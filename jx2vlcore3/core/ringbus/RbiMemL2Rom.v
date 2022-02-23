@@ -225,8 +225,8 @@ begin
 	if(mem2OpmIn[11])
 		$display("L2ROM: TLB Missed O=%X A=%X", mem2OpmIn, mem2AddrIn);
 
-	if(mem2AddrIsZero)
-		$display("L2ROM: Zero O=%X A=%X", mem2OpmIn, mem2AddrIn);
+//	if(mem2AddrIsZero)
+//		$display("L2ROM: Zero O=%X A=%X", mem2OpmIn, mem2AddrIn);
 
 	tMemOpmReq[7:0]	= JX2_RBI_OPM_OKLD;
 //	if(tRamDoStL)

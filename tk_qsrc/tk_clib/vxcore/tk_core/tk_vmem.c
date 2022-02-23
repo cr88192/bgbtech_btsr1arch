@@ -880,7 +880,7 @@ int TK_VMem_Init()
 
 	if(TK_VMEM_PAGESHL==14)
 	{
-		tpte|=0x0042;	//Three-Level, 64K pages
+		tpte|=0x0042;	//Three-Level, 16K pages
 		tmmcr=0x002D;
 	}
 	else
@@ -1591,6 +1591,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 		return;
 	}
 	
+#if 0
 	if(!pte)
 	{
 		tea&=0x0000FFFFFFFFFFFFULL;
@@ -1601,6 +1602,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 		tk_vmem_loadpte(tea, pte);
 		return;
 	}
+#endif
 	
 	__debugbreak();
 	TK_VMem_VaPageInAddr(tea);

@@ -107,7 +107,7 @@ void *TKMM_MMList_AllocBrk(int sz)
 			return(NULL);
 		}
 		
-//		memset(tkmm_mmlist_brkbuf, 0, 1<<20);
+		memset(tkmm_mmlist_brkbuf, 0, 1<<20);
 
 //		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
 		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<TKMM_BRKBITS);

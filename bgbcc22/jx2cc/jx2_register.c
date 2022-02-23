@@ -3146,6 +3146,9 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	if(!((sctx->regalc_save)&(1ULL<<i)))
 		return(0);
 
+//	if(i<sctx->vsp_rsv)
+//		return(0);
+
 	reg=sctx->regalc_map[i];
 	regfl=BGBCC_JX2C_GetFrameVRegFlags(ctx, sctx, reg);
 
@@ -3173,6 +3176,8 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	case BGBCC_SH_REGCLS_VO_GR2:
 	case BGBCC_SH_REGCLS_VO_QGR2:
 	case BGBCC_SH_REGCLS_AR_REF:
+	case BGBCC_SH_REGCLS_VO_REF2:
+	case BGBCC_SH_REGCLS_AR_REF2:
 		if(sctx->is_addr64)
 			userq=1;
 		else
@@ -3271,6 +3276,15 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 		}
 #endif
 
+		if(
+			(	BGBCC_CCXL_IsRegTempP(ctx, reg)		||
+				BGBCC_CCXL_IsRegArgP(ctx, reg)		||
+				BGBCC_CCXL_IsRegLocalP(ctx, reg)	)	&&
+			(sctx->is_leaftiny&1))
+		{
+			sctx->regalc_dirty&=~(1ULL<<i);
+		}
+
 #if 1
 		if(!(sfl&4))
 		{
@@ -3286,6 +3300,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 		}
 #endif
 
+#if 0
 		if(!sctx->is_addr64)
 		{
 			if(BGBCC_CCXL_IsRegSgLongP(ctx, reg) ||
@@ -3298,11 +3313,16 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 //				creg=bgbcc_jx2_lcachereg[i+1];
 				creg=sctx->lcachereg[i+1];
 		}
+#endif
 
 //		if(!rchk)
 //		if(!rchk && ((sctx->regalc_dirty)&(1ULL<<i)))
 		if(!rchk && ((sctx->regalc_dirty)&(1ULL<<i)) &&
-			(	!(sctx->is_leaftiny&1) ||
+//			!(sctx->is_leaftiny&1) &&
+			(
+				!(sctx->is_leaftiny&1) ||
+				(regfl&BGBCC_REGFL_ALIASPTR) ||
+				BGBCC_CCXL_IsRegThisIdxP(ctx, reg) ||
 				BGBCC_CCXL_IsRegGlobalP(ctx, reg) ||
 				BGBCC_CCXL_IsRegVolatileP(ctx, reg)))
 		{
@@ -3358,10 +3378,13 @@ int BGBCC_JX2C_EmitSyncRegisters(
 	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
 		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 3);
+
+#if 0
 		sctx->regalc_utcnt[i]=0;
 		sctx->regalc_live&=~(1ULL<<i);
 		sctx->regalc_noval&=~(1ULL<<i);
 		sctx->regalc_pair&=~(1ULL<<i);
+#endif
 	}
 
 	return(0);
@@ -3371,7 +3394,8 @@ int BGBCC_JX2C_EmitSyncLeafRegisters(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx)
 {
-	int i;
+	ccxl_register reg;
+	int i, isv, regfl;
 
 //	if(sctx->is_leaftiny&1)
 //	{
@@ -3387,7 +3411,19 @@ int BGBCC_JX2C_EmitSyncLeafRegisters(
 //	for(i=sctx->maxreg_gpr; i<sctx->maxreg_gpr_lf; i++)
 	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
-		if(!BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i))
+		isv=0;
+		reg=sctx->regalc_map[i];
+		regfl=BGBCC_JX2C_GetFrameVRegFlags(ctx, sctx, reg);
+
+		if(	BGBCC_CCXL_IsRegGlobalP(ctx, reg) ||
+			BGBCC_CCXL_IsRegThisIdxP(ctx, reg) ||
+			BGBCC_CCXL_IsRegVolatileP(ctx, reg) ||
+			(regfl&BGBCC_REGFL_ALIASPTR))
+		{
+			isv=1;
+		}
+
+		if(!BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i) && !isv)
 			continue;
 
 		if(!(sctx->is_leaftiny&1))

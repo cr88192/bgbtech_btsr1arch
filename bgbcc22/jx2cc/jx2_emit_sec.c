@@ -1954,6 +1954,132 @@ int BGBCC_JX2_EmitCheckRepackOp(BGBCC_JX2_Context *ctx)
 }
 #endif
 
+/*
+Check For Op64 bundles (not normally valid), and either repack into Op40x2 form or unbundle.
+ */
+int BGBCC_JX2_EmitCheckRepackBundle(BGBCC_JX2_Context *ctx)
+{
+	int opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7, opw8, opw9;
+	int ofs0, ofs1, o;
+
+	if(ctx->sec!=BGBCC_SH_CSEG_TEXT)
+		return(0);
+
+	ofs0=ctx->ofs_curbdl;
+	ofs1=BGBCC_JX2_EmitGetOffs(ctx);
+	
+	if(!ofs0)
+		return(0);
+	if((ofs1-ofs0)<=8)
+		return(0);
+	
+	o=ofs0;
+	
+	if((ofs1-ofs0)==12)
+	{
+		opw0=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 0);
+		opw1=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 2);
+		opw2=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 4);
+		opw3=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 6);
+		opw4=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 8);
+		opw5=BGBCC_JX2_EmitGetOffsWord(ctx, o+10);
+		
+		if(	((opw0&0xFF00)==0xFF00) &&
+			((opw2&0xFC00)==0xF400) &&
+			((opw4&0xFC00)==0xF000))
+		{
+			if(	((opw0&0xFF0F)==0xFF00) &&
+				((opw1&0xF780)==0x0000) )
+			{
+				opw6=0x7800|(opw0&0x00F0);
+				opw7=((opw1<<4)&0x80F0)|((opw1<<8)&0x7000);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+0, opw6);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+2, opw7);
+				return(1);
+			}else
+			{
+				opw2&=~0x0400;
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+4, opw2);
+				return(1);
+			}
+		}
+
+		if(
+			((opw0&0xFC00)==0xF400) &&
+			((opw2&0xFF00)==0xFF00) &&
+			((opw4&0xFC00)==0xF000))
+		{
+			if(	((opw2&0xFF0F)==0xFF00) &&
+				((opw3&0xF780)==0x0000) )
+			{
+				opw6=0x7800|((opw2>>4)&0x000F);
+				opw7=((opw3<<0)&0x080F)|((opw3<<4)&0x0700);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+0, opw6);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+2, opw7);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+4, opw0);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+6, opw1);
+				return(1);
+			}else
+			{
+				opw0&=~0x0400;
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+0, opw0);
+				return(1);
+			}
+		}
+	}
+
+	if((ofs1-ofs0)==16)
+	{
+		opw0=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 0);
+		opw1=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 2);
+		opw2=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 4);
+		opw3=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 6);
+		opw4=BGBCC_JX2_EmitGetOffsWord(ctx, o+ 8);
+		opw5=BGBCC_JX2_EmitGetOffsWord(ctx, o+10);
+		opw6=BGBCC_JX2_EmitGetOffsWord(ctx, o+12);
+		opw7=BGBCC_JX2_EmitGetOffsWord(ctx, o+14);
+
+		if(	((opw0&0xFF00)==0xFF00) &&
+			((opw2&0xFC00)==0xF400) &&
+			((opw4&0xFF00)==0xFF00) &&
+			((opw6&0xFC00)==0xF000))
+		{
+			if(
+				((opw0&0xFF0F)==0xFF00) &&
+				((opw1&0xF780)==0x0000) &&
+				((opw4&0xFF0F)==0xFF00) &&
+				((opw5&0xF780)==0x0000) )
+			{
+				opw8=0x7800|(opw0&0x00F0)|((opw4>>4)&0x000F);
+				opw9=	((opw1<<4)&0x80F0)|
+						((opw1<<8)&0x7000)|
+						((opw5<<0)&0x080F)|
+						((opw5<<4)&0x0700);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+ 0, opw8);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+ 2, opw9);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+ 4, opw2);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+ 6, opw3);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+ 8, opw6);
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+10, opw7);
+
+				if(ctx->is_simpass)
+					{ ctx->sec_vpos[ctx->sec]-=4; }
+				else
+					{ ctx->sec_pos[ctx->sec]-=4; }
+
+				return(1);
+			}else
+			{
+				opw0&=~0x0400;
+				BGBCC_JX2_EmitSetOffsWord(ctx, o+0, opw0);
+				return(1);
+			}
+		}
+	}
+	
+	return(0);
+}
+
 int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 {
 	int i, j, k;
@@ -2054,6 +2180,14 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 		}
 	}
 
+	if((ctx->op_is_wex2)&2)
+	{
+		if(!(ctx->ofs_curbdl))
+		{
+			ctx->ofs_curbdl=BGBCC_JX2_EmitGetOffs(ctx);
+		}
+	}
+
 	BGBCC_JX2_EmitStatWord(ctx, val);
 
 //	if(!val && (ctx->sec==BGBCC_SH_CSEG_TEXT))
@@ -2093,6 +2227,18 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 //		BGBCC_JX2_EmitCheckRepackOp(ctx);
 		return(0);
 	}
+
+
+	if(!((ctx->op_is_wex2)&2) && ctx->stat_opc_issfx)
+	{
+		if(ctx->ofs_curbdl)
+		{
+//			ctx->ofs_curbdl=BGBCC_JX2_EmitGetOffs(ctx);
+			BGBCC_JX2_EmitCheckRepackBundle(ctx);
+			ctx->ofs_curbdl=0;
+		}
+	}
+
 	
 //	BGBCC_JX2_EmitCheckRepackOp(ctx);
 

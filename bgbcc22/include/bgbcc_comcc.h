@@ -326,6 +326,7 @@ int stat_const_masktot;
 int stat_const_jumbo64;
 int stat_const_jumbo96;
 
+int ofs_curbdl;
 
 int sim_voffs;		//est' offset between real PC and sim PC
 int cur_fcnbase;
@@ -416,6 +417,7 @@ int frm_offs_save;		//offset of register-save area
 int frm_offs_thisptr;	//offset of 'this' pointer
 int frm_offs_sectoken;	//offset of security token
 int frm_offs_allocamrk;	//offset of alloca mark
+int frm_offs_isrsaves;	//offset of saved registers (ISR)
 
 s64 frm_val_sectoken;	//value used for security token.
 

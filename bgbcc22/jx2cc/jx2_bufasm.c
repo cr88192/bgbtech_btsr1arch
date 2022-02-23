@@ -489,6 +489,9 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 		if(!bgbcc_stricmp(str, "krr"))
 			return(BGBCC_SH_REG_KRR);
 
+		if(!bgbcc_stricmp(str, "isrsave"))
+			return(BGBCC_SH_REG_ISRSAVE);
+
 		break;
 	}
 

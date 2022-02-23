@@ -521,6 +521,9 @@ static int _fcn_clz128(__uint128 v)
 }
 #endif
 
+
+u64 __udivdi3(u64 n, u64 d);
+
 #if 1
 __uint128 __xli_udiv(__uint128 n, __uint128 d)
 {
@@ -537,7 +540,13 @@ __uint128 __xli_udiv(__uint128 n, __uint128 d)
 	if(d>n)
 		return(0);
 
-#if 0
+	if(((u64)n==n) && ((u64)d==d))
+	{
+		q=__udivdi3(n, d);
+		return(q);
+	}
+
+#if 1
 	if(!(d&(d-1)))
 	{
 		q=n;
@@ -581,6 +590,14 @@ __int128 __xli_umod(__uint128 a, __uint128 b)
 {
 	__uint128	c, d;
 	
+#if 1
+	if(!(b&(b-1)))
+	{
+		d=a&(b-1);
+		return(d);
+	}
+#endif
+
 	c=__xli_udiv(a, b);
 	d=a-(c*b);
 	

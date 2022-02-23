@@ -73,6 +73,7 @@ module ExEX1(
 //	regValFRs,		//Source A Value (FPR)
 //	regValFRt,		//Source B Value (FPR)
 	regValCRm,		//Source C Value (CR)
+	regValBPc,		//Instruction Base PC
 
 	regIdRn1,		//Destination ID (EX1)
 	regValRn1,		//Destination Value (EX1)
@@ -135,6 +136,7 @@ output[63:0]	regOutXLea;
 // input[63:0]		regValFRs;		//Source A Value (FPR)
 // input[63:0]		regValFRt;		//Source B Value (FPR)
 input[63:0]		regValCRm;		//Source C Value (CR)
+input[47:0]		regValBPc;
 
 `output_gpr		regIdRn1;		//Destination ID (EX1)
 output[63:0]	regValRn1;		//Destination Value (EX1)
@@ -650,7 +652,13 @@ begin
 			if(!tMsgLatch)
 				$display("EX1: Invalid Opcode %X", tOpUCmd1);
 			tNextMsgLatch	= 1;
-			tExHold		= 1;
+
+			tExTrapExc = {
+				tValBraHi,
+				regValBPc,
+				16'h800E };
+
+//			tExHold		= 1;
 //			tExHold		= !reset;
 		end
 	

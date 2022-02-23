@@ -1499,7 +1499,7 @@ Set the SR.T flag.
 
 === SETTRAP ===
 
-* F0nm_1GA9  SETTRAP	Rm, (Rn)
+* F0nm_1GA9  SETTRAP	Rn, (Rm)
 
 Optional Debug Feature: Set Tripwire Mode
 This modifies the status of the pointed-to cache line, such as setting it to be temporarily write protected.

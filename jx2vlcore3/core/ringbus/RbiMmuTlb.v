@@ -144,6 +144,38 @@ reg[5:0]	tlbHbIxA;
 
 `endif
 
+`ifdef jx2_tlbsz_32
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkA[31:0];
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkB[31:0];
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkC[31:0];
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkD[31:0];
+
+reg[4:0]	tlbHixA;
+reg[4:0]	tlbHixSelA;
+reg[4:0]	tlbHixSelB;
+reg[4:0]	tlbHbIxA;
+`endif
+
+`ifdef jx2_tlbsz_16
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkA[15:0];
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkB[15:0];
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkC[15:0];
+(* ram_style = "distributed" *)
+	reg[143:0]	tlbBlkD[15:0];
+
+reg[3:0]	tlbHixA;
+reg[3:0]	tlbHixSelA;
+reg[3:0]	tlbHixSelB;
+reg[3:0]	tlbHbIxA;
+`endif
+
 reg[143:0]	tlbHbDatA;
 reg[143:0]	tlbHbDatB;
 reg[143:0]	tlbHbDatC;
@@ -409,10 +441,12 @@ begin
 //		regInAddrA[28], regInAddrA[29]
 //		};
 	
-	tlbHixA = tlbHixSelA ^ regInAddrA[25:16];
+//	tlbHixA = tlbHixSelA ^ regInAddrA[25:16];
+	tlbHixA = tlbHixSelA + regInAddrA[25:16];
 `endif
 
-`ifdef jx2_tlbsz_256
+// `ifdef jx2_tlbsz_256
+`ifndef def_true
 	case({tlbMmuPg16K, tlbMmuPg64K})
 		2'b00: begin
 //			tlbHixSelA={regInAddrA[15:12], regInAddrA[27:24]};
@@ -439,7 +473,25 @@ begin
 				regInAddrA[27:26],	regInAddrA[29:28] };
 		end
 	endcase
-	tlbHixA = tlbHixSelA ^ regInAddrA[23:16];
+//	tlbHixA = tlbHixSelA ^ regInAddrA[23:16];
+	tlbHixA = tlbHixSelA + regInAddrA[23:16];
+`endif
+
+`ifdef jx2_tlbsz_256
+	case({tlbMmuPg16K, tlbMmuPg64K})
+		2'b00: begin
+			tlbHixA={regInAddrA[15:12], regInAddrA[19:16]};
+		end
+		2'b01: begin
+			tlbHixA=regInAddrA[23:16];
+		end
+		2'b10: begin
+			tlbHixA={regInAddrA[15:14], regInAddrA[21:16]};
+		end
+		2'b11: begin
+			tlbHixA=regInAddrA[23:16];
+		end
+	endcase
 `endif
 
 `ifdef jx2_tlbsz_64
@@ -458,6 +510,62 @@ begin
 		end
 	endcase
 	tlbHixA = tlbHixSelA[5:0] ^ regInAddrA[21:16];
+`endif
+
+`ifdef jx2_tlbsz_32
+	case({tlbMmuPg16K, tlbMmuPg64K})
+		2'b00: begin
+			tlbHixSelA={regInAddrA[15:12], regInAddrA[21]};
+		end
+		2'b01: begin
+			tlbHixSelA=regInAddrA[25:21];
+		end
+		2'b10: begin
+			tlbHixSelA={regInAddrA[15:14], regInAddrA[23:21]};
+		end
+		2'b11: begin
+			tlbHixSelA=regInAddrA[25:21];
+		end
+	endcase
+	tlbHixA = tlbHixSelA[4:0] ^ regInAddrA[20:16];
+`endif
+
+// `ifdef jx2_tlbsz_16
+`ifndef def_true
+	case({tlbMmuPg16K, tlbMmuPg64K})
+		2'b00: begin
+			tlbHixSelA=regInAddrA[15:12];
+		end
+		2'b01: begin
+			tlbHixSelA=regInAddrA[23:20];
+		end
+		2'b10: begin
+			tlbHixSelA={regInAddrA[15:14], regInAddrA[21:20]};
+		end
+		2'b11: begin
+			tlbHixSelA=regInAddrA[23:20];
+		end
+	endcase
+//	tlbHixA = tlbHixSelA[3:0] ^ regInAddrA[19:16];
+	tlbHixA = tlbHixSelA[3:0] + regInAddrA[19:16];
+`endif
+
+`ifdef jx2_tlbsz_16
+// `ifndef def_true
+	case({tlbMmuPg16K, tlbMmuPg64K})
+		2'b00: begin
+			tlbHixA=regInAddrA[15:12];
+		end
+		2'b01: begin
+			tlbHixA=regInAddrA[19:16];
+		end
+		2'b10: begin
+			tlbHixA=regInAddrA[17:14];
+		end
+		2'b11: begin
+			tlbHixA=regInAddrA[19:16];
+		end
+	endcase
 `endif
 
 	nxtAclEntryA	= aclEntryA;
@@ -813,7 +921,7 @@ begin
 //	if((tRegInAddr[47:0]!=tlbAddr[47:0]) && !tAddrIsPhys)
 	if((tRegInAddr[43:0]!=tlbAddr[43:0]) && !tAddrIsPhys)
 	begin
-		$display("TLB(A) %X -> %X", tRegInAddr, tlbAddr);
+//		$display("TLB(A) %X -> %X", tRegInAddr, tlbAddr);
 	end
 
 //	if(tRegInIsBounce && !tAddrIsMMIO)

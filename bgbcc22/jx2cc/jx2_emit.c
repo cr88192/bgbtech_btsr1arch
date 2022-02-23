@@ -4190,7 +4190,7 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(
 {
 	int opw1, opw2, opw3, opw4, opw5, opwf;
 	int rlty, prlty, rlty2;
-	int tr0;
+	int tr0, tr1, j;
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
@@ -4199,6 +4199,30 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(
 	if((lbl>=BGBCC_SH_LBL_ARCHSTRT) && (lbl<BGBCC_SH_LBL_ARCHEND))
 	{
 		tr0=lbl-BGBCC_SH_LBL_ARCHSTRT;
+		
+		if(tr0==BGBCC_SH_REG_ISRSAVE)
+		{
+			tr1=reg;
+			if(BGBCC_JX2C_EmitRegIsExtLpReg(NULL, ctx, reg))
+			{
+				tr1=BGBCC_JX2C_MapLpRegToQgr(NULL, ctx, reg);
+			}
+			
+//			j=ctx->frm_offs_isrsaves+ctx->frm_size;
+			j=ctx->frm_offs_isrsaves;
+			BGBCC_JX2_EmitOpLdRegDispReg(ctx,
+				BGBCC_SH_NMID_LEAB,
+				BGBCC_SH_REG_SP, j, tr1);
+			
+			if(tr1!=reg)
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_MOV, BGBCC_SH_REG_GBH, tr1+1);
+			}
+
+			return(1);
+		}
+		
 		BGBCC_JX2_EmitOpRegReg(ctx,
 			BGBCC_SH_NMID_MOV, tr0, reg);
 		return(1);

@@ -50,6 +50,7 @@ module RbiMemL1A(
 	
 	regOutExc,		regTraPc,
 	dcInTraPc,		deadlockLatch,
+	regInCurExc,
 
 	l2mAddrIn,		l2mAddrOut,
 	l2mDataIn,		l2mDataOut,
@@ -89,6 +90,8 @@ input[63:0]		regInDhr;
 input[63:0]		regInMmcr;
 input[63:0]		regInKrr;
 input[63:0]		regInSr;
+
+input[127:0]	regInCurExc;
 
 output[127:0]	regOutExc;
 output[63:0]	regTraPc;
@@ -229,9 +232,19 @@ RbiMmuTlb	tlb(
 `endif
 
 
+reg [7:0]		regKrrRngDs;
+reg [7:0]		regNxtKrrRngDs;
+
+reg [7:0]		regKrrRngIs;
+reg [7:0]		regNxtKrrRngIs;
+
 wire[7:0]		regKrrHash;
 reg [7:0]		regKrrHashL;
 assign		regKrrHash = regInKrr[7:0]^regInKrr[15:8];
+// assign		regKrrHash = (regInKrr[7:0]^regInKrr[15:8])+regKrrRng;
+
+reg [7:0]		regKrrHashIsL;
+reg [7:0]		regKrrHashDsL;
 
 
 wire[5:0]		dfInOpm;
@@ -265,7 +278,7 @@ RbiMemIcWxA		memIc(
 	icInPcHold,		icInPcWxe,
 	dfInOpm,		regInSr,
 	ifMemWait,		ifOutExc,
-	icOutPcSxo,		regKrrHashL,
+	icOutPcSxo,		regKrrHashIsL,
 	tTlbExc,		tIcExecAcl,
 
 	ifMemAddrI,		ifMemAddrO,
@@ -304,7 +317,7 @@ RbiMemDcA		memDc(
 	dcInHold,		dfOutHold,
 	regInSr,		dfOutWait,
 	dfOutExc,		regInMmcr,
-	regKrrHashL,	tRngN2,
+	regKrrHashDsL,	tRngN2,
 
 	dfMemAddrI,		dfMemAddrO,
 	dfMemDataI,		dfMemDataO,
@@ -356,6 +369,9 @@ reg		tSkipTlb;
 
 reg		tMsgLatch;
 reg		tNxtMsgLatch;
+
+reg		tExcLatch;
+reg		tNxtExcLatch;
 
 always @*
 begin
@@ -430,14 +446,19 @@ end
 always @*
 begin
 	tNxtMsgLatch	= 0;
-	tRegOutExc	= UV128_00;
-	tRegTraPc	= UV64_00;
+	tRegOutExc		= UV128_00;
+	tRegTraPc		= UV64_00;
 
-//	tDcOutOK	= dfOutOK[1:0];
+	tNxtExcLatch	= tExcLatch;
+
+	regNxtKrrRngDs	= regKrrRngDs;
+	regNxtKrrRngIs	= regKrrRngIs;
+
+//	tDcOutOK		= dfOutOK[1:0];
 	
-//	tDcOutHold	= 0;
+//	tDcOutHold		= 0;
 // `ifdef	jx2_mem_l1dstall
-//	tDcOutHold	= dfOutOKB[1];
+//	tDcOutHold		= dfOutOKB[1];
 // `endif
 
 	tDcOutHold	= dfOutHold;
@@ -450,7 +471,8 @@ begin
 	tNxtRngA	= 0;
 	tNxtRngB	= 0;
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 	tRngBitA	=
 		tRngA[1] ^ tRngA[3] ^
 		tRngA[5] ^ tRngA[7] ^
@@ -467,7 +489,7 @@ begin
 	tNxtRngN	= tRngA + tRngB;
 `endif
 
-	tNxtRngN	= 0;
+//	tNxtRngN	= 0;
 
 	if(reset)
 	begin
@@ -489,6 +511,47 @@ begin
 			tRegOutExc = ifOutExc;
 	end
 
+	if(tRegOutExc[15])
+	begin
+		tDcOutHold		= 1;
+		tNxtExcLatch	= 1;
+//		if(	(tRegOutExc[15:12]==4'h8) ||
+//			(tRegOutExc[15:12]==4'hA) )
+//				regNxtKrrRng	= tNxtRngN[11:4];
+	end
+	
+//	if(	(dcInOpm==UMEM_OPM_FLUSHDS) ||
+//		(dcInOpm==UMEM_OPM_FLUSHIS))
+//			regNxtKrrRng	= tNxtRngN[11:4];
+
+
+	if(dcInOpm==UMEM_OPM_FLUSHDS)
+	begin
+//		regNxtKrrRngDs	= tNxtRngN[11:4];
+//		regNxtKrrRngDs	= tNxtRngN[7:0];
+		regNxtKrrRngDs	= tNxtRngN[7:0] + tNxtRngN[15:8];
+		$display("KrrRngDs %X %X", regKrrRngDs, regNxtKrrRngDs);
+	end
+	if(dcInOpm==UMEM_OPM_FLUSHIS)
+	begin
+//		regNxtKrrRngIs	= tNxtRngN[11:4];
+//		regNxtKrrRngIs	= tNxtRngN[7:0];
+		regNxtKrrRngIs	= tNxtRngN[7:0] + tNxtRngN[15:8];
+		$display("KrrRngIs %X %X", regKrrRngIs, regNxtKrrRngIs);
+	end
+
+
+//		(dcInOpm==UMEM_OPM_FLUSHIS))
+//			regNxtKrrRng	= tNxtRngN[11:4];
+	
+	if(tExcLatch)
+		tDcOutHold		= 1;
+
+	if(regInCurExc[15])
+	begin
+		tNxtExcLatch	= 0;
+	end
+
 end
 
 always @(posedge clock)
@@ -501,6 +564,12 @@ begin
 	ifMemWaitL		<= ifMemWait;
 
 	regKrrHashL		<= regKrrHash;
+	regKrrHashDsL	<= regKrrHashL + regKrrRngDs;
+	regKrrHashIsL	<= regKrrHashL + regKrrRngIs;
+	regKrrRngDs		<= regNxtKrrRngDs;
+	regKrrRngIs		<= regNxtKrrRngIs;
+
+	tExcLatch		<= tNxtExcLatch;
 
 	tRngA			<= tNxtRngA;
 	tRngB			<= tNxtRngB;

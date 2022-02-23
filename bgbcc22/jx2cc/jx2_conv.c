@@ -1237,8 +1237,18 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			tr0=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, tr1);
 
 			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, tr0);
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
-				BGBCC_SH_NMID_MOV, BGBCC_SH_REG_GBH, tr0+1);
+			if(sctx->has_xgpr&2)
+			{
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+					BGBCC_SH_NMID_MOV, BGBCC_SH_REG_GBH, tr0+1);
+			}else
+			{
+				BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+					BGBCC_SH_NMID_MOV, 0, tr0+1);
+			}
+
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tr1);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
 			return(1);
 		}
 

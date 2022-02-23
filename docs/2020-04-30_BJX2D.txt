@@ -567,10 +567,10 @@ Page Control:
 * ( 0): PR.V0, Page Is Valid (Mode)
 
 Valid 1/0:
-* 00: Not Valid
-* 01: Valid (Normal Page), Low Range (X2TLB)
+* 00: Not Valid (This TLBE will be ignored).
+* 01: Valid Exclusive (Normal Page), Low Range (X2TLB)
 * 10: High-Range (X2TLB), Addr(95:48)
-* 11: Reserved
+* 11: Valid Shared (Normal Page), Low Range (X2TLB)
 
 Size 1/0 (Base=4K):
 * 00:  4K Page (Single Page)
@@ -596,6 +596,9 @@ If NC is Set and NU is Clear:
 * If NR or NW are Set, these are ignored in Supervisor Mode.
 ** The NC flag is Ignored if NX is Set.
 
+Valid Shared/Exclusive Mode:
+* Valid Exclusive: Assume that page is only mapped once.
+* Valid Shared: Assume that this page may be in use multiple places.
 
 Keyring checks are enabled via the Keyring Register (KRR):
 * This register is interpreted as four 16-bit word values.
@@ -2273,16 +2276,8 @@ The V.w flag will apply to 3R/3RI (Imm5u) encodings (V.w, E.q):
 * { 0, 0 }: 3R ( Rm, Ro, Rn, Rn )
 * { 1, 0 }: 4R ( Rm, Ro, Rp, Rn )
 * { 0, 1 }: 3R ( Rm, Imm17s, Rn, Rn )
-* { 1, 1 }: 4R ( Rm, Imm11s,  Ro, Rn )
+* { 1, 1 }: 4R ( Rm, Imm11s, Ro, Rn )
 
-The V.w flag will apply to Ld/St:
-* 0: (Rm, Ro)		-> (Rm, Ro, Disp11u/0)
-* 0: (Rm, Disp5)	-> (Rm, Disp17s)
-* 1: (Rm, Ro)		-> (Rm, Ro*Sc, Disp9u/0)
-* 1: (Rm, Disp5)	-> (Rm, Disp17s*1)
-
-With both an index and displacement, the displacement field will be unscaled.
-Support for non-zero displacements will be an optional extension.
 
 
 Immediate values may be extended by 8 bits:
@@ -2314,6 +2309,32 @@ The W.w bit may be used to select the use of SR.S as a Predicate.
 For CMPxx ops within F2zz, W.m will select SR.S as the output bit.
 
 
+==== Jumbo Op40x2 ====
+
+Will define an Op40x2 Prefix (78zz_zzzz).
+
+An Op64 Prefix may be used in a bundle:
+* Op40x2 | OpB | OpA
+Where 
+* Op40x2 will have the form: FFww_vvii
+* OpB will be: F4..F7, or EA/EB, EE/EF
+* OpA will be: F0..F3, or E0..E7
+Which will be decoded as-if this were a pair of Op64 instructions.
+
+Each virtual Op64 instruction will have a prefix encoded as if it were:
+* FFw0_0vxi
+
+Where vi will expand to vxi:
+* wxjj_iiii -> wxxx_xxjj_iiii
+
+Within RiMOV encodings, the unpacking will differ:
+* 0xjj_iiii -> 0xxx_xxjj_iiii
+* 1xjj_iiii -> 1xxx_xxjj_iiii	//(Rm, Disp13s)
+* 1xjj_iiii -> 1jjx_xxxx_iiii	//(Rm, Ro*Sc, Disp4u/0)
+
+* Namely: F0/F4 Block, Major=0/4/8, Minor=4..7, C..F
+
+
 ==== Op64 RiMOV ====
 
 The RiMOV Extension will be a special case of Op64, which will extend the capabilities of Load/Store instructions.
@@ -2323,6 +2344,16 @@ This extension will provide:
 * Ability to use an encode the Scale explicitly for Loads/Stores.
 * Ability to use both an index register and displacement.
 ** Unlike normal Load/Store operations, this displacement is unscaled.
+
+
+The V.w flag will apply to Ld/St:
+* 0: (Rm, Ro)		-> (Rm, Ro, Disp11u/0)
+* 0: (Rm, Disp5)	-> (Rm, Disp17s)
+* 1: (Rm, Ro)		-> (Rm, Ro*Sc, Disp9u/0)
+* 1: (Rm, Disp5)	-> (Rm, Disp17s*1)
+
+With both an index and displacement, the displacement field will be unscaled.
+Support for non-zero displacements will be an optional extension.
 
 
 ==== Jumbo Op48 ====
@@ -2484,6 +2515,15 @@ With 'W.w' as the WEX bit.
 
 For Disp5u encodings in the F0nm_ZeoZ block, the Disp5u is expanded to Disp6s.
 * This allows these to encode a load or store with a negative displacement.
+
+
+XGPR Encodings which are redundant with the Fz encodings will be reserved/invalid:
+* 70 (F0), Reserved
+* 78 (F4), Op40x2 Prefix
+* 90 (F2), Reserved
+* 91 (F1), Reserved
+* 98 (F6), Jumbo Reserved
+* 99 (F5), Jumbo Reserved
 
 
 === Wide Execution 2 (Optional) ===

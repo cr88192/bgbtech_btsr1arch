@@ -1247,7 +1247,7 @@ int tk_shell_chksane()
 
 	tk_printf("CS B7\n");
 
-	tk_shell_chksane_var();
+//	tk_shell_chksane_var();
 
 	tk_printf("CS B8\n");
 }

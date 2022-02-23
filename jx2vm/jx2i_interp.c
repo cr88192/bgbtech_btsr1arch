@@ -367,7 +367,11 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 
 		if(sr0&(1<<29))
 		{
-			JX2_DBGBREAK
+			ctx->tr_rnxt=NULL;
+			ctx->tr_rjmp=NULL;
+			ctx->status=status;
+			return(0);
+//			JX2_DBGBREAK
 		}
 
 //		ctx->regs[BJX2_REG_EXSR]=status;
@@ -1162,6 +1166,10 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_XLEAL:		s0="XLEA.L";	break;
 	case BJX2_NMID_XLEAQ:		s0="XLEA.Q";	break;
 
+	case BJX2_NMID_BRAX:		s0="BRAX";		break;
+	case BJX2_NMID_BSRX:		s0="BSRX";		break;
+	case BJX2_NMID_BTX:			s0="BTX";		break;
+	case BJX2_NMID_BFX:			s0="BFX";		break;
 	case BJX2_NMID_MOVTT:		s0="MOVTT";		break;
 	case BJX2_NMID_XMOVTT:		s0="XMOVTT";	break;
 
@@ -2589,7 +2597,11 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			pc=ctx->regs[BJX2_REG_PC];
 			
 			if(!pc && ctx->tot_cyc>1000)
+			{
+				if(!ctx->status)
+					ctx->status=0x9999;
 				break;
+			}
 			if(pc!=(pc&0x0000FFFFFFFFFFFFULL))
 			{
 				ctx->status=0x9999;

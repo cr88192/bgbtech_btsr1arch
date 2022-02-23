@@ -508,3 +508,37 @@ int __lvax_cmp_gt(u128 arga, u128 argb)
 	
 	return(0);
 }
+
+u128 __lvax_conv_fromptr(void *val)
+{
+	u128 v;	
+
+	v=((u128)val);
+	
+	if(((v>>60)&15)==0)
+	{
+		if((v>>48)&4095)
+			return(v);
+
+		v=v&0x0000FFFF_FFFFFFFF_0000FFFF_FFFFFFFFUI128;
+		v|=((u128)TKMM_LVA_GetPtrTypeTag(val))<<48;
+		return(v);
+	}
+
+	if(	(((v>>60)&15)==2)	||
+		(((v>>60)&15)==3)	)
+	{
+		v=v&0x0000FFFF_FFFFFFFF_0000FFFF_FFFFFFFFUI128;
+		v|=((u128)TKMM_LVA_GetPtrTypeTag(val))<<48;
+		return(v);
+	}
+	
+	return(0);
+}
+
+void *__lvax_conv_toptr(u128 val)
+{
+	void *ptr;
+	u128 v;	
+
+}

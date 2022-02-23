@@ -688,13 +688,25 @@ begin
 		tBlockIsFF = 0;
 	end
 
+	if(tOpIsXGprX0 && (istrWord[10:8]==0))
+	begin
+		tOpIsXGprX0 = 0;
+		tBlockIsFF = 1;
+	end
+
+	if((tOpIsXGprX1 || tOpIsXGprX2) && (istrWord[10:9]==0))
+	begin
+		tOpIsXGprX1 = 0;
+		tOpIsXGprX2 = 0;
+		tBlockIsFF = 1;
+	end
+
 	if(tOpIsXGprX0)
 		tBlockIsF0 = 1;
 	if(tOpIsXGprX1)
 		tBlockIsF1 = 1;
 	if(tOpIsXGprX2)
 		tBlockIsF2 = 1;
-
 
 	if(opIsXGpr)
 		tBlockIsWex		= istrWord[11];

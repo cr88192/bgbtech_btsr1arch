@@ -295,7 +295,7 @@ int tk_shell_chksane_int128()
 	if(sv2!=sv1)
 		__debugbreak();
 	
-	bs2_chksane3();
+//	bs2_chksane3();
 	
 //	__debugbreak();
 }

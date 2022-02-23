@@ -296,6 +296,8 @@
 // #define BGBCC_SH_REG_SPH		0x107
 
 
+#define BGBCC_SH_REG_ISRSAVE	0x107	//virtual, ISR save area
+
 #define BGBCC_SH_REG_R0B		0x108
 // #define BGBCC_SH_REG_R1B		0x69
 // #define BGBCC_SH_REG_R2B		0x6A

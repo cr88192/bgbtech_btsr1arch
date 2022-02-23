@@ -66,7 +66,6 @@ reg[127: 0]	tRegOutExc2;
 assign	regOutExc = tRegOutExc2;
 
 reg[63: 0]		tRegInSr;
-reg[63: 0]		tRegInSrL;
 
 reg[63: 0]		tRegRng1;
 
@@ -131,78 +130,67 @@ reg		tSrJQ;
 
 /*
 Addr:
-  (107:92): Dext
-  ( 91:72): Aext
-  ( 71:68): Flush Rover
-  ( 67:48): PA Bits
-  ( 47: 5): VA Bits
-  (  4: 0): Access Flags
+  (71:68): Flush Rover
+  (67:48): PA Bits
+  (47: 5): VA Bits
+  ( 4: 0): Access Flags
  */
-
-// `define jx2_mem_l1darr_addr		reg[ 71:0]
-// `define jx2_mem_l1darr_data		reg[143:0]
-
-`define jx2_mem_l1darr_addr		reg[ 71:0]
-`define jx2_mem_l1darr_addrb	reg[107:0]
-`define jx2_mem_l1darr_data		reg[127:0]
 
 `ifdef jx2_mem_l1dsz_1024
 `define			reg_l1d_ix	reg[9:0]
-`jx2_mem_l1darr_addrb		arrMemAddrA[1023:0];
-`jx2_mem_l1darr_addrb		arrMemAddrB[1023:0];
-`jx2_mem_l1darr_data		arrMemDataA[1023:0];
-`jx2_mem_l1darr_data		arrMemDataB[1023:0];
+reg[ 71:0]		arrMemAddrA[1023:0];
+reg[ 71:0]		arrMemAddrB[1023:0];
+reg[143:0]		arrMemDataA[1023:0];
+reg[143:0]		arrMemDataB[1023:0];
 `endif
 
 `ifdef jx2_mem_l1dsz_512
 `define			reg_l1d_ix	reg[8:0]
-`jx2_mem_l1darr_addrb		arrMemAddrA[511:0];
-`jx2_mem_l1darr_addrb		arrMemAddrB[511:0];
-`jx2_mem_l1darr_data		arrMemDataA[511:0];
-`jx2_mem_l1darr_data		arrMemDataB[511:0];
+reg[ 71:0]		arrMemAddrA[511:0];
+reg[ 71:0]		arrMemAddrB[511:0];
+reg[143:0]		arrMemDataA[511:0];
+reg[143:0]		arrMemDataB[511:0];
 `endif
 
 `ifdef jx2_mem_l1dsz_256
 `define			reg_l1d_ix	reg[7:0]
-`jx2_mem_l1darr_addrb		arrMemAddrA[255:0];
-`jx2_mem_l1darr_addrb		arrMemAddrB[255:0];
-`jx2_mem_l1darr_data		arrMemDataA[255:0];
-`jx2_mem_l1darr_data		arrMemDataB[255:0];
+reg[ 71:0]		arrMemAddrA[255:0];
+reg[ 71:0]		arrMemAddrB[255:0];
+reg[143:0]		arrMemDataA[255:0];
+reg[143:0]		arrMemDataB[255:0];
 `endif
 
 `ifdef jx2_mem_l1dsz_128
 `define			reg_l1d_ix	reg[6:0]
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_addrb		arrMemAddrA[127:0];
+	reg[ 71:0]		arrMemAddrA[127:0];
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_addrb		arrMemAddrB[127:0];
+	reg[ 71:0]		arrMemAddrB[127:0];
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_data		arrMemDataA[127:0];
+	reg[143:0]		arrMemDataA[127:0];
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_data		arrMemDataB[127:0];
+	reg[143:0]		arrMemDataB[127:0];
 `endif
 
 `ifdef jx2_mem_l1dsz_64
 `define			reg_l1d_ix	reg[5:0]
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_addrb		arrMemAddrA[63:0];
+	reg[ 71:0]		arrMemAddrA[63:0];
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_addrb		arrMemAddrB[63:0];
+	reg[ 71:0]		arrMemAddrB[63:0];
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_data		arrMemDataA[63:0];
+	reg[143:0]		arrMemDataA[63:0];
 (* ram_style = "distributed" *)
-	`jx2_mem_l1darr_data		arrMemDataB[63:0];
+	reg[143:0]		arrMemDataB[63:0];
 `endif
 
 
-`jx2_mem_l1darr_addr		tArrMemAddrStA;
-`jx2_mem_l1darr_addr		tArrMemAddrStB;
+reg[ 71:0]		tArrMemAddrStA;
+reg[ 71:0]		tArrMemAddrStB;
 reg[127:0]		tArrMemDataStA;
 reg[127:0]		tArrMemDataStB;
 reg[15:0]		tArrMemDextStA;
 reg[15:0]		tArrMemDextStB;
-reg[19:0]		tArrMemAextStA;
-reg[19:0]		tArrMemAextStB;
 reg[7:0]		tArrMemChkStA;
 reg[7:0]		tArrMemChkStB;
 `reg_l1d_ix		tArrMemIdxStA;
@@ -212,14 +200,12 @@ reg				tArrMemDoStB;
 reg				tArrMemDidStA;
 reg				tArrMemDidStB;
 
-`jx2_mem_l1darr_addr		tArrMemDidStAddrA;
-`jx2_mem_l1darr_addr		tArrMemDidStAddrB;
+reg[ 71:0]		tArrMemDidStAddrA;
+reg[ 71:0]		tArrMemDidStAddrB;
 reg[127:0]		tArrMemDidStDataA;
 reg[127:0]		tArrMemDidStDataB;
 reg[15:0]		tArrMemDidStDextA;
 reg[15:0]		tArrMemDidStDextB;
-reg[19:0]		tArrMemDidStAextA;
-reg[19:0]		tArrMemDidStAextB;
 
 `reg_l1d_ix		tReqSeqIdxArr[15:0];
 reg[ 43:0]		tReqSeqVaArr[15:0];
@@ -260,9 +246,13 @@ reg[ 43:0]		tReqAxB;
 `reg_l1d_ix		tArrMemDidStIxA;
 `reg_l1d_ix		tArrMemDidStIxB;
 
+// reg[ 47:0]		tReqAddrUtlb;
+// reg				tReqAddrUtlbHit;
+
 reg[15:0]		tReqAxH;
 reg[15:0]		tNxtReqAxH;
 reg[15:0]		tReq2AxH;
+
 
 reg[  4:0]		tNxtReqBix;
 reg[  4:0]		tReqBix;
@@ -286,15 +276,10 @@ reg				tReq2Ready;
 
 reg				tReqMissAddrA;
 reg				tReqMissAddrB;
-reg				tReqMissAddrLoA;
-reg				tReqMissAddrLoB;
-
 reg				tReqMissA;
 reg				tReqMissB;
 reg				tReqDoMissA;
 reg				tReqDoMissB;
-reg				tReqDoMissAL;
-reg				tReqDoMissBL;
 reg				tReqMiss;
 reg				tReqWaitResp;
 reg				tReqSx;
@@ -305,8 +290,6 @@ reg				tReqMissL;
 
 reg				tReqFlushAddrA;
 reg				tReqFlushAddrB;
-reg				tReqWeakFlushAddrA;
-reg				tReqWeakFlushAddrB;
 
 reg				tReqNoReadA;
 reg				tReqNoReadB;
@@ -339,43 +322,34 @@ reg				tReqDoSpxA;
 reg				tReqDoSpxB;
 
 
-`jx2_mem_l1darr_addr		tBlkMemAddrA;
-`jx2_mem_l1darr_addr		tBlkMemAddrB;
+reg[ 71:0]		tBlkMemAddrA;
+reg[ 71:0]		tBlkMemAddrB;
 reg[127:0]		tBlkMemDataA;
 reg[127:0]		tBlkMemDataB;
 reg[15:0]		tBlkMemDextA;
 reg[15:0]		tBlkMemDextB;
-reg[19:0]		tBlkMemAextA;
-reg[19:0]		tBlkMemAextB;
 `reg_l1d_ix		tBlkMemIdxA;
 `reg_l1d_ix		tBlkMemIdxB;
 reg				tBlkIsDirtyA;
 reg				tBlkIsDirtyB;
 
-reg[3:0]		tBlkEpochDeltaA;
-reg[3:0]		tBlkEpochDeltaB;
-
-`jx2_mem_l1darr_addr		tBlkMemAddr2A;
-`jx2_mem_l1darr_addr		tBlkMemAddr2B;
+reg[ 71:0]		tBlkMemAddr2A;
+reg[ 71:0]		tBlkMemAddr2B;
 reg[127:0]		tBlkMemData2A;
 reg[127:0]		tBlkMemData2B;
 reg[15:0]		tBlkMemDext2A;
 reg[15:0]		tBlkMemDext2B;
-reg[19:0]		tBlkMemAext2A;
-reg[19:0]		tBlkMemAext2B;
 reg[7:0]		tBlkMemChk2A;
 reg[7:0]		tBlkMemChk2B;
 reg[7:0]		tBlkMemRChk2A;
 reg[7:0]		tBlkMemRChk2B;
 
-`jx2_mem_l1darr_addr		tBlk2StoreAddrA;
-`jx2_mem_l1darr_addr		tBlk2StoreAddrB;
+reg[ 71:0]		tBlk2StoreAddrA;
+reg[ 71:0]		tBlk2StoreAddrB;
 reg[127:0]		tBlk2StoreDataA;
 reg[127:0]		tBlk2StoreDataB;
 reg[15:0]		tBlk2StoreDextA;
 reg[15:0]		tBlk2StoreDextB;
-reg[19:0]		tBlk2StoreAextA;
-reg[19:0]		tBlk2StoreAextB;
 // reg[ 7:0]		tBlk2StoreChkA;
 // reg[ 7:0]		tBlk2StoreChkB;
 
@@ -397,12 +371,10 @@ reg[ 63:0]		tBlkInsData4;
 
 reg[127:0]		tBlk2MemDataA;
 reg[127:0]		tBlk2MemDataB;
-`jx2_mem_l1darr_addr		tBlk2MemAddrA;
-`jx2_mem_l1darr_addr		tBlk2MemAddrB;
-reg[ 15:0]		tBlk2MemDextA;
-reg[ 15:0]		tBlk2MemDextB;
-reg[ 19:0]		tBlk2MemAextA;
-reg[ 19:0]		tBlk2MemAextB;
+reg[ 71:0]		tBlk2MemAddrA;
+reg[ 71:0]		tBlk2MemAddrB;
+reg[ 71:0]		tBlk2MemDextA;
+reg[ 71:0]		tBlk2MemDextB;
 
 reg[255:0]		tBlk2InsData;
 `reg_l1d_ix		tReq2IxA;
@@ -441,12 +413,12 @@ reg[ 15:0]		tMemOpmReqL;
 `reg_l1addr		tMemAddrReqL;
 `reg_tile		tMemDataReqL;
 
-reg				tMemReqStA;			//Store A
-reg				tMemReqStB;			//Store B
-reg				tNxtMemReqStA;		//Store A
-reg				tNxtMemReqStB;		//Store B
-reg				tNxtMemReqStAL;		//Store A
-reg				tNxtMemReqStBL;		//Store B
+reg				tMemReqStA;		//Store A
+reg				tMemReqStB;		//Store B
+reg				tNxtMemReqStA;	//Store A
+reg				tNxtMemReqStB;	//Store B
+reg				tNxtMemReqStAL;	//Store A
+reg				tNxtMemReqStBL;	//Store B
 
 reg				tMemRespStA;		//Store A
 reg				tMemRespStB;		//Store B
@@ -458,15 +430,15 @@ reg				tMemRespLdB;		//Store B
 reg				tNxtMemRespLdA;		//Store A
 reg				tNxtMemRespLdB;		//Store B
 
-reg				tMemReqLdA;			//Load A
-reg				tMemReqLdB;			//Load B
-reg				tMemReqLdM;			//Load MMIO
-reg				tNxtMemReqLdA;		//Load A
-reg				tNxtMemReqLdB;		//Load B
-reg				tNxtMemReqLdM;		//Load MMIO
-reg				tNxtMemReqLdAL;		//Load A
-reg				tNxtMemReqLdBL;		//Load B
-reg				tNxtMemReqLdML;		//Load MMIO
+reg				tMemReqLdA;		//Load A
+reg				tMemReqLdB;		//Load B
+reg				tMemReqLdM;		//Load MMIO
+reg				tNxtMemReqLdA;	//Load A
+reg				tNxtMemReqLdB;	//Load B
+reg				tNxtMemReqLdM;	//Load MMIO
+reg				tNxtMemReqLdAL;	//Load A
+reg				tNxtMemReqLdBL;	//Load B
+reg				tNxtMemReqLdML;	//Load MMIO
 
 reg[ 3:0]		tMemSeqRov;
 reg[ 3:0]		tNxtMemSeqRov;
@@ -476,9 +448,9 @@ reg[43:0]		tMemSeqVa;
 `reg_l1d_ix		tMemSeqIxL;
 reg[43:0]		tMemSeqVaL;
 
-reg[5:0]		tInOpm;				//OPM (Used for cache-control)
-reg[5:0]		tInOpmB;			//OPM (Used for cache-control)
-reg[5:0]		tInOpmC;			//OPM (Used for cache-control)
+reg[5:0]		tInOpm;			//OPM (Used for cache-control)
+reg[5:0]		tInOpmB;		//OPM (Used for cache-control)
+reg[5:0]		tInOpmC;		//OPM (Used for cache-control)
 reg				tNxtDoFlush;
 reg				tNxtDoFlushTlb;
 reg				tDoFlush;
@@ -499,12 +471,12 @@ reg[2:0]		tNxtVolatileInh;
 `reg_l1d_ix		tNxtVolatileIxB;
 
 
-reg[95:0]		tUtlbArr[15:0];
-reg[95:0]		tUtlbStAddr;
+reg[79:0]		tUtlbArr[15:0];
+reg[79:0]		tUtlbStAddr;
 reg[3:0]		tUtlbStIx;
 reg				tUtlbDoSt;
 
-reg[95:0]		tUtlbBlkAddr;
+reg[79:0]		tUtlbBlkAddr;
 reg[3:0]		tUtlbBlkIx;
 reg[3:0]		tUtlb1BlkIx;
 reg[3:0]		tNxtUtlbBlkIx;
@@ -512,15 +484,12 @@ reg				tUtlbBlkFlush;
 
 reg[43:0]		tReqUtlbAxA;
 reg[43:0]		tReqUtlbAxB;
-reg[15:0]		tReqUtlbAxH;
 reg[3:0]		tReqUtlbAccA;
 reg[3:0]		tReqUtlbAccB;
 reg				tReqUtlbHitHi;
 reg				tReqUtlbHitAxA;
 reg				tReqUtlbHitAxB;
 
-reg				tReqStrobe1;
-reg				tReqStrobe2;
 
 always @*
 begin
@@ -556,8 +525,8 @@ begin
 //		tNxtReqAddrHi[31:16] ^
 //		tNxtReqAddrHi[47:32] ;
 
-// `ifdef def_true
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 	tNxtReqAxH		=
 		tNxtReqAddrHi[15: 0] ^
 		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } ^
@@ -566,15 +535,21 @@ begin
 		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
 `endif
 
-// `ifndef def_true
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 	tNxtReqAxH		=
-		tNxtReqAddrHi[15: 0] +
-		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } +
-		{	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
+		(tNxtReqAddrHi[15: 0] + tFlushRng[15:0]) ^
+		({	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } +
+			tFlushRng[31:16]) ^
+		({	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
 			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } +
-		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+			tFlushRng[47:32]) ^
+		({	4'h0, regInSr[31:28], regKrrHash[7:0] } +
+			tFlushRng[63:48]) ;
 `endif
+
+
+`ifdef def_true
 
 `ifdef jx2_mem_l1dsz_64
 	tNxtReqIxA[5:0] = tNxtReqAxA[6:1];
@@ -636,7 +611,6 @@ begin
 
 //	if(regInOpm[5:4] == 2'b00)
 	if(regInOpm == 0)
-//	if(1'b0)
 	begin
 		tNxtReqAddr		= 0;
 		tNxtReqAddrHi	= 0;
@@ -663,6 +637,11 @@ begin
 		end
 	end
 
+//	if((tVolatileIxA != 0) && (regInOpm[5:4] == 2'b00))
+//		tNxtReqIxA = tVolatileIxA;
+//	if((tVolatileIxB != 0) && (regInOpm[5:4] == 2'b00))
+//		tNxtReqIxB = tVolatileIxB;
+
 	tNxtReqInValA	= regInValA;
 	tNxtReqInValB	= regInValB;
 
@@ -678,6 +657,7 @@ begin
 		tReq1IxB		= tNxtReqIxB;
 		tUtlb1BlkIx		= tNxtUtlbBlkIx;
 	end
+`endif
 end
 
 always @*
@@ -690,13 +670,7 @@ begin
 	tNxtDoFlushTlb		= 0;
 
 //	if((tInOpm == JX2_DCOPM_LDTLB) || tRegInSr[29])
-//	if((tInOpm == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
-//	if(tRegInSr[29] && tRegInSr[30])
-//	if(	(tRegInSr[29] && tRegInSr[30]) &&
-//		(tRegInSrL[29] && tRegInSrL[30]))
-	if(	(tRegInSr[29] && tRegInSr[30]) &&
-		(regInSr[29] && regInSr[30]) &&
-		(tRegInSrL[29] && tRegInSrL[30]))
+	if((tInOpm == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
 	begin
 		if(tTlbMissInh)
 			$display("L1D$ Clear TLB Inhibit");
@@ -783,7 +757,6 @@ begin
 	tArrMemDoStA	= 0;
 	tArrMemChkStA	= 0;
 	tArrMemDextStA	= 0;
-	tArrMemAextStA	= 0;
 	
 	tArrMemAddrStB	= 0;
 	tArrMemDataStB	= 0;
@@ -791,7 +764,6 @@ begin
 	tArrMemDoStB	= 0;
 	tArrMemChkStB	= 0;
 	tArrMemDextStB	= 0;
-	tArrMemAextStB	= 0;
 	
 	if(tReq2Opm[5] && !tReq2IsMmio && !tReq2IsCcmd && !tReq2StoreSticky)
 	begin
@@ -824,17 +796,30 @@ begin
 
 	tReqNoCross		= 0;
 	casez(tReqOpm[2:0])
+//		3'bz00:		tReqNoCross = 1;
+//		3'bz01:		tReqNoCross = !tReqBix[0];
+//		3'bz10:		tReqNoCross = (tReqBix[1:0]==2'h0);
+//		3'b011:		tReqNoCross = (tReqBix[2:0]==3'h0);
+
 		3'bz00:		tReqNoCross = 1;
+//		3'bz00:		tReqNoCross = 0;
+//		3'bz00:		tReqNoCross =
+//			(tReqBix[3:1]!=3'b000) && (tReqBix[3:1]!=3'b111);
 		3'bz01:		tReqNoCross = !tReqBix[0] || (tReqBix[3:1]!=3'b111);
-		3'bz10:		tReqNoCross =	(tReqBix[1:0]==2'h0) || 
-									(tReqBix[3:2]!=2'b11);
+		3'bz10:		tReqNoCross = (tReqBix[1:0]==2'h0) || (tReqBix[3:2]!=2'b11);
 		3'b011:		tReqNoCross = (tReqBix[2:0]==3'h0) || !tReqBix[3];
+
 		3'b111:		tReqNoCross = (tReqBix[3:0]==4'h0);
+//		default:	tReqNoCross		= 0;
 	endcase
 
+`ifdef def_true
 	if(tReqOpm[5] && !tReqOpm[1])
 		tReqNoCross = 0;
+`endif
 
+// `ifndef def_true	
+`ifdef def_true	
 	if(tReqNoCross)
 	begin
 		if(tReqBix[4])
@@ -842,6 +827,7 @@ begin
 		else
 			tReqMissSkipB	= 1;
 	end
+`endif
 
 `ifdef def_true	
 // `ifndef def_true	
@@ -851,8 +837,13 @@ begin
 		begin
 			if(tReqBix[4])
 				tReqDoSpxB		= 1;
+//				tReqDoPfxB		= 1;
 			else
 				tReqDoSpxA		= 1;
+//				tReqDoPfxA		= 1;
+
+	//		tReqDoPfxA		= 0;
+	//		tReqDoPfxB		= 0;
 		end
 	end
 `endif
@@ -861,14 +852,19 @@ begin
 	tReqReadyB	= (tBlkMemIdxB == tReqIxB);
 	tReqReady	= tReqReadyA && tReqReadyB;
 
+`ifndef def_true
+	if(tReqMissSkipA)
+		tReg2MissInterlockA = 0;
+	if(tReqMissSkipB)
+		tReg2MissInterlockB = 0;
+`endif
+
 	tBlkMemData2A = tBlkMemDataA;
 	tBlkMemData2B = tBlkMemDataB;
 	tBlkMemAddr2A = tBlkMemAddrA;
 	tBlkMemAddr2B = tBlkMemAddrB;
 	tBlkMemDext2A = tBlkMemDextA;
 	tBlkMemDext2B = tBlkMemDextB;
-	tBlkMemAext2A = tBlkMemAextA;
-	tBlkMemAext2B = tBlkMemAextB;
 
 	tBlk2StoreAddrA = {
 		tBlk2MemAddrA[71:5], 1'b1,
@@ -886,34 +882,46 @@ begin
 		tBlk2StoreDataB = tBlk2InsData[255:128];
 	end
 
-	tBlk2StoreDextA		= tReq2AxH;
-	tBlk2StoreDextB		= tReq2AxH;
-	tBlk2StoreAextA		= tBlk2MemAextA;
-	tBlk2StoreAextB		= tBlk2MemAextB;
-
-// `ifdef def_true
 `ifndef def_true
-	/* If entirely replacing the block, update to current epoch. */
-	if(tReqDoSpxA)
-	begin
-		tBlk2StoreAextA[3:2]=tSyncEpoch[7:6];
-		tBlk2StoreAextA[1:0]=tSyncEpoch[3:2];
-	end
-	if(tReqDoSpxB)
-	begin
-		tBlk2StoreAextB[3:2]=tSyncEpoch[7:6];
-		tBlk2StoreAextB[1:0]=tSyncEpoch[3:2];
-	end
+//	tBlk2StoreChkA		= tBlk2StoreAddrA[71:64] ^ tBlk2StoreAddrA[12:5];
+//	tBlk2StoreChkB		= tBlk2StoreAddrB[71:64] ^ tBlk2StoreAddrB[12:5];
+	tBlk2StoreChkA		= {
+		~(tBlk2StoreAddrA[71:68] ^ tBlk2StoreAddrA[8:5]),
+		 (tBlk2StoreAddrA[71:68] ^ tBlk2StoreAddrA[8:5]) };
+	tBlk2StoreChkB		= {
+		~(tBlk2StoreAddrB[71:68] ^ tBlk2StoreAddrB[8:5]),
+		 (tBlk2StoreAddrB[71:68] ^ tBlk2StoreAddrB[8:5]) };
+
+//	tBlk2StoreDextA		= { 8'h00, tBlk2StoreChkA };
+//	tBlk2StoreDextB		= { 8'h00, tBlk2StoreChkB };
+
+//	tBlk2StoreDextA		= { 4'h0, tInPmode, tBlk2StoreChkA };
+//	tBlk2StoreDextB		= { 4'h0, tInPmode, tBlk2StoreChkB };
 `endif
 
+	tBlk2StoreDextA		= tReq2AxH;
+	tBlk2StoreDextB		= tReq2AxH;
+
 `ifdef jx2_mem_l1d_fwstore
+// `ifdef def_true
+// `ifndef def_true
+
 	if(tReg2MissInterlockA)
 	begin
 		tReg2StoreFwA = 1;
 		tBlkMemAddr2A = tBlk2StoreAddrA;
 		tBlkMemData2A = tBlk2StoreDataA;
 		tBlkMemDext2A = tBlk2StoreDextA;
-		tBlkMemAext2A = tBlk2StoreAextA;
+
+//		if(tReq2Bix[4])
+//		begin
+//			tBlkMemData2A = tBlk2InsData[255:128];
+//		end else begin
+//			tBlkMemData2A = tBlk2InsData[127:  0];
+//		end
+//		tBlkMemAddr2A = {
+//			tBlk2MemAddrA[71:5], 1'b1,
+//			tBlk2MemAddrA[3:0]};
 	end
 
 	if(tReg2MissInterlockB)
@@ -922,7 +930,16 @@ begin
 		tBlkMemAddr2B = tBlk2StoreAddrB;
 		tBlkMemData2B = tBlk2StoreDataB;
 		tBlkMemDext2B = tBlk2StoreDextB;
-		tBlkMemAext2B = tBlk2StoreAextB;
+
+//		if(!tReq2Bix[4])
+//		begin
+//			tBlkMemData2B = tBlk2InsData[255:128];
+//		end else begin
+//			tBlkMemData2B = tBlk2InsData[127:  0];
+//		end
+//		tBlkMemAddr2B = {
+//			tBlk2MemAddrB[71:5], 1'b1,
+//			tBlk2MemAddrB[3:0]};
 	end
 `else
 	if(tReg2MissInterlockA)
@@ -941,31 +958,33 @@ begin
 	tMemArrInterlockB	= tArrMemDidStB && (tReqIxB == tArrMemDidStIxB);
 
 `ifdef jx2_mem_l1d_fwarray
+// `ifdef def_true
+// `ifndef def_true
+//	if(tArrMemDidStA && (tReqIxA == tArrMemDidStIxA) && !tReg2StoreFwA)
 	if(tMemArrInterlockA && !tReg2StoreFwA)
 	begin
 		tMemArrFwA		= 1;
 		tBlkMemData2A	= tArrMemDidStDataA;
 		tBlkMemAddr2A	= tArrMemDidStAddrA;
 		tBlkMemDext2A	= tArrMemDidStDextA;
-		tBlkMemAext2A	= tArrMemDidStAextA;
 	end
+//	if(tArrMemDidStB && (tReqIxB == tArrMemDidStIxB) && !tReg2StoreFwB)
 	if(tMemArrInterlockB && !tReg2StoreFwB)
 	begin
 		tMemArrFwB		= 1;
 		tBlkMemData2B	= tArrMemDidStDataB;
 		tBlkMemAddr2B	= tArrMemDidStAddrB;
 		tBlkMemDext2B	= tArrMemDidStDextB;
-		tBlkMemAext2B	= tArrMemDidStAextB;
 	end
 `else
-//	if(tMemArrInterlockA)
-	if(tMemArrInterlockA && !tReg2StoreFwA)
+//	if(tArrMemDidStA && (tReqIxA == tArrMemDidStIxA))
+	if(tMemArrInterlockA)
 	begin
 //		$display("L1 D$: Line A Store Clash");
 		tReqReady	= 0;
 	end
-//	if(tMemArrInterlockB)
-	if(tMemArrInterlockB && !tReg2StoreFwB)
+//	if(tArrMemDidStB && (tReqIxB == tArrMemDidStIxB))
+	if(tMemArrInterlockB)
 	begin
 //		$display("L1 D$: Line B Store Clash");
 		tReqReady	= 0;
@@ -973,16 +992,15 @@ begin
 `endif
 
 `ifndef def_true
-// `ifdef def_true
 	if(tMemArrInterlockA && tReg2MissInterlockA)
 	begin
-		$display("L1 D$: Line A Double Interlock");
+//		$display("L1 D$: Line A Double Interlock");
 		tReqReady	= 0;
 	end
 
 	if(tMemArrInterlockB && tReg2MissInterlockB)
 	begin
-		$display("L1 D$: Line B Double Interlock");
+//		$display("L1 D$: Line B Double Interlock");
 		tReqReady	= 0;
 	end
 `endif
@@ -994,23 +1012,12 @@ begin
 
 	tReqReady2	= tReqReady && tReqReadyL;
 
+
+//	tBlkMemChk2A	= tBlkMemDext2A[7:0];
+//	tBlkMemChk2B	= tBlkMemDext2B[7:0];
+
 	tBlkIsDirtyA	= tBlkMemAddr2A[4];
 	tBlkIsDirtyB	= tBlkMemAddr2B[4];
-
-	tBlkEpochDeltaA	=
-		{	tSyncEpoch[7:6] - tBlkMemAext2A[3:2],
-			tSyncEpoch[3:2] - tBlkMemAext2A[1:0] };
-	tBlkEpochDeltaB	=
-		{	tSyncEpoch[7:6] - tBlkMemAext2B[3:2],
-			tSyncEpoch[3:2] - tBlkMemAext2B[1:0] };
-
-	if(tReqIsNz)
-	begin
-//		$display(" Epoch %X/%X", tSyncEpoch[7:6], tBlkMemAext2A[3:2]);
-//		$display(" Epoch %X/%X %X",
-//			tSyncEpoch[3:2], tBlkMemAext2A[1:0],
-//			tBlkEpochDeltaA);
-	end
 
 	tReqMissAddrA	=
 		((tBlkMemAddr2A[47:32] != tReqAxA[43:28]) && tSrJQ) ||
@@ -1019,13 +1026,13 @@ begin
 		((tBlkMemAddr2B[47:32] != tReqAxB[43:28]) && tSrJQ) ||
 		 (tBlkMemAddr2B[31: 5] != tReqAxB[27: 1]);
 
-	tReqMissAddrLoA	= tReqMissAddrA;
-	tReqMissAddrLoB	= tReqMissAddrB;
+//	tReqMissAddrA	= tBlkMemAddr2A[47:5] != tReqAxA[43:1];
+//	tReqMissAddrB	= tBlkMemAddr2B[47:5] != tReqAxB[43:1];
+//	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov) || (tFlushRov==0);
+//	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov) || (tFlushRov==0);
 
 	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
 	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
-	tReqWeakFlushAddrA	= 0;
-	tReqWeakFlushAddrB	= 0;
 
 //	if(tBlkMemDext2A != tReqAxH)
 	if((tBlkMemDext2A != tReqAxH) && !tTlbMissInh)
@@ -1038,15 +1045,13 @@ begin
 	tUtlbBlkFlush	= (tUtlbBlkAddr[7:4] != tFlushRovTlb);
 	tReqUtlbAxA		= { tUtlbBlkAddr[79:46], tReqAxA[9:0] };
 	tReqUtlbAxB		= { tUtlbBlkAddr[79:46], tReqAxB[9:0] };
-	tReqUtlbAxH		= tUtlbBlkAddr[95:80];
 	tReqUtlbAccA	= tUtlbBlkAddr[3:0];
 	tReqUtlbAccB	= tUtlbBlkAddr[3:0];
 
 //	tReqUtlbHitHi	= tReqAxA[43:16] == tUtlbBlkAddr[43:16];
 	tReqUtlbHitHi	=
 		(tReqAxA[43:28] == tUtlbBlkAddr[43:28]) &&
-		(tReqAxA[27:16] == tUtlbBlkAddr[27:16]) &&
-		(tReqAxH == tReqUtlbAxH);
+		(tReqAxA[27:16] == tUtlbBlkAddr[27:16]) ;
 	if(tReqAxA[16] != tReqAxB[16])
 		tReqUtlbHitHi = 0;
 	tReqUtlbHitAxA	= tReqUtlbHitHi &&
@@ -1085,61 +1090,46 @@ begin
 	tReqReadOnlyA	= tBlkMemAddr2A[1];
 	tReqReadOnlyB	= tBlkMemAddr2B[1];
 
+//	if(!tTlbMissInh)
 	if(!tTlbMissInh && !tReqIsMmio && !tReqIsCcmd)
 	begin
+//		if(tBlkMemAddr2A[3])
 		if(tBlkMemAddr2A[3:2] == 2'b11)
-//		if((tBlkMemAddr2A[3:2] == 2'b11) && tReqIsNz && !tReqMissSkipA &&
-//			!tRegInSr[29])
 		begin
-			tReqFlushAddrA		= 1;
-//			tReqWeakFlushAddrA	= 1;
-			tBlkIsDirtyA		= 0;
+			tReqFlushAddrA = 1;
 		end
-
+//		if(tBlkMemAddr2B[3])
 		if(tBlkMemAddr2B[3:2] == 2'b11)
-//		if((tBlkMemAddr2B[3:2] == 2'b11) && tReqIsNz && !tReqMissSkipB &&
-//			!tRegInSr[29])
 		begin
-			tReqFlushAddrB		= 1;
-//			tReqWeakFlushAddrB	= 1;
-			tBlkIsDirtyB		= 0;
+			tReqFlushAddrB = 1;
 		end
 
-//		if(tVolatileInhCnt == 0)
-		if((tVolatileInhCnt == 0) && !tReqIsNz)
+		if(tVolatileInhCnt == 0)
 		begin
 			if(tBlkMemAddr2A[3:2] == 2'b10)
 			begin
 				tReqFlushAddrA	= 1;
+				tReqIsNz		= 1;
 			end
 			if(tBlkMemAddr2B[3:2] == 2'b10)
 			begin
 				tReqFlushAddrB	= 1;
+				tReqIsNz		= 1;
 			end
 		end
-		
-// `ifndef def_true
-`ifdef def_true
-		if(((tBlkEpochDeltaA[1] && tBlkIsDirtyA) || tBlkEpochDeltaA[3]) && 
-			!tReqIsNz && (tBlkMemDext2A != UV16_FF))
-//		if(((tBlkEpochDeltaA[1] && tBlkIsDirtyA) || tBlkEpochDeltaA[3]) && 
-//			(tBlkMemDext2A != UV16_FF))
-		begin
-			tReqFlushAddrA	= 1;
-		end
 
-		if(((tBlkEpochDeltaB[1] && tBlkIsDirtyB) || tBlkEpochDeltaB[3]) && 
-			!tReqIsNz && (tBlkMemDext2B != UV16_FF))
-//		if(((tBlkEpochDeltaB[1] && tBlkIsDirtyB) || tBlkEpochDeltaB[3]) && 
-//			(tBlkMemDext2B != UV16_FF))
+`ifndef def_true
+// `ifdef def_true
+		if((tBlkMemDext2A[11:8] != tInPmode) && !tReqMissSkipA)
+		begin
+			tReqFlushAddrA	= 1;
+//			tReqIsNz		= 1;
+		end
+		if((tBlkMemDext2B[11:8] != tInPmode) && !tReqMissSkipB)
 		begin
 			tReqFlushAddrB	= 1;
+//			tReqIsNz		= 1;
 		end
-		
-		if(tReqIsNz && tBlkEpochDeltaA[3] && !tReqMissSkipA)
-			tReqFlushAddrA	= 1;
-		if(tReqIsNz && tBlkEpochDeltaB[3] && !tReqMissSkipB)
-			tReqFlushAddrB	= 1;
 `endif
 	end
 
@@ -1163,50 +1153,40 @@ begin
 		end
 	end
 
+`ifndef def_true
+//	if(tBlkMemChk2A != tBlkMemRChk2A)
+	if(tBlkMemChk2A[3:0] != (~tBlkMemChk2A[7:4]))
+	begin
+		tBlkIsDirtyA	= 0;
+		tReqFlushAddrA	= 1;
+	end
+//	if(tBlkMemChk2B != tBlkMemRChk2B)
+	if(tBlkMemChk2B[3:0] != (~tBlkMemChk2B[7:4]))
+	begin
+		tBlkIsDirtyB	= 0;
+		tReqFlushAddrB	= 1;
+	end
+`endif
+
 	tReqMissA	= (tReqMissAddrA && !tReqMissSkipA) || tReqFlushAddrA;
 	tReqMissB	= (tReqMissAddrB && !tReqMissSkipB) || tReqFlushAddrB;
-
-//	tReqMissA	= ((tReqMissAddrA || tReqWeakFlushAddrA) &&
-//		!tReqMissSkipA) || tReqFlushAddrA;
-//	tReqMissB	= ((tReqMissAddrB || tReqWeakFlushAddrB) &&
-//		!tReqMissSkipB) || tReqFlushAddrB;
-
-//	tReqMiss	= (tReqMissA || tReqMissB) && tReqIsNz;
-	tReqMiss	= (tReqMissA || tReqMissB) &&
-		(tReqIsNz || tReqFlushAddrA || tReqFlushAddrB);
+	tReqMiss	= (tReqMissA || tReqMissB) && tReqIsNz;
 
 	if(tReqMiss)
 		tRegOutExc[15] = 0;
 
-//	if(!tReqIsNz)
-//	begin
-//		tReqMissA	= 0;
-//		tReqMissB	= 0;
-//	end
-
-	if(tReqMiss && !tReqIsMmio && !tReqIsCcmd)
-		tRegOutHold = 1;
-
-	if(!tReqReady && !tReqIsMmio && !tReqIsCcmd)
-		tRegOutHold = 1;
-
-//	tReqDoMissA	= tReqMissA;
-//	tReqDoMissB	= tReqMissB;
-	tReqDoMissA	= (tReqMissA && tReqIsNz) || tReqFlushAddrA;
-	tReqDoMissB	= (tReqMissB && tReqIsNz) || tReqFlushAddrB;
-	
-	if(tReqIsMmio || tReqIsCcmd || !tReqReady)
-//	if(tReqIsMmio || tReqIsCcmd || !tReqReady ||
-//		tReg2StoreFwA || tMemArrFwA)
+	if(!tReqIsNz)
 	begin
-		if(!tReqDoMissAL)
-			tReqDoMissA	= 0;
-		if(!tReqDoMissBL)
-			tReqDoMissB	= 0;
+		tReqMissA	= 0;
+		tReqMissB	= 0;
 	end
-	
-// `ifdef def_true
-`ifndef def_true
+
+
+	tReqDoMissA	= tReqMissA;
+	tReqDoMissB	= tReqMissB;
+
+`ifdef def_true
+// `ifndef def_true
 
 //	if(tReqMiss || (tReqMissNoSkipL && tRegOutHoldL))
 //	if((tReqMiss && tReqReady) || (tReqMissNoSkipL && tRegOutHoldL))
@@ -1218,15 +1198,81 @@ begin
 //		tReqMissSkipB	= 0;
 		tReqMissNoSkip	= 1;
 
-//		tReqDoMissA	= (tReqMissAddrA || tReqFlushAddrA) && tReqIsNz;
-//		tReqDoMissB	= (tReqMissAddrB || tReqFlushAddrB) && tReqIsNz;
-
-		tReqDoMissA	= (tReqMissAddrA && tReqIsNz) || tReqFlushAddrA;
-		tReqDoMissB	= (tReqMissAddrB && tReqIsNz) || tReqFlushAddrB;
-
+		tReqDoMissA	= (tReqMissAddrA || tReqFlushAddrA) && tReqIsNz;
+		tReqDoMissB	= (tReqMissAddrB || tReqFlushAddrB) && tReqIsNz;
 //		tReqMiss	= tReqMissA || tReqMissB;
+		
+// `ifdef def_true
+`ifndef def_true
+//		if(tReqMissSkipA && tBlkIsDirtyA)
+//		if(tReqMissSkipA && tBlkIsDirtyA && tReg2MissInterlockA)
+		if(tReqMissSkipA && tBlkIsDirtyA &&
+				(tReg2MissInterlockA || tMemArrInterlockA))
+			tReqDoMissA = 0;
+//		if(tReqMissSkipB && tBlkIsDirtyB)
+//		if(tReqMissSkipB && tBlkIsDirtyB && tReg2MissInterlockB)
+		if(tReqMissSkipB && tBlkIsDirtyB &&
+				(tReg2MissInterlockB || tMemArrInterlockB))
+			tReqDoMissB = 0;
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+		if(tReqMissL)
+		begin
+			if(tReqDoMissA && !tReqMissAL)
+			begin
+				$display("L1D$: Gained MissA");
+//				tReqDoMissA	= tReqMissAL;
+			end
+			if(tReqDoMissB && !tReqMissBL)
+			begin
+				$display("L1D$: Gained MissB");
+//				tReqDoMissB	= tReqMissBL;
+			end
+		end
+`endif
+
 //		tReqMiss	= tReqMissA || tReqMissB;
 	end
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+	if(tReqMissNoSkip)
+//	if(1'b1)
+	begin
+		if(tReg2MissInterlockA)
+			tReqReady	= 0;
+		if(tReg2MissInterlockB)
+			tReqReady	= 0;
+
+		if(tArrMemDidStA && (tReqIxA == tArrMemDidStIxA))
+			tReqReady	= 0;
+		if(tArrMemDidStB && (tReqIxB == tArrMemDidStIxB))
+			tReqReady	= 0;
+	end
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+	if(tReqMissA && tReg2MissInterlockA)
+		tReqReady	= 0;
+	if(tReqMissB && tReg2MissInterlockB)
+		tReqReady	= 0;
+
+	if(tReqMissA && tArrMemDidStA && (tReqIxA == tArrMemDidStIxA))
+		tReqReady	= 0;
+	if(tReqMissB && tArrMemDidStB && (tReqIxB == tArrMemDidStIxB))
+		tReqReady	= 0;
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+	if(tReg2MissInterlockA && tArrMemDidStA && (tReqIxA == tArrMemDidStIxA))
+		tReqReady	= 0;
+	if(tReg2MissInterlockB && tArrMemDidStB && (tReqIxB == tArrMemDidStIxB))
+		tReqReady	= 0;
 `endif
 
 //	if(!tReqReady && tReqReadyL && tRegOutHoldL)
@@ -1284,11 +1330,18 @@ begin
 	if(tReqOpm[1:0]!=2'b11)
 		tBlkExData[63:32] = tReqSx ? UV32_FF : UV32_00;
 
-	tBlkExDataA = tBlkExData;
 	tBlkExDataB = tBlkExData1[127:64];
 
 	if(tReqOpm[2:0]==3'b111)
+	begin
 		tBlkExDataA = tBlkExData1[ 63: 0];
+//		tBlkExDataB = tBlkExData1[127:64];
+	end
+	else
+	begin
+		tBlkExDataA = tBlkExData;
+//		tBlkExDataB = UV64_00;
+	end
 	
 	if(tReqNoReadA || tReqNoReadB)
 	begin
@@ -1323,7 +1376,8 @@ begin
 		{ tBlkExData0 [255:192], tBlkInsData1[127:  0], tBlkExData0 [ 63:0] } :
 		{ tBlkExData0 [255:192], tBlkExData0 [191:128], tBlkInsData1[127:0] } ;
 
-`ifdef jx2_debug_ldst
+`ifndef def_true
+// `ifdef def_true
 	if(tReqOpm[5:4]!=0)
 	begin
 		$display("L1 D$, D-Ex =%X", tBlkExData0);
@@ -1340,9 +1394,10 @@ begin
 //			$display("L1 D$: MMIO Stall");			
 			tRegOutHold = 1;
 		end
-
+//		tBlkExDataA = tNxtMemMmioData;
 		tBlkExDataA = tMemMmioData;
 
+`ifdef def_true
 		if(tReqOpm[1:0]!=2'b11)
 		begin
 			if(tMemMmioData[31] && !tReqOpm[2])
@@ -1350,6 +1405,10 @@ begin
 			else
 				tBlkExDataA[63:32]=UV32_00;
 		end
+`endif
+
+//		if(tMemMmioReady)
+//			$display("MMIO result is Ready");
 	end
 	else
 	begin
@@ -1368,53 +1427,61 @@ begin
 
 	if(memRingIsRespOkStA)
 	begin
-		if(tReqSeqIdx==tReqIxA)
-//		if(1'b1)
+//		if(tReqSeqIdx==tReqIxA)
+		if(1'b1)
 		begin
-`ifdef jx2_debug_l1ds
-			$display("L1D$: Store Response A, A=%X, Ix1/Ix2=%X/%X", 
-				memAddrIn, tReqSeqIdx, tReqIxA);
-`endif
+//			$display("L1D$: Store Response A, A=%X, Ix1/Ix2", memAddrIn, 
+//				tReqSeqIdx, tReqIxA);
 			tNxtMemRespStA = 1;
 		end
 		else
 		begin
-`ifdef def_true
-			$display("L1D$: Bad Store Resp A, A=%X Ix:%X!=%X Rov=%X", 
-				memAddrIn, tReqSeqIdx, tReqIxA, tMemSeqRov);
-`endif
+			$display("L1D$: Mismatch Store Response A, A=%X Ix1/Ix2=%X/%X", 
+				memAddrIn, tReqSeqIdx, tReqIxA);
 		end
 	end
 	
 	if(memRingIsRespOkStB)
 	begin
-		if(tReqSeqIdx==tReqIxB)
-//		if(1'b1)
+//		if(tReqSeqIdx==tReqIxB)
+		if(1'b1)
 		begin
-`ifdef jx2_debug_l1ds
-			$display("L1D$: Store Resp B, A=%X, Ix1/Ix2=%X/%X Rov=%X", 
-				memAddrIn, tReqSeqIdx, tReqIxB, tMemSeqRov);
-`endif
+//			$display("L1D$: Store Response B, A=%X", memAddrIn);
 			tNxtMemRespStB = 1;
 		end
 		else
 		begin
-`ifdef def_true
-			$display("L1D$: Bad Store Resp B, A=%X Ix:%X!=%X Rov=%X", 
-				memAddrIn, tReqSeqIdx, tReqIxB, tMemSeqRov);
-`endif
+			$display("L1D$: Mismatch Store Response B, A=%X", memAddrIn);
 		end
 	end
 	
-	if(memRingIsRespOkLdA && !tMemRingSkipResp && !reset)
+`ifndef def_true
+// `ifdef def_true
+	if(memRingIsRespOkLdA)
 	begin
-`ifdef jx2_debug_l1ds
-		$display("L1D$: Load Response A, A=%X, Ix1/Ix2=%X/%X", 
-				memAddrIn, tReqSeqIdx, tReqIxA);
+		if(tMemReqStA && !tMemRespStA)
+		begin
+//			$display("L1D$: Response Order Skip A");
+			tMemRingSkipResp = 1;
+		end
+	end
+
+	if(memRingIsRespOkLdB)
+	begin
+		if(tMemReqStB && !tMemRespStB)
+		begin
+//			$display("L1D$: Response Order Skip B");
+			tMemRingSkipResp = 1;
+		end
+	end
 `endif
 
-		if(tReqSeqIdx==tReqIxA)
-//		if(1'b1)
+	if(memRingIsRespOkLdA && !tMemRingSkipResp && !reset)
+	begin
+//		$display("L1D$: Load Response A, A=%X", memAddrIn);
+
+//		if(tReqSeqIdx==tReqIxA)
+		if(1'b1)
 		begin
 			tArrMemAddrStA = {
 				tFlushRov[3:0],
@@ -1422,24 +1489,25 @@ begin
 				tReqSeqVa[43:1], 1'b0,
 				memOpmIn[3:0]};
 			tArrMemDataStA = memDataIn;
-			tArrMemIdxStA = tReqSeqIdx;
-//			tArrMemIdxStA = tReqIxA;
+//			tArrMemIdxStA = tReqSeqIdx;
+			tArrMemIdxStA = tReqIxA;
+//			tArrMemChkStA	= tArrMemAddrStA[71:64] ^ tArrMemAddrStA[12:5];
+			tArrMemChkStA		= {
+				~(tArrMemAddrStA[71:68] ^ tArrMemAddrStA[8:5]),
+				 (tArrMemAddrStA[71:68] ^ tArrMemAddrStA[8:5]) };
+//			tArrMemDextStA	= { 8'h00, tArrMemChkStA };
+//			tArrMemDextStA	= { 4'h0, tInPmode, tArrMemChkStA };
 			tArrMemDextStA	= tReqAxH;
-			tArrMemAextStA	= { 16'h0, tSyncEpoch[7:6], tSyncEpoch[3:2] };
 			tArrMemDoStA = 1;
 			tNxtMemRespLdA = 1;
 
 			tUtlbStAddr		= {
-				tReqAxH,
 				memAddrIn[47:12],
 				tReqSeqVa[43: 8],
 				tFlushRovTlb,
 				memOpmIn[3:0] };
 			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
 			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
-
-			if(tVolatileIxA == tReqIxA)
-				tNxtVolatileIxA = 0;
 
 			if(memOpmIn[3])
 			begin
@@ -1462,7 +1530,7 @@ begin
 		if(tReqSeqIdx!=tReqIxA)
 			$display("L1D$: In!=Req IxA, %X %X",
 				tReqSeqIdx, tReqIxA);
-		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF))
+		if(memAddrIn[31:5]!=tReqSeqVa[27:1])
 			$display("L1D$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 		if(tReqSeqVa[43:1]!=tReqAxA[43:1])
@@ -1472,13 +1540,10 @@ begin
 
 	if(memRingIsRespOkLdB && !tMemRingSkipResp && !reset)
 	begin
-`ifdef jx2_debug_l1ds
-		$display("L1D$: Load Response B, A=%X, Ix1/Ix2=%X/%X", 
-				memAddrIn, tReqSeqIdx, tReqIxB);
-`endif
+//		$display("L1D$: Load Response B, A=%X", memAddrIn);
 
-		if(tReqSeqIdx==tReqIxB)
-//		if(1'b1)
+//		if(tReqSeqIdx==tReqIxB)
+		if(1'b1)
 		begin
 			tArrMemAddrStB = {
 				tFlushRov[3:0],
@@ -1486,24 +1551,25 @@ begin
 				tReqSeqVa[43:1], 1'b0,
 				memOpmIn[3:0]};
 			tArrMemDataStB = memDataIn;
-			tArrMemIdxStB = tReqSeqIdx;
-//			tArrMemIdxStB = tReqIxB;
+//			tArrMemIdxStB = tReqSeqIdx;
+			tArrMemIdxStB = tReqIxB;
+//			tArrMemChkStB	= tArrMemAddrStB[71:64] ^ tArrMemAddrStB[12:5];
+			tArrMemChkStB		= {
+				~(tArrMemAddrStB[71:68] ^ tArrMemAddrStB[8:5]),
+				 (tArrMemAddrStB[71:68] ^ tArrMemAddrStB[8:5]) };
+//			tArrMemDextStB	= { 8'h00, tArrMemChkStB };
+//			tArrMemDextStB	= { 4'h0, tInPmode, tArrMemChkStB };
 			tArrMemDextStB	= tReqAxH;
-			tArrMemAextStB	= { 16'h0, tSyncEpoch[7:6], tSyncEpoch[3:2] };
-			tArrMemDoStB	= 1;
-			tNxtMemRespLdB	= 1;
+			tArrMemDoStB = 1;
+			tNxtMemRespLdB = 1;
 
 			tUtlbStAddr		= {
-				tReqAxH,
 				memAddrIn[47:12],
 				tReqSeqVa[43: 8],
 				tFlushRovTlb,
 				memOpmIn[3:0] };
 			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
 			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
-
-			if(tVolatileIxB == tReqIxB)
-				tNxtVolatileIxB = 0;
 
 			if(memOpmIn[3])
 			begin
@@ -1526,7 +1592,7 @@ begin
 		if(tReqSeqIdx!=tReqIxB)
 			$display("L1D$: In!=Req IxB, %X %X",
 				tReqSeqIdx, tReqIxB);
-		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF))
+		if(memAddrIn[31:5]!=tReqSeqVa[27:1])
 			$display("L1D$: Virt!=Phys B, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 		if(tReqSeqVa[43:1]!=tReqAxB[43:1])
@@ -1545,7 +1611,7 @@ begin
 	if(tMemReqStA && !tMemRespStA)
 //	if(tMemReqStA && !tNxtMemRespStA)
 		tReqWaitResp = 1;
-	if(tMemReqStB && !tMemRespStB)
+	if(tMemReqStB && tMemRespStB)
 //	if(tMemReqStB && !tNxtMemRespStB)
 		tReqWaitResp = 1;
 
@@ -1553,6 +1619,8 @@ begin
 		tRegOutHold = 1;
 `endif
 
+//	if(memRingIsRespOkMmio)
+//	if(memRingIsRespOkMmio && tReqIsMmio)
 	if(memRingIsRespOkMmio && (tReqIsMmio || tReqIsCcmd))
 	begin
 //		$display("L1 D$: MMIO Response Seen");
@@ -1560,6 +1628,7 @@ begin
 		tNxtMemMmioReady = 1;
 	end
 
+//	if(tReq2Opm[5] && !tReq2IsMmio)
 	if(tReq2Opm[5] && !tReq2IsMmio && !tReq2IsCcmd)
 	begin
 		tNxtReq2StoreSticky = tReq2StoreSticky;
@@ -1583,20 +1652,37 @@ begin
 		end
 		else if(!tReq2StoreSticky)
 		begin
+//			tArrMemAddrStA = {
+//				tBlk2MemAddrA[71:5], 1'b1,
+//				tBlk2MemAddrA[3:0]};
 			tArrMemAddrStA	= tBlk2StoreAddrA;
 			tArrMemDataStA	= tBlk2StoreDataA;
 			tArrMemDextStA	= tBlk2StoreDextA;
-			tArrMemAextStA	= tBlk2StoreAextA;
 			tArrMemIdxStA	= tReq2IxA;
 
+//			tArrMemAddrStB = {
+//				tBlk2MemAddrB[71:5], 1'b1,
+//				tBlk2MemAddrB[3:0]};
 			tArrMemAddrStB	= tBlk2StoreAddrB;
 			tArrMemDataStB	= tBlk2StoreDataB;
 			tArrMemDextStB	= tBlk2StoreDextB;
-			tArrMemAextStB	= tBlk2StoreAextB;
 			tArrMemIdxStB	= tReq2IxB;
 
 			tNxtReq2StoreSticky = 1;
 
+`ifndef def_true
+			if(tReq2Bix[4])
+			begin
+				tArrMemDataStA = tBlk2InsData[255:128];
+				tArrMemDataStB = tBlk2InsData[127:  0];
+			end else begin
+				tArrMemDataStA = tBlk2InsData[127:  0];
+				tArrMemDataStB = tBlk2InsData[255:128];
+			end
+`endif
+
+//			tArrMemDoStA = !tReq2MissSkipA;
+//			tArrMemDoStB = !tReq2MissSkipB;
 			tArrMemDoStA = !tReq2MissSkipA && !tReq2ReadOnlyA;
 			tArrMemDoStB = !tReq2MissSkipB && !tReq2ReadOnlyB;
 
@@ -1608,18 +1694,18 @@ begin
 			if((tBlk2MemAddrA[31:5]!=tReq2AxA[27:1]) && !tReq2MissSkipA)
 			begin
 				$display("L1 D$: Store Addr Mismatch A");
+//				tRegOutHold		= 1;
 			end
 			if((tBlk2MemAddrB[31:5]!=tReq2AxB[27:1]) && !tReq2MissSkipB)
 			begin
 				$display("L1 D$: Store Addr Mismatch B");
+//				tRegOutHold		= 1;
 			end
 
 `ifdef def_true
-			if((tArrMemDataStA[127:0]!=tBlk2MemDataA[127:0]) && 
-					tReq2MissSkipA)
+			if((tArrMemDataStA[127:0]!=tBlk2MemDataA[127:0]) && tReq2MissSkipA)
 				$display("L1 D$: Store Data Mismatch A");
-			if((tArrMemDataStB[127:0]!=tBlk2MemDataB[127:0]) && 
-					tReq2MissSkipB)
+			if((tArrMemDataStB[127:0]!=tBlk2MemDataB[127:0]) && tReq2MissSkipB)
 				$display("L1 D$: Store Data Mismatch B");
 `endif
 
@@ -1629,18 +1715,29 @@ begin
 			begin
 				$display("L1 D$: Store Fault: MissA");
 				tArrMemDoStA = 0;
+//				tRegOutHold		= 1;
 			end
 
 			if(tReq2MissB && tArrMemDoStB)
 			begin
 				$display("L1 D$: Store Fault: MissB");
 				tArrMemDoStB = 0;
+//				tRegOutHold		= 1;
 			end
 `endif
 			
 //			$display("%X %X", tArrMemDoStA, tArrMemDoStB)
 		end
 	end
+
+// `ifdef def_true
+`ifndef def_true
+	if(tReqMissSkipA && tArrMemDoStA && (tReqIxA == tArrMemIdxStA))
+		tReqDoMissA = 0;
+	if(tReqMissSkipB && tArrMemDoStB && (tReqIxB == tArrMemIdxStB))
+		tReqDoMissB = 0;
+`endif
+
 
 	if(reset)
 	begin
@@ -1656,12 +1753,12 @@ begin
 	if(tMemReqStA && !tMemReqLdA && !tReqDoMissA)
 	begin
 		$display("L1D$: Store Without Load A");
-		tReqDoMissA = 1;
+//		tReqDoMissA = 1;
 	end
 	if(tMemReqStB && !tMemReqLdB && !tReqDoMissB)
 	begin
 		$display("L1D$: Store Without Load B");
-		tReqDoMissB = 1;
+//		tReqDoMissB = 1;
 	end
 
 	if(!tMemReqStA && tMemReqLdA && tBlkIsDirtyA)
@@ -1683,6 +1780,7 @@ begin
 	tMemSeqVa		= 0;
 	tNxtMemSeqRov	= tMemSeqRov;
 
+//	if(tReqIsMmio && !tMemMmioReady)
 	if(reset)
 	begin
 		tNxtMemSeqRov	= 0;
@@ -1691,6 +1789,7 @@ begin
 		if(tReqIsMmio || tReqIsCcmd)
 	begin
 		tNxtMemReqLdM	= tMemReqLdM;
+//		tNxtMemSeqRov	= tMemSeqRov;
 		tRegOutWait		= 1;
 //		tRegOutHold		= 1;
 
@@ -1738,12 +1837,20 @@ begin
 		tNxtMemReqStB	= tMemReqStB;
 		tNxtMemReqLdA	= tMemReqLdA;
 		tNxtMemReqLdB	= tMemReqLdB;
+//		tNxtMemSeqRov	= tMemSeqRov;
 
 		tMemSeqIx		= tMemSeqIxL;
 		tMemSeqVa		= tMemSeqVaL;
 
-//		tReqAliasA		= tBlkMemAddr2A[23: 8] == tRegAxA[19:4];
-//		tReqAliasB		= tBlkMemAddr2B[23: 8] == tRegAxB[19:4];
+`ifndef def_true
+		if(!tMemReqSent)
+		begin
+			tMemSeqReq		= tMemSeqReqL;
+			tMemOpmReq		= tMemOpmReqL;
+			tMemAddrReq		= tMemAddrReqL;
+			tMemDataReq		= tMemDataReqL;
+		end
+`endif
 
 		tRegOutWait		= 1;
 		tRegOutHold		= 1;
@@ -1760,10 +1867,7 @@ begin
 `ifdef def_true
 		if(tReqDoMissA && tBlkIsDirtyA && !tMemReqStA)
 		begin
-`ifdef jx2_debug_l1ds
-			$display("L1 D$: Send STA Req, A=%X Ix=%X Rov=%X",
-				tBlkMemAddr2A[47:4], tReqIxA, tMemSeqRov);
-`endif
+//			$display("L1 D$: Send STA Req, A=%X", tBlkMemAddr2A[47:4]);
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxA;
 			tMemSeqVa		= tReqAxA;
@@ -1782,10 +1886,7 @@ begin
 		end
 		else if(tReqDoMissB && tBlkIsDirtyB && !tMemReqStB)
 		begin
-`ifdef jx2_debug_l1ds
-			$display("L1 D$: Send STB Req, A=%X Ix=%X Rov=%X",
-				tBlkMemAddr2B[47:4], tReqIxB, tMemSeqRov);
-`endif
+//			$display("L1 D$: Send STB Req, A=%X", tBlkMemAddr2B[47:4]);
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxB;
 			tMemSeqVa		= tReqAxB;
@@ -1803,13 +1904,9 @@ begin
 			tNxtMemReqStB	= 1;
 		end
 		else
-//			if(tReqDoMissA && !tMemReqLdA)
-			if(tReqDoMissA && !tMemReqLdA &&
-				!(tMemReqStA && !tMemRespStA && !tReqMissAddrLoA))
+			if(tReqDoMissA && !tMemReqLdA)
 		begin
-`ifdef jx2_debug_l1ds
-			$display("L1 D$: Send LDA Req A=%X", tReqAxA);
-`endif
+//			$display("L1 D$: Send LDA Req A=%X", tReqAxA);
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxA;
 			tMemSeqVa		= tReqAxA;
@@ -1822,13 +1919,10 @@ begin
 			tMemAddrReq		= { tReqAxA, 4'h00 };
 `endif
 
-// `ifndef def_true
-`ifdef def_true
 			if(tReqDoPfxA)
 				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
 			if(tReqDoSpxA)
 				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_SPX };
-`endif
 
 `ifdef jx2_mem_l1d_utlb
 			if(tReqUtlbHitAxA)
@@ -1844,13 +1938,9 @@ begin
 			tNxtMemReqLdA = 1;
 		end
 		else
-//			if(tReqDoMissB && !tMemReqLdB)
-			if(tReqDoMissB && !tMemReqLdB &&
-				!(tMemReqStB && !tMemRespStB && !tReqMissAddrLoB))
+			if(tReqDoMissB && !tMemReqLdB)
 		begin
-`ifdef jx2_debug_l1ds
-			$display("L1 D$: Send LDB Req A=%X", tReqAxB);
-`endif
+//			$display("L1 D$: Send LDB Req A=%X", tReqAxB);
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxB;
 			tMemSeqVa		= tReqAxB;
@@ -1863,13 +1953,10 @@ begin
 			tMemAddrReq		= { tReqAxB, 4'h00 };
 `endif
 
-// `ifndef def_true
-`ifdef def_true
 			if(tReqDoPfxB)
 				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
 			if(tReqDoSpxB)
 				tMemOpmReq		= { UV8_00, JX2_RBI_OPM_SPX };
-`endif
 
 `ifdef jx2_mem_l1d_utlb
 			if(tReqUtlbHitAxB)
@@ -1899,12 +1986,8 @@ begin
 `endif
 	end
 
-	if((tReqDoMissA || tReqDoMissB) && !tRegOutHold &&
-		!(tReqIsMmio || tReqIsCcmd))
-	begin
-		$display("DoMiss but no Hold %d %d", tReqDoMissA, tReqDoMissB);
-//		tRegOutHold = 1;
-	end
+//	if(tReqIsMmio && tMemMmioReady)
+//		tRegOutHold = 0;
 
 	if(reset)
 	begin
@@ -1936,9 +2019,6 @@ begin
 		tSyncEpoch		<= tNxtSyncEpoch;
 		tSyncEpochL		<= tSyncEpoch;
 
-		tReqStrobe1		<= !tReqStrobe1;
-		tReqStrobe2		<= tReqStrobe2 ^ tReqStrobe1;
-
 		tVolatileInhCnt	<= tNxtVolatileInh;
 		tVolatileInhSet	<= 0;
 
@@ -1946,7 +2026,6 @@ begin
 
 		tSrJQ			<= regInSr[31];
 		tRegInSr		<= regInSr;
-		tRegInSrL		<= tRegInSr;
 	
 		/* EX1 -> EX2 */
 		tReqAddr		<= tNxtReqAddr;
@@ -1972,10 +2051,6 @@ begin
 		tBlk2MemAddrB	<= tBlkMemAddr2B;
 		tBlk2MemDataA	<= tBlkMemData2A;
 		tBlk2MemDataB	<= tBlkMemData2B;
-		tBlk2MemDextA	<= tBlkMemDext2A;
-		tBlk2MemDextB	<= tBlkMemDext2B;
-		tBlk2MemAextA	<= tBlkMemAext2A;
-		tBlk2MemAextB	<= tBlkMemAext2B;
 
 		tBlk2InsData	<= tBlkInsData0;
 		tReq2IxA		<= tReqIxA;
@@ -2032,11 +2107,10 @@ begin
 
 
 	/* EX1->EX2 */
-
-	{ tBlkMemDextA, tBlkMemAextA, tBlkMemAddrA }	<= arrMemAddrA[tReq1IxA];
-	{ tBlkMemDextB, tBlkMemAextB, tBlkMemAddrB }	<= arrMemAddrB[tReq1IxB];
-	tBlkMemDataA	<= arrMemDataA[tReq1IxA];
-	tBlkMemDataB	<= arrMemDataB[tReq1IxB];
+	tBlkMemAddrA	<= arrMemAddrA[tReq1IxA];
+	tBlkMemAddrB	<= arrMemAddrB[tReq1IxB];
+	{ tBlkMemDextA, tBlkMemDataA }	<= arrMemDataA[tReq1IxA];
+	{ tBlkMemDextB, tBlkMemDataB }	<= arrMemDataB[tReq1IxB];
 	tBlkMemIdxA		<= tReq1IxA;
 	tBlkMemIdxB		<= tReq1IxB;
 
@@ -2045,18 +2119,16 @@ begin
 	begin
 //		$display("L1 D$ STA Ix=%X A=%X D=%X",
 //			tArrMemIdxStA, tArrMemAddrStA, tArrMemDataStA);
-		arrMemAddrA[tArrMemIdxStA]	<=
-			{ tArrMemDextStA, tArrMemAextStA, tArrMemAddrStA };
-		arrMemDataA[tArrMemIdxStA]	<= tArrMemDataStA;
+		arrMemAddrA[tArrMemIdxStA]	<= tArrMemAddrStA;
+		arrMemDataA[tArrMemIdxStA]	<= { tArrMemDextStA, tArrMemDataStA };
 	end
 
 	if(tArrMemDoStB)
 	begin
 //		$display("L1 D$ STB Ix=%X A=%X D=%X",
 //			tArrMemIdxStB, tArrMemAddrStB, tArrMemDataStB);
-		arrMemAddrB[tArrMemIdxStB]	<=
-			{ tArrMemDextStB, tArrMemAextStB, tArrMemAddrStB };
-		arrMemDataB[tArrMemIdxStB]	<= tArrMemDataStB;
+		arrMemAddrB[tArrMemIdxStB]	<= tArrMemAddrStB;
+		arrMemDataB[tArrMemIdxStB]	<= { tArrMemDextStB, tArrMemDataStB };
 	end
 
 `ifdef jx2_mem_l1d_utlb
@@ -2074,26 +2146,32 @@ begin
 	tArrMemDidStDataB	<= tArrMemDataStB;
 	tArrMemDidStDextA	<= tArrMemDextStA;
 	tArrMemDidStDextB	<= tArrMemDextStB;
-	tArrMemDidStAextA	<= tArrMemAextStA;
-	tArrMemDidStAextB	<= tArrMemAextStB;
 
 	tArrMemDidStIxA	<= tArrMemIdxStA;
 	tArrMemDidStIxB	<= tArrMemIdxStB;
 	tArrMemDidStA	<= tArrMemDoStA;
 	tArrMemDidStB	<= tArrMemDoStB;
 
+//	tMemRespStA		<= tNxtMemRespStA;
+//	tMemRespStB		<= tNxtMemRespStB;
+//	tMemRespLdA		<= tNxtMemRespLdA;
+//	tMemRespLdB		<= tNxtMemRespLdB;
+
 	tMemRespStA		<= dcInHold ? tNxtMemRespStA : 0;
 	tMemRespStB		<= dcInHold ? tNxtMemRespStB : 0;
 	tMemRespLdA		<= dcInHold ? tNxtMemRespLdA : 0;
 	tMemRespLdB		<= dcInHold ? tNxtMemRespLdB : 0;
-
-	tReqDoMissAL	<= dcInHold ? tReqDoMissA : 0;
-	tReqDoMissBL	<= dcInHold ? tReqDoMissB : 0;
+//	tReqMissNoSkipL	<= dcInHold ? tReqMissNoSkip : 0;
 
 	tMemSeqReqL		<= tMemSeqReq;
 	tMemOpmReqL		<= tMemOpmReq;
 	tMemAddrReqL	<= tMemAddrReq;
 	tMemDataReqL	<= tMemDataReq;
+//	tNxtMemReqStAL	<= dcInHold ? tNxtMemReqStA : 0;
+//	tNxtMemReqStBL	<= dcInHold ? tNxtMemReqStB : 0;
+//	tNxtMemReqLdAL	<= dcInHold ? tNxtMemReqLdA : 0;
+//	tNxtMemReqLdBL	<= dcInHold ? tNxtMemReqLdB : 0;
+//	tNxtMemReqLdML	<= dcInHold ? tNxtMemReqLdM : 0;
 
 	tMemSeqIxL		<= tMemSeqIx;
 	tMemSeqVaL		<= tMemSeqVa;
@@ -2110,6 +2188,11 @@ begin
 		tMemOpmOut  <= 0;
 		tMemAddrOut <= 0;
 		tMemDataOut <= 0;
+
+//		tMemSeqOut  <= memSeqIn;
+//		tMemOpmOut  <= memOpmIn;
+//		tMemAddrOut <= memAddrIn;
+//		tMemDataOut <= memDataIn;
 		tMemReqSent	<= 0;
 
 		tMemReqStA	<= 0;
@@ -2128,6 +2211,10 @@ begin
 		tMemDataOut <= tMemDataReq;
 		tMemReqSent	<= 1;
 
+//		tMemReqStA	<= tNxtMemReqStA;
+//		tMemReqStB	<= tNxtMemReqStB;
+//		tMemReqLdA	<= tNxtMemReqLdA;
+//		tMemReqLdB	<= tNxtMemReqLdB;
 		tMemSeqRov	<= tNxtMemSeqRov;
 
 		tMemReqStA	<= dcInHold ? tNxtMemReqStA : 0;
@@ -2136,6 +2223,7 @@ begin
 		tMemReqLdB	<= dcInHold ? tNxtMemReqLdB : 0;
 
 		tMemReqLdM	<= dcInHold ? tNxtMemReqLdM : 0;
+//		tMemReqLdM	<= tNxtMemReqLdM;
 
 		tReqSeqIdxArr[tMemSeqRov]	<= tMemSeqIx;
 		tReqSeqVaArr[tMemSeqRov]	<= tMemSeqVa;

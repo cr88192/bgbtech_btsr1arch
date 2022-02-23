@@ -4776,9 +4776,9 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 int BJX2_DecodeOpcode_DecFK(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
 {
-	BJX2_Opcode *op1;
+	BJX2_Opcode *op1, *op2;
 	int opw3, opw4, opw5, opw6;
-	u32 immb;
+	u32 imma, immb, immc;
 	u64 imm;
 	int ret;
 	byte rn;
@@ -4792,6 +4792,129 @@ int BJX2_DecodeOpcode_DecFK(BJX2_Context *ctx,
 	{
 		ret=BJX2_DecodeOpcode_DecFJ(ctx,
 			op, addr, opw1, opw2);
+		return(ret);
+	}
+
+	if(	((opw1&0xFF00)==0x7800)	&&
+		((opw3&0xFC00)==0xF400)	)
+	{
+		op1=BJX2_ContextAllocOpcode(ctx);
+		op2=BJX2_ContextAllocOpcode(ctx);
+		op->data=op1;
+		op1->data=op2;
+
+		imma=0x02000000U|((opw1&255)<<16)|(opw2&65535);
+//		immb=0x02000000U|((imma<<0)&0xF00000)|((imma>>4)&0x0F0F);
+//		immc=0x02000000U|((imma<<4)&0xF00000)|((imma>>0)&0x0F0F);
+//		if(immb&0x100000)immb|=0x0F0;
+//		if(immc&0x100000)immc|=0x0F0;
+
+		immb=0x02000000U|((imma<<0)&0xF00000)|
+			((imma>>4)&0x080F)|((imma>>8)&0x0070);
+		immc=0x02000000U|((imma<<4)&0xF00000)|
+			((imma>>0)&0x080F)|((imma>>4)&0x0070);
+
+//		if(immb&0x100000)immb|=0x780;
+//		if(immc&0x100000)immc|=0x780;
+		if(immb&0x0040)immb|=0x0780;
+		if(immc&0x0040)immc|=0x0780;
+		if(	(((opw3>>8)&3)==0) &&
+			(((opw4>>12)&3)==0) &&
+			(opw4&4) && (imma&0x0800))
+		{
+			immc&=~0x0600;
+			immc|=((imma<<1)&0x0600);
+		}
+
+		switch((opw3>>8)&255)
+		{
+		case 0xF0:		case 0xF4:
+			ret=BJX2_DecodeOpcode_DecF0(ctx, op1, addr, opw3, opw4, immb);
+			break;
+		case 0xF1:		case 0xF5:
+			ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw3, opw4, immb);
+			break;
+		case 0xF2:		case 0xF6:
+			ret=BJX2_DecodeOpcode_DecF2(ctx, op1, addr, opw3, opw4, immb);
+			break;			
+		case 0xF8:		case 0xFC:
+			ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw3, opw4, immb);
+			break;			
+		case 0xE0:		case 0xE4:
+			ret=BJX2_DecodeOpcode_DecD4(ctx, op1, addr, opw3, opw4, immb);
+			break;
+		case 0xE1:		case 0xE5:
+			ret=BJX2_DecodeOpcode_DecD5(ctx, op1, addr, opw3, opw4, immb);
+			break;
+		case 0xE2:		case 0xE6:
+			ret=BJX2_DecodeOpcode_DecD6(ctx, op1, addr, opw3, opw4, immb);
+			break;			
+			
+		default:
+			ret=-1;
+			break;
+		}
+
+		switch((opw5>>8)&255)
+		{
+		case 0xF0:		case 0xF4:
+			ret=BJX2_DecodeOpcode_DecF0(ctx, op2, addr, opw5, opw6, immc);
+			break;
+		case 0xF1:		case 0xF5:
+			ret=BJX2_DecodeOpcode_DecF1(ctx, op2, addr, opw5, opw6, immc);
+			break;
+		case 0xF2:		case 0xF6:
+			ret=BJX2_DecodeOpcode_DecF2(ctx, op2, addr, opw5, opw6, immc);
+			break;			
+		case 0xF8:		case 0xFC:
+			ret=BJX2_DecodeOpcode_DecF8(ctx, op2, addr, opw5, opw6, immc);
+			break;			
+		case 0xE0:		case 0xE4:
+			ret=BJX2_DecodeOpcode_DecD4(ctx, op2, addr, opw5, opw6, immc);
+			break;
+		case 0xE1:		case 0xE5:
+			ret=BJX2_DecodeOpcode_DecD5(ctx, op2, addr, opw5, opw6, immc);
+			break;
+		case 0xE2:		case 0xE6:
+			ret=BJX2_DecodeOpcode_DecD6(ctx, op2, addr, opw5, opw6, immc);
+			break;			
+			
+		default:
+			ret=-1;
+			break;
+		}
+
+		op ->opn =opw1;
+		op ->opn2=opw2;
+
+		op1->opn=0xD000|
+			((imma>>12)&0x0F00)|
+			((imma>> 8)&0x00F0)|
+			((imma>> 4)&0x000F);
+		op1->opn2=opw3;
+		op1->opn3=opw4;
+
+		op2->opn=0xD000|
+			((imma>> 8)&0x0F00)|
+			((imma>> 4)&0x00F0)|
+			((imma>> 0)&0x000F);
+		op2->opn2=opw5;
+		op2->opn3=opw6;
+
+		op ->pc=addr;
+		op1->pc=addr+3;
+		op2->pc=addr+5;
+
+		op->fl&=~BJX2_OPFL_TWOWORD;
+		op1->fl&=~BJX2_OPFL_TWOWORD;
+		op2->fl&=~BJX2_OPFL_TWOWORD;
+
+		op->fl|=BJX2_OPFL_JUMBO96;
+		op1->fl|=BJX2_OPFL_TRIWORD;
+		op2->fl|=BJX2_OPFL_TRIWORD;
+		
+		op->nmid=BJX2_NMID_NONE;
+
 		return(ret);
 	}
 	
@@ -5021,6 +5144,12 @@ int BJX2_DecodeOpcode_DecXz(BJX2_Context *ctx,
 	BJX2_Opcode *op1;
 	int opw3, opw4;
 	int ret, z, imm;
+
+	if((opw1&0xFF00) == 0x7800)
+	{
+		ret=BJX2_DecodeOpcode_DecFK(ctx, op, addr, opw1, opw2);
+		return(ret);
+	}
 
 	op->fl|=BJX2_OPFL_TWOWORD;
 	op->opn=opw1;

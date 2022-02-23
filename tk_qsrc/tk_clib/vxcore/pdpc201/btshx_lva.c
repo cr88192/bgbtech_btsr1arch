@@ -1642,7 +1642,11 @@ tk_lva_variant __lva_rcons(tk_lva_variant cdr, tk_lva_variant car)
 	LVA_Cons *tmp;
 	u64 val;
 	tmp=TKMM_LVA_NewCons(car, cdr);
+#ifdef __ADDR_X96__
+	val=__lvax_conv_fromptr(tmp);
+#else
 	val=__lva_conv_fromptr(tmp);
+#endif
 	return(val);
 }
 
@@ -1651,7 +1655,11 @@ tk_lva_variant __lva_cons(tk_lva_variant car, tk_lva_variant cdr)
 	LVA_Cons *tmp;
 	u64 val;
 	tmp=TKMM_LVA_NewCons(car, cdr);
+#ifdef __ADDR_X96__
+	val=__lvax_conv_fromptr(tmp);
+#else
 	val=__lva_conv_fromptr(tmp);
+#endif
 	return(val);
 }
 

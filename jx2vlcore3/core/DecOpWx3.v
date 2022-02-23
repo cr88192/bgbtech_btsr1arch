@@ -169,6 +169,14 @@ wire		opIsWexJumbo96;
 reg			opIsWexJumboLdi;
 `reg_gpr	opWexJumboRn;
 
+wire		opIsWexJumboXA;
+wire		opIsWexJumboXB;
+
+wire	opIsWexB;
+wire	opIsWexaB;
+wire	opIsWex2x40B;
+
+
 
 `wire_gpr		decOpBz_idRegN;
 `wire_gpr		decOpBz_idRegM;
@@ -198,7 +206,9 @@ DecOpFz	decOpFzC(
 	clock,		reset,	srMod,
 	{ UV32_XX, istrWord[95:64] },	4'h1,
 		{ tOpJBitsB[24], tOpJBitsC[24],
-		opIsWexJumbo96, opIsWexJumboB, tOpJBitsC[23:0] },
+			opIsWexJumbo96,
+			opIsWexJumboB | opIsWex2x40B,
+			tOpJBitsC[23:0] },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idRegP,
 	decOpFzC_idImm,
@@ -218,7 +228,10 @@ wire[3:0]		decOpFzB_idUFl;
 DecOpFz	decOpFzB(
 	clock,		reset,	srMod,
 	{ UV32_XX, istrWord[63:32] },	4'h1,
-		{ 1'b0, tOpJBitsB[24], 1'b0, opIsWexJumboA, tOpJBitsB[23:0] },
+		{ 1'b0, tOpJBitsB[24],
+			1'b0,
+			opIsWexJumboA | opIsWex2x40B,
+			tOpJBitsB[23:0] },
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idRegP,
 	decOpFzB_idImm,
@@ -340,6 +353,7 @@ reg opIsDwC;		//PrWEX Ops
 reg opIsDfC;		//Pred-False or WEX
 reg opIsWfC;		//WEX
 
+
 `ifdef jx2_enable_wexjumbo
 //assign	opIsWexJumboA =
 //		(istrWord[15: 8] == 8'b1111_0100) &&
@@ -358,15 +372,79 @@ assign	opIsWexJumboA =
 assign	opIsWexJumboB =
 		(istrWord[47:41] == 7'b1111_111) ;
 
+assign	opIsWexJumboXA =
+		((istrWord[15:12] == 4'b0111) && (istrWord[10:8] == 3'b000)) ||
+		((istrWord[15:12] == 4'b1001) && (istrWord[10:9] == 2'b00 )) ;
+assign	opIsWexJumboXB =
+		((istrWord[47:44] == 4'b0111) && (istrWord[42:40] == 3'b000)) ||
+		((istrWord[47:44] == 4'b1001) && (istrWord[42:41] == 2'b00 )) ;
+
 assign	opIsWexJumbo96 =
 //	opIsWexJumboA && istrWord[42];
 	opIsWexJumboA && opIsWexJumboB;
 
+assign	opIsWexB =
+	((istrWord[47:44] == 4'b1111) && istrWord[42]) ||
+	((istrWord[47:44] == 4'b1110) && (istrWord[43:41]==3'b101));
+
+assign	opIsWexaB =
+	((istrWord[47:44] == 4'b1111) && (istrWord[43:42]==2'b01 )) ||
+	((istrWord[47:44] == 4'b1110) && (istrWord[43:41]==3'b101));
+
+`ifdef jx2_enable_2x40b
+assign	opIsWex2x40B =
+//	opIsWexJumboA && istrWord[8] && opIsWexaB;
+	opIsWexJumboXA && opIsWexaB;
+`else
+assign	opIsWex2x40B = 0;
+`endif
+
 assign	tOpJBitsA		= 0;
 // assign	tOpJBitsB		= { istrWord [7: 0], istrWord[29:16] };
 // assign	tOpJBitsC		= { istrWord[39:32], istrWord[61:48] };
+
+// assign	tOpJBitsB		= { istrWord [8: 0], istrWord[31:16] };
+// assign	tOpJBitsC		= { istrWord[40:32], istrWord[63:48] };
+
+wire		opIsWex2x40B_RiAltC;
+assign		opIsWex2x40B_RiAltC =
+	(istrWord[53:52] == 2'b00) &&
+	(istrWord[61:60] == 2'b00) &&
+	istrWord[50] && istrWord[27] ;
+
+`ifdef jx2_enable_2x40b
+assign	tOpJBitsB		=
+	opIsWex2x40B ? {
+		1'b1, istrWord [7:4], 8'h00,
+//		istrWord[31] ?
+//			{ 1'b1, istrWord[30:29],
+//				istrWord[4] ? 4'hF : 4'h0, istrWord[28] } :
+//			{ 1'b0, istrWord[4] ? 4'hF : 4'h0, istrWord[30:28] },
+
+//		{ istrWord[31], istrWord[4] ? 4'hF : 4'h0, istrWord[30:28] },
+		{ istrWord[31], istrWord[30] ? 4'hF : 4'h0, istrWord[30:28] },
+		istrWord[23:20] } :
+	{ istrWord [8: 0], istrWord[31:16] };
+assign	tOpJBitsC		=
+	opIsWex2x40B ? {
+		1'b1, istrWord [3:0], 8'h00,
+//		{ istrWord[27], istrWord[0] ? 4'hF : 4'h0, istrWord[26:24] },
+//		{ istrWord[27], istrWord[26] ? 4'hF : 4'h0, istrWord[26:24] },
+		{ istrWord[27],
+			opIsWex2x40B_RiAltC ?
+				istrWord[25:24] :
+				(istrWord[26] ? 2'b11 : 2'b00),
+			istrWord[26] ? 3'b111 : 3'b000,
+			opIsWex2x40B_RiAltC ?
+				( istrWord[26] ? 2'b11 : 2'b00 ) :
+				istrWord[25:24]
+			},
+		istrWord[19:16] } :
+	{ istrWord[40:32], istrWord[63:48] };
+`else
 assign	tOpJBitsB		= { istrWord [8: 0], istrWord[31:16] };
 assign	tOpJBitsC		= { istrWord[40:32], istrWord[63:48] };
+`endif
 
 `else
 

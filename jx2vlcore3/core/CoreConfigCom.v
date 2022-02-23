@@ -12,6 +12,9 @@
 
 `define jx2_agu_ribound			//Enable AGU Bounds Checks
 
+`define jx2_enable_2x40b		//Enable 2x40 Encoding
+
+
 // `define jx2_cfg_75mhz
 
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)

@@ -517,9 +517,11 @@ int __open(const char *a, int b, int *rc)
 	fd=tk_fopen(tfn, md);
 	if(!fd)
 	{
+//		tk_printf("");
 //		tk_printf("__open: %s, tk_fopen returned NULL\n", tfn);
 //		*(int *)((long)((unsigned int)c))=-1;
-		*rc=-1;
+		*rc=-3;
+//		__debugbreak();
 		return(-1);
 	}
 

@@ -1247,6 +1247,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
 {
+	static int rec=0;
 	char *s0;
 
 //	BGBCC_JX2C_CompilePrintVirtOp(ctx, sctx, obj, op);
@@ -1561,12 +1562,21 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	{
 		if(sctx->regalc_live || sctx->fregalc_live)
 		{
-			BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, op);
+			if(!rec)
+			{
+				rec=1;
+				BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, op);
+			}
 			BGBCC_DBGBREAK
 		}
 
 		if(sctx->sreg_live || sctx->sfreg_live)
 		{
+			if(!rec)
+			{
+				rec=1;
+				BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, op);
+			}
 			BGBCC_DBGBREAK
 		}
 

@@ -91,8 +91,13 @@ void TKMM_LVA_ArrayInit(void)
 	tkmm_lvatyi_arrmsc[ 1]=3;
 	tkmm_lvatyi_arrmsc[ 2]=2;
 	tkmm_lvatyi_arrmsc[ 3]=3;
+#ifdef __ADDR_X96__
+	tkmm_lvatyi_arrmsc[ 4]=4;
+	tkmm_lvatyi_arrmsc[ 5]=4;
+#else
 	tkmm_lvatyi_arrmsc[ 4]=3;
 	tkmm_lvatyi_arrmsc[ 5]=3;
+#endif
 	tkmm_lvatyi_arrmsc[ 6]=2;
 	tkmm_lvatyi_arrmsc[ 7]=3;
 	tkmm_lvatyi_arrmsc[ 8]=0;
@@ -474,12 +479,20 @@ double __lvo_loadindex_d(tk_lva_object obj, int idx)
 
 void *__lvo_loadindex_p(tk_lva_object obj, int idx)
 {
+#ifdef __ADDR_X96__
+	return(*(void **)TKMM_LVA_GetArrayIndexPtr(obj, idx, 4));
+#else
 	return(*(void **)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+#endif
 }
 
 tk_lva_object __lvo_loadindex_v(tk_lva_object obj, int idx)
 {
+#ifdef __ADDR_X96__
+	return(*(tk_lva_object *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 4));
+#else
 	return(*(tk_lva_object *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+#endif
 }
 
 int __lvo_loadindex_sb(tk_lva_object obj, int idx)
@@ -514,7 +527,11 @@ u64 __lvo_loadindex_ul(tk_lva_object obj, int idx)
 
 tk_lva_variant __lvo_loadindex_va(tk_lva_object obj, int idx)
 {
+#ifdef __ADDR_X96__
+	return(*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 4));
+#else
 	return(*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+#endif
 }
 
 __m128 __lvo_loadindex_x(tk_lva_object obj, int idx)
@@ -557,7 +574,13 @@ void __lvo_storeindex_d(tk_lva_object obj, int idx, double val)
 void __lvo_storeindex_p(tk_lva_object obj, int idx, void *val)
 {
 	void *ptr;
+
+#ifdef __ADDR_X96__
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 4);
+#else
 	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+#endif
+
 	*(void **)ptr=val;
 //	*(void **)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
@@ -565,7 +588,11 @@ void __lvo_storeindex_p(tk_lva_object obj, int idx, void *val)
 void __lvo_storeindex_v(tk_lva_object obj, int idx, tk_lva_object val)
 {
 	void *ptr;
+#ifdef __ADDR_X96__
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 4);
+#else
 	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+#endif
 	*(tk_lva_object *)ptr=val;
 }
 
@@ -588,7 +615,11 @@ void __lvo_storeindex_s(tk_lva_object obj, int idx, int val)
 void __lvo_storeindex_va(tk_lva_object obj, int idx, tk_lva_variant val)
 {
 	void *ptr;
+#ifdef __ADDR_X96__
+	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 4);
+#else
 	ptr=TKMM_LVA_GetArrayIndexPtr(obj, idx, 3);
+#endif
 	*(tk_lva_variant *)ptr=val;
 //	*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }

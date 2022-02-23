@@ -281,7 +281,7 @@ byte* I_AllocLow (int length)
     byte*	mem;
         
     mem = (byte *)malloc (length);
-    memset (mem,0,length);
+//    memset (mem,0,length);
     return mem;
 }
 

@@ -52,6 +52,7 @@ __interrupt
 #endif
 void __isr_interrupt(void)
 {
+	void (*run)();
 	int i, irq;
 
 //	irq=__get_exsr();
@@ -59,8 +60,21 @@ void __isr_interrupt(void)
 
 	if(((u16)irq)==0xC001)
 	{
+		if((n_irq_timer<0) || (n_irq_timer>16))
+		{
+			__debugbreak();
+			n_irq_timer=0;
+		}
+	
 		for(i=0; i<n_irq_timer; i++)
-			irq_timer[i]();
+		{
+			run=irq_timer[i];
+			if(!run)
+				continue;
+			run();
+
+//			irq_timer[i]();
+		}
 		return;
 	}
 

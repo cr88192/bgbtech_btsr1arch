@@ -536,10 +536,11 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 	int xri, xro;
 	int tri, tro;
 	int pri, pro;
-	int rcls;
+	int rcls, islvax;
 
 	tty=BGBCC_CCXL_GetRegType(ctx, dreg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
+	islvax=0;
 
 	if(sctx->is_addr64)
 	{
@@ -553,6 +554,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 		{
 			pri=BGBCC_SH_REG_LR4;
 			pro=BGBCC_SH_REG_LR2;
+			islvax=1;
 		}else
 		{
 			pri=BGBCC_SH_REG_RQ4;
@@ -589,7 +591,8 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 		}
 	}
 
-	if(rcls==BGBCC_SH_REGCLS_QGR2)
+//	if(rcls==BGBCC_SH_REGCLS_QGR2)
+	if(islvax)
 	{
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, type))
 		{
@@ -644,7 +647,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 		{
 			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, dr4);
 			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, dr4);
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_fromf64");
+			BGBCC_JX2C_EmitCallName(ctx, sctx, "__lvax_conv_fromf64");
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, dr4);
 			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, xro);
 			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, xro);
@@ -657,7 +660,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(
 		{
 			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, pri);
 			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, pri);
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_fromptr");
+			BGBCC_JX2C_EmitCallName(ctx, sctx, "__lvax_conv_fromptr");
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, pri);
 			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, xro);
 			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, xro);

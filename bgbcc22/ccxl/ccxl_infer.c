@@ -1057,8 +1057,9 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
 			return(1);
-		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
-			return(1);
+		if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
+				return(1);
 		return(0);
 	}
 	
@@ -1091,11 +1092,17 @@ int BGBCC_CCXL_InferExprSimpleCmpP(BGBCC_TransState *ctx, BCCX_Node *l)
 //		BGBCC_CCXL_GetTypeBinaryDest(ctx, j, lty, rty, &dty);
 		BGBCC_CCXL_GetTypeCompareBinaryDest(ctx, j, lty, rty, &dty);
 
-		if(	!BGBCC_CCXL_TypeSmallIntP(ctx, dty) &&
-			!BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
-				return(0);
-		
-		return(1);
+		if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
+			return(1);
+		if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
+				return(1);
+		return(0);
+
+//		if(	!BGBCC_CCXL_TypeSmallIntP(ctx, dty) &&
+//			!BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
+//				return(0);
+//		return(1);
 	}
 
 #if 1
@@ -1132,7 +1139,8 @@ int BGBCC_CCXL_InferExprSimpleCmpP(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
 			return(1);
-		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
+		if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
 			return(1);
 		return(0);
 	}

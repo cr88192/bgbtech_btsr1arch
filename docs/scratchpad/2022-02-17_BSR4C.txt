@@ -1,0 +1,119 @@
+BSR4C:
+* R0..R63: 64-bit
+** X0,X2,X62: Paired, 128-bit
+* Variable-Bundle VLIW
+** Pointers: 64-bit (Narrow) / 128-bit (Tag/Bound)
+* C0..C63:
+** Control Registers
+
+SR:
+* (1): S (Secondary Predicate)
+* (0): T (Primary Predicate)
+
+
+Registers:
+* R0..R31: Scratch
+* R32..R59: Callee Save
+* R60..R63: Context / Port Sensitive
+
+Base Register (Rs):
+* R60: GB (Global Base Register)
+* R61: SP (Stack Pointer)
+* R62: LR (Link Register)
+* R63: PC (Program Counter)
+
+Index / ALU Register (Rt):
+* R60: Imm C (24b)
+* R61: Imm B (24b)
+* R62: Imm CB (48-bit)
+* R63: ZR (Zero)
+
+Dest Register (Rn):
+* R60: GB
+* R61: SP
+* R62: LR
+* R63: ZR (Ignore)
+
+
+
+=== Address Space ===
+
+Virtual Address Space:
+* 48-bit (Local)
+* 96-bit (Extended)
+
+By default, addressing will be within a 48-bit Quadrant.
+The high order bits of the address will only be used indirectly.
+
+
+=== Instruction Format ===
+
+* wwpp-qqnn nnnn-ssss sstt-tttt zzzz-zzzz  //3R
+* wwpp-qqnn nnnn-ssss sszz-zzzz zzzz-zzzz  //2R
+* wwpp-qqnn nnnn-jjjj jjjj-jjjj zzzz-zzzz  //2RI (Imm12, Rn)
+* wwpp-qqnn nnnn-jjjj jjjj-jjjj jjjj-zzzz  //Large Immed
+* wwpp-jjjj jjjj-jjjj jjjj-jjjj zzzz-zzzz  //Imm20
+* 1011-zzzz jjjj-jjjj jjjj-jjjj jjjj-jjjj  //Jumbo
+
+ww:
+* 00: Unconditional
+* 01: Predicated
+* 10: WEX+Unconditional
+* 11: WEX+Predicated
+pp (If Predicated):
+* 00: ?T
+* 01: ?F
+* 10: ?ST
+* 11: ?SF
+pp (Non-Predicated)
+* 00: Major Block 0
+* 01: Major Block 1
+* 10: Large Immediate
+* 11: Jumbo Block
+
+qq: Contextual Sub-Format (Typical, ALU)
+* 00: 64-bit 3R
+* 01: 128-bit 3R (Xs, Xt, Xn)
+* 10: 64-bit, 3RI (Rt=Imm6u)
+* 11: 64-bit, 3RI (Rt=Imm6n)
+
+qq: Contextual Sub-Format (Ld/St)
+* 00:  64-bit, (Rs, Rt)
+* 01: 128-bit, (Xs, Rt)
+* 10:  64-bit, (Rs, Imm6u)
+* 11: 128-bit, (Xs, Imm6u)
+
+Listing:
+* z00: ST.B
+* z01: ST.W
+* z02: ST.L
+* z03: ST.Q
+* z04: LEA.B
+* z05: -
+* z06: -
+* z07: ST.X
+* z08: LD.B
+* z09: LD.W
+* z0A: LD.L
+* z0B: LD.Q
+* z0C: LDU.B
+* z0D: LDU.W
+* z0E: LDU.L
+* z0F: LD.X
+* z10: ADD
+* z11: SUB
+* z12: SHA (Shift, Arithmetic)
+* z13: SHL (Shift, Logical)
+* z14: -
+* z15: AND
+* z16: OR
+* z17: XOR
+* z18: -
+* ..
+* z1F: -
+* z20: BRA
+* z21: BSR
+* z22: -
+* ..
+* z2F: -
+* z3z: 2R Block

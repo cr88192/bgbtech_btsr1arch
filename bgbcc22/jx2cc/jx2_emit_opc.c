@@ -4989,6 +4989,13 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			opw2=0x1900|((reg&15)<<4);
 			break;
 
+		case BGBCC_SH_NMID_TRAPA:
+//			opw1=0xF08A|(ex&0x0040); odr=1;
+//			opw2=0x1900|((reg&15)<<4);
+			opw1=0xF08A|(ex&0x0020); odr=1;
+			opw2=0x1900|((reg&15)<<0);
+			break;
+
 		case BGBCC_SH_NMID_TST:	
 			if(!BGBCC_JX2_CheckPadCross48(ctx) &&
 				!ctx->is_fixed32 && !ctx->op_is_wex2)

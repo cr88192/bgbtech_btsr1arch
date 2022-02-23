@@ -2909,6 +2909,7 @@ int BGBCC_JX2_EmitPadForLabel(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val);
 int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2);
 int BGBCC_JX2_EmitCheckRepackOp(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_EmitCheckRepackBundle(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val);
 int BGBCC_JX2_EmitDWordI(BGBCC_JX2_Context *ctx, u32 val);
 int BGBCC_JX2_EmitQWordI(BGBCC_JX2_Context *ctx, s64 val);

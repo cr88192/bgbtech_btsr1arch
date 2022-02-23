@@ -713,7 +713,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		BJX2_MemTranslateTlb(ctx, addr+ 0, 4);
 //		BJX2_MemTranslateTlb(ctx, addr+12);
 //		BJX2_MemTranslateTlb(ctx, addr+4096);
-		BJX2_MemTranslateTlb(ctx, addr+(32*8), 4);
+		if(!ctx->status)
+			{ BJX2_MemTranslateTlb(ctx, addr+(32*8), 4); }
 	}
 
 	if(ctx->status)
@@ -760,7 +761,21 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			break;
 		}
 
-		tr->ops[nc++]=op;
+		if(	(op->nmid==BJX2_NMID_NONE) &&
+			(op->fl&BJX2_OPFL_JUMBO96))
+		{
+			if((nc+1)>=BJX2_TR_MAXOP)
+				break;
+
+			op1=op->data;
+			op2=op1->data;
+			tr->ops[nc++]=op1;
+			tr->ops[nc++]=op2;
+		}else
+		{
+			tr->ops[nc++]=op;
+		}
+
 //		ncyc++;
 		ncyc+=op->cyc;
 		pc+=2;
@@ -1333,8 +1348,15 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 BJX2_Trace *BJX2_DecTraceCb_RunUnpack(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 	int i;
+
+	ctx->regs[BJX2_REG_PC]=tr->addr;
+	ctx->trapc=tr->addr;
 	i=BJX2_DecodeTraceForAddr(ctx, tr, tr->addr, 0);
 	if((i>=0) && (tr->Run!=BJX2_DecTraceCb_RunUnpack))
 		return(tr->Run(ctx, tr));
+
+	if((ctx->status&0xF000)==0xA000)
+		ctx->regs[BJX2_REG_SPC]=tr->addr;
+
 	return(NULL);
 }

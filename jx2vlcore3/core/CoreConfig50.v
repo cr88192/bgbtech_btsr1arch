@@ -122,8 +122,10 @@
 
 // `define jx2_expand_tlb		//Make TLB Bigger
 // `define jx2_tlbsz_1024		//Make TLB Bigger
-`define jx2_tlbsz_256		//Make TLB Bigger
-// `define jx2_tlbsz_64		//Make TLB Bigger
+`define jx2_tlbsz_256			//Make TLB Bigger
+// `define jx2_tlbsz_64			//Make TLB Bigger
+// `define jx2_tlbsz_32			//Make TLB Bigger
+// `define jx2_tlbsz_16			//Make TLB Bigger
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller
