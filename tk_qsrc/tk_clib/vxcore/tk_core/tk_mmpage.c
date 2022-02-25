@@ -95,32 +95,103 @@ int TKMM_MMCell_FreeLnkObjCellPtr(TKMM_MemLnkObj *obj, void *ptr);
 
 // static int tkmm_findfree_rec=0;
 
+int TKMM_FindFreePage(void)
+{
+	int i0, i1;
+	int i, j, m;
+	
+	i=tkmm_pagerov;
+	m=tkmm_maxpage;
+	while(i<m)
+	{
+		j=tkmm_pagebmp[i>>3];
+		if(j==0xFF)
+			{ i=(i+8)&(~7); continue; }
+		if(j&(1<<(i&7)))
+			{ i++; continue; }
+		tkmm_pagerov=i+1;
+		return(i);
+	}
+	
+	if(tkmm_pagerov!=0)
+	{
+		tkmm_pagerov=0;
+		i=TKMM_FindFreePage();
+		return(i);
+	}
+
+	return(-1);
+}
+
+int TKMM_AllocPage(void)
+{
+	byte *bm;
+	int i0, i1;
+	int i, j, m;
+	
+	bm=tkmm_pagebmp;
+	i=tkmm_pagerov;
+	m=tkmm_maxpage;
+	while(i<m)
+	{
+		j=bm[i>>3];
+		if(j==0xFF)
+			{ i=(i+8)&(~7); continue; }
+		if(j&(1<<(i&7)))
+			{ i++; continue; }
+		j|=1<<(i&7);
+		bm[i>>3]=j;
+		break;
+	}
+	
+	if(i<m)
+	{
+		tkmm_pagerov=i+1;
+//		__debugbreak();
+		return(i);
+	}
+	
+	if(tkmm_pagerov!=0)
+	{
+		tkmm_pagerov=0;
+		i=TKMM_AllocPage();
+		return(i);
+	}
+
+	return(-1);
+}
+
 int TKMM_FindFreePages(int n)
 {
+	byte *bm;
 	int i0, i1;
 	int i, j, m;
 	
 	if(n<=0)
 		return(-1);
 	
+//	if(n==1)
+//		return(TKMM_FindFreePage());
+	
+	bm=tkmm_pagebmp;
 	i=tkmm_pagerov;
 	m=tkmm_maxpage;
 	while(i<m)
 	{
-		if(tkmm_pagebmp[i>>3]&(1<<(i&7)))
+		if(bm[i>>3]&(1<<(i&7)))
 		{
-			while((tkmm_pagebmp[i>>3]==0xFF) && (i<m))
+			while((bm[i>>3]==0xFF) && (i<m))
 			{
 				i=(i+8)&(~7);
 				continue;
 			}
-			while((tkmm_pagebmp[i>>3]&(1<<(i&7))) && (i<m))
+			while((bm[i>>3]&(1<<(i&7))) && (i<m))
 				i++;
 			continue;
 		}
 		i0=i; i1=i0+n;
 		if(i1>m)break;
-		while(!(tkmm_pagebmp[i>>3]&(1<<(i&7))) && (i<i1))
+		while(!(bm[i>>3]&(1<<(i&7))) && (i<i1))
 			i++;
 		if(i>=i1)
 		{
@@ -141,7 +212,29 @@ int TKMM_FindFreePages(int n)
 
 int TKMM_AllocPages(int n)
 {
+	byte *bm;
 	int i, j, k;
+	
+	if(n<=0)
+	{
+		tk_printf("TKMM_AllocPages: Bad Page Count, n=%d\n", n);
+		return(-1);
+	}
+
+#if 1
+	if(n==1)
+	{
+		i=TKMM_AllocPage();
+		if(i<0)
+		{
+			tk_printf("TKMM_AllocPages: Out Of Memory, n=%d\n", n);
+			return(-1);
+		}
+
+//		tk_printf("TKMM_AllocPages: %X\n", i);
+		return(i);
+	}
+#endif
 	
 	i=TKMM_FindFreePages(n);
 	if(i<0)
@@ -155,13 +248,32 @@ int TKMM_AllocPages(int n)
 		__debugbreak();
 	}
 	
+	bm=tkmm_pagebmp;
 	j=i; k=j+n;
 	while(j<k)
 	{
-		tkmm_pagebmp[j>>3]|=(1<<(j&7));
+		bm[j>>3]|=(1<<(j&7));
 		j++;
 	}
+
+//	tk_printf("TKMM_AllocPages: %X..%X\n", i, k-1);
+
 	return(i);
+}
+
+int TKMM_AllocPagesZeroed(int n)
+{
+	byte *ptr;
+	int i0;
+	
+	i0=TKMM_AllocPages(n);
+	if(i0<0)
+		return(i0);
+
+	ptr=((byte *)TKMM_PAGEBASE)+(i0<<TKMM_PAGEBITS);
+	memset(ptr, 0, n<<TKMM_PAGEBITS);
+
+	return(i0);
 }
 
 int TKMM_FreePages(int b, int n)

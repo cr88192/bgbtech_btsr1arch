@@ -2992,6 +2992,7 @@ int BGBCC_JX2C_EmitReleaseRegister(
 	ccxl_register reg)
 {
 	static int rchk=0;
+	char *s0, *s1;
 	ccxl_register reg1;
 	ccxl_type tty;
 	int creg, regfl, rcls;
@@ -3013,6 +3014,17 @@ int BGBCC_JX2C_EmitReleaseRegister(
 		}
 #endif
 		return(0);
+	}
+
+	if(BGBCC_CCXL_IsRegGlobalP(ctx, reg))
+	{
+		i=BGBCC_CCXL_GetRegID(ctx, reg);
+//		sig=ctx->reg_globals[i]->sig;
+		s0=ctx->reg_globals[i]->name;
+		if(!strncmp(s0, "__arch_", 7))
+		{
+			i=-1;
+		}
 	}
 
 	tty=BGBCC_CCXL_GetRegType(ctx, reg);
@@ -3214,14 +3226,17 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 		}
 
 #if 1
-//		if((
-//			BGBCC_CCXL_IsRegTempP(ctx, reg) ||
+		if(
+//			(BGBCC_CCXL_IsRegTempP(ctx, reg) ||
 //			BGBCC_CCXL_IsRegArgP(ctx, reg) ||
 //			BGBCC_CCXL_IsRegLocalP(ctx, reg)) &&
-//			!(regfl&BGBCC_REGFL_ALIASPTR))
+			!(regfl&BGBCC_REGFL_ALIASPTR) &&
+			!BGBCC_CCXL_IsRegThisIdxP(ctx, reg) &&
+			!BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
+			!BGBCC_CCXL_IsRegVolatileP(ctx, reg))
 //		if(BGBCC_CCXL_IsRegTempP(ctx, reg) &&
 //			!(regfl&BGBCC_REGFL_ALIASPTR))
-		if(1)
+//		if(1)
 		{
 			if((sctx->vsp_rsv>0) && (i<sctx->vsp_rsv))
 			{

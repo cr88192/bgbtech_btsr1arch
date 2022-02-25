@@ -396,10 +396,10 @@ assign		memRingIsRespOkLd =
 	(memOpmIn[ 5:4] == 2'b11);
 assign		memRingIsRespOkLdA =
 	memRingIsRespOkLd &&
-	(memSeqIn[7:6] == 2'b00);
+	(memSeqIn[7:6] == 2'b10);
 assign		memRingIsRespOkLdB =
 	memRingIsRespOkLd &&
-	(memSeqIn[7:6] == 2'b01);
+	(memSeqIn[7:6] == 2'b11);
 
 
 `ifdef jx2_mem_l1isz_512
@@ -1424,7 +1424,7 @@ begin
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxA;
 			tMemSeqVa		= tReqAddrA;
-			tMemSeqReq		= { unitNodeId, 4'b0000, tMemSeqRov };
+			tMemSeqReq		= { unitNodeId, 4'b1000, tMemSeqRov };
 
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 `ifdef jx2_enable_l1addr96
@@ -1443,7 +1443,7 @@ begin
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxB;
 			tMemSeqVa		= tReqAddrB;
-			tMemSeqReq		= { unitNodeId, 4'b0100, tMemSeqRov};
+			tMemSeqReq		= { unitNodeId, 4'b1100, tMemSeqRov};
 
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 `ifdef jx2_enable_l1addr96

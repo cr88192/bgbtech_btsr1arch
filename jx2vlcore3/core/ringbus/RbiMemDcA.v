@@ -886,8 +886,11 @@ begin
 		tBlk2StoreDataB = tBlk2InsData[255:128];
 	end
 
-	tBlk2StoreDextA		= tReq2AxH;
-	tBlk2StoreDextB		= tReq2AxH;
+//	tBlk2StoreDextA		= tReq2AxH;
+//	tBlk2StoreDextB		= tReq2AxH;
+	tBlk2StoreDextA		= tBlk2MemDextA;
+	tBlk2StoreDextB		= tBlk2MemDextB;
+
 	tBlk2StoreAextA		= tBlk2MemAextA;
 	tBlk2StoreAextB		= tBlk2MemAextB;
 
@@ -987,6 +990,11 @@ begin
 	end
 `endif
 
+//	if(!tReqIsNz && (tMemArrInterlockA || tReg2MissInterlockA))
+//		tReqReady = 0;
+//	if(!tReqIsNz && (tMemArrInterlockB || tReg2MissInterlockB))
+//		tReqReady = 0;
+
 	if(tReqAxA[0])
 		$display("L1D$: tReqAxA Even/Odd Error");
 	if(!tReqAxB[0])
@@ -1033,6 +1041,11 @@ begin
 //	if(tBlkMemDext2B != tReqAxH)
 	if((tBlkMemDext2B != tReqAxH) && !tTlbMissInh)
 		tReqMissAddrB	= 1;
+	
+//	if(tBlkMemDext2A==UV16_FF)
+//		tReqMissAddrA	= 1;
+//	if(tBlkMemDext2B==UV16_FF)
+//		tReqMissAddrB	= 1;
 
 `ifdef jx2_mem_l1d_utlb
 	tUtlbBlkFlush	= (tUtlbBlkAddr[7:4] != tFlushRovTlb);
@@ -1136,10 +1149,10 @@ begin
 			tReqFlushAddrB	= 1;
 		end
 		
-		if(tReqIsNz && tBlkEpochDeltaA[3] && !tReqMissSkipA)
-			tReqFlushAddrA	= 1;
-		if(tReqIsNz && tBlkEpochDeltaB[3] && !tReqMissSkipB)
-			tReqFlushAddrB	= 1;
+//		if(tReqIsNz && tBlkEpochDeltaA[3] && !tReqMissSkipA)
+//			tReqFlushAddrA	= 1;
+//		if(tReqIsNz && tBlkEpochDeltaB[3] && !tReqMissSkipB)
+//			tReqFlushAddrB	= 1;
 `endif
 	end
 
@@ -1173,7 +1186,8 @@ begin
 
 //	tReqMiss	= (tReqMissA || tReqMissB) && tReqIsNz;
 	tReqMiss	= (tReqMissA || tReqMissB) &&
-		(tReqIsNz || tReqFlushAddrA || tReqFlushAddrB);
+		(tReqIsNz || tReqFlushAddrA || tReqFlushAddrB) &&
+		!(tReqIsMmio || tReqIsCcmd);
 
 	if(tReqMiss)
 		tRegOutExc[15] = 0;
@@ -1194,19 +1208,44 @@ begin
 //	tReqDoMissB	= tReqMissB;
 	tReqDoMissA	= (tReqMissA && tReqIsNz) || tReqFlushAddrA;
 	tReqDoMissB	= (tReqMissB && tReqIsNz) || tReqFlushAddrB;
+
+`ifdef def_true
+	if(tReqIsMmio || tReqIsCcmd)
+	begin
+		tReqDoMissA	= 0;
+		tReqDoMissB	= 0;
+	end
+
+	if(!tReqReady)
+//	if(tReqIsMmio || tReqIsCcmd || !tReqReady ||
+//		tReg2StoreFwA || tMemArrFwA)
+	begin
+//		if(!tReqDoMissAL)
+		if(!(tMemReqStA || tMemReqLdA))
+			tReqDoMissA	= 0;
+//		if(!tReqDoMissBL)
+		if(!(tMemReqStB || tMemReqLdB))
+			tReqDoMissB	= 0;
+	end
+`endif
 	
+
+`ifndef def_true
 	if(tReqIsMmio || tReqIsCcmd || !tReqReady)
 //	if(tReqIsMmio || tReqIsCcmd || !tReqReady ||
 //		tReg2StoreFwA || tMemArrFwA)
 	begin
-		if(!tReqDoMissAL)
+//		if(!tReqDoMissAL)
+		if(!(tMemReqStA || tMemReqLdA))
 			tReqDoMissA	= 0;
-		if(!tReqDoMissBL)
+//		if(!tReqDoMissBL)
+		if(!(tMemReqStB || tMemReqLdB))
 			tReqDoMissB	= 0;
 	end
+`endif
 	
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 
 //	if(tReqMiss || (tReqMissNoSkipL && tRegOutHoldL))
 //	if((tReqMiss && tReqReady) || (tReqMissNoSkipL && tRegOutHoldL))
@@ -1413,6 +1452,15 @@ begin
 				memAddrIn, tReqSeqIdx, tReqIxA);
 `endif
 
+		if(memAddrIn[31:5]==0)
+		begin
+			if(tReqAxH!=UV16_FF)
+			begin
+				$display("L1D$: Load Null, Non-FF");
+				$display("  A=%X AH=%X O=%X", tReqSeqVa, tReqAxH, tReqOpm);
+			end
+		end
+
 		if(tReqSeqIdx==tReqIxA)
 //		if(1'b1)
 		begin
@@ -1476,6 +1524,15 @@ begin
 		$display("L1D$: Load Response B, A=%X, Ix1/Ix2=%X/%X", 
 				memAddrIn, tReqSeqIdx, tReqIxB);
 `endif
+
+		if(memAddrIn[31:5]==0)
+		begin
+			if(tReqAxH!=UV16_FF)
+			begin
+				$display("L1D$: Load Null, Non-FF");
+				$display("  A=%X AH=%X O=%X", tReqSeqVa, tReqAxH, tReqOpm);
+			end
+		end
 
 		if(tReqSeqIdx==tReqIxB)
 //		if(1'b1)
@@ -1806,6 +1863,8 @@ begin
 //			if(tReqDoMissA && !tMemReqLdA)
 			if(tReqDoMissA && !tMemReqLdA &&
 				!(tMemReqStA && !tMemRespStA && !tReqMissAddrLoA))
+//			if(tReqDoMissA && !tMemReqLdA &&
+//				!(tMemReqStA && !tMemRespStA))
 		begin
 `ifdef jx2_debug_l1ds
 			$display("L1 D$: Send LDA Req A=%X", tReqAxA);
@@ -1847,6 +1906,8 @@ begin
 //			if(tReqDoMissB && !tMemReqLdB)
 			if(tReqDoMissB && !tMemReqLdB &&
 				!(tMemReqStB && !tMemRespStB && !tReqMissAddrLoB))
+//			if(tReqDoMissB && !tMemReqLdB &&
+//				!(tMemReqStB && !tMemRespStB))
 		begin
 `ifdef jx2_debug_l1ds
 			$display("L1 D$: Send LDB Req A=%X", tReqAxB);

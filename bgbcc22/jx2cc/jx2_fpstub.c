@@ -32,7 +32,7 @@ int BGBCC_JX2C_EmitRegIsExtGpReg(
 	if((dreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ16)
 		return(1);
 
-	if(sctx->has_xgpr)
+	if(sctx->has_xgpr&1)
 	{
 		if((dreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_R0)
 			return(1);

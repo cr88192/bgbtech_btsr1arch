@@ -211,7 +211,7 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		break;
 
 	default:
-		JX2_DBGBREAK
+//		JX2_DBGBREAK
 		break;
 	}
 	return(rv);

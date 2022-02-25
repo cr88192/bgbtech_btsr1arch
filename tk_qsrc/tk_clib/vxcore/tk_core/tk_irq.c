@@ -43,8 +43,8 @@ int TK_SetUserIrqV(int irq, void *ptr)
 	return(i);
 }
 
-extern int __arch_exsr;
-extern void *__arch_tbr;
+extern volatile int __arch_exsr;
+extern volatile void *__arch_tbr;
 
 // int __isr_interrupt(int irq)
 #ifdef __BGBCC__

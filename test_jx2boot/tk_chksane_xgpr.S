@@ -1,4 +1,5 @@
 .ifarch has_xgpr
+// .ifarch has_none
 
 // #define CHKSANE_EN_XGPR
 
@@ -78,6 +79,12 @@ X(tk_checksane_xgpr_asm):
 
 	add	64, sp
 
+	rts
+
+.else
+
+.global X(tk_checksane_xgpr_asm)
+X(tk_checksane_xgpr_asm):
 	rts
 
 .endif

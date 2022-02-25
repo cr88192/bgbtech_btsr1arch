@@ -72,6 +72,8 @@ __udivsi3:
 	mov		r16, r4
 	bsr		_fcn_clz32
 
+//	break
+
 	sub		r2, r18
 	extu.b	r18
 

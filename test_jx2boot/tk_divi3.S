@@ -174,6 +174,9 @@ __udivdi3:
 	mov		r4, r2
 //	rts
 //	or		r6, r4, r2
+
+//	break
+
 	jmp		r23
 
 .Ret_Zero:
@@ -184,6 +187,8 @@ __udivdi3:
 
 .Ret_R16:
 	mov		r16, r2
+//	break
+
 	jmp		r23
 //	mov		r23, lr
 //	rts
@@ -204,6 +209,9 @@ __sdivdi3:
 	bsr		__udivdi3
 	xor		r2, r21, r3
 	sub		r3, r21, r2
+
+//	break
+
 	jmp		r22
 //	mov		r22, lr
 //	rts

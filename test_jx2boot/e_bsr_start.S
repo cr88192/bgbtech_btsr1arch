@@ -33,6 +33,11 @@ _start:
 	mov r1, mmcr
 //	mov r1, sr
 
+	mov		sr, r2
+	shld	r2, -28, r2
+	test	3, r2
+	break?f
+
 	cpuid #1
 	test #15, r0
 	bf _iscore2
@@ -547,31 +552,47 @@ X(__setj):
 
 .global X(__va64_arg_i)
 X(__va64_arg_i):
-	mov.l @(r4, 96), r2
-	mov #64, r1
-	cmp/gt r2, r1
+//	mov.l @(r4, 96), r2
+//	mov #64, r1
+//	cmp/gt r2, r1
+	mov.l @(r4, 128), r2
+.ifarch abi_is_xgpr
+	mov #128, r3
+.else
+	mov #64, r3
+.endif
+	cmp/gt r2, r3
 	bf __va64_arg_i.L0
 	
 	mov r2, r3
 	add r4, r3
 	mov.q @r3, r6
 	add #8, r2
-	mov.l  r2, @(r4, 96)
+//	mov.l  r2, @(r4, 96)
+	mov.l  r2, @(r4, 128)
 	mov r6, r2
 	rts
 	nop
 __va64_arg_i.L0:
-	mov.q @(r4, 112), r3
+//	mov.q @(r4, 112), r3
+	mov.q @(r4, 144), r3
 	mov.l @r3+, r6
-	mov.q  r3, @(r4, 112)
+//	mov.q  r3, @(r4, 112)
+	mov.q  r3, @(r4, 144)
 	mov r6, r2
 	rts
 	nop
 
 .global X(__va64_arg_l)
 X(__va64_arg_l):
-	mov.l @(r4, 96), r2
+//	mov.l @(r4, 96), r2
+//	mov #64, r3
+	mov.l @(r4, 128), r2
+.ifarch abi_is_xgpr
+	mov #128, r3
+.else
 	mov #64, r3
+.endif
 	cmp/gt r2, r3
 	bf __va64_arg_l.L0	
 
@@ -579,25 +600,35 @@ X(__va64_arg_l):
 	add r4, r3
 	mov.q @r3, r6
 	add #8, r2
-	mov.l  r2, @(r4, 96)
+//	mov.l  r2, @(r4, 96)
+	mov.l  r2, @(r4, 128)
 	mov r6, r2
 	rts
 	nop
 __va64_arg_l.L0:
-	mov.q @(r4, 112), r3
+//	mov.q @(r4, 112), r3
+	mov.q @(r4, 144), r3
 	add #7, r3
 	and #-8, r3
 	mov.q @r3+, r6
-	mov.q  r3, @(r4, 112)
+//	mov.q  r3, @(r4, 112)
+	mov.q  r3, @(r4, 144)
 	mov r6, r2
 	rts
 	nop
 
 .global X(__va64_arg_x)
 X(__va64_arg_x):
-	mov.l @(r4, 96), r2
+//	mov.l @(r4, 96), r2
+//	mov #56, r3
+	mov.l @(r4, 128), r2
+.ifarch abi_is_xgpr
+	mov #120, r3
+.else
 	mov #56, r3
-	cmp/gt r0, r3
+.endif
+	cmp/gt r2, r3
+//	cmp/gt r0, r3
 	bf __va64_arg_x.L0
 	mov r2, r3
 	add r4, r3
@@ -605,18 +636,21 @@ X(__va64_arg_x):
 	add #8, r3
 	mov.q @r3, r7
 	add #8, r3
-	mov.l  r3, @(r4, 96)
+//	mov.l  r3, @(r4, 96)
+	mov.l  r3, @(r4, 128)
 	mov r6, r2
 	mov r7, r3
 	rts
 	nop
 __va64_arg_x.L0:
-	mov.q @(r4, 112), r3
+//	mov.q @(r4, 112), r3
+	mov.q @(r4, 144), r3
 	add #7, r3
 	and #-8, r3
 	mov.q @r3+, r6
 	mov.q @r3+, r7
-	mov.q  r3, @(r4, 112)
+//	mov.q  r3, @(r4, 112)
+	mov.q  r3, @(r4, 144)
 	mov r6, r2
 	mov r7, r3
 	rts

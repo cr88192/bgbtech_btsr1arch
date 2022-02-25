@@ -4757,7 +4757,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(sctx->has_bjx1egpr)
 			k-=16*4;		//saved R16..R31
 
-		if(sctx->has_xgpr&2)
+//		if(sctx->has_xgpr&2)
+		if(sctx->has_xgpr&1)
 			k-=32*4;		//saved R32..R64
 #endif
 	}
@@ -8597,8 +8598,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 	}
 
+	sctx->sreg_live		= 0;
+	sctx->sfreg_live	= 0;
+
 	if(	sctx->regalc_live || sctx->fregalc_live ||
 		sctx->sreg_live || sctx->sfreg_live)
+//	if(	sctx->regalc_live || sctx->fregalc_live)
 			{ BGBCC_DBGBREAK }
 
 	j=k;

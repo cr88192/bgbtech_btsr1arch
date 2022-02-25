@@ -874,7 +874,14 @@ void BJX2_Op_RTE_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 
 	if(!(ctx->regs[BJX2_REG_SPC]))
-		{ JX2_DBGBREAK }
+	{
+		ctx->status=BJX2_FLT_BADPC;
+		ctx->tr_rnxt=NULL;
+		ctx->regs[BJX2_REG_EXSR]=BJX2_FLT_BADPC;
+//		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+//		JX2_DBGBREAK
+		return;
+	}
 
 	BJX2_FaultLeaveInterrupt(ctx);
 //	ctx->regs[BJX2_REG_PC]=
@@ -882,7 +889,13 @@ void BJX2_Op_RTE_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->tr_rnxt=NULL;
 
 	if(!(ctx->regs[BJX2_REG_PC]))
-		{ JX2_DBGBREAK }
+	{
+		ctx->status=9999;
+		ctx->tr_rnxt=NULL;
+//		BJX2_ThrowFaultStatus(ctx, 0x9999);
+//		JX2_DBGBREAK
+		return;
+	}
 	
 	if((exc&0xF000)==0xA000)
 	{

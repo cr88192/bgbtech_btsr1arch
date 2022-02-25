@@ -27,7 +27,7 @@
 int TKSH_TryLoad(char *img, char **args);
 int TKSH_TryLoad_n(char *img, char **args);
 
-extern u64 __arch_gbr;
+extern volatile u64 __arch_gbr;
 
 TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);

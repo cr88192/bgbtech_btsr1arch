@@ -67,7 +67,7 @@ __asm {
 
 TK_VMem_GetPageTableEntry:
 
-	MOV		16777215, R1
+	MOV		16777215, R17
 //	BREAK
 	MOV		511, R2
 	MOV		2047, R3
@@ -82,21 +82,44 @@ TK_VMem_GetPageTableEntry:
 
 //		pde=tk_vmem_pageroot[vpt];
 	
-	MOV.Q	tk_vmem_pageroot, R3
+//	MOV.Q	tk_vmem_pageroot, R3
+	MOV		0x0000FFFFFFFFC000, R16
+	MOV		TTB, R3
+	AND		R16, R3
+
+	TEST	R3, R3
+	BREAK?T
+	
+//	BREAK
+
 	MOV.Q	(R3, R20), R7
 
-	TEST	1, R7
-	BT		.L0
-	SHLD.Q	R7, -12,  R3
-	AND		R1, R3
-	SHLD.Q	R3, 14, R3
-	MOV.Q	(R3, R21), R7
+	NOP
+	NOP
 
 	TEST	1, R7
 	BT		.L0
 	SHLD.Q	R7, -12,  R3
-	AND		R1, R3
+	AND		R17, R3
 	SHLD.Q	R3, 14, R3
+
+	TEST	R3, R3
+	BREAK?T
+
+	MOV.Q	(R3, R21), R7
+
+	NOP
+	NOP
+
+	TEST	1, R7
+	BT		.L0
+	SHLD.Q	R7, -12,  R3
+	AND		R17, R3
+	SHLD.Q	R3, 14, R3
+
+	TEST	R3, R3
+	BREAK?T
+
 	MOV.Q	(R3, R22), R2
 
 	RTS
@@ -132,7 +155,11 @@ TK_VMem_GetPageTableEntry:
 
 //		pde=tk_vmem_pageroot[vpt];
 	
-	MOV.Q	tk_vmem_pageroot, R3
+//	MOV.Q	tk_vmem_pageroot, R3
+	MOV		0x0000FFFFFFFFC000, R16
+	MOV		TTB, R3
+	AND		R16, R3
+
 	MOV.Q	(R3, R6), R7
 	
 //	XOR		R2, R2
@@ -181,7 +208,11 @@ TK_VMem_GetPageTableEntry:
 
 //		pde=tk_vmem_pageroot[vpt];
 	
-	MOV.Q	tk_vmem_pageroot, R3
+//	MOV.Q	tk_vmem_pageroot, R3
+	MOV		0x0000FFFFFFFFC000, R16
+	MOV		TTB, R3
+	AND		R16, R3
+
 	MOV.Q	(R3, R20), R7
 
 	TEST	1, R7
@@ -337,12 +368,13 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 		{
 			if(!pde)
 			{
-				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+//				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				pde=(((u64)ptpn)<<12)|1;
 				ptp[vp0]=pde;
 
-				ptp=(u64 *)(ptpn<<14);
-				memset(ptp, 0, 16384);
+//				ptp=(u64 *)(ptpn<<14);
+//				memset(ptp, 0, 16384);
 			}else
 			{
 				__debugbreak();
@@ -356,12 +388,13 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 		{
 			if(!pde)
 			{
-				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+//				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				pde=(((u64)ptpn)<<12)|1;
 				ptp[vp1]=pde;
 
-				ptp=(u64 *)(ptpn<<14);
-				memset(ptp, 0, 16384);
+//				ptp=(u64 *)(ptpn<<14);
+//				memset(ptp, 0, 16384);
 			}else
 			{
 				__debugbreak();
@@ -387,15 +420,16 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 			{
 				/* No pages here yet. */
 //				ptpn=TKMM_AllocPages(1);
-				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+//				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				tk_printf("TK_VMem_SetPageTableEntry: "
 					"AllocPage: %d %p\n",
 					ptpn, (void *)(ptpn<<16));
 				pde=(((u64)ptpn)<<12)|1;
 				tk_vmem_pageroot[vpt]=pde;
 
-				ptp=(u64 *)(ptpn<<16);
-				memset(ptp, 0, 65536);
+//				ptp=(u64 *)(ptpn<<16);
+//				memset(ptp, 0, 65536);
 //				return(0);
 			}else
 			{
@@ -426,12 +460,13 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 		{
 			if(!pde)
 			{
-				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+//				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				pde=(((u64)ptpn)<<12)|1;
 				ptp[vp0]=pde;
 
-				ptp=(u64 *)(ptpn<<12);
-				memset(ptp, 0, 4096);
+//				ptp=(u64 *)(ptpn<<12);
+//				memset(ptp, 0, 4096);
 			}else
 			{
 				__debugbreak();
@@ -445,12 +480,13 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 		{
 			if(!pde)
 			{
-				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+//				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				pde=(((u64)ptpn)<<12)|1;
 				ptp[vp1]=pde;
 
-				ptp=(u64 *)(ptpn<<12);
-				memset(ptp, 0, 4096);
+//				ptp=(u64 *)(ptpn<<12);
+//				memset(ptp, 0, 4096);
 			}else
 			{
 				__debugbreak();
@@ -464,12 +500,13 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 		{
 			if(!pde)
 			{
-				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+//				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				pde=(((u64)ptpn)<<12)|1;
 				ptp[vp2]=pde;
 
-				ptp=(u64 *)(ptpn<<12);
-				memset(ptp, 0, 4096);
+//				ptp=(u64 *)(ptpn<<12);
+//				memset(ptp, 0, 4096);
 			}else
 			{
 				__debugbreak();
@@ -506,11 +543,11 @@ int TK_VMem_AddSdSwap(s64 lba, u32 sz)
 
 #ifdef __BJX2__
 // #if 0
-extern u64 __arch_ttb;
-extern u64 __arch_tea;
-extern u64 __arch_exsr;
-extern u64 __arch_mmcr;
-extern u64 __arch_sttb;
+extern volatile u64 __arch_ttb;
+extern volatile u64 __arch_tea;
+extern volatile u64 __arch_exsr;
+extern volatile u64 __arch_mmcr;
+extern volatile u64 __arch_sttb;
 
 void tk_vmem_do_ldtlb(u64 ptel, u64 pteh);
 void tk_vmem_loadpte(u64 tva, u64 pte);
@@ -784,17 +821,7 @@ int TK_VMem_Init()
 	}
 	
 	tk_printf("TK_VMem_Init\n");
-	
-//	np=8192;
-	np=(32768<<10)>>TK_VMEM_PAGESHL;
-	tk_vmem_pagecache=TKMM_PageAlloc(np<<TK_VMEM_PAGESHL);
-	tk_vmem_npage=np;
-	
-	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
-	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
-
-	tk_printf("TK_VMem_Init: A-0\n");
-	
+		
 	for(i=0; i<64; i++)
 		tk_vmem_pagehash[i]=-1;
 
@@ -808,6 +835,18 @@ int TK_VMem_Init()
 		cpi->next=tk_vmem_lru_free;
 		tk_vmem_lru_free=i;
 	}
+
+#if 0
+	tk_printf("TK_VMem_Init: A-0\n");
+
+//	np=8192;
+	np=(32768<<10)>>TK_VMEM_PAGESHL;
+	tk_vmem_pagecache=TKMM_PageAlloc(np<<TK_VMEM_PAGESHL);
+	tk_vmem_npage=np;
+	
+	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
+	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
+#endif
 
 	tk_printf("TK_VMem_Init: A-1\n");
 
@@ -873,6 +912,21 @@ int TK_VMem_Init()
 	i=((u64)tk_vmem_usrexpage)>>TK_VMEM_PAGESHL;
 	TK_VMem_SetPageTableEntry(tva, (i<<12)|1);
 
+#if 1
+	tk_printf("TK_VMem_Init: A-4\n");
+
+//	np=8192;
+	np=(32768<<10)>>TK_VMEM_PAGESHL;
+	tk_vmem_pagecache=TKMM_PageAlloc(np<<TK_VMEM_PAGESHL);
+	tk_vmem_npage=np;
+	
+//	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
+	tk_vmem_pageinf=TKMM_PageAlloc(np*sizeof(TK_VMem_PageInfo));
+//	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
+#endif
+
+	tk_printf("TK_VMem_Init: A-5\n");
+
 	/* Enable MMU */
 
 #ifdef __BJX2__
@@ -895,7 +949,12 @@ int TK_VMem_Init()
 		tmmcr=0x000D;
 	}
 	__arch_ttb=tpte;
+//	tk_printf("");
+//	TK_VMem_GetPageTableEntry(0);
+	
 	__arch_mmcr=tmmcr;
+	
+//	__debugbreak();
 #endif
 
 	tk_printf("TK_VMem_Init: OK\n");
@@ -1608,6 +1667,10 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 	TK_VMem_VaPageInAddr(tea);
 }
 
+void tk_vmem_aclmiss(u64 ttb, u64 tea)
+{
+}
+
 __interrupt void __isr_tlbfault(void)
 // __declspec(dllexport) void isr_tlbfault_i(void)
 {
@@ -1623,6 +1686,12 @@ __interrupt void __isr_tlbfault(void)
 	if(exsr==0xA001)
 	{
 		tk_vmem_tlbmiss(ttb, tea);
+		return;
+	}
+
+	if(exsr==0xA002)
+	{
+		tk_vmem_aclmiss(ttb, tea);
 		return;
 	}
 
