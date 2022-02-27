@@ -566,6 +566,8 @@ begin
 	begin
 		if(tTlbMissInh)
 			$display("L1I$ Clear TLB Inhibit");
+//			$display("L1I$ Clear TLB Inhibit, InPc=%X InAddr=%X",
+//				regInPc, tInAddr);
 		tNxtTlbMissInh = 0;
 	end
 	
@@ -871,9 +873,11 @@ begin
 		(tBlkAddr2B[11: 0] != tReqAddrB[11: 0]) ;
 `endif
 
-	if((tBlkDext2A != tReqAxH) && !tTlbMissInh)
+//	if((tBlkDext2A != tReqAxH) && !tTlbMissInh)
+	if(tBlkDext2A != tReqAxH)
 		tMissAddrA = 1;
-	if((tBlkDext2B != tReqAxH) && !tTlbMissInh)
+//	if((tBlkDext2B != tReqAxH) && !tTlbMissInh)
+	if(tBlkDext2B != tReqAxH)
 		tMissAddrB = 1;
 
 	tMissA =
@@ -1580,11 +1584,41 @@ begin
 			$display("I$ Unhold");
 	end
 `endif
-
 end
 
-assign		tNx2IxA = tRegOutHold ? tReqIxA : tNxtIxA;
-assign		tNx2IxB = tRegOutHold ? tReqIxB : tNxtIxB;
+wire		tAdvHold;
+
+always @*
+begin
+	if(tRegOutHold && !icInPcHold)
+	begin
+		$display("L1 I$: Hold Mismatch");
+	end
+	
+	if(	tRegOutHold && tReqReady &&
+		(	(tMemReqLdA && tMemRespLdA && tMissA) ||
+			(tMemReqLdB && tMemRespLdB && tMissB) )
+	)
+	begin
+		$display("L1I$: Stuck Miss %d %d", tMissA, tMissB);
+	end
+
+	if(tTlbMissInh)
+	begin
+		$display("L1I$ TLB Inhibit, InPc=%X InAddr=%X",
+			regInPc, tInAddr);
+	end
+end
+
+// assign		tAdvHold = icInPcHold;
+// assign		tAdvHold = tRegOutHold;
+assign		tAdvHold = tRegOutHold || icInPcHold;
+
+// assign		tNx2IxA = tRegOutHold ? tReqIxA : tNxtIxA;
+// assign		tNx2IxB = tRegOutHold ? tReqIxB : tNxtIxB;
+
+assign		tNx2IxA = tAdvHold ? tReqIxA : tNxtIxA;
+assign		tNx2IxB = tAdvHold ? tReqIxB : tNxtIxB;
 
 always @(posedge clock)
 begin
@@ -1614,7 +1648,8 @@ begin
 	/* Stage A */
 `ifdef jx2_mem_l1inostall
 // `ifndef jx2_mem_l1inostall
-	if(!tRegOutHold)
+//	if(!tRegOutHold)
+	if(!tAdvHold)
 `else
 	if(1'b1)
 `endif
@@ -1627,7 +1662,7 @@ begin
 		tReqIxA			<= tNxtIxA;
 		tReqIxB			<= tNxtIxB;
 
-		tTlbMissInh		<= tNxtTlbMissInh;
+//		tTlbMissInh		<= tNxtTlbMissInh;
 		tFlushRov		<= tNxtFlushRov;
 		tAdvFlushRov	<= tNxtAdvFlushRov;
 
@@ -1641,8 +1676,10 @@ begin
 	end
 	else
 	begin
-		tTlbMissInh		<= (tTlbMissInh || tNxtTlbMissInh);
+//		tTlbMissInh		<= (tTlbMissInh || tNxtTlbMissInh);
 	end
+
+	tTlbMissInh		<= (tAdvHold ? tTlbMissInh : 0) | tNxtTlbMissInh;
 
 	tReqAddrAL	<= tReqAddrA;
 	tReqAddrBL	<= tReqAddrB;
@@ -1654,9 +1691,13 @@ begin
 	tFlushAL	<= tFlushA;
 	tFlushBL	<= tFlushB;
 
-	tMissA1L	<= tRegOutHold ? tMissA : 0;
-	tMissB1L	<= tRegOutHold ? tMissB : 0;
-	tMiss1L		<= tRegOutHold ? tMiss : 0;
+//	tMissA1L	<= tRegOutHold ? tMissA : 0;
+//	tMissB1L	<= tRegOutHold ? tMissB : 0;
+//	tMiss1L		<= tRegOutHold ? tMiss : 0;
+
+	tMissA1L	<= tAdvHold ? tMissA : 0;
+	tMissB1L	<= tAdvHold ? tMissB : 0;
+	tMiss1L		<= tAdvHold ? tMiss : 0;
 
 	tInOpm		<= tInPcOpm;
 	tInOpmB		<= tInOpm;
@@ -1678,7 +1719,8 @@ begin
 
 	if(tDoStBlkA)
 	begin
-//		$display("L1I$ DoStBlkA Ix=%X A=%X", tStBlkIxA, tStBlkAddrA);
+//		$display("L1I$ DoStBlkA Ix=%X A=%X D=%X",
+//			tStBlkIxA, tStBlkAddrA, tStBlkDataA);
 
 //		icCaMemA[tStBlkIxA]		<= { tStBlkPFlA, tStBlkPRovA, tStBlkDataA };
 //		icCaAddrA[tStBlkIxA]	<= { tStBlkFlagA, tStBlkAddrA };
@@ -1691,7 +1733,8 @@ begin
 
 	if(tDoStBlkB)
 	begin
-//		$display("L1I$ DoStBlkB Ix=%X A=%X", tStBlkIxB, tStBlkAddrB);
+//		$display("L1I$ DoStBlkB Ix=%X A=%X D=%X",
+//			tStBlkIxB, tStBlkAddrB, tStBlkDataB);
 
 //		icCaMemB[tStBlkIxB]		<= { tStBlkPFlB, tStBlkPRovB, tStBlkDataB };
 //		icCaAddrB[tStBlkIxB]	<= { tStBlkFlagB, tStBlkAddrB };
@@ -1737,6 +1780,13 @@ begin
 		tMemReqSent	<= 1;
 
 `ifdef def_true
+		tMemReqLdA	<= tAdvHold ? tNxtMemReqLdA : 0;
+		tMemReqLdB	<= tAdvHold ? tNxtMemReqLdB : 0;
+		tMemRespLdA	<= tAdvHold ? tNxtMemRespLdA : 0;
+		tMemRespLdB	<= tAdvHold ? tNxtMemRespLdB : 0;
+`endif
+
+`ifndef def_true
 //		tMemReqStA	<= tRegOutHold ? tNxtMemReqStA : 0;
 //		tMemReqStB	<= tRegOutHold ? tNxtMemReqStB : 0;
 		tMemReqLdA	<= tRegOutHold ? tNxtMemReqLdA : 0;
@@ -1767,6 +1817,13 @@ begin
 		tMemReqSent	<= 0;
 
 `ifdef def_true
+		tMemReqLdA	<= tAdvHold ? tMemReqLdA : 0;
+		tMemReqLdB	<= tAdvHold ? tMemReqLdB : 0;
+		tMemRespLdA	<= tAdvHold ? tMemRespLdA : 0;
+		tMemRespLdB	<= tAdvHold ? tMemRespLdB : 0;
+`endif
+
+`ifndef def_true
 		tMemReqLdA	<= tRegOutHold ? tMemReqLdA : 0;
 		tMemReqLdB	<= tRegOutHold ? tMemReqLdB : 0;
 		tMemRespLdA	<= tRegOutHold ? tNxtMemRespLdA : 0;

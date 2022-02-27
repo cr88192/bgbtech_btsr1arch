@@ -1983,7 +1983,9 @@ end
 always @(posedge clock)
 begin
 //	tTlbMissInh		<= tNxtTlbMissInh;
-	tTlbMissInh		<= tNxtTlbMissInh || tNxtTlbMissInh2;
+//	tTlbMissInh		<= tNxtTlbMissInh || tNxtTlbMissInh2;
+	tTlbMissInh		<= (dcInHold ? tTlbMissInh : 0) ||
+		tNxtTlbMissInh || tNxtTlbMissInh2;
 //	tVolatileInh	<= tNxtVolatileInh;
 	tVolatileIxA	<= tNxtVolatileIxA;
 	tVolatileIxB	<= tNxtVolatileIxB;

@@ -1878,6 +1878,9 @@ reg[47:0]	tValNextPcHi;
 reg[47:0]	tOpNextPc;
 reg[47:0]	tIsrNextPc;
 
+reg			tIsrBranchMsgLatch;
+reg			tNxtIsrBranchMsgLatch;
+
 reg[47:0]	tValBraPc;
 reg[47:0]	tValBraPcHi;
 reg[47:0]	tValNextBraPc;
@@ -2026,8 +2029,12 @@ begin
 
 //	tValNextBraPc	= UV32_XX;
 //	tValNextBraPc	= UV32_00;
-	tValNextBraPc	= UV48_00;
-	tValNextBraPcHi	= UV48_00;
+//	tValNextBraPc	= UV48_00;
+//	tValNextBraPcHi	= UV48_00;
+
+	tValNextBraPc	= tValBraPc;
+	tValNextBraPcHi	= tValBraPcHi;
+
 //	tValNextBraSrT	= UV16_00;
 	tValNextBraSrT	= {
 		crOutSr[15: 4],
@@ -2673,7 +2680,7 @@ begin
 
 	if(tNxtRegExc[15])
 	begin
-//		$display("tNxtRegExc %X", tNxtRegExc);
+		$display("tNxtRegExc %X PC=%X", tNxtRegExc, ifLastPc);
 	end
 
 	if(tRegExc[15])
@@ -2683,9 +2690,12 @@ begin
 //		if(!tNxtRegExc[15] && exHold2 && (tRegExc[15:12]!=4'hF))
 //		if(!tNxtRegExc[15] && exHold2)
 //		if(!tNxtRegExc[15] && (exHold2 || exHold1))
-		if(!tNxtRegExc[15] && !ifValBraOk)
+//		if(!tNxtRegExc[15] && !ifValBraOk)
+//		if(!tNxtRegExc[15] && (!ifValBraOk || exHold1 || exHold2))
+		if(!tNxtRegExc[15] && (!ifValBraOk || exHold1 || exHold2 ||
+			((ifOutPcStep==0) && (tRegExc[15:12]==4'hA))))
 		begin
-//			$display("EXC Sustain %X", tRegExc);
+			$display("EXC Sustain %X PC=%X", tRegExc, ifLastPc);
 			tNxtRegExc = tRegExc;
 		end
 	end
@@ -2693,9 +2703,12 @@ begin
 	if(tNxtRegExc[15])
 	begin
 		if(crOutSr[28] && crOutSr[29] &&
-			(tNxtRegExc[15:12]==4'hA) && ifValBraOk)
+//			(tNxtRegExc[15:12]==4'hA) && ifValBraOk)
+//			(tNxtRegExc[15:12]==4'hA) && ifValBraOk && !exHold1)
+			(tNxtRegExc[15:12]==4'hA) && ifValBraOk &&
+				!(exHold1 || exHold2 || (ifOutPcStep==0)))
 		begin
-//			$display("EXC Filter %X", tNxtRegExc);
+			$display("EXC Filter %X", tNxtRegExc);
 //			tNxtRegExc = 0;
 			tNxtRegExc[15] = 0;
 		end
@@ -2850,9 +2863,17 @@ begin
 //	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
 //	if(({1'b1, ex1RegIdCn1} == JX2_CR_PC) && !ex1PreBra)
 //	if({1'b1, ex1RegIdCn1} == JX2_CR_PC)
-	if(ex1RegIdCn1 == JX2_CR_PC)
+//	if(ex1RegIdCn1 == JX2_CR_PC)
+//	if((ex1RegIdCn1 == JX2_CR_PC) && !ex1BraFlush)
+//	if((ex1RegIdCn1 == JX2_CR_PC) && !ex1TrapFlush)
+//	if((ex1RegIdCn1 == JX2_CR_PC) && !tRegExc[15] && !ifValBraOk)
+	if((ex1RegIdCn1 == JX2_CR_PC) && !tRegExc[15] &&
+		!ifValBraOk && ((ifOutPcStep!=0) || tRegExc[15:12]==4'hF))
 	begin
-//		$display("EX1 BRA %X", ex1RegValCn1);
+//		if(crOutSr[28])
+//		begin
+//			$display("EX1 BRA %X", ex1RegValCn1);
+//		end
 //		tValNextPc = ex1RegValCn1[31:0];
 //		tValNextBraPc = ex1RegValCn1[31:0];
 		tValNextBraPc = ex1RegValCn1[47:0];
@@ -3005,7 +3026,7 @@ begin
 	begin
 		if(tRegExc[15:10]==6'b111111)
 		begin
-//			$display("ExUnit: RTE, SPC=%X", crOutSpc);
+			$display("ExUnit: RTE, SPC=%X", crOutSpc);
 			tValNextBraPc	= crOutSpc;
 			tValNextBraPcHi	= crOutSpcHi;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
@@ -3120,8 +3141,8 @@ begin
 
 				if(!crOutSr[28])
 				begin
-					$display("ISR VBR=%X PC=%X, SPC=%X",
-						crOutVbr, tValNextBraPc, crInSpc);
+					$display("ISR VBR=%X PC=%X, SPC=%X PC.b=%X",
+						crOutVbr, tValNextBraPc, crInSpc, tValBraPc);
 				end
 			end
 
@@ -3477,8 +3498,8 @@ begin
 				end
 `endif
 
-//				$display("ISR VBR=%X PC=%X, SPC=%X",
-//					crOutVbr, tValNextBraPc, crInSpc);
+				$display("ISR VBR=%X PC=%X, SPC=%X",
+					crOutVbr, tValNextBraPc, crInSpc);
 
 				if(tRegExc[15:12]==4'b1110)
 				begin
@@ -3555,11 +3576,22 @@ begin
 `endif
 
 
+// reg			tIsrBranchMsgLatch;
+// reg			tNxtIsrBranchMsgLatch;
+
+	tNxtIsrBranchMsgLatch = tIsrBranchMsgLatch;
+	if(!crOutSr[28])
+		tNxtIsrBranchMsgLatch = 0;
+
 `ifdef jx2_bra2stage
 	if(opBraFlushMask[4])
 	begin
 //		if(crOutSr[28])
-//			$display("Branch %X", tValNextBraPc);
+//		if(crOutSr[28] && !ifNxtValBraOk && !tIsrBranchMsgLatch)
+		if(crOutSr[28] && !ifValBraOk && !tIsrBranchMsgLatch)
+			$display("ISR Branch %X %X", tValNextBraPc, tValBraPc);
+		tNxtIsrBranchMsgLatch = 1;
+
 		tValNextPc		= tValBraPc;
 		tValNextPcHi	= tValBraPcHi;
 
@@ -3771,6 +3803,9 @@ begin
 	tDeadlockLatch	<= tNxtDeadlockLatch;
 	tExcLatch		<= tNxtExcLatch;
 
+	tIsrBranchMsgLatch	<= tNxtIsrBranchMsgLatch;
+
+
 `ifdef jx2_debug_hitmiss
 	tBraHitMiss		<= tBraNxtHitMiss;
 	tBraCycCnt		<= tBraNxtCycCnt;
@@ -3868,7 +3903,8 @@ begin
 	begin
 		tRegExc			<= tNxtRegExc;
 
-`ifdef jx2_bra2stage
+// `ifdef jx2_bra2stage
+`ifdef def_true
 		tValBraPc		<= tValNextBraPc;
 		tValBraPcHi		<= tValNextBraPcHi;
 		tValBraSrT		<= tValNextBraSrT;
@@ -3976,6 +4012,7 @@ begin
 		opBraFlushMask	<= nxtBraFlushMask;
 //		ifValPc			<= tValNextPc;
 		ifValBraOk		<= ifNxtValBraOk;
+//		ifValBraOk		<= ifNxtValBraOk && (ifOutPcStep!=0);
 
 
 		/* ID1 */
