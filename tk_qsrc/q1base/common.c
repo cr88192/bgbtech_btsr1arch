@@ -2005,7 +2005,8 @@ byte *COM_LoadFileSz (char *path, int usehunk, int *rlen)
 {
 	int             h;
 	byte    *buf;
-	char    base[32];
+//	char    base[32];
+	char    base[256];
 	int             len;
 
 	buf = NULL;     // quiet compiler warning
@@ -2036,7 +2037,8 @@ byte *COM_LoadFileSz (char *path, int usehunk, int *rlen)
 		tk_printf("COM_LoadFile: loadbuf=%p loadsz=%d len=%d\n",
 			loadbuf, loadsize, len);
 
-		if (len+1 > loadsize)
+//		if (len+1 > loadsize)
+		if ((len+32+1) > loadsize)
 			buf = Hunk_TempAlloc (len+32+1);
 		else
 			buf = loadbuf;

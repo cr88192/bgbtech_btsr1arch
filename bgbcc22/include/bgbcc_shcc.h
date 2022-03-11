@@ -3,6 +3,8 @@
  * Also: BJX1, BJX2, ...
  */
 
+#define BGBCC_JX2_OLDBTF
+
 /* 00-3F: GPR R00-R63, 32/64 */
 #define BGBCC_SH_REG_R0			0x00
 #define BGBCC_SH_REG_R1			0x01

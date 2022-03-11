@@ -44,7 +44,9 @@ ccxl_status BGBCC_JX2C_LoadBufferDLL(BGBCC_TransState *ctx,
 
 ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 {
+	char tb[256];
 	BGBCC_JX2_Context *shctx;
+	int i, j, k;
 
 	if(ctx->arch!=BGBCC_ARCH_BJX2)
 		return(CCXL_STATUS_ERR_UNSUPPORTED);
@@ -377,6 +379,12 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	
 	if(shctx->no_fpu)
 		BGBPP_AddStaticDefine(NULL, "__NOFPU__", "");
+
+	k=32+4;
+	if(shctx->has_xgpr&1)
+		k+=32;
+	sprintf(tb, "%d", (k*8));
+	BGBPP_AddStaticDefine(NULL, "__ARCH_SIZEOF_REGSAVE__", bgbcc_strdup(tb));
 
 	return(0);
 }

@@ -1,0 +1,106 @@
+Idea: Music format partway between a Tracker format and MIDI.
+* Will support up to 32 channels.
+
+Format will contain:
+* Instruments
+* Patterns
+* A pattern order table.
+
+Top level structure will consist of a series of tags, with the file terminated via an END tag.
+
+Top-Level Structure:
+* 0x00..0xFC: Reserved
+* 0xFD (ShortTag:BYTE) (Length:DWORD) (Data[Length-6])
+* 0xFE (ShortTag:BYTE) (Length:WORD) (Data[Length-4])
+* 0xFF, Pad Byte
+
+Tags:
+* 'I': Instrument / Sample Definition
+* 'O': Order Table
+* 'P': Pattern
+* 'Z': End Tag
+
+Order Table:
+* Array of WORD Values, Encodes which patterns to play in which order.
+* The low 12 bits will give the ID number of the pattern.
+
+
+=== Instrument ===
+
+An instrument will be defined in terms of one of several sets of properties:
+* Wave Generator Parameters
+* A PCM Waveform.
+
+Header:
+* InstrumID:WORD	//00, Instrument Number
+* HeadSz:WORD		//02, Size of this header
+* BaseFreq:WORD		//04, Base Frequency (Sample Rate ad C4)
+* Format:BYTE		//06, Sample Format
+* Volume:BYTE		//07, Base Volume
+* Flags:DWORD		//08, Flags
+* Length:DWORD		//0C, Sample Length
+* LoopStart:DWORD	//10, Start of Loop
+* LoopEnd:DWORD		//14, End of Loop
+* WaveGen:BYTE[24]	//18: Waveform Generation
+* Name:BYTE[16]		//30: Sample Name
+
+This will be followed by 1 or more tags.
+* 'D': Sample Data (Encoded according to Format)
+** 0: 8b Mono PCM
+** 1: 16b Mono PCM
+** 2: 8b Stereo PCM
+** 3: 16b Stereo PCM
+
+If Data is absent, a procedural waveform generator will be used instead.
+* The WaveGen might also be used if the target lacks PCM.
+* The WaveGen might be further limited based on hardware capability.
+
+WaveGen Bytes:
+* ( 0): Wave Function A (Primary)
+* ( 1): Wave Function B (Secondary / Modulator)
+* ( 2): Modulation Type
+* ( 3): Reserved
+* ( 4.. 8): Period A
+* ( 9..13): Period B
+* (14..18): Volume A
+* (19..23): Volume B
+
+Where:
+* Period will represent a 3.5 Minifloat.
+** This will be used as a frequency divisor from the BaseFreq.
+* The Period and Volume will be interpolated along the sample.
+
+
+
+=== Pattern ===
+
+Within the data, the pattern will start with two bytes:
+* PatternID:WORD	//Pattern ID and Size
+** Low 12 bits give ID of pattern.
+** High 4 bits give Log2 of Pattern Size (4..11)
+* This is followed by command bytes for the pattern.
+
+
+Encoded patterns will not have any particular length.
+* In general, patterns will be assumed to be variable length.
+* For pattern numbering, we may assume patterns to be a multiple of 64 rows.
+** Patterns longer than 16 may "shadow" index numbers for following patterns.
+** Patterns may also be less than 16 rows.
+
+Each pattern will be stored as a blob of byte oriented commands.
+
+Playback for a given pattern will finish as soon as the End of Pattern tag is reached (This will move on to the next pattern in the Order table).
+
+Command Format
+* zzzjjjjj: Z=Command, J=Parameter
+** 000jjjjj: Wait 1..30 Ticks
+*** 0: End Of Pattern
+*** 31: Long Delay (VLN)
+** 001jjjjj: Set Target Channel (0..31)
+** 010jjjjj: Set Instrument (0..30)
+*** 31: Escape Instrument (VLN)
+** 0110jjjj-jjjjjjjj: Note On / Set Pitch (0 == Note Off)
+** 0111nnnn-jjjjjjjj: Controller / Effect (Short Form)
+** 10jjjjjj: Set Volume (0..63)
+** 11zzzzzz-*: Longer-Form Command (not one of the above)
+

@@ -1,0 +1,49 @@
+Yet Another RISC (Hypothetical):
+* Take RISC "Just a Little too Far"
+* Omits some features common in other ISAs
+** No Dedicated branch instructions.
+** No large immediate encodings
+** No MUL, DIV, or FPU
+** ...
+
+Design:
+* R0..R63, 64-bit
+** R0: PC or ZR, Depends on Context
+** R1: LR
+** R2: GBR
+** R3: SP
+** R4..R31: Scratch Registers
+** R32..R63: Callee Save Registers
+
+Instruction Formats:
+* ppzz_zzzz_00nn_nnnn_00ss_ssss_00tt_tttt  (3R)
+* ppzz_zzzz_iinn_nnnn_iiss_ssss_iiii_iiii  (3RI)
+
+* pp00_zzzz_iinn_nnnn_iiss_ssss_iiii_iiii  Ld/St (Disp)
+** 0=LDB, 1=LDW, 2=LDL, 3=LDQ
+** 4=LDUB, 5=LDUW, 6=LDUL, 7=LDX
+** 8=STB, 9=STW, A=STL, B=STQ
+** C=-, D=-, E=-, F=STX
+* pp01_0zzz_00nn_nnnn_00ss_ssss_00tt_tttt  (ALU, 3R)
+* pp01_1zzz_iinn_nnnn_iiss_ssss_iiii_iiii  (ALU, 3RI)
+** 0=ADD, 1=SUB, 2=SHAD, 3=SHLD
+** 4=-, 5=AND, 6=OR, 7=XOR
+** 8=ADDI, 9=SUBI, A=SHADI, B=SHLDI
+** C=-, D=ANDI, E=ORI, F=XORI
+
+pp: 00=Execute Always, 01=Reserved, 10=Execute If True, 11=Execute If False
+
+
+Will define some pseudo operations:
+* BRA Disp12	-> ADDI PC, Disp12, PC
+* BSR Disp12	-> ADDI PC, Disp12, LR
+* RTS			-> ORI LR, 0, PC
+* CMPGE Rs, Rt	-> SUB Rs, Rt, ZR (Set T if (Rs-Rt)>=0)
+* TEST Rs, Rt	-> AND Rs, Rt, ZR (Set T if (Rs&Rt)==0)
+* CMPEQ Rs, Rt	-> XOR Rs, Rt, ZR (Set T if (Rs^Rt)==0)
+* MOV Rm, Rn	-> ORI Rm, 0, Rn
+* EXTUB Rm, Rn	-> ANDI Rm, 255, Rn
+* ...
+
+If a larger value is needed, it may be loaded from memory.
+

@@ -4978,6 +4978,7 @@ int BJX2_DecodeOpcode_DecFK(BJX2_Context *ctx,
 	return(0);
 }
 
+#if 0
 int BJX2_DecodeOpcode_DecF4(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
 {
@@ -5013,6 +5014,7 @@ int BJX2_DecodeOpcode_DecF4(BJX2_Context *ctx,
 	ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw1, opw2, 0);
 	return(ret);
 }
+#endif
 
 int BJX2_DecodeOpcode_DecD4(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
@@ -5023,6 +5025,24 @@ int BJX2_DecodeOpcode_DecD4(BJX2_Context *ctx,
 	op->fl|=BJX2_OPFL_TWOWORD;
 	op->opn=opw1;
 	op->opn2=opw2;
+
+	/* Pred+BRA is Equivalent to BT/BF. */
+	if(((opw1&0xFB00)==0xE000) && (opw2&0xF000)==0xC000)
+	{
+		ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw1, opw2, jbits);
+
+		if(opw1&0x0400)
+		{
+			op->nmid=BJX2_NMID_BF;
+			op->Run=BJX2_Op_BF_PcDisp;
+		}else
+		{
+			op->nmid=BJX2_NMID_BT;
+			op->Run=BJX2_Op_BT_PcDisp;
+		}
+
+		return(ret);
+	}
 
 	op1=BJX2_ContextAllocOpcode(ctx);
 	op1->pc=addr;

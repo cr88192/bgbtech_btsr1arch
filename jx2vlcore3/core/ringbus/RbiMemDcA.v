@@ -627,6 +627,8 @@ begin
 //	tNxtReqIxB[9:0] = tNxtReqAxB[9:0] ^ tNxtReqAxB[17:8];
 	tNxtReqIxA[9:0] = tNxtReqAxA[10:1] ^ tNxtReqAxA[19:10];
 	tNxtReqIxB[9:0] = tNxtReqAxB[10:1] ^ tNxtReqAxB[19:10];
+//	tNxtReqIxA[9:0] = tNxtReqAxA[10:1] ^ (tNxtReqAxA[11]?UV10_FF:UV10_00);
+//	tNxtReqIxB[9:0] = tNxtReqAxB[10:1] ^ (tNxtReqAxB[11]?UV10_FF:UV10_00);
 `endif
 
 `endif
@@ -1081,6 +1083,7 @@ begin
 	end
 
 `ifndef def_true
+// `ifdef def_true
 	if(regInMmcr[0] && tReqIsNz && !tReqIsMmio && !tReqIsCcmd)
 	begin
 		if(tReqUtlbHitAxA)
@@ -1250,6 +1253,7 @@ begin
 //	if(tReqMiss || (tReqMissNoSkipL && tRegOutHoldL))
 //	if((tReqMiss && tReqReady) || (tReqMissNoSkipL && tRegOutHoldL))
 	if((tReqMiss && tReqReady && !tReqMissL) ||
+//	if(((tReqMissA && tReqIsNz) && tReqReady && !tReqMissL) ||
 		(tReqMissNoSkipL && tRegOutHoldL))
 //	if(1'b1)
 	begin

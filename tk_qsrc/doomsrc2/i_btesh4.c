@@ -401,6 +401,13 @@ void I_SetPalette (byte* palette)
 		d_8to16table[i]=(cy<<10)|(cv<<5)|cu;
 #endif
 
+		cr+=4;
+		cg+=4;
+		cb+=4;
+		if(cr>255)cr=255;
+		if(cg>255)cg=255;
+		if(cb>255)cb=255;
+
 		d_8to16table[i]=
 			((cr<<7)&0x7C00)|
 			((cg<<2)&0x03E0)|

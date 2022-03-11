@@ -42,6 +42,7 @@ u32	tk_vmem_swap_psz;
 
 
 u64	*tk_vmem_pageroot=NULL;
+u64	*tk_vmem_aclroot=NULL;
 
 u16	*tk_vmem_usrexpage;		//User, Execute Only, Memory
 u16	*tk_vmem_usrexonly;		//User, Execute Only, Ex-Only Addr
@@ -551,6 +552,7 @@ extern volatile u64 __arch_sttb;
 
 void tk_vmem_do_ldtlb(u64 ptel, u64 pteh);
 void tk_vmem_loadpte(u64 tva, u64 pte);
+void tk_vmem_loadacl(u64 acle);
 
 void tk_vmem_l1flush();
 
@@ -610,6 +612,11 @@ tk_vmem_do_ldtlb:
 	RTS
 	NOP
 	NOP
+
+tk_vmem_loadacl:
+	MOV		R4, R0
+	LDACL
+	RTS
 
 #if (TK_VMEM_PAGESHL==14)
 tk_vmem_loadpte:
@@ -852,6 +859,9 @@ int TK_VMem_Init()
 
 	tk_vmem_pageroot=TKMM_PageAlloc(1<<TK_VMEM_PAGESHL);
 	memset(tk_vmem_pageroot, 0, 1<<TK_VMEM_PAGESHL);
+
+	tk_vmem_aclroot=TKMM_PageAlloc(1<<TK_VMEM_PAGESHL);
+	memset(tk_vmem_aclroot, 0, 1<<TK_VMEM_PAGESHL);
 
 #if 1
 //	i=(tk_vmem_swap_psz+7)/8;
@@ -1458,7 +1468,8 @@ int TK_VMem_VaFreePages(s64 vaddr, int cnt)
 
 		if(pte&1)
 		{
-			paddr=pte&0x0000FFFFFFFFF000ULL;
+//			paddr=pte&0x0000FFFFFFFFF000ULL;
+			paddr=((pte>>12)&0xFFFFFFFFFULL)<<TKMM_PAGEBITS;
 			pidx=TK_VMem_MapAddrToPhysIdx((void *)paddr);
 			if(pidx>=0)
 			{
@@ -1467,6 +1478,13 @@ int TK_VMem_VaFreePages(s64 vaddr, int cnt)
 				pte=TK_VMem_GetPageTableEntry(vtaddr);
 				if(!pte)
 					continue;
+			}else
+			{
+				/* Physical Remap */
+				k=TKMM_PointerToPage((void *)paddr);
+				TKMM_FreePages(k, 1);
+				TK_VMem_SetPageTableEntry(vtaddr, 0);
+				continue;
 			}
 		}
 
@@ -1490,6 +1508,30 @@ int TK_VMem_VaFreePages(s64 vaddr, int cnt)
 #endif
 	}
 }
+
+
+int TK_VMem_VaDoRemapPages(s64 vaddr, s64 phaddr, int cnt)
+{
+	u64 pte;
+	s64 vtaddr;
+	int phb;
+	int i, j, k;
+	
+	for(i=0; i<cnt; i++)
+	{
+		vtaddr=vaddr+(((s64)i)<<TKMM_PAGEBITS);
+		pte=TK_VMem_GetPageTableEntry(vtaddr);
+		if(!pte)
+		{
+			pte=(((pdaddr>>TKMM_PAGEBITS)+i)<<12)|
+				(0<<8)|(1<<10)|1;
+
+//			pte=(0<<8)|(1<<10);
+			TK_VMem_SetPageTableEntry(vtaddr, pte);
+		}
+	}
+}
+
 
 void TK_VMem_VaEvictPageIndex(int pidx)
 {
@@ -1663,12 +1705,77 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 	}
 #endif
 	
-	__debugbreak();
+//	__debugbreak();
 	TK_VMem_VaPageInAddr(tea);
 }
 
 void tk_vmem_aclmiss(u64 ttb, u64 tea)
 {
+	u64 *acla;
+	u64 acld, acle;
+	int acid, acix;
+	int apid;
+	int i, k;
+	
+	acid=(tea    )&0xFFFF;
+	apid=(tea>>16)&0xFFFF;
+	
+	acix=acid-0xF000;
+	if((acix<0) || (acix>=2048))
+	{
+		/* Bad, No Access */
+		acle=(u32)tea;	//No Access
+		tk_vmem_loadacl(acle);
+		return;
+	}
+	
+	acld=tk_vmem_aclroot[acix];
+	if((acld>>60)==1)
+	{
+		if(((u32)tea)==((u32)acld))
+		{
+			acle=acld&0x0000FFFFFFFFFFFFULL;
+			tk_vmem_loadacl(acle);
+			return;
+		}
+
+		acle=(u32)tea;	//No Access
+		tk_vmem_loadacl(acle);
+		return;
+	}
+
+	if((acld>>60)==0)
+	{
+		if(!acld)
+		{
+			/* NULL, No Access */
+			acle=(u32)tea;	//No Access
+			tk_vmem_loadacl(acle);
+			return;
+		}
+	
+		acla=(u64 *)acld;
+		
+		i=0;
+		while(1)
+		{
+			acle=acla[i];
+			if(!acle)
+				break;
+
+			/* Hit */
+			if(((u32)tea)==((u32)acle))
+			{
+				tk_vmem_loadacl(acle);
+				return;
+			}
+		}
+
+		/* Miss, No Access */
+		acle=(u32)tea;	//No Access
+		tk_vmem_loadacl(acle);
+		return;
+	}
 }
 
 __interrupt void __isr_tlbfault(void)

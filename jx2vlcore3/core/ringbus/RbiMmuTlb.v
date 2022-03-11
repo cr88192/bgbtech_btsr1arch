@@ -233,6 +233,8 @@ reg			tlbHitD;
 
 reg			tlbHitAX;
 reg			tlbHitCX;
+reg			tlbHitAE;
+reg			tlbHitCE;
 
 reg			tlbHitAB;
 reg			tlbHitCD;
@@ -494,7 +496,8 @@ begin
 	endcase
 `endif
 
-`ifdef jx2_tlbsz_64
+// `ifdef jx2_tlbsz_64
+`ifndef def_true
 	case({tlbMmuPg16K, tlbMmuPg64K})
 		2'b00: begin
 			tlbHixSelA={regInAddrA[15:12], regInAddrA[23:22]};
@@ -510,6 +513,24 @@ begin
 		end
 	endcase
 	tlbHixA = tlbHixSelA[5:0] ^ regInAddrA[21:16];
+`endif
+
+`ifdef jx2_tlbsz_64
+// `ifndef def_true
+	case({tlbMmuPg16K, tlbMmuPg64K})
+		2'b00: begin
+			tlbHixA={regInAddrA[15:12], regInAddrA[17:16]};
+		end
+		2'b01: begin
+			tlbHixA=regInAddrA[21:16];
+		end
+		2'b10: begin
+			tlbHixA={regInAddrA[15:14], regInAddrA[19:16]};
+		end
+		2'b11: begin
+			tlbHixA=regInAddrA[21:16];
+		end
+	endcase
 `endif
 
 `ifdef jx2_tlbsz_32
@@ -741,6 +762,8 @@ begin
 
 	tlbHitAX = tlbHitA && (tlbHdatB[1:0] == 2'b10);
 	tlbHitCX = tlbHitC && (tlbHdatD[1:0] == 2'b10);
+	tlbHitAE = (tlbHdatB[1:0] == 2'b10);
+	tlbHitCE = (tlbHdatD[1:0] == 2'b10);
 `else
 	tlbHitA = tlbHitA_Hi && tlbHitA_Mi && tlbHitA_Lo && tlbHdatA[0];
 	tlbHitB = tlbHitB_Hi && tlbHitB_Mi && tlbHitB_Lo && tlbHdatB[0];
@@ -748,6 +771,8 @@ begin
 	tlbHitD = tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo && tlbHdatD[0];
 	tlbHitAX = 0;
 	tlbHitCX = 0;
+	tlbHitAE = 0;
+	tlbHitCE = 0;
 `endif
 
 	tlbHitAB = tlbHitA || tlbHitB;
@@ -1053,6 +1078,15 @@ begin
 			begin
 				/* No Op */
 			end
+`ifdef jx2_tlb_xtlbe
+			else if(tlbHitCX || (tlbHitD && tlbHitAE))
+			begin
+				tlbLdHdatA	= tlbHdatC;
+				tlbLdHdatB	= tlbHdatD;
+				tlbLdHdatC	= tlbHdatA;
+				tlbLdHdatD	= tlbHdatB;
+				tlbDoLdtlb	= 1;
+			end
 			else if(tlbHitB)
 			begin
 				tlbLdHdatA	= tlbHdatB;
@@ -1077,6 +1111,32 @@ begin
 				tlbLdHdatD	= tlbHdatC;
 				tlbDoLdtlb	= 1;
 			end
+`else
+			else if(tlbHitB)
+			begin
+				tlbLdHdatA	= tlbHdatB;
+				tlbLdHdatB	= tlbHdatA;
+				tlbLdHdatC	= tlbHdatC;
+				tlbLdHdatD	= tlbHdatD;
+				tlbDoLdtlb	= 1;
+			end
+			else if(tlbHitC)
+			begin
+				tlbLdHdatA	= tlbHdatC;
+				tlbLdHdatB	= tlbHdatA;
+				tlbLdHdatC	= tlbHdatB;
+				tlbLdHdatD	= tlbHdatD;
+				tlbDoLdtlb	= 1;
+			end
+			else if(tlbHitD)
+			begin
+				tlbLdHdatA	= tlbHdatD;
+				tlbLdHdatB	= tlbHdatA;
+				tlbLdHdatC	= tlbHdatB;
+				tlbLdHdatD	= tlbHdatC;
+				tlbDoLdtlb	= 1;
+			end
+`endif
 		end
 `endif
 

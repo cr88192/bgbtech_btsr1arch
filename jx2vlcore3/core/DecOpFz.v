@@ -3094,15 +3094,15 @@ begin
 
 
 			16'hCzzz: begin		/* F0dd_Cddd */
-//				opNmid	= JX2_UCMD_BRA;
-				opNmid	= tBlockIsF4 ? JX2_UCMD_NOP : JX2_UCMD_BRA;
+				opNmid	= JX2_UCMD_BRA;
+//				opNmid	= tBlockIsF4 ? JX2_UCMD_NOP : JX2_UCMD_BRA;
 				opFmid	= JX2_FMID_PCDISP8;
 				opBty	= JX2_BTY_SW;
 				opIty	= JX2_ITY_SW;
 			end
 			16'hDzzz: begin		/* F0dd_Dddd */
-//				opNmid	= JX2_UCMD_BSR;
-				opNmid	= tBlockIsF4 ? JX2_UCMD_NOP : JX2_UCMD_BSR;
+				opNmid	= JX2_UCMD_BSR;
+//				opNmid	= tBlockIsF4 ? JX2_UCMD_NOP : JX2_UCMD_BSR;
 				opFmid	= JX2_FMID_PCDISP8;
 				opBty	= JX2_BTY_SW;
 				opIty	= JX2_ITY_SW;

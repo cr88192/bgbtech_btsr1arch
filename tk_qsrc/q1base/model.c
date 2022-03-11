@@ -289,7 +289,8 @@ Loads a model into the cache
 model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 {
 	unsigned *buf;
-	byte	stackbuf[1024];		// avoid dirtying the cache heap
+//	byte	stackbuf[1024];		// avoid dirtying the cache heap
+	static byte	stackbuf[2048];		// avoid dirtying the cache heap
 
 	if (mod->type == mod_alias)
 	{

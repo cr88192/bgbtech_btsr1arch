@@ -1052,6 +1052,238 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr)
 #endif
 
 
+static FILE *mlogfd=NULL;
+
+int BJX2_MemSimAddrL1Multi(BJX2_Context *ctx, bjx2_addr addr, int opm)
+{
+	int prcnt[256*2];
+	bjx2_addr t0, t1, a0, a1;
+	int ax0, ax1, ax2, ax3, ax4, ax5, ax6, ax7, ax8, ax9;
+	int ix0, ix1, miss0, miss1, miss2, miss3, miss;
+	int miss4, miss5, miss6, miss7;
+	int skip0, skip1;
+	int h, p, p0, p1, p2, shr;
+	int i, j, k, l;
+
+#if 0
+	if(addr&16)
+	{
+		a1=addr&(~15);
+		a0=a1+16;
+	}else
+	{
+		a0=addr&(~15);
+		a1=a0+16;
+	}
+#endif
+
+	ctx->mem_l1m_cnt+=2;
+
+//	for(i=0; i<16; i++)
+	for(i=0; i<48; i++)
+	{
+		l=12-(i&7);
+		shr=5+((i>>4)&3);
+		
+		if(i&8)
+			l--;
+
+		if(!ctx->mem_l1m[i])
+		{
+			ctx->mem_l1m[i]=malloc((1<<l)*8*sizeof(bjx2_addr));
+		}
+
+		j=shr-1;
+//		ax0=(a0>>j)<<j;
+//		ax1=(a1>>j)<<j;
+
+		if(addr&(1<<j))
+		{
+			ax1=addr&(~((1<<j)-1));
+			ax0=ax1+(1<<j);
+		}else
+		{
+			ax0=addr&(~((1<<j)-1));
+			ax1=ax0+(1<<j);
+		}
+
+		j=(1<<l)-1;
+		ix0=(ax0>>shr)&j;
+		ix1=(ax1>>shr)&j;
+
+		ax2=ctx->mem_l1m[i][(ix0<<3)|0];
+		ax3=ctx->mem_l1m[i][(ix1<<3)|1];
+		miss0=(ax0!=(ax2&(~15)));
+		miss1=(ax1!=(ax3&(~15)));
+
+		ax4=ctx->mem_l1m[i][(ix0<<3)|2];
+		ax5=ctx->mem_l1m[i][(ix1<<3)|3];
+		miss2=(ax0!=(ax4&(~15)));
+		miss3=(ax1!=(ax5&(~15)));
+
+		ax6=ctx->mem_l1m[i][(ix0<<3)|4];
+		ax7=ctx->mem_l1m[i][(ix1<<3)|5];
+		ax8=ctx->mem_l1m[i][(ix0<<3)|6];
+		ax9=ctx->mem_l1m[i][(ix1<<3)|7];
+		miss4=(ax0!=(ax6&(~15)));
+		miss5=(ax1!=(ax7&(~15)));
+		miss6=(ax0!=(ax8&(~15)));
+		miss7=(ax1!=(ax9&(~15)));
+
+		if(i&8)
+		{
+			miss=(miss0&miss2)|(miss1&miss3);
+		}else
+		{
+			miss=miss0||miss1;
+		}
+
+		if(miss)
+		{
+			if(miss0)
+			{
+				ctx->mem_l1m_miss[i]++;
+//				if(((ax2>>shr)&j)==((ax0>>shr)&j))
+//					ctx->mem_l1m_cmiss[i]++;
+//				else
+//					ctx->mem_l1m_umiss[i]++;
+
+				if(!(miss2&miss4&miss6))
+					ctx->mem_l1m_cmiss[i]++;
+				else
+					ctx->mem_l1m_umiss[i]++;
+
+				ctx->mem_l1m[i][(ix0<<3)|0]=ax0;
+				ctx->mem_l1m[i][(ix0<<3)|2]=ax2;
+
+				if(!miss6)
+				{
+					ctx->mem_l1m[i][(ix0<<3)|4]=ax8;
+					ctx->mem_l1m[i][(ix0<<3)|6]=ax4;
+				}else
+				{
+					ctx->mem_l1m[i][(ix0<<3)|4]=ax4;
+					ctx->mem_l1m[i][(ix0<<3)|6]=ax6;
+				}
+			}
+
+			if(miss1)
+			{
+				ctx->mem_l1m_miss[i]++;
+//				if(((ax3>>shr)&j)==((ax1>>shr)&j))
+				if(!(miss3&miss5&miss7))
+					ctx->mem_l1m_cmiss[i]++;
+				else
+					ctx->mem_l1m_umiss[i]++;
+
+				ctx->mem_l1m[i][(ix1<<3)|1]=ax1;
+				ctx->mem_l1m[i][(ix1<<3)|3]=ax3;
+
+				if(!miss7)
+				{
+					ctx->mem_l1m[i][(ix0<<3)|5]=ax9;
+					ctx->mem_l1m[i][(ix0<<3)|7]=ax5;
+				}else
+				{
+					ctx->mem_l1m[i][(ix1<<3)|5]=ax5;
+					ctx->mem_l1m[i][(ix1<<3)|7]=ax7;
+				}
+			}
+		}else if(i&8)
+		{
+			if(miss0 && !miss2)
+			{
+				ctx->mem_l1m[i][(ix0<<3)|0]=ax4;
+				ctx->mem_l1m[i][(ix0<<3)|2]=ax2;
+			}
+
+			if(miss1 && !miss3)
+			{
+				ctx->mem_l1m[i][(ix1<<3)|1]=ax5;
+				ctx->mem_l1m[i][(ix1<<3)|3]=ax3;
+			}
+		}
+	}
+	
+	if(!(ctx->mem_l1m_cnt&0xFFFFFF))
+	{
+		if(!mlogfd)
+		{
+			mlogfd=fopen("bjx2_mcachelog.txt", "wt");
+		}
+
+		for(i=0; i<256*2; i++)
+		{
+			prcnt[i]=-1;
+		}
+		
+//		for(i=0; i<8; i++)
+//		for(i=0; i<64; i++)
+		for(i=0; i<48; i++)
+		{
+			l=12-(i&7);
+			shr=5+((i>>4)&3);
+
+			p0=(100000.0*ctx->mem_l1m_miss[i])/ctx->mem_l1m_cnt;
+			p1=(100000.0*ctx->mem_l1m_cmiss[i])/ctx->mem_l1m_cnt;
+			
+//			p0=(100000.0*ctx->mem_l1m_miss[i+0])/ctx->mem_l1m_cnt;
+//			p1=(100000.0*ctx->mem_l1m_miss[i+8])/ctx->mem_l1m_cnt;
+//			p1=(100000.0*ctx->mem_l1m_umiss[i])/ctx->mem_l1m_cnt;
+
+			prcnt[((l+shr)<<4)|(((i>>3)&7)<<1)|0]=p0;
+			prcnt[((l+shr)<<4)|(((i>>3)&7)<<1)|1]=p1;
+
+			fprintf(mlogfd, "% 7d    % 3d.%03d%%   % 3d.%03d%% "
+					"(%d way, %d line)\n",
+//				(1<<(12-(i&7)))*32,
+				1<<(l+shr),
+				p0/1000, p0%1000,
+				p1/1000, p1%1000,
+				(i&8)?2:1,
+				1<<(shr-1)
+				);
+
+//			fprintf(mlogfd, "% 7d   % 2.2f%%   % 2.2f%%  (%d-way)\n",
+//				(1<<(12-(i&7)))*32,
+//				(100.0*ctx->mem_l1m_cmiss[i])/ctx->mem_l1m_cnt,
+//				(100.0*ctx->mem_l1m_umiss[i])/ctx->mem_l1m_cnt,
+//				(i&8)?2:1
+//				);
+		}
+
+		fprintf(mlogfd, "\n");
+
+		for(i=0; i<32; i++)
+		{
+			for(j=0; j<16; j++)
+				if(prcnt[(i<<4)|j]!=-1)
+					break;
+			if(j>=16)
+				continue;
+
+			for(j=0; j<6; j++)
+			{
+				p0=prcnt[(i<<4)|(j*2)|0];
+				p1=prcnt[(i<<4)|(j*2)|1];
+				if(p0<0)
+				{
+					fprintf(mlogfd, "%d,Z,Z,",
+						1<<i,p0/1000, p0%1000, p1/1000, p1%1000);
+				}else
+				{
+				fprintf(mlogfd, "%d,%d.%03d,%d.%03d,",
+					1<<i,p0/1000, p0%1000, p1/1000, p1%1000);
+				}
+			}
+			fprintf(mlogfd, "\n");
+		}
+
+		fprintf(mlogfd, "\n");
+		fflush(mlogfd);
+	}
+}
+
 
 #if 1
 int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
@@ -1082,6 +1314,8 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 
 		return(0);
 	}
+	
+//	BJX2_MemSimAddrL1Multi(ctx, addr, opm);
 	
 	a0=addr;
 	a1=a0+(1<<(opm&3));

@@ -56,7 +56,7 @@
 `define jx2_mem_l1d_fwstore			//Store Forwarding
 `define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
-// `define jx2_mem_l1d_utlb			//Micro TLB
+`define jx2_mem_l1d_utlb			//Micro TLB
 
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB

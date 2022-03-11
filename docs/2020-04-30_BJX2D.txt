@@ -1975,10 +1975,12 @@ F0zz Instruction Block:
 
 * F0dd_Cddd  BRA	(PC, disp20s)		//Branch, +/- 1MB
 * F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
-* F0dd_Eddd  BT		(PC, disp20s)		//Branch True, +/- 1MB
-* F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
+* F0dd_Eddd ? BT	(PC, disp20s)		//1, Branch True, +/- 1MB
+* F0dd_Fddd ? BF	(PC, disp20s)		//1, Branch False, +/- 1MB
 
 Branch ops may only exist in lane 1.
+
+1: These encodings are being Deprecated in favor of E0dd_Cddd and E4dd_Cddd.
 
 
 ==== F1zz Instruction Block ====
@@ -2309,14 +2311,14 @@ The W.w bit may be used to select the use of SR.S as a Predicate.
 For CMPxx ops within F2zz, W.m will select SR.S as the output bit.
 
 
-==== Jumbo Op40x2 ====
+==== Jumbo Op40x2 (Optional) ====
 
-Will define an Op40x2 Prefix (78zz_zzzz).
+Will define an Op40x2 Prefix (78ww_vvii).
 
 An Op64 Prefix may be used in a bundle:
 * Op40x2 | OpB | OpA
 Where 
-* Op40x2 will have the form: FFww_vvii
+* Op40x2 will have the form: 78ww_vvii
 * OpB will be: F4..F7, or EA/EB, EE/EF
 * OpA will be: F0..F3, or E0..E7
 Which will be decoded as-if this were a pair of Op64 instructions.
@@ -2333,6 +2335,14 @@ Within RiMOV encodings, the unpacking will differ:
 * 1xjj_iiii -> 1jjx_xxxx_iiii	//(Rm, Ro*Sc, Disp4u/0)
 
 * Namely: F0/F4 Block, Major=0/4/8, Minor=4..7, C..F
+
+
+Possible, Op40x1:
+* 78nm_ZeoZ_Ywvi
+Will be unpacked as if it were:
+* FFw0_0vxi_FYnm_ZeoZ
+Where: Y=0..3
+
 
 
 ==== Op64 RiMOV ====
@@ -2356,7 +2366,7 @@ With both an index and displacement, the displacement field will be unscaled.
 Support for non-zero displacements will be an optional extension.
 
 
-==== Jumbo Op48 ====
+==== Jumbo Op48 (Possible/Drop) ====
 
 Possible:
 Use of a jumbo prefix followed by a 16-bit instruction may be used to encode 48-bit instruction forms.
@@ -2496,7 +2506,7 @@ Map:
 Bxx.B will be a byte-aligned branch op.
 
 
-=== Op32_XGPR (Possible) ===
+=== Op32 XGPR (Optional) ===
 
 The Op32_XGPR encoding space will use an encoding space which overlaps with Op24, and is as such mutually exclusive.
 
@@ -2560,7 +2570,9 @@ WEX2 Would be based around 32-bit instructions, where:
 * F0zz..F3zz, represent the last instruction in a series.
 * F4zz..F7zz, represent an instruction which may execute in parallel.
 * F8zz/F9zz, may be used for Imm16 ops.
-* FAzz..FFzz, are not allowed in a WEX2 construct (Scalar Only).
+* FAzz/FBzz, are not allowed in a WEX2 construct (Scalar Only).
+* FCzz/FDzz, Imm16 ops, in parallel.
+* FEzz/FFzz, Jumbo Prefixes
 * E0zz..EFzz, Conditional ops are Scalar Only.
 ** With the exception of the PrWEX block (WEX only).
 

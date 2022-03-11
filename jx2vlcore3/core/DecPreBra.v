@@ -88,6 +88,10 @@ reg			tIsRtsR1;
 
 reg			tIsBraCc8;		//Conditional Branch (8-bit Disp)
 reg			tIsBraCc20;		//Conditional Branch (20-bit Disp)
+
+reg			tIsBraCcP20;	//Conditional Branch (20-bit Disp)
+reg			tIsBraCcF20;	//Conditional Branch (20-bit Disp)
+
 reg			tDoBraCc8;		//Take Conditional Branch (Cc8)
 reg			tDoBraCc20;		//Take Conditional Branch (Cc20)
 
@@ -228,13 +232,23 @@ begin
 		(istrWord[31:29]==3'b110);
 //		(istrWord[31:28]==4'b1100);
 
+	tIsBraCcP20		=
+		(istrWord[15:12]==4'hE) &&
+		((istrWord[11: 8]==4'h0) || (istrWord[11: 8]==4'h4)) &&
+		(istrWord[31:28]==4'b1100);
+//	tIsBraCcP20		= 0;
+
 	tIsBraCc8		=
 		(istrWord[15:12]==4'h2) &&
 		(istrWord[11: 9]==3'b001);
-	tIsBraCc20		=
+
+//	tIsBraCc20		=
+	tIsBraCcF20		=
 		(istrWord[15:12]==4'hF) &&
 		(istrWord[11: 8]==4'h0) &&
 		(istrWord[31:29]==3'b111);
+
+	tIsBraCc20		= tIsBraCcF20 || tIsBraCcP20;
 	
 `ifdef jx2_prebra_rts
 	tIsRtsu			=

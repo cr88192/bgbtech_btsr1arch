@@ -922,6 +922,13 @@ u64		hw_rng[4];
 
 u64		krr_key[2];
 
+// bjx2_addr	mem_l1m[16][16384];	//L1 addr (Multi)
+bjx2_addr	*mem_l1m[64];
+s64			mem_l1m_miss[64];
+s64			mem_l1m_cmiss[64];
+s64			mem_l1m_umiss[64];
+s64			mem_l1m_cnt;
+
 bjx2_addr mem_l1h4k[4096];		//L1 addr (4kB)
 // bjx2_addr mem_l2h32k[8192];	//L2 addr (32/64kB)
 bjx2_addr mem_l2h32k[16384];	//L2 addr (32/64kB)

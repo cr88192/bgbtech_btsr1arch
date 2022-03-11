@@ -1604,6 +1604,7 @@ void R_InitColormaps (void)
 	byte *tbuf;
 	lighttable_t *tcol;
 	int	lump, length, blen, hdl, lump1, hdl1;
+	int cr, cg, cb;
 	int i, j, k, l, n;
 
 	pal = W_CacheLumpName ("PLAYPAL", PU_CACHE);
@@ -1674,6 +1675,33 @@ void R_InitColormaps (void)
 			j = 255;
 		cmap_luma[i] = j;
 	}
+
+#if 1
+//	for(i=0; i<64; i++)
+	for(i=0; i<32; i++)
+	{
+		l=cmap_luma[i];
+		for(j=0; j<256; j++)
+		{
+			k=colormaps[j];
+			cr=(k>>10)&31;
+			cg=(k>> 5)&31;
+			cb=(k>> 0)&31;
+			
+			cr=(cr*l+127)>>8;
+			cg=(cg*l+127)>>8;
+			cb=(cb*l+127)>>8;
+			if(cr>31)cr=31;
+			if(cg>31)cg=31;
+			if(cb>31)cb=31;
+			
+			k=(cr<<10)|(cg<<5)|cb;
+			colormaps[i*256+j] = k;
+			
+//			colormaps[i] = d_8to16table[tbuf[i]];
+		}
+	}
+#endif
 
 	lump = W_GetNumForNameBase(lump, "COLORMAP"); 
 	while(lump>0)
