@@ -1604,7 +1604,7 @@ void R_InitColormaps (void)
 	byte *tbuf;
 	lighttable_t *tcol;
 	int	lump, length, blen, hdl, lump1, hdl1;
-	int cr, cg, cb;
+	int cr, cg, cb, cr2, cg2, cb2, dr, dg, db;
 	int i, j, k, l, n;
 
 	pal = W_CacheLumpName ("PLAYPAL", PU_CACHE);
@@ -1687,14 +1687,38 @@ void R_InitColormaps (void)
 			cr=(k>>10)&31;
 			cg=(k>> 5)&31;
 			cb=(k>> 0)&31;
-			
+
 			cr=(cr*l+127)>>8;
 			cg=(cg*l+127)>>8;
 			cb=(cb*l+127)>>8;
 			if(cr>31)cr=31;
 			if(cg>31)cg=31;
 			if(cb>31)cb=31;
+
+			k=colormaps[i*256+j];
+			cr2=(k>>10)&31;
+			cg2=(k>> 5)&31;
+			cb2=(k>> 0)&31;
 			
+			dr=cr2-cr;
+			dg=cg2-cg;
+			db=cb2-cb;
+			dr=dr^(dr>>31);
+			dg=dg^(dg>>31);
+			db=db^(db>>31);
+			k=dr+dg+db;
+			if(k>12)
+			{
+				cr=cr2;
+				cg=cg2;
+				cb=cb2;
+			}else
+			{
+//				cr=(cr+cr2)>>1;
+//				cg=(cg+cg2)>>1;
+//				cb=(cb+cb2)>>1;
+			}
+						
 			k=(cr<<10)|(cg<<5)|cb;
 			colormaps[i*256+j] = k;
 			

@@ -1523,7 +1523,7 @@ int TK_VMem_VaDoRemapPages(s64 vaddr, s64 phaddr, int cnt)
 		pte=TK_VMem_GetPageTableEntry(vtaddr);
 		if(!pte)
 		{
-			pte=(((pdaddr>>TKMM_PAGEBITS)+i)<<12)|
+			pte=(((phaddr>>TKMM_PAGEBITS)+i)<<12)|
 				(0<<8)|(1<<10)|1;
 
 //			pte=(0<<8)|(1<<10);
