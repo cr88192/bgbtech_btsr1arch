@@ -647,6 +647,12 @@ BCCX_Node *struct_hash[256];
 BCCX_Node *type_hash[1024];
 #endif
 
+int n_enum_vars;
+char *enum_names[4096];
+int enum_vals[4096];
+int enum_chain[4096];
+int enum_hash[256];
+
 BCCX_Node *reduce_tmp;
 
 char *cur_ns;

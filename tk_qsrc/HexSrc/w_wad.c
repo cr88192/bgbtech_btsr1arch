@@ -1041,7 +1041,7 @@ W_DecodeBufferRP2:
 	MOV.Q	R16, (R19, 0)
 	MOV.Q	R17, (R19, 8)
 	ADD		16, R19
-	CMPGT	R19, R7
+	CMPQGT	R19, R7
 	BT		.L5_0
 	MOV		R6, R18		|	MOV		R7, R19
 	BRA		.L0
@@ -1091,7 +1091,7 @@ W_DecodeBufferRP2:
 	MOV.Q	R16, (R19, 0)
 	MOV.Q	R17, (R19, 8)
 	ADD		R22, R19
-	CMPGT	R19, R7
+	CMPQGT	R19, R7
 	BT		.L12
 	BRA		.L10
 .L11:
@@ -1101,7 +1101,7 @@ W_DecodeBufferRP2:
 	MOV.Q	R16, (R19, 0)
 	MOV.Q	R17, (R19, 8)
 	ADD		16, R19
-	CMPGT	R19, R7
+	CMPQGT	R19, R7
 	BT		.L11
 .L10:
 	MOV		R7, R19

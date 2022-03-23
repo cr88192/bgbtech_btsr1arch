@@ -743,7 +743,11 @@ u32 TK_GetTimeMs(void)
 	u64 us;
 	int ms;
 
+#ifdef __ADDR_X48__
+	sreg=(u64 *)0xFFFFF000E000ULL;
+#else
 	sreg=(u64 *)0xF000E000UL;
+#endif
 	us=sreg[0];
 //	us=(us*131)>>7;		//correct for (us>>10) vs us/1000.
 	us=(us*2097)>>11;	//correct for (us>>10) vs us/1000.
@@ -757,8 +761,12 @@ u32 TK_GetTimeMs(void)
 	u64 us;
 	int ms;
 
+#ifdef __ADDR_X48__
+	sreg=(int *)0xFFFFF000E000ULL;
+#else
 //	sreg=(int *)0xA000E000;
 	sreg=(int *)0xF000E000UL;
+#endif
 	us_lo=sreg[0];
 	us_hi=sreg[1];
 	us=(((u64)us_hi)<<32)|us_lo;
@@ -780,7 +788,11 @@ s64 TK_GetTimeUs(void)
 	u64 us;
 	int ms;
 
+#ifdef __ADDR_X48__
+	sreg=(u64 *)0xFFFFF000E000ULL;
+#else
 	sreg=(u64 *)0xF000E000UL;
+#endif
 	us=sreg[0];
 	return(us);
 #endif
@@ -791,8 +803,12 @@ s64 TK_GetTimeUs(void)
 	u64 us;
 	int ms;
 
+#ifdef __ADDR_X48__
+	sreg=(u64 *)0xFFFFF000E000ULL;
+#else
 //	sreg=(int *)0xA000E000;
 	sreg=(int *)0xF000E000;
+#endif
 	us_lo=sreg[0];
 	us_hi=sreg[1];
 	us=(((u64)us_hi)<<32)|us_lo;
@@ -813,8 +829,12 @@ s64 TK_GetTimeCycles(void)
 	u64 us;
 	int ms;
 
+#ifdef __ADDR_X48__
+	sreg=(u32 *)0xFFFFF000E340ULL;
+#else
 //	sreg=(int *)0xA000E340;
 	sreg=(int *)0xF000E340;
+#endif
 	us_lo=sreg[0];
 	us_hi=sreg[1];
 	us=(((u64)us_hi)<<32)|us_lo;

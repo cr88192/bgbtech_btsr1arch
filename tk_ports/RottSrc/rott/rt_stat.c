@@ -1287,8 +1287,8 @@ void SpawnStatic (int tilex, int tiley, int mtype, int zoffset)
 		temp->whichstat = statcount ++;
 		temp->tilex = tilex;
 		temp->tiley = tiley;
-		temp->x = ((long)tilex << TILESHIFT) + 0x8000;
-		temp->y = ((long)tiley << TILESHIFT) + 0x8000;
+		temp->x = ((int)tilex << TILESHIFT) + 0x8000;
+		temp->y = ((int)tiley << TILESHIFT) + 0x8000;
 		area = MAPSPOT(tilex,tiley,0)-AREATILE;
 
 		if((area<0) || (area>NUMAREAS))		//BGB: debug

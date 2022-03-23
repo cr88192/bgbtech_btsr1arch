@@ -137,6 +137,7 @@ BCCX_Node *BGBCP_DefClassJ(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_DefType(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_DefExpectType(BGBCP_ParseState *ctx, char **str);
+s64 BGBCP_CheckNameEnum(BGBCP_ParseState *ctx, char *name);
 BCCX_Node *BGBCP_EnumVarsList(BGBCP_ParseState *ctx, char **str);
 //AHSRC:cparse/cparse_def.c
 BCCX_Node *BGBCP_DummyVar(BGBCP_ParseState *ctx, BCCX_Node *tn);

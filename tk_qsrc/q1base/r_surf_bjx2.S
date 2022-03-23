@@ -21,11 +21,11 @@ X(R_DrawSurfaceBlock16_mip0A):
 
 	MOV.L	X(r_numvblocks), R16
 
-	MOV.L	X(r_vid_colormap16), R18
-	MOV.L	X(pbasesource), R19
-	MOV.L	X(prowdestbase), R20
+	MOV.P	X(r_vid_colormap16), R18
+	MOV.P	X(pbasesource), R19
+	MOV.P	X(prowdestbase), R20
 
-	MOV.L	X(r_lightptr), R22
+	MOV.P	X(r_lightptr), R22
 	MOV.L	X(r_lightwidth), R23
 
 	MOV.L	X(sourcetstep), R8
@@ -156,11 +156,11 @@ X(R_DrawSurfaceBlock16_mip1A):
 
 	MOV.L	X(r_numvblocks), R16
 
-	MOV.L	X(r_vid_colormap16), R18
-	MOV.L	X(pbasesource), R19
-	MOV.L	X(prowdestbase), R20
+	MOV.P	X(r_vid_colormap16), R18
+	MOV.P	X(pbasesource), R19
+	MOV.P	X(prowdestbase), R20
 
-	MOV.L	X(r_lightptr), R22
+	MOV.P	X(r_lightptr), R22
 	MOV.L	X(r_lightwidth), R23
 
 	MOV.L	X(sourcetstep), R8
@@ -301,11 +301,11 @@ X(R_DrawSurfaceBlock16_mip2A):
 
 	MOV.L	X(r_numvblocks), R16
 
-	MOV.L	X(r_vid_colormap16), R18
-	MOV.L	X(pbasesource), R19
-	MOV.L	X(prowdestbase), R20
+	MOV.P	X(r_vid_colormap16), R18
+	MOV.P	X(pbasesource), R19
+	MOV.P	X(prowdestbase), R20
 
-	MOV.L	X(r_lightptr), R22
+	MOV.P	X(r_lightptr), R22
 	MOV.L	X(r_lightwidth), R23
 
 	MOV.L	X(sourcetstep), R8
@@ -386,11 +386,11 @@ X(R_DrawSurfaceBlock16_mip3A):
 
 	MOV.L	X(r_numvblocks), R16
 
-	MOV.L	X(r_vid_colormap16), R18
-	MOV.L	X(pbasesource), R19
-	MOV.L	X(prowdestbase), R20
+	MOV.P	X(r_vid_colormap16), R18
+	MOV.P	X(pbasesource), R19
+	MOV.P	X(prowdestbase), R20
 
-	MOV.L	X(r_lightptr), R22
+	MOV.P	X(r_lightptr), R22
 	MOV.L	X(r_lightwidth), R23
 
 	MOV.L	X(sourcetstep), R8
@@ -549,7 +549,7 @@ X(D_DrawSpans16_InnerPx2):
 	ADDS.L	R6, #-2, R6		| ADDS.L	R2, R18, R19
 	ADDS.L	R21, R23, R21	| MOVU.W	(R4, R19), R16
 	MOV.W	R16, (R5, 2)
-	ADDS.L	R5, #4, R5		| CMP/GE	#2, R6
+	ADD		R5, #4, R5		| CMP/GE	#2, R6
 	BT .L0
 	.L1:
 	TEST R6, R6
@@ -647,7 +647,7 @@ X(D_DrawZSpans_Inner):
 	OR		R3, R2
 
 	ADDS.L	#-4, R7			| MOV.Q		R2, (R4)
-	ADDU.L	#8, R4			| CMP/GE	#4, R7
+	ADD		#8, R4			| CMP/GE	#4, R7
 	BT		.L2
 	.L3:
 #endif
@@ -686,7 +686,7 @@ X(D_DrawZSpans_InnerLo):
 	MOV.Q	R2, (R4, 0)
 	MOV.Q	R2, (R4, 8)
 
-	ADDU.L	#16, R4			| CMP/GE	#8, R7
+	ADD		#16, R4			| CMP/GE	#8, R7
 	BT		.L2
 	.L3:
 #endif

@@ -173,8 +173,8 @@ void TKMM_MMList_MProtectCat(byte *ptr, int sz, int cat)
 	{
 		if(tk_iskernel())
 		{
-//			TK_VMem_MProtectPages((u64)ptr, sz,
-//				TKMM_PROT_NOUSER|TKMM_PROT_READ|TKMM_PROT_WRITE);
+			TK_VMem_MProtectPages((u64)ptr, sz,
+				TKMM_PROT_NOUSER|TKMM_PROT_READ|TKMM_PROT_WRITE);
 		}else
 		{
 //			tk_mprotect((u64)ptr, sz,
@@ -231,7 +231,10 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 
 	if(sz>=TKMM_MAXMMLISTSZ)
 	{
-		ptr=TKMM_PageAlloc(sz);
+		if((cat==0) || (cat==4))
+			ptr=TKMM_PageAllocUsc(sz);
+		else
+			ptr=TKMM_PageAlloc(sz);
 
 		if(!ptr)
 		{
@@ -261,7 +264,11 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 	if(!(tkmm_mmlist_brkbuf_c[cat]))
 	{
 		tk_puts("TKMM_MMList_AllocBrk C\n");
-		tkmm_mmlist_brkbuf_c[cat]=TKMM_PageAlloc(1<<TKMM_BRKBITS);
+		if((cat==0) || (cat==4))
+			ptr=TKMM_PageAllocUsc(1<<TKMM_BRKBITS);
+		else
+			ptr=TKMM_PageAlloc(1<<TKMM_BRKBITS);
+		tkmm_mmlist_brkbuf_c[cat]=ptr;
 
 		if(!(tkmm_mmlist_brkbuf_c[cat]))
 		{
@@ -274,6 +281,8 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 			1<<TKMM_BRKBITS,
 			cat);
 		
+		memset(ptr, 0, 1<<TKMM_BRKBITS);
+
 		tkmm_mmlist_brkend_c[cat]=tkmm_mmlist_brkbuf_c[cat]+(1<<TKMM_BRKBITS);
 
 		seg=(TKMM_MemLnkSeg *)(tkmm_mmlist_brkbuf_c[cat]);
@@ -752,13 +761,19 @@ void *tk_malloc_cat(int sz, int cat)
 #endif
 }
 
+void *tk_malloc_krn(int sz)
+{
+	return(TKMM_MallocCat(sz, 2));
+}
+
 void *tk_malloc_wxe(int sz)
 {
 //	if(!TKMM_PageAlloc_f)
 //		__debugbreak();
 
 //	return(TKMM_MMList_Malloc(sz));
-	return(TKMM_Malloc(sz));
+//	return(TKMM_Malloc(sz));
+	return(TKMM_MallocCat(sz, 4));
 }
 
 int tk_free(void *ptr)

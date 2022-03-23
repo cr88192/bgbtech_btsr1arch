@@ -137,7 +137,7 @@ TKPE_UnpackL6:
 	MOV.Q	R16, (R20, 0)
 	MOV.Q	R17, (R20, 8)
 	ADD		16, R20
-	CMPGT	R21, R22
+	CMPQGT	R21, R22
 	BT		.L1
 #endif
 
@@ -147,7 +147,7 @@ TKPE_UnpackL6:
 	ADD		8, R21
 	MOV.Q	R16, (R20, 0)
 	ADD		8, R20
-	CMPGT	R21, R22
+	CMPQGT	R21, R22
 	BT		.L1
 #endif
 
@@ -157,7 +157,7 @@ TKPE_UnpackL6:
 	MOV.B	R16, (R20)
 	ADD		1, R21
 	ADD		1, R20
-	CMPGT	R21, R22
+	CMPQGT	R21, R22
 	BT		.L1
 #endif
 
@@ -167,7 +167,7 @@ TKPE_UnpackL6:
 	ADD		2, R5
 
 	/* Hit end of buffer yet? */
-	CMPGT	R23, R7
+	CMPQGT	R23, R7
 	BF		.Done
 	CMPEQ	15, R19
 	ADD?T	1, R5
@@ -182,7 +182,7 @@ TKPE_UnpackL6:
 	BRA		.Done
 
 	.Cont:
-	CMPGT	R5, R7
+	CMPQGT	R5, R7
 	BT		.L0
 
 	.Done:
@@ -212,7 +212,7 @@ TKPE_UnpackL6:
 	MOV.Q	R16, (R20, 0)
 	MOV.Q	R17, (R20, 8)
 	ADD		16, R20
-	CMPGT	R20, R22
+	CMPQGT	R20, R22
 	BT		.CopyL1
 	BRA		.Cont
 #endif
@@ -225,7 +225,7 @@ TKPE_UnpackL6:
 	MOV.Q	R17, (R20, 8)
 	ADD		16, R21
 	ADD		16, R20
-	CMPGT	R20, R22
+	CMPQGT	R20, R22
 	BT		.CopyL1S
 	BRA		.Cont
 #endif
@@ -236,7 +236,7 @@ TKPE_UnpackL6:
 	ADD		1, R21
 	MOV.B	R16, (R20)
 	ADD		1, R20
-	CMPGT	R20, R22
+	CMPQGT	R20, R22
 	BT		.CopyL1B
 	BRA		.Cont
 #endif
@@ -259,7 +259,7 @@ TKPE_UnpackL6:
 	.CopyRLE_L1:
 	MOV.Q	R16, (R20, 0)
 	ADD		R18, R20
-	CMPGT	R20, R22
+	CMPQGT	R20, R22
 	BT		.CopyRLE_L1
 	BRA		.Cont
 #endif
@@ -270,7 +270,7 @@ TKPE_UnpackL6:
 	ADD		1, R21
 	MOV.B	R16, (R20, 0)
 	ADD		1, R20
-	CMPGT	R20, R22
+	CMPQGT	R20, R22
 	BT		.CopyRLE_L1
 	BRA		.Cont
 #endif
@@ -305,7 +305,7 @@ TKPE_UnpackL6:
 	MOV.Q	R16, (R20, 0)
 	MOV.Q	R16, (R20, 8)
 	ADD		16, R20
-	CMPGT	R20, R22
+	CMPQGT	R20, R22
 	BT		.CopyRLEN_L1
 	BRA		.Cont
 };
@@ -486,7 +486,7 @@ TKPE_DecodeBufferRP2:
 	MOV.Q	R16, (R19, 0)
 	MOV.Q	R17, (R19, 8)
 	ADD		16, R19
-	CMPGT	R19, R7
+	CMPQGT	R19, R7
 	BT		.L5_0
 	MOV		R6, R18		|	MOV		R7, R19
 	BRA		.L0
@@ -522,13 +522,16 @@ TKPE_DecodeBufferRP2:
 	SHLD	R20, 3, R20
 	BRA		.L5_1
 .L9:
+	TEST	R22, R22
+	BREAK?T
+
 	MOV.Q	(R18), R16
 	ADD		R20, R18
 	MOV.Q	R16, (R19)
 	ADD		R20, R19
 	SUB		R19, R22, R6
 	ADD		R19, R21, R7
-	CMPGT	15, R22
+	CMPQGT	15, R22
 	BT		.L11
 	MOV.Q	(R6, 0), R16
 	MOV.Q	(R6, 8), R17
@@ -536,7 +539,7 @@ TKPE_DecodeBufferRP2:
 	MOV.Q	R16, (R19, 0)
 	MOV.Q	R17, (R19, 8)
 	ADD		R22, R19
-	CMPGT	R19, R7
+	CMPQGT	R19, R7
 	BT		.L12
 	BRA		.L10
 .L11:
@@ -546,7 +549,7 @@ TKPE_DecodeBufferRP2:
 	MOV.Q	R16, (R19, 0)
 	MOV.Q	R17, (R19, 8)
 	ADD		16, R19
-	CMPGT	R19, R7
+	CMPQGT	R19, R7
 	BT		.L11
 .L10:
 	MOV		R7, R19
@@ -631,7 +634,7 @@ TKPE_CalculateImagePel4BChecksum:
 	ADD		R18, R17, R19	|	ADD		R21, R18, R16
 	ADD		R16, R19, R17	|	ADD		R22, R16, R18
 	ADD		R18, R17, R19	|	ADD		R23, R18, R16
-	ADD		R16, R19, R17	|	CMPGT	R4, R6
+	ADD		R16, R19, R17	|	CMPQGT	R4, R6
 								BT		.L0
 #endif
 
@@ -641,7 +644,7 @@ TKPE_CalculateImagePel4BChecksum:
 	ADD		R7, R16
 	ADD		R16, R17
 	ADD		4, R4
-	CMPGT	R4, R6
+	CMPQGT	R4, R6
 	BT		.L0
 #endif
 

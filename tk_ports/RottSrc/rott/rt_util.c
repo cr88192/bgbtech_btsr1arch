@@ -258,15 +258,18 @@ void FindEGAColors ( void )
 byte BestColor (int r, int g, int b, byte *palette)
 {
 	int	i;
-	long	dr, dg, db;
-	long	bestdistortion, distortion;
-	int	bestcolor;
+	int		dr, dg, db;
+	int		bestdistortion, distortion;
+	int		bestcolor;
 	byte	*pal;
 
 //
 // let any color go to 0 as a last resort
 //
-	bestdistortion = ( (long)WeightR*r*r + (long)WeightG*g*g + (long)WeightB*b*b )*2;
+	bestdistortion = (
+		(int)WeightR*r*r +
+		(int)WeightG*g*g +
+		(int)WeightB*b*b )*2;
 	bestcolor = 0;
 
 	pal = &palette[0];
@@ -680,9 +683,9 @@ int SafeOpenRead (char *filename)
 }
 
 
-void SafeRead (int handle, void *buffer, long count)
+void SafeRead (int handle, void *buffer, int count)
 {
-	unsigned	iocount;
+	unsigned int iocount;
 
 	while (count)
 	{
@@ -695,9 +698,9 @@ void SafeRead (int handle, void *buffer, long count)
 }
 
 
-void SafeWrite (int handle, void *buffer, long count)
+void SafeWrite (int handle, void *buffer, int count)
 {
-	unsigned	iocount;
+	unsigned int iocount;
 
 	while (count)
 	{
@@ -711,14 +714,14 @@ void SafeWrite (int handle, void *buffer, long count)
 
 void SafeWriteString (int handle, char * buffer)
 {
-	unsigned	iocount;
+	unsigned int iocount;
 
 	iocount=strlen(buffer);
 	if (w_write (handle,buffer,iocount) != iocount)
 			Error ("File write string failure writing %s\n",buffer);
 }
 
-void *SafeMalloc (long size)
+void *SafeMalloc (int size)
 {
 	void *ptr;
 
@@ -734,7 +737,7 @@ void *SafeMalloc (long size)
 	return ptr;
 }
 
-void *SafeLevelMalloc (long size)
+void *SafeLevelMalloc (int size)
 {
 	void *ptr;
 
@@ -766,10 +769,10 @@ void SafeFree (void * ptr)
 ==============
 */
 
-long	LoadFile (char *filename, void **bufferptr)
+int LoadFile (char *filename, void **bufferptr)
 {
 	int		handle;
-	long	length;
+	int		length;
 
 	handle = SafeOpenRead (filename);
 	length = w_filelength (handle);
@@ -788,7 +791,7 @@ long	LoadFile (char *filename, void **bufferptr)
 ==============
 */
 
-void	SaveFile (char *filename, void *buffer, long count)
+void	SaveFile (char *filename, void *buffer, int count)
 {
 	int		handle;
 
@@ -798,26 +801,29 @@ void	SaveFile (char *filename, void *buffer, long count)
 }
 
 
-void GetPathFromEnvironment( char *fullname, const char *envname, const char *filename )
-	{
+void GetPathFromEnvironment(
+	char *fullname,
+	const char *envname,
+	const char *filename )
+{
 	char *path;
 
 	path = getenv( envname );
 
 	if ( path != NULL )
-		{
+	{
 		strcpy( fullname, path );
 		if ( fullname[ strlen( fullname ) ] != '\\' )
-			{
-			strcat( fullname, "\\" );
-			}
-		strcat( fullname, filename );
-		}
-	else
 		{
-		strcpy( fullname, filename );
+			strcat( fullname, "\\" );
 		}
+		strcat( fullname, filename );
 	}
+	else
+	{
+		strcpy( fullname, filename );
+	}
+}
 
 void DefaultExtension (char *path, char *extension)
 {
@@ -939,7 +945,7 @@ short	IntelShort (short l)
 }
 
 
-long	MotoLong (long l)
+int MotoLong (int l)
 {
 	byte	b1,b2,b3,b4;
 
@@ -948,10 +954,10 @@ long	MotoLong (long l)
 	b3 = (l>>16)&255;
 	b4 = (l>>24)&255;
 
-	return ((long)b1<<24) + ((long)b2<<16) + ((long)b3<<8) + b4;
+	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
 }
 
-long	IntelLong (long l)
+int	IntelLong (int l)
 {
 	return l;
 }

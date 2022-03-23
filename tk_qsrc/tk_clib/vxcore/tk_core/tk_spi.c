@@ -383,7 +383,7 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 {
 	byte *ct;
 	u64 la;
-	int n, h;
+	int n, h, xt;
 
 //	if(((s32)lba)!=lba)
 	if(lba>>32)
@@ -419,9 +419,13 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 #endif
 
 #if 1
+	xt=buf[0]+buf[(cnt<<9)-1];	//Make sure it is paged in.
+
 	ct=buf; la=lba; n=cnt;
 	while(n>0)
 	{
+		xt+=ct[0]+ct[511];	//Make sure it is paged in.
+
 		h=la>>32;
 		if(h)TKSPI_SendCmd(MMC_CMD55, h);
 		TKSPI_SendCmd(MMC_CMD17, la);
@@ -436,7 +440,7 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 {
 	byte *ct;
 	u64 la;
-	int n, h;
+	int n, h, xt;
 
 //	if(((s32)lba)!=lba)
 	if(lba>>32)
@@ -444,10 +448,14 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 	
 	if(cnt!=(cnt&255))
 		__debugbreak();
-	
+
+	xt=buf[0]+buf[(cnt<<9)-1];	//Make sure it is paged in.
+
 	ct=buf; la=lba; n=cnt;
 	while(n>0)
 	{
+		xt+=ct[0]+ct[511];	//Make sure it is paged in.
+
 		h=la>>32;
 		if(h)TKSPI_SendCmd(MMC_CMD55, h);
 		TKSPI_SendCmd(MMC_CMD24, la);

@@ -500,7 +500,7 @@ void SNDDMA_Submit(void)
 	
 //	snd_dmabuf=(u32 *)0xA0080000;
 //	snd_dmabuf=(u32 *)0xF0080000;
-	snd_dmabuf=(u32 *)0xF0090000;
+	snd_dmabuf=(u32 *)0xFFFFF0090000ULL;
 
 	b=olddma;
 	n=dma-b;
@@ -530,7 +530,7 @@ void SNDDMA_Submit(void)
 //	((u32 *)0xF009F000)[0]=0x002B;
 //	((u32 *)0xF009F000)[0]=0x002A;
 //	((u32 *)0xF009F000)[0]=0x0028;
-	((u32 *)0xF009F000)[0]=0x0029;
+	((u32 *)0xFFFFF009F000ULL)[0]=0x0029;
 //	for(i=0; i<n; i+=2)
 //	for(i=0; i<n; i+=4)
 	for(i=0; i<n1; i+=4)

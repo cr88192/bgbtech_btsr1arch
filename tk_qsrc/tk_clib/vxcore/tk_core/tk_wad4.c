@@ -18,7 +18,7 @@ TK_WadZBlock *TK_Wad4_ZAllocBlock()
 		return(tmp);
 	}
 	
-	tmp=tk_malloc(sizeof(TK_WadZBlock));
+	tmp=tk_malloc_krn(sizeof(TK_WadZBlock));
 	return(tmp);
 }
 
@@ -57,7 +57,7 @@ void *TK_Wad4_ZMalloc(int sz, int tag, void **user)
 	void *ptr, *ptr1;
 
 	blk=TK_Wad4_ZAllocBlock();
-	ptr=tk_malloc(sz+sizeof(void *));
+	ptr=tk_malloc_krn(sz+sizeof(void *));
 	blk->data=ptr;
 	blk->size=sz;
 	blk->user=user;
@@ -141,7 +141,7 @@ TK_WadImage *TK_Wad4_AllocImage()
 {
 	TK_WadImage *img;
 
-	img=tk_malloc(sizeof(TK_WadImage));
+	img=tk_malloc_krn(sizeof(TK_WadImage));
 	memset(img, 0, sizeof(TK_WadImage));
 
 	if(__offsetof(TK_WadImage, mntbase)>=sizeof(TK_WadImage))
@@ -175,7 +175,7 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 	img=TK_Wad4_AllocImage();
 	img->img_fd=fd;
 	
-	inf=tk_malloc(sizeof(TK_Wad4Info));
+	inf=tk_malloc_krn(sizeof(TK_Wad4Info));
 	img->w2inf=(TK_Wad2Lump *)inf;
 	img->w4inf=(TK_Wad4Lump *)inf;
 	
@@ -213,12 +213,12 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 	{
 //		tk_printf("TK_Wad4_OpenImage: WAD2\n");
 
-		img->w2dir=tk_malloc(inf->numlumps*sizeof(TK_Wad2Lump));
+		img->w2dir=tk_malloc_krn(inf->numlumps*sizeof(TK_Wad2Lump));
 		tk_fseek(fd, inf->diroffs, 0);
 		tk_fread(img->w2dir, 1, inf->numlumps*sizeof(TK_Wad2Lump), fd);
 
 		img->hashsz=64;
-		img->hash2=tk_malloc(hsz*2);
+		img->hash2=tk_malloc_krn(hsz*2);
 		tk_fread(img->hash2, 1, hsz*2, fd);
 	}
 
@@ -229,8 +229,8 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 		nl0=inf->numlumps;
 		nl1=nl0+256;
 
-//		img->w4dir=tk_malloc(inf->numlumps*sizeof(TK_Wad4Lump));
-		img->w4dir=tk_malloc(nl1*sizeof(TK_Wad4Lump));
+//		img->w4dir=tk_malloc_krn(inf->numlumps*sizeof(TK_Wad4Lump));
+		img->w4dir=tk_malloc_krn(nl1*sizeof(TK_Wad4Lump));
 		memset(img->w4dir, 0, nl1*sizeof(TK_Wad4Lump));
 		
 		tk_fseek(fd, inf->diroffs*64, 0);
@@ -249,14 +249,14 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 		{
 //			tk_printf("TK_Wad4_OpenImage: Hash4\n");
 
-			img->hash4=tk_malloc(hsz*4);
+			img->hash4=tk_malloc_krn(hsz*4);
 			tk_fseek(fd, inf->hashoffs*64, 0);
 			tk_fread(img->hash4, 1, hsz*4, fd);
 		}else
 		{
 //			tk_printf("TK_Wad4_OpenImage: Hash2\n");
 
-			img->hash2=tk_malloc(hsz*2);
+			img->hash2=tk_malloc_krn(hsz*2);
 			tk_fseek(fd, inf->hashoffs*64, 0);
 			tk_fread(img->hash2, 1, hsz*2, fd);
 		}
@@ -264,8 +264,8 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 		inf->numlumps=nl1;
 	}
 	
-	img->lca_data=tk_malloc(inf->numlumps*sizeof(void *));
-//	img->lca_sz=tk_malloc(inf->numlumps*sizeof(int));
+	img->lca_data=tk_malloc_krn(inf->numlumps*sizeof(void *));
+//	img->lca_sz=tk_malloc_krn(inf->numlumps*sizeof(int));
 
 	memset(img->lca_data, 0, inf->numlumps*sizeof(void *));
 
@@ -282,7 +282,7 @@ TK_WadImage *TK_Wad4_CreateTempRamImage(int dirsz)
 	img=TK_Wad4_AllocImage();
 //	img->img_fd=fd;
 	
-	inf=tk_malloc(sizeof(TK_Wad4Info));
+	inf=tk_malloc_krn(sizeof(TK_Wad4Info));
 	img->w4inf=(TK_Wad4Lump *)inf;
 	img->wadver=4;
 	img->readwrite=1;
@@ -292,7 +292,7 @@ TK_WadImage *TK_Wad4_CreateTempRamImage(int dirsz)
 //	if(wadver==4)
 	if(1)
 	{
-		img->w4dir=tk_malloc(dirsz*sizeof(TK_Wad4Lump));
+		img->w4dir=tk_malloc_krn(dirsz*sizeof(TK_Wad4Lump));
 		memset(img->w4dir, 0, dirsz*sizeof(TK_Wad4Lump));
 
 		lmp=(img->w4dir)+0;
@@ -314,14 +314,14 @@ TK_WadImage *TK_Wad4_CreateTempRamImage(int dirsz)
 		
 		if(inf->numlumps>=65536)
 		{
-			img->hash4=tk_malloc(hsz*4);
+			img->hash4=tk_malloc_krn(hsz*4);
 			memset(img->hash4, 0, hsz*4);
 
 //			tk_fseek(fd, inf->hashoffs*64, 0);
 //			tk_fread(img->hash4, 1, hsz*4, fd);
 		}else
 		{
-			img->hash2=tk_malloc(hsz*2);
+			img->hash2=tk_malloc_krn(hsz*2);
 			memset(img->hash2, 0, hsz*2);
 
 //			tk_fseek(fd, inf->hashoffs*64, 0);
@@ -329,8 +329,8 @@ TK_WadImage *TK_Wad4_CreateTempRamImage(int dirsz)
 		}
 	}
 	
-	img->lca_data=tk_malloc(inf->numlumps*sizeof(void *));
-//	img->lca_sz=tk_malloc(inf->numlumps*sizeof(int));
+	img->lca_data=tk_malloc_krn(inf->numlumps*sizeof(void *));
+//	img->lca_sz=tk_malloc_krn(inf->numlumps*sizeof(int));
 
 	memset(img->lca_data, 0, inf->numlumps*sizeof(void *));
 
@@ -718,7 +718,7 @@ void TK_Wad4_ReadLumpBuffer(TK_WadImage *img, int lump, void *buf)
 		csz1=65536;
 		while(csz>csz1)
 			csz1=csz1+(csz1>>1);
-		tk_wad4_tcbuf=tk_malloc(csz1);
+		tk_wad4_tcbuf=tk_malloc_krn(csz1);
 		tk_wad4_tcsz=csz1;
 	}
 

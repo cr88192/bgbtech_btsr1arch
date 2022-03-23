@@ -42,9 +42,11 @@ u64 __int32_dmulu(u32 a, u32 b)
 	return(((u64)a) * ((u64)b));
 }
 
-//void __debugbreak()
-//{
-//}
+#ifndef __clang__
+void __debugbreak()
+{
+}
+#endif
 
 void I_Error(char *str, ...)
 {
@@ -566,6 +568,10 @@ void S_SetMaxVolume (boolean fullproc)
 }
 
 void S_GetChannelInfo (SoundInfo_t *s)
+{
+}
+
+void I_MusicFineTick(void)	
 {
 }
 

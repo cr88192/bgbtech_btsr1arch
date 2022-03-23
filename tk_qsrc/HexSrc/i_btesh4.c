@@ -1910,20 +1910,20 @@ void I_FinishUpdate (void)
 //		dirtybox[1],	dirtybox[0]);
 
 //	conbufa=(u32 *)0xA00A0000;
-	conbufa=(u32 *)0xF00A0000;
+	conbufa=(u32 *)0xFFFFF00A0000ULL;
 
-	((u32 *)0xF00BFF00)[8]=vid_frnum;
+	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
 	vid_frnum++;
 
 #ifdef I_SCR_BMP128K
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp, YUV655
-	((u32 *)0xF00BFF00)[0]=0x0095;		//320x200x16bpp, RGB555
+	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0095;		//320x200x16bpp, RGB555
 
 //	((u32 *)0xF00BFF00)[0]=0x0025;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0005;		//320x200x16bpp
 //	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
 #else
-	((u32 *)0xF00BFF00)[0]=0x0000;		//320x200
+	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0000;		//320x200
 #endif
 
 	ics=(byte *)screen;

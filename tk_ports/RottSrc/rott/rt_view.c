@@ -510,8 +510,12 @@ void SetupLightLevels ( void )
       if (fog==0)
          {
 		   lightsource=1;
-         lights=Z_Malloc(MAPSIZE*MAPSIZE*(sizeof(unsigned long)),PU_LEVEL,NULL);
-         memset (lights,0,MAPSIZE*MAPSIZE*(sizeof(unsigned long)));
+//         lights=Z_Malloc(MAPSIZE*MAPSIZE*
+//				(sizeof(unsigned long)),PU_LEVEL,NULL);
+         lights=Z_Malloc(MAPSIZE*MAPSIZE*(sizeof(unsigned int)),
+			PU_LEVEL,NULL);
+//         memset (lights,0,MAPSIZE*MAPSIZE*(sizeof(unsigned long)));
+         memset (lights,0,MAPSIZE*MAPSIZE*(sizeof(unsigned int)));
          }
       else
 		   Error("You cannot use light sourcing on a level with fog on map %ld\n",gamestate.mapon);

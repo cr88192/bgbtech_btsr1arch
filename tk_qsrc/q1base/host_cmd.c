@@ -954,7 +954,8 @@ void Host_Name_f (void)
 		if (Q_strcmp(host_client->name, newName) != 0)
 			Con_Printf ("%s renamed to %s\n", host_client->name, newName);
 	Q_strcpy (host_client->name, newName);
-	host_client->edict->v.netname = host_client->name - pr_strings;
+//	host_client->edict->v.netname = host_client->name - pr_strings;
+	host_client->edict->v.netname = ED_StringToStringT(host_client->name);
 	
 // send notification to all clients
 	

@@ -952,6 +952,13 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		if(t)
 			return(t);
 
+		j=BGBCP_CheckNameEnum(ctx, s);
+		if(j>=0)
+		{
+			t=BGBCP_WrapInt(j);
+			return(t);
+		}
+
 		return(BCCX_CloneS(l));
 	}
 

@@ -5348,6 +5348,14 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDest(
 
 	if((opr==CCXL_BINOP_SHL) || (opr==CCXL_BINOP_SHR))
 	{
+		if(BGBCC_CCXL_TypeSmallIntP(ctx, lty) &&
+			!BGBCC_CCXL_TypeSgIntP(ctx, lty))
+		{
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_I);
+			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+				CCXL_STATUS_YES:CCXL_STATUS_NO);
+		}
+	
 		if(BGBCC_CCXL_TypeSmallInt128P(ctx, lty))
 		{
 			*rdty=lty;

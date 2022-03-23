@@ -1791,15 +1791,17 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 	ccxl_register sreg, ccxl_register treg,
 	int cmp, int lbl)
 {
-	if(BGBCC_CCXL_TypeSmallIntP(ctx, type) ||
+//	if(BGBCC_CCXL_TypeSmallIntP(ctx, type) ||
 //		(BGBCC_CCXL_TypePointerP(ctx, type) && !sctx->is_addr64))
-		(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && !sctx->is_addr64))
+//		(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && !sctx->is_addr64))
+	if(BGBCC_CCXL_TypeSmallIntP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
 	}
 
-	if(BGBCC_CCXL_TypeQuadPointerP(ctx, type))
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && 
+		BGBCC_CCXL_TypeQuadPointerP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegInt128(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
@@ -1807,13 +1809,15 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 
 //	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
 //	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && sctx->is_addr_x32)
-	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && (ctx->arch_sizeof_ptr==4))
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) &&
+		(ctx->arch_sizeof_ptr==4))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
 	}
 
-	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && (ctx->arch_sizeof_ptr==8))
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) &&
+		(ctx->arch_sizeof_ptr==8))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegVRegQLong(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
@@ -2040,9 +2044,11 @@ int BGBCC_JX2C_EmitJCmpVRegZero(
 			type, sreg, cmp, lbl));
 	}
 
-	if((BGBCC_CCXL_TypePointerP(ctx, type) ||
-		BGBCC_CCXL_TypeArrayP(ctx, type)) &&
-			(!sctx->is_addr64 || sctx->is_addr_x32))
+//	if((BGBCC_CCXL_TypePointerP(ctx, type) ||
+//		BGBCC_CCXL_TypeArrayP(ctx, type)) &&
+//			(!sctx->is_addr64 || sctx->is_addr_x32))
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) &&
+		(ctx->arch_sizeof_ptr==4))
 	{
 		return(BGBCC_JX2C_EmitJCmpVRegZeroInt(ctx, sctx,
 			type, sreg, cmp, lbl));

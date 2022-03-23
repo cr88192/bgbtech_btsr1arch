@@ -2660,13 +2660,39 @@ BCCX_Node *BGBCP_DefExpectType(BGBCP_ParseState *ctx, char **str)
 	return(n);
 }
 
+s64 BGBCP_CheckNameEnum(BGBCP_ParseState *ctx, char *name)
+{
+	int i, j, k, h;
+	
+	if(!ctx)
+		return(-1);
+	
+	if(!name)
+		return(-1);
+	
+	h=BGBCC_CCXL_HashName(name)&255;
+	i=ctx->enum_hash[h];
+	while(i>=0)
+	{
+		if(!strcmp(ctx->enum_names[i], name))
+			return(ctx->enum_vals[i]);
+		i=ctx->enum_chain[i];
+	}
+	
+//	for(i=0; i<ctx->n_enum_vars; i++)
+//		if(!strcmp(ctx->enum_names[i], name))
+//			return(ctx->enum_vals[i]);
+	
+	return(-1);
+}
+
 BCCX_Node *BGBCP_EnumVarsList(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256];
 	char *s, *s1;
 	int ty, ty2;
 	BCCX_Node *n, *n1, *lst, *lste;
-	int i;
+	int i, j, k, h;
 
 	s=*str;
 	lst=NULL;
@@ -2692,6 +2718,28 @@ BCCX_Node *BGBCP_EnumVarsList(BGBCP_ParseState *ctx, char **str)
 			n1=BGBCP_Expression(ctx, &s);
 			n1=BGBCP_ReduceExpr(ctx, n1);
 			i=BCCX_GetIntCst(n1, &bgbcc_rcst_value, "value");
+		}
+
+		h=BGBCC_CCXL_HashName(b)&255;
+		for(k=0; k<ctx->n_enum_vars; k++)
+			if(!strcmp(ctx->enum_names[k], b))
+				break;
+		if(k<ctx->n_enum_vars)
+		{
+			ctx->enum_vals[k]=i;
+		}else
+		{
+			if(ctx->n_enum_vars<4096)
+			{
+				k=ctx->n_enum_vars++;
+				ctx->enum_names[k]=bgbcc_strdup(b);
+				ctx->enum_vals[k]=i;
+				ctx->enum_chain[k]=ctx->enum_hash[h];
+				ctx->enum_hash[h]=k;
+			}else
+			{
+				k=-1;
+			}
 		}
 
 		n=BCCX_NewCst(&bgbcc_rcst_def, "def");

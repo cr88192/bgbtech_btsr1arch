@@ -425,7 +425,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	tk_printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X\n",
 		imgbase, imgsz, startrva, gbr_rva);
 	
-	img=tk_malloc(sizeof(TKPE_ImageInfo));
+	img=tk_malloc_krn(sizeof(TKPE_ImageInfo));
 	memset(img, 0, sizeof(TKPE_ImageInfo));
 
 	imgsz1=(imgsz+16383)&(~16383);

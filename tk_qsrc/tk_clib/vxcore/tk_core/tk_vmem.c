@@ -1,7 +1,7 @@
 /*
 Virtual Memory
 
-Each VM Page is 4K|64K, and will map to a location in the pagefile.
+Each VM Page is 4K/16K/64K, and will map to a location in the pagefile.
 Page indices will correspond to a logical pagefile entry.
  */
 
@@ -10,26 +10,30 @@ Page indices will correspond to a logical pagefile entry.
 #define		TK_VMEM_BLOCKSHL	9
 #define		TK_VMEM_PGBLKSHL	(TK_VMEM_PAGESHL-TK_VMEM_BLOCKSHL)
 
+// #define		TK_VMEM_PTESHL		12
+#define		TK_VMEM_PTESHL		TKMM_PAGEBITS
+
+// #define		TK_VMEM_PTEMASK		16777215
+#define		TK_VMEM_PTEMASK		(16777215ULL>>(TK_VMEM_PTESHL-12))
+
 typedef struct TK_VMem_PageInfo_s TK_VMem_PageInfo;
 struct TK_VMem_PageInfo_s {
 int		pidx;		// 0, page index (pagefile)
 byte	hi;			// 4, hash index
 byte	pad0;		// 5, pad
-short	flags;		// 6, flags
-short	hnext;		// 8, next in hash
-short	hprev;		//10, prev in hash
-short	next;		//12, next in LRU
-short	prev;		//14, prev in LRU
+u16		flags;		// 6, flags
+s32		next;		// 8, next in LRU
+s32		prev;		//12, prev in LRU
 u32		vapidx;		//16, virtual address page index
-u32		pad1;		//20, pad
-u32		pad2;		//24, pad
+s32		hnext;		//20, next in hash
+s32		hprev;		//24, prev in hash
 u32		pad3;		//28, pad
 //32
 };
 
 byte *tk_vmem_pagecache=NULL;	//page cache memory
 TK_VMem_PageInfo *tk_vmem_pageinf;
-int tk_vmem_pagehash[64];		//page hash
+int tk_vmem_pagehash[256];		//page hash
 int tk_vmem_npage;
 
 int tk_vmem_lru_first;
@@ -39,6 +43,7 @@ int tk_vmem_lru_free;
 s64	tk_vmem_swap_lba;
 u32	tk_vmem_swap_sz;
 u32	tk_vmem_swap_psz;
+int	tk_vmem_swap_disable;
 
 
 u64	*tk_vmem_pageroot=NULL;
@@ -51,16 +56,28 @@ byte tk_vmem_useldekrr;
 
 // byte tk_vmem_pagebmp[16384];	//virtual page
 byte *tk_vmem_pagebmp;	//virtual page
+byte *tk_vmem_pagevnz;	//virtual page (valid / non-zero)
 int tk_vmem_maxpage;
 int tk_vmem_pagerov;
 
 int tk_vmem_varov_lo;
 int tk_vmem_varov_hi;
 
-void TK_VMem_VaEvictPageIndex(int pidx);
-
 #ifdef __BJX2__
 // #if 0
+extern volatile u64 __arch_ttb;
+extern volatile u64 __arch_tea;
+extern volatile u64 __arch_exsr;
+extern volatile u64 __arch_mmcr;
+extern volatile u64 __arch_sttb;
+#endif
+
+void TK_VMem_VaEvictPageIndex(int pidx);
+
+#include "tk_vmptavl.c"
+
+// #ifdef __BJX2__
+#if 0
 u64 TK_VMem_GetPageTableEntry(s64 vaddr);
 
 __asm {
@@ -68,7 +85,7 @@ __asm {
 
 TK_VMem_GetPageTableEntry:
 
-	MOV		16777215, R17
+	MOV		TK_VMEM_PTEMASK, R17
 //	BREAK
 	MOV		511, R2
 	MOV		2047, R3
@@ -100,7 +117,8 @@ TK_VMem_GetPageTableEntry:
 
 	TEST	1, R7
 	BT		.L0
-	SHLD.Q	R7, -12,  R3
+//	SHLD.Q	R7, -12,  R3
+	SHLD.Q	R7, -TK_VMEM_PTESHL,  R3
 	AND		R17, R3
 	SHLD.Q	R3, 14, R3
 
@@ -114,7 +132,8 @@ TK_VMem_GetPageTableEntry:
 
 	TEST	1, R7
 	BT		.L0
-	SHLD.Q	R7, -12,  R3
+//	SHLD.Q	R7, -12,  R3
+	SHLD.Q	R7, -TK_VMEM_PTESHL,  R3
 	AND		R17, R3
 	SHLD.Q	R3, 14, R3
 
@@ -139,12 +158,12 @@ TK_VMem_GetPageTableEntry:
 
 TK_VMem_GetPageTableEntry:
 
-//		vpn=(vaddr>>16)&16777215;
+//		vpn=(vaddr>>16)&TK_VMEM_PTEMASK;
 //		vpt=vpn>>13;
 //		vpn&=8191;
 //		vpt&=8191;
 
-	MOV		16777215, R1
+	MOV		TK_VMEM_PTEMASK, R1
 	MOV		8191, R2
 	MOV		2047, R3
 	SHLD.Q	R4, -16, R5
@@ -168,10 +187,11 @@ TK_VMem_GetPageTableEntry:
 	BT		.L0
 //	RTS?T
 		
-//		ptpn=(pde>>12)&16777215;
+//		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 //		ptp=(u64 *)(ptpn<<16);
 
-	SHLD.Q	R7, -12,  R3
+//	SHLD.Q	R7, -12,  R3
+	SHLD.Q	R7, -TK_VMEM_PTESHL,  R3
 	AND		R1, R3
 	SHLD.Q	R3, 16, R3
 
@@ -193,7 +213,7 @@ TK_VMem_GetPageTableEntry:
 
 TK_VMem_GetPageTableEntry:
 
-	MOV		16777215, R1
+	MOV		TK_VMEM_PTEMASK, R1
 	MOV		511, R2
 	MOV		2047, R3
 	SHLD.Q	R4, -12, R5
@@ -262,25 +282,36 @@ u64 TK_VMem_GetPageTableEntry(s64 vaddr)
 	int vp0, vp1, vp2, vp3;
 	int vpt, ptpn;
 
+	pde=__arch_ttb;
+//	if((pde&15)==0x4)
+	if((pde&0x13)==0x13)
+	{
+		pte=TK_VMem_GetAvlPageTableEntry(pde, vaddr, 0);
+		return(pte);
+	}
+	
+	ptp=(u64 *)(pde&(~4095ULL));
+
 	if(TK_VMEM_PAGESHL==14)
 	{
 		/* Three-Level 16K page table. */
-		vpn=(vaddr>>14);
+		vpn=(vaddr>>TK_VMEM_PAGESHL);
 		vp0=(vpn>>22)&2047;
 		vp1=(vpn>>11)&2047;
 		vp2=(vpn    )&2047;
 		
-		pde=tk_vmem_pageroot[vp0];
+//		pde=tk_vmem_pageroot[vp0];
+		pde=ptp[vp0];
 		if(!(pde&1))
 			{ return(0); }
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<14);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+		ptp=(u64 *)(ptpn<<TK_VMEM_PAGESHL);
 
 		pde=ptp[vp1];
 		if(!(pde&1))
 			{ return(0); }
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<14);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+		ptp=(u64 *)(ptpn<<TK_VMEM_PAGESHL);
 
 		pte=ptp[vp2];
 		return(pte);
@@ -288,12 +319,13 @@ u64 TK_VMem_GetPageTableEntry(s64 vaddr)
 		if(TK_VMEM_PAGESHL==16)
 	{
 		/* Two-Level 64K page table. */
-		vpn=(vaddr>>16)&16777215;
+		vpn=(vaddr>>16)&TK_VMEM_PTEMASK;
 		vpt=vpn>>13;
 		vpn&=8191;
 		vpt&=8191;
 		
-		pde=tk_vmem_pageroot[vpt];
+//		pde=tk_vmem_pageroot[vpt];
+		pde=ptp[vp0];
 		if(!(pde&1))
 		{
 			if(!pde)
@@ -306,7 +338,7 @@ u64 TK_VMem_GetPageTableEntry(s64 vaddr)
 			}
 		}
 		
-		ptpn=(pde>>12)&16777215;
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 		ptp=(u64 *)(ptpn<<16);
 		
 		pte=ptp[vpn];
@@ -322,23 +354,26 @@ u64 TK_VMem_GetPageTableEntry(s64 vaddr)
 		vp2=(vpn>> 9)&511;
 		vp3=(vpn    )&511;
 		
-		pde=tk_vmem_pageroot[vp0];
+//		pde=tk_vmem_pageroot[vp0];
+		pde=ptp[vp0];
 		if(!(pde&1))
 			{ return(0); }
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<12);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+//		ptp=(u64 *)(ptpn<<12);
+		ptp=(u64 *)(ptpn<<TK_VMEM_PAGESHL);
 
 		pde=ptp[vp1];
 		if(!(pde&1))
 			{ return(0); }
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<12);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+		ptp=(u64 *)(ptpn<<TK_VMEM_PAGESHL);
 
 		pde=ptp[vp2];
 		if(!(pde&1))
 			{ return(0); }
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<12);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+//		ptp=(u64 *)(ptpn<<12);
+		ptp=(u64 *)(ptpn<<TK_VMEM_PAGESHL);
 
 		pte=ptp[vp3];
 		return(pte);
@@ -352,6 +387,16 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 	u64 pde, pte, vpn;
 	int vp0, vp1, vp2, vp3;
 	int vpt, ptpn;
+
+	pde=__arch_ttb;
+//	if((pde&15)==0x4)
+	if((pde&0x13)==0x13)
+	{
+		TK_VMem_SetAvlPageTableEntry(pde, vaddr, 0, ptval);
+		return(0);
+	}
+	
+	ptp=(u64 *)(pde&(~4095ULL));
 
 	if(TK_VMEM_PAGESHL==14)
 	{
@@ -371,17 +416,14 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 			{
 //				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
-				pde=(((u64)ptpn)<<12)|1;
+				pde=(((u64)ptpn)<<TK_VMEM_PTESHL)|1;
 				ptp[vp0]=pde;
-
-//				ptp=(u64 *)(ptpn<<14);
-//				memset(ptp, 0, 16384);
 			}else
 			{
 				__debugbreak();
 			}
 		}
-		ptpn=(pde>>12)&16777215;
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 		ptp=(u64 *)(ptpn<<14);
 
 		pde=ptp[vp1];
@@ -391,17 +433,14 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 			{
 //				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
-				pde=(((u64)ptpn)<<12)|1;
+				pde=(((u64)ptpn)<<TK_VMEM_PTESHL)|1;
 				ptp[vp1]=pde;
-
-//				ptp=(u64 *)(ptpn<<14);
-//				memset(ptp, 0, 16384);
 			}else
 			{
 				__debugbreak();
 			}
 		}
-		ptpn=(pde>>12)&16777215;
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 		ptp=(u64 *)(ptpn<<14);
 
 		ptp[vp2]=ptval;
@@ -409,7 +448,7 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 	}else
 		if(TK_VMEM_PAGESHL==16)
 	{
-		vpn=(vaddr>>16)&16777215;
+		vpn=(vaddr>>16)&TK_VMEM_PTEMASK;
 		vpt=vpn>>13;
 		vpn&=8191;
 		vpt&=8191;
@@ -423,15 +462,11 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 //				ptpn=TKMM_AllocPages(1);
 //				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
-				tk_printf("TK_VMem_SetPageTableEntry: "
-					"AllocPage: %d %p\n",
-					ptpn, (void *)(ptpn<<16));
-				pde=(((u64)ptpn)<<12)|1;
+//				tk_printf("TK_VMem_SetPageTableEntry: "
+//					"AllocPage: %d %p\n",
+//					ptpn, (void *)(ptpn<<16));
+				pde=(((u64)ptpn)<<TK_VMEM_PTESHL)|1;
 				tk_vmem_pageroot[vpt]=pde;
-
-//				ptp=(u64 *)(ptpn<<16);
-//				memset(ptp, 0, 65536);
-//				return(0);
 			}else
 			{
 				/* Page table may not be paged out. */
@@ -439,7 +474,7 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 			}
 		}
 		
-		ptpn=(pde>>12)&16777215;
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 		ptp=(u64 *)(ptpn<<16);
 		
 		ptp[vpn]=ptval;
@@ -463,18 +498,15 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 			{
 //				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
-				pde=(((u64)ptpn)<<12)|1;
+				pde=(((u64)ptpn)<<TK_VMEM_PTESHL)|1;
 				ptp[vp0]=pde;
-
-//				ptp=(u64 *)(ptpn<<12);
-//				memset(ptp, 0, 4096);
 			}else
 			{
 				__debugbreak();
 			}
 		}
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<12);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+		ptp=(u64 *)(ptpn<<TK_VMEM_PTESHL);
 
 		pde=ptp[vp1];
 		if(!(pde&1))
@@ -483,7 +515,8 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 			{
 //				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
-				pde=(((u64)ptpn)<<12)|1;
+//				pde=(((u64)ptpn)<<12)|1;
+				pde=(((u64)ptpn)<<TK_VMEM_PTESHL)|1;
 				ptp[vp1]=pde;
 
 //				ptp=(u64 *)(ptpn<<12);
@@ -493,8 +526,8 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 				__debugbreak();
 			}
 		}
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<12);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+		ptp=(u64 *)(ptpn<<TK_VMEM_PTESHL);
 
 		pde=ptp[vp2];
 		if(!(pde&1))
@@ -503,18 +536,18 @@ int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
 			{
 //				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
-				pde=(((u64)ptpn)<<12)|1;
+				pde=(((u64)ptpn)<<TK_VMEM_PTESHL)|1;
 				ptp[vp2]=pde;
 
-//				ptp=(u64 *)(ptpn<<12);
+//				ptp=(u64 *)(ptpn<<TK_VMEM_PTESHL);
 //				memset(ptp, 0, 4096);
 			}else
 			{
 				__debugbreak();
 			}
 		}
-		ptpn=(pde>>12)&16777215;
-		ptp=(u64 *)(ptpn<<12);
+		ptpn=(pde>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
+		ptp=(u64 *)(ptpn<<TK_VMEM_PTESHL);
 
 		ptp[vp3]=ptval;
 		return(0);
@@ -543,18 +576,12 @@ int TK_VMem_AddSdSwap(s64 lba, u32 sz)
 }
 
 #ifdef __BJX2__
-// #if 0
-extern volatile u64 __arch_ttb;
-extern volatile u64 __arch_tea;
-extern volatile u64 __arch_exsr;
-extern volatile u64 __arch_mmcr;
-extern volatile u64 __arch_sttb;
-
 void tk_vmem_do_ldtlb(u64 ptel, u64 pteh);
 void tk_vmem_loadpte(u64 tva, u64 pte);
 void tk_vmem_loadacl(u64 acle);
 
 void tk_vmem_l1flush();
+void tk_vmem_setsrjq(int fl);
 
 __asm {
 
@@ -618,17 +645,35 @@ tk_vmem_loadacl:
 	LDACL
 	RTS
 
+tk_vmem_setsrjq:
+	MOV		SR, R7
+	
+	TEST	R4, R4
+	AND?T	0xFFFFFFFF7FFFFFFF, R7
+	OR?F	0x0000000080000000, R7
+	MOV		R7, SR
+
+//	MOV		R4, R0
+//	LDACL
+	RTS
+
 #if (TK_VMEM_PAGESHL==14)
 tk_vmem_loadpte:
 	MOV		0x0000000000000FFF, R16
 	MOV		0x0000FFFFFFFFC000, R17
+#if (TK_VMEM_PTESHL!=TK_VMEM_PAGESHL)
 	MOV		0x0000000FFFFFF000, R18
+#else
+	MOV		0x0000000FFFFFC000, R18
+#endif
 	MOV		0xFFFF000000000000, R19
 	AND		R5, R16, R2
 	AND		R4, R17, R3
 	AND		R5, R18, R6
 	AND		R5, R19, R7
+#if (TK_VMEM_PTESHL!=TK_VMEM_PAGESHL)
 	SHLD.Q	R6, 2, R6
+#endif
 	SHLD.Q	R5, -36, R20
 	OR		R6, R2
 	OR		R7, R3
@@ -797,10 +842,11 @@ void tk_vmem_loadpte(u64 tva, u64 pte)
 
 int TK_VMem_Init()
 {
+	char tblk1[512], tblk2[512];
 	TK_VMem_PageInfo *cpi, *lpi, *npi;
 	s64 tva;
 	u64 tpte, tmmcr;
-	int np, b;
+	int np, b, lba;
 	int i, j, k, n;
 
 	if(!tk_iskernel())
@@ -809,7 +855,7 @@ int TK_VMem_Init()
 		return(0);
 	}
 
-	if(tk_vmem_pagecache)
+	if(tk_vmem_pagecache || tk_vmem_pageroot)
 		return(0);
 	
 	if(!tk_vmem_swap_psz)
@@ -823,18 +869,43 @@ int TK_VMem_Init()
 			tk_vmem_useldekrr=0;
 		}
 
-		/* Don't set up virtual memory if no pagefile. */
-		return(0);
+		tk_vmem_swap_disable=1;
+
+//		/* Don't set up virtual memory if no pagefile. */
+//		return(0);
 	}
 	
 	tk_printf("TK_VMem_Init\n");
-		
-	for(i=0; i<64; i++)
+
+	tk_vmem_swap_disable=0;
+
+	for(i=0; i<512; i++)
+	{
+		tblk1[i]=i;
+		tblk2[i]=0;
+	}
+
+	lba=tk_vmem_swap_lba;
+	TKSPI_WriteSectors(tblk1, lba, 1);
+	TKSPI_ReadSectors(tblk2, lba, 1);
+
+	for(i=0; i<512; i++)
+	{
+		if(tblk1[i]!=tblk2[i])
+		{
+			tk_printf("TK_VMem_Init: Swap IO Check Fail\n");
+			tk_vmem_swap_disable=1;
+			break;
+		}
+	}
+
+	for(i=0; i<256; i++)
 		tk_vmem_pagehash[i]=-1;
 
 	tk_vmem_lru_first=-1;
 	tk_vmem_lru_last=-1;
 
+#if 0
 	tk_vmem_lru_free=-1;
 	for(i=0; i<np; i++)
 	{
@@ -842,6 +913,7 @@ int TK_VMem_Init()
 		cpi->next=tk_vmem_lru_free;
 		tk_vmem_lru_free=i;
 	}
+#endif
 
 #if 0
 	tk_printf("TK_VMem_Init: A-0\n");
@@ -851,7 +923,8 @@ int TK_VMem_Init()
 	tk_vmem_pagecache=TKMM_PageAlloc(np<<TK_VMEM_PAGESHL);
 	tk_vmem_npage=np;
 	
-	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
+//	tk_vmem_pageinf=tk_malloc_cat(np*sizeof(TK_VMem_PageInfo), 2);
+	tk_vmem_pageinf=TKMM_PageAlloc(np*sizeof(TK_VMem_PageInfo));
 	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
 #endif
 
@@ -864,14 +937,23 @@ int TK_VMem_Init()
 	memset(tk_vmem_aclroot, 0, 1<<TK_VMEM_PAGESHL);
 
 #if 1
-//	i=(tk_vmem_swap_psz+7)/8;
-	i=((tk_vmem_swap_psz+63)/64)*8;
-	tk_vmem_pagebmp=tk_malloc(i);
-	memset(tk_vmem_pagebmp, 0, i);
+	if(!tk_vmem_swap_disable)
+	{
+//		i=(tk_vmem_swap_psz+7)/8;
+		i=((tk_vmem_swap_psz+63)/64)*8;
+//		tk_vmem_pagebmp=tk_malloc_cat(i, 2);
+//		tk_vmem_pagevnz=tk_malloc_cat(i, 2);
+		tk_vmem_pagebmp=TKMM_PageAlloc(i);
+		tk_vmem_pagevnz=TKMM_PageAlloc(i);
+		memset(tk_vmem_pagebmp, 0, i);
+		memset(tk_vmem_pagevnz, 0, i);
 
-//	memset(tk_vmem_pagebmp, 0, 16384);
-	tk_vmem_maxpage=tk_vmem_swap_psz;
-	tk_vmem_pagerov=0;
+		tk_vmem_pagebmp[0]|=1;
+
+//		memset(tk_vmem_pagebmp, 0, 16384);
+		tk_vmem_maxpage=tk_vmem_swap_psz;
+		tk_vmem_pagerov=0;
+	}
 #endif
 
 	tk_printf("TK_VMem_Init: A-2\n");
@@ -884,7 +966,7 @@ int TK_VMem_Init()
 		tva=((u64)i)<<TK_VMEM_PAGESHL;
 //		tpte=(2<<8)|(1<<10)|1;
 		tpte=(0<<8)|(1<<10)|1;
-		tpte|=i<<12;
+		tpte|=i<<TK_VMEM_PTESHL;
 
 		TK_VMem_SetPageTableEntry(tva, tpte);
 //		tk_vmem_loadpte(tva, tpte);
@@ -898,14 +980,14 @@ int TK_VMem_Init()
 		tva=((u64)(b+i))<<TK_VMEM_PAGESHL;
 //		tpte=(2<<8)|(1<<10)|1;
 		tpte=(0<<8)|(1<<10)|1;
-		tpte|=(b+i)<<12;
+		tpte|=(b+i)<<TK_VMEM_PTESHL;
 
 		TK_VMem_SetPageTableEntry(tva, tpte);
 	}
 
 	/* Setup Null Page */
 	i=0x10000>>TK_VMEM_PAGESHL;
-	TK_VMem_SetPageTableEntry(0, (i<<12)|1);
+	TK_VMem_SetPageTableEntry(0, (i<<TK_VMEM_PTESHL)|1);
 //	TK_VMem_SetPageTableEntry(0, 0);
 
 	tk_printf("TK_VMem_Init: A-3\n");
@@ -920,19 +1002,41 @@ int TK_VMem_Init()
 
 	tva=(u64)tk_vmem_usrexonly;
 	i=((u64)tk_vmem_usrexpage)>>TK_VMEM_PAGESHL;
-	TK_VMem_SetPageTableEntry(tva, (i<<12)|1);
+	TK_VMem_SetPageTableEntry(tva, (i<<TK_VMEM_PTESHL)|1);
 
 #if 1
 	tk_printf("TK_VMem_Init: A-4\n");
 
-//	np=8192;
-	np=(32768<<10)>>TK_VMEM_PAGESHL;
-	tk_vmem_pagecache=TKMM_PageAlloc(np<<TK_VMEM_PAGESHL);
-	tk_vmem_npage=np;
-	
-//	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
-	tk_vmem_pageinf=TKMM_PageAlloc(np*sizeof(TK_VMem_PageInfo));
-//	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
+	if(!tk_vmem_swap_disable)
+	{
+	//	np=8192;
+		np=(32768<<10)>>TK_VMEM_PAGESHL;
+		tk_vmem_pagecache=TKMM_PageAlloc(np<<TK_VMEM_PAGESHL);
+		tk_vmem_npage=np;
+		
+		k=(np+1)*sizeof(TK_VMem_PageInfo);
+//		tk_printf("sizeof(TK_VMem_PageInfo)=%d, np=%d np*sz=%d\n",
+//			sizeof(TK_VMem_PageInfo), np, k);
+		
+//		__debugbreak();
+		
+	//	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
+		tk_vmem_pageinf=TKMM_PageAlloc(np*sizeof(TK_VMem_PageInfo));
+	//	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
+
+#if 1
+		tk_vmem_lru_free=-1;
+//		for(i=0; i<np; i++)
+//		for(i=1; i<(np-1); i++)
+		for(i=np-1; i>0; i--)
+		{
+			cpi=tk_vmem_pageinf+i;
+			cpi->next=tk_vmem_lru_free;
+			tk_vmem_lru_free=i;
+		}
+#endif
+	}
+
 #endif
 
 	tk_printf("TK_VMem_Init: A-5\n");
@@ -958,6 +1062,11 @@ int TK_VMem_Init()
 		tpte|=0x0003;	//Four-Level, 4K pages
 		tmmcr=0x000D;
 	}
+	
+#ifdef __ADDR_X48__
+	tk_vmem_setsrjq(1);
+#endif
+	
 	__arch_ttb=tpte;
 //	tk_printf("");
 //	TK_VMem_GetPageTableEntry(0);
@@ -983,7 +1092,7 @@ int TK_VMem_MProtectPages(u64 addr, size_t len, int prot)
 	if(!tk_vmem_pageroot)
 		return(0);
 
-	tk_printf("TK_VMem_MProtectPages: %p %X %X\n", addr, len, prot);
+//	tk_printf("TK_VMem_MProtectPages: %p %X %X\n", addr, len, prot);
 
 	b=(addr>>TK_VMEM_PAGESHL);
 	n=(len>>TK_VMEM_PAGESHL);
@@ -1009,7 +1118,7 @@ int TK_VMem_MProtectPages(u64 addr, size_t len, int prot)
 
 //		tpte=(2<<8)|(1<<10)|1;
 //		tpte=(0<<8)|(1<<10)|1;
-//		tpte|=(b+i)<<12;
+//		tpte|=(b+i)<<TK_VMEM_PTESHL;
 
 		TK_VMem_SetPageTableEntry(tva, tpte);
 	}
@@ -1121,44 +1230,89 @@ void TK_VMem_AddPageFrontLRU(int i)
 
 	cpi=tk_vmem_pageinf+i;
 	k=tk_vmem_lru_first;
-	npi=tk_vmem_pageinf+k;
-	npi->prev=i;
 	cpi->next=k;
+	if(k>=0)
+	{
+		npi=tk_vmem_pageinf+k;
+		npi->prev=i;
+	}
 	tk_vmem_lru_first=i;
 }
 
-void TK_VMem_SetPageVAddr(int idx, s64 vaddr)
+void TK_VMem_SetPageVAddr(int cidx, s64 vaddr)
 {
 	TK_VMem_PageInfo *cpi;
-	cpi=tk_vmem_pageinf+idx;
+	
+	if(cidx<0)
+		{ __debugbreak(); }
+	if(cidx>=tk_vmem_npage)
+		{ __debugbreak(); }
+
+	cpi=tk_vmem_pageinf+cidx;
 	cpi->vapidx=vaddr>>TKMM_PAGEBITS;
 }
 
-s64 TK_VMem_GetPageVAddr(int idx)
+s64 TK_VMem_GetPageVAddr(int cidx)
 {
 	TK_VMem_PageInfo *cpi;
 	s64 vaddr;
-	cpi=tk_vmem_pageinf+idx;
+
+	if(cidx<0)
+		{ __debugbreak(); }
+	if(cidx>=tk_vmem_npage)
+		{ __debugbreak(); }
+
+	cpi=tk_vmem_pageinf+cidx;
 	vaddr=((s64)(cpi->vapidx))<<TKMM_PAGEBITS;
 	return(vaddr);
 }
 
-int TK_VMem_GetPagePidx(int idx)
+int TK_VMem_GetPagePidx(int cidx)
 {
 	TK_VMem_PageInfo *cpi;
-	cpi=tk_vmem_pageinf+idx;
+
+	if(cidx<0)
+		{ __debugbreak(); }
+	if(cidx>=tk_vmem_npage)
+		{ __debugbreak(); }
+
+	cpi=tk_vmem_pageinf+cidx;
 	return(cpi->pidx);
 }
 
-void TK_VMem_WritePageToDisk(int idx)
+void TK_VMem_WritePageToDisk(int cidx)
 {
 	TK_VMem_PageInfo *cpi;
+	u64 *ppq;
 	byte *ppi;
 	s64 lba;
+	int i, l;
 
-	cpi=tk_vmem_pageinf+idx;
-	ppi=tk_vmem_pagecache+(idx<<TK_VMEM_PAGESHL);
-	
+	if(cidx<0)
+		{ __debugbreak(); }
+	if(cidx>=tk_vmem_npage)
+		{ __debugbreak(); }
+
+	cpi=tk_vmem_pageinf+cidx;
+	ppi=tk_vmem_pagecache+(cidx<<TK_VMEM_PAGESHL);
+
+	if(!(tk_vmem_pagevnz[cidx>>3]&(1<<(cidx&7))))
+	{
+		/* If Zero or Non-Initialized, Check if Non-Zero. */
+		ppq=(u64 *)ppi;
+		l=(1<<(TK_VMEM_PAGESHL-3));
+		for(i=0; i<l; i++)
+			if(ppq[i])
+				break;
+		if(i>=l)
+		{
+			/* Page is still Zero. */
+			cpi->flags&=~1;
+			return;
+		}
+		tk_vmem_pagevnz[cidx>>3]|=1<<(cidx&7);
+	}
+
 	if(tk_vmem_swap_lba>0)
 	{
 		lba=tk_vmem_swap_lba+((cpi->pidx)<<TK_VMEM_PGBLKSHL);
@@ -1167,15 +1321,36 @@ void TK_VMem_WritePageToDisk(int idx)
 	}
 }
 
-void TK_VMem_LoadPageFromDisk(int idx)
+void TK_VMem_LoadPageFromDisk(int cidx)
 {
 	TK_VMem_PageInfo *cpi;
+	u64 *ppq;
 	byte *ppi;
 	s64 lba;
+	int i, l;
 
-	cpi=tk_vmem_pageinf+idx;
-	ppi=tk_vmem_pagecache+(idx<<TK_VMEM_PAGESHL);
+//	return;
+
+	if(cidx<0)
+		{ __debugbreak(); }
+	if(cidx>=tk_vmem_npage)
+		{ __debugbreak(); }
+
+	cpi=tk_vmem_pageinf+cidx;
+	ppi=tk_vmem_pagecache+(cidx<<TK_VMEM_PAGESHL);
 	
+	if(!(tk_vmem_pagevnz[cidx>>3]&(1<<(cidx&7))))
+	{
+		/* Zero or Not Initialized Yet. */
+//		ppq=(u64 *)ppi;
+//		l=1<<(TK_VMEM_PAGESHL-3);
+//		for(i=0; i<l; i++)
+//			ppq[i]=0;
+
+		memset(ppi, 0, 1<<TK_VMEM_PAGESHL);
+		return;
+	}
+
 	if(tk_vmem_swap_lba>0)
 	{
 		lba=tk_vmem_swap_lba+((cpi->pidx)<<TK_VMEM_PGBLKSHL);
@@ -1189,13 +1364,16 @@ int TK_VMem_MapVirtToPhysIdx(int pidx)
 	int hi, lp;
 	int i, j, k;
 	
-	hi=((pidx*65521)>>16)&63;
+#if 1
+//	hi=((pidx*65521)>>16)&63;
+	hi=pidx&255;
 	i=tk_vmem_pagehash[hi]; lpi=NULL;
 	while(i>=0)
 	{
 		cpi=tk_vmem_pageinf+i;
 		if(cpi->pidx==pidx)
 		{
+#if 1
 			j=cpi->hprev;
 			if(j>=0)
 			{
@@ -1211,18 +1389,24 @@ int TK_VMem_MapVirtToPhysIdx(int pidx)
 				TK_VMem_UnlinkPageLRU(i);
 				TK_VMem_AddPageFrontLRU(i);
 			}
+#endif
+
+			tk_printf("TK_VMem_MapVirtToPhysIdx: Reuse %d\n", i);
+
 			return(i);
 		}
 
 		lpi=cpi;
 		i=cpi->hnext;
 	}
-	
+#endif
+
 	if(tk_vmem_lru_free>=0)
 	{
 		/* Use page from free page list. */
 		i=tk_vmem_lru_free;
 		cpi=tk_vmem_pageinf+i;
+
 		tk_vmem_lru_free=cpi->next;
 		cpi->next=-1;	cpi->prev=-1;
 		cpi->hnext=-1;	cpi->hprev=-1;
@@ -1230,18 +1414,26 @@ int TK_VMem_MapVirtToPhysIdx(int pidx)
 	{
 		/* Evict old page. */
 		i=tk_vmem_lru_last;
+		cpi=tk_vmem_pageinf+i;
+
+		tk_printf("TK_VMem_MapVirtToPhysIdx: Evict %d\n", i);
+
+		if(cpi->flags&1)
+		{
+			TK_VMem_WritePageToDisk(i);
+		}
+
 		TK_VMem_VaEvictPageIndex(i);
 		TK_VMem_UnlinkPageHash(i);
 		TK_VMem_UnlinkPageLRU(i);
 	}
-	
-	if(cpi->flags&1)
-	{
-		TK_VMem_WritePageToDisk(i);
-	}
-	
+		
+//	tk_printf("TK_VMem_MapVirtToPhysIdx: Load Ci=%d Pi=%d\n", i, pidx);
+
 	cpi->pidx=pidx;
 	cpi->hi=hi;
+	cpi->flags|=1;
+
 	TK_VMem_LoadPageFromDisk(i);
 
 	TK_VMem_AddPageFrontHash(i);
@@ -1249,23 +1441,23 @@ int TK_VMem_MapVirtToPhysIdx(int pidx)
 	return(i);
 }
 
-void *TK_VMem_MapPhysIdxToAddr(int idx)
+void *TK_VMem_MapPhysIdxToAddr(int cidx)
 {
 	byte *ppi;
-	ppi=tk_vmem_pagecache+(idx<<TK_VMEM_PAGESHL);
+	ppi=tk_vmem_pagecache+(cidx<<TK_VMEM_PAGESHL);
 	return(ppi);
 }
 
-int TK_VMem_MapPhysIdxToPageNum(int idx)
+int TK_VMem_MapPhysIdxToPageNum(int cidx)
 {
 	int pn;	
 	pn=((s64)tk_vmem_pagecache)>>TK_VMEM_PAGESHL;
-	return(pn+idx);
+	return(pn+cidx);
 }
 
 int TK_VMem_MapAddrToPhysIdx(void *addr)
 {
-	int ix;
+	s64 ix;
 	ix=((byte *)addr)-tk_vmem_pagecache;
 	if(ix<0)
 		return(-1);
@@ -1276,7 +1468,7 @@ int TK_VMem_MapAddrToPhysIdx(void *addr)
 }
 
 
-int TK_VMem_FindFreeVirtPages(int n)
+int TK_VMem_FindFreeSwapPages(int n)
 {
 	int i0, i1;
 	int i, j, m;
@@ -1313,21 +1505,63 @@ int TK_VMem_FindFreeVirtPages(int n)
 	if(tk_vmem_pagerov!=0)
 	{
 		tk_vmem_pagerov=0;
-		i=TK_VMem_FindFreeVirtPages(n);
+		i=TK_VMem_FindFreeSwapPages(n);
 		return(i);
 	}
 
 	return(-1);
 }
 
-int TK_VMem_AllocVirtPages(int n)
+int TK_VMem_AllocSwapPage()
+{
+	int i0, i1;
+	int i, j, m;
+	
+	i=tk_vmem_pagerov;
+	m=tk_vmem_maxpage;
+	while(i<m)
+	{
+		if(!(tk_vmem_pagebmp[i>>3]&(1<<(i&7))))
+		{
+			tk_vmem_pagebmp[i>>3]|=(1<<(i&7));
+			tk_vmem_pagerov=i+1;
+			return(i);
+		}
+		
+		while((tk_vmem_pagebmp[i>>3]==0xFF) && (i<m))
+		{
+			i=(i+8)&(~7);
+			continue;
+		}
+		while((tk_vmem_pagebmp[i>>3]&(1<<(i&7))) && (i<m))
+			i++;
+	}
+	
+	if(tk_vmem_pagerov!=0)
+	{
+		tk_vmem_pagerov=0;
+		i=TK_VMem_AllocSwapPage();
+		return(i);
+	}
+
+	return(-1);
+}
+
+int TK_VMem_AllocSwapPages(int n)
 {
 	int i, j, k;
 	
-	i=TK_VMem_FindFreeVirtPages(n);
+	if(n==1)
+	{
+		i=TK_VMem_AllocSwapPage();
+		if(i>=0)
+			return(i);
+	}
+
+	i=TK_VMem_FindFreeSwapPages(n);
 	if(i<0)
 	{
-		tk_printf("TK_VMem_AllocVirtPages: Out Of Memory, n=%d\n", n);
+		tk_printf("TK_VMem_AllocSwapPages: Out Of Memory, n=%d\n", n);
 		return(-1);
 	}
 
@@ -1345,7 +1579,7 @@ int TK_VMem_AllocVirtPages(int n)
 	return(i);
 }
 
-int TK_VMem_FreeVirtPages(int b, int n)
+int TK_VMem_FreeSwapPages(int b, int n)
 {
 	int i;
 	
@@ -1360,6 +1594,7 @@ int TK_VMem_FreeVirtPages(int b, int n)
 	for(i=b; i<(b+n); i++)
 	{
 		tk_vmem_pagebmp[i>>3]&=~(1<<(i&7));
+		tk_vmem_pagevnz[i>>3]&=~(1<<(i&7));
 	}
 	
 	if(b<tk_vmem_pagerov)
@@ -1405,6 +1640,10 @@ int TK_VMem_VaReservePages(s64 vaddr, int cnt)
 	{
 		vtaddr=vaddr+(((s64)i)<<TKMM_PAGEBITS);
 		pte=TK_VMem_GetPageTableEntry(vtaddr);
+
+		if(pte&1)
+			continue;
+
 		if(!pte)
 		{
 //			if(TKMM_PAGEBITS==16)
@@ -1421,13 +1660,16 @@ int TK_VMem_VaCommitPages(s64 vaddr, int cnt)
 {
 	u64 pte;
 	s64 vtaddr;
-	int ptpn;
+	int ptpn, pidx, ppn;
 	int i, j, k;
 	
 	for(i=0; i<cnt; i++)
 	{
 		vtaddr=vaddr+(((s64)i)<<TKMM_PAGEBITS);
 		pte=TK_VMem_GetPageTableEntry(vtaddr);
+
+		if(pte&1)
+			continue;
 
 		if(!pte)
 		{
@@ -1439,15 +1681,28 @@ int TK_VMem_VaCommitPages(s64 vaddr, int cnt)
 //			TK_VMem_SetPageTableEntry(vtaddr, pte);
 		}
 
-		ptpn=(pte>>12)&16777215;
+		ptpn=(pte>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 		if(!ptpn)
 		{
-			ptpn=TK_VMem_AllocVirtPages(1);
+			ptpn=TK_VMem_AllocSwapPages(1);
+#if 1
 //			TK_VMem_SetPageVAddr(ptpn, vtaddr);
-			pte|=((u64)ptpn)<<12;
+//			pte|=((u64)ptpn)<<12;
+			pte|=((u64)ptpn)<<TK_VMEM_PTESHL;
 			pte&=~1;
 			TK_VMem_SetPageTableEntry(vtaddr, pte);
+#endif
 		}
+
+#if 0
+		pte&=~(TK_VMEM_PTEMASK<<TK_VMEM_PTESHL);
+		pidx=TK_VMem_MapVirtToPhysIdx(ptpn);
+		TK_VMem_SetPageVAddr(pidx, vtaddr);
+		ppn=TK_VMem_MapPhysIdxToPageNum(pidx);
+		pte|=((u64)ppn)<<TK_VMEM_PTESHL;
+		pte|=1;
+		TK_VMem_SetPageTableEntry(vtaddr, pte);
+#endif
 	}
 }
 
@@ -1469,7 +1724,7 @@ int TK_VMem_VaFreePages(s64 vaddr, int cnt)
 		if(pte&1)
 		{
 //			paddr=pte&0x0000FFFFFFFFF000ULL;
-			paddr=((pte>>12)&0xFFFFFFFFFULL)<<TKMM_PAGEBITS;
+			paddr=((pte>>TK_VMEM_PTESHL)&0xFFFFFFFFFULL)<<TKMM_PAGEBITS;
 			pidx=TK_VMem_MapAddrToPhysIdx((void *)paddr);
 			if(pidx>=0)
 			{
@@ -1478,6 +1733,9 @@ int TK_VMem_VaFreePages(s64 vaddr, int cnt)
 				pte=TK_VMem_GetPageTableEntry(vtaddr);
 				if(!pte)
 					continue;
+
+				if(pte&1)
+					__debugbreak();
 			}else
 			{
 				/* Physical Remap */
@@ -1488,20 +1746,21 @@ int TK_VMem_VaFreePages(s64 vaddr, int cnt)
 			}
 		}
 
-		ptpn=(pte>>12)&16777215;
+		ptpn=(pte>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 		if(ptpn)
 		{
-			TK_VMem_FreeVirtPages(ptpn, 1);
+			TK_VMem_FreeSwapPages(ptpn, 1);
 			TK_VMem_SetPageTableEntry(vtaddr, 0);
 		}
 
 #if 0
-		ptpn=(pte>>12)&16777215;
+		ptpn=(pte>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 		if(!ptpn)
 		{
-			ptpn=TK_VMem_AllocVirtPages(1);
+			ptpn=TK_VMem_AllocSwapPages(1);
 //			TK_VMem_SetPageVAddr(ptpn, vtaddr);
-			pte|=((u64)ptpn)<<12;
+//			pte|=((u64)ptpn)<<12;
+			pte|=((u64)ptpn)<<TK_VMEM_PTESHL;
 			pte&=~1;
 			TK_VMem_SetPageTableEntry(vtaddr, pte);
 		}
@@ -1523,7 +1782,7 @@ int TK_VMem_VaDoRemapPages(s64 vaddr, s64 phaddr, int cnt)
 		pte=TK_VMem_GetPageTableEntry(vtaddr);
 		if(!pte)
 		{
-			pte=(((phaddr>>TKMM_PAGEBITS)+i)<<12)|
+			pte=(((phaddr>>TKMM_PAGEBITS)+i)<<TK_VMEM_PTESHL)|
 				(0<<8)|(1<<10)|1;
 
 //			pte=(0<<8)|(1<<10);
@@ -1532,6 +1791,47 @@ int TK_VMem_VaDoRemapPages(s64 vaddr, s64 phaddr, int cnt)
 	}
 }
 
+int TK_VMem_VaDoAllocRemapedPages(s64 vaddr, int cnt)
+{
+	u64 pte;
+	s64 vtaddr;
+	int phb, pg;
+	int i, j, k;
+	
+	vtaddr=vaddr;
+	for(i=0; i<cnt; i++)
+	{
+//		vtaddr=vaddr+(((s64)i)<<TKMM_PAGEBITS);
+		pte=TK_VMem_GetPageTableEntry(vtaddr);
+		if(!pte)
+		{
+			pg=TKMM_AllocPages(1);
+			pg+=(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+			pte=(pg<<TK_VMEM_PTESHL)|(0<<8)|(1<<10)|1;
+			
+//			tk_printf("    %p %08X\n", (void *)vtaddr, pg<<14);
+
+//			pte=(((phaddr>>TKMM_PAGEBITS)+i)<<TK_VMEM_PTESHL)|
+//				(0<<8)|(1<<10)|1;
+
+//			pte=(0<<8)|(1<<10);
+			TK_VMem_SetPageTableEntry(vtaddr, pte);
+		}
+		vtaddr+=1<<TKMM_PAGEBITS;
+	}
+}
+
+void TK_VMem_VaFlushVaddr(s64 vaddr)
+{
+	u64 pte;
+
+	/* Attempt to flush page from TLB */
+	pte=(0<<8)|(1<<10);
+	tk_vmem_loadpte(vaddr, pte);
+	tk_vmem_loadpte(vaddr, pte);
+	tk_vmem_loadpte(vaddr, pte);
+	tk_vmem_loadpte(vaddr, pte);
+}
 
 void TK_VMem_VaEvictPageIndex(int pidx)
 {
@@ -1547,7 +1847,7 @@ void TK_VMem_VaEvictPageIndex(int pidx)
 //	else
 //		{ pte=(0<<8)|(1<<10); }
 	pte=(0<<8)|(1<<10);
-	pte|=((u64)ptpn)<<12;
+	pte|=((u64)ptpn)<<TK_VMEM_PTESHL;
 	TK_VMem_SetPageTableEntry(vaddr, pte);
 	
 	/* Attempt to flush page from TLB */
@@ -1559,31 +1859,49 @@ void TK_VMem_VaEvictPageIndex(int pidx)
 
 void TK_VMem_VaPageInAddr(s64 vaddr)
 {
+	s64 vaddr1;
 	u64 pte;
 	int ptpn;
 	int pidx;
 	int ppn;
 
-	pte=TK_VMem_GetPageTableEntry(vaddr);
+	vaddr1=vaddr&(~((1<<TKMM_PAGEBITS)-1));
+
+	pte=TK_VMem_GetPageTableEntry(vaddr1);
 	if(pte&1)
+	{
+		tk_vmem_loadpte(vaddr, pte);
 		return;
-	ptpn=(pte>>12)&16777215;
+	}
+
+	ptpn=(pte>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 	if(!ptpn)
 	{
-		ptpn=TK_VMem_AllocVirtPages(1);
-		pte|=((u64)ptpn)<<12;
-		pte&=~1;
+//		ptpn=TK_VMem_AllocSwapPages(1);
+//		pte|=((u64)ptpn)<<TK_VMEM_PTESHL;
+//		pte&=~1;
+//		TK_VMem_SetPageTableEntry(vaddr, pte);
+
+//		pte=0x0F1;
+		pte=0x00010001;
 		TK_VMem_SetPageTableEntry(vaddr, pte);
 
-//		return;
+		tk_vmem_loadpte(vaddr, pte);
+		return;
 	}
-	pte&=~((16777215ULL)<<12);
+
+//	pte&=~((16777215ULL)<<12);
+	pte&=~(TK_VMEM_PTEMASK<<TK_VMEM_PTESHL);
 	pidx=TK_VMem_MapVirtToPhysIdx(ptpn);
-	TK_VMem_SetPageVAddr(pidx, vaddr);
+	TK_VMem_SetPageVAddr(pidx, vaddr1);
 	ppn=TK_VMem_MapPhysIdxToPageNum(pidx);
-	pte|=((u64)ppn)<<12;
+	pte|=((u64)ppn)<<TK_VMEM_PTESHL;
 	pte|=1;
-	TK_VMem_SetPageTableEntry(vaddr, pte);
+	TK_VMem_SetPageTableEntry(vaddr1, pte);
+	
+//	tk_printf("TK_VMem_VaPageInAddr: %p %p\n", vaddr, pte);
+
+	TK_VMem_VaFlushVaddr(vaddr);
 
 	tk_vmem_loadpte(vaddr, pte);
 }
@@ -1594,6 +1912,9 @@ s64 TK_VMem_VaFindFreePages(int cnt, int flag)
 	s64 vta;
 	int vpn;
 	int i, j, k;
+	
+	if(!tk_vmem_pagecache)
+		return(0);
 	
 	vpn=tk_vmem_varov_hi;
 	while(1)
@@ -1623,6 +1944,59 @@ s64 TK_VMem_VaFindFreePages(int cnt, int flag)
 	return(vta);
 }
 
+s64 TK_VMem_VaFindFreePagesLow(int cnt, int flag)
+{
+	u64 pte;
+	s64 vta;
+	int vpn, vps, vpe;
+	int i, j, k;
+	
+	if(cnt<=0)
+		return(0);
+	
+//	if(!tk_vmem_pagecache)
+//		return(0);
+	
+	vps=TKMM_VALOSTART>>TKMM_PAGEBITS;
+	vpe=TKMM_VALOEND>>TKMM_PAGEBITS;
+	
+	vpn=tk_vmem_varov_lo;
+	while(1)
+	{
+		vta=((s64)vpn)<<TKMM_PAGEBITS;
+		pte=TK_VMem_GetPageTableEntry(vta);
+		if(pte)
+		{
+			vpn++;
+			continue;
+		}
+		
+		if((vpn+cnt)>vpe)
+		{
+			vpn=0;
+			continue;
+		}
+		
+		if((vpn<tk_vmem_varov_lo) && ((vpn+cnt)>tk_vmem_varov_lo))
+			return(0);
+
+		for(i=0; i<cnt; i++)
+		{
+			vta=((s64)(vpn+i))<<TKMM_PAGEBITS;
+			pte=TK_VMem_GetPageTableEntry(vta);
+			if(pte)
+				break;
+		}
+		
+		if(i>=cnt)
+			break;
+		vpn+=i;
+	}
+
+	vta=((s64)vpn)<<TKMM_PAGEBITS;
+	return(vta);
+}
+
 s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap)
 {
 	int vpn, vpb;
@@ -1633,7 +2007,10 @@ s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap)
 
 #if 1
 	vpb=addr>>TKMM_PAGEBITS;
-	vpn=size>>TKMM_PAGEBITS;
+//	vpn=size>>TKMM_PAGEBITS;
+	vpn=(size+((1<<TKMM_PAGEBITS)-1))>>TKMM_PAGEBITS;
+//	vpn=((size+32)+((1<<TKMM_PAGEBITS)-1))>>TKMM_PAGEBITS;
+//	vpn=(size+(1<<TKMM_PAGEBITS))>>TKMM_PAGEBITS;
 
 	if(addr)
 	{
@@ -1641,22 +2018,63 @@ s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap)
 		
 		if(qfl==1)
 		{
-//			TK_VMem_VaReservePages(addr, vpn);
-			TK_VMem_VaCommitPages(addr, vpn);
-			return(addr);
+			if(TK_VMem_CheckAddrIsVirtual(addr))
+			{
+//				TK_VMem_VaReservePages(addr, vpn);
+				TK_VMem_VaCommitPages(addr, vpn);
+				return(addr);
+			}else
+			{
+				TK_VMem_VaDoAllocRemapedPages(addr, vpn);
+				return(addr);
+			}
 		}
 	}
+
+//	if(1)
+//	if(0)
+	if(tk_vmem_swap_disable)
+	{
+//		tk_printf("TK_VMem_VaVirtualAlloc: A0\n");
+		addr=TK_VMem_VaFindFreePagesLow(vpn, flMap);
+//		tk_printf("TK_VMem_VaVirtualAlloc: A1\n");
+		if(!addr)
+			return(0);
+//		tk_printf("TK_VMem_VaVirtualAlloc: A2 %p\n", (void *)addr);
+		TK_VMem_VaDoAllocRemapedPages(addr, vpn);
+		tk_vmem_varov_lo=(addr>>TKMM_PAGEBITS)+vpn;
+//		tk_printf("TK_VMem_VaVirtualAlloc: A3\n");
+		return(addr);
+	}
+
 	
 	addr=TK_VMem_VaFindFreePages(vpn, flMap);
+	if(!addr)
+		return(0);
+	
+//	tk_printf("TK_VMem_VaVirtualAlloc: VA=%p..%p Vpn=%d\n",
+//		addr, addr+(vpn<<TKMM_PAGEBITS), vpn);
+	
 //	TK_VMem_VaReservePages(addr, vpn);
 	TK_VMem_VaCommitPages(addr, vpn);
+	tk_vmem_varov_hi=(addr>>TKMM_PAGEBITS)+vpn;
 	return(addr);
 #endif
 }
 
+int TK_VMem_VaVirtualFree(s64 vaddr, s64 size)
+{
+	return(TK_VMem_VaFreePages(vaddr, size>>TKMM_PAGEBITS));
+}
+
 int TK_VMem_CheckAddrIsVirtual(s64 addr)
 {
-	if(((addr>>32)&0xFFFF)!=0x0000)
+	u64 addr1;
+	
+	addr1=addr&0x0000FFFFFFFFFFFFULL;
+	
+//	if(((addr>>32)&0xFFFF)!=0x0000)
+	if((addr1>=TKMM_VAS_START_HI) && (addr1<TKMM_VAS_END_HI))
 		return(1);
 	return(0);
 }
@@ -1675,7 +2093,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 	if(1)
 	{
 		tea&=0x0000FFFFFFFFFFFFULL;
-		pte=((tea>>TKMM_PAGEBITS)<<12)|1;
+		pte=((tea>>TKMM_PAGEBITS)<<TK_VMEM_PTESHL)|1;
 		tk_vmem_loadpte(tea, pte);
 		return;
 	}
@@ -1696,17 +2114,41 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 	if(!pte)
 	{
 		tea&=0x0000FFFFFFFFFFFFULL;
-		pte=((tea>>TKMM_PAGEBITS)<<12)|1;
+		pte=((tea>>TKMM_PAGEBITS)<<TK_VMEM_PTESHL)|1;
 
 //		__debugbreak();
-//		pte=((0x10000>>TKMM_PAGEBITS)<<12)|1;
+//		pte=((0x10000>>TKMM_PAGEBITS)<<TK_VMEM_PTESHL)|1;
 		tk_vmem_loadpte(tea, pte);
 		return;
 	}
 #endif
 	
-//	__debugbreak();
-	TK_VMem_VaPageInAddr(tea);
+	if(TK_VMem_CheckAddrIsVirtual(tea))
+	{
+//		__debugbreak();
+		TK_VMem_VaPageInAddr(tea);
+	}else
+	{
+		if(tea<TKMM_VALOSTART)
+		{
+			/* Physical Mapped Range */
+
+			tea&=0x0000FFFFFFFFFFFFULL;
+			pte=((tea>>TKMM_PAGEBITS)<<TK_VMEM_PTESHL)|1;
+			tk_vmem_loadpte(tea, pte);
+			return;
+		}else
+		{
+			__debugbreak();
+
+			/* Direct Mapping Range */
+
+			tea=0x10000ULL;
+			pte=((tea>>TKMM_PAGEBITS)<<TK_VMEM_PTESHL)|1;
+			tk_vmem_loadpte(tea, pte);
+			return;
+		}
+	}
 }
 
 void tk_vmem_aclmiss(u64 ttb, u64 tea)

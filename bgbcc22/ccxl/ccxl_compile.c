@@ -392,6 +392,7 @@ int BGBCC_CCXL_CompileSwitchJmpR(
 //		if((ncl<256) && (df>=224))
 //		if((ncl<1024) && (df>=224))
 		if((ncl<1024) && (df>=192))
+//		if(ncl<1024)
 	{
 		BGBCC_CCXL_StackDupClean(ctx);
 		BGBCC_CCXL_StackCompileJmpTab(ctx, clm, cln, cl, clv, dfl, dfl2);
@@ -434,17 +435,30 @@ int BGBCC_CCXL_CompileSwitch_SortR(
 
 	ncl=cln-clm;
 
+//	printf("BGBCC_CCXL_CompileSwitch_SortR ncl=%d\n", ncl);
+//	for(i=0; i<ncl; i++)
+//	{
+//		printf("%X %d\n", (int)(cl[i].id), (int)clv[i]);
+//	}
+
 #if 1
 //	if(1)
 //	if(ncl<32)
 //	if(ncl<16)
-//	if(ncl<8)
-	if(ncl<4)
+	if(ncl<8)
+//	if(ncl<4)
 	{
 		for(i=0; i<ncl; i++)
 			for(j=i+1; j<ncl; j++)
 		{
 			bi=clm+i;	bj=clm+j;
+
+			if(clv[bj]==clv[bi])
+			{
+				printf("BGBCC_CCXL_CompileSwitch_SortR: "
+					"Duplicate Label %d\n", (int)(clv[bi]));
+			}
+
 			if(clv[bj]<clv[bi])
 			{
 				li=clv[bj]; clv[bj]=clv[bi]; clv[bi]=li;
@@ -552,6 +566,7 @@ int BGBCC_CCXL_CompileSwitch(BGBCC_TransState *ctx, BCCX_Node *l)
 			if(BGBCC_CCXL_IsIntP(ctx, v))
 			{
 				li=BCCX_GetIntCst(v, &bgbcc_rcst_value, "value");
+//					printf("Case Imm %d\n", (int)li);
 			}else if(BGBCC_CCXL_IsCharP(ctx, v))
 			{
 				s=BCCX_GetCst(v, &bgbcc_rcst_value, "value");
@@ -563,6 +578,7 @@ int BGBCC_CCXL_CompileSwitch(BGBCC_TransState *ctx, BCCX_Node *l)
 				if(ri && BGBCC_CCXL_IsRegImmIntP(ctx, ri->value))
 				{
 					li=BGBCC_CCXL_GetRegImmIntValue(ctx, ri->value);
+//					printf("%s %d\n", s, (int)li);
 				}else
 				{
 					BGBCC_CCXL_StubError(ctx);

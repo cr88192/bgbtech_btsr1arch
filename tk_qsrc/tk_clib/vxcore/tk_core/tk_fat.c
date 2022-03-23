@@ -197,7 +197,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 	if(tbcn<tbcm)
 	{
 		i=img->tbc_num++;
-		tbd=tk_malloc(n*512);
+		tbd=tk_malloc_krn(n*512);
 		img->tbc_buf[i]=tbd;
 		img->tbc_lba[i]=lba;
 		img->tbc_lbn[i]=num;
@@ -225,7 +225,7 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		if(n!=(img->tbc_lbn[i]&255))
 		{
 			tk_free(img->tbc_buf[i]);
-			img->tbc_buf[i]=tk_malloc(n*512);
+			img->tbc_buf[i]=tk_malloc_krn(n*512);
 		}
 		img->tbc_lba[i]=lba;
 		img->tbc_lbn[i]=num;
@@ -282,7 +282,7 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 		return(NULL);
 	}
 	
-	img->sbc_buf[i]=tk_malloc((num&255)*512);
+	img->sbc_buf[i]=tk_malloc_krn((num&255)*512);
 	img->sbc_lba[i]=lba;
 	img->sbc_lbn[i]=num;
 
@@ -457,7 +457,7 @@ byte *TKFAT_GetSectorTempFatBuffer(TKFAT_ImageInfo *img,
 //	if(img->tfbc_num<1024)
 	{
 		i=img->tfbc_num++;
-		tbd=tk_malloc(n*512);
+		tbd=tk_malloc_krn(n*512);
 //		img->tfbc_buf[i]=tbd;
 //		img->tfbc_lba[i]=lba;
 //		img->tfbc_lbn[i]=n;
@@ -491,7 +491,7 @@ byte *TKFAT_GetSectorTempFatBuffer(TKFAT_ImageInfo *img,
 		if(n!=(img->tfbc_lbn[i]&255))
 		{
 			tk_free(img->tfbc_buf[i]);
-			img->tfbc_buf[i]=tk_malloc(n*512);
+			img->tfbc_buf[i]=tk_malloc_krn(n*512);
 		}
 		img->tfbc_lba[i]=lba;
 		img->tfbc_lbn[i]=num;
@@ -3379,7 +3379,7 @@ TKFAT_ImageInfo *TKFAT_CreateSdFatContext()
 {
 	TKFAT_ImageInfo *img;
 
-	img=tk_malloc(sizeof(TKFAT_ImageInfo));
+	img=tk_malloc_krn(sizeof(TKFAT_ImageInfo));
 	memset(img, 0, sizeof(TKFAT_ImageInfo));
 	
 	TKSPI_InitDevice();
@@ -3480,7 +3480,7 @@ byte *LoadFile(char *path, int *rsz)
 	fseek(fd, 0, 2);
 	sz=ftell(fd);
 	fseek(fd, 0, 0);
-	buf=tk_malloc(sz);
+	buf=tk_malloc_krn(sz);
 	i=fread(buf, 1, sz, fd);
 	fclose(fd);
 	
@@ -3539,10 +3539,10 @@ int ProcessSDCL(
 			
 			printf("Make Image %dKiB\n", imgsz/2);
 			
-			imgbuf=tk_malloc(imgsz*512);
+			imgbuf=tk_malloc_krn(imgsz*512);
 			imgfn=strdup(a[1]);
 			
-			img=tk_malloc(sizeof(TKFAT_ImageInfo));
+			img=tk_malloc_krn(sizeof(TKFAT_ImageInfo));
 			memset(img, 0, sizeof(TKFAT_ImageInfo));
 			img->pImgData=imgbuf;
 			img->nImgBlks=imgsz;

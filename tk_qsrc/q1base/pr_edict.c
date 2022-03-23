@@ -751,7 +751,8 @@ string_t ED_StringToStringT (char *str)
 	string_t d;
 	
 	v = str;
-	d = v - pr_strings;
+	d = (int)(v - pr_strings);
+	d = (int)((s64)d);
 	w = pr_strings + d;
 
 	if(v!=w)

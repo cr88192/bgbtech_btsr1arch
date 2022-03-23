@@ -293,7 +293,7 @@ int GfxDrv_PrepareFramebuf()
 //	btesh2_gfxcon_framebuf=(byte *)btesh_main_screen->pixels;
 //	btesh2_gfxcon_framebuf=(byte *)malloc(960*720*4);
 	btesh2_gfxcon_framebuf=(byte *)malloc(
-		btesh2_gfxcon_fbxs*btesh2_gfxcon_fbys*4);
+		(btesh2_gfxcon_fbxs+8)*(btesh2_gfxcon_fbys+8)*4);
 	gfxdrv_locksurf=1;
 	return(1);
 }

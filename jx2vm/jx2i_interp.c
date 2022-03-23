@@ -622,7 +622,7 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 		if((exsr&0xF000)==0xC000)
 			return(0);
 
-		JX2_DBGBREAK
+//		JX2_DBGBREAK
 		return(0);
 	}
 

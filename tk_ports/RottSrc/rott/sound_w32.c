@@ -454,5 +454,9 @@ int SoundDev_WriteSamples(short *buffer, int cnt)
 	return(i);
 }
 
+void SoundDev_Silence()
+{
+}
+
 #endif
 

@@ -1514,7 +1514,8 @@ begin
 		if(tReqSeqIdx!=tReqIxA)
 			$display("L1D$: In!=Req IxA, %X %X",
 				tReqSeqIdx, tReqIxA);
-		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF))
+		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
+				(tReqSeqVa[43:24]==0))
 			$display("L1D$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 		if(tReqSeqVa[43:1]!=tReqAxA[43:1])
@@ -1587,7 +1588,8 @@ begin
 		if(tReqSeqIdx!=tReqIxB)
 			$display("L1D$: In!=Req IxB, %X %X",
 				tReqSeqIdx, tReqIxB);
-		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF))
+		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
+				(tReqSeqVa[43:24]==0))
 			$display("L1D$: Virt!=Phys B, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 		if(tReqSeqVa[43:1]!=tReqAxB[43:1])

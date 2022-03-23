@@ -77,7 +77,7 @@ byte * shadingtable;
 word	tilemap[MAPSIZE][MAPSIZE]; // wall values only
 byte	spotvis[MAPSIZE][MAPSIZE];
 byte	mapseen[MAPSIZE][MAPSIZE];
-unsigned long * lights;
+unsigned int * lights;
 
 // int			wstart;
 
@@ -113,7 +113,7 @@ int	tics;
 // ray tracing variables
 //
 
-long	xintercept,yintercept;
+int	xintercept,yintercept;
 
 int doublestep=0;
 int hp_startfrac;
@@ -600,8 +600,8 @@ boolean TransformPlane (int x1, int y1, int x2, int y2, visobj_t * plane)
 
 int		CalcHeight (void)
 {
-		fixed  gxt,gyt,nx;
-	long				gx,gy;
+	fixed		gxt,gyt,nx;
+	int			gx,gy;
 
 	whereami=0;
 
@@ -5517,7 +5517,7 @@ void WarpCreditString ( int time, byte * back, int num, CreditType * Credits)
 	soundplayed=false;
 
 	while (time>0)
-		{
+	{
 		DrawBackground ( back );
 		DrawPreviousCredits ( num, Credits );
 		if (Credits[num].font==0)
@@ -5526,36 +5526,51 @@ void WarpCreditString ( int time, byte * back, int num, CreditType * Credits)
 			CurrentFont=tinyfont;
 		US_ClippedPrint (x, (cy>>16)+4, &Credits[num].text[0]);
 		if ( ((cy>>16)<196) && (soundplayed==false))
-			{
+		{
 			if ((dopefish==true) && (SD_Started==true))
-				{
+			{
 				int snd;
 
 				do
-					{
+				{
 					snd=(RandomNumber("DoCredits",0)+RandomNumber("DoCredits",0))%MAXSOUNDS;
-					}
+				}
 				while (SD_SoundOkay ( snd ) == false);
 				SD_Play ( snd );
-				}
+			}
 			else
-				{
+			{
+#if 0
+				/* 	BGB: Random sound effects got old */
+
 //				SD_Play ( SD_BAZOOKAFIRESND );
 #if (SHAREWARE == 0)
 				SD_Play ( SD_BAZOOKAFIRESND + (RandomNumber("DoCredits",1)%13) );
 #else
 				SD_Play ( SD_BAZOOKAFIRESND + (RandomNumber("DoCredits",1)%6) );
 #endif
+
+#else
+
+				/* BGB: Just play a single sound. */
+//				SD_Play ( SD_BAZOOKAFIRESND );
+//				SD_Play ( SD_ATKPISTOLSND );
+//				SD_Play ( SD_MOVECURSORSND );
+				SD_Play ( SD_RICOCHET1SND + (RandomNumber("DoCredits",1)%3));
+
+#endif
+
+
 				soundplayed=true;
-				}
 			}
+		}
 		FlipPage();
 		CalcTics();
 		cy+=dy*tics;
 		time-=tics;
 		if (LastScan != 0)
 			break;
-		}
+	}
 }
 
 void DoCreditScreen ( void )

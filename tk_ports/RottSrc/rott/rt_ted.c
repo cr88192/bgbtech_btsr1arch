@@ -124,13 +124,13 @@ static char * ROTTMAPS = STANDARDGAMELEVELS;
 static char * BATTMAPS = STANDARDBATTLELEVELS;
 
 static char NormalWeaponTiles[ 10 ] =
-	{
+{
 	46, 48, 49, 50, 51, 52, 53, 54, 55, 56
-	};
+};
 static char SharewareWeaponTiles[ 7 ] =
-	{
+{
 	48, 49, 50, 51, 52, 53, 54
-	};
+};
 
 static char CacheStrings[MAXSILLYSTRINGS][80]=
 {
@@ -302,31 +302,30 @@ void PreCacheGroup( int start, int end )
 		return;
 	k=cacheindex;
 	for (j=start;j<=end;j++)
-		{
+	{
 		if (!W_LumpLength(j))
-			{
+		{
 #if (PRECACHETEST == 1)
 			SoftError("Tried to precache a label, lump = %ld\n",j);
 #endif
 			continue;
-			}
+		}
 		found=0;
 		for (i=1;i<k;i++)
 			if (cachelist[i].lump==j)
-				{
-				found=1;
-				break;
-				}
+		{
+			found=1;
+			break;
+		}
 		if (found==0)
-			{
+		{
 			cachelist[cacheindex].lump=j;
 			cachelist[cacheindex++].cachelevel=PU_CACHEACTORS;
 
 			if (cacheindex==MAXPRECACHE)
 				Error("MaxPreCache reached\n");
-			}
 		}
-
+	}
 }
 
 
@@ -361,31 +360,31 @@ void PreCachePlayers(void )
 
 
 void PreCachePlayerSound(void)
-	{
+{
 	switch (locplayerstate->player)
-		{
-		case 0:
-		case 5:
-			SD_PreCacheSound(SD_PLAYERTCSND);
+	{
+	case 0:
+	case 5:
+		SD_PreCacheSound(SD_PLAYERTCSND);
 
-			break;
-		case 1:
-			SD_PreCacheSound(SD_PLAYERTBSND);
+		break;
+	case 1:
+		SD_PreCacheSound(SD_PLAYERTBSND);
 
-			break;
-		case 2:
-			SD_PreCacheSound(SD_PLAYERDWSND);
+		break;
+	case 2:
+		SD_PreCacheSound(SD_PLAYERDWSND);
 
-			break;
-		case 3:
-			SD_PreCacheSound(SD_PLAYERLNSND);
+		break;
+	case 3:
+		SD_PreCacheSound(SD_PLAYERLNSND);
 
-			break;
-		case 4:
-			SD_PreCacheSound(SD_PLAYERIPFSND);
-			break;
-		}
+		break;
+	case 4:
+		SD_PreCacheSound(SD_PLAYERIPFSND);
+		break;
 	}
+}
 
 
 #define IS_ALTERNATE_ACTOR(ob)											\
@@ -405,10 +404,10 @@ void PreCacheActor( int actor, int which )
 	int end;
 
 	switch (actor)
-		{
+	{
 		case lowguardobj:
 			if (IS_ALTERNATE_ACTOR(new))
-				{
+			{
 				start = SD_LOWGUARD2SEESND;
 				end = SD_LOWGUARD2SEE3SND;
 				SD_PreCacheSoundGroup(start,end);
@@ -424,10 +423,10 @@ void PreCacheActor( int actor, int which )
 				start=W_GetNumForName("MARSHOO1");
 				end  =W_GetNumForName("MNGRISE4");
 				//end  =W_GetNumForName("MARUSE28");
-				}
-
+			}
 			else
-				{start = SD_LOWGUARD1SEESND;
+			{
+				start = SD_LOWGUARD1SEESND;
 				end = SD_LOWGUARD1SEE3SND;
 				SD_PreCacheSoundGroup(start,end);
 
@@ -442,9 +441,9 @@ void PreCacheActor( int actor, int which )
 				start=W_GetNumForName("LWGSHOO1");
 				end = W_GetNumForName("SNGRISE4");
 				//end  =W_GetNumForName("LOWUSE28");
-				}
-
+			}
 			break;
+
 		case highguardobj:
 			start = SD_HIGHGUARD1SEESND;
 			end = SD_HIGHGUARDDIESND;
@@ -501,18 +500,18 @@ void PreCacheActor( int actor, int which )
 			SD_PreCacheSoundGroup(start,end);
 
 			if (IS_ALTERNATE_ACTOR(new))
-				{
+			{
 				start=W_GetNumForName("XYGSHOO1");
 				end  =W_GetNumForName("XYLROLL6");
 				//end  =W_GetNumForName("XYUSE28");
-				}
+			}
 
 			else
-				{
+			{
 				start=W_GetNumForName("ANGSHOO1");
 				end  =W_GetNumForName("ANLROLL6");
 				//end  =W_GetNumForName("ANUSE28");
-				}
+			}
 
 			break;
 
@@ -523,16 +522,16 @@ void PreCacheActor( int actor, int which )
 			SD_PreCacheSoundGroup(start,end);
 
 			if (IS_ALTERNATE_ACTOR(new))
-				{
+			{
 				start=W_GetNumForName("WIGSHOO1");
 				end  =W_GetNumForName("WIHUSE28");
-				}
+			}
 
 			else
-				{
+			{
 				start=W_GetNumForName("LIGSHOO1");
 				end  =W_GetNumForName("LIPEAD11");
-				}
+			}
 
 			break;
 
@@ -2654,7 +2653,8 @@ void RespawnPlayerobj(objtype *ob)
 */
 
 void AssignTeams(void)
-{int i,color;
+{
+	int i,color;
 	int teamforcolor[MAXPLAYERCOLORS];
 
 	numteams = 0;
@@ -2665,9 +2665,11 @@ void AssignTeams(void)
 	memset(TEAM,0,sizeof(TEAM));
 
 	for(i=0;i<numplayers;i++)
-	{color = PLAYERSTATE[i].uniformcolor;
-	if (teamforcolor[color] == -1)
-		{TEAM[numteams].uniformcolor = color;
+	{
+		color = PLAYERSTATE[i].uniformcolor;
+		if (teamforcolor[color] == -1)
+		{
+			TEAM[numteams].uniformcolor = color;
 
 			TEAM[numteams].nummembers ++;
 			teamforcolor[color] = numteams;
@@ -2676,10 +2678,10 @@ void AssignTeams(void)
 				(numteams > 2))
 			Error("players selected more colors(%d) than Capture the Triad allows",numteams);
 		}
-	else
-		TEAM[teamforcolor[color]].nummembers ++;
+		else
+			TEAM[teamforcolor[color]].nummembers ++;
 
-	PLAYERSTATE[i].team = teamforcolor[color];
+		PLAYERSTATE[i].team = teamforcolor[color];
 
 	}
 
@@ -2947,7 +2949,8 @@ void SetupPlayers( void )
 		}
 
 	if (gamestate.battlemode == battle_Tag)
-	{int i;
+	{
+		int i;
 		playertype *pstate;
 
 		BATTLE_It = GameRandomNumber("tag choose",0) % numplayers;
@@ -2957,13 +2960,23 @@ void SetupPlayers( void )
 		{M_LINKSTATE(PLAYER[i],pstate);
 
 			if (i == BATTLE_It)
-			{pstate->missileweapon = pstate->oldweapon = pstate->new_weapon =
-				pstate->oldmissileweapon = pstate->weapon = wp_godhand;
+			{
+				pstate->missileweapon =
+					pstate->oldweapon =
+					pstate->new_weapon =
+					pstate->oldmissileweapon =
+					pstate->weapon =
+					wp_godhand;
 				pstate->bulletweapon = -1;
 			}
 			else
-			{pstate->missileweapon = pstate->oldweapon = pstate->new_weapon =
-				pstate->oldmissileweapon = pstate->bulletweapon = pstate->weapon = -1;
+			{
+				pstate->missileweapon =
+					pstate->oldweapon =
+					pstate->new_weapon =
+					pstate->oldmissileweapon =
+					pstate->bulletweapon =
+					pstate->weapon = -1;
 			}
 		}
 	}
@@ -2988,22 +3001,23 @@ void SetupMaskedWalls( void )
 
 	map = mapplanes[0];
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			tile = *map++;
 			if ((tile >= 158) && (tile <= 160)) // Multi glassed walls
-				{
-				SpawnMaskedWall(i,j,mw_multi1+(tile-158),MW_MULTI|MW_BLOCKING|MW_BLOCKINGCHANGES|MW_SHOOTABLE);
-				}
+			{
+				SpawnMaskedWall(i,j,mw_multi1+(tile-158),
+					MW_MULTI|MW_BLOCKING|MW_BLOCKINGCHANGES|MW_SHOOTABLE);
+			}
 			else if ((tile >= 176) && (tile <= 178)) // Multi shot out glassed walls
-				{
+			{
 				SpawnMaskedWall(i,j,mw_multi1+(tile-176),MW_BOTTOMPASSABLE);
-				}
+			}
 			else if ((tile >= 162) && (tile <= 171))
-				{
+			{
 				switch (tile)
-					{
+				{
 					case 162:
 						SpawnMaskedWall(i,j,mw_normal1,MW_SHOOTABLE|MW_BLOCKING);
 						break;
@@ -3177,9 +3191,9 @@ void SetupPushWalls( void )
 
 	map = mapplanes[1];
 	for(j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			tile = *map++;
 
 			if(rott_iswolf)
@@ -3190,7 +3204,7 @@ void SetupPushWalls( void )
 			}
 
 			switch(tile)
-				{
+			{
 				case 72:
 				case 73:
 				case 74:
@@ -3200,26 +3214,26 @@ void SetupPushWalls( void )
 				case 78:
 				case 79:
 					if (tilemap[i][j] && ActorIsWall(i,j))
-						{
+					{
 						temp=tilemap[i][j]&0x1fff;
 						tilemap[i][j] = pwallnum;
 						if (MAPSPOT(i,j,2))
 							SpawnPushWall(i,j,1,temp,tile-72,0);
 						else
 							SpawnPushWall(i,j,0,temp,tile-72,0);
-						}
+					}
 					break;
 
 				case 80: //OldPushWall
 					if (tilemap[i][j])
-						{
+					{
 						temp=tilemap[i][j]&0x1fff;
 						tilemap[i][j] = pwallnum;
 						if (MAPSPOT(i,j,2))
 							Error("You cannot link a pushwall which has no direction associated\n with it at x=%ld y=%ld\n",i,j);
 						else
 							SpawnPushWall(i,j,0,temp,nodir,0);
-						}
+					}
 					break;
 
 				case 256:
@@ -3230,14 +3244,14 @@ void SetupPushWalls( void )
 						break;
 				
 					if (tilemap[i][j])
-						{
+					{
 						temp=tilemap[i][j]&0x1fff;
 						tilemap[i][j] = pwallnum;
 						if (MAPSPOT(i,j,2))
 							SpawnPushWall(i,j,0,temp,(tile-256)<<1,2);
 						else
 							SpawnPushWall(i,j,0,temp,(tile-256)<<1,4);
-						}
+					}
 					else
 						Error("You have to place a turbomovewall icon on a wall at x=%d y=%d",i,j);
 					break;
@@ -3250,14 +3264,14 @@ void SetupPushWalls( void )
 						break;
 
 					if (tilemap[i][j])
-						{
+					{
 						temp=tilemap[i][j]&0x1fff;
 						tilemap[i][j] = pwallnum;
 						if (MAPSPOT(i,j,2))
 							SpawnPushWall(i,j,0,temp,(tile-300)/9,1);
 						else
 								SpawnPushWall(i,j,0,temp,(tile-300)/9,3);
-						}
+					}
 					else
 						Error("You have to place a movewall icon on a wall at x=%d y=%d",i,j);
 					break;
@@ -3302,9 +3316,9 @@ void SetupPushWallLinks( void )
 
 	map = mapplanes[1];
 	for(j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			tile = *map++;
 
 			if(rott_iswolf)
@@ -3315,7 +3329,7 @@ void SetupPushWallLinks( void )
 			}
 
 			switch(tile)
-				{
+			{
 				case 72:
 				case 73:
 				case 74:
@@ -3325,37 +3339,37 @@ void SetupPushWallLinks( void )
 				case 78:
 				case 79:
 					if (ActorIsPushWall(i,j))
-						{
+					{
 						if (MAPSPOT(i,j,2))
-							{
+						{
 							touchx = (word) ((MAPSPOT(i,j,2) >> 8) & 0xff);
 							touchy = (word) ((MAPSPOT(i,j,2) >> 0) & 0xff);
 							if (touchindices[touchx][touchy])
-								{
+							{
 								if (MAPSPOT(i,j+1,2)!=0)
-									{
+								{
 #if (DEVELOPMENT == 1)
 									SoftError("MAPWARNING:You left a delay for a linked push wall under the pushwall\n at x=%ld y=%ld\n",i,j);
 #endif
-									}
+								}
 								Link_To_Touchplate(touchx,touchy,
 									ActivatePushWall,NULL,
 									GetPushWallNumber(i,j),0);
-								}
+							}
 							else
 								Error("tried to link a pushwall at x=%ld y=%ld to a non-existent touchplate\n",i,j);
-							}
 						}
+					}
 					break;
 
 				case 80:
 					if (ActorIsPushWall(i,j))
-						{
+					{
 						if (MAPSPOT(i,j,2))
-							{
+						{
 							Error("You shouldn't be linking a nondirectional-push wall at x=%ld y=%ld\n",i,j);
-							}
 						}
+					}
 					break;
 				case 256:
 				case 257:
@@ -3781,25 +3795,26 @@ void FindTimeTile ( int * x, int * y )
 
 	if (!(tilemap[xx+1][yy]) && MAPSPOT(xx+1,yy,2))
 	{
-	*x=xx+1;
-	return;
+		*x=xx+1;
+		return;
 	}
 	if (!(tilemap[xx-1][yy]) && MAPSPOT(xx-1,yy,2))
 	{
-	*x=xx-1;
-	return;
+		*x=xx-1;
+		return;
 	}
 	if (!(tilemap[xx][yy+1]) && MAPSPOT(xx,yy+1,2))
 	{
-	*y=yy+1;
-	return;
+		*y=yy+1;
+		return;
 	}
 	if (!(tilemap[xx][yy-1]) && MAPSPOT(xx,yy-1,2))
 	{
-	*y=yy-1;
-	return;
+		*y=yy-1;
+		return;
 	}
-	Error ("Could not find an end time for a clock linked item\nat x=%ld y=%ld\n",*x,*y);
+	Error ("Could not find an end time for a clock linked item\n"
+		"at x=%ld y=%ld\n",*x,*y);
 }
 
 
@@ -3916,7 +3931,7 @@ void LinkElevatorDiskGroups(void)
 	boolean newdiskheight;
 
 
-	#define M_ISELEVDISK(actor) \
+#define M_ISELEVDISK(actor) \
 	((actor->obclass == diskobj) && (actor->state == &s_elevdisk))
 
 
@@ -3985,7 +4000,7 @@ void LinkElevatorDiskGroups(void)
 void LinkActor (objtype *ob,int tilex,int tiley,
 					void (*action)(int),void (*swapaction)(int)
 					)
-	{
+{
 	word  touchx,touchy;
 	int	clockx,clocky;
 	int	clocklinked,k;
@@ -3994,36 +4009,36 @@ void LinkActor (objtype *ob,int tilex,int tiley,
 
 	clocklinked = 0;
 	for(k=0;k<numclocks;k++)
-		{
+	{
 		clockx = Clocks[k].points_to_tilex;
 		clocky = Clocks[k].points_to_tiley;
 		if ((clockx == tilex) && (clocky == tiley))
-			{
+		{
 			clocklinked = 1;
 			ClockLink(EnableObject,DisableObject,(nlint)ob,k);
-			}
 		}
+	}
 
 	if (!clocklinked)
-		{
+	{
 		touchx = (word) ((MAPSPOT(tilex,tiley,2) >> 8) & 0xff);
 		touchy = (word) ((MAPSPOT(tilex,tiley,2) >> 0) & 0xff);
 		if ((MISCVARS->TOMLOC.x == touchx) && (MISCVARS->TOMLOC.y == touchy))
-			{
+		{
 			objtype *tom = (objtype*)actorat[touchx][touchy];
 			tom->whatever = ob;
-			}
+		}
 
 		else if (touchindices[touchx][touchy])
-			{
+		{
 			tswitch = (wall_t*) actorat[touchx][touchy];
 
 			if (tswitch && (ob->obclass == wallfireobj))
-				{
+			{
 				tswitch->flags |= FL_REVERSIBLE;
 				if (tswitch->flags & FL_ON)
 					ob->flags |= FL_ACTIVE;
-				}
+			}
 
 
 			if (tswitch && (tswitch->flags & FL_ON))
@@ -4035,18 +4050,18 @@ void LinkActor (objtype *ob,int tilex,int tiley,
 				Link_To_Touchplate(touchx,touchy,action,swapaction,
 					T_SwizzleObjtypeToInt(ob),0);
 			if (ob->obclass == gasgrateobj)
-				{
+			{
 				ob->temp1 = touchx;
 				ob->temp2 = touchy;
-				}
 			}
+		}
 		else
 			Error("tried to link an object at x=%ld y=%ld to a non-existent touchplate supposedly at x=%ld y=%ld",tilex,tiley,touchx,touchy);
-		}
+	}
 
 	if (tilemap[tilex][tiley])
 		(MAPSPOT(tilex,tiley,2))=21;
-	}
+}
 
 
 
@@ -4061,7 +4076,7 @@ void LinkActor (objtype *ob,int tilex,int tiley,
 
 
 void SetupInanimateActors (void)
-	{
+{
 	int	i,j,linked;
 	word	*map,tile;
 	void (*action)(int),(*swapaction)(int);
@@ -4072,9 +4087,9 @@ void SetupInanimateActors (void)
 
 	// non-linked, harmless inanimate actors
 	for(j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			tile = *map++;
 
 			if(rott_iswolf)
@@ -4085,7 +4100,7 @@ void SetupInanimateActors (void)
 			}
 
 			switch(tile)
-				{
+			{
 
 				case 193:
 					SpawnSpring(i,j);
@@ -4873,18 +4888,19 @@ void InsaneDump(void)
 	BATTLEMODE = 1;
 	for(level=0;level<8;level ++)
 	{
-	GetEpisode(level);
-	LoadROTTMap(level);
-	map = mapplanes[0];
-	for (j=0;j<mapheight;j++)
+		GetEpisode(level);
+		LoadROTTMap(level);
+		map = mapplanes[0];
+		for (j=0;j<mapheight;j++)
 		{
-		for(i=0;i<mapwidth;i++)
-			{tile = *map++;
-			if (IsWall(i,j)==true)
-				{tally[tile]++;
-				inlevel[tile][level]=1;
+			for(i=0;i<mapwidth;i++)
+			{
+				tile = *map++;
+				if (IsWall(i,j)==true)
+				{
+					tally[tile]++;
+					inlevel[tile][level]=1;
 				}
-
 			}
 		}
 	}
@@ -4893,14 +4909,15 @@ void InsaneDump(void)
 	MapDebug("----------------------------\n");
 	for (i=0;i<1000;i++)
 	if (i < 90)
-		{MapDebug("%4d		%4d		%s",i,tally[i],
+	{
+		MapDebug("%4d		%4d		%s",i,tally[i],
 					W_GetNameForNum(GetLumpForTile(i)));
 		MapDebug("	");
 		for(level=0;level < 10;level ++)
 			if (inlevel[i][level])
-			MapDebug("%d,",level);
+				MapDebug("%d,",level);
 		MapDebug("\n");
-		}
+	}
 
 
 
@@ -4914,16 +4931,18 @@ void InsaneDump(void)
 	MapDebug("=======================\n");
 	for(level=0;level<10;level ++)
 	{
-	GetEpisode(level);
-	LoadROTTMap(level);
-	map = mapplanes[0];
-	for (j=0;j<mapheight;j++)
+		GetEpisode(level);
+		LoadROTTMap(level);
+		map = mapplanes[0];
+		for (j=0;j<mapheight;j++)
 		{
-		for(i=0;i<mapwidth;i++)
-			{tile = *map++;
-			if (IsDoor(i,j)==true)
-				{tally[tile]++;
-				inlevel[tile][level]=1;
+			for(i=0;i<mapwidth;i++)
+			{
+				tile = *map++;
+				if (IsDoor(i,j)==true)
+				{
+					tally[tile]++;
+					inlevel[tile][level]=1;
 				}
 
 			}
@@ -4934,13 +4953,13 @@ void InsaneDump(void)
 	MapDebug("----------------------------\n");
 	for (i=0;i<1000;i++)
 	if (tally[i]!=0)
-		{MapDebug("%4d		%4d			",i,tally[i]);
+	{
+		MapDebug("%4d		%4d			",i,tally[i]);
 		for(level=0;level < 10;level ++)
 			if (inlevel[i][level])
-			MapDebug("%d,",level);
+				MapDebug("%d,",level);
 		MapDebug("\n");
-
-		}
+	}
 
 // MaskedWalls
 	memset(tally,0,sizeof(tally));
@@ -4950,18 +4969,19 @@ void InsaneDump(void)
 	MapDebug("=======================\n");
 	for(level=0;level<10;level ++)
 	{
-	GetEpisode(level);
-	LoadROTTMap(level);
-	map = mapplanes[0];
-	for (j=0;j<mapheight;j++)
+		GetEpisode(level);
+		LoadROTTMap(level);
+		map = mapplanes[0];
+		for (j=0;j<mapheight;j++)
 		{
-		for(i=0;i<mapwidth;i++)
-			{tile = *map++;
-			if ((IsMaskedWall(i,j)) && (!IsPlatform(i,j)))
-				{tally[tile]++;
-				inlevel[tile][level]=1;
+			for(i=0;i<mapwidth;i++)
+			{
+				tile = *map++;
+				if ((IsMaskedWall(i,j)) && (!IsPlatform(i,j)))
+				{
+					tally[tile]++;
+					inlevel[tile][level]=1;
 				}
-
 			}
 		}
 	}
@@ -4970,13 +4990,14 @@ void InsaneDump(void)
 	MapDebug("----------------------------\n");
 	for (i=0;i<1000;i++)
 	if (tally[i]!=0)
-		{MapDebug("%4d		%4d			",i,tally[i]);
+	{
+		MapDebug("%4d		%4d			",i,tally[i]);
 		for(level=0;level < 10;level ++)
 			if (inlevel[i][level])
 			MapDebug("%d,",level);
 		MapDebug("\n");
 
-		}
+	}
 
 }
 
@@ -5439,11 +5460,11 @@ int GetSongForLevel ( void )
 	int num;
 
 	for (i=0;i<mapwidth;i++)
-		{
+	{
 		num = MAPSPOT(i,0,2);
 		if ( (num>>8) == 0xba )
 			return (num&0xff);
-		}
+	}
 //	Error("GetSongForLevel: could not find song in level %ld\n",gamestate.mapon);
 //	return -1;
 	return 0;
@@ -5465,12 +5486,12 @@ void DoSharewareConversionBackgroundPlane (void)
 		return;
 
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			map=&(mapplanes[0][MAPSIZE*(j)+(i)]);
 			switch (*map)
-				{
+			{
 
 				// Tom Face
 				case 45:
@@ -5589,9 +5610,9 @@ void DoSharewareConversionBackgroundPlane (void)
 				case 232:
 					*map=231;
 					break;
-				}
 			}
 		}
+	}
 }
 
 
@@ -5603,18 +5624,18 @@ void DoSharewareConversionBackgroundPlane (void)
 ========================================
 */
 void DoLowMemoryConversionBackgroundPlane (void)
-	{
+{
 	int i,j;
 	word * map;
 
 
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			map=&(mapplanes[0][MAPSIZE*(j)+(i)]);
 			switch (*map)
-				{
+			{
 				//Walls
 
 				case 2:
@@ -5771,10 +5792,10 @@ void DoLowMemoryConversionBackgroundPlane (void)
 					*map=(*(&(mapplanes[0][MAPSIZE*(0)+(0)]))) + 18;
 					break;
 #endif
-				}
 			}
 		}
 	}
+}
 
 
 /*
@@ -5785,28 +5806,28 @@ void DoLowMemoryConversionBackgroundPlane (void)
 ========================================
 */
 void DoLowMemoryConversionIconPlane (void)
-	{
+{
 #if 0
 	int i,j;
 	word * map;
 
 
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			map=&(mapplanes[2][MAPSIZE*(j)+(i)]);
 			switch (*map)
-				{
+			{
 				case 13:
 					*(&(mapplanes[0][MAPSIZE*(j)+(i)]))=21;
 					*map=0;
 					break;
-				}
 			}
 		}
-#endif
 	}
+#endif
+}
 
 
 
@@ -5819,18 +5840,18 @@ void DoLowMemoryConversionIconPlane (void)
 */
 
 void DoLowMemoryConversionForegroundPlane (void)
-	{
+{
 	int i,j;
 	word * map;
 
 
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			map=&MAPSPOT(i,j,1);
 			switch (*map)
-				{
+			{
 				// light sourcing
 				case 139:
 					*map=0;
@@ -5998,10 +6019,10 @@ void DoLowMemoryConversionForegroundPlane (void)
 					*map = 211;
 					break;
 
-				}
 			}
 		}
 	}
+}
 
 
 /*
@@ -6020,12 +6041,12 @@ void DoSharewareConversionForegroundPlane (void)
 		return;
 
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			map=&(mapplanes[1][MAPSIZE*(j)+(i)]);
 			switch (*map)
-				{
+			{
 				case 32:  // Crystal Key
 				case 47:  // Knife
 				case 65:  // DIP BALL D
@@ -6062,9 +6083,9 @@ void DoSharewareConversionForegroundPlane (void)
 				case 262:  // Tom Larva
 					*map=263;
 					break;
-				}
 			}
 		}
+	}
 }
 
 /*
@@ -6129,19 +6150,19 @@ void DoRegisterConversionBackgroundPlane (void)
 ========================================
 */
 void DoRegisterConversionForegroundPlane (void)
-	{
+{
 //	int i,j;
 //	word * map;
 
 
 #if 0
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		for(i=0;i<mapwidth;i++)
-			{
+		{
 			map=&MAPSPOT(i,j,1);
 			switch (*map)
-				{
+			{
 				//sprites
 				case 42:
 				case 43:
@@ -6150,11 +6171,11 @@ void DoRegisterConversionForegroundPlane (void)
 					*map = 43;
 					break;
 
-				}
 			}
 		}
-#endif
 	}
+#endif
+}
 
 /*
 ==================
@@ -6191,12 +6212,15 @@ void DoRegisterConversion (void)
 =======================
 */
 boolean DoPanicMapping (void)
-	{
-	if ((lowmemory==true) && (modemgame==false) && (demorecord==false) && (demoplayback==false))
+{
+	if (	(lowmemory==true) &&
+			(modemgame==false) &&
+			(demorecord==false) &&
+			(demoplayback==false)	)
 		return true;
 	else
 		return false;
-	}
+}
 
 /*
 =======================
@@ -6206,12 +6230,12 @@ boolean DoPanicMapping (void)
 =======================
 */
 void DoLowMemoryConversion (void)
-	{
+{
 	DoLowMemoryConversionBackgroundPlane ();
 	if ((modemgame==false) && (demorecord==false) && (demoplayback==false))
 		DoLowMemoryConversionForegroundPlane ();
 	DoLowMemoryConversionIconPlane ();
-	}
+}
 
 
 const char *rt_shapenames[3072]=
@@ -6870,6 +6894,8 @@ void SetupGameLevel (void)
 	int crud, nshap;
 	int i, j, k;
 
+	FX_StopAllSounds();
+
 #if 0
 	mapwidth = mapheight = 128;
 
@@ -6900,11 +6926,11 @@ void SetupGameLevel (void)
 		SetRNGindex ( gamestate.randomseed );
 
 	if (tedlevel)
-		{
+	{
 		GetEpisode (tedlevelnum);
 		LoadROTTMap(tedlevelnum);
 		gamestate.mapon=tedlevelnum;
-		}
+	}
 	else
 	{
 		GetEpisode (gamestate.mapon);
@@ -6919,25 +6945,26 @@ void SetupGameLevel (void)
 		rott_iswolf=true;
 
 	if (DoPanicMapping())
-		{
+	{
 		DoLowMemoryConversion();
-		}
+	}
 
 	if ( gamestate.Product == ROTT_SHAREWARE )
-		{
+	{
 		DoSharewareConversion ();
-		}
+	}
 	else
-		{
+	{
 		DoRegisterConversion ();
-		}
+	}
 
 	if ( (NewGame) || (lastlevelloaded!=gamestate.mapon) )
-		{
+	{
 		SetupPreCache();
 		lastlevelloaded=gamestate.mapon;
 		MU_StartSong(song_level);
-		}
+	}
+
 //	shapestart = W_GetNumForName("SHAPSTRT");
 //	shapestop = W_GetNumForName("SHAPSTOP");
 //	gunsstart=W_GetNumForName("GUNSTART");
@@ -6991,20 +7018,20 @@ void SetupGameLevel (void)
 	gamestate.DOGROUNDZEROBONUS  = false;
 
 	if (gamestate.mapon == 30)
-	SNAKELEVEL = 1;
+		SNAKELEVEL = 1;
 	else if (gamestate.mapon == 32)
-	SNAKELEVEL = 2;
+		SNAKELEVEL = 2;
 	else if (gamestate.mapon == 33)
-	SNAKELEVEL = 3;
+		SNAKELEVEL = 3;
 
 	InitAreas();
 	InitDoorList();
 	InitElevators();
 	if (loadedgame==false)
-		{
+	{
 		InitStaticList ();
 		InitActorList();
-		}
+	}
 	memset (tilemap,0,sizeof(tilemap));
 	memset (actorat,0,sizeof(actorat));
 	memset (sprites,0,sizeof(sprites));
@@ -7017,17 +7044,17 @@ void SetupGameLevel (void)
 
 	crud=(word)MAPSPOT(0,0,1);
 	if ((crud>=90) && (crud<=97))
-		{
+	{
 		levelheight=crud-89;
 		maxheight = (levelheight << 6)-32;
 		nominalheight = maxheight-32;
-		}
+	}
 	else if ((crud>=450) && (crud<=457))
-		{
+	{
 		levelheight=crud-450+9;
 		maxheight = (levelheight << 6)-32;
 		nominalheight = maxheight-32;
-		}
+	}
 	else
 		Error("You must specify a valid height sprite icon at (2,0) on map %ld\n",gamestate.mapon);
 
@@ -7045,7 +7072,7 @@ void SetupGameLevel (void)
 	SetupAnimatedWalls();
 
 	if (loadedgame==false)
-		{
+	{
 		SetupSwitches();
 		SetupStatics ();
 		SetupMaskedWalls();
@@ -7053,10 +7080,10 @@ void SetupGameLevel (void)
 		SetupPushWalls();
 		SetupPlayers();
 		if (!BATTLEMODE)
-			{
+		{
 			SetupActors();
 			SetupRandomActors();
-			}
+		}
 		SetupElevators();
 		SetupDoorLinks();
 		SetupPushWallLinks();
@@ -7065,22 +7092,24 @@ void SetupGameLevel (void)
 		SetupWindows();
 		SetupLights();
 		SetupInanimateActors();
-		}
+
+		printf("SetupGameLevel: RNG 1 End=%X\n", GetRNGindex());
+	}
 	else
 		FixTiles();
 
 	if (gamestate.SpawnEluder || gamestate.SpawnDeluder)
-		{
+	{
 //MED
 		for (i=0;i<25;i++)
 			RespawnEluder();
-		}
+	}
 
 
 	if ( ( BATTLEMODE ) && ( MapSpecials & MAP_SPECIAL_TOGGLE_PUSHWALLS ) )
-		{
+	{
 		ActivateAllPushWalls();
-		}
+	}
 	Illuminate();
 
 	if (SNAKELEVEL == 1)
@@ -7090,7 +7119,7 @@ void SetupGameLevel (void)
 
 	SetPlaneViewSize();
 	if (loadedgame==false)
-		{
+	{
 		ConnectAreas();
 #if (DEVELOPMENT == 1)
 #if (PRECACHETEST == 1)
@@ -7108,51 +7137,53 @@ void SetupGameLevel (void)
 #endif
 		SetupPlayScreen();
 		SetupScreen(false);
-		}
+	}
 
 	if (BATTLEMODE)
-		{
+	{
 		SetModemLightLevel ( gamestate.BattleOptions.LightLevel );
-		}
+	}
 
 	for (i=0;i<100;i++)
 		UpdateLightLevel(player->areanumber);
 	insetupgame=false;
+
+	printf("SetupGameLevel: RNG 2 End=%X\n", GetRNGindex());
 
 	tedlevel = false;	// turn it off once we have done any ted stuff
 }
 
 
 void InitializePlayerstates(void)
-{int i;
+{
+	int i;
 	playertype * pstate;
 
 	if (NewGame || (gamestate.mapon == 0) || tedlevel)
-		{for(i=0;i<numplayers;i++)
+	{
+		for(i=0;i<numplayers;i++)
 			InitializeWeapons(&PLAYERSTATE[i]);
-		}
+	}
 
 	for(i=0;i<numplayers;i++)
 	{
-	pstate=&PLAYERSTATE[i];
-	if (
+		pstate=&PLAYERSTATE[i];
+		if (
 			(pstate->missileweapon == wp_godhand)
 #if (SHAREWARE == 0)
 			||
 			(pstate->missileweapon == wp_dog)
 #endif
-		)
+			)
 		{
-		pstate->weapon=pstate->new_weapon=pstate->oldweapon;
-		pstate->missileweapon = pstate->oldmissileweapon;
-
+			pstate->weapon=pstate->new_weapon=pstate->oldweapon;
+			pstate->missileweapon = pstate->oldmissileweapon;
 		}
 
-	ResetPlayerstate(pstate);
+		ResetPlayerstate(pstate);
 	}
 
 	NewGame = false;
-
 }
 
 
@@ -7169,13 +7200,14 @@ void SetupSnakePath(void)
 
 	for(j=0;j<mapheight;j++)
 	for(i=0;i<mapwidth;i++)
-	{tile = *map++;
-	if ((tile >= 72) && (tile <= 79) && (!tilemap[i][j]))
-	{SNAKEPATH[whichpath].x = i;
-		SNAKEPATH[whichpath].y = j;
-		whichpath ++;
-	}
-
+	{
+		tile = *map++;
+		if ((tile >= 72) && (tile <= 79) && (!tilemap[i][j]))
+		{
+			SNAKEPATH[whichpath].x = i;
+			SNAKEPATH[whichpath].y = j;
+			whichpath ++;
+		}
 	}
 #endif
 }
@@ -7245,6 +7277,9 @@ void SetupRandomActors(void)
 	}
 
 #if 1
+
+	printf("SetupRandomActors: RNG Start=%X\n", GetRNGindex());
+
 	lim=totalrandom*10;
 //	while(count<totalrandom)
 	while((count<totalrandom) && ((lim--)>0))
@@ -7265,6 +7300,8 @@ void SetupRandomActors(void)
 		}
 	}
 	
+	printf("SetupRandomActors: RNG End=%X\n", GetRNGindex());
+
 	if(count<totalrandom)
 	{
 		printf("SetupRandomActors %d/%d\n", count, totalrandom);
@@ -7314,7 +7351,7 @@ void SetupActors(void)
 	map+=5;
 
 	for (j=0;j<mapheight;j++)
-		{
+	{
 		if (j==0)
 			starti=5;
 		else
@@ -8287,19 +8324,19 @@ void RaiseSprites( int x, int y, int count, int dir )
 
 
 	if (((statobj_t *)sprites[x][y])->z==-65)
-		{
+	{
 		c=(maxheight+20)<<8;
 		hc=(count+1)<<7;
 		a=(c<<8)/(hc*hc);
 		for (i=0;i<count;i++)
-			{
+		{
 			xx=-hc+((i+1)<<8);
 			h=(c-FixedMulShift(a,(xx*xx),8) )>>8;
 			((statobj_t *)sprites[x+(dx*i)][y+(dy*i)])->z=maxheight-h;
-			}
 		}
+	}
 	else
-		{
+	{
 		if (ActorIsSpring(x-(dx),y-(dy)))
 			d=1;
 		else if (ActorIsSpring(x+(dx*count),y+(dy*count)))
@@ -8310,14 +8347,14 @@ void RaiseSprites( int x, int y, int count, int dir )
 		hc=((maxheight+20)<<16)/(count+1);
 		h=hc<<1;
 		for (i=0;i<count;i++)
-			{
+		{
 			if (d==1)
 				((statobj_t *)sprites[x+(dx*i)][y+(dy*i)])->z=maxheight-(h>>16);
 			else
 				((statobj_t *)sprites[x+(dx*(count-i-1))][y+(dy*(count-i-1))])->z=maxheight-(h>>16);
 			h+=hc;
-			}
 		}
+	}
 }
 
 void LoftSprites( void )
@@ -8326,33 +8363,33 @@ void LoftSprites( void )
 	int count;
 
 	for(y=1;y<mapheight-1;y++)
-		{
+	{
 		for(x=1;x<mapwidth-1;x++)
-			{
+		{
 			if (StaticUndefined(x,y))
-				{
+			{
 				if (StaticUndefined(x+1,y))
-					{
+				{
 					count=1;
 					while (StaticUndefined(x+count,y))
 						count++;
 					if (count<3)
 						Error ("Are You kidding me? You are trying to loft <3 sprites in an arc??? \n x=%ld y=%ld\n",x,y);
 					RaiseSprites(x,y,count,1);
-					}
+				}
 				else if (StaticUndefined(x,y+1))
-					{
+				{
 					count=1;
 					while (StaticUndefined(x,y+count))
 						count++;
 					if (count<3)
 						Error ("Are You kidding me? You are trying to loft <3 sprites??? \n x=%ld y=%ld\n",x,y);
 					RaiseSprites(x,y,count,0);
-					}
+				}
 				else
 					Error ("Sprite Lofter is confused around x=%ld y=%ld\n",x,y);
-				}
 			}
 		}
+	}
 }
 

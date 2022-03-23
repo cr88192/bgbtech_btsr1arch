@@ -45,7 +45,8 @@ typedef struct
 
 typedef struct
 {
-	long id;
+//	long id;
+	s32 id;
 	unsigned short priority;
 	char *name;
 	mobj_t *mo;

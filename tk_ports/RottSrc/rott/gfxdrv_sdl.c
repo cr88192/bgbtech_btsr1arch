@@ -404,6 +404,11 @@ int SoundDev_DeInit()
 {
 	return(0);
 }
+
+void SoundDev_Silence()
+{
+}
+
 #endif
 
 // #ifdef linux

@@ -1737,7 +1737,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 #if 1
 	if(ctx->regs[BJX2_REG_MMCR]&32)
 	{
-		h=((addr>>24)&0x3F)^((addr>>16)&0xFF)^((addr>>8)&0xC0);
+//		h=((addr>>24)&0x3F)^((addr>>16)&0xFF)^((addr>>8)&0xC0);
+		h=(addr>>14)&0xFF;
 		for(i=0; i<4; i++)
 		{
 			tlbhi2=ctx->mem_tlb_hi[h*4+i];
@@ -1780,8 +1781,9 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 				
 				if(addr!=addr1)
 				{
-					printf("BJX2_MemTranslateTlb %llX -> %llX\n",
-						addr, addr1);
+					k=-1;
+//					printf("BJX2_MemTranslateTlb %llX -> %llX\n",
+//						addr, addr1);
 //					JX2_DBGBREAK
 				}
 
@@ -1813,7 +1815,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 //		h=((addr>>22)&31)^((addr>>16)&31);
 //		h=((addr>>22)&63)^((addr>>16)&63);
 //		h=((addr>>24)&127)^((addr>>16)&127);
-		h=((addr>>24)&255)^((addr>>16)&255);
+//		h=((addr>>24)&255)^((addr>>16)&255);
+		h=(addr>>16)&0xFF;
 		for(i=0; i<4; i++)
 		{
 			tlbhi2=ctx->mem_tlb_hi[h*4+i];
@@ -1856,7 +1859,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 		}
 	}else
 	{
-		h=((addr>>24)&0x0F)^((addr>>16)&0xFF)^((addr>>8)&0xF0);
+//		h=((addr>>24)&0x0F)^((addr>>16)&0xFF)^((addr>>8)&0xF0);
+		h=(addr>>12)&0xFF;
 
 //		h=((addr>>12)&63)^((addr>>16)&63);
 //		h=((addr>>12)&255)^((addr>>16)&255);

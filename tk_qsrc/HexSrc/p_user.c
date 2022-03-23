@@ -1623,6 +1623,9 @@ dt_bool P_UseArtifact(player_t *player, artitype_t arti)
 		case arti_puzzgear2:
 		case arti_puzzgear3:
 		case arti_puzzgear4:
+			if(arti==arti_poisonbag)
+				__debugbreak();
+
 			if(P_UsePuzzleItem(player, arti-arti_firstpuzzitem))
 			{
 				return true;

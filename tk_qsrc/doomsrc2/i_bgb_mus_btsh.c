@@ -131,9 +131,13 @@ int SMus_Init()
 	}
 #endif
 
+#ifdef __ADDR_X48__
+	smus_regs=(u32 *)0xFFFFF008C000ULL;
+#else
 //	smus_regs=(u32 *)0xA0081800UL;
 //	smus_regs=(u32 *)0xF0081800UL;
 	smus_regs=(u32 *)0xF008C000UL;
+#endif
 	
 	for(i=0; i<128; i++)
 	{

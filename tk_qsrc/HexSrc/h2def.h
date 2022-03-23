@@ -93,6 +93,16 @@
 #define VERSIONTEXT "Version 1.1 "__DATE__" ("VER_ID")"
 #endif
 
+typedef unsigned short u16;
+typedef unsigned int u32;
+typedef unsigned long long u64;
+
+typedef signed short s16;
+typedef signed int s32;
+typedef signed long long s64;
+
+typedef unsigned int uint;
+
 // all exterior data is defined here
 #include "xddefs.h"
 
@@ -202,16 +212,6 @@ extern byte *destview, *destscreen;	// PC direct to screen pointers
 #define	FRACBITS		16
 #define	FRACUNIT		(1<<FRACBITS)
 typedef int fixed_t;
-
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
-
-typedef signed short s16;
-typedef signed int s32;
-typedef signed long long s64;
-
-typedef unsigned int uint;
 
 #ifdef _M_X64
 typedef long long nlint;
@@ -791,7 +791,7 @@ typedef struct
 
 typedef struct
 {
-	long	id;
+	s32		id;
 	short	intnum;			// DOOM executes an int to execute commands
 
 // communication between DOOM and the driver

@@ -2503,7 +2503,7 @@ JX2R_TKFAT_ImageInfo *JX2R_CreateRamImage(int imgsz, int fsty)
 	int n;
 	int i, j, k;
 	
-	imgbuf=(byte *)malloc(imgsz*512);
+	imgbuf=(byte *)malloc((imgsz+17)*512);
 	
 	img=(JX2R_TKFAT_ImageInfo *)malloc(sizeof(JX2R_TKFAT_ImageInfo));
 	memset(img, 0, sizeof(JX2R_TKFAT_ImageInfo));

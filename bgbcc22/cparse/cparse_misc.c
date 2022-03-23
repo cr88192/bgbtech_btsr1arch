@@ -926,6 +926,10 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	BGBCP_PushLinenum();
 	BGBCP_SetLinenum(name, buf, 1);
 
+	ctx->n_enum_vars=0;
+	for(i=0; i<256; i++)
+		ctx->enum_hash[i]=-1;
+
 	pprs=BGBPP_Filter(ctx, buf, tbuf, 1<<24);
 
 	BGBCP_PopLinenum();
@@ -960,6 +964,10 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	ctx->e_structs=NULL;
 	ctx->types=NULL;
 	ctx->e_types=NULL;
+	ctx->n_enum_vars=0;
+
+	for(i=0; i<256; i++)
+		ctx->enum_hash[i]=-1;
 
 	if(!ctx->cur_nsi)
 	{

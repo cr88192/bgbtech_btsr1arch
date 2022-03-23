@@ -364,6 +364,36 @@ int TKMM_PageFree(void *ptr, int sz)
 	{ return(TKMM_PageFree_f(ptr, sz)); }
 #endif
 
+void *TKMM_PageAllocUsc(int sz)
+{
+	s64 va;
+
+	if(!tk_iskernel())
+		return(TKMM_PageAlloc_f(sz));
+
+	va=TK_VMem_VaVirtualAlloc(0, sz, TKMM_PROT_RWX, TKMM_MAP_PRIVATE);
+	if(va)
+		return((void *)va);
+
+	return(TKMM_PageAlloc_f(sz));
+}
+
+int TKMM_PageFreeUsc(void *ptr, int sz)
+{
+	s64 tea;
+	if(!tk_iskernel())
+		return(TKMM_PageFree_f(ptr, sz));
+
+	tea=(s64)ptr;
+//	if(TK_VMem_CheckPtrIsVirtual(ptr))
+	if(tea>=TKMM_VALOSTART)
+	{
+		return(TK_VMem_VaVirtualFree((s64)ptr, sz));
+	}
+
+	return(TKMM_PageFree_f(ptr, sz));
+}
+
 extern volatile u64 __arch_tbr;
 
 void *tk_getsavedvbr(void);

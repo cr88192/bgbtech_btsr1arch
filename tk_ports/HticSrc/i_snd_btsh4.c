@@ -68,7 +68,7 @@ int SNDDMA_GetDevDMAPos(void)
 //	return(wbufrov);
 
 	int idma;
-	idma=((u32 *)0xF009F000)[8];
+	idma=((u32 *)0xFFFFF009F000ULL)[8];
 //	return(idma&8191);
 	return(idma);
 }
@@ -127,7 +127,7 @@ void SNDDMA_Submit(void)
 	int i, j, k, l;
 
 	buf=(short *)dma_buffer;
-	snd_dmabuf=(u32 *)0xF0090000;
+	snd_dmabuf=(u32 *)0xFFFFF0090000ULL;
 
 	dma=SNDDMA_GetDMAPos();
 	idma=SNDDMA_GetDevDMAPos();
@@ -184,7 +184,7 @@ void SNDDMA_Submit(void)
 //	((u32 *)0xF009F000)[0]=0x002B;
 //	((u32 *)0xF009F000)[0]=0x002A;
 //	((u32 *)0xF009F000)[0]=0x0028;
-	((u32 *)0xF009F000)[0]=0x0029;
+	((u32 *)0xFFFFF009F000ULL)[0]=0x0029;
 //	for(i=0; i<n; i+=2)
 //	for(i=0; i<n; i+=4)
 	for(i=0; i<n1; i+=4)

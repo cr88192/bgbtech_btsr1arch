@@ -1959,11 +1959,25 @@ void I_FinishUpdate (void)
 //		dirtybox[2],	dirtybox[3],
 //		dirtybox[1],	dirtybox[0]);
 
+#ifdef __ADDR_X48__
+	conbufa=(u32 *)0xFFFFF00A0000ULL;
+#else
 //	conbufa=(u32 *)0xA00A0000UL;
 	conbufa=(u32 *)0xF00A0000UL;
+#endif
 
 //	((u32 *)0xF00BFF00)[8]=vid_frnum;
 //	vid_frnum++;
+
+#ifdef __ADDR_X48__
+
+#ifdef I_SCR_BMP128K
+	((u32 *)0xFFFFF00BFF00UL)[0]=0x0095;		//320x200x16bpp, RGB555
+#else
+	((u32 *)0xFFFFF00BFF00UL)[0]=0x0000;		//320x200
+#endif
+
+#else
 
 #ifdef I_SCR_BMP128K
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp, YUV655
@@ -1974,6 +1988,8 @@ void I_FinishUpdate (void)
 //	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
 #else
 	((u32 *)0xF00BFF00UL)[0]=0x0000;		//320x200
+#endif
+
 #endif
 
 //	ics16=(u16 *)screens[0];
@@ -2211,7 +2227,11 @@ void I_FinishUpdate (void)
 //	ict[0]=vid_frnum;
 //	conbufa[8100]=vid_frnum;
 
+#ifdef __ADDR_X48__
+	((u32 *)0xFFFFF00BFF00UL)[8]=vid_frnum;
+#else
 	((u32 *)0xF00BFF00UL)[8]=vid_frnum;
+#endif
 	vid_frnum++;
 	
 //	if(i_scrflash)

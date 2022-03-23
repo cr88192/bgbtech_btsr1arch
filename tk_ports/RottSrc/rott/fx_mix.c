@@ -27,9 +27,10 @@ int fx_chanmask = 0;
 
 fx_channel_t	*fx_chan[32];
 
-int SoundDev_Init(void);
+int		SoundDev_Init(void);
 void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp);
 void	SoundDev_Submit();
+void	SoundDev_Silence(void);
 
 
 char *FX_ErrorString( int ErrorNumber )
@@ -590,6 +591,7 @@ int FX_PlayWAV3D( char *ptr, int pitchoffset, int angle, int distance,
 		if(tag==FOURCC('d', 'a', 't', 'a'))
 		{
 			len+=sz;
+			len+=sz;
 			seg_ptr[nseg]=cs0;
 			seg_len[nseg]=sz;
 			nseg++;
@@ -684,6 +686,8 @@ int FX_StopAllSounds( void )
 		FX_FlushChan(i);
 
 	fx_chanmask = 0;
+
+	SoundDev_Silence();
 
 	return(0);
 }

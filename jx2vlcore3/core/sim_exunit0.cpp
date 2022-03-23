@@ -49,7 +49,7 @@ typedef signed char sbyte;
 #define FKEY_KEYLF	0x92
 #define FKEY_KEYRT	0x93
 
-byte kbbuf[256];
+byte kbbuf[256+8];
 byte kbrov;
 byte kbirov;
 // byte gfxdrv_kill;

@@ -498,9 +498,13 @@ void SNDDMA_Submit(void)
 //	sbufr=(short *)0x007F4000;
 	buf=(short *)dma_buffer;
 	
+#ifdef __ADDR_X48__
+	snd_dmabuf=(u32 *)0xFFFFF0090000ULL;
+#else
 //	snd_dmabuf=(u32 *)0xA0080000;
 //	snd_dmabuf=(u32 *)0xF0080000;
 	snd_dmabuf=(u32 *)0xF0090000UL;
+#endif
 
 	b=olddma;
 	n=dma-b;
@@ -527,10 +531,14 @@ void SNDDMA_Submit(void)
 	b1=b&(~3); n1=(n+3)&(~3);
 	d1=dmarov&(~3);
 
+#ifdef __ADDR_X48__
+	((u32 *)0xFFFFF009F000ULL)[0]=0x0029;
+#else
 //	((u32 *)0xF009F000)[0]=0x002B;
 //	((u32 *)0xF009F000)[0]=0x002A;
 //	((u32 *)0xF009F000)[0]=0x0028;
 	((u32 *)0xF009F000UL)[0]=0x0029;
+#endif
 //	for(i=0; i<n; i+=2)
 //	for(i=0; i<n; i+=4)
 	for(i=0; i<n1; i+=4)

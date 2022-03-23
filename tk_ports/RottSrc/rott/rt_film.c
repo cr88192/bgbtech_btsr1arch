@@ -65,13 +65,13 @@ static byte firsttime=1;
 */
 void FirstTimeInitialize ( void )
 {
-   if (firsttime==0)
-      return;
+	if (firsttime==0)
+		return;
 
-   memset(actors,NULL,sizeof(actors));
-   memset(events,NULL,sizeof(events));
+	memset(actors,NULL,sizeof(actors));
+	memset(events,NULL,sizeof(events));
 
-   firsttime=0;
+	firsttime=0;
 }
 
 
@@ -84,14 +84,14 @@ void FirstTimeInitialize ( void )
 */
 void InitializeFilmActors ( void )
 {
-   int i;
+	int i;
 
-   for (i=0;i<MAXFILMACTORS;i++)
-      {
-      if (actors[i]!=NULL)
-         SafeFree(actors[i]);
-      }
-   lastfilmactor=0;
+	for (i=0;i<MAXFILMACTORS;i++)
+		{
+		if (actors[i]!=NULL)
+			SafeFree(actors[i]);
+		}
+	lastfilmactor=0;
 }
 
 /*
@@ -103,15 +103,15 @@ void InitializeFilmActors ( void )
 */
 void InitializeEvents ( void )
 {
-   int i;
+	int i;
 
-   for (i=0;i<MAXEVENTS;i++)
-      {
-      if (events[i]!=NULL)
-         SafeFree(events[i]);
-      }
-   currentevent=0;
-   eventindex=0;
+	for (i=0;i<MAXEVENTS;i++)
+	{
+		if (events[i]!=NULL)
+			SafeFree(events[i]);
+	}
+	currentevent=0;
+	eventindex=0;
 }
 
 /*
@@ -123,14 +123,14 @@ void InitializeEvents ( void )
 */
 void CleanupEvents ( void )
 {
-   int i;
+	int i;
 
-   for (i=0;i<MAXEVENTS;i++)
-      if (events[i]!=NULL)
-         {
-         SafeFree(events[i]);
-         events[i]=NULL;
-         }
+	for (i=0;i<MAXEVENTS;i++)
+		if (events[i]!=NULL)
+	{
+		SafeFree(events[i]);
+		events[i]=NULL;
+	}
 }
 
 /*
@@ -142,14 +142,14 @@ void CleanupEvents ( void )
 */
 void CleanupActors ( void )
 {
-   int i;
+	int i;
 
-   for (i=0;i<MAXFILMACTORS;i++)
-      if (actors[i]!=NULL)
-         {
-         SafeFree(actors[i]);
-         actors[i]=NULL;
-         }
+	for (i=0;i<MAXFILMACTORS;i++)
+		if (actors[i]!=NULL)
+	{
+		SafeFree(actors[i]);
+		actors[i]=NULL;
+	}
 }
 
 /*
@@ -161,11 +161,11 @@ void CleanupActors ( void )
 */
 event * GetNewFilmEvent ( void )
 {
-   if (eventindex==MAXEVENTS)
-      Error("No free Events in Cinematic engine\n");
-   events[eventindex]=SafeMalloc(sizeof(event));
-   eventindex++;
-   return events[eventindex-1];
+	if (eventindex==MAXEVENTS)
+		Error("No free Events in Cinematic engine\n");
+	events[eventindex]=SafeMalloc(sizeof(event));
+	eventindex++;
+	return events[eventindex-1];
 }
 
 /*
@@ -178,142 +178,142 @@ event * GetNewFilmEvent ( void )
 
 void ParseMovieScript (void)
 {
-   int time;
-   event * newevent;
+	int time;
+	event * newevent;
 
-   time=0;
-   do
-      {
-      //
-      // get a command / lump name
-      //
-      GetToken (true);
-      if (endofscript)
-         break;
-      newevent=GetNewFilmEvent();
-      time+=ParseNum(token);
-      GetToken (false);
-      if (!strcmpi (token,"BACKGROUND"))
-         {
-         GetToken (false);
-         newevent->time=time;
-         strcpy(&(newevent->name[0]),token);
-         GetToken (false);
-         if (!strcmpi (token,"SCROLLRIGHT"))
-            {
-            newevent->dir=RIGHT;
-            newevent->type=backgroundscroll;
-            }
-         else if (!strcmpi (token,"SCROLLLEFT"))
-            {
-            newevent->dir=LEFT;
-            newevent->type=backgroundscroll;
-            }
-         else
-            {
-            newevent->type=background;
-            }
-         GetToken (false);
-         newevent->dx=ParseNum(token);
-         newevent->x=0;
-         }
-      else if (!strcmpi (token,"BACKDROP"))
-         {
-         GetToken (false);
-         newevent->time=time;
-         newevent->type=backdrop;
-         strcpy(&(newevent->name[0]),token);
-         GetToken (false);
-         if (!strcmpi (token,"SCROLLRIGHT"))
-            {
-            newevent->dir=RIGHT;
-            newevent->type=backdropscroll;
-            }
-         else if (!strcmpi (token,"SCROLLLEFT"))
-            {
-            newevent->dir=LEFT;
-            newevent->type=backdropscroll;
-            }
-         else
-            {
-            newevent->type=backdrop;
-            }
-         GetToken (false);
-         newevent->dx=ParseNum(token);
-         newevent->x=0;
-         }
-      else if (!strcmpi (token,"BKGNDSPRITE"))
-         {
-         GetToken (false);
-         newevent->time=time;
-         newevent->type=bkgndsprite;
-         strcpy(&(newevent->name[0]),token);
-         GetToken (false);
-         newevent->length=ParseNum(token);
-         GetToken (false);
-         newevent->origheight=ParseNum(token);
-         GetToken (false);
-         newevent->x=ParseNum(token);
-         GetToken (false);
-         newevent->y=ParseNum(token);
-         GetToken (false);
-         newevent->scale=ParseNum(token);
-         GetToken (false);
-         newevent->dx=ParseNum(token);
-         GetToken (false);
-         newevent->dy=ParseNum(token);
-         GetToken (false);
-         newevent->dscale=ParseNum(token);
-         }
-      else if (!strcmpi (token,"SPRITE"))
-         {
-         GetToken (false);
-         newevent->time=time;
-         newevent->type=sprite;
-         strcpy(&(newevent->name[0]),token);
-         GetToken (false);
-         newevent->length=ParseNum(token);
-         GetToken (false);
-         newevent->origheight=ParseNum(token);
-         GetToken (false);
-         newevent->x=ParseNum(token);
-         GetToken (false);
-         newevent->y=ParseNum(token);
-         GetToken (false);
-         newevent->scale=ParseNum(token);
-         GetToken (false);
-         newevent->dx=ParseNum(token);
-         GetToken (false);
-         newevent->dy=ParseNum(token);
-         GetToken (false);
-         newevent->dscale=ParseNum(token);
-         }
-      else if (!strcmpi (token,"PALETTE"))
-         {
-         GetToken (false);
-         newevent->time=time;
-         newevent->type=palette;
-         strcpy(&(newevent->name[0]),token);
-         }
-      else if (!strcmpi (token,"FADEOUT"))
-         {
-         newevent->time=time;
-         newevent->type=fadeout;
-         GetToken (false);
-         newevent->length=ParseNum(token);
-         }
-      else if (!strcmpi (token,"MOVIEEND"))
-         {
-         movielength=time;
-         eventindex--;
-         }
-      else
-         Error("PARSE: Illegal Token %s\n",token);
-//      eventindex++;
-      }
-   while (script_p < scriptend_p);
-   if (movielength==0)
-      Error("No end of movie marker\n");
+	time=0;
+	do
+	{
+		//
+		// get a command / lump name
+		//
+		GetToken (true);
+		if (endofscript)
+			break;
+		newevent=GetNewFilmEvent();
+		time+=ParseNum(token);
+		GetToken (false);
+		if (!strcmpi (token,"BACKGROUND"))
+			{
+			GetToken (false);
+			newevent->time=time;
+			strcpy(&(newevent->name[0]),token);
+			GetToken (false);
+			if (!strcmpi (token,"SCROLLRIGHT"))
+				{
+				newevent->dir=RIGHT;
+				newevent->type=backgroundscroll;
+				}
+			else if (!strcmpi (token,"SCROLLLEFT"))
+				{
+				newevent->dir=LEFT;
+				newevent->type=backgroundscroll;
+				}
+			else
+				{
+				newevent->type=background;
+				}
+			GetToken (false);
+			newevent->dx=ParseNum(token);
+			newevent->x=0;
+			}
+		else if (!strcmpi (token,"BACKDROP"))
+			{
+			GetToken (false);
+			newevent->time=time;
+			newevent->type=backdrop;
+			strcpy(&(newevent->name[0]),token);
+			GetToken (false);
+			if (!strcmpi (token,"SCROLLRIGHT"))
+				{
+				newevent->dir=RIGHT;
+				newevent->type=backdropscroll;
+				}
+			else if (!strcmpi (token,"SCROLLLEFT"))
+				{
+				newevent->dir=LEFT;
+				newevent->type=backdropscroll;
+				}
+			else
+				{
+				newevent->type=backdrop;
+				}
+			GetToken (false);
+			newevent->dx=ParseNum(token);
+			newevent->x=0;
+			}
+		else if (!strcmpi (token,"BKGNDSPRITE"))
+			{
+			GetToken (false);
+			newevent->time=time;
+			newevent->type=bkgndsprite;
+			strcpy(&(newevent->name[0]),token);
+			GetToken (false);
+			newevent->length=ParseNum(token);
+			GetToken (false);
+			newevent->origheight=ParseNum(token);
+			GetToken (false);
+			newevent->x=ParseNum(token);
+			GetToken (false);
+			newevent->y=ParseNum(token);
+			GetToken (false);
+			newevent->scale=ParseNum(token);
+			GetToken (false);
+			newevent->dx=ParseNum(token);
+			GetToken (false);
+			newevent->dy=ParseNum(token);
+			GetToken (false);
+			newevent->dscale=ParseNum(token);
+			}
+		else if (!strcmpi (token,"SPRITE"))
+			{
+			GetToken (false);
+			newevent->time=time;
+			newevent->type=sprite;
+			strcpy(&(newevent->name[0]),token);
+			GetToken (false);
+			newevent->length=ParseNum(token);
+			GetToken (false);
+			newevent->origheight=ParseNum(token);
+			GetToken (false);
+			newevent->x=ParseNum(token);
+			GetToken (false);
+			newevent->y=ParseNum(token);
+			GetToken (false);
+			newevent->scale=ParseNum(token);
+			GetToken (false);
+			newevent->dx=ParseNum(token);
+			GetToken (false);
+			newevent->dy=ParseNum(token);
+			GetToken (false);
+			newevent->dscale=ParseNum(token);
+			}
+		else if (!strcmpi (token,"PALETTE"))
+			{
+			GetToken (false);
+			newevent->time=time;
+			newevent->type=palette;
+			strcpy(&(newevent->name[0]),token);
+			}
+		else if (!strcmpi (token,"FADEOUT"))
+			{
+			newevent->time=time;
+			newevent->type=fadeout;
+			GetToken (false);
+			newevent->length=ParseNum(token);
+			}
+		else if (!strcmpi (token,"MOVIEEND"))
+			{
+			movielength=time;
+			eventindex--;
+			}
+		else
+			Error("PARSE: Illegal Token %s\n",token);
+//		eventindex++;
+	}
+	while (script_p < scriptend_p);
+	if (movielength==0)
+		Error("No end of movie marker\n");
 }
 
 
@@ -326,98 +326,98 @@ void ParseMovieScript (void)
 */
 void DumpMovie( void )
 {
-   int i;
-   char typestring[45];
+	int i;
+	char typestring[45];
 
-   if (eventindex==0)
-      Error ("No events in movie");
-   for (i=0;i<eventindex;i++)
-      {
-      printf("Event #%ld at %ld tics\n",i,events[i]->time);
-      switch (events[i]->type)
-         {
-         case background:
-            strcpy(&typestring[0],"BACKGROUND");
-            break;
-         case backdrop:
-            strcpy(&typestring[0],"BACKDROP");
-            break;
-         case bkgndsprite:
-            strcpy(&typestring[0],"BKGNDSPRITE");
-            break;
-         case sprite:
-            strcpy(&typestring[0],"SPRITE");
-            break;
-         case palette:
-            strcpy(&typestring[0],"PALLETE");
-            break;
-         default:
-            Error("DUMP: Illegal event type\n");
-            break;
-         }
-      printf("%s\n",typestring);
-      switch (events[i]->type)
-         {
-         case background:
-            printf("   NAME: %s\n",events[i]->name);
-            break;
-         case backdrop:
-            printf("   NAME: %s\n",events[i]->name);
-            break;
-         case palette:
-            printf("   NAME: %s\n",events[i]->name);
-            break;
-         case bkgndsprite:
-            printf("   NAME: %s\n",events[i]->name);
-            if (events[i]->length!=-1)
-               printf(" LENGTH: %ld\n",events[i]->length);
-            else
-               printf(" LENGTH: INFINITE\n");
-            printf("ORGHGHT: %ld\n",events[i]->origheight);
-            printf("      X: %ld\n",events[i]->x);
-            printf("      Y: %ld\n",events[i]->y);
-            printf("  SCALE: %ld\n",events[i]->scale);
-            if (events[i]->dx)
-               printf("     DX: %ld\n",events[i]->dx);
-            else
-               printf("     DX: STATIC\n");
-            if (events[i]->dy)
-               printf("     DY: %ld\n",events[i]->dy);
-            else
-               printf("     DY: STATIC\n");
-            if (events[i]->dscale)
-               printf(" DSCALE: %ld\n",events[i]->dscale);
-            else
-               printf(" DSCALE: STATIC\n");
-            break;
-         case sprite:
-            printf("   NAME: %s\n",events[i]->name);
-            if (events[i]->length!=-1)
-               printf(" LENGTH: %ld\n",events[i]->length);
-            else
-               printf(" LENGTH: INFINITE\n");
-            printf("ORGHGHT: %ld\n",events[i]->origheight);
-            printf("      X: %ld\n",events[i]->x);
-            printf("      Y: %ld\n",events[i]->y);
-            printf("  SCALE: %ld\n",events[i]->scale);
-            if (events[i]->dx)
-               printf("     DX: %ld\n",events[i]->dx);
-            else
-               printf("     DX: STATIC\n");
-            if (events[i]->dy)
-               printf("     DY: %ld\n",events[i]->dy);
-            else
-               printf("     DY: STATIC\n");
-            if (events[i]->dscale)
-               printf(" DSCALE: %ld\n",events[i]->dscale);
-            else
-               printf(" DSCALE: STATIC\n");
-            break;
-         default:
-            Error("DUMP: Illegal event type\n");
-            break;
-         }
-      }
+	if (eventindex==0)
+		Error ("No events in movie");
+	for (i=0;i<eventindex;i++)
+		{
+		printf("Event #%ld at %ld tics\n",i,events[i]->time);
+		switch (events[i]->type)
+			{
+			case background:
+				strcpy(&typestring[0],"BACKGROUND");
+				break;
+			case backdrop:
+				strcpy(&typestring[0],"BACKDROP");
+				break;
+			case bkgndsprite:
+				strcpy(&typestring[0],"BKGNDSPRITE");
+				break;
+			case sprite:
+				strcpy(&typestring[0],"SPRITE");
+				break;
+			case palette:
+				strcpy(&typestring[0],"PALLETE");
+				break;
+			default:
+				Error("DUMP: Illegal event type\n");
+				break;
+			}
+		printf("%s\n",typestring);
+		switch (events[i]->type)
+			{
+			case background:
+				printf("	NAME: %s\n",events[i]->name);
+				break;
+			case backdrop:
+				printf("	NAME: %s\n",events[i]->name);
+				break;
+			case palette:
+				printf("	NAME: %s\n",events[i]->name);
+				break;
+			case bkgndsprite:
+				printf("	NAME: %s\n",events[i]->name);
+				if (events[i]->length!=-1)
+					printf(" LENGTH: %ld\n",events[i]->length);
+				else
+					printf(" LENGTH: INFINITE\n");
+				printf("ORGHGHT: %ld\n",events[i]->origheight);
+				printf("		X: %ld\n",events[i]->x);
+				printf("		Y: %ld\n",events[i]->y);
+				printf("  SCALE: %ld\n",events[i]->scale);
+				if (events[i]->dx)
+					printf("	  DX: %ld\n",events[i]->dx);
+				else
+					printf("	  DX: STATIC\n");
+				if (events[i]->dy)
+					printf("	  DY: %ld\n",events[i]->dy);
+				else
+					printf("	  DY: STATIC\n");
+				if (events[i]->dscale)
+					printf(" DSCALE: %ld\n",events[i]->dscale);
+				else
+					printf(" DSCALE: STATIC\n");
+				break;
+			case sprite:
+				printf("	NAME: %s\n",events[i]->name);
+				if (events[i]->length!=-1)
+					printf(" LENGTH: %ld\n",events[i]->length);
+				else
+					printf(" LENGTH: INFINITE\n");
+				printf("ORGHGHT: %ld\n",events[i]->origheight);
+				printf("		X: %ld\n",events[i]->x);
+				printf("		Y: %ld\n",events[i]->y);
+				printf("  SCALE: %ld\n",events[i]->scale);
+				if (events[i]->dx)
+					printf("	  DX: %ld\n",events[i]->dx);
+				else
+					printf("	  DX: STATIC\n");
+				if (events[i]->dy)
+					printf("	  DY: %ld\n",events[i]->dy);
+				else
+					printf("	  DY: STATIC\n");
+				if (events[i]->dscale)
+					printf(" DSCALE: %ld\n",events[i]->dscale);
+				else
+					printf(" DSCALE: STATIC\n");
+				break;
+			default:
+				Error("DUMP: Illegal event type\n");
+				break;
+			}
+		}
 }
 
 /*
@@ -429,18 +429,18 @@ void DumpMovie( void )
 */
 actortype * GetFreeActor ( void )
 {
-   int i;
+	int i;
 
-   for (i=0;i<MAXFILMACTORS;i++)
-      if (actors[i]==NULL)
-         {
-         actors[i]=SafeMalloc(sizeof(actortype));
-         if (i>lastfilmactor)
-            lastfilmactor=i;
-         return actors[i];
-         }
-   Error ("No free spots in actorlist");
-   return NULL;
+	for (i=0;i<MAXFILMACTORS;i++)
+		if (actors[i]==NULL)
+			{
+			actors[i]=SafeMalloc(sizeof(actortype));
+			if (i>lastfilmactor)
+				lastfilmactor=i;
+			return actors[i];
+			}
+	Error ("No free spots in actorlist");
+	return NULL;
 }
 
 
@@ -453,8 +453,8 @@ actortype * GetFreeActor ( void )
 */
 void FreeActor ( int i )
 {
-   SafeFree(actors[i]);
-   actors[i]=NULL;
+	SafeFree(actors[i]);
+	actors[i]=NULL;
 }
 
 /*
@@ -466,56 +466,56 @@ void FreeActor ( int i )
 */
 void UpdateEvents ( void )
 {
-   int i,j;
+	int i,j;
 
-   for (i=0;i<=lastfilmactor;)
-      {
-      if (actors[i]!=NULL)
-         {
-         for (j=0;j<dtime;j++)
-            {
-            if (actors[i]->tics!=-1)
-               {
-               actors[i]->tics--;
-               if (actors[i]->tics<=0)
-                  {
-                  FreeActor(i);
-                  goto continueloop;
-                  }
-               }
-            switch (events[actors[i]->eventnumber]->type)
-               {
-               case background:
-               case backdrop:
-               case palette:
-               case fadeout:
-                  break;
-               case backgroundscroll:
-               case backdropscroll:
-                  if (events[actors[i]->eventnumber]->dir==RIGHT)
-                     actors[i]->curx-=events[actors[i]->eventnumber]->dx;
-                  else if (events[actors[i]->eventnumber]->dir==LEFT)
-                     actors[i]->curx+=events[actors[i]->eventnumber]->dx;
-                  break;
-               case bkgndsprite:
-                  actors[i]->curx+=events[actors[i]->eventnumber]->dx;
-                  actors[i]->cury+=events[actors[i]->eventnumber]->dy;
-                  actors[i]->curscale+=events[actors[i]->eventnumber]->dscale;
-                  break;
-               case sprite:
-                  actors[i]->curx+=events[actors[i]->eventnumber]->dx;
-                  actors[i]->cury+=events[actors[i]->eventnumber]->dy;
-                  actors[i]->curscale+=events[actors[i]->eventnumber]->dscale;
-                  break;
-               default:
-                  Error("UPDATE: Illegal event type\n");
-                  break;
-               }
-            }
-         }
+	for (i=0;i<=lastfilmactor;)
+		{
+		if (actors[i]!=NULL)
+			{
+			for (j=0;j<dtime;j++)
+				{
+				if (actors[i]->tics!=-1)
+					{
+					actors[i]->tics--;
+					if (actors[i]->tics<=0)
+						{
+						FreeActor(i);
+						goto continueloop;
+						}
+					}
+				switch (events[actors[i]->eventnumber]->type)
+					{
+					case background:
+					case backdrop:
+					case palette:
+					case fadeout:
+						break;
+					case backgroundscroll:
+					case backdropscroll:
+						if (events[actors[i]->eventnumber]->dir==RIGHT)
+							actors[i]->curx-=events[actors[i]->eventnumber]->dx;
+						else if (events[actors[i]->eventnumber]->dir==LEFT)
+							actors[i]->curx+=events[actors[i]->eventnumber]->dx;
+						break;
+					case bkgndsprite:
+						actors[i]->curx+=events[actors[i]->eventnumber]->dx;
+						actors[i]->cury+=events[actors[i]->eventnumber]->dy;
+						actors[i]->curscale+=events[actors[i]->eventnumber]->dscale;
+						break;
+					case sprite:
+						actors[i]->curx+=events[actors[i]->eventnumber]->dx;
+						actors[i]->cury+=events[actors[i]->eventnumber]->dy;
+						actors[i]->curscale+=events[actors[i]->eventnumber]->dscale;
+						break;
+					default:
+						Error("UPDATE: Illegal event type\n");
+						break;
+					}
+				}
+			}
 continueloop:
-      i++;
-      }
+		i++;
+		}
 }
 
 /*
@@ -527,25 +527,25 @@ continueloop:
 */
 void DrawBackground (char * name)
 {
-   byte * shape;
-   byte * buf;
-   byte * src;
-   lpic_t * p;
-   int i;
-   int plane;
+	byte * shape;
+	byte * buf;
+	byte * src;
+	lpic_t * p;
+	int i;
+	int plane;
 
 
-   shape=W_CacheLumpName(name,PU_CACHE);
-   p=(lpic_t *)shape;
+	shape=W_CacheLumpName(name,PU_CACHE);
+	p=(lpic_t *)shape;
 
-   for (plane=0;plane<4;plane++)
-      {
-      buf=filmbuffer;
-      src=shape+8+(plane*p->height);
-      VGAWRITEMAP(plane);
-      for (i=plane;i<p->width;i+=4,src+=(p->height<<2),buf++)
-         DrawFilmPost(buf,src,p->height);
-      }
+	for (plane=0;plane<4;plane++)
+	{
+		buf=filmbuffer;
+		src=shape+8+(plane*p->height);
+		VGAWRITEMAP(plane);
+		for (i=plane;i<p->width;i+=4,src+=(p->height<<2),buf++)
+			DrawFilmPost(buf,src,p->height);
+	}
 }
 
 /*
@@ -557,37 +557,37 @@ void DrawBackground (char * name)
 */
 int DrawScrollingBackground (char * name, int x)
 {
-   byte * shape;
-   byte * buf;
-   byte * src;
-   lpic_t * p;
-   int i;
-   int xx;
-   int plane;
+	byte * shape;
+	byte * buf;
+	byte * src;
+	lpic_t * p;
+	int i;
+	int xx;
+	int plane;
 
-   shape=W_CacheLumpName(name,PU_CACHE);
-   p=(lpic_t *)shape;
+	shape=W_CacheLumpName(name,PU_CACHE);
+	p=(lpic_t *)shape;
 
-   if (x<0)
-      x+=(p->width<<8);
-   if (x>=(p->width<<8))
-      x-=(p->width<<8);
+	if (x<0)
+		x+=(p->width<<8);
+	if (x>=(p->width<<8))
+		x-=(p->width<<8);
 
-   xx=x>>8;
-   for (plane=0;plane<4;plane++)
-      {
-      buf=filmbuffer;
-      src=shape+8;
-      VGAWRITEMAP(plane);
-      for (i=plane+xx;i<(p->width+xx);i+=4,buf++)
-         {
-         if (i>=p->width)
-            DrawFilmPost(buf,src + ((i-p->width)*p->height),p->height);
-         else
-            DrawFilmPost(buf,src + (i*p->height),p->height);
-         }
-      }
-   return x;
+	xx=x>>8;
+	for (plane=0;plane<4;plane++)
+	{
+		buf=filmbuffer;
+		src=shape+8;
+		VGAWRITEMAP(plane);
+		for (i=plane+xx;i<(p->width+xx);i+=4,buf++)
+		{
+			if (i>=p->width)
+				DrawFilmPost(buf,src + ((i-p->width)*p->height),p->height);
+			else
+				DrawFilmPost(buf,src + (i*p->height),p->height);
+		}
+	}
+	return x;
 }
 
 
@@ -600,37 +600,37 @@ int DrawScrollingBackground (char * name, int x)
 */
 void DrawBackdrop (char * name)
 {
-   byte * shape;
-   patch_t * p;
-   int i;
-   int toppost;
-   int offset;
-   int length;
-   byte * src;
-   byte * buf;
-   int plane;
+	byte * shape;
+	patch_t * p;
+	int i;
+	int toppost;
+	int offset;
+	int length;
+	byte * src;
+	byte * buf;
+	int plane;
 
-   shape=W_CacheLumpName(name,PU_CACHE);
-   p=(patch_t *)shape;
+	shape=W_CacheLumpName(name,PU_CACHE);
+	p=(patch_t *)shape;
 
-   toppost=-p->topoffset;
-   for (plane=0;plane<4;plane++)
-      {
-      buf=filmbuffer;
-      VGAWRITEMAP(plane);
-      for (i=plane;i<p->width;i+=4,buf++)
-         {
-         src=p->collumnofs[i]+shape;
-         offset=*(src++);
-         for (;offset!=255;)
-            {
-            length=*(src++);
-            DrawFilmPost(buf + ylookup[toppost+offset],src,length);
-            src+=length;
-            offset=*(src++);
-            }
-         }
-      }
+	toppost=-p->topoffset;
+	for (plane=0;plane<4;plane++)
+	{
+		buf=filmbuffer;
+		VGAWRITEMAP(plane);
+		for (i=plane;i<p->width;i+=4,buf++)
+		{
+			src=p->collumnofs[i]+shape;
+			offset=*(src++);
+			for (;offset!=255;)
+			{
+				length=*(src++);
+				DrawFilmPost(buf + ylookup[toppost+offset],src,length);
+				src+=length;
+				offset=*(src++);
+			}
+		}
+	}
 }
 
 /*
@@ -642,48 +642,48 @@ void DrawBackdrop (char * name)
 */
 int DrawScrollingBackdrop (char * name, int x)
 {
-   byte * shape;
-   patch_t * p;
-   int i;
-   int toppost;
-   int xx;
-   int offset;
-   int length;
-   byte * src;
-   byte * buf;
-   int plane;
+	byte * shape;
+	patch_t * p;
+	int i;
+	int toppost;
+	int xx;
+	int offset;
+	int length;
+	byte * src;
+	byte * buf;
+	int plane;
 
-   shape=W_CacheLumpName(name,PU_CACHE);
-   p=(patch_t *)shape;
+	shape=W_CacheLumpName(name,PU_CACHE);
+	p=(patch_t *)shape;
 
-   if (x<0)
-      x+=(p->width<<8);
-   if (x>=(p->width<<8))
-      x-=(p->width<<8);
+	if (x<0)
+		x+=(p->width<<8);
+	if (x>=(p->width<<8))
+		x-=(p->width<<8);
 
-   xx=x>>8;
-   toppost=-p->topoffset;
-   for (plane=0;plane<4;plane++)
-      {
-      VGAWRITEMAP(plane);
-      buf=filmbuffer;
-      for (i=plane+xx;(i<p->width+xx);i+=4,buf++)
-         {
-         if (i>=p->width)
-            src=p->collumnofs[i-p->width]+shape;
-         else
-            src=p->collumnofs[i]+shape;
-         offset=*(src++);
-         for (;offset!=255;)
-            {
-            length=*(src++);
-            DrawFilmPost(buf + ylookup[toppost+offset],src,length);
-            src+=length;
-            offset=*(src++);
-            }
-         }
-      }
-   return x;
+	xx=x>>8;
+	toppost=-p->topoffset;
+	for (plane=0;plane<4;plane++)
+	{
+		VGAWRITEMAP(plane);
+		buf=filmbuffer;
+		for (i=plane+xx;(i<p->width+xx);i+=4,buf++)
+		{
+			if (i>=p->width)
+				src=p->collumnofs[i-p->width]+shape;
+			else
+				src=p->collumnofs[i]+shape;
+			offset=*(src++);
+			for (;offset!=255;)
+			{
+				length=*(src++);
+				DrawFilmPost(buf + ylookup[toppost+offset],src,length);
+				src+=length;
+				offset=*(src++);
+			}
+		}
+	}
+	return x;
 }
 
 
@@ -697,32 +697,32 @@ int DrawScrollingBackdrop (char * name, int x)
 */
 void ScaleFilmPost (byte * src, byte * buf)
 {
-   int  offset;
-   int  length;
-   int  topscreen;
-   int  bottomscreen;
+	int  offset;
+	int  length;
+	int  topscreen;
+	int  bottomscreen;
 
 
-   offset=*(src++);
-   for (;offset!=255;)
-      {
-      length=*(src++);
-      topscreen = sprtopoffset + (dc_invscale*offset);
-      bottomscreen = topscreen + (dc_invscale*length);
-      dc_yl = (topscreen+SFRACUNIT-1)>>SFRACBITS;
-      dc_yh = (bottomscreen-FRACUNIT)>>SFRACBITS;
-      if (dc_yh >= 200)
-         dc_yh = 199;
-      if (dc_yl < 0)
-         dc_yl = 0;
-      if (dc_yl <= dc_yh)
-         {
-         dc_source=src-offset;
-         R_DrawFilmColumn (buf);
-         }
-      src+=length;
-      offset=*(src++);
-      }
+	offset=*(src++);
+	for (;offset!=255;)
+	{
+		length=*(src++);
+		topscreen = sprtopoffset + (dc_invscale*offset);
+		bottomscreen = topscreen + (dc_invscale*length);
+		dc_yl = (topscreen+SFRACUNIT-1)>>SFRACBITS;
+		dc_yh = (bottomscreen-FRACUNIT)>>SFRACBITS;
+		if (dc_yh >= 200)
+			dc_yh = 199;
+		if (dc_yl < 0)
+			dc_yl = 0;
+		if (dc_yl <= dc_yh)
+			{
+			dc_source=src-offset;
+			R_DrawFilmColumn (buf);
+			}
+		src+=length;
+		offset=*(src++);
+	}
 
 }
 
@@ -736,61 +736,61 @@ void ScaleFilmPost (byte * src, byte * buf)
 */
 void DrawSprite (char * name, int x, int y, int height, int origheight)
 {
-   byte *shape;
-   int      frac;
-   patch_t *p;
-   int      x1,x2;
-   int      tx;
-   int      xcent;
-   byte *   buf;
+	byte *shape;
+	int		frac;
+	patch_t *p;
+	int		x1,x2;
+	int		tx;
+	int		xcent;
+	byte *	buf;
 
-//   SimpleScaleShape(x,y,W_GetNumForName(name),height,origheight);
-//   return;
+//	SimpleScaleShape(x,y,W_GetNumForName(name),height,origheight);
+//	return;
 
-   height>>=1;
-   if (!height)
-      return;
-   dc_invscale = (height<<17)/origheight;
-   buf=(byte *)filmbuffer;
-   shape=W_CacheLumpName(name,PU_CACHE);
-   p=(patch_t *)shape;
-   tx=-p->leftoffset;
-   xcent=(x<<SFRACBITS)-(height<<SFRACBITS)+(SFRACBITS/2);
+	height>>=1;
+	if (!height)
+		return;
+	dc_invscale = (height<<17)/origheight;
+	buf=(byte *)filmbuffer;
+	shape=W_CacheLumpName(name,PU_CACHE);
+	p=(patch_t *)shape;
+	tx=-p->leftoffset;
+	xcent=(x<<SFRACBITS)-(height<<SFRACBITS)+(SFRACBITS/2);
 //
 // calculate edges of the shape
 //
-        x1 = (xcent+(tx*dc_invscale))>>SFRACBITS;
-        if (x1 >= 320)
-                return;               // off the right side
-        tx+=p->width;
-        x2 = ((xcent+(tx*dc_invscale)) >>SFRACBITS) - 1 ;
-        if (x2 < 0)
-                return;         // off the left side
+		  x1 = (xcent+(tx*dc_invscale))>>SFRACBITS;
+		  if (x1 >= 320)
+					 return;					// off the right side
+		  tx+=p->width;
+		  x2 = ((xcent+(tx*dc_invscale)) >>SFRACBITS) - 1 ;
+		  if (x2 < 0)
+					 return;			// off the left side
 
-   dc_iscale=(origheight<<15)/height;
+	dc_iscale=(origheight<<15)/height;
 
 //
 // store information in a vissprite
 //
-   if (x1<0)
-      {
-      frac=dc_iscale*(-x1);
-      x1=0;
-      }
-   else
-      frac=0;
-   x2 = x2 >= 320 ? 319 : x2;
+	if (x1<0)
+	{
+		frac=dc_iscale*(-x1);
+		x1=0;
+	}
+	else
+		frac=0;
+	x2 = x2 >= 320 ? 319 : x2;
 
-   dc_ycenter=y;
-   dc_texturemid=(((origheight>>1)+p->topoffset)<<SFRACBITS)+(SFRACUNIT>>1);
-   sprtopoffset=(y<<16) - FixedMul(dc_texturemid,dc_invscale);
+	dc_ycenter=y;
+	dc_texturemid=(((origheight>>1)+p->topoffset)<<SFRACBITS)+(SFRACUNIT>>1);
+	sprtopoffset=(y<<16) - FixedMul(dc_texturemid,dc_invscale);
 
 
-   for (; x1<=x2 ; x1++, frac += dc_iscale)
-     {
-     VGAWRITEMAP(x1&3);
-     ScaleFilmPost(((p->collumnofs[frac>>SFRACBITS])+shape),buf+(x1>>2));
-     }
+	for (; x1<=x2 ; x1++, frac += dc_iscale)
+  {
+	  VGAWRITEMAP(x1&3);
+	  ScaleFilmPost(((p->collumnofs[frac>>SFRACBITS])+shape),buf+(x1>>2));
+  }
 }
 
 /*
@@ -802,13 +802,13 @@ void DrawSprite (char * name, int x, int y, int height, int origheight)
 */
 void DrawPalette (char * name)
 {
-   byte * pal;
-   byte pal2[768];
+	byte * pal;
+	byte pal2[768];
 
-   pal=W_CacheLumpName(name,PU_CACHE);
-   memcpy(&pal2[0],pal,768);
-   VL_NormalizePalette(&pal2[0]);
-   SwitchPalette(&pal2[0],35);
+	pal=W_CacheLumpName(name,PU_CACHE);
+	memcpy(&pal2[0],pal,768);
+	VL_NormalizePalette(&pal2[0]);
+	SwitchPalette(&pal2[0],35);
 }
 
 
@@ -821,10 +821,10 @@ void DrawPalette (char * name)
 */
 void DrawFadeout ( int time )
 {
-   VL_FadeOut (0, 255, 0, 0, 0, time);
-   CalcTics();
-   CalcTics();
-   VL_ClearVideo (0);
+	VL_FadeOut (0, 255, 0, 0, 0, time);
+	CalcTics();
+	CalcTics();
+	VL_ClearVideo (0);
 }
 
 /*
@@ -836,98 +836,98 @@ void DrawFadeout ( int time )
 */
 void DrawEvents ( void )
 {
-   int i;
-   int done;
+	int i;
+	int done;
 
 
 
-   // ChangePalette
+	// ChangePalette
 
-   for (i=0;i<=lastfilmactor;i++)
-      if (actors[i]!=NULL)
-         {
-         if (events[actors[i]->eventnumber]->type==palette)
-            {
-            DrawPalette(&(events[actors[i]->eventnumber]->name[0]));
-            FreeActor(i);
-            break;
-            }
-         else if (events[actors[i]->eventnumber]->type==fadeout)
-            {
-            DrawFadeout(events[actors[i]->eventnumber]->length);
-            FreeActor(i);
-            break;
-            }
-         }
+	for (i=0;i<=lastfilmactor;i++)
+		if (actors[i]!=NULL)
+	{
+		if (events[actors[i]->eventnumber]->type==palette)
+		{
+			DrawPalette(&(events[actors[i]->eventnumber]->name[0]));
+			FreeActor(i);
+			break;
+		}
+		else if (events[actors[i]->eventnumber]->type==fadeout)
+		{
+			DrawFadeout(events[actors[i]->eventnumber]->length);
+			FreeActor(i);
+			break;
+		}
+	}
 
-   done=0;
-   for (i=0;i<=lastfilmactor;i++)
-      if (actors[i]!=NULL)
-         {
-         switch (events[actors[i]->eventnumber]->type)
-            {
-            // Draw Background
-            case background:
-               DrawBackground(&(events[actors[i]->eventnumber]->name[0]));
-               done=1;
-               break;
-            // Draw Scrolling Background
-            case backgroundscroll:
-               actors[i]->curx=DrawScrollingBackground(&(events[actors[i]->eventnumber]->name[0]),actors[i]->curx);
-               done=1;
-               break;
-            }
-         if (done==1)
-            break;
-         }
+	done=0;
+	for (i=0;i<=lastfilmactor;i++)
+		if (actors[i]!=NULL)
+			{
+			switch (events[actors[i]->eventnumber]->type)
+				{
+				// Draw Background
+				case background:
+					DrawBackground(&(events[actors[i]->eventnumber]->name[0]));
+					done=1;
+					break;
+				// Draw Scrolling Background
+				case backgroundscroll:
+					actors[i]->curx=DrawScrollingBackground(&(events[actors[i]->eventnumber]->name[0]),actors[i]->curx);
+					done=1;
+					break;
+				}
+			if (done==1)
+				break;
+			}
 
-   // Draw Background Sprites
+	// Draw Background Sprites
 
-   for (i=0;i<=lastfilmactor;i++)
-      if (actors[i]!=NULL)
-         if (events[actors[i]->eventnumber]->type==bkgndsprite)
-            {
-            DrawSprite(&(events[actors[i]->eventnumber]->name[0]),
-                       actors[i]->curx>>8,
-                       actors[i]->cury>>8,
-                       actors[i]->curscale>>8,
-                       events[actors[i]->eventnumber]->origheight);
-            }
+	for (i=0;i<=lastfilmactor;i++)
+		if (actors[i]!=NULL)
+			if (events[actors[i]->eventnumber]->type==bkgndsprite)
+				{
+				DrawSprite(&(events[actors[i]->eventnumber]->name[0]),
+							  actors[i]->curx>>8,
+							  actors[i]->cury>>8,
+							  actors[i]->curscale>>8,
+							  events[actors[i]->eventnumber]->origheight);
+				}
 
 
-   done=0;
-   for (i=0;i<=lastfilmactor;i++)
-      if (actors[i]!=NULL)
-         {
-         switch (events[actors[i]->eventnumber]->type)
-            {
-            // Draw Backdrop
-            case backdrop:
-               DrawBackdrop(&(events[actors[i]->eventnumber]->name[0]));
-               done=1;
-               break;
-            // Draw Scrolling Backdrop
-            case backdropscroll:
-               actors[i]->curx=DrawScrollingBackdrop(&(events[actors[i]->eventnumber]->name[0]),actors[i]->curx);
-               done=1;
-               break;
-            }
-         if (done==1)
-            break;
-         }
+	done=0;
+	for (i=0;i<=lastfilmactor;i++)
+		if (actors[i]!=NULL)
+			{
+			switch (events[actors[i]->eventnumber]->type)
+				{
+				// Draw Backdrop
+				case backdrop:
+					DrawBackdrop(&(events[actors[i]->eventnumber]->name[0]));
+					done=1;
+					break;
+				// Draw Scrolling Backdrop
+				case backdropscroll:
+					actors[i]->curx=DrawScrollingBackdrop(&(events[actors[i]->eventnumber]->name[0]),actors[i]->curx);
+					done=1;
+					break;
+				}
+			if (done==1)
+				break;
+			}
 
-   // Draw foreground Sprites
+	// Draw foreground Sprites
 
-   for (i=0;i<=lastfilmactor;i++)
-      if (actors[i]!=NULL)
-         if (events[actors[i]->eventnumber]->type==sprite)
-            {
-            DrawSprite(&(events[actors[i]->eventnumber]->name[0]),
-                       actors[i]->curx>>8,
-                       actors[i]->cury>>8,
-                       actors[i]->curscale>>8,
-                       events[actors[i]->eventnumber]->origheight);
-            }
+	for (i=0;i<=lastfilmactor;i++)
+		if (actors[i]!=NULL)
+			if (events[actors[i]->eventnumber]->type==sprite)
+				{
+				DrawSprite(&(events[actors[i]->eventnumber]->name[0]),
+							  actors[i]->curx>>8,
+							  actors[i]->cury>>8,
+							  actors[i]->curscale>>8,
+							  events[actors[i]->eventnumber]->origheight);
+				}
 
 }
 
@@ -940,16 +940,19 @@ void DrawEvents ( void )
 */
 void DeleteEvent( eventtype type, actortype * actor )
 {
-   int i;
+	int i;
 
-   for (i=0;i<=lastfilmactor;i++)
-      if (actors[i]!=NULL)
-         if ((events[actors[i]->eventnumber]->type==type) && (actors[i]!=actor))
-            {
-            FreeActor(i);
-            if (i==lastfilmactor)
-               lastfilmactor--;
-            }
+	for (i=0;i<=lastfilmactor;i++)
+	{
+		if (actors[i]!=NULL)
+			if (	(events[actors[i]->eventnumber]->type==type) &&
+					(actors[i]!=actor))
+		{
+			FreeActor(i);
+			if (i==lastfilmactor)
+				lastfilmactor--;
+		}
+	}
 }
 
 
@@ -962,56 +965,56 @@ void DeleteEvent( eventtype type, actortype * actor )
 */
 void AddEvents( void )
 {
-   actortype * actor;
+	actortype * actor;
 
-   while ((events[currentevent]->time<=filmtics) && (currentevent<eventindex))
-      {
-      actor=GetFreeActor();
-      actor->eventnumber=currentevent;
-      switch (events[actor->eventnumber]->type)
-         {
-         case palette:
-            actor->tics=-1;
-            break;
-         case fadeout:
-            actor->tics=-1;
-            break;
-         case background:
-            DeleteEvent (background, actor);
-            actor->tics=-1;
-            break;
-         case backdrop:
-            DeleteEvent (backdrop, actor);
-            actor->tics=-1;
-            break;
-         case backgroundscroll:
-            DeleteEvent (backgroundscroll, actor);
-            actor->curx=0;
-            actor->tics=-1;
-            break;
-         case backdropscroll:
-            DeleteEvent (backdropscroll, actor);
-            actor->curx=0;
-            actor->tics=-1;
-            break;
-         case bkgndsprite:
-            actor->tics=events[actor->eventnumber]->length;
-            actor->curx=events[actor->eventnumber]->x<<8;
-            actor->cury=events[actor->eventnumber]->y<<8;
-            actor->curscale=events[actor->eventnumber]->scale<<8;
-            break;
-         case sprite:
-            actor->tics=events[actor->eventnumber]->length;
-            actor->curx=events[actor->eventnumber]->x<<8;
-            actor->cury=events[actor->eventnumber]->y<<8;
-            actor->curscale=events[actor->eventnumber]->scale<<8;
-            break;
-         default:
-            Error("ADD: Illegal event type\n");
-            break;
-         }
-      currentevent++;
-      }
+	while ((events[currentevent]->time<=filmtics) && (currentevent<eventindex))
+	{
+		actor=GetFreeActor();
+		actor->eventnumber=currentevent;
+		switch (events[actor->eventnumber]->type)
+		{
+			case palette:
+				actor->tics=-1;
+				break;
+			case fadeout:
+				actor->tics=-1;
+				break;
+			case background:
+				DeleteEvent (background, actor);
+				actor->tics=-1;
+				break;
+			case backdrop:
+				DeleteEvent (backdrop, actor);
+				actor->tics=-1;
+				break;
+			case backgroundscroll:
+				DeleteEvent (backgroundscroll, actor);
+				actor->curx=0;
+				actor->tics=-1;
+				break;
+			case backdropscroll:
+				DeleteEvent (backdropscroll, actor);
+				actor->curx=0;
+				actor->tics=-1;
+				break;
+			case bkgndsprite:
+				actor->tics=events[actor->eventnumber]->length;
+				actor->curx=events[actor->eventnumber]->x<<8;
+				actor->cury=events[actor->eventnumber]->y<<8;
+				actor->curscale=events[actor->eventnumber]->scale<<8;
+				break;
+			case sprite:
+				actor->tics=events[actor->eventnumber]->length;
+				actor->curx=events[actor->eventnumber]->x<<8;
+				actor->cury=events[actor->eventnumber]->y<<8;
+				actor->curscale=events[actor->eventnumber]->scale<<8;
+				break;
+			default:
+				Error("ADD: Illegal event type\n");
+				break;
+		}
+		currentevent++;
+	}
 }
 
 
@@ -1025,12 +1028,12 @@ void AddEvents( void )
 
 void CacheScriptFile (char *filename)
 {
-	long            size;
-   int lump;
+	long				size;
+	int lump;
 
-   lump=W_GetNumForName(filename)+1;
+	lump=W_GetNumForName(filename)+1;
 
-   scriptbuffer=W_CacheLumpNum(lump,PU_CACHE);
+	scriptbuffer=W_CacheLumpNum(lump,PU_CACHE);
 	size = W_LumpLength(lump);
 
 	script_p = scriptbuffer;
@@ -1051,51 +1054,51 @@ void CacheScriptFile (char *filename)
 
 void GrabMovieScript (char const *basename)
 {
-        char            script[256];
+		  char				script[256];
 
 //
 // read in the script file
 //
-        strcpy (script, basename);
-        strcat (script,".ms");
-//        LoadScriptFile (script);
-        CacheScriptFile ((char *)basename);
-        ParseMovieScript ();
+		  strcpy (script, basename);
+		  strcat (script,".ms");
+//		  LoadScriptFile (script);
+		  CacheScriptFile ((char *)basename);
+		  ParseMovieScript ();
 
 }
 void InitializeMovie ( void )
 {
-   FirstTimeInitialize();
-   movielength=0;
-   InitializeFilmActors();
-   InitializeEvents();
+	FirstTimeInitialize();
+	movielength=0;
+	InitializeFilmActors();
+	InitializeEvents();
 }
 
 void CleanupMovie ( void )
 {
-   CleanupEvents();
-   CleanupActors();
+	CleanupEvents();
+	CleanupActors();
 }
 
 void PlayMovie ( char * name )
 {
-   InitializeMovie();
-   GrabMovieScript (name);
-   filmbuffer=(byte *)bufferofs;
-   IN_ClearKeysDown();
-   for (filmtics=0;filmtics<movielength;filmtics+=dtime)
-      {
-      AddEvents();
-      DrawEvents();
-      UpdateEvents();
-      FlipPage();
-      CalcTics();
-      dtime=tics;
-      filmbuffer=(byte *)bufferofs;
-      if ((LastScan) || IN_GetMouseButtons())
-         break;
-      }
-   CleanupMovie();
+	InitializeMovie();
+	GrabMovieScript (name);
+	filmbuffer=(byte *)bufferofs;
+	IN_ClearKeysDown();
+	for (filmtics=0;filmtics<movielength;filmtics+=dtime)
+	{
+		AddEvents();
+		DrawEvents();
+		UpdateEvents();
+		FlipPage();
+		CalcTics();
+		dtime=tics;
+		filmbuffer=(byte *)bufferofs;
+		if ((LastScan) || IN_GetMouseButtons())
+			break;
+	}
+	CleanupMovie();
 }
 
 

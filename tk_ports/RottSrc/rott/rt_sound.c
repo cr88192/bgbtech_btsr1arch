@@ -460,18 +460,18 @@ int SD_PlayIt ( int sndnum, int angle, int distance, int pitch )
 	snd=W_CacheSoundLumpNum(SoundNumber(sndnum),PU_STATIC);
 
 	if ( *snd == 'C' )
-		{
+	{
 		voice = FX_PlayVOC3D( snd, pitch, angle, distance,
 			sounds[sndnum].priority, (unsigned long) sndnum );
-		}
+	}
 	else
-		{
+	{
 		voice = FX_PlayWAV3D( snd, pitch, angle, distance,
 			sounds[sndnum].priority, (unsigned long) sndnum );
-		}
+	}
 
 	if ( voice < FX_Ok )
-		{
+	{
 #if (DEVELOPMENT == 1)
 /*
 		if (MV_ErrorCode == MV_InvalidVOCFile)
@@ -486,15 +486,15 @@ int SD_PlayIt ( int sndnum, int angle, int distance, int pitch )
 		SD_MakeCacheable( sndnum );
 
 		return 0;
-		}
+	}
 
 	NumBadSounds=0;
 
 	if (!(sounds[sndnum].flags & SD_WRITE))
-		{
+	{
 		sounds[sndnum].prevhandle=voice;
 		sounds[sndnum].prevdistance=distance;
-		}
+	}
 	return voice;
 }
 
@@ -519,11 +519,13 @@ int SD_Play ( int sndnum )
 	pitch = 0;
 
 	if ( !( sounds[ sndnum ].flags & SD_PITCHSHIFTOFF ) )
-		{
+	{
 		pitch = PitchOffset();
-		}
+	}
 
-	voice = SD_PlayIt ( sndnum, 0, 0, pitch );
+//	voice = SD_PlayIt ( sndnum, 0, 0, pitch );
+	voice = SD_PlayIt ( sndnum, 0, 64, pitch );
+//	voice = SD_PlayIt ( sndnum, 0, 128, pitch );
 
 	return voice;
 
@@ -548,9 +550,9 @@ int SD_Play3D ( int sndnum, int angle, int distance )
 
 	pitch = 0;
 	if ( !( sounds[ sndnum ].flags & SD_PITCHSHIFTOFF ) )
-		{
+	{
 		pitch = PitchOffset();
-		}
+	}
 
 	voice = SD_PlayIt ( sndnum, angle, distance, pitch );
 
@@ -588,20 +590,20 @@ int SD_PlayPositionedSound ( int sndnum, int px, int py, int x, int y )
 		return 0;
 
 	if (distance!=0)
-		{
+	{
 		angle = ( atan2_appx(dx,dy) & (FINEANGLES-1) ) >> 6;
-		}
+	}
 	else
-		{
+	{
 		angle=0;
-		}
+	}
 
 	pitch = 0;
 
 	if ( !( sounds[ sndnum ].flags & SD_PITCHSHIFTOFF ) )
-		{
+	{
 		pitch = PitchOffset();
-		}
+	}
 
 	voice = SD_PlayIt ( sndnum, angle, distance, pitch );
 
@@ -655,20 +657,20 @@ int SD_PlaySoundRTP ( int sndnum, int x, int y )
 #endif
 
 	if (distance!=0)
-		{
+	{
 		angle = ( (player->angle - atan2_appx(dx,dy)) & (FINEANGLES-1) ) >> 6;
-		}
+	}
 	else
-		{
+	{
 		angle=0;
-		}
+	}
 
 	pitch = 0;
 
 	if ( !( sounds[ sndnum ].flags & SD_PITCHSHIFTOFF ) )
-		{
+	{
 		pitch = PitchOffset();
-		}
+	}
 
 	voice = SD_PlayIt ( sndnum, angle, distance, pitch );
 
@@ -717,11 +719,11 @@ void SD_SetSoundPitch ( int sndnum, int pitch )
 
 	status=FX_SetPitch( sndnum, pitch );
 	if (status != FX_Ok)
-		{
+	{
 #if (DEVELOPMENT == 1)
 		SoftError("SD_SetSoundPitch : %s\n",FX_ErrorString( status ));
 #endif
-		}
+	}
 }
 
 //***************************************************************************
@@ -753,22 +755,22 @@ void SD_PanRTP ( int handle, int x, int y )
 		return;
 
 	if (distance!=0)
-		{
+	{
 		angle = ( (player->angle - atan2_appx(dx,dy)) & (FINEANGLES-1) ) >> 6;
-		}
+	}
 	else
-		{
+	{
 		angle = 0;
-		}
+	}
 
 	status = FX_Pan3D ( handle, angle, distance );
 
 	if (status != FX_Ok)
-		{
+	{
 #if (DEVELOPMENT == 1)
 		SoftError("SD_PanPositionedSound: %s\n",FX_ErrorString( status ));
 #endif
-		}
+	}
 }
 
 //***************************************************************************
@@ -790,11 +792,11 @@ void SD_SetPan ( int handle, int vol, int left, int right )
 	status=FX_SetPan( handle, vol, left, right );
 
 	if (status != FX_Ok)
-		{
+	{
 #if (DEVELOPMENT == 1)
 		SoftError("SD_SetPan: %s\n",FX_ErrorString( status ));
 #endif
-		}
+	}
 }
 
 //***************************************************************************
@@ -826,22 +828,22 @@ void SD_PanPositionedSound ( int handle, int px, int py, int x, int y )
 		return;
 
 	if (distance!=0)
-		{
+	{
 		angle = ( atan2_appx(dx,dy) & (FINEANGLES-1) ) >> 6;
-		}
+	}
 	else
-		{
+	{
 		angle = 0;
-		}
+	}
 
 	status=FX_Pan3D( handle, angle, distance );
 
 	if (status != FX_Ok)
-		{
+	{
 #if (DEVELOPMENT == 1)
 		SoftError("SD_PanPositionedSound: %s\n",FX_ErrorString( status ));
 #endif
-		}
+	}
 }
 
 
@@ -861,11 +863,11 @@ void SD_StopSound ( int handle )
 	status=FX_StopSound( handle);
 
 	if (status != FX_Ok)
-		{
+	{
 #if (DEVELOPMENT == 1)
 		SoftError("SD_StopSound: %s\n",FX_ErrorString( status ));
 #endif
-		}
+	}
 }
 
 //***************************************************************************
@@ -884,11 +886,11 @@ void  SD_StopAllSounds ( void )
 	status=FX_StopAllSounds();
 
 	if (status != FX_Ok)
-		{
+	{
 #if (DEVELOPMENT == 1)
 		SoftError("SD_StopAllSounds: %s\n",FX_ErrorString( status ));
 #endif
-		}
+	}
 }
 
 //***************************************************************************
@@ -900,13 +902,13 @@ void  SD_StopAllSounds ( void )
 int SD_SoundActive ( int handle )
 {
 	if (SD_Started==false)
-		{
+	{
 		return false;
-		}
+	}
 	else
-		{
+	{
 		return (FX_SoundActive(handle));
-		}
+	}
 }
 
 //***************************************************************************
@@ -1060,13 +1062,13 @@ void MU_PlayJukeBoxSong
 	int which
 	)
 
-	{
+{
 	if ( ( MusicMode > 0 ) && ( MU_Started == true ) )
-		{
+	{
 		SetMenuHeader( rottsongs[ which ].songname );
 		MU_PlaySong( which );
-		}
 	}
+}
 
 
 //****************************************************************************

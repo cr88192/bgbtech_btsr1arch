@@ -2048,6 +2048,7 @@ dt_bool PTR_PuzzleItemTraverse(intercept_t *in)
 	mobj = in->d.thing;
 	if(mobj->special != USE_PUZZLE_ITEM_SPECIAL)
 	{ // Wrong special
+//		__debugbreak();
 		return true;
 	}
 	if(PuzzleItemType != mobj->args[0])
@@ -2083,6 +2084,10 @@ dt_bool P_UsePuzzleItem(player_t *player, int itemType)
 	y2 = y1+(USERANGE>>FRACBITS)*finesine[angle];
 	P_PathTraverse(x1, y1, x2, y2, PT_ADDLINES|PT_ADDTHINGS,
 		PTR_PuzzleItemTraverse);
+	
+//	if(!PuzzleActivated)
+//		__debugbreak();
+	
 	return PuzzleActivated;
 }
 

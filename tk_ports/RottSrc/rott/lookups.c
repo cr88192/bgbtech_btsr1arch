@@ -105,7 +105,7 @@ void SafeWrite (int handle, void *buffer, long count)
 void CalcPixelAngles ( void )
 {
 	int	i;
-	long  intang;
+	int  intang;
 	double  angle;
 	double  tang;
 
@@ -117,7 +117,7 @@ void CalcPixelAngles ( void )
 		// start 1/2 pixel over, so viewangle bisects two middle pixels
 		tang = ((((double)i*160.0)+80.0)/(FPFOCALWIDTH*(double)PANGLES));
 		angle = atan(tang);
-		intang = ((long)(angle*radtoint));
+		intang = ((int)(angle*radtoint));
 		pangle[i] = intang;
 	}
 }

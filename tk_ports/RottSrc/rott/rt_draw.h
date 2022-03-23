@@ -79,9 +79,9 @@ extern fixed   viewsin,viewcos;
 extern visobj_t vislist[MAXVISIBLE];
 extern visobj_t *visptr,*visstep,*farthest;
 
-extern long     xintercept,yintercept;
+extern int     xintercept,yintercept;
 extern byte     mapseen[MAPSIZE][MAPSIZE];
-extern unsigned long * lights;
+extern unsigned int * lights;
 
 extern int hp_startfrac;
 extern int hp_srcstep;
@@ -101,7 +101,7 @@ extern  int firstcoloffset;
 //=========================== macros =============================
 
 #define LightSourceAt(x,y)    (*(lights+((x)<<7)+(y)))
-#define SetLight(x,y,level)   (LightSourceAt((x),(y))|=(unsigned long)(level))
+#define SetLight(x,y,level)   (LightSourceAt((x),(y))|=(unsigned int)(level))
 
 //=========================== functions =============================
 

@@ -2663,7 +2663,7 @@ short	BigShort (short l)
 	return (b1<<8) + b2;
 }
 
-long	BigLong (long l)
+int	BigLong (int l)
 {
 	byte	b1,b2,b3,b4;
 
@@ -2672,7 +2672,7 @@ long	BigLong (long l)
 	b3 = (l>>16)&255;
 	b4 = (l>>24)&255;
 
-	return ((long)b1<<24) + ((long)b2<<16) + ((long)b3<<8) + b4;
+	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
 }
 
 /*
@@ -2686,8 +2686,8 @@ long	BigLong (long l)
 void WriteLBMfile (char *filename, byte *data, int width, int height)
 {
 	byte	*lbm, *lbmptr;
-	long	*formlength, *bmhdlength, *cmaplength, *bodylength;
-	long	length;
+	int		*formlength, *bmhdlength, *cmaplength, *bodylength;
+	int		length;
 	bmhd_t  basebmhd;
 	int	handle;
 	int	i;
@@ -2702,7 +2702,7 @@ void WriteLBMfile (char *filename, byte *data, int width, int height)
 	*lbmptr++ = 'R';
 	*lbmptr++ = 'M';
 
-	formlength = (long*)lbmptr;
+	formlength = (int*)lbmptr;
 	lbmptr+=4;							// leave space for length
 
 	*lbmptr++ = 'P';
@@ -2718,7 +2718,7 @@ void WriteLBMfile (char *filename, byte *data, int width, int height)
 	*lbmptr++ = 'H';
 	*lbmptr++ = 'D';
 
-	bmhdlength = (long *)lbmptr;
+	bmhdlength = (int *)lbmptr;
 	lbmptr+=4;							// leave space for length
 
 	memset (&basebmhd,0,sizeof(basebmhd));
@@ -2746,7 +2746,7 @@ void WriteLBMfile (char *filename, byte *data, int width, int height)
 	*lbmptr++ = 'A';
 	*lbmptr++ = 'P';
 
-	cmaplength = (long *)lbmptr;
+	cmaplength = (int *)lbmptr;
 	lbmptr+=4;							// leave space for length
 
 	for (i = 0; i < 0x300; i++)
@@ -2768,7 +2768,7 @@ void WriteLBMfile (char *filename, byte *data, int width, int height)
 	*lbmptr++ = 'D';
 	*lbmptr++ = 'Y';
 
-	bodylength = (long *)lbmptr;
+	bodylength = (int *)lbmptr;
 	lbmptr+=4;							// leave space for length
 
 	memcpy (lbmptr,data,width*height);

@@ -1457,6 +1457,8 @@ void SpawnNewObj (int tilex, int tiley, statetype *state, classtype which)
 	tilex &= MAPSIZE-1;
 	tiley &= MAPSIZE-1;
 
+//	__debugbreak();
+
 	GetNewActor ();
 	new->obclass = which;
 	SetTilePosition(new,tilex,tiley);
@@ -1764,6 +1766,8 @@ void SpawnDisk(int tilex, int tiley, int type, boolean master)
 
 	tilex &= MAPSIZE-1;
 	tiley &= MAPSIZE-1;
+
+//	__debugbreak();
 
 	if (master == true)
 	{
@@ -12268,7 +12272,7 @@ void SelectPathDir (objtype *ob)
 
 boolean CheckSight (objtype *ob,void *atwhat)
 {
-	long	deltax,deltay;
+	int		deltax,deltay;
 	objtype * what;
 //
 // don't bother tracing a line if the area isn't connected to the player's

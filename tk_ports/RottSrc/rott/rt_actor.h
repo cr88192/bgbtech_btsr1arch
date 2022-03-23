@@ -113,6 +113,8 @@ int M_ABS(int value);
   ob->y = (ob->tiley << TILESHIFT) + TILEGLOBAL/2; \
   }
 
+//  __debugbreak();		\
+
 //  ob->tilex = newtilex;                            \
 //  ob->tiley = newtiley;                            \
 
