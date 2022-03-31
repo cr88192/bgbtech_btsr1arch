@@ -1337,16 +1337,24 @@ wire		timerNoise_NS2;
 reg			timerNoise_S2;
 wire		timerNoise_NS3;
 reg			timerNoise_S3;
+wire		timerNoise_NS4;
+reg			timerNoise_S4;
 
 assign		timerNoise_NS0 = (scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0]);
-assign		timerNoise_NS1 = (sdc_di ^ sdc_do);
+assign		timerNoise_NS1 = (sdc_di ^ sdc_do) ^ timerNoise_S4;
 // assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
 assign		timerNoise_NS2 =
 	dbg_exHold1 ^ audPwmOut2 ^ clock_halfMhz ^
 	timerNPat ^ tAudMicData ^ tSbitX;
 assign		timerNoise_NS3 =
-	memAddr[1] ^ memAddr[2] ^ memAddr[3] ^
-	memAddr[5] ^ memAddr[7] ^ memAddr[11];
+//	memAddr[1] ^ memAddr[2] ^ memAddr[3] ^
+//	memAddr[5] ^ memAddr[7] ^ memAddr[11];
+	memAddr[4] ^ memAddr[5] ^ memAddr[6] ^
+	memAddr[9] ^ memAddr[11] ^ memAddr[13];
+
+assign		timerNoise_NS4 =
+	memOutData[1] ^ memOutData[ 3] ^ memOutData[ 5] ^
+	memOutData[7] ^ memOutData[11] ^ memOutData[13];
 
 assign		timerNoiseL0 =
 	timerNoiseL2	^ timerNoiseL4 ^
@@ -1668,6 +1676,7 @@ begin
 	timerNoise_S1	<= timerNoise_NS1;
 	timerNoise_S2	<= timerNoise_NS2;
 	timerNoise_S3	<= timerNoise_NS3;
+	timerNoise_S4	<= timerNoise_NS4;
 
 	mmioAddrL1		<= mmioAddr;
 	mmioAddrL2		<= mmioAddrL1;

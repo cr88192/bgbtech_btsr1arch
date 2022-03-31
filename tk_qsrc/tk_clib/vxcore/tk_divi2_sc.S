@@ -229,4 +229,9 @@ __sdivsi3:
 //	pop r14
 //	ret
 
+	break
+	break
+	break
+	break
+
 #endif

@@ -1308,11 +1308,17 @@ int TKSH_TryLoad(char *img, char **args0)
 //			boot_newspb=TKMM_PageAlloc(1<<18);
 //			boot_newsp=boot_newspb+((1<<18)-1024);
 
-			boot_newspb=TKMM_PageAlloc(1<<19);
-			boot_newsp=boot_newspb+((1<<19)-1024);
+			i=TK_GetRandom16ASLR()&0x03F0;
+//			boot_newspb=TKMM_PageAlloc(1<<19);
+			boot_newspb=TKMM_PageAllocUsc(1<<19);
+//			boot_newsp=boot_newspb+((1<<19)-1024);
+			boot_newsp=boot_newspb+(((1<<19)-1024)-i);
 
+			i=TK_GetRandom16ASLR()&0x00F0;
 			boot_newspbk=TKMM_PageAlloc(1<<16);
-			boot_newspk=boot_newspb+((1<<16)-1024);
+//			boot_newspk=boot_newspb+((1<<16)-1024);
+//			boot_newspk=boot_newspbk+((1<<16)-1024);
+			boot_newspk=boot_newspbk+(((1<<16)-1024)-i);
 
 			env0=TK_GetCurrentEnvContext();
 			env1=TK_EnvCtx_CloneContext(env0);
@@ -1365,6 +1371,8 @@ int TKSH_TryLoad(char *img, char **args0)
 
 			TKPE_SetupTaskForImage(task, pimg);
 			bootgbr=task->basegbr;
+			
+			TK_SchedAddTask(task);
 
 			tk_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
 

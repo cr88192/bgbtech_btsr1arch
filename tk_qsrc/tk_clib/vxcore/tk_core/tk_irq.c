@@ -43,8 +43,62 @@ int TK_SetUserIrqV(int irq, void *ptr)
 	return(i);
 }
 
-extern volatile int __arch_exsr;
+TKPE_TaskInfo *tk_sched_taskarray[256];
+int tk_sched_ntask;
+
+TKPE_TaskInfo *TK_CheckSchedNewTask(TKPE_TaskInfo *oldtask)
+{
+	TKPE_TaskInfo *newtask;
+	int i, j, k, pid;
+	
+	newtask=NULL;
+	pid=oldtask->pid;
+	i=pid;
+	while(1)
+	{
+		i=i+1;
+		if(i>=tk_sched_ntask)
+			i=1;
+		if(i==pid)
+			break;
+		newtask=tk_sched_taskarray[i];
+		if(newtask && !(newtask->status))
+			break;
+	}
+
+	return(newtask);
+//	return(NULL);
+}
+
+int TK_SchedAddTask(TKPE_TaskInfo *newtask)
+{
+	int i, j, k;
+	
+	if(!tk_sched_ntask)
+	{
+		tk_sched_taskarray[0]=NULL;
+		tk_sched_taskarray[1]=newtask;
+		tk_sched_ntask=2;
+		newtask->pid=1;
+	}
+	
+	for(i=1; i<tk_sched_ntask; i++)
+	{
+		if(!tk_sched_taskarray[i])
+			break;
+	}
+	
+	if(i>=tk_sched_ntask)
+		i=tk_sched_ntask++;
+
+	tk_sched_taskarray[i]=newtask;
+	newtask->pid=i;
+}
+
+extern volatile u64 __arch_exsr;
+extern volatile u64 __arch_krr;
 extern volatile void *__arch_tbr;
+extern volatile void *__arch_isrsave;		/* Pseudo */
 
 // int __isr_interrupt(int irq)
 #ifdef __BGBCC__
@@ -52,6 +106,8 @@ __interrupt
 #endif
 void __isr_interrupt(void)
 {
+	TKPE_TaskInfo *task, *task2;
+	TKPE_TaskInfoKern *taskern, *taskern2;
 	void (*run)();
 	int i, irq;
 
@@ -60,6 +116,40 @@ void __isr_interrupt(void)
 
 	if(((u16)irq)==0xC001)
 	{
+		task=(TKPE_TaskInfo *)__arch_tbr;
+		if(task && task->qtick)
+		{
+			task->qtick--;
+		}
+		else if(task && task->krnlptr)
+		{
+			task2=TK_CheckSchedNewTask(task);
+			if(task2 && (task2!=task))
+			{
+				taskern=(TKPE_TaskInfoKern *)task->krnlptr;
+				memcpy(
+					taskern->ctx_regsave,
+					__arch_isrsave, 
+					__ARCH_SIZEOF_REGSAVE__);
+
+				taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
+
+				taskern2=(TKPE_TaskInfoKern *)task->krnlptr;
+				memcpy(
+					__arch_isrsave, 
+					taskern2->ctx_regsave,
+					__ARCH_SIZEOF_REGSAVE__);
+
+				__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
+
+				task2->qtick=16;
+				__arch_tbr=(u64 *)task2;
+			}else
+			{
+				task->qtick=16;
+			}
+		}
+
 		if((n_irq_timer<0) || (n_irq_timer>16))
 		{
 			__debugbreak();
@@ -373,6 +463,25 @@ void TK_SmallFlushL1I(void *ptr, int sz)
 		cs+=16;
 	}
 	return;
+}
+
+u64 tk_seed_aslr=0x12345678ULL;
+
+u16 TK_GetRandom16ASLR()
+{
+	u64 hi;
+	tk_seed_aslr=(tk_seed_aslr*65521)+(tk_seed_aslr>>32)+1;
+	hi=(tk_seed_aslr>>16)&65535;
+	return(hi);
+}
+
+u64 TK_GetRandom48ASLR()
+{
+	u64 addr;
+	addr=TK_GetRandom16ASLR();
+	addr=(addr<<16)|TK_GetRandom16ASLR();
+	addr=(addr<<16)|TK_GetRandom16ASLR();
+	return(addr);
 }
 
 u64 TK_GetRandom();

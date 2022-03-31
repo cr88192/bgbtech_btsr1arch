@@ -639,6 +639,18 @@ TKPE_DecodeBufferRP2:
 };
 #endif
 
+u64 TK_GetRandom();
+
+#ifdef __BJX2__
+__asm {
+TK_GetRandom:
+	CPUID	31
+	NOP
+	NOP
+	MOV		DLR, R2
+	RTS
+};
+#endif
 
 byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
 {
@@ -1056,6 +1068,13 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 
 	imgptr=(byte *)imgbase;
 	reloc_disp=0;
+
+#if 0
+	i=TK_GetRandom();
+	i=(i*64)&65535;
+	imgptr+=i;
+	reloc_disp+=i;
+#endif
 
 	bss_ptr=imgptr+imgsz;
 	bss_sz=imgsz2-imgsz;

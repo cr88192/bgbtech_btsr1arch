@@ -54,6 +54,8 @@ void *TKMM_MMList_MallocCat(int sz, int cat);
 void *TKMM_MMList_MallocURo(int sz);
 void *TKMM_MMList_Malloc(int sz);
 
+s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap);
+
 
 int TKMM_InitBootParm()
 {
@@ -363,6 +365,20 @@ void *TKMM_PageAlloc(int sz)
 int TKMM_PageFree(void *ptr, int sz)
 	{ return(TKMM_PageFree_f(ptr, sz)); }
 #endif
+
+void *TKMM_PageAllocVaMap(int sz, int flProt, int flMap)
+{
+	s64 va;
+
+	if(!tk_iskernel())
+		return(TKMM_PageAlloc_f(sz));
+
+	va=TK_VMem_VaVirtualAlloc(0, sz, flProt, flMap);
+	if(va)
+		return((void *)va);
+
+	return(TKMM_PageAlloc_f(sz));
+}
 
 void *TKMM_PageAllocUsc(int sz)
 {

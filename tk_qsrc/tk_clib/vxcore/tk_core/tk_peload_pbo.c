@@ -313,7 +313,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	byte is_pel4, cmp;
 	u32 csum1, csum2;
 	int sig_mz, sig_pe, mach, mmagic;
-	int rva_rlc, sz_rlc, rlc_disp;
+	int rva_rlc, sz_rlc;
+	s64 rlc_disp;
 	u32 tls_rva, tls_sz, tls_iptr, tls_key, tls_rds, tls_rde;
 	int rva_imp, sz_imp, rva_ilt, rva_iat;
 	int rva_exp, sz_exp;
@@ -428,12 +429,21 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	img=tk_malloc_krn(sizeof(TKPE_ImageInfo));
 	memset(img, 0, sizeof(TKPE_ImageInfo));
 
-	imgsz1=(imgsz+16383)&(~16383);
+//	imgsz1=(imgsz+16383)&(~16383);
+	imgsz1=(imgsz+16384+16383)&(~16383);
+
+//	i=(TK_GetRandom()*64)&16383;
+	i=(TK_GetRandom16ASLR()*64)&16383;
 
 	imgptr=TKMM_PageAlloc(imgsz1);
+//	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
+//		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+
 	TK_VMem_MProtectPages(imgptr, imgsz1,
 		TKMM_PROT_READ|TKMM_PROT_WRITE|
 		TKMM_PROT_EXEC);
+
+//	imgptr+=i;
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);
@@ -936,6 +946,7 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 
 	gbrsz=img->gbr_sz;
 	gbrdat=TKMM_PageAlloc(gbrsz);
+//	gbrdat=TKMM_PageAllocUsc(gbrsz);
 	TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
 	
 	tk_printf("TK_InstanceImageInTask: GBR RVA=%X sz_cpy=%d sz=%d pboix=%d\n",
@@ -967,6 +978,7 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 	{
 		tlssz=img->tls_dsize;
 		tlsdat=TKMM_PageAlloc(tlssz);
+//		tlsdat=TKMM_PageAllocUsc(tlssz);
 		TK_TaskAddPageAlloc(task, tlsdat, tlssz);
 		if(img->tls_rvaraw)
 		{

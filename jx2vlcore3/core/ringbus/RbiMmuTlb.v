@@ -49,6 +49,7 @@ input[15:0]		regInExecAcl;
 reg[127:0]		tRegInLdtlbHi;
 reg[127:0]		tNxtRegInLdtlbHi;
 
+reg[63:0]		tRegInSR;		//Status Register
 
 `reg_l1addr		tRegOutAddr;
 `reg_l1addr		tRegOutAddr2;
@@ -360,7 +361,7 @@ RbiMmuChkAcc tlbChkAcc(
 	regInMMCR,
 //	regInKRR,
 	tRegInKRR,
-	regInSR,
+	tRegInSR,
 	regInOpm[7:0],
 	tlbAcc,
 	aclEntryA,	aclEntryB,
@@ -381,10 +382,10 @@ begin
 	tlbMmuPg16K		= regInMMCR[5];
 	tlbMmuPg4K		= !(tlbMmuPg16K || tlbMmuPg64K);
 
-	tlbIs48b		= regInSR[31];
-	if(regInMMCR[2] && !regInSR[30])
+	tlbIs48b		= tRegInSR[31];
+	if(regInMMCR[2] && !tRegInSR[30])
 		tlbIs48b	= 1;
-	if(regInMMCR[3] && regInSR[30])
+	if(regInMMCR[3] && tRegInSR[30])
 		tlbIs48b	= 1;
 	tlbIs32b		= !tlbIs48b;
 
@@ -612,10 +613,10 @@ begin
 //	tRegInIsBounce	= (tRegInOpm == UMEM_OPM_RD_BOUNCE);
 	tRegInIsBounce	= 0;
 
-	if(regInSR[29] && regInSR[28])
+	if(tRegInSR[29] && tRegInSR[28])
 	begin
 //		$display("TLB Disable ISR");
-		tlbMmuEnable = 0;
+//		tlbMmuEnable = 0;
 	end
 	
 	if(tlbMmuEnable)
@@ -835,7 +836,7 @@ begin
 
 	if((tRegInAddr[47] && tRegInIsLDX) || tAddrIsMMIO)
 	begin
-		if(tlbMmuEnable && !regInSR[30])
+		if(tlbMmuEnable && !tRegInSR[30])
 		begin
 			tRegOutOpm[11:8]	= 4'h7;
 		end
@@ -851,14 +852,14 @@ begin
 		
 		if(tlbMiss)
 		begin
-			if(regInSR[29] && regInSR[28])
+			if(tRegInSR[29] && tRegInSR[28])
 			begin
 				$display("Miss while in ISR");
 			end
 
 //			$display("Miss A=%X B=%X SR=%X_%X",
 //				tRegInAddr,	tRegInAddrB,
-//				regInSR[63:32], regInSR[31:0]);
+//				tRegInSR[63:32], tRegInSR[31:0]);
 
 //			tlbAddr		= 48'h010000;
 `ifdef jx2_enable_l1addr96
@@ -1254,6 +1255,8 @@ begin
 	tlbHbDatB		<= tlbBlkB[tlbHixA];
 	tlbHbDatC		<= tlbBlkC[tlbHixA];
 	tlbHbDatD		<= tlbBlkD[tlbHixA];
+
+	tRegInSR		<= regInSR;
 
 	if(tlbDoLdtlb && !tlbLdtlbOK)
 	begin

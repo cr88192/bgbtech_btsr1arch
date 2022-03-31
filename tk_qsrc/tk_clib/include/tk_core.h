@@ -47,7 +47,8 @@ typedef u64 tk_kptr;
 // #define UART_BASE	0xA000E010
 // #define AIC_BASE	0xA000E200
 
-#ifdef __ADDR_X48__
+// #ifdef __ADDR_X48__
+#if 1
 #define MMIO_BASE	0xFFFFF0000000ULL
 #define MMIO_END	0xFFFFFFFFFFF0ULL
 #else
@@ -233,6 +234,7 @@ typedef u64 tk_kptr;
 #define TKMM_MAP_GROWSDOWN	0x0010
 #define TKMM_MAP_NORESERVE	0x0020
 #define TKMM_MAP_32BIT		0x0040
+#define TKMM_MAP_DIRECT		0x0080
 
 // #define INITRD_ADDR	0x1003F010
 // #define INITRD_SIZE	0x1003F014

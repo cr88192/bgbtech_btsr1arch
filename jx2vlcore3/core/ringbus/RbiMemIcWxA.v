@@ -323,6 +323,9 @@ reg				tNxtTlbMissInh;
 reg				tClrTlbMissInh;
 reg				tClrTlbMissInhL;
 
+reg				tSkipTlb;
+reg				tNxtSkipTlb;
+
 reg				tStuckTlbMissInh;
 reg				tStuckTlbMissInhL;
 
@@ -555,6 +558,7 @@ begin
 	tRegOutExc			= 0;
 	tNxtMsgLatch		= 0;
 	tNxtMsgLatchTmiss	= 0;
+	tNxtSkipTlb			= 0;
 	
 	tNxtStickyTlbExc	= tStickyTlbExc;
 	if(tlbExc[15:12]==4'h7)
@@ -563,29 +567,42 @@ begin
 	if(tClrTlbMissInhL && tTlbMissInh)
 		tClrTlbMissInh		= 1;
 
+// `ifndef def_true
+`ifdef def_true
 	if(tReqIxAL != tReqIxA)
+//	if((tReqIxAL != tReqIxA) && tStuckTlbMissInhL)
+	begin
+		if(tTlbMissInh)
+			$display("L1I$ Clear TLB Inhibit, Drop");
 		tNxtTlbMissInh		= 0;
+	end
+`endif
 
 //	if(tMemNoRwx[5])
 //		tNxtTlbMissInh = 1;
 	
 //	if((tInOpmB == JX2_DCOPM_LDTLB) || tRegInSr[29])
-	if((tInOpmB == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
+//	if((tInOpmB == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
 //	if(tRegInSr[29] && tRegInSr[30])
 //	if(	(tRegInSr[29] && tRegInSr[30]) &&
 //		(regInSr[29] && regInSr[30]) &&
 //		(tRegInSrL[29] && tRegInSrL[30]))
+	if(	(tRegInSr[29] && tRegInSr[30]) &&
+		(tRegInSrL[29] && tRegInSrL[30]))
 	begin
 		if(tTlbMissInh)
 			$display("L1I$ Clear TLB Inhibit");
 //			$display("L1I$ Clear TLB Inhibit, InPc=%X InAddr=%X",
 //				regInPc, tInAddr);
-		tNxtTlbMissInh = 0;
-		tClrTlbMissInh = 1;
+		tNxtTlbMissInh	= 0;
+		tClrTlbMissInh	= 1;
+//		tSkipTlb		= 1;
 	end
 	
 
 	/* Stage A */
+
+	tNxtSkipTlb			= regInSr[29] && regInSr[30];
 
 	tRegInPc	= regInPc;
 	tNxtAddrHi	= 0;
@@ -641,6 +658,7 @@ begin
 		tNxtInPmode		= tInPmode;
 		tNxtInPcWxe		= tInPcWxe;
 		tNxtInPcRiscv	= tInPcRiscv;
+		tNxtSkipTlb		= tSkipTlb;
 	end
 
 `ifdef jx2_l1i_nohash
@@ -892,6 +910,20 @@ begin
 //	if((tBlkDext2B != tReqAxH) && !tTlbMissInh)
 	if(tBlkDext2B != tReqAxH)
 		tMissAddrB = 1;
+
+// `ifdef def_true
+`ifndef def_true
+	if((tBlkData2A[31:0]==UV32_00) && !tTlbMissInh)
+	begin
+		$display("L1I$: Debug Miss A");
+		tMissAddrA = 1;
+	end
+	if((tBlkData2B[31:0]==UV32_00) && !tTlbMissInh)
+	begin
+		$display("L1I$: Debug Miss B");
+		tMissAddrB = 1;
+	end
+`endif
 
 	tMissA =
 		tMissAddrA ||
@@ -1451,6 +1483,9 @@ begin
 `endif
 			tNxtMemReqLdA = 1;
 
+			if(tSkipTlb)
+				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+
 //			$display("I$ LDA %X %X %X Ix=%X",
 //				tMemOpmReq, tMemSeqReq, tMemAddrReq, tReqIxA);
 		end
@@ -1469,6 +1504,10 @@ begin
 			tMemAddrReq		= { tReqAddrB, 4'h00 };
 `endif
 			tNxtMemReqLdB = 1;
+
+			if(tSkipTlb)
+				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+//				tMemAddrReq[47:44]=4'hC;
 
 //			$display("I$ LDB %X %X %X Ix=%X",
 //				tMemOpmReq, tMemSeqReq, tMemAddrReq, tReqIxB);
@@ -1537,21 +1576,24 @@ begin
 //	end
 
 //	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold)
-	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold && !tDoStallNop)
+//	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold && !tDoStallNop)
+	if((tRegOutPcVal[31:0]==32'h0000) && !tRegOutHold && !tDoStallNop)
 	begin
 		if(!tMsgLatch)
 		begin
 			$display("L1I$: Op=00 A=%X D=%X Miss=%d/%d",
 				tInAddr, tRegOutPcVal, tMissA, tMissB);
-			$display("    L1I$: A BA=%X AxH=%X/%X",
+			$display("    L1I$: A BA=%X/%X AxH=%X/%X",
 				tBlkAddr2A, tReqAddrA,
 				tBlkDext2A, tReqAxH);
-			$display("    L1I$: B BA=%X AxH=%X/%X",
+			$display("    L1I$: B BA=%X/%X AxH=%X/%X",
 				tBlkAddr2B, tReqAddrB,
 				tBlkDext2B, tReqAxH);
 		end
 		tNxtMsgLatch = 1;
-//		tRegOutHold = 1;
+
+		if(!tTlbMissInh && !reset)
+			tRegOutHold = 1;
 	end
 		
 	if(reset)
@@ -1628,7 +1670,8 @@ begin
 			tStuckTlbMissInh = 1;
 		end
 
-		if(!tStuckTlbMissInh)
+//		if(!tStuckTlbMissInh)
+		if(1'b1)
 		begin
 			$display("L1I$ TLB Inhibit, InPc=%X InAddr=%X Clear=%X",
 				regInPc, tInAddr, tClrTlbMissInh);
@@ -1687,6 +1730,7 @@ begin
 		tReqAxH			<= tNxtAxH;
 		tReqIxA			<= tNxtIxA;
 		tReqIxB			<= tNxtIxB;
+		tSkipTlb		<= tNxtSkipTlb;
 
 //		tTlbMissInh		<= tNxtTlbMissInh;
 		tFlushRov		<= tNxtFlushRov;
@@ -1705,8 +1749,9 @@ begin
 //		tTlbMissInh		<= (tTlbMissInh || tNxtTlbMissInh);
 	end
 
-	tTlbMissInh		<= ((tAdvHold ? tTlbMissInh : 0) || tNxtTlbMissInh) && 
-						!tClrTlbMissInh;
+	tTlbMissInh		<= (tAdvHold ? tTlbMissInh : 0) || tNxtTlbMissInh;
+//	tTlbMissInh		<= ((tAdvHold ? tTlbMissInh : 0) || tNxtTlbMissInh) && 
+//						!tClrTlbMissInh;
 	tClrTlbMissInhL		<= tClrTlbMissInh;
 	tStuckTlbMissInhL	<= tStuckTlbMissInh;
 

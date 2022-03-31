@@ -1,3 +1,11 @@
+#define TKPE_REGSAVE_R0		0x00
+#define TKPE_REGSAVE_GBR	0x40
+#define TKPE_REGSAVE_LR		0x41
+#define TKPE_REGSAVE_SPC	0x42
+#define TKPE_REGSAVE_EXSR	0x43
+
+#define TKPE_REGSAVE_KRR	0x48
+
 typedef struct TKPE_ImageInfo_s		TKPE_ImageInfo;
 
 typedef struct TKPE_TaskInfo_s			TKPE_TaskInfo;
@@ -175,6 +183,10 @@ tk_kptr		resv_F8;		//F8, reserved pointer
 int			n_tlsv;			//number of allocated TLS vars
 int			n_dllimg;		//number of loaded DLL images
 int			m_imgptrs;		//Maximum Image Pointers
+
+byte		status;			//Status, 0=Running
+byte		prio;			//Priority Level
+byte		qtick;			//Schedule Tick
 
 tk_kptr		img_baseptrs[256];
 tk_kptr		img_gbrptrs[256];

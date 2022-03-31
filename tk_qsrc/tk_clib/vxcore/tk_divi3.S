@@ -208,4 +208,10 @@ __sdivdi3:
 	jmp		r22
 //	mov		r22, lr
 //	rts
+
+	break
+	break
+	break
+	break
+
 #endif

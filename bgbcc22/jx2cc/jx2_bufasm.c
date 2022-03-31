@@ -2789,6 +2789,8 @@ int BGBCC_JX2A_ParseBuffer(BGBCC_JX2_Context *ctx, char **rcs)
 
 	BGBCC_JX2A_Init();
 
+	BGBCC_JX2_SetSectionName(ctx, ".text");
+
 	cs=*rcs;
 	while(*cs)
 	{

@@ -190,4 +190,9 @@ __sdivsi3:
 
 //	ret
 
+	break
+	break
+	break
+	break
+
 #endif

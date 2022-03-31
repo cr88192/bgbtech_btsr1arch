@@ -253,6 +253,8 @@ reg[ 43:0]		tNxtReqAxB;
 reg[47:0]		tReqAddr;
 `reg_l1d_ix		tReqIxA;
 `reg_l1d_ix		tReqIxB;
+`reg_l1d_ix		tReqIxAL;
+`reg_l1d_ix		tReqIxBL;
 reg[ 43:0]		tReqAxA;
 reg[ 43:0]		tReqAxB;
 `reg_l1d_ix		tReq1IxA;
@@ -489,6 +491,8 @@ reg				tDoFlushTlbL;
 reg				tTlbMissInh;
 reg				tNxtTlbMissInh;
 reg				tNxtTlbMissInh2;
+reg				tSkipTlb;
+reg				tNxtSkipTlb;
 
 reg[2:0]		tVolatileInhSet;	//Volatile Inhibit Cycles (Set)
 reg[2:0]		tVolatileInhCnt;	//Volatile Inhibit Cycles (Count)
@@ -690,6 +694,7 @@ begin
 	tNxtFlushRovTlb		= tFlushRovTlb;
 	tNxtDoFlush			= 0;
 	tNxtDoFlushTlb		= 0;
+	tNxtSkipTlb			= 0;
 
 //	if((tInOpm == JX2_DCOPM_LDTLB) || tRegInSr[29])
 //	if((tInOpm == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
@@ -702,8 +707,21 @@ begin
 	begin
 		if(tTlbMissInh)
 			$display("L1D$ Clear TLB Inhibit");
-		tNxtTlbMissInh = 0;
+		tNxtTlbMissInh	= 0;
+//		tNxtSkipTlb		= 1;
 	end
+
+	tNxtSkipTlb		= (regInSr[29] && regInSr[30]);
+
+`ifndef def_true
+// `ifdef def_true
+	if(tReqIxAL != tReqIxA)
+	begin
+		if(tTlbMissInh)
+			$display("L1D$ Clear TLB Inhibit, Drop");
+		tNxtTlbMissInh		= 0;
+	end
+`endif
 
 //	if(((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS)) || reset)
 	if((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS) && !reset)
@@ -713,6 +731,11 @@ begin
 	end
 
 	if((tInOpm==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB) && !reset)
+	begin
+		tNxtDoFlushTlb = 1;
+	end
+
+	if((tInOpm == JX2_DCOPM_LDTLB) && (tInOpmC!=JX2_DCOPM_LDTLB) && !reset)
 	begin
 		tNxtDoFlushTlb = 1;
 	end
@@ -1887,6 +1910,9 @@ begin
 			tMemAddrReq		= { tReqAxA, 4'h00 };
 `endif
 
+			if(tSkipTlb)
+				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+
 // `ifndef def_true
 `ifdef def_true
 			if(tReqDoPfxA)
@@ -1929,6 +1955,9 @@ begin
 `else
 			tMemAddrReq		= { tReqAxB, 4'h00 };
 `endif
+
+			if(tSkipTlb)
+				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 
 // `ifndef def_true
 `ifdef def_true
@@ -1992,6 +2021,8 @@ begin
 //	tTlbMissInh		<= tNxtTlbMissInh || tNxtTlbMissInh2;
 	tTlbMissInh		<= (dcInHold ? tTlbMissInh : 0) ||
 		tNxtTlbMissInh || tNxtTlbMissInh2;
+//	tSkipTlb		<= tNxtSkipTlb;
+
 //	tVolatileInh	<= tNxtVolatileInh;
 	tVolatileIxA	<= tNxtVolatileIxA;
 	tVolatileIxB	<= tNxtVolatileIxB;
@@ -2012,6 +2043,7 @@ begin
 		tVolatileInhSet	<= 0;
 
 		tInPmode		<= tNxtInPmode;
+		tSkipTlb		<= tNxtSkipTlb;
 
 		tSrJQ			<= regInSr[31];
 		tRegInSr		<= regInSr;
@@ -2087,6 +2119,9 @@ begin
 	tFlushRovTlb	<= tNxtFlushRovTlb;
 
 	tReqReadyL		<= tReqReady;
+
+	tReqIxAL		<= tReqIxA;
+	tReqIxBL		<= tReqIxB;
 
 	tInOpm			<= tNxtReqOpm;
 	tInOpmB			<= tInOpm;
