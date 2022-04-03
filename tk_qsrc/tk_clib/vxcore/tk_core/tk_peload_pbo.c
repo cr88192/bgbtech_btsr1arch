@@ -435,9 +435,11 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 //	i=(TK_GetRandom()*64)&16383;
 	i=(TK_GetRandom16ASLR()*64)&16383;
 
-	imgptr=TKMM_PageAlloc(imgsz1);
-//	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
-//		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+//	imgptr=TKMM_PageAlloc(imgsz1);
+	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
+		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+
+	memset(imgptr, 0, imgsz1);
 
 	TK_VMem_MProtectPages(imgptr, imgsz1,
 		TKMM_PROT_READ|TKMM_PROT_WRITE|
@@ -945,8 +947,11 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 		return;
 
 	gbrsz=img->gbr_sz;
-	gbrdat=TKMM_PageAlloc(gbrsz);
+//	gbrdat=TKMM_PageAlloc(gbrsz);
 //	gbrdat=TKMM_PageAllocUsc(gbrsz);
+	gbrdat=TKMM_PageAllocVaMap(gbrsz, TKMM_PROT_RW,
+		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+
 	TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
 	
 	tk_printf("TK_InstanceImageInTask: GBR RVA=%X sz_cpy=%d sz=%d pboix=%d\n",

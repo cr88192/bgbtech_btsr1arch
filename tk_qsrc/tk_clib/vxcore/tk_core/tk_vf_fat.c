@@ -114,7 +114,10 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	TKFAT_FAT_DirEntExt tdee;
 	TKFAT_FAT_DirEntExt *dee, *dee2;
 	TKFAT_ImageInfo *img;
+	byte *clbuf;
+	char *name1;
 	TK_FILE *fd;
+	int clid, lba;
 	int i;
 
 //	tk_printf("tk_fat_fopen: %s\n", name);
@@ -137,8 +140,38 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 		return(NULL);
 	}
 
-	if(dee->deb.attrib&0x10)
+//	if(dee->deb.attrib&0x10)
+	if(dee->deb.attrib&0xD8)
 		return(NULL);
+
+	clid=TKFAT_GetDirEntCluster(dee);
+	if(clid>0)
+	{
+		lba=TKFAT_GetClusterLBA(img, clid);
+		clbuf=TKFAT_GetSectorTempBuffer(img,
+			lba, img->szclust);
+		if(	(((u64 *)clbuf)[0]==0xBEAF5A52618F4181ULL) &&
+			(((u64 *)clbuf)[1]==0x9C601B210E5B669CULL) &&
+			(((u64 *)clbuf)[2]==0x5015D23C5B47459AULL) &&
+			(((u64 *)clbuf)[3]==0xA0F43B3C94D04DC2ULL) &&
+			(((u64 *)clbuf)[4]==0x9C601B210E5B669CULL) &&
+			(((u64 *)clbuf)[5]==0x5015D23C5B47459AULL) &&
+			(((u64 *)clbuf)[6]==0xA0F43B3C94D04DC2ULL) &&
+			(((u64 *)clbuf)[7]==0xBEAF5A52618F4181ULL) )
+		{
+			/* Magic Symlink File */
+			name1=clbuf+64;
+			if(*name1=='/')
+			{
+				return(tk_fopen2(usri, name1, mode));
+			}
+
+			if(*name1==':')
+			{
+				return(tk_fat_fopen(mnt, usri, name1+1, mode));
+			}
+		}
+	}
 
 	dee2=malloc(sizeof(TKFAT_FAT_DirEntExt));
 	memcpy(dee2, dee, sizeof(TKFAT_FAT_DirEntExt));
@@ -242,15 +275,41 @@ int tk_fat_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 }
 
 
-int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, char *mode)
+int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *oldfn, char *newfn, char *mode)
 {
+	char tbuf[512];
+
 	TKFAT_FAT_DirEntExt tdee1, tdee2;
 	TKFAT_FAT_DirEntExt *dee1, *dee2;
 	TKFAT_ImageInfo *img;
-	int i;
+	int i, sz;
 	
 	if(mode && *mode && (*mode!='r'))
 	{
+		if((*mode=='l') || (*mode=='s') || (*mode=='S'))
+		{
+			sz=64+strlen(oldfn)+1;
+			((u64 *)tbuf)[0]=0xBEAF5A52618F4181;
+			((u64 *)tbuf)[1]=0x9C601B210E5B669C;
+			((u64 *)tbuf)[2]=0x5015D23C5B47459A;
+			((u64 *)tbuf)[3]=0xA0F43B3C94D04DC2;
+			((u64 *)tbuf)[4]=0x9C601B210E5B669C;
+			((u64 *)tbuf)[5]=0x5015D23C5B47459A;
+			((u64 *)tbuf)[6]=0xA0F43B3C94D04DC2;
+			((u64 *)tbuf)[7]=0xBEAF5A52618F4181;
+			strcpy(tbuf+64, oldfn);
+		
+			i=TKFAT_CreateDirEntPath(img, dee2, newfn);
+			if(i<0)
+				return(-1);
+
+			TKFAT_ReadWriteDirEntFile(
+				dee2, 0, true, tbuf, sz);
+			dee2->is_dirty=1;
+			TKFAT_SetDirEntSize(dee2, sz);
+		}
+	
 		return(-1);
 	}
 
@@ -376,7 +435,10 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	dee->is_dirty=1;
 	if(sz>0)fd->ofs+=sz;
 	if(fd->ofs>fd->size)
+	{
 		fd->size=fd->ofs;
+		TKFAT_SetDirEntSize(dee, fd->size);
+	}
 	return(sz);
 }
 

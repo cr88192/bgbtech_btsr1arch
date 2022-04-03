@@ -47,6 +47,12 @@ int main(int argc, char *argv[])
 //		tk_puts("$  \b");
 		tk_gets(tbuf);
 		TKSH_ExecCmd(tbuf);
+		
+		while(TKSH_IsCmdEntryMode())
+		{
+			tk_gets(tbuf);
+			TKSH_ExecCmdEntry(tbuf);
+		}
 	}
 
 	puts("Loop Terminate\n");

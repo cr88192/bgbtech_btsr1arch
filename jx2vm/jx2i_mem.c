@@ -3212,12 +3212,13 @@ int BJX2_MemSetQWord(BJX2_Context *ctx, bjx2_addr addr0, s64 val)
 int BJX2_MemSetXWord(BJX2_Context *ctx, bjx2_addr addr0,
 	u64 vlo, u64 vhi)
 {
-	return(ctx->MemSetXWord(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], vlo, vhi));
+	return(ctx->MemSetXWord(ctx,
+		addr0, ctx->regs[BJX2_REG_GBR_HI], vlo, vhi));
 }
 
 int BJX2_MemSetTrip(BJX2_Context *ctx, bjx2_addr addr0, int val)
 {
-	return(ctx->MemSetTripwire(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
+//	return(ctx->MemSetTripwire(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
 }
 
 int BJX2_MemQueryTransit(BJX2_Context *ctx,

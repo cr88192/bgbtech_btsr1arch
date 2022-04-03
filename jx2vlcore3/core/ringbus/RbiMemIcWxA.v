@@ -567,8 +567,8 @@ begin
 	if(tClrTlbMissInhL && tTlbMissInh)
 		tClrTlbMissInh		= 1;
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 	if(tReqIxAL != tReqIxA)
 //	if((tReqIxAL != tReqIxA) && tStuckTlbMissInhL)
 	begin
@@ -584,11 +584,11 @@ begin
 //	if((tInOpmB == JX2_DCOPM_LDTLB) || tRegInSr[29])
 //	if((tInOpmB == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
 //	if(tRegInSr[29] && tRegInSr[30])
-//	if(	(tRegInSr[29] && tRegInSr[30]) &&
-//		(regInSr[29] && regInSr[30]) &&
-//		(tRegInSrL[29] && tRegInSrL[30]))
 	if(	(tRegInSr[29] && tRegInSr[30]) &&
+		(regInSr[29] && regInSr[30]) &&
 		(tRegInSrL[29] && tRegInSrL[30]))
+//	if(	(tRegInSr[29] && tRegInSr[30]) &&
+//		(tRegInSrL[29] && tRegInSrL[30]))
 	begin
 		if(tTlbMissInh)
 			$display("L1I$ Clear TLB Inhibit");
@@ -1322,7 +1322,8 @@ begin
 			$display("L1 I$, Mismatch Index A, %X!=!X",
 				tReqSeqVa[43:0], tReqAddrA[43:0]);
 		end
-		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF))
+		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
+				(tReqSeqVa[43:24]==0))
 			$display("L1I$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 	end
@@ -1384,7 +1385,8 @@ begin
 			$display("L1 I$, Mismatch Index B, %X!=!X",
 				tReqSeqVa[43:0], tReqAddrB[43:0]);
 		end
-		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF))
+		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
+				(tReqSeqVa[43:24]==0))
 			$display("L1I$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 	end
@@ -1576,8 +1578,8 @@ begin
 //	end
 
 //	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold)
-//	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold && !tDoStallNop)
-	if((tRegOutPcVal[31:0]==32'h0000) && !tRegOutHold && !tDoStallNop)
+	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold && !tDoStallNop)
+//	if((tRegOutPcVal[31:0]==32'h0000) && !tRegOutHold && !tDoStallNop)
 	begin
 		if(!tMsgLatch)
 		begin
@@ -1592,8 +1594,8 @@ begin
 		end
 		tNxtMsgLatch = 1;
 
-		if(!tTlbMissInh && !reset)
-			tRegOutHold = 1;
+//		if(!tTlbMissInh && !reset)
+//			tRegOutHold = 1;
 	end
 		
 	if(reset)

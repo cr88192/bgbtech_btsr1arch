@@ -219,6 +219,7 @@ typedef u64 tk_kptr;
 #define TKMM_PROT_WRITE		0x0002
 #define TKMM_PROT_EXEC		0x0004
 
+#define TKMM_PROT_RW		0x0003
 #define TKMM_PROT_RWX		0x0007
 
 #define TKMM_PROT_NOCACHE	0x0010

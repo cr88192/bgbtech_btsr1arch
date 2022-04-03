@@ -81,7 +81,7 @@ TKRA_DrawSpan_ModTexZt:
 	MOV.W?T		R2, (R5)
 //	MOV.W?T		R17, (R6)
 	ADD			2, R5			| ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -126,7 +126,7 @@ TKRA_DrawSpan_ModTexMortZt:
 //	MOV.W?F		R17, (R6)
 
 	ADD			2, R5			| ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -166,7 +166,7 @@ TKRA_DrawSpan_ModTexMortZb:
 	MOV.W?F		R17, (R6)
 
 	ADD			2, R5			| ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -243,7 +243,7 @@ R31: X/Y Mask
 									CMPGT		R16, R17
 									MOV.W?F		R18, (R5)
 	ADD			2, R5			|	ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -302,7 +302,7 @@ TKRA_DrawSpan_ModBlTexMortZt:
 									MOV.W?F		R18, (R5)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -367,7 +367,7 @@ TKRA_DrawSpan_AlphaModBlTexMortZt:
 	ADD			R25, R24		|	CMPGT		R16, R17
 									MOV.W?F		R18, (R5)
 	ADD			2, R5			|	ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -420,7 +420,7 @@ TKRA_DrawSpan_ModUtx2MortZt:
 									MOV.W?F		R2, (R5)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -467,7 +467,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 									MOV.W?F		R17, (R6)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -508,7 +508,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	ADD			R27, R26		|	CMPGT		R16, R17
 	SHAD		R19, -4, R3		|	MOV.W?F		R2, (R5)
 	ADD			2, R5			|	MOV.W?F		R17, (R6)
-	ADD			2, R6			|	CMPGT		R5, R21
+	ADD			2, R6			|	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -544,7 +544,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	ADD			R37, R36		|	CMPGT		R16, R17
 	SHAD		R19, -4, R3		|	MOV.W?F		R2, (R5)
 	ADD			2, R5			|	MOV.W?F		R17, (R6)
-	ADD			2, R6			|	CMPGT		R5, R21
+	ADD			2, R6			|	CMPQGT		R5, R21
 	BT			.L0
 
 //	BREAK
@@ -582,7 +582,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	ADD			R27, R26		|	CMPGT		R16, R17
 	SHAD		R19, -4, R3		|	MOV.W?F		R2, (R5)
 	ADD			2, R5			|	MOV.W?F		R17, (R6)
-	ADD			2, R6			|	CMPGT		R5, R21
+	ADD			2, R6			|	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -625,7 +625,7 @@ TKRA_DrawSpan_AtestModUtx2MortZt:
 									MOV.W?F		R2, (R5)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -674,7 +674,7 @@ TKRA_DrawSpan_AlphaModUtx2MortZt:
 									CMPGT		R16, R17
 									MOV.W?F		R18, (R5)
 	ADD			2, R5			|	ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -721,7 +721,7 @@ TKRA_DrawSpan_AlphaModUtx2MortZb:
 									MOV.W?F		R18, (R5)
 									MOV.W?F		R17, (R6)
 	ADD			2, R5			|	ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -783,7 +783,7 @@ TKRA_DrawSpan_ModBlUtx2MortZt:
 									MOV.W?F		R18, (R5)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -854,7 +854,7 @@ TKRA_DrawSpan_AlphaModBlUtx2MortZt:
 	ADD			R25, R24		|	CMPGT		R16, R17
 									MOV.W?F		R18, (R5)
 	ADD			2, R5			|	ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -925,7 +925,7 @@ TKRA_DrawSpan_AtestModBlUtx2MortZt:
 									MOV.W?F		R18, (R5)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -1006,7 +1006,7 @@ TKRA_DrawSpan_ModBlUtx2MortZb:
 									MOV.W?F		R17, (R6)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -1087,7 +1087,7 @@ TKRA_DrawSpan_ModBlUtx2MortZb:
 									MOV.W?F		R17, (R6)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -1164,7 +1164,7 @@ TKRA_DrawSpan_AlphaModBlUtx2MortZb:
 									MOV.W?F		R18, (R5)
 									MOV.W?F		R17, (R6)
 	ADD			2, R5			|	ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -1190,7 +1190,7 @@ TKRA_DrawSpan_Zbuf:
 	ADD			R7, R6			| CMPGT		R16, R17
 	MOV.W?F		R17, (R4)
 	ADD			2, R4
-	CMPGT		R4, R21
+	CMPQGT		R4, R21
 	BT			.L0
 	RTSU
 
@@ -1269,7 +1269,7 @@ TKRA_DrawSpan_AtestModTexMortZt:
 	MOV.W?F		R3, (R5)
 
 	ADD			2, R5			| ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -1310,7 +1310,7 @@ TKRA_DrawSpan_AtestModTexMortZb:
 	MOV.W?F		R17, (R6)
 
 	ADD			2, R5			| ADD			2, R6
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -1351,7 +1351,7 @@ TKRA_DrawSpan_AtestModUtx2MortZb:
 									MOV.W?F		R17, (R6)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -1410,7 +1410,7 @@ TKRA_DrawSpan_AtestModBlTexMortZt:
 									MOV.W?F		R19, (R5)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -1480,7 +1480,7 @@ TKRA_DrawSpan_AtestModBlUtx2MortZb:
 									MOV.W?F		R17, (R6)
 	ADD			2, R5			|	ADD			2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:

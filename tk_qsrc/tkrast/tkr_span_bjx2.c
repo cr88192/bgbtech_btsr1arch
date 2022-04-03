@@ -122,7 +122,7 @@ TKRA_DrawSpan_DirClr:
 	ADD			R23, R22
 	MOV.W		R2, (R5)
 	ADD			2, R5
-	CMPGT		R5, R20
+	CMPQGT		R5, R20
 	BT			.L0
 	RTSU
 };
@@ -155,7 +155,7 @@ TKRA_DrawSpan_DirTex:
 
 	MOV.W	R2, (R5)
 	ADD		2, R5
-	CMPGT	R5, R21
+	CMPQGT	R5, R21
 	BT		.L0
 
 //	MOV.X	(SP,  0), R24
@@ -224,7 +224,7 @@ TKRA_DrawSpan_ModTex:
 	ADD			R27, R26		| RGB5PCK64		R2, R2
 	MOV.W		R2, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -262,7 +262,7 @@ TKRA_DrawSpan_ModTexMort:
 	ADD			R27, R26		| RGB5PCK64		R2, R2
 	MOV.W		R2, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -351,7 +351,7 @@ R31: X/Y Mask
 	TEST		2, R5
 	ADD?T		2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -391,7 +391,7 @@ TKRA_DrawSpan_AtestModTexMort:
 	TST			1, R3
 	MOV.W?F		R2, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -446,7 +446,7 @@ TKRA_DrawSpan_ModBlTexMort:
 									MOV.W		R18, (R5)
 	ADD			2, R5
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -509,7 +509,7 @@ TKRA_DrawSpan_AlphaModBlTexMort:
 									RGB5PCK64	R18, R18
 									MOV.W		R18, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -571,7 +571,7 @@ TKRA_DrawSpan_AtestModBlTexMort:
 									MOV.W?F		R18, (R5)
 	ADD			2, R5
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -623,7 +623,7 @@ TKRA_DrawSpan_ModUtx2Mort:
 	ADD			R27, R26		| RGB5PCK64		R2, R2
 	MOV.W		R2, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -718,7 +718,7 @@ R31: X/Y Mask
 	TEST		2, R5
 	ADD?T		2, R6
 
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -756,7 +756,7 @@ TKRA_DrawSpan_AtestModUtx2Mort:
 	TST			1, R3
 	MOV.W?F		R2, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L0
 
 	MOV.X	(SP,  0), R24
@@ -815,7 +815,7 @@ TKRA_DrawSpan_ModBlUtx2Mort:
 	ADD			R27, R26		|	RGB5PCK64	R18, R18
 									MOV.W		R18, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -884,7 +884,7 @@ TKRA_DrawSpan_AlphaModBlUtx2Mort:
 									RGB5PCK64	R18, R18
 									MOV.W		R18, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:
@@ -948,7 +948,7 @@ TKRA_DrawSpan_AtestModBlUtx2Mort:
 									TST			1, R3
 									MOV.W?F		R18, (R5)
 	ADD			2, R5
-	CMPGT		R5, R21
+	CMPQGT		R5, R21
 	BT			.L1
 
 	.L2:

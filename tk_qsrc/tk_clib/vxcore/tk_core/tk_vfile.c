@@ -959,6 +959,22 @@ int tk_fputc(int ch, TK_FILE *fd)
 	return(-1);
 }
 
+int tk_fputs(char *str, TK_FILE *fd)
+{
+	char *s;
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
+	if(fd->vt->fputc)
+	{
+		s=str;
+		while(*s)
+			fd->vt->fputc(*s++, fd);
+		return(0);
+	}
+	return(-1);
+}
+
 int tk_fioctl(TK_FILE *fd, int cmd, void *ptr)
 {
 	if(!fd || !(fd->vt))

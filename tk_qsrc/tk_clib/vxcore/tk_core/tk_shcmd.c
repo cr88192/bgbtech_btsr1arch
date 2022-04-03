@@ -40,6 +40,10 @@ TKSH_CommandInfo *tksh_commands=NULL;
 TKSH_CommandInfo *tksh_command_hash[64];
 int tksh_commands_init;
 
+int tksh_cmdentry;
+
+#include "tk_shcmd_ed.c"
+
 int TKSH_HashFast(char *name)
 {
 	int i;
@@ -455,17 +459,41 @@ int THSH_QualifyPathArg(char *dst, char *src)
 int TKSH_Cmds_Ls(char **args)
 {
 	char tb[256];
-	char *darg;
-	int i;
+	char *darg, *s;
+	int i, dohelp;
 
 	darg=NULL;
+	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
+			if(args[i][1]!='-')
+			{
+				s=args[i]+1;
+				while(*s)
+				{
+					if(*s=='h')
+						{ dohelp=1; }
+					s++;
+				}
+			}
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] [target]\n", args[0]);
+		tk_printf("List information about a file or directory\n");
+		tk_printf("-a		Show all entries\n");
+		tk_printf("-l		Use long listing format\n");
+		tk_printf("-t		Sort by modification time (newest first)\n");
+		return(0);
 	}
 
 	THSH_QualifyPathArg(tb, darg);
@@ -486,21 +514,42 @@ int TKSH_Cmds_Mv(char **args)
 {
 	char tb1[256];
 	char tb2[256];
-	char *darg, *sarg;
-	int i;
+	char *darg, *sarg, *s;
+	int i, dohelp;
 
+	dohelp=0;
 	darg=NULL;
 	sarg=NULL;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
+			if(args[i][1]!='-')
+			{
+				s=args[i]+1;
+				while(*s)
+				{
+					if(*s=='h')
+						{ dohelp=1; }
+					s++;
+				}
+			}
 			continue;
 		}
 		if(!sarg)
 			{ sarg=args[i]; continue; }
 		if(!darg)
 			{ darg=args[i]; continue; }
+	}
+	
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] source destination\n", args[0]);
+		tk_printf("Move file from source to destination\n");
+		return(0);
 	}
 
 	if(sarg && darg)
@@ -511,6 +560,7 @@ int TKSH_Cmds_Mv(char **args)
 //		tk_unlink(tb);
 	}else
 	{
+		tk_printf("%s: invalid arguments\n", args[0]);
 	}
 	return(0);
 }
@@ -521,15 +571,19 @@ int TKSH_Cmds_Ln(char **args)
 	char tb2[256];
 	char *darg, *sarg, *mode;
 	char *s;
-	int i;
+	int i, dohelp;
 
 	darg=NULL;
 	sarg=NULL;
 	mode="l";
+	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			if(!strcmp(args[i], "--symbolic"))
 				{ mode="S"; continue; }
 
@@ -540,6 +594,8 @@ int TKSH_Cmds_Ln(char **args)
 				{
 					if(*s=='s')
 						{ mode="S"; }
+					if(*s=='h')
+						{ dohelp=1; }
 					s++;
 				}
 			}
@@ -550,6 +606,13 @@ int TKSH_Cmds_Ln(char **args)
 			{ sarg=args[i]; continue; }
 		if(!darg)
 			{ darg=args[i]; continue; }
+	}
+	
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] source destination\n", args[0]);
+		tk_printf("Create link at destination pointing at source\n");
+		return(0);
 	}
 
 	if(sarg && darg)
@@ -566,6 +629,7 @@ int TKSH_Cmds_Ln(char **args)
 //		tk_unlink(tb);
 	}else
 	{
+		tk_printf("%s: invalid arguments\n", args[0]);
 	}
 	return(0);
 }
@@ -574,21 +638,43 @@ int TKSH_Cmds_Cp(char **args)
 {
 	char tb1[256];
 	char tb2[256];
-	char *darg, *sarg;
-	int i;
+	char *darg, *sarg, *s;
+	int i, dohelp;
 
 	darg=NULL;
 	sarg=NULL;
+	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
+			if(args[i][1]!='-')
+			{
+				s=args[i]+1;
+				while(*s)
+				{
+					if(*s=='h')
+						{ dohelp=1; }
+					s++;
+				}
+			}
+
 			continue;
 		}
 		if(!sarg)
 			{ sarg=args[i]; continue; }
 		if(!darg)
 			{ darg=args[i]; continue; }
+	}
+	
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] source destination\n", args[0]);
+		tk_printf("Copies file from source to destination\n");
+		return(0);
 	}
 
 	if(sarg && darg)
@@ -598,6 +684,7 @@ int TKSH_Cmds_Cp(char **args)
 		tk_fcopy(tb1, tb2);
 	}else
 	{
+		tk_printf("%s: invalid arguments\n", args[0]);
 	}
 	return(0);
 }
@@ -831,6 +918,62 @@ int TKSH_Cmds_Mount(char **args)
 	return(0);
 }
 
+int TKSH_Cmds_Ed(char **args)
+{
+	char tb[256];
+	char *darg;
+	int i;
+
+	darg=NULL;
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			continue;
+		}
+		darg=args[i];
+	}
+
+	tksh_cmdentry=1;
+	
+	if(darg)
+	{
+		THSH_QualifyPathArg(tb, darg);
+		TKSH_EdLoadFile(tb);
+	}
+
+	return(0);
+}
+
+int TKSH_Cmds_Edit(char **args)
+{
+	char tb[256];
+	char *darg;
+	int i;
+
+	darg=NULL;
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			continue;
+		}
+		darg=args[i];
+	}
+
+//	tksh_cmdentry=1;
+	
+	if(darg)
+	{
+		THSH_QualifyPathArg(tb, darg);
+		TKSH_EdLoadFile(tb);
+	}
+	
+	TKSH_EditUpdateLoop();
+
+	return(0);
+}
+
 int TKSH_InitCmds(void)
 {
 	TKSH_CommandInfo *cmdi;
@@ -849,16 +992,25 @@ int TKSH_InitCmds(void)
 	TKSH_RegisterCommand("chdir",	TKSH_Cmds_Chdir);
 	TKSH_RegisterCommand("cls",		TKSH_Cmds_Cls);
 	TKSH_RegisterCommand("cp",		TKSH_Cmds_Cp);
+
+	TKSH_RegisterCommand("dir",		TKSH_Cmds_Ls);
+
 	TKSH_RegisterCommand("echo",	TKSH_Cmds_Echo);
+	TKSH_RegisterCommand("ed",		TKSH_Cmds_Ed);
+	TKSH_RegisterCommand("edit",	TKSH_Cmds_Edit);
+
 	TKSH_RegisterCommand("ln",		TKSH_Cmds_Ln);
 	TKSH_RegisterCommand("ls",		TKSH_Cmds_Ls);
+
+	TKSH_RegisterCommand("md",		TKSH_Cmds_Mkdir);
+	TKSH_RegisterCommand("mkdir",	TKSH_Cmds_Mkdir);
+	TKSH_RegisterCommand("mount",	TKSH_Cmds_Mount);
 	TKSH_RegisterCommand("mv",		TKSH_Cmds_Mv);
+
 	TKSH_RegisterCommand("recvxm",	TKSH_Cmds_RecvXm);
 	TKSH_RegisterCommand("rm",		TKSH_Cmds_Rm);
 	TKSH_RegisterCommand("rmdir",	TKSH_Cmds_Rmdir);
-	TKSH_RegisterCommand("mkdir",	TKSH_Cmds_Mkdir);
-	TKSH_RegisterCommand("md",		TKSH_Cmds_Mkdir);
-	TKSH_RegisterCommand("mount",	TKSH_Cmds_Mount);
+
 	TKSH_RegisterCommand("set",		TKSH_Cmds_Set);
 
 	return(1);
@@ -945,6 +1097,25 @@ int tk_cmd2idx(char *s)
 	return(-1);
 }
 #endif
+
+int TKSH_IsCmdEntryMode()
+{
+	return(tksh_cmdentry);
+}
+
+int TKSH_ExecCmdEntry(char *cmd)
+{
+	if(tksh_cmdentry==1)
+	{
+		if(*cmd=='q')
+		{
+			tksh_cmdentry=0;
+			return(0);
+		}
+		TKSH_EdParseCommand(cmd);
+		return(0);
+	}
+}
 
 int TKSH_ExecCmd(char *cmd)
 {

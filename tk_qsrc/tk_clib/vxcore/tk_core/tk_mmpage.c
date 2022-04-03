@@ -220,6 +220,7 @@ int TKMM_AllocPages(int n)
 	if(n<=0)
 	{
 		tk_printf("TKMM_AllocPages: Bad Page Count, n=%d\n", n);
+		__debugbreak();
 		return(-1);
 	}
 
@@ -230,6 +231,7 @@ int TKMM_AllocPages(int n)
 		if(i<0)
 		{
 			tk_printf("TKMM_AllocPages: Out Of Memory, n=%d\n", n);
+			__debugbreak();
 			return(-1);
 		}
 
@@ -242,6 +244,7 @@ int TKMM_AllocPages(int n)
 	if(i<0)
 	{
 		tk_printf("TKMM_AllocPages: Out Of Memory, n=%d\n", n);
+		__debugbreak();
 		return(-1);
 	}
 
