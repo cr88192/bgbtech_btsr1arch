@@ -465,13 +465,17 @@ void TK_SmallFlushL1I(void *ptr, int sz)
 	return;
 }
 
-u64 tk_seed_aslr=0x12345678ULL;
+u64 tk_seed1_aslr=0x12345678ULL;
+u64 tk_seed2_aslr=0x12345678ULL;
 
 u16 TK_GetRandom16ASLR()
 {
 	u64 hi;
-	tk_seed_aslr=(tk_seed_aslr*65521)+(tk_seed_aslr>>32)+1;
-	hi=(tk_seed_aslr>>16)&65535;
+	tk_seed1_aslr=(tk_seed1_aslr*65521)+(tk_seed1_aslr>>32)+1;
+	tk_seed2_aslr=(tk_seed2_aslr*65521)+(tk_seed2_aslr>>32)+1;
+	tk_seed1_aslr+=tk_seed2_aslr>>37;
+	tk_seed2_aslr+=tk_seed1_aslr>>43;
+	hi=(tk_seed1_aslr>>16)&65535;
 	return(hi);
 }
 
@@ -485,6 +489,19 @@ u64 TK_GetRandom48ASLR()
 }
 
 u64 TK_GetRandom();
+
+int TK_SeedRandomASLR()
+{
+	int i;
+	i=128+(TK_GetRandom()&255);
+	while(i--)
+		TK_GetRandom();
+	tk_seed1_aslr=TK_GetRandom();
+	i=128+(TK_GetRandom()&255);
+	while(i--)
+		TK_GetRandom();
+	tk_seed2_aslr=TK_GetRandom();
+}
 
 __asm {
 TK_GetRandom:

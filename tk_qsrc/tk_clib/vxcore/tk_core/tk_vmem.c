@@ -55,10 +55,13 @@ int	tk_vmem_usrexoffs;		//User, Execute Only, Offset
 byte tk_vmem_useldekrr;
 
 // byte tk_vmem_pagebmp[16384];	//virtual page
-byte *tk_vmem_pagebmp;	//virtual page
+byte *tk_vmem_pagebmp;	//virtual page (allocated)
 byte *tk_vmem_pagevnz;	//virtual page (valid / non-zero)
+byte *tk_vmem_pagecmz;	//virtual page (compacted)
 int tk_vmem_maxpage;
 int tk_vmem_pagerov;
+
+byte *tk_vmem_page_tcbuf;	//temporary compression buffer
 
 int tk_vmem_varov_lo;
 int tk_vmem_varov_hi;
@@ -87,6 +90,8 @@ u64 TK_VMem_PtoForPtr(u64 *ptr)
 
 #include "tk_vmptavl.c"
 #include "tk_vmabtree.c"
+
+#include "tk_vmlz64a.c"
 
 // #ifdef __BJX2__
 #if 0
@@ -937,6 +942,8 @@ int TK_VMem_Init()
 		tblk1[i]=TK_GetRandom();
 		tblk2[i]=0;
 	}
+	
+	TK_SeedRandomASLR();
 #endif
 
 	lba=tk_vmem_swap_lba;
@@ -1023,8 +1030,12 @@ int TK_VMem_Init()
 //		tk_vmem_pagevnz=tk_malloc_cat(i, 2);
 		tk_vmem_pagebmp=TKMM_PageAlloc(i);
 		tk_vmem_pagevnz=TKMM_PageAlloc(i);
+		tk_vmem_pagecmz=TKMM_PageAlloc(i);
 		memset(tk_vmem_pagebmp, 0, i);
 		memset(tk_vmem_pagevnz, 0, i);
+		memset(tk_vmem_pagecmz, 0, i);
+
+		tk_vmem_page_tcbuf=TKMM_PageAlloc(2<<TK_VMEM_PAGESHL);
 
 		tk_vmem_pagebmp[0]|=1;
 
@@ -1387,13 +1398,108 @@ int TK_VMem_GetPagePidx(int cidx)
 	return(cpi->pidx);
 }
 
+void TK_VMem_UnpackCompactedPage(byte *cpi, byte *ppi)
+{
+	u64 nzm;
+	byte cm;
+	byte *cs, *ct, *cmap;
+	int i, j, k;
+
+	cm=cpi[0];
+
+	if(cm==1)
+	{
+#if 0
+		nzm=*(u64 *)(cpi+8);
+		memset(ppi, 0, 1<<TK_VMEM_PAGESHL);
+		
+		cs=cpi+16;
+		ct=ppi;
+		for(i=0; i<64; i++)
+		{
+			if((nzm>>i)&1)
+			{
+				memcpy(ct, cs, 1<<(TK_VMEM_PAGESHL-6));
+				cs+=1<<(TK_VMEM_PAGESHL-6);
+			}
+			ct+=1<<(TK_VMEM_PAGESHL-6);
+		}
+#endif
+
+#if 1
+		memset(ppi, 0, 1<<TK_VMEM_PAGESHL);
+		
+		cmap=cpi+8;
+		cs=cpi+8+(1<<(TK_VMEM_PAGESHL-7));
+		ct=ppi;
+		for(i=0; i<(1<<(TK_VMEM_PAGESHL-4)); i++)
+		{
+			if((cmap[i>>3]>>(i&7))&1)
+				{ memcpy(ct, cs, 16); cs+=16; }
+			ct+=16;
+		}
+#endif
+
+		return;
+	}
+	
+	if(cm==2)
+	{
+		TK_VMem_UnpackLz64Page(cpi, ppi);
+		return;
+	}
+
+	__debugbreak();
+}
+
+void TK_VMem_PackCompactedPage(byte *cpi, byte *ppi)
+{
+	u64 nzm;
+	byte cm;
+	byte *cs, *ct, *cmap;
+	int i, j, k;
+
+	memset(cpi, 0, 512);
+
+	cmap=cpi+8;
+	ct=cpi+8+(1<<(TK_VMEM_PAGESHL-7));
+	cs=ppi;
+
+	for(i=0; i<(1<<(TK_VMEM_PAGESHL-4)); i++)
+	{
+		if(	(((u64 *)cs)[0]==0) &&
+			(((u64 *)cs)[1]==0) )
+		{
+			cs+=16;
+			continue;
+		}
+
+		cmap[i>>3]|=1<<(i&7);
+		memcpy(ct, cs, 16);
+		cs+=16;		ct+=16;
+	}
+	
+	j=((ct-cpi)+511)>>9;
+	cpi[0]=1;
+	cpi[1]=j-1;
+
+	if((j<<9)>=(1<<(TK_VMEM_PAGESHL-1)))
+	{
+		tk_printf("TK_VMem_PackCompactedPage: Pack64\n");
+		TK_VMem_PackLz64Page(cpi, ppi);
+		return;
+	}
+
+}
+
 void TK_VMem_WritePageToDisk(int cidx)
 {
 	TK_VMem_PageInfo *cpi;
 	u64 *ppq;
-	byte *ppi;
+	byte *ppi, *cs, *ct, *tcbuf;
+	u64 nzm;
 	s64 lba;
-	int i, l;
+	int i, j, k, l, cm, pidx;
 
 	if(cidx<0)
 		{ __debugbreak(); }
@@ -1402,28 +1508,121 @@ void TK_VMem_WritePageToDisk(int cidx)
 
 	cpi=tk_vmem_pageinf+cidx;
 	ppi=tk_vmem_pagecache+(cidx<<TK_VMEM_PAGESHL);
+	cm=0;
+	pidx=cpi->pidx;
 
-	if(!(tk_vmem_pagevnz[cidx>>3]&(1<<(cidx&7))))
+	tcbuf=tk_vmem_page_tcbuf;
+
+//	if(!(tk_vmem_pagevnz[cidx>>3]&(1<<(cidx&7))))
+	if(1)
 	{
 		/* If Zero or Non-Initialized, Check if Non-Zero. */
 		ppq=(u64 *)ppi;
+		nzm=0;
 		l=(1<<(TK_VMEM_PAGESHL-3));
+//		for(i=0; i<l; i++)
+//			if(ppq[i])
+//				break;
+
 		for(i=0; i<l; i++)
+		{
 			if(ppq[i])
-				break;
-		if(i>=l)
+				nzm|=1ULL<<(i>>(TK_VMEM_PAGESHL-6-3));
+		}
+
+//		if(i>=l)
+		if(!nzm)
 		{
 			/* Page is still Zero. */
+			tk_printf("TK_VMem_WritePageToDisk: Page Is Zero\n");
+			tk_vmem_pagevnz[pidx>>3]&=~(1<<(pidx&7));
 			cpi->flags&=~1;
 			return;
 		}
-		tk_vmem_pagevnz[cidx>>3]|=1<<(cidx&7);
+		tk_vmem_pagevnz[pidx>>3]|=1<<(pidx&7);
+
+		tk_printf("TK_VMem_WritePageToDisk: Page Nzm=%08X_%08X\n",
+			(u32)(nzm>>32), (u32)(nzm>>0));
+		
+		k=0;
+		for(i=0; i<64; i++)
+			if(nzm&(1ULL<<i))
+				k++;
+//		if(k<=48)
+		if(k<=56)
+		{
+			cs=ppi;
+			cm=1;
+
+			TK_VMem_PackCompactedPage(tcbuf, ppi);
+			j=tcbuf[1]+1;
+
+			if((j<<9)>=(1<<(TK_VMEM_PAGESHL-1)))
+				cm=0;
+			
+			tk_printf("TK_VMem_WritePageToDisk: Page Compact, %dK\n",
+				(j+2)>>1);
+
+			if((j<<9)>=(1<<TK_VMEM_PAGESHL))
+				{ __debugbreak(); }
+
+#if 0
+			ct=tk_vmem_page_tcbuf;
+			j=16+(k*(1<<(TK_VMEM_PAGESHL-6)));
+			j=((j+511)>>9)-1;
+			ct[0]=1;
+			ct[1]=j;
+			*(u64 *)(ct+8)=nzm;
+			ct+=16;
+
+			tk_printf("TK_VMem_WritePageToDisk: Page Compact, %dK\n",
+				(j+2)>>1);
+			
+			for(i=0; i<64; i++)
+			{
+				if((nzm>>i)&1)
+				{
+					memcpy(ct, cs, 1<<(TK_VMEM_PAGESHL-6));
+					ct+=1<<(TK_VMEM_PAGESHL-6);
+				}
+				cs+=1<<(TK_VMEM_PAGESHL-6);
+			}
+#endif
+		}else
+		{
+			cm=2;
+			TK_VMem_PackLz64Page(tcbuf, ppi);
+			j=tcbuf[1]+1;
+
+			if((j<<9)>=(1<<(TK_VMEM_PAGESHL-1)))
+				cm=0;
+			
+			if(cm==2)
+			{
+				tk_printf("TK_VMem_WritePageToDisk: Page LZ64A, %dK\n",
+					(j+2)>>1);
+			}
+
+			cm=0;
+//			tk_printf("TK_VMem_WritePageToDisk: Page Is Store\n");
+		}
 	}
 
 	if(tk_vmem_swap_lba>0)
 	{
 		lba=tk_vmem_swap_lba+((cpi->pidx)<<TK_VMEM_PGBLKSHL);
-		TKSPI_WriteSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
+
+		if(!cm)
+		{
+			TKSPI_WriteSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
+			tk_vmem_pagecmz[pidx>>3]&=~(1<<(pidx&7));
+		}else
+		{
+			TKSPI_WriteSectors(tcbuf, lba, tcbuf[1]+1);
+			tk_vmem_pagecmz[pidx>>3]|=1<<(pidx&7);
+			
+		}
+
 		cpi->flags&=~1;
 	}
 }
@@ -1432,8 +1631,9 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 {
 	TK_VMem_PageInfo *cpi;
 	u64 *ppq;
-	byte *ppi;
+	byte *ppi, *tcb;
 	s64 lba;
+	int pidx;
 	int i, l;
 
 //	return;
@@ -1445,8 +1645,9 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 
 	cpi=tk_vmem_pageinf+cidx;
 	ppi=tk_vmem_pagecache+(cidx<<TK_VMEM_PAGESHL);
+	pidx=(cpi->pidx);
 	
-	if(!(tk_vmem_pagevnz[cidx>>3]&(1<<(cidx&7))))
+	if(!(tk_vmem_pagevnz[pidx>>3]&(1<<(pidx&7))))
 	{
 		/* Zero or Not Initialized Yet. */
 //		ppq=(u64 *)ppi;
@@ -1460,8 +1661,19 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 
 	if(tk_vmem_swap_lba>0)
 	{
-		lba=tk_vmem_swap_lba+((cpi->pidx)<<TK_VMEM_PGBLKSHL);
-		TKSPI_ReadSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
+		lba=tk_vmem_swap_lba+(pidx<<TK_VMEM_PGBLKSHL);
+		tcb=tk_vmem_page_tcbuf;
+
+//		if(tk_vmem_pagecmz[cidx>>3]&(1<<(cidx&7)))
+		if((tk_vmem_pagecmz[pidx>>3]>>(pidx&7))&1)
+		{
+			TKSPI_ReadSectors(tcb, lba, 1);
+			TKSPI_ReadSectors(tcb+512, lba+1, tcb[1]);
+			TK_VMem_UnpackCompactedPage(tcb, ppi);
+		}else
+		{
+			TKSPI_ReadSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
+		}
 	}
 }
 
