@@ -1061,6 +1061,12 @@ begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
 		end
+
+`ifdef jx2_alu_slomuldiv
+		JX2_UCMD_QMULDIV: begin
+			tRegHeld		= 1;
+		end
+`endif
 	
 `ifdef jx2_enable_fpu
 		JX2_UCMD_FSTCX: begin

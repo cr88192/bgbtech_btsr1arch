@@ -773,6 +773,9 @@ begin
 	tClrRgbB = 0;
 	tBlinkStrobeA	= 0;
 
+//	if((tScrMode[3:0]==4'h8) && (tCellData[31]==1'b0))
+//		tPixRgb565 = 0;
+
 	if(tCellData[31:30]==2'b00)
 	begin
 		case(tCellData[15:14])
@@ -781,6 +784,11 @@ begin
 			2'b10: 	tBlinkStrobeA	= blinkSlow;
 			2'b11: 	tBlinkStrobeA	= 0;
 		endcase
+	end
+
+	if(tCellData[31:30]==2'b10)
+	begin
+		tBlinkStrobeA	= blinkSlow;
 	end
 	
 	case(tCellData[29:28])
@@ -813,22 +821,38 @@ begin
 		default: begin end
 	endcase
 
-	tClrYuvA[15:10]=
-		{1'b0, tClrRgbA[ 7: 3]}+
-		{2'b0, tClrRgbA[11: 8]}+
-		{2'b0, tClrRgbA[ 3: 0]};
-	tClrYuvB[15:10]=
-		{1'b0, tClrRgbB[ 7: 3]}+
-		{2'b0, tClrRgbB[11: 8]}+
-		{2'b0, tClrRgbB[ 3: 0]};
-//	tClrYuvA[9:5]=5'h10+(tClrRgbA[ 3: 0]-tClrRgbA[ 7: 4]);
-//	tClrYuvB[9:5]=5'h10+(tClrRgbB[ 3: 0]-tClrRgbB[ 7: 4]);
-//	tClrYuvA[4:0]=5'h10+(tClrRgbA[11: 8]-tClrRgbA[ 7: 4]);
-//	tClrYuvB[4:0]=5'h10+(tClrRgbB[11: 8]-tClrRgbB[ 7: 4]);
-	tClrYuvA[9:5]=5'h10+(tClrRgbA[11: 8]-tClrRgbA[ 7: 4]);
-	tClrYuvB[9:5]=5'h10+(tClrRgbB[11: 8]-tClrRgbB[ 7: 4]);
-	tClrYuvA[4:0]=5'h10+(tClrRgbA[ 3: 0]-tClrRgbA[ 7: 4]);
-	tClrYuvB[4:0]=5'h10+(tClrRgbB[ 3: 0]-tClrRgbB[ 7: 4]);
+	if(tPixRgb565)
+	begin
+		tClrYuvA =
+			{ 1'b0,
+				tClrRgbA[11: 8], 1'b0,
+				tClrRgbA[ 7: 4], 1'b0,
+				tClrRgbA[ 3: 0], 1'b0 };
+		tClrYuvB =
+			{ 1'b0,
+				tClrRgbB[11: 8], 1'b0,
+				tClrRgbB[ 7: 4], 1'b0,
+				tClrRgbB[ 3: 0], 1'b0 };
+	end
+	else
+	begin
+		tClrYuvA[15:10]=
+			{1'b0, tClrRgbA[ 7: 3]}+
+			{2'b0, tClrRgbA[11: 8]}+
+			{2'b0, tClrRgbA[ 3: 0]};
+		tClrYuvB[15:10]=
+			{1'b0, tClrRgbB[ 7: 3]}+
+			{2'b0, tClrRgbB[11: 8]}+
+			{2'b0, tClrRgbB[ 3: 0]};
+	//	tClrYuvA[9:5]=5'h10+(tClrRgbA[ 3: 0]-tClrRgbA[ 7: 4]);
+	//	tClrYuvB[9:5]=5'h10+(tClrRgbB[ 3: 0]-tClrRgbB[ 7: 4]);
+	//	tClrYuvA[4:0]=5'h10+(tClrRgbA[11: 8]-tClrRgbA[ 7: 4]);
+	//	tClrYuvB[4:0]=5'h10+(tClrRgbB[11: 8]-tClrRgbB[ 7: 4]);
+		tClrYuvA[9:5]=5'h10+(tClrRgbA[11: 8]-tClrRgbA[ 7: 4]);
+		tClrYuvB[9:5]=5'h10+(tClrRgbB[11: 8]-tClrRgbB[ 7: 4]);
+		tClrYuvA[4:0]=5'h10+(tClrRgbA[ 3: 0]-tClrRgbA[ 7: 4]);
+		tClrYuvB[4:0]=5'h10+(tClrRgbB[ 3: 0]-tClrRgbB[ 7: 4]);
+	end
 
 	tFontData_A = fontData;
 
@@ -850,12 +874,22 @@ begin
 
 	if(tCellData[31:30]==2'b10)
 	begin
-		tClrYuvB[11:8]=tCellData[27:24];
-		tClrYuvA[11:8]=tCellData[21:18];
-		tClrYuvB[ 7:4]=tCellData[15:12];
-		tClrYuvA[ 7:4]=tCellData[11: 8];
-		tClrYuvB[ 3:0]=tCellData[ 7: 4];
-		tClrYuvA[ 3:0]=tCellData[ 3: 0];
+//		tClrYuvB[11:8]=tCellData[27:24];
+//		tClrYuvA[11:8]=tCellData[21:18];
+//		tClrYuvB[ 7:4]=tCellData[15:12];
+//		tClrYuvA[ 7:4]=tCellData[11: 8];
+//		tClrYuvB[ 3:0]=tCellData[ 7: 4];
+//		tClrYuvA[ 3:0]=tCellData[ 3: 0];
+
+//		tClrYuvB[11:8]=tCellData[29:26];
+//		tClrYuvB[ 7:4]=tCellData[24:21];
+//		tClrYuvB[ 3:0]=tCellData[19:16];
+//		tClrYuvA[11:8]=tCellData[14:11];
+//		tClrYuvA[ 7:4]=tCellData[ 9: 6];
+//		tClrYuvA[ 3:0]=tCellData[ 4: 1];
+
+		tClrYuvB={ 1'b0, tCellData[29:15] };
+		tClrYuvA={ 1'b0, tCellData[14: 0] };
 	end
 
 
@@ -1093,21 +1127,26 @@ begin
 	if(tCellData_C[31:30]==2'b10)
 	begin
 		begin
-			tClrYuvC_C[15:10] = (tFontGlyphY_C[tPixCellGx_C]) ?
-				tClrYuvA_C[15:10] : tClrYuvB_C[15:10];
-			tClrYuvC_C[9:5] = (tFontGlyphU_C[tPixCellFx_C]) ?
-				tClrYuvA_C[9:5] : tClrYuvB_C[9:5];
-			tClrYuvC_C[4:0] = (tFontGlyphV_C[tPixCellFx_C]) ?
-				tClrYuvA_C[4:0] : tClrYuvB_C[4:0];
+//			tClrYuvC_C[15:10] = (tFontGlyphY_C[tPixCellGx_C]) ?
+//				tClrYuvA_C[15:10] : tClrYuvB_C[15:10];
+//			tClrYuvC_C[9:5] = (tFontGlyphU_C[tPixCellFx_C]) ?
+//				tClrYuvA_C[9:5] : tClrYuvB_C[9:5];
+//			tClrYuvC_C[4:0] = (tFontGlyphV_C[tPixCellFx_C]) ?
+//				tClrYuvA_C[4:0] : tClrYuvB_C[4:0];
+
+			tClrYuvC_C = (tFontGlyphY_C[tPixCellGx_C]) ?
+				tClrYuvA_C : tClrYuvB_C;
 		end
 
 	end
 	else
 	begin
 		if(tCellData_C[31:30]==2'b00)
-			tClrYuvC_C = (tFontData_C[tPixCellGx_C]) ? tClrYuvA_C : tClrYuvB_C;
+			tClrYuvC_C = (tFontData_C[tPixCellGx_C]) ?
+				tClrYuvA_C : tClrYuvB_C;
 		else if(tCellData_C[31:30]==2'b01)
-			tClrYuvC_C = (tFontGlyph_C[tPixCellFx_C]) ? tClrYuvA_C : tClrYuvB_C;
+			tClrYuvC_C = (tFontGlyph_C[tPixCellFx_C]) ?
+				tClrYuvA_C : tClrYuvB_C;
 		
 		if(tDoCellCursor && blinkSlow)
 		begin

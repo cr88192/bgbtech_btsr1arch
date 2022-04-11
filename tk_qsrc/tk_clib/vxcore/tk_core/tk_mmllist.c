@@ -107,7 +107,8 @@ void *TKMM_MMList_AllocBrk(int sz)
 			return(NULL);
 		}
 		
-		memset(tkmm_mmlist_brkbuf, 0, 1<<20);
+//		memset(tkmm_mmlist_brkbuf, 0, 1<<20);
+		memset(tkmm_mmlist_brkbuf, 0, 1<<TKMM_BRKBITS);
 
 //		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<20);
 		tkmm_mmlist_brkend=tkmm_mmlist_brkbuf+(1<<TKMM_BRKBITS);
@@ -124,7 +125,7 @@ void *TKMM_MMList_AllocBrk(int sz)
 		
 		seg->nblk=0;
 
-		TKMM_MMList_AddVrmBrk(ptr, 1<<TKMM_BRKBITS, 0);
+		TKMM_MMList_AddVrmBrk(tkmm_mmlist_brkbuf, 1<<TKMM_BRKBITS, 0);
 	}
 
 //	tk_puts("TKMM_MMList_AllocBrk D\n");
@@ -223,7 +224,7 @@ void TKMM_MMList_MProtectCat(byte *ptr, int sz, int cat)
 void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 {
 	TKMM_MemLnkSeg *seg;
-	byte *ptr;
+	byte *ptr, *brkbuf, *brkpos, *brkend;
 	int i;
 
 	if(cat&(~7))
@@ -231,10 +232,13 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 
 	if(sz>=TKMM_MAXMMLISTSZ)
 	{
-		if((cat==0) || (cat==4))
-			ptr=TKMM_PageAllocUsc(sz);
+//		tk_printf("TKMM_MMList_AllocBrk A, cat=%d\n", cat);
+
+//		if((cat==0) || (cat==4))
+		if(cat==0)
+			ptr=TKMM_PageAllocUsc(sz+256);
 		else
-			ptr=TKMM_PageAlloc(sz);
+			ptr=TKMM_PageAlloc(sz+256);
 
 		if(!ptr)
 		{
@@ -255,63 +259,78 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 //	sz=(sz+15)&(~15);
 	sz=(sz+31)&(~15);
 	
-	if(tkmm_mmlist_brkbuf_c[cat] &&
-		((tkmm_mmlist_brkpos_c[cat]+sz)>tkmm_mmlist_brkend_c[cat]))
+	brkbuf=tkmm_mmlist_brkbuf_c[cat];
+	brkpos=tkmm_mmlist_brkpos_c[cat];
+	brkend=tkmm_mmlist_brkend_c[cat];
+	
+	if(brkbuf &&
+		((brkpos+sz)>brkend))
 	{
 		tkmm_mmlist_brkbuf_c[cat]=NULL;
+		brkbuf=NULL;
 	}
 	
-	if(!(tkmm_mmlist_brkbuf_c[cat]))
+	if(!brkbuf)
 	{
-		tk_puts("TKMM_MMList_AllocBrk C\n");
-		if((cat==0) || (cat==4))
-			ptr=TKMM_PageAllocUsc(1<<TKMM_BRKBITS);
+		tk_printf("TKMM_MMList_AllocBrk C, cat=%d\n", cat);
+//		if((cat==0) || (cat==4))
+		if(cat==0)
+			ptr=TKMM_PageAllocUsc((1<<TKMM_BRKBITS)+256);
 		else
-			ptr=TKMM_PageAlloc(1<<TKMM_BRKBITS);
+			ptr=TKMM_PageAlloc((1<<TKMM_BRKBITS)+256);
 		tkmm_mmlist_brkbuf_c[cat]=ptr;
+		brkbuf=ptr;
 
-		if(!(tkmm_mmlist_brkbuf_c[cat]))
+		if(!brkbuf)
 		{
 			tk_puts("TKMM_MMList_AllocBrk C: Fail\n");
 			return(NULL);
 		}
 		
 		TKMM_MMList_MProtectCat(
-			(u64)(tkmm_mmlist_brkbuf_c[cat]),
+			(u64)(brkbuf),
 			1<<TKMM_BRKBITS,
 			cat);
 		
-		memset(ptr, 0, 1<<TKMM_BRKBITS);
+		memset(brkbuf, 0, 1<<TKMM_BRKBITS);
 
-		tkmm_mmlist_brkend_c[cat]=tkmm_mmlist_brkbuf_c[cat]+(1<<TKMM_BRKBITS);
+//		tkmm_mmlist_brkend_c[cat]=tkmm_mmlist_brkbuf_c[cat]+(1<<TKMM_BRKBITS);
+//		tkmm_mmlist_brkend_c[cat]=tkmm_mmlist_brkbuf_c[cat]+
+//			(1<<TKMM_BRKBITS)-4096;
 
-		seg=(TKMM_MemLnkSeg *)(tkmm_mmlist_brkbuf_c[cat]);
-		i=(byte *)(seg->data)-(tkmm_mmlist_brkbuf_c[cat]);
-		i=(i+15)&(~15);
-		tkmm_mmlist_brkpos_c[cat]=tkmm_mmlist_brkbuf_c[cat]+i;
+		brkend=brkbuf+(1<<TKMM_BRKBITS)-4096;
+		tkmm_mmlist_brkend_c[cat]=brkend;
+
+		seg=(TKMM_MemLnkSeg *)(brkbuf);
+		i=(byte *)(seg->data)-(brkbuf);
+//		i=(i+15)&(~15);
+		i=(i+31)&(~15);
+		brkpos=brkbuf+i;
+		tkmm_mmlist_brkpos_c[cat]=brkpos;
 		
 		if(!i)
 			__debugbreak();
 		
-		if((long)(tkmm_mmlist_brkpos_c[cat])&15)
+		if((long)(brkpos)&15)
 			__debugbreak();
 		
 		seg->nblk=0;
 
-		TKMM_MMList_AddVrmBrk(ptr, 1<<TKMM_BRKBITS, 0);
+		TKMM_MMList_AddVrmBrk(brkbuf, 1<<TKMM_BRKBITS, 0);
 	}
 
 //	tk_puts("TKMM_MMList_AllocBrk D\n");
 
-	seg=(TKMM_MemLnkSeg *)(tkmm_mmlist_brkbuf_c[cat]);
+	seg=(TKMM_MemLnkSeg *)(brkbuf);
 	
-	ptr=tkmm_mmlist_brkpos_c[cat];
-	tkmm_mmlist_brkpos_c[cat]=ptr+sz;
+	ptr=brkpos;
+	brkpos=ptr+sz;
+	tkmm_mmlist_brkpos_c[cat]=brkpos;
 
 	if(((long)(ptr))&15)
 		__debugbreak();
 
-	if(((long)(tkmm_mmlist_brkpos_c[cat]))&15)
+	if(((long)(brkpos))&15)
 		__debugbreak();
 
 #if 1
@@ -578,6 +597,7 @@ int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj)
 	if(obj->check!=0x5A)
 	{
 		tk_puts("TKMM_MMList_FreeLnkObj: Check Value Fail\n");
+		__debugbreak();
 		return(-1);
 	}
 

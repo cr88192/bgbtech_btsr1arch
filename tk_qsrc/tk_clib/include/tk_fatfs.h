@@ -10,6 +10,8 @@
 #define TKFAT_ATTR_DEVICE		0x40
 #define TKFAT_ATTR_RESERVED		0x80
 
+#define TKFAT_ATTR_LINKHINT		0x05	//Hint, Check for symlinks / etc
+
 #define TKFAT_EMETA_BASE		0x01
 #define TKFAT_EMETA_LINK		0x04
 #define TKFAT_EMETA_LINKEXT		0x05
@@ -50,6 +52,7 @@
 #define TKFAT_DT_SOCK			12
 #define TKFAT_DT_WHT			14
 
+#define TKFAT_MAGIC1			0x12345678ULL
 
 typedef struct TKFAT_MBR_Entry_s TKFAT_MBR_Entry;
 typedef struct TKFAT_MBR_s TKFAT_MBR;
@@ -179,6 +182,8 @@ TKFAT_FAT32_Boot boot;
 typedef struct TKFAT_ImageInfo_s TKFAT_ImageInfo;
 
 struct TKFAT_ImageInfo_s {
+u32	magic1;
+
 byte *pImgData;
 int nImgBlks;
 byte fsty;			//filesystem type
@@ -197,9 +202,13 @@ int lba_data;		//LBA of data start
 int tot_clust;
 int clid_root;
 
+u32	magic2;
+
 TKFAT_MBR *mbr;
 TKFAT_FAT16_Boot *boot16;
 TKFAT_FAT32_Boot *boot32;
+
+u32	magic3;
 
 /* Static Buffer Cache */
 u32 sbc_lba[64];
@@ -207,10 +216,14 @@ s16 sbc_lbn[64];
 void *sbc_buf[64];
 int sbc_num;
 
+u32	magic4;
+
 /* Temp Buffer Cache */
 u32 tbc_lba[256];
 s16 tbc_lbn[256];
 void *tbc_buf[256];
+
+u32	magic5;
 
 //u32 tbc_lba[1024];
 //s16 tbc_lbn[1024];
@@ -260,8 +273,13 @@ int walk4_clid;		//walk starting cluster
 int walk4_clofs;	//walk cluster offset
 int walk4_clcur;	//walk cluster current
 
+u32	magic8;
+
 int walk_luhint[65536];		//lookup, once per 128 clusters
 int walk_lumax;
+
+u32	magic9;
+
 };
 
 

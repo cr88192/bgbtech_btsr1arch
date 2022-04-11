@@ -1235,7 +1235,8 @@ begin
 	tReqDoMissA	= (tReqMissA && tReqIsNz) || tReqFlushAddrA;
 	tReqDoMissB	= (tReqMissB && tReqIsNz) || tReqFlushAddrB;
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 	if(tReqIsMmio || tReqIsCcmd)
 	begin
 		tReqDoMissA	= 0;
@@ -1278,6 +1279,7 @@ begin
 	if((tReqMiss && tReqReady && !tReqMissL) ||
 //	if(((tReqMissA && tReqIsNz) && tReqReady && !tReqMissL) ||
 		(tReqMissNoSkipL && tRegOutHoldL))
+//		(tReqMissNoSkipL && tRegOutHoldL && tReqReady))
 //	if(1'b1)
 	begin
 //		tReqMissSkipA	= 0;
@@ -1292,6 +1294,27 @@ begin
 
 //		tReqMiss	= tReqMissA || tReqMissB;
 //		tReqMiss	= tReqMissA || tReqMissB;
+	end
+`endif
+
+`ifdef def_true
+// `ifndef def_true
+	if(tReqIsMmio || tReqIsCcmd)
+	begin
+		tReqDoMissA	= 0;
+		tReqDoMissB	= 0;
+	end
+
+	if(!tReqReady)
+//	if(tReqIsMmio || tReqIsCcmd || !tReqReady ||
+//		tReg2StoreFwA || tMemArrFwA)
+	begin
+//		if(!tReqDoMissAL)
+		if(!(tMemReqStA || tMemReqLdA))
+			tReqDoMissA	= 0;
+//		if(!tReqDoMissBL)
+		if(!(tMemReqStB || tMemReqLdB))
+			tReqDoMissB	= 0;
 	end
 `endif
 

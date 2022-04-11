@@ -409,28 +409,47 @@ begin
 			opFmid		= JX2_FMID_REGREG;
 			opIty		= JX2_ITY_SB;
 
-			case(istrWord[14:12])
-				3'b000:
-					opUCmdIx = istrWord[30] ?
-						JX2_UCIX_ALU_SUB : JX2_UCIX_ALU_ADD;
+			if(istrWord[30:25]==6'h01)
+			begin
+				opNmid		= JX2_UCMD_QMULDIV;
+				case(istrWord[14:12])
+					3'b000: opUCmdIx = JX2_UCIX_QMUL_MULS;
+					3'b001: opUCmdIx = JX2_UCIX_QMUL_MULHS;
+					3'b010: opUCmdIx = JX2_UCIX_QMUL_MULHSU;
+					3'b011: opUCmdIx = JX2_UCIX_QMUL_MULHU;
+					3'b100: opUCmdIx = JX2_UCIX_QMUL_DIVS;
+					3'b101: opUCmdIx = JX2_UCIX_QMUL_DIVU;
+					3'b110: opUCmdIx = JX2_UCIX_QMUL_MODS;
+					3'b111: opUCmdIx = JX2_UCIX_QMUL_MODU;
+				endcase
+			end
+			else
+			begin
+				case(istrWord[14:12])
+					3'b000:
+					begin
+						opUCmdIx = istrWord[30] ?
+							JX2_UCIX_ALU_SUB : JX2_UCIX_ALU_ADD;
+					end
 
-				3'b001: begin
-					opNmid		= JX2_UCMD_SHADQ3;
-					opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
-				end
+					3'b001: begin
+						opNmid		= JX2_UCMD_SHADQ3;
+						opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
+					end
 
-				3'b010: opUCmdIx = JX2_UCIX_ALU_SLTSQ;
-				3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUQ;
+					3'b010: opUCmdIx = JX2_UCIX_ALU_SLTSQ;
+					3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUQ;
 
-				3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
-				3'b101: begin
-					opNmid		= JX2_UCMD_SHADQ3;
-					opUCmdIx = istrWord[30] ?
-						JX2_UCIX_SHAD_SHARQ3 : JX2_UCIX_SHAD_SHLRQ3;
-				end
-				3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
-				3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
-			endcase
+					3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
+					3'b101: begin
+						opNmid		= JX2_UCMD_SHADQ3;
+						opUCmdIx = istrWord[30] ?
+							JX2_UCIX_SHAD_SHARQ3 : JX2_UCIX_SHAD_SHLRQ3;
+					end
+					3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
+					3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
+				endcase
+			end
 		end
 
 		5'b00_101: begin /* AUIPC */
@@ -454,25 +473,44 @@ begin
 			opFmid		= JX2_FMID_REGIMMREG;
 			opIty		= JX2_ITY_SW;
 
-			case(istrWord[14:12])
-				3'b000: opUCmdIx = JX2_UCIX_ALU_ADDSL;
-				3'b001: begin
-					opNmid		= JX2_UCMD_SHAD3;
-					opUCmdIx	= JX2_UCIX_SHAD_SHLD3;
-				end
+			if(istrWord[30:25]==6'h01)
+			begin
+`ifndef def_true
+				opNmid		= JX2_UCMD_QMULDIV;
+				case(istrWord[14:12])
+					3'b000: opUCmdIx = JX2_UCIX_QMUL_MULS;
+					3'b001: opUCmdIx = JX2_UCIX_QMUL_MULHS;
+					3'b010: opUCmdIx = JX2_UCIX_QMUL_MULU;
+					3'b011: opUCmdIx = JX2_UCIX_QMUL_MULHU;
+					3'b100: opUCmdIx = JX2_UCIX_QMUL_DUVS;
+					3'b101: opUCmdIx = JX2_UCIX_QMUL_DIVU;
+					3'b110: opUCmdIx = JX2_UCIX_QMUL_MODS;
+					3'b111: opUCmdIx = JX2_UCIX_QMUL_MODU;
+				endcase
+`endif
+			end
+			else
+			begin
+				case(istrWord[14:12])
+					3'b000: opUCmdIx = JX2_UCIX_ALU_ADDSL;
+					3'b001: begin
+						opNmid		= JX2_UCMD_SHAD3;
+						opUCmdIx	= JX2_UCIX_SHAD_SHLD3;
+					end
 
-				3'b010: opUCmdIx = JX2_UCIX_ALU_SLTSL;
-				3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUL;
+					3'b010: opUCmdIx = JX2_UCIX_ALU_SLTSL;
+					3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUL;
 
-				3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
-				3'b101: begin
-					opNmid		= JX2_UCMD_SHAD3;
-					opUCmdIx = istrWord[30] ?
-						JX2_UCIX_SHAD_SHAR3 : JX2_UCIX_SHAD_SHLR3;
-				end
-				3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
-				3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
-			endcase
+					3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
+					3'b101: begin
+						opNmid		= JX2_UCMD_SHAD3;
+						opUCmdIx = istrWord[30] ?
+							JX2_UCIX_SHAD_SHAR3 : JX2_UCIX_SHAD_SHLR3;
+					end
+					3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
+					3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
+				endcase
+			end
 		end
 
 		5'b01_110: begin /* ALU OP, 3R */
@@ -480,28 +518,50 @@ begin
 			opFmid		= JX2_FMID_REGREG;
 			opIty		= JX2_ITY_SB;
 
-			case(istrWord[14:12])
-				3'b000:
-					opUCmdIx = istrWord[30] ?
-						JX2_UCIX_ALU_SUBSL : JX2_UCIX_ALU_ADDSL;
+			if(istrWord[30:25]==6'h01)
+			begin
+				opNmid		= JX2_UCMD_QMULDIV;
+				case(istrWord[14:12])
+					3'b000:
+					begin
+//						opUCmdIx = JX2_UCIX_QMUL_MULSL;
+						opNmid		= JX2_UCMD_MUL3;
+						opUCmdIx	= JX2_UCIX_MUL3_MUL3S;
+					end
+					3'b001: opUCmdIx = JX2_UCIX_QMUL_MULHSL;
+					3'b010: opUCmdIx = JX2_UCIX_QMUL_MULHSU;
+					3'b011: opUCmdIx = JX2_UCIX_QMUL_MULHUL;
+					3'b100: opUCmdIx = JX2_UCIX_QMUL_DIVSL;
+					3'b101: opUCmdIx = JX2_UCIX_QMUL_DIVUL;
+					3'b110: opUCmdIx = JX2_UCIX_QMUL_MODSL;
+					3'b111: opUCmdIx = JX2_UCIX_QMUL_MODUL;
+				endcase
+			end
+			else
+			begin
+				case(istrWord[14:12])
+					3'b000:
+						opUCmdIx = istrWord[30] ?
+							JX2_UCIX_ALU_SUBSL : JX2_UCIX_ALU_ADDSL;
 
-				3'b001: begin
-					opNmid		= JX2_UCMD_SHAD3;
-					opUCmdIx	= JX2_UCIX_SHAD_SHLD3;
-				end
+					3'b001: begin
+						opNmid		= JX2_UCMD_SHAD3;
+						opUCmdIx	= JX2_UCIX_SHAD_SHLD3;
+					end
 
-				3'b010: opUCmdIx = JX2_UCIX_ALU_SLTSL;
-				3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUL;
+					3'b010: opUCmdIx = JX2_UCIX_ALU_SLTSL;
+					3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUL;
 
-				3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
-				3'b101: begin
-					opNmid		= JX2_UCMD_SHAD3;
-					opUCmdIx = istrWord[30] ?
-						JX2_UCIX_SHAD_SHAR3 : JX2_UCIX_SHAD_SHLR3;
-				end
-				3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
-				3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
-			endcase
+					3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
+					3'b101: begin
+						opNmid		= JX2_UCMD_SHAD3;
+						opUCmdIx = istrWord[30] ?
+							JX2_UCIX_SHAD_SHAR3 : JX2_UCIX_SHAD_SHLR3;
+					end
+					3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
+					3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
+				endcase
+			end
 		end
 
 		default: begin

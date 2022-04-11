@@ -610,13 +610,13 @@ memset_movx:
 	PSHUF.B		R5, 0, R7
 	PSHUF.W		R7, 0, R20
 	MOV		R20, R22	|	MOV		R20, R23
-	MOV		R20, R21	|	CMP/GE	32, R6
+	MOV		R20, R21	|	CMPGT	32, R6
 	BF		.L1
 	.L0:
 	MOV.X	R20, (R4,  0)
 	ADD		-32, R6	
 	MOV.X	R22, (R4, 16)
-	ADD		32, R4		|	CMP/GE	32, R6
+	ADD		32, R4		|	CMPGT	32, R6
 	BT		.L0
 	.L1:
 .else
@@ -630,21 +630,21 @@ memset_movx:
 .endif
 
 .ifarch bjx2_wex
-	CMP/GE	8, R6
+	CMPGE	8, R6
 	BF		.L3
 	.L2:
 	ADD		-8, R6		|	MOV.Q	R20, (R4)
-	ADD		8, R4		|	CMP/GE	8, R6
+	ADD		8, R4		|	CMPGE	8, R6
 	BT		.L2
 	.L3:
 .else
-	CMP/GE	8, R6
+	CMPGE	8, R6
 	BF		.L3
 	.L2:
 	ADD		-8, R6
 	MOV.Q	R20, (R4)
 	ADD		8, R4
-	CMP/GE	8, R6
+	CMPGE	8, R6
 	BT		.L2
 	.L3:
 .endif

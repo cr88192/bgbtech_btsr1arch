@@ -4,6 +4,9 @@
 #define TKPE_REGSAVE_SPC	0x42
 #define TKPE_REGSAVE_EXSR	0x43
 
+#define TKPE_REGSAVE_TBR	0x44
+#define TKPE_REGSAVE_TTB	0x45
+
 #define TKPE_REGSAVE_KRR	0x48
 
 typedef struct TKPE_ImageInfo_s		TKPE_ImageInfo;
@@ -126,10 +129,18 @@ tk_kptr		krn_boot_spe;		//38, Stack End (Top)
 
 // u64			ctx_regsave[64];	//saved registers (context switch)
 u64			ctx_regsave[128];	//saved registers (context switch)
+u64			ctx_stksave[128];	//top of stack
 
 tk_kptr		span_ptr[512];	//span	(mmap / VirtualAlloc)
 int			span_sz[512];	//span	(mmap / VirtualAlloc)
 int			n_span;			//span	(mmap / VirtualAlloc)
+
+
+tk_kptr		mmap_ptr[512];	//mmap base address
+int			mmap_len[512];	//mmap size
+int			mmap_prot[512];	//mmap prot
+int			mmap_flag[512];	//mmap flag
+int			mmap_n_map;			//span	(mmap / VirtualAlloc)
 
 // s64			result;			//return value (non-zero if terminated)
 };

@@ -379,6 +379,17 @@ begin
 			tSlotUSup		= 1;
 		end
 
+		JX2_UCMD_QMULDIV: begin
+			tSlotUSup		= 1;
+
+			if(	(opUIxt[8:6]==JX2_IUC_WX) ||
+				(opUIxt[8:6]==JX2_IUC_WXA))
+			begin
+				tSlotUSup		= 0;
+				tRegHeld		= 1;
+			end
+		end
+
 		JX2_UCMD_FPU3: begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;

@@ -151,6 +151,7 @@ void I_Quit (void)
     M_SaveDefaults ();
     I_ShutdownGraphics();
     exit(0);
+//    __debugbreak();
 }
 
 void I_WaitVBL(int count)

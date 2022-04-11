@@ -507,16 +507,17 @@ The immediate gives an index into a table of CPUID bits.
 Index 0:
 * (63:0): Gives an identifier for the processor.
 ** 'BJX2xxyy', Identifies core as BJX2.
-** 'xx' gives the major ISA Profile and Profile Version.
+** 'xx' gives the Baseline ISA Profile and Profile Version.
 ** 'yy' May give an additional version, or '  ' if absent.
 
 ISA Profiles:
-* 'A': Full Features
-* 'B': (Drop)
+* 'A': Full Profile, 48-bit Address Space, Has WEX3W and Jumbo
+* 'B': Fix32 Profile, Has FPU, Optional MMU
 * 'C': Basic, 32-bit Address Space.
-* 'D': Lite/Fix32 Profile, fixed-Length 32-bit instruction encodings
-* 'E': Lite Profile, No FPU or MMU, 32-bit Address Space
-* 'F': Lite Profile, Has GFP, No MMU, 32-bit Address Space
+* 'D': Fix32 Profile, No FPU, Optional MMU
+* 'E': Lite Profile, No FPU, Optional MMU, 32-bit Address Space
+* 'F': Lite Profile, Has FPU, Optional MMU, 32-bit Address Space
+* 'G': Full Profile, 96-bit Address Space, Has WEX3W and Jumbo
 
 This instruction is only allowed in Lane 1.
 
@@ -545,10 +546,13 @@ Index 1:
 * ( 27): XMOV Quadrant Add Mode
 * ( 28): DMAC (Integer Multiply-Accumulate)
 * ( 29): Op64 RiMOV
+* ( 30): QMUL (64-bit MUL and DIV/MOD instructions)
 
 Index 31:
 * Hardware Random Number
 * Gives a random number generated internally by the CPU.
+** Note that this RNG is fully dynamic rather than sequential.
+** This RNG is meant to approximate a non-deterministic entropy source.
 
 
 === CSELT ===

@@ -43,6 +43,7 @@ int tksh_commands_init;
 int tksh_cmdentry;
 
 #include "tk_shcmd_ed.c"
+#include "tk_shcmd_hex.c"
 
 int TKSH_HashFast(char *name)
 {
@@ -971,6 +972,39 @@ int TKSH_Cmds_Edit(char **args)
 	
 	TKSH_EditUpdateLoop();
 
+	tk_con_reset();
+
+	return(0);
+}
+
+int TKSH_Cmds_HexEdit(char **args)
+{
+	char tb[256];
+	char *darg;
+	int i;
+
+	darg=NULL;
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			continue;
+		}
+		darg=args[i];
+	}
+
+//	tksh_cmdentry=1;
+	
+	if(darg)
+	{
+		THSH_QualifyPathArg(tb, darg);
+		TKSH_HexLoadFile(tb);
+	}
+	
+	TKSH_HexUpdateLoop();
+
+	tk_con_reset();
+
 	return(0);
 }
 
@@ -998,6 +1032,8 @@ int TKSH_InitCmds(void)
 	TKSH_RegisterCommand("echo",	TKSH_Cmds_Echo);
 	TKSH_RegisterCommand("ed",		TKSH_Cmds_Ed);
 	TKSH_RegisterCommand("edit",	TKSH_Cmds_Edit);
+
+	TKSH_RegisterCommand("hexedit",	TKSH_Cmds_HexEdit);
 
 	TKSH_RegisterCommand("ln",		TKSH_Cmds_Ln);
 	TKSH_RegisterCommand("ls",		TKSH_Cmds_Ls);
@@ -1141,6 +1177,8 @@ int TKSH_ExecCmd(char *cmd)
 		return(i);
 	}
 
+	cmd[0]=0;
+
 	ri=TKSH_TryLoad_n(tb, a);
 
 	if(ri>0)
@@ -1262,6 +1300,10 @@ int TK_DestroyTaskInfo(void *tkptr);
 void TK_FlushCacheL1D();
 void TK_FlushCacheL1D_INVIC(void *ptr);
 
+int tk_sysc_exitpt();
+
+volatile int tksh_runstate;
+
 int TKSH_TryLoad(char *img, char **args0)
 {
 	byte tb[1024];
@@ -1284,6 +1326,8 @@ int TKSH_TryLoad(char *img, char **args0)
 	void *boottbr, *boottls;
 	void *sysc;
 	int (*bootptr)();
+	volatile int chk;
+	volatile int *rchk;
 	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
 	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
 	int sig_is_pe, sig_is_asc;
@@ -1300,6 +1344,10 @@ int TKSH_TryLoad(char *img, char **args0)
 	if(ix>0)
 	{
 		pimg=TK_GetImageForIndex(ix);
+//		tk_printf("TKSH_TryLoad: Got Image %d %p\n", ix, pimg);
+	}else
+	{
+//		tk_printf("TKSH_TryLoad: Not Yet Loaded\n");
 	}
 
 	if(args0)
@@ -1442,7 +1490,10 @@ int TKSH_TryLoad(char *img, char **args0)
 		if((tb[0]=='P') && (tb[1]=='E'))
 			sig_is_pe=1;
 	}
-	
+
+	rchk=&chk;
+	*rchk=0x1234567;
+
 //	if(fd)
 	if(pimg || (fd && sig_is_pe))
 	{
@@ -1476,6 +1527,9 @@ int TKSH_TryLoad(char *img, char **args0)
 		
 		if(bootptr)
 		{
+		
+			tksh_runstate = 2;
+		
 //			boot_newspb=TKMM_PageAlloc(1<<18);
 //			boot_newsp=boot_newspb+((1<<18)-1024);
 
@@ -1604,13 +1658,23 @@ int TKSH_TryLoad(char *img, char **args0)
 #endif
 
 			rv=tk_sysc_exitpt();
+//			if(rv || (tksh_runstate != 2))
 			if(rv)
 			{
-				TK_DestroyTaskInfo(task);
+				if(rv<0)
+					rv=-rv;
+//				__debugbreak();
 				tk_con_chkreset();
 //				__debugbreak();
+				TK_TaskFreeAllPageAlloc(task);
+				TK_DestroyTaskInfo(task);
 				return(rv);
 			}
+
+			if(chk!=0x1234567)
+				__debugbreak();
+
+			tksh_runstate = 3;
 		
 			TK_FlushCacheL1D();
 			TK_FlushCacheL1D_INVIC(NULL);

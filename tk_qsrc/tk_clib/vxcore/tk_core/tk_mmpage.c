@@ -141,14 +141,20 @@ int TKMM_AllocPage(void)
 			{ i=(i+8)&(~7); continue; }
 		if(j&(1<<(i&7)))
 			{ i++; continue; }
-		j|=1<<(i&7);
-		bm[i>>3]=j;
+//		j|=1<<(i&7);
+//		bm[i>>3]=j;
 		break;
 	}
 	
 	if(i<m)
 	{
+		j=bm[i>>3];
+		j|=1<<(i&7);
+		bm[i>>3]=j;
+
 		tkmm_pagerov=i+1;
+		if((i+1)>=m)
+			tkmm_pagerov=0;
 //		__debugbreak();
 		return(i);
 	}
@@ -281,6 +287,31 @@ int TKMM_AllocPagesZeroed(int n)
 	return(i0);
 }
 
+int TKMM_AllocPagesApn(int n)
+{
+	int i0;
+	
+	i0=TKMM_AllocPages(n);
+	if(i0<0)
+		return(i0);
+	return(i0+(TKMM_PAGEBASE>>TKMM_PAGEBITS));
+}
+
+int TKMM_AllocPagesZeroedApn(int n)
+{
+	byte *ptr;
+	int i0;
+	
+	i0=TKMM_AllocPages(n);
+	if(i0<0)
+		return(i0);
+
+	ptr=((byte *)TKMM_PAGEBASE)+(i0<<TKMM_PAGEBITS);
+	memset(ptr, 0, n<<TKMM_PAGEBITS);
+
+	return(i0+(TKMM_PAGEBASE>>TKMM_PAGEBITS));
+}
+
 int TKMM_FreePages(int b, int n)
 {
 	int i;
@@ -293,13 +324,19 @@ int TKMM_FreePages(int b, int n)
 		__debugbreak();
 	}
 	
+	if(n==1)
+	{
+		tkmm_pagebmp[b>>3]&=~(1<<(b&7));
+		return(0);
+	}
+	
 	for(i=b; i<(b+n); i++)
 	{
 		tkmm_pagebmp[i>>3]&=~(1<<(i&7));
 	}
 	
-	if(b<tkmm_pagerov)
-		tkmm_pagerov=b;
+//	if(b<tkmm_pagerov)
+//		tkmm_pagerov=b;
 	
 	return(0);
 }

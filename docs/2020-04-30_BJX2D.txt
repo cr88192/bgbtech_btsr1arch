@@ -23,9 +23,9 @@ Multiple subset profiles will exist, and some features will be optional.
 
 Several ISA Profiles may exist:
 * A: Full, Full Features, 48-bit address space.
-* B: Lite + Fix32 + GFP
+* B: Fix32 + GFP
 * C: Basic, Partial Features, 32-bit address space.
-* D: Lite + Fix32 + SoftFPU
+* D: Fix32 + SoftFPU
 * E: Lite + SoftFPU
 * F: Lite + GFP
 * G: Full Features, 96-bit address space.
@@ -71,6 +71,7 @@ BJX2 Lite Profile
 * Will support 16 and 32 bit instruction encodings.
 * Support for WEX is optional.
 * Support for Jumbo is optional.
+* Support MULQ is optional.
 
 ABI: SoftFP
 * Absolute Addressing for ROM
@@ -656,7 +657,7 @@ Page Table Entries (32-bit PTE):
 * ( 11:  0) = Page Control bits
 
 Page Table Entries (64-bit PTE, U2=0):
-* ( 63: 48) = VUGID Table Index
+* ( 63: 48) = ACLID Table Index
 * ( 47: 12) = Physical Address Page
 * ( 11:  0) = Page Control bits
 
@@ -673,7 +674,7 @@ Page Table Entries (64K, 128-bit):
 * ( 11:  0) = Page Control bits
 
 There will be a User Page Table (TTB) and a System Page Table (STTB).
-Whether STTD is used, and what page-table type is assumed, will depend on the low bits in TTB.
+Whether STTB is used, and what page-table type is assumed, will depend on the low bits in TTB.
 
 TTB Bits:
 * ( 1: 0): Will give the main page-table type (32/64 bit PTE).
@@ -701,10 +702,16 @@ Type of STTB table:
 
 The STTB table will need to match the main page table in terms of nominal page size.
 
-Quadrant Extra Levels:
+Quadrant Extra Levels (Page Table):
 * 0: Adds 0 Levels (NA,  2,  3,  4)
 * 1: Adds 4 Levels ( 5,  6,  7,  8)
 * 2: Adds 8 Levels ( 9, 10, 11, 12)
+* 3: Reserved
+
+Quadrant Extra Levels (AVL Tree):
+* 0: AVL Tree
+* 1: B-Tree
+* 2: Reserved
 * 3: Reserved
 
 
@@ -732,7 +739,7 @@ The page table types for 128-bit PTEs with 4K pages:
 * 00: Four-level, 44-bit address
 * 01: Five-level, 52-bit address
 * 10: Six-Level, 60-bit address
-* 11: Seven-Level, 64-bit address
+* 11: AVL Tree
 
 
 ==== 64K Page Tables ====
@@ -752,7 +759,7 @@ Page Table Types (128-bit PTE):
 * 00: None / Invalid
 * 01: Two-level, 128-bit PTE, 40-bit address.
 * 10: Three-Level, 128-bit PTE, 52-bit address.
-* 11: Four-Level, 128-bit PTE, 64-bit address.
+* 11: AVL Tree
 
 
 ==== 16K Page Tables ====
@@ -772,7 +779,49 @@ Page Table Types (128-bit PTE):
 * 00: None / Invalid
 * 01: Two-level, 128-bit PTE, 34-bit address.
 * 10: Three-Level, 128-bit PTE, 44-bit address.
-* 11: Four-Level, 128-bit PTE, 54-bit address.
+* 11: AVL Tree
+
+
+=== AVL-Tree Page Table ===
+
+An AVL Tree may be used instead of a page table.
+
+AVL Node:
+* (255:172): Virtual Address (95:12)
+* (171:160): Optional KR Mode
+* (159:152): Node Depth (0=Leaf)
+* (151:128): ?
+* (127: 64): Page Table Entry (64-bit)
+* ( 63: 32): Left Node
+* ( 31:  0): Right Node
+
+TTB will hold the Root Node ID of the tree in TTB(43:12).
+
+The Node IDs will be encoded as the Node's physical address shifted right by 4 bits.
+
+
+=== B-Tree Page Table ===
+
+A B-Tree will be used in place of a typical page table, with each B-Tree node equal in size to a page.
+
+Typical Node Layout:
+* u64 ptr_next;			//pointer to next node (same level)
+* u64 ptr_prev;			//pointer to previous node (same level)
+* u64 ptr_up;			//pointer to parent node
+* u16 n_ecnt;			//number of entries in this node
+* byte n_level;			//node level (0=leaf)
+* byte pad1[5];			//pad to 32B (MBZ)
+* byte pad2[NODEPAD];	//pad bytes (MBZ)
+* u32 addr_hi[NODESZ];	//high address bits
+* u64 addr_lo[NODESZ];	//low address bits
+* u64 pte_val[NODESZ];	//page table entry
+
+The address will be represented as a 96-bit linear address.
+
+The NODESZ will depend on page size:
+* 4K: 203 (PAD=4)
+* 16K: 817 (PAD=12)
+* 64K: 3275 (PAD=4)
 
 
 === Addressing Modes ===
@@ -802,6 +851,8 @@ Displacement Scale:
 ** GBR and TBR, as with PC, will use a scale of 1.
 * Branches will use a scale of 2.
 * LEA.x will be scaled by the size of the base type.
+
+The Scaled Index forms will be demoted to Optional in Fix32 'D' Profile.
 
 
 For PC relative addresses, the address will be calculated relative to the start of the following instruction.
@@ -844,16 +895,16 @@ Depending on the implementation and mode, LEA may be computed either as 32-bit a
 
 If full 48-bit addressing is used:
 * Bits 0..47 will be subject to address calculation;
-* Bits 48..63 will be zero.
+* Bits 48..63 will be copied unchanged.
 
 If 32-bit wraparound is used with 48 bit addressing:
 * Bits 0..31 will be subject to address calculation;
 * Bits 32..47 will be copied unchanged;
-* Bits 48..63 will be zero.
+* Bits 48..63 will be copied unchanged.
 
 In an implementation with 32-bit addressing, or in 32-bit address mode:
 * Bits 0..31 will contain the computed address;
-* Bits 32..63 will be cleared to zero.
+* Bits 32..63 will be copied unchanged.
 
 Note that the address mode used is not required to match the pointer width used by the C ABI. However, it may be presumed that the address width matches between the address mode, C ABI, and the width specified in executable images.
 
@@ -1815,9 +1866,9 @@ F0zz Instruction Block:
 ** F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
 ** F0nm_3go3  ROTRQ		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
 ** F0nm_3Go3  SHLRX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
-** F0nm_3go4  -
+** F0nm_3go4 ? MULSH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
 ** F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
-** F0nm_3go5  -
+** F0nm_3go5 ? MULUH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
 ** F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
 ** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALU) Rotate Left (32b)
 ** F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
@@ -1865,8 +1916,8 @@ F0zz Instruction Block:
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
 ** F0nm_5Go0  NOP3		Rm, Ro, Rn			//NOP (3-Register)
-** F0nm_5go1  PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
-** F0nm_5Go1  PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
+** F0nm_5go1  PMULS.W	Rm, Ro, Rn			//(GSV) Packed Mul (2x16->2x32)
+** F0nm_5Go1  PMULU.W	Rm, Ro, Rn			//(GSV) Packed Mul (2x16->2x32)
 ** F0nm_5go2  DMULS.L	Rm, Ro, Rn			//(MULL) Sx 32b Mul (32*32->64)
 ** F0nm_5Go2  DMULS.Q	Rm, Ro, Xn			//(MULQ) Sx 64b Mul (64*64->128)
 ** F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
@@ -1906,8 +1957,10 @@ F0zz Instruction Block:
 ** F0nm_6Go2 ? DMACS.L	Rm, Imm5u, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
 ** F0nm_6go3 ? DMACU.L	Rm, Ro, Rn			//(DMAC) Rn=Rn+(Rm*Ro)
 ** F0nm_6Go3 ? DMACU.L	Rm, Imm5u, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
-** F0nm_6eo4  -
-** F0nm_6eo5  -
+** F0nm_6go4 ? DIVS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Signed)
+** F0nm_6Go4 ? DIVU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Unsigned)
+** F0nm_6go5 ? MODS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
+** F0nm_6Go5 ? MODU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
 ** F0nm_6eo6  -
 ** F0nm_6eo7  -
 ** F0nm_6go8 ? BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)

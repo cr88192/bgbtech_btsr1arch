@@ -1,0 +1,176 @@
+#include "VExOpSloMulDiv.h"
+#include "verilated.h"
+
+VExOpSloMulDiv *top = new VExOpSloMulDiv;
+
+vluint64_t main_time = 0;
+
+#define JX2_UCMD_QMULDIV		0x0B
+
+#define JX2_UCIX_QMUL_MULS		0x00		//
+#define JX2_UCIX_QMUL_MULU		0x01		//
+#define JX2_UCIX_QMUL_MULHS		0x02		//
+#define JX2_UCIX_QMUL_MULHU		0x03		//
+
+#define JX2_UCIX_QMUL_DIVS		0x04		//
+#define JX2_UCIX_QMUL_DIVU		0x05		//
+#define JX2_UCIX_QMUL_MODS		0x06		//
+#define JX2_UCIX_QMUL_MODU		0x07		//
+
+struct JX2_FpuTestCase_s {
+int cmd;
+int ixt;
+vluint64_t x;
+vluint64_t y;
+vluint64_t z;
+vluint64_t grn;
+}fputest[]={
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVU,  12345678,  314159, 	  39},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVU,  12345678,    8191,	1507},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  12345678,  314159, 	  39},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  12345678,    8191,	1507},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  -12345678,  314159,	  -39},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  -12345678,    8191,	-1507},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  12345678,  -314159,	  -39},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  12345678,    -8191,	-1507},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  -12345678,  -314159,	  39},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_DIVS,  -12345678,    -8191,	1507},
+
+//{JX2_UCMD_QMULDIV, JX2_UCIX_FPU_FMUL,  3.14,  2.73,  8.572200000},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULU,    39,  314159, 	12252201},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULU,  1507,    8191,	12343837},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULS,   -39,  314159, -12252201},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULS, -1507,    8191, -12343837},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULS,    39, -314159, -12252201},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULS,  1507,   -8191, -12343837},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULS,   -39, -314159,  12252201},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULS, -1507,   -8191,  12343837},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULHU,
+	15241578750190521, 15241578750190521, 	12593318466934},
+// {JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULHU, 123456789,    8191,	12343837},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MODU,  12345678,  314159, 	93477},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MODU,  12345678,    8191,	 1841},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULHU,
+	0xFFFFFFFFFFFFFFFFULL, 0xFFFFFFFFFFFFFFFFULL,
+	0xFFFFFFFFFFFFFFFEULL},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULHU,
+	0x7FFFFFFFFFFFFFFFULL, 0x7FFFFFFFFFFFFFFFULL,
+	0x3FFFFFFFFFFFFFFFULL},
+
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULHU,
+	0x7FFFFFFFFFFFFFFFULL, 0xFFFFFFFFFFFFFFFFULL,
+	0x7FFFFFFFFFFFFFFEULL},
+{JX2_UCMD_QMULDIV, JX2_UCIX_QMUL_MULHU,
+	0xFFFFFFFFFFFFFFFFULL, 0x7FFFFFFFFFFFFFFFULL,
+	0x7FFFFFFFFFFFFFFEULL},
+
+{0x00, 0,  0,  0,  0.000000000},
+};
+
+int main(int argc, char **argv, char **env)
+{
+	double fx, fy, fz, fw;
+	vluint64_t tx, ty, tz, tw;
+	vluint64_t grn, egrn;
+	int64_t dst;
+	
+	int tst, op, ixt;
+	int n, isz_x, isz_y, isnan_x, isnan_y;
+	
+	printf("FPU Test\n");
+	
+	Verilated::commandArgs(argc, argv);
+
+	fx=3.14; fy=2.73;
+	tx=*(vluint64_t *)(&fx);
+	ty=*(vluint64_t *)(&fy);
+	tst=0;
+
+	while (!Verilated::gotFinish())
+	{
+		top->clock = (main_time>>0)&1;
+//		top->mode = 3;
+
+		top->exInHold=0;
+		
+		if(top->exOutHold)
+		{
+			top->exInHold=1;
+			top->eval();
+			main_time++;
+			continue;
+		}
+
+		if(top->clock)
+		{
+			top->eval();
+			main_time++;
+			continue;
+		}
+
+		if(top->idUCmd)
+		{
+			tz=top->valRn;
+
+			printf(
+				"%02X-%02X Rn=%lX Rm=%lX\n"
+				"Ro=%016lX Expect=%016lX %s\n",
+				top->idUCmd, top->idUIxt,
+				tx, ty, tz, tw, (tz==tw)?"Pass":"Fail");
+
+			printf("\n");
+
+			top->idUCmd=0x00;
+			top->idUIxt=0;
+			tst++;
+
+			op=fputest[tst].cmd;
+			if(!op)
+				break;
+		}else
+		{
+			op=fputest[tst].cmd;
+			ixt=fputest[tst].ixt;
+			tx=fputest[tst].x;
+			ty=fputest[tst].y;
+			tw=fputest[tst].z;
+			egrn=fputest[tst].grn;
+			
+			if(!op)
+				break;
+		
+			top->idUCmd=op;
+			top->idUIxt=ixt;
+
+			top->valRs=tx;
+			top->valRt=ty;
+		}
+
+		top->eval();
+
+		main_time++;
+		
+//		if(main_time>256)
+		if(main_time>8192)
+		{
+			break;
+		}
+	}
+
+	delete top;
+	exit(0);
+}
+
+// verilator -Wall --cc our.v --exe sim_main.cpp

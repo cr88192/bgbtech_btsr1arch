@@ -439,7 +439,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
 		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
 
-	memset(imgptr, 0, imgsz1);
+//	memset(imgptr, 0, imgsz1-32);
+//	memset(imgptr, 0, imgsz1);
 
 	TK_VMem_MProtectPages(imgptr, imgsz1,
 		TKMM_PROT_READ|TKMM_PROT_WRITE|
@@ -532,6 +533,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		img->isdll=is_dll;
 
 		i=tkpe_nimgix++;
+		if(!i)
+			i=tkpe_nimgix++;
 		tkpe_pbo_image[i]=img;
 		img->imgix=i;
 
@@ -759,11 +762,15 @@ int TKPE_LookupPboImageName(char *imgname, int isdll)
 	for(i=1; i<tkpe_nimgix; i++)
 	{
 		img=tkpe_pbo_image[i];
+
+		tk_printf("TKPE_TryLoadProgramImage: Check %s\n", img->imgname);
+
 		if((isdll&1) && !(img->pboix))
 			continue;
 		if(!strcmp(img->imgname, imgname))
 			return(i);
 	}
+	tk_printf("TKPE_TryLoadProgramImage: Not Found %s\n", imgname);
 	return(0);
 }
 
@@ -775,11 +782,48 @@ int TKPE_LookupPboImagePath(char *imgpath, int isdll)
 	for(i=1; i<tkpe_nimgix; i++)
 	{
 		img=tkpe_pbo_image[i];
+
+//		tk_printf("TKPE_LookupPboImagePath: Check %s\n", img->imgpath);
+
 		if((isdll&1) && !(img->pboix))
 			continue;
 		if(!strcmp(img->imgpath, imgpath))
 			return(i);
 	}
+
+//	tk_printf("TKPE_LookupPboImagePath: Not Found %s\n", imgpath);
+	return(0);
+}
+
+int TKPE_LookupPboImagePathExt(char *imgpath, int isdll)
+{
+	char tbuf[512];
+	int isext, ix;
+
+	isext=(strchr(imgpath, '.')!=NULL);
+	
+	ix=TKPE_LookupPboImagePath(imgpath, isdll);
+	if(ix>0)
+		return(ix);
+	if(isext)
+		return(0);
+
+	if(!isext && (isdll&1))
+	{
+		tk_sprintf(tbuf, "%s.dll", imgpath);
+		ix=TKPE_LookupPboImagePath(tbuf, isdll);
+		if(ix>0)
+			return(ix);
+	}
+
+	if(!isext && !(isdll&1))
+	{
+		tk_sprintf(tbuf, "%s.exe", imgpath);
+		ix=TKPE_LookupPboImagePath(tbuf, isdll);
+		if(ix>0)
+			return(ix);
+	}
+	
 	return(0);
 }
 
@@ -872,17 +916,29 @@ int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll)
 {
 	char tbuf[128];
 	TKPE_ImageInfo *img;
-	char *basename;
+	char *basename, *ext;
 	char *path, *ls1, *ls2;
 	TK_FILE *fd;
 	int i;
+
+	ext=strchr(imgname, '.');
+	
+	if(ext)
+	{
+		if(strcmp(ext, ".exe") && !(isdll&1))
+			return(0);
+		if(strcmp(ext, ".dll") && (isdll&1))
+			return(0);
+	}
+	
 	
 	ls1=strrchr(imgname, '/');
 	if(ls1)
 	{
 		if(imgname[0]=='/')
 		{
-			i=TKPE_LookupPboImagePath(imgname, isdll);
+//			i=TKPE_LookupPboImagePath(imgname, isdll);
+			i=TKPE_LookupPboImagePathExt(imgname, isdll);
 			if(i>0)
 				return(i);
 		}else if(cwd)

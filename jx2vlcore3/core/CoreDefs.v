@@ -703,11 +703,12 @@ parameter[5:0] JX2_UCMD_OP_IXT		= 6'h02;		//0R
 parameter[5:0] JX2_UCMD_LEA_MR		= 6'h03;		//Load
 parameter[5:0] JX2_UCMD_MOV_RM		= 6'h04;		//Store
 parameter[5:0] JX2_UCMD_MOV_MR		= 6'h05;		//Load
-parameter[5:0] JX2_UCMD_PUSHX		= 6'h06;		//
-parameter[5:0] JX2_UCMD_POPX		= 6'h07;		//
+// parameter[5:0] JX2_UCMD_PUSHX	= 6'h06;		//
+// parameter[5:0] JX2_UCMD_POPX		= 6'h07;		//
 parameter[5:0] JX2_UCMD_FMOV_RM		= 6'h08;		//FPU Store
 parameter[5:0] JX2_UCMD_FMOV_MR		= 6'h09;		//FPU Load
 parameter[5:0] JX2_UCMD_ADDSP		= 6'h0A;		//ADD Imm, SP
+parameter[5:0] JX2_UCMD_QMULDIV		= 6'h0B;		//Slow MUL/DIV
 
 parameter[5:0] JX2_UCMD_CONV2_RR	= 6'h0C;		//Convert (Via ALU)
 
@@ -964,6 +965,29 @@ parameter[5:0] JX2_UCIX_MUL3_DMAC3U	= 6'h15;		//
 
 parameter[5:0] JX2_UCIX_MUL3_BLKUAB1	= 6'h2C;	//Get Sample, UAB1
 parameter[5:0] JX2_UCIX_MUL3_BLKUAB2	= 6'h2D;	//Get Sample, UAB2
+
+
+parameter[5:0] JX2_UCIX_QMUL_MULS	= 6'h00;		//
+parameter[5:0] JX2_UCIX_QMUL_MULU	= 6'h01;		//
+parameter[5:0] JX2_UCIX_QMUL_MULHS	= 6'h02;		//
+parameter[5:0] JX2_UCIX_QMUL_MULHU	= 6'h03;		//
+
+parameter[5:0] JX2_UCIX_QMUL_DIVS	= 6'h04;		//
+parameter[5:0] JX2_UCIX_QMUL_DIVU	= 6'h05;		//
+parameter[5:0] JX2_UCIX_QMUL_MODS	= 6'h06;		//
+parameter[5:0] JX2_UCIX_QMUL_MODU	= 6'h07;		//
+
+parameter[5:0] JX2_UCIX_QMUL_MULSL	= 6'h08;		//
+parameter[5:0] JX2_UCIX_QMUL_MULUL	= 6'h09;		//
+parameter[5:0] JX2_UCIX_QMUL_MULHSL	= 6'h0A;		//
+parameter[5:0] JX2_UCIX_QMUL_MULHUL	= 6'h0B;		//
+
+parameter[5:0] JX2_UCIX_QMUL_DIVSL	= 6'h0C;		//
+parameter[5:0] JX2_UCIX_QMUL_DIVUL	= 6'h0D;		//
+parameter[5:0] JX2_UCIX_QMUL_MODSL	= 6'h0E;		//
+parameter[5:0] JX2_UCIX_QMUL_MODUL	= 6'h0F;		//
+
+parameter[5:0] JX2_UCIX_QMUL_MULHSU	= 6'h12;		//
 
 
 parameter[5:0] JX2_UCIX_LDI_LDIX	= 6'h00;		//

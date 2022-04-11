@@ -2744,8 +2744,8 @@ int JX2R_ImageAddExport(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 int JX2R_UseImageCreateRamdisk(int imgsz)
 {
 	JX2R_TKFAT_ImageInfo *img;
-//	img=JX2R_CreateRamImage(imgsz, 0);
-	img=JX2R_CreateRamImage(imgsz, 6);
+//	img=JX2R_CreateRamImage(imgsz*2, 0);
+	img=JX2R_CreateRamImage(imgsz*2, 6);
 	spimmc_img=img;
 	return(0);
 }

@@ -730,6 +730,102 @@ void BJX2_Op_MULUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 #endif
 
+void BJX2_Op_MULSQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc;
+	va=(s64)(ctx->regs[op->ro]);
+	vb=(s64)(ctx->regs[op->rm]);
+	vc=va*vb;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MULUQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	va=(u64)(ctx->regs[op->ro]);
+	vb=(u64)(ctx->regs[op->rm]);
+	vc=va*vb;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MULSHQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc, vc1;
+	va=(s64)(ctx->regs[op->ro]);
+	vb=(s64)(ctx->regs[op->rm]);
+	
+	vc1=	(((u32)va)*(vb>>32)) +
+			(((u32)vb)*(va>>32)) ;
+	vc=((va>>32)*(vb>>32)) + (vc1>>32);
+
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MULUHQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc, vc1;
+	va=(u64)(ctx->regs[op->ro]);
+	vb=(u64)(ctx->regs[op->rm]);
+
+	vc1=	(((u32)va)*(vb>>32)) +
+			(((u32)vb)*(va>>32)) ;
+	vc=((va>>32)*(vb>>32)) + (vc1>>32);
+
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_DIVSQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc;
+	va=(s64)(ctx->regs[op->ro]);
+	vb=(s64)(ctx->regs[op->rm]);
+	if(vb!=0)
+		{ vc=va/vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_DIVUQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	va=(u64)(ctx->regs[op->ro]);
+	vb=(u64)(ctx->regs[op->rm]);
+	if(vb!=0)
+		{ vc=va/vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MODSQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc;
+	va=(s64)(ctx->regs[op->ro]);
+	vb=(s64)(ctx->regs[op->rm]);
+	if(vb!=0)
+		{ vc=va%vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MODUQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	va=(u64)(ctx->regs[op->ro]);
+	vb=(u64)(ctx->regs[op->rm]);
+	if(vb!=0)
+		{ vc=va%vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
 
 void BJX2_Op_MACSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

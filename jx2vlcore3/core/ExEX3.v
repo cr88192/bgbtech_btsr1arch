@@ -278,6 +278,11 @@ begin
 			tDoOutDfl		= 1;
 		end
 
+`ifdef jx2_alu_slomuldiv
+		JX2_UCMD_QMULDIV: begin
+		end
+`endif
+
 		JX2_UCMD_FLDCX: begin
 		end
 		JX2_UCMD_FSTCX: begin

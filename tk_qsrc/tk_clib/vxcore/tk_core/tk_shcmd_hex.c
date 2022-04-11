@@ -1,0 +1,311 @@
+byte *tksh_hex_buf;
+int tksh_hex_bufsz;
+
+int TKSH_HexLoadFile(char *fname)
+{
+	byte *buf;
+	int sz;
+	buf=TKSH_LoadFileBuf(fname, &sz);
+	tksh_hex_buf=buf;
+	tksh_hex_bufsz=sz;
+	return(1);
+}
+
+int TKSH_HexGetRow(int row, byte *tbuf)
+{
+	memcpy(tbuf, tksh_hex_buf+(row*16), 16);
+	return(0);
+}
+
+int TKSH_HexSetRow(int row, byte *tbuf)
+{
+	memcpy(tksh_hex_buf+(row*16), tbuf, 16);
+	return(0);
+}
+
+int TKSH_HexRedraw()
+{
+	char tb[128];
+	byte tbu0[16], tbu1[18];
+	int i, j, k;
+
+	if(tksh_edit_cur_x>=32)
+	{
+		tksh_edit_cur_y++;
+		tksh_edit_cur_x=0;
+	}
+
+	if(tksh_edit_cur_x<0)
+	{
+		tksh_edit_cur_y--;
+		tksh_edit_cur_x=31;
+	}
+	
+	while((tksh_edit_cur_y*16)>=tksh_hex_bufsz)
+		tksh_edit_cur_y--;
+
+	while(((tksh_edit_cur_y*16)+(tksh_edit_cur_x/2))>=tksh_hex_bufsz)
+		tksh_edit_cur_x--;
+	
+	if(tksh_edit_cur_y<0)
+		tksh_edit_cur_y=0;
+
+	if(tksh_edit_cur_y<tksh_edit_base_y)
+		{ tksh_edit_base_y=tksh_edit_cur_y; }
+	if(tksh_edit_cur_y>(tksh_edit_base_y+23))
+		{ tksh_edit_base_y=tksh_edit_cur_y-23; }
+
+
+	for(i=0; i<24; i++)
+	{
+		tk_puts("\x1B[44m");
+		tk_puts("\x1B[37m");
+
+		sprintf(tb, "\x1B[%d;1H", i+1);
+		tk_puts(tb);
+
+#if 0
+		tk_puts(
+			"                    "
+			"                    "
+			"                    "
+			"                    "
+//			"                    "
+			);
+#endif
+
+		sprintf(tb, "\x1B[%d;1H", i+1);
+		tk_puts(tb);
+
+		j=tksh_edit_base_y+i;
+		if((j*16)>=tksh_hex_bufsz)
+		{
+#if 1
+			tk_puts(
+				"                    "
+				"                    "
+				"                    "
+				"                    "
+				);
+#endif
+
+			continue;
+		}
+		
+		TKSH_HexGetRow(j, tbu0);
+		
+		memcpy(tbu1, tbu0, 16);
+		for(j=0; j<16; j++)
+		{
+			k=tbu1[j];
+			if((k<' ') || (k>'~'))
+				k='.';
+			tbu1[j]=k;
+		}
+		tbu1[16]=0;
+			
+		sprintf(tb, "%08X "
+			"%02X %02X %02X %02X  %02X %02X %02X %02X  "
+			"%02X %02X %02X %02X  %02X %02X %02X %02X  "
+			"%s   ",
+			(tksh_edit_base_y+i)*16,
+			tbu0[ 0], tbu0[ 1], tbu0[ 2], tbu0[ 3],
+			tbu0[ 4], tbu0[ 5], tbu0[ 6], tbu0[ 7],
+			tbu0[ 8], tbu0[ 9], tbu0[10], tbu0[11],
+			tbu0[12], tbu0[13], tbu0[14], tbu0[15],
+			tbu1);
+		if(((tksh_edit_base_y+i+1)*16)>tksh_hex_bufsz)
+		{
+			k=tksh_hex_bufsz-((tksh_edit_base_y+i)*16);
+			k=k+k;
+			j=k+(k>>1)+(k>>3);
+			j=j+9;
+			memset(tb+j, ' ', 61-j);
+			memset(tb+61+(k/2), ' ', 16-(k/2));
+		}
+		tk_puts(tb);
+	}
+
+	j=tksh_edit_cur_x+(tksh_edit_cur_x>>1)+(tksh_edit_cur_x>>3);
+	sprintf(tb, "\x1B[%d;%dH",
+		(tksh_edit_cur_y-tksh_edit_base_y)+1,
+		j+10);
+	tk_puts(tb);
+}
+
+int TKSH_HexUpdateLoop()
+{
+	char tbuf[256];
+	byte tbu[16];
+	char *cs1, *cs2;
+	int key, dn, kk;
+	int i, j, k, l, brk;
+
+	tksh_edit_base_y=0;
+
+	tksh_edit_cur_x=0;
+	tksh_edit_cur_y=0;
+	tksh_edit_redraw=1;
+
+	brk=0;
+	while(!brk)
+	{
+		while(tk_kbhit())
+		{
+			kk=tk_getch();
+			if(kk==0x7F)
+				{ key=tk_getch(); dn=1; }
+			else if(kk==0xFF)
+				{ key=tk_getch(); dn=0; }
+			else if(kk==0x80)
+			{
+				key=tk_getch();
+				key=(key<<8)|tk_getch();
+				dn=!(key&0x8000);
+			}else
+			{
+				key=kk&0x7F;
+				dn=!(kk&0x80);
+			}
+
+			if(key==TK_K_CTRL)
+			{
+				tksh_edit_ctrl=dn;
+				continue;
+			}
+			
+			if(tksh_edit_ctrl && (key=='q'))
+			{
+				brk=1;
+				break;
+			}
+
+			if(tksh_edit_ctrl && (key=='s'))
+			{
+				if(tksh_edit_fname)
+				{
+//					TKSH_EdStoreFile(tksh_edit_fname,
+//						0, tksh_num_editlines-1);
+				}
+				continue;
+			}
+			
+			if(!dn)
+				continue;
+
+			if((key>=' ') && (key<='~') && !tksh_edit_ctrl)
+			{
+				TKSH_HexGetRow(tksh_edit_cur_y, tbu);
+				
+				if((key>='0') && (key<='9'))
+				{
+					j=tksh_edit_cur_x;
+					tbu[j>>1]&=~(0xF0>>((j&1)*4));
+					tbu[j>>1]|=((key-'0')*16)>>((j&1)*4);
+				}
+
+				if((key>='a') && (key<='f'))
+				{
+					j=tksh_edit_cur_x;
+					tbu[j>>1]&=~(0xF0>>((j&1)*4));
+					tbu[j>>1]|=((10+key-'a')*16)>>((j&1)*4);
+				}
+
+				if((key>='A') && (key<='F'))
+				{
+					j=tksh_edit_cur_x;
+					tbu[j>>1]&=~(0xF0>>((j&1)*4));
+					tbu[j>>1]|=((10+key-'A')*16)>>((j&1)*4);
+				}
+				
+				tksh_edit_cur_x++;
+				
+				TKSH_HexSetRow(tksh_edit_cur_y, tbu);
+			
+#if 0
+				cs1=tksh_editlines[tksh_edit_cur_y];
+				if(cs1)
+				{
+					l=strlen(cs1);
+					j=tksh_edit_cur_x;
+					memcpy(tbuf, cs1, l+1);
+					memcpy(tbuf+j+1, cs1+j, (l-j)+1);
+				}else
+				{
+					memset(tbuf, 0, 16);
+					l=0;
+					j=0;
+				}
+				tbuf[j]=key;
+				tksh_edit_cur_x++;
+				TKSH_EdUpdateLine(tksh_edit_cur_y, tbuf);
+#endif
+				tksh_edit_redraw=1;
+				continue;
+			}
+
+			if(key==TK_K_UPARROW)
+			{
+				tksh_edit_cur_y--;
+				tksh_edit_redraw=1;
+				continue;
+			}
+			if(key==TK_K_DOWNARROW)
+			{
+				tksh_edit_cur_y++;
+				tksh_edit_redraw=1;
+				continue;
+			}
+			if(key==TK_K_LEFTARROW)
+			{
+				tksh_edit_cur_x--;
+				tksh_edit_redraw=1;
+				continue;
+			}
+			if(key==TK_K_RIGHTARROW)
+			{
+				tksh_edit_cur_x++;
+				tksh_edit_redraw=1;
+				continue;
+			}
+
+			if(key==TK_K_HOME)
+			{
+				tksh_edit_cur_x=0;
+				tksh_edit_redraw=1;
+				continue;
+			}
+
+			if(key==TK_K_END)
+			{
+				tksh_edit_cur_x=31;
+//				cs1=tksh_editlines[tksh_edit_cur_y];
+//				l=strlen(cs1);
+//				tksh_edit_cur_x=l;
+				tksh_edit_redraw=1;
+				continue;
+			}
+
+			if(key==TK_K_PGUP)
+			{
+				tksh_edit_cur_y-=23;
+				tksh_edit_redraw=1;
+				continue;
+			}
+
+			if(key==TK_K_PGDN)
+			{
+				tksh_edit_cur_y+=23;
+				tksh_edit_redraw=1;
+				continue;
+			}
+		}
+		
+		if(tksh_edit_redraw)
+		{
+			tksh_edit_redraw=0;
+			TKSH_HexRedraw();
+		}
+	}
+	return(0);
+}

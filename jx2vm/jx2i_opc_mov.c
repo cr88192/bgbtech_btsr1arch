@@ -586,12 +586,21 @@ void BJX2_Op_MOVX2_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 	addr=(bjx2_addr)(ctx->regs[op->rn])+(op->imm*8);
 	ctx->trapc=op->pc;
 	if(addr&7)
+	{
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
+		return;
+	}
+
+#if 1
 	if((addr&(~4095))!=((addr+16)&(~4095)))
 	{
 		BJX2_MemTranslateTlb(ctx, addr+0, 2);
-		BJX2_MemTranslateTlb(ctx, addr+16, 2);
+		BJX2_MemTranslateTlb(ctx, addr+15, 2);
+		if(ctx->status)
+			return;
 	}
+#endif
+
 	BJX2_MemSetQWordW(ctx, addr+0, ctx->regs[op->rq], ctx->regs[op->rm+0]);
 	BJX2_MemSetQWordW(ctx, addr+8, ctx->regs[op->rq], ctx->regs[op->rm+1]);
 

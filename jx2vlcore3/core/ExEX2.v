@@ -52,6 +52,7 @@ module ExEX2(
 	regValKrreRes,	//Keyring Result
 	regValAluResB,	//ALU Result (ALUB)
 	regBlintRes,	//ALU Result (ALUB)
+	regQMulRes,		//QMUL/QDIV Result
 
 	regFpuGRn,		//FPU GPR Result
 	regFpuLdGRn,		//FPU GPR Result
@@ -112,7 +113,9 @@ input[63:0]		regValMulwRes;	//Multiplier Result
 input[65:0]		regValKrreRes;	//Keyring Result
 input[65:0]		regValAluResB;	//ALU Result (ALUB)
 
+
 input[63:0]		regBlintRes;	//BLINT Result
+input[63:0]		regQMulRes;		//QMUL / QDIV Result
 
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
@@ -379,6 +382,13 @@ begin
 //			tRegIdRn2	= regIdRm;			//
 //			tRegValRn2	= regBlintRes;		//
 			tValOutDfl		= regBlintRes;
+			tDoOutDfl		= 1;
+		end
+`endif
+
+`ifdef jx2_alu_slomuldiv
+		JX2_UCMD_QMULDIV: begin
+			tValOutDfl		= regQMulRes;
 			tDoOutDfl		= 1;
 		end
 `endif

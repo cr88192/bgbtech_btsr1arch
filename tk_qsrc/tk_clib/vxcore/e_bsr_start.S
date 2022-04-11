@@ -92,6 +92,7 @@ _start:
 	bra _exit
 
 _exit:
+	break
 	mov 0, r4
 	mov 0x1003, r5
 	mov 0, r6
@@ -684,6 +685,41 @@ X(__tk_farcall):
 	jmp		r4
 
 
+.global X(__longj_sys)
+X(__longj_sys):
+
+#if 0
+	mov.q  @(r4, 32), r1
+	mov r1, tbr
+
+	mov.q  @(r4, 40), r1
+	mov r1, ttb
+
+//	mov.q  @(r4, 48), r1
+//	mov r1, mmcr
+
+//	mov.q  @(r4, 128), r1
+//	mov r1, vbr
+#endif
+
+//	mov.q  @(r4, 56), r1
+//	mov r1, krr
+
+
+	mov.q  @(r4, 544), r1
+	mov r1, tbr
+
+	mov.q  @(r4, 552), r1
+	mov r1, ttb
+
+	mov.q  @(r4, 576), r1
+	mov r1, krr
+
+
+	mov		0, r2
+	invic	r2
+	invdc	r2
+
 .global X(__longj)
 X(__longj):
 //	mov r4, r1
@@ -695,6 +731,7 @@ X(__longj):
 //	mov.q  @(16,r4), r0
 //	lds r0, pr
 
+#if 0
 	mov.q  @(r4, 0), r1
 	mov r1, lr
 
@@ -703,6 +740,18 @@ X(__longj):
 
 	mov.q  @(r4, 16), r1
 	mov r1, sr
+#endif
+
+#if 1
+	mov.q  @(r4, 512), r1
+	mov r1, gbr
+
+	mov.q  @(r4, 520), r1
+	mov r1, lr
+
+//	mov.q  @(r4, 16), r1
+//	mov r1, sr
+#endif
 
 //	mov.q  @(r4, 24), r1
 //	mov r1, ssp
@@ -724,8 +773,8 @@ X(__longj):
 	mov r1, vbr
 #endif
 
-	mov.q  @(r4, 56), r1
-	mov r1, krr
+//	mov.q  @(r4, 56), r1
+//	mov r1, krr
 
 .ifarch has_xgpr
 
@@ -740,7 +789,7 @@ X(__longj):
 	mov.q	(112,r4), r14
 	mov.q	(120,r4), r15
 
-	mov.x	(128,r4), r16
+//	mov.x	(128,r4), r16
 	mov.x	(144,r4), r18
 	mov.x	(160,r4), r20
 	mov.x	(176,r4), r22
@@ -805,6 +854,39 @@ X(__longj):
 
 .endif
 
+	mov.x	(r4, 0x300), r16
+	mov.x	(r4, 0x310), r18
+	mov.x	(r4, 0x320), r20
+	mov.x	(r4, 0x330), r22
+	mov.x	r16, (r15, 0x000)
+	mov.x	r18, (r15, 0x010)
+	mov.x	r20, (r15, 0x020)
+	mov.x	r22, (r15, 0x030)
+	mov.x	(r4, 0x340), r16
+	mov.x	(r4, 0x350), r18
+	mov.x	(r4, 0x360), r20
+	mov.x	(r4, 0x370), r22
+	mov.x	r16, (r15, 0x040)
+	mov.x	r18, (r15, 0x050)
+	mov.x	r20, (r15, 0x060)
+	mov.x	r22, (r15, 0x070)
+	mov.x	(r4, 0x380), r16
+	mov.x	(r4, 0x390), r18
+	mov.x	(r4, 0x3A0), r20
+	mov.x	(r4, 0x3B0), r22
+	mov.x	r16, (r15, 0x080)
+	mov.x	r18, (r15, 0x090)
+	mov.x	r20, (r15, 0x0A0)
+	mov.x	r22, (r15, 0x0B0)
+	mov.x	(r4, 0x3C0), r16
+	mov.x	(r4, 0x3D0), r18
+	mov.x	(r4, 0x3E0), r20
+	mov.x	(r4, 0x3F0), r22
+	mov.x	r16, (r15, 0x0C0)
+	mov.x	r18, (r15, 0x0D0)
+	mov.x	r20, (r15, 0x0E0)
+	mov.x	r22, (r15, 0x0F0)
+
 //	break
 
 
@@ -812,17 +894,51 @@ X(__longj):
 	rts
 	nop
 
+
+.global X(__setj_sys)
+X(__setj_sys):
+
+#if 0
+	mov ssp, r1
+	mov.q  r1, @(r4, 24)
+
+	mov tbr, r1
+	mov.q  r1, @(r4, 32)
+
+	mov ttb, r1
+	mov.q  r1, @(r4, 40)
+
+	mov mmcr, r1
+	mov.q  r1, @(r4, 48)
+
+	mov vbr, r1
+	mov.q  r1, @(r4, 128)
+#endif
+
+//	mov krr, r1
+//	mov.q  r1, @(r4, 56)
+
+
+	mov tbr, r1
+	mov.q  r1, @(r4, 544)
+
+	mov ttb, r1
+	mov.q  r1, @(r4, 552)
+
+	mov krr, r1
+	mov.q  r1, @(r4, 576)
+
 .global X(__setj)
 X(__setj):
 
 .ifarch has_xgpr
 
-	mov.q  r0, @(  0,r4)
-	mov.q  r1, @(  8,r4)
+//	mov.q  r0, @(  0,r4)
+//	mov.q  r1, @(  8,r4)
 
-	mov.x  r2, @( 16,r4)
-	mov.x  r4, @( 32,r4)
-	mov.x  r6, @( 48,r4)
+//	mov.x  r2, @( 16,r4)
+//	mov.x  r4, @( 32,r4)
+//	mov.x  r6, @( 48,r4)
 	mov.x  r8, @( 64,r4)
 	mov.x r10, @( 80,r4)
 	mov.x r12, @( 96,r4)
@@ -830,7 +946,7 @@ X(__setj):
 	mov.q r14, @(112,r4)
 	mov.q r15, @(120,r4)
 
-	mov.x r16, @(128,r4)
+//	mov.x r16, @(128,r4)
 	mov.x r18, @(144,r4)
 	mov.x r20, @(160,r4)
 	mov.x r22, @(176,r4)
@@ -859,14 +975,14 @@ X(__setj):
 
 .else
 
-	mov.q  r0, @(  0,r4)
-	mov.q  r1, @(  8,r4)
-	mov.q  r2, @( 16,r4)
-	mov.q  r3, @( 24,r4)
-	mov.q  r4, @( 32,r4)
-	mov.q  r5, @( 40,r4)
-	mov.q  r6, @( 48,r4)
-	mov.q  r7, @( 56,r4)
+//	mov.q  r0, @(  0,r4)
+//	mov.q  r1, @(  8,r4)
+//	mov.q  r2, @( 16,r4)
+//	mov.q  r3, @( 24,r4)
+//	mov.q  r4, @( 32,r4)
+//	mov.q  r5, @( 40,r4)
+//	mov.q  r6, @( 48,r4)
+//	mov.q  r7, @( 56,r4)
 	mov.q  r8, @( 64,r4)
 	mov.q  r9, @( 72,r4)
 	mov.q r10, @( 80,r4)
@@ -895,6 +1011,46 @@ X(__setj):
 
 .endif
 
+	mov gbr, r1
+	mov.q  r1, @(r4, 512)
+
+	mov lr, r1
+	mov.q  r1, @(r4, 520)
+
+	mov.x	(r15, 0x000), r16
+	mov.x	(r15, 0x010), r18
+	mov.x	(r15, 0x020), r20
+	mov.x	(r15, 0x030), r22
+	mov.x	r16, (r4, 0x300)
+	mov.x	r18, (r4, 0x310)
+	mov.x	r20, (r4, 0x320)
+	mov.x	r22, (r4, 0x330)
+	mov.x	(r15, 0x040), r16
+	mov.x	(r15, 0x050), r18
+	mov.x	(r15, 0x060), r20
+	mov.x	(r15, 0x070), r22
+	mov.x	r16, (r4, 0x340)
+	mov.x	r18, (r4, 0x350)
+	mov.x	r20, (r4, 0x370)
+	mov.x	r22, (r4, 0x370)
+	mov.x	(r15, 0x080), r16
+	mov.x	(r15, 0x090), r18
+	mov.x	(r15, 0x0A0), r20
+	mov.x	(r15, 0x0B0), r22
+	mov.x	r16, (r4, 0x380)
+	mov.x	r18, (r4, 0x390)
+	mov.x	r20, (r4, 0x3A0)
+	mov.x	r22, (r4, 0x3B0)
+	mov.x	(r15, 0x0C0), r16
+	mov.x	(r15, 0x0D0), r18
+	mov.x	(r15, 0x0E0), r20
+	mov.x	(r15, 0x0F0), r22
+	mov.x	r16, (r4, 0x3C0)
+	mov.x	r18, (r4, 0x3D0)
+	mov.x	r20, (r4, 0x3E0)
+	mov.x	r22, (r4, 0x3F0)
+
+#if 0
 //	sts pr, r1
 //	mov #16, r0
 //	mov.q  r1, @(r0,r4)
@@ -907,6 +1063,7 @@ X(__setj):
 
 	mov sr, r1
 	mov.q  r1, @(r4, 16)
+#endif
 
 #if 0
 	mov ssp, r1
@@ -925,8 +1082,8 @@ X(__setj):
 	mov.q  r1, @(r4, 128)
 #endif
 
-	mov krr, r1
-	mov.q  r1, @(r4, 56)
+//	mov krr, r1
+//	mov.q  r1, @(r4, 56)
 	
 //	mov #0, r0
 	mov #0, r2
@@ -1126,7 +1283,7 @@ X(__memcpy32):
 	xmov.l	(r6, r18), r2
 	xmov.l	r2, (r4, r18)
 	add		1, r18
-	cmp/gt	r18, r19
+	cmpqgt	r18, r19
 	bt .L0
 	rts
 
@@ -1138,7 +1295,7 @@ X(__memcpy64):
 	xmov.q	(r6, r18), r2
 	xmov.q	r2, (r4, r18)
 	add		1, r18
-	cmp/gt	r18, r19
+	cmpqgt	r18, r19
 	bt .L0
 	rts
 
@@ -1153,7 +1310,7 @@ X(__memcpy128):
 	xmov.q	r2, (r4, r18)
 	xmov.q	r3, (r4, r21)
 	add		2, r18
-	cmp/gt	r18, r19
+	cmpqgt	r18, r19
 	bt .L0
 	rts
 
@@ -1170,7 +1327,7 @@ X(memcpy):
 	xmov.q	(r6, r18), r2
 	xmov.q	r2, (r4, r18)
 	add		1, r18
-	cmp/gt	r18, r19
+	cmpqgt	r18, r19
 	bt .L0
 
 	and		r20, 7, r3
@@ -1186,7 +1343,7 @@ X(memcpy):
 	xmov.b	(r6, r18), r2
 	xmov.b	r2, (r4, r18)
 	add		1, r18
-	cmp/gt	r18, r3
+	cmpqgt	r18, r3
 	bt .L1
 
 	.end:
@@ -1213,7 +1370,7 @@ __memcpy32.L0:
 	mov.l r1, @r4
 	add #4, r5
 	add #4, r4
-	cmp/hi r5, r3
+	cmpqhi r5, r3
 	bt __memcpy32.L0
 //	break
 	rts
@@ -1242,7 +1399,7 @@ __memcpy64.L0:
 	mov.q r1, @r4
 	add #8, r5
 	add #8, r4
-	cmp/hi r5, r3
+	cmpqhi r5, r3
 	bt __memcpy64.L0
 //	break
 	rts
@@ -1261,7 +1418,7 @@ __memcpy128.L0:
 	mov.q r1, @(r4, 8)
 	add #16, r5
 	add #16, r4
-	cmp/hi r5, r3
+	cmpqhi r5, r3
 	bt __memcpy128.L0
 //	break
 	rts
@@ -1282,7 +1439,7 @@ memcpy_movx:
 	TEST	15, R7
 	BT		.L0A
 
-	CMP/GE		40, R6
+	CMPGE		40, R6
 	BF			.L1
 
 //	AND		R4, 15, R16
@@ -1296,7 +1453,7 @@ memcpy_movx:
 	.L0A:
 #endif
 
-	CMP/GE	32, R6
+	CMPGT	32, R6
 	BF		.L1
 	.L0:
 	MOV.X	(R5,  0), R20
@@ -1304,46 +1461,46 @@ memcpy_movx:
 	ADD		32, R5		|	ADD		-32, R6
 	MOV.X	R20, (R4,  0)
 	MOV.X	R22, (R4, 16)
-	ADD		32, R4		|	CMP/GE	32, R6
+	ADD		32, R4		|	CMPGT	32, R6
 	BT		.L0
 	.L1:
 
-	CMP/GE	8, R6
+	CMPGE	8, R6
 	BF		.L3
 	.L2:
 	ADD		-8, R6		|	MOV.Q	(R5,  0), R20
 	ADD		8, R5		|	MOV.Q	R20, (R4,  0)
-	ADD		8, R4		|	CMP/GE	8, R6
+	ADD		8, R4		|	CMPGE	8, R6
 	BT		.L2
 	.L3:
 
 #if 1
 	TEST	R6, R6
-	RTSU?T
-//	BT		.L5
+//	RTSU?T
+	BT		.L5
 
-	CMP/GE		4, R6
+	CMPGE		4, R6
 	MOV.L?T		(R5), R2
 	MOV.L?T		R2, (R4)
 	ADD?T		4, R4
 	ADD?T		4, R5
 	ADD?T		-4, R6
 
-	CMP/GE		2, R6
+	CMPGE		2, R6
 	MOV.W?T		(R5), R2
 	MOV.W?T		R2, (R4)
 	ADD?T		2, R4
 	ADD?T		2, R5
 	ADD?T		-2, R6
 
-	CMP/GE		1, R6
+	CMPGE		1, R6
 	MOV.B?T		(R5), R2
 	MOV.B?T		R2, (R4)
 
-//	.L5:
+	.L5:
 #endif
 
-	RTSU
+	RTS
 .endif
 
 .global X(memcpy)
@@ -1358,7 +1515,7 @@ X(memcpy):
 #endif
 
 .ifarch bjx2_wex
-	cmp/ge	#32, r6
+	cmpge	#32, r6
 	bf		.L1
 	.L0:
 	mov.q	(r5,  0), r20
@@ -1369,16 +1526,16 @@ X(memcpy):
 	mov.q	r21, (r4,  8)
 	add		#32, r5		| mov.q		r22, (r4, 16)
 	add		#-32, r6	| mov.q		r23, (r4, 24)
-	add		#32, r4		| cmp/ge	#32, r6
+	add		#32, r4		| cmpge		32, r6
 	bt		.L0
 	.L1:
 
-	cmp/ge	#8, r6
+	cmpge	#8, r6
 	bf		.L3
 	.L2:
 	add		#-8, r6		| mov.q		(r5), r2
 	add		#8, r5		| mov.q		r2, (r4)
-	add		#8, r4		| cmp/ge	#8, r6
+	add		#8, r4		| cmpge		#8, r6
 	bt		.L2
 	.L3:
 .else
@@ -1432,21 +1589,21 @@ X(memcpy):
 #endif
 
 #if 1
-	cmp/ge #4, r6
+	cmpge		#4, r6
 	mov.l?t		(r5), r2
 	mov.l?t		r2, (r4)
 	add?t		#4, r4
 	add?t		#4, r5
 	add?t		#-4, r6
 
-	cmp/ge #2, r6
+	cmpge		#2, r6
 	mov.w?t		(r5), r2
 	mov.w?t		r2, (r4)
 	add?t		#2, r4
 	add?t		#2, r5
 	add?t		#-2, r6
 
-	cmp/ge #1, r6
+	cmpge		#1, r6
 	mov.b?t		(r5), r2
 	mov.b?t		r2, (r4)
 #endif

@@ -253,11 +253,11 @@ u64 btesh2_gfxcon_glyphs[256]=
 0x0010301010107E00,	//0x31 "1"
 0x003C440810207E00,	//0x32 "2"
 0x007C081008443C00,	//0x33 "3"
-0x0008183C487E0800,	//0x34 "4"
+0x00081828487E0800,	//0x34 "4"
 0x007E407C04443C00,	//0x35 "5"
 0x003C407C44443800,	//0x36 "6"
 0x007E040810202000,	//0x37 "7"
-0x003C443C44443800,	//0x38 "8"
+0x0038443844443800,	//0x38 "8"
 0x003C443E04083000,	//0x39 "9"
 0x0000101000101000,	//0x3A ":"
 0x0000101000101020,	//0x3B ";"
@@ -924,7 +924,8 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	if(!btesh2_gfxcon_framebuf)
 		return(0);
 	
-	if(jx2i_gfxcon_isbmap)
+//	if(jx2i_gfxcon_isbmap)
+	if(jx2i_gfxcon_isbmap&7)
 	{
 		return(JX2I_GfxCon_UpdateCellBM(cx, cy));
 	}
@@ -976,6 +977,7 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		break;
 	}
 
+#if 0
 	if(((c0>>30)&3)==2)
 	{		
 		c2yb=(c0>>22)&63;
@@ -1044,6 +1046,81 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 			}
 		}
 	}
+#endif
+
+#if 1
+	if(((c0>>30)&3)==2)
+	{
+#if 1
+		pxubits=c0>>15;
+		pxvbits=c0>>0;
+
+		cy0=(pxubits>>10)&31;
+		cv0=(pxubits>> 5)&31;	
+		cu0=(pxubits    )&31;
+
+		cy1=(pxvbits>>10)&31;
+		cv1=(pxvbits>> 5)&31;
+		cu1=(pxvbits    )&31;
+
+		if(jx2i_gfxcon_isbmap&8)
+		{
+			cr0=(cy0<<3)|(cy0>>2);
+			cg0=(cv0<<3)|(cv0>>2);
+			cb0=(cu0<<3)|(cu0>>2);
+
+			cr1=(cy1<<3)|(cy1>>2);
+			cg1=(cv1<<3)|(cv1>>2);
+			cb1=(cu1<<3)|(cu1>>2);
+			
+//			cr1=127;
+//			cg1=127;
+//			cb1=127;
+		}else
+		{
+			cy0=(cy0<<3)|(cy0>>2);
+			cu0=(cu0<<3)|(7-(cu0>>2));
+			cv0=(cv0<<3)|(7-(cv0>>2));
+
+			cu2=cu0-128; cv2=cv0-128;
+			cr0=(256*cy0        +359*cv2+128)>>8;
+			cg0=(256*cy0- 88*cu2-183*cv2+128)>>8;
+			cb0=(256*cy0+454*cu2        +128)>>8;
+
+
+			cy1=(cy1<<3)|(cy1>>2);
+			cu1=(cu1<<3)|(7-(cu1>>2));
+			cv1=(cv1<<3)|(7-(cv1>>2));
+
+			cu2=cu1-128; cv2=cv1-128;
+			cr1=(256*cy1        +359*cv2+128)>>8;
+			cg1=(256*cy1- 88*cu2-183*cv2+128)>>8;
+			cb1=(256*cy1+454*cu2        +128)>>8;
+		}
+
+		if((cr0|cg0|cb0)&(~255))
+		{
+			cr0=jx2i_gfxcon_clamp255(cr0);
+			cg0=jx2i_gfxcon_clamp255(cg0);
+			cb0=jx2i_gfxcon_clamp255(cb0);
+		}
+
+		if((cr1|cg1|cb1)&(~255))
+		{
+			cr1=jx2i_gfxcon_clamp255(cr1);
+			cg1=jx2i_gfxcon_clamp255(cg1);
+			cb1=jx2i_gfxcon_clamp255(cb1);
+		}
+
+//		clrb=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+//		clra=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+
+		clrb=0xFF000000|(cr0<<16)|(cg0<<8)|cb0;
+		clra=0xFF000000|(cr1<<16)|(cg1<<8)|cb1;
+#endif
+	}
+#endif
+
 	
 	switch((c0>>7)&7)
 	{
@@ -1100,7 +1177,27 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	}else
 		if(((c0>>30)&3)==2)
 	{
-		if(((c0>>28)&3)==0)
+//		if(docurblnk)
+//		{
+//			if(jx2i_gfxcon_curms&512)
+//				pixbits|=0x000000000000FF00ULL;
+//		}
+
+		if(((c1>>30)&3)==0)
+//		if(1)
+		{
+//			clra=0xFF7F7F7F;
+//			clrb=0xFF000000;
+
+			for(py=0; py<8; py++)
+				for(px=0; px<8; px++)
+			{
+				clrc=((pixbits>>((7-py)*8+(7-px)))&1)?clra:clrb;
+				JX2I_GfxCon_PutPix200(cx*8+px, cy*8+py, clrc);
+			}
+		}else
+#if 0
+			if(((c0>>28)&3)==0)
 		{
 			for(py=0; py<8; py++)
 				for(px=0; px<8; px++)
@@ -1130,7 +1227,9 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 				JX2I_GfxCon_PutPix200(cx*8+px, cy*8+py, clrc);
 			}
 		}else
-			if(((c0>>28)&3)==2)
+#endif
+//			if(((c0>>28)&3)==2)
+			if(((c1>>30)&3)==2)
 		{
 			for(qy=0; qy<2; qy++)
 				for(qx=0; qx<2; qx++)

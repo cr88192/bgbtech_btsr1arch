@@ -1,4 +1,6 @@
 /*
+  FeLz64
+
   Simplistic LZ format intended for Pagefile Compression.
   Focuses more on encoding speed rather than compression.
   Uncompressed data assumed to be page-sized.

@@ -18,7 +18,9 @@ typedef struct {
 #if 1
 //    int regs[31];
 //    int regs[64];
-    int regs[128];
+//    int regs[256];
+	long long regs[128];
+	long long stk[128];
 #elif defined(__MVS__) || defined(__CMS__)
     int regs[15];
 #elif defined(__WIN32__) || defined(__32BIT__) || defined(__OS2__) \

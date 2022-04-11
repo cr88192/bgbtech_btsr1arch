@@ -160,6 +160,8 @@ typedef u64 tk_kptr;
 // #define TKMM_PAGEEND	0x18000000
 #define TKMM_PAGEEND	0x08000000ULL
 
+#define TKMM_RAMBASE	0x01000000ULL
+
 #define TKMM_EXOSTART	0x18000000ULL	//Execute Only Start
 
 #define TKMM_VALOSTART	0x20000000ULL	//Virtual Address Low Start

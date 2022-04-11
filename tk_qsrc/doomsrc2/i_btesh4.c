@@ -273,6 +273,7 @@ void I_Quit (void)
 {
     I_ShutdownGraphics();
     exit(0);
+    __debugbreak();
 }
 
 

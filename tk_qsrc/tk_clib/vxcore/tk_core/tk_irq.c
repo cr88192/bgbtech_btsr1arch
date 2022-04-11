@@ -287,6 +287,32 @@ TK_EnvContext *TK_GetCurrentEnvContext()
 	return(env);
 }
 
+TKPE_TaskInfoKern *TK_GetCurrentTaskInfoKern()
+{
+	TKPE_TaskInfo *task;
+	TKPE_TaskInfoKern *krnl;
+
+	task=__arch_tbr;
+	if(!task)
+	{
+		task=TK_AllocNewTask();
+		TK_SetCurrentTask(task);
+//		__debugbreak();
+//		return(NULL);
+	}
+
+	krnl=(TKPE_TaskInfoKern *)(task->krnlptr);
+	if(krnl)
+		return(krnl);
+
+	__debugbreak();
+
+//	tk_printf("TK_GetCurrentEnvContext: New %p:%p\n", task, env);
+//	env=TK_EnvCtx_AllocContext();
+//	task->envctx=(tk_kptr)env;
+	return(NULL);
+}
+
 static void *tk_dummyallocaptr;
 
 void **TK_GetAllocaMark()
@@ -323,6 +349,25 @@ int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size)
 	krnl->span_sz[i]=size;
 
 	return(i);
+}
+
+int TK_TaskFreeAllPageAlloc(TKPE_TaskInfo *task)
+{
+	TKPE_TaskInfoKern *krnl;
+	int i;
+
+	if(!task)
+		return(0);
+
+	krnl=(TKPE_TaskInfoKern *)(task->krnlptr);
+	if(!krnl)
+		return(0);
+
+	for(i=0; i<krnl->n_span; i++)
+	{
+		TK_MMap_VaPageFree(krnl->span_ptr[i], krnl->span_sz[i]);
+	}
+	return(0);
 }
 
 int TK_TaskGetCwd(TKPE_TaskInfo *task, char *buf, int sz)

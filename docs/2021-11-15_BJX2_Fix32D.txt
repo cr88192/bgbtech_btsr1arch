@@ -160,6 +160,8 @@ Refer to main spec.
 
 Refer to main spec.
 
+MOVIDX: The Scaled Index forms will be demoted to Optional in the Fix32 'D' Profile.
+
 
 === Predicated Instructions ===
 
@@ -352,25 +354,25 @@ F0zz Instruction Block:
 ** F0nm_0ed1  (Non Applicable)
 ** F0nm_0ed2  (Non Applicable)
 ** F0nm_0ed3  (Non Applicable)
-** F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go4  LEA.B		(Rm, Ro), Rn		//Q=1
-** F0nm_0go5  MOV.W		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go5  LEA.W		(Rm, Ro), Rn		//Q=1
-** F0nm_0go6  MOV.L		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go6  LEA.L		(Rm, Ro), Rn		//Q=1
-** F0nm_0go7  MOV.Q		Rn, (Rm, Ro)		//Q=0
-** F0nm_0Go7  LEA.Q		(Rm, Ro), Rn		//Q=1
+** F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0 (MOVIDX)
+** F0nm_0Go4  LEA.B		(Rm, Ro), Rn		//Q=1 (MOVIDX)
+** F0nm_0go5  MOV.W		Rn, (Rm, Ro)		//Q=0 (MOVIDX)
+** F0nm_0Go5  LEA.W		(Rm, Ro), Rn		//Q=1 (MOVIDX)
+** F0nm_0go6  MOV.L		Rn, (Rm, Ro)		//Q=0 (MOVIDX)
+** F0nm_0Go6  LEA.L		(Rm, Ro), Rn		//Q=1 (MOVIDX)
+** F0nm_0go7  MOV.Q		Rn, (Rm, Ro)		//Q=0 (MOVIDX)
+** F0nm_0Go7  LEA.Q		(Rm, Ro), Rn		//Q=1 (MOVIDX)
 ** F0nm_0ed8  (Non Applicable)
 ** F0nm_0ed9  (Non Applicable)
 ** F0nm_0edA  (Non Applicable)
 ** F0nm_0edB  (Non Applicable)
-** F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0
-** F0nm_0GoC  MOVU.B	(Rm, Ro), Rn		//Q=1
-** F0nm_0goD  MOV.W		(Rm, Ro), Rn		//Q=0
-** F0nm_0GoD  MOVU.W	(Rm, Ro), Rn		//Q=1
-** F0nm_0goE  MOV.L		(Rm, Ro), Rn		//Q=0
-** F0nm_0GoE  MOVU.L	(Rm, Ro), Rn		//Q=1
-** F0nm_0goF  MOV.Q		(Rm, Ro), Rn		//Q=0
+** F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0 (MOVIDX)
+** F0nm_0GoC  MOVU.B	(Rm, Ro), Rn		//Q=1 (MOVIDX)
+** F0nm_0goD  MOV.W		(Rm, Ro), Rn		//Q=0 (MOVIDX)
+** F0nm_0GoD  MOVU.W	(Rm, Ro), Rn		//Q=1 (MOVIDX)
+** F0nm_0goE  MOV.L		(Rm, Ro), Rn		//Q=0 (MOVIDX)
+** F0nm_0GoE  MOVU.L	(Rm, Ro), Rn		//Q=1 (MOVIDX)
+** F0nm_0goF  MOV.Q		(Rm, Ro), Rn		//Q=0 (MOVIDX)
 ** F0nm_0GoF /
 
 * F0zz_1zzz

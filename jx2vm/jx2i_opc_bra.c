@@ -1136,6 +1136,8 @@ void BJX2_Op_BSR_RegRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_INVIC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	if(ctx->status)
+		return;
 	ctx->cc_flush|=1;
 	ctx->tr_rnxt=NULL;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_CCFLUSH);
@@ -1143,6 +1145,8 @@ void BJX2_Op_INVIC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_INVDC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	if(ctx->status)
+		return;
 	ctx->cc_flush|=2;
 	ctx->trapc=op->pc2;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_CCFLUSH);
@@ -1270,7 +1274,8 @@ void BJX2_Op_CPUID_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 	int fflags;
 	u64 v;
 
-	fflags=0x01D9FF00;
+//	fflags=0x01D9FF00;
+	fflags=0x77D9FF00;
 
 	switch(op->imm)
 	{
@@ -1279,6 +1284,25 @@ void BJX2_Op_CPUID_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 		tb[2]='X';	tb[3]='2';
 		tb[4]='F';	tb[5]='0';
 		tb[6]='0';	tb[7]='0';
+		
+		tb[4]='E';
+		if(fflags&(1<<15))
+		{
+			tb[4]='F';
+			if(fflags&(1<<11))
+			{
+				tb[4]='C';
+				if((fflags&(1<<12)) && (fflags&(1<<9)))
+				{
+					tb[4]='A';
+					if(fflags&(1<<26))
+					{
+						tb[4]='G';
+					}
+				}
+			}
+		}
+		
 		v=BJX2_PtrGetSQWordOfsLe(tb, 0);
 		break;
 	case 1:

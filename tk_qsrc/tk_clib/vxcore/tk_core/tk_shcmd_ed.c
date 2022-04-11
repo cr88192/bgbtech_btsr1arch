@@ -427,7 +427,7 @@ int TKSH_EditRedraw()
 			"                    "
 			"                    "
 			"                    "
-			"                    "
+//			"                    "
 			);
 
 		sprintf(tb, "\x1B[%d;1H", i+1);

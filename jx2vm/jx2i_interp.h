@@ -608,6 +608,14 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVTT			0x12C		//
 #define BJX2_NMID_XMOVTT		0x12D		//
 
+#define BJX2_NMID_MULSQ			0x130		//
+#define BJX2_NMID_MULUQ			0x131		//
+#define BJX2_NMID_MULSHQ		0x132		//
+#define BJX2_NMID_MULUHQ		0x133		//
+#define BJX2_NMID_DIVSQ			0x134		//
+#define BJX2_NMID_DIVUQ			0x135		//
+#define BJX2_NMID_MODSQ			0x136		//
+#define BJX2_NMID_MODUQ			0x137		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

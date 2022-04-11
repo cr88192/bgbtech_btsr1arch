@@ -132,6 +132,44 @@ begin
 	valCpuIdLo2=0;
 	valCpuIdLo3=0;
 
+`ifdef jx2_enable_ops16
+
+	valCpuIdLo0[39:32]=8'h45;	//'E' Profile
+
+`ifdef jx2_enable_fpu
+
+	valCpuIdLo0[39:32]=8'h46;	//'F' Profile
+
+`ifdef jx2_enable_mmu
+
+	valCpuIdLo0[39:32]=8'h43;	//'C' Profile
+
+`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_vaddr48
+
+	valCpuIdLo0[39:32]=8'h41;	//'A' Profile
+
+`ifdef jx2_enable_vaddr96
+	valCpuIdLo0[39:32]=8'h47;	//'G' Profile
+`endif	//addr96
+
+`endif	//addr48
+`endif	//wex3w
+
+`endif	//mmu
+
+`endif	//fpu
+
+`else	//ops16
+
+	valCpuIdLo0[39:32]=8'h44;	//'D' Profile
+
+`ifdef jx2_enable_fpu
+	valCpuIdLo0[39:32]=8'h42;	//'B' Profile
+`endif
+
+`endif	//ops16
+
 	valCpuIdLo1[3:0] = timers[11:8];
 
 `ifdef jx2_enable_wex
@@ -205,6 +243,10 @@ begin
 `endif
 `ifdef jx2_agu_ridisp
 	valCpuIdLo1[29] = 1;
+`endif
+
+`ifdef jx2_alu_slomuldiv
+	valCpuIdLo1[30] = 1;
 `endif
 
 	tResLoA = arrCpuIdLo[index[2:0]];

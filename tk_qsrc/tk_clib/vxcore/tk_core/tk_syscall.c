@@ -20,23 +20,41 @@ One scheme may operate as:
 
 #include <setjmp.h>
 
-jmp_buf	tk_sysc_exit;
+// jmp_buf	tk_sysc_exit;
+// u64	tk_sysc_exit[128];
+u64		*tk_sysc_exit;
+
+int __setj_sys(u64 *buf);
+int __longj_sys(u64 *buf, int ret);
 
 int tk_sysc_exitpt()
 {
+	volatile int chk;
+	volatile int *rchk;
 	int i;
-	i=setjmp(tk_sysc_exit);
+//	i=setjmp(tk_sysc_exit);
+	if(!tk_sysc_exit)
+		tk_sysc_exit=tk_malloc_krn(128*8);
+
+	rchk=&chk;
+	*rchk=0x12345;
+
+	i=__setj_sys(tk_sysc_exit);
 	if(i)
 	{
-//		__debugbreak();
 	}
+
+	if(chk!=0x12345)
+		__debugbreak();
+
 	return(i);
 }
 
 void tk_sysc_exitpgm(int val)
 {
 //	__debugbreak();
-	longjmp(tk_sysc_exit, val|0x10000);
+//	longjmp(tk_sysc_exit, val|0x10000);
+	__longj_sys(tk_sysc_exit, val|0x10000);
 }
 
 // __declspec(syscall)

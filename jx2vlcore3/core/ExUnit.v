@@ -68,6 +68,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExModKrrEnc.v"
 `endif
 
+`ifdef jx2_alu_slomuldiv
+`include "ExOpSloMulDiv.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExUnit(
@@ -1061,6 +1065,14 @@ reg[63:0]		ex1RegValRs;		//Source A Value
 reg[63:0]		ex1RegValRt;		//Source B Value
 reg[63:0]		ex1RegValRm;		//Source C Value
 
+/* GPR Only: Timing Hack. */
+wire[63:0]		ex1RegValRsGpo;		//Source A Value (GPR Only)
+wire[63:0]		ex1RegValRtGpo;		//Source B Value (GPR Only)
+assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UV64_XX : ex1RegValRs;
+// assign	ex1RegValRsGpo = ex1RegValRs;
+// assign	ex1RegValRtGpo = ex1RegIdRt[6] ? UV64_XX : ex1RegValRt;
+assign	ex1RegValRtGpo = ex1RegValRt;
+
 reg[63:0]		exB1RegValRs;		//Source A Value
 
 // `ifdef jx2_enable_fpu
@@ -1305,13 +1317,36 @@ ExModBlint	ex1Blint(
 	clock,			reset,
 	ex1OpUCmd,		ex1OpUIxt,
 	exHold2,		ex1BlintDoHold,
-	ex1RegValRs,	ex1RegValRt,
+	ex1RegValRsGpo,	ex1RegValRtGpo,
 	exB1RegValRs,	exB1RegValRt,
 	ex1RegValRm,	exB1RegValRm,
 	ex1BlintVal		);
 `else
 assign		ex1BlintDoHold = 0;
 assign		ex1BlintVal = 0;
+`endif
+
+
+wire		ex1SloMulDoHold;
+wire[63:0]	ex1SloMulVal;
+wire[63:0]	ex1SloMulValHi;
+
+`ifdef jx2_alu_slomuldiv
+
+ExOpSloMulDiv	ex1SloMul(
+	clock,			reset,
+	ex1OpUCmd,		ex1OpUIxt,
+	ex1RegValRsGpo,	ex1RegValRtGpo,
+	ex1SloMulVal,	ex1SloMulValHi,
+	exHold2,		ex1SloMulDoHold
+	);
+
+`else
+
+assign		ex1SloMulDoHold	= 0;
+assign		ex1SloMulVal	= 0;
+assign		ex1SloMulValHi	= 0;
+
 `endif
 
 
@@ -1402,6 +1437,7 @@ ExEX2	ex2(
 	ex2RegAluRes,	ex2RegMulRes,
 	ex2RegMulWRes,	ex1KrreLo,
 	ex2RegAluResB,	ex1BlintVal,
+	ex1SloMulVal,
 
 	ex1FpuValGRn,	ex1FpuValLdGRn,
 	ex1FpuSrT,		ex1FpuOK,
@@ -2060,7 +2096,8 @@ begin
 	exHold2	=
 		(ex1Hold[0])	||	(ex2Hold[0])	||
 		(ex3Hold[0])	||	dcOutHold		||
-		(ifOutPcOK[1])	||	(ex1FpuOK[1]);
+		(ifOutPcOK[1])	||	(ex1FpuOK[1])	||
+		ex1SloMulDoHold;
 
 	exHold1A	= exHold2;
 
