@@ -72,7 +72,7 @@ tk_elf64_xword	p_memsz;
 tk_elf64_xword	p_align;
 };
 
-#if 1
+#if 0
 int btsh2_ptrGetSW(byte *ptr, byte en)
 {
 	if(en)
@@ -102,6 +102,12 @@ u32 btsh2_ptrGetUD(byte *ptr, byte en)
 }
 #endif
 
+#define btsh2_ptrGetSW(ptr, en)		(*(s16 *)(ptr))
+#define btsh2_ptrGetUW(ptr, en)		(*(u16 *)(ptr))
+#define btsh2_ptrGetSD(ptr, en)		(*(s32 *)(ptr))
+#define btsh2_ptrGetUD(ptr, en)		(*(u32 *)(ptr))
+
+
 int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 {
 //	byte tbuf[1024];
@@ -112,7 +118,8 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	s64 reloc_disp;
 	btsh2_elf64_hdr *ehdr;
 	struct btsh2_elf64_phdr_s *phdr;
-	u32 entry, phoff, shoff;
+	u64 entry;
+	u32 phoff, shoff;
 	u32 paddr, pmsz, poff, mach;
 	byte en, isriscv, isbjx2;
 	int phentsz, phnum;
@@ -196,7 +203,8 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	
 	if(isriscv)
 	{
-		entry|=1;
+//		entry|=1;
+		entry|=0x0004000000000003ULL;
 	}
 
 	*rbootptr=(void *)entry;

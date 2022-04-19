@@ -1822,13 +1822,13 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			if(nc)
 				{ BGBCC_CCXL_CompileJCF(ctx, nc, l2); }
 
-			BGBCC_CCXL_EmitLabel(ctx, l0);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l0, ctx->contstackpos);
 
 			BGBCC_CCXL_CompileStatement(ctx, nb);
 
 			k=ctx->loop_localstate;
 			if(k&BGBCC_LOOPFL_CONTINUE)
-				BGBCC_CCXL_EmitLabel(ctx, l1);
+				BGBCC_CCXL_EmitLabelLvl(ctx, l1, ctx->contstackpos);
 
 			if(ns)
 				{ BGBCC_CCXL_CompileStatement(ctx, ns); }
@@ -1838,10 +1838,10 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			else
 				BGBCC_CCXL_CompileJmp(ctx, l0);
 
-			BGBCC_CCXL_EmitLabel(ctx, l2);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 		}else
 		{
-			BGBCC_CCXL_EmitLabel(ctx, l0);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l0, ctx->contstackpos);
 
 			if(nc)
 				{ BGBCC_CCXL_CompileJCF(ctx, nc, l2); }
@@ -1850,13 +1850,13 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 			k=ctx->loop_localstate;
 			if(k&BGBCC_LOOPFL_CONTINUE)
-				BGBCC_CCXL_EmitLabel(ctx, l1);
+				BGBCC_CCXL_EmitLabelLvl(ctx, l1, ctx->contstackpos);
 
 			if(ns)
 				{ BGBCC_CCXL_CompileStatement(ctx, ns); }
 
 			BGBCC_CCXL_CompileJmp(ctx, l0);
-			BGBCC_CCXL_EmitLabel(ctx, l2);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 		}
 
 		ctx->loop_localstate=oldlclst;
@@ -1893,11 +1893,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			oldlclst=ctx->loop_localstate;
 			ctx->loop_localstate&=~BGBCC_LOOPFL_MASK;
 
-			BGBCC_CCXL_EmitLabel(ctx, l1);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l1, ctx->contstackpos);
 			BGBCC_CCXL_CompileStatement(ctx,
 				BCCX_FetchCst(l, &bgbcc_rcst_body, "body"));
 			BGBCC_CCXL_CompileJmp(ctx, l1);
-			BGBCC_CCXL_EmitLabel(ctx, l2);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 
 			ctx->loop_localstate=oldlclst;
 			ctx->contstackpos--;
@@ -1923,18 +1923,18 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 //			BGBCC_CCXL_CompileJCF(ctx, t, l2);
 			BGBCC_CCXL_CompileJmp(ctx, l3);
 
-			BGBCC_CCXL_EmitLabel(ctx, l1);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l1, ctx->contstackpos);
 
 			BGBCC_CCXL_CompileStatement(ctx,
 				BCCX_FetchCst(l, &bgbcc_rcst_body, "body"));
 			k=ctx->loop_localstate;
 
 //			if(k&BGBCC_LOOPFL_CONTINUE)
-				BGBCC_CCXL_EmitLabel(ctx, l3);
+				BGBCC_CCXL_EmitLabelLvl(ctx, l3, ctx->contstackpos);
 
 			BGBCC_CCXL_CompileJCT(ctx, t, l1);
 
-			BGBCC_CCXL_EmitLabel(ctx, l2);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 
 			ctx->loop_localstate=oldlclst;
 			ctx->contstackpos--;
@@ -1953,12 +1953,12 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 //			ctx->loop_localstate|=BGBCC_LOOPFL_CONTINUE;
 
-			BGBCC_CCXL_EmitLabel(ctx, l1);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l1, ctx->contstackpos);
 			BGBCC_CCXL_CompileJCF(ctx, t, l2);
 			BGBCC_CCXL_CompileStatement(ctx,
 				BCCX_FetchCst(l, &bgbcc_rcst_body, "body"));
 			BGBCC_CCXL_CompileJmp(ctx, l1);
-			BGBCC_CCXL_EmitLabel(ctx, l2);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 
 			ctx->loop_localstate=oldlclst;
 			ctx->contstackpos--;
@@ -1987,7 +1987,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 //		ctx->loop_localstate|=BGBCC_LOOPFL_CONTINUE;
 
-		BGBCC_CCXL_EmitLabel(ctx, l1);
+		BGBCC_CCXL_EmitLabelLvl(ctx, l1, ctx->contstackpos);
 		BGBCC_CCXL_CompileStatement(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_body, "body"));
 
@@ -1998,9 +1998,9 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(i==0)
 		{
 			if(ctx->loop_localstate&BGBCC_LOOPFL_CONTINUE)
-				BGBCC_CCXL_EmitLabel(ctx, l3);
+				BGBCC_CCXL_EmitLabelLvl(ctx, l3, ctx->contstackpos);
 			if(ctx->loop_localstate&BGBCC_LOOPFL_BREAK)
-				BGBCC_CCXL_EmitLabel(ctx, l2);
+				BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 
 			ctx->loop_localstate=oldlclst;
 			ctx->contstackpos--;
@@ -2011,11 +2011,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(i==1)
 		{
 			if(ctx->loop_localstate&BGBCC_LOOPFL_CONTINUE)
-				BGBCC_CCXL_EmitLabel(ctx, l3);
+				BGBCC_CCXL_EmitLabelLvl(ctx, l3, ctx->contstackpos);
 //			BGBCC_CCXL_CompileContinue(ctx);
 			BGBCC_CCXL_CompileJmp(ctx, l1);
 			if(ctx->loop_localstate&BGBCC_LOOPFL_BREAK)
-				BGBCC_CCXL_EmitLabel(ctx, l2);
+				BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 
 			ctx->loop_localstate=oldlclst;
 			ctx->contstackpos--;
@@ -2024,10 +2024,10 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		}
 
 		if(ctx->loop_localstate&BGBCC_LOOPFL_CONTINUE)
-			BGBCC_CCXL_EmitLabel(ctx, l3);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l3, ctx->contstackpos);
 		BGBCC_CCXL_CompileJCT(ctx, t, l1);
 		if(ctx->loop_localstate&BGBCC_LOOPFL_BREAK)
-			BGBCC_CCXL_EmitLabel(ctx, l2);
+			BGBCC_CCXL_EmitLabelLvl(ctx, l2, ctx->contstackpos-1);
 
 		ctx->loop_localstate=oldlclst;
 		ctx->contstackpos--;

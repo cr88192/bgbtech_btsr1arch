@@ -780,8 +780,8 @@ void BJX2_Op_DIVSQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 //	s64 va, vb, vc;
 	s64 va, vb, vc;
-	va=(s64)(ctx->regs[op->ro]);
-	vb=(s64)(ctx->regs[op->rm]);
+	va=(s64)(ctx->regs[op->rm]);
+	vb=(s64)(ctx->regs[op->ro]);
 	if(vb!=0)
 		{ vc=va/vb; }
 	else
@@ -792,8 +792,8 @@ void BJX2_Op_DIVSQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_DIVUQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;
-	va=(u64)(ctx->regs[op->ro]);
-	vb=(u64)(ctx->regs[op->rm]);
+	va=(u64)(ctx->regs[op->rm]);
+	vb=(u64)(ctx->regs[op->ro]);
 	if(vb!=0)
 		{ vc=va/vb; }
 	else
@@ -805,8 +805,8 @@ void BJX2_Op_MODSQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 //	s64 va, vb, vc;
 	s64 va, vb, vc;
-	va=(s64)(ctx->regs[op->ro]);
-	vb=(s64)(ctx->regs[op->rm]);
+	va=(s64)(ctx->regs[op->rm]);
+	vb=(s64)(ctx->regs[op->ro]);
 	if(vb!=0)
 		{ vc=va%vb; }
 	else
@@ -817,8 +817,8 @@ void BJX2_Op_MODSQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_MODUQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;
-	va=(u64)(ctx->regs[op->ro]);
-	vb=(u64)(ctx->regs[op->rm]);
+	va=(u64)(ctx->regs[op->rm]);
+	vb=(u64)(ctx->regs[op->ro]);
 	if(vb!=0)
 		{ vc=va%vb; }
 	else

@@ -281,6 +281,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_REGX2R	0x0300		//Rm and Rn are Xn
 #define BJX2_OPFL_REGX3R	0x0700		//Rm, Rn, and Ro are Xn
 #define BJX2_OPFL_OP24		0x0800		//24-bit instruction
+#define BJX2_OPFL_OPSSC		0x1000		//Op Flagged as Superscalar
 
 #define BJX2_OPFL_PREDMSK	0xC1		//Mask copied for predicated ops.
 
@@ -573,6 +574,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDEKRR		0x10C		//
 #define BJX2_NMID_LDEKEY		0x10D		//
 #define BJX2_NMID_LDEENC		0x10E		//
+#define BJX2_NMID_FDIVX			0x10F		//
 
 #define BJX2_NMID_BREQ			0x110		//
 #define BJX2_NMID_BRNE			0x111		//
@@ -599,14 +601,14 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_XLEAW			0x125		//
 #define BJX2_NMID_XLEAL			0x126		//
 #define BJX2_NMID_XLEAQ			0x127		//
-
 #define BJX2_NMID_BRAX			0x128		//
 #define BJX2_NMID_BSRX			0x129		//
 #define BJX2_NMID_BTX			0x12A		//
 #define BJX2_NMID_BFX			0x12B		//
-
 #define BJX2_NMID_MOVTT			0x12C		//
 #define BJX2_NMID_XMOVTT		0x12D		//
+#define BJX2_NMID_FSQRT			0x12E		//
+#define BJX2_NMID_FSQRTX		0x12F		//
 
 #define BJX2_NMID_MULSQ			0x130		//
 #define BJX2_NMID_MULUQ			0x131		//

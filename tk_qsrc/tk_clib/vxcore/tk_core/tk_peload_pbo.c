@@ -224,16 +224,28 @@ int TKPE_ApplyDataRelocs(
 	byte *cs, *cse, *cs1, *cs1e;
 	byte *pdst;
 	u32 pv;
+//	int gbr_rva, gbr_sz;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, rva_dest, sz_blk;
 	int tg;
+
+//	gbr_rva=gbr_rva1;
+//	gbr_sz=gbr_sz1;
+
+//	__debugbreak();
 
 	tk_printf("TKPE_ApplyDataRelocs: disp_base=%X, disp_data=%X\n",
 		disp_base, disp_data);
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
+	tk_printf("TKPE_ApplyDataRelocs: gbr_rva=%X..%X\n",
+		gbr_rva, gbr_end_rva);
+
 	cs=rlc;		cse=rlc+szrlc;
+	tk_printf("TKPE_ApplyDataRelocs: relocs=%p..%p\n",
+		cs, cse);
+
 	while(cs<cse)
 	{
 		rva_page=((u32 *)cs)[0];
@@ -1000,7 +1012,11 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 
 	gbrdat=(byte *)TK_PboGbrGetB(task, img->pboix);
 	if(gbrdat)
+	{
+		if(*(tk_kptr *)gbrdat!=task->imggbrptrs)
+			{ __debugbreak(); }
 		return;
+	}
 
 	gbrsz=img->gbr_sz;
 //	gbrdat=TKMM_PageAlloc(gbrsz);

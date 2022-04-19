@@ -85,6 +85,8 @@ int tk_mount_sdfat(char *path)
 	
 	tk_vf_addmount(mnt);
 
+	if(mnt->vt->fopen!=tk_fat_fopen)
+		{ __debugbreak(); }
 
 	dee=&tdee;
 	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));

@@ -4433,7 +4433,9 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 			case CCXL_TY_I:
 				if(fl&1)
 					{ rt=1; break; }
-				if((sty.val==CCXL_TY_UI) || (sty.val==CCXL_TY_UNL))
+				if(sty.val==CCXL_TY_UI)
+					{ rt=fl&1; break; }
+				if(sty.val==CCXL_TY_UNL)
 					{ rt=0; break; }
 				if(((sty.val==CCXL_TY_NL) || (sty.val==CCXL_TY_UNL)) &&
 					(ctx->arch_sizeof_long!=4))
@@ -4487,6 +4489,18 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 				if(BGBCC_CCXL_TypeSgLongP(ctx, sty))
 					return(1);
 			}
+
+#if 0
+			if(!BGBCC_CCXL_TypeQuadPointerP(ctx, sty) &&
+				(ctx->arch_sizeof_long==ctx->arch_sizeof_ptr))
+			{
+				if(BGBCC_CCXL_TypePointerP(ctx, sty))
+				{
+					if(fl&2)
+						return(1);
+				}
+			}
+#endif
 		}
 	}
 
@@ -4502,6 +4516,18 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 				if(BGBCC_CCXL_TypeSgNLongP(ctx, sty))
 					return(1);
 			}
+
+#if 0
+			if(!BGBCC_CCXL_TypeQuadPointerP(ctx, sty) &&
+				(ctx->arch_sizeof_ptr==8))
+			{
+				if(BGBCC_CCXL_TypePointerP(ctx, sty))
+				{
+					if(fl&2)
+						return(1);
+				}
+			}
+#endif
 		}
 		
 		if(fl&4)
@@ -4701,6 +4727,24 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 				return(1);
 
 			return(0);
+		}
+
+		if(ctx->arch_sizeof_long==ctx->arch_sizeof_ptr)
+		{
+			if(BGBCC_CCXL_TypeSgNLongP(ctx, sty))
+			{
+				if(fl&2)
+					return(1);
+			}
+		}
+
+		if(ctx->arch_sizeof_ptr==8)
+		{
+			if(BGBCC_CCXL_TypeSgLongP(ctx, sty))
+			{
+				if(fl&2)
+					return(1);
+			}
 		}
 	}
 

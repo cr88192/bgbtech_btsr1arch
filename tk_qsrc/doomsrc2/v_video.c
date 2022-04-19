@@ -215,19 +215,23 @@ V_DrawPatchCmap
   int		y,
   int		scrn,
   patch_t*	patch,
-  lighttable_t *tcol) 
+  lighttable_t *tcol1) 
 { 
-
-    int		count;
+	register lighttable_t *tcol;
+    register int		count;
     int		col; 
     column_t*	column; 
     dt_scrpix	*desttop;
     dt_scrpix	*scrp, *scrp_end;
-    dt_scrpix	*dest, *dest_end;
-    byte*	source; 
+    register dt_scrpix	*dest;
+    dt_scrpix	*dest_end, *dest_e1;
+    register byte*	source;
+    register int i0, i1, i2, i3;
     int		w; 
 
 	__hint_use_egpr();
+
+	tcol = tcol1;
 
 	if(!patch)
 		return;
@@ -299,6 +303,27 @@ V_DrawPatchCmap
 
 			if((dest<scrp) || (dest_end>scrp_end))
 			{
+				if(dest>=scrp)
+				{
+					dest_e1 = dest+4*SCREENWIDTH;
+					while((count>=4) && (dest_e1<=scrp_end))
+					{
+						i0 = source[0];	i1 = source[1];
+						i2 = source[2];	i3 = source[3];
+						i0 = tcol[i0];	i1 = tcol[i1];
+						i2 = tcol[i2];	i3 = tcol[i3];
+						dest[0*SCREENWIDTH] = i0;
+						dest[1*SCREENWIDTH] = i1;
+						dest[2*SCREENWIDTH] = i2;
+						dest[3*SCREENWIDTH] = i3;
+						dest = dest_e1;
+						dest_e1 += 4*SCREENWIDTH; 
+						
+						source+=4;
+						count-=4;
+					}
+				}
+			
 				while (count--) 
 				{ 
 //					if(dest<scrp)
@@ -321,7 +346,8 @@ V_DrawPatchCmap
 				continue;
 			}
 
-#ifndef __BGBCC__
+// #ifndef __BGBCC__
+#ifndef __BJX2__
 //#if 1
 
 #if 1

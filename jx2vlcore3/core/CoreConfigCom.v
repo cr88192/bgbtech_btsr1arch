@@ -28,6 +28,8 @@
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
+`define	jx2_fpu_enable_fdiv		//enable FDIV
+
 `define	jx2_alu_wx				//Enable Wide-ALU
 
 // `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext

@@ -111,13 +111,32 @@ ccxl_status BGBCC_CCXL_StackSetPred(BGBCC_TransState *ctx, int prd)
 	return(0);
 }
 
-ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx, ccxl_label lbl)
+ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx,
+	ccxl_label lbl)
+{
+	int lvl;
+	return(BGBCC_CCXL_EmitLabelLvl(ctx, lbl, ctx->contstackpos));
+}
+
+ccxl_status BGBCC_CCXL_EmitLabelLvl(BGBCC_TransState *ctx,
+	ccxl_label lbl, int llvl)
 {
 	BGBCC_CCXL_VirtOp *op;
 
-	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LABEL);
-	BGBCC_CCXLR3_EmitArgLabel(ctx, lbl);
+	if(llvl<0)
+		llvl=0;
 
+	if(llvl>0)
+	{
+		BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LABELLVL);
+		BGBCC_CCXLR3_EmitArgLabel(ctx, lbl);
+		BGBCC_CCXLR3_EmitArgInt(ctx, llvl);
+	}else
+	{
+		BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LABEL);
+		BGBCC_CCXLR3_EmitArgLabel(ctx, lbl);
+	}
+	
 	if(ctx->cgif_no3ac)
 		return(0);
 
@@ -129,6 +148,7 @@ ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx, ccxl_label lbl)
 	op->prd=ctx->curprd;
 	op->imm.ui=lbl.id;
 	op->immty=CCXL_VOPITY_LBL;
+	op->llvl=llvl;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }

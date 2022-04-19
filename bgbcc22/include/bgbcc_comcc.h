@@ -175,6 +175,7 @@ byte has_xgpr;		//Has R32..R63
 byte has_fmovs;		//Has FMOV.S
 byte has_fmovc;		//Has MOV.C
 byte has_dmacl;		//Has MACx.L / DMACx.L
+byte has_qmul;		//Has MUL.Q / DIVS.Q / ...
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 

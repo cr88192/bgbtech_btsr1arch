@@ -1752,9 +1752,15 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 
 		BGBCC_CCXL_CompileJmpCond(ctx, s0, lbl);
 		break;
+
 	case BGBCC_RIL3OP_LABEL:
 		lbl=BGBCC_CCXLR3_ReadLabel(ctx, &cs);
 		BGBCC_CCXL_EmitLabel(ctx, lbl);
+		break;
+	case BGBCC_RIL3OP_LABELLVL:
+		lbl=BGBCC_CCXLR3_ReadLabel(ctx, &cs);
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_EmitLabelLvl(ctx, lbl, i0);
 		break;
 
 	case BGBCC_RIL3OP_STKFN:

@@ -765,6 +765,26 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 		}
 		break;
 
+	case CCXL_BINOP_DIV:
+		if(sctx->has_qmul&1)
+		{
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				nm1=BGBCC_SH_NMID_DIVUQ;
+			else
+				nm1=BGBCC_SH_NMID_DIVSQ;
+		}
+		break;
+
+	case CCXL_BINOP_MOD:
+		if(sctx->has_qmul&1)
+		{
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				nm1=BGBCC_SH_NMID_MODUQ;
+			else
+				nm1=BGBCC_SH_NMID_MODSQ;
+		}
+		break;
+
 	default:		nm1=-1; nm2=-1; break;
 	}
 
@@ -1427,6 +1447,26 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 //			nm2=BGBCC_SH_NMID_NEG;
 			nm1=BGBCC_SH_NMID_SHLR;
 			break;
+		}
+		break;
+
+	case CCXL_BINOP_DIV:
+		if(sctx->has_qmul&1)
+		{
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				nm1=BGBCC_SH_NMID_DIVUQ;
+			else
+				nm1=BGBCC_SH_NMID_DIVSQ;
+		}
+		break;
+
+	case CCXL_BINOP_MOD:
+		if(sctx->has_qmul&1)
+		{
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				nm1=BGBCC_SH_NMID_MODUQ;
+			else
+				nm1=BGBCC_SH_NMID_MODSQ;
 		}
 		break;
 
@@ -4779,11 +4819,13 @@ int BGBCC_JX2C_EmitCallVReg(
 					continue;
 				}else
 				{
-					tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
-						BGBCC_SH_REGCLS_GR);
+//					tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+//						BGBCC_SH_REGCLS_GR);
+//					tr0=BGBCC_SH_REG_RD16;
+					tr0=BGBCC_SH_REG_RD16+(j&1);
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, treg, tr0);
 					BGBCC_JX2C_EmitStoreStackOfsReg(ctx, sctx, ns*4, tr0);
-					BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+//					BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
 					ns++;
 					continue;
 				}
@@ -4844,11 +4886,12 @@ int BGBCC_JX2C_EmitCallVReg(
 				}else
 				{
 					ns=(ns+1)&(~1);
-					tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
-						BGBCC_SH_REGCLS_QGR);
+//					tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+//						BGBCC_SH_REGCLS_QGR);
+					tr0=BGBCC_SH_REG_RQ16+(j&1);
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, treg, tr0);
 					BGBCC_JX2C_EmitStoreStackOfsReg(ctx, sctx, ns*4, tr0);
-					BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+//					BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
 					ns+=2;
 					continue;
 				}

@@ -42,6 +42,18 @@ int tk_vf_addmount(TK_MOUNT *mnt)
 {
 	TK_MOUNT *cur, *prv;
 	
+	if(!mnt)
+		return(-1);
+	if(!mnt->vt)
+		{ __debugbreak(); }
+	
+	if(!mnt->vt->fsname)
+		{ __debugbreak(); }
+//	if(mnt->vt->next)
+//		{ __debugbreak(); }
+		
+	mnt->magic1=0x1234ABCD;
+	
 	mnt->szSrc=0;
 	if(mnt->src)
 		{ mnt->szSrc=strlen(mnt->src); }
@@ -234,7 +246,7 @@ TK_FILE *tk_alloc_file()
 		return(tmp);
 	}
 	
-	tmp=malloc(sizeof(TK_FILE));
+	tmp=tk_malloc(sizeof(TK_FILE));
 	memset(tmp, 0, sizeof(TK_FILE));
 	return(tmp);
 }
@@ -270,7 +282,7 @@ TK_MOUNT *tk_alloc_mount()
 		return(tmp);
 	}
 	
-	tmp=malloc(sizeof(TK_MOUNT));
+	tmp=tk_malloc(sizeof(TK_MOUNT));
 	memset(tmp, 0, sizeof(TK_MOUNT));
 	return(tmp);
 }
@@ -847,6 +859,9 @@ TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode)
 	mnt=tk_vf_mount;
 	while(mnt)
 	{
+		if(mnt->magic1!=0x1234ABCD)
+			{ __debugbreak(); }
+
 		s1=name;
 		if(mnt->src && (mnt->szSrc>0))
 		{
@@ -864,6 +879,9 @@ TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode)
 			if(*s1=='/')
 				s1++;
 		}
+		
+		if(!mnt->vt)
+			{ __debugbreak(); }
 	
 		if(mnt->vt->fopen)
 		{

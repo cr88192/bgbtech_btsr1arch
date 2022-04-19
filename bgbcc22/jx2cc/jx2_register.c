@@ -32,6 +32,7 @@ int BGBCC_JX2C_InitRemaps(
 		bgbcc_rvi_remap_jx2rv[i]=0;
 		bgbcc_rvi_remap_rv2jx[i]=0;
 	}
+	return(0);
 }
 
 

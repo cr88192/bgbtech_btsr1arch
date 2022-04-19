@@ -172,3 +172,5 @@
 #define BGBCC_RIL3OP_LDCONSTSMI	0x8B
 #define BGBCC_RIL3OP_TRINOP		0x8C
 #define BGBCC_RIL3OP_STTRINOP	0x8D
+
+#define BGBCC_RIL3OP_LABELLVL	0x8E	//label, with a loop-level

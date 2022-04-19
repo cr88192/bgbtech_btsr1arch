@@ -375,7 +375,14 @@ void *TKMM_PageAllocL(int sz)
 int TKMM_PageFreeL(void *ptr, int sz)
 {
 	void *p;
+	s64 tea;
 	int pg;
+
+	tea=(s64)ptr;
+	if(tea>=TKMM_VALOSTART)
+	{
+		return(TK_VMem_VaVirtualFree((s64)ptr, sz));
+	}
 
 	pg=TKMM_PointerToPage(ptr);
 	TKMM_FreePages(pg, (sz+TKMM_PAGEMASK)>>TKMM_PAGEBITS);

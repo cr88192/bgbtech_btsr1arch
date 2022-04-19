@@ -439,6 +439,7 @@ TK_MOUNT *next;
 char *src;
 char *tgt;
 int szSrc;
+int magic1;
 void *udata0;
 void *udata1;
 

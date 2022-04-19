@@ -196,6 +196,16 @@ void BJX2_Op_FMULD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	c=a*b;
 	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
 }
+
+void BJX2_Op_FDIVD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a, b, c;
+	
+	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
+	c=a/b;
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
+}
 #endif
 
 
@@ -716,6 +726,14 @@ void BJX2_Op_FABS_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=ctx->regs[op->rm]&0x7FFFFFFFFFFFFFFFULL;
 }
 
+void BJX2_Op_FSQRT_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double sf;
+	sf=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+	sf=sqrt(sf);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, sf);
+}
+
 void BJX2_Op_FCMPEQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	double a, b, c;
@@ -886,6 +904,18 @@ void BJX2_Op_FMULX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	a=BJX2_PtrGetF128Ix(ctx->regs, op->rm);
 	b=BJX2_PtrGetF128Ix(ctx->regs, op->ro);
 	c=a*b;
+	BJX2_PtrSetF128Ix(ctx->regs, op->rn, c);
+}
+#endif
+
+#if 1
+void BJX2_Op_FDIVX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a, b, c;
+	
+	a=BJX2_PtrGetF128Ix(ctx->regs, op->rm);
+	b=BJX2_PtrGetF128Ix(ctx->regs, op->ro);
+	c=a/b;
 	BJX2_PtrSetF128Ix(ctx->regs, op->rn, c);
 }
 #endif
@@ -1204,6 +1234,20 @@ void BJX2_Op_FABSX_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn+1]=ctx->regs[op->rm+1]&0x7FFFFFFFFFFFFFFFULL;
 }
 
+void BJX2_Op_FSQRTX_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	double a, b, c;
+	
+	a=BJX2_PtrGetF128Ix(ctx->regs, op->rm);
+	c=sqrt(a);
+	BJX2_PtrSetF128Ix(ctx->regs, op->rn, c);
+
+//	bjx2_val128 va, vb, vc;	
+//	va=BJX2_PtrGetVal128Ix(ctx->regs, op->rm);
+//	vc=bjx2_fmulx_v128(va, vb);
+//	BJX2_PtrSetVal128Ix(ctx->regs, op->rn, vc);
+}
+
 void BJX2_Op_FCMPXEQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 #if 1
@@ -1467,6 +1511,22 @@ void BJX2_Op_SHARX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	int shl;
 	shl=ctx->regs[op->ro];
 	BJX2_Op_SHADX_RegRegReg_i(ctx, op, -shl);
+}
+
+void BJX2_Op_SHLDX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+//	shl=ctx->regs[op->ro];
+	shl=(sbyte)(op->imm);
+	BJX2_Op_SHLDX_RegRegReg_i(ctx, op, shl);
+}
+
+void BJX2_Op_SHADX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int shl;
+//	shl=ctx->regs[op->ro];
+	shl=(sbyte)(op->imm);
+	BJX2_Op_SHADX_RegRegReg_i(ctx, op, shl);
 }
 
 void BJX2_Op_ROTLX_RegRegReg_i(BJX2_Context *ctx, BJX2_Opcode *op, int shl)

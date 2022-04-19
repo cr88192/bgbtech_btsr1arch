@@ -112,6 +112,9 @@ SRCS=\
 	jx2cc/jx2_fpreg2x.c \
 	jx2cc/jx2_fpstub.c \
 	jx2cc/jx2_frame.c \
+	jx2cc/jx2_frm_layout.c \
+	jx2cc/jx2_frm_prolog.c \
+	jx2cc/jx2_frm_epilog.c \
 	jx2cc/jx2_ldix.c \
 	jx2cc/jx2_lparith.c \
 	jx2cc/jx2_lpreg.c \

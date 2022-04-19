@@ -311,6 +311,7 @@ void __start()
 
 //	puts("Boot Failed\n");
 	puts("No BOOTLOAD.SYS found\n");
+#if 0
 	while(1)
 	{
 		puts("$ ");
@@ -344,4 +345,5 @@ void __start()
 	}
 
 	puts("Loop Terminate\n");
+#endif
 }

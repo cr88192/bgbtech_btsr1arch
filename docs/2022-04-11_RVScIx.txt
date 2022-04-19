@@ -1,0 +1,34 @@
+BGB Scaled-Index Address Extension (RISC-V):
+* Address something I feel is lacking in RISC-V.
+* Whether or not this conflicts with anything, dunno.
+
+Load Forms
+* 00110ss-ttttt-mmmmm-000-nnnnn-01-01111  LB	Rn, (Rm, Rt*Sc)
+* 00110ss-ttttt-mmmmm-001-nnnnn-01-01111  LH	Rn, (Rm, Rt*Sc)
+* 00110ss-ttttt-mmmmm-010-nnnnn-01-01111  LW	Rn, (Rm, Rt*Sc)
+* 00110ss-ttttt-mmmmm-011-nnnnn-01-01111  LD	Rn, (Rm, Rt*Sc)
+* 00110ss-ttttt-mmmmm-100-nnnnn-01-01111  LBU	Rn, (Rm, Rt*Sc)
+* 00110ss-ttttt-mmmmm-101-nnnnn-01-01111  LHU	Rn, (Rm, Rt*Sc)
+* 00110ss-ttttt-mmmmm-110-nnnnn-01-01111  LWU	Rn, (Rm, Rt*Sc)
+* 00110ss-ttttt-mmmmm-111-nnnnn-01-01111  LX	Xn, (Rm, Rt*Sc)
+
+Store Forms
+* 00111ss-ttttt-mmmmm-000-nnnnn-01-01111  SB	(Rm, Rt*Sc), Rn
+* 00111ss-ttttt-mmmmm-001-nnnnn-01-01111  SH	(Rm, Rt*Sc), Rn
+* 00111ss-ttttt-mmmmm-010-nnnnn-01-01111  SW	(Rm, Rt*Sc), Rn
+* 00111ss-ttttt-mmmmm-011-nnnnn-01-01111  SD	(Rm, Rt*Sc), Rn
+* 00111ss-ttttt-mmmmm-100-nnnnn-01-01111  -
+* 00111ss-ttttt-mmmmm-101-nnnnn-01-01111  -
+* 00111ss-ttttt-mmmmm-110-nnnnn-01-01111  -
+* 00111ss-ttttt-mmmmm-111-nnnnn-01-01111  SX	(Rm, Rt*Sc), Xn
+
+These would define Scaled-Index Load/Store within the context of the RISC-V ISA, reusing some of the remaining encoding space from the 'A' extension.
+
+The 'ss' field would define the scale: 00=B, 01=H, 10=W, 11=D
+
+LX/SX, Optional Load/Store Pair form.
+* Would require a 64-bit alignment.
+
+
+Will not define LEA forms, as are redundant with the BitManip/Zba extension.
+* SH1ADD/SH2ADD/SH3ADD

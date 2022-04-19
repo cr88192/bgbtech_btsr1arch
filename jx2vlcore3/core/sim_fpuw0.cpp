@@ -31,6 +31,8 @@ vluint64_t main_time = 0;
 #define JX2_UCIX_FPU_CMPEQ_G	0x1C		//ALU Command
 #define JX2_UCIX_FPU_CMPGT_G	0x1E		//ALU Command
 
+#define JX2_UCIX_FPU_FSQRT		0x0F		//FPU SQRT
+
 #define JX2_UCIX_FPIX_FNEG		0x00		//FPU ADD
 #define JX2_UCIX_FPIX_FABS		0x01		//FPU SUB
 #define JX2_UCIX_FPIX_FRCP		0x02		//FPU SUB
@@ -139,6 +141,15 @@ vluint64_t grn;
 
 {JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  1.0, 0,  6972.0, 1},
 {JX2_UCMD_FSTCX, JX2_UCIX_FPCX_I,  -1.0, 0,  -6972.0, -1},
+
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIV,  2.634884,  3.048831,  0.86422763347656856},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIV,  2.634884, -3.048831, -0.86422763347656856},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIV, -2.634884,  3.048831, -0.86422763347656856},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIV, -2.634884, -3.048831,  0.86422763347656856},
+
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FSQRT,  3.14159,  3.048831,  1.77245310234149},
+
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FSQRT,  9.8695877281,  3.048831,  3.14159 },
 
 #if 0
 {0x57, 0,  3.14,  2.73, -3.140000000},
@@ -289,7 +300,8 @@ int main(int argc, char **argv, char **env)
 //		top->idxDisp=3;
 
 //		if(main_time>256)
-		if(main_time>4096)
+//		if(main_time>4096)
+		if(main_time>16384)
 		{
 //			printf("%llX\n", (long long)(top->outAddr));
 			break;

@@ -191,12 +191,30 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		op->nmid=BJX2_NMID_OR;
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_OR_RegImmReg;
+#if 1
+		if(eq)
+		{
+			op->imm=(sbyte)imm9u;
+			op->nmid=BJX2_NMID_SHADX;
+			op->fmid=BJX2_FMID_REGIMMREG;
+			op->Run=BJX2_Op_SHADX_RegImmReg;
+		}
+#endif
 		break;
 	case 0x7:	/* F2nm_7ejj */
 		op->imm=imm9u;
 		op->nmid=BJX2_NMID_XOR;
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_XOR_RegImmReg;
+#if 1
+		if(eq)
+		{
+			op->imm=(sbyte)imm9u;
+			op->nmid=BJX2_NMID_SHLDX;
+			op->fmid=BJX2_FMID_REGIMMREG;
+			op->Run=BJX2_Op_SHLDX_RegImmReg;
+		}
+#endif
 		break;
 
 	case 0x8:	/* F2nm_8ejj */

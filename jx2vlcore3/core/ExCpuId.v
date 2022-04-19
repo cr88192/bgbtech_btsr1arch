@@ -249,6 +249,10 @@ begin
 	valCpuIdLo1[30] = 1;
 `endif
 
+`ifdef jx2_fpu_enable_fdiv
+	valCpuIdLo1[31] = 1;
+`endif
+
 	tResLoA = arrCpuIdLo[index[2:0]];
 	tResHiA = UV64_00;
 //	tResHiA = arrCpuIdHi[index[2:0]];

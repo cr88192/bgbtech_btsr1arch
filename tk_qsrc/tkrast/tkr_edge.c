@@ -152,7 +152,8 @@ u64 TKRA_CalcClrStepRcp(u64 cdst, u64 csrc, u16 rcp)
 
 #endif
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if 1
 /*
 Walk along a pair of edges, calling DrawSpan for each span.
 Default Version (Tex+Color+Z)
@@ -332,6 +333,13 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	edge_l[TKRA_ES_ZPOS] = zpos_l;
 	edge_r[TKRA_ES_ZPOS] = zpos_r;
 }
+
+// void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
+//	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
+// {
+//	TKRA_WalkEdges_Dfl(ctx, ytop, edge_l, edge_r, cnt);
+// }
+
 #endif
 
 /* Half-Resolution Z-Buffer */
@@ -542,8 +550,8 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 	edge_r[TKRA_ES_ZPOS] = zpos_r;
 }
 
-// #if 0
-#ifdef __BJX2__
+#if 0
+// #ifdef __BJX2__
 void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
@@ -1448,7 +1456,8 @@ R31		tstep_r
 };
 #endif
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if 1
 /* Z-Buffer */
 void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt)

@@ -1270,8 +1270,8 @@ Instruction Space
 ** 30A0  /
 ** 30B0  /
 ** 30C0  RTE						//Return from exception
-** 30D0 ? DIV0						//Setup SR for divide
-** 30E0 ? DIV1						//Divide Step (Uses DHR, DLR)
+** 30D0 / DIV0						//Setup SR for divide
+** 30E0 / DIV1						//Divide Step (Uses DHR, DLR)
 ** 30F0  LDTLB						//Load entry into TLB
 
 ** 30z1  -
@@ -1674,7 +1674,6 @@ F0zz Instruction Block:
 *** F0nm_1GAC  MOVX		Xm, XCn				//(XMOV) XCn=Xm
 *** F0nm_1gBC  MOV		Sm, Rn				//Rn=Sm
 *** F0nm_1GBC  MOVX		XCm, Xn				//(XMOV) Xn=XCm
-*** F0nm_1GBC /? SWAP.Q	(Rm), Rn			//Exchange Rn with memory at (Rm)
 
 *** F0nm_1eCC / CLNZ{Q}	Rm, Rn				//(CLZ) Count Leading Ones
 *** F0nm_1eDC / CTNZ{Q}	Rm, Rn				//(CLZ) Count Trailing Ones
@@ -1700,7 +1699,8 @@ F0zz Instruction Block:
 *** F0nm_1GAD  FCMPXEQ		Xm, Xn		//SR.T=(FRn EQ FRm)  (GFPX)
 *** F0nm_1gBD  FCMPGT		Rm, Rn		//SR.T=(FRn GT FRm)
 *** F0nm_1GBD  FCMPXGT		Xm, Xn		//SR.T=(FRn GT FRm)  (GFPX)
-*** F0nm_1eCD  -
+*** F0nm_1gCD ? FSQRT		Rm, Rn		//(FDIV) Square Root
+*** F0nm_1GCD ? FSQRTX		Xm, Xn		//(FDIV) Square Root (GFPX)
 *** F0nm_1eDD  -
 *** F0nm_1eED  -
 *** F0nm_1eFD  -
@@ -1792,8 +1792,8 @@ F0zz Instruction Block:
 *** F000_30A0  -
 *** F000_30B0  -
 *** F000_30C0  RTE
-*** F000_30D0 ? DIV0
-*** F000_30E0 ? DIV1
+*** F000_30D0 / DIV0		//Drop
+*** F000_30E0 / DIV1		//Drop
 *** F000_30F0  LDTLB
 
 *** F002_3010  RTSU
@@ -1844,9 +1844,9 @@ F0zz Instruction Block:
 *** F035_3en0 ? ROTR		Rn
 *** F036_3en0  ROTCL	Rn
 *** F037_3en0  ROTCR	Rn
-*** F038_3en0 ? SHLL		Rn
-*** F039_3en0 ? SHLR		Rn
-*** F03A_3en0 ? SHAR		Rn
+*** F038_3en0 ? SHLL		Rn		//Rn=Rn<<1
+*** F039_3en0 ? SHLR		Rn		//Rn=Rn>>1 (Logical)
+*** F03A_3en0 ? SHAR		Rn		//Rn=Rn>>1 (Arithmetic)
 
 *** F03E_3en0  MOVST	Rn
 *** F03F_3en0  MOVPQ	Rn
@@ -1860,7 +1860,7 @@ F0zz Instruction Block:
 *** F082_3en0  /
 *** F083_3en0  /
 
-** F0nm_3go1  MOVTT		Rm, Ri, Rn		//(TTAG) High 16 bits from Rn
+** F0nm_3go1  MOVTT		Rm, Ri, Rn		//(TTAG) High 16 bits from Ri
 ** F0nm_3Go1  MOVTT		Rm, Imm5u, Rn	//(TTAG) Set Type-Tag
 ** F0nm_3go2  ROTLQ		Rm, Ro, Rn		//(ALU) Rotate Left (64b)
 ** F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
@@ -1868,15 +1868,15 @@ F0zz Instruction Block:
 ** F0nm_3Go3  SHLRX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
 ** F0nm_3go4 ? MULSH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
 ** F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
-** F0nm_3go5 ? MULUH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
+** F0nm_3go5 ? MULUH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
 ** F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
 ** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALU) Rotate Left (32b)
 ** F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
 ** F0nm_3ez7  SWxP.x	Rm, Rn			//(GSV) SWAP and SWCP
 
-** F0nm_3ez8  (2R Block)
+** F0nm_3ez8  (Reserved 2R Block Space)
 ** ...
-** F0nm_3ezF  (2R Block)
+** F0nm_3ezF  (Reserved 2R Block Space)
 
 * F0nm_4eoz (Follows a similar pattern as F0nm_0zz0)
 ** F0nm_4go0  MOV.X		Xn, (Rm, Disp5)		//(MOVX2) Store Pair
@@ -1922,15 +1922,12 @@ F0zz Instruction Block:
 ** F0nm_5Go2  DMULS.Q	Rm, Ro, Xn			//(MULQ) Sx 64b Mul (64*64->128)
 ** F0nm_5go3  DMULU.L	Rm, Ro, Rn			//(MULL) Zx 32b Mul (32*32->64)
 ** F0nm_5Go3  DMULU.Q	Rm, Ro, Xn			//(MULQ) Zx 64b Mul (64*64->128)
-
-** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn
-** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn
-
+** F0nm_5eo4  SHAD{Q}	Rm, Ro, Rn			//Arithmetic Shift Left
+** F0nm_5eo5  SHLD{Q}	Rm, Ro, Rn			//Logical Shift Left
 ** F0nm_5go6  PMULS.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
 ** F0nm_5Go6  PMULU.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
 ** F0nm_5go7  PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
 ** F0nm_5Go7  PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
-
 ** F0nm_5go8  FADD		Rm, Ro, Rn			//(GFP) FADD
 ** F0nm_5Go8  FADDX		Xm, Xo, Xn			//(GFPX) FADD, Binary128
 ** F0nm_5go9  FSUB		Rm, Ro, Rn			//(GFP) FSUB
@@ -1961,8 +1958,9 @@ F0zz Instruction Block:
 ** F0nm_6Go4 ? DIVU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Unsigned)
 ** F0nm_6go5 ? MODS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
 ** F0nm_6Go5 ? MODU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
-** F0nm_6eo6  -
-** F0nm_6eo7  -
+** F0nm_6go6 ? FDIV		Rm, Ro, Rn			//(FDIV) FDIV
+** F0nm_6Go6 ? FDIVX	Rm, Ro, Rn			//(FDIV+GFPX)
+** F0nm_6eo7 -
 ** F0nm_6go8 ? BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
 ** F0nm_6Go8 ? BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
 ** F0nm_6go9 ? BLERP	Rm, Ro, Rn			//(RGBX) Linear Interpolate
@@ -1970,7 +1968,7 @@ F0zz Instruction Block:
 ** F0nm_6goA ? BLINTA	Rm, Ro, Rn			//(RGBX) Bilinear Interpolate (2p)
 ** F0nm_6GoA ? BLINT	Xm, Xo, Xn			//(RGBX) Bilinear Interpolate
 ** F0nm_6goB ? BITSEL	Rm, Ro, Rn			//(?) Rn = (Rm & Ro) | (Rn & ~Ro)
-** F0nm_6GoB  -
+** F0nm_6GoB ? BITSELX	Xm, Xo, Xn			//(?) Xn = (Xm & Xo) | (Xn & ~Xo)
 ** F0nm_6goC ? BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6GoC ? BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6goD  FADDG		Rm, Ro, Rn			//(GFP) FADD (Dynamic Rounding)
@@ -1982,9 +1980,9 @@ F0zz Instruction Block:
 
 
 * F0zz_7zzz
-*** F0nm_7ez8  (2R Block)
+*** F0nm_7ez8  (Reserved 2R Block Space)
 *** ...
-*** F0nm_7ezF  (2R Block)
+*** F0nm_7ezF  (Reserved 2R Block Space)
 
 * F0zz_8zzz (XMOV Block)
 ** F0nm_8gd0  XMOV.B	Rn, (Xm, Disp5)		//
@@ -2092,7 +2090,9 @@ F1zz Instruction Block:
 F2zz Instruction Block  (Imm9 Block):
 
 * F2nm_0gjj  ADD		Rm, Imm9u, Rn		//
+* F2nm_0Gjj  -
 * F2nm_1gjj  ADD		Rm, Imm9n, Rn		//
+* F2nm_1Gjj  -
 * F2nm_2gjj  MULS		Rm, Imm9u, Rn		//32*32=>32, Signed result
 * F2nm_2Gjj  MULU		Rm, Imm9u, Rn		//32*32=>32, Unsigned result
 * F2nm_3gjj  ADDS.L		Rm, Imm9u, Rn		//ADD 32 SX, Zero-Ext Imm
@@ -2100,10 +2100,11 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_4gjj  ADDS.L		Rm, Imm9n, Rn		//ADD 32 SX, One-Ext Imm
 * F2nm_4Gjj  ADDU.L		Rm, Imm9n, Rn		//ADD 32 ZX, One-Ext Imm
 * F2nm_5gjj  AND		Rm, Imm9u, Rn		//
+* F2nm_5Gjj  -
 * F2nm_6gjj  OR			Rm, Imm9u, Rn		//
-* F2nm_6Gjj  SHADX		Xm, Imm8, Xn		//(ALUX)
+* F2nm_6Pjj  SHADX		Xm, Imm8, Xn		//(ALUX)
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
-* F2nm_7Gjj  SHLDX		Xm, Imm8, Xn		//(ALUX)
+* F2nm_7Pjj  SHLDX		Xm, Imm8, Xn		//(ALUX)
 
 * F2nm_8pjj  SHAD		Rm, Imm8, Rn		//E.i=0
 * F2nm_8Pjj  SHAD.Q		Rm, Imm8, Rn		//E.i=0
@@ -2123,7 +2124,6 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n1_Cfjj  LDIN{D}	Imm10n, Rn				//(PrWEX) Alt
 ** F2n2_Cfjj  LDISH		Imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
 *** Jumbo: LDISH32	Imm32, Rn
-*** / Jumbo+(E.m==1): (E.q?BSR:BRA) Disp33s		//?
 ** F2n3_Cfjj  LDIHI{Q}	Imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
 ** F2n4_Cfjj  TST{Q}	Imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	Imm10n, Rn				//SR.T=!(Imm AND Rn)

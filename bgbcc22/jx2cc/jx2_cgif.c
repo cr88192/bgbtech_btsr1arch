@@ -115,6 +115,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->use_wexmd=0;
 	shctx->no_wexify=0;
 	shctx->use_wexdbg=0;
+	
+	shctx->has_qmul=0;
 
 //	shctx->no_wexify=1;		//Debug
 
@@ -196,6 +198,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "dmacl"))
 		{ shctx->has_dmacl=1; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "qmul"))
+		{ shctx->has_qmul=1; }
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
@@ -3680,7 +3684,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 
 			if(ctx->arch_sizeof_ptr==16)
 			{
-				BGBCC_JX2_EmitQWordAbs96(sctx, k, j);
+				BGBCC_JX2_EmitQWordAbs96Disp(sctx, k, j);
 			}else
 				if(ctx->arch_sizeof_ptr==8)
 			{

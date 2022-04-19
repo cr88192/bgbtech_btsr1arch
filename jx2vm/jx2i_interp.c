@@ -1173,6 +1173,15 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MOVTT:		s0="MOVTT";		break;
 	case BJX2_NMID_XMOVTT:		s0="XMOVTT";	break;
 
+	case BJX2_NMID_MULSQ:		s0="MULS.Q";	break;
+	case BJX2_NMID_MULUQ:		s0="MULU.Q";	break;
+	case BJX2_NMID_MULSHQ:		s0="MULSH.Q";	break;
+	case BJX2_NMID_MULUHQ:		s0="MULUH.Q";	break;
+	case BJX2_NMID_DIVSQ:		s0="DIVS.Q";	break;
+	case BJX2_NMID_DIVUQ:		s0="DIVU.Q";	break;
+	case BJX2_NMID_MODSQ:		s0="MODS.Q";	break;
+	case BJX2_NMID_MODUQ:		s0="MODU.Q";	break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;
@@ -1385,13 +1394,16 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 //				op1->opn, op1->opn2, op1->opn3,
 //				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 
-			printf("%08X  (%2d) %04X_%04X   -\n",
+			printf("%04X_%08X  (%2d) %04X_%04X   -\n",
+				(u32)((op->pc+0)>>32),
 				(u32)op->pc+0, op->cyc,
 				op->opn, op->opn2);
-			printf("%08X       %04X_%04X   -\n",
+			printf("%04X_%08X       %04X_%04X   -\n",
+				(u32)((op->pc+4)>>32),
 				(u32)op->pc+4,
 				op->opn3, op->opn);
-			printf("%08X       %04X_%04X   %-8s ",
+			printf("%04X_%08X       %04X_%04X   %-8s ",
+				(u32)((op->pc+8)>>32),
 				(u32)op->pc+8,
 				op1->opn2, op1->opn3,
 				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
@@ -1402,10 +1414,12 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			op1=op->data;
 
-			printf("%08X  (%2d) %04X_%04X   -\n",
+			printf("%04X_%08X  (%2d) %04X_%04X   -\n",
+				(u32)((op->pc+0)>>32),
 				(u32)op->pc, op->cyc,
 				op->opn, op->opn2);
-			printf("%08X       %04X_%04X   %-8s ",
+			printf("%04X_%08X       %04X_%04X   %-8s ",
+				(u32)((op->pc+4)>>32),
 				(u32)op1->pc,
 				op1->opn, op1->opn2,
 				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
@@ -1413,7 +1427,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		}else
 		if(op->fl&BJX2_OPFL_TRIWORD)
 		{
-			printf("%08X  (%2d) %04X_%04X_%04X %c %-8s ",
+			printf("%04X_%08X  (%2d) %04X_%04X_%04X %c %-8s ",
+				(u32)((op->pc+0)>>32),
 				(u32)op->pc, op->cyc,
 				op->opn, op->opn2, op->opn3,
 				((op->fl&BJX2_OPFL_WEX)?'|':' '),
@@ -1432,14 +1447,16 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 
 				if(fl&2)
 				{
-					printf("%08X  (%2d) %04X_%04X     %c %-8s ",
+					printf("%04X_%08X  (%2d) %04X_%04X     %c %-8s ",
+						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
 						((op->fl&BJX2_OPFL_WEX)?'|':' '),
 						tb1);
 				}else
 				{
-					printf("%08X  (%2d) %04X_%04X %c %-8s ",
+					printf("%04X_%08X  (%2d) %04X_%04X %c %-8s ",
+						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
 					((op->fl&BJX2_OPFL_WEX)?'|':' '),
@@ -1449,14 +1466,16 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			{
 				if(fl&2)
 				{
-					printf("%08X  (%2d) %04X_%04X      %c %-8s ",
+					printf("%04X_%08X  (%2d) %04X_%04X      %c %-8s ",
+						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
 						((op->fl&BJX2_OPFL_WEX)?'|':' '),
 						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 				}else
 				{
-					printf("%08X  (%2d) %04X_%04X %c %-8s ",
+					printf("%04X_%08X  (%2d) %04X_%04X %c %-8s ",
+						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
 						((op->fl&BJX2_OPFL_WEX)?'|':' '),
@@ -1468,17 +1487,23 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			if(fl&2)
 			{
-				printf("%08X  (%2d) %04X           %c %-8s ",
+				printf("%04X_%08X  (%2d) %04X           %c %-8s ",
+					(u32)((op->pc+0)>>32),
 					(u32)op->pc, op->cyc,
 					op->opn,
-					((op->fl&BJX2_OPFL_WEX)?'|':' '),
+//					((op->fl&BJX2_OPFL_WEX)?'|':' '),
+					((op->fl&BJX2_OPFL_WEX)?'|':
+						((op->fl&BJX2_OPFL_OPSSC)?'S':' ')),
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}else
 			{
-				printf("%08X  (%2d) %04X      %c %-8s ",
+				printf("%04X_%08X  (%2d) %04X      %c %-8s ",
+					(u32)((op->pc+0)>>32),
 					(u32)op->pc, op->cyc,
 					op->opn,
-					((op->fl&BJX2_OPFL_WEX)?'|':' '),
+//					((op->fl&BJX2_OPFL_WEX)?'|':' '),
+					((op->fl&BJX2_OPFL_WEX)?'|':
+						((op->fl&BJX2_OPFL_OPSSC)?'S':' ')),
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}
 			brpc=op->pc+2;

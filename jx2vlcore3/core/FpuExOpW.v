@@ -198,6 +198,21 @@ reg[63:0]		tRegValRnL;			//Rn input value (FPR, Duplicate)
 reg[63:0]		tRegInSrL;
 reg				tBraFlushL;
 
+reg[63:0]		tRegValRcpL;		//Reciprocal (Working Value)
+reg[63:0]		tRegValRcpL2;		//Reciprocal (Working Value)
+reg[63:0]		tRegValRcpL3;		//Reciprocal (Working Value)
+reg[63:0]		tRegValRcpL4;		//Reciprocal (Working Value)
+reg[63:0]		tRegValRcpL5;		//Reciprocal (Working Value)
+reg[63:0]		tRegValRcpL6;		//Reciprocal (Working Value)
+reg[63:0]		tRegValRcp;			//Reciprocal (Working Value)
+
+reg[63:0]		tRegDifRcpL;		//Reciprocal Delta
+reg[63:0]		tRegDifRcp;			//Reciprocal Delta
+reg[63:0]		tRegDifRcpA;		//Reciprocal Delta
+reg[63:0]		tRegTgtRcpL;		//Reciprocal Target
+reg[63:0]		tRegTgtRcp;			//Reciprocal Target
+
+
 `reg_gpr		tRegIdRsAL;
 `reg_gpr		tRegIdRtAL;
 `reg_gpr		tRegIdRnAL;
@@ -490,6 +505,10 @@ reg			tExValidCmd;
 reg[3:0]	tHoldCyc;
 reg[3:0]	tDoHoldCyc;
 
+reg			tDivHold;
+reg			tDoHoldDiv;
+reg			tDoHoldDivL;
+
 `ifdef def_true
 assign	tOpCmdA			= opCmdA;
 assign	tRegIdIxtA		= regIdIxtA;
@@ -619,6 +638,11 @@ begin
 	tNxtVecdRnA		= tVecdRnA;
 	tNxtVecdRnB		= tVecdRnB;
 	tDoHoldCyc		= 0;
+	tDoHoldDiv		= 0;
+	
+	tRegValRcp		= tRegValRcpL;
+	tRegDifRcp		= tRegDifRcpL;
+	tRegTgtRcp		= tRegTgtRcpL;
 
 	tRegOutFpsr		= regInFpsr;
 
@@ -813,6 +837,22 @@ begin
 		end
 	endcase
 
+`ifdef jx2_fpu_enable_fdiv
+	tRegDifRcpA	= tRegTgtRcpL - tRegMulVal;
+
+	tRegDifRcp	= {
+		tRegDifRcpA[63], tRegDifRcpA[63], 
+		tRegDifRcpA[63], // tRegDifRcpA[63], 
+		tRegDifRcpA[63:3] };
+
+	tRegValRcp	= tRegValRcpL + tRegDifRcpL;
+//	tRegValRcp	= tRegValRcpL6 + tRegDifRcpL;
+
+	tDivHold	= (tRegDifRcpL[62:0] != 0) &&
+				(tDoHoldDivL || (tHoldCyc>10));
+				
+`endif
+
 	case(tOpUCmd1)
 		JX2_UCMD_FPU3: begin
 			tExValidCmd	= 1;
@@ -850,6 +890,37 @@ begin
 					tRegValGRnB	= tRegMulValHi;
 `endif
 				end
+
+`ifdef jx2_fpu_enable_fdiv
+				4'h3: begin
+					tRegMulRs	= tRegValRcpL;
+					tRegMulRt	= tRegValRtL;
+					tRegTgtRcp	= tRegValRsL;
+
+					if(!tDoHoldDivL)
+						tDoHoldCyc	= 14;
+					
+					if(!tDoHoldDivL)
+					begin
+						tRegValRcp	= { tRegValRtL[63], 
+							63'h7FF0_0000_0000_0000 - tRegValRtL[62:0] };
+//						$display("Rcp=%X", tRegValRcp);
+					end
+					
+//					$display("Rcp Diff=%X", tRegDifRcp);
+
+//					if(tRegDifRcp[52:6]==0)
+//					begin
+//						$display("Rcp L2=%X L3=%X L4=%X L5=%X",
+//							tRegValRcpL2[15:0], tRegValRcpL3[15:0],
+//							tRegValRcpL4[15:0], tRegValRcpL5[15:0]);
+//					end
+
+					tDoHoldDiv	= tDivHold;
+//					tRegValGRn	= tRegValRcpL;
+					tRegValGRn	= tRegValRcpL6;
+				end
+`endif
 
 				4'h4: begin
 					tRegValGRn	= tRegValRs;
@@ -992,7 +1063,33 @@ begin
 					tRegValGRnB	= tRegAddValHi;
 				end
 `endif
-				
+
+
+`ifdef jx2_fpu_enable_fdiv
+				4'hF: begin
+					tRegMulRs	= tRegValRcpL;
+					tRegMulRt	= tRegValRcpL;
+					tRegTgtRcp	= tRegValRsL;
+
+					if(!tDoHoldDivL)
+						tDoHoldCyc	= 14;
+
+					if(!tDoHoldDivL)
+//					if(tHoldCyc < tDoHoldCyc)
+					begin
+						tRegValRcp	= { tRegValRsL[63], 
+							63'h2000_0000_0000_0000 + tRegValRsL[63:1] };
+//						$display("Sqrt %X=%X", tRegValRsL, tRegValRcp);
+					end
+					
+//					$display("Sqrt Diff=%X", tRegDifRcp);
+
+					tDoHoldDiv	= tDivHold;
+//					tRegValGRn	= tRegValRcpL;
+					tRegValGRn	= tRegValRcpL6;
+				end
+`endif
+	
 				default: begin
 				end
 			endcase
@@ -1118,6 +1215,9 @@ begin
 
 	if(tHoldCyc < tDoHoldCyc)
 		tExHold = 1;
+	
+	if(tDoHoldDiv)
+		tExHold = 1;
 
 	if(reset)
 		tExHold = 0;
@@ -1189,6 +1289,17 @@ begin
 	tVecdRnA	<= tNxtVecdRnA;
 	tVecdRnB	<= tNxtVecdRnB;
 	tRegMulValL	<= tRegMulVal;
+
+
+	tRegValRcpL		<= tRegValRcp;
+	tRegValRcpL2	<= tRegValRcpL;
+	tRegValRcpL3	<= tRegValRcpL2;
+	tRegValRcpL4	<= tRegValRcpL3;
+	tRegValRcpL5	<= tRegValRcpL4;
+	tRegValRcpL6	<= tRegValRcpL5;
+	tRegDifRcpL		<= tRegDifRcp;
+	tRegTgtRcpL		<= tRegTgtRcp;
+	tDoHoldDivL		<= tDoHoldDiv;
 
 	if(tExHold)
 		tHoldCyc <= tHoldCyc + 1;

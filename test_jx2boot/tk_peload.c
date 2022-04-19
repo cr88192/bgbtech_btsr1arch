@@ -1,5 +1,7 @@
 // extern u64 __arch_gbr;
 
+int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr);
+
 byte tkpe_imgend;
 
 byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
@@ -121,6 +123,8 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	
 	return(ct);
 }
+
+#if 0
 
 #ifndef __BJX2__
 byte *TKPE_UnpackL6(byte *ct, byte *ibuf, int isz)
@@ -303,6 +307,8 @@ TKPE_UnpackL6:
 	BT		.CopyRLEN_L1
 	BRA		.Cont
 };
+
+#endif
 
 #endif
 
@@ -657,11 +663,13 @@ byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
 	byte *ct1;
 	int rsz;
 
+#if 0
 #ifdef __BJX2__
 	if(cmp==6)
 	{
 		return(TKPE_UnpackL6(ct, ibuf, isz));
 	}
+#endif
 #endif
 
 //	if(cmp==4)
@@ -809,7 +817,7 @@ void __setmemtrap(void *ptr, int mode);
 #if 1
 int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 	s64 disp, int pboix,
-	s64 imgbase, int gbr_rva, int gbr_sz)
+	s64 imgbase, int gbr_rva, int gbr_sz, int mach)
 {
 	byte *cs, *cse, *cs1, *cs1e;
 	byte *pdst;
@@ -817,7 +825,12 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 	u32 pv, pv0, pv1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
+	int isriscv, isbjx2;
 	int tg;
+
+
+	isriscv=(mach==0x5064);
+	isbjx2=(mach==0xB264);
 
 //	printf("TKPE_ApplyStaticRelocs: disp=%X rlc=%p sz=%d\n",
 //		(int)disp, rlc, szrlc);
@@ -875,66 +888,112 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				*((u32 *)pdst)=(*((u32 *)pdst))+(disp>>32);
 				break;
 			case 5:
-				pv=*((u32 *)pdst);
-				if((pv&0x0000FE00U)==0x0000FE00U)
+				if(isriscv)
 				{
-					pv0=((u32 *)pdst)[0];
-					pv1=((u32 *)pdst)[1];
-					v0=((pv0&0x00FF)<<16)|((pv0>>16)&0xFFFF);
-					v1=((pv1&0x00FF)<<16)|((pv1>>16)&0xFFFF);
-					v1+=disp;
-					v0+=(disp>>24)+(v1>>24);
-					pv0=(pv0&0x0000FF00U)|
-						((v0>>16)&0x000000FFU)|
-						((v0<<16)&0xFFFF0000U);
-					pv1=(pv1&0x0000FF00U)|
-						((v1>>16)&0x000000FFU)|
-						((v1<<16)&0xFFFF0000U);
-					((u32 *)pdst)[0]=pv0;
-					((u32 *)pdst)[1]=pv1;
+					/* RISC-V: Disp High 20 */
+					pv=*((u32 *)pdst);
+					pv+=disp&0xFFFFF000U;
+					*((u32 *)pdst)=pv;
 					break;
 				}
 			
-//				pv=*((u32 *)pdst);
-				v0=((pv&0x01FF)<<16)|((pv>>16)&0xFFFF);
-				v1=v0+disp;
-				pv=(pv&0x0000FE00U)|
-					((v1>>16)&0x1FF)|
-					((v1<<16)&0xFFFF0000U);
+				if(isbjx2)
+				{
+					pv=*((u32 *)pdst);
+					if((pv&0x0000FE00U)==0x0000FE00U)
+					{
+						pv0=((u32 *)pdst)[0];
+						pv1=((u32 *)pdst)[1];
+						v0=((pv0&0x00FF)<<16)|((pv0>>16)&0xFFFF);
+						v1=((pv1&0x00FF)<<16)|((pv1>>16)&0xFFFF);
+						v1+=disp;
+						v0+=(disp>>24)+(v1>>24);
+						pv0=(pv0&0x0000FF00U)|
+							((v0>>16)&0x000000FFU)|
+							((v0<<16)&0xFFFF0000U);
+						pv1=(pv1&0x0000FF00U)|
+							((v1>>16)&0x000000FFU)|
+							((v1<<16)&0xFFFF0000U);
+						((u32 *)pdst)[0]=pv0;
+						((u32 *)pdst)[1]=pv1;
+						break;
+					}
 				
-//				pv=(pv&0xFE000000)|((pv+disp)&0x01FFFFFF);
-				*((u32 *)pdst)=pv;
+	//				pv=*((u32 *)pdst);
+					v0=((pv&0x01FF)<<16)|((pv>>16)&0xFFFF);
+					v1=v0+disp;
+					pv=(pv&0x0000FE00U)|
+						((v1>>16)&0x1FF)|
+						((v1<<16)&0xFFFF0000U);
+					
+	//				pv=(pv&0xFE000000)|((pv+disp)&0x01FFFFFF);
+					*((u32 *)pdst)=pv;
+					break;
+				}
+				
+				__debugbreak();
 				break;
 
 			case 6:
-				pv=*((u16 *)pdst);
-				if((pv==0xA000) && pboix)
+				if(isbjx2)
 				{
-					pv=pv|(((-pboix)*8)&0x1FFF);
-					*((u16 *)pdst)=pv;
+					pv=*((u16 *)pdst);
+					if((pv==0xA000) && pboix)
+					{
+						pv=pv|(((-pboix)*8)&0x1FFF);
+						*((u16 *)pdst)=pv;
+						break;
+					}
 					break;
 				}
 				break;
 				
 			case 7:
-				break;
-			case 8:
-				break;
-
-			case 9:
-				pv=*((u32 *)pdst);
-				if((pv==0xFA000000UL) && pboix)
+				if(isriscv)
 				{
-					pv=pv|(((-pboix)*8)&0x01FFFFFF);
+					/* RISC-V: Low 12 I */
+					pv=*((u32 *)pdst);
+					pv+=(disp<<20)&0xFFF00000U;
 					*((u32 *)pdst)=pv;
 					break;
 				}
+				__debugbreak();
+				break;
+			case 8:
+				if(isriscv)
+				{
+					/* RISC-V: Low 12 S */
+					pv=*((u32 *)pdst);
+					pv+=((disp<<20)&0xFE000000);
+					pv+=((disp<< 7)&0x00000F80);
+					*((u32 *)pdst)=pv;
+					break;
+				}
+				__debugbreak();
+				break;
+
+			case 9:
+				if(isbjx2)
+				{
+					pv=*((u32 *)pdst);
+					if((pv==0xFA000000UL) && pboix)
+					{
+						pv=pv|(((-pboix)*8)&0x01FFFFFF);
+						*((u32 *)pdst)=pv;
+						break;
+					}
+					break;
+				}
+				__debugbreak();
 				break;
 			case 10:
 				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
 				break;
 			case 11:
 				__setmemtrap(pdst, 3);
+				break;
+			default:
+				__debugbreak();
 				break;
 			}
 		}
@@ -950,6 +1009,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	byte *imgptr, *ct, *cte, *bss_ptr;
 	u64 imgbase;
 	s64 reloc_disp;
+	u64 entry;
 	u32 imgsz, startrva, gbr_rva, gbr_sz, imgsz1, imgsz2;
 	u32 reloc_rva, reloc_sz, bss_sz;
 	u32 csum1, csum2;
@@ -1006,7 +1066,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	}
 
 	mach=tkfat_getWord(tbuf+ofs_pe+0x04);
-	if(mach!=0xB264)
+//	if(mach!=0xB264)
+	if((mach!=0xB264) && (mach!=0x5064))
 	{
 		printf("TKPE: Unexpected Arch %04X\n", mach);
 		return(-1);
@@ -1185,10 +1246,17 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	{
 //		tk_printf("Reloc: RVA=%08X, sz=%d\n", reloc_rva, reloc_sz);
 		TKPE_ApplyStaticRelocs(imgptr, imgptr+reloc_rva, reloc_sz,
-			reloc_disp, 0, imgbase, gbr_rva, gbr_sz);
+			reloc_disp, 0, imgbase, gbr_rva, gbr_sz, mach);
 	}
 
-	*rbootptr=imgptr+startrva;
+	entry=((u64)imgptr)+startrva;
+
+	if(mach==0x5064)
+	{
+		entry|=0x0004000000000003ULL;
+	}
+
+	*rbootptr=(void *)entry;
 	*rbootgbr=imgptr+gbr_rva;
 #endif
 }

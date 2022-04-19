@@ -899,6 +899,11 @@ int nmid;
 {"brgtu",	BGBCC_SH_NMID_BRGTU},
 {"brleu",	BGBCC_SH_NMID_BRLEU},
 
+{"divs.q",	BGBCC_SH_NMID_DIVSQ},
+{"divu.q",	BGBCC_SH_NMID_DIVUQ},
+{"mods.q",	BGBCC_SH_NMID_MODSQ},
+{"modu.q",	BGBCC_SH_NMID_MODUQ},
+
 #if 0
 {"jcmpeq",	BGBCC_SH_NMID_BREQL},
 {"jcmpne",	BGBCC_SH_NMID_BRNEL},
@@ -1097,6 +1102,7 @@ int nmid;
 {"fcnvds",	BGBCC_SH_NMID_FCNVDS},
 {"fcnvsd",	BGBCC_SH_NMID_FCNVSD},
 {"fdiv",	BGBCC_SH_NMID_FDIV},
+{"fdivx",	BGBCC_SH_NMID_FDIVX},
 {"fldi0",	BGBCC_SH_NMID_FLDI0},
 {"fldi1",	BGBCC_SH_NMID_FLDI1},
 {"flds",	BGBCC_SH_NMID_FLDS},
@@ -1906,6 +1912,11 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "abi_is_xgpr"))
 		return((ctx->has_xgpr&2)!=0);
+
+	if(!bgbcc_stricmp(sym, "has_dmacl"))
+		return((ctx->has_dmacl&1)!=0);
+	if(!bgbcc_stricmp(sym, "has_qmul"))
+		return((ctx->has_qmul&1)!=0);
 
 	if(!bgbcc_stricmp(sym, "has_fmovs"))
 		return((ctx->has_fmovs&1)!=0);

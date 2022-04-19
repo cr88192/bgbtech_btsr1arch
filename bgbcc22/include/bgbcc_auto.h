@@ -735,7 +735,8 @@ ccxl_status BGBCC_CCXL_StackLn(BGBCC_TransState *ctx, int line);
 ccxl_status BGBCC_CCXL_StackDisable3AC(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_StackEnable3AC(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_StackSetPred(BGBCC_TransState *ctx, int prd);
-ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx, ccxl_label lbl);
+ccxl_status BGBCC_CCXL_EmitLabel(BGBCC_TransState *ctx,ccxl_label lbl);
+ccxl_status BGBCC_CCXL_EmitLabelLvl(BGBCC_TransState *ctx,ccxl_label lbl, int llvl);
 ccxl_status BGBCC_CCXL_EmitJump(BGBCC_TransState *ctx, ccxl_label lbl);
 ccxl_status BGBCC_CCXL_EmitJumpRegZero(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register reg, ccxl_label lbl);
 ccxl_status BGBCC_CCXL_EmitJumpRegCmpI(BGBCC_TransState *ctx,ccxl_type type, int cmpop, ccxl_register sreg, ccxl_register treg, ccxl_label lbl);
@@ -3091,15 +3092,18 @@ int BGBCC_JX2C_GetFrameVRegFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
 int BGBCC_JX2C_GetFrameVRegVspanFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
 int BGBCC_JX2C_BeginSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EndSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
-int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dstfl);
+int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dstfl, int mult);
+//AHSRC:jx2cc/jx2_frm_layout.c
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
+//AHSRC:jx2cc/jx2_frm_prolog.c
 int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, u64 *repik, int *repix);
 int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, int fl, int *rfl2);
 ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveReg(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, ccxl_register reg);
 ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveVopRegs(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op);
 int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
-int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int fcnlbl);
+//AHSRC:jx2cc/jx2_frm_epilog.c
+int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_EmitFrameEpilogUnwind(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:jx2cc/jx2_ldix.c
@@ -3318,7 +3322,7 @@ int BGBCC_JX2C_SizeofVar(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_ty
 int BGBCC_JX2C_EmitPredCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 int BGBCC_JX2C_EmitPredCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 //AHSRC:jx2cc/jx2_wexify.c
-int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, byte *rrs, byte *rrt, byte *rrn, byte *rspr, byte *rspw, int *rspfl);
+int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, u16 *rrs, u16 *rrt, u16 *rrn, u16 *rspr, u16 *rspw, int *rspfl);
 int BGBCC_JX2_CheckOps32ReadsRn(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32IsMem(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32Is2Stage(BGBCC_JX2_Context *sctx, int opw1, int opw2);

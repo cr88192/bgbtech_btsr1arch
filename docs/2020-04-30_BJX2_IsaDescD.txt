@@ -546,7 +546,8 @@ Index 1:
 * ( 27): XMOV Quadrant Add Mode
 * ( 28): DMAC (Integer Multiply-Accumulate)
 * ( 29): Op64 RiMOV
-* ( 30): QMUL (64-bit MUL and DIV/MOD instructions)
+* ( 30): MULQ (64-bit MUL and DIV/MOD instructions)
+* ( 31): FDIV (Adds FDIV and FSQRT)
 
 Index 31:
 * Hardware Random Number
@@ -563,10 +564,10 @@ Select between Rm or Ro based on the value of SR.T, storing the result in Rn.
 If SR.T is set, the value from Rm is used, otherwise the value from Ro is used.
 
 
-=== DIV0 (DIV) ===
+=== DIV0 (DIV, Drop) ===
 
-* 30D0      ? DIV0
-* F000_30D0 ? DIV0
+* 30D0      / DIV0
+* F000_30D0 / DIV0
 
 Initializes state for unsigned division.
 
@@ -574,10 +575,10 @@ Initializes state for unsigned division.
  SR.T <= 0
 
 
-=== DIV1 (DIV) ===
+=== DIV1 (DIV, Drop) ===
 
-* 30E0      ? DIV1
-* F000_30E0 ? DIV1
+* 30E0      / DIV1
+* F000_30E0 / DIV1
 
 Perform a division step, with SR.S and SR.T holding internal state.
 
@@ -596,6 +597,19 @@ Perform a division step, with SR.S and SR.T holding internal state.
  SR.S = q2;
  SR.T = t2;
  
+ 
+=== DIVx.Q (3R) ===
+
+* F0nm_6go4 DIVS.Q	Rm, Ro, Rn	//(MULQ)
+* F0nm_6Go4 DIVU.Q	Rm, Ro, Rn	//(MULQ)
+
+Perform a 64-bit integer division.
+Divides Rm by Ro and stores the result in Rn.
+
+This instruction will be part of the MULQ extension.
+
+This operation only exists in Lane 1.
+
 
 === EXTS.B ===
 
@@ -984,6 +998,19 @@ The MACS and MACU instructions will do a multiply-accumulate with a 32-bit resul
 The DMACS and DMACU instructions will multiply two 32-bit quantities and accumulate using a 64-bit result.
 
 
+=== MODx.Q (3R) ===
+
+* F0nm_6go5  MODS.Q	Rm, Ro, Rn	//(MULQ)
+* F0nm_6Go5  MODU.Q	Rm, Ro, Rn	//(MULQ)
+
+Perform a 64-bit integer modulo.
+Find the modulo of dividing Rm by Ro and stores the result in Rn.
+
+This instruction will be part of the MULQ extension.
+
+This operation only exists in Lane 1.
+
+
 === MOV ===
 
 MOV, GPR
@@ -1267,6 +1294,30 @@ XMOVTT will load the 32-bit immediate into the high 16 bits of each target regis
 
 Performs a narrow multiply (32 bit).
 Only the low 32 bits are used from the input registers, and the resulting value is 32-bit sign or zero extended.
+
+This operation only exists in Lane 1.
+
+
+=== MULx.Q (3R) ===
+
+* F0nm_1Go2  MULS.Q		Rm, Ro, Rn			//(MULQ) Signed Multiply
+* F0nm_1Go3  MULU.Q		Rm, Ro, Rn			//(MULQ) Unsigned Multiply
+
+Perform a 64-bit multiply, either signed or unsigned.
+
+This instruction will be part of the MULQ extension.
+
+This operation only exists in Lane 1.
+
+
+=== MULxH.x (3R) ===
+
+* F0nm_3go4  MULSH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
+* F0nm_3go5  MULUH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
+
+Perform a 64-bit multiply, keeping the high-order results (bits 127:64 of a widening multiply).
+
+This instruction will be part of the MULQ extension.
 
 This operation only exists in Lane 1.
 
@@ -2057,8 +2108,8 @@ PCSELT.W will select each Word element from Rm or Rn depending on the correspond
 
 === PDOTT.x (GSVF, Possible) ===
 
-*** F0ni_1g9A  PDOTT.H		Imm5u, Rn	//(GSVF? Predict Dot Predicate)
-*** F0ni_1G9A  PDOTT.F		Imm5u, Rn	//(GSVF? Predict Dot Predicate)
+* F0ni_1g9A  PDOTT.H		Imm5u, Rn	//(GSVF? Predict Dot Predicate)
+* F0ni_1G9A  PDOTT.F		Imm5u, Rn	//(GSVF? Predict Dot Predicate)
 
 Make a prediction about a Dot Vector.
 These predictions will be fairly loose in terms of accuracy requirements.
@@ -2591,6 +2642,17 @@ Types:
 * 1111: -
 
 
+=== FDIVx (GFP, FDIV) ===
+
+* F0nm_6go6 FDIV		Rm, Ro, Rn			//(FDIV) FDIV
+* F0nm_6Go6 FDIVX		Rm, Ro, Rn			//(FDIV+GFPX)
+
+Perform a Floating-Point Divide.
+Divides Rm by Ro and store the result in Rn.
+
+This instruction will be part of the FDIV extension.
+
+
 === FLDCx (GFP) ===
 
 * 63nm       FLDCF		Rm, Rn		//(GFP) Single->Double
@@ -2668,6 +2730,16 @@ Negate the value of the double precision value in Rm and store the result in Rn.
 
 
 
+=== FSQRTx (GFP, FDIV) ===
+
+* F0nm_1gCD  FSQRT		Rm, Rn		//(FDIV) Square Root
+* F0nm_1GCD  FSQRTX		Xm, Xn		//(FDIV) Square Root (GFPX)
+
+Perform a Floating-Point Square Root.
+
+This instruction will be part of the FDIV extension.
+
+
 === FSTCx (GFP) ===
 
 * 66nm       FSTCF		Rm, Rn		//(GFP) Double->Single
@@ -2703,7 +2775,7 @@ Subtract the double precision value in Ro from the value from Rm and store the r
 FSUBX will operate instead on a LongDouble value.
 
 
-== Jumbo Instructions (Optional / Experimental) ==
+== Jumbo Instructions ==
 
 Moved to core ISA Spec.
 

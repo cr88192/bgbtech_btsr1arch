@@ -676,6 +676,8 @@ byte opn;
 byte opr;
 byte prd;			//predication mode
 byte immty;			//immediate type
+byte tgt_mult;		//branch target multiplier
+byte llvl;			//Loop Level
 ccxl_type type;
 ccxl_type stype;
 ccxl_register dst;

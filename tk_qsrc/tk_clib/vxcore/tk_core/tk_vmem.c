@@ -1015,8 +1015,8 @@ int TK_VMem_Init()
 
 	if(TK_VMEM_PAGESHL==14)
 	{
-		tpte|=0x0042;	//Three-Level, 16K pages
-//		tpte|=0x0153;	//B-Tree
+//		tpte|=0x0042;	//Three-Level, 16K pages
+		tpte|=0x0153;	//B-Tree
 //		tpte|=0x0253;	//B-Tree (Hybrid)
 //		tmmcr=0x002D;
 	}
@@ -2293,15 +2293,16 @@ void TK_VMem_VaPageInAddr(s64 vaddr)
 	ptpn=(pte>>TK_VMEM_PTESHL)&TK_VMEM_PTEMASK;
 	if(!ptpn)
 	{
-#if 0
+#if 1
 		tk_printf("TK_VMem_VaPageInAddr: Debug Pad, %p\n", vaddr1);
 		ptpn=TK_VMem_AllocSwapPages(1);
 		pte|=((u64)ptpn)<<TK_VMEM_PTESHL;
 		pte&=~1;
 		TK_VMem_SetPageTableEntry(vaddr, pte);
+		return;
 #endif
 
-#if 1
+#if 0
 //		pte=0x0F1;
 //		pte=0x00010001;
 		pte=0x000100F1;

@@ -457,6 +457,8 @@ ashl_list:
 #endif
 
 
+#if 0
+
 .global X(__longj)
 X(__longj):
 	mov r4, r1
@@ -548,6 +550,8 @@ X(__setj):
 	mov #0, r2
 	rts
 	nop
+
+#endif
 
 
 .global X(__va64_arg_i)
@@ -721,6 +725,8 @@ X(__sthf16):
 	rts
 #endif
 
+
+#if 0
 .global X(__memcpy32)
 X(__memcpy32):
 
@@ -767,6 +773,8 @@ __memcpy64.L0:
 	rts
 #endif
 
+#endif
+
 .global X(__memcpy128)
 X(__memcpy128):
 
@@ -786,6 +794,7 @@ __memcpy128.L0:
 	rts
 #endif
 
+#if 0
 .global X(__memcpy8_16)
 X(__memcpy8_16):
 	mov.q @(r5, 0), r0
@@ -794,6 +803,7 @@ X(__memcpy8_16):
 	mov.q r1, @(r4, 8)
 	rts
 
+#endif
 
 .ifarch bjx2_movx
 memcpy_movx:
@@ -983,13 +993,16 @@ X(sleep_0):
 
 	rts
 
+#if 0
 .global X(__do_ldtlb)
 X(__do_ldtlb):
 	mov r4, r0
 	mov r5, r1
 	ldtlb
 	rts
+#endif
 
+#if 0
 .global X(__do_rethrow_fault)
 X(__do_rethrow_fault):
 	mov STACK_BASE_ISR, sp
@@ -1035,6 +1048,7 @@ X(__do_rethrow_fault):
 	mov vbr, r2
 	add #8, r2
 	jmp r2
+#endif
 
 #include "tk_divi2.S"
 // #include "tk_divi3.S"

@@ -9,10 +9,10 @@ Flag:
 int BGBCC_JX2_CheckOps32GetRegs(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2,
-	byte *rrs, byte *rrt, byte *rrn,
-	byte *rspr, byte *rspw, int *rspfl)
+	u16 *rrs, u16 *rrt, u16 *rrn,
+	u16 *rspr, u16 *rspw, int *rspfl)
 {
-	static byte gr2cr[32]={
+	static u16 gr2cr[32]={
 		BGBCC_SH_REG_PC,
 		BGBCC_SH_REG_PR,
 		BGBCC_SH_REG_SR,
@@ -31,7 +31,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		BGBCC_SH_REG_ZZR
 	};
 
-	byte rs, rt, rn, spr, spw, spfl;
+	u16 rs, rt, rn, rs2, spr, spw, spfl;
 	
 //	if((opw1&0xE000)!=0xE000)
 	if(	((opw1&0xE000)!=0xE000) &&
@@ -79,6 +79,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		if((opw2&0xF008)==0x1008)
 		{
 			rt=rn;
+//			rs2=rn;
 
 //			return(-1);
 
@@ -94,9 +95,15 @@ int BGBCC_JX2_CheckOps32GetRegs(
 				
 				case 0xA:
 					spw=gr2cr[rn];
+//					rt=BGBCC_SH_REG_ZZR;
 					break;
 				case 0xB:
 					spr=gr2cr[rs];
+//					rt=BGBCC_SH_REG_ZZR;
+					break;
+
+				case 0x8:
+					rt=BGBCC_SH_REG_ZZR;
 					break;
 					
 				case 0x9:	case 0xF:
@@ -141,8 +148,12 @@ int BGBCC_JX2_CheckOps32GetRegs(
 			}
 
 
-			*rrs=rn;
-			*rrt=rs;
+//			*rrs=rn;
+//			*rrt=rs;
+
+			*rrs=rs;
+			*rrt=rt;
+
 			*rrn=rn;
 			*rspr=spr;
 			*rspw=spw;
@@ -470,7 +481,7 @@ int BGBCC_JX2_CheckOps32ReadsRn(
 int BGBCC_JX2_CheckOps32IsMem(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
-	byte rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
+	u16 rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
 	int rspfl1, rspfl2;
 	int ret1, ret2;
 
@@ -485,7 +496,7 @@ int BGBCC_JX2_CheckOps32IsMem(
 int BGBCC_JX2_CheckOps32Is2Stage(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
-	byte rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
+	u16 rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
 	int rspfl1, rspfl2;
 	int ret1, ret2;
 
@@ -501,7 +512,7 @@ int BGBCC_JX2_CheckOps32Is2Stage(
 int BGBCC_JX2_CheckOps32Is3Stage(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
-	byte rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
+	u16 rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
 	int rspfl1, rspfl2;
 	int ret1, ret2;
 
@@ -517,8 +528,8 @@ int BGBCC_JX2_CheckOps32SequenceOnlyB(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2, int opw3, int opw4, int fl)
 {
-	byte rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
-	byte rs2, rt2, rn2, rm2, rspw2, rs2b, rt2b, rn2b, rm2b;
+	u16 rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
+	u16 rs2, rt2, rn2, rm2, rspw2, rs2b, rt2b, rn2b, rm2b;
 	int rspfl1, rspfl2;
 	int ret1, ret2;
 
@@ -695,9 +706,9 @@ int BGBCC_JX2_InferOps32Interlock(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int fl)
 {
-	byte rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
-	byte rs2, rt2, rn2, rm2, rspw2, rs2b, rt2b, rn2b, rm2b;
-	byte rs3, rt3, rn3, rm3, rspw3, rs3b, rt3b, rn3b, rm3b;
+	u16 rs1, rt1, rn1, rm1, rspw1, rs1b, rt1b, rn1b, rm1b;
+	u16 rs2, rt2, rn2, rm2, rspw2, rs2b, rt2b, rn2b, rm2b;
+	u16 rs3, rt3, rn3, rm3, rspw3, rs3b, rt3b, rn3b, rm3b;
 	int rspfl1, rspfl2, rspfl3;
 	int ret1, ret2, ret3;
 
@@ -1090,6 +1101,7 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 		if((sctx->use_wexmd==1) || (fl&1))
 //		if(1)
 		{
+			/* Disallow Store in 3-wide bundles. */
 			if((opw2&0x8800)==0x0000)
 				return(0);
 		}

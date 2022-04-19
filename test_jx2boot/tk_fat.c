@@ -19,6 +19,7 @@ void tkfat_setChs(byte *chs, int lba)
 	chs[2]=ts>>8;
 }
 
+#if 0
 void tkfat_setWord(byte *ptr, u16 val)
 	{	ptr[0]=val;	ptr[1]=val>>8;	}
 void tkfat_setDWord(byte *ptr, u32 val)
@@ -28,6 +29,13 @@ u16 tkfat_getWord(byte *ptr)
 	{	return(ptr[0]|(ptr[1]<<8));	}
 u32 tkfat_getDWord(byte *ptr)
 	{	return(ptr[0]|(ptr[1]<<8)|(ptr[2]<<16)|(ptr[3]<<24));	}
+#endif
+
+#define tkfat_getWord(ptr)			(*(u16 *)(ptr))
+#define tkfat_getDWord(ptr)			(*(u32 *)(ptr))
+#define tkfat_setWord(ptr, val)		(*(u16 *)(ptr)=(val))
+#define tkfat_setDWord(ptr, val)	(*(u32 *)(ptr)=(val))
+
 
 /** Get sectors as a temporary buffer.
   * Given LBA and a number of sectors (max=128).
