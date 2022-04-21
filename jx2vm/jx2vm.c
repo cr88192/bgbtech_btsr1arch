@@ -1160,6 +1160,7 @@ int main(int argc, char *argv[])
 			ctx->tot_cyc/(tsec*1000000.0),
 			(tvus/10000.0)/tsec,
 			ctx->nttick_irq/tsec);
+		printf("Avg Bundle: %f\n", (ctx->tot_ops*1.0)/ctx->tot_nbops);
 		printf("Exit Status %04X\n", i);
 	}
 #endif

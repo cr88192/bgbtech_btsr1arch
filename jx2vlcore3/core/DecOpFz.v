@@ -1696,6 +1696,17 @@ begin
 							opUCty		= JX2_IUC_WX;
 						end
 					end
+					4'hD: begin		/* F0nm_1eDD */
+						opNmid		= JX2_UCMD_FPU3;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_FPU_FSQRTA;
+						if(opExQ)
+						begin
+							opUCmdIx	= JX2_UCIX_FPU_FSQRTXA;
+							opUCty		= JX2_IUC_WX;
+						end
+					end
 `endif
 
 					default: begin
@@ -2903,6 +2914,17 @@ begin
 				if(opExQ)
 				begin
 					opUCmdIx	= JX2_UCIX_FPU_FDIVX;
+					opUCty		= JX2_IUC_WX;
+				end
+			end
+			16'h6zz7: begin		/* F0nm_6eo7 */
+				opNmid		= JX2_UCMD_FPU3;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_FPU_FDIVA;
+				if(opExQ)
+				begin
+					opUCmdIx	= JX2_UCIX_FPU_FDIVXA;
 					opUCty		= JX2_IUC_WX;
 				end
 			end

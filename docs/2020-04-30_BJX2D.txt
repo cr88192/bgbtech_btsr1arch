@@ -1701,7 +1701,8 @@ F0zz Instruction Block:
 *** F0nm_1GBD  FCMPXGT		Xm, Xn		//SR.T=(FRn GT FRm)  (GFPX)
 *** F0nm_1gCD ? FSQRT		Rm, Rn		//(FDIV) Square Root
 *** F0nm_1GCD ? FSQRTX		Xm, Xn		//(FDIV) Square Root (GFPX)
-*** F0nm_1eDD  -
+*** F0nm_1gDD ? FSQRTA		Rm, Rn		//(FDIV) Square Root (Approx)
+*** F0nm_1GDD ? FSQRTXA		Xm, Xn		//(FDIV) Square Root (GFPX, Approx)
 *** F0nm_1eED  -
 *** F0nm_1eFD  -
 
@@ -1960,7 +1961,8 @@ F0zz Instruction Block:
 ** F0nm_6Go5 ? MODU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
 ** F0nm_6go6 ? FDIV		Rm, Ro, Rn			//(FDIV) FDIV
 ** F0nm_6Go6 ? FDIVX	Rm, Ro, Rn			//(FDIV+GFPX)
-** F0nm_6eo7 -
+** F0nm_6go7 ? FDIVA	Rm, Ro, Rn			//(FDIV) FDIV Approx
+** F0nm_6Go7 ? FDIVXA	Rm, Ro, Rn			//(FDIV+GFPX) FDIVX Approx
 ** F0nm_6go8 ? BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
 ** F0nm_6Go8 ? BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
 ** F0nm_6go9 ? BLERP	Rm, Ro, Rn			//(RGBX) Linear Interpolate

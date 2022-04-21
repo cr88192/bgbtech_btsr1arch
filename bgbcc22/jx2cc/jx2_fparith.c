@@ -37,12 +37,16 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 	}
 #endif
 
+	nm1=-1; nm2=-1;
 	switch(opr)
 	{
 	case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADD;	nm2=-1; break;
 	case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUB;	nm2=-1; break;
 	case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMUL;	nm2=-1; break;
-//	case CCXL_BINOP_DIV:	nm1=BGBCC_SH_NMID_FDIV;	nm2=-1; break;
+	case CCXL_BINOP_DIV:
+		if(sctx->has_qmul&2)
+			nm1=BGBCC_SH_NMID_FDIV;
+		break;
 
 	default:		nm1=-1; nm2=-1; break;
 	}
@@ -298,12 +302,17 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 		}
 #endif
 
+		nm1=-1; nm2=-1;
 		switch(opr)
 		{
 		case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADD;	nm2=-1; break;
 		case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUB;	nm2=-1; break;
 		case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMUL;	nm2=-1; break;
-//		case CCXL_BINOP_DIV:	nm1=BGBCC_SH_NMID_FDIV;	nm2=-1; break;
+
+		case CCXL_BINOP_DIV:
+			if(sctx->has_qmul&2)
+				nm1=BGBCC_SH_NMID_FDIV;
+			break;
 
 		default:		nm1=-1; nm2=-1; break;
 		}

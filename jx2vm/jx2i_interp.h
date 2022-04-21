@@ -619,6 +619,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MODSQ			0x136		//
 #define BJX2_NMID_MODUQ			0x137		//
 
+#define BJX2_NMID_FDIVA			0x138		//
+#define BJX2_NMID_FDIVXA		0x139		//
+#define BJX2_NMID_FSQRTA		0x12A		//
+#define BJX2_NMID_FSQRTXA		0x12B		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -853,6 +858,7 @@ s64 tot_cyc_miss_l2i;
 s64 tot_cyc_miss_l2v;
 s64 tot_cyc_mmio;
 s64 tot_ops;
+s64 tot_nbops;
 s16 tgt_mhz;				//target MHz
 u16 rcp_mhz;				//reciprocal MHz
 int iodel_cyc;				//IO delay cycles
@@ -1041,7 +1047,7 @@ byte rm;		//Source Register
 byte ro;		//Source Register
 byte rp;		//Source Register (4R)
 byte rq;		//Quadrant Register
-sbyte cyc;		//Clock Cycles
+s16 cyc;		//Clock Cycles
 u16 fl;			//Opcode Flags
 // s32 imm;		//Immediate
 s64 imm;		//Immediate
@@ -1056,8 +1062,9 @@ void *data;
 struct BJX2_Trace_s {
 // BJX2_Opcode *ops[BJX2_TR_MAXOP+2];
 BJX2_Opcode *ops[BJX2_TR_MAXOP];
-int n_ops;
-int n_cyc;
+sbyte n_ops;
+sbyte n_nbops;
+s16 n_cyc;
 s16	jit_inh;
 s64 runcnt;
 s64 acc_pencyc;			//accumulated penalty cycles

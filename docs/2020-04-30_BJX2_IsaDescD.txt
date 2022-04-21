@@ -2646,9 +2646,13 @@ Types:
 
 * F0nm_6go6 FDIV		Rm, Ro, Rn			//(FDIV) FDIV
 * F0nm_6Go6 FDIVX		Rm, Ro, Rn			//(FDIV+GFPX)
+* F0nm_6go7 FDIVA		Rm, Ro, Rn			//(FDIV) FDIV (Approx)
+* F0nm_6Go7 FDIVXA		Rm, Ro, Rn			//(FDIV+GFPX) (Approx)
 
 Perform a Floating-Point Divide.
 Divides Rm by Ro and store the result in Rn.
+
+The FDIVA and FDIVXA will perform a fast approximation without waiting for the result to converge on the correct answer.
 
 This instruction will be part of the FDIV extension.
 
@@ -2734,8 +2738,14 @@ Negate the value of the double precision value in Rm and store the result in Rn.
 
 * F0nm_1gCD  FSQRT		Rm, Rn		//(FDIV) Square Root
 * F0nm_1GCD  FSQRTX		Xm, Xn		//(FDIV) Square Root (GFPX)
+* F0nm_1gDD  FSQRTA		Rm, Rn		//(FDIV) Square Root (Approx)
+* F0nm_1GDD  FSQRTXA	Xm, Xn		//(FDIV) Square Root (GFPX, Approx)
 
 Perform a Floating-Point Square Root.
+
+The FSQRTA and FSQRTXA forms will perform a fast approximation without waiting for the result to converge on the correct answer.
+
+Note that SQRT will be defined as a Signed Square Root, as-in, the output sign will be equivalent to the input sign.
 
 This instruction will be part of the FDIV extension.
 

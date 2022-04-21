@@ -2856,7 +2856,7 @@ int BGBCC_JX2_TryMapRegCn(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_TryMapRegSn(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegBsrCn(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegBsrSn(BGBCC_JX2_Context *ctx, int reg);
-int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn);
+int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2_EmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int rn);
 int BGBCC_JX2_ProbeEmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int rn);
 int BGBCC_JX2_TryNormalizeXReg(BGBCC_JX2_Context *ctx, int nmid, int rs);

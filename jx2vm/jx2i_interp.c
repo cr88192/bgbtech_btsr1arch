@@ -2601,7 +2601,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 {
 	BJX2_Trace *cur;
 	bjx2_addr pc;
-	int cn, cn0, cn1, nc, no;
+	int cn, cn0, cn1, nc, no, nbo;
 	int i, j, k;
 
 	cn=lim;
@@ -2657,6 +2657,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		cn0=cn1;
 		
 		no=0;
+		nbo=0;
 		
 //		if(ctx->tgt_mhz>300)
 //		if(ctx->use_jit)
@@ -2668,6 +2669,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 				nc=cur->n_cyc;
 				cn1-=nc;
 				no+=cur->n_ops;
+				nbo+=cur->n_nbops;
 				cur=cur->Run(ctx, cur);
 			}
 		}
@@ -2682,6 +2684,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 				nc=cur->n_cyc;
 				cn1-=nc;
 				no+=cur->n_ops;
+				nbo+=cur->n_nbops;
 
 				cur=cur->Run(ctx, cur);
 			}
@@ -2754,6 +2757,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 
 		ctx->tot_cyc+=nc;
 		ctx->tot_ops+=no;
+		ctx->tot_nbops+=nbo;
 		ctx->ttick_hk-=nc;
 		cn-=nc;
 

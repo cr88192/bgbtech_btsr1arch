@@ -206,6 +206,37 @@ void BJX2_Op_FDIVD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	c=a/b;
 	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
 }
+
+void BJX2_Op_FDIVAD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	
+	v0=ctx->regs[op->rm];
+	v1=ctx->regs[op->ro];
+	v2=	(v0-v1)+0x3FEF5D0000000000ULL;
+	v2=	((v0^v1)&0x8000000000000000ULL)|
+		((v2   )&0x7FFFFF0000000000ULL);
+	ctx->regs[op->rn]=v2;
+
+//	double a, b, c;
+//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
+//	c=a/b;
+//	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
+}
+
+void BJX2_Op_FDIVXA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	
+	v0=ctx->regs[op->rm+1];
+	v1=ctx->regs[op->ro+1];
+	v2=	(v0-v1)+0x3FFEF5D000000000ULL;
+	v2=	((v0^v1)&0x8000000000000000ULL)|
+		((v2   )&0x7FFFFFF000000000ULL);
+	ctx->regs[op->rn+0]=0;
+	ctx->regs[op->rn+1]=v2;
+}
 #endif
 
 
@@ -730,8 +761,31 @@ void BJX2_Op_FSQRT_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	double sf;
 	sf=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
-	sf=sqrt(sf);
+	if(sf<0)
+		sf=-sqrt(-sf);
+	else
+		sf=sqrt(sf);
 	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, sf);
+}
+
+void BJX2_Op_FSQRTA_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	v0=ctx->regs[op->rm];
+	v1=(v0>>1)+0x2000000000000000ULL;
+	v2=	(v0&0x8000000000000000ULL)|
+		(v1&0x7FFFFF0000000000ULL);
+	ctx->regs[op->rn]=v2;
+}
+
+void BJX2_Op_FSQRTXA_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	v0=ctx->regs[op->rm+1];
+	v1=(v0>>1)+0x2000000000000000ULL;
+	v2=	(v0&0x8000000000000000ULL)|
+		(v1&0x7FFFFFF000000000ULL);
+	ctx->regs[op->rn+1]=v2;
 }
 
 void BJX2_Op_FCMPEQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)

@@ -204,20 +204,30 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			case BGBCC_SH_REGCLS_AR_REF2:
 				if(ni&1)ni++;
 				if(ni>=8)
+				{
+					/* Argument comes from stack. */
 					obj->args[i]->regflags|=BGBCC_REGFL_TEMPLOAD;
+				}
 				ni+=2;
 				break;
 
 			default:
 				if(ni>=8)
+				{
+					/* Argument comes from stack. */
 					obj->args[i]->regflags|=BGBCC_REGFL_TEMPLOAD;
+				}
 				ni++;
 				break;
 		}
 	}
 	if(ni>8)
 	{
+		/* Function may access stack. */
 		obj->regflags|=BGBCC_REGFL_TEMPLOAD;
+
+		/* Disallow "tiny leaf" special case. */
+		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 	}
 #endif
 

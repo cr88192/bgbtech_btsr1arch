@@ -17,6 +17,8 @@ vluint64_t main_time = 0;
 #define JX2_UCIX_FPU_FDIV		0x03		//FPU DIV
 #define JX2_UCIX_FPU_FMOV		0x04		//FPU MOV
 
+#define JX2_UCIX_FPU_FDIVA		0x13		//FPU DIV
+
 #define JX2_UCIX_FPU_FADD_G		0x10		//FPU ADD (GFP)
 #define JX2_UCIX_FPU_FSUB_G		0x11		//FPU SUB (GFP)
 #define JX2_UCIX_FPU_FMUL_G		0x12		//FPU MUL (GFP)
@@ -32,6 +34,7 @@ vluint64_t main_time = 0;
 #define JX2_UCIX_FPU_CMPGT_G	0x1E		//ALU Command
 
 #define JX2_UCIX_FPU_FSQRT		0x0F		//FPU SQRT
+#define JX2_UCIX_FPU_FSQRTA		0x1F		//FPU SQRT
 
 #define JX2_UCIX_FPIX_FNEG		0x00		//FPU ADD
 #define JX2_UCIX_FPIX_FABS		0x01		//FPU SUB
@@ -151,6 +154,18 @@ vluint64_t grn;
 
 {JX2_UCMD_FPU3, JX2_UCIX_FPU_FSQRT,  9.8695877281,  3.048831,  3.14159 },
 
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIV,   3.048831, 2.634884,  
+			1.1571025517631895749490300142245},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIV,   3.14159, 1.414214,  
+			2.2214389052859043963643408989021},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIV,   1.414214,  3.14159, 
+			0.45015867761229186494736741586267},
+
+
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FDIVA,   1.414214,  3.14159, 
+			0.45015867761229186494736741586267},
+{JX2_UCMD_FPU3, JX2_UCIX_FPU_FSQRTA,  9.8695877281,  3.048831,  3.14159 },
+
 #if 0
 {0x57, 0,  3.14,  2.73, -3.140000000},
 {0x57, 1,  3.14,  2.73,  3.140000000},
@@ -206,20 +221,30 @@ int main(int argc, char **argv, char **env)
 			tz=top->regValGRnA;
 			fz=*(double *)(&tz);
 
-			printf(
-				"%02X-%02X Rn=%lX(%f) Rm=%lX(%f)\n"
-				"Ro=%016lX(%f) Expect=%016lX(%f)\n",
-				top->opCmdA, top->regIdIxtA,
-				tx, fx, ty, fy, tz, fz, tw, fw);
-
-			if(op==JX2_UCMD_FSTCX)
+			grn=top->regValGRnA;
+			if((tz==tw) || ((op==JX2_UCMD_FSTCX) && (grn==egrn)))
 			{
-				grn=top->regValGRnA;
-				printf("GRn=%llX (%lld), Expect=%llX(%lld)\n",
-					grn, grn, egrn, egrn);
+				printf(
+					"%02X-%02X Rn=%016llX(% f) Rm=%016llX(% f)  Exact\n",
+					top->opCmdA, top->regIdIxtA,
+					tx, fx, ty, fy);
+			}else
+			{
+				printf(
+					"%02X-%02X Rn=%lX(%f) Rm=%lX(%f)\n"
+					"Ro=%016lX(%f) Expect=%016lX(%f) E=%ld\n",
+					top->opCmdA, top->regIdIxtA,
+					tx, fx, ty, fy, tz, fz, tw, fw, tz-tw);
+
+				if(op==JX2_UCMD_FSTCX)
+				{
+					grn=top->regValGRnA;
+					printf("GRn=%llX (%lld), Expect=%llX(%lld)\n",
+						grn, grn, egrn, egrn);
+				}
+				printf("\n");
 			}
 
-			printf("\n");
 
 			top->opCmdA=0x00;
 			top->opCmdB=0x00;
@@ -301,7 +326,8 @@ int main(int argc, char **argv, char **env)
 
 //		if(main_time>256)
 //		if(main_time>4096)
-		if(main_time>16384)
+//		if(main_time>16384)
+		if(main_time>65536)
 		{
 //			printf("%llX\n", (long long)(top->outAddr));
 			break;

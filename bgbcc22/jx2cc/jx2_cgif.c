@@ -200,6 +200,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_dmacl=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "qmul"))
 		{ shctx->has_qmul=1; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "mulq"))
+		{ shctx->has_qmul=1; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "fdiv"))
+		{ shctx->has_qmul|=2; }
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;

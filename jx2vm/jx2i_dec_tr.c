@@ -695,13 +695,14 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	static int rec=0;
 	BJX2_Opcode *op, *op1, *op2, *op3, *op4;
 	int ldrl, vdrl, brk, wexmd;
-	int pc, nc, ncyc, npc, jpc, ilo;
+	int pc, nc, ncyc, npc, jpc, ilo, nbo;
 	int i, j;
 	
 //	if((addr&1) || (addr&(~65535)))
 	if(addr&1)
 	{
 		tr->n_ops=0;
+		tr->n_nbops=0;
 		tr->n_cyc=0;
 		tr->Run=BJX2_DecTraceCb_Bad;
 		return(-1);
@@ -722,6 +723,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 //		__debugbreak();
 
 		tr->n_ops=0;
+		tr->n_nbops=0;
 		tr->n_cyc=0;
 		tr->jit_inh=-1;
 //		if(ctx->status==BJX2_FLT_TLBMISS)
@@ -736,6 +738,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	if(rec>=32)
 	{
 		tr->n_ops=0;
+		tr->n_nbops=0;
 		tr->n_cyc=0;
 		tr->jit_inh=-1;
 		tr->Run=BJX2_DecTraceCb_RunUnpack;
@@ -883,6 +886,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	if(nc<1)
 	{
 		tr->n_ops=0;
+		tr->n_nbops=0;
 		tr->n_cyc=0;
 		tr->jit_inh=-1;
 		tr->Run=BJX2_DecTraceCb_Bad;
@@ -1261,17 +1265,22 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	}
 #endif
 
+	nbo=0;
 	ncyc=0;
 	for(i=0; i<nc; i++)
 	{
 		op=tr->ops[i];
 		ncyc+=op->cyc;
+
+		if(!(op->fl&BJX2_OPFL_WEX))
+			nbo++;
 	}
 
 	if(nc>=BJX2_TR_MAXOP)
 		{ npc=pc; }
 
 	tr->n_ops=nc;
+	tr->n_nbops=nbo;
 	tr->n_cyc=ncyc;
 	tr->addr_nxt=npc;
 	tr->addr_jmp=jpc;

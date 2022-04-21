@@ -206,6 +206,11 @@ reg[63:0]		tRegValRcpL5;		//Reciprocal (Working Value)
 reg[63:0]		tRegValRcpL6;		//Reciprocal (Working Value)
 reg[63:0]		tRegValRcp;			//Reciprocal (Working Value)
 
+reg[63:0]		tRegValRcpS;		//Reciprocal (Working Value)
+reg[63:0]		tRegValRcpSL;		//Reciprocal (Working Value)
+reg				tRegValRcpDoS;		//Reciprocal (Working Value)
+reg				tRegValRcpDoSL;		//Reciprocal (Working Value)
+
 reg[63:0]		tRegDifRcpL;		//Reciprocal Delta
 reg[63:0]		tRegDifRcp;			//Reciprocal Delta
 reg[63:0]		tRegDifRcpA;		//Reciprocal Delta
@@ -344,6 +349,8 @@ reg[63:0]	tRegMulValL;	//Rn output value (last cycle)
 wire[63:0]	tRegMulVal;		//Rn output value
 wire[63:0]	tRegMulValHi;		//Rn output value
 wire[1:0]	tRegMulExOK;	
+wire[3:0]	tRegMulExOp;
+wire[3:0]	tRegMulExOpA;
 
 `ifdef jx2_fpu_longdbl
 
@@ -363,7 +370,7 @@ FpuMulG	fpu_mul(
 	tRegMulRt,		tRegMulRtHi,
 	tRegMulRs,		tRegMulRsHi,
 	tRegMulVal,		tRegMulValHi,
-	tRegAddExOp,	tRegMulExOK,
+	tRegMulExOp,	tRegMulExOK,
 	tRegMulRMode
 	);
 
@@ -385,7 +392,7 @@ FpuMul	fpu_mul(
 	clock,			reset,		tMulExHold,
 //	tRegAddRt,		tRegAddRs,	tRegMulVal);
 	tRegMulRt,		tRegMulRs,	tRegMulVal,
-	tRegAddExOp,	tRegMulExOK,
+	tRegMulExOp,	tRegMulExOK,
 	tRegMulRMode);
 
 `endif
@@ -425,8 +432,15 @@ assign	tRegAddExOpA	=
 	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h2)) ? 3'h4 :
 	3'h0 };
 
+assign	tRegMulExOpA	=
+	(tExCmdIsSimd) ? tRegAddSimdExOp :
+	(tExCmdIsCnvLd) ? tRegAddCnvLdExOp :
+	{ tFpuIsLongDbl, 3'h0 };
+
 assign	tRegAddExOp	=
 	(exHold && !tExCmdIsSimd) ? tRegAddExOpL : tRegAddExOpA;
+
+assign	tRegMulExOp = tRegMulExOpA;
 
 
 assign	tExCmdIsCnvLd =
@@ -449,6 +463,8 @@ assign	tExCmdIsMac =
 
 `endif
 
+
+reg	tMulFlipSign;
 
 `ifdef def_true
 assign	tFpuIsFpu3 = (tOpCmdL[5:0]==JX2_UCMD_FPU3);
@@ -473,7 +489,13 @@ assign	tRegAddExOpA	=
 	(tFpuIsFstcx && (tRegIdIxtL[3:0]==4'h2)) ? 3'h4 :
 	3'h0 };
 
+assign	tRegMulExOpA	=
+	(tExCmdIsSimd) ? tRegAddSimdExOp :
+	(tExCmdIsCnvLd) ? tRegAddCnvLdExOp :
+	{ tFpuIsLongDbl, 2'b00, tMulFlipSign };
+
 assign	tRegAddExOp	= tRegAddExOpA;
+assign	tRegMulExOp	= tRegMulExOpA;
 
 assign	tExCmdIsCnvLd =
 	(	(tOpCmdL[5:0]==JX2_UCMD_FLDCX)	||
@@ -502,8 +524,8 @@ reg[5:0]	tOpUCmd1;
 
 reg			tExHold;
 reg			tExValidCmd;
-reg[3:0]	tHoldCyc;
-reg[3:0]	tDoHoldCyc;
+reg[11:0]	tHoldCyc;
+reg[11:0]	tDoHoldCyc;
 
 reg			tDivHold;
 reg			tDoHoldDiv;
@@ -615,6 +637,10 @@ assign		tRegValRsBH = exHold ? tRegValRsBL : tRegValRsB;
 assign		tRegValRtBH = exHold ? tRegValRtBL : tRegValRtB;
 `endif
 
+reg			tValSgX;
+reg[11:0]	tValRcpBias;
+reg[12:0]	tValRcpBiasB;
+
 
 always @*
 begin
@@ -631,6 +657,7 @@ begin
 	tExValidCmd		= 0;
 	tExCmdVecW		= 0;
 	tRegOutSrT		= tRegInSr[0];
+	tMulFlipSign	= 0;
 
 	tNxtVecRnA		= tVecRnA;
 	tNxtVecRnB		= tVecRnB;
@@ -642,7 +669,11 @@ begin
 	
 	tRegValRcp		= tRegValRcpL;
 	tRegDifRcp		= tRegDifRcpL;
-	tRegTgtRcp		= tRegTgtRcpL;
+//	tRegTgtRcp		= tRegTgtRcpL;
+	tRegTgtRcp		= tRegValRsL;
+
+	tRegValRcpS		= UV64_XX;
+	tRegValRcpDoS	= 0;
 
 	tRegOutFpsr		= regInFpsr;
 
@@ -838,15 +869,37 @@ begin
 	endcase
 
 `ifdef jx2_fpu_enable_fdiv
-	tRegDifRcpA	= tRegTgtRcpL - tRegMulVal;
+	tRegDifRcpA	= tRegTgtRcpL - tRegMulValL;
+
+//	tRegDifRcp	= {
+//		tRegDifRcpA[63], tRegDifRcpA[63], 
+//		tRegDifRcpA[63], tRegDifRcpA[63], 
+//		tRegDifRcpA[63:4] };
+
+//	tRegDifRcp	= {
+//		tRegDifRcpA[63], tRegDifRcpA[63], 
+//		tRegDifRcpA[63], tRegDifRcpA[63:4],
+//		!tRegDifRcpA[63] ^ 
+//			(tRegDifRcpA[3:1]==(tRegDifRcpA[63]?3'b111:3'b000)) };
+//		!tRegDifRcpA[63] };
 
 	tRegDifRcp	= {
 		tRegDifRcpA[63], tRegDifRcpA[63], 
-		tRegDifRcpA[63], // tRegDifRcpA[63], 
-		tRegDifRcpA[63:3] };
+		tRegDifRcpA[63], tRegDifRcpA[63], 
+		tRegDifRcpA[63:5],
+		!tRegDifRcpA[63] };
+
+//	tRegDifRcp	= {
+//		tRegDifRcpA[63], tRegDifRcpA[63], 
+//		tRegDifRcpA[63], tRegDifRcpA[63], 
+//		tRegDifRcpA[63], tRegDifRcpA[63:5] };
 
 	tRegValRcp	= tRegValRcpL + tRegDifRcpL;
 //	tRegValRcp	= tRegValRcpL6 + tRegDifRcpL;
+//	tRegValRcp	= tRegValRcpL2 + tRegDifRcpL;
+
+	if(tRegValRcpDoSL)
+		tRegValRcp	= tRegValRcpSL;
 
 	tDivHold	= (tRegDifRcpL[62:0] != 0) &&
 				(tDoHoldDivL || (tHoldCyc>10));
@@ -897,17 +950,45 @@ begin
 					tRegMulRt	= tRegValRtL;
 					tRegTgtRcp	= tRegValRsL;
 
-					if(!tDoHoldDivL)
-						tDoHoldCyc	= 14;
+//					if(!tDoHoldDivL)
+//						tDoHoldCyc	= 14;
+//					tDoHoldCyc	= 140;
+//					tDoHoldCyc	= 240;
+//					tDoHoldCyc	= 280;
+//					tDoHoldCyc	= 320;
+					tDoHoldCyc	= 384;
+//					tDoHoldCyc	= 420;
 					
-					if(!tDoHoldDivL)
+//					tValRcpBias = 0;
+//					tValRcpBias = 12'hE7F;
+					tValRcpBias = 12'hF5D;
+//					tValRcpBiasB = 13'h0E7F;
+					tValRcpBiasB = 13'h0F5D;
+//					tValRcpBiasB = 13'h0F3D;
+//					tValRcpBiasB = 13'h0EEE;
+
+//					if(!tDoHoldDivL)
+					if(tHoldCyc < 8)
 					begin
-						tRegValRcp	= { tRegValRtL[63], 
-							63'h7FF0_0000_0000_0000 - tRegValRtL[62:0] };
-//						$display("Rcp=%X", tRegValRcp);
+						tValSgX = tRegValRsL[63] ^ tRegValRtL[63];
+					
+//						$display("Rs=%X Rt=%X SgX=%X",
+//							tRegValRsL, tRegValRtL, tValSgX);
+
+						tRegValRcpS	= { tValSgX, 
+							tRegValRsL[62:40]-
+							tRegValRtL[62:40]+
+//							23'h3FF000, 40'h0000 };
+//							{ 11'h3FE, tValRcpBias }, 40'h0000 };
+							{ 10'h1FF, tValRcpBiasB }, 40'h0000 };
+
+//						$display("Rcp=%X", tRegValRcpS);
+
+						tRegValRcpDoS	= 1;
 					end
 					
-//					$display("Rcp Diff=%X", tRegDifRcp);
+//					$display("Rcp Diff=%X Rcp=%X Cyc=%d",
+//						tRegDifRcp, tRegValRcp, tHoldCyc);
 
 //					if(tRegDifRcp[52:6]==0)
 //					begin
@@ -916,9 +997,38 @@ begin
 //							tRegValRcpL4[15:0], tRegValRcpL5[15:0]);
 //					end
 
-					tDoHoldDiv	= tDivHold;
+//					tDoHoldDiv	= tDivHold;
 //					tRegValGRn	= tRegValRcpL;
-					tRegValGRn	= tRegValRcpL6;
+					tRegValGRn	= tRegValRcpL2;
+//					tRegValGRn	= tRegValRcpL6;
+
+					if(tRegIdIxtL[4])
+					begin
+						/* FDIVA */
+						tDoHoldCyc	= 3;
+					end
+
+`ifndef def_true
+					if(tRegValRsL[62:52]==11'h7FF)
+					begin
+						/* Inf or NaN */
+						tRegValGRn	= tRegValRsL;
+						tDoHoldCyc	= 2;
+					end else
+						if(tRegValRtL[62:52]==11'h7FF)
+					begin
+						/* Inf or NaN */
+						tRegValGRn	= tRegValRtL;
+						tDoHoldCyc	= 2;
+					end else
+						if(tRegValRtL[62:52]==11'h000)
+					begin
+						/* Divide by Zero */
+						tRegValGRn	= { tValSgX, 11'h7FF, 52'h00 };
+						tDoHoldCyc	= 2;
+					end
+`endif
+
 				end
 `endif
 
@@ -1069,24 +1179,48 @@ begin
 				4'hF: begin
 					tRegMulRs	= tRegValRcpL;
 					tRegMulRt	= tRegValRcpL;
-					tRegTgtRcp	= tRegValRsL;
+//					tRegTgtRcp	= tRegValRsL;
+					tRegTgtRcp	= { 1'b0, tRegValRsL[62:0] };
 
-					if(!tDoHoldDivL)
-						tDoHoldCyc	= 14;
+//					if(!tDoHoldDivL)
+//						tDoHoldCyc	= 14;
 
-					if(!tDoHoldDivL)
+//					tDoHoldCyc	= 140;
+//					tDoHoldCyc	= 254;
+//					tDoHoldCyc	= 280;
+//					tDoHoldCyc	= 320;
+					tDoHoldCyc	= 384;
+
+//					if(!tDoHoldDivL)
 //					if(tHoldCyc < tDoHoldCyc)
+					if(tHoldCyc < 8)
 					begin
-						tRegValRcp	= { tRegValRsL[63], 
-							63'h2000_0000_0000_0000 + tRegValRsL[63:1] };
-//						$display("Sqrt %X=%X", tRegValRsL, tRegValRcp);
+//						tRegValRcp	= { tRegValRsL[63], 
+//							63'h2000_0000_0000_0000 + tRegValRsL[63:1] };
+//						tRegValRcp	= { tRegValRsL[63], 
+//							31'h2000_0000 + tRegValRsL[63:33], 32'h00 };
+//						tRegValRcpS	= { tRegValRsL[63], 
+						tRegValRcpS	= { 1'b0, 
+							7'h20 + { 1'b0, tRegValRsL[62:57] },
+							tRegValRsL[56:41], 40'h00 };
+						tRegValRcpDoS	= 1;
+
+//						$display("Sqrt %X=%X", tRegValRsL, tRegValRcpS);
 					end
 					
 //					$display("Sqrt Diff=%X", tRegDifRcp);
 
-					tDoHoldDiv	= tDivHold;
+					if(tRegIdIxtL[4])
+					begin
+						/* FDIVA */
+						tDoHoldCyc	= 3;
+					end
+
+//					tDoHoldDiv	= tDivHold;
 //					tRegValGRn	= tRegValRcpL;
-					tRegValGRn	= tRegValRcpL6;
+//					tRegValGRn	= tRegValRcpL2;
+					tRegValGRn	= { tRegValRsL[63], tRegValRcpL2[62:0] };
+//					tRegValGRn	= tRegValRcpL6;
 				end
 `endif
 	
@@ -1300,6 +1434,9 @@ begin
 	tRegDifRcpL		<= tRegDifRcp;
 	tRegTgtRcpL		<= tRegTgtRcp;
 	tDoHoldDivL		<= tDoHoldDiv;
+
+	tRegValRcpSL	<= tRegValRcpS;
+	tRegValRcpDoSL	<= tRegValRcpDoS;
 
 	if(tExHold)
 		tHoldCyc <= tHoldCyc + 1;

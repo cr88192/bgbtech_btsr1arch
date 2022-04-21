@@ -410,7 +410,24 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 			op->cyc=6;
 			break;
 		case BJX2_NMID_FDIV:
-			op->cyc=80;
+		case BJX2_NMID_FDIVX:
+//			op->cyc=80;
+//			op->cyc=240;
+			op->cyc=384;
+			break;
+
+		case BJX2_NMID_FSQRT:
+		case BJX2_NMID_FSQRTX:
+//			op->cyc=80;
+//			op->cyc=254;
+			op->cyc=440;
+			break;
+
+		case BJX2_NMID_FDIVA:
+		case BJX2_NMID_FDIVXA:
+		case BJX2_NMID_FSQRTA:
+		case BJX2_NMID_FSQRTXA:
+			op->cyc=2;
 			break;
 
 		case BJX2_NMID_PADDF:
