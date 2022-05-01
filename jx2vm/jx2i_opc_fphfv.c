@@ -1882,3 +1882,68 @@ void BJX2_Op_PLDCM8SH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vn=(((u64)v3)<<48)|(((u64)v2)<<32)|(((u64)v1)<<16)|v0;
 	ctx->regs[op->rn]=vn;
 }
+
+
+void BJX2_Op_BCDADC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn, vna, vnc, sr;
+	int i, j, k;
+
+	vs=ctx->regs[op->rn];
+	vt=ctx->regs[op->rm];
+	sr=ctx->regs[BJX2_REG_SR];
+	
+	vn=0;
+	for(i=0; i<16; i++)
+	{
+		j=((vs>>(i*4))&15)+((vt>>(i*4))&15);
+		if(i==0)
+//			j+=(sr>>1)&1;
+			j+=sr&1;
+		if(j>9)
+			j+=6;
+		vn|=((u64)j)<<(i*4);
+	}
+	
+//	sr&=~(2ULL);
+	sr&=~(1ULL);
+	if(j>=10)
+//		sr|=2;
+		sr|=1;
+	
+	ctx->regs[op->rn]=vn;
+	ctx->regs[BJX2_REG_SR]=sr;
+}
+
+void BJX2_Op_BCDSBB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn, vna, vnc, sr;
+	int i, j, k;
+
+	vs=ctx->regs[op->rn];
+	vt=ctx->regs[op->rm];
+	sr=ctx->regs[BJX2_REG_SR];
+	
+	vt=0x9999999999999999ULL-vt;
+	
+	vn=0;
+	for(i=0; i<16; i++)
+	{
+		j=((vs>>(i*4))&15)+((vt>>(i*4))&15);
+		if(i==0)
+//			j+=!((sr>>1)&1);
+			j+=!(sr&1);
+		if(j>9)
+			j+=6;
+		vn|=((u64)j)<<(i*4);
+	}
+	
+//	sr&=~(2ULL);
+	sr&=~(1ULL);
+	if(!(j>=10))
+//		sr|=2;
+		sr|=1;
+	
+	ctx->regs[op->rn]=vn;
+	ctx->regs[BJX2_REG_SR]=sr;
+}

@@ -2781,6 +2781,14 @@ void BGBCC_CCXL_CompileExprT(BGBCC_TransState *ctx, BCCX_Node *l)
 		return;
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_bigint, "bigint"))
+	{
+		s0=BCCX_GetCst(l, &bgbcc_rcst_value, "value");
+		s1=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
+		BGBCC_CCXL_StackPushConstBigInt(ctx, s0, 0);
+		return;
+	}
+
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_string, "string"))
 	{
 		s0=BCCX_GetCst(l, &bgbcc_rcst_value, "value");

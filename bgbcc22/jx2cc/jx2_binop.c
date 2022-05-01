@@ -2379,6 +2379,12 @@ int BGBCC_JX2C_EmitUnaryVRegVReg(
 			type, dreg, opr, sreg));
 	}
 
+	if(BGBCC_CCXL_TypeVecP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitUnaryVRegVRegVec(ctx, sctx,
+			type, dreg, opr, sreg));
+	}
+
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
 }
@@ -2671,6 +2677,12 @@ int BGBCC_JX2C_EmitCompareVRegVRegVReg(
 	if(BGBCC_CCXL_TypeBitIntP(ctx, type))
 	{
 		return(BGBCC_JX2C_EmitCompareVRegVRegVRegBitInt(ctx, sctx,
+			type, dreg, opr, sreg, treg));
+	}
+
+	if(BGBCC_CCXL_TypeVecP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitCompareVRegVRegVRegVec(ctx, sctx,
 			type, dreg, opr, sreg, treg));
 	}
 

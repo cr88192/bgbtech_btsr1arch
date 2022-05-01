@@ -571,6 +571,17 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(
 //			case CCXL_BINOP_XOR:	s0="__vnf_c2f_dot"; break;
 		}
 		break;
+
+	case CCXL_TY_BCD64:
+		switch(opr)
+		{
+			case CCXL_BINOP_ADD:	s0="__bcd64_add"; break;
+			case CCXL_BINOP_SUB:	s0="__bcd64_sub"; break;
+			case CCXL_BINOP_MUL:	s0="__bcd64_mul"; break;
+			case CCXL_BINOP_DIV:	s0="__bcd64_div"; break;
+			case CCXL_BINOP_MOD:	s0="__bcd64_mod"; break;
+		}
+		break;
 	}
 
 #if 0
@@ -620,7 +631,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(
 	if(s0)
 	{
 		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, treg, BGBCC_SH_REG_RQ5);
-		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RQ4);
+		BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_RQ4);
 		BGBCC_JX2C_EmitCallName(ctx, sctx, s0);
 		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx,
 			dreg, BGBCC_SH_REG_RQ2);
@@ -717,7 +728,22 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec128F(
 			}
 		}
 	}
-	
+
+	if(sctx->has_qmul&4)
+	{
+		if(type.val==CCXL_TY_BCD128)
+		{
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:
+				nm1=BGBCC_SH_NMID_BCDADDX;
+				break;
+			case CCXL_BINOP_SUB:
+				nm1=BGBCC_SH_NMID_BCDSUBX;
+				break;
+			}
+		}
+	}
 
 	if(nm1>=0)
 	{
@@ -853,6 +879,17 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec128F(
 			case CCXL_BINOP_AND:	s0="__vnf_v4i_and"; break;
 			case CCXL_BINOP_OR:		s0="__vnf_v4i_or"; break;
 			case CCXL_BINOP_XOR:	s0="__vnf_v4i_xor"; break;
+		}
+		break;
+
+	case CCXL_TY_BCD128:
+		switch(opr)
+		{
+			case CCXL_BINOP_ADD:	s0="__bcd128_add"; break;
+			case CCXL_BINOP_SUB:	s0="__bcd128_sub"; break;
+			case CCXL_BINOP_MUL:	s0="__bcd128_mul"; break;
+			case CCXL_BINOP_DIV:	s0="__bcd128_div"; break;
+			case CCXL_BINOP_MOD:	s0="__bcd128_mod"; break;
 		}
 		break;
 	}
@@ -1077,6 +1114,126 @@ int BGBCC_JX2C_EmitConvVRegVRegVec(
 			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx,
 				dreg, BGBCC_SH_REG_R2);
 			return(1);
+		}
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitJCmpVRegVRegVec(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type,
+	ccxl_register sreg, ccxl_register treg,
+	int cmp, int lbl)
+{
+	if(BGBCC_CCXL_TypeBcd64P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegQLong(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
+	if(BGBCC_CCXL_TypeBcd128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegInt128(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitJCmpVRegZeroVec(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type,
+	ccxl_register sreg,
+	int cmp, int lbl)
+{
+	ccxl_register treg;
+	int i;
+	
+	if(BGBCC_CCXL_TypeVec64P(ctx, type))
+	{
+		BGBCC_CCXL_GetRegForLongValue(ctx, &treg, 0);
+		i=BGBCC_JX2C_EmitJCmpVRegVRegVec(ctx, sctx, type,
+			sreg, treg, cmp, lbl);
+		return(i);
+	}
+	
+	if(BGBCC_CCXL_TypeVec128P(ctx, type))
+	{
+		BGBCC_CCXL_GetRegForInt128Value(ctx, &treg, 0, 0);
+		i=BGBCC_JX2C_EmitJCmpVRegVRegVec(ctx, sctx, type,
+			sreg, treg, cmp, lbl);
+		return(i);
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitCompareVRegVRegVRegVec(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type, ccxl_register dreg,
+	int opr,
+	ccxl_register sreg, ccxl_register treg)
+{
+	if(BGBCC_CCXL_TypeBcd64P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(ctx, sctx,
+			type, dreg, opr, sreg, treg));
+	}
+
+	if(BGBCC_CCXL_TypeBcd128P(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitCompareVRegVRegVRegInt128(ctx, sctx,
+			type, dreg, opr, sreg, treg));
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitUnaryVRegVRegVec(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type, ccxl_register dreg,
+	int opr, ccxl_register sreg)
+{
+	ccxl_register treg;
+	int opr2;
+	int i;
+	
+	opr2=-1;
+
+	switch(opr)
+	{
+	case CCXL_UNOP_MOV:	opr2=CCXL_BINOP_ADD; break;
+	case CCXL_UNOP_NEG:	opr2=CCXL_BINOP_SUB; break;
+//	case CCXL_UNOP_NOT:	opr2=CCXL_BINOP_ADD; break;
+	default:
+		break;
+	}
+
+	if(opr2>=0)
+	{
+		if(BGBCC_CCXL_TypeVec64P(ctx, type))
+		{
+			BGBCC_CCXL_GetRegForLongValue(ctx, &treg, 0);
+			i=BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec(ctx, sctx,
+				type, dreg, opr2, sreg, treg);
+			return(i);
+		}
+		
+		if(BGBCC_CCXL_TypeVec128P(ctx, type))
+		{
+			BGBCC_CCXL_GetRegForInt128Value(ctx, &treg, 0, 0);
+			i=BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec(ctx, sctx,
+				type, dreg, opr2, sreg, treg);
+			return(i);
 		}
 	}
 

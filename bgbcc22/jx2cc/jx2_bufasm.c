@@ -904,6 +904,19 @@ int nmid;
 {"mods.q",	BGBCC_SH_NMID_MODSQ},
 {"modu.q",	BGBCC_SH_NMID_MODUQ},
 
+{"divs.l",	BGBCC_SH_NMID_DIVSL},
+{"divu.l",	BGBCC_SH_NMID_DIVUL},
+{"mods.l",	BGBCC_SH_NMID_MODSL},
+{"modu.l",	BGBCC_SH_NMID_MODUL},
+
+{"bcdadc",	BGBCC_SH_NMID_BCDADC},
+{"bcdsbb",	BGBCC_SH_NMID_BCDSBB},
+
+{"bcdadd",	BGBCC_SH_NMID_BCDADD},
+{"bcdsub",	BGBCC_SH_NMID_BCDSUB},
+{"bcdaddx",	BGBCC_SH_NMID_BCDADDX},
+{"bcdsubx",	BGBCC_SH_NMID_BCDSUBX},
+
 #if 0
 {"jcmpeq",	BGBCC_SH_NMID_BREQL},
 {"jcmpne",	BGBCC_SH_NMID_BRNEL},
@@ -979,6 +992,12 @@ int nmid;
 {"rott",	BGBCC_SH_NMID_ROTT},
 {"rotcr",	BGBCC_SH_NMID_ROTCR},
 {"rotr",	BGBCC_SH_NMID_ROTR},
+
+{"rotcl.l",	BGBCC_SH_NMID_ROTCL},
+{"rotcr.l",	BGBCC_SH_NMID_ROTCR},
+{"rotcl.q",	BGBCC_SH_NMID_ROTCLQ},
+{"rotcr.q",	BGBCC_SH_NMID_ROTCRQ},
+
 {"cmp/pl",	BGBCC_SH_NMID_CMPPL},
 
 {"shll1",	BGBCC_SH_NMID_SHLL1},
@@ -1917,6 +1936,11 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return((ctx->has_dmacl&1)!=0);
 	if(!bgbcc_stricmp(sym, "has_qmul"))
 		return((ctx->has_qmul&1)!=0);
+
+	if(!bgbcc_stricmp(sym, "has_fdiv"))
+		return((ctx->has_qmul&2)!=0);
+	if(!bgbcc_stricmp(sym, "has_bcd"))
+		return((ctx->has_qmul&4)!=0);
 
 	if(!bgbcc_stricmp(sym, "has_fmovs"))
 		return((ctx->has_fmovs&1)!=0);

@@ -1783,7 +1783,27 @@ void BJX2_Op_ROTCR_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[BJX2_REG_SR]=sr&(~1);
 	ctx->regs[BJX2_REG_SR]|=((ctx->regs[op->rn]   )&1);
 	ctx->regs[op->rn]=
-		(ctx->regs[op->rn]>>1) | ((sr&1)<<31);
+		(((u32)ctx->regs[op->rn])>>1) | ((sr&1)<<31);
+}
+
+void BJX2_Op_ROTCLQ_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 sr;
+	sr=ctx->regs[BJX2_REG_SR];
+	ctx->regs[BJX2_REG_SR]=sr&(~1);
+	ctx->regs[BJX2_REG_SR]|=((ctx->regs[op->rn]>>63)&1);
+	ctx->regs[op->rn]=
+		(ctx->regs[op->rn]<<1) | (sr&1);
+}
+
+void BJX2_Op_ROTCRQ_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 sr;
+	sr=ctx->regs[BJX2_REG_SR];
+	ctx->regs[BJX2_REG_SR]=sr&(~1);
+	ctx->regs[BJX2_REG_SR]|=((ctx->regs[op->rn]   )&1);
+	ctx->regs[op->rn]=
+		(ctx->regs[op->rn]>>1) | ((sr&1)<<63);
 }
 
 void BJX2_Op_SHLL_Reg(BJX2_Context *ctx, BJX2_Opcode *op)

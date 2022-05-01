@@ -206,6 +206,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fdiv"))
 		{ shctx->has_qmul|=2; }
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "bcd"))
+		{ shctx->has_qmul|=4; }
+
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
 
@@ -5790,6 +5793,14 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_FLOAT128))
 				{
 					if(!strncmp(obj->name, "__xlf_", 6))
+						continue;
+				}
+
+				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_BCD))
+				{
+					if(!strncmp(obj->name, "__bcd64_", 8))
+						continue;
+					if(!strncmp(obj->name, "__bcd128_", 9))
 						continue;
 				}
 

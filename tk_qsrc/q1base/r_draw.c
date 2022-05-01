@@ -69,8 +69,8 @@ int				r_ceilv1;
 
 qboolean	r_lastvertvalid;
 
-float __fpu_frcp_sf(float f);
-float __fpu_fdiv_sf(float f, float g);
+// float __fpu_frcp_sf(float f);
+// float __fpu_fdiv_sf(float f, float g);
 
 
 #if	!id386
@@ -222,7 +222,7 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 		edge->surfs[1] = 0;
 
 //		u_step = ((r_u1 - u0) / (r_v1 - v0));
-		u_step = __fpu_fdiv_sf((r_u1 - u0), (r_v1 - v0));
+		u_step = d_fdiv_sf((r_u1 - u0), (r_v1 - v0));
 		u = u0 + ((float)v - v0) * u_step;
 	}
 	else
@@ -235,7 +235,7 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 		edge->surfs[1] = surface_p - surfaces;
 
 //		u_step = ((u0 - r_u1) / (v0 - r_v1));
-		u_step = __fpu_fdiv_sf((u0 - r_u1), (v0 - r_v1));
+		u_step = d_fdiv_sf((u0 - r_u1), (v0 - r_v1));
 		u = r_u1 + ((float)v - r_v1) * u_step;
 	}
 
@@ -332,7 +332,7 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 
 #if 1
 				f = d0 / (d0 - d1);
-//				f = __fpu_fdiv_sf(d0, (d0 - d1));
+//				f = d_fdiv_sf(d0, (d0 - d1));
 				pf0=pv0->position;
 				pf1=pv1->position;
 				pf2=clipvert.position;
@@ -386,7 +386,7 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 
 #if 1
 				f = d0 / (d0 - d1);
-//				f = __fpu_fdiv_sf(d0, (d0 - d1));
+//				f = d_fdiv_sf(d0, (d0 - d1));
 				pf0=pv0->position;
 				pf1=pv1->position;
 				pf2=clipvert.position;
@@ -881,7 +881,7 @@ void R_RenderPoly (msurface_t *fa, int clipflags)
 			if ((lastdist > 0) != (dist > 0))
 			{
 //				frac = dist / (dist - lastdist);
-				frac = __fpu_fdiv_sf(dist, (dist - lastdist));
+				frac = d_fdiv_sf(dist, (dist - lastdist));
 
 #if 0
 				verts[newpage][newverts].position[0] =

@@ -1,6 +1,7 @@
 #if 1
 // #if 0
 
+#if 0
 .ifarch has_qmul
 
 .global	__udivsi3_i
@@ -15,6 +16,7 @@ __sdivsi3:
 	rts
 
 .else
+#endif
 
 .ifarch bjx2_wex
 #include "tk_divi2_wx.S"
@@ -22,7 +24,7 @@ __sdivsi3:
 #include "tk_divi2_sc.S"
 .endif
 
-.endif
+// .endif
 
 #else
 #include "tk_divi2_sc.S"

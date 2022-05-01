@@ -4247,8 +4247,8 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 			{
 //				vsp->cnt+=mult;
 //				vsp->cnt+=mult*mult;
-//				vsp->cnt+=8*mult*mult;
-				vsp->cnt+=4*mult*mult;
+				vsp->cnt+=8*mult*mult;
+//				vsp->cnt+=4*mult*mult;
 			}
 #endif
 

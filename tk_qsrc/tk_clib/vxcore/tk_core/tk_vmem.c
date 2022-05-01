@@ -1015,8 +1015,8 @@ int TK_VMem_Init()
 
 	if(TK_VMEM_PAGESHL==14)
 	{
-//		tpte|=0x0042;	//Three-Level, 16K pages
-		tpte|=0x0153;	//B-Tree
+		tpte|=0x0042;	//Three-Level, 16K pages
+//		tpte|=0x0153;	//B-Tree
 //		tpte|=0x0253;	//B-Tree (Hybrid)
 //		tmmcr=0x002D;
 	}
@@ -1843,7 +1843,10 @@ int TK_VMem_FindFreeSwapPages(int n)
 	int i, j, m;
 	
 	if(n<=0)
+	{
+		tk_printf("TK_VMem_FindFreeSwapPages: n=%d\n", n);
 		return(-1);
+	}
 	
 	i=tk_vmem_pagerov;
 	m=tk_vmem_maxpage;
@@ -1878,6 +1881,7 @@ int TK_VMem_FindFreeSwapPages(int n)
 		return(i);
 	}
 
+	tk_printf("TK_VMem_FindFreeSwapPages: Failed to find, n=%d\n", n);
 	return(-1);
 }
 
@@ -1913,6 +1917,7 @@ int TK_VMem_AllocSwapPage()
 		return(i);
 	}
 
+	tk_printf("TK_VMem_AllocSwapPage: Failed to alloc\n");
 	return(-1);
 }
 

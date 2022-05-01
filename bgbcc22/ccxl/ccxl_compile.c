@@ -2594,6 +2594,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "quatd"))
 			{ *t++='D'; *t++='q'; }
 
+		if(!strcmp(s, "bcd64"))
+			{ *t++='D'; *t++='m'; }
+		if(!strcmp(s, "bcd128"))
+			{ *t++='D'; *t++='o'; }
+
 		if(!strcmp(s, "vec3fx") || !strcmp(s, "vec3xf"))
 			{ *t++='D'; *t++='h'; }
 		if(!strcmp(s, "vec3fq"))

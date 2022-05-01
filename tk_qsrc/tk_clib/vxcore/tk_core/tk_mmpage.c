@@ -122,6 +122,7 @@ int TKMM_FindFreePage(void)
 		return(i);
 	}
 
+	tk_printf("TKMM_FindFreePage: Failed to find\n");
 	return(-1);
 }
 
@@ -166,6 +167,8 @@ int TKMM_AllocPage(void)
 		return(i);
 	}
 
+	__debugbreak();
+//	tk_printf("TKMM_AllocPage: Failed to alloc %d/%d\n", i, m);
 	return(-1);
 }
 
@@ -344,6 +347,10 @@ int TKMM_FreePages(int b, int n)
 void *TKMM_PageToPointer(int n)
 {
 	byte *ptr;
+	
+	if(n<0)
+		{ __debugbreak(); }
+	
 	ptr=((byte *)TKMM_PAGEBASE)+(n<<TKMM_PAGEBITS);
 //	__debugbreak();
 	return(ptr);

@@ -2227,7 +2227,7 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str)
 			if(isws)
 				*t++=' ';
 			
-			if((ty==BTK_STRING)||(ty2==BTK_STRING))
+			if((ty==BTK_STRING) || (ty2==BTK_STRING))
 			{
 				t=BGBPP_EmitString(t, b);
 			}else if((ty==BTK_CHARSTRING)||(ty2==BTK_CHARSTRING))

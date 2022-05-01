@@ -2,7 +2,12 @@ struct conparm_s {
 byte x;
 byte y;
 byte ena;
-volatile u32 *buf;
+// volatile u32 *buf;
+u64 buf_addr;
+u32 text_attr;
+u32 text_attr_dfl;
+u16 fgclr_555;
+u16 bgclr_555;
 };
 
 struct conparm_s tk_con_base;
@@ -24,7 +29,8 @@ void tk_con_init()
 //	tk_con_x=0;
 //	tk_con_y=0;
 
-	tk_con->buf=(u32 *)0xF00A0000;
+//	tk_con->buf=(u32 *)0xF00A0000;
+	tk_con->buf_addr=0xFFFFF00A0000ULL;
 	tk_con->x=0;
 	tk_con->y=0;
 
@@ -54,7 +60,8 @@ void tk_con_scroll_up()
 	int i0, i1;
 	int i, j, k;
 
-	buf=tk_con->buf;
+//	buf=tk_con->buf;
+	buf=(volatile u32 *)(tk_con->buf_addr);
 
 #if 1
 	for(i=0; i<TK_CONHEIGHTN1; i++)
@@ -126,8 +133,11 @@ void tk_con_newline()
 void tk_con_putc(int ch)
 {
 #ifndef JX2UC
+	volatile u32 *buf;
 	u32 px;
-	
+
+	buf=(volatile u32 *)(tk_con->buf_addr);
+
 	if(ch<' ')
 	{
 		if(ch=='\r')
@@ -153,7 +163,8 @@ void tk_con_putc(int ch)
 //	px=0x0FC00000|ch;
 	px=0x003F0000|ch;
 //	tk_con_buf[(tk_con_y*TK_CONWIDTH+tk_con_x)*8+0]=px;
-	tk_con->buf[(tk_con->y*TK_CONWIDTH+tk_con->x)*8+0]=px;
+//	tk_con->buf[(tk_con->y*TK_CONWIDTH+tk_con->x)*8+0]=px;
+	buf[(tk_con->y*TK_CONWIDTH+tk_con->x)*8+0]=px;
 
 //	tk_con_x++;
 	tk_con->x++;

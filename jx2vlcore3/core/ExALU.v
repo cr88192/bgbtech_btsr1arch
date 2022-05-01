@@ -75,6 +75,11 @@ S1, S2, S3 -> V
 `endif
 `endif
 
+`ifdef jx2_enable_packbcd
+// `include "ExMiscDaa64.v"
+`include "ExBcdAdd64.v"
+`endif
+
 
 module ExALU(
 	/* verilator lint_off UNUSED */
@@ -243,6 +248,24 @@ ExBtcUtx1	exUtx1(
 `endif
 `endif
 
+// `ifdef jx2_enable_packbcd
+`ifndef def_true
+wire[63:0]		tValDaa;
+wire			tValDaaSrT;
+
+ExMiscDaa64 daa1(regValRs, tValDaa, regInSrT, tValDaaSrT, idUIxt[0]);
+`endif
+
+`ifdef jx2_enable_packbcd
+wire[63:0]		tValBcdAdd;
+wire			tValBcdAddSrT;
+
+ExBcdAdd64	bcdAdd1(
+	regValRs, regValRt, tValBcdAdd,
+	regInSrT, tValBcdAddSrT,
+//	regInSrS, tValBcdAddSrT,
+	idUIxt[0]);
+`endif
 
 reg[16:0]	tAdd1A0;
 reg[16:0]	tAdd1A1;
@@ -426,6 +449,8 @@ reg[32:0]	tResultb1W;
 reg[64:0]	tResultb2W;
 
 reg[63:0]	tRegConvVal;
+reg			tRegConvSrT;
+reg			tRegConvSrS;
 
 reg			tOpIsWx;
 
@@ -962,6 +987,8 @@ begin
 	tResult2T=regInSrT;
 	tResultw1T=regInSrT;
 	tResultb1T=regInSrT;
+	tRegConvSrT=regInSrT;
+	tRegConvSrS=regInSrS;
 
 	tResult1B=UV33_XX;
 	tResult1S=regInSrS;
@@ -1540,6 +1567,7 @@ begin
 `endif
 
 `ifdef jx2_enable_conv2_alu
+	tRegConvVal = UV64_XX;
 	case(idUIxt[5:0])
 
 `ifdef jx2_do_convfp16_alu
@@ -1602,6 +1630,60 @@ begin
 
 `endif
 `endif
+
+// wire[63:0]		tValDaa;
+// wire			tValDaaSrT;
+
+// `ifdef jx2_enable_packbcd
+`ifndef def_true
+		JX2_UCIX_CONV2_DAAQ, JX2_UCIX_CONV2_DASQ: begin
+			tRegConvVal		= tValDaa;
+//			tRegConvSrT		= tValDaaSrT;
+			tRegConvSrS		= tValDaaSrS;
+		end
+`endif
+		
+`ifdef jx2_enable_packbcd
+		JX2_UCIX_CONV2_BCDADD, JX2_UCIX_CONV2_BCDSUB:
+		begin
+			tRegConvVal		= tValBcdAdd;
+			tRegConvSrT		= tValBcdAddSrT;
+//			tRegConvSrS		= tValBcdAddSrT;
+
+//			if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
+//			begin
+//				$display("BCDADC %X %X %d->%d", regValRs, regValRt,
+//					regInSrT, tRegConvSrT);
+//			end
+		end
+`endif
+
+		JX2_UCIX_CONV2_ROTCL:
+		begin		
+//			tRegConvVal		= {	regValRs[62:0], regInSrT };
+			tRegConvVal		= {	UV32_00, regValRs[30:0], regInSrT };
+			tRegConvSrT		= regValRs[31];
+
+//			if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
+//			begin
+//				$display("ROTCL %X %d", regValRs, tRegConvSrT);
+//			end
+		end
+		JX2_UCIX_CONV2_ROTCR:
+		begin
+			tRegConvVal		= {	UV32_00, regInSrT, regValRs[31:1] };
+			tRegConvSrT		= regValRs[0];
+		end
+		JX2_UCIX_CONV2_ROTCLQ:
+		begin
+			tRegConvVal		= {	regValRs[62:0], regInSrT };
+			tRegConvSrT		= regValRs[63];
+		end
+		JX2_UCIX_CONV2_ROTCRQ:
+		begin
+			tRegConvVal		= {	regInSrT, regValRs[63:1] };
+			tRegConvSrT		= regValRs[0];
+		end
 
 		default: begin
 			tRegConvVal = UV64_XX;
@@ -1701,6 +1783,8 @@ begin
 	if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
 	begin
 		tRegOutVal = tRegConvVal;
+		tRegOutSrT = tRegConvSrT;
+		tRegOutSrS = tRegConvSrS;
 	end	
 `endif
 

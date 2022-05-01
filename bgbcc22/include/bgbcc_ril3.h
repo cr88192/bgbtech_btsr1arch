@@ -77,14 +77,14 @@
 #define BGBCC_RIL3OP_STCMPOP	0x35
 #define BGBCC_RIL3OP_LDUNOP		0x36	//name=op name;
 #define BGBCC_RIL3OP_LDCONSTV	0x37	//load a void / placeholder
-#define BGBCC_RIL3OP_LDCONSTI	0x38
-#define BGBCC_RIL3OP_LDCONSTL	0x39
-#define BGBCC_RIL3OP_LDCONSTF	0x3A
-#define BGBCC_RIL3OP_LDCONSTD	0x3B
+#define BGBCC_RIL3OP_LDCONSTI	0x38	//load const int
+#define BGBCC_RIL3OP_LDCONSTL	0x39	//load const long
+#define BGBCC_RIL3OP_LDCONSTF	0x3A	//load const float
+#define BGBCC_RIL3OP_LDCONSTD	0x3B	//load const double
 #define BGBCC_RIL3OP_LDCONSTS	0x3C	//ASCII String
 #define BGBCC_RIL3OP_LDCONSTWS	0x3D	//Wide / UTF-16 String
-#define BGBCC_RIL3OP_LDCONSTXL	0x3E
-#define BGBCC_RIL3OP_LDCONSTXF	0x3F
+#define BGBCC_RIL3OP_LDCONSTXL	0x3E	//load const int128
+#define BGBCC_RIL3OP_LDCONSTXF	0x3F	//load const float128
 
 #define BGBCC_RIL3OP_POP		0x40
 #define BGBCC_RIL3OP_LDA		0x41
@@ -155,9 +155,9 @@
 #define BGBCC_RIL3OP_PRCMPF		0x7F	//Predicate Compare (A==0)
 
 #define BGBCC_RIL3OP_CALLN_INT	0x80
-#define BGBCC_RIL3OP_LDCONSTCPX	0x81
-#define BGBCC_RIL3OP_LDCONSTV2F	0x82
-#define BGBCC_RIL3OP_LDCONSTV4F	0x83
+#define BGBCC_RIL3OP_LDCONSTCPX	0x81	//load constant, Complex
+#define BGBCC_RIL3OP_LDCONSTV2F	0x82	//load constant, Vec2F
+#define BGBCC_RIL3OP_LDCONSTV4F	0x83	//load constant, Vec4F
 
 #define BGBCC_RIL3OP_LDCONSTU8S	0x84	//UTF-8 String
 #define BGBCC_RIL3OP_LDCONSTW4S	0x85	//UTF-32 String
@@ -169,8 +169,11 @@
 #define BGBCC_RIL3OP_STCONSTI	0x88
 #define BGBCC_RIL3OP_STCONSTL	0x89
 #define BGBCC_RIL3OP_STREFREF	0x8A
-#define BGBCC_RIL3OP_LDCONSTSMI	0x8B
+#define BGBCC_RIL3OP_LDCONSTSMI	0x8B	//load const small integer/long
 #define BGBCC_RIL3OP_TRINOP		0x8C
 #define BGBCC_RIL3OP_STTRINOP	0x8D
 
 #define BGBCC_RIL3OP_LABELLVL	0x8E	//label, with a loop-level
+#define BGBCC_RIL3OP_LDCONSTVXI	0x8F	//load const, 128-bit vector
+
+#define BGBCC_RIL3OP_LDCONSTBI	0x90	//BigInt

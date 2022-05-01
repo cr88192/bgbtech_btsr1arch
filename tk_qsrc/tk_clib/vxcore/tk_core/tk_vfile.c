@@ -236,7 +236,8 @@ int tk_vfile_init()
 
 TK_FILE *tk_alloc_file()
 {
-	TK_FILE *tmp;
+	TK_FILE *tmp, *tmpa;
+	int i;
 	
 	tmp=tk_vf_freelist;
 	if(tmp)
@@ -246,9 +247,30 @@ TK_FILE *tk_alloc_file()
 		return(tmp);
 	}
 	
-	tmp=tk_malloc(sizeof(TK_FILE));
-	memset(tmp, 0, sizeof(TK_FILE));
-	return(tmp);
+	tmpa=tk_malloc(256*sizeof(TK_FILE));
+	
+	tmp=tmpa;
+	for(i=0; i<256; i++)
+	{
+		tmp->udata0=tk_vf_freelist;
+		tk_vf_freelist=tmp;
+		tmp++;
+	}
+
+	tmp=tk_vf_freelist;
+	if(tmp)
+	{
+		tk_vf_freelist=tmp->udata0;
+		memset(tmp, 0, sizeof(TK_FILE));
+		return(tmp);
+	}
+	
+	__debugbreak();
+	return(NULL);
+	
+//	tmp=tk_malloc(sizeof(TK_FILE));
+//	memset(tmp, 0, sizeof(TK_FILE));
+//	return(tmp);
 }
 
 TK_DIR *tk_alloc_dir()

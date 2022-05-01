@@ -111,6 +111,25 @@ This form sign or zero extends the 32-bit result to 64 bits.
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
 
 
+=== BCDADC / BCDSBB (BCD) ===
+
+* F0nm_1g88 BCDADC	Rm, Rn
+* F0nm_1g98 BCDSBB	Rm, Rn
+
+Perform addition or subtraction of Packed BCD numbers.
+
+The SR.T flag is used as a Carry or Borrow flag, and is updated based the result of the leftmost digit.
+
+For this instruction, the 64-bit register is interpreted as a 16-digit BCD number, with each 4 bits corresponding to a decimal digit (0..9). When performing an addition, if the result of adding a pair of digits (plus the carry) is larger than 9, then 6 will be added in this location (so A maps to 0, B to 1, ...), and a carry will be propagated to the next digit.
+
+The SBB case will be similar to ADC, but will perform a 9s complement remapping (0123456789 -> 9876543210) on Rm and will invert the value of SR.T.
+
+
+These instructions may be daisy-chained to support larger numbers.
+
+This instruction is only allowed in Lane 1.
+
+
 === BF / JF ===
 
 * 23dd       BF		(PC, disp8s)
@@ -1432,9 +1451,10 @@ Then this will produce as output:
 
 === ROTCL ===
 
-* F036_3en0  ROTCL	Rn
+* F036_3gn0  ROTCL.L	Rn
+* F036_3Gn0  ROTCL.Q	Rn
 
-Rn'=(Rn SHL 1)|SR.T; SR.T=Rn.31
+Rn'=(Rn SHL 1)|SR.T; SR.T=MSB
 
 Rotate the value in Rn left by 1 bit, pulling SR.T into the LSB, and putting the shifted out bit into SR.T.
 
@@ -1443,7 +1463,8 @@ This operation is only valid in Lane 1.
 
 === ROTCR ===
 
-* F037_3en0  ROTCR	Rn
+* F037_3gn0  ROTCR.L	Rn
+* F037_3Gn0  ROTCR.Q	Rn
 
 Rotate the value in Rn right by 1 bit, pulling SR.T into the MSB, and putting the shifted out bit into SR.T.
 

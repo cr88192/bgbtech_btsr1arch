@@ -701,10 +701,10 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	}
 
 //	if(obj->n_args>8)
-//	if(obj->regflags&BGBCC_REGFL_TEMPLOAD)
-//	{
-//		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
-//	}
+	if((obj->n_args>8) || (obj->regflags&BGBCC_REGFL_TEMPLOAD))
+	{
+		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+	}
 
 	if(obj->regflags&BGBCC_REGFL_NOTLEAFTINY)
 		obj->regflags&=~BGBCC_REGFL_LEAFTINY;

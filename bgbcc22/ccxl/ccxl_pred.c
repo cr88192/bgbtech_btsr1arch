@@ -303,9 +303,10 @@ ccxl_type BGBCC_CCXL_GetRegType(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
 	BGBCC_CCXL_LiteralInfo *linf;
+	char *str;
 	u64 regty;
 	ccxl_type tty;
-	int i;
+	int i, j;
 	
 	regty=reg.val&CCXL_REGTY_REGMASK;
 
@@ -378,6 +379,18 @@ ccxl_type BGBCC_CCXL_GetRegType(
 				case 1:		tty.val=CCXL_TY_UB|CCXL_TY_PTRIDX1; break;
 				case 2:		tty.val=CCXL_TY_US|CCXL_TY_PTRIDX1; break;
 				case 3:		tty.val=CCXL_TY_I |CCXL_TY_PTRIDX1; break;
+				
+				case 4:
+					i=(reg.val>>40)&0xFFF;
+					switch((reg.val>>32)&255)
+					{
+						case 0x00:		j=CCXL_TY_SBITINT; break;
+						case 0x01:		j=CCXL_TY_UBITINT; break;
+						default:	j=CCXL_TY_SBITINT; break;
+					}
+					tty=BGBCC_CCXL_MakeTypeID_Arr(ctx, j, i);
+					break;
+				
 				default:	tty.val=CCXL_TY_SB|CCXL_TY_PTRIDX1; break;
 				}
 				return(tty);
@@ -436,6 +449,15 @@ ccxl_type BGBCC_CCXL_GetRegType(
 			case CCXL_REGVEC_TY_V4UW:	tty.val=CCXL_TY_VEC4UW;		break;
 			case CCXL_REGVEC_TY_V4SI:	tty.val=CCXL_TY_VEC4SI;		break;
 			case CCXL_REGVEC_TY_V4UI:	tty.val=CCXL_TY_VEC4UI;		break;
+
+			case CCXL_REGVEC_TY_V3FX:	tty.val=CCXL_TY_VEC3FX;		break;
+			case CCXL_REGVEC_TY_V3FQ:	tty.val=CCXL_TY_VEC3FQ;		break;
+			case CCXL_REGVEC_TY_V4H:	tty.val=CCXL_TY_VEC4H;		break;
+			case CCXL_REGVEC_TY_V3H:	tty.val=CCXL_TY_VEC3H;		break;
+
+			case CCXL_REGVEC_TY_BCD64:	tty.val=CCXL_TY_BCD64;		break;
+			case CCXL_REGVEC_TY_BCD128:	tty.val=CCXL_TY_BCD128;		break;
+
 			default:					tty.val=CCXL_TY_I128;		break;
 			}
 			return(tty);
@@ -1116,6 +1138,18 @@ bool BGBCC_CCXL_IsRegImmW4StringP(
 			return(true);
 	}
 
+	return(false);
+}
+
+bool BGBCC_CCXL_IsRegImmBigIntP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_STRING)
+	{
+		if(((reg.val>>52)&15)==4)
+			return(true);
+		return(false);
+	}
 	return(false);
 }
 
@@ -1891,6 +1925,47 @@ int BGBCC_CCXL_GetRegImmFloat128Value(
 	return(1);
 }
 
+int BGBCC_CCXL_GetRegImmBigIntValue(
+	BGBCC_TransState *ctx, ccxl_register reg,
+	u64 *rvala, int cnt)
+{
+	u64 tv;
+	char *str, *s;
+	int i, j, n, n1;
+	
+	str=BGBCC_CCXL_GetRegImmStringValue(ctx, reg);
+	
+	n1=strlen(str)/11;
+	n=n1;
+	if(cnt<n)
+		n=cnt;
+
+	s=str; tv=0;
+	for(i=0; i<n; i++)
+	{
+		tv=	(((u64)(s[ 0]-'0'))<< 0) |
+			(((u64)(s[ 1]-'0'))<< 6) |
+			(((u64)(s[ 2]-'0'))<<12) |
+			(((u64)(s[ 3]-'0'))<<18) |
+			(((u64)(s[ 4]-'0'))<<24) |
+			(((u64)(s[ 5]-'0'))<<30) |
+			(((u64)(s[ 6]-'0'))<<36) |
+			(((u64)(s[ 7]-'0'))<<42) |
+			(((u64)(s[ 8]-'0'))<<58) |
+			(((u64)(s[ 9]-'0'))<<54) |
+			(((u64)(s[10]-'0'))<<60) ;
+		rvala[i]=tv;
+		s+=11;
+	}
+
+	tv=~((tv>>63)-1);
+	for(i=n; i<cnt; i++)
+	{
+		rvala[i]=tv;
+	}
+	return(0);
+}
+
 double BGBCC_CCXL_GetRegImmFloatValue(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
@@ -2252,6 +2327,61 @@ ccxl_status BGBCC_CCXL_GetRegForW4StringValue(
 	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_WSTRING|(3LL<<52);
 	*rreg=treg;
 	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForBigIntValueStr(
+	BGBCC_TransState *ctx, ccxl_register *rreg, char *str, int vty)
+{
+	ccxl_register treg;
+	int i, j;
+	
+	i=BGBCC_CCXL_IndexString(ctx, str);
+	if(i<0)
+		{ BGBCC_DBGBREAK }
+	
+	j=strlen(str)/11;
+	j=(j+1)/2;
+	
+	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_STRING|
+		(4LL<<52)|(((u64)j)<<40)|(((u64)vty)<<32);
+
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForBigIntValueN(
+	BGBCC_TransState *ctx, ccxl_register *rreg,
+	u64 *rval, int n, int vty)
+{
+	char tb[512];
+	ccxl_register treg;
+	u64 tv;
+	char *t;
+	int i, j;
+	
+	t=tb;
+	for(i=0; i<n; i++)
+	{
+		tv=rval[i];
+		t[ 0]='0'+((tv>> 0)&63);
+		t[ 1]='0'+((tv>> 6)&63);
+		t[ 2]='0'+((tv>>12)&63);
+		t[ 3]='0'+((tv>>18)&63);
+		t[ 4]='0'+((tv>>24)&63);
+		t[ 5]='0'+((tv>>30)&63);
+		t[ 6]='0'+((tv>>36)&63);
+		t[ 7]='0'+((tv>>42)&63);
+		t[ 8]='0'+((tv>>48)&63);
+		t[ 9]='0'+((tv>>54)&63);
+		t[10]='0'+((tv>>60)&63);
+		t+=11;
+	}
+	*t=0;
+	
+	i=BGBCC_CCXL_GetRegForBigIntValueStr(ctx, rreg, tb, vty);
+	return(i);
+//	*rreg=treg;
+//	return(CCXL_STATUS_YES);
 }
 
 ccxl_status BGBCC_CCXL_GetRegForFieldIdValue(

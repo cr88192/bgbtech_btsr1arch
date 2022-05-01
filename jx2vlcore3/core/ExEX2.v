@@ -313,6 +313,7 @@ begin
 		end
 
 		JX2_UCMD_CONV2_RR: begin
+			tDoAluSrT		= 1;
 			tValOutDfl		= regValAluRes[63:0];
 			tDoOutDfl		= 1;
 		end

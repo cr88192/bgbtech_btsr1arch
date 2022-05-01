@@ -1880,6 +1880,12 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 			type, sreg, treg, cmp, lbl));
 	}
 
+	if(BGBCC_CCXL_TypeVecP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegVRegVec(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
 }
@@ -2118,6 +2124,13 @@ int BGBCC_JX2C_EmitJCmpVRegZero(
 		return(BGBCC_JX2C_EmitJCmpVRegVReg(ctx, sctx,
 			type, sreg, treg, cmp, lbl));
 	}
+
+	if(BGBCC_CCXL_TypeVecP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegZeroVec(ctx, sctx,
+			type, sreg, cmp, lbl));
+	}
+
 
 	BGBCC_CCXL_StubError(ctx);
 	return(0);

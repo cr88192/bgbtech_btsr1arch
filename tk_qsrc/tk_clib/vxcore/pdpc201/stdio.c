@@ -1612,12 +1612,14 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 		{
 			lvalue = va_arg(*arg, long long);
 
+//			__debugbreak();
+
 //			if (	(specifier == 'u') ||
 //					(specifier == 'x') ||
 //					(specifier == 'X')	)
 			if(isunsgn)
 				lvalue = (unsigned long long)lvalue;
-		}
+		}else
 #endif
 			if (lng)
 		{
@@ -1702,7 +1704,16 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 //		while (ulvalue > 0)
 		while ((ulvalue > 0) && ((n--)>0))
 		{
-			rem = (int)(ulvalue % base);
+			if(base == 16)
+			{
+				rem = (int)(ulvalue & 15);
+				ulvalue = ulvalue >> 4;
+			}else
+			{
+				rem = (int)(ulvalue % base);
+				ulvalue = ulvalue / base;
+			}
+
 			if (rem < 10)
 			{
 				work[x] = (char)('0' + rem);
@@ -1726,7 +1737,6 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 				x++;
 			}
 #endif
-			ulvalue = ulvalue / base;
 		}
 #if defined(__MSDOS__) && !defined(__PDOS__) && !defined(__gnu_linux__)
 		if (specifier == 'p')

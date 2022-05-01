@@ -1105,7 +1105,9 @@ reg[63:0]		ex1RegInSp;
 wire[63:0]		ex1RegOutLr;
 reg[63:0]		ex1RegInLr;
 wire[63:0]		ex1RegOutSr;
-reg[63:0]		ex1RegInSr;
+// reg[63:0]		ex1RegInSr;
+wire[63:0]		ex1RegInSr;
+
 
 wire[47:0]		ex1OutPcHi;
 wire[47:0]		ex1OutLrHi;
@@ -1458,6 +1460,8 @@ ExEX2	ex2(
 	ex2MemDataInB,
 	ex2MemDataOK
 	);
+
+assign		ex1RegInSr = ex2RegOutSr;
 
 
 /* EX3 */
@@ -3751,7 +3755,7 @@ begin
 //	ex1RegInLr		= ex2RegOutLr;
 
 //	ex1RegInSr		= crOutSr;
-	ex1RegInSr		= ex2RegOutSr;
+//	ex1RegInSr		= ex2RegOutSr;
 //	ex1RegInSchm	= ex2RegOutSchm;
 	ex1RegInSchm	= 0;
 

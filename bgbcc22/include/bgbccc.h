@@ -519,7 +519,8 @@ extern "C" {
 #define BGBCC_TYCSEEN_ISHL_VAR	0x0040	//saw int shift left, variable
 #define BGBCC_TYCSEEN_ISHR_VAR	0x0080	//saw int shift right (log), variable
 #define BGBCC_TYCSEEN_ISAR_VAR	0x0100	//saw int shift right (arith), variable
-#define BGBCC_TYCSEEN_BITINT	0x0200	//saw int128
+#define BGBCC_TYCSEEN_BITINT	0x0200	//saw _BitInt
+#define BGBCC_TYCSEEN_BCD		0x0400	//saw BCD types
 
 typedef union {
 	struct {

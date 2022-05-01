@@ -607,6 +607,9 @@ static char *bgbcp_basetypes_c[]={
 "__flonum",
 "__boxint",
 
+"__bcd64",
+"__bcd128",
+
 NULL
 };
 

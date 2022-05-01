@@ -267,7 +267,9 @@ void *TKMM_MMCell_Malloc(int sz)
 	int i, n;
 	
 //	n=(sz+7)/8;
-	n=(sz+15)/8;
+//	n=(sz+15)/8;
+//	n=(sz+23)/8;
+	n=((sz+47)/16)*2;
 	
 //	n*=2;
 //	n+=2;
@@ -277,7 +279,8 @@ void *TKMM_MMCell_Malloc(int sz)
 		chk=tkmm_mmcell_chunk[i];
 		b=TKMM_MMCell_ChunkTryAllocSpanFlO(chk, n);
 		if(b>=0)
-			{ return(chk->data+b+1); }
+//			{ return(chk->data+b+1); }
+			{ return(chk->data+b+2); }
 	}
 	
 	for(i=0; i<tkmm_mmcell_nchunk; i++)
@@ -285,7 +288,8 @@ void *TKMM_MMCell_Malloc(int sz)
 		chk=tkmm_mmcell_chunk[i];
 		b=TKMM_MMCell_ChunkTryAllocSpan(chk, n);
 		if(b>=0)
-			{ return(chk->data+b+1); }
+//			{ return(chk->data+b+1); }
+			{ return(chk->data+b+2); }
 	}
 	
 	i=TKMM_MMCell_AllocNewChunk();
@@ -293,7 +297,8 @@ void *TKMM_MMCell_Malloc(int sz)
 	chk=tkmm_mmcell_chunk[i];
 	b=TKMM_MMCell_ChunkTryAllocSpan(chk, n);
 	if(b>=0)
-		{ return(chk->data+b+1); }
+//		{ return(chk->data+b+1); }
+		{ return(chk->data+b+2); }
 	
 	__debugbreak();
 }

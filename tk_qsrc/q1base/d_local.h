@@ -109,3 +109,13 @@ extern float	d_scalemip[3];
 
 extern void (*d_drawspans) (espan_t *pspan);
 
+#ifdef _BGBCC
+// #if 0
+
+#define d_fdiv_sf(f, g)		__fpu_fdiv_sf(f, g)
+
+#else
+
+#define d_fdiv_sf(f, g)		((f)/(g))
+
+#endif

@@ -248,10 +248,36 @@ int print_hex_genw(u32 v)
 	return(i);
 }
 
+#if 1
+u64 conv_uint_bcd(int val);
+
+__asm {
+conv_uint_bcd:
+	MOV 0, R2
+	MOV 32, R7
+	.L0:
+	ADD -4, R7
+
+	ROTCL	R4
+	BCDADC	R2, R2
+	ROTCL	R4
+	BCDADC	R2, R2
+	ROTCL	R4
+	BCDADC	R2, R2
+	ROTCL	R4
+	BCDADC	R2, R2
+
+	TEST R7, R7
+	BF .L0
+	RTS
+}
+#endif
+
 void print_decimal(int val)
 {
 	char tb[256];
 	char *t;
+	u64 tv;
 	int i, k, s;
 	
 	k=val; s=0;
@@ -261,6 +287,21 @@ void print_decimal(int val)
 //	__debugbreak();
 	
 	t=tb;
+#if 1
+	if(k)
+	{
+		tv=conv_uint_bcd(k);
+		while(tv)
+		{
+			*t++='0'+(tv&15);
+			tv=tv>>4;
+		}
+//		__debugbreak();
+	}else
+	{
+		*t++='0';
+	}
+#else
 	if(!k)*t++='0';	
 	while(k>0)
 	{
@@ -272,6 +313,7 @@ void print_decimal(int val)
 		*t++='0'+i;
 		k=k/10;
 	}
+#endif
 	if(s)*t++='-';
 	
 	while(t>tb)

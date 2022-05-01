@@ -26,7 +26,8 @@ int TKSH_HexSetRow(int row, byte *tbuf)
 int TKSH_HexRedraw()
 {
 	char tb[128];
-	byte tbu0[16], tbu1[18];
+	byte tbu0[16], tbu1[36];
+	byte *s, *t;
 	int i, j, k;
 
 	if(tksh_edit_cur_x>=32)
@@ -93,7 +94,8 @@ int TKSH_HexRedraw()
 		}
 		
 		TKSH_HexGetRow(j, tbu0);
-		
+
+#if 0	
 		memcpy(tbu1, tbu0, 16);
 		for(j=0; j<16; j++)
 		{
@@ -103,7 +105,32 @@ int TKSH_HexRedraw()
 			tbu1[j]=k;
 		}
 		tbu1[16]=0;
-			
+#endif
+
+#if 1
+//		memcpy(tbu1, tbu0, 16);
+
+		s=tbu0;
+		t=tbu1;
+		
+		for(j=0; j<16; j++)
+		{
+			k=*s++;
+			if((k<' ') || (k>'~'))
+			{
+				k=k+0x0600;
+				*t++=0xC0|((k>>6)&0x1F);
+				*t++=0x80|((k>>0)&0x3F);
+				continue;
+//				k='.';
+			}
+			*t++=k;
+		}
+		*t++=0;
+#endif
+		
+		s=tbu1;
+		
 		sprintf(tb, "%08X "
 			"%02X %02X %02X %02X  %02X %02X %02X %02X  "
 			"%02X %02X %02X %02X  %02X %02X %02X %02X  "
@@ -113,7 +140,7 @@ int TKSH_HexRedraw()
 			tbu0[ 4], tbu0[ 5], tbu0[ 6], tbu0[ 7],
 			tbu0[ 8], tbu0[ 9], tbu0[10], tbu0[11],
 			tbu0[12], tbu0[13], tbu0[14], tbu0[15],
-			tbu1);
+			s);
 		if(((tksh_edit_base_y+i+1)*16)>tksh_hex_bufsz)
 		{
 			k=tksh_hex_bufsz-((tksh_edit_base_y+i)*16);

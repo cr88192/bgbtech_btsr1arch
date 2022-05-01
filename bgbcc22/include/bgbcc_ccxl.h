@@ -79,6 +79,11 @@
 #define CCXL_TY_FIXNUM			0x41		//large boxed integer
 #define CCXL_TY_FLONUM			0x42		//large boxed integer
 #define CCXL_TY_VEC3H			0x43		//64-bit 3x Half
+#define CCXL_TY_BCD64			0x44		//64-bit BCD
+#define CCXL_TY_BCD128			0x45		//128-bit BCD
+
+#define CCXL_TY_BCDBIG_P0		0x46		//64-bit BCD
+#define CCXL_TY_BCDBIG_P4		0x47		//128-bit BCD
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'
@@ -261,6 +266,8 @@ Base, Q1..Q3:
 #define CCXL_REGVEC_TY_V3FQ		0x11
 #define CCXL_REGVEC_TY_V4H		0x12
 #define CCXL_REGVEC_TY_V3H		0x13
+#define CCXL_REGVEC_TY_BCD64	0x14
+#define CCXL_REGVEC_TY_BCD128	0x15
 
 #define CCXL_REGGBLA_DZMASK		0x000FFFFF00000000ULL	//displacement mask
 
@@ -714,6 +721,7 @@ bccx_cxstate bgbcc_rcst_attribute;
 bccx_cxstate bgbcc_rcst_attributes;
 
 bccx_cxstate bgbcc_rcst_begin;
+bccx_cxstate bgbcc_rcst_bigint;
 bccx_cxstate bgbcc_rcst_binary;
 bccx_cxstate bgbcc_rcst_bits;
 bccx_cxstate bgbcc_rcst_blockcomment;

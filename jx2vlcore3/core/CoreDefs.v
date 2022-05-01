@@ -834,6 +834,7 @@ parameter[5:0] JX2_UCIX_ALUN_CTZQ	= 6'h21;		//Count Trailing Zeroes (QW)
 parameter[5:0] JX2_UCIX_ALUN_BTRNSQ	= 6'h22;		//Transpose Bits (QW)
 parameter[5:0] JX2_UCIX_ALUN_PMORTQ	= 6'h23;		//Morton-Shuffle Bits (QW)
 
+
 parameter[5:0] JX2_UCIX_ALUW_PADDW	= 6'h20;		//ALU ADD
 parameter[5:0] JX2_UCIX_ALUW_PSUBW	= 6'h21;		//ALU SUB
 
@@ -932,6 +933,17 @@ parameter[5:0] JX2_UCIX_CONV2_BLKUTX3H		= 6'h0A;	//Get pixel, UTX3H
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX3L		= 6'h0B;	//Get pixel, UTX3L
 // parameter[5:0] JX2_UCIX_CONV2_BLKUAB1		= 6'h0C;	//Get Sample, UAB1
 // parameter[5:0] JX2_UCIX_CONV2_BLKUAB2		= 6'h0D;	//Get Sample, UAB2
+
+parameter[5:0] JX2_UCIX_CONV2_DAAQ	= 6'h0E;		//
+parameter[5:0] JX2_UCIX_CONV2_DASQ	= 6'h0F;		//
+
+parameter[5:0] JX2_UCIX_CONV2_BCDADD	= 6'h10;	//
+parameter[5:0] JX2_UCIX_CONV2_BCDSUB	= 6'h11;	//
+
+parameter[5:0] JX2_UCIX_CONV2_ROTCL		= 6'h14;	//
+parameter[5:0] JX2_UCIX_CONV2_ROTCR		= 6'h15;	//
+parameter[5:0] JX2_UCIX_CONV2_ROTCLQ	= 6'h16;	//
+parameter[5:0] JX2_UCIX_CONV2_ROTCRQ	= 6'h17;	//
 
 // parameter[5:0] JX2_UCIX_CONV_MOVX		= 6'h23;		//MOVX
 

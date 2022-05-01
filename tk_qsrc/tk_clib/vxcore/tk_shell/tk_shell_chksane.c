@@ -809,6 +809,7 @@ void sanity_glColor4f(float red, float green, float blue, float alpha)
 }
 
 #include "tk_shell_chksvar.c"
+#include "tk_shell_chksbcd.c"
 
 int tk_shell_chksane_arith()
 {
@@ -1248,6 +1249,7 @@ int tk_shell_chksane()
 	tk_printf("CS B7\n");
 
 //	tk_shell_chksane_var();
+	tk_shell_chksane_bcd();
 
 	tk_printf("CS B8\n");
 }

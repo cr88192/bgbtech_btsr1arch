@@ -178,9 +178,13 @@ reg			usrSuAllowEn;
 always @*
 begin
 
-	tRegRoIsRs	= (istrWord[24:23]==2'b00);
-	tRegRmIsRs	= (istrWord[19:18]==2'b00);
-	tRegRnIsRs	= (istrWord[11:10]==2'b00);
+//	tRegRoIsRs	= (istrWord[24:23]==2'b00);
+//	tRegRmIsRs	= (istrWord[19:18]==2'b00);
+//	tRegRnIsRs	= (istrWord[11:10]==2'b00);
+
+	tRegRoIsRs	= (istrWord[24]==1'b0);
+	tRegRmIsRs	= (istrWord[19]==1'b0);
+	tRegRnIsRs	= (istrWord[11]==1'b0);
 
 	opIsJumbo	= istrJBits[24];
 	opIsJumbo96	= istrJBits[25];
@@ -189,39 +193,67 @@ begin
 	opRegO_Dfl	= { 2'b0, istrWord[24:20] };
 	opRegM_Dfl	= { 2'b0, istrWord[19:15] };
 	opRegN_Dfl	= { 2'b0, istrWord[11: 7] };
-	opRegP_Dfl	= opRegN_Dfl;
+//	opRegP_Dfl	= opRegN_Dfl;
 
-	case(istrWord[22:20])
-		3'b000: opRegO_Sr = JX2_GR_ZZR;
-		3'b001: opRegO_Sr = JX2_GR_LR;
-		3'b010: opRegO_Sr = JX2_GR_SP;
-		3'b011: opRegO_Sr = JX2_GR_GBR;
-		3'b100: opRegO_Sr = JX2_GR_TBR;
-		3'b101: opRegO_Sr = JX2_GR_DHR;
-		3'b110: opRegO_Sr = JX2_GR_DLR;
-		3'b111: opRegO_Sr = JX2_GR_R7;
+	opRegO_Sr = opRegO_Dfl;
+	opRegM_Sr = opRegM_Dfl;
+	opRegN_Sr = opRegN_Dfl;
+
+	case(istrWord[23:20])
+		4'b0000: opRegO_Sr = JX2_GR_ZZR;
+		4'b0001: opRegO_Sr = JX2_GR_LR;
+		4'b0010: opRegO_Sr = JX2_GR_SP;
+		4'b0011: opRegO_Sr = JX2_GR_GBR;
+		4'b0100: opRegO_Sr = JX2_GR_TBR;
+		4'b0101: opRegO_Sr = JX2_GR_DHR;
+		4'b0110: opRegO_Sr = JX2_GR_DLR;
+		4'b0111: opRegO_Sr = JX2_GR_R7;
+		4'b1000: opRegO_Sr = JX2_GR_R8;
+		4'b1001: opRegO_Sr = JX2_GR_R9;
+		4'b1010: opRegO_Sr = JX2_GR_R10;
+		4'b1011: opRegO_Sr = JX2_GR_R11;
+		4'b1100: opRegO_Sr = JX2_GR_R12;
+		4'b1101: opRegO_Sr = JX2_GR_R13;
+		4'b1110: opRegO_Sr = JX2_GR_R2;
+		4'b1111: opRegO_Sr = JX2_GR_R3;
 	endcase
 
-	case(istrWord[17:15])
-		3'b000: opRegM_Sr = JX2_GR_ZZR;
-		3'b001: opRegM_Sr = JX2_GR_LR;
-		3'b010: opRegM_Sr = JX2_GR_SP;
-		3'b011: opRegM_Sr = JX2_GR_GBR;
-		3'b100: opRegM_Sr = JX2_GR_TBR;
-		3'b101: opRegM_Sr = JX2_GR_DHR;
-		3'b110: opRegM_Sr = JX2_GR_DLR;
-		3'b111: opRegM_Sr = JX2_GR_R7;
+	case(istrWord[18:15])
+		4'b0000: opRegM_Sr = JX2_GR_ZZR;
+		4'b0001: opRegM_Sr = JX2_GR_LR;
+		4'b0010: opRegM_Sr = JX2_GR_SP;
+		4'b0011: opRegM_Sr = JX2_GR_GBR;
+		4'b0100: opRegM_Sr = JX2_GR_TBR;
+		4'b0101: opRegM_Sr = JX2_GR_DHR;
+		4'b0110: opRegM_Sr = JX2_GR_DLR;
+		4'b0111: opRegM_Sr = JX2_GR_R7;
+		4'b1000: opRegM_Sr = JX2_GR_R8;
+		4'b1001: opRegM_Sr = JX2_GR_R9;
+		4'b1010: opRegM_Sr = JX2_GR_R10;
+		4'b1011: opRegM_Sr = JX2_GR_R11;
+		4'b1100: opRegM_Sr = JX2_GR_R12;
+		4'b1101: opRegM_Sr = JX2_GR_R13;
+		4'b1110: opRegM_Sr = JX2_GR_R2;
+		4'b1111: opRegM_Sr = JX2_GR_R3;
 	endcase
 
-	case(istrWord[9:7])
-		3'b000: opRegN_Sr = JX2_GR_ZZR;
-		3'b001: opRegN_Sr = JX2_GR_LR;
-		3'b010: opRegN_Sr = JX2_GR_SP;
-		3'b011: opRegN_Sr = JX2_GR_GBR;
-		3'b100: opRegN_Sr = JX2_GR_TBR;
-		3'b101: opRegN_Sr = JX2_GR_DHR;
-		3'b110: opRegN_Sr = JX2_GR_DLR;
-		3'b111: opRegN_Sr = JX2_GR_R7;
+	case(istrWord[10:7])
+		4'b0000: opRegN_Sr = JX2_GR_ZZR;
+		4'b0001: opRegN_Sr = JX2_GR_LR;
+		4'b0010: opRegN_Sr = JX2_GR_SP;
+		4'b0011: opRegN_Sr = JX2_GR_GBR;
+		4'b0100: opRegN_Sr = JX2_GR_TBR;
+		4'b0101: opRegN_Sr = JX2_GR_DHR;
+		4'b0110: opRegN_Sr = JX2_GR_DLR;
+		4'b0111: opRegN_Sr = JX2_GR_R7;
+		4'b1000: opRegN_Sr = JX2_GR_R8;
+		4'b1001: opRegN_Sr = JX2_GR_R9;
+		4'b1010: opRegN_Sr = JX2_GR_R10;
+		4'b1011: opRegN_Sr = JX2_GR_R11;
+		4'b1100: opRegN_Sr = JX2_GR_R12;
+		4'b1101: opRegN_Sr = JX2_GR_R13;
+		4'b1110: opRegN_Sr = JX2_GR_R2;
+		4'b1111: opRegN_Sr = JX2_GR_R3;
 	endcase
 
 	if(tRegRoIsRs)
@@ -230,6 +262,8 @@ begin
 		opRegM_Dfl = opRegM_Sr;
 	if(tRegRnIsRs)
 		opRegN_Dfl = opRegN_Sr;
+
+	opRegP_Dfl	= opRegN_Dfl;
 
 	opRegM_Cr	= 0;
 	opRegO_Cr	= 0;

@@ -248,7 +248,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		{
 //			if(	BGBCC_CCXL_TypeFloatP(ctx, sty) ||
 //				BGBCC_CCXL_TypeDoubleP(ctx, sty))
-			if(BGBCC_CCXL_TypeRealP(ctx, sty))
+			if(BGBCC_CCXL_TypeRealP(ctx, sty) ||
+				BGBCC_CCXL_TypeBcdP(ctx, sty))
 			{
 				BGBCC_CCXL_ConvImm(ctx, sty, tty, treg, &treg);
 				tty=sty;
@@ -258,7 +259,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		{
 //			if(	BGBCC_CCXL_TypeFloatP(ctx, tty) ||
 //				BGBCC_CCXL_TypeDoubleP(ctx, tty))
-			if(BGBCC_CCXL_TypeRealP(ctx, tty))
+			if(BGBCC_CCXL_TypeRealP(ctx, tty) ||
+				BGBCC_CCXL_TypeBcdP(ctx, tty))
 			{
 				BGBCC_CCXL_ConvImm(ctx, tty, sty, sreg, &sreg);
 				sty=tty;
@@ -813,7 +815,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		{
 			if(BGBCC_CCXL_TypeRealP(ctx, sty))
 			{
-				if(BGBCC_CCXL_TypeRealP(ctx, dty))
+				if(BGBCC_CCXL_TypeRealP(ctx, dty) ||
+					BGBCC_CCXL_TypeBcdP(ctx, dty))
 				{
 					BGBCC_CCXL_ConvImm(ctx, dty, tty, treg, &treg);
 					tty=dty;
@@ -828,7 +831,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		{
 			if(BGBCC_CCXL_TypeRealP(ctx, tty))
 			{
-				if(BGBCC_CCXL_TypeRealP(ctx, dty))
+				if(BGBCC_CCXL_TypeRealP(ctx, dty) ||
+					BGBCC_CCXL_TypeBcdP(ctx, dty))
 				{
 					BGBCC_CCXL_ConvImm(ctx, dty, sty, sreg, &sreg);
 					sty=dty;

@@ -55,10 +55,11 @@ BCCX_Node *BGBCP_Number(BGBCP_ParseState *ctx, char *str)
 
 BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 {
+	char tba[512];
 	BCCX_Node *n;
 	char *s, *suf1;
 	s64 li, lj;
-	int i;
+	int i, big;
 
 	s=str;
 //	while(*s && (*s!='.') && (*s!='e') && (*s!='E')) s++;
@@ -68,7 +69,11 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 	{
 //		li=bgbcc_atoi(str);
 
-		bgbcc_atoxl(str, (u64 *)(&li), (u64 *)(&lj));
+		i=bgbcc_atoxl(str, (u64 *)(&li), (u64 *)(&lj));
+		
+		big=0;
+		if(!suf && (i<0))
+			big=1;
 		
 		suf1=suf;
 #if 1
@@ -108,6 +113,18 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 			}
 		}
 #endif
+		
+		if(big)
+		{
+			bgbcc_strtoxs(str, tba);
+		
+			n=BCCX_NewCst(&bgbcc_rcst_bigint, "bigint");
+			BCCX_SetCst(n, &bgbcc_rcst_value, "value", tba);
+//			BCCX_SetIntCst(n, &bgbcc_rcst_value, "value", li);			
+			if(suf1)
+				BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", suf1);
+			return(n);
+		}
 		
 		if(((lj!=0) && (lj!=(-1))) ||
 			(suf && (lj!=(li>>63)) &&
@@ -214,7 +231,17 @@ BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str)
 			
 			memcpy(t1, b2, l+1);
 			t1+=l;
-			
+
+			s=BGBCP_EatWhite(s);
+			if((s[0]=='L') && (s[1]=='\"'))		s++;
+			if((s[0]=='u') && (s[1]=='\"'))		s++;
+			if((s[0]=='U') && (s[1]=='\"'))		s++;
+
+			if(		(s[0]=='u')		&&
+					(s[1]=='8')		&&
+					(s[2]=='\"')	)
+				s+=2;
+
 			s1=BGBCP_Token(s, b2, &ty2);
 			continue;
 		}
@@ -286,6 +313,16 @@ BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str)
 				*t1++=*s++;
 			}
 			*t1=0;
+			
+			s=BGBCP_EatWhite(s);
+			if((s[0]=='L') && (s[1]=='\"'))		s++;
+			if((s[0]=='u') && (s[1]=='\"'))		s++;
+			if((s[0]=='U') && (s[1]=='\"'))		s++;
+
+			if(		(s[0]=='u')		&&
+					(s[1]=='8')		&&
+					(s[2]=='\"')	)
+				s+=2;
 
 			s1=BGBCP_Token(s, b2, &ty2);
 			continue;

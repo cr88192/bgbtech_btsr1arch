@@ -1577,6 +1577,10 @@ F0zz Instruction Block:
 ** F0nm_1Go7  XORX		Xm, Xo, Xn			//(ALUX) Xn=Xm^Xo
 
 ** F0nm_1ez8
+
+*** F0nm_1g88 BCDADC	Rm, Rn				//BCD ADC
+*** F0nm_1g98 BCDSBB	Rm, Rn				//BCD SBB
+
 *** F0nm_1gA8 MOVZT		Rm, Rn				//MOV, Zero Tag
 *** F0nm_1GA8 XMOVZT	Xm, Xn				//XMOV, Zero Tag
 *** F0nm_1gB8 SNIPEDC	Rm, Rn				//Calculate L1 D$ Snipe Address
@@ -1843,14 +1847,17 @@ F0zz Instruction Block:
 *** F033_3en0  MOVNT	Rn
 *** F034_3en0 ? ROTL		Rn
 *** F035_3en0 ? ROTR		Rn
-*** F036_3en0  ROTCL	Rn
-*** F037_3en0  ROTCR	Rn
+*** F036_3en0  ROTCL{Q}		Rn
+*** F037_3en0  ROTCR{Q}		Rn
 *** F038_3en0 ? SHLL		Rn		//Rn=Rn<<1
 *** F039_3en0 ? SHLR		Rn		//Rn=Rn>>1 (Logical)
 *** F03A_3en0 ? SHAR		Rn		//Rn=Rn>>1 (Arithmetic)
 
 *** F03E_3en0  MOVST	Rn
 *** F03F_3en0  MOVPQ	Rn
+
+*** F060_3en0 ? DAA		Rn			//(BCD) Decimal Adjust After ADD
+*** F061_3en0 ? DAS		Rn			//(BCD) Decimal Adjust After SUB
 
 *** F068_3en0  TRAP		Rn
 *** F069_3en0  WEXMD	Imm5u

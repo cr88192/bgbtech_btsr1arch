@@ -37,8 +37,8 @@ void D_DrawTurbulent8Span (void);
 int D_SoftDivB(int a, int b);
 // #define D_SoftDivB	D_SoftDiv
 
-float __fpu_fdiv_sf(float x, float y);
-float __fpu_frcp_sf(float x);
+// float __fpu_fdiv_sf(float x, float y);
+// float __fpu_frcp_sf(float x);
 
 /*
 =============
@@ -301,7 +301,7 @@ void Turbulent8 (espan_t *pspan)
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 //		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-		z = __fpu_fdiv_sf(65536.0, zi);
+		z = d_fdiv_sf(65536.0, zi);
 
 		r_turb_s = (int)(sdivz * z) + sadjust;
 		if (r_turb_s > bbextents)
@@ -333,7 +333,7 @@ void Turbulent8 (espan_t *pspan)
 				tdivz += tdivz16stepu;
 				zi += zi16stepu;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -363,7 +363,7 @@ void Turbulent8 (espan_t *pspan)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -452,7 +452,7 @@ void Turbulent16 (espan_t *pspan)
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 //		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-		z = __fpu_fdiv_sf(65536.0, zi);
+		z = d_fdiv_sf(65536.0, zi);
 
 		r_turb_s = (int)(sdivz * z) + sadjust;
 		if (r_turb_s > bbextents)
@@ -484,7 +484,7 @@ void Turbulent16 (espan_t *pspan)
 				tdivz += tdivz16stepu;
 				zi += zi16stepu;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -514,7 +514,7 @@ void Turbulent16 (espan_t *pspan)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -590,7 +590,7 @@ void Turbulent16_Low (espan_t *pspan)
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 //		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-		z = __fpu_fdiv_sf(65536.0, zi);
+		z = d_fdiv_sf(65536.0, zi);
 
 		r_turb_s = (int)(sdivz * z) + sadjust;
 		if (r_turb_s > bbextents)
@@ -619,7 +619,7 @@ void Turbulent16_Low (espan_t *pspan)
 				sdivz += sdivz16stepu;
 				tdivz += tdivz16stepu;
 				zi += zi16stepu;
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -638,7 +638,7 @@ void Turbulent16_Low (espan_t *pspan)
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -711,7 +711,7 @@ void D_DrawSpans8 (espan_t *pspan)
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 //		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-		z = __fpu_fdiv_sf(65536.0, zi);
+		z = d_fdiv_sf(65536.0, zi);
 
 		s = (int)(sdivz * z) + sadjust;
 		if (s > bbextents)
@@ -743,7 +743,7 @@ void D_DrawSpans8 (espan_t *pspan)
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -773,7 +773,7 @@ void D_DrawSpans8 (espan_t *pspan)
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
 					snext = bbextents;
@@ -876,7 +876,7 @@ void D_DrawSpans16 (espan_t *pspan)
 //		z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
 //		z = 65536.0 / zi;	// prescale to 16.16 fixed-point
 //		z = __fpu_frcp_sf(zi) * 65536.0;
-		z = __fpu_fdiv_sf(65536.0, zi);
+		z = d_fdiv_sf(65536.0, zi);
 
 //		tk_printf("zio=%f %f %f\n", d_ziorigin, d_zistepv, d_zistepu);
 
@@ -911,7 +911,7 @@ void D_DrawSpans16 (espan_t *pspan)
 				zi += zi8stepu;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
 //				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
-//				z = __fpu_fdiv_sf(65536.0, zi);
+//				z = d_fdiv_sf(65536.0, zi);
 				z = __fpu_frcp_sf(zi) * 65536.0;
 
 				snext = (int)(sdivz * z) + sadjust;
@@ -944,7 +944,7 @@ void D_DrawSpans16 (espan_t *pspan)
 				zi += d_zistepu * spancountminus1;
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
 //				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
-//				z = __fpu_fdiv_sf(65536.0, zi);
+//				z = d_fdiv_sf(65536.0, zi);
 				z = __fpu_frcp_sf(zi) * 65536.0;
 
 				snext = (int)(sdivz * z) + sadjust;
@@ -1413,7 +1413,7 @@ void D_DrawSpans16 (espan_t *pspan)
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 //		z = __fpu_frcp_sf(zi) * 65536.0;
-		z = __fpu_fdiv_sf(65536.0, zi);
+		z = d_fdiv_sf(65536.0, zi);
 
 		s = (int)(sdivz * z) + sadjust;
 		t = (int)(tdivz * z) + tadjust;
@@ -1466,7 +1466,7 @@ void D_DrawSpans16 (espan_t *pspan)
 			sdivz += sdivzstepu * spancountminus1;
 			tdivz += tdivzstepu * spancountminus1;
 			zi += zistepu * spancountminus1;
-			z = __fpu_fdiv_sf(65536.0, zi);
+			z = d_fdiv_sf(65536.0, zi);
 
 			snext = (int)(sdivz * z) + sadjust;
 			tnext = (int)(tdivz * z) + tadjust;
@@ -1510,7 +1510,7 @@ void D_DrawSpans16 (espan_t *pspan)
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
 //				z = __fpu_frcp_sf(zi) * 65536.0;
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 //				z += z8stepu;
 
 				snext = (int)(sdivz * z) + sadjust;
@@ -1535,7 +1535,7 @@ void D_DrawSpans16 (espan_t *pspan)
 				zi += zistepu * spancountminus1;
 //				z = __fpu_frcp_sf(zi) * 65536.0;
 //				if(spancount>=4)
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 //				z += zstepu * spancountminus1;
 
 				snext = (int)(sdivz * z) + sadjust;
@@ -1641,7 +1641,7 @@ void D_DrawSpans16_Low (espan_t *pspan)
 		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
-		z = __fpu_fdiv_sf(65536.0, zi);
+		z = d_fdiv_sf(65536.0, zi);
 
 		s = (int)(sdivz * z) + sadjust;
 		t = (int)(tdivz * z) + tadjust;
@@ -1702,7 +1702,7 @@ void D_DrawSpans16_Low (espan_t *pspan)
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				tnext = (int)(tdivz * z) + tadjust;
@@ -1719,7 +1719,7 @@ void D_DrawSpans16_Low (espan_t *pspan)
 				sdivz += sdivzstepu * spancountminus1;
 				tdivz += tdivzstepu * spancountminus1;
 				zi += zistepu * spancountminus1;
-				z = __fpu_fdiv_sf(65536.0, zi);
+				z = d_fdiv_sf(65536.0, zi);
 
 				snext = (int)(sdivz * z) + sadjust;
 				tnext = (int)(tdivz * z) + tadjust;

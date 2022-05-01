@@ -1126,10 +1126,12 @@ int bgbcc_strtoxl(char *str, int rdx, u64 *rxlo, u64 *rxhi)
 int bgbcc_strtoxl2(char *str, int rdx, u64 *rxlo, u64 *rxhi, short *rdpct)
 {
 	char *s;
-	u64 tl, tm, th;
+//	u64 tl, tm, th;
+	u64 tva, tvb, tvc, tvd;
 	int i, j, dpct;
 	
-	s=str; tl=0; tm=0; th=0; dpct=-9999;
+//	s=str; tl=0; tm=0; th=0; dpct=-9999;
+	s=str; tva=0; tvb=0; tvc=0; tvd=0; dpct=-9999;
 	while(*s)
 	{
 		if(*s=='_')
@@ -1151,26 +1153,43 @@ int bgbcc_strtoxl2(char *str, int rdx, u64 *rxlo, u64 *rxhi, short *rdpct)
 			j=10+(i-'a');
 		if((j<0) || (j>=rdx))
 			break;
-		tl=(tl*rdx)+j;
-		tm=(tm*rdx)+(tl>>32);
-		th=(th*rdx)+(tm>>32);
-		tl=(u32)tl;
-		tm=(u32)tm;
+//		tl=(tl*rdx)+j;
+//		tm=(tm*rdx)+(tl>>32);
+//		th=(th*rdx)+(tm>>32);
+//		tl=(u32)tl;
+//		tm=(u32)tm;
+
+		tva=(tva*rdx)+j;
+		tvb=(tvb*rdx)+(tva>>32);
+		tvc=(tvc*rdx)+(tvb>>32);
+		tvd=(tvd*rdx)+(tvc>>32);
+		tva=(u32)tva;
+		tvb=(u32)tvb;
+		tvc=(u32)tvc;
+
 		dpct++;
 	}
 	
 	if(dpct<0)
 		dpct=0;
 	
-	*rxlo=tl|(tm<<32);
-	*rxhi=th;
+//	*rxlo=tl|(tm<<32);
+//	*rxhi=th;
+	*rxlo=tva|(tvb<<32);
+	*rxhi=tvc|(tvd<<32);
 	if(rdpct)
 		*rdpct=dpct;
+	
+	if(tvd>>32)
+	{
+		/* Exceeds 128-bit range... */
+		return(-1);
+	}
 	
 	return(1);
 }
 
-s64 bgbcc_atoxl(char *str, u64 *rxlo, u64 *rxhi)
+int bgbcc_atoxl(char *str, u64 *rxlo, u64 *rxhi)
 {
 	u64 t0, t1, t2;
 	s64 li;
@@ -1333,3 +1352,148 @@ char *BGBCC_StrPrintRawStr(char *t, char *s)
 	*t=0;
 	return(t);
 }
+
+#if 1
+int bgbcc_strtoxx2(char *str, int rdx, u64 *rxa, int *rdpct)
+{
+	char *s;
+	u64 tvaa[64], tv;
+	int i, j, k, dpct;
+	
+	memset(tvaa, 0, 64*sizeof(u64));
+	
+//	s=str; tl=0; tm=0; th=0; dpct=-9999;
+	s=str; dpct=-99999;
+	while(*s)
+	{
+		if(*s=='_')
+			{ s++; continue; }
+
+		if((*s=='.') && rdpct)
+		{
+			s++;
+			dpct=0;
+			continue;
+		}
+
+		i=*s++; j=-1;
+		if((i>='0') && (i<='9'))
+			j=0+(i-'0');
+		if((i>='A') && (i<='Z'))
+			j=10+(i-'A');
+		if((i>='a') && (i<='z'))
+			j=10+(i-'a');
+		if((j<0) || (j>=rdx))
+			break;
+
+		tvaa[0]=(tvaa[0]*rdx)+j;
+		for(k=1; k<64; k++)
+			tvaa[k]=(tvaa[k]*rdx)+(tvaa[k-1]>>32);
+		for(k=0; k<64; k++)
+			tvaa[k]=(u32)tvaa[k];
+		dpct++;
+	}
+	
+	if(dpct<0)
+		dpct=0;
+	
+	for(k=0; k<32; k++)
+	{
+		tv=tvaa[k*2+0]|(tvaa[k*2+1]<<32);
+		rxa[k]=tv;
+		if(!tv)
+			break;
+	}
+	
+	*rdpct=0;
+	return(k);
+}
+
+int bgbcc_strtoxx(char *str, u64 *rxa, int *rdpct)
+{
+	char *s;
+	u64 tv, tv1;
+	int i, j, c, n, sg, rdx;
+	
+	rdx=10;
+	
+	s=str; sg=0;
+	if(*s=='-')
+		{ s++; sg=1; }
+
+	if(*s=='0')
+	{
+		if((s[1]=='x') || (s[1]=='X'))
+		{
+			rdx=16;
+			s+=2;
+		}
+		else if((s[1]=='b') || (s[1]=='B'))
+		{
+			rdx=2;
+			s+=2;
+		}
+		else if((s[1]=='d') || (s[1]=='D'))
+		{
+			rdx=10;
+			s+=2;
+		}
+		else if((s[1]=='c') || (s[1]=='C'))
+		{
+			rdx=8;
+			s+=2;
+		}else
+		{
+			rdx=8;
+			s++;
+		}
+	}
+		
+	n=bgbcc_strtoxx2(s, rdx, rxa, rdpct);
+
+	if(sg)
+	{
+		c=1;
+		for(i=0; i<n; i++)
+		{
+			tv=~rxa[i];
+			tv1=tv+c;
+			rxa[i]=tv1;
+			c=((tv>>63)^(tv1>>63))&1;
+		}
+	}
+	return(n);
+}
+
+int bgbcc_strtoxs(char *str, char *rxb)
+{
+	u64 tva[64];
+	u64 tv;
+	char *t;
+	int i, j, k, n, pct;
+
+	n=bgbcc_strtoxx(str, tva, &pct);
+
+	t=rxb;
+	for(i=0; i<n; i++)
+	{
+		tv=tva[i];
+		t[ 0]='0'+((tv>> 0)&63);
+		t[ 1]='0'+((tv>> 6)&63);
+		t[ 2]='0'+((tv>>12)&63);
+		t[ 3]='0'+((tv>>18)&63);
+		t[ 4]='0'+((tv>>24)&63);
+		t[ 5]='0'+((tv>>30)&63);
+		t[ 6]='0'+((tv>>36)&63);
+		t[ 7]='0'+((tv>>42)&63);
+		t[ 8]='0'+((tv>>48)&63);
+		t[ 9]='0'+((tv>>54)&63);
+		t[10]='0'+((tv>>60)&63);
+		t+=11;
+	}
+	*t=0;
+	
+	return(n);
+}
+
+#endif

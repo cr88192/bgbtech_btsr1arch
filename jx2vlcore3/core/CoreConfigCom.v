@@ -82,6 +82,7 @@
 
 `define jx2_enable_aluunary
 `define jx2_enable_clz
+`define jx2_enable_packbcd
 
 // `ifndef jx2_cfg_75mhz
 `ifdef def_true

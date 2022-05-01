@@ -2,10 +2,55 @@ void __halt(void);
 
 byte tk_dbg_iscopy;
 
-void tk_dbg_putc(int val)
+void tk_dbg_putc_i(int val)
 {
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
+}
+
+static char *tk_hextab="0123456789ABCDEF";
+
+void tk_dbg_putc(int val)
+{
+	if(val<=0)
+		return;
+
+	if(val<=0x7F)
+	{
+		tk_dbg_putc_i(val);
+		return;
+	}
+
+	if((val>=0x600) && (val<=0x6FF))
+	{
+		tk_dbg_putc_i(tk_hextab[(val>>4)&15]);
+		tk_dbg_putc_i(tk_hextab[(val>>0)&15]);
+		return;
+	}
+
+	if(val<=0x7FF)
+	{
+		tk_dbg_putc_i(0xC0|((val>>6)&0x1F));
+		tk_dbg_putc_i(0x80|((val   )&0x3F));
+		return;
+	}
+
+	if(val<=0xFFFF)
+	{
+		tk_dbg_putc_i(0xE0|((val>>12)&0x0F));
+		tk_dbg_putc_i(0x80|((val>> 6)&0x3F));
+		tk_dbg_putc_i(0x80|((val    )&0x3F));
+		return;
+	}
+
+	if(val<=0x1FFFFF)
+	{
+		tk_dbg_putc_i(0xF0|((val>>18)&0x07));
+		tk_dbg_putc_i(0x80|((val>>12)&0x3F));
+		tk_dbg_putc_i(0x80|((val>> 6)&0x3F));
+		tk_dbg_putc_i(0x80|((val    )&0x3F));
+		return;
+	}
 }
 
 int tk_dbg_kbhit(void)
@@ -167,22 +212,118 @@ int tk_getch(void)
 #endif
 }
 
+byte *TK_EmitCharUtf8(byte *ct, int v)
+{
+	if(v<0x80)
+		{ *ct++=v; }
+	else if(v<0x0800)
+	{
+		*ct++=0xC0|((v>>6)&0x1F);
+		*ct++=0x80|((v   )&0x3F);
+	}
+	else if(v<0x10000)
+	{
+		*ct++=0xE0|((v>>12)&0x0F);
+		*ct++=0x80|((v>> 6)&0x3F);
+		*ct++=0x80|((v    )&0x3F);
+	}
+	else if(v<0x200000)
+	{
+		*ct++=0xF0|((v>>18)&0x07);
+		*ct++=0x80|((v>>12)&0x3F);
+		*ct++=0x80|((v>> 6)&0x3F);
+		*ct++=0x80|((v    )&0x3F);
+	}
+	return(ct);
+}
+
+int TK_ReadCharUtf8(byte **rcs)
+{
+	byte *cs;
+	int i, j, k, l;
+
+	cs=*rcs;
+	i=*cs++;
+	if(!(i&0x80))
+	{
+		*rcs=cs;
+		return(i);
+	}
+	else
+		if(!(i&0x40))	/* 80..BF */
+	{
+		*rcs=cs;
+		return(i);		
+	}else
+		if(!(i&0x20))	/* C0..DF */
+	{
+		j=*cs;
+		if((j&0xC0)==0x80)
+		{
+			cs++;
+			i=((i&0x1F)<<6)|(j&0x3F);
+			*rcs=cs;
+			return(i);
+		}
+	}else
+		if(!(i&0x10))	/* E0..EF */
+	{
+		j=cs[0];
+		k=cs[1];
+		if(((j&0xC0)==0x80) && ((k&0xC0)==0x80))
+		{
+			cs+=2;
+			i=((i&0x0F)<<12)|((j&0x3F)<<6)|(k&0x3F);
+			*rcs=cs;
+			return(i);
+		}
+	}else
+		if(!(i&0x08))	/* F0..F7 */
+	{
+		j=cs[0];
+		k=cs[1];
+		l=cs[2];
+		if(((j&0xC0)==0x80) && ((k&0xC0)==0x80) && ((l&0xC0)==0x80))
+		{
+			cs+=3;
+			i=((i&0x07)<<18)|((j&0x3F)<<12)|((k&0x3F)<<6)|(l&0x3F);
+			*rcs=cs;
+			return(i);
+		}
+	}
+	
+	*rcs=cs;
+	return(i);
+}
+
 void tk_puts(char *msg)
 {
 	char *s;
+	int i;
 	
 	s=msg;
 	while(*s)
-		{ tk_putc(*s++); }
+	{
+//		tk_putc(*s++);
+
+		i=TK_ReadCharUtf8((byte **)(&s));
+		tk_putc(i);
+	}
 }
 
 void tk_puts_n(char *msg, int n)
 {
 	char *s;
+	int i;
 	
 	s=msg;
 	while(n--)
-		{ tk_putc(*s++); }
+	{
+//		tk_putc(*s++);
+
+		i=TK_ReadCharUtf8((byte **)(&s));
+		tk_putc(i);
+	}
 }
 
 void tk_gets(char *buf)
@@ -391,17 +532,20 @@ int tk_print_hex_genw(u32 v)
 void tk_print_decimal(int val)
 {
 	char tb[256];
-	char *t;
+	char *t, *te;
 	int i, k, s;
 	
 	k=val; s=0;
 	if(k<0)
 		{ k=-k; s=1; }
 	
-	t=tb;
+	t=tb; te=tb+24;
 	if(!k)*t++='0';	
 	while(k>0)
 	{
+		if(t>te)
+			{ __debugbreak(); }
+	
 		i=k%10;
 		
 //		if((i<0) | (i>=10))
@@ -425,6 +569,9 @@ void tk_print_decimal_n(int val, int num)
 	k=val; s=0;
 	if(k<0)
 		{ k=-k; s=1; }
+	
+	if(n>=256)
+		{ __debugbreak(); }
 	
 	t=tb; n=num;
 //	if(!k)*t++=0;	
@@ -476,7 +623,7 @@ void tk_printf(char *str, ...)
 	va_list lst;
 	char pcfill;
 	char *s, *s1;
-	int v, w;
+	int i, v, w;
 
 //	plst=(void **)(&str);
 //	plst++;
@@ -488,7 +635,13 @@ void tk_printf(char *str, ...)
 	while(*s)
 	{
 		if(*s!='%')
-			{ tk_putc(*s++); continue; }
+		{
+//			tk_putc(*s++);
+
+			i=TK_ReadCharUtf8((byte **)(&s));
+			tk_putc(i);
+			continue;
+		}
 		if(s[1]=='%')
 			{ s+=2; tk_putc('%'); continue; }
 		s++;

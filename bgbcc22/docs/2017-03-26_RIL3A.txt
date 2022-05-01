@@ -266,9 +266,9 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dj': __vec2ui
 * 'Dk': __vec3h
 * 'Dl': __vec3fq
-* 'Dm':
+* 'Dm': __bcd64
 * 'Dn': nullptr
-* 'Do':
+* 'Do': __bcd128
 * 'Dp':
 * 'Dq': __quatd
 

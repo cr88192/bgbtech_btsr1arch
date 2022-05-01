@@ -1091,6 +1091,9 @@ X(__setj):
 	nop
 
 
+// .global X(__va64_arg_l)
+// X(__va64_arg_l):
+
 .global X(__va64_arg_i)
 X(__va64_arg_i):
 //	mov.l @(r4, 96), r2
@@ -1124,6 +1127,7 @@ __va64_arg_i.L0:
 	rts
 	nop
 
+#if 1
 .global X(__va64_arg_l)
 X(__va64_arg_l):
 //	mov.l @(r4, 96), r2
@@ -1156,6 +1160,8 @@ __va64_arg_l.L0:
 	mov r6, r2
 	rts
 	nop
+#endif
+
 
 .global X(__va64_arg_x)
 X(__va64_arg_x):
