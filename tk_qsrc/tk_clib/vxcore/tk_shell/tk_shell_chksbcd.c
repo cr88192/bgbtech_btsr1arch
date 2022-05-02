@@ -33,6 +33,6 @@ int tk_shell_chksane_bcd()
 		u8" \u0444\u0435\u0440\u0442\u044A"
 		u8" \u0395\u03BB\u03BB\u03B7\u03BD\u03B9\u03BA\u03AC");
 
-	while(1);
+//	while(1);
 //	__debugbreak();
 }
