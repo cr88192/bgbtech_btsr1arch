@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 `include "ringbus/RbiDefs.v"
 
 module RbiMemDcA(
@@ -493,6 +518,7 @@ reg				tNxtTlbMissInh;
 reg				tNxtTlbMissInh2;
 reg				tSkipTlb;
 reg				tNxtSkipTlb;
+reg				tReqAddrIsVirt;
 
 reg[2:0]		tVolatileInhSet;	//Volatile Inhibit Cycles (Set)
 reg[2:0]		tVolatileInhCnt;	//Volatile Inhibit Cycles (Count)
@@ -711,7 +737,16 @@ begin
 //		tNxtSkipTlb		= 1;
 	end
 
-	tNxtSkipTlb		= (regInSr[29] && regInSr[30]);
+//	tNxtSkipTlb		= (regInSr[29] && regInSr[30]);
+	tNxtSkipTlb		= (tRegInSr[29] && tRegInSr[30]);
+//	tNxtSkipTlb		= (tRegInSrL[29] && tRegInSrL[30]);
+
+	if(tNxtSkipTlb && (regInAddr[47:28]!=0) && !dcInHold &&
+		(regInOpm[5:4] != 2'b00))
+	begin
+		$display("L1 D$: Next Skip TLB and Addr is Virt, A=%X",
+			regInAddr);
+	end
 
 `ifndef def_true
 // `ifdef def_true
@@ -847,6 +882,9 @@ begin
 		((tReqAddr[47:44] == 4'hF) && tSrJQ);
 	tReqIsCcmd		= (tReqOpm[5:4] == 2'b00) && (tReqOpm[3:0] != 4'b0000);
 
+	tReqAddrIsVirt	= (tReqAddr[47:28] != 0) && !tReqAddr[47] &&
+		!tReqIsMmio && !tReqIsCcmd;
+	
 	tReqNoCross		= 0;
 	casez(tReqOpm[2:0])
 		3'bz00:		tReqNoCross = 1;
@@ -1934,7 +1972,30 @@ begin
 `endif
 
 			if(tSkipTlb)
-				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+			begin
+				/* FIXME: This is ugly hacks. */
+				/* If in an ISR, force physical addressing.
+				 * Unless address is in virtual ranges,
+				 * then just have it behave
+				 * as if TLB lookup has failed.
+				 */
+			
+
+//				if(tReqAxA[43:24]!=0)
+				if(tReqAddrIsVirt)
+					$display("L1 D$: Send LDA Req Abs A=%X", tReqAxA);
+//				else
+
+				if(!tReqAddrIsVirt)
+					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+		
+				if(tReqAddrIsVirt)
+				begin
+					tMemOpmReq[11:8] = 4'hF;
+//					tRegOutHold = 1;
+				end
+
+			end
 
 // `ifndef def_true
 `ifdef def_true
@@ -1945,7 +2006,7 @@ begin
 `endif
 
 `ifdef jx2_mem_l1d_utlb
-			if(tReqUtlbHitAxA)
+			if(tReqUtlbHitAxA && !tSkipTlb)
 			begin
 `ifdef jx2_enable_l1addr96
 				tMemAddrReq			= { UV48_00, tReqUtlbAxA, 4'h00 };
@@ -1980,7 +2041,23 @@ begin
 `endif
 
 			if(tSkipTlb)
-				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+			begin
+				/* FIXME: This is ugly hacks. */
+
+//				if(tReqAxB[43:24]!=0)
+				if(tReqAddrIsVirt)
+					$display("L1 D$: Send LDB Req Abs A=%X", tReqAxB);
+//				else
+
+				if(!tReqAddrIsVirt)
+					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+
+				if(tReqAddrIsVirt)
+				begin
+					tMemOpmReq[11:8] = 4'hF;
+//					tRegOutHold = 1;
+				end
+			end
 
 // `ifndef def_true
 `ifdef def_true
@@ -1991,7 +2068,7 @@ begin
 `endif
 
 `ifdef jx2_mem_l1d_utlb
-			if(tReqUtlbHitAxB)
+			if(tReqUtlbHitAxB && !tSkipTlb)
 			begin
 `ifdef jx2_enable_l1addr96
 				tMemAddrReq			= { UV48_00, tReqUtlbAxB, 4'h00 };

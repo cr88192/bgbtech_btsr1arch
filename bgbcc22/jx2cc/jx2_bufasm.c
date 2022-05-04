@@ -2855,6 +2855,8 @@ int BGBCC_JX2C_AssembleBuffer(
 	int oldar;
 	char *cs;
 
+//	BGBCC_JX2_SetSectionName(sctx, ".text");
+
 	sctx->iflvl_f=0;
 	sctx->iflvl_t=0;
 

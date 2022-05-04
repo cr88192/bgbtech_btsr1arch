@@ -1,4 +1,29 @@
 /*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
 L1 Instruction Cache, WEX
  */
 
@@ -326,6 +351,8 @@ reg				tClrTlbMissInhL;
 reg				tSkipTlb;
 reg				tNxtSkipTlb;
 
+reg				tReqAddrIsVirt;
+
 reg				tStuckTlbMissInh;
 reg				tStuckTlbMissInhL;
 
@@ -603,6 +630,7 @@ begin
 	/* Stage A */
 
 	tNxtSkipTlb			= regInSr[29] && regInSr[30];
+//	tNxtSkipTlb			= tRegInSr[29] && tRegInSr[30];
 
 	tRegInPc	= regInPc;
 	tNxtAddrHi	= 0;
@@ -827,6 +855,8 @@ begin
 
 //	tIcExecAcl = tBlkPFlA;
 	tIcExecAcl = tBlkPFlB;
+	
+	tReqAddrIsVirt	= (tInAddr[47:28] != 0) && !tInAddr[47];
 
 	tRegOutExc[ 63:16] = tInAddr[47:0];
 	tRegOutExc[111:64] = tReqAddrHi[47:0];
@@ -1486,7 +1516,17 @@ begin
 			tNxtMemReqLdA = 1;
 
 			if(tSkipTlb)
-				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+			begin
+//				if(tReqAddrA[43:24]!=0)
+				if(tReqAddrIsVirt)
+					$display("L1 I$: Send LDA Req Abs A=%X", tReqAddrA);
+
+//				if(!tReqAddrIsVirt)
+					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+
+//				if(tReqAddrIsVirt)
+//					tMemOpmReq[11:8] = 4'hF;
+			end
 
 //			$display("I$ LDA %X %X %X Ix=%X",
 //				tMemOpmReq, tMemSeqReq, tMemAddrReq, tReqIxA);
@@ -1508,8 +1548,18 @@ begin
 			tNxtMemReqLdB = 1;
 
 			if(tSkipTlb)
-				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+			begin
+//				if(tReqAddrB[43:24]!=0)
+				if(tReqAddrIsVirt)
+					$display("L1 I$: Send LDB Req Abs A=%X", tReqAddrB);
+
+//				if(!tReqAddrIsVirt)
+					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 //				tMemAddrReq[47:44]=4'hC;
+
+//				if(tReqAddrIsVirt)
+//					tMemOpmReq[11:8] = 4'hF;
+			end
 
 //			$display("I$ LDB %X %X %X Ix=%X",
 //				tMemOpmReq, tMemSeqReq, tMemAddrReq, tReqIxB);

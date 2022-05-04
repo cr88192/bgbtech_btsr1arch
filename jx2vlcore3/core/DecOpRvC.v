@@ -1,4 +1,29 @@
 /*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
 RISC-V C Instruction Decoder
 
 Decodes 16-bit RVC Instruction.
@@ -115,67 +140,107 @@ reg		usrReject;
 reg[1:0]	usrSuAllow;
 reg			usrSuAllowEn;
 
+reg[9:0]	tOffsJmp;
+reg[9:0]	tOffsJmpZ;
+
 always @*
 begin
 
-	tRegRoIsRz	= (istrWord[11:9]==3'b000);
-	tRegRnIsRz	= (istrWord[ 7:5]==3'b000);
-	tRegRmIsRz	= (istrWord[ 3:1]==3'b000);
-	tRegRnIsR0	= tRegRnIsRz && !istrWord[4];
-	tRegRnIsR1	= tRegRnIsRz &&  istrWord[4];
-	tRegRmIsR0	= tRegRmIsRz && !istrWord[0];
-	tRegRmIsR1	= tRegRmIsRz &&  istrWord[0];
+//	tRegRoIsRs	= (istrWord[12]==1'b0);
+	tRegRmIsRs	= (istrWord[ 6]==1'b0);
+	tRegRnIsRs	= (istrWord[11]==1'b0);
 
-//	tRegRnIsR0	= tRegRnIsRz & !istrWord[4];
-//	tRegRnIsR1	= tRegRnIsRz &  istrWord[4];
-//	tRegRmIsR0	= tRegRmIsRz & !istrWord[0];
-//	tRegRmIsR1	= tRegRmIsRz &  istrWord[0];
+	opRegM_Dfl	= { 2'b0, istrWord[ 6:2]};
+	opRegN_Dfl	= { 2'b0, istrWord[11:7]};
 
-	tRegRoIsRs = tRegRoIsRz || (istrWord[11:8]==4'b1111);
-	tRegRnIsRs = tRegRnIsRz || (istrWord[ 7:4]==4'b1111);
-	tRegRmIsRs = tRegRmIsRz || (istrWord[ 3:0]==4'b1111);
+	case(istrWord[5:2])
+		4'b0000: opRegM_Sr = JX2_GR_ZZR;
+		4'b0001: opRegM_Sr = JX2_GR_LR;
+		4'b0010: opRegM_Sr = JX2_GR_SP;
+		4'b0011: opRegM_Sr = JX2_GR_GBR;
+		4'b0100: opRegM_Sr = JX2_GR_TBR;
+		4'b0101: opRegM_Sr = JX2_GR_DHR;
+		4'b0110: opRegM_Sr = JX2_GR_DLR;
+		4'b0111: opRegM_Sr = JX2_GR_R7;
+		4'b1000: opRegM_Sr = JX2_GR_R8;
+		4'b1001: opRegM_Sr = JX2_GR_R9;
+		4'b1010: opRegM_Sr = JX2_GR_R10;
+		4'b1011: opRegM_Sr = JX2_GR_R11;
+		4'b1100: opRegM_Sr = JX2_GR_R12;
+		4'b1101: opRegM_Sr = JX2_GR_R13;
+		4'b1110: opRegM_Sr = JX2_GR_R2;
+		4'b1111: opRegM_Sr = JX2_GR_R3;
+	endcase
 
-//	tRegRoIsRs = tRegRoIsRz | (istrWord[11:8]==4'b1111);
-//	tRegRnIsRs = tRegRnIsRz | (istrWord[ 7:4]==4'b1111);
-//	tRegRmIsRs = tRegRmIsRz | (istrWord[ 3:0]==4'b1111);
+	case(istrWord[10:7])
+		4'b0000: opRegN_Sr = JX2_GR_ZZR;
+		4'b0001: opRegN_Sr = JX2_GR_LR;
+		4'b0010: opRegN_Sr = JX2_GR_SP;
+		4'b0011: opRegN_Sr = JX2_GR_GBR;
+		4'b0100: opRegN_Sr = JX2_GR_TBR;
+		4'b0101: opRegN_Sr = JX2_GR_DHR;
+		4'b0110: opRegN_Sr = JX2_GR_DLR;
+		4'b0111: opRegN_Sr = JX2_GR_R7;
+		4'b1000: opRegN_Sr = JX2_GR_R8;
+		4'b1001: opRegN_Sr = JX2_GR_R9;
+		4'b1010: opRegN_Sr = JX2_GR_R10;
+		4'b1011: opRegN_Sr = JX2_GR_R11;
+		4'b1100: opRegN_Sr = JX2_GR_R12;
+		4'b1101: opRegN_Sr = JX2_GR_R13;
+		4'b1110: opRegN_Sr = JX2_GR_R2;
+		4'b1111: opRegN_Sr = JX2_GR_R3;
+	endcase
 
-	opRegO_Dfl	= {tRegRoIsRs, 2'b00, istrWord[11:8]};
-	opRegN_Dfl	= {tRegRnIsRs, 2'b00, istrWord[ 7:4]};
-	opRegM_Dfl	= {tRegRmIsRs, 2'b00, istrWord[ 3:0]};
+//	if(tRegRoIsRs)
+//		opRegO_Dfl = opRegO_Sr;
+	if(tRegRmIsRs)
+		opRegM_Dfl = opRegM_Sr;
+	if(tRegRnIsRs)
+		opRegN_Dfl = opRegN_Sr;
 
-	opRegN_Sr	= {3'b100, istrWord[ 7:4]};
-	opRegM_Sr	= {3'b100, istrWord[ 3:0]};
+	case(istrWord[4:2])
+		4'b000: opRegM_Er = JX2_GR_R8;
+		4'b001: opRegM_Er = JX2_GR_R9;
+		4'b010: opRegM_Er = JX2_GR_R10;
+		4'b011: opRegM_Er = JX2_GR_R11;
+		4'b100: opRegM_Er = JX2_GR_R12;
+		4'b101: opRegM_Er = JX2_GR_R13;
+		4'b110: opRegM_Er = JX2_GR_R2;
+		4'b111: opRegM_Er = JX2_GR_R3;
+	endcase
 
-	opRegN_Cr	= {3'b110, istrWord[ 7:4]};
-	opRegM_Cr	= {3'b110, istrWord[ 3:0]};
-
-	opRegO_Er	= {3'b001, istrWord[11:8]};
-	opRegN_Er	= {3'b001, istrWord[ 7:4]};
-	opRegM_Er	= {3'b001, istrWord[ 3:0]};
-
-	opRegN_ECr	= opRegN_Cr;
-	opRegN_ESr	= opRegN_Sr;
+	case(istrWord[9:7])
+		3'b000: opRegN_Er = JX2_GR_R8;
+		3'b001: opRegN_Er = JX2_GR_R9;
+		3'b010: opRegN_Er = JX2_GR_R10;
+		3'b011: opRegN_Er = JX2_GR_R11;
+		3'b100: opRegN_Er = JX2_GR_R12;
+		3'b101: opRegN_Er = JX2_GR_R13;
+		3'b110: opRegN_Er = JX2_GR_R2;
+		3'b111: opRegN_Er = JX2_GR_R3;
+	endcase
 	
-	opRegN_Xr	= {tRegRnIsRs && (!istrWord[11]), 1'b0,
-		istrWord[11], istrWord[ 7:4]};
-	opRegN_Yr	= {tRegRnIsRs && (!istrWord[14]), 1'b0,
-		istrWord[14], istrWord[ 7:4]};
+	tOffsJmp = {
+		istrWord[12],	istrWord[ 8], 
+		istrWord[10],	istrWord[ 9], 
+		istrWord[ 6],	istrWord[ 7],
+		istrWord[ 2],	istrWord[11],
+		istrWord[ 5],	istrWord[ 4],
+		istrWord[ 3],	1'b0 };
 
-	opRegN_ZXr	= {tRegRnIsRs & (!istrWord[ 4]), 1'b0,
-		istrWord[ 4], istrWord[ 7:5], 1'b0};
+	tOffsJmpZ = {
+		istrWord[12],
+		istrWord[ 6],	istrWord[ 5],
+		istrWord[ 2],	istrWord[11],
+		istrWord[10],	istrWord[ 4],
+		istrWord[ 3],	1'b0 };
 
 	usrReject	= 0;
 	usrSuAllow	= 0;
 
-	usrRejectCmR = usrRejectCmMask[opRegM_Cr[3:0]];
-	usrRejectCmW = usrRejectCnMask[opRegM_Cr[3:0]];
-	usrRejectCnR = usrRejectCmMask[opRegN_Cr[3:0]];
-	usrRejectCnW = usrRejectCnMask[opRegN_Cr[3:0]];
-
 	opRegN_Fix	= JX2_GR_ZZR;
 	opRegM_Fix	= JX2_GR_ZZR;
 	opRegO_Fix	= JX2_GR_ZZR;
-
 
 	opNmid		= JX2_UCMD_INVOP;
 	opRegN		= JX2_GR_ZZR;
@@ -208,7 +273,7 @@ begin
 	
 	case(opFmid)
 		JX2_FMID_INV: begin
-			$display("Jx2DecOp: Inv %X-%X-%X",
+			$display("DecOpRvC: Inv %X-%X-%X",
 			istrWord[15:0], istrWord[31:16], istrWord[47:32]);
 		end
 
@@ -220,14 +285,10 @@ begin
 		end
 	
 		/*
-			SB: ZZR, Rx, Rx
 			SW: ZZR, Rn, Rn
-			SL: Rx, ZZR, Rx
 			SQ: Rn, ZZR, Rn
 
-			XB: ZZR, Rx, DLR
 			XW: ZZR, Rn, DLR
-			SL: Rx, FixImm, Rx
 			SQ: Rn, FixImm, Rn
 		 */
 		JX2_FMID_REG: begin
@@ -235,9 +296,6 @@ begin
 
 			case(opIty)
 				JX2_ITY_SB: begin
-					opRegM	= JX2_GR_ZZR;
-					opRegO	= opRegN_Xr;
-					opRegN	= opRegN_Xr;
 				end
 				JX2_ITY_SW: begin
 					opRegN	= opRegN_Dfl;
@@ -246,80 +304,20 @@ begin
 				end
 
 				JX2_ITY_SL: begin
-					opRegN	= opRegN_Xr;
-					opRegM	= opRegN_Xr;
-					opRegO	= JX2_GR_ZZR;
 				end
+
 				JX2_ITY_SQ: begin
 					opRegN	= opRegN_Dfl;
 					opRegM	= opRegN_Dfl;
 					opRegO	= JX2_GR_ZZR;
 				end
 
-				JX2_ITY_UB: begin
-					opRegN	= opRegN_Cr;
-					opRegM	= JX2_GR_ZZR;
-					if(usrRejectCnW)
-						usrReject = 1;
-				end
-				JX2_ITY_UW: begin
-					opRegN	= opRegN_ECr;
-					opRegM	= JX2_GR_ZZR;
-					usrReject = 1;
-				end
-				JX2_ITY_UL: begin
-					opRegN	= opRegN_Sr;
-					opRegM	= JX2_GR_ZZR;
-					usrReject = 1;
-				end
-				JX2_ITY_UQ: begin
-					opRegN	= opRegN_ESr;
-					opRegM	= JX2_GR_ZZR;
-					usrReject = 1;
-				end
-
-				JX2_ITY_NB: begin
-					opRegN	= JX2_GR_ZZR;
-					opRegM	= opRegN_Cr;
-					if(usrRejectCnR)
-						usrReject = 1;
-				end
-				JX2_ITY_NW: begin
-					opRegN	= JX2_GR_ZZR;
-					opRegM	= opRegN_ECr;
-					usrReject = 1;
-				end
-				JX2_ITY_NL: begin
-					opRegN	= JX2_GR_ZZR;
-					opRegM	= opRegN_Sr;
-					usrReject = 1;
-				end
-				JX2_ITY_NQ: begin
-					opRegN	= JX2_GR_ZZR;
-					opRegM	= opRegN_ESr;
-					usrReject = 1;
-				end
-
-				JX2_ITY_XB: begin
-					opRegM	= JX2_GR_ZZR;
-					opRegO	= opRegN_Xr;
-					opRegN	= JX2_GR_DLR;
-				end
 				JX2_ITY_XW: begin
 					opRegN	= JX2_GR_DLR;
 					opRegM	= JX2_GR_ZZR;
 					opRegO	= opRegN_Dfl;
 				end
 
-				JX2_ITY_XL: begin
-					opRegN	= opRegN_Xr;
-					opRegM	= opRegN_Xr;
-					opRegO	= JX2_GR_IMM;
-					opImm	= {
-						opRegO_Fix[5]?UV21_FF:UV21_00,
-//						opRegO_Fix, opRegM_Fix };
-						opRegO_Fix[5:0], opRegM_Fix[5:0] };
-				end
 				JX2_ITY_XQ: begin
 					opRegN	= JX2_GR_DLR;
 					opRegM	= opRegN_Xr;
@@ -385,20 +383,6 @@ begin
 					opRegO	= JX2_GR_DLR;
 				end
 				
-				JX2_ITY_UB: begin
-					opRegN	= opRegN_Cr;
-					opRegM	= opRegM_Dfl;
-					opRegO	= JX2_GR_DLR;
-					if(usrRejectCnW)
-						usrReject = 1;
-				end
-				JX2_ITY_UW: begin
-					opRegN	= opRegN_Dfl;
-					opRegM	= opRegM_Cr;
-					opRegO	= JX2_GR_DLR;
-					if(usrRejectCmR)
-						usrReject = 1;
-				end
 				JX2_ITY_UL: begin
 					opRegN	= opRegN_Sr;
 					opRegM	= opRegM_Dfl;
@@ -651,7 +635,7 @@ begin
 			if(!tMsgLatch)
 			begin
 				$display("Unhandled FMID (16) %X", opFmid);
-				$display("Jx2DecOp: Istr %X",
+				$display("DecOpRvC: Istr %X",
 					istrWord[15:0]);
 			end
 			tNextMsgLatch=1;
@@ -669,7 +653,7 @@ begin
 
 	if(usrReject && srUser && !usrSuAllowEn)
 	begin
-		$display("DecOpBz: Usermode Reject %X", istrWord[15:0]);
+		$display("DecOpRvC: Usermode Reject %X", istrWord[15:0]);
 		opNmid	= JX2_UCMD_INVOP;
 		opFmid	= JX2_FMID_INV;
 	end

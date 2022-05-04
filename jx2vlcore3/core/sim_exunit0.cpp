@@ -959,7 +959,7 @@ void MemUpdateForBusRing()
 		isMmio, isCcmd, isSkip;
 	int isL2mRepeat, l2Epoch;
 	
-	char *src_unit;
+	const char *src_unit;
 	
 	src_unit="?";
 	switch((l2seq1>>6)&15)
@@ -2245,6 +2245,7 @@ int main(int argc, char **argv, char **env)
 	}
 
 	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context));
+	memset(ctx, 0, sizeof(BJX2_Context));
 	jx2_ctx=ctx;
 
 	ctx->tgt_mhz=mhz;
