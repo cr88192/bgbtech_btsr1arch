@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -711,9 +711,62 @@ int bjx2_fflush(BJX2_FILE *fd)
 	return(fflush((FILE *)fd));
 }
 
+//char bjx2_vmputlinebuf[256];
+//byte bjx2_vmputlinepos;
+
+int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
+{
+	char tb[256];
+	char *s, *t;
+	u32 a_lo, a_hi;
+	u64 addr;
+	int i, j, k;
+	
+	if(!strncmp(line, "TKPE!LDA:", 9))
+	{
+		s=line+9;
+		t=tb;
+		while(*s && (*s!='='))
+			*t++=*s++;
+		*t++=0;
+		if(*s=='=')
+		{
+			s++;
+			sscanf(s, "%04X_%08X", &a_hi, &a_lo);
+			addr=(((u64)a_hi)<<32)|a_lo;
+			
+			for(i=0; i<ctx->n_map_img; i++)
+			{
+				if(!strcmp(ctx->map_img_name[i], tb))
+				{
+					ctx->map_img_base[i]=addr;
+					break;
+				}
+			}
+			
+			if(i>=ctx->n_map_img)
+			{
+				i=ctx->n_map_img++;
+				ctx->map_img_name[i]=strdup(tb);
+				ctx->map_img_base[i]=addr;
+			}
+		}
+	}
+}
 
 int bjx2_vmputc(BJX2_Context *ctx, int val)
 {
+	if(val=='\n')
+	{
+		ctx->puts_linebuf[ctx->puts_linepos]=0;
+		ctx->puts_linepos=0;
+
+		bjx2_vmcheckdbg(ctx, ctx->puts_linebuf);
+	}else
+	{
+		ctx->puts_linebuf[ctx->puts_linepos++]=val;
+	}
+
 	if(bjx2_vmoutlog)
 		fputc(val, bjx2_vmoutlog);
 
@@ -868,8 +921,9 @@ int main(int argc, char *argv[])
 	int rd_n_add;
 	int rd_n_exp;
 	int rd_n_map;
+	char tb1[256], tb2[256];
 
-	char *ifn;
+	char *ifn, *s, *t;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
 	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost;
@@ -940,7 +994,9 @@ int main(int argc, char *argv[])
 	JX2R_UseImageCreateRamdisk(rdsz*1024);
 	
 	for(i=0; i<rd_n_add; i++)
+	{
 		JX2R_UseImageAddFile(rd_add[i], NULL);
+	}
 	for(i=0; i<rd_n_exp; i++)
 		JX2R_UseImageAddExport(rd_exp[i], NULL);
 	
@@ -1005,7 +1061,32 @@ int main(int argc, char *argv[])
 
 	for(i=0; i<rd_n_map; i++)
 	{
-		BJX2_ContextLoadMap(ctx, rd_map[i]);
+		BJX2_ContextLoadMap(ctx, rd_map[i], NULL);
+	}
+
+	for(i=0; i<rd_n_add; i++)
+	{
+		s=rd_add[i];
+		t=tb1;
+		while(*s && (*s!='='))
+			*t++=*s++;
+		*t++=0;
+
+		if(*s=='=')
+			s++;
+
+		t=tb2;
+		while(*s)
+			*t++=*s++;
+		*t++=0;
+
+		if(tb1[0] && tb2[0])
+		{
+			strcat(tb2, ".map");
+			BJX2_ContextLoadMap(ctx, tb2, tb1);
+		}
+			
+//		JX2R_UseImageAddFile(rd_add[i], NULL);
 	}
 
 	if(chkbss)

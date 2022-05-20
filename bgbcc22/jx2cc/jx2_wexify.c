@@ -1,4 +1,29 @@
 /*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/*
 Flag:
   1&=Accesses Memory
   2&=Uses SR.T
@@ -1199,13 +1224,23 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix3W(
 int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
-	int ret;
+	int ret, rn;
 
 	if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)!=0)
 		return(0);
 
 	if(BGBCC_JX2_CheckOps32ValidWexSuffixFl(sctx, opw1, opw2, 1)<=0)
 		return(0);
+
+	rn=(opw1>>4)&15;
+	if(opw2&0x0400)
+		rn|=16;
+//	if((rn==0) || (rn==1) || (rn==15))
+	if((rn==1) || (rn==15))
+	{
+		/* Disallow Rn to be DLR, DHR, or SP, in WEX'ed ops */
+		return(0);
+	}
 
 	if(	((opw1&0xF000)!=0xF000) &&
 		((opw1&0xF000)!=0x7000) &&
@@ -2787,6 +2822,9 @@ ccxl_status BGBCC_JX2_BeginWex(
 	BGBCC_JX2_Context *sctx)
 {
 	if(!sctx->use_wexmd)
+		return(0);
+
+	if(sctx->optmode==BGBCC_OPT_SIZE)
 		return(0);
 
 //	return(0);

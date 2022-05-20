@@ -593,7 +593,8 @@ begin
 		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } ^
 		{	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
 			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } ^
-		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+//		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+		{	4'h0, tRegInSr[31:28], regKrrHash[7:0] } ;
 `endif
 
 // `ifndef def_true
@@ -603,7 +604,8 @@ begin
 		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } +
 		{	tNxtReqAddrHi[35:32], tNxtReqAddrHi[39:36],
 			tNxtReqAddrHi[43:40], tNxtReqAddrHi[47:44] } +
-		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+//		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+		{	4'h0, tRegInSr[31:28], regKrrHash[7:0] } ;
 `endif
 
 `ifdef jx2_mem_l1dsz_64

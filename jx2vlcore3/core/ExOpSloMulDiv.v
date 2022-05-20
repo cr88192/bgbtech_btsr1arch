@@ -98,6 +98,13 @@ reg				tValC1;
 reg				tValC;
 reg				tNxtValC;
 
+reg				tNxtValSgFdiv;
+reg				tValSgFdiv;
+reg[11:0]		tNxtValExpFdiv;
+reg[11:0]		tValExpFdiv;
+reg				tValFdivRndb;
+reg[8:0]		tValFdivRnd;
+
 reg[6:0]		tOpCnt;
 reg[6:0]		tNxtOpCnt;
 
@@ -107,6 +114,8 @@ begin
 	tNxtValAddDc	= tValAddDc;
 	tNxtValOp		= tValOp;
 	tNxtValSg		= tValSg;
+	tNxtValSgFdiv	= tValSgFdiv;
+	tNxtValExpFdiv	= tValExpFdiv;
 	tDoHold			= 0;
 	tNxtOpCnt		= tOpCnt;
 	
@@ -150,6 +159,42 @@ begin
 	else
 		tNxtValRn	= tValAQ[63:0];
 
+`ifdef jx2_alu_slomuldiv_fdiv
+	if(tValOp[5])
+	begin
+		tNxtValRn[63] = tValSgFdiv;
+		if(tValAQ[54])
+		begin
+			tNxtValRn[62:52]	= tValExpFdiv[10:0]+1;
+			tNxtValRn[51:0]		= tValAQ[53:2];
+			tValFdivRndb		= tValAQ[1];
+		end
+		else
+		begin
+			tNxtValRn[62:52]	= tValExpFdiv[10:0];
+			tNxtValRn[51:0]		= tValAQ[52:1];
+			tValFdivRndb		= tValAQ[0];
+		end
+		
+		tValFdivRnd = { 1'b0, tNxtValRn[7:0] } + { 8'b0, tValFdivRndb };
+		if(!tValFdivRnd[8])
+			tNxtValRn[7:0] = tValFdivRnd[7:0];
+
+		if(tValExpFdiv[11])
+		begin
+			tNxtValRn[51:48]	= 0;
+			if(tValExpFdiv[10])
+			begin
+				tNxtValRn[62:52]	= 11'h000;
+			end
+			else
+			begin
+				tNxtValRn[62:52]	= 11'h7FF;
+			end		
+		end
+	end
+`endif
+
 //	tNxtValRnHi = tValQ[63:0];
 //	if(tValOp[1] ^ !tValOp[2])
 //		tNxtValRn	= tValSg ? -tValR[63:0] : tValR[63:0];
@@ -192,6 +237,12 @@ begin
 
 //			tNxtValSg		= (valRs[63] ^ valRt[63]) && !idUIxt[0];
 			tNxtValSg		= tValSg1s ^ tValSg1t;
+			tNxtValSgFdiv	= valRs[63] ^ valRt[63];
+
+			tNxtValExpFdiv	=
+				1022 +
+				{ 1'b0, valRs[62:52] } -
+				{ 1'b0, valRt[62:52] };
 
 			tNxtValR		= UV64_00;
 			tNxtValAddDc	= 0;
@@ -221,11 +272,27 @@ begin
 				tNxtValAddD[63:32]	= UV32_00;
 			end
 
+`ifdef jx2_alu_slomuldiv_fdiv
+			if(idUIxt[5])
+			begin
+				tNxtValQ[63:52]		= 12'h001;
+				tNxtValAddD[63:52]	= 12'hFFE;
+			end
+`endif
+
 			if(idUIxt[2])
 			begin
 				tNxtOpCnt		= 67;
 				if(idUIxt[1])
 					tNxtOpCnt		= 66;
+
+`ifdef jx2_alu_slomuldiv_fdiv
+				if(idUIxt[5])
+				begin
+					tNxtOpCnt		= 121;
+//					tNxtOpCnt		= 106;
+				end
+`endif
 			end
 			else
 			begin
@@ -248,6 +315,9 @@ begin
 	tValAddDc	<= tNxtValAddDc;
 	tValOp		<= tNxtValOp;
 	tValSg		<= tNxtValSg;
+
+	tValSgFdiv	<= tNxtValSgFdiv;
+	tValExpFdiv	<= tNxtValExpFdiv;
 
 	tValAQ		<= tNxtValAQ;
 	tValAR		<= tNxtValAR;

@@ -557,13 +557,15 @@ int sdc_spibit(int bit, int cs)
 {
 	static int init=0;
 	static int pos, tvi, tvo, tvn;
-	int ret;
+	static int ret;
 
 	if(!init)
 	{
+		printf("sdc_spibit: Init\n");
 		init=1;
 		tvo=0xFFFF;
 		pos=8;
+		ret=1;
 	}
 
 	if(!cs)
@@ -597,10 +599,12 @@ int sdc_spibit(int bit, int cs)
 		pos--;
 	}else
 	{
+//		printf("sdc_spibit: Non-Select\n");
 		tvo=0xFFFF;
 		tvi=0xFF;
 //		tvn=0xFF;
 		pos=8;
+		ret=1;
 	}
 	
 	sdc_spipos=pos;
@@ -1511,7 +1515,7 @@ int main(int argc, char **argv, char **env)
 	cdec_imgbuf *vgactx;
 	FILE *fd;
 	int lclk, mhz;
-	int sdc_lclk, sdc_lbit;
+	int sdc_lclk, sdc_lbit, sdc_cbit;
 	int tt_start, tt_frame, tt_reset;
 	int cnt_dled, cnt_h1, cnt_h2,
 		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
@@ -1882,6 +1886,7 @@ int main(int argc, char **argv, char **env)
 #endif
 #endif
 		main_time++;
+		top->sdc_dat_i=sdc_cbit;
 		
 		if(top->clock_100 && (lclk!=top->clock_100))
 		{
@@ -1897,17 +1902,23 @@ int main(int argc, char **argv, char **env)
 //				printf("Clock IRQ\n");
 				ctx->ttick_hk=ctx->ttick_rst;
 			}
+
+//			top->sdc_dat_i=sdc_lbit;
 			
 			if(top->sdc_clk!=sdc_lclk)
 			{
 				if(top->sdc_clk)
+//				if(!top->sdc_clk)
 				{
 //					top->sdc_dat_i=
 					sdc_lbit=
 						sdc_spibit(top->sdc_cmd, top->sdc_dat_o&8);
+//					top->sdc_dat_i=sdc_lbit;
+//					sdc_cbit=sdc_lbit;
 				}else
 				{
 					top->sdc_dat_i=sdc_lbit;
+					sdc_cbit=sdc_lbit;
 				}
 
 #if 0

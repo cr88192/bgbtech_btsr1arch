@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -734,21 +734,69 @@ int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx)
 	return(0);
 }
 
+char *BJX2_DbgNameForAddrSzIx(BJX2_Context *ctx,
+	bjx2_addr addr, int ix, s64 imgadj, bjx2_addr *raddr2, int *rsz2);
+
 char *BJX2_DbgNameForAddrSz(BJX2_Context *ctx,
 	bjx2_addr addr, bjx2_addr *raddr2, int *rsz2)
 {
-	bjx2_addr ba, ba2;
+	char *s;
+	s64 adj;
+	int i, j, k;
+
+	for(i=0; i<ctx->n_map; i++)
+	{
+		if(ctx->map_iname[i])
+		{
+			for(j=0; j<ctx->n_map_img; j++)
+			{
+				if(!strcmp(ctx->map_img_name[j], ctx->map_iname[i]))
+					break;
+			}
+			
+			if(j<ctx->n_map_img)
+			{
+				adj=ctx->map_img_base[j]-(ctx->map_addr_min[i]&(~16383));
+
+				if(
+					((addr-adj)>=ctx->map_addr_min[i]) &&
+					((addr-adj)<=ctx->map_addr_max[i]) )
+				{
+					s=BJX2_DbgNameForAddrSzIx(ctx,
+						addr, i, adj, raddr2, rsz2);
+					return(s);
+				}
+			}
+
+		}else if(
+			(addr>=ctx->map_addr_min[i]) &&
+			(addr<=ctx->map_addr_max[i]) )
+		{
+			s=BJX2_DbgNameForAddrSzIx(ctx, addr, i, 0, raddr2, rsz2);
+			return(s);
+		}
+	}
+
+	return(NULL);
+}
+
+char *BJX2_DbgNameForAddrSzIx(BJX2_Context *ctx,
+	bjx2_addr addr, int ix, s64 imgadj, bjx2_addr *raddr2, int *rsz2)
+{
+	bjx2_addr ba, ba2, addr1;
 	char *bn;
 	int i, j, k, m, n, sz;
 
 	m=0;
-	n=ctx->map_n_ents;
+	n=ctx->map_n_ents[ix];
 	bn=NULL;
+	
+	addr1=addr-imgadj;
 	
 	while(n>(m+3))
 	{
 		i=(m+n)/2;
-		if(ctx->map_addr[i]>=addr)
+		if(ctx->map_addr[ix][i]>=addr1)
 		{
 			n=i;
 		}else
@@ -758,13 +806,13 @@ char *BJX2_DbgNameForAddrSz(BJX2_Context *ctx,
 	}
 
 	i=m;
-	while(i<ctx->map_n_ents)
+	while(i<ctx->map_n_ents[ix])
 	{
-		if(addr<ctx->map_addr[i])
+		if(addr1<ctx->map_addr[ix][i])
 			break;
-		ba=ctx->map_addr[i];
-		bn=ctx->map_name[i];
-		ba2=ctx->map_addr[i+1];
+		ba=ctx->map_addr[ix][i];
+		bn=ctx->map_name[ix][i];
+		ba2=ctx->map_addr[ix][i+1];
 		i++;
 	}
 	
@@ -774,20 +822,20 @@ char *BJX2_DbgNameForAddrSz(BJX2_Context *ctx,
 	ba=-999999999;
 	bn=NULL;
 	
-	for(i=0; i<ctx->map_n_ents; i++)
+	for(i=0; i<ctx->map_n_ents[ix]; i++)
 	{
-		if(addr<ctx->map_addr[i])
+		if(addr<ctx->map_addr[ix][i])
 			continue;
-		if(ctx->map_addr[i]>ba)
+		if(ctx->map_addr[ix][i]>ba)
 		{
-			ba=ctx->map_addr[i];
-			bn=ctx->map_name[i];
+			ba=ctx->map_addr[ix][i];
+			bn=ctx->map_name[ix][i];
 		}
 	}
 #endif
 	
 	if(raddr2)
-		*raddr2=ba;
+		*raddr2=ba+imgadj;
 	if(rsz2)
 		*rsz2=sz;
 	return(bn);
@@ -799,17 +847,26 @@ char *BJX2_DbgNameForAddr(BJX2_Context *ctx,
 	return(BJX2_DbgNameForAddrSz(ctx, addr, raddr2, NULL));
 }
 
+bjx2_addr BJX2_DbgAddrForNameIx(BJX2_Context *ctx, char *name,
+	int ix, s64 imgadj);
+
 bjx2_addr BJX2_DbgAddrForName(BJX2_Context *ctx, char *name)
+{
+	return(BJX2_DbgAddrForNameIx(ctx, name, 0, 0));
+}
+
+bjx2_addr BJX2_DbgAddrForNameIx(BJX2_Context *ctx, char *name,
+	int ix, s64 imgadj)
 {
 	int i;
 
-	for(i=0; i<ctx->map_n_ents; i++)
+	for(i=0; i<ctx->map_n_ents[ix]; i++)
 	{
-		if(ctx->map_addr[i] < 0x10000)
+		if(ctx->map_addr[ix][i] < 0x10000)
 			continue;
 	
-		if(!strcmp(ctx->map_name[i], name))
-			return(ctx->map_addr[i]);
+		if(!strcmp(ctx->map_name[ix][i], name))
+			return(ctx->map_addr[ix][i]+imgadj);
 	}
 
 	return(0);

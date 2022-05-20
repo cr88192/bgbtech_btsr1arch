@@ -5,6 +5,18 @@
 #include "tk_fatfs.h"
 #endif
 
+#define tkfat_panic(code)	tkfat_panic_lln(__FILE__, __LINE__, code)
+// #define tkfat_panic(code)	tkfat_panic_lln(__FILE__, __LINE__)
+
+// void tkfat_panic(int code)
+void tkfat_panic_lln(char *lfn, int lln, int code)
+// void tkfat_panic_lln(char *lfn, int lln)
+{
+	printf("Panic: %s:%d %04X\n", lfn, lln, code);
+//	printf("Panic: %s:%d\n", lfn, lln);
+	__debugbreak();
+}
+
 void tkfat_setChs(byte *chs, int lba)
 {
 	int c, h, s, ts;
@@ -222,7 +234,7 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 	byte *buf;
 	int i, n;
 
-	printf("TKFAT_GetSectorStaticBuffer: %08X %02X\n", lba, num);
+//	printf("TKFAT_GetSectorStaticBuffer: %08X %02X\n", lba, num);
 
 	for(i=0; i<img->sbc_num; i++)
 		if(img->sbc_lba[i]==lba)
@@ -244,11 +256,12 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 	
 	if(!buf)
 	{
-		printf("GetSector: Malloc %d sectors returned NULL\n", n);
-		__debugbreak();
+//		printf("GetSector: Malloc %d sectors returned NULL\n", n);
+//		__debugbreak();
+		tkfat_panic(0x0001);
 	}
 
-	printf("GetSector: buf=%p\n", buf);
+//	printf("GetSector: buf=%p\n", buf);
 
 //	printf("GetSector: Index=%02X\n", i);
 	
@@ -332,13 +345,14 @@ void TKFAT_ReadImageMBR(TKFAT_ImageInfo *img)
 	int lba, lbn, fsty;
 	int i;
 
-	printf("TKFAT_ReadImageMBR\n");
+//	printf("TKFAT_ReadImageMBR\n");
 
 	if(sizeof(TKFAT_MBR)!=512)
 	{
 //		printf("TKFAT_ReadImageMBR: MBR Sizeof Sanity Fail %d\n",
 //			sizeof(TKFAT_MBR));
-		__debugbreak();
+		tkfat_panic(0x0002);
+//		__debugbreak();
 	}
 
 	img->mbr=(TKFAT_MBR *)
@@ -347,11 +361,12 @@ void TKFAT_ReadImageMBR(TKFAT_ImageInfo *img)
 
 	if(!img->mbr)
 	{
-		printf("TKFAT_ReadImageMBR: GetSector returned NULL\n");
-		__debugbreak();
+		tkfat_panic(0x0003);
+//		printf("TKFAT_ReadImageMBR: GetSector returned NULL\n");
+//		__debugbreak();
 	}
 
-	printf("TKFAT_ReadImageMBR: img=%p, mbr=%p\n", img, img->mbr);
+//	printf("TKFAT_ReadImageMBR: img=%p, mbr=%p\n", img, img->mbr);
 
 	i=tkfat_getWord(img->mbr->aa55);
 	if(i!=0xAA55)
@@ -359,6 +374,7 @@ void TKFAT_ReadImageMBR(TKFAT_ImageInfo *img)
 		printf("TKFAT_ReadImageMBR: Not 55-AA, got %X, %02X-%02X\n", i,
 			((byte *)(img->mbr))[510], ((byte *)(img->mbr))[511]);
 		__debugbreak();
+//		tkfat_panic(0x0004);
 	}
 
 	for(i=0; i<4; i++)
@@ -399,13 +415,14 @@ int TKFAT_GetFatEntry(TKFAT_ImageInfo *img, int clid)
 
 	if(!img)
 	{
-		puts("TKFAT_GetFatEntry: Image Is NULL\n");
-		__debugbreak();
+//		puts("TKFAT_GetFatEntry: Image Is NULL\n");
+//		__debugbreak();
+		tkfat_panic(0x0005);
 	}
 	
 	if(clid<0)
 	{
-		printf("TKFAT_GetFatEntry: Bad CLID %d\n", clid);
+//		printf("TKFAT_GetFatEntry: Bad CLID %d\n", clid);
 	}
 
 	if(img->isfat16)
@@ -512,7 +529,7 @@ void TKFAT_SetupImageFAT(TKFAT_ImageInfo *img)
 
 	if(img->lba_count<128)
 	{
-		printf("TKFAT_SetupImageFAT: Image LBA Size Bad\n");
+//		printf("TKFAT_SetupImageFAT: Image LBA Size Bad\n");
 		return;
 	}
 
@@ -694,8 +711,9 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 
 	if(lba_strt!=img->lba_start)
 	{
-		puts("TKFAT_ReadImageFat: LBA Changed\n");
-		__debugbreak();
+//		puts("TKFAT_ReadImageFat: LBA Changed\n");
+//		__debugbreak();
+		tkfat_panic(0x0006);
 	}
 
 	img->boot32=(TKFAT_FAT32_Boot *)
@@ -722,8 +740,8 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 		lban=(((s64)i0)<<32)|i1;
 		fatsz=(((s64)i2)<<32)|i3;
 
-		printf("TKFAT_ReadImageFAT: Sig29 %08X %08X\n",
-			(u32)lban, (u32)fatsz);
+//		printf("TKFAT_ReadImageFAT: Sig29 %08X %08X\n",
+//			(u32)lban, (u32)fatsz);
 	}else
 	{
 		lban=i0?i0:i1;
@@ -735,8 +753,8 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 			lban=(((s64)i0)<<32)|i1;
 		}
 
-		printf("TKFAT_ReadImageFAT: LBA2 %08X %08X\n",
-			(u32)lban, (u32)fatsz);
+//		printf("TKFAT_ReadImageFAT: LBA2 %08X %08X\n",
+//			(u32)lban, (u32)fatsz);
 	}
 	
 	rootsz=0;
@@ -746,7 +764,7 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 	if(!clsz || (clsz&(clsz-1)))
 	{
 		img->szclust=0;
-		printf("TKFAT_ReadImageFAT: Bad Sectors/Cluster %d\n", clsz);
+//		printf("TKFAT_ReadImageFAT: Bad Sectors/Cluster %d\n", clsz);
 		return;
 	}else
 	{
@@ -839,14 +857,15 @@ int TKFAT_GetWalkCluster(
 
 	if(clid<=0)
 	{
-		printf("TKFAT_GetWalkCluster: CLID is %d\n", clid);
+//		printf("TKFAT_GetWalkCluster: CLID is %d\n", clid);
 		return(-1);
 	}
 
 	if(!img)
 	{
-		puts("TKFAT_GetWalkCluster: Image Is NULL\n");
-		__debugbreak();
+//		puts("TKFAT_GetWalkCluster: Image Is NULL\n");
+//		__debugbreak();
+		tkfat_panic(0x0007);
 	}
 
 //	printf("TKFAT_GetWalkCluster: clid=%d clofs=%d\n", clid, cloffs);
@@ -905,7 +924,7 @@ int TKFAT_GetWalkCluster(
 #ifndef TKFAT_READONLY
 			if(!expand)
 			{
-				puts("TKFAT_GetWalkCluster: EOF-1A\n");
+//				puts("TKFAT_GetWalkCluster: EOF-1A\n");
 				return(-1);
 			}
 
@@ -915,8 +934,8 @@ int TKFAT_GetWalkCluster(
 			TKFAT_SetFatEntry(img, i, j);
 //			TKFAT_SetFatEntry(img, j, 0x0FFFFFFF);
 #else
-			printf("TKFAT_GetWalkCluster: EOF-1B, i=%d, j=%d, n=%d\n",
-				i, j, n);
+//			printf("TKFAT_GetWalkCluster: EOF-1B, i=%d, j=%d, n=%d\n",
+//				i, j, n);
 			return(-1);
 #endif
 		}
@@ -953,8 +972,9 @@ int TKFAT_GetClusterFileOffs(TKFAT_ImageInfo *img,
 	clsh=img->shclust;
 	if((clsh<9) || (clsh>16))
 	{
-		puts("Invalid Cluster Size\n");
-		__debugbreak();
+//		puts("Invalid Cluster Size\n");
+//		__debugbreak();
+		tkfat_panic(0x0008);
 	}
 
 //	cloffs=foffs>>img->shclust;
@@ -984,7 +1004,7 @@ int TKFAT_ReadWriteSector(TKFAT_ImageInfo *img,
 
 	if(lba<0)
 	{
-		printf("TKFAT_ReadWriteSector: Bad LBA %d\n", lba);
+//		printf("TKFAT_ReadWriteSector: Bad LBA %d\n", lba);
 		return(-1);
 	}
 
@@ -995,7 +1015,8 @@ int TKFAT_ReadWriteSector(TKFAT_ImageInfo *img,
 			lba, 1|TKFAT_SFL_DIRTY);
 		memcpy(clbuf+offs, data, size);
 #else
-		printf("TKFAT_ReadWriteSector: Fail Write %08X %d\n", lba, offs);
+		tkfat_panic(0x0012);
+//		printf("TKFAT_ReadWriteSector: Fail Write %08X %d\n", lba, offs);
 #endif
 	}
 	else
@@ -1017,12 +1038,15 @@ int TKFAT_ReadWriteCluster(TKFAT_ImageInfo *img,
 	
 	if(clid<=0)
 	{
-		printf("TKFAT_ReadWriteCluster: Bad CLID %d\n", clid);
+//		printf("TKFAT_ReadWriteCluster: Bad CLID %d\n", clid);
 		return(-1);
 	}
 
 	if((clid<=0) || (offs<0))
-		__debugbreak();
+	{
+//		__debugbreak();
+		tkfat_panic(0x0009);
+	}
 
 	lba=TKFAT_GetClusterLBA(img, clid);
 
@@ -1033,7 +1057,8 @@ int TKFAT_ReadWriteCluster(TKFAT_ImageInfo *img,
 			lba, img->szclust|TKFAT_SFL_DIRTY);
 		memcpy(clbuf+offs, data, size);
 #else
-		__debugbreak();
+//		__debugbreak();
+		tkfat_panic(0x000A);
 #endif
 	}
 	else
@@ -1056,13 +1081,14 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 
 	if(clid<=0)
 	{
-		puts("TKFAT_ReadWriteClusterOffset: CLID is Zero\n");
+//		puts("TKFAT_ReadWriteClusterOffset: CLID is Zero\n");
 	}
 
 	if(!img)
 	{
-		puts("TKFAT_ReadWriteClusterOffset: Image Is NULL\n");
-		__debugbreak();
+//		puts("TKFAT_ReadWriteClusterOffset: Image Is NULL\n");
+//		__debugbreak();
+		tkfat_panic(0x000B);
 	}
 
 	clid1=-1;	offs1=-1;
@@ -1076,11 +1102,14 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 			&clid1, &offs1);
 		if(i<0)
 		{
-			puts("TKFAT_ReadWriteClusterOffset: Fail-1\n");
+//			puts("TKFAT_ReadWriteClusterOffset: Fail-1\n");
 			return(i);
 		}
 		if((clid1<0) || (offs1<0))
-			__debugbreak();
+		{
+//			__debugbreak();
+			tkfat_panic(0x000C);
+		}
 		i=TKFAT_ReadWriteCluster(img,
 			clid1, offs1, iswrite, data, size);
 		return(i);
@@ -1092,12 +1121,12 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 		foffs+(size-1), iswrite, &clid2, &offs2);
 	if(i<0)
 	{
-		puts("TKFAT_ReadWriteClusterOffset: Fail-2A\n");
+//		puts("TKFAT_ReadWriteClusterOffset: Fail-2A\n");
 		return(i);
 	}
 	if(j<0)
 	{
-		puts("TKFAT_ReadWriteClusterOffset: Fail-2B\n");
+//		puts("TKFAT_ReadWriteClusterOffset: Fail-2B\n");
 		return(j);
 	}
 
@@ -1108,7 +1137,7 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 	
 	if(clid1<=0)
 	{
-		printf("TKFAT_ReadWriteClusterOffset: Fail-2C\n");
+//		printf("TKFAT_ReadWriteClusterOffset: Fail-2C\n");
 	}
 	
 	szcl=(1<<img->shclust);
@@ -1125,8 +1154,8 @@ int TKFAT_ReadWriteClusterOffset(TKFAT_ImageInfo *img,
 		clidt=TKFAT_GetWalkCluster(img, clidt, 1, iswrite);
 		if(clidt<0)
 		{
-			printf("TKFAT_ReadWriteClusterOffset: Fail-3, ofs=%d sz=%d\n",
-				(int)(ct-data), (int)(cte-data));
+//			printf("TKFAT_ReadWriteClusterOffset: Fail-3, ofs=%d sz=%d\n",
+//				(int)(ct-data), (int)(cte-data));
 			return(-1);
 		}
 		ct+=szcl;
@@ -1146,14 +1175,15 @@ int TKFAT_ReadWriteDirEntOffset(TKFAT_ImageInfo *img,
 
 	if(clid<=0)
 	{
-		puts("TKFAT_ReadWriteDirEntOffset: CLID is Zero\n");
+//		puts("TKFAT_ReadWriteDirEntOffset: CLID is Zero\n");
 		return(-1);
 	}
 
 	if(!img)
 	{
-		puts("TKFAT_ReadWriteDirEntOffset: Image Is NULL\n");
-		__debugbreak();
+//		puts("TKFAT_ReadWriteDirEntOffset: Image Is NULL\n");
+//		__debugbreak();
+		tkfat_panic(0x000E);
 	}
 
 //	printf("TKFAT_ReadWriteDirEntOffset: Index=%d\n", idx);
@@ -1165,7 +1195,7 @@ int TKFAT_ReadWriteDirEntOffset(TKFAT_ImageInfo *img,
 		n=tkfat_getWord(img->boot16->root_dirents);
 		if((idx<0) || (idx>=n))
 		{
-			printf("TKFAT_ReadWriteDirEntOffset: Bad Index %d\n", idx);
+//			printf("TKFAT_ReadWriteDirEntOffset: Bad Index %d\n", idx);
 			return(-1);
 		}
 
@@ -1184,6 +1214,13 @@ int TKFAT_ReadWriteDirEntOffset(TKFAT_ImageInfo *img,
 	return(i);
 }
 
+int tkfat_toupper(int j)
+{
+	if((j>='a') && (j<='z'))
+		j='A'+(j-'a');
+	return(j);
+}
+
 int tkfat_name2sfn(char *name, char *sfn)
 {
 	char *s, *t;
@@ -1197,10 +1234,11 @@ int tkfat_name2sfn(char *name, char *sfn)
 	{
 		if(!(*s) || (*s=='.'))
 			break;
-		j=*s++;
-		if((j>='a') && (j<='z'))
-			j='A'+(j-'a');
-		*t++=j;
+		*t++=tkfat_toupper(*s++);
+//		j=*s++;
+//		if((j>='a') && (j<='z'))
+//			j='A'+(j-'a');
+//		*t++=j;
 	}
 	if(!(*s))
 		return(0);
@@ -1213,10 +1251,11 @@ int tkfat_name2sfn(char *name, char *sfn)
 	{
 		if(!(*s) || (*s=='.'))
 			break;
-		j=*s++;
-		if((j>='a') && (j<='z'))
-			j='A'+(j-'a');
-		*t++=j;
+		*t++=tkfat_toupper(*s++);
+//		j=*s++;
+//		if((j>='a') && (j<='z'))
+//			j='A'+(j-'a');
+//		*t++=j;
 	}
 	if(*s)
 		return(-1);
@@ -1628,7 +1667,7 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 				j=tkfat_sfn2utf8(deb->name, deb->lncase, dee->de_name);
 				if(j<0)
 				{
-					printf("TKFAT_WalkDirEntNext: Reject DirEnt\n");
+//					printf("TKFAT_WalkDirEntNext: Reject DirEnt\n");
 					continue;
 				}
 				dee->de_aname[0]=0;
@@ -1649,9 +1688,11 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 
 int tkfat_memcmp11(byte *s1, byte *s2)
 {
-	if(((u32 *)s1)[0]!=((u32 *)s2)[0])
-		return(-1);
-	if(((u32 *)s1)[1]!=((u32 *)s2)[1])
+//	if(((u32 *)s1)[0]!=((u32 *)s2)[0])
+//		return(-1);
+//	if(((u32 *)s1)[1]!=((u32 *)s2)[1])
+//		return(-1);
+	if(((u64 *)s1)[0]!=((u64 *)s2)[0])
 		return(-1);
 	if((((u32 *)s1)[2]&0xFFFFFF)!=(((u32 *)s2)[2]&0xFFFFFF))
 		return(-1);
@@ -1689,7 +1730,8 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 			if(j<0)break;
 
 			if(deb->name[0]==0x00)
-				continue;
+				break;
+//				continue;
 			if(deb->name[0]==0xE5)
 				continue;
 			if(deb->attrib==0x0F)
@@ -1713,7 +1755,8 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 	}
 
 #ifdef TKFAT_NOLFN
-	__debugbreak();
+	tkfat_panic(0x000F);
+//	__debugbreak();
 #endif
 
 #ifndef TKFAT_NOLFN
@@ -1725,7 +1768,8 @@ int TKFAT_LookupDirEntName(TKFAT_ImageInfo *img,
 		if(j<0)break;
 		
 		if(deb->name[0]==0x00)
-			continue;
+			break;
+//			continue;
 		if(deb->name[0]==0xE5)
 			continue;
 		
@@ -1895,7 +1939,8 @@ int TKFAT_CreateDirEntName(TKFAT_ImageInfo *img,
 	}
 
 #ifdef TKFAT_NOLFN
-	__debugbreak();
+	tkfat_panic(0x000F);
+//	__debugbreak();
 #endif
 
 #ifndef TKFAT_NOLFN
@@ -2005,8 +2050,8 @@ int TKFAT_CreateDirEntPathR(TKFAT_ImageInfo *img,
 		i=TKFAT_CreateDirEntName(img, clid, &tdee, tb);
 		if(i<0)
 		{
-			printf("TKFAT_CreateDirEntPathR: "
-				"Failed Recurse %s\n", tb);
+//			printf("TKFAT_CreateDirEntPathR: "
+//				"Failed Recurse %s\n", tb);
 			return(i);
 		}
 		TKFAT_SetupDirEntNewDirectory(&tdee);
@@ -2055,8 +2100,8 @@ int TKFAT_LookupDirEntPathR(TKFAT_ImageInfo *img,
 		i=TKFAT_LookupDirEntName(img, clid, &tdee, tb);
 		if(i<0)
 		{
-			printf("TKFAT_CreateDirEntPathR: "
-				"Failed Recurse %s\n", tb);
+//			printf("TKFAT_CreateDirEntPathR: "
+//				"Failed Recurse %s\n", tb);
 			return(i);
 		}
 //		TKFAT_SetupDirEntNewDirectory(&tdee);
@@ -2143,8 +2188,9 @@ int TKFAT_ReadWriteDirEntFile(
 
 	if(!dee || !dee->img)
 	{
-		puts("TKFAT_ReadWriteDirEntFile: Dirent Is NULL\n");
-		__debugbreak();
+//		puts("TKFAT_ReadWriteDirEntFile: Dirent Is NULL\n");
+//		__debugbreak();
+		tkfat_panic(0x0010);
 	}
 
 #ifndef TKFAT_READONLY
@@ -2176,7 +2222,10 @@ int TKFAT_ReadWriteDirEntFile(
 	}
 #else
 	if(iswrite)
-		__debugbreak();
+	{
+//		__debugbreak();
+		tkfat_panic(0x0011);
+	}
 
 #endif
 
@@ -2185,8 +2234,9 @@ int TKFAT_ReadWriteDirEntFile(
 
 	if(offs>=dsz)
 	{
-		printf("TKFAT_ReadWriteDirEntFile: Offset past EOF %X %X\n",
-			offs, dsz);
+//		printf("TKFAT_ReadWriteDirEntFile: Offset past EOF %X %X\n",
+//			offs, dsz);
+		tkfat_panic(0x0013);
 		return(-1);
 	}
 	
@@ -2258,6 +2308,7 @@ int TKFAT_SetupDirEntNewDirectory(
 //{
 //}
 
+#if 0
 int TKFAT_ListDir(TKFAT_ImageInfo *img, int clid)
 {
 	TKFAT_FAT_DirEntExt tdee;
@@ -2281,6 +2332,7 @@ int TKFAT_ListDir(TKFAT_ImageInfo *img, int clid)
 
 	return(0);
 }
+#endif
 
 TKFAT_ImageInfo *TKFAT_CreateSdFatContext()
 {
@@ -2448,7 +2500,7 @@ int ProcessSDCL(
 			if(a[2][strlen(a[2])-1]=='M')
 				imgsz*=2*1024;
 			
-			printf("Make Image %dKiB\n", imgsz/2);
+//			printf("Make Image %dKiB\n", imgsz/2);
 			
 			imgbuf=malloc(imgsz*512);
 			imgfn=strdup(a[1]);

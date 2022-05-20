@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -387,12 +387,18 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_BRA:
 		case BJX2_NMID_BSR:
 			op->cyc=2;
+			
+			if(op->fmid==BJX2_FMID_REG)
+				{ op->cyc=8; }
 			break;
 
 		case BJX2_NMID_BT:
 		case BJX2_NMID_BF:
 			op->cyc=3;
 //			op->cyc=2;
+
+			if(op->fmid==BJX2_FMID_REG)
+				{ op->cyc=8; }
 			break;
 		case BJX2_NMID_RTS:
 //			op->cyc=5;

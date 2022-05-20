@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -1680,7 +1680,14 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 //	if(ctx->regs[BJX2_REG_SR]&(1<<29))
 	if(	(ctx->regs[BJX2_REG_SR]&(1<<29)) &&
 		(ctx->regs[BJX2_REG_SR]&(1<<28)))
+	{
+		if((((addr>>28)&15)!=15) && !((addr>>63)&1) && ((addr>>28)!=0))
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MRD);
+		}
+	
 		return(addr);
+	}
 
 	krr=ctx->regs[BJX2_REG_KRR];
 

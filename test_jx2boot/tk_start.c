@@ -50,29 +50,29 @@ void sanity_a()
 	k=i+j;	if(k!=0x24692467)
 		__debugbreak();
 
-	puts("A0-0\n");
+//	puts("A0-0\n");
 
 	k=i&j;	if(k!=0x12344468)
 		__debugbreak();
 
-	puts("A0-1\n");
+//	puts("A0-1\n");
 
 	k=i|j;	if(k!=0x1234DFFF)
 		__debugbreak();
 	k=i^j;	if(k!=0x00009B97)
 		__debugbreak();
 
-	puts("A1\n");
+//	puts("A1\n");
 
 	k=i<<9;	if(k!=0x68ACF000)
 		__debugbreak();
 
-	puts("A2\n");
+//	puts("A2\n");
 
 	k=i>>9;	if(k!=0x00091A2B)
 		__debugbreak();
 
-	puts("A3\n");
+//	puts("A3\n");
 
 	*pi=123456;
 	*pj=10;
@@ -86,16 +86,16 @@ void sanity_a()
 	if(l!=6)
 		__debugbreak();
 
-	puts("A4\n");
+//	puts("A4\n");
 }
 
 void sanity_b()
 {
+#if 0
 	int *pi, *pj;
 	int i, j, k, l;
 	double a, b;
 
-#if 1
 	for(i=0; i<32; i++)
 	{
 		a=(i*(1.0/31.0))*(2*M_PI);
@@ -196,9 +196,10 @@ void tk_tryload(char *img, char **args)
 	if(fd)
 	{
 		bootgbr=0;
-		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr);
+		TKPE_LoadStaticPE(fd, &bootptr, &bootgbr, img);
 		printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
-		
+
+#if 0
 		if(bootgbr)
 		{
 			pb_gbr=*(u64 *)bootgbr;
@@ -208,6 +209,7 @@ void tk_tryload(char *img, char **args)
 					pb_gbr, bootgbr);
 			}
 		}
+#endif
 		
 		if(bootptr)
 		{
@@ -242,13 +244,13 @@ void __start()
 
 //	ci=I_GetTime();
 	ci = TK_GetTimeMs();
-	printf("%d\n", ci);
+	printf("t: %d ms\n", ci);
 	
 	TK_RamChk();
 	
 //	ci=I_GetTime();
 	ci = TK_GetTimeMs();
-	printf("%d\n", ci);
+	printf("t: %d ms\n", ci);
 
 //	ci = TK_GetTimeMs();
 	TK_RamBench();
@@ -267,7 +269,7 @@ void __start()
 //	ci=I_GetTime();
 	ci = TK_GetTimeMs();
 
-	printf("%d\n", ci);
+	printf("t: %d ms\n", ci);
 	
 //	TKSPI_InitDevice();
 	tk_vfile_init();
@@ -282,7 +284,7 @@ void __start()
 //	puts("Boot 1\n");
 
 	ci = TK_GetTimeMs();
-	printf("Boot 1 %d\n", ci);
+	printf("Boot 1, t: %d ms\n", ci);
 
 	tk_tryload("bootload.sys", NULL);
 

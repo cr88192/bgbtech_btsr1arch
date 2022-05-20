@@ -22,12 +22,20 @@ NULL,				//fstat
 
 /* FILE Ops */
 tk_fat_fread,		//fread
+#ifndef TKFAT_READONLY
 tk_fat_fwrite,		//fwrite
+#else
+NULL,				//fwrite
+#endif
 tk_fat_fseek,		//fseek
 tk_fat_ftell,		//ftell
 tk_fat_fclose,		//fclose
 tk_fat_fgetc,		//fgetc
+#ifndef TKFAT_READONLY
 tk_fat_fputc		//fputc
+#else
+NULL,				//fputc
+#endif
 };
 
 int tk_fat_init()
@@ -44,7 +52,7 @@ int tk_mount_sdfat()
 	img=TKFAT_CreateSdFatContext();
 	if(!img)
 	{
-		printf("tk_mount_sdfat: failed\n");
+//		printf("tk_mount_sdfat: failed\n");
 		return(0);
 	}
 
@@ -163,6 +171,7 @@ int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 
 int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 {
+#ifndef TKFAT_READONLY
 	int sz;
 
 	sz=sz1*sz2;
@@ -171,6 +180,9 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	if(sz>0)
 		fd->ofs+=sz;
 	return(sz);
+#else
+	return(-1);
+#endif
 }
 
 int tk_fat_fgetc(TK_FILE *fd)
@@ -182,9 +194,13 @@ int tk_fat_fgetc(TK_FILE *fd)
 
 int tk_fat_fputc(int ch, TK_FILE *fd)
 {
+#ifndef TKFAT_READONLY
 	byte buf[4];
 	ch=(byte)ch;
 	buf[0]=ch;
 	tk_fat_fwrite(buf, 1, 1, fd);
 	return(ch);
+#else
+	return(-1);
+#endif
 }

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -4844,7 +4844,41 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 		case 0xF2:		case 0xF6:
 			ret=BJX2_DecodeOpcode_DecF2(ctx, op, addr, opw3, opw4, immb);
 			break;
+
+		case 0x71:
+		case 0x72:	case 0x73:
+		case 0x74:	case 0x75:
+		case 0x76:	case 0x77:
+			opw5=0xF000|(opw3&0x00FF);
+			opw6=opw4;
+			immb|=(opw3&0x0700)<<20;
+//			if(opw3&0x0800)
+//				opw5|=0x0400;
+
+			ret=BJX2_DecodeOpcode_DecF0(ctx, op, addr, opw5, opw6, immb);
+			break;
+
+		case 0x91:
+		case 0x92:	case 0x93:
+		case 0x94:	case 0x95:
+		case 0x96:	case 0x97:
+			opw5=0xF000|(opw3&0x00FF);
+			opw6=opw4;
+			immb|=(opw3&0x0600)<<20;
+
+//			if(opw3&0x0800)
+//				opw5|=0x0400;
+			if(opw3&0x0100)
+				opw5|=0x0100;
+			else
+				opw5|=0x0200;
 			
+			if(opw3&0x0100)
+				ret=BJX2_DecodeOpcode_DecF1(ctx, op, addr, opw5, opw6, immb);
+			else
+				ret=BJX2_DecodeOpcode_DecF2(ctx, op, addr, opw5, opw6, immb);
+			break;
+
 		case 0xFA:
 		case 0xFB:
 //			op->fl|=BJX2_OPFL_TWOWORD;

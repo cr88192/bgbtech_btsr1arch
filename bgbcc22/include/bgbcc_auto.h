@@ -1479,6 +1479,13 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,ccxl_regis
 ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_CCXL_GlobalMarkReachable(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj, int afl);
+int BGBCC_CCXL_CheckVirtOpNoSwaps(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op);
+int BGBCC_CCXL_CheckVirtOpIsLoadStore(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op);
+int BGBCC_CCXL_CheckVirtOpIsStore(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op);
+int BGBCC_CCXL_CheckVirtOpIsLoad(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op);
+int BGBCC_CCXL_CheckVirtOpOrderDep(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op1, BGBCC_CCXL_VirtOp *op2);
+int BGBCC_CCXL_CheckVirtOpOrderOnly(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op1, BGBCC_CCXL_VirtOp *op2);
+int BGBCC_CCXL_CheckVirtOpCanSwap(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op1, BGBCC_CCXL_VirtOp *op2);
 s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str);
 int BGBCC_CCXL_NormalizeImmVReg(BGBCC_TransState *ctx, ccxl_type type, ccxl_register treg, ccxl_register *rtreg);
 //AHSRC:ccxl/ccxl_type.c

@@ -357,7 +357,7 @@ byte TKSPI_SendCmd(byte cmd, u32 arg)
 	TKSPI_Deselect();
 	if(!TKSPI_Select())
 	{
-		printf("TKSPI_SendCmd: Select Fail\n");
+//		printf("TKSPI_SendCmd: Select Fail\n");
 		return(0xFF);
 	}
 
@@ -493,13 +493,16 @@ int TKSPI_InitDevice(void)
 		return(tkspi_init_ok);
 	tkspi_init=1;
 
-	lim1=16384;
+//	lim1=16384;
+	lim1=128;
+//	lim1=256;
 
 	while(1)
 	{
 		printf("TKSPI_InitDevice: Init 1\n");
 
 		TKSPI_SetSpeed(0);
+		TKSPI_ChipSel(1);
 
 		for (n=0; n<lim1; n++)
 	//	for (n=0; n<16384; n++)
@@ -514,8 +517,8 @@ int TKSPI_InitDevice(void)
 
 		printf("TKSPI_InitDevice: Init 2\n");
 
-	//	count=256;
-		count=4096;
+		count=256;
+//		count=4096;
 		while(count>0)
 		{
 			ty=0;
@@ -531,12 +534,13 @@ int TKSPI_InitDevice(void)
 			break;
 
 		printf("TKSPI_InitDevice: Retry\n");
-		lim1=1<<20;
+//		lim1=1<<20;
+		lim1=256;
 	}
 
 	if(n==1)
 	{
-		printf("TKSPI_InitDevice: Init 3A\n");
+//		printf("TKSPI_InitDevice: Init 3A\n");
 
 		s=TKSPI_SendCmd(MMC_CMD8, 0x1AA);
 		if(s==1)
@@ -566,7 +570,7 @@ int TKSPI_InitDevice(void)
 		}
 		else
 		{
-			printf("TKSPI_InitDevice: Init 3B\n");
+//			printf("TKSPI_InitDevice: Init 3B\n");
 
 			s=TKSPI_SendCmd(MMC_ACMD41, 0);
 			if(s<=1)
@@ -594,7 +598,7 @@ int TKSPI_InitDevice(void)
 	}else
 	{
 		ty=0;
-		printf("TKSPI_InitDevice: Bad CMD0 %02X\n", n);
+//		printf("TKSPI_InitDevice: Bad CMD0 %02X\n", n);
 	}
 	TKSPI_Deselect();
 

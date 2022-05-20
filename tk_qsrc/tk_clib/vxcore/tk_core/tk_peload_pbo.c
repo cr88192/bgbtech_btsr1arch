@@ -319,7 +319,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	byte *imgptr, *ct, *cte;
 	byte *cs, *cse, *p0, *p1;
 	char *s0, *s1;
-	u64 imgbase;
+	u64 imgbase, imgbase1;
 	u32 imgsz, imgsz1, startrva, gbr_rva, gbr_sz;
 	byte is64;
 	byte is_pel4, cmp;
@@ -447,9 +447,9 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 //	i=(TK_GetRandom()*64)&16383;
 	i=(TK_GetRandom16ASLR()*64)&16383;
 
-//	imgptr=TKMM_PageAlloc(imgsz1);
-	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
-		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+	imgptr=TKMM_PageAlloc(imgsz1);
+//	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
+//		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
 
 //	memset(imgptr, 0, imgsz1-32);
 //	memset(imgptr, 0, imgsz1);
@@ -462,7 +462,11 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);
-	
+
+	imgbase1=(u64)imgptr;
+	printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
+		(u16)(imgbase1>>32), (u32)imgbase1);
+
 	rlc_disp=((byte *)imgptr)-((byte *)imgbase);
 	
 	if(!is_pel4)

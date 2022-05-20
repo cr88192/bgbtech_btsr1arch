@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 BGBCC_CCXL_BackendFuncs_vt bgbgc_jx2_vt;
 static int bgbgc_jx2_init=0;
 
@@ -1643,7 +1668,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtTr *tr, int idx)
 {
-	BGBCC_CCXL_VirtOp *vop, *vop1, *vop2;
+	BGBCC_CCXL_VirtOp *vop, *vop1, *vop2, *vop3;
 	int ps0, ps1, tr1, tr2, usewex;
 	int i, j, k;
 
@@ -1747,10 +1772,13 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		vop=obj->vop[tr->b_ops+i];
 		vop1=NULL;
 		vop2=NULL;
+		vop3=NULL;
 		if((i+1)<tr->n_ops)
 			vop1=obj->vop[tr->b_ops+i+1];
 		if((i+2)<tr->n_ops)
 			vop2=obj->vop[tr->b_ops+i+2];
+		if((i+3)<tr->n_ops)
+			vop3=obj->vop[tr->b_ops+i+3];
 
 		ctx->cur_vop=vop;
 
@@ -1766,6 +1794,86 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		}
 		
 		sctx->op_is_wex2=j;
+
+#if 0
+		/*
+		 * Try to shuffle 3AC ops to reduce dependencies.
+		 */
+//		if(vop && vop1 && vop2 && vop3 && (sctx->is_simpass&64))
+		if(vop && vop1 && vop2 && vop3 && (sctx->is_simpass))
+		{
+//			if(	(vop->opn==CCXL_VOP_LOADSLOT) ||
+//				(vop->opn==CCXL_VOP_LDIX) ||
+//				(vop->opn==CCXL_VOP_LDIXIMM)	)
+//			if(BGBCC_CCXL_CheckVirtOpIsLoad(ctx, vop))
+			if(1)
+			{
+//				if(	(vop1->opn==CCXL_VOP_BINARY) ||
+//					(vop1->opn==CCXL_VOP_UNARY) )
+				if(	!BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, vop1) &&
+					!BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, vop2) &&
+//					 BGBCC_CCXL_CheckVirtOpOrderDep(ctx, vop, vop1) &&
+//					!BGBCC_CCXL_CheckVirtOpOrderDep(ctx, vop, vop2) &&
+//					!BGBCC_CCXL_CheckVirtOpOrderDep(ctx, vop1, vop3) &&
+
+					 BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop, vop1) &&
+					!BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop, vop2) &&
+					!BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop1, vop3) &&
+
+					BGBCC_CCXL_CheckVirtOpCanSwap(ctx, vop1, vop2))
+				{
+					obj->vop[tr->b_ops+i+1]=vop2;
+					obj->vop[tr->b_ops+i+2]=vop1;
+
+					vop1=obj->vop[tr->b_ops+i+1];
+					vop2=obj->vop[tr->b_ops+i+2];
+				}
+			}
+		}else
+//			if(vop && vop1 && vop2 && (sctx->is_simpass&64))
+			if(vop && vop1 && vop2 && (sctx->is_simpass))
+		{
+//			if(	(vop->opn==CCXL_VOP_LOADSLOT)	||
+//				(vop->opn==CCXL_VOP_LDIX)		||
+//				(vop->opn==CCXL_VOP_LDIXIMM)	)
+			if(1)
+			{
+//				if(	(vop1->opn==CCXL_VOP_BINARY) ||
+//					(vop1->opn==CCXL_VOP_UNARY) )
+				if(	!BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, vop1) &&
+					!BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, vop2) &&
+					BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop, vop1) &&
+					!BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop, vop2) &&
+					BGBCC_CCXL_CheckVirtOpCanSwap(ctx, vop1, vop2))
+				{
+					obj->vop[tr->b_ops+i+1]=vop2;
+					obj->vop[tr->b_ops+i+2]=vop1;
+
+					vop1=obj->vop[tr->b_ops+i+1];
+					vop2=obj->vop[tr->b_ops+i+2];
+				}
+			}
+#if 0
+			else
+				if(	(vop1->opn==CCXL_VOP_LOADSLOT) ||
+					(vop1->opn==CCXL_VOP_LDIX) ||
+					(vop1->opn==CCXL_VOP_LDIXIMM)	)
+			{
+				if(
+					!BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop, vop1) &&
+					!BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop, vop2) &&
+					BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, vop1, vop2) &&
+					BGBCC_CCXL_CheckVirtOpCanSwap(ctx, vop, vop1))
+				{
+					obj->vop[tr->b_ops+i+0]=vop1;
+					obj->vop[tr->b_ops+i+1]=vop;
+					i--;
+					continue;
+				}
+			}
+#endif
+		}
+#endif
 
 #if 0
 		if(vop && vop1)
@@ -6560,6 +6668,51 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		sctx->stat_const_jumbo64,
 		sctx->stat_const_jumbo96
 		);
+
+	printf("WEXed: F0=%.2f%% F1=%.2f%% F2=%.2f%% F8=%.2f%% Tot=%.2f%%\n",
+		(100.0*(sctx->opcnt_hi8[0xF4]+
+			sctx->opcnt_hi8[0xEA]+sctx->opcnt_hi8[0xEE]))/
+			(sctx->opcnt_hi8[0xF0]+sctx->opcnt_hi8[0xF4]+
+			sctx->opcnt_hi8[0xEA]+sctx->opcnt_hi8[0xEE]+1),
+
+		(100.0*sctx->opcnt_hi8[0xF5])/
+			(sctx->opcnt_hi8[0xF1]+sctx->opcnt_hi8[0xF5]+1),
+
+		(100.0*(sctx->opcnt_hi8[0xF6]+
+				sctx->opcnt_hi8[0xEB]+sctx->opcnt_hi8[0xEF]))/
+			(sctx->opcnt_hi8[0xF2]+sctx->opcnt_hi8[0xF6]+
+			sctx->opcnt_hi8[0xEB]+sctx->opcnt_hi8[0xEF]+1),
+
+		(100.0*sctx->opcnt_hi8[0xFC])/
+			(sctx->opcnt_hi8[0xF8]+sctx->opcnt_hi8[0xFC]+1),
+
+		(100.0*(
+			sctx->opcnt_hi8[0xF4]+
+			sctx->opcnt_hi8[0xF5]+
+			sctx->opcnt_hi8[0xF6]+
+			sctx->opcnt_hi8[0xFC]+
+			sctx->opcnt_hi8[0xEA]+
+			sctx->opcnt_hi8[0xEB]+
+			sctx->opcnt_hi8[0xEE]+
+			sctx->opcnt_hi8[0xEF]
+			))/
+			(
+			sctx->opcnt_hi8[0xF0]+
+			sctx->opcnt_hi8[0xF1]+
+			sctx->opcnt_hi8[0xF2]+
+			sctx->opcnt_hi8[0xF4]+
+			sctx->opcnt_hi8[0xF5]+
+			sctx->opcnt_hi8[0xF8]+
+			sctx->opcnt_hi8[0xF6]+
+			sctx->opcnt_hi8[0xFC]+
+			sctx->opcnt_hi8[0xEA]+
+			sctx->opcnt_hi8[0xEB]+
+			sctx->opcnt_hi8[0xEE]+
+			sctx->opcnt_hi8[0xEF]+
+			1)
+
+		);
+
 
 	if(sctx->lvt16_n_idx>0)
 	{

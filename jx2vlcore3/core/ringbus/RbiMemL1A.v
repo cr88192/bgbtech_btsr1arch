@@ -423,6 +423,7 @@ begin
 	tBridgeSeqI		= tTlbSeqO;
 
 `ifdef def_true
+// `ifndef def_true
 	/* Check if L1 D$ request should skip over L1 I$ and TLB. */
 	tSkipTlb		= 0;
 	if(tTlbOpmO[7:0] == JX2_RBI_OPM_IDLE)

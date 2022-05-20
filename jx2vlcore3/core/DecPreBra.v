@@ -93,7 +93,8 @@ assign	preIsBra	= { 1'b0, tPreBra };
 
 // reg[32:0]	tBraDisp8;
 // reg[32:0]	tBraDisp20;
-reg[24:0]	tBraDisp8;
+// reg[24:0]	tBraDisp8;
+reg[12:0]	tBraDisp8;
 reg[24:0]	tBraDisp20;
 
 reg[31:0]	tDisp8;
@@ -217,7 +218,8 @@ begin
 	
 //	tBraDisp8	= {1'b0, istrBraPc[31:0] } + { tDisp8[31:0], 1'b0 };
 //	tBraDisp20	= {1'b0, istrBraPc[31:0] } + { tDisp20[31:0], 1'b0 };
-	tBraDisp8	= {1'b0, istrBraPc[23:0] } + { tDisp8[23:0], 1'b0 };
+//	tBraDisp8	= {1'b0, istrBraPc[23:0] } + { tDisp8[23:0], 1'b0 };
+	tBraDisp8	= {1'b0, istrBraPc[11:0] } + { tDisp8[11:0], 1'b0 };
 	tBraDisp20	= {1'b0, istrBraPc[23:0] } + { tDisp20[23:0], 1'b0 };
 
 // `ifdef def_true
@@ -333,7 +335,8 @@ begin
 	if(tIsBra8 || tIsBraCc8)
 	begin
 //		tPreBraPc	= { istrBraPc[47:32], tBraDisp8[31:0] };
-		tPreBraPc	= { istrBraPc[47:24], tBraDisp8[23:0] };
+//		tPreBraPc	= { istrBraPc[47:24], tBraDisp8[23:0] };
+		tPreBraPc	= { istrBraPc[47:12], tBraDisp8[11:0] };
 	end
 
 	if(tIsBra20 || tIsBraCc20)
@@ -354,7 +357,8 @@ begin
 		tPreBra		= 1;
 		
 //		if(tBraDisp8[32])
-		if(tBraDisp8[24])
+//		if(tBraDisp8[24])
+		if(tBraDisp8[12])
 			tPreBra		= 0;
 	end
 
@@ -377,7 +381,9 @@ begin
 //		$display("PreBra: RTSU, I=%X-%X PC2=%X",
 //			istrWord[15:0], istrWord[31:16], regValLr);
 		tPreBraPc	= regValLr[47:0];
-		tPreBra		= 1;
+//		tPreBra		= 1;
+		tPreBra		= !regValLr[0] ||
+			(regValLr[1] && (regValLr[50]==pipeHasLr[4]));
 	end
 
 `ifdef jx2_prebra_rts
@@ -385,7 +391,10 @@ begin
 	if(tIsRtsR1)
 	begin
 		tPreBraPc	= regValDhr[47:0];
-		tPreBra		= 1;
+//		tPreBra		= 1;
+//		tPreBra		= !regValDhr[0];
+		tPreBra		= !regValDhr[0] ||
+			(regValDhr[1] && (regValDhr[50]==pipeHasLr[4]));
 	end
 `endif
 

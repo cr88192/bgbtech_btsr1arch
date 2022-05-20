@@ -876,6 +876,8 @@ parameter[5:0] JX2_UCIX_ALUW_CMPAHS		= 6'h19;		//
 parameter[5:0] JX2_UCIX_ALUW_CMPAEQ		= 6'h1A;		//
 parameter[5:0] JX2_UCIX_ALUW_MOVTA5U	= 6'h2A;		//
 parameter[5:0] JX2_UCIX_ALUW_MOVTA16	= 6'h2B;		//
+parameter[5:0] JX2_UCIX_ALUW_CMPNATEQ	= 6'h1B;		//
+
 parameter[5:0] JX2_UCIX_ALUW_PSRCHE		= 6'h1C;		//Packed Search
 parameter[5:0] JX2_UCIX_ALUW_CMPAHI		= 6'h1D;		//
 parameter[5:0] JX2_UCIX_ALUW_CMPTEQ		= 6'h1E;		//
@@ -1025,6 +1027,8 @@ parameter[5:0] JX2_UCIX_QMUL_MODSL	= 6'h0E;		//
 parameter[5:0] JX2_UCIX_QMUL_MODUL	= 6'h0F;		//
 
 parameter[5:0] JX2_UCIX_QMUL_MULHSU	= 6'h12;		//
+
+parameter[5:0] JX2_UCIX_QMUL_FDIV	= 6'h25;		//
 
 
 parameter[5:0] JX2_UCIX_LDI_LDIX	= 6'h00;		//
@@ -1433,7 +1437,7 @@ parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h1F;		//
 parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
 `endif
 
-// parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h3F;		//
+parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h3F;		//
 
 `include "ExModKrrKeys.v"
 

@@ -242,6 +242,15 @@ begin
 	tDoOutDfl		= 0;
 
 `ifndef def_true
+// `ifdef def_true
+	if(opBraFlush)
+	begin
+		tRegIdRn2	= JX2_GR_ZZR;
+		tRegIdCn2	= JX2_CR_ZZR;
+	end
+`endif
+
+`ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
 		4'b000z: 	tOpEnable = 1;
 		4'b001z: 	tOpEnable = 0;

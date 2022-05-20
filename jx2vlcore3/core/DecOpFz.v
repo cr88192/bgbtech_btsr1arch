@@ -1274,6 +1274,16 @@ begin
 						opUCmdIx	= JX2_UCIX_CONV_MOV;
 						opIty		= JX2_ITY_NW;
 
+						if(opExQ)
+						begin
+							usrReject	= 0;
+							opNmid		= JX2_UCMD_ALUCMPB;
+							opFmid		= JX2_FMID_REGREG;
+//							opIty		= JX2_ITY_NB;
+							opIty		= JX2_ITY_XL;
+							opUCmdIx	= JX2_UCIX_ALUW_CMPNATEQ;
+						end
+
 `ifndef def_true
 						opNmid		= JX2_UCMD_MUL3;
 						opFmid		= JX2_FMID_REGREG;
@@ -2990,6 +3000,13 @@ begin
 					opUCmdIx	= JX2_UCIX_FPU_FDIVX;
 					opUCty		= JX2_IUC_WX;
 				end
+`ifdef jx2_alu_slomuldiv_fdiv
+				if(!opExQ)
+				begin
+					opNmid		= JX2_UCMD_QMULDIV;
+					opUCmdIx	= JX2_UCIX_QMUL_FDIV;
+				end
+`endif
 			end
 			16'h6zz7: begin		/* F0nm_6eo7 */
 				opNmid		= JX2_UCMD_FPU3;

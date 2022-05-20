@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -972,9 +972,13 @@ u64 mem_tlb_pr1_lo;
 u64 mem_ldtlb_hix;
 u64 mem_ldtlb_lox;
 
-bjx2_addr *map_addr;
-char **map_name;
-int map_n_ents;
+char *map_iname[256];
+bjx2_addr *map_addr[256];
+char **map_name[256];
+int map_n_ents[256];
+bjx2_addr map_addr_min[256];
+bjx2_addr map_addr_max[256];
+int n_map;
 
 bjx2_addr	dbg_data_start;
 bjx2_addr	dbg_data_end;
@@ -991,6 +995,13 @@ u32 msgbuf_rxspos;
 u32 msgbuf_rxepos;
 u32 msgbuf_txspos;
 u32 msgbuf_txepos;
+
+char puts_linebuf[256];
+byte puts_linepos;
+
+char		*map_img_name[256];
+bjx2_addr	map_img_base[256];
+byte		n_map_img;
 
 BJX2_MemSpan *(*MemSpanForAddr)(BJX2_Context *ctx, bjx2_addr addr);
 

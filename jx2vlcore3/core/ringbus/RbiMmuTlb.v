@@ -563,7 +563,8 @@ begin
 	endcase
 `endif
 
-`ifdef jx2_tlbsz_32
+// `ifdef jx2_tlbsz_32
+`ifndef def_true
 	case({tlbMmuPg16K, tlbMmuPg64K})
 		2'b00: begin
 			tlbHixSelA={regInAddrA[15:12], regInAddrA[21]};
@@ -579,6 +580,23 @@ begin
 		end
 	endcase
 	tlbHixA = tlbHixSelA[4:0] ^ regInAddrA[20:16];
+`endif
+
+`ifdef jx2_tlbsz_32
+	case({tlbMmuPg16K, tlbMmuPg64K})
+		2'b00: begin
+			tlbHixA={regInAddrA[15:12], regInAddrA[16]};
+		end
+		2'b01: begin
+			tlbHixA=regInAddrA[20:16];
+		end
+		2'b10: begin
+			tlbHixA={regInAddrA[15:14], regInAddrA[18:16]};
+		end
+		2'b11: begin
+			tlbHixA=regInAddrA[20:16];
+		end
+	endcase
 `endif
 
 // `ifdef jx2_tlbsz_16
@@ -1101,7 +1119,7 @@ begin
 `ifdef def_true
 		if(tlbMmuEnable && icPageReady &&
 			!tlbMiss && !tlbMmuSkip &&
-			(tRegInOpm[4:3]!=0) && !tlbMmuSkip)
+			(tRegInOpm[4:3]!=0))
 		begin
 			/* Special: Shuffle TLBE's based on TLB Hits.
 			 * This should slightly improve hit rate.

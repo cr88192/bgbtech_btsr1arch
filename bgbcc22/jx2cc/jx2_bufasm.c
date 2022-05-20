@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 char *BGBCC_JX2A_EatWhite(char *cs)
 {
 	return(BGBCP_EatWhite(cs));
@@ -2225,7 +2250,8 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		}
 
 		if(!strcmp(tk0, "I.long") ||
-			!strcmp(tk0, "I.int"))
+			!strcmp(tk0, "I.int") ||
+			!strcmp(tk0, "I.dword"))
 		{
 			cs2=cs1;
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
@@ -2379,7 +2405,8 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 
-		if(!strcmp(tk0, "I.quad"))
+		if(!strcmp(tk0, "I.quad") ||
+			!strcmp(tk0, "I.qword"))
 		{
 			cs2=cs1;
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
@@ -2561,7 +2588,8 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 
 		if(!strcmp(tk0, "I.text") ||
 			!strcmp(tk0, "I.data") ||
-			!strcmp(tk0, "I.bss"))
+			!strcmp(tk0, "I.bss") ||
+			!strcmp(tk0, "I.rodata"))
 		{
 			BGBCC_JX2_SetSectionName(ctx, tk0+1);
 			*rcs=cs1;

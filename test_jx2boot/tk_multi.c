@@ -16,7 +16,7 @@
 #include "tk_vfile.c"
 // #include "tk_divi.c"
 
-#include "math2.c"
+// #include "math2.c"
 
 #include "tk_ptetlb.c"
 #include "tk_syscall.c"

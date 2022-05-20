@@ -163,6 +163,8 @@ begin
 		if(tDivCnt==tDivRstH)
 		begin
 			tNxtOutSclk = 1;
+//			tNxtRegExchI	= { tRegExchI[14:0], tInMiso };
+//			tNxtRegExchI	= { tRegExchI[14:0], spi_miso };
 		end
 	end
 `endif
@@ -176,6 +178,7 @@ begin
 		if(tDivCnt==tDivRstH)
 		begin
 //			tNxtOutSclk = !tOutSclk;
+//			tNxtRegExchI	= { tRegExchI[14:0], tInMiso };
 			tNxtOutSclk = 1;
 		end
 `endif
@@ -190,6 +193,11 @@ begin
 			tNxtOutSclk		= 0;
 			tNxtBitCnt		= tBitCnt - 1;
 			tOutCs			= tRegCtrl[0];
+
+//			if(!tOutCs)
+//			begin
+//				$display("SdSpi: Chip Select Not Set");
+//			end
 `endif
 
 `ifndef def_true
@@ -213,17 +221,20 @@ begin
 			begin
 				tNxtOutSclk		= 1;
 				tNxtDivCnt		= tDivRstH;
-			end
-			
+			end			
+`endif
+
 //			$display("SdSpi Bit=%d Mosi=%d Miso=%d ExchI=%X ExchO=%X",
 //				tBitCnt, tOutMosi, spi_miso, tRegExchI, tRegExchO);
-`endif
+//			$display("SdSpi Bit=%d Mosi=%d Miso=%d ExchI=%X ExchO=%X",
+//				tBitCnt, tOutMosi, tInMiso, tRegExchI, tRegExchO);
 
 		end
 	end
 
 //	tRegValIn = tRegExchI[7:0];
 	tRegValIn = tRegExchI[14:7];
+//	tRegValIn = tRegExchI[15:8];
 
 //	if((tBitCnt==0) && (tLastBitCnt!=0))
 	if(tBitCnt==0)
@@ -237,6 +248,9 @@ begin
 			tNxtRegExchO[7:0]	= tRegSendQ[7:0];
 			tNxtRegSendQ		= { 8'hFF, tRegSendQ[63:8] };
 			tNxtRegRecvQ		= { tRegValIn, tNxtRegRecvQ[63:8] };
+			
+//			$display("SdSpi: Byte: Send=%X Recv=%X",
+//				tRegSendQ[7:0], tRegValIn);
 			
 			//9: zzxxxxxxxxxxxxxx  00
 			//8: 00zzxxxxxxxxxxxx  11

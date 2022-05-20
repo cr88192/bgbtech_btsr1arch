@@ -1,5 +1,7 @@
 // extern u64 __arch_gbr;
 
+#define TKPE_NO_RP2
+
 int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr);
 
 byte tkpe_imgend;
@@ -55,7 +57,7 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		{
 			if(ll==5)
 				continue;
-			printf("TKPE_UnpackL4: End Of Image\n");
+//			printf("TKPE_UnpackL4: End Of Image\n");
 			tkpe_imgend=1;
 			break;
 		}
@@ -312,6 +314,7 @@ TKPE_UnpackL6:
 
 #endif
 
+#ifndef TKPE_NO_RP2
 void W_MatchCopy2(byte *dst, int sz, int d)
 {
 	byte *cs, *ct, *cte;
@@ -645,6 +648,9 @@ TKPE_DecodeBufferRP2:
 };
 #endif
 
+#endif  /* TKPE_NO_RP2 */
+
+
 u64 TK_GetRandom();
 
 #ifdef __BJX2__
@@ -678,11 +684,15 @@ byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
 		return(TKPE_UnpackL4(ct, ibuf, isz));
 	}
 
+#ifndef TKPE_NO_RP2
 	if(cmp==3)
 	{
 		rsz=TKPE_DecodeBufferRP2(ibuf, ct, isz, 999999);
 		return(ct+rsz);
 	}
+#endif
+
+	tkfat_panic(0x0080);
 }
 
 #if 0
@@ -1002,12 +1012,13 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 }
 #endif
 
-int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
+int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
+	char *imgname)
 {
 //	byte tbuf[1024];
 	byte tbuf[1024+32];
 	byte *imgptr, *ct, *cte, *bss_ptr;
-	u64 imgbase;
+	u64 imgbase, imgbase1;
 	s64 reloc_disp;
 	u64 entry;
 	u32 imgsz, startrva, gbr_rva, gbr_sz, imgsz1, imgsz2;
@@ -1136,6 +1147,10 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	imgptr+=i;
 	reloc_disp+=i;
 #endif
+
+	imgbase1=(u64)imgptr;
+	printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
+		(u16)(imgbase1>>32), (u32)imgbase1);
 
 	bss_ptr=imgptr+imgsz;
 	bss_sz=imgsz2-imgsz;

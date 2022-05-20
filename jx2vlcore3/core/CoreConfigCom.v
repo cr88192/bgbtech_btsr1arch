@@ -47,6 +47,7 @@
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
 
 `define jx2_alu_slomuldiv			//Enable Slow MUL/DIV Unit
+`define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 `define jx2_bra2stage			//Use 2-stage branch initiation
@@ -153,6 +154,8 @@
 
 
 // `define jx2_fbuf_hwsprite		//Enable Hardware Sprites
+
+`define jx2_fbuf_nofont		//Disable Font ROM
 
 
 `ifdef jx2_enable_riscv

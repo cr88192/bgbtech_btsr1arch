@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 
 
 int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
@@ -353,6 +378,40 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	if(1)
 	{
 		j=k;
+
+#if 1
+		if(	!(obj->flagsint&BGBCC_TYFL_INTERRUPT) &&
+			!(obj->flagsint&BGBCC_TYFL_SYSCALL) &&
+			!(sctx->is_leaf&1))
+		{
+			for(i=0; i<64; i++)
+			{
+				if(!(sctx->has_xgpr&1) && (i>=32))
+					continue;
+				if(!(sctx->has_bjx1egpr) && (i>=16))
+					continue;
+				if(i==15)
+					continue;
+
+				if(sctx->reg_save&(1ULL<<i))
+				{
+					k+=8;
+				}
+			}
+
+			if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+				k+=8;
+
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_SP, (k-j),
+				BGBCC_SH_REG_R1);
+
+			k=j;
+
+		}
+#endif
+
+		j=k;
 	
 	//	for(i=0; i<15; i++)
 //		for(i=0; i<32; i++)
@@ -457,6 +516,11 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 				{
 					if(sctx->has_fmovc)
 					{
+#if 0
+						BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+							BGBCC_SH_REG_SP, (k-j)+8,
+							BGBCC_SH_REG_R1);
+#endif
 						BGBCC_JX2_EmitOpLdRegDispReg(sctx,
 							BGBCC_SH_NMID_MOVC,
 							BGBCC_SH_REG_SP, (k-j)+0,
@@ -464,19 +528,18 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 //						BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVC,
 //							BGBCC_SH_REG_SP, (k-j)+8,
 //							BGBCC_SH_REG_PR);
-						BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
-							BGBCC_SH_REG_SP, (k-j)+8,
-							BGBCC_SH_REG_R1);
 					}else
 					{
-						BGBCC_JX2_EmitOpLdRegDispReg(sctx,
-							BGBCC_SH_NMID_MOVQ,
-							BGBCC_SH_REG_SP, (k-j)+0,
-							BGBCC_SH_REG_R18);
+#if 0
 						BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
 							BGBCC_SH_REG_SP, (k-j)+8,
 	//						BGBCC_SH_REG_R19);
 							BGBCC_SH_REG_R1);
+#endif
+						BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+							BGBCC_SH_NMID_MOVQ,
+							BGBCC_SH_REG_SP, (k-j)+0,
+							BGBCC_SH_REG_R18);
 					}
 				}
 				k+=16;
@@ -518,9 +581,11 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 					BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
 				}else
 				{
+#if 0
 					BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
 						BGBCC_SH_REG_SP, (k-j),
 						BGBCC_SH_REG_R1);
+#endif
 					k+=8;
 
 					BGBCC_JX2_EmitOpImmReg(sctx,

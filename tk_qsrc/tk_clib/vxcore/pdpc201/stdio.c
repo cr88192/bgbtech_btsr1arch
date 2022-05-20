@@ -1545,7 +1545,8 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 	else if (*format == 'L')
 //	else if ((*format == 'L') || (*format == 't'))
 	{
-		lng = 1;
+//		lng = 1;
+		xlng = 1;
 	}
 	else if (*format == 'j')
 	{

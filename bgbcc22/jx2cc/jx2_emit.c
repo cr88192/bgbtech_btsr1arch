@@ -1,3 +1,28 @@
+/*
+ Copyright (c) 2018-2022 Brendan G Bohannon
+
+ Permission is hereby granted, free of charge, to any person
+ obtaining a copy of this software and associated documentation
+ files (the "Software"), to deal in the Software without
+ restriction, including without limitation the rights to use,
+ copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the
+ Software is furnished to do so, subject to the following
+ conditions:
+
+ The above copyright notice and this permission notice shall be
+ included in all copies or substantial portions of the Software.
+
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 int BGBCC_JX2_EmitCheckRegQuad(BGBCC_JX2_Context *ctx, int reg)
 {
 	if((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RQ0)
@@ -6327,6 +6352,32 @@ int BGBCC_JX2_ComposeJumboImmRegF2(BGBCC_JX2_Context *ctx,
 			imm1|=0xFFFFFFFFFFFF0000LL;
 		if(imm!=imm1)
 		{
+			if(((topw1&0xFF00)==0xF100) || ((topw1&0xFF00)==0xF200))
+			{
+				opw1=0xFE00|((imm>>24)&0x00FF);
+				opw2=0x0000|((imm>>8)&0xFFFF);
+				opw3=topw1|((reg&15)<<4);
+				opw4=topw2|((reg&16)<<6)|(imm&0x00FF);
+
+				opw3=0x9000|(opw3&0x00FF);
+				if((topw1&0xFF00)==0xF100)
+					opw3|=0x0100;
+				if(BGBCC_JX2_EmitCheckRegExt5(ctx, reg))
+					opw3|=0x0400;
+
+				*ropw1=opw1;
+				*ropw2=opw2;
+				*ropw3=opw3;
+				*ropw4=opw4;
+
+				imm1=(((u32)(opw1&0x00FF))<<24)|(opw2<<8)|(opw4&0x00FF);
+				if(opw4&0x0100)
+					imm1|=0xFFFFFFFF00000000LL;
+				if(imm!=imm1)
+					{ BGBCC_DBGBREAK }
+
+				return(1);
+			}
 //			BGBCC_DBGBREAK
 			return(0);
 		}
@@ -6407,8 +6458,40 @@ int BGBCC_JX2_ComposeJumboRegImmRegF2(BGBCC_JX2_Context *ctx,
 		imm1=((opw2&0x00FF)<<8)|(opw4&0x00FF);
 		if(opw4&0x0100)
 			imm1|=0xFFFFFFFFFFFF0000LL;
+
 		if(imm!=imm1)
 		{
+#if 1
+			if(((topw1&0xFF00)==0xF100) || ((topw1&0xFF00)==0xF200))
+			{
+				opw1=0xFE00|((imm>>24)&0x00FF);
+				opw2=0x0000|((imm>>8)&0xFFFF);
+				opw3=topw1|((dreg&15)<<4)|((sreg&15)<<0);
+				opw4=topw2|((dreg&16)<<6)|((sreg&16)<<5)|(imm&0x00FF);
+				
+				opw3=0x9000|(opw3&0x00FF);
+				if((topw1&0xFF00)==0xF100)
+					opw3|=0x0100;
+				if(BGBCC_JX2_EmitCheckRegExt5(ctx, dreg))
+					opw3|=0x0400;
+				if(BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
+					opw3|=0x0200;
+
+				*ropw1=opw1;
+				*ropw2=opw2;
+				*ropw3=opw3;
+				*ropw4=opw4;
+
+				imm1=(((u32)(opw1&0x00FF))<<24)|(opw2<<8)|(opw4&0x00FF);
+				if(opw4&0x0100)
+					imm1|=0xFFFFFFFF00000000LL;
+				if(imm!=imm1)
+					{ BGBCC_DBGBREAK }
+
+				return(1);
+			}
+#endif
+
 //			BGBCC_DBGBREAK
 			return(0);
 		}

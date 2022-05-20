@@ -330,6 +330,213 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 	return(0);
 }
 
+int BGBCC_CCXL_CheckVirtOpNoSwaps(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *op)
+{
+	if(	(op->opn==CCXL_VOP_UNARY)			||
+		(op->opn==CCXL_VOP_BINARY)			||
+		(op->opn==CCXL_VOP_MOV)				||
+		(op->opn==CCXL_VOP_CONV)			||
+
+		(op->opn==CCXL_VOP_DBGFN)			||
+		(op->opn==CCXL_VOP_DBGLN)			||
+		(op->opn==CCXL_VOP_COMPARE)			||
+
+#if 1
+		(op->opn==CCXL_VOP_LDIXIMM)			||
+		(op->opn==CCXL_VOP_STIXIMM)			||
+		(op->opn==CCXL_VOP_LDIX)			||
+		(op->opn==CCXL_VOP_STIX)			||
+		(op->opn==CCXL_VOP_LOADSLOT)		||
+		(op->opn==CCXL_VOP_STORESLOT)		||
+#endif
+
+#if 1
+		(op->opn==CCXL_VOP_LEAIMM)			||
+		(op->opn==CCXL_VOP_LEA)				||
+#endif
+
+#if 1
+		(op->opn==CCXL_VOP_LDAVAR)			||
+		(op->opn==CCXL_VOP_SIZEOFVAR)		||
+		(op->opn==CCXL_VOP_DIFFPTR)			||
+		(op->opn==CCXL_VOP_OFFSETOF)		||
+#endif
+
+#if 1
+		(op->opn==CCXL_VOP_LOADSLOTADDR)	||
+		(op->opn==CCXL_VOP_LOADSLOTADDRID)	||
+#endif
+		0
+		)
+	{
+		return(0);
+	}
+	return(1);
+}
+
+int BGBCC_CCXL_CheckVirtOpIsLoadStore(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *op)
+{
+	if(
+		(op->opn==CCXL_VOP_LDIXIMM)			||
+		(op->opn==CCXL_VOP_STIXIMM)			||
+		(op->opn==CCXL_VOP_LDIX)			||
+		(op->opn==CCXL_VOP_STIX)			||
+		(op->opn==CCXL_VOP_LOADSLOT)		||
+		(op->opn==CCXL_VOP_STORESLOT)		||
+		0)
+	{
+		return(1);
+	}
+
+#if 0
+	if(	(op->opn==CCXL_VOP_LEA)		||
+		(op->opn==CCXL_VOP_LEAIMM)	)
+	{
+		return(1);
+	}
+#endif
+
+	return(0);
+}
+
+int BGBCC_CCXL_CheckVirtOpIsStore(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *op)
+{
+	if(
+//		(op->opn==CCXL_VOP_LDIXIMM)			||
+		(op->opn==CCXL_VOP_STIXIMM)			||
+//		(op->opn==CCXL_VOP_LDIX)			||
+		(op->opn==CCXL_VOP_STIX)			||
+//		(op->opn==CCXL_VOP_LOADSLOT)		||
+		(op->opn==CCXL_VOP_STORESLOT)		||
+		0)
+	{
+		return(1);
+	}
+	return(0);
+}
+
+int BGBCC_CCXL_CheckVirtOpIsLoad(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *op)
+{
+	if(
+		(op->opn==CCXL_VOP_LDIXIMM)			||
+		(op->opn==CCXL_VOP_LDIX)			||
+		(op->opn==CCXL_VOP_LOADSLOT)		||
+		0)
+	{
+		return(1);
+	}
+
+#if 0
+	if(	(op->opn==CCXL_VOP_LEA)		||
+		(op->opn==CCXL_VOP_LEAIMM)	)
+	{
+		return(1);
+	}
+#endif
+	
+	return(0);
+}
+
+int BGBCC_CCXL_CheckVirtOpOrderDep(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *op1,
+	BGBCC_CCXL_VirtOp *op2)
+{
+//	if(op1->dst.val==CCXL_REGID_REG_Z)
+//		return(0);
+
+	if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srca) ||
+		BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srcb) ||
+		BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srcc) ||
+		BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srcd))
+	{
+		if(op1->dst.val!=CCXL_REGID_REG_Z)
+			return(1);
+	}
+	return(0);
+}
+
+int BGBCC_CCXL_CheckVirtOpOrderOnly(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *op1,
+	BGBCC_CCXL_VirtOp *op2)
+{
+	if(BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, op1))
+		return(1);
+	if(BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, op2))
+		return(1);
+
+#if 1
+	if(	BGBCC_CCXL_CheckVirtOpIsLoadStore(ctx, op1) &&
+		BGBCC_CCXL_CheckVirtOpIsLoadStore(ctx, op2)	&&
+		(	BGBCC_CCXL_CheckVirtOpIsStore(ctx, op1) ||
+			BGBCC_CCXL_CheckVirtOpIsStore(ctx, op2) ) &&
+		!(	BGBCC_CCXL_CheckVirtOpIsStore(ctx, op1) &&
+			BGBCC_CCXL_CheckVirtOpIsStore(ctx, op2) )
+		)
+#endif
+//	if(	BGBCC_CCXL_CheckVirtOpIsLoadStore(ctx, op1) &&
+//		BGBCC_CCXL_CheckVirtOpIsLoadStore(ctx, op2)	)
+	{
+		return(1);
+	}
+
+#if 0
+//	if(op1->dst.val==CCXL_REGID_REG_Z)
+//		return(0);
+
+	if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srca) ||
+		BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srcb) ||
+		BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srcc) ||
+		BGBCC_CCXL_RegisterIdentEqualP(ctx,
+			op1->dst, op2->srcd))
+	{
+		if(op1->dst.val!=CCXL_REGID_REG_Z)
+			return(1);
+	}
+#endif
+
+	if(BGBCC_CCXL_CheckVirtOpOrderDep(ctx, op1, op2))
+		return(1);
+	if(BGBCC_CCXL_CheckVirtOpOrderDep(ctx, op2, op1))
+		return(1);
+
+	return(0);
+}
+
+int BGBCC_CCXL_CheckVirtOpCanSwap(
+	BGBCC_TransState *ctx,
+	BGBCC_CCXL_VirtOp *op1,
+	BGBCC_CCXL_VirtOp *op2)
+{
+	if(BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, op1))
+		return(0);
+	if(BGBCC_CCXL_CheckVirtOpNoSwaps(ctx, op2))
+		return(0);
+
+	if(BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, op1, op2))
+		return(0);
+	if(BGBCC_CCXL_CheckVirtOpOrderOnly(ctx, op2, op1))
+		return(0);
+
+	return(1);
+}
+
 s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str)
 {
 	s64 fl;

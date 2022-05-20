@@ -391,6 +391,8 @@ reg[12:0]	tSubAA1;
 reg			tSubTZF;
 reg			tSubTHZF;
 reg			tSubTLZF;
+reg			tSubTNZF;
+reg			tSubNaZF;
 
 reg			tSubABZF;
 
@@ -531,6 +533,14 @@ begin
 		((regValRs[ 1: 0]==regValRt[4:3]) && (regValRt[2:0]==3'b011)) ||
 		((regValRs[ 0   ]==regValRt[4  ]) && (regValRt[2:0]==3'b111)) ;
 	tSubTZF	= regValRt[5] ? tSubTLZF : tSubTHZF;
+
+	tSubTNZF	=
+		((regValRs[51:48]==regValRt[4:1]) && !regValRt[  0]) ||
+		((regValRs[51:49]==regValRt[4:2]) && (regValRt[1:0]==2'b01)) ||
+		((regValRs[51:50]==regValRt[4:3]) && (regValRt[2:0]==3'b011)) ||
+		((regValRs[51   ]==regValRt[4  ]) && (regValRt[2:0]==3'b111)) ;
+
+	tSubNaZF = tSubTNZF && (regValRs[62:52]==11'h7FF);
 
 `else
 
@@ -1280,6 +1290,8 @@ begin
 `endif
 //			tResult2W = { 1'b0, regValRs[63:48], regValRt[47:0] };
 			tResult2W = { 1'b0, regValRt[63:48], regValRs[47:0] };
+
+			tResultb1T	= tSubNaZF;		//Tag Equal
 		end
 
 `ifndef def_true

@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -696,6 +696,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	BJX2_Opcode *op, *op1, *op2, *op3, *op4;
 	int ldrl, vdrl, brk, wexmd;
 	int pc, nc, ncyc, npc, jpc, ilo, nbo;
+	byte lrseen, r1seen;
 	int i, j;
 	
 //	if((addr&1) || (addr&(~65535)))
@@ -911,6 +912,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	}
 	
 #if 1
+	lrseen=0;
+	r1seen=0;
 	for(i=0; i<nc; i++)
 	{
 		wexmd=ctx->wexmd;
@@ -1262,6 +1265,38 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			if(j>2)j=2;
 			op->cyc=j;
 		}
+
+		if(
+			(op->nmid==BJX2_NMID_BRA)		||
+			(op->nmid==BJX2_NMID_BSR)		||
+			(op->nmid==BJX2_NMID_BT)		||
+			(op->nmid==BJX2_NMID_BF)		)
+		{
+			if(op->fmid==BJX2_FMID_REG)
+			{
+				op->cyc=8;
+
+//				if(op->rn==BJX2_REG_R1)
+				if(op->rn==BJX2_REG_DHR)
+				{
+					if(!r1seen)
+					{
+						op->cyc=2;
+					}
+				}
+			}
+		}
+
+		if(lrseen>0)
+			lrseen--;
+		if(r1seen>0)
+			r1seen--;
+		
+		if(op->rn==BJX2_REG_LR)
+			lrseen=6;
+//		if(op->rn==BJX2_REG_R1)
+		if(op->rn==BJX2_REG_DHR)
+			r1seen=6;
 	}
 #endif
 

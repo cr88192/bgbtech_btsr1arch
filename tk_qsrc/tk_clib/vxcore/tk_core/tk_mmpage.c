@@ -296,7 +296,10 @@ int TKMM_AllocPagesApn(int n)
 	
 	i0=TKMM_AllocPages(n);
 	if(i0<0)
+	{
+		__debugbreak();
 		return(i0);
+	}
 	return(i0+(TKMM_PAGEBASE>>TKMM_PAGEBITS));
 }
 
@@ -307,7 +310,10 @@ int TKMM_AllocPagesZeroedApn(int n)
 	
 	i0=TKMM_AllocPages(n);
 	if(i0<0)
+	{
+		__debugbreak();
 		return(i0);
+	}
 
 	ptr=((byte *)TKMM_PAGEBASE)+(i0<<TKMM_PAGEBITS);
 	memset(ptr, 0, n<<TKMM_PAGEBITS);

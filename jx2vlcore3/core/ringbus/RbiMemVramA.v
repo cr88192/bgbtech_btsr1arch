@@ -465,9 +465,11 @@ reg[13:0]		tNxtPixCellIxLim;
 reg[14:0]		tPixCellIxCi;
 
 
+`ifndef jx2_fbuf_nofont
 reg[63:0]	fontMem[255:0];
 reg[63:0]	fontGfx1Mem[127:0];
 reg[63:0]	fontGfx2Mem[127:0];
+`endif
 
 reg[31:0]	fontRamA[511:0];
 reg[31:0]	fontRamB[511:0];
@@ -525,9 +527,11 @@ assign fontData = tFontData1;
 // assign fontData = tFontData2;
 
 initial begin
+`ifndef jx2_fbuf_nofont
 	$readmemh("fontmem.txt", fontMem);
 	$readmemh("gfxfont0.txt", fontGfx1Mem);
 	$readmemh("gfxfont1.txt", fontGfx2Mem);
+`endif
 end
 
 always @*
@@ -1406,6 +1410,7 @@ begin
 	begin
 	end
 
+`ifndef jx2_fbuf_nofont
 	case(tFontGlyph[9:7])
 		3'b000:	tFontData2 = tFontDataAsc1;
 		3'b001:	tFontData2 = tFontDataAsc1;
@@ -1416,6 +1421,9 @@ begin
 		3'b110:	tFontData2 = tFontDataRam;
 		3'b111:	tFontData2 = tFontDataRam;
 	endcase
+`else
+	tFontData2 = tFontDataRam;
+`endif
 
 	if(reset)
 	begin
@@ -1569,9 +1577,12 @@ begin
 	tBlkMemIdxC		<= tReqIxC;
 	tBlkMemIdxD		<= tReqIxD;
 
+`ifndef jx2_fbuf_nofont
 	tFontDataAsc1	<= fontMem[tFontGlyph[7:0]];
 	tFontDataGfx1	<= fontGfx1Mem[tFontGlyph[6:0]];
 	tFontDataGfx2	<= fontGfx2Mem[tFontGlyph[6:0]];
+`endif
+
 	tFontDataRam	<= {
 		fontRamB[tFontGlyph[8:0]],
 		fontRamA[tFontGlyph[8:0]] };

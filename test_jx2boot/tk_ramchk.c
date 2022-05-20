@@ -580,7 +580,8 @@ int TK_RamBench()
 		tf=25600000/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memcpy (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memcpy (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memcpy (DRAM)", ck, th, tl);
 	}
 
 
@@ -619,7 +620,8 @@ int TK_RamBench()
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memcpy (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memcpy (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memcpy (L1)", ck, th, tl);
 	}
 
 
@@ -652,7 +654,8 @@ int TK_RamBench()
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memcpy (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memcpy (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memcpy (L2)", ck, th, tl);
 	}
 
 
@@ -692,7 +695,8 @@ int TK_RamBench()
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memcpy (L1, Misal): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memcpy (L1, Misal): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memcpy (L1, Misal)", ck, th, tl);
 	}
 #endif
 
@@ -711,7 +715,8 @@ int TK_RamBench()
 		tf=25600000/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memset (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memset (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memset (DRAM)", ck, th, tl);
 	}
 #endif
 
@@ -752,7 +757,8 @@ int TK_RamBench()
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memset (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memset (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memset (L1)", ck, th, tl);
 	}
 
 
@@ -781,7 +787,8 @@ int TK_RamBench()
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memset (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memset (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memset (L2)", ck, th, tl);
 	}
 
 #if 1
@@ -803,7 +810,8 @@ int TK_RamBench()
 		tf=25600000/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memload (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memload (DRAM): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memload (DRAM)", ck, th, tl);
 	}
 #endif
 
@@ -844,7 +852,8 @@ int TK_RamBench()
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memload (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memload (L1): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memload (L1)", ck, th, tl);
 	}
 
 
@@ -873,7 +882,8 @@ int TK_RamBench()
 //		tf=12800/ck;
 		th=tf/100;
 		tl=tf-(th*100);
-		printf("memload (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+//		printf("memload (L2): %dus, %d.%02d MB/s\n", ck, th, tl);
+		printf("%s: %dus, %d.%02d MB/s\n", "memload (L2)", ck, th, tl);
 	}
 
 

@@ -629,8 +629,8 @@ begin
 
 	/* Stage A */
 
-	tNxtSkipTlb			= regInSr[29] && regInSr[30];
-//	tNxtSkipTlb			= tRegInSr[29] && tRegInSr[30];
+//	tNxtSkipTlb			= regInSr[29] && regInSr[30];
+	tNxtSkipTlb			= tRegInSr[29] && tRegInSr[30];
 
 	tRegInPc	= regInPc;
 	tNxtAddrHi	= 0;
@@ -648,10 +648,12 @@ begin
 		{	tNxtAddrHi[35:32], tNxtAddrHi[39:36],
 			tNxtAddrHi[43:40], tNxtAddrHi[47:44] } +
 		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+//		{	4'h0, tRegInSr[31:28], regKrrHash[7:0] } ;
 `else
 
 	tNxtAxH		=
 		{	4'h0, regInSr[31:28], regKrrHash[7:0] } ;
+//		{	4'h0, tRegInSr[31:28], regKrrHash[7:0] } ;
 
 `endif
 
@@ -1751,6 +1753,12 @@ begin
 
 	tRegInSr		<= regInSr;
 	tRegInSrL		<= tRegInSr;
+
+//	if(!icInPcHold)
+//	begin
+//		tRegInSr		<= regInSr;
+//		tRegInSrL		<= tRegInSr;
+//	end
 
 	tRegOutHoldL	<= tRegOutHold;
 

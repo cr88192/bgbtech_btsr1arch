@@ -1,5 +1,5 @@
 /*
- Copyright (c) 2018-2020 Brendan G Bohannon
+ Copyright (c) 2018-2022 Brendan G Bohannon
 
  Permission is hereby granted, free of charge, to any person
  obtaining a copy of this software and associated documentation
@@ -413,7 +413,7 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 	return(0);
 }
 
-int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
+int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 {
 //	static bjx2_addr tmap_addr[16384];
 //	static char *tmap_name[16384];
@@ -422,11 +422,11 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 	char tb[256];
 	BJX2_FILE *fd;
 	char **a;
-	char *s;
-	int tmn, ta;
+	char *s, *t;
+	int tmn, ta, mn;
 	int sz, sz1;
 	int i, j, k;
-	
+
 	fd=bjx2_fopen(name, "rb");
 	if(!fd)
 	{
@@ -435,7 +435,8 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 	}
 
 	tmn=0;
-	
+
+#if 0
 	if(ctx->map_n_ents)
 	{
 		for(i=0; i<ctx->map_n_ents; i++)
@@ -448,6 +449,7 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 		free(ctx->map_addr);
 		free(ctx->map_name);
 	}
+#endif
 	
 	while(!bjx2_feof(fd))
 	{
@@ -479,16 +481,37 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name)
 		}
 	}
 	
-	ctx->map_addr=malloc((tmn+64)*sizeof(bjx2_addr));
-	ctx->map_name=malloc((tmn+64)*sizeof(char *));
-	ctx->map_n_ents=tmn;
 	
-	memset(ctx->map_name, 0, (tmn+64)*sizeof(char *));
+	mn=ctx->n_map++;
+	ctx->map_addr[mn]=malloc((tmn+64)*sizeof(bjx2_addr));
+	ctx->map_name[mn]=malloc((tmn+64)*sizeof(char *));
+	ctx->map_n_ents[mn]=tmn;
+	ctx->map_iname[mn]=NULL;
+
+	ctx->map_addr_min[mn]=tmap_addr[0];
+	ctx->map_addr_max[mn]=tmap_addr[tmn-1];
+	
+	if(imgname)
+	{
+		s=imgname+strlen(imgname);
+		while((s>imgname) && (*s!='/') && (*s!='\\'))
+			s--;
+		if((*s=='/') || (*s=='\\'))
+			s++;
+		t=tb;
+		while(*s && (*s!='.'))
+			*t++=*s++;
+		*t++=0;
+		
+		ctx->map_iname[mn]=strdup(tb);
+	}
+	
+	memset(ctx->map_name[mn], 0, (tmn+64)*sizeof(char *));
 	
 	for(i=0; i<tmn; i++)
 	{
-		ctx->map_addr[i]=tmap_addr[i];
-		ctx->map_name[i]=tmap_name[i];
+		ctx->map_addr[mn][i]=tmap_addr[i];
+		ctx->map_name[mn][i]=tmap_name[i];
 	}
 	return(0);
 }
@@ -556,7 +579,7 @@ int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 	free(buf);
 	
 	sprintf(tb, "%s.map", name);
-	BJX2_ContextLoadMap(ctx, tb);
+	BJX2_ContextLoadMap(ctx, tb, NULL);
 	
 	return(0);
 }
