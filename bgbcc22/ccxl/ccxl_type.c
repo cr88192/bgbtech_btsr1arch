@@ -6514,3 +6514,52 @@ ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_UNHANDLEDTYPE));
 	return(CCXL_STATUS_ERR_UNHANDLEDTYPE);
 }
+
+
+ccxl_status BGBCC_CCXL_TypeCheckConvImplicit(
+	BGBCC_TransState *ctx, int opr,
+	ccxl_type dty, ccxl_type sty)
+{
+	ccxl_type dty2, sty2;
+	byte	pred_pvoid;
+	byte	pred_pbyte;
+	byte	pred_pshort;
+	byte	pred_pint;
+	byte	pred_plong;
+
+	if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
+		BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+	{
+		BGBCC_CCXL_TypeDerefType(ctx, dty, &dty2);
+		BGBCC_CCXL_TypeDerefType(ctx, sty, &sty2);
+		
+
+		if(dty2.val!=sty2.val)
+		{
+			pred_pvoid = (dty2.val==0x05) || (sty2.val==0x05);
+			pred_pbyte =
+				((dty2.val==0x08) && (sty2.val==0x09)) ||
+				((dty2.val==0x09) && (sty2.val==0x08));
+			pred_pshort =
+				((dty2.val==0x0A) && (sty2.val==0x0B)) ||
+				((dty2.val==0x0B) && (sty2.val==0x0A));
+			pred_pint =
+				((dty2.val==0x0C) && (sty2.val==0x00)) ||
+				((dty2.val==0x00) && (sty2.val==0x0C));
+			pred_plong =
+				((dty2.val==0x0D) && (sty2.val==0x01)) ||
+				((dty2.val==0x01) && (sty2.val==0x0D));
+		}
+		
+		if((dty2.val!=sty2.val) &&
+			!pred_pvoid &&
+			!pred_pbyte &&
+			!pred_pshort &&
+			!pred_pint &&
+			!pred_plong)
+		{
+			BGBCC_CCXL_Warn(ctx, "Implicit Pointer Conversion "
+				"%08X->%08X\n", sty2.val, dty2.val);
+		}
+	}
+}

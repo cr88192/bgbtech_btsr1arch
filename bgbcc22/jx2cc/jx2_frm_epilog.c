@@ -290,6 +290,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	epilbl=sctx->epihash_lbl[epix];
 
 #if 1
+	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+
 	k=sctx->frm_offs_save;
 	p0=BGBCC_JX2_TryEmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 		k, BGBCC_SH_REG_SP);
@@ -615,6 +617,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		}
 		else
 		{
+			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 				k-j, BGBCC_SH_REG_SP);
 		}
@@ -952,6 +955,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	}
 #endif
 
+	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+
 	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 		k-j, BGBCC_SH_REG_SP);
 
@@ -971,6 +976,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTE);
 
+		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 	}

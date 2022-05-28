@@ -1,0 +1,122 @@
+Yet another BSR/BJX style idea.
+
+
+Will probably move SP to a low-numbered register, say:
+* R0: Zero / PC (Depends on Context)
+* R1: SP (Stack Pointer)
+* R2: LR (Link Register)
+* R3: GBR (Global Register)
+* R4..R15: Low GPRs
+* R16..R31: High GPRs
+
+
+Length will be enoded via the MSB of the first word:
+* 0zzz-nnnn-mmmm-zzzz  (16-bit)
+* 1ppp-zzzz-zzzz-zzzz  (32-bit, or larger)
+
+ppp:
+* 000: Pred?T
+* 001: Pred?F
+* 010: Pred?T, WEX
+* 011: Pred?F, WEX
+* 100: Normal
+* 101: Special
+* 110: Normal, WEX
+* 111: Jumbo
+
+
+General Layout:
+* 0zzz-nnnn-mmmm-zzzz  (16-bit, 2R)
+* 0zzz-nnnn-iiii-zzzz  (16-bit, 2RI)
+* 0zzz-zzzz-iiii-iiii  (16-bit, Imm8 and Misc)
+* 1ppp-zzzz-zzzn-nnnn zzss-sssz-zzzt-tttt  //3R (Rs, Rt, Rn)
+* 1ppp-zzzz-zzzn-nnnn zzss-sssi-iiii-iiii  //3RI (Rs, Imm9, Rn)
+* 1ppp-zzzz-zzzn-nnnn iiii-iiii-iiii-iiii  //2RI (Imm16, Rn)
+* 1ppp-zzzz-zzzz-iiii iiii-iiii-iiii-iiii  //(Imm20)
+* 1ppp-zzzz-iiii-iiii iiii-iiii-iiii-iiii  //(Imm24 / Jumbo)
+
+
+16-bit Ops:
+* 0000-nnnn-mmmm-0sss  Store  Rn,(Rm)
+* 0000-nnnn-mmmm-1sss  Load   (Rm),Rn
+**  sss=Type (SB/SS,UB/US,SL/Q,UL/X)
+* 0001-nnnn-iiii-0nss  Store  Rn,(SP,Disp4)
+* 0001-nnnn-iiii-1nss  Load   (SP,Disp4),Rn
+**  ss=Type (SL/Q,UL/X)
+* 0010-nnnn-mmmm-0zzz  2R ALU Ops (ADD,SUB,-,-,-,AND,OR,XOR)
+* 0010-nnnn-mmmm-1nm0  MOV (R0..R31)
+* 0010-nnnn-mmmm-1nm1  ADD (R0..R31)
+
+* 0011-nnnn-iiii-0zzz  2RI ALU Ops (Imm4u,Rn)
+* 0011-nnnn-iiii-1ns0  MOV Imm5s, Rn (R0..R31)
+* 0011-nnnn-iiii-1ns1  ADD Imm5s, Rn (R0..R31)
+
+* 0100-nnnn-mmmm-zzzz  2R ALU Ops2 (Rm,Rn)
+* 0101-nnnn-iiii-zzzz  2RI ALU Ops2 (Imm4u,Rn)
+** 0000: CMPEQ
+** 0001: CMPQEQ
+** 0010: CMPGT
+** 0011: CMPQGT
+** 0100: CMPGE
+** 0101: CMPQGE
+** 0110: TST
+** 0111: TSTQ
+** 1000: -
+** 1001: -
+** 1010: CMPHI
+** 1011: CMPQHI
+** 1100: CMPHS
+** 1101: CMPQHS
+** 1110: -
+** 1111: -
+
+* 0110-0000-iiii-iiii  BRA Disp8s
+* 0110-0001-iiii-iiii  ADD Imm8s, SP
+* 0110-0010-iiii-iiii  BT Disp8s
+* 0110-0011-iiii-iiii  BF Disp8s
+
+* 0111-nnnn-zzzz-znzz  1R Ops
+
+* ...
+
+32-bit:
+* 1ppp-0000-00un-nnnn vvss-sss0-0iit-tttt  STx Rn, (Rs, Rt*(2^ii))
+* 1ppp-0000-01un-nnnn vvss-sss0-0iit-tttt  LDx (Rs, Rt*(2^ii)), Rn
+** uvv: SB, SS, SL, Q, UB, US, UL, X
+* 1ppp-0000-10qn-nnnn 00ss-sssa-aaat-tttt  ALU Rs, Rt, Rn
+** aaaa: 00zz: ADD{Q/X}, SUB{Q/X}, MULS{L/Q}, MULU{L/Q}
+** aaaa: 01zz: -, AND, OR, XOR
+** aaaa: 10zz: SHAD{L/Q}, SHLD{L/Q}, SHAD{-/X}, SHLD{-/X}
+
+* 1ppp-0000-10qn-nnnn 00ss-sssa-aaat-tttt  LDx (Rs, Rt*(2^ii)), Rn
+
+* 1ppp-0001-0wun-nnnn vvss-sssi-iiii-iiii  STx Rn, (Rs, Imm9)
+* 1ppp-0001-1wun-nnnn vvss-sssi-iiii-iiii  LDx (Rs, Imm9), Rn
+** 0uvv: SB, SS, SL, Q, UB, US, UL, X
+** 1uvv: -, -, FS, -, -, -, -, -
+
+* 1ppp-0010-aaqn-nnnn aass-sssi-iiii-iiii  ALU Rs, Imm9u, Rn
+** aaaa:
+*** 0000= ADD{Q/X}
+*** 0001= SUB{Q/X}
+*** 0010= MULS{L/Q}
+*** 0011= MULU{L/Q}
+*** 0100= SHxD{L/Q}
+*** 0101= AND / -
+*** 0110= OR  / -
+*** 0111= XOR / -
+*** 1000= SHAD{L/Q}, Imm8s
+*** 1001= SHLD{L/Q}, Imm8s
+*** 1010= SHAD{-/X}, Imm8s
+*** 1011= SHLD{-/X}, Imm8s
+*** 1100= -
+*** 1101= -
+*** 1110= -
+*** 1111= -
+
+* 1ppp-zzzz-zzzn-nnnn zzss-sssz-zzzt-tttt  //3R (Rs, Rt, Rn)
+
+* 1ppp-zzzz-zzzn-nnnn zzss-sssi-iiii-iiii  //3RI (Rs, Imm9, Rn)
+* 1ppp-zzzz-zzzn-nnnn iiii-iiii-iiii-iiii  //2RI (Imm16, Rn)
+* 1ppp-zzzz-zzzz-iiii iiii-iiii-iiii-iiii  //(Imm20)
+

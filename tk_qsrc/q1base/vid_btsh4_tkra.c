@@ -762,6 +762,8 @@ void GL_EndRendering (void)
 
 	if (fullsbardraw)
 		Sbar_Changed();
+		
+	qglFinish();
 
 	Sys_SendKeyEvents();
 

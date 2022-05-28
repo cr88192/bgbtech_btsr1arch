@@ -48,6 +48,10 @@ float __float32_dot3fv(float *a, float *b);
 // #define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
 // #define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
 
+#define VectorSubtract_M(a,b,c) \
+	{ (c)[0]=(a)[0]-(b)[0]; (c)[1]=(a)[1]-(b)[1]; (c)[2]=a[2]-b[2]; }
+#define VectorCopy_M(a,b) { (b)[0]=(a)[0]; (b)[1]=(a)[1]; (b)[2]=(a)[2]; }
+
 #ifdef __BJX2__
 #define DotProduct(x,y)			__float32_dot3fv(x, y)
 #else
@@ -73,6 +77,8 @@ float VectorNormalizeFast (vec3_t v);		// returns vector length
 void VectorInverse (vec3_t v);
 void VectorScale (vec3_t in, vec_t scale, vec3_t out);
 int Q_log2(int val);
+
+float VectorDistanceFast (vec3_t sv, vec3_t ev);
 
 void R_ConcatRotations (float in1[3][3], float in2[3][3], float out[3][3]);
 void R_ConcatTransforms (float in1[3][4], float in2[3][4], float out[3][4]);

@@ -62,6 +62,7 @@ void SubdividePolygon (int numverts, float *verts)
 	float	dist[64];
 	float	frac;
 	glpoly_t	*poly;
+	qgl_hfloat	*pv;
 	float	s, t;
 
 	if (numverts > 60)
@@ -126,13 +127,26 @@ void SubdividePolygon (int numverts, float *verts)
 	poly->next = warpface->polys;
 	warpface->polys = poly;
 	poly->numverts = numverts;
+	pv=poly->verts[0];
+	
 	for (i=0 ; i<numverts ; i++, verts+= 3)
 	{
-		VectorCopy (verts, poly->verts[i]);
+//		VectorCopy_M (verts, poly->verts[i]);
+		VectorCopy_M (verts, pv);
 		s = DotProduct (verts, warpface->texinfo->vecs[0]);
 		t = DotProduct (verts, warpface->texinfo->vecs[1]);
-		poly->verts[i][3] = s;
-		poly->verts[i][4] = t;
+//		poly->verts[i][3] = s;
+//		poly->verts[i][4] = t;
+		pv[3] = s;
+		pv[4] = t;
+
+#ifdef QGL_HFLOAT
+		*(u32 *)(pv+6)=0xFFFFFFFF;
+#else
+		*(u32 *)(pv+7)=0xFFFFFFFF;
+#endif
+
+		pv+=VERTEXSIZE;
 	}
 }
 
@@ -321,7 +335,7 @@ void EmitSkyPolys (msurface_t *fa)
 		qglBegin (GL_POLYGON);
 		for (i=0,v=p->verts[0] ; i<p->numverts ; i++, v+=VERTEXSIZE)
 		{
-			VectorSubtract (v, r_origin, dir);
+			VectorSubtract_M (v, r_origin, dir);
 			dir[2] *= 3;	// flatten the sphere
 
 			length = dir[0]*dir[0] + dir[1]*dir[1] + dir[2]*dir[2];
@@ -992,7 +1006,7 @@ void R_DrawSkyChain (msurface_t *s)
 		{
 			for (i=0 ; i<p->numverts ; i++)
 			{
-				VectorSubtract (p->verts[i], r_origin, verts[i]);
+				VectorSubtract_M (p->verts[i], r_origin, verts[i]);
 			}
 			ClipSkyPolygon (p->numverts, verts[0], 0);
 		}

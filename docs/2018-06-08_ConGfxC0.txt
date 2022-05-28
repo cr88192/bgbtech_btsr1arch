@@ -186,6 +186,11 @@ For 9-bit color endpoints:
 * (11: 0): Sprite Glyph (A) / Color Select
 
 
+=== Cell Mode 0.3 (Sprite Cell 2) ===
+
+Similar to 0.2, except that (255:128) is interpreted as pixel bits more like those in mode 3.3.
+
+
 
 === Cell Mode 2 (Graphical Cells, Change) ===
 
@@ -224,10 +229,11 @@ These will rely on a secondary Cell Mode in bits 62 and 63.
 
 Extended Graphics Cell
 * (63:62): Cell Mode B (CellModeB)
-** 00: 4x4, 6-bpp Bitmap (Drop)
-** 01: 8x16, 4x8 Sub-Cell (15-bit YUV)
-** 10: 4x8, 2x2 Sub-Cell (15-bit YUV)
-** 11: 8x8, 4x4 Sub-Cell (15-bit YUV)
+** 00: / 4x4, 6-bpp Bitmap (Drop)
+** 00: 4x4, 4x4 15-bit CLR15
+** 01: 8x16, 4x8 Sub-Cell (15-bit CLR15)
+** 10: 4x8, 2x2 Sub-Cell (15-bit CLR15)
+** 11: 8x8, 4x4 Sub-Cell (15-bit CLR15)
 
 
 ==== Format (3.0): 4x4 Cell, 6-bpp Bitmap Cells (Drop) ====
@@ -240,6 +246,19 @@ Format (3.0): 6-bpp Bitmap Cells (128 bit):
 * Each 32-bit word holds 4 pixels, each 6 bits.
 ** Pixel data is held in the low 24 bits.
 ** (127:120), (95:88) = Currently Ignored
+
+
+==== Format (3.0): 4x4 Cell, 15-bpp Bitmap Cells ====
+
+Format (3.0): 15-bpp Bitmap Cells (256 bit):
+* CellMode=11, ClrTag=00/01
+** CellModeB = 00
+
+The low 30 bits of each DWORD will be interpreted as a pair of CLR15 pixels.
+* Pixels will be held in Raster Order starting LSB first.
+** P0,P1,P2,P3
+** P4,P5,P6,P7
+** (14:0)=P0, (29:15)=P1, ..., (78:64)=P4, ...
 
 
 ==== Format (3.1): 8x16 Cell, 4x8 Sub-Cell (256 bit) ====

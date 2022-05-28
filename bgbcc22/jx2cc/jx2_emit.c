@@ -6690,6 +6690,17 @@ int BGBCC_JX2_ComposeJumboRegImmRegRegF0(BGBCC_JX2_Context *ctx,
 	return(1);
 }
 
+int BGBCC_JX2_ComposeJumboRegRegImmRegF0(BGBCC_JX2_Context *ctx,
+	int *ropw1, int *ropw2, int *ropw3, int *ropw4,
+	int topw1, int topw2,
+	int sreg, int treg, s64 imm, int dreg)
+{
+	return(BGBCC_JX2_ComposeJumboRegImmRegRegF0(ctx,
+		ropw1, ropw2, ropw3, ropw4,
+		topw1, topw2,
+		sreg, imm, treg, dreg));
+}
+
 int BGBCC_JX2_ComposeJumboRegRegRegRegF0(BGBCC_JX2_Context *ctx,
 	int *ropw1, int *ropw2, int *ropw3, int *ropw4,
 	int topw1, int topw2,

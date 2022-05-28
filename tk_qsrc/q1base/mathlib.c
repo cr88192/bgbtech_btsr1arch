@@ -698,13 +698,17 @@ float VectorNormalize (vec3_t v)
 
 }
 
+float __fpu_frcp_sf(float x);
+
 float VectorNormalizeFast (vec3_t v)
 {
 	/* Optimized for BJX2... */
 	double	length, ilength;
 //	length = v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
 	length = DotProduct(v, v);
-	ilength = Q_rsqrt_d(length);
+	length = Q_sqrt_fast (length);
+//	ilength = Q_rsqrt_d(length);
+	ilength = __fpu_frcp_sf (length);
 	if (length>0)
 	{
 		v[0] *= ilength;
@@ -712,6 +716,15 @@ float VectorNormalizeFast (vec3_t v)
 		v[2] *= ilength;
 	}
 	return length;
+}
+
+float VectorDistanceFast (vec3_t sv, vec3_t ev)
+{
+	vec3_t	dv;
+	float	len;
+	VectorSubtract(ev, sv, dv);
+	
+	len = DotProduct (dv, dv);
 }
 
 void VectorInverse (vec3_t v)

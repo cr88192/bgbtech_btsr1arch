@@ -1008,6 +1008,7 @@ RegCR regCr(
 wire[47:0]		id2RegValSp;		//SP Value (Capture)
 wire[63:0]		id2RegValLr;		//LR Value (Capture)
 wire[63:0]		id2RegValDlr;		//LR Value (Capture)
+wire[63:0]		id2RegValDhr;		//LR Value (Capture)
 
 
 /* EX1 */	
@@ -1023,6 +1024,10 @@ reg[63:0]		ex3RegValLr;		//LR Value (Capture)
 reg[63:0]		ex1RegValDlr;		//DLR Value (Capture)
 reg[63:0]		ex2RegValDlr;		//DLR Value (Capture)
 reg[63:0]		ex3RegValDlr;		//DLR Value (Capture)
+
+reg[63:0]		ex1RegValDhr;		//DLR Value (Capture)
+reg[63:0]		ex2RegValDhr;		//DLR Value (Capture)
+reg[63:0]		ex3RegValDhr;		//DLR Value (Capture)
 
 reg[63:0]		ex2RegInSr;
 
@@ -2094,6 +2099,33 @@ assign		id2RegValDlr		=
 				exC3RegValRn2 :
 `endif
 			gprOutDlr;
+
+assign		id2RegValDhr		=
+			(ex1RegIdRn1==JX2_GR_DHR) ?
+				ex1RegValRn1 :
+`ifdef jx2_enable_wex3w
+			(exB1RegIdRn1==JX2_GR_DHR) ?
+				exB1RegValRn1 :
+			(exC1RegIdRn1==JX2_GR_DHR) ?
+				exC1RegValRn1 :
+`endif
+			(ex2RegIdRn2==JX2_GR_DHR) ?
+				ex2RegValRn2 :
+`ifdef jx2_enable_wex3w
+			(exB2RegIdRn2==JX2_GR_DHR) ?
+				exB2RegValRn2 :
+			(exC2RegIdRn2==JX2_GR_DHR) ?
+				exC2RegValRn2 :
+`endif
+			(ex3RegIdRn2==JX2_GR_DHR) ?
+				ex3RegValRn2 :
+`ifdef jx2_enable_wex3w
+			(exB3RegIdRn2==JX2_GR_DHR) ?
+				exB3RegValRn2 :
+			(exC3RegIdRn2==JX2_GR_DHR) ?
+				exC3RegValRn2 :
+`endif
+			gprOutDhr;
 
 always @*
 begin
@@ -3197,7 +3229,8 @@ begin
 			crInSr			= { crOutSr[63:32], crOutExsr[63:32] };
 `endif
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 			if(exL4RegInLr != crOutLr)
 				$display("RTE: LR Mismatch, %X -> %X",
 					exL4RegInLr, crOutLr);
@@ -3432,9 +3465,10 @@ begin
 //					crInExsr[39:32]	= ex2RegInLastSr;
 					crInLr			= ex3RegInLr;
 //					crInLr			= ex3RegValLr;
-//					gprInDlr		= gprOutDlr;
-					gprInDlr		= ex3RegValDlr;
+					gprInDlr		= gprOutDlr;
+//					gprInDlr		= ex3RegValDlr;
 					gprInDhr		= gprOutDhr;
+//					gprInDhr		= ex3RegValDhr;
 					braIsrSp		= gprOutSp[47:0];
 //					braIsrSp		= ex3RegValSp;
 `endif
@@ -3443,8 +3477,8 @@ begin
 					braNxtInSpc			= ex3ValBPc;
 					braNxtInExsr[39:32]	= ex3RegInLastSr;
 					braNxtInLr			= ex3RegInLr;
-//					braNxtInDlr			= gprOutDlr;
-					braNxtInDlr			= ex3RegValDlr;
+					braNxtInDlr			= gprOutDlr;
+//					braNxtInDlr			= ex3RegValDlr;
 					braNxtInDhr			= gprOutDhr;
 					braIsrSp			= gprOutSp[47:0];
 `endif
@@ -3467,9 +3501,10 @@ begin
 					crInExsr[39:32]	= ex2RegInLastSr;
 					crInLr			= ex2RegInLr;
 //					crInLr			= ex2RegValLr;
-//					gprInDlr		= gprOutDlr;
-					gprInDlr		= ex2RegValDlr;
+					gprInDlr		= gprOutDlr;
+//					gprInDlr		= ex2RegValDlr;
 					gprInDhr		= gprOutDhr;
+//					gprInDhr		= ex2RegValDhr;
 					braIsrSp		= gprOutSp[47:0];
 //					braIsrSp		= ex2RegValSp;
 `endif
@@ -3480,7 +3515,8 @@ begin
 					braNxtInLr			= ex2RegInLr;
 //					braNxtInDlr			= gprOutDlr;
 					braNxtInDlr			= ex2RegValDlr;
-					braNxtInDhr			= gprOutDhr;
+//					braNxtInDhr			= gprOutDhr;
+					braNxtInDhr			= ex2RegValDhr;
 					braIsrSp			= gprOutSp[47:0];
 `endif
 
@@ -3502,7 +3538,8 @@ begin
 //					crInLr			= crOutLr;
 //					gprInDlr		= gprOutDlr;
 					gprInDlr		= ex1RegValDlr;
-					gprInDhr		= gprOutDhr;
+//					gprInDhr		= gprOutDhr;
+					gprInDhr		= ex1RegValDhr;
 //					braIsrSp		= gprOutSp;
 //					braIsrSp		= ex2RegOutSp[47:0];
 					braIsrSp		= ex1RegValSp;
@@ -3515,7 +3552,8 @@ begin
 					braNxtInLr			= crOutLr;
 //					braNxtInDlr			= gprOutDlr;
 					braNxtInDlr			= ex1RegValDlr;
-					braNxtInDhr			= gprOutDhr;
+//					braNxtInDhr			= gprOutDhr;
+					braNxtInDhr			= ex1RegValDhr;
 //					braIsrSp			= gprOutSp;
 //					braIsrSp			= ex2RegOutSp;
 					braIsrSp			= ex1RegValSp;
@@ -4320,6 +4358,7 @@ begin
 		ex1RegValSp		<= id2RegValSp;
 		ex1RegValLr		<= id2RegValLr;
 		ex1RegValDlr	<= id2RegValDlr;
+		ex1RegValDhr	<= id2RegValDhr;
 
 //		ex1RegValSp		<= (ex2RegIdRn2==JX2_GR_SP) ?
 //			ex2RegValRn2[47:0] : gprOutSp[47:0];
@@ -4455,6 +4494,7 @@ begin
 		ex1RegValSp		<= id2RegValSp;
 		ex1RegValLr		<= id2RegValLr;
 		ex1RegValDlr	<= id2RegValDlr;
+		ex1RegValDhr	<= id2RegValDhr;
 
 //		ex1RegValSp		<=
 //			(ex1RegIdRn1==JX2_GR_SP) ?
@@ -4736,6 +4776,7 @@ begin
 		ex2RegValSp		<= ex1RegValSp;
 		ex2RegValLr		<= ex1RegValLr;
 		ex2RegValDlr	<= ex1RegValDlr;
+		ex2RegValDhr	<= ex1RegValDhr;
 
 `ifdef jx2_enable_wex
 //		exB2OpUCmd		<= exB1OpUCmd;
@@ -4786,9 +4827,11 @@ begin
 //		ex3BraFlush		<= ex2BraFlush;
 		ex3BraFlush		<= ex2BraFlush || ex2TrapFlush;
 		ex3RegInLastSr	<= ex2RegInLastSr;
+
 		ex3RegValSp		<= ex2RegValSp;
 		ex3RegValLr		<= ex2RegValLr;
 		ex3RegValDlr	<= ex2RegValDlr;
+		ex3RegValDhr	<= ex2RegValDhr;
 
 		ex3RegIdRs		<= ex2RegIdRs;
 		ex3RegIdRt		<= ex2RegIdRt;
@@ -4846,7 +4889,8 @@ begin
 `endif
 
 		/* EXL4 */
-		if(!(ex3BraFlush || ex3TrapFlush || crOutSr[28]))
+//		if(!(ex3BraFlush || ex3TrapFlush || crOutSr[28]))
+		if(!(ex3BraFlush || ex3TrapFlush || crOutSr[28] || tRegExc[15]))
 		begin
 			/*
 			 * Try to keep track of the last non-flushed state.
@@ -4881,12 +4925,19 @@ begin
 			exL4RegInSp		<= { gprOutSp[63:48], ex3RegValSp };
 //			exL4RegValSp	<= ex3RegValSp;
 
-			exL4RegInLr		<= ex3RegValLr;
-			exL4RegInDlr	<= ex3RegValDlr;
+//			exL4RegInLr		<= ex3RegValLr;
+//			exL4RegInDlr	<= ex3RegValDlr;
+
+			exL4RegInLr		<= ex3RegInLr;
+
+			exL4RegInDlr	<= ex3RegInDlr;
+			exL4RegInDhr	<= ex3RegInDhr;
+
+//			exL4RegInDlr	<= ex3RegValDlr;
 
 //			exL4RegInLr		<= crOutLr;
-			exL4RegInDlr	<= gprOutDlr;
-			exL4RegInDhr	<= gprOutDhr;
+//			exL4RegInDlr	<= gprOutDlr;
+//			exL4RegInDhr	<= gprOutDhr;
 //			exL4RegInSp		<= gprOutSp;
 		end
 	end

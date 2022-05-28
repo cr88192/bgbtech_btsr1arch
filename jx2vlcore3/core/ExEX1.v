@@ -304,7 +304,8 @@ wire[15:0]	tAguXLeaTag;
 // ExAGUB	exAgu(regValRs[47:0], regValRt[47:0],
 //	opUIxt, tValAgu, tAguFlagJq);
 ExAGUC	exAgu(
-	regValRs[47:0],		regValRt[47:0],
+//	regValRs[47:0],		regValRt[47:0],
+	regValRs[63:0],		regValRt[63:0],
 	regValImm[15:0],	regValXs[47:0],
 	opUCmd,				opUIxt,
 	tValAgu,			tAguFlagJq,

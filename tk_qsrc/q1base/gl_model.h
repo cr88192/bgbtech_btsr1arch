@@ -129,9 +129,9 @@ typedef struct glpoly_s
 {
 	struct	glpoly_s	*next;
 	struct	glpoly_s	*chain;
-	int		numverts;
-	int		flags;			// for SURF_UNDERWATER
-	int		prim;			// primitive type
+	byte	numverts;
+	byte	prim;			// primitive type
+	short	flags;			// for SURF_UNDERWATER
 //	float	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 	qgl_hfloat	verts[4][VERTEXSIZE];	// variable sized (xyz s1t1 s2t2)
 } glpoly_t;
@@ -149,8 +149,8 @@ typedef struct msurface_s
 	short		texturemins[2];
 	short		extents[2];
 	
-	float		minmaxs[6];		// for bounding box culling
-	float		porg[4];		//bounding sphere
+	qgl_hfloat	minmaxs[6];		// for bounding box culling
+	qgl_hfloat	porg[4];		//bounding sphere
 
 //	int			light_s, light_t;	// gl lightmap coordinates
 

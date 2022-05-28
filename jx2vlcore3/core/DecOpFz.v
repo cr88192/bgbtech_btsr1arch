@@ -891,6 +891,16 @@ begin
 				opBty	= opExQ ? JX2_BTY_SL : JX2_BTY_SQ;
 				opIty	= JX2_ITY_UB;
 
+`ifdef jx2_agu_ldtex
+				if(opExQ)
+				begin
+					opNmid	= JX2_UCMD_FMOV_MR;
+					opFmid	= JX2_FMID_LDDRREGREG;
+//					opBty	= JX2_BTY_SQ;
+					opBty	= JX2_BTY_UQ;
+				end
+`endif
+
 `ifdef jx2_enable_ops24
 				if(opExQ && isOp24)
 				begin

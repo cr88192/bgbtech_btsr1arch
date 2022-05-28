@@ -164,6 +164,14 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs)
 	return false;
 }
 
+qboolean R_CullBox_HF (qgl_hfloat *mins, qgl_hfloat *maxs)
+{
+	vec3_t	m, n;
+	VectorCopy_M(mins, m);
+	VectorCopy_M(maxs, n);
+	return(R_CullBox(m, n));
+}
+
 qboolean R_CullSphere (vec3_t org, vec_t rad)
 {
 	mplane_t *p;
@@ -779,8 +787,9 @@ void R_DrawAliasModel (entity_t *e)
 	VectorCopy (currententity->origin, r_entorigin);
 	VectorSubtract (r_origin, r_entorigin, modelorg);
 	
-	VectorCopy(modelorg, modeldir);
-	modeldist=VectorNormalize(modeldir);
+	VectorCopy (modelorg, modeldir);
+//	modeldist=VectorNormalize (modeldir);
+	modeldist=VectorNormalizeFast (modeldir);
 
 	//
 	// get lighting information
@@ -858,10 +867,13 @@ void R_DrawAliasModel (entity_t *e)
 	shadelight = shadelight / 200.0;
 	
 	an = e->angles[1]/180*M_PI;
-	shadevector[0] = cos(-an);
-	shadevector[1] = sin(-an);
+//	shadevector[0] = cos(-an);
+	shadevector[0] = qgl_fastcos(-an);
+//	shadevector[1] = sin(-an);
+	shadevector[1] = qgl_fastsin(-an);
 	shadevector[2] = 1;
-	VectorNormalize (shadevector);
+//	VectorNormalize (shadevector);
+	VectorNormalizeFast (shadevector);
 
 	//
 	// locate the proper data
@@ -962,6 +974,88 @@ void R_DrawEntitiesOnList (void)
 
 		case mod_brush:
 			R_DrawBrushModel (currententity);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	for (i=0 ; i<cl_numvisedicts ; i++)
+	{
+		currententity = cl_visedicts[i];
+
+		switch (currententity->model->type)
+		{
+		case mod_sprite:
+			R_DrawSpriteModel (currententity);
+			break;
+		}
+	}
+}
+
+void R_DrawEntitiesOnList_Brush (void)
+{
+	int		i;
+
+	if (!r_drawentities.value)
+		return;
+
+	// draw sprites seperately, because of alpha blending
+	for (i=0 ; i<cl_numvisedicts ; i++)
+	{
+		currententity = cl_visedicts[i];
+
+		switch (currententity->model->type)
+		{
+		case mod_alias:
+//			R_DrawAliasModel (currententity);
+			break;
+
+		case mod_brush:
+			R_DrawBrushModel (currententity);
+			break;
+
+		default:
+			break;
+		}
+	}
+
+#if 0
+	for (i=0 ; i<cl_numvisedicts ; i++)
+	{
+		currententity = cl_visedicts[i];
+
+		switch (currententity->model->type)
+		{
+		case mod_sprite:
+//			R_DrawSpriteModel (currententity);
+			break;
+		}
+	}
+#endif
+}
+
+void R_DrawEntitiesOnList_NoBrush (void)
+{
+	int		i;
+
+	if (!r_drawentities.value)
+		return;
+
+	// draw sprites seperately, because of alpha blending
+	for (i=0 ; i<cl_numvisedicts ; i++)
+	{
+		currententity = cl_visedicts[i];
+
+		switch (currententity->model->type)
+		{
+		case mod_alias:
+			R_DrawAliasModel (currententity);
+			break;
+
+		case mod_brush:
+//			R_DrawBrushModel (currententity);
 			break;
 
 		default:
@@ -1291,6 +1385,8 @@ void R_SetupGL (void)
 	qglEnable(GL_DEPTH_TEST);
 }
 
+int qgl_drawflat;
+
 /*
 ================
 R_RenderScene
@@ -1306,13 +1402,36 @@ void R_RenderScene (void)
 
 	R_SetupGL ();
 
+#if 1
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglShadeModel (GL_SMOOTH);
+	qglEnable(GL_BLEND);
+	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+#endif
+
 	R_MarkLeaves ();	// done here so we know if we're in water
+
+//	qglDisable(GL_TEXTURE_2D);
+//	qgl_drawflat = 1;
+//	GL_Bind(0);
+//	qglDepthRange (gldepthmin+0.1, gldepthmax);
+
+	R_DrawEntitiesOnList_Brush ();
+
+	S_ExtraUpdate ();	// don't let sound get messed up if going slow
+
+//	qglDepthRange (gldepthmin, gldepthmax);
+//	qgl_drawflat = 0;
+//	qglEnable(GL_TEXTURE_2D);
 
 	R_DrawWorld ();		// adds static entities to the list
 
 	S_ExtraUpdate ();	// don't let sound get messed up if going slow
 
-	R_DrawEntitiesOnList ();
+//	R_DrawEntitiesOnList ();
+	R_DrawEntitiesOnList_NoBrush ();
+
+	S_ExtraUpdate ();	// don't let sound get messed up if going slow
 
 	GL_DisableMultitexture();
 

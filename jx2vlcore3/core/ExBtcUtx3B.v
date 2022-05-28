@@ -26,6 +26,18 @@
 /*
 Extract a pixel from a UTX3(B) block.
 
+Basic Format:
+* ( 31: 0): ColorA
+* ( 63:32): ColorB
+* ( 95:64): Selectors (RGB)
+* (127:96): Selectors (Alpha)
+
+Selectors for RGB and Alpha will be 4x4x2:
+* 00: ColorB
+* 01: 2/3*ColorB + 1/3*ColorA
+* 10: 1/3*ColorB + 2/3*ColorA
+* 11: ColorA
+
  */
 
 `include "ExScAddSc511B_8F.v"

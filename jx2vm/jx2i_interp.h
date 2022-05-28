@@ -621,13 +621,15 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_FDIVA			0x138		//
 #define BJX2_NMID_FDIVXA		0x139		//
-#define BJX2_NMID_FSQRTA		0x12A		//
-#define BJX2_NMID_FSQRTXA		0x12B		//
+#define BJX2_NMID_FSQRTA		0x13A		//
+#define BJX2_NMID_FSQRTXA		0x13B		//
 
-#define BJX2_NMID_BCDADC		0x12C		//
-#define BJX2_NMID_BCDSBB		0x12D		//
-#define BJX2_NMID_ROTCLQ		0x12E		//
-#define BJX2_NMID_ROTCRQ		0x12F		//
+#define BJX2_NMID_BCDADC		0x13C		//
+#define BJX2_NMID_BCDSBB		0x13D		//
+#define BJX2_NMID_ROTCLQ		0x13E		//
+#define BJX2_NMID_ROTCRQ		0x13F		//
+
+#define BJX2_NMID_LDTEX			0x140		//
 
 
 

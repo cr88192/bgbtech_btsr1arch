@@ -12,6 +12,8 @@
 
 `define jx2_agu_ribound			//Enable AGU Bounds Checks
 
+`define jx2_agu_ldtex			//Texture Load
+
 `define jx2_enable_2x40b		//Enable 2x40 Encoding
 
 
@@ -40,6 +42,7 @@
 // `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
 
 `define jx2_enable_fmov			//FPU Load/Store
+`define jx2_enable_fmovh			//FPU Load/Store
 // `define jx2_enable_movc			//MOV.C
 // `define jx2_enable_movclite		//MOV.C (Lite)
 `define jx2_enable_bitsel		//Bit Select

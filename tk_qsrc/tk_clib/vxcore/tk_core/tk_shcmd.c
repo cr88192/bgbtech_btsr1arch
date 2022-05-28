@@ -1534,8 +1534,8 @@ int TKSH_TryLoad(char *img, char **args0)
 //			boot_newsp=boot_newspb+((1<<18)-1024);
 
 			i=TK_GetRandom16ASLR()&0x03F0;
-//			boot_newspb=TKMM_PageAlloc(1<<19);
-			boot_newspb=TKMM_PageAllocUsc(1<<19);
+			boot_newspb=TKMM_PageAlloc(1<<19);
+//			boot_newspb=TKMM_PageAllocUsc(1<<19);
 //			boot_newsp=boot_newspb+((1<<19)-1024);
 			boot_newsp=boot_newspb+(((1<<19)-1024)-i);
 

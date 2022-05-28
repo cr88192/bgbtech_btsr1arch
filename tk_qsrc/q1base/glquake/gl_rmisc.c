@@ -496,7 +496,7 @@ void R_DrawParticles (void)
 	qgl_hfloat		*fv;
 	
 	vec3_t			up, right;
-	float			scale;
+	float			scale, dist2, d2x, d2y, d2z;
 
 // #ifdef __BJX2__
 //	return;	//BGB: Disable Particles on BJX2
@@ -547,13 +547,31 @@ void R_DrawParticles (void)
 			break;
 		}
 
+#if 0
+		d2x=p->org[0] - r_origin[0];
+		d2y=p->org[1] - r_origin[1];
+		d2z=p->org[2] - r_origin[2];
+		dist2=d2x*d2x+d2y*d2x+d2z*d2z;
+		
+		if(dist2>(64*64))
+		{
+			p->die = cl.time;
+			continue;
+		}
+#endif
+
 		// hack a scale up to keep particles from disapearing
-		scale = (p->org[0] - r_origin[0])*vpn[0] + (p->org[1] - r_origin[1])*vpn[1]
-			+ (p->org[2] - r_origin[2])*vpn[2];
+		scale =
+			(p->org[0] - r_origin[0])*vpn[0] +
+			(p->org[1] - r_origin[1])*vpn[1] +
+			(p->org[2] - r_origin[2])*vpn[2] ;
+
 		if (scale < 20)
 			scale = 1;
 		else
 			scale = 1 + scale * 0.004;
+
+		scale *= 3;
 
 #if 0
 		qglColor3ubv ((byte *)&d_8to24table[(int)p->color]);

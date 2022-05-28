@@ -14,7 +14,7 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 {
 	byte *ptr;
 	int scr_memsz;
-	int ofs_rgb, ofs_zbuf, ofs_sten;
+	int ofs_rgb, ofs_zbuf, ofs_zbuf2, ofs_sten;
 	int i, j, k;
 
 	scr_memsz = (xs+2)*16*2;
@@ -25,6 +25,11 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 	ofs_zbuf = scr_memsz;
 	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_zbufpixel);
 	scr_memsz = (scr_memsz+63)&(~63);
+
+	ofs_zbuf2 = scr_memsz;
+	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_zbufpixel);
+	scr_memsz = (scr_memsz+63)&(~63);
+
 	ofs_sten = scr_memsz;
 	scr_memsz += (xs+2)*(ys+4)*sizeof(byte);
 
@@ -37,6 +42,7 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 	
 	ctx->screen_rgb=(void *)(ptr+ofs_rgb);
 	ctx->screen_zbuf=(void *)(ptr+ofs_zbuf);
+	ctx->screen_zbuf2=(void *)(ptr+ofs_zbuf2);
 	ctx->screen_sten=(void *)(ptr+ofs_sten);
 
 //	ctx->screen_rgb=tkra_malloc((xs+4)*(ys+16)*sizeof(tkra_rastpixel));
@@ -74,6 +80,56 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 	return(0);
 }
 
+int TKRA_DebugPrintStats(TKRA_Context *ctx)
+{
+#if 0
+	if(ctx->stat_base_tris)
+	{
+//		TKRA_DumpVec4(ctx->prj_xyzsc, "Clip: XyzSc:");
+//		TKRA_DumpVec4(ctx->prj_xyzbi, "Clip: XyzBi:");
+
+		printf("clip: L=%f R=%f T=%f B=%f\n",
+			ctx->scr_clip_l, ctx->scr_clip_r,
+			ctx->scr_clip_t, ctx->scr_clip_b);
+
+	//	tkra_prj_xyzsc=prj_xyzsc;
+	//	tkra_prj_xyzbi=prj_xyzbi;
+
+		printf("Stat: Base=%d Frag=%d Draw=%d Reject=%d Blown=%d\n",
+			ctx->stat_base_tris,
+			ctx->stat_frag_tris,
+			ctx->stat_draw_tris,
+			ctx->stat_reject_tris,
+			ctx->stat_blown_tris);
+
+		printf("Stat: Rejects: Frustum=%d MicroBase=%d "
+				"MicroFrag=%d Backface=%d NegW=%d Zocc=%d\n",
+			ctx->stat_frustum_tris,
+			ctx->stat_microbase_tris,
+			ctx->stat_microfrag_tris,
+			ctx->stat_backface_tris,
+			ctx->stat_negw_tris,
+			ctx->stat_zocc_tris);
+	}
+#endif
+
+	ctx->stat_base_tris=0;
+	ctx->stat_frag_tris=0;
+	ctx->stat_draw_tris=0;
+	ctx->stat_reject_tris=0;
+	ctx->stat_blown_tris=0;
+	ctx->stat_drawpts1_tris=0;
+	ctx->stat_drawpts3_tris=0;
+
+	ctx->stat_frustum_tris=0;
+//	ctx->stat_micro_tris=0;
+	ctx->stat_microbase_tris=0;
+	ctx->stat_microfrag_tris=0;
+	ctx->stat_backface_tris=0;
+	ctx->stat_negw_tris=0;
+	ctx->stat_zocc_tris=0;
+}
+
 int TKRA_RecalcViewport(TKRA_Context *ctx)
 {
 	float	scr_xsc, scr_ysc, scr_zsc;
@@ -106,48 +162,6 @@ int TKRA_RecalcViewport(TKRA_Context *ctx)
 	ctx->scr_clip_r=scr_xc+scr_xsc;
 	ctx->scr_clip_t=scr_yc+scr_ysc;
 	ctx->scr_clip_b=scr_yc-scr_ysc;
-
-#if 0
-	if(ctx->stat_base_tris)
-	{
-		TKRA_DumpVec4(ctx->prj_xyzsc, "Clip: XyzSc:");
-		TKRA_DumpVec4(ctx->prj_xyzbi, "Clip: XyzBi:");
-
-		printf("clip: L=%f R=%f T=%f B=%f\n",
-			ctx->scr_clip_l, ctx->scr_clip_r,
-			ctx->scr_clip_t, ctx->scr_clip_b);
-
-	//	tkra_prj_xyzsc=prj_xyzsc;
-	//	tkra_prj_xyzbi=prj_xyzbi;
-
-		printf("Stat: Base=%d Frag=%d Draw=%d Reject=%d Blown=%d\n",
-			ctx->stat_base_tris,
-			ctx->stat_frag_tris,
-			ctx->stat_draw_tris,
-			ctx->stat_reject_tris,
-			ctx->stat_blown_tris);
-
-		printf("Stat: Rejects: Frustum=%d MicroBase=%d MicroFrag=%d NegW=%d\n",
-			ctx->stat_frustum_tris,
-			ctx->stat_microbase_tris,
-			ctx->stat_microfrag_tris,
-			ctx->stat_negw_tris);
-	}
-#endif
-
-	ctx->stat_base_tris=0;
-	ctx->stat_frag_tris=0;
-	ctx->stat_draw_tris=0;
-	ctx->stat_reject_tris=0;
-	ctx->stat_blown_tris=0;
-	ctx->stat_drawpts1_tris=0;
-	ctx->stat_drawpts3_tris=0;
-
-	ctx->stat_frustum_tris=0;
-//	ctx->stat_micro_tris=0;
-	ctx->stat_microbase_tris=0;
-	ctx->stat_microfrag_tris=0;
-	ctx->stat_negw_tris=0;
 }
 
 int TKRA_SetViewport(TKRA_Context *ctx, int x, int y, int xs, int ys)

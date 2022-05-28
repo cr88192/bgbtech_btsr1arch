@@ -152,8 +152,8 @@ u64 TKRA_CalcClrStepRcp(u64 cdst, u64 csrc, u16 rcp)
 
 #endif
 
-// #ifndef __BJX2__
-#if 1
+#ifndef __BJX2__
+// #if 1
 /*
 Walk along a pair of edges, calling DrawSpan for each span.
 Default Version (Tex+Color+Z)
@@ -550,8 +550,8 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 	edge_r[TKRA_ES_ZPOS] = zpos_r;
 }
 
-#if 0
-// #ifdef __BJX2__
+// #if 0
+#ifdef __BJX2__
 void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
@@ -805,7 +805,11 @@ R31		tstep_r
 
 //		if(x0<clip_x0)
 //		{
-		CMPGT	R16, R22
+//		EXTU.L	R22, R1
+//		CMPGE	R16, R1
+
+//		CMPGT	R16, R22
+		CMPGE	R16, R22
 		BF		.L2
 
 //			x2=clip_x0-x0;
@@ -818,20 +822,21 @@ R31		tstep_r
 
 		SUBS.L	R22, R16, R1
 
-		DMULS	R4, R1, R2
+		DMULS.L	R4, R1, R2
 		ADD		R28, R2, R2
 		MOV.Q	R2, (R14, TKRA_DS_TPOS*8)
 
-		DMULS	R5, R1, R3
+		DMULS.L	R5, R1, R3
 		ADD		R8, R3, R3
 		MOV.Q	R3, (R14, TKRA_DS_CPOS*8)
 
-		DMULS	R19, R1, R2
+		DMULS.L	R19, R1, R2
 //		ADD		R24, R2, R2
 		ADDS.L	R24, R2, R2
 		MOV.Q	R2, (R14, TKRA_DS_ZPOS*8)
 
-		MOV		R22, R16
+//		MOV		R22, R16
+		EXTS.L	R22, R16
 
 //		}
 
@@ -848,7 +853,8 @@ R31		tstep_r
 		CMPGT	R2, R17
 		MOV?T	R2, R17
 
-		SUB		R17, R16, R18		//		xcnt=x1-x0;
+//		SUB		R17, R16, R18		//		xcnt=x1-x0;
+		SUBS.L	R17, R16, R18		//		xcnt=x1-x0;
 
 //		if(xcnt>0)
 //		{
@@ -1093,7 +1099,7 @@ R31		tstep_r
 	SUB			R2, R3, R2	|	PSHUF.W		R1, 0, R19
 								PMULS.HW	R2, R19, R2
 	SHLD.Q		R2, 1, R5	|	SUBS.L	R26, R24, R19
-								DMULS	R19, R1, R19
+								DMULS.L	R19, R1, R19
 								SHAD.Q	R19, -16, R19
 	EXTS.L	R24, R2			|	EXTS.L	R19, R3
 
@@ -1107,14 +1113,14 @@ R31		tstep_r
 	CMPGT	R16, R22
 	BF		.L2
 								SUBS.L	R22, R16, R1
-	SHAD.Q	R4, -32, R3		|	DMULS		R4, R1, R2
-	PSHUF.W		R1, 0, R0	|	DMULS		R3, R1, R3
+	SHAD.Q	R4, -32, R3		|	DMULS.L		R4, R1, R2
+	PSHUF.W		R1, 0, R0	|	DMULS.L		R3, R1, R3
 								MOVLD		R3, R2, R2
 								PMULU.HW	R5, R0, R3
 	ADD		R28, R2, R2		|	ADD			R8, R3, R3
 								MOV.Q	R2, (R14, TKRA_DS_TPOS*8)
 								MOV.Q	R3, (R14, TKRA_DS_CPOS*8)
-	MOV		R22, R16		|	DMULS	R19, R1, R2
+	EXTS.L	R22, R16		|	DMULS.L	R19, R1, R2
 								ADDS.L	R24, R2, R2
 								MOV.Q	R2, (R14, TKRA_DS_ZPOS*8)
 	.L2:
@@ -1122,7 +1128,7 @@ R31		tstep_r
 	CMPGT	R2, R17
 	MOV?T	R2, R17
 
-	SUB		R17, R16, R18
+	SUBS.L	R17, R16, R18
 
 	CMPGT	0, R18
 	BF		.L3
@@ -1456,8 +1462,8 @@ R31		tstep_r
 };
 #endif
 
-// #ifndef __BJX2__
-#if 1
+#ifndef __BJX2__
+// #if 1
 /* Z-Buffer */
 void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
@@ -2210,7 +2216,19 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 			}
 		}
 
-		if(ctx->tex_cur->tex_img_bcn)
+#if 0
+		if(!(ctx->stateflag1&TKRA_STFL1_TEXTURE2D))
+		{
+			ctx->DrawSpan=TKRA_DrawSpan_DirClr;
+			ctx->DrawSpan_Min=TKRA_DrawSpan_DirClr;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_DirClr;
+
+			ctx->DrawSpanZt=TKRA_DrawSpan_DirClrZt;
+			ctx->DrawSpanZt_Min=TKRA_DrawSpan_DirClrZt;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_DirClrZt;
+		}else
+#endif
+			if(ctx->tex_cur->tex_img_bcn)
 		{
 #if 0
 			ctx->DrawSpan=TKRA_DrawSpan_BlendModUtx2Mort;
@@ -2328,6 +2346,19 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 				ctx->DrawSpanZt_Mag=TKRA_DrawSpan_LmapModTexMortZt;
 			}
 		}
+
+#if 0
+		if(!(ctx->stateflag1&TKRA_STFL1_TEXTURE2D))
+		{
+			ctx->DrawSpan=TKRA_DrawSpan_DirClr;
+			ctx->DrawSpan_Min=TKRA_DrawSpan_DirClr;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_DirClr;
+
+			ctx->DrawSpanZt=TKRA_DrawSpan_DirClrZt;
+			ctx->DrawSpanZt_Min=TKRA_DrawSpan_DirClrZt;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_DirClrZt;
+		}else
+#endif
 
 		if(ctx->tex_cur->tex_img_bcn)
 		{
@@ -2697,7 +2728,18 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 		}
 
 
-		if(ctx->tex_cur->tex_img_bcn)
+		if(	!(ctx->stateflag1&TKRA_STFL1_TEXTURE2D) &&
+			!(ctx->stateflag1&TKRA_STFL1_ALPHATEST))
+		{
+			ctx->DrawSpan=TKRA_DrawSpan_DirClr;
+			ctx->DrawSpan_Min=TKRA_DrawSpan_DirClr;
+			ctx->DrawSpan_Mag=TKRA_DrawSpan_DirClr;
+
+			ctx->DrawSpanZt=TKRA_DrawSpan_DirClrZt;
+			ctx->DrawSpanZt_Min=TKRA_DrawSpan_DirClrZt;
+			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_DirClrZt;
+		}else
+			if(ctx->tex_cur->tex_img_bcn)
 		{
 #if 0
 //			ctx->DrawSpan=TKRA_DrawSpan_AlphaModUtx2Mort;

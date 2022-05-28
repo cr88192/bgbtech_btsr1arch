@@ -183,6 +183,16 @@ void tkra_glClear(unsigned int mask)
 	zbuf=ctx->screen_zbuf;
 	sten=ctx->screen_sten;
 
+	if(mask&TKRA_GL_DEPTH_BUFFER_BIT)
+	{
+		/* Swap Z Buffers */
+		zbuf=ctx->screen_zbuf2;
+		zct=ctx->screen_zbuf;
+		ctx->screen_zbuf=zbuf;
+		ctx->screen_zbuf2=zct;
+	}
+
+
 	if(mask&TKRA_GL_COLOR_BUFFER_BIT)
 	{
 		px=ctx->clear_rgb5;
@@ -486,6 +496,7 @@ void tkra_glEnable(int cap)
 		ctx->stateflag1|=TKRA_STFL1_CULLFACE;
 		break;
 	case GL_TEXTURE_2D:
+		ctx->stateflag1|=TKRA_STFL1_TEXTURE2D;
 		break;
 	case GL_SCISSOR_TEST:
 		break;
@@ -528,6 +539,7 @@ void tkra_glDisable(int cap)
 		ctx->stateflag1&=~TKRA_STFL1_CULLFACE;
 		break;
 	case GL_TEXTURE_2D:
+		ctx->stateflag1&=~TKRA_STFL1_TEXTURE2D;
 		break;
 	case GL_SCISSOR_TEST:
 		break;
@@ -686,6 +698,11 @@ char *tkra_glGetString(int name)
 
 void tkra_glFinish(void)
 {
+	TKRA_Context *ctx;
+
+	ctx=TKRA_GetCurrentContext();
+	
+	TKRA_DebugPrintStats(ctx);
 }
 
 void tkra_glFlush(void)

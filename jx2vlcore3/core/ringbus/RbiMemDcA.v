@@ -519,6 +519,7 @@ reg				tNxtTlbMissInh2;
 reg				tSkipTlb;
 reg				tNxtSkipTlb;
 reg				tReqAddrIsVirt;
+reg				tWasMissInh;
 
 reg[2:0]		tVolatileInhSet;	//Volatile Inhibit Cycles (Set)
 reg[2:0]		tVolatileInhCnt;	//Volatile Inhibit Cycles (Count)
@@ -580,6 +581,9 @@ begin
 	tNxtInPmode		= regInSr[31:28] ^ regKrrHash[3:0] ^ regKrrHash[7:4];
 
 	tNxtUtlbBlkIx	= regInAddr[15:12] ^ regInAddr[19:16];
+
+	if(regInSr[28] != tRegInSr[28])
+		tNxtReqOpm		= 0;
 
 //	tNxtReqAxH		=
 //		tNxtReqAddrHi[15: 0] ^
@@ -898,7 +902,10 @@ begin
 	endcase
 
 	if(tReqOpm[5] && !tReqOpm[1])
+//	if(tReqOpm[5])
 		tReqNoCross = 0;
+
+//	tReqNoCross = 0;
 
 	if(tReqNoCross)
 	begin
@@ -1163,6 +1170,16 @@ begin
 
 	tReqReadOnlyA	= tBlkMemAddr2A[1];
 	tReqReadOnlyB	= tBlkMemAddr2B[1];
+	
+	tWasMissInh		= 0;
+
+	if(tTlbMissInh && !tReqIsMmio && !tReqIsCcmd)
+	begin
+		if(tBlkMemAddr2A[3:2] == 2'b11)
+			tWasMissInh		= 1;
+		if(tBlkMemAddr2B[3:2] == 2'b11)
+			tWasMissInh		= 1;		
+	end
 
 	if(!tTlbMissInh && !tReqIsMmio && !tReqIsCcmd)
 	begin
@@ -1396,6 +1413,14 @@ begin
 	tBlkExData2 = tReqBix[2] ? tBlkExData1[119:32] : tBlkExData1[ 87: 0];
 	tBlkExData3 = tReqBix[1] ? tBlkExData2[ 87:16] : tBlkExData2[ 71: 0];
 	tBlkExData4 = tReqBix[0] ? tBlkExData3[ 71: 8] : tBlkExData3[ 63: 0];
+
+// `ifdef def_true
+`ifndef def_true
+	if(tWasMissInh)		//BGB: Debug
+	begin
+		tBlkExData4[15:0] = 16'hAAAA;
+	end
+`endif
 
 	casez(tReqOpm[2:0])
 		3'b000: tReqSx = tBlkExData4[7];

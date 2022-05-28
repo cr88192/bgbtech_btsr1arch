@@ -321,11 +321,13 @@ int BGBCC_JX2_CheckOps32GetRegs(
 
 //		if((opw2&0xF000)==0x0000)
 		if(	((opw2&0xF000)==0x0000) ||
-			((opw2&0xF000)==0x4000))
+			((opw2&0xF000)==0x4000) ||
+			((opw2&0xF000)==0x8000))
 		{
 //			if((opw2&0xF808)==0x0000)
 			if(	((opw2&0xF808)==0x0000) ||
-				((opw2&0xF808)==0x4000))
+				((opw2&0xF808)==0x4000) ||
+				((opw2&0xF008)==0x8000))
 			{
 				spr=rn;
 //				return(-1);
@@ -336,6 +338,12 @@ int BGBCC_JX2_CheckOps32GetRegs(
 			if((opw2&0xF000)==0x4000)
 			{
 				spfl|=4;
+			}
+
+			if((opw2&0xF000)==0x8000)
+			{
+				spfl|=4;
+				spfl|=8;
 			}
 
 //			return(-1);
@@ -488,6 +496,8 @@ int BGBCC_JX2_CheckOps32ReadsRn(
 		if((opw2&0xF808)==0x0000)
 			return(1);
 		if((opw2&0xF008)==0x4000)
+			return(1);
+		if((opw2&0xF008)==0x8000)
 			return(1);
 		return(0);
 	}
@@ -946,6 +956,13 @@ int BGBCC_JX2_CheckOps32ImmovableFl(
 			if((opw1&0x000F)==0x0000)	//Ld/St, Rb=PC
 				return(1);
 		}
+
+		if((opw2&0xF000)==0x8000)
+		{
+			if((opw1&0x000F)==0x0000)	//Ld/St, Rb=PC
+				return(1);
+		}
+
 		return(0);
 	}
 
@@ -1064,6 +1081,40 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 			}
 		}
 
+		if((opw2&0xF008)==0x1008)
+		{
+			switch(opw2&0xFF)
+			{
+			case 0x48:	case 0x58:
+			case 0x68:	case 0x78:
+			case 0x88:	case 0x98:
+			case 0xA8:	case 0xB8:
+			case 0xC8:	case 0xD8:
+			case 0xE8:	case 0xF8:
+
+			case 0x89:
+
+			case 0x0C:
+			case 0x1C:
+			case 0xAC:
+			case 0xBC:
+
+			case 0x0D:	case 0x1D:
+			case 0x2D:	case 0x3D:
+			case 0x4D:	case 0x5D:
+			case 0x6D:	case 0x7D:
+			case 0x8D:	case 0x9D:
+			case 0xAD:	case 0xBD:
+			case 0xCD:	case 0xDD:
+			case 0xED:	case 0xFD:
+
+				if(opw2&0x0800)
+					return(0);
+
+				break;
+			}
+		}
+
 		if((opw2&0xF000)==0x2000)
 		{
 			if(	((opw2&0x000C)==0x0004) ||
@@ -1116,6 +1167,12 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 			return(1);
 		}
 
+		if((opw2&0xF000)==0x8000)
+		{
+			/* XMOV.x */
+			return(0);
+		}
+
 		return(1);
 	}
 
@@ -1166,7 +1223,15 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 
 //	if((opw1&0xFF00)==0xF800)
 	if((opw1&0xEB00)==0xE800)
+	{
+		if((opw1&0x00E0)==0x0080)
+		{
+//			if(fl&1)
+//				return(0);
+		}
+	
 		return(1);
+	}
 
 	return(0);
 }

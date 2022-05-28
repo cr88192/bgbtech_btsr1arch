@@ -238,8 +238,11 @@ Listing:
 * 0000000-ttttt-mmmmm-000-nnnnn-01-10011  ADD		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-000-nnnnn-01-10011  MUL		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-001-nnnnn-01-10011  SLL		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-001-nnnnn-01-10011  MULH		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-010-nnnnn-01-10011  SLT		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-010-nnnnn-01-10011  MULHSU	Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-011-nnnnn-01-10011  SLTU		Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-011-nnnnn-01-10011  MULHU		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-100-nnnnn-01-10011  XOR		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-100-nnnnn-01-10011  DIV		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-101-nnnnn-01-10011  SRL		Rn, Rm, Rt

@@ -56,6 +56,45 @@ u64 TKRA_InterpBilinear64(
 	u64 px0, u64 px1, u64 px2, u64 px3,
 	u16 xfrac, u16 yfrac);
 
+void TKRA_DrawSpan_DirClrZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	tkra_rastpixel *ct, *cte, *src;
+	tkra_zbufpixel *ctz;
+	u64	pos, step;
+	u64	cpos, cstep;
+	u64 zpos, zstep;
+	u32 xmask, ymask;
+	int pix, idx, z;
+
+	cpos=parm[TKRA_DS_CPOS];
+	cstep=parm[TKRA_DS_CSTEP];
+
+	zpos=parm[TKRA_DS_ZPOS];
+	zstep=parm[TKRA_DS_ZSTEP];
+
+	ct=dstc; cte=ct+cnt;
+	ctz=dstz;
+	while(ct<cte)
+	{
+		pix=
+			((cpos>>33)&0x7C00) |
+			((cpos>>22)&0x03E0) |
+			((cpos>>11)&0x001F);
+
+		z=zpos>>16;
+		if(z<=(*ctz))
+		{
+			*ct=pix;
+		}
+		ct++;
+		ctz++;
+
+		cpos+=cstep;
+		zpos+=zstep;
+	}
+}
+
 void TKRA_DrawSpan_ModTexZbuf(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
 {

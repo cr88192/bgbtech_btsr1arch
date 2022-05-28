@@ -1002,6 +1002,12 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 			case 11:
 				__setmemtrap(pdst, 3);
 				break;
+
+			case 12:
+				/* Technically Abs96 */
+				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
+				break;
+
 			default:
 				__debugbreak();
 				break;

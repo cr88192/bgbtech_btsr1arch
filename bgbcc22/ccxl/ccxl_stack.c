@@ -1232,7 +1232,7 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *lobj;
 	BGBCC_CCXL_RegisterInfo *rfn;
 	ccxl_register treg, dreg;
-	ccxl_type bty, dty, sty;
+	ccxl_type bty, dty, sty, dty2, sty2;
 	int ms, ps;
 	int i, j, k, n, an;
 	
@@ -1328,6 +1328,9 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg);
 				BGBCC_CCXL_EmitConv(ctx, dty, sty, treg, dreg);
 				ctx->regstack[ps]=treg;
+			}else
+			{
+				BGBCC_CCXL_TypeCheckConvImplicit(ctx, 0, dty, sty);
 			}
 		}
 

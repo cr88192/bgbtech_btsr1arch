@@ -35,6 +35,9 @@ The UTX1 format:
 
  */
 
+`ifndef has_ExBtcUtx1
+`define has_ExBtcUtx1
+
 `define jx2_utx2_interp
 
 `ifdef jx2_utx2_interp
@@ -102,6 +105,11 @@ reg			tDoInterp;
 reg			tDoAlpha;
 reg			tDoUtx3;
 
+reg[15:0]	tSelRgb16;
+reg[31:0]	tSelRgb32;
+reg[63:0]	tSelRgb64;
+reg			tDoSelPix;
+
 `ifdef jx2_utx2_interp
 
 wire[15:0]		tColorA;
@@ -143,6 +151,7 @@ begin
 	tDoInterp	= 0;
 	tDoAlpha	= 0;
 	tDoUtx3		= 0;
+	tDoSelPix	= 0;
 
 	tValPb = UV16_XX;
 	tValPa = UV16_XX;
@@ -154,6 +163,43 @@ begin
 	tValNg = UV8_XX;
 	tValNb = UV8_XX;
 	tValNa = UV8_XX;
+
+//reg[15:0]	tSelRgb16;
+//reg[31:0]	tSelRgb32;
+
+`ifdef def_true
+	case(regValRt[1:0])
+		2'b00: tSelRgb16 = regValRs[15: 0];
+		2'b01: tSelRgb16 = regValRs[31:16];
+		2'b10: tSelRgb16 = regValRs[47:32];
+		2'b11: tSelRgb16 = regValRs[63:48];
+	endcase
+	
+	if(regValRt[0])
+		tSelRgb32 = regValRs[63:32];
+	else
+		tSelRgb32 = regValRs[31: 0];
+		
+//	if(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB15A)
+	if(!idUIxt[1])
+	begin
+		tSelRgb32	=
+			{ (tSelRgb16[15]) ?
+					{ tSelRgb16[10], tSelRgb16[5], tSelRgb16[0], UV5_00 } :
+					UV8_FF,
+				tSelRgb16[14:10], tSelRgb16[14:12],
+				tSelRgb16[ 9: 5], tSelRgb16[ 9: 7],
+				tSelRgb16[ 4: 0], tSelRgb16[ 4: 2] };
+	end
+	
+	tSelRgb64 = {
+		tSelRgb32[31:24], tSelRgb32[31:24],
+		tSelRgb32[23:16], tSelRgb32[23:16],
+		tSelRgb32[15: 8], tSelRgb32[15: 8],
+		tSelRgb32[ 7: 0], tSelRgb32[ 7: 0]	};
+		
+	tDoSelPix = (idUIxt[3:2]==2'b11);
+`endif
 
 `ifdef jx2_enable_btcutx3
 	if(idUIxt[1])
@@ -304,6 +350,14 @@ begin
 		tRegOutVal = tUtx3OutVal;
 `endif
 
+`ifdef def_true
+	if(tDoSelPix)
+		tRegOutVal = tSelRgb64;
+`endif
+
 end
 
 endmodule
+
+`endif
+

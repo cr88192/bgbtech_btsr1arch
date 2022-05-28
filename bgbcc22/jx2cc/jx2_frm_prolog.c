@@ -178,6 +178,8 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 			}
 		}
 
+		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+
 		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 			-k*4, BGBCC_SH_REG_SP);
 		n++;
@@ -1687,6 +1689,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //	BGBCC_JX2_EmitWord(sctx, 0x0858);	//Debug, Set Token
 	
 	sctx->frm_offs_save=sctx->frm_size-(k*4);
+
+	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 
 	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 		-sctx->frm_offs_save, BGBCC_SH_REG_SP);

@@ -770,6 +770,7 @@ int BGBCC_JX2C_CheckNmidScaleMatch(
 	case BGBCC_SH_NMID_MOVUL: rt=(sc==4); break;
 	case BGBCC_SH_NMID_MOVDL: rt=(sc==4); break;
 
+	case BGBCC_SH_NMID_FMOVH: rt=(sc==2); break;
 	case BGBCC_SH_NMID_FMOVS: rt=(sc==4); break;
 	case BGBCC_SH_NMID_FMOVD: rt=(sc==8); break;
 

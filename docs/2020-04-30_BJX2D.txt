@@ -259,7 +259,7 @@ Clearing the WEX Enable flag will cause WEX instructions to be executed as scala
 The Link Register (LR) will have the layout:
 * (63:52), Saved SR(15: 4), U and PQRO
 * (51:50), Saved SR(27:26), WXE, WX2
-* (48:48), Saved SR( 1: 0), S and T
+* (49:48), Saved SR( 1: 0), S and T
 * (47: 0), Saved PC Address
 
 The Global Base Register (GBR) will have the layout:
@@ -1549,7 +1549,7 @@ F0zz Instruction Block:
 ** F0nm_0gdA  MOV.L		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
 ** F0nm_0GdA  MOVU.L	(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
 ** F0nm_0gdB  MOV.Q		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
-** F0nm_0GdB  MOV?		(Rm, Disp5), Rn		//(PrWEX + WEXMV | XGPR)
+** F0nm_0GdB  LDTEX		(Rm, Ro), Rn		//(LDTEX)
 ** F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0
 ** F0nm_0GoC  MOVU.B	(Rm, Ro), Rn		//Q=1
 ** F0nm_0goD  MOV.W		(Rm, Ro), Rn		//Q=0
@@ -1578,8 +1578,19 @@ F0zz Instruction Block:
 
 ** F0nm_1ez8
 
-*** F0nm_1g88 BCDADC	Rm, Rn				//BCD ADC
-*** F0nm_1g98 BCDSBB	Rm, Rn				//BCD SBB
+*** F0nm_1g48 -
+*** F0nm_1G48 ? MULU.X	Xm, Xn				//(MULX) Xn=Xn*Xm
+*** F0nm_1g58 -
+*** F0nm_1G58 ? MULHU.X	Xm, Xn				//(MULX) Xn=(Xn*Xm)>>128
+*** F0nm_1g68 -
+*** F0nm_1G68 ? DIVU.X	Xm, Xn				//(MULX) Xn=Xn/Xm
+*** F0nm_1g78 -
+*** F0nm_1G78 ? REMU.X	Xm, Xn				//(MULX) Xn=Xn%Xm
+
+*** F0nm_1g88 BCDADC	Rm, Rn				//(BCD) BCD ADC
+*** F0nm_1G88 BCDADCX	Xm, Xn				//(BCDX) BCD ADC
+*** F0nm_1g98 BCDSBB	Rm, Rn				//(BCD) BCD SBB
+*** F0nm_1G98 BCDSBBX	Xm, Xn				//(BCDX) BCD SBB
 
 *** F0nm_1gA8 MOVZT		Rm, Rn				//MOV, Zero Tag
 *** F0nm_1GA8 XMOVZT	Xm, Xn				//XMOV, Zero Tag
@@ -1611,7 +1622,7 @@ F0zz Instruction Block:
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
 *** F0nm_1G89 MOVX		Rm, Rn				//MOV, 128-bit
 *** F0nm_1g99 MOV		Sm, Sn
-*** F0nm_1G99 -
+*** F0nm_1G99 CMPNANTEQ	RmImm6u, Rn			//(TTAG) Compare NaN-Tag
 *** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
 *** F0nm_1GA9 SETTRAP	Rn, (Rm)			//(Opt/Dbg) Set Trap Mode
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
@@ -1874,9 +1885,9 @@ F0zz Instruction Block:
 ** F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
 ** F0nm_3go3  ROTRQ		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
 ** F0nm_3Go3  SHLRX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
-** F0nm_3go4 ? MULSH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
+** F0nm_3go4 ? MULHS.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
 ** F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
-** F0nm_3go5 ? MULUH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
+** F0nm_3go5 ? MULHU.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
 ** F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
 ** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALU) Rotate Left (32b)
 ** F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
@@ -2160,6 +2171,11 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nz_Ffjj
 
 
+==== F3zz Instruction Block ====
+
+The F3zz Block is currently intended for user-defined or implementation dependent instructions. It will be assumed that it followes the same basic instruction format as the F0, F1, or F2 blocks.
+
+
 ==== F8zz Instruction Block ====
 
 F8zz Instruction Block:
@@ -2182,6 +2198,23 @@ F8zz Instruction Block:
 * F8Fn_iiii  -
 
 The FCzz block will repeat the F8zz block, but with the primary difference that FCzz will indicate a WEX2 form.
+
+The layout of the F8 block will be modified with two Jumbo prefixes (Jumbo96):
+* FE-FE F80n_iiii  LDI		Imm64, Rn		//R0..R15
+* FE-FE F81n_iiii  LDI		Imm64, Rk		//R16..R31
+* FE-FE F82n_iiii  LDI		Imm64, Rk		//R32..R47
+* FE-FE F83n_iiii  LDI		Imm64, Rk		//R48..R63
+* FE-FE F84n_iiii  ADD		Imm64, Rn		//R0..R15
+* FE-FE F85n_iiii  ADD		Imm64, Rk		//R16..R31
+* FE-FE F86n_iiii  ADD		Imm64, Rn		//R32..R47
+* FE-FE F87n_iiii  ADD		Imm64, Rk		//R48..R63
+
+Or, in effect, the Rn field will be expanded to 6 bits.
+
+
+==== F9zz Instruction Block ====
+
+Reserved for now. This block will use the same format as the F0 block.
 
 
 ==== FAzz/FBzz Instruction Block ====

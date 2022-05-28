@@ -234,6 +234,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "bcd"))
 		{ shctx->has_qmul|=4; }
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ldtex"))
+		{ shctx->has_fmovs|=4; }
+
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
 
@@ -363,9 +366,12 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_fpux=0; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofmovs"))
-		{ shctx->has_fmovs=0; }
+		{ shctx->has_fmovs&=~3; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovc"))
 		{ shctx->has_fmovc=0; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noldtex"))
+		{ shctx->has_fmovs&=~4; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nodmacl"))
 		{ shctx->has_dmacl=0; }

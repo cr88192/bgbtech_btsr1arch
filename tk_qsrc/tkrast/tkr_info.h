@@ -179,6 +179,7 @@ Vertex Parameter Arrays
 #define		TKRA_TRFL_DOZABLEND		0x0800	//Complex blend mode
 
 #define		TKRA_TRFL_DOCMP			0x1000	//Do Compression
+#define		TKRA_TRFL_FLIPST		0x2000	//Flip S/T Coords
 
 
 #define TKRA_BYTE								0x1400
@@ -370,6 +371,7 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_CULL_FT						0x00000020
 #define TKRA_STFL1_CULL_BK						0x00000040
 #define TKRA_STFL1_CULL_CW						0x00000080
+#define TKRA_STFL1_TEXTURE2D					0x00000100
 
 #define TKRA_STFL1_VERTEX_ARRAY					0x00000100
 #define TKRA_STFL1_NORMAL_ARRAY					0x00000200
@@ -476,6 +478,7 @@ struct TKRA_Context_s
 byte			*screen_mem;	//combined screen memory
 tkra_rastpixel	*screen_rgb;	//display buffer (RGB)
 tkra_zbufpixel	*screen_zbuf;	//display buffer (Z buffer)
+tkra_zbufpixel	*screen_zbuf2;	//display buffer (Z buffer)
 byte			*screen_sten;	//stencil buffer
 int		screen_xsize;
 int		screen_ysize;
@@ -624,7 +627,9 @@ int		stat_drawpts3_tris;
 int		stat_frustum_tris;
 int		stat_microbase_tris;
 int		stat_microfrag_tris;
+int		stat_backface_tris;
 int		stat_negw_tris;
+int		stat_zocc_tris;
 };
 
 struct TKRA_TexImage_s

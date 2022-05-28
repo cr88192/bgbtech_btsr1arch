@@ -83,8 +83,12 @@ void R_RenderDlight (dlight_t *light)
 	{
 		a = i/16.0 * M_PI*2;
 		for (j=0 ; j<3 ; j++)
-			v[j] = light->origin[j] + vright[j]*cos(a)*rad
-				+ vup[j]*sin(a)*rad;
+		{
+//			v[j] = light->origin[j] + vright[j]*cos(a)*rad
+//				+ vup[j]*sin(a)*rad;
+			v[j] = light->origin[j] + vright[j]*qgl_fastcos(a)*rad
+				+ vup[j]*qgl_fastsin(a)*rad;
+		}
 		qglVertex3fv (v);
 	}
 	qglEnd ();
@@ -333,32 +337,44 @@ int R_LightPointDirOrg (vec3_t p, vec3_t dir)
 
 int R_LightPointDir (vec3_t p, vec3_t dir)
 {
+	int l, l1;
 //	return(255);
-	return(R_LightPointDirOrg(p, dir));
+
+	l=R_LightPointDirOrg(p, dir);
+	l1=R_LightPoint(p);
+	if(l1>l)
+		l=(l+l1)>>1;
+	return(l);
+
+//	return(R_LightPointDirOrg(p, dir));
+//	return(R_LightPoint(p));
 }
 
 
 // byte *lightcube;
 int *lightcube;
-byte lightcube_ready = false;
+byte lightcube_ready;
 
 int R_LightPoint (vec3_t p)
 {
+	vec3_t p1, p2;
 	int x, y, z, w;
-	int i, j, k, l;
+	int i, j, k, k1, k2, k3, l, l1;
 	
 //	return(255);
 	
 	if(!lightcube)
 	{
 		lightcube=malloc(4096*sizeof(int));
-		lightcube_ready = false;
+//		lightcube=malloc(1024*sizeof(int));
+		lightcube_ready = 0;
 	}
 	
 	if(!lightcube_ready)
 	{
 		memset(lightcube, 0x00, 4096*sizeof(int));
-		lightcube_ready = true;
+//		memset(lightcube, 0x00, 1024*sizeof(int));
+		lightcube_ready = 1;
 	}
 	
 //	x=(p[0]/64)+16;
@@ -370,28 +386,137 @@ int R_LightPoint (vec3_t p)
 //	y=((int)(p[1]/16))&255;
 //	z=((int)(p[2]/16))&255;
 
-	x=((int)(p[0]/32))&255;
-	y=((int)(p[1]/32))&255;
-	z=((int)(p[2]/32))&255;
+//	x=((int)(p[0]/32))&255;
+//	y=((int)(p[1]/32))&255;
+//	z=((int)(p[2]/32))&255;
+
+	x=((int)(p[0]*(1.0/32)))&255;
+	y=((int)(p[1]*(1.0/32)))&255;
+	z=((int)(p[2]*(1.0/32)))&255;
+
+	p1[0]=x*32+16;
+	p1[1]=y*32+16;
+	p1[2]=z*32+16;
+
+	j=(x<<16)|(y<<8)|z;
 
 //	w=(x*251+y)*251+z;
 //	w=w*251; w=w*251;
 //	w=((x+y+z)<<2)^(x^y);
-	w=((x+y+z)<<3)^(x^y);
+//	w=((x+y+z)<<3)^(x^y);
+	w=j^(j>>12);
+
 	w=w*65521;
 //	w=(w>>16)&4095;
 	w=(w>>16)&1023;
 
-	j=(x<<16)|(y<<8)|z;
+//	j=(x<<16)|(y<<8)|z;
 
 	k=lightcube[w];
 	l=(k>>24)&255;
 //	if(l<=0)
 	if((k&0x00FFFFFF)!=j)
 	{
-		l=R_LightPointOrg(p);
+		k1=lightcube[w|(1<<10)];
+		if((k1&0x00FFFFFF)==j)
+		{
+			l=(k1>>24)&255;
+			lightcube[w]=k1;
+			lightcube[w|(1<<10)]=k;
+			return(l);
+		}
+
+		k2=lightcube[w|(2<<10)];
+		if((k2&0x00FFFFFF)==j)
+		{
+			l=(k2>>24)&255;
+			lightcube[w]=k2;
+			lightcube[w|(1<<10)]=k;
+			lightcube[w|(2<<10)]=k1;
+			return(l);
+		}
+
+		k3=lightcube[w|(3<<10)];
+		if((k2&0x00FFFFFF)==j)
+		{
+			l=(k3>>24)&255;
+			lightcube[w]=k3;
+			lightcube[w|(1<<10)]=k;
+			lightcube[w|(2<<10)]=k1;
+			lightcube[w|(3<<10)]=k2;
+			return(l);
+		}
+
+		l=127;
+
+#if 1
+		l=R_LightPointOrg(p1);
+
+		if(l<=0)
+		{
+			l=R_LightPointOrg(p);
+		}
+		
+		if(l<=0)
+		{
+			VectorCopy(p1, p2);
+			p2[0]+=16;
+			l1=R_LightPointOrg(p2);
+			if(l1>l)
+				l=l1;
+		}
+
+		if(l<=0)
+		{
+			VectorCopy(p1, p2);
+			p2[0]-=16;
+			l1=R_LightPointOrg(p2);
+			if(l1>l)
+				l=l1;
+		}
+
+		if(l<=0)
+		{
+			VectorCopy(p1, p2);
+			p2[1]+=16;
+			l1=R_LightPointOrg(p2);
+			if(l1>l)
+				l=l1;
+		}
+
+		if(l<=0)
+		{
+			VectorCopy(p1, p2);
+			p2[1]-=16;
+			l1=R_LightPointOrg(p2);
+			if(l1>l)
+				l=l1;
+		}
+
+		if(l<=0)
+		{
+			VectorCopy(p1, p2);
+			p2[2]+=16;
+			l1=R_LightPointOrg(p2);
+			if(l1>l)
+				l=l1;
+		}
+
+		if(l<=0)
+		{
+			VectorCopy(p1, p2);
+			p2[2]-=16;
+			l1=R_LightPointOrg(p2);
+			if(l1>l)
+				l=l1;
+		}
+#endif
+
 //		if(l<1)l=1;
 		lightcube[w]=(l<<24)|j;
+		lightcube[w|(1<<10)]=k;
+		lightcube[w|(2<<10)]=k1;
+		lightcube[w|(3<<10)]=k2;
 	}
 
 	return(l);

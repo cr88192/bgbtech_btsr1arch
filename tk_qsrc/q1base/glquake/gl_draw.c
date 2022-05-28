@@ -51,9 +51,9 @@ int		gl_lightmap_format = 4;
 int		gl_solid_format = 3;
 int		gl_alpha_format = 4;
 
-//int		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
+// int		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
 int		gl_filter_min = GL_NEAREST_MIPMAP_NEAREST;
-// int		gl_filter_max = GL_LINEAR;
+//int		gl_filter_max = GL_LINEAR;
 int		gl_filter_max = GL_NEAREST;
 
 qboolean	gl_force_square = false;
@@ -83,6 +83,12 @@ void GL_Bind (int texnum)
 //#ifdef _WIN32
 //	bindTexFunc (GL_TEXTURE_2D, texnum);
 //#else
+
+	if(texnum>0)
+		{ qglEnable (GL_TEXTURE_2D); }
+	else
+		{ qglDisable (GL_TEXTURE_2D); }
+
 	qglBindTexture(GL_TEXTURE_2D, texnum);
 //#endif
 }
@@ -542,6 +548,8 @@ void Draw_Character (int x, int y, int num)
 	fcol = col*0.0625;
 	size = 0.0625;
 
+	qglEnable (GL_TEXTURE_2D);
+
 	GL_Bind (char_texture);
 
 	qglBegin (GL_QUADS);
@@ -599,6 +607,7 @@ void Draw_AlphaPic (int x, int y, qpic_t *pic, float alpha)
 	if (scrap_dirty)
 		Scrap_Upload ();
 	gl = (glpic_t *)pic->data;
+	qglEnable (GL_TEXTURE_2D);
 	qglDisable(GL_ALPHA_TEST);
 	qglEnable (GL_BLEND);
 //	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -637,6 +646,7 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 		Scrap_Upload ();
 	gl = (glpic_t *)pic->data;
 	qglColor4f (1,1,1,1);
+	qglEnable (GL_TEXTURE_2D);
 	GL_Bind (gl->texnum);
 	qglBegin (GL_QUADS);
 	qglTexCoord2f (gl->sl, gl->tl);

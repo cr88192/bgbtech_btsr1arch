@@ -1617,6 +1617,7 @@ int BGBCC_CCXL_TypeCompatibleFlP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type
 bool BGBCC_CCXL_TypeSupportsOperatorP(BGBCC_TransState *ctx, ccxl_type ty, int opr);
 ccxl_status BGBCC_CCXL_GetTypeBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
 ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
+ccxl_status BGBCC_CCXL_TypeCheckConvImplicit(BGBCC_TransState *ctx, int opr, ccxl_type dty, ccxl_type sty);
 //AHSRC:ccxl/ccxl_fr2e.c
 byte *BGBCC_FR2E_BufEmitUVli(byte *dct, u64 val);
 byte *BGBCC_FR2E_BufEmitSVli(byte *dct, s64 val);
@@ -2763,6 +2764,7 @@ int BGBCC_JX2_ComposeJumboRegImmRegF2B(BGBCC_JX2_Context *ctx,int *ropw1, int *r
 int BGBCC_JX2_ComposeJumboRegImmRegF2A(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, s64 imm, int dreg);
 int BGBCC_JX2_ComposeJumboRegImmRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, s64 imm, int dreg);
 int BGBCC_JX2_ComposeJumboRegImmRegRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, s64 imm, int preg, int dreg);
+int BGBCC_JX2_ComposeJumboRegRegImmRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, int treg, s64 imm, int dreg);
 int BGBCC_JX2_ComposeJumboRegRegRegRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, int treg, int preg, int dreg);
 //AHSRC:jx2cc/jx2_emit_bra.c
 int BGBCC_JX2_ModelIsLabel16P(BGBCC_JX2_Context *ctx);

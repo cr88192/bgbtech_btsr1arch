@@ -1214,6 +1214,8 @@ int nmid;
 {"blkuab1",		BGBCC_SH_NMID_BLKUAB1},
 {"blkuab2",		BGBCC_SH_NMID_BLKUAB2},
 
+{"ldtex",		BGBCC_SH_NMID_LDTEX},
+
 {"convfxi",		BGBCC_SH_NMID_CONVFXI},
 {"convfli",		BGBCC_SH_NMID_CONVFLI},
 {"snipe.dc",	BGBCC_SH_NMID_SNIPEDC},
@@ -1305,6 +1307,13 @@ int nmid;
 {"paddx.d",		BGBCC_SH_NMID_PADDXD},
 {"psubx.d",		BGBCC_SH_NMID_PSUBXD},
 {"pmulx.d",		BGBCC_SH_NMID_PMULXD},
+
+{"padd.fa",		BGBCC_SH_NMID_PADDFA},
+{"psub.fa",		BGBCC_SH_NMID_PSUBFA},
+{"pmul.fa",		BGBCC_SH_NMID_PMULFA},
+{"paddx.fa",	BGBCC_SH_NMID_PADDFAX},
+{"psubx.fa",	BGBCC_SH_NMID_PSUBFAX},
+{"pmulx.fa",	BGBCC_SH_NMID_PMULFAX},
 
 {"pshuf.b",		BGBCC_SH_NMID_PSHUFB},
 {"pshuf.w",		BGBCC_SH_NMID_PSHUFW},
@@ -1971,6 +1980,8 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return((ctx->has_fmovs&1)!=0);
 	if(!bgbcc_stricmp(sym, "has_fmovh"))
 		return((ctx->has_fmovs&2)!=0);
+	if(!bgbcc_stricmp(sym, "has_ldtex"))
+		return((ctx->has_fmovs&4)!=0);
 
 	if(!bgbcc_stricmp(sym, "abi_evenonly"))
 		return(ctx->abi_evenonly);

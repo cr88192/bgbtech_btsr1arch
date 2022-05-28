@@ -367,12 +367,13 @@ tk_shell_chksane_rgb5_asm:
 	BLKUTX2		R16, R2, R4
 	BLKUTX2		R16, R3, R5
 
+#if 0
 	.L4A1:
 	CMPQEQ		R4, R21
 	BREAK?F
 	CMPQEQ		R5, R22
 	BREAK?F
-
+#endif
 
 	MOV			0xFFAA55009234ABCD, R16
 
@@ -384,11 +385,13 @@ tk_shell_chksane_rgb5_asm:
 	BLKUTX2		R16, R2, R4
 	BLKUTX2		R16, R3, R5
 
+#if 0
 	.L4B:
 	CMPQEQ		R4, R20
 	BREAK?F
 	CMPQEQ		R5, R23
 	BREAK?F
+#endif
 
 
 	/* Test FLDCH Immed */
@@ -669,6 +672,49 @@ void Sys_CheckSanityB(void)
 		
 	ff=123456;
 	if(ff!=123456)
+		__debugbreak();
+		
+	ff=123;
+	*(short float *)b_arr0=ff;
+	ff=*(short float *)b_arr0;
+	j=*(short *)b_arr0;
+
+	if(ff!=123)
+		__debugbreak();
+
+	ff=456;
+	((short float *)b_arr0)[1]=ff;
+	ff=((short float *)b_arr0)[1];
+
+	if(ff!=456)
+		__debugbreak();
+
+	ff=0.09375;
+	((short float *)b_arr0)[2]=ff;
+	ff=((short float *)b_arr0)[2];
+	j=((short *)b_arr0)[2];
+
+	if(ff!=0.09375)
+		__debugbreak();
+
+	ff=-0.09375;
+	((short float *)b_arr0)[3]=ff;
+	ff=((short float *)b_arr0)[3];
+	if(ff!=-0.09375)
+		__debugbreak();
+
+	ff=0.0000009375;
+	((short float *)b_arr0)[3]=ff;
+	ff=((short float *)b_arr0)[3];
+	if(ff!=0.0)
+		__debugbreak();
+
+	j=2;
+	ff=456;
+	((short float *)b_arr0)[j]=ff;
+	ff=((short float *)b_arr0)[j];
+
+	if(ff!=456)
 		__debugbreak();
 }
 

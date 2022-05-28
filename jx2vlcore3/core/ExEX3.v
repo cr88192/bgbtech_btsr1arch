@@ -38,6 +38,12 @@ Continues on the work from the first 2 stages.
 `include "FpuConvH2D.v"
 `endif
 
+`ifdef jx2_agu_ldtex
+`ifdef jx2_enable_btcutx
+`include "ExBtcUtx1.v"
+`endif
+`endif
+
 module ExEX3(
 	clock,		reset,
 	opUCmd,		opUIxt,
@@ -159,6 +165,40 @@ FpuConvS2D	mem_cnv_s2d(memDataIn[31:0], memDataIn_S2D);
 FpuConvH2D	mem_cnv_h2d(memDataIn[15:0], memDataIn_H2D);
 `endif
 
+`ifdef jx2_agu_ldtex
+`ifdef jx2_enable_btcutx
+
+wire[63:0]	tValUtx1;
+// wire[8:0]	tUtxIdUIxt;
+reg[8:0]	tUtxIdUIxt;
+wire[3:0]	tUtxIx;
+
+// assign	tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX2 };
+assign	tUtxIx = { regValRt[49], regValRt[17], regValRt[48], regValRt[16] };
+
+always @*
+begin
+	case(regValRs[59:57])
+		3'b000: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX2 };
+		3'b001: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX1 };
+		3'b010: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX3L };
+		3'b011: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX3H };
+		3'b100: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB15F };
+		3'b101: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB15A };
+		3'b110: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGBA32 };
+		3'b111: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB30A };
+	endcase
+end
+
+ExBtcUtx1	exUtx1(
+	memDataIn [63:0],
+	memDataInB[63:0],
+	tUtxIx,
+	tUtxIdUIxt, tValUtx1);
+
+`endif
+`endif
+
 
 always @*
 begin
@@ -273,13 +313,29 @@ begin
 			tDoMemOp		= 1;
 			tValOutDfl		= memDataIn_S2D;
 `ifdef jx2_enable_fmovh
-			if(opUIxt[4])
+//			if(opUIxt[4])
+			if(opUIxt[5:4]==2'b01)
 				tValOutDfl	= memDataIn_H2D;
 `endif
+
+`ifdef jx2_agu_ldtex
+			if(opUIxt[5:4]==2'b11)
+			begin
+				tValOutDfl	= tValUtx1;
+			end
+`endif
+
+//			if(regIdRm[6])
+//				tValOutDfl	= UV64_XX;
+
 			tDoOutDfl		= 1;
 `ifdef jx2_debug_ldst
 			$display("LOAD(3): R=%X V=%X", regIdRm, memDataIn);
 `endif
+
+			if(regIdRm[6])
+				tDoOutDfl	= 0;
+
 		end
 `endif
 

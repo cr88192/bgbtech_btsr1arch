@@ -53,8 +53,10 @@ module ExAGUC(
 	regOutXLeaTag
 	);
 
-input[47:0]		regValRm;
-input[47:0]		regValRi;
+// input[47:0]		regValRm;
+// input[47:0]		regValRi;
+input[63:0]		regValRm;
+input[63:0]		regValRi;
 input[15:0]		regValImm;
 input[47:0]		regValXm;
 
@@ -133,6 +135,8 @@ reg			tRegOutIsOob;
 reg			tIsStore;
 reg			tIsConst;
 
+reg			tIsLdTex;
+
 reg[27:0]	tBoundUp;
 reg[27:0]	tBoundDn;
 reg[27:0]	tBoundUp1;
@@ -150,6 +154,13 @@ reg[11:0]	tRegBoundAdj;
 reg[12:0]	tRegBoundSum;
 reg[19:0]	tRegBndAdjAddP;
 reg			tRegBndAdjC0;
+
+reg[11:0]	tRegTexS;
+reg[11:0]	tRegTexT;
+reg[23:0]	tRegTexMort;
+reg[23:0]	tRegTexMask;
+reg[23:0]	tRegTexPix;
+reg[23:0]	tRegTexBix;
 
 
 always @*
@@ -173,6 +184,71 @@ begin
 	tRegOutXLeaHi	= { regBoundX[27:12], regValXm };
 	tRegOutXLeaTag	= 0;
 	tRegBoundAdj	= 0;
+
+
+`ifdef jx2_agu_ldtex
+	tRegTexS = regValRi[27:16];
+	tRegTexT = regValRi[59:48];
+	tRegTexMort = {
+		tRegTexT[11], tRegTexS[11],	tRegTexT[10], tRegTexS[10],
+		tRegTexT[ 9], tRegTexS[ 9],	tRegTexT[ 8], tRegTexS[ 8],
+		tRegTexT[ 7], tRegTexS[ 7],	tRegTexT[ 6], tRegTexS[ 6],
+		tRegTexT[ 5], tRegTexS[ 5],	tRegTexT[ 4], tRegTexS[ 4],
+		tRegTexT[ 3], tRegTexS[ 3],	tRegTexT[ 2], tRegTexS[ 2],
+		tRegTexT[ 1], tRegTexS[ 1],	tRegTexT[ 0], tRegTexS[ 0]
+		};
+	casez(regValRm[56:52])
+		5'h00: tRegTexMask = 24'h000000;
+		5'h01: tRegTexMask = 24'h000001;
+		5'h02: tRegTexMask = 24'h000003;
+		5'h03: tRegTexMask = 24'h000007;
+		5'h04: tRegTexMask = 24'h00000F;
+		5'h05: tRegTexMask = 24'h00001F;
+		5'h06: tRegTexMask = 24'h00003F;
+		5'h07: tRegTexMask = 24'h00007F;
+		5'h08: tRegTexMask = 24'h0000FF;
+		5'h09: tRegTexMask = 24'h0001FF;
+		5'h0A: tRegTexMask = 24'h0003FF;
+		5'h0B: tRegTexMask = 24'h0007FF;
+		5'h0C: tRegTexMask = 24'h000FFF;
+		5'h0D: tRegTexMask = 24'h001FFF;
+		5'h0E: tRegTexMask = 24'h003FFF;
+		5'h0F: tRegTexMask = 24'h007FFF;
+		5'h10: tRegTexMask = 24'h00FFFF;
+		5'h11: tRegTexMask = 24'h01FFFF;
+		5'h12: tRegTexMask = 24'h03FFFF;
+		5'h13: tRegTexMask = 24'h07FFFF;
+		5'h14: tRegTexMask = 24'h0FFFFF;
+		5'h15: tRegTexMask = 24'h1FFFFF;
+		5'h16: tRegTexMask = 24'h3FFFFF;
+		5'h17: tRegTexMask = 24'h7FFFFF;
+		5'h18: tRegTexMask = 24'hFFFFFF;
+		default:	tRegTexMask = 24'hFFFFFF;
+	endcase
+	
+	tRegTexPix = tRegTexMort & tRegTexMask;
+	
+	tRegTexBix = { 4'h0, tRegTexPix[23:4] };
+
+	tIsLdTex = (idUCmd[5:0] == JX2_UCMD_FMOV_MR) &&
+		(idUIxt[5:4]==2'b11);
+
+	if(tIsLdTex)
+	begin
+//		tRiSc = { 21'h00, tRegTexBix, 3'b000 };
+
+		casez(regValRm[59:57])
+//			3'b00z: tRiSc = { 21'h00, tRegTexBix, 3'h0 };
+//			3'b01z: tRiSc = { 20'h00, tRegTexBix, 4'h0 };
+
+			3'b00z: tRiSc = { 25'h00, tRegTexPix[23:4], 3'h0 };
+			3'b01z: tRiSc = { 24'h00, tRegTexPix[23:4], 4'h0 };
+			3'b10z: tRiSc = { 23'h00, tRegTexPix[23:2], 3'h0 };
+			3'b11z: tRiSc = { 22'h00, tRegTexPix[23:1], 3'h0 };
+		endcase
+	end
+`endif
+
 
 `ifdef jx2_agu_ribound
 

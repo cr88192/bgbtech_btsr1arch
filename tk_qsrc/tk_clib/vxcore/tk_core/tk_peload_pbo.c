@@ -1023,10 +1023,10 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 	}
 
 	gbrsz=img->gbr_sz;
-//	gbrdat=TKMM_PageAlloc(gbrsz);
+	gbrdat=TKMM_PageAlloc(gbrsz);
 //	gbrdat=TKMM_PageAllocUsc(gbrsz);
-	gbrdat=TKMM_PageAllocVaMap(gbrsz, TKMM_PROT_RW,
-		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+//	gbrdat=TKMM_PageAllocVaMap(gbrsz, TKMM_PROT_RW,
+//		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
 
 	TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
 	

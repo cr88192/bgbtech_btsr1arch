@@ -635,6 +635,9 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 		return(0);
 	}
 
+	if((exsr&0xFFFF)==BJX2_FLT_INVADDR)
+		return(0);
+
 	if(!(ctx->regs[BJX2_REG_SR]&(1<<29)))
 	{
 #if 1
@@ -1238,6 +1241,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_DIVUQ:		s0="DIVU.Q";	break;
 	case BJX2_NMID_MODSQ:		s0="MODS.Q";	break;
 	case BJX2_NMID_MODUQ:		s0="MODU.Q";	break;
+
+	case BJX2_NMID_LDTEX:		s0="LDTEX";		break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);

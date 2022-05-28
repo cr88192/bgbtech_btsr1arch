@@ -1,5 +1,10 @@
 #ifdef __BJX2__
 
+void TKRA_DrawSpan_DirClrZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void TKRA_DrawSpan_ModFlatZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+
 void TKRA_DrawSpan_ModTexZt(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
 void TKRA_DrawSpan_ModTexMortZt(u64 *parm,
@@ -49,6 +54,44 @@ void TKRA_DrawSpan_ZbNul(tkra_zbufpixel *dstz, int cnt, u64 zpos, u64 zstep);
 
 
 __asm {
+TKRA_DrawSpan_DirClrZt:
+TKRA_DrawSpan_ModFlatZt:
+	ADD		-64, SP
+	MOV.X	R30, (SP, 48)
+	MOV.X	R28, (SP, 32)
+	MOV.X	R26, (SP, 16)
+	MOV.X	R24, (SP,  0)
+
+//	MOV.Q	(R4, TKRA_DS_TEXIMG*8), R20
+
+	MOV.Q	(R4, TKRA_DS_ZPOS *8), R24
+	MOV.Q	(R4, TKRA_DS_ZSTEP*8), R25
+	MOV.Q	(R4, TKRA_DS_CPOS *8), R26
+	MOV.Q	(R4, TKRA_DS_CSTEP*8), R27
+//	MOV.Q	(R4, TKRA_DS_TPOS *8), R28
+//	MOV.Q	(R4, TKRA_DS_TSTEP*8), R29
+//	MOV.Q	(R4, TKRA_DS_XMASK*8), R30
+//	MOV.Q	(R4, TKRA_DS_YMASK*8), R31
+	LEA.W	(R5, R7), R21
+
+	.L0:	
+	RGB5PCK64		R26, R2
+	SHAD		R24, -16, R17	|	MOV.W		(R6), R16
+	ADD			R25, R24		|	CMPHI		R17, R16
+	ADD			R27, R26		|	MOV.W?T		R2, (R5)
+//									MOV.W?T		R17, (R6)
+	ADD			2, R5			|	ADD			2, R6
+	CMPQGT		R5, R21
+	BT			.L0
+
+	MOV.X	(SP,  0), R24
+	MOV.X	(SP, 16), R26
+	MOV.X	(SP, 32), R28
+	MOV.X	(SP, 48), R30
+	ADD		64, SP
+	RTSU
+
+
 TKRA_DrawSpan_ModTexZt:
 	ADD		-64, SP
 	MOV.X	R30, (SP, 48)
@@ -522,6 +565,90 @@ TKRA_DrawSpan_ModUtx2MortZb:
 #if 1
 .ifarch has_xgpr
 
+#if 1
+TKRA_DrawSpan_ModUtx2MortZb:
+
+	MOV.Q	(R4, TKRA_DS_TEXBCN*8), R20
+
+	MOV.X	(R4, TKRA_DS_ZPOS *8), R34
+	MOV.X	(R4, TKRA_DS_CPOS *8), R36
+	MOV.X	(R4, TKRA_DS_TPOS *8), R38
+	MOV.Q	(R4, TKRA_DS_YMASK*8), R41
+//	LEA.W	(R5, R7), R21
+
+	SHAD		R34, -16, R17	|	MOV.W		(R6, 0), R16
+
+	CMPGE		2, R7
+	BF			.L0E
+	
+	CMPGT		R16, R17
+	BT			.L0ZF
+	
+	.L0:
+									LDTEX		(R20, R38), R2
+	ADD			R39, R38		|	MOV.W		(R6, 0), R16	
+	SHAD		R34, -16, R17	|	MOV.W		(R6, 2), R18
+	ADD			R35, R34		|	LDTEX		(R20, R38), R3
+
+	ADD			R39, R38		|	PMULU.HW	R2, R36, R2
+	SHAD		R34, -16, R19	|	ADD			R37, R36
+	ADD			R35, R34		|	RGB5PCK64	R2, R2
+
+	PMULU.HW	R3, R36, R3		|	CMPGT		R16, R17
+	ADD			R37, R36		|	MOV.W?F		R2, (R5)
+	RGB5PCK64	R3, R3			|	MOV.W?F		R17, (R6)
+
+	ADD			-2, R7			|	CMPGT		R18, R19
+									MOV.W?F		R3, (R5, 2)
+									MOV.W?F		R19, (R6, 2)
+	ADD			4, R6			|	ADD			4, R5
+
+//	CMPQGT		R7, R21
+	CMPGE		2, R7
+	BT			.L0
+	.L0E:
+
+	CMPGE		1, R7
+	BF			.L1E
+	.L1:	
+	SHAD		R34, -16, R17	|	LDTEX		(R20, R38), R2
+	ADD			R39, R38		|	MOV.W		(R6), R16	
+	ADD			R35, R34		|	PMULU.HW	R2, R36, R2
+	ADD			R37, R36		|	RGB5PCK64	R2, R2
+	ADD			-1, R7			|	CMPGT		R16, R17
+									MOV.W?F		R2, (R5)
+									MOV.W?F		R17, (R6)
+	ADD			2, R6			|	ADD			2, R5
+	CMPGE		1, R7
+	BT			.L1
+	.L1E:
+
+	RTSU
+
+//	BREAK
+
+	.L0ZP:
+	CMPGE		2, R7
+	BT			.L0
+	BRA			.L0E
+
+	.L0ZF:	
+	SHAD		R34, -16, R17	|	MOV.W		(R6, 2), R16	
+	ADD			-1, R7			|	ADD			R39, R38
+	ADD			R35, R34		|	ADD			R37, R36
+	ADD			2, R6			|	ADD			2, R5
+
+	CMPGT		R16, R17
+	BF			.L0ZP
+
+	CMPGE		1, R7
+	BT			.L0ZF
+
+
+	RTSU
+#endif
+
+#if 0
 TKRA_DrawSpan_ModUtx2MortZb:
 
 	MOV.Q	(R4, TKRA_DS_TEXBCN*8), R20
@@ -550,6 +677,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 //	BREAK
 
 	RTSU
+#endif
 
 .else
 

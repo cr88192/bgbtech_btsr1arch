@@ -357,6 +357,7 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_FMOVS:
 //		case BJX2_NMID_FMOVD:
 		case BJX2_NMID_FMOVH:
+		case BJX2_NMID_LDTEX:
 		case BJX2_NMID_PUSH:
 		case BJX2_NMID_POP:
 		case BJX2_NMID_FPUSH:
@@ -414,12 +415,16 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_FSUB:
 		case BJX2_NMID_FMUL:
 			op->cyc=6;
+			if(op->imm&8)
+				op->cyc=2;
 			break;
+
 		case BJX2_NMID_FDIV:
 		case BJX2_NMID_FDIVX:
 //			op->cyc=80;
 //			op->cyc=240;
-			op->cyc=384;
+			op->cyc=122;
+//			op->cyc=384;
 			break;
 
 		case BJX2_NMID_FSQRT:
@@ -443,6 +448,12 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_PSUBXD:
 		case BJX2_NMID_PMULXD:
 			op->cyc=8;
+//			op->cyc=1;
+//			op->cyc=2;
+
+			if(op->imm&8)
+				op->cyc=2;
+
 			break;
 
 		case BJX2_NMID_PADDXF:
@@ -452,6 +463,12 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_PSUBH:
 		case BJX2_NMID_PMULH:
 			op->cyc=10;
+//			op->cyc=1;
+//			op->cyc=2;
+
+			if(op->imm&8)
+				op->cyc=2;
+
 			break;
 
 		case BJX2_NMID_MULU:

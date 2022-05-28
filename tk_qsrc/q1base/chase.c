@@ -57,6 +57,16 @@ void TraceLine (vec3_t start, vec3_t end, vec3_t impact)
 	VectorCopy (trace.endpos, impact);
 }
 
+qboolean TraceLine_CheckHit (vec3_t start, vec3_t end)
+{
+	int cont;
+
+	cont = SV_RecursiveHullCheck_ContentsOnly (
+		cl.worldmodel->hulls, 0, 0, 1, start, end);
+
+	return(cont == CONTENTS_SOLID);
+}
+
 void Chase_Update (void)
 {
 	int		i;

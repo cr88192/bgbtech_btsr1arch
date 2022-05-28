@@ -32,10 +32,12 @@ u16 bjx2_f2h(float f)
 //	v0=*(u32 *)(&f);
 	v0=BJX2_PtrGetDWord(&f);
 
-	ex=((v0>>23)&256)-(127-15);
+	ex=((v0>>23)&255)-(127-15);
+//	if(ex<=0)
+//		return(0);
 	zm=~(ex>>31);
 	om=(ex>30)-1;
-	v0+=4095;
+//	v0+=4095;
 	v1=((v0>>16)&0xC000) | ((v0>>13)&0x3FFF);
 	vo=((v0>>16)&0x8000) | 0x7C00;
 	v1=(v1&om)|(vo&(~om));
@@ -46,6 +48,9 @@ u16 bjx2_f2h(float f)
 float bjx2_h2f(u16 v0)
 {
 	u32 v1;
+	
+	if(!v0)
+		return(0);
 	
 	v1=((v0&0x8000)<<16) |
 		(((v0&0x7FFF)+0x1C000)<<13);
@@ -67,8 +72,8 @@ float bjx2_ss2f(u32 v0)
 u32 bjx2_f2ss(float f)
 {
 	u32 v0;
-	u16 v1, vo;
-	int ex, zm, om;
+//	u16 v1, vo;
+//	int ex, zm, om;
 	
 //	v0=*(u32 *)(&f);
 	v0=BJX2_PtrGetDWord(&f);
@@ -212,6 +217,13 @@ void BJX2_Op_PADDF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vn;
 
 	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+
+	if(op->imm&8)
+	{
+		vs&=0xFFFFFF00FFFFFF00ULL;
+		vt&=0xFFFFFF00FFFFFF00ULL;
+	}
+	
 	jx2_upvec_f(tv0, vs);	jx2_upvec_f(tv1, vt);
 	tv2[0]=tv0[0]+tv1[0];	tv2[1]=tv0[1]+tv1[1];
 	vn=jx2_mkvec_f(tv2[0], tv2[1]);
@@ -224,6 +236,13 @@ void BJX2_Op_PSUBF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vn;
 
 	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+
+	if(op->imm&8)
+	{
+		vs&=0xFFFFFF00FFFFFF00ULL;
+		vt&=0xFFFFFF00FFFFFF00ULL;
+	}
+	
 	jx2_upvec_f(tv0, vs);	jx2_upvec_f(tv1, vt);
 	tv2[0]=tv0[0]-tv1[0];	tv2[1]=tv0[1]-tv1[1];
 	vn=jx2_mkvec_f(tv2[0], tv2[1]);
@@ -236,6 +255,13 @@ void BJX2_Op_PMULF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vn;
 
 	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+
+	if(op->imm&8)
+	{
+		vs&=0xFFFFFF00FFFFFF00ULL;
+		vt&=0xFFFFFF00FFFFFF00ULL;
+	}
+	
 	jx2_upvec_f(tv0, vs);	jx2_upvec_f(tv1, vt);
 	tv2[0]=tv0[0]*tv1[0];	tv2[1]=tv0[1]*tv1[1];
 	vn=jx2_mkvec_f(tv2[0], tv2[1]);
@@ -249,6 +275,15 @@ void BJX2_Op_PADDXF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	vs0=ctx->regs[op->rm+0];	vt0=ctx->regs[op->ro+0];
 	vs1=ctx->regs[op->rm+1];	vt1=ctx->regs[op->ro+1];
+
+	if(op->imm&8)
+	{
+		vs0&=0xFFFFFF00FFFFFF00ULL;
+		vs1&=0xFFFFFF00FFFFFF00ULL;
+		vt0&=0xFFFFFF00FFFFFF00ULL;
+		vt1&=0xFFFFFF00FFFFFF00ULL;
+	}
+
 	jx2_upvec_f(tv0+0, vs0);	jx2_upvec_f(tv1+0, vt0);
 	jx2_upvec_f(tv0+2, vs1);	jx2_upvec_f(tv1+2, vt1);
 	tv2[0]=tv0[0]+tv1[0];	tv2[1]=tv0[1]+tv1[1];
@@ -266,6 +301,15 @@ void BJX2_Op_PSUBXF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	vs0=ctx->regs[op->rm+0];	vt0=ctx->regs[op->ro+0];
 	vs1=ctx->regs[op->rm+1];	vt1=ctx->regs[op->ro+1];
+
+	if(op->imm&8)
+	{
+		vs0&=0xFFFFFF00FFFFFF00ULL;
+		vs1&=0xFFFFFF00FFFFFF00ULL;
+		vt0&=0xFFFFFF00FFFFFF00ULL;
+		vt1&=0xFFFFFF00FFFFFF00ULL;
+	}
+
 	jx2_upvec_f(tv0+0, vs0);	jx2_upvec_f(tv1+0, vt0);
 	jx2_upvec_f(tv0+2, vs1);	jx2_upvec_f(tv1+2, vt1);
 	tv2[0]=tv0[0]-tv1[0];	tv2[1]=tv0[1]-tv1[1];
@@ -283,6 +327,15 @@ void BJX2_Op_PMULXF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	vs0=ctx->regs[op->rm+0];	vt0=ctx->regs[op->ro+0];
 	vs1=ctx->regs[op->rm+1];	vt1=ctx->regs[op->ro+1];
+
+	if(op->imm&8)
+	{
+		vs0&=0xFFFFFF00FFFFFF00ULL;
+		vs1&=0xFFFFFF00FFFFFF00ULL;
+		vt0&=0xFFFFFF00FFFFFF00ULL;
+		vt1&=0xFFFFFF00FFFFFF00ULL;
+	}
+
 	jx2_upvec_f(tv0+0, vs0);	jx2_upvec_f(tv1+0, vt0);
 	jx2_upvec_f(tv0+2, vs1);	jx2_upvec_f(tv1+2, vt1);
 	tv2[0]=tv0[0]*tv1[0];	tv2[1]=tv0[1]*tv1[1];
@@ -1347,6 +1400,50 @@ void BJX2_Op_BLKUTX2_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vc;
 }
 
+
+u32 BJX2_PMORT_U16(u16 x);
+
+void BJX2_Op_LDTEX_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vst, vrb, txb, vc;
+	u32 txs, txt, txi;
+
+	vrb=ctx->regs[op->rm];
+	vst=ctx->regs[op->ro];
+	txs=(vst>>16)&0xFFFF;
+	txt=(vst>>48)&0xFFFF;
+
+	if(op->imm&4)
+	{
+		if(op->imm&1)
+			txs++;
+		if(op->imm&2)
+			txt++;
+	}else
+	{
+		txs+=(vst>>15)&1;
+		txt+=(vst>>47)&1;
+	}
+
+	txi=	(BJX2_PMORT_U16(txt)<<1)|
+			(BJX2_PMORT_U16(txs)   );
+	
+	txi=txi&((1<<((vrb>>52)&31))-1);
+
+	ctx->trapc=op->pc;
+	
+	txb=BJX2_MemGetQWord(ctx,
+		(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*8));
+
+	vc=TKRA_CachedBlkUtx2(txb, txi);
+	ctx->regs[op->rn]=vc;
+
+//	BJX2_DbgAddrAccessTrap(ctx,
+//		(bjx2_addr)(ctx->regs[op->rm]),
+//		(bjx2_addr)(ctx->regs[op->rm])+((ctx->regs[op->ro])*8), 8);
+//	ctx->regs[op->rn]=BJX2_MemGetQWord(ctx,
+//		(bjx2_addr)(ctx->regs[op->rm])+((bjx2_addr)(ctx->regs[op->ro])*8));
+}
 
 void BJX2_Op_BLKUTX3H_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

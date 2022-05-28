@@ -350,6 +350,8 @@ reg				tClrTlbMissInhL;
 
 reg				tSkipTlb;
 reg				tNxtSkipTlb;
+reg				tSkipMiss;
+reg				tNxtSkipMiss;
 
 reg				tReqAddrIsVirt;
 
@@ -586,6 +588,7 @@ begin
 	tNxtMsgLatch		= 0;
 	tNxtMsgLatchTmiss	= 0;
 	tNxtSkipTlb			= 0;
+	tNxtSkipMiss		= 0;
 	
 	tNxtStickyTlbExc	= tStickyTlbExc;
 	if(tlbExc[15:12]==4'h7)
@@ -631,6 +634,8 @@ begin
 
 //	tNxtSkipTlb			= regInSr[29] && regInSr[30];
 	tNxtSkipTlb			= tRegInSr[29] && tRegInSr[30];
+//	tNxtSkipMiss		= tRegInSr[29] != regInSr[29];
+	tNxtSkipMiss		= !tRegInSr[29] && regInSr[29];
 
 	tRegInPc	= regInPc;
 	tNxtAddrHi	= 0;
@@ -689,6 +694,7 @@ begin
 		tNxtInPcWxe		= tInPcWxe;
 		tNxtInPcRiscv	= tInPcRiscv;
 		tNxtSkipTlb		= tSkipTlb;
+		tNxtSkipMiss	= tSkipMiss;
 	end
 
 `ifdef jx2_l1i_nohash
@@ -966,6 +972,12 @@ begin
 
 	tMissC = 1;
 	tMissD = 1;
+
+	if(tSkipMiss)
+	begin
+		tMissA = 0;
+		tMissB = 0;
+	end
 
 	tMiss = tMissA || tMissB;
 
@@ -1791,6 +1803,7 @@ begin
 		tReqIxA			<= tNxtIxA;
 		tReqIxB			<= tNxtIxB;
 		tSkipTlb		<= tNxtSkipTlb;
+		tSkipMiss		<= tNxtSkipMiss;
 
 //		tTlbMissInh		<= tNxtTlbMissInh;
 		tFlushRov		<= tNxtFlushRov;

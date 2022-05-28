@@ -1509,6 +1509,8 @@ memcpy_movx:
 	RTS
 .endif
 
+.ifnarch abi_is_xgpr
+
 .global X(memcpy)
 X(memcpy):
 #if 1
@@ -1614,6 +1616,8 @@ X(memcpy):
 	mov.b?t		r2, (r4)
 #endif
 	rtsu
+
+.endif
 
 
 .endif

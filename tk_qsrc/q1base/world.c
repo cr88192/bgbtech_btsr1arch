@@ -578,7 +578,9 @@ SV_RecursiveHullCheck
 
 ==================
 */
-qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
+qboolean SV_RecursiveHullCheck (hull_t *hull, int num,
+	float p1f, float p2f, vec3_t p1, vec3_t p2,
+	trace_t *trace)
 {
 	dclipnode_t	*node;
 	mplane_t	*plane;
@@ -746,6 +748,73 @@ qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec
 
 	return false;
 }
+
+
+
+int SV_RecursiveHullCheck_ContentsOnly (hull_t *hull, int num,
+	float p1f, float p2f, vec3_t p1, vec3_t p2)
+{
+	dclipnode_t	*node;
+	mplane_t	*plane;
+	float		t1, t2;
+	float		frac;
+	int			i;
+	vec3_t		mid;
+	int			side, cont;
+	float		midf;
+
+	if (num < 0)
+	{
+		return(num);
+	}
+
+	node = hull->clipnodes + num;
+	plane = hull->planes + node->planenum;
+
+	if (plane->type < 3)
+	{
+		t1 = p1[plane->type] - plane->dist;
+		t2 = p2[plane->type] - plane->dist;
+	}
+	else
+	{
+		t1 = DotProduct (plane->normal, p1) - plane->dist;
+		t2 = DotProduct (plane->normal, p2) - plane->dist;
+	}
+
+	if (t1 >= 0 && t2 >= 0)
+		return SV_RecursiveHullCheck_ContentsOnly (
+			hull, node->children[0], p1f, p2f, p1, p2);
+	if (t1 < 0 && t2 < 0)
+		return SV_RecursiveHullCheck_ContentsOnly (
+			hull, node->children[1], p1f, p2f, p1, p2);
+
+	if (t1 < 0)
+		frac = (t1 + DIST_EPSILON)/(t1-t2);
+	else
+		frac = (t1 - DIST_EPSILON)/(t1-t2);
+
+	if (frac < 0.0)
+		frac = 0.0;
+	if (frac > 1.0)
+		frac = 1.0;
+		
+	midf = p1f + (p2f - p1f)*frac;
+	for (i=0 ; i<3 ; i++)
+		mid[i] = p1[i] + frac*(p2[i] - p1[i]);
+
+	side = (t1 < 0.0);
+
+	cont = SV_RecursiveHullCheck_ContentsOnly (
+		hull, node->children[side], p1f, midf, p1, mid);
+
+	if (cont != CONTENTS_EMPTY)
+		return(cont);
+	
+	return SV_RecursiveHullCheck_ContentsOnly (
+		hull, node->children[side^1], midf, p2f, mid, p2);
+}
+
 
 
 /*

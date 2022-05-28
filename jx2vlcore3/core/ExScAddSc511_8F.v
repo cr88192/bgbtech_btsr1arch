@@ -15,6 +15,8 @@ assign	valC = tScC;
 
 always @*
 begin
+// `ifndef def_true
+`ifdef def_true
 	case(valA)
 		5'h00: tScA=8'h00;		5'h01: tScA=8'h02;
 		5'h02: tScA=8'h05;		5'h03: tScA=8'h08;
@@ -54,6 +56,15 @@ begin
 	endcase
 
 	tScC = tScA + tScB;
+`endif
+
+`ifndef def_true
+	tScC =
+		{ 2'b0, valA, 1'b0 } +
+		{ 1'b0, valB, 2'b0 } +
+		{ 3'b0, valA } +
+		{ 3'b0, valB } ;
+`endif
 
 end
 

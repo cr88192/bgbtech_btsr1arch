@@ -978,6 +978,75 @@ In a Jumbo64 form, the 33-bit immediate will be interpreted as a 25 bit immediat
 This operation may be limited to Lane 1.
 
 
+=== LDTEX (LDTEX) ===
+
+* F0nm_0GdB				LDTEX	(Rm, Ro), Rn				//(LDTEX)
+* FFw0_0vii-F0nm_0GoB	LDTEX	(Rm, Ro, Disp11u), Rn		//(LDTEX+RiMOV)
+* FFw0_0Vii-F0nm_0GoB	LDTEX	(Rm, Ro*Sc, Disp9u), Rn		//(LDTEX+RiMOV)
+
+Load from Texture.
+
+The Rm gives the base address and format of the texture.
+
+Unlike normal Load/Store instructions, Rm will require a 64-bit alignment.
+* Note that alignment will still be required even with 16 or 32-bit texels.
+
+The Ro field gives the ST coords, as a pair of 16.16 fixed-point values.
+The ST coordinate values will be interpreted as a texel coordinate.
+
+The result texel will be unpacked into RGBA64 form (4x Int16).
+
+The Rm field will be interpreted as:
+* (47: 0): Texture Base Address
+* (51:48): Texture X Size
+* (56:52): Texture Combined Size (X+Y)
+* (59:57): Block Mode
+* (63:60): Pointer Tag
+
+Texture X Size:
+* 0: Interpret texture as Morton Order
+** This will interleave the S and T bits, using this as the index.
+* 1..12: X Stride of 2 .. 4096 pixels.
+** Y will be shifted left by this many bits, with X in the low bits.
+** Note that the low 2-bits of S and T will be cut off for block textures.
+
+Texture Combined Size:
+* Interpreted as the log2 of a bit-mask for the texture index (in texels).
+* Note that the mask effectively discards the low 4 bits for block coordinates.
+** The complete mask would be applicable for RGBA textures.
+** However, LDTEX is not required to mask the low 4 bits of the coordinate.
+
+Block Mode:
+* 000: UTX2
+* 001: -
+* 010: UTX3 (LDR)
+* 011: UTX3 (HDR)
+* 100: -
+* 101: RGB555A
+* 110: RGB8888A / RGB32
+* 111: RGB30A
+
+If a displacement is used, it will be interpreted as additional parameters:
+* Disp(2:0): Pixel Selector
+** 000: Round Nearest (Default)
+** 001: Reserved
+** 010: Reserved
+** 011: Reserved
+** 100: Round S and T downward
+** 101: Round S upward, T downward
+** 110: Round S downward, T upward
+** 111: Round S and T upward
+
+
+For UTX2, See [BLKUTX2 (RGB)]
+
+For RGB555A, See [RGB Pack/Unpack]
+
+RGB555A:
+* 0rrrrrgggggbbbbb, Opaque
+* 1rrrraggggabbbba, Translucent (3 bit Alpha)
+
+
 === MACx.L ===
 
 * F0nm_6go0  MACS.L		Rm, Ro, Rn		//(DMAC) Rn=Sx(Rn+(Rm*Ro))
@@ -1329,10 +1398,10 @@ This instruction will be part of the MULQ extension.
 This operation only exists in Lane 1.
 
 
-=== MULxH.x (3R) ===
+=== MULHx.x (3R) ===
 
-* F0nm_3go4  MULSH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
-* F0nm_3go5  MULUH.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
+* F0nm_3go4  MULHS.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
+* F0nm_3go5  MULHU.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
 
 Perform a 64-bit multiply, keeping the high-order results (bits 127:64 of a widening multiply).
 
@@ -1354,6 +1423,18 @@ These produce widening multiplies of a given input size.
 The values in Rm and Ro are multiplied, and the result is stored in Rn.
 
 The WORD multiplies will exist in all lanes.
+
+
+=== MULx.X (2R) ===
+
+* F0nm_1G48  MULU.X		Xm, Xn				//(MULX) Xn=Xn*Xm
+* F0nm_1G58  MULHU.X	Xm, Xn				//(MULX) Xn=(Xn*Xm)>>128
+
+
+Multiply two 128 bit values, producing a 128-bit result.
+* MULU.X will produce a result containing the low-order bits.
+* MULHU.X will produce a result containing the high-order bits.
+
 
 
 === NEG ===
@@ -2083,13 +2164,18 @@ MOVLHD will select the low bits from Rm, and the high bits from Ro.
 * F0nm_2go0  PADD.W		Rm, Ro, Rn		//(GSV) Packed ADD Word
 * F0nm_2Go0  PADD.L		Rm, Ro, Rn		//(GSV) Packed ADD DWord
 * F0nm_2go5  PADD.F		Rm, Ro, Rn		//(GSVF) Packed FADD (2x Float)
-* F0nm_2Go5  PADDX.F	Rm, Ro, Rn		//(GSVFX) Packed FADD (4x Float)
+* F0nm_2Go5  PADDX.F	Xm, Xo, Xn		//(GSVFX) Packed FADD (4x Float)
 * F0nm_2goD  PADD.H 	Rm, Ro, Rn		//(GSVF) Packed FADD (4x Half)
 * F0nm_2GoD  PADDX.D	Xm, Xo, Xn		//(GSVFX) Packed FADD (2x Double)
+* FFw0_00ii_F0nm_2go5  PADD.X		Rm, Ro, Rn, Imm8
+* FFw0_00ii_F0nm_2Go5  PADDX.X		Xm, Xo, Xn, Imm8
 
 Packed ADD, but in 3-register form.
 PADDX.x will operate on a 128-bit vector.
 
+The Op64 encoding will add a Rounding Mode.
+* The Single Precision rounding modes will be special.
+** This will encode a request to go faster at the cost of precision.
 
 
 === PCMPx.x (GSV) ===
@@ -2210,16 +2296,59 @@ The FP8S and FP8U formats will consist a microfloat with a bias of 7.
 * Includes Zero, does not include Inf or NaN.
 
 
+=== PLDCM30AH / PSTCM30AH (RGBF) ===
+
+* F0nm_1g9E  PLDCM30AH	Rm, Rn		//(RGBF) RGB30A Unpack to RGB64F
+* F0nm_1gBE  PSTCM30AH	Rm, Rn		//(RGBF) RGB30A Pack from RGB64F
+
+Pack or Unpack the RGB30A format.
+
+The RGB30A Format will consist of three 10 bit fields:
+* (31): Selects RGB/RGA
+* (30): Selects Unsigned and Signed
+* (29: 0): Depends on Selector
+
+If Bit(31) is 0:
+* (29:20): Red
+* (19:10): Green
+* ( 9: 0): Blue
+* Values are truncated Binary16
+** Unsigned, E5.F5
+** Signed, E5.F4.S
+* Alpha is decoded as 1.0 (3C00)
+
+If Bit(31) is 1:
+* (29:22): Alpha
+* (21:15): Red
+* (14: 7): Green
+* ( 6: 0): Blue
+** Unsigned is E4.F4 / E4.F3
+** Signed is E4.F3.S / E4.F2.S
+
+If Bit(30) is 0:
+* Values are Unsigned
+* Values are Signed
+
+
 === PMUL.F 3R (GSVF) ===
 
 * F0nm_2go7  PMUL.F		Rm, Ro, Rn			//(GSVF) Packed FMUL (2x Float)
 * F0nm_2Go7  PMULX.F	Xm, Xo, Xn			//(GSVFX) Packed FMUL (4x Float)
 * F0nm_2goF  PMUL.H		Rm, Ro, Rn			//(GSVF) Packed FMUL (4x Half)
 * F0nm_2GoF  PMULX.D	Xm, Xo, Xn			//(GSVFX) Packed FMUL (2x Double)
+* FFw0_00ii_F0nm_2go7  PMUL.X		Rm, Ro, Rn, Imm8
+* FFw0_00ii_F0nm_2Go7  PMULX.X		Xm, Xo, Xn, Imm8
+
 
 Floating point packed multiply.
+PMULX.x will operate on a 128-bit vector.
+
 These will multiply the vectors in Rm and Ro, storing the result in Rn.
 The vectors are available in 2x or 4x Single, 4x Half, or 2x Double.
+
+The Op64 encoding will add a Rounding Mode.
+* The Single Precision rounding modes will be special.
+** This will encode a request to go faster at the cost of precision.
 
 
 === PMULx.W 3R (GSV) ===
@@ -2358,6 +2487,27 @@ Swap or Copy elements within a register.
 SWAP.x will exchange a the low element with another element, whereas SWCP.x will copy the low element into another element.
 
 Other than the first element, the others will be labeled as Low, Middle, and High. Low will correspond to the lower-order bits of the register, and High will correspond with the higher order bits.
+
+
+=== BLERP (RGBX) ===
+
+* F0nm_6go9            BLERP	Rm, Ro, Rn		//(RGBX) Linear Interpolate
+* FFw0_00pp_F0nm_6go9  BLERPx	Rm, Ro, Rp, Rn	//(RGBX) Linear Interpolate
+
+Linearly interpolate between two vectors.
+* The vectors will be interpreted as RGBA64 or Packed UInt16.
+* Rm and Ro will give the vectors to interpolate.
+* Rn (3R) or Rp (4R) will give the interpolated value.
+** The 3R form will use bits (15:0) as the interplator.
+** The 4R will use bits (7:6) of the pp field to select an interpolator:
+*** 00: Bits (15: 0) (BLERPS)
+*** 01: Bits (31:16) (BLERPSH)
+*** 10: Bits (47:32) (BLERPT)
+*** 11: Bits (63:48) (BLERPTH)
+
+The LERP of each component will be interpreted as:
+* ValRm*(~Interp) + ValRo*Interp
+* With both components treated as Unsigned.
 
 
 === BLKUAB (UAB) ===
@@ -2506,6 +2656,30 @@ With bit-selection, for each 2 bit pixel:
 * 11: ColorA, AlphaA
 
 Pixel ordering will be such that 0 refers to the pixel at the low order bit position, and 15 at the high order bit position. These operations will not care about the internal pixel ordering within the block (which may be either raster or morton).
+
+
+=== BLKUTX3 (RGBX) ===
+
+* F0nm_6Go8  BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
+* F0nm_6Go9  BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
+
+Extract a texel from UTX3.
+
+The UTX format will come in two sub-variants:
+** LDR, with RGBA32 endpoints.
+** HDR, with with FP8U endpoints in place of linear 8-bit values.
+
+Basic Format:
+* ( 31: 0): ColorA
+* ( 63:32): ColorB
+* ( 95:64): Selectors (RGB)
+* (127:96): Selectors (Alpha)
+
+Selectors for RGB and Alpha will be 4x4x2:
+* 00: ColorB
+* 01: 2/3*ColorB + 1/3*ColorA
+* 10: 1/3*ColorB + 2/3*ColorA
+* 11: ColorA
 
 
 == GFP Instructions (GPR FPU Ops, Optional) ==
