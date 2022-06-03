@@ -90,6 +90,8 @@ cvar_t		scr_showpause = {"showpause","1"};
 cvar_t		scr_printspeed = {"scr_printspeed","8"};
 cvar_t		gl_triplebuffer = {"gl_triplebuffer", "1", true };
 
+cvar_t		scr_speeds = {"scr_speeds","0"};	// debug screen speeds
+
 extern	cvar_t	crosshair;
 
 qboolean	scr_initialized;		// ready to draw
@@ -379,6 +381,8 @@ void SCR_Init (void)
 	Cvar_RegisterVariable (&scr_centertime);
 	Cvar_RegisterVariable (&scr_printspeed);
 	Cvar_RegisterVariable (&gl_triplebuffer);
+
+	Cvar_RegisterVariable (&scr_speeds);
 
 //
 // register our commands
@@ -828,9 +832,14 @@ void SCR_UpdateScreen (void)
 	vrect_t		vrect;
 	float		fps;
 	int			ifps;
+	float		time0, time1, time2, time3, time4, time5;
+	int			pass1, pass2, pass3, pass4, pass5, passtot;
 
 	if (block_drawing)
 		return;
+
+	if (scr_speeds.value)
+		time0 = Sys_FloatTime ();
 
 	vid.numpages = 2 + gl_triplebuffer.value;
 
@@ -853,6 +862,9 @@ void SCR_UpdateScreen (void)
 
 
 	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
+
+	if (scr_speeds.value)
+		time1 = Sys_FloatTime ();
 	
 	//
 	// determine size of refresh window
@@ -872,12 +884,18 @@ void SCR_UpdateScreen (void)
 	if (vid.recalc_refdef)
 		SCR_CalcRefdef ();
 
+	if (scr_speeds.value)
+		time2 = Sys_FloatTime ();
+
 //
 // do 3D refresh drawing, and then update the screen
 //
 	SCR_SetUpToDrawConsole ();
 	
 	V_RenderView ();
+
+	if (scr_speeds.value)
+		time3 = Sys_FloatTime ();
 
 	GL_Set2D ();
 
@@ -936,10 +954,30 @@ void SCR_UpdateScreen (void)
 				4,
 				'0'+(ifps%10));
 		}
+		
+		R_RenderDelayPolyTris();
 	}
+
+	if (scr_speeds.value)
+		time4 = Sys_FloatTime ();
 
 	V_UpdatePalette ();
 
 	GL_EndRendering ();
+
+	if (scr_speeds.value)
+		time5 = Sys_FloatTime ();
+
+	if (scr_speeds.value)
+	{
+		passtot = (time5-time0)*1000;
+		pass1 = (time1-time0)*1000;
+		pass2 = (time2-time1)*1000;
+		pass3 = (time3-time2)*1000;
+		pass4 = (time4-time3)*1000;
+		pass5 = (time5-time4)*1000;
+		Con_Printf ("%3i:t %3i:b %3i:rd %3i:v %3i:2d %3i:e\n",
+			passtot,	pass1,	pass2,	pass3,	pass4,	pass5);
+	}
 }
 

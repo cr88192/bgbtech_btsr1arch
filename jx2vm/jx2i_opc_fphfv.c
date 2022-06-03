@@ -1204,6 +1204,46 @@ u64 tkra_rgbupck64(u16 a)
 	
 }
 
+u64 tkra_rgb32upck64(u32 a)
+{
+	u64 b;
+	int cr, cg, cb, ca;
+	
+	ca=(a>>24)&255;
+	cr=(a>>16)&255;
+	cg=(a>> 8)&255;
+	cb=(a>> 0)&255;
+	
+	ca|=(ca<<8);
+	cr|=(cr<<8);
+	cg|=(cg<<8);
+	cb|=(cb<<8);
+	
+	b=(((u64)ca)<<48)|(((u64)cr)<<32)|(((u64)cg)<<16)|cb;
+	return(b);
+}
+
+u16 bjx2_ldm8uh(byte v);
+
+u64 tkra_rgb32fupck64(u32 a)
+{
+	u64 b;
+	int cr, cg, cb, ca;
+	
+	ca=(a>>24)&255;
+	cr=(a>>16)&255;
+	cg=(a>> 8)&255;
+	cb=(a>> 0)&255;
+	
+	ca=bjx2_ldm8uh(ca);
+	cr=bjx2_ldm8uh(cr);
+	cg=bjx2_ldm8uh(cg);
+	cb=bjx2_ldm8uh(cb);
+	
+	b=(((u64)ca)<<48)|(((u64)cr)<<32)|(((u64)cg)<<16)|cb;
+	return(b);
+}
+
 int TKRA_GetPixel444A3_Alpha(int a)
 {
 	int av;
@@ -1214,6 +1254,11 @@ int TKRA_GetPixel444A3_Alpha(int a)
 
 u64 	tkra_utx2_cachedblka[64];
 u64		tkra_utx2_cachedpels[64][16];
+
+u64 	tkra_utx3_cachedblka[64];
+u64 	tkra_utx3_cachedblkb[64];
+u64		tkra_utx3_cachedpelsl[64][16];
+u64		tkra_utx3_cachedpelsh[64][16];
 
 byte	tkra_utx2_tab511_a[32] = {
 	0x00,	0x02,	0x05,	0x08,
@@ -1342,6 +1387,106 @@ u64 TKRA_CachedBlkUtx2(u64 blk, int ix)
 	return(tkra_utx2_cachedpels[hxi][ix0]);
 }
 
+u64 TKRA_CachedBlkUtx3L(u64 blka, u64 blkb, int ix)
+{
+	u64 tca[4], tcah[4];
+	int pxa, pxb, pxvc, pxva;
+	int axa, axb, axc;
+	u64 clra, clrb, clrc, clrd, clrp, clrq;
+	
+	int ix0, ix1, hxi;
+	int i;
+
+	ix0=ix&15;
+	ix1=ix>>4;
+//	hxi=((ix1*251)>>8)&255;
+//	hxi=(ix1^(ix1>>6))&63;
+	hxi=((((blka^blkb^(blka>>32))*65521)*251)>>8)&63;
+	
+	if(	(tkra_utx3_cachedblka[hxi]==blka) &&
+		(tkra_utx3_cachedblkb[hxi]==blkb))
+	{
+		return(tkra_utx3_cachedpelsl[hxi][ix0]);
+	}
+
+	pxa=(u32)(blka>> 0);
+	pxb=(u32)(blka>>32);
+	pxvc=blkb>> 0;
+	pxva=blkb>>32;
+
+	clra=tkra_rgb32upck64(pxa);
+	clrb=tkra_rgb32upck64(pxb);
+
+	clrc=TKRA_Utx2Blend511(clrb, clra);
+	clrd=TKRA_Utx2Blend511(clra, clrb);
+
+	tca[0]=clrb;
+	tca[1]=clrd;
+	tca[2]=clrc;
+	tca[3]=clra;
+
+	clra=tkra_rgb32fupck64(pxa);
+	clrb=tkra_rgb32fupck64(pxb);
+
+	clrc=TKRA_Utx2Blend511(clrb, clra);
+	clrd=TKRA_Utx2Blend511(clra, clrb);
+
+	tcah[0]=clrb;
+	tcah[1]=clrd;
+	tcah[2]=clrc;
+	tcah[3]=clra;
+
+	for(i=0; i<16; i++)
+	{
+		clrp=tca[(pxvc>>(i*2))&3];
+		clrq=tca[(pxva>>(i*2))&3];
+		
+		clrp=
+			(clrp&0x0000FFFFFFFFFFFFULL) |
+			(clra&0xFFFF000000000000ULL) ;
+		tkra_utx3_cachedpelsl[hxi][i]=clrp;
+
+		clrp=tcah[(pxvc>>(i*2))&3];
+		clrq=tcah[(pxva>>(i*2))&3];
+		
+		clrp=
+			(clrp&0x0000FFFFFFFFFFFFULL) |
+			(clra&0xFFFF000000000000ULL) ;
+		tkra_utx3_cachedpelsh[hxi][i]=clrp;
+	}
+
+	tkra_utx3_cachedblka[hxi]=blka;
+	tkra_utx3_cachedblkb[hxi]=blkb;
+	return(tkra_utx3_cachedpelsl[hxi][ix0]);
+}
+
+u64 TKRA_CachedBlkUtx3H(u64 blka, u64 blkb, int ix)
+{
+	u64 tca[4], tcah[4];
+	int pxa, pxb, pxvc, pxva;
+	int axa, axb, axc;
+	u64 clra, clrb, clrc, clrd, clrp, clrq;
+	
+	int ix0, ix1, hxi;
+	int i;
+
+	ix0=ix&15;
+	ix1=ix>>4;
+//	hxi=((ix1*251)>>8)&255;
+//	hxi=(ix1^(ix1>>6))&63;
+	hxi=((((blka^blkb^(blka>>32))*65521)*251)>>8)&63;
+	
+	if(	(tkra_utx3_cachedblka[hxi]==blka) &&
+		(tkra_utx3_cachedblkb[hxi]==blkb))
+	{
+		return(tkra_utx3_cachedpelsh[hxi][ix0]);
+	}
+
+	TKRA_CachedBlkUtx3L(blka, blkb, ix);
+
+	return(tkra_utx3_cachedpelsh[hxi][ix0]);
+}
+
 void BJX2_Op_BLKUTX2_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	int cr, cg, cb, cy;
@@ -1405,13 +1550,19 @@ u32 BJX2_PMORT_U16(u16 x);
 
 void BJX2_Op_LDTEX_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	u64 vst, vrb, txb, vc;
-	u32 txs, txt, txi;
+	u64 vst, vrb, txb, txc, vc;
+	u32 txs, txt, txi, txm;
 
 	vrb=ctx->regs[op->rm];
 	vst=ctx->regs[op->ro];
 	txs=(vst>>16)&0xFFFF;
 	txt=(vst>>48)&0xFFFF;
+
+	if(vrb&7)
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_MISAL);
+		return;
+	}
 
 	if(op->imm&4)
 	{
@@ -1428,14 +1579,46 @@ void BJX2_Op_LDTEX_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	txi=	(BJX2_PMORT_U16(txt)<<1)|
 			(BJX2_PMORT_U16(txs)   );
 	
-	txi=txi&((1<<((vrb>>52)&31))-1);
+	txm=((1<<((vrb>>52)&31))-1);
+	txm|=15;
+	
+	txi=txi&txm;
 
 	ctx->trapc=op->pc;
 	
-	txb=BJX2_MemGetQWord(ctx,
-		(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*8));
 
-	vc=TKRA_CachedBlkUtx2(txb, txi);
+	if(((vrb>>57)&7)==0)
+	{
+		txb=BJX2_MemGetQWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*8));
+		vc=TKRA_CachedBlkUtx2(txb, txi);
+	}else
+		if(((vrb>>57)&7)==5)
+	{
+		txb=BJX2_MemGetWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>0)*2));
+		vc=tkra_rgbupck64(txb);
+	}else
+		if(((vrb>>57)&7)==2)
+	{
+		txb=BJX2_MemGetQWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0));
+		txc=BJX2_MemGetQWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+8));
+		vc=TKRA_CachedBlkUtx3L(txb, txc, txi);
+	}else
+		if(((vrb>>57)&7)==3)
+	{
+		txb=BJX2_MemGetQWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0));
+		txc=BJX2_MemGetQWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+8));
+		vc=TKRA_CachedBlkUtx3H(txb, txc, txi);
+	}else
+	{
+		vc=0;
+	}
+
 	ctx->regs[op->rn]=vc;
 
 //	BJX2_DbgAddrAccessTrap(ctx,
@@ -1447,10 +1630,26 @@ void BJX2_Op_LDTEX_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BLKUTX3H_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 va0, va1, vb, vc;
+
+	va0=ctx->regs[(op->rm)+0];
+	va1=ctx->regs[(op->rm)+1];
+	vb=ctx->regs[op->ro];
+
+	vc=TKRA_CachedBlkUtx3H(va0, va1, vb);
+	ctx->regs[op->rn]=vc;
 }
 
 void BJX2_Op_BLKUTX3L_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 va0, va1, vb, vc;
+
+	va0=ctx->regs[(op->rm)+0];
+	va1=ctx->regs[(op->rm)+1];
+	vb=ctx->regs[op->ro];
+
+	vc=TKRA_CachedBlkUtx3L(va0, va1, vb);
+	ctx->regs[op->rn]=vc;
 }
 
 

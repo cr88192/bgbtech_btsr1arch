@@ -102,7 +102,7 @@ cvar_t	gl_clear = {"gl_clear","0"};
 cvar_t	gl_cull = {"gl_cull","1"};
 cvar_t	gl_texsort = {"gl_texsort","1"};
 cvar_t	gl_smoothmodels = {"gl_smoothmodels","1"};
-cvar_t	gl_affinemodels = {"gl_affinemodels","0"};
+cvar_t	gl_affinemodels = {"gl_affinemodels","1"};
 cvar_t	gl_polyblend = {"gl_polyblend","1"};
 // cvar_t	gl_flashblend = {"gl_flashblend","1"};
 cvar_t	gl_flashblend = {"gl_flashblend","0"};
@@ -111,6 +111,8 @@ cvar_t	gl_nocolors = {"gl_nocolors","0"};
 cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","0"};
 cvar_t	gl_reporttjunctions = {"gl_reporttjunctions","0"};
 cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
+
+cvar_t	gl_wireframe = {"gl_wireframe", "0"};
 
 extern	cvar_t	gl_ztrick;
 
@@ -713,6 +715,8 @@ void GL_DrawAliasAsSprite (aliashdr_t *phdr, int posenum)
 //	qglEnable(GL_BLEND);
 }
 
+int r_timecut;
+
 /*
 =================
 R_SetupAliasFrame
@@ -721,7 +725,7 @@ R_SetupAliasFrame
 */
 void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 {
-	int				pose, numposes;
+	int				pose, numposes, isview;
 	float			interval, relsz;
 
 	if ((frame >= paliashdr->numframes) || (frame < 0))
@@ -729,6 +733,8 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 		Con_DPrintf ("R_AliasSetupFrame: no such frame %d\n", frame);
 		frame = 0;
 	}
+
+	isview = (currententity == &cl.viewent);
 
 	pose = paliashdr->frames[frame].firstpose;
 	numposes = paliashdr->frames[frame].numposes;
@@ -744,6 +750,12 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 //	if((relsz<0.15) && (paliashdr->spr_texnum[0]>0))
 //	if((relsz<0.25) && (paliashdr->spr_texnum[0]>0))
 	if((relsz<0.2) && (paliashdr->spr_texnum[0]>0))
+	{
+		GL_DrawAliasAsSprite (paliashdr, pose);
+		return;
+	}
+	
+	if(r_timecut && !isview && (paliashdr->spr_texnum[0]>0))
 	{
 		GL_DrawAliasAsSprite (paliashdr, pose);
 		return;
@@ -1406,8 +1418,12 @@ void R_RenderScene (void)
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	qglShadeModel (GL_SMOOTH);
 	qglEnable(GL_BLEND);
-	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+//	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 #endif
+
+	if(gl_wireframe.value)
+		qglPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	R_MarkLeaves ();	// done here so we know if we're in water
 
@@ -1442,6 +1458,8 @@ void R_RenderScene (void)
 #ifdef GLTEST
 	Test_Draw ();
 #endif
+
+	qglPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 }
 

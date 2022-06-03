@@ -210,6 +210,7 @@ void R_Init (void)
 	Cvar_RegisterVariable (&gl_reporttjunctions);
 
 	Cvar_RegisterVariable (&gl_doubleeyes);
+	Cvar_RegisterVariable (&gl_wireframe);
 
 	R_InitParticles ();
 	R_InitParticleTexture ();

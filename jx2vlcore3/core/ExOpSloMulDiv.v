@@ -207,6 +207,8 @@ begin
 	begin
 		tNxtOpCnt	= tOpCnt - 1;
 //		tDoHold		= 1;
+		$display("SloMulDiv: Rn=%X Cnt=%d Ixt=%X", tNxtValRn, tOpCnt, tValOp);
+
 	end
 	else
 	begin
@@ -215,6 +217,8 @@ begin
 
 		if(idUCmd[5:0]==JX2_UCMD_QMULDIV)
 		begin
+
+			$display("SloMulDiv: %x %x %x-%d", valRs, valRt, idUCmd, idUIxt);
 
 `ifdef def_true
 			tValSg1s		= valRs[63];

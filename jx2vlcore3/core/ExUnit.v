@@ -2898,6 +2898,7 @@ begin
 
 	if(reset)
 	begin
+		$display("ExUnit: RESET");
 //		tNxtRegExc = 0;
 		tNxtRegExc[15] = 0;
 

@@ -423,6 +423,22 @@ void tkra_glLineStipple(int factor, unsigned short pattern)
 
 void tkra_glPolygonMode(int face, int mode)
 {
+	TKRA_Context *ctx;
+
+	ctx=TKRA_GetCurrentContext();
+	
+	if(	(face==GL_FRONT_AND_BACK) ||
+		(face==GL_FRONT) ||
+		(face==GL_BACK))
+	{
+		if(mode==GL_LINE)
+		{
+			ctx->stateflag1|=TKRA_STFL1_FILL_LINE;
+		}else
+		{
+			ctx->stateflag1&=~TKRA_STFL1_FILL_LINE;
+		}
+	}
 }
 
 void tkra_glPolygonOffset(float factor, float units)
@@ -711,5 +727,23 @@ void tkra_glFlush(void)
 
 void tkra_glHint(int target, int mode)
 {
+	TKRA_Context *ctx;
+
+	ctx=TKRA_GetCurrentContext();
+	
+	if(target==GL_PERSPECTIVE_CORRECTION_HINT)
+	{
+		if(mode==GL_NICEST)
+		{
+			ctx->stateflag1&=~TKRA_STFL1_NOSUBDIV;
+		}else
+			if((mode==GL_DONT_CARE) || (mode==GL_FASTEST))
+		{
+			ctx->stateflag1|=TKRA_STFL1_NOSUBDIV;
+		}else
+		{
+			ctx->stateflag1&=~TKRA_STFL1_NOSUBDIV;
+		}
+	}
 }
 

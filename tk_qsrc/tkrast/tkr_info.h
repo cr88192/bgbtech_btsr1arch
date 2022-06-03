@@ -371,7 +371,6 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_CULL_FT						0x00000020
 #define TKRA_STFL1_CULL_BK						0x00000040
 #define TKRA_STFL1_CULL_CW						0x00000080
-#define TKRA_STFL1_TEXTURE2D					0x00000100
 
 #define TKRA_STFL1_VERTEX_ARRAY					0x00000100
 #define TKRA_STFL1_NORMAL_ARRAY					0x00000200
@@ -381,6 +380,10 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_EDGEFLAG_ARRAY				0x00002000
 
 #define TKRA_STFL1_TEX_REPLACE					0x00004000
+
+#define TKRA_STFL1_TEXTURE2D					0x00008000
+#define TKRA_STFL1_FILL_LINE					0x00010000
+#define TKRA_STFL1_NOSUBDIV						0x00020000
 
 
 typedef unsigned short	tkra_rastpixel;

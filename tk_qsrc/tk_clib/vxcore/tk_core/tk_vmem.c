@@ -679,7 +679,8 @@ tk_vmem_do_ldtlb:
 	
 //	XOR		R2, R2
 	MOV		-1, R2
-//	INVDC	R2
+
+	INVDC	R2
 	INVIC	R2
 //	INVDC	R5
 //	INVIC	R5

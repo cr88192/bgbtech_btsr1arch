@@ -4593,6 +4593,13 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 				break;
 			}
 
+			if(((imm&1023)==imm) || ((imm|(~1023))==imm))
+			{
+				opw1=0xF200|((reg&15)<<4)|((imm>>31)&1);
+				opw2=0xD000|(imm&0x03FF)|(ex2&0x0C00);
+				break;
+			}
+
 #if 0
 			if(!BGBCC_JX2_CheckPadCross48(ctx) &&
 				!ctx->is_fixed32 && !ctx->op_is_wex2)

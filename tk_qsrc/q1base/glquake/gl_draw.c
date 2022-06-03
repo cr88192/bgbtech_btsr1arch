@@ -72,6 +72,9 @@ typedef struct
 gltexture_t	gltextures[MAX_GLTEXTURES];
 int			numgltextures;
 
+extern int		gl_nvadptris;
+extern int		gl_nvadpquads;
+
 
 void GL_Bind (int texnum)
 {
@@ -79,6 +82,12 @@ void GL_Bind (int texnum)
 		texnum = char_texture;
 	if (currenttexture == texnum)
 		return;
+
+	if(gl_nvadptris || gl_nvadpquads)
+	{
+		R_RenderDelayPolyTris();
+	}
+
 	currenttexture = texnum;
 //#ifdef _WIN32
 //	bindTexFunc (GL_TEXTURE_2D, texnum);
@@ -529,6 +538,7 @@ void Draw_Character (int x, int y, int num)
 	byte			*dest;
 	byte			*source;
 	unsigned short	*pusdest;
+	qgl_hfloat		*v;
 	int				drawline;	
 	int				row, col;
 	float			frow, fcol, size;
@@ -548,7 +558,8 @@ void Draw_Character (int x, int y, int num)
 	fcol = col*0.0625;
 	size = 0.0625;
 
-	qglEnable (GL_TEXTURE_2D);
+#if 0
+//	qglEnable (GL_TEXTURE_2D);
 
 	GL_Bind (char_texture);
 
@@ -562,6 +573,31 @@ void Draw_Character (int x, int y, int num)
 	qglTexCoord2f (fcol, frow + size);
 	qglVertex2f (x, y+8);
 	qglEnd ();
+#endif
+
+#if 1
+	GL_Bind (char_texture);
+
+	v=R_CheckExpandDelayPolyQuads(4);
+	
+	v[0]=x; v[1]=y; v[2]=0; v[3]=fcol; v[4]=frow;
+	*(u32 *)(v+VERTEX_RGBA)=0xFFFFFFFFU;
+	v+=VERTEXSIZE;
+
+	v[0]=x+8; v[1]=y; v[2]=0; v[3]=fcol+size; v[4]=frow;
+	*(u32 *)(v+VERTEX_RGBA)=0xFFFFFFFFU;
+	v+=VERTEXSIZE;
+
+	v[0]=x+8; v[1]=y+8; v[2]=0; v[3]=fcol+size; v[4]=frow+size;
+	*(u32 *)(v+VERTEX_RGBA)=0xFFFFFFFFU;
+	v+=VERTEXSIZE;
+
+	v[0]=x; v[1]=y+8; v[2]=0; v[3]=fcol; v[4]=frow+size;
+	*(u32 *)(v+VERTEX_RGBA)=0xFFFFFFFFU;
+	v+=VERTEXSIZE;
+	
+	gl_nvadpquads+=4;
+#endif
 }
 
 /*
@@ -571,12 +607,16 @@ Draw_String
 */
 void Draw_String (int x, int y, char *str)
 {
+	GL_Bind (char_texture);
+
 	while (*str)
 	{
 		Draw_Character (x, y, *str);
 		str++;
 		x += 8;
 	}
+
+	R_RenderDelayPolyTris();
 }
 
 /*

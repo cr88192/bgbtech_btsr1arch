@@ -1330,7 +1330,14 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	s64 addr;
 	u64	r0, r1, r2, r3;
 	int i, j, h;
-	
+
+	ctx->mem_tlb_pr0_hi=0;
+	ctx->mem_tlb_pr0_hx=0;
+	ctx->mem_tlb_pr0_lo=0;
+	ctx->mem_tlb_pr1_hi=0;
+	ctx->mem_tlb_pr1_hx=0;
+	ctx->mem_tlb_pr1_lo=0;
+
 	r0=ctx->regs[BJX2_REG_DLR];
 	r1=ctx->regs[BJX2_REG_DHR];
 	addr=r1&0x0000FFFFFFFFF000ULL;
@@ -1419,6 +1426,13 @@ void BJX2_Op_LDACL_None(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_INVTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	int i, j, k;
+
+	ctx->mem_tlb_pr0_hi=0;
+	ctx->mem_tlb_pr0_hx=0;
+	ctx->mem_tlb_pr0_lo=0;
+	ctx->mem_tlb_pr1_hi=0;
+	ctx->mem_tlb_pr1_hx=0;
+	ctx->mem_tlb_pr1_lo=0;
 
 	ctx->mem_tlb_acl[3]=0;
 	ctx->mem_tlb_acl[2]=0;

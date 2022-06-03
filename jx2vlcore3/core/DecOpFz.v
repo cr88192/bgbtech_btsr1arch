@@ -2985,7 +2985,7 @@ begin
 			16'h6zz4: begin		/* F0nm_6eo4 */
 				opNmid		= JX2_UCMD_QMULDIV;
 				opFmid		= JX2_FMID_REGREG;
-				opIty		= JX2_ITY_SW;
+				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_QMUL_DIVS;
 				if(opExQ)
 					opUCmdIx	= JX2_UCIX_QMUL_DIVU;
@@ -2993,7 +2993,7 @@ begin
 			16'h6zz5: begin		/* F0nm_6eo5 */
 				opNmid		= JX2_UCMD_QMULDIV;
 				opFmid		= JX2_FMID_REGREG;
-				opIty		= JX2_ITY_SW;
+				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_QMUL_MODS;
 				if(opExQ)
 					opUCmdIx	= JX2_UCIX_QMUL_MODU;

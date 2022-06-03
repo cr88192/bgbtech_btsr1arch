@@ -167,7 +167,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 				nm1=BGBCC_SH_NMID_MODUQ;
 			else
-				nm1=BGBCC_SH_NMID_MODSQ;
+			{
+//				nm1=BGBCC_SH_NMID_MODSQ;
+			}
 		}
 	}
 
@@ -715,7 +717,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 				nm1=BGBCC_SH_NMID_MODUQ;
 			else
-				nm1=BGBCC_SH_NMID_MODSQ;
+			{
+//				nm1=BGBCC_SH_NMID_MODSQ;
+			}
 		}
 	}
 

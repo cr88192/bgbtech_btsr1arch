@@ -2635,7 +2635,7 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	if((opw1<0) &&
 		((nmid==BGBCC_SH_NMID_MOVC) ||
 		 (nmid==BGBCC_SH_NMID_MOVC_DISP24)))
-	{		
+	{	
 		if(	BGBCC_JX2_EmitCheckRegExtGPR(ctx, rm) &&
 			BGBCC_JX2_EmitCheckRegBsrCn(ctx, rn))
 		{

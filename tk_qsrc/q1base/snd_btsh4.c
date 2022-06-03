@@ -1,5 +1,7 @@
 #include "quakedef.h"
 
+#define SND_8KHZ
+
 // #define BUFFER_CHAN		2
 #define BUFFER_CHAN		1
 #define BUFFER_SIZE		(BUFFER_CHAN*8192*2)
@@ -367,7 +369,12 @@ qboolean SNDDMA_Init(void)
 	shm->splitbuffer = 0;
 
 //	shm->speed = 11025;
+#ifdef SND_8KHZ
+	shm->speed = 8000;
+#else
 	shm->speed = 16000;
+#endif
+
 	shm->samplebits = 16;
 	shm->channels = BUFFER_CHAN;
 
@@ -442,7 +449,7 @@ int sblk0_enc(int v)
 		if(v0&(~255))	{ v0=v0>>4; e+=4; }
 		if(v0&(~127))	{ v0=v0>>3; e+=3; }
 		if(v0&(~63))	{ v0=v0>>2; e+=2; }
-//		if(v0&(~31))	{ v0=v0>>1; e++; }
+		if(v0&(~31))	{ v0=v0>>1; e++; }
 
 //		if(v0&(~511))	{ v0=v0>>5; e+=5; }
 
@@ -539,7 +546,11 @@ void SNDDMA_Submit(void)
 //		k=(dmarov+i)&8191;
 //		k=(dmarov+i)&16383;
 //		k=(d1+i)&16383;
+#ifdef SND_8KHZ
+		k=(d1+i)&4095;
+#else
 		k=(d1+i)&8191;
+#endif
 
 		if(BUFFER_CHAN==2)
 		{
@@ -568,7 +579,14 @@ void SNDDMA_Submit(void)
 //			s2=192;		s3=192;
 
 //			snd_dmabuf[k>>1]=s0|(s1<<16);
+//			snd_dmabuf[k>>2]=s0|(s1<<8)|(s2<<16)|(s3<<24);
+
+#ifdef SND_8KHZ
+			snd_dmabuf[((k>>2)<<1)+0]=s0|(s0<<8)|(s1<<16)|(s1<<24);
+			snd_dmabuf[((k>>2)<<1)+1]=s2|(s2<<8)|(s3<<16)|(s3<<24);
+#else
 			snd_dmabuf[k>>2]=s0|(s1<<8)|(s2<<16)|(s3<<24);
+#endif
 		}
 	}
 #endif

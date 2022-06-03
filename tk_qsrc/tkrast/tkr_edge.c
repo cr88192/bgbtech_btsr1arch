@@ -556,6 +556,8 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
+void TKRA_WalkEdges_ZbufNZb(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 
 __asm {
 #if 0
@@ -952,8 +954,625 @@ R31		tstep_r
 
 
 
+
 #if 1
+.ifarch has_xgpr
+
 TKRA_WalkEdges_Zbuf:
+
+	CMPGT	0, R20
+	BF		.L_END_F
+
+	SUB		512, SP
+	MOV		LR , R16
+	MOV.X	R8 , (SP, 8*8)
+	MOV.X	R10, (SP, 10*8)
+	MOV.X	R12, (SP, 12*8)
+	MOV.Q	R14, (SP, 14*8)
+	MOV.Q	R16, (SP, 15*8)
+
+	MOV.X	R24, (SP, 24*8)
+	MOV.X	R26, (SP, 26*8)
+	MOV.X	R28, (SP, 28*8)
+	MOV.X	R30, (SP, 30*8)
+
+	MOV.X	R40, (SP, 40*8)
+	MOV.X	R42, (SP, 42*8)
+	MOV.X	R44, (SP, 44*8)
+	MOV.X	R46, (SP, 46*8)
+
+	MOV.X	R56, (SP, 56*8)
+	MOV.X	R58, (SP, 58*8)
+	MOV.X	R60, (SP, 60*8)
+	MOV.X	R62, (SP, 62*8)
+
+/*
+
+R0		Scratch
+R1		Scratch
+R2		Scratch
+R3		Scratch
+
+R4		ctx			/ tstep_c
+R5		ytop		/ cstep_c
+R6		edge_l
+R7		edge_r
+
+R8		cpos_l
+R9		cstep_l
+R10		cpos_r
+R11		cstep_r
+
+R12		scr_offs
+R13		scr_xs
+R14		dsparm
+R15		SP
+
+R16		-
+R17		-
+R18		-
+R19		Scratch
+
+
+R20		ycnt / ycur
+R21		ymax
+R22		clip_x1:clip_x0
+R23		clip_y1:clip_y0
+
+R24		xzpos_l
+R25		xzstep_l
+R26		xzpos_r
+R27		xzstep_r
+
+R28		tpos_l
+R29		tstep_l
+R30		tpos_r
+R31		tstep_r
+
+R40		ycnt / ycur			(alt)
+R41		ymax				(alt)
+R42		clip_x1:clip_x0		(alt)
+R43		clip_y1:clip_y0		(alt)
+R44		ctx		/ tstep_c	(alt)
+R45		ytop	/ cstep_c	(alt)
+R46		edge_l				(alt)
+R47		edge_r				(alt)
+
+R56		x0
+R57		x1
+R58		xcnt
+R59		ctx
+
+R60		Scratch (Across Call)
+R61		Scratch (Across Call)
+R62		z_buf
+R63		rgb_buf
+*/
+
+	MOV.X	(R4, offsetof TKRA_Context_s clip_x0), R22
+	MOV.L	(R4, offsetof TKRA_Context_s screen_xsize), R13
+
+	ADD		R5, R20, R21	
+	MOV		R5, R20			|	DMULS	R5, R13, R12
+	SHAD.Q	R22, -32, R2	|	SHAD.Q	R23, -32, R3	
+
+	CMPGT	R5, R3
+	BF		.L_END
+
+	CMPGT	R23, R21
+	BF		.L_END
+
+	LEA.Q	(SP, 32*8), R14
+	MOV.Q	(R4, offsetof TKRA_Context_s tex_img), R2
+	MOV.Q	(R4, offsetof TKRA_Context_s tex_img_bcn), R3
+	MOV.Q	(R4, offsetof TKRA_Context_s Blend), R8
+	MOV.Q	(R4, offsetof TKRA_Context_s ZaTest), R9
+	MOV.Q	R4, (R14, TKRA_DS_CTX*8)
+	MOV.Q	R2, (R14, TKRA_DS_TEXIMG*8)
+	MOV.Q	R3, (R14, TKRA_DS_TEXBCN*8)
+	MOV.Q	R8, (R14, TKRA_DS_BLEND*8)
+	MOV.Q	R9, (R14, TKRA_DS_ZATEST*8)
+
+	MOVU.B	(R4, offsetof TKRA_Context_s tex_xshl), R2
+	MOVU.B	(R4, offsetof TKRA_Context_s tex_yshl), R3
+	MOV		1, R1		|	ADD		R2, R3, R9
+	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
+	ADD		R8, -1, R8	|	ADD		R9, -1, R9
+	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
+	MOV.Q	R9, (R14, TKRA_DS_YMASK*8)
+
+	MOV.X	(R6, TKRA_ES_CPOS*8), R8	//cpos_l, cstep_l
+	MOV.X	(R7, TKRA_ES_CPOS*8), R10	//cpos_r, cstep_r
+
+	MOV.X	(R6, TKRA_ES_ZPOS*8), R24	//zpos_l, zstep_l
+	MOV.X	(R7, TKRA_ES_ZPOS*8), R26	//zpos_r, zstep_r
+	MOV.X	(R6, TKRA_ES_TPOS*8), R28	//tpos_l, tstep_l
+	MOV.X	(R7, TKRA_ES_TPOS*8), R30	//tpos_r, tstep_r
+
+	MOV.Q	(R14, TKRA_DS_CTX*8), R59
+	MOV		R59, R19
+	MOV.Q	(R19, offsetof TKRA_Context_s screen_zbuf), R62
+	MOV.Q	(R19, offsetof TKRA_Context_s screen_rgb), R63
+
+
+	.L0:
+	CMPGT	R20, R21		//(ymax>ycur)
+	BF		.L4
+
+	SHAD.Q	R24, -48, R56	|	SHAD.Q	R26, -48, R57
+
+	SUB		R57, R56, R58		//		xcnt=x1-x0;
+	
+	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SUBS.L	R20, R23, R2	|	SUBS.L	R57, R22, R3	
+	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R56, R0
+	ADDS.L	R58, -1, R19	|	OR		R2, R3, R3
+	OR		R0, R1, R1		|	OR		R3, R19, R2
+	OR		R2, R1, R2
+	
+	CMPGE	0, R2
+	BT		.L1
+	ADD		R25, R24	|	ADD		R27, R26
+	ADD		R29, R28	|	ADD		R31, R30
+	ADD		R9 , R8		|	ADD		R11, R10
+	ADD		R13, R12	|	ADD		1, R20
+	BRA		.L0	
+
+	.L1:
+	MOV		tkra_spanrcptab, R3
+	SUB		R30, R28, R2	|	MOVU.W	(R3, R58), R1
+	EXTS.L	R2, R5			|	SHAD.Q	R2, -32, R3
+								DMULS.L	R5, R1, R2
+								DMULS.L	R3, R1, R3
+	/* Jumbo */					MOV		0xFFFEFFFEFFFEFFFE, R19
+	SHAD.Q	R2, -16, R2		|	SHAD.Q	R3, -16, R3
+								MOVLD	R3, R2, R4
+	AND		R10, R19, R2	|	AND		R8, R19, R5
+
+	SHLD.Q	R2, -1, R2		|	SHLD.Q	R5, -1, R3
+	SUB			R2, R3, R2	|	PSHUF.W		R1, 0, R18
+								PMULS.HW	R2, R18, R2
+
+	SHLD.Q		R2, 1, R5	|	SUBS.L	R26, R24, R18
+								DMULS.L	R18, R1, R18
+
+								MOV.Q	R28, (R14, TKRA_DS_TPOS*8)
+								MOV.Q	R4,  (R14, TKRA_DS_TSTEP*8)
+	SHAD.Q	R18, -16, R18	|	MOV.Q	R8,  (R14, TKRA_DS_CPOS*8)
+	EXTS.L	R24, R2			|	MOV.Q	R5,  (R14, TKRA_DS_CSTEP*8)
+	EXTS.L	R18, R3			|	MOV.Q	R2,  (R14, TKRA_DS_ZPOS*8)
+								MOV.Q	R3,  (R14, TKRA_DS_ZSTEP*8)
+
+	CMPGT	R56, R22
+	BF		.L2
+								SUBS.L		R22, R56, R1
+	SHAD.Q	R4, -32, R3		|	DMULS.L		R4, R1, R2
+	PSHUF.W		R1, 0, R0	|	DMULS.L		R3, R1, R3
+								MOVLD		R3, R2, R2
+								PMULU.HW	R5, R0, R3
+	ADD		R28, R2, R2		|	ADD			R8, R3, R3
+								MOV.Q	R2, (R14, TKRA_DS_TPOS*8)
+								MOV.Q	R3, (R14, TKRA_DS_CPOS*8)
+	EXTS.L	R22, R56		|	DMULS.L	R18, R1, R2
+								ADDS.L	R24, R2, R2
+								MOV.Q	R2, (R14, TKRA_DS_ZPOS*8)
+	.L2:
+	SHAD.Q	R22, -32, R2
+	CMPGT	R2, R57
+//	MOV?T	R2, R57
+	CSELT	R2, R57, R57
+
+	SUBS.L	R57, R56, R58
+
+	CMPGT	0, R58
+	BF		.L3
+
+//	MOV.Q	(R14, TKRA_DS_CTX*8), R19
+
+	MOVX	R4, R44
+	MOVX	R6, R46
+
+//	MOV.Q	(R19, offsetof TKRA_Context_s screen_zbuf), R4
+//	MOV.Q	(R19, offsetof TKRA_Context_s screen_rgb), R5
+	MOVX	R62, R4
+	ADD		R12, R56, R3
+
+	MOVX	R20, R40
+	MOVX	R22, R42
+
+//	.break
+//	MOV.Q	(R59, offsetof TKRA_Context_s DrawSpanZb), R3
+
+//	MOV		R59, R19
+	LEA.W	(R4, R3), R4
+	LEA.W	(R5, R3), R5
+	MOV.Q	(R59, offsetof TKRA_Context_s DrawSpanZb), R3
+
+	MOV.X	R4, R60
+
+	MOV.X	(R14, TKRA_DS_ZPOS*8), R6
+	MOV		R58, R5
+	JSR		R3
+
+//	MOV		R59, R19
+//	MOV.Q	(R14, TKRA_DS_CTX*8), R19
+	MOV.X	R60, R6
+	MOV		R14, R4
+	MOV.Q	(R59, offsetof TKRA_Context_s DrawSpanZt), R3
+	MOV		R7, R5
+	MOV		R58, R7
+	JSR		R3
+
+	MOVX	R44, R4
+	MOVX	R46, R6
+
+	MOVX	R40, R20
+	MOVX	R42, R22
+
+	.L3:
+
+	ADD		R25, R24	|	ADD		R27, R26
+	ADD		R29, R28	|	ADD		R31, R30
+	ADD		R9 , R8		|	ADD		R11, R10
+	ADD		R13, R12	|	ADD		1, R20
+	BRA		.L0
+
+	.L4:
+
+	MOV.X	R8, (R6, TKRA_ES_CPOS*8)	//cpos_l, cstep_l
+	MOV.X	R10, (R7, TKRA_ES_CPOS*8)	//cpos_r, cstep_r
+
+	MOV.X	R24, (R6, TKRA_ES_ZPOS*8)	//zpos_l, zstep_l
+	MOV.X	R26, (R7, TKRA_ES_ZPOS*8)	//zpos_r, zstep_r
+	MOV.X	R28, (R6, TKRA_ES_TPOS*8)	//tpos_l, tstep_l
+	MOV.X	R30, (R7, TKRA_ES_TPOS*8)	//tpos_r, tstep_r
+
+	.L_END:
+
+	MOV.X	(SP,  8*8), R8
+	MOV.X	(SP, 10*8), R10
+	MOV.X	(SP, 12*8), R12
+	MOV.Q	(SP, 14*8), R14
+	MOV.Q	(SP, 15*8), R1
+	MOV.X	(SP, 24*8), R24
+	MOV.X	(SP, 26*8), R26
+	MOV.X	(SP, 28*8), R28
+	MOV.X	(SP, 30*8), R30
+
+	MOV.X	(SP, 40*8), R40
+	MOV.X	(SP, 42*8), R42
+	MOV.X	(SP, 44*8), R44
+	MOV.X	(SP, 46*8), R46
+
+	MOV.X	(SP, 56*8), R56
+	MOV.X	(SP, 58*8), R58
+	MOV.X	(SP, 60*8), R60
+	MOV.X	(SP, 62*8), R62
+
+	ADD		512, SP
+	JMP		R1
+	NOP
+	NOP
+
+	.L_END_F:
+	RTS
+
+.endif
+
+#endif
+
+
+#if 1
+.ifarch has_xgpr
+
+TKRA_WalkEdges_ZbufNZb:
+
+	CMPGT	0, R20
+	BF		.L_END_F
+
+	SUB		512, SP
+	MOV		LR , R16
+	MOV.X	R8 , (SP, 8*8)
+	MOV.X	R10, (SP, 10*8)
+	MOV.X	R12, (SP, 12*8)
+	MOV.Q	R14, (SP, 14*8)
+	MOV.Q	R16, (SP, 15*8)
+
+	MOV.X	R24, (SP, 24*8)
+	MOV.X	R26, (SP, 26*8)
+	MOV.X	R28, (SP, 28*8)
+	MOV.X	R30, (SP, 30*8)
+
+	MOV.X	R40, (SP, 40*8)
+	MOV.X	R42, (SP, 42*8)
+	MOV.X	R44, (SP, 44*8)
+	MOV.X	R46, (SP, 46*8)
+
+	MOV.X	R56, (SP, 56*8)
+	MOV.X	R58, (SP, 58*8)
+	MOV.X	R60, (SP, 60*8)
+	MOV.X	R62, (SP, 62*8)
+
+/*
+
+R0		Scratch
+R1		Scratch
+R2		Scratch
+R3		Scratch
+
+R4		ctx			/ tstep_c
+R5		ytop		/ cstep_c
+R6		edge_l
+R7		edge_r
+
+R8		cpos_l
+R9		cstep_l
+R10		cpos_r
+R11		cstep_r
+
+R12		scr_offs
+R13		scr_xs
+R14		dsparm
+R15		SP
+
+R16		-
+R17		-
+R18		-
+R19		Scratch
+
+
+R20		ycnt / ycur
+R21		ymax
+R22		clip_x1:clip_x0
+R23		clip_y1:clip_y0
+
+R24		xzpos_l
+R25		xzstep_l
+R26		xzpos_r
+R27		xzstep_r
+
+R28		tpos_l
+R29		tstep_l
+R30		tpos_r
+R31		tstep_r
+
+R40		ycnt / ycur			(alt)
+R41		ymax				(alt)
+R42		clip_x1:clip_x0		(alt)
+R43		clip_y1:clip_y0		(alt)
+R44		ctx		/ tstep_c	(alt)
+R45		ytop	/ cstep_c	(alt)
+R46		edge_l				(alt)
+R47		edge_r				(alt)
+
+R56		x0
+R57		x1
+R58		xcnt
+R59		ctx
+
+R60		Scratch (Across Call)
+R61		Scratch (Across Call)
+R62		z_buf
+R63		rgb_buf
+*/
+
+	MOV.X	(R4, offsetof TKRA_Context_s clip_x0), R22
+	MOV.L	(R4, offsetof TKRA_Context_s screen_xsize), R13
+
+	ADD		R5, R20, R21	
+	MOV		R5, R20			|	DMULS	R5, R13, R12
+	SHAD.Q	R22, -32, R2	|	SHAD.Q	R23, -32, R3	
+
+	CMPGT	R5, R3
+	BF		.L_END
+
+	CMPGT	R23, R21
+	BF		.L_END
+
+	LEA.Q	(SP, 32*8), R14
+	MOV.Q	(R4, offsetof TKRA_Context_s tex_img), R2
+	MOV.Q	(R4, offsetof TKRA_Context_s tex_img_bcn), R3
+	MOV.Q	(R4, offsetof TKRA_Context_s Blend), R8
+	MOV.Q	(R4, offsetof TKRA_Context_s ZaTest), R9
+	MOV.Q	R4, (R14, TKRA_DS_CTX*8)
+	MOV.Q	R2, (R14, TKRA_DS_TEXIMG*8)
+	MOV.Q	R3, (R14, TKRA_DS_TEXBCN*8)
+	MOV.Q	R8, (R14, TKRA_DS_BLEND*8)
+	MOV.Q	R9, (R14, TKRA_DS_ZATEST*8)
+
+	MOVU.B	(R4, offsetof TKRA_Context_s tex_xshl), R2
+	MOVU.B	(R4, offsetof TKRA_Context_s tex_yshl), R3
+	MOV		1, R1		|	ADD		R2, R3, R9
+	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
+	ADD		R8, -1, R8	|	ADD		R9, -1, R9
+	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
+	MOV.Q	R9, (R14, TKRA_DS_YMASK*8)
+
+	MOV.X	(R6, TKRA_ES_CPOS*8), R8	//cpos_l, cstep_l
+	MOV.X	(R7, TKRA_ES_CPOS*8), R10	//cpos_r, cstep_r
+
+	MOV.X	(R6, TKRA_ES_ZPOS*8), R24	//zpos_l, zstep_l
+	MOV.X	(R7, TKRA_ES_ZPOS*8), R26	//zpos_r, zstep_r
+	MOV.X	(R6, TKRA_ES_TPOS*8), R28	//tpos_l, tstep_l
+	MOV.X	(R7, TKRA_ES_TPOS*8), R30	//tpos_r, tstep_r
+
+	MOV.Q	(R14, TKRA_DS_CTX*8), R59
+	MOV		R59, R19
+	MOV.Q	(R19, offsetof TKRA_Context_s screen_zbuf), R62
+	MOV.Q	(R19, offsetof TKRA_Context_s screen_rgb), R63
+
+
+	.L0:
+	CMPGT	R20, R21		//(ymax>ycur)
+	BF		.L4
+
+	SHAD.Q	R24, -48, R56	|	SHAD.Q	R26, -48, R57
+
+	SUB		R57, R56, R58		//		xcnt=x1-x0;
+	
+	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SUBS.L	R20, R23, R2	|	SUBS.L	R57, R22, R3	
+	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R56, R0
+	ADDS.L	R58, -1, R19	|	OR		R2, R3, R3
+	OR		R0, R1, R1		|	OR		R3, R19, R2
+	OR		R2, R1, R2
+	
+	CMPGE	0, R2
+	BT		.L1
+	ADD		R25, R24	|	ADD		R27, R26
+	ADD		R29, R28	|	ADD		R31, R30
+	ADD		R9 , R8		|	ADD		R11, R10
+	ADD		R13, R12	|	ADD		1, R20
+	BRA		.L0	
+
+	.L1:
+	MOV		tkra_spanrcptab, R3
+	SUB		R30, R28, R2	|	MOVU.W	(R3, R58), R1
+	EXTS.L	R2, R5			|	SHAD.Q	R2, -32, R3
+								DMULS.L	R5, R1, R2
+								DMULS.L	R3, R1, R3
+	/* Jumbo */					MOV		0xFFFEFFFEFFFEFFFE, R19
+	SHAD.Q	R2, -16, R2		|	SHAD.Q	R3, -16, R3
+								MOVLD	R3, R2, R4
+	AND		R10, R19, R2	|	AND		R8, R19, R5
+
+	SHLD.Q	R2, -1, R2		|	SHLD.Q	R5, -1, R3
+	SUB			R2, R3, R2	|	PSHUF.W		R1, 0, R18
+								PMULS.HW	R2, R18, R2
+
+	SHLD.Q		R2, 1, R5	|	SUBS.L	R26, R24, R18
+								DMULS.L	R18, R1, R18
+
+								MOV.Q	R28, (R14, TKRA_DS_TPOS*8)
+								MOV.Q	R4,  (R14, TKRA_DS_TSTEP*8)
+	SHAD.Q	R18, -16, R18	|	MOV.Q	R8,  (R14, TKRA_DS_CPOS*8)
+	EXTS.L	R24, R2			|	MOV.Q	R5,  (R14, TKRA_DS_CSTEP*8)
+	EXTS.L	R18, R3			|	MOV.Q	R2,  (R14, TKRA_DS_ZPOS*8)
+								MOV.Q	R3,  (R14, TKRA_DS_ZSTEP*8)
+
+	CMPGT	R56, R22
+	BF		.L2
+								SUBS.L		R22, R56, R1
+	SHAD.Q	R4, -32, R3		|	DMULS.L		R4, R1, R2
+	PSHUF.W		R1, 0, R0	|	DMULS.L		R3, R1, R3
+								MOVLD		R3, R2, R2
+								PMULU.HW	R5, R0, R3
+	ADD		R28, R2, R2		|	ADD			R8, R3, R3
+								MOV.Q	R2, (R14, TKRA_DS_TPOS*8)
+								MOV.Q	R3, (R14, TKRA_DS_CPOS*8)
+	EXTS.L	R22, R56		|	DMULS.L	R18, R1, R2
+								ADDS.L	R24, R2, R2
+								MOV.Q	R2, (R14, TKRA_DS_ZPOS*8)
+	.L2:
+	SHAD.Q	R22, -32, R2
+	CMPGT	R2, R57
+//	MOV?T	R2, R57
+	CSELT	R2, R57, R57
+
+	SUBS.L	R57, R56, R58
+
+	CMPGT	0, R58
+	BF		.L3
+
+//	MOV.Q	(R14, TKRA_DS_CTX*8), R19
+
+	MOVX	R4, R44
+	MOVX	R6, R46
+
+//	MOV.Q	(R19, offsetof TKRA_Context_s screen_zbuf), R4
+//	MOV.Q	(R19, offsetof TKRA_Context_s screen_rgb), R5
+	MOVX	R62, R4
+	ADD		R12, R56, R3
+
+	MOVX	R20, R40
+	MOVX	R22, R42
+
+//	MOV		R59, R19
+	LEA.W	(R4, R3), R6
+	LEA.W	(R5, R3), R7
+//	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZb), R3
+
+//	MOV.X	R4, R60
+
+//	MOV.X	(R14, TKRA_DS_ZPOS*8), R6
+//	MOV		R58, R5
+//	JSR		R3
+
+//	MOV		R59, R19
+//	MOV.Q	(R14, TKRA_DS_CTX*8), R19
+//	MOV.X	R60, R6
+	MOV		R14, R4
+	MOV.Q	(R59, offsetof TKRA_Context_s DrawSpanZt), R3
+	MOV		R7, R5
+	MOV		R58, R7
+	JSR		R3
+
+	MOVX	R44, R4
+	MOVX	R46, R6
+
+	MOVX	R40, R20
+	MOVX	R42, R22
+
+	.L3:
+
+	ADD		R25, R24	|	ADD		R27, R26
+	ADD		R29, R28	|	ADD		R31, R30
+	ADD		R9 , R8		|	ADD		R11, R10
+	ADD		R13, R12	|	ADD		1, R20
+	BRA		.L0
+
+	.L4:
+
+	MOV.X	R8, (R6, TKRA_ES_CPOS*8)	//cpos_l, cstep_l
+	MOV.X	R10, (R7, TKRA_ES_CPOS*8)	//cpos_r, cstep_r
+
+	MOV.X	R24, (R6, TKRA_ES_ZPOS*8)	//zpos_l, zstep_l
+	MOV.X	R26, (R7, TKRA_ES_ZPOS*8)	//zpos_r, zstep_r
+	MOV.X	R28, (R6, TKRA_ES_TPOS*8)	//tpos_l, tstep_l
+	MOV.X	R30, (R7, TKRA_ES_TPOS*8)	//tpos_r, tstep_r
+
+	.L_END:
+
+	MOV.X	(SP,  8*8), R8
+	MOV.X	(SP, 10*8), R10
+	MOV.X	(SP, 12*8), R12
+	MOV.Q	(SP, 14*8), R14
+	MOV.Q	(SP, 15*8), R1
+	MOV.X	(SP, 24*8), R24
+	MOV.X	(SP, 26*8), R26
+	MOV.X	(SP, 28*8), R28
+	MOV.X	(SP, 30*8), R30
+
+	MOV.X	(SP, 40*8), R40
+	MOV.X	(SP, 42*8), R42
+	MOV.X	(SP, 44*8), R44
+	MOV.X	(SP, 46*8), R46
+
+	MOV.X	(SP, 56*8), R56
+	MOV.X	(SP, 58*8), R58
+	MOV.X	(SP, 60*8), R60
+	MOV.X	(SP, 62*8), R62
+
+	ADD		512, SP
+	JMP		R1
+	NOP
+	NOP
+
+	.L_END_F:
+	RTS
+
+.endif
+
+#endif
+
+
+
+
+#if 1
+.ifnarch has_xgpr
+
+TKRA_WalkEdges_Zbuf:
+TKRA_WalkEdges_ZbufNZb:
 
 	CMPGT	0, R20
 	BF		.L_END_F
@@ -1059,8 +1678,9 @@ R31		tstep_r
 	CMPGT	R20, R21		//(ymax>ycur)
 	BF		.L4
 
-	SHAD.Q	R24, -48, R16		//		x0=(xzpos_l)>>48;
-	SHAD.Q	R26, -48, R17		//		x1=(xzpos_r)>>48;
+	//		x0=(xzpos_l)>>48;
+	//		x1=(xzpos_r)>>48;
+	SHAD.Q	R24, -48, R16	|	SHAD.Q	R26, -48, R17
 
 //	SHAD.Q	R26, -32, R17		//		x1=(xzpos_r)>>48;
 //	ADD		65535, R17
@@ -1147,6 +1767,7 @@ R31		tstep_r
 	MOV.X	R16, (SP, 16*8)
 	MOV.X	R20, (SP, 20*8)
 	MOV.X	R22, (SP, 22*8)
+
 	LEA.W	(R4, R3), R4
 	LEA.W	(R5, R3), R5
 	MOV.Q	(R19, offsetof TKRA_Context_s DrawSpanZb), R3
@@ -1162,10 +1783,12 @@ R31		tstep_r
 	MOV.Q	(SP, 18*8), R7
 	JSR		R3
 
+	MOV.X	(SP, 18*8), R18
+
 	MOV.X	(SP,  4*8), R4
 	MOV.X	(SP,  6*8), R6
+
 	MOV.X	(SP, 16*8), R16
-	MOV.X	(SP, 18*8), R18
 	MOV.X	(SP, 20*8), R20
 	MOV.X	(SP, 22*8), R22
 
@@ -1198,12 +1821,16 @@ R31		tstep_r
 	MOV.X	(SP, 26*8), R26
 	MOV.X	(SP, 28*8), R28
 	MOV.X	(SP, 30*8), R30
+
 	ADD		512, SP
 	JMP		R16
 	NOP
 
 	.L_END_F:
 	RTS
+
+.endif
+
 #endif
 
 #if 1
@@ -1958,6 +2585,122 @@ void TKRA_WalkPoint(TKRA_Context *ctx, u64 *vec0)
 }
 #endif
 
+#if 1
+void TKRA_WalkLine(TKRA_Context *ctx, u64 *vec0, u64 *vec1)
+{
+	void (*DrawSpan)(u64 *parm,
+		tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+	void (*DrawSpanZ)(tkra_zbufpixel *dstz, int cnt, u64 zpos, u64 zstep);
+
+	u64	dsparm[TKRA_DS_NPARM];
+	tkra_rastpixel *scr_cb, *cb;
+	tkra_zbufpixel *scr_zb, *zb;
+	int x0, y0, z0, x1, y1, z1;
+	int xc, yc, zc, xs, ys, zs, xd, yd, zd, xda, yda, xyd, xydrcp;
+	int i, j, k;
+
+	int clip_x0, clip_x1, clip_y0, clip_y1;
+
+	int		xshl, yshl;
+	int		scr_xs, scr_ys;
+
+	x0=vec0[TKRA_VX_XPOS];
+	y0=vec0[TKRA_VX_YPOS];
+	z0 = (int)(vec0[TKRA_VX_ZPOS]);
+
+	y1=vec1[TKRA_VX_YPOS];
+	x1=vec1[TKRA_VX_XPOS];
+	z1 = (int)(vec1[TKRA_VX_ZPOS]);
+	
+	xd=x1-x0;
+	yd=y1-y0;
+	zd=z1-z0;
+//	xyd=(xd^(xd>>31))+(yd^(yd>>31));
+	xda=xd^(xd>>31);
+	yda=yd^(yd>>31);
+	xyd=xda;
+	if(yda>xyd)
+		xyd=yda;
+
+	xyd=(xyd>>16)+1;
+
+	xydrcp=TKRA_SpanRcp(xyd);
+	
+	xc=x0;
+	yc=y0;
+	zc=z0;
+	xs=xd/xyd;
+	ys=yd/xyd;
+	zs=zd/xyd;
+
+//	xs=(xd*xydrcp)>>16;
+//	ys=(yd*xydrcp)>>16;
+//	zs=(zd*xydrcp)>>16;
+
+	clip_x0	= ctx->clip_x0;
+	clip_x1	= ctx->clip_x1;
+	clip_y0	= ctx->clip_y0;
+	clip_y1	= ctx->clip_y1;
+
+//	if(	(x0>=clip_x1) ||
+//		(x0<=clip_x0) ||
+//		(y0>=clip_y1) ||
+//		(y0<=clip_y0) )
+//			return;
+
+	DrawSpan	= ctx->DrawSpanZt;
+	DrawSpanZ	= ctx->DrawSpanZb;
+	
+	scr_cb = ctx->screen_rgb;
+	scr_zb = ctx->screen_zbuf;
+	scr_xs = ctx->screen_xsize;
+	scr_ys = ctx->screen_ysize;
+
+	xshl=ctx->tex_xshl;
+	yshl=ctx->tex_yshl;
+
+	dsparm[TKRA_DS_CTX]=(u64)(ctx);
+	dsparm[TKRA_DS_TEXIMG]=(u64)(ctx->tex_img);
+	dsparm[TKRA_DS_TEXBCN]=(u64)(ctx->tex_img_bcn);
+	dsparm[TKRA_DS_BLEND]=(u64)(ctx->Blend);
+	dsparm[TKRA_DS_ZATEST]=(u64)(ctx->ZaTest);
+	dsparm[TKRA_DS_XMASK]=(1<<xshl)-1;
+	dsparm[TKRA_DS_YMASK]=(1<<(yshl+xshl))-1;
+	
+	dsparm[TKRA_DS_TPOS		]=vec0[TKRA_VX_TPOS];
+	dsparm[TKRA_DS_TSTEP	]=0;
+	dsparm[TKRA_DS_CPOS		]=vec0[TKRA_VX_CPOS];
+	dsparm[TKRA_DS_CSTEP	]=0;
+	dsparm[TKRA_DS_ZPOS		]=z0;
+	dsparm[TKRA_DS_ZSTEP	]=0;
+
+	for(i=0; i<xyd; i++)
+	{
+		x0=xc>>16;
+		y0=yc>>16;
+
+		if(	(x0>=clip_x1) ||
+			(x0<=clip_x0) ||
+			(y0>=clip_y1) ||
+			(y0<=clip_y0) )
+				continue;
+
+		dsparm[TKRA_DS_ZPOS		]=zc;
+
+		cb=scr_cb+(y0*scr_xs+x0);
+		zb=scr_zb+(y0*scr_xs+x0);
+		DrawSpanZ(zb, 1, z0, 0);
+		DrawSpan(dsparm, cb, zb, 1);
+		
+		xc+=xs;
+		yc+=ys;
+		zc+=zs;
+	}
+
+	return(0);
+}
+#endif
+
 int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 {
 #if 0
@@ -2005,6 +2748,11 @@ int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 	{
 //		ctx->RasterWalkEdges=TKRA_WalkEdges_HZbuf;
 		ctx->RasterWalkEdges=TKRA_WalkEdges_Zbuf;
+
+#ifdef __BJX2__
+		if(ctx->DrawSpanZb == TKRA_DrawSpan_ZbNul)
+			ctx->RasterWalkEdges=TKRA_WalkEdges_ZbufNZb;
+#endif
 	}else
 	{
 		ctx->RasterWalkEdges=TKRA_WalkEdges_Dfl;

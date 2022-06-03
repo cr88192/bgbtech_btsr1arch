@@ -1175,6 +1175,8 @@ int TKRA_EmitProjectedTriangle(
 	int ds0, ds1, ds2, dt0, dt1, dt2, dst;
 	int dx0, dx1, dx2, dy0, dy1, dy2, dxy, mmip;
 	int tx0, ty0, tz0, shx, shy, flipst;
+	int clip_mx, clip_nx, clip_my, clip_ny;
+
 
 	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;
 	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;
@@ -1185,29 +1187,47 @@ int TKRA_EmitProjectedTriangle(
 //		zbuf=ctx->screen_zbuf2;
 		zbuf=ctx->screen_zbuf;
 
+		clip_mx=ctx->clip_x0;		clip_nx=ctx->clip_x1;
+		clip_my=ctx->clip_y0;		clip_ny=ctx->clip_y1;
+
 		dxy=ctx->screen_xsize*ctx->screen_ysize;
 		
-		dx0=((pv0.y>>16)*ctx->screen_xsize)+(pv0.x>>16);
+		tx0=(pv0.x>>16);		ty0=(pv0.y>>16);
+		tx0=__int_clamp(tx0, clip_mx, clip_nx);
+		ty0=__int_clamp(ty0, clip_my, clip_ny);
+		dx0=(ty0*ctx->screen_xsize)+tx0;
+		
+//		dx0=((pv0.y>>16)*ctx->screen_xsize)+(pv0.x>>16);
 		dy0=(s16)(pv0.z>>16)-256;
 
-		if(dx0<0)dx0=0;
-		if(dx0>dxy)dx0=dxy;
+//		if(dx0<0)dx0=0;
+//		if(dx0>dxy)dx0=dxy;
 
 		if(zbuf[dx0]<dy0)
 		{
-			dx1=((pv1.y>>16)*ctx->screen_xsize)+(pv1.x>>16);
+			tx0=(pv1.x>>16);		ty0=(pv1.y>>16);
+			tx0=__int_clamp(tx0, clip_mx, clip_nx);
+			ty0=__int_clamp(ty0, clip_my, clip_ny);
+			dx1=(ty0*ctx->screen_xsize)+tx0;
+
+			tx0=(pv2.x>>16);		ty0=(pv2.y>>16);
+			tx0=__int_clamp(tx0, clip_mx, clip_nx);
+			ty0=__int_clamp(ty0, clip_my, clip_ny);
+			dx2=(ty0*ctx->screen_xsize)+tx0;
+
+//			dx1=((pv1.y>>16)*ctx->screen_xsize)+(pv1.x>>16);
 			dy1=(s16)(pv1.z>>16)-256;
 
-			dx2=((pv2.y>>16)*ctx->screen_xsize)+(pv2.x>>16);
+//			dx2=((pv2.y>>16)*ctx->screen_xsize)+(pv2.x>>16);
 			dy2=(s16)(pv2.z>>16)-256;
 
 //			if(dx0<0)dx0=0;
-			if(dx1<0)dx1=0;
-			if(dx2<0)dx2=0;
+//			if(dx1<0)dx1=0;
+//			if(dx2<0)dx2=0;
 
 //			if(dx0>dxy)dx0=dxy;
-			if(dx1>dxy)dx1=dxy;
-			if(dx2>dxy)dx2=dxy;
+//			if(dx1>dxy)dx1=dxy;
+//			if(dx2>dxy)dx2=dxy;
 
 //			if((zbuf[dx0]<dy0) && (zbuf[dx1]<dy1) && (zbuf[dx2]<dy2))
 			if((zbuf[dx1]<dy1) && (zbuf[dx2]<dy2))
@@ -1219,11 +1239,15 @@ int TKRA_EmitProjectedTriangle(
 				dy2=(dx2*85)>>8;
 				ds2=(ds2*85)>>8;
 
-				dx0=(dy2*ctx->screen_xsize)+(dx2);
+				tx0=__int_clamp(dx2, clip_mx, clip_nx);
+				ty0=__int_clamp(dy2, clip_my, clip_ny);
+				dx0=(ty0*ctx->screen_xsize)+tx0;
+
+//				dx0=(dy2*ctx->screen_xsize)+(dx2);
 				dy0=((s16)ds2)-256;
 
-				if(dx0<0)dx0=0;
-				if(dx0>dxy)dx0=dxy;
+//				if(dx0<0)dx0=0;
+//				if(dx0>dxy)dx0=dxy;
 
 				if(zbuf[dx0]<dy0)
 					return(-1);
@@ -1435,7 +1459,107 @@ int TKRA_EmitProjectedTriangle(
 	v2_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv1.rgb);
 	v3_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv2.rgb);
 
-	TKRA_WalkTriangle(ctx, v1_parm, v2_parm, v3_parm);
+	if(ctx->stateflag1&TKRA_STFL1_FILL_LINE)
+	{
+		TKRA_WalkLine(ctx, v1_parm, v2_parm);
+		TKRA_WalkLine(ctx, v2_parm, v3_parm);
+		TKRA_WalkLine(ctx, v3_parm, v1_parm);
+	}else
+	{
+		TKRA_WalkTriangle(ctx, v1_parm, v2_parm, v3_parm);
+	}
+
+
+	return(0);
+}
+
+int TKRA_CheckZCullQuad(
+	TKRA_Context *ctx,
+	tkra_projvertex pv0,
+	tkra_projvertex pv1,
+	tkra_projvertex pv2,
+	tkra_projvertex pv3)
+{
+	tkra_zbufpixel *zbuf;
+	int ds0, ds1, ds2, ds3, dt0, dt1, dt2, dt3, dst;
+	int dx0, dx1, dx2, dx3, dy0, dy1, dy2, dy3, dxy, mmip;
+	int tx0, ty0, tz0, shx, shy, flipst;
+	int clip_mx, clip_nx, clip_my, clip_ny;
+
+	if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
+	{
+		zbuf=ctx->screen_zbuf;
+
+		clip_mx=ctx->clip_x0;		clip_nx=ctx->clip_x1;
+		clip_my=ctx->clip_y0;		clip_ny=ctx->clip_y1;
+
+		dxy=ctx->screen_xsize*ctx->screen_ysize;
+		
+		tx0=(pv0.x>>16);		ty0=(pv0.y>>16);
+		tx0=__int_clamp(tx0, clip_mx, clip_nx);
+		ty0=__int_clamp(ty0, clip_my, clip_ny);
+		dx0=(ty0*ctx->screen_xsize)+tx0;
+		
+//		dx0=((pv0.y>>16)*ctx->screen_xsize)+(pv0.x>>16);
+		dy0=(s16)(pv0.z>>16)-256;
+
+//		if(dx0<0)dx0=0;
+//		if(dx0>dxy)dx0=dxy;
+
+		if(zbuf[dx0]<dy0)
+		{
+			tx0=(pv3.x>>16);		ty0=(pv3.y>>16);
+			tx0=__int_clamp(tx0, clip_mx, clip_nx);
+			ty0=__int_clamp(ty0, clip_my, clip_ny);
+			dx3=(ty0*ctx->screen_xsize)+tx0;
+			dy3=(s16)(pv3.z>>16)-256;
+
+			if(zbuf[dx3]<dy3)
+			{
+				tx0=(pv1.x>>16);		ty0=(pv1.y>>16);
+				tx0=__int_clamp(tx0, clip_mx, clip_nx);
+				ty0=__int_clamp(ty0, clip_my, clip_ny);
+				dx1=(ty0*ctx->screen_xsize)+tx0;
+				dy1=(s16)(pv1.z>>16)-256;
+
+				tx0=(pv2.x>>16);		ty0=(pv2.y>>16);
+				tx0=__int_clamp(tx0, clip_mx, clip_nx);
+				ty0=__int_clamp(ty0, clip_my, clip_ny);
+				dx2=(ty0*ctx->screen_xsize)+tx0;
+				dy2=(s16)(pv2.z>>16)-256;
+
+	//			if((zbuf[dx0]<dy0) && (zbuf[dx1]<dy1) && (zbuf[dx2]<dy2))
+	//			if((zbuf[dx1]<dy1) && (zbuf[dx2]<dy2) && (zbuf[dx3]<dy3))
+				if((zbuf[dx1]<dy1) && (zbuf[dx2]<dy2))
+	//			if((zbuf[dx1]<dy1) && (zbuf[dx2]<dy2))
+				{
+					dx2=(pv0.x>>16)+(pv1.x>>16)+(pv2.x>>16)+(pv3.x>>16);
+					dy2=(pv0.y>>16)+(pv1.y>>16)+(pv2.y>>16)+(pv3.y>>16);
+					ds2=(pv0.z>>16)+(pv1.z>>16)+(pv2.z>>16)+(pv3.z>>16);
+	//				dx2=(dx2*85)>>8;
+	//				dy2=(dx2*85)>>8;
+	//				ds2=(ds2*85)>>8;
+
+					dx2=dx2>>2;
+					dy2=dx2>>2;
+					ds2=ds2>>2;
+
+					dx2=__int_clamp(dx2, clip_mx, clip_nx);
+					dy2=__int_clamp(dy2, clip_my, clip_ny);
+
+					dx0=(dy2*ctx->screen_xsize)+(dx2);
+					dy0=((s16)ds2)-256;
+
+	//				if(dx0<0)dx0=0;
+	//				if(dx0>dxy)dx0=dxy;
+
+					if(zbuf[dx0]<dy0)
+						return(1);
+				}
+			}
+		}
+	}
+	
 	return(0);
 }
 
@@ -1450,7 +1574,6 @@ int TKRA_EmitProjectedQuad(
 	u64	v2_parm[TKRA_VX_NPARM];
 	u64	v3_parm[TKRA_VX_NPARM];
 	u64	v4_parm[TKRA_VX_NPARM];
-	tkra_zbufpixel *zbuf;
 	TKRA_TexImage *img;
 
 	u64 tl0, tl1;
@@ -1458,69 +1581,13 @@ int TKRA_EmitProjectedQuad(
 	int ds0, ds1, ds2, ds3, dt0, dt1, dt2, dt3, dst;
 	int dx0, dx1, dx2, dx3, dy0, dy1, dy2, dy3, dxy, mmip;
 	int tx0, ty0, tz0, shx, shy, flipst;
+	int clip_mx, clip_nx, clip_my, clip_ny;
+
+	if(TKRA_CheckZCullQuad(ctx, pv0, pv1, pv2, pv3))
+		return(-1);
 
 	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;	is3=pv3.s;
 	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;	it3=pv3.t;
-
-	if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
-	{
-		zbuf=ctx->screen_zbuf;
-
-		dxy=ctx->screen_xsize*ctx->screen_ysize;
-		
-		dx0=((pv0.y>>16)*ctx->screen_xsize)+(pv0.x>>16);
-		dy0=(s16)(pv0.z>>16)-256;
-
-		if(dx0<0)dx0=0;
-		if(dx0>dxy)dx0=dxy;
-
-		if(zbuf[dx0]<dy0)
-		{
-			dx1=((pv1.y>>16)*ctx->screen_xsize)+(pv1.x>>16);
-			dy1=(s16)(pv1.z>>16)-256;
-
-			dx2=((pv2.y>>16)*ctx->screen_xsize)+(pv2.x>>16);
-			dy2=(s16)(pv2.z>>16)-256;
-
-			dx3=((pv3.y>>16)*ctx->screen_xsize)+(pv3.x>>16);
-			dy3=(s16)(pv3.z>>16)-256;
-
-//			if(dx0<0)dx0=0;
-			if(dx1<0)dx1=0;
-			if(dx2<0)dx2=0;
-			if(dx3<0)dx3=0;
-
-//			if(dx0>dxy)dx0=dxy;
-			if(dx1>dxy)dx1=dxy;
-			if(dx2>dxy)dx2=dxy;
-			if(dx3>dxy)dx3=dxy;
-
-//			if((zbuf[dx0]<dy0) && (zbuf[dx1]<dy1) && (zbuf[dx2]<dy2))
-			if((zbuf[dx1]<dy0) && (zbuf[dx2]<dy1) && (zbuf[dx3]<dy2))
-//			if((zbuf[dx1]<dy1) && (zbuf[dx2]<dy2))
-			{
-				dx2=(pv0.x>>16)+(pv1.x>>16)+(pv2.x>>16)+(pv3.x>>16);
-				dy2=(pv0.y>>16)+(pv1.y>>16)+(pv2.y>>16)+(pv3.y>>16);
-				ds2=(pv0.z>>16)+(pv1.z>>16)+(pv2.z>>16)+(pv3.z>>16);
-//				dx2=(dx2*85)>>8;
-//				dy2=(dx2*85)>>8;
-//				ds2=(ds2*85)>>8;
-
-				dx2=dx2>>2;
-				dy2=dx2>>2;
-				ds2=ds2>>2;
-
-				dx0=(dy2*ctx->screen_xsize)+(dx2);
-				dy0=((s16)ds2)-256;
-
-				if(dx0<0)dx0=0;
-				if(dx0>dxy)dx0=dxy;
-
-				if(zbuf[dx0]<dy0)
-					return(-1);
-			}
-		}
-	}
 
 	flipst=0;
 
@@ -1656,8 +1723,18 @@ int TKRA_EmitProjectedQuad(
 	v3_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv2.rgb);
 	v4_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv3.rgb);
 
-	TKRA_WalkTriangle(ctx, v1_parm, v2_parm, v3_parm);
-	TKRA_WalkTriangle(ctx, v1_parm, v3_parm, v4_parm);
+	if(ctx->stateflag1&TKRA_STFL1_FILL_LINE)
+	{
+		TKRA_WalkLine(ctx, v1_parm, v2_parm);
+		TKRA_WalkLine(ctx, v2_parm, v3_parm);
+		TKRA_WalkLine(ctx, v3_parm, v4_parm);
+		TKRA_WalkLine(ctx, v4_parm, v1_parm);
+	}else
+	{
+		TKRA_WalkTriangle(ctx, v1_parm, v2_parm, v3_parm);
+		TKRA_WalkTriangle(ctx, v1_parm, v3_parm, v4_parm);
+	}
+
 	return(0);
 }
 
@@ -1872,7 +1949,7 @@ int TKRA_TransformProjectTriangle(
 	float			w0, w1, w2, skew;
 	int				i0, i1, i2, tfl;
 	int				ecfl, lim;
-	byte			wasfrag;
+	byte			wasfrag, nosubdiv;
 	
 	TKRA_SetupDrawBlend(ctx);
 
@@ -1951,6 +2028,13 @@ int TKRA_TransformProjectTriangle(
 	wasfrag=0;
 
 	lim=4096;
+
+	nosubdiv=0;
+	if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))
+		nosubdiv=1;
+			
+	if(ctx->stateflag1&TKRA_STFL1_NOSUBDIV)
+		nosubdiv=1;
 
 	while((vstkpos>0) && (lim>0))
 	{
@@ -2285,7 +2369,8 @@ int TKRA_TransformProjectTriangle(
 //		if(ecfl)
 //			f4=(32*32*3);
 
-		if(ecfl&4)
+//		if(ecfl&4)
+		if(ecfl&6)
 //			f4=(32*32*3);
 			f4=(48*48*3);
 
@@ -2295,15 +2380,19 @@ int TKRA_TransformProjectTriangle(
 //			f4=(16*16*3);
 #endif
 
-		if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))
-			f4=999999;
+		if(ecfl&1)
+			nosubdiv=0;
+
+//		if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))
+//			f4=999999;
 
 //		f4 *= skew;
 	
 //		if(f3>(64*64*3))
 //		if(f3>(32*32*3))
 //		if(f3>(128*128*3))
-		if(f3>f4)
+//		if(f3>f4)
+		if(!nosubdiv && (f3>f4))
 //		if(0)
 		{
 //			if((vstkpos+5)>=32)
@@ -2570,7 +2659,7 @@ int TKRA_TransformProjectQuad(
 	float			w0, w1, w2, skew;
 	int				i0, i1, i2, tfl;
 	int				ecfl, lim;
-	byte			wasfrag;
+	byte			wasfrag, nosubdiv;
 	
 	TKRA_SetupDrawBlend(ctx);
 
@@ -2619,6 +2708,13 @@ int TKRA_TransformProjectQuad(
 	wasfrag=0;
 
 	lim=4096;
+
+	nosubdiv=0;
+	if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))
+		nosubdiv=1;
+			
+	if(ctx->stateflag1&TKRA_STFL1_NOSUBDIV)
+		nosubdiv=1;
 
 	while((vstkpos>0) && (lim>0))
 	{
@@ -2789,7 +2885,7 @@ int TKRA_TransformProjectQuad(
 			}
 		}
 
-#if 1
+#if 0
 		if((f0<1) | (f1<1) | (f2<1))
 		{
 			ctx->stat_reject_tris++;
@@ -2803,14 +2899,15 @@ int TKRA_TransformProjectQuad(
 
 #if 1
 //		f4=(72*72*4);
-		f4=(64*64*4);
-//		f4=(56*56*4);
+//		f4=(64*64*4);
+		f4=(56*56*4);
 //		f4=(48*48*4);
 
-		if(ecfl&4)
+//		if(ecfl&4)
+		if(ecfl&6)
 //			f4=(32*32*4);
-			f4=(40*40*4);
-//			f4=(48*48*4);
+//			f4=(40*40*4);
+			f4=(48*48*4);
 
 		if(ecfl&1)
 //			f4=(32*32*4);
@@ -2818,12 +2915,52 @@ int TKRA_TransformProjectQuad(
 //			f4=(16*16*4);
 #endif
 
-		if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))
-			f4=999999;
+		if(ecfl&1)
+			nosubdiv=0;
 
-		if(f5>f4)
+//		if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))
+//			f4=999999;
+			
+//		if(ctx->stateflag1&TKRA_STFL1_NOSUBDIV)
+//			f4=999999;
+
+		if(!nosubdiv && (f5>f4))
 //		if(0)
 		{
+#if 1
+			if(!ecfl)
+			{
+				/* Check for early Z cull rather than fragment. */
+			
+				i0=tkra_v4f_x(v0p)*65536;
+				i1=tkra_v4f_y(v0p)*65536;
+				i2=tkra_v4f_z(v0p)*65536;
+				pv0.x=i0;	pv0.y=i1;	pv0.z=i2;
+				
+				i0=tkra_v4f_x(v1p)*65536;
+				i1=tkra_v4f_y(v1p)*65536;
+				i2=tkra_v4f_z(v1p)*65536;
+				pv1.x=i0;	pv1.y=i1;	pv1.z=i2;
+
+				i0=tkra_v4f_x(v2p)*65536;
+				i1=tkra_v4f_y(v2p)*65536;
+				i2=tkra_v4f_z(v2p)*65536;
+				pv2.x=i0;	pv2.y=i1;	pv2.z=i2;
+
+				i0=tkra_v4f_x(v3p)*65536;
+				i1=tkra_v4f_y(v3p)*65536;
+				i2=tkra_v4f_z(v3p)*65536;
+				pv3.x=i0;	pv3.y=i1;	pv3.z=i2;
+
+				if(TKRA_CheckZCullQuad(ctx, pv0, pv1, pv2, pv3))
+				{
+					ctx->stat_reject_tris++;
+					ctx->stat_zocc_tris++;
+					continue;
+				}
+			}
+#endif
+
 			if((vstkpos+5)>=48)
 			{
 				printf("blown: Wn: %f %f %f\n", w0, w1, w2);
@@ -2859,7 +2996,8 @@ int TKRA_TransformProjectQuad(
 #if 1
 //			if(((f0+f2)>(2*(f1+f3))) && !ecfl)
 //			if(((f0+f2)>(2*(f1+f3))) && !ecfl && !(f5>(f4*4)))
-			if(((f0+f2)>(2*(f1+f3))) && !(f5>(f4*8)))
+//			if(((f0+f2)>(2*(f1+f3))) && !(f5>(f4*8)))
+			if(((f0+f2)>(2*(f1+f3))) && !(f5>(f4*32)))
 			{
 				v0stk[vstkpos]=v0;
 				v1stk[vstkpos]=v4;
@@ -2881,7 +3019,8 @@ int TKRA_TransformProjectQuad(
 
 //			if(((f1+f3)>(2*(f0+f2))) && !ecfl)
 //			if(((f1+f3)>(2*(f0+f2))) && !ecfl && !(f5>(f4*4)))
-			if(((f1+f3)>(2*(f0+f2))) && !(f5>(f4*8)))
+//			if(((f1+f3)>(2*(f0+f2))) && !(f5>(f4*8)))
+			if(((f1+f3)>(2*(f0+f2))) && !(f5>(f4*32)))
 			{
 				v0stk[vstkpos]=v0;
 				v1stk[vstkpos]=v1;

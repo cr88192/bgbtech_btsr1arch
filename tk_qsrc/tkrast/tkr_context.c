@@ -15,23 +15,48 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 	byte *ptr;
 	int scr_memsz;
 	int ofs_rgb, ofs_zbuf, ofs_zbuf2, ofs_sten;
+	int ofs_pad, ofs_pad_lo, frsz;
 	int i, j, k;
+	
+	frsz=xs*ys;
+
+//	ofs_pad=4096-(frsz&8191);
+//	if(ofs_pad<0)
+//		ofs_pad+=8192;
+
+//	ofs_pad=2048-(frsz&4095);
+	ofs_pad=2720-(frsz&4095);
+	if(ofs_pad<0)
+		ofs_pad+=4096;
+
+	ofs_pad=(ofs_pad+31)&(~31);
+	ofs_pad_lo=ofs_pad>>1;
 
 	scr_memsz = (xs+2)*16*2;
 	scr_memsz = (scr_memsz+63)&(~63);
-	ofs_rgb = scr_memsz;
-	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_rastpixel);
-	scr_memsz = (scr_memsz+63)&(~63);
-	ofs_zbuf = scr_memsz;
-	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_zbufpixel);
+
+//	ofs_rgb = scr_memsz;
+	ofs_rgb = scr_memsz + ofs_pad_lo;
+//	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_rastpixel);
+	scr_memsz += (frsz+ofs_pad)*sizeof(tkra_rastpixel);
 	scr_memsz = (scr_memsz+63)&(~63);
 
-	ofs_zbuf2 = scr_memsz;
-	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_zbufpixel);
+//	ofs_zbuf = scr_memsz;
+	ofs_zbuf = scr_memsz + ofs_pad_lo;
+//	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_zbufpixel);
+	scr_memsz += (frsz+ofs_pad)*sizeof(tkra_zbufpixel);
 	scr_memsz = (scr_memsz+63)&(~63);
 
-	ofs_sten = scr_memsz;
-	scr_memsz += (xs+2)*(ys+4)*sizeof(byte);
+//	ofs_zbuf2 = scr_memsz;
+	ofs_zbuf2 = scr_memsz + ofs_pad_lo;
+//	scr_memsz += (xs+2)*(ys+4)*sizeof(tkra_zbufpixel);
+	scr_memsz += (frsz+ofs_pad)*sizeof(tkra_zbufpixel);
+	scr_memsz = (scr_memsz+63)&(~63);
+
+//	ofs_sten = scr_memsz;
+	ofs_sten = scr_memsz + ofs_pad_lo;
+//	scr_memsz += (xs+2)*(ys+4)*sizeof(byte);
+	scr_memsz += (frsz+ofs_pad)*sizeof(byte);
 
 	ptr=tkra_malloc(scr_memsz+31);
 	ctx->screen_mem=ptr;
@@ -82,7 +107,7 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 
 int TKRA_DebugPrintStats(TKRA_Context *ctx)
 {
-#if 0
+#if 1
 	if(ctx->stat_base_tris)
 	{
 //		TKRA_DumpVec4(ctx->prj_xyzsc, "Clip: XyzSc:");

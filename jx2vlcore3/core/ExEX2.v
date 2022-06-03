@@ -423,6 +423,7 @@ begin
 
 `ifdef jx2_alu_slomuldiv
 		JX2_UCMD_QMULDIV: begin
+			$display("QMUL: Out %X", regQMulRes);
 			tValOutDfl		= regQMulRes;
 			tDoOutDfl		= 1;
 		end

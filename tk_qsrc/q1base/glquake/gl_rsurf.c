@@ -554,7 +554,10 @@ qgl_hfloat *R_CheckExpandDelayPolyQuads(int nvtx)
 		gl_vadpquads = realloc(gl_vadpquads, size1);
 		gl_szvadpquads = size1;
 	}
-	return(gl_vatmp);
+	
+	return(gl_vadpquads + (gl_nvadpquads*VERTEXSIZE));
+	
+//	return(gl_vatmp);
 }
 
 qgl_hfloat *R_GetExpandDelayPolyTris(int nvtx)
@@ -1059,7 +1062,7 @@ void DrawTextureChains (void)
 		qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		qglShadeModel (GL_SMOOTH);
 		qglEnable(GL_BLEND);
-		qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+//		qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 
 		t = cl.worldmodel->textures[i];
 		if (!t)
@@ -1266,6 +1269,9 @@ void R_DrawBrushModel (entity_t *e)
 */
 
 int r_totalsurfs;
+float r_time0;
+float r_time1;
+int r_timecut;
 
 /*
 ================
@@ -1291,7 +1297,17 @@ void R_RecursiveWorldNode (mnode_t *node)
 
 	if (R_CullBox (node->minmaxs, node->minmaxs+3))
 		return;
-	
+
+#if 0
+	r_time1 = Sys_FloatTime ();
+	if((r_time1-r_time0)>0.07)
+	{
+		r_timecut = 1;
+		return;
+	}
+#endif
+
+
 // if a leaf node, draw stuff
 	if (node->contents < 0)
 	{
@@ -1427,11 +1443,17 @@ void R_RecursiveWorldNode (mnode_t *node)
 
 
 //	if(c_brush_polys>128)
+//	if(c_brush_polys>256)
 //		return;
 
 //	if(r_totalsurfs > 200)
 //	if(r_totalsurfs > 400)
 //		return;
+
+//	r_time1 = Sys_FloatTime ();
+//	if((r_time1-r_time0)>0.07)
+//		return;
+
 
 // recurse down the back side
 	R_RecursiveWorldNode (node->children[!side]);
@@ -1469,12 +1491,15 @@ void R_DrawWorld (void)
 #endif
 
 	r_totalsurfs = 0;
+	r_time0 = Sys_FloatTime ();
+	r_timecut = 0;
 
 #if 1
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	qglShadeModel (GL_SMOOTH);
 	qglEnable(GL_BLEND);
-	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+//	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 #endif
 
 	R_RecursiveWorldNode (cl.worldmodel->nodes);
@@ -1535,6 +1560,10 @@ void R_MarkLeaves (void)
 		if (vis[i>>3] & (1<<(i&7)))
 		{
 			node = (mnode_t *)&cl.worldmodel->leafs[i+1];
+			
+//			if((VectorDistanceFast(node->porg, r_origin)-node->porg[3])>512)
+//				continue;
+			
 			do
 			{
 				if (node->visframe == r_visframecount)

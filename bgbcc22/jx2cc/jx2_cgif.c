@@ -1801,7 +1801,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		
 		sctx->op_is_wex2=j;
 
-#if 0
+#if 1
 		/*
 		 * Try to shuffle 3AC ops to reduce dependencies.
 		 */

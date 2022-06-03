@@ -284,6 +284,14 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 	u64 exc, sr0;
 	int i;
 
+	/* Clear predicted TLBE's */
+	ctx->mem_tlb_pr0_hi=0;
+	ctx->mem_tlb_pr0_hx=0;
+	ctx->mem_tlb_pr0_lo=0;
+	ctx->mem_tlb_pr1_hi=0;
+	ctx->mem_tlb_pr1_hx=0;
+	ctx->mem_tlb_pr1_lo=0;
+
 	if(!ctx->regs[BJX2_REG_PC])
 	{
 		if(ctx->status)
@@ -2187,7 +2195,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	int idx_nmid[1024];
 	char *topfn_name[1024];
 	int topfn_chn[1024];
-	int topfn_cyc[1024];
+	s64 topfn_cyc[1024];
 	int topfn_hash[64];
 	float topfn_pcnt[64];
 	float topfn_tpcnt[64];

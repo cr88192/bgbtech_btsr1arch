@@ -573,8 +573,8 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	if(((opw&0xF800)==0x8000) &&
 		((opw&0xFF00)!=0x8000))
 			fnm=1;
-	if((opw&0xFC00)==0x9000)
-		fnm=1;
+//	if((opw&0xFC00)==0x9000)
+//		fnm=1;
 	
 	if(fnm)
 	{

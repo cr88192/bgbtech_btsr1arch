@@ -1658,8 +1658,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	bjx2_addr addr1, addrh1;
 	u64 tlbhi3, tlblo3;
 	u64 tlbhi2, tlblo2;
-	u64 tlbhi0, tlblo0;
-	u64 tlbhi1, tlblo1;
+	u64 tlbhi0, tlblo0, tlbhx0;
+	u64 tlbhi1, tlblo1, tlbhx1;
 	u64	krr;
 	int i, j, k, h;
 
@@ -1688,6 +1688,36 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	
 		return(addr);
 	}
+
+#if 1
+	tlbhx0=ctx->mem_tlb_pr0_hx;
+	tlbhi0=ctx->mem_tlb_pr0_hi;
+	tlblo0=ctx->mem_tlb_pr0_lo;
+//	if(	((tlbhi0&0x0000FFFFFFFFC000ULL) ==
+//		(addr  &0x0000FFFFFFFFC000ULL)))
+	if(	((tlbhi0&0x0000FFFFFFFFC000ULL) ==
+		(addr   &0x0000FFFFFFFFC000ULL)) &&
+		((tlbhx0&0x0000FFFFFFFFFFFFULL) ==
+		(addrh  &0x0000FFFFFFFFFFFFULL)) )
+	{
+		addr1=(tlblo0&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
+		return(addr1);
+	}
+
+	tlbhx1=ctx->mem_tlb_pr1_hx;
+	tlbhi1=ctx->mem_tlb_pr1_hi;
+	tlblo1=ctx->mem_tlb_pr1_lo;
+//	if(	((tlbhi1&0x0000FFFFFFFFC000ULL) ==
+//		(addr  &0x0000FFFFFFFFC000ULL)))
+	if(	((tlbhi1&0x0000FFFFFFFFC000ULL) ==
+		(addr   &0x0000FFFFFFFFC000ULL)) &&
+		((tlbhx1&0x0000FFFFFFFFFFFFULL) ==
+		(addrh  &0x0000FFFFFFFFFFFFULL)) )
+	{
+		addr1=(tlblo1&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
+		return(addr1);
+	}
+#endif
 
 	krr=ctx->regs[BJX2_REG_KRR];
 
@@ -1783,10 +1813,6 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 				((tlbhi3&0x0000FFFFFFFFFFFFULL) ==
 				(addrh1&0x0000FFFFFFFFFFFFULL)))
 			{
-//				ctx->mem_tlb_pr0_hi=tlbhi2;
-//				ctx->mem_tlb_pr0_lo=tlblo2;
-//				ctx->mem_tlb_pr1_hi=tlbhi0;
-//				ctx->mem_tlb_pr1_lo=tlblo0;
 				addr1=(tlblo2&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
 				
 				if(addr!=addr1)
@@ -1812,6 +1838,16 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 				BJX2_MemTlbCheckAccess(ctx, acc, tlblo2&255, krr,
 					(tlbhi2&0x0000FFFFU)|((tlbhi2>>32)&0xFFFF0000U));
 				
+				if(!ctx->status)
+				{
+					ctx->mem_tlb_pr0_hx=tlbhi3;
+					ctx->mem_tlb_pr0_hi=tlbhi2;
+					ctx->mem_tlb_pr0_lo=tlblo2;
+					ctx->mem_tlb_pr1_hx=tlbhx0;
+					ctx->mem_tlb_pr1_hi=tlbhi0;
+					ctx->mem_tlb_pr1_lo=tlblo0;
+				}
+
 				return(addr1);
 			}
 		}

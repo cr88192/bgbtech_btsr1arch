@@ -967,8 +967,10 @@ u64 mem_tlb_lo[256*4];
 u64 mem_tlb_acl[4];
 
 u64 mem_tlb_pr0_hi;
+u64 mem_tlb_pr0_hx;
 u64 mem_tlb_pr0_lo;
 u64 mem_tlb_pr1_hi;
+u64 mem_tlb_pr1_hx;
 u64 mem_tlb_pr1_lo;
 
 u64 mem_ldtlb_hix;

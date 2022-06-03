@@ -654,12 +654,14 @@ void GL_Init (void)
 //	CheckTextureExtensions ();
 //	CheckMultiTextureExtensions ();
 
-	qglClearColor (1,0,0,0);
+//	qglClearColor (1,0,0,0);
+	qglClearColor (0.5,0.5,0.5,0);
+
 	qglCullFace(GL_FRONT);
 	qglEnable(GL_TEXTURE_2D);
 
 	qglEnable(GL_ALPHA_TEST);
-	qglAlphaFunc(GL_GREATER, 0.666);
+	qglAlphaFunc(GL_GREATER, 0.667);
 
 	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
 	qglShadeModel (GL_FLAT);
@@ -1570,7 +1572,7 @@ int vid_frnum;
 
 void	VID_Update (vrect_t *rects)
 {
-	u32 *conbufa, *conbufb;
+	u32 *conbufa, *conbufb, *conbufb2;
 	int bx, by, by2;
 
 	byte *ics;
@@ -1586,8 +1588,16 @@ void	VID_Update (vrect_t *rects)
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 //	conbufb=conbufa+(80*61);
 
+//	conbufb=(u32 *)0x0000080A0000ULL;
+	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
+	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
+
 	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
 	vid_frnum++;
+	
+	conbufa[0]=vid_frnum;
+	if(conbufb2[0]==vid_frnum)				//Detect if MMIO maps here.
+		conbufa=conbufb;
 
 	if(host_colormap16)
 	{

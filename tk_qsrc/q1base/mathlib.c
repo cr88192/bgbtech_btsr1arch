@@ -718,13 +718,26 @@ float VectorNormalizeFast (vec3_t v)
 	return length;
 }
 
+float VectorDistance (vec3_t sv, vec3_t ev)
+{
+	vec3_t	dv;
+	float	len;
+
+	VectorSubtract(ev, sv, dv);
+	len = DotProduct (dv, dv);
+	len = sqrt (len);
+	return(len);
+}
+
 float VectorDistanceFast (vec3_t sv, vec3_t ev)
 {
 	vec3_t	dv;
 	float	len;
+
 	VectorSubtract(ev, sv, dv);
-	
 	len = DotProduct (dv, dv);
+	len = Q_sqrt_fast (len);
+	return(len);
 }
 
 void VectorInverse (vec3_t v)

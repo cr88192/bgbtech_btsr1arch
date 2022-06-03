@@ -573,7 +573,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	MOV.X	(R4, TKRA_DS_ZPOS *8), R34
 	MOV.X	(R4, TKRA_DS_CPOS *8), R36
 	MOV.X	(R4, TKRA_DS_TPOS *8), R38
-	MOV.Q	(R4, TKRA_DS_YMASK*8), R41
+//	MOV.Q	(R4, TKRA_DS_YMASK*8), R33
 //	LEA.W	(R5, R7), R21
 
 	SHAD		R34, -16, R17	|	MOV.W		(R6, 0), R16
@@ -600,11 +600,8 @@ TKRA_DrawSpan_ModUtx2MortZb:
 
 	ADD			-2, R7			|	CMPGT		R18, R19
 									MOV.W?F		R3, (R5, 2)
-									MOV.W?F		R19, (R6, 2)
-	ADD			4, R6			|	ADD			4, R5
-
-//	CMPQGT		R7, R21
-	CMPGE		2, R7
+	ADD			4, R5			|	MOV.W?F		R19, (R6, 2)
+	ADD			4, R6			|	CMPGE		2, R7
 	BT			.L0
 	.L0E:
 
@@ -632,7 +629,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	BT			.L0
 	BRA			.L0E
 
-	.L0ZF:	
+	.L0ZF:
 	SHAD		R34, -16, R17	|	MOV.W		(R6, 2), R16	
 	ADD			-1, R7			|	ADD			R39, R38
 	ADD			R35, R34		|	ADD			R37, R36
@@ -656,10 +653,10 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	MOV.X	(R4, TKRA_DS_ZPOS *8), R34
 	MOV.X	(R4, TKRA_DS_CPOS *8), R36
 	MOV.X	(R4, TKRA_DS_TPOS *8), R38
-	MOV.Q	(R4, TKRA_DS_YMASK*8), R41
+	MOV.Q	(R4, TKRA_DS_YMASK*8), R33
 	LEA.W	(R5, R7), R21
 	PMORT.L		R38, R18
-	AND			R18, R41, R19
+	AND			R18, R33, R19
 	SHAD		R19, -4, R3
 
 	.L0:	
@@ -667,7 +664,7 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	SHAD		R34, -16, R17	|	MOV.W		(R6), R16
 	PMORT.L		R38, R18		|	BLKUTX2		R2, R19, R2
 	ADD			R35, R34		|	PMULU.HW	R2, R36, R2
-	AND			R18, R41, R19	|	RGB5PCK64	R2, R2
+	AND			R18, R33, R19	|	RGB5PCK64	R2, R2
 	ADD			R37, R36		|	CMPGT		R16, R17
 	SHAD		R19, -4, R3		|	MOV.W?F		R2, (R5)
 	ADD			2, R5			|	MOV.W?F		R17, (R6)

@@ -890,7 +890,15 @@ void Mod_LoadNodes (lump_t *l)
 			out->minmaxs[j] = LittleShort (in->mins[j]);
 			out->minmaxs[3+j] = LittleShort (in->maxs[j]);
 		}
-	
+
+#if 1
+		//BGB: Calculate Bounding Sphere
+		out->porg[0] = (out->minmaxs[0] + out->minmaxs[3]) * 0.5;
+		out->porg[1] = (out->minmaxs[1] + out->minmaxs[4]) * 0.5;
+		out->porg[2] = (out->minmaxs[2] + out->minmaxs[5]) * 0.5;
+		out->porg[3] = VectorDistance (out->minmaxs, out->porg);
+#endif
+
 		p = LittleLong(in->planenum);
 		out->plane = loadmodel->planes + p;
 
@@ -937,6 +945,14 @@ void Mod_LoadLeafs (lump_t *l)
 			out->minmaxs[j] = LittleShort (in->mins[j]);
 			out->minmaxs[3+j] = LittleShort (in->maxs[j]);
 		}
+
+#if 1
+		//BGB: Calculate Bounding Sphere
+		out->porg[0] = (out->minmaxs[0] + out->minmaxs[3]) * 0.5;
+		out->porg[1] = (out->minmaxs[1] + out->minmaxs[4]) * 0.5;
+		out->porg[2] = (out->minmaxs[2] + out->minmaxs[5]) * 0.5;
+		out->porg[3] = VectorDistance (out->minmaxs, out->porg);
+#endif
 
 		p = LittleLong(in->contents);
 		out->contents = p;

@@ -1557,7 +1557,7 @@ F0zz Instruction Block:
 ** F0nm_0goE  MOV.L		(Rm, Ro), Rn		//Q=0
 ** F0nm_0GoE  MOVU.L	(Rm, Ro), Rn		//Q=1
 ** F0nm_0goF  MOV.Q		(Rm, Ro), Rn		//Q=0
-** F0nm_0GoF /? MOVD.L	(Rm, Ro), Rn		//Q=1 (63..32=Undefined)
+** F0nm_0GoF ? LDTEX2
 
 * F0zz_1zzz
 ** F0nm_1go0  ADD		Rm, Ro, Rn			//Rn=Rm+Ro
@@ -1708,12 +1708,12 @@ F0zz Instruction Block:
 *** F0nm_1g6D  FSTCI		Rm, Rn		//Store Convert Int
 *** F0nm_1G6D  FSTCXI		Rm, Rn		//Store Convert Int (GFPX, F128)
 *** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
-*** F0nm_1g8D  FNEG			Rm, Rn		//Negate
-*** F0nm_1g9D  FABS			Rm, Rn		//Absolute
-*** F0nm_1gAD  FCMPEQ		Rm, Rn		//SR.T=(FRn EQ FRm)
-*** F0nm_1GAD  FCMPXEQ		Xm, Xn		//SR.T=(FRn EQ FRm)  (GFPX)
-*** F0nm_1gBD  FCMPGT		Rm, Rn		//SR.T=(FRn GT FRm)
-*** F0nm_1GBD  FCMPXGT		Xm, Xn		//SR.T=(FRn GT FRm)  (GFPX)
+*** F0nm_1g8D  FNEG			Rm, Rn		//(GFP ) Negate
+*** F0nm_1g9D  FABS			Rm, Rn		//(GFP ) Absolute
+*** F0nm_1gAD  FCMPEQ		Rm, Rn		//(GFP ) SR.T=(FRn EQ FRm)
+*** F0nm_1GAD  FCMPXEQ		Xm, Xn		//(GFPX) SR.T=(FRn EQ FRm)
+*** F0nm_1gBD  FCMPGT		Rm, Rn		//(GFP ) SR.T=(FRn GT FRm)
+*** F0nm_1GBD  FCMPXGT		Xm, Xn		//(GFPX) SR.T=(FRn GT FRm)
 *** F0nm_1gCD ? FSQRT		Rm, Rn		//(FDIV) Square Root
 *** F0nm_1GCD ? FSQRTX		Xm, Xn		//(FDIV) Square Root (GFPX)
 *** F0nm_1gDD ? FSQRTA		Rm, Rn		//(FDIV) Square Root (Approx)
@@ -1910,9 +1910,9 @@ F0zz Instruction Block:
 ** F0nm_4Go4  MOV.C		Cn, (Rm, Ro)		//(MOVC)
 ** F0nm_4go5  -
 ** F0nm_4Go5  -
-** F0nm_4go6  FMOV.S	Rn, (Rm, Ro)
+** F0nm_4go6  FMOV.S	Rn, (Rm, Ro)		//(FMOV)
 ** F0nm_4Go6  -
-** F0nm_4go7  FMOV.H	Rn, (Rm, Ro)
+** F0nm_4go7  FMOV.H	Rn, (Rm, Ro)		//(FMOV)
 ** F0nm_4Go7  -
 
 ** F0nm_4go8  MOV.X		(Rm, Disp5), Xn		//(MOVX2) Load Pair
@@ -1927,9 +1927,9 @@ F0zz Instruction Block:
 ** F0nm_4GoC  MOV.C		(Rm, Ro), Cn		//(MOVC)
 ** F0nm_4goD  -
 ** F0nm_4GoD  -
-** F0nm_4goE  FMOV.S	(Rm, Ro), Rn
+** F0nm_4goE  FMOV.S	(Rm, Ro), Rn		//(FMOV)
 ** F0nm_4GoE  -
-** F0nm_4goF  FMOV.H	(Rm, Ro), Rn
+** F0nm_4goF  FMOV.H	(Rm, Ro), Rn		//(FMOV)
 ** F0nm_4GoF  -
 
 * F0zz_5zzz

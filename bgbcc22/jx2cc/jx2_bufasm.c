@@ -2717,6 +2717,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 
+		if(!strcmp(tk0, "I.break"))
+		{
+			__debugbreak();
+
+			cs2=cs1;
+			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+				cs2++;
+			*rcs=cs2;
+			return(1);
+		}
+
 		if(!strcmp(tk0, "I.endif"))
 		{
 			if(ctx->iflvl_f>0)

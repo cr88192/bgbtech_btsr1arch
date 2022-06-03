@@ -125,6 +125,12 @@ typedef struct
 // #define	VERTEXSIZE	7
 #define	VERTEXSIZE	8
 
+#ifdef QGL_HFLOAT
+#define VERTEX_RGBA	6
+#else
+#define VERTEX_RGBA	7
+#endif
+
 typedef struct glpoly_s
 {
 	struct	glpoly_s	*next;
@@ -177,6 +183,7 @@ typedef struct mnode_s
 	int			visframe;		// node needs to be traversed if current
 	
 	float		minmaxs[6];		// for bounding box culling
+	float		porg[4];
 
 	struct mnode_s	*parent;
 
@@ -197,6 +204,7 @@ typedef struct mleaf_s
 	int			visframe;		// node needs to be traversed if current
 
 	float		minmaxs[6];		// for bounding box culling
+	float		porg[4];
 
 	struct mnode_s	*parent;
 

@@ -248,7 +248,8 @@ int print_hex_genw(u32 v)
 	return(i);
 }
 
-#if 1
+// #if 0
+#ifdef USEBCD
 u64 conv_uint_bcd(int val);
 
 __asm {
@@ -287,7 +288,8 @@ void print_decimal(int val)
 //	__debugbreak();
 	
 	t=tb;
-#if 1
+// #if 0
+#ifdef USEBCD
 	if(k)
 	{
 		tv=conv_uint_bcd(k);
