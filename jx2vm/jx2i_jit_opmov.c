@@ -1019,7 +1019,7 @@ int BJX2_TryJitOpcode_MovMem(UAX_Context *jctx,
 			return(1);
 		}
 
-#if 1
+#if 0
 		if(op->fmid==BJX2_FMID_REGSTREG)
 		{
 			BJX2_JitSetupOpTrap(jctx, cpu, tr, op);
@@ -1032,7 +1032,7 @@ int BJX2_TryJitOpcode_MovMem(UAX_Context *jctx,
 		}
 #endif
 
-#if 1
+#if 0
 		if(op->fmid==BJX2_FMID_LDREGDISPREG)
 		{
 			BJX2_JitSetupOpTrap(jctx, cpu, tr, op);
@@ -1058,7 +1058,7 @@ int BJX2_TryJitOpcode_MovMem(UAX_Context *jctx,
 		}
 #endif
 
-#if 1
+#if 0
 //		if((op->fmid==BJX2_FMID_LDREG2REG) &&
 		if(((op->fmid==BJX2_FMID_LDREG2REG) ||
 			(op->fmid==BJX2_FMID_LDDRREGREG)) &&
@@ -1128,7 +1128,7 @@ int BJX2_TryJitOpcode_MovMem(UAX_Context *jctx,
 			return(1);
 		}
 
-#if 1
+#if 0
 		if(op->fmid==BJX2_FMID_REGSTREG)
 		{
 			BJX2_JitSetupOpTrap(jctx, cpu, tr, op);
@@ -1141,7 +1141,7 @@ int BJX2_TryJitOpcode_MovMem(UAX_Context *jctx,
 		}
 #endif
 
-#if 1
+#if 0
 		if(op->fmid==BJX2_FMID_LDREGDISPREG)
 		{
 			BJX2_JitSetupOpTrap(jctx, cpu, tr, op);
@@ -1167,7 +1167,7 @@ int BJX2_TryJitOpcode_MovMem(UAX_Context *jctx,
 		}
 #endif
 
-#if 1
+#if 0
 //		if((op->fmid==BJX2_FMID_LDREG2REG) &&
 		if(((op->fmid==BJX2_FMID_LDREG2REG) ||
 			(op->fmid==BJX2_FMID_LDDRREGREG)) &&

@@ -333,8 +333,8 @@ begin
 			$display("LOAD(3): R=%X V=%X", regIdRm, memDataIn);
 `endif
 
-			if(regIdRm[6])
-				tDoOutDfl	= 0;
+//			if(regIdRm[6])
+//				tDoOutDfl	= 0;
 
 		end
 `endif

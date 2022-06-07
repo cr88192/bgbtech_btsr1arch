@@ -339,7 +339,7 @@ int Sblkau_EncodeBlock(short *ibuf, u32 *obuf, u32 *rpred)
 	tk_printf("%08X %08X %08X %08X\n", obuf[ 8], obuf[ 9], obuf[10], obuf[11]);
 	tk_printf("%08X %08X %08X %08X\n", obuf[12], obuf[13], obuf[14], obuf[15]);
 	
-//	__debugbreak();
+//	DBGBREAK
 #endif
 
 	spc=(Sblkau_SampToPred9(cpr)<<7)|(ssc<<1);
@@ -385,7 +385,7 @@ qboolean SNDDMA_Init(void)
 	shm->buffer = (unsigned char *)dma_buffer;
 	
 	if(shm->samples != 8192)
-		__debugbreak();
+		{ DBGBREAK }
 	
 	return(1);
 }
@@ -410,7 +410,7 @@ int SNDDMA_GetDMAPos(void)
 //	i = (int)(realtime*shm->speed*shm->channels);
 //	j = i & (shm->samples-1);
 //	shm->samplepos = j;
-//	__debugbreak();
+//	DBGBREAK
 //	return j;
 
 	shm->samplepos = (int)(realtime*shm->speed*shm->channels) & (shm->samples-1);

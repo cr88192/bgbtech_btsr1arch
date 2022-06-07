@@ -207,7 +207,7 @@ begin
 	begin
 		tNxtOpCnt	= tOpCnt - 1;
 //		tDoHold		= 1;
-		$display("SloMulDiv: Rn=%X Cnt=%d Ixt=%X", tNxtValRn, tOpCnt, tValOp);
+//		$display("SloMulDiv: Rn=%X Cnt=%d Ixt=%X", tNxtValRn, tOpCnt, tValOp);
 
 	end
 	else
@@ -218,7 +218,7 @@ begin
 		if(idUCmd[5:0]==JX2_UCMD_QMULDIV)
 		begin
 
-			$display("SloMulDiv: %x %x %x-%d", valRs, valRt, idUCmd, idUIxt);
+//			$display("SloMulDiv: %x %x %x-%d", valRs, valRt, idUCmd, idUIxt);
 
 `ifdef def_true
 			tValSg1s		= valRs[63];
@@ -239,9 +239,15 @@ begin
 			if(idUIxt[4])
 				tValSg1t		= 0;
 
+
 //			tNxtValSg		= (valRs[63] ^ valRt[63]) && !idUIxt[0];
 			tNxtValSg		= tValSg1s ^ tValSg1t;
 			tNxtValSgFdiv	= valRs[63] ^ valRt[63];
+
+			if(idUIxt[2:0]==3'b110)
+			begin
+				tNxtValSg		= tValSg1s;
+			end
 
 			tNxtValExpFdiv	=
 				1022 +

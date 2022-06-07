@@ -81,12 +81,12 @@ void ED_ClearEdict (edict_t *e)
 
 	i = progs->entityfields * 4;
 	p = &e->v;
-//	__debugbreak();
+//	DBGBREAK
 	
 	memset (p, 0, i);
 	e->free = false;
 
-//	__debugbreak();
+//	DBGBREAK
 }
 
 /*
@@ -768,7 +768,7 @@ string_t ED_StringToStringT (char *str)
 
 		if(v!=w)
 		{
-			__debugbreak();
+			DBGBREAK
 		}
 
 //		d=(((int)str)&0x1FFFFFFF)-(((int)pr_strings)&0x1FFFFFFF);
@@ -804,7 +804,7 @@ qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
 //		*(string_t *)d = v - pr_strings;
 //		w = pr_strings + (*(string_t *)d);
 //		if(v!=w)
-//			__debugbreak();
+//			DBGBREAK
 		*(string_t *)d = ED_StringToStringT(v);
 
 //		*(string_t *)d = ED_NewString (s) - pr_strings;

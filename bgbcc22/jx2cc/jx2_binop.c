@@ -3328,6 +3328,7 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 	char *name,
 	int narg, ccxl_register *args)
 {
+	char tb[256];
 	int csreg, ctreg, cdreg, cureg, cvreg;
 	ccxl_register treg0, treg1;
 	ccxl_type dty, sty, bty;
@@ -3346,7 +3347,13 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 
 	if(!strcmp(name, "__debugbreak"))
 	{
-		BGBCC_JX2C_EmitOpNone(ctx, sctx, BGBCC_SH_NMID_BRK);
+		k=sctx->breakrov++;
+		sprintf(tb, "__gen_debugbreak_%04X", k);
+		
+		BGBCC_JX2_EmitNamedLabel(sctx, tb);
+		
+//		BGBCC_JX2C_EmitOpNone(ctx, sctx, BGBCC_SH_NMID_BRK);
+		BGBCC_JX2C_EmitOpImm(ctx, sctx, BGBCC_SH_NMID_BRK, k);
 		return(1);
 	}
 

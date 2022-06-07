@@ -111,7 +111,7 @@ sfxcache_t *S_LoadSound (sfx_t *s)
     char	namebuffer[256];
 	byte	*data;
 	wavinfo_t	info;
-	int		len;
+	int		len, pad;
 	float	stepscale;
 	sfxcache_t	*sc;
 	byte	stackbuf[1*1024];		// avoid dirtying the cache heap
@@ -153,10 +153,14 @@ sfxcache_t *S_LoadSound (sfx_t *s)
 	len = info.samples / stepscale;
 
 	len = len * info.width * info.channels;
+	
+	pad = len * 0.01;
+	if(pad<256)
+		pad=256;
 
 //	printf("S_LoadSound: A3\n");
 
-	sc = Cache_Alloc ( &s->cache, len + sizeof(sfxcache_t), s->name);
+	sc = Cache_Alloc ( &s->cache, len + pad + sizeof(sfxcache_t), s->name);
 	if (!sc)
 		return NULL;
 
@@ -301,7 +305,7 @@ wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength)
 	if (!(data_p && !Q_strncmp(data_p+8, "WAVE", 4)))
 //	if (!data_p || ((*(int *)(data_p+8)) != (*(int *)"WAVE")))
 	{
-		__debugbreak();
+		DBGBREAK
 
 		Con_Printf("Missing RIFF/WAVE chunks\n");
 		return info;

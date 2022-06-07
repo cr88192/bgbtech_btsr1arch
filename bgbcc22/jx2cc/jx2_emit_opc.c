@@ -1420,6 +1420,13 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 		break;
 #endif
 
+#if 1
+	case BGBCC_SH_NMID_BRK:
+		opw1=0xF88F;
+		opw2=(u16)imm;
+		break;
+#endif
+
 	default:
 		break;
 	}
@@ -1431,6 +1438,7 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 			opw2=0x3000|((opw1>>4)&0x00F0)|(opw1&0x000F);
 			opw1=0xF000|((opw1>>4)&0x000F);
 		}else
+			if((opw1&0xE000)!=0xE000)
 		{
 			opw1=-1;
 		}

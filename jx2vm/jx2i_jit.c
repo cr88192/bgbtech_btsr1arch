@@ -610,7 +610,7 @@ int BJX2_JitInsnVMRegVMReg(UAX_Context *jctx, int op, int didx, int sidx)
 	return(1);
 }
 
-
+#if 0
 int BJX2_JitLoadVMFReg(UAX_Context *jctx, int idx, int reg)
 {
 	if(idx!=(idx&127))
@@ -644,8 +644,9 @@ int BJX2_JitStoreVMFReg(UAX_Context *jctx, int idx, int reg)
 	}
 	return(0);
 }
+#endif
 
-
+#if 0
 int BJX2_JitLoadVMDReg(UAX_Context *jctx, int idx, int reg)
 {
 	if(idx!=(idx&127))
@@ -715,6 +716,7 @@ int BJX2_JitStoreVMDReg(UAX_Context *jctx, int idx, int reg)
 	}
 	return(0);
 }
+#endif
 
 int BJX2_JitFlushJNext(UAX_Context *jctx,
 	BJX2_Context *cpu, BJX2_Trace *tr)

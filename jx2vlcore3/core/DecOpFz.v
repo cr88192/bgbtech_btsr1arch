@@ -95,6 +95,7 @@ assign	idUFl = opUFl;
 `reg_gpr	opRegN_Fix;
 
 `reg_gpr	opRegO_Df2;
+reg			opRegO_Df2_IsSP;
 
 `reg_gpr	opRegM_Cr;
 `reg_gpr	opRegN_Cr;
@@ -360,6 +361,8 @@ begin
 	if(opRegN_Cr[4:0]==5'h0F)
 		opRegN_Cr = JX2_GR_R15;
 `endif
+
+	opRegO_Df2_IsSP = (opRegO_Df2 == JX2_GR_SP);
 
 `ifdef jx2_enable_xgpr
 	opImm_imm5u	= {UV27_00, opRegO_Dfl[5:0]};
@@ -4000,6 +4003,14 @@ begin
 					opFmid		= JX2_FMID_IMM8REG;
 					opIty		= JX2_ITY_UW;
 					opUCmdIx	= JX2_UCIX_FPCX_HG;
+				end
+
+//				if(opRegO_Df2_IsSP)
+				if(istrWord[4:0]==5'h0F)
+				begin
+					/* "FLDCH Imm16, SP" is a BREAK */
+					opNmid		= JX2_UCMD_OP_IXT;
+					opUCmdIx	= JX2_UCIX_IXT_BREAK;
 				end
 			end
 `endif

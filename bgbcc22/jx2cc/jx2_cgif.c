@@ -351,13 +351,17 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
 		shctx->use_wexmd=0;
 
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
 		shctx->has_pushx2=0;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nosimdx"))
 		shctx->has_simdx2=0;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowexify"))
 		shctx->no_wexify=1;
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nojumbo"))
+		shctx->has_jumbo=0;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowexj"))
 		shctx->has_jumbo=0;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "noalux"))

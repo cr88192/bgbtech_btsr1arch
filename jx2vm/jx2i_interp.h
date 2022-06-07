@@ -795,10 +795,10 @@ typedef struct BJX2_MemSpan_s BJX2_MemSpan;
 
 struct BJX2_Context_s {
 u64 regs[128];				//GPRs and CRs
-u64 fpreg[32];				//FPRs
+// u64 fpreg[32];				//FPRs
 
 u64 ex_regs[128];				//GPRs and CRs
-u64 ex_fpreg[32];				//FPRs
+// u64 ex_fpreg[32];				//FPRs
 
 BJX2_Trace *rttr[64];		//return traces (mini hash)
 BJX2_Trace *prttr;			//return traces (pred)

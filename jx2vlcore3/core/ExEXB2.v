@@ -192,6 +192,12 @@ begin
 			tRegHeld	= 1;
 		end
 
+		JX2_UCMD_FMOV_RM: begin
+		end
+		JX2_UCMD_FMOV_MR: begin
+			tRegHeld	= 1;
+		end
+
 		JX2_UCMD_ADDSP: begin
 		end
 

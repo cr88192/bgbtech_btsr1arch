@@ -746,6 +746,10 @@ void CL_ParseServerMessage (void)
 //
 	MSG_BeginReading ();
 	
+//	__debugbreak();
+
+//	tk_printf("CL_ParseServerMessage: ");
+
 	while (1)
 	{
 		if (msg_badread)
@@ -757,6 +761,12 @@ void CL_ParseServerMessage (void)
 		{
 			SHOWNET("END OF MESSAGE");
 			return;		// end of message
+		}
+		
+		if(cmd == 0)
+		{
+			Con_Printf ("CL_ParseServerMessage: Bad End %d\n", cmd);
+			return;
 		}
 
 	// if the high bit of the command byte is set, it is a fast update
@@ -770,6 +780,7 @@ void CL_ParseServerMessage (void)
 		SHOWNET(svc_strings[cmd]);
 
 //		Con_Printf ("CL_ParseServerMessage: %d\n", cmd);
+//		tk_printf("%02X ", cmd);
 	
 	// other commands
 		switch (cmd)
@@ -941,7 +952,8 @@ void CL_ParseServerMessage (void)
 		case svc_cdtrack:
 			cl.cdtrack = MSG_ReadByte ();
 			cl.looptrack = MSG_ReadByte ();
-			if ( (cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1) )
+			if ( (cls.demoplayback || cls.demorecording) &&
+					(cls.forcetrack != -1) )
 				CDAudio_Play ((byte)cls.forcetrack, true);
 			else
 				CDAudio_Play ((byte)cl.cdtrack, true);
@@ -972,5 +984,6 @@ void CL_ParseServerMessage (void)
 			break;
 		}
 	}
+//	tk_printf("\n");
 }
 

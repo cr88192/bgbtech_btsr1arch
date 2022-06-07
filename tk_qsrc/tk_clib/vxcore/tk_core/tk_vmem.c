@@ -2391,7 +2391,7 @@ s64 TK_VMem_VaFindFreePagesBasic(int cnt, int flag)
 
 s64 TK_VMem_VaFindFreePagesAslr(int cnt, int flag)
 {
-	s64 addr;
+	s64 addr, addr1;
 	int n, qfl;
 
 	if(!tk_vmem_pagecache)
@@ -2406,6 +2406,13 @@ s64 TK_VMem_VaFindFreePagesAslr(int cnt, int flag)
 		addr=TK_GetRandom48ASLR();
 //		addr=(addr<<TKMM_PAGEBITS)&0x00003FFFFFFFFFFFLL;
 		addr=(addr<<TKMM_PAGEBITS)&0x00001FFFFFFFFFFFLL;
+		
+		if(cnt<=65536)
+		{
+			addr1=addr+(cnt<<TKMM_PAGEBITS);
+			if((addr>>32)!=(addr1>>32))
+				continue;
+		}
 		
 		if(TK_VMem_CheckAddrIsVirtual(addr))
 		{

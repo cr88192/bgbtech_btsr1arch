@@ -189,6 +189,13 @@ begin
 			tRegValRn2	= memDataInB;
 		end
 
+		JX2_UCMD_FMOV_RM: begin
+		end
+		JX2_UCMD_FMOV_MR: begin
+//			tRegIdRn2	= regIdRm;
+//			tRegValRn2	= memDataInB;
+		end
+
 		JX2_UCMD_ADDSP: begin
 		end
 

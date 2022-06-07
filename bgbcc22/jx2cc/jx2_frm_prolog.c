@@ -1784,10 +1784,10 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	k=sctx->frm_offs_sectoken;
 	if(k)
 	{
-		BGBCC_JX2_EmitLoadRegImm64P(sctx, BGBCC_SH_REG_RQ0,
+		BGBCC_JX2_EmitLoadRegImm64P(sctx, BGBCC_SH_REG_RQ16,
 //			0x1234567890ABCDEFLL);
 			sctx->frm_val_sectoken);
-		BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, BGBCC_SH_REG_RQ0);
+		BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, BGBCC_SH_REG_RQ16);
 	}
 
 	if(	sctx->regalc_live || sctx->fregalc_live ||

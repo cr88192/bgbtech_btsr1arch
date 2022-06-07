@@ -602,6 +602,10 @@ void MSG_WriteChar (sizebuf_t *sb, int c)
 
 	buf = SZ_GetSpace (sb, 1);
 	buf[0] = c;
+
+	buf[1] = 0;
+	buf[2] = 0;
+	buf[3] = 0;
 }
 
 void MSG_WriteByte (sizebuf_t *sb, int c)
@@ -615,6 +619,10 @@ void MSG_WriteByte (sizebuf_t *sb, int c)
 
 	buf = SZ_GetSpace (sb, 1);
 	buf[0] = c;
+
+	buf[1] = 0;
+	buf[2] = 0;
+	buf[3] = 0;
 }
 
 void MSG_WriteShort (sizebuf_t *sb, int c)
@@ -629,6 +637,9 @@ void MSG_WriteShort (sizebuf_t *sb, int c)
 	buf = SZ_GetSpace (sb, 2);
 	buf[0] = c&0xff;
 	buf[1] = c>>8;
+
+	buf[2] = 0;
+	buf[3] = 0;
 }
 
 void MSG_WriteLong (sizebuf_t *sb, int c)
@@ -640,6 +651,9 @@ void MSG_WriteLong (sizebuf_t *sb, int c)
 	buf[1] = (c>>8)&0xff;
 	buf[2] = (c>>16)&0xff;
 	buf[3] = c>>24;
+
+	buf[4] = 0;
+	buf[5] = 0;
 }
 
 void MSG_WriteFloat (sizebuf_t *sb, float f)
@@ -720,7 +734,11 @@ int MSG_ReadByte (void)
 	p=p+msg_readcount;
 	c = *p;
 
+	c=c&255;
+
 	msg_readcount++;
+	
+//	__debugbreak();
 	
 	return c;
 }
@@ -756,13 +774,20 @@ int MSG_ReadLong (void)
 		return -1;
 	}
 		
-	c = net_message.data[msg_readcount]
-	+ (net_message.data[msg_readcount+1]<<8)
-	+ (net_message.data[msg_readcount+2]<<16)
-	+ (net_message.data[msg_readcount+3]<<24);
-	
-	msg_readcount += 4;
-	
+//	c = net_message.data[msg_readcount]
+//	+ (net_message.data[msg_readcount+1]<<8)
+//	+ (net_message.data[msg_readcount+2]<<16)
+//	+ (net_message.data[msg_readcount+3]<<24);
+
+//	msg_readcount += 4;
+
+	c=MSG_ReadByte();
+	c=c|(MSG_ReadByte()<<8);
+	c=c|(MSG_ReadByte()<<16);
+	c=c|(MSG_ReadByte()<<24);
+
+	c=(int)c;
+
 	return c;
 }
 
@@ -795,7 +820,10 @@ char *MSG_ReadString (void)
 	do
 	{
 		c = MSG_ReadChar ();
-		if (c == -1 || c == 0)
+//		if (c == -1 || c == 0)
+		if ((c == -1) && msg_badread)
+			break;
+		if (c == 0)
 			break;
 		string[l] = c;
 		l++;
@@ -840,7 +868,7 @@ void SZ_Alloc (sizebuf_t *buf, int startsize)
 {
 	if (startsize < 256)
 	{
-//		__debugbreak();
+//		DBGBREAK
 		startsize = 256;
 	}
 	buf->data = Hunk_AllocName (startsize, "sizebuf");
@@ -1539,7 +1567,7 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 					{
 						if(pak->files[i].cmp)
 						{
-							__debugbreak();
+							DBGBREAK
 						}
 						
 					       // open a new file on the pakfile
@@ -1780,7 +1808,7 @@ int COM_DecodeBufferRP2(
 			continue;
 		}else
 		{
-			__debugbreak();
+			DBGBREAK
 		}
 
 		*(u64 *)ct=*(u64 *)cs;
@@ -1897,7 +1925,7 @@ byte *COM_UnpackL4(byte *ct, byte *ibuf, int isz)
 //				{ *(u64 *)ct1=*(u64 *)cs1; ct1+=8; cs1+=8; }
 //				{ *(u32 *)ct1=*(u32 *)cs1; ct1+=4; cs1+=4; }
 			ct+=ll;
-//			__debugbreak();
+//			DBGBREAK
 		}else
 //			if(ld>4)
 			if(ld>=4)
@@ -1911,7 +1939,7 @@ byte *COM_UnpackL4(byte *ct, byte *ibuf, int isz)
 				ct1+=8; cs1+=8;
 			}
 			ct+=ll;
-//			__debugbreak();
+//			DBGBREAK
 		}else if(ld==1)
 		{
 			tv=*cs1;		tv|=tv<<8;
@@ -1985,7 +2013,7 @@ int COM_FileRead (int handle, void *dest, int count)
 		return(com_findfile_csize);
 	}
 	
-	__debugbreak();
+	DBGBREAK
 	return(-1);
 }
 

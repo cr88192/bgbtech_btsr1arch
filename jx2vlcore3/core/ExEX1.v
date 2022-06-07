@@ -1273,7 +1273,8 @@ begin
 				end
 				JX2_UCIX_IXT_BREAK: begin
 					if(!tMsgLatch)
-						$display("EX: BREAK, PC=%X", regValPc);
+						$display("EX: BREAK, PC=%X Imm=%X",
+							regValPc, regValImm);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
 					if(regInExc[15])

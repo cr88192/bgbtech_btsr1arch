@@ -228,6 +228,8 @@ int sim_datsz;
 int sim_bsssz;
 int simimgsz;
 
+int breakrov;
+
 u32 *lbl_ofs;		//label offsets
 u32 *rlc_ofs;		//reloc offsets
 u32 *lbl_id;		//label IDs

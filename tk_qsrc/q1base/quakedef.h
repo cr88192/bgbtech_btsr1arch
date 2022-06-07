@@ -131,6 +131,9 @@ void	VID_UnlockBuffer (void);
 
 #define	MAX_STYLESTRING	64
 
+#define	DBGBREAK \
+	do { printf("BRK %s:%d\n", __FILE__, __LINE__); __debugbreak(); }while(0);
+
 //
 // stats are integers communicated to the client by the server
 //

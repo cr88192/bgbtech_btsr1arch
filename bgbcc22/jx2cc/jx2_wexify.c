@@ -2892,6 +2892,9 @@ ccxl_status BGBCC_JX2_BeginWex(
 	if(sctx->optmode==BGBCC_OPT_SIZE)
 		return(0);
 
+	if(sctx->no_wexify)
+		return(0);
+
 //	return(0);
 
 	if(!(sctx->is_fixed32&16))

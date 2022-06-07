@@ -2203,9 +2203,9 @@ int main(int argc, char **argv, char **env)
 		(char *)"ID1/PAK2LZ.WAD",
 		(char *)"../../tk_qsrc/id1/pak2lz.wad");
 
-	JX2R_UseImageAddFile(
-		(char *)"ID1/AUTOEXEC.CFG",
-		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
+//	JX2R_UseImageAddFile(
+//		(char *)"ID1/AUTOEXEC.CFG",
+//		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
 #if 1

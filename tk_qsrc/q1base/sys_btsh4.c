@@ -169,7 +169,7 @@ void Sys_Error (char *error, ...)
 //	char tb[1024];
 	va_list         argptr;
 
-//	__debugbreak();
+//	{ DBGBREAK }
 
 	tk_printf("Sys_Error: ");   
 	va_start(argptr, error);
@@ -179,7 +179,7 @@ void Sys_Error (char *error, ...)
 	va_end(argptr);
 //	printf("%s\n", tb);
 
-	__debugbreak();
+	{ DBGBREAK }
 
 //	exit(1);
 //	*(int *)-1=-1;
@@ -373,7 +373,7 @@ void Sys_CheckSanity(void)
 		tk_printf("Q Flt 6: %f\n", time);
 		
 //		if(time!=3.14159)
-//			__debugbreak();
+//			{ DBGBREAK }
 
 		for(i=-1; i<=1; i++)
 			for(j=-1; j<=1; j++)
@@ -438,135 +438,135 @@ void Sys_CheckSanity(void)
 	if(!rec)	tk_puts("Sanity A\n");
 
 	if(LittleShort(0x1234)!=0x1234)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleLong(0x12345678)!=0x12345678)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleShort(0xABCD)!=(short)0xABCD)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleLong(0x89ABCDEF)!=0x89ABCDEF)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity B\n");
 
 	if(LittleShort(0x12345678)!=0x5678)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleShort(0x89ABCDEF)!=(short)0xCDEF)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(LittleFloat(M_PI)!=((float)M_PI))
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity C\n");
 
 	if(LittleShort(*(short *)(pat_tst0+2))!=0x1234)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleLong(*(int *)(pat_tst0+0))!=0x12345678)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleShort(*(short *)(pat_tst0+5))!=(short)0xABCD)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleLong(*(int *)(pat_tst0+4))!=0x89ABCDEF)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(LittleShort(*(int *)(pat_tst0+0))!=0x5678)
-		__debugbreak();
+		{ DBGBREAK }
 	if(LittleShort(*(int *)(pat_tst0+4))!=(short)0xCDEF)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity C1\n");
 
 	i=*(int *)(pat_tst0+4);
 	if((i<<16)!=0xCDEF0000)
-		__debugbreak();
+		{ DBGBREAK }
 	if((i>>16)!=0xFFFF89AB)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if((((u32)i)<<16)!=0xCDEF0000)
-		__debugbreak();
+		{ DBGBREAK }
 	if((((u32)i)>>16)!=0x000089AB)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity D\n");
 
 
 	i=4095;
 	if(&pr_functions[i] != pr_functions+i)
-		__debugbreak();
+		{ DBGBREAK }
 	if((byte *)(&pr_functions[i]) !=
 		(byte *)pr_functions+i*sizeof(*pr_functions))
-			__debugbreak();
+			{ DBGBREAK }
 	if(sizeof(*pr_functions)!=sizeof(dfunction_t))
-		__debugbreak();
+		{ DBGBREAK }
 	if(sizeof(dfunction_t)!=36)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity E\n");
 
 	pj=(int *)pat_tst0+3;
 	pk=(int *)pat_tst0;
 	if((pj-pk)!=3)
-		__debugbreak();
+		{ DBGBREAK }
 	if(((byte *)pj-(byte *)pk)!=12)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity F\n");
 #endif
 
 	i=3; j=4; k=5;
 	if((i+j)!=7)
-		__debugbreak();
+		{ DBGBREAK }
 	if((i-k)!=-2)
-		__debugbreak();
+		{ DBGBREAK }
 	if((i*j)!=12)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity G\n");
 
 	if((i&j)!=0)
-		__debugbreak();
+		{ DBGBREAK }
 	if((i|k)!=7)
-		__debugbreak();
+		{ DBGBREAK }
 	if((i^k)!=6)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity H\n");
 
 	i=-6972; j=1;
 
 	if((i>>1)!=(-3486))
-		__debugbreak();
+		{ DBGBREAK }
 	if((((u32)i)>>1)!=(0x7FFFF262))
-		__debugbreak();
+		{ DBGBREAK }
 
 	if((i>>j)!=(-3486))
-		__debugbreak();
+		{ DBGBREAK }
 	if((((u32)i)>>j)!=(0x7FFFF262))
-		__debugbreak();
+		{ DBGBREAK }
 
 	k=0;
 	if((i<<k)!=i)
-		__debugbreak();
+		{ DBGBREAK }
 	if((i>>k)!=i)
-		__debugbreak();
+		{ DBGBREAK }
 
 	j=1; k=9;
 	if((j<<k)!=512)
-		__debugbreak();
+		{ DBGBREAK }
 	if((j<<8)!=256)
-		__debugbreak();
+		{ DBGBREAK }
 	if((2<<k)!=1024)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity I\n");
 
 	i>>=3;
 	if(i!=(-872))
-		__debugbreak();
+		{ DBGBREAK }
 	i<<=19;
 	if(i!=(-457179136))
-		__debugbreak();
+		{ DBGBREAK }
 	i=-i;
 	if(i!=(457179136))
-		__debugbreak();
+		{ DBGBREAK }
 
 	i=-6972; j=1;
 
@@ -585,7 +585,7 @@ void Sys_CheckSanity(void)
 		printf("I1-0: i=%d f=%08X-%08X g=%08X-%08X\n", i,
 			(int)(li>>32), (int)li,
 			(int)(lj>>32), (int)lj);
-		__debugbreak();
+		{ DBGBREAK }
 	}
 //	if(ff!=(-6972.0))
 	if(ff!=gf)
@@ -593,7 +593,7 @@ void Sys_CheckSanity(void)
 //		gf=-6972.0;
 		printf("I1-1: i=%d ff=%08X exp=%08X\n", i,
 			*(int *)(&ff), *(int *)(&gf));
-		__debugbreak();
+		{ DBGBREAK }
 	}
 
 	if(!rec)	tk_puts("Sanity J\n");
@@ -601,9 +601,9 @@ void Sys_CheckSanity(void)
 	f=3.14159; ff=f;
 	i=f; j=ff;
 	if(i!=3)
-		__debugbreak();
+		{ DBGBREAK }
 	if(j!=3)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity J1\n");
 
@@ -611,82 +611,82 @@ void Sys_CheckSanity(void)
 
 	f=7.0; g=8.0; h=9.0;
 	if((f+g)!=15.0)
-		__debugbreak();
+		{ DBGBREAK }
 	if((f-h)!=-2.0)
-		__debugbreak();
+		{ DBGBREAK }
 	if((f*h)!=63.0)
-		__debugbreak();
+		{ DBGBREAK }
 	if((h/g)!=1.125)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(ceil(3.14)!=4.0)
-		__debugbreak();
+		{ DBGBREAK }
 	if(floor(3.14)!=3.0)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity K\n");
 
 	if(i)
-		__debugbreak();
+		{ DBGBREAK }
 	if(!j)
-		__debugbreak();
+		{ DBGBREAK }
 	if(j<=0)
-		__debugbreak();
+		{ DBGBREAK }
 	if(k>=0)
-		__debugbreak();
+		{ DBGBREAK }
 	if(i<0)
-		__debugbreak();
+		{ DBGBREAK }
 	if(i>0)
-		__debugbreak();
+		{ DBGBREAK }
 
 	i=0; j=1; k=!j; l=!i;
 	if(i && j)
-		__debugbreak();
+		{ DBGBREAK }
 	if(i || k)
-		__debugbreak();
+		{ DBGBREAK }
 	if(j && l)	{}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 	if(j || k) {}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 	if(k || l) {}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity L\n");
 
 	if((i && j) || !(j && l))
-		__debugbreak();
+		{ DBGBREAK }
 	if((i || j) && (j && l)) {}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 
 	if((i || j) && (i || k))
-		__debugbreak();
+		{ DBGBREAK }
 	if((i || k) && (i || j))
-		__debugbreak();
+		{ DBGBREAK }
 
 	if((i && j) || (j && l)) {}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 	if((j && l) || (i && j)) {}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity M\n");
 
 	i='5';
 	if (i >= '0' && i <= '9') {}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 	if (i >= 'a' && i <= 'z')
-		{ __debugbreak(); }
+		{ { DBGBREAK } }
 	else	{ }
 
 	i='H';
 	if (i >= 'A' && i <= 'Z') {}
-	else	__debugbreak();
+	else	{ DBGBREAK }
 
 	i=999; j=10;
 	if((i%j)!=9)
-		__debugbreak();
+		{ DBGBREAK }
 	i=486; j=7;
 	if((i%j)!=3)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity N\n");
 
@@ -709,11 +709,11 @@ void Sys_CheckSanity(void)
 		rec--;
 		
 		if(i!=rec)
-			__debugbreak();
+			{ DBGBREAK }
 	}
 	
 	if(rec<0)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity O\n");
 
@@ -722,32 +722,32 @@ void Sys_CheckSanity(void)
 		tk_puts("Check for: Int Stomp\n");
 	
 //		if(i!=3)
-//			__debugbreak();
+//			{ DBGBREAK }
 		if(j!=4)
-			__debugbreak();
+			{ DBGBREAK }
 		if(k!=5)
-			__debugbreak();
+			{ DBGBREAK }
 
 		tk_puts("Check for: Double Stomp\n");
 
 		if(f==g)
-			__debugbreak();
+			{ DBGBREAK }
 
 		if(f!=7.0)
-			__debugbreak();
+			{ DBGBREAK }
 		if(g!=8.0)
-			__debugbreak();
+			{ DBGBREAK }
 		if(h!=9.0)
-			__debugbreak();
+			{ DBGBREAK }
 
 		tk_puts("Check for: Float Stomp\n");
 
 		if(ff!=1.1f)
-			__debugbreak();
+			{ DBGBREAK }
 		if(gf!=2.2f)
-			__debugbreak();
+			{ DBGBREAK }
 		if(hf!=3.3f)
-			__debugbreak();
+			{ DBGBREAK }
 	}else
 	{
 		f=rand()*0.01;
@@ -822,13 +822,13 @@ void Sys_CheckSanity(void)
 
 //	sprintf(tb, "AB%iCD%iEF", 1, 4);
 //	if(strcmp(tb, "AB1CD4EF"))
-//		__debugbreak();
+//		{ DBGBREAK }
 //	tk_printf("P %s\n", tb);
 
 	sprintf(tb, "AB%iCD%iEF", 1234, 4567);
 	tk_printf("P %s\n", tb);
 	if(strcmp(tb, "AB1234CD4567EF"))
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(!rec)	tk_puts("Sanity Q\n");
 }
@@ -852,103 +852,103 @@ void Sys_CheckSanityB(void)
 
 #if 1
 	if((t_arr[0]>>4)!=0x01234567)
-		__debugbreak();
+		{ DBGBREAK }
 	if((((s32)t_arr[1])>>4)!=((s32)0xFAB89EFC))
-		__debugbreak();
+		{ DBGBREAK }
 	if((((u32)t_arr[1])>>4)!=((u32)0x0AB89EFC))
-		__debugbreak();
+		{ DBGBREAK }
 
 	if((t_arr[0]>>11)!=0x0002468A)
-		__debugbreak();
+		{ DBGBREAK }
 	if((((s32)t_arr[1])>>13)!=((s32)0xFFFD5C4F))
-		__debugbreak();
+		{ DBGBREAK }
 	if((((u32)t_arr[1])>>13)!=((u32)0x00055C4F))
-		__debugbreak();
+		{ DBGBREAK }
 	if((t_arr[2]<<17)!=0x24680000)
-		__debugbreak();
+		{ DBGBREAK }
 
 	if(((t_arr[0]>>4)&15)!=7)
-		__debugbreak();
+		{ DBGBREAK }
 
 //	if((((s64)(t_arr[0])>>4)&15)!=7)
-//		__debugbreak();
+//		{ DBGBREAK }
 //	if(((0x0123456789ABCDEFLL>>44)&15)!=5)
-//		__debugbreak();
+//		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK\n");
 	
 	((short *)(b_arr0))[0]=0x1234;
 	((short *)(b_arr0))[1]=0xABCD;
 	if(((short *)(b_arr0))[0]!=0x1234)
-		__debugbreak();
+		{ DBGBREAK }
 	if(((short *)(b_arr0))[1]!=((int)0xFFFFABCD))
-		__debugbreak();
+		{ DBGBREAK }
 	if(((unsigned short *)(b_arr0))[0]!=0x1234)
-		__debugbreak();
+		{ DBGBREAK }
 	if(((unsigned short *)(b_arr0))[1]!=0xABCD)
-		__debugbreak();
+		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK 1\n");
 
 	((char *)(b_arr0))[0]=0x1234;
 	((char *)(b_arr0))[1]=0xABCD;
 	if(((signed char *)(b_arr0))[0]!=0x34)
-		__debugbreak();
+		{ DBGBREAK }
 	if(((signed char *)(b_arr0))[1]!=((int)0xFFFFFFCD))
-		__debugbreak();
+		{ DBGBREAK }
 	if(((unsigned char *)(b_arr0))[0]!=0x34)
-		__debugbreak();
+		{ DBGBREAK }
 	if(((unsigned char *)(b_arr0))[1]!=0xCD)
-		__debugbreak();
+		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK 2\n");
 
 	i=t_arr[0]; j=i<<16; k=j>>16;
 	if(k!=0x5678)
-		__debugbreak();
+		{ DBGBREAK }
 	i=t_arr[3]; j=i<<16; k=j>>16;
 	if(k!=0xFFFFCDEF)
-		__debugbreak();
+		{ DBGBREAK }
 	i=t_arr[3]; j=i<<16; k=((unsigned int)j)>>16;
 	if(k!=0xCDEF)
-		__debugbreak();
+		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK 3\n");
 	
 	ui=t_arr[3];	uli=ui;
 	if(uli!=0x0000000089ABCDEFULL)
-		__debugbreak();
+		{ DBGBREAK }
 	i=t_arr[3];		uli=i;
 	if(uli!=0xFFFFFFFF89ABCDEFULL)
-		__debugbreak();
+		{ DBGBREAK }
 
 	uli=t_arr[3];	ulj=t_arr[0];	ulk=uli*ulj;
 	if(ulk!=0x09CA39E0E242D208ULL)
-		__debugbreak();
+		{ DBGBREAK }
 	uli=(s32)(t_arr[3]);	ulj=(s32)(t_arr[0]);	ulk=uli*ulj;
 	if(ulk!=0xF795E368E242D208ULL)
-		__debugbreak();
+		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK 4\n");
 
 	uli=t_arrl[0];	ulj=t_arrl[1];
 	ulk=t_arrl[0];
-	if(uli==ulj)	__debugbreak();
-	if(uli>ulj)		__debugbreak();
-	if(uli>=ulj)	__debugbreak();
-	if(ulj<uli)		__debugbreak();
-	if(ulj<=uli)	__debugbreak();
+	if(uli==ulj)	{ DBGBREAK }
+	if(uli>ulj)		{ DBGBREAK }
+	if(uli>=ulj)	{ DBGBREAK }
+	if(ulj<uli)		{ DBGBREAK }
+	if(ulj<=uli)	{ DBGBREAK }
 
-	if(uli!=ulk)	__debugbreak();
-	if(uli>ulk)		__debugbreak();
-	if(uli<ulk)		__debugbreak();
+	if(uli!=ulk)	{ DBGBREAK }
+	if(uli>ulk)		{ DBGBREAK }
+	if(uli<ulk)		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK 5\n");
 
 	if((t_arr[0]/10)!=0x1D208A5)
-		__debugbreak();
+		{ DBGBREAK }
 	if((t_arr[0]%10)!=6)
-		__debugbreak();
+		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK 5-1\n");
 
@@ -956,12 +956,12 @@ void Sys_CheckSanityB(void)
 	*((int *)b_arr0)=10;
 	i=*((int *)b_arr0);
 	if((t_arr[0]/i)!=0x1D208A5)
-		__debugbreak();
+		{ DBGBREAK }
 
 	tk_puts("Q Pt0 OK 5-2\n");
 
 	if((t_arr[0]%i)!=6)
-		__debugbreak();
+		{ DBGBREAK }
 #endif
 
 #endif
@@ -972,43 +972,43 @@ void Sys_CheckSanityB(void)
 	ff=i;
 	j=ff;
 	if(i!=j)
-		__debugbreak();
+		{ DBGBREAK }
 		
 	i=123456789;
 	fg=i;
 	j=fg;
 	if(i!=j)
-		__debugbreak();
+		{ DBGBREAK }
 
 
 	i=-123456;
 	ff=i;
 	j=ff;
 	if(i!=j)
-		__debugbreak();
+		{ DBGBREAK }
 		
 	i=-123456789;
 	fg=i;
 	j=fg;
 	if(i!=j)
-		__debugbreak();
+		{ DBGBREAK }
 	
 	ff=(i==i);
 	ff=!ff;
 	j=ff;
 	if(j)
-		__debugbreak();
+		{ DBGBREAK }
 	if(ff)
-		__debugbreak();
+		{ DBGBREAK }
 	ff=!ff;
 	if(ff!=1.0)
-		__debugbreak();
+		{ DBGBREAK }
 	if(!ff)
-		__debugbreak();
+		{ DBGBREAK }
 		
 	ff=123456;
 	if(ff!=123456)
-		__debugbreak();
+		{ DBGBREAK }
 }
 
 //=============================================================================
@@ -1030,7 +1030,7 @@ int main (int argc, char **argv)
 
 	tk_puts("Q A0-0\n");
 
-//	__debugbreak();
+//	{ DBGBREAK }
 
 //	parms.memsize = 8*1024*1024;
 	parms.memsize = 24*1024*1024;

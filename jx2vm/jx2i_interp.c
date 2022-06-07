@@ -385,8 +385,8 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 //		ctx->regs[BJX2_REG_EXSR]=status;
 		for(i=0; i<128; i++)
 			ctx->ex_regs[i]=ctx->regs[i];
-		for(i=0; i<32; i++)
-			ctx->ex_fpreg[i]=ctx->fpreg[i];
+//		for(i=0; i<32; i++)
+//			ctx->ex_fpreg[i]=ctx->fpreg[i];
 	}
 #endif
 
@@ -662,8 +662,8 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 					continue;
 				ctx->regs[i]=ctx->ex_regs[i];
 			}
-			for(i=0; i<32; i++)
-				ctx->fpreg[i]=ctx->ex_fpreg[i];
+//			for(i=0; i<32; i++)
+//				ctx->fpreg[i]=ctx->ex_fpreg[i];
 		}
 //		ctx->ex_regs[BJX2_REG_EXSR]=0;
 
@@ -677,8 +677,8 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 					continue;
 				ctx->regs[i]=ctx->ex_regs[i];
 			}
-			for(i=0; i<32; i++)
-				ctx->fpreg[i]=ctx->ex_fpreg[i];
+//			for(i=0; i<32; i++)
+//				ctx->fpreg[i]=ctx->ex_fpreg[i];
 		}
 #endif
 
@@ -2156,6 +2156,7 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 	return(0);
 }
 
+#if 0
 int BJX2_DbgPrintFpRegs(BJX2_Context *ctx)
 {
 	int i, j;
@@ -2185,6 +2186,7 @@ int BJX2_DbgPrintFpRegs(BJX2_Context *ctx)
 	}
 	return(0);
 }
+#endif
 
 int BJX2_DbgTopTraces(BJX2_Context *ctx)
 {
@@ -2595,7 +2597,7 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	}
 
 	BJX2_DbgPrintRegs(ctx);
-	BJX2_DbgPrintFpRegs(ctx);
+//	BJX2_DbgPrintFpRegs(ctx);
 	
 //		if(ctx->use_jit)
 

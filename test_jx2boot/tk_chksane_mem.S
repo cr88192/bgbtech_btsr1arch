@@ -154,6 +154,36 @@ X(tk_checksane_mem_asm):
 //	bf _checksane_fail_mem
 	.L5_3: break?f
 
+	shld	r8, -8, r3
+	extu.b r3, r12
+	movu.b (sp, 1), r6
+
+	cmpq/eq r6, r12
+	.L5_3A0: break?f
+
+	shld	r8, -16, r3
+	extu.w r3, r12
+	movu.w (sp, 2), r6
+	
+	cmpq/eq r6, r12
+	.L5_3A1: break?f
+
+	mov		sp, r2	|	shld.q	r8, -24, r3
+	add		3, r2	|	extu.b r3, r12
+	movu.b (r2), r6
+
+	cmpq/eq r6, r12
+	.L5_3A2: break?f
+
+	mov		sp, r2	|	shld.q	r8, -8, r3
+	add		1, r2	|	extu.w r3, r12
+	movu.w (r2), r6
+
+	cmpq/eq r6, r12
+	.L5_3A3: break?f
+
+
+
 	mov sp, r3
 	mov.l (sp, 4), r6
 	mov.l (r3, 4), r7

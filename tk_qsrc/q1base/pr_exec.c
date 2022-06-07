@@ -431,7 +431,7 @@ while (1)
 	s++;	// next statement
 
 	if(s >= progs->numstatements)
-		__debugbreak();
+		{ DBGBREAK  }
 
 	st = &pr_statements[s];
 //	a = (eval_t *)&pr_globals[st->a];
@@ -442,11 +442,11 @@ while (1)
 	c = (eval_t *)(pr_globals+st->c);
 
 	if(st->a >= progs->numglobals)
-		__debugbreak();
+		{ DBGBREAK  }
 	if(st->b >= progs->numglobals)
-		__debugbreak();
+		{ DBGBREAK  }
 	if(st->c >= progs->numglobals)
-		__debugbreak();
+		{ DBGBREAK  }
 
 //	tk_printf("PR_ExecuteProgram: stmt=%d op=%d(%s)"
 //		" a=%d b=%d c=%d\n", s, st->op, pr_opnames[st->op],
@@ -613,7 +613,7 @@ while (1)
 	case OP_EQ_E:
 //		tk_puts("PR_ExecuteProgram: OP_EQ_E\n");
 		c->_float = a->_int == b->_int;
-//		__debugbreak();
+//		{ DBGBREAK  }
 		break;
 	case OP_EQ_FNC:
 //		tk_puts("PR_ExecuteProgram: OP_EQ_FNC\n");
@@ -792,7 +792,7 @@ while (1)
 //		newf = pr_functions + a->function;
 
 //		if((a->function<0) || (a->function!=((short)a->function)))
-//			__debugbreak();
+//			{ DBGBREAK  }
 
 //		tk_puts("PR_ExecuteProgram: OP_CALLn: A1\n");
 

@@ -1267,7 +1267,7 @@ int BJX2_TryJitOpcode_CmpOp(UAX_Context *jctx,
 	}
 #endif
 
-#if 1
+#if 0
 	if((op->nmid==BJX2_NMID_FCMPEQ) && (op->fmid==BJX2_FMID_FREGREG))
 	{
 		BJX2_JitLoadVMReg(jctx, BJX2_REG_SR, UAX_REG_RDX);
@@ -1282,7 +1282,7 @@ int BJX2_TryJitOpcode_CmpOp(UAX_Context *jctx,
 	}
 #endif
 
-#if 1
+#if 0
 	if((op->nmid==BJX2_NMID_FCMPGT) && (op->fmid==BJX2_FMID_FREGREG))
 	{
 		BJX2_JitLoadVMReg(jctx, BJX2_REG_SR, UAX_REG_RDX);

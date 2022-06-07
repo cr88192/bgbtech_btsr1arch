@@ -772,7 +772,7 @@ void S_UpdateAmbientSounds (void)
 			chan->master_vol += dv;
 			
 //			if((dv<0) || (dv>64))
-//				__debugbreak();
+//				{ DBGBREAK }
 			
 			if (chan->master_vol > vol)
 				chan->master_vol = vol;
@@ -784,7 +784,7 @@ void S_UpdateAmbientSounds (void)
 			chan->master_vol -= dv;
 
 //			if((dv<0) || (dv>64))
-//				__debugbreak();
+//				{ DBGBREAK }
 
 			if (chan->master_vol < vol)
 				chan->master_vol = vol;
@@ -796,7 +796,7 @@ void S_UpdateAmbientSounds (void)
 		v = chan->master_vol;
 		
 		if(v<0)
-			__debugbreak();
+			{ DBGBREAK }
 		
 		if(v<8) v=0;
 		

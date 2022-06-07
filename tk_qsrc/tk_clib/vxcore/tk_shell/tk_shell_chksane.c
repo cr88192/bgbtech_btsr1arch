@@ -2,6 +2,7 @@
 
 void tk_shell_chksane_simd_asm();
 void tk_shell_chksane_rgb5_asm();
+void tk_shell_chksane_fmovs();
 
 __vec4f		tk_shell_fv0_gbl;
 
@@ -408,6 +409,82 @@ tk_shell_chksane_rgb5_asm:
 
 
 	RTSU
+
+tk_shell_chksane_fmovs_i:
+	ADD		-64, SP
+
+.L0:
+	FLDCF	R4, R16
+	FLDCF	R5, R17
+	FSTCF	R16, R20
+	FSTCF	R17, R21
+
+	CMPQEQ		R4, R20
+	BREAK?F
+	CMPQEQ		R5, R21
+	BREAK?F
+
+.ifarch has_fmovs
+
+.L1:
+	FLDCF	R4, R16
+	FLDCF	R5, R17
+	FMOV.S	R16, (SP, 0)
+	FMOV.S	R17, (SP, 4)
+	FMOV.S	(SP, 0), R18
+	FMOV.S	(SP, 4), R19
+	FSTCF	R18, R20
+	FSTCF	R19, R21
+
+	CMPQEQ		R4, R20
+	BREAK?F
+	CMPQEQ		R5, R21
+	BREAK?F
+
+.endif
+
+
+	ADD		64, SP
+	RTSU
+
+tk_shell_chksane_fmovs:
+	MOV		LR, R1
+	.LA0:
+
+	MOV		0x00123456, R4
+	MOV		0x00123457, R5
+	BSR		tk_shell_chksane_fmovs_i
+
+	.LA1:
+
+	MOV		0x80123456, R4
+	MOV		0x80123457, R5
+	BSR		tk_shell_chksane_fmovs_i
+
+	.LA2:
+
+	MOV		0x7F923456, R4
+	MOV		0x7F923457, R5
+	BSR		tk_shell_chksane_fmovs_i
+
+	.LA3:
+
+	MOV		0xFF923456, R4
+	MOV		0xFF923457, R5
+	BSR		tk_shell_chksane_fmovs_i
+
+
+	MOV		0x3F923456, R4
+	MOV		0x3F923457, R5
+	BSR		tk_shell_chksane_fmovs_i
+
+
+	MOV		0xBF923456, R4
+	MOV		0xBF923457, R5
+	BSR		tk_shell_chksane_fmovs_i
+
+	JMP		R1
+//	RTSU
 
 };
 
@@ -1260,14 +1337,95 @@ int tk_shell_chksane_addr()
 #endif
 }
 
+int tk_shell_chksane_switch_i(int num)
+{
+	int k;
+	
+	switch(num)
+	{
+		case 1: k=2; break;
+		case 2: k=4; break;
+		case 3: k=6; break;
+		case 4: k=8; break;
+		case 5: k=10; break;
+		case 6: k=12; break;
+		case 7: k=14; break;
+		case 8: k=16; break;
+		case 9: k=18; break;
+		case 10: k=20; break;
+		case 11: k=22; break;
+		case 12: k=24; break;
+		case 13: k=26; break;
+		case 14: k=28; break;
+		case 15: k=30; break;
+		case 16: k=32; break;
+	}
+	
+	if((num+num)!=k)
+		__debugbreak();
+	return(k);
+}
+
+int tk_shell_chksane_arith2()
+{
+	int				*pi, *pj;
+	long long		*pli, *plj;
+	unsigned int	*pui, *puj;
+
+	long long		li, lj, lk, ll;
+	unsigned int	ui, uj, uk, ul;
+	int				i, j, k, l;
+
+	pi=&i;
+	pj=&j;
+
+	pui=&ui;
+	puj=&uj;
+
+	*pi=12345678;
+	*pj=12345678;
+
+	if(i<j)
+		__debugbreak();
+	if(i>j)
+		__debugbreak();
+	if(!(i<=j))
+		__debugbreak();
+	if(!(i>=j))
+		__debugbreak();
+
+	if(i<=j)
+		{ k++; }
+	else
+		{ __debugbreak(); }
+	if(i>=j)
+		{ k++; }
+	else
+		{ __debugbreak(); }
+	
+	
+	tk_shell_chksane_switch_i(2);
+	tk_shell_chksane_switch_i(3);
+	tk_shell_chksane_switch_i(4);
+	tk_shell_chksane_switch_i(5);
+	tk_shell_chksane_switch_i(6);
+	tk_shell_chksane_switch_i(7);
+	tk_shell_chksane_switch_i(8);
+	tk_shell_chksane_switch_i(11);
+	tk_shell_chksane_switch_i(13);
+}
+
 int tk_shell_chksane()
 {
 	unsigned int	ui;
 	int			i, j, k, l;
 
 	tk_shell_chksane_arith();
+	tk_shell_chksane_arith2();
 
 	tk_shell_chksane_memset();
+
+	tk_shell_chksane_fmovs();
 
 	Sys_CheckSanityB();
 

@@ -388,18 +388,19 @@ void BJX2_Op_PMULH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+#if 1
 void BJX2_Op_PADDXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	double a0, b0, c0;
 	double a1, b1, c1;
 	
-	a0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+0);
-	a1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+1);
-	b0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+0);
-	b1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+1);
+	a0=BJX2_PtrGetDoubleIx(ctx->regs, op->rm+0);
+	a1=BJX2_PtrGetDoubleIx(ctx->regs, op->rm+1);
+	b0=BJX2_PtrGetDoubleIx(ctx->regs, op->ro+0);
+	b1=BJX2_PtrGetDoubleIx(ctx->regs, op->ro+1);
 	c0=a0+b0;	c1=a1+b1;
-	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+0, c0);
-	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+1, c1);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn+0, c0);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn+1, c1);
 }
 
 void BJX2_Op_PSUBXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -407,13 +408,13 @@ void BJX2_Op_PSUBXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	double a0, b0, c0;
 	double a1, b1, c1;
 	
-	a0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+0);
-	a1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+1);
-	b0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+0);
-	b1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+1);
+	a0=BJX2_PtrGetDoubleIx(ctx->regs, op->rm+0);
+	a1=BJX2_PtrGetDoubleIx(ctx->regs, op->rm+1);
+	b0=BJX2_PtrGetDoubleIx(ctx->regs, op->ro+0);
+	b1=BJX2_PtrGetDoubleIx(ctx->regs, op->ro+1);
 	c0=a0-b0;	c1=a1-b1;
-	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+0, c0);
-	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+1, c1);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn+0, c0);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn+1, c1);
 }
 
 void BJX2_Op_PMULXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -421,14 +422,15 @@ void BJX2_Op_PMULXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	double a0, b0, c0;
 	double a1, b1, c1;
 	
-	a0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+0);
-	a1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->rm+1);
-	b0=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+0);
-	b1=BJX2_PtrGetDoubleIx(ctx->fpreg, op->ro+1);
+	a0=BJX2_PtrGetDoubleIx(ctx->regs, op->rm+0);
+	a1=BJX2_PtrGetDoubleIx(ctx->regs, op->rm+1);
+	b0=BJX2_PtrGetDoubleIx(ctx->regs, op->ro+0);
+	b1=BJX2_PtrGetDoubleIx(ctx->regs, op->ro+1);
 	c0=a0*b0;	c1=a1*b1;
-	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+0, c0);
-	BJX2_PtrSetDoubleIx(ctx->fpreg, op->rn+1, c1);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn+0, c0);
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn+1, c1);
 }
+#endif
 
 void BJX2_Op_MOVHD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

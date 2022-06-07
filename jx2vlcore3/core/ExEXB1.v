@@ -273,10 +273,16 @@ begin
 			tRegHeld		= 1;
 		end
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 		JX2_UCMD_FMOV_RM: begin
+			tRegValRn1		= regValRm;		/* MOV.X bits */
 		end
 		JX2_UCMD_FMOV_MR: begin
+			tSlotUSup		= 1;
+			if(opUIxt[8:6]==JX2_IUC_WX)
+				tSlotUSup	= 0;
+			tRegHeld		= 1;
 		end
 `endif
 
