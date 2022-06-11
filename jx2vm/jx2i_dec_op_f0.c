@@ -558,6 +558,9 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fl|=BJX2_OPFL_NOWEX;
 			if(eq)
 			{
+				op->fl|=BJX2_OPFL_NOWEX;
+				op->fl|=BJX2_OPFL_NOWEXSFX;
+
 //				op->nmid=BJX2_NMID_MOVDL;
 				op->nmid=BJX2_NMID_LDTEX;
 				op->fmid=BJX2_FMID_LDREG2REG;

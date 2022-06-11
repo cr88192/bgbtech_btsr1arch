@@ -663,6 +663,15 @@ REGIMMREG, Fz:
 	UW:	Rm, Imm9u, Rn
 	NW:	Rm, Imm9n, Rn
 
+LDREGDISPREG, Fz:
+	SW: (Rm, Disp9u/17s), Rn
+	UB: (Rm, Disp5u), Rn
+	UL: (Rm, Disp9u/17s), Cn
+
+LDDRREGREG, Fz:
+	UB: (Rm, Ro), Rn
+	UL: (Rm, Ro), Cn
+
 IMM8REG, Fz
 	SB: Fzeo_iiii		Ro, Imm16s, Ro
 	SW: Fzeo_iiii		Imm16s, Ro, Ro

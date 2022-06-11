@@ -2306,8 +2306,8 @@ begin
 	 */
 `ifdef jx2_enable_wex
 
-`ifdef def_true
-// `ifndef def_true
+// `ifdef def_true
+`ifndef def_true
 	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM))	&&
 		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
@@ -2317,8 +2317,8 @@ begin
 			exHold1C = 1;
 `endif
 
-//`ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 //	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
 //		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM))	&&
 	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||

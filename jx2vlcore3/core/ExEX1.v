@@ -723,7 +723,8 @@ begin
 			
 			tMemDataOut[31:0] = regValRm_D2S;
 `ifdef jx2_enable_fmovh
-			if(opUIxt[4])
+//			if(opUIxt[4])
+			if(opUIxt[5:4]==2'b01)
 				tMemDataOut[15:0] = regValRm_D2H;
 `endif
 

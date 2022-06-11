@@ -3347,13 +3347,14 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 
 	if(!strcmp(name, "__debugbreak"))
 	{
-		k=sctx->breakrov++;
-		sprintf(tb, "__gen_debugbreak_%04X", k);
+		k=(sctx->breakrov++)&16383;
+//		sprintf(tb, "__gen_debugbreak_%04X", k);
+		sprintf(tb, "__gen_debugbreak.L%04X", k);
 		
 		BGBCC_JX2_EmitNamedLabel(sctx, tb);
 		
-//		BGBCC_JX2C_EmitOpNone(ctx, sctx, BGBCC_SH_NMID_BRK);
 		BGBCC_JX2C_EmitOpImm(ctx, sctx, BGBCC_SH_NMID_BRK, k);
+		BGBCC_JX2C_EmitOpNone(ctx, sctx, BGBCC_SH_NMID_BRK);
 		return(1);
 	}
 

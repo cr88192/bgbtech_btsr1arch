@@ -35,7 +35,8 @@ LDFLAGS=$(TK_LDFL) -lvxcore
 
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2E
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -Zz -fnowexj -fnowexify -fnofmovs
-CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -Zz -fnofmovs
+# CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -Zz -fnofmovs
+CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -Zz
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -Zz -fnowexj -fnowexify
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2 -fwex3w -fwexj -Zz
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz

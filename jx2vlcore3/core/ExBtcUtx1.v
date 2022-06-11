@@ -106,7 +106,26 @@ reg			tDoAlpha;
 reg			tDoUtx3;
 
 reg[15:0]	tSelRgb16;
+reg[3:0]	tSelRgb16_E4;
+
+reg[3:0]	tSelRgb16_E4A;
+reg[3:0]	tSelRgb16_E4R;
+reg[3:0]	tSelRgb16_E4G;
+reg[3:0]	tSelRgb16_E4B;
+
+reg[4:0]	tSelRgb16_E5A;
+reg[4:0]	tSelRgb16_E5R;
+reg[4:0]	tSelRgb16_E5G;
+reg[4:0]	tSelRgb16_E5B;
+
+reg[3:0]	tSelRgb16_F4A;
+reg[3:0]	tSelRgb16_F4R;
+reg[3:0]	tSelRgb16_F4G;
+reg[3:0]	tSelRgb16_F4B;
+
 reg[31:0]	tSelRgb32;
+reg[31:0]	tSelRgb32F8;
+
 reg[63:0]	tSelRgb64;
 reg			tDoSelPix;
 
@@ -179,9 +198,11 @@ begin
 		tSelRgb32 = regValRs[63:32];
 	else
 		tSelRgb32 = regValRs[31: 0];
-		
-//	if(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB15A)
-	if(!idUIxt[1])
+
+	tSelRgb32F8	= tSelRgb32;
+
+	if(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB15A)
+//	if(!idUIxt[1])
 	begin
 		tSelRgb32	=
 			{ (tSelRgb16[15]) ?
@@ -191,12 +212,156 @@ begin
 				tSelRgb16[ 9: 5], tSelRgb16[ 9: 7],
 				tSelRgb16[ 4: 0], tSelRgb16[ 4: 2] };
 	end
-	
+
+// `ifdef def_true
+`ifndef def_true
+	if(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB15F)
+	begin
+		tSelRgb16_E4 = tSelRgb16[15:12];
+
+		casez(tSelRgb16[11: 8])
+			4'b1zzz: begin
+				tSelRgb16_E4R = tSelRgb16_E4;
+				tSelRgb16_F4R = { tSelRgb16[10: 8], 1'b0 };
+			end
+			4'b01zz: begin
+				tSelRgb16_E4R = tSelRgb16_E4-1;
+				tSelRgb16_F4R = { tSelRgb16[9: 8], 2'b0 };
+			end
+			4'b001z: begin
+				tSelRgb16_E4R = tSelRgb16_E4-2;
+				tSelRgb16_F4R = { tSelRgb16[8], 3'b0 };
+			end
+			4'b0001: begin
+				tSelRgb16_E4R = tSelRgb16_E4-3;
+				tSelRgb16_F4R = 0;
+			end
+			4'b0000: begin
+				tSelRgb16_E4R = 0;
+				tSelRgb16_F4R = 0;
+			end
+		endcase
+
+		casez(tSelRgb16[7: 4])
+			4'b1zzz: begin
+				tSelRgb16_E4G = tSelRgb16_E4;
+				tSelRgb16_F4G = { tSelRgb16[6: 4], 1'b0 };
+			end
+			4'b01zz: begin
+				tSelRgb16_E4G = tSelRgb16_E4-1;
+				tSelRgb16_F4G = { tSelRgb16[5: 4], 2'b0 };
+			end
+			4'b001z: begin
+				tSelRgb16_E4G = tSelRgb16_E4-2;
+				tSelRgb16_F4G = { tSelRgb16[4], 3'b0 };
+			end
+			4'b0001: begin
+				tSelRgb16_E4G = tSelRgb16_E4-3;
+				tSelRgb16_F4G = 0;
+			end
+			4'b0000: begin
+				tSelRgb16_E4G = 0;
+				tSelRgb16_F4G = 0;
+			end
+		endcase
+
+		casez(tSelRgb16[3: 0])
+			4'b1zzz: begin
+				tSelRgb16_E4B = tSelRgb16_E4;
+				tSelRgb16_F4B = { tSelRgb16[2: 0], 1'b0 };
+			end
+			4'b01zz: begin
+				tSelRgb16_E4B = tSelRgb16_E4-1;
+				tSelRgb16_F4B = { tSelRgb16[1: 0], 2'b0 };
+			end
+			4'b001z: begin
+				tSelRgb16_E4B = tSelRgb16_E4-2;
+				tSelRgb16_F4B = { tSelRgb16[0], 3'b0 };
+			end
+			4'b0001: begin
+				tSelRgb16_E4B = tSelRgb16_E4-3;
+				tSelRgb16_F4B = 0;
+			end
+			4'b0000: begin
+				tSelRgb16_E4B = 0;
+				tSelRgb16_F4B = 0;
+			end
+		endcase
+
+//		tSelRgb32F8	=
+//			{	8'h70,
+//				tSelRgb16_E4R, tSelRgb16_F4R,
+//				tSelRgb16_E4G, tSelRgb16_F4G,
+//				tSelRgb16_E4B, tSelRgb16_F4B };
+
+		tSelRgb16_E5R = {
+			tSelRgb16_E4R[3], !tSelRgb16_E4R[3], tSelRgb16_E4R[2:0] };
+		tSelRgb16_E5G = {
+			tSelRgb16_E4G[3], !tSelRgb16_E4G[3], tSelRgb16_E4G[2:0] };
+		tSelRgb16_E5B = {
+			tSelRgb16_E4B[3], !tSelRgb16_E4B[3], tSelRgb16_E4B[2:0] };
+
+		tSelRgb32F8	= { 2'b00,
+			tSelRgb16_E5R, tSelRgb16_F4R, 1'b0,
+			tSelRgb16_E5G, tSelRgb16_F4G, 1'b0,
+			tSelRgb16_E5B, tSelRgb16_F4B, 1'b0 };
+	end
+`endif
+
 	tSelRgb64 = {
 		tSelRgb32[31:24], tSelRgb32[31:24],
 		tSelRgb32[23:16], tSelRgb32[23:16],
 		tSelRgb32[15: 8], tSelRgb32[15: 8],
 		tSelRgb32[ 7: 0], tSelRgb32[ 7: 0]	};
+
+`ifndef def_true
+	if(	(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB15F) ||
+		(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB30A) )
+	begin
+		tSelRgb16_E4A = tSelRgb32F8[29:26];
+		tSelRgb16_E4R = tSelRgb32F8[21:18];
+		tSelRgb16_E4G = tSelRgb32F8[14:11];
+		tSelRgb16_E4B = tSelRgb32F8[ 6: 3];
+	
+		tSelRgb16_E5A = {
+			tSelRgb16_E4A[3], !tSelRgb16_E4A[3], tSelRgb16_E4A[2:0] };
+		tSelRgb16_E5R = {
+			tSelRgb16_E4R[3], !tSelRgb16_E4R[3], tSelRgb16_E4R[2:0] };
+		tSelRgb16_E5G = {
+			tSelRgb16_E4G[3], !tSelRgb16_E4G[3], tSelRgb16_E4G[2:0] };
+		tSelRgb16_E5B = {
+			tSelRgb16_E4B[3], !tSelRgb16_E4B[3], tSelRgb16_E4B[2:0] };
+
+		tSelRgb16_F4A = tSelRgb32F8[25:22];
+		tSelRgb16_F4R = { tSelRgb32F8[17:15], tSelRgb32F8[15] };
+		tSelRgb16_F4G = tSelRgb32F8[10: 7];
+		tSelRgb16_F4B = { tSelRgb32F8[ 2: 0], tSelRgb32F8[0] };
+
+		if(tSelRgb32F8[31])
+		begin
+			tSelRgb64 = {
+				tSelRgb16_F4A[0]&tSelRgb32F8[30],
+					tSelRgb16_E5A, tSelRgb16_F4A, 6'h0,
+				tSelRgb16_F4R[0]&tSelRgb32F8[30],
+					tSelRgb16_E5R, tSelRgb16_F4R, 6'h0,
+				tSelRgb16_F4G[0]&tSelRgb32F8[30],
+					tSelRgb16_E5G, tSelRgb16_F4G, 6'h0,
+				tSelRgb16_F4B[0]&tSelRgb32F8[30],
+					tSelRgb16_E5B, tSelRgb16_F4B, 6'h0 };
+		end
+		else
+		begin
+			tSelRgb64 = {
+				16'h3C00,
+				tSelRgb16_F4R[0] & tSelRgb32F8[30],
+					tSelRgb32F8[29:20], 5'h00,
+				tSelRgb16_F4G[0] & tSelRgb32F8[30],
+					tSelRgb32F8[19:10], 5'h00,
+				tSelRgb16_F4B[0] & tSelRgb32F8[30],
+					tSelRgb32F8[ 9: 0], 5'h00 };
+		end
+	end
+`endif
 		
 	tDoSelPix = (idUIxt[3:2]==2'b11);
 `endif

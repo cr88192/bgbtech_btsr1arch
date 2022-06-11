@@ -437,6 +437,8 @@ reg			tSub1BSxVF;
 
 reg			tFCmpRsIsNaN;
 reg			tFCmpRtIsNaN;
+reg			tFCmpRsIsZero;
+reg			tFCmpRtIsZero;
 reg			tFCmpEqP;
 reg			tFCmpxEqP;
 reg			tFCmpGtP;
@@ -711,13 +713,28 @@ begin
 	tFCmpRsIsNaN	= (regValRs[62:52]==11'h7FF) && (regValRs[51:48]!=0);
 	tFCmpRtIsNaN	= (regValRt[62:52]==11'h7FF) && (regValRt[51:48]!=0);
 
+	tFCmpRsIsZero	= (regValRs[62:52]==11'h000);
+	tFCmpRtIsZero	= (regValRt[62:52]==11'h000);
+
+`ifdef jx2_fpu_longdbl
 	tFCmpxRsIsNaN	= (regValRs[62:48]==15'h7FFF) && (regValRs[47:44]!=0);
 	tFCmpxRtIsNaN	= (regValRt[62:48]==15'h7FFF) && (regValRt[47:44]!=0);
+`else
+	tFCmpxRsIsNaN	= tFCmpRsIsNaN;
+	tFCmpxRtIsNaN	= tFCmpRtIsNaN;
+`endif
 
-	tFCmpEqP		= tSub2ZF && !tFCmpRsIsNaN;
+//	tFCmpEqP		= tSub2ZF && !tFCmpRsIsNaN;
+	tFCmpEqP		= (tSub2ZF || (tFCmpRsIsZero && tFCmpRtIsZero)) && 
+		!tFCmpRsIsNaN;
+
+`ifdef jx2_fpu_longdbl
 //	tFCmpxEqP		= tSub2ZF && !tFCmpxRsIsNaN;
 	tFCmpxEqP		= tSub2ZF && !tFCmpxRsIsNaN && regInCarryD[4];
 //	tFCmpGtP;
+`else
+	tFCmpxEqP		= tFCmpEqP;
+`endif
 
 	casez({regValRs[63], regValRt[63], tSub2SF, tSub2ZF})
 		4'b0000: tFCmpGtP=1;	/* (s-t)>0 */
@@ -736,7 +753,11 @@ begin
 		4'b1111: tFCmpGtP=0;	/* s==t */
 	endcase
 	
+`ifdef jx2_fpu_longdbl
 	tFCmpxGtP = tFCmpGtP && (tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
+`else
+	tFCmpxGtP = tFCmpGtP;
+`endif
 
 `ifdef def_true
 

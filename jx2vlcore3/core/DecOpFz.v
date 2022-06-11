@@ -4479,6 +4479,13 @@ begin
 			end
 `endif
 
+`ifdef def_true
+			if(opNmid == JX2_UCMD_MOV_RM)
+				opRegN	= JX2_GR_ZZR;
+			if(opNmid == JX2_UCMD_MOV_MR)
+				opRegP	= JX2_GR_ZZR;
+`endif
+
 			if(tRegRmIsRz)
 			begin
 				opRegM	= tRegRmIsR1 ? JX2_GR_GBR : JX2_GR_PC;
@@ -4508,6 +4515,13 @@ begin
 					opRegN	= opRegN_Cr;
 					opRegP	= opRegN_Cr;
 				end
+`endif
+
+`ifdef def_true
+				if(opNmid == JX2_UCMD_MOV_RM)
+					opRegN	= JX2_GR_ZZR;
+				if(opNmid == JX2_UCMD_MOV_MR)
+					opRegP	= JX2_GR_ZZR;
 `endif
 
 				if(tRegRmIsRz)

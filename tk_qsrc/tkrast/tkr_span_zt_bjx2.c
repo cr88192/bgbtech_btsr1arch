@@ -585,10 +585,11 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	BT			.L0ZF
 	
 	.L0:
-									LDTEX		(R20, R38), R2
+	LDTEX		(R20, R38), R2
 	ADD			R39, R38		|	MOV.W		(R6, 0), R16	
 	SHAD		R34, -16, R17	|	MOV.W		(R6, 2), R18
-	ADD			R35, R34		|	LDTEX		(R20, R38), R3
+	ADD			R35, R34
+	LDTEX		(R20, R38), R3
 
 	ADD			R39, R38		|	PMULU.HW	R2, R36, R2
 	SHAD		R34, -16, R19	|	ADD			R37, R36
@@ -608,7 +609,8 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	CMPGE		1, R7
 	BF			.L1E
 	.L1:	
-	SHAD		R34, -16, R17	|	LDTEX		(R20, R38), R2
+	SHAD		R34, -16, R17
+	LDTEX		(R20, R38), R2
 	ADD			R39, R38		|	MOV.W		(R6), R16	
 	ADD			R35, R34		|	PMULU.HW	R2, R36, R2
 	ADD			R37, R36		|	RGB5PCK64	R2, R2

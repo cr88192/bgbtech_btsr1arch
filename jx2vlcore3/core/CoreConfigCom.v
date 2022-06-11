@@ -34,7 +34,7 @@
 
 `define	jx2_alu_wx				//Enable Wide-ALU
 
-// `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext
+// `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext (GFPX)
 `define	jx2_fpu_fmac			//Enable FMAC Operation
 
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2

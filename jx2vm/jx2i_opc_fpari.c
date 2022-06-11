@@ -589,6 +589,9 @@ void BJX2_Op_FCMPEQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vb=ctx->regs[op->rm];
 
 	isnan=(((va>>52)&2047)==2047) && (((va>>48)&15)!=0);
+	
+	if((((va>>52)&2047)==0) && (((vb>>52)&2047)==0))
+		{ va=0; vb=0; }
 
 //	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rn);
 //	b=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
