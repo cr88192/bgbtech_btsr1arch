@@ -46,7 +46,8 @@ begin
 		tExpC = valI[10] ? 4'hF : 4'h0 ;
 
 	if(hasSgn[0])
-		tValO = { tSgn, tExpC, valI[5:3] };
+//		tValO = { tSgn, tExpC, valI[5:3] };
+		tValO = { tExpC, valI[5:3], tSgn };
 	else
 		tValO = { tExpC, valI[5:2] };
 end

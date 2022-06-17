@@ -473,7 +473,10 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(
 		}
 	}
 
-	if((type.val==CCXL_TY_VEC4H) || (type.val==CCXL_TY_VEC3H))
+	if(	(type.val==CCXL_TY_VEC4H)		||
+		(type.val==CCXL_TY_VEC3H)		||
+		(type.val==CCXL_TY_VEC4_FP8S)	||
+		(type.val==CCXL_TY_VEC4_FP8U)	)
 	{
 		switch(opr)
 		{
@@ -543,6 +546,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(
 		break;
 	case CCXL_TY_VEC4H:
 	case CCXL_TY_VEC3H:
+	case CCXL_TY_VEC4_FP8S:
+	case CCXL_TY_VEC4_FP8U:
 		switch(opr)
 		{
 			case CCXL_BINOP_ADD:	s0="__vnf_v4h_add"; break;
@@ -992,7 +997,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec(
 	char *fcn;
 	int i;
 	
-	if(BGBCC_CCXL_TypeVec64P(ctx, type))
+	if(	BGBCC_CCXL_TypeVec64P(ctx, type) ||
+		BGBCC_CCXL_TypeVecAs64P(ctx, type))
 	{
 		i=BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec64F(ctx, sctx, type,
 			dreg, opr, sreg, treg);
@@ -1024,7 +1030,8 @@ int BGBCC_JX2C_EmitConvVRegVRegVec(
 	dt=dtype.val;
 	st=stype.val;
 
-	if((dt==CCXL_TY_VEC4H) || (dt==CCXL_TY_VEC3H))
+	if(	(dt==CCXL_TY_VEC4H) || (dt==CCXL_TY_VEC3H) ||
+		(dt==CCXL_TY_VEC4_FP8S)	||	(dt==CCXL_TY_VEC4_FP8U) )
 	{
 		if(st==CCXL_TY_VEC3FQ)
 		{
@@ -1067,7 +1074,8 @@ int BGBCC_JX2C_EmitConvVRegVRegVec(
 			return(1);
 		}
 
-		if((st==CCXL_TY_VEC4H) || (st==CCXL_TY_VEC3H))
+		if(	(st==CCXL_TY_VEC4H) || (st==CCXL_TY_VEC3H) ||
+			(st==CCXL_TY_VEC4_FP8S)	||	(st==CCXL_TY_VEC4_FP8U)	)
 		{
 			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
@@ -1111,7 +1119,8 @@ int BGBCC_JX2C_EmitConvVRegVRegVec(
 			return(1);
 		}
 
-		if((st==CCXL_TY_VEC4H) || (st==CCXL_TY_VEC3H))
+		if(	(st==CCXL_TY_VEC4H) || (st==CCXL_TY_VEC3H) ||
+			(st==CCXL_TY_VEC4_FP8S)	||	(st==CCXL_TY_VEC4_FP8U)	)
 		{
 			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, BGBCC_SH_REG_R4);
 			BGBCC_JX2C_EmitCallName(ctx, sctx, "__vnf_v4f_from_v4h");
@@ -1179,7 +1188,8 @@ int BGBCC_JX2C_EmitJCmpVRegZeroVec(
 	ccxl_register treg;
 	int i;
 	
-	if(BGBCC_CCXL_TypeVec64P(ctx, type))
+	if(BGBCC_CCXL_TypeVec64P(ctx, type) ||
+		BGBCC_CCXL_TypeVecAs64P(ctx, type))
 	{
 		BGBCC_CCXL_GetRegForLongValue(ctx, &treg, 0);
 		i=BGBCC_JX2C_EmitJCmpVRegVRegVec(ctx, sctx, type,
@@ -1245,7 +1255,8 @@ int BGBCC_JX2C_EmitUnaryVRegVRegVec(
 
 	if(opr2>=0)
 	{
-		if(BGBCC_CCXL_TypeVec64P(ctx, type))
+		if(BGBCC_CCXL_TypeVec64P(ctx, type) ||
+			BGBCC_CCXL_TypeVecAs64P(ctx, type))
 		{
 			BGBCC_CCXL_GetRegForLongValue(ctx, &treg, 0);
 			i=BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec(ctx, sctx,

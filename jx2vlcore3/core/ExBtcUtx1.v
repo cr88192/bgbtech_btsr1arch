@@ -49,19 +49,23 @@ The UTX1 format:
 `include "ExBtcUtx3B.v"
 `endif
 
+`include "ExConv_Fp8Exp12.v"
+
 module ExBtcUtx1(
 	/* verilator lint_off UNUSED */
 	regValRs,
 	regValXs,
 	regValRt,
 	idUIxt,
-	regOutVal
+	regOutVal,
+	isLdTex
 	);
 
 input[63:0]		regValRs;
 input[63:0]		regValXs;
 input[ 3:0]		regValRt;
 input[8:0]		idUIxt;
+input			isLdTex;
 
 output[63:0]	regOutVal;
 
@@ -74,6 +78,19 @@ wire[63:0]	tUtx3OutVal;
 // ExBtcUtx3	utx3(regValRs, regValXs, regValRt, idUIxt, tUtx3OutVal);
 ExBtcUtx3B	utx3(regValRs, regValXs, regValRt, idUIxt, tUtx3OutVal);
 `endif
+
+
+wire[31:0]	tSelRgb32F;
+wire[11:0]	tSelRgb32F_A12;
+wire[11:0]	tSelRgb32F_R12;
+wire[11:0]	tSelRgb32F_G12;
+wire[11:0]	tSelRgb32F_B12;
+assign	tSelRgb32F = regValRt[0] ? regValRs[63:32] : regValRs[31: 0];
+
+ExConv_Fp8Exp12		fp8expa(tSelRgb32F[31:24], tSelRgb32F_A12, 2'b00);
+ExConv_Fp8Exp12		fp8expr(tSelRgb32F[23:16], tSelRgb32F_R12, 2'b00);
+ExConv_Fp8Exp12		fp8expg(tSelRgb32F[15: 8], tSelRgb32F_G12, 2'b00);
+ExConv_Fp8Exp12		fp8expb(tSelRgb32F[ 7: 0], tSelRgb32F_B12, 2'b00);
 
 
 reg[15:0]	tValPb;
@@ -204,6 +221,7 @@ begin
 	if(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB15A)
 //	if(!idUIxt[1])
 	begin
+		tDoSelPix	= 1;
 		tSelRgb32	=
 			{ (tSelRgb16[15]) ?
 					{ tSelRgb16[10], tSelRgb16[5], tSelRgb16[0], UV5_00 } :
@@ -211,6 +229,11 @@ begin
 				tSelRgb16[14:10], tSelRgb16[14:12],
 				tSelRgb16[ 9: 5], tSelRgb16[ 9: 7],
 				tSelRgb16[ 4: 0], tSelRgb16[ 4: 2] };
+	end
+
+	if(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGBA32)
+	begin
+		tDoSelPix	= 1;
 	end
 
 // `ifdef def_true
@@ -314,6 +337,25 @@ begin
 		tSelRgb32[15: 8], tSelRgb32[15: 8],
 		tSelRgb32[ 7: 0], tSelRgb32[ 7: 0]	};
 
+	if(idUIxt[5:0]==JX2_UCIX_CONV_RGB32UPCK64FU)
+	begin
+		tDoSelPix	= 1;
+		tSelRgb64	= {
+			tSelRgb32F_A12, 4'b0,
+			tSelRgb32F_R12, 4'b0,
+			tSelRgb32F_G12, 4'b0,
+			tSelRgb32F_B12, 4'b0
+			};
+	end
+	
+`ifdef def_true
+	if(idUIxt[5:0]==JX2_UCIX_CONV_RGB30APCK64F)
+	begin
+		tDoSelPix	= 1;
+		tSelRgb64	= regValRs;
+	end
+`endif
+
 `ifndef def_true
 	if(	(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB15F) ||
 		(idUIxt[5:0]==JX2_UCIX_CONV2_BLKRGB30A) )
@@ -362,8 +404,12 @@ begin
 		end
 	end
 `endif
-		
-	tDoSelPix = (idUIxt[3:2]==2'b11);
+
+	if(!isLdTex)
+	begin
+		tDoSelPix	= 0;
+	end
+
 `endif
 
 `ifdef jx2_enable_btcutx3

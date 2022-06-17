@@ -272,15 +272,20 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dp':
 * 'Dq': __quatd
 
+* 'Dv': __vec4_fp8s
+* 'Dw': __vec4_fp8u
+
 * 'Dx{n}': Signed BitInt
 * 'Dy{n}': Unsigned BitInt
 
 * 'Dz': va_list
 
+* 'Ga': __float8s
 * 'Gd': _Imaginary double
 * 'Ge': _Imaginary long double
 * 'Gf': _Imaginary float
 * 'Gg': _Imaginary float128
+* 'Gh': __float8u
 
 * 'Gw': bigint
 * 'Gx': fixnum

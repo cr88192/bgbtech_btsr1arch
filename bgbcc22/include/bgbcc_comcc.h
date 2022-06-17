@@ -471,10 +471,12 @@ int t_genlabel_srcpos[4096];
 /* Epilog Caching */
 u64 epihash_key[1024];
 int epihash_lbl[1024];
+int epihash_rov;
 
 /* Prolog Caching */
 u64 eprhash_key[1024];
 int eprhash_lbl[1024];
+int eprhash_rov;
 
 
 /* TLS Section. */

@@ -4497,7 +4497,9 @@ begin
 
 		JX2_FMID_LDDRREGREG: begin
 //			if(opBty == JX2_BTY_UQ)
-			if((opBty == JX2_BTY_UQ) && (opUCty == JX2_IUC_SC))
+//			if((opBty == JX2_BTY_UQ) && (opUCty == JX2_IUC_SC))
+			if((opBty == JX2_BTY_UQ) && (opUCty == JX2_IUC_SC) &&
+				(opNmid != JX2_UCMD_FMOV_MR))
 				opUCty		= JX2_IUC_WX;
 
 //			if(	(opIty==JX2_ITY_UB) ||

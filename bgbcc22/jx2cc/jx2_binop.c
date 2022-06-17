@@ -3349,7 +3349,8 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 	{
 		k=(sctx->breakrov++)&16383;
 //		sprintf(tb, "__gen_debugbreak_%04X", k);
-		sprintf(tb, "__gen_debugbreak.L%04X", k);
+//		sprintf(tb, "__gen_debugbreak.L%04X", k);
+		sprintf(tb, "%s.debugbreak_L%04X", ctx->cur_func->qname, k);
 		
 		BGBCC_JX2_EmitNamedLabel(sctx, tb);
 		

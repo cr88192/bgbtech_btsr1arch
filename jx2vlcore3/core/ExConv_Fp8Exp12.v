@@ -47,10 +47,20 @@ always @*
 begin
 	if(hasSgn[0])
 	begin
+
+`ifndef def_true
 		tSgn = valI[7];
 //		tExpC = { valI[6], !valI[5], valI[5:3] };
 		tExpC = { valI[6], !valI[6], valI[5:3] };
 		tFraC = { valI[2:0], 1'b0 };
+`endif
+
+`ifdef def_true
+		tSgn = valI[0];
+		tExpC = { valI[7], !valI[7], valI[6:4] };
+		tFraC = { valI[3:1], 1'b0 };
+`endif
+
 	end
 	else
 	begin

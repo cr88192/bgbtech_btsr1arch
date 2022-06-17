@@ -1018,13 +1018,13 @@ Texture Combined Size:
 
 Block Mode:
 * 000: UTX2
-* 001: -
+* 001: RGBA64 / RGBA64F
 * 010: UTX3 (LDR)
 * 011: UTX3 (HDR)
-* 100: -
+* 100: RGB15F / RGB4_E4 (?)
 * 101: RGB555A
-* 110: RGB8888A / RGB32
-* 111: RGB30A
+* 110: RGBA8 / RGBA32
+* 111: RGBA32_FP8U
 
 If a displacement is used, it will be interpreted as additional parameters:
 * Disp(2:0): Pixel Selector
@@ -1045,6 +1045,14 @@ For RGB555A, See [RGB Pack/Unpack]
 RGB555A:
 * 0rrrrrgggggbbbbb, Opaque
 * 1rrrraggggabbbba, Translucent (3 bit Alpha)
+
+
+RGB4_E4:
+* (15:12): Exponent
+* (11: 8): R
+* ( 7: 4): G
+* ( 3: 0): B
+* This is a joint exponent format with denormal components.
 
 
 === MACx.L ===

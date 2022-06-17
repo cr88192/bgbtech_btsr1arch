@@ -955,7 +955,7 @@ R31		tstep_r
 
 
 
-#if 1
+#if 0
 .ifarch has_xgpr
 
 TKRA_WalkEdges_Zbuf:
@@ -1262,7 +1262,7 @@ R63		rgb_buf
 #endif
 
 
-#if 1
+#if 0
 .ifarch has_xgpr
 
 TKRA_WalkEdges_ZbufNZb:
@@ -1569,7 +1569,7 @@ R63		rgb_buf
 
 
 #if 1
-.ifnarch has_xgpr
+// .ifnarch has_xgpr
 
 TKRA_WalkEdges_Zbuf:
 TKRA_WalkEdges_ZbufNZb:
@@ -1829,7 +1829,7 @@ R31		tstep_r
 	.L_END_F:
 	RTS
 
-.endif
+// .endif
 
 #endif
 

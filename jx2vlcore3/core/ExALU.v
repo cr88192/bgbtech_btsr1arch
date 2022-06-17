@@ -269,7 +269,8 @@ ExBtcUtx1	exUtx1(
 	regValRs[63:0],
 	regValXs[63:0],
 	regValRt[3:0],
-	idUIxt, tValUtx1);
+	idUIxt, tValUtx1,
+	1'b0);
 `endif
 `endif
 

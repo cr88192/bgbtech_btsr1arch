@@ -967,8 +967,25 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 			}
 			break;
 
+		case 'v':
+		case 'w':
+			sza[0]=4; sza[1]=4;
+			ala[0]=4; ala[1]=4;
+			break;
+
 		default:
 			BGBCC_DBGBREAK
+			break;
+		}
+		break;
+
+	case 'G':
+		switch(sig[1])
+		{
+		case 'a':
+		case 'h':
+			sza[0]=1; sza[1]=1;
+			ala[0]=1; ala[1]=1;
 			break;
 		}
 		break;

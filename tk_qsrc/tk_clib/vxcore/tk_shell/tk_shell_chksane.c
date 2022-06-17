@@ -852,6 +852,20 @@ void Sys_CheckSanityB(void)
 
 	if(ff!=456)
 		__debugbreak();
+		
+#if 1	
+	ff=16.0;
+	((__float8u *)b_arr0)[0]=ff;
+	ff=((__float8u *)b_arr0)[0];
+	if(ff!=16.0)
+		__debugbreak();
+
+	ff=-16.0;
+	((__float8s *)b_arr0)[1]=ff;
+	ff=((__float8s *)b_arr0)[1];
+	if(ff!=-16.0)
+		__debugbreak();
+#endif
 }
 
 long long __int32_dmuls(int a, int b);

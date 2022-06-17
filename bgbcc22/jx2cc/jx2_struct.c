@@ -38,7 +38,7 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 	BGBCC_JX2_Context *sctx,
 	int nmid, int sreg, int dreg)
 {
-	int sreg2, dreg2;
+	int sreg2, dreg2, nm1, nm2;
 	int i, j, k;
 
 #if 0
@@ -152,6 +152,58 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 		BGBCC_JX2_EmitOpRegImmReg(sctx,
 			BGBCC_SH_NMID_SHLD, BGBCC_SH_REG_R0, -16, dreg);
 		return(1);
+	}
+
+	if(	(nmid==BGBCC_SH_NMID_LDHF8S) ||
+		(nmid==BGBCC_SH_NMID_LDHF8U))
+	{
+		nm2=BGBCC_SH_NMID_PLDCM8SH;
+		if(nmid==BGBCC_SH_NMID_LDHF8U)
+			nm2=BGBCC_SH_NMID_PLDCM8UH;
+	
+		BGBCC_JX2_EmitOpRegReg(sctx,
+			nm2, sreg, dreg);
+		BGBCC_JX2_EmitOpRegReg(sctx,
+			BGBCC_SH_NMID_FLDCH, dreg, dreg);
+		return(1);
+
+#if 0
+		if(BGBCC_JX2_TryEmitOpRegReg(sctx,
+			nmid, sreg, dreg)>0)
+		{
+			return(1);
+		}
+
+		BGBCC_DBGBREAK
+	//	BGBCC_CCXL_StubError(ctx);
+		return(0);
+#endif
+	}
+
+	if(	(nmid==BGBCC_SH_NMID_STHF8S) ||
+		(nmid==BGBCC_SH_NMID_STHF8U))
+	{
+		nm2=BGBCC_SH_NMID_PSTCM8SH;
+		if(nmid==BGBCC_SH_NMID_STHF8U)
+			nm2=BGBCC_SH_NMID_PSTCM8UH;
+	
+		BGBCC_JX2_EmitOpRegReg(sctx,
+			BGBCC_SH_NMID_FSTCH, sreg, dreg);
+		BGBCC_JX2_EmitOpRegReg(sctx,
+			nm2, dreg, dreg);
+		return(1);
+
+#if 0
+		if(BGBCC_JX2_TryEmitOpRegReg(sctx,
+			nmid, sreg, dreg)>0)
+		{
+			return(1);
+		}
+
+		BGBCC_DBGBREAK
+	//	BGBCC_CCXL_StubError(ctx);
+		return(0);
+#endif
 	}
 
 	if(nmid==BGBCC_SH_NMID_SHLL32)
@@ -602,6 +654,16 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 	if(nm2==BGBCC_SH_NMID_FLDCH)
 		nm2=BGBCC_SH_NMID_FSTCH;
 
+	if(nm2==BGBCC_SH_NMID_LDHF8S)
+		nm2=BGBCC_SH_NMID_STHF8S;
+	if(nm2==BGBCC_SH_NMID_LDHF8U)
+		nm2=BGBCC_SH_NMID_STHF8U;
+
+	if(nm2==BGBCC_SH_NMID_PLDCM8SH)
+		nm2=BGBCC_SH_NMID_PSTCM8SH;
+	if(nm2==BGBCC_SH_NMID_PLDCM8UH)
+		nm2=BGBCC_SH_NMID_PSTCM8UH;
+
 	if(nm2==BGBCC_SH_NMID_SHLL32)
 		nm2=BGBCC_SH_NMID_SHLR32;
 	if(nm2==BGBCC_SH_NMID_SHLL64)
@@ -977,6 +1039,16 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 		nm2=BGBCC_SH_NMID_FSTCF;
 	if(nm2==BGBCC_SH_NMID_FLDCH)
 		nm2=BGBCC_SH_NMID_FSTCH;
+
+	if(nm2==BGBCC_SH_NMID_LDHF8S)
+		nm2=BGBCC_SH_NMID_STHF8S;
+	if(nm2==BGBCC_SH_NMID_LDHF8U)
+		nm2=BGBCC_SH_NMID_STHF8U;
+
+	if(nm2==BGBCC_SH_NMID_PLDCM8SH)
+		nm2=BGBCC_SH_NMID_PSTCM8SH;
+	if(nm2==BGBCC_SH_NMID_PLDCM8UH)
+		nm2=BGBCC_SH_NMID_PSTCM8UH;
 
 	if(nm2==BGBCC_SH_NMID_SHLL32)
 		nm2=BGBCC_SH_NMID_SHLR32;
@@ -2099,6 +2171,11 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 
 	case CCXL_TY_F16:
 		sz=2; nm1=BGBCC_SH_NMID_MOVW; nm2=BGBCC_SH_NMID_LDHF16; break;
+
+	case CCXL_TY_FP8S:
+		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=BGBCC_SH_NMID_LDHF8S; break;
+	case CCXL_TY_FP8U:
+		sz=1; nm1=BGBCC_SH_NMID_MOVB; nm2=BGBCC_SH_NMID_LDHF8U; break;
 
 	case CCXL_TY_VARIANT:
 	case CCXL_TY_VARSTRING:

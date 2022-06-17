@@ -971,9 +971,9 @@ parameter[5:0] JX2_UCIX_CONV2_BLKUTX3L		= 6'h0B;	//Get pixel, UTX3L
 // parameter[5:0] JX2_UCIX_CONV2_BLKUAB2		= 6'h0D;	//Get Sample, UAB2
 
 parameter[5:0] JX2_UCIX_CONV2_BLKRGB15F		= 6'h0C;	//Get pixel
-parameter[5:0] JX2_UCIX_CONV2_BLKRGB15A		= 6'h0D;	//Get pixel
-parameter[5:0] JX2_UCIX_CONV2_BLKRGBA32		= 6'h0E;	//Get pixel
-parameter[5:0] JX2_UCIX_CONV2_BLKRGB30A		= 6'h0F;	//Get pixel
+parameter[5:0] JX2_UCIX_CONV2_BLKRGB15A		= 6'h0D;	//Get pixel, RGB555A
+parameter[5:0] JX2_UCIX_CONV2_BLKRGBA32		= 6'h0E;	//Get pixel, RGBA32
+parameter[5:0] JX2_UCIX_CONV2_BLKRGB30A		= 6'h0F;	//Get pixel, RGB30A
 
 parameter[5:0] JX2_UCIX_CONV2_BCDADD	= 6'h10;	//
 parameter[5:0] JX2_UCIX_CONV2_BCDSUB	= 6'h11;	//

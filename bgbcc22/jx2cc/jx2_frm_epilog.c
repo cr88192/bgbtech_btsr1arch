@@ -122,6 +122,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj)
 {
+	char tb[256];
 	ccxl_register reg, treg;
 	ccxl_type tty;
 	u64 uli, epik;
@@ -130,7 +131,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	int ob, ov;
 	int tr0, tr1;
 	int p0, tsz;
-	int i, j, k;
+	int i, j, k, l;
 
 	if(sctx->is_leaftiny&8)
 		obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
@@ -290,7 +291,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	epilbl=sctx->epihash_lbl[epix];
 
 #if 1
-	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 
 	k=sctx->frm_offs_save;
 	p0=BGBCC_JX2_TryEmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
@@ -340,7 +341,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		if(sctx->is_align_wexj&2)
 			{ BGBCC_JX2_EmitPad32AlignLastOp(sctx); }
 
-		epilbl=BGBCC_JX2_GenLabel(sctx);
+		l=sctx->epihash_rov++;
+//		sprintf(tb, "__epilog.%04X.%016llX", l, epik);
+		sprintf(tb, "__epilog_%04X_%012llX", l, epik);
+
+//		epilbl=BGBCC_JX2_GenLabel(sctx);
+		epilbl=BGBCC_JX2_GetNamedLabel(sctx, tb);
 		BGBCC_JX2_EmitLabel(sctx, epilbl);
 
 		sctx->epihash_key[epix]=epik;
@@ -617,7 +623,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		}
 		else
 		{
-			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+//			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 				k-j, BGBCC_SH_REG_SP);
 		}
@@ -955,7 +961,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	}
 #endif
 
-	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 
 	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 		k-j, BGBCC_SH_REG_SP);

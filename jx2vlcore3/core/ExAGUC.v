@@ -241,7 +241,9 @@ begin
 //			3'b00z: tRiSc = { 21'h00, tRegTexBix, 3'h0 };
 //			3'b01z: tRiSc = { 20'h00, tRegTexBix, 4'h0 };
 
-			3'b00z: tRiSc = { 25'h00, tRegTexPix[23:4], 3'h0 };
+//			3'b00z: tRiSc = { 25'h00, tRegTexPix[23:4], 3'h0 };
+			3'b000: tRiSc = { 25'h00, tRegTexPix[23:4], 3'h0 };
+			3'b001: tRiSc = { 21'h00, tRegTexPix[23:0], 3'h0 };
 			3'b01z: tRiSc = { 24'h00, tRegTexPix[23:4], 4'h0 };
 			3'b10z: tRiSc = { 23'h00, tRegTexPix[23:2], 3'h0 };
 			3'b11z: tRiSc = { 22'h00, tRegTexPix[23:1], 3'h0 };

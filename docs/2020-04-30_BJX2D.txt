@@ -1867,8 +1867,8 @@ F0zz Instruction Block:
 *** F03E_3en0  MOVST	Rn
 *** F03F_3en0  MOVPQ	Rn
 
-*** F060_3en0 ? DAA		Rn			//(BCD) Decimal Adjust After ADD
-*** F061_3en0 ? DAS		Rn			//(BCD) Decimal Adjust After SUB
+*** F060_3en0 / DAA		Rn			//(BCD) Decimal Adjust After ADD
+*** F061_3en0 / DAS		Rn			//(BCD) Decimal Adjust After SUB
 
 *** F068_3en0  TRAP		Rn
 *** F069_3en0  WEXMD	Imm5u
@@ -1894,7 +1894,12 @@ F0zz Instruction Block:
 ** F0nm_3ez7  SWxP.x	Rm, Rn			//(GSV) SWAP and SWCP
 
 ** F0nm_3ez8  (Reserved 2R Block Space)
-** ...
+** F0nm_3ez9  (Reserved 2R Block Space)
+** F0nm_3ezA  (Reserved 2R Block Space)
+** F0nm_3ezB  (Reserved 2R Block Space)
+** F0nm_3ezC  (Reserved 2R Block Space)
+** F0nm_3ezD  (Reserved 2R Block Space)
+** F0nm_3ezE  (Reserved 2R Block Space)
 ** F0nm_3ezF  (Reserved 2R Block Space)
 
 * F0nm_4eoz (Follows a similar pattern as F0nm_0zz0)
@@ -2000,9 +2005,14 @@ F0zz Instruction Block:
 
 
 * F0zz_7zzz
-*** F0nm_7ez8  (Reserved 2R Block Space)
-*** ...
-*** F0nm_7ezF  (Reserved 2R Block Space)
+** F0nm_7ez8  (Reserved 2R Block Space)
+** F0nm_7ez9  (Reserved 2R Block Space)
+** F0nm_7ezA  (Reserved 2R Block Space)
+** F0nm_7ezB  (Reserved 2R Block Space)
+** F0nm_7eoC  (Op64 Extended 3R Block, F07C)
+** F0nm_7eoD  (Op64 Extended 3R Block, F07D)
+** F0nm_7eoE  (Op64 Extended 3R Block, F07E)
+** F0nm_7eoF  (Op64 Extended 3R Block, F07F)
 
 * F0zz_8zzz (XMOV Block)
 ** F0nm_8gd0  XMOV.B	Rn, (Xm, Disp5)		//
@@ -2212,6 +2222,11 @@ The layout of the F8 block will be modified with two Jumbo prefixes (Jumbo96):
 Or, in effect, the Rn field will be expanded to 6 bits.
 
 
+As a special case:
+* F88F_iiii  BREAK		Imm16u			//Breakpoint with Imm16
+** The Imm16 may be used for debugging.
+
+
 ==== F9zz Instruction Block ====
 
 Reserved for now. This block will use the same format as the F0 block.
@@ -2320,8 +2335,8 @@ The layout of the F8 block will thus be modified slighly with XGPR and two Imm24
 
 * FFw0_0ddd_F0dd_Cddd  BRA	(PC, Disp33s)
 * FFw0_0ddd_F0dd_Dddd  BSR	(PC, Disp33s)
-* FFw0_0ddd_F0dd_Eddd  BT	(PC, Disp33s)
-* FFw0_0ddd_F0dd_Fddd  BF	(PC, Disp33s)
+* FFw0_0ddd_E0dd_Cddd  BT	(PC, Disp33s)
+* FFw0_0ddd_E4dd_Cddd  BF	(PC, Disp33s)
 
 
 * FFjj_jjjj_FAjj_jjjj  JMP	Abs48				//Abs48 Branch
@@ -2404,6 +2419,17 @@ For Imm5, W.i will function as a sign bit:
 
 The W.w bit may be used to select the use of SR.S as a Predicate.
 For CMPxx ops within F2zz, W.m will select SR.S as the output bit.
+
+==== Jumbo Op64 Extended 3R ====
+
+* FFw0_0yyy_F0nm_ZeoZ  "OP Rm, Ro, Rn"
+
+In these blocks, yyy will be interpreted as opcode bits.
+* 000..03F will be special, in that they may be encoded via Op40x2
+* 040..FFF will be assumed non-encodable via Op40x2.
+
+These encodings are assumed for low-probability instructions, where the bulkier encoding is less of an issue.
+
 
 
 ==== Jumbo Op40x2 (Optional) ====

@@ -90,9 +90,17 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 		epik|=0x04000000;
 		
 	uli=epik;
-	uli=(uli+1)*65521;
-	uli=(uli+1)*65521;
-	uli=(uli+1)*251;
+//	uli=(uli+1)*65521;
+//	uli=(uli+1)*65521;
+//	uli=(uli+1)*251;
+
+	uli=(uli+(uli>>31)+1)*251;
+	uli=(uli+(uli>>31)+1)*251;
+	uli=(uli+(uli>>31)+1)*251;
+	uli=(uli+(uli>>31)+1)*251;
+	uli=(uli+(uli>>31)+1)*251;
+	uli=(uli+(uli>>31)+1)*251;
+
 	epix=(uli>>32)&1023;
 
 	/* Unusual Registers Saved */
@@ -178,7 +186,7 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 			}
 		}
 
-		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+//		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 
 		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 			-k*4, BGBCC_SH_REG_SP);
@@ -712,6 +720,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj, int fcnlbl)
 {
+	char tb[256];
 	ccxl_register reg, treg;
 	ccxl_type tty;
 	int bo, co, pr0;
@@ -719,7 +728,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	int ni, nf, rcls, ob, ov;
 	u64 epik;
 	int epix, epilbl, epij;
-	int i, j, k, fl, fl2;
+	int i, j, k, l, fl, fl2;
 
 	ctx->cur_func=obj;
 	ctx->cur_vtr=NULL;
@@ -788,7 +797,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	{
 		epij=3;
 
-		epilbl=BGBCC_JX2_GenLabel(sctx);
+		l=sctx->eprhash_rov++;
+//		sprintf(tb, "__prolog.%04X.%016llX", l, epik);
+		sprintf(tb, "__prolog_%04X_%012llX", l, epik);
+
+//		epilbl=BGBCC_JX2_GenLabel(sctx);
+		epilbl=BGBCC_JX2_GetNamedLabel(sctx, tb);
 		sctx->eprhash_key[epix]=epik;
 		sctx->eprhash_lbl[epix]=epilbl;
 
@@ -1690,7 +1704,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	
 	sctx->frm_offs_save=sctx->frm_size-(k*4);
 
-	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 
 	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 		-sctx->frm_offs_save, BGBCC_SH_REG_SP);

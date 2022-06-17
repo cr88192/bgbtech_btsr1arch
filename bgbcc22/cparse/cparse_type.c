@@ -610,6 +610,12 @@ static char *bgbcp_basetypes_c[]={
 "__bcd64",
 "__bcd128",
 
+"__float8s",
+"__float8u",
+
+"__vec4fp8s",
+"__vec4fp8u",
+
 NULL
 };
 

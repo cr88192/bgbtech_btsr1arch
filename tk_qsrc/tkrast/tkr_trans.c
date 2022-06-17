@@ -2363,16 +2363,16 @@ int TKRA_TransformProjectTriangle(
 
 
 #if 1
-		f4=(72*72*3);
-//		f4=(64*64*3);
+//		f4=(72*72*3);
+		f4=(64*64*3);
 //		f4=(48*48*3);
 //		if(ecfl)
 //			f4=(32*32*3);
 
 //		if(ecfl&4)
 		if(ecfl&6)
-//			f4=(32*32*3);
-			f4=(48*48*3);
+			f4=(32*32*3);
+//			f4=(48*48*3);
 
 		if(ecfl&1)
 //			f4=(32*32*3);
@@ -2900,14 +2900,14 @@ int TKRA_TransformProjectQuad(
 #if 1
 //		f4=(72*72*4);
 //		f4=(64*64*4);
-		f4=(56*56*4);
-//		f4=(48*48*4);
+//		f4=(56*56*4);
+		f4=(48*48*4);
 
 //		if(ecfl&4)
 		if(ecfl&6)
 //			f4=(32*32*4);
-//			f4=(40*40*4);
-			f4=(48*48*4);
+			f4=(40*40*4);
+//			f4=(48*48*4);
 
 		if(ecfl&1)
 //			f4=(32*32*4);
@@ -2927,7 +2927,7 @@ int TKRA_TransformProjectQuad(
 		if(!nosubdiv && (f5>f4))
 //		if(0)
 		{
-#if 1
+#if 0
 			if(!ecfl)
 			{
 				/* Check for early Z cull rather than fragment. */

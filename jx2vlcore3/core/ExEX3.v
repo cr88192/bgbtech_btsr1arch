@@ -180,13 +180,15 @@ always @*
 begin
 	case(regValRs[59:57])
 		3'b000: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX2 };
-		3'b001: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX1 };
+//		3'b001: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX1 };
+		3'b001: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV_RGB30APCK64F };
 		3'b010: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX3L };
 		3'b011: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX3H };
 		3'b100: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB15F };
 		3'b101: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB15A };
 		3'b110: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGBA32 };
-		3'b111: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB30A };
+//		3'b111: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB30A };
+		3'b111: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV_RGB32UPCK64FU };
 	endcase
 end
 
@@ -194,7 +196,7 @@ ExBtcUtx1	exUtx1(
 	memDataIn [63:0],
 	memDataInB[63:0],
 	tUtxIx,
-	tUtxIdUIxt, tValUtx1);
+	tUtxIdUIxt, tValUtx1, 1'b1);
 
 `endif
 `endif

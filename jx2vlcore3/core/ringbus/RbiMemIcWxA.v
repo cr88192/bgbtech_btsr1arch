@@ -122,6 +122,18 @@ assign		icInPcWxe = icInPcWxm[1];
 `define	jx2_mem_l1i_regicdata	reg[143:0]
 `define	jx2_mem_l1i_regicaddr	reg[ 71:0]
 
+`ifdef jx2_mem_l1isz_1024
+`jx2_mem_l1i_regicdata		icCaMemA[1023:0];	//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemB[1023:0];	//Local L1 tile memory (Odd)
+`jx2_mem_l1i_regicdata		icCaMemC[1023:0];	//Local L1 tile memory (Even)
+`jx2_mem_l1i_regicdata		icCaMemD[1023:0];	//Local L1 tile memory (Odd)
+
+`jx2_mem_l1i_regicaddr		icCaAddrA[1023:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrB[1023:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrC[1023:0];	//Local L1 tile address
+`jx2_mem_l1i_regicaddr		icCaAddrD[1023:0];	//Local L1 tile address
+`endif
+
 `ifdef jx2_mem_l1isz_512
 `jx2_mem_l1i_regicdata		icCaMemA[511:0];	//Local L1 tile memory (Even)
 `jx2_mem_l1i_regicdata		icCaMemB[511:0];	//Local L1 tile memory (Odd)
@@ -202,6 +214,20 @@ assign		icInPcWxe = icInPcWxm[1];
 	reg[27:0]		tNxtAddrA;
 (* max_fanout = 50 *)
 	reg[27:0]		tNxtAddrB;
+`endif
+
+`ifdef jx2_mem_l1isz_1024
+reg[9:0]		tNxtIxA;
+reg[9:0]		tNxtIxB;
+reg[9:0]		tReqIxA;
+reg[9:0]		tReqIxB;
+reg[9:0]		tReqIxAL;
+reg[9:0]		tReqIxBL;
+
+wire[9:0]		tNx2IxA;
+wire[9:0]		tNx2IxB;
+reg[9:0]		tNx2IxAL;
+reg[9:0]		tNx2IxBL;
 `endif
 
 `ifdef jx2_mem_l1isz_512
@@ -438,6 +464,11 @@ assign		memRingIsRespOkLdB =
 	memRingIsRespOkLd &&
 	(memSeqIn[7:6] == 2'b11);
 
+`ifdef jx2_mem_l1isz_1024
+reg[  9:0]		tReqSeqIdxArr[15:0];
+reg[  9:0]		tReqSeqIdx;
+reg[9:0]		tMemSeqIx;
+`endif
 
 `ifdef jx2_mem_l1isz_512
 reg[  8:0]		tReqSeqIdxArr[15:0];
@@ -554,6 +585,11 @@ reg[7:0]		tStBlkPRovC;
 reg[7:0]		tStBlkPRovD;
 
 
+
+`ifdef jx2_mem_l1isz_1024
+reg[9:0]		tStBlkIxA;
+reg[9:0]		tStBlkIxB;
+`endif
 
 `ifdef jx2_mem_l1isz_512
 reg[8:0]		tStBlkIxA;
@@ -699,6 +735,11 @@ begin
 
 `ifdef jx2_l1i_nohash
 
+`ifdef jx2_mem_l1isz_1024
+	tNxtIxA=tNxtAddrA[10:1];
+	tNxtIxB=tNxtAddrB[10:1];
+`endif
+
 `ifdef jx2_mem_l1isz_512
 	tNxtIxA=tNxtAddrA[9:1];
 	tNxtIxB=tNxtAddrB[9:1];
@@ -720,6 +761,13 @@ begin
 `endif
 
 `else
+
+`ifdef jx2_mem_l1isz_1024
+//	tNxtIxA=tNxtAddrA[9:1];
+//	tNxtIxB=tNxtAddrB[9:1];
+	tNxtIxA=tNxtAddrA[10:1]^tNxtAddrA[20:11];
+	tNxtIxB=tNxtAddrB[10:1]^tNxtAddrB[20:11];
+`endif
 
 `ifdef jx2_mem_l1isz_512
 //	tNxtIxA=tNxtAddrA[9:1];

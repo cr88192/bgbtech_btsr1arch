@@ -1617,6 +1617,23 @@ void BJX2_Op_LDTEX_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+8));
 		vc=TKRA_CachedBlkUtx3H(txb, txc, txi);
 	}else
+		if(((vrb>>57)&7)==6)
+	{
+		txb=BJX2_MemGetDWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>0)*4));
+		vc=tkra_rgb32upck64(txb);
+	}else
+		if(((vrb>>57)&7)==7)
+	{
+		txb=BJX2_MemGetDWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>0)*4));
+		vc=tkra_rgb32fupck64(txb);
+	}else
+		if(((vrb>>57)&7)==1)
+	{
+		vc=BJX2_MemGetQWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>0)*8));
+	}else
 	{
 		vc=0;
 	}
@@ -2067,25 +2084,42 @@ void BJX2_Op_PSTCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 u16 bjx2_ldm8uh(byte v)
 {
 	u16 v1;
-	v1=(v<<6)|(((~v)<<7)&0x4000);
+	
+	if(!v)
+		return(0);
+
+//	v1=(v<<6)^0x4000;
+	v1=(v<<6)|((v<<7)&0x4000);
+	v1^=0x2000;
+	
+//	v1=(v<<6)|(((~v)<<7)&0x4000);
 	return(v1);
 }
 
 u16 bjx2_ldm8sh(byte v)
 {
 	u16 v1;
-	v1= (((v )<<7)&0x3F80)|
-		(((~v)<<8)&0x4000)|
-		((( v)<<8)&0x8000);
+//	v1= (((v )<<7)&0x3F80)|
+//		(((~v)<<8)&0x4000)|
+//		((( v)<<8)&0x8000);
+
+//	v1= (((v )<< 6)&0x3F80)|
+//		(((~v)<< 7)&0x4000)|
+//		((( v)<<15)&0x8000);
+	v1= ((v<< 6)&0x3F80)|
+		((v<< 7)&0x4000)|
+		((v<<15)&0x8000);
+	v1^=0x2000;
+
 	return(v1);
 }
 
 byte bjx2_stm8uh(u16 v)
 {
 	u16 v1;
-	v1=v>>6;
+	v1=(v>>6)^0x80;
 	if(((v>>13)&3)==0)
-		v1=0;
+		v1=0x00;
 	if(((v>>13)&3)==3)
 		v1=0xF0;
 	return(v1);
@@ -2094,11 +2128,13 @@ byte bjx2_stm8uh(u16 v)
 byte bjx2_stm8sh(u16 v)
 {
 	u16 v1;
-	v1=(v>>7)|((v>>8)&0x80);
+//	v1=(v>>7)|((v>>8)&0x80);
+	v1=((v>>6)^0x80)|((v>>15)&1);
+
 	if(((v>>13)&3)==0)
 		v1=0;
 	if(((v>>13)&3)==3)
-		v1|=0x78;
+		v1=0xF0|((v>>15)&1);
 	return(v1);
 }
 

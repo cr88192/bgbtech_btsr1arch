@@ -2512,6 +2512,16 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "float128"))*t++='g';
 		if(!strcmp(s, "long_double"))*t++='g';
 
+		if(!strcmp(s, "float8s"))
+			{ *t++='G'; *t++='a'; }
+		if(!strcmp(s, "float8u"))
+			{ *t++='G'; *t++='h'; }
+
+		if(!strcmp(s, "vec4fp8s"))
+			{ *t++='D'; *t++='v'; }
+		if(!strcmp(s, "vec4fp8u"))
+			{ *t++='D'; *t++='w'; }
+
 		if(!strcmp(s, "auto"))*t++='r';
 		if(!strcmp(s, "var"))*t++='r';
 		if(!strcmp(s, "variant"))*t++='r';

@@ -85,6 +85,11 @@
 #define CCXL_TY_BCDBIG_P0		0x46		//64-bit BCD
 #define CCXL_TY_BCDBIG_P4		0x47		//128-bit BCD
 
+#define CCXL_TY_FP8S			0x48		//Float8S
+#define CCXL_TY_FP8U			0x49		//Float8U
+#define CCXL_TY_VEC4_FP8S		0x4A		//Vec4 Float8S
+#define CCXL_TY_VEC4_FP8U		0x4B		//Vec4 Float8U
+
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'

@@ -25,6 +25,9 @@ vluint64_t main_time = 0;
 // #define JX2_L2_MISS_CYC		30	//skip trying to model L2 behavior.
 #define JX2_L2_MISS_CYC		10		//skip trying to model L2 behavior.
 
+#ifdef L2FAST
+#define JX2_SKIP_L2_MODEL			//skip trying to model L2 behavior.
+#endif
 
 typedef unsigned char byte;
 typedef signed char sbyte;
