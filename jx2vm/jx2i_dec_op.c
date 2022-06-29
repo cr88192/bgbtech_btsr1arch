@@ -502,6 +502,13 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_MODUQ:
 			op->cyc=68;
 			break;
+
+		case BJX2_NMID_DIVSL:
+		case BJX2_NMID_DIVUL:
+		case BJX2_NMID_MODSL:
+		case BJX2_NMID_MODUL:
+			op->cyc=36;
+			break;
 		
 		default:
 			op->cyc=1;

@@ -619,11 +619,17 @@ Perform a division step, with SR.S and SR.T holding internal state.
  
 === DIVx.Q (3R) ===
 
-* F0nm_6go4 DIVS.Q	Rm, Ro, Rn	//(MULQ)
-* F0nm_6Go4 DIVU.Q	Rm, Ro, Rn	//(MULQ)
+* F0nm_6go4 DIVS.Q	Rm, Ro, Rn	//(MULQ) 64-bit Signed Divide
+* F0nm_6Go4 DIVU.Q	Rm, Ro, Rn	//(MULQ) 64-bit Unsigned Divide
+* F0nm_7go4 DIVS.L	Rm, Ro, Rn	//(MULQ) 32-bit Signed Divide
+* F0nm_7Go4 DIVU.L	Rm, Ro, Rn	//(MULQ) 32-bit Unsigned Divide
 
-Perform a 64-bit integer division.
+Perform an integer division.
 Divides Rm by Ro and stores the result in Rn.
+
+The Q form performs a 64-bit division, whereas the L form performs a 32-bit division.
+
+Values for 32-bit divide will be required to be in-range, the result of a division with out-of-range values is undefined.
 
 This instruction will be part of the MULQ extension.
 
@@ -1028,11 +1034,11 @@ Block Mode:
 
 If a displacement is used, it will be interpreted as additional parameters:
 * Disp(2:0): Pixel Selector
-** 000: Round Nearest (Default)
-** 001: Reserved
+** 000: Truncare (Default)
+** 001: Round Nearest
 ** 010: Reserved
 ** 011: Reserved
-** 100: Round S and T downward
+** 100: Round S and T downward (Truncate)
 ** 101: Round S upward, T downward
 ** 110: Round S downward, T upward
 ** 111: Round S and T upward
@@ -1096,10 +1102,12 @@ The DMACS and DMACU instructions will multiply two 32-bit quantities and accumul
 
 === MODx.Q (3R) ===
 
-* F0nm_6go5  MODS.Q	Rm, Ro, Rn	//(MULQ)
-* F0nm_6Go5  MODU.Q	Rm, Ro, Rn	//(MULQ)
+* F0nm_6go5  MODS.Q	Rm, Ro, Rn		//(MULQ) 64-bit Signed Modulo
+* F0nm_6Go5  MODU.Q	Rm, Ro, Rn		//(MULQ) 64-bit Unsigned Modulo
+* F0nm_7go5  MODS.L	Rm, Ro, Rn		//(MULQ) 32-bit Signed Modulo
+* F0nm_7Go5  MODU.L	Rm, Ro, Rn		//(MULQ) 32-bit Unsigned Modulo
 
-Perform a 64-bit integer modulo.
+Perform an integer modulo.
 Find the modulo of dividing Rm by Ro and stores the result in Rn.
 
 This instruction will be part of the MULQ extension.
@@ -2296,7 +2304,7 @@ The Unpacking conversion will pad the low-order bits with zeroes.
 The Packing conversion will truncate the low order bits.
 
 Formats here:
-* RGB32SF: 4x FP8S (S.E4.F3), 32 bits
+* RGB32SF: 4x FP8S (E4.F3.S), 32 bits
 * RGB32UF: 4x FP8U (E4.F4), 32 bits
 * RGB64F: 4x Binary16 (Packed Half), 64 bits
 

@@ -1932,7 +1932,7 @@ extern byte	st_didsbar;
 
 void I_FinishUpdate (void)
 {
-	u32 *conbufa;
+	u32 *conbufa, *conbufb, *conbufb2;
 	int bx, by, by2;
 
 	u64 pxa, pxb, pxc, pxd;
@@ -1966,6 +1966,13 @@ void I_FinishUpdate (void)
 //	conbufa=(u32 *)0xA00A0000UL;
 	conbufa=(u32 *)0xF00A0000UL;
 #endif
+
+	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
+	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
+
+	conbufa[0]=vid_frnum;
+	if(conbufb2[0]==vid_frnum)				//Detect if MMIO maps here.
+		conbufa=conbufb;
 
 //	((u32 *)0xF00BFF00)[8]=vid_frnum;
 //	vid_frnum++;

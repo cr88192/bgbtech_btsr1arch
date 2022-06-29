@@ -1885,9 +1885,9 @@ F0zz Instruction Block:
 ** F0nm_3Go2  SHARX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
 ** F0nm_3go3  ROTRQ		Rm, Ro, Rn		//(ALU) Rotate Right (64b)
 ** F0nm_3Go3  SHLRX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
-** F0nm_3go4 ? MULHS.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
+** F0nm_3go4  MULHS.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Signed
 ** F0nm_3Go4  SHADX		Xm, Ro, Xn		//(ALUX) Shift Arithmetic (128b)
-** F0nm_3go5 ? MULHU.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
+** F0nm_3go5  MULHU.Q	Rm, Ro, Rn		//(MULQ) MUL, High Results Unsigned
 ** F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
 ** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALU) Rotate Left (32b)
 ** F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
@@ -1978,24 +1978,24 @@ F0zz Instruction Block:
 ** F0nm_6Go2 ? DMACS.L	Rm, Imm5u, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
 ** F0nm_6go3 ? DMACU.L	Rm, Ro, Rn			//(DMAC) Rn=Rn+(Rm*Ro)
 ** F0nm_6Go3 ? DMACU.L	Rm, Imm5u, Rn		//(DMAC) Rn=Rn+(Rm*Imm)
-** F0nm_6go4 ? DIVS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Signed)
-** F0nm_6Go4 ? DIVU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Unsigned)
-** F0nm_6go5 ? MODS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
-** F0nm_6Go5 ? MODU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
-** F0nm_6go6 ? FDIV		Rm, Ro, Rn			//(FDIV) FDIV
-** F0nm_6Go6 ? FDIVX	Rm, Ro, Rn			//(FDIV+GFPX)
-** F0nm_6go7 ? FDIVA	Rm, Ro, Rn			//(FDIV) FDIV Approx
-** F0nm_6Go7 ? FDIVXA	Rm, Ro, Rn			//(FDIV+GFPX) FDIVX Approx
-** F0nm_6go8 ? BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
-** F0nm_6Go8 ? BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
-** F0nm_6go9 ? BLERP	Rm, Ro, Rn			//(RGBX) Linear Interpolate
-** F0nm_6Go9 ? BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
-** F0nm_6goA ? BLINTA	Rm, Ro, Rn			//(RGBX) Bilinear Interpolate (2p)
-** F0nm_6GoA ? BLINT	Xm, Xo, Xn			//(RGBX) Bilinear Interpolate
-** F0nm_6goB ? BITSEL	Rm, Ro, Rn			//(?) Rn = (Rm & Ro) | (Rn & ~Ro)
-** F0nm_6GoB ? BITSELX	Xm, Xo, Xn			//(?) Xn = (Xm & Xo) | (Xn & ~Xo)
-** F0nm_6goC ? BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
-** F0nm_6GoC ? BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
+** F0nm_6go4  DIVS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Signed)
+** F0nm_6Go4  DIVU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Unsigned)
+** F0nm_6go5  MODS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
+** F0nm_6Go5  MODU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
+** F0nm_6go6  FDIV		Rm, Ro, Rn			//(FDIV) FDIV
+** F0nm_6Go6  FDIVX	Rm, Ro, Rn				//(FDIV+GFPX)
+** F0nm_6go7  FDIVA	Rm, Ro, Rn				//(FDIV) FDIV Approx
+** F0nm_6Go7  FDIVXA	Rm, Ro, Rn			//(FDIV+GFPX) FDIVX Approx
+** F0nm_6go8  BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
+** F0nm_6Go8  BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
+** F0nm_6go9  BLERP	Rm, Ro, Rn				//(RGBX) Linear Interpolate
+** F0nm_6Go9  BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
+** F0nm_6goA  BLINTA	Rm, Ro, Rn			//(RGBX) Bilinear Interpolate (2p)
+** F0nm_6GoA  BLINT	Xm, Xo, Xn				//(RGBX) Bilinear Interpolate
+** F0nm_6goB  BITSEL	Rm, Ro, Rn			//(?) Rn = (Rm & Ro) | (Rn & ~Ro)
+** F0nm_6GoB  BITSELX	Xm, Xo, Xn			//(?) Xn = (Xm & Xo) | (Xn & ~Xo)
+** F0nm_6goC  BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
+** F0nm_6GoC  BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6goD  FADDG		Rm, Ro, Rn			//(GFP) FADD (Dynamic Rounding)
 ** F0nm_6GoD  -
 ** F0nm_6goE  FSUBG		Rm, Ro, Rn			//(GFP) FSUB (Dynamic Rounding)
@@ -2005,6 +2005,22 @@ F0zz Instruction Block:
 
 
 * F0zz_7zzz
+** F0nm_7go0  -
+** F0nm_7Go0  -
+** F0nm_7go1  -
+** F0nm_7Go1  -
+** F0nm_7go2  -
+** F0nm_7Go2  -
+** F0nm_7go3  -
+** F0nm_7Go3  -
+** F0nm_7go4  DIVS.L	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Signed)
+** F0nm_7Go4  DIVU.L	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Unsigned)
+** F0nm_7go5  MODS.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
+** F0nm_7Go5  MODU.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
+** F0nm_7go6  -
+** F0nm_7Go6  -
+** F0nm_7go7  -
+** F0nm_7Go7  -
 ** F0nm_7ez8  (Reserved 2R Block Space)
 ** F0nm_7ez9  (Reserved 2R Block Space)
 ** F0nm_7ezA  (Reserved 2R Block Space)

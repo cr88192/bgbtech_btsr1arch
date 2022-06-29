@@ -730,6 +730,7 @@ R31: X/Y Mask
 	ADD		64, SP
 	RTSU
 
+#if 0
 TKRA_DrawSpan_AtestModUtx2Mort:
 	ADD		-64, SP
 	MOV.X	R30, (SP, 48)
@@ -765,7 +766,52 @@ TKRA_DrawSpan_AtestModUtx2Mort:
 	MOV.X	(SP, 48), R30
 	ADD		64, SP
 	RTSU
+#endif
 
+#if 1
+TKRA_DrawSpan_AtestModUtx2Mort:
+	MOV.X	(R4, TKRA_DS_CPOS *8), R16
+	MOV.X	(R4, TKRA_DS_TPOS *8), R18
+	MOV.Q	(R4, TKRA_DS_TEXBCN*8), R20
+	MOV.Q	(R4, TKRA_DS_YMASK*8), R22
+	LEA.W	(R5, R7), R21
+
+#if 1
+	LDTEX		(R20, R18), R2
+#endif
+
+	.L0:
+.ifarch has_ldtex
+#if 1
+	PMULU.HW	R2, R16, R2
+	ADD			R19, R18		|	SHLD.Q		R2, -63, R3
+	ADD			R17, R16		|	RGB5PCK64	R2, R2
+	TST			1, R3
+	MOV.W?F		R2, (R5)
+	ADD			2, R5			|	LDTEX		(R20, R18), R2
+#endif
+.else
+#if 1
+	PMORT.L		R18, R2
+	ADD			R19, R18		|	AND			R2, R22, R3
+	SHAD		R3, -4, R2
+	MOV.Q		(R20, R2), R2
+	BLKUTX2		R2, R3, R2
+
+	PMULU.HW	R2, R16, R2
+	SHLD.Q		R2, -63, R3
+	ADD			R17, R16		| RGB5PCK64		R2, R2
+	TST			1, R3
+	MOV.W?F		R2, (R5)
+	ADD			2, R5
+#endif
+.endif
+
+	CMPQGT		R5, R21
+	BT			.L0
+
+	RTSU
+#endif
 
 #if 1
 TKRA_DrawSpan_ModBlUtx2Mort:

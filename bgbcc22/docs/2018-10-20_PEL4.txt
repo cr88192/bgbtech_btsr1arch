@@ -515,6 +515,11 @@ ExportNamePointerTable and ExportOrdinalTable
 * ExportOrdinalTable maps these names to ordinal indices.
 ** Each entry in the ordinal table is a 16-bit Word.
 
+Export names may be (optionally) followed by a signature hash:
+* XH#xxxx
+* Where xxxx is a 16-bit hash value expressed in hex.
+* This would represent a hash value for a signature string for the export.
+
 
 === Imports Table ===
 
@@ -543,11 +548,18 @@ rvaImportLookupTable:
 rvaImportAddressTable:
 * Initially same contents as Import Lookup Table.
 * Each entry is replaced by the address of the imported symbol.
+* If the Entry contains a BRA48 instruction
+** This instruction will be patched to the imported address.
 
 Imports are given by a Name/Hint string:
 * Consists of a properly aligned WORD giving a lookup-index hint.
 * The hint is followed by an ASCII string giving the name of the imported symbol.
 * Located within the '.idata' section.
+
+Import names may be (optionally) followed by a signature hash:
+* XH#xxxx
+* Where xxxx is a 16-bit hash value expressed in hex.
+* This would represent a hash value for a signature string for the import.
 
 
 === TLS Directory ===

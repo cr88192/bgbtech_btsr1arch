@@ -1174,6 +1174,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			
 		}
 
+#if 0
 		if((op->nmid==BJX2_NMID_POP) ||
 			(op->nmid==BJX2_NMID_FPOP) ||
 			(op->nmid==BJX2_NMID_POPX2))
@@ -1189,6 +1190,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 //			op->cyc=1;
 			op->cyc=4;
 		}
+#endif
+
 #endif
 
 		if(
@@ -1215,6 +1218,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_SUBSL)		||
 			(op->nmid==BJX2_NMID_ADDUL)		||
 			(op->nmid==BJX2_NMID_SUBUL)		||
+			(op->nmid==BJX2_NMID_MULSW)		||
+			(op->nmid==BJX2_NMID_MULUW)		||
 			(op->nmid==BJX2_NMID_PADDW)		||
 			(op->nmid==BJX2_NMID_PSUBW)		||
 			(op->nmid==BJX2_NMID_PSHUFB)	||

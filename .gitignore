@@ -3,6 +3,8 @@
 *_log.txt
 
 *ast.txt
+*_asm.txt
+*_dasm.txt
 *.vspx
 
 randbits.txt

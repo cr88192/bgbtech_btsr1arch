@@ -182,7 +182,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->has_pushx2=1;
 			shctx->has_simdx2=1;
 //			shctx->has_fmovs=1;
-			shctx->has_fmovs=3;
+			shctx->has_fmovs|=3;
 //			shctx->has_fmovc=1;
 //			shctx->has_dmacl=1;
 		}
@@ -257,7 +257,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2=1;
 		shctx->has_simdx2=1;
 
-		shctx->has_fmovs=3;
+		shctx->has_fmovs|=3;
 
 //		shctx->has_fmovc=1;
 //		shctx->has_dmacl=1;
@@ -1849,7 +1849,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		
 		sctx->op_is_wex2=j;
 
-#if 1
+#if 0
 		/*
 		 * Try to shuffle 3AC ops to reduce dependencies.
 		 */
@@ -2665,6 +2665,8 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 	ccxl_register treg;
 	ccxl_type tty;
 	s64 li, lj;
+	s16 si, sj;
+	byte bi, bj;
 	double f, g;
 	char *s0, *s1;
 	int n, sz, sz1, al, asz, bty;
@@ -3117,6 +3119,70 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 		return(0);
 	}
 
+	if(bty==CCXL_TY_F16)
+	{
+		BGBCC_JX2_EmitBAlign(sctx, 2);
+
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, value))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, value);
+			(*(float *)(&j))=li;
+			BGBCC_JX2_ConstConvFloatToHalf(j, &sj);
+			BGBCC_JX2_EmitWord(sctx, (u16)sj);
+			return(1);
+		}
+
+		if(BGBCC_CCXL_IsRegImmFloatP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, value))
+		{
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, value);
+			(*(float *)(&j))=f;
+			BGBCC_JX2_ConstConvFloatToHalf(j, &sj);
+			BGBCC_JX2_EmitWord(sctx, (u16)sj);
+			return(1);
+		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
+	}
+
+	if((bty==CCXL_TY_FP8S) || (bty==CCXL_TY_FP8U))
+	{
+//		BGBCC_JX2_EmitBAlign(sctx, 2);
+
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, value))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, value);
+			(*(float *)(&j))=li;
+			BGBCC_JX2_ConstConvFloatToHalf(j, &sj);
+			if(bty==CCXL_TY_FP8U)
+				BGBCC_JX2_ConstConvHalfToFP8U(sj, &bj);
+			else
+				BGBCC_JX2_ConstConvHalfToFP8S(sj, &bj);
+			BGBCC_JX2_EmitByte(sctx, bj);
+			return(1);
+		}
+
+		if(BGBCC_CCXL_IsRegImmFloatP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, value))
+		{
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, value);
+			(*(float *)(&j))=f;
+			BGBCC_JX2_ConstConvFloatToHalf(j, &sj);
+			if(bty==CCXL_TY_FP8U)
+				BGBCC_JX2_ConstConvHalfToFP8U(sj, &bj);
+			else
+				BGBCC_JX2_ConstConvHalfToFP8S(sj, &bj);
+			BGBCC_JX2_EmitByte(sctx, bj);
+			return(1);
+		}
+
+		BGBCC_CCXL_StubError(ctx);
+		return(0);
+	}
+
 	if((bty==CCXL_TY_SB) || (bty==CCXL_TY_UB))
 	{
 //		BGBCC_JX2_EmitBAlign(sctx, 4);
@@ -3183,8 +3249,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 
 	if(BGBCC_CCXL_TypeVec64P(ctx, type))
 	{
-		if(BGBCC_CCXL_IsRegImmIntP(ctx, value) ||
-			BGBCC_CCXL_IsRegImmLongP(ctx, value))
+		if(	BGBCC_CCXL_IsRegImmIntP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, value) ||
+			BGBCC_CCXL_IsRegImmX64P(ctx, value))
 		{
 			BGBCC_JX2_EmitBAlign(sctx, 8);
 			li=BGBCC_CCXL_GetRegImmLongValue(ctx, value);
@@ -5739,6 +5806,7 @@ ccxl_status BGBCC_JX2C_AddResourceData(BGBCC_TransState *ctx,
 ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	byte *obuf, int *rosz, fourcc imgfmt)
 {
+	char tb[256];
 	BGBCC_JX2_Context *sctx;
 	BGBCC_CCXL_RegisterInfo *obj, *obj1, *obj2;
 	BGBCC_CCXL_LiteralInfo *litobj;
@@ -5769,6 +5837,10 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 //		sctx->is_pbo=0;
 	}
 
+	if(bgbcc_dumpast)
+	{
+		sctx->do_asm=1;
+	}
 
 	sctx->is_rom=0;
 	if(imgfmt==BGBCC_IMGFMT_ROM)
@@ -6715,11 +6787,19 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	printf("\n");
 #endif
 
-	printf("Masks: Hit=%d Jumbo=%d Tot=%d, Tot_J64=%d Tot_J96=%d\n",
+	printf("Consts: MaskHit=%d MaskJumbo=%d MaskTot=%d\n"
+		"\tTot_J64=%d (Fp32=%d 2xFp16=%d 4xFp8=%d i33l=%d i32h=%d i32c=%d)\n"
+		"\tTot_J96=%d\n",
 		sctx->stat_const_maskhit,
 		sctx->stat_const_maskjumbo,
 		sctx->stat_const_masktot,
 		sctx->stat_const_jumbo64,
+		sctx->stat_const_jumbo64_f32,
+		sctx->stat_const_jumbo64_2xf16,
+		sctx->stat_const_jumbo64_4xf8,
+		sctx->stat_const_jumbo64_imm33l,
+		sctx->stat_const_jumbo64_imm32h,
+		sctx->stat_const_jumbo64_imm32c,
 		sctx->stat_const_jumbo96
 		);
 
@@ -6883,11 +6963,33 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		return(-1);
 	}
 
+	if(bgbcc_dumpast)
+	{
+		if(ctx->imgbasename)
+			sprintf(tb, "dump/%s_asm.txt", ctx->imgbasename);
+		else
+			sprintf(tb, "dump/aout_asm.txt");
+		
+		BGBCC_JX2C_DumpImageASM(ctx, tb);
+
+
+	}
+
 	if((imgfmt==BGBCC_IMGFMT_EXE) ||
 		(imgfmt==BGBCC_IMGFMT_DLL) ||
 		(imgfmt==BGBCC_IMGFMT_SYS))
 	{
 		BGBCC_JX2C_FlattenImagePECOFF(ctx, obuf, rosz, imgfmt);
+
+		if(bgbcc_dumpast)
+		{
+			if(ctx->imgbasename)
+				sprintf(tb, "dump/%s_dasm.txt", ctx->imgbasename);
+			else
+				sprintf(tb, "dump/aout_dasm.txt");
+			BGBCC_JX2C_DumpImageDisAsm(ctx, tb);
+		}
+
 
 		if(ctx->n_error)
 		{
@@ -6908,6 +7010,15 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	if(imgfmt==BGBCC_IMGFMT_ROM)
 	{
 		BGBCC_JX2C_FlattenImageROM(ctx, obuf, rosz, imgfmt);
+
+		if(bgbcc_dumpast)
+		{
+			if(ctx->imgbasename)
+				sprintf(tb, "dump/%s_dasm.txt", ctx->imgbasename);
+			else
+				sprintf(tb, "dump/aout_dasm.txt");
+			BGBCC_JX2C_DumpImageDisAsm(ctx, tb);
+		}
 
 		if(ctx->n_error)
 		{

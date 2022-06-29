@@ -552,6 +552,8 @@ void (*DrawSpanZt_Mag)(u64 *parm,
 void (*DrawSpanZb)(tkra_zbufpixel *dstz, int cnt, u64 zpos, u64 zstep);
 void (*RasterWalkEdges)(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
+void (*RasterWalkEdgesNcp)(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 
 tkra_vec4f	(*VaGetPtr_xyz)(void *ptr);
 tkra_vec2f	(*VaGetPtr_st )(void *ptr);

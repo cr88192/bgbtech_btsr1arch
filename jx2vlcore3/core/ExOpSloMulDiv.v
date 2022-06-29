@@ -152,6 +152,12 @@ begin
 
 	tNxtValAR	= tValSg ? -tValR[63:0] : tValR[63:0];
 	tNxtValAQ	= tValSg ? -tValQ[63:0] : tValQ[63:0];
+	
+	if(tValOp[3])
+	begin
+		tNxtValAR[63:32] = tValSg ? UV32_FF : UV32_00;
+		tNxtValAQ[63:32] = tValSg ? UV32_FF : UV32_00;
+	end
 
 	tNxtValRnHi = tValAQ[63:0];
 	if(tValOp[1] ^ !tValOp[2])
@@ -278,8 +284,11 @@ begin
 
 			if(idUIxt[3])
 			begin
-				tNxtValQ[63:32]		= UV32_00;
-				tNxtValAddD[63:32]	= UV32_00;
+//				tNxtValQ[63:32]		= UV32_00;
+//				tNxtValAddD[63:32]	= UV32_00;
+
+				tNxtValQ		= { tNxtValQ[31:0], 32'h0 };
+//				tNxtValAddD		= UV32_00;
 			end
 
 `ifdef jx2_alu_slomuldiv_fdiv
@@ -296,6 +305,13 @@ begin
 				if(idUIxt[1])
 					tNxtOpCnt		= 66;
 
+				if(idUIxt[3])
+				begin
+					tNxtOpCnt		= 35;
+					if(idUIxt[1])
+						tNxtOpCnt		= 34;
+				end
+
 `ifdef jx2_alu_slomuldiv_fdiv
 				if(idUIxt[5])
 				begin
@@ -306,7 +322,10 @@ begin
 			end
 			else
 			begin
-				tNxtOpCnt		= 66;
+				if(idUIxt[3])
+					tNxtOpCnt		= 34;
+				else
+					tNxtOpCnt		= 66;
 			end
 `endif
 

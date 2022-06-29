@@ -1112,6 +1112,7 @@ bool BGBCC_CCXL_IsRegImmUIntP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmUnsignedP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmFloatP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmDoubleP(BGBCC_TransState *ctx, ccxl_register reg);
+bool BGBCC_CCXL_IsRegImmX64P(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmX128P(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmInt128P(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmFloat128P(BGBCC_TransState *ctx, ccxl_register reg);
@@ -2552,8 +2553,9 @@ int BGBCC_BSRC_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, 
 //AHSRC:jx2cc/jx2_asmdump.c
 int BGBCC_JX2DA_EmitPuts(BGBCC_JX2_Context *ctx, char *str);
 int BGBCC_JX2DA_EmitPrintf(BGBCC_JX2_Context *ctx, char *str, ...);
-char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid);
+char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2);
 char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid);
+char *BGBCC_JX2DA_GetIstrSuffix(BGBCC_JX2_Context *ctx, int wex2);
 int BGBCC_JX2DA_EmitOpNone(BGBCC_JX2_Context *ctx, int nmid);
 int BGBCC_JX2DA_EmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg);
 int BGBCC_JX2DA_EmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm);
@@ -2644,6 +2646,11 @@ int BGBCC_JX2A_ParseOpcode_ScanForBar(BGBCC_JX2_Context *ctx, char *cs0);
 int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs);
 int BGBCC_JX2A_ParseBuffer(BGBCC_JX2_Context *ctx, char **rcs);
 int BGBCC_JX2C_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *text);
+//AHSRC:jx2cc/jx2_disasm.c
+int BGBCC_JX2_TryDisassembleOpcodeI1(BGBCC_JX2_Context *ctx, u32 opw, int *rnmid, int *rfmid, int *rwex2, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
+int BGBCC_JX2_TryDisassembleOpcode_PrintArgStr(BGBCC_JX2_Context *ctx, char **rct, BGBCC_JX2_OpcodeArg *arg, int nmid);
+int BGBCC_JX2_TryDisassembleOpcodeI0(BGBCC_JX2_Context *ctx, int pc, int opw1, int opw2);
+int BGBCC_JX2_TryDisassembleOpcodeBuf(BGBCC_JX2_Context *ctx, char **rct, int pc, int opw1, int opw2);
 //AHSRC:jx2cc/jx2_cgif.c
 int BGBCC_JX2C_InitIface();
 ccxl_status BGBCC_JX2C_LoadBufferDLL(BGBCC_TransState *ctx,byte *buf, int sz);
@@ -2694,6 +2701,7 @@ int BGBCC_JX2_EmitCheckRegExt5(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegNeedSx(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegNeedZx(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegNeedSzx(BGBCC_JX2_Context *ctx, int reg);
+int BGBCC_JX2_EmitCheckRegExtPlainGPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegExtGPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegExt32GPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2_EmitCheckRegBase32GPR(BGBCC_JX2_Context *ctx, int reg);
@@ -3015,6 +3023,8 @@ int BGBCC_JX2RV_TryEmitOpLdReg2Reg(BGBCC_JX2_Context *ctx, int nmid, int rm, int
 //AHSRC:jx2cc/jx2_fltrom.c
 ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
+ccxl_status BGBCC_JX2C_DumpImageASM(BGBCC_TransState *ctx,char *name);
+ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,char *name);
 //AHSRC:jx2cc/jx2_fparith.c
 int BGBCC_JX2C_EmitBinaryVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);

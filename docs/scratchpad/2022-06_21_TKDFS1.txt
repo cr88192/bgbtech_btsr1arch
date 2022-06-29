@@ -1,0 +1,146 @@
+TKDFS:
+* TestKern Disk Filesystem
+* Intended to be a basic filesystem for disk-like media.
+* Intended to limit design complexity.
+
+General Image Structure
+* Boot Block (512B)
+* Super Block (512B)
+* Data Region
+** Inode Table
+** Directory Table
+** Allocation Bitmaps
+** File Data
+
+The data region covers the entire volume, just marks the superblock and similar "in-use", with everything else allocated as normal block spans.
+
+Span:
+* Span is 64 bits:
+* (43: 0): Block Number
+* (59:44): Span Length
+* (63:60): Span Type
+** 0=Normal
+*** (Number==0) && (Length==0): Unused Entry
+*** (Number==0) && (Length!=0): Skipped Zero Blocks
+*** (Number!=0) && (Length==0): Directory Entry
+*** (Number!=0) && (Length!=0): Span of Blocks
+** 1=Packed (File)
+*** Number gives a target inode, Length gives an Index
+** 2=Compressed (File)
+*** (51:44): Logical Length (Blocks)
+*** (59:52): Packed Length (Blocks)
+
+ SuperBlock {
+ FOURCC magic;		//000, 'DFS1'
+ BYTE ln2_sz_blk;	//004, Size of Disk Block (Log2)
+ BYTE ln2_sz_ino;	//005, Size of inode (Log2)
+ BYTE ln2_sz_de;	//006, Size of Dirent (log2)
+ BYTE ln2_rsv_ino;	//007, Number of reserved inodes (log2)
+ U16 acmode;		//008, Media Access Flags (Mount State)
+ BYTE res1[6];		//009, Reserved
+ U64 imgsize;		//010, Image Size (Blocks)
+ U64 span_ino;		//018, First Span of Inode Table.
+ U64 guid_lo;		//020, Volume GUID (Low)
+ U64 guid_hi;		//028, Volume GUID (High)
+ BYTE label[16];	//030, Volume Label
+ U32 rov_ino;		//040, Inode Rover (Hint)
+ U32 rov_blk;		//044, Block Rover (Hint)
+ //...
+ }
+
+
+Inodes:
+* 512 Bytes
+* Will have a multi-purpose data area:
+** Small files / Symlinks, inlined directly into inode;
+** Generic files: Collection of Spans
+** Large / Fragmented file: Overflow to a span of more spans.
+
+ INode_File {
+ FOURCC	fcctag;		//000, 'file' for File-like INode
+ U16	nh_size;	//004, Node Header Size (11:0) and Version (15:12)
+ U16	ucnt;		//006, Node Use Count
+ U64	dsize;		//008, File Size (Logical)
+ U64	csize;		//010, File Size (Compressed)
+ U64	atime;		//018, Access Time
+ U64	ctime;		//020, Creation Time
+ U64	mtime;		//028, Modified Time
+ U32	uid;		//030, UID
+ U32	gid;		//034, GID
+ U16	mode;		//038, File Mode Flags
+ U16	nflag;		//03A, Node Flags
+ BYTE	cmpmode;	//03C, Compression Method
+ BYTE	res1;		//03D, Pad
+ U16	nx_size;	//03E, Node Extension Size (64)
+ //End of Node Header, Start of Node Extension
+ BYTE	nxtag[64];	//(NH), Node Extension Tags
+ //End of Node Extension
+ BYTE   ndata[384];	//(NH+NX), Node Data or Spans
+ }
+
+
+File Mode:
+* 0001: XO
+* 0002: WO
+* 0004: RO
+* 0008: XG
+* 0010: WG
+* 0020: RG
+* 0040: XU
+* 0080: WU
+* 0100: RU
+* 0400: SetGID
+* 0800: SetUID
+* High Bits give Type:
+** 4000: DIR
+** 8000: FILE
+** A000: SYMLINK
+
+Node Extension tags would be optional TLV tags, terminated by a 0 tag.
+* The size may be adjusted between nxtag and ndata.
+* SmallTag { BYTE tag; BYTE len; }
+** tag != 0x00
+** len = 2..127
+* MediumTag { BYTE len_lo; BYTE len_hi; U16 tag; }
+** len_hi = 128..191 (Bias=128)
+
+Node Data:
+* For small files, is area will be interpreted as raw file data.
+* For normal files, this will be interpreted as a collection of spans.
+
+
+Would have fixed inode numbers for:
+* 0, Inode Table
+* 1, Directory Table
+* 2, Root Directory
+* 3, Block Allocation Bitmap
+* 4, Inode Table Bitmap
+* 5, Directory Table Bitmaps
+* 16+, Generic File Inodes
+
+
+Backup tables and/or a journal could be optional features (to improve reliability). Optional because these are not always needed.
+
+The inode table would have its own inode, superblock holding the first span of the inode table, which would (necessarily) contain the inode-table inode and other fixed inodes (with table being expanded if/when the initial part gets full).
+
+
+Directory Entry:
+* Fixed Size, Power-of-2
+** 64: NLEN=48
+** 128: NLEN=112
+** 256: NLEN=240
+* Directories are organized as an AVL Tree
+** Directory inode points at root of AVL Tree
+* Names are UTF-8 and Zero Padded
+
+ DirEnt {
+ u32 ino;			//inode number
+ u32 lsn;			//left child node
+ u32 rsn;			//right child node
+ byte ino_hi;		//inode high bits
+ byte lsn_hi;		//lsn high bits
+ byte rsn_hi;		//rsn high bits
+ byte zh;			//Z height of node (0=Leaf)
+ byte name[NLEN];	//Depends on DirEnt Size
+ }
+

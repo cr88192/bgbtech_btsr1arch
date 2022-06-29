@@ -3177,6 +3177,23 @@ begin
 				opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
 			end
 
+			16'h7zz4: begin		/* F0nm_7eo4 */
+				opNmid		= JX2_UCMD_QMULDIV;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_QMUL_DIVSL;
+				if(opExQ)
+					opUCmdIx	= JX2_UCIX_QMUL_DIVUL;
+			end
+			16'h7zz5: begin		/* F0nm_7eo5 */
+				opNmid		= JX2_UCMD_QMULDIV;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_QMUL_MODSL;
+				if(opExQ)
+					opUCmdIx	= JX2_UCIX_QMUL_MODUL;
+			end
+
 
 			16'h8zz0: begin		/* F0nm_8eo0 */
 				if(opExQ)

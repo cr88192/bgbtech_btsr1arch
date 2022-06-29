@@ -1033,6 +1033,31 @@ bool BGBCC_CCXL_IsRegImmDoubleP(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegImmX64P(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	ccxl_type	bty;
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
+	{
+		bty=BGBCC_CCXL_GetRegType(ctx, reg);
+
+		if(BGBCC_CCXL_TypeVec64P(ctx, bty))
+			return(true);
+
+		return(false);
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_I128_LVT)
+	{
+		bty=BGBCC_CCXL_GetRegType(ctx, reg);
+		if(BGBCC_CCXL_TypeVec64P(ctx, bty))
+			return(true);
+		return(false);
+	}
+
+	return(false);
+}
+
 bool BGBCC_CCXL_IsRegImmX128P(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
@@ -1850,6 +1875,14 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 		return((s64)dv);
 
 //		return(BGBCC_CCXL_GetRegImmDoubleValue(ctx, reg));
+	}
+
+	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_I128_LVT) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_F128_LVT))
+	{
+		i=reg.val&CCXL_REGINTPL_MASK;
+		v=ctx->ctab_lvt8[i];
+		return(v);
 	}
 
 	__debugbreak();

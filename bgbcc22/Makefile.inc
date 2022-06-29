@@ -98,6 +98,7 @@ SRCS=\
 	jx2cc/jx2_asmdump.c \
 	jx2cc/jx2_binop.c \
 	jx2cc/jx2_bufasm.c \
+	jx2cc/jx2_disasm.c \
 	jx2cc/jx2_cgif.c \
 	jx2cc/jx2_conv.c \
 	jx2cc/jx2_emit.c \

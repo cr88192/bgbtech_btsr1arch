@@ -329,6 +329,13 @@ int stat_const_masktot;
 int stat_const_jumbo64;
 int stat_const_jumbo96;
 
+int stat_const_jumbo64_imm33l;
+int stat_const_jumbo64_imm32h;
+int stat_const_jumbo64_imm32c;
+int stat_const_jumbo64_f32;
+int stat_const_jumbo64_2xf16;
+int stat_const_jumbo64_4xf8;
+
 int ofs_curbdl;
 
 int sim_voffs;		//est' offset between real PC and sim PC

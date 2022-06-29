@@ -66,8 +66,9 @@ int BGBCC_JX2DA_EmitPrintf(BGBCC_JX2_Context *ctx, char *str, ...)
 	return(0);
 }
 
-char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid)
+char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 {
+	char tb[128];
 	char *sn;
 
 	switch(nmid)
@@ -91,11 +92,11 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_SUB:		sn="SUB";		break;	//0x08	//SUB
 	case BGBCC_SH_NMID_SUBC:	sn="SUBC";		break;	//0x09	//SUBC
 	case BGBCC_SH_NMID_SUBV:	sn="SUBV";		break;	//0x0A	//SUBV
-	case BGBCC_SH_NMID_CMPHS:	sn="CMP/HS";	break;	//0x0B	//CMPHS
-	case BGBCC_SH_NMID_CMPHI:	sn="CMP/HI";	break;	//0x0C	//CMPHI
-	case BGBCC_SH_NMID_CMPEQ:	sn="CMP/EQ";	break;	//0x0D	//CMPEQ
-	case BGBCC_SH_NMID_CMPGE:	sn="CMP/GE";	break;	//0x0E	//CMPGE
-	case BGBCC_SH_NMID_CMPGT:	sn="CMP/GT";	break;	//0x0F	//CMPGT
+	case BGBCC_SH_NMID_CMPHS:	sn="CMPHS";	break;	//0x0B	//CMPHS
+	case BGBCC_SH_NMID_CMPHI:	sn="CMPHI";	break;	//0x0C	//CMPHI
+	case BGBCC_SH_NMID_CMPEQ:	sn="CMPEQ";	break;	//0x0D	//CMPEQ
+	case BGBCC_SH_NMID_CMPGE:	sn="CMPGE";	break;	//0x0E	//CMPGE
+	case BGBCC_SH_NMID_CMPGT:	sn="CMPGT";	break;	//0x0F	//CMPGT
 	case BGBCC_SH_NMID_JMP:		sn="JMP";		break;	//0x10	//JMP
 	case BGBCC_SH_NMID_JSR:		sn="JSR";		break;	//0x11	//JSR
 	case BGBCC_SH_NMID_BRA:		sn="BRA";		break;	//0x12	//BRA
@@ -105,78 +106,78 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_BTS:		sn="BTS";		break;	//0x16	//BTS
 	case BGBCC_SH_NMID_BFS:		sn="BFS";		break;	//0x17	//BFS
 	case BGBCC_SH_NMID_DIV1:	sn="DIV1";		break;	//0x18	//DIV1
-	case BGBCC_SH_NMID_DMULU:	sn="DMULU";		break;	//0x19	//DMULU
-	case BGBCC_SH_NMID_DMULS:	sn="DMULS";		break;	//0x1A	//DMULS
+	case BGBCC_SH_NMID_DMULU:	sn="MULU.L";	break;	//0x19	//DMULU
+	case BGBCC_SH_NMID_DMULS:	sn="MULS.L";	break;	//0x1A	//DMULS
 	case BGBCC_SH_NMID_TST:		sn="TST";		break;	//0x1B	//TST
 	case BGBCC_SH_NMID_AND:		sn="AND";		break;	//0x1C	//AND
 	case BGBCC_SH_NMID_XOR:		sn="XOR";		break;	//0x1D	//XOR
 	case BGBCC_SH_NMID_OR:		sn="OR";		break;	//0x1E	//OR
-	case BGBCC_SH_NMID_DIV0S:	sn="DIV0S";		break;	//0x20	//
-	case BGBCC_SH_NMID_CMPSTR:	sn="CMP/STR";	break;	//0x21	//
-	case BGBCC_SH_NMID_MULUW:	sn="MULU.W";	break;	//0x22	//
-	case BGBCC_SH_NMID_MULSW:	sn="MULS.W";	break;	//0x23	//
-	case BGBCC_SH_NMID_MACL:	sn="MAC.L";		break;	//0x24	//
-	case BGBCC_SH_NMID_BSRF:	sn="BSRF";		break;	//0x25	//
-	case BGBCC_SH_NMID_BRAF:	sn="BRAF";		break;	//0x26	//
-	case BGBCC_SH_NMID_MULL:	sn="MUL.L";		break;	//0x27	//
-	case BGBCC_SH_NMID_CLRT:	sn="CLRT";		break;	//0x28	//
-	case BGBCC_SH_NMID_SETT:	sn="SETT";		break;	//0x29	//
-	case BGBCC_SH_NMID_CLRMAC:	sn="CLRMAC";	break;	//0x2A	//
-	case BGBCC_SH_NMID_NOP:		sn="NOP";		break;	//0x2B	//
-	case BGBCC_SH_NMID_MOVT:	sn="MOVT";		break;	//0x2C	//
-	case BGBCC_SH_NMID_RTS:		sn="RTS";		break;	//0x2D	//
-	case BGBCC_SH_NMID_SLEEP:	sn="SLEEP";		break;	//0x2E	//
-	case BGBCC_SH_NMID_RTE:		sn="RTE";		break;	//0x2F	//
-	case BGBCC_SH_NMID_SHLL:	sn="SHLL";		break;	//0x30	//
-	case BGBCC_SH_NMID_DT:		sn="DT";		break;	//0x31	//
-	case BGBCC_SH_NMID_SHAL:	sn="SHAL";		break;	//0x32	//
-	case BGBCC_SH_NMID_SHLR:	sn="SHLR";		break;	//0x33	//
-	case BGBCC_SH_NMID_CMPPZ:	sn="CMP/PZ";	break;	//0x34	//
-	case BGBCC_SH_NMID_SHAR:	sn="SHAR";		break;	//0x35	//
-	case BGBCC_SH_NMID_ROTL:	sn="ROTL";		break;	//0x36	//
-	case BGBCC_SH_NMID_ROTCL:	sn="ROTCL";		break;	//0x37	//
-	case BGBCC_SH_NMID_ROTT:	sn="ROTT";		break;	//0x38	//
-	case BGBCC_SH_NMID_ROTCR:	sn="ROTCR";		break;	//0x39	//
-	case BGBCC_SH_NMID_SHLL2:	sn="SHLL2";		break;	//0x3A	//
-	case BGBCC_SH_NMID_ROTR:	sn="ROTR";		break;	//0x3B	//
-	case BGBCC_SH_NMID_CMPPL:	sn="CMP/PL";	break;	//0x3C	//
-	case BGBCC_SH_NMID_SHLL8:	sn="SHLL8";		break;	//0x3D	//
-	case BGBCC_SH_NMID_SHLL16:	sn="SHLL16";	break;	//0x3E	//
-	case BGBCC_SH_NMID_SHLR2:	sn="SHLR2";		break;	//0x3F	//
-	case BGBCC_SH_NMID_SHLR8:	sn="SHLR8";		break;	//0x40	//
-	case BGBCC_SH_NMID_SHLR16:	sn="SHLR16";	break;	//0x41	//
-	case BGBCC_SH_NMID_MACW:	sn="MAC.W";		break;	//0x42	//
-	case BGBCC_SH_NMID_NOT:		sn="NOT";		break;	//0x43	//
-	case BGBCC_SH_NMID_SWAPB:	sn="SWAP.B";	break;	//0x44	//
-	case BGBCC_SH_NMID_SWAPW:	sn="SWAP.W";	break;	//0x45	//
-	case BGBCC_SH_NMID_NEGC:	sn="NEGC";		break;	//0x46	//
-	case BGBCC_SH_NMID_NEG:		sn="NEG";		break;	//0x47	//
-	case BGBCC_SH_NMID_EXTUB:	sn="EXTU.B";	break;	//0x48	//
-	case BGBCC_SH_NMID_EXTUW:	sn="EXTU.W";	break;	//0x49	//
-	case BGBCC_SH_NMID_EXTSB:	sn="EXTS.B";	break;	//0x4A	//
-	case BGBCC_SH_NMID_EXTSW:	sn="EXTS.W";	break;	//0x4B	//
-	case BGBCC_SH_NMID_TRAPA:	sn="TRAPA";		break;	//0x4C	//
-	case BGBCC_SH_NMID_MOVA:	sn="MOVA";		break;	//0x4D	//
-	case BGBCC_SH_NMID_TSTB:	sn="TSTB";		break;	//0x4E	//
-	case BGBCC_SH_NMID_DIV0U:	sn="DIV0U";		break;	//0x4F	//
-	case BGBCC_SH_NMID_LDC:		sn="LDC";		break;	//0x50	//
-	case BGBCC_SH_NMID_LDCL:	sn="LDC.L";		break;	//0x51	//
-	case BGBCC_SH_NMID_LDS:		sn="LDS";		break;	//0x52	//
-	case BGBCC_SH_NMID_LDSL:	sn="LDS.L";		break;	//0x53	//
-	case BGBCC_SH_NMID_STC:		sn="STC";		break;	//0x54	//
-	case BGBCC_SH_NMID_STCL:	sn="STC.L";		break;	//0x55	//
-	case BGBCC_SH_NMID_STS:		sn="STS";		break;	//0x56	//
-	case BGBCC_SH_NMID_STSL:	sn="STS.L";		break;	//0x57	//
-	case BGBCC_SH_NMID_CASL:	sn="CAS.L";		break;	//0x58	//
-	case BGBCC_SH_NMID_TASB:	sn="TAS.B";		break;	//0x59	//
-	case BGBCC_SH_NMID_XTRCT:	sn="XTRCT";		break;	//0x5A	//
-	case BGBCC_SH_NMID_ANDB:	sn="AND.B";		break;	//0x5B	//
-	case BGBCC_SH_NMID_XORB:	sn="XOR.B";		break;	//0x5C	//
-	case BGBCC_SH_NMID_ORB:		sn="OR.B";		break;	//0x5D	//
-	case BGBCC_SH_NMID_SHAD:	sn="SHAD";		break;	//0x5E	//
-	case BGBCC_SH_NMID_SHLD:	sn="SHLD";		break;	//0x5F	//
-	case BGBCC_SH_NMID_CLRS:	sn="CLRS";		break;	//0x61	//
-	case BGBCC_SH_NMID_SETS:	sn="SETS";		break;	//0x62	//
+	case BGBCC_SH_NMID_DIV0S:	sn="DIV0S";		break;	//0x20
+	case BGBCC_SH_NMID_CMPSTR:	sn="CMP/STR";	break;	//0x21
+	case BGBCC_SH_NMID_MULUW:	sn="MULU.W";	break;	//0x22
+	case BGBCC_SH_NMID_MULSW:	sn="MULS.W";	break;	//0x23
+	case BGBCC_SH_NMID_MACL:	sn="MAC.L";		break;	//0x24
+	case BGBCC_SH_NMID_BSRF:	sn="BSRF";		break;	//0x25
+	case BGBCC_SH_NMID_BRAF:	sn="BRAF";		break;	//0x26
+	case BGBCC_SH_NMID_MULL:	sn="MUL.L";		break;	//0x27
+	case BGBCC_SH_NMID_CLRT:	sn="CLRT";		break;	//0x28
+	case BGBCC_SH_NMID_SETT:	sn="SETT";		break;	//0x29
+	case BGBCC_SH_NMID_CLRMAC:	sn="CLRMAC";	break;	//0x2A
+	case BGBCC_SH_NMID_NOP:		sn="NOP";		break;	//0x2B
+	case BGBCC_SH_NMID_MOVT:	sn="MOVT";		break;	//0x2C
+	case BGBCC_SH_NMID_RTS:		sn="RTS";		break;	//0x2D
+	case BGBCC_SH_NMID_SLEEP:	sn="SLEEP";		break;	//0x2E
+	case BGBCC_SH_NMID_RTE:		sn="RTE";		break;	//0x2F
+	case BGBCC_SH_NMID_SHLL:	sn="SHLL";		break;	//0x30
+	case BGBCC_SH_NMID_DT:		sn="DT";		break;	//0x31
+	case BGBCC_SH_NMID_SHAL:	sn="SHAL";		break;	//0x32
+	case BGBCC_SH_NMID_SHLR:	sn="SHLR";		break;	//0x33
+	case BGBCC_SH_NMID_CMPPZ:	sn="CMPPZ";		break;	//0x34
+	case BGBCC_SH_NMID_SHAR:	sn="SHAR";		break;	//0x35
+	case BGBCC_SH_NMID_ROTL:	sn="ROTL";		break;	//0x36
+	case BGBCC_SH_NMID_ROTCL:	sn="ROTCL";		break;	//0x37
+	case BGBCC_SH_NMID_ROTT:	sn="ROTT";		break;	//0x38
+	case BGBCC_SH_NMID_ROTCR:	sn="ROTCR";		break;	//0x39
+	case BGBCC_SH_NMID_SHLL2:	sn="SHLL2";		break;	//0x3A
+	case BGBCC_SH_NMID_ROTR:	sn="ROTR";		break;	//0x3B
+	case BGBCC_SH_NMID_CMPPL:	sn="CMPPL";		break;	//0x3C
+	case BGBCC_SH_NMID_SHLL8:	sn="SHLL8";		break;	//0x3D
+	case BGBCC_SH_NMID_SHLL16:	sn="SHLL16";	break;	//0x3E
+	case BGBCC_SH_NMID_SHLR2:	sn="SHLR2";		break;	//0x3F
+	case BGBCC_SH_NMID_SHLR8:	sn="SHLR8";		break;	//0x40
+	case BGBCC_SH_NMID_SHLR16:	sn="SHLR16";	break;	//0x41
+	case BGBCC_SH_NMID_MACW:	sn="MAC.W";		break;	//0x42
+	case BGBCC_SH_NMID_NOT:		sn="NOT";		break;	//0x43
+	case BGBCC_SH_NMID_SWAPB:	sn="SWAP.B";	break;	//0x44
+	case BGBCC_SH_NMID_SWAPW:	sn="SWAP.W";	break;	//0x45
+	case BGBCC_SH_NMID_NEGC:	sn="NEGC";		break;	//0x46
+	case BGBCC_SH_NMID_NEG:		sn="NEG";		break;	//0x47
+	case BGBCC_SH_NMID_EXTUB:	sn="EXTU.B";	break;	//0x48
+	case BGBCC_SH_NMID_EXTUW:	sn="EXTU.W";	break;	//0x49
+	case BGBCC_SH_NMID_EXTSB:	sn="EXTS.B";	break;	//0x4A
+	case BGBCC_SH_NMID_EXTSW:	sn="EXTS.W";	break;	//0x4B
+	case BGBCC_SH_NMID_TRAPA:	sn="TRAPA";		break;	//0x4C
+	case BGBCC_SH_NMID_MOVA:	sn="MOVA";		break;	//0x4D
+	case BGBCC_SH_NMID_TSTB:	sn="TSTB";		break;	//0x4E
+	case BGBCC_SH_NMID_DIV0U:	sn="DIV0U";		break;	//0x4F
+	case BGBCC_SH_NMID_LDC:		sn="LDC";		break;	//0x50
+	case BGBCC_SH_NMID_LDCL:	sn="LDC.L";		break;	//0x51
+	case BGBCC_SH_NMID_LDS:		sn="LDS";		break;	//0x52
+	case BGBCC_SH_NMID_LDSL:	sn="LDS.L";		break;	//0x53
+	case BGBCC_SH_NMID_STC:		sn="STC";		break;	//0x54
+	case BGBCC_SH_NMID_STCL:	sn="STC.L";		break;	//0x55
+	case BGBCC_SH_NMID_STS:		sn="STS";		break;	//0x56
+	case BGBCC_SH_NMID_STSL:	sn="STS.L";		break;	//0x57
+	case BGBCC_SH_NMID_CASL:	sn="CAS.L";		break;	//0x58
+	case BGBCC_SH_NMID_TASB:	sn="TAS.B";		break;	//0x59
+	case BGBCC_SH_NMID_XTRCT:	sn="XTRCT";		break;	//0x5A
+	case BGBCC_SH_NMID_ANDB:	sn="AND.B";		break;	//0x5B
+	case BGBCC_SH_NMID_XORB:	sn="XOR.B";		break;	//0x5C
+	case BGBCC_SH_NMID_ORB:		sn="OR.B";		break;	//0x5D
+	case BGBCC_SH_NMID_SHAD:	sn="SHAD";		break;	//0x5E
+	case BGBCC_SH_NMID_SHLD:	sn="SHLD";		break;	//0x5F
+	case BGBCC_SH_NMID_CLRS:	sn="CLRS";		break;	//0x61
+	case BGBCC_SH_NMID_SETS:	sn="SETS";		break;	//0x62
 	case BGBCC_SH_NMID_MOVUB:	sn="MOVU.B";	break;	//0x65	//MOVU.B
 	case BGBCC_SH_NMID_MOVUW:	sn="MOVU.W";	break;	//0x66	//MOVU.W
 	case BGBCC_SH_NMID_MOVUL:	sn="MOVU.L";	break;	//0x67	//MOVU.L
@@ -185,56 +186,56 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_LEAL:	sn="LEA.L";		break;	//0x6A	//LEA.L
 	case BGBCC_SH_NMID_LEAQ:	sn="LEA.Q";		break;	//0x6B	//LEA.Q
 	case BGBCC_SH_NMID_LEAO:	sn="LEA.O";		break;	//0x6C	//LEA.O
-	case BGBCC_SH_NMID_NOTT:	sn="NOTT";		break;	//0x6D	//
-	case BGBCC_SH_NMID_LDTLB:	sn="LDTLB";		break;	//0x6E	//
-	case BGBCC_SH_NMID_BRK:		sn="BRK";		break;	//0x6F	//
-	case BGBCC_SH_NMID_MOVRT:	sn="MOVRT";		break;	//0x70	//
-	case BGBCC_SH_NMID_MOVCAL:	sn="MOVCAL";	break;	//0x71	//
-	case BGBCC_SH_NMID_PUSH:	sn="PUSH";		break;	//0x72	//
-	case BGBCC_SH_NMID_POP:		sn="POP";		break;	//0x73	//
-	case BGBCC_SH_NMID_ICLRMD:	sn="ICLRMD";	break;	//0x74	//
-	case BGBCC_SH_NMID_ISETMD:	sn="ISETMD";	break;	//0x75	//
-	case BGBCC_SH_NMID_SHLL1:	sn="SHLL1";		break;	//0x76	//
-	case BGBCC_SH_NMID_LDHF16:	sn="LDHF16";	break;	//0x77	//
+	case BGBCC_SH_NMID_NOTT:	sn="NOTT";		break;	//0x6D
+	case BGBCC_SH_NMID_LDTLB:	sn="LDTLB";		break;	//0x6E
+	case BGBCC_SH_NMID_BRK:		sn="BRK";		break;	//0x6F
+	case BGBCC_SH_NMID_MOVRT:	sn="MOVRT";		break;	//0x70
+	case BGBCC_SH_NMID_MOVCAL:	sn="MOVCAL";	break;	//0x71
+	case BGBCC_SH_NMID_PUSH:	sn="PUSH";		break;	//0x72
+	case BGBCC_SH_NMID_POP:		sn="POP";		break;	//0x73
+	case BGBCC_SH_NMID_ICLRMD:	sn="ICLRMD";	break;	//0x74
+	case BGBCC_SH_NMID_ISETMD:	sn="ISETMD";	break;	//0x75
+	case BGBCC_SH_NMID_SHLL1:	sn="SHLL1";		break;	//0x76
+	case BGBCC_SH_NMID_LDHF16:	sn="LDHF16";	break;	//0x77
 	case BGBCC_SH_NMID_BRAN:	sn="BRA/N";		break;	//0x78	//BRA/N
 	case BGBCC_SH_NMID_BSRN:	sn="BSR/N";		break;	//0x79	//BSR/N
-	case BGBCC_SH_NMID_RTSN:	sn="RTS/N";		break;	//0x7A	//
-	case BGBCC_SH_NMID_LDIF16:	sn="LDIF16";	break;	//0x7B	//
-	case BGBCC_SH_NMID_STHF16:	sn="STHF16";	break;	//0x7C	//
-	case BGBCC_SH_NMID_CSELT:	sn="CSELT";		break;	//0x7D	//
-	case BGBCC_SH_NMID_EXTUL:	sn="EXTU.L";	break;	//0x7E	//
-	case BGBCC_SH_NMID_EXTSL:	sn="EXTS.L";	break;	//0x7F	//
+	case BGBCC_SH_NMID_RTSN:	sn="RTS/N";		break;	//0x7A
+	case BGBCC_SH_NMID_LDIF16:	sn="LDIF16";	break;	//0x7B
+	case BGBCC_SH_NMID_STHF16:	sn="STHF16";	break;	//0x7C
+	case BGBCC_SH_NMID_CSELT:	sn="CSELT";		break;	//0x7D
+	case BGBCC_SH_NMID_EXTUL:	sn="EXTU.L";	break;	//0x7E
+	case BGBCC_SH_NMID_EXTSL:	sn="EXTS.L";	break;	//0x7F
 
-	case BGBCC_SH_NMID_FABS:	sn="FABS";		break;	//0x80	//
-	case BGBCC_SH_NMID_FADD:	sn="FADD";		break;	//0x81	//
-	case BGBCC_SH_NMID_FCMPEQ:	sn="FCMP/EQ";	break;	//0x82	//
-	case BGBCC_SH_NMID_FCMPGT:	sn="FCMP/GT";	break;	//0x83	//
-	case BGBCC_SH_NMID_FCNVDS:	sn="FCNVDS";	break;	//0x84	//
-	case BGBCC_SH_NMID_FCNVSD:	sn="FCNVSD";	break;	//0x85	//
-	case BGBCC_SH_NMID_FDIV:	sn="FDIV";		break;	//0x86	//
-	case BGBCC_SH_NMID_FLDI0:	sn="FLDI0";		break;	//0x87	//
-	case BGBCC_SH_NMID_FLDI1:	sn="FLDI1";		break;	//0x88	//
-	case BGBCC_SH_NMID_FLDS:	sn="FLDS";		break;	//0x89	//
-	case BGBCC_SH_NMID_FLOAT:	sn="FLOAT";		break;	//0x8A	//
-	case BGBCC_SH_NMID_FMAC:	sn="FMAC";		break;	//0x8B	//
-	case BGBCC_SH_NMID_FMOV:	sn="FMOV";		break;	//0x8C	//
-	case BGBCC_SH_NMID_FMOVS:	sn="FMOV.S";	break;	//0x8D	//
-	case BGBCC_SH_NMID_FMOVD:	sn="FMOV.D";	break;	//0x8E	//
-	case BGBCC_SH_NMID_FMUL:	sn="FMUL";		break;	//0x8F	//
-	case BGBCC_SH_NMID_FNEG:	sn="FNEG";		break;	//0x90	//
-	case BGBCC_SH_NMID_FSCHG:	sn="FSCHG";		break;	//0x91	//
-	case BGBCC_SH_NMID_FSQRT:	sn="FSQRT";		break;	//0x92	//
-	case BGBCC_SH_NMID_FSTS:	sn="FSTS";		break;	//0x93	//
-	case BGBCC_SH_NMID_FSUB:	sn="FSUB";		break;	//0x94	//
-	case BGBCC_SH_NMID_FTRC:	sn="FTRC";		break;	//0x95	//
-	case BGBCC_SH_NMID_FSRRA:	sn="FSRRA";		break;	//0x96	//
-	case BGBCC_SH_NMID_FIPR:	sn="FIPR";		break;	//0x97	//
-	case BGBCC_SH_NMID_FTRV:	sn="FTRV";		break;	//0x98	//
-	case BGBCC_SH_NMID_FMOVX:	sn="FMOVX";		break;	//0x9B	//
-	case BGBCC_SH_NMID_FMOVIS:	sn="FMOVIS";	break;	//0x9C	//
-	case BGBCC_SH_NMID_FMOVID:	sn="FMOVID";	break;	//0x9D	//
-	case BGBCC_SH_NMID_FMOVSI:	sn="FMOVSI";	break;	//0x9E	//
-	case BGBCC_SH_NMID_FMOVDI:	sn="FMOVDI";	break;	//0x9F	//
+	case BGBCC_SH_NMID_FABS:	sn="FABS";		break;	//0x80
+	case BGBCC_SH_NMID_FADD:	sn="FADD";		break;	//0x81
+	case BGBCC_SH_NMID_FCMPEQ:	sn="FCMP/EQ";	break;	//0x82
+	case BGBCC_SH_NMID_FCMPGT:	sn="FCMP/GT";	break;	//0x83
+	case BGBCC_SH_NMID_FCNVDS:	sn="FCNVDS";	break;	//0x84
+	case BGBCC_SH_NMID_FCNVSD:	sn="FCNVSD";	break;	//0x85
+	case BGBCC_SH_NMID_FDIV:	sn="FDIV";		break;	//0x86
+	case BGBCC_SH_NMID_FLDI0:	sn="FLDI0";		break;	//0x87
+	case BGBCC_SH_NMID_FLDI1:	sn="FLDI1";		break;	//0x88
+	case BGBCC_SH_NMID_FLDS:	sn="FLDS";		break;	//0x89
+	case BGBCC_SH_NMID_FLOAT:	sn="FLOAT";		break;	//0x8A
+	case BGBCC_SH_NMID_FMAC:	sn="FMAC";		break;	//0x8B
+	case BGBCC_SH_NMID_FMOV:	sn="FMOV";		break;	//0x8C
+	case BGBCC_SH_NMID_FMOVS:	sn="FMOV.S";	break;	//0x8D
+	case BGBCC_SH_NMID_FMOVD:	sn="FMOV.D";	break;	//0x8E
+	case BGBCC_SH_NMID_FMUL:	sn="FMUL";		break;	//0x8F
+	case BGBCC_SH_NMID_FNEG:	sn="FNEG";		break;	//0x90
+	case BGBCC_SH_NMID_FSCHG:	sn="FSCHG";		break;	//0x91
+	case BGBCC_SH_NMID_FSQRT:	sn="FSQRT";		break;	//0x92
+	case BGBCC_SH_NMID_FSTS:	sn="FSTS";		break;	//0x93
+	case BGBCC_SH_NMID_FSUB:	sn="FSUB";		break;	//0x94
+	case BGBCC_SH_NMID_FTRC:	sn="FTRC";		break;	//0x95
+	case BGBCC_SH_NMID_FSRRA:	sn="FSRRA";		break;	//0x96
+	case BGBCC_SH_NMID_FIPR:	sn="FIPR";		break;	//0x97
+	case BGBCC_SH_NMID_FTRV:	sn="FTRV";		break;	//0x98
+	case BGBCC_SH_NMID_FMOVX:	sn="FMOVX";		break;	//0x9B
+	case BGBCC_SH_NMID_FMOVIS:	sn="FMOVIS";	break;	//0x9C
+	case BGBCC_SH_NMID_FMOVID:	sn="FMOVID";	break;	//0x9D
+	case BGBCC_SH_NMID_FMOVSI:	sn="FMOVSI";	break;	//0x9E
+	case BGBCC_SH_NMID_FMOVDI:	sn="FMOVDI";	break;	//0x9F
 
 	case BGBCC_SH_NMID_CMOVTB:	sn="CMOVT.B";	break;	//0xA0	//CMOVT.B
 	case BGBCC_SH_NMID_CMOVTW:	sn="CMOVT.W";	break;	//0xA1	//CMOVT.W
@@ -245,32 +246,32 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_CMOVFL:	sn="CMOVF.L";	break;	//0xA6	//CMOVF.L
 	case BGBCC_SH_NMID_CMOVFQ:	sn="CMOVF.Q";	break;	//0xA7	//CMOVF.Q
 
-	case BGBCC_SH_NMID_FLDCF:	sn="FLDCF";		break;	//0xA8	//
-	case BGBCC_SH_NMID_FLDCD:	sn="FLDCD";		break;	//0xA9	//
-	case BGBCC_SH_NMID_FLDCI:	sn="FLDCI";		break;	//0xAA	//
-	case BGBCC_SH_NMID_FLDCH:	sn="FLDCH";		break;	//0xAB	//
-	case BGBCC_SH_NMID_FSTCF:	sn="FSTCF";		break;	//0xAC	//
-	case BGBCC_SH_NMID_FSTCD:	sn="FSTCD";		break;	//0xAD	//
-	case BGBCC_SH_NMID_FSTCI:	sn="FSTCI";		break;	//0xAE	//
-	case BGBCC_SH_NMID_FSTCH:	sn="FSTCH";		break;	//0xAF	//
-	case BGBCC_SH_NMID_FRCPA:	sn="FRCPA";		break;	//0xB0	//
-	case BGBCC_SH_NMID_FSQRTA:	sn="FSQRTA";	break;	//0xB1	//
-	case BGBCC_SH_NMID_FRCP:	sn="FRCP";		break;	//0xB2	//
+	case BGBCC_SH_NMID_FLDCF:	sn="FLDCF";		break;	//0xA8
+	case BGBCC_SH_NMID_FLDCD:	sn="FLDCD";		break;	//0xA9
+	case BGBCC_SH_NMID_FLDCI:	sn="FLDCI";		break;	//0xAA
+	case BGBCC_SH_NMID_FLDCH:	sn="FLDCH";		break;	//0xAB
+	case BGBCC_SH_NMID_FSTCF:	sn="FSTCF";		break;	//0xAC
+	case BGBCC_SH_NMID_FSTCD:	sn="FSTCD";		break;	//0xAD
+	case BGBCC_SH_NMID_FSTCI:	sn="FSTCI";		break;	//0xAE
+	case BGBCC_SH_NMID_FSTCH:	sn="FSTCH";		break;	//0xAF
+	case BGBCC_SH_NMID_FRCPA:	sn="FRCPA";		break;	//0xB0
+	case BGBCC_SH_NMID_FSQRTA:	sn="FSQRTA";	break;	//0xB1
+	case BGBCC_SH_NMID_FRCP:	sn="FRCP";		break;	//0xB2
 
-	case BGBCC_SH_NMID_BSR2F:	sn="BSR2F";		break;	//0xBA	//
-	case BGBCC_SH_NMID_BRA2F:	sn="BRA2F";		break;	//0xBB	//
+	case BGBCC_SH_NMID_BSR2F:	sn="BSR2F";		break;	//0xBA
+	case BGBCC_SH_NMID_BRA2F:	sn="BRA2F";		break;	//0xBB
 	case BGBCC_SH_NMID_MOVDL:	sn="MOVD.L";	break;	//0xBC	//MOVD.L
-	case BGBCC_SH_NMID_RET:		sn="RET";		break;	//0xBD	//
-	case BGBCC_SH_NMID_PUSHX2:	sn="PUSHX2";	break;	//0xBE	//
-	case BGBCC_SH_NMID_POPX2:	sn="POPX2";		break;	//0xBF	//
+	case BGBCC_SH_NMID_RET:		sn="RET";		break;	//0xBD
+	case BGBCC_SH_NMID_PUSHX2:	sn="PUSHX2";	break;	//0xBE
+	case BGBCC_SH_NMID_POPX2:	sn="POPX2";		break;	//0xBF
 
-	case BGBCC_SH_NMID_MOVI:	sn="MOVI";		break;	//0xC0	//
-	case BGBCC_SH_NMID_MOVIV:	sn="MOVIV";		break;	//0xC1	//
-	case BGBCC_SH_NMID_PREF:	sn="PREF";		break;	//0xC2	//
-	case BGBCC_SH_NMID_OCBI:	sn="OCBI";		break;	//0xC3	//
-	case BGBCC_SH_NMID_OCBP:	sn="OCBP";		break;	//0xC4	//
-	case BGBCC_SH_NMID_OCBWB:	sn="OCBWB";		break;	//0xC5	//
-	case BGBCC_SH_NMID_ICBI:	sn="ICBI";		break;	//0xC6	//
+	case BGBCC_SH_NMID_MOVI:	sn="MOVI";		break;	//0xC0
+	case BGBCC_SH_NMID_MOVIV:	sn="MOVIV";		break;	//0xC1
+	case BGBCC_SH_NMID_PREF:	sn="PREF";		break;	//0xC2
+	case BGBCC_SH_NMID_OCBI:	sn="OCBI";		break;	//0xC3
+	case BGBCC_SH_NMID_OCBP:	sn="OCBP";		break;	//0xC4
+	case BGBCC_SH_NMID_OCBWB:	sn="OCBWB";		break;	//0xC5
+	case BGBCC_SH_NMID_ICBI:	sn="ICBI";		break;	//0xC6
 	case BGBCC_SH_NMID_MOVQ:	sn="MOV.Q";		break;	//0xC7	//MOV.Q
 	case BGBCC_SH_NMID_ADDQ:	sn="ADD.Q";		break;	//0xC8	//ADD
 	case BGBCC_SH_NMID_SUBQ:	sn="SUB.Q";		break;	//0xC9	//SUB
@@ -284,44 +285,318 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_NMID_SHARQ:	sn="SHAR.Q";	break;	//0xD1	//SUB
 	case BGBCC_SH_NMID_LDSH16:	sn="LDSH16";	break;	//0xD2	//SUB
 	case BGBCC_SH_NMID_TSTQ:	sn="TST.Q";		break;	//0xD3	//SUB
-	case BGBCC_SH_NMID_SHADQ:	sn="SHAD.Q";	break;	//0xD4	//
-	case BGBCC_SH_NMID_SHLDQ:	sn="SHLD.Q";	break;	//0xD5	//
-	case BGBCC_SH_NMID_SHLL4:	sn="SHLL4";		break;	//0xD6	//
-	case BGBCC_SH_NMID_SHLR4:	sn="SHLR4";		break;	//0xD7	//
-	case BGBCC_SH_NMID_BREQ:	sn="BR/EQ";		break;	//0xD8	//
-	case BGBCC_SH_NMID_BRNE:	sn="BR/NE";		break;	//0xD9	//
-	case BGBCC_SH_NMID_BRGT:	sn="BR/GT";		break;	//0xDA	//
-	case BGBCC_SH_NMID_BRLE:	sn="BR/LE";		break;	//0xDB	//
-	case BGBCC_SH_NMID_BRGE:	sn="BR/GE";		break;	//0xDC	//
-	case BGBCC_SH_NMID_BRLT:	sn="BR/LT";		break;	//0xDD	//
-	case BGBCC_SH_NMID_CMPQHS:	sn="CMPQ/HS";	break;	//0xE0	//CMPQ/HS
-	case BGBCC_SH_NMID_CMPQHI:	sn="CMPQ/HI";	break;	//0xE1	//CMPQ/HI
-	case BGBCC_SH_NMID_CMPQEQ:	sn="CMPQ/EQ";	break;	//0xE2	//CMPQ/EQ
-	case BGBCC_SH_NMID_CMPQGE:	sn="CMPQ/GE";	break;	//0xE3	//CMPQ/GE
-	case BGBCC_SH_NMID_CMPQGT:	sn="CMPQ/GT";	break;	//0xE4	//CMPQ/GT
-	case BGBCC_SH_NMID_CMPQPZ:	sn="CMPQ/PZ";	break;	//0xE5	//CMPQ/PZ
-	case BGBCC_SH_NMID_CMPQPL:	sn="CMPQ/PL";	break;	//0xE6	//CMPQ/PL
-	case BGBCC_SH_NMID_NOTS:	sn="NOTS";		break;	//0xE7	//
-	case BGBCC_SH_NMID_SHLL32:	sn="SHLL32";	break;	//0xE8	//
-	case BGBCC_SH_NMID_SHLR32:	sn="SHLR32";	break;	//0xE9	//
-	case BGBCC_SH_NMID_SHLR1:	sn="SHLR1";		break;	//0xEA	//
-	case BGBCC_SH_NMID_SHAR1:	sn="SHAR1";		break;	//0xEB	//
-	case BGBCC_SH_NMID_SHAR2:	sn="SHAR2";		break;	//0xEC	//
-	case BGBCC_SH_NMID_SHAR4:	sn="SHAR4";		break;	//0xED	//
-	case BGBCC_SH_NMID_SHAR8:	sn="SHAR8";		break;	//0xEE	//
-	case BGBCC_SH_NMID_SHAR16:	sn="SHAR16";	break;	//0xEF	//
-	case BGBCC_SH_NMID_SHAR32:	sn="SHAR32";	break;	//0xF0	//
+	case BGBCC_SH_NMID_SHADQ:	sn="SHAD.Q";	break;	//0xD4
+	case BGBCC_SH_NMID_SHLDQ:	sn="SHLD.Q";	break;	//0xD5
+	case BGBCC_SH_NMID_SHLL4:	sn="SHLL4";		break;	//0xD6
+	case BGBCC_SH_NMID_SHLR4:	sn="SHLR4";		break;	//0xD7
+	case BGBCC_SH_NMID_BREQ:	sn="BREQ";		break;	//0xD8
+	case BGBCC_SH_NMID_BRNE:	sn="BRNE";		break;	//0xD9
+	case BGBCC_SH_NMID_BRGT:	sn="BRGT";		break;	//0xDA
+	case BGBCC_SH_NMID_BRLE:	sn="BRLE";		break;	//0xDB
+	case BGBCC_SH_NMID_BRGE:	sn="BRGE";		break;	//0xDC
+	case BGBCC_SH_NMID_BRLT:	sn="BRLT";		break;	//0xDD
+	case BGBCC_SH_NMID_CMPQHS:	sn="CMPQHS";	break;	//0xE0
+	case BGBCC_SH_NMID_CMPQHI:	sn="CMPQHI";	break;	//0xE1
+	case BGBCC_SH_NMID_CMPQEQ:	sn="CMPQEQ";	break;	//0xE2
+	case BGBCC_SH_NMID_CMPQGE:	sn="CMPQGE";	break;	//0xE3
+	case BGBCC_SH_NMID_CMPQGT:	sn="CMPQGT";	break;	//0xE4
+	case BGBCC_SH_NMID_CMPQPZ:	sn="CMPQPZ";	break;	//0xE5
+	case BGBCC_SH_NMID_CMPQPL:	sn="CMPQPL";	break;	//0xE6
+	case BGBCC_SH_NMID_NOTS:	sn="NOTS";		break;	//0xE7
+	case BGBCC_SH_NMID_SHLL32:	sn="SHLL32";	break;	//0xE8
+	case BGBCC_SH_NMID_SHLR32:	sn="SHLR32";	break;	//0xE9
+	case BGBCC_SH_NMID_SHLR1:	sn="SHLR1";		break;	//0xEA
+	case BGBCC_SH_NMID_SHAR1:	sn="SHAR1";		break;	//0xEB
+	case BGBCC_SH_NMID_SHAR2:	sn="SHAR2";		break;	//0xEC
+	case BGBCC_SH_NMID_SHAR4:	sn="SHAR4";		break;	//0xED
+	case BGBCC_SH_NMID_SHAR8:	sn="SHAR8";		break;	//0xEE
+	case BGBCC_SH_NMID_SHAR16:	sn="SHAR16";	break;	//0xEF
+	case BGBCC_SH_NMID_SHAR32:	sn="SHAR32";	break;	//0xF0
 	case BGBCC_SH_NMID_LDSH8:	sn="LDSH8";		break;	//0xF1	//SUB
 	case BGBCC_SH_NMID_BRA8B:	sn="BRA8B";		break;	//0xF2	//SUB
-	case BGBCC_SH_NMID_SHARX:	sn="SHARX";		break;	//0xF3	//SUB
-	case BGBCC_SH_NMID_MOVNT:	sn="MOVNT";		break;	//0xF4	//
-	case BGBCC_SH_NMID_CLZ:		sn="CLZ";		break;	//0xF5	//
-	case BGBCC_SH_NMID_CLZQ:	sn="CLZQ";		break;	//0xF6	//
+
+	case BGBCC_SH_NMID_MOVNT:	sn="MOVNT";		break;	//0xF4
+	case BGBCC_SH_NMID_CLZ:		sn="CLZ";		break;	//0xF5
+	case BGBCC_SH_NMID_CLZQ:	sn="CLZQ";		break;	//0xF6
+
+	case BGBCC_SH_NMID_SWAP8B:	sn="C_";		break;	//0x00F7
+	case BGBCC_SH_NMID_SWCPLB:	sn="C_";		break;	//0x00F8
+	case BGBCC_SH_NMID_SWAPLB:	sn="C_";		break;	//0x00F9
+	case BGBCC_SH_NMID_SWAPMB:	sn="C_";		break;	//0x00FA
+	case BGBCC_SH_NMID_SWAPHB:	sn="C_";		break;	//0x00FB
+	case BGBCC_SH_NMID_SWCPMB:	sn="C_";		break;	//0x00FC
+	case BGBCC_SH_NMID_SWCPHB:	sn="C_";		break;	//0x00FD
+	case BGBCC_SH_NMID_LDBF16:	sn="LDBF16";	break;	//0x00FE
+	case BGBCC_SH_NMID_STBF16:	sn="STBF16";	break;	//0x00FF
+
+	case BGBCC_SH_NMID_ADDL:	sn="ADD.L";		break;	//0x0100
+	case BGBCC_SH_NMID_SUBL:	sn="SUB.L";		break;	//0x0101
+	case BGBCC_SH_NMID_PADDW:	sn="PADD.W";	break;	//0x0102
+	case BGBCC_SH_NMID_PADDL:	sn="PADD.L";	break;	//0x0103
+	case BGBCC_SH_NMID_PSUBW:	sn="PSUB.W";	break;	//0x0104
+	case BGBCC_SH_NMID_PSUBL:	sn="PSUB.L";	break;	//0x0105
+	case BGBCC_SH_NMID_PMULUW:	sn="PMULU.W";	break;	//0x0106
+	case BGBCC_SH_NMID_MOVD:	sn="MOVD";		break;	//0x0107
+	case BGBCC_SH_NMID_MOVHD:	sn="MOVHD";		break;	//0x0108
+	case BGBCC_SH_NMID_MOVLD:	sn="MOVLD";		break;	//0x0109
+	case BGBCC_SH_NMID_MOVHLD:	sn="MOVHLD";	break;	//0x010A
+	case BGBCC_SH_NMID_MOVLHD:	sn="MOVLHD";	break;	//0x010B
+	case BGBCC_SH_NMID_ADDSL:	sn="ADDS.L";	break;	//0x010C	//ADD
+	case BGBCC_SH_NMID_ADDUL:	sn="ADDU.L";	break;	//0x010D	//ADD
+	case BGBCC_SH_NMID_SUBSL:	sn="SUBS.L";	break;	//0x010E	//ADD
+	case BGBCC_SH_NMID_SUBUL:	sn="SUBU.L";	break;	//0x010F	//ADD
+
+	case BGBCC_SH_NMID_MOVX2:	sn="MOV.X";		break;	//0x0120
+	case BGBCC_SH_NMID_PADDH:	sn="PADDH";		break;	//0x0121
+	case BGBCC_SH_NMID_PSUBH:	sn="PSUBH";		break;	//0x0122
+	case BGBCC_SH_NMID_PMULH:	sn="PMULH";		break;	//0x0123
+	case BGBCC_SH_NMID_WEXMD:	sn="WEXMD";		break;	//0x0124
+	case BGBCC_SH_NMID_CPUID:	sn="CPUID";		break;	//0x0125
+	case BGBCC_SH_NMID_RTSU:	sn="RTSU";		break;	//0x0126
+	case BGBCC_SH_NMID_SYSCALL:	sn="SYSCALL";	break;	//0x0127
+	case BGBCC_SH_NMID_INVIC:	sn="INVIC";		break;	//0x0128
+	case BGBCC_SH_NMID_INVDC:	sn="INVDC";		break;	//0x0129
+	case BGBCC_SH_NMID_INVTLB:	sn="INVTLB";	break;	//0x012A
+	case BGBCC_SH_NMID_JLDI:	sn="JLDI";		break;	//0x012B
+	case BGBCC_SH_NMID_MULUL:	sn="DMULU.L";	break;	//0x012C
+	case BGBCC_SH_NMID_MULSL:	sn="DMULS.L";	break;	//0x012D
+	case BGBCC_SH_NMID_BRA2B:	sn="BRA2B";		break;	//0x012E
+	case BGBCC_SH_NMID_BRA4B:	sn="BRA4B";		break;	//0x012F
+
+	case BGBCC_SH_NMID_FLDCFH:		sn="FLDCFH";		break;	//0x0130
+	case BGBCC_SH_NMID_FSTCFH:		sn="FSTCFH";		break;	//0x0131
+	case BGBCC_SH_NMID_RGB5SHR1:	sn="RGB5SHR1";		break;	//0x0132
+	case BGBCC_SH_NMID_PMULSW:		sn="PMULS.W";		break;	//0x0133
+	case BGBCC_SH_NMID_PMULULW:		sn="PMULUL.W";		break;	//0x0134
+	case BGBCC_SH_NMID_PMULSLW:		sn="PMULSL.W";		break;	//0x0135
+	case BGBCC_SH_NMID_PMULUHW:		sn="PMULUH.W";		break;	//0x0136
+	case BGBCC_SH_NMID_PMULSHW:		sn="PMULSH.W";		break;	//0x0137
+	case BGBCC_SH_NMID_RGB5PCK32:	sn="RGB5PCK32";		break;	//0x0138
+	case BGBCC_SH_NMID_RGB5PCK64:	sn="RGB5PCK64";		break;	//0x0139
+	case BGBCC_SH_NMID_RGB5UPCK32:	sn="RGB5UPCK32";	break;	//0x013A
+	case BGBCC_SH_NMID_RGB5UPCK64:	sn="RGB5UPCK64";	break;	//0x013B
+	case BGBCC_SH_NMID_RGB32PCK64:	sn="RGB32PCK64";	break;	//0x013C
+	case BGBCC_SH_NMID_RGB32UPCK64:	sn="RGB32UPCK64";	break;	//0x013D
+	case BGBCC_SH_NMID_PSHUFB:	sn="PSHUF.B";			break;	//0x013E
+	case BGBCC_SH_NMID_PSHUFW:	sn="PSHUF.W";			break;	//0x013F
+
+	case BGBCC_SH_NMID_PADDF:	sn="PADD.F";	break;	//0x0140
+	case BGBCC_SH_NMID_PSUBF:	sn="PSUB.F";	break;	//0x0141
+	case BGBCC_SH_NMID_PMULF:	sn="PMUL.F";	break;	//0x0142
+	case BGBCC_SH_NMID_PADDFX:	sn="PADDX.F";	break;	//0x0143
+	case BGBCC_SH_NMID_PSUBFX:	sn="PSUBX.F";	break;	//0x0144
+	case BGBCC_SH_NMID_PMULFX:	sn="PMULX.F";	break;	//0x0145
+	case BGBCC_SH_NMID_PSHUFL:	sn="PSHUF.L";	break;	//0x0146
+	case BGBCC_SH_NMID_PSHUFXL:	sn="PSHUFX.L";	break;	//0x0147
+	case BGBCC_SH_NMID_CTZ:		sn="CTZ";		break;	//0x0148
+	case BGBCC_SH_NMID_CTZQ:	sn="CTZQ";		break;	//0x0149
+	case BGBCC_SH_NMID_BTRNS:	sn="BTRNS";		break;	//0x014A
+	case BGBCC_SH_NMID_BTRNSQ:	sn="BTRNSQ";	break;	//0x014B
+	case BGBCC_SH_NMID_PMORTL:	sn="PMORT.L";	break;	//0x014C
+	case BGBCC_SH_NMID_PMORTQ:	sn="PMORT.Q";	break;	//0x014D
+	case BGBCC_SH_NMID_MOVP:	sn="MOV.P";		break;	//0x014E
+	case BGBCC_SH_NMID_LEAP:	sn="LEA.P";		break;	//0x014F
+
+	case BGBCC_SH_NMID_PADDXD:	sn="C_";		break;	//0x0150
+	case BGBCC_SH_NMID_PSUBXD:	sn="C_";		break;	//0x0151
+	case BGBCC_SH_NMID_PMULXD:	sn="C_";		break;	//0x0152
+	case BGBCC_SH_NMID_MOVQ_DISP:	sn="C_";		break;	//0x0153
+	case BGBCC_SH_NMID_PCSELTW:	sn="C_";		break;	//0x0154
+	case BGBCC_SH_NMID_PCSELTL:	sn="C_";		break;	//0x0155
+	case BGBCC_SH_NMID_PCMPEQW:	sn="C_";		break;	//0x0156
+	case BGBCC_SH_NMID_PCMPEQL:	sn="C_";		break;	//0x0157
+	case BGBCC_SH_NMID_PCMPHIW:	sn="C_";		break;	//0x0158
+	case BGBCC_SH_NMID_PCMPHIL:	sn="C_";		break;	//0x0159
+	case BGBCC_SH_NMID_PCMPGTW:	sn="C_";		break;	//0x015A
+	case BGBCC_SH_NMID_PCMPGTL:	sn="C_";		break;	//0x015B
+	case BGBCC_SH_NMID_PCMPEQH:	sn="C_";		break;	//0x015C
+	case BGBCC_SH_NMID_PCMPEQF:	sn="C_";		break;	//0x015D
+	case BGBCC_SH_NMID_PCMPGTH:	sn="C_";		break;	//0x015E
+	case BGBCC_SH_NMID_PCMPGTF:	sn="C_";		break;	//0x015F
+
+	case BGBCC_SH_NMID_SHLL64:	sn="SHLL64";	break;	//0x0160
+	case BGBCC_SH_NMID_SHLR64:	sn="SHLR64";	break;	//0x0161
+	case BGBCC_SH_NMID_FADDX:	sn="FADDX";		break;	//0x0162
+	case BGBCC_SH_NMID_FSUBX:	sn="FSUBX";		break;	//0x0163
+	case BGBCC_SH_NMID_FMULX:	sn="FMULX";		break;	//0x0164
+	case BGBCC_SH_NMID_FMACX:	sn="FMACX";		break;	//0x0165
+	case BGBCC_SH_NMID_FCMPXEQ:	sn="FCMPXEQ";	break;	//0x0166
+	case BGBCC_SH_NMID_FCMPXGT:	sn="FCMPXGT";	break;	//0x0167
+	case BGBCC_SH_NMID_FLDCDX:	sn="FLDCDX";	break;	//0x0168
+	case BGBCC_SH_NMID_FSTCDX:	sn="FSTCDX";	break;	//0x0169
+	case BGBCC_SH_NMID_FLDCIX:	sn="FLDCIX";	break;	//0x016A
+	case BGBCC_SH_NMID_FSTCIX:	sn="FSTCIX";	break;	//0x016B
+	case BGBCC_SH_NMID_SHADX:	sn="SHADX";		break;	//0x016C
+	case BGBCC_SH_NMID_SHLDX:	sn="SHLDX";		break;	//0x016D
+	case BGBCC_SH_NMID_SHARX:	sn="SHARX";		break;	//0x016E
+	case BGBCC_SH_NMID_SHLRX:	sn="SHLRX";		break;	//0x016F
+
+	case BGBCC_SH_NMID_ADDX:	sn="ADDX";		break;	//0x0170
+	case BGBCC_SH_NMID_SUBX:	sn="SUBX";		break;	//0x0171
+	case BGBCC_SH_NMID_ADCX:	sn="ADCX";		break;	//0x0172
+	case BGBCC_SH_NMID_SBBX:	sn="SBBX";		break;	//0x0173
+	case BGBCC_SH_NMID_ROTLX:	sn="ROTLX";		break;	//0x0174
+	case BGBCC_SH_NMID_ANDX:	sn="ANDX";		break;	//0x0175
+	case BGBCC_SH_NMID_ORX:		sn="ORX";		break;	//0x0176
+	case BGBCC_SH_NMID_XORX:	sn="XORX";		break;	//0x0177
+	case BGBCC_SH_NMID_CMPXEQ:	sn="CMPXEQ";	break;	//0x0178
+	case BGBCC_SH_NMID_CMPXHI:	sn="CMPXHI";	break;	//0x0179
+	case BGBCC_SH_NMID_CMPXGT:	sn="CMPXGT";	break;	//0x017A
+	case BGBCC_SH_NMID_MOVQ_DISP24:	sn="MOV.Q";	break;	//0x017B
+	case BGBCC_SH_NMID_BLKUTX1:		sn="BLKUTX1";	break;	//0x017C
+	case BGBCC_SH_NMID_BLKUTX2:		sn="BLKUTX2";	break;	//0x017D
+	case BGBCC_SH_NMID_BLKUTX3H:	sn="BLKUTX3H";		break;	//0x017E
+	case BGBCC_SH_NMID_BLKUTX3L:	sn="BLKUTX3L";		break;	//0x017F
+
+	case BGBCC_SH_NMID_BLINTW:		sn="C_";		break;	//0x0180
+	case BGBCC_SH_NMID_BLERPW:		sn="C_";		break;	//0x0181
+	case BGBCC_SH_NMID_BLINTAW:		sn="C_";		break;	//0x0182
+	case BGBCC_SH_NMID_PSTCH:		sn="PSTCH";		break;	//0x0183
+	case BGBCC_SH_NMID_PLDCH:		sn="PLDCH";		break;	//0x0184
+	case BGBCC_SH_NMID_PLDCHH:		sn="PLDCHH";	break;	//0x0185
+	case BGBCC_SH_NMID_BLKUAB1:		sn="BLKUAB1";	break;	//0x0186
+	case BGBCC_SH_NMID_BLKUAB2:		sn="BLKUAB2";	break;	//0x0187
+	case BGBCC_SH_NMID_PLDCM8SH:	sn="PLDCM8SH";	break;	//0x0188
+	case BGBCC_SH_NMID_PLDCM8UH:	sn="PLDCM8UL";	break;	//0x0189
+	case BGBCC_SH_NMID_PSTCM8SH:	sn="PSTCM8SH";	break;	//0x018A
+	case BGBCC_SH_NMID_PSTCM8UH:	sn="PSTCM8UH";	break;	//0x018B
+	case BGBCC_SH_NMID_BRAB:		sn="BRAB";		break;	//0x018C
+	case BGBCC_SH_NMID_BSRB:		sn="BSRB";		break;	//0x018D
+	case BGBCC_SH_NMID_BTB:			sn="BTB";		break;	//0x018E
+	case BGBCC_SH_NMID_BFB:			sn="BFB";		break;	//0x018F
+
+	case BGBCC_SH_NMID_BRAL:		sn="C_";		break;	//0x0190
+	case BGBCC_SH_NMID_BSRL:		sn="C_";		break;	//0x0191
+	case BGBCC_SH_NMID_BTL:			sn="C_";		break;	//0x0192
+	case BGBCC_SH_NMID_BFL:			sn="C_";		break;	//0x0193
+	case BGBCC_SH_NMID_PSCHEQW:		sn="PSCHEQ.W";	break;	//0x0194
+	case BGBCC_SH_NMID_PSCHEQB:		sn="PSCHEQ.B";	break;	//0x0195
+	case BGBCC_SH_NMID_PSCHNEW:		sn="PSCHNE.W";		break;	//0x0196
+	case BGBCC_SH_NMID_PSCHNEB:		sn="PSCHNE.B";		break;	//0x0197
+	case BGBCC_SH_NMID_CONVFXI:		sn="CONVFXI";		break;	//0x0198
+	case BGBCC_SH_NMID_CONVFLI:		sn="CONVFLI";		break;	//0x0199
+	case BGBCC_SH_NMID_SNIPEDC:		sn="SNIPEDC";		break;	//0x019A
+	case BGBCC_SH_NMID_SNIPEIC:		sn="SNIPEIC";		break;	//0x019B
+	case BGBCC_SH_NMID_LDACL:		sn="LDACL";		break;	//0x019C
+	case BGBCC_SH_NMID_FADDG:		sn="FADDG";		break;	//0x019D
+	case BGBCC_SH_NMID_FSUBG:		sn="C_";		break;	//0x019E
+	case BGBCC_SH_NMID_FMULG:		sn="C_";		break;	//0x019F
+
+	case BGBCC_SH_NMID_LDEKRR:	sn="LDEKRR";		break;	//0x01A0
+	case BGBCC_SH_NMID_SVEKRR:	sn="SVEKRR";		break;	//0x01A1
+	case BGBCC_SH_NMID_LDEKEY:	sn="LDEKEY";		break;	//0x01A2
+	case BGBCC_SH_NMID_LDEENC:	sn="LDEENC";		break;	//0x01A3
+	case BGBCC_SH_NMID_PLDCEHL:	sn="PLDCEHL";		break;	//0x01A4
+	case BGBCC_SH_NMID_PLDCEHH:	sn="PLDCEHH";		break;	//0x01A5
+	case BGBCC_SH_NMID_FMOVH:	sn="FMOV.H";		break;	//0x01A6
+	case BGBCC_SH_NMID_MOVC:	sn="MOV.C";		break;	//0x01A7
+	case BGBCC_SH_NMID_BRGTU:	sn="BRGTU";		break;	//0x01A8
+	case BGBCC_SH_NMID_BRLEU:	sn="BRLEU";		break;	//0x01A9
+	case BGBCC_SH_NMID_BRGEU:	sn="BRGEU";		break;	//0x01AA
+	case BGBCC_SH_NMID_BRLTU:	sn="BRLTU";		break;	//0x01AB
+	case BGBCC_SH_NMID_CMPTAEQ:	sn="C_";		break;	//0x01AC
+	case BGBCC_SH_NMID_CMPTAHI:	sn="C_";		break;	//0x01AD
+	case BGBCC_SH_NMID_CMPTAHS:	sn="C_";		break;	//0x01AE
+	case BGBCC_SH_NMID_CMPTTEQ:	sn="C_";		break;	//0x01AF
+
+	case BGBCC_SH_NMID_XMOVB:	sn="C_";		break;	//0x01B0	//XMOV.B
+	case BGBCC_SH_NMID_XMOVW:	sn="C_";		break;	//0x01B1	//XMOV.W
+	case BGBCC_SH_NMID_XMOVL:	sn="C_";		break;	//0x01B2	//XMOV.L
+	case BGBCC_SH_NMID_XMOVQ:	sn="C_";		break;	//0x01B3	//XMOV.Q
+	case BGBCC_SH_NMID_XMOVUB:	sn="C_";		break;	//0x01B4	//XMOVU.B
+	case BGBCC_SH_NMID_XMOVUW:	sn="C_";		break;	//0x01B5	//XMOVU.W
+	case BGBCC_SH_NMID_XMOVUL:	sn="C_";		break;	//0x01B6	//XMOVU.L
+	case BGBCC_SH_NMID_XMOVX2:	sn="C_";		break;	//0x01B7	//XMOV.X
+	case BGBCC_SH_NMID_XMOVP:	sn="C_";		break;	//0x01B8	//XMOV.P
+	case BGBCC_SH_NMID_MOVC_DISP24:	sn="MOVC";	break;	//0x01B9	
+	case BGBCC_SH_NMID_XJMP:	sn="C_";		break;	//0x01BA	//XJMP
+	case BGBCC_SH_NMID_XJSR:	sn="C_";		break;	//0x01BB	//XJSR
+	case BGBCC_SH_NMID_MACSL:	sn="C_";		break;	//0x01BC
+	case BGBCC_SH_NMID_MACUL:	sn="C_";		break;	//0x01BD
+	case BGBCC_SH_NMID_DMACSL:	sn="C_";		break;	//0x01BE
+	case BGBCC_SH_NMID_DMACUL:	sn="C_";		break;	//0x01BF
+
+	case BGBCC_SH_NMID_BREQL:	sn="BREQL";		break;	//0x01C0
+	case BGBCC_SH_NMID_BRNEL:	sn="BRNEL";		break;	//0x01C1
+	case BGBCC_SH_NMID_BRGTL:	sn="BRGTL";		break;	//0x01C2
+	case BGBCC_SH_NMID_BRLEL:	sn="BRLEL";		break;	//0x01C3
+	case BGBCC_SH_NMID_BRGEL:	sn="BRGEL";		break;	//0x01C4
+	case BGBCC_SH_NMID_BRLTL:	sn="BRLTL";		break;	//0x01C5
+	case BGBCC_SH_NMID_MOVTT:	sn="MOVTT";		break;	//0x01C6
+	case BGBCC_SH_NMID_XMOVTT:	sn="XMOVTT";	break;	//0x01C7
+	case BGBCC_SH_NMID_BRGTUL:	sn="BRGTUL";	break;	//0x01C8
+	case BGBCC_SH_NMID_BRLEUL:	sn="BRLEUL";	break;	//0x01C9
+	case BGBCC_SH_NMID_BRGEUL:	sn="BRGEUL";	break;	//0x01CA
+	case BGBCC_SH_NMID_BRLTUL:	sn="BRLTUL";	break;	//0x01CB
+	case BGBCC_SH_NMID_XLEAB:	sn="XLEA.B";	break;	//0x01CC
+	case BGBCC_SH_NMID_XLEAW:	sn="XLEA.W";	break;	//0x01CD
+	case BGBCC_SH_NMID_XLEAL:	sn="XLEA.L";	break;	//0x01CE
+	case BGBCC_SH_NMID_XLEAQ:	sn="XLEA.Q";	break;	//0x01CF
+
+	case BGBCC_SH_NMID_MULSQ:	sn="MULS.Q";	break;	//0x01D0
+	case BGBCC_SH_NMID_MULUQ:	sn="MULU.Q";	break;	//0x01D1
+	case BGBCC_SH_NMID_DIVSQ:	sn="DIVS.Q";	break;	//0x01D2
+	case BGBCC_SH_NMID_DIVUQ:	sn="DIVU.Q";	break;	//0x01D3
+	case BGBCC_SH_NMID_MODSQ:	sn="MODS.Q";	break;	//0x01D4
+	case BGBCC_SH_NMID_MODUQ:	sn="MODU.Q";	break;	//0x01D5
+
+	case BGBCC_SH_NMID_FDIVX:	sn="FDIVX";		break;	//0x01D6
+	case BGBCC_SH_NMID_LDTEX:	sn="LDTEX";		break;	//0x01D7
+
+	case BGBCC_SH_NMID_DIVSL:	sn="DIVSL";		break;	//0x01D8
+	case BGBCC_SH_NMID_DIVUL:	sn="DIVUL";		break;	//0x01D9
+	case BGBCC_SH_NMID_MODSL:	sn="MODSL";		break;	//0x01DA
+	case BGBCC_SH_NMID_MODUL:	sn="MODUL";		break;	//0x01DB
+	case BGBCC_SH_NMID_ROTCLQ:	sn="C_";		break;	//0x01DC
+	case BGBCC_SH_NMID_ROTCRQ:	sn="C_";		break;	//0x01DD
+	case BGBCC_SH_NMID_BCDADC:	sn="C_";		break;	//0x01DE
+	case BGBCC_SH_NMID_BCDSBB:	sn="C_";		break;	//0x01DF
+
+	case BGBCC_SH_NMID_BCDADD:	sn="C_";		break;	//0x01E0
+	case BGBCC_SH_NMID_BCDSUB:	sn="C_";		break;	//0x01E1
+	case BGBCC_SH_NMID_BCDADDX:	sn="C_";		break;	//0x01E2
+	case BGBCC_SH_NMID_BCDSUBX:	sn="C_";		break;	//0x01E3
+
+	case BGBCC_SH_NMID_PADDFA:	sn="C_";		break;	//0x01E4
+	case BGBCC_SH_NMID_PSUBFA:	sn="C_";		break;	//0x01E5
+	case BGBCC_SH_NMID_PMULFA:	sn="C_";		break;	//0x01E6
+	case BGBCC_SH_NMID_PADDFAX:	sn="C_";		break;	//0x01E7
+	case BGBCC_SH_NMID_PSUBFAX:	sn="C_";		break;	//0x01E8
+	case BGBCC_SH_NMID_PMULFAX:	sn="C_";		break;	//0x01E9
+
+	case BGBCC_SH_NMID_LDIZ:	sn="LDIZ";		break;	//0x01EA
+	case BGBCC_SH_NMID_LDIN:	sn="LDIN";		break;	//0x01EB
+
+	case BGBCC_SH_NMID_LDHF8S:	sn="C_";		break;	//0x01EC
+	case BGBCC_SH_NMID_LDHF8U:	sn="C_";		break;	//0x01ED
+	case BGBCC_SH_NMID_STHF8S:	sn="C_";		break;	//0x01EE
+	case BGBCC_SH_NMID_STHF8U:	sn="C_";		break;	//0x01EF
+
+	case BGBCC_SH_NMID_JIMM:	sn="J_IMM";		break;	//0x01F0
+	case BGBCC_SH_NMID_JOP64:	sn="J_OP64";	break;	//0x01F1
 
 	default:
-		sn="UNKNOWN";
+		sprintf(tb, "UNK_%04X", nmid);
+		sn=bgbcc_strdup(tb);
+//		sn="UNKNOWN";
 		break;
 	}
+	
+	if(!strcmp(sn, "C_"))
+	{
+		sprintf(tb, "UNK_%04X", nmid);
+		sn=bgbcc_strdup(tb);
+	}
+	
+	if(wex2&4)
+	{
+		if(wex2&1)
+			sprintf(tb, "%s?F", sn);
+		else
+			sprintf(tb, "%s?T", sn);
+		sn=bgbcc_strdup(tb);
+	}
+	
 	return(sn);
 }
 
@@ -562,6 +837,21 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 	return(sn);
 }
 
+char *BGBCC_JX2DA_GetIstrSuffix(BGBCC_JX2_Context *ctx, int wex2)
+{
+	if(wex2&2)
+	{
+		if((wex2&3)==3)
+			return("\t|  ");
+
+		if(wex2&4)
+			return("\t|  ");
+
+		return("\n");
+	}
+	return("\n");
+}
+
 int BGBCC_JX2DA_EmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 {
 	char *snm;
@@ -569,9 +859,10 @@ int BGBCC_JX2DA_EmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s\n", snm);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s%s", snm,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -585,10 +876,11 @@ int BGBCC_JX2DA_EmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	if((nmid==BGBCC_SH_NMID_POP) && (reg==BGBCC_SH_REG_PC))
 		return(BGBCC_JX2DA_EmitOpNone(ctx, BGBCC_SH_NMID_RET));
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s\n", snm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s%s", snm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -599,9 +891,10 @@ int BGBCC_JX2DA_EmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #%d\n", snm, imm);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %d%s", snm, imm,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -612,10 +905,11 @@ int BGBCC_JX2DA_EmitOpMReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s @%s\n", snm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s)%s", snm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -626,11 +920,12 @@ int BGBCC_JX2DA_EmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, %s\n", snm, srm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s%s", snm, srm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -642,12 +937,14 @@ int BGBCC_JX2DA_EmitOpRegRegReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rs);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 	sro=BGBCC_JX2DA_RegToName(ctx, rt);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, %s, %s\n", snm, srm, sro, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s, %s%s",
+		snm, srm, sro, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -659,10 +956,11 @@ int BGBCC_JX2DA_EmitOpImmReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #%d, %s\n", snm, imm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %d, %s%s", snm, imm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -674,11 +972,13 @@ int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, #%d, %s\n", snm, srm, imm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %d, %s%s",
+		snm, srm, imm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -691,11 +991,12 @@ int BGBCC_JX2DA_EmitOpRegStReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, @%s\n", snm, srm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, (%s)%s", snm, srm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -707,11 +1008,13 @@ int BGBCC_JX2DA_EmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s @%s, %s\n", snm, srm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s), %s%s",
+		snm, srm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -723,11 +1026,13 @@ int BGBCC_JX2DA_EmitOpRegStDecReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, @-%s\n", snm, srm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, (-%s)%s",
+		snm, srm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -739,11 +1044,13 @@ int BGBCC_JX2DA_EmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s @%s+, %s\n", snm, srm, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s+), %s%s",
+		snm, srm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -755,11 +1062,13 @@ int BGBCC_JX2DA_EmitOpRegStRegDisp(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, @(%s, %d)\n", snm, srm, srn, disp);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, (%s, %d)%s",
+		snm, srm, srn, disp,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -771,11 +1080,13 @@ int BGBCC_JX2DA_EmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s @(%s, %d), %s\n", snm, srm, disp, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s, %d), %s%s",
+		snm, srm, disp, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -787,12 +1098,47 @@ int BGBCC_JX2DA_EmitOpRegStReg2(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 	sro=BGBCC_JX2DA_RegToName(ctx, ro);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, @(%s, %s)\n", snm, srm, srn, sro);
+	if(rn==BGBCC_SH_REG_R0)
+	{
+		if(ro==BGBCC_SH_REG_R0)
+		{
+			srn="PC";
+			sro="DLR";
+		}else
+			if(ro==BGBCC_SH_REG_R1)
+		{
+			srn="DLR";
+			sro="ZZR";
+		}else
+		{
+			srn="PC";
+		}
+	}else
+		if(rn==BGBCC_SH_REG_R1)
+	{
+		if(ro==BGBCC_SH_REG_R0)
+		{
+			srn="GBR";
+			sro="DLR";
+		}else
+			if(ro==BGBCC_SH_REG_R1)
+		{
+			srn="TBR";
+			sro="DLR";
+		}else
+		{
+			srn="GBR";
+		}
+	}
+
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, (%s, %s)%s",
+		snm, srm, srn, sro,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -804,12 +1150,47 @@ int BGBCC_JX2DA_EmitOpLdReg2Reg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 	sro=BGBCC_JX2DA_RegToName(ctx, ro);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s @(%s, %s), %s\n", snm, srm, sro, srn);
+	if(rm==BGBCC_SH_REG_R0)
+	{
+		if(ro==BGBCC_SH_REG_R0)
+		{
+			srm="PC";
+			sro="DLR";
+		}else
+			if(ro==BGBCC_SH_REG_R1)
+		{
+			srm="DLR";
+			sro="ZZR";
+		}else
+		{
+			srm="PC";
+		}
+	}else
+		if(rm==BGBCC_SH_REG_R1)
+	{
+		if(ro==BGBCC_SH_REG_R0)
+		{
+			srm="GBR";
+			sro="DLR";
+		}else
+			if(ro==BGBCC_SH_REG_R1)
+		{
+			srm="TBR";
+			sro="DLR";
+		}else
+		{
+			srm="GBR";
+		}
+	}
+
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s, %s), %s%s",
+		snm, srm, sro, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -821,13 +1202,14 @@ int BGBCC_JX2DA_EmitOpRegStReg2Disp(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 	sro=BGBCC_JX2DA_RegToName(ctx, ro);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, @(%s, %s, %d)\n",
-		snm, srm, srn, sro, disp);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, (%s, %s, %d)%s",
+		snm, srm, srn, sro, disp,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -839,13 +1221,14 @@ int BGBCC_JX2DA_EmitOpLdReg2DispReg(
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 	sro=BGBCC_JX2DA_RegToName(ctx, ro);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s @(%s, %s, %d), %s\n",
-		snm, srm, sro, disp, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s, %s, %d), %s%s",
+		snm, srm, sro, disp, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -889,12 +1272,13 @@ int BGBCC_JX2DA_EmitOpLblReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, %s\n",
-		snm, sro, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s%s",
+		snm, sro, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -905,11 +1289,12 @@ int BGBCC_JX2DA_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s\n",
-		snm, sro);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s%s",
+		snm, sro,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -921,24 +1306,27 @@ int BGBCC_JX2DA_EmitLoadRegImm(
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-//	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+//	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 //	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
 	snm="MOV";
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
 	if(((s16)imm)==imm)
 	{
-		BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #%d, %s\n",
-			snm, imm, srn);
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %d, %s%s",
+			snm, imm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 		return(1);
 	}else if(((u32)imm)==imm)
 	{
-		BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #0x%08X, %s\n",
-			snm, imm, srn);
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s 0x%08X, %s%s",
+			snm, imm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	}else
 	{
-		BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #0x%016llX, %s\n",
-			snm, imm, srn);
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s 0x%016llX, %s%s",
+			snm, imm, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	}
 	return(1);
 }
@@ -951,24 +1339,27 @@ int BGBCC_JX2DA_EmitLoadRegImm64(
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-//	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+//	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 //	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
 	snm="MOV";
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
 	if(((s16)imm)==imm)
 	{
-		BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #%d, %s\n",
-			snm, imm, srn);
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %d, %s%s",
+			snm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 //	}else if((((s32)imm)==imm) && (imm>0))
 	}else if(((u32)imm)==imm)
 	{
-		BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #0x%08X, %s\n",
-			snm, imm, srn);
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s 0x%08X, %s%s",
+			snm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	}else
 	{
-		BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s #0x%016llX, %s\n",
-			snm, imm, srn);
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s 0x%016llX, %s%s",
+			snm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	}
 	return(1);
 }
@@ -981,12 +1372,13 @@ int BGBCC_JX2DA_EmitLoadRegLabelVarRel24(
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, %s\n",
-		snm, sro, srn);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s%s",
+		snm, sro, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
@@ -998,12 +1390,13 @@ int BGBCC_JX2DA_EmitStoreRegLabelVarRel24(
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
-	snm=BGBCC_JX2DA_NmidToName(ctx, nmid);
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-8s %s, %s\n",
-		snm, srn, sro);
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s%s",
+		snm, srn, sro,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 

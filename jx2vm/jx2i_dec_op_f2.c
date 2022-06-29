@@ -255,6 +255,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		break;
 
 	case 0xC:	/* F2nz_Cejj */
+		op->rn=rn_dfl;
+		op->rm=rn_dfl;
+
 		op->imm=imm10u;
 		if(opw1&1)
 			op->imm=imm10n;
@@ -381,6 +384,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		break;
 
 	case 0xD:	/* F2nz_Dejj */
+		op->rn=rn_dfl;
+		op->rm=rn_dfl;
+
 		op->imm=imm10u;
 		if(opw1&1)
 			op->imm=imm10n;

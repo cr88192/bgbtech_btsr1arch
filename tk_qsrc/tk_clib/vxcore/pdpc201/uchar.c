@@ -70,4 +70,3 @@ size_t mbrtoc16(
 	*pwc=tc;
 	return(i);
 }
-

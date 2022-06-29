@@ -174,6 +174,7 @@
 #include "jx2cc/jx2_asmdump.c"
 #include "jx2cc/jx2_binop.c"
 #include "jx2cc/jx2_bufasm.c"
+#include "jx2cc/jx2_disasm.c"
 #include "jx2cc/jx2_cgif.c"
 #include "jx2cc/jx2_conv.c"
 #include "jx2cc/jx2_emit.c"

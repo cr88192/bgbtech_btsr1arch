@@ -1710,6 +1710,10 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		(nmid==BGBCC_SH_NMID_DIVUQ)	||
 		(nmid==BGBCC_SH_NMID_MODSQ)	||
 		(nmid==BGBCC_SH_NMID_MODUQ)	||
+		(nmid==BGBCC_SH_NMID_DIVSL)	||
+		(nmid==BGBCC_SH_NMID_DIVUL)	||
+		(nmid==BGBCC_SH_NMID_MODSL)	||
+		(nmid==BGBCC_SH_NMID_MODUL)	||
 		(nmid==BGBCC_SH_NMID_FDIV) )
 	{
 		return(BGBCC_JX2_TryEmitOpRegRegReg(ctx, nmid, rn, rm, rn));
@@ -3437,6 +3441,24 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 			opw2=0x6500|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
+		case BGBCC_SH_NMID_DIVSL:
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x7400|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_DIVUL:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x7400|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_MODSL:
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x7500|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MODUL:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x7500|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
 		case BGBCC_SH_NMID_FDIV:
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x6600|((rn&15)<<4)|((rs&15)<<0);
@@ -4594,17 +4616,17 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 		case BGBCC_SH_NMID_ADD:
 
 #if 1
-			if((((s16)imm)==imm) && !exw)
-			{
-				opw1=0xF840|(reg&31);
-				opw2=(u16)imm;
-				break;
-			}
-
 			if(((imm&1023)==imm) || ((imm|(~1023))==imm))
 			{
 				opw1=0xF200|((reg&15)<<4)|((imm>>31)&1);
 				opw2=0xD000|(imm&0x03FF)|(ex2&0x0C00);
+				break;
+			}
+
+			if((((s16)imm)==imm) && !exw)
+			{
+				opw1=0xF840|(reg&31);
+				opw2=(u16)imm;
 				break;
 			}
 
@@ -4655,6 +4677,13 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			break;
 		case BGBCC_SH_NMID_SUB:
 #if 1
+			if(((imm1n&1023)==imm1n) || ((imm1n|(~1023))==imm1n))
+			{
+				opw1=0xF200|((reg&15)<<4)|((imm1n>>31)&1);
+				opw2=0xD000|(imm1n&0x03FF)|(ex2&0x0C00);
+				break;
+			}
+
 			if((((s16)imm1n)==imm1n) && !exw)
 			{
 				opw1=0xF840|(reg&31);
@@ -4704,6 +4733,15 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			break;
 
 		case BGBCC_SH_NMID_MOV:
+#if 1
+			if(((imm&1023)==imm) || ((imm|(~1023))==imm))
+			{
+				opw1=0xF200|((reg&15)<<4)|((imm>>31)&1);
+				opw2=0xC000|(imm&0x03FF)|(ex2&0x0C00);
+				break;
+			}
+#endif
+		
 #if 1
 //			if(((s16)imm)==imm)
 			if(((((s16)imm)==imm) || (((u16)imm)==imm)) && !exw)
@@ -5526,7 +5564,10 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 #endif
 
 #if 1
-	if(rm==rn)
+//	if(rm==rn)
+	if(	BGBCC_JX2_EmitCheckRegExtPlainGPR(ctx, rm) &&
+		BGBCC_JX2_EmitCheckRegExtPlainGPR(ctx, rn) &&
+		(rm&63)==(rn&63))
 	{
 		if(
 			(nmid==BGBCC_SH_NMID_ADD) ||

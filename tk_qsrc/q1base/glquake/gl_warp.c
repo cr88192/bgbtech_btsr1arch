@@ -204,13 +204,21 @@ void GL_SubdivideSurface (msurface_t *fa)
 
 
 // speed up sin calculations - Ed
+#ifdef __BJX2__
+short float	turbsin[] =
+#else
 float	turbsin[] =
+#endif
 {
 	#include "gl_warp_sin.h"
 };
 #define TURBSCALE (256.0 / (2 * M_PI))
 
+#ifdef __BJX2__
+short float qgl_sintab[256];
+#else
 float qgl_sintab[256];
+#endif
 
 float qgl_fastsin(float ra)
 {

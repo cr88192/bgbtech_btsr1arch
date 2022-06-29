@@ -447,3 +447,132 @@ ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,
 	*rosz=ct-obuf;
 	return(0);
 }
+
+ccxl_status BGBCC_JX2C_DumpImageASM(BGBCC_TransState *ctx,
+	char *name)
+{
+	char tb[256];
+	BGBCC_JX2_Context *sctx;
+	FILE *fd;
+	char *s0;
+	byte *ct, *obuf;
+	int nm, fl, lva, rva, lsz, sn_strs, imty, sz;
+	int i, j, k;
+
+	sctx=ctx->uctx;
+	
+	lsz=0;
+
+	for(i=0; i<sctx->nsec; i++)
+	{
+		s0=sctx->sec_name[i];
+		if(s0)
+		{
+//			BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+		}else
+		{
+			switch(i)
+			{
+			case BGBCC_SH_CSEG_TEXT: s0=".text"; break;
+			case BGBCC_SH_CSEG_STRTAB: s0=".strtab"; break;
+			case BGBCC_SH_CSEG_GOT: s0=".got"; break;
+			case BGBCC_SH_CSEG_DATA: s0=".data"; break;
+			case BGBCC_SH_CSEG_RODATA: s0=".rodata"; break;
+			case BGBCC_SH_CSEG_BSS: s0=".bss"; break;
+			default: s0=".unknown"; break;
+			}
+
+//			BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
+			sctx->sec_name[i]=s0;
+		}
+
+		j=sctx->asm_pos[i]-sctx->asm_buf[i];
+		lsz+=j+1024;
+	}
+
+	obuf=malloc(lsz);
+
+	ct=obuf;
+	for(i=0; i<sctx->nsec; i++)
+	{
+		j=sctx->asm_pos[i]-sctx->asm_buf[i];
+		if(j<=0)
+			continue;
+
+		sprintf((char *)ct, ".section %s\n", sctx->sec_name[i]);
+		ct+=strlen((char *)ct);
+		
+		memcpy(ct, sctx->asm_buf[i], j);
+		ct+=j;
+		*ct=0;
+	}
+	
+//	*rosz=ct-obuf;
+	sz=ct-obuf;
+	
+	fd=fopen(name, "wb");
+	if(fd)
+	{
+		fwrite(obuf, 1, sz, fd);
+		fclose(fd);
+	}
+	
+	free(obuf);
+
+	return(0);
+}
+
+
+ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
+	char *name)
+{
+	char tb[256];
+	BGBCC_JX2_Context *sctx;
+	FILE *fd;
+	char *s0;
+	byte *ct, *cte, *obuf;
+	byte *css, *cse, *cs;
+	int obsz, opw1, opw2, il, sz;
+
+	obsz=1<<23;
+	obuf=malloc(obsz);
+	cte=obuf+obsz;
+	ct=obuf;
+
+	sctx=ctx->uctx;
+
+	css=sctx->sec_buf[BGBCC_SH_CSEG_TEXT];
+	cse=sctx->sec_pos[BGBCC_SH_CSEG_TEXT];
+	cs=css;
+	
+	while(cs<cse)
+	{
+		if((ct+256)>=cte)
+		{
+			obsz=obsz+(obsz>>1);
+			il=ct-obuf;
+			obuf=realloc(obuf, obsz);
+			cte=obuf+obsz;
+			ct=obuf+il;
+		}
+
+		opw1=((u16 *)cs)[0];
+		opw2=((u16 *)cs)[1];
+		il=BGBCC_JX2_TryDisassembleOpcodeBuf(sctx, &ct, cs-css, opw1, opw2);
+		cs+=il*2;
+	}
+
+
+	sz=ct-obuf;
+	
+	fd=fopen(name, "wb");
+	if(fd)
+	{
+		fwrite(obuf, 1, sz, fd);
+		fclose(fd);
+	}
+	
+	free(obuf);
+
+	return(0);
+}

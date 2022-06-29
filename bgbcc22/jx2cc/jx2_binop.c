@@ -769,9 +769,11 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 		if(sctx->has_qmul&1)
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
-				nm1=BGBCC_SH_NMID_DIVUQ;
+//				nm1=BGBCC_SH_NMID_DIVUQ;
+				nm1=BGBCC_SH_NMID_DIVUL;
 			else
-				nm1=BGBCC_SH_NMID_DIVSQ;
+//				nm1=BGBCC_SH_NMID_DIVSQ;
+				nm1=BGBCC_SH_NMID_DIVSL;
 		}
 		break;
 
@@ -779,10 +781,14 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 		if(sctx->has_qmul&1)
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
-				nm1=BGBCC_SH_NMID_MODUQ;
+			{
+//				nm1=BGBCC_SH_NMID_MODUQ;
+				nm1=BGBCC_SH_NMID_MODUL;
+			}
 			else
 			{
 //				nm1=BGBCC_SH_NMID_MODSQ;
+				nm1=BGBCC_SH_NMID_MODSL;
 			}
 		}
 		break;
@@ -1456,9 +1462,11 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 		if(sctx->has_qmul&1)
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
-				nm1=BGBCC_SH_NMID_DIVUQ;
+//				nm1=BGBCC_SH_NMID_DIVUQ;
+				nm1=BGBCC_SH_NMID_DIVUL;
 			else
-				nm1=BGBCC_SH_NMID_DIVSQ;
+//				nm1=BGBCC_SH_NMID_DIVSQ;
+				nm1=BGBCC_SH_NMID_DIVSL;
 		}
 		break;
 
@@ -1466,10 +1474,14 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 		if(sctx->has_qmul&1)
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
-				nm1=BGBCC_SH_NMID_MODUQ;
+			{
+//				nm1=BGBCC_SH_NMID_MODUQ;
+				nm1=BGBCC_SH_NMID_MODUL;
+			}
 			else
 			{
 //				nm1=BGBCC_SH_NMID_MODSQ;
+				nm1=BGBCC_SH_NMID_MODSL;
 			}
 		}
 		break;

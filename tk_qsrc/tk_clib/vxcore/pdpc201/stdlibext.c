@@ -12,6 +12,7 @@
 
 
 static const char *itoa_radix="0123456789abcdefghijklmnopqrstuvwxyz";
+static const char *itoa_radix_b="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 char *lltoa(long long value, char *str, int base)
 {
@@ -48,6 +49,58 @@ char *lltoa(long long value, char *str, int base)
 		v1=uv/base;
 		*s++=itoa_radix[v-(v1*base)];
 		v=v1;
+	}
+	
+	t=str;
+	while(s!=tb)
+		*t++=*(--s);
+	*t++=0;
+	return(str);
+}
+
+char *xlltoa_cnt(__int128 value, char *str, int base, int cnt)
+{
+	char tb[160];
+	char *s, *t, *rdx;
+//	unsigned long long uv;
+	unsigned __int128 uv;
+	int sg, v, v1, c;
+	
+	rdx=itoa_radix;
+	if(base&64)
+		rdx=itoa_radix_b;
+	base&=63;
+
+	if(base==10)
+	{
+		v=value; sg=0;
+		if(v<0)
+			{ v=-v; sg=1; }
+		s=tb; c=cnt;
+		while(v || (c>0) || (s==tb))
+		{
+			v1=v/10;
+			*s++=rdx[v-(v1*10)];
+			v=v1;
+			c--;
+		}
+		if(sg)*s++='-';
+		
+		t=str;
+		while(s!=tb)
+			*t++=*(--s);
+		*t++=0;
+		return(str);
+	}
+
+	uv=value;
+	s=tb; c=cnt;
+	while(uv || (c>0) || (s==tb))
+	{
+		v1=uv/base;
+		*s++=rdx[v-(v1*base)];
+		v=v1;
+		c--;
 	}
 	
 	t=str;

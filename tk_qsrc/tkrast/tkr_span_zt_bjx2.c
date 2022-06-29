@@ -565,6 +565,8 @@ TKRA_DrawSpan_ModUtx2MortZb:
 #if 1
 .ifarch has_xgpr
 
+.ifarch has_ldtex
+
 #if 1
 TKRA_DrawSpan_ModUtx2MortZb:
 
@@ -647,7 +649,9 @@ TKRA_DrawSpan_ModUtx2MortZb:
 	RTSU
 #endif
 
-#if 0
+.else 
+
+#if 1
 TKRA_DrawSpan_ModUtx2MortZb:
 
 	MOV.Q	(R4, TKRA_DS_TEXBCN*8), R20
@@ -677,6 +681,8 @@ TKRA_DrawSpan_ModUtx2MortZb:
 
 	RTSU
 #endif
+
+.endif
 
 .else
 

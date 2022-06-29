@@ -1574,8 +1574,11 @@ void BJX2_Op_LDTEX_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 			txt++;
 	}else
 	{
-		txs+=(vst>>15)&1;
-		txt+=(vst>>47)&1;
+		if(op->imm&3)
+		{
+			txs+=(vst>>15)&1;
+			txt+=(vst>>47)&1;
+		}
 	}
 
 	txi=	(BJX2_PMORT_U16(txt)<<1)|
