@@ -388,6 +388,9 @@ int fmid;	//form index
 {0x10CEE000, 0xF8FFEB00, BGBCC_SH_NMID_PLDCH,		BGBCC_SH_FMID_REGREGB},
 {0x18CEE000, 0xF8FFEB00, BGBCC_SH_NMID_PLDCHH,		BGBCC_SH_FMID_REGREGB},
 
+{0x10DEE000, 0xF8FFEB00, BGBCC_SH_NMID_PLDCEHL,		BGBCC_SH_FMID_REGREGB},
+{0x18DEE000, 0xF8FFEB00, BGBCC_SH_NMID_PLDCEHH,		BGBCC_SH_FMID_REGREGB},
+
 {0x10EEE000, 0xF8FFEB00, BGBCC_SH_NMID_PSTCH,		BGBCC_SH_FMID_REGREGB},
 
 
@@ -518,10 +521,10 @@ int fmid;	//form index
 {0x5005E000, 0xF80FEB00, BGBCC_SH_NMID_SHLD,	BGBCC_SH_FMID_REGREGREG},
 {0x5805E000, 0xF80FEB00, BGBCC_SH_NMID_SHLDQ,	BGBCC_SH_FMID_REGREGREG},
 
-{0x5002E000, 0xF80FEB00, BGBCC_SH_NMID_PMULSLW,	BGBCC_SH_FMID_REGREGREG},
-{0x5802E000, 0xF80FEB00, BGBCC_SH_NMID_PMULULW,	BGBCC_SH_FMID_REGREGREG},
-{0x5002E000, 0xF80FEB00, BGBCC_SH_NMID_PMULSHW,	BGBCC_SH_FMID_REGREGREG},
-{0x5802E000, 0xF80FEB00, BGBCC_SH_NMID_PMULUHW,	BGBCC_SH_FMID_REGREGREG},
+{0x5006E000, 0xF80FEB00, BGBCC_SH_NMID_PMULSLW,	BGBCC_SH_FMID_REGREGREG},
+{0x5806E000, 0xF80FEB00, BGBCC_SH_NMID_PMULULW,	BGBCC_SH_FMID_REGREGREG},
+{0x5007E000, 0xF80FEB00, BGBCC_SH_NMID_PMULSHW,	BGBCC_SH_FMID_REGREGREG},
+{0x5807E000, 0xF80FEB00, BGBCC_SH_NMID_PMULUHW,	BGBCC_SH_FMID_REGREGREG},
 
 {0x5008E000, 0xF80FEB00, BGBCC_SH_NMID_FADD,	BGBCC_SH_FMID_REGREGREG},
 {0x5808E000, 0xF80FEB00, BGBCC_SH_NMID_FADDX,	BGBCC_SH_FMID_REGREGREG},
@@ -670,6 +673,8 @@ int fmid;	//form index
 {0xD000E203, 0xF800EB0F, BGBCC_SH_NMID_MULSW,	BGBCC_SH_FMID_REGIMM_10_N},
 {0xD800E203, 0xF800EB0F, BGBCC_SH_NMID_MULUW,	BGBCC_SH_FMID_REGIMM_10_N},
 
+{0x0000E88F, 0x0000EBFF, BGBCC_SH_NMID_BRK,		BGBCC_SH_FMID_REGIMM16_U},
+
 {0x0000E800, 0x0000EBE0, BGBCC_SH_NMID_LDIZ,	BGBCC_SH_FMID_REGIMM16_U},
 {0x0000E820, 0x0000EBE0, BGBCC_SH_NMID_LDIN,	BGBCC_SH_FMID_REGIMM16_N},
 {0x0000E840, 0x0000EBE0, BGBCC_SH_NMID_ADD,		BGBCC_SH_FMID_REGIMM16S},
@@ -684,6 +689,43 @@ int fmid;	//form index
 {0, 0, 0, 0}
 };
 
+int bgbcc_jx2_opidx[4096];
+int bgbcc_jx2_opidx_init=0;
+
+int BGBCC_JX2_DisassembleBuildOpIdx()
+{
+	int opm, opn, opm1, opn1;
+	int i, j, k;
+	
+	if(bgbcc_jx2_opidx_init)
+		return(0);
+	bgbcc_jx2_opidx_init=1;
+	
+	for(i=0; i<4096; i++)
+	{
+		bgbcc_jx2_opidx[i]=0;
+		for(j=0; bgbcc_jx2_optab[j].opm!=0; j++)
+		{
+			opm=bgbcc_jx2_optab[i].opm;
+			opn=bgbcc_jx2_optab[i].opn;
+			
+			opm1=((opm>>8)&0x0FF)|((opm>>20)&0xF00);
+			opn1=((opn>>8)&0x0FF)|((opn>>20)&0xF00);
+			
+			if((i&opm1)==opn1)
+			{
+				bgbcc_jx2_opidx[i]=j;
+				break;
+			}
+		
+	//		if((opwb&bgbcc_jx2_optab[i].opm)==bgbcc_jx2_optab[i].opn)
+	//			break;
+		}
+	}
+	
+	return(1);
+}
+
 int BGBCC_JX2_TryDisassembleOpcodeI1(
 	BGBCC_JX2_Context *ctx,
 	u32 opw,
@@ -694,7 +736,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 {
 	u32 opwb;
 	int nmid, fmid, wex2, ex, exw, sc;
-	int i, il;
+	int i, j, il;
 	
 	wex2=0;
 
@@ -757,8 +799,11 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		}
 	}
 
+	j=((opwb>>8)&0x0FF)|((opwb>>20)&0xF00);
+	j=bgbcc_jx2_opidx[j];
 
-	for(i=0; bgbcc_jx2_optab[i].opm!=0; i++)
+//	for(i=0; bgbcc_jx2_optab[i].opm!=0; i++)
+	for(i=j; bgbcc_jx2_optab[i].opm!=0; i++)
 	{
 		if((opwb&bgbcc_jx2_optab[i].opm)==bgbcc_jx2_optab[i].opn)
 			break;
@@ -875,15 +920,17 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	case BGBCC_SH_FMID_REGLDSPVIMM:
 		arg0->ty=BGBCC_SH_OPVTY_RDMEM;
 		arg1->ty=BGBCC_SH_OPVTY_REG;
-		arg0->breg=BGBCC_SH_REG_PC;
+		arg0->breg=BGBCC_SH_REG_SP;
 		arg0->disp=opw&15;
+		arg0->sc=sc;
 		arg1->breg=((opw>>4)&15);
 		break;
 	case BGBCC_SH_FMID_REGSTSPVIMM:
 		arg1->ty=BGBCC_SH_OPVTY_RDMEM;
 		arg0->ty=BGBCC_SH_OPVTY_REG;
-		arg1->breg=BGBCC_SH_REG_PC;
+		arg1->breg=BGBCC_SH_REG_SP;
 		arg1->disp=opw&15;
+		arg1->sc=sc;
 		arg0->breg=((opw>>4)&15);
 		break;
 
@@ -892,14 +939,14 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg0->ty=BGBCC_SH_OPVTY_RRMEM;
 		arg1->ty=BGBCC_SH_OPVTY_REG;
 		arg0->breg=((opw>>0)&15);
-		arg0->ireg=BGBCC_SH_REG_MACL;
+		arg0->ireg=BGBCC_SH_REG_R0;
 		arg1->breg=((opw>>4)&15);
 		break;
 	case BGBCC_SH_FMID_REGSTR0N:
 		arg1->ty=BGBCC_SH_OPVTY_RRMEM;
 		arg0->ty=BGBCC_SH_OPVTY_REG;
 		arg1->breg=((opw>>0)&15);
-		arg1->ireg=BGBCC_SH_REG_MACL;
+		arg1->ireg=BGBCC_SH_REG_R0;
 		arg0->breg=((opw>>4)&15);
 		break;
 #endif
@@ -934,26 +981,35 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	case BGBCC_SH_FMID_IMM:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg0->disp=(byte)opw;
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg1->breg=BGBCC_SH_REG_R0;
 		break;
+
 	case BGBCC_SH_FMID_IMM12A_U:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg0->disp=opw&4095;
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg1->breg=BGBCC_SH_REG_R0;
 		break;
 	case BGBCC_SH_FMID_IMM12A_N:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg0->disp=opw|(~4095);
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg1->breg=BGBCC_SH_REG_R0;
 		break;
 
 	case BGBCC_SH_FMID_PCDISP8:
 		arg0->ty=BGBCC_SH_OPVTY_RDMEM;
 		arg0->breg=BGBCC_SH_REG_PC;
 		arg0->disp=(sbyte)opw;
+		arg0->sc=2;
 		break;
 
 	case BGBCC_SH_FMID_PCDISP20:
 		arg0->ty=BGBCC_SH_OPVTY_RDMEM;
 		arg0->breg=BGBCC_SH_REG_PC;
 		arg0->disp=(((sbyte)opw)<<12)|((opw>>16)&4095);
+		arg0->sc=2;
 		break;
 
 	case BGBCC_SH_FMID_REGSTR0N:
@@ -961,13 +1017,13 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg1->ty=BGBCC_SH_OPVTY_RRMEM;
 		arg1->breg=((opw   )&15);
 		arg0->breg=((opw>>4)&15);
-		arg1->ireg=BGBCC_SH_REG_MACL;
+		arg1->ireg=BGBCC_SH_REG_R0;
 		break;
 	case BGBCC_SH_FMID_REGLDR0M:
 		arg0->ty=BGBCC_SH_OPVTY_RRMEM;
 		arg1->ty=BGBCC_SH_OPVTY_REG;
 		arg0->breg=((opw   )&15);
-		arg0->ireg=BGBCC_SH_REG_MACL;
+		arg0->ireg=BGBCC_SH_REG_R0;
 		arg1->breg=((opw>>4)&15);
 		break;
 
@@ -977,12 +1033,14 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg1->breg=((opw   )&15);
 		arg0->breg=((opw>>4)&15);
 		arg1->disp=0;
+		arg1->sc=sc;
 		break;
 	case BGBCC_SH_FMID_REGLD:
 		arg0->ty=BGBCC_SH_OPVTY_RDMEM;
 		arg1->ty=BGBCC_SH_OPVTY_REG;
 		arg0->breg=((opw   )&15);
 		arg0->disp=0;
+		arg0->sc=sc;
 		arg1->breg=((opw>>4)&15);
 		break;
 
@@ -1020,6 +1078,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg0->breg=((opw    )&15)|(((ex>>1)&1)<<4)|(((exw>>1)&1)<<5);
 		arg0->ireg=((opw>>20)&15)|(((ex>>0)&1)<<4)|(((exw>>0)&1)<<5);
 		arg1->breg=((opw>> 4)&15)|(((ex>>2)&1)<<4)|(((exw>>2)&1)<<5);
+		arg0->sc=sc;
 		break;
 
 	case BGBCC_SH_FMID_REGSTRON:
@@ -1028,6 +1087,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg1->breg=((opw    )&15)|(((ex>>1)&1)<<4)|(((exw>>1)&1)<<5);
 		arg1->ireg=((opw>>20)&15)|(((ex>>0)&1)<<4)|(((exw>>0)&1)<<5);
 		arg0->breg=((opw>> 4)&15)|(((ex>>2)&1)<<4)|(((exw>>2)&1)<<5);
+		arg1->sc=sc;
 		break;
 
 	case BGBCC_SH_FMID_REGREGB:
@@ -1107,10 +1167,14 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	case BGBCC_SH_FMID_IMM24_U:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg0->disp=((opw&255)<<16)|((opw>>16)&65535);
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg1->breg=BGBCC_SH_REG_R0;
 		break;
 	case BGBCC_SH_FMID_IMM24_N:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg0->disp=((opw&255)<<16)|((opw>>16)&65535)|(~16777215);
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg1->breg=BGBCC_SH_REG_R0;
 		break;
 	
 	default:
@@ -1129,8 +1193,79 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		*rwex2=wex2;
 		return(-1);
 	}
+	
+	BGBCC_JX2_TryDisassembleOpcode_FixupArg(ctx, arg0, nmid);
+	BGBCC_JX2_TryDisassembleOpcode_FixupArg(ctx, arg1, nmid);
+	BGBCC_JX2_TryDisassembleOpcode_FixupArg(ctx, arg2, nmid);
 
 	return(il);
+}
+
+int BGBCC_JX2_TryDisassembleOpcode_FixupArg(
+	BGBCC_JX2_Context *ctx,
+	BGBCC_JX2_OpcodeArg *arg, int nmid)
+{
+	if(arg->ty==BGBCC_SH_OPVTY_REG)
+	{
+		if(arg->breg==BGBCC_SH_REG_R15)
+		{
+			arg->breg=BGBCC_SH_REG_SP;
+		}
+		return(1);
+	}
+
+	if(arg->ty==BGBCC_SH_OPVTY_RRMEM)
+	{
+		if(arg->breg==BGBCC_SH_REG_R0)
+		{
+			arg->breg=BGBCC_SH_REG_PC;
+			arg->sc=1;
+
+			if(arg->ireg==BGBCC_SH_REG_R1)
+			{
+				arg->ty=BGBCC_SH_OPVTY_RDMEM;
+				arg->breg=BGBCC_SH_REG_R0;
+				arg->disp=0;
+			}
+		}else
+			if(arg->breg==BGBCC_SH_REG_R1)
+		{
+			arg->breg=BGBCC_SH_REG_GBR;
+			arg->sc=1;
+
+			if(arg->ireg==BGBCC_SH_REG_R1)
+			{
+				arg->breg=BGBCC_SH_REG_TBR;
+				arg->ireg=BGBCC_SH_REG_R0;
+			}
+		}else
+			if(arg->breg==BGBCC_SH_REG_R15)
+		{
+			arg->breg=BGBCC_SH_REG_SP;
+		}
+		return(1);
+	}
+
+	if(arg->ty==BGBCC_SH_OPVTY_RDMEM)
+	{
+		if(arg->breg==BGBCC_SH_REG_R0)
+		{
+			arg->breg=BGBCC_SH_REG_PC;
+			arg->sc=1;
+		}
+
+		if(arg->breg==BGBCC_SH_REG_R1)
+		{
+			arg->breg=BGBCC_SH_REG_GBR;
+			arg->sc=1;
+		}
+
+		if(arg->breg==BGBCC_SH_REG_R15)
+			arg->breg=BGBCC_SH_REG_SP;
+		return(1);
+	}
+
+	return(0);
 }
 
 int BGBCC_JX2_TryDisassembleOpcode_PrintArgStr(
@@ -1200,6 +1335,8 @@ int BGBCC_JX2_TryDisassembleOpcodeBuf(
 	int nmid, fmid, wex2, il;
 	int i, j;
 	
+	BGBCC_JX2_DisassembleBuildOpIdx();
+	
 	il=BGBCC_JX2_TryDisassembleOpcodeI1(ctx, opw1|(opw2<<16),
 		&nmid, &fmid, &wex2, &arg0, &arg1, &arg2);
 
@@ -1221,9 +1358,9 @@ int BGBCC_JX2_TryDisassembleOpcodeBuf(
 	ct0=ct;
 
 	if(il>1)
-		sprintf(ct, "%04X_%04X %-10s ", opw1, opw2, snm);
+		sprintf(ct, "  %04X_%04X  %-10s ", opw1, opw2, snm);
 	else
-		sprintf(ct, "%04X      %-10s ", opw1, snm);
+		sprintf(ct, "  %04X       %-10s ", opw1, snm);
 	ct+=strlen(ct);
 	BGBCC_JX2_TryDisassembleOpcode_PrintArgStr(ctx, &ct, &arg0, nmid);
 	if(arg1.ty!=BGBCC_SH_OPVTY_NONE)

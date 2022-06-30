@@ -45,7 +45,10 @@ int BGBCC_JX2_SetBeginSimPass(BGBCC_JX2_Context *ctx)
 	ctx->nvlbln=ctx->nlbln;
 
 	for(i=0; i<64; i++)
+	{
 		ctx->lbl_simhash[i]=(-1);
+		ctx->lbl_simhashb[i]=(-1);
+	}
 
 	ctx->is_simpass=1;
 	return(0);

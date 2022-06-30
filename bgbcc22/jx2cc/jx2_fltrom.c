@@ -532,7 +532,7 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 	char *s0;
 	byte *ct, *cte, *obuf;
 	byte *css, *cse, *cs;
-	int obsz, opw1, opw2, il, sz;
+	int obsz, opw1, opw2, il, sz, lbl, lbl1, rlc;
 
 	obsz=1<<23;
 	obuf=malloc(obsz);
@@ -554,6 +554,25 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 			obuf=realloc(obuf, obsz);
 			cte=obuf+obsz;
 			ct=obuf+il;
+		}
+
+		lbl=BGBCC_JX2_LookupLabelAtOffs(sctx, BGBCC_SH_CSEG_TEXT, cs-css);
+		if(lbl>=0)
+		{
+			s0=BGBCC_JX2DA_NameForLabel(sctx, lbl);
+			sprintf(ct, "\n%s: //@%06X\n", s0, (int)(cs-css));
+			ct+=strlen(ct);
+		}
+		
+		rlc=BGBCC_JX2_LookupRelocAtOffs(sctx, BGBCC_SH_CSEG_TEXT, cs-css);
+		if(rlc>=0)
+		{
+			lbl1=sctx->rlc_id[rlc];
+			s0=BGBCC_JX2DA_NameForLabel(sctx, lbl1);
+			sprintf(ct, ".reloc %s %02X/%s\n",
+				s0, sctx->rlc_ty[rlc],
+				BGBCC_JX2DA_RelocToName(sctx, sctx->rlc_ty[rlc]));
+			ct+=strlen(ct);
 		}
 
 		opw1=((u16 *)cs)[0];

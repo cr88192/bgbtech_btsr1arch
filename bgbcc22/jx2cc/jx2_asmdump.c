@@ -66,6 +66,76 @@ int BGBCC_JX2DA_EmitPrintf(BGBCC_JX2_Context *ctx, char *str, ...)
 	return(0);
 }
 
+char *BGBCC_JX2DA_RelocToName(BGBCC_JX2_Context *ctx, int rlc)
+{
+	char tb[128];
+	char *sn;
+
+	switch(rlc)
+	{
+	case BGBCC_SH_RLC_REL8:				sn="REL8";			break;
+	case BGBCC_SH_RLC_REL16:			sn="REL16";			break;
+	case BGBCC_SH_RLC_REL32:			sn="REL32";			break;
+	case BGBCC_SH_RLC_ABS8:				sn="ABS8";			break;
+	case BGBCC_SH_RLC_ABS16:			sn="ABS16";			break;
+	case BGBCC_SH_RLC_ABS32:			sn="ABS32";			break;
+	case BGBCC_SH_RLC_ABS64:			sn="ABS64";			break;
+	case BGBCC_SH_RLC_RELW12:			sn="RELW12";		break;
+	case BGBCC_SH_RLC_RELW8:			sn="RELW8";			break;
+	case BGBCC_SH_RLC_REL32B:			sn="REL32B";		break;
+	case BGBCC_SH_RLC_RELW12L:			sn="RELW12L";		break;
+	case BGBCC_SH_RLC_RELW8L:			sn="RELW8L";		break;
+	case BGBCC_SH_RLC_REL20_2A:			sn="REL20_2A";		break;
+	case BGBCC_SH_RLC_RELW16_BJX:		sn="RELW16_BJX";	break;
+	case BGBCC_SH_RLC_RELW20_BJX:		sn="RELW20_BJX";	break;
+	case BGBCC_SH_RLC_REL24_BJX:		sn="REL24_BJX";		break;
+	case BGBCC_SH_RLC_REL24B_BJX:		sn="REL24B_BJX";	break;
+	case BGBCC_SH_RLC_RVA32:			sn="RVA32";			break;
+	case BGBCC_SH_RLC_RELW24_BJX:		sn="RELW24_BJX";	break;
+	case BGBCC_SH_RLC_PBO24_BJX:		sn="PBO24_BJX";		break;
+	case BGBCC_SH_RLC_PBO32_BJX:		sn="PBO32_BJX";		break;
+	case BGBCC_SH_RLC_TBR24_BJX:		sn="TBR24_BJX";		break;
+	case BGBCC_SH_RLC_TBR12_BJX:		sn="TBR12_BJX";		break;
+	case BGBCC_SH_RLC_RELW16C_BSR:		sn="RELW16C_BJX";	break;
+	case BGBCC_SH_RLC_RELW16_BSR:		sn="RELW16_BSR";	break;
+	case BGBCC_SH_RLC_RELW24C_BSR:		sn="RELW24C_BSR";	break;
+	case BGBCC_SH_RLC_RELW24_BSR:		sn="RELW24_BSR";	break;
+	case BGBCC_SH_RLC_ABSW16A_BSR:		sn="ABSW16A_BSR";	break;
+	case BGBCC_SH_RLC_ABSW24A_BSR:		sn="ABSW24A_BSR";	break;
+	case BGBCC_SH_RLC_ABSW32A_BSR:		sn="ABSW32A_BSR";	break;
+	case BGBCC_SH_RLC_RELW8_BSR:		sn="RELW8_BSR";		break;
+	case BGBCC_SH_RLC_RELW16D_BSR:		sn="RELW16D_BSR";	break;
+	case BGBCC_SH_RLC_RELW24D_BSR:		sn="RELW24D_BSR";	break;
+	case BGBCC_SH_RLC_RELW32D_BSR:		sn="RELW32D_BSR";	break;
+	case BGBCC_SH_RLC_RELW32C_BSR:		sn="RELW32C_BSR";	break;
+	case BGBCC_SH_RLC_ABSW16B_BSR:		sn="RELW16B_BSR";	break;
+	case BGBCC_SH_RLC_ABSW24B_BSR:		sn="RELW24B_BSR";	break;
+	case BGBCC_SH_RLC_ABSW32B_BSR:		sn="RELW32B_BSR";	break;
+	case BGBCC_SH_RLC_RELW12_BSR:		sn="RELW12_BSR";	break;
+	case BGBCC_SH_RLC_RELW16A_BSR:		sn="RELW16A_BSR";	break;
+	case BGBCC_SH_RLC_RELW24A_BSR:		sn="RELW24A_BSR";	break;
+	case BGBCC_SH_RLC_RELW32A_BSR:		sn="RELW32A_BSR";	break;
+	case BGBCC_SH_RLC_PBO9_BJX:			sn="PBO9_BJX";		break;
+	case BGBCC_SH_RLC_PBOJ29_BJX:		sn="PBO29_BJX";		break;
+	case BGBCC_SH_RLC_PBOJ32_BJX:		sn="PBOJ32_BJX";	break;
+	case BGBCC_SH_RLC_RELJ29_BJX:		sn="RELJ29_BJX";	break;
+	case BGBCC_SH_RLC_RELJ32_BJX:		sn="RELJ32_BJX";	break;
+	case BGBCC_SH_RLC_TRIPWIRE_BJX:		sn="TRIPWIRE_BJX";	break;
+	case BGBCC_SH_RLC_RELB13_OP24:		sn="RELB13_OP24";	break;
+	case BGBCC_SH_RLC_ABS48_BJX:		sn="ABS48_BJX";		break;
+	case BGBCC_SH_RLC_RVA24:			sn="RVA24";			break;
+	case BGBCC_SH_RLC_RELW12_RVI:		sn="RELW12_RVI";	break;
+	case BGBCC_SH_RLC_RELW20_RVI:		sn="RELW20_RVI";	break;
+	case BGBCC_SH_RLC_ABS96:			sn="ABS96";			break;
+
+	default:
+		sprintf(tb, "RLC_%02X", rlc);
+		sn=bgbcc_strdup(tb);
+		break;
+	}
+	return(sn);
+}
+
 char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 {
 	char tb[128];
@@ -79,6 +149,11 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	default:
 		break;
 	}
+	
+	if((nmid==BGBCC_SH_NMID_BRA) && (wex2==4))
+		{ nmid=BGBCC_SH_NMID_BT; wex2=0; }
+	if((nmid==BGBCC_SH_NMID_BRA) && (wex2==5))
+		{ nmid=BGBCC_SH_NMID_BF; wex2=0; }
 	
 	switch(nmid)
 	{
@@ -639,6 +714,39 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_REG_R30:		sn="R30";		break;	// 0x1E
 	case BGBCC_SH_REG_R31:		sn="R31";		break;	// 0x1F
 
+	case BGBCC_SH_REG_R32:		sn="R32";		break;	// 0x02
+	case BGBCC_SH_REG_R33:		sn="R33";		break;	// 0x03
+	case BGBCC_SH_REG_R34:		sn="R34";		break;	// 0x04
+	case BGBCC_SH_REG_R35:		sn="R35";		break;	// 0x05
+	case BGBCC_SH_REG_R36:		sn="R36";		break;	// 0x06
+	case BGBCC_SH_REG_R37:		sn="R37";		break;	// 0x07
+	case BGBCC_SH_REG_R38:		sn="R38";		break;	// 0x08
+	case BGBCC_SH_REG_R39:		sn="R93";		break;	// 0x09
+	case BGBCC_SH_REG_R40:		sn="R40";		break;	// 0x0A
+	case BGBCC_SH_REG_R41:		sn="R41";		break;	// 0x0B
+	case BGBCC_SH_REG_R42:		sn="R42";		break;	// 0x0C
+	case BGBCC_SH_REG_R43:		sn="R43";		break;	// 0x0D
+	case BGBCC_SH_REG_R44:		sn="R44";		break;	// 0x0E
+	case BGBCC_SH_REG_R45:		sn="R45";		break;	// 0x0F
+	case BGBCC_SH_REG_R46:		sn="R46";		break;	// 0x10
+	case BGBCC_SH_REG_R47:		sn="R47";		break;	// 0x11
+	case BGBCC_SH_REG_R48:		sn="R48";		break;	// 0x12
+	case BGBCC_SH_REG_R49:		sn="R49";		break;	// 0x13
+	case BGBCC_SH_REG_R50:		sn="R50";		break;	// 0x14
+	case BGBCC_SH_REG_R51:		sn="R51";		break;	// 0x15
+	case BGBCC_SH_REG_R52:		sn="R52";		break;	// 0x16
+	case BGBCC_SH_REG_R53:		sn="R53";		break;	// 0x17
+	case BGBCC_SH_REG_R54:		sn="R54";		break;	// 0x18	
+	case BGBCC_SH_REG_R55:		sn="R55";		break;	// 0x19
+	case BGBCC_SH_REG_R56:		sn="R56";		break;	// 0x1A
+	case BGBCC_SH_REG_R57:		sn="R57";		break;	// 0x1B
+	case BGBCC_SH_REG_R58:		sn="R58";		break;	// 0x1C
+	case BGBCC_SH_REG_R59:		sn="R59";		break;	// 0x1D
+	case BGBCC_SH_REG_R60:		sn="R60";		break;	// 0x1E
+	case BGBCC_SH_REG_R61:		sn="R61";		break;	// 0x1F
+	case BGBCC_SH_REG_R62:		sn="R62";		break;	// 0x1F
+	case BGBCC_SH_REG_R63:		sn="R63";		break;	// 0x1F
+
 /* 20-3F: GPR RQ00-RQ31, 64 */
 	case BGBCC_SH_REG_RQ0:		sn="RQ0";		break;	// 0x20
 	case BGBCC_SH_REG_RQ1:		sn="RQ1";		break;	// 0x21
@@ -672,6 +780,39 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_REG_RQ29:		sn="RQ29";		break;	// 0x3D
 	case BGBCC_SH_REG_RQ30:		sn="RQ30";		break;	// 0x3E
 	case BGBCC_SH_REG_RQ31:		sn="RQ31";		break;	// 0x3F
+
+	case BGBCC_SH_REG_RQ32:		sn="RQ32";		break;	// 0x02
+	case BGBCC_SH_REG_RQ33:		sn="RQ33";		break;	// 0x03
+	case BGBCC_SH_REG_RQ34:		sn="RQ34";		break;	// 0x04
+	case BGBCC_SH_REG_RQ35:		sn="RQ35";		break;	// 0x05
+	case BGBCC_SH_REG_RQ36:		sn="RQ36";		break;	// 0x06
+	case BGBCC_SH_REG_RQ37:		sn="RQ37";		break;	// 0x07
+	case BGBCC_SH_REG_RQ38:		sn="RQ38";		break;	// 0x08
+	case BGBCC_SH_REG_RQ39:		sn="RQ93";		break;	// 0x09
+	case BGBCC_SH_REG_RQ40:		sn="RQ40";		break;	// 0x0A
+	case BGBCC_SH_REG_RQ41:		sn="RQ41";		break;	// 0x0B
+	case BGBCC_SH_REG_RQ42:		sn="RQ42";		break;	// 0x0C
+	case BGBCC_SH_REG_RQ43:		sn="RQ43";		break;	// 0x0D
+	case BGBCC_SH_REG_RQ44:		sn="RQ44";		break;	// 0x0E
+	case BGBCC_SH_REG_RQ45:		sn="RQ45";		break;	// 0x0F
+	case BGBCC_SH_REG_RQ46:		sn="RQ46";		break;	// 0x10
+	case BGBCC_SH_REG_RQ47:		sn="RQ47";		break;	// 0x11
+	case BGBCC_SH_REG_RQ48:		sn="RQ48";		break;	// 0x12
+	case BGBCC_SH_REG_RQ49:		sn="RQ49";		break;	// 0x13
+	case BGBCC_SH_REG_RQ50:		sn="RQ50";		break;	// 0x14
+	case BGBCC_SH_REG_RQ51:		sn="RQ51";		break;	// 0x15
+	case BGBCC_SH_REG_RQ52:		sn="RQ52";		break;	// 0x16
+	case BGBCC_SH_REG_RQ53:		sn="RQ53";		break;	// 0x17
+	case BGBCC_SH_REG_RQ54:		sn="RQ54";		break;	// 0x18	
+	case BGBCC_SH_REG_RQ55:		sn="RQ55";		break;	// 0x19
+	case BGBCC_SH_REG_RQ56:		sn="RQ56";		break;	// 0x1A
+	case BGBCC_SH_REG_RQ57:		sn="RQ57";		break;	// 0x1B
+	case BGBCC_SH_REG_RQ58:		sn="RQ58";		break;	// 0x1C
+	case BGBCC_SH_REG_RQ59:		sn="RQ59";		break;	// 0x1D
+	case BGBCC_SH_REG_RQ60:		sn="RQ60";		break;	// 0x1E
+	case BGBCC_SH_REG_RQ61:		sn="RQ61";		break;	// 0x1F
+	case BGBCC_SH_REG_RQ62:		sn="RQ62";		break;	// 0x1F
+	case BGBCC_SH_REG_RQ63:		sn="RQ63";		break;	// 0x1F
 
 /* 40-5F: GPR RD00-RD31, 32 */
 	case BGBCC_SH_REG_RD0:		sn="RD0";		break;	// 0x40
@@ -707,12 +848,47 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 	case BGBCC_SH_REG_RD30:		sn="RD30";		break;	// 0x5E
 	case BGBCC_SH_REG_RD31:		sn="RD31";		break;	// 0x5F
 
+	case BGBCC_SH_REG_RD32:		sn="RD32";		break;	// 0x02
+	case BGBCC_SH_REG_RD33:		sn="RD33";		break;	// 0x03
+	case BGBCC_SH_REG_RD34:		sn="RD34";		break;	// 0x04
+	case BGBCC_SH_REG_RD35:		sn="RD35";		break;	// 0x05
+	case BGBCC_SH_REG_RD36:		sn="RD36";		break;	// 0x06
+	case BGBCC_SH_REG_RD37:		sn="RD37";		break;	// 0x07
+	case BGBCC_SH_REG_RD38:		sn="RD38";		break;	// 0x08
+	case BGBCC_SH_REG_RD39:		sn="RD93";		break;	// 0x09
+	case BGBCC_SH_REG_RD40:		sn="RD40";		break;	// 0x0A
+	case BGBCC_SH_REG_RD41:		sn="RD41";		break;	// 0x0B
+	case BGBCC_SH_REG_RD42:		sn="RD42";		break;	// 0x0C
+	case BGBCC_SH_REG_RD43:		sn="RD43";		break;	// 0x0D
+	case BGBCC_SH_REG_RD44:		sn="RD44";		break;	// 0x0E
+	case BGBCC_SH_REG_RD45:		sn="RD45";		break;	// 0x0F
+	case BGBCC_SH_REG_RD46:		sn="RD46";		break;	// 0x10
+	case BGBCC_SH_REG_RD47:		sn="RD47";		break;	// 0x11
+	case BGBCC_SH_REG_RD48:		sn="RD48";		break;	// 0x12
+	case BGBCC_SH_REG_RD49:		sn="RD49";		break;	// 0x13
+	case BGBCC_SH_REG_RD50:		sn="RD50";		break;	// 0x14
+	case BGBCC_SH_REG_RD51:		sn="RD51";		break;	// 0x15
+	case BGBCC_SH_REG_RD52:		sn="RD52";		break;	// 0x16
+	case BGBCC_SH_REG_RD53:		sn="RD53";		break;	// 0x17
+	case BGBCC_SH_REG_RD54:		sn="RD54";		break;	// 0x18	
+	case BGBCC_SH_REG_RD55:		sn="RD55";		break;	// 0x19
+	case BGBCC_SH_REG_RD56:		sn="RD56";		break;	// 0x1A
+	case BGBCC_SH_REG_RD57:		sn="RD57";		break;	// 0x1B
+	case BGBCC_SH_REG_RD58:		sn="RD58";		break;	// 0x1C
+	case BGBCC_SH_REG_RD59:		sn="RD59";		break;	// 0x1D
+	case BGBCC_SH_REG_RD60:		sn="RD60";		break;	// 0x1E
+	case BGBCC_SH_REG_RD61:		sn="RD61";		break;	// 0x1F
+	case BGBCC_SH_REG_RD62:		sn="RD62";		break;	// 0x1F
+	case BGBCC_SH_REG_RD63:		sn="RD63";		break;	// 0x1F
+
 /* 60-6F: Control Regs */
 	case BGBCC_SH_REG_SR:		sn="SR";		break;	// 0x60
 	case BGBCC_SH_REG_GBR:		sn="GBR";		break;	// 0x61
 	case BGBCC_SH_REG_VBR:		sn="VBR";		break;	// 0x62
 	case BGBCC_SH_REG_SSR:		sn="SSR";		break;	// 0x63
 	case BGBCC_SH_REG_SPC:		sn="SPC";		break;	// 0x64
+
+	case BGBCC_SH_REG_TBR:		sn="TBR";		break;
 
 #if 0
 	case BGBCC_SH_REG_R0B:		sn="R0B";		break;	// 0x68
@@ -842,10 +1018,10 @@ char *BGBCC_JX2DA_GetIstrSuffix(BGBCC_JX2_Context *ctx, int wex2)
 	if(wex2&2)
 	{
 		if((wex2&3)==3)
-			return("\t|  ");
+			return("\t|\n  ");
 
 		if(wex2&4)
-			return("\t|  ");
+			return("\t|\n  ");
 
 		return("\n");
 	}
@@ -1241,7 +1417,7 @@ char *BGBCC_JX2DA_NameForLabel(BGBCC_JX2_Context *ctx, int lblid)
 	if(s)
 		return(s);
 
-	sprintf(tbuf, "L%08X", lblid);
+	sprintf(tbuf, ".L%08X", lblid);
 	return(bgbcc_rstrdup(tbuf));
 }
 

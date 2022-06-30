@@ -2553,6 +2553,7 @@ int BGBCC_BSRC_EmitJCmpVRegZero(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, 
 //AHSRC:jx2cc/jx2_asmdump.c
 int BGBCC_JX2DA_EmitPuts(BGBCC_JX2_Context *ctx, char *str);
 int BGBCC_JX2DA_EmitPrintf(BGBCC_JX2_Context *ctx, char *str, ...);
+char *BGBCC_JX2DA_RelocToName(BGBCC_JX2_Context *ctx, int rlc);
 char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2);
 char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid);
 char *BGBCC_JX2DA_GetIstrSuffix(BGBCC_JX2_Context *ctx, int wex2);
@@ -2647,7 +2648,9 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs);
 int BGBCC_JX2A_ParseBuffer(BGBCC_JX2_Context *ctx, char **rcs);
 int BGBCC_JX2C_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *text);
 //AHSRC:jx2cc/jx2_disasm.c
+int BGBCC_JX2_DisassembleBuildOpIdx();
 int BGBCC_JX2_TryDisassembleOpcodeI1(BGBCC_JX2_Context *ctx, u32 opw, int *rnmid, int *rfmid, int *rwex2, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
+int BGBCC_JX2_TryDisassembleOpcode_FixupArg(BGBCC_JX2_Context *ctx, BGBCC_JX2_OpcodeArg *arg, int nmid);
 int BGBCC_JX2_TryDisassembleOpcode_PrintArgStr(BGBCC_JX2_Context *ctx, char **rct, BGBCC_JX2_OpcodeArg *arg, int nmid);
 int BGBCC_JX2_TryDisassembleOpcodeI0(BGBCC_JX2_Context *ctx, int pc, int opw1, int opw2);
 int BGBCC_JX2_TryDisassembleOpcodeBuf(BGBCC_JX2_Context *ctx, char **rct, int pc, int opw1, int opw2);
@@ -2822,6 +2825,7 @@ int BGBCC_JX2_EmitNamedLabel(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2_EmitNamedGlobal(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz, int al);
 int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,int sz, int al);
+int BGBCC_JX2_LookupLabelAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs);
 int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs);
 int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty);
 int BGBCC_JX2_EmitNamedReloc(BGBCC_JX2_Context *ctx, char *name, int ty);

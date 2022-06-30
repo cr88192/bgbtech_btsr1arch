@@ -237,16 +237,20 @@ u32 *rlc_id;		//reloc label IDs
 byte *lbl_sec;		//label section
 byte *rlc_sec;		//reloc section
 byte *rlc_ty;		//reloc type
-s32 *rlc_chn;		//label section
-s32 *lbl_chn;		//label chains
+s32 *rlc_chn;		//reloc chains
+s32 *lbl_chn;		//label chains (lblid)
+s32 *lbl_cho;		//label chains (sec, ofs)
 int nlbl, mlbl;
 int nrlc, mrlc;
 int nvlbl;
 u16 lblrov;			//labels (local)
 u16 lbltrov;		//labels (temp)
 
-s32 lbl_hash[1024];		//label chain hash
+s32 lbl_hash[1024];		//label chain hash (lblid)
 s32 lbl_simhash[64];	//label chain hash (simulation)
+
+s32 lbl_hashb[1024];	//label chain hash (sec, ofs)
+s32 lbl_simhashb[64];	//label chain hash (simulation)
 
 s32 rlc_hash[1024];		//reloc chain hash (sec, offs)
 

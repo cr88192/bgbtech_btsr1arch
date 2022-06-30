@@ -98,7 +98,10 @@ int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx)
 	if(!ctx->lbl_ofs)
 	{
 		for(i=0; i<1024; i++)
+		{
 			ctx->lbl_hash[i]=(-1);
+			ctx->lbl_hashb[i]=(-1);
+		}
 	
 //		i=4096;
 		i=65536;
@@ -106,6 +109,7 @@ int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx)
 		ctx->lbl_id =bgbcc_malloc(i*sizeof(u32));
 		ctx->lbl_sec=bgbcc_malloc(i*sizeof(byte));
 		ctx->lbl_chn=bgbcc_malloc(i*sizeof(s32));
+		ctx->lbl_cho=bgbcc_malloc(i*sizeof(s32));
 		ctx->nlbl=1;
 		ctx->nvlbl=1;
 		ctx->mlbl=i;
@@ -120,6 +124,7 @@ int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx)
 		ctx->lbl_id =bgbcc_realloc(ctx->lbl_id , i*sizeof(u32));
 		ctx->lbl_sec=bgbcc_realloc(ctx->lbl_sec, i*sizeof(byte));
 		ctx->lbl_chn=bgbcc_realloc(ctx->lbl_chn, i*sizeof(s32));
+		ctx->lbl_cho=bgbcc_realloc(ctx->lbl_cho, i*sizeof(s32));
 		ctx->mlbl=i;
 	}
 
@@ -128,7 +133,7 @@ int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx)
 
 int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 {
-	int h;
+	int h, h2, sec, ofs;
 	int i;
 	
 	if(lblid<=0)
@@ -149,11 +154,16 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 	ctx->pos_pad_op1=-999;
 	ctx->pos_pad_op0=-999;
 
+	ofs=BGBCC_JX2_EmitGetOffs(ctx);
+	sec=ctx->sec;
+
 	if(ctx->is_simpass)
 	{
 		h=lblid*65521+31;
 		h=h*65521+31;
 		h=(h>>16)&63;
+
+		h2=(((ofs*251+sec)*251)>>8)&63;
 
 		i=ctx->nvlbl++;
 
@@ -174,6 +184,9 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 		ctx->lbl_chn[i]=ctx->lbl_simhash[h];
 		ctx->lbl_simhash[h]=i;
 
+		ctx->lbl_cho[i]=ctx->lbl_simhashb[h2];
+		ctx->lbl_simhashb[h2]=i;
+
 		return(i);
 	}
 
@@ -189,6 +202,8 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 	h=h*65521+31;
 	h=(h>>16)&1023;
 
+	h2=(((ofs*251+sec)*251)>>8)&1023;
+
 	i=ctx->nlbl++;
 	ctx->lbl_id[i]=lblid;
 	ctx->lbl_ofs[i]=BGBCC_JX2_EmitGetOffs(ctx);
@@ -196,6 +211,9 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 	
 	ctx->lbl_chn[i]=ctx->lbl_hash[h];
 	ctx->lbl_hash[h]=i;
+
+	ctx->lbl_cho[i]=ctx->lbl_hashb[h2];
+	ctx->lbl_hashb[h2]=i;
 	
 //	if((ctx->lbl_ofs[i]>>20) && (ctx->sec!=BGBCC_SH_CSEG_BSS))
 //		{ BGBCC_DBGBREAK }
@@ -208,7 +226,7 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 #if 1
 int BGBCC_JX2_EmitLabelAbs(BGBCC_JX2_Context *ctx, int lblid, s64 addr)
 {
-	int h;
+	int h, h2;
 	int i;
 	
 	if(lblid<=0)
@@ -225,6 +243,8 @@ int BGBCC_JX2_EmitLabelAbs(BGBCC_JX2_Context *ctx, int lblid, s64 addr)
 	h=h*65521+31;
 	h=(h>>16)&1023;
 
+	h2=(((addr*251+BGBCC_SH_CSEG_ABS)*251)>>8)&1023;
+
 	i=ctx->nlbl++;
 	ctx->lbl_id[i]=lblid;
 	ctx->lbl_ofs[i]=addr;
@@ -232,6 +252,9 @@ int BGBCC_JX2_EmitLabelAbs(BGBCC_JX2_Context *ctx, int lblid, s64 addr)
 	
 	ctx->lbl_chn[i]=ctx->lbl_hash[h];
 	ctx->lbl_hash[h]=i;
+
+	ctx->lbl_cho[i]=ctx->lbl_hashb[h2];
+	ctx->lbl_hashb[h2]=i;
 	
 	return(i);
 }
@@ -472,6 +495,35 @@ int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,
 //	BGBCC_JX2_EmitNamedLabel(sctx, name);
 //	BGBCC_JX2_EmitRawBytes(sctx, NULL, sz);
 //	return(1);
+}
+
+int BGBCC_JX2_LookupLabelAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
+{
+	int i, j, k, h;
+
+	h=(((ofs*251+sec)*251)>>8)&1023;
+
+	i=ctx->lbl_hashb[h];
+	while(i>=0)
+	{
+		if(	(ctx->lbl_sec[i]==sec) &&
+			(ctx->lbl_ofs[i]==ofs)	)
+				return(ctx->lbl_id[i]);
+		i=ctx->lbl_cho[i];
+	}
+	return(-1);
+
+#if 0
+	for(i=0; i<ctx->nlbl; i++)
+	{
+		if(	(ctx->lbl_sec[i]==sec) &&
+			(ctx->lbl_ofs[i]==ofs)	)
+		{
+			return(ctx->lbl_id[i]);
+		}
+	}
+	return(-1);
+#endif
 }
 
 int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
