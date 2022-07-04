@@ -1490,6 +1490,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 //	if(1)
 	if(!BGBCC_JX2_CheckPadCross32(ctx))
 	{
+#if 1
 		if((imm&65535)==imm)
 		{
 			opw1=0xF800;
@@ -1513,6 +1514,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 			BGBCC_JX2_EmitWord(ctx, opw2);
 			return(1);
 		}
+#endif
 		
 		if((imm&16777215)==imm)
 		{
@@ -1537,7 +1539,8 @@ int BGBCC_JX2_EmitLoadDrImm(
 			BGBCC_JX2_EmitWord(ctx, opw2);
 			return(1);
 		}
-		
+
+#if 1
 //		if(ctx->has_jumbo)
 		if(ctx->has_jumbo &&
 			((ctx->tctx->optmode!=BGBCC_OPT_SIZE) ||
@@ -1560,6 +1563,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 				return(1);
 			}
 		}
+#endif
 
 		if(ctx->has_bra48)
 		{
@@ -1598,6 +1602,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 			}
 		}
 
+#if 1
 //		if(ctx->has_jumbo)
 		if(ctx->has_jumbo &&
 			((ctx->tctx->optmode!=BGBCC_OPT_SIZE) ||
@@ -1621,6 +1626,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 			BGBCC_JX2_EmitWord(ctx, opw6);
 			return(1);
 		}
+#endif
 	}
 #endif
 

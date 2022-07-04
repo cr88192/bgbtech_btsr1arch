@@ -4885,7 +4885,7 @@ void BJX2_Op_PREDF_Chn(BJX2_Context *ctx, BJX2_Opcode *op)
 int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
 {
-	BJX2_Opcode *op1;
+	BJX2_Opcode *op1, *op2;
 	int opw3, opw4, opw5, opw6;
 	u32 immb;
 	u64 imm;
@@ -5009,6 +5009,45 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_JADD;
 			op->fmid=BJX2_FMID_IMMREG;
 			op->Run=BJX2_Op_ADD_ImmReg;
+
+			return(1);
+		}
+#endif
+
+#if 1
+//		if((opw5&0xFFE0)==0xF800)
+		if((opw5&0xFBC0)==0xE800)
+		{
+//			op2=BJX2_ContextAllocOpcode(ctx);
+
+//			rn	= (opw5&31);
+			rn	= (opw5&63);
+			imm	=
+				((opw1&255ULL)<<56) |	((opw2&65535ULL)<<40) |
+				((opw3&255ULL)<<32) |	((opw4&65535ULL)<<16) |
+										((opw6&65535ULL)<< 0) ;
+			
+			rn=BJX2_RemapGPR(ctx, rn);
+
+			op ->rn=rn;
+			op ->imm=imm;
+//			op ->imm=imm>>32;
+//			op1->imm=imm;
+
+//			op->nmid=BJX2_NMID_LDI;
+			op->nmid=BJX2_NMID_JLDI;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_MOV_ImmReg;
+			
+			if(opw5&0x0400)
+			{
+				op->nmid=BJX2_NMID_JLDIF;
+				op->Run=BJX2_Op_MOVPF_ImmReg;
+			}else
+			{
+				op->nmid=BJX2_NMID_JLDIT;
+				op->Run=BJX2_Op_MOVPT_ImmReg;
+			}
 
 			return(1);
 		}

@@ -62,6 +62,18 @@ void BJX2_Op_MOV_JImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(((u64)(op->imm))<<32)|((u32)(op1->imm));
 }
 
+void BJX2_Op_MOVPT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(ctx->regs[BJX2_REG_SR]&1)
+		ctx->regs[op->rn]=(s64)(op->imm);
+}
+
+void BJX2_Op_MOVPF_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(!(ctx->regs[BJX2_REG_SR]&1))
+		ctx->regs[op->rn]=(s64)(op->imm);
+}
+
 void BJX2_Op_MOV_Dr4Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=ctx->regs[BJX2_REG_DR]*16+op->imm;

@@ -2780,10 +2780,16 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 
 //			i=BGBCC_JX2A_ParseCheckFeature(ctx, tk0+1);
 			i=BGBCC_JX2A_ParseCheckFeatureList(ctx, tk0+1);
-			if(i>0)
-				{ ctx->iflvl_t++; }
-			else
-				{ ctx->iflvl_f++; }
+			if(ctx->iflvl_f>0)
+			{
+				ctx->iflvl_f++;
+			}else
+			{
+				if(i>0)
+					{ ctx->iflvl_t++; }
+				else
+					{ ctx->iflvl_f++; }
+			}
 
 	//		cs2=cs1;
 			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
@@ -2799,10 +2805,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 
 //			i=BGBCC_JX2A_ParseCheckFeature(ctx, tk0+1);
 			i=BGBCC_JX2A_ParseCheckFeatureList(ctx, tk0+1);
-			if(i>0)
-				{ ctx->iflvl_f++; }
-			else
-				{ ctx->iflvl_t++; }
+
+			if(ctx->iflvl_f>0)
+			{
+				ctx->iflvl_f++;
+			}else
+			{
+				if(i>0)
+					{ ctx->iflvl_f++; }
+				else
+					{ ctx->iflvl_t++; }
+			}
 
 	//		cs2=cs1;
 			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))

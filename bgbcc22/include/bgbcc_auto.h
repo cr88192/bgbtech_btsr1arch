@@ -3364,11 +3364,13 @@ int BGBCC_JX2C_SizeofVar(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_ty
 int BGBCC_JX2C_EmitPredCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 int BGBCC_JX2C_EmitPredCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 //AHSRC:jx2cc/jx2_wexify.c
-int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, u16 *rrs, u16 *rrt, u16 *rrn, u16 *rspr, u16 *rspw, int *rspfl);
+int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, u16 *rrs, u16 *rrt, u16 *rrn, u16 *rrp, u16 *rspr, u16 *rspw, int *rspfl);
 int BGBCC_JX2_CheckOps32ReadsRn(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32IsMem(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32Is2Stage(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32Is3Stage(BGBCC_JX2_Context *sctx, int opw1, int opw2);
+int BGBCC_JX2_CheckOps32MemNoAlias(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int fl);
+int BGBCC_JX2_RemapReg5Xn(BGBCC_JX2_Context *sctx, u16 xn, u16 *rrl, u16 *rrh, int spfl, int rix);
 int BGBCC_JX2_CheckOps32SequenceOnlyB(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int fl);
 int BGBCC_JX2_InferOps32Interlock(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int fl);
 int BGBCC_JX2_CheckOps32SequenceOnly(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
