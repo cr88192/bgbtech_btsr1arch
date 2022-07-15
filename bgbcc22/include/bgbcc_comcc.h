@@ -340,6 +340,42 @@ int stat_const_jumbo64_f32;
 int stat_const_jumbo64_2xf16;
 int stat_const_jumbo64_4xf8;
 
+int stat_ldst_disp12s;
+int stat_ldst_disp10s;
+int stat_ldst_disp9u;
+int stat_ldst_disp5u;
+
+int stat_ldst_disp5ub;
+int stat_ldst_disp9ub;
+int stat_ldst_disp10sb;
+int stat_ldst_disp12sb;
+
+int stat_ldst_disptot;
+
+int stat_imm3ri_imm9u;
+int stat_imm3ri_imm9n;
+int stat_imm3ri_imm5u;
+int stat_imm3ri_imm5n;
+int stat_imm3ri_imm9un;
+int stat_imm3ri_immtot;
+
+int stat_imm2ri_imm6u;
+int stat_imm2ri_imm6n;
+int stat_imm2ri_imm10u;
+int stat_imm2ri_imm10n;
+int stat_imm2ri_imm10un;
+int stat_imm2ri_immtot;
+
+int stat_imm2ri_hmtot;
+int stat_imm2ri_hmiss;
+int stat_imm2ri_hjmb;
+
+int stat_imm3ri_hmtot;
+int stat_imm3ri_hmiss;
+int stat_imm3ri_hjmb;
+
+
+
 int ofs_curbdl;
 
 int sim_voffs;		//est' offset between real PC and sim PC

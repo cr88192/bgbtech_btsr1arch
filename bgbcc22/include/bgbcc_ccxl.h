@@ -63,8 +63,10 @@
 #define CCXL_TY_GCOMPLEX		0x36		//256-bit float128 complex
 #define CCXL_TY_FATVARIANT		0x37		//Fat Variant
 
-#define CCXL_TY_VEC3FQ			0x38		//64-bit 3x float21
-#define CCXL_TY_VEC3FX			0x39		//128-bit 3x float42
+#define CCXL_TY_PIL				0x38		//Pointer/Int/Long (Abstract)
+
+//#define CCXL_TY_VEC3FQ			0x38		//64-bit 3x float21
+//#define CCXL_TY_VEC3FX			0x39		//128-bit 3x float42
 #define CCXL_TY_SBITINT			0x3A		//signed _BitInt(n)
 #define CCXL_TY_UBITINT			0x3B		//unsigned _BitInt(n)
 
@@ -89,6 +91,9 @@
 #define CCXL_TY_FP8U			0x49		//Float8U
 #define CCXL_TY_VEC4_FP8S		0x4A		//Vec4 Float8S
 #define CCXL_TY_VEC4_FP8U		0x4B		//Vec4 Float8U
+
+#define CCXL_TY_VEC3FQ			0x4C		//64-bit 3x float21
+#define CCXL_TY_VEC3FX			0x4D		//128-bit 3x float42
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'

@@ -1086,6 +1086,7 @@ ccxl_type BGBCC_CCXL_MakeTypeVTy(BGBCC_TransState *ctx, int id);
 ccxl_type BGBCC_CCXL_MakeTypeID(BGBCC_TransState *ctx, int id);
 ccxl_type BGBCC_CCXL_MakeTypeID_Arr(BGBCC_TransState *ctx, int id, int asz);
 ccxl_type BGBCC_CCXL_GetRegType(BGBCC_TransState *ctx, ccxl_register reg);
+ccxl_type BGBCC_CCXL_GetRegStorageType(BGBCC_TransState *ctx, ccxl_register reg);
 int BGBCC_CCXL_GetRegAsType(BGBCC_TransState *ctx, ccxl_register reg, ccxl_type tty, ccxl_register *rtreg);
 ccxl_type BGBCC_CCXL_GetRegDerefType(BGBCC_TransState *ctx, ccxl_register reg);
 ccxl_type BGBCC_CCXL_GetTypeReturnType(BGBCC_TransState *ctx, ccxl_type bty);
@@ -1621,6 +1622,7 @@ bool BGBCC_CCXL_TypeSupportsOperatorP(BGBCC_TransState *ctx, ccxl_type ty, int o
 ccxl_status BGBCC_CCXL_GetTypeBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
 ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
 ccxl_status BGBCC_CCXL_TypeCheckConvImplicit(BGBCC_TransState *ctx, int opr, ccxl_type dty, ccxl_type sty);
+ccxl_status BGBCC_CCXL_TypeCheckConvTransparentP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
 //AHSRC:ccxl/ccxl_fr2e.c
 byte *BGBCC_FR2E_BufEmitUVli(byte *dct, u64 val);
 byte *BGBCC_FR2E_BufEmitSVli(byte *dct, s64 val);
@@ -2855,6 +2857,9 @@ int BGBCC_JX2_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int 
 int BGBCC_JX2_EmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2_ProbeEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
+int BGBCC_JX2_EmitOpStatDisp(BGBCC_JX2_Context *ctx, int nmid, int disp);
+int BGBCC_JX2_EmitOpStatImmed3RI(BGBCC_JX2_Context *ctx, int nmid, int disp);
+int BGBCC_JX2_EmitOpStatImmed2RI(BGBCC_JX2_Context *ctx, int nmid, int disp);
 int BGBCC_JX2_EmitOpRegStRegDisp(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int disp);
 int BGBCC_JX2_ProbeEmitOpRegStRegDisp(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int disp);
 int BGBCC_JX2_TryEmitOpRegStRegDisp(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn, int disp);
@@ -3134,6 +3139,7 @@ int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx
 //AHSRC:jx2cc/jx2_frm_layout.c
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:jx2cc/jx2_frm_prolog.c
+int BGBCC_JX2C_CalcBitCount(u64 val);
 int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, int rqt, u64 *repik, int *repix);
 int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, int fl, int *rfl2);
 ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveReg(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, ccxl_register reg);
@@ -3373,9 +3379,10 @@ int BGBCC_JX2_CheckOps32MemNoAlias(BGBCC_JX2_Context *sctx, int opw1, int opw2, 
 int BGBCC_JX2_RemapReg5Xn(BGBCC_JX2_Context *sctx, u16 xn, u16 *rrl, u16 *rrh, int spfl, int rix);
 int BGBCC_JX2_CheckOps32SequenceOnlyB(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int fl);
 int BGBCC_JX2_InferOps32Interlock(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int fl);
-int BGBCC_JX2_CheckOps32SequenceOnly(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
+int BGBCC_JX2_InferOps32InterlockI(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int fl);
 int BGBCC_JX2_CheckOps32Immovable(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ImmovableFl(BGBCC_JX2_Context *sctx, int opw1, int opw2, int flag);
+int BGBCC_JX2_CheckOps32SequenceOnly(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckCanSwapOps32(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckOps32ValidWexSuffix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ValidWexSuffix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);
@@ -3383,7 +3390,7 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(BGBCC_JX2_Context *sctx, int opw1, int 
 int BGBCC_JX2_CheckOps32ValidWexPrefix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ValidWexPrefix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 ccxl_status BGBCC_JX2_AdjustWexifyOp(BGBCC_JX2_Context *sctx, int *ropw1, int *ropw2);
-int BGBCC_JX2_InferInterlockCost(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int opw7, int opw8);
+int BGBCC_JX2_InferInterlockCost(BGBCC_JX2_Context *sctx, int opwn1, int opwn2, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int opw7, int opw8, int opw9, int opw10, int opw11, int opw12);
 ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(BGBCC_JX2_Context *sctx, int spos, int epos);
 ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(BGBCC_JX2_Context *sctx, int spos, int epos);
 ccxl_status BGBCC_JX2_CheckWexify_DoBundle(BGBCC_JX2_Context *sctx, int spos, int epos);

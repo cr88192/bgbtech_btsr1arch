@@ -2490,6 +2490,33 @@ ccxl_status BGBCC_CCXL_StackCastSig(BGBCC_TransState *ctx, char *sig)
 	}
 #endif
 
+#if 1
+	if(	BGBCC_CCXL_TypeCheckConvTransparentP(ctx, dty, sty) &&
+		(BGBCC_CCXL_GetRegAsType(ctx, sreg, dty, &dreg)>0))
+	{
+		BGBCC_CCXL_PushRegister(ctx, dreg);
+		return(CCXL_STATUS_YES);
+	}
+#endif
+
+#if 0
+	if(	BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
+		BGBCC_CCXL_TypeSmallLongP(ctx, sty) &&
+		(BGBCC_CCXL_GetRegAsType(ctx, sreg, dty, &dreg)>0))
+	{
+		BGBCC_CCXL_PushRegister(ctx, dreg);
+		return(CCXL_STATUS_YES);
+	}
+
+	if(	BGBCC_CCXL_TypePointerP(ctx, dty) &&
+		BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
+		(BGBCC_CCXL_GetRegAsType(ctx, sreg, dty, &dreg)>0))
+	{
+		BGBCC_CCXL_PushRegister(ctx, dreg);
+		return(CCXL_STATUS_YES);
+	}
+#endif
+
 	BGBCC_CCXL_NormalizeImmVReg(ctx, dty, sreg, &sreg2);
 
 	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);

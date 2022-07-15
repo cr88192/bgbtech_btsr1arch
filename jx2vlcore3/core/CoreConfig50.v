@@ -85,15 +85,15 @@
 // `define jx2_mem_l2sz_1024		//L2 is 1024 entries
 
 // `define jx2_mem_l2wsz_1024		//L2 is 1024 entries
-`define jx2_mem_l2wsz_2048		//L2 is 2048 entries
-// `define jx2_mem_l2wsz_4096			//L2 is 4096 entries
+// `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
+`define jx2_mem_l2wsz_4096			//L2 is 4096 entries
 
 // `define jx2_mem_l1i2way			//Use 2-Way L1 I$
 // `define jx2_mem_l1d2way			//Use 2-Way L1 D$
 
 // `define jx2_mem_l2skip			//Skip L2 Cache
 
-`define jx2_mem_l2d2way				//Use 2-Way L2 Cache
+// `define jx2_mem_l2d2way				//Use 2-Way L2 Cache
 `define jx2_mem_l2dokseq			//L2: Use OK Sequencing
 `define jx2_mem_l2d_ldatb			//L2: Copy A to B during L2 Miss
 // `define jx2_mem_l2d_stswab		//L2: Stores may swap A and B.

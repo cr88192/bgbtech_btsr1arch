@@ -80,21 +80,26 @@ Encoding non RV64I instructions in a binary marked as RV64I will be undefined in
 
 === Addressing ===
 
-Addressing:
+Addressing (Data):
+* (47: 0): Linear Address
+* (63:48): Pointer Tag Bits
+
+Addressing (PC):
 * (47: 0): Linear Address
 * (63:48): Caches SR bits for LR
 ** JALR with X1 or X5 will restore these bits.
 ** Otherwise, the high 16 bits are ignored by JALR or LD/ST ops.
 
 As a divergence from the RISC-V spec, JALR where the LSB is set in the result will invoke special behavior:
-* 01: Jump back to BJX2 Mode.
-* 11: / Jump back to BJX2 Mode, Enable WEX (Reserved).
-* 11: Jump to Mode as given in bits (51:50).
-* The target for an Inter-ISA jump will require a 4-byte alignment.
+* 01: / Jump back to BJX2 Mode.
+* 11: / Jump to Mode as given in bits (51:50).
+* / The target for an Inter-ISA jump will require a 4-byte alignment.
+* x1: / Jump to Mode as given in bits (51:50).
 
 For BJX2 Cores with the RVI Extension, JMP or JSR with the LSB set will jump into RISC-V Mode. They may jump into either Scalar or WEX Mode.
-* 01: Jump into RISC-V Mode.
-* 11: Jump to Mode as given in bits (51:50).
+* 01: / Jump into RISC-V Mode.
+* 11: / Jump to Mode as given in bits (51:50).
+* x1: Jump to Mode as given in bits (51:50).
 
 With both low-order bits set, the mode bits will be restored similar to what happens with a jump via the link register.
 
@@ -286,6 +291,21 @@ Listing:
 * 1101001-ttttt-00001-rrr-nnnnn-10-10011  FCVT.DWU	Rm, Rn, Rt
 
 * ddddddd-ddddd-ddddd-ddd-nnnnn-11-10011  (SYSTEM)
+
+* 0000000-00000-00000-000-00000-11-10011  ECALL			(Priv)
+* 0000000-00001-00000-000-00000-11-10011  EBREAK		(Priv)
+* 0000000-00010-00000-000-00000-11-10011  URET			(Priv)
+* 0001000-00010-00000-000-00000-11-10011  SRET			(Priv)
+* 0011000-00010-00000-000-00000-11-10011  MRET			(Priv)
+* 0000000-00101-00000-000-00000-11-10011  WFI			(Priv)
+
+* iiiiiii-iiiii-mmmmm-001-nnnnn-11-10011  CSRRW			(Priv)
+* iiiiiii-iiiii-mmmmm-010-nnnnn-11-10011  CSRRS			(Priv)
+* iiiiiii-iiiii-mmmmm-011-nnnnn-11-10011  CSRRC			(Priv)
+* iiiiiii-iiiii-mmmmm-100-nnnnn-11-10011  -
+* iiiiiii-iiiii-mmmmm-101-nnnnn-11-10011  CSRRWI		(Priv)
+* iiiiiii-iiiii-mmmmm-110-nnnnn-11-10011  CSRRSI		(Priv)
+* iiiiiii-iiiii-mmmmm-111-nnnnn-11-10011  CSRRCI		(Priv)
 
 * ddddddd-ddddd-ddddd-ddd-nnnnn-00-10111  AUIPC		Rn, Disp20_U
 

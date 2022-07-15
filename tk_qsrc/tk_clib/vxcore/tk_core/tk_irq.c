@@ -1,6 +1,8 @@
 static int (*irq_timer[16])();
 static int n_irq_timer=0;
 
+int tk_iskernel();
+
 int irq_addTimerIrq(void *fcn)
 {
 #ifndef __TK_CLIB_ONLY__

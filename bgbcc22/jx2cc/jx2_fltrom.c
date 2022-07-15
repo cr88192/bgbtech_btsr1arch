@@ -69,7 +69,13 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 			case BGBCC_SH_CSEG_RODATA: s0=".rodata"; break;
 			case BGBCC_SH_CSEG_BSS: s0=".bss"; break;
 			case BGBCC_SH_CSEG_RELOC: s0=".reloc"; break;
-			default: s0=".unknown"; break;
+			case BGBCC_SH_CSEG_DYN: s0=".dyn"; break;
+			case BGBCC_SH_CSEG_ABS: s0=".abs"; break;
+			default:
+				sprintf(tb, ".unk%03X", i);
+				s0=bgbcc_strdup(tb);
+//				s0=".unknown";
+				break;
 			}
 
 //			BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
@@ -418,7 +424,14 @@ ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,
 			case BGBCC_SH_CSEG_DATA: s0=".data"; break;
 			case BGBCC_SH_CSEG_RODATA: s0=".rodata"; break;
 			case BGBCC_SH_CSEG_BSS: s0=".bss"; break;
-			default: s0=".unknown"; break;
+			case BGBCC_SH_CSEG_RELOC: s0=".reloc"; break;
+			case BGBCC_SH_CSEG_DYN: s0=".dyn"; break;
+			case BGBCC_SH_CSEG_ABS: s0=".abs"; break;
+			default:
+				sprintf(tb, ".unk%03X", i);
+				s0=bgbcc_strdup(tb);
+//				s0=".unknown";
+				break;
 			}
 
 //			BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
@@ -479,7 +492,14 @@ ccxl_status BGBCC_JX2C_DumpImageASM(BGBCC_TransState *ctx,
 			case BGBCC_SH_CSEG_DATA: s0=".data"; break;
 			case BGBCC_SH_CSEG_RODATA: s0=".rodata"; break;
 			case BGBCC_SH_CSEG_BSS: s0=".bss"; break;
-			default: s0=".unknown"; break;
+			case BGBCC_SH_CSEG_RELOC: s0=".reloc"; break;
+			case BGBCC_SH_CSEG_DYN: s0=".dyn"; break;
+			case BGBCC_SH_CSEG_ABS: s0=".abs"; break;
+			default:
+				sprintf(tb, ".unk%03X", i);
+				s0=bgbcc_strdup(tb);
+//				s0=".unknown";
+				break;
 			}
 
 //			BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);

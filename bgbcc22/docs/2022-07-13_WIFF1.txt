@@ -1,0 +1,65 @@
+WIFF:
+* Aim is to be partway between WAD and RIFF.
+* Numbers will be in Little-Endian ordering.
+
+Header:
+ WIFF_Head {
+ FOURCC   fccTag;		//WIFF
+ FOURCC   fccSub;		//Sub-Format
+ S32      ofsDir;		//Offset of Directory
+ S32      szDir;		//Number of Directory Entries
+ S32      ofsSelf;		//Self-Pointer to Header (0 for standalone files)
+ }
+
+For standalone files, the WIFF header will come at the start of the file, and ofsSelf will be required to be zero.
+
+In embedded cases (WIFF within another format or image), the header may not come at the start, and ofsSelf will give the offset of this header relative to the logical start of the image. Other offsets will be relative to this start offset. In most cases, ofsSelf will be required to be positive.
+
+DirEnt:
+ WIFF_DirEnt {
+ FOURCC   tagName1;		//Tag or Name
+ FOURCC   tagName2;		//Tag or Name
+ S32      ofsEnt;		//Offset of entry
+ S32      szEnt;		//Size of entry
+ }
+
+tagName:
+* Interpreted as either Tags or as a Name.
+* Names will be assumed unique.
+* Tags will not be unique.
+** If tagName1 is 'RIFF', data will be assumed to be in RIFF format.
+
+szEnt will be signed:
+* Positive: Will be payload data.
+** Size will give the payload size.
+* Negative: Will be a directory.
+** Size will give the number of directory entries.
+
+
+Mapping RIFF to WIFF:
+* 'LIST'/tag2: Directory-Style Tag
+** Tag is a directory containing a list of tags.
+* 'RIFF'/tag2: RIFF-Style Tag
+** Contents are a list in RIFF-Tag format.
+** The list tag will be in tag2 rather than at the start of the list.
+* 'DATA'/tag2: Unstructured Data Tag
+
+
+RIFF-Tag Format:
+ RIFF_Tag {
+ FOURCC  tag1;
+ U32     size;
+ BYTE    data[(size+1)&(~1)];
+ }
+
+RIFF-Tag Format:
+ RIFF_ListTag {
+ FOURCC  tag1;  //'LIST' or similar
+ U32     size;
+ FOURCC  tag2;
+ BYTE    data[(size-4+1)&(~1)];  //Contains more tags.
+ }
+
+Payload data and sub-lists if RIFF mode are stored inline.
+* For 'LIST', Sub-Tag will precede other list data.
+

@@ -351,7 +351,8 @@ int TK_VMem_SetHybAvlPageTableEntry(s64 ttb, u64 teal, u64 teah, u64 ptval)
 	ptd=TK_VMem_GetAvlPageTableEntry(ttb, teal2, teah);
 	if(!ptd)
 	{
-		ptp1=TKMM_PageAllocZero(1<<TKMM_PAGEBITS);
+//		ptp1=TKMM_PageAllocZero(1<<TKMM_PAGEBITS);
+		ptp1=TKMM_PageAlloc(1<<TKMM_PAGEBITS);
 		ptd=TK_VMem_PtoForPtr(ptp1)|1;
 		TK_VMem_SetAvlPageTableEntry(ttb, teal2, teah, ptd);
 	}

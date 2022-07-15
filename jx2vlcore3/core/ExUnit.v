@@ -933,6 +933,8 @@ wire[15:0]	crOutFpsr;
 // reg [15:0]	crInFpsr;
 wire[15:0]	crInFpsr;
 
+wire[15:0]	crOutVbrCm;
+
 wire[47:0]	crOutVbr;
 wire[47:0]	crOutGbr;
 wire[47:0]	crOutTbr;
@@ -999,7 +1001,8 @@ RegCR regCr(
 `endif
 
 	crOutMmcr,
-	crOutKrr
+	crOutKrr,
+	crOutVbrCm
 
 	);
 
@@ -3368,7 +3371,8 @@ begin
 				braNxtInTeaHi		=  { tRegExc[127:64] };
 				braNxtInSr			= ex1RegOutSr;
 				braNxtInSr[30:28]	= 3'b111;
-				braNxtInSr[27:26]	= 2'b00;
+//				braNxtInSr[27:26]	= 2'b00;
+				braNxtInSr[27:26]	= crOutVbrCm[3:2];
 				braNxtInLr			= crOutLr;
 //				braNxtInDlr			= ex1RegOutDlr;
 //				braNxtInDhr			= ex1RegOutDhr;

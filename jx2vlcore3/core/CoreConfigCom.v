@@ -10,7 +10,7 @@
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
-`define jx2_agu_ribound			//Enable AGU Bounds Checks
+// `define jx2_agu_ribound			//Enable AGU Bounds Checks
 
 `define jx2_agu_ldtex			//Texture Load
 

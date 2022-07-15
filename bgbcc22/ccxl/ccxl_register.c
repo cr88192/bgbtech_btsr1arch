@@ -48,11 +48,22 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 {
 	BGBCC_CCXL_RegisterInfo *ri;
 	ccxl_register treg;
+	ccxl_type sbty, tty;
 	int i, j, k, z, bi, rov, nr;
 
 	BGBCC_CCXL_MarkTypeAccessed(ctx, bty);
 
 	z=BGBCC_CCXL_GetTypeOperationBaseZ(ctx, bty);
+
+	sbty=bty;
+
+	/* Check if we can lump value into 'PIL' class.
+	 * This will represent types which can share the same underlying storage.
+	 * PIL is not a "true" type though in its own right.
+	 */
+	tty.val=CCXL_TY_PIL;
+	if(BGBCC_CCXL_TypeCompatibleStorageP(ctx, tty, bty))
+		{ sbty=tty; }
 
 	if(!ctx->cur_func->regs)
 	{
@@ -98,12 +109,14 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
 //				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
 //				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
-				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+//				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, ri->type, bty))
 					continue;
 
 			if(!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
 			{
-				if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+//				if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+				if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, ri->type, bty))
 					continue;
 			}
 
@@ -143,7 +156,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 			ri->cseq=1;
 			ri->type_zb=z;
 
-			ri->type=bty;
+//			ri->type=bty;
+			ri->type=sbty;
 //			ri->regid=i|((j&4095)<<12);
 			ri->regid=i|((ri->cseq&4095)<<12);
 
@@ -182,10 +196,11 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
 					continue;
 		
-			ri->cseq++;
+			ri->cseq++;0
 //			ri->type_zb=z;
 
-			ri->type=bty;
+//			ri->type=bty;
+			ri->type=sbty;
 			ri->regid=i|((ri->cseq&4095)<<12);
 			ri->ucnt=1;
 
@@ -211,7 +226,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 		ri->cseq++;
 //		ri->type_zb=z;
 
-		ri->type=bty;
+//		ri->type=bty;
+		ri->type=sbty;
 		ri->regid=bi|((ri->cseq&4095)<<12);
 		ri->ucnt=1;
 

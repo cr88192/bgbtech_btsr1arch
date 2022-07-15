@@ -538,6 +538,174 @@ void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);
 char *TKMM_LVA_Strdup(char *str);
 
+u16 TK_GetRandom16ASLR();
+u64 TK_GetRandom48ASLR();
+u64 TK_GetRandom();
+
+s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap);
+int TK_VMem_VaVirtualFree(s64 vaddr, s64 size);
+int TK_VMem_CheckAddrIsVirtual(s64 addr);
+int TK_VMem_CheckAddrIsLowVirtual(s64 addr);
+int TK_VMem_CheckAddrIsPhysPage(s64 addr);
+int TK_VMem_CheckPtrIsVirtual(void *ptr);
+int TK_VMem_MProtectPages(u64 addr, size_t len, int prot);
+int TK_VMem_VaFreePages(s64 vaddr, int cnt);
+
+int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size);
+
+void *TKMM_MMList_AllocBrk(int sz);
+void *TKMM_MMList_AllocBrkCat(int sz, int cat);
+TKMM_MemLnkObj *TKMM_MMList_GetPtrLnkObj(void *ptr);
+int TKMM_MMCell_GetLnkObjCellSize(TKMM_MemLnkObj *obj, void *ptr);
+int TKMM_FxiToSize(int ix);
+
+void TK_SetCurrentTask(TKPE_TaskInfo *task);
+TKPE_TaskInfo *TK_GetCurrentTask();
+TK_EnvContext *TK_GetCurrentEnvContext();
+TKPE_TaskInfoKern *TK_GetCurrentTaskInfoKern();
+int TK_TaskFreeAllPageAlloc(TKPE_TaskInfo *task);
+void *TK_AllocNewTask();
+int TK_SchedAddTask(TKPE_TaskInfo *newtask);
+
+int TK_SpawnNewThread(void *func, void *uptr);
+int TK_SpawnNewThreadB(TKPE_TaskInfo *btask, void *func, void *uptr);
+s64 TK_GetThreadStatusB(int pid);
+s64 TK_GetThreadStatusA(int pid);
+void TK_SuspendThreadB(int pid, s64 res);
+int TK_YieldCurrentThreadB(s64 res);
+void TK_YieldCurrentThreadA(s64 res);
+void TK_YieldCurrentThread(void);
+void *TK_WithKrrSetuidB(void *func, u64 key);
+
+int TK_AllocNewTlsGbl();
+int TK_AllocNewTlsB(TKPE_TaskInfo *task);
+int TK_AllocNewTlsA(void);
+s64 TK_TlsGetB(TKPE_TaskInfo *task, int key);
+s64 TK_TlsSetB(TKPE_TaskInfo *task, int key, s64 val);
+s64 TK_TlsGet(int key);
+s64 TK_TlsSet(int key, s64 val);
+
+int TK_TaskGetCwd(TKPE_TaskInfo *task, char *buf, int sz);
+int TK_TaskSetCwd(TKPE_TaskInfo *task, char *buf);
+
+tk_kptr TK_PboGbrGetB(TKPE_TaskInfo *task, int key);
+tk_kptr TK_PboGbrSetB(TKPE_TaskInfo *task, int key, tk_kptr val);
+tk_kptr TK_PboImgBaseGetB(TKPE_TaskInfo *task, int key);
+tk_kptr TK_PboImgBaseSetB(TKPE_TaskInfo *task, int key, tk_kptr val);
+
+int TK_Env_SetCwd(char *cwd);
+char *TK_Env_GetCwd(char *buf, int sz);
+int TK_Env_GetPathList(char ***rlst, int *rnlst);
+int TK_Env_SetPath(char *cwd);
+int TK_Env_GetEnvVar(char *varn, char *buf, int sz);
+int TK_Env_SetEnvVar(char *varn, char *varv);
+
+TK_EnvContext *TK_EnvCtx_AllocContext(void);
+void TK_EnvCtx_FreeContext(TK_EnvContext *ctx);
+TK_EnvContext *TK_EnvCtx_CloneContext(TK_EnvContext *ctx);
+int TK_EnvCtx_SetCwd(TK_EnvContext *ctx, char *cwd);
+char *TK_EnvCtx_GetCwd(TK_EnvContext *ctx, char *buf, int sz);
+int TK_EnvCtx_GetPathList(TK_EnvContext *ctx, char ***rlst, int *rnlst);
+int TK_EnvCtx_SplitVar(char *str, char *bvar, char **rval);
+int TK_EnvCtx_SetPath(TK_EnvContext *ctx, char *path);
+int TK_EnvCtx_GetEnvVar(TK_EnvContext *ctx, char *varn, char *bufv, int sz);
+int TK_EnvCtx_SetEnvVar(TK_EnvContext *ctx, char *varn, char *varv);
+int TK_EnvCtx_UpdateForSet(TK_EnvContext *ctx, char *estr);
+int TK_EnvCtx_GetEnvListBuffer(TK_EnvContext *ctx, void *buf, int szbuf);
+int TK_EnvCtx_InitForEnv(TK_EnvContext *ctx, char **envv);
+
+void tk_puts(char *msg);
+int tk_iskernel();
+
+int tk_vf_register(TK_FILE_VT *fsty);
+int tk_vf_addmount(TK_MOUNT *mnt);
+TK_MOUNT *tk_vf_nextmount(TK_MOUNT *mnt);
+TK_MOUNT *tk_vf_firstmount(void);
+
+int TK_FindFreeObjHandle(TKPE_TaskInfo *task);
+int TK_FreeObjHandle(TKPE_TaskInfo *task, int ix);
+int TK_LookupHandleForPtr(TKPE_TaskInfo *task, void *ptr);
+int TK_GetHandleForPtr(TKPE_TaskInfo *task, void *ptr);
+void *TK_GetPtrForHandle(TKPE_TaskInfo *task, int ix);
+int TK_CheckUserAccess(TK_USERINFO *usr, TK_USERINFO *tgt);
+
+int tk_vfile_init();
+TK_FILE *tk_alloc_file();
+TK_DIR *tk_alloc_dir();
+void tk_free_file(TK_FILE *tmp);
+void tk_free_dir(TK_DIR *tmp);
+TK_MOUNT *tk_alloc_mount();
+void tk_free_mount(TK_MOUNT *tmp);
+int tk_fmount(
+	char *devfn, char *mntfn, char *fsty,
+	char *mode, char **opts);
+int tk_unlink2(TK_USERINFO *usri, char *name);
+int tk_unlink(char *name);
+int tk_rmdir2(TK_USERINFO *usri, char *name);
+int tk_rmdir(char *name);
+int tk_mkdir2(TK_USERINFO *usri, char *name, char *mode);
+int tk_mkdir(char *name, char *mode);
+int tk_rename2(TK_USERINFO *usri, char *oldname, char *newname, char *mode);
+int tk_rename(char *oldname, char *newname, char *mode);
+int tk_fcopy2(TK_USERINFO *usri, char *oldname, char *newname);
+int tk_fcopy(char *oldname, char *newname);
+int tk_fstat2(TK_USERINFO *usri, char *name, TK_FSTAT *st);
+int tk_fstat(char *name, TK_FSTAT *st);
+int tk_fsctl2(TK_USERINFO *usri, char *name, int cmd, void *ptr);
+int tk_fsctl(char *name, int cmd, void *ptr);
+TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode);
+TK_FILE *tk_fopen(char *name, char *mode);
+
+int tk_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
+int tk_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
+s64 tk_fseek(TK_FILE *fd, s64 ofs, int rel);
+s64 tk_ftell(TK_FILE *fd);
+int tk_fclose(TK_FILE *fd);
+int tk_fgetc(TK_FILE *fd);
+int tk_fputc(int ch, TK_FILE *fd);
+int tk_fputs(char *str, TK_FILE *fd);
+int tk_fioctl(TK_FILE *fd, int cmd, void *ptr);
+int tk_fsend(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
+int tk_frecv(TK_FILE *fd, int cmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
+
+int TK_InitUserInfoForTask(TKPE_TaskInfo *task, TK_USERINFO *usri);
+int tk_hfmount(TKPE_TaskInfo *task,
+	char *devfn, char *mntfn, char *fsty,
+	char *mode, char **opts);
+int tk_hfstat(TKPE_TaskInfo *task, char *name, TK_FSTAT *st);
+int tk_hfsctl(TKPE_TaskInfo *task, char *name, int cmd, void *ptr);
+int tk_hunlink(TKPE_TaskInfo *task, char *name);
+int tk_hrmdir(TKPE_TaskInfo *task, char *name);
+int tk_hmkdir(TKPE_TaskInfo *task, char *name, char *mode);
+int tk_hrename(TKPE_TaskInfo *task,
+	char *oldname, char *newname, char *mode);
+int tk_hfopen(TKPE_TaskInfo *task, char *name, char *mode);
+int tk_hread(TKPE_TaskInfo *task, int iHdl, void *pBuf, int szBuf);
+int tk_hwrite(TKPE_TaskInfo *task, int iHdl, void *pBuf, int szBuf);
+s64 tk_hseek(TKPE_TaskInfo *task, int iHdl, s64 lOffs, int iMod);
+int tk_hclose(TKPE_TaskInfo *task, int iHdl);
+s64 tk_hioctl(TKPE_TaskInfo *task, int iHdl, int iCmd, void *ptr);
+s64 tk_hsend(TKPE_TaskInfo *task, int iHdl, int iCmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
+s64 tk_hrecv(TKPE_TaskInfo *task, int iHdl, int iCmd,
+	void *msgbuf, int szmsg, int flag,
+	void *sockaddr, int szsockaddr);
+
+TK_DIR *tk_opendir2(TK_USERINFO *usri, char *name);
+TK_DIR *tk_opendir(char *name);
+TK_DIRENT *tk_readdir(TK_DIR *fd);
+int tk_closedir(TK_DIR *fd);
+int tk_hopendir(TKPE_TaskInfo *task, char *name);
+int tk_hreaddir(TKPE_TaskInfo *task, int iHdl,
+	void *pDe, int szDe, int nDe);
+int tk_hclosedir(TKPE_TaskInfo *task, int iHdl);
+
+
 // void printf(char *str, ...);
 
 // void *malloc(int sz);

@@ -629,13 +629,19 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_LDTEX			0x140		//
 
-#define BJX2_NMID_JLDIT			0x143		//
+#define BJX2_NMID_JLDIT			0x142		//
 #define BJX2_NMID_JLDIF			0x143		//
-
 #define BJX2_NMID_DIVSL			0x144		//
 #define BJX2_NMID_DIVUL			0x145		//
 #define BJX2_NMID_MODSL			0x146		//
 #define BJX2_NMID_MODUL			0x147		//
+
+#define BJX2_NMID_CSRRW			0x148		//(CSR SWAP, RISC-V)
+#define BJX2_NMID_CSRRS			0x149		//(CSR SET, RISC-V)
+#define BJX2_NMID_CSRRC			0x14A		//(CSR CLEAR, RISC-V)
+#define BJX2_NMID_CSRRWI		0x14B		//(CSR SWAP, RISC-V)
+#define BJX2_NMID_CSRRSI		0x14C		//(CSR SET, RISC-V)
+#define BJX2_NMID_CSRRCI		0x14D		//(CSR CLEAR, RISC-V)
 
 
 
@@ -892,6 +898,7 @@ int mem_cnt_l1i;			//cache miss cycles
 int mem_cnt_l2;				//cache miss cycles
 int mem_cnt_l2i;			//cache miss cycles
 int mem_cnt_dram;			//cache miss cycles
+int mem_cnt_vihit;			//victim hit
 
 int miss_cnt_l1;			//cache miss cycles (L1 miss D$)
 int miss_cnt_l1i;			//cache miss cycles (L1 miss I$)
@@ -906,6 +913,7 @@ s64 tot_cnt_mem_l1i;
 s64 tot_cnt_mem_l2;
 s64 tot_cnt_mem_l2i;
 s64 tot_cnt_mem_l2v;
+s64 tot_cnt_mem_l2vihit;
 s64 tot_cnt_mem_dram;
 s64 tot_cnt_miss_l1;
 s64 tot_cnt_miss_l2;
@@ -943,10 +951,10 @@ bjx2_addr mem_l1addr2;		//L1 addr
 bjx2_addr mem_l1addr3;		//L1 addr
 bjx2_addr mem_l1addr4;		//L1 addr
 
-bjx2_addr mem_l2addr1;		//L1 addr
-bjx2_addr mem_l2addr2;		//L1 addr
-bjx2_addr mem_l2addr3;		//L1 addr
-bjx2_addr mem_l2addr4;		//L1 addr
+bjx2_addr mem_l2addr1;		//L2 addr
+bjx2_addr mem_l2addr2;		//L2 addr
+bjx2_addr mem_l2addr3;		//L2 addr
+bjx2_addr mem_l2addr4;		//L2 addr
 
 u64		hw_rng[4];
 
@@ -959,11 +967,21 @@ s64			mem_l1m_cmiss[64];
 s64			mem_l1m_umiss[64];
 s64			mem_l1m_cnt;
 
-bjx2_addr mem_l1h4k[4096];		//L1 addr (4kB)
+bjx2_addr mem_l1h4k[8192];		//L1 addr (4kB)
+bjx2_addr mem_l1ih4k[8192];		//L1 addr (4kB)
+
 // bjx2_addr mem_l2h32k[8192];	//L2 addr (32/64kB)
 bjx2_addr mem_l2h32k[16384];	//L2 addr (32/64kB)
 
-bjx2_addr mem_l1ih4k[4096];		//L1 addr (4kB)
+
+short	l1i_hmask;
+short	l1d_hmask;
+byte	l1i_wmask;
+byte	l1d_wmask;
+
+short	l2_hmask;
+byte	l2_wmask;
+byte	l2_vict;		//L2 enable victim buffer
 
 // u64 mem_tlb_hi[64*4];
 // u64 mem_tlb_lo[64*4];

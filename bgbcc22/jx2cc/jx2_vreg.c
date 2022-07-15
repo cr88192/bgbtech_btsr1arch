@@ -1617,7 +1617,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 	{
 		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
 
-		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
+//		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
+		if(((imm&1023)==imm) || ((imm|(~1023))==imm) || sctx->has_jumbo)
 			noflip=1;
 
 //		if(sctx->is_betav && !sctx->has_bjx1ari)

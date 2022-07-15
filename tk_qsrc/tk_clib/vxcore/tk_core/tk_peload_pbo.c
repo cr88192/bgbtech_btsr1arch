@@ -321,6 +321,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	char *s0, *s1;
 	u64 imgbase, imgbase1;
 	u32 imgsz, imgsz1, startrva, gbr_rva, gbr_sz;
+	u64 entry;
 	byte is64;
 	byte is_pel4, cmp;
 	u32 csum1, csum2;
@@ -370,7 +371,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	}
 
 	mach=tkfat_getWord(tbuf+ofs_pe+0x04);
-	if(mach!=0xB264)
+//	if(mach!=0xB264)
+	if((mach!=0xB264) && (mach!=0x5064))
 	{
 		printf("TKPE: Unexpected Arch %04X\n", mach);
 		return(NULL);
@@ -573,7 +575,16 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	TKPE_ApplyBaseRelocs(imgptr, imgptr+rva_rlc, sz_rlc, rlc_disp, pboix,
 		imgbase, gbr_rva, gbr_sz);
 
-	img->bootptr=imgptr+startrva;
+	entry=((u64)imgptr)+startrva;
+
+	if(mach==0x5064)
+	{
+//		entry|=0x0004000000000003ULL;
+		entry|=0x0004000000000001ULL;
+	}
+
+//	img->bootptr=imgptr+startrva;
+	img->bootptr=entry;
 	img->bootgbr=imgptr+gbr_rva;
 	img->bootgbre=imgptr+imgsz;
 	

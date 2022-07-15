@@ -1062,6 +1062,7 @@
 
 
 #define BGBCC_SH_FMID_REGIMM5REG	0x60	//Rn, Imm5u, Ro
+#define BGBCC_SH_FMID_REGIMMREG_8S	0x61	//Rn, Imm8s, Ro
 #define BGBCC_SH_FMID_REGIMMREG_N	0x62	//Rn, Imm9n, Ro
 
 

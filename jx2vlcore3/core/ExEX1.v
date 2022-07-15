@@ -957,7 +957,8 @@ begin
 				tRegOutSr[26]	= !regInSr[26];
 //				tRegOutSr[27]	= tValAgu[1];
 				tRegOutSr[27]	= 0;
-				if(tValAgu[1])
+//				if(tValAgu[1])
+				if(1'b1)
 				begin
 					tRegOutSr[27:26]	= regValRs[51:50];
 				end
@@ -1019,7 +1020,8 @@ begin
 				tRegOutSr[26]	= !regInSr[26];
 //				tRegOutSr[27]	= tValAgu[1];
 				tRegOutSr[27]	= 0;
-				if(tValAgu[1])
+//				if(tValAgu[1])
+				if(1'b1)
 				begin
 					tRegOutSr[27:26]	= regValRs[51:50];
 				end

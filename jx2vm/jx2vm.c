@@ -923,7 +923,7 @@ int main(int argc, char *argv[])
 	int rd_n_map;
 	char tb1[256], tb2[256];
 
-	char *ifn, *s, *t;
+	char *ifn, *s, *t, *l1icfg, *l1dcfg, *l2cfg;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
 	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost;
@@ -941,6 +941,10 @@ int main(int argc, char *argv[])
 //	mhz=100; usejit=0; nomemcost=0;
 	mhz=50; usejit=0; nomemcost=0;
 	chkbss=0;
+	l1icfg=NULL;
+	l1dcfg=NULL;
+	l2cfg=NULL;
+	
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]=='-')
@@ -961,6 +965,16 @@ int main(int argc, char *argv[])
 				{ swapsz=atoi(argv[i+1]); i++; continue; }
 			if(!strcmp(argv[i], "--noswap"))
 				{ swapsz=0; continue; }
+
+			if(!strcmp(argv[i], "--l1cfg"))
+				{ l1icfg=argv[i+1]; l1dcfg=l1icfg; continue; }
+			if(!strcmp(argv[i], "--l1icfg"))
+				{ l1icfg=argv[i+1]; continue; }
+			if(!strcmp(argv[i], "--l1dcfg"))
+				{ l1dcfg=argv[i+1]; continue; }
+
+			if(!strcmp(argv[i], "--l2cfg"))
+				{ l2cfg=argv[i+1]; continue; }
 
 			if(!strcmp(argv[i], "--jit"))
 				{ usejit=1; continue; }
@@ -1052,6 +1066,19 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xF00000090000, 0xF0000009FFFF);
 	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF000000A0000, 0xF000000BFFFF);
 #endif
+
+	if(!l1icfg)
+		l1icfg="16k1";
+	if(!l1dcfg)
+		l1dcfg="32k1";
+	if(!l2cfg)
+//		l2cfg="128k2";
+		l2cfg="256k1";
+
+//	if(l1cfg)
+	BJX2_MemSimSetConfigL1I(ctx, l1icfg);
+	BJX2_MemSimSetConfigL1D(ctx, l1dcfg);
+	BJX2_MemSimSetConfigL2(ctx, l2cfg);
 	
 	BJX2_ContextSetupZero(ctx);
 	if(ifn)

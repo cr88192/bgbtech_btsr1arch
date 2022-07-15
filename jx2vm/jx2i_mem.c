@@ -534,6 +534,98 @@ int BJX2_MemFlushL1(BJX2_Context *ctx)
 	return(0);
 }
 
+int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
+{
+	ctx->l2_hmask=2047;
+	ctx->l2_wmask=1;
+	ctx->l2_vict=0;
+
+	if(!strcmp(str, "16k1") ||
+		!strcmp(str, "16k") ||
+		!strcmp(str, "16k1v"))
+	{
+		ctx->l2_hmask=255;
+	}
+
+	if(!strcmp(str, "32k1") ||
+		!strcmp(str, "32k") ||
+		!strcmp(str, "32k1v"))
+	{
+		ctx->l2_hmask=511;
+	}
+
+	if(!strcmp(str, "64k1") ||
+		!strcmp(str, "64k") ||
+		!strcmp(str, "64k1v"))
+	{
+		ctx->l2_hmask=1023;
+	}
+
+	if(!strcmp(str, "128k1") ||
+		!strcmp(str, "128k") ||
+		!strcmp(str, "128k1v"))
+	{
+		ctx->l2_hmask=2047;
+	}
+
+	if(!strcmp(str, "256k1") ||
+		!strcmp(str, "256k") ||
+		!strcmp(str, "256k1v"))
+	{
+		ctx->l2_hmask=4095;
+	}
+
+
+	if(!strcmp(str, "16k2") ||
+		!strcmp(str, "16k2v"))
+	{
+		ctx->l2_hmask=127;
+		ctx->l2_wmask=1;
+	}
+
+	if(!strcmp(str, "32k2") ||
+		!strcmp(str, "32k2v"))
+	{
+		ctx->l2_hmask=255;
+		ctx->l2_wmask=1;
+	}
+
+	if(!strcmp(str, "64k2") ||
+		!strcmp(str, "64k2v"))
+	{
+		ctx->l2_hmask=511;
+		ctx->l2_wmask=1;
+	}
+
+	if(!strcmp(str, "128k2") ||
+		!strcmp(str, "128k2v"))
+	{
+		ctx->l2_hmask=1023;
+		ctx->l2_wmask=1;
+	}
+
+	if(!strcmp(str, "256k2") ||
+		!strcmp(str, "256k2v"))
+	{
+		ctx->l2_hmask=2047;
+		ctx->l2_wmask=1;
+	}
+
+	if(!strcmp(str, "512k2") ||
+		!strcmp(str, "512k2v"))
+	{
+		ctx->l2_hmask=4095;
+		ctx->l2_wmask=1;
+	}
+	
+	if(str[strlen(str)-1]=='v')
+	{
+		ctx->l2_vict=1;
+	}
+	
+	return(0);
+}
+
 int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 {
 	bjx2_addr t0, t1;
@@ -564,10 +656,12 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 
 //	h=((addr>>6)^(addr>>19))&4095;
 //	h=((addr>>6)^(addr>>17))&2047;
-	h=((ax>>6)^(ax>>17))&2047;
+//	h=((ax>>6)^(ax>>17))&2047;
 //	h=((ax>>6)^(ax>>16))&2047;
 //	h=((ax>>6)^(ax>>19))&2047;
 //	h=(ax>>6)&2047;
+
+	h=((ax>>6)^(ax>>17))&(ctx->l2_hmask);
 
 	ax2=ctx->mem_l2h32k[(h<<2)|0];
 	ax3=ctx->mem_l2h32k[(h<<2)|1];
@@ -578,6 +672,9 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 	if(((ax2>>30)&3)!=(ctx->mem_l2rov&3))
 		miss0=1;
 	if(((ax3>>30)&3)!=(ctx->mem_l2rov&3))
+		miss1=1;
+
+	if(!ctx->l2_wmask)
 		miss1=1;
 
 //	de0=((ax2>>2)-epo)&15;
@@ -613,38 +710,44 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 			return(0);
 	}
 
-#if 0
-	/* What if, victim buffer? */
+#if 1
+	if(ctx->l2_vict)
+	{
+		/* What if, victim buffer? */
 
-	ax4=0;
-	ax5=0;
+		ax4=0;
+		ax5=0;
 
 #if 1
-	ax1=ax&0x3FFFFFC0U;
-	if(ax1==ctx->mem_l2addr1)	ax4=ctx->mem_l2addr1;
-	if(ax1==ctx->mem_l2addr2)	ax4=ctx->mem_l2addr2;
-	if(ax1==ctx->mem_l2addr3)	ax4=ctx->mem_l2addr3;
-	if(ax1==ctx->mem_l2addr4)	ax4=ctx->mem_l2addr4;
+		ax1=ax&0x3FFFFFC0U;
+		if(ax1==ctx->mem_l2addr1)	ax4=ctx->mem_l2addr1;
+		if(ax1==ctx->mem_l2addr2)	ax4=ctx->mem_l2addr2;
+		if(ax1==ctx->mem_l2addr3)	ax4=ctx->mem_l2addr3;
+		if(ax1==ctx->mem_l2addr4)	ax4=ctx->mem_l2addr4;
 #endif
 
-	if(miss0)
-	{
-		ctx->mem_l2addr4=ctx->mem_l1addr3;
-		ctx->mem_l2addr3=ctx->mem_l1addr2;
-		ctx->mem_l2addr2=ctx->mem_l1addr1;
-		ctx->mem_l2addr1=ax2&0x3FFFFFC0U;
-	}
+//		if(miss0 && ax4 && !(ax2&1))
+		if(miss0 && ax4)
+		{
+			if(acc&1)
+				ax4|=1;
 
-	if(miss0 && ax4 && !(ax2&1))
-	{
-		if(acc&1)
-			ax4|=1;
+			ax4|=epo<<2;
+			ax4|=((bjx2_addr)(ctx->mem_l2rov&3))<<30;
+			
+			ctx->tot_cnt_mem_l2vihit++;
 
-		ax4|=epo<<2;
-		ax4|=((bjx2_addr)(ctx->mem_l2rov&3))<<30;
+			ctx->mem_l2h32k[(h<<2)|0]=ax4;
+			return(0);
+		}
 
-		ctx->mem_l2h32k[(h<<2)|0]=ax4;
-		return(0);
+		if(miss0)
+		{
+			ctx->mem_l2addr4=ctx->mem_l2addr3;
+			ctx->mem_l2addr3=ctx->mem_l2addr2;
+			ctx->mem_l2addr2=ctx->mem_l2addr1;
+			ctx->mem_l2addr1=ax2&0x3FFFFFC0U;
+		}
 	}
 #endif
 
@@ -730,6 +833,119 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 	return(1);
 }
 
+int BJX2_MemSimSetConfigL1I(BJX2_Context *ctx, char *str)
+{
+	ctx->l1i_hmask=255;
+	ctx->l1i_wmask=0;
+
+	if(!strcmp(str, "8k1") ||
+		!strcmp(str, "8k"))
+	{
+		ctx->l1i_hmask=255;
+	}
+
+	if(!strcmp(str, "16k1") ||
+		!strcmp(str, "16k"))
+	{
+		ctx->l1i_hmask=511;
+	}
+
+	if(!strcmp(str, "32k1") ||
+		!strcmp(str, "32k"))
+	{
+		ctx->l1i_hmask=1023;
+	}
+
+	if(!strcmp(str, "64k1") ||
+		!strcmp(str, "64k"))
+	{
+		ctx->l1i_hmask=2047;
+	}
+
+	if(!strcmp(str, "8k2"))
+	{
+		ctx->l1i_hmask=127;
+		ctx->l1i_wmask=1;
+	}
+
+	if(!strcmp(str, "16k2"))
+	{
+		ctx->l1i_hmask=255;
+		ctx->l1i_wmask=1;
+	}
+
+	if(!strcmp(str, "32k2"))
+	{
+		ctx->l1i_hmask=511;
+		ctx->l1i_wmask=1;
+	}
+
+	if(!strcmp(str, "64k2"))
+	{
+		ctx->l1i_hmask=1023;
+		ctx->l1i_wmask=1;
+	}
+	
+	return(0);
+}
+
+int BJX2_MemSimSetConfigL1D(BJX2_Context *ctx, char *str)
+{
+	ctx->l1d_hmask=255;
+	ctx->l1d_wmask=0;
+
+	if(!strcmp(str, "8k1") ||
+		!strcmp(str, "8k"))
+	{
+		ctx->l1d_hmask=255;
+	}
+
+	if(!strcmp(str, "16k1") ||
+		!strcmp(str, "16k"))
+	{
+		ctx->l1d_hmask=511;
+	}
+
+	if(!strcmp(str, "32k1") ||
+		!strcmp(str, "32k"))
+	{
+		ctx->l1d_hmask=1023;
+	}
+
+	if(!strcmp(str, "64k1") ||
+		!strcmp(str, "64k"))
+	{
+		ctx->l1d_hmask=2047;
+	}
+
+
+	if(!strcmp(str, "8k2"))
+	{
+		ctx->l1d_hmask=127;
+		ctx->l1d_wmask=1;
+	}
+
+	if(!strcmp(str, "16k2"))
+	{
+		ctx->l1d_hmask=255;
+		ctx->l1d_wmask=1;
+	}
+
+	if(!strcmp(str, "32k2"))
+	{
+		ctx->l1d_hmask=511;
+		ctx->l1d_wmask=1;
+	}
+
+	if(!strcmp(str, "64k2"))
+	{
+		ctx->l1d_hmask=1023;
+		ctx->l1d_wmask=1;
+	}
+	
+	return(0);
+}
+
 int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 {
 #if 1
@@ -745,8 +961,9 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 	
 //	h=(addr>>4)&63;
 //	h=(addr>>5)&63;
-	h=(addr>>5)&255;
+//	h=(addr>>5)&255;
 //	h=(addr>>5)&511;
+	h=(addr>>5)&(ctx->l1i_hmask);
 
 //	ctx->mem_cyc+=3;
 //	ctx->mem_cyc+=2;
@@ -756,7 +973,8 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 //		return(0);
 	if((addr>>5)==ctx->mem_l1ih4k[(h<<2)|0])
 		return(0);
-	if((addr>>5)==ctx->mem_l1ih4k[(h<<2)|1])
+//	if((addr>>5)==ctx->mem_l1ih4k[(h<<2)|1])
+	if(((addr>>5)==ctx->mem_l1ih4k[(h<<2)|1]) && ctx->l1i_wmask)
 		return(0);
 
 	p1=5;
@@ -1293,8 +1511,8 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 {
 	static int cnt;
 	bjx2_addr t0, t1, a0, a1;
-	int ax0, ax1, ax2, ax3;
-	int ax4, ax5, ix0, ix1, miss0, miss1, miss;
+	int ax0, ax1, ax2, ax3, ax4, ax5;
+	int ix0, ix1, miss0, miss1, miss2, miss3, miss;
 	int skip0, skip1;
 	int h, p, p1, p2;
 	
@@ -1349,8 +1567,11 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 //	ix0=(ax0>>5)&511;
 //	ix1=(ax1>>5)&511;
 
-	ix0=(ax0>>5)&1023;
-	ix1=(ax1>>5)&1023;
+//	ix0=(ax0>>5)&1023;
+//	ix1=(ax1>>5)&1023;
+
+	ix0=(ax0>>5)&(ctx->l1d_hmask);
+	ix1=(ax1>>5)&(ctx->l1d_hmask);
 
 //	h=((addr>>5)^(addr>>13))&1023;
 
@@ -1383,10 +1604,15 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 
 	ax2=ctx->mem_l1h4k[(ix0<<2)|0];
 	ax3=ctx->mem_l1h4k[(ix1<<2)|1];
+	ax4=ctx->mem_l1h4k[(ix0<<2)|2];
+	ax5=ctx->mem_l1h4k[(ix1<<2)|3];
+
 //	miss0=(ax0!=ax2);
 //	miss1=(ax1!=ax3);
 	miss0=(ax0!=(ax2&(~15)));
 	miss1=(ax1!=(ax3&(~15)));
+	miss2=(ax0!=(ax4&(~15)));
+	miss3=(ax1!=(ax5&(~15)));
 
 
 #if 0
@@ -1439,6 +1665,19 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 
 	miss = (miss0 && !skip0) || (miss1 && !skip1);
 	
+	if(ctx->l1d_wmask)
+	{
+		if(opm&0x20)
+		{
+			miss2=1;
+			miss3=1;
+		}
+
+		miss =
+			(miss0 && miss2 && !skip0) ||
+			(miss1 && miss3 && !skip1);
+	}
+	
 	if(!miss)
 	{
 		if(opm&0x20)
@@ -1487,6 +1726,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 		p++;
 
 		ctx->mem_l1h4k[(ix0<<2)|0]=ax0;
+		ctx->mem_l1h4k[(ix0<<2)|2]=ax2;
 	}
 
 	if(miss1)
@@ -1507,6 +1747,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 		p++;
 
 		ctx->mem_l1h4k[(ix1<<2)|1]=ax1;
+		ctx->mem_l1h4k[(ix1<<2)|3]=ax3;
 	}
 
 	ctx->miss_cyc+=p;

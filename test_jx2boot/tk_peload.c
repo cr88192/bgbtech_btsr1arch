@@ -1274,7 +1274,8 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 
 	if(mach==0x5064)
 	{
-		entry|=0x0004000000000003ULL;
+//		entry|=0x0004000000000003ULL;
+		entry|=0x0004000000000001ULL;
 	}
 
 	*rbootptr=(void *)entry;

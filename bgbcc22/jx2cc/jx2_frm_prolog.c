@@ -23,6 +23,32 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
+int BGBCC_JX2C_CalcBitCount(u64 val)
+{
+	static const byte bitcnt[16]={
+		0, 1, 1, 2,  1, 2, 2, 3,
+		1, 2, 2, 3,  2, 3, 3, 4	};
+	int c;
+
+	c=	bitcnt[(val>> 0)&15] +
+		bitcnt[(val>> 4)&15] +
+		bitcnt[(val>> 8)&15] +
+		bitcnt[(val>>12)&15] +
+		bitcnt[(val>>16)&15] +
+		bitcnt[(val>>20)&15] +
+		bitcnt[(val>>24)&15] +
+		bitcnt[(val>>28)&15] +
+		bitcnt[(val>>32)&15] +
+		bitcnt[(val>>36)&15] +
+		bitcnt[(val>>40)&15] +
+		bitcnt[(val>>44)&15] +
+		bitcnt[(val>>48)&15] +
+		bitcnt[(val>>52)&15] +
+		bitcnt[(val>>56)&15] +
+		bitcnt[(val>>60)&15] ;
+	return(c);
+}
+
 int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj,
@@ -30,6 +56,7 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 {
 	u64 uli;
 	u64 epik, epix, epilbl;
+	int bc;
 
 	*repik=0;
 	*repix=0;
@@ -110,12 +137,17 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 		{ epilbl=0; epik=0; epix=0; }
 
 	/* Not enough registers saved */
-	if((epik&0x60)!=0x60)
+//	if((epik&0x60)!=0x60)
 //	if((epik&0x70)!=0x70)
 //	if((epik&0x7C)!=0x7C)
-		{ epilbl=0; epik=0; epix=0; }
+//		{ epilbl=0; epik=0; epix=0; }
 //	if((epik&0x60)!=0x60)
 //		{ epilbl=0; epik=0; epix=0; }
+
+	bc=BGBCC_JX2C_CalcBitCount(epik);
+//	if(bc<5)
+	if(bc<4)
+		{ epilbl=0; epik=0; epix=0; }
 
 	if(rqt&1)
 	{

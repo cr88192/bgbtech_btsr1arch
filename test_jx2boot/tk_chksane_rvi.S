@@ -37,7 +37,8 @@ X(tk_checksane_rvi_asm):
 
 #if 1
 	MOV		_chksane_riscv, R3
-	MOV		0x0004000000000003, R7
+//	MOV		0x0004000000000003, R7
+	MOV		0x0004000000000001, R7
 	OR		R7, R3
 //	ADD		1, R3
 	JSR		R3

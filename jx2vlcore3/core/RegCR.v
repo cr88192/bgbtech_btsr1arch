@@ -72,7 +72,8 @@ module RegCR(
 `endif
 
 	regOutMmcr,
-	regOutKrr
+	regOutKrr,
+	regOutVbrCm
 	);
 
 input			clock;
@@ -124,6 +125,8 @@ output[47:0]	regOutTbr;
 output[63:0]	regOutMmcr;
 output[63:0]	regOutKrr;
 
+output[15:0]	regOutVbrCm;
+
 `ifdef jx2_enable_vaddr96
 
 output[47:0]	regOutPcHi;
@@ -152,6 +155,7 @@ reg[47:0]	crRegTbr;
 reg[63:0]	crRegTea;
 reg[63:0]	crRegTeaHi;
 reg[15:0]	crRegFpsr;
+reg[15:0]	crRegVbrCm;
 
 `ifdef jx2_enable_mmu
 reg[47:0]	crRegTtb;
@@ -189,6 +193,8 @@ assign	regOutTbr	= crRegTbr;
 assign	regOutTea	= crRegTea;
 assign	regOutTeaHi	= crRegTeaHi;
 assign	regOutFpsr	= crRegFpsr;
+
+assign	regOutVbrCm	= crRegVbrCm;
 
 `ifdef jx2_enable_mmu
 assign	regOutMmcr	= crRegMmcr;
@@ -296,7 +302,8 @@ begin
 		JX2_CR_PC:		tValCmA={UV16_00, gprValPc};
 //		JX2_CR_LR:		tValCmA={UV16_00, crRegLr};
 		JX2_CR_LR:		tValCmA=crRegLr;
-		JX2_CR_VBR:		tValCmA={UV16_00, crRegVbr};
+//		JX2_CR_VBR:		tValCmA={UV16_00, crRegVbr};
+		JX2_CR_VBR:		tValCmA={crRegVbrCm, crRegVbr};
 		JX2_CR_SPC:		tValCmA={UV16_00, crRegSpc};
 		JX2_CR_SSP:		tValCmA={UV16_00, crRegSsp};
 //		JX2_CR_GBR:		tValCmA={UV16_00, crRegGbr};
@@ -309,7 +316,8 @@ begin
 //		JX2_CR_PC:		tValCmA={UV32_00, crRegPc[31:0]};
 		JX2_CR_PC:		tValCmA={UV32_00, gprValPc[31:0]};
 		JX2_CR_LR:		tValCmA={UV32_00, crRegLr[31:0]};
-		JX2_CR_VBR:		tValCmA={UV32_00, crRegVbr[31:0]};
+//		JX2_CR_VBR:		tValCmA={UV32_00, crRegVbr[31:0]};
+		JX2_CR_VBR:		tValCmA={crRegVbrCm, UV16_00, crRegVbr[31:0]};
 		JX2_CR_SPC:		tValCmA={UV32_00, crRegSpc[31:0]};
 		JX2_CR_SSP:		tValCmA={UV32_00, crRegSsp[31:0]};
 //		JX2_CR_GBR:		tValCmA={UV32_00, crRegGbr[31:0]};
@@ -436,6 +444,7 @@ begin
 		crRegGbr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_48b : crRegGbr;
 		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_48b : crRegTbr;
 		crRegFpsr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_16h : regInFpsr;
+		crRegVbrCm	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_16h : crRegVbrCm;
 `endif
 
 `ifdef jx2_enable_mmu

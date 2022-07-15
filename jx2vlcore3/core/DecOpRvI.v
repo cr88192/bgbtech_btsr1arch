@@ -175,6 +175,10 @@ reg tRegRmIsRs;
 reg tRegRnIsRs;
 reg tRegRoIsRs;
 
+reg tRegRmIsZr;
+reg tRegRnIsZr;
+reg tRegCsrIsCpuid;
+
 reg	tMsgLatch;
 reg	tNextMsgLatch;
 
@@ -210,6 +214,9 @@ begin
 	tRegRoIsRs	= (istrWord[24]==1'b0);
 	tRegRmIsRs	= (istrWord[19]==1'b0);
 	tRegRnIsRs	= (istrWord[11]==1'b0);
+
+	tRegRmIsZr	= (istrWord[19:15] == 5'h00);
+	tRegRnIsZr	= (istrWord[11: 7] == 5'h00);
 
 	opIsJumbo	= istrJBits[24];
 	opIsJumbo96	= istrJBits[25];
@@ -295,6 +302,25 @@ begin
 	opRegN_Cr	= 0;
 
 	opRegO_Df2	= opRegN_Dfl;
+
+	tRegCsrIsCpuid = 0;
+	casez(istrWord[31:20])
+		12'b0111_11zz_zzzz: begin
+			opRegM_Cr = { 1'b1, !istrWord[25], istrWord[24:20] };
+		end
+		12'b1011_11zz_zzzz: begin
+			opRegM_Cr = { 1'b0, istrWord[25:20] };
+		end
+		12'b1111_11zz_zzzz: begin
+			tRegCsrIsCpuid = 1;
+			opRegM_Cr = { 1'b0, istrWord[25:20] };
+		end
+		default: begin
+		end
+	endcase
+	
+	opRegN_Cr = opRegM_Cr;
+	
 
 
 	opImm_imm5u	= {UV27_00, opRegO_Dfl[5:0]};
@@ -509,6 +535,80 @@ begin
 					3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
 				endcase
 			end
+		end
+
+		5'b11_100: begin /* SYSTEM */
+			opFmid		= JX2_FMID_REGREG;
+			opIty		= JX2_ITY_SB;
+
+			case(istrWord[14:12])
+				3'b000: begin
+					case(istrWord[23:20])
+						4'h0: begin
+							opNmid		= JX2_UCMD_OP_IXT;
+							opFmid		= JX2_FMID_Z;
+							opUCmdIx	= JX2_UCIX_IXT_SYSE;
+						end
+						4'h1: begin
+							opNmid		= JX2_UCMD_OP_IXT;
+							opFmid		= JX2_FMID_Z;
+							opUCmdIx	= JX2_UCIX_IXT_BREAK;
+						end
+						4'h2: begin
+							opNmid		= JX2_UCMD_OP_IXT;
+							opFmid		= JX2_FMID_Z;
+							opUCmdIx	= JX2_UCIX_IXT_RTE;
+						end
+
+						4'h5: begin
+							opNmid		= JX2_UCMD_OP_IXT;
+							opFmid		= JX2_FMID_Z;
+							opUCmdIx	= JX2_UCIX_IXT_SLEEP;
+						end
+
+						default: begin
+						end
+					endcase
+				end
+
+				3'b001: begin
+					if(tRegRnIsZr)
+					begin
+						opNmid	= JX2_UCMD_MOV_RC;
+						opFmid	= JX2_FMID_REGREG;
+						opIty	= JX2_ITY_UL;
+					end
+				end
+
+				3'b010: begin
+					if(tRegRmIsZr)
+					begin
+						opNmid	= JX2_UCMD_MOV_CR;
+						opFmid	= JX2_FMID_REGREG;
+						opIty	= JX2_ITY_UQ;
+					end
+					
+					if(tRegCsrIsCpuid)
+					begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_CPUID;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UQ;
+					end
+				end
+
+				3'b011: begin
+					if(tRegRmIsZr)
+					begin
+						opNmid	= JX2_UCMD_MOV_CR;
+						opFmid	= JX2_FMID_REGREG;
+						opIty	= JX2_ITY_UQ;
+					end
+				end
+				
+				default: begin
+				end
+			endcase
 		end
 
 		5'b00_101: begin /* AUIPC */
@@ -767,7 +867,8 @@ begin
 				end
 				JX2_ITY_UQ: begin
 					opRegM	= opRegM_Cr;
-					opRegO	= opRegN_Dfl;
+//					opRegO	= opRegN_Dfl;
+					opRegO	= opRegM_Cr;
 					opRegN	= opRegN_Dfl;
 					opRegP	= opRegN_Dfl;
 					if(usrRejectCmR)

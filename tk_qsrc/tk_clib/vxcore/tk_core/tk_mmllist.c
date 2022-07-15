@@ -196,7 +196,7 @@ void TKMM_MMList_MProtectCat(byte *ptr, int sz, int cat)
 			tk_mprotect((u64)ptr, sz,
 				TKMM_PROT_READ|TKMM_PROT_WRITE|TKMM_PROT_EXEC);
 		}
-		return(0);
+		return;
 	}
 #endif
 

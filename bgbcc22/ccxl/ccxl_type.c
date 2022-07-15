@@ -4591,6 +4591,34 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 	if(dty.val==sty.val)
 		return(1);
 
+	if((dty.val==CCXL_TY_PIL) && ((fl&7)==7))
+	{
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, sty))
+			return(1);
+		if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(1);
+
+		if(	BGBCC_CCXL_TypeFloatP(ctx, sty) ||
+			BGBCC_CCXL_TypeDoubleP(ctx, sty) ||
+			BGBCC_CCXL_TypeVec64P(ctx, sty))
+				return(1);
+	}
+
+	if((sty.val==CCXL_TY_PIL) && ((fl&7)==7))
+	{
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, dty))
+			return(1);
+		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
+			return(1);
+
+		if(	BGBCC_CCXL_TypeFloatP(ctx, dty) ||
+			BGBCC_CCXL_TypeDoubleP(ctx, dty) ||
+			BGBCC_CCXL_TypeVec64P(ctx, dty))
+				return(1);
+	}
+
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
 	{
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, sty))
@@ -6665,4 +6693,119 @@ ccxl_status BGBCC_CCXL_TypeCheckConvImplicit(
 	}
 	
 	return(CCXL_STATUS_NO);
+}
+
+/*
+ * Check if we can convert via simply relabeling the types.
+ * For integer types, ensures sign extension.
+ */
+ccxl_status BGBCC_CCXL_TypeCheckConvTransparentP(
+	BGBCC_TransState *ctx,
+	ccxl_type dty, ccxl_type sty)
+{
+	int dbt, sbt, pred;
+
+	if(	BGBCC_CCXL_TypePointerP(ctx, dty) &&
+		BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
+		!BGBCC_CCXL_TypeQuadPointerP(ctx, dty) &&
+		!BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+	{
+		return(CCXL_STATUS_YES);
+	}
+
+//	dbt=BGBCC_CCXL_GetTypeBaseType(ctx, dty);
+//	sbt=BGBCC_CCXL_GetTypeBaseType(ctx, sty);
+	dbt=dty.val;
+	sbt=sty.val;
+
+	pred=CCXL_STATUS_NO;
+
+	switch(dbt)
+	{
+	case CCXL_TY_UB:
+		if(sbt==CCXL_TY_UB)
+			pred=CCXL_STATUS_YES;
+		break;
+	case CCXL_TY_SB:
+		if(sbt==CCXL_TY_SB)
+			pred=CCXL_STATUS_YES;
+		break;
+
+	case CCXL_TY_SS:
+		switch(sbt)
+		{
+		case CCXL_TY_UB:
+		case CCXL_TY_SB:
+		case CCXL_TY_SS:
+			pred=CCXL_STATUS_YES; break;
+		}
+		break;
+	case CCXL_TY_US:
+		switch(sbt)
+		{
+		case CCXL_TY_UB:
+		case CCXL_TY_US:
+			pred=CCXL_STATUS_YES; break;
+		}
+		break;
+
+	case CCXL_TY_I:
+		switch(sbt)
+		{
+		case CCXL_TY_UB:
+		case CCXL_TY_SB:
+		case CCXL_TY_US:
+		case CCXL_TY_SS:
+		case CCXL_TY_I:
+			pred=CCXL_STATUS_YES; break;
+		}
+		break;
+
+	case CCXL_TY_UI:
+		switch(sbt)
+		{
+		case CCXL_TY_UB:
+		case CCXL_TY_US:
+		case CCXL_TY_UI:
+			pred=CCXL_STATUS_YES; break;
+		}
+		break;
+
+	case CCXL_TY_L:
+	case CCXL_TY_NL:
+		if(ctx->arch_sizeof_long!=8)
+			break;
+	
+		switch(sbt)
+		{
+		case CCXL_TY_UB:
+		case CCXL_TY_SB:
+		case CCXL_TY_US:
+		case CCXL_TY_SS:
+		case CCXL_TY_I:
+		case CCXL_TY_UI:
+		case CCXL_TY_L:
+		case CCXL_TY_NL:
+			pred=CCXL_STATUS_YES; break;
+		}
+		break;
+
+	case CCXL_TY_UL:
+	case CCXL_TY_UNL:
+		if(ctx->arch_sizeof_long!=8)
+			break;
+
+		switch(sbt)
+		{
+		case CCXL_TY_UB:
+		case CCXL_TY_US:
+		case CCXL_TY_UI:
+		case CCXL_TY_UL:
+		case CCXL_TY_UNL:
+			pred=CCXL_STATUS_YES; break;
+		}
+		break;
+	}
+
+	return(pred);
 }

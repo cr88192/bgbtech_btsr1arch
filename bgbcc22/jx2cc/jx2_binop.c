@@ -865,6 +865,13 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			nm1=BGBCC_SH_NMID_DMULU;
 
+		if(BGBCC_CCXL_TypeSmallShortP(ctx, type))
+		{
+			nm1=BGBCC_SH_NMID_MULSW;
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				nm1=BGBCC_SH_NMID_MULUW;
+		}
+
 		BGBCC_JX2_EmitOpRegRegReg(sctx,
 			nm1, ctreg, cdreg, cdreg);
 
@@ -1632,6 +1639,13 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 		nm1=BGBCC_SH_NMID_DMULS;
 		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			nm1=BGBCC_SH_NMID_DMULU;
+
+		if(BGBCC_CCXL_TypeSmallShortP(ctx, type))
+		{
+			nm1=BGBCC_SH_NMID_MULSW;
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+				nm1=BGBCC_SH_NMID_MULUW;
+		}
 
 		BGBCC_JX2_EmitOpRegRegReg(sctx,
 			nm1, csreg, ctreg, cdreg);

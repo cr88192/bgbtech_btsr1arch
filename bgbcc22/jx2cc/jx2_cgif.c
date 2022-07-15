@@ -654,6 +654,9 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 
 	sctx=ctx->uctx;
 
+	if(ty.val==CCXL_TY_PIL)
+		{ return(BGBCC_SH_REGCLS_QGR); }
+
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 	{
 #if 1
@@ -6801,6 +6804,48 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		sctx->stat_const_jumbo64_imm32h,
 		sctx->stat_const_jumbo64_imm32c,
 		sctx->stat_const_jumbo96
+		);
+	
+	printf("Disp-Hit(Scale): 5u=%.2f%% 9u=%.2f%% "
+			"10s=%.2f%% 12s=%.2f%%\n",
+		(100.0*sctx->stat_ldst_disp5u)/(sctx->stat_ldst_disptot+1),
+		(100.0*sctx->stat_ldst_disp9u)/(sctx->stat_ldst_disptot+1),
+		(100.0*sctx->stat_ldst_disp10s)/(sctx->stat_ldst_disptot+1),
+		(100.0*sctx->stat_ldst_disp12s)/(sctx->stat_ldst_disptot+1)
+		);
+
+	printf("Disp-Hit(Byte): 5u=%.2f%% 9u=%.2f%% "
+			"10s=%.2f%% 12s=%.2f%%\n",
+		(100.0*sctx->stat_ldst_disp5ub)/(sctx->stat_ldst_disptot+1),
+		(100.0*sctx->stat_ldst_disp9ub)/(sctx->stat_ldst_disptot+1),
+		(100.0*sctx->stat_ldst_disp10sb)/(sctx->stat_ldst_disptot+1),
+		(100.0*sctx->stat_ldst_disp12sb)/(sctx->stat_ldst_disptot+1)
+		);
+
+	printf("Imm-Hit(3RI): 5u=%.2f%% 9u=%.2f%% "
+			"5n=%.2f%%, 9n=%.2f%%, 9un=%.2f%%\n",
+		(100.0*sctx->stat_imm3ri_imm5u)/(sctx->stat_imm3ri_immtot+1),
+		(100.0*sctx->stat_imm3ri_imm9u)/(sctx->stat_imm3ri_immtot+1),
+		(100.0*sctx->stat_imm3ri_imm5n)/(sctx->stat_imm3ri_immtot+1),
+		(100.0*sctx->stat_imm3ri_imm9n)/(sctx->stat_imm3ri_immtot+1),
+		(100.0*sctx->stat_imm3ri_imm9un)/(sctx->stat_imm3ri_immtot+1)
+		);
+
+	printf("Imm-Hit(2RI): 6u=%.2f%% 10u=%.2f%% "
+			"6n=%.2f%%, 10n=%.2f%%, 10un=%.2f%%\n",
+		(100.0*sctx->stat_imm2ri_imm6u)/(sctx->stat_imm2ri_immtot+1),
+		(100.0*sctx->stat_imm2ri_imm10u)/(sctx->stat_imm2ri_immtot+1),
+		(100.0*sctx->stat_imm2ri_imm6n)/(sctx->stat_imm2ri_immtot+1),
+		(100.0*sctx->stat_imm2ri_imm10n)/(sctx->stat_imm2ri_immtot+1),
+		(100.0*sctx->stat_imm2ri_imm10un)/(sctx->stat_imm2ri_immtot+1)
+		);
+
+	printf("Imm-Hit: Miss2RI=%.2f%% Miss3RI=%.2f%% "
+			"Jumbo2RI=%.2f%% Jumbo3RI=%.2f%%\n",
+		(100.0*sctx->stat_imm2ri_hmiss)/(sctx->stat_imm2ri_hmtot+1),
+		(100.0*sctx->stat_imm3ri_hmiss)/(sctx->stat_imm3ri_hmtot+1),
+		(100.0*sctx->stat_imm2ri_hjmb)/(sctx->stat_imm2ri_hmtot+1),
+		(100.0*sctx->stat_imm3ri_hjmb)/(sctx->stat_imm3ri_hmtot+1)
 		);
 
 	printf("WEXed: F0=%.2f%% F1=%.2f%% F2=%.2f%% F8=%.2f%% Tot=%.2f%%\n",

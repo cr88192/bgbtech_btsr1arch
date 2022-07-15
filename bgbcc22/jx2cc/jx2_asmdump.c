@@ -583,7 +583,7 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_XMOVUL:	sn="C_";		break;	//0x01B6	//XMOVU.L
 	case BGBCC_SH_NMID_XMOVX2:	sn="C_";		break;	//0x01B7	//XMOV.X
 	case BGBCC_SH_NMID_XMOVP:	sn="C_";		break;	//0x01B8	//XMOV.P
-	case BGBCC_SH_NMID_MOVC_DISP24:	sn="MOVC";	break;	//0x01B9	
+	case BGBCC_SH_NMID_MOVC_DISP24:	sn="MOV.C";	break;	//0x01B9	
 	case BGBCC_SH_NMID_XJMP:	sn="C_";		break;	//0x01BA	//XJMP
 	case BGBCC_SH_NMID_XJSR:	sn="C_";		break;	//0x01BB	//XJSR
 	case BGBCC_SH_NMID_MACSL:	sn="C_";		break;	//0x01BC
@@ -591,12 +591,12 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_DMACSL:	sn="C_";		break;	//0x01BE
 	case BGBCC_SH_NMID_DMACUL:	sn="C_";		break;	//0x01BF
 
-	case BGBCC_SH_NMID_BREQL:	sn="BREQL";		break;	//0x01C0
-	case BGBCC_SH_NMID_BRNEL:	sn="BRNEL";		break;	//0x01C1
-	case BGBCC_SH_NMID_BRGTL:	sn="BRGTL";		break;	//0x01C2
-	case BGBCC_SH_NMID_BRLEL:	sn="BRLEL";		break;	//0x01C3
-	case BGBCC_SH_NMID_BRGEL:	sn="BRGEL";		break;	//0x01C4
-	case BGBCC_SH_NMID_BRLTL:	sn="BRLTL";		break;	//0x01C5
+	case BGBCC_SH_NMID_BREQL:	sn="BREQ.L";	break;	//0x01C0
+	case BGBCC_SH_NMID_BRNEL:	sn="BRNE.L";	break;	//0x01C1
+	case BGBCC_SH_NMID_BRGTL:	sn="BRGT.L";	break;	//0x01C2
+	case BGBCC_SH_NMID_BRLEL:	sn="BRLE.L";	break;	//0x01C3
+	case BGBCC_SH_NMID_BRGEL:	sn="BRGE.L";	break;	//0x01C4
+	case BGBCC_SH_NMID_BRLTL:	sn="BRLT.L";	break;	//0x01C5
 	case BGBCC_SH_NMID_MOVTT:	sn="MOVTT";		break;	//0x01C6
 	case BGBCC_SH_NMID_XMOVTT:	sn="XMOVTT";	break;	//0x01C7
 	case BGBCC_SH_NMID_BRGTUL:	sn="BRGTUL";	break;	//0x01C8
@@ -618,10 +618,10 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_FDIVX:	sn="FDIVX";		break;	//0x01D6
 	case BGBCC_SH_NMID_LDTEX:	sn="LDTEX";		break;	//0x01D7
 
-	case BGBCC_SH_NMID_DIVSL:	sn="DIVSL";		break;	//0x01D8
-	case BGBCC_SH_NMID_DIVUL:	sn="DIVUL";		break;	//0x01D9
-	case BGBCC_SH_NMID_MODSL:	sn="MODSL";		break;	//0x01DA
-	case BGBCC_SH_NMID_MODUL:	sn="MODUL";		break;	//0x01DB
+	case BGBCC_SH_NMID_DIVSL:	sn="DIVS.L";	break;	//0x01D8
+	case BGBCC_SH_NMID_DIVUL:	sn="DIVU.L";	break;	//0x01D9
+	case BGBCC_SH_NMID_MODSL:	sn="MODS.L";	break;	//0x01DA
+	case BGBCC_SH_NMID_MODUL:	sn="MODU.L";	break;	//0x01DB
 	case BGBCC_SH_NMID_ROTCLQ:	sn="C_";		break;	//0x01DC
 	case BGBCC_SH_NMID_ROTCRQ:	sn="C_";		break;	//0x01DD
 	case BGBCC_SH_NMID_BCDADC:	sn="C_";		break;	//0x01DE

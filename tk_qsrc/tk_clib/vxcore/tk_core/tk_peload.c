@@ -893,6 +893,7 @@ int TKPE_LoadStaticPE(
 	byte *imgptr, *ct, *cte, *bss_ptr;
 	u64 imgbase;
 	s64 reloc_disp;
+	u64 entry;
 	u32 imgsz, startrva, gbr_rva, gbr_sz, imgsz1, imgsz2;
 	u32 reloc_rva, reloc_sz, bss_sz;
 	u32 tls_rva, tls_sz, tls_iptr, tls_key, tls_rds, tls_rde;
@@ -944,7 +945,8 @@ int TKPE_LoadStaticPE(
 	}
 
 	mach=tkfat_getWord(tbuf+ofs_pe+0x04);
-	if(mach!=0xB264)
+//	if(mach!=0xB264)
+	if((mach!=0xB264) && (mach!=0x5064))
 	{
 		tk_printf("TKPE: Unexpected Arch %04X\n", mach);
 		return(-1);
@@ -1145,7 +1147,16 @@ int TKPE_LoadStaticPE(
 		}
 	}
 
-	*rbootptr=imgptr+startrva;
+	entry=((u64)imgptr)+startrva;
+
+	if(mach==0x5064)
+	{
+//		entry|=0x0004000000000003ULL;
+		entry|=0x0004000000000001ULL;
+	}
+
+	*rbootptr=(void *)entry;
+//	*rbootptr=imgptr+startrva;
 	*rbootgbr=imgptr+gbr_rva;
 #endif
 }

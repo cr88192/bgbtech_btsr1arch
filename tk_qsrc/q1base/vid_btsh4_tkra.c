@@ -1594,7 +1594,7 @@ void	VID_Update (vrect_t *rects)
 
 	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
 	vid_frnum++;
-	
+
 	conbufa[0]=vid_frnum;
 	if(conbufb2[0]==vid_frnum)				//Detect if MMIO maps here.
 		conbufa=conbufb;

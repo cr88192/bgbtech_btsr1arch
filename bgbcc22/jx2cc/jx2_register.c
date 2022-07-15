@@ -1864,7 +1864,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	int pr0, pr1, pr0b, pr1b, i1;
 	int i, j, bi;
 
-	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+//	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+	tty=BGBCC_CCXL_GetRegStorageType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
 
 	if(ctx->arch_sizeof_ptr==16)
@@ -2300,7 +2301,8 @@ int BGBCC_JX2C_EmitGetRegister(
 	}
 
 
-	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+//	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+	tty=BGBCC_CCXL_GetRegStorageType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
 
 //	if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
@@ -3053,7 +3055,8 @@ int BGBCC_JX2C_EmitReleaseRegister(
 		}
 	}
 
-	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+//	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+	tty=BGBCC_CCXL_GetRegStorageType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
 
 	if(ctx->arch_sizeof_ptr==16)
@@ -3190,7 +3193,8 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 	reg=sctx->regalc_map[i];
 	regfl=BGBCC_JX2C_GetFrameVRegFlags(ctx, sctx, reg);
 
-	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+//	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+	tty=BGBCC_CCXL_GetRegStorageType(ctx, reg);
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
 
 	if(ctx->arch_sizeof_ptr==16)

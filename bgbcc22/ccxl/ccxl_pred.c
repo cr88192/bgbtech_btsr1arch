@@ -556,17 +556,62 @@ ccxl_type BGBCC_CCXL_GetRegType(
 	return(tty);
 }
 
+ccxl_type BGBCC_CCXL_GetRegStorageType(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	BGBCC_CCXL_RegisterInfo *ri;
+	int i, j, k;
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP)
+	{
+		i=reg.val&CCXL_REGID_BASEMASK;
+		if(i!=CCXL_REGID_BASEMASK)
+		{
+			ri=ctx->cur_func->regs[i];
+			return(ri->type);
+		}
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG)
+	{
+		i=reg.val&CCXL_REGID_BASEMASK;
+		if(i!=CCXL_REGID_BASEMASK)
+		{
+			ri=ctx->cur_func->args[i];
+			return(ri->type);
+		}
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL)
+	{
+		i=reg.val&CCXL_REGID_BASEMASK;
+		if(i!=CCXL_REGID_BASEMASK)
+		{
+			ri=ctx->cur_func->locals[i];
+			return(ri->type);
+		}
+	}
+	
+	return(BGBCC_CCXL_GetRegType(ctx, reg));
+}
+
 int BGBCC_CCXL_GetRegAsType(
 	BGBCC_TransState *ctx,
 	ccxl_register reg, ccxl_type tty, ccxl_register *rtreg)
 {
 	ccxl_register treg;
+	ccxl_type sty;
 	int i;
 	
 	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL))
 	{
+		/* Disallow if underlying storage doesn't match. */
+//		sty=BGBCC_CCXL_GetRegStorageType(ctx, reg);
+//		if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, sty, tty))
+//			return(-1);
+	
 //		tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
 		treg.val=(reg.val&(~CCXL_REGID_TYPEMASK))|
 			(((u64)tty.val)<<CCXL_REGID_TYPESHIFT);

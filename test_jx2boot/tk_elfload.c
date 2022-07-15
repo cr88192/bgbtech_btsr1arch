@@ -204,7 +204,8 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	if(isriscv)
 	{
 //		entry|=1;
-		entry|=0x0004000000000003ULL;
+//		entry|=0x0004000000000003ULL;
+		entry|=0x0004000000000001ULL;
 	}
 
 	*rbootptr=(void *)entry;

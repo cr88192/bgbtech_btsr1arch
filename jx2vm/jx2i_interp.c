@@ -2558,6 +2558,12 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			(ctx->tot_cnt_mem_l2+ctx->tot_cnt_mem_l2i+ctx->tot_cnt_mem_l2v);
 		printf("Total Count, Cache Miss L2   : %.2f%%\n", pcnt);
 
+		if(ctx->l2_vict)
+		{
+			pcnt=(100.0*ctx->tot_cnt_mem_l2vihit)/(ctx->tot_cnt_mem_l2);
+			printf("    L2-ViHit: %.2f%%\n", pcnt);
+		}
+
 		pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
 		printf("    L2-D$: %.2f%%", pcnt);
 		pcnt=(100.0*ctx->tot_cnt_miss_l2i)/(ctx->tot_cnt_mem_l2i);
@@ -2799,6 +2805,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		ctx->tot_cnt_mem_l1i+=ctx->mem_cnt_l1i;
 		ctx->tot_cnt_mem_l2+=ctx->mem_cnt_l2;
 		ctx->tot_cnt_mem_l2i+=ctx->mem_cnt_l2i;
+//		ctx->tot_cnt_mem_l2vihit+=ctx->mem_cnt_l2vihit;
 
 		ctx->tot_cnt_miss_l1+=ctx->miss_cnt_l1;
 		ctx->tot_cnt_miss_l1i+=ctx->miss_cnt_l1i;

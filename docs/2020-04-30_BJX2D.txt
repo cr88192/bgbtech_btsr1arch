@@ -275,6 +275,12 @@ FPSCR Will be defined as:
 * (7:4), Control Bits
 * (3:0), Rounding Mode
 
+The Vector Base Register (VBR) will have the layout:
+* (63:52), Reserved (MBZ)
+* (51:50), WXE and WX2 on ISR Entry
+* (49:48), Reserved (MBZ)
+* (47: 0), VBR Base Address
+
 
 === Special Restrictions ===
 
@@ -308,6 +314,8 @@ VBR Displacements:
 * VBR+0x10: IRQ, Hardware Interrupt, or TRAP instruction
 * VBR+0x18: MMU/TLB Miss/Fault.
 * VBR+0x20: Syscall
+
+Note that the location of VBR is not allowed to be in a location where the vector displacement may result in a carry beyond the low 8 bits.
 
 EXSR Codes:
 * Holds a numeric status code for the exception.
@@ -377,6 +385,7 @@ On interrupt Entry:
 * Copy low 32 bits of SR into high 32 bits of EXSR.
 * The status code for the interrupt will be loaded into EXSR.
 ** Set SR.BL, SR.MD, and SR.RB
+** Set SR.WXE and SR.WX2 according to VBR.WXE and VBR.WX2
 * TEA will be set to the Fault Address (if relevant for the interrupt).
 * TEAH will be set to the High Fault Address (if relevant for the interrupt).
 * EXSR will be set to the exception code in the low 16 bits.
@@ -2148,19 +2157,19 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_5gjj  AND		Rm, Imm9u, Rn		//
 * F2nm_5Gjj  -
 * F2nm_6gjj  OR			Rm, Imm9u, Rn		//
-* F2nm_6Pjj  SHADX		Xm, Imm8, Xn		//(ALUX)
+* F2nm_6Pjj  SHADX		Xm, Imm8s, Xn		//(ALUX)
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
-* F2nm_7Pjj  SHLDX		Xm, Imm8, Xn		//(ALUX)
+* F2nm_7Pjj  SHLDX		Xm, Imm8s, Xn		//(ALUX)
 
-* F2nm_8pjj  SHAD		Rm, Imm8, Rn		//E.i=0
-* F2nm_8Pjj  SHAD.Q		Rm, Imm8, Rn		//E.i=0
-* F2nm_8qjj  PSHUF.B	Rm, Imm8, Rn		//(GSV) E.i=1
-* F2nm_8Qjj  PSHUF.W	Rm, Imm8, Rn		//(GSV) E.i=1
+* F2nm_8pjj  SHAD		Rm, Imm8s, Rn		//E.i=0
+* F2nm_8Pjj  SHAD.Q		Rm, Imm8s, Rn		//E.i=0
+* F2nm_8qjj  PSHUF.B	Rm, Imm8u, Rn		//(GSV) E.i=1
+* F2nm_8Qjj  PSHUF.W	Rm, Imm8u, Rn		//(GSV) E.i=1
 
-* F2nm_9pjj  SHLD		Rm, Imm8, Rn		//E.i=0
-* F2nm_9Pjj  SHLD.Q		Rm, Imm8, Rn		//E.i=0
-* F2nm_9qjj  PCONV		Rm, Imm8, Rn		//(GSVX) E.i=1, Packed Convert
-* F2nm_9Qjj  PCONVX		Rm, Imm8, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9pjj  SHLD		Rm, Imm8s, Rn		//E.i=0
+* F2nm_9Pjj  SHLD.Q		Rm, Imm8s, Rn		//E.i=0
+* F2nm_9qjj  PCONV		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9Qjj  PCONVX		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
 
 * F2nz_Aejj  (Imm10 Space)
 * F2nz_Bejj  (Imm10 Space)
