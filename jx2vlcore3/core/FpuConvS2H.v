@@ -23,10 +23,10 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
-`ifndef HAS_FP32PCK16
-`define HAS_FP32PCK16
+`ifndef HAS_FPUCONVS2H
+`define HAS_FPUCONVS2H
 
-module ExConv_Fp32Pck16(valI, valO);
+module FpuConvS2H(valI, valO);
 input [31:0]	valI;
 output[15:0]	valO;
 

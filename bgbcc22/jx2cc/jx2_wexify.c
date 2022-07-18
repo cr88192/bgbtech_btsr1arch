@@ -2008,6 +2008,17 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix3W(
 			/* Disallow shift in Lane 3 */
 			return(0);
 		}
+
+		if(
+			((opw2&0xF00F)==0x100D) ||
+			((opw2&0xF00C)==0x5008) ||
+			((opw2&0xF00E)==0x6006) ||
+			((opw2&0xF00C)==0x600C)
+			)
+		{
+			/* Disallow FPU in Lane 3 */
+			return(0);
+		}
 	}
 
 	if(	((opw1&0xEF00)==0xE200) ||
@@ -2020,7 +2031,91 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix3W(
 		}
 	}
 
+	if(	((opw1&0xEF00)==0xE100) ||
+		((opw1&0xF100)==0x9100))
+	{
+		/* Disallow Load/Store Lane 3
+		 * In profiles that allow it in Lane 2.
+		 */
+		return(0);
+	}
+
 	return(1);
+}
+
+/* Check if operation is a valid prefix.
+ * Also allows certain special cases for 2-wide bundles.
+ */
+int BGBCC_JX2_CheckOps32ValidWexPrefix2B(
+	BGBCC_JX2_Context *sctx,
+	int opw1, int opw2, int opw3, int opw4)
+{
+	int ret;
+	
+	ret = BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2);
+	if(ret > 0)
+		return(ret);
+
+	if((sctx->use_wexmd==3) || (sctx->use_wexmd==5))
+	{
+#if 1
+		if(	(	((opw1&0xFF00)==0xF100) ||
+				((opw1&0xF100)==0x9100) ) &&
+				((opw2&0xC800)==0x0800) &&
+				((opw1&0x000E)!=0x0000)
+			)
+		{
+			/* Allow LEA */
+			return(1);
+		}
+#endif
+
+#if 1
+		if(	(	((opw3&0xFF00)==0xF100) ||
+				((opw3&0xF100)==0x9100) ) &&
+//				((opw4&0xC000)==0x8000) &&
+			(	((opw4&0xC800)==0x0000) ||
+				((opw4&0xC000)==0x8000) ) &&
+				((opw3&0x000E)!=0x0000)
+			)
+		{
+			if(	(	((opw1&0xFF00)==0xF100) ||
+					((opw1&0xF100)==0x9100) ) &&
+					((opw2&0xC000)==0x8000) &&
+					((opw1&0x000E)!=0x0000)
+				)
+			{
+				/* Allow pairing load with other ops. */
+				return(1);
+			}
+		}
+#endif
+	}
+
+	if((sctx->use_wexmd==3) || (sctx->use_wexmd==5))
+	{
+#if 1
+		if(	(	((opw3&0xFF00)==0xF100) ||
+				((opw3&0xF100)==0x9100) ) &&
+			(	((opw4&0xC800)==0x0000) ||
+				((opw4&0xC000)==0x8000) )
+			)
+		{
+			if((opw1&0xEB00)==0xE000)
+			{
+				if((opw2&0xF00C)==0x5008)
+				{
+					/* Allow FPU paired with Mem */
+					return(0);
+				}
+
+//					((opw2&0xF00F)==0x100D) ||
+			}
+		}
+#endif
+	}
+
+	return(0);
 }
 
 int BGBCC_JX2_CheckOps32ValidWexPrefix(
@@ -2356,7 +2451,19 @@ ccxl_status BGBCC_JX2_AdjustWexifyOp(
 		}
 	}
 
-	if((opw1&0xFF00)==0xF100)
+	if((sctx->use_wexmd==3) || (sctx->use_wexmd==5))
+	{
+		if((opw1&0xFF00)==0xF100)
+		{
+			sctx->opcnt_hi8[(opw1>>8)&0xFF]--;
+			opw1|=0x0400;
+			sctx->opcnt_hi8[(opw1>>8)&0xFF]++;
+			*ropw1=opw1;
+			*ropw2=opw2;
+			return(1);
+		}
+	}else
+		if((opw1&0xFF00)==0xF100)
 	{
 		if((opw2&0xC800)==0x0800)
 		{
@@ -3404,7 +3511,10 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 		}
 #endif
 
-		if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
+		if(
+//			BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
+			BGBCC_JX2_CheckOps32ValidWexPrefix2B(sctx,
+				opw1, opw2, opw3, opw4) &&
 			BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
 			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 				opw1, opw2, opw3, opw4))
@@ -3460,7 +3570,10 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 #endif
 
 #if 1
-			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
+			if(	
+//				BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
+				BGBCC_JX2_CheckOps32ValidWexPrefix2B(sctx,
+					opw3, opw4, opw1, opw2) &&
 				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw1, opw2) &&
 //				!BGBCC_JX2_CheckOps32SequenceOnly(ctx, sctx,
 				BGBCC_JX2_CheckCanSwapOps32(sctx,
@@ -3492,7 +3605,10 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 		if(1)
 		{
 #if 1
-			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw5, opw6) &&
+			if(
+//				BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw5, opw6) &&
+				BGBCC_JX2_CheckOps32ValidWexPrefix2B(sctx,
+					opw5, opw6, opw3, opw4) &&
 				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
 //				!BGBCC_JX2_CheckOps32SequenceOnly(ctx, sctx,
 				BGBCC_JX2_CheckCanSwapOps32(sctx,
@@ -3654,7 +3770,9 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 		if(BGBCC_JX2_CheckOps32Immovable(sctx, opw5, opw6)>0)
 			imv5=1;
 		
-		if(!BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2))
+//		if(!BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2))
+		if(!BGBCC_JX2_CheckOps32ValidWexPrefix2B(sctx,
+				opw1, opw2, opw3, opw4))
 			{ cp+=4; continue; }
 
 		i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+0);
@@ -3705,7 +3823,10 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 		}
 #endif
 
-		if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
+		if(
+//			BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
+			BGBCC_JX2_CheckOps32ValidWexPrefix2B(sctx,
+				opw1, opw2, opw3, opw4) &&
 			BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
 			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 				opw1, opw2, opw3, opw4) &&

@@ -35,6 +35,9 @@ idUIxt:
 
  */
 
+`ifndef HAS_EXAGUB
+`define HAS_EXAGUB
+
 module ExAGUB(
 	regValRm,
 	regValRi,
@@ -44,7 +47,7 @@ module ExAGUB(
 
 input[47:0]		regValRm;
 input[47:0]		regValRi;
-input[7:0]		idUIxt;
+input[8:0]		idUIxt;
 input			addrEnJq;
 
 output[47:0]	regOutAddr;
@@ -179,3 +182,5 @@ begin
 end
 
 endmodule
+
+`endif

@@ -3986,13 +3986,60 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		if(!strcmp(name, "__int_muluw"))
 			nm1=BGBCC_SH_NMID_MULUW;
 	
-		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
-		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
-		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
-		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
-		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
-		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
-		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		if(BGBCC_CCXL_IsRegImmIntP(ctx, args[1]))
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, args[1]);
+			
+			if(li==(li&31))
+			{
+				if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+				{
+					cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
+					csreg=cdreg;
+					BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+						nm1, csreg, li, cdreg);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+				}else
+				{
+					csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+					cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+					BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+						nm1, csreg, li, cdreg);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+				}
+				sctx->csrv_skip=1;
+				return(1);
+			}
+		}
+
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+		{
+			ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
+			csreg=cdreg;
+			BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		}else
+			if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[1]))
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
+			ctreg=cdreg;
+			BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		}else
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+			BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		}
 
 		sctx->csrv_skip=1;
 		return(1);

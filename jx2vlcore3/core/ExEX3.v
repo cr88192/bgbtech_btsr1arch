@@ -74,6 +74,7 @@ module ExEX3(
 	regValKrreRes,	//Keyring Result
 
 	regFpuGRn,		//FPU GPR Result
+	regFpuV4GRn,	//FPU GPR Result
 	opBraFlush,
 
 	regInLastSr,	
@@ -118,6 +119,7 @@ input[65:0]		regValKrreRes;	//Keyring Result
 
 input[63:0]		regValMulRes;	//MUL.W Result
 input[63:0]		regFpuGRn;		//FPU GPR Result
+input[63:0]		regFpuV4GRn;		//FPU GPR Result
 
 input			opBraFlush;
 
@@ -415,6 +417,15 @@ begin
 		end
 
 		JX2_UCMD_BLINT: begin
+		end
+
+		JX2_UCMD_FPUV4SF: begin
+//			tRegIdRn2		= regIdRm;
+//			tRegValRn2		= regFpuV4GRn;
+			tValOutDfl		= regFpuV4GRn;
+			tDoOutDfl		= 1;
+			
+//			$display("JX2_UCMD_FPUV4SF: regFpuV4GRn = %X", regFpuV4GRn);
 		end
 
 		default: begin

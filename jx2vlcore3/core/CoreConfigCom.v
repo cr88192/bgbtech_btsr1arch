@@ -30,6 +30,8 @@
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
+`define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
+
 `define	jx2_fpu_enable_fdiv		//enable FDIV
 
 `define	jx2_alu_wx				//Enable Wide-ALU
@@ -38,6 +40,8 @@
 `define	jx2_fpu_fmac			//Enable FMAC Operation
 
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
+
+// `define	jx2_mem_lane2			//Allow Loads from Lane 2
 
 // `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
 

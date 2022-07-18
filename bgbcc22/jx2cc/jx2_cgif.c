@@ -170,6 +170,30 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //		shctx->has_jumbo=1;
 	}
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex3w"))
+	{
+		shctx->use_wexmd=2;
+//		shctx->has_jumbo=1;
+	}
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex3w_io2"))
+	{
+		shctx->use_wexmd=3;
+//		shctx->has_jumbo=1;
+	}
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex3w_fp2"))
+	{
+		shctx->use_wexmd=4;
+//		shctx->has_jumbo=1;
+	}
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "wex3w_io2fp2"))
+	{
+		shctx->use_wexmd=5;
+//		shctx->has_jumbo=1;
+	}
+
 	if(	BGBCC_CCXL_CheckForOptStr(ctx, "wexj") ||
 		BGBCC_CCXL_CheckForOptStr(ctx, "jumbo"))
 	{
@@ -177,7 +201,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //		shctx->use_wexmd=2;
 		shctx->has_jumbo=1;
 
-		if(shctx->use_wexmd==2)
+		if(shctx->use_wexmd>=2)
 		{
 			shctx->has_pushx2=1;
 			shctx->has_simdx2=1;
@@ -252,7 +276,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->is_pbo=1;
 
 #if 1
-		shctx->use_wexmd=2;
+		if(shctx->use_wexmd==0)
+			shctx->use_wexmd=2;
+
 		shctx->has_jumbo=1;
 		shctx->has_pushx2=1;
 		shctx->has_simdx2=1;

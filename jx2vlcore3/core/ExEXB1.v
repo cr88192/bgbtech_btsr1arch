@@ -54,6 +54,10 @@ opUIxt:
 `endif
 `endif
 
+`ifdef jx2_mem_lane2
+`include "ExAGUB.v"
+`endif
+
 module ExEXB1(
 	clock, reset,
 	opUCmd, opUIxt,
@@ -77,7 +81,9 @@ module ExEXB1(
 	regValImm,		//Immediate (Decode)
 	opBraFlush,
 	regInSr,
-	idLane
+	idLane,
+
+	memAddr,	memOpm
 	);
 
 
@@ -109,6 +115,9 @@ input			opBraFlush;
 
 input[63:0]		regInSr;
 
+output[47:0]	memAddr;
+output[4:0]		memOpm;
+
 
 `reg_gpr		tRegIdRn1;		//Destination ID (EX1)
 reg[63:0]		tRegValRn1;		//Destination Value (EX1)
@@ -122,10 +131,26 @@ reg				tExHold;
 reg				tRegHeld;
 assign	exHold		= { tRegHeld, tExHold };
 
+reg[47:0]		tMemAddr;
+reg[ 4:0]		tMemOpm;
+
+assign	memAddr		= tMemAddr;
+assign	memOpm		= tMemOpm;
+
 
 wire[63:0]	tValCnv;
 wire		tCnvSrT;
 ExConv2R	exConv2R(regValRs, opUIxt, regInSr[0], tValCnv, tCnvSrT);
+
+reg				tAguFlagJq;
+wire[47:0]		tValAgu;
+
+`ifdef jx2_mem_lane2
+ExAGUB	exAgu(regValRs[47:0], regValRt[47:0],
+	opUIxt, tValAgu, tAguFlagJq);
+`else
+assign	tValAgu = UV48_00;
+`endif
 
 `ifdef jx2_merge_shadfn
 
@@ -175,6 +200,9 @@ ExShad64C	exShad64(clock, reset,
 
 reg			tOpEnable;
 
+reg			tDoMemOp;
+reg[4:0]	tDoMemOpm;
+
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
 reg[8:0]	tOpUCmd2;
@@ -202,6 +230,12 @@ begin
 
 	tValOutDfl		= UV64_XX;
 	tDoOutDfl		= 0;
+
+	tMemOpm			= UMEM_OPM_READY;
+	tMemAddr		= tValAgu;
+
+	tDoMemOpm		= UMEM_OPM_READY;
+	tDoMemOp		= 0;
 
 `ifdef jx2_enable_pred_s
 	casez( { opBraFlush, opUCmd[8:6], regInSr[1:0] } )
@@ -250,6 +284,12 @@ begin
 //			tSlotUSup		= 0;
 			tSlotUSup		= 1;
 
+`ifdef jx2_mem_lane2
+			tSlotUSup		= 0;
+			tRegIdRn1	= regIdRm;
+			tRegValRn1	= { UV16_00, tValAgu };
+`endif
+
 			if(	(opUIxt[8:6]==JX2_IUC_WX) ||
 				(opUIxt[8:6]==JX2_IUC_WXA))
 			begin
@@ -263,9 +303,28 @@ begin
 //			tRegIdRn1		= JX2_GR_ZZR;
 //			tRegValRn1		= regValRs;
 			tRegValRn1		= regValRm;		/* MOV.X bits */
+
+`ifdef jx2_mem_lane2
+			if(opUIxt[8:6]!=JX2_IUC_WX)
+			begin
+				tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
+				tDoMemOp	= 1;
+			end
+`endif
 		end
 		JX2_UCMD_MOV_MR: begin
 			tSlotUSup		= 1;
+
+`ifdef jx2_mem_lane2
+			tSlotUSup		= 0;
+
+			if(opUIxt[8:6]!=JX2_IUC_WX)
+			begin
+				tDoMemOpm = { 2'b01, opUIxt[2], opUIxt[5:4] };
+				tDoMemOp	= 1;
+			end
+`endif
+
 //			if(opUIxt[7:6]==JX2_IUC_WX)
 			if(opUIxt[8:6]==JX2_IUC_WX)
 				tSlotUSup	= 0;
@@ -426,6 +485,10 @@ begin
 			tRegHeld		= 1;
 		end
 
+		JX2_UCMD_FPUV4SF: begin
+			tRegHeld		= 1;
+		end
+
 		JX2_UCMD_BLINT: begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
@@ -509,7 +572,12 @@ begin
 		tRegIdRn1		= regIdRm;
 		tRegValRn1		= tValOutDfl;
 	end
-	
+
+	if(tDoMemOp)
+	begin
+		tMemOpm			= tDoMemOpm;
+	end
+
 	if(opBraFlush)
 	begin
 		tRegIdRn1	= JX2_GR_ZZR;
@@ -535,6 +603,7 @@ end
 
 always @(posedge clock)
 begin
+	tAguFlagJq	<= regInSr[31];
 	tMsgLatch	<= tNextMsgLatch;
 end
 

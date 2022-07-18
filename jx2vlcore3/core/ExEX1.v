@@ -1119,6 +1119,10 @@ begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
 		end
+		
+		JX2_UCMD_FPUV4SF: begin
+			tRegHeld		= 1;
+		end
 `endif
 
 		JX2_UCMD_BLINT: begin
@@ -1325,6 +1329,18 @@ begin
 						4'h0:		tRegOutSr[27]	= 0;
 						4'h1:		tRegOutSr[27]	= 1;
 						4'h2:		tRegOutSr[27]	= 1;
+
+`ifdef jx2_mem_lane2
+						4'h3:		tRegOutSr[27]	= 1;
+`endif
+
+`ifdef jx2_fpu_lane2
+						4'h4:		tRegOutSr[27]	= 1;
+`ifdef jx2_mem_lane2
+						4'h5:		tRegOutSr[27]	= 1;
+`endif
+`endif
+
 						default:	tRegOutSr[27]	= 0;
 					endcase
 `else

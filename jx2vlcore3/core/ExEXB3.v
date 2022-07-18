@@ -58,6 +58,7 @@ module ExEXB3(
 	regValKrreRes,	//Keyring Result
 
 	regFpuGRn,		//FPU GPR Result
+	regFpuV4GRn,		//FPU GPR Result
 	opBraFlush,
 
 	regInLastSr,	
@@ -91,7 +92,8 @@ input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulwRes;	//MUL.W Result
 input[65:0]		regValKrreRes;	//Keyring Result
 
-input[63:0]		regFpuGRn;		//FPU GPR Result
+input[63:0]		regFpuGRn;			//FPU GPR Result
+input[63:0]		regFpuV4GRn;		//FPU GPR Result
 
 input			opBraFlush;
 
@@ -235,6 +237,11 @@ begin
 		JX2_UCMD_FPU3: begin
 //			tRegIdRn2		= regIdRm;
 //			tRegValRn2		= regFpuGRn;
+		end
+
+		JX2_UCMD_FPUV4SF: begin
+			tRegIdRn2		= regIdRm;
+			tRegValRn2		= regFpuV4GRn;
 		end
 
 		JX2_UCMD_BLINT: begin

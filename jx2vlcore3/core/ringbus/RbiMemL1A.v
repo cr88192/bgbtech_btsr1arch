@@ -64,6 +64,7 @@ module RbiMemL1A(
 	icOutPcSxo,
 
 	dcInAddr,		dcInOpm,
+	dcInAddrB,		dcInOpmB,
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
 	dcOutOK,		dcInHold,
@@ -98,14 +99,17 @@ output[ 3: 0]	icOutPcSxo;		//Secure Execute
 input			icInPcHold;
 input[1:0]		icInPcWxe;
 
-`input_vaddr	dcInAddr;		//input PC address
-input [ 4: 0]	dcInOpm;		//input PC address
+`input_vaddr	dcInAddr;		//input address A
+input [ 4: 0]	dcInOpm;		//input command A
 output[63: 0]	dcOutVal;		//output data value
 input [63: 0]	dcInVal;		//input data value
 output[ 1: 0]	dcOutOK;		//set if we have a valid value.
 input			dcInHold;
 output			dcOutHold;		//we need to stall the pipeline
 output			dcBusWait;		//we are waiting on the bus
+
+input[47:0]		dcInAddrB;		//input address B
+input [ 4: 0]	dcInOpmB;		//input command B
 
 output[63: 0]	dcOutValB;		//output data value (alternate)
 input [63: 0]	dcInValB;		//input data value (alternate)
@@ -273,7 +277,9 @@ reg [7:0]		regKrrHashDsL;
 
 
 wire[5:0]		dfInOpm;
-assign		dfInOpm		= { dcInOpm[4:3], 1'b0, dcInOpm[2:0] };
+wire[5:0]		dfInOpmB;
+assign		dfInOpm		= { dcInOpm [4:3], 1'b0, dcInOpm [2:0] };
+assign		dfInOpmB	= { dcInOpmB[4:3], 1'b0, dcInOpmB[2:0] };
 
 wire			ifMemWait;
 wire[127:0]		ifOutExc;
@@ -337,6 +343,7 @@ wire[  7:0]		dfMemNodeId;
 RbiMemDcA		memDc(
 	clock,			reset,
 	dcInAddr,		dfInOpm,
+	dcInAddrB,		dfInOpmB,
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
 	dcInHold,		dfOutHold,

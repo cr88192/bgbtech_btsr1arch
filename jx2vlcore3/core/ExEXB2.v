@@ -255,6 +255,10 @@ begin
 			tRegValRn2		= regFpuGRn;
 		end
 
+		JX2_UCMD_FPUV4SF: begin
+			tRegHeld		= 1;
+		end
+
 		JX2_UCMD_BLINT: begin
 		end
 

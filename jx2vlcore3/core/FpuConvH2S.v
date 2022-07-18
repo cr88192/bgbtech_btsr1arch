@@ -23,32 +23,38 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
-`ifndef HAS_FP32PCK16
-`define HAS_FP32PCK16
+`ifndef HAS_FPUCONVH2S
+`define HAS_FPUCONVH2S
 
-module ExConv_Fp32Pck16(valI, valO);
-input [31:0]	valI;
-output[15:0]	valO;
+module FpuConvH2S(valI, valO);
 
-reg[15:0]	tValO;
+input [15:0]	valI;
+output[31:0]	valO;
+
+reg[31:0]	tValO;
 assign		valO = tValO;
 
-reg[4:0]	tExpC;
+reg[7:0]	tExpC;
+reg[9:0]	tFraC;
 reg			tSgn;
+
+reg			tExpIsZero;
+reg			tExpIsNaN;
 
 always @*
 begin
-	tSgn	= valI[31];
-	tExpC	= { valI[30], valI[26:23] };
+	tExpIsZero = (valI[14:10]==5'h00);
+	tExpIsNaN  = (valI[14:10]==5'h1F);
 
-	if((valI[30:26] != 5'h0F) && (valI[30:26] != 5'h10))
-	begin
-		tExpC = valI[30] ? 5'h1F : 5'h00 ;
-		if(!valI[30])
-			tSgn = 0;
-	end
+	tSgn = valI[15];
+	tExpC = {
+		valI[14],
+		((valI[14] || tExpIsZero) && !tExpIsNaN) ?
+			3'b000 : 3'b111,
+		valI[13:10] };
+	tFraC = valI[9:0];
 
-	tValO = { tSgn, tExpC, valI[22:13] };
+	tValO = { tSgn, tExpC, tFraC, 13'h0 };
 end
 
 endmodule

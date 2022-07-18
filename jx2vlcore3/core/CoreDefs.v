@@ -745,6 +745,7 @@ parameter[5:0] JX2_UCMD_ADDSP		= 6'h0A;		//ADD Imm, SP
 parameter[5:0] JX2_UCMD_QMULDIV		= 6'h0B;		//Slow MUL/DIV
 
 parameter[5:0] JX2_UCMD_CONV2_RR	= 6'h0C;		//Convert (Via ALU)
+parameter[5:0] JX2_UCMD_FPUV4SF		= 6'h0D;		//FPU Vec4SF Unit
 
 parameter[5:0] JX2_UCMD_INVOP		= 6'h0F;		//
 parameter[5:0] JX2_UCMD_ALU3		= 6'h10;		//ALU Command (3R)

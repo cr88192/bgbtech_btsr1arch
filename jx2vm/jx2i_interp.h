@@ -283,6 +283,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_OP24		0x0800		//24-bit instruction
 #define BJX2_OPFL_OPSSC		0x1000		//Op Flagged as Superscalar
 
+#define BJX2_OPFL_NOWEX_FP2	0x2000		//Not valid WEX unless FP2
+#define BJX2_OPFL_NOWEX_IO2	0x4000		//Not valid WEX unless IO2
+
 #define BJX2_OPFL_PREDMSK	0xC1		//Mask copied for predicated ops.
 
 

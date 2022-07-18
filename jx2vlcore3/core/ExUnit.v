@@ -85,6 +85,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `endif
 `endif
 
+`ifdef jx2_use_fpu_v4sf
+`include "FpuVec4SF.v"
+`endif
+
 `ifdef jx2_enable_blint
 `include "ExModBlint.v"
 `endif
@@ -343,6 +347,9 @@ wire			dcBusWait;
 wire[63:0]		dcOutValB;
 reg [63:0]		dcInValB;
 
+reg [4:0]		dcInOpmB;
+reg [47:0]		dcInAddrB;
+
 reg [63:0]		dcInTraPc;
 
 reg			tDeadlockLatch;
@@ -368,6 +375,7 @@ RbiMemL1A		memL1(
 	ifOutPcSxo,
 
 	dcInAddr,		dcInOpm,
+	dcInAddrB,		dcInOpmB,
 	dcOutVal,		dcInVal,
 	dcOutValB,		dcInValB,
 	dcOutOK,		dcInHold,
@@ -508,6 +516,7 @@ reg[47:0]		ex1ValBPc;
 reg[2:0]		ex1ValBraDir;
 
 wire[ 4:0]		ex1MemOpm;
+wire[ 4:0]		exB1MemOpm;
 
 wire[47:0]		id1PreBraPc;
 wire[1:0]		id1PreBra;
@@ -1281,6 +1290,9 @@ assign		ex1KrreLo = {
 assign		ex1KrreHi = UV66_00;
 `endif
 
+wire[63:0]				exA1FpuV4SfRn;
+wire[63:0]				exB1FpuV4SfRn;
+
 `ifdef jx2_enable_fpu
 
 `ifdef jx2_use_fpu_w
@@ -1323,6 +1335,27 @@ FpuExOpW	ex1Fpu(
 	
 	ex1FpuValGRn,	exB1FpuValGRn
 	);
+
+`ifdef jx2_use_fpu_v4sf
+FpuVec4SF	ex1FpuV4(
+	clock,			reset,
+
+	ex1OpUCmd,		ex1OpUIxt,
+	exB1OpUCmd,		exB1OpUIxt,
+	exHold2,
+
+	ex1RegValImm,	exB1RegValImm,
+
+	ex1RegValRs,	exB1RegValRs,
+	ex1RegValRt,	exB1RegValRt,
+	ex1RegValRm,	exB1RegValRm,
+
+	exA1FpuV4SfRn,	exB1FpuV4SfRn);
+`else
+assign	exA1FpuV4SfRn = 0;
+assign	exB1FpuV4SfRn = 0;
+`endif
+
 `else
 
 FpuExOp	ex1Fpu(
@@ -1573,6 +1606,7 @@ ExEX3	ex3(
 	ex3RegAluRes,	ex3RegMulRes,
 	ex3RegMulWRes,	ex1KrreLo,
 	ex1FpuValGRn,
+	exA1FpuV4SfRn,
 
 //	ex3BraFlush || reset,
 	ex3BraFlush,
@@ -1614,6 +1648,8 @@ wire[8:0]		exB1OpUCmd2;
 wire[63:0]		exB1AguXLea;		//XLEA Output
 assign		exB1AguXLea = ex1AguOutXLea;
 
+wire[47:0]			exB1MemAddr;
+
 ExEXB1	exb1(
 	clock,			reset,
 	exB1OpUCmd,		exB1OpUIxt,
@@ -1631,7 +1667,8 @@ ExEXB1	exb1(
 	ex1BraFlush,
 //	ex1BraFlush || reset,
 	ex1RegInSr,
-	1
+	1,
+	exB1MemAddr, exB1MemOpm
 	);
 	
 
@@ -1742,6 +1779,8 @@ ExEXB3		exb3(
 	exB3RegValImm,	exB3RegAluRes,
 	exB3RegMulWRes,	ex1KrreHi,
 	exB1FpuValGRn,
+	exB1FpuV4SfRn,
+
 //	ex3BraFlush || reset,
 	ex3BraFlush,
 
@@ -3949,6 +3988,10 @@ begin
 
 	dcInAddr		= ex1MemAddr;
 	dcInOpm			= ex1MemOpm;
+
+	dcInAddrB		= exB1MemAddr;
+	dcInOpmB		= exB1MemOpm;
+
 	dcInVal			= ex1MemDataOut;
 //	dcInValB		= ex1MemDataOutB;
 `ifdef jx2_enable_wex

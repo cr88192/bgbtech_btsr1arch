@@ -3388,6 +3388,7 @@ int BGBCC_JX2_CheckOps32ValidWexSuffix(BGBCC_JX2_Context *sctx, int opw1, int op
 int BGBCC_JX2_CheckOps32ValidWexSuffix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 int BGBCC_JX2_CheckOps32ValidWexSuffixFl(BGBCC_JX2_Context *sctx, int opw1, int opw2, int fl);
 int BGBCC_JX2_CheckOps32ValidWexPrefix3W(BGBCC_JX2_Context *sctx, int opw1, int opw2);
+int BGBCC_JX2_CheckOps32ValidWexPrefix2B(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckOps32ValidWexPrefix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 ccxl_status BGBCC_JX2_AdjustWexifyOp(BGBCC_JX2_Context *sctx, int *ropw1, int *ropw2);
 int BGBCC_JX2_InferInterlockCost(BGBCC_JX2_Context *sctx, int opwn1, int opwn2, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int opw7, int opw8, int opw9, int opw10, int opw11, int opw12);

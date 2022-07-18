@@ -462,6 +462,10 @@ begin
 			tDoOutDfl		= 1;
 		end
 
+		JX2_UCMD_FPUV4SF: begin
+			tRegHeld		= 1;
+		end
+
 		JX2_UCMD_FCMP: begin
 `ifdef jx2_fcmp_alu
 			tDoAluSrT		= 1;
