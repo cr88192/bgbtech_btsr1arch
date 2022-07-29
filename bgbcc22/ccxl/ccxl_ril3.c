@@ -8,6 +8,13 @@ int ril3_lblchn[RIL3_LBLMAX];
 int ril3_lblhash[1024];
 int ril3_nlbl=0;
 
+int BGBCC_CCXLR3_ClearLabels(BGBCC_TransState *ctx)
+{
+	ril3_nlbl=0;
+	memset(ril3_lbltab, 0, sizeof(ril3_lbltab));
+	return(0);
+}
+
 int BGBCC_CCXLR3_LabelToIndex(BGBCC_TransState *ctx, ccxl_label lbl)
 {
 	int v, h;
@@ -2031,6 +2038,9 @@ void BGBCC_CCXLR3_LoadBufferRIL(
 	{
 		ctx->ril3_norec=1;
 		onl=ctx->n_literals;
+
+		ril3_nlbl=0;
+		BGBCC_CCXLR3_ClearLabels(ctx);
 		
 		BGBCC_CCXLR3_CheckLzWindow(ctx);
 		
@@ -2064,7 +2074,10 @@ void BGBCC_CCXLR3_LoadBufferRIL(
 	{
 		ctx->ril3_norec=1;
 		onl=ctx->n_literals;
-		
+
+		ril3_nlbl=0;
+		BGBCC_CCXLR3_ClearLabels(ctx);
+
 		BGBCC_CCXLR3_CheckLzWindow(ctx);
 		
 		rtsize=*(u32 *)(buf+4);

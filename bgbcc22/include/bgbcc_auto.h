@@ -1252,6 +1252,7 @@ ccxl_status BGBCC_CCXL_LoadIndexCacheCheck(BGBCC_TransState *ctx, ccxl_register 
 ccxl_status BGBCC_CCXL_LoadIndexConstCacheAdd(BGBCC_TransState *ctx, ccxl_register dreg, ccxl_register sreg, int idx);
 ccxl_status BGBCC_CCXL_LoadIndexConstCacheCheck(BGBCC_TransState *ctx, ccxl_register sreg, int idx, ccxl_register *rdreg2);
 //AHSRC:ccxl/ccxl_ril3.c
+int BGBCC_CCXLR3_ClearLabels(BGBCC_TransState *ctx);
 int BGBCC_CCXLR3_LabelToIndex(BGBCC_TransState *ctx, ccxl_label lbl);
 ccxl_label BGBCC_CCXLR3_IndexToLabel(BGBCC_TransState *ctx, int ix);
 void BGBCC_CCXLR3_CheckLzWindow(BGBCC_TransState *ctx);

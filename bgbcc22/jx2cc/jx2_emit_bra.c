@@ -1426,6 +1426,7 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 //		return(0);
 
 	i=BGBCC_JX2_LookupSimLabelIndex(ctx, lbl);
+//	i=BGBCC_JX2_LookupLabelIndex(ctx, lbl);
 //	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec))
 	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec) &&
 		(ctx->is_stable || ctx->is_rawasm))

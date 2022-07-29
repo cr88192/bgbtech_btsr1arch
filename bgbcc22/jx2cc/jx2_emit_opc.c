@@ -3104,6 +3104,15 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 	if(	(nmid==BGBCC_SH_NMID_PADDFA) ||
 		(nmid==BGBCC_SH_NMID_PSUBFA) ||
 		(nmid==BGBCC_SH_NMID_PMULFA) ||
+
+		(nmid==BGBCC_SH_NMID_FADDA) ||
+		(nmid==BGBCC_SH_NMID_FSUBA) ||
+		(nmid==BGBCC_SH_NMID_FMULA) ||
+
+		(nmid==BGBCC_SH_NMID_PADDXDA) ||
+		(nmid==BGBCC_SH_NMID_PSUBXDA) ||
+		(nmid==BGBCC_SH_NMID_PMULXDA) ||
+		
 		(nmid==BGBCC_SH_NMID_PADDFAX) ||
 		(nmid==BGBCC_SH_NMID_PSUBFAX) ||
 		(nmid==BGBCC_SH_NMID_PMULFAX))
@@ -6714,6 +6723,10 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 	case BGBCC_SH_NMID_PSUBXD:
 	case BGBCC_SH_NMID_PMULXD:
 
+	case BGBCC_SH_NMID_PADDXDA:
+	case BGBCC_SH_NMID_PSUBXDA:
+	case BGBCC_SH_NMID_PMULXDA:
+
 	case BGBCC_SH_NMID_FADDX:
 	case BGBCC_SH_NMID_FSUBX:
 	case BGBCC_SH_NMID_FMULX:
@@ -6755,18 +6768,21 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 	switch(nmid)
 	{
 	case BGBCC_SH_NMID_FADD:
+	case BGBCC_SH_NMID_FADDA:
 		BGBCC_JX2_ComposeJumboRegRegImmRegF0(ctx,
 			&opw1, &opw2, &opw3, &opw4,
 			0xF000, 0x5008,
 			rs, rt, imm, rn);
 		break;
 	case BGBCC_SH_NMID_FSUB:
+	case BGBCC_SH_NMID_FSUBA:
 		BGBCC_JX2_ComposeJumboRegRegImmRegF0(ctx,
 			&opw1, &opw2, &opw3, &opw4,
 			0xF000, 0x5009,
 			rs, rt, imm, rn);
 		break;
 	case BGBCC_SH_NMID_FMUL:
+	case BGBCC_SH_NMID_FMULA:
 		BGBCC_JX2_ComposeJumboRegRegImmRegF0(ctx,
 			&opw1, &opw2, &opw3, &opw4,
 			0xF000, 0x500A,
@@ -6814,6 +6830,28 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 		BGBCC_JX2_ComposeJumboRegRegImmRegF0(ctx,
 			&opw1, &opw2, &opw3, &opw4,
 			0xF000, 0x2807,
+			rs, rt, imm, rn);
+		break;
+
+	case BGBCC_SH_NMID_PADDXD:
+	case BGBCC_SH_NMID_PADDXDA:
+		BGBCC_JX2_ComposeJumboRegRegImmRegF0(ctx,
+			&opw1, &opw2, &opw3, &opw4,
+			0xF000, 0x280D,
+			rs, rt, imm, rn);
+		break;
+	case BGBCC_SH_NMID_PSUBXD:
+	case BGBCC_SH_NMID_PSUBXDA:
+		BGBCC_JX2_ComposeJumboRegRegImmRegF0(ctx,
+			&opw1, &opw2, &opw3, &opw4,
+			0xF000, 0x280E,
+			rs, rt, imm, rn);
+		break;
+	case BGBCC_SH_NMID_PMULXD:
+	case BGBCC_SH_NMID_PMULXDA:
+		BGBCC_JX2_ComposeJumboRegRegImmRegF0(ctx,
+			&opw1, &opw2, &opw3, &opw4,
+			0xF000, 0x280F,
 			rs, rt, imm, rn);
 		break;
 

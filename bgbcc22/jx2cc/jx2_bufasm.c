@@ -1315,6 +1315,13 @@ int nmid;
 {"psubx.fa",	BGBCC_SH_NMID_PSUBFAX},
 {"pmulx.fa",	BGBCC_SH_NMID_PMULFAX},
 
+{"fadda",		BGBCC_SH_NMID_FADDA},
+{"fsuba",		BGBCC_SH_NMID_FSUBA},
+{"fmula",		BGBCC_SH_NMID_FMULA},
+{"paddx.da",	BGBCC_SH_NMID_PADDXDA},
+{"psubx.da",	BGBCC_SH_NMID_PSUBXDA},
+{"pmulx.da",	BGBCC_SH_NMID_PMULXDA},
+
 {"pshuf.b",		BGBCC_SH_NMID_PSHUFB},
 {"pshuf.w",		BGBCC_SH_NMID_PSHUFW},
 {"pshuf.l",		BGBCC_SH_NMID_PSHUFL},

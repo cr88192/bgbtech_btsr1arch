@@ -5098,7 +5098,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-2)>>1);
 			if((((s32)(d1<<24))>>24)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW8)\n");
 				break;
 //				{ BGBCC_DBGBREAK }
 			}
@@ -5116,7 +5116,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-2)>>1);
 			if((((s32)(d1<<20))>>20)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW12)\n");
 				break;
 //				{ BGBCC_DBGBREAK }
 			}
@@ -5137,7 +5137,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
 				{
-					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16)\n");
 					break;
 //					{ BGBCC_DBGBREAK }
 				}
@@ -5176,7 +5176,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
 				{
-					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16C)\n");
 					break;
 //					{ BGBCC_DBGBREAK }
 				}
@@ -5196,7 +5196,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				if((((s32)(d1<<16))>>16)!=d1)
 				{
-					BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16C)\n");
 					break;
 //					{ BGBCC_DBGBREAK }
 				}
@@ -5216,7 +5216,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<16))>>16)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16D)\n");
 				break;
 //				{ BGBCC_DBGBREAK }
 			}
@@ -5239,7 +5239,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+(d-4);
 			if((((s32)(d1<<15))>>15)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16A)\n");
 				break;
 //				{ BGBCC_DBGBREAK }
 			}
@@ -5260,7 +5260,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-6)>>1);
 			if((((s32)(d1<<8))>>8)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW24)\n");
 				break;
 //				{ BGBCC_DBGBREAK }
 			}
@@ -5287,7 +5287,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+(d-6);
 			if((((s32)(d1<<8))>>8)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range\n");
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW24C)\n");
 				break;
 //				{ BGBCC_DBGBREAK }
 			}

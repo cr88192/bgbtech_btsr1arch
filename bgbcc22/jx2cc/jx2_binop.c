@@ -3599,7 +3599,7 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 	
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
 		{
-			cdreg=BGBCC_JX2C_EmitTryGetRegisterDirty(ctx, sctx, dst);
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
 //			BGBCC_JX2_EmitShufByte8B(sctx, cdreg, sz);
 			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SWAPB, cdreg);
 			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SWAPW, cdreg);
@@ -3933,6 +3933,72 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 //		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg, ctreg);
 //		BGBCC_JX2C_EmitMovRegReg(ctx, sctx, tr1, cdreg);
 		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+
+		sctx->csrv_skip=1;
+		return(1);
+	}
+#endif
+
+#if 1
+	if((!strcmp(name, "__int64_pscheqb") ||
+		!strcmp(name, "__int64_pschneb") ||
+		!strcmp(name, "__int64_pscheqw") ||
+		!strcmp(name, "__int64_pschnew")) &&
+		(narg==2))
+	{
+		nm1=-1;
+
+		if(!strcmp(name, "__int64_pscheqb"))
+			nm1=BGBCC_SH_NMID_PSCHEQB;
+		if(!strcmp(name, "__int64_pschneb"))
+			nm1=BGBCC_SH_NMID_PSCHNEB;
+		if(!strcmp(name, "__int64_pscheqw"))
+			nm1=BGBCC_SH_NMID_PSCHEQW;
+		if(!strcmp(name, "__int64_pschnew"))
+			nm1=BGBCC_SH_NMID_PSCHNEW;
+	
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
+//		BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, cdreg);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if((!strcmp(name, "__int64_pscheqb_p") ||
+		!strcmp(name, "__int64_pschneb_p") ||
+		!strcmp(name, "__int64_pscheqw_p") ||
+		!strcmp(name, "__int64_pschnew_p")) &&
+		(narg==2))
+	{
+		nm1=-1;
+
+		if(!strcmp(name, "__int64_pscheqb_p"))
+			nm1=BGBCC_SH_NMID_PSCHEQB;
+		if(!strcmp(name, "__int64_pschneb_p"))
+			nm1=BGBCC_SH_NMID_PSCHNEB;
+		if(!strcmp(name, "__int64_pscheqw_p"))
+			nm1=BGBCC_SH_NMID_PSCHEQW;
+		if(!strcmp(name, "__int64_pschnew_p"))
+			nm1=BGBCC_SH_NMID_PSCHNEW;
+	
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx, nm1, csreg, ctreg, cdreg);
+		BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, cdreg);
 
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
@@ -4441,6 +4507,124 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 #endif
+
+
+
+#if 1
+	if(!strcmp(name, "__vnf_v3fa_dot") && (narg==2))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+			BGBCC_SH_REGCLS_QGR2);
+		tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+			BGBCC_SH_REGCLS_QGR2);
+
+		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+			BGBCC_SH_NMID_MOVQ, csreg, 0, (tr0+0)&31);
+		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+			BGBCC_SH_NMID_MOVUL, csreg, 8, (tr0+1)&31);
+
+		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+			BGBCC_SH_NMID_MOVQ, ctreg, 0, (tr1+0)&31);
+		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+			BGBCC_SH_NMID_MOVUL, ctreg, 8, (tr1+1)&31);
+
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_PMULFAX, tr0, tr1, tr0);
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_PADDFA, (tr0+0)&31, (tr0+1)&31, (tr1+0)&31);
+
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FLDCF, (tr1+0)&31, (tr0+0)&31);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FLDCFH, (tr1+0)&31, (tr0+1)&31);
+
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FADD, (tr0+0)&31, (tr0+1)&31, cdreg);
+
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+#endif
+
+#if 1
+	if(!strcmp(name, "__vnf_v4fa_dot") && (narg==2))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+			BGBCC_SH_REGCLS_QGR2);
+		tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+			BGBCC_SH_REGCLS_QGR2);
+
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_PMULFAX, csreg, ctreg, tr0);
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_PADDFA, (tr0+0)&31, (tr0+1)&31, (tr1+0)&31);
+
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FLDCF, (tr1+0)&31, (tr0+0)&31);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FLDCFH, (tr1+0)&31, (tr0+1)&31);
+
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FADD, (tr0+0)&31, (tr0+1)&31, cdreg);
+
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+#endif
+
+#if 1
+	if(!strcmp(name, "__vnf_v2fa_dot") && (narg==2))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+			BGBCC_SH_REGCLS_QGR);
+		tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+			BGBCC_SH_REGCLS_QGR);
+
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_PMULFA, csreg, ctreg, cdreg);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FLDCF, cdreg, tr0);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FLDCFH, cdreg, tr1);
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_FADD, tr0, tr1, cdreg);
+
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+#endif
+
+
 
 #if 1
 	if(!strcmp(name, "memcpy") && (narg==3))
