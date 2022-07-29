@@ -50,6 +50,12 @@ s64 BJX2_Interp_GetVirtualUsec(BJX2_Context *ctx)
 {
 	s64 rvq;
 
+	if(ctx->use_walltime)
+	{
+		rvq=clock()*1000;
+		return(rvq);
+	}
+
 	rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
 //	rv=rvq;
 
@@ -82,12 +88,14 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 	switch(ra)
 	{
 	case 0x0000:
-		rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+//		rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+		rvq=BJX2_Interp_GetVirtualUsec(ctx);
 		rv=rvq;
 //		rv=ctx->tot_cyc/ctx->tgt_mhz;
 		break;
 	case 0x0004:
-		rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+//		rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+		rvq=BJX2_Interp_GetVirtualUsec(ctx);
 		rv=rvq>>32;
 //		rv=(ctx->tot_cyc/ctx->tgt_mhz)>>32;
 		break;
@@ -290,8 +298,11 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 			lv1=0;
 			for(i=0; i<8; i++)
 			{
-//				mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
-				mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
+				if(!(ctx->no_memcost))
+				{
+//					mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+					mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
+				}
 				v=btesh2_spimmc_XrByte(ctx, (lv0>>(i*8))&255);
 				lv1|=((u64)(v&255))<<(i*8);
 			}
@@ -318,9 +329,12 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 //		ctx->iodel_cyc=200;
 //		mmgp_spi_delcyc+=200;
 //		ctx->iodel_cyc=20;
-//		mmgp_spi_delcyc+=20;
-//		mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
-		mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
+		if(!(ctx->no_memcost))
+		{
+//			mmgp_spi_delcyc+=20;
+//			mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+			mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
+		}
 
 //		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 //		ctx->regs[BJX2_REG_TEA]=addr;

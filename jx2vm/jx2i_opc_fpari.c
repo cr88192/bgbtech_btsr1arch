@@ -240,6 +240,44 @@ void BJX2_Op_FDIVXA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 #endif
 
+#if 1
+void BJX2_Op_FADDA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 a, b, c;
+	a=ctx->regs[op->rm];
+	b=ctx->regs[op->ro];
+	a=(a>>36)<<36;
+	b=(b>>36)<<36;
+	c=BJX2_FAddSoft(a, b);
+	c=(c>>36)<<36;
+	ctx->regs[op->rn]=c;
+}
+
+void BJX2_Op_FSUBA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 a, b, c;
+	a=ctx->regs[op->rm];
+	b=ctx->regs[op->ro];
+	a=(a>>36)<<36;
+	b=(b>>36)<<36;
+	c=BJX2_FSubSoft(a, b);
+	c=(c>>36)<<36;
+	ctx->regs[op->rn]=c;
+}
+
+void BJX2_Op_FMULA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 a, b, c;
+	a=ctx->regs[op->rm];
+	b=ctx->regs[op->ro];
+	a=(a>>36)<<36;
+	b=(b>>36)<<36;
+	c=BJX2_FMulSoft(a, b);
+	c=(c>>36)<<36;
+	ctx->regs[op->rn]=c;
+}
+#endif
+
 
 #if 1
 #ifdef _MSC_VER

@@ -3652,6 +3652,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_FADDD_RegRegReg;
 			op->fl|=BJX2_OPFL_NOWEX;
+			
+			if(disp11as&8)
+				op->Run=BJX2_Op_FADDA_RegRegReg;
+			
 			if(eq)
 			{
 				op->nmid=BJX2_NMID_FADDX;
@@ -3667,6 +3671,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_FSUBD_RegRegReg;
 			op->fl|=BJX2_OPFL_NOWEX;
+
+			if(disp11as&8)
+				op->Run=BJX2_Op_FSUBA_RegRegReg;
+
 			if(eq)
 			{
 				op->nmid=BJX2_NMID_FSUBX;
@@ -3682,6 +3690,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_FMULD_RegRegReg;
 			op->fl|=BJX2_OPFL_NOWEX;
+
+			if(disp11as&8)
+				op->Run=BJX2_Op_FMULA_RegRegReg;
+
 			if(eq)
 			{
 				op->nmid=BJX2_NMID_FMULX;

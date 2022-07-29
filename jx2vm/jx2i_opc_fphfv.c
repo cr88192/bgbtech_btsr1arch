@@ -1606,18 +1606,25 @@ void BJX2_Op_LDTEX_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}else
 		if(((vrb>>57)&7)==2)
 	{
-		txb=BJX2_MemGetQWord(ctx,
-			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0));
-		txc=BJX2_MemGetQWord(ctx,
-			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+8));
+//		txb=BJX2_MemGetQWord(ctx,
+//			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0));
+//		txc=BJX2_MemGetQWord(ctx,
+//			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+8));
+		BJX2_MemGetXWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0),
+			&txb, &txc);
 		vc=TKRA_CachedBlkUtx3L(txb, txc, txi);
 	}else
 		if(((vrb>>57)&7)==3)
 	{
-		txb=BJX2_MemGetQWord(ctx,
-			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0));
-		txc=BJX2_MemGetQWord(ctx,
-			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+8));
+//		txb=BJX2_MemGetQWord(ctx,
+//			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0));
+//		txc=BJX2_MemGetQWord(ctx,
+//			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+8));
+		BJX2_MemGetXWord(ctx,
+			(bjx2_addr)vrb+((bjx2_addr)(txi>>4)*16+0),
+			&txb, &txc);
+
 		vc=TKRA_CachedBlkUtx3H(txb, txc, txi);
 	}else
 		if(((vrb>>57)&7)==6)

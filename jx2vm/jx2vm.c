@@ -758,19 +758,27 @@ int bjx2_vmputc(BJX2_Context *ctx, int val)
 {
 	if(val=='\n')
 	{
+		ctx->puts_linebuf[ctx->puts_linepos++]=val;
+
 		ctx->puts_linebuf[ctx->puts_linepos]=0;
 		ctx->puts_linepos=0;
 
 		bjx2_vmcheckdbg(ctx, ctx->puts_linebuf);
+
+		fputs(ctx->puts_linebuf, bjx2_vmoutlog);
+		fputs(ctx->puts_linebuf, stdout);
 	}else
 	{
 		ctx->puts_linebuf[ctx->puts_linepos++]=val;
 	}
 
+#if 0
 	if(bjx2_vmoutlog)
 		fputc(val, bjx2_vmoutlog);
 
 	fputc(val, stdout);
+#endif
+
 	return(0);
 
 #if 0
@@ -926,7 +934,7 @@ int main(int argc, char *argv[])
 	char *ifn, *s, *t, *l1icfg, *l1dcfg, *l2cfg;
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
-	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost;
+	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost, walltime;
 	int i;
 	
 	rd_n_add=0;
@@ -944,6 +952,7 @@ int main(int argc, char *argv[])
 	l1icfg=NULL;
 	l1dcfg=NULL;
 	l2cfg=NULL;
+	walltime=0;
 	
 	for(i=1; i<argc; i++)
 	{
@@ -960,6 +969,17 @@ int main(int argc, char *argv[])
 
 			if(!strcmp(argv[i], "--mhz"))
 				{ mhz=atoi(argv[i+1]); i++; continue; }
+
+			if(!strcmp(argv[i], "--walltime"))
+				{ walltime=1; continue; }
+
+			if(!strcmp(argv[i], "--wallspeed"))
+			{
+				walltime=1;
+				nomemcost=3;
+				mhz=900;
+				continue;
+			}
 
 			if(!strcmp(argv[i], "--swap"))
 				{ swapsz=atoi(argv[i+1]); i++; continue; }
@@ -1079,6 +1099,8 @@ int main(int argc, char *argv[])
 	BJX2_MemSimSetConfigL1I(ctx, l1icfg);
 	BJX2_MemSimSetConfigL1D(ctx, l1dcfg);
 	BJX2_MemSimSetConfigL2(ctx, l2cfg);
+	
+	ctx->use_walltime=walltime;
 	
 	BJX2_ContextSetupZero(ctx);
 	if(ifn)

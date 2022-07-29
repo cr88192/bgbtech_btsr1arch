@@ -2425,15 +2425,26 @@ s32 BJX2_MemGetDWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 	bjx2_addr addr;
 	int ra, lo, hi;
 
-	if((addr0&4095)>4092)
+	if(ctx->regs[BJX2_REG_MMCR]&1)
 	{
-		lo=BJX2_MemGetWord_Dfl(ctx, addr0+0, addrh);
-		hi=BJX2_MemGetWord_Dfl(ctx, addr0+2, addrh);
-		ra=((u16)lo)|(hi<<16);
-		return(ra);
+		if((addr0&4095)>4092)
+		{
+			lo=BJX2_MemGetWord_Dfl(ctx, addr0+0, addrh);
+			hi=BJX2_MemGetWord_Dfl(ctx, addr0+2, addrh);
+			ra=((u16)lo)|(hi<<16);
+			return(ra);
+		}
+
+		addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
+	}else
+	{
+		if(ctx->regs[BJX2_REG_SR]&(1<<31))
+			addr=(addr0&0x0000FFFFFFFFFFFFULL);
+		else
+			addr=(addr0&0x00000000FFFFFFFFULL);
 	}
 
-	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
+//	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -2497,15 +2508,25 @@ s64 BJX2_MemGetQWord_Dfl(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 	s64 t, lo, hi;
 	int ra;
 
-	if((addr0&4095)>4088)
+	if(ctx->regs[BJX2_REG_MMCR]&1)
 	{
-		lo=BJX2_MemGetDWord_Dfl(ctx, addr0+0, addrh);
-		hi=BJX2_MemGetDWord_Dfl(ctx, addr0+4, addrh);
-		t=((u32)lo)|(hi<<32);
-		return(t);
+		if((addr0&4095)>4088)
+		{
+			lo=BJX2_MemGetDWord_Dfl(ctx, addr0+0, addrh);
+			hi=BJX2_MemGetDWord_Dfl(ctx, addr0+4, addrh);
+			t=((u32)lo)|(hi<<32);
+			return(t);
+		}
+
+		addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
+	}else
+	{
+		if(ctx->regs[BJX2_REG_SR]&(1<<31))
+			addr=(addr0&0x0000FFFFFFFFFFFFULL);
+		else
+			addr=(addr0&0x00000000FFFFFFFFULL);
 	}
 
-	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -2574,14 +2595,25 @@ int BJX2_MemGetXWord_Dfl(BJX2_Context *ctx,
 	s64 t;
 	int ra;
 
-	if((addr0&4095)>4080)
+	if(ctx->regs[BJX2_REG_MMCR]&1)
 	{
-		*rvlo=BJX2_MemGetQWord_Dfl(ctx, addr0+0, addrh);
-		*rvhi=BJX2_MemGetQWord_Dfl(ctx, addr0+8, addrh);
-		return(0);
+		if((addr0&4095)>4080)
+		{
+			*rvlo=BJX2_MemGetQWord_Dfl(ctx, addr0+0, addrh);
+			*rvhi=BJX2_MemGetQWord_Dfl(ctx, addr0+8, addrh);
+			return(0);
+		}
+
+		addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
+	}else
+	{
+		if(ctx->regs[BJX2_REG_SR]&(1<<31))
+			addr=(addr0&0x0000FFFFFFFFFFFFULL);
+		else
+			addr=(addr0&0x00000000FFFFFFFFULL);
 	}
 
-	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
+//	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 1);
 	if(ctx->status)
 		return(0);
 
@@ -3006,14 +3038,25 @@ int BJX2_MemSetDWord_Dfl(BJX2_Context *ctx,
 	bjx2_addr addr;
 	int ra, ra4;
 
-	if((addr0&4095)>4092)
+	if(ctx->regs[BJX2_REG_MMCR]&1)
 	{
-		BJX2_MemSetWord_Dfl(ctx, addr0+0, addrh, (val    )&65535);
-		BJX2_MemSetWord_Dfl(ctx, addr0+2, addrh, (val>>16)&65535);
-		return(0);
+		if((addr0&4095)>4092)
+		{
+			BJX2_MemSetWord_Dfl(ctx, addr0+0, addrh, (val    )&65535);
+			BJX2_MemSetWord_Dfl(ctx, addr0+2, addrh, (val>>16)&65535);
+			return(0);
+		}
+
+		addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
+	}else
+	{
+		if(ctx->regs[BJX2_REG_SR]&(1<<31))
+			addr=(addr0&0x0000FFFFFFFFFFFFULL);
+		else
+			addr=(addr0&0x00000000FFFFFFFFULL);
 	}
 
-	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
+//	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -3077,24 +3120,25 @@ int BJX2_MemSetQWord_Dfl(BJX2_Context *ctx,
 	bjx2_addr addr;
 	int ra, ra4;
 
-	if((addr0&4095)>4088)
+	if(ctx->regs[BJX2_REG_MMCR]&1)
 	{
-//		BJX2_MemSetByte_Dfl(ctx, addr0+0, addrh, (val    )&255);
-//		BJX2_MemSetByte_Dfl(ctx, addr0+1, addrh, (val>> 8)&255);
-//		BJX2_MemSetByte_Dfl(ctx, addr0+2, addrh, (val>>16)&255);
-//		BJX2_MemSetByte_Dfl(ctx, addr0+3, addrh, (val>>24)&255);
-//		BJX2_MemSetByte_Dfl(ctx, addr0+4, addrh, (val>>32)&255);
-//		BJX2_MemSetByte_Dfl(ctx, addr0+5, addrh, (val>>40)&255);
-//		BJX2_MemSetByte_Dfl(ctx, addr0+6, addrh, (val>>48)&255);
-//		BJX2_MemSetByte_Dfl(ctx, addr0+7, addrh, (val>>56)&255);
+		if((addr0&4095)>4088)
+		{
+			BJX2_MemSetDWord_Dfl(ctx, addr0+0, addrh, (u32)(val    ));
+			BJX2_MemSetDWord_Dfl(ctx, addr0+4, addrh, (u32)(val>>32));
+			return(0);
+		}
 
-		BJX2_MemSetDWord_Dfl(ctx, addr0+0, addrh, (u32)(val    ));
-		BJX2_MemSetDWord_Dfl(ctx, addr0+4, addrh, (u32)(val>>32));
-
-		return(0);
+		addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
+	}else
+	{
+		if(ctx->regs[BJX2_REG_SR]&(1<<31))
+			addr=(addr0&0x0000FFFFFFFFFFFFULL);
+		else
+			addr=(addr0&0x00000000FFFFFFFFULL);
 	}
 
-	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
+//	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -3162,14 +3206,25 @@ int BJX2_MemSetXWord_Dfl(BJX2_Context *ctx,
 	bjx2_addr addr;
 	int ra, ra4;
 
-	if((addr0&4095)>4080)
+	if(ctx->regs[BJX2_REG_MMCR]&1)
 	{
-		BJX2_MemSetQWord_Dfl(ctx, addr0+0, addrh, vlo);
-		BJX2_MemSetQWord_Dfl(ctx, addr0+8, addrh, vhi);
-		return(0);
+		if((addr0&4095)>4080)
+		{
+			BJX2_MemSetQWord_Dfl(ctx, addr0+0, addrh, vlo);
+			BJX2_MemSetQWord_Dfl(ctx, addr0+8, addrh, vhi);
+			return(0);
+		}
+
+		addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
+	}else
+	{
+		if(ctx->regs[BJX2_REG_SR]&(1<<31))
+			addr=(addr0&0x0000FFFFFFFFFFFFULL);
+		else
+			addr=(addr0&0x00000000FFFFFFFFULL);
 	}
 
-	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
+//	addr=BJX2_MemTranslateTlbW(ctx, addr0, addrh, 2);
 	if(ctx->status)
 		return(0);
 
@@ -3219,8 +3274,8 @@ int BJX2_MemSetXWord_Dfl(BJX2_Context *ctx,
 	{
 //		ra=addr-sp->addr_base;
 		ra=(addr-sp->modbase)&(sp->modmask);
-		BJX2_PtrSetQWordOfsLe(sp->data, ra, vlo);
-		BJX2_PtrSetQWordOfsLe(sp->data, ra, vhi);
+		BJX2_PtrSetQWordOfsLe(sp->data, ra+0, vlo);
+		BJX2_PtrSetQWordOfsLe(sp->data, ra+8, vhi);
 		return(0);
 	}
 #endif

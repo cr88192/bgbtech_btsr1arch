@@ -2199,7 +2199,19 @@ void BJX2_Op_BTRNSQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 u32 BJX2_PMORT_U16(u16 x)
 {
+	const byte pmort_exptab[16] = {
+		0x00, 0x01, 0x04, 0x05,  0x10, 0x11, 0x14, 0x15,
+		0x40, 0x41, 0x44, 0x45,  0x50, 0x51, 0x54, 0x55
+	};
 	u32 x1;
+
+	x1=	(pmort_exptab[(x    )&15]    ) |
+		(pmort_exptab[(x>> 4)&15]<< 8) |
+		(pmort_exptab[(x>> 8)&15]<<16) |
+		(pmort_exptab[(x>>12)&15]<<24) ;
+	return(x1);
+
+#if 0
 	x1=0;
 	if(x&0x0001)x1|=0x00000001;
 	if(x&0x0002)x1|=0x00000004;
@@ -2218,6 +2230,7 @@ u32 BJX2_PMORT_U16(u16 x)
 	if(x&0x4000)x1|=0x10000000;
 	if(x&0x8000)x1|=0x40000000;
 	return(x1);
+#endif
 }
 
 u64 BJX2_PMORT_U32(u32 x)

@@ -818,7 +818,8 @@ u64 ex_regs[128];				//GPRs and CRs
 BJX2_Trace *rttr[64];		//return traces (mini hash)
 BJX2_Trace *prttr;			//return traces (pred)
 
-BJX2_Trace *trhash[1024];
+// BJX2_Trace *trhash[1024];
+BJX2_Trace *trhash[4096];
 BJX2_Trace *trcur;			//cached trace for interpreter loop.
 
 BJX2_MemSpan *span[64];	//memory spans, sorted by address
@@ -885,6 +886,8 @@ s64 tot_nbops;
 s16 tgt_mhz;				//target MHz
 u16 rcp_mhz;				//reciprocal MHz
 int iodel_cyc;				//IO delay cycles
+
+byte	use_walltime;
 
 int nttick_irq;				//number of timer-tick IRQs
 int mem_cyc;				//cache miss cycles

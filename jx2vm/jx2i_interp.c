@@ -156,7 +156,8 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 #endif
 
 #if 1
-	h=((addr*65521)>>16)&1023;
+//	h=((addr*65521)>>16)&1023;
+	h=((addr*65521)>>16)&4095;
 
 #if 1
 	cur=ctx->rttr[h&63];
@@ -265,7 +266,8 @@ int BJX2_DecodeTraceFlushCache(BJX2_Context *ctx)
 	for(i=0; i<64; i++)
 		ctx->rttr[i]=NULL;
 	
-	for(i=0; i<1024; i++)
+//	for(i=0; i<1024; i++)
+	for(i=0; i<4096; i++)
 	{
 		cur=ctx->trhash[i];
 		ctx->trhash[i]=NULL;
@@ -2224,7 +2226,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	memset(tra, 0, 262144*sizeof(void *));
 
 	trn=0; trtops=0;
-	for(i=0; i<1024; i++)
+//	for(i=0; i<1024; i++)
+	for(i=0; i<4096; i++)
 	{
 		trcur=ctx->trhash[i];
 
