@@ -101,7 +101,7 @@ __PDPCLIB_API__ int CTYP __start()
 	char **penv;
 
 	__start_first();
-	tk_puts("TK: Start A0\n");
+//	tk_puts("TK: Start A0\n");
 	__start_early();
 
 	p=__get_cmdline();
@@ -112,7 +112,7 @@ __PDPCLIB_API__ int CTYP __start()
 		__debugbreak();
 	}
 
-	tk_puts("A1\n");
+//	tk_puts("A1\n");
 
 	__init_stdin();
 	
@@ -192,7 +192,7 @@ __PDPCLIB_API__ int CTYP __start()
 		__userFiles[x] = NULL;
 	}
 
-	tk_puts("A2\n");
+//	tk_puts("A2\n");
 
 	if(p)
 	{
@@ -231,7 +231,7 @@ __PDPCLIB_API__ int CTYP __start()
 		argv[0] = "";
 	}
 
-	tk_puts("A3\n");
+//	tk_puts("A3\n");
 
 	if(p)
 	{
@@ -286,11 +286,11 @@ __PDPCLIB_API__ int CTYP __start()
 		argc = 1;
 	}
 
-	tk_puts("A4\n");
+//	tk_puts("A4\n");
 
 	__start_late();
 
-	tk_puts("TK: Start Main\n");
+//	tk_puts("TK: Start Main\n");
 
 	rc = main(argc, argv);
 	__exit(rc);

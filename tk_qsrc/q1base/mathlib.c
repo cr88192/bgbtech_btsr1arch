@@ -279,18 +279,24 @@ BoxOnPlaneSide:
 
 	/* dist1 = _DotProduct (p->normal, cmaxs); */
 	PMULX.F		R22, R18, R16
+//	PMULX.FA	R22, R18, R16
 	PADD.F		R16, R17, R3
+//	PADD.FA		R16, R17, R3
 	FLDCF		R3, R16
 	FLDCFH		R3, R17
 	FADD		R16, R17, R4
+//	FADDA		R16, R17, R4
 	/* R4 = dist1 */
 
 	/* dist2 = _DotProduct (p->normal, cmins); */
 	PMULX.F		R20, R18, R16
+//	PMULX.FA	R20, R18, R16
 	PADD.F		R16, R17, R3
+//	PADD.FA		R16, R17, R3
 	FLDCF		R3, R16
 	FLDCFH		R3, R17
 	FADD		R16, R17, R5
+//	FADDA		R16, R17, R5
 	/* R5 = dist2 */
 
 	MOV			0, R2
@@ -514,6 +520,10 @@ void _VectorAdd (vec3_t veca, vec3_t vecb, vec3_t out);
 void _VectorSubtract (vec3_t veca, vec3_t vecb, vec3_t out);
 void _VectorCopy (vec3_t in, vec3_t out);
 
+//vec_t _DotProductFa (const vec3_t v1, const vec3_t v2);
+//void _VectorAddFa (vec3_t veca, vec3_t vecb, vec3_t out);
+//void _VectorSubtractFa (vec3_t veca, vec3_t vecb, vec3_t out);
+
 __asm {
 
 _VectorAdd:
@@ -522,6 +532,7 @@ _VectorAdd:
 	MOV.Q		(R5, 0), R22
 	MOVU.L		(R5, 8), R23
 	PADDX.F		R20, R22, R16
+//	PADDX.FA	R20, R22, R16
 	MOV.Q		R16, (R6, 0)
 	MOVU.L		R17, (R6, 8)
 	RTSU
@@ -532,6 +543,7 @@ _VectorSubtract:
 	MOV.Q		(R5, 0), R22
 	MOVU.L		(R5, 8), R23
 	PSUBX.F		R20, R22, R16
+//	PSUBX.FA	R20, R22, R16
 	MOV.Q		R16, (R6, 0)
 	MOVU.L		R17, (R6, 8)
 	RTSU
@@ -543,7 +555,9 @@ _DotProduct:
 	MOVU.L		(R5, 8), R23
 
 	PMULX.F		R20, R22, R16
+//	PMULX.FA	R20, R22, R16
 	PADD.F		R16, R17, R3
+//	PADD.FA		R16, R17, R3
 	FLDCF		R3, R18
 	FLDCFH		R3, R19
 	FADD		R18, R19, R2
@@ -555,6 +569,7 @@ _VectorCopy:
 	MOV.Q	R6, (R5, 0)
 	MOVU.L	R7, (R5, 8)
 	RTSU
+
 };
 #else
 vec_t _DotProduct (const vec3_t v1, const vec3_t v2)

@@ -57,6 +57,8 @@ void tk_sysc_exitpgm(int val)
 	__longj_sys(tk_sysc_exit, val|0x10000);
 }
 
+void *TK_DlGetApiContextA(u64 apiname, u64 subname);
+
 // __declspec(syscall)
 // int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 
@@ -229,6 +231,11 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				ret=TK_URES_TRUE;
 				break;
 
+			case 0x1D:
+				p=TK_DlGetApiContextB(task, args[0].l, args[1].l);
+				*((void **)vParm1)=p;
+				ret=TK_URES_TRUE;
+				break;
 			case 0x1E:
 				p=TK_DlOpenB(task, args[0].p, args[1].i);
 				*((void **)vParm1)=p;

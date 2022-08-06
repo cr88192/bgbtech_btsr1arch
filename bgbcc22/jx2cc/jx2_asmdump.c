@@ -1060,7 +1060,7 @@ int BGBCC_JX2DA_EmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	return(1);
 }
 
-int BGBCC_JX2DA_EmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
+int BGBCC_JX2DA_EmitOpImm(BGBCC_JX2_Context *ctx, int nmid, s64 imm)
 {
 	char *snm;
 
@@ -1069,7 +1069,7 @@ int BGBCC_JX2DA_EmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 		
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %d%s", snm, imm,
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %lld%s", snm, imm,
 		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
@@ -1125,7 +1125,7 @@ int BGBCC_JX2DA_EmitOpRegRegReg(BGBCC_JX2_Context *ctx,
 }
 
 int BGBCC_JX2DA_EmitOpImmReg(BGBCC_JX2_Context *ctx,
-	int nmid, int imm, int reg)
+	int nmid, s64 imm, int reg)
 {
 	char *snm, *srn;
 
@@ -1135,13 +1135,13 @@ int BGBCC_JX2DA_EmitOpImmReg(BGBCC_JX2_Context *ctx,
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %d, %s%s", snm, imm, srn,
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %lld, %s%s", snm, imm, srn,
 		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }
 
 int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,
-	int nmid, int rm, int imm, int rn)
+	int nmid, int rm, s64 imm, int rn)
 {
 	char *snm, *srm, *srn;
 
@@ -1152,7 +1152,7 @@ int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %d, %s%s",
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %lld, %s%s",
 		snm, srm, imm, srn,
 		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
@@ -1475,7 +1475,7 @@ int BGBCC_JX2DA_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 }
 
 int BGBCC_JX2DA_EmitLoadRegImm(
-	BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm)
+	BGBCC_JX2_Context *ctx, int nmid, int reg, s64 imm)
 {
 	char *snm, *srm, *srn, *sro;
 
@@ -1508,7 +1508,7 @@ int BGBCC_JX2DA_EmitLoadRegImm(
 }
 
 int BGBCC_JX2DA_EmitLoadRegImm64(
-	BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm)
+	BGBCC_JX2_Context *ctx, int nmid, int reg, s64 imm)
 {
 	char *snm, *srm, *srn, *sro;
 

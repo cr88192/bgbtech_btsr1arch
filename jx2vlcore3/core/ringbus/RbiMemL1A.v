@@ -69,6 +69,7 @@ module RbiMemL1A(
 	dcOutValB,		dcInValB,
 	dcOutOK,		dcInHold,
 	dcOutHold,		dcBusWait,
+	dcInLdOp,
 
 	regInDlr,		regInDhr,
 	regInMmcr,		regInKrr,
@@ -107,6 +108,7 @@ output[ 1: 0]	dcOutOK;		//set if we have a valid value.
 input			dcInHold;
 output			dcOutHold;		//we need to stall the pipeline
 output			dcBusWait;		//we are waiting on the bus
+input [ 4: 0]	dcInLdOp;		//Load/Store Operation
 
 input[47:0]		dcInAddrB;		//input address B
 input [ 4: 0]	dcInOpmB;		//input command B
@@ -281,6 +283,9 @@ wire[5:0]		dfInOpmB;
 assign		dfInOpm		= { dcInOpm [4:3], 1'b0, dcInOpm [2:0] };
 assign		dfInOpmB	= { dcInOpmB[4:3], 1'b0, dcInOpmB[2:0] };
 
+wire[7:0]		dfInLdOp;
+assign		dfInLdOp		= { 3'b000, dcInLdOp [4:0] };
+
 wire			ifMemWait;
 wire[127:0]		ifOutExc;
 
@@ -350,6 +355,7 @@ RbiMemDcA		memDc(
 	regInSr,		dfOutWait,
 	dfOutExc,		regInMmcr,
 	regKrrHashDsL,	tRngN2,
+	dfInLdOp,
 
 	dfMemAddrI,		dfMemAddrO,
 	dfMemDataI,		dfMemDataO,

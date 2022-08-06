@@ -8,7 +8,8 @@ float floorf(float x)
 	{ return(floor(x)); }
 float fmodf(float x, float y);
 	{ return(fmod(x, y)); }
-float atan2f(float y, float x);
+float atan2f(float y, float x)
+	{ return(atan2(y, x)); }
 float frexpf(float value, int *exp);
 float ldexpf(float x, int exp);
 float modff(float value, float *iptr);

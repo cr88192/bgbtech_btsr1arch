@@ -1,114 +1,213 @@
-#include <tkgdi.h>
+#include <tkgdi/tkgdi.h>
 
-int tkgdi_vid_frnum;
-int tkgdi_vid_scrmode;
+void *TK_DlGetApiContextA(u64 apiname, u64 subname);
 
-void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
-void I_FinishUpdate_ScanCopy_Flip(u16 *ics, u32 *ict, int blkn);
+static _tkgdi_context_t *tkgdi_current_context = NULL;
 
-/* For the 320x200 hi-color mode. */
-int TKGDI_BlitUpdate_BlkRgb555(
-	int dxo, int dyo, int dxs, int dys,
-	u16 *sbuf,
-	int sbxo, int sbyo,
-	int sbxs, int sbys)
+_tkgdi_context_t *tkgGetCurrentContext()
 {
-	u32 *conbufa, *conbufb, *conbufb2;
-	u32 *ict;
-	u16 *ics;
-	int bym, byn, bxm, bxn;
-	int bx, by, flip;
+	_tkgdi_context_t *ctx;
 
-	flip=1;
-	if(sbys<0)
+//	tk_printf("tkgGetCurrentContext: 0\n");
+
+	ctx=tkgdi_current_context;
+
+//	__debugbreak();
+
+	if(ctx)
 	{
-		sbys=!sbys;
-		flip=!flip;
-	}
+//		tk_printf("tkgGetCurrentContext: A\n");
+//		__debugbreak();
+	
+		if(ctx->vt->magic0 != ((void *)0x12345678))
+			{ __debugbreak(); }
+		if(ctx->vt->magic1 != ((void *)0x12345678))
+			{ __debugbreak(); }
+		if(ctx->vt->magic2 != ((void *)0x12345678))
+			{ __debugbreak(); }
 
-//	conbufa=(u32 *)0xA00A0000;
-	conbufa=(u32 *)0xFFFFF00A0000ULL;
-//	conbufb=conbufa+(80*61);
-
-//	conbufb=(u32 *)0x0000080A0000ULL;
-	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
-	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
-
-	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
-	tkgdi_vid_frnum++;
-
-	conbufa[0]=tkgdi_vid_frnum;
-	if(conbufb2[0]==tkgdi_vid_frnum)		//Detect if MMIO maps here.
-		conbufa=conbufb;
-
-	bxm=dxo>>2;
-	bxn=(dxo+dxs)>>2;
-	bym=dyo>>2;
-	byn=(dyo+dys)>>2;
-
-	ics=sbuf+(sbyo*sbxs)+sbxo;
-	ict=conbufa+((bym*80+bxm)*8);
-	if(flip)
-	{
-		ics+=((dys>>4)-1)*(4*sbxs);
+		return(ctx);
 	}
 	
-	for(by=bym; by<byn; by++)
-	{
-		if(flip)
-		{
-			I_FinishUpdate_ScanCopy_Flip(ics16, ict, dxs>>2);
-			ics-=4*sbxs;
-		}else
-		{
-			I_FinishUpdate_ScanCopy(ics16, ict, dxs>>2);
-			ics+=4*sbxs;
-		}
-		ict+=80*8;
-	}
+//	tk_printf("tkgGetCurrentContext: B\n");
+//	__debugbreak();
+
+	ctx=TK_DlGetApiContextA(TK_FCC_GDI, TK_FCC_GDI);
+	tkgdi_current_context=ctx;
+
+//	__debugbreak();
 	
-	return(0);
+	if(!ctx || !ctx->vt)
+		{ __debugbreak(); }
+	if(ctx->vt->magic0 != ((void *)0x12345678))
+		{ __debugbreak(); }
+	if(ctx->vt->magic1 != ((void *)0x12345678))
+		{ __debugbreak(); }
+	if(ctx->vt->magic2 != ((void *)0x12345678))
+		{ __debugbreak(); }
+	
+	return(ctx);
 }
-
 
 TKGSTATUS tkgBlitSubImage(TKGHDC dev, int xo_dev, int yo_dev,
 	TKGDI_BITMAPINFOHEADER *info, void *data,
 	int xo_src, int yo_src, int xs_src, int ys_src)
 {
-	int xs, ys, mxs, mys;
-	if(dev<=0)
-		return(-1);
-		
-	if(dev==1)
-	{
-		xs=xs_src;
-		ys=ys_src;
-		
-		mxs=320-xo_dev;
-		mys=200-yo_dev;
-		
-		if(xs>mxs)
-			xs=mxs;
-		if(ys>mys)
-			ys=mys;
-	
-		TKGDI_BlitUpdate_BlkRgb555(xo_dev, yo_dev, xs, ys,
-			data, xo_src, yo_src, info->biWidth, info->biHeight);
-	}
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->BlitSubImage(ctx,
+		dev, xo_dev, yo_dev,
+		info, data,
+		xo_src, yo_src, xs_src, ys_src));
 }
 
 TKGSTATUS tkgBlitImage(TKGHDC dev, int xo_dev, int yo_dev,
 	TKGDI_BITMAPINFOHEADER *info, void *data)
 {
-	return(tkgBlitSubImage(dev, xo_dev, yo_dev, info, data,
+	return(tkgBlitSubImage(
+		dev, xo_dev, yo_dev, info, data,
 		0, 0, info->biWidth, info->biHeight));
 }
 
-TKGSTATUS tkgQueryDisplay(TKGDI_BITMAPINFOHEADER *ifmt,
+TKGSTATUS tkgQueryDisplay(
+	TKGHDC dev,		TKGFOURCC parm,
+	void *ifmt,		void *ofmt)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->QueryDisplay(ctx, dev, parm, ifmt, ofmt));
+}
+
+TKGSTATUS tkgQueryCreateDisplay(
+	TKGDI_BITMAPINFOHEADER *ifmt,
 	TKGDI_BITMAPINFOHEADER *ofmt)
 {
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->QueryDisplay(ctx, 0, TKGDI_FCC_crea, ifmt, ofmt));
 }
+
 
 TKGHDC tkgCreateDisplay(TKGDI_BITMAPINFOHEADER *info)
 {
+	_tkgdi_context_t *ctx;
+	tk_printf("tkgCreateDisplay: A\n");
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->CreateDisplay(ctx, 0, TKGDI_FCC_crea, info));
+}
+
+TKGHDC tkgCreateWindow(
+	TKGHDC hDev,
+	char *title,
+	u64 style,
+	int x_org,
+	int y_org,
+	TKGDI_BITMAPINFOHEADER *info)
+{
+	_tkgdi_context_t *ctx;
+	TKGDI_RECT tRect;
+	TKGHDC hDc;
+	
+	if(hDev<=0)
+		hDev=1;
+	
+	tk_printf("tkgCreateWindow: A\n");
+	ctx=tkgGetCurrentContext();
+	hDc=ctx->vt->CreateDisplay(ctx, hDev, TKGDI_FCC_crea, info);
+	if(hDc<=0)
+		return(hDc);
+	
+	if(x_org || y_org)
+	{
+		tRect.left=x_org;
+		tRect.top=y_org;
+		tRect.right=x_org+info->biWidth;
+		tRect.bottom=y_org+info->biHeight;
+		tkgModifyDisplay(hDc, TKGDI_FCC_move, &tRect, NULL);
+	}
+	
+	if(title)
+	{
+		tkgModifyDisplay(hDc, TKGDI_FCC_text, title, NULL);
+	}
+	
+	if(style)
+	{
+		tkgModifyDisplay(hDc, TKGDI_FCC_styl, &style, NULL);
+	}
+	
+	return(hDc);
+}
+
+TKGSTATUS tkgDestroyDisplay(TKGHDC dev)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->DestroyDisplay(ctx));
+}
+
+TKGSTATUS tkgModifyDisplay(
+	TKGHDC dev,		TKGFOURCC parm,
+	void *ifmt,		void *ofmt)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->ModifyDisplay(ctx, dev, parm, ifmt, ofmt));
+}
+
+TKGSTATUS tkgResizeDisplay(TKGHDC dev, TKGDI_BITMAPINFOHEADER *info)
+{
+	return(tkgModifyDisplay(dev, TKGDI_FCC_resz, info, NULL));
+}
+
+TKGSTATUS tkgDrawString(TKGHDC dev, int xo_dev, int yo_dev,
+	char *text, TKGHFONT font, long long mode)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->DrawString(ctx, dev, xo_dev, yo_dev,
+		text, font, mode));
+}
+
+
+TKGHSND tkgCreateAudioDevice(TKGHDC dev,
+	TKGFOURCC clz, TKGDI_WAVEFORMATEX *info)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->CreateAudioDevice(ctx, dev, clz, info));
+}
+
+TKGSTATUS tkgDestroyAudioDevice(TKGHSND dev)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->DestroyAudioDevice(ctx, dev));
+}
+
+TKGSTATUS tkgModifyAudioDevice(
+	TKGHSND dev,	TKGFOURCC parm,
+	void *ifmt,		void *ofmt)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->ModifyAudioDevice(ctx, dev, parm, ifmt, ofmt));
+}
+
+
+TKGSTATUS tkgQueryAudioDevice(
+	TKGHSND dev,	TKGFOURCC parm,
+	void *ifmt,		void *ofmt)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->QueryAudioDevice(ctx, dev, parm, ifmt, ofmt));
+}
+
+TKGSTATUS tkgWriteSamples(
+	TKGHSND dev, void *buffer, int cnt, int ovcnt)
+{
+	_tkgdi_context_t *ctx;
+	ctx=tkgGetCurrentContext();
+	return(ctx->vt->WriteAudioSamples(ctx, dev, buffer, cnt, ovcnt));
 }

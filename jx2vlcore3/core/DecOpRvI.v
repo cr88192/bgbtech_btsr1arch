@@ -54,7 +54,8 @@ input[27:0]		istrJBits;
 output[32:0]	idImm;
 output[8:0]		idUCmd;
 output[8:0]		idUIxt;
-output[3:0]		idUFl;
+// output[3:0]		idUFl;
+output[7:0]		idUFl;
 
 wire			isAltOp;
 wire			isOp24;
@@ -80,6 +81,7 @@ reg[32:0]		opImm;
 reg[8:0]		opUCmd;
 reg[8:0]		opUIxt;
 reg[3:0]		opUFl;
+reg[3:0]		opULdOp;
 
 assign	idRegN = opRegN;
 assign	idRegM = opRegM;
@@ -88,7 +90,8 @@ assign	idRegP = opRegP;
 assign	idImm = opImm;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
-assign	idUFl = opUFl;
+// assign	idUFl = opUFl;
+assign	idUFl = { opULdOp, opUFl };
 
 `reg_gpr	opRegM_Dfl;
 `reg_gpr	opRegO_Dfl;
@@ -735,7 +738,8 @@ begin
 
 	opUCmd = { opCcty, opNmid };
 
-	opUFl = 0;
+	opUFl	= 0;
+	opULdOp	= 0;
 
 	case(opFmid)
 		JX2_FMID_Z: begin

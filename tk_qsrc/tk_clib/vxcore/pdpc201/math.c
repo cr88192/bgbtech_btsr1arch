@@ -57,6 +57,22 @@
 // static const double ln10 = 2.3025850929940456840179914546844;
 // static const double ln2 = 0.69314718055994530941723212145818 ;
 
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
+#ifndef M_PI_2 /* (M_PI/2) */
+#define M_PI_2 1.5707963267948966192313216916398
+#endif
+
+#ifndef M_TAU	/* (2.0*M_PI) */
+#define M_TAU 6.283185307179586476925286766559
+#endif
+
+#ifndef M_TAU_R	/* (1.0/(2*M_PI)) */
+#define M_TAU_R 0.15915494309189533576888376337251
+#endif
+
 
 __PDPCLIB_API__ double ceil(double x)
 {
@@ -232,6 +248,28 @@ __PDPCLIB_API__ double asin (double y)
 
 */
 
+#if 1
+__PDPCLIB_API__ double atan(double ang)
+{
+	double t, x, th, th2;
+	long i;
+
+    i=ang*M_TAU_R;
+    th=ang-(i*M_TAU);
+
+	x=th;
+	th2=th*th;
+	t =x*( 1.0      ); x*=th2;
+	t+=x*(-1.0/  3.0); x*=th2;
+	t+=x*( 1.0/  5.0); x*=th2;
+	t+=x*(-1.0/  7.0); x*=th2;
+	t+=x*( 1.0/  9.0); x*=th2;
+	t+=x*(-1.0/ 11.0); x*=th2;
+	return(t);
+}
+#endif
+
+#if 0
 __PDPCLIB_API__ double atan (double x)
 {
 	int i, n;
@@ -290,6 +328,7 @@ __PDPCLIB_API__ double atan (double x)
 	return(answer);
 
 }
+#endif
 
 
 /* atan2 was taken from libnix and modified slightly */

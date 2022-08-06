@@ -32,6 +32,7 @@
 
 `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
 `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
+`define	jx2_use_mem_ldop		//Load/Store Operations
 
 `define	jx2_fpu_enable_fdiv		//enable FDIV
 

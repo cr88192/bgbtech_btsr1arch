@@ -1,3 +1,5 @@
+#include <tkgdi/tkgdi.h>
+
 #define TKGDI_JPG_RGBA 0
 #define TKGDI_JPG_BGRA 1
 
@@ -896,13 +898,13 @@ TKGDI_Video_Stats *TKGDI_AVI_GetStats(TKGDI_AVI_Context *ctx)
 	switch(i)
 	{
 	case 1:
-		i=TKGDI_RIFF_MAKETAG('P', 'C', 'M', ' ');
+		i=RIFF_MAKETAG('P', 'C', 'M', ' ');
 		break;
 	case 85:
-		i=TKGDI_RIFF_MAKETAG('M', 'P', '3', ' ');
+		i=RIFF_MAKETAG('M', 'P', '3', ' ');
 		break;
 	default:
-		i=TKGDI_RIFF_MAKEHEXTAG(i);
+		i=RIFF_MAKEHEXTAG(i);
 		break;
 	}
 	tmp->aud_cmpr=i;
@@ -928,7 +930,7 @@ int TKGDI_AVI_DecodeAudio(TKGDI_AVI_Context *ctx, int ofs)
 
 	//assume a bad index
 	if((sz<0) || (sz>=(1<<22)) ||
-		(cc1!=TKGDI_RIFF_MAKETAG('0', '1', 'w', 'b')))
+		(cc1!=RIFF_MAKETAG('0', '1', 'w', 'b')))
 	{
 		if(!rhack)
 		{
@@ -1025,7 +1027,7 @@ int TKGDI_AVI_DecodeVideo(TKGDI_AVI_Context *ctx,
 
 	//assume a bad index
 	if((sz<0) || (sz>=(1<<22)) ||
-		(cc1!=TKGDI_RIFF_MAKETAG('0', '0', 'd', 'c')))
+		(cc1!=RIFF_MAKETAG('0', '0', 'd', 'c')))
 	{
 		if(!rhack)
 		{

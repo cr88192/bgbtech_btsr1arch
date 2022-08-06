@@ -144,6 +144,7 @@ output[8:0]		idUIxtC;
 reg[32:0]		opImmA;
 reg[8:0]		opUCmdA;
 reg[8:0]		opUIxtA;
+reg[7:0]		opUFlA;
 
 reg[32:0]		opImmB;
 reg[8:0]		opUCmdB;
@@ -156,6 +157,7 @@ reg[8:0]		opUIxtC;
 reg[32:0]		opImmA0;
 reg[8:0]		opUCmdA0;
 reg[8:0]		opUIxtA0;
+reg[7:0]		opUFlA0;
 
 assign	idRegS = opRegAM;
 assign	idRegT = opRegAO;
@@ -225,7 +227,8 @@ DecOpBz	decOpBz(
 wire[32:0]		decOpFzC_idImm;
 wire[8:0]		decOpFzC_idUCmd;
 wire[8:0]		decOpFzC_idUIxt;
-wire[3:0]		decOpFzC_idUFl;
+// wire[3:0]		decOpFzC_idUFl;
+wire[7:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
 	clock,		reset,	srMod,
@@ -248,7 +251,8 @@ DecOpFz	decOpFzC(
 wire[32:0]		decOpFzB_idImm;
 wire[8:0]		decOpFzB_idUCmd;
 wire[8:0]		decOpFzB_idUIxt;
-wire[3:0]		decOpFzB_idUFl;
+// wire[3:0]		decOpFzB_idUFl;
+wire[7:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
 	clock,		reset,	srMod,
@@ -271,7 +275,8 @@ DecOpFz	decOpFzB(
 wire[32:0]		decOpFzA_idImm;
 wire[8:0]		decOpFzA_idUCmd;
 wire[8:0]		decOpFzA_idUIxt;
-wire[3:0]		decOpFzA_idUFl;
+// wire[3:0]		decOpFzA_idUFl;
+wire[7:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
 	clock,		reset,	srMod,
@@ -292,7 +297,8 @@ DecOpFz	decOpFzA(
 wire[32:0]		decOpRvA_idImm;
 wire[8:0]		decOpRvA_idUCmd;
 wire[8:0]		decOpRvA_idUIxt;
-wire[3:0]		decOpRvA_idUFl;
+// wire[3:0]		decOpRvA_idUFl;
+wire[7:0]		decOpRvA_idUFl;
 
 DecOpRvI	decOpRvA(
 	clock,		reset,	srMod,
@@ -722,6 +728,7 @@ begin
 		opRegAP0	= decOpFzC_idRegP;
 		opUCmdA0	= decOpFzC_idUCmd;
 		opUIxtA0	= decOpFzC_idUIxt;
+		opUFlA0		= decOpFzC_idUFl;
 
 		opRegBM	= JX2_GR_ZZR;
 		opRegBO	= JX2_GR_ZZR;
@@ -778,6 +785,7 @@ begin
 			opRegAO0	= decOpFC_idRegO;
 			opUCmdA0	= decOpFC_idUCmd;
 			opUIxtA0	= decOpFC_idUIxt;
+//			opUFlA0		= decOpFzC_idUFl;
 
 			opRegBN	= JX2_GR_ZZR;
 			opRegBM	= JX2_GR_ZZR;
@@ -819,6 +827,7 @@ begin
 				opRegAP0	= decOpFzC_idRegP;
 				opUCmdA0	= decOpFzC_idUCmd;
 				opUIxtA0	= decOpFzC_idUIxt;
+				opUFlA0		= decOpFzC_idUFl;
 
 				opRegBM	= decOpFzB_idRegM;
 				opRegBO	= decOpFzB_idRegO;
@@ -873,6 +882,7 @@ begin
 				opRegAP0	= decOpFzB_idRegP;
 				opUCmdA0	= decOpFzB_idUCmd;
 				opUIxtA0	= decOpFzB_idUIxt;
+				opUFlA0		= decOpFzB_idUFl;
 
 				opRegBM	= decOpFzA_idRegM;
 				opRegBO	= decOpFzA_idRegO;
@@ -888,13 +898,15 @@ begin
 				opRegCN	= JX2_GR_ZZR;
 				opImmC	= UV33_XX;
 				opUCmdC	= UV9_00;
-				opUIxtC	= UV9_00;
+//				opUIxtC	= UV9_00;
+				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
 
 				opIsScalar	= opIsWexJumboA;
 
 				if(opIsWexJumboA)
 				begin
-					if(decOpFzC_idUFl[0])
+//					if(decOpFzC_idUFl[0])
+					if(decOpFzB_idUFl[0])
 					begin
 						/* Jumbo24 + Imm16 */
 						opImmB	= {
@@ -932,6 +944,7 @@ begin
 					opImmA0		= decOpRvA_idImm;
 					opUCmdA0	= decOpRvA_idUCmd;
 					opUIxtA0	= decOpRvA_idUIxt;
+					opUFlA0		= decOpRvA_idUFl;
 				end
 				else
 				begin
@@ -942,6 +955,7 @@ begin
 					opImmA0		= decOpFzA_idImm;
 					opUCmdA0	= decOpFzA_idUCmd;
 					opUIxtA0	= decOpFzA_idUIxt;
+					opUFlA0		= decOpFzA_idUFl;
 				end
 
 `else
@@ -953,6 +967,7 @@ begin
 				opImmA0		= decOpFzA_idImm;
 				opUCmdA0	= decOpFzA_idUCmd;
 				opUIxtA0	= decOpFzA_idUIxt;
+				opUFlA0		= decOpFzA_idUFl;
 
 `endif
 
@@ -963,6 +978,7 @@ begin
 				opImmA	= opImmA0;
 				opUCmdA	= opUCmdA0;
 				opUIxtA	= opUIxtA0;
+				opUFlA	= opUFlA0;
 `endif
 
 `ifndef def_true
@@ -979,6 +995,7 @@ begin
 				opRegAP0	= decOpFzA_idRegP;
 				opUCmdA0	= decOpFzA_idUCmd;
 				opUIxtA0	= decOpFzA_idUIxt;
+				opUFlA0		= decOpFzA_idUFl;
 `endif
 
 				opRegBM	= JX2_GR_ZZR;
@@ -996,7 +1013,8 @@ begin
 				opRegCN	= JX2_GR_ZZR;
 				opImmC	= UV33_XX;
 				opUCmdC	= UV9_00;
-				opUIxtC	= UV9_00;
+//				opUIxtC	= UV9_00;
+				opUIxtC	= { 5'h0, decOpFzA_idUFl[7:4] };
 
 				opIsScalar	= 1;
 
@@ -1046,6 +1064,7 @@ begin
 		opRegAP0	= opRegAN;
 		opUCmdA0	= opUCmdA;
 		opUIxtA0	= opUIxtA;
+		opUFlA0		= opUFlA;
 
 		opRegBN	= JX2_GR_ZZR;
 		opRegBM	= JX2_GR_ZZR;

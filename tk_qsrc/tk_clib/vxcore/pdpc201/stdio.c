@@ -262,11 +262,11 @@ static void fopen2(void)
 			fopen3();
 		}else
 		{
-			tk_puts("fopen2: error status B\n");
+//			tk_puts("fopen2: error status B\n");
 		}
 	}else
 	{
-		tk_puts("fopen2: error status A\n");
+//		tk_puts("fopen2: error status A\n");
 	}
 	return;
 }
@@ -513,7 +513,7 @@ static void osfopen(void)
 	{
 		err = 1;
 		errno = myfile->hfile;
-		tk_puts("osfopen: got error status\n");
+//		tk_puts("osfopen: got error status\n");
 	}
 	return;
 }

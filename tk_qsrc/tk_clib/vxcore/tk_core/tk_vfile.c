@@ -1015,6 +1015,30 @@ int tk_fputs(char *str, TK_FILE *fd)
 	return(-1);
 }
 
+int tk_fgets(char *str, int lim, TK_FILE *fd)
+{
+	char *s, *se;
+	int c;
+	
+	if(!fd || !(fd->vt))
+		{ __debugbreak(); }
+
+	if(fd->vt->fgetc)
+	{
+		s=str; se=str+lim;
+		while(s<se)
+		{
+			c=fd->vt->fgetc(fd);
+			if(c=='\n')
+				break;
+			*s++=c;
+		}
+		*s=0;
+		return(0);
+	}
+	return(-1);
+}
+
 int tk_fioctl(TK_FILE *fd, int cmd, void *ptr)
 {
 	if(!fd || !(fd->vt))

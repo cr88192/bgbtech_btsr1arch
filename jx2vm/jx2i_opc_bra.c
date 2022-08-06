@@ -1355,6 +1355,8 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	r0, r1, r2, r3;
 	int i, j, h;
 
+	BJX2_MemFlushPPA(ctx);
+
 	ctx->mem_tlb_pr0_hi=0;
 	ctx->mem_tlb_pr0_hx=0;
 	ctx->mem_tlb_pr0_lo=0;

@@ -1562,3 +1562,42 @@ void tk_con_putc(int ch)
 //	((u32 *)0xF00BFF00)[1]=py;		//move hardware cursor
 	TK_Con_UpdateHwCursor();
 }
+
+
+u64 TK_Con_GlyphForCodepoint(int ch)
+{
+	u64 q1;
+
+	if(ch>=0x100)
+	{
+		ch=tk_con_doremap(ch);
+	}
+
+	if((ch>=0x00) && (ch<=0x7F))
+	{
+		q1=tk_gfxcon_glyphs[ch];
+	}else
+		if((ch>=0x80) && (ch<=0xFF))
+	{
+		q1=tk_gfxcon_glyphs_lat1ext[ch&0x7F];
+	}else
+		if((ch>=0x100) && (ch<=0x17F))
+	{
+		q1=tk_gfxcon_glyphs_cyril0[ch&0x7F];
+	}else
+		if((ch>=0x180) && (ch<=0x1FF))
+	{
+		q1=tk_gfxcon_glyphs_437ext[ch&0x7F];
+	}else
+//		if((ch>=0x1F00) && (ch<=0x1FFF))
+		if((ch>=0x0600) && (ch<=0x06FF))
+	{
+		q1=tk_gfxcon_hexblock[ch&0xFF];
+//		q1=tk_gfxcon_glyphs[0xBF];
+	}else
+	{
+		q1=tk_gfxcon_glyphs[0xBF];
+	}
+	
+	return(q1);
+}

@@ -28,7 +28,7 @@ typedef unsigned int clock_t;
 
 #ifndef STD_TIME_T
 #define	STD_TIME_T
-typedef	unsigned long time_t;
+typedef	long long time_t;
 #endif
 
 #ifndef STD_TM_S

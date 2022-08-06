@@ -84,6 +84,7 @@ module ExEX1(
 	opUCmd, opUIxt,
 	exHold,	exTrapExc,
 	timers,	opUCmdOut,
+	opUExtFl,
 
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
@@ -134,6 +135,7 @@ module ExEX1(
 	
 	memAddr,	memOpm,
 	memDataOut,	memDataOutB,
+	memLdOp,
 	memDataOK,	regInExc
 	);
 
@@ -142,6 +144,8 @@ input			clock;
 input			reset;
 input[8:0]		opUCmd;
 input[8:0]		opUIxt;
+input[7:0]		opUExtFl;
+
 output[1:0]		exHold;
 output[127:0]	exTrapExc;
 
@@ -215,6 +219,7 @@ input[7:0]		regInSchm;
 // output[47:0]	memAddr;
 `output_vaddr	memAddr;
 output[ 4:0]	memOpm;
+output[ 4:0]	memLdOp;
 output[63:0]	memDataOut;
 output[63:0]	memDataOutB;
 
@@ -269,11 +274,13 @@ assign	exTrapExc	= tExTrapExc;
 // reg[47:0]	tMemAddr;
 `reg_vaddr		tMemAddr;
 reg[ 4:0]		tMemOpm;
+reg[ 4:0]		tMemLdOp;
 reg[63:0]		tMemDataOut;
 reg[63:0]		tMemDataOutB;
 
 assign	memAddr		= tMemAddr;
 assign	memOpm		= tMemOpm;
+assign	memLdOp		= tMemLdOp;
 assign	memDataOut	= tMemDataOut;
 assign	memDataOutB	= tMemDataOutB;
 
@@ -515,8 +522,17 @@ begin
 `endif
 
 	tMemOpm			= UMEM_OPM_READY;
+	tMemLdOp		= 0;
 	tMemDataOut		= regValRm;
 	tMemDataOutB	= regValRt;
+	
+`ifdef jx2_use_mem_ldop
+	tMemLdOp		= { 1'b0, opUExtFl[3:0] };
+	if(opUExtFl[3])
+	begin
+		tMemDataOut		= { 58'h00, regIdRm[5:0] };
+	end
+`endif
 	
 	tDoMemOpm		= UMEM_OPM_READY;
 	tDoMemOp		= 0;
@@ -709,6 +725,13 @@ begin
 			tDoMemOp	= 1;
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
+
+`ifdef jx2_use_mem_ldop
+			if(opUExtFl[3:0]==4'h1)
+			begin
+				tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
+			end
+`endif
 
 `ifdef jx2_debug_ldst
 			$display("LOAD(1): A=%X R=%X",

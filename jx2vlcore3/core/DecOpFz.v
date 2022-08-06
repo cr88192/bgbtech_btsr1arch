@@ -53,7 +53,8 @@ input[27:0]		istrJBits;
 output[32:0]	idImm;
 output[8:0]		idUCmd;
 output[8:0]		idUIxt;
-output[3:0]		idUFl;
+// output[3:0]		idUFl;
+output[7:0]		idUFl;
 
 wire			isAltOp;
 wire			isOp24;
@@ -75,6 +76,7 @@ reg[32:0]		opImm;
 reg[8:0]		opUCmd;
 reg[8:0]		opUIxt;
 reg[3:0]		opUFl;
+reg[3:0]		opULdOp;
 
 assign	idRegN = opRegN;
 assign	idRegM = opRegM;
@@ -83,7 +85,8 @@ assign	idRegP = opRegP;
 assign	idImm = opImm;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
-assign	idUFl = opUFl;
+// assign	idUFl = opUFl;
+assign	idUFl = { opULdOp, opUFl };
 
 `reg_gpr	opRegM_Dfl;
 `reg_gpr	opRegO_Dfl;
@@ -156,6 +159,8 @@ reg		opIsJumbo96;
 reg		opIsImm9;
 reg		opIsImm4R;
 reg		opIsImmSplit;
+
+reg[3:0]	opIsImmLdOp;
 
 reg		opExWQ;
 reg		opExWN;
@@ -256,6 +261,7 @@ begin
 	opExWM		= 0;
 	opExWI		= 0;
 	opIsImm4R	= 0;
+	opIsImmLdOp	= 0;
 
 	tOpIsXGprX0	= 0;
 	tOpIsXGprX1	= 0;
@@ -441,6 +447,7 @@ begin
 //			opExWI, opExI, istrJBits[7:0], istrWord[23:20]};
 
 		opIsImm4R	= istrJBits[11];
+		opIsImmLdOp	= istrJBits[15:12];
 
 //		opImm_disp5u	= {opExWI ? UV20_FF : UV20_00,
 //			opExI, istrJBits[7:0], istrWord[23:20]};
@@ -4178,8 +4185,9 @@ begin
 	end
 `endif
 
-	opUFl = 0;
-
+	opUFl	= 0;
+	opULdOp	= 0;
+	
 	case(opFmid)
 		JX2_FMID_Z: begin
 			opUIxt	= {opUCty, opUCmdIx[5:0]};
@@ -4500,6 +4508,7 @@ begin
 
 //			opUIxt	= {opUCty, opBty[1:0], 1'b1, opBty};
 			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
+			opULdOp	= opIsImmLdOp;
 
 			opRegN	= opRegN_Dfl;
 			opRegP	= opRegN_Dfl;
@@ -4533,6 +4542,7 @@ begin
 //			opUIxt	= {opUCty, opBty[1:0], 1'b1, opBty};
 			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
 			opImm	= opImm_disp9s;
+			opULdOp	= opIsImmLdOp;
 			
 			if(opIty==JX2_ITY_UB)
 			begin
@@ -4584,6 +4594,8 @@ begin
 				opRegN	= opRegN_Dfl;
 				opRegP	= opRegN_Dfl;
 				opImm	= opImm_disp11as;
+				opULdOp	= opIsImmLdOp;
+
 
 `ifdef jx2_enable_movc
 				if(opIty==JX2_ITY_UL)

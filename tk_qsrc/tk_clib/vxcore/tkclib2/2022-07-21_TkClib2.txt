@@ -1,0 +1,6 @@
+TkClib2:
+* A redesigned C library.
+
+Idea is that the C library will be partially split into a "frontend" and "backend" part. The frontend will be statically linked to the binary in question, whereas the backend part may be shared across multiple binaries.
+
+The frontend and backend parts will be connected via contexts and VTables.

@@ -56,6 +56,12 @@ typedef u64 tk_kptr;
 #define MMIO_END	0xFFFFFFF0ULL
 #endif
 
+#ifndef RIFF_MAKETAG
+#define RIFF_MAKETAG(a, b, c, d)	((a)+((b)<<8)+((c)<<16)+((d)<<24))
+#endif
+
+#define TK_FCC_GDI	RIFF_MAKETAG('G','D','I',' ')
+
 // #define GPIO_BASE	0xF000E100ULL
 // #define SPI_BASE	0xF000E030ULL
 // #define UART_BASE	0xF000E010ULL

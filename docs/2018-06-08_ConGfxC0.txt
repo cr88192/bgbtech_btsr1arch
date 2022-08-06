@@ -213,6 +213,30 @@ Format (2.0): YUV 4:2:0 (128 bit):
 ** (14: 0)=ColorA
 
 
+==== Format (2.1): 8x8x1 / (4x4x1 Sub-Cell) (128 bit) ====
+
+Format (2.1): YUV 4:2:0 (128 bit):
+* (127:64): 8x8x1 Luma (Y)
+* (63:62): Cell Mode B (CellModeB)
+* (61:60): 00
+** (59:48)=Color3
+*** (59:54)=Color3B
+*** (53:48)=Color3A
+* (47:44): 0000
+** (43:32)=Color2
+*** (43:38)=Color2B
+*** (37:32)=Color2A
+* (31:30): Cell Mode
+* (29:28): 00
+** (27:16)=Color1
+*** (27:22)=Color1B
+*** (21:16)=Color1A
+* (15:12): 0000
+** (11: 0)=Color0
+*** (11: 6)=Color0B
+*** ( 5: 0)=Color0A
+
+
 ==== Format (2.2): YUV 4:2:0 (256 bit) ====
 
 Format (2.2): Color Tag 2: YUV 4:2:0 (256 bit):

@@ -69,6 +69,9 @@
 
 #include "tk_core/tk_rwad.c"
 
+#include "tk_core/tk_hal_tkgdi.c"
+#include "tk_core/tk_hal_snd.c"
+
 #include "pdpc201/btshx_supa.c"
 #include "pdpc201/btshx_lva.c"
 #include "pdpc201/btshx_xli.c"

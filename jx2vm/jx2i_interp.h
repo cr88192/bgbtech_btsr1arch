@@ -647,6 +647,15 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CSRRCI		0x14D		//(CSR CLEAR, RISC-V)
 
 
+#define BJX2_NMID_LDOPB			0x150		//
+#define BJX2_NMID_LDOPUB		0x151		//
+#define BJX2_NMID_LDOPW			0x152		//
+#define BJX2_NMID_LDOPUW		0x153		//
+#define BJX2_NMID_LDOPL			0x154		//
+#define BJX2_NMID_LDOPUL		0x155		//
+#define BJX2_NMID_LDOPQ			0x156		//
+#define BJX2_NMID_LDOPUQ		0x157		//
+
 
 #define BJX2_FMID_NONE			0x00		//?
 #define BJX2_FMID_REG			0x01		//Rn
@@ -835,6 +844,10 @@ BJX2_Context	*ctx_next;
 
 BJX2_MemSpan *span_pr0;
 BJX2_MemSpan *span_pr1;
+
+bjx2_addr	ppa_addr[64];		//page-predict addr
+bjx2_addr	ppa_addrh[64];		//page-predict addr (high)
+byte		*ppa_data[64];
 
 BJX2_Opcode *free_op;
 BJX2_Trace *free_tr;
@@ -1092,12 +1105,17 @@ u16 opn;		//Opcode Value
 u16 opn2;		//Opcode Value
 u16 opn3;		//Opcode Value
 u16 nmid;		//Opcode Number
+
 byte fmid;		//Form ID
 byte rn;		//Dest Register
 byte rm;		//Source Register
 byte ro;		//Source Register
+
 byte rp;		//Source Register (4R)
 byte rq;		//Quadrant Register
+byte ldsc;		//Load Scale
+byte ldop;		//Load Operation
+
 s16 cyc;		//Clock Cycles
 u16 fl;			//Opcode Flags
 // s32 imm;		//Immediate

@@ -545,7 +545,18 @@ tk_shell_chksane_fmovs:
 	JMP		R1
 //	RTSU
 
+tk_shell_chksane_padds_sf:
+	PADDX.FA	R4, R6, R2
+	RTS
+
+tk_shell_chksane_pmuls_sf:
+	PMULX.FA	R4, R6, R2
+	RTS
+
 };
+
+__vec4f tk_shell_chksane_padds_sf(__vec4f va, __vec4f vb);
+__vec4f tk_shell_chksane_pmuls_sf(__vec4f va, __vec4f vb);
 
 int tk_fcn_clz(long long j);
 int tk_fcn_clzq(long long j);
@@ -614,9 +625,20 @@ int tk_shell_chksane_simd()
 
 //	__debugbreak();
 	
-//	tk_printf("SIMD A0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
-	tk_printf("SIMD A0: %f %f\n", fv1.x, fv1.y);
-	tk_printf("SIMD A0: %f %f\n", fv1.z, fv1.w);
+//	tk_printf("SIMD A0-0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
+
+	tk_printf("SIMD A0-0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
+	tk_printf("SIMD A0-1: %f %f %f %f\n", fv2.x, fv2.y, fv2.z, fv2.w);
+
+	fv1=tk_shell_chksane_padds_sf(fv0, fv0);
+	fv2=tk_shell_chksane_pmuls_sf(fv1, fv0);
+
+	tk_printf("\n");
+
+	tk_printf("SIMD A0-2: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
+	tk_printf("SIMD A0-3: %f %f %f %f\n", fv2.x, fv2.y, fv2.z, fv2.w);
+
+	tk_printf("\n");
 
 //	__debugbreak();
 

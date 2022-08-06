@@ -11,12 +11,12 @@ void __sigign(int sig);
 #define SIG_ERR __sigerr
 #define SIG_IGN __sigign
 
-#define SIGABRT 1
-#define SIGFPE 2
-#define SIGILL 3
-#define SIGINT 4
-#define SIGSEGV 5
-#define SIGTERM 6
+#define SIGABRT		1
+#define SIGFPE		2
+#define SIGILL		3
+#define SIGINT		4
+#define SIGSEGV		5
+#define SIGTERM		6
 
 typedef void (*signal_t)(int);
 

@@ -337,6 +337,7 @@ assign	dbgOutIstr	= ifIstrWord;
 
 `reg_vaddr		dcInAddr;
 reg [4:0]		dcInOpm;
+reg [4:0]		dcInLdOp;
 wire[63:0]		dcOutVal;
 reg [63:0]		dcInVal;
 wire[ 1:0]		dcOutOK;
@@ -380,6 +381,7 @@ RbiMemL1A		memL1(
 	dcOutValB,		dcInValB,
 	dcOutOK,		dcInHold,
 	dcOutHold,		dcBusWait,
+	dcInLdOp,
 
 	gprOutDlr,		gprOutDhr,
 	crOutMmcr,		crOutKrr,		crOutSr,
@@ -517,6 +519,7 @@ reg[2:0]		ex1ValBraDir;
 
 wire[ 4:0]		ex1MemOpm;
 wire[ 4:0]		exB1MemOpm;
+wire[ 4:0]		ex1MemLdOp;
 
 wire[47:0]		id1PreBraPc;
 wire[1:0]		id1PreBra;
@@ -1175,12 +1178,17 @@ wire[8:0]		ex1OpUCmd2;
 wire			ex1AluSrJcmpT;
 
 wire[63:0]		ex1AguOutXLea;		//XLEA Output
+wire[7:0]		ex1ExfFl;
+
+assign		ex1ExfFl =
+	(exC1OpUCmd[5:0] == 0) ? exC1OpUIxt[7:0] : 0;
 
 ExEX1	ex1(
 	clock,			reset,
 	ex1OpUCmd,		ex1OpUIxt,
 	ex1Hold,		ex1TrapExc,
 	ex1Timers,		ex1OpUCmd2,
+	ex1ExfFl,
 
 	ex1RegIdRs,		ex1RegIdRt,		ex1RegIdRm,
 	ex1RegValRs,	ex1RegValRt,	ex1RegValRm,
@@ -1232,6 +1240,7 @@ ExEX1	ex1(
 
 	ex1MemAddr,		ex1MemOpm,
 	ex1MemDataOut,	ex1MemDataOutB,
+	ex1MemLdOp,
 	ex2MemDataOK,	tRegExc[63:0]
 	);
 
@@ -3988,6 +3997,7 @@ begin
 
 	dcInAddr		= ex1MemAddr;
 	dcInOpm			= ex1MemOpm;
+	dcInLdOp		= ex1MemLdOp;
 
 	dcInAddrB		= exB1MemAddr;
 	dcInOpmB		= exB1MemOpm;

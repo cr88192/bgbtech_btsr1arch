@@ -103,9 +103,12 @@ __PDPCLIB_API__ time_t time(time_t *timer)
     return (tt);
 }
 
+// s64 TK_GetTimeUs(void);
+
 __PDPCLIB_API__ clock_t clock(void)
 {
-    return ((clock_t)-1);
+//    return ((clock_t)-1);
+	return(TK_GetTimeMs());
 }
 
 __PDPCLIB_API__ double difftime(time_t time1, time_t time0)

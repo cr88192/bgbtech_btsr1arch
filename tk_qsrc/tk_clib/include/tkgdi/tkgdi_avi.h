@@ -1,7 +1,10 @@
 #ifndef TKGDI_AVI_H
 #define TKGDI_AVI_H
 
+#ifndef RIFF_MAKETAG
 #define RIFF_MAKETAG(a, b, c, d)	((a)+((b)<<8)+((c)<<16)+((d)<<24))
+#endif
+
 #define RIFF_UNHEX_NIBBLE(a)		( \
 	(((a)>='0')&&((a)<='9'))?((a)-'0') : \
 	(((a)>='A')&&((a)<='F'))?((a)-'A'+10) : \
@@ -102,6 +105,8 @@
 #define TKGDI_FCC_bt1d	RIFF_MAKETAG('b','t','1','d')
 
 #define TKGDI_FCC_bt2c	RIFF_MAKETAG('b','t','2','c')
+
+#define TKGDI_FCC_UTX2	RIFF_MAKETAG('U','T','X','2')
 
 
 #define TKGDI_AVI_FL_UPDATING		1

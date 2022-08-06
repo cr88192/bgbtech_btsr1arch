@@ -983,6 +983,37 @@ In a Jumbo64 form, the 33-bit immediate will be interpreted as a 25 bit immediat
 
 This operation may be limited to Lane 1.
 
+=== LDOP/x (RiMOV+LdOp) ===
+
+* FFw0_Uvii-F0nm_0giZ  LDOP/x.x	Rn, (Rm, Disp17s)			//(RiMOV+LdOp)
+* FFw0_Uvii-F0nm_0goZ  LDOP/x.x	Rn, (Rm, Ro, Disp11u)		//(RiMOV+LdOp)
+* FFw0_UVii-F0nm_0goZ  LDOP/x.x	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV+LdOp)
+* FFw0_Uvii-F0nm_0giZ  LDOP/x.x	(Rm, Disp17s), Rn			//(RiMOV+LdOp)
+* FFw0_Uvii-F0nm_0goZ  LDOP/x.x	(Rm, Ro, Disp11u), Rn		//(RiMOV+LdOp)
+* FFw0_UVii-F0nm_0goZ  LDOP/x.x	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV+LdOp)
+
+* FFw0_Uvii-F0nm_0giZ  LDOP/x.x	Imm6u, (Rm, Disp17s)		//(RiMOV+LdOp)
+* FFw0_Uvii-F0nm_0goZ  LDOP/x.x	Imm6u, (Rm, Ro, Disp11u)	//(RiMOV+LdOp)
+* FFw0_UVii-F0nm_0goZ  LDOP/x.x	Imm6u, (Rm, Ro*Sc, Disp9u)	//(RiMOV+LdOp)
+
+LdOp will be an extension of RiMOV which adds the ability to encode LoadOp and StoreOp instructions. These will follow the same basic encoding as RiMOV.
+
+LoadOp will combine a Memory Load with an ALU operation, with the result going into Rn. StoreOp will perform an ALU operation against a value in memory, with the result remaining in memory.
+
+The Z field will follow the pattern:
+* 0..3: StoreOp (Rm, Disp)
+* 4..7: StoreOp (Rm, Ro, Disp)
+* 8..B: LoadOp (Rm, Disp)
+* C..F: LoadOp (Rm, Ro, Disp)
+
+If U is not 0, then these will encode an LDOP instruction.
+* U (LoadOp/StoreOp):
+** 0=MOV, 1=XCHG, 2=ADD, 3=SUB
+** 4=RSUB, 5=AND, 6=OR, 7=XOR
+* U (StoreOp Only):
+** 8=MOV(Imm6u), 9=MOV(Imm6n), A=ADD(Imm6u), B=SUB(Imm6u)
+** C=RSUB(Imm6u), D=AND(Imm6u), E=OR(Imm6u), F=XOR(Imm6u)
+
 
 === LDTEX (LDTEX) ===
 
@@ -2448,6 +2479,8 @@ PSCHNE will update Rn and SR.T based on the first non-matching element.
 Elements may be either Packed Word or Packed Byte.
 Elements will be numbered starting from the low-order bits.
 
+For the Packed Byte operator, it will check up to 8 bytes.
+For the Packed Word operator, it will check up to 4 words.
 
 
 === RGB Pack/Unpack ===

@@ -413,6 +413,17 @@ __PDPCLIB_API__ int rand(void)
 	return (ret);
 }
 
+int rand_r(unsigned int *seedp)
+{
+	unsigned int seed;
+	int ret;
+	seed=*seedp;
+	seed=seed*65521+1;
+	ret = (int)((seed >> 48) & 0x7FFF);
+	*seedp=seed;
+	return (ret);
+}
+
 __PDPCLIB_API__ double atof(const char *nptr)
 {
 	return (strtod(nptr, (char **)NULL));

@@ -40,8 +40,13 @@ LDFLAGS=$(TK_LDFL) -lvxcore
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -Zz -fnowexj -fnowexify
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2 -fwex3w -fwexj -Zz
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz
+
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
-	-fxgpr -fqmul -fldtex -ptropts
+	-fxgpr -fqmul -fldtex -ptropts -ffdiv
+
+# CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w_io2fp2 -fwexj -Zz \
+#	-fxgpr -fqmul -fldtex -ptropts
+
 #	-fqmul -fldtex
 #	-fxgpr -fqmul
 #	-fxgpr -fqmul -fnofmovs

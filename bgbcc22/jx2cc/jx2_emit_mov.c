@@ -2114,6 +2114,83 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 			break;
 #endif
 
+		case BGBCC_SH_NMID_ADDSL:
+		case BGBCC_SH_NMID_ADDUL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x0002,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_SUBSL:
+		case BGBCC_SH_NMID_SUBUL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x0002,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_RSUBSL:
+		case BGBCC_SH_NMID_RSUBUL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x0002,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_ANDL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0002,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_ORL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0002,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_XORL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0002,
+				rm, disp>>2, rn);
+			break;
+
+		case BGBCC_SH_NMID_ADD:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x0003,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_SUB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x0003,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_RSUB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x0003,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_AND:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0003,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_OR:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0003,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_XOR:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0003,
+				rm, disp>>3, rn);
+			break;
+
 		}
 	}
 
@@ -3416,6 +3493,234 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			break;
 #endif
 
+		case BGBCC_SH_NMID_ADDSL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x000A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_ADDUL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x080A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_SUBSL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x000A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_SUBUL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x080A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_RSUBSL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x000A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_RSUBUL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x080A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_ANDL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x080A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_ORL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x080A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_XORL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x080A,
+				rm, disp>>2, rn);
+			break;
+
+
+		case BGBCC_SH_NMID_ADD:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x000B,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_SUB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x000B,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_RSUB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x000B,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_AND:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x080B,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_OR:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x080B,
+				rm, disp>>3, rn);
+			break;
+		case BGBCC_SH_NMID_XOR:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x080B,
+				rm, disp>>3, rn);
+			break;
+
+
+		case BGBCC_SH_NMID_ADDSB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x0008,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_ADDUB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x0808,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_SUBSB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x0008,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_SUBUB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x0808,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_RSUBSB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x0008,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_RSUBUB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x0808,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_ANDB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0808,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_ORB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0808,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_XORB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0808,
+				rm, disp>>0, rn);
+			break;
+
+		case BGBCC_SH_NMID_ADDSW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x0009,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_ADDUW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x2000, 0xF000, 0x0809,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_SUBSW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x0009,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_SUBUW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x3000, 0xF000, 0x0809,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_RSUBSW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x0009,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_RSUBUW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x4000, 0xF000, 0x0809,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_ANDW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0809,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_ORW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0809,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_XORW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x5000, 0xF000, 0x0809,
+				rm, disp>>1, rn);
+			break;
+
+		case BGBCC_SH_NMID_SWAPB:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x1000, 0xF000, 0x0008,
+				rm, disp>>0, rn);
+			break;
+		case BGBCC_SH_NMID_SWAPW:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x1000, 0xF000, 0x0009,
+				rm, disp>>1, rn);
+			break;
+		case BGBCC_SH_NMID_SWAPL:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x1000, 0xF000, 0x000A,
+				rm, disp>>2, rn);
+			break;
+		case BGBCC_SH_NMID_SWAPQ:
+			BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+				&opw1, &opw2, &opw3, &opw4,
+				0xFF00, 0x1000, 0xF000, 0x000B,
+				rm, disp>>2, rn);
+			break;
 		}
 	}
 

@@ -2445,6 +2445,7 @@ For Imm5, W.i will function as a sign bit:
 The W.w bit may be used to select the use of SR.S as a Predicate.
 For CMPxx ops within F2zz, W.m will select SR.S as the output bit.
 
+
 ==== Jumbo Op64 Extended 3R ====
 
 * FFw0_0yyy_F0nm_ZeoZ  "OP Rm, Ro, Rn"
@@ -2510,6 +2511,25 @@ The V.w flag will apply to Ld/St:
 
 With both an index and displacement, the displacement field will be unscaled.
 Support for non-zero displacements will be an optional extension.
+
+
+Possible:
+* FFw0_Uvii_F0nm_0eoZ  "LDOP/x Rm, Ro, Rn"
+
+The U field will encode an ALU operation to be executed directly within memory:
+* 0: None (Load/Store)
+* 1: EXCH.x
+* 2: ADD.x
+* 3: SUB.x (Mem-Reg)
+* 4: SUB.x (Reg-Mem)
+* 5: AND.x
+* 6: OR.x
+* 7: XOR.x
+* 8..F: Repeat
+** For Load: Reserved
+** For Store: Interpret Rn as Imm6u.
+
+If Load, this will perform a Load-Operate Instruction.
 
 
 ==== Jumbo Op48 (Possible/Drop) ====
@@ -2766,20 +2786,30 @@ Profile 3 (WEX 3-Wide): Triple Lane ALU, Dual Lane IO
 * Accessing MMIO is only allowed from Lane 1.
 * Simultaneous load and store to the same cache line will be undefined as to whether the old or new value is read.
 
-Profile 4 (WEX 5-Wide, WEX5W): Five Lane ALU, Dual Lane IO, No Interleave
+Profile 4 (WEX 3-Wide): Triple Lane ALU, Single IO Lane, Dual Lane FPU.
+* Similar to 2, but allows FPU ops to be issued from Lane 2.
+** Only certain ops may be co-issued.
+
+Profile 5 (WEX 3-Wide): Triple Lane ALU, Dual Lane IO, Dual Lane FPU
+* Similar to 3, but allows FPU ops to be issued from Lane 2.
+** Only certain ops may be co-issued.
+
+
+
+Profile 8 (WEX 5-Wide, WEX5W): Five Lane ALU, Dual Lane IO, No Interleave
 * There are 5 WEX lanes (5/4/3/2/1)
 * Both the first and second lane may perform IO.
 * No interleaved encodings are allowed.
 ** Jumbo encodings which would use interleaving are seen as Non-Encodable.
 ** This will be to preserve the linear / parallel equivalence rule.
 
-Profile 5 (WEX 5-Wide, WEX5W): Five Lane ALU, Dual Lane IO
+Profile 9 (WEX 5-Wide, WEX5W): Five Lane ALU, Dual Lane IO
 * There are 5 WEX lanes (5/4/3/2/1)
 * Both the first and second lane may perform IO.
 * Lanes will use interleaving rules as defined for SMT.
 ** SMT Interleaving rules will apply even if SMT is not used.
 
-Profile 6 (WEX 6-Wide, WEX6W): Six Lane ALU, Dual Lane IO
+Profile 10 (WEX 6-Wide, WEX6W): Six Lane ALU, Dual Lane IO
 * There are 6 WEX lanes (6/5/4/3/2/1)
 * Both the first and second lane may perform IO.
 * Lanes will use interleaving rules as defined for SMT.

@@ -1228,3 +1228,39 @@ void *TK_DlSymA(void *handle, const char *symbol, int flags)
 	tk_syscall(NULL, TK_UMSG_DLSYM, &p, ar);
 	return(p);
 }
+
+void *TKGDI_GetHalContext(TKPE_TaskInfo *task,
+	u64 apiname, u64 subname);
+
+void *TK_DlGetApiContextB(TKPE_TaskInfo *task, u64 apiname, u64 subname)
+{
+	if(((u32)apiname)==TK_FCC_GDI)
+	{
+		return(TKGDI_GetHalContext(task, apiname, subname));
+	}
+	
+	return(NULL);
+}
+
+void *TK_DlGetApiContextA(u64 apiname, u64 subname)
+{
+	TK_SysArg ar[4];
+	void *p;
+	int tid;
+	
+//	return(NULL);
+	
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskernel())
+	{
+		p=TK_DlGetApiContextB((TKPE_TaskInfo *)__arch_tbr, apiname, subname);
+		return(p);
+	}
+#endif
+
+	p=0;
+	ar[0].l=apiname;
+	ar[1].l=subname;
+	tk_syscall(NULL, TK_UMSG_GETAPICTX, &p, ar);
+	return(p);
+}

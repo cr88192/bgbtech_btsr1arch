@@ -38,6 +38,7 @@ extern vec3_t vec3_origin;
 extern	int nanmask;
 
 float __float32_dot3fv(float *a, float *b);
+float __vnf_v3fa_dot(float *a, float *b);
 
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
 
@@ -53,7 +54,8 @@ float __float32_dot3fv(float *a, float *b);
 #define VectorCopy_M(a,b) { (b)[0]=(a)[0]; (b)[1]=(a)[1]; (b)[2]=(a)[2]; }
 
 #ifdef __BJX2__
-#define DotProduct(x,y)			__float32_dot3fv(x, y)
+// #define DotProduct(x,y)			__float32_dot3fv(x, y)
+#define DotProduct(x,y)			__vnf_v3fa_dot(x, y)
 #else
 #define DotProduct(x,y)			_DotProduct(x, y)
 #endif

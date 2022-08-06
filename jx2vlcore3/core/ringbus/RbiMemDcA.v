@@ -36,6 +36,7 @@ module RbiMemDcA(
 	regInSr,		regOutWait,
 	regOutExc,		regInMmcr,
 	regKrrHash,		regRng,
+	regInLdOp,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -53,6 +54,8 @@ input [ 5: 0]	regInOpm;		//operation mode
 
 input[47: 0]	regInAddrB;		//input address
 input[ 5: 0]	regInOpmB;		//operation mode
+
+input[ 7: 0]	regInLdOp;
 
 output[63: 0]	regOutValA;		//output data value (Low 128 / Lane A)
 output[63: 0]	regOutValB;		//output data value (High 128 / Lane B)
@@ -318,6 +321,8 @@ reg[  4:0]		tNxtReqBix;
 reg[  4:0]		tReqBix;
 reg[  5:0]		tNxtReqOpm;
 reg[  5:0]		tReqOpm;
+reg[  7:0]		tNxtReqLdOp;
+reg[  7:0]		tReqLdOp;
 
 `ifdef jx2_mem_lane2
 reg[47:0]		tNxtReqAddrB;
@@ -699,6 +704,7 @@ begin
 	tNxtReqAddr		= regInAddr[47:0];
 	tNxtReqBix		= regInAddr[4:0];
 	tNxtReqOpm		= regInOpm;
+	tNxtReqLdOp		= regInLdOp;
 
 `ifdef jx2_mem_lane2
 	tNxtReqAddrB	= regInAddrB[47:0];
@@ -1840,6 +1846,49 @@ begin
 	end
 	
 	tBlkInsData4 = tReqInValA;
+
+`ifdef jx2_use_mem_ldop
+	case(tReqLdOp[2:0])
+		3'b000: begin
+			/* Normal Load/Store */
+		end
+		3'b001: begin
+			/* Exchange */
+		end
+		3'b010: begin
+			/* ADD */
+			tBlkInsData4[31:0] = tBlkExData[31:0] + tReqInValA[31:0];
+			tBlkExData[31:0] = tBlkInsData4[31:0];
+		end
+		3'b011: begin
+			/* SUB */
+			tBlkInsData4[31:0] = tBlkExData[31:0] - tReqInValA[31:0];
+			tBlkExData[31:0] = tBlkInsData4[31:0];
+		end
+		3'b100: begin
+			/* SUB */
+			tBlkInsData4[31:0] = tReqInValA[31:0] - tBlkExData[31:0];
+			tBlkExData[31:0] = tBlkInsData4[31:0];
+		end
+
+		3'b101: begin
+			/* AND */
+			tBlkInsData4[31:0] = tBlkExData[31:0] & tReqInValA[31:0];
+			tBlkExData[31:0] = tBlkInsData4[31:0];
+		end
+		3'b110: begin
+			/* OR */
+			tBlkInsData4[31:0] = tBlkExData[31:0] | tReqInValA[31:0];
+			tBlkExData[31:0] = tBlkInsData4[31:0];
+		end
+		3'b111: begin
+			/* XOR */
+			tBlkInsData4[31:0] = tBlkExData[31:0] ^ tReqInValA[31:0];
+			tBlkExData[31:0] = tBlkInsData4[31:0];
+		end
+	endcase
+`endif
+
 	if(tReqOpm[1:0]==2'b00)
 		tBlkInsData4[15:8] = tBlkExData4[15:8];
 	if(tReqOpm[1]==1'b0)
@@ -2590,6 +2639,7 @@ begin
 		tReqAxH			<= tNxtReqAxH;
 		tReqBix			<= tNxtReqBix;
 		tReqOpm			<= tNxtReqOpm;
+		tReqLdOp		<= tNxtReqLdOp;
 		tReqInValA		<= tNxtReqInValA;
 		tReqInValB		<= tNxtReqInValB;
 

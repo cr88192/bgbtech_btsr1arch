@@ -72,6 +72,8 @@ SRCS_CLIB = \
 	tk_core/tk_envctx.c \
 	tk_core/tk_epoch.c \
 	tk_core/tk_fat.c \
+	tk_core/tk_hal_tkgdi.c \
+	tk_core/tk_hal_snd.c \
 	tk_core/tk_irq.c \
 	tk_core/tk_mmap.c \
 	tk_core/tk_mmcell.c \
@@ -133,6 +135,35 @@ SRCS_TKSH_BS2 = \
 SRCS_TKSH = \
 		tk_shell/tk_shell.c
 
+TKRA_SRCS = \
+	tkrast/tkr_blend.c			\
+	tkrast/tkr_blend_bjx2.c		\
+	tkrast/tkr_context.c		\
+	tkrast/tkr_edge.c			\
+	tkrast/tkr_glbegin.c		\
+	tkrast/tkr_glenable.c		\
+	tkrast/tkr_glgpa.c			\
+	tkrast/tkr_glmatrix.c		\
+	tkrast/tkr_gltex.c			\
+	tkrast/tkr_matrix.c			\
+	tkrast/tkr_multi.c			\
+	tkrast/tkr_span.c			\
+	tkrast/tkr_span_bjx2.c		\
+	tkrast/tkr_span_zt.c		\
+	tkrast/tkr_span_zt_bjx2.c	\
+	tkrast/tkr_span_bf.c		\
+	tkrast/tkr_span_bf_bjx2.c	\
+	tkrast/tkr_span_hzt.c		\
+	tkrast/tkr_teximg.c			\
+	tkrast/tkr_trans.c			\
+
+SRCS_TKGDI = \
+	$(TKRA_SRCS) \
+	tkrast/tkr_multi.c \
+	tk_gdi/tk_codec_cram.c \
+	tk_gdi/tk_ramavi.c \
+	tk_gdi/tkg_display.c
+
 all: includes libs apps
 
 includes: FORCE
@@ -146,7 +177,8 @@ libs2: FORCE
 
 libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libvxcore_bjx2.ril \
-	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril
+	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril \
+	libtkgdi.bjx2.ril
 
 bins: tkshell.sys tkshdll.dll tkshell96.sys
 
@@ -177,6 +209,9 @@ libdl.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 
 libcdll.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM_DLL)
 	$(CC) -o libcdll.bjx2.ril libcdll_multi.c $(SRCS_ASM_DLL) $(COPTS64)
+
+libtkgdi.bjx2.ril: $(SRCS_TKGDI) $(TKRA_SRCS)
+	$(CC) -o libtkgdi.bjx2.ril tkgdi_multi.c $(COPTS64)
 
 tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshell.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
