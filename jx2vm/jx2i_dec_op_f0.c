@@ -2280,6 +2280,93 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			switch(opw1&15)
 			{
 			case 0x0:	/* F0e0_1Fnm */
+				op->nmid=BJX2_NMID_PCVTSB2HL;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTSB2HL_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTSB2HL;
+					op->Run=BJX2_Op_PCVTUB2HL_RegReg;
+				}
+				break;
+			case 0x1:	/* F0e1_1Fnm */
+				op->nmid=BJX2_NMID_PCVTSB2HH;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTSB2HH_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTSB2HH;
+					op->Run=BJX2_Op_PCVTUB2HH_RegReg;
+				}
+				break;
+			case 0x2:	/* F0e2_1Fnm */
+				op->nmid=BJX2_NMID_PCVTSW2FL;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTSW2FL_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTUW2FL;
+					op->Run=BJX2_Op_PCVTUW2FL_RegReg;
+				}
+				break;
+			case 0x3:	/* F0e3_1Fnm */
+				op->nmid=BJX2_NMID_PCVTSW2FH;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTSW2FH_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTUW2FH;
+					op->Run=BJX2_Op_PCVTUW2FH_RegReg;
+				}
+				break;
+
+			case 0x4:	/* F0e4_1Fnm */
+				op->nmid=BJX2_NMID_PCVTH2SB;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTH2SB_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTH2UB;
+					op->Run=BJX2_Op_PCVTH2UB_RegReg;
+				}
+				break;
+			case 0x5:	/* F0e5_1Fnm */
+				op->nmid=BJX2_NMID_PCVTSW2H;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTSW2H_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTUW2H;
+					op->Run=BJX2_Op_PCVTUW2H_RegReg;
+				}
+				break;
+			case 0x6:	/* F0e6_1Fnm */
+				op->nmid=BJX2_NMID_PCVTF2SW;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTF2SW_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTF2UW;
+					op->Run=BJX2_Op_PCVTF2UW_RegReg;
+				}
+				break;
+			case 0x7:	/* F0e7_1Fnm */
+				op->nmid=BJX2_NMID_PCVTH2SW;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PCVTH2SW_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PCVTH2UW;
+					op->Run=BJX2_Op_PCVTH2UW_RegReg;
+				}
 				break;
 			}
 			break;

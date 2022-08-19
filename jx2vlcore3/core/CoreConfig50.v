@@ -30,6 +30,8 @@
 `define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
 
 
+`define jx2_cpu_merge_rxy		//Merge Rx/Ry
+
 // `define jx2_mem_useddrb			//Use newer DDR controller.
 
 // `define jx2_mem_line32B				//Use 32-byte cache line
@@ -68,8 +70,8 @@
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
 
-`define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
-// `define jx2_mem_l1isz_512			//L1 I$ is 512 entries
+// `define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
+`define jx2_mem_l1isz_512			//L1 I$ is 512 entries
 // `define jx2_mem_l1isz_256			//L1 I$ is 256 entries
 // `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
 // `define jx2_mem_l1isz_64			//L1 I$ is 64 entries
@@ -102,6 +104,8 @@
 
 // `define jx2_mem_l1inostall			//L1 I$ does not stall pipeline
 
+
+`define jx2_reg_spdecswap			//Swap SP and SSP in Decode
 
 
 // `ifndef def_true

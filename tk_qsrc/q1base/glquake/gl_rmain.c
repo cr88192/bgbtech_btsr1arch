@@ -353,6 +353,8 @@ float	*shadedots = r_avertexnormal_dots[0];
 
 int	lastposenum;
 
+//static qgl_hfloat	*gl_drawalias_vtxa = NULL;
+
 /*
 =============
 GL_DrawAliasFrame
@@ -360,7 +362,8 @@ GL_DrawAliasFrame
 */
 void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
 {
-//	static float	vtxa[MAXALIASVERTS*2*8];
+//	static qgl_hfloat	vtxa[MAXALIASVERTS*2*8];
+//	static qgl_hfloat	*vtxa = NULL;
 	static qgl_hfloat	*vtxa = NULL;
 
 	float	s, t, s2, scs, sct;
@@ -384,7 +387,7 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
 	int		count;
 	int		nvert, step;
 
-lastposenum = posenum;
+	lastposenum = posenum;
 
 // #ifdef __BJX2__
 //	return;
@@ -428,10 +431,17 @@ lastposenum = posenum;
 #endif
 
 #if 1
+//	vtxa=gl_drawalias_vtxa;
 	if(!vtxa)
 	{
 		vtxa=malloc(MAXALIASVERTS*2*8*sizeof(qgl_hfloat));
+//		gl_drawalias_vtxa=malloc(MAXALIASVERTS*2*8*sizeof(qgl_hfloat));
+//		__debugbreak();
 	}
+//	gl_drawalias_vtxa=vtxa;
+
+	if((paliashdr->numverts + paliashdr->n_osvidx)>=MAXALIASVERTS)
+		return;
 
 	order = (void *)((byte *)paliashdr + paliashdr->p_poseverts);
 //	verts = paliashdr->p_poseverts[posenum];
@@ -441,7 +451,7 @@ lastposenum = posenum;
 	stfverts = (void *)((byte *)paliashdr + paliashdr->p_sttverts);
 	
 	nvert = paliashdr->numverts;
-	
+
 	scs = 1.0 / paliashdr->skinwidth;
 	sct = 1.0 / paliashdr->skinheight;
 //	scs = 1.0 / (paliashdr->skinwidth+1);
@@ -743,6 +753,7 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 	{
 		interval = paliashdr->frames[frame].interval;
 		pose += (int)(cl.time / interval) % numposes;
+//		pose = (pose + (int)(cl.time / interval)) % numposes;
 	}
 
 	relsz=paliashdr->boundingradius/(modeldist+1);

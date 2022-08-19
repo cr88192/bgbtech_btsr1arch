@@ -242,6 +242,9 @@ begin
 		JX2_UCMD_FPUV4SF: begin
 			tRegIdRn2		= regIdRm;
 			tRegValRn2		= regFpuV4GRn;
+
+//			$display("(B): Rs=%X Rt=%X Rn=%X Ixt=%X",
+//				regValRs, regValRt, regFpuV4GRn, opUIxt);
 		end
 
 		JX2_UCMD_BLINT: begin

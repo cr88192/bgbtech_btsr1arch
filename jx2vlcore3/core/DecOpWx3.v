@@ -112,6 +112,14 @@ output[32:0]	idImmC;
 output[8:0]		idUCmdC;
 output[8:0]		idUIxtC;
 
+parameter		noLane3 = 0;
+parameter		noNoRiscV = 0;
+parameter		fpuLowPrec = 0;
+defparam		decOpFzA.fpuLowPrec		= fpuLowPrec;
+defparam		decOpFzB.fpuLowPrec		= fpuLowPrec;
+defparam		decOpFzC.fpuLowPrec		= fpuLowPrec;
+defparam		decOpBz.fpuLowPrec		= fpuLowPrec;
+
 
 `reg_gpr		opRegAM;
 `reg_gpr		opRegAO;
@@ -537,14 +545,23 @@ end
 always @*
 begin
 
+	opUCmdA	= UV9_00;
+	opUIxtA	= UV9_00;
+	opImmA	= UV33_00;
 	opRegAM	= JX2_GR_ZZR;
 	opRegAO	= JX2_GR_ZZR;
 	opRegAN	= JX2_GR_ZZR;
 
+	opUCmdB	= UV9_00;
+	opUIxtB	= UV9_00;
+	opImmB	= UV33_00;
 	opRegBM	= JX2_GR_ZZR;
 	opRegBO	= JX2_GR_ZZR;
 	opRegBN	= JX2_GR_ZZR;
 
+	opUCmdC	= UV9_00;
+	opUIxtC	= UV9_00;
+	opImmC	= UV33_00;
 	opRegCM	= JX2_GR_ZZR;
 	opRegCO	= JX2_GR_ZZR;
 	opRegCN	= JX2_GR_ZZR;
@@ -552,6 +569,7 @@ begin
 	opRegXM	= JX2_GR_ZZR;
 	opRegXO	= JX2_GR_ZZR;
 	opRegXN	= JX2_GR_ZZR;
+
 
 	opIsDwA = 0;
 	opIsDwB = 0;
@@ -843,6 +861,17 @@ begin
 				opUCmdC	= decOpFzA_idUCmd;
 				opUIxtC	= decOpFzA_idUIxt;
 
+				if(noLane3)
+				begin
+					opRegCM	= JX2_GR_ZZR;
+					opRegCO	= JX2_GR_ZZR;
+					opRegCN	= JX2_GR_ZZR;
+//					opImmC	= UV33_XX;
+					opImmC	= 0;
+					opUCmdC	= 0;
+					opUIxtC	= 0;
+				end
+
 `ifndef def_true
 				if(opIsDzA)
 				begin
@@ -905,8 +934,23 @@ begin
 
 				if(opIsWexJumboA)
 				begin
-//					if(decOpFzC_idUFl[0])
-					if(decOpFzB_idUFl[0])
+`ifdef jx2_use_fpu_fpimm
+					if(decOpFzB_idUFl[2])
+					begin
+						opImmB	= {
+							1'b0,
+							opImmA[15:14],
+							(opImmA[14] || (opImmA[14:10]==0)) ?
+								6'h00 : 6'h3F,
+							opImmA[13: 0],
+							10'h0
+							};
+						opImmA = 0;
+					end
+					else
+`endif
+//						if(decOpFzC_idUFl[0])
+						if(decOpFzB_idUFl[0])
 					begin
 						/* Jumbo24 + Imm16 */
 						opImmB	= {
@@ -935,7 +979,7 @@ begin
 			begin
 `ifdef jx2_enable_riscv
 
-				if(srRiscv)
+				if(srRiscv && !noNoRiscV)
 				begin
 					opRegAM0	= decOpRvA_idRegM;
 					opRegAO0	= decOpRvA_idRegO;
@@ -1284,7 +1328,7 @@ begin
 
 	if(opIsDualLane)
 	begin
-		if(!opIsScalar)
+		if(!opIsScalar && !noLane3)
 		begin
 			/* WEX+DualLane: Shove Lane2 into Lane3
 			 * Assume no 3-wide; this is invalid with dual-lane ops.

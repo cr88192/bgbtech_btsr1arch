@@ -94,6 +94,11 @@ S1, S2, S3 -> V
 
 `endif
 
+`ifdef jx2_enable_conv_vubtof16
+`include "ExConv_VecUbToFp16.v"
+`include "ExConv_VecFp16ToUb.v"
+`endif
+
 `ifdef jx2_do_btcutx_alu
 `ifdef jx2_enable_btcutx
 `include "ExBtcUtx1.v"
@@ -262,6 +267,17 @@ ExConv_Fp32Pck16	conv_fp16pckb(regValRs[63:32], tRegFp32Pck16[31:16]);
 
 `endif
 
+`ifdef jx2_enable_conv_vubtof16
+// wire[31:0]	tRegVub16UPckT =
+//	idUIxt[0] ? regValRs[63:32] : regValRs[31: 0];
+wire[63:0]	tRegVubUpck;
+wire[63:0]	tRegVubPck;
+
+ExConv_VecUbToFp16 vub2f(regValRs, tRegVubUpck, idUIxt[3:0]);
+ExConv_VecFp16ToUb vf2ub(regValRs, tRegVubPck, idUIxt[3:0]);
+`endif
+
+
 `ifdef jx2_do_btcutx_alu
 `ifdef jx2_enable_btcutx
 wire[63:0]	tValUtx1;
@@ -281,6 +297,9 @@ wire			tValDaaSrT;
 
 ExMiscDaa64 daa1(regValRs, tValDaa, regInSrT, tValDaaSrT, idUIxt[0]);
 `endif
+
+parameter		noBcd = 0;
+parameter		noAlux = 0;
 
 `ifdef jx2_enable_packbcd
 wire[63:0]		tValBcdAdd;
@@ -561,6 +580,8 @@ begin
 		(idUIxt[8:6] == JX2_IUC_WF) ||
 		(idUIxt[8:6] == JX2_IUC_WXA);
 
+	if(noAlux)
+		tOpIsWx = 0;
 
 `ifdef def_true
 	tAddCa1A0 = { tAdd1A0[16]?tAdd1B1[16]:tAdd1B0[16], tAdd1A0[16] };
@@ -611,7 +632,8 @@ begin
 	tSubCa2_Sbb = { regInSrT ? tSubCa2A0 : tSubCa2A1, !regInSrT };
 
 `ifdef jx2_alu_wx
-	if(tOpIsWx)
+//	if(tOpIsWx)
+	if(tOpIsWx && !noAlux)
 	begin
 		tAddCa2_Add = {
 			regInCarryD[0] ? tAddCa2A1 : tAddCa2A0,
@@ -1066,7 +1088,7 @@ begin
 	tResultb1R=regInSrR;
 	tResultb1O=regInSrO;
 	
-	tOpIsWx = (idUIxt[7:6] == 2'b11);
+//	tOpIsWx = (idUIxt[7:6] == 2'b11) && !noAlux;
 
 	case(idUIxt[3:0])
 		4'h0: begin		/* ADD */
@@ -1340,6 +1362,7 @@ begin
 
 `ifdef jx2_alu_wx
 			if(tOpIsWx)
+//			if(tOpIsWx && !noAlux)
 			begin
 				tResult2T = tSub2ZF && regInCarryD[4];
 			end
@@ -1414,6 +1437,7 @@ begin
 
 `ifdef jx2_alu_wx
 			if(tOpIsWx)
+//			if(tOpIsWx && !noAlux)
 			begin
 				tResult2T = tSub2CF ||
 					(tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
@@ -1441,6 +1465,7 @@ begin
 
 `ifdef jx2_alu_wx
 			if(tOpIsWx)
+//			if(tOpIsWx && !noAlux)
 			begin
 				tResult2T = (!tSub2ZF && !(tSub2SF^tSub2VF)) ||
 					(tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
@@ -1705,15 +1730,18 @@ begin
 `ifdef jx2_enable_packbcd
 		JX2_UCIX_CONV2_BCDADD, JX2_UCIX_CONV2_BCDSUB:
 		begin
-			tRegConvVal		= tValBcdAdd;
-			tRegConvSrT		= tValBcdAddSrT;
-//			tRegConvSrS		= tValBcdAddSrT;
+			if(!noBcd)
+			begin
+				tRegConvVal		= tValBcdAdd;
+				tRegConvSrT		= tValBcdAddSrT;
+	//			tRegConvSrS		= tValBcdAddSrT;
 
-//			if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
-//			begin
-//				$display("BCDADC %X %X %d->%d", regValRs, regValRt,
-//					regInSrT, tRegConvSrT);
-//			end
+	//			if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
+	//			begin
+	//				$display("BCDADC %X %X %d->%d", regValRs, regValRt,
+	//					regInSrT, tRegConvSrT);
+	//			end
+			end
 		end
 `endif
 
@@ -1743,6 +1771,27 @@ begin
 			tRegConvVal		= {	regInSrT, regValRs[63:1] };
 			tRegConvSrT		= regValRs[0];
 		end
+
+`ifdef jx2_enable_conv_vubtof16
+// wire[63:0]	tRegVubUpck;
+// wire[31:0]	tRegVubPck;
+
+		JX2_UCIX_CONV2_VUBTOF16L, JX2_UCIX_CONV2_VSBTOF16L,
+		JX2_UCIX_CONV2_VUWTOF32L, JX2_UCIX_CONV2_VSWTOF32L,
+		JX2_UCIX_CONV2_VUBTOF16H, JX2_UCIX_CONV2_VSBTOF16H,
+		JX2_UCIX_CONV2_VUWTOF32H, JX2_UCIX_CONV2_VSWTOF32H,
+		JX2_UCIX_CONV2_VUWTOF16, JX2_UCIX_CONV2_VSWTOF16:
+		begin
+			tRegConvVal		= tRegVubUpck;
+		end
+
+		JX2_UCIX_CONV2_VF16TOUB, JX2_UCIX_CONV2_VF16TOSB,
+		JX2_UCIX_CONV2_VF32TOUW, JX2_UCIX_CONV2_VF32TOSW,
+		JX2_UCIX_CONV2_VF16TOUW, JX2_UCIX_CONV2_VF16TOSW:
+		begin
+			tRegConvVal		= tRegVubPck;
+		end
+`endif
 
 		default: begin
 			tRegConvVal = UV64_XX;

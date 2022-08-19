@@ -71,6 +71,8 @@ input[63:0]		regInSR;		//Status Register
 input[127:0]	regInLdtlb;
 input[15:0]		regInExecAcl;
 
+parameter		disableTlb = 0;
+
 reg[127:0]		tRegInLdtlbHi;
 reg[127:0]		tNxtRegInLdtlbHi;
 

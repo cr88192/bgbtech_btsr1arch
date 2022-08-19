@@ -249,13 +249,14 @@ __PDPCLIB_API__ double asin (double y)
 */
 
 #if 1
-__PDPCLIB_API__ double atan(double ang)
+double _atan_i(double ang)
 {
 	double t, x, th, th2;
 	long i;
 
-    i=ang*M_TAU_R;
-    th=ang-(i*M_TAU);
+//    i=ang*M_TAU_R;
+//    th=ang-(i*M_TAU);
+	th=ang;
 
 	x=th;
 	th2=th*th;
@@ -266,6 +267,32 @@ __PDPCLIB_API__ double atan(double ang)
 	t+=x*( 1.0/  9.0); x*=th2;
 	t+=x*(-1.0/ 11.0); x*=th2;
 	return(t);
+}
+
+__PDPCLIB_API__ double atan(double ang)
+{
+	double a1;
+
+#if 1
+	if(ang<0)
+	{
+		a1=-ang;
+		if(a1>(M_PI/2.0))
+		{
+			return(-((M_PI/2.0) - _atan_i(1.0/a1)));
+		}
+		return(-_atan_i(a1));
+	}
+#endif
+
+#if 1
+	if(ang>(M_PI/2.0))
+	{
+		return((M_PI/2.0)-_atan_i(1.0/ang));
+	}
+#endif
+
+	return(_atan_i(ang));
 }
 #endif
 

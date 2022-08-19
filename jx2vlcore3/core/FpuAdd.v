@@ -200,7 +200,7 @@ reg[11:0]		tExpC4B;
 reg[63:0]		tFraC4B;
 reg				tInxC4B;
 
-reg[4:0]		tValRoundC4;
+reg[8:0]		tValRoundC4;
 reg[63:0]		tValC4;
 
 reg				tFraRbit4B;
@@ -405,14 +405,14 @@ begin
 	if(regRMode[3:0]!=4)
 		tFraRbit4B2=0;
 
-	tValRoundC4 = { 1'b0, tValC4[3:0] } + {
-		1'b0, tFraRbit4B2,
+	tValRoundC4 = { 1'b0, tValC4[7:0] } + {
+		5'b0, tFraRbit4B2,
 		1'b0, tFraRbit4B };
 	
 //	tValRoundC4 = { 1'b0, tValC4[3:0] } + 1;
 //	if(tFraC4B[8] && !tValRoundC4[4])
-	if(!tValRoundC4[4])
-		tValC4[3:0] = tValRoundC4[3:0];
+	if(!tValRoundC4[8])
+		tValC4[7:0] = tValRoundC4[7:0];
 
 	if(regRMode[3:0]==4)
 		tValC4[1:0] = tInxC4B ? 2'b01 : 2'b00;

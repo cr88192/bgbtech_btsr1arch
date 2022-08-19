@@ -106,7 +106,8 @@ always @*
 begin
 	tFmtHalf = 0;
 
-	if(tFmtHalf)
+//	if(tFmtHalf)
+	if(1'b0)
 	begin
 		tSgnS	= regValRs[15];
 		tSgnT	= regValRt[15];
@@ -121,12 +122,16 @@ begin
 		tSgnT	= regValRt[31];
 		tExpS	= { 1'b0, regValRs[30:23] };
 		tExpT	= { 1'b0, regValRt[30:23] };
-		tFraS	= { 3'b001, regValRs[22:7] };
-		tFraT	= { 3'b001, regValRt[22:7] };
+//		tFraS	= { 3'b001, regValRs[22:7] };
+//		tFraT	= { 3'b001, regValRt[22:7] };
+
+		tFraS	= { 2'b00, tExpS!=0, regValRs[22:7] };
+		tFraT	= { 2'b00, tExpT!=0, regValRt[22:7] };
 	end
 	
 //	if(!regExOp[0])
-	if(regExOp[3:0]==4'h2)
+//	if(regExOp[3:0]==4'h2)
+	if((regExOp[3:0]==4'h2) && (tExpT!=0))
 		tSgnT = !tSgnT;
 	
 
@@ -157,6 +162,8 @@ begin
 		tFraT1B = 0;
 
 	tSgnCin1 = (tSgnS1!=tSgnT1);
+//	tSgnCin1 = (tSgnS1!=tSgnT1) && (tExpD1[8:4]==0);
+	tSgnCin1 = (tSgnS1!=tSgnT1) && tFraT1[16];
 	if(tSgnCin1)
 		tFraT1C = ~tFraT1B;
 //		tFraT1C = -tFraT1B;
@@ -233,7 +240,8 @@ begin
 	tValU2S = { tSgnU2A, tExpU2A[7:0], tFraU2A[15:0], 7'b0 };
 	tValU2H = { tSgnU2A, tExpU2A[7], tExpU2A[3:0], tFraU2A[15:6] };
 	
-	tRegValRo = tFmtHalf2 ? { 16'b0, tValU2H } : tValU2S;
+//	tRegValRo = tFmtHalf2 ? { 16'b0, tValU2H } : tValU2S;
+	tRegValRo = tValU2S;
 end
 
 always @(posedge clock)

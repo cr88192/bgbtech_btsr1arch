@@ -970,6 +970,7 @@ begin
 				end
 
 `ifdef jx2_fpu_enable_fdiv
+// `ifndef jx2_alu_slomuldiv_fdiv
 				4'h3: begin
 					tRegMulRs	= tRegValRcpL;
 					tRegMulRt	= tRegValRtL;
@@ -1055,6 +1056,7 @@ begin
 `endif
 
 				end
+// `endif
 `endif
 
 				4'h4: begin
@@ -1201,6 +1203,7 @@ begin
 
 
 `ifdef jx2_fpu_enable_fdiv
+// `ifndef def_true
 				4'hF: begin
 					tRegMulRs	= tRegValRcpL;
 					tRegMulRt	= tRegValRcpL;

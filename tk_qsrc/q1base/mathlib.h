@@ -54,8 +54,8 @@ float __vnf_v3fa_dot(float *a, float *b);
 #define VectorCopy_M(a,b) { (b)[0]=(a)[0]; (b)[1]=(a)[1]; (b)[2]=(a)[2]; }
 
 #ifdef __BJX2__
-// #define DotProduct(x,y)			__float32_dot3fv(x, y)
-#define DotProduct(x,y)			__vnf_v3fa_dot(x, y)
+#define DotProduct(x,y)			__float32_dot3fv(x, y)
+// #define DotProduct(x,y)			__float32_dot3fva(x, y)
 #else
 #define DotProduct(x,y)			_DotProduct(x, y)
 #endif
@@ -63,6 +63,7 @@ float __vnf_v3fa_dot(float *a, float *b);
 #define VectorAdd(a,b,c)		_VectorAdd(a, b, c)
 #define VectorSubtract(a,b,c)	_VectorSubtract(a, b, c)
 #define VectorCopy(a,b)			memcpy(b, a, 3*sizeof(float))
+// #define VectorCopy(a,b)			_VectorCopy(a, b)
 
 void VectorMA (vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
 

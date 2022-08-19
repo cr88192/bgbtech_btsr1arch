@@ -1024,9 +1024,11 @@ int BGBCC_JX2C_EmitStixVRegVRegImm(
 
 		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+
+		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, type);
 		
-		al=4;
-		if(sz&2)al=2;
+		if(sz&7)al=4;
+		if(sz&3)al=2;
 		if(sz&1)al=1;
 		
 		if(imm)
@@ -1034,7 +1036,8 @@ int BGBCC_JX2C_EmitStixVRegVRegImm(
 			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 			BGBCC_JX2C_EmitLeaBRegOfsReg(ctx, sctx,
 				nm1, cdreg, imm*sz, ctreg);
-			BGBCC_JX2C_EmitValueCopyRegRegSz(ctx, sctx, ctreg, csreg, sz, al);
+			BGBCC_JX2C_EmitValueCopyRegRegSz(ctx, sctx,
+				ctreg, csreg, sz, al);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
 		}else
 		{
@@ -1237,8 +1240,10 @@ int BGBCC_JX2C_EmitStixVRegVRegVReg(
 		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 
-		al=4;
-		if(sz&2)al=2;
+		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, type);
+
+		if(sz&7)al=4;
+		if(sz&3)al=2;
 		if(sz&1)al=1;
 
 		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
@@ -1422,8 +1427,10 @@ int BGBCC_JX2C_EmitStixVRegVRegVRegImm(
 		sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 		nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 
-		al=4;
-		if(sz&2)al=2;
+		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, type);
+
+		if(sz&7)al=4;
+		if(sz&3)al=2;
 		if(sz&1)al=1;
 
 		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);

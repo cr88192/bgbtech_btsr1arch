@@ -125,6 +125,7 @@ void tkra_glNormalPointer(int type, int stride,
 	if(!stride)
 		stride=TKRA_CalcDefaultStride(3, type);
 
+	ctx->tkgl_vptr_nv_nsz=3;
 	ctx->tkgl_vptr_nv_ty=type;
 	ctx->tkgl_vptr_nv_str=stride;
 	ctx->tkgl_vptr_nv_ptr=(void *)pointer;
@@ -151,6 +152,8 @@ void tkra_glDrawArrays(int mode, int first, int count)
 		ctx->tkgl_vptr_st_ty,	ctx->tkgl_vptr_st_str,
 		ctx->tkgl_vptr_rgb_ptr,	ctx->tkgl_vptr_rgb_nsz,
 		ctx->tkgl_vptr_rgb_ty,	ctx->tkgl_vptr_rgb_str,
+		ctx->tkgl_vptr_nv_ptr,	ctx->tkgl_vptr_nv_nsz,
+		ctx->tkgl_vptr_nv_ty,	ctx->tkgl_vptr_nv_str,
 		ixp,	0,
 		mode,	count);
 }
@@ -172,6 +175,8 @@ void tkra_glDrawElements(int mode, int count,
 		ctx->tkgl_vptr_st_ty,	ctx->tkgl_vptr_st_str,
 		ctx->tkgl_vptr_rgb_ptr,	ctx->tkgl_vptr_rgb_nsz,
 		ctx->tkgl_vptr_rgb_ty,	ctx->tkgl_vptr_rgb_str,
+		ctx->tkgl_vptr_nv_ptr,	ctx->tkgl_vptr_nv_nsz,
+		ctx->tkgl_vptr_nv_ty,	ctx->tkgl_vptr_nv_str,
 		ixp,	type,
 		mode,	count);
 }
@@ -205,6 +210,7 @@ void tkra_glEnd(void)
 		vtxa+0,	4,	TKRA_FLOAT,	8*4,
 		vtxa+4,	2,	TKRA_FLOAT,	8*4,
 		vtxa+6,	4,	TKRA_UBYTE,	8*4,
+		vtxa+7,	3,	TKRA_BYTE,	8*4,
 		NULL,		0,
 		ctx->tkgl_begin_mode,
 		ctx->tkgl_begin_nvtx);

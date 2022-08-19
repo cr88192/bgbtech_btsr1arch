@@ -193,6 +193,30 @@ const struct tkra_glfunc_s tkra_glfuncs[]={
 { "glFinish",				tkra_glFinish },
 { "glFlush",				tkra_glFlush },
 { "glHint",					tkra_glHint },
+
+{ "glLightf",				tkra_glLightf },
+{ "glLighti",				tkra_glLighti },
+{ "glLightfv",				tkra_glLightfv },
+{ "glLightiv",				tkra_glLightiv },
+{ "glGetLightfv",			tkra_glGetLightfv },
+{ "glGetLightiv",			tkra_glGetLightiv },
+{ "glLightModelf",			tkra_glLightModelf },
+{ "glLightModeli",			tkra_glLightModeli },
+{ "glLightModelfv",			tkra_glLightModelfv },
+{ "glLightModeliv",			tkra_glLightModeliv },
+{ "glMaterialf",			tkra_glMaterialf },
+{ "glMateriali",			tkra_glMateriali },
+{ "glMaterialfv",			tkra_glMaterialfv },
+{ "glMaterialiv",			tkra_glMaterialiv },
+{ "glGetMaterialfv",		tkra_glGetMaterialfv },
+{ "glGetMaterialiv",		tkra_glGetMaterialiv },
+{ "glColorMaterial",		tkra_glColorMaterial },
+
+{ "glStencilFunc",			tkra_glStencilFunc },
+{ "glStencilMask",			tkra_glStencilMask },
+{ "glStencilOp",			tkra_glStencilOp },
+{ "glClearStencil",			tkra_glClearStencil },
+
 { NULL,						NULL }
 };
 

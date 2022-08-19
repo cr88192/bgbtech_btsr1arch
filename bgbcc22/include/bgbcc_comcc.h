@@ -176,6 +176,9 @@ byte has_fmovs;		//Has FMOV.S
 byte has_fmovc;		//Has MOV.C
 byte has_dmacl;		//Has MACx.L / DMACx.L
 byte has_qmul;		//Has MUL.Q / DIVS.Q / ...
+byte has_ldop;		//Has FPU Immediates
+byte has_fpim;		//Has FPU Immediates
+byte has_fpvsf;		//Has FPU Immediates
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 

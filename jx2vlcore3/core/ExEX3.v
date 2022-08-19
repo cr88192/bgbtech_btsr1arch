@@ -425,7 +425,8 @@ begin
 			tValOutDfl		= regFpuV4GRn;
 			tDoOutDfl		= 1;
 			
-//			$display("JX2_UCMD_FPUV4SF: regFpuV4GRn = %X", regFpuV4GRn);
+//			$display("(A): Rs=%X Rt=%X Rn=%X Ixt=%X",
+//				regValRs, regValRt, regFpuV4GRn, opUIxt);
 		end
 
 		default: begin

@@ -75,6 +75,7 @@ tk_ports/Q3Src/demoq3/*
 
 vlcore/obj_dir/*
 jx2vlcore3/core/obj_dir/*
+jx2vlcore3/core_*
 # bjx1core32/obj_dir/*
 # smalltst/compdec/obj_dir/*
 # bjx1c32b/obj_dir/*

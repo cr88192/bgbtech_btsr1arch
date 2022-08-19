@@ -624,7 +624,11 @@ begin
 //	tValBra			= tValAguBra[47:0];
 //	tValBra			= { tRegBraLr[63:48], tValAguBra[47:0] };
 	tValBra			= { regValPc[63:48], tValAguBra[47:0] };
+`ifdef jx2_enable_vaddr96
 	tValBraHi		= { UV16_00, regValPcHi[47:0] };
+`else
+	tValBraHi		= 0;
+`endif
 	tDoBra			= 0;
 
 `ifdef jx2_enable_vaddr96
@@ -882,7 +886,8 @@ begin
 //			tDoMemOpm	= UMEM_OPM_RD_UW;	//Hack, Dummy Load (TLB)
 //			tDoMemOp	= 1;
 
-`ifndef jx2_enable_riscv
+// `ifndef jx2_enable_riscv
+`ifndef def_true
 // `ifdef def_true
 //			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
 //			tRegOutLr	= regValPc;
@@ -899,10 +904,12 @@ begin
 //				regValPc };
 `endif
 
-`ifdef jx2_enable_riscv
+//`ifdef jx2_enable_riscv
+`ifdef def_true
 			tValOutDfl		= tRegBraLr;
 			tDoOutDfl		= 1;
 
+`ifndef def_true
 //			if(regIdRm==JX2_GR_ZZR)
 			if(regIdRm==JX2_GR_DLR)
 			begin
@@ -912,6 +919,8 @@ begin
 `endif
 				tDoOutDfl	= 0;
 			end
+`endif
+
 `endif
 
 //			if(!opPreBra)
@@ -996,7 +1005,8 @@ begin
 
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
 
-`ifndef jx2_enable_riscv
+// `ifndef jx2_enable_riscv
+`ifndef def_true
 // `ifdef def_true
 //			tRegOutLr	= regValPc;
 			tRegOutLr	= tRegBraLr;
@@ -1014,13 +1024,15 @@ begin
 			tDoBra		= 1;
 `endif
 
-`ifdef jx2_enable_riscv
+// `ifdef jx2_enable_riscv
+`ifdef def_true
 // `ifndef def_true
 			tValBra		= { regValPc[63:48], tValAgu[47:0] };
 			tValOutDfl	= tRegBraLr;
 			tDoOutDfl	= 1;
 			tDoBra		= 1;
 
+`ifndef def_true
 //			if(regIdRm==JX2_GR_ZZR)
 			if(regIdRm==JX2_GR_DLR)
 			begin
@@ -1030,6 +1042,7 @@ begin
 `endif
 				tDoOutDfl	= 0;
 			end
+`endif
 
 			if(	(regIdRs==JX2_GR_LR) ||
 				(regIdRs==JX2_GR_DHR))
@@ -1662,7 +1675,9 @@ begin
 //		tRegValCn1	= {UV16_00, tValBra};
 		tRegValCn1	= tValBra;
 
+`ifdef jx2_enable_vaddr96
 		tRegOutPcHi		= tValBraHi[47:0];
+`endif
 		
 // `ifdef def_true
 `ifndef def_true

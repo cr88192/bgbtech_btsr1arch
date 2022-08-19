@@ -14,7 +14,7 @@ Performs SIMD faster but at lower accuracy than with the main FPU.
 `include "FpuConvH2S.v"
 `include "FpuConvS2H.v"
 
-`ifdef jx2_use_fpu_v2sd
+`ifdef jx2_ena_fpu_v2sd
 `include "FpuConvS2D.v"
 `include "FpuConvD2SA.v"
 `endif
@@ -119,7 +119,7 @@ FpuConvH2S	fpConvRtC(regValRtH[47:32], fpConvValRtC);
 FpuConvH2S	fpConvRtD(regValRtH[63:48], fpConvValRtD);
 
 
-`ifdef jx2_use_fpu_v2sd
+`ifdef jx2_ena_fpu_v2sd
 
 wire[31:0]		fpConvValDblRsB;
 wire[31:0]		fpConvValDblRsD;
@@ -137,7 +137,9 @@ FpuConvD2SA	fpConvDblRtB(regValRtB, fpConvValDblRtD);
 wire			tVecIsHalf;
 wire			tVecIsDbl;
 assign		tVecIsHalf = regIdIxt[5:4]==2'b01;
-assign		tVecIsDbl = regIdIxt[5:4]==2'b11;
+// assign		tVecIsDbl = regIdIxt[5:4]==2'b11;
+assign		tVecIsDbl = 
+	(regIdIxt[5:4]==2'b11) || (regIdIxt[5:2]==4'b0000);
 
 wire[31:0]		fpValRsA;
 wire[31:0]		fpValRsB;
@@ -157,7 +159,7 @@ assign		fpValRtA = tVecIsHalf ? fpConvValRtA : regValRtA[31: 0];
 assign		fpValRtC = tVecIsHalf ? fpConvValRtC : regValRtB[31: 0];
 // assign		fpValRtD = tVecIsHalf ? fpConvValRtD : regValRtB[63:32];
 
-`ifdef jx2_use_fpu_v2sd
+`ifdef jx2_ena_fpu_v2sd
 
 assign		fpValRsB =
 	tVecIsHalf ? fpConvValRsB :
@@ -237,7 +239,9 @@ assign		tVecRnWasLive = (opCmd3[5:0] == JX2_UCMD_FPUV4SF);
 assign		tVecRnIsLive = (opCmd2[5:0] == JX2_UCMD_FPUV4SF);
 // assign		tVecRnIsHalf = regIdIxt2[4];
 assign		tVecRnIsHalf	= (regIdIxt2[5:4]==2'b01);
-assign		tVecRnIsDbl		= (regIdIxt2[5:4]==2'b11);
+// assign		tVecRnIsDbl		= (regIdIxt2[5:4]==2'b11);
+assign		tVecRnIsDbl		=
+	(regIdIxt2[5:4]==2'b11) || (regIdIxt2[5:2]==4'b0000);
 // assign		tVecRnIsFmul	= (regIdIxt2[3:0] == 4'h7);
 assign		tVecRnIsFmul	=
 	(regIdIxt2[3:0] == 4'h2) ||
@@ -259,7 +263,7 @@ FpuConvS2H	fpDoConvRnB(fpValRnB, fpConvRnA[31:16]);
 FpuConvS2H	fpDoConvRnC(fpValRnC, fpConvRnA[47:32]);
 FpuConvS2H	fpDoConvRnD(fpValRnD, fpConvRnA[63:48]);
 
-`ifdef jx2_use_fpu_v2sd
+`ifdef jx2_ena_fpu_v2sd
 
 wire[63:0]		fpConvDblRnA;
 wire[63:0]		fpConvDblRnB;
@@ -272,7 +276,7 @@ assign	tRegValRnA =
 	{ fpValRnB, fpValRnA };
 assign	tRegValRnB =
 	tVecRnIsHalf ? fpConvRnA :
-	tVecRnIsHalf ? fpConvDblRnB :
+	tVecRnIsDbl ? fpConvDblRnB :
 	{ fpValRnD, fpValRnC };
 
 `else

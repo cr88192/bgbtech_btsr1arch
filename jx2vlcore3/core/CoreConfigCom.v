@@ -4,7 +4,7 @@
 // `define jx2_mc_enable_fpu
 
 `define jx2_enable_mmu_acl		//Enable ACL Checks
-`define jx2_enable_ldekey		//Enable ACL Checks
+// `define jx2_enable_ldekey		//Enable ACL Checks
 
 `define jx2_enable_riscv		//Enable RISC-V Decoder
 
@@ -32,7 +32,10 @@
 
 `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
 `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
-`define	jx2_use_mem_ldop		//Load/Store Operations
+`define	jx2_ena_fpu_v2sd		//Enable Binary64 via V4SF Unit
+
+// `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
+// `define	jx2_use_mem_ldop		//Load/Store Operations
 
 `define	jx2_fpu_enable_fdiv		//enable FDIV
 
@@ -108,12 +111,14 @@
 
 `define jx2_do_btcutx_alu
 
-`define jx2_enable_btcuab1			//UAB1/2 Block Conversion Op
+// `define jx2_enable_btcuab1			//UAB1/2 Block Conversion Op
 
 `define jx2_enable_convrgb32f		//RGBA32F Conversion Op
 // `define jx2_enable_convrgb30a		//RGB30A Conversion Op
 
 `define jx2_enable_convfp16
+
+`define jx2_enable_conv_vubtof16		//Packed Byte/Word <-> F16/F32
 
 `endif
 

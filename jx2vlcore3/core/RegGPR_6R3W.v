@@ -78,6 +78,7 @@ module RegGPR_6R3W(
 	regValImmB,		//Immediate (Decode, Lane 2)
 	regValImmC,		//Immediate (Decode, Lane 3)
 	regValLr,		//LR Value (CR)
+	regValSsp,		//SSP Value (CR)
 	regValCm,		//Cm Value (CR)
 	
 	gprEx1Flush,
@@ -143,6 +144,7 @@ input [32:0]	regValImmA;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
 input [32:0]	regValImmC;		//Immediate (Decode)
 input [63:0]	regValLr;		//LR Value (CR)
+input [63:0]	regValSsp;		//SSP Value (CR)
 input [63:0]	regValCm;		//Cm Value (CR)
 
 input			gprEx1Flush;
@@ -155,6 +157,8 @@ input			gprEx3DualLane;
 
 wire			gprId2DualLane;
 assign		gprId2DualLane = (regIdUIxt[7:6] == 2'b11);
+
+parameter		noLane3 = 0;
 
 
 output[63:0]	regOutDlr;
@@ -193,8 +197,8 @@ assign	regIdRnAW	= regIdRnA3;
 assign	regValRnAW	= regValRnA3;
 assign	regIdRnBW	= regIdRnB3;
 assign	regValRnBW	= regValRnB3;
-assign	regIdRnCW	= regIdRnC3;
-assign	regValRnCW	= regValRnC3;
+assign	regIdRnCW	= noLane3 ? JX2_GR_ZZR : regIdRnC3;
+assign	regValRnCW	= noLane3 ? 0 : regValRnC3;
 assign	regFlushRnW	= gprEx3Flush;
 
 
@@ -214,10 +218,10 @@ assign	regFlushRnW	= gprEx3Flush;
 
 assign		regIdRnA1B = regIdRnA1;
 assign		regIdRnB1B = regIdRnB1;
-assign		regIdRnC1B = regIdRnC1;
+assign		regIdRnC1B = noLane3 ? JX2_GR_ZZR : regIdRnC1;
 assign		regIdRnA2B = regIdRnA2;
 assign		regIdRnB2B = regIdRnB2;
-assign		regIdRnC2B = regIdRnC2;
+assign		regIdRnC2B = noLane3 ? JX2_GR_ZZR : regIdRnC2;
 
 `wire_gpr		regIdRnA3B;		//Destination ID
 `wire_gpr		regIdRnB3B;		//Destination ID
@@ -227,7 +231,7 @@ assign		regIdRnC2B = regIdRnC2;
 // assign		regIdRnC3B = gprEx3Flush ? JX2_GR_ZZR : regIdRnC3;
 assign		regIdRnA3B = regIdRnA3;
 assign		regIdRnB3B = regIdRnB3;
-assign		regIdRnC3B = regIdRnC3;
+assign		regIdRnC3B = noLane3 ? JX2_GR_ZZR : regIdRnC3;
 
 // `ifdef jx2_enable_gpr48
 `ifdef jx2_enable_xgpr
@@ -262,7 +266,8 @@ RegSpr_3W	gprModDlr(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInDlr,	hold,
+//	regInDlr,	hold,
+	gprRegDlr,	hold,
 	regFlushRnW);
 
 RegSpr_3W	gprModDhr(
@@ -271,7 +276,8 @@ RegSpr_3W	gprModDhr(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 	regIdRnCW,	regValRnCW,
-	regInDhr,	hold,
+//	regInDhr,	hold,
+	gprRegDhr,	hold,
 	regFlushRnW);
 
 RegSpr_3W	gprModSp(
@@ -559,6 +565,8 @@ begin
 		JX2_GR_SP:	tValRtA=gprRegSp;
 //		JX2_GR_SP:	tValRtA=regInSp;
 
+//		JX2_GR_SSP:	tValRtA=regValSsp;
+
 		JX2_GR_IMM:	begin
 			tValRtA={
 				regValImmA[32]?UV32_FF:UV32_00,
@@ -616,6 +624,8 @@ begin
 		JX2_GR_SP:	tValRuA=gprRegSp;
 //		JX2_GR_SP:	tValRuA=regInSp;
 
+		JX2_GR_SSP:	tValRuA=regValSsp;
+
 		JX2_GR_IMM:begin
 			tValRuA={
 				regValImmB[32]?UV32_FF:UV32_00,
@@ -651,6 +661,8 @@ begin
 //		JX2_GR_DHR:	tValRvA=regInDhr;
 		JX2_GR_SP:	tValRvA=gprRegSp;
 //		JX2_GR_SP:	tValRvA=regInSp;
+
+//		JX2_GR_SSP:	tValRvA=regValSsp;
 
 		JX2_GR_IMM:begin
 			tValRvA={
@@ -688,6 +700,8 @@ begin
 //		JX2_GR_DHR:	tValRxA=regInDhr;
 		JX2_GR_SP:	tValRxA=gprRegSp;
 //		JX2_GR_SP:	tValRxA=regInSp;
+
+//		JX2_GR_SSP:	tValRxA=regValSsp;
 
 `ifndef def_true
 
@@ -741,6 +755,8 @@ begin
 //		JX2_GR_DHR:	tValRyA=regInDhr;
 		JX2_GR_SP:	tValRyA=gprRegSp;
 //		JX2_GR_SP:	tValRyA=regInSp;
+
+//		JX2_GR_SSP:	tValRyA=regValSsp;
 
 
 // `ifdef def_true

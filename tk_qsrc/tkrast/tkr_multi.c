@@ -26,6 +26,8 @@
 #include "tkr_context.c"
 
 #include "tkr_trans.c"
+#include "tkr_trans_proj.c"
+#include "tkr_trans_arr.c"
 #include "tkr_matrix.c"
 
 
@@ -33,4 +35,7 @@
 #include "tkr_glmatrix.c"
 #include "tkr_gltex.c"
 #include "tkr_glenable.c"
+#include "tkr_gllight.c"
+#include "tkr_glstencil.c"
+
 #include "tkr_glgpa.c"

@@ -130,20 +130,33 @@ typedef u32 nlint;
 // #define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(24*24*3)
 
+// #define		TKRA_PARAM_TRISUBDIV_DFL	(64*64*3)
 #define		TKRA_PARAM_TRISUBDIV_DFL	(48*48*3)
 // #define		TKRA_PARAM_TRISUBDIV_DFL	(36*36*3)
-#define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
+
+// #define		TKRA_PARAM_TRISUBDIV_EDGE	(40*40*3)
+// #define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
+#define		TKRA_PARAM_TRISUBDIV_EDGE	(24*24*3)
+
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(24*24*3)
-#define		TKRA_PARAM_TRISUBDIV_NEAR	(16*16*3)
+// #define		TKRA_PARAM_TRISUBDIV_NEAR	(16*16*3)
+#define		TKRA_PARAM_TRISUBDIV_NEAR	(12*12*3)
 
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(48*48*4)
 // #define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
 
-#define		TKRA_PARAM_QUADSUBDIV_DFL	(40*40*4)
+// #define		TKRA_PARAM_QUADSUBDIV_DFL	(72*72*4)
+// #define		TKRA_PARAM_QUADSUBDIV_DFL	(64*64*4)
+#define		TKRA_PARAM_QUADSUBDIV_DFL	(56*56*4)
+// #define		TKRA_PARAM_QUADSUBDIV_DFL	(40*40*4)
+
+// #define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
 #define		TKRA_PARAM_QUADSUBDIV_EDGE	(32*32*4)
+
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
-#define		TKRA_PARAM_QUADSUBDIV_NEAR	(16*16*4)
+// #define		TKRA_PARAM_QUADSUBDIV_NEAR	(16*16*4)
+#define		TKRA_PARAM_QUADSUBDIV_NEAR	(12*12*4)
 
 /*
 DrawSpan Parameter Array
@@ -407,6 +420,8 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_TEXTURE2D					0x00008000
 #define TKRA_STFL1_FILL_LINE					0x00010000
 #define TKRA_STFL1_NOSUBDIV						0x00020000
+#define TKRA_STFL1_LIGHTING						0x00040000
+#define TKRA_STFL1_FOG							0x00080000
 
 
 typedef unsigned short	tkra_rastpixel;
@@ -471,25 +486,30 @@ typedef struct {
 }tkra_mat4;
 
 typedef struct {
-	tkra_vec4f	xyz;
-	tkra_vec2f	st;
-	u32			rgb;
+	tkra_vec4f	xyz;			//00
+	tkra_vec4f	pv;				//10
+	tkra_vec2f	st;				//20
+	u32			rgb;			//28
+	u32			nv;				//2C
+
+	int			fl;				//30
+	u32			mrgb;			//34, RGBA (Material)
+	int			pad1;			//38
+	int			pad2;			//3C
+
+//	tkra_vec4f	norm;			//40
+	u64			attrib[8];		//40
+	//80
 }tkra_trivertex;
 
 typedef struct {
-	s32 x;
-	s32 y;
-	s32 z;
-	s32	s;
-	s32 t;
-
-//	u16 x;
-//	u16 y;
-//	u16 z;
-//	u16 w;
-//	s16	s;
-//	s16 t;
-	u32 rgb;
+	s32 x;		//00
+	s32 y;		//04
+	s32 z;		//08
+	s32	s;		//0C
+	s32 t;		//10
+	u32 rgb;	//14
+	//18
 }tkra_projvertex;
 
 typedef u64 (*tkra_blendfunc_t)(u64 sclr, u64 dclr);
@@ -609,10 +629,32 @@ byte		zat_alfunc;
 byte		zat_zfunc;
 byte		blend_isready;
 
+byte		light_mask;
+
+tkra_vec4f	light_model_ambient;
+tkra_vec4f	light_ambient[8];
+tkra_vec4f	light_diffuse[8];
+tkra_vec4f	light_specular[8];
+tkra_vec4f	light_position[8];
+tkra_vec4f	light_spot_dir[8];
+float		light_spot_exp[8];
+float		light_spot_cutoff[8];
+float		light_attn_const[8];
+float		light_attn_linear[8];
+float		light_attn_quadratic[8];
+
 tkra_blendfunc_t	Blend;
 tkra_zatest_t		ZaTest;
 
 u32		zat_cref;
+
+int		tkgl_usepgm_vtx;		//vertex shader
+u64		tkgl_shdr_uniform[128];		//uniform parameters
+
+tkra_trivertex v0stk[64];
+tkra_trivertex v1stk[64];
+tkra_trivertex v2stk[64];
+tkra_trivertex v3stk[64];
 
 int		tkgl_vptr_xyz_nsz;
 int		tkgl_vptr_xyz_ty;

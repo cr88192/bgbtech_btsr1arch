@@ -323,14 +323,14 @@ begin
 		JX2_UCMD_LEA_MR: begin
 		end
 		JX2_UCMD_MOV_RM: begin
-			tRegHeld	= 1;
+//			tRegHeld	= 1;
 		end
 		JX2_UCMD_MOV_MR: begin
 			tRegHeld	= 1;
 		end
 
 		JX2_UCMD_FMOV_RM: begin
-			tRegHeld	= 1;
+//			tRegHeld	= 1;
 		end
 		JX2_UCMD_FMOV_MR: begin
 			tRegHeld	= 1;

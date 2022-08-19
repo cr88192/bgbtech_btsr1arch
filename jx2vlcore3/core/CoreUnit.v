@@ -578,6 +578,12 @@ reg[63:0]		memBusExcIn;
 
 `ifdef jx2_enable_dualcore
 
+defparam cpu1.isAltCore = 0;
+defparam cpu2.isAltCore = 1;
+
+defparam cpu1.isGpu = 0;
+defparam cpu2.isGpu = 1;
+
 `wire_tile		memInData;
 `wire_tile		memOutData;
 `wire_l2addr	memAddr;
@@ -621,7 +627,7 @@ wire			dbgOutStatus8;
 `wire_tile		mem1InData;
 `wire_tile		mem1OutData;
 `wire_l2addr	mem1AddrA;
-`wire_l2addr	mem1AddrB;
+// `wire_l2addr	mem1AddrB;
 wire[15:0]		mem1Opm;
 wire[1:0]		mem1OK;
 wire[127:0]		mem1BusExc;
@@ -633,18 +639,20 @@ wire[15:0]		mem1SeqIn;
 wire[7:0]		mem1NodeId;
 assign			mem1NodeId = 8'h04;
 
-wire[95:0]		mem1Addr;
-wire[95:0]		mem1AddrB;
+wire[95:0]		mem1AddrAt;
+wire[95:0]		mem1AddrBt;
 wire[95:0]		mem1AddrInA;
 wire[95:0]		mem1AddrInB;
 
 `ifdef jx2_enable_l2addr96
-assign	mem1Addr			= mem1AddrA;
+// assign	mem1Addr			= mem1AddrA;
+assign	mem1AddrA			= mem1AddrAt;
 assign	mem1AddrInA			= mem1AddrIn;
 assign	mem1AddrInB			= 0;
 `else
-assign	mem1Addr			= mem1AddrA[47:0];
-assign	mem1AddrInA[47:0]	= mem1AddrIn;
+// assign	mem1Addr			= { 48'h0, mem1AddrA[47:0] };
+assign	mem1AddrA			= mem1AddrAt[47:0];
+assign	mem1AddrInA			= { 48'hX, mem1AddrIn };
 assign	mem1AddrInB			= 0;
 `endif
 
@@ -673,7 +681,7 @@ ExUnit	cpu1(
 	clock_cpu, 		reset2_cpu,
 	{ 4'h0, timers },
 
-	mem1AddrA,		mem1AddrB,
+	mem1AddrAt,		mem1AddrBt,
 	mem1InData,		mem1OutData,
 	mem1Opm,		mem1OK,
 	mem1BusExc,
@@ -714,16 +722,18 @@ wire[7:0]		mem2NodeId;
 assign			mem2NodeId = 8'h08;
 
 wire[95:0]		mem2AddrA;
-wire[95:0]		mem2AddrB;
+wire[95:0]		mem2AddrBt;
 wire[95:0]		mem2AddrInA;
 wire[95:0]		mem2AddrInB;
 
 `ifdef jx2_enable_l2addr96
-assign	mem2Addr		= mem2AddrA;
-assign	mem2AddrInA		= mem2AddrIn;
+assign	mem2Addr			= mem2AddrA;
+assign	mem2AddrInA			= mem2AddrIn;
+assign	mem2AddrInB			= 0;
 `else
 assign	mem2Addr			= mem2AddrA[47:0];
-assign	mem2AddrInA[47:0]	= mem2AddrIn;
+assign	mem2AddrInA			= { 48'hX, mem2AddrIn };
+assign	mem2AddrInB			= 0;
 `endif
 
 // `wire_vaddr		dbg2OutPc;
@@ -751,7 +761,7 @@ ExUnit	cpu2(
 	clock_cpu, 		reset2_cpu,
 	{ 4'h1, timers },
 
-	mem2AddrA,		mem2AddrB,
+	mem2AddrA,		mem2AddrBt,
 	mem2InData,		mem2OutData,
 	mem2Opm,		mem2OK,
 	mem2BusExc,
@@ -773,9 +783,6 @@ ExUnit	cpu2(
 	dbg2OutStatus5,	dbg2OutStatus6,
 	dbg2OutStatus7,	dbg2OutStatus8
 	);
-
-defparam cpu1.isAltCore = 0;
-defparam cpu2.isAltCore = 1;
 
 assign		dbgOutPc		= dbg1OutPc;
 assign		dbgOutIstr		= dbg1OutIstr;
@@ -804,8 +811,9 @@ assign	memOutData	= mem2OutData;
 
 assign	mem1AddrIn	= memAddrIn;
 // assign	mem2AddrIn	= mem1AddrA;
-assign	mem2AddrIn	= mem1Addr;
-assign	memAddr		= mem2AddrA;
+assign	mem2AddrIn	= mem1AddrA;
+// assign	memAddr		= mem2AddrA;
+assign	memAddr		= mem2AddrA[47:0];
 
 assign	mem1SeqIn	= memSeqIn;
 assign	mem2SeqIn	= mem1SeqOut;

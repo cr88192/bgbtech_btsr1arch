@@ -143,6 +143,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	
 	shctx->has_qmul=0;
 
+	shctx->has_ldop=0;
+	shctx->has_fpim=0;
+	shctx->has_fpvsf=0;
+
 //	shctx->no_wexify=1;		//Debug
 
 //	shctx->fpu_gfp=1;
@@ -193,6 +197,14 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->use_wexmd=5;
 //		shctx->has_jumbo=1;
 	}
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpu_fpimm"))
+		shctx->has_fpim=1;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpu_fpvsf"))
+		shctx->has_fpvsf=1;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "loadop"))
+		shctx->has_ldop=1;
 
 	if(	BGBCC_CCXL_CheckForOptStr(ctx, "wexj") ||
 		BGBCC_CCXL_CheckForOptStr(ctx, "jumbo"))

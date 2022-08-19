@@ -233,7 +233,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R23B	87
 #endif
 
-#define BJX2_TR_MAXOP	32
+// #define BJX2_TR_MAXOP	32
+// #define BJX2_TR_MAXOP	40
+#define BJX2_TR_MAXOP	64
 
 
 #define BJX2_FLT_INVADDR	0x8000		//invalid memory address
@@ -655,6 +657,23 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDOPUL		0x155		//
 #define BJX2_NMID_LDOPQ			0x156		//
 #define BJX2_NMID_LDOPUQ		0x157		//
+
+#define BJX2_NMID_PCVTSB2HL		0x160		//
+#define BJX2_NMID_PCVTUB2HL		0x161		//
+#define BJX2_NMID_PCVTSB2HH		0x162		//
+#define BJX2_NMID_PCVTUB2HH		0x163		//
+#define BJX2_NMID_PCVTSW2FL		0x164		//
+#define BJX2_NMID_PCVTUW2FL		0x165		//
+#define BJX2_NMID_PCVTSW2FH		0x166		//
+#define BJX2_NMID_PCVTUW2FH		0x167		//
+#define BJX2_NMID_PCVTH2SB		0x168		//
+#define BJX2_NMID_PCVTH2UB		0x169		//
+#define BJX2_NMID_PCVTSW2H		0x16A		//
+#define BJX2_NMID_PCVTUW2H		0x16B		//
+#define BJX2_NMID_PCVTF2SW		0x16C		//
+#define BJX2_NMID_PCVTF2UW		0x16D		//
+#define BJX2_NMID_PCVTH2SW		0x16E		//
+#define BJX2_NMID_PCVTH2UW		0x16F		//
 
 
 #define BJX2_FMID_NONE			0x00		//?

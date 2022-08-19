@@ -87,6 +87,8 @@ output[ 15:0]	memOpmOut;		//memory operation mode
 
 input [  7:0]	unitNodeId;		//Who Are We?
 
+parameter		noLdOp		= 0;
+parameter		disableTlb	= 0;
 
 reg[63: 0]	tRegOutValA;
 reg[63: 0]	tRegOutValB;
@@ -699,12 +701,15 @@ begin
 	tNxtReqAddrHi	= 0;
 `ifdef jx2_enable_vaddr96
 	tNxtReqAddrHi	= regInAddr[95:48];
+	if(disableTlb)
+		tNxtReqAddrHi	= 0;
 `endif
 
 	tNxtReqAddr		= regInAddr[47:0];
 	tNxtReqBix		= regInAddr[4:0];
 	tNxtReqOpm		= regInOpm;
-	tNxtReqLdOp		= regInLdOp;
+//	tNxtReqLdOp		= regInLdOp;
+	tNxtReqLdOp		= noLdOp ? 0 : regInLdOp;
 
 `ifdef jx2_mem_lane2
 	tNxtReqAddrB	= regInAddrB[47:0];
@@ -896,6 +901,9 @@ begin
 //	tNxtSkipTlb		= (regInSr[29] && regInSr[30]);
 	tNxtSkipTlb		= (tRegInSr[29] && tRegInSr[30]);
 //	tNxtSkipTlb		= (tRegInSrL[29] && tRegInSrL[30]);
+
+	if(disableTlb)
+		tNxtSkipTlb = 1;
 
 	if(tNxtSkipTlb && (regInAddr[47:28]!=0) && !dcInHold &&
 		(regInOpm[5:4] != 2'b00))
@@ -1838,63 +1846,75 @@ begin
 		tBlkExDataB = tBlkExData1[127:64];
 `endif
 	end
-	
+
+`ifndef def_true
 	if(tReqNoReadA || tReqNoReadB)
 	begin
 		tBlkExDataA = UV64_00;
 		tBlkExDataB = UV64_00;
 	end
+`endif
 	
 	tBlkInsData4 = tReqInValA;
 
 `ifdef jx2_use_mem_ldop
-	case(tReqLdOp[2:0])
-		3'b000: begin
-			/* Normal Load/Store */
-		end
-		3'b001: begin
-			/* Exchange */
-		end
-		3'b010: begin
-			/* ADD */
-			tBlkInsData4[31:0] = tBlkExData[31:0] + tReqInValA[31:0];
-			tBlkExData[31:0] = tBlkInsData4[31:0];
-		end
-		3'b011: begin
-			/* SUB */
-			tBlkInsData4[31:0] = tBlkExData[31:0] - tReqInValA[31:0];
-			tBlkExData[31:0] = tBlkInsData4[31:0];
-		end
-		3'b100: begin
-			/* SUB */
-			tBlkInsData4[31:0] = tReqInValA[31:0] - tBlkExData[31:0];
-			tBlkExData[31:0] = tBlkInsData4[31:0];
-		end
+	if(!noLdOp)
+	begin
+		case(tReqLdOp[2:0])
+			3'b000: begin
+				/* Normal Load/Store */
+			end
+			3'b001: begin
+				/* Exchange */
+			end
+			3'b010: begin
+				/* ADD */
+				tBlkInsData4[31:0] = tBlkExData[31:0] + tReqInValA[31:0];
+				tBlkExData[31:0] = tBlkInsData4[31:0];
+			end
+			3'b011: begin
+				/* SUB */
+				tBlkInsData4[31:0] = tBlkExData[31:0] - tReqInValA[31:0];
+				tBlkExData[31:0] = tBlkInsData4[31:0];
+			end
+			3'b100: begin
+				/* SUB */
+				tBlkInsData4[31:0] = tReqInValA[31:0] - tBlkExData[31:0];
+				tBlkExData[31:0] = tBlkInsData4[31:0];
+			end
 
-		3'b101: begin
-			/* AND */
-			tBlkInsData4[31:0] = tBlkExData[31:0] & tReqInValA[31:0];
-			tBlkExData[31:0] = tBlkInsData4[31:0];
-		end
-		3'b110: begin
-			/* OR */
-			tBlkInsData4[31:0] = tBlkExData[31:0] | tReqInValA[31:0];
-			tBlkExData[31:0] = tBlkInsData4[31:0];
-		end
-		3'b111: begin
-			/* XOR */
-			tBlkInsData4[31:0] = tBlkExData[31:0] ^ tReqInValA[31:0];
-			tBlkExData[31:0] = tBlkInsData4[31:0];
-		end
-	endcase
+			3'b101: begin
+				/* AND */
+				tBlkInsData4[31:0] = tBlkExData[31:0] & tReqInValA[31:0];
+				tBlkExData[31:0] = tBlkInsData4[31:0];
+			end
+			3'b110: begin
+				/* OR */
+				tBlkInsData4[31:0] = tBlkExData[31:0] | tReqInValA[31:0];
+				tBlkExData[31:0] = tBlkInsData4[31:0];
+			end
+			3'b111: begin
+				/* XOR */
+				tBlkInsData4[31:0] = tBlkExData[31:0] ^ tReqInValA[31:0];
+				tBlkExData[31:0] = tBlkInsData4[31:0];
+			end
+		endcase
+	end
 `endif
 
-	if(tReqOpm[1:0]==2'b00)
-		tBlkInsData4[15:8] = tBlkExData4[15:8];
-	if(tReqOpm[1]==1'b0)
-		tBlkInsData4[31:16] = tBlkExData4[31:16];
-	if(tReqOpm[1:0]!=2'b11)
-		tBlkInsData4[63:32] = tBlkExData4[63:32];
+//	if(tReqOpm[1:0]==2'b00)
+//		tBlkInsData4[15:8] = tBlkExData4[15:8];
+//	if(tReqOpm[1]==1'b0)
+//		tBlkInsData4[31:16] = tBlkExData4[31:16];
+//	if(tReqOpm[1:0]!=2'b11)
+//		tBlkInsData4[63:32] = tBlkExData4[63:32];
+
+	tBlkInsData4 = {
+		(tReqOpm[1:0]!=2'b11) ? tBlkExData4[63:32] : tBlkInsData4[63:32],
+		(tReqOpm[1  ]==1'b0 ) ? tBlkExData4[31:16] : tBlkInsData4[31:16],
+		(tReqOpm[1:0]==2'b00) ? tBlkExData4[15: 8] : tBlkInsData4[15: 8],
+		tBlkInsData4[7:0]
+	};
 
 	tBlkInsData3 = tReqBix[0] ?
 		{ tBlkInsData4[63: 0], tBlkExData3 [ 7:0] } :
@@ -1902,18 +1922,31 @@ begin
 	tBlkInsData2 = tReqBix[1] ?
 		{ tBlkInsData3[71: 0], tBlkExData2 [15:0] } :
 		{ tBlkExData2 [87:72], tBlkInsData3[71:0] } ;
-	tBlkInsData1 = tReqBix[2] ?
-		{ tBlkExData1 [127:120], tBlkInsData2[ 87: 0], tBlkExData1 [31:0] } :
-		{ tBlkExData1 [127:120], tBlkExData1 [119:88], tBlkInsData2[87:0] } ;
+//	tBlkInsData1 = tReqBix[2] ?
+//		{ tBlkExData1 [127:120], tBlkInsData2[ 87: 0], tBlkExData1 [31:0] } :
+//		{ tBlkExData1 [127:120], tBlkExData1 [119:88], tBlkInsData2[87:0] } ;
+
+	tBlkInsData1 = { 
+		tBlkExData1 [127:120], 
+		tReqBix[2] ?
+			{ tBlkInsData2[ 87: 0], tBlkExData1 [31:0] } :
+			{ tBlkExData1 [119:88], tBlkInsData2[87:0] } 
+		};
 
 	if(tReqOpm[2:0]==3'b111)
 	begin
 		tBlkInsData1 = { tReqInValB, tReqInValA };
 	end
 
-	tBlkInsData0 = tReqBix[3] ?
-		{ tBlkExData0 [255:192], tBlkInsData1[127:  0], tBlkExData0 [ 63:0] } :
-		{ tBlkExData0 [255:192], tBlkExData0 [191:128], tBlkInsData1[127:0] } ;
+//	tBlkInsData0 = tReqBix[3] ?
+//		{ tBlkExData0 [255:192], tBlkInsData1[127:  0], tBlkExData0 [ 63:0] } :
+//		{ tBlkExData0 [255:192], tBlkExData0 [191:128], tBlkInsData1[127:0] } ;
+
+	tBlkInsData0 = {
+		tBlkExData0 [255:192],
+		tReqBix[3] ? tBlkInsData1[127: 64] : tBlkExData0 [191:128],
+		tReqBix[3] ? tBlkInsData1[ 63:  0] : tBlkInsData1[127: 64],
+		tReqBix[3] ? tBlkExData0 [ 63:  0] : tBlkInsData1[ 63:  0]	};
 
 `ifdef jx2_debug_ldst
 	if(tReqOpm[5:4]!=0)

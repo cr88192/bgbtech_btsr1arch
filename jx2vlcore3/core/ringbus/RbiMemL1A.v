@@ -40,6 +40,8 @@ In the case of Full-Duplex / Swap operations, a FAULT with a zero exception will
 
 `include "ringbus/RbiDefs.v"
 
+/* verilator lint_off DEFPARAM */
+
 `include "ringbus/RbiMemDcA.v"
 
 `ifdef jx2_enable_wex
@@ -139,6 +141,11 @@ output[ 15:0]	l2mOpmOut;		//memory operation mode
 `output_tile	l2mDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
+
+parameter		disableTlb = 0;
+defparam		tlb.disableTlb		= disableTlb;
+defparam		memDc.noLdOp		= disableTlb;
+defparam		memDc.disableTlb	= disableTlb;
 
 
 reg[15:0]	tRngA;
@@ -459,6 +466,9 @@ begin
 		end
 	end
 
+	if(disableTlb)
+		tSkipTlb	= 1;
+
 	if(tSkipTlb)
 	begin
 		/* Do Skip. */
@@ -472,13 +482,36 @@ begin
 		tBridgeOpmI		= dfMemOpmO;
 		tBridgeSeqI		= dfMemSeqO;
 	end
+
+	if(disableTlb)
+	begin
+		dfMemDataI		= tBridgeDataO;
+		dfMemAddrI		= tBridgeAddrO;
+		dfMemOpmI		= tBridgeOpmO;
+		dfMemSeqI		= tBridgeSeqO;
+
+		ifMemDataI		= dfMemDataO;
+		ifMemAddrI		= dfMemAddrO;
+		ifMemOpmI		= dfMemOpmO;
+		ifMemSeqI		= dfMemSeqO;
+
+		tTlbDataI		= 0;
+		tTlbAddrI		= 0;
+		tTlbOpmI		= 0;
+		tTlbSeqI		= 0;
+
+		tBridgeDataI	= ifMemDataO;
+		tBridgeAddrI	= ifMemAddrO;
+		tBridgeOpmI		= ifMemOpmO;
+		tBridgeSeqI		= ifMemSeqO;
+	end
 `endif
 
 `else
-	tBridgeDataI	= dfMemDataO;
-	tBridgeAddrI	= dfMemAddrO;
-	tBridgeOpmI		= dfMemOpmO;
-	tBridgeSeqI		= dfMemSeqO;
+	tBridgeDataI	= ifMemDataO;
+	tBridgeAddrI	= ifMemAddrO;
+	tBridgeOpmI		= ifMemOpmO;
+	tBridgeSeqI		= ifMemSeqO;
 `endif
 end
 

@@ -59,6 +59,7 @@ output[32:0]	idImm;
 output[8:0]		idUCmd;
 output[8:0]		idUIxt;
 
+parameter		fpuLowPrec = 0;
 
 wire			srUser;				//Usermode
 wire			srSuperuser;		//Superuser mode
@@ -267,6 +268,30 @@ begin
 	opRegM_Fix	= JX2_GR_ZZR;
 	opRegO_Fix	= JX2_GR_ZZR;
 
+
+`ifdef jx2_reg_spdecswap
+	if(srMod[2])
+	begin
+		if(opRegM_Dfl == JX2_GR_SP)
+			opRegM_Dfl = JX2_GR_SSP;
+		if(opRegO_Dfl == JX2_GR_SP)
+			opRegO_Dfl = JX2_GR_SSP;
+		if(opRegN_Dfl == JX2_GR_SP)
+			opRegN_Dfl = JX2_GR_SSP;
+//		if(opRegO_Df2 == JX2_GR_SP)
+//			opRegO_Df2 = JX2_GR_SSP;
+
+		if(opRegN_Xr == JX2_GR_SP)
+			opRegN_Xr = JX2_GR_SSP;
+		if(opRegN_Yr == JX2_GR_SP)
+			opRegN_Yr = JX2_GR_SSP;
+			
+		if(opRegM_Cr == JX2_GR_SSP)
+			opRegM_Cr = JX2_GR_SP;
+		if(opRegN_Cr == JX2_GR_SSP)
+			opRegN_Cr = JX2_GR_SP;
+	end
+`endif
 
 	opNmid		= JX2_UCMD_INVOP;
 	opRegN		= JX2_GR_ZZR;
@@ -1542,6 +1567,10 @@ begin
 			opIty		= JX2_ITY_NB;
 //			opUCmdIx	= JX2_UCIX_FPU_FADD_G;
 			opUCmdIx	= JX2_UCIX_FPU_FADD;
+`ifdef jx2_use_fpu_v2sd
+			if(fpuLowPrec)
+				opNmid		= JX2_UCMD_FPUV4SF;
+`endif
 		end
 		16'h61zz: begin
 			opNmid		= JX2_UCMD_FPU3;
@@ -1549,6 +1578,10 @@ begin
 			opIty		= JX2_ITY_NB;
 //			opUCmdIx	= JX2_UCIX_FPU_FSUB_G;
 			opUCmdIx	= JX2_UCIX_FPU_FSUB;
+`ifdef jx2_use_fpu_v2sd
+			if(fpuLowPrec)
+				opNmid		= JX2_UCMD_FPUV4SF;
+`endif
 		end
 		16'h62zz: begin
 			opNmid		= JX2_UCMD_FPU3;
@@ -1556,6 +1589,10 @@ begin
 			opIty		= JX2_ITY_NB;
 //			opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
 			opUCmdIx	= JX2_UCIX_FPU_FMUL;
+`ifdef jx2_use_fpu_v2sd
+			if(fpuLowPrec)
+				opNmid		= JX2_UCMD_FPUV4SF;
+`endif
 		end
 		16'h63zz: begin
 			opNmid		= JX2_UCMD_FLDCX;
@@ -1781,7 +1818,8 @@ begin
 
 `ifdef def_true
 				JX2_ITY_SQ: begin
-					opRegN	= JX2_GR_DLR;
+//					opRegN	= JX2_GR_DLR;
+					opRegN	= JX2_GR_LR;
 					opRegM	= opRegN_Xr;
 					opRegO	= JX2_GR_ZZR;
 				end
@@ -2179,7 +2217,8 @@ begin
 		end
 
 		JX2_FMID_PCDISP8: begin
-			opRegN	= JX2_GR_DLR;
+//			opRegN	= JX2_GR_DLR;
+			opRegN	= JX2_GR_LR;
 			opRegM	= JX2_GR_PC;
 			opRegO	= JX2_GR_IMM;
 //			opUIxt	= {opUCty, opBty[1:0], 1'b1, opBty};
@@ -2216,6 +2255,9 @@ begin
 
 		JX2_FMID_LDDI4SPREG: begin
 			opRegM	= JX2_GR_SP;
+			if(srMod[2])
+				opRegM	= JX2_GR_SSP;
+
 			opRegO	= JX2_GR_IMM;
 			opRegN	= opRegN_Dfl;
 

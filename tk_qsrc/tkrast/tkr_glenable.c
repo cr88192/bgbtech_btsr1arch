@@ -522,6 +522,19 @@ void tkra_glEnable(int cap)
 		break;
 	case GL_POLYGON_OFFSET_FILL:
 		break;
+	case GL_LIGHTING:
+		ctx->stateflag1|=TKRA_STFL1_LIGHTING;
+		break;
+
+	case GL_LIGHT0:		ctx->light_mask|=0x01;		break;
+	case GL_LIGHT1:		ctx->light_mask|=0x02;		break;
+	case GL_LIGHT2:		ctx->light_mask|=0x04;		break;
+	case GL_LIGHT3:		ctx->light_mask|=0x08;		break;
+	case GL_LIGHT4:		ctx->light_mask|=0x10;		break;
+	case GL_LIGHT5:		ctx->light_mask|=0x20;		break;
+	case GL_LIGHT6:		ctx->light_mask|=0x40;		break;
+	case GL_LIGHT7:		ctx->light_mask|=0x80;		break;
+
 	default:
 		__debugbreak();
 		break;
@@ -565,6 +578,19 @@ void tkra_glDisable(int cap)
 		break;
 	case GL_POLYGON_OFFSET_FILL:
 		break;
+	case GL_LIGHTING:
+		ctx->stateflag1&=~TKRA_STFL1_LIGHTING;
+		break;
+
+	case GL_LIGHT0:		ctx->light_mask&=~0x01;		break;
+	case GL_LIGHT1:		ctx->light_mask&=~0x02;		break;
+	case GL_LIGHT2:		ctx->light_mask&=~0x04;		break;
+	case GL_LIGHT3:		ctx->light_mask&=~0x08;		break;
+	case GL_LIGHT4:		ctx->light_mask&=~0x10;		break;
+	case GL_LIGHT5:		ctx->light_mask&=~0x20;		break;
+	case GL_LIGHT6:		ctx->light_mask&=~0x40;		break;
+	case GL_LIGHT7:		ctx->light_mask&=~0x80;		break;
+
 	default:
 		__debugbreak();
 		break;

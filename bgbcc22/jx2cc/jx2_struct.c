@@ -624,7 +624,9 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 		}
 
 		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
-		al=8;
+		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, type);
+
+//		al=8;
 //		if(fi->fxoffs&15)al=8;
 		if(fi->fxoffs&7)al=4;
 		if(fi->fxoffs&3)al=2;
@@ -1012,7 +1014,9 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
 		ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
-		al=4;
+		al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, type);
+//		al=8;
+		if(fi->fxoffs&7)al=4;
 		if(fi->fxoffs&3)al=2;
 		if(fi->fxoffs&1)al=1;
 
@@ -1442,7 +1446,7 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 	}
 
 	if(sctx->has_pushx2 && (al0>=8) && !(sz&15) && (sz>32) && (sz<=256) &&
-		(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2)>2))
+		(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2)>=2))
 	{
 		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2);
 		tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2);
@@ -1454,7 +1458,7 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 		i=0;
 
 		if((sz>=64) &&
-			(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2)>2))
+			(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2)>=2))
 		{
 			tr2=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2);
 			tr3=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2);
@@ -1526,7 +1530,9 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 			return(1);
 		}
 
-		if(sz==24)
+//		if(sz==24)
+		if((sz==24) &&
+			(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR)>=3))
 		{
 //			nm1=BGBCC_SH_NMID_MOVQ;
 			nm1=nm_movq;
@@ -1545,7 +1551,9 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 			return(1);
 		}
 
-		if(sz==32)
+//		if(sz==32)
+		if((sz==32) &&
+			(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR)>=4))
 		{
 #if 0
 			nm1=BGBCC_SH_NMID_MOVQ;
@@ -1593,7 +1601,11 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 		tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 		tr2=-1;			tr3=-1;
-		if(sz>=64)
+//		if(sz>=64)
+//		if((sz>=64) ||
+//			(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR)>2))
+		if((sz>=32) &&
+			(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR)>=2))
 		{
 			tr2=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 			tr3=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);

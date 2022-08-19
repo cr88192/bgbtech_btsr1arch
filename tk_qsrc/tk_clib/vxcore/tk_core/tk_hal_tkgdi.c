@@ -1330,32 +1330,38 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 	tk_printf("TKGDI_ModeForInputFormat: W=%d H=%d bpp=%d\n",
 		ifmt->biWidth, ifmt->biHeight, ifmt->biBitCount);
 
-	if(	(ifmt->biWidth		== 320) &&
-		(ifmt->biHeight		== 200) &&
-		(ifmt->biBitCount	== 16))
+	if((ifmt->biBitCount == 16) || (ifmt->biBitCount == 15))
 	{
-		ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
-	}
 
-	if(	(ifmt->biWidth		== 640) &&
-		(ifmt->biHeight		== 200) &&
-		(ifmt->biBitCount	== 16))
-	{
-		ofmt_mode=TKGDI_SCRMODE_TEXT;		//Use 80x25 color cell
-	}
+		if(	(ifmt->biWidth		== 320) &&
+			(ifmt->biHeight		== 200) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
+		}
 
-	if(	(ifmt->biWidth		== 640) &&
-		(ifmt->biHeight		== 400) &&
-		(ifmt->biBitCount	== 16))
-	{
-		ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
-	}
-	
-	if(	(ifmt->biWidth		== 800) &&
-		(ifmt->biHeight		== 600) &&
-		(ifmt->biBitCount	== 16))
-	{
-		ofmt_mode=TKGDI_SCRMODE_800x600_CC;	//Use 100x75 color cell
+		if(	(ifmt->biWidth		== 320) &&
+			(ifmt->biHeight		== 200) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
+		}
+
+		if(	(ifmt->biWidth		== 640) &&
+			(ifmt->biHeight		== 200) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_TEXT;		//Use 80x25 color cell
+		}
+
+		if(	(ifmt->biWidth		== 640) &&
+			(ifmt->biHeight		== 400) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
+		}
+		
+		if(	(ifmt->biWidth		== 800) &&
+			(ifmt->biHeight		== 600) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_800x600_CC;	//Use 100x75 color cell
+		}
 	}
 	
 	return(ofmt_mode);
@@ -1401,14 +1407,14 @@ TKGSTATUS TKGDI_QueryCreateDisplay(
 		{
 			ofmt->biWidth=640;
 			ofmt->biHeight=200;
-			ofmt->biBitCount=16;
+//			ofmt->biBitCount=16;
 		}
 
 		if(ofmt_mode==TKGDI_SCRMODE_640x400_CC)
 		{
 			ofmt->biWidth=640;
 			ofmt->biHeight=400;
-			ofmt->biBitCount=16;
+//			ofmt->biBitCount=16;
 //			ofmt->biCompression=TKGDI_FCC_UTX2;
 		}
 
@@ -1416,7 +1422,7 @@ TKGSTATUS TKGDI_QueryCreateDisplay(
 		{
 			ofmt->biWidth=640;
 			ofmt->biHeight=400;
-			ofmt->biBitCount=16;
+//			ofmt->biBitCount=16;
 //			ofmt->biCompression=TKGDI_FCC_UTX2;
 		}
 
@@ -1424,7 +1430,7 @@ TKGSTATUS TKGDI_QueryCreateDisplay(
 		{
 			ofmt->biWidth=320;
 			ofmt->biHeight=200;
-			ofmt->biBitCount=16;
+//			ofmt->biBitCount=16;
 		}
 
 		ofmt->biSizeImage=
@@ -1465,6 +1471,9 @@ TKGHDC TKGDI_CreateDisplay(
 	int i, j, k;
 
 	tk_printf("TKGDI_CreateDisplay: A\n");
+
+	if((tkgdi_vid_scrmode<0) || (tkgdi_vid_scrmode>16))
+		tkgdi_vid_scrmode=0;
 
 	tgt_mode=TKGDI_ModeForInputFormat(info);
 	

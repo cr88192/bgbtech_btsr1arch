@@ -1568,3 +1568,219 @@ void BJX2_Op_CMPXHI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 
 #endif
+
+int BJX2_OpI_SByteToF16ALU(int va)
+{
+	return(0x4000|((va&0xFF)<<2));
+}
+
+int BJX2_OpI_UByteToF16ALU(int va)
+{
+	return(0x3C00|((va&0xFF)<<2));
+}
+
+int BJX2_OpI_SWordToF16ALU(int va)
+{
+	return(0x4000|((va&0xFFFF)>>6));
+}
+
+int BJX2_OpI_UWordToF16ALU(int va)
+{
+	return(0x3C00|((va&0xFFFF)>>6));
+}
+
+int BJX2_OpI_SWordToF32ALU(int va)
+{
+	return(0x40000000U|((va&0xFFFF)<<7));
+}
+
+int BJX2_OpI_UWordToF32ALU(int va)
+{
+	return(0x3F800000U|((va&0xFFFF)<<7));
+}
+
+void BJX2_Op_PCVTSB2HL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				BJX2_OpI_SByteToF16ALU(va>>24);
+	vc=(vc<<16)	|	BJX2_OpI_SByteToF16ALU(va>>16);
+	vc=(vc<<16)	|	BJX2_OpI_SByteToF16ALU(va>> 8);
+	vc=(vc<<16)	|	BJX2_OpI_SByteToF16ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTUB2HL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				BJX2_OpI_UByteToF16ALU(va>>24);
+	vc=(vc<<16)	|	BJX2_OpI_UByteToF16ALU(va>>16);
+	vc=(vc<<16)	|	BJX2_OpI_UByteToF16ALU(va>> 8);
+	vc=(vc<<16)	|	BJX2_OpI_UByteToF16ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTSB2HH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	va=va>>32;
+	vc=				BJX2_OpI_SByteToF16ALU(va>>24);
+	vc=(vc<<16)	|	BJX2_OpI_SByteToF16ALU(va>>16);
+	vc=(vc<<16)	|	BJX2_OpI_SByteToF16ALU(va>> 8);
+	vc=(vc<<16)	|	BJX2_OpI_SByteToF16ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTUB2HH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	va=va>>32;
+	vc=				BJX2_OpI_UByteToF16ALU(va>>24);
+	vc=(vc<<16)	|	BJX2_OpI_UByteToF16ALU(va>>16);
+	vc=(vc<<16)	|	BJX2_OpI_UByteToF16ALU(va>> 8);
+	vc=(vc<<16)	|	BJX2_OpI_UByteToF16ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTSW2FL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				BJX2_OpI_SWordToF32ALU(va>>16);
+	vc=(vc<<32)	|	BJX2_OpI_SWordToF32ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTUW2FL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				BJX2_OpI_UWordToF32ALU(va>>16);
+	vc=(vc<<32)	|	BJX2_OpI_UWordToF32ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTSW2FH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	va=va>>32;
+	vc=				BJX2_OpI_SWordToF32ALU(va>>16);
+	vc=(vc<<32)	|	BJX2_OpI_SWordToF32ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTUW2FH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	va=va>>32;
+	vc=				BJX2_OpI_UWordToF32ALU(va>>16);
+	vc=(vc<<32)	|	BJX2_OpI_UWordToF32ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTSW2H_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				BJX2_OpI_SWordToF16ALU(va>>48);
+	vc=(vc<<16)	|	BJX2_OpI_SWordToF16ALU(va>>32);
+	vc=(vc<<16)	|	BJX2_OpI_SWordToF16ALU(va>>16);
+	vc=(vc<<16)	|	BJX2_OpI_SWordToF16ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTUW2H_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				BJX2_OpI_UWordToF16ALU(va>>48);
+	vc=(vc<<16)	|	BJX2_OpI_UWordToF16ALU(va>>32);
+	vc=(vc<<16)	|	BJX2_OpI_UWordToF16ALU(va>>16);
+	vc=(vc<<16)	|	BJX2_OpI_UWordToF16ALU(va>> 0);
+	ctx->regs[op->rn]=vc;
+}
+
+
+void BJX2_Op_PCVTH2SB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				(((va>>50)&0xFF)^0x80);
+	vc=(vc<<8)	|	(((va>>34)&0xFF)^0x80);
+	vc=(vc<<8)	|	(((va>>18)&0xFF)^0x80);
+	vc=(vc<<8)	|	(((va>> 2)&0xFF)^0x80);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTH2UB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				(((va>>50)&0xFF)^0x00);
+	vc=(vc<<8)	|	(((va>>34)&0xFF)^0x00);
+	vc=(vc<<8)	|	(((va>>18)&0xFF)^0x00);
+	vc=(vc<<8)	|	(((va>> 2)&0xFF)^0x00);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTF2SW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				(((va>>39)&0xFFFF)^0x8000);
+	vc=(vc<<16)	|	(((va>> 7)&0xFFFF)^0x8000);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTF2UW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				(((va>>39)&0xFFFF)^0x0000);
+	vc=(vc<<16)	|	(((va>> 7)&0xFFFF)^0x0000);
+	ctx->regs[op->rn]=vc;
+}
+
+
+void BJX2_Op_PCVTH2SW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				((((va>>50)&0xFF)^0x80)<<8);
+	vc=(vc<<16)	|	((((va>>34)&0xFF)^0x80)<<8);
+	vc=(vc<<16)	|	((((va>>18)&0xFF)^0x80)<<8);
+	vc=(vc<<16)	|	((((va>> 2)&0xFF)^0x80)<<8);
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_PCVTH2UW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vc=				((((va>>50)&0xFF)^0x00)<<8);
+	vc=(vc<<16)	|	((((va>>34)&0xFF)^0x00)<<8);
+	vc=(vc<<16)	|	((((va>>18)&0xFF)^0x00)<<8);
+	vc=(vc<<16)	|	((((va>> 2)&0xFF)^0x00)<<8);
+	ctx->regs[op->rn]=vc;
+}

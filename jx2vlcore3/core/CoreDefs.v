@@ -663,6 +663,8 @@ REGIMMREG, Fz:
 	UW:	Rm, Imm9u, Rn
 	NW:	Rm, Imm9n, Rn
 
+	UB:	Rm, Imm9f/Imm16f, Rn
+
 LDREGDISPREG, Fz:
 	SW: (Rm, Disp9u/17s), Rn
 	UB: (Rm, Disp5u), Rn
@@ -986,6 +988,26 @@ parameter[5:0] JX2_UCIX_CONV2_ROTCL		= 6'h14;	//
 parameter[5:0] JX2_UCIX_CONV2_ROTCR		= 6'h15;	//
 parameter[5:0] JX2_UCIX_CONV2_ROTCLQ	= 6'h16;	//
 parameter[5:0] JX2_UCIX_CONV2_ROTCRQ	= 6'h17;	//
+
+
+parameter[5:0] JX2_UCIX_CONV2_VUBTOF16L	= 6'h30;	//
+parameter[5:0] JX2_UCIX_CONV2_VUBTOF16H	= 6'h31;	//
+parameter[5:0] JX2_UCIX_CONV2_VSBTOF16L	= 6'h32;	//
+parameter[5:0] JX2_UCIX_CONV2_VSBTOF16H	= 6'h33;	//
+parameter[5:0] JX2_UCIX_CONV2_VUWTOF32L	= 6'h34;	//
+parameter[5:0] JX2_UCIX_CONV2_VUWTOF32H	= 6'h35;	//
+parameter[5:0] JX2_UCIX_CONV2_VSWTOF32L	= 6'h36;	//
+parameter[5:0] JX2_UCIX_CONV2_VSWTOF32H	= 6'h37;	//
+
+parameter[5:0] JX2_UCIX_CONV2_VF16TOUB	= 6'h38;	//
+parameter[5:0] JX2_UCIX_CONV2_VUWTOF16	= 6'h39;	//
+parameter[5:0] JX2_UCIX_CONV2_VF16TOSB	= 6'h3A;	//
+parameter[5:0] JX2_UCIX_CONV2_VSWTOF16	= 6'h3B;	//
+
+parameter[5:0] JX2_UCIX_CONV2_VF32TOUW	= 6'h3C;	//
+parameter[5:0] JX2_UCIX_CONV2_VF16TOUW	= 6'h3D;	//
+parameter[5:0] JX2_UCIX_CONV2_VF32TOSW	= 6'h3E;	//
+parameter[5:0] JX2_UCIX_CONV2_VF16TOSW	= 6'h3F;	//
 
 // parameter[5:0] JX2_UCIX_CONV_MOVX		= 6'h23;		//MOVX
 

@@ -2804,15 +2804,337 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 //	if(tve1[TKRA_VX_XPOS]<tve2[TKRA_VX_XPOS])
 	if(x1step_c<=x2step_c)
 	{
+		e2_parm[TKRA_ES_XPOS]+=32768;
 		RasterWalkEdges(ctx, y0, e1_parm, e2_parm, y1-y0);
 		RasterWalkEdges(ctx, y1, e3_parm, e2_parm, y2-y1);
 	}else
 	{
+		e1_parm[TKRA_ES_XPOS]+=32768;
+		e3_parm[TKRA_ES_XPOS]+=32768;
+
 		RasterWalkEdges(ctx, y0, e2_parm, e1_parm, y1-y0);
 		RasterWalkEdges(ctx, y1, e2_parm, e3_parm, y2-y1);
 	}
 	
 }
+
+
+#if 1
+void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
+	u64 *vec0, u64 *vec1, u64 *e_parm)
+{
+	int x1step_d, x1step_c;
+	u64 t1step_d, t1step_c;
+	u64 c1step_d, c1step_c;
+	int z1step_d, z1step_c;
+	u64 t0, t1, t2;
+
+	int y0, y1, y1cnt, y1rcp;
+
+	y0=(vec0[TKRA_VX_YPOS]+32767)>>16;
+	y1=(vec1[TKRA_VX_YPOS]+32767)>>16;
+
+	if(y1==y0)
+	{
+		e_parm[TKRA_ES_XPOS]=vec0[TKRA_VX_XPOS];
+		e_parm[TKRA_ES_TPOS]=vec0[TKRA_VX_TPOS];
+		e_parm[TKRA_ES_CPOS]=vec0[TKRA_VX_CPOS];
+		e_parm[TKRA_ES_ZPOS]=vec0[TKRA_VX_ZPOS];
+
+		e_parm[TKRA_ES_XSTEP]=0;
+		e_parm[TKRA_ES_TSTEP]=0;
+		e_parm[TKRA_ES_CSTEP]=0;
+		e_parm[TKRA_ES_ZSTEP]=0;
+		
+		return;
+	}
+
+	y1cnt=y1-y0;
+	if(y1cnt<0)
+		y1cnt=-y1cnt;
+	
+//	y1rcp=TKRA_SpanRcp(y1cnt+1);
+	y1rcp=TKRA_SpanRcp(y1cnt+0);
+
+	t0=vec0[TKRA_VX_XPOS];	t1=vec1[TKRA_VX_XPOS];
+	x1step_d=t1-t0;
+	x1step_c=(tkra_dmuls(x1step_d, y1rcp)+32767)>>16;
+
+	t0=vec0[TKRA_VX_TPOS];	t1=vec1[TKRA_VX_TPOS];
+	t1step_c=TKRA_CalcTexStepRcp(t1, t0, y1rcp);
+
+	t0=vec0[TKRA_VX_CPOS];	t1=vec1[TKRA_VX_CPOS];
+	c1step_c=TKRA_CalcClrStepRcp(t1, t0, y1rcp);
+
+	t0=vec0[TKRA_VX_ZPOS];	t1=vec1[TKRA_VX_ZPOS];
+	z1step_d=t1-t0;
+	z1step_c=tkra_dmuls(z1step_d, y1rcp)>>16;
+
+//	z1step_c = 0;
+
+	e_parm[TKRA_ES_XPOS]=vec0[TKRA_VX_XPOS];
+	e_parm[TKRA_ES_TPOS]=vec0[TKRA_VX_TPOS];
+	e_parm[TKRA_ES_CPOS]=vec0[TKRA_VX_CPOS];
+	e_parm[TKRA_ES_ZPOS]=vec0[TKRA_VX_ZPOS];
+
+	e_parm[TKRA_ES_XSTEP]=x1step_c;
+	e_parm[TKRA_ES_TSTEP]=t1step_c;
+	e_parm[TKRA_ES_CSTEP]=c1step_c;
+	e_parm[TKRA_ES_ZSTEP]=((u32)z1step_c) | (((s64)x1step_c)<<32);
+}
+
+/*
+Draw a Quad
+Given 4 vertices in Screen Space.
+*/
+void TKRA_WalkQuadB(TKRA_Context *ctx,
+	u64 *vec0, u64 *vec1, u64 *vec2, u64 *vec3)
+{
+	u64	e1_parm[TKRA_ES_NPARM];
+	u64	e2_parm[TKRA_ES_NPARM];
+	u64	e3_parm[TKRA_ES_NPARM];
+//	u64	e4_parm[TKRA_ES_NPARM];	
+
+	u64	e5_parm[TKRA_ES_NPARM];
+	u64	e6_parm[TKRA_ES_NPARM];
+	u64	e7_parm[TKRA_ES_NPARM];
+//	u64	e8_parm[TKRA_ES_NPARM];
+
+	void (*RasterWalkEdges)(TKRA_Context *ctx,
+		int ytop, u64 *edge_l, u64 *edge_r, int cnt);
+	u64 *tve0, *tve1, *tve2, *tve3;
+	u64 *tve4, *tve5, *tve6, *tve7;
+	int y0, y1, y2, y3, y3m, y3n;
+	int x0, x1, x2, x3, x3m, x3n;
+	int y1cnt, y2cnt, y3cnt, y4cnt, y1rcp, y2rcp, y3rcp, y4rcp;
+	u64 t0, t1, t2;
+	s64 l1, l2, l3;
+	int i;
+
+//	int xshl, yshl;
+
+	RasterWalkEdges = ctx->RasterWalkEdges;
+	
+	if(!RasterWalkEdges)
+		return;
+
+//	xshl=ctx->tex_xshl;
+//	yshl=ctx->tex_yshl;
+
+	y0=vec0[TKRA_VX_YPOS];
+	y1=vec1[TKRA_VX_YPOS];
+	y2=vec2[TKRA_VX_YPOS];
+	y3=vec3[TKRA_VX_YPOS];
+
+	x0=vec0[TKRA_VX_XPOS];
+	x1=vec1[TKRA_VX_XPOS];
+	x2=vec2[TKRA_VX_XPOS];
+	x3=vec3[TKRA_VX_XPOS];
+	
+	y0=y0>>16;	y1=y1>>16;
+	y2=y2>>16;	y3=y3>>16;
+	x0=x0>>16;	x1=x1>>16;
+	x2=x2>>16;	x3=x3>>16;
+	
+	i=0;
+//	if((y0==y1) && (x0==x1))	i|=1;
+//	if((y1==y2) && (x1==x2))	i|=2;
+//	if((y2==y3) && (x2==x3))	i|=4;
+//	if((y3==y0) && (x3==x0))	i|=8;
+
+	i =((y0==y1)&(x0==x1))   ;
+	i|=((y1==y2)&(x1==x2))<<1;
+	i|=((y2==y3)&(x2==x3))<<2;
+	i|=((y3==y0)&(x3==x0))<<3;
+	
+	if(i)
+	{
+		/* Deal with colinear points. */
+		if(i==1)
+			{ TKRA_WalkTriangle(ctx, vec0, vec2, vec3); }
+		else if(i==2)
+			{ TKRA_WalkTriangle(ctx, vec0, vec1, vec3); }
+		else if(i==4)
+			{ TKRA_WalkTriangle(ctx, vec0, vec1, vec2); }
+		else if(i==8)
+			{ TKRA_WalkTriangle(ctx, vec0, vec1, vec2); }
+		return;
+	}
+	
+#if 1
+	y3m=y0;	y3n=y0;
+	if(y1<y3m)y3m=y1;
+	if(y1>y3n)y3n=y1;
+	if(y2<y3m)y3m=y2;
+	if(y2>y3n)y3n=y2;
+	if(y3<y3m)y3m=y3;
+	if(y3>y3n)y3n=y3;
+
+	x3m=x0;	x3n=x0;
+	if(x1<x3m)x3m=x1;
+	if(x1>x3n)x3n=x1;
+	if(x2<x3m)x3m=x2;
+	if(x2>x3n)x3n=x2;
+	if(x3<x3m)x3m=x3;
+	if(x3>x3n)x3n=x3;
+	
+//	y3m=y3m>>16;	y3n=y3n>>16;
+//	x3m=x3m>>16;	x3n=x3n>>16;
+	
+	if(	((x3m-4)>ctx->clip_x0) && ((x3n+4)<ctx->clip_x1) &&
+		((y3m-4)>ctx->clip_y0) && ((y3n+4)<ctx->clip_y1))
+	{
+		RasterWalkEdges = ctx->RasterWalkEdgesNcp;
+	}
+#endif
+
+	/* Find starting vertex with smallest Y position  */
+	if(y0<=y1)
+	{
+		if(y0<=y2)
+		{
+			if(y0<=y3)
+				{	tve0=vec0;	tve1=vec1;	tve2=vec2;	tve3=vec3;	}
+			else
+				{	tve0=vec3;	tve1=vec0;	tve2=vec1;	tve3=vec2;	}
+		}else
+		{
+			if(y2<=y3)
+				{	tve0=vec2;	tve1=vec3;	tve2=vec0;	tve3=vec1;	}
+			else
+				{	tve0=vec3;	tve1=vec0;	tve2=vec1;	tve3=vec2;	}
+		}
+	}else
+	{
+		if(y1<=y2)
+		{
+			if(y1<=y3)
+				{	tve0=vec1;	tve1=vec2;	tve2=vec3;	tve3=vec0;	}
+			else
+				{	tve0=vec3;	tve1=vec0;	tve2=vec1;	tve3=vec2;	}
+		}else
+		{
+			if(y2<=y3)
+				{	tve0=vec2;	tve1=vec3;	tve2=vec0;	tve3=vec1;	}
+			else
+				{	tve0=vec3;	tve1=vec0;	tve2=vec1;	tve3=vec2;	}
+		}
+	}
+
+	y0=tve0[TKRA_VX_YPOS];
+	y1=tve1[TKRA_VX_YPOS];
+	y2=tve2[TKRA_VX_YPOS];
+	y3=tve3[TKRA_VX_YPOS];
+
+#if 1
+	if((y0==y1) || (y0==y3))
+	{
+		x0=tve0[TKRA_VX_XPOS];
+		x1=tve1[TKRA_VX_XPOS];
+		x2=tve2[TKRA_VX_XPOS];
+		x3=tve3[TKRA_VX_XPOS];
+
+		if((y0==y1) && (x1<x0))
+		{
+			tve4=tve0;	tve0=tve1;
+			tve1=tve2;	tve2=tve3;
+			tve3=tve4;
+		}else
+			if((y0==y3) && (x3<x0))
+		{
+			tve4=tve3;	tve3=tve2;
+			tve2=tve1;	tve1=tve0;
+			tve0=tve4;
+		}
+	}
+#endif
+	
+//	if(y0>y1)
+//		{ __debugbreak(); }
+//	if(y1>y2)
+//		{ __debugbreak(); }
+	
+	y0=(tve0[TKRA_VX_YPOS]+32767)>>16;
+	y1=(tve1[TKRA_VX_YPOS]+32767)>>16;
+	y2=(tve2[TKRA_VX_YPOS]+32767)>>16;
+	y3=(tve3[TKRA_VX_YPOS]+32767)>>16;
+
+	x0=tve0[TKRA_VX_XPOS];
+	x1=tve1[TKRA_VX_XPOS];
+	x2=tve2[TKRA_VX_XPOS];
+	x3=tve3[TKRA_VX_XPOS];
+
+
+	TKRA_WalkQuad_FillEParm(ctx, tve0, tve1, e1_parm);
+
+	if(y2>=y1)
+		TKRA_WalkQuad_FillEParm(ctx, tve1, tve2, e2_parm);
+	if(y3>=y2)
+		TKRA_WalkQuad_FillEParm(ctx, tve2, tve3, e3_parm);
+//	TKRA_WalkQuad_FillEParm(ctx, tve3, tve0, e4_parm);
+
+	TKRA_WalkQuad_FillEParm(ctx, tve0, tve3, e5_parm);
+
+	if(y2>=y3)
+		TKRA_WalkQuad_FillEParm(ctx, tve3, tve2, e6_parm);
+	if(y1>=y2)
+		TKRA_WalkQuad_FillEParm(ctx, tve2, tve1, e7_parm);
+//	TKRA_WalkQuad_FillEParm(ctx, tve1, tve0, e8_parm);
+
+	if(x3<x1)
+	{
+		/* Something weird here. */
+		TKRA_WalkTriangle(ctx, vec0, vec1, vec2);
+		TKRA_WalkTriangle(ctx, vec0, vec2, vec3);		
+	}
+	
+	e5_parm[TKRA_ES_XPOS]+=32768;
+	e6_parm[TKRA_ES_XPOS]+=32768;
+	e7_parm[TKRA_ES_XPOS]+=32768;
+	
+	if((y0==y3) && (y1==y2))
+	{
+		RasterWalkEdges(ctx, y3, e1_parm, e6_parm, y1-y0);
+	}else
+		if(y1<y3)
+	{
+		if(y3<y2)
+		{
+			RasterWalkEdges(ctx, y0, e1_parm, e5_parm, y1-y0);
+			RasterWalkEdges(ctx, y1, e2_parm, e5_parm, y3-y1);
+			RasterWalkEdges(ctx, y3, e2_parm, e6_parm, y2-y3);
+		}else
+		{
+			RasterWalkEdges(ctx, y0, e1_parm, e5_parm, y1-y0);
+			RasterWalkEdges(ctx, y1, e2_parm, e5_parm, y2-y1);
+			RasterWalkEdges(ctx, y2, e3_parm, e5_parm, y3-y2);
+		}
+	}else
+	{
+		if(y1<y2)
+		{
+			RasterWalkEdges(ctx, y0, e1_parm, e5_parm, y3-y0);
+			RasterWalkEdges(ctx, y3, e1_parm, e6_parm, y1-y3);
+			RasterWalkEdges(ctx, y1, e2_parm, e6_parm, y2-y1);
+		}else
+		{
+			RasterWalkEdges(ctx, y0, e1_parm, e5_parm, y3-y0);
+			RasterWalkEdges(ctx, y3, e1_parm, e6_parm, y2-y3);
+			RasterWalkEdges(ctx, y2, e1_parm, e7_parm, y1-y2);
+		}
+	}
+}
+#endif
+
+void TKRA_WalkQuad(TKRA_Context *ctx,
+	u64 *vec0, u64 *vec1, u64 *vec2, u64 *vec3)
+{
+//	TKRA_WalkTriangle(ctx, vec0, vec1, vec2);
+//	TKRA_WalkTriangle(ctx, vec0, vec2, vec3);
+
+	TKRA_WalkQuadB(ctx, vec0, vec1, vec2, vec3);
+}
+
 
 #if 1
 void TKRA_WalkPoint(TKRA_Context *ctx, u64 *vec0)

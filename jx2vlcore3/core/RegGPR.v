@@ -25,6 +25,7 @@ module RegGPR(
 	regValImm,		//Immediate (Decode)
 	regValImmB,		//Immediate (Decode)
 	regValLr,		//LR Value (CR)
+	regValSsp,		//LR Value (CR)
 	regValCm,		//Cm Value (CR)
 	
 	regOutDlr,	regInDlr,
@@ -65,6 +66,7 @@ input [47:0]	regValGbr;		//GBR Value (CR)
 input [32:0]	regValImm;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
 input [63:0]	regValLr;		//LR Value (CR)
+input [63:0]	regValSsp;		//SSP Value (CR)
 input [63:0]	regValCm;		//Cm Value (CR)
 	
 output[63:0]	regOutDlr;
