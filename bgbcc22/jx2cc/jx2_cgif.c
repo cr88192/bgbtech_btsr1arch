@@ -279,6 +279,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	ctx->arch_has_imac=0;
 	ctx->arch_has_fmac=0;
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nopredops"))
+		{ ctx->arch_has_predops=0; }
+
 	shctx->optmode=ctx->optmode;
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2A)
@@ -2555,8 +2558,8 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		lo=co;
 
 //		if(issta)
-		if(issta && (np>2))
-			break;
+//		if(issta && (np>2))
+//			break;
 
 		sctx->need_farjmp=0;
 		sctx->need_f16jmp=0;

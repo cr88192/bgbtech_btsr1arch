@@ -240,7 +240,7 @@ wire[7:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
 	clock,		reset,	srMod,
-	{ UV32_XX, istrWord[95:64] },	4'h1,
+	{ UV32_XX, istrWord[95:64] },	4'h5,
 		{ tOpJBitsB[24], tOpJBitsC[24],
 			opIsWexJumbo96,
 			opIsWexJumboB | opIsWex2x40B,

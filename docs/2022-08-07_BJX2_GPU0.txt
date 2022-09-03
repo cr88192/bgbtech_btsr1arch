@@ -1,0 +1,11 @@
+BJX2, GPU Profile:
+* Subset of BJX2 intended mostly for use in GPU style cores.
+
+General:
+* Has XGPR
+* MMU is Optional
+* Main FPU is Optional
+** Low Precision FPU Ops will be used instead.
+* Will disallow the use of Lane 3.
+** Only Lanes 1 and 2 may be used for instructions.
+** Lane 3 may only be used for Jumbo Prefixes.

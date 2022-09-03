@@ -1249,7 +1249,12 @@ int BGBCC_JX2C_EmitStixVRegVRegVReg(
 		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, treg);
-		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, cdreg))
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+				BGBCC_SH_REGCLS_QGR2);
+		else
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 //		tr0=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);
 		
 //		BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
@@ -2426,8 +2431,10 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 	}
 #endif
 
-	if(		((breg&0x1E)==0x00) ||
-			((ireg&0x1E)==0x00)	)
+//	if(		((breg&0x1E)==0x00) ||
+//			((ireg&0x1E)==0x00)	)
+	if(		((breg&0x3E)==0x00) ||
+			((ireg&0x3E)==0x00)	)
 	{
 		BGBCC_DBGBREAK
 	}

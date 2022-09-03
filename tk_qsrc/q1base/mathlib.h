@@ -38,7 +38,7 @@ extern vec3_t vec3_origin;
 extern	int nanmask;
 
 float __float32_dot3fv(float *a, float *b);
-float __vnf_v3fa_dot(float *a, float *b);
+// float __vnf_v3fa_dot(float *a, float *b);
 
 #define	IS_NAN(x) (((*(int *)&x)&nanmask)==nanmask)
 

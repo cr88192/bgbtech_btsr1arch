@@ -1201,6 +1201,9 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 //	cln=((img->lba_start+img->lba_count)-img->lba_data)/clsz;
 //	cln=((img->lba_start+img->lba_count)-img->lba_data)>>clsh;
 	cln=((img->lba_start+lban)-img->lba_data)>>clsh;
+	
+	cln=(int)cln;
+	
 	img->tot_clust=cln;
 	img->clid_root=rootcl;
 		
@@ -1208,7 +1211,20 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 	if(cln<=65525)
 		img->isfat16=true;
 	
-	printf("TKFAT_ReadImageFAT: Read FAT%d\n", img->isfat16?16:32);
+//	__debugbreak();
+	
+	i=img->isfat16?16:32;
+
+	if((i==32) && img->isfat16)
+		{ __debugbreak(); }
+	
+	if(img->tot_clust!=cln)
+		{ __debugbreak(); }
+
+	if(img->tot_clust!=((int)cln))
+		{ __debugbreak(); }
+	
+	printf("TKFAT_ReadImageFAT: Read FAT%d\n", i);
 	printf("  LBA FAT1=%08X (Offs=%08X)\n",
 		img->lba_fat1, img->lba_fat1<<9);
 	printf("  LBA FAT2=%08X (Offs=%08X)\n",

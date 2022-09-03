@@ -865,7 +865,8 @@ int BGBCC_JX2C_EmitUnaryVRegVRegQLong(
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
 				BGBCC_SH_NMID_TSTQ, cdreg, cdreg);
-			ctreg=cdreg&31;
+//			ctreg=cdreg&31;
+			ctreg=cdreg&63;
 //			BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
 			BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
@@ -878,7 +879,8 @@ int BGBCC_JX2C_EmitUnaryVRegVRegQLong(
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_TSTQ, csreg, csreg);
-		ctreg=cdreg&31;
+//		ctreg=cdreg&31;
+		ctreg=cdreg&63;
 //		BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
 		BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);

@@ -59,9 +59,11 @@ output[7:0]		idUFl;
 parameter		fpuLowPrec = 0;
 
 wire			isAltOp;
+wire			isAltOpC;
 wire			isOp24;
-assign		isAltOp	= isAltOpB[0];
-assign		isOp24	= isAltOpB[1];
+assign		isAltOp		= isAltOpB[0];
+assign		isOp24		= isAltOpB[1];
+assign		isAltOpC	= isAltOpB[0] && isAltOpB[2];
 
 wire			srUser;				//Usermode
 wire			srSuperuser;		//Superuser mode
@@ -168,6 +170,7 @@ reg			opExWQ;
 reg			opExWN;
 reg			opExWM;
 reg			opExWI;
+// reg			opExWIS;
 reg[3:0]	opIsExWB2;
 
 reg		opIsXGpr;
@@ -264,6 +267,7 @@ begin
 	opExWN		= 0;
 	opExWM		= 0;
 	opExWI		= 0;
+//	opExWIS		= 0;
 	opIsImm4R	= 0;
 	opIsImmLdOp	= 0;
 	opIsExWB2	= 0;
@@ -291,8 +295,13 @@ begin
 
 	opExWN		= istrWord[10] && opIsXGpr;
 	opExWM		= istrWord[ 9] && opIsXGpr;
-	opExWI		= istrWord[ 8] && opIsXGpr;
+//	opExWI		= istrWord[ 8] && opIsXGpr;
+	opExWI		= istrWord[ 8] && tOpIsXGprX0;
 //	opExWI		= istrWord[ 8] && opIsXGpr && (istrWord[15:12]!=4'b1001);
+
+//	opExWIS		= opExWI;
+//	if(istrWord[15:12]==4'b1001)
+//		opExWI		= 0;
 
 	if(opIsJumboAu)
 	begin
@@ -386,6 +395,8 @@ begin
 
 //	opImm_disp5u	= opImm_imm5u;
 	opImm_disp5u	= {opExWI ? UV27_FF : UV27_00, opRegO_Dfl[5:0]};
+	
+	opImm_imm5u		= opImm_disp5u;
 `else
 	opImm_imm5u	= {UV28_00, opRegO_Dfl[4:0]};
 	opImm_imm5n	= {UV28_FF, opRegO_Dfl[4:0]};
@@ -796,6 +807,12 @@ begin
 	tBlockIsPrWxB =
 		(istrWord[11:8] == 4'b1011) ||
 		(istrWord[11:8] == 4'b1111);
+
+//	if(opIsXGpr)
+//	begin
+//		tBlockIsPrWxA = 0;
+//		tBlockIsPrWxB = 0;
+//	end
 
 	tBlockIsEz		= (istrWord[15:12] == 4'b1110);
 //	tBlockIsEA_09	= !istrWord[31] || (istrWord[30:29]==0);
@@ -4310,7 +4327,8 @@ begin
 				end
 
 //				if(opRegO_Df2_IsSP)
-				if(istrWord[4:0]==5'h0F)
+//				if(istrWord[4:0]==5'h0F)
+				if((istrWord[4:0]==5'h0F) && !opIsJumboAu)
 				begin
 					/* "FLDCH Imm16, SP" is a BREAK */
 					opNmid		= JX2_UCMD_OP_IXT;
@@ -5300,6 +5318,67 @@ begin
 			istrWord[15:0], istrWord[31:16]);
 		opNmid	= JX2_UCMD_INVOP;
 		opFmid	= JX2_FMID_INV;
+	end
+
+	if(opIsXGpr && (!isAltOp || opIsJumbo || opIsJumboAu))
+	begin
+		if(opIsJumboAu)
+		begin
+			$display("XGPR+Op64: %X %X-%X",
+				istrJBits[23:0],
+				istrWord[15:0], istrWord[31:16]);
+		end
+		else if(opIsJumbo)
+		begin
+			$display("XGPR+Jumbo: %X %X-%X",
+				istrJBits[23:0],
+				istrWord[15:0], istrWord[31:16]);
+		end
+		else
+		begin
+			$display("XGPR: %X-%X", istrWord[15:0], istrWord[31:16]);
+		end
+
+		if(tOpIsXGprX0)
+		begin
+			$display("  X0 Rs=%x Rt=%x Rn=%x Imm5=%x",
+				opRegM_Dfl, opRegO_Dfl, opRegN_Dfl, opImm_imm5u);
+		end
+		
+		if(tOpIsXGprX1)
+		begin
+			$display("  X1 Rm=%x Rn=%x Imm9=%x",
+				opRegM_Dfl, opRegN_Dfl, opImm_imm9u);
+		end
+		
+		if(tOpIsXGprX2)
+		begin
+			$display("  X2 Rm=%x Rn=%x Imm9=%x",
+				opRegM_Dfl, opRegN_Dfl, opImm_imm9u);
+		end
+
+		$display(" %X-%X  Rm=%X Ro=%X Rn=%X Rp=%X Imm=%X",
+			opUCmd,		opUIxt,
+			opRegM,		opRegO,
+			opRegN,		opRegP,
+			opImm);
+
+	end
+	else
+//		if(opIsJumboAu && (!opIsNotFx || opIsXGpr) && !isAltOpC)
+		if(opIsJumboAu && !isAltOpC)
+	begin
+		$display("Op64: FF%X-%X %X-%X",
+			istrJBits[23:16],	istrJBits[15:0],
+			istrWord[15:0],		istrWord[31:16]);
+		$display("  Rs=%x Rt=%x Rn=%x Imm5=%x Imm9=%x",
+			opRegM_Dfl, opRegO_Dfl, opRegN_Dfl, opImm_imm5u, opImm_imm9u);
+
+		$display(" %X-%X  Rm=%X Ro=%X Rn=%X Rp=%X Imm=%X",
+			opUCmd,		opUIxt,
+			opRegM,		opRegO,
+			opRegN,		opRegP,
+			opImm);
 	end
 
 end

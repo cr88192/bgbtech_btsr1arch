@@ -278,6 +278,11 @@ int pos_pad_op5;
 int pos_pad_op6;
 int pos_pad_op7;
 
+int emit_hist_word0;
+int emit_hist_word1;
+int emit_hist_word2;
+int emit_hist_word3;
+
 u32		arch_pad_op32;		//padding ".text" for 32-bit pads
 u16		arch_pad_op16;		//padding ".text" for 16-bit pads
 byte	arch_pad_op8;		//padding ".text" for 8-bit pads
@@ -419,6 +424,13 @@ const short *lcachereg;
 const short *fcachereg;
 const short *dcachereg;
 
+const short *shufreg0;
+const short *shufreg1;
+const short *shufreg2;
+const short *shufreg3;
+
+u64 regs_excl;
+u64 regs_excl_tiny;
 
 byte reg_pszx[64];		//register sign/zero extension
 

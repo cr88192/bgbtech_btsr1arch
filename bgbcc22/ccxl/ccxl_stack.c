@@ -1378,6 +1378,22 @@ ccxl_status BGBCC_CCXL_StackCallName(BGBCC_TransState *ctx,
 	return(BGBCC_CCXL_StackCallName2(ctx, name, NULL, flag));
 }
 
+int BGBCC_CCXL_QueryTargetFeature(BGBCC_TransState *ctx, char *name)
+{
+	BGBCC_JX2_Context *sctx;
+
+	if(ctx->arch!=BGBCC_ARCH_BJX2)
+		return(0);
+		
+	sctx=ctx->uctx;
+	if(sctx)
+	{
+		return(BGBCC_JX2A_ParseCheckFeature(sctx, name));
+	}
+	
+	return(0);
+}
+
 int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name)
 {
 	if(!name)
@@ -1392,6 +1408,85 @@ int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name)
 		!strcmp(name, "__int_max")			||
 		!strcmp(name, "__int_clamp")		)
 			return(1);
+
+	if(BGBCC_CCXL_QueryTargetFeature(ctx, "bjx2"))
+	{
+		if((!strcmp(name, "__float32_getbits") ||
+			!strcmp(name, "__float32_frombits") ||
+			!strcmp(name, "__float64_getbits") ||
+			!strcmp(name, "__float64_frombits") ||
+			!strcmp(name, "__object_getbits") ||
+			!strcmp(name, "__object_frombits") ||
+			!strcmp(name, "__variant_getbits") ||
+			!strcmp(name, "__variant_frombits")))
+		{
+			return(1);
+		}
+
+		if(	!strcmp(name, "__int32_dmuls") ||
+			!strcmp(name, "__int32_dmulu") ||
+			!strcmp(name, "__int_mulsw") ||
+			!strcmp(name, "__int_muluw") ||
+			!strcmp(name, "__int_pmortl") ||
+			!strcmp(name, "__int_pmortq") )
+		{
+			return(1);
+		}
+	}
+
+	if(BGBCC_CCXL_QueryTargetFeature(ctx, "has_simdx2"))
+	{
+		if((!strcmp(name, "__int64_paddw") ||
+			!strcmp(name, "__int64_paddl") ||
+			!strcmp(name, "__int64_psubw") ||
+			!strcmp(name, "__int64_psubl") ||
+			!strcmp(name, "__m64_paddw") ||
+			!strcmp(name, "__m64_paddl") ||
+			!strcmp(name, "__m64_psubw") ||
+			!strcmp(name, "__m64_psubl")) )
+		{
+			return(1);
+		}
+
+		if((!strcmp(name, "__int64_pmulw") ||
+			!strcmp(name, "__int64_pmulhw") ||
+			!strcmp(name, "__m64_pmulw") ||
+			!strcmp(name, "__m64_pmulhw")) )
+		{
+			return(1);
+		}
+
+		if((!strcmp(name, "__int64_pscheqb_p") ||
+			!strcmp(name, "__int64_pschneb_p") ||
+			!strcmp(name, "__int64_pscheqw_p") ||
+			!strcmp(name, "__int64_pschnew_p")) )
+		{
+			return(1);
+		}
+
+		if(
+			!strcmp(name, "__vnf_v3f_add")			||
+			!strcmp(name, "__vnf_v3f_sub")			||
+			!strcmp(name, "__vnf_v3f_mul")			||
+			!strcmp(name, "__vnf_v3f_dot")			||
+			!strcmp(name, "__vnf_v3fa_add")			||
+			!strcmp(name, "__vnf_v3fa_sub")			||
+			!strcmp(name, "__vnf_v3fa_mul")			||
+			!strcmp(name, "__vnf_v3fa_dot")			||
+
+			!strcmp(name, "__vnf_v4f_add")			||
+			!strcmp(name, "__vnf_v4f_sub")			||
+			!strcmp(name, "__vnf_v4f_mul")			||
+			!strcmp(name, "__vnf_v4f_dot")			||
+			!strcmp(name, "__vnf_v4fa_add")			||
+			!strcmp(name, "__vnf_v4fa_sub")			||
+			!strcmp(name, "__vnf_v4fa_mul")			||
+			!strcmp(name, "__vnf_v4fa_dot")
+			)
+		{
+			return(1);
+		}
+	}
 
 	return(0);
 }

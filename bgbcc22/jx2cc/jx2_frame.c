@@ -95,6 +95,12 @@ int BGBCC_JX2C_EmitLoadFrameOfsReg(
 		nmid=BGBCC_SH_NMID_MOVQ;
 	}
 
+	if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+	{
+//		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
+		nmid=BGBCC_SH_NMID_MOVX2;
+	}
+
 	BGBCC_JX2_EmitOpLdRegDispReg(sctx, nmid,
 		BGBCC_SH_REG_SP, ofs1, dreg);
 	return(1);
@@ -153,6 +159,12 @@ int BGBCC_JX2C_EmitStoreFrameOfsReg(
 	{
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 		nmid=BGBCC_SH_NMID_MOVQ;
+	}
+
+	if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+	{
+//		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
+		nmid=BGBCC_SH_NMID_MOVX2;
 	}
 
 #if 0
@@ -496,8 +508,8 @@ int BGBCC_JX2C_EmitStoreBRegOfsReg(
 	{
 //		dreg2=BGBCC_SH_REG_FR0+(dreg&7)*2;
 //		dreg2=BGBCC_SH_REG_FR0+(dreg&15);
-		dreg2=BGBCC_SH_REG_FR0+(dreg&31);
-		
+
+//		dreg2=BGBCC_SH_REG_FR0+(dreg&31);		
 		if(dreg2&1)
 			{ dreg2=(dreg2&(~1))+32; }
 
@@ -652,7 +664,7 @@ int BGBCC_JX2C_EmitLeaBRegOfsReg(
 //	if((ctx->arch_sizeof_ptr==8) || (breg!=dreg))
 	if(sctx->is_addr64 || (breg!=dreg))
 	{
-		if((((sbyte)ofs)==ofs) && (breg==dreg) && ((breg&31)<16))
+//		if((((sbyte)ofs)==ofs) && (breg==dreg) && ((breg&31)<16))
 		{
 			i=BGBCC_JX2_TryEmitOpImmReg(sctx,
 				BGBCC_SH_NMID_ADD, ofs, dreg);
@@ -2370,7 +2382,9 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 			}
 
 //			if((li!=0) && ((*(float *)(&j))==f) && sctx->fpu_gfp)
-			if(k && ((*(float *)(&j))==f) && sctx->fpu_gfp)
+//			if(k && ((*(float *)(&j))==f) && sctx->fpu_gfp)
+			if(k && ((*(float *)(&j))==f) && sctx->fpu_gfp &&
+				BGBCC_JX2_EmitCheckRegExt32GPR(sctx, dreg))
 			{
 				i=BGBCC_JX2_ConstConvFloatToHalf(j, &usk);
 				if(i>0)
@@ -3089,7 +3103,12 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 		if(BGBCC_CCXL_TypeValueObjectP(ctx, ctx->cur_func->locals[j]->type))
 		{
 //			cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
-			treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, sreg))
+				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+					BGBCC_SH_REGCLS_QGR2);
+			else
+				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+
 			tsz=BGBCC_CCXL_TypeGetLogicalSize(ctx,
 				ctx->cur_func->locals[j]->type);
 
@@ -3592,7 +3611,12 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 		}
 #endif
 
-		treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, sreg))
+			treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+				BGBCC_SH_REGCLS_QGR2);
+		else
+			treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+
 //		treg=BGBCC_SH_REG_R1;
 //		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
 //		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
@@ -4253,6 +4277,11 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 		vsp=sctx->vspan[i];
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vsp->reg, sreg))
 		{
+			if(vsp->flag&BGBCC_RSPFL_NONLOCAL)
+				mult=0;
+			if(vsp->flag&BGBCC_RSPFL_NONBASIC)
+				mult=0;
+
 			if(sctx->tr_opnum < vsp->bbeg)
 				vsp->bbeg=sctx->tr_opnum;
 			if(sctx->tr_opnum > vsp->bend)
@@ -4353,6 +4382,9 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 
 //	if(BGBCC_CCXL_IsRegArgP(ctx, sreg) && (ctx->cur_func->n_args>8))
 	if(regfl&BGBCC_REGFL_TEMPLOAD)
+		fl|=BGBCC_RSPFL_NONLOCAL;
+
+	if(regfl&BGBCC_REGFL_ALIASPTR)
 		fl|=BGBCC_RSPFL_NONLOCAL;
 
 //	if(	BGBCC_CCXL_TypeValueObjectP(ctx, tty) ||

@@ -838,14 +838,17 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	case BGBCC_SH_NMID_MOVW:
 	case BGBCC_SH_NMID_MOVUW:
 	case BGBCC_SH_NMID_LEAW:
+	case BGBCC_SH_NMID_FMOVH:
 		sc=2;	break;
 	case BGBCC_SH_NMID_MOVL:
 	case BGBCC_SH_NMID_MOVUL:
 	case BGBCC_SH_NMID_LEAL:
+	case BGBCC_SH_NMID_FMOVS:
 		sc=4;	break;
 	case BGBCC_SH_NMID_MOVQ:
 	case BGBCC_SH_NMID_MOVX2:
 	case BGBCC_SH_NMID_LEAQ:
+	case BGBCC_SH_NMID_FMOVD:
 		sc=8;	break;
 	}
 

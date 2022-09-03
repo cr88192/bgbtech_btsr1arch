@@ -1756,13 +1756,13 @@ X(__fpu_frcp_sf):
 	mov #0x7FE, r5		| mov #0x3FF, r6
 	shld.q r5, #52, r5	| mov #0x400, r3
 	shld.q r6, #52, r6	| sub r5, r4, r5
-	shld.q r3, #52, r3	| fmul r5, r4, r7
+	shld.q r3, #52, r3	| fmula r5, r4, r7
 	sub r6, r7, r7
 	add r7, r5, r2
 
-	fmul r2, r4, r6
-	fsub r3, r6, r7
-	fmul r7, r2
+	fmula r2, r4, r6
+	fsuba r3, r6, r7
+	fmula r2, r7, r2
 
 	fneg?f r2
 	
@@ -1778,13 +1778,13 @@ X(__fpu_fdiv_sf):
 	mov		#0x7FE0000000000000, r3
 	mov		#0x3FF0000000000000, r6
 	sub		r3, r5, r3
-	fmul	r3, r5, r7
+	fmula	r3, r5, r7
 	sub		r6, r7, r7
 	add		r7, r3, r2
 
-	fmul	r2, r5, r6
-	fsub	r1, r6, r7
-	fmul	r7, r2
+	fmula	r2, r5, r6
+	fsuba	r1, r6, r7
+	fmula	r2, r7, r2
 
 	fneg?f	r2
 	fmul	r2, r4, r2	

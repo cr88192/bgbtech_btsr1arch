@@ -158,7 +158,7 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 }
 
 int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
-	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
 	BJX2_Opcode *op1;
 	int ret;
@@ -171,13 +171,16 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 	op1=BJX2_ContextAllocOpcode(ctx);
 	op1->pc=addr;
 
-	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2, 0);
+	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2, jbits);
 
 	if(!op1->Run || !op1->opn)
 	{
 		op->nmid=BJX2_NMID_INV;
 		op->fmid=BJX2_FMID_Z;
-		op->Run=BJX2_Op_INVOP_None;
+//		op->Run=BJX2_Op_INVOP_None;
+		op->nmid=BJX2_NMID_BREAK;
+		op->Run=BJX2_Op_BREAK_None;
+
 		op->fl|=BJX2_OPFL_CTRLF;
 		return(ret);
 	}

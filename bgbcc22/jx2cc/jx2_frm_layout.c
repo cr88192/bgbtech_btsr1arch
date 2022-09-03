@@ -50,6 +50,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	for(i=0; i<obj->n_vop; i++)
 	{
 		vop=obj->vop[i];
+		vop->tgt_mult=0;
+	}
+
+	for(i=0; i<obj->n_vop; i++)
+	{
+		vop=obj->vop[i];
 		if(vop->opn==CCXL_VOP_LDAVAR)
 		{
 			reg=vop->srca;
@@ -97,6 +103,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				if(vop->imm.ui!=vop1->imm.ui)
 					continue;
 				vop1->tgt_mult++;
+				break;
 			}
 		}
 	}
@@ -108,7 +115,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(vop->opn==CCXL_VOP_LABEL)
 		{
 //			k=vop->tgt_mult;
-			k=vop->llvl;
+			j=(vop->tgt_mult>>3);
+			if(j<0)		j=0;
+			if(j>3)		j=3;
+//			k=vop->llvl;
+			k=vop->llvl + j;
 		}else
 		{
 			vop->tgt_mult=k;
@@ -154,12 +165,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(BGBCC_CCXL_TypeVec128P(ctx, tty))
 		{
 			obj->regflags|=BGBCC_REGFL_HAS128;
-			sctx->use_egpr=1;
+			sctx->use_egpr|=1;
 		}
 
 		if(obj->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
 		{
-			sctx->use_egpr=1;
+			sctx->use_egpr|=1;
 			obj->regflags|=BGBCC_REGFL_GOFAST;
 		}
 	}
@@ -341,12 +352,18 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		/* High register pressure. */
 		if(sctx->vspan_num>k)
 		{
-			sctx->use_egpr=1;
+			sctx->use_egpr|=1;
+		}
+
+		if(sctx->vspan_num>(2*k))
+//		if(sctx->vspan_num>(3*k))
+		{
+			sctx->use_egpr|=2;
 		}
 
 		/* Try for full static assignment. */
 		if(sctx->vspan_num<12)
-			sctx->use_egpr=1;
+			sctx->use_egpr|=1;
 		
 //		if(sctx->is_mergece)
 //			sctx->use_egpr=0;
@@ -356,13 +373,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	}
 
 	if(ctx->optmode==BGBCC_OPT_SPEED2)
-		sctx->use_egpr=1;
+		sctx->use_egpr|=1;
 
 	if(sctx->is_fixed32)
-		sctx->use_egpr=1;
+		sctx->use_egpr|=1;
 		
 	if(sctx->has_xgpr&2)
-		sctx->use_egpr=1;
+		sctx->use_egpr|=1;
 
 	if(!sctx->use_egpr)
 	{
@@ -373,7 +390,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 			if(obj->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
 			{
-				sctx->use_egpr=1;
+				sctx->use_egpr|=1;
+//				sctx->use_egpr|=3;
 				obj->regflags|=BGBCC_REGFL_GOFAST;
 //				continue;
 			}
@@ -388,7 +406,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			case BGBCC_SH_REGCLS_WGR:
 			case BGBCC_SH_REGCLS_VO_REF2:
 			case BGBCC_SH_REGCLS_AR_REF2:
-				sctx->use_egpr=1;
+				sctx->use_egpr|=1;
 				break;
 			}
 		}
@@ -405,7 +423,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			case BGBCC_SH_REGCLS_WGR:
 			case BGBCC_SH_REGCLS_VO_REF2:
 			case BGBCC_SH_REGCLS_AR_REF2:
-				sctx->use_egpr=1;
+				sctx->use_egpr|=1;
 				break;
 			}
 		}
@@ -422,11 +440,18 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			case BGBCC_SH_REGCLS_WGR:
 			case BGBCC_SH_REGCLS_VO_REF2:
 			case BGBCC_SH_REGCLS_AR_REF2:
-				sctx->use_egpr=1;
+				sctx->use_egpr|=1;
 				break;
 			}
 		}
 	}
+
+//	sctx->use_egpr|=2;
+
+	if(!(sctx->has_xgpr&1))
+		sctx->use_egpr&=~2;
+
+//	sctx->use_egpr&=~2;
 
 	if(!strcmp(obj->name, "TKRA_MatrixIdentify"))
 	{
@@ -451,8 +476,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		(obj->flagsint&BGBCC_TYFL_INTERRUPT))
 		k-=4;		//saved GBR
 
-	if(sctx->has_xgpr&2)
-		k-=16*4;		//saved R24..R31
+//	if(sctx->has_xgpr&2)
+//	if((sctx->has_xgpr&2) ||
+//		((sctx->has_xgpr&1) && (sctx->use_egpr&2)))
+	if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+		k-=16*4;		//saved R40..R47, R56..R63
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
 	{

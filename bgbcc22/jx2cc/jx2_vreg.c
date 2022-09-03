@@ -290,7 +290,7 @@ int BGBCC_JX2C_EmitMovRegReg(
 		return(1);
 	}
 
-	if(BGBCC_JX2_EmitCheckRegExtGPR(sctx, sreg) &&
+	if(	BGBCC_JX2_EmitCheckRegExtGPR(sctx, sreg) &&
 		BGBCC_JX2_EmitCheckRegExtGPR(sctx, dreg))
 	{
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_MOV, sreg, dreg);
@@ -836,8 +836,10 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 //		if((cdreg&0xF0) != (csreg&0xF0))
 		if((cdreg&BGBCC_SH_REG_RTMASK5)!=(csreg&BGBCC_SH_REG_RTMASK5))
 		{
-			if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
+//			if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0) &&
+//				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
+			if(	((cdreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_R0) &&
+				((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RD0))
 			{
 				nm1=BGBCC_SH_NMID_EXTSL;
 
@@ -852,43 +854,65 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 				return(1);
 			}
 
-			if(((cdreg&BGBCC_SH_REG_RTMASK5)==(csreg&BGBCC_SH_REG_RTMASK5)) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
+			if(
+				((cdreg&BGBCC_SH_REG_RTMASK6)==(csreg&BGBCC_SH_REG_RTMASK6)) &&
+				((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RQ0))
 			{
 			}else
-			if(((cdreg&BGBCC_SH_REG_RTMASK5)==(csreg&BGBCC_SH_REG_RTMASK5)) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
+				if(
+				((cdreg&BGBCC_SH_REG_RTMASK6)==(csreg&BGBCC_SH_REG_RTMASK6)) &&
+				((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RD0))
 			{
 			}else
-			if(((cdreg&BGBCC_SH_REG_RTMASK5)==(csreg&BGBCC_SH_REG_RTMASK5)) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
+				if(
+				((cdreg&BGBCC_SH_REG_RTMASK6)==(csreg&BGBCC_SH_REG_RTMASK6)) &&
+				((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_R0))
 			{
 			}else
 
 //			if(((cdreg&0xF0)==BGBCC_SH_REG_RD0) &&
 //				((csreg&0xF0)==BGBCC_SH_REG_RQ0))
-			if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
+//			if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0) &&
+//				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
+			if(((cdreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RD0) &&
+				((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RQ0))
 			{
-				csreg=BGBCC_SH_REG_RD0+(csreg&31);
+//				csreg=BGBCC_SH_REG_RD0+(csreg&31);
+				csreg=BGBCC_SH_REG_RD0+(csreg&63);
 //			}else if(((cdreg&0xF0)==BGBCC_SH_REG_RQ0) &&
 //				((csreg&0xF0)==BGBCC_SH_REG_RD0))
-			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
+			}else
+//				if(	((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0) &&
+//					((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0))
+				if(	((cdreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_R0) &&
+					((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RQ0))
 			{
-				csreg=BGBCC_SH_REG_R0+(csreg&31);
-			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
+//				csreg=BGBCC_SH_REG_R0+(csreg&31);
+				csreg=BGBCC_SH_REG_R0+(csreg&63);
+			}else
+//				if(	((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0) &&
+//					((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
+				if(	((cdreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RQ0) &&
+					((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_R0))
 			{
-				csreg=BGBCC_SH_REG_RQ0+(csreg&31);
-			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
+//				csreg=BGBCC_SH_REG_RQ0+(csreg&31);
+				csreg=BGBCC_SH_REG_RQ0+(csreg&63);
+			}else
+//				if(	((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0) &&
+//					((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_R0))
+				if(	((cdreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RD0) &&
+					((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_R0))
 			{
-				csreg=BGBCC_SH_REG_RD0+(csreg&31);
-			}else if(((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0) &&
-				((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
+//				csreg=BGBCC_SH_REG_RD0+(csreg&31);
+				csreg=BGBCC_SH_REG_RD0+(csreg&63);
+			}else
+//				if(	((cdreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RQ0) &&
+//					((csreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_RD0))
+				if(	((cdreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RQ0) &&
+					((csreg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RD0))
 			{
-				csreg=BGBCC_SH_REG_RQ0+(csreg&31);
+//				csreg=BGBCC_SH_REG_RQ0+(csreg&31);
+				csreg=BGBCC_SH_REG_RQ0+(csreg&63);
 			}else
 			{
 				printf("BGBCC_JX2C_EmitMovVRegVReg: "

@@ -385,7 +385,10 @@ qboolean SNDDMA_Init(void)
 	shm->buffer = (unsigned char *)dma_buffer;
 	
 	if(shm->samples != 8192)
-		{ DBGBREAK }
+	{
+		__debugbreak();
+//		DBGBREAK
+	}
 	
 	return(1);
 }

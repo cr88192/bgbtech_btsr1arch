@@ -148,7 +148,8 @@ typedef u32 nlint;
 
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(72*72*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(64*64*4)
-#define		TKRA_PARAM_QUADSUBDIV_DFL	(56*56*4)
+#define		TKRA_PARAM_QUADSUBDIV_DFL	(60*60*4)
+// #define		TKRA_PARAM_QUADSUBDIV_DFL	(56*56*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(40*40*4)
 
 // #define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
@@ -422,6 +423,9 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_NOSUBDIV						0x00020000
 #define TKRA_STFL1_LIGHTING						0x00040000
 #define TKRA_STFL1_FOG							0x00080000
+#define TKRA_STFL1_USESHADER					0x00100000
+
+#define TKRA_STFL1_DOSHADER_MASK				0x001C0000
 
 
 typedef unsigned short	tkra_rastpixel;
@@ -510,6 +514,8 @@ typedef struct {
 	s32 t;		//10
 	u32 rgb;	//14
 	//18
+	u64 pad;
+	u64 attrib[4];
 }tkra_projvertex;
 
 typedef u64 (*tkra_blendfunc_t)(u64 sclr, u64 dclr);
@@ -518,6 +524,41 @@ typedef int (*tkra_zatest_t)(
 	s32 zsrc, s32 ztgt, s32 zref, s32 *zmod,
 	u64 csrc, u64 ctgt, u64 cref, u64 *cmod);
 
+typedef struct TKRA_ShaderProg_s	TKRA_ShaderProg;
+typedef struct TKRA_ShaderTrace_s	TKRA_ShaderTrace;
+typedef struct TKRA_ShaderOp_s		TKRA_ShaderOp;
+
+struct TKRA_ShaderProg_s
+{
+	TKRA_ShaderProg *next;
+	u16 sdr_id;
+	u64 vars_uniform[256];	//uniform variables
+	u64 *wordcode_img[4];	//wordcode image (vertex)
+};
+
+#define TKRA_SHADER_MAXTROPS	16
+
+struct TKRA_ShaderTrace_s
+{
+	TKRA_ShaderTrace *(*Run)(TKRA_Context *ctx, TKRA_ShaderTrace *tr);
+	u32 sdr_idpc;			//Shader ID+PC
+	byte n_ops;
+	TKRA_ShaderTrace	*tr_next;		//Next Trace (PC Order)
+	TKRA_ShaderTrace	*tr_jump;		//Jump Trace
+	TKRA_ShaderOp		*ops[TKRA_SHADER_MAXTROPS];
+};
+
+struct TKRA_ShaderOp_s
+{
+	void (*Run)(TKRA_Context *ctx, TKRA_ShaderOp *op);
+	byte nmid;
+	byte fmid;
+	byte rn;
+	byte rs;
+	byte rt;
+	byte opfl;
+	u32	imm;
+};
 
 struct TKRA_Context_s
 {
@@ -649,7 +690,22 @@ tkra_zatest_t		ZaTest;
 u32		zat_cref;
 
 int		tkgl_usepgm_vtx;		//vertex shader
-u64		tkgl_shdr_uniform[128];		//uniform parameters
+u64		*tkgl_sdr_uniform;		//uniform parameters
+u64		*tkgl_sdr_local;		//local parameters
+u64		*tkgl_sdr_attrib;		//local parameters
+
+TKRA_ShaderTrace *sdr_trcache[1024];
+u16 sdr_trchain[1024];
+u16 sdr_n_trace;
+u16 sdr_trhash[256];
+
+TKRA_ShaderProg		*sdr_progs;
+TKRA_ShaderTrace	*sdr_tr_free;
+TKRA_ShaderTrace	*sdr_tr_next;
+TKRA_ShaderOp		*sdr_op_free;
+
+TKRA_ShaderProg		*sdr_prog_cur;
+TKRA_ShaderTrace	*sdr_tr_e_vtx;
 
 tkra_trivertex v0stk[64];
 tkra_trivertex v1stk[64];

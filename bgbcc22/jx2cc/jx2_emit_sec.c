@@ -2181,6 +2181,12 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 				{
 					/* Can't do anything here. */
 				}else
+					if(	((val&0xF000)==0x7000) ||
+						((val&0xF000)==0x9000) )
+				{
+					/* Predicate + 32-bit XGPR, Invalid. */
+					BGBCC_DBGBREAK
+				}else
 				{
 					BGBCC_DBGBREAK
 				}
@@ -2216,7 +2222,58 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 		}
 	}
 
+	if(!ctx->is_simpass && (ctx->sec==BGBCC_SH_CSEG_TEXT))
+	{
+		if(ctx->stat_opc_issfx)
+		{
+			if((ctx->emit_hist_word2&0xFF00)==0xFF00)
+			{
+				if((ctx->emit_hist_word0&0xE000)!=0xE000)
+				{
+	//				BGBCC_DBGBREAK
+					k=-1;
+				}
+			}
+
+			if((ctx->emit_hist_word2&0xFF0F)==0xFF00)
+			{
+				if((ctx->emit_hist_word0&0xFF00)==0xFE00)
+				{
+//					BGBCC_DBGBREAK
+					k=-1;
+				}
+
+				if((ctx->emit_hist_word0&0xFF00)==0xFA00)
+				{
+//					BGBCC_DBGBREAK
+					k=-1;
+				}
+			}
+
+			if((ctx->emit_hist_word2&0xFF00)==0xFE00)
+			{
+				if((ctx->emit_hist_word0&0xFF0F)==0xFF00)
+				{
+//					BGBCC_DBGBREAK
+					k=-1;
+				}
+			}
+		}else
+		{
+			if((val&0xFF00)==0x7000)
+			{
+	//			BGBCC_DBGBREAK
+				k=-1;
+			}
+		}
+	}
+
 	BGBCC_JX2_EmitStatWord(ctx, val);
+
+	ctx->emit_hist_word3=ctx->emit_hist_word2;
+	ctx->emit_hist_word2=ctx->emit_hist_word1;
+	ctx->emit_hist_word1=ctx->emit_hist_word0;
+	ctx->emit_hist_word0=val;
 
 //	if(!val && (ctx->sec==BGBCC_SH_CSEG_TEXT))
 //	{
@@ -3336,7 +3393,7 @@ int BGBCC_JX2_EmitByte(BGBCC_JX2_Context *ctx, int val)
  (19:16)=3: Flipped, 16-bit Op
  (19:16)=4: Flipped, 32 First Word
  (19:16)=5: Flipped, 32 Second Word
- (19:16)=6: ?
+ (19:16)=6: Flipped, 32 First Word (N/M Switched)
  (19:16)=7: Byte
  
  */
@@ -3347,8 +3404,9 @@ int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 		BGBCC_DBGBREAK
 	}
 
-	if((val>0xFFFF) && ((val>>16)!=6) &&
-		((val>>16)!=3) && ((val>>16)!=4) && ((val>>16)!=5))
+//	if((val>0xFFFF) && ((val>>16)!=6) &&
+//		((val>>16)!=3) && ((val>>16)!=4) && ((val>>16)!=5))
+	if(((val>>16)&15)==7)
 	{
 		if(
 			(ctx->sec==BGBCC_SH_CSEG_TEXT) &&

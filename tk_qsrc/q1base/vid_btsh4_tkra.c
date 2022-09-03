@@ -555,6 +555,10 @@ void	VID_Init (unsigned char *palette)
 	host_colormap16 = malloc (131072);
 
 	vid.colormap16 = host_colormap16;
+
+	if(!host_colormap16)
+		{ __debugbreak(); }
+
 #endif
 
 //#ifndef CONGFX
@@ -614,6 +618,9 @@ void	VID_Init (unsigned char *palette)
 	}
 #endif
 
+	if(!host_colormap16)
+		{ __debugbreak(); }
+
 	TKRA_SetupContextBasic(BASEWIDTH, BASEHEIGHT);
 
 	vid_buffer = TKRA_GetCurrentScreenBuffer_RGB();
@@ -622,6 +629,9 @@ void	VID_Init (unsigned char *palette)
 	QGL_Init(NULL);
 	
 	GL_Init();
+
+	if(!host_colormap16)
+		{ __debugbreak(); }
 
 }
 
@@ -1584,6 +1594,9 @@ void	VID_Update (vrect_t *rects)
 	int pix, bn;
 	int i, j, k;
 
+	if(!host_colormap16)
+		{ __debugbreak(); }
+
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 //	conbufb=conbufa+(80*61);
@@ -1600,6 +1613,7 @@ void	VID_Update (vrect_t *rects)
 		conbufa=conbufb;
 
 	if(host_colormap16)
+//	if(1)
 	{
 		r_pixbytes=2;
 		bn=0;
@@ -1716,6 +1730,9 @@ void	VID_Update (vrect_t *rects)
 
 //		conbufa[8100]=vid_frnum;
 #endif
+	}else
+	{
+		__debugbreak();
 	}
 	
 //	memset(vid.buffer, 0, 320*200*2);

@@ -2886,6 +2886,32 @@ Types:
 * 1111: -
 
 
+=== PCVTxx (GSVF) ===
+
+* F0nm_1g0F  PCVTSB2HL	Rm, Rn		//(GSVF) Packed SB to FP16 (Low32)
+* F0nm_1G0F  PCVTUB2HL	Rm, Rn		//(GSVF) Packed UB to FP16
+* F0nm_1g1F  PCVTSB2HH	Rm, Rn		//(GSVF) Packed SB to FP16 (High32)
+* F0nm_1G1F  PCVTUB2HH	Rm, Rn		//(GSVF) Packed UB to FP16
+* F0nm_1g2F  PCVTSW2FL	Rm, Rn		//(GSVF) Packed SW to FP32 (Low32)
+* F0nm_1G2F  PCVTUW2FL	Rm, Rn		//(GSVF) Packed UW to FP32
+* F0nm_1g3F  PCVTSW2FH	Rm, Rn		//(GSVF) Packed SW to FP32 (High32)
+* F0nm_1G3F  PCVTUW2FH	Rm, Rn		//(GSVF) Packed UW to FP32
+
+* F0nm_1g4F  PCVTH2SB	Rm, Rn		//(GSVF) Packed FP16 to SB (4x)
+* F0nm_1G4F  PCVTH2UB	Rm, Rn		//(GSVF) Packed FP16 to UB (4x)
+* F0nm_1g5F  PCVTSW2H	Rm, Rn		//(GSVF) Packed SW to FP16 (4x)
+* F0nm_1G5F  PCVTUW2H	Rm, Rn		//(GSVF) Packed UW to FP16 (4x)
+* F0nm_1g6F  PCVTF2SW	Rm, Rn		//(GSVF) Packed FP32 to SW (2x)
+* F0nm_1G6F  PCVTF2UW	Rm, Rn		//(GSVF) Packed FP32 to UW (2x)
+* F0nm_1g7F  PCVTH2SW	Rm, Rn		//(GSVF) Packed FP16 to SW (4x)
+* F0nm_1G7F  PCVTH2UW	Rm, Rn		//(GSVF) Packed FP16 to UW (4x)
+
+Perform packed conversion between floating point and integer types.
+
+Note that these operations will perform a slightly atypical conversion in that they will map the converted value between 1.0000 and 1.9999 for unsigned and 2.0000 and 3.9999 for signed. One may add a bias of 1.0 or 3.0 to get the value back into unit range.
+
+
+
 === FDIVx (GFP, FDIV) ===
 
 * F0nm_6go6 FDIV		Rm, Ro, Rn			//(FDIV) FDIV

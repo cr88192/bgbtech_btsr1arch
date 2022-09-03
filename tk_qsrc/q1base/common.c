@@ -1367,6 +1367,7 @@ typedef struct pack_s
 	int             handle;
 	int             numfiles;
 	packfile_t      *files;
+	int		magic;
 } pack_t;
 
 //
@@ -1395,6 +1396,7 @@ typedef struct searchpath_s
 	char    filename[MAX_OSPATH];
 	pack_t  *pack;          // only one of filename / pack will be used
 	struct searchpath_s *next;
+	int		magic;
 } searchpath_t;
 
 searchpath_t    *com_searchpaths;
@@ -1504,6 +1506,18 @@ void COM_CopyFile (char *netpath, char *cachepath)
 	Sys_FileClose (out);    
 }
 
+void COM_TrapBadPtr(void *ptr)
+{
+	if(!ptr)
+		return;
+
+	if(((long long)ptr)<0x100000)
+		{ __debugbreak(); }
+
+	if((((long long)ptr)>>48)!=0)
+		{ __debugbreak(); }		
+}
+
 /*
 ===========
 COM_FindFile
@@ -1548,9 +1562,20 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 
 	for ( ; search ; search = search->next)
 	{
+		COM_TrapBadPtr(search);
+		COM_TrapBadPtr(search->pack);
+
+		if(search->magic != 0x12345678)
+			{ __debugbreak(); }
+
 	// is the element a pak file?
 		if (search->pack)
 		{
+			if(search->pack->magic != 0x12345678)
+				{ __debugbreak(); }
+
+			COM_TrapBadPtr(search->pack->files);
+
 		// look through all the pak file elements
 			pak = search->pack;
 			for (i=0 ; i<pak->numfiles ; i++)
@@ -2206,11 +2231,16 @@ pack_t *COM_LoadPackFile (char *packfile)
 
 	printf("COM_LoadPackFile: E\n");
 
+	COM_TrapBadPtr(newfiles);
+
 	pack = Hunk_Alloc (sizeof (pack_t));
 	strcpy (pack->filename, packfile);
 	pack->handle = packhandle;
 	pack->numfiles = numpackfiles;
 	pack->files = newfiles;
+	pack->magic = 0x12345678;
+
+	COM_TrapBadPtr(pack->files);
 
 	printf("COM_LoadPackFile: F\n");
 
@@ -2369,12 +2399,19 @@ pack_t *COM_LoadWad2AFile (char *packfile)
 
 	printf("COM_LoadPackFile: E\n");
 
+	COM_TrapBadPtr(newfiles);
+
 	pack = Hunk_Alloc (sizeof (pack_t));
 	strcpy (pack->filename, packfile);
 	pack->handle = packhandle;
 //	pack->numfiles = numpackfiles;
 	pack->numfiles = numpackfiles;
 	pack->files = newfiles;
+	pack->magic = 0x12345678;
+
+	COM_TrapBadPtr(pack);
+
+	COM_TrapBadPtr(pack->files);
 
 	printf("COM_LoadPackFile: F\n");
 
@@ -2411,6 +2448,12 @@ void COM_AddGameDirectory (char *dir)
 	strcpy (search->filename, dir);
 	search->next = com_searchpaths;
 	com_searchpaths = search;
+	
+	search->pack = NULL;
+	search->magic = 0x12345678;
+
+	COM_TrapBadPtr(search);
+	COM_TrapBadPtr(search->pack);
 
 	tk_puts("COM_AddGameDirectory: A1\n");
 
@@ -2421,6 +2464,7 @@ void COM_AddGameDirectory (char *dir)
 	{
 		sprintf (pakfile, "%s/pak%dlz.wad", dir, i);
 		pak = COM_LoadWad2AFile (pakfile);
+		COM_TrapBadPtr(pak);
 
 		if(pak)
 		{
@@ -2430,6 +2474,10 @@ void COM_AddGameDirectory (char *dir)
 			search->pack = pak;
 			search->next = com_searchpaths;
 			com_searchpaths = search;
+			search->magic = 0x12345678;
+
+			COM_TrapBadPtr(search);
+			COM_TrapBadPtr(search->pack);
 			continue;
 		}
 
@@ -2455,6 +2503,10 @@ void COM_AddGameDirectory (char *dir)
 		search->pack = pak;
 		search->next = com_searchpaths;
 		com_searchpaths = search;               
+		search->magic = 0x12345678;
+
+		COM_TrapBadPtr(search);
+		COM_TrapBadPtr(search->pack);
 	}
 
 	tk_puts("COM_AddGameDirectory: A2\n");
@@ -2572,6 +2624,7 @@ void COM_InitFilesystem (void)
 				strcpy (search->filename, com_argv[i]);
 			search->next = com_searchpaths;
 			com_searchpaths = search;
+			search->magic = 0x12345678;
 		}
 	}
 

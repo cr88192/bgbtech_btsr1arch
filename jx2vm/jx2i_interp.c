@@ -1491,6 +1491,18 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			op1=op->data;
 
+			if((op->nmid==BJX2_NMID_PRED_T) || (op->nmid==BJX2_NMID_PRED_F))
+			{
+//				op1=op->data;
+				sprintf(tb1, "%s?%c",
+					BJX2_DbgPrintNameForNmid(ctx, op1->nmid),
+						(op->nmid==BJX2_NMID_PRED_T)?'T':'F');
+			}else
+			{
+				strcpy(tb1, BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			}
+
+
 			printf("%04X_%08X  (%2d) %04X_%04X   -\n",
 				(u32)((op->pc+0)>>32),
 				(u32)op->pc, op->cyc,
@@ -1499,7 +1511,8 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 				(u32)((op->pc+4)>>32),
 				(u32)op1->pc,
 				op1->opn, op1->opn2,
-				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+//				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+				tb1);
 			brpc=op->pc+8;
 		}else
 		if(op->fl&BJX2_OPFL_TRIWORD)
@@ -2212,7 +2225,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	BJX2_Trace *trcur;
 	bjx2_addr ba2;
 	s64 cyc, cy0, cy1;
-	double pcnt, tpcnt;
+	double pcnt, tpcnt, tkra_pcnt;
 	char *bn2, *s0, *s1;
 	int trn, trtops;
 	int i, j, k, h;
@@ -2358,6 +2371,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		topfn_tpcnt[i]=tpcnt;
 	}
 
+	tkra_pcnt=0;
+
 	for(i=0; i<64; i++)
 	{
 		bn2=topfn_name[63-i];
@@ -2372,8 +2387,16 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 				continue;
 			bn2="?";
 		}
+		
+		if(!strncmp(bn2, "tkra_", 5) || !strncmp(bn2, "TKRA_", 5))
+			tkra_pcnt+=pcnt;
 
 		printf(" %-40s %.2f%% %.2f%%\n", bn2, pcnt, tpcnt);
+	}
+	
+	if(tkra_pcnt>5)
+	{
+		printf(" TKRA: %.2f%%\n", tkra_pcnt);
 	}
 	
 	printf("Top Traces:\n");

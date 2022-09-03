@@ -856,11 +856,11 @@ X(TransformVector):
 	FLDCF	R17, R20
 .endif
 
-	FMUL	R18, R21, R2
-	FMUL	R19, R22, R3
-	FMUL	R20, R23, R7
-	FADD	R2, R3, R2
-	FADD	R2, R7, R2
+	FMULA	R18, R21, R2
+	FMULA	R19, R22, R3
+	FMULA	R20, R23, R7
+	FADDA	R2, R3, R2
+	FADDA	R2, R7, R2
 .ifarch has_fmovs
 	FMOV.S	R2, (R5, 0)
 .else
@@ -882,11 +882,11 @@ X(TransformVector):
 	FLDCF	R17, R20
 .endif
 
-	FMUL	R18, R21, R2
-	FMUL	R19, R22, R3
-	FMUL	R20, R23, R7
-	FADD	R2, R3, R2
-	FADD	R2, R7, R2
+	FMULA	R18, R21, R2
+	FMULA	R19, R22, R3
+	FMULA	R20, R23, R7
+	FADDA	R2, R3, R2
+	FADDA	R2, R7, R2
 .ifarch has_fmovs
 	FMOV.S	R2, (R5, 4)
 .else
@@ -907,11 +907,11 @@ X(TransformVector):
 	FLDCF	R17, R20
 .endif
 
-	FMUL	R18, R21, R2
-	FMUL	R19, R22, R3
-	FMUL	R20, R23, R7
-	FADD	R2, R3, R2
-	FADD	R2, R7, R2
+	FMULA	R18, R21, R2
+	FMULA	R19, R22, R3
+	FMULA	R20, R23, R7
+	FADDA	R2, R3, R2
+	FADDA	R2, R7, R2
 
 .ifarch has_fmovs
 	FMOV.S	R2, (R5, 8)

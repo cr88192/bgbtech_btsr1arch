@@ -1357,10 +1357,12 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 	if(((rn&63)==(rn0&63)) &&
 		((rn0&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_LR0))
 	{
-		if((rn&31)==0)
+//		if((rn&31)==0)
+		if((rn&63)==0)
 			{ BGBCC_DBGBREAK }
 	//	if((rn&31)==1)
-		if(((rn&31)==1) && (rn!=BGBCC_SH_REG_GBR))
+//		if(((rn&31)==1) && (rn!=BGBCC_SH_REG_GBR))
+		if(((rn&63)==1) && (rn!=BGBCC_SH_REG_GBR))
 			{ BGBCC_DBGBREAK }
 	}
 
@@ -1376,7 +1378,8 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 			rm, BGBCC_SH_REG_DLR, BGBCC_SH_REG_TBR));
 	}
 
-	if((rn&0x1E)==0x00)
+//	if((rn&0x1E)==0x00)
+	if((rn&0x3E)==0x00)
 	{
 		/* HACK: Scale displacement for Byte-Scaled cases. */
 		switch(nmid)
@@ -2447,7 +2450,8 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			BGBCC_SH_REG_TBR, BGBCC_SH_REG_DLR, rn));
 	}
 
-	if((rm&0x1E)==0x00)
+//	if((rm&0x1E)==0x00)
+	if((rm&0x3E)==0x00)
 	{
 		/* HACK: Scale displacement for Byte-Scaled cases. */
 		switch(nmid)

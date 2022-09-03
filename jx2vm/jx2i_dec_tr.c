@@ -2378,6 +2378,23 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			op->cyc=ilo;
 		}
 
+		if(
+			(op->nmid==BJX2_NMID_FADD)		||
+			(op->nmid==BJX2_NMID_FSUB)		||
+			(op->nmid==BJX2_NMID_FMUL)		||
+			(op->nmid==BJX2_NMID_PADDF)		||
+			(op->nmid==BJX2_NMID_PSUBF)		||
+			(op->nmid==BJX2_NMID_PMULF)		||
+			(op->nmid==BJX2_NMID_PADDXF)	||
+			(op->nmid==BJX2_NMID_PSUBXF)	||
+			(op->nmid==BJX2_NMID_PMULXF)	)
+		{
+			if(op->imm&8)
+			{
+				op->cyc=ilo;
+			}
+		}
+
 #if 1
 		if(
 			(op->nmid==BJX2_NMID_ADD)		||

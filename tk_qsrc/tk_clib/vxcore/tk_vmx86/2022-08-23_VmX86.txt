@@ -1,0 +1,10 @@
+Idea:
+* Another attempt at an x86 userland emulator.
+* Try to make something which will hopefully be "viable".
+** Optimize for BJX2 to what extent possible.
+* Leverage TestKern's virtual memory support.
+** Will map x86 userland to a contiguous region of address space.
+
+Possible Sub-Goals:
+* Full Emulation
+* Real Mode and 16-bit protected Mode

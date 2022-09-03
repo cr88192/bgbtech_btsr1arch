@@ -1,0 +1,46 @@
+Registers (8-bit space, possible):
+* 00..3F: Locals
+**  00..0F: Input Arguments (Functions)
+**  10..3F: Frame Local Variables and Temporaries
+* 40..5F: Control / Misc
+**  50..5F: Arguments for function calls(?)
+* 60..7F: Varying / Attribute 'in' and 'out'
+* 80..FF: Uniform Variables
+**  Also some fixed-assignment inputs/outputs.
+
+Would use a Word Code, possibly with 64-bit instructions, say:
+* ( 7: 0): Primary Opcode
+* (15: 8): Rn (Dest / Source C)
+* (23:16): Rs (Source A, 2R/3R)
+* (31:24): Rt (Source B, 3R; Sub-Operation 2R / 3RI)
+* (63:32): Immed, Extended Opcode, or Misc (Depends)
+**  Imm32 (63:32)
+**  (39:32): Sub-Operation (3R)
+
+Primary Opcode Space:
+* 00..3F: Unconditional (Normal Space)
+* 40..7F: Special (Large Immediate, Etc)
+* 80..BF: PredT (Normal Space, Executed if True)
+* C0..FF: PredF (Normal Space, Executed if False)
+
+Opcodes:
+* 00: NOP/END
+* 01: UNARY_VEC4 (2R)
+** 00: MOV (Copy)
+** 01: NEG (Negate)
+** 04: RSQ (Reciprocal Square Root)
+** 03: RCP (Reciprocal)
+* 02: BINARY_VEC4 (3R)
+** 00: ADD (Add Vectors)
+** 01: SUB (Subtract Vectors)
+** 02: MUL (Multiply Vectors)
+** 03: DIV (Divide Vectors)
+** 04: DOT4 (4 element Dot Product)
+** 05: DOT3 (3 element Dot Product)
+** 06: DOTH (Homogenous Dot Product)
+** 07: DST (Distance)
+** 08: XPD (Cross Product)
+* 03: BINARY_VEC4_IMM (3R)
+** Same as Binary
+** VEC4 is 4x FP8S
+

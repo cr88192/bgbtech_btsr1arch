@@ -3,9 +3,17 @@ void TKRA_UnpackMatrix16fv(tkra_mat4 mat, float *fv);
 // #ifdef __BJX2__
 #ifdef BJX2_SIMD
 
-#define tkra_v4fadd(a, b)	((a)+(b))
-#define tkra_v4fsub(a, b)	((a)-(b))
-#define tkra_v4fmul(a, b)	((a)*(b))
+__vec4f		__vnf_v4fa_add(__vec4f a, __vec4f b);
+__vec4f		__vnf_v4fa_sub(__vec4f a, __vec4f b);
+__vec4f		__vnf_v4fa_mul(__vec4f a, __vec4f b);
+
+#define tkra_v4fadd(a, b)	(__vnf_v4fa_add(a, b))
+#define tkra_v4fsub(a, b)	(__vnf_v4fa_sub(a, b))
+#define tkra_v4fmul(a, b)	(__vnf_v4fa_mul(a, b))
+
+// #define tkra_v4fadd(a, b)	((a)+(b))
+// #define tkra_v4fsub(a, b)	((a)-(b))
+// #define tkra_v4fmul(a, b)	((a)*(b))
 
 #define tkra_v2fadd(a, b)	((a)+(b))
 #define tkra_v2fsub(a, b)	((a)-(b))
@@ -58,9 +66,18 @@ __m128 __m128_shufd(__m128 a, int b);
 float		__vnf_v4f_dot(__vec4f a, __vec4f b);
 float		__vnf_v3f_dot(__vec4f a, __vec4f b);
 float		__vnf_v2f_dot(__vec2f a, __vec2f b);
-#define tkra_v4fdot(a, b)	__vnf_v4f_dot(a, b)
-#define tkra_v3fdot(a, b)	__vnf_v3f_dot(a, b)
-#define tkra_v2fdot(a, b)	__vnf_v2f_dot(a, b)
+
+float		__vnf_v4fa_dot(__vec4f a, __vec4f b);
+float		__vnf_v3fa_dot(__vec4f a, __vec4f b);
+float		__vnf_v2fa_dot(__vec2f a, __vec2f b);
+
+// #define tkra_v4fdot(a, b)	__vnf_v4f_dot(a, b)
+// #define tkra_v3fdot(a, b)	__vnf_v3f_dot(a, b)
+// #define tkra_v2fdot(a, b)	__vnf_v2f_dot(a, b)
+
+#define tkra_v4fdot(a, b)	__vnf_v4fa_dot(a, b)
+#define tkra_v3fdot(a, b)	__vnf_v3fa_dot(a, b)
+#define tkra_v2fdot(a, b)	__vnf_v2fa_dot(a, b)
 
 // #define tkra_v4fdot(a, b)	((a)^(b))
 // #define tkra_v2fdot(a, b)	((a)^(b))

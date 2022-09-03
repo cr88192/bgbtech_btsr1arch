@@ -222,8 +222,19 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 
 	if(nmid==BGBCC_SH_NMID_SHLL64)
 	{
-		sreg2=BGBCC_SH_REG_RQ0+(sreg&31);
-		dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+//		sreg2=BGBCC_SH_REG_RQ0+(sreg&31);
+//		dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, sreg))
+			{	sreg2=BGBCC_SH_REG_RQ0+(sreg&0x1E);
+				if(sreg&1)	sreg2+=32;		}
+		else
+			{	sreg2=BGBCC_SH_REG_RQ0+(sreg&63);	}
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+			{	dreg2=BGBCC_SH_REG_RQ0+(dreg&0x1E);
+				if(dreg&1)	dreg2+=32;		}
+		else
+			{	dreg2=BGBCC_SH_REG_RQ0+(dreg&63);	}
 
 		BGBCC_JX2_EmitOpRegReg(sctx,
 			BGBCC_SH_NMID_MOV, sreg2+0, dreg2+1);
@@ -234,8 +245,19 @@ int BGBCC_JX2C_EmitConvOpRegReg(
 
 	if(nmid==BGBCC_SH_NMID_SHLR64)
 	{
-		sreg2=BGBCC_SH_REG_RQ0+(sreg&31);
-		dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+//		sreg2=BGBCC_SH_REG_RQ0+(sreg&31);
+//		dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, sreg))
+			{	sreg2=BGBCC_SH_REG_RQ0+(sreg&0x1E);
+				if(sreg&1)	sreg2+=32;		}
+		else
+			{	sreg2=BGBCC_SH_REG_RQ0+(sreg&63);	}
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+			{	dreg2=BGBCC_SH_REG_RQ0+(dreg&0x1E);
+				if(dreg&1)	dreg2+=32;		}
+		else
+			{	dreg2=BGBCC_SH_REG_RQ0+(dreg&63);	}
 
 		BGBCC_JX2_EmitOpRegReg(sctx,
 			BGBCC_SH_NMID_MOV, sreg2+1, dreg2+0);
@@ -330,9 +352,16 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 
 			if(BGBCC_JX2C_EmitRegIsLpReg(ctx, sctx, cdreg))
 			{
-				tr0=BGBCC_SH_REG_R0|((cdreg&31)+0);
-				tr1=BGBCC_SH_REG_R0|((cdreg&31)+1);
-			
+//				tr0=BGBCC_SH_REG_R0|((cdreg&31)+0);
+//				tr1=BGBCC_SH_REG_R0|((cdreg&31)+1);
+
+				tr0=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, cdreg);
+				tr1=tr0+1;
+
+//				tr0=BGBCC_SH_REG_R0+(cdreg&0x1E)+0;
+//				tr1=BGBCC_SH_REG_R0+(cdreg&0x1E)+1;
+//				if(cdreg&1)	{ tr0+=32; tr1+=32; }
+
 				BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
 					BGBCC_SH_NMID_MOVQ, csreg, 0, tr0);
 				BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
@@ -2342,8 +2371,12 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 		(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2)>1))
 	{
 		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR2);
-		tr2=(tr0&31)+0;
-		tr3=(tr0&31)+1;
+//		tr2=(tr0&31)+0;
+//		tr3=(tr0&31)+1;
+
+		tr2=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, tr0);
+		tr3=tr2+1;
+
 		nm1=BGBCC_SH_NMID_MOVX2;
 
 		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
@@ -2364,6 +2397,7 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 	}
 
 	if((al>=8) && (!(sz&7) || (al0>=8)) && (sz<=128))
+//	if((!(sz&7) || (al0>=8)) && (sz<=128))
 	{
 		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
 

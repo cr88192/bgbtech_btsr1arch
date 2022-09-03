@@ -290,9 +290,10 @@ A few special-case restrictions will be defined as part of this ISA:
 ** This will apply both to branch instructions and PC-relative load/store.
 * PC is required to be aligned to a 16-bit boundary.
 ** Setting the low bit of PC is Undefined.
-* SP will also have some restrictions:
+* SP (and SSP) will also have some restrictions:
 ** The stack may not cross a 4GB boundary.
 ** SP will have a minimum alignment of 8 bytes.
+** SP may only be modified from Lane 1.
 
 The results of violating these restrictions are undefined.
 
@@ -1762,6 +1763,24 @@ F0zz Instruction Block:
 *** F0nm_1GFE -
 
 ** F0nm_1ezF  -
+*** F0nm_1g0F  PCVTSB2HL	Rm, Rn		//(GSVF) Packed SB to FP16 (Low32)
+*** F0nm_1G0F  PCVTUB2HL	Rm, Rn		//(GSVF) Packed UB to FP16
+*** F0nm_1g1F  PCVTSB2HH	Rm, Rn		//(GSVF) Packed SB to FP16 (High32)
+*** F0nm_1G1F  PCVTUB2HH	Rm, Rn		//(GSVF) Packed UB to FP16
+*** F0nm_1g2F  PCVTSW2FL	Rm, Rn		//(GSVF) Packed SW to FP32 (Low32)
+*** F0nm_1G2F  PCVTUW2FL	Rm, Rn		//(GSVF) Packed UW to FP32
+*** F0nm_1g3F  PCVTSW2FH	Rm, Rn		//(GSVF) Packed SW to FP32 (High32)
+*** F0nm_1G3F  PCVTUW2FH	Rm, Rn		//(GSVF) Packed UW to FP32
+
+*** F0nm_1g4F  PCVTH2SB		Rm, Rn		//(GSVF) Packed FP16 to SB (4x)
+*** F0nm_1G4F  PCVTH2UB		Rm, Rn		//(GSVF) Packed FP16 to UB (4x)
+*** F0nm_1g5F  PCVTSW2H		Rm, Rn		//(GSVF) Packed SW to FP16 (4x)
+*** F0nm_1G5F  PCVTUW2H		Rm, Rn		//(GSVF) Packed UW to FP16 (4x)
+*** F0nm_1g6F  PCVTF2SW		Rm, Rn		//(GSVF) Packed FP32 to SW (2x)
+*** F0nm_1G6F  PCVTF2UW		Rm, Rn		//(GSVF) Packed FP32 to UW (2x)
+*** F0nm_1g7F  PCVTH2SW		Rm, Rn		//(GSVF) Packed FP16 to SW (4x)
+*** F0nm_1G7F  PCVTH2UW		Rm, Rn		//(GSVF) Packed FP16 to UW (4x)
+
 
 * F0zz_2zzz (More 3R Ops)
 ** 
@@ -2439,7 +2458,7 @@ For certain ops, Imm17u or Imm18u may function instead as Imm18s or Imm19s.
 ** The existence of a one-extended partner would makes sense.
 
 For Imm5, W.i will function as a sign bit:
-* Imm14s = { Wi ? -1 : 0, Ei, jbits(7:0), opw_b(7:4) }
+* Imm17s = { Wi ? -1 : 0, Ei, jbits(11:0), opw_b(7:4) }
 
 
 The W.w bit may be used to select the use of SR.S as a Predicate.

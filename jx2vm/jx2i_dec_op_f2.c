@@ -89,7 +89,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 //		imm10u=(opw2&255)|(jbits<<8);
 //		imm10n=imm10u;
 
-		imm9u=(u32)((opw2&255)|(jbits<<8));
+		imm9u=(u32)((opw2&255)|((jbits&0x00FFFFFF)<<8));
 		if(eo)imm9u|=0xFFFFFFFF00000000LL;
 		imm9n=imm9u;
 
@@ -110,11 +110,14 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 //		imm10n=imm10u;
 
 		imm9u=(u32)((opw2&255)|((jbits&255)<<8));
-		if(eo)imm9u|=0x0000000000010000LL;
-		imm9n=imm9u|0xFFFFFFFFFFFE0000LL;
+		if(eo)imm9u|=	0x0000000000010000LL;
+		imm9n=imm9u|	0xFFFFFFFFFFFE0000LL;
+		
+		if(jbits&0x10000000U)
+			imm9u=imm9n;
 
 		imm10u=(u32)((opw2&255)|((jbits&255)<<8));
-		imm10u=((opw2&0x0300)<<8);
+		imm10u|=((opw2&0x0300)<<8);
 		imm10n=imm10u|0xFFFFFFFFFFFC0000LL;
 	}
 
@@ -517,7 +520,10 @@ int BJX2_DecodeOpcode_DecD6(BJX2_Context *ctx,
 	{
 		op->nmid=BJX2_NMID_INV;
 		op->fmid=BJX2_FMID_Z;
-		op->Run=BJX2_Op_INVOP_None;
+//		op->Run=BJX2_Op_INVOP_None;
+		op->nmid=BJX2_NMID_BREAK;
+		op->Run=BJX2_Op_BREAK_None;
+
 		op->fl|=BJX2_OPFL_CTRLF;
 		return(ret);
 	}

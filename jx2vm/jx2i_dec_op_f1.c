@@ -835,7 +835,10 @@ int BJX2_DecodeOpcode_DecD5(BJX2_Context *ctx,
 	{
 		op->nmid=BJX2_NMID_INV;
 		op->fmid=BJX2_FMID_Z;
-		op->Run=BJX2_Op_INVOP_None;
+//		op->Run=BJX2_Op_INVOP_None;
+		op->nmid=BJX2_NMID_BREAK;
+		op->Run=BJX2_Op_BREAK_None;
+
 		op->fl|=BJX2_OPFL_CTRLF;
 		return(ret);
 	}

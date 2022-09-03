@@ -332,6 +332,12 @@ static void SCR_CalcRefdef (void)
 	r_refdef.fov_y = CalcFov (r_refdef.fov_x, r_refdef.vrect.width, r_refdef.vrect.height);
 
 	scr_vrect = r_refdef.vrect;
+	
+#if 0	//BGB: debug
+	h = (scr_vrect.x + scr_vrect.width);
+	if(h != vid.width)
+		{ __debugbreak(); }
+#endif
 }
 
 
@@ -834,6 +840,7 @@ void SCR_UpdateScreen (void)
 	int			ifps;
 	float		time0, time1, time2, time3, time4, time5;
 	int			pass1, pass2, pass3, pass4, pass5, passtot;
+	int			xoffs;
 
 	if (block_drawing)
 		return;
@@ -945,11 +952,14 @@ void SCR_UpdateScreen (void)
 			fps = 1.0 / (real_frametime+0.00001);
 			ifps = fps;
 
-			Draw_Character (scr_vrect.x + scr_vrect.width-18,
+			xoffs=scr_vrect.x + scr_vrect.width-18;
+//			__debugbreak();
+
+			Draw_Character (xoffs,
 //				scr_vrect.y + scr_vrect.height-12,
 				4,
 				'0'+(ifps/10));
-			Draw_Character (scr_vrect.x + scr_vrect.width-18+8,
+			Draw_Character (xoffs+8,
 //				scr_vrect.y + scr_vrect.height-12,
 				4,
 				'0'+(ifps%10));

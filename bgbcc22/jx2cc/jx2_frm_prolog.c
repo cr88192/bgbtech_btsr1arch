@@ -105,16 +105,16 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 	epik=	((sctx->reg_save >> 8)&0x00000000000000FFULL)|
 			((sctx->reg_save >>16)&0x000000000000FF00ULL)|
 			((sctx->freg_save<< 8)&0x0000000000FF0000ULL)|
-			((sctx->reg_save >>16)&0x000000FF00000000ULL)|
-			((sctx->reg_save >>24)&0x0000FF0000000000ULL);
+			((sctx->reg_save >> 8)&0x000000FF00000000ULL)|
+			((sctx->reg_save >>16)&0x0000FF0000000000ULL);
 
-	if(sctx->use_fpr)
-		epik|=0x01000000;
+//	if(sctx->use_fpr)
+//		epik|=0x01000000;
 	if(!(sctx->is_leaf&1))
-		epik|=0x02000000;
+		epik|=0x02000000ULL;
 
 	if((obj->regflags&BGBCC_REGFL_ALIASPTR) && sctx->is_pbo)
-		epik|=0x04000000;
+		epik|=0x04000000ULL;
 		
 	uli=epik;
 //	uli=(uli+1)*65521;
@@ -379,6 +379,11 @@ ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveReg(BGBCC_TransState *ctx,
 	int csreg;
 
 	if(!reg.val)
+		return(0);
+	
+	if(reg.val==CCXL_REGID_REG_Z)
+		return(0);
+	if(reg.val==CCXL_REGID_REG_DZ)
 		return(0);
 
 	csreg=BGBCC_JX2C_EmitTryGetRegisterRead(ctx, sctx, reg);
@@ -1043,6 +1048,9 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 				{ sctx->vsp_rsv+=8; }
 			else
 				{ sctx->vsp_rsv+=3; }
+
+			if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+				{ sctx->vsp_rsv+=12; }
 		}
 	}
 
@@ -1093,7 +1101,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		maxrsv+=8;
 
 //	if(sctx->has_xgpr&2)
-//		maxrsv+=12;
+//	if((sctx->has_xgpr&2) ||
+//		((sctx->has_xgpr&1) && (sctx->use_egpr&2)))
+	if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+	{
+		maxrsv+=14;
+	}
 
 	ismaxrsv=0;
 
