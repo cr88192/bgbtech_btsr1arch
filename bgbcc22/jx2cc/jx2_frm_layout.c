@@ -451,6 +451,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	if(!(sctx->has_xgpr&1))
 		sctx->use_egpr&=~2;
 
+	if(!(sctx->has_xgpr&6))
+		sctx->use_egpr&=~2;
+
 //	sctx->use_egpr&=~2;
 
 	if(!strcmp(obj->name, "TKRA_MatrixIdentify"))

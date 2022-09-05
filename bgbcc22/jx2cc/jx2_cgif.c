@@ -256,6 +256,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_bra48=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "xgpr"))
 		{ shctx->has_xgpr=1; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "xgpr_abi"))
+		{ shctx->has_xgpr=3; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "xgpr_ena"))
+		{ shctx->has_xgpr=5; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "dmacl"))
 		{ shctx->has_dmacl=1; }

@@ -1446,6 +1446,7 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 				break;	}
 		}
 #endif
+
 		if(ctx->has_jumbo && !ctx->op_is_wex2)
 			break;
 

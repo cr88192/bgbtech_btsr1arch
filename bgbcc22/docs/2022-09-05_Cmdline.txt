@@ -1,0 +1,32 @@
+BGBCC Command Line Options.
+
+Feature "-f..." options, BJX2:
+* shuffle: Shuffle variables and functions into randomized order
+* wex2w: Enable 2-wide WEX profile
+* wex3w: Enable 3-wide WEX profile
+* wex3w_io2: Enable 3-wide WEX profile with dual-lane Load/Store
+* wex3w_fp2: Enable 3-wide WEX profile with dual-lane FPU
+* wex3w_io2fp2: Enable 3-wide WEX profile with dual-lane Ld/St and FPU
+* fpu_fpimm: Enable FPU Immediate instructions.
+* fpu_fpvsf: Enable low-precision FPU instructions.
+* loadop: Enable Load+Op and Store+Op instructions.
+* wexj / jumbo: Enable Jumbo Encodings
+* alux: Enable 128-bit ALU instructions
+* fpux: Enable "long double" instructions (truncated Binary128)
+* movc: Enable load/store for control registers.
+* wexify: Turn on instruction shuffle and bundling.
+** If WEXifier is turned off, BGBCC produces RISC-style output.
+* ops24: Dropped Feature, 24-bit instructions.
+
+PEL:
+* pexe: Emit traditional PE/COFF
+* pel0: PEL0 Mode, Uncompressed
+* pel3: PEL3 Mode, RP2 Compression
+* pel4: PEL4 Mode, LZ4 Compression
+* pel6: PEL6 Mode, LZ4LLB
+** LZ4 with length-limited encodings.
+** Adds a "literal bytes with no LZ Run" edge case.
+
+Default mode is PEL4.
+* LZ4 seems to on-average get best compression for BJX2 machine code.
+
