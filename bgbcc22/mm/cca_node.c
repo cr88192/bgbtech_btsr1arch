@@ -107,6 +107,8 @@ BCCX_Node *BCCX_AllocNode(void)
 		bccx_free_node=*(BCCX_Node **)cur;
 		*(BCCX_Node **)cur=NULL;
 //		bccx_memset(cur, 0, sizeof(BCCX_Node));
+
+		cur->magic=BCCX_NODE_MAGIC;
 		return(cur);
 	}
 
@@ -130,6 +132,7 @@ BCCX_Node *BCCX_AllocNode(void)
 	cur=bccx_free_node;
 	bccx_free_node=*(BCCX_Node **)cur;
 	*(BCCX_Node **)cur=NULL;
+	cur->magic=BCCX_NODE_MAGIC;
 	return(cur);
 }
 
@@ -347,8 +350,11 @@ int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,
 	*rrn=NULL;
 	*rrv=NULL;
 	
-//	if(node->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+	if(!node)
+		return(-1);
+	
+	if(node->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	
 //	if(!node->mattr)
 	if(!node->malvl)
@@ -491,8 +497,11 @@ int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,
 	*rrn=NULL;
 	*rrv=NULL;
 	
-//	if(node->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+	if(!node)
+		return(-1);
+	
+	if(node->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 	
 //	if(!node->mattr)
 	if(!node->malvl)
@@ -711,8 +720,13 @@ void BCCX_SetCst(BCCX_Node *n, bccx_cxstate *rcst, char *var, char *val)
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
-//	if(n->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+
+	if(!n)
+		return;
+	
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	i=BCCX_FetchAttrValCst(n, rcst, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_STRING<<12);
 	av->s=bgbcc_strdup(val);
@@ -724,8 +738,13 @@ void BCCX_SetIntCst(BCCX_Node *n,
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
-//	if(n->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+	
+	if(!n)
+		return;
+	
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	i=BCCX_FetchAttrValCst(n, rcst, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_INT<<12);
 	av->i=val;
@@ -737,8 +756,13 @@ void BCCX_SetFloatCst(BCCX_Node *n,
 	u16 *an;
 	BCCX_AttrVal *av;
 	int i;
-//	if(n->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+
+	if(!n)
+		return;
+	
+	if(n->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+
 	i=BCCX_FetchAttrValCst(n, rcst, var, &an, &av);
 	*an=(*an&4095)|(BCCX_IVTY_REAL<<12);
 	av->f=val;
@@ -782,7 +806,7 @@ BCCX_Node *BCCX_GetNodeIndex(BCCX_Node *n, int idx0)
 	BCCX_NodeList *nl;
 	BCCX_AttrVal *av;
 	u16 *an;
-	int i, j, ix, idx;
+	int i, j, k, ix, idx;
 
 	if(idx0<0)
 		return(NULL);
@@ -813,14 +837,29 @@ BCCX_Node *BCCX_GetNodeIndex(BCCX_Node *n, int idx0)
 	if((idx<0) || (idx>=nl->lisz))
 		return(NULL);
 	if(!nl->lilvl)
+	{
+		if(idx&(~15))
+			{ BGBCC_DBGBREAK }
+	
 		return(nl->lidat[idx]);
+	}
 
 	i=nl->lilvl;
+	if((i<0) || (i>6))
+		{ BGBCC_DBGBREAK }
+	
 	while(i)
 	{
 		j=(idx>>(i*4))&15;
 		nl=nl->lidat[j];
-		i=nl->lilvl;
+//		i=nl->lilvl;
+
+		k=nl->lilvl;
+
+		if(k!=(i-1))
+			{ BGBCC_DBGBREAK }
+
+		i=k;
 	}
 	return(nl->lidat[idx&15]);
 
@@ -1117,10 +1156,10 @@ void BCCX_AddV(BCCX_Node *parent, BCCX_Node *child)
 		return;
 	}
 
-//	if(parent->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
-//	if(child->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+	if(parent->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
+	if(child->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 
 #if 1
 	if((child->itag>>12)==BCCX_NTY_TRANS)
@@ -1369,6 +1408,29 @@ BCCX_Node *BCCX_FindTagIx(BCCX_Node *parent, int iv)
 //	return(BCCX_FindNextTagIx(parent->down, iv));
 }
 
+int BCCX_FindTagIndexCst(BCCX_Node *parent,
+	bccx_cxstate *rcst, char *tag)
+{
+	BCCX_Node *tmp;
+	int i, j, k, na, iv;
+
+	iv=*rcst;
+	if(!iv)
+		{ iv=BCCX_StringToStridx(tag); *rcst=iv; }
+
+	na=BCCX_GetNodeChildCount(parent);
+	for(i=0; i<na; i++)
+	{
+		tmp=BCCX_GetNodeIndex(parent, i);
+		if(!tmp)
+			continue;
+		if((tmp->itag&4095)==(iv&4095))
+			return(i);
+	}
+	
+	return(-1);
+}
+
 BCCX_Node *BCCX_FindTagCst(BCCX_Node *parent, bccx_cxstate *rcst, char *tag)
 {
 	BCCX_Node *tmp;
@@ -1401,8 +1463,8 @@ BCCX_Node *BCCX_Fetch(BCCX_Node *parent, char *tag)
 	char *tb;
 	int i;
 
-//	if(parent->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+	if(parent->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 
 	i=BCCX_LookupAttrVal(parent, tag, &an, &av);
 	if(i>=0)
@@ -1430,8 +1492,8 @@ BCCX_Node *BCCX_FetchCst(BCCX_Node *parent, bccx_cxstate *rcst, char *tag)
 	if(!iv)
 		{ iv=BCCX_StringToStridx(tag); *rcst=iv; }
 
-//	if(parent->magic!=BCCX_NODE_MAGIC)
-//		{ BGBCC_DBGBREAK }
+	if(parent->magic!=BCCX_NODE_MAGIC)
+		{ BGBCC_DBGBREAK }
 
 //	i=BCCX_LookupAttrVal(parent, tag, &an, &av);
 	i=BCCX_LookupAttrValIx(parent, iv, &an, &av);

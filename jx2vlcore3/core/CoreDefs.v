@@ -134,6 +134,8 @@ parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
 // parameter[6:0] JX2_GR_PC2_HI	= 7'h58;
 // parameter[6:0] JX2_GR_LR2_HI	= 7'h59;
 
+parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
+parameter[6:0] JX2_GR_FPIMM10	= 7'h5D;		//FP Immed, 10-bit
 parameter[6:0] JX2_GR_SP2		= 7'h5F;
 
 parameter[6:0] JX2_GR_PC		= 7'h60;
@@ -659,16 +661,24 @@ REGREG, Fz+Au (Rm, Ro, Rp, Rn)
 	XW: Rm, Ro, Imm8, Rn
 
 REGIMMREG, Fz:
+	SB: Rm, 0, Rn
 	SW:	Rm, Imm9s, Rn
-	UW:	Rm, Imm9u, Rn
-	NW:	Rm, Imm9n, Rn
 
 	UB:	Rm, Imm9f/Imm16f, Rn
+	UW:	Rm, Imm9u, Rn
+	UL: Imm9u, Rm, Rn
+
+	NW:	Rm, Imm9n, Rn
+
 
 LDREGDISPREG, Fz:
 	SW: (Rm, Disp9u/17s), Rn
+	SL: (Rm, Disp9u/17s), Rn  (Keeps Scale)
+
 	UB: (Rm, Disp5u), Rn
 	UL: (Rm, Disp9u/17s), Cn
+
+	NB: (Rm, Disp5u), Rn  (Keeps Scale)
 
 LDDRREGREG, Fz:
 	UB: (Rm, Ro), Rn
@@ -677,16 +687,25 @@ LDDRREGREG, Fz:
 IMM8REG, Fz
 	SB: Fzeo_iiii		Ro, Imm16s, Ro
 	SW: Fzeo_iiii		Imm16s, Ro, Ro
+	SL: Fzeo_iiii		Imm16s, DLR, DLR
+	SQ: Fzze_zznz_iiii	Rn, Imm10s, Rn
 
 	UB: Fzeo_jjjj		Ro, Imm16u, Ro
 	UW: Fzeo_jjjj		Imm16u, Ro, Ro
+	UL: Fznz_zejj		Imm10u, Rn, Rn
+	UQ: Fznz_zejj		Rn, Imm10u, Rn
 
 	NB: Fzeo_jjjj		Ro, Imm16n, Ro
 	NW: Fzeo_jjjj		Imm16n, Ro, Ro
+	NL:
+	NQ: Fznz_zejj		Rn, Imm10n, Rn
 
-	SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn
-	UQ: Fzze_zznz_iiii	Rn, Imm17u, Rn
-	NQ: Fzze_zznz_iiii	Rn, Imm17n, Rn
+	XB: Fznz_zejj		ImmFp10, Rn, Rn
+	XW: Fzeo_jjjj		ImmFp16, Ro, Ro
+
+	/ SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn
+	/ UQ: Fzze_zznz_iiii	Rn, Imm17u, Rn
+	/ NQ: Fzze_zznz_iiii	Rn, Imm17n, Rn
 
 JX2_FMID_LDREGDISPREG:
 	UB: (Rm, Disp5), Rn
@@ -980,14 +999,23 @@ parameter[5:0] JX2_UCIX_CONV2_BLKRGB30A		= 6'h0F;	//Get pixel, RGB30A
 
 parameter[5:0] JX2_UCIX_CONV2_BCDADD	= 6'h10;	//
 parameter[5:0] JX2_UCIX_CONV2_BCDSUB	= 6'h11;	//
-
-parameter[5:0] JX2_UCIX_CONV2_DAAQ		= 6'h12;		//
-parameter[5:0] JX2_UCIX_CONV2_DASQ		= 6'h13;		//
+parameter[5:0] JX2_UCIX_CONV2_DAAQ		= 6'h12;	//
+parameter[5:0] JX2_UCIX_CONV2_DASQ		= 6'h13;	//
 
 parameter[5:0] JX2_UCIX_CONV2_ROTCL		= 6'h14;	//
 parameter[5:0] JX2_UCIX_CONV2_ROTCR		= 6'h15;	//
 parameter[5:0] JX2_UCIX_CONV2_ROTCLQ	= 6'h16;	//
 parameter[5:0] JX2_UCIX_CONV2_ROTCRQ	= 6'h17;	//
+
+parameter[5:0] JX2_UCIX_CONV2_PSQRTSAH	= 6'h18;	//
+parameter[5:0] JX2_UCIX_CONV2_PSQRTUAH	= 6'h19;	//
+parameter[5:0] JX2_UCIX_CONV2_PSQRTSAF	= 6'h1A;	//
+parameter[5:0] JX2_UCIX_CONV2_PSQRTUAF	= 6'h1B;	//
+
+parameter[5:0] JX2_UCIX_CONV2_PRCPAH	= 6'h1C;	//
+parameter[5:0] JX2_UCIX_CONV2_PRELUH	= 6'h1D;	//
+parameter[5:0] JX2_UCIX_CONV2_PRCPAF	= 6'h1E;	//
+parameter[5:0] JX2_UCIX_CONV2_PRELUF	= 6'h1F;	//
 
 
 parameter[5:0] JX2_UCIX_CONV2_VUBTOF16L	= 6'h30;	//

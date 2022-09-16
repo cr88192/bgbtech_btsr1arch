@@ -63,9 +63,25 @@ X(tk_checksane_xgpr_asm):
 	mov.q	(sp, 16), r44
 	mov.q	(sp, 24), r45
 
+
 	cmp/eq	r36, r44
 	break?f
 	cmp/eq	r37, r45
+	break?f
+
+	mov.x	(sp, 16), r46
+
+	cmp/eq	r36, r46
+	break?f
+	cmp/eq	r37, r47
+	break?f
+
+	mov.x	r46, (sp, 40)
+	mov.x	(sp, 40), r32
+
+	cmp/eq	r36, r32
+	break?f
+	cmp/eq	r37, r33
 	break?f
 
 	mov.q?t	r36, (sp, 8)
@@ -73,6 +89,64 @@ X(tk_checksane_xgpr_asm):
 	mov.q	(sp, 8), r46
 
 	cmp/eq	r36, r46
+	break?f
+
+	mov		0x123456789ABCDEF, r44
+	mov		0x403200000000000, r45
+	mov		0x89ABCDEF1234567, r12
+	mov		0x123456789ABCDEF, r4
+	mov		0x403200000000000, r5
+
+	cmpq/eq		r12, r44
+	break?t
+
+	cmpq/eq		r4, r44
+	break?f
+
+	cmpq/eq		r5, r45
+	break?f
+
+	mov			123, r45
+	add			456, r45
+	cmp/eq		579, r45
+	break?f
+
+	mov			 123, r45
+	add			-456, r45
+	cmp/eq		-333, r45
+	break?f
+
+	mov			123, r45
+	add			r45, 456, r46
+	cmp/eq		579, r46
+	break?f
+
+	add			r45, -456, r46
+	cmp/eq		-333, r46
+	break?f
+
+	mov			123456, r45
+	add			r45, 456789, r46
+	cmp/eq		580245, r46
+	break?f
+
+	add			r45, -456789, r46
+	cmp/eq		-333333, r46
+	break?f
+	
+	add?t		12345, r46
+
+	cmp/eq		-320988, r46
+	break?f
+
+	pmulx.f		r8, r10, r36
+
+	cmpq/eq		r4, r44
+	break?f
+
+	pmulx.fa	r8, r10, r36
+
+	cmpq/eq		r4, r44
 	break?f
 
 //	break

@@ -1427,6 +1427,17 @@ int nmid;
 {"pcvth2uw",	BGBCC_SH_NMID_PCVTH2UW},
 
 
+{"psqrta.h",	BGBCC_SH_NMID_PSQRTAH},
+{"psqrtua.h",	BGBCC_SH_NMID_PSQRTUAH},
+{"psqrta.f",	BGBCC_SH_NMID_PSQRTAF},
+{"psqrtua.h",	BGBCC_SH_NMID_PSQRTUAF},
+
+{"prcpa.h",		BGBCC_SH_NMID_PRCPAH},
+{"prelu.h",		BGBCC_SH_NMID_PRELUH},
+{"prcpa.f",		BGBCC_SH_NMID_PRCPAF},
+{"prelu.f",		BGBCC_SH_NMID_PRELUF},
+
+
 // {"iclrmd.dq",	BGBCC_SH_NMID_ICLRMD_DQ},
 // {"isetmd.dq",	BGBCC_SH_NMID_ISETMD_DQ},
 
@@ -1981,6 +1992,8 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return(!BGBCC_JX2A_ParseCheckFeature(ctx, sym+1));
 	}
 
+	tctx=ctx->tctx;
+
 	if(!bgbcc_stricmp(sym, "bjx2_fix32"))
 		return((ctx->is_fixed32)!=0);
 
@@ -2036,7 +2049,11 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return((ctx->has_xgpr&1)!=0);
 
 	if(!bgbcc_stricmp(sym, "abi_is_xgpr"))
+	{
+		if(tctx->arch_sizeof_ptr==8)
+			return(0);
 		return((ctx->has_xgpr&2)!=0);
+	}
 
 	if(!bgbcc_stricmp(sym, "has_dmacl"))
 		return((ctx->has_dmacl&1)!=0);
@@ -2057,8 +2074,6 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "abi_evenonly"))
 		return(ctx->abi_evenonly);
-
-	tctx=ctx->tctx;
 
 	if(!bgbcc_stricmp(sym, "seen_variant"))
 		return((tctx->ccxl_tyc_seen&BGBCC_TYCSEEN_VARIANT)!=0);

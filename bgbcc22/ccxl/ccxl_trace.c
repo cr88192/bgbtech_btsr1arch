@@ -214,18 +214,43 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 	BGBCC_CCXL_VirtOp *op;
 	ccxl_register *args;
 	ccxl_register treg;
-	int n;
+	int n, lvl, oldmult;
 	int i, j;
+
+	oldmult=ctx->trace_mult;
+
+	for(i=0; i<obj->n_locals; i++)
+	{
+		if(obj->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
+		{
+			obj->regflags|=BGBCC_REGFL_GOFAST;
+		}
+	}
 
 //	if(!strcmp(obj->name, "tk_fat_init"))
 //		j=-1;
 //	if(!strcmp(obj->name, "tk_vfile_init"))
 //		j=-1;
 
+	lvl=0;
 	for(i=0; i<obj->n_vop; i++)
 	{
 		op=obj->vop[i];
-		
+
+		if(op->opn==CCXL_VOP_LABEL)
+		{
+			lvl=op->llvl;
+			
+			if(obj->regflags&BGBCC_REGFL_GOFAST)
+				lvl+=2;
+			
+			ctx->trace_mult=lvl;
+		}else
+		{
+			op->tgt_mult=lvl;
+			ctx->trace_mult=lvl;
+		}
+
 		if(op->opn==CCXL_VOP_CALL)
 		{
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst, 1);
@@ -250,6 +275,8 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcd, 1);
 		}
 	}
+
+	ctx->trace_mult=oldmult;
 	return(1);
 }
 
@@ -268,7 +295,11 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 
 	if(obj->regflags&BGBCC_REGFL_RECTRACE)
 	{
-		obj->gblrefcnt++;
+//		obj->gblrefcnt++;
+		i=ctx->trace_mult;
+		obj->gblrefcnt+=1+4*(i*i);
+//		obj->gblrefcnt+=1+(i+(i>>1));
+//		obj->gblrefcnt+=1+(i);
 		return(0);
 	}
 	
@@ -289,7 +320,12 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 	obj->regflags|=BGBCC_REGFL_RECTRACE;
 	obj->regflags|=BGBCC_REGFL_ACCESSED;
 	obj->regflags&=~BGBCC_REGFL_CULL;
-	obj->gblrefcnt++;
+//	obj->gblrefcnt++;
+
+	i=ctx->trace_mult;
+	obj->gblrefcnt+=1+4*(i*i);
+//	obj->gblrefcnt+=1+(i+(i>>1));
+//	obj->gblrefcnt+=1+(i);
 
 	if(obj->regtype==CCXL_LITID_FUNCTION)
 	{

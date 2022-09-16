@@ -2472,3 +2472,160 @@ void BJX2_Op_BCDSBB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 	ctx->regs[BJX2_REG_SR]=sr;
 }
+
+
+u16 bjx2_fsqrta_fp16(u16 val)
+{
+	return((val&0x8000)|((val&0x7FFF)>>1)+0x1E00);
+}
+
+u32 bjx2_fsqrta_fp32(u32 val)
+{
+	return((val&0x80000000U)|((val&0x7FFFFFFFU)>>1)+0x1FC00000U);
+}
+
+void BJX2_Op_PSQRTAH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+
+	vn=				bjx2_fsqrta_fp16(vs>>48);
+	vn=(vn<<16) |	bjx2_fsqrta_fp16(vs>>32);
+	vn=(vn<<16) |	bjx2_fsqrta_fp16(vs>>16);
+	vn=(vn<<16) |	bjx2_fsqrta_fp16(vs>> 0);
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSQRTUAH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+
+	vn=				bjx2_fsqrta_fp16(vs>>48);
+	vn=(vn<<16) |	bjx2_fsqrta_fp16(vs>>32);
+	vn=(vn<<16) |	bjx2_fsqrta_fp16(vs>>16);
+	vn=(vn<<16) |	bjx2_fsqrta_fp16(vs>> 0);
+
+	if(	vn&  0x0000000000008000ULL)
+		vn&=~0x000000000000FFFFULL;
+	if(	vn&  0x0000000080000000ULL)
+		vn&=~0x00000000FFFF0000ULL;
+	if(	vn&  0x0000800000000000ULL)
+		vn&=~0x0000FFFF00000000ULL;
+	if(	vn&  0x8000000000000000ULL)
+		vn&=~0xFFFF000000000000ULL;
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSQRTAF_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+
+	vn=				bjx2_fsqrta_fp32(vs>>32);
+	vn=(vn<<32) |	bjx2_fsqrta_fp32(vs>>0);
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSQRTUAF_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+
+	vn=				bjx2_fsqrta_fp32(vs>>32);
+	vn=(vn<<32) |	bjx2_fsqrta_fp32(vs>>0);
+
+	if(	vn&  0x0000000080000000ULL)
+		vn&=~0x00000000FFFFFFFFULL;
+	if(	vn&  0x8000000000000000ULL)
+		vn&=~0xFFFFFFFF00000000ULL;
+
+	ctx->regs[op->rn]=vn;
+}
+
+u16 bjx2_frcpa_fp16(u16 val)
+{
+	return((~val)+0x7800);
+}
+
+u32 bjx2_frcpa_fp32(u32 val)
+{
+	return((~val)+0x7F000000U);
+}
+
+void BJX2_Op_PRCPAH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+
+	vn=				bjx2_frcpa_fp16(vs>>48);
+	vn=(vn<<16) |	bjx2_frcpa_fp16(vs>>32);
+	vn=(vn<<16) |	bjx2_frcpa_fp16(vs>>16);
+	vn=(vn<<16) |	bjx2_frcpa_fp16(vs>> 0);
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PRCPAF_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+
+	vn=				bjx2_frcpa_fp32(vs>>32);
+	vn=(vn<<32) |	bjx2_frcpa_fp32(vs>>0);
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PRELUH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+//	vs=ctx->regs[op->rn];
+	vs=ctx->regs[op->rm];
+
+	vn=vs;
+	if(	vn&  0x0000000000008000ULL)
+		vn&=~0x000000000000FFFFULL;
+	if(	vn&  0x0000000080000000ULL)
+		vn&=~0x00000000FFFF0000ULL;
+	if(	vn&  0x0000800000000000ULL)
+		vn&=~0x0000FFFF00000000ULL;
+	if(	vn&  0x8000000000000000ULL)
+		vn&=~0xFFFF000000000000ULL;
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PRELUF_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+//	vs=ctx->regs[op->rn];
+	vs=ctx->regs[op->rm];
+
+	vn=vs;
+	if(	vn&  0x0000000080000000ULL)
+		vn&=~0x00000000FFFFFFFFULL;
+	if(	vn&  0x8000000000000000ULL)
+		vn&=~0xFFFFFFFF00000000ULL;
+
+	ctx->regs[op->rn]=vn;
+}

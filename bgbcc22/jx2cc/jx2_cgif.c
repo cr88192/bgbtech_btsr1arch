@@ -157,6 +157,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->is_align_wexj=0;
 	
 	shctx->abi_evenonly=0;
+	shctx->abi_noexcept=0;
 
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
@@ -274,8 +275,14 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "bcd"))
 		{ shctx->has_qmul|=4; }
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "rsub"))
+		{ shctx->has_qmul|=8; }
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ldtex"))
 		{ shctx->has_fmovs|=4; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ldgbr"))
+		{ shctx->has_fmovs|=8; }
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
@@ -403,6 +410,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_simdx2=0;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowexify"))
 		shctx->no_wexify=1;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noexcept"))
+		shctx->abi_noexcept=1;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "no-exceptions"))
+		shctx->abi_noexcept=1;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nojumbo"))
 		shctx->has_jumbo=0;
@@ -2251,7 +2263,8 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 	fnsz=(ce-bt)/2;
 
 //	if(!sctx->is_simpass)
-	if(!sctx->is_rom)
+//	if(!sctx->is_rom)
+	if(!sctx->is_rom && !sctx->abi_noexcept)
 	{
 		BGBCC_JX2_SetSectionName(sctx, ".pdata");
 
@@ -3768,7 +3781,10 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 //			sz+=8;
 
 //		if(obj->flagsint&BGBCC_TYFL_REGISTER)
-		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<512) && (sz<=16))
+//		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<512) && (sz<=16))
+//		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<4096) &&
+		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<8192) &&
+			(sz<=16))
 		{
 			BGBCC_JX2_SetSectionName(sctx, ".data");
 			BGBCC_JX2_EmitBAlign(sctx, al);
@@ -5861,7 +5877,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	int *shufarr;
 	int t0, t1, t2, t3;
 	int l0;
-	int shufgbl;
+	int shufgbl, sz, al, sz1, al1, sz2, al2, tsz, nswap;
 	u64 h;
 	u32 addr;
 	int i, j, k, l, n;
@@ -6260,6 +6276,71 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				}
 			}
 		}
+	}
+
+	/* Shuffle global variables for space compacting. */
+	for(i=0; i<512; i++)
+	{
+		tsz=0; nswap=0;
+		for(j=1; j<(shufgbl-1); j++)
+		{
+			obj1=ctx->reg_globals[shufarr[j+0]];
+			obj2=ctx->reg_globals[shufarr[j+1]];
+			if(	(obj1->regtype==CCXL_LITID_GLOBALVAR) ||
+				(obj1->regtype==CCXL_LITID_STATICVAR) )
+			{
+				if(	(obj2->regtype==CCXL_LITID_GLOBALVAR) ||
+					(obj2->regtype==CCXL_LITID_STATICVAR) )
+				{
+					sz1=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj1->type);
+					al1=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj1->type);
+					sz2=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj2->type);
+					al2=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj2->type);
+					if(al1<1)al1=1;
+					if(al2<1)al2=1;
+					
+//					if((tsz&(al1-1)) && (sz2<sz1))
+					if(	( (tsz&(al1-1)) && (al2<al1)) ||
+						(!(tsz&(al2-1)) && (al2>sz1)) )
+					{
+						k=shufarr[j+0];
+						shufarr[j+0]=shufarr[j+1];
+						shufarr[j+1]=k;
+						nswap++;
+						
+						tsz=(tsz+(al2-1))&(~(al2-1));
+						tsz+=sz2;
+					}else
+					{
+						tsz=(tsz+(al1-1))&(~(al1-1));
+						tsz+=sz1;
+					}
+				}else
+				{
+					sz1=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj1->type);
+					al1=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj1->type);
+
+					tsz=(tsz+(al1-1))&(~(al1-1));
+					tsz+=sz1;
+				}
+			}else
+			{
+				if(	(obj2->regtype==CCXL_LITID_GLOBALVAR) ||
+					(obj2->regtype==CCXL_LITID_STATICVAR) )
+				{
+					k=shufarr[j+0];
+					shufarr[j+0]=shufarr[j+1];
+					shufarr[j+1]=k;
+					nswap++;
+					
+					j--;
+					continue;
+				}
+			}
+		}
+		
+		if(!nswap)
+			break;
 	}
 
 	for(i=0; i<ctx->n_reg_globals; i++)
@@ -6892,6 +6973,16 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		(100.0*sctx->stat_imm2ri_hjmb)/(sctx->stat_imm2ri_hmtot+1),
 		(100.0*sctx->stat_imm3ri_hjmb)/(sctx->stat_imm3ri_hmtot+1)
 		);
+
+	if(sctx->stat_ldst_pbotot>0)
+	{
+		printf("PBO: Indexed=%.2f%% Disp9=%.2f%% "
+				"Disp10_sc=%.2f%% Miss=%.2f%%\n",
+			(100.0*sctx->stat_ldst_pbotot_ix)/sctx->stat_ldst_pbotot,
+			(100.0*sctx->stat_ldst_pbotot_9b)/sctx->stat_ldst_pbotot,
+			(100.0*sctx->stat_ldst_pbotot_10b)/sctx->stat_ldst_pbotot,
+			(100.0*sctx->stat_ldst_pbotot_33b)/sctx->stat_ldst_pbotot);
+	}
 
 	printf("WEXed: F0=%.2f%% F1=%.2f%% F2=%.2f%% F8=%.2f%% Tot=%.2f%%\n",
 		(100.0*(sctx->opcnt_hi8[0xF4]+

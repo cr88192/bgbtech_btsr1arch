@@ -314,6 +314,12 @@ reg[63:0]	tValRyA;
 reg[63:0]	tValJimm;
 reg[63:0]	tValJimm56;
 
+reg[63:0]	tValFpImm16A;
+reg[63:0]	tValFpImm10A;
+
+reg[63:0]	tValFpImm16B;
+reg[63:0]	tValFpImm10B;
+
 reg		tValRsZz;
 reg		tValRtZz;
 reg		tValRuZz;
@@ -405,6 +411,25 @@ begin
 	tValJimm={
 		regValImmB[31:0],
 		regValImmA[31:0] };
+`endif
+
+`ifdef jx2_use_fpu_fpimm
+	tValFpImm16A	= {
+		regValImmA[15:14],
+		(regValImmA[14] || (regValImmA[14:10]==0)) ?
+			6'h00 : 6'h3F,
+		regValImmA[13: 0],
+		10'h0,
+		32'h0
+		};
+	tValFpImm10A	= {
+		regValImmA[9:8],
+		(regValImmA[8] || (regValImmA[8:4]==0)) ?
+			6'h00 : 6'h3F,
+		regValImmA[3: 0],
+		16'h0,
+		32'h0
+		};
 `endif
 
 `ifdef jx2_enable_xgpr
@@ -529,6 +554,16 @@ begin
 //		end
 `endif
 
+`ifdef jx2_use_fpu_fpimm
+		JX2_GR_FPIMM10: begin
+			tValRsA=tValFpImm10A;
+		end
+
+		JX2_GR_FPIMM16: begin
+			tValRsA=tValFpImm16A;
+		end
+`endif
+
 // `ifdef jx2_enable_ldirot
 `ifndef def_true
 		JX2_GR_R4IMM1, JX2_GR_R4IMM2: begin
@@ -587,6 +622,16 @@ begin
 //			tValRtA=tValJimm56;
 //			tValRtZz=1;
 //		end
+`endif
+
+`ifdef jx2_use_fpu_fpimm
+		JX2_GR_FPIMM10: begin
+			tValRtA=tValFpImm10A;
+		end
+
+		JX2_GR_FPIMM16: begin
+			tValRtA=tValFpImm16A;
+		end
 `endif
 
 // `ifdef jx2_enable_ldirot

@@ -958,6 +958,22 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			t=BGBCP_WrapInt(j);
 			return(t);
 		}
+		
+		if((s[0]=='$') && (s[1]=='.'))
+		{
+			t=BGBCP_CheckTemplateParam(ctx, s+2);
+			if(t)
+			{
+				return(BCCX_CloneS(t));
+			}
+		}else
+		{
+			t=BGBCP_CheckTemplateParam(ctx, s);
+			if(t)
+			{
+				return(BCCX_CloneS(t));
+			}
+		}
 
 		return(BCCX_CloneS(l));
 	}
@@ -986,6 +1002,18 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			}
 		}
 #endif
+
+		if(ctx && ctx->template_inst_stackpos && t)
+		{
+			t=BGBCP_ReduceType(ctx, t);
+
+			x=BCCX_NewCst(&bgbcc_rcst_sizeof, "sizeof");
+			BCCX_AddV(x,
+				BCCX_NewCst1V(&bgbcc_rcst_tyexpr, "tyexpr",
+					BCCX_NewCst1(&bgbcc_rcst_var, "var", t)));
+			return(x);
+		}
+
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof_expr, "sizeof_expr"))
@@ -1081,7 +1109,7 @@ int BGBCP_SetLine(BGBCP_ParseState *ctx, BCCX_Node *l,
 BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 	BCCX_Node *l, int flag)
 {
-	BCCX_Node *c, *t, *v, *x, *ln, *rn;
+	BCCX_Node *c, *t, *v, *x, *a, *ln, *rn, *ty;
 	char *s, *fnam;
 	double f, g;
 	int i, j, lnum, na, ci;
@@ -1245,8 +1273,147 @@ BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 		return(x);
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_vars, "vars"))
+	{
+#if 1
+		na=BCCX_GetNodeChildCount(l);
+		if(na<=0)
+			return(NULL);
+		
+//		if(na==1)
+//		{
+//			t=BGBCP_ReduceStatementForm(ctx, BCCX_Child(l), flag);
+//			return(t);
+//		}
+		
+		x=BCCX_NewCst(&bgbcc_rcst_vars, "vars");
+		for(ci=0; ci<na; ci++)
+		{
+			c=BCCX_GetNodeIndex(l, ci);
+			t=BGBCP_ReduceStatementForm(ctx, c, flag);
+			BCCX_Add(x, t);
+		}
+#endif
+
+		return(x);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_var, "var"))
+	{
+		ty=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+
+		ty=BGBCP_ReduceType(ctx, ty);
+
+		v=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+		v=BGBCP_ReduceExpr(ctx, v);
+
+		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+		x=BCCX_NewCst(&bgbcc_rcst_var, "var");
+		BCCX_SetCst(x, &bgbcc_rcst_name, "name", s);
+		BCCX_Add(x, ty);
+		if(v)
+		{
+			BCCX_AddV(x, BCCX_NewCst1(&bgbcc_rcst_value, "value", v));
+		}
+		
+		return(x);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_args, "args"))
+	{
+		na=BCCX_GetNodeChildCount(l);
+//		if(na<=0)
+//			return(NULL);
+		
+		x=BCCX_NewCst(&bgbcc_rcst_args, "args");
+		for(ci=0; ci<na; ci++)
+		{
+			c=BCCX_GetNodeIndex(l, ci);
+			t=BGBCP_ReduceStatementForm(ctx, c, flag);
+			BCCX_Add(x, t);
+		}
+		return(x);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_defun, "defun"))
+	{
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+		a=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+		v=BCCX_FetchCst(l, &bgbcc_rcst_body, "body");
+		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+		t=BGBCP_ReduceType(ctx, t);
+		a=BGBCP_ReduceStatementForm(ctx, a, 0);
+		v=BGBCP_ReduceStatementForm(ctx, v, 0);
+
+		x=BCCX_NewCst(&bgbcc_rcst_defun, "defun");
+		BCCX_SetCst(x, &bgbcc_rcst_name, "name", s);
+		BCCX_Add(x, t);
+		BCCX_Add(x, a);
+		BCCX_AddV(x, BCCX_NewCst1(&bgbcc_rcst_body, "body", v));
+		
+		return(x);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_proto, "proto"))
+	{
+		t=BCCX_FindTagCst(l, &bgbcc_rcst_type, "type");
+		a=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+//		v=BCCX_FetchCst(l, &bgbcc_rcst_body, "body");
+		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+		t=BGBCP_ReduceType(ctx, t);
+		a=BGBCP_ReduceStatementForm(ctx, a, 0);
+		v=BGBCP_ReduceStatementForm(ctx, v, 0);
+
+		x=BCCX_NewCst(&bgbcc_rcst_proto, "proto");
+		BCCX_SetCst(x, &bgbcc_rcst_name, "name", s);
+		BCCX_Add(x, t);
+		BCCX_Add(x, a);
+//		BCCX_AddV(x, BCCX_NewCst1(&bgbcc_rcst_body, "body", v));
+		
+		return(x);
+	}
+
 	t=BGBCP_ReduceForm(ctx, l, flag);
 	return(t);
+}
+
+BCCX_Node *BGBCP_ReduceType(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	BCCX_Node *n, *t, *v;
+	char *s;
+
+	s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+	if((s[0]=='$') && (s[1]=='.'))
+	{
+		t=BGBCP_CheckTemplateParam(ctx, s+2);
+		if(t)
+		{
+			if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
+			{
+				n=BCCX_Clone(l);
+				s=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s);
+			}else
+				if(BCCX_TagIsCstP(t, &bgbcc_rcst_type, "type"))
+			{
+				n=BCCX_CloneS(t);
+			}else
+			{
+				n=BCCX_CloneS(l);
+			}
+		}else
+		{
+			n=BCCX_CloneS(l);
+		}
+	}else
+	{
+		n=BCCX_CloneS(l);
+	}
+	
+	return(n);
 }
 
 BCCX_Node *BGBCP_ReduceExpr(BGBCP_ParseState *ctx, BCCX_Node *l)
@@ -1283,6 +1450,28 @@ BCCX_Node *BGBCP_ReduceStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 	return(t);
 }
 
+BCCX_Node *BGBCP_ReduceStatementList(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	BCCX_Node *t, *a, *c, *n;
+	int na, ci;
+
+	if(!l)
+		return(NULL);
+//	t=BGBCP_ReduceStatementForm(ctx, l, 0);
+
+	n=BCCX_New(BCCX_Tag(l));
+
+	na=BCCX_GetNodeChildCount(l);
+	for(ci=0; ci<na; ci++)
+	{
+		c=BCCX_GetNodeIndex(l, ci);
+		t=BGBCP_ReduceStatement(ctx, c);
+		if(!t)
+			continue;
+		BCCX_Add(n, t);
+	}
+	return(n);
+}
 
 BCCX_Node *BGBCP_ReduceExprConst(BGBCP_ParseState *ctx, BCCX_Node *l)
 {

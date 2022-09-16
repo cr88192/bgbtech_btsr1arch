@@ -3143,6 +3143,8 @@ int BGBCC_JX2_EmitRawBytes(BGBCC_JX2_Context *ctx, byte *buf, int sz)
 	byte *s;
 	int n;
 	
+	BGBCC_JX2DA_EmitRawBytes(ctx, buf, sz);
+	
 	if(buf)
 	{
 		s=buf; n=sz;

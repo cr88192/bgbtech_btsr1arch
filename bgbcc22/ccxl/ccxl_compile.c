@@ -5177,6 +5177,13 @@ void BGBCC_CCXL_CompileStruct(BGBCC_TransState *ctx, BCCX_Node *l)
 	int i, j, na, ci;
 
 	s0=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+	if(*s0=='!')
+	{
+		/* Template Related, Ignore */
+		return;
+	}
+
 	s=BGBCC_CCXL_QualifyNameNS(ctx, s0);
 
 	if(!strcmp(s, "bot_matchvariable_s"))
@@ -5237,6 +5244,13 @@ void BGBCC_CCXL_CompileUnion(BGBCC_TransState *ctx, BCCX_Node *l)
 	int i, j, na, ci;
 
 	s0=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+	if(*s0=='!')
+	{
+		/* Template Related, Ignore */
+		return;
+	}
+
 	s=BGBCC_CCXL_QualifyNameNS(ctx, s0);
 
 	/* avoid redefining the same stuff */
@@ -5298,6 +5312,13 @@ void BGBCC_CCXL_CompileClass(BGBCC_TransState *ctx, BCCX_Node *l)
 		{ BGBCC_DBGBREAK }
 
 	s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+	if(*s=='!')
+	{
+		/* Template Related, Ignore */
+		return;
+	}
+
 	qn=BGBCC_CCXL_QualifyNameNS(ctx, s);
 
 	/* avoid redefining the same stuff */
@@ -5436,6 +5457,13 @@ void BGBCC_CCXL_CompileEnum(BGBCC_TransState *ctx, BCCX_Node *l)
 	int i, j, na, ci;
 
 	s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
+
+	if(*s=='!')
+	{
+		/* Template Related, Ignore */
+		return;
+	}
+
 	s=BGBCC_CCXL_QualifyNameNS(ctx, s);
 
 	i=BCCX_GetIntCst(l, &bgbcc_rcst_flags, "flags");
@@ -5782,6 +5810,12 @@ void BGBCC_CCXL_CompileTypedef(BGBCC_TransState *ctx, BCCX_Node *l)
 			BGBCC_CCXL_End(ctx);
 		}
 #endif
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_template, "template"))
+	{
+		/* Templates disappear after the frontend. */
+		return;
 	}
 
 	BGBCC_CCXL_StubError(ctx);

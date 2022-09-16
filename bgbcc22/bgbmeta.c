@@ -1244,6 +1244,8 @@ int BGBCC_LoadCSourcesCCXL(
 		if((lang==BGBCC_LANG_CS) ||
 			(lang==BGBCC_LANG_BS2))
 		{
+			BCCX_MarkTreeZone(t, BCCX_ZTY_GLOBAL);
+		
 			j=n_asts_bs++;
 			asts_bsn[j]=names[i];
 			asts_bsa[j]=t;
@@ -1254,7 +1256,8 @@ int BGBCC_LoadCSourcesCCXL(
 			BGBCC_CCXL_CompileModuleCTX(ctx, names[i], t);
 
 #ifdef BGBCC_BCCX2
-			BCCX_ClearZoneLevel(BCCX_ZTY_GLOBAL);
+//			BCCX_ClearZoneLevel(BCCX_ZTY_GLOBAL);
+			BCCX_ClearZoneLevel(BCCX_ZTY_NONGLOBAL);
 #else
 			BCCX_DeleteTree(t);
 #endif

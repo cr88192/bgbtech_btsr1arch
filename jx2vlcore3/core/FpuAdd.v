@@ -250,6 +250,12 @@ begin
 //		tExpB1		= 1085;
 		tExpB1		= 1084;
 		tFraB1		= 0;
+
+//		if(tExpA1[10:9] == 0)
+//		begin
+//			/* F->I, Force small exponents to zero. */
+//			tExpA1	= 0;
+//		end
 	end
 
 //	tFraJ1Sg	= tRegValRn[63];
@@ -265,6 +271,8 @@ begin
 
 	tExpA1D	= {1'b0, tExpA1} - {1'b0, tExpB1};
 	tExpB1D	= {1'b0, tExpB1} - {1'b0, tExpA1};
+//	tExpA1D	= {2'b0, tExpA1} - {2'b0, tExpB1};
+//	tExpB1D	= {2'b0, tExpB1} - {2'b0, tExpA1};
 
 	tFraUseB		= 1;
 
@@ -278,24 +286,29 @@ begin
 
 `ifdef def_true
 	tFraShr1A_S		= tFraA1;
-	tFraShr1A_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
+//	tFraShr1A_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
+	tFraShr1A_Shr	= { tExpB1D[11:7]!=0, tExpB1D[6:0] };
 
 	tFraShr1B_S		= tFraB1;
-	tFraShr1B_Shr	= { tExpA1D[9:7]!=0, tExpA1D[6:0] };
+//	tFraShr1B_Shr	= { tExpA1D[9:7]!=0, tExpA1D[6:0] };
+	tFraShr1B_Shr	= { tExpA1D[11:7]!=0, tExpA1D[6:0] };
 `endif
 
 
 //	if(tExpA1D[11] || tFraDti1)
 //	if(tExpA1D[11] || tFraDti1 || tFraItf1)
 	if(tExpA1D[11] || tFraDti1 || tFraItf1 || !tFraUseB)
+//	if(tExpA1D[12] || tFraDti1 || tFraItf1 || !tFraUseB)
 	begin
 		tFraUseA		= 0;
 		tFraShr1_S		= tFraA1;
-		tFraShr1_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
+//		tFraShr1_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
+		tFraShr1_Shr	= { tExpB1D[11:7]!=0, tExpB1D[6:0] };
 	end else begin
 		tFraUseA		= 1;
 		tFraShr1_S		= tFraB1;
-		tFraShr1_Shr	= { tExpA1D[9:7]!=0, tExpA1D[6:0] };
+//		tFraShr1_Shr	= { tExpA1D[9:7]!=0, tExpA1D[6:0] };
+		tFraShr1_Shr	= { tExpA1D[11:7]!=0, tExpA1D[6:0] };
 	end
 
 	/* Stage 2 */

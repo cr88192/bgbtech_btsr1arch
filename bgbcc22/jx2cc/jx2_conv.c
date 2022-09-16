@@ -1323,7 +1323,8 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			tr0=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, tr1);
 
 			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, tr0);
-			if(sctx->has_xgpr&2)
+//			if(sctx->has_xgpr&2)
+			if((sctx->has_xgpr&2) && (ctx->arch_sizeof_ptr==16))
 			{
 				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
 					BGBCC_SH_NMID_MOV, BGBCC_SH_REG_GBH, tr0+1);

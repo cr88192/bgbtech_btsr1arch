@@ -21,12 +21,15 @@
 #define BCCX_ZTY_FREED			1
 
 #define BCCX_ZTY_GLOBAL		8
+#define BCCX_ZTY_NONGLOBAL	16
 #define BCCX_ZTY_MODULE		32	//Module Scope
 #define BCCX_ZTY_REDUCE		64	//Expression Reduction
 
 // #define BCCX_NODE_FIXATTR		6
 #define BCCX_NODE_FIXATTR		8
 #define BCCX_NODE_FESCATTR		12
+
+#define BCCX_NODE_MAGIC			0x50DE
 
 typedef struct BCCX_Node_s			BCCX_Node;
 typedef struct BCCX_NodeList_s		BCCX_NodeList;
@@ -42,6 +45,7 @@ typedef int bccx_cxstate;
 struct BCCX_Node_s {
 BCCX_NodeList	*list;		//list pointer
 u16 itag;		//node tag
+u16 magic;		//magic number
 byte nattr;
 // byte mattr;
 byte malvl;

@@ -512,6 +512,22 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 			return(NULL);
 		}
 
+		if((b[0]=='t') && !bgbcp_strcmp7(b, "template") &&
+			(ctx->lang==BGBCC_LANG_CPP))
+		{
+			s=BGBCP_Token2(s, b2, &ty2, ctx->lang);	//'<'
+			n1=BGBCP_TemplateArgs(ctx, &s);
+
+			BGBCP_PushTemplateArgs(ctx, n1);
+			n=BGBCP_ForceDefinition(ctx, &s);
+			BGBCP_PopTemplateArgs(ctx);
+
+			BGBCP_HandleTemplate(ctx, n, n1);
+
+			*str=s;
+			return(NULL);
+		}
+
 		if((b[0]=='c') && !bgbcp_strcmp4(b, "case"))
 		{
 			n1=BGBCP_Expression(ctx, &s);
@@ -1104,7 +1120,7 @@ BCCX_Node *BGBCP_BlockStatementI(BGBCP_ParseState *ctx, char **str, int flag)
 	char b[256];
 	int ty, ln;
 	BCCX_Node *n, *n1;
-	char *s, *s1, *fn, *t;
+	char *s, *s1, *s0, *fn, *t;
 	char **a;
 	int i;
 
@@ -1148,7 +1164,16 @@ BCCX_Node *BGBCP_BlockStatementI(BGBCP_ParseState *ctx, char **str, int flag)
 //	printf("@ %s:%d\n", fn, ln);
 
 #if 1
+	s1=BGBCP_EatWhite(s);
+
+	s0=s;
 	n=BGBCP_Definition(ctx, &s);
+
+	if(!n && (s!=s0) && (s!=s1))
+	{
+		*str=s;
+		return(n);
+	}
 
 	if(!n && (flag&1))
 	{
@@ -1279,10 +1304,57 @@ BCCX_Node *BGBCP_Block(BGBCP_ParseState *ctx, char **str)
 
 BCCX_Node *BGBCP_Toplevel(BGBCP_ParseState *ctx, char **str)
 {
+#if 0
 	BCCX_Node *n;
 	
 	n=BGBCP_BlockI(ctx, str, 1);
 	return(n);
+#endif
+
+#if 1
+	char b[256];
+	char *s, *s1;
+	int ty, ty2, i;
+	BCCX_Node *n, *lst, *lste;
+
+	s=*str; s1=s;
+	lst=NULL; lste=NULL;
+	while(1)
+	{
+		if(!s)
+			break;
+		BGBCP_Token2(s, b, &ty, ctx->lang);
+		if(!*s || (*b=='}'))
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+			break;
+		}
+
+		s1=BGBCP_EatWhite(s);
+		if(!*s1) { s=s1; break; }
+
+		n=BGBCP_BlockStatementI(ctx, &s, 1);
+		if(n==NULL)
+		{
+			if(!s || s==s1)
+			{
+				BGBCP_Error(s, "PDSCR_CParse_Block: "
+					"Unknown Parse Error\n");
+				break;
+			}
+			continue;
+		}
+		
+		BGBCP_AddDefToplevel(ctx, n);
+		
+//		lst=BCCX_AddEnd(lst, n);
+//		lst=BCCX_AddEnd2(lst, &lste, n);
+	}
+
+	*str=s;
+//	return(lst);
+	return(NULL);
+#endif
 }
 
 BCCX_Node *BGBCP_BlockStatement2(BGBCP_ParseState *ctx, char **str)

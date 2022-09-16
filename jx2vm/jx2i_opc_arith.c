@@ -229,6 +229,11 @@ void BJX2_Op_SUB_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=ctx->regs[op->rm]-op->imm;
 }
 
+void BJX2_Op_RSUB_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=op->imm-ctx->regs[op->rm];
+}
+
 void BJX2_Op_ADC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;

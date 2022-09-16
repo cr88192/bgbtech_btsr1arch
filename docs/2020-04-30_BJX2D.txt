@@ -861,6 +861,7 @@ Displacement Scale:
 ** GBR and TBR, as with PC, will use a scale of 1.
 * Branches will use a scale of 2.
 * LEA.x will be scaled by the size of the base type.
+** This includes if using PC or GBR as a base register.
 
 The Scaled Index forms will be demoted to Optional in Fix32 'D' Profile.
 
@@ -1707,13 +1708,13 @@ F0zz Instruction Block:
 
 ** F0nm_1ezD ? (GFP, GPR FPU, Opt)
 *** F0nm_1g0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
-*** F0nm_1G0D  FLDCDX		Rm, Rn		//Load Convert Double (GFPX, F128)
+*** F0nm_1G0D  FLDCDX		Rm, Xn		//Load Convert Double (GFPX, F128)
 *** F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
 *** F0nm_1g2D  FLDCI		Rm, Rn		//Load Convert Int
 *** F0nm_1G2D  FLDCXI		Rm, Rn		//Load Convert Int (GFPX, F128)
 *** F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
 *** F0nm_1g4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
-*** F0nm_1G4D  FSTCDX		Rm, Rn		//Store Convert Double (GFPX, F128)
+*** F0nm_1G4D  FSTCDX		Xm, Rn		//Store Convert Double (GFPX, F128)
 *** F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
 *** F0nm_1g6D  FSTCI		Rm, Rn		//Store Convert Int
 *** F0nm_1G6D  FSTCXI		Rm, Rn		//Store Convert Int (GFPX, F128)
@@ -1780,6 +1781,15 @@ F0zz Instruction Block:
 *** F0nm_1G6F  PCVTF2UW		Rm, Rn		//(GSVF) Packed FP32 to UW (2x)
 *** F0nm_1g7F  PCVTH2SW		Rm, Rn		//(GSVF) Packed FP16 to SW (4x)
 *** F0nm_1G7F  PCVTH2UW		Rm, Rn		//(GSVF) Packed FP16 to UW (4x)
+
+*** F0nm_1g8F  PSQRTA.H		Rm, Rn		//(GSVF) SQRTA (4x FP16)
+*** F0nm_1G8F  PSQRTUA.H	Rm, Rn		//(GSVF) SQRTA (4x FP16)
+*** F0nm_1g9F  PSQRTA.F		Rm, Rn		//(GSVF) SQRTA (2x FP32)
+*** F0nm_1G9F  PSQRTUA.F	Rm, Rn		//(GSVF) SQRTA (2x FP32)
+*** F0nm_1gAF  PRCPA.H		Rm, Rn		//(GSVF) RCPA (4x FP16)
+*** F0nm_1GAF  PRELU.H		Rm, Rn		//(GSVF) RELU (4x FP16)
+*** F0nm_1gBF  PRCPA.F		Rm, Rn		//(GSVF) RCPA (2x FP32)
+*** F0nm_1GBF  PRELU.F		Rm, Rn		//(GSVF) RELU (2x FP32)
 
 
 * F0zz_2zzz (More 3R Ops)
@@ -2011,15 +2021,15 @@ F0zz Instruction Block:
 ** F0nm_6go5  MODS.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
 ** F0nm_6Go5  MODU.Q	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
 ** F0nm_6go6  FDIV		Rm, Ro, Rn			//(FDIV) FDIV
-** F0nm_6Go6  FDIVX	Rm, Ro, Rn				//(FDIV+GFPX)
-** F0nm_6go7  FDIVA	Rm, Ro, Rn				//(FDIV) FDIV Approx
+** F0nm_6Go6  FDIVX		Rm, Ro, Rn			//(FDIV+GFPX)
+** F0nm_6go7  FDIVA		Rm, Ro, Rn			//(FDIV) FDIV Approx
 ** F0nm_6Go7  FDIVXA	Rm, Ro, Rn			//(FDIV+GFPX) FDIVX Approx
 ** F0nm_6go8  BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
 ** F0nm_6Go8  BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
-** F0nm_6go9  BLERP	Rm, Ro, Rn				//(RGBX) Linear Interpolate
+** F0nm_6go9  BLERP		Rm, Ro, Rn			//(RGBX) Linear Interpolate
 ** F0nm_6Go9  BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
 ** F0nm_6goA  BLINTA	Rm, Ro, Rn			//(RGBX) Bilinear Interpolate (2p)
-** F0nm_6GoA  BLINT	Xm, Xo, Xn				//(RGBX) Bilinear Interpolate
+** F0nm_6GoA  BLINT		Xm, Xo, Xn			//(RGBX) Bilinear Interpolate
 ** F0nm_6goB  BITSEL	Rm, Ro, Rn			//(?) Rn = (Rm & Ro) | (Rn & ~Ro)
 ** F0nm_6GoB  BITSELX	Xm, Xo, Xn			//(?) Xn = (Xm & Xo) | (Xn & ~Xo)
 ** F0nm_6goC  BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
@@ -2163,9 +2173,9 @@ F1zz Instruction Block:
 
 F2zz Instruction Block  (Imm9 Block):
 
-* F2nm_0gjj  ADD		Rm, Imm9u, Rn		//
+* F2nm_0gjj  ADD		Rm, Imm9u, Rn		// Rn=Rm+Imm9u
 * F2nm_0Gjj  -
-* F2nm_1gjj  ADD		Rm, Imm9n, Rn		//
+* F2nm_1gjj  ADD		Rm, Imm9n, Rn		// Rn=Rm+Imm9n
 * F2nm_1Gjj  -
 * F2nm_2gjj  MULS		Rm, Imm9u, Rn		//32*32=>32, Signed result
 * F2nm_2Gjj  MULU		Rm, Imm9u, Rn		//32*32=>32, Unsigned result
@@ -2174,7 +2184,7 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_4gjj  ADDS.L		Rm, Imm9n, Rn		//ADD 32 SX, One-Ext Imm
 * F2nm_4Gjj  ADDU.L		Rm, Imm9n, Rn		//ADD 32 ZX, One-Ext Imm
 * F2nm_5gjj  AND		Rm, Imm9u, Rn		//
-* F2nm_5Gjj  -
+* F2nm_5Gjj ? RSUB		Rm, Imm9u, Rn		// Rn=Imm9u-Rm
 * F2nm_6gjj  OR			Rm, Imm9u, Rn		//
 * F2nm_6Pjj  SHADX		Xm, Imm8s, Xn		//(ALUX)
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
@@ -2221,6 +2231,24 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n5_Dfjj ? LDIRON{Q}	Imm10n, Rn			//Load + ROTL
 ** F2n6_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMP) JCmp (Rn xx 0)
 ** F2n7_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMP) JCmp (Rn xx 0)
+
+** F2n8_Dhjj ? MOV.L	Rn, (GBR, Disp10u*4)	// (E.q=0)
+** F2n8_DHjj ? -
+** F2n9_Dhjj ? MOV.Q	Rn, (GBR, Disp10u*8)	// (E.q=0)
+** F2n9_DHjj ? MOV.X	Xn, (GBR, Disp10u*8)	// (E.q=1)
+** F2nA_Dhjj ? MOV.L	(GBR, Disp10u*4), Rn	// (E.q=0)
+** F2nA_DHjj ? MOVU.L	(GBR, Disp10u*4), Rn	// (E.q=1)
+** F2nB_Dhjj ? MOV.Q	(GBR, Disp10u*8), Rn	// (E.q=0)
+** F2nB_DHjj ? MOV.X	(GBR, Disp10u*8), Xn	// (E.q=1)
+
+** F2nC_Dhjj ? FCMPEQ	Imm10fp, Rn				//(FpImm) (E.q=0) Rn==Imm
+** F2nC_DHjj ? FLDI		Imm10fp, Rn				//(FpImm) (E.q=1) Rn=Imm10fp
+** F2nD_Dfjj ? -
+** F2nE_Dhjj ? FCMPGT	Imm10fp, Rn				//(FpImm) (E.q=0) FCMPGT
+** F2nE_DHjj ? FADD		Imm10fp, Rn				//(FpImm) (E.q=1) FADD
+** F2nF_Dhjj ? FCMPGE	Imm10fp, Rn				//(FpImm) (E.q=0) FCMPGE
+** F2nF_DHjj ? FMUL		Imm10fp, Rn				//(FpImm) (E.q=1) FMUL
+
 * F2nz_Efjj
 * F2nz_Ffjj
 

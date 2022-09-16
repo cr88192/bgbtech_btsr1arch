@@ -274,7 +274,8 @@ int BGBCC_JX2C_EmitMovRegReg(
 //		sreg2=BGBCC_JX2_GETLREG_LO(sreg);
 //		dreg2=BGBCC_JX2_GETLREG_LO(dreg);
 
-		if(sctx->has_xgpr&2)
+//		if(sctx->has_xgpr&2)
+		if(sctx->has_xgpr&1)
 		{
 			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
 				BGBCC_SH_NMID_XMOV, sreg, dreg);

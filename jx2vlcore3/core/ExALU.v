@@ -99,6 +99,10 @@ S1, S2, S3 -> V
 `include "ExConv_VecFp16ToUb.v"
 `endif
 
+`ifdef jx2_enable_conv_psqrta
+`include "ExConv_PSqrta.v"
+`endif
+
 `ifdef jx2_do_btcutx_alu
 `ifdef jx2_enable_btcutx
 `include "ExBtcUtx1.v"
@@ -275,6 +279,11 @@ wire[63:0]	tRegVubPck;
 
 ExConv_VecUbToFp16 vub2f(regValRs, tRegVubUpck, idUIxt[3:0]);
 ExConv_VecFp16ToUb vf2ub(regValRs, tRegVubPck, idUIxt[3:0]);
+`endif
+
+`ifdef jx2_enable_conv_psqrta
+wire[63:0]	tRegPsqrt;
+ExConv_PSqrta psqrta(regValRs, tRegPsqrt, idUIxt[3:0]);
 `endif
 
 
@@ -1790,6 +1799,16 @@ begin
 		JX2_UCIX_CONV2_VF16TOUW, JX2_UCIX_CONV2_VF16TOSW:
 		begin
 			tRegConvVal		= tRegVubPck;
+		end
+`endif
+
+`ifdef jx2_enable_conv_psqrta
+		JX2_UCIX_CONV2_PSQRTSAH, JX2_UCIX_CONV2_PSQRTUAH,
+		JX2_UCIX_CONV2_PSQRTSAF, JX2_UCIX_CONV2_PSQRTUAF,
+		JX2_UCIX_CONV2_PRCPAH, JX2_UCIX_CONV2_PRELUH,
+		JX2_UCIX_CONV2_PRCPAF, JX2_UCIX_CONV2_PRELUF:
+		begin
+			tRegConvVal		= tRegPsqrt;
 		end
 `endif
 

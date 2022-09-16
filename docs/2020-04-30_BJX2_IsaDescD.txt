@@ -1236,6 +1236,9 @@ The behavior of this operation will be similar to a MOV.Q, just applying to cont
 * F1nm_2gdd  MOV.L		Rn, (Rm, disp9u)
 * F1nm_Agdd  MOV.L		(Rm, disp9u), Rn
 
+* F2n8_Dhjj  MOV.L		Rn, (GBR, Disp10u*4)
+* F2nA_Dhjj  MOV.L		(GBR, Disp10u*4), Rn
+
 * FEdd_dddd-F1nm_2gdd  MOV.L	Rn, (Rm, disp33s)			//(Jumbo)
 * FEdd_dddd-F1nm_Agdd  MOV.L	(Rm, disp33s), Rn			//(Jumbo)
 
@@ -1269,6 +1272,9 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 * F0nm_0goF  MOV.Q		(Rm, Ro), Rn
 * F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
 * F1nm_Bgdd  MOV.Q		(Rm, disp9u), Rn
+
+* F2n9_Dhjj  MOV.Q		Rn, (GBR, Disp10u*8)
+* F2nB_Dhjj  MOV.Q		(GBR, Disp10u*8), Rn
 
 * FEdd_dddd-F1nm_3gdd  MOV.Q	Rn, (Rm, disp33s)			//(Jumbo)
 * FEdd_dddd-F1nm_Bgdd  MOV.Q	(Rm, disp33s), Rn			//(Jumbo)
@@ -1338,6 +1344,8 @@ The byte is zero extended to the size of the register.
 * F0nm_0GoE  MOVU.L	(Rm, Ro), Rn
 * F1nm_AGdd  MOVU.L	(Rm, disp9u), Rn
 
+* F2nA_DHjj  MOVU.L	(GBR, Disp10u*4), Rn
+
 * FEdd_dddd-F1nm_AGdd  MOVU.L	(Rm, disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0GiA  MOVU.L	(Rm, Disp17s), Rn			//(RiMOV)
@@ -1377,6 +1385,9 @@ The word is zero extended to the size of the register.
 * F0nm_4eoC  MOV.X		(Rm, Ro), Rn
 * F1nm_5Gdd  MOV.X		Rn, (Rm, disp9u)
 * F1nm_7Gdd  MOV.X		(Rm, disp9u), Rn
+
+* F2n9_DHjj  MOV.X		Xn, (GBR, Disp10u*8)
+* F2nB_DHjj  MOV.X		(GBR, Disp10u*8), Xn
 
 * FEdd_dddd-F1nm_5gdd  MOV.X	Rn, (Rm, disp33s)			//(Jumbo)
 * FEdd_dddd-F1nm_7gdd  MOV.X	(Rm, disp33s), Rn			//(Jumbo)

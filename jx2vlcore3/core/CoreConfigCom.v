@@ -119,6 +119,7 @@
 `define jx2_enable_convfp16
 
 `define jx2_enable_conv_vubtof16		//Packed Byte/Word <-> F16/F32
+`define jx2_enable_conv_psqrta
 
 `endif
 

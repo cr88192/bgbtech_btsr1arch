@@ -813,6 +813,29 @@ BCCX_Node *BGBCP_ArgDefinition(BGBCP_ParseState *ctx, char **str)
 	int i, ty, ty2;
 
 	s=*str;
+
+	if(ctx->lang==BGBCC_LANG_CPP)
+	{
+		s1=BGBCP_Token2(s, b, &ty, ctx->lang);
+		if(ty==BTK_NAME)
+		{
+			if(!strcmp(b, "class"))
+			{
+				n1=BCCX_NewCst(&bgbcc_rcst_type, "type");
+				BCCX_SetCst(n1, &bgbcc_rcst_name, "name", "class");
+				BCCX_SetIntCst(n1, &bgbcc_rcst_flags, "flags", 0);
+				BCCX_SetIntCst(n1, &bgbcc_rcst_ind, "ind", 0);
+
+				s=s1;
+				n=BGBCP_VarDefinition(ctx, &s, n1);
+				BCCX_CheckDeleteUnlinked(n1);
+
+				*str=s;
+				return(n);
+			}
+		}
+	}
+
 	n1=BGBCP_DefType(ctx, &s);
 	if(!n1)
 	{
@@ -1243,6 +1266,7 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 		return(n);
 	}
 
+	*str=s;
 	return(NULL);
 }
 

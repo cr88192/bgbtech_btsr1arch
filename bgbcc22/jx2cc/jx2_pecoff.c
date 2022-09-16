@@ -668,6 +668,19 @@ int BGBCC_JX2C_PackBlockLZ_LookupMatch(
 			continue;
 			
 		cs1=cs; ct1=ct;
+		
+#ifdef BGBCC_GET_BITS
+		if(d>=8)
+		{
+			while((cs1+8)<cs1e)
+			{
+				if(BGBCC_GET_U64LE(cs1)!=BGBCC_GET_U64LE(ct1))
+					break;
+				cs1+=8;	ct1+=8;
+			}
+		}
+#endif
+		
 		while(cs1<cs1e)
 		{
 			if((*cs1)!=(*ct1))

@@ -622,6 +622,7 @@ s64	dfl_flags;
 
 BCCX_Node *structs;
 BCCX_Node *types;
+BCCX_Node *toplevel;
 
 BCCX_Node *e_structs;
 BCCX_Node *e_types;
@@ -656,6 +657,13 @@ int enum_chain[4096];
 int enum_hash[256];
 
 BCCX_Node *reduce_tmp;
+
+BCCX_Node *template_stack[16];
+byte template_stackpos;
+
+char *template_inststack_var[64];
+BCCX_Node *template_inststack_val[64];
+byte template_inst_stackpos;
 
 char *cur_ns;
 // char **cur_nsi;
@@ -843,6 +851,8 @@ byte pel_cmpr;			//PEL compression method
 byte optmode;			//optimization mode
 byte curprd;			//current predication mode
 int loop_localstate;	
+
+int trace_mult;
 
 int ccxl_tyc_seen;
 

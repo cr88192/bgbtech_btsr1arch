@@ -1372,6 +1372,27 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 			continue;
 		}
 
+		if(!bgbcp_strcmp1(b, "<") &&
+			((ty==BTK_BRACE) || (ty==BTK_OPERATOR)))
+		{
+			if(BCCX_TagIsCstP(n, &bgbcc_rcst_ref, "ref"))
+			{
+				s0=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
+				n1=BGBCP_LookupTemplateFunc(ctx, s0);
+				if(n1)
+				{
+					s=s1;
+					n2=BGBCP_GenArgs(ctx, &s);
+					BGBCP_GenMangledTemplateName(ctx, b2, s0, n2);
+					BGBCP_InstanceTemplate(ctx, b2, n1, n2);
+
+					n=BCCX_Clone(n);
+					BCCX_SetCst(n, &bgbcc_rcst_name, "name", b2);
+					continue;
+				}
+			}
+		}
+
 		if(!bgbcp_strcmp2(b, "++") && (ty==BTK_OPERATOR))
 		{
 //			s=BGBCP_Token(s, b, &ty);

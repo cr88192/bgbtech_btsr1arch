@@ -18,6 +18,21 @@ Feature "-f..." options, BJX2:
 ** If WEXifier is turned off, BGBCC produces RISC-style output.
 * ops24: Dropped Feature, 24-bit instructions.
 
+* bra48: Enable 48-bit absolute branches.
+* xgpr: Enable XGPR (R32..R63)
+* xgpr_ena: Enable XGPR for register allocation and code generation.
+* xgpr_abi: Enable ABI changes
+** Allows 16 arguments in registers
+** Moves a few register assignments to match those of 128-bit ABI.
+
+* dmacl: Enable integer Multiply-Accumulate instructions.
+* qmul / mulq: Enable 64-bit multiply and integer divide.
+* fdiv: Enable floating-point divide instruction.
+* bcd: Enable BCD instructions.
+* ldtex: Enable texture-load instruction.
+
+* nopredops: Disable use of predicated instructions.
+
 PEL:
 * pexe: Emit traditional PE/COFF
 * pel0: PEL0 Mode, Uncompressed

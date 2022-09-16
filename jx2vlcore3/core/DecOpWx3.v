@@ -154,6 +154,8 @@ reg[8:0]		opUCmdA;
 reg[8:0]		opUIxtA;
 reg[7:0]		opUFlA;
 
+reg[15:0]		opFpImmA;
+
 reg[32:0]		opImmB;
 reg[8:0]		opUCmdB;
 reg[8:0]		opUIxtB;
@@ -496,10 +498,14 @@ assign	tOpJBitsC		= 0;
 
 `endif
 
-`reg_gpr	opCmRemapRx[31:0];
+// `reg_gpr	opCmRemapRxA[31:0];
+
+`reg_gpr	opCmRemapRxA[63:0];
+`reg_gpr	opCmRemapRxB[63:0];
 
 initial
 begin
+`ifndef def_true
 	opCmRemapRx[ 0]=JX2_GR_PC_HI;
 //	opCmRemapRx[ 1]=JX2_GR_LR_HI;
 	opCmRemapRx[ 1]=JX2_GR_ZZR;
@@ -540,6 +546,142 @@ begin
 	opCmRemapRx[30]=JX2_GR_ZZR;
 	opCmRemapRx[31]=JX2_GR_ZZR;
 //	opCmRemapRx[31]=JX2_GR_SP2_HI;
+`endif
+
+`ifdef def_true
+	opCmRemapRxA[6'h00]=JX2_GR_DLR;
+	opCmRemapRxA[6'h01]=JX2_GR_R32;
+	opCmRemapRxA[6'h02]=JX2_GR_R2 ;
+	opCmRemapRxA[6'h03]=JX2_GR_R34;
+	opCmRemapRxA[6'h04]=JX2_GR_R4 ;
+	opCmRemapRxA[6'h05]=JX2_GR_R36;
+	opCmRemapRxA[6'h06]=JX2_GR_R6 ;
+	opCmRemapRxA[6'h07]=JX2_GR_R38;
+	opCmRemapRxA[6'h08]=JX2_GR_R8 ;
+	opCmRemapRxA[6'h09]=JX2_GR_R40;
+	opCmRemapRxA[6'h0A]=JX2_GR_R10;
+	opCmRemapRxA[6'h0B]=JX2_GR_R42;
+	opCmRemapRxA[6'h0C]=JX2_GR_R12;
+	opCmRemapRxA[6'h0D]=JX2_GR_R44;
+	opCmRemapRxA[6'h0E]=JX2_GR_R14;
+	opCmRemapRxA[6'h0F]=JX2_GR_R46;
+	opCmRemapRxA[6'h10]=JX2_GR_R16;
+	opCmRemapRxA[6'h11]=JX2_GR_R48;
+	opCmRemapRxA[6'h12]=JX2_GR_R18;
+	opCmRemapRxA[6'h13]=JX2_GR_R50;
+	opCmRemapRxA[6'h14]=JX2_GR_R20;
+	opCmRemapRxA[6'h15]=JX2_GR_R52;
+	opCmRemapRxA[6'h16]=JX2_GR_R22;
+	opCmRemapRxA[6'h17]=JX2_GR_R54;
+	opCmRemapRxA[6'h18]=JX2_GR_R24;
+	opCmRemapRxA[6'h19]=JX2_GR_R56;
+	opCmRemapRxA[6'h1A]=JX2_GR_R26;
+	opCmRemapRxA[6'h1B]=JX2_GR_R58;
+	opCmRemapRxA[6'h1C]=JX2_GR_R28;
+	opCmRemapRxA[6'h1D]=JX2_GR_R60;
+	opCmRemapRxA[6'h1E]=JX2_GR_R30;
+	opCmRemapRxA[6'h1F]=JX2_GR_R62;
+
+	opCmRemapRxB[6'h00]=JX2_GR_DHR;
+	opCmRemapRxB[6'h01]=JX2_GR_R33;
+	opCmRemapRxB[6'h02]=JX2_GR_R3 ;
+	opCmRemapRxB[6'h03]=JX2_GR_R35;
+	opCmRemapRxB[6'h04]=JX2_GR_R5 ;
+	opCmRemapRxB[6'h05]=JX2_GR_R37;
+	opCmRemapRxB[6'h06]=JX2_GR_R7 ;
+	opCmRemapRxB[6'h07]=JX2_GR_R39;
+	opCmRemapRxB[6'h08]=JX2_GR_R9 ;
+	opCmRemapRxB[6'h09]=JX2_GR_R41;
+	opCmRemapRxB[6'h0A]=JX2_GR_R11;
+	opCmRemapRxB[6'h0B]=JX2_GR_R43;
+	opCmRemapRxB[6'h0C]=JX2_GR_R13;
+	opCmRemapRxB[6'h0D]=JX2_GR_R45;
+	opCmRemapRxB[6'h0E]=JX2_GR_R15;
+	opCmRemapRxB[6'h0F]=JX2_GR_R47;
+	opCmRemapRxB[6'h10]=JX2_GR_R17;
+	opCmRemapRxB[6'h11]=JX2_GR_R49;
+	opCmRemapRxB[6'h12]=JX2_GR_R19;
+	opCmRemapRxB[6'h13]=JX2_GR_R51;
+	opCmRemapRxB[6'h14]=JX2_GR_R21;
+	opCmRemapRxB[6'h15]=JX2_GR_R53;
+	opCmRemapRxB[6'h16]=JX2_GR_R23;
+	opCmRemapRxB[6'h17]=JX2_GR_R55;
+	opCmRemapRxB[6'h18]=JX2_GR_R25;
+	opCmRemapRxB[6'h19]=JX2_GR_R57;
+	opCmRemapRxB[6'h1A]=JX2_GR_R27;
+	opCmRemapRxB[6'h1B]=JX2_GR_R59;
+	opCmRemapRxB[6'h1C]=JX2_GR_R29;
+	opCmRemapRxB[6'h1D]=JX2_GR_R61;
+	opCmRemapRxB[6'h1E]=JX2_GR_R31;
+	opCmRemapRxB[6'h1F]=JX2_GR_R63;
+
+	opCmRemapRxA[6'h20]=JX2_GR_PC;
+	opCmRemapRxA[6'h21]=JX2_GR_LR;
+	opCmRemapRxA[6'h22]=JX2_GR_SR;
+	opCmRemapRxA[6'h23]=JX2_GR_VBR;
+	opCmRemapRxA[6'h24]=JX2_GR_SPC;
+	opCmRemapRxA[6'h25]=JX2_GR_R46;
+	opCmRemapRxA[6'h26]=JX2_GR_GBR;
+	opCmRemapRxA[6'h27]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h28]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h29]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h2A]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h2B]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h2C]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h2D]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h2E]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h2F]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h30]=JX2_GR_PC2;
+	opCmRemapRxA[6'h31]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h32]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h33]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h34]=JX2_GR_SPC2;
+	opCmRemapRxA[6'h35]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h36]=JX2_GR_GBR2;
+	opCmRemapRxA[6'h37]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h38]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h39]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h3A]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h3B]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h3C]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h3D]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h3E]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h3F]=JX2_GR_ZZR;
+
+	opCmRemapRxB[6'h20]=JX2_GR_PC_HI;
+	opCmRemapRxB[6'h21]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h22]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h23]=JX2_GR_VBR_HI;
+	opCmRemapRxB[6'h24]=JX2_GR_SPC_HI;
+	opCmRemapRxB[6'h25]=JX2_GR_R47;
+	opCmRemapRxB[6'h26]=JX2_GR_GBR_HI;
+	opCmRemapRxB[6'h27]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h28]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h29]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h2A]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h2B]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h2C]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h2D]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h2E]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h2F]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h30]=JX2_GR_PC2_HI;
+	opCmRemapRxB[6'h31]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h32]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h33]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h34]=JX2_GR_SPC2_HI;
+	opCmRemapRxB[6'h35]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h36]=JX2_GR_GBR2_HI;
+	opCmRemapRxB[6'h37]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h38]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h39]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h3A]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h3B]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h3C]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h3D]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h3E]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h3F]=JX2_GR_ZZR;
+`endif
+
 end
 
 always @*
@@ -934,23 +1076,8 @@ begin
 
 				if(opIsWexJumboA)
 				begin
-`ifdef jx2_use_fpu_fpimm
-					if(decOpFzB_idUFl[2])
-					begin
-						opImmB	= {
-							1'b0,
-							opImmA[15:14],
-							(opImmA[14] || (opImmA[14:10]==0)) ?
-								6'h00 : 6'h3F,
-							opImmA[13: 0],
-							10'h0
-							};
-						opImmA = 0;
-					end
-					else
-`endif
-//						if(decOpFzC_idUFl[0])
-						if(decOpFzB_idUFl[0])
+//					if(decOpFzC_idUFl[0])
+					if(decOpFzB_idUFl[0])
 					begin
 						/* Jumbo24 + Imm16 */
 						opImmB	= {
@@ -1090,6 +1217,31 @@ begin
 			opUCmdA	= decOpHz_idUCmd;
 			opUIxtA	= decOpHz_idUIxt;
 		end
+`endif
+
+`ifndef def_true
+
+`ifdef jx2_use_fpu_fpimm
+		opFpImmA = opImmA0[15:0];
+		if(opUFlA0[0])
+			opFpImmA = { opImmA0[9:0], 6'h0 };
+`endif
+
+`ifdef jx2_use_fpu_fpimm
+		if(opUFlA0[2])
+		begin
+			opImmB	= {
+				1'b0,
+				opFpImmA[15:14],
+				(opFpImmA[14] || (opFpImmA[14:10]==0)) ?
+					6'h00 : 6'h3F,
+				opFpImmA[13: 0],
+				10'h0
+				};
+			opImmA = 0;
+		end
+`endif
+
 `endif
 
 //		opRegXM = decOpBz_idRegM;
@@ -1274,18 +1426,144 @@ begin
 	
 	if(opRegAM0[6])
 	begin
-		opRegXM		= opRegAM0;
-		opRegXMv	= opCmRemapRx[opRegAM0[4:0]];
+		if(opDualLaneSw)
+		begin
+			opRegXM		= opCmRemapRxB[opRegAM0[5:0]];
+			opRegXMv	= opCmRemapRxA[opRegAM0[5:0]];
+		end else begin
+			opRegXM		= opCmRemapRxA[opRegAM0[5:0]];
+			opRegXMv	= opCmRemapRxB[opRegAM0[5:0]];
+		end
+
+		if(opIsDualLaneRm && (opRegAM0!=JX2_GR_ZZR))
+		begin
+			$display("XGPR: Dual Lane Special Rm %X -> %X:%X",
+				opRegAM0, opRegXMv, opRegXM);
+		end
+
+`ifndef def_true
+		if((opRegAM0==JX2_GR_SP) || (opRegAM0==JX2_GR_SSP))
+		begin
+			opRegXM	= { 2'b01, 4'h7, opDualLaneSw };
+			opRegXMv = { opRegXM[6:1], !opRegXM[0] };
+		end
+		else
+		begin
+			opRegXM		= opRegAM0;
+			opRegXMv	= opCmRemapRx[opRegAM0[4:0]];
+			
+			if(opIsDualLaneRm && (opRegAM0!=JX2_GR_ZZR))
+			begin
+				$display("XGPR: Dual Lane Special Rm %X", opRegAM0);
+			end
+		end
+`endif
 	end
+
 	if(opRegAN0[6])
 	begin
-		opRegXN		= opRegAN0;
-		opRegXNv	= opCmRemapRx[opRegAN0[4:0]];
+		if(opDualLaneSw)
+		begin
+			opRegXN		= opCmRemapRxB[opRegAN0[5:0]];
+			opRegXNv	= opCmRemapRxA[opRegAN0[5:0]];
+		end else begin
+			opRegXN		= opCmRemapRxA[opRegAN0[5:0]];
+			opRegXNv	= opCmRemapRxB[opRegAN0[5:0]];
+		end
+
+		if(opIsDualLaneRn && (opRegAN0!=JX2_GR_ZZR))
+		begin
+			$display("XGPR: Dual Lane Special Rn %X -> %X:%X",
+				opRegAN0, opRegXNv, opRegXN);
+		end
+
+`ifndef def_true
+		if((opRegAN0==JX2_GR_SP) || (opRegAN0==JX2_GR_SSP))
+		begin
+			opRegXN	= { 2'b01, 4'h7, opDualLaneSw };
+			opRegXNv = { opRegXN[6:1], !opRegXN[0] };
+		end
+		else
+		begin
+			opRegXN		= opRegAN0;
+			opRegXNv	= opCmRemapRx[opRegAN0[4:0]];
+			
+			if(opIsDualLaneRn)
+			begin
+				$display("XGPR: Dual Lane Special Rn %X", opRegAN0);
+			end
+		end
+`endif
 	end
+
 	if(opRegAP0[6])
 	begin
-		opRegXP		= opRegAP0;
-		opRegXPv	= opCmRemapRx[opRegAP0[4:0]];
+		if(opDualLaneSw)
+		begin
+			opRegXP		= opCmRemapRxB[opRegAP0[5:0]];
+			opRegXPv	= opCmRemapRxA[opRegAP0[5:0]];
+		end else begin
+			opRegXP		= opCmRemapRxA[opRegAP0[5:0]];
+			opRegXPv	= opCmRemapRxB[opRegAP0[5:0]];
+		end
+
+		if(opIsDualLaneRn && (opRegAP0!=JX2_GR_ZZR))
+		begin
+			$display("XGPR: Dual Lane Special Rp %X -> %X:%X",
+				opRegAP0, opRegXPv, opRegXP);
+		end
+
+`ifndef def_true
+		if((opRegAP0==JX2_GR_SP) || (opRegAP0==JX2_GR_SSP))
+		begin
+			opRegXP	= { 2'b01, 4'h7, opDualLaneSw };
+			opRegXPv = { opRegXP[6:1], !opRegXP[0] };
+		end
+		else
+		begin
+			opRegXP		= opRegAP0;
+			opRegXPv	= opCmRemapRx[opRegAP0[4:0]];
+			
+			if(opIsDualLaneRn)
+			begin
+				$display("XGPR: Dual Lane Special Rp %X", opRegAP0);
+			end
+		end
+`endif
+
+	end
+
+	if(opRegAO0[6])
+	begin
+		if(opDualLaneSw)
+		begin
+			opRegXO		= opCmRemapRxB[opRegAO0[5:0]];
+			opRegXOv	= opCmRemapRxA[opRegAO0[5:0]];
+		end else begin
+			opRegXO		= opCmRemapRxA[opRegAO0[5:0]];
+			opRegXOv	= opCmRemapRxB[opRegAO0[5:0]];
+		end
+
+		if(opIsDualLaneRo && (opRegAO0!=JX2_GR_ZZR))
+		begin
+			$display("XGPR: Dual Lane Special Ro %X -> %X:%X",
+				opRegAO0, opRegXOv, opRegXO);
+		end
+
+`ifndef def_true
+		if((opRegAO0==JX2_GR_SP) || (opRegAO0==JX2_GR_SSP))
+		begin
+			opRegXO	= { 2'b01, 4'h7, opDualLaneSw };
+			opRegXOv = { opRegXO[6:1], !opRegXO[0] };
+		end
+		else
+		begin
+			if(opIsDualLaneRo)
+			begin
+				$display("XGPR: Dual Lane Special Ro %X", opRegAO0);
+			end
+		end
+`endif
 	end
 	
 `else

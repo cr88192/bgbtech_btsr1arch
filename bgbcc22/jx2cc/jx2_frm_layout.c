@@ -361,6 +361,15 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			sctx->use_egpr|=2;
 		}
 
+#if 0
+		if(ctx->optmode==BGBCC_OPT_SPEED2)
+		{
+//			if(sctx->vspan_num>=24)
+			if(sctx->vspan_num>=36)
+				sctx->use_egpr|=2;
+		}
+#endif
+
 		/* Try for full static assignment. */
 		if(sctx->vspan_num<12)
 			sctx->use_egpr|=1;
@@ -380,6 +389,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		
 	if(sctx->has_xgpr&2)
 		sctx->use_egpr|=1;
+
+//	if((sctx->vspan_num>12) && (sctx->vspan_num<24))
+//		sctx->use_egpr|=2;
+
 
 	if(!sctx->use_egpr)
 	{
@@ -445,6 +458,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 		}
 	}
+	
+	if(obj->regflags&BGBCC_REGFL_GOFAST)
+		sctx->use_egpr|=2;
 
 //	sctx->use_egpr|=2;
 
@@ -541,7 +557,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	if((obj->regflags&BGBCC_REGFL_ALLOCA))
 	{
-		if(sctx->has_xgpr&2)
+//		if(sctx->has_xgpr&2)
+		if(ctx->arch_sizeof_ptr==16)
 			{ k-=16; k&=~15; }
 		else
 			{ k-=8; k&=~7; }
@@ -737,7 +754,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				{ BGBCC_DBGBREAK }
 			
 //			j=(j+3)&(~3);
-			if(sctx->has_xgpr&2)
+//			if(sctx->has_xgpr&2)
+			if(ctx->arch_sizeof_ptr==16)
 				{ j=(j+15)&(~15); }
 			else 
 				{ j=(j+7)&(~7); }

@@ -512,10 +512,20 @@ int BGBCC_JX2_CheckOps32GetRegs(
 
 		if((opw2&0xE000)==0x0000)
 			{ spfl|=BGBCC_WXSPFL_2STAGE; }
-		if((opw2&0xE000)==0x2000)
+		if((opw2&0xF000)==0x2000)
 			{ spfl|=BGBCC_WXSPFL_3STAGE; }
+		if((opw2&0xF000)==0x3000)
+			{ spfl|=BGBCC_WXSPFL_2STAGE; }
 		if((opw2&0xC000)==0x4000)
 			{ spfl|=BGBCC_WXSPFL_2STAGE; }
+
+		if((opw2&0xE000)==0x6000)
+		{
+//			spfl|=BGBCC_WXSPFL_2STAGE;
+			if(opw2&0x0800)
+				spfl|=BGBCC_WXSPFL_PXSTN;
+		}
+
 
 		if((opw2&0xF000)>=0xA000)
 		{
@@ -545,6 +555,23 @@ int BGBCC_JX2_CheckOps32GetRegs(
 			if((opw1&0x000C)==0x0000)
 			{
 				spfl|=BGBCC_WXSPFL_2STAGE;
+			}
+
+			if((opw1&0x000C)==0x0008)
+			{
+				spfl&=~BGBCC_WXSPFL_2STAGE;
+				spfl|= BGBCC_WXSPFL_3STAGE;
+
+				spfl|=BGBCC_WXSPFL_ISMEM;
+				if((opw1&0x000E)==0x0008)
+				{
+					rp=rn;
+					spfl|=BGBCC_WXSPFL_IS_STORE;
+				}
+
+				rs=BGBCC_SH_REG_GBR;
+				if((opw1&0x0001) && (opw2&0x0800))
+					spfl|=BGBCC_WXSPFL_PXSTN;
 			}
 		}
 
@@ -631,6 +658,17 @@ int BGBCC_JX2_CheckOps32ReadsRn(
 		return(0);
 	}
 
+	if(	((opw1&0xFF00)==0xF200) ||
+		((opw1&0xF100)==0x9000)	)
+	{
+		if((opw2&0xF000)==0xD000)
+		{
+			if((opw1&0x000E)==0x0008)
+				return(1);
+		}
+		return(0);
+	}
+
 	return(0);
 }
 
@@ -690,44 +728,118 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 		4,2, 8,8, 4,2, 8,8,
 		1,1, 2,2, 4,4, 8,8,
 		0,0, 0,0, 0,0, 0,0};
+	static const byte iwct[32]={
+		0,0, 0,0, 0,0, 0,0,
+		0,0, 0,8, 0,0, 0,8,
+		0,0, 0,0, 0,0, 0,0,
+		0,0, 0,0, 0,0, 0,0};
 	int rs1, rn1, rs2, rn2, ix1, ix2, sc1, sc2;
-	int xm1, xn1, xm2, xn2;
+	int xm1, xn1, xm2, xn2, wx1, wx2;
 
 //	return(0);
 
+	sc1=0;
+	sc2=0;
+	wx1=0;
+	wx2=0;
+
 	rn1=((opw1>>4)&15)|((opw2>>6)&16);
 	rs1=((opw1   )&15)|((opw2>>5)&16);
-	ix1=opw2&0x01FF;
-	sc1=isct[(opw2>>11)&31];
 
 	rn2=((opw3>>4)&15)|((opw4>>6)&16);
 	rs2=((opw3   )&15)|((opw4>>5)&16);
+
+
+#if 1
+	if(((opw1&0xF000)==0x7000) || ((opw1&0xF000)==0x9000))
+	{
+		if(opw1&0x0400)
+			rn1+=32;
+		if(opw1&0x0200)
+			rs1+=32;
+	}
+
+	if(((opw3&0xF000)==0x7000) || ((opw3&0xF000)==0x9000))
+	{
+		if(opw3&0x0400)
+			rn2+=32;
+		if(opw3&0x0200)
+			rs2+=32;
+	}
+#endif
+
+
+	ix1=opw2&0x01FF;
+	if(((opw1&0xEB00)==0xE100) || ((opw1&0xF100)==0x9100))
+	{
+		sc1=isct[(opw2>>11)&31];
+		wx1=iwct[(opw2>>11)&31];
+		if((rs1<2) && sc1)
+			ix1/=sc1;
+	}
+
 	ix2=opw4&0x01FF;
-	sc2=isct[(opw4>>11)&31];
+	if(((opw3&0xEB00)==0xE100) || ((opw3&0xF100)==0x9100))
+	{
+		sc2=isct[(opw4>>11)&31];
+		wx2=iwct[(opw4>>11)&31];
+		if((rs2<2) && sc2)
+			ix2/=sc2;
+	}
+
+#if 1
+//	if(((opw1&0xEB0C)==0xE208) && ((opw2&0xF000)==0xD000))
+	if((((opw1&0xEB0C)==0xE208) || ((opw1&0xF10C)==0x9008)) &&
+		((opw2&0xF000)==0xD000))
+//	if(((opw1&0xEB0E)==0xE20A) && ((opw2&0xF000)==0xD000))
+	{
+		rs1=1;
+		sc1=(opw1&0x0001)?8:4;
+		wx1=(opw2&0x0800) && (opw1&0x0001);
+		ix1=opw2&0x03FF;
+	}
+
+//	if(((opw3&0xEB0C)==0xE208) && ((opw4&0xF000)==0xD000))
+	if((((opw3&0xEB0C)==0xE208) || ((opw3&0xF10C)==0x9008)) &&
+		((opw4&0xF000)==0xD000))
+//	if(((opw3&0xEB0E)==0xE20A) && ((opw4&0xF000)==0xD000))
+	{
+		rs2=1;
+		sc2=(opw3&0x0001)?8:4;
+		wx2=(opw4&0x0800) && (opw3&0x0001);
+		ix2=opw4&0x03FF;
+	}
+#endif
+
 
 	/* Only check aliasing for F1 block for now. */
-	if((opw1&0xEB00)!=0xE100)
+//	if((opw1&0xEB00)!=0xE100)
+	if(!sc1)
 	{
-		if((opw3&0xEB00)==0xE100)
+//		if((opw3&0xEB00)==0xE100)
+		if(sc2)
 		{
 			/* Assume SP or GBR can't alias with indexed access. */
 			if((rs2==15) && (rs1!=15))
 				return(1);
-			if((rs2==1) && (rs1!=1))
-				return(1);
+//			if((rs2==1) && (rs1!=1))
+//				return(1);
 		}
 
 		return(0);
 	}
-	if((opw3&0xEB00)!=0xE100)
+
+//	if((opw3&0xEB00)!=0xE100)
+	if(!sc2)
 	{
-		if((opw1&0xEB00)==0xE100)
+//		if((opw1&0xEB00)==0xE100)
+		if(sc1)
 		{
 			/* Assume SP or GBR can't alias with indexed access. */
 			if((rs1==15) && (rs2!=15))
 				return(1);
-			if((rs1==1) && (rs2!=1))
-				return(1);
+//			if((rs1==1) && (rs2!=1))
+//				return(1);
 		}
 
 		return(0);
@@ -747,8 +859,15 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 	 */
 	if((rs1==rs2) && (sc1==sc2))
 	{
+		if(wx1 && ((ix1+1)==ix2))
+			return(0);
+		if(wx2 && ((ix2+1)==ix1))
+			return(0);
+	
 		if(ix1!=ix2)
 			return(1);
+		
+		return(0);
 	}
 
 	/*
@@ -761,6 +880,10 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 		xm2=ix2*sc2;
 		xn1=xm1+(sc1-1);
 		xn2=xm2+(sc2-1);
+		if(wx1)
+			xn1=xm1+16;
+		if(wx2)
+			xn2=xm2+16;
 
 		if(xn1<xm2)
 			return(1);
@@ -769,7 +892,11 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 
 //		if(ix1!=ix2)
 //			return(1);
+
+		return(0);
 	}
+
+//	return(0);
 
 #if 1
 	/* Assume: SP vs Non-SP:
@@ -1955,6 +2082,15 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 			return(0);
 		}
 
+		if((opw2&0xF800)==0xD800)
+		{
+			if((opw1&0x000D)==0x0009)
+			{
+				/* 128-bit Load/Store */
+				return(0);
+			}
+		}
+
 		return(1);
 	}
 
@@ -2359,8 +2495,17 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 		case 0x0:	case 0x1:
 		case 0x3:
 		case 0x4:	case 0x5:
-		case 0x6:	case 0x7:
 		case 0x8:	case 0x9:
+			ret=1;
+			break;
+
+		case 0x6:	case 0x7:
+			if(opw2&0x0800)
+			{
+				ret=0;
+				break;
+			}
+
 			ret=1;
 			break;
 			
@@ -2392,6 +2537,16 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			case 0x2:
 //			case 0x3:
 				ret=1;
+				break;
+
+			case 0x4:	case 0x5:
+			case 0x6:	case 0x7:
+				ret=0;
+				break;
+
+			case 0x8:	case 0x9:
+			case 0xA:	case 0xB:
+				ret=0;	/* Load/Store GBR */
 				break;
 
 			default:

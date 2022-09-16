@@ -294,6 +294,8 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 	ctx->mem_tlb_pr1_hx=0;
 	ctx->mem_tlb_pr1_lo=0;
 
+	BJX2_MemFlushPPA(ctx);
+
 	if(!ctx->regs[BJX2_REG_PC])
 	{
 		if(ctx->status)
@@ -1256,6 +1258,7 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_DIVUL:		s0="DIVU.L";	break;
 	case BJX2_NMID_MODSL:		s0="MODS.L";	break;
 	case BJX2_NMID_MODUL:		s0="MODU.L";	break;
+	case BJX2_NMID_RSUB:		s0="RSUB";		break;
 
 	case BJX2_NMID_LDTEX:		s0="LDTEX";		break;
 

@@ -2465,13 +2465,18 @@ int BGBCC_JX2C_CheckRegisterIndexExcludeP(
 	
 	creg=sctx->qcachereg[idx];
 	
-	tr0=creg&63;
-	if(sctx->regs_excl&(1ULL<<tr0))
+	if(creg==BGBCC_SH_REG_ZZR)
 		return(1);
+	
+	tr0=creg&63;
 
 	if(sctx->is_leaftiny&1)
 	{
 		if(sctx->regs_excl_tiny&(1ULL<<tr0))
+			return(1);
+	}else
+	{
+		if(sctx->regs_excl&(1ULL<<tr0))
 			return(1);
 	}
 
@@ -4319,6 +4324,12 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 
 		sctx->regs_excl			=0xFFFFFFFF00008000ULL;
 		sctx->regs_excl_tiny	=0xFFFFFFFFFF00FF00ULL;
+
+		if(sctx->has_xgpr&6)
+		{
+			sctx->regs_excl			=0xFF00FF0000008000ULL;
+			sctx->regs_excl_tiny	=0xFF00FF00FF00FF00ULL;
+		}
 
 		if(sctx->use_egpr&2)
 		{

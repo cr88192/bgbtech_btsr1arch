@@ -181,6 +181,7 @@ byte has_fpim;		//Has FPU Immediates
 byte has_fpvsf;		//Has FPU Immediates
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
+byte abi_noexcept;	//Disable Exceptions
 
 byte do_shuffle;
 
@@ -359,6 +360,13 @@ int stat_ldst_disp10sb;
 int stat_ldst_disp12sb;
 
 int stat_ldst_disptot;
+
+
+int stat_ldst_pbotot;
+int stat_ldst_pbotot_ix;
+int stat_ldst_pbotot_9b;
+int stat_ldst_pbotot_10b;
+int stat_ldst_pbotot_33b;
 
 int stat_imm3ri_imm9u;
 int stat_imm3ri_imm9n;

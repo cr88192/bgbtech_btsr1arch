@@ -85,6 +85,120 @@ BCCX_Node *BGBCP_LookupStructI(BGBCP_ParseState *ctx, char *name)
 	return(NULL);
 }
 
+BCCX_Node *BGBCP_LookupTemplateI(BGBCP_ParseState *ctx, char *name)
+{
+	char tb[256];
+	BCCX_Node *c;
+	int hi, na, ci;
+	char *s;
+
+//	hi=BGBCC_CCXL_HashName(name)&255;
+	hi=BGBCP_HashTypeNameI(ctx, name);
+
+	if(!ctx->types)
+		return(NULL);
+
+	ci=ctx->type_hash_ix[hi];
+	while(ci>=0)
+	{
+		c=BCCX_GetNodeIndex(ctx->types, ci);
+
+		if(!BCCX_TagIsCstP(c, &bgbcc_rcst_template, "template"))
+		{
+			ci=BCCX_GetIntCst(c, &bgbcc_rcst_Shnext, "$hnext");
+			continue;
+		}
+		
+		s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
+		if(s && !bgbcp_strcmp(s, name))
+			return(c);
+		ci=BCCX_GetIntCst(c, &bgbcc_rcst_Shnext, "$hnext");
+	}
+
+#if 0
+	na=BCCX_GetNodeChildCount(ctx->types);
+	for(ci=0; ci<na; ci++)
+	{
+		c=BCCX_GetNodeIndex(ctx->types, ci);
+
+		if(!BCCX_TagIsCstP(c, &bgbcc_rcst_template, "template"))
+			continue;
+
+		s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
+		if(s && !bgbcp_strcmp(s, name))
+			return(c);
+	}
+#endif
+
+	return(NULL);
+}
+
+BCCX_Node *BGBCP_LookupToplevelI(BGBCP_ParseState *ctx, char *name)
+{
+	BCCX_Node *c;
+	int hi, na, ci;
+	char *s;
+
+	na=BCCX_GetNodeChildCount(ctx->toplevel);
+	for(ci=0; ci<na; ci++)
+	{
+		c=BCCX_GetNodeIndex(ctx->toplevel, ci);
+
+//		if(!BCCX_TagIsCstP(c, &bgbcc_rcst_template, "template"))
+//			continue;
+
+		s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
+		if(s && !bgbcp_strcmp(s, name))
+			return(c);
+	}
+
+	return(NULL);
+}
+
+BCCX_Node *BGBCP_LookupTemplate(BGBCP_ParseState *ctx, char *name)
+{
+	return(BGBCP_LookupTemplateI(ctx, name));
+}
+
+BCCX_Node *BGBCP_LookupToplevel(BGBCP_ParseState *ctx, char *name)
+{
+	return(BGBCP_LookupToplevelI(ctx, name));
+}
+
+BCCX_Node *BGBCP_LookupTemplateType(BGBCP_ParseState *ctx, char *name)
+{
+	BCCX_Node *n, *t;
+
+	n=BGBCP_LookupTemplateI(ctx, name);
+	if(!n)
+		return(NULL);
+
+	t=BCCX_FindTagCst(n, &bgbcc_rcst_type, "type");
+	if(!t)
+		return(NULL);
+
+	return(n);
+}
+
+BCCX_Node *BGBCP_LookupTemplateFunc(BGBCP_ParseState *ctx, char *name)
+{
+	BCCX_Node *n, *t;
+
+	n=BGBCP_LookupTemplateI(ctx, name);
+	if(!n)
+		return(NULL);
+
+	t=BCCX_FindTagCst(n, &bgbcc_rcst_defun, "defun");
+	if(t)
+		return(n);
+
+	t=BCCX_FindTagCst(n, &bgbcc_rcst_proto, "proto");
+	if(t)
+		return(n);
+
+	return(NULL);
+}
+
 int BGBCP_HashTypeNameI(BGBCP_ParseState *ctx, char *name)
 {
 	int hi;
@@ -123,6 +237,13 @@ BCCX_Node *BGBCP_LookupTypeI(BGBCP_ParseState *ctx, char *name)
 	while(ci>=0)
 	{
 		c=BCCX_GetNodeIndex(ctx->types, ci);
+		
+		if(!BCCX_TagIsCstP(c, &bgbcc_rcst_var, "var"))
+		{
+			ci=BCCX_GetIntCst(c, &bgbcc_rcst_Shnext, "$hnext");
+			continue;
+		}
+		
 		s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
 		if(s && !bgbcp_strcmp(s, name))
 			return(c);
@@ -285,9 +406,9 @@ BCCX_Node *BGBCP_LookupTypeI(BGBCP_ParseState *ctx, char *name)
 BCCX_Node *BGBCP_LookupType(BGBCP_ParseState *ctx, char *name)
 {
 	char tb[256];
-	BCCX_Node *c;
-	char *s;
-	int i;
+	BCCX_Node *c, *a, *ty, *n;
+	char *s, *tn;
+	int i, na, ci;
 
 	if(ctx->cur_ns)
 	{
@@ -309,6 +430,45 @@ BCCX_Node *BGBCP_LookupType(BGBCP_ParseState *ctx, char *name)
 
 	c=BGBCP_LookupTypeI(ctx, name);
 	if(c)return(c);
+
+	if(ctx->template_stackpos>0)
+	{
+		i=ctx->template_stackpos;
+		while((i--)>0)
+		{
+			a=ctx->template_stack[i];
+
+			na=BCCX_GetNodeChildCount(a);
+			for(ci=0; ci<na; ci++)
+			{
+				c=BCCX_GetNodeIndex(a, ci);
+
+				if(BCCX_TagIsCstP(c, &bgbcc_rcst_var, "var"))
+				{
+					ty=BCCX_FindTagCst(c, &bgbcc_rcst_type, "type");
+					s=BCCX_GetCst(c, &bgbcc_rcst_name, "name");
+					if(!ty || !s)
+						continue;
+
+					tn=BCCX_GetCst(ty, &bgbcc_rcst_name, "name");
+					
+					if(!strcmp(s, name) && tn && !strcmp(tn, "class"))
+					{
+						sprintf(tb, "$.%s", name);
+					
+						n=BCCX_NewCst(&bgbcc_rcst_type, "type");
+						BCCX_SetCst(n, &bgbcc_rcst_name, "name", tb);
+						BCCX_SetIntCst(n, &bgbcc_rcst_flags, "flags", 0);
+						BCCX_SetIntCst(n, &bgbcc_rcst_ind, "ind", 0);
+
+						n=BCCX_NewCst1(&bgbcc_rcst_var, "var", n);
+
+						return(n);
+					}
+				}
+			}
+		}
+	}
 
 	return(NULL);
 }
@@ -400,6 +560,106 @@ int BGBCP_HandleTypedef(BGBCP_ParseState *ctx, BCCX_Node *n)
 	BGBCP_Error(NULL, "BGBCP_HandleTypedef: "
 			"Bad typedef definition\n");
 	return(-1);
+}
+
+int BGBCP_AddDefToplevel(BGBCP_ParseState *ctx, BCCX_Node *n)
+{
+	if(!ctx->toplevel)
+		ctx->toplevel=BCCX_NewList();
+	BCCX_Add(ctx->toplevel, n);
+	return(0);
+}
+
+int BGBCP_HandleTemplate(BGBCP_ParseState *ctx,
+	BCCX_Node *def, BCCX_Node *args)
+{
+	BCCX_Node *n, *c, *ty;
+	char *s, *tag;
+	int na, ci;
+	int i, j, k;
+
+	tag=BCCX_Tag(def);
+
+	if(	BCCX_TagIsCstP(def, &bgbcc_rcst_proto, "proto") ||
+		BCCX_TagIsCstP(def, &bgbcc_rcst_defun, "defun"))
+	{
+		s=BCCX_GetCst(def, &bgbcc_rcst_name, "name");
+
+		n=BCCX_NewCst(&bgbcc_rcst_template, "template");
+
+		BCCX_Add(n, BCCX_Clone(def));
+	//	BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_body, "body", def));
+		BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", args));
+	}else
+		if(BCCX_TagIsCstP(def, &bgbcc_rcst_var, "var"))
+	{
+		ty=BCCX_FindTagCst(def, &bgbcc_rcst_type, "type");
+		if(!ty)
+			{ return(-1); }
+
+		s=BCCX_GetCst(ty, &bgbcc_rcst_name, "name");
+
+		n=BCCX_NewCst(&bgbcc_rcst_template, "template");
+
+		BCCX_Add(n, BCCX_Clone(ty));
+	//	BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_body, "body", def));
+		BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_args, "args", args));
+	}else
+		if(BCCX_TagIsCstP(def, &bgbcc_rcst_vars, "vars"))
+	{
+		na=BCCX_GetNodeChildCount(def);
+		for(ci=0; ci<na; ci++)
+		{
+			c=BCCX_GetNodeIndex(def, ci);
+			BGBCP_HandleTemplate(ctx, c, args);
+		}
+		
+		return(0);
+//		BGBCC_DBGBREAK
+	}else
+	{
+		BGBCC_DBGBREAK
+	}
+
+	if(!s)
+		{ return(-1); }
+
+	if(*s=='!')
+		s++;
+
+	BCCX_SetCst(n, &bgbcc_rcst_name, "name", s);
+
+//	s=BCCX_GetCst(n, &bgbcc_rcst_name, "name");
+	i=BGBCP_HashTypeNameI(ctx, s);
+
+	if(!ctx->types)
+		ctx->types=BCCX_NewList();
+	j=ctx->type_hash_ix[i];
+	k=BCCX_Add(ctx->types, n);
+	if(k>=0)
+	{
+		ctx->type_hash_ix[i]=k;
+		BCCX_SetIntCst(n, &bgbcc_rcst_Shnext, "$hnext", j);	
+	}
+
+	return(0);
+}
+
+int BGBCP_PushTemplateArgs(BGBCP_ParseState *ctx,
+	BCCX_Node *args)
+{
+	int i;
+	
+	i=ctx->template_stackpos++;
+	ctx->template_stack[i]=args;
+	return(0);
+}
+
+int BGBCP_PopTemplateArgs(BGBCP_ParseState *ctx)
+{
+	if(ctx->template_stackpos>0)
+		ctx->template_stackpos--;
+	return(0);
 }
 
 BCCX_Node *BGBCP_GetStruct(BGBCP_ParseState *ctx, char *name)
@@ -525,6 +785,9 @@ BCCX_Node *BGBCP_GetStructJ(BGBCP_ParseState *ctx, char *name, int ty)
 		BCCX_SetCst(n1, &bgbcc_rcst_name, "name", s1);
 
 #ifdef BGBCC_BCCX2
+		if(!ctx->types)
+			ctx->types=BCCX_NewList();
+
 		i=BGBCP_HashTypeNameI(ctx, s1);
 		j=ctx->type_hash_ix[i];
 		k=BCCX_Add(ctx->types, n1);
@@ -1220,7 +1483,16 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 		if(ty==BTK_NAME)
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);	//name
-			n=BGBCP_GetStructJ(ctx, b, cty);
+
+			if(ctx->template_stackpos)
+			{
+				sprintf(b2, "!%s", b);
+				n=BGBCP_GetStructJ(ctx, b2, cty);
+			}
+			else
+			{
+				n=BGBCP_GetStructJ(ctx, b, cty);
+			}
 
 			s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//name, '{', ...
 			BGBCP_Token2(s1, b2, &ty2, ctx->lang);	//name, '{', ...
@@ -2062,6 +2334,65 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 
 		*str=s;
 		return(n);
+	}
+	
+	if(ctx->lang==BGBCC_LANG_CPP)
+	{
+		n=BGBCP_LookupTemplateType(ctx, b);
+		if(n)
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+			s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+			
+			n2=NULL;
+			if(!strcmp(b2, "<"))
+			{
+				s=s1;
+				n2=BGBCP_GenArgs(ctx, &s);
+			}
+			
+			BGBCP_GenMangledTemplateName(ctx, b3, b, n2);
+
+			n1=BGBCP_LookupStruct(ctx, b3);
+			if(n1)
+			{
+				/* Already exists. */
+			
+				s1=BCCX_GetCst(n1, &bgbcc_rcst_name, "name");
+				fl2=BCCX_GetIntCst(n1, &bgbcc_rcst_flags, "flags");
+
+				n=BCCX_NewCst(&bgbcc_rcst_type, "type");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
+				BCCX_SetIntCst(n, &bgbcc_rcst_flags, "flags", fl2|fl);
+				BCCX_SetIntCst(n, &bgbcc_rcst_ind, "ind", 0);
+
+				if(attrl)BCCX_Add(n, attrl);
+
+				*str=s;
+				return(n);
+			}
+
+			BGBCP_InstanceTemplate(ctx, b3, n, n2);
+
+			n1=BGBCP_LookupStruct(ctx, b3);
+			if(n1)
+			{
+				s1=BCCX_GetCst(n1, &bgbcc_rcst_name, "name");
+				fl2=BCCX_GetIntCst(n1, &bgbcc_rcst_flags, "flags");
+
+				n=BCCX_NewCst(&bgbcc_rcst_type, "type");
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s1);
+				BCCX_SetIntCst(n, &bgbcc_rcst_flags, "flags", fl2|fl);
+				BCCX_SetIntCst(n, &bgbcc_rcst_ind, "ind", 0);
+
+				if(attrl)BCCX_Add(n, attrl);
+
+				*str=s;
+				return(n);
+			}
+			
+			BGBCC_DBGBREAK
+		}
 	}
 
 	if(	(ctx->lang==BGBCC_LANG_CPP) ||
