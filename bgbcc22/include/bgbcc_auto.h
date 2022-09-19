@@ -3159,6 +3159,7 @@ int BGBCC_JX2C_GetFrameVRegVspanFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *
 int BGBCC_JX2C_BeginSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EndSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dstfl, int mult);
+int BGBCC_JX2C_CheckVRegLastUseInBlock(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
 //AHSRC:jx2cc/jx2_frm_layout.c
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:jx2cc/jx2_frm_prolog.c

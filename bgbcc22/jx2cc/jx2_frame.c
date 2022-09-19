@@ -4463,3 +4463,14 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 
 	return(1);
 }
+
+
+int BGBCC_JX2C_CheckVRegLastUseInBlock(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	if(!BGBCC_JX2C_CheckVRegMoreUsesInTraceP(ctx, sctx, reg))
+		return(1);
+	return(0);
+}

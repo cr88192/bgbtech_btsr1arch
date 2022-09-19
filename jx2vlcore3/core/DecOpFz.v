@@ -4270,8 +4270,8 @@ begin
 						opFmid		= JX2_FMID_IMM8REG;
 						opIty		= JX2_ITY_XL;
 						opBty		= JX2_BTY_SL;
-						if(opExQ)
-							opNmid		= JX2_UCMD_LEA_MR;
+//						if(opExQ)
+//							opNmid		= JX2_UCMD_LEA_MR;
 					end
 					4'b1001: begin
 						opNmid		= JX2_UCMD_MOV_RM;
@@ -4784,6 +4784,17 @@ begin
 			endcase
 		end
 
+		/*
+		REGIMMREG, Fz:
+			SB: Rm, 0, Rn
+			SW:	Rm, Imm9s, Rn
+
+			UB:	Rm, Imm9f/Imm16f, Rn
+			UW:	Rm, Imm9u, Rn
+			UL: Imm9u, Rm, Rn
+
+			NW:	Rm, Imm9n, Rn
+		 */
 		JX2_FMID_REGIMMREG: begin
 			opRegN	= opRegN_Dfl;
 			opRegP	= opRegN_Dfl;
@@ -5241,8 +5252,8 @@ begin
 
 					opImm		= opImm_imm10u;
 					opRegM		= JX2_GR_GBR;
-//					opRegO		= JX2_GR_IMM;
-					opRegO		= opRegImm10;
+					opRegO		= JX2_GR_IMM;
+//					opRegO		= opRegImm10;
 					opRegN		= opRegN_Dfl;
 					opRegP		= opRegN_Dfl;
 

@@ -2091,6 +2091,17 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 			}
 		}
 
+		if((opw2&0xF000)==0xD000)
+		{
+			if((opw1&0x000C)==0x0008)
+			{
+				/* Disallow in 3-wide bundles. */
+				if((sctx->use_wexmd==1) || (fl&1))
+					return(0);
+			}
+		}
+
+
 		return(1);
 	}
 

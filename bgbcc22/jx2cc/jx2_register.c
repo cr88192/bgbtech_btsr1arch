@@ -3806,7 +3806,8 @@ int BGBCC_JX2C_EmitReleaseRegister(
 
 //				if((regfl&BGBCC_REGFL_ALIASPTR))
 				if((regfl&BGBCC_REGFL_ALIASPTR) ||
-					BGBCC_CCXL_IsRegVolatileP(ctx, reg))
+					BGBCC_CCXL_IsRegVolatileP(ctx, reg) ||
+					BGBCC_JX2C_CheckVRegLastUseInBlock(ctx, sctx, reg))
 				{
 					BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
 				}
