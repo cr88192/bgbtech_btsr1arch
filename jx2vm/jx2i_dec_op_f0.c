@@ -274,7 +274,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_MOVB;
 			op->fmid=BJX2_FMID_REGSTREGDISP;
 			op->Run=BJX2_Op_MOVB_RegStRegDisp;
-			
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
+
 			if(disp_ldop)
 			{
 				op->nmid=BJX2_NMID_LDOPB;
@@ -298,6 +299,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_MOVW;
 			op->fmid=BJX2_FMID_REGSTREGDISP;
 			op->Run=BJX2_Op_MOVW_RegStRegDisp;
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
+
 			if(disp_ldop)
 			{
 				op->nmid=BJX2_NMID_LDOPW;
@@ -320,6 +323,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_MOVL;
 			op->fmid=BJX2_FMID_REGSTREGDISP;
 			op->Run=BJX2_Op_MOVL_RegStRegDisp;
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
 			if(disp_ldop)
 			{
 				op->nmid=BJX2_NMID_LDOPL;
@@ -342,6 +346,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_MOVQ;
 			op->fmid=BJX2_FMID_REGSTREGDISP;
 			op->Run=BJX2_Op_MOVQ_RegStRegDisp;
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
 			if(disp_ldop)
 			{
 				op->nmid=BJX2_NMID_LDOPQ;
@@ -374,6 +379,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_LEAB_LdReg2Reg;
 				break;
 			}
+
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
 
 			if(op->rn==BJX2_REG_DLR)
 			{
@@ -430,6 +437,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 			}
 
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
+
 			if(op->rn==BJX2_REG_DLR)
 			{
 				if(op->ro==BJX2_REG_DHR)
@@ -484,6 +493,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 			}
 
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
+
 			if(op->rn==BJX2_REG_DLR)
 			{
 				if(op->ro==BJX2_REG_DHR)
@@ -537,6 +548,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_LEAQ_LdReg2Reg;
 				break;
 			}
+
+			op->fl|=BJX2_OPFL_NOWEXSFX3W;
 
 			if(op->rn==BJX2_REG_DLR)
 			{
