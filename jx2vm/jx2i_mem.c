@@ -551,12 +551,14 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	ctx->l2_hmask=2047;
 	ctx->l2_wmask=1;
 	ctx->l2_vict=0;
+	ctx->l2_hshr=17;
 
 	if(!strcmp(str, "16k1") ||
 		!strcmp(str, "16k") ||
 		!strcmp(str, "16k1v"))
 	{
 		ctx->l2_hmask=255;
+		ctx->l2_hshr=8+6;
 	}
 
 	if(!strcmp(str, "32k1") ||
@@ -564,6 +566,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 		!strcmp(str, "32k1v"))
 	{
 		ctx->l2_hmask=511;
+		ctx->l2_hshr=9+6;
 	}
 
 	if(!strcmp(str, "64k1") ||
@@ -571,6 +574,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 		!strcmp(str, "64k1v"))
 	{
 		ctx->l2_hmask=1023;
+		ctx->l2_hshr=10+6;
 	}
 
 	if(!strcmp(str, "128k1") ||
@@ -578,6 +582,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 		!strcmp(str, "128k1v"))
 	{
 		ctx->l2_hmask=2047;
+		ctx->l2_hshr=11+6;
 	}
 
 	if(!strcmp(str, "256k1") ||
@@ -585,6 +590,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 		!strcmp(str, "256k1v"))
 	{
 		ctx->l2_hmask=4095;
+		ctx->l2_hshr=12+6;
 	}
 
 
@@ -593,6 +599,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	{
 		ctx->l2_hmask=127;
 		ctx->l2_wmask=1;
+		ctx->l2_hshr=7+6;
 	}
 
 	if(!strcmp(str, "32k2") ||
@@ -600,6 +607,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	{
 		ctx->l2_hmask=255;
 		ctx->l2_wmask=1;
+		ctx->l2_hshr=8+6;
 	}
 
 	if(!strcmp(str, "64k2") ||
@@ -607,6 +615,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	{
 		ctx->l2_hmask=511;
 		ctx->l2_wmask=1;
+		ctx->l2_hshr=9+6;
 	}
 
 	if(!strcmp(str, "128k2") ||
@@ -614,6 +623,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	{
 		ctx->l2_hmask=1023;
 		ctx->l2_wmask=1;
+		ctx->l2_hshr=10+6;
 	}
 
 	if(!strcmp(str, "256k2") ||
@@ -621,6 +631,7 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	{
 		ctx->l2_hmask=2047;
 		ctx->l2_wmask=1;
+		ctx->l2_hshr=11+6;
 	}
 
 	if(!strcmp(str, "512k2") ||
@@ -628,6 +639,31 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	{
 		ctx->l2_hmask=4095;
 		ctx->l2_wmask=1;
+		ctx->l2_hshr=12+6;
+	}
+
+	if(!strcmp(str, "128k4") ||
+		!strcmp(str, "128k4v"))
+	{
+		ctx->l2_hmask=511;
+		ctx->l2_wmask=3;
+		ctx->l2_hshr=9+6;
+	}
+
+	if(!strcmp(str, "256k4") ||
+		!strcmp(str, "256k4v"))
+	{
+		ctx->l2_hmask=1023;
+		ctx->l2_wmask=3;
+		ctx->l2_hshr=10+6;
+	}
+
+	if(!strcmp(str, "512k4") ||
+		!strcmp(str, "512k4v"))
+	{
+		ctx->l2_hmask=2047;
+		ctx->l2_wmask=3;
+		ctx->l2_hshr=11+6;
 	}
 	
 	if(str[strlen(str)-1]=='v')
@@ -641,9 +677,9 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 {
 	bjx2_addr t0, t1;
-	bjx2_addr ax, ax1, ax2, ax3, ax4, ax5;
+	bjx2_addr ax, ax1, ax2, ax3, ax4, ax5, ax6, ax7;
 	int epo, de0, de1;
-	int miss0, miss1, miss;
+	int miss0, miss1, miss2, miss3, miss;
 	int h, p1, p2, p, dp, cnt;
 
 	if(!(addr>>24))
@@ -673,21 +709,52 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 //	h=((ax>>6)^(ax>>19))&2047;
 //	h=(ax>>6)&2047;
 
-	h=((ax>>6)^(ax>>17))&(ctx->l2_hmask);
+//	if(ctx->l2_hmask==4095)
+//		h=((ax>>6)^(ax>>18))&(ctx->l2_hmask);
+//	else if(ctx->l2_hmask==2047)
+//		h=((ax>>6)^(ax>>17))&(ctx->l2_hmask);
+//	else if(ctx->l2_hmask==1023)
+//		h=((ax>>6)^(ax>>16))&(ctx->l2_hmask);
+
+	if(ctx->l2_hmask==4095)
+	{
+		h=(	((ax>> 6)      )^
+			((ax>>10)&0xF00)^
+			((ax>>18)&0x0F0)^
+			((ax>>26)&0x00F) )&
+			(ctx->l2_hmask);
+	}else
+	{
+		h=((ax>>6)^(ax>>ctx->l2_hshr))&(ctx->l2_hmask);
+	}
 
 	ax2=ctx->mem_l2h32k[(h<<2)|0];
 	ax3=ctx->mem_l2h32k[(h<<2)|1];
+	ax4=ctx->mem_l2h32k[(h<<2)|2];
+	ax5=ctx->mem_l2h32k[(h<<2)|3];
 
 	miss0=(ax!=(ax2&0x3FFFFFC0U));
 	miss1=(ax!=(ax3&0x3FFFFFC0U));
+	miss2=(ax!=(ax4&0x3FFFFFC0U));
+	miss3=(ax!=(ax5&0x3FFFFFC0U));
 
 	if(((ax2>>30)&3)!=(ctx->mem_l2rov&3))
 		miss0=1;
 	if(((ax3>>30)&3)!=(ctx->mem_l2rov&3))
 		miss1=1;
+	if(((ax4>>30)&3)!=(ctx->mem_l2rov&3))
+		miss2=1;
+	if(((ax5>>30)&3)!=(ctx->mem_l2rov&3))
+		miss3=1;
 
 	if(!ctx->l2_wmask)
 		miss1=1;
+
+	if(ctx->l2_wmask<3)
+	{
+		miss2=1;
+		miss3=1;
+	}
 
 //	de0=((ax2>>2)-epo)&15;
 //	de1=((ax3>>2)-epo)&15;
@@ -697,7 +764,37 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 	ax|=epo<<2;
 	ax|=((bjx2_addr)(ctx->mem_l2rov&3))<<30;
 
-	if(acc&1)
+	if(ctx->l2_wmask==3)
+	{
+		ax1=ax;
+		if(acc&1)
+			ax1|=1;
+	
+		if(!miss0)
+			return(0);
+		if(!miss1)
+		{
+			ctx->mem_l2h32k[(h<<2)|0]=ax1;
+			ctx->mem_l2h32k[(h<<2)|1]=ax2;
+			return(0);
+		}
+		if(!miss2)
+		{
+			ctx->mem_l2h32k[(h<<2)|0]=ax1;
+			ctx->mem_l2h32k[(h<<2)|1]=ax2;
+			ctx->mem_l2h32k[(h<<2)|2]=ax3;
+			return(0);
+		}
+		if(!miss3)
+		{
+			ctx->mem_l2h32k[(h<<2)|0]=ax1;
+			ctx->mem_l2h32k[(h<<2)|1]=ax2;
+			ctx->mem_l2h32k[(h<<2)|2]=ax3;
+			ctx->mem_l2h32k[(h<<2)|3]=ax4;
+			return(0);
+		}
+	}else
+		if(acc&1)
 //	if(0)
 	{
 		if(!miss0)
@@ -720,6 +817,10 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 			return(0);
 		if(!miss1)
 			return(0);
+//		if(!miss2)
+//			return(0);
+//		if(!miss3)
+//			return(0);
 	}
 
 #if 1
@@ -727,29 +828,29 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 	{
 		/* What if, victim buffer? */
 
-		ax4=0;
-		ax5=0;
+		ax6=0;
+		ax7=0;
 
 #if 1
 		ax1=ax&0x3FFFFFC0U;
-		if(ax1==ctx->mem_l2addr1)	ax4=ctx->mem_l2addr1;
-		if(ax1==ctx->mem_l2addr2)	ax4=ctx->mem_l2addr2;
-		if(ax1==ctx->mem_l2addr3)	ax4=ctx->mem_l2addr3;
-		if(ax1==ctx->mem_l2addr4)	ax4=ctx->mem_l2addr4;
+		if(ax1==ctx->mem_l2addr1)	ax6=ctx->mem_l2addr1;
+		if(ax1==ctx->mem_l2addr2)	ax6=ctx->mem_l2addr2;
+		if(ax1==ctx->mem_l2addr3)	ax6=ctx->mem_l2addr3;
+		if(ax1==ctx->mem_l2addr4)	ax6=ctx->mem_l2addr4;
 #endif
 
-//		if(miss0 && ax4 && !(ax2&1))
-		if(miss0 && ax4)
+//		if(miss0 && ax6 && !(ax2&1))
+		if(miss0 && ax6)
 		{
 			if(acc&1)
-				ax4|=1;
+				ax6|=1;
 
-			ax4|=epo<<2;
-			ax4|=((bjx2_addr)(ctx->mem_l2rov&3))<<30;
+			ax6|=epo<<2;
+			ax6|=((bjx2_addr)(ctx->mem_l2rov&3))<<30;
 			
 			ctx->tot_cnt_mem_l2vihit++;
 
-			ctx->mem_l2h32k[(h<<2)|0]=ax4;
+			ctx->mem_l2h32k[(h<<2)|0]=ax6;
 			return(0);
 		}
 
@@ -770,7 +871,25 @@ int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc)
 	p=p1;
 	dp=1;
 
-	if(acc&1)
+	if(ctx->l2_wmask==3)
+	{
+		if(acc&1)
+			ctx->mem_l2h32k[(h<<2)|0]=ax|1;
+		else
+			ctx->mem_l2h32k[(h<<2)|0]=ax;
+		ctx->mem_l2h32k[(h<<2)|1]=ax2;
+		ctx->mem_l2h32k[(h<<2)|2]=ax3;
+		ctx->mem_l2h32k[(h<<2)|3]=ax4;
+
+//		ctx->mem_l2h32k[(h<<2)|1]=ax4;
+//		ctx->mem_l2h32k[(h<<2)|2]=ax3;
+//		ctx->mem_l2h32k[(h<<2)|3]=ax2;
+
+		if(ax5&1)
+			{ p=p2; dp=2; }
+
+	}else
+		if(acc&1)
 //	if(1)
 	{
 		ctx->mem_l2h32k[(h<<2)|0]=ax|1;

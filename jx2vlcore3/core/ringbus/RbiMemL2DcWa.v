@@ -615,16 +615,22 @@ begin
 	nxtReqAddrLo	= memAddrIn[ 5:0];
 
 `ifdef jx2_mem_l2wsz_1024
-	nxtReqIx	= nxtReqAddr [9:0] ^ nxtReqAddr [19:10];
+//	nxtReqIx	= nxtReqAddr [9:0] ^ nxtReqAddr [19:10];
 //	nxtReqIx	= nxtReqAddr [9:0];
+	nxtReqIx	= nxtReqAddr [9:0] ^
+		{ nxtReqAddr [15:10], nxtReqAddr [19:16] };
 `endif
 
 `ifdef jx2_mem_l2wsz_2048
-	nxtReqIx	= nxtReqAddr [10:0] ^ nxtReqAddr [21:11];
+//	nxtReqIx	= nxtReqAddr [10:0] ^ nxtReqAddr [21:11];
+	nxtReqIx	= nxtReqAddr [10:0] ^
+		{ nxtReqAddr [15:11], nxtReqAddr [21:16] };
 `endif
 
 `ifdef jx2_mem_l2wsz_4096
-	nxtReqIx	= nxtReqAddr [11:0] ^ nxtReqAddr [23:12];
+//	nxtReqIx	= nxtReqAddr [11:0] ^ nxtReqAddr [23:12];
+	nxtReqIx	= nxtReqAddr [11:0] ^
+		{ nxtReqAddr [15:12], nxtReqAddr [19:16], nxtReqAddr [23:20] };
 `endif
 
 `ifdef jx2_mem_l2wsz_8192

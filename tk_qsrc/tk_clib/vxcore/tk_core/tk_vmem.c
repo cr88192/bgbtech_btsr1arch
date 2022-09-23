@@ -943,6 +943,7 @@ int TK_VMem_Init()
 	}
 #endif
 
+	lba=tk_vmem_swap_lba;
 	TKSPI_ReadSectors(tblk2, lba, 1);
 
 #if 1
@@ -1091,7 +1092,9 @@ int TK_VMem_Init()
 		TK_VMem_SetPageTableEntry(tva, tpte);
 //		tk_vmem_loadpte(tva, tpte);
 	}
+#endif
 	
+#if 0
 	/* Identity Map MMIO Range */
 	b=(MMIO_BASE>>TK_VMEM_PAGESHL);
 	n=((MMIO_END-MMIO_BASE)>>TK_VMEM_PAGESHL);

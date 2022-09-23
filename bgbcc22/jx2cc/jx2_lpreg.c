@@ -264,7 +264,8 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 					continue;
 
 //			if(!((sctx->regalc_save)&(3ULL<<i)))
-			if(!((sctx->regalc_save)&(3ULL<<i1)) && sctx->is_simpass)
+//			if(!((sctx->regalc_save)&(3ULL<<i1)) && sctx->is_simpass)
+			if(!((sctx->regalc_save)&(3ULL<<i1)) && (sctx->is_simpass&32))
 			{
 //				creg=bgbcc_jx2_lcachereg[i1+1];
 				creg=sctx->qcachereg[i1+1];
@@ -280,7 +281,8 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 				continue;
 			}
 
-			if(!sctx->is_simpass &&
+//			if(!sctx->is_simpass &&
+			if(!(sctx->is_simpass&32) &&
 				!BGBCC_JX2C_EmitCheckSavedLpRegIndex(ctx, sctx, i1))
 					continue;
 
@@ -315,9 +317,10 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 		{
 			reg1=sctx->regalc_map[bi];
 //			if((nsv>=2) && (sctx->regalc_ltcnt[bi]<=2) &&
-			if((nsv>=1) && (sctx->regalc_ltcnt[bi]<=2) &&
-//			if((nsv>=1) && (sctx->regalc_ltcnt[bi]<=3) &&
-				sctx->is_simpass &&
+//			if((nsv>=1) && (sctx->regalc_ltcnt[bi]<=2) &&
+			if((nsv>=1) && (sctx->regalc_ltcnt[bi]<=3) &&
+//				sctx->is_simpass &&
+				(sctx->is_simpass&32) &&
 				!BGBCC_JX2C_CheckVRegIsZRegP(ctx, sctx, reg1))
 			{
 				bi=-1;
@@ -516,6 +519,16 @@ int BGBCC_JX2C_EmitGetLpRegister(
 //			continue;
 		if(!BGBCC_JX2C_EmitCheckValidLpRegisterIndex(ctx, sctx, i1, algn))
 			continue;
+		
+		reg1=sctx->regalc_map[i1];
+		if(	BGBCC_JX2C_CheckVRegIsZRegP(ctx, sctx, reg1) &&
+			BGBCC_JX2C_EmitCheckSavedLpRegIndex(ctx, sctx, i1) &&
+//			!sctx->is_simpass)
+			!(sctx->is_simpass&32))
+		{
+			bi=i1;
+			break;
+		}
 
 //		if(!((sctx->regalc_live)&(3ULL<<i1)))
 		if(	!((sctx->regalc_live)&(3ULL<<i1)) &&
@@ -574,7 +587,10 @@ int BGBCC_JX2C_EmitGetLpRegister(
 			}
 
 			if((((sctx->regalc_save)>>i1)&3)!=3)
-				{ continue; }
+			{
+//				if((((sctx->regalc_vrsave)>>i1)&3)!=3)
+				continue;
+			}
 
 //			if(!((sctx->regalc_save)&(3ULL<<i1)))
 //				{ continue; }
@@ -594,9 +610,10 @@ int BGBCC_JX2C_EmitGetLpRegister(
 	if(bi>=0)
 	{
 		reg1=sctx->regalc_map[bi];
-		if((nsv>=2) && (sctx->regalc_ltcnt[bi]<=2) &&
-//		if((nsv>=1) && (sctx->regalc_ltcnt[bi]<=2) &&
-			sctx->is_simpass &&
+//		if((nsv>=2) && (sctx->regalc_ltcnt[bi]<=2) &&
+		if((nsv>=1) && (sctx->regalc_ltcnt[bi]<=2) &&
+//			sctx->is_simpass &&
+			(sctx->is_simpass&32) &&
 			!BGBCC_JX2C_CheckVRegIsZRegP(ctx, sctx, reg1))
 		{
 			bi=-1;

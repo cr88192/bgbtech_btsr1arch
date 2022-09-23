@@ -177,6 +177,7 @@ R_MapPlane
 		ds_colormap = planezlight[index];
 	}
 
+#if 0
 	k = (ds_colormap - colormaps)>>8;
 	l = cmap_luma[k];
 	l = l << 8;
@@ -188,11 +189,16 @@ R_MapPlane
 	{
 		ds_color = 0xFFFFAAAA55551111ULL;
 	}
-	
+#else
+	ds_color = 0xFFFFAAAA55551111ULL;
+#endif
+
 	ds_y = y;
 	ds_x1 = x1;
 	ds_x2 = x2;
 	ds_z = distance;
+
+	ds_colormap = R_ColormapRemapForBlend(ds_colormap);
 
 	// high or low detail
 	spanfunc ();	
@@ -439,10 +445,14 @@ void R_DrawPlanes (void)
 			//  i.e. colormaps[0] is used.
 			// Because of this hack, sky is not affected
 			//  by INVUL inverse mapping.
-			dc_colormap = colormaps;
+//			dc_colormap = colormaps;
+			dc_colormap = R_ColormapRemapForBlend(colormaps);
 			dc_texturemid = skytexturemid;
 			if(fixedcolormap)
-				dc_colormap = fixedcolormap;
+			{
+//				dc_colormap = fixedcolormap;
+				dc_colormap = R_ColormapRemapForBlend(fixedcolormap);
+			}
 
 			for (x=pl->minx ; x <= pl->maxx ; x++)
 			{

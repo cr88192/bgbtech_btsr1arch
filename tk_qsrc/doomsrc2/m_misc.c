@@ -384,20 +384,22 @@ void M_LoadDefaults (void)
 	int		parm;
 	boolean	isstring;
 	
+	parm = 0;
+	
 	// set everything to base values
 	numdefaults = sizeof(defaults)/sizeof(defaults[0]);
 	for (i=0 ; i<numdefaults ; i++)
-	*defaults[i].location = defaults[i].defaultvalue;
+		*defaults[i].location = defaults[i].defaultvalue;
 	
 	// check for a custom default file
 	i = M_CheckParm ("-config");
 	if (i && i<myargc-1)
 	{
-	defaultfile = myargv[i+1];
-	printf ("	default file: %s\n",defaultfile);
+		defaultfile = myargv[i+1];
+		printf ("	default file: %s\n",defaultfile);
 	}
 	else
-	defaultfile = basedefault;
+		defaultfile = basedefault;
 	
 	// read the file in, overriding any set defaults
 	f = fopen (defaultfile, "r");

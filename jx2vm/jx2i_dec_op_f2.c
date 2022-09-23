@@ -125,6 +125,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	op->rm=rm_dfl;
 	op->imm=imm9u;
 
+	op->rp=BJX2_REG_ZZR;
+	op->rq=BJX2_REG_GBR_HI;
+
 	ret=0;
 	switch((opw2>>12)&15)
 	{

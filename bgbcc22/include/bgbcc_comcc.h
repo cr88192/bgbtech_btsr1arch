@@ -368,6 +368,19 @@ int stat_ldst_pbotot_9b;
 int stat_ldst_pbotot_10b;
 int stat_ldst_pbotot_33b;
 
+int stat_func_tot;
+int stat_func_leaf;
+int stat_func_leaftiny;
+int stat_func_maxrsv;
+int stat_func_partrsv;
+
+int stat_func_alias;
+
+int stat_func_acc_vsprsv;
+int stat_func_acc_vspan;
+int stat_func_acc_vspval;
+int stat_func_acc_vspmax;
+
 int stat_imm3ri_imm9u;
 int stat_imm3ri_imm9n;
 int stat_imm3ri_imm5u;
@@ -450,6 +463,7 @@ u64 regalc_live;		//register is currently holding a value
 u64 regalc_dirty;		//register is dirty
 u64 regalc_noval;		//register lacks backing value
 u64 regalc_pair;		//register is paired
+u64 regalc_gbldirty;	//register is dirty (global)
 
 ccxl_register fregalc_map[64];
 short fregalc_ltcnt[64];	//lifetime count (who to evict)

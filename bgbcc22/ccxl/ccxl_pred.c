@@ -739,6 +739,21 @@ ccxl_type BGBCC_CCXL_GetRegReturnType(
 	return(dty);
 }
 
+int BGBCC_CCXL_IsRegGlobalFunctionP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	ccxl_type bty;
+	int i, j, k;
+
+	if(!BGBCC_CCXL_IsRegGlobalP(ctx, reg))
+		return(0);
+	bty=BGBCC_CCXL_GetRegType(ctx, reg);
+	if(!BGBCC_CCXL_TypeFunctionP(ctx, bty))
+		return(0);
+
+	return(1);
+}
+
 ccxl_type BGBCC_CCXL_GetRegPointerToType(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {

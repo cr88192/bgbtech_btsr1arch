@@ -1365,7 +1365,7 @@ BCCX_Node *BGBCP_ReduceStatementForm(BGBCP_ParseState *ctx,
 
 		t=BGBCP_ReduceType(ctx, t);
 		a=BGBCP_ReduceStatementForm(ctx, a, 0);
-		v=BGBCP_ReduceStatementForm(ctx, v, 0);
+//		v=BGBCP_ReduceStatementForm(ctx, v, 0);
 
 		x=BCCX_NewCst(&bgbcc_rcst_proto, "proto");
 		BCCX_SetCst(x, &bgbcc_rcst_name, "name", s);

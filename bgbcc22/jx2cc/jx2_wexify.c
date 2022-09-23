@@ -1935,6 +1935,12 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 				return(0);
 		}
 
+		if((opw2&0xF008)==0x0000)
+		{
+			if((sctx->use_wexmd==1) || (fl&1))
+				return(0);
+		}
+
 		if((opw2&0xF008)==0x1000)
 		{
 			if(opw2&0x0800)

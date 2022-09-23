@@ -1053,6 +1053,7 @@ I_InitSound()
 	}
 	i_sound_init=1;
 
+	rate=0;
 	
 	// Secure and configure sound device first.
 	fprintf( stderr, "I_InitSound: ");

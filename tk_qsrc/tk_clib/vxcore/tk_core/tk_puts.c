@@ -570,8 +570,8 @@ void tk_print_decimal_n(int val, int num)
 	if(k<0)
 		{ k=-k; s=1; }
 	
-	if(n>=256)
-		{ __debugbreak(); }
+//	if(n>=256)
+//		{ __debugbreak(); }
 	
 	t=tb; n=num;
 //	if(!k)*t++=0;	

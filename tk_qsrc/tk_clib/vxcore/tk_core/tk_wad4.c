@@ -218,6 +218,8 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 		tk_fread(img->w2dir, 1, inf->numlumps*sizeof(TK_Wad2Lump), fd);
 
 		img->hashsz=64;
+		hsz=64;
+		
 		img->hash2=tk_malloc_krn(hsz*2);
 		tk_fread(img->hash2, 1, hsz*2, fd);
 	}
@@ -543,6 +545,7 @@ int TK_Wad4_GetLumpDirRawLink(TK_WadImage *img,
 	int sz;
 	int i, j, k;
 	
+	sz=0;
 	if(img->w4dir)
 	{
 		ptr=TK_Wad4_GetCacheLumpNum(img, lump, &sz);
@@ -550,6 +553,7 @@ int TK_Wad4_GetLumpDirRawLink(TK_WadImage *img,
 		ct=(byte *)name;
 		cs=ptr;
 		cse=cs+sz;
+		ct0=ct;
 		
 		while(cs<cse)
 		{
@@ -602,7 +606,7 @@ int TK_Wad4_GetLumpDirBaseLink(TK_WadImage *img, int lump,
 	int sz, isuri;
 	int i, j, k;
 	
-	TK_Wad4_GetLumpDirRawLink(img, lump, tb);
+	sz=TK_Wad4_GetLumpDirRawLink(img, lump, tb);
 	ptr=tb;
 
 	cs=ptr; i=*cs++;
@@ -662,6 +666,8 @@ void TK_Wad4_ReadLumpBuffer(TK_WadImage *img, int lump, void *buf)
 	int csz, lmp1, offs0, ofs1, csz1;
 	int dsz;
 	int cmp;
+
+	csz1=0;
 
 	if(img->w4dir)
 	{
@@ -1482,7 +1488,7 @@ int TK_Wad4_CreateLink(TK_WadImage *img, char *path, char *dest)
 int TK_Wad4_UnlinkDirLump(TK_WadImage *img, int id)
 {
 	TK_Wad4Lump *lmp, *lmp1, *plmp;
-	int id, id1, pfx, hi;
+	int id1, pfx, hi;
 
 	lmp=img->w4dir+id;
 	pfx=lmp->dirid;

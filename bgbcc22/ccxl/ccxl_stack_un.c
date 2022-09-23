@@ -121,6 +121,9 @@ ccxl_status BGBCC_CCXL_StackUnaryOpName(BGBCC_TransState *ctx,
 		}
 	}
 
+//	if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
+//		__debugbreak();
+
 	BGBCC_CCXL_EmitUnaryOp(ctx, sty, opr, sreg, sreg);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
 	return(CCXL_STATUS_YES);

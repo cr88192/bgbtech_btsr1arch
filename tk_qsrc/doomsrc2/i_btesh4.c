@@ -2027,7 +2027,8 @@ void I_FinishUpdate (void)
 	if(!screen)
 		return;
 
-	if(vid_flashblend)
+//	if(vid_flashblend)
+	if(0)
 	{
 //		screen_tmp
 

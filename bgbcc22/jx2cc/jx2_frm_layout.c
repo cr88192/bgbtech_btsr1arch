@@ -29,6 +29,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 {
 	BGBCC_CCXL_VirtOp *vop, *vop1;
 	BGBCC_CCXL_VirtTr *vtr;
+	u32 localmap[16];
 	char *fname;
 	ccxl_register reg;
 	ccxl_type tty;
@@ -46,6 +47,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	sctx->frm_offs_retstr=0;
 	sctx->frm_offs_thisptr=0;
 	sctx->frm_offs_isrsaves=0;
+
+	memset(localmap, 0, 16*sizeof(u32));
 
 	for(i=0; i<obj->n_vop; i++)
 	{
@@ -275,6 +278,57 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	for(i=0; i<obj->n_vop; i++)
 	{
+		vop=obj->vop[i];
+
+		if(vop->opn==CCXL_VOP_CALL)
+		{
+			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAF;
+		}
+		
+		if(BGBCC_CCXL_IsRegGlobalP(ctx, vop->dst))
+		{
+			ctx->cur_func->regflags|=BGBCC_REGFL_GBLSTORE;
+		}
+
+		if(vop->opn==CCXL_VOP_DBGFN)
+			{ ctx->lfn=vop->imm.str; }
+		if(vop->opn==CCXL_VOP_DBGLN)
+			{ ctx->lln=vop->imm.si; }
+
+		if(!sctx->is_simpass)
+		{
+			if(BGBCC_CCXL_IsRegLocalP(ctx, vop->dst))
+			{
+				j=vop->dst.val&4095;
+				localmap[j>>5]|=1U<<(j&31);
+			}
+
+			if(BGBCC_CCXL_IsRegLocalP(ctx, vop->srca))
+			{
+				j=vop->srca.val&4095;
+				if(!(localmap[j>>5]&(1U<<(j&31))))
+				{
+					printf("%s:%d uninitialized local %s\n",
+						ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+					localmap[j>>5]|=1U<<(j&31);
+				}
+			}
+
+			if(BGBCC_CCXL_IsRegLocalP(ctx, vop->srcb))
+			{
+				j=vop->srcb.val&4095;
+				if(!(localmap[j>>5]&(1U<<(j&31))))
+				{
+					printf("%s:%d uninitialized local %s\n",
+						ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+					localmap[j>>5]|=1U<<(j&31);
+				}
+			}
+		}
+	}
+
+	for(i=0; i<obj->n_vop; i++)
+	{
 		vtr=obj->vtr[trn];
 		vop=obj->vop[i];
 
@@ -288,7 +342,21 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		sctx->tr_opnum=i;
 		
 		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->dst, 1, vop->tgt_mult);
-		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->srca, 0, vop->tgt_mult);
+
+		if(vop->opn!=CCXL_VOP_CALL)
+//		if(1)
+		{
+			BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,
+				vop->srca, 0, vop->tgt_mult);
+		}else
+		{
+			if(!BGBCC_CCXL_IsRegGlobalFunctionP(ctx, vop->srca))
+			{
+				BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,
+					vop->srca, 0, vop->tgt_mult);
+			}
+		}
+
 		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->srcb, 0, vop->tgt_mult);
 
 

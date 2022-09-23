@@ -666,6 +666,8 @@ boolean PIT_AddThingIntercepts (mobj_t* thing)
 	
 	fixed_t		frac;
 	
+	x1 = y2 = x2 = y1 = 0;
+	
 	tracepositive = (trace.dx ^ trace.dy)>0;
 	
 	if(R_ThingIsPolyObjP(thing))

@@ -122,8 +122,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_fmovc=0;
 	shctx->has_dmacl=0;
 
-	shctx->do_shuffle=0;
-//	shctx->do_shuffle=1;
+//	shctx->do_shuffle=0;
+	shctx->do_shuffle=1;
 
 //	shctx->no_fpu=1;
 	shctx->no_ext32=0;
@@ -2277,6 +2277,18 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 		BGBCC_JX2_SetSectionName(sctx, ".text");
 	}
 
+	if(!sctx->is_simpass)
+	{
+		sctx->stat_func_tot++;
+		if(sctx->is_leaftiny&1)
+			{ sctx->stat_func_leaftiny++; }
+		else if(sctx->is_leaf&1)
+			{ sctx->stat_func_leaf++; }
+		
+		if(ctx->cur_func->regflags&BGBCC_REGFL_ALIASPTR)
+			{ sctx->stat_func_alias++; }
+	}
+
 	ctx->cur_func=NULL;
 	sctx->is_tr_leaf=0;
 
@@ -2288,10 +2300,10 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 {
 	BGBCC_JX2_Context *sctx;
 //	char tbuf[256];
-	int fnsz[8];
-	int fnsz_pro[8];
-	int fnsz_epi[8];
-	int fnsz_bod[8];
+	int fnsz[16];
+	int fnsz_pro[16];
+	int fnsz_epi[16];
+	int fnsz_bod[16];
 	int otrov, issta;
 	int l0, l1, np, co, lo, bo, bo1, co1, sz, sz1, msz, nsz;
 	byte simonly;
@@ -2473,8 +2485,10 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 
 //	{ BGBCC_DBGBREAK }
 
+//	for(np=0; np<8; np++)
 //	for(np=0; np<6; np++)
-	for(np=0; np<4; np++)
+	for(np=0; np<5; np++)
+//	for(np=0; np<4; np++)
 	{
 		sctx->lbltrov=otrov;
 
@@ -2486,6 +2500,12 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		{
 			BGBCC_JX2_SetBeginSimPass(sctx);
 			sctx->is_simpass=np+1;
+			
+//			if(np<4)
+			if(np<3)
+			{
+				sctx->is_simpass=32|(np+1);
+			}
 
 #if 1
 //			if((obj->n_args+obj->n_locals+obj->n_regs)<12)
@@ -5874,6 +5894,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx;
 	BGBCC_CCXL_RegisterInfo *obj, *obj1, *obj2;
 	BGBCC_CCXL_LiteralInfo *litobj;
+	double f, g;
 	int *shufarr;
 	int t0, t1, t2, t3;
 	int l0;
@@ -6217,6 +6238,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				j>>=1;
 			}
 		}
+
+		if(obj->regtype==CCXL_LITID_FUNCTION)
+		{
+			obj->gblrefcnt>>=2;
+		}
 	}
 
 
@@ -6250,8 +6276,19 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			{
 				obj1=ctx->reg_globals[shufarr[i]];
 				obj2=ctx->reg_globals[shufarr[j]];
+				
+				f=1.25;
+				if(	(obj1->regtype==CCXL_LITID_GLOBALVAR) &&
+					(obj2->regtype==CCXL_LITID_GLOBALVAR) )
+						f=1.0625;
+				if(	(obj1->regtype==CCXL_LITID_FUNCTION) &&
+					(obj2->regtype==CCXL_LITID_FUNCTION) )
+						f=1.5;
+				
 				if((obj2->gblrefcnt>obj1->gblrefcnt) &&
-					(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>1.25))
+//					(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>1.25))
+//					(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>1.125))
+					(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>f))
 				{
 					k=shufarr[i];
 					shufarr[i]=shufarr[j];
@@ -6982,6 +7019,28 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			(100.0*sctx->stat_ldst_pbotot_9b)/sctx->stat_ldst_pbotot,
 			(100.0*sctx->stat_ldst_pbotot_10b)/sctx->stat_ldst_pbotot,
 			(100.0*sctx->stat_ldst_pbotot_33b)/sctx->stat_ldst_pbotot);
+	}
+
+	if(sctx->stat_func_tot>0)
+	{
+		printf("TotalFuncs=%d\n"
+				"  Leaf: LeafTiny=%.2f%% LeafOther=%.2f%%\n"
+				"  Non-Leaf: MaxRsv=%.2f%% PartRsv=%.2f%% Alias=%.2f%%\n",
+			sctx->stat_func_tot,
+			(100.0*sctx->stat_func_leaftiny)/sctx->stat_func_tot,
+			(100.0*sctx->stat_func_leaf    )/sctx->stat_func_tot,
+			(100.0*sctx->stat_func_maxrsv  )/sctx->stat_func_tot,
+			(100.0*sctx->stat_func_partrsv )/sctx->stat_func_tot,
+			(100.0*sctx->stat_func_alias   )/sctx->stat_func_tot);
+
+		if(sctx->stat_func_partrsv>0)
+		{
+			printf("  Part-Rsv Avg: rsv/val/tot=%.2f/%.2f/%.2f max=%.2f\n",
+				(1.0*sctx->stat_func_acc_vsprsv )/(sctx->stat_func_partrsv),
+				(1.0*sctx->stat_func_acc_vspval )/(sctx->stat_func_partrsv),
+				(1.0*sctx->stat_func_acc_vspan  )/(sctx->stat_func_partrsv),
+				(1.0*sctx->stat_func_acc_vspmax )/(sctx->stat_func_partrsv));
+		}
 	}
 
 	printf("WEXed: F0=%.2f%% F1=%.2f%% F2=%.2f%% F8=%.2f%% Tot=%.2f%%\n",

@@ -747,6 +747,8 @@ int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,
 //		sctx->sreg_live || sctx->sfreg_live)
 //			{ BGBCC_DBGBREAK }
 
+	BGBCC_JX2C_EmitSyncProlog(ctx, sctx);
+
 	sctx->is_leaftiny=1;
 	
 	return(0);
@@ -1066,6 +1068,32 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		if(k&BGBCC_REGFL_TEMPLOAD)
 			{ maxvalidrsv=i; break; }
 
+		if(sctx->vspan[i]->flag&BGBCC_RSPFL_NONBASIC)
+			{ maxvalidrsv=i; break; }
+		if(sctx->vspan[i]->flag&BGBCC_RSPFL_ALIASPTR)
+			{ maxvalidrsv=i; break; }
+
+		if(sctx->vspan[i]->flag&BGBCC_RSPFL_NONLOCAL)
+		{
+#if 1
+			if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
+				(sctx->is_leaf&1) &&
+//				!(sctx->vspan[i]->flag&BGBCC_RSPFL_GBLSTORE) &&
+				!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
+			{
+				continue;
+			}
+#endif
+
+//			if(BGBCC_CCXL_IsRegImmP(ctx, reg))
+//			{
+//				continue;
+//			}
+
+			maxvalidrsv=i; break;
+		}
+
+#if 0
 		if(
 			!BGBCC_CCXL_IsRegTempP(ctx, reg) &&
 			!BGBCC_CCXL_IsRegArgP(ctx, reg) &&
@@ -1087,6 +1115,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			BGBCC_CCXL_TypeQuadVarObjP(ctx, tty) ||
 			BGBCC_CCXL_TypeQuadVarRefP(ctx, tty))
 				{ maxvalidrsv=i; break; }
+#endif
 	}
 #endif
 
@@ -1115,6 +1144,31 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	{
 		sctx->vsp_rsv=sctx->vspan_num;
 		ismaxrsv=1;
+	}else if(sctx->vspan_num<=maxrsv)
+	{
+		ismaxrsv=0;
+
+#if 1
+		for(i=maxvalidrsv; i<sctx->vspan_num; i++)
+		{
+			reg=sctx->vspan[i]->reg;
+			if(!BGBCC_CCXL_IsRegImmP(ctx, reg))
+				break;
+//			if(ctx->cur_func->regflags&BGBCC_REGFL_IMMLOAD)
+//				break;
+		}
+
+		ismaxrsv=0;
+		
+		if(i==sctx->vspan_num)
+		{
+//			sctx->vsp_rsv=sctx->vspan_num;
+			ismaxrsv=1;
+		}
+#endif
+	}else
+	{
+		ismaxrsv=0;
 	}
 	
 	if(sctx->use_bp)sctx->vsp_rsv--;
@@ -1132,12 +1186,15 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	for(i=0; i<sctx->vsp_rsv; i++)
 	{
 		cnt+=sctx->vspan[i]->cnt;
+
+#if 1
 //		if((cnt<(sctx->vsp_tcnt/8)) && !(ismaxrsv>0))
 		if((cnt<(sctx->vsp_tcnt/16)) && !(ismaxrsv>0))
 //		if((cnt<(sctx->vsp_tcnt/32)) && !(ismaxrsv>0))
 //		if((cnt<((sctx->vsp_tcnt*8)>>8)) && !(ismaxrsv>0))
 //		if((cnt<((sctx->vsp_tcnt*6)>>8)) && !(ismaxrsv>0))
 			{ sctx->vsp_rsv=i; break; }
+#endif
 
 		if(BGBCC_CCXL_IsRegArgP(ctx, reg) && (obj->n_args>8))
 			{ sctx->vsp_rsv=i; break; }
@@ -1179,6 +1236,34 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 #endif
 	}
 #endif
+
+	if(sctx->vspan_num!=sctx->vsp_rsv)
+	{
+		if(ctx->cur_func->regflags&BGBCC_REGFL_HAS128)
+		{
+			if(sctx->vsp_rsv>(maxrsv-6))
+				sctx->vsp_rsv=(maxrsv-6);
+		}else
+		{
+			if(sctx->vsp_rsv>(maxrsv-3))
+				sctx->vsp_rsv=(maxrsv-3);
+		}
+	}
+
+	if(!sctx->is_simpass)
+	{
+		if(sctx->vspan_num==sctx->vsp_rsv)
+		{
+			sctx->stat_func_maxrsv++;
+		}else
+		{
+			sctx->stat_func_partrsv++;
+			sctx->stat_func_acc_vsprsv+=sctx->vsp_rsv;
+			sctx->stat_func_acc_vspan +=sctx->vspan_num;
+			sctx->stat_func_acc_vspval+=maxvalidrsv;
+			sctx->stat_func_acc_vspmax+=maxrsv;
+		}
+	}
 
 	k=0;
 
@@ -2684,6 +2769,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //			{ sctx->vsp_rsv=i; break; }
 	}
 #endif
+
+	BGBCC_JX2C_EmitSyncProlog(ctx, sctx);
 
 	if(	sctx->regalc_live || sctx->fregalc_live ||
 		sctx->sreg_live || sctx->sfreg_live)

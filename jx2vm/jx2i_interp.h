@@ -1030,6 +1030,7 @@ byte	l1d_wmask;
 
 short	l2_hmask;
 byte	l2_wmask;
+byte	l2_hshr;
 byte	l2_vict;		//L2 enable victim buffer
 
 // u64 mem_tlb_hi[64*4];

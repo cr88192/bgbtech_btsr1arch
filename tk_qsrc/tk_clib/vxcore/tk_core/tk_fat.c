@@ -2177,6 +2177,7 @@ int TKFAT_WalkDirEntNext(TKFAT_ImageInfo *img,
 	bln2[0]=0;
 	h0=-1;
 	h1=-1;
+	lh=-1;
 
 	for(i=sidx; i<65536; i++)
 	{

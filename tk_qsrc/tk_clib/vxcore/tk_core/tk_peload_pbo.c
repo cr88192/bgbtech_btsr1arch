@@ -753,6 +753,7 @@ TK_FILE *TKPE_TryOpenImage(
 		}
 	}
 
+	path=NULL; npath=0;
 	TK_Env_GetPathList(&path, &npath);
 	for(i=0; i<npath; i++)
 	{
@@ -914,6 +915,7 @@ int TKPE_LookupPboImageRelPath(char *imgname, char *cwd, int isdll)
 		}
 	}
 
+	path=NULL; npath=0;
 	TK_Env_GetPathList(&path, &npath);
 	for(i=0; i<npath; i++)
 	{

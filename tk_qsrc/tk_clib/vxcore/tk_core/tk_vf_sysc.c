@@ -103,6 +103,7 @@ TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	
 	tk_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
 	
+	p=NULL;
 //	ar[0].p=name;
 	ar[0].p=tfname;
 	ar[1].p=mode;
@@ -131,6 +132,7 @@ TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 
 	tk_printf("tk_sysc_opendir: %s -> %s\n", name, tfname);
 	
+	p=NULL;
 //	ar[0].p=name;
 	ar[0].p=tfname;
 	i=tk_syscall(NULL, TK_UMSG_VFOPENDIR, &p, ar);
@@ -169,6 +171,7 @@ int tk_sysc_rename(TK_MOUNT *mnt,
 	
 //	tk_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
 	
+	p=NULL;
 //	ar[0].p=name;
 	ar[0].p=tfoname;
 	ar[1].p=tfnname;
@@ -186,6 +189,7 @@ int tk_sysc_fclose(TK_FILE *fd)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	i=tk_syscall(NULL, TK_UMSG_VFCLOSE, &p, ar);
 	tk_free_file(fd);
@@ -198,6 +202,7 @@ int tk_sysc_closedir(TK_DIR *fd)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	i=tk_syscall(NULL, TK_UMSG_VFCLOSEDIR, &p, ar);
 	free(fd->udata2);
@@ -211,6 +216,7 @@ int tk_sysc_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	ar[1].p=buf;
 	ar[2].i=sz1*sz2;
@@ -224,6 +230,7 @@ int tk_sysc_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	ar[1].p=buf;
 	ar[2].i=sz1*sz2;
@@ -238,6 +245,7 @@ s64 tk_sysc_fseek(TK_FILE *fd, s64 ofs, int rel)
 	void *p;
 	int i;
 	
+	li=0;
 	ar[0].i=fd->ifd;
 	ar[1].l=ofs;
 	ar[2].i=rel;
@@ -252,6 +260,7 @@ s64 tk_sysc_ftell(TK_FILE *fd)
 	void *p;
 	int i;
 	
+	li=0;
 	ar[0].i=fd->ifd;
 	ar[1].l=0;
 	ar[2].i=1;
@@ -288,6 +297,7 @@ int tk_sysc_fioctl(TK_FILE *fd, int cmd, void *ptr)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	ar[1].i=cmd;
 	ar[2].p=ptr;
@@ -303,6 +313,7 @@ int tk_sysc_fsend(TK_FILE *fd, int cmd,
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	ar[1].i=cmd;
 	ar[2].p=msgbuf;
@@ -322,6 +333,7 @@ int tk_sysc_frecv(TK_FILE *fd, int cmd,
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	ar[1].i=cmd;
 	ar[2].p=msgbuf;
@@ -339,6 +351,7 @@ TK_DIRENT *tk_sysc_readdir(TK_DIR *fd)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=fd->ifd;
 	ar[1].p=fd->udata2;
 	ar[2].i=sizeof(TK_DIRENT);

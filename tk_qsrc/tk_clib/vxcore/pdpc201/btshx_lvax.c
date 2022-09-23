@@ -180,6 +180,7 @@ double __lvax_conv_tof64(u128 val)
 	tg=(val>>60)&15;
 	if(tg==5)
 	{
+		fx=0;
 		v1=(val>>64)|(val<<64);
 		v1=v1<<4;
 		*(u128 *)(&fx)=v1;
@@ -240,6 +241,7 @@ double __lvax_conv_tof64_gen(u128 val)
 	tg=(val>>60)&15;
 	if(tg==5)
 	{
+		fx=0;
 		v1=(val>>64)|(val<<64);
 		v1=v1<<4;
 		*(u128 *)(&fx)=v1;

@@ -37,7 +37,7 @@ TKGDI_BlitUpdate_ScanCopy:
 	BF .loop
 #endif
 
-#if 1
+#if 0
 	SHLD	R6, -1, R6
 	.loop:
 							MOV.X	(R4,    0), R16
@@ -53,6 +53,39 @@ TKGDI_BlitUpdate_ScanCopy:
 	ADD		-1, R6		|	MOV.Q	R21, (R5, 48)
 	ADD		16, R4		|	MOV.Q	R23, (R5, 56)
 	ADD		64, R5		|	TEST	R6, R6
+	BF .loop
+#endif
+
+#if 1
+	SHLD	R6, -2, R6
+	.loop:
+							MOV.X	(R4,    0), R16
+							MOV.X	(R4,  640), R18
+							MOV.X	(R4, 1280), R20
+							MOV.X	(R4, 1920), R22
+							MOV.Q	R16, (R5,  0)
+							MOV.Q	R18, (R5,  8)
+							MOV.Q	R20, (R5, 16)
+							MOV.Q	R22, (R5, 24)
+							MOV.Q	R17, (R5, 32)
+							MOV.Q	R19, (R5, 40)
+							MOV.Q	R21, (R5, 48)
+							MOV.Q	R23, (R5, 56)
+
+							MOV.X	(R4,   16), R16
+							MOV.X	(R4,  656), R18
+							MOV.X	(R4, 1296), R20
+							MOV.X	(R4, 1936), R22
+							MOV.Q	R16, (R5,  64)
+							MOV.Q	R18, (R5,  72)
+							MOV.Q	R20, (R5,  80)
+							MOV.Q	R22, (R5,  88)
+							MOV.Q	R17, (R5,  96)
+							MOV.Q	R19, (R5, 104)
+	ADD		-1, R6		|	MOV.Q	R21, (R5, 112)
+	ADD		32, R4		|	MOV.Q	R23, (R5, 120)
+
+	ADD		128, R5		|	TEST	R6, R6
 	BF .loop
 #endif
 
@@ -192,6 +225,7 @@ void TKGDI_BlitUpdate_EncodeCell8x8x1(u16 *ics, u32 *ict, int sbxs)
 	clrn=(cr1<<10)|(cg1<<5)|cb1;
 #endif
 
+	pxb=0;
 	for(i=0; i<64; i++)
 	{
 		cy=clry[i];
@@ -331,6 +365,7 @@ void TKGDI_BlitUpdate_EncodeCell4x4x2(
 #endif
 
 #if 1
+	pxc=0;
 	rcp=tkgdi_enc2b_rcptab[ncy-mcy];
 	pclry=clry;
 	for(i=0; i<4; i++)
@@ -425,6 +460,7 @@ u64 TKGDI_BlitUpdate_EncodeCellUTX2(u16 *ics, int sbxs)
 	
 	acy=(mcy+ncy)>>1;
 
+	pxc=0;
 	rcp=tkgdi_enc2b_rcptab[ncy-mcy];
 	pclry=clry;
 	for(i=0; i<4; i++)

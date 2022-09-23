@@ -7,7 +7,7 @@ CC=bgbcc
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj /Zz
 
 TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
-	/Zz /fshuffle /fqmul /ptropts
+	/Zz /fshuffle /fqmul /fptropts /fxgpr /fnoexcept /frsub /fldgbr
 
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 \
 #	/fwex3w_io2fp2 /fwexj /Zz /fshuffle /fqmul /ptropts

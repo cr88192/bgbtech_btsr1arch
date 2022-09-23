@@ -105,6 +105,7 @@ void Z_Init (void)
 	memblock_t*	block;
 	int		size;
 
+	size = 0;
 	mainzone = (memzone_t *)I_ZoneBase (&size);
 	mainzone->size = size;
 

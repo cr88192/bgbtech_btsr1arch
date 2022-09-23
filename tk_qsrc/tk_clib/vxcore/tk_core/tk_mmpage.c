@@ -527,6 +527,7 @@ int TKMM_PageFreeV(void *ptr, int sz)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].p=ptr;
 	ar[1].i=sz;
 	i=tk_syscall(NULL, TK_UMSG_PAGEFREE, &p, ar);
@@ -538,6 +539,7 @@ void TK_ExitV(int res)
 	TK_SysArg ar[4];
 	void *p;
 	
+	p=NULL;
 	ar[0].i=res;
 	tk_syscall(NULL, TK_UMSG_PGMEXIT, &p, ar);
 }

@@ -447,6 +447,7 @@ int tk_wad4_fclose(TK_FILE *fd)
 	void *p;
 	int i;
 	
+	i=0;
 	tk_free_file(fd);
 	return(i);
 }
@@ -456,6 +457,7 @@ int tk_wad4_closedir(TK_DIR *fd)
 	void *p;
 	int i;
 	
+	i=0;
 	free(fd->udata2);
 	tk_free_dir(fd);
 	return(i);
@@ -466,7 +468,7 @@ int tk_wad4_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 	TK_WadImage *img;
 	byte *cs, *ct, *cte;
 	void *ptr;
-	int sz, sz1, fofs, rofs, rsz, rsz1;
+	int sz, fofs, rofs, rsz, rsz1;
 	int i;
 
 	sz=sz1*sz2;
@@ -477,6 +479,7 @@ int tk_wad4_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 	
 	while(ct<cte)
 	{
+		rofs=0; rsz=0;
 		ptr=TK_Wad4_GetCacheLumpNumOffs(img, fd->ifd, fofs, &rofs, &rsz);
 		if(!ptr)
 			break;
@@ -502,7 +505,7 @@ int tk_wad4_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	TK_WadImage *img;
 	byte *cs, *ct, *cte;
 	void *ptr;
-	int sz, sz1, fofs, rofs, rsz, rsz1;
+	int sz, fofs, rofs, rsz, rsz1;
 	int i;
 
 	sz=sz1*sz2;
@@ -516,6 +519,8 @@ int tk_wad4_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	
 	while(ct<cte)
 	{
+		rofs=0;
+		rsz=0;
 		ptr=TK_Wad4_GetCacheExpandLumpNumOffs(img, fd->ifd,
 			fofs, cte-ct, &rofs, &rsz);
 		if(!ptr)

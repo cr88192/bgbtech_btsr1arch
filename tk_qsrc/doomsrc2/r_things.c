@@ -498,7 +498,9 @@ R_DrawVisSprite
 		// NULL colormap = shadow draw
 		colfunc = fuzzcolfunc;
 	}
-	
+
+	dc_colormap = R_ColormapRemapForBlend(dc_colormap);
+
 	dc_iscale = abs(vis->xiscale)>>detailshift;
 	dc_texturemid = vis->texturemid;
 	frac = vis->startfrac;
@@ -581,7 +583,9 @@ R_DrawVisSprite
 		dc_translation = translationtables - 256 +
 			( (vis->mobjflags & MF_TRANSLATION) >> (MF_TRANSSHIFT-8) );
 	}
-	
+
+	dc_colormap = R_ColormapRemapForBlend(dc_colormap);
+
 	dc_iscale = abs(vis->xiscale)>>detailshift;
 	dc_texturemid = vis->texturemid;
 	frac = vis->startfrac;

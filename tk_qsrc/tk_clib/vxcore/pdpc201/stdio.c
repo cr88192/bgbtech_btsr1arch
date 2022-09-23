@@ -543,6 +543,9 @@ __PDPCLIB_API__ size_t fread(void *ptr,
 	int errind;
 	size_t tempRead;
 
+	errind = 0;
+	actualRead = 0;
+
 	if(!stream)
 		return(-1);
 
@@ -693,6 +696,7 @@ static void freadSlowT(void *ptr,
 	size_t tempRead;
 	int errind;
 
+	errind=0;
 	*actualRead = 0;
 	while (!finReading)
 	{
@@ -773,6 +777,8 @@ static void freadSlowB(void *ptr,
 	size_t tempRead;
 	int errind;
 
+	errind = 0;
+
 	avail = (size_t)(stream->endbuf - stream->upto);
 	memcpy(ptr, stream->upto, avail);
 	*actualRead = avail;
@@ -845,6 +851,9 @@ __PDPCLIB_API__ size_t fwrite(const void *ptr,
 	size_t elemWritten;
 	size_t actualWritten;
 	int errind;
+
+	errind = 0;
+	elemWritten = 0;
 
 	if(!stream)
 		return(-1);
@@ -920,6 +929,8 @@ static void fwriteSlow(const void *ptr,
 {
 	size_t actualWritten;
 
+	actualWritten = 0;
+
 	/* Normally, on output, there will never be a situation where
 	   the write buffer is full, but it hasn't been written out.
 	   If we find this to be the case, then it is because we have
@@ -982,6 +993,7 @@ static void fwriteSlowT(const void *ptr,
 	size_t tempWritten;
 	int errind;
 
+	errind = 0;
 	*actualWritten = 0;
 	tptr = (char *)ptr;
 	p = tptr;
@@ -1135,6 +1147,8 @@ static void fwriteSlowB(const void *ptr,
 	size_t tempWritten;
 	int errind;
 
+	errind = 0;
+
 	spare = (size_t)(stream->endbuf - stream->upto);
 	if (towrite < spare)
 	{
@@ -1209,8 +1223,9 @@ static int vvprintf(const char *format, va_list arg,
 
 	dste=s+nmax;
 
-	fin=0;
-	chcount=0;
+	fin = 0;
+	chcount = 0;
+	llong = 0;
 
 	while (!fin)
 	{
@@ -2090,6 +2105,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 	size_t actualRead;
 	int errind;
 
+	errind=-1;
+
 	if (stream->quickText)
 	{
 		p = stream->upto + n - 1;
@@ -2555,6 +2572,8 @@ __PDPCLIB_API__ int fflush(FILE *stream)
 {
 	int errind;
 	size_t actualWritten;
+
+	errind = 0;
 
 	if ((stream->upto != stream->fbuf) && (stream->mode == __WRITE_MODE))
 	{

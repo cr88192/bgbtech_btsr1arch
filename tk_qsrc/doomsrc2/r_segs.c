@@ -182,7 +182,10 @@ R_RenderMaskedSegRange
 	dc_texturemid += curline->sidedef->rowoffset;
 			
 	if (fixedcolormap)
-		dc_colormap = fixedcolormap;
+	{
+//		dc_colormap = fixedcolormap;
+		dc_colormap = R_ColormapRemapForBlend(fixedcolormap);
+	}
 		
 	tz = ds->tz1;
  
@@ -201,7 +204,8 @@ R_RenderMaskedSegRange
 				if (index >=  MAXLIGHTSCALE )
 					index = MAXLIGHTSCALE-1;
 
-				dc_colormap = walllights[index];
+//				dc_colormap = walllights[index];
+				dc_colormap = R_ColormapRemapForBlend(walllights[index]);
 			}
 				
 			sprtopscreen = centeryfrac - FixedMul(dc_texturemid, spryscale);
@@ -317,7 +321,8 @@ void R_RenderSegLoop (void)
 			if (index >=  MAXLIGHTSCALE )
 				index = MAXLIGHTSCALE-1;
 
-			dc_colormap = walllights[index];
+//			dc_colormap = walllights[index];
+			dc_colormap = R_ColormapRemapForBlend(walllights[index]);
 			dc_x = rw_x;
 	//		dc_iscale = 0xffffffffu / (unsigned)rw_scale;
 	//		dc_iscale = (0x7fffffffu / (unsigned)rw_scale)<<1;
@@ -325,6 +330,7 @@ void R_RenderSegLoop (void)
 			dc_scale = rw_scale;
 			dc_zdist = rw_z;
 
+#if 0
 			k = (dc_colormap - colormaps)>>8;
 			l = cmap_luma[k];
 			l = l << 8;
@@ -340,6 +346,9 @@ void R_RenderSegLoop (void)
 			{
 				dc_color = 0xFFFFAAAA55551111ULL;
 			}
+#else
+			dc_color = 0xFFFFAAAA55551111ULL;
+#endif
 		}
 		
 		dc_col = texturecolumn;

@@ -351,6 +351,8 @@ extern "C" {
 #define BGBCC_REGFL_IFACULL			0x00020000		//Culled via IfArch
 #define BGBCC_REGFL_TEMPLOAD		0x00040000		//Temp Loaded from Stack
 #define BGBCC_REGFL_HAS128			0x00080000		//Has 128-bit Types
+#define BGBCC_REGFL_IMMLOAD			0x00100000		//Immediate value Loaded
+#define BGBCC_REGFL_GBLSTORE		0x00200000		//Stores into Global
 
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
@@ -365,6 +367,8 @@ extern "C" {
 #define BGBCC_RSPFL_SINGLETRACE		0x0004		//Only spans a single trace
 #define BGBCC_RSPFL_NONOVTRACE		0x0008		//No overlap within trace.
 #define BGBCC_RSPFL_CROSSTRACE		0x0010		//Cross-trace spans seen.
+#define BGBCC_RSPFL_GBLSTORE		0x0020		//Modified Global
+#define BGBCC_RSPFL_ALIASPTR		0x0040		//Aliased by pointer
 
 #ifndef BTK_NAME
 #define BTK_NAME	1

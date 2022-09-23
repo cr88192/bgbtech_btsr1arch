@@ -49,6 +49,7 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 		return(TK_EnvCtx_GetEnvVar(env, varn, buf, sz));
 	}else
 	{
+		i=-1;
 		ar[0].p=varn;
 		ar[1].p=buf;
 		ar[2].i=sz;
@@ -70,6 +71,7 @@ int TK_Env_SetEnvVarI(char *varn, char *varv)
 		return(TK_EnvCtx_SetEnvVar(env, varn, varv));
 	}else
 	{
+		i=-1;
 		ar[0].p=varn;
 		ar[1].p=varv;
 		tk_syscall(NULL, TK_UMSG_SETENVVAR, &i, ar);

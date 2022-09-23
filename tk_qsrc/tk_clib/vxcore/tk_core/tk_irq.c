@@ -39,6 +39,7 @@ int TK_SetUserIrqV(int irq, void *ptr)
 	void *p;
 	int i;
 	
+	p=NULL;
 	ar[0].i=irq;
 	ar[1].p=ptr;
 	i=tk_syscall(NULL, TK_UMSG_SETUSRIRQ, &p, ar);
@@ -1033,7 +1034,7 @@ int TK_SpawnNewThreadB(TKPE_TaskInfo *btask, void *func, void *uptr)
 	if(!ptask)
 		return(-1);
 
-	tkp=(TKPE_TaskInfoKern *)(task->krnlptr);
+	tkp=(TKPE_TaskInfoKern *)(ptask->krnlptr);
 
 	task=TK_AllocNewTask();
 

@@ -2232,6 +2232,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
 	{
+		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
+	
 #if 0
 		if(BGBCC_JX2C_EmitRegIsFpReg(ctx, sctx, dreg))
 		{
@@ -2267,6 +2269,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegImmUIntP(ctx, sreg))
 	{
+		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
+	
 #if 0
 		if(BGBCC_JX2C_EmitRegIsFpReg(ctx, sctx, dreg))
 		{
@@ -2307,6 +2311,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegImmLongP(ctx, sreg))
 	{
+		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
+	
 		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg) ||
 			BGBCC_JX2_EmitCheckRegQuad(sctx, dreg))
 		{
@@ -2341,6 +2347,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	if(BGBCC_CCXL_IsRegImmFloatP(ctx, sreg) ||
 		BGBCC_CCXL_IsRegImmDoubleP(ctx, sreg))
 	{
+		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
+	
 		if(BGBCC_JX2C_EmitRegIsFpReg(ctx, sctx, dreg))
 		{
 			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, sreg);
@@ -2422,6 +2430,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegImmStringP(ctx, sreg))
 	{
+		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
+	
 		s0=BGBCC_CCXL_GetRegImmStringValue(ctx, sreg);
 //		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
 //		k=BGBCC_JX2_EmitGetStrtabLabelUTF2ASCII(sctx, s0);
@@ -2461,6 +2471,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegImmWStringP(ctx, sreg))
 	{
+		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
+	
 		s0=BGBCC_CCXL_GetRegImmStringValue(ctx, sreg);
 //		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
 		k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS2(sctx, s0);
@@ -2484,6 +2496,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegImmW4StringP(ctx, sreg))
 	{
+		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
+	
 		s0=BGBCC_CCXL_GetRegImmStringValue(ctx, sreg);
 //		k=BGBCC_JX2_EmitGetStrtabLabel(sctx, s0);
 		k=BGBCC_JX2_EmitGetStrtabLabelUTF2UCS4(sctx, s0);
@@ -4249,12 +4263,12 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(
 int BGBCC_JX2C_SetupFrameVRegSpan(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
-	ccxl_register sreg, int dstfl, int mult)
+	ccxl_register sreg, int dstfl, int mult0)
 {
 	BGBCC_JX2_VarSpan *vsp, *vsp1;
 	BGBCC_JX2_VarSpan2 *vspb;
 	ccxl_type tty;
-	int fl, regfl;
+	int fl, regfl, mult, acnt;
 	int i, j, k;
 
 	if(!sreg.val)
@@ -4262,7 +4276,7 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	if((sreg.val&4095)==4095)
 		return(0);
 
-	sctx->vsp_tcnt++;
+//	sctx->vsp_tcnt++;
 
 	if(!sctx->vspan)
 	{
@@ -4272,15 +4286,45 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 		sctx->vspan_max=1024;
 	}
 	
+	mult=mult0;
 	for(i=0; i<sctx->vspan_num; i++)
 	{
 		vsp=sctx->vspan[i];
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vsp->reg, sreg))
 		{
+			if(!vsp->flag)
+				mult=mult0+1;
+		
 			if(vsp->flag&BGBCC_RSPFL_NONLOCAL)
-				mult=0;
+			{
+				if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) &&
+					!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
+//				if(0)
+				{
+//					mult=mult0-1;
+//					if(mult<0)
+//						mult=0;
+				}
+				else
+					if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
+				{
+					mult=-1;
+				}else
+				{
+					mult=0;
+				}
+			}
 			if(vsp->flag&BGBCC_RSPFL_NONBASIC)
 				mult=0;
+			if(vsp->flag&BGBCC_RSPFL_ALIASPTR)
+				mult=0;
+//			if(vsp->flag&BGBCC_RSPFL_GBLSTORE)
+//				mult=0;
+//			if(dstfl&1)
+//				mult=0;
+			
+			if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) && (dstfl&1))
+				vsp->flag|=BGBCC_RSPFL_GBLSTORE;
 
 			if(sctx->tr_opnum < vsp->bbeg)
 				vsp->bbeg=sctx->tr_opnum;
@@ -4292,7 +4336,10 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 			if(sctx->tr_trnum > vsp->tend)
 				vsp->tend=sctx->tr_trnum;
 
-			vsp->cnt++;
+			acnt=vsp->cnt;
+
+			if(mult>=0)
+				vsp->cnt++;
 
 #if 1
 //			if(mult>0)
@@ -4315,6 +4362,8 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 			if(mult>4)
 				vsp->cnt+=vsp->cnt>>4;
 #endif
+
+			sctx->vsp_tcnt+=vsp->cnt-acnt;
 
 			while(i>0)
 			{
@@ -4385,7 +4434,10 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 		fl|=BGBCC_RSPFL_NONLOCAL;
 
 	if(regfl&BGBCC_REGFL_ALIASPTR)
+	{
 		fl|=BGBCC_RSPFL_NONLOCAL;
+		fl|=BGBCC_RSPFL_ALIASPTR;
+	}
 
 //	if(	BGBCC_CCXL_TypeValueObjectP(ctx, tty) ||
 //		BGBCC_CCXL_TypeArrayP(ctx, tty) ||
@@ -4423,6 +4475,16 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	vsp->cnt=1;
 	vsp->flag=fl;
 	vsp->nseq=0;
+
+	if(!fl)
+		mult=mult0+1;
+
+	if((mult>0) && !fl)
+	{
+		vsp->cnt+=8*mult*mult;
+	}
+
+	sctx->vsp_tcnt+=vsp->cnt;
 
 	if(BGBCC_CCXL_IsRegLocalP(ctx, sreg))
 	{

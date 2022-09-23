@@ -70,6 +70,8 @@ int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
 
 	BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
 
+	BGBCC_JX2C_EmitSyncEpilog(ctx, sctx);
+
 	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
@@ -182,6 +184,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 		}
 	}
+
+	BGBCC_JX2C_EmitSyncEpilog(ctx, sctx);
 
 	sctx->sreg_held=0x0003;
 	sctx->sfreg_held=0x0003;

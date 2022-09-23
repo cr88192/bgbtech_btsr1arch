@@ -188,6 +188,11 @@ int				colormaps_aidx[8];
 int				n_colormaps_alt;
 u16				d_8to16table_alt[8][256];
 
+lighttable_t	*colormaps_blend;
+lighttable_t	*colormaps_blend_base;
+int				colormaps_blend_ix;
+int				colormaps_blend_len;
+int				colormaps_blend_flash;
 
 void		**patchcache;
 void		**utxcache;
@@ -1595,6 +1600,8 @@ void R_InitSpriteLumps (void)
 
 unsigned short	d_8to16table[256];
 
+int vid_flashblend;
+
 //
 // R_InitColormaps
 //
@@ -1632,6 +1639,19 @@ void R_InitColormaps (void)
 
 	colormaps = Z_Malloc ((length+256)*sizeof(lighttable_t), PU_STATIC, 0); 
 	colormaps = (lighttable_t *)( ((nlint)colormaps + 255)&(~0xff)); 
+
+	colormaps_blend = Z_Malloc (
+		(length+256)*sizeof(lighttable_t), PU_STATIC, 0); 
+	colormaps_blend = (lighttable_t *)
+		( ((nlint)colormaps_blend + 255)&(~0xff)); 
+	colormaps_blend_ix = -1;
+	colormaps_blend_flash = -1;
+	colormaps_blend_base = NULL;
+	colormaps_blend_len = length;
+
+//lighttable_t	*colormaps_blend;
+//int				colormaps_blend_ix;
+//int				colormaps_blend_flash;
 
 	colormaps_alt[0]=colormaps;
 	colormaps_aidx[0]=lump1;
@@ -1771,7 +1791,7 @@ void R_InitColormaps (void)
 	}
 }
 
-lighttable_t *R_ColormapForLump(int lump, int lvl)
+lighttable_t *R_ColormapForLumpI(int lump, int lvl)
 {
 	lighttable_t *tcol;
 	int i, j, k;
@@ -1797,6 +1817,80 @@ lighttable_t *R_ColormapForLump(int lump, int lvl)
 
 //	byte *tbuf;
 }
+
+lighttable_t *R_ColormapForLump(int lump, int lvl)
+{
+	lighttable_t *basecm;
+	int i, j, k;
+
+	return(R_ColormapForLumpI(lump, lvl));
+
+#if 0
+	if(!vid_flashblend)
+	{
+		return(R_ColormapForLumpI(lump, lvl));
+	}
+
+	basecm=R_ColormapForLumpI(lump, lvl);
+	if(!basecm)
+		basecm=colormaps;
+		
+	if(colormaps_blend_base==basecm)
+	{
+		if(vid_flashblend==colormaps_blend_flash)
+			return(colormaps_blend);
+	}
+	
+	colormaps_blend_base=basecm;
+	colormaps_blend_flash=vid_flashblend;
+	
+	for(i=0; i<8192; i+=4)
+	{
+		*(u64 *)(colormaps_blend+i) =
+			VID_BlendFlash4x(*(u64 *)(basecm+i), vid_flashblend);
+	}
+
+	return(colormaps_blend);
+#endif
+}
+
+lighttable_t *R_ColormapRemapForBlend(lighttable_t *cmap)
+{
+	lighttable_t *basecm;
+	int ofs;
+	int i, j, k;
+
+	if(!vid_flashblend)
+	{
+		return(cmap);
+	}
+	
+	ofs=cmap-colormaps;
+	if((ofs>=0) && (ofs<colormaps_blend_len))
+	{
+		basecm=colormaps;
+		
+		if(colormaps_blend_base==basecm)
+		{
+			if(vid_flashblend==colormaps_blend_flash)
+				return(colormaps_blend+ofs);
+		}
+		
+		colormaps_blend_base=basecm;
+		colormaps_blend_flash=vid_flashblend;
+		
+		for(i=0; i<colormaps_blend_len; i+=4)
+		{
+			*(u64 *)(colormaps_blend+i) =
+				VID_BlendFlash4x(*(u64 *)(basecm+i), vid_flashblend);
+		}
+
+		return(colormaps_blend+ofs);
+	}
+	
+	return(cmap);
+}
+
 
 //
 // R_InitData
