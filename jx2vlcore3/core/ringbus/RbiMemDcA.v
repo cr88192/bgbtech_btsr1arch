@@ -905,7 +905,9 @@ begin
 	if(disableTlb)
 		tNxtSkipTlb = 1;
 
-	if(tNxtSkipTlb && (regInAddr[47:28]!=0) && !dcInHold &&
+	if(tNxtSkipTlb && (regInAddr[47:28]!=0) &&
+		(regInAddr[47:44]!=4'hF) &&
+		!dcInHold &&
 		(regInOpm[5:4] != 2'b00))
 	begin
 		$display("L1 D$: Next Skip TLB and Addr is Virt, A=%X",

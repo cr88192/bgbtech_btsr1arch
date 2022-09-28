@@ -254,8 +254,12 @@ begin
 		(l2mOpmOut[7:0] == JX2_RBI_OPM_PFX) ||
 		(l2mOpmOut[7:0] == JX2_RBI_OPM_SPX)) &&
 		(l2mAddrOut[29:24] != 6'h00) &&
-		(l2mAddrOut[31:30]==2'h0))
+		(l2mAddrOut[31:30] == 2'h0) &&
+		(l2mAddrOut[37:32] == 6'h00) &&
+		(l2mAddrOut[43:38] == 6'h00))
 	begin
+		/* Shortcut: Keep DRAM requests close to L2. */
+	
 		tL2mSeqIn		= l2mSeqOut;
 		tL2mOpmIn		= l2mOpmOut;
 		tL2mAddrIn		= l2mAddrOut;
@@ -274,7 +278,7 @@ begin
 //		(l2mOpmOut[7:0] != 8'h00) && 
 		(l2mOpmOut[7:6] == 2'b01))
 	begin
-		/* Shortcut */
+		/* Shortcut: Forward Responses to output. */
 	
 		tL2mSeqOut		= l2bSeqOut;
 		tL2mOpmOut		= l2bOpmOut;

@@ -673,6 +673,17 @@ begin
 //	tNxtSkipMiss		= tRegInSr[29] != regInSr[29];
 	tNxtSkipMiss		= !tRegInSr[29] && regInSr[29];
 
+// `ifndef def_true
+`ifdef def_true
+//	if(tNxtSkipTlb && (regInPc[47:28]!=0) && !icInPcHold)
+//	if(tNxtSkipTlb && (regInPc[47:28]!=0))
+	if(tSkipTlb && (tInAddr[47:28]!=0))
+	begin
+		$display("L1 I$: Next Skip TLB and Addr is Virt, A=%X",
+			tInAddr);
+	end
+`endif
+
 	tRegInPc	= regInPc;
 	tNxtAddrHi	= 0;
 	tNxtAxH	= 0;
@@ -1583,11 +1594,11 @@ begin
 				if(tReqAddrIsVirt)
 					$display("L1 I$: Send LDA Req Abs A=%X", tReqAddrA);
 
-//				if(!tReqAddrIsVirt)
+				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 
-//				if(tReqAddrIsVirt)
-//					tMemOpmReq[11:8] = 4'hF;
+				if(tReqAddrIsVirt)
+					tMemOpmReq[11:8] = 4'hF;
 			end
 
 //			$display("I$ LDA %X %X %X Ix=%X",
@@ -1615,12 +1626,12 @@ begin
 				if(tReqAddrIsVirt)
 					$display("L1 I$: Send LDB Req Abs A=%X", tReqAddrB);
 
-//				if(!tReqAddrIsVirt)
+				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 //				tMemAddrReq[47:44]=4'hC;
 
-//				if(tReqAddrIsVirt)
-//					tMemOpmReq[11:8] = 4'hF;
+				if(tReqAddrIsVirt)
+					tMemOpmReq[11:8] = 4'hF;
 			end
 
 //			$display("I$ LDB %X %X %X Ix=%X",

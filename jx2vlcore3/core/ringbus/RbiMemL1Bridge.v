@@ -107,6 +107,7 @@ assign		l2mRingIsIdle = (l2mOpmIn[7:0] == JX2_RBI_OPM_IDLE);
 
 wire			l1mRingIsReq;
 wire			l2mRingIsResp;
+wire			l2mRingIsRespOther;
 
 wire			l1mRingIsIrq;
 wire			l2mRingIsIrq;
@@ -117,6 +118,10 @@ assign		l1mRingIsReq = l1mOpmIn[ 7:6] == 2'b10;
 assign		l2mRingIsResp =
 	(l2mOpmIn[ 7:6] == 2'b01) &&
 	(l2mSeqIn[15:10] == unitNodeId[7:2]);
+
+assign		l2mRingIsRespOther =
+	(l2mOpmIn[ 7:6] == 2'b01) &&
+	(l2mSeqIn[15:10] != unitNodeId[7:2]);
 
 assign		l1mRingIsIrq =
 	(l2mOpmIn[ 7:0] == JX2_RBI_OPM_IRQ) &&
@@ -159,6 +164,17 @@ assign		tlbRingIsIdle = (tTlbOpmReqOut[7:0] == JX2_RBI_OPM_IDLE);
 `endif
 
 
+wire			l2mOpmIn_IsReq =
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_PFX)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_SPX)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_LDX)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_LDSQ)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_LDSL)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_LDUL)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_STX)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_STSQ)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_STSL)	;
+
 reg				tHoldL2b;			//Can't transfer L1->L2
 reg				tHoldL1b;			//Can't transfer L2->L1
 
@@ -185,6 +201,24 @@ begin
 		tL1mAddrOut = l2mAddrIn;
 		tL2mAddrOut = l1mAddrIn;
 `endif
+
+	if(l2mOpmIn_IsReq || l2mRingIsRespOther)
+	begin
+		if(l1mRingIsIdle)
+		begin
+			/* Avoid letting requests back into L1 ring. */
+		
+			tL1mSeqOut  = l1mSeqIn;
+			tL1mOpmOut  = l1mOpmIn;
+			tL1mAddrOut = l1mAddrIn;
+			tL1mDataOut = l1mDataIn;
+
+			tL2mSeqOut  = l2mSeqIn;
+			tL2mOpmOut  = l2mOpmIn;
+			tL2mAddrOut = l2mAddrIn;
+			tL2mDataOut = l2mDataIn;
+		end
+	end
 
 `endif
 

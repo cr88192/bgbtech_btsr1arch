@@ -1435,11 +1435,13 @@ begin
 			opRegXMv	= opCmRemapRxB[opRegAM0[5:0]];
 		end
 
+`ifndef def_true
 		if(opIsDualLaneRm && (opRegAM0!=JX2_GR_ZZR))
 		begin
 			$display("XGPR: Dual Lane Special Rm %X -> %X:%X",
 				opRegAM0, opRegXMv, opRegXM);
 		end
+`endif
 
 `ifndef def_true
 		if((opRegAM0==JX2_GR_SP) || (opRegAM0==JX2_GR_SSP))
@@ -1471,11 +1473,13 @@ begin
 			opRegXNv	= opCmRemapRxB[opRegAN0[5:0]];
 		end
 
+`ifndef def_true
 		if(opIsDualLaneRn && (opRegAN0!=JX2_GR_ZZR))
 		begin
 			$display("XGPR: Dual Lane Special Rn %X -> %X:%X",
 				opRegAN0, opRegXNv, opRegXN);
 		end
+`endif
 
 `ifndef def_true
 		if((opRegAN0==JX2_GR_SP) || (opRegAN0==JX2_GR_SSP))
@@ -1507,11 +1511,13 @@ begin
 			opRegXPv	= opCmRemapRxB[opRegAP0[5:0]];
 		end
 
+`ifndef def_true
 		if(opIsDualLaneRn && (opRegAP0!=JX2_GR_ZZR))
 		begin
 			$display("XGPR: Dual Lane Special Rp %X -> %X:%X",
 				opRegAP0, opRegXPv, opRegXP);
 		end
+`endif
 
 `ifndef def_true
 		if((opRegAP0==JX2_GR_SP) || (opRegAP0==JX2_GR_SSP))
@@ -1544,11 +1550,13 @@ begin
 			opRegXOv	= opCmRemapRxB[opRegAO0[5:0]];
 		end
 
+`ifndef def_true
 		if(opIsDualLaneRo && (opRegAO0!=JX2_GR_ZZR))
 		begin
 			$display("XGPR: Dual Lane Special Ro %X -> %X:%X",
 				opRegAO0, opRegXOv, opRegXO);
 		end
+`endif
 
 `ifndef def_true
 		if((opRegAO0==JX2_GR_SP) || (opRegAO0==JX2_GR_SSP))

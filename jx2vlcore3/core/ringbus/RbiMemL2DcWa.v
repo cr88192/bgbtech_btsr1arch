@@ -628,9 +628,16 @@ begin
 `endif
 
 `ifdef jx2_mem_l2wsz_4096
+
 //	nxtReqIx	= nxtReqAddr [11:0] ^ nxtReqAddr [23:12];
 	nxtReqIx	= nxtReqAddr [11:0] ^
 		{ nxtReqAddr [15:12], nxtReqAddr [19:16], nxtReqAddr [23:20] };
+//	nxtReqIx	= nxtReqAddr [11:0] ^
+//		{ nxtReqAddr [17:12], nxtReqAddr [23:18] };
+//	nxtReqIx	= nxtReqAddr [11:0] ^
+//		{	nxtReqAddr [14:12], nxtReqAddr [17:15],
+//			nxtReqAddr [20:18], nxtReqAddr [23:21] };
+
 `endif
 
 `ifdef jx2_mem_l2wsz_8192
