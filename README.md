@@ -1,11 +1,16 @@
 # bgbtech_btsr1arch
-BtSR1 and BJX2 ISA / CPU Architecture
+BtSR1 and BJX2 ISA / CPU Architectures
+
+There are two ISAs in this project:
+* BtSR1 is an older and simpler 32-bit ISA
+* BJX2 is a fancier 64-bit ISA
+
 
 BtSR1, or BSR1, is a CPU architecture primarily intended for soft-core microcontroller applications.
 The initial use case is intended to be loosely similar to that of a 32-bit analog of an MSP430, but with the option to
 have higher performance and implement some peripherals directly in Verilog.
 
-BJX2 is a larger and more advanced ISA based on a similar design. It is a 64-bit ISA with 32 or 64 GPRs (baseline is 32, but an optional extension allows for 64 GPRs). It will be higher performance, but requires a larger FPGA. It supports VLIW bundles and SIMD.
+BJX2 is a larger and more advanced ISA starting from a similar design. It is a 64-bit ISA with 32 or 64 GPRs (baseline is 32, but an optional extension allows for 64 GPRs). It will be higher performance, but requires a larger FPGA. It supports VLIW bundles and SIMD.
 
 For these, I am generally targeting FPGA's in the 25k to 100k LUT range (currently mostly Spartan-7 and Artix-7).
 
@@ -27,7 +32,7 @@ from an implementation perspective, and also represents a somewhat lower target)
 As of 2019-12-01, I have reached a stage where I can more-or-less run Doom and Quake on the BJX2 Verilog implementation on an FPGA. Work continues on this front.
 
 
-General design summary (BtSR1):
+General design summary of BtSR1:
 * Instruction set with a fixed 16-bit instruction format.
 * Little endian, supports misaligned access to data (optional).
 * Intended for a small address space with fixed regions for ROM and RAM.
