@@ -273,6 +273,11 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 	int i, j, k;
 
 	ty=type.val;
+	
+	if(ty==0x0D)
+	{
+		i=-1;
+	}
 
 	if(BGBCC_CCXL_TypeVarObjP(ctx, stype))
 	{

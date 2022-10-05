@@ -323,3 +323,61 @@ int BGBCC_JX2C_ResetFpscrUnknown(
 {
 	return(0);
 }
+
+int BGBCC_JX2C_CalcDivideRecipShr(
+	BGBCC_TransState *ctx,
+	BGBCC_SHX_Context *sctx,
+	int divisor, u32 *rrcp, int *rshl)
+{
+	u64 rcp, q1, q2, n1, n2, nv;
+	int j, l;
+
+	j=divisor;
+	if(j<=0)
+	{
+		*rrcp=0;
+		*rshl=0;
+		return(-1);
+	}
+
+	l=31+ceil(log(j)/log(2));
+	l--;
+
+	rcp=((1ULL<<l)+(j-1))/j;
+
+	if(rcp>=(1ULL<<32))
+	{
+		*rrcp=0;
+		*rshl=0;
+		return(-1);
+	}
+
+#if 1
+	n1=((1LL<<31)-1);
+			
+	n2=((n1/j)*j)+10;
+	if(n2<n1)
+	{
+		n1=n2;
+		n2=n1-20;
+	}else
+	{
+		n2=n1-(2*j);
+	}
+			
+	for(nv=n1; nv>n2; nv--)
+	{
+		q1=(nv*rcp)>>l;
+		q2=nv/j;
+		if(q1!=q2)
+		{
+			rcp=0;
+			break;
+		}
+	}
+#endif
+
+	*rrcp=rcp;
+	*rshl=l;
+	return(0);
+}

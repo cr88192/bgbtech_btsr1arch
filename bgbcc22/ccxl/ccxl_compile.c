@@ -1771,7 +1771,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		nb=BCCX_FetchCst(l, &bgbcc_rcst_body, "body");
 		ns=BCCX_FetchCst(l, &bgbcc_rcst_step, "step");
 
-#if 0
+#if 1
 		i=1;
 		i=i&&BGBCC_CCXL_IsFixIntAssignRVP(ctx, ni, &s0, &i0);
 		i=i&&BGBCC_CCXL_IsFixIntCompareRVP(ctx, nc, &s1, &s2, &i1);
@@ -1779,11 +1779,18 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 				BGBCC_CCXL_IsTagVarRVP(ctx, ns, "preinc", s0));
 		i=i&&(!strcmp(s0, s1));
 		i=i&&(!strcmp(s2, "<") || !strcmp(s2, "<="));
-		i=i&&(	BCCX_TagIsCstP(nb, &bgbcc_rcst_assign, "assign") ||
-				BCCX_TagIsCstP(nb, &bgbcc_rcst_funcall, "funcall") ||
-				BCCX_TagIsCstP(nb, &bgbcc_rcst_setindex, "setindex"));
+//		i=i&&(	BCCX_TagIsCstP(nb, &bgbcc_rcst_assign, "assign") ||
+//				BCCX_TagIsCstP(nb, &bgbcc_rcst_funcall, "funcall") ||
+//				BCCX_TagIsCstP(nb, &bgbcc_rcst_setindex, "setindex"));
+//		i=i&&(	BCCX_TagIsCstP(nb, &bgbcc_rcst_assign, "assign") ||
+//				BCCX_TagIsCstP(nb, &bgbcc_rcst_funcall, "funcall"));
+
+		ctx->infer_var_loopconst=s0;
+		i=i&&BGBCC_CCXL_InferBlockPredSafeP(ctx, nb);
+		ctx->infer_var_loopconst=NULL;
 		
-		if(i && ((i1-i0)<=8))
+//		if(i && ((i1-i0)<=8))
+		if(i && ((i1-i0)<=16))
 		{
 			if(!strcmp(s2, "<="))i1++;
 			for(i=i0; i<i1; i++)

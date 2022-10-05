@@ -929,6 +929,16 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
 		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
 
+		if(ctx->infer_var_loopconst)
+		{
+			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref"))
+			{
+				s0=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
+				if(!strcmp(s0, ctx->infer_var_loopconst))
+					return(0);
+			}
+		}
+
 		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
 
 		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, ln);

@@ -814,6 +814,7 @@ char *vlcn_names[512];
 BCCX_Node *vlcn_types[512];
 int vlcn_npos;
 
+char *infer_var_loopconst;
 
 int vlcl_seq;
 int vlcl_curseq;

@@ -1072,6 +1072,27 @@ bool BGBCC_CCXL_IsRegImmUnsignedP(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegImmSmallLongP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
+	{
+//		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_L)
+//			return(true);
+//		if((reg.val&CCXL_REGINT_STMASK)==CCXL_REGINT_ST_UL)
+//			return(true);
+		return(true);
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)
+		return(true);
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG_LVT)
+		return(true);
+	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG)
+		return(true);
+	return(false);
+}
+
 
 bool BGBCC_CCXL_IsRegImmFloatP(
 	BGBCC_TransState *ctx, ccxl_register reg)

@@ -1441,6 +1441,29 @@ int BGBCC_JX2_InferOps32Interlock(
 	return(res);
 }
 
+int BGBCC_JX2_InferOps32InterlockEx2(
+	BGBCC_JX2_Context *sctx,
+	int opw1, int opw2, int opw3, int opw4, int opw5, int opw6,
+	int opw7, int opw8, int opw9, int opw10, int fl)
+{
+	int cf1, cf2;
+	
+	cf1=BGBCC_JX2_InferOps32Interlock(sctx,
+		opw1, opw2, opw3, opw4, opw5, opw6, fl);
+	cf2=BGBCC_JX2_InferOps32Interlock(sctx,
+		opw1, opw2, opw7, opw8, opw9, opw10, fl);
+	
+	if(cf1>1)
+		cf1+=2;
+	if(cf2>0)
+		cf2--;
+
+//	if(cf2>0)
+//		cf2=(cf2-1)>>1;
+
+	return(cf1+cf2);
+}
+
 int BGBCC_JX2_InferOps32InterlockI(
 	BGBCC_JX2_Context *sctx,
 	int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int fl)
@@ -2739,13 +2762,26 @@ int BGBCC_JX2_InferInterlockCost(
 	int cfn1, cf1, cf2, cf3, cf4;
 	int cn1, c1, c2, c3, c4, c5;
 
-	cfn1=BGBCC_JX2_InferOps32Interlock(sctx,
-		opwn1, opwn2, opw1, opw2, opw3, opw4, 0);
+#if 0
+//	cfn1=BGBCC_JX2_InferOps32Interlock(sctx,
+//		opwn1, opwn2, opw1, opw2, opw3, opw4, 0);
+//	cf1=BGBCC_JX2_InferOps32Interlock(sctx,
+//		opw1, opw2, opw3, opw4, opw5, opw6, 0);
+//	cf2=BGBCC_JX2_InferOps32Interlock(sctx,
+//		opw3, opw4, opw5, opw6, opw7, opw8, 0);
+#endif
 
-	cf1=BGBCC_JX2_InferOps32Interlock(sctx,
-		opw1, opw2, opw3, opw4, opw5, opw6, 0);
-	cf2=BGBCC_JX2_InferOps32Interlock(sctx,
-		opw3, opw4, opw5, opw6, opw7, opw8, 0);
+#if 1
+	cfn1=BGBCC_JX2_InferOps32InterlockEx2(sctx,
+		opwn1, opwn2, opw1, opw2, opw3, opw4,
+		opw5 , opw6 , opw7, opw8, 0);
+	cf1=BGBCC_JX2_InferOps32InterlockEx2(sctx,
+		opw1, opw2, opw3, opw4 , opw5, opw6,
+		opw7, opw8, opw9, opw10, 0);
+	cf2=BGBCC_JX2_InferOps32InterlockEx2(sctx,
+		opw3, opw4 , opw5 , opw6 , opw7, opw8,
+		opw9, opw10, opw11, opw12, 0);
+#endif
 
 	cf3=BGBCC_JX2_InferOps32Interlock(sctx,
 		opw5, opw6, opw7, opw8, opw9, opw10, 0);

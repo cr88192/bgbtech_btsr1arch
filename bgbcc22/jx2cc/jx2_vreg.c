@@ -49,7 +49,7 @@ int BGBCC_JX2C_EmitOpReg(
 
 int BGBCC_JX2C_EmitOpImm(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
-	int nmid, int imm)
+	int nmid, s64 imm)
 {
 	if(sctx->use_emitqueue)
 		BGBCC_JX2_QueueOpImm(sctx, nmid, imm);
@@ -77,6 +77,28 @@ int BGBCC_JX2C_EmitOpRegReg(
 		BGBCC_JX2_QueueOpRegReg(sctx, nmid, rm, rn);
 	else
 		BGBCC_JX2_EmitOpRegReg(sctx, nmid, rm, rn);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitOpRegRegPredT(
+	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+	int nmid, int rm, int rn)
+{
+//	if(sctx->use_emitqueue)
+//		BGBCC_JX2_QueueOpImmReg(sctx, nmid, imm, reg);
+//	else
+		BGBCC_JX2_EmitOpRegRegPred(sctx, nmid, rm, rn, 4);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitOpRegRegPredF(
+	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+	int nmid, int rm, int rn)
+{
+//	if(sctx->use_emitqueue)
+//		BGBCC_JX2_QueueOpImmReg(sctx, nmid, imm, reg);
+//	else
+		BGBCC_JX2_EmitOpRegRegPred(sctx, nmid, rm, rn, 5);
 	return(0);
 }
 
@@ -203,7 +225,7 @@ int BGBCC_JX2C_EmitOpRegRegReg(
 
 int BGBCC_JX2C_EmitOpImmReg(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
-	int nmid, int imm, int reg)
+	int nmid, s64 imm, int reg)
 {
 	if(sctx->use_emitqueue)
 		BGBCC_JX2_QueueOpImmReg(sctx, nmid, imm, reg);
@@ -214,7 +236,7 @@ int BGBCC_JX2C_EmitOpImmReg(
 
 int BGBCC_JX2C_EmitOpImmRegPredT(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
-	int nmid, int imm, int reg)
+	int nmid, s64 imm, int reg)
 {
 	if(sctx->use_emitqueue)
 		BGBCC_JX2_QueueOpImmReg(sctx, nmid, imm, reg);
@@ -225,7 +247,7 @@ int BGBCC_JX2C_EmitOpImmRegPredT(
 
 int BGBCC_JX2C_EmitOpImmRegPredF(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
-	int nmid, int imm, int reg)
+	int nmid, s64 imm, int reg)
 {
 	if(sctx->use_emitqueue)
 		BGBCC_JX2_QueueOpImmReg(sctx, nmid, imm, reg);
@@ -236,12 +258,34 @@ int BGBCC_JX2C_EmitOpImmRegPredF(
 
 int BGBCC_JX2C_EmitOpRegImmReg(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
-	int nmid, int rm, int imm, int rn)
+	int nmid, int rm, s64 imm, int rn)
 {
 	if(sctx->use_emitqueue)
 		BGBCC_JX2_QueueOpRegImmReg(sctx, nmid, rm, imm, rn);
 	else
 		BGBCC_JX2_EmitOpRegImmReg(sctx, nmid, rm, imm, rn);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitOpRegImmRegPredT(
+	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+	int nmid, int rm, s64 imm, int rn)
+{
+//	if(sctx->use_emitqueue)
+//		BGBCC_JX2_QueueOpImmReg(sctx, nmid, imm, reg);
+//	else
+		BGBCC_JX2_EmitOpRegImmRegPred(sctx, nmid, rm, imm, rn, 4);
+	return(0);
+}
+
+int BGBCC_JX2C_EmitOpRegImmRegPredF(
+	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+	int nmid, int rm, s64 imm, int rn)
+{
+//	if(sctx->use_emitqueue)
+//		BGBCC_JX2_QueueOpImmReg(sctx, nmid, imm, reg);
+//	else
+		BGBCC_JX2_EmitOpRegImmRegPred(sctx, nmid, rm, imm, rn, 5);
 	return(0);
 }
 

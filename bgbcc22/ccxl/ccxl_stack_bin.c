@@ -161,6 +161,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 	ccxl_register sreg, treg, dreg, sreg2, treg2, dreg2;
 	ccxl_type sty, tty, dty, dty2, bty, pty;
 	double f, g;
+	s64 li, lj, lk;
 	int opr, is_shl;
 	int i, j, k;
 
@@ -242,6 +243,39 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		if(	BGBCC_CCXL_IsRegImmILFDP(ctx, sreg) &&
 			BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
 		{
+			if(	BGBCC_CCXL_IsRegImmILP(ctx, sreg) &&
+				BGBCC_CCXL_IsRegImmILP(ctx, treg))
+			{
+				li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+				lj=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+				lk=-999999;
+				
+				switch(opr)
+				{
+				case CCXL_BINOP_ADD:	lk=li+lj; break;
+				case CCXL_BINOP_SUB:	lk=li-lj; break;
+				case CCXL_BINOP_MUL:	lk=li*lj; break;
+				case CCXL_BINOP_DIV:	lk=li/lj; break;
+				case CCXL_BINOP_MOD:	lk=li%lj; break;
+				case CCXL_BINOP_AND:	lk=li&lj; break;
+				case CCXL_BINOP_OR:		lk=li|lj; break;
+				case CCXL_BINOP_XOR:	lk=li^lj; break;
+
+				case CCXL_BINOP_SHL:	lk=li<<((int)lj); break;
+				case CCXL_BINOP_SHR:	lk=li>>((int)lj); break;
+				}
+				
+				if(lk!=-999999)
+				{
+					if(((int)lk)==lk)
+						BGBCC_CCXL_GetRegForIntValue(ctx, &dreg, lk);
+					else
+						BGBCC_CCXL_GetRegForLongValue(ctx, &dreg, lk);
+					BGBCC_CCXL_PushRegister(ctx, dreg);
+					return(CCXL_STATUS_YES);
+				}
+			}
+
 			/* Errm... */
 		}
 		else if(BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
@@ -732,6 +766,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 	ccxl_register sreg, treg, dreg, sreg2, treg2, dreg2;
 	ccxl_type sty, tty, dty, dty2, bty;
 	double f, g;
+	s64 li, lj, lk;
 	int opr, is_shl;
 	int i, j, k;
 
@@ -809,6 +844,37 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		if(	BGBCC_CCXL_IsRegImmILFDP(ctx, sreg) &&
 			BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
 		{
+			if(	BGBCC_CCXL_IsRegImmILP(ctx, sreg) &&
+				BGBCC_CCXL_IsRegImmILP(ctx, treg))
+			{
+				li=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+				lj=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+				lk=-999999;
+				
+				switch(opr)
+				{
+				case CCXL_BINOP_ADD:	lk=li+lj; break;
+				case CCXL_BINOP_SUB:	lk=li-lj; break;
+				case CCXL_BINOP_MUL:	lk=li*lj; break;
+				case CCXL_BINOP_DIV:	lk=li/lj; break;
+				case CCXL_BINOP_MOD:	lk=li%lj; break;
+				case CCXL_BINOP_AND:	lk=li&lj; break;
+				case CCXL_BINOP_OR:		lk=li|lj; break;
+				case CCXL_BINOP_XOR:	lk=li^lj; break;
+
+				case CCXL_BINOP_SHL:	lk=li<<((int)lj); break;
+				case CCXL_BINOP_SHR:	lk=li>>((int)lj); break;
+				}
+				
+				if(lk!=-999999)
+				{
+					BGBCC_CCXL_GetRegForLongValue(ctx, &treg2, lk);
+					BGBCC_CCXL_ConvImm(ctx, dty, tty, treg2, &treg2);
+					BGBCC_CCXL_EmitMov(ctx, dty, dreg, treg2);
+					return(CCXL_STATUS_YES);
+				}
+			}
+
 			/* Errm... */
 		}
 		else if(BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
@@ -851,17 +917,29 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 		{
 			dty2=dty;
 		}
-		
+
+#if 1
 		if(	BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
 			BGBCC_CCXL_TypeSmallLongP(ctx, dty2) &&
 			(opr!=CCXL_BINOP_MUL) &&
 			(opr!=CCXL_BINOP_DIV) &&
 			(opr!=CCXL_BINOP_MOD) &&
 			(opr!=CCXL_BINOP_SHL) &&
-			(opr!=CCXL_BINOP_SHR))
+			(opr!=CCXL_BINOP_SHR) &&
+			!BGBCC_CCXL_TypeSmallShortP(ctx, dty))
 		{
-			dty2=dty;
+			if(	BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
+				BGBCC_CCXL_TypeCompatibleP(ctx, dty, tty))
+			{
+				dty2=dty;
+			}else
+				if(	!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty) ||
+					!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty))
+			{
+				dty2=dty;
+			}
 		}
+#endif
 		
 		if(	BGBCC_CCXL_TypeVecP(ctx, sty) &&
 			BGBCC_CCXL_TypeVecP(ctx, tty) &&
@@ -993,8 +1071,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			}
 
 			if(BGBCC_CCXL_IsRegImmIntP(ctx, treg) &&
-				BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
-				BGBCC_CCXL_TypeUnsignedP(ctx, dty))
+				BGBCC_CCXL_TypeSmallLongP(ctx, dty2) &&
+				BGBCC_CCXL_TypeUnsignedP(ctx, dty2))
 			{
 				j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
 				if((j>1) && !(j&(j-1)))
