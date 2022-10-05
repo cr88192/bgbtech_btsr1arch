@@ -714,6 +714,52 @@ TKMM_MemLnkObj *TKMM_MMList_GetPtrLnkObj(void *ptr)
 	return(NULL);
 }
 
+int TKMM_MMList_WalkHeapObjects(
+	void *ctx, int (*func)(void *ctx, TKMM_MemLnkObj *obj))
+{
+	TKMM_MemLnkSeg *seg;
+	TKMM_MemLnkObj *obj;
+	byte *vss, *vse;
+	byte *p;
+	int i, j, k, vrn, nb;
+	
+//	p=ptr;
+	vrn=tkmm_mmlist_n_vrm;
+	for(i=0; i<vrn; i++)
+	{
+		j=tkmm_mmlist_vrm_brkflg[i];
+		if(j&1)
+		{
+			obj=(TKMM_MemLnkObj *)(tkmm_mmlist_vrm_brkbuf[i]);
+			func(ctx, obj);
+			continue;
+		}
+
+		seg=(TKMM_MemLnkSeg *)(tkmm_mmlist_vrm_brkbuf[i]);
+
+		nb=seg->nblk;
+		for(j=0; j<nb; j++)
+		{
+			obj=(TKMM_MemLnkObj *)(((byte *)seg)+seg->blk[j]);
+			func(ctx, obj);
+
+//			sz1=TKMM_FxiToSize(obj->ix);
+//			vss=(byte *)obj;
+//			vse=((byte *)(obj->data))+sz1;
+			
+//			if((p>=vss) && (p<vse))
+//				return(obj);
+		}
+
+//		vss=tkmm_mmlist_vrm_brkbuf[i];
+//		vse=tkmm_mmlist_vrm_brkend[i];
+//		if((p>=vss) && (p<vse))
+//			return(i);
+	}
+	
+	return(-1);
+}
+
 int TKMM_MMList_CheckPtrIsHeap(void *ptr)
 {
 	return(TKMM_MMList_GetPtrHeapIndex(ptr)>=0);
@@ -725,7 +771,7 @@ int TKMM_MMList_GetTag(void *ptr)
 
 	if(!ptr)return(-1);
 	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
-	return(obj->dty_tag);
+	return(obj->ttag);
 }
 
 
@@ -736,7 +782,7 @@ int TKMM_MMList_SetTag(void *ptr, int tag)
 	if(!ptr)return(-1);
 	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
 	__setmemtrap(obj, 2);
-	obj->dty_tag=tag;
+	obj->ttag=tag;
 	__setmemtrap(obj, 3);
 	return(0);
 }
@@ -848,7 +894,25 @@ int tk_msettag(void *ptr, int tag)
 	return(TKMM_SetTag(ptr, tag));
 }
 
+int tk_mgetzone(void *ptr)
+{
+	return(TKMM_GetZoneTag(ptr));
+}
 
+int tk_msetzone(void *ptr, int tag)
+{
+	return(TKMM_SetZoneTag(ptr, tag));
+}
+
+void *tk_mgetbase(void *ptr)
+{
+	return(TKMM_GetBase(ptr));
+}
+
+int tk_mfreezone(int ztag, int zmask)
+{
+	return(TKMM_FreeZone(ztag, zmask));
+}
 
 char *tk_strdup_in(char *str)
 {

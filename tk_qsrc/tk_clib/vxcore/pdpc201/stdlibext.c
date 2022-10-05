@@ -143,11 +143,15 @@ char *getcwd(char *buf, size_t size)
 	return(TK_Env_GetCwd(buf, size));
 }
 
+void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d);
+
 #if 1
-void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
+uint8_t *MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
 {
 	uint8_t *cs, *ct, *cte;
-	uint64_t v;
+	uint64_t *ctl, *csl;
+	uint64_t v, v0, v1, v2, v3;
+	int step;
 	
 	if(d<8)
 	{
@@ -157,33 +161,52 @@ void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
 			v=v|(v<<8);
 			v=v|(v<<16);
 			v=v|(v<<32);
-
-			ct=dst; cte=dst+sz;
-			while(ct<cte)
-			{
-				*(uint64_t *)ct=v;
-				ct+=8;
-			}
+			step=8;
 		}else
 			if(d==2)
 		{
 			v=*(uint16_t *)(dst-d);
 			v=v|(v<<16);
 			v=v|(v<<32);
-
-			ct=dst; cte=dst+sz;
-			while(ct<cte)
-			{
-				*(uint64_t *)ct=v;
-				ct+=8;
-			}
+			step=8;
 		}else
 			if(d==4)
 		{
 			v=*(uint32_t *)(dst-d);
 			v=v|(v<<32);
+			step=8;
+		}else
+			if(d==8)
+		{
+			v=*(uint64_t *)(dst-d);
+			step=8;
+		}else
+		{
+			v=*(uint64_t *)(dst-d);
+			step=d;
+			if(step<=4)
+			{
+				*(uint64_t *)dst=v;
+				v=*(uint64_t *)(dst-d);
+				step+=step;
+			}
+		}
 
-			ct=dst; cte=dst+sz;
+		ct=dst; cte=dst+sz;
+		if(step==8)
+		{
+#if 1
+			while((ct+64)<cte)
+			{
+				ctl=(uint64_t *)ct;
+				ctl[0]=v;	ctl[1]=v;
+				ctl[2]=v;	ctl[3]=v;
+				ctl[4]=v;	ctl[5]=v;
+				ctl[6]=v;	ctl[7]=v;
+				ct+=64;
+			}
+#endif
+
 			while(ct<cte)
 			{
 				*(uint64_t *)ct=v;
@@ -191,12 +214,22 @@ void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
 			}
 		}else
 		{
-			v=*(uint64_t *)(dst-d);
-			ct=dst; cte=dst+sz;
+#if 1
+			while((ct+64)<cte)
+			{
+				*(uint64_t *)ct=v;	ct+=step;
+				*(uint64_t *)ct=v;	ct+=step;
+				*(uint64_t *)ct=v;	ct+=step;
+				*(uint64_t *)ct=v;	ct+=step;
+				*(uint64_t *)ct=v;	ct+=step;
+				*(uint64_t *)ct=v;	ct+=step;
+			}
+#endif
+
 			while(ct<cte)
 			{
 				*(uint64_t *)ct=v;
-				ct+=d;
+				ct+=step;
 			}
 		}
 	}else
@@ -205,6 +238,7 @@ void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
 		cs=dst-d;
 		((uint64_t *)dst)[0]=((uint64_t *)cs)[0];
 		((uint64_t *)dst)[1]=((uint64_t *)cs)[1];
+		ct=dst+16;
 	}else
 		if(sz<=32)
 	{
@@ -213,25 +247,94 @@ void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
 		((uint64_t *)dst)[1]=((uint64_t *)cs)[1];
 		((uint64_t *)dst)[2]=((uint64_t *)cs)[2];
 		((uint64_t *)dst)[3]=((uint64_t *)cs)[3];
+		ct=dst+32;
 	}else
+		if(d<32)
+//		if(1)
 	{
 		cs=dst-d;
 		ct=dst; cte=dst+sz;
+
+#if 1
+		while((ct+64)<cte)
+		{
+			csl=(uint64_t *)cs;
+			ctl=(uint64_t *)ct;
+			ctl[0]=csl[0];	ctl[1]=csl[1];
+			ctl[2]=csl[2];	ctl[3]=csl[3];
+			ctl[4]=csl[4];	ctl[5]=csl[5];
+			ctl[6]=csl[6];	ctl[7]=csl[7];
+			ct+=64; cs+=64;
+		}
+#endif
+
 		while(ct<cte)
 		{
 			((uint64_t *)ct)[0]=((uint64_t *)cs)[0];
 			((uint64_t *)ct)[1]=((uint64_t *)cs)[1];
 			ct+=16; cs+=16;
 		}
+	}else
+	{
+		cs=dst-d;
+		ct=dst; cte=dst+sz;
+
+		while((ct+64)<cte)
+		{
+			csl=(uint64_t *)cs;
+			ctl=(uint64_t *)ct;
+			
+			v0=csl[0];	v1=csl[1];
+			v2=csl[2];	v3=csl[3];
+			ctl[0]=v0;	ctl[1]=v1;
+			ctl[2]=v2;	ctl[3]=v3;
+
+			v0=csl[4];	v1=csl[5];
+			v2=csl[6];	v3=csl[7];
+			ctl[4]=v0;	ctl[5]=v1;
+			ctl[6]=v2;	ctl[7]=v3;
+			
+			ct+=64; cs+=64;
+		}
+
+		while(ct<cte)
+		{
+			v0=((uint64_t *)cs)[0];	v1=((uint64_t *)cs)[1];
+			((uint64_t *)ct)[0]=v0;	((uint64_t *)ct)[1]=v1;
+			ct+=16; cs+=16;
+		}
 	}
+	return(ct);
 }
+
+uint8_t *MemLzCpy_MatchCopy2S(uint8_t *dst, long sz, long d)
+{
+	uint8_t *cs, *ct, *cte;
+
+	cs=dst-d;
+	ct=dst; cte=dst+sz;
+
+	while((ct+4)<=cte)
+	{	*ct++=*cs++;	*ct++=*cs++;
+		*ct++=*cs++;	*ct++=*cs++;	}
+
+	while(ct<cte)
+		{ *ct++=*cs++; }
+	return(ct);
+}
+
 #endif
 
 #if 1
+/** Do an "LZ style" copy.
+  * This version will copy an exact number of bytes.
+  */
 void *_memlzcpy(void *dst, void *src, size_t n)
 {
-	long d;
+	void *ct1, *cte;
+	long d, b, n1, n1f;
 	
+	cte=((uint8_t *)dst)+n;
 	d=((char *)dst)-((char *)src);
 	if(d<=0)
 	{
@@ -246,12 +349,185 @@ void *_memlzcpy(void *dst, void *src, size_t n)
 		memcpy(dst, src, n);
 	}else
 	{
-		MemLzCpy_MatchCopy2(dst, n, d);
+		b=(long)src;
+		if((d<=8) && !(b&15) && !(n&15))
+		{
+			/* If aligned, try to turn it into a memset. */
+			if(d==1)
+			{
+				memset(src, *(uint8_t *)src, n+1);
+				return(cte);
+			}else
+				if(d==2)
+			{
+				_memset16(src, *(uint16_t *)(src), (n+3)>>1);
+				return(cte);
+			}
+			else
+				if(d==4)
+			{
+				_memset32(src, *(uint32_t *)(src), (n+7)>>2);
+				return(cte);
+			}else
+				if(d==8)
+			{
+				_memset64(src, *(uint64_t *)(src), (n+15)>>3);
+				return(cte);
+			}
+		}
+
+		if(1)
+		{
+			n1=n&(~15);
+			
+			if((d<8) && (d&(d-1)))
+			{
+				/* NPOT step, so use relative margin. */
+				n1=n-16;
+				if(n1<0)
+					n1=0;
+			}
+
+			ct1=dst;
+
+			if(n1>0)
+			{
+				/* Copy bulk portion. */
+				ct1=MemLzCpy_MatchCopy2(dst, n1, d);
+			}
+
+//			n1f=n-(((char *)ct1)-((char *)dst));
+			n1f=cte-ct1;
+			
+//			if(n1f<0)
+//				{ __debugbreak(); }
+			
+			if(n1f>0)
+			{
+				/* Copy remainder, safer byte-for-byte copy. */
+				ct1=MemLzCpy_MatchCopy2S(ct1, n1f, d);
+			}
+			return(cte);
+		}
 	}
-	return(dst);
+	return(cte);
+}
+
+/** Do an "LZ style" copy.
+  * Fast version may run past the end by a small amoumt.
+  */
+void *_memlzcpyf(void *dst, void *src, size_t n)
+{
+	void *cte;
+	uint64_t v0, v1;
+	long d, b;
+	
+	cte=((uint8_t *)dst)+n;
+	d=((char *)dst)-((char *)src);
+	if(d<=0)
+	{
+		/* Copying backwards, use normal copy. */
+		if(n<=16)
+		{
+			/* Small copy. */
+			v0=((uint64_t *)src)[0];
+			v1=((uint64_t *)src)[1];
+			((uint64_t *)dst)[0]=v0;
+			((uint64_t *)dst)[1]=v1;
+		}else
+			if((-d)>=n)
+		{
+			memcpy(dst, src, n);
+		}
+		else if(d!=0)
+		{
+			memmove(dst, src, n);
+		}
+	}else if(d>=n)
+	{
+		/* No overlap, use memcpy. */
+		if(n<=16)
+		{
+			/* Small copy. */
+			v0=((uint64_t *)src)[0];
+			v1=((uint64_t *)src)[1];
+			((uint64_t *)dst)[0]=v0;
+			((uint64_t *)dst)[1]=v1;
+		}else
+		{
+			memcpy(dst, src, n);
+		}
+	}else
+	{
+		b=(long)src;
+//		if(d<8)
+//		if((d<8) && !(b&15))
+		if((d<=8) && !(b&15) && !(n&15))
+//		if(0)
+		{
+			/* If aligned, try to turn it into a memset. */
+			if(d==1)
+			{
+				memset(src, *(uint8_t *)src, n+1);
+//				return(cte);
+			}else
+#if 1
+				if(d==2)
+			{
+				_memset16(src, *(uint16_t *)(src), (n+3)>>1);
+//				return(cte);
+			}
+			else
+#endif
+#if 1
+				if(d==4)
+			{
+				_memset32(src, *(uint32_t *)(src), (n+7)>>2);
+			}else
+#endif
+#if 1
+				if(d==8)
+			{
+				_memset64(src, *(uint64_t *)(src), (n+15)>>3);
+			}else
+#endif
+			{
+				MemLzCpy_MatchCopy2(dst, n, d);
+			}
+		}else
+		{
+			MemLzCpy_MatchCopy2(dst, n, d);
+		}
+	}
+	return(cte);
 }
 #endif
 
+#if 1
+int _memlzcmp(void *dst, void *src, size_t n)
+{
+	uint8_t *cs, *ct, *cse;
+	
+	cs=src;
+	ct=dst;
+	cse=cs+n;
+	
+	while((cs+8)<=cse)
+	{
+		if((*(uint64_t *)cs)!=(*(uint64_t *)ct))
+			break;
+		cs+=8;	ct+=8;
+	}
+
+	while(cs<cse)
+	{
+		if(*cs!=*ct)
+			break;
+		cs++;	ct++;
+	}
+	return(cs-((uint8_t *)src));
+}
+#endif
 
 constraint_handler_t global_constraint_handler;
 

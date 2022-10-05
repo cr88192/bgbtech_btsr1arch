@@ -449,9 +449,9 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 //	i=(TK_GetRandom()*64)&16383;
 	i=(TK_GetRandom16ASLR()*64)&16383;
 
-	imgptr=TKMM_PageAlloc(imgsz1);
-//	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
-//		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+//	imgptr=TKMM_PageAlloc(imgsz1);
+	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
+		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
 
 //	memset(imgptr, 0, imgsz1-32);
 //	memset(imgptr, 0, imgsz1);

@@ -29,12 +29,12 @@ __PDPCLIB_API__ void *memmove(void *s1, const void *s2, size_t n)
 	const char *cs2e, *cs2e1;
 	size_t x, d;
 
+	p = s1;
+	cs2 = s2;
+	cs2e = s2 + n;
+
 	if (p <= cs2)
 	{
-		p = s1;
-		cs2 = s2;
-		cs2e = s2 + n;
-
 		d = (cs2-p);
 		if(d >= n)
 		{
@@ -69,9 +69,9 @@ __PDPCLIB_API__ void *memmove(void *s1, const void *s2, size_t n)
 	}
 	else
 	{
-		p = s1;
-		cs2 = s2;
-		cs2e = s2 + n;
+//		p = s1;
+//		cs2 = s2;
+//		cs2e = s2 + n;
 
 		d = (p-cs2);
 		if(d >= n)
@@ -602,6 +602,7 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 #if defined(__BJX2__) && !defined(__ADDR_X96__)
 // #if 0
 void memset_movx(void *s, int c, size_t n);
+void memset_filx(void *s, uint64_t c, size_t n);
 
 __asm {
 memset_movx:
@@ -627,6 +628,47 @@ memset_movx:
 	OR			R7, R20
 	SHLD.Q		R5, 32, R7
 	OR			R7, R20
+.endif
+
+.ifarch bjx2_wex
+	CMPGE	8, R6
+	BF		.L3
+	.L2:
+	ADD		-8, R6		|	MOV.Q	R20, (R4)
+	ADD		8, R4		|	CMPGE	8, R6
+	BT		.L2
+	.L3:
+.else
+	CMPGE	8, R6
+	BF		.L3
+	.L2:
+	ADD		-8, R6
+	MOV.Q	R20, (R4)
+	ADD		8, R4
+	CMPGE	8, R6
+	BT		.L2
+	.L3:
+.endif
+
+	RTSU
+
+
+memset_filx:
+
+.ifarch bjx2_movx
+	MOV		R5,  R20
+	MOV		R20, R22	|	MOV		R20, R23
+	MOV		R20, R21	|	CMPGT	32, R6
+	BF		.L1
+	.L0:
+	MOV.X	R20, (R4,  0)
+	ADD		-32, R6	
+	MOV.X	R22, (R4, 16)
+	ADD		32, R4		|	CMPGT	32, R6
+	BT		.L0
+	.L1:
+.else
+	MOV		R5,  R20
 .endif
 
 .ifarch bjx2_wex
@@ -800,6 +842,125 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 #endif
 }
 #endif
+
+__PDPCLIB_API__ void *_memset64(void *s, uint64_t v, size_t n)
+{
+	uint64_t *ct, *cte, *cte0;
+	uint64_t v1;
+	int a, n1;
+
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
+	n1=n<<3;
+	a=(int)(((long)s)|n1);
+	if(!(a&15))
+	{
+		memset_filx(s, v, n1);
+		return(s);
+	}
+#endif
+
+	ct=s; cte=ct+n;
+	while((ct+8)<=cte)
+	{
+		ct[0]=v;	ct[1]=v;
+		ct[2]=v;	ct[3]=v;
+		ct[4]=v;	ct[5]=v;
+		ct[6]=v;	ct[7]=v;
+		ct+=8;
+	}
+
+	while(ct<cte)
+		{ *ct++=v; }
+	return(s);
+}
+
+__PDPCLIB_API__ void *_memset32(void *s, uint32_t v, size_t n)
+{
+	uint32_t *ct, *cte, *cte0;
+	uint64_t v1;
+	int a, n1;
+
+	v1=(((uint64_t)v)<<32)|(v);
+
+#if 1
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
+	n1=n<<2;
+	a=(int)(((long)s)|n1);
+	if(!(a&15))
+	{
+		memset_filx(s, v1, n1);
+		return(s);
+	}
+#endif
+
+	if(!(n&1))
+	{
+		return(_memset64(s, v1, n>>1));
+	}
+#endif
+
+	ct=s; cte=ct+n;
+
+#if 1
+	while((ct+8)<=cte)
+	{
+		((uint64_t *)ct)[0]=v1;
+		((uint64_t *)ct)[1]=v1;
+		((uint64_t *)ct)[2]=v1;
+		((uint64_t *)ct)[3]=v1;
+		ct+=8;
+	}
+#endif
+
+	while(ct<cte)
+		{ *ct++=v; }
+	return(s);
+}
+
+__PDPCLIB_API__ void *_memset16(void *s, uint16_t v, size_t n)
+{
+	uint16_t *ct, *cte, *cte0;
+	uint64_t *ctl;
+	uint64_t v1;
+	int a, n1;
+
+	v1=(((uint64_t)v)<<16)|(v);
+	v1=(v1<<32)|v1;
+
+#if 1
+#if defined(__BJX2__) && !defined(__ADDR_X96__)
+	n1=n<<1;
+	a=(int)(((long)s)|n1);
+	if(!(a&15))
+	{
+		memset_filx(s, v1, n1);
+		return(s);
+	}
+#endif
+
+	if(!(n&1))
+	{
+		return(_memset32(s, v1, n>>1));
+	}
+#endif
+
+	ct=s; cte=ct+n;
+
+#if 1
+	while((ct+16)<=cte)
+	{
+		ctl=(uint64_t *)ct;
+		ctl[0]=v1;	ctl[1]=v1;
+		ctl[2]=v1;	ctl[3]=v1;
+		ct+=16;
+	}
+#endif
+
+	while(ct<cte)
+		{ *ct++=v; }
+	return(s);
+}
+
 
 #ifdef strerror
 #undef strerror

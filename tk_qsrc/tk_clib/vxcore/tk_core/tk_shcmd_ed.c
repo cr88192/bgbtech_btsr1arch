@@ -115,6 +115,7 @@ int TKSH_EdLoadFile(char *name)
 	TK_FILE *fd;
 	int sz, ch, nl;
 
+	sz=0;
 	tbuf=TKSH_LoadFileBuf(name, &sz);
 	if(!tbuf)
 		return(0);

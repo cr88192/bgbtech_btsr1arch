@@ -79,6 +79,7 @@ SRCS_CLIB = \
 	tk_core/tk_fat.c \
 	tk_core/tk_hal_tkgdi.c \
 	tk_core/tk_hal_snd.c \
+	tk_core/tk_hal_midi.c \
 	tk_core/tk_irq.c \
 	tk_core/tk_mmap.c \
 	tk_core/tk_mmcell.c \

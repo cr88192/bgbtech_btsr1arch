@@ -5,6 +5,7 @@ int TKSH_HexLoadFile(char *fname)
 {
 	byte *buf;
 	int sz;
+	sz=0;
 	buf=TKSH_LoadFileBuf(fname, &sz);
 	tksh_hex_buf=buf;
 	tksh_hex_bufsz=sz;

@@ -22,6 +22,7 @@ byte tk_midi_vnflg[32];		//voice flag
 
 u32 tk_midi_fmregdata[256*16];
 
+byte tk_midi_musicvolume = 15;
 
 int TK_Midi_Tick();
 
@@ -49,7 +50,7 @@ int tk_midi_timer_irq()
 	return(0);
 }
 
-static int tk_midi_isinit=0;
+static int tk_midi_isinit = 0;
 
 double tk_midi_ipow2(double y)
 {
@@ -80,12 +81,26 @@ double tk_midi_ipow2(double y)
 	}
 }
 
+int TK_Midi_SetMasterParam(int var, int val)
+{
+	if(var==1)
+	{
+		tk_midi_musicvolume=val;
+		return(0);
+	}
+
+	return(-1);
+}
+
 int TK_Midi_Init()
 {
 //	float freq, ph;
 	double freq, ph;
 	double *rph;
 	int i, j, k;
+	
+	if(!tk_midi_regs)
+		tk_midi_isinit=0;
 	
 	if(tk_midi_isinit)
 		return(0);
@@ -161,6 +176,8 @@ int TK_Midi_NoteOff(int ch, int d0, int d1)
 {
 	int vn1, vn2, cvn;
 
+	if(!tk_midi_regs)
+		return(0);
 
 	cvn=tk_midi_chanvn[ch];
 	if(cvn==0xFF)
@@ -219,17 +236,20 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	u32		*rec;
 	byte	*brec;
 	u32		rv1, rv2;
-	int		fvn, vn1, vn2, prg, fn, note;
-	int 	dv, att1, att2, vol, pbl;
+	int		fvn, vn1, vn2, prg, fn, note, note1, note2;
+	int 	dv, dv1, dv2, att1, att2, vol, pbl;
 	int 	basenote, fl, loghz;
 
 	byte modfcn, carfcn, modksc;
 	byte modlvl, carlvl, carksc;
 	byte modvol, carvol;
-	byte fbconn;
+	byte fbconn, fineadj, fixnote, fixflag;
 
 	note=d0;
 
+
+	if(!tk_midi_regs)
+		return(0);
 
 	prg=tk_midi_chanprg[ch];
 	if(ch==8)
@@ -237,6 +257,10 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 //	rec=tk_midi_fmregdata[prg];
 	rec=tk_midi_fmregdata+(prg*16);
 	brec=(byte *)rec;
+
+	fixflag=brec[0];
+	fineadj=brec[2];
+	fixnote=brec[3];
 
 	basenote=(short)(rec[4]>>16);
 
@@ -256,8 +280,9 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	if(fvn<0)
 	{
 		fl=0;
-		if(!(fbconn&1) || (modfcn!=carfcn))
+		if(!(fbconn&1) || (modfcn!=carfcn) || (fixflag&4))
 			fl|=1;
+//		fl=1;
 		fvn=TK_Midi_FindFreeVoice(fl);
 	}
 	if(fvn<0)
@@ -281,10 +306,18 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	note+=basenote;
 	if(note<0)note=0;
 
+	if(fixflag&1)
+	{
+		note=fixnote;
+	}
+
 	loghz=((note-96)<<8)/12;
 
+	note1=note;
+	note2=note+(fineadj-128);
+
 	vol=(tk_midi_chanvol[ch]*d1)>>7;
-	vol=(vol*snd_MusicVolume)>>4;
+	vol=(vol*tk_midi_musicvolume)>>4;
 
 	vol=__int_clamp(vol, 0, 127);
 
@@ -310,7 +343,7 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 
 	if(!(fbconn&1))
 	{
-		modvol=modvol>>1;
+//		modvol=modvol>>1;
 		carvol=(carvol*vol)>>6;
 		
 		switch((fbconn>>1)&7)
@@ -324,6 +357,11 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 			case 6: modvol=modvol<<1; break;
 			case 7: modvol=modvol<<2; break;
 		}
+		
+		modvol=modvol<<1;
+//		modvol=modvol<<2;
+//		modvol=modvol<<3;
+		
 		modvol=__int_clamp(modvol, 0, 127);
 		
 	}else
@@ -333,8 +371,8 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 		fn=modfcn;
 	}
 	
-	modvol=vol;
-	carvol=vol;
+//	modvol=vol;
+//	carvol=vol;
 	
 	modvol=__int_clamp(modvol, 0, 127);
 	carvol=__int_clamp(carvol, 0, 127);
@@ -343,12 +381,13 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	if(fvn&16)
 	{
 //		dv=tk_midi_notediv[d0];
-		dv=tk_midi_notediv[note];
+		dv1=tk_midi_notediv[note1];
+		dv2=tk_midi_notediv[note2];
 		att1=tk_midi_noteatt[carvol];
 		att2=tk_midi_noteatt[modvol];
 		
-		rv1=dv|(att1<<22)|((carfcn&7)<<28);
-		rv2=dv|(att2<<22)|((modfcn&7)<<28);
+		rv1=dv1|(att1<<22)|((carfcn&7)<<28);
+		rv2=dv2|(att2<<22)|((modfcn&7)<<28);
 
 //		if(!(fbconn&1) && (vn1<4))
 		if(!(fbconn&1))
@@ -435,6 +474,7 @@ int TK_Midi_ParseVLI(byte **rcs)
 	return(j);
 }
 
+#if 0
 int TK_Midi_ParseEvent()
 {
 	static int ld0, ld1;
@@ -542,7 +582,9 @@ int TK_Midi_ParseEvent()
 	
 	return(0);
 }
+#endif
 
+#if 0
 int TK_Midi_Tick()
 {
 	int i;
@@ -599,3 +641,4 @@ void I_MusicSubmit(void)
 {
 	I_MusicFineTick();
 }
+#endif

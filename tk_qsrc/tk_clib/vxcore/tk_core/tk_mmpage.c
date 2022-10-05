@@ -770,6 +770,7 @@ int TKMM_GetSize(void *ptr)
 	return(sz1);
 }
 
+#if 0
 int TKMM_IncRef(void *ptr)
 {
 	TKMM_MemLnkObj *obj;
@@ -841,6 +842,7 @@ int TKMM_DecRef(void *ptr)
 	}
 	return(0);
 }
+#endif
 
 int TKMM_GetTag(void *ptr)
 {
@@ -863,7 +865,7 @@ int TKMM_GetTag(void *ptr)
 		return(v&0xFFFF);
 	}
 
-	return(obj->dty_tag);
+	return(obj->ttag);
 }
 
 int TKMM_SetTag(void *ptr, int tag)
@@ -887,10 +889,128 @@ int TKMM_SetTag(void *ptr, int tag)
 		v=v&(~0x0000FFFFULL);
 		v|=tag&0xFFFF;
 		*pv=v;
+		return(tag&0xFFFF);
+	}
+
+	obj->ttag=tag;
+	return(obj->ttag);
+}
+
+int TKMM_GetZoneTag(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+	u64	*pv;
+	u64 v;
+	int i, b, n, sz1;
+
+	if(!ptr)
+		return(-1);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+		{ return(-1); }
+
+	if(obj->fl&8)
+	{
+		pv=TKMM_MMCell_GetLnkObjCellHeadPtr(obj, ptr);
+		v=*pv;
+		return((v>>16)&0xFFFF);
+	}
+
+	return(obj->ztag);
+}
+
+int TKMM_SetZoneTag(void *ptr, int tag)
+{
+	TKMM_MemLnkObj *obj;
+	u64	*pv;
+	u64 v;
+	int i, b, n, sz1;
+
+	if(!ptr)
+		return(-1);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+		{ return(-1); }
+
+	if(obj->fl&8)
+	{
+		pv=TKMM_MMCell_GetLnkObjCellHeadPtr(obj, ptr);
+		v=*pv;
+		v=v&(~0x00000000FFFF0000ULL);
+		v|=((tag&0xFFFFULL)<<16);
+		*pv=v;
+		return(tag&0xFFFF);
+	}
+
+	obj->ztag=tag;
+	return(obj->ztag);
+}
+
+
+void *TKMM_GetBase(void *ptr)
+{
+	TKMM_MemLnkObj *obj;
+	u64	*pv;
+//	u64 v;
+	int i, b, n, sz1;
+
+	if(!ptr)
+		return(NULL);
+
+	obj=TKMM_MMList_GetPtrLnkObj(ptr);
+	if(!obj)
+		{ return(NULL); }
+
+	if(obj->fl&8)
+	{
+		pv=TKMM_MMCell_GetLnkObjCellHeadPtr(obj, ptr);
+		return(pv+2);
+	}
+
+	return(obj->data);
+}
+
+struct tkmm_freezone_ctx_s {
+	int ztag;
+	int zmask;
+};
+
+int tkmm_freezone_cbfunc(void *p_ctx, TKMM_MemLnkObj *obj)
+{
+	struct tkmm_freezone_ctx_s *ctx;
+	ctx=p_ctx;
+
+	if(obj->fl&8)
+	{
+//		TKMM_MMCell_FreeLnkObjCellPtr(obj, ptr);
 		return(0);
 	}
 
-	obj->dty_tag=tag;
+	if((obj->ztag&ctx->zmask)==ctx->ztag)
+	{
+		if(obj->fl&4)
+		{
+			TKMM_PageFree(obj, obj->ix<<TKMM_PAGEBITS);
+			return(1);
+		}
+		TKMM_MMList_FreeLnkObj(obj);
+		return(1);
+	}
+
+	return(0);
+}
+
+int TKMM_FreeZone(int ztag, int zmask)
+{
+	struct tkmm_freezone_ctx_s t_ctx;
+	struct tkmm_freezone_ctx_s *ctx;
+
+	ctx=&t_ctx;
+	ctx->ztag=ztag;
+	ctx->zmask=zmask;
+	TKMM_MMList_WalkHeapObjects(ctx, tkmm_freezone_cbfunc);
 	return(0);
 }
 

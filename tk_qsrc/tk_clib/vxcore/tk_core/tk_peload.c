@@ -34,13 +34,17 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 				{ lr+=255; i=*cs++; }
 			lr+=i;
 		}
-		
+
+#if 0		
 		ct1=ct; cs1=cs; cs1e=cs+lr;
 		while(cs1<cs1e)
 		{
 			*(u64 *)ct1=*(u64 *)cs1;
 			ct1+=8; cs1+=8;
 		}
+#endif
+
+		_memlzcpyf(ct, cs, lr);
 		ct+=lr; cs+=lr;
 		
 		if((cs+1)>=cse)
@@ -65,7 +69,11 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 				{ ll+=255; i=*cs++; }
 			ll+=i;
 		}
-		
+
+		ct=_memlzcpyf(ct, ct-ld, ll);
+//		ct=_memlzcpy(ct, ct-ld, ll);
+
+#if 0
 		cs1=ct-ld; cs1e=cs1+ll;
 //		if(ld>=8)
 		if(ld>8)
@@ -96,6 +104,7 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 			while(cs1<cs1e)
 				{ *ct++=*cs1++; }
 		}
+#endif
 	}
 	
 	return(ct);

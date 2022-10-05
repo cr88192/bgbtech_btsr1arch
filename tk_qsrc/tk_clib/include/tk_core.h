@@ -311,14 +311,12 @@ typedef struct TKMM_MemLnkSeg_s TKMM_MemLnkSeg;
 typedef struct TKMM_MemCelChk_s TKMM_MemCelChk;
 
 struct TKMM_MemLnkObj_s {
-// TKMM_MemLnkObj *cnext;	//next object in chunk
-// TKMM_MemLnkObj *cprev;	//previous object in chunk
-u16 ix;					//size index value
-u16 dty_tag;			//type tag
-byte fl;				//object flags
-byte check;				//check value
-byte refcnt;			//reference count
-byte cat;				//category
+u16 ttag;			//00, type tag
+u16 ztag;			//02, zone tag
+byte fl;			//04, object flags
+byte check;			//05, check value
+byte ix;			//06, size index
+byte cat;			//07, category
 u64		pad_resv;
 // int flag;
 // u32 size;

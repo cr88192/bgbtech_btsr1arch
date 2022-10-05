@@ -20,6 +20,8 @@
 
 #define TKGDI_FCC_auds		RIFF_MAKETAG('a','u','d','s')
 
+#define TKGDI_FCC_mcmd		RIFF_MAKETAG('m','c','m','d')
+
 
 #define TKGDI_DSTR_PX			0x000000FF	//Font size in pixels
 #define TKGDI_DSTR_8PX			0x00000008	//8px
@@ -153,6 +155,17 @@ u16		*buf_data;		//backbuffer data
 u64		*buf_utx2;		//backbuffer (UTX2)
 byte	*buf_dirty1;	//buffer (dirty, pixel data)
 byte	*buf_dirty2;	//buffer (dirty, cells since last redraw)
+};
+
+typedef struct TKGDI_MIDI_COMMAND_s TKGDI_MIDI_COMMAND;
+
+struct TKGDI_MIDI_COMMAND_s {
+byte op;	//operation
+byte ch;	//channel
+byte d0;	//first parameter
+byte d1;	//second parameter
+u32 u0;		//first large parameter
+u32 u1;		//second large parameter
 };
 
 /* Blit an image to Display Device.

@@ -36,6 +36,7 @@ int tk_sysc_exitpt()
 	if(!tk_sysc_exit)
 		tk_sysc_exit=tk_malloc_krn(128*8);
 
+	chk=999;
 	rchk=&chk;
 	*rchk=0x12345;
 

@@ -1,0 +1,13 @@
+./gfx/atlas0_2a.dds
+./gfx/atlas0_2b.dds
+./gfx/fixed_16px.dds
+./gfx/fixed_8px.dds
+./gfx/invgrid0.dds
+./gfx/sky1b1.dds
+./gfx/sky2.dds
+./gfx/tinycnt0.dds
+./gfx/tinycnt1.dds
+./sprites/chicken1_m0.dds
+./sprites/cow1_m0.dds
+./sprites/pig1_m0.dds
+./sprites/sheep1_m0.dds

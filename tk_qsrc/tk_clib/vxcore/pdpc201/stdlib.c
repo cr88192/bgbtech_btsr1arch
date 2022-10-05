@@ -122,6 +122,14 @@ void (*_free_fptr)(void *ptr);
 void *(*_realloc_fptr)(void *ptr, size_t size);
 size_t (*_msize_fptr)(void *ptr);
 
+void *(*_mgetbase_fptr)(void *ptr);
+
+int (*_mgettag_fptr)(void *ptr);
+int (*_msettag_fptr)(void *ptr, int tag);
+int (*_mgetzone_fptr)(void *ptr);
+int (*_msetzone_fptr)(void *ptr, int ztag);
+int (*_mfreezone_fptr)(int ztag, int zmask);
+
 __PDPCLIB_API__ void **_getmallocptr(void)
 	{ return(&_malloc_fptr); }
 __PDPCLIB_API__ void **_getfreecptr(void)
@@ -130,6 +138,15 @@ __PDPCLIB_API__ void **_getreallocptr(void)
 	{ return(&_realloc_fptr); }
 __PDPCLIB_API__ void **_getmsizeptr(void)
 	{ return(&_msize_fptr); }
+
+__PDPCLIB_API__ void **_getmgettagptr(void)
+	{ return(&_mgettag_fptr); }
+__PDPCLIB_API__ void **_getmsettagptr(void)
+	{ return(&_msettag_fptr); }
+__PDPCLIB_API__ void **_getmgetzoneptr(void)
+	{ return(&_mgetzone_fptr); }
+__PDPCLIB_API__ void **_getmsetzoneptr(void)
+	{ return(&_msetzone_fptr); }
 
 // #ifdef __BJX2__
 // #if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__)
@@ -212,6 +229,38 @@ __PDPCLIB_API__ void *realloc(void *ptr, size_t size)
 }
 
 #endif
+
+
+__PDPCLIB_API__ void *_mgetbase(void *ptr)
+{
+	return(_mgetbase_fptr(ptr));
+}
+
+__PDPCLIB_API__ int _mgettag(void *ptr)
+{
+	return(_mgettag_fptr(ptr));
+}
+
+__PDPCLIB_API__ int _msettag(void *ptr, int tag)
+{
+	return(_msettag_fptr(ptr));
+}
+
+__PDPCLIB_API__ int _mgetzone(void *ptr)
+{
+	return(_mgetzone_fptr(ptr));
+}
+
+__PDPCLIB_API__ int _msetzone(void *ptr, int tag)
+{
+	return(_msetzone_fptr(ptr, tag));
+}
+
+__PDPCLIB_API__ int _mfreezone(int ztag, int zmask)
+{
+	return(_mfreezone_fptr(ztag, zmask));
+}
+
 
 #ifndef __TK_CLIB_DLLSTUB__
 

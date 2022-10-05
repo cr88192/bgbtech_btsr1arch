@@ -268,10 +268,12 @@ void *__lva_conv_toptr(u64 val)
 	if((val>>62)==1)
 	{
 // #ifdef __BJX1_64__
-#ifdef __ADDR_64__
+// #ifdef __ADDR_64__
+#if 1
 		iv=val<<2;
 		return((void *)(iv>>2));
 #else
+		iv=val;
 		return((void *)((u32)iv));
 #endif
 	}

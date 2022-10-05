@@ -898,6 +898,7 @@ void Sys_CheckSanityC(void)
 	long long la, lb, lc;
 	int a, b, c;
 	
+	f=0.0;
 	h=3.14159;
 	*(&f)=h;
 	g=f*100;
@@ -1038,6 +1039,8 @@ int tk_shell_chksane_arith()
 	long long		li, lj, lk, ll;
 	unsigned int	ui, uj, uk, ul;
 	int				i, j, k, l;
+
+	i=0; j=0; ui=0; uj=0;
 
 	pi=&i;
 	pj=&j;
@@ -1183,6 +1186,8 @@ int tk_shell_chksane_arith()
 		__debugbreak();
 	if(l!=-7)
 		__debugbreak();
+
+	li=0; lj=0;
 
 	pli=&li;
 	plj=&lj;
@@ -1401,6 +1406,7 @@ int tk_shell_chksane_addr()
 	TK_Wad4Lump		*pwl0, *pwl1;
 	int i, j, k;
 	
+	k=0;
 	pwz0=&k;
 	pwl0=&k;
 	j=251;
@@ -1470,6 +1476,9 @@ int tk_shell_chksane_arith2()
 	long long		li, lj, lk, ll;
 	unsigned int	ui, uj, uk, ul;
 	int				i, j, k, l;
+
+	i=0; j=0;
+	ui=0; uj=0;
 
 	pi=&i;
 	pj=&j;

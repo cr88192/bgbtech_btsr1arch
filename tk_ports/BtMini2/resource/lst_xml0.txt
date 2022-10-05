@@ -1,0 +1,3 @@
+./dialog/house0.xml
+./dialog/mainmenu0.xml
+./dialog/menus.xml

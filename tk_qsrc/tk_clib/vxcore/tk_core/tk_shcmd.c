@@ -1491,6 +1491,7 @@ int TKSH_TryLoad(char *img, char **args0)
 			sig_is_pe=1;
 	}
 
+	chk=999;
 	rchk=&chk;
 	*rchk=0x1234567;
 
@@ -1826,6 +1827,7 @@ int TKSH_TryLoad_n(char *img, char **args)
 		return(ri);
 #endif
 
+	path=NULL;	npath=0;
 	TK_Env_GetPathList(&path, &npath);
 	for(i=0; i<npath; i++)
 	{

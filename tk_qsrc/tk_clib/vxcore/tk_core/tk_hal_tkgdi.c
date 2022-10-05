@@ -1786,6 +1786,55 @@ TKGSTATUS TKGDI_ModifyAudioDevice(
 	void *ifmt,
 	void *ofmt)
 {
+	TKGDI_MIDI_COMMAND *mcmd;
+	int op, ch, d0, d1;
+
+	if(parm==TKGDI_FCC_mcmd)
+	{
+		TK_Midi_Init();
+	
+		mcmd=ifmt;
+		
+		op=mcmd->op;
+		ch=mcmd->ch;
+		d0=mcmd->d0;
+		d1=mcmd->d1;
+
+		switch(mcmd->op)
+		{
+		case 0:
+			TK_Midi_NoteOff(ch, d0, d1);
+			break;
+		case 1:
+			TK_Midi_NoteOn(ch, d0, d1);
+			break;
+		case 2:
+			TK_Midi_PitchBlend(ch, d0<<6);
+			break;
+		case 3:
+			TK_Midi_Controller(ch,  d0, d1);
+			break;
+		case 4:
+			TK_Midi_ProgramChange(ch,  d0);
+			break;
+			
+		case 16:
+			TK_Midi_SetFmRegisterData(d0, d1, mcmd->u0);
+			break;
+		case 17:
+			if(d0==0)
+			{
+				TK_Midi_SilenceAll();
+				break;
+			}
+			TK_Midi_SetMasterParam(d0, d1);
+			break;
+
+		default:
+			break;
+		}
+	}
+
 	return(0);
 }
 

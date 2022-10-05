@@ -88,6 +88,9 @@ errno_t strncpy_s(
 	const char *restrict src, rsize_t count);
 #endif
 
+void *_memlzcpy(void *dst, void *src, size_t n);
+int _memlzcmp(void *dst, void *src, size_t n);
+
 #ifdef __WATCOMC__
 #ifdef __INLINE_FUNCTIONS__
 #pragma intrinsic(memchr, memcmp, memcpy, strcat, strcpy, strlen, strchr)

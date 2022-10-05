@@ -905,7 +905,7 @@ void __allocmem(size_t size, void **rptr)
 void __freemem(void *ptr)
 {
 //	vx_free(ptr);
-//	TKMM_Free(ptr);
+	TKMM_Free(ptr);
 }
 
 unsigned char *__envptr;
@@ -930,11 +930,26 @@ void (*_free_fptr)(void *ptr);
 void *(*_realloc_fptr)(void *ptr, size_t size);
 size_t (*_msize_fptr)(void *ptr);
 
+int (*_mgettag_fptr)(void *ptr);
+int (*_msettag_fptr)(void *ptr, int tag);
+int (*_mgetzone_fptr)(void *ptr);
+int (*_msetzone_fptr)(void *ptr, int ztag);
+
+void *(*_mgetbase_fptr)(void *ptr);
+int (*_mfreezone_fptr)(int ztag, int zmask);
+
 void *tk_malloc(int sz);
 void *tk_malloc_cat(int sz, int cat);
 int tk_free(void *ptr);
 void *tk_realloc(void *ptr, int sz);
 int tk_msize(void *ptr);
+
+void *tk_mgetbase(void *ptr);
+int tk_mgettag(void *ptr);
+int tk_msettag(void *ptr, int sz);
+int tk_mgetzone(void *ptr);
+int tk_msezone(void *ptr, int sz);
+int tk_mfreezone(int ztag, int zmask);
 
 
 int __start_early()
@@ -944,6 +959,15 @@ int __start_early()
 	_free_fptr=tk_free;
 	_realloc_fptr=tk_realloc;
 	_msize_fptr=tk_msize;
+	
+	_mgetbase_fptr=tk_mgetbase;
+	_mfreezone_fptr=tk_mfreezone;
+	
+	_mgettag_fptr=tk_mgettag;
+	_msettag_fptr=tk_msettag;
+	_mgetzone_fptr=tk_mgetzone;
+	_msetzone_fptr=tk_msetzone;
+	
 	return(0);
 }
 
