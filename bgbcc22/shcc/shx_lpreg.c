@@ -5,7 +5,7 @@
 //	BGBCC_SH_REG_LR9,
 //	BGBCC_SH_REG_LR8, 255 };
 
-const byte bgbcc_shx_lcachereg[8]={
+const short bgbcc_shx_lcachereg[8]={
 	BGBCC_SH_REG_LR14, BGBCC_SH_REG_LR13,
 	BGBCC_SH_REG_LR12, BGBCC_SH_REG_LR11,
 	BGBCC_SH_REG_LR10, BGBCC_SH_REG_LR9,

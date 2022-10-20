@@ -1243,6 +1243,10 @@
 #define BGBCC_SH_RLC_ABS96			0x36	//Absolute 96-bit
 
 
+#define BGBCC_SH_RLC_RELW8_BJCMP	0x38	//JCMPxx (WORD)
+#define BGBCC_SH_RLC_RELW32_BJCMP	0x39	//JCMPxx (WORD, Jumbo)
+
+
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE
 // #define BGBCC_SH_RLC_ABSW64A_BSR	0x21	//Absolute BYTE
 

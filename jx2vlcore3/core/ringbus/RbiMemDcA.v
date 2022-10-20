@@ -97,12 +97,15 @@ assign	regOutValB = tRegOutValB;
 
 reg[127: 0]	tRegOutExc;
 reg[127: 0]	tRegOutExc2;
+reg[127: 0]	tRegOutExc3;
 assign	regOutExc = tRegOutExc2;
+assign	regOutExc = tRegOutExc3;
 
 reg[63: 0]		tRegInSr;
 reg[63: 0]		tRegInSrL;
 
 reg[63: 0]		tRegRng1;
+reg[63: 0]		tRegInMmcr;
 
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
@@ -241,7 +244,7 @@ Addr:
 	`jx2_mem_l1darr_data		arrMemDataF[63:0];
 `endif
 
-
+reg				tResetL;
 
 `jx2_mem_l1darr_addr		tArrMemAddrStA;
 `jx2_mem_l1darr_addr		tArrMemAddrStB;
@@ -348,8 +351,8 @@ reg[  5:0]		tNxtReqOpmB;
 reg[  5:0]		tReqOpmB;
 `endif
 
-reg[3:0]		tInPmode;
-reg[3:0]		tNxtInPmode;
+//reg[3:0]		tInPmode;
+//reg[3:0]		tNxtInPmode;
 
 reg[63: 0]		tReqInValA;
 reg[63: 0]		tReqInValB;
@@ -718,7 +721,7 @@ begin
 `endif
 
 //	tNxtInPmode		= regInSr[31:28];
-	tNxtInPmode		= regInSr[31:28] ^ regKrrHash[3:0] ^ regKrrHash[7:4];
+//	tNxtInPmode		= regInSr[31:28] ^ regKrrHash[3:0] ^ regKrrHash[7:4];
 
 	tNxtUtlbBlkIx	= regInAddr[15:12] ^ regInAddr[19:16];
 
@@ -924,26 +927,26 @@ begin
 	end
 `endif
 
-//	if(((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS)) || reset)
-	if((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS) && !reset)
+//	if(((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS)) || tResetL)
+	if((tInOpm==JX2_DCOPM_FLUSHDS) && (tInOpmC!=JX2_DCOPM_FLUSHDS) && !tResetL)
 	begin
 		tNxtDoFlush = 1;
 		tNxtDoFlushTlb = 1;
 	end
 
-	if((tInOpm==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB) && !reset)
+	if((tInOpm==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB) && !tResetL)
 	begin
 		tNxtDoFlushTlb = 1;
 	end
 
-	if((tInOpm == JX2_DCOPM_LDTLB) && (tInOpmC!=JX2_DCOPM_LDTLB) && !reset)
+	if((tInOpm == JX2_DCOPM_LDTLB) && (tInOpmC!=JX2_DCOPM_LDTLB) && !tResetL)
 	begin
 		tNxtDoFlushTlb = 1;
 	end
 	
-	if((tFlushRov == 0) && !tDoFlush && !reset)
+	if((tFlushRov == 0) && !tDoFlush && !tResetL)
 		tNxtDoFlush = 1;
-	if((tFlushRovTlb == 0) && !tDoFlushTlb && !reset)
+	if((tFlushRovTlb == 0) && !tDoFlushTlb && !tResetL)
 		tNxtDoFlushTlb = 1;
 
 	if(tDoFlush && !tDoFlushL)
@@ -959,7 +962,7 @@ begin
 		tNxtFlushRovTlb = tFlushRovTlb + 1;
 	end
 
-	if(reset)
+	if(tResetL)
 	begin
 		tNxtFlushRov		= 0;
 		tNxtFlushRovTlb		= 0;
@@ -1418,12 +1421,13 @@ begin
 		tReqUtlbHitHi = 0;
 	tReqUtlbHitAxA	= tReqUtlbHitHi &&
 		(tReqAxA[15:10] == tUtlbBlkAddr[15:10]) &&
-		!tUtlbBlkFlush && regInMmcr[0];
+		!tUtlbBlkFlush && tRegInMmcr[0];
 	tReqUtlbHitAxB	= tReqUtlbHitHi &&
 		(tReqAxB[15:10] == tUtlbBlkAddr[15:10]) &&
-		!tUtlbBlkFlush && regInMmcr[0];
+		!tUtlbBlkFlush && tRegInMmcr[0];
 
-	if(regInMmcr[5:4]==2'b00)
+//	if(regInMmcr[5:4]==2'b00)
+	if(tRegInMmcr[5:4]==2'b00)
 	begin
 		/* 4K pages. */
 		tReqUtlbAxA[9:8]=tUtlbBlkAddr[45:44];
@@ -1436,7 +1440,7 @@ begin
 
 `ifndef def_true
 // `ifdef def_true
-	if(regInMmcr[0] && tReqIsNz && !tReqIsMmio && !tReqIsCcmd)
+	if(tRegInMmcr[0] && tReqIsNz && !tReqIsMmio && !tReqIsCcmd)
 	begin
 		if(tReqUtlbHitAxA)
 			$display("Utlb Hit, %X %X", tUtlbBlkAddr, tReqAxA);
@@ -1496,8 +1500,10 @@ begin
 			end
 		end
 		
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
+		/* Auto Flush cache lines that are getting old. */
+
 		if(((tBlkEpochDeltaA[1] && tBlkIsDirtyA) || tBlkEpochDeltaA[3]) && 
 			!tReqIsNz && (tBlkMemDext2A != UV16_FF))
 //		if(((tBlkEpochDeltaA[1] && tBlkIsDirtyA) || tBlkEpochDeltaA[3]) && 
@@ -1586,6 +1592,11 @@ begin
 
 	if(!tReqReady && !tReqIsMmio && !tReqIsCcmd)
 		tRegOutHold = 1;
+
+	/* Hold until EXC forwards. */
+//	if(tRegOutExc[15] && !tRegOutExc3[15])
+//	if(tRegOutExc[15] && !tRegOutExc2[15])
+//		tRegOutHold = 1;
 
 //	tReqDoMissA	= tReqMissA;
 //	tReqDoMissB	= tReqMissB;
@@ -2033,7 +2044,7 @@ begin
 		end
 	end
 	
-	if(memRingIsRespOkLdA && !tMemRingSkipResp && !reset)
+	if(memRingIsRespOkLdA && !tMemRingSkipResp && !tResetL)
 	begin
 `ifdef jx2_debug_l1ds
 		$display("L1D$: Load Response A, A=%X, Ix1/Ix2=%X/%X", 
@@ -2109,7 +2120,7 @@ begin
 				tReqMissAxA[43:1], tReqSeqVa[43:0]);
 	end
 
-	if(memRingIsRespOkLdB && !tMemRingSkipResp && !reset)
+	if(memRingIsRespOkLdB && !tMemRingSkipResp && !tResetL)
 	begin
 `ifdef jx2_debug_l1ds
 		$display("L1D$: Load Response B, A=%X, Ix1/Ix2=%X/%X", 
@@ -2304,7 +2315,7 @@ begin
 		end
 	end
 
-	if(reset)
+	if(tResetL)
 	begin
 		tReqMiss		= 0;
 		tReqMissA		= 0;
@@ -2345,7 +2356,7 @@ begin
 	tMemSeqVa		= 0;
 	tNxtMemSeqRov	= tMemSeqRov;
 
-	if(reset)
+	if(tResetL)
 	begin
 		tNxtMemSeqRov	= 0;
 	end
@@ -2617,7 +2628,7 @@ begin
 //		tRegOutHold = 1;
 	end
 
-	if(reset)
+	if(tResetL)
 	begin
 		tRegOutHold = 0;
 	end
@@ -2642,8 +2653,9 @@ begin
 	tVolatileIxA	<= tNxtVolatileIxA;
 	tVolatileIxB	<= tNxtVolatileIxB;
 
+	tRegInMmcr		<= regInMmcr;
 	tRegRng1		<= { tRegRng1[47:0], regRng };
-
+	tResetL			<= reset;
 
 	if(!dcInHold)
 	begin
@@ -2657,7 +2669,7 @@ begin
 		tVolatileInhCnt	<= tNxtVolatileInh;
 		tVolatileInhSet	<= 0;
 
-		tInPmode		<= tNxtInPmode;
+//		tInPmode		<= tNxtInPmode;
 		tSkipTlb		<= tNxtSkipTlb;
 
 		tSrJQ			<= regInSr[31];
@@ -2856,8 +2868,9 @@ begin
 	tReqMissL		<= tReqMiss;
 
 	tRegOutExc2		<= tRegOutExc;
+	tRegOutExc3		<= tRegOutExc2;
 
-	if(reset)
+	if(tResetL)
 	begin
 		tMemSeqOut  <= 0;
 		tMemOpmOut  <= 0;

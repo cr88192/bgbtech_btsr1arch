@@ -1368,6 +1368,7 @@ int BGBCC_JX2C_EmitJCmpVRegZeroQLong(
 	ccxl_register treg;
 	int csreg, ctreg;
 	int nm1, nm2, nm3;
+	int i, j, k;
 
 	if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 	{
@@ -1397,35 +1398,39 @@ int BGBCC_JX2C_EmitJCmpVRegZeroQLong(
 		nm1=BGBCC_SH_NMID_CMPQEQ;
 //		nm1=BGBCC_SH_NMID_CMPEQ;
 		nm2=BGBCC_SH_NMID_BT;
-//		nm3=BGBCC_SH_NMID_BREQ;
+		nm3=BGBCC_SH_NMID_BREQ;
 		break;
 	case CCXL_CMP_NE:
 		nm1=BGBCC_SH_NMID_CMPQEQ;
 //		nm1=BGBCC_SH_NMID_CMPEQ;
 		nm2=BGBCC_SH_NMID_BF;
-//		nm3=BGBCC_SH_NMID_BRNE;
+		nm3=BGBCC_SH_NMID_BRNE;
 		break;
 
-#if 0
+#if 1
 	case CCXL_CMP_LT:
-		nm1=BGBCC_SH_NMID_CMPPZ;
+//		nm1=BGBCC_SH_NMID_CMPPZ;
+		nm1=BGBCC_SH_NMID_CMPQGE;
 		nm2=BGBCC_SH_NMID_BF;
-//		nm3=BGBCC_SH_NMID_BRLT;
+		nm3=BGBCC_SH_NMID_BRLT;
 		break;
 	case CCXL_CMP_GT:
-		nm1=BGBCC_SH_NMID_CMPPL;
+//		nm1=BGBCC_SH_NMID_CMPPL;
+		nm1=BGBCC_SH_NMID_CMPQGT;
 		nm2=BGBCC_SH_NMID_BT;
-//		nm3=BGBCC_SH_NMID_BRGT;
+		nm3=BGBCC_SH_NMID_BRGT;
 		break;
 	case CCXL_CMP_LE:
-		nm1=BGBCC_SH_NMID_CMPPL;
+//		nm1=BGBCC_SH_NMID_CMPPL;
+		nm1=BGBCC_SH_NMID_CMPQGT;
 		nm2=BGBCC_SH_NMID_BF;
-//		nm3=BGBCC_SH_NMID_BRLE;
+		nm3=BGBCC_SH_NMID_BRLE;
 		break;
 	case CCXL_CMP_GE:
-		nm1=BGBCC_SH_NMID_CMPPZ;
+//		nm1=BGBCC_SH_NMID_CMPPZ;
+		nm1=BGBCC_SH_NMID_CMPQGE;
 		nm2=BGBCC_SH_NMID_BT;
-//		nm3=BGBCC_SH_NMID_BRGE;
+		nm3=BGBCC_SH_NMID_BRGE;
 		break;
 #endif
 
@@ -1452,6 +1457,17 @@ int BGBCC_JX2C_EmitJCmpVRegZeroQLong(
 			return(1);
 		}
 #endif
+
+		if((nm3>=0) && (sctx->has_jcmp&1) &&
+			BGBCC_JX2_EmitCheckRegExtGPR(sctx, csreg))
+		{
+			j=BGBCC_JX2_TryEmitOpRegLbl(sctx, nm3, lbl, csreg);
+			if(j>0)
+			{
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+				return(1);
+			}
+		}
 
 //		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 

@@ -687,6 +687,26 @@ int BGBCC_JX2_CheckOps32IsMem(
 	return(0);
 }
 
+int BGBCC_JX2_CheckOps32IsLoad(
+	BGBCC_JX2_Context *sctx, int opw1, int opw2)
+{
+	u16 rs1, rt1, rn1, rspr1, rp1, rspw1, rs1b, rt1b, rn1b, rspr1b;
+	int rspfl1, rspfl2;
+	int ret1, ret2;
+
+	ret1=BGBCC_JX2_CheckOps32GetRegs(sctx, opw1, opw2,
+		&rs1, &rt1, &rn1, &rp1, &rspr1, &rspw1, &rspfl1);
+		
+	if(rspfl1&BGBCC_WXSPFL_ISMEM)
+	{
+		if(rspfl1&BGBCC_WXSPFL_IS_STORE)
+			return(0);
+
+		return(1);
+	}
+	return(0);
+}
+
 int BGBCC_JX2_CheckOps32Is2Stage(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
@@ -881,9 +901,9 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 		xn1=xm1+(sc1-1);
 		xn2=xm2+(sc2-1);
 		if(wx1)
-			xn1=xm1+16;
+			xn1=xm1+15;
 		if(wx2)
-			xn2=xm2+16;
+			xn2=xm2+15;
 
 		if(xn1<xm2)
 			return(1);
@@ -2813,8 +2833,11 @@ int BGBCC_JX2_InferInterlockCost(
 //	cf1=cf1*2;
 //	cf2=cf2*2;
 
-	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opwn1, opwn2) ||
-		BGBCC_JX2_CheckOps32Is3Stage(sctx, opwn1, opwn2))
+//	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opwn1, opwn2) ||
+//		BGBCC_JX2_CheckOps32Is3Stage(sctx, opwn1, opwn2))
+	if(	BGBCC_JX2_CheckOps32IsLoad(sctx, opwn1, opwn2) ||
+		(BGBCC_JX2_CheckOps32Is3Stage(sctx, opwn1, opwn2) &&
+		!BGBCC_JX2_CheckOps32IsMem(sctx, opwn1, opwn2)))
 	{
 		cn1=cfn1;
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opwn1, opwn2))
@@ -2824,8 +2847,11 @@ int BGBCC_JX2_InferInterlockCost(
 			cn1=1;
 	}
 
-	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw1, opw2) ||
-		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw1, opw2))
+//	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw1, opw2) ||
+//		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw1, opw2))
+	if(	BGBCC_JX2_CheckOps32IsLoad(sctx, opw1, opw2) ||
+		(BGBCC_JX2_CheckOps32Is3Stage(sctx, opw1, opw2) &&
+		!BGBCC_JX2_CheckOps32IsMem(sctx, opw1, opw2)))
 	{
 		c1=cf1;
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opw1, opw2))
@@ -2836,8 +2862,11 @@ int BGBCC_JX2_InferInterlockCost(
 			c1=1;
 	}
 
-	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw3, opw4) ||
-		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw3, opw4))
+//	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw3, opw4) ||
+//		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw3, opw4))
+	if(	BGBCC_JX2_CheckOps32IsLoad(sctx, opw3, opw4) ||
+		(BGBCC_JX2_CheckOps32Is3Stage(sctx, opw3, opw4) &&
+		!BGBCC_JX2_CheckOps32IsMem(sctx, opw3, opw4)))
 	{
 		c2=cf2;
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opw3, opw4))
@@ -2849,8 +2878,11 @@ int BGBCC_JX2_InferInterlockCost(
 	}
 
 #if 1
-	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw5, opw6) ||
-		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw5, opw6))
+//	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw5, opw6) ||
+//		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw5, opw6))
+	if(	BGBCC_JX2_CheckOps32IsLoad(sctx, opw5, opw6) ||
+		(BGBCC_JX2_CheckOps32Is3Stage(sctx, opw5, opw6) &&
+		!BGBCC_JX2_CheckOps32IsMem(sctx, opw5, opw6)))
 	{
 		c3=cf3;
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opw5, opw6))
@@ -2860,8 +2892,11 @@ int BGBCC_JX2_InferInterlockCost(
 			c3=1;
 	}
 
-	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw7, opw8) ||
-		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw7, opw8))
+//	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw7, opw8) ||
+//		BGBCC_JX2_CheckOps32Is3Stage(sctx, opw7, opw8))
+	if(	BGBCC_JX2_CheckOps32IsLoad(sctx, opw7, opw8) ||
+		(BGBCC_JX2_CheckOps32Is3Stage(sctx, opw7, opw8) &&
+		!BGBCC_JX2_CheckOps32IsMem(sctx, opw7, opw8)))
 	{
 		c4=cf4;
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opw7, opw8))

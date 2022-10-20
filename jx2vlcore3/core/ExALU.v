@@ -1042,27 +1042,27 @@ begin
 
 `ifdef jx2_alu_jcmp
 	case(idUIxt[4:0])
-		5'h00: tRegOutJcmpT = tSub1ZF;				/* EQ */
-		5'h01: tRegOutJcmpT = !tSub1ZF;				/* NE */
-		5'h02: tRegOutJcmpT = tSub1ZF || (tSub1SF^tSub1VF); /* LE */
-		5'h03: tRegOutJcmpT = !tSub1ZF && !(tSub1SF^tSub1VF); /* GT */
-		5'h04: tRegOutJcmpT = (tSub1SF^tSub1VF);		/* LT */
-		5'h05: tRegOutJcmpT = !(tSub1SF^tSub1VF);	/* GE */
-		5'h06: tRegOutJcmpT = !tSub1CF;				/* B  */
-		5'h07: tRegOutJcmpT = tSub1CF;				/* HS */
-		5'h08: tRegOutJcmpT = tTst1ZF;				/* TSTT */
-		5'h09: tRegOutJcmpT = !tTst1ZF;				/* TSTF */
+		5'h00: tRegOutJcmpT = tSub1ZF;							/* EQ */
+		5'h01: tRegOutJcmpT = !tSub1ZF;							/* NE */
+		5'h02: tRegOutJcmpT = tSub1ZF || (tSub1SF^tSub1VF);		/* LE */
+		5'h03: tRegOutJcmpT = !tSub1ZF && !(tSub1SF^tSub1VF);	/* GT */
+		5'h04: tRegOutJcmpT = (tSub1SF^tSub1VF);				/* LT */
+		5'h05: tRegOutJcmpT = !(tSub1SF^tSub1VF);				/* GE */
+		5'h06: tRegOutJcmpT = !tSub1CF;							/* B  */
+		5'h07: tRegOutJcmpT = tSub1CF;							/* HS */
+		5'h08: tRegOutJcmpT = tTst1ZF;							/* TSTT */
+		5'h09: tRegOutJcmpT = !tTst1ZF;							/* TSTF */
 
-		5'h10: tRegOutJcmpT = tSub2ZF;				/* EQ */
-		5'h11: tRegOutJcmpT = !tSub2ZF;				/* NE */
-		5'h12: tRegOutJcmpT = tSub2ZF || (tSub2SF^tSub2VF); /* LE */
-		5'h13: tRegOutJcmpT = !tSub2ZF && !(tSub2SF^tSub2VF); /* GT */
-		5'h14: tRegOutJcmpT = (tSub2SF^tSub2VF);		/* LT */
-		5'h15: tRegOutJcmpT = !(tSub2SF^tSub2VF);	/* GE */
-		5'h16: tRegOutJcmpT = !tSub2CF;				/* B  */
-		5'h17: tRegOutJcmpT = tSub2CF;				/* HS */
-		5'h18: tRegOutJcmpT = tTst2ZF;				/* TSTT */
-		5'h19: tRegOutJcmpT = !tTst2ZF;				/* TSTF */
+		5'h10: tRegOutJcmpT = tSub2ZF;							/* EQ */
+		5'h11: tRegOutJcmpT = !tSub2ZF;							/* NE */
+		5'h12: tRegOutJcmpT = tSub2ZF || (tSub2SF^tSub2VF);		/* LE */
+		5'h13: tRegOutJcmpT = !tSub2ZF && !(tSub2SF^tSub2VF);	/* GT */
+		5'h14: tRegOutJcmpT = (tSub2SF^tSub2VF);				/* LT */
+		5'h15: tRegOutJcmpT = !(tSub2SF^tSub2VF);				/* GE */
+		5'h16: tRegOutJcmpT = !tSub2CF;							/* B  */
+		5'h17: tRegOutJcmpT = tSub2CF;							/* HS */
+		5'h18: tRegOutJcmpT = tTst2ZF;							/* TSTT */
+		5'h19: tRegOutJcmpT = !tTst2ZF;							/* TSTF */
 
 		default: tRegOutJcmpT = 0;					/* - */
 	endcase

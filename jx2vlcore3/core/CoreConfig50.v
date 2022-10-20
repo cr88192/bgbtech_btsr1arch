@@ -56,7 +56,7 @@
 // `define jx2_mem_fwstore			//Store Forwarding
 
 `define jx2_mem_l1d_fwstore			//Store Forwarding
-`define jx2_mem_l1d_fwarray			//Block Array Forwarding
+// `define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
 // `define jx2_mem_l1d_utlb			//Micro TLB
 

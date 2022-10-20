@@ -4430,7 +4430,8 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 		fl|=BGBCC_RSPFL_NONLOCAL;
 
 //	if(BGBCC_CCXL_IsRegArgP(ctx, sreg) && (ctx->cur_func->n_args>8))
-	if(regfl&BGBCC_REGFL_TEMPLOAD)
+//	if(regfl&BGBCC_REGFL_TEMPLOAD)
+	if(BGBCC_CCXL_IsRegArgP(ctx, sreg) && (regfl&BGBCC_REGFL_TEMPLOAD))
 		fl|=BGBCC_RSPFL_NONLOCAL;
 
 	if(regfl&BGBCC_REGFL_ALIASPTR)

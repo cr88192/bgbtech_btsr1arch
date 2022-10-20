@@ -31,7 +31,8 @@ module ExCpuId(
 	clock,	reset,
 	timers,
 	index,
-	resLo,	resHi
+	resLo,	resHi,
+	outRng
 	);
 
 input			clock;
@@ -41,6 +42,7 @@ input[11:0]		timers;
 input[4:0]		index;
 output[63:0]	resLo;
 output[63:0]	resHi;
+output[63:0]	outRng;
 
 parameter		isAltCore = 0;
 
@@ -52,6 +54,9 @@ reg[63:0]		tResHi;
 
 assign		resLo = tResLo;
 assign		resHi = tResHi;
+
+reg[63:0]		tOutRng;
+assign		outRng = tOutRng;
 
 reg[31:0]	tRngA;
 reg[31:0]	tRngB;
@@ -309,6 +314,17 @@ begin
 
 	tResHi = tResHiA;
 
+	tOutRng	=	{
+		tRngA[31:28], tRngB[ 3: 0],
+		tRngA[27:24], tRngB[ 7: 4],
+		tRngA[23:20], tRngB[11: 8],
+		tRngA[19:16], tRngB[15:12],
+		tRngA[15:12], tRngB[19:16],
+		tRngA[11: 8], tRngB[23:20],
+		tRngA[ 7: 4], tRngB[27:24],
+		tRngA[ 3: 0], tRngB[31:28]
+	};
+
 
 `ifdef def_true
 	casez(index[4:0])
@@ -361,16 +377,17 @@ begin
 			tResHi = UV64_00;
 		end
 		5'b1_1111: begin
-			tResLo = {
-				tRngA[31:28], tRngB[ 3: 0],
-				tRngA[27:24], tRngB[ 7: 4],
-				tRngA[23:20], tRngB[11: 8],
-				tRngA[19:16], tRngB[15:12],
-				tRngA[15:12], tRngB[19:16],
-				tRngA[11: 8], tRngB[23:20],
-				tRngA[ 7: 4], tRngB[27:24],
-				tRngA[ 3: 0], tRngB[31:28]
-			};
+			tResLo = tOutRng;
+//			tResLo = {
+//				tRngA[31:28], tRngB[ 3: 0],
+//				tRngA[27:24], tRngB[ 7: 4],
+//				tRngA[23:20], tRngB[11: 8],
+//				tRngA[19:16], tRngB[15:12],
+//				tRngA[15:12], tRngB[19:16],
+//				tRngA[11: 8], tRngB[23:20],
+//				tRngA[ 7: 4], tRngB[27:24],
+//				tRngA[ 3: 0], tRngB[31:28]
+//			};
 		end
 //		default: begin
 //			tResLo = UV64_00;

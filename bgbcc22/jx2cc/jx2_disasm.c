@@ -1322,7 +1322,7 @@ int BGBCC_JX2_TryDisassembleOpcode_PrintArgStr(
 	case BGBCC_SH_OPVTY_NONE:
 		break;
 	case BGBCC_SH_OPVTY_IMM:
-		sprintf(ct, "%d", arg->disp);
+		sprintf(ct, "%lld", arg->disp);
 		break;
 	case BGBCC_SH_OPVTY_REG:
 		sprintf(ct, "%s", BGBCC_JX2DA_RegToName(ctx, arg->breg));
@@ -1334,7 +1334,7 @@ int BGBCC_JX2_TryDisassembleOpcode_PrintArgStr(
 			BGBCC_JX2DA_RegToName(ctx, arg->ireg));
 		break;
 	case BGBCC_SH_OPVTY_RDMEM:
-		sprintf(ct, "(%s, %d)",
+		sprintf(ct, "(%s, %lld)",
 			BGBCC_JX2DA_RegToName(ctx, arg->breg),
 			arg->disp*arg->sc);
 		break;
@@ -1363,6 +1363,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI0(
 	printf("%06X %04X %s", pc, opw,
 		snm);
 #endif
+	return(0);
 }
 
 

@@ -147,6 +147,7 @@ defparam		tlb.disableTlb		= disableTlb;
 defparam		memDc.noLdOp		= disableTlb;
 defparam		memDc.disableTlb	= disableTlb;
 
+reg			tResetL;
 
 reg[15:0]	tRngA;
 reg[15:0]	tRngB;
@@ -183,7 +184,7 @@ wire[15:0]		tBridgeSeqO;
 wire[ 7:0]		tBridgeNodeId;
 
 RbiMemL1Bridge	l1bridge(
-	clock,			reset,
+	clock,			tResetL,
 	regInMmcr,		regInKrr,		regInSr,
 
 	tBridgeAddrI,	tBridgeAddrO,
@@ -208,6 +209,7 @@ reg[  4:0]		tMemOpm;		//Memory Operation
 
 reg[127:0]		tRegOutExc;
 reg[127:0]		tRegOutExc2;
+reg[127:0]		tRegOutExc3;
 
 reg[63:0]		tRegTraPc;
 reg[63:0]		tRegTraPc2;
@@ -219,7 +221,8 @@ wire[127:0]		tTlbExc;
 wire[15:0]		tIcExecAcl;
 
 
-assign	regOutExc	= tRegOutExc2;
+// assign	regOutExc	= tRegOutExc2;
+assign	regOutExc	= tRegOutExc3;
 assign	regTraPc	= tRegTraPc2;
 
 reg[1:0]		tDcOutOK;
@@ -254,7 +257,7 @@ wire[15:0]		tTlbOpmO;
 wire[15:0]		tTlbSeqO;
 
 RbiMmuTlb	tlb(
-	clock,			reset,
+	clock,			tResetL,
 
 	tTlbAddrI,		tTlbAddrO,
 	tTlbDataI,		tTlbDataO,
@@ -315,7 +318,7 @@ wire[ 15:0]		ifMemSeqO;
 wire[  7:0]		ifMemNodeId;
 
 RbiMemIcWxA		memIc(
-	clock,			reset,
+	clock,			tResetL,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
@@ -353,7 +356,7 @@ wire[ 15:0]		dfMemSeqO;
 wire[  7:0]		dfMemNodeId;
 
 RbiMemDcA		memDc(
-	clock,			reset,
+	clock,			tResetL,
 	dcInAddr,		dfInOpm,
 	dcInAddrB,		dfInOpmB,
 	dcOutVal,		dcInVal,
@@ -563,7 +566,7 @@ begin
 
 //	tNxtRngN	= 0;
 
-	if(reset)
+	if(tResetL)
 	begin
 		tDcOutHold	= 0;
 		tDcBusWait	= 0;
@@ -573,7 +576,7 @@ begin
 	if(dfOutHold)
 		tDcOutOK	= UMEM_OK_HOLD;
 
-	if(!reset)
+	if(!tResetL)
 	begin
 		if(tTlbExc[15])
 			tRegOutExc = tTlbExc;
@@ -630,14 +633,17 @@ always @(posedge clock)
 begin
 
 	tRegOutExc2		<= tRegOutExc;
+	tRegOutExc3		<= tRegOutExc2;
 	tRegTraPc2		<= tRegTraPc;
 	tDcOutOK2		<= tDcOutOK;
 
 	ifMemWaitL		<= ifMemWait;
 
 	regKrrHashL		<= regKrrHash;
-	regKrrHashDsL	<= regKrrHashL + regKrrRngDs;
-	regKrrHashIsL	<= regKrrHashL + regKrrRngIs;
+//	regKrrHashDsL	<= regKrrHashL + regKrrRngDs;
+//	regKrrHashIsL	<= regKrrHashL + regKrrRngIs;
+	regKrrHashDsL	<= regKrrHashL ^ regKrrRngDs;
+	regKrrHashIsL	<= regKrrHashL ^ regKrrRngIs;
 	regKrrRngDs		<= regNxtKrrRngDs;
 	regKrrRngIs		<= regNxtKrrRngIs;
 
@@ -661,6 +667,7 @@ begin
 
 	tRngN			<= tNxtRngN;
 	tRngN2			<= tRngN;
+	tResetL			<= reset;
 
 `ifndef def_true
 // `ifdef def_true

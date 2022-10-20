@@ -924,6 +924,25 @@ int nmid;
 {"brgtu",	BGBCC_SH_NMID_BRGTU},
 {"brleu",	BGBCC_SH_NMID_BRLEU},
 
+{"brz",		BGBCC_SH_NMID_BREQ},
+{"brnz",	BGBCC_SH_NMID_BRNE},
+
+{"breq.q",	BGBCC_SH_NMID_BREQ},
+{"brne.q",	BGBCC_SH_NMID_BRNE},
+
+{"brlt.q",	BGBCC_SH_NMID_BRLT},
+{"brge.q",	BGBCC_SH_NMID_BRGE},
+{"brgt.q",	BGBCC_SH_NMID_BRGT},
+{"brle.q",	BGBCC_SH_NMID_BRLE},
+
+{"breq.l",	BGBCC_SH_NMID_BREQL},
+{"brne.l",	BGBCC_SH_NMID_BRNEL},
+
+{"brlt.l",	BGBCC_SH_NMID_BRLTL},
+{"brge.l",	BGBCC_SH_NMID_BRGEL},
+{"brgt.l",	BGBCC_SH_NMID_BRGTL},
+{"brle.l",	BGBCC_SH_NMID_BRLEL},
+
 {"divs.q",	BGBCC_SH_NMID_DIVSQ},
 {"divu.q",	BGBCC_SH_NMID_DIVUQ},
 {"mods.q",	BGBCC_SH_NMID_MODSQ},
@@ -2071,6 +2090,15 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return((ctx->has_fmovs&2)!=0);
 	if(!bgbcc_stricmp(sym, "has_ldtex"))
 		return((ctx->has_fmovs&4)!=0);
+
+	if(!bgbcc_stricmp(sym, "has_jcmpz"))
+		return((ctx->has_xgpr&1)!=0);
+	if(!bgbcc_stricmp(sym, "has_jcmpr"))
+		return((ctx->has_xgpr&2)!=0);
+
+	if(!bgbcc_stricmp(sym, "has_jcmp"))
+		return((ctx->has_xgpr&3)==3);
+
 
 	if(!bgbcc_stricmp(sym, "abi_evenonly"))
 		return(ctx->abi_evenonly);

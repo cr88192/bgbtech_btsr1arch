@@ -320,6 +320,9 @@ reg[63:0]	tValFpImm10A;
 reg[63:0]	tValFpImm16B;
 reg[63:0]	tValFpImm10B;
 
+reg[63:0]	tValImmRpA;
+reg[63:0]	tValImmRpB;
+
 reg		tValRsZz;
 reg		tValRtZz;
 reg		tValRuZz;
@@ -430,6 +433,9 @@ begin
 		16'h0,
 		32'h0
 		};
+	
+	tValImmRpA = { regIdRy[5] ? UV59_FF, UV59_00, regIdRy[4:0] };
+	tValImmRpB = { regIdRx[5] ? UV59_FF, UV59_00, regIdRx[4:0] };
 `endif
 
 `ifdef jx2_enable_xgpr
@@ -557,10 +563,19 @@ begin
 `ifdef jx2_use_fpu_fpimm
 		JX2_GR_FPIMM10: begin
 			tValRsA=tValFpImm10A;
+			tValRsZz=1;
 		end
 
 		JX2_GR_FPIMM16: begin
 			tValRsA=tValFpImm16A;
+			tValRsZz=1;
+		end
+`endif
+
+`ifdef jx2_alu_jcmp_rpimm
+		JX2_GR_IMM_RP: begin
+			tValRsA=tValImmRpA;
+			tValRsZz=1;
 		end
 `endif
 
@@ -627,10 +642,19 @@ begin
 `ifdef jx2_use_fpu_fpimm
 		JX2_GR_FPIMM10: begin
 			tValRtA=tValFpImm10A;
+			tValRtZz=1;
 		end
 
 		JX2_GR_FPIMM16: begin
 			tValRtA=tValFpImm16A;
+			tValRtZz=1;
+		end
+`endif
+
+`ifdef jx2_alu_jcmp_rpimm
+		JX2_GR_IMM_RP: begin
+			tValRtA=tValImmRpA;
+			tValRtZz=1;
 		end
 `endif
 

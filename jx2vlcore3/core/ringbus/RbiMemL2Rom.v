@@ -247,7 +247,8 @@ begin
 //	tMemDataReq		= mem2DataIn;
 	tMemCcmdReq		= 0;
 	
-	if(mem2OpmIn[11])
+//	if(mem2OpmIn[11])
+	if(mem2OpmIn[11] && mem2OpmIn[8])
 		$display("L2ROM: TLB Missed O=%X A=%X", mem2OpmIn, mem2AddrIn);
 
 //	if(mem2AddrIsZero)

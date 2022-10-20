@@ -1065,7 +1065,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		k=BGBCC_JX2C_GetFrameVRegFlags(ctx, sctx, reg);
 		if(k&BGBCC_REGFL_ALIASPTR)
 			{ maxvalidrsv=i; break; }
-		if(k&BGBCC_REGFL_TEMPLOAD)
+//		if(k&BGBCC_REGFL_TEMPLOAD)
+		if(BGBCC_CCXL_IsRegArgP(ctx, reg) && (k&BGBCC_REGFL_TEMPLOAD))
 			{ maxvalidrsv=i; break; }
 
 		if(sctx->vspan[i]->flag&BGBCC_RSPFL_NONBASIC)
@@ -1186,6 +1187,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	for(i=0; i<sctx->vsp_rsv; i++)
 	{
 		cnt+=sctx->vspan[i]->cnt;
+		reg=sctx->vspan[i]->reg;
 
 #if 1
 //		if((cnt<(sctx->vsp_tcnt/8)) && !(ismaxrsv>0))
@@ -1196,7 +1198,10 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			{ sctx->vsp_rsv=i; break; }
 #endif
 
-		if(BGBCC_CCXL_IsRegArgP(ctx, reg) && (obj->n_args>8))
+		k=BGBCC_JX2C_GetFrameVRegFlags(ctx, sctx, reg);
+
+//		if(BGBCC_CCXL_IsRegArgP(ctx, reg) && (obj->n_args>8))
+		if(BGBCC_CCXL_IsRegArgP(ctx, reg) && (k&BGBCC_REGFL_TEMPLOAD))
 			{ sctx->vsp_rsv=i; break; }
 
 #if 0

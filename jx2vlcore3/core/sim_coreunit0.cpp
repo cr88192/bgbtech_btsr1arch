@@ -1680,7 +1680,8 @@ int main(int argc, char **argv, char **env)
 		cnt_d8+=(top->dbg_outStatus8!=0);
 
 //		if(t2>16)
-		if((t2>16) && (cnt_dled>8))
+//		if((t2>16) && (cnt_dled>8))
+		if((t2>64) && (cnt_dled>32))
 		{
 			BTSR1_MainPollKeyboard();
 

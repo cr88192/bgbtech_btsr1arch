@@ -110,6 +110,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->has_bjx1breq=0;
 	shctx->has_bjx1breq=1;
 	shctx->has_addsl=1;
+	shctx->has_jcmp=0;
 	shctx->has_pushx2=0;
 	
 	shctx->has_alux=0;		//128-bit ALU Ops
@@ -238,6 +239,13 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ops24"))
 		{ shctx->has_ops24=1; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "jcmp"))
+		{ shctx->has_jcmp|=3; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "jcmpz"))
+		{ shctx->has_jcmp|=1; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "jcmpr"))
+		{ shctx->has_jcmp|=2; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pexe"))
 		ctx->pel_cmpr=255;
@@ -5654,6 +5662,45 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
 			break;
 
+		case BGBCC_SH_RLC_RELW8_BJCMP:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+
+			b1=((s32)(w1<<24))>>24;
+			d1=b1+((d-4)>>1);
+			if((((s32)(d1<<24))>>24)!=d1)
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW8)\n");
+				break;
+			}
+			w1=(w1&0xFF00)|(d1&0x00FF);
+
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_RELW32_BJCMP:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			w2=bgbcc_getu16en(ctr+4, en);
+			w3=bgbcc_getu16en(ctr+6, en);
+
+			b=((w0&255)<<16)|(w1&65535);
+			b=(b<<8)|(w3&0x00FF);
+			b1=(s32)b;
+
+			d1=b1+((d-8)>>1);
+
+			w0=(w0&0xFF00)|((d1>>24)&0x00FF);
+			w1=(w1&0x0000)|((d1>> 8)&0xFFFF);
+			w3=(w3&0xFF00)|((d1    )&0x00FF);
+
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
+			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
+			break;
+
 		default:
 			BGBCC_CCXL_StubError(ctx);
 //			BGBCC_DBGBREAK
@@ -6952,6 +6999,38 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	}
 	printf("\n");
 #endif
+
+	printf("\n");
+
+	n=0;
+	for(i=0; i<64; i++)
+		n+=sctx->reg_heatstat[i];
+
+	if(n>0)
+	{
+		printf("Register Heat Map:\n");
+		for(i=0; i<16; i++)
+		{
+			for(j=0; j<4; j++)
+			{
+				k=sctx->reg_heatstat[i*4+j];
+				if(k)break;
+			}
+			if(j>=4)
+				continue;
+		
+			printf("R%02u: ", i*4);
+			for(j=0; j<4; j++)
+			{
+				k=sctx->reg_heatstat[i*4+j];
+				f=(100.0*k)/n;
+				printf(" %5u(%2u.%02u%%)",
+					k, ((int)f), ((int)(f*100))%100);
+			}
+			printf("\n");
+		}
+		printf("\n");
+	}
 
 	printf("Consts: MaskHit=%d MaskJumbo=%d MaskTot=%d\n"
 		"\tTot_J64=%d (Fp32=%d 2xFp16=%d 4xFp8=%d i33l=%d i32h=%d i32c=%d)\n"

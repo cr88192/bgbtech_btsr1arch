@@ -645,7 +645,7 @@ const byte bgbcc_bsr_maxreg=7;
 #if 1
 // const byte bgbcc_bsr_cachereg[6]={ 13, 11, 10, 9, 8, 255 };
 // const byte bgbcc_bsr_cachereg[8]={ 14, 13, 12, 11, 10, 9, 8, 255 };
-const byte bgbcc_bsr_cachereg[16]={
+const short bgbcc_bsr_cachereg[16]={
 	BGBCC_SH_REG_R14, BGBCC_SH_REG_R13,
 	BGBCC_SH_REG_R12, BGBCC_SH_REG_R11,
 	BGBCC_SH_REG_R10, BGBCC_SH_REG_R9,
@@ -655,7 +655,7 @@ const byte bgbcc_bsr_cachereg[16]={
 	BGBCC_SH_REG_R27, BGBCC_SH_REG_R26,
 	BGBCC_SH_REG_R25, BGBCC_SH_REG_R24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_bsr_jcachereg[16]={
+const short bgbcc_bsr_jcachereg[16]={
 	BGBCC_SH_REG_RD14, BGBCC_SH_REG_RD13,
 	BGBCC_SH_REG_RD12, BGBCC_SH_REG_RD11,
 	BGBCC_SH_REG_RD10, BGBCC_SH_REG_RD9,
@@ -665,7 +665,7 @@ const byte bgbcc_bsr_jcachereg[16]={
 	BGBCC_SH_REG_RD27, BGBCC_SH_REG_RD26,
 	BGBCC_SH_REG_RD25, BGBCC_SH_REG_RD24, 
 	BGBCC_SH_REG_ZZR };
-const byte bgbcc_bsr_qcachereg[16]={
+const short bgbcc_bsr_qcachereg[16]={
 	BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ13,
 	BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ11,
 	BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ9,

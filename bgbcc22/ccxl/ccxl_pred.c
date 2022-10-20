@@ -101,9 +101,9 @@ bool BGBCC_CCXL_IsRegTempP(
 }
 
 bool BGBCC_CCXL_IsRegArgP(
-	BGBCC_TransState *ctx, ccxl_register reg)
+	BGBCC_TransState *ctx, ccxl_register sreg)
 {
-	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG)
+	if((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG)
 		return(1);
 	return(0);
 }
@@ -602,7 +602,7 @@ int BGBCC_CCXL_GetRegAsType(
 	ccxl_register treg;
 	ccxl_type sty;
 	int i;
-	
+
 	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_TEMP) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_ARG) ||
 		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL))
@@ -628,6 +628,7 @@ int BGBCC_CCXL_GetRegAsType(
 		return(1);
 	}
 
+	*rtreg=reg;
 	return(-1);
 }
 

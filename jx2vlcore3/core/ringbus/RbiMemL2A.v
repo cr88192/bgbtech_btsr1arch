@@ -230,10 +230,12 @@ begin
 	
 	tL2mOpmIn[15] = timers[0];
 
-	if(memOpmIn[11])
+//	if(memOpmIn[11])
+	if(memOpmIn[11] && memOpmIn[8])
 		$display("L2A: TLB Missed A O=%X A=%X", memOpmIn, memAddrIn);
 
-	if(memOpmOut[11])
+//	if(memOpmOut[11])
+	if(memOpmOut[11] && memOpmOut[8])
 		$display("L2A: TLB Missed B O=%X A=%X", memOpmOut, memAddrOut);
 
 	tL2mSeqOut		= l2mSeqOut;

@@ -1192,10 +1192,20 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_LDEKEY:		s0="LDEKEY";	break;
 	case BJX2_NMID_LDEENC:		s0="LDEENC";	break;
 
-	case BJX2_NMID_BREQ:		s0="BREQ";		break;
-	case BJX2_NMID_BRNE:		s0="BRNE";		break;
-	case BJX2_NMID_BRLT:		s0="BRLT";		break;
-	case BJX2_NMID_BRGE:		s0="BRGE";		break;
+	case BJX2_NMID_BREQ:		s0="BREQ.Q";	break;
+	case BJX2_NMID_BRNE:		s0="BRNE.Q";	break;
+	case BJX2_NMID_BRLT:		s0="BRLT.Q";	break;
+	case BJX2_NMID_BRGE:		s0="BRGE.Q";	break;
+	case BJX2_NMID_BRGT:		s0="BRGT.Q";	break;
+	case BJX2_NMID_BRLE:		s0="BRLE.Q";	break;
+
+	case BJX2_NMID_BREQL:		s0="BREQ.L";	break;
+	case BJX2_NMID_BRNEL:		s0="BRNE.L";	break;
+	case BJX2_NMID_BRLTL:		s0="BRLT.L";	break;
+	case BJX2_NMID_BRGEL:		s0="BRGE.L";	break;
+	case BJX2_NMID_BRGTL:		s0="BRGT.L";	break;
+	case BJX2_NMID_BRLEL:		s0="BRLE.L";	break;
+
 	case BJX2_NMID_BRBI:		s0="BRLTU";		break;
 	case BJX2_NMID_BRHE:		s0="BRGEU";		break;
 
@@ -1612,6 +1622,23 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_NMID_BT:
 	case BJX2_NMID_BF:
 		psc=2;	break;
+
+	case BJX2_NMID_BREQ:
+	case BJX2_NMID_BRNE:
+	case BJX2_NMID_BRGE:
+	case BJX2_NMID_BRLT:
+	case BJX2_NMID_BRGT:
+	case BJX2_NMID_BRLE:
+		psc=2;	break;
+
+	case BJX2_NMID_BREQL:
+	case BJX2_NMID_BRNEL:
+	case BJX2_NMID_BRGEL:
+	case BJX2_NMID_BRLTL:
+	case BJX2_NMID_BRGTL:
+	case BJX2_NMID_BRLEL:
+		psc=2;	break;
+
 	case BJX2_NMID_MOVB:
 	case BJX2_NMID_MOVUB:
 		msc=1;	break;
@@ -2000,12 +2027,12 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			printf("%s, (0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
-				brpc+(op->imm*1));
+				brpc+(op->imm*psc));
 		}else
 		{
 			printf("%s, (PC, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
-				(op->imm*1));
+				(op->imm*psc));
 		}
 		break;
 	case BJX2_FMID_REGREGPCDISP:
@@ -2014,13 +2041,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			printf("%s, %s, (0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
-				brpc+(op->imm*1));
+				brpc+(op->imm*psc));
 		}else
 		{
 			printf("%s, %s, (PC, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
-				(op->imm*1));
+				(op->imm*psc));
 		}
 		break;
 	
@@ -2217,6 +2244,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	BJX2_Trace **tra;
 	char tb[256];
 	s64 cyc_nmid[1024];
+	s64 ipcyc_nmid[1024];
 	int idx_nmid[1024];
 	char *topfn_name[1024];
 	int topfn_chn[1024];
@@ -2227,8 +2255,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	int n_topfn;
 	BJX2_Trace *trcur;
 	bjx2_addr ba2;
-	s64 cyc, cy0, cy1;
-	double pcnt, tpcnt, tkra_pcnt;
+	s64 cyc, cy0, cy1, ipcyc;
+	double pcnt, pcnt2, tpcnt, tkra_pcnt;
 	char *bn2, *s0, *s1;
 	int trn, trtops;
 	int i, j, k, h;
@@ -2236,6 +2264,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	for(i=0; i<1024; i++)
 	{
 		cyc_nmid[i]=0;
+		ipcyc_nmid[i]=0;
 	}
 
 	tra=malloc(262144*sizeof(void *));
@@ -2274,6 +2303,13 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		{
 			cyc_nmid[trcur->ops[j]->nmid]+=
 				trcur->ops[j]->cyc*tra[i]->runcnt;
+
+			if(trcur->ops[j]->fl&BJX2_OPFL_OPPIPE)
+			{
+				k=(trcur->ops[j]->cyc-1);
+				if(k<0)k=0;
+				ipcyc_nmid[trcur->ops[j]->nmid]+=k*tra[i]->runcnt;
+			}
 		}
 	}
 	
@@ -2422,12 +2458,13 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		if(bn2)
 		{
 			printf("PC @ %04X_%08X (%-20s+%04X) "
-				"Cyc=%4lldM(p=%lldM %.2f%%) %.2f%%\n",
+				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%%\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), bn2,
 				(int)(trcur->addr-ba2),
 				cyc>>20, trcur->acc_pencyc>>20,
 				(100.0*trcur->acc_pencyc)/cyc,
+				(100.0*trcur->ip_cyc)/(trcur->n_cyc+0.001),
 				pcnt);
 		}else
 		{
@@ -2452,12 +2489,13 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		if(bn2)
 		{
 			printf("PC @ %04X_%08X (%-20s+%04X) "
-				"Cyc=%4lldM(p=%lldM %.2f%%) %.2f%%\n",
+				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%%\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), bn2,
 				(int)(trcur->addr-ba2),
 				cyc>>20, trcur->acc_pencyc>>20,
 				(100.0*trcur->acc_pencyc)/cyc,
+				(100.0*trcur->ip_cyc)/(trcur->n_cyc+0.001),
 				pcnt);
 		}else
 		{
@@ -2520,10 +2558,16 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		{
 			k=idx_nmid[i*2+j];
 			pcnt=(100.0*cyc_nmid[k])/(ctx->tot_cyc);
+			pcnt2=(100.0*ipcyc_nmid[k])/(ctx->tot_cyc);
 
-			printf("%12s(%11lld) %2d.%02d%%  ",
+			if(j)
+				printf(" ");
+
+			printf("%10s(%11lld) %2d.%02d%%(i%2d.%02d%%)",
 				BJX2_DbgPrintNameForNmid(ctx, k),
-				cyc_nmid[k], (int)pcnt, ((int)(pcnt*100))%100);
+				cyc_nmid[k],
+					(int)pcnt,		((int)(pcnt*100))%100,
+					(int)pcnt2,		((int)(pcnt2*100))%100);
 		}
 		printf("\n");
 	}
@@ -2531,6 +2575,9 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 	pcnt=((double)trtops)/trn;
 	printf("Average Trace Length: %.2f\n", pcnt);
+
+	pcnt=(100.0*ctx->tot_cyc_ip)/(ctx->tot_cyc);
+	printf("Cycles Spent, Interlock: %.2f%%\n", pcnt);
 
 	if(ctx->tot_cyc_mem>0)
 	{
@@ -2713,7 +2760,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 {
 	BJX2_Trace *cur;
 	bjx2_addr pc;
-	int cn, cn0, cn1, nc, no, nbo;
+	int cn, cn0, cn1, nc, no, nbo, nc_ip;
 	int i, j, k;
 
 	cn=lim;
@@ -2770,6 +2817,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		
 		no=0;
 		nbo=0;
+		nc_ip=0;
 		
 //		if(ctx->tgt_mhz>300)
 //		if(ctx->use_jit)
@@ -2797,6 +2845,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 				cn1-=nc;
 				no+=cur->n_ops;
 				nbo+=cur->n_nbops;
+				nc_ip+=cur->ip_cyc;
 
 				cur=cur->Run(ctx, cur);
 			}
@@ -2869,6 +2918,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 #endif
 
 		ctx->tot_cyc+=nc;
+		ctx->tot_cyc_ip+=nc_ip;
 		ctx->tot_ops+=no;
 		ctx->tot_nbops+=nbo;
 		ctx->ttick_hk-=nc;

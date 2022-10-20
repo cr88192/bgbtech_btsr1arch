@@ -6697,7 +6697,7 @@ int BGBCC_CCXL_CompileModuleCTX(
 		ctx->opt_ptrcache=0;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropts"))
-		ctx->opt_ptrcache=2;
+		ctx->opt_ptrcache=3;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropt0"))
 		ctx->opt_ptrcache=0;
@@ -6705,6 +6705,8 @@ int BGBCC_CCXL_CompileModuleCTX(
 		ctx->opt_ptrcache=1;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropt2"))
 		ctx->opt_ptrcache=2;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ptropt3"))
+		ctx->opt_ptrcache=3;
 
 	s=BCCX_GetCst(l, &bgbcc_rcst_lang, "lang");
 	ctx->lang=BGBCP_LangForName(s);

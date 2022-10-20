@@ -381,11 +381,12 @@ assign	tRegInKRR = ((regInExecAcl!=0) && (regInKRR[15:0]!=0)) ?
 	{ regInKRR[47:0], regInExecAcl } : regInKRR;
 
 reg		tRegInIsBounce;
+reg		tResetL;
 
 wire[5:0]	tChkAccNoRwx;	//No R/W/X
 
 RbiMmuChkAcc tlbChkAcc(
-	clock,	reset,
+	clock,	tResetL,
 	regInHold,
 	regInMMCR,
 //	regInKRR,
@@ -1006,7 +1007,7 @@ begin
 //		tRegOutOpm   = UMEM_OPM_LDTLB;
 //	end
 	
-	if(tRegInIsINVTLB || reset)
+	if(tRegInIsINVTLB || tResetL)
 	begin
 		tNxtTlbRov		= tTlbRov + 1;
 
@@ -1030,14 +1031,14 @@ begin
 		end
 	end
 
-	if(reset)
+	if(tResetL)
 	begin
 		tRegOutExc = 0;
 		tRegOutOpm   = UV16_00;
 	end
 
 `ifndef def_true
-	if(tRegInIsINVACL || reset)
+	if(tRegInIsINVACL || tResetL)
 	begin
 		nxtAclEntryA	= 0;
 		nxtAclEntryB	= 0;
@@ -1308,6 +1309,7 @@ begin
 	tlbHbDatD		<= tlbBlkD[tlbHixA];
 
 	tRegInSR		<= regInSR;
+	tResetL			<= reset;
 
 	if(tlbDoLdtlb && !tlbLdtlbOK)
 	begin

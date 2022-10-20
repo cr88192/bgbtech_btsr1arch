@@ -33,6 +33,8 @@ Modify L2 Cache to be 4-way set associative.
 
 `include "ringbus/RbiDefs.v"
 
+`define jx2_mem_l2w4sz_1024
+
 module RbiMemL2Dc4Wa(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
@@ -480,10 +482,14 @@ reg				tBlkDoStCL;
 reg				tBlkDoStDL;
 
 
-reg		tMissAddr;
+reg		tMissAddrA;
 reg		tMissAddrB;
-reg		tMissAddrL;
+reg		tMissAddrC;
+reg		tMissAddrD;
+reg		tMissAddrAL;
 reg		tMissAddrBL;
+reg		tMissAddrCL;
+reg		tMissAddrDL;
 reg		tMiss;
 reg		tMissL;
 reg		tMissL2;
@@ -740,6 +746,15 @@ begin
 	tBlkFlushA	= 0;
 	tBlkDirtyA	= 0;
 	
+	tBlkFlushB	= 0;
+	tBlkDirtyB	= 0;
+
+	tBlkFlushC	= 0;
+	tBlkDirtyC	= 0;
+
+	tBlkFlushD	= 0;
+	tBlkDirtyD	= 0;
+
 	tAccReady	= 1;
 
 	tOpmIsLoad	=
@@ -806,8 +821,12 @@ begin
 	tBlkDirtyA			= tBlkFlagA[0];
 	tNxtAccBlkAddrIsRam	= tBlkAddrIsRam;
 
+	tBlkDirtyB			= tBlkFlagB[0];
+	tBlkDirtyC			= tBlkFlagC[0];
+	tBlkDirtyD			= tBlkFlagD[0];
+
 	tMiss		=
-		 (tMissAddr || tBlkFlushA) &&
+		 (tMissAddrA || tBlkFlushA) &&
 		(tOpmIsNz && tAddrIsRam);
 	tNxtAccNoClashA	= 	
 		!tBlkFlushA && !tBlkFlushB && !tBlkFlushC && !tBlkFlushD;
@@ -1268,7 +1287,7 @@ begin
 	tMemOpmReq		= mem3OpmIn;
 	tMemAddrReq		= mem3AddrIn;
 
-	if(!(tMissAddrL || tBlkFlushAL))
+	if(!(tMissAddrAL || tBlkFlushAL))
 	begin
 		if(mem3AddrIn[5:4]==2'b00)
 			tMemDataReq		= tBlkData0AC3;
@@ -1437,7 +1456,10 @@ begin
 	tReqIxL2		<= tReqIxL;
 
 	tBlkDirtyAL		<= tBlkDirtyA;
-	tBlkFlushAL		<= tBlkFlushA;
+	tBlkDirtyBL		<= tBlkDirtyB;
+	tBlkDirtyCL		<= tBlkDirtyC;
+	tBlkDirtyDL		<= tBlkDirtyD;
+
 	tAccReadyL		<= tAccReady;
 
 	tHoldL			<= tHold;
@@ -1446,7 +1468,8 @@ begin
 	tMissL			<= tMiss;
 	tMissL2			<= tMissL;
 	tMissL3			<= tMissL2;
-	tMissAddrL		<= tMissAddr;
+	tMissAddrAL		<= tMissAddrA;
+	tBlkFlushAL		<= tBlkFlushA;
 
 	tMissAddrBL		<= tMissAddrB;
 	tBlkFlushBL		<= tBlkFlushB;
@@ -1455,7 +1478,7 @@ begin
 	tBlkFlushCL		<= tBlkFlushD;
 
 	tMissAddrDL		<= tMissAddrD;
-	tBlkFlushCL		<= tBlkFlushD;
+	tBlkFlushDL		<= tBlkFlushD;
 
 	tDoAcc				<= tNxtDoAcc;
 	tAccAddr			<= tNxtAccAddr;
@@ -1716,7 +1739,7 @@ begin
 `endif
 
 //				if(!tAccBlkDirty || tAccStDone)
-				if(!tAccBlkDirty || tAccStDone || tAccStoreOnly)
+				if(!tAccBlkDirtyD || tAccStDone || tAccStoreOnly)
 			begin
 
 `ifndef def_true
@@ -1727,7 +1750,7 @@ begin
 					$display("L2DC: Miss LD OK Ix=%X A=%X", tAccIx, tAccAddr);
 `endif
 
-				if(!tAccBlkDirty && tAccStoreOnly)
+				if(!tAccBlkDirtyD && tAccStoreOnly)
 					$display("L2DC: STO Not-Dirty");
 				
 				tBlkLdData		<= tDdrMemDataIn;
@@ -1746,8 +1769,8 @@ begin
 				tAccLatch		<= 0;
 				tAccBusyLatch	<= 0;
 
-				tBlkLdDataB		<= tAccBlkData;
-				tBlkLdAddrB		<= tAccBlkAddr;
+				tBlkLdDataB		<= tAccBlkDataA;
+				tBlkLdAddrB		<= tAccBlkAddrA;
 
 				tBlkLdDataC		<= tAccBlkDataB;
 				tBlkLdAddrC		<= tAccBlkAddrB;
@@ -1763,7 +1786,7 @@ begin
 					tAccOpSq		<= tAccOpSq + 1;
 				end
 			end
-			else if(tAccBlkDirty && !tNxtStDone)
+			else if(tAccBlkDirtyD && !tNxtStDone)
 			begin
 //				$display("L2DC: Miss ST OK Ix=%X A=%X", tAccIx, tBlkAddr);
 				tNxtStDone	<= 1;
@@ -1790,7 +1813,7 @@ begin
 		begin
 			tAccStDone	<= tNxtStDone;
 
-			if(tAccBlkDirty && !tAccBlkAddrIsRam)
+			if(tAccBlkDirtyD && !tAccBlkAddrIsRam)
 			begin
 				$display("L2: Store Non-RAM Block Addr=%X", tBlkAddrA);
 			end
@@ -1809,7 +1832,7 @@ begin
 				tAccLatch		<= 1;
 				tAccStDone		<= 1;
 			end
-			else if(tAccBlkDirty && !tNxtStDone)
+			else if(tAccBlkDirtyD && !tNxtStDone)
 			begin
 				tDdrMemAddr		<= {tAccBlkAddrD, 6'h00};
 				tDdrMemOpm		<= UMEM_OPM_WR_TILE;
@@ -1824,7 +1847,7 @@ begin
 				tAccLatch		<= 1;
 			end
 `else
-			if(tAccBlkDirty && !tNxtStDone)
+			if(tAccBlkDirtyD && !tNxtStDone)
 			begin
 				tDdrMemAddr		<= {tAccBlkAddrD, 6'h00};
 				tDdrMemOpm		<= UMEM_OPM_WR_TILE;

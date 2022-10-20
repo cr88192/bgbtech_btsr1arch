@@ -10,12 +10,18 @@
 
 // #include "bgbmid1/bgbmid.h"
 
-volatile u32 *smus_regs;
+#include <tkgdi/tkgdi.h>
+
+TKGHSND hSndDev;
 
 byte *i_smus_css;		//start position (active song)
 byte *i_smus_cse;		//end position (active song)
 byte *i_smus_cs;		//current position (active song)
 int i_smus_tt;			//remaining tics until next event
+
+
+#if 0
+volatile u32 *smus_regs;
 
 int smus_notediv[128];
 byte smus_noteatt[128];
@@ -563,6 +569,131 @@ int SMus_ProgramChange(int ch, int d0)
 {
 	printf("SMus_ProgramChange: %d %d\n", ch, d0);
 	smus_chanprg[ch]=d0;
+	return(0);
+}
+
+#endif
+
+int SMus_Init()
+{
+	SMus_SilenceAll();
+}
+
+int SMus_SetFmRegisterData(int prg, int idx, u32 val)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=16;
+//	mcmd->ch=ch;
+	mcmd->d0=prg;
+	mcmd->d1=idx;
+	mcmd->u0=val;
+	
+	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	return(0);
+}
+
+int SMus_SilenceAll()
+{
+	SMus_SpecialParm(0, 0);
+	SMus_SpecialParm(1, snd_MusicVolume);
+}
+
+int SMus_UpdateVolume()
+{
+//	SMus_SpecialParm(0, 0);
+	SMus_SpecialParm(1, snd_MusicVolume);
+}
+
+int SMus_SpecialParm(int parm, int val)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=17;
+	mcmd->ch=0;
+	mcmd->d0=parm;
+	mcmd->d1=val;
+	
+	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	return(0);
+}
+
+int SMus_NoteOn(int ch, int d0, int d1)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=1;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+	mcmd->d1=d1;
+	
+	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	return(0);
+}
+
+int SMus_NoteOff(int ch, int d0, int d1)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=0;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+	mcmd->d1=d1;
+	
+	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	return(0);
+}
+
+int SMus_PitchBlend(int ch, int d0)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=2;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+//	mcmd->d1=d1;
+	
+	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	return(0);
+}
+
+int SMus_Controller(int ch, int d0, int d1)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=3;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+	mcmd->d1=d1;
+	
+	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	return(0);
+}
+
+int SMus_ProgramChange(int ch, int d0)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=4;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+//	mcmd->d1=d1;
+	
+	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
 	return(0);
 }
 

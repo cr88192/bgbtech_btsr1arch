@@ -371,6 +371,15 @@ begin
 	if(idUIxt[3])
 		tRiDi = regValImm;
 
+// `ifdef def_true
+`ifndef def_true
+	if(idUCmd[5:0] == JX2_UCMD_JCMP)
+	begin
+		tRiSc = { regValImm[15] ? UV31_FF : UV31_00, regValImm[15:0], 1'b0 };
+		tRiDi = 0;
+	end
+`endif
+
 `ifdef jx2_agu_ridisp
 	tAddrSc0A  =
 		{ 2'b0, regValRm[15: 0] } +

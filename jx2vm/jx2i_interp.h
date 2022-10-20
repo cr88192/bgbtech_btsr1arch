@@ -268,21 +268,22 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_IOPOKE		0xC002		//IO Poke
 #define BJX2_FLT_SCRPOKE	0xC003		//Screen Poke
 
-#define BJX2_OPFL_CTRLF		0x01		//Control-Flow Opcode
-#define BJX2_OPFL_TWOWORD	0x02		//Uses two instruction words
-#define BJX2_OPFL_TRIWORD	0x04		//Uses three instruction words
-#define BJX2_OPFL_WEX		0x08		//Wide-Executed Op
-#define BJX2_OPFL_JUMBO64	0x10		//Uses four instruction words
-#define BJX2_OPFL_JUMBO96	0x20		//Uses six instruction words
-#define BJX2_OPFL_NOWEX		0x40		//Invalid as a WEX form
-#define BJX2_OPFL_NOWEXSFX	0x80		//Invalid as a WEX suffix
+#define BJX2_OPFL_CTRLF		0x0001		//Control-Flow Opcode
+#define BJX2_OPFL_TWOWORD	0x0002		//Uses two instruction words
+#define BJX2_OPFL_TRIWORD	0x0004		//Uses three instruction words
+#define BJX2_OPFL_WEX		0x0008		//Wide-Executed Op
+#define BJX2_OPFL_JUMBO64	0x0010		//Uses four instruction words
+#define BJX2_OPFL_JUMBO96	0x0020		//Uses six instruction words
+#define BJX2_OPFL_NOWEX		0x0040		//Invalid as a WEX form
+#define BJX2_OPFL_NOWEXSFX	0x0080		//Invalid as a WEX suffix
 
 #define BJX2_OPFL_REGXM		0x0100		//Rm is Xm
 #define BJX2_OPFL_REGXN		0x0200		//Rn is Xn
 #define BJX2_OPFL_REGXO		0x0400		//Ro is Xo
 #define BJX2_OPFL_REGX2R	0x0300		//Rm and Rn are Xn
 #define BJX2_OPFL_REGX3R	0x0700		//Rm, Rn, and Ro are Xn
-#define BJX2_OPFL_OP24		0x0800		//24-bit instruction
+// #define BJX2_OPFL_OP24		0x0800		//24-bit instruction
+#define BJX2_OPFL_OPPIPE	0x0800		//Pipelined Opcode
 #define BJX2_OPFL_OPSSC		0x1000		//Op Flagged as Superscalar
 
 #define BJX2_OPFL_NOWEX_FP2		0x2000		//Not valid WEX unless FP2
@@ -635,7 +636,6 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_LDTEX			0x140		//
 #define BJX2_NMID_RSUB			0x141		//
-
 #define BJX2_NMID_JLDIT			0x142		//
 #define BJX2_NMID_JLDIF			0x143		//
 #define BJX2_NMID_DIVSL			0x144		//
@@ -650,7 +650,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CSRRSI		0x14C		//(CSR SET, RISC-V)
 #define BJX2_NMID_CSRRCI		0x14D		//(CSR CLEAR, RISC-V)
 
-
 #define BJX2_NMID_LDOPB			0x150		//
 #define BJX2_NMID_LDOPUB		0x151		//
 #define BJX2_NMID_LDOPW			0x152		//
@@ -659,6 +658,15 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDOPUL		0x155		//
 #define BJX2_NMID_LDOPQ			0x156		//
 #define BJX2_NMID_LDOPUQ		0x157		//
+
+#define BJX2_NMID_BREQL			0x158		//
+#define BJX2_NMID_BRNEL			0x159		//
+#define BJX2_NMID_BRLTL			0x15A		//
+#define BJX2_NMID_BRGEL			0x15B		//
+#define BJX2_NMID_BRGTL			0x15C		//
+#define BJX2_NMID_BRLEL			0x15D		//
+#define BJX2_NMID_BRLE			0x15E		//
+#define BJX2_NMID_BRGT			0x15F		//
 
 #define BJX2_NMID_PCVTSB2HL		0x160		//
 #define BJX2_NMID_PCVTUB2HL		0x161		//
@@ -916,6 +924,7 @@ byte ps2msirov;				//debug keyboard rover
 int ttick_hk;				//timer ticks until IRQ
 int ttick_rst;				//timer ticks reset
 s64 tot_cyc;
+s64 tot_cyc_ip;				//interlock penalty
 s64 tot_cyc_mem;
 s64 tot_cyc_miss;
 s64 tot_cyc_miss_l1;
@@ -1148,7 +1157,7 @@ byte ldsc;		//Load Scale
 byte ldop;		//Load Operation
 
 s16 cyc;		//Clock Cycles
-u16 fl;			//Opcode Flags
+u32 fl;			//Opcode Flags
 // s32 imm;		//Immediate
 s64 imm;		//Immediate
 
@@ -1164,7 +1173,8 @@ struct BJX2_Trace_s {
 BJX2_Opcode *ops[BJX2_TR_MAXOP];
 sbyte n_ops;
 sbyte n_nbops;
-s16 n_cyc;
+s16 n_cyc;				//Baseline Cycles
+s16 ip_cyc;				//Interlock Penalty Cycles
 s16	jit_inh;
 s64 runcnt;
 s64 acc_pencyc;			//accumulated penalty cycles

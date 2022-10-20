@@ -100,8 +100,13 @@ X(R_DrawColumn):
 	ADD		R21, R20		| MOVU.B	(R22, R6), R19
 	ADD		#1280, R23		| MOVU.W	(R4, R18), R18
 	ADD		#-1, R17		| MOVU.W	(R4, R19), R19
+
+.ifarch has_jcmpz
+	BRNE.L	R17, .doubleloop
+.else
 	TEST	R17, R17
 	BF		.doubleloop
+.endif
 #endif
 
 // check for final pixel
@@ -266,8 +271,12 @@ X(R_DrawSpan):
 	ADD		R21, R20			|	MOVU.B	(R22, R6), R19	
 	ADD		#-1, R17			|	MOVU.W	(R4, R18), R18
 	ADD		#4, R23				|	MOVU.W	(R7, R19), R19
+.ifarch has_jcmpz
+	BRNE.L	R17, .hdoubleloop
+.else
 	TEST	R17, R17
 	BF		.hdoubleloop
+.endif
 #endif
 
 .hchecklast:

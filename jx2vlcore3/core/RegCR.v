@@ -230,6 +230,7 @@ reg[47:0]		regValCn2B_48b;		//Destination Value
 reg[15:0]		regValCn2B_16h;		//Destination Value
 
 reg[63:0]		tRegInLr;
+reg				tResetL;
 
 always @*
 begin
@@ -379,7 +380,9 @@ end
 
 always @(posedge clock)
 begin
-	if(reset)
+	tResetL		<= reset;
+
+	if(tResetL)
 	begin
 		crRegPc		<= UV48_00;
 //		crRegLr		<= UV48_00;

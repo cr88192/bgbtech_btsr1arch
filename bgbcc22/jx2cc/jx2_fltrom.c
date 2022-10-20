@@ -597,7 +597,8 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 
 		opw1=((u16 *)cs)[0];
 		opw2=((u16 *)cs)[1];
-		il=BGBCC_JX2_TryDisassembleOpcodeBuf(sctx, &ct, cs-css, opw1, opw2);
+		il=BGBCC_JX2_TryDisassembleOpcodeBuf(sctx,
+			(char **)(&ct), cs-css, opw1, opw2);
 		cs+=il*2;
 	}
 

@@ -95,9 +95,11 @@ assign	preIsBra	= { 1'b0, tPreBra };
 // reg[32:0]	tBraDisp20;
 // reg[24:0]	tBraDisp8;
 reg[12:0]	tBraDisp8;
+reg[12:0]	tBraDisp8B;
 reg[24:0]	tBraDisp20;
 
 reg[31:0]	tDisp8;
+reg[31:0]	tDisp8B;
 reg[31:0]	tDisp20;
 
 reg[11:0]	tBraDisp8HiP0;
@@ -112,13 +114,19 @@ reg			tIsBra20;		//Unconditional Branch (16-bit Disp)
 reg			tIsRtsu;
 reg			tIsRtsR1;
 
+reg			tIsBraFz;		//Fn
+
 reg			tIsBraCc8;		//Conditional Branch (8-bit Disp)
+reg			tIsBraCc8B;		//Conditional Branch (8-bit Disp, JCMP)
+reg			tIsBraCc8Br;	//Conditional Branch (8-bit Disp, JCMP)
+reg			tIsBraCc8Bz;	//Conditional Branch (8-bit Disp, JCMP)
 reg			tIsBraCc20;		//Conditional Branch (20-bit Disp)
 
 reg			tIsBraCcP20;	//Conditional Branch (20-bit Disp)
 reg			tIsBraCcF20;	//Conditional Branch (20-bit Disp)
 
 reg			tDoBraCc8;		//Take Conditional Branch (Cc8)
+reg			tDoBraCc8B;		//Take Conditional Branch (Cc8, JCMP)
 reg			tDoBraCc20;		//Take Conditional Branch (Cc20)
 
 reg[2:0]	preCnts[63:0];
@@ -212,6 +220,7 @@ begin
 	end
 		
 	tDisp8		= { istrWord[7]?UV24_FF:UV24_00, istrWord[7:0] };
+	tDisp8B		= { istrWord[23]?UV24_FF:UV24_00, istrWord[23:16] };
 	tDisp20		= {
 		istrWord[7]?UV12_FF:UV12_00,
 		istrWord[7:0], istrWord[27:16] };
@@ -221,6 +230,8 @@ begin
 //	tBraDisp8	= {1'b0, istrBraPc[23:0] } + { tDisp8[23:0], 1'b0 };
 	tBraDisp8	= {1'b0, istrBraPc[11:0] } + { tDisp8[11:0], 1'b0 };
 	tBraDisp20	= {1'b0, istrBraPc[23:0] } + { tDisp20[23:0], 1'b0 };
+
+	tBraDisp8B	= {1'b0, istrBraPc[11:0] } + { tDisp8B[11:0], 1'b0 };
 
 // `ifdef def_true
 `ifndef def_true
@@ -269,6 +280,23 @@ begin
 		(istrWord[15:12]==4'h2) &&
 		(istrWord[11: 9]==3'b001);
 
+	tIsBraCc8B = 0;
+
+`ifdef jx2_alu_jcmp
+// `ifndef def_true
+	tIsBraFz		=	(istrWord[15: 12]==4'hF);
+	tIsBraCc8Br		=
+		tIsBraFz				&&
+		(istrWord[11: 8]==4'h1) &&
+		(istrWord[31:30]==2'b11);
+	tIsBraCc8Bz		=
+		tIsBraFz				&&
+		(istrWord[11: 8]==4'h2) &&
+		(istrWord[31:28]==4'hD) &&
+		(istrWord[ 3: 1]==3'b011);
+	tIsBraCc8B		= tIsBraCc8Br || tIsBraCc8Bz;
+`endif
+
 //	tIsBraCc20		=
 	tIsBraCcF20		=
 		(istrWord[15:12]==4'hF) &&
@@ -294,6 +322,7 @@ begin
 	begin
 		/* RISC-V */
 		tIsBraCc8	= 0;
+		tIsBraCc8B	= 0;
 		tIsBraCc20	= 0;
 		tIsRtsu		= 0;
 		tIsRtsR1	= 0;
@@ -305,6 +334,7 @@ begin
 
 	tDoBraCc8	= 0;
 	tDoBraCc20	= 0;
+	tDoBraCc8B	= 0;
 
 // `ifndef def_true
 `ifdef def_true
@@ -330,6 +360,11 @@ begin
 //		tDoBraCc20 = !tPreIfCnt[2];
 //		$display("PreBra: Predict 20, Do=%d", tDoBraCc20);
 	end
+
+	if(tIsBraCc8B && (tPreIbIx==tPreIdIx))
+	begin
+		tDoBraCc8B = tPreIfCnt[2] ^ tPreIfCnt[1];
+	end
 `endif
 	
 	if(tIsBra8 || tIsBraCc8)
@@ -344,6 +379,13 @@ begin
 //		tPreBraPc	= { istrBraPc[47:32], tBraDisp20[31:0] };
 		tPreBraPc	= { istrBraPc[47:24], tBraDisp20[23:0] };
 	end
+
+`ifdef jx2_alu_jcmp
+	if(tIsBraCc8B)
+	begin
+		tPreBraPc	= { istrBraPc[47:12], tBraDisp8B[11:0] };
+	end
+`endif
 
 //	if(tIsBra8)
 	if(tIsBra8 || tDoBraCc8)
@@ -376,6 +418,15 @@ begin
 			tPreBra		= 0;
 	end
 	
+`ifdef jx2_alu_jcmp
+	if(tDoBraCc8B)
+	begin
+		tPreBra		= 1;
+		if(tBraDisp8B[12])
+			tPreBra		= 0;
+	end
+`endif
+
 	if(tIsRtsu)
 	begin
 //		$display("PreBra: RTSU, I=%X-%X PC2=%X",

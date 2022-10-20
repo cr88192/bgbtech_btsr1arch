@@ -390,11 +390,12 @@ ExBtcUtx1	exUtx1(
 `endif
 
 
+wire[63:0]	tValCpuIdRng;
 wire[63:0]	tValCpuIdLo;
 wire[63:0]	tValCpuIdHi;
 ExCpuId		cpuid(clock, reset, timers,
 //	regIdRm[4:0], tValCpuIdLo, tValCpuIdHi);
-	regIdRt[4:0], tValCpuIdLo, tValCpuIdHi);
+	regIdRt[4:0], tValCpuIdLo, tValCpuIdHi, tValCpuIdRng);
 
 // reg[63:0]	tRegSpAdd8;
 // reg[63:0]	tRegSpSub8;
@@ -402,6 +403,10 @@ ExCpuId		cpuid(clock, reset, timers,
 
 // reg[63:0]	tRegSpAdd16;
 // reg[63:0]	tRegSpSub16;
+
+reg[15:0]	tCanaryMagic;
+reg[15:0]	tNxtCanaryMagic;
+reg[15:0]	tCanaryRef;
 
 reg			tOpEnable;
 reg			tDoMemOp;
@@ -426,7 +431,8 @@ reg[16:0]	tValAguBraC1;
 reg[63:0]	tRegBraLr;
 reg[63:0]	tValAguBra;
 
-reg[15:0]	tValAguBraJCmpMi;
+reg[15:0]	tValAguBraJCmpMi0;
+reg[15:0]	tValAguBraJCmpMi1;
 reg[15:0]	tValAguBraJCmpLo;
 reg[47:0]	tValAguBraJCmp;
 
@@ -483,6 +489,8 @@ begin
 	tRegOutLr	= regInLr;
 	tRegOutSr	= regInSr;
 	tRegOutSchm	= regInSchm;
+
+	tNxtCanaryMagic		= tCanaryMagic;
 
 `ifdef jx2_enable_vaddr96
 	tRegOutPcHi		= regValPcHi;
@@ -548,17 +556,22 @@ begin
 //	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
 //	tValAguBra		= { UV16_00, tValAgu };
 
-	tValAguBraJCmpMi = regValPc[31:16] + 1;
+//	tValAguBraJCmpMi = regValPc[31:16] + 1;
+	tValAguBraJCmpMi0 = regValPc[31:16] + regValImm[30:15] + 0;
+	tValAguBraJCmpMi1 = regValPc[31:16] + regValImm[30:15] + 1;
 	tValAguBraJCmpLo = { 1'b0, regValPc[15:1] } + { 1'b0, regValImm[14:0] };
 	tValAguBraJCmp = {
 		regValPc[47:32],
-		tValAguBraJCmpLo[15] ? tValAguBraJCmpMi : regValPc[31:16],
+//		tValAguBraJCmpLo[15] ? tValAguBraJCmpMi : regValPc[31:16],
+		tValAguBraJCmpLo[15] ? tValAguBraJCmpMi1 : tValAguBraJCmpMi0,
 		tValAguBraJCmpLo[14:0],
 		1'b0 };
 
 	tValAguBra		= { UV16_00, tValAgu[47:0] };
 	if(!tAguFlagJq)
 		tValAguBra[47:32] = regValPc[47:32];
+
+//	tValAguBraJCmp = tValAguBra[47:0];
 
 //	tValAguBra		= { UV16_00, regValPc[47:32],
 //		regValPc[31:0] + { regValRt[30:0], 1'b0 } };
@@ -689,6 +702,7 @@ begin
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : tOpUCmdF;
 	
 	tOpUCmd2	= { JX2_IXC_AL, tOpUCmd1 };
+	tCanaryRef	= regValRt[15:0] ^ tCanaryMagic;
 
 	case(tOpUCmd1)
 		JX2_UCMD_NOP: begin
@@ -1068,12 +1082,20 @@ begin
 
 `ifdef jx2_alu_jcmp
 		JX2_UCMD_JCMP: begin
-			$display("JCMP, PC0=%X, PC1=%X, Imm=%X T=%d",
-				regValPc, tValAguBraJCmp, regValImm, aluSrJcmpT);
+//			$display("JCMP, PC0=%X, PC1=%X, Imm=%X T=%d  Rs=%X Rt=%X Ixt=%X",
+//				regValPc, tValAguBraJCmp, regValImm, aluSrJcmpT,
+//				regValRs, regValRt, opUIxt);
 			if(aluSrJcmpT)
 			begin
-				tValBra		= { tRegBraLr[63:48], tValAguBraJCmp[47:0] };
-				tDoBra		= 1;
+//				tValBra		= { tRegBraLr[63:48], tValAguBraJCmp[47:0] };
+				tValBra		= { regValPc[63:48], tValAguBraJCmp[47:0] };
+//				tDoBra		= 1;
+				tDoBra		= (opPreBra != 2'b01);
+			end
+			else
+			begin
+				tValBra		= regValPc[63:0];
+				tDoBra		= (opPreBra != 2'b00);
 			end
 		end
 `endif
@@ -1357,6 +1379,16 @@ begin
 //					tRegValRn1		= tValCpuIdLo;
 					tValOutDfl		= tValCpuIdLo;
 					tDoOutDfl		= 1;
+					
+					if(regIdRt[4:0]==5'h1E)
+					begin
+						if(!tNxtCanaryMagic[15] && regInSr[31])
+						begin
+							tNxtCanaryMagic = {1'b1, tValCpuIdRng[14:0]};
+							$display("EX1: Init Canary Magic %X", 
+								tNxtCanaryMagic);
+						end
+					end
 				end
 
 				JX2_UCIX_IXT_WEXMD: begin
@@ -1429,6 +1461,17 @@ begin
 					tRegOutSr[30:29]	= 2'b10;
 					tValBra				= regValPc;
 					tDoBra				= 1;
+				end
+
+				JX2_UCIX_IXT_VSKG: begin
+					tValOutDfl		= { UV48_00, tCanaryRef };
+					tDoOutDfl		= 1;
+				end
+				JX2_UCIX_IXT_VSKC: begin
+					if(tCanaryRef != regValRs[15:0])
+					begin
+						tExTrapExc = { UV112_00, 16'h8010 };
+					end
 				end
 
 `ifdef jx2_enable_srtwid
@@ -1714,6 +1757,9 @@ always @(posedge clock)
 begin
 	tAguFlagJq	<= regInSr[31];
 	tMsgLatch	<= tNextMsgLatch;
+//	tCanaryMagic	<= tNxtCanaryMagic;
+	tCanaryMagic	<= reset ? 0 : tNxtCanaryMagic;
+
 end
 
 endmodule

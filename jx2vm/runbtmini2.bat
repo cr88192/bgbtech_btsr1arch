@@ -1,0 +1,2 @@
+@echo off
+jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_ports/BtMini2/tst_btm_bjx2.exe resource/wad0.wd4=../tk_ports/BtMini2/resource/wad0.wd4 resource/wad1.wd4=../tk_ports/BtMini2/resource/wad1.wd4 resource/wad2.wd4=../tk_ports/BtMini2/resource/wad2.wd4 resource/wad3.wd4=../tk_ports/BtMini2/resource/wad3.wd4 --rd_map ../tk_ports/BtMini2/tst_btm_bjx2.exe.map %1 %2 %3 %4 %5 

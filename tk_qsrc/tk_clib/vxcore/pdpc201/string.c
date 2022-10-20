@@ -1050,16 +1050,79 @@ strlen:
 	RTS
 	
 strcmp:
-	MOV			0, R2
-#if 1
-	.L0:
+//	ADD			R4, 8, R18	|	MOV.Q		(R4), R6
+//	ADD			R5, 8, R19	|	MOV.Q		(R5), R7
 	MOV.Q		(R4), R6
 	MOV.Q		(R5), R7
+	MOV			0, R2
+
+#if 1
+	MOV.Q		(R4, 8), R16
+	MOV.Q		(R5, 8), R17
+
 	PSCHNE.B	R6, R7, R1
 	BT			.L1
 	PSCHEQ.B	R7, R2, R1
 	BT			.L2
+
 	ADD			8, R4		|	ADD			8, R5
+	MOV			R16, R6		|	MOV			R17, R7
+
+	MOV.Q		(R4, 8), R16
+	MOV.Q		(R5, 8), R17
+
+	PSCHNE.B	R6, R7, R1
+	BT			.L1
+	PSCHEQ.B	R7, R2, R1
+	BT			.L2
+
+#if 1
+	ADD			8, R4		|	ADD			8, R5
+	MOV			R16, R6		|	MOV			R17, R7
+
+	MOV.Q		(R4, 8), R16
+	MOV.Q		(R5, 8), R17
+
+	PSCHNE.B	R6, R7, R1
+	BT			.L1
+	PSCHEQ.B	R7, R2, R1
+	BT			.L2
+#endif
+
+#if 1
+	ADD			8, R4		|	ADD			8, R5
+	MOV			R16, R6		|	MOV			R17, R7
+
+	MOV.Q		(R4, 8), R16
+	MOV.Q		(R5, 8), R17
+
+	PSCHNE.B	R6, R7, R1
+	BT			.L1
+	PSCHEQ.B	R7, R2, R1
+	BT			.L2
+#endif
+
+//	MOV.Q		(R4, 8), R6
+//	MOV.Q		(R5, 8), R7
+	MOV			R16, R6		|	MOV			R17, R7
+	ADD			8, R4		|	ADD			8, R5
+#endif
+
+#if 1
+	.L0:
+
+//	MOV.Q		(R4), R6
+//	MOV.Q		(R5), R7
+	PSCHNE.B	R6, R7, R1
+	BT			.L1
+	PSCHEQ.B	R7, R2, R1
+	BT			.L2
+	MOV.Q		(R4, 8), R6
+	MOV.Q		(R5, 8), R7
+	ADD			8, R4		|	ADD			8, R5
+//	MOV			R18, R4		|	MOV.Q		(R18), R6
+//	MOV			R19, R5		|	MOV.Q		(R19), R7
+//	ADD			R4, 8, R18	|	ADD			R5, 8, R19
 	BRA			.L0
 #endif
 
@@ -1126,8 +1189,10 @@ strcmp:
 	CMPGT		R7, R6
 	MOV?T		1, R2
 	MOV?F		-1, R2	
+	RTS
 
 	.L2:
+//	MOV			0, R2
 	RTS
 
 

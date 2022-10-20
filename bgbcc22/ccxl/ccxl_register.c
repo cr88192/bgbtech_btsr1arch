@@ -92,6 +92,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 
 	rov=ctx->regrov;
 	ctx->regrov=rov+1;
+//	ctx->regrov=rov+3;
 	bi=-1;
 
 	nr=ctx->cur_func->n_regs;
@@ -125,92 +126,96 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 		}
 	}
 
-	
-//	for(i=0; i<256; i++)
-	for(i=0; i<ctx->cur_func->m_regs; i++)
+	if(bi<0)
 	{
-//		j=ctx->cur_func->regs_tyseq[i];
-//		if(j && (((j>>16)&15)!=z))
-//			continue;
-
-		ri=ctx->cur_func->regs[i];
-//		if(!ctx->cur_func->regs[i])
-		if(!ri)
+	//	for(i=0; i<256; i++)
+		for(i=0; i<ctx->cur_func->m_regs; i++)
 		{
-			if(i<ctx->cur_func->n_regs)
-				BGBCC_DBGBREAK
+	//		j=ctx->cur_func->regs_tyseq[i];
+	//		if(j && (((j>>16)&15)!=z))
+	//			continue;
 
-//			if(!j)
-//				{ ctx->cur_func->regs_tyseq[i]=(z<<16)|1; }
-//			else
-//				{ ctx->cur_func->regs_tyseq[i]=++j; }
-		
-			if(i>=ctx->cur_func->n_regs)
-				ctx->cur_func->n_regs=i+1;
-		
-			ri=BGBCC_CCXL_AllocRegisterInfo(ctx);
-			ri->alc_fn=fn;
-			ri->alc_ln=ln;
-
-			ri->ucnt=1;
-			ri->cseq=1;
-			ri->type_zb=z;
-
-//			ri->type=bty;
-			ri->type=sbty;
-//			ri->regid=i|((j&4095)<<12);
-			ri->regid=i|((ri->cseq&4095)<<12);
-
-			ctx->cur_func->regs[i]=ri;
-			treg.val=CCXL_REGTY_TEMP|
-				(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
-				ri->regid;
-			BGBCC_CCXL_LoadslotCacheFlushReg(ctx, treg);
-			*rtreg=treg;
-			return(i);
-		}
-		
-		if(!ri->ucnt && (ri->type_zb==z))
-		{
-			if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
-				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
-//				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
-//				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
-				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
-					continue;
-
-			if(!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+			ri=ctx->cur_func->regs[i];
+	//		if(!ctx->cur_func->regs[i])
+			if(!ri)
 			{
-				if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
-					continue;
+				if(i<ctx->cur_func->n_regs)
+					BGBCC_DBGBREAK
+
+	//			if(!j)
+	//				{ ctx->cur_func->regs_tyseq[i]=(z<<16)|1; }
+	//			else
+	//				{ ctx->cur_func->regs_tyseq[i]=++j; }
+			
+				ctx->regrov=i+1;
+
+				if(i>=ctx->cur_func->n_regs)
+					ctx->cur_func->n_regs=i+1;
+			
+				ri=BGBCC_CCXL_AllocRegisterInfo(ctx);
+				ri->alc_fn=fn;
+				ri->alc_ln=ln;
+
+				ri->ucnt=1;
+				ri->cseq=1;
+				ri->type_zb=z;
+
+	//			ri->type=bty;
+				ri->type=sbty;
+	//			ri->regid=i|((j&4095)<<12);
+				ri->regid=i|((ri->cseq&4095)<<12);
+
+				ctx->cur_func->regs[i]=ri;
+				treg.val=CCXL_REGTY_TEMP|
+					(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
+					ri->regid;
+				BGBCC_CCXL_LoadslotCacheFlushReg(ctx, treg);
+				*rtreg=treg;
+				return(i);
 			}
+			
+			if(!ri->ucnt && (ri->type_zb==z))
+			{
+				if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
+					BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
+	//				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+	//				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
+					!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+						continue;
 
-			bi=i;
-			break;
+				if(!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+				{
+					if(!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+						continue;
+				}
 
-#if 0
-			if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
-				BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
-//				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
-//				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
-				!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
-					continue;
-		
-			ri->cseq++;0
-//			ri->type_zb=z;
+				bi=i;
+				break;
 
-//			ri->type=bty;
-			ri->type=sbty;
-			ri->regid=i|((ri->cseq&4095)<<12);
-			ri->ucnt=1;
+	#if 0
+				if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
+					BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
+	//				!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
+	//				!BGBCC_CCXL_TypeCompatibleArchP(ctx, bty, ri->type))
+					!BGBCC_CCXL_TypeCompatibleStorageP(ctx, bty, ri->type))
+						continue;
+			
+				ri->cseq++;0
+	//			ri->type_zb=z;
 
-			treg.val=CCXL_REGTY_TEMP|
-				(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
-				ri->regid;
-			BGBCC_CCXL_LoadslotCacheFlushReg(ctx, treg);
-			*rtreg=treg;
-			return(i);
-#endif
+	//			ri->type=bty;
+				ri->type=sbty;
+				ri->regid=i|((ri->cseq&4095)<<12);
+				ri->ucnt=1;
+
+				treg.val=CCXL_REGTY_TEMP|
+					(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
+					ri->regid;
+				BGBCC_CCXL_LoadslotCacheFlushReg(ctx, treg);
+				*rtreg=treg;
+				return(i);
+	#endif
+			}
 		}
 	}
 	
@@ -222,7 +227,9 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 //			BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
 //			!BGBCC_CCXL_TypeEqualP(ctx, bty, ri->type))
 //				continue;
-	
+
+		ctx->regrov=bi+1;
+
 		ri->cseq++;
 //		ri->type_zb=z;
 
@@ -667,6 +674,88 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushReg(
 	return(CCXL_STATUS_YES);
 }
 
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushRegIndex(
+	BGBCC_TransState *ctx, ccxl_register sreg, ccxl_register ireg)
+{
+	ccxl_register zreg;
+	ccxl_type bty, sty;
+	int sr, er, ff;
+	int i;
+
+	if(sreg.val==CCXL_REGID_REG_Z)
+		return(CCXL_STATUS_NO);
+
+	if(ireg.val==CCXL_REGID_REG_Z)
+	{
+		return(BGBCC_CCXL_LoadslotCacheFlushStorePtr(ctx, sreg));
+	}
+
+	sr=ctx->loadslot_cache_srov;
+	er=ctx->loadslot_cache_erov;
+	
+	if(sr==er)
+		return(CCXL_STATUS_YES);
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	
+	if((ctx->opt_ptrcache<2) &&
+		!BGBCC_CCXL_TypeRestrictPointerP(ctx, sty))
+	{
+		BGBCC_CCXL_LoadslotCacheFlush(ctx);
+		return(CCXL_STATUS_YES);
+	}
+
+	zreg.val=CCXL_REGID_REG_Z;
+
+	sty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
+
+//	if(BGBCC_CCXL_TypeSgByteP(ctx, sty) || (ctx->opt_ptrcache<3))
+	if(BGBCC_CCXL_TypeSgByteP(ctx, sty))
+	{
+		/* Treat byte-access as wildcard. */
+		return(BGBCC_CCXL_LoadslotCacheFlushStorePtr(ctx, sreg));
+	}
+
+	i=sr;
+	while(i!=er)
+	{
+		ff=1;
+
+		if(	BGBCC_CCXL_IsRegImmIntP(ctx,
+				ctx->loadslot_cache_ireg[i]) &&
+			BGBCC_CCXL_IsRegImmIntP(ctx, ireg))
+				ff=0;
+
+		if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				ctx->loadslot_cache_ireg[i], ireg))
+					ff=1;
+
+		if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				ctx->loadslot_cache_sreg[i], sreg) &&
+				ff )
+//			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+//				ctx->loadslot_cache_ireg[i], ireg)	)
+		{
+			ctx->loadslot_cache_ireg[i]=zreg;
+			ctx->loadslot_cache_st[i]=NULL;
+		}
+
+		/* Pointer alias, type-clash. */
+		bty=BGBCC_CCXL_GetRegType(ctx, ctx->loadslot_cache_dreg[i]);
+		if(BGBCC_CCXL_TypeCompatibleP(ctx, sty, bty) &&
+			!ctx->loadslot_cache_st[i])
+		{
+			ctx->loadslot_cache_st[i]=NULL;
+			ctx->loadslot_cache_ireg[i]=zreg;
+		}
+
+		i=(i+1)&255;
+	}
+
+//	ctx->loadslot_cache_srov=ctx->loadslot_cache_erov;
+	return(CCXL_STATUS_YES);
+}
+
 ccxl_status BGBCC_CCXL_LoadslotCacheAdd(
 	BGBCC_TransState *ctx,
 	ccxl_register dreg, ccxl_register sreg,
@@ -817,3 +906,18 @@ ccxl_status BGBCC_CCXL_LoadIndexConstCacheCheck(
 	BGBCC_CCXL_GetRegForIntValue(ctx, &ireg, idx);
 	return(BGBCC_CCXL_LoadIndexCacheCheck(ctx, sreg, ireg, rdreg2));
 }
+
+ccxl_status BGBCC_CCXL_LoadslotCacheFlushRegIndexConst(
+	BGBCC_TransState *ctx, ccxl_register sreg, int idx)
+{
+	ccxl_register ireg;
+
+	if(!idx)
+	{
+		return(BGBCC_CCXL_LoadslotCacheFlushReg(ctx, sreg));
+	}
+
+	BGBCC_CCXL_GetRegForIntValue(ctx, &ireg, idx);
+	return(BGBCC_CCXL_LoadslotCacheFlushRegIndex(ctx, sreg, ireg));
+}
+

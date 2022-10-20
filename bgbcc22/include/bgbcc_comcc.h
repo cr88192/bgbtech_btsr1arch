@@ -179,6 +179,7 @@ byte has_qmul;		//Has MUL.Q / DIVS.Q / ...
 byte has_ldop;		//Has FPU Immediates
 byte has_fpim;		//Has FPU Immediates
 byte has_fpvsf;		//Has FPU Immediates
+byte has_jcmp;		//Has Compare+Branch
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 byte abi_noexcept;	//Disable Exceptions
@@ -454,6 +455,8 @@ u64 regs_excl;
 u64 regs_excl_tiny;
 
 byte reg_pszx[64];		//register sign/zero extension
+
+int reg_heatstat[64];	//register heat map
 
 ccxl_register regalc_map[64];
 short regalc_ltcnt[64];	//lifetime count (who to evict)

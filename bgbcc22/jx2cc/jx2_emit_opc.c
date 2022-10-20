@@ -187,6 +187,13 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	}
 #endif
 
+	if(	(nmid==BGBCC_SH_NMID_CMPQGE) ||
+		(nmid==BGBCC_SH_NMID_CMPQGT))
+	{
+		i=BGBCC_JX2_TryEmitOpImmReg(ctx, nmid, 0, reg);
+		return(i);
+	}
+
 	if(	(nmid==BGBCC_SH_NMID_XJMP)		||
 		(nmid==BGBCC_SH_NMID_XJSR)		)
 	{

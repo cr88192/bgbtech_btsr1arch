@@ -1946,11 +1946,13 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			pc+=4;
 		}
 
+#if 0
 		if(op->fl&BJX2_OPFL_OP24)
 		{
 //			ncyc++;
 			pc++;
 		}
+#endif
 
 		if(op->fl&BJX2_OPFL_JUMBO64)
 		{
@@ -2263,11 +2265,13 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			if((op->fmid==BJX2_FMID_LDREGREG) ||
 				(op->fmid==BJX2_FMID_LDDRREGREG) ||
 				(op->fmid==BJX2_FMID_LDREGDISPREG) ||
+				(op->fmid==BJX2_FMID_LDREGDISP1REG) ||
 				(op->fmid==BJX2_FMID_LDREG2REG))
 			{
 //				if((i+3)>nc)
 //					continue;
 
+				op->fl|=BJX2_OPFL_OPPIPE;
 				op->cyc=ilo;
 
 #if 0
@@ -2378,6 +2382,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_DMACSL)	||
 			(op->nmid==BJX2_NMID_DMACUL)	)
 		{
+			op->fl|=BJX2_OPFL_OPPIPE;
 			op->cyc=ilo;
 		}
 
@@ -2394,6 +2399,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		{
 			if(op->imm&8)
 			{
+				op->fl|=BJX2_OPFL_OPPIPE;
 				op->cyc=ilo;
 			}
 		}
@@ -2426,6 +2432,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			if(j<1)j=1;
 			if(j>2)j=2;
 			op->cyc=j;
+			op->fl|=BJX2_OPFL_OPPIPE;
 		
 #if 0
 			if((i+3)>nc)
@@ -2461,6 +2468,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			if(j<1)j=1;
 			if(j>2)j=2;
 			op->cyc=j;
+			op->fl|=BJX2_OPFL_OPPIPE;
 		}
 
 		if(
@@ -2499,6 +2507,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 	nbo=0;
 	ncyc=0;
+	ilo=0;
 	for(i=0; i<nc; i++)
 	{
 		op=tr->ops[i];
@@ -2506,6 +2515,13 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 		if(!(op->fl&BJX2_OPFL_WEX))
 			nbo++;
+
+		if(op->fl&BJX2_OPFL_OPPIPE)
+		{
+			j=(op->cyc-1);
+			if(j<0)j=0;
+			ilo+=j;
+		}
 	}
 
 	if(nc>=BJX2_TR_MAXOP)
@@ -2514,6 +2530,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	tr->n_ops=nc;
 	tr->n_nbops=nbo;
 	tr->n_cyc=ncyc;
+	tr->ip_cyc=ilo;
 	tr->addr_nxt=npc;
 	tr->addr_jmp=jpc;
 

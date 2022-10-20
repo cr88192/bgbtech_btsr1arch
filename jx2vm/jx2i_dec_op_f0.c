@@ -5783,6 +5783,7 @@ int BJX2_DecodeOpcode_DecD4(BJX2_Context *ctx,
 	return(ret);
 }
 
+#if 0
 int BJX2_DecodeOpcode_DecHz(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2)
 {
@@ -5863,6 +5864,7 @@ int BJX2_DecodeOpcode_DecHz(BJX2_Context *ctx,
 
 	return(0);
 }
+#endif
 
 
 int BJX2_DecodeOpcode_DecXz(BJX2_Context *ctx,

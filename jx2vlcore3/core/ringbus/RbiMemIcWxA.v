@@ -614,6 +614,8 @@ reg[5:0]		tStBlkIxB;
 reg[127:0]		tStickyTlbExc;
 reg[127:0]		tNxtStickyTlbExc;
 
+reg				tResetL;
+
 always @*
 begin
 	tNxtTlbMissInh		= tTlbMissInh;
@@ -811,14 +813,14 @@ begin
 	tNxtFlushRov	= tFlushRov;
 	tNxtAdvFlushRov	= 0;
 
-//	if(((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS)) || reset)
-//	if((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS) && !reset)
+//	if(((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS)) || tResetL)
+//	if((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS) && !tResetL)
 	if((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS))
 	begin
 		icNxtDoFlush = 1;
 	end
 
-//	if((tFlushRov == 0) && !tAdvFlushRov && !reset)
+//	if((tFlushRov == 0) && !tAdvFlushRov && !tResetL)
 	if((tFlushRov == 0) && !tAdvFlushRov)
 		icNxtDoFlush = 1;
 	
@@ -832,7 +834,7 @@ begin
 		end
 	end
 
-	if(reset)
+	if(tResetL)
 	begin
 		tNxtFlushRov		= 0;
 		icNxtDoFlush		= 0;
@@ -1043,7 +1045,7 @@ begin
 //	if(tMiss)
 //		tRegOutExc[15] = 0;
 
-	if(reset)
+	if(tResetL)
 	begin
 		tMiss		= 0;
 		tReqReady	= 0;
@@ -1336,7 +1338,7 @@ begin
 	
 //	tRegOutPcOK = tMiss ? UMEM_OK_HOLD : UMEM_OK_OK;
 
-//	if(reset)
+//	if(tResetL)
 //	begin
 //		tMiss = 0;
 //	end
@@ -1368,7 +1370,7 @@ begin
 	tNxtMemRespLdA	= tMemRespLdA;
 	tNxtMemRespLdB	= tMemRespLdB;
 
-	if(memRingIsRespOkLdA && !reset)
+	if(memRingIsRespOkLdA && !tResetL)
 	begin
 //		$display("L1 I$: Resp A, O=%X S=%X A=%X D=%X",
 //			memOpmIn, memSeqIn, memAddrIn, memDataIn);
@@ -1431,7 +1433,7 @@ begin
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
 	end
 
-	if(memRingIsRespOkLdB && !reset)
+	if(memRingIsRespOkLdB && !tResetL)
 	begin
 //		$display("L1 I$: Resp B, O=%X S=%X A=%X D=%X",
 //			memOpmIn, memSeqIn, memAddrIn, memDataIn);
@@ -1524,7 +1526,7 @@ begin
 		tRegOutHold = 1;
 `endif
 
-	if(reset)
+	if(tResetL)
 	begin
 		tNxtMemReqLdA	= 0;
 		tNxtMemReqLdB	= 0;
@@ -1717,11 +1719,11 @@ begin
 		end
 		tNxtMsgLatch = 1;
 
-//		if(!tTlbMissInh && !reset)
+//		if(!tTlbMissInh && !tResetL)
 //			tRegOutHold = 1;
 	end
 		
-	if(reset)
+	if(tResetL)
 		tRegOutHold = 0;
 
 	if(!tRegOutHold)
@@ -1824,6 +1826,7 @@ begin
 
 	tRegInSr		<= regInSr;
 	tRegInSrL		<= tRegInSr;
+	tResetL			<= reset;
 
 //	if(!icInPcHold)
 //	begin
@@ -1956,7 +1959,7 @@ begin
 
 	/* Stage B */
 
-	if(reset)
+	if(tResetL)
 	begin
 		tMemSeqOut  <= 0;
 		tMemOpmOut  <= 0;

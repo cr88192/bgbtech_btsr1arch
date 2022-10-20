@@ -88,7 +88,16 @@ errno_t strncpy_s(
 	const char *restrict src, rsize_t count);
 #endif
 
+void *_memset16(void *s, unsigned short v, size_t n);
+void *_memset32(void *s, unsigned int v, size_t n);
+void *_memset64(void *s, unsigned long long v, size_t n);
+
+void *_memcpyf(void *dst, void *src, size_t n);
+void *_memmovef(void *dst, void *src, size_t n);
+
 void *_memlzcpy(void *dst, void *src, size_t n);
+void *_memlzcpyf(void *dst, void *src, size_t n);
+
 int _memlzcmp(void *dst, void *src, size_t n);
 
 #ifdef __WATCOMC__

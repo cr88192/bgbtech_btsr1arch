@@ -136,6 +136,7 @@ parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
 
 parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
 parameter[6:0] JX2_GR_FPIMM10	= 7'h5D;		//FP Immed, 10-bit
+parameter[6:0] JX2_GR_IMM_RP	= 7'h5E;		//Immed via Rp
 parameter[6:0] JX2_GR_SP2		= 7'h5F;
 
 parameter[6:0] JX2_GR_PC		= 7'h60;
@@ -452,6 +453,9 @@ parameter[28:0] UV29_FF			= 29'h1FFFFFFF;	//
 
 parameter[29:0] UV30_00			= 30'h00000000;	//
 parameter[29:0] UV30_FF			= 30'h3FFFFFFF;	//
+
+parameter[30:0] UV31_00			= 31'h00000000;	//
+parameter[30:0] UV31_FF			= 31'h7FFFFFFF;	//
 
 parameter[31:0] UV32_00			= 32'h00000000;	//
 parameter[31:0] UV32_FF			= 32'hFFFFFFFF;	//
@@ -1244,6 +1248,9 @@ parameter[5:0] JX2_UCIX_IXT_SVEKRR	= 6'h16;		//Save KRR into Encoded Key
 parameter[5:0] JX2_UCIX_IXT_SVENTR	= 6'h17;		//Enter Supervisor Mode
 parameter[5:0] JX2_UCIX_IXT_SXENTR	= 6'h18;		//Enter Superuser Mode
 parameter[5:0] JX2_UCIX_IXT_SUENTR	= 6'h19;		//Enter User Mode
+
+parameter[5:0] JX2_UCIX_IXT_VSKG	= 6'h1A;		//Canary Gen
+parameter[5:0] JX2_UCIX_IXT_VSKC	= 6'h1B;		//Canary Check
 
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op

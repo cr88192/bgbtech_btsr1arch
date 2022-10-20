@@ -172,6 +172,8 @@
 
 `define jx2_fbuf_nofont		//Disable Font ROM
 
+// `define jx2_alu_jcmp_rpimm
+
 
 `ifdef jx2_enable_riscv
 

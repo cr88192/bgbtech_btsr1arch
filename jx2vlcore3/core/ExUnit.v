@@ -225,6 +225,11 @@ defparam		exAlu.noAlux = isGpu;
 (* max_fanout = 100 *)
 	reg				exHold2;
 
+(* max_fanout = 100 *)
+	reg				exResetL;
+(* max_fanout = 100 *)
+	reg				exResetL2;
+
 reg				exHold1L;
 
 reg				exHold1A;
@@ -383,7 +388,7 @@ wire[63:0]		memRegTraPc;
 `ifdef jx2_use_ringbus
 
 RbiMemL1A		memL1(
-	clock,			reset,
+	clock,			exResetL,
 
 	ifValPcW,		ifIstrWord,
 	ifOutPcOK,		ifOutPcStep,
@@ -420,7 +425,7 @@ assign		memAddrB = 0;
 assign	memSeqOut	= 16'hFF00;
 
 MemL1A		memL1(
-	clock,			reset,
+	clock,			exResetL,
 
 	ifValPc,		ifIstrWord,
 	ifOutPcOK,		ifOutPcStep,
@@ -493,7 +498,7 @@ wire[8:0]		idC1IdUCmd;
 wire[8:0]		idC1IdUIxt;
 
 DecOpWx3	decOp(
-	clock,			reset,
+	clock,			exResetL,
 //	id1IstrWord,	ifInPcWxe,
 	id1IstrWord,
 //	crOutSr,
@@ -525,7 +530,7 @@ wire[8:0]		id1IdUCmd;
 wire[8:0]		id1IdUIxt;
 
 DecOp	decOp(
-	clock,	reset,
+	clock,	exResetL,
 	id1IstrWord[63:0],
 	{ id1IstrWordL2[31:0], id1IstrWordL1[31:0] },
 	id1IdRegN,	id1IdRegM,
@@ -568,7 +573,7 @@ assign		id1BraPipelineDbl = 1'b1;
 reg[7:0]			id1BraPipelineLrL;
 
 DecPreBra	preBra(
-	clock,				reset,
+	clock,				exResetL,
 	id1IstrWord[63:0],	id1ValBPc,	id1ValPc,
 	id1PreBraPc,		id1PreBra,
 	gprValLr,			ifLastPc,
@@ -710,7 +715,7 @@ RegGPR_6R3W_SM regGpr(
 RegGPR_6R3W regGpr(
 `endif
 	clock,
-	reset,
+	exResetL,
 //	exHold2,
 	exHold2 && !crIsIsrEdge,
 
@@ -782,7 +787,7 @@ RegGPR_6R3W regGpr(
 `else
 RegGPR_4R2W regGpr(
 	clock,
-	reset,
+	exResetL,
 //	exHold2,
 	exHold2 && !crIsIsrEdge,
 
@@ -881,7 +886,7 @@ reg [63:0]		gprInBp;
 
 RegGPR regGpr(
 	clock,
-	reset,
+	exResetL,
 //	exHold2,
 	exHold2 && !crIsIsrEdge,
 
@@ -1000,7 +1005,7 @@ assign	crOutLrHi = 0;
 `endif
 
 RegCR regCr(
-	clock,	reset,
+	clock,	exResetL,
 //	exHold2,
 	exHold2 && !crIsIsrEdge,
 
@@ -1229,7 +1234,7 @@ assign		ex1ExfFl =
 	(exC1OpUCmd[5:0] == 0) ? exC1OpUIxt[7:0] : 0;
 
 ExEX1	ex1(
-	clock,			reset,
+	clock,			exResetL,
 	ex1OpUCmd,		ex1OpUIxt,
 	ex1Hold,		ex1TrapExc,
 	ex1Timers,		ex1OpUCmd2,
@@ -1261,7 +1266,7 @@ ExEX1	ex1(
 	ex1RegValImm,
 	ex1FpuValGRn,	ex1FpuSrT,
 	ex1BraFlush,
-//	ex1BraFlush || reset,
+//	ex1BraFlush || exResetL,
 	ex1PreBraPc,	ex1PreBra,
 	ex1AluSrJcmpT,
 	
@@ -1296,7 +1301,7 @@ wire[69:0]	ex1ValAlu;
 // wire		ex1AluSrT;
 
 ExALU	exAlu(
-	clock,				reset,
+	clock,				exResetL,
 	ex1RegValRs,		ex1RegValRt,	
 	exB1RegValRs,		ex1RegValRm,
 	ex1OpUCmd,			ex1OpUIxt,
@@ -1310,14 +1315,14 @@ ExALU	exAlu(
 // ExMul	ex1Mul(
 // ExMulB	ex1Mul(
 ExMulC	ex1Mul(
-	clock,			reset,
+	clock,			exResetL,
 	ex1RegValRs,	ex1RegValRt,		ex1RegValRm,
 	ex1OpUCmd,		ex1OpUIxt,
 	exHold2,		ex1MulVal
 	);
 
 ExMulW	ex1MulW(
-	clock,				reset,
+	clock,				exResetL,
 	ex1RegValRs,		ex1RegValRt,
 	ex1OpUCmd,			ex1OpUIxt,
 	exHold2,			ex1MulWVal,
@@ -1335,7 +1340,7 @@ wire[8:0]		krrEx1OpUCmd = isGpu ? 0 : ex1OpUCmd;
 wire[8:0]		krrEx1OpUIxt = isGpu ? 0 : ex1OpUIxt;
 
 ExModKrrEnc	ex1KrrEnc(
-	clock,				reset,
+	clock,				exResetL,
 	krrEx1OpUCmd,		krrEx1OpUIxt,
 	exHold2,			ex1BraFlush,
 	ex1RegInDlr,		ex1RegInDhr,	crOutKrr,
@@ -1403,7 +1408,7 @@ assign	ex1FpuOK		= fpuLowPrec ? 0 : ex1FpuOKB;
 
 
 FpuExOpW	ex1Fpu(
-	clock,			reset,
+	clock,			exResetL,
 
 	fpuExA1OpUCmd,		fpuExA1OpUIxt,
 	fpuExB1OpUCmd,		fpuExB1OpUIxt,
@@ -1421,7 +1426,7 @@ FpuExOpW	ex1Fpu(
 	crOutFpsr,		crInFpsr,
 	
 	ex2RegInSr,
-//	ex1BraFlush || reset,
+//	ex1BraFlush || exResetL,
 	ex1BraFlush,
 	exHold2,
 	
@@ -1430,7 +1435,7 @@ FpuExOpW	ex1Fpu(
 
 `ifdef jx2_use_fpu_v4sf
 FpuVec4SF	ex1FpuV4(
-	clock,			reset,
+	clock,			exResetL,
 
 	ex1OpUCmd,		ex1OpUIxt,
 	exB1OpUCmd,		exB1OpUIxt,
@@ -1451,7 +1456,7 @@ assign	exB1FpuV4SfRn = 0;
 `else
 
 FpuExOp	ex1Fpu(
-	clock,			reset,
+	clock,			exResetL,
 
 	ex1OpUCmd,		ex1OpUIxt,
 	ex1RegIdRs,		ex1RegValRs,
@@ -1461,7 +1466,7 @@ FpuExOp	ex1Fpu(
 	ex1FpuOK,		ex1FpuSrT,
 	
 	ex2RegInSr,
-//	ex1BraFlush || reset,
+//	ex1BraFlush || exResetL,
 	ex1BraFlush,
 	exHold2,
 	
@@ -1479,7 +1484,7 @@ wire[63:0]	ex1BlintVal;
 
 `ifdef jx2_enable_blint
 ExModBlint	ex1Blint(
-	clock,			reset,
+	clock,			exResetL,
 	ex1OpUCmd,		ex1OpUIxt,
 	exHold2,		ex1BlintDoHold,
 	ex1RegValRsGpo,	ex1RegValRtGpo,
@@ -1503,7 +1508,7 @@ wire[8:0]	smulEx1OpUCmd	= isGpu ? 0 : ex1OpUCmd;
 wire[8:0]	smulEx1OpUIxt	= isGpu ? 0 : ex1OpUIxt;
 
 ExOpSloMulDiv	ex1SloMul(
-	clock,			reset,
+	clock,			exResetL,
 	smulEx1OpUCmd,	smulEx1OpUIxt,
 	ex1RegValRsGpo,	ex1RegValRtGpo,
 	ex1SloMulVal,	ex1SloMulValHi,
@@ -1595,7 +1600,7 @@ reg[7:0]		ex2RegInLastSr;
 // reg[1:0]		ex2MemDataOK;
 
 ExEX2	ex2(
-	clock,			reset,
+	clock,			exResetL,
 	ex2OpUCmd,		ex2OpUIxt,
 	ex2Hold,
 
@@ -1620,7 +1625,7 @@ ExEX2	ex2(
 	ex1FpuSrT,		ex1FpuOK,
 	
 	ex2BraFlush,
-//	ex2BraFlush || reset,
+//	ex2BraFlush || exResetL,
 	ex2RegInLastSr,
 	
 	ex2RegOutDlr,	ex2RegInDlr,
@@ -1701,7 +1706,7 @@ wire[63:0]		ex3RegOutLr;
 reg[63:0]		ex3RegInLr;
 
 ExEX3	ex3(
-	clock,			reset,
+	clock,			exResetL,
 	ex3OpUCmd,		ex3OpUIxt,
 	ex3Hold,		exHold2,
 
@@ -1720,7 +1725,7 @@ ExEX3	ex3(
 	ex1FpuValGRn,
 	exA1FpuV4SfRn,
 
-//	ex3BraFlush || reset,
+//	ex3BraFlush || exResetL,
 	ex3BraFlush,
 	ex3RegInLastSr,
 
@@ -1763,7 +1768,7 @@ assign		exB1AguXLea = ex1AguOutXLea;
 wire[47:0]			exB1MemAddr;
 
 ExEXB1	exb1(
-	clock,			reset,
+	clock,			exResetL,
 	exB1OpUCmd,		exB1OpUIxt,
 	exB1Hold,		exB1OpUCmd2,
 	
@@ -1777,7 +1782,7 @@ ExEXB1	exb1(
 	
 	ex1RegValPc,	exB1RegValImm,
 	ex1BraFlush,
-//	ex1BraFlush || reset,
+//	ex1BraFlush || exResetL,
 	ex1RegInSr,
 	1,
 	exB1MemAddr, exB1MemOpm
@@ -1789,7 +1794,7 @@ wire[65:0]	exB1ValAlu;
 
 // ExALU	exAluB(
 ExALUB	exAluB(
-	clock,				reset,
+	clock,				exResetL,
 	exB1RegValRs,		exB1RegValRt,
 	exB1OpUCmd,			exB1OpUIxt,
 	exHold2,			ex1RegInSr[1:0],
@@ -1797,7 +1802,7 @@ ExALUB	exAluB(
 	exB1ValCarryD);
 
 ExMulW	exB1MulW(
-	clock,				reset,
+	clock,				exResetL,
 	exB1RegValRs,		exB1RegValRt,
 	exB1OpUCmd,			exB1OpUIxt,
 	exHold2,			exB1MulWVal,
@@ -1843,7 +1848,7 @@ reg[65:0]		exB2RegAluRes;		//Arithmetic Result
 reg[63:0]		exB2RegMulWRes;		//Word Multiply Result
 
 ExEXB2		exb2(
-	clock,		reset,
+	clock,		exResetL,
 	exB2OpUCmd,	exB2OpUIxt,
 	exB2Hold,
 	
@@ -1858,7 +1863,7 @@ ExEXB2		exb2(
 	exB2RegMulWRes,	ex1KrreHi,
 	exB1FpuValGRn,
 	ex2BraFlush,
-//	ex2BraFlush || reset,
+//	ex2BraFlush || exResetL,
 
 	ex2RegInLastSr,	ex2RegInSr,
 	ex2MemDataIn,	ex2MemDataInB
@@ -1892,7 +1897,7 @@ reg[65:0]		exB3RegAluRes;		//Arithmetic Result
 reg[63:0]		exB3RegMulWRes;		//Word Multiply Result
 
 ExEXB3		exb3(
-	clock,		reset,
+	clock,		exResetL,
 	exB3OpUCmd,	exB3OpUIxt,
 	exB3Hold,
 	
@@ -1908,7 +1913,7 @@ ExEXB3		exb3(
 	exB1FpuValGRn,
 	exB1FpuV4SfRn,
 
-//	ex3BraFlush || reset,
+//	ex3BraFlush || exResetL,
 	ex3BraFlush,
 
 	ex3RegInLastSr,
@@ -1942,7 +1947,7 @@ reg[32:0]		exC1RegValImm;		//Immediate (Decode)
 wire[8:0]		exC1OpUCmd2;
 
 ExEXC1	exc1(
-	clock,			reset,
+	clock,			exResetL,
 	exC1OpUCmd,		exC1OpUIxt,
 	exC1Hold,		exC1OpUCmd2,
 	
@@ -1956,7 +1961,7 @@ ExEXC1	exc1(
 	
 	ex1RegValPc,	exC1RegValImm,
 //	ex1BraFlush,	ex1RegInSr
-//	ex1BraFlush || reset,
+//	ex1BraFlush || exResetL,
 	ex1BraFlush,
 	ex1RegInSr,
 	2
@@ -1968,7 +1973,7 @@ wire[ 7:0]	exC1ValCarryD;
 
 // ExALU	exAluC(
 ExALUB	exAluC(
-	clock,				reset,
+	clock,				exResetL,
 	exC1RegValRs,		exC1RegValRt,
 	exC1OpUCmd,			exC1OpUIxt,
 	exHold2,			ex1RegInSr[1:0],
@@ -1976,7 +1981,7 @@ ExALUB	exAluC(
 	exC1ValCarryD);
 
 ExMulW	exC1MulW(
-	clock,				reset,
+	clock,				exResetL,
 	exC1RegValRs,		exC1RegValRt,
 	exC1OpUCmd,			exC1OpUIxt,
 	exHold2,			exC1MulWVal,
@@ -2011,7 +2016,7 @@ reg[65:0]		exC2RegAluRes;		//Arithmetic Result
 reg[63:0]		exC2RegMulWRes;		//Word Multiply Result
 
 ExEXC2		exc2(
-	clock,		reset,
+	clock,		exResetL,
 	exC2OpUCmd,	exC2OpUIxt,
 	exC2Hold,
 	
@@ -2026,7 +2031,7 @@ ExEXC2		exc2(
 	exC2RegMulWRes,	ex1KrreHi,
 	exC1FpuValGRn,
 	ex2BraFlush,
-//	ex2BraFlush || reset,
+//	ex2BraFlush || exResetL,
 
 	ex2RegInLastSr,	ex2RegInSr,
 	ex2MemDataIn,	ex2MemDataInB
@@ -2053,7 +2058,7 @@ reg[65:0]		exC3RegAluRes;		//Arithmetic Result
 reg[63:0]		exC3RegMulWRes;		//Word Multiply Result
 
 ExEXC3		exc3(
-	clock,		reset,
+	clock,		exResetL,
 	exC3OpUCmd,	exB3OpUIxt,
 	exC3Hold,
 	
@@ -2067,7 +2072,7 @@ ExEXC3		exc3(
 	exC3RegValImm,	exB3RegAluRes,
 	exC3RegMulWRes,	ex1KrreHi,
 	exC1FpuValGRn,
-//	ex3BraFlush || reset,
+//	ex3BraFlush || exResetL,
 	ex3BraFlush,
 
 	ex3RegInLastSr,
@@ -3026,7 +3031,7 @@ begin
 		tNxtRegExc = { UV64_00, UV48_00, 16'h800D };
 	end
 
-	if(reset)
+	if(exResetL2)
 	begin
 		exHold1		= 0;
 		exHold2		= 0;
@@ -3069,7 +3074,7 @@ begin
 		end
 	end
 
-	if(reset)
+	if(exResetL2)
 	begin
 		$display("ExUnit: RESET");
 //		tNxtRegExc = 0;
@@ -3171,6 +3176,16 @@ begin
 //	begin
 //		$display("ExUnit: Predict CC Branch ID1");
 //	end
+
+`ifndef def_true
+	if(ex1OpUCmd[5:0]==JX2_UCMD_JCMP)
+	begin
+		$display("JCMP X=%X-%X-%X-%X Rs=%X Rt=%X", 
+			ex1IstrWord[15: 0], ex1IstrWord[31:16],
+			ex1IstrWord[47:32], ex1IstrWord[63:48],
+			ex1RegIdRs, ex1RegIdRt);
+	end
+`endif
 
 	ex1ValBraDir = 3'b001;
 //	if(ex1OpUCmd[5:0]==JX2_UCMD_BRA)
@@ -3277,7 +3292,7 @@ begin
 	end
 `endif
 
-	if(reset)
+	if(exResetL2)
 	begin
 //		tValNextPc = UV32_00;
 //		tValNextBraPc = UV32_00;
@@ -3333,7 +3348,7 @@ begin
 	end
 `endif
 
-//	if(reset)
+//	if(exResetL2)
 //	begin
 //		crInSr			= 0;
 //		gprInSp			= 64'h00000DFF0;
@@ -4201,6 +4216,8 @@ begin
 	tPreHold1		<= tNxtPreHold1;
 	tLstPreHold1	<= tPreHold1;
 	exHold1L		<= exHold1;
+	exResetL		<= reset;
+	exResetL2		<= exResetL;
 
 //	tRegExc			<= tNxtRegExc;
 	tDelayExc		<= tNxtDelayExc;
@@ -4240,7 +4257,7 @@ begin
 `endif
 
 `ifndef def_true
-	if(reset)
+	if(exResetL2)
 	begin
 //		ifValPc			<= UV32_00;
 //		opBraFlushMask	<= 8'h07;

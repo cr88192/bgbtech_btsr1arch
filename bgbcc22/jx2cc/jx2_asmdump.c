@@ -741,6 +741,8 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 {
 	char *sn;
 	
+//	ctx->reg_heatstat[nmid&63]++;
+	
 	switch(nmid)
 	{
 	case BGBCC_SH_REG_R0:		sn="R0";		break;	// 0x00
@@ -1072,6 +1074,12 @@ char *BGBCC_JX2DA_RegToName(BGBCC_JX2_Context *ctx, int nmid)
 		sn="UNKNOWN";
 		break;
 	}
+
+	if(sn[0]=='R')
+	{
+		ctx->reg_heatstat[nmid&63]++;
+	}
+
 	return(sn);
 }
 

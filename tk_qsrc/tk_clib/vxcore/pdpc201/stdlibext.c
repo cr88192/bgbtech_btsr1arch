@@ -437,11 +437,13 @@ void *_memlzcpyf(void *dst, void *src, size_t n)
 		}else
 			if((-d)>=n)
 		{
-			memcpy(dst, src, n);
+//			memcpy(dst, src, n);
+			_memcpyf(dst, src, n);
 		}
 		else if(d!=0)
 		{
-			memmove(dst, src, n);
+//			memmove(dst, src, n);
+			_memmovef(dst, src, n);
 		}
 	}else if(d>=n)
 	{
@@ -455,7 +457,8 @@ void *_memlzcpyf(void *dst, void *src, size_t n)
 			((uint64_t *)dst)[1]=v1;
 		}else
 		{
-			memcpy(dst, src, n);
+//			memcpy(dst, src, n);
+			_memcpyf(dst, src, n);
 		}
 	}else
 	{
@@ -528,6 +531,84 @@ int _memlzcmp(void *dst, void *src, size_t n)
 	return(cs-((uint8_t *)src));
 }
 #endif
+
+__PDPCLIB_API__ void *_memmovef(void *s1, const void *s2, size_t n)
+{
+	uint64_t v0, v1, v2, v3;
+	uint64_t *csl, *ctl, *ctle, *ctls;
+	long d, n1;
+
+	d = ((char *)s1) - ((char *)s2);
+	
+	if(d<0)
+	{
+		d=-d;
+		if(d>=n)
+			{ return(_memcpyf(s1, s2, n));	}
+
+		n1=(n+15)&(~15);
+		ctl=s1;	csl=s2;
+		ctle=ctl+(n1>>3);
+
+		while((ctl+4)<=ctle)
+		{
+			v0=csl[0];	v1=csl[1];
+			v2=csl[2];	v3=csl[3];
+			ctl[0]=v0;	ctl[1]=v1;
+			ctl[2]=v2;	ctl[3]=v3;
+			csl+=4; ctl+=4;
+		}
+
+		while((ctl+2)<=ctle)
+		{
+			v0=csl[0];	v1=csl[1];
+			ctl[0]=v0;	ctl[1]=v1;
+			csl+=2; ctl+=2;
+		}
+
+		while(ctl<ctle)
+		{
+			v0=*csl++; *ctl++=v0;
+		}
+		
+		return(s1);
+	}
+
+	if(d>=n)
+		{ return(_memcpyf(s1, s2, n));	}
+
+	n1=(n+15)&(~15);
+	ctl=s1;	csl=s2;
+	ctl+=n1>>3;
+	csl+=n1>>3;
+	ctls=s1;
+
+	while((ctl-4)>=ctls)
+	{
+		csl-=4; ctl-=4;
+		v0=csl[0];	v1=csl[1];
+		v2=csl[2];	v3=csl[3];
+		ctl[0]=v0;	ctl[1]=v1;
+		ctl[2]=v2;	ctl[3]=v3;
+	}
+
+	while((ctl-2)>=ctls)
+	{
+		csl-=2; ctl-=2;
+		v0=csl[0];	v1=csl[1];
+		ctl[0]=v0;	ctl[1]=v1;
+	}
+
+	while(ctl>ctls)
+	{
+		csl--; ctl--;
+		v0=*csl; *ctl=v0;
+	}
+	
+	return(s1);
+}
+
+
 
 constraint_handler_t global_constraint_handler;
 
