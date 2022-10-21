@@ -483,7 +483,8 @@ int FS_Init()
 
 	for(i=0; i<10; i++)
 	{
-		sprintf(tb, "resource/wad%u.wad", i);
+//		sprintf(tb, "resource/wad%u.wad", i);
+		sprintf(tb, "resource/wad%u.wd4", i);
 		wctx=FS_LoadWad4(tb);
 		if(!wctx)
 			continue;

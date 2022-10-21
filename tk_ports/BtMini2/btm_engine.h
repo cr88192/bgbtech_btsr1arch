@@ -220,8 +220,9 @@ typedef int64_t	s64;
 #if 1
 #define BTM_TARGET_SMALL
 // #define BTM_TARGET_DRAWDIST	28
+#define BTM_TARGET_DRAWDIST	20
 // #define BTM_TARGET_DRAWDIST	16
-#define BTM_TARGET_DRAWDIST	12
+// #define BTM_TARGET_DRAWDIST	12
 // #define BTM_TARGET_DRAWDIST	8
 #endif
 
