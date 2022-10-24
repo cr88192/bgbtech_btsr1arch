@@ -6,7 +6,7 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
 
 # TK_LDEXTFS = -fxgpr -fqmul -ffdiv -ffpu_fpvsf
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr
-TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr -fnowexify
+TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr -fnowexify -fjcmp
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fnowexify
 
 TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0 $(TK_LDEXTFS)

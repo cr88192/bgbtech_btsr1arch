@@ -1031,6 +1031,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_INVIC:		s0="INVIC";		break;
 	case BJX2_NMID_INVDC:		s0="INVDC";		break;
 
+	case BJX2_NMID_VSKG:		s0="VSKG";		break;
+	case BJX2_NMID_VSKC:		s0="VSKC";		break;
+
 	case BJX2_NMID_SWAPB:		s0="SWAP.B";	break;
 	case BJX2_NMID_SWAPW:		s0="SWAP.W";	break;
 

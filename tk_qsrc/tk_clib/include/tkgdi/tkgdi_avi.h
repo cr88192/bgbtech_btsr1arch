@@ -223,6 +223,13 @@ typedef struct {
 } TKGDI_RECT;
 
 typedef struct {
+	s32 xorg;
+	s32 yorg;
+	s32 xsize;
+	s32 ysize;
+} TKGDI_RRECT;
+
+typedef struct {
 	byte peRed;
 	byte peGreen;
 	byte peBlue;

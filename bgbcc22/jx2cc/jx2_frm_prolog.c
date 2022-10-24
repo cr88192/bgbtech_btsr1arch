@@ -1957,6 +1957,13 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		BGBCC_JX2_EmitLoadRegImm64P(sctx, BGBCC_SH_REG_RQ16,
 //			0x1234567890ABCDEFLL);
 			sctx->frm_val_sectoken);
+			
+		if(sctx->abi_spillpad&2)
+		{
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_VSKG,
+				BGBCC_SH_REG_R16, BGBCC_SH_REG_R16);
+		}
+			
 		BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, BGBCC_SH_REG_RQ16);
 	}
 
@@ -2590,8 +2597,18 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 						BGBCC_SH_NMID_MOVQ, BGBCC_SH_REG_R1,
 						BGBCC_SH_REG_R3, 128);
 
+					j=0;
+					if(sctx->abi_spillpad&1)
+					{
+						j=8*8;
+						if(sctx->has_xgpr&2)
+							j=16*8;
+					}
+
 					BGBCC_JX2_EmitLoadRegImm(sctx,
-						BGBCC_SH_NMID_MOVL, BGBCC_SH_REG_R1, sctx->frm_size);
+						BGBCC_SH_NMID_MOVL, BGBCC_SH_REG_R1,
+						sctx->frm_size+j);
+
 					BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_ADD,
 						BGBCC_SH_REG_SP, BGBCC_SH_REG_R1);
 

@@ -54,8 +54,21 @@ Basic C ABI (32/64 bit):
 * TBR: System
 ** TBR will be a System register, and should not be modified by normal code.
 ** The use of TBR is outside the scope of the basic C ABI.
+* This ABI may or may not use register spill space.
 
 Note that R16..R19 may be stomped during prolog and epilog sequences.
+
+The Basic ABI will be divided into 32 and 64 bit sub-variants.
+
+Specifics for the 32-bit sub-ABI:
+* The 32-bit ABI will not reserve spill space;
+* The 32-bit ABI will use 32-bit storage on-stack for 32-bit types.
+** This will include both integer and pointer types.
+
+
+Specifics for the 64-bit sub-ABI:
+* The 64-bit ABI will reserve spill space;
+* The 64-bit ABI will use 64-bit storage on-stack for 32-bit types.
 
 
 Basic C ABI (128 bit):
@@ -73,6 +86,7 @@ Basic C ABI (128 bit):
 * GBR_HI, GBR: Callee Preserve
 ** PBO Sub-ABI: GBR will be the base address for ".data" and ".bss".
 * TBR: System
+* This ABI will have spill space for 16 arguments.
 
 Extended Rn / Xn Registers:
 * R32..R39 | X32..X38: Scratch
@@ -80,9 +94,35 @@ Extended Rn / Xn Registers:
 * R48..R55 | X48..X54: Scratch
 * R56..R63 | X56..X62: Callee Preserve
 
-If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack. The stack will not have any spill space.
 
-Items on the stack will have a 8-byte alignment, with the size of stack frames kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
+Extended C ABI (64 bit, XGPR):
+* R2..R7, R16..R23: Scratch
+* R8..R14: Callee Preserved
+* R15: Stack Pointer
+* R3:R2: Return Value, Struct Return Address
+* R18: Owning 'this' Object
+* R19: Scratch
+* R4..R7, R20..R23, R36..R39, R52..R55: Register Arguments
+** Structures are passed in 1 or 2 registers if they fit.
+** Otherwise, structures are passed by reference (2 registers).
+** Float and Double arguments will be passed in GPRs.
+* R0/DLR: Volatile/Scratch
+* R1/DHR: Volatile/Scratch
+* GBR: Callee Preserve
+* TBR: System
+* This ABI will have spill space for 16 arguments.
+
+
+If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack.
+
+Old: The stack will not have any spill space.
+
+New: The stack may or may not have spill space, depending on ABI variant.
+If present, the size of the spill space will be equivalent to the number of register arguments. The caller will be required to provide this space regardless of the number of function arguments. This requirement will be N/A for leaf functions.
+
+Items on the stack will have a 8-byte alignment in the 64 and 128-bit ABI variants, with the size of stack frames kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
+
+Within the 32 bit ABI, 32 bit types will have a 32-bit alignment. However, the stack frame will still be required to have a 128-bit alignment.
 
 
 Primitive Types:
@@ -128,7 +168,9 @@ Passing 128-bit types will be via a pair of GPRs, if both values will fit into G
 
 The Extended Xn registers are not used for argument passing in the base ABI.
 
-Change: For modes where 128-bit operations exist, the ABI may require 128-bit types to be passed in even-numbered registers. In cases where 
+Change: For modes where 128-bit operations exist, the ABI may require 128-bit types to be passed in even-numbered registers.
+
+If a 128-bit argument is located on the stack, it will be aligned to a 16-byte boundary.
 
 
 === 32-bit Sub ABI ===

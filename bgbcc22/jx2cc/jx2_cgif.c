@@ -159,9 +159,18 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	
 	shctx->abi_evenonly=0;
 	shctx->abi_noexcept=0;
+	shctx->abi_spillpad=0;
+
+//	shctx->abi_spillpad=1;
+//	shctx->abi_spillpad|=2;
 
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "argshadow"))
+		shctx->abi_spillpad|= 1;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "vskgen"))
+		shctx->abi_spillpad|= 2;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "shuffle"))
 		shctx->do_shuffle=1;
@@ -321,6 +330,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 //		shctx->has_fmovc=1;
 //		shctx->has_dmacl=1;
+
+		shctx->abi_spillpad=1;
+		shctx->abi_spillpad|=2;
 #endif
 	}
 
@@ -331,6 +343,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->fpu_gfp=1;
 		shctx->is_pbo=1;
+
+		shctx->abi_spillpad=1;
+//		shctx->abi_spillpad|=2;
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2C)
@@ -404,12 +419,20 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 //		shctx->has_fmovc=1;
 //		shctx->has_dmacl=1;
+
+		shctx->abi_spillpad=1;
+		shctx->abi_spillpad|=2;
 #endif
 	}
 
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
 		shctx->use_wexmd=0;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noargshadow"))
+		shctx->abi_spillpad&=~1;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "novskgen"))
+		shctx->abi_spillpad&=~2;
 
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
@@ -992,10 +1015,15 @@ int BGBCC_JX2C_EmitVaArg(
 	case BGBCC_SH_REGCLS_VO_GR:
 	case BGBCC_SH_REGCLS_VO_REF:
 	case BGBCC_SH_REGCLS_WGR:
-		if(sctx->is_addr64)
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_i");
+		if(sctx->abi_spillpad&1)
+			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_l");
 		else
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va_arg_i");
+			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_i");
+
+//		if(sctx->is_addr64)
+//			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_i");
+//		else
+//			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va_arg_i");
 
 		BGBCC_JX2C_ResetModeDqUnknown(ctx, sctx);
 
@@ -1011,10 +1039,12 @@ int BGBCC_JX2C_EmitVaArg(
 
 	case BGBCC_SH_REGCLS_VO_QGR:
 	case BGBCC_SH_REGCLS_QGR:
-		if(sctx->is_addr64)
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_l");
-		else
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va_arg_l");
+		BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_l");
+
+//		if(sctx->is_addr64)
+//			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_l");
+//		else
+//			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va_arg_l");
 
 		BGBCC_JX2C_ResetModeDqUnknown(ctx, sctx);
 
@@ -1030,10 +1060,12 @@ int BGBCC_JX2C_EmitVaArg(
 
 	case BGBCC_SH_REGCLS_GR2:
 	case BGBCC_SH_REGCLS_VO_GR2:
-		if(sctx->is_addr64)
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_x");
-		else
-			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va_arg_x");
+		BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_x");
+
+//		if(sctx->is_addr64)
+//			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_x");
+//		else
+//			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va_arg_x");
 
 		BGBCC_JX2C_ResetModeDqUnknown(ctx, sctx);
 
@@ -1063,6 +1095,7 @@ int BGBCC_JX2C_EmitVaArg(
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_LR2);
 		break;
 
+#if 0
 	case BGBCC_SH_REGCLS_FR:
 		if(sctx->is_addr64)
 			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_f");
@@ -1074,6 +1107,9 @@ int BGBCC_JX2C_EmitVaArg(
 //		BGBCC_JX2C_EmitStoreFrameVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_FR0);
 		BGBCC_JX2C_EmitStoreFrameVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_FR2);
 		break;
+#endif
+
+#if 0
 	case BGBCC_SH_REGCLS_FR2:
 		if(sctx->is_addr64)
 			BGBCC_JX2C_EmitCallName(ctx, sctx, "__va64_arg_d");
@@ -1092,6 +1128,7 @@ int BGBCC_JX2C_EmitVaArg(
 //		BGBCC_JX2C_EmitStoreFrameVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_DR0);
 		BGBCC_JX2C_EmitStoreFrameVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_DR2);
 		break;
+#endif
 
 	default:
 		BGBCC_DBGBREAK

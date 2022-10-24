@@ -911,6 +911,9 @@ int nmid;
 {"bt.l",	BGBCC_SH_NMID_BTL},
 {"bf.l",	BGBCC_SH_NMID_BFL},
 
+{"vskg",	BGBCC_SH_NMID_VSKG},
+{"vskc",	BGBCC_SH_NMID_VSKC},
+
 {"breq",	BGBCC_SH_NMID_BREQ},
 {"brne",	BGBCC_SH_NMID_BRNE},
 
@@ -2092,12 +2095,12 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return((ctx->has_fmovs&4)!=0);
 
 	if(!bgbcc_stricmp(sym, "has_jcmpz"))
-		return((ctx->has_xgpr&1)!=0);
+		return((ctx->has_jcmp&1)!=0);
 	if(!bgbcc_stricmp(sym, "has_jcmpr"))
-		return((ctx->has_xgpr&2)!=0);
+		return((ctx->has_jcmp&2)!=0);
 
 	if(!bgbcc_stricmp(sym, "has_jcmp"))
-		return((ctx->has_xgpr&3)==3);
+		return((ctx->has_jcmp&3)==3);
 
 
 	if(!bgbcc_stricmp(sym, "abi_evenonly"))

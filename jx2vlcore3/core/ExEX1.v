@@ -1379,7 +1379,8 @@ begin
 //					tRegValRn1		= tValCpuIdLo;
 					tValOutDfl		= tValCpuIdLo;
 					tDoOutDfl		= 1;
-					
+
+`ifndef def_true
 					if(regIdRt[4:0]==5'h1E)
 					begin
 						if(!tNxtCanaryMagic[15] && regInSr[31])
@@ -1389,25 +1390,39 @@ begin
 								tNxtCanaryMagic);
 						end
 					end
+`endif
 				end
 
 				JX2_UCIX_IXT_WEXMD: begin
 `ifdef jx2_enable_wex
-					case(regIdRm[3:0])
-						4'h0:		tRegOutSr[27]	= 0;
-						4'h1:		tRegOutSr[27]	= 1;
-						4'h2:		tRegOutSr[27]	= 1;
+					case(regIdRm[4:0])
+						5'h0:		tRegOutSr[27]	= 0;
+						5'h1:		tRegOutSr[27]	= 1;
+						5'h2:		tRegOutSr[27]	= 1;
 
 `ifdef jx2_mem_lane2
-						4'h3:		tRegOutSr[27]	= 1;
+						5'h3:		tRegOutSr[27]	= 1;
 `endif
 
 `ifdef jx2_fpu_lane2
-						4'h4:		tRegOutSr[27]	= 1;
+						5'h4:		tRegOutSr[27]	= 1;
 `ifdef jx2_mem_lane2
-						4'h5:		tRegOutSr[27]	= 1;
+						5'h5:		tRegOutSr[27]	= 1;
 `endif
 `endif
+
+						5'h1F:
+						begin
+							tRegOutSr[27]	= 0;
+//							if(!tNxtCanaryMagic[15] && regInSr[31])
+							if(regInSr[31])
+							begin
+//								tNxtCanaryMagic = {1'b1, tValCpuIdRng[14:0]};
+								tNxtCanaryMagic = tValCpuIdRng[15:0];
+								$display("EX1: Init Canary Magic %X", 
+									tNxtCanaryMagic);
+							end
+						end
 
 						default:	tRegOutSr[27]	= 0;
 					endcase

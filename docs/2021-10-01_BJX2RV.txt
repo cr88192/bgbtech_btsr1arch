@@ -241,6 +241,7 @@ Listing:
 * iiiiiii-iiiii-mmmmm-111-nnnnn-00-10011  ANDI		Rn, Rm, Imm12_I
 
 * 0000000-ttttt-mmmmm-000-nnnnn-01-10011  ADD		Rn, Rm, Rt
+* 0100000-ttttt-mmmmm-000-nnnnn-01-10011  SUB		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-000-nnnnn-01-10011  MUL		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-001-nnnnn-01-10011  SLL		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-001-nnnnn-01-10011  MULH		Rn, Rm, Rt (M)

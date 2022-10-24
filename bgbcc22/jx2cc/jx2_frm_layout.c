@@ -870,6 +870,14 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK }
 
 #if 1
+	if(sctx->abi_spillpad&1)
+	{
+		if(sctx->has_xgpr&2)
+			{ ka+=16*8; }
+		else
+			{ ka+=8*8; }
+	}
+
 	for(i=0; i<obj->n_args; i++)
 	{
 		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->args[i]->type);
@@ -883,21 +891,66 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_WGR:
 			if(sctx->has_xgpr&2)
 			{
-				if(ni<16)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
-				else		{ obj->args[i]->fxoffs=ka; ka+=4; }
+				if(ni<16)
+				{
+					if(sctx->abi_spillpad&1)
+					{
+						obj->args[i]->fxoffs=ni*8; ni++;
+					}else
+					{
+						k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++;
+					}
+				}
+				else
+				{
+					if(sctx->abi_spillpad&1)
+					{
+						ka=(ka+7)&(~7);
+						obj->args[i]->fxoffs=ka;
+	//					ka+=4;
+						ka+=8;
+					}else
+					{
+						obj->args[i]->fxoffs=ka;
+						ka+=4;
+					}
+				}
 				break;
 			}
 
 //			if(sctx->is_addr64)
-			if(sctx->has_bjx1egpr)
+//			if(sctx->has_bjx1egpr)
+			if(1)
 			{
-				if(ni<8)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
-				else		{ obj->args[i]->fxoffs=ka; ka+=4; }
+				if(ni<8)
+				{
+					if(sctx->abi_spillpad&1)
+					{
+						obj->args[i]->fxoffs=ni*8; ni++;
+					}else
+					{
+						k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++;
+					}
+				}
+				else
+				{
+					if(sctx->abi_spillpad&1)
+					{
+						ka=(ka+7)&(~7);
+						obj->args[i]->fxoffs=ka;
+	//					ka+=4;
+						ka+=8;
+					}else
+					{
+						obj->args[i]->fxoffs=ka;
+						ka+=4;
+					}
+				}
 				break;
 			}
 		
-			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
-			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
+//			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
+//			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
 			break;
 
 		case BGBCC_SH_REGCLS_VO_REF:
@@ -910,8 +963,14 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				if(	(ni<4) || ((ni<8) && sctx->has_bjx1egpr) ||
 					((ni<16) && (sctx->has_xgpr&2)))
 				{
-					k&=(~7); k-=8;
-					obj->args[i]->fxoffs=k; ni++;
+					if(sctx->abi_spillpad&1)
+					{
+						obj->args[i]->fxoffs=ni*8; ni++;
+					}else
+					{
+						k&=(~7); k-=8;
+						obj->args[i]->fxoffs=k; ni++;
+					}
 				}
 				else
 				{
@@ -922,8 +981,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				break;
 			}
 
-			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
-			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
+//			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
+//			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
 			break;
 
 		case BGBCC_SH_REGCLS_GR2:
@@ -935,24 +994,33 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			if(sctx->abi_evenonly)
 				ni=(ni+1)&(~1);
 		
-			if(sctx->is_addr64)
+//			if(sctx->is_addr64)
+			if(1)
 			{
 //				if(ni<7)
 				if((ni<3) || ((ni<7) && sctx->has_bjx1egpr) ||
 					((ni<15) && (sctx->has_xgpr&2)))
 				{
-					k&=~7; k-=16;
-					obj->args[i]->fxoffs=k; ni+=2;
+//					k&=~7; k-=16;
+					if(sctx->abi_spillpad&1)
+					{
+						obj->args[i]->fxoffs=ni*8; ni+=2;
+					}else
+					{
+						k&=~15; k-=16;
+						obj->args[i]->fxoffs=k; ni+=2;
+					}
 				}
 				else
 				{
-					ka=(ka+7)&(~7);
+//					ka=(ka+7)&(~7);
+					ka=(ka+15)&(~15);
 					obj->args[i]->fxoffs=ka; ka+=16;
 				}
 				break;
 			}
-			if(ni<3)	{ k&=~3; k-=8; obj->args[i]->fxoffs=k; ni+=2; }
-			else		{ obj->args[i]->fxoffs=ka; ka+=8; }
+//			if(ni<3)	{ k&=~3; k-=8; obj->args[i]->fxoffs=k; ni+=2; }
+//			else		{ obj->args[i]->fxoffs=ka; ka+=8; }
 			break;
 
 #if 0
@@ -1204,10 +1272,22 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	sctx->frm_offs_tmp=k;
 #endif
 
-	if(sctx->is_addr64)
-		{ k&=~7; k-=obj->n_cargs*8; }
-	else
-		k-=obj->n_cargs*4;
+	i=obj->n_cargs;
+	
+	if(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF)
+	{
+		i=(i+3)&(~3);
+		if(i<8)
+			i=8;
+	}
+
+	k&=~7;
+	k-=i*8;
+
+//	if(sctx->is_addr64)
+//		{ k&=~7; k-=obj->n_cargs*8; }
+//	else
+//		k-=obj->n_cargs*4;
 
 	if((-k)>=BGBCC_MAXSTACKFRAME)
 		{ BGBCC_DBGBREAK }

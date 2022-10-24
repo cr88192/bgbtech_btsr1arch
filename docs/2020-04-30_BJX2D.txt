@@ -345,6 +345,7 @@ EXSR Codes:
 ** 0x800D: Load Keyring Fault (LDEKRR Failed)
 ** 0x800E: Invalid Opcode
 ** 0x800F: Bounds Fault
+** 0x8010: Canary Fault
 * Interrupts:
 ** 0xC000: General Interrupt
 ** 0xC001: Interval Timer
@@ -1593,9 +1594,9 @@ F0zz Instruction Block:
 *** F0nm_1G48 ? MULU.X	Xm, Xn				//(MULX) Xn=Xn*Xm
 *** F0nm_1g58 -
 *** F0nm_1G58 ? MULHU.X	Xm, Xn				//(MULX) Xn=(Xn*Xm)>>128
-*** F0nm_1g68 -
+*** F0nm_1g68 VSKG		Rm, Rn				//Canary Generate
 *** F0nm_1G68 ? DIVU.X	Xm, Xn				//(MULX) Xn=Xn/Xm
-*** F0nm_1g78 -
+*** F0nm_1g78 VSKC		Rm, Rn				//Canary Check
 *** F0nm_1G78 ? REMU.X	Xm, Xn				//(MULX) Xn=Xn%Xm
 
 *** F0nm_1g88 BCDADC	Rm, Rn				//(BCD) BCD ADC

@@ -128,6 +128,26 @@ TKGSTATUS (*WriteAudioSamples)(
 	TKGHSND dev, void *buffer, int cnt, int ovcnt);
 
 void *magic2;
+
+TKGSTATUS (*BlitSubImageNew)(
+	_tkgdi_context_t *ctx,
+	TKGHDC dev,
+	TKGDI_RRECT *drect,
+	TKGDI_BITMAPINFOHEADER *info, void *data,
+	TKGDI_RRECT *rect);
+
+void	*pad1;
+void	*pad2;
+void	*pad3;
+void	*pad4;
+void	*pad5;
+void	*pad6;
+void	*pad7;
+void	*pad8;
+void	*pad9;
+void	*pad10;
+
+void *magic3;
 };
 
 struct _tkgdi_context_s {
@@ -184,8 +204,11 @@ TKGSTATUS tkgBlitImage(TKGHDC dev, int xo_dev, int yo_dev,
  * xo_src / yo_src / xs_src / ys_src:
  *   Give the offsets and size within the source image.
  */
-TKGSTATUS tkgBlitSubImage(TKGHDC dev, int xo_dev, int yo_dev,
+TKGSTATUS tkgBlitSubImage(TKGHDC dev,
+	int xo_dev, int yo_dev,
+//	TKGDI_RRECT *drect,
 	TKGDI_BITMAPINFOHEADER *info, void *data,
+//	TKGDI_RRECT *srect);
 	int xo_src, int yo_src, int xs_src, int ys_src);
 
 /* Query Display Device Parameter:

@@ -1196,6 +1196,32 @@ begin
 			16'h1zz8: begin	/* F0nm_1ez8 */
 				case(istrWord[23:20])
 
+					4'h6: begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NB;
+						opUCmdIx	= JX2_UCIX_IXT_VSKG;
+
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_INVOP;
+							opUCmdIx	= JX2_UCIX_IXT_BREAK;
+						end
+					end
+
+					4'h7: begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NB;
+						opUCmdIx	= JX2_UCIX_IXT_VSKC;
+						
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_INVOP;
+							opUCmdIx	= JX2_UCIX_IXT_BREAK;
+						end
+					end
+
 `ifdef jx2_enable_packbcd
 					4'h8: begin		/* F0nm_1e88 */
 						opNmid		= JX2_UCMD_CONV2_RR;

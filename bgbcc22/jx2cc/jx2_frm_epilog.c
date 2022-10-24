@@ -284,11 +284,19 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		BGBCC_JX2_EmitLoadRegImm64P(sctx, BGBCC_SH_REG_RQ17,
 //			0x1234567890ABCDEFLL);
 			sctx->frm_val_sectoken);
-		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_CMPQEQ,
-			BGBCC_SH_REG_RQ16, BGBCC_SH_REG_RQ17);
-		sctx->op_is_wex2=5;
-		BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
-		sctx->op_is_wex2=0;
+
+		if(sctx->abi_spillpad&2)
+		{
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_VSKC,
+				BGBCC_SH_REG_R17, BGBCC_SH_REG_R16);
+		}else
+		{
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_CMPQEQ,
+				BGBCC_SH_REG_RQ16, BGBCC_SH_REG_RQ17);
+			sctx->op_is_wex2=5;
+			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
+			sctx->op_is_wex2=0;
+		}
 	}
 
 //	BGBCC_JX2C_ResetFpscrDefaults(ctx, sctx);

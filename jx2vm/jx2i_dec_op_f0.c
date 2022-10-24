@@ -1094,6 +1094,26 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->ro=BJX2_REG_ZZR;
 			switch(opw1&15)
 			{
+			case 0x6:	/* F0e6_18nm */
+				op->nmid=BJX2_NMID_VSKG;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_VSKG_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+				}
+				break;
+			case 0x7:	/* F0e7_18nm */
+				op->nmid=BJX2_NMID_VSKC;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_VSKC_RegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				op->fl|=BJX2_OPFL_CTRLF;
+				if(eq)
+				{
+				}
+				break;
+
 
 			case 0x8:	/* F0e8_18nm */
 				op->nmid=BJX2_NMID_BCDADC;

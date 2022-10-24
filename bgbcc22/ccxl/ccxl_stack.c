@@ -1210,7 +1210,11 @@ int BGBCC_CCXL_StackGetCntCallArgs(BGBCC_TransState *ctx)
 		dreg=ctx->regstack[ps];
 		sty=BGBCC_CCXL_GetRegType(ctx, dreg);
 
-		if(BGBCC_CCXL_IsRegDoubleP(ctx, dreg) ||
+		if(
+			BGBCC_CCXL_TypeSgInt128P(ctx, sty) ||
+			BGBCC_CCXL_TypeVec128P(ctx, sty) ||
+			BGBCC_CCXL_TypeQuadPointerP(ctx, sty) ||
+			BGBCC_CCXL_IsRegDoubleP(ctx, dreg) ||
 			BGBCC_CCXL_IsRegSgLongP(ctx, dreg))
 				{ n2+=2; }
 		else

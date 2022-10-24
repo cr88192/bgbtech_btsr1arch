@@ -54,11 +54,39 @@ TKGSTATUS tkgBlitSubImage(TKGHDC dev, int xo_dev, int yo_dev,
 	int xo_src, int yo_src, int xs_src, int ys_src)
 {
 	_tkgdi_context_t *ctx;
+	TKGDI_RRECT t_rect, t_drect;
+	TKGDI_RRECT *rect;
+	TKGDI_RRECT *drect;
+	
+	rect=&t_rect;
+	drect=&t_drect;
+	rect->xorg=xo_src;
+	rect->yorg=yo_src;
+	rect->xsize=xs_src;
+	rect->ysize=ys_src;
+
+	drect->xorg=xo_dev;
+	drect->yorg=yo_dev;
+	drect->xsize=xs_src;
+	drect->ysize=ys_src;
+	
 	ctx=tkgGetCurrentContext();
+
+	if(ctx->vt->magic3 == ((void *)0x12345678))
+	{
+		return(ctx->vt->BlitSubImageNew(ctx,
+			dev,
+			drect,
+			info, data,
+			rect));
+	}
+
 	return(ctx->vt->BlitSubImage(ctx,
-		dev, xo_dev, yo_dev,
+		dev,
+		xo_dev, yo_dev,
 		info, data,
 		xo_src, yo_src, xs_src, ys_src));
+
 }
 
 TKGSTATUS tkgBlitImage(TKGHDC dev, int xo_dev, int yo_dev,

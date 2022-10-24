@@ -1185,20 +1185,33 @@ _tkgdi_window_t *TKGDI_AllocNewWindow(
 	return(wctx);
 }
 
-TKGSTATUS TKGDI_BlitSubImage(
+TKGSTATUS TKGDI_BlitSubImageNew(
 	_tkgdi_context_t *ctx,
-	TKGHDC dev, int xo_dev, int yo_dev,
+	TKGHDC dev,
+	TKGDI_RRECT *drect,
+//	int xo_dev, int yo_dev,
 	TKGDI_BITMAPINFOHEADER *info, void *data,
-	int xo_src, int yo_src, int xs_src, int ys_src)
+	TKGDI_RRECT *rect)
+//	int xo_src, int yo_src, int xs_src, int ys_src)
 {
 	_tkgdi_window_t *wctx;
 	byte *bmct;
 	u16 *cs, *ct;
+	int xo_dev, yo_dev;
+	int xo_src, yo_src, xs_src, ys_src;
 	int xs, ys, mxs, mys, bxs, bys, nx, ny;
 	int i, j, k;
 
 	if(dev<=0)
 		return(-1);
+	
+	xo_dev=drect->xorg;
+	yo_dev=drect->yorg;
+	
+	xo_src=rect->xorg;
+	yo_src=rect->yorg;
+	xs_src=rect->xsize;
+	ys_src=rect->ysize;
 	
 	if(xs_src<0)
 		xs_src=-xs_src;
@@ -1349,6 +1362,36 @@ TKGSTATUS TKGDI_BlitSubImage(
 		dev, tkgdi_n_windows);
 
 	return(-1);
+}
+
+TKGSTATUS TKGDI_BlitSubImageOld(
+	_tkgdi_context_t *ctx,
+	TKGHDC dev,
+	int xo_dev, int yo_dev,
+	TKGDI_BITMAPINFOHEADER *info, void *data,
+	int xo_src, int yo_src, int xs_src, int ys_src)
+{
+	TKGDI_RRECT t_rect, t_drect;
+	TKGDI_RRECT *rect;
+	TKGDI_RRECT *drect;
+	
+	rect=&t_rect;
+	drect=&t_drect;
+	rect->xorg=xo_src;
+	rect->yorg=yo_src;
+	rect->xsize=xs_src;
+	rect->ysize=ys_src;
+
+	drect->xorg=xo_dev;
+	drect->yorg=yo_dev;
+	drect->xsize=xs_src;
+	drect->ysize=ys_src;
+	
+	return(ctx->vt->BlitSubImageNew(ctx,
+		dev,
+		drect,
+		info, data,
+		rect));
 }
 
 int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
@@ -1867,7 +1910,7 @@ NULL,
 
 (void *)0x12345678,
 
-TKGDI_BlitSubImage,
+TKGDI_BlitSubImageOld,
 TKGDI_QueryDisplay,
 TKGDI_CreateDisplay,
 TKGDI_DestroyDisplay,
@@ -1883,7 +1926,22 @@ TKGDI_ModifyAudioDevice,
 TKGDI_QueryAudioDevice,
 TKGDI_WriteAudioSamples,
 
+(void *)0x12345678,
+
+TKGDI_BlitSubImageNew,
+NULL,	//1
+NULL,	//2
+NULL,	//3
+NULL,	//4
+NULL,	//5
+NULL,	//6
+NULL,	//7
+NULL,	//8
+NULL,	//9
+NULL,	//10
+
 (void *)0x12345678
+
 };
 
 // _tkgdi_context_t tkgdi_context_dfl = {

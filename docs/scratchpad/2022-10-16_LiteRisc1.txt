@@ -1,0 +1,239 @@
+BT Lite RISC 1 (Idea / Hypothetical):
+* Try to design a cost-efficient RISC.
+* Design will take some influence from RISC-V.
+* Will try to be "less annoying" in a few areas.
+
+Basic Design:
+* 32x 32-bit registers;
+* 32-bit or 16/32 instructions.
+* 64-bit is possible.
+
+Registers:
+* R0: ZR | PC (Mem, R/O)
+* R1: LR | TP (Mem, R/O)
+* R2: SP (Stack Pointer)
+* R3: GP (Global Pointer)
+* R4..R31: GPRs
+
+ABI Registers:
+*      R4 : Scratch
+*      R5 : Scratch / 'this'
+*      R6 : Scratch / Return Value (Low)
+*      R7 : Scratch / Return Value (High)
+* R8 ..R15: Callee Preserved
+* R16..R23: Scratch / Argument (A0..A7)
+* R24..R31: Callee Preserved
+
+Partial Registers (16-bit ops):
+* P0..P3 : R4..R7
+* P4..R7 : R16..R19
+* P8..P15: R24..R31
+
+
+The R0 register will be a dedicated Zero Register for many instructions, but will be interpreted as PC for Load/Store.
+
+Unlike RISC-V, the Link Register will be fixed (LR).
+If used as a base for a Load/Store, it will refer to a Task Pointer.
+The Task Pointer will be Read-Only in User-Mode.
+
+
+Instruction Layouts (32-bit):
+* zzzz-zzzt_tttt-ssss_szzz-nnnn_nzzz-zz11  (Typical 3R)
+* iiii-iiii_iiii-ssss_szzz-nnnn_nzzz-zz11  (Imm12, Load/Store)
+* iiii-iiii_iiii-iiii_iiii-pzzz_zzzz-zz11  (B / BL)
+* iiii-iiii_iiii-iiii_pzzz-nnnn_nzzz-zz11  (Bcc Reg)
+
+Instruction Layouts (16-bit):
+* zzzz-tttt-tnnn-nn00  (2R, Rn)
+* zzzz-iiii-innn-nn00  (2RI, Rn, Imm5)
+* zzzz-tttt-nnnn-zz00  (2R, Pn)
+* zzzz-iiii-nnnn-zz00  (2RI, Pn, Imm4)
+
+The two LSB bits will encode the length:
+* 00: 16-bit
+* 01: Reserved
+* 10: Reserved
+* 11: 32-bit
+
+
+Load/Store:
+
+* iiii-iiii_iiii-ssss_sfff-nnnn_n000-0011  (Load)
+* iiii-iiii_iiii-ssss_sfff-nnnn_n010-0011  (Store)
+
+* iiii-iiii_iiii-ssss_s000-nnnn_n000-0011  LDB      Rn, (Rs, Disp12u*1)
+* iiii-iiii_iiii-ssss_s001-nnnn_n000-0011  LDW      Rn, (Rs, Disp12u*2)
+* iiii-iiii_iiii-ssss_s010-nnnn_n000-0011  LDL      Rn, (Rs, Disp12u*4)
+* iiii-iiii_iiii-ssss_s011-nnnn_n000-0011  (LDQ)    Rn, (Rs, Disp12u*8)
+* iiii-iiii_iiii-ssss_s100-nnnn_n000-0011  LDUB     Rn, (Rs, Disp12u*1)
+* iiii-iiii_iiii-ssss_s101-nnnn_n000-0011  LDUW     Rn, (Rs, Disp12u*2)
+* iiii-iiii_iiii-ssss_s110-nnnn_n000-0011  (LDUL)   Rn, (Rs, Disp12u*4)
+* iiii-iiii_iiii-ssss_s111-nnnn_n000-0011  (LDX)    Rn, (Rs, Disp12u*8)
+
+* iiii-iiii_iiii-ssss_s000-nnnn_n010-0011  STB      Rn, (Rs, Disp12u*1)
+* iiii-iiii_iiii-ssss_s001-nnnn_n010-0011  STW      Rn, (Rs, Disp12u*2)
+* iiii-iiii_iiii-ssss_s010-nnnn_n010-0011  STL      Rn, (Rs, Disp12u*4)
+* iiii-iiii_iiii-ssss_s011-nnnn_n010-0011  (STQ)    Rn, (Rs, Disp12u*8)
+* iiii-iiii_iiii-ssss_s100-nnnn_n010-0011  LEAB     Rn, (Rs, Disp12u*1)
+* iiii-iiii_iiii-ssss_s101-nnnn_n010-0011  LEAW     Rn, (Rs, Disp12u*2)
+* iiii-iiii_iiii-ssss_s110-nnnn_n010-0011  LEAL     Rn, (Rs, Disp12u*4)
+* iiii-iiii_iiii-ssss_s111-nnnn_n010-0011  (STX)    Rn, (Rs, Disp12u*8)
+
+
+Where:
+* Q and X modes would require a 64-bit target.
+* Unsigned Modes are only exist for Load
+* LEA calculates the address and puts it into Rn.
+
+Load and Store will use the same layout, but will differ in that Store will interpret Rd as an input register.
+
+The displacement will be zero-extended, with the displacement being scaled by the element size (so, a 32-bit Ld/St will address up to 16K).
+
+Rationale: Negative displacements and unaligned load/store are much less common than are displacements larger than 2K.
+
+
+Support for unaligned Load/Store in memory will be optional.
+If a target does not support unaligned Load/Store directly, the implementation should trap if it is encountered.
+
+
+Branch:
+* aaaa-aaaa_aaaa-bbbb_pccc-0000_0110-1111  B        Disp20s
+* aaaa-aaaa_aaaa-bbbb_pccc-0000_1110-1111  BL       Disp20s
+* aaaa-aaaa_aaaa-bbbb_pccc-0001_0110-1111  LEAW     R4, (PC, Disp20s*2)
+* aaaa-aaaa_aaaa-bbbb_pccc-0001_1110-1111  LEAL     R4, (GP, Disp20s*4)
+
+* aaaa-aaaa_aaaa-bbbb_pfff-nnnn_n001-0111  Bcc  Rn, Disp17s
+
+* B: Branch (Unconditional)
+* BL: Branch with Link (Unconditional, Save PC to LR)
+
+Displacement will be decoded as:
+* pppp-pppp-pppp-cccb-bbba-aaaa-aaaa-aaa0 (Disp20)
+* pppp-pppp-pppp-pppb-bbba-aaaa-aaaa-aaa0 (Disp17)
+* This value will be interpreted as twos complement.
+
+fff:
+* 000: EQ (Rn==0)
+* 001: NE (Rn!=0)
+* 010: GT (Rn> 0)
+* 011: LE (Rn<=0)
+* 100: LT (Rn< 0)
+* 101: GE (Rn>=0)
+* 110: LDI (Rn=Imm17s)
+* 111: LDSH (P==0, Rn=(Rn<<16)|Imm16u)
+
+* aaaa-aaaa_aaaa-bbbb_p000-nnnn_n001-0111  BEQ      Rn, Disp17s
+* aaaa-aaaa_aaaa-bbbb_p001-nnnn_n001-0111  BNE      Rn, Disp17s
+* aaaa-aaaa_aaaa-bbbb_p010-nnnn_n001-0111  BGT      Rn, Disp17s
+* aaaa-aaaa_aaaa-bbbb_p011-nnnn_n001-0111  BLE      Rn, Disp17s
+* aaaa-aaaa_aaaa-bbbb_p100-nnnn_n001-0111  BLT      Rn, Disp17s
+* aaaa-aaaa_aaaa-bbbb_p101-nnnn_n001-0111  BGE      Rn, Disp17s
+
+* aaaa-aaaa_aaaa-bbbb_p110-nnnn_n001-0111  LDI      Rn, Imm17s
+* aaaa-aaaa_aaaa-bbbb_0111-nnnn_n001-0111  LDSH     Rn, Imm16u
+
+
+Note that Compare between Rn and Zero can be implemented in terms of bits:
+* S: MSB of Rn
+* Z: (Rn==0)
+* EQ: Z==1
+* NE: Z==0
+* GT: (S==0) && (Z!=0)
+* LE: (S==1) || (Z==0)
+* LT: (S==1)
+* GE: (S==0)
+
+Comparing Rs and Rt would require internally subtracting Rs and Rt, and then driving logic based on the result. Subtracting two numbers can involve significant latency, so a Compare-and-Branch with two inputs is undesirable.
+
+
+ALU (Immed):
+* iiii-iiii_iiii-ssss_s000-nnnn_n001-0011  ADD		Rn, Rs, Imm12u
+* iiii-iiii_iiii-ssss_s001-nnnn_n001-0011  ADD		Rn, Rs, Imm12n
+* iiii-iiii_iiii-ssss_s010-nnnn_n001-0011  -
+* iiii-iiii_iiii-ssss_s011-nnnn_n001-0011  -
+* iiii-iiii_iiii-ssss_s100-nnnn_n001-0011  XOR		Rn, Rs, Imm12u
+
+* 0000-iiii_iiii-ssss_s101-nnnn_n001-0011  SHLD		Rn, Rs, Imm8u
+* 0001-iiii_iiii-ssss_s101-nnnn_n001-0011  -
+* 0010-iiii_iiii-ssss_s101-nnnn_n001-0011  CMP		Rn, Rs, Imm8u
+* 0011-iiii_iiii-ssss_s101-nnnn_n001-0011  CMPU		Rn, Rs, Imm8u
+* 0100-iiii_iiii-ssss_s101-nnnn_n001-0011  SHAD		Rn, Rs, Imm8u
+
+* iiii-iiii_iiii-ssss_s110-nnnn_n001-0011  OR		Rn, Rs, Imm12u
+* iiii-iiii_iiii-ssss_s111-nnnn_n001-0011  AND		Rn, Rs, Imm12u
+
+Special (Possible):
+* ADD  R0, Rs, Imm12  ->  J   (Rs, Imm12*2)
+* ADD  R1, Rs, Imm12  ->  JL  (Rs, Imm12*2)
+* ADD  R0, R1, 0      ->  RTS
+
+The J and JL instructions perform a computed Branch based on a Register.
+* The RTS pseudo-instruction will be a Jump to LR.
+
+
+ALU (3R):
+* 0000-000t_tttt-ssss_s000-nnnn_n011-0011  ADD		Rn, Rs, Rt
+* 0000-001t_tttt-ssss_s000-nnnn_n011-0011  MUL		Rn, Rs, Rt (MUL)
+* 0000-000t_tttt-ssss_s001-nnnn_n011-0011  SUB		Rn, Rs, Rt
+* 0000-001t_tttt-ssss_s001-nnnn_n011-0011  MULH		Rn, Rs, Rt (MUL)
+* 0000-000t_tttt-ssss_s010-nnnn_n011-0011  -
+* 0000-001t_tttt-ssss_s010-nnnn_n011-0011  MULHSU	Rn, Rs, Rt (MUL)
+* 0000-000t_tttt-ssss_s011-nnnn_n011-0011  -
+* 0000-001t_tttt-ssss_s011-nnnn_n011-0011  MULHU	Rn, Rs, Rt (MUL)
+* 0000-000t_tttt-ssss_s100-nnnn_n011-0011  XOR		Rn, Rs, Rt
+* 0000-001t_tttt-ssss_s100-nnnn_n011-0011  DIV		Rn, Rs, Rt (DIV)
+
+* 0000-000t_tttt-ssss_s101-nnnn_n011-0011  SHLD		Rn, Rs, Rt
+* 0001-000t_tttt-ssss_s101-nnnn_n011-0011  SHLR		Rn, Rs, Rt
+* 0010-000t_tttt-ssss_s101-nnnn_n011-0011  CMP		Rn, Rs, Rt
+* 0011-000t_tttt-ssss_s101-nnnn_n011-0011  CMPU		Rn, Rs, Rt
+* 0100-000t_tttt-ssss_s101-nnnn_n011-0011  SHAD		Rn, Rs, Rt
+* 0101-000t_tttt-ssss_s101-nnnn_n011-0011  SHAR		Rn, Rs, Rt
+
+* 0000-001t_tttt-ssss_s101-nnnn_n011-0011  DUVU		Rn, Rs, Rt (DIV)
+
+* 0000-000t_tttt-ssss_s110-nnnn_n011-0011  OR		Rn, Rs, Rt
+* 0000-001t_tttt-ssss_s110-nnnn_n011-0011  REM		Rn, Rs, Rt (DIV)
+* 0000-000t_tttt-ssss_s111-nnnn_n011-0011  AND		Rn, Rs, Rt
+* 0000-001t_tttt-ssss_s111-nnnn_n011-0011  REMU		Rn, Rs, Rt (DIV)
+
+SHLD/SHAD:
+* (Rt>=0): Rn=Rs<<( Rt)
+* (Rt< 0): Rn=Rs>>(-Rt)
+
+SHLR/SHAR:
+* (Rt>=0): Rn=Rs>>( Rt)
+* (Rt< 0): Rn=Rs<<(-Rt)
+
+CMP/CMPU:
+* (Rs==Rt): Rn= 0
+* (Rs< Rt): Rn=-1
+* (Rs> Rt): Rn= 1
+
+
+Instruction Map (16-bit):
+* 0000-tttt-tnnn-nn00  MOV	    Rn, Rt					//Rn=Rt
+* 0001-iiii-iiii-ii00  B        Disp10s					//
+* 0010-tttt-tnnn-nn00  ADD	    Rn, Rt					//Rn=Rn+Rt
+* 0011-iiii-iiii-ii00  LEAL     SP, (SP, Disp10s*4)		//SP=SP+Imm10s*4
+* 0100-0iii-innn-nn00  LDL      Rn, (SP, Disp4u*4)
+* 0100-1iii-innn-nn00  LDUL     Rn, (SP, Disp4u*4)
+* 0101-0iii-innn-nn00  STL      Rn, (SP, Disp4u*4)
+* 0101-1iii-innn-nn00  LEAL     Rn, (SP, Disp4u*4)
+* 0110-0iii-innn-nn00  (LDQ)    Rn, (SP, Disp4u*8)
+* 0110-1iii-innn-nn00  (LDX)    Rn, (SP, Disp4u*8)
+* 0111-0iii-innn-nn00  (STQ)    Rn, (SP, Disp4u*8)
+* 0111-1iii-innn-nn00  (STX)    Rn, (SP, Disp4u*8)
+* 1000-iiii-innn-nn00  MOV      Rn, Imm5u	//Rn=Imm5u
+* 1001-iiii-innn-nn00  MOV      Rn, Imm5n	//Rn=Imm5n
+* 1010-iiii-innn-nn00  ADD      Rn, Imm5u
+* 1011-iiii-innn-nn00  ADD      Rn, Imm5n
+* 1100-iiii-innn-nn00  -
+* 1101-iiii-innn-nn00  -
+* 1110-iiii-innn-nn00  -
+* 1111-iiii-innn-nn00  -
+
+Possible:
+* ADD R0, Rt -> J Rt
+* ADD R1, Rt -> JL Rt
+* ADD R0, R1 -> RTS

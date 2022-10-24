@@ -174,6 +174,7 @@ tk_shell_chksane_simd_asm:
 	BREAK?F
 
 #if 1
+.ifarch has_jcmp
 	MOV		0x3456789abcdef012, R6
 	MOV		0xb456789a3cdef012, R7
 	
@@ -192,7 +193,8 @@ tk_shell_chksane_simd_asm:
 	BRGE	R6, R6, .J0L3
 	BREAK
 	.J0L3:
-	
+
+.endif
 #endif
 
 	MOV			R16, GBR

@@ -2377,7 +2377,7 @@ int BGBCC_JX2C_EmitRotateRegisterIndex(
 //		if(flag&1)
 //			i1=shuf[i1];
 
-#if 1
+#if 0
 		if(flag&1)
 		{
 			i2=i1^h;
@@ -2418,7 +2418,7 @@ int BGBCC_JX2C_EmitRotateRegisterIndex(
 	if(((i1&(~3))<m3) && (((i1&(~3))+4)>=m3))
 		h=0;
 
-#if 1
+#if 0
 	if(flag&1)
 	{
 		i2=i1^h;

@@ -860,6 +860,34 @@ void BJX2_Op_INVOP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->tr_rnxt=NULL;
 }
 
+void BJX2_Op_VSKG_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int va, vb, vc;
+	
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->rn];
+
+	vc=((va^ctx->vsk_rng)^(va>>16))&0xFFFF;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_VSKC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int va, vb, vc;
+	
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->rn];
+	vc=((va^ctx->vsk_rng)^(va>>16))&0xFFFF;
+
+	if(vc!=vb)
+	{
+		ctx->trapc=op->pc;
+		ctx->regs[BJX2_REG_PC]=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+		ctx->tr_rnxt=NULL;
+	}
+}
+
 
 void BJX2_Op_RTE_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -1243,27 +1271,6 @@ void BJX2_Op_SYSCALL_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	BJX2_ThrowFaultStatus(ctx, 0xE000|(ctx->regs[0]&0xFFF));
 }
 
-void BJX2_Op_WEXMD_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	ctx->wexmd=op->imm;
-
-	switch(ctx->wexmd)
-	{
-	case 0:
-		ctx->regs[BJX2_REG_SR]&=~(1<<27);
-		break;
-	case 1:
-	case 2:
-		ctx->regs[BJX2_REG_SR]|=(1<<27);
-		break;
-
-	default:
-		ctx->regs[BJX2_REG_SR]&=~(1<<27);
-		ctx->wexmd=0;
-		break;
-	}
-}
-
 void BJX2_AdvanceRng(BJX2_Context *ctx, u32 val)
 {
 	ctx->hw_rng[0] += val + 1;
@@ -1283,6 +1290,39 @@ void BJX2_AdvanceRngB(BJX2_Context *ctx, u32 val)
 	BJX2_AdvanceRng(ctx, 0);
 	BJX2_AdvanceRng(ctx, 0);
 	BJX2_AdvanceRng(ctx, 0);
+}
+
+void BJX2_Op_WEXMD_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+
+	ctx->wexmd=op->imm;
+
+	switch(ctx->wexmd)
+	{
+	case 0:
+		ctx->regs[BJX2_REG_SR]&=~(1<<27);
+		break;
+	case 1:
+	case 2:
+		ctx->regs[BJX2_REG_SR]|=(1<<27);
+		break;
+
+	case 31:
+		ctx->regs[BJX2_REG_SR]&=~(1<<27);
+		BJX2_AdvanceRngB(ctx, ctx->tot_cyc);
+		v=	((ctx->hw_rng[0]>>48)<<48)	|
+			((ctx->hw_rng[1]>>48)<<32)	|
+			((ctx->hw_rng[2]>>48)<<16)	|
+			((ctx->hw_rng[3]>>48)<< 0)	;
+		ctx->vsk_rng=(v+(v>>16)+(v>>32)+(v>>48))&0xFFFF;
+		break;
+
+	default:
+		ctx->regs[BJX2_REG_SR]&=~(1<<27);
+		ctx->wexmd=0;
+		break;
+	}
 }
 
 u64 BJX2_GetCpuidVal(BJX2_Context *ctx, int ix)

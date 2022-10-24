@@ -749,11 +749,23 @@ Alternately
 TSTT will perform a logical AND, and Branch if the result is Zero.
 TSTF will perform a logical AND, and Branch if the result is Not Zero.
 
+These will also be exposed under alternate names:
+* BREQ / BREQ.L / BREQ.Q
+* BRNE / BRNE.L / BRNE.Q
+* BRGT / BRGT.L / BRGT.Q
+* BRLE / BRLE.L / BRLE.Q
+* BRLT / BRLT.L / BRLT.Q
+* BRGE / BRGE.L / BRGE.Q
+
 
 === JCMPZxx ===
 
 * F2n6_Dfjj  JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
 * F2n7_Dfjj  JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
+
+* F2n6_Dfjj  BRxx.{L/Q}		Rn, Disp8s	//(JCMP)
+* F2n7_Dfjj  BRxx.{L/Q}		Rn, Disp8s	//(JCMP)
+
 
 Compare (Rn op 0) and branch based on the result.
 
@@ -2094,10 +2106,24 @@ For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
 The values of the other bits are unchanged by this operation.
 
 
+=== VSKx ===
+
+* F0nm_1g68 VSKG		Rm, Rn				//Canary Generate
+* F0nm_1g78 VSKC		Rm, Rn				//Canary Check
+
+These instructions will Generate or Check a Canary value.
+The Generate operation will transform a reference value into an internal form via combining it with a randomized number. The contents of the generated number will be implementation defined.
+
+The Check operation will verify that the values match, and will raise a Canary Check exception if the values don't match. The reference value supplied to the check will be required to be the same as that supplied to the generate instruction.
+
+The Rm value will supply a reference value (magic number), with Rn holding the Canary value.
+
+
 === WEXMD (WEX) ===
 
-* 36n9  WEXMD	Imm4 //( 0..15)
-* 3En9  WEXMD	Imm4 //(16..31)
+* 36n9       WEXMD	Imm4 //( 0..15)
+* 3En9       WEXMD	Imm4 //(16..31)
+* F069_3en0  WEXMD	Imm5u
 
 Sets the Active WEX Profile.
 This instruction is No-Op if the core does not support WEX.
@@ -2105,6 +2131,10 @@ This instruction is No-Op if the core does not support WEX.
 This instruction will enable or disable WEX based on whether or not the given profile ID is supported by the core. This will be achieved by updating the value for SR.WXE based on the profile ID given as an immediate.
 
 If WEX is disabled, any WEX sequences encountered will be treated as if they were scalar instructions.
+
+
+If the mode is 31 (Supervisor Mode Only), WEX will be disabled and the Canary Seed will be randomized. Otherwise, behavior is NOP or undefined.
+Note that any Canary values generated before executing this instruction will become invalid.
 
 
 === XMOV.x (XMOV, Possible) ===

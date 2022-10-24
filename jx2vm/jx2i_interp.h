@@ -649,6 +649,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CSRRWI		0x14B		//(CSR SWAP, RISC-V)
 #define BJX2_NMID_CSRRSI		0x14C		//(CSR SET, RISC-V)
 #define BJX2_NMID_CSRRCI		0x14D		//(CSR CLEAR, RISC-V)
+#define BJX2_NMID_VSKG			0x14E		//
+#define BJX2_NMID_VSKC			0x14F		//
 
 #define BJX2_NMID_LDOPB			0x150		//
 #define BJX2_NMID_LDOPUB		0x151		//
@@ -658,7 +660,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LDOPUL		0x155		//
 #define BJX2_NMID_LDOPQ			0x156		//
 #define BJX2_NMID_LDOPUQ		0x157		//
-
 #define BJX2_NMID_BREQL			0x158		//
 #define BJX2_NMID_BRNEL			0x159		//
 #define BJX2_NMID_BRLTL			0x15A		//
@@ -1017,6 +1018,7 @@ bjx2_addr mem_l2addr4;		//L2 addr
 u64		hw_rng[4];
 
 u64		krr_key[2];
+int		vsk_rng;
 
 // bjx2_addr	mem_l1m[16][16384];	//L1 addr (Multi)
 bjx2_addr	*mem_l1m[64];

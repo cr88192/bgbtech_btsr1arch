@@ -2605,6 +2605,13 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			opw1=0xF009|ex;
 			opw2=0x1800|((rn&15)<<4)|((rm&15)<<0);			break;
 
+		case BGBCC_SH_NMID_VSKG:
+			opw1=0xF006|ex;
+			opw2=0x1800|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_VSKC:
+			opw1=0xF007|ex;
+			opw2=0x1800|((rn&15)<<4)|((rm&15)<<0);			break;
+
 //		case BGBCC_SH_NMID_MOVD:
 		case BGBCC_SH_NMID_MOVX2:
 		case BGBCC_SH_NMID_XMOV:

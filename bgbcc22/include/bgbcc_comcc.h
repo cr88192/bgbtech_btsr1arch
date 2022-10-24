@@ -183,6 +183,7 @@ byte has_jcmp;		//Has Compare+Branch
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 byte abi_noexcept;	//Disable Exceptions
+byte abi_spillpad;	//Disable Exceptions
 
 byte do_shuffle;
 
