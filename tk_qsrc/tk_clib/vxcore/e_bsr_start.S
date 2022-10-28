@@ -172,6 +172,22 @@ isr_tlbfault:
 #endif
 
 isr_syscall:
+//	break
+
+	//adjust return point to be somewhere after syscall op
+	mov		spc, r16
+	add		8, r16
+	mov		r16, spc
+
+	bra __isr_syscall
+
+	nop
+	nop
+	nop
+	break
+	nop
+
+#if 0
 	mov sp, r16
 	mov STACK_BASE_SYS, sp
 //	push r16
@@ -206,6 +222,7 @@ isr_syscall:
 //	break
 	
 	rte
+#endif
 
 .balign 128
 
@@ -246,6 +263,48 @@ X(tk_syscall):
 //	break
 	
 //	pop lr
+	rts
+#endif
+
+#if 1
+.global X(tk_syscall2)
+X(tk_syscall2):
+//	push lr
+
+	syscall	#0
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	
+//	break
+	
+//	pop lr
+	rts
+
+.global X(tk_syscall2_rtuser)
+X(tk_syscall2_rtuser):
+	
+	mov		0x12345678, R2
+	mov		0x89ABCDEF, R7
+	mov		0x1234CDEF, R16
+
+	syscall	#1
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	
+//	break
+	
 	rts
 #endif
 
@@ -1450,8 +1509,15 @@ memcpy_movx:
 	TEST	15, R7
 	BT		.L0A
 
-	CMPGE		40, R6
-	BF			.L1
+	TEST	7, R7
+	BT		.L1
+
+	CMPGE	40, R6
+	BF		.L1
+
+	XOR		R4, R5, R7
+	TEST	8, R7
+	BF		.L0A
 
 //	AND		R4, 15, R16
 //	AND		R5, 15, R17
@@ -1464,7 +1530,25 @@ memcpy_movx:
 	.L0A:
 #endif
 
-	CMPGT	32, R6
+#if 1
+	CMPGE	64, R6
+	BF		.L1B
+	.L0B:
+	MOV.X	(R5,  0), R16
+	MOV.X	(R5, 16), R18
+	MOV.X	(R5, 32), R20
+	MOV.X	(R5, 48), R22
+	ADD		64, R5		|	ADD		-64, R6
+	MOV.X	R16, (R4,  0)
+	MOV.X	R18, (R4, 16)
+	MOV.X	R20, (R4, 32)
+	MOV.X	R22, (R4, 48)
+	ADD		64, R4		|	CMPGE	64, R6
+	BT		.L0B
+	.L1B:
+#endif
+
+	CMPGE	32, R6
 	BF		.L1
 	.L0:
 	MOV.X	(R5,  0), R20
@@ -1472,7 +1556,7 @@ memcpy_movx:
 	ADD		32, R5		|	ADD		-32, R6
 	MOV.X	R20, (R4,  0)
 	MOV.X	R22, (R4, 16)
-	ADD		32, R4		|	CMPGT	32, R6
+	ADD		32, R4		|	CMPGE	32, R6
 	BT		.L0
 	.L1:
 

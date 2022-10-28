@@ -1,0 +1,2 @@
+jx2vm_nms ../tst_jx2boot.bin --rd_add bootload.sys=../tk_qsrc/doomsrc2/doom_bjx2.exe doomu.wad=../tk_qsrc/doomsrc2/doomulz.wad --rd_map ../tk_qsrc/doomsrc2/doom_bjx2.exe.map %1 %2 %3 %4 %5 %6 %7
+rem jx2vm_nms ../tst_jx2boot.bin --rd_add bootload.sys=../tk_qsrc/tk_clib/tkshell.sys autoexec.exe=../tk_qsrc/doomsrc2/doom_bjx2.exe doomu.wad=../tk_qsrc/doomsrc2/doomulz.wad %1 %2 %3 %4 %5 %6 %7

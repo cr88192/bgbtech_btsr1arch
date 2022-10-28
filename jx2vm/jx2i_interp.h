@@ -762,7 +762,14 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FLIPSTNM
 
-// #define BJX2_EM_BPRED
+// #ifdef X86_64
+#if defined(X86_64) && !defined(BJX2_EM_NOSTAT)
+
+#define BJX2_EM_BPRED
+#define BJX2_EM_MEMSTAT
+
+#endif
+
 
 #if 0
 typedef unsigned char byte;
@@ -933,6 +940,7 @@ s64 tot_cyc_miss_l1i;
 s64 tot_cyc_miss_l2;
 s64 tot_cyc_miss_l2i;
 s64 tot_cyc_miss_l2v;
+s64 tot_cyc_miss_bra;
 s64 tot_cyc_mmio;
 s64 tot_ops;
 s64 tot_nbops;
@@ -950,6 +958,8 @@ int miss_cyc_l1i;			//cache miss cycles (L1 miss)
 int miss_cyc_l2;			//cache miss cycles (L2 miss)
 int miss_cyc_l2i;			//cache miss cycles (L2 miss)
 int mem_cyc_mmio;			//cycles spent in MMIO
+
+int miss_cyc_bra;			//branch miss cycles
 
 int mem_cnt_mem;			//cache miss cycles
 int mem_cnt_l1;				//cache miss cycles

@@ -1432,7 +1432,8 @@ begin
 				end
 
 				JX2_UCIX_IXT_SYSE: begin
-					tExTrapExc = { UV112_00, 4'hE, regInDlr[11:0] };
+//					tExTrapExc = { UV112_00, 4'hE, regInDlr[11:0] };
+					tExTrapExc = { UV112_00, 4'hE, regValRs[11:0] };
 				end
 				
 				JX2_UCIX_IXT_LDTLB: begin

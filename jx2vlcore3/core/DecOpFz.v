@@ -2497,6 +2497,13 @@ begin
 								opRegM_Fix	= JX2_GR_LR;
 							end
 
+							4'h2: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SYSE;
+								opRegM_Fix	= JX2_GR_DLR;
+							end
+
 							4'h4: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
@@ -5567,7 +5574,8 @@ begin
 	endcase
 
 //	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
-	if(usrReject && srUser && !usrSuAllowEn)
+//	if(usrReject && srUser && !usrSuAllowEn)
+	if(usrReject && srUser && !usrSuAllowEn && (!opIsNotFx || opIsXGpr))
 	begin
 		$display("DecOpFz: Usermode Reject %X-%X",
 			istrWord[15:0], istrWord[31:16]);

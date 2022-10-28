@@ -1147,6 +1147,7 @@ int tk_hfopen(TKPE_TaskInfo *task, char *name, char *mode)
 {
 	TK_USERINFO tacc;
 	FILE *fd;
+	int hdl;
 
 	TK_InitUserInfoForTask(task, &tacc);
 	if(mode[0]=='r')
@@ -1164,8 +1165,13 @@ int tk_hfopen(TKPE_TaskInfo *task, char *name, char *mode)
 //	fd=tk_fopen(name, mode);
 	fd=tk_fopen2(&tacc, name, mode);
 	if(!fd)
+	{
+//		tk_printf("tk_hfopen: failed open %s\n", name);
 		return(0);
-	return(TK_GetHandleForPtr(task, fd));
+	}
+	hdl=TK_GetHandleForPtr(task, fd);
+//	tk_printf("tk_hfopen: open %s h=%d\n", name, hdl);
+	return(hdl);
 }
 
 int tk_hread(TKPE_TaskInfo *task, int iHdl, void *pBuf, int szBuf)

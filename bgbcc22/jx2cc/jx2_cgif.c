@@ -518,8 +518,13 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	k=32+4;
 	if(shctx->has_xgpr&1)
 		k+=32;
-	sprintf(tb, "%d", (k*8));
-	BGBPP_AddStaticDefine(NULL, "__ARCH_SIZEOF_REGSAVE__", bgbcc_strdup(tb));
+	
+	ctx->arch_sizeof_regsave=k*8;
+		
+//	sprintf(tb, "%d", (k*8));
+//	BGBPP_AddStaticDefine(NULL, "__ARCH_SIZEOF_REGSAVE__", bgbcc_strdup(tb));
+	BGBPP_AddStaticDefine(NULL, "__ARCH_SIZEOF_REGSAVE__", 
+		"__arch_sizeof_regsave__");
 
 	return(0);
 }

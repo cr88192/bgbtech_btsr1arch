@@ -831,6 +831,9 @@ byte arch_sizeof_int;	//sizeof(int), 0/2/4
 byte arch_sizeof_long;
 byte arch_sizeof_ptr;
 byte arch_sizeof_valist;
+
+int arch_sizeof_regsave;
+
 byte arch_demote_d2f;	//for arch, demote double to float
 byte arch_align_max;	//don't use alignments larger than this
 byte arch_align_objmin;	//minimum alignment for value-objects

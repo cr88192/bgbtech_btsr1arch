@@ -1592,6 +1592,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
 					BGBCC_SH_REG_R1, BGBCC_SH_REG_SP, 8);
 
+
 				BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
 					BGBCC_SH_REG_SP, 0, BGBCC_SH_REG_R1);
 				BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
@@ -1707,6 +1708,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 					BGBCC_SH_REG_R0+1, BGBCC_SH_REG_SP, 1*8);
 				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
 					BGBCC_SH_REG_R0+0, BGBCC_SH_REG_SP, 0*8);
+
+#if 0
 				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
 					BGBCC_SH_REG_R14, BGBCC_SH_REG_SP, 14*8);
 
@@ -1714,6 +1717,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 					BGBCC_SH_REG_SGR, BGBCC_SH_REG_R1);
 				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
 					BGBCC_SH_REG_R1, BGBCC_SH_REG_SP, 15*8);
+#endif
 
 				if(sctx->has_xgpr&1)
 				{
@@ -1734,6 +1738,16 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //						BGBCC_SH_REG_RQ0+i, BGBCC_SH_REG_SP, i*8);
 						BGBCC_SH_REG_LR0+i, BGBCC_SH_REG_SP, i*8);
 				}
+
+#if 1
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R14, BGBCC_SH_REG_SP, 14*8);
+
+				BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+					BGBCC_SH_REG_SGR, BGBCC_SH_REG_R1);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R1, BGBCC_SH_REG_SP, 15*8);
+#endif
 			}else
 			{
 				if(sctx->has_xgpr&1)

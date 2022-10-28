@@ -49,6 +49,9 @@ int	tk_vmem_swap_disable;
 u64	*tk_vmem_pageroot=NULL;
 u64	*tk_vmem_aclroot=NULL;
 
+u64	tk_vmem_pageglobal=0;
+u64	tk_vmem_aclglobal=0;
+
 u16	*tk_vmem_usrexpage;		//User, Execute Only, Memory
 u16	*tk_vmem_usrexonly;		//User, Execute Only, Ex-Only Addr
 int	tk_vmem_usrexoffs;		//User, Execute Only, Offset
@@ -1049,6 +1052,8 @@ int TK_VMem_Init()
 		tpte|=0x0003;	//Four-Level, 4K pages
 //		tmmcr=0x000D;
 	}
+	
+	tk_vmem_pageglobal=tpte;
 	__arch_ttb=tpte;
 #endif
 

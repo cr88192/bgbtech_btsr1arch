@@ -933,7 +933,10 @@ begin
 //	if(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])
 	if(	(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])	||
 		(tBlkFlagB[2] && !tBlkFlagB[3] &&  tInAddr[4])	)
-			tRegOutExc[15:0] = 16'h8003;
+	begin
+		$display("L1 I$: Bad Execute %X", tInAddr);
+		tRegOutExc[15:0] = 16'h8003;
+	end
 	
 	tBlkIsSxo = 0;
 //	if(tBlkFlagA[3:0]==4'b1011)

@@ -742,14 +742,14 @@ void tk_con_init()
 		TK_Con_SetColorFg(tk_con_clr16to64[7]);
 	}
 
-//	((u32 *)0xF00BFF00UL)[0]=0x0015;		//320x200x16bpp
-//	((u32 *)0xF00BFF00UL)[0]=0x0005;		//
-//	((u32 *)0xF00BFF00UL)[0]=0x0001;		//
-//	((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0001;		//
-	((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0081;		//
-	
 	if(tk_iskernel())
 	{
+//		((u32 *)0xF00BFF00UL)[0]=0x0015;		//320x200x16bpp
+//		((u32 *)0xF00BFF00UL)[0]=0x0005;		//
+//		((u32 *)0xF00BFF00UL)[0]=0x0001;		//
+//		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0001;		//
+		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0081;		//
+
 		tk_con_clear();
 	}
 

@@ -20,8 +20,9 @@ Register Mapping:
 * X5 -> DHR (R1 in BJX2)
 * X6 -> R6
 * X7 -> R7
-* X8..X14 -> R8..R14
-* X15 -> R15U
+* X8..X13 -> R8..R13
+* X14 -> R2
+* X15 -> R3
 * X16..X31 -> R16..R31
 
 

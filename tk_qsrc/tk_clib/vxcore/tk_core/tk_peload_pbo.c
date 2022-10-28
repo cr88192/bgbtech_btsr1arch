@@ -1244,6 +1244,16 @@ void *TK_DlGetApiContextB(TKPE_TaskInfo *task, u64 apiname, u64 subname)
 	return(NULL);
 }
 
+void *TK_DlGetApiContextWrapB(TKPE_TaskInfo *task, u64 apiname, u64 subname)
+{
+	if(((u32)apiname)==TK_FCC_GDI)
+	{
+		return(TKGDI_GetHalContextComGlue(task, apiname, subname));
+	}
+	
+	return(NULL);
+}
+
 void *TK_DlGetApiContextA(u64 apiname, u64 subname)
 {
 	TK_SysArg ar[4];

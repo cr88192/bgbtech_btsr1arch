@@ -2582,6 +2582,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	pcnt=(100.0*ctx->tot_cyc_ip)/(ctx->tot_cyc);
 	printf("Cycles Spent, Interlock: %.2f%%\n", pcnt);
 
+#ifdef BJX2_EM_MEMSTAT
 	if(ctx->tot_cyc_mem>0)
 	{
 		pcnt=(100.0*ctx->tot_cyc_mem)/(ctx->tot_cyc);
@@ -2614,6 +2615,11 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 		pcnt=(100.0*ctx->tot_cyc_mmio)/(ctx->tot_cyc);
 		printf("Cycles Spent, MMIO: %.2f%%\n", pcnt);
+
+#ifdef BJX2_EM_BPRED
+		pcnt=(100.0*ctx->tot_cyc_miss_bra)/(ctx->tot_cyc);
+		printf("Cycles Spent, Branch Miss: %.2f%%\n", pcnt);
+#endif
 
 		pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_miss_l1i))/
 			(ctx->tot_cnt_mem_l1i);
@@ -2663,6 +2669,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			(1.0*ctx->tot_cnt_mem_dram)/
 				(ctx->tot_cnt_miss_l2+ctx->tot_cnt_miss_l2i+1.0));
 	}
+#endif
+
 
 	return(0);
 }
@@ -2870,9 +2878,11 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 //		nc+=ctx->iodel_cyc;
 //		ctx->iodel_cyc=0;
 
-#ifdef X86_64
+// #ifdef X86_64
+#ifdef BJX2_EM_MEMSTAT
 		ctx->tot_cyc_mem+=ctx->mem_cyc;
 		ctx->tot_cyc_miss+=ctx->miss_cyc;
+		ctx->tot_cyc_miss_bra+=ctx->miss_cyc_bra;
 
 		ctx->tot_cyc_miss_l1+=ctx->miss_cyc_l1;
 		ctx->tot_cyc_miss_l1i+=ctx->miss_cyc_l1i;
@@ -2898,12 +2908,15 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		ctx->tot_cnt_mem_drd+=ctx->mem_cnt_drd;
 
 		nc+=ctx->miss_cyc;
+		nc+=ctx->miss_cyc_bra;
+
 		ctx->mem_cyc=0;
 		ctx->miss_cyc=0;
 		ctx->miss_cyc_l1=0;
 		ctx->miss_cyc_l1i=0;
 		ctx->miss_cyc_l2=0;
 		ctx->miss_cyc_l2i=0;
+		ctx->miss_cyc_bra=0;
 		ctx->mem_cyc_mmio=0;
 
 		ctx->mem_cnt_mem=0;

@@ -1,4 +1,23 @@
 #define TKPE_REGSAVE_R0		0x00
+#define TKPE_REGSAVE_R1		0x01
+#define TKPE_REGSAVE_R2		0x02
+#define TKPE_REGSAVE_R3		0x03
+#define TKPE_REGSAVE_R4		0x04
+#define TKPE_REGSAVE_R5		0x05
+#define TKPE_REGSAVE_R6		0x06
+#define TKPE_REGSAVE_R7		0x07
+#define TKPE_REGSAVE_R8		0x08
+#define TKPE_REGSAVE_R9		0x09
+#define TKPE_REGSAVE_R10	0x0A
+#define TKPE_REGSAVE_R11	0x0B
+#define TKPE_REGSAVE_R12	0x0C
+#define TKPE_REGSAVE_R13	0x0D
+#define TKPE_REGSAVE_R14	0x0E
+#define TKPE_REGSAVE_R15	0x0F
+
+#define TKPE_REGSAVE_SSP	0x0F
+
+
 #define TKPE_REGSAVE_GBR	0x40
 #define TKPE_REGSAVE_LR		0x41
 #define TKPE_REGSAVE_SPC	0x42
@@ -72,6 +91,8 @@ TKPE_ImageInfo *dll[256];
 int n_dll;
 };
 
+#define TKPE_TASK_MAGIC		0x14263748
+
 /*
 The TaskInfoUser area will contain data which may be modified by the running program.
  */
@@ -88,7 +109,7 @@ tk_kptr		eh_oldlr;		//40, Saved LR (Exception Unwind)
 tk_kptr		allocamrk;		//48, pointer to alloca mark
 tk_kptr		tlsptr;			//50, pointer to TLS data area
 tk_kptr		clib_gpa;		//58, C Library, GetProcAddress
-tk_kptr		resv_60;		//60, reserved pointer
+tk_kptr		magic0;			//60, magic pointer
 tk_kptr		resv_68;		//68, reserved pointer
 tk_kptr		resv_70;		//70, reserved pointer
 tk_kptr		resv_78;		//78, reserved pointer
@@ -127,9 +148,10 @@ tk_kptr		usr_boot_spe;		//28, Stack End (Top)
 tk_kptr		krn_boot_sps;		//30, Stack Start (Bottom), Kernel
 tk_kptr		krn_boot_spe;		//38, Stack End (Top)
 
-// u64			ctx_regsave[64];	//saved registers (context switch)
 u64			ctx_regsave[128];	//saved registers (context switch)
 u64			ctx_stksave[128];	//top of stack
+
+tk_kptr		magic0;				//40, magic key
 
 tk_kptr		span_ptr[512];	//span	(mmap / VirtualAlloc)
 int			span_sz[512];	//span	(mmap / VirtualAlloc)
@@ -141,6 +163,9 @@ int			mmap_len[512];	//mmap size
 int			mmap_prot[512];	//mmap prot
 int			mmap_flag[512];	//mmap flag
 int			mmap_n_map;			//span	(mmap / VirtualAlloc)
+
+tk_kptr		task_sysc_user;		//task that initiated syscall.
+tk_kptr		task_join_ret;		//task join-on-return
 
 // s64			result;			//return value (non-zero if terminated)
 };
@@ -162,7 +187,8 @@ tk_kptr		usrptr;			//40, pointer to user-modifiable area
 tk_kptr		allocaptr;		//48, pointer to alloca mark
 tk_kptr		tlsptr;			//50, pointer to TLS data area
 
-int			pid;			//58
+short		pid;			//58, Process ID
+short		sch_id;			//5A, Scheduler ID
 short		uid;			//5C
 short		gid;			//5E
 
@@ -190,6 +216,8 @@ tk_kptr		resv_F0;		//F0, reserved pointer
 tk_kptr		resv_F8;		//F8, reserved pointer
 
 //End of fixed area.
+
+tk_kptr		magic0;			//100, key magic pointer
 
 int			n_tlsv;			//number of allocated TLS vars
 int			n_dllimg;		//number of loaded DLL images

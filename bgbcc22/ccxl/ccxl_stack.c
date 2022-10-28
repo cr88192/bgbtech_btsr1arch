@@ -816,6 +816,17 @@ ccxl_status BGBCC_CCXL_PushLoad(BGBCC_TransState *ctx, char *name)
 			BGBCC_CCXL_PushRegister(ctx, treg);
 			return(CCXL_STATUS_YES);
 		}
+
+		if(!strcmp(name, "__arch_sizeof_regsave__"))
+		{
+			if(ctx->arch_sizeof_regsave>0)
+			{
+				BGBCC_CCXL_GetRegForIntValue(ctx,
+					&treg, ctx->arch_sizeof_regsave);
+				BGBCC_CCXL_PushRegister(ctx, treg);
+				return(CCXL_STATUS_YES);
+			}
+		}
 	}
 
 	i=BGBCC_CCXL_LookupAsRegister(ctx, name, &treg);

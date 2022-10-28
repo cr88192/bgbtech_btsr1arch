@@ -100,10 +100,14 @@ SRCS=				\
 #		tst_bs2a.bs		\
 #		tst_cpp1a.cpp
 
-all:	 doom_bjx2.exe
+all:	 doom_bjx2.exe tstputc_bjx2.exe
 
 clean:
 
 doom_bjx2.exe:	$(SRCS) i_main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c \
 	/Fedoom_bjx2.exe $(LIBS)
+
+tstputc_bjx2.exe:	tests/tst_putcperf.c
+	$(CC) $(CFLAGS) $(LDFLAGS) tests/tst_putcperf.c \
+	/Fetstputc_bjx2.exe $(LIBS)

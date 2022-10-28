@@ -1,3 +1,4 @@
+#include <tk_core.h>
 #include <tkgdi/tkgdi.h>
 
 int tkgdi_vid_frnum;
@@ -1979,3 +1980,233 @@ void *TKGDI_GetHalContext(TKPE_TaskInfo *task,
 	return(ctx);
 }
 
+void tkgdi_comglue_dispatchfcn(void *obj, void *fcn, void *pret, void *args);
+
+__asm {
+tkgdi_comglue_dispatchfcn:
+	ADD		-256, SP
+	MOV		LR, R1
+	MOV.Q	R1, (SP, 248)
+
+	MOV.Q	R4, (SP, 192)
+	MOV.Q	R5, (SP, 200)
+	MOV.Q	R6, (SP, 208)
+	MOV.Q	R7, (SP, 216)
+	
+	
+	MOV		R7, R19
+	MOV		R5, R3
+
+	MOV.Q	(R19, 0), R5
+	MOV.Q	(R19, 8), R6
+	MOV.Q	(R19, 16), R7
+	MOV.Q	(R19, 24), R20
+	MOV.Q	(R19, 32), R21
+	MOV.Q	(R19, 40), R22
+	MOV.Q	(R19, 48), R23
+	
+	JSR		R3
+
+	MOV.Q	(SP, 248), R1
+	MOV.Q	(SP, 208), R18
+	NOP
+	MOV.Q	R2, (R18)
+	NOP
+	NOP
+	ADD		256, SP
+	JMP 	R1
+};
+
+void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
+	void *sObj, int idx, void *pret, void *args)
+{
+	void *obj1, **vt, *fn;
+	
+	obj1=((void **)sObj)[1];
+	vt=(void **)(*(void **)obj1);
+	fn=vt[idx];
+	
+	tkgdi_comglue_dispatchfcn(obj1, fn, pret, args);
+}
+
+
+void tkgdi_comglue_wrapcall3(void *obj);
+void tkgdi_comglue_wrapcall4(void *obj);
+void tkgdi_comglue_wrapcall5(void *obj);
+void tkgdi_comglue_wrapcall6(void *obj);
+void tkgdi_comglue_wrapcall7(void *obj);
+void tkgdi_comglue_wrapcall8(void *obj);
+void tkgdi_comglue_wrapcall9(void *obj);
+void tkgdi_comglue_wrapcall10(void *obj);
+void tkgdi_comglue_wrapcall11(void *obj);
+void tkgdi_comglue_wrapcall12(void *obj);
+void tkgdi_comglue_wrapcall13(void *obj);
+void tkgdi_comglue_wrapcall14(void *obj);
+void tkgdi_comglue_wrapcall15(void *obj);
+void tkgdi_comglue_wrapcall16(void *obj);
+void tkgdi_comglue_wrapcall17(void *obj);
+void tkgdi_comglue_wrapcall18(void *obj);
+void tkgdi_comglue_wrapcall19(void *obj);
+void tkgdi_comglue_wrapcall20(void *obj);
+void tkgdi_comglue_wrapcall21(void *obj);
+void tkgdi_comglue_wrapcall22(void *obj);
+void tkgdi_comglue_wrapcall23(void *obj);
+void tkgdi_comglue_wrapcall24(void *obj);
+void tkgdi_comglue_wrapcall25(void *obj);
+void tkgdi_comglue_wrapcall26(void *obj);
+void tkgdi_comglue_wrapcall27(void *obj);
+void tkgdi_comglue_wrapcall28(void *obj);
+void tkgdi_comglue_wrapcall29(void *obj);
+void tkgdi_comglue_wrapcall30(void *obj);
+void tkgdi_comglue_wrapcall31(void *obj);
+
+__asm {
+tkgdi_comglue_wrapcall_gen:
+	ADD		-256, SP
+	MOV		LR, R1
+	MOV.Q	R1, (SP, 248)
+
+	MOV.Q	R4, (SP, 128)
+	MOV.Q	R5, (SP, 136)
+	MOV.Q	R6, (SP, 144)
+	MOV.Q	R7, (SP, 152)
+	MOV.Q	R20, (SP, 160)
+	MOV.Q	R21, (SP, 168)
+	MOV.Q	R22, (SP, 176)
+	MOV.Q	R23, (SP, 184)
+	
+	MOV		R3, R5
+	LEA.B	(SP, 112), R6
+//	LEA.B	(SP, 128), R7
+	LEA.B	(SP, 136), R7
+	BSR		tk_syscall
+
+	MOV.Q	(SP, 248), R1
+	MOV.Q	(SP, 112), R2
+	MOV.Q	(SP, 120), R3
+
+	ADD		256, SP
+	JMP 	R1
+
+tkgdi_comglue_wrapcall3:
+	MOV		TK_UMSG_COMGLUE_VMT3, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall4:
+	MOV		TK_UMSG_COMGLUE_VMT4, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall5:
+	MOV		TK_UMSG_COMGLUE_VMT5, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall6:
+	MOV		TK_UMSG_COMGLUE_VMT6, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall7:
+	MOV		TK_UMSG_COMGLUE_VMT7, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+
+tkgdi_comglue_wrapcall8:
+	MOV		TK_UMSG_COMGLUE_VMT8, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall9:
+	MOV		TK_UMSG_COMGLUE_VMT9, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+
+tkgdi_comglue_wrapcall10:
+	MOV		TK_UMSG_COMGLUE_VMT10, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall11:
+	MOV		TK_UMSG_COMGLUE_VMT11, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall12:
+	MOV		TK_UMSG_COMGLUE_VMT12, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall13:
+	MOV		TK_UMSG_COMGLUE_VMT13, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall14:
+	MOV		TK_UMSG_COMGLUE_VMT14, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall15:
+	MOV		TK_UMSG_COMGLUE_VMT15, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall16:
+	MOV		TK_UMSG_COMGLUE_VMT16, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall17:
+	MOV		TK_UMSG_COMGLUE_VMT17, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall18:
+	MOV		TK_UMSG_COMGLUE_VMT18, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+tkgdi_comglue_wrapcall19:
+	MOV		TK_UMSG_COMGLUE_VMT19, R3
+	BRA		tkgdi_comglue_wrapcall_gen
+};
+
+
+const _tkgdi_context_vtable_t tkgdi_context_vtable_gvt = {
+NULL,						//0
+NULL,						//1
+(void *)0x12345678,			//2
+tkgdi_comglue_wrapcall3,	//3
+tkgdi_comglue_wrapcall4,
+tkgdi_comglue_wrapcall5,
+tkgdi_comglue_wrapcall6,
+tkgdi_comglue_wrapcall7,
+tkgdi_comglue_wrapcall8,
+(void *)0x12345678,			//9
+tkgdi_comglue_wrapcall10,	//10
+tkgdi_comglue_wrapcall11,
+tkgdi_comglue_wrapcall12,
+tkgdi_comglue_wrapcall13,
+tkgdi_comglue_wrapcall14,	//14
+(void *)0x12345678,			//15
+tkgdi_comglue_wrapcall16,	//16
+NULL,	//1
+NULL,	//2
+NULL,	//3
+NULL,	//4
+NULL,	//5
+NULL,	//6
+NULL,	//7
+NULL,	//8
+NULL,	//9
+NULL,	//10
+(void *)0x12345678
+};
+
+
+_tkgdi_context_t *tkgdi_gcontext_ctx[256];
+TKPE_TaskInfo *tkgdi_gcontext_task[256];
+int tkgdi_n_gcontexts;
+
+void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
+	u64 apiname, u64 subname)
+{
+	_tkgdi_context_t *ctx;
+	_tkgdi_context_t *ctx2;
+	int i, j, k;
+	
+	tk_printf("TKGDI_GetHalContext:\n");
+	
+	for(i=0; i<tkgdi_n_gcontexts; i++)
+	{
+		if(tkgdi_gcontext_task[i]==task)
+		{
+			return(tkgdi_gcontext_ctx[i]);
+		}
+	}
+	
+	ctx2=TKGDI_GetHalContext(task, apiname, subname);
+	
+	ctx=tk_malloc(sizeof(_tkgdi_context_t));
+	memset(ctx, 0, sizeof(_tkgdi_context_t));
+	ctx->vt=&tkgdi_context_vtable_gvt;
+	ctx->sobj=ctx2;
+	
+	i=tkgdi_n_gcontexts++;
+	tkgdi_gcontext_task[i]=task;
+	tkgdi_gcontext_ctx[i]=ctx;
+	
+	return(ctx);
+}

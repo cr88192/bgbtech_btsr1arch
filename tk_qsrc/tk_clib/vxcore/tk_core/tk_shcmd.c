@@ -29,6 +29,10 @@ int TKSH_TryLoad_n(char *img, char **args);
 
 extern volatile u64 __arch_gbr;
 
+extern TKPE_TaskInfo *tk_task_syscall;
+extern u64	tk_vmem_pageglobal;
+
+
 TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
 
@@ -1317,6 +1321,7 @@ int TKSH_TryLoad(char *img, char **args0)
 //	u64 bootgbr;
 	u64	pb_gbr;
 	TKPE_TaskInfo *task;
+	TKPE_TaskInfo *ctask, *ptask;
 	TKPE_TaskInfoKern *tkern;
 	TK_EnvContext *env0, *env1;
 	TKPE_ImageInfo *pimg;
@@ -1549,6 +1554,16 @@ int TKSH_TryLoad(char *img, char **args0)
 			env0=TK_GetCurrentEnvContext();
 			env1=TK_EnvCtx_CloneContext(env0);
 
+			ctask=TK_GetCurrentTask();
+			ptask=NULL;
+
+			if(ctask==tk_task_syscall)
+			{
+				ptask=TK_GetSyscallUserTask();
+				if(ptask==tk_task_syscall)
+					ptask=NULL;
+			}
+
 			boottbr=TK_AllocNewTask();
 			task=boottbr;
 			tkern=(TKPE_TaskInfoKern *)(task->krnlptr);
@@ -1658,6 +1673,7 @@ int TKSH_TryLoad(char *img, char **args0)
 			task->argv=a1;
 #endif
 
+#if 0
 			rv=tk_sysc_exitpt();
 //			if(rv || (tksh_runstate != 2))
 			if(rv)
@@ -1683,6 +1699,48 @@ int TKSH_TryLoad(char *img, char **args0)
 //			__arch_gbr=bootgbr;
 //			bootptr();
 			__tk_farcall(bootptr, bootgbr, boot_newsp, boottbr);
+#endif
+
+#if 1
+			tksh_runstate = 3;
+		
+			TK_FlushCacheL1D();
+			TK_FlushCacheL1D_INVIC(NULL);
+
+			tkern->task_join_ret=ptask;
+			if(!ptask)
+			{
+				if(ctask==tk_task_syscall)
+					__debugbreak();
+				tkern->task_join_ret=ctask;
+			}
+
+			tkern->ctx_regsave[TKPE_REGSAVE_TTB]=tk_vmem_pageglobal;
+			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
+			tkern->ctx_regsave[TKPE_REGSAVE_GBR]=bootgbr;
+			tkern->ctx_regsave[TKPE_REGSAVE_SSP]=boot_newsp;
+			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
+//			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
+			TK_Task_SyscallReturnToUser(task);
+
+#if 1
+			if(!ptask)
+			{
+				rv=TK_Task_JoinOnReturn(task);
+				if(rv<0)
+					rv=-rv;
+				if(!rv)rv=1;
+				tk_con_chkreset();
+				TK_TaskFreeAllPageAlloc(task);
+				TK_DestroyTaskInfo(task);
+				return(rv);
+			}
+#endif
+
+			return(1);
+
+#endif
+
 		}
 	}
 	

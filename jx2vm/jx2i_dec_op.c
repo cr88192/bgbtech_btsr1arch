@@ -395,8 +395,12 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 
 		case BJX2_NMID_BT:
 		case BJX2_NMID_BF:
+#ifdef BJX2_EM_BPRED
+			op->cyc=2;
+#else
 			op->cyc=3;
 //			op->cyc=2;
+#endif
 
 			if(op->fmid==BJX2_FMID_REG)
 				{ op->cyc=8; }
@@ -408,7 +412,11 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_BRGT:
 		case BJX2_NMID_BRLE:
 		case BJX2_NMID_BRGE:
+#ifdef BJX2_EM_BPRED
+			op->cyc=2;
+#else
 			op->cyc=3;
+#endif
 			break;
 		case BJX2_NMID_BREQL:
 		case BJX2_NMID_BRNEL:
@@ -416,7 +424,11 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_BRGTL:
 		case BJX2_NMID_BRLEL:
 		case BJX2_NMID_BRGEL:
+#ifdef BJX2_EM_BPRED
+			op->cyc=2;
+#else
 			op->cyc=3;
+#endif
 			break;
 
 		case BJX2_NMID_RTS:

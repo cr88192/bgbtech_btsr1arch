@@ -1852,6 +1852,7 @@ F0zz Instruction Block:
 *** F000_30F0  LDTLB
 
 *** F002_3010  RTSU
+*** F002_3020  SYSCALL
 
 *** F002_3040  LDACL
 

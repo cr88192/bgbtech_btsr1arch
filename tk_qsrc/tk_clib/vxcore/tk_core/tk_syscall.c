@@ -63,11 +63,30 @@ void *TK_DlGetApiContextA(u64 apiname, u64 subname);
 // __declspec(syscall)
 // int __isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 
+int tk_syscall2(void *sObj, int uMsg, void *vParm1, void *vParm2);
+
 // __declspec(dllexport)
 TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
-	TKPE_TaskInfo *task;
+	int i;
+	
+	i=0;
+	if(vParm1)
+		{ i+=*(int *)vParm1; }
+	if(vParm2)
+		{ i+=*(int *)vParm2; }
+
+	return(tk_syscall2(sObj, uMsg, vParm1, vParm2));
+//	TKPE_TaskInfo *task;
+//	task=TK_GetCurrentTask();
+//	return(TK_HandleSyscall(task, sObj, uMsg, vParm1, vParm2));
+}
+
+
+int TK_HandleSyscall(TKPE_TaskInfo *task,
+	void *sObj, int uMsg, void *vParm1, void *vParm2)
+{
 	TK_EnvContext *env;
 	TK_SysArg *args;
 	s64 li;
@@ -86,7 +105,7 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 
 //	tk_printf("SYSC: uMsg=%X vParm1=%p, vParm2=%p\n", uMsg, vParm1, vParm2);
 
-	task=TK_GetCurrentTask();
+//	task=TK_GetCurrentTask();
 	env=(void *)task->envctx;
 
 	ret=TK_URES_ERR_BADMSG;
@@ -112,7 +131,8 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 			
 			case 0x03:
-				tk_sysc_exitpgm(args[0].i);
+				__debugbreak();
+//				tk_sysc_exitpgm(args[0].i);
 				ret=TK_URES_TRUE;
 				break;
 
@@ -144,8 +164,17 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				ret=TK_URES_TRUE;
 				break;
 			case 0x09:
-				sz=tk_getch();
-				*((int *)vParm1)=sz;
+				if(args[0].i==0)
+				{
+					sz=tk_getch();
+					*((int *)vParm1)=sz;
+				}
+
+				if(args[0].i==1)
+				{
+					li=TK_GetTimeUs();
+					*((s64 *)vParm1)=li;
+				}
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0A:
@@ -168,6 +197,10 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 			case 0x0D:
 				sz=TK_EnvCtx_SetEnvVar(env, args[0].p, args[1].p, args[2].i);
 				*((int *)vParm1)=sz;
+				ret=TK_URES_TRUE;
+				break;
+			case 0x0E:
+				tk_puts_n(args[0].p, args[1].i);
 				ret=TK_URES_TRUE;
 				break;
 
@@ -233,7 +266,8 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 
 			case 0x1D:
-				p=TK_DlGetApiContextB(task, args[0].l, args[1].l);
+//				p=TK_DlGetApiContextB(task, args[0].l, args[1].l);
+				p=TK_DlGetApiContextWrapB(task, args[0].l, args[1].l);
 				*((void **)vParm1)=p;
 				ret=TK_URES_TRUE;
 				break;
@@ -316,6 +350,14 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 				break;
 			}
 			break;
+
+		case 2:
+			/* COMGLUE */
+			TKGDI_ComGlueDispatch(task,
+				sObj, uMsg-TK_UMSG_COMGLUE_VMT0,
+				vParm1, vParm2);
+			break;
+
 		default:
 			tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
 				sObj, uMsg, vParm1, vParm2);

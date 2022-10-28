@@ -397,7 +397,7 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 	static byte adjf[8]={ 1, 1, 0, 2, 2, 4, 3, 3 };
 	static u64 srbmsk = 0x513713671B677F7FULL;
 	int pr, prb, pri, prj;
-	int sc, sc1, srb, prc;
+	int sc, sc1, srb, prc, p;
 
 	pri=((op->pc)>>1)&63;
 //	pri=((op->pc)>>1)&255;
@@ -416,6 +416,7 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 	ctx->bpr_sctab[pri]=sc1&63;
 	srb=(srbmsk>>(63-sc))&1;
 
+	p=0;
 	ctx->bpr_cnt++;
 	if(take)
 	{
@@ -425,10 +426,14 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 //				ctx->bpr_hit++;
 			if(!(pr&4))
 				ctx->bpr_hit++;
+			else
+				p=1;
 		}else
 		{
 			if(pr&4)
 				ctx->bpr_hit++;
+			else
+				p=1;
 		}
 	}else
 	{
@@ -438,11 +443,22 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 //				ctx->bpr_hit++;
 			if(pr&4)
 				ctx->bpr_hit++;
+			else
+				p=1;
 		}else
 		{
 			if(!(pr&4))
 				ctx->bpr_hit++;
+			else
+				p=1;
 		}
+	}
+	
+	if(p)
+	{
+		ctx->miss_cyc_bra+=7;
+		if(ctx->tr_cur)
+			ctx->tr_cur->acc_pencyc+=7;
 	}
 }
 #endif
@@ -1268,7 +1284,7 @@ void BJX2_Op_TRAP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_SYSCALL_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->trapc=op->pc2;
-	BJX2_ThrowFaultStatus(ctx, 0xE000|(ctx->regs[0]&0xFFF));
+	BJX2_ThrowFaultStatus(ctx, 0xE000|(ctx->regs[BJX2_REG_DLR]&0xFFF));
 }
 
 void BJX2_AdvanceRng(BJX2_Context *ctx, u32 val)
@@ -1654,6 +1670,11 @@ void BJX2_Op_BSR_Abs(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BREQ_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(ctx->regs[op->rn]==ctx->regs[op->rm]));
+#endif
+
 	if(ctx->regs[op->rn]==ctx->regs[op->rm])
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1666,6 +1687,11 @@ void BJX2_Op_BREQ_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRNE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(ctx->regs[op->rn]!=ctx->regs[op->rm]));
+#endif
+
 	if(ctx->regs[op->rn]!=ctx->regs[op->rm])
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1678,6 +1704,11 @@ void BJX2_Op_BRNE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRLT_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s64)ctx->regs[op->rn])<((s64)ctx->regs[op->rm])));
+#endif
+
 	if(((s64)ctx->regs[op->rn])<((s64)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1690,6 +1721,11 @@ void BJX2_Op_BRLT_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRGE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s64)ctx->regs[op->rn])>=((s64)ctx->regs[op->rm])));
+#endif
+
 	if(((s64)ctx->regs[op->rn])>=((s64)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1702,6 +1738,11 @@ void BJX2_Op_BRGE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRGT_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s64)ctx->regs[op->rn])>((s64)ctx->regs[op->rm])));
+#endif
+
 	if(((s64)ctx->regs[op->rn])>((s64)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1714,6 +1755,11 @@ void BJX2_Op_BRGT_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRLE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s64)ctx->regs[op->rn])<=((s64)ctx->regs[op->rm])));
+#endif
+
 	if(((s64)ctx->regs[op->rn])<=((s64)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1726,6 +1772,11 @@ void BJX2_Op_BRLE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRBI_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((u64)ctx->regs[op->rn])<((u64)ctx->regs[op->rm])));
+#endif
+
 	if(((u64)ctx->regs[op->rn])<((u64)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1738,6 +1789,11 @@ void BJX2_Op_BRBI_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRHE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((u64)ctx->regs[op->rn])>=((u64)ctx->regs[op->rm])));
+#endif
+
 	if(((u64)ctx->regs[op->rn])>=((u64)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1775,6 +1831,11 @@ void BJX2_Op_BRTSTF_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BREQL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s32)ctx->regs[op->rn])==((s32)ctx->regs[op->rm])));
+#endif
+
 	if(((s32)ctx->regs[op->rn])==((s32)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1787,6 +1848,11 @@ void BJX2_Op_BREQL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRNEL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s32)ctx->regs[op->rn])!=((s32)ctx->regs[op->rm])));
+#endif
+
 	if(((s32)ctx->regs[op->rn])!=((s32)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1799,6 +1865,11 @@ void BJX2_Op_BRNEL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRLTL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s32)ctx->regs[op->rn])<((s32)ctx->regs[op->rm])));
+#endif
+
 	if(((s32)ctx->regs[op->rn])<((s32)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1811,6 +1882,11 @@ void BJX2_Op_BRLTL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRGEL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s32)ctx->regs[op->rn])>=((s32)ctx->regs[op->rm])));
+#endif
+
 	if(((s32)ctx->regs[op->rn])>=((s32)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1823,6 +1899,11 @@ void BJX2_Op_BRGEL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRGTL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s32)ctx->regs[op->rn])>((s32)ctx->regs[op->rm])));
+#endif
+
 	if(((s32)ctx->regs[op->rn])>((s32)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
@@ -1835,6 +1916,11 @@ void BJX2_Op_BRGTL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRLEL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((s32)ctx->regs[op->rn])<=((s32)ctx->regs[op->rm])));
+#endif
+
 	if(((s32)ctx->regs[op->rn])<=((s32)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);

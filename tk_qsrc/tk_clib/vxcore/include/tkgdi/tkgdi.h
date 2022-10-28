@@ -152,6 +152,7 @@ void *magic3;
 
 struct _tkgdi_context_s {
 _tkgdi_context_vtable_t *vt;
+void *sobj;
 };
 
 typedef struct _tkgdi_window_s		_tkgdi_window_t;

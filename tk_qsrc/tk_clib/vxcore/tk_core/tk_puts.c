@@ -95,6 +95,17 @@ void tk_putc_v(int val)
 	tk_syscall(NULL, TK_UMSG_CONPUTC, &p, ar);
 }
 
+void tk_putsn_v(char *str, int n)
+{
+	TK_SysArg ar[4];
+	void *p;
+	
+	p=NULL;
+	ar[0].p=str;
+	ar[1].i=n;
+	tk_syscall(NULL, TK_UMSG_CONPUTSN, &p, ar);
+}
+
 void (*tk_putc_fn)(int val);
 
 void tk_putc(int val)
@@ -156,6 +167,7 @@ int tk_kbhit_v(void)
 	TK_SysArg ar[4];
 	int i;
 	i=0;
+	ar[0].i=0;
 	tk_syscall(NULL, TK_UMSG_CONKBHIT, &i, ar);
 	return(i);
 }
@@ -165,6 +177,17 @@ int tk_getch_v(void)
 	TK_SysArg ar[4];
 	int i;
 	i=0;
+	ar[0].i=0;
+	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
+	return(i);
+}
+
+int tk_gettimeus_v(void)
+{
+	TK_SysArg ar[4];
+	int i;
+	i=0;
+	ar[0].i=1;
 	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
 	return(i);
 }
@@ -298,8 +321,15 @@ int TK_ReadCharUtf8(byte **rcs)
 
 void tk_puts(char *msg)
 {
+#ifndef __TK_CLIB_ONLY__
 	char *s;
 	int i;
+	
+	if(!tk_iskernel())
+	{
+		tk_puts_n(msg, strlen(msg));
+		return;
+	}
 	
 	s=msg;
 	while(*s)
@@ -309,6 +339,33 @@ void tk_puts(char *msg)
 		i=TK_ReadCharUtf8((byte **)(&s));
 		tk_putc(i);
 	}
+#else
+	tk_puts_n(msg, strlen(msg));
+#endif
+}
+
+void (*tk_putsn_fn)(char *msg, int n);
+
+int tk_putsn_check_nonascii(char *msg, int cnt)
+{
+	char *cs;
+	int n;
+	
+	cs=msg; n=cnt;
+	while(n>=8)
+	{
+		if((*(long long *)cs)&0x8080808080808080ULL)
+			return(1);
+		cs+=8; n-=8;
+	}
+	
+	while(n>0)
+	{
+		if((*cs)&0x80)
+			return(1);
+		cs++; n--;
+	}
+	return(0);
 }
 
 void tk_puts_n(char *msg, int n)
@@ -316,6 +373,22 @@ void tk_puts_n(char *msg, int n)
 	char *s;
 	int i;
 	
+	if(tk_iskernel() || tk_putsn_check_nonascii(msg, n))
+	{
+		s=msg;
+		while(n--)
+		{
+	//		tk_putc(*s++);
+
+			i=TK_ReadCharUtf8((byte **)(&s));
+			tk_putc(i);
+		}
+		return;
+	}
+	
+	tk_putsn_v(msg, n);
+	
+#if 0
 	s=msg;
 	while(n--)
 	{
@@ -324,6 +397,7 @@ void tk_puts_n(char *msg, int n)
 		i=TK_ReadCharUtf8((byte **)(&s));
 		tk_putc(i);
 	}
+#endif
 }
 
 void tk_gets(char *buf)

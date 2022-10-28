@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
 
 	task=TK_AllocNewTask();
 	TK_SetCurrentTask(task);
+
+	tk_printf("TKSH 0, Init Syscall Task\n");
+	TK_SpawnSyscallTask(task);
 	
 	TKSH_InitCmds();
 
