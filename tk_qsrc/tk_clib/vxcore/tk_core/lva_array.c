@@ -1802,3 +1802,77 @@ void *__operator_new(int sz)
 {
 	return(tk_malloc(sz));
 }
+
+
+tk_lva_object TKMM_LVA_CreateShareBuffer(void *pbuf, int sz)
+{
+	TKPE_TaskInfo *task;
+	TKPE_TaskInfoUser *taskusr;
+	u64 pbase, pbsz, tobj;
+	int i;
+
+	task=TK_GetCurrentTask();
+	taskusr=(TKPE_TaskInfoUser *)task->usrptr;
+	
+	for(i=0; i<32; i++)
+	{
+		if(!taskusr->sharebuf[i])
+		{
+			pbase=(u64 *)pbuf;
+			pbsz=(sz+255)>>8;
+			pbase&=0x0000FFFFFFFFFFFFULL;
+			pbase|=pbsz<<48;
+			taskusr->sharebuf[i]=pbase;
+			
+			tobj=0x1C00000000000000ULL;
+			tobj|=(task->pid<<16)|i;
+			return(tk_lva_object_frombits(tobj));
+		}
+	}
+	
+	return(tk_lva_object_null);
+}
+
+int TKMM_LVA_DestroyShareBuffer(tk_lva_object obj)
+{
+	TKPE_TaskInfo *task;
+	TKPE_TaskInfoUser *taskusr;
+	u64 pbase, pbsz, tobj;
+	int i;
+
+	task=TK_GetCurrentTask();
+	taskusr=(TKPE_TaskInfoUser *)task->usrptr;
+
+	tobj=tk_lva_object_getbits(obj);
+	if(((u16)(tobj>>16))!=task->pid)
+		__debugbreak();
+
+	i=tobj&0xFF;
+	taskusr->sharebuf[i]=NULL;
+	
+	return(0);
+}
+
+void *TKMM_LVA_MapShareBufferRead(tk_lva_object obj)
+{
+}
+
+void *TKMM_LVA_MapShareBufferWrite(tk_lva_object obj)
+{
+}
+
+void *TKMM_LVA_MapShareBufferModify(tk_lva_object obj)
+{
+}
+
+int TKMM_LVA_UnmapShareBuffer(void *ptr)
+{
+}
+
+
+void *TKMM_LVA_ExportSharedObjectPtr(void *ptr)
+{
+	/* TODO: Register object pointer to return to exporter. */
+	return(ptr);
+}
+

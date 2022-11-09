@@ -89,20 +89,20 @@ typedef struct BGBCC_CMG_RWadEntry_s BGBCC_CMG_RWadEntry;
 
 
 struct BGBCC_CMG_Context_s {
-char *sec_name[16];
-byte *sec_buf[16];
-byte *sec_end[16];
-byte *sec_pos[16];
-byte *sec_vpos[16];
-u32 sec_rva[16];		//relative virtual address (image offset)
-u32 sec_lva[16];		//logical virtual address
-u32 sec_lsz[16];		//logical size
+char *sec_name[64];
+byte *sec_buf[64];
+byte *sec_end[64];
+byte *sec_pos[64];
+byte *sec_vpos[64];
+u32 sec_rva[64];		//relative virtual address (image offset)
+u32 sec_lva[64];		//logical virtual address
+u32 sec_lsz[64];		//logical size
 byte sec;
 byte nsec;
 
-byte *asm_buf[16];
-byte *asm_end[16];
-byte *asm_pos[16];
+byte *asm_buf[64];
+byte *asm_end[64];
+byte *asm_pos[64];
 byte do_asm;
 
 byte is_le;			//is little endian

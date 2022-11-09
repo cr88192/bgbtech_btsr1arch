@@ -55,6 +55,7 @@ module RbiMmuChkAcc(
 	regInKRR,
 	regInSR,
 	regInOpm,
+	regInAddrHi,
 	tlbInAcc,
 	aclEntryA,	aclEntryB,
 	aclEntryC,	aclEntryD,
@@ -73,6 +74,8 @@ input[63:0]		regInKRR;		//Keyring Register
 input[63:0]		regInSR;		//Status Register
 
 input[7:0]		regInOpm;		//Operation Size/Type
+input[3:0]		regInAddrHi;
+
 input[35:0]		tlbInAcc;		//TLB Access Mode
 
 input[47:0]		aclEntryA;
@@ -358,6 +361,8 @@ begin
 		endcase
 	end
 
+//	tRegOutNoRwx = 0;
+
 	tUsDeny = (tlbInAcc[3] && !regInSR[30]);
 
 	tRegOutNoRwx[3] = tlbInAcc[35];
@@ -383,6 +388,19 @@ begin
 			tRegOutNoRwx[1:0] = 0;
 		end
 	end
+	
+	if(regInAddrHi[3:2]==2'b11)
+	begin
+		tAccOutExc	= 0;
+		tRegOutNoRwx = 0;
+	end
+
+	if(tRegOutNoRwx!=0)
+	begin
+		$display("RbiMmuChkAcc: NoRwx=%X", tRegOutNoRwx);
+	end
+
+//	tRegOutNoRwx = 0;
 
 	if(!tlbMmuEnable)
 	begin

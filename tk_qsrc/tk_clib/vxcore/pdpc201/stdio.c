@@ -1436,6 +1436,7 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 	double vdbl;
 	char *svalue;
 	char work[50];
+//	char work[192];
 	int x;
 	int y;
 	int rem;

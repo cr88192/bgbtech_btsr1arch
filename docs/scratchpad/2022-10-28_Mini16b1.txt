@@ -1,0 +1,63 @@
+Small 16/32 ISA.
+* Will have 16-bit instructions.
+* Will have 8 GPRs, with 3 or 4 bit register fields.
+* Will use either 16 or 32 bit registers.
+
+Data (3b):
+* D0..D7
+** D0..D3=Scratch
+** D4..D7=Preserved
+
+Address (3b):
+* A0..A1=Scratch
+* A2..A3=Preserve
+* A4=PC
+* A5=LR
+* A6=GP
+* A7=SP
+
+Combined (R0..R15):
+* R0..R7=D0..D7
+* R8..R15=A0..A7
+
+
+
+* 0000-nnnn-0sss-0iii: LDB		(As, Disp3), Rn
+* 0000-nnnn-0sss-1iii: LDW		(As, Disp3), Rn
+* 0000-nnnn-1sss-0iii: LDL		(As, Disp3), Rn		(32b)
+* 0000-nnnn-1sss-1iii: LDUB		(As, Disp3), Rn
+* 0001-nnnn-0sss-0iii: STB		(As, Disp3), Rn
+* 0001-nnnn-0sss-1iii: STW		(As, Disp3), Rn
+* 0001-nnnn-1sss-0iii: STL 		(As, Disp3), Rn		(32b)
+* 0001-nnnn-1sss-1iii: LDUW		(As, Disp3), Rn		(32b)
+
+* 0010-nnnn-ssss-0000: ADD		Rs, Rn
+* 0010-nnnn-ssss-0001: SUB		Rs, Rn
+* 0010-nnnn-ssss-0010: -
+* 0010-nnnn-ssss-0011: -
+* 0010-nnnn-ssss-0100: MOV		Rs, Rn
+* 0010-nnnn-ssss-0101: AND		Rs, Rn
+* 0010-nnnn-ssss-0110: OR		Rs, Rn
+* 0010-nnnn-ssss-0111: XOR		Rs, Rn
+
+* 0011-nnnn-0iii-0iii: BEQ		Rn, Disp6  (Branch if Rn==0)
+* 0011-nnnn-1iii-0iii: BNE		Rn, Disp6  (Branch if Rn!=0)
+* 0011-nnnn-0iii-1iii: BLT		Rn, Disp6  (Branch if Rn< 0)
+* 0011-nnnn-iiii-1iii: BGE		Rn, Disp6  (Branch if Rn>=0)
+
+* 0100-0nnn-0sss-0ttt: ADD		Ds, Dt, Dn
+* 0100-0nnn-0sss-1ttt: SUB		Ds, Dt, Dn
+* 0100-0nnn-1sss-0ttt: -
+* 0100-0nnn-1sss-1ttt: -
+* 0100-1iii-0iii-0iii: -
+* 0100-1nnn-0sss-1ttt: AND		Ds, Dt, Dn
+* 0100-1nnn-1sss-0ttt: OR		Ds, Dt, Dn
+* 0100-1nnn-1sss-1ttt: XOR		Ds, Dt, Dn
+
+* 0101-nnnn-0iii-0iii: ADD		Imm6u, Rn
+* 0101-nnnn-1iii-0iii: ADD		Imm6n, Rn
+** Rn=PC, BRA
+** Rn=LR, BSR
+
+* 0101-nnnn-0iii-1iii: MOV		Imm6u, Rn
+* 0101-nnnn-iiii-1iii: MOV		Imm6n, Rn

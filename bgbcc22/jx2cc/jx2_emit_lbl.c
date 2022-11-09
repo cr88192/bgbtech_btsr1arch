@@ -704,6 +704,7 @@ int BGBCC_JX2_LookupSimLabelIndex(
 int BGBCC_JX2_CheckLabelIsGpRel(
 	BGBCC_JX2_Context *sctx, int lblid)
 {
+	char *lbln;
 	int i, j, k;
 
 	if(!sctx->is_pbo)
@@ -713,7 +714,22 @@ int BGBCC_JX2_CheckLabelIsGpRel(
 	i=BGBCC_JX2_LookupSimLabelIndex(sctx, lblid);
 	
 	if(i<0)
+	{
+		lbln=BGBCC_JX2_LookupNameForLabel(sctx, lblid);
+		if(!lbln)
+			return(0);
+		if((lbln[0]=='_') || (lbln[1]=='_'))
+		{
+			if(		!strcmp(lbln, "__data_start") ||
+					!strcmp(lbln, "__data_end") ||
+					!strcmp(lbln, "__bss_start") ||
+					!strcmp(lbln, "__bss_end") )
+			{
+				return(1);
+			}
+		}
 		return(0);
+	}
 	
 	j=sctx->lbl_sec[i];
 	return(BGBCC_JX2_IsSectionGpRel(sctx, j));

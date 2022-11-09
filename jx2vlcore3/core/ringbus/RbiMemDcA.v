@@ -1451,11 +1451,17 @@ begin
 
 `endif
 
-	tReqNoReadA		= tBlkMemAddr2A[0];
-	tReqNoReadB		= tBlkMemAddr2B[0];
+//	tReqNoReadA		= tBlkMemAddr2A[0];
+//	tReqNoReadB		= tBlkMemAddr2B[0];
 
-	tReqReadOnlyA	= tBlkMemAddr2A[1];
-	tReqReadOnlyB	= tBlkMemAddr2B[1];
+//	tReqReadOnlyA	= tBlkMemAddr2A[1];
+//	tReqReadOnlyB	= tBlkMemAddr2B[1];
+	
+	tReqNoReadA		= tBlkMemAddr2A[0] && !tBlkMemAddr2A[3];
+	tReqNoReadB		= tBlkMemAddr2B[0] && !tBlkMemAddr2B[3];
+
+	tReqReadOnlyA	= tBlkMemAddr2A[1] && !tBlkMemAddr2A[3];
+	tReqReadOnlyB	= tBlkMemAddr2B[1] && !tBlkMemAddr2B[3];
 	
 	tWasMissInh		= 0;
 
@@ -1530,20 +1536,29 @@ begin
 	tRegOutExc[ 63:16] = tReqAddr[47:0];
 	tRegOutExc[111:64] = tReqAddrHi[47:0];
 
-	if(!tBlkMemAddr2A[3] && !tBlkMemAddr2B[3])
+	if(!tBlkMemAddr2A[3] && !tBlkMemAddr2B[3] &&
+		!tReqMissAddrA && !tReqMissAddrB)
 	begin
 		if(	(tReqNoReadA && !tReqMissSkipA) ||
 			(tReqNoReadB && !tReqMissSkipB) )
 		begin
 			if(tReqOpm[4])
+			begin
+				$display("L1 D$: Bad Read %X %X/%X",
+					tReqAddr, tBlkMemAddr2A, tBlkMemAddr2B);
 				tRegOutExc[15:0] = 16'h8001;
+			end
 		end
 
 		if(	(tReqReadOnlyA && !tReqMissSkipA) ||
 			(tReqReadOnlyB && !tReqMissSkipB) )
 		begin
 			if(tReqOpm[5])
+			begin
+				$display("L1 D$: Bad Write %X %X/%X",
+					tReqAddr, tBlkMemAddr2A, tBlkMemAddr2B);
 				tRegOutExc[15:0] = 16'h8002;
+			end
 		end
 	end
 
@@ -2270,8 +2285,10 @@ begin
 
 			tNxtReq2StoreSticky = 1;
 
-			tArrMemDoStA = !tReq2MissSkipA && !tReq2ReadOnlyA;
-			tArrMemDoStB = !tReq2MissSkipB && !tReq2ReadOnlyB;
+//			tArrMemDoStA = !tReq2MissSkipA && !tReq2ReadOnlyA;
+//			tArrMemDoStB = !tReq2MissSkipB && !tReq2ReadOnlyB;
+			tArrMemDoStA = !tReq2MissSkipA;
+			tArrMemDoStB = !tReq2MissSkipB;
 
 			if(tBlk2StoreAddrA[3:2]==2'b11)
 				tArrMemDoStA = 0;

@@ -179,6 +179,47 @@ void BJX2_Op_MOV_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=ctx->regs[op->rm];
 }
 
+void BJX2_Op_MOVC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(!(ctx->regs[BJX2_REG_SR]&(1<<30)))
+	{
+		if(	(op->rn==BJX2_REG_PC) ||
+			(op->rn==BJX2_REG_SR) ||
+			(op->rn==BJX2_REG_VBR) ||
+			(op->rn==BJX2_REG_SPC) ||
+			(op->rn==BJX2_REG_SSP) ||
+			(op->rn==BJX2_REG_TBR) ||
+			(op->rn==BJX2_REG_TTB) ||
+			(op->rn==BJX2_REG_TEA) ||
+			(op->rn==BJX2_REG_MMCR) ||
+			(op->rn==BJX2_REG_EXSR) ||
+			(op->rn==BJX2_REG_STTB) ||
+			(op->rn==BJX2_REG_KRR))
+		{
+			ctx->trapc=op->pc;
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+		}
+
+		if(	(op->rm==BJX2_REG_PC) ||
+			(op->rm==BJX2_REG_SR) ||
+			(op->rm==BJX2_REG_VBR) ||
+			(op->rm==BJX2_REG_SPC) ||
+			(op->rm==BJX2_REG_SSP) ||
+			(op->rm==BJX2_REG_TTB) ||
+			(op->rm==BJX2_REG_TEA) ||
+			(op->rm==BJX2_REG_MMCR) ||
+			(op->rm==BJX2_REG_EXSR) ||
+			(op->rm==BJX2_REG_STTB) ||
+			(op->rm==BJX2_REG_KRR))
+		{
+			ctx->trapc=op->pc;
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+		}
+	}
+
+	ctx->regs[op->rn]=ctx->regs[op->rm];
+}
+
 void BJX2_Op_MOVD_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=ctx->regs[op->rm];
@@ -1317,46 +1358,88 @@ void BJX2_Op_LDIN_Imm48(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_LEAB_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm);
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+(op->imm);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
 }
 
 void BJX2_Op_LEAW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2);
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2);
 }
 
 void BJX2_Op_LEAD_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*4);
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*4);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*4);
 }
 
 void BJX2_Op_LEAQ_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*8);
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*8);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*8);
 }
 
 void BJX2_Op_LEAB_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
-		(bjx2_addr)(ctx->regs[BJX2_REG_DR]);
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
+		((bjx2_addr)(ctx->regs[BJX2_REG_DR]));
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		(bjx2_addr)(ctx->regs[BJX2_REG_DR]);
 }
 
 void BJX2_Op_LEAW_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
 		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*2);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*2);
 }
 
 void BJX2_Op_LEAD_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
 		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*4);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*4);
 }
 
 void BJX2_Op_LEAQ_LdDrRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
 		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*8);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[BJX2_REG_DR])*8);
 }
 
 void BJX2_Op_LEAB_LdDrPcReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -1402,26 +1485,50 @@ void BJX2_Op_LEAW_LdDr4PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_LEAB_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
 		(bjx2_addr)(ctx->regs[op->ro]);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[op->ro])*1);
 }
 
 void BJX2_Op_LEAW_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
 		((bjx2_addr)(ctx->regs[op->ro])*2);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[op->ro])*2);
 }
 
 void BJX2_Op_LEAD_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
 		((bjx2_addr)(ctx->regs[op->ro])*4);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[op->ro])*4);
 }
 
 void BJX2_Op_LEAQ_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+	u64 v1;
+	v1=(bjx2_addr)(ctx->regs[op->rm])+
 		((bjx2_addr)(ctx->regs[op->ro])*8);
+	v1=v1&0x0000FFFFFFFFFFFFULL;
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[op->ro])*8);
 }
 
 void BJX2_Op_LEAB_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -2573,3 +2680,136 @@ void BJX2_Op_PCSELTW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vc=sc0 | (((u64)sc1)<<16) | (((u64)sc2)<<32) | (((u64)sc3)<<48);
 	ctx->regs[op->rn]=vc;
 }
+
+
+#if 1
+u64 BJX2_OpI_LeaAdjustBoundPtr(BJX2_Context *ctx, u64 base, s64 disp)
+{
+	u64 v1, v1b;
+	u64 v2, v2bi;
+	int bstep, lobi, cmsk;
+	byte bnd, shl, cbit;
+
+	v1b=base+disp;
+	v1b=v1b&0x0000FFFFFFFFFFFFULL;
+
+//	return(v1b);
+
+	if((base>>60)==0)
+	{
+		/* Non-bounded pointers are stripped. */
+		return(v1b);
+	}
+
+
+	bnd=(base>>48)&255;
+	if(bnd<0x10)
+	{
+		lobi=((base>>56)&15);
+		v2=bnd;
+		v2bi=lobi;
+		shl=0;
+	}
+	else
+	{
+		lobi=((base>>56)&15);
+		shl=((bnd>>3)-1);
+		v2=(8|(bnd&7))<<shl;
+		v2bi=((u64)lobi)<<shl;
+	}
+	
+	cmsk=(1<<shl)-1;
+	cbit=((base&cmsk)+(disp&cmsk))>>shl;
+//	bstep=(v1b-base)>>shl;
+	bstep=(disp>>shl)+cbit;
+	lobi+=bstep;
+
+	if((base>>60)==3)
+	{
+		if((lobi<0) || (lobi>15))
+		{
+			return(v1b);
+		}
+		
+		v1=((base>>48)&0xF0FF)|(lobi<<8);
+		v1=(v1<<48)|v1b;
+		return(v1);
+	}
+
+	return(v1b);
+}
+
+void BJX2_Op_LEATB_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx, ctx->regs[op->rm], op->imm*1);
+	ctx->regs[op->rn]=v1;
+}
+
+void BJX2_Op_LEATW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx, ctx->regs[op->rm], op->imm*2);
+	ctx->regs[op->rn]=v1;
+}
+
+void BJX2_Op_LEATL_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx, ctx->regs[op->rm], op->imm*4);
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*4);
+}
+
+void BJX2_Op_LEATQ_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx, ctx->regs[op->rm], op->imm*8);
+	ctx->regs[op->rn]=v1;
+}
+
+void BJX2_Op_LEATB_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx,
+		ctx->regs[op->rm], (ctx->regs[op->ro])*1);
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		(bjx2_addr)(ctx->regs[op->ro]);
+}
+
+void BJX2_Op_LEATW_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx,
+		ctx->regs[op->rm], (ctx->regs[op->ro])*2);
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[op->ro])*2);
+}
+
+void BJX2_Op_LEATL_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx,
+		ctx->regs[op->rm], (ctx->regs[op->ro])*4);
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[op->ro])*4);
+}
+
+void BJX2_Op_LEATQ_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v1;
+	v1=BJX2_OpI_LeaAdjustBoundPtr(ctx,
+		ctx->regs[op->rm], (ctx->regs[op->ro])*8);
+	ctx->regs[op->rn]=v1;
+
+//	ctx->regs[op->rn]=(bjx2_addr)(ctx->regs[op->rm])+
+//		((bjx2_addr)(ctx->regs[op->ro])*8);
+}
+#endif

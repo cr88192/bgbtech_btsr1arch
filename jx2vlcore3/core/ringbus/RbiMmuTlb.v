@@ -392,7 +392,8 @@ RbiMmuChkAcc tlbChkAcc(
 //	regInKRR,
 	tRegInKRR,
 	tRegInSR,
-	regInOpm[7:0],
+	tRegInOpm[7:0],
+	tRegInAddr[47:44],
 	tlbAcc,
 	aclEntryA,	aclEntryB,
 	aclEntryC,	aclEntryD,
@@ -885,7 +886,7 @@ begin
 	if(tAddrIsPhysV)
 		tRegOutOpm[11]	= 1;
 
-	if((tRegInAddr[47] && tRegInIsLDX) || tAddrIsMMIO)
+	if((tRegInAddr[47] && !tAddrIsPhys && tRegInIsLDX) || tAddrIsMMIO)
 	begin
 		if(tlbMmuEnable && !tRegInSR[30])
 		begin

@@ -2714,6 +2714,7 @@ int BGBCC_JX2C_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, 
 int BGBCC_JX2C_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2C_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
 void bgbcc_jx2cc_setu16en(byte *ct, int en, u16 v);
+ccxl_status BGBCC_JX2C_RelocRangeError(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rlcix, int lblix, int rlcty, int disp);
 ccxl_status BGBCC_JX2C_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *imgbase);
 ccxl_status BGBCC_JX2C_CheckTlsInit(BGBCC_TransState *ctx);
 ccxl_status BGBCC_JX2C_CheckRWadInit(BGBCC_TransState *ctx);
@@ -3156,6 +3157,8 @@ int BGBCC_JX2C_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx
 int BGBCC_JX2C_EmitLoadFrameNmidForVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
 int BGBCC_JX2C_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
+int BGBCC_JX2C_SizeToFp8(int sz);
+int BGBCC_JX2C_SizeToBndTag16(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int sz, ccxl_type tty);
 int BGBCC_JX2C_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register dreg, int sreg);
 int BGBCC_JX2C_CheckEmitLookupVRegForName(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name, ccxl_register *rreg);

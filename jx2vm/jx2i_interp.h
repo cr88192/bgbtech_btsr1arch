@@ -642,7 +642,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_DIVUL			0x145		//
 #define BJX2_NMID_MODSL			0x146		//
 #define BJX2_NMID_MODUL			0x147		//
-
 #define BJX2_NMID_CSRRW			0x148		//(CSR SWAP, RISC-V)
 #define BJX2_NMID_CSRRS			0x149		//(CSR SET, RISC-V)
 #define BJX2_NMID_CSRRC			0x14A		//(CSR CLEAR, RISC-V)
@@ -694,6 +693,17 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PRELUH		0x175	//
 #define BJX2_NMID_PRCPAF		0x176	//
 #define BJX2_NMID_PRELUF		0x177	//
+#define BJX2_NMID_BNDCMP		0x178	//
+
+#define BJX2_NMID_BNDCHKB		0x180	//
+#define BJX2_NMID_BNDCHKW		0x181	//
+#define BJX2_NMID_BNDCHKL		0x182	//
+#define BJX2_NMID_BNDCHKQ		0x183	//
+#define BJX2_NMID_LEATB			0x184	//
+#define BJX2_NMID_LEATW			0x185	//
+#define BJX2_NMID_LEATL			0x186	//
+#define BJX2_NMID_LEATQ			0x187	//
+
 
 
 #define BJX2_FMID_NONE			0x00		//?

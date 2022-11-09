@@ -182,14 +182,15 @@ int tk_getch_v(void)
 	return(i);
 }
 
-int tk_gettimeus_v(void)
+u64 tk_gettimeus_v(void)
 {
 	TK_SysArg ar[4];
-	int i;
-	i=0;
+	u64 li;
+	li=0;
 	ar[0].i=1;
-	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
-	return(i);
+//	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
+	tk_syscall(NULL, TK_UMSG_CONKBHIT, &li, ar);
+	return(li);
 }
 
 int (*tk_kbhit_fn)(void);

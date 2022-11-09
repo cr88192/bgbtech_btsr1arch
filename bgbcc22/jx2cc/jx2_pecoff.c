@@ -459,12 +459,20 @@ int BGBCC_JX2C_CoffSectionFlags(
 	BGBCC_JX2_Context *sctx,
 	char *name)
 {
-	if(!strcmp(name, ".text"))
+	if(!strcmp(name, ".text") ||
+		!strcmp(name, ".utext"))
 	{
 		return(BGBCC_COFF_SCNT_CODE|
 			BGBCC_COFF_SCNT_EXECUTE|
 			BGBCC_COFF_SCNT_READ);
 	}
+	if(!strcmp(name, ".udata"))
+	{
+		return(BGBCC_COFF_SCNT_IDATA|
+			BGBCC_COFF_SCNT_READ|
+			BGBCC_COFF_SCNT_WRITE);
+	}
+
 	if(!strcmp(name, ".data") ||
 		!strcmp(name, ".idata") ||
 		!strcmp(name, ".vsdata") ||
@@ -2123,6 +2131,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		k=(k+63)&(~63);
 	}
 	
+	/* If .utext exists, pad data sections to a new page. */
+	i=BGBCC_SH_CSEG_UTEXT;
+	j=sctx->sec_pos[i]-sctx->sec_buf[i];
+	if((j>0) && !(sctx->is_pbo))
+		{ k=(k+16383)&(~16383); }
+
 	sctx->gbr_rva=k;
 	
 	if(sctx->is_pbo)
@@ -2294,6 +2308,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			case BGBCC_SH_CSEG_RODATA: s0=".rdata"; break;
 			case BGBCC_SH_CSEG_BSS: s0=".bss"; break;
 			case BGBCC_SH_CSEG_RELOC: s0=".reloc"; break;
+
+			case BGBCC_SH_CSEG_UTEXT: s0=".utext"; break;
+			case BGBCC_SH_CSEG_UDATA: s0=".udata"; break;
+
 			case BGBCC_SH_CSEG_DYN: s0=".dyn"; break;
 			case BGBCC_SH_CSEG_ABS: s0=".abs"; break;
 			default:
@@ -2342,6 +2360,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 //		sctx->sec_rva[i]=k;
 //		sctx->sec_lva[i]=img_base+k;
 //		sctx->sec_lsz[i]=j;
+
+		if((j>0) && (i==BGBCC_SH_CSEG_UTEXT) && !(sctx->is_pbo))
+		{
+			k=(k+16383)&(~16383);
+		}
+
 		k+=j;
 		k=(k+63)&(~63);
 	}
@@ -2366,6 +2390,13 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			continue;
 
 		j=sctx->sec_pos[i]-sctx->sec_buf[i];
+		if(!j)
+			continue;
+
+		/* pad .utext to its own page. */
+		if((j>0) && (i==BGBCC_SH_CSEG_UTEXT) && !(sctx->is_pbo))
+			{ k=(k+16383)&(~16383); }
+
 		sctx->sec_rva[i]=k;
 		sctx->sec_lva[i]=img_base+k;
 		sctx->sec_lsz[i]=j;
@@ -2379,6 +2410,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			sctx->sec_lsz[i]);
 
 	}
+
+	/* If .utext exists, pad data sections to a new page. */
+	i=BGBCC_SH_CSEG_UTEXT;
+	j=sctx->sec_pos[i]-sctx->sec_buf[i];
+	if((j>0) && !(sctx->is_pbo))
+		{ k=(k+16383)&(~16383); }
 
 	sctx->gbr_rva=k;
 	
@@ -2397,6 +2434,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 				continue;
 
 			j=sctx->sec_pos[i]-sctx->sec_buf[i];
+			if(!j)
+				continue;
+
 			sctx->sec_rva[i]=k;
 			sctx->sec_lva[i]=img_base+k;
 			sctx->sec_lsz[i]=j;
@@ -2428,6 +2468,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	printf("%d: %s %08X..%08X %d\n", i, s0,
 		sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
 		sctx->sec_lsz[i]);
+
+
+	if((sctx->gbr_rva!=sctx->sec_rva[BGBCC_SH_CSEG_DATA]) && (sctx->is_pbo))
+	{
+		BGBCC_DBGBREAK
+	}
 
 	ofs_mend=k;
 	

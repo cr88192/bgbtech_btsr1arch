@@ -174,6 +174,8 @@ isr_tlbfault:
 isr_syscall:
 //	break
 
+	mov		0x123456789ABCDEF, r16	//96-bit pad
+
 	//adjust return point to be somewhere after syscall op
 	mov		spc, r16
 	add		8, r16

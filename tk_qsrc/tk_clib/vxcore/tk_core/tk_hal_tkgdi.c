@@ -2060,7 +2060,54 @@ void tkgdi_comglue_wrapcall29(void *obj);
 void tkgdi_comglue_wrapcall30(void *obj);
 void tkgdi_comglue_wrapcall31(void *obj);
 
+void tkgdi_comglue_rv_wrapcall3(void *obj);
+void tkgdi_comglue_rv_wrapcall4(void *obj);
+void tkgdi_comglue_rv_wrapcall5(void *obj);
+void tkgdi_comglue_rv_wrapcall6(void *obj);
+void tkgdi_comglue_rv_wrapcall7(void *obj);
+void tkgdi_comglue_rv_wrapcall8(void *obj);
+void tkgdi_comglue_rv_wrapcall9(void *obj);
+void tkgdi_comglue_rv_wrapcall10(void *obj);
+void tkgdi_comglue_rv_wrapcall11(void *obj);
+void tkgdi_comglue_rv_wrapcall12(void *obj);
+void tkgdi_comglue_rv_wrapcall13(void *obj);
+void tkgdi_comglue_rv_wrapcall14(void *obj);
+void tkgdi_comglue_rv_wrapcall15(void *obj);
+void tkgdi_comglue_rv_wrapcall16(void *obj);
+void tkgdi_comglue_rv_wrapcall17(void *obj);
+void tkgdi_comglue_rv_wrapcall18(void *obj);
+void tkgdi_comglue_rv_wrapcall19(void *obj);
+void tkgdi_comglue_rv_wrapcall20(void *obj);
+void tkgdi_comglue_rv_wrapcall21(void *obj);
+void tkgdi_comglue_rv_wrapcall22(void *obj);
+void tkgdi_comglue_rv_wrapcall23(void *obj);
+void tkgdi_comglue_rv_wrapcall24(void *obj);
+void tkgdi_comglue_rv_wrapcall25(void *obj);
+void tkgdi_comglue_rv_wrapcall26(void *obj);
+void tkgdi_comglue_rv_wrapcall27(void *obj);
+void tkgdi_comglue_rv_wrapcall28(void *obj);
+void tkgdi_comglue_rv_wrapcall29(void *obj);
+void tkgdi_comglue_rv_wrapcall30(void *obj);
+void tkgdi_comglue_rv_wrapcall31(void *obj);
+
+int tk_syscall_utxt(void *sobj, int umsg, void *pptr, void *args);
+int tk_syscall_rv_utxt(void *sobj, int umsg, void *pptr, void *args);
+
 __asm {
+.section .utext
+
+tk_syscall_utxt:
+	syscall	0
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	rts
+
 tkgdi_comglue_wrapcall_gen:
 	ADD		-256, SP
 	MOV		LR, R1
@@ -2079,7 +2126,7 @@ tkgdi_comglue_wrapcall_gen:
 	LEA.B	(SP, 112), R6
 //	LEA.B	(SP, 128), R7
 	LEA.B	(SP, 136), R7
-	BSR		tk_syscall
+	BSR		tk_syscall_utxt
 
 	MOV.Q	(SP, 248), R1
 	MOV.Q	(SP, 112), R2
@@ -2141,6 +2188,105 @@ tkgdi_comglue_wrapcall18:
 tkgdi_comglue_wrapcall19:
 	MOV		TK_UMSG_COMGLUE_VMT19, R3
 	BRA		tkgdi_comglue_wrapcall_gen
+
+
+#if 1
+.riscv
+
+tk_syscall_rv_utxt:
+	syscall
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	nop
+	rts
+
+tkgdi_comglue_rv_wrapcall_gen:
+	ADD		-256, SP
+//	MOV		LR, R1
+	MOV.Q	R1, (SP, 248)
+
+	MOV.Q	R10, (SP, 128)
+	MOV.Q	R11, (SP, 136)
+	MOV.Q	R12, (SP, 144)
+	MOV.Q	R13, (SP, 152)
+	MOV.Q	R14, (SP, 160)
+	MOV.Q	R15, (SP, 168)
+	MOV.Q	R16, (SP, 176)
+	MOV.Q	R17, (SP, 184)
+	
+	MOV		R5, R11
+	ADD		SP, 112, R12
+	ADD		SP, 136, R13
+	BSR		tk_syscall_utxt
+
+	MOV.Q	(SP, 248), R1
+	MOV.Q	(SP, 112), R10
+	MOV.Q	(SP, 120), R11
+
+	ADD		256, SP
+	JMP 	R1
+
+tkgdi_comglue_rv_wrapcall3:
+	MOV		TK_UMSG_COMGLUE_VMT3, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall4:
+	MOV		TK_UMSG_COMGLUE_VMT4, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall5:
+	MOV		TK_UMSG_COMGLUE_VMT5, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall6:
+	MOV		TK_UMSG_COMGLUE_VMT6, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall7:
+	MOV		TK_UMSG_COMGLUE_VMT7, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+
+tkgdi_comglue_rv_wrapcall8:
+	MOV		TK_UMSG_COMGLUE_VMT8, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall9:
+	MOV		TK_UMSG_COMGLUE_VMT9, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+
+tkgdi_comglue_rv_wrapcall10:
+	MOV		TK_UMSG_COMGLUE_VMT10, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall11:
+	MOV		TK_UMSG_COMGLUE_VMT11, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall12:
+	MOV		TK_UMSG_COMGLUE_VMT12, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall13:
+	MOV		TK_UMSG_COMGLUE_VMT13, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall14:
+	MOV		TK_UMSG_COMGLUE_VMT14, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall15:
+	MOV		TK_UMSG_COMGLUE_VMT15, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall16:
+	MOV		TK_UMSG_COMGLUE_VMT16, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall17:
+	MOV		TK_UMSG_COMGLUE_VMT17, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall18:
+	MOV		TK_UMSG_COMGLUE_VMT18, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+tkgdi_comglue_rv_wrapcall19:
+	MOV		TK_UMSG_COMGLUE_VMT19, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
+
+.endriscv
+#endif
 };
 
 
@@ -2175,6 +2321,40 @@ NULL,	//10
 (void *)0x12345678
 };
 
+const _tkgdi_context_vtable_t tkgdi_context_vtable_grvvt = {
+NULL,						//0
+NULL,						//1
+(void *)0x12345678,			//2
+tkgdi_comglue_rv_wrapcall3,	//3
+tkgdi_comglue_rv_wrapcall4,
+tkgdi_comglue_rv_wrapcall5,
+tkgdi_comglue_rv_wrapcall6,
+tkgdi_comglue_rv_wrapcall7,
+tkgdi_comglue_rv_wrapcall8,
+(void *)0x12345678,			//9
+tkgdi_comglue_rv_wrapcall10,	//10
+tkgdi_comglue_rv_wrapcall11,
+tkgdi_comglue_rv_wrapcall12,
+tkgdi_comglue_rv_wrapcall13,
+tkgdi_comglue_rv_wrapcall14,	//14
+(void *)0x12345678,			//15
+tkgdi_comglue_rv_wrapcall16,	//16
+NULL,	//1
+NULL,	//2
+NULL,	//3
+NULL,	//4
+NULL,	//5
+NULL,	//6
+NULL,	//7
+NULL,	//8
+NULL,	//9
+NULL,	//10
+(void *)0x12345678
+};
+
+
+_tkgdi_context_vtable_t *tkgdi_context_vtable_gvtc;
+_tkgdi_context_vtable_t *tkgdi_context_vtable_grvvtc;
 
 _tkgdi_context_t *tkgdi_gcontext_ctx[256];
 TKPE_TaskInfo *tkgdi_gcontext_task[256];
@@ -2185,6 +2365,7 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 {
 	_tkgdi_context_t *ctx;
 	_tkgdi_context_t *ctx2;
+	TKPE_TaskInfo *ctask;
 	int i, j, k;
 	
 	tk_printf("TKGDI_GetHalContext:\n");
@@ -2196,13 +2377,39 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 			return(tkgdi_gcontext_ctx[i]);
 		}
 	}
-	
+
+	ctask=TK_GetCurrentTask();
+
 	ctx2=TKGDI_GetHalContext(task, apiname, subname);
 	
-	ctx=tk_malloc(sizeof(_tkgdi_context_t));
+	if(ctask==task)
+		return(ctx2);
+	
+	if(!tkgdi_context_vtable_gvtc)
+	{
+		tkgdi_context_vtable_gvtc=tk_malloc_usr(
+			sizeof(_tkgdi_context_vtable_t));
+		tkgdi_context_vtable_grvvtc=tk_malloc_usr(
+			sizeof(_tkgdi_context_vtable_t));
+		memcpy(tkgdi_context_vtable_gvtc,
+			&tkgdi_context_vtable_gvt,
+			sizeof(_tkgdi_context_vtable_t));
+		memcpy(tkgdi_context_vtable_grvvtc,
+			&tkgdi_context_vtable_grvvt,
+			sizeof(_tkgdi_context_vtable_t));
+	}
+	
+	ctx=tk_malloc_usr(sizeof(_tkgdi_context_t));
 	memset(ctx, 0, sizeof(_tkgdi_context_t));
-	ctx->vt=&tkgdi_context_vtable_gvt;
-	ctx->sobj=ctx2;
+//	ctx->vt=&tkgdi_context_vtable_gvt;
+	ctx->vt=tkgdi_context_vtable_gvtc;
+	
+	if(TK_Task_SyscallTaskIsRiscV(task))
+	{
+		ctx->vt=tkgdi_context_vtable_grvvtc;
+	}
+	
+	ctx->sobj=TKMM_LVA_ExportSharedObjectPtr(ctx2);
 	
 	i=tkgdi_n_gcontexts++;
 	tkgdi_gcontext_task[i]=task;

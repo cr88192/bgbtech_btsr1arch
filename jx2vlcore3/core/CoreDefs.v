@@ -1252,6 +1252,16 @@ parameter[5:0] JX2_UCIX_IXT_SUENTR	= 6'h19;		//Enter User Mode
 parameter[5:0] JX2_UCIX_IXT_VSKG	= 6'h1A;		//Canary Gen
 parameter[5:0] JX2_UCIX_IXT_VSKC	= 6'h1B;		//Canary Check
 
+parameter[5:0] JX2_UCIX_IXT_BNDCMPB	= 6'h1C;		//Bound Compare
+parameter[5:0] JX2_UCIX_IXT_BNDCMPW	= 6'h1D;		//Bound Compare
+parameter[5:0] JX2_UCIX_IXT_BNDCMPL	= 6'h1E;		//Bound Compare
+parameter[5:0] JX2_UCIX_IXT_BNDCMPQ	= 6'h1F;		//Bound Compare
+
+parameter[5:0] JX2_UCIX_IXT_BNDCHKB	= 6'h20;		//Bound Check
+parameter[5:0] JX2_UCIX_IXT_BNDCHKW	= 6'h21;		//Bound Check
+parameter[5:0] JX2_UCIX_IXT_BNDCHKL	= 6'h22;		//Bound Check
+parameter[5:0] JX2_UCIX_IXT_BNDCHKQ	= 6'h23;		//Bound Check
+
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg

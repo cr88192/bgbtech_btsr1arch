@@ -633,7 +633,7 @@ Basic Scheme (4 bit MSB Tag, 64-bit format):
 * 0010: BoundedArray (Offset=0)
 ** Low 48: Array Base (Data Area)
 ** High 12: Array Length
-* 0011: Reserved
+* 0011: BoundedArray_F8 (Offset=0)
 * 01zz: FixLong (62 bit)
 ** 62-bit, Twos Complement
 * 10zz: Flonum (62 bit)
@@ -669,7 +669,8 @@ Basic Scheme (4 bit Tag, 128-bit format):
 * 0011: DoubleBoundArray
 * 0100: Fixnum (124 bit, Sign Extend, Flipped)
 * 0101: Flonum (124 bit, Float128, Flipped)
-* 011x: Reserved
+* 0110: DoubleBoundArray_F16
+* 0111: Reserved
 * 10xx: Reserved
 * 1100: TagArray (Base Adjust)
 * 1101: Reserved
@@ -845,10 +846,10 @@ In the Extended form, the Bound will be given in 16-byte units.
 
 Double Bounded Array (Extended, Alternate)
 * Bits (127:124)=Element Size
-* Bits (123:112)=Array Lower Bound
+* Bits (123:112)=Array Lower Bound / Bias
 * Bits (111: 64)=Address(95:48)
 * Bits ( 63: 60)=Tag (0011)
-* Bits ( 59: 48)=Array Upper Bound
+* Bits ( 59: 48)=Array Upper Bound / Size
 * Bits ( 47:  0)=Address(47:0)
 
 Element Sizes / Array Size Limit:
@@ -874,3 +875,53 @@ Bounded arrays with a const-flag status should not be written to.
 The CPU may be allowed to fault if storing to an address with this flag set.
 
 Bounded Arrays will have an implicit No-Execute Status.
+
+
+
+=== Bounded Array F8 ===
+
+Bounded Array (F8)
+* Bits (63:60)=Tag (0011)
+* Bits (59:56)=Array Bias
+* Bits (55:48)=Array Bound
+* Bits (47: 0)=Address
+
+
+The array bound is given in bits (55:48) as an E5.F3 microfloat.
+* 00:  0  01:  1  02:  2  03:  3  04:  4  05:  5  06:  6  07:  7
+* 08:  8  09:  9  0A: 10  0B: 11  0C: 12  0D: 13  0E: 14  0F: 15
+* 10: 16  11: 18  12: 20  13: 22  14: 24  15: 26  16: 28  17: 30
+* 18: 32  19: 36  1A: 40  1B: 44  1C: 48  1D: 52  1E: 56  1F: 60
+* 20: 64  11: 72  12: 80  13: 88  14: 96  15:104  16:112  17:120
+* 28:128  19:144  1A:160  1B:176  1C:192  1D:208  1E:224  1F:240
+* 30:256  ...
+* 38:512  ...
+* ...
+
+The Bias is a value with the same exponent as the Bound, but represents a non-normalized value. It is added to the index prior to checking against the bound.
+
+
+=== Double Bounded Array F16 (Possible) ===
+
+DoubleBoundArray F16:
+* Bits (127:112)=ArrayBound(F16)
+* Bits (111: 64)=Base Address
+* Bits ( 63: 60)=Tag (0110)
+* Bits ( 59: 56)=Access Type
+* Bits ( 55: 48)=Element Type
+* Bits ( 47:  0)=Current Address
+
+The F16 bound will be given as an E6.F10 microfloat:
+* 0000..07FF:     0.. 2047
+* 0800..0BFF:  2048.. 4094
+* 0C00..0FFF:  4096.. 8188
+* 1000..13FF:  8192..16376
+* 1400..17FF: 16384..32752
+* ...
+
+This format will consist of a pair of 48 bit addresses:
+* The Base Address will give the lower bound of the array.
+** The Base Address + F16 Bound will give the upper bound.
+* The Current Address will give a pointer into the array.
+
+This mode will encode a quadrant-local address.

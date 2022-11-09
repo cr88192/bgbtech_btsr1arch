@@ -1,8 +1,15 @@
 int main()
 {
+	signed char a, b, c;
+
 	int n;
 	int t0, t1, t2, dt, tt;
 	int i, j, k;
+	
+	a=110;
+	b=75;
+	c=a+b;
+	printf("%d\n", c);
 	
 	t0=TK_GetTimeMs();
 	tt=0; n=0;

@@ -380,6 +380,7 @@ reg				tSkipMiss;
 reg				tNxtSkipMiss;
 
 reg				tReqAddrIsVirt;
+reg				tReqAddrNoExecute;
 
 reg				tStuckTlbMissInh;
 reg				tStuckTlbMissInhL;
@@ -925,17 +926,24 @@ begin
 //	tIcExecAcl = tBlkPFlA;
 	tIcExecAcl = tBlkPFlB;
 	
-	tReqAddrIsVirt	= (tInAddr[47:28] != 0) && !tInAddr[47];
+	tReqAddrIsVirt		= (tInAddr[47:28] != 0) && !tInAddr[47];
+	tReqAddrNoExecute	= 0;
 
 	tRegOutExc[ 63:16] = tInAddr[47:0];
 	tRegOutExc[111:64] = tReqAddrHi[47:0];
 
-//	if(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])
-	if(	(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])	||
-		(tBlkFlagB[2] && !tBlkFlagB[3] &&  tInAddr[4])	)
+	if(!tRegInSr[30])
 	begin
-		$display("L1 I$: Bad Execute %X", tInAddr);
-		tRegOutExc[15:0] = 16'h8003;
+	//	if(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])
+		if(	(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])	||
+			(tBlkFlagB[2] && !tBlkFlagB[3] &&  tInAddr[4])	||
+			tInAddr[47] )
+		begin
+			tReqAddrNoExecute	= 0;
+//			$display("L1 I$: Bad Execute %X %X/%X",
+//				tInAddr, tBlkFlagA, tBlkFlagB);
+//			tRegOutExc[15:0] = 16'h8003;
+		end
 	end
 	
 	tBlkIsSxo = 0;
@@ -1044,6 +1052,14 @@ begin
 	end
 
 	tMiss = tMissA || tMissB;
+
+	if(tReqAddrNoExecute && !tMiss)
+	begin
+		tReqAddrNoExecute	= 0;
+		$display("L1 I$: Bad Execute %X %X/%X",
+			tInAddr, tBlkFlagA, tBlkFlagB);
+		tRegOutExc[15:0] = 16'h8003;
+	end
 
 //	if(tMiss)
 //		tRegOutExc[15] = 0;

@@ -897,6 +897,9 @@ void tk_vmem_loadpte(u64 tva, u64 pte)
 
 #endif
 
+extern byte __utext_start;
+extern byte __utext_end;
+
 int TK_VMem_Init()
 {
 	char tblk1[512], tblk2[512];
@@ -1181,6 +1184,12 @@ int TK_VMem_Init()
 	}
 
 #endif
+
+	TK_VMem_MProtectPages(
+		&__utext_start,
+//		8192,
+		&__utext_end-&__utext_start,
+		TKMM_PROT_RWX);
 
 	tk_printf("TK_VMem_Init: A-5\n");
 

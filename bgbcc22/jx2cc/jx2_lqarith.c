@@ -1164,7 +1164,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 	ccxl_register sreg, ccxl_register treg,
 	int cmp, int lbl)
 {
-	int csreg, ctreg, flip, noflip;
+	int csreg, ctreg, flip, noflip, doptrshl;
+	int csreg2, ctreg2;
 //	s32 imm;
 	s64 imm;
 	int nm1, nm2, nm3;
@@ -1184,6 +1185,15 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 //		if(((imm&1023)==imm) || ((imm|(~1023))==imm))
 		if(((imm&1023)==imm) || ((imm|(~1023))==imm) || sctx->has_jumbo)
 			noflip=1;
+	}
+	
+	doptrshl=0;
+	if(sctx->abi_spillpad&4)
+	{
+		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type))
+		{
+			doptrshl=1;
+		}
 	}
 	
 	nm3=-1; flip=0;
@@ -1341,11 +1351,35 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		}
 #endif
 
+		csreg2=csreg;
+		ctreg2=ctreg;
+		if(doptrshl)
+		{
+			csreg2=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			ctreg2=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+//			BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+//				BGBCC_SH_NMID_SHLDQ, csreg, 16, csreg2);
+//			BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+//				BGBCC_SH_NMID_SHLDQ, ctreg, 16, ctreg2);
+
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+				BGBCC_SH_NMID_MOVZT, csreg, csreg2);
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+				BGBCC_SH_NMID_MOVZT, ctreg, ctreg2);
+		}
+
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 		if(flip)
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg, ctreg);
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg2, ctreg2);
 		else
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg, csreg);
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg2, csreg2);
+
+		if(doptrshl)
+		{
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, csreg2);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg2);
+		}
+
 		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 
 		BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);
@@ -1366,9 +1400,18 @@ int BGBCC_JX2C_EmitJCmpVRegZeroQLong(
 	int cmp, int lbl)
 {
 	ccxl_register treg;
-	int csreg, ctreg;
+	int csreg, ctreg, doptrshl;
 	int nm1, nm2, nm3;
 	int i, j, k;
+
+	doptrshl=0;
+	if(sctx->abi_spillpad&4)
+	{
+		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type))
+		{
+			doptrshl=1;
+		}
+	}
 
 	if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 	{
@@ -1440,6 +1483,9 @@ int BGBCC_JX2C_EmitJCmpVRegZeroQLong(
 		nm3=-1;
 		break;
 	}
+	
+	if(doptrshl)
+		nm1=-1;
 	
 	if((nm1>=0) && (nm2>=0))
 	{

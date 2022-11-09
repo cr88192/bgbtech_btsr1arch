@@ -709,6 +709,28 @@ int BGBCC_JX2C_EmitLeaBRegOfsReg(
 				opw1=BGBCC_SH_NMID_LEAQ;
 		}
 
+		if(sctx->abi_spillpad&4)
+//		if(0)
+		{
+			opw1=BGBCC_SH_NMID_LEATB;
+//			if(ofs>=512)
+			if(ofs>=32)
+			{
+				if(!(ofs&1))
+					opw1=BGBCC_SH_NMID_LEATW;
+				if(!(ofs&3))
+					opw1=BGBCC_SH_NMID_LEATL;
+				if(!(ofs&7))
+					opw1=BGBCC_SH_NMID_LEATQ;
+			}
+		}
+
+		if(sctx->abi_spillpad&4)
+		{
+//			BGBCC_JX2_EmitOpInnReg(sctx,
+//				BGBCC_SH_NMID_BNDCHK, ofs, breg);
+		}
+
 		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
 			opw1, breg, ofs, dreg);
 		return(1);
@@ -733,6 +755,22 @@ int BGBCC_JX2C_EmitLeaBRegOfsReg(
 				opw1=BGBCC_SH_NMID_LEAL;
 			if(!(ofs&7))
 				opw1=BGBCC_SH_NMID_LEAQ;
+		}
+
+		if(sctx->abi_spillpad&4)
+//		if(0)
+		{
+			opw1=BGBCC_SH_NMID_LEATB;
+//			if(ofs>=512)
+			if(ofs>=32)
+			{
+				if(!(ofs&1))
+					opw1=BGBCC_SH_NMID_LEATW;
+				if(!(ofs&3))
+					opw1=BGBCC_SH_NMID_LEATL;
+				if(!(ofs&7))
+					opw1=BGBCC_SH_NMID_LEATQ;
+			}
 		}
 
 		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
@@ -1811,20 +1849,103 @@ int BGBCC_JX2C_EmitStoreFrameVRegByValReg(
 	return(p0);
 }
 
+int BGBCC_JX2C_SizeToFp8(int sz)
+{
+	int v, e, i;
+
+	if(sz<0)
+		return(0);
+	
+	if(sz<16)
+		return(sz);
+	
+	v=sz; e=1;
+	while(v>=16)
+		{ v=(v+1)>>1; e++; }
+	i=(e<<3)|(v&7);
+	return(i);
+}
+
+int BGBCC_JX2C_SizeToBndTag16(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int sz, ccxl_type tty)
+{
+	int i, tt, sc;
+	
+	tt=-1;
+	switch(tty.val)
+	{
+	case CCXL_TY_SB:
+		tt=0; sc=1;	break;
+	case CCXL_TY_SS:
+		tt=1; sc=2;	break;
+	case CCXL_TY_I:
+		tt=2; sc=4;	break;
+	case CCXL_TY_L:
+	case CCXL_TY_UL:
+		tt=3; sc=8;	break;
+	case CCXL_TY_NL:
+	case CCXL_TY_UNL:
+		tt=3; sc=8;	break;
+
+	case CCXL_TY_UB:
+		tt=4; sc=1;	break;
+	case CCXL_TY_US:
+		tt=5; sc=2;	break;
+	case CCXL_TY_UI:
+		tt=6; sc=4;	break;
+
+	case CCXL_TY_F16:
+		tt=9; sc=2;		break;
+	case CCXL_TY_F:
+		tt=10; sc=4;	break;
+	case CCXL_TY_D:
+		tt=11; sc=8;	break;
+
+	case CCXL_TY_I128:
+	case CCXL_TY_UI128:
+		tt=15; sc=8;	break;
+	
+	default:
+		if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, tty))
+		{
+			if(BGBCC_CCXL_TypeQuadPointerP(ctx, tty))
+			{
+				tt=14; sc=8;
+			}else
+			{
+				tt=12; sc=8;
+			}
+		}
+		break;
+	}
+	
+	if(tt<0)
+		return(0);
+	
+	i=BGBCC_JX2C_SizeToFp8(sz*sc);
+	if(!i)
+		return(0);
+	
+//	return(0x3000|(tt<<8)|i);
+	return(0x3000|i);
+}
+
 int BGBCC_JX2C_EmitLoadFrameVRegReg(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	ccxl_register sreg, int dreg)
 {
 	ccxl_register tvreg;
-	ccxl_type tty;
+	ccxl_type tty, bty;
 	char *s0;
 	double f, g;
 	float sf;
 	u16 usk;
 	s64 li, lj;
 	int dreg2, treg, rcls;
-	int nm1, nm2, nm3;
+	int nm1, nm2, nm3, asz, tag;
 	int p0, p1, tr0, tr1;
 	int i, j, k;
 
@@ -1849,6 +1970,19 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		
 			k=(ctx->cur_func->locals[j]->fxmoffs)+(sctx->frm_offs_fix);
 			i=BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, k, dreg);
+
+			if(sctx->abi_spillpad&4)
+			{
+				BGBCC_CCXL_TypeDerefType(ctx, tty, &bty);
+				asz=BGBCC_CCXL_TypeGetArrayDimSize(ctx, tty);
+				tag=BGBCC_JX2C_SizeToBndTag16(ctx, sctx, asz, bty);
+				if(tag>0)
+				{
+					BGBCC_JX2_EmitOpRegImmReg(sctx,
+						BGBCC_SH_NMID_MOVTT, dreg, tag, dreg);
+				}
+			}
+
 			return(i);
 		}
 

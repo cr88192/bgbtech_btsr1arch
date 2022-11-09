@@ -130,6 +130,8 @@ tk_kptr		resv_E8;		//E8, reserved pointer
 tk_kptr		resv_F0;		//F0, reserved pointer
 tk_kptr		resv_F8;		//F8, reserved pointer
 
+tk_kptr		sharebuf[32];	//100, Shared Buffers
+
 //End of fixed area.
 
 u64			tlsdat[2048];	//data for TLS
@@ -187,10 +189,10 @@ tk_kptr		usrptr;			//40, pointer to user-modifiable area
 tk_kptr		allocaptr;		//48, pointer to alloca mark
 tk_kptr		tlsptr;			//50, pointer to TLS data area
 
-short		pid;			//58, Process ID
-short		sch_id;			//5A, Scheduler ID
-short		uid;			//5C
-short		gid;			//5E
+u16			pid;			//58, Process ID
+u16			sch_id;			//5A, Scheduler ID
+u16			uid;			//5C
+u16			gid;			//5E
 
 tk_kptr		baseptr;		//60, base pointer for main binary
 tk_kptr		bootptr;		//68, entry point for main binary

@@ -148,6 +148,51 @@ The target address is computed and PC is updated to the new address if the condi
 This instruction is only allowed in Lane 1.
 
 
+=== BNDCHK / BNDCMP ===
+
+* F0nm_1g08 BNDCHK.B	Rm, Rn				//Bounds Check (Byte Scale)
+* F0nm_1g18 BNDCHK.W	Rm, Rn				//Bounds Check (Word Scale)
+* F0nm_1g28 BNDCHK.L	Rm, Rn				//Bounds Check (DWord Scale)
+* F0nm_1g38 BNDCHK.Q	Rm, Rn				//Bounds Check (QWord Scale)
+
+* F0nm_3g08 BNDCMP.B	Rm, Rn				//Bounds Compare (Byte Scale)
+* F0nm_3g18 BNDCMP.W	Rm, Rn				//Bounds Compare (Word Scale)
+* F0nm_3g28 BNDCMP.L	Rm, Rn				//Bounds Compare (DWord Scale)
+* F0nm_3g38 BNDCMP.Q	Rm, Rn				//Bounds Compare (QWord Scale)
+
+Check or Compare Array Bounds.
+
+The Bounds Check operation will verify whether an index (given) in Rm, falls within the bounds of the array pointer given in Rn.
+
+The pointer is assumed to follow the tagged pointer scheme defined in the ABI spec.
+
+The Check operation will determine bounds and, if the bounds check fails, will raise a bounds check exception. It will also raise an exception if given a tagged pointer that does not represent either a raw pointer or a bounded array.
+
+
+The Compare operation is similar, but will update SR.T based on the result.
+SR.T will be set if the access is in-bounds, or cleared if the access is out-of-bounds or is an unhandled type.
+
+
+The bounded pointer format is:
+* Bits (63:60)=Tag (0011)
+* Bits (59:56)=Array Bias
+* Bits (55:48)=Array Bound
+* Bits (47: 0)=Address
+
+The bound is given in bits (55:48) as an E5.F3 microfloat.
+* 00:  0  01:  1  02:  2  03:  3  04:  4  05:  5  06:  6  07:  7
+* 08:  8  09:  9  0A: 10  0B: 11  0C: 12  0D: 13  0E: 14  0F: 15
+* 10: 16  11: 18  12: 20  13: 22  14: 24  15: 26  16: 28  17: 30
+* 18: 32  19: 36  1A: 40  1B: 44  1C: 48  1D: 52  1E: 56  1F: 60
+* 20: 64  11: 72  12: 80  13: 88  14: 96  15:104  16:112  17:120
+* 28:128  19:144  1A:160  1B:176  1C:192  1D:208  1E:224  1F:240
+* 30:256  ...
+* 38:512  ...
+* ...
+
+The Bias is a value with the same exponent as the Bound, but represents a non-normalized value. It is added to the index prior to checking against the bound.
+
+
 === BRA / JMP ===
 
 * 20dd       BRA		(PC, disp8s)
@@ -862,50 +907,56 @@ A key encoded on one machine will not necessarily be valid on a different machin
 Encoded keys should not be placed in memory which is readable from user-mode, as this increases the likelihood of code being able to break the encoding and forge its own keys.
 
 
-=== LEA.B ===
+=== LEA.x ===
 
 * 4Cnm       LEA.B		(Rm, DLR), Rn
+* 4Dnm       LEA.W		(Rm, DLR), Rn
+* 4Enm       LEA.L		(Rm, DLR), Rn
+* 4Fnm       LEA.Q		(Rm, DLR), Rn
+
+* F0nm_0Go0  LEA.B		(Rm, Disp5u), Rn
+* F0nm_0Go1  LEA.W		(Rm, Disp5u), Rn
+* F0nm_0Go2  LEA.L		(Rm, Disp5u), Rn
+* F0nm_0Go3  LEA.Q		(Rm, Disp5u), Rn
+
 * F0nm_0Go4  LEA.B		(Rm, Ro), Rn
+* F0nm_0Go5  LEA.W		(Rm, Ro), Rn
+* F0nm_0Go6  LEA.L		(Rm, Ro), Rn
+* F0nm_0Go7  LEA.Q		(Rm, Ro), Rn
+
 * F1nm_0Gdd  LEA.B		(Rm, disp9u), Rn
+* F1nm_1Gdd  LEA.W		(Rm, disp9u), Rn
+* F1nm_2Gdd  LEA.L		(Rm, disp9u), Rn
+* F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
+
 
 Load the effective address of the Base register added to the displacement and store the result into the destination register.
 
-This will use a scale factor of 1.
-
-Note that the effective precision of LEA will be relative to the size of the address space. The effective precision of a LEA may be smaller than 64 bits.
+This will use a scale factor equivalent to the size element type.
 
 
-=== LEA.L ===
+Note that the effective precision of LEA will be relative to the size of the address space. In a 32-bit address space, it will only update the low 32 bits, and in a 48-bit address space will adjust the low 48 bits.
 
-* 4Enm       LEA.L	(Rm, DLR), Rn
-* F0nm_0Go6  LEA.L	(Rm, Ro), Rn
-* F1nm_2Gdd  LEA.L	(Rm, disp9u), Rn
-
-Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
-
-This will use a scale factor of 4.
+The basic form of the LEA.x instruction will zero the tag bits.
+In a 32 bit address space, the high 32 bits of the result will be zeroed.
 
 
-=== LEA.Q ===
+=== LEAT.x ===
 
-* 4Fnm       LEA.Q	(Rm, DLR), Rn
-* F0nm_0Go7  LEA.Q	(Rm, Ro), Rn
-* F1nm_3Gdd  LEA.Q	(Rm, disp9u), Rn
+** F0nm_4Go0  LEAT.B		(Rm, Disp5), Rn		//(TTAG)
+** F0nm_4Go1  LEAT.W		(Rm, Disp5), Rn		//(TTAG)
+** F0nm_4Go2  LEAT.L		(Rm, Disp5), Rn		//(TTAG)
+** F0nm_4Go3  LEAT.Q		(Rm, Disp5), Rn		//(TTAG)
+** F0nm_4Go4  LEAT.B		(Rm, Ro), Rn		//(TTAG)
+** F0nm_4Go5  LEAT.W		(Rm, Ro), Rn		//(TTAG)
+** F0nm_4Go6  LEAT.L		(Rm, Ro), Rn		//(TTAG)
+** F0nm_4Go7  LEAT.Q		(Rm, Ro), Rn		//(TTAG)
 
-Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
+The LEAT.x instruction will have similar behavior to a normal LEA.
 
-This will use a scale factor of 8.
+The primary difference, howerver, will be that LEAT will also adjust the tag bits for bounds-checked pointers.
 
-
-=== LEA.W ===
-
-* 4Dnm       LEA.W	(Rm, DLR), Rn
-* F0nm_0Go5  LEA.W	(Rm, Ro), Rn
-* F1nm_1Gdd  LEA.W	(Rm, disp9u), Rn
-
-Load the effective address of the Base register added to the scaled displacement and store the result into the destination register.
-
-This will use a scale factor of 2.
+If given a pointer with an unhandled tag type, or if the pointer goes outside the representable range for the bounds, then the tag bits will be zeroed.
 
 
 === LDIN / LDIZ ===
@@ -1214,10 +1265,37 @@ Load or store a Byte to/from memory.
 The byte is sign extended to the size of the register.
 
 
+The behavior of the address for MOV.x will depend on the address space size.
+In a 32 bit address mode, the high 32 bits of the address will be ignored (treated as if they were always zero).
+
+In both 32 and 48 bit modes, the high 16 bits for Load/Store operations will be ignoed by default (with a partial exception for an optional extended 60-bit addressing mode).
+
+In targets with a 96-bit virtual address space, GBH will be used for the high order bits of the virtual address when using these instruction forms.
+
+
+Note that for Load/Store, R0 and R1 will be special as Base and Index registers.
+
+For Displacement Forms:
+* (R0, Disp) => (PC, Disp)
+* (R1, Disp) => (GBR, Disp)
+
+For Indexed Forms with R0 or R1:
+* (R0, R0) => (PC, DLR)
+* (R0, R1) => (DLR)
+* (R1, R0) => (GBR, DLR)
+* (R1, R1) => (TBR, DLR)
+
+For other Indexed forms:
+* (R0, Ri) => (PC, Ri)
+* (R1, Ri) => (GBR, Ri)
+* (Rm, R1) => (Rm, R0)		//Unscaled
+* (Rm, R1) => (Rm, R0)		//Unscaled
+
+
 === MOV.C ===
 
-* F0nm_4go3  MOV.C		Cn, (Rm, Ro)
-* F0nm_4goB  MOV.C		(Rm, Ro), Cn
+* F0nm_4go5  MOV.C		Cn, (Rm, Ro)
+* F0nm_4goD  MOV.C		(Rm, Ro), Cn
 * F1nm_5gdd  MOV.C		Cn, (Rm, disp9u)
 * F1nm_7gdd  MOV.C		(Rm, disp9u), Cn
 
@@ -1231,6 +1309,8 @@ The byte is sign extended to the size of the register.
 
 Load or store a Control Register to/from memory.
 The behavior of this operation will be similar to a MOV.Q, just applying to control registers.
+
+See MOV.B for general Load/Store semantics.
 
 
 === MOV.L ===
@@ -1265,9 +1345,7 @@ The behavior of this operation will be similar to a MOV.Q, just applying to cont
 
 Load or store a DWord to/from memory.
 
-Thought: This is a stupid number of MOV.L forms, it may be relevant to prune some of them.
-
-For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need to both exist in the case of SP. The Disp9 cases don't save much on average vs disp17s when F0-28 exists, but save a bit more if it does not exist.
+See MOV.B for general Load/Store semantics.
 
 
 === MOV.Q ===
@@ -1302,6 +1380,8 @@ For example, F0-28 and F1-2 could both achieve a similar purpose, so don't need 
 
 Load or store a QWord to/from memory.
 
+See MOV.B for general Load/Store semantics.
+
 
 === MOV.W ===
 
@@ -1329,6 +1409,8 @@ Load or store a QWord to/from memory.
 Load or store a Word to/from memory.
 The Word value is sign extended to the size of the register.
 
+See MOV.B for general Load/Store semantics.
+
 
 === MOVU.B ===
 
@@ -1345,6 +1427,8 @@ The Word value is sign extended to the size of the register.
 
 Load or store a Byte to/from memory.
 The byte is zero extended to the size of the register.
+
+See MOV.B for general Load/Store semantics.
 
 
 === MOVU.L ===
@@ -1368,6 +1452,8 @@ The byte is zero extended to the size of the register.
 Load or store a DWord to/from memory.
 The byte is zero extended to the size of the register.
 
+See MOV.B for general Load/Store semantics.
+
 
 === MOVU.W ===
 
@@ -1385,6 +1471,8 @@ The byte is zero extended to the size of the register.
 
 Load or store a Word to/from memory.
 The word is zero extended to the size of the register.
+
+See MOV.B for general Load/Store semantics.
 
 
 === MOV.X (MOVX2) ===
@@ -1420,6 +1508,8 @@ As with other MOV.x ops, encodings using PC or GBR as a base will use a byte sca
 
 The results of trying to load or store using a misaligned address are undefined.
 
+See MOV.B for general Load/Store semantics.
+
 
 === MOVTT (TTAG) ===
 
@@ -1440,6 +1530,15 @@ With the 3RI form, all other bits are copied unchanged from Rm.
 
 
 XMOVTT will load the 32-bit immediate into the high 16 bits of each target register, with the low half into the low register and the high half into the high register. The remaining 96 bits are kept unchanged.
+
+
+=== MOVZT (TTAG) ===
+
+* F0nm_1gA8 MOVZT		Rm, Rn			//MOV, Zero Tag
+* F0nm_1GA8 XMOVZT		Xm, Xn			//XMOV, Zero Tag
+
+Move value from Rm to Rn, but zero the tag bits (63:48).
+The XMOVZT will zero (63:48) in both registers in the pair.
 
 
 === MULx (3R) ===

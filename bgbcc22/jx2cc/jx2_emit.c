@@ -679,6 +679,16 @@ int BGBCC_JX2_EmitOpCheckRepack(
 			flip=1;
 		}
 
+#if 0
+		if((opw1&0xF800)==0x4000)
+		{
+			opw3=(opw3&0xFF00)|
+				((opw3<<4)&0x00F0)|
+				((opw3>>4)&0x000F);
+			flip=1;
+		}
+#endif
+
 		if(((opw1&0xF800)==0x8000) &&
 			((opw1&0xFF00)!=0x8000))
 		{
@@ -7650,7 +7660,8 @@ int BGBCC_JX2_ComposeJumboCheckOpwIsStore(BGBCC_JX2_Context *ctx,
 	{
 		if((opw2&0xF808)==0x0000)
 			return(1);
-		if((opw2&0xF008)==0x4000)
+//		if((opw2&0xF008)==0x4000)
+		if((opw2&0xF808)==0x4000)
 		{
 			if((opw2&0xF80F)==0x4800)
 				return(0);

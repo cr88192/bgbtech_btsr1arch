@@ -1251,6 +1251,17 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_XLEAL:		s0="XLEA.L";	break;
 	case BJX2_NMID_XLEAQ:		s0="XLEA.Q";	break;
 
+	case BJX2_NMID_LEATB:		s0="LEAT.B";	break;
+	case BJX2_NMID_LEATW:		s0="LEAT.W";	break;
+	case BJX2_NMID_LEATL:		s0="LEAT.L";	break;
+	case BJX2_NMID_LEATQ:		s0="LEAT.Q";	break;
+
+	case BJX2_NMID_BNDCHKB:		s0="BNDCHK.B";	break;
+	case BJX2_NMID_BNDCHKW:		s0="BNDCHK.W";	break;
+	case BJX2_NMID_BNDCHKL:		s0="BNDCHK.L";	break;
+	case BJX2_NMID_BNDCHKQ:		s0="BNDCHK.Q";	break;
+	case BJX2_NMID_BNDCMP:		s0="BNDCMP";	break;
+
 	case BJX2_NMID_BRAX:		s0="BRAX";		break;
 	case BJX2_NMID_BSRX:		s0="BSRX";		break;
 	case BJX2_NMID_BTX:			s0="BTX";		break;

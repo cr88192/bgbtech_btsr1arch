@@ -222,7 +222,7 @@ __interrupt void __isr_syscall(void)
 {
 	TKPE_TaskInfo *task, *task2;
 	TKPE_TaskInfoKern *taskern, *taskern2;
-	u64 *isrsave, *args;
+	u64 *isrsave, *args, *pret;
 	u64 ttb, tea, exc, yres;
 	u32 reg_sr, umsg;
 	u16 exsr;
@@ -246,65 +246,78 @@ __interrupt void __isr_syscall(void)
 
 	isrsave=__arch_isrsave;
 
-	memcpy(
-		taskern->ctx_regsave,
-		isrsave, 
-		__ARCH_SIZEOF_REGSAVE__);
-
-//	__debugbreak();
-
-	taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
-	taskern->ctx_regsave[TKPE_REGSAVE_TTB]=__arch_ttb;
-
 	if((exsr&15)==0)
 	{
 		if(reg_sr&(1<<26))
 		{
 			umsg=isrsave[TKPE_REGSAVE_R11];
+			pret=(u64 *)(isrsave[TKPE_REGSAVE_R12]);
 			args=(u64 *)(isrsave[TKPE_REGSAVE_R13]);
 		}
 		else
 		{
 			umsg=isrsave[TKPE_REGSAVE_R5];
+			pret=(u64 *)(isrsave[TKPE_REGSAVE_R6]);
 			args=(u64 *)(isrsave[TKPE_REGSAVE_R7]);
 		}
 
 		task2=NULL;
 
-//		if((umsg==TK_UMSG_YEILDTHREAD) ||
-//			(umsg==TK_UMSG_PGMEXIT))
-		if(umsg==TK_UMSG_YEILDTHREAD)
+		if(		TK_VMem_CheckAddrIsPhysPage(pret)	&&
+				TK_VMem_CheckAddrIsPhysPage(args)	)
 		{
-			yres=args[0];
-			task->ystatus=yres;
-			
-//			if(umsg==TK_UMSG_PGMEXIT)
-//			{
-//				yres=(u32)yres;
-//				yres|=(1ULL<<56);
-//			}
-
-			if(yres>>56)
+	//		if((umsg==TK_UMSG_YEILDTHREAD) ||
+	//			(umsg==TK_UMSG_PGMEXIT))
+			if(umsg==TK_UMSG_YEILDTHREAD)
 			{
-				if(taskern->task_join_ret)
+				yres=args[0];
+				task->ystatus=yres;
+				
+	//			if(umsg==TK_UMSG_PGMEXIT)
+	//			{
+	//				yres=(u32)yres;
+	//				yres|=(1ULL<<56);
+	//			}
+
+				if(yres>>56)
 				{
-					task2=(TKPE_TaskInfo *)(taskern->task_join_ret);
+					if(taskern->task_join_ret)
+					{
+						task2=(TKPE_TaskInfo *)(taskern->task_join_ret);
+					}
+				}
+
+				if(!task2)
+					task2=TK_CheckSchedNewTask(task);
+
+				if(!task2)
+				{
+					if(!(yres>>56))
+					{
+						/* yield or sleep, continue running task. */
+						task2=task;
+					}
 				}
 			}
 
-			if(!task2)
-				task2=TK_CheckSchedNewTask(task);
-
-			if(!task2)
+			if(umsg==TK_UMSG_CONKBHIT)
 			{
-				if(!(yres>>56))
+				yres=args[0];
+				if(yres==0)
 				{
-					/* yield or sleep, continue running task. */
+					/* Bounce back to caller. */
+					*(int *)pret=tk_kbhit();
+					task2=task;
+				}else
+					if(yres==1)
+				{
+					/* Bounce back to caller. */
+					*(u64 *)pret=TK_GetTimeUs();
 					task2=task;
 				}
 			}
 		}
-		
+
 		if(!task2)
 		{
 			task2=tk_task_syscall;
@@ -329,25 +342,38 @@ __interrupt void __isr_syscall(void)
 		__debugbreak();
 	}
 
-	if(task2->magic0!=TKPE_TASK_MAGIC)
-		__debugbreak();
+	if(task2!=task)
+	{
+		if(task2->magic0!=TKPE_TASK_MAGIC)
+			__debugbreak();
 
-	taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
-	if(taskern2->magic0!=TKPE_TASK_MAGIC)
-		__debugbreak();
+		taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
+		if(taskern2->magic0!=TKPE_TASK_MAGIC)
+			__debugbreak();
 
-	memcpy(
-		isrsave, 
-		taskern2->ctx_regsave,
-		__ARCH_SIZEOF_REGSAVE__);
+		memcpy(
+			taskern->ctx_regsave,
+			isrsave, 
+			__ARCH_SIZEOF_REGSAVE__);
 
-	ttb=taskern2->ctx_regsave[TKPE_REGSAVE_TTB];
-	if(!ttb)
-		{ ttb=tk_vmem_pageglobal; }
+	//	__debugbreak();
 
-	__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
-	__arch_ttb=ttb;
-	__arch_tbr=(u64 *)task2;
+		taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
+		taskern->ctx_regsave[TKPE_REGSAVE_TTB]=__arch_ttb;
+
+		memcpy(
+			isrsave, 
+			taskern2->ctx_regsave,
+			__ARCH_SIZEOF_REGSAVE__);
+
+		ttb=taskern2->ctx_regsave[TKPE_REGSAVE_TTB];
+		if(!ttb)
+			{ ttb=tk_vmem_pageglobal; }
+
+		__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
+		__arch_ttb=ttb;
+		__arch_tbr=(u64 *)task2;
+	}
 
 	/* Returns into new task. */
 }
@@ -443,6 +469,19 @@ void TK_Task_SyscallSetReturn(TKPE_TaskInfo *task, u64 val)
 	{
 		taskern->ctx_regsave[TKPE_REGSAVE_R2]=val;
 	}
+}
+
+int TK_Task_SyscallTaskIsRiscV(TKPE_TaskInfo *task)
+{
+	TKPE_TaskInfoKern *taskern;
+	u32 reg_sr;
+
+	taskern=(TKPE_TaskInfoKern *)task->krnlptr;
+
+	reg_sr=taskern->ctx_regsave[TKPE_REGSAVE_EXSR]>>32;
+	if(reg_sr&(1<<26))
+		return(1);
+	return(0);
 }
 
 int TK_Task_SyscallLoop(void *uptr)

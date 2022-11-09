@@ -829,7 +829,12 @@ void *tk_malloc_cat(int sz, int cat)
 
 void *tk_malloc_krn(int sz)
 {
-	return(TKMM_MallocCat(sz, 2));
+	return(TKMM_MallocCat(sz, TKMM_MCAT_KRN_RW));
+}
+
+void *tk_malloc_usr(int sz)
+{
+	return(TKMM_MallocCat(sz, TKMM_MCAT_USR_RW));
 }
 
 void *tk_malloc_wxe(int sz)
@@ -839,7 +844,7 @@ void *tk_malloc_wxe(int sz)
 
 //	return(TKMM_MMList_Malloc(sz));
 //	return(TKMM_Malloc(sz));
-	return(TKMM_MallocCat(sz, 4));
+	return(TKMM_MallocCat(sz, TKMM_MCAT_USR_RWX));
 }
 
 int tk_free(void *ptr)

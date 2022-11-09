@@ -1306,6 +1306,9 @@ void TK_FlushCacheL1D_INVIC(void *ptr);
 
 int tk_sysc_exitpt();
 
+int tk_syscall_utxt(void *sobj, int umsg, void *pptr, void *args);
+int tk_syscall_rv_utxt(void *sobj, int umsg, void *pptr, void *args);
+
 volatile int tksh_runstate;
 
 int TKSH_TryLoad(char *img, char **args0)
@@ -1588,6 +1591,11 @@ int TKSH_TryLoad(char *img, char **args0)
 //			task->SysCall=tk_isr_syscall;
 
 			sysc=tk_isr_syscall;
+//			sysc=tk_syscall_utxt;
+			
+//			if((bootptr>>50)&1)
+//				{ sysc=tk_syscall_rv_utxt; }
+
 			task->SysCall=(tk_kptr)sysc;
 
 #if 0
@@ -1719,8 +1727,8 @@ int TKSH_TryLoad(char *img, char **args0)
 			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
 			tkern->ctx_regsave[TKPE_REGSAVE_GBR]=bootgbr;
 			tkern->ctx_regsave[TKPE_REGSAVE_SSP]=boot_newsp;
-			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
-//			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
+//			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
+			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
 			TK_Task_SyscallReturnToUser(task);
 
 #if 1

@@ -2044,3 +2044,129 @@ void BJX2_Op_CSRRCI_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(op->rn!=BJX2_REG_ZZR)
 		ctx->regs[op->rn]=v1;
 }
+
+
+int BJX2_OpI_BNDCHK(u64 v0, u64 v1)
+{
+	u64 v2, v2bi;
+	byte bnd;
+
+	if((v0>>60)==0)
+	{
+		if(v0>>48)
+			return(1);
+		return(0);
+	}
+
+	if((v0>>60)==3)
+	{
+		bnd=(v0>>48)&255;
+		if(bnd<0x10)
+		{
+			v2=bnd;
+			v2bi=((v0>>56)&15);
+		}
+		else
+		{
+			v2=(8|(bnd&7))<<((bnd>>3)-1);
+			v2bi=((v0>>56)&15)<<((bnd>>3)-1);
+		}
+		
+//		return(v1>=v2);
+		return((v1+v2bi)>=v2);
+	}
+	
+	if((v0>>60)==15)
+	{
+		return(0);
+	}
+
+	if((v0>>60)==2)
+	{
+		bnd=(v0>>48)&255;
+		v2=bnd;
+		return(v1>=v2);
+	}
+
+	return(1);
+}
+
+void BJX2_Op_BNDCHKB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*1);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCHKW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*2);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCHKL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*4);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCHKQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*8);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCMP_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}

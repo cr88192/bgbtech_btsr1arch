@@ -77,6 +77,10 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "FpuConvD2H.v"
 `endif
 
+`ifdef jx2_agu_ribound64
+`include "ExBoundFp8.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExEX1(
@@ -328,6 +332,14 @@ assign	tValAguOob		= 0;
 assign	tAguXLeaTag		= 0;
 
 ExAGU	exAgu(regValRs[31:0], regValRt[31:0], opUIxt, tValAgu[31:0]);
+`endif
+
+wire		tValBound8Oob;
+
+`ifdef jx2_agu_ribound64
+ExBoundFp8	tboundfp8(regValRt, regValRs[63:48], opUIxt[7:0], tValBound8Oob);
+`else
+assign	tValBound8Oob = 1'b0;
 `endif
 
 wire[63:0]	tValCnv;
@@ -713,10 +725,13 @@ begin
 				$display("EX1: Invalid Opcode %X", tOpUCmd1);
 			tNextMsgLatch	= 1;
 
-			tExTrapExc = {
-				tValBraHi,
-				regValBPc,
-				16'h800E };
+//			tExTrapExc = {
+//				tValBraHi,
+//				regValBPc,
+//				16'h800E };
+
+//			tExTrapExc = { UV112_00, 16'h800E };
+			tExTrapExc = { UV96_00, regValBPc[15:0], 16'h800E };
 
 //			tExHold		= 1;
 //			tExHold		= !reset;
@@ -1488,6 +1503,21 @@ begin
 					begin
 						tExTrapExc = { UV112_00, 16'h8010 };
 					end
+				end
+				
+				JX2_UCIX_IXT_BNDCHKB, JX2_UCIX_IXT_BNDCHKW,
+				JX2_UCIX_IXT_BNDCHKL, JX2_UCIX_IXT_BNDCHKQ:
+				begin
+					if(tValBound8Oob)
+					begin
+						tExTrapExc = { UV112_00, 16'h800F };
+					end
+				end
+
+				JX2_UCIX_IXT_BNDCMPB, JX2_UCIX_IXT_BNDCMPW,
+				JX2_UCIX_IXT_BNDCMPL, JX2_UCIX_IXT_BNDCMPQ:
+				begin
+					tRegOutSr[0]	= !tValBound8Oob;
 				end
 
 `ifdef jx2_enable_srtwid

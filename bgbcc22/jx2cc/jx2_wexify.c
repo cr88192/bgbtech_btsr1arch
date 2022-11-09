@@ -367,8 +367,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		{
 //			if((opw2&0xF808)==0x0000)
 			if(	((opw2&0xF808)==0x0000) ||
-//				((opw2&0xF808)==0x4000) ||
-				((opw2&0xF008)==0x4000) ||
+				((opw2&0xF808)==0x4000) ||
+//				((opw2&0xF008)==0x4000) ||
 				((opw2&0xF008)==0x8000))
 			{
 //				spr=rn;
@@ -388,7 +388,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 				if((opw2&0x0803)==0x0000)
 					spfl|=BGBCC_WXSPFL_RXN;
 
-				if((opw2&0x0803)==0x0800)
+//				if((opw2&0x0803)==0x0800)
+				if((opw2&0x0803)==0x0001)
 				{
 					rn=gr2cr[rn];
 					if(spfl&BGBCC_WXSPFL_IS_STORE)
@@ -2050,6 +2051,7 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 		}
 
 		if((opw2&0xF003)==0x4000)
+//		if((opw2&0xF803)==0x4000)
 		{
 			/* MOV.X */
 			return(0);
@@ -2261,6 +2263,12 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix2B(
 				((opw1&0x000E)!=0x0000)
 			)
 		{
+			if(sctx->abi_spillpad&4)
+			{
+				/* No LEA transform if bounds-checking is on. */
+				return(0);
+			}
+
 			/* Allow LEA */
 			return(1);
 		}

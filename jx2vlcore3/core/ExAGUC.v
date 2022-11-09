@@ -155,6 +155,11 @@ reg[12:0]	tRegBoundSum;
 reg[19:0]	tRegBndAdjAddP;
 reg			tRegBndAdjC0;
 
+reg[3:0]	tRegBoundRiShr4;
+reg[3:0]	tRegBoundAdj4;
+reg[4:0]	tRegBoundSum4;
+reg[4:0]	tRegBoundExp5;
+
 reg[11:0]	tRegTexS;
 reg[11:0]	tRegTexT;
 reg[23:0]	tRegTexMort;
@@ -184,7 +189,6 @@ begin
 	tRegOutXLeaHi	= { regBoundX[27:12], regValXm };
 	tRegOutXLeaTag	= 0;
 	tRegBoundAdj	= 0;
-
 
 `ifdef jx2_agu_ldtex
 	tRegTexS = regValRi[27:16];
@@ -252,6 +256,59 @@ begin
 `endif
 
 
+	tRegBndAdjAddP	= (regValRm[19:0] + tRiSc[19:0]) ^
+		(regValRm[19:0] ^ tRiSc[19:0]);
+
+`ifdef jx2_agu_ribound64
+	tRegBoundExp5	= regValRm[55:51]-1;
+	if(regValRm[55:51]==5'h00)
+		tRegBoundExp5 = 0;
+	
+//	tRegBoundRiShr4 = (tRiSc >> {1'b0, tRegBoundExp5})[3:0];
+	case(tRegBoundExp5)
+		5'h00: tRegBoundAdj4 = tRiSc[ 3: 0] + 0;
+		5'h01: tRegBoundAdj4 = tRiSc[ 4: 1] + {3'b0, tRegBndAdjAddP[ 0]};
+		5'h02: tRegBoundAdj4 = tRiSc[ 5: 2] + {3'b0, tRegBndAdjAddP[ 1]};
+		5'h03: tRegBoundAdj4 = tRiSc[ 6: 3] + {3'b0, tRegBndAdjAddP[ 2]};
+		5'h04: tRegBoundAdj4 = tRiSc[ 7: 4] + {3'b0, tRegBndAdjAddP[ 3]};
+		5'h05: tRegBoundAdj4 = tRiSc[ 8: 5] + {3'b0, tRegBndAdjAddP[ 4]};
+		5'h06: tRegBoundAdj4 = tRiSc[ 9: 6] + {3'b0, tRegBndAdjAddP[ 5]};
+		5'h07: tRegBoundAdj4 = tRiSc[10: 7] + {3'b0, tRegBndAdjAddP[ 6]};
+		5'h08: tRegBoundAdj4 = tRiSc[11: 8] + {3'b0, tRegBndAdjAddP[ 7]};
+		5'h09: tRegBoundAdj4 = tRiSc[12: 9] + {3'b0, tRegBndAdjAddP[ 8]};
+		5'h0A: tRegBoundAdj4 = tRiSc[13:10] + {3'b0, tRegBndAdjAddP[ 9]};
+		5'h0B: tRegBoundAdj4 = tRiSc[14:11] + {3'b0, tRegBndAdjAddP[10]};
+		5'h0C: tRegBoundAdj4 = tRiSc[15:12] + {3'b0, tRegBndAdjAddP[11]};
+		5'h0D: tRegBoundAdj4 = tRiSc[16:13] + {3'b0, tRegBndAdjAddP[12]};
+		5'h0E: tRegBoundAdj4 = tRiSc[17:14] + {3'b0, tRegBndAdjAddP[13]};
+		5'h0F: tRegBoundAdj4 = tRiSc[18:15] + {3'b0, tRegBndAdjAddP[14]};
+		5'h10: tRegBoundAdj4 = tRiSc[19:16] + {3'b0, tRegBndAdjAddP[15]};
+		5'h11: tRegBoundAdj4 = tRiSc[20:17] + {3'b0, tRegBndAdjAddP[16]};
+		5'h12: tRegBoundAdj4 = tRiSc[21:18] + {3'b0, tRegBndAdjAddP[17]};
+		5'h13: tRegBoundAdj4 = tRiSc[22:19] + {3'b0, tRegBndAdjAddP[18]};
+		5'h14: tRegBoundAdj4 = tRiSc[23:20] + {3'b0, tRegBndAdjAddP[19]};
+
+//		5'h15: tRegBoundAdj4 = tRiSc[24:21] + tRegBndAdjAddP[20];
+		default: tRegBoundAdj4 = 0;
+	endcase
+
+//	tRegBoundAdj4 = tRegBoundRiShr4 + tRegBndAdjAddP[tRegBoundExp5];
+	tRegBoundSum4 =
+		{ 1'b0, regValRm[59:56] } +
+		{ 1'b0, tRegBoundAdj4 } ;
+	
+	if(idUIxt[2])
+	begin
+		if(regValRm[63:60]==4'h3)
+		begin
+			tRegOutXLeaTag			= regValRm[63:48];
+			tRegOutXLeaTag[11:8]	= tRegBoundSum4[3:0];
+			if(tRegBoundSum4[4])
+				tRegOutXLeaTag		= 0;
+		end
+	end
+`endif
+
 `ifdef jx2_agu_ribound
 
 	tRegOutIsOob	= 0;
@@ -262,8 +319,8 @@ begin
 	tBoundDn	= 0;
 	tBndOor		= 0;
 	
-	tRegBndAdjAddP	= (regValRm[19:0] + tRiSc[19:0]) ^
-		(regValRm[19:0] ^ tRiSc[19:0]);
+//	tRegBndAdjAddP	= (regValRm[19:0] + tRiSc[19:0]) ^
+//		(regValRm[19:0] ^ tRiSc[19:0]);
 	
 	if(regBoundX[28])
 	begin

@@ -168,18 +168,35 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				{
 					sz=tk_getch();
 					*((int *)vParm1)=sz;
-				}
-
-				if(args[0].i==1)
+				}else
+					if(args[0].i==1)
 				{
 					li=TK_GetTimeUs();
 					*((s64 *)vParm1)=li;
+				}else
+				{
+					sz=0;
+					if(tk_kbhit())
+						sz=tk_getch();
+					*((int *)vParm1)=sz;
 				}
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0A:
-				sz=tk_kbhit();
-				*((int *)vParm1)=sz;
+				if(args[0].i==0)
+				{
+					sz=tk_kbhit();
+					*((int *)vParm1)=sz;
+				}else
+					if(args[0].i==1)
+				{
+					li=TK_GetTimeUs();
+					*((s64 *)vParm1)=li;
+				}else
+				{
+					sz=tk_kbhit();
+					*((int *)vParm1)=sz;
+				}
 				ret=TK_URES_TRUE;
 				break;
 			

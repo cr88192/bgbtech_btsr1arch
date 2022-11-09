@@ -907,16 +907,16 @@ Depending on the implementation and mode, LEA may be computed either as 32-bit a
 
 If full 48-bit addressing is used:
 * Bits 0..47 will be subject to address calculation;
-* Bits 48..63 will be copied unchanged.
+* Bits 48..63 will be zeroed.
 
 If 32-bit wraparound is used with 48 bit addressing:
 * Bits 0..31 will be subject to address calculation;
 * Bits 32..47 will be copied unchanged;
-* Bits 48..63 will be copied unchanged.
+* Bits 48..63 will be zeroed.
 
 In an implementation with 32-bit addressing, or in 32-bit address mode:
 * Bits 0..31 will contain the computed address;
-* Bits 32..63 will be copied unchanged.
+* Bits 32..63 will be zeroed.
 
 Note that the address mode used is not required to match the pointer width used by the C ABI. However, it may be presumed that the address width matches between the address mode, C ABI, and the width specified in executable images.
 
@@ -1589,10 +1589,18 @@ F0zz Instruction Block:
 ** F0nm_1Go7  XORX		Xm, Xo, Xn			//(ALUX) Xn=Xm^Xo
 
 ** F0nm_1ez8
+*** F0nm_1g08 BNDCHK.B	Rm, Rn				//Bounds Check (Byte Scale)
+*** F0nm_1G08 -
+*** F0nm_1g18 BNDCHK.W	Rm, Rn				//Bounds Check (Word Scale)
+*** F0nm_1G18 -
+*** F0nm_1g28 BNDCHK.L	Rm, Rn				//Bounds Check (DWord Scale)
+*** F0nm_1G28 -
+*** F0nm_1g38 BNDCHK.Q	Rm, Rn				//Bounds Check (QWord Scale)
+*** F0nm_1G38 -
 
 *** F0nm_1g48 -
 *** F0nm_1G48 ? MULU.X	Xm, Xn				//(MULX) Xn=Xn*Xm
-*** F0nm_1g58 -
+*** F0nm_1g58 BNDCMP	Rm, Rn				//Bounds Compare
 *** F0nm_1G58 ? MULHU.X	Xm, Xn				//(MULX) Xn=(Xn*Xm)>>128
 *** F0nm_1g68 VSKG		Rm, Rn				//Canary Generate
 *** F0nm_1G68 ? DIVU.X	Xm, Xn				//(MULX) Xn=Xn/Xm
@@ -1934,6 +1942,16 @@ F0zz Instruction Block:
 ** F0nm_3ez7  SWxP.x	Rm, Rn			//(GSV) SWAP and SWCP
 
 ** F0nm_3ez8  (Reserved 2R Block Space)
+** F0nm_3ez8
+*** F0nm_3g08 BNDCMP.B	Rm, Rn				//Bounds Compare (Byte Scale)
+*** F0nm_3G08 -
+*** F0nm_3g18 BNDCMP.W	Rm, Rn				//Bounds Compare (Word Scale)
+*** F0nm_3G18 -
+*** F0nm_3g28 BNDCMP.L	Rm, Rn				//Bounds Compare (DWord Scale)
+*** F0nm_3G28 -
+*** F0nm_3g38 BNDCMP.Q	Rm, Rn				//Bounds Compare (QWord Scale)
+*** F0nm_3G38 -
+
 ** F0nm_3ez9  (Reserved 2R Block Space)
 ** F0nm_3ezA  (Reserved 2R Block Space)
 ** F0nm_3ezB  (Reserved 2R Block Space)
@@ -1944,33 +1962,33 @@ F0zz Instruction Block:
 
 * F0nm_4eoz (Follows a similar pattern as F0nm_0zz0)
 ** F0nm_4go0  MOV.X		Xn, (Rm, Disp5)		//(MOVX2) Store Pair
-** F0nm_4Go0  MOV.C		Cn, (Rm, Disp5)		//(MOVC)
-** F0nm_4go1  -
-** F0nm_4Go1  -
+** F0nm_4Go0  LEAT.B		(Rm, Disp5), Rn		//(TTAG)
+** F0nm_4go1  ? MOV.C		Cn, (Rm, Disp5)		//(MOVC)
+** F0nm_4Go1  LEAT.W		(Rm, Disp5), Rn		//(TTAG)
 ** F0nm_4go2  -
-** F0nm_4Go2  -
+** F0nm_4Go2  LEAT.L		(Rm, Disp5), Rn		//(TTAG)
 ** F0nm_4go3  -
-** F0nm_4Go3  -
+** F0nm_4Go3  LEAT.Q		(Rm, Disp5), Rn		//(TTAG)
 ** F0nm_4go4  MOV.X		Xn, (Rm, Ro)		//(MOVX2) Store Pair
-** F0nm_4Go4  MOV.C		Cn, (Rm, Ro)		//(MOVC)
-** F0nm_4go5  -
-** F0nm_4Go5  -
+** F0nm_4Go4  ? LEAT.B		(Rm, Ro), Rn	//(TTAG)
+** F0nm_4go5  ? MOV.C		Cn, (Rm, Ro)	//(MOVC)
+** F0nm_4Go5  ? LEAT.W		(Rm, Ro), Rn	//(TTAG)
 ** F0nm_4go6  FMOV.S	Rn, (Rm, Ro)		//(FMOV)
-** F0nm_4Go6  -
+** F0nm_4Go6  ? LEAT.L		(Rm, Ro), Rn	//(TTAG)
 ** F0nm_4go7  FMOV.H	Rn, (Rm, Ro)		//(FMOV)
-** F0nm_4Go7  -
+** F0nm_4Go7  ? LEAT.Q		(Rm, Ro), Rn	//(TTAG)
 
 ** F0nm_4go8  MOV.X		(Rm, Disp5), Xn		//(MOVX2) Load Pair
-** F0nm_4Go8  MOV.C		(Rm, Disp5), Cn		//(MOVC)
-** F0nm_4go9  -
+** F0nm_4Go8  -
+** F0nm_4go9  MOV.C		(Rm, Disp5), Cn		//(MOVC)
 ** F0nm_4Go9  -
 ** F0nm_4goA  -
 ** F0nm_4GoA  -
 ** F0nm_4goB  -
 ** F0nm_4GoB  -
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
-** F0nm_4GoC  MOV.C		(Rm, Ro), Cn		//(MOVC)
-** F0nm_4goD  -
+** F0nm_4GoC  -
+** F0nm_4goD  MOV.C		(Rm, Ro), Cn		//(MOVC)
 ** F0nm_4GoD  -
 ** F0nm_4goE  FMOV.S	(Rm, Ro), Rn		//(FMOV)
 ** F0nm_4GoE  -

@@ -1550,6 +1550,9 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 
 			if(sctx->has_fmovc)
 			{
+				BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP4B);
+				BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP4B);
+
 				BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 					-32, BGBCC_SH_REG_SP);
 
@@ -1565,6 +1568,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			}
 			else
 			{
+				BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP4B);
+
 				BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 					-40, BGBCC_SH_REG_SP);
 

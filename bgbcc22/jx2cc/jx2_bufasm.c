@@ -913,6 +913,8 @@ int nmid;
 
 {"vskg",	BGBCC_SH_NMID_VSKG},
 {"vskc",	BGBCC_SH_NMID_VSKC},
+{"bndchk",	BGBCC_SH_NMID_BNDCHK},
+{"bndcmp",	BGBCC_SH_NMID_BNDCMP},
 
 {"breq",	BGBCC_SH_NMID_BREQ},
 {"brne",	BGBCC_SH_NMID_BRNE},
@@ -2715,8 +2717,10 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 
-		if(!strcmp(tk0, "I.text") ||
+		if(	!strcmp(tk0, "I.text") ||
 			!strcmp(tk0, "I.data") ||
+			!strcmp(tk0, "I.utext") ||
+			!strcmp(tk0, "I.udata") ||
 			!strcmp(tk0, "I.bss") ||
 			!strcmp(tk0, "I.rodata"))
 		{

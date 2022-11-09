@@ -667,6 +667,7 @@
 #define BGBCC_SH_NMID_SHAR32		0x00F0	//
 #define BGBCC_SH_NMID_LDSH8			0x00F1	//
 #define BGBCC_SH_NMID_BRA8B			0x00F2	//
+#define BGBCC_SH_NMID_NOP4B			0x00F3	//
 // #define BGBCC_SH_NMID_SHARX			0x00F3	//
 // #define BGBCC_SH_NMID_CMPTTEQ		0x00F3	//
 #define BGBCC_SH_NMID_MOVNT			0x00F4	//
@@ -909,6 +910,9 @@
 #define BGBCC_SH_NMID_MOVZT			BGBCC_SH_NMID_MOVTT
 #define BGBCC_SH_NMID_XMOVZT		BGBCC_SH_NMID_XMOVTT
 
+#define BGBCC_SH_NMID_AUIPC			BGBCC_SH_NMID_MOVI20
+#define BGBCC_SH_NMID_LUI			BGBCC_SH_NMID_MOVI20S
+
 #define BGBCC_SH_NMID_MULSQ			0x01D0	//
 #define BGBCC_SH_NMID_MULUQ			0x01D1	//
 #define BGBCC_SH_NMID_DIVSQ			0x01D2	//
@@ -952,16 +956,23 @@
 #define BGBCC_SH_NMID_MULHSQ		0x01F6	//
 #define BGBCC_SH_NMID_MULHUQ		0x01F7	//
 
+#define BGBCC_SH_NMID_BNDCHKB		0x01F8	//
+#define BGBCC_SH_NMID_BNDCHKW		0x01F9	//
+#define BGBCC_SH_NMID_BNDCHKL		0x01FA	//
+#define BGBCC_SH_NMID_BNDCHKQ		0x01FB	//
+
+#define BGBCC_SH_NMID_EXTUTT		0x01FC	//
+
 #define BGBCC_SH_NMID_FADDA			0x0200	//
 #define BGBCC_SH_NMID_FSUBA			0x0201	//
 #define BGBCC_SH_NMID_FMULA			0x0202	//
 #define BGBCC_SH_NMID_PADDXDA		0x0203	//
 #define BGBCC_SH_NMID_PSUBXDA		0x0204	//
 #define BGBCC_SH_NMID_PMULXDA		0x0205	//
-
 #define BGBCC_SH_NMID_VSKG			0x0206	//
 #define BGBCC_SH_NMID_VSKC			0x0207	//
-
+#define BGBCC_SH_NMID_BNDCHK		0x0208	//
+#define BGBCC_SH_NMID_BNDCMP		0x0209	//
 #define BGBCC_SH_NMID_RSUBSL		0x020A	//RSUB
 #define BGBCC_SH_NMID_RSUBUL		0x020B	//RSUB
 #define BGBCC_SH_NMID_RSUB			0x020C	//RSUB
@@ -973,7 +984,6 @@
 #define BGBCC_SH_NMID_ORW			0x0211	//OR
 #define BGBCC_SH_NMID_XORW			0x0212	//XOR
 #define BGBCC_SH_NMID_SWAPQ			0x0213	//XOR
-
 #define BGBCC_SH_NMID_ADDSB			0x0214	//RSUB
 #define BGBCC_SH_NMID_ADDUB			0x0215	//RSUB
 #define BGBCC_SH_NMID_SUBSB			0x0216	//RSUB
@@ -1012,6 +1022,11 @@
 #define BGBCC_SH_NMID_PRELUH		0x0235	//
 #define BGBCC_SH_NMID_PRCPAF		0x0236	//
 #define BGBCC_SH_NMID_PRELUF		0x0237	//
+
+#define BGBCC_SH_NMID_LEATB			0x0238	//LEAT.B
+#define BGBCC_SH_NMID_LEATW			0x0239	//LEAT.W
+#define BGBCC_SH_NMID_LEATL			0x023A	//LEAT.L
+#define BGBCC_SH_NMID_LEATQ			0x023B	//LEAT.Q
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
@@ -1257,11 +1272,15 @@
 #define BGBCC_SH_CSEG_STRTAB	0x01		//.strtab section
 #define BGBCC_SH_CSEG_RODATA	0x02		//.rodata section
 #define BGBCC_SH_CSEG_GOT		0x03		//.got section
-#define BGBCC_SH_CSEG_DATA		0x04		//.data section
-#define BGBCC_SH_CSEG_BSS		0x05		//.bss section
-#define BGBCC_SH_CSEG_RELOC		0x06		//.reloc section
+#define BGBCC_SH_CSEG_UTEXT		0x04		//.utext section
+#define BGBCC_SH_CSEG_UDATA		0x05		//.udata section
 
-#define BGBCC_SH_CSEG_DYN		0x07		//dynamic sections
+#define BGBCC_SH_CSEG_DATA		0x06		//.data section
+#define BGBCC_SH_CSEG_BSS		0x07		//.bss section
+#define BGBCC_SH_CSEG_RELOC		0x08		//.reloc section
+
+// #define BGBCC_SH_CSEG_DYN		0x07		//dynamic sections
+#define BGBCC_SH_CSEG_DYN		0x10		//dynamic sections
 
 #define BGBCC_SH_CSEG_ABS		0x7F		//absolute address
 

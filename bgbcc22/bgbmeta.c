@@ -2545,5 +2545,6 @@ int main(int argc, char *argv[], char **env)
 
 	if(metafn)
 		DYLL_MetaPath_SaveDB(metafn);
+	return(0);
 }
 

@@ -2868,8 +2868,10 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			{
 				opw1=0xFA00|((disp>>19)&0x01FF);
 				opw2=0x0000|((disp>> 3)&0xFFFF);
-				opw3=0xF080|ex;
-				opw4=0x4C00|((rn3&15)<<4)|((rm&15)<<0);
+//				opw3=0xF080|ex;
+//				opw4=0x4C00|((rn3&15)<<4)|((rm&15)<<0);
+				opw3=0xF000|ex;
+				opw4=0x4D00|((rn3&15)<<4)|((rm&15)<<0);
 			}else
 				if((disp&0xFF8)==disp)
 			{
@@ -3426,6 +3428,49 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 
 			opw1=0xF080|ex;	odr=8;
 			opw2=0x0700|((rn&15)<<4)|((rm&15)<<0);			break;
+#endif
+
+#if 1
+		case BGBCC_SH_NMID_LEATB:
+			if((disp&0x1F)==disp)
+			{
+				opw1=0xF080|ex|((disp>>0)&0x1F);
+				opw2=0x4000|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF080|ex;	odr=1;
+			opw2=0x4400|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_LEATW:
+			if((disp&0x3E)==disp)
+			{
+				opw1=0xF080|ex|((disp>>1)&0x1F);
+				opw2=0x4100|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF080|ex;	odr=2;
+			opw2=0x4500|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_LEATL:
+			if((disp&0x7C)==disp)
+			{
+				opw1=0xF080|ex|((disp>>2)&0x1F);
+				opw2=0x4200|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF080|ex;	odr=4;
+			opw2=0x4600|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_LEATQ:
+			if((disp&0xF8)==disp)
+			{
+				opw1=0xF080|ex|((disp>>3)&0x1F);
+				opw2=0x4300|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF080|ex;	odr=8;
+			opw2=0x4700|((rn&15)<<4)|((rm&15)<<0);
+			break;
 #endif
 
 #if 1
@@ -4819,6 +4864,21 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 		case BGBCC_SH_NMID_LEAQ:
 			opw1=0xF080|ex|(ro&15);
 			opw2=0x0700|((rn&15)<<4)|((rm&15)<<0);			break;
+#endif
+
+#if 1
+		case BGBCC_SH_NMID_LEATB:
+			opw1=0xF080|ex|(ro&15);
+			opw2=0x4400|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_LEATW:
+			opw1=0xF080|ex|(ro&15);
+			opw2=0x4500|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_LEATL:
+			opw1=0xF080|ex|(ro&15);
+			opw2=0x4600|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_LEATQ:
+			opw1=0xF080|ex|(ro&15);
+			opw2=0x4700|((rn&15)<<4)|((rm&15)<<0);			break;
 #endif
 
 

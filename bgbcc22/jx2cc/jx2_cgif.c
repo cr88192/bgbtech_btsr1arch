@@ -171,6 +171,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->abi_spillpad|= 1;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "vskgen"))
 		shctx->abi_spillpad|= 2;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "dobounds"))
+		shctx->abi_spillpad|= 4;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "shuffle"))
 		shctx->do_shuffle=1;
@@ -331,7 +333,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //		shctx->has_fmovc=1;
 //		shctx->has_dmacl=1;
 
-		shctx->abi_spillpad=1;
+		shctx->abi_spillpad|=1;
 		shctx->abi_spillpad|=2;
 #endif
 	}
@@ -3793,7 +3795,34 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 		/* This variable is a system register. */
 		return(0);
 	}
-	
+
+	s0=obj->qname;
+	if((s0[0]=='_') && (s0[1]=='_'))
+	{
+		if(	!strcmp(s0, "__text_start") ||
+			!strcmp(s0, "__utext_start") ||
+			!strcmp(s0, "__udata_start") ||
+			!strcmp(s0, "__data_start") ||
+			!strcmp(s0, "__bss_start") )
+		{
+			return(0);
+		}
+
+		if(	!strcmp(s0, "__text_end") ||
+			!strcmp(s0, "__utext_end") ||
+			!strcmp(s0, "__udata_end") ||
+			!strcmp(s0, "__data_end") ||
+			!strcmp(s0, "__bss_end") )
+		{
+			return(0);
+		}
+		
+		if(!strcmp(s0, "__global_ptr"))
+		{
+			return(0);
+		}
+	}
+
 	hasval=1;
 
 	if(!obj->value.val)
@@ -4655,6 +4684,28 @@ void bgbcc_jx2cc_setu16en(byte *ct, int en, u16 v)
 	bgbcc_setu16en(ct, en, v);
 }
 
+ccxl_status BGBCC_JX2C_RelocRangeError(
+	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+	int rlcix, int lblix, int rlcty, int disp)
+{
+	char *lbln;
+	
+	lbln=BGBCC_JX2_LookupNameForLabel(sctx, sctx->lbl_id[lblix]);
+	if(!lbln)
+		lbln="?";
+
+	ctx->n_error++;
+
+	printf("BGBCC_JX2C_RelocRangeError: Symbol Out of Range\n");
+	printf("  rlc_sec=%d(%s) lbl_sec=%d(%s) rlcty=%02X disp=%08X name=%s\n",
+		sctx->rlc_sec[rlcix], sctx->sec_name[sctx->rlc_sec[rlcix]],
+		sctx->lbl_sec[lblix], sctx->sec_name[sctx->lbl_sec[lblix]],
+		rlcty,
+		disp,
+		lbln);
+	return(0);
+}
+
 ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
 	byte *imgbase)
@@ -5159,7 +5210,12 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+(ctl-gbr_base);
 
 			if(d1<0)
-				{ BGBCC_DBGBREAK }
+			{
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Negative Displacement (PBOJ32)\n");
+//				BGBCC_DBGBREAK
+			}
 
 			w0=(w0&0xFF00)|((d1>>24)&0x00FF);
 			w1=(w1&0x0000)|((d1>> 8)&0xFFFF);
@@ -5183,7 +5239,11 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+(ctl-gbr_base);
 
 			if((d1<0) || (d1>=512))
-				{ BGBCC_DBGBREAK }
+			{
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_DBGBREAK
+			}
 
 			w1=(w1&0xFE00)|(d1&0x01FF);
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
@@ -5203,8 +5263,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-2)>>1);
 			if((((s32)(d1<<24))>>24)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW8)\n");
-				break;
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW8)\n");
+//				break;
 //				{ BGBCC_DBGBREAK }
 			}
 			if((w0&0xFE00)==0x2400)
@@ -5221,8 +5283,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-2)>>1);
 			if((((s32)(d1<<20))>>20)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW12)\n");
-				break;
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW12)\n");
+//				break;
 //				{ BGBCC_DBGBREAK }
 			}
 			bgbcc_jx2cc_setu16en(ctr, en, (b&0xF000)|(d1&0x0FFF));
@@ -5242,8 +5306,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
 				{
-					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16)\n");
-					break;
+					BGBCC_JX2C_RelocRangeError(ctx, sctx,
+						i, j, sctx->rlc_ty[i], d1);
+//					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16)\n");
+//					break;
 //					{ BGBCC_DBGBREAK }
 				}
 				w0=(w0&0xFE00)|((d1>>8)&0x01FF);
@@ -5281,8 +5347,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				if((((s32)(d1<<15))>>15)!=d1)
 				{
-					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16C)\n");
-					break;
+					BGBCC_JX2C_RelocRangeError(ctx, sctx,
+						i, j, sctx->rlc_ty[i], d1);
+//					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16C)\n");
+//					break;
 //					{ BGBCC_DBGBREAK }
 				}
 				w0=(w0&0xFE00)|((d1>>8)&0x01FF);
@@ -5301,8 +5369,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			{
 				if((((s32)(d1<<16))>>16)!=d1)
 				{
-					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16C)\n");
-					break;
+					BGBCC_JX2C_RelocRangeError(ctx, sctx,
+						i, j, sctx->rlc_ty[i], d1);
+//					BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16C)\n");
+//					break;
 //					{ BGBCC_DBGBREAK }
 				}
 				w0=(w0&0xFF00)|((d1>>8)&0x00FF);
@@ -5321,8 +5391,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<16))>>16)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16D)\n");
-				break;
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16D)\n");
+//				break;
 //				{ BGBCC_DBGBREAK }
 			}
 			if((((s32)(d1<<24))>>24)==d1)
@@ -5344,8 +5416,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+(d-4);
 			if((((s32)(d1<<15))>>15)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16A)\n");
-				break;
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW16A)\n");
+//				break;
 //				{ BGBCC_DBGBREAK }
 			}
 			if((((s32)(d1<<24))>>24)==d1)
@@ -5365,8 +5439,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-6)>>1);
 			if((((s32)(d1<<8))>>8)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW24)\n");
-				break;
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW24)\n");
+//				break;
 //				{ BGBCC_DBGBREAK }
 			}
 			if((((s32)(d1<<24))>>24)==d1)
@@ -5392,8 +5468,10 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+(d-6);
 			if((((s32)(d1<<8))>>8)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW24C)\n");
-				break;
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW24C)\n");
+//				break;
 //				{ BGBCC_DBGBREAK }
 			}
 			if((w0&0xFE00)==0x2400)
@@ -5439,7 +5517,12 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			b1=((s32)(b<<8))>>8;
 			d1=b1+((d-6)>>1);
 			if((((s32)(d1<<8))>>8)!=d1)
-				{ BGBCC_DBGBREAK }
+			{
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				break;
+//				{ BGBCC_DBGBREAK }
+			}
 			if((((s32)(d1<<24))>>24)==d1)
 					sctx->stat_ovlbl8++;
 			w0=(w0&0xE000)|((d1>>12)&0x1FFF);
@@ -6046,9 +6129,6 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_SetSectionName(sctx, ".data");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__data_start");
 
-//	BGBCC_JX2_SetSectionName(sctx, ".rsrc");
-//	BGBCC_JX2_EmitNamedLabel(sctx, "__rsrc_start");
-
 //	if(sctx->is_pbo)
 	if(1)
 	{
@@ -6069,14 +6149,20 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 //		{
 //			BGBCC_JX2_EmitQWord(sctx, 0);
 //		}
-
-		/* Change: Pointers table will have negative offsets relative to GBR. */
-
 	}
 
 	BGBCC_JX2_SetSectionName(sctx, ".bss");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__bss_start");
-	
+
+//	BGBCC_JX2_SetSectionName(sctx, ".rsrc");
+//	BGBCC_JX2_EmitNamedLabel(sctx, "__rsrc_start");
+
+	BGBCC_JX2_SetSectionName(sctx, ".utext");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__utext_start");
+
+	BGBCC_JX2_SetSectionName(sctx, ".udata");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__udata_start");
+
 	sctx->lbl_got=BGBCC_JX2_GenLabel(sctx);
 
 	for(i=0; i<ctx->n_literals; i++)
@@ -7255,6 +7341,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_SetSectionName(sctx, ".bss");
 	BGBCC_JX2_EmitNamedLabel(sctx, "_end");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__bss_end");
+
+	BGBCC_JX2_SetSectionName(sctx, ".utext");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__utext_end");
+
+	BGBCC_JX2_SetSectionName(sctx, ".udata");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__udata_end");
 
 	if(sctx->rwad_dir)
 	{
