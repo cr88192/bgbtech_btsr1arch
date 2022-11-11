@@ -651,7 +651,7 @@ REGREG, Fz
 	XB: Rm, Ro, Rn
 	XW: Rm, Ro, Rn
 
-	XL: Rn, RmImm5u, Rn
+	XL: Rn, RmImm6u, Rn
 
 REGREG, Fz+Au (Rm, Ro, Rp, Rn)
 	SB: Rm, Ro, Rn, Rn

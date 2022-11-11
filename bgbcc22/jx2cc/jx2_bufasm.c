@@ -856,6 +856,11 @@ int nmid;
 {"xlea.l",	BGBCC_SH_NMID_XLEAL},
 {"xlea.q",	BGBCC_SH_NMID_XLEAQ},
 
+{"leat.b",	BGBCC_SH_NMID_LEATB},
+{"leat.w",	BGBCC_SH_NMID_LEATW},
+{"leat.l",	BGBCC_SH_NMID_LEATL},
+{"leat.q",	BGBCC_SH_NMID_LEATQ},
+
 {"add",		BGBCC_SH_NMID_ADD},
 {"addc",	BGBCC_SH_NMID_ADDC},
 {"addv",	BGBCC_SH_NMID_ADDV},
@@ -915,6 +920,16 @@ int nmid;
 {"vskc",	BGBCC_SH_NMID_VSKC},
 {"bndchk",	BGBCC_SH_NMID_BNDCHK},
 {"bndcmp",	BGBCC_SH_NMID_BNDCMP},
+
+{"bndchk.b",	BGBCC_SH_NMID_BNDCHKB},
+{"bndchk.w",	BGBCC_SH_NMID_BNDCHKW},
+{"bndchk.l",	BGBCC_SH_NMID_BNDCHKL},
+{"bndchk.q",	BGBCC_SH_NMID_BNDCHKQ},
+
+{"bndcmp.b",	BGBCC_SH_NMID_BNDCMPB},
+{"bndcmp.q",	BGBCC_SH_NMID_BNDCMPW},
+{"bndcmp.l",	BGBCC_SH_NMID_BNDCMPL},
+{"bndcmp.q",	BGBCC_SH_NMID_BNDCMPQ},
 
 {"breq",	BGBCC_SH_NMID_BREQ},
 {"brne",	BGBCC_SH_NMID_BRNE},

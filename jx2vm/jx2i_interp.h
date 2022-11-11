@@ -704,6 +704,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LEATL			0x186	//
 #define BJX2_NMID_LEATQ			0x187	//
 
+#define BJX2_NMID_BNDCMPB		0x188	//
+#define BJX2_NMID_BNDCMPW		0x189	//
+#define BJX2_NMID_BNDCMPL		0x18A	//
+#define BJX2_NMID_BNDCMPQ		0x18B	//
+
 
 
 #define BJX2_FMID_NONE			0x00		//?

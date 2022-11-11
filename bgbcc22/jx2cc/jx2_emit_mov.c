@@ -2400,6 +2400,20 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			return(1);
 		}
 	}
+	
+	if(
+		(nmid==BGBCC_SH_NMID_LEATB)		||
+		(nmid==BGBCC_SH_NMID_LEATW)		||
+		(nmid==BGBCC_SH_NMID_LEATL)		||
+		(nmid==BGBCC_SH_NMID_LEATQ)		)
+	{
+		if((rm==rn) && (disp>=(-1023)) && (disp<=( 1023)))
+		{
+			i=BGBCC_JX2_TryEmitOpImmReg(ctx, nmid, disp, rn);
+			return(i);
+		}
+	}
+
 
 	if(	(nmid==BGBCC_SH_NMID_XMOVB)		||
 		(nmid==BGBCC_SH_NMID_XMOVW)		||

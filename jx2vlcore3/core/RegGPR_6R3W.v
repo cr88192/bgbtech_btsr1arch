@@ -425,15 +425,19 @@ begin
 		10'h0,
 		32'h0
 		};
-	tValFpImm10A	= {
-		regValImmA[9:8],
-		(regValImmA[8] || (regValImmA[8:4]==0)) ?
-			6'h00 : 6'h3F,
-		regValImmA[3: 0],
-		16'h0,
-		32'h0
-		};
+//	tValFpImm10A	= {
+//		regValImmA[9:8],
+//		(regValImmA[8] || (regValImmA[8:4]==0)) ?
+//			6'h00 : 6'h3F,
+//		regValImmA[3: 0],
+//		16'h0,
+//		32'h0
+//		};
+
+	tValFpImm10A = 0;
+`endif
 	
+`ifdef jx2_use_fpu_rpimm
 	tValImmRpA = { regIdRy[5] ? UV59_FF, UV59_00, regIdRy[4:0] };
 	tValImmRpB = { regIdRx[5] ? UV59_FF, UV59_00, regIdRx[4:0] };
 `endif
@@ -561,10 +565,10 @@ begin
 `endif
 
 `ifdef jx2_use_fpu_fpimm
-		JX2_GR_FPIMM10: begin
-			tValRsA=tValFpImm10A;
-			tValRsZz=1;
-		end
+//		JX2_GR_FPIMM10: begin
+//			tValRsA=tValFpImm10A;
+//			tValRsZz=1;
+//		end
 
 		JX2_GR_FPIMM16: begin
 			tValRsA=tValFpImm16A;
@@ -640,10 +644,10 @@ begin
 `endif
 
 `ifdef jx2_use_fpu_fpimm
-		JX2_GR_FPIMM10: begin
-			tValRtA=tValFpImm10A;
-			tValRtZz=1;
-		end
+//		JX2_GR_FPIMM10: begin
+//			tValRtA=tValFpImm10A;
+//			tValRtZz=1;
+//		end
 
 		JX2_GR_FPIMM16: begin
 			tValRtA=tValFpImm16A;

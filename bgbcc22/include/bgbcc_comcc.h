@@ -406,6 +406,10 @@ int stat_imm3ri_hmiss;
 int stat_imm3ri_hjmb;
 
 
+int stat_fp16_isfpa;
+int stat_fp16_tot;
+int stat_fp16_hit5;
+
 
 int ofs_curbdl;
 

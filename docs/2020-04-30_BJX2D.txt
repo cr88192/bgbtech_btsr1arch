@@ -443,18 +443,6 @@ Addresses in the MMIO range will be masked to 28 bits, which will be used as the
 
 Access to MMIO will require being in Supervisor mode, and will not be subject to address translation via the MMU.
 
-In 48-bit Mode, the address space will be extended (bits 32..47, Old):
-* / 0000: Behaves the same as in 32-bit mode.
-* / 0001..7FFF: Userland (MMU).
-* 8000..BFFF: System (MMU).
-* / C000..FBFF: System (No MMU; Absolute ~ 46-bit address).
-* C000..CFFF: System (No MMU; Absolute 44-bit address).
-* D000..EFFF: Reserved.
-* / FC00..FFFF: Expanded Processor/Chipset/MMIO.
-** / This supports a 42-bit MMIO Space.
-** / FC00_0zzz_zzzz will identity map to Fzzz_zzzz.
-* F000..FFFF: Expanded Processor/Chipset/MMIO (44-bit).
-
 In 48-bit Mode (MMU), the address space will be extended (bits 32..47):
 * 0000..7FFF: Userland (MMU).
 * 8000..BFFF: System (MMU).
@@ -928,7 +916,7 @@ For other cases, the nominal address calculation will be performed as 36 bits wi
 To support objects larger than those which support a 32 or 33 bit displacement, it will be necessary to use explicit ALU instructions.
 
 
-=== Symmetric Multithreading (SMT) ===
+=== Symmetric Multithreading (SMT, Possible) ===
 
 Multithreading may be provided as an optional feature.
 * In this mode, two logical user threads may run in parallel.
@@ -1009,7 +997,7 @@ For narrow bundles:
 Note that interleaving the jumbo prefixes violates the equivalence between sequential and parallel execution. By extension, profiles which allow the use interleaved jumbo encodings will drop the requirement for sequential equivalence.
 
 
-=== XMOV (Possible) ===
+=== XMOV ===
 
 Possible Extension, Extended Address Space
 * Will extend the address space to 96 bits.
@@ -1107,6 +1095,41 @@ Predicated Ranges will exist:
 
 The ranges FAzz, FBzz, FEzz, and FFzz, may not be encoded in predicated forms.
 The encoding of predicated forms will be otherwise equivalent to their Fz counterparts.
+
+
+=== Extensions List ===
+
+Extensions List:
+* ALU: Optional ALU Extensions
+* ALUX: 128-bit ALU Instructions
+* BCD: Packed Binary Coded Decimal
+* CLZ: Count Leading Zeroes
+* DMAC: Integer Multiply Accumulate
+* FDIV: Floating Point Divide
+* GFP: GPR Floating Point
+* GSV: GPR SIMD
+* GSVF: GPR Floating-Point SIMD (64-bit)
+* GSVFX: GPR Floating-Point SIMD (128-bit)
+* JCMP: Compare-and-Branch
+* Jumbo: Large Immediate Encodings
+* LdOp: Load/Store Operations
+* LDTEX: Load Texture
+* MOVX2: 128-bit Load/Store
+* MULL: 32-bit Multiply
+* MULQ: 64-bit Multiply and Integer Divide Instructions
+* MULW: 16-bit Multiply
+* MULX: 128-bit Multiply
+* Op24 (Deprecated): 24-bit instruction encodings.
+* Op64: Extended 64-bit instruction encodings
+* PrWEX: Predicated WEX Encodings
+* RGB: Packed RGB Operations
+* RGBF: Packed Floating Point RGB Operations
+* RGBX: Extended 128-bit RGB Operations
+* RiMOV: Register+Displacement Addressing Mode
+* TTAG: Type Tag Instructions
+* WEX2: Wide-Execute
+* XGPR: Extended GPR Set (R0..R63)
+* XMOV: Load/Store with 128-bit Addresses.
 
 
 == Instruction Set ==
@@ -1598,9 +1621,9 @@ F0zz Instruction Block:
 *** F0nm_1g38 BNDCHK.Q	Rm, Rn				//Bounds Check (QWord Scale)
 *** F0nm_1G38 -
 
-*** F0nm_1g48 -
+*** F0nm_1g48 BNDCHK	RmImm6u, Rn			//Bounds Compare
 *** F0nm_1G48 ? MULU.X	Xm, Xn				//(MULX) Xn=Xn*Xm
-*** F0nm_1g58 BNDCMP	Rm, Rn				//Bounds Compare
+*** F0nm_1g58 BNDCMP	RmImm6u, Rn			//Bounds Compare
 *** F0nm_1G58 ? MULHU.X	Xm, Xn				//(MULX) Xn=(Xn*Xm)>>128
 *** F0nm_1g68 VSKG		Rm, Rn				//Canary Generate
 *** F0nm_1G68 ? DIVU.X	Xm, Xn				//(MULX) Xn=Xn/Xm
@@ -2270,6 +2293,11 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2nF_DHjj ? FMUL		Imm10fp, Rn				//(FpImm) (E.q=1) FMUL
 
 * F2nz_Efjj
+** F2n0_Ehjj  LEAT.B	Imm10u, Rn				//(TTAG) LEAT.B (Rn, Imm10u), Rn
+** F2n0_EHjj  XLEA.B	Imm10u, Rn				//(TTAG) XLEA.B (Xn, Imm10u), Xn
+** F2n1_Ehjj  LEAT.B	Imm10n, Rn				//(TTAG) LEAT.B (Rn, Imm10n), Rn
+** F2n1_EHjj  XLEA.B	Imm10n, Rn				//(TTAG) XLEA.B (Xn, Imm10n), Xn
+
 * F2nz_Ffjj
 
 

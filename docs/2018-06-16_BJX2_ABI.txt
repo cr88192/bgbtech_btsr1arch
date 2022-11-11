@@ -901,6 +901,11 @@ The array bound is given in bits (55:48) as an E5.F3 microfloat.
 The Bias is a value with the same exponent as the Bound, but represents a non-normalized value. It is added to the index prior to checking against the bound.
 
 
+This pointer type may be used to point to a Tag Array.
+In this case, the pointer will point to the start of the Data Area.
+The Data Area will be preceded either by an Tag Array Header or a Dummy Header encoding a back-link to the array header.
+
+
 === Double Bounded Array F16 (Possible) ===
 
 DoubleBoundArray F16:

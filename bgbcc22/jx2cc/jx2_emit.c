@@ -2719,6 +2719,37 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 		}
 
 		ctx->stat_const_masktot++;
+
+		j=1;
+		if(((imm>>48)&0x7FFF)<0x1000)
+			j=0;
+		if(((imm>>48)&0x7FFF)>0x7000)
+			j=0;
+		if(j)
+			ctx->stat_fp16_isfpa++;
+
+#if 1
+		rt1=BGBCC_JX2_ConstConvDoubleToFloat(imm, &imm_f32);
+		rt2=BGBCC_JX2_ConstConvFloatToHalf(imm_f32, &imm_f16);
+		if((rt1>0) && (rt2>0) && (imm!=0))
+		{
+			j=((((imm_f16)>>10)&31)-15)+3;
+			if((j<0) || (j>7))
+				j=-1;
+			if(!imm_f16)
+				j=0;
+			if(j>=0)
+			{
+				k=imm_f16&0x7F00;
+			}
+		
+			ctx->stat_fp16_tot++;
+			if(k==imm_f16)
+			{
+				ctx->stat_fp16_hit5++;
+			}
+		}
+#endif
 	}
 
 //	BGBCC_JX2DA_EmitLoadRegImm64(ctx, BGBCC_SH_NMID_MOVQ, reg, imm);

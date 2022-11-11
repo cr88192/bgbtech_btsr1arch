@@ -627,6 +627,41 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		}
 		break;
 
+	case 0xE:	/* F2nz_Eejj */
+		op->rn=rn_dfl;
+		op->rm=rn_dfl;
+
+		op->imm=imm10u;
+		if(opw1&1)
+			op->imm=imm10n;
+
+		switch(opw1&0xF)
+		{
+		case 0x0:	case 0x1:
+//			op->imm=imm16s;
+//			op->rn=rn_i16;
+			op->nmid=BJX2_NMID_LEATB;
+			op->fmid=BJX2_FMID_LDREGDISPREG;
+			op->Run=BJX2_Op_LEATB_LdRegDispReg;
+			op->fl|=BJX2_OPFL_NOWEX;
+
+			if(eq)
+			{
+				if(op->rn&1)
+					{ op->rn=(op->rn&0x1E)+0x20;	}
+				op->rq=op->rn+1;
+				op->fl|=BJX2_OPFL_REGX2R;
+				op->fl|=BJX2_OPFL_NOWEXSFX;
+
+				op->nmid=BJX2_NMID_XLEAB;
+				op->fmid=BJX2_FMID_LDREGDISPREG;
+				op->Run=BJX2_Op_XLEAB_LdRegDispReg;
+			}
+			break;
+		}
+		break;
+
+
 	default:
 		ret=-1;
 		break;

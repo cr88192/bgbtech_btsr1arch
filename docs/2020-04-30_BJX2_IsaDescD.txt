@@ -148,7 +148,7 @@ The target address is computed and PC is updated to the new address if the condi
 This instruction is only allowed in Lane 1.
 
 
-=== BNDCHK / BNDCMP ===
+=== BNDCHK / BNDCMP (TTAG) ===
 
 * F0nm_1g08 BNDCHK.B	Rm, Rn				//Bounds Check (Byte Scale)
 * F0nm_1g18 BNDCHK.W	Rm, Rn				//Bounds Check (Word Scale)
@@ -160,9 +160,15 @@ This instruction is only allowed in Lane 1.
 * F0nm_3g28 BNDCMP.L	Rm, Rn				//Bounds Compare (DWord Scale)
 * F0nm_3g38 BNDCMP.Q	Rm, Rn				//Bounds Compare (QWord Scale)
 
+* F0nm_1g48 BNDCHK		RmImm6u, Rn			//Bounds Compare
+* F0nm_1g58 BNDCMP		RmImm6u, Rn			//Bounds Compare
+
 Check or Compare Array Bounds.
 
 The Bounds Check operation will verify whether an index (given) in Rm, falls within the bounds of the array pointer given in Rn.
+
+The immediate forms will give the bounds to check as a byte offset.
+
 
 The pointer is assumed to follow the tagged pointer scheme defined in the ABI spec.
 
@@ -172,8 +178,12 @@ The Check operation will determine bounds and, if the bounds check fails, will r
 The Compare operation is similar, but will update SR.T based on the result.
 SR.T will be set if the access is in-bounds, or cleared if the access is out-of-bounds or is an unhandled type.
 
+Check and Compare will differ regarding the handling of Tagged Object:
+* BNDCHK.x will allow access to all Tagged Object types.
+* BNDCMP.x will only allow Tagged Object if the tag is 0000.
 
-The bounded pointer format is:
+
+The Bounded Pointer format is:
 * Bits (63:60)=Tag (0011)
 * Bits (59:56)=Array Bias
 * Bits (55:48)=Array Bound
@@ -191,6 +201,8 @@ The bound is given in bits (55:48) as an E5.F3 microfloat.
 * ...
 
 The Bias is a value with the same exponent as the Bound, but represents a non-normalized value. It is added to the index prior to checking against the bound.
+
+These instructions will be part of the TTAG extension.
 
 
 === BRA / JMP ===
@@ -957,6 +969,8 @@ The LEAT.x instruction will have similar behavior to a normal LEA.
 The primary difference, howerver, will be that LEAT will also adjust the tag bits for bounds-checked pointers.
 
 If given a pointer with an unhandled tag type, or if the pointer goes outside the representable range for the bounds, then the tag bits will be zeroed.
+
+These instructions will be part of the TTAG extension.
 
 
 === LDIN / LDIZ ===
@@ -2354,8 +2368,8 @@ MOVLHD will select the low bits from Rm, and the high bits from Ro.
 * F0nm_2Go5  PADDX.F	Xm, Xo, Xn		//(GSVFX) Packed FADD (4x Float)
 * F0nm_2goD  PADD.H 	Rm, Ro, Rn		//(GSVF) Packed FADD (4x Half)
 * F0nm_2GoD  PADDX.D	Xm, Xo, Xn		//(GSVFX) Packed FADD (2x Double)
-* FFw0_00ii_F0nm_2go5  PADD.X		Rm, Ro, Rn, Imm8
-* FFw0_00ii_F0nm_2Go5  PADDX.X		Xm, Xo, Xn, Imm8
+* FFw0_00ii_F0nm_2go5  PADD.X		Rm, Ro, Rn, Imm8		//(GSVFX)
+* FFw0_00ii_F0nm_2Go5  PADDX.X		Xm, Xo, Xn, Imm8		//(GSVFX)
 
 Packed ADD, but in 3-register form.
 PADDX.x will operate on a 128-bit vector.

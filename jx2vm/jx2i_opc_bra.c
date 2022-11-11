@@ -2155,7 +2155,7 @@ void BJX2_Op_BNDCHKQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
-void BJX2_Op_BNDCMP_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+void BJX2_Op_BNDCMPB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 v0, v1, v2;
 	int i;
@@ -2164,6 +2164,183 @@ void BJX2_Op_BNDCMP_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	v1=ctx->regs[op->rm];
 	
 	i=BJX2_OpI_BNDCHK(v0, v1);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}
+
+void BJX2_Op_BNDCMPW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*2);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}
+
+void BJX2_Op_BNDCMPL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*4);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}
+
+void BJX2_Op_BNDCMPQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=ctx->regs[op->rm];
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*8);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}
+
+
+void BJX2_Op_BNDCHKB_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*1);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCHKW_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*2);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCHKL_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*4);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCHKQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*8);
+	if(i)
+	{
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
+void BJX2_Op_BNDCMPB_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}
+
+void BJX2_Op_BNDCMPW_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*2);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}
+
+void BJX2_Op_BNDCMPL_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*4);
+
+	if(i)
+		{ ctx->regs[BJX2_REG_SR]&=~1; }
+	else
+		{ ctx->regs[BJX2_REG_SR]|=1; }
+}
+
+void BJX2_Op_BNDCMPQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2;
+	int i;
+
+	v0=ctx->regs[op->rn];
+	v1=op->imm;
+	
+	i=BJX2_OpI_BNDCHK(v0, v1*8);
 
 	if(i)
 		{ ctx->regs[BJX2_REG_SR]&=~1; }

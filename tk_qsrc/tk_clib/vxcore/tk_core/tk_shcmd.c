@@ -1727,8 +1727,8 @@ int TKSH_TryLoad(char *img, char **args0)
 			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
 			tkern->ctx_regsave[TKPE_REGSAVE_GBR]=bootgbr;
 			tkern->ctx_regsave[TKPE_REGSAVE_SSP]=boot_newsp;
-//			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
-			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
+			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
+//			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
 			TK_Task_SyscallReturnToUser(task);
 
 #if 1
