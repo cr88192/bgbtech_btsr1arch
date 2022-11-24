@@ -1785,7 +1785,7 @@ F0zz Instruction Block:
 *** F0nm_1gAE  PSTCM8SH		Rm, Rn		//(GSVF) RGB32SF Pack from RGB64F
 *** F0nm_1GAE  PSTCM8UH		Rm, Rn		//(GSVF) RGB32UF Pack from RGB64F
 *** F0nm_1gBE  PSTCM30AH	Rm, Rn		//(RGBF) RGB30A Pack from RGB64F
-*** F0nm_1GBE  -
+*** F0nm_1GBE ? PLDCXH		Rm, Xn		//(GSVFX?) Packed Half to Single (4x)
 *** F0nm_1gCE  PLDCH		Rm, Rn		//(GSVF) Packed Half to Single (2x)
 *** F0nm_1GCE  PLDCHH		Rm, Rn		//(GSVF) Packed Half to Single (Hi)
 *** F0nm_1gDE  PLDCEHL		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Lo)
@@ -2078,11 +2078,11 @@ F0zz Instruction Block:
 ** F0nm_6goC  BLKUAB1	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6GoC  BLKUAB2	Rm, Ro, Rn			//(UAB) Extract Sample
 ** F0nm_6goD  FADDG		Rm, Ro, Rn			//(GFP) FADD (Dynamic Rounding)
-** F0nm_6GoD  -
+** F0nm_6GoD ? FADD		Rm, Imm5fp, Rn		//(FpImm) FADD (Imm5)
 ** F0nm_6goE  FSUBG		Rm, Ro, Rn			//(GFP) FSUB (Dynamic Rounding)
-** F0nm_6GoE  -
+** F0nm_6GoE ? FSUB		Rm, Imm5fp, Rn		//(FpImm) FSUB (Imm5)
 ** F0nm_6goF  FMULG		Rm, Ro, Rn			//(GFP) FMUL (Dynamic Rounding)
-** F0nm_6GoF  -
+** F0nm_6GoF ? FMUL		Rm, Imm5fp, Rn		//(FpImm) FMUL (Imm5)
 
 
 * F0zz_7zzz
@@ -2338,6 +2338,9 @@ The layout of the F8 block will be modified with two Jumbo prefixes (Jumbo96):
 * FE-FE F85n_iiii  ADD		Imm64, Rk		//R16..R31
 * FE-FE F86n_iiii  ADD		Imm64, Rn		//R32..R47
 * FE-FE F87n_iiii  ADD		Imm64, Rk		//R48..R63
+
+* FE-FE F88n_iiii ? PLDCXH	Imm64, Xn		//R0..R14, R32..R46		//(GSVFX?)
+* FE-FE F89n_iiii ? PLDCXH	Imm64, Xn		//R16..R30, R48..R62	//(GSVFX?)
 
 Or, in effect, the Rn field will be expanded to 6 bits.
 

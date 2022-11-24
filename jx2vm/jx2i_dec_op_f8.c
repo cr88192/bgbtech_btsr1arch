@@ -111,7 +111,7 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 		op->nmid=BJX2_NMID_FLDCH;
 		op->fmid=BJX2_FMID_IMMREG;
 		op->Run=BJX2_Op_FLDCH_ImmGReg;
-		op->fl|=BJX2_OPFL_NOWEX;
+//		op->fl|=BJX2_OPFL_NOWEX;
 
 		if((opw1&31)==15)
 		{
@@ -121,6 +121,8 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 
 		if(jbits&0x02000000U)
 		{
+			op->fl|=BJX2_OPFL_NOWEX;
+
 			switch((jbits>>20)&3)
 			{
 			case 0:

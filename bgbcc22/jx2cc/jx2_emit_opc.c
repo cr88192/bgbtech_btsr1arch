@@ -1072,8 +1072,8 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 
 		case BGBCC_SH_NMID_CMPQEQ:	/* pseudo-op */
 		case BGBCC_SH_NMID_TSTQ:	/* pseudo-op */
-			opw2=0xF084|ex;
-			opw1=0x1900|((reg&15)<<4)|((reg&15)<<0); break;
+			opw1=0xF084|ex;
+			opw2=0x1900|((reg&15)<<4)|((reg&15)<<0); break;
 
 		case BGBCC_SH_NMID_SNIPEDC:
 			opw1=0xF00B|ex;
@@ -5602,6 +5602,42 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 			break;
 #endif
 
+#if 1
+		case BGBCC_SH_NMID_FCMPEQ:
+			if((imm&0xFFFF)!=imm)
+				break;
+			opw1=0xF20C|((reg&15)<<4);
+			opw2=0xD000|((imm>>6)&0x03FF)|(ex2&0x0400);
+			break;
+		case BGBCC_SH_NMID_FCMPGT:
+			if((imm&0xFFFF)!=imm)
+				break;
+			opw1=0xF20E|((reg&15)<<4);
+			opw2=0xD000|((imm>>6)&0x03FF)|(ex2&0x0400);
+			break;
+		case BGBCC_SH_NMID_FCMPGE:
+			if((imm&0xFFFF)!=imm)
+				break;
+			opw1=0xF20F|((reg&15)<<4);
+			opw2=0xD000|((imm>>6)&0x03FF)|(ex2&0x0400);
+			break;
+#endif
+
+#if 1
+		case BGBCC_SH_NMID_FADD:
+			if((imm&0xFFFF)!=imm)
+				break;
+			opw1=0xF20E|((reg&15)<<4);
+			opw2=0xD800|((imm>>6)&0x03FF)|(ex2&0x0400);
+			break;
+		case BGBCC_SH_NMID_FMUL:
+			if((imm&0xFFFF)!=imm)
+				break;
+			opw1=0xF20F|((reg&15)<<4);
+			opw2=0xD800|((imm>>6)&0x03FF)|(ex2&0x0400);
+			break;
+#endif
+
 		case BGBCC_SH_NMID_ADDC:	
 			opw1=0xF002|(ex&0x0040); odr=1;
 			opw2=0x1900|((reg&15)<<4);
@@ -7153,6 +7189,31 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 		
 			opw1=0xF080|ex|(imm&31);
 			opw2=0x3100|((rn&15)<<4)|((rm&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_FADD:
+			if((imm>=0) && (imm<=0x1F))
+			{
+				opw1=0xF080|ex|(imm&0x1F);
+				opw2=0x6D00|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			break;
+		case BGBCC_SH_NMID_FSUB:
+			if((imm>=0) && (imm<=0x1F))
+			{
+				opw1=0xF080|ex|(imm&0x1F);
+				opw2=0x6E00|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			break;
+		case BGBCC_SH_NMID_FMUL:
+			if((imm>=0) && (imm<=0x1F))
+			{
+				opw1=0xF080|ex|(imm&0x1F);
+				opw2=0x6F00|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
 			break;
 		}
 	}

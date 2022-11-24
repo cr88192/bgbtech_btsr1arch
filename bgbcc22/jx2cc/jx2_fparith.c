@@ -32,8 +32,11 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 {
 	double f;
 	char *s0;
+	s64 li;
+	u32 imm_f32;
+	u16 imm_f16, imm_f16b;
 	int csreg, ctreg, cdreg;
-	int nm1, nm2;
+	int nm1, nm2, nm3, rt1, rt2;
 	int i, j, k;
 
 	if(sctx->no_fpu || sctx->fpu_soft)
@@ -62,12 +65,38 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 	}
 #endif
 
-	nm1=-1; nm2=-1;
+	if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+	{
+		f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+		if(f==0)
+		{
+			if(opr==CCXL_BINOP_ADD)
+				return(1);
+			if(opr==CCXL_BINOP_SUB)
+				return(1);
+
+			if(opr==CCXL_BINOP_MUL)
+			{
+				BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, 0);
+				return(1);
+			}
+		}
+	}
+		
+	nm1=-1; nm2=-1; nm3=-1;
 	switch(opr)
 	{
-	case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADD;	nm2=-1; break;
-	case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUB;	nm2=-1; break;
-	case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMUL;	nm2=-1; break;
+	case CCXL_BINOP_ADD:
+		nm1=BGBCC_SH_NMID_FADD;	nm2=-1;
+		nm3=BGBCC_SH_NMID_FADD;
+		break;
+	case CCXL_BINOP_SUB:
+		nm1=BGBCC_SH_NMID_FSUB;	nm2=-1; break;
+	case CCXL_BINOP_MUL:
+		nm1=BGBCC_SH_NMID_FMUL;	nm2=-1;
+		nm3=BGBCC_SH_NMID_FMUL;
+		break;
 	case CCXL_BINOP_DIV:
 		if(sctx->has_qmul&2)
 			nm1=BGBCC_SH_NMID_FDIV;
@@ -92,6 +121,30 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 			nm1=-1;
 		if(BGBCC_CCXL_TypeDoubleP(ctx, type))
 			nm1=-1;
+	}
+
+	if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+	{
+		f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+		
+		if(sctx->has_fpim&1)
+		{
+			memcpy(&li, &f, sizeof(double));
+		
+			rt1=BGBCC_JX2_ConstConvDoubleToFloat(li, &imm_f32);
+			rt2=BGBCC_JX2_ConstConvFloatToHalf(imm_f32, &imm_f16);
+			imm_f16b=imm_f16&0xFFC0;
+
+			if((rt1>0) && (rt2>0) && (imm_f16b==imm_f16) &&
+				(nm3>=0))
+			{
+				cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
+				BGBCC_JX2_EmitOpImmReg(sctx, nm3, imm_f16, cdreg);
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+				return(1);
+			}
+		}
 	}
 
 	if(nm1>=0)
@@ -272,9 +325,13 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 {
 	double f;
 	char *s0;
+	u64 li;
+	u32 imm_f32;
+	u16 imm_f16, imm_f16b;
 	int csreg, ctreg, cdreg;
-	int nm1, nm2;
-	int i;
+	int rt1, rt2;
+	int nm1, nm2, nm3;
+	int i, j;
 
 	if(sctx->no_fpu || sctx->fpu_soft)
 	{
@@ -327,12 +384,18 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 		}
 #endif
 
-		nm1=-1; nm2=-1;
+		nm1=-1; nm2=-1;	nm3=-1;
 		switch(opr)
 		{
-		case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADD;	nm2=-1; break;
-		case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUB;	nm2=-1; break;
-		case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMUL;	nm2=-1; break;
+		case CCXL_BINOP_ADD:
+			nm1=BGBCC_SH_NMID_FADD;	nm2=-1;
+			nm3=BGBCC_SH_NMID_FADD;		break;
+		case CCXL_BINOP_SUB:
+			nm1=BGBCC_SH_NMID_FSUB;	nm2=-1;
+			nm3=BGBCC_SH_NMID_FSUB;		break;
+		case CCXL_BINOP_MUL:
+			nm1=BGBCC_SH_NMID_FMUL;	nm2=-1;
+			nm3=BGBCC_SH_NMID_FMUL;		break;
 
 		case CCXL_BINOP_DIV:
 			if(sctx->has_qmul&2)
@@ -350,6 +413,69 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 				nm1=BGBCC_SH_NMID_FSUBG;
 			if(nm1==BGBCC_SH_NMID_FMUL)
 				nm1=BGBCC_SH_NMID_FMULG;
+		}
+
+		if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+		{
+			f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+			
+			if((f==0.0) && ((opr==CCXL_BINOP_ADD) || (opr==CCXL_BINOP_SUB)))
+			{
+				BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx, type, dreg, sreg);
+				return(1);
+			}
+
+			if((f==1.0) && ((opr==CCXL_BINOP_MUL) || (opr==CCXL_BINOP_DIV)))
+			{
+				BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx, type, dreg, sreg);
+				return(1);
+			}
+
+			if((f==0.0) && ((opr==CCXL_BINOP_MUL) || (opr==CCXL_BINOP_DIV)))
+			{
+				BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, 0);
+				return(1);
+			}
+
+			if(sctx->has_fpim&1)
+			{
+				memcpy(&li, &f, sizeof(double));
+			
+				rt1=BGBCC_JX2_ConstConvDoubleToFloat(li, &imm_f32);
+				rt2=BGBCC_JX2_ConstConvFloatToHalf(imm_f32, &imm_f16);
+
+#if 0
+//				j=((imm_f16-0x3800)>>8)&0x1F;
+//				imm_f16b=0x3800+(j<<8);
+
+//				j=((imm_f16-0x3000)>>8)&0x1F;
+//				imm_f16b=0x3000+(j<<8);
+
+//				j=((imm_f16-0x3400)>>8)&0x1F;
+				j=((imm_f16-0x3000)>>8)&0x1F;
+				if(!imm_f16)
+					j=0;
+//				imm_f16b=0x3400+(j<<8);
+				imm_f16b=0x3000+(j<<8);
+				if(!j)
+					imm_f16b=0;
+#endif
+
+				j=BGBCC_JX2_ConstConvHalfToFP5A(imm_f16);
+
+//				if((rt1>0) && (rt2>0) && (imm_f16b==imm_f16) &&
+				if((rt1>0) && (rt2>0) && (j>=0) &&
+					(nm3>=0))
+				{
+					csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+					cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+					BGBCC_JX2_EmitOpRegImmReg(sctx, nm3, csreg, j, cdreg);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+					return(1);
+				}
+			}
 		}
 
 		if(sctx->fpu_lite)
@@ -961,8 +1087,14 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 	ccxl_register sreg, ccxl_register treg,
 	int cmp, int lbl)
 {
+	double f;
+	u64 li;
+	u32 imm_f32;
+	u16 imm_f16, imm_f16b;
 	int csreg, ctreg;
 	int nm1, nm2, sw, lfp;
+	int rt0, rt1, rt2;
+	int i;
 	
 	if(sctx->no_fpu || sctx->fpu_soft)
 	{
@@ -972,6 +1104,30 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
+
+	if(	 (	BGBCC_CCXL_IsRegImmFloatP(ctx, sreg) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, sreg)) &&
+		!(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, treg)))
+	{
+		rt2=-1;
+		switch(cmp)
+		{
+			case CCXL_CMP_EQ:	rt2=CCXL_CMP_EQ;	break;
+			case CCXL_CMP_NE:	rt2=CCXL_CMP_NE;	break;
+			case CCXL_CMP_LT:	rt2=CCXL_CMP_GT;	break;
+			case CCXL_CMP_GT:	rt2=CCXL_CMP_LT;	break;
+			case CCXL_CMP_LE:	rt2=CCXL_CMP_GE;	break;
+			case CCXL_CMP_GE:	rt2=CCXL_CMP_LE;	break;
+			default:			rt2=-1;				break;
+		}
+		
+		if(rt2>=0)
+		{
+			return(BGBCC_JX2C_EmitJCmpVRegVRegFloat(ctx, sctx,
+				type, treg, sreg, rt2, lbl));
+		}
+	}
 
 	lfp=0; sw=0;
 	switch(cmp)
@@ -1009,6 +1165,40 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 		nm2=-1;
 		sw=0;
 		break;
+	}
+
+	if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+	{
+		f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+		
+#if 0
+		if(f==0)
+		{
+			i=BGBCC_JX2C_EmitJCmpVRegZeroQLong(ctx, sctx,
+				type, sreg, cmp, lbl);
+			return(i);
+		}
+#endif
+		
+		if(sctx->has_fpim&1)
+		{
+			memcpy(&li, &f, sizeof(double));
+		
+			rt1=BGBCC_JX2_ConstConvDoubleToFloat(li, &imm_f32);
+			rt2=BGBCC_JX2_ConstConvFloatToHalf(imm_f32, &imm_f16);
+			imm_f16b=imm_f16&0xFFC0;
+
+			if((rt1>0) && (rt2>0) && (imm_f16b==imm_f16) &&
+				(nm1>=0) && !sw)
+			{
+				csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+				BGBCC_JX2_EmitOpImmReg(sctx, nm1, imm_f16, csreg);
+				BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+				return(1);
+			}
+		}
 	}
 
 	if(sctx->fpu_lite)

@@ -164,6 +164,8 @@ assign		regInSrQ = regInSrST[3];
 assign		regInSrR = regInSrST[4];
 assign		regInSrO = regInSrST[5];
 
+wire			tOpIsWx;
+
 reg[8:0]		idUIxt2;
 
 
@@ -257,9 +259,13 @@ wire[63:0]	tRegFp16Upck32;
 wire[31:0]	tRegFp32Pck16;
 
 wire[9:0]	tRegFp16UPckE = idUIxt[1] ?
-	( idUIxt[0] ? { 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
+//	( idUIxt[0] ? { 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
+	( (idUIxt[0] || tOpIsWx) ?
+		{ 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
 
-wire[31:0]	tRegFp16UPckT = idUIxt[0] ? regValRs[63:32] : regValRs[31: 0];
+// wire[31:0]	tRegFp16UPckT = idUIxt[0] ? regValRs[63:32] : regValRs[31: 0];
+wire[31:0]	tRegFp16UPckT = (idUIxt[0] || tOpIsWx) ?
+	regValRs[63:32] : regValRs[31: 0];
 ExConv_Fp16Exp32	conv_fp16upcka(
 	tRegFp16UPckT[15: 0], tRegFp16UPckE[4:0], tRegFp16Upck32[31: 0]);
 ExConv_Fp16Exp32	conv_fp16upckb(
@@ -510,7 +516,13 @@ reg[63:0]	tRegConvVal;
 reg			tRegConvSrT;
 reg			tRegConvSrS;
 
-reg			tOpIsWx;
+// reg			tOpIsWx;
+
+assign	tOpIsWx =
+		(idUIxt[8:6] == JX2_IUC_WX) ||
+		(idUIxt[8:6] == JX2_IUC_WT) ||
+		(idUIxt[8:6] == JX2_IUC_WF) ||
+		(idUIxt[8:6] == JX2_IUC_WXA);
 
 
 always @*
@@ -583,14 +595,14 @@ begin
 
 
 //	tOpIsWx = (idUIxt[7:6] == 2'b11);
-	tOpIsWx =
-		(idUIxt[8:6] == JX2_IUC_WX) ||
-		(idUIxt[8:6] == JX2_IUC_WT) ||
-		(idUIxt[8:6] == JX2_IUC_WF) ||
-		(idUIxt[8:6] == JX2_IUC_WXA);
+//	tOpIsWx =
+//		(idUIxt[8:6] == JX2_IUC_WX) ||
+//		(idUIxt[8:6] == JX2_IUC_WT) ||
+//		(idUIxt[8:6] == JX2_IUC_WF) ||
+//		(idUIxt[8:6] == JX2_IUC_WXA);
 
-	if(noAlux)
-		tOpIsWx = 0;
+//	if(noAlux)
+//		tOpIsWx = 0;
 
 `ifdef def_true
 	tAddCa1A0 = { tAdd1A0[16]?tAdd1B1[16]:tAdd1B0[16], tAdd1A0[16] };
@@ -1637,6 +1649,14 @@ begin
 			tResult1T = tFCmpGtP;
 			tResult2T = tFCmpGtP;
 			tResult1S = tSub2ZF;
+
+`ifdef jx2_use_fpu_fpimm
+			if(idUIxt[3:0]==JX2_UCIX_FPU_CMPGE[3:0])
+			begin
+				tResult1T = tFCmpGtP || tFCmpEqP;
+				tResult2T = tFCmpGtP || tFCmpEqP;
+			end
+`endif
 
 `ifdef jx2_alu_wx
 			if(idUIxt[5:4]==2'b10)

@@ -793,6 +793,18 @@ int BGBCC_JX2C_EmitMovVRegVReg(
 		}
 	}
 
+#if 1
+	if(BGBCC_CCXL_TypeBaseRealP(ctx, type) &&
+		(	BGBCC_CCXL_IsRegImmFloatP(ctx, sreg) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, sreg)))
+	{
+		f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, sreg);
+		(*(double *)(&lj))=f;
+		BGBCC_JX2C_EmitMovVRegImm(ctx, sctx, type, dreg, lj);
+		return(1);
+	}
+#endif
+
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, type) ||
 		(BGBCC_CCXL_TypePointerP(ctx, type) &&
 		!BGBCC_CCXL_TypeQuadPointerP(ctx, type)))

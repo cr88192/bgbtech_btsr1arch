@@ -1373,6 +1373,9 @@ begin
 				opDualLaneSw	= 1;
 `endif
 
+			if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
+				opDualLaneSw	= 1;
+
 			if(opUCmdA0[5:0] == JX2_UCMD_FLDCX)
 			begin
 				opIsDualLaneRm	= 0;

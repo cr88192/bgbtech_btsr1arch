@@ -566,6 +566,20 @@ int fmid;	//form index
 // {0x6009E000, 0xF80FEB00, BGBCC_SH_NMID_BLERP,	BGBCC_SH_FMID_REGREGREG},
 {0x6809E000, 0xF80FEB00, BGBCC_SH_NMID_BLKUTX3L,	BGBCC_SH_FMID_REGREGREG},
 
+{0x600AE000, 0xF80FEB00, BGBCC_SH_NMID_BLINTW,	BGBCC_SH_FMID_REGREGREG},
+{0x680AE000, 0xF80FEB00, BGBCC_SH_NMID_BLINTAW,	BGBCC_SH_FMID_REGREGREG},
+{0x600BE000, 0xF80FEB00, BGBCC_SH_NMID_BITSEL,	BGBCC_SH_FMID_REGREGREG},
+{0x680BE000, 0xF80FEB00, BGBCC_SH_NMID_BITSELX,	BGBCC_SH_FMID_REGREGREG},
+{0x600CE000, 0xF80FEB00, BGBCC_SH_NMID_BLKUAB1,	BGBCC_SH_FMID_REGREGREG},
+{0x680CE000, 0xF80FEB00, BGBCC_SH_NMID_BLKUAB2,	BGBCC_SH_FMID_REGREGREG},
+
+{0x600DE000, 0xF80FEB00, BGBCC_SH_NMID_FADDG,	BGBCC_SH_FMID_REGREGREG},
+{0x680DE000, 0xF80FEB00, BGBCC_SH_NMID_FADD,	BGBCC_SH_FMID_REGIMM5REG},
+{0x600EE000, 0xF80FEB00, BGBCC_SH_NMID_FSUBG,	BGBCC_SH_FMID_REGREGREG},
+{0x680EE000, 0xF80FEB00, BGBCC_SH_NMID_FSUB,	BGBCC_SH_FMID_REGIMM5REG},
+{0x600FE000, 0xF80FEB00, BGBCC_SH_NMID_FMULG,	BGBCC_SH_FMID_REGREGREG},
+{0x680FE000, 0xF80FEB00, BGBCC_SH_NMID_FMUL,	BGBCC_SH_FMID_REGIMM5REG},
+
 
 {0x7004E000, 0xF80FEB00, BGBCC_SH_NMID_DIVSL,	BGBCC_SH_FMID_REGREGREG},
 {0x7804E000, 0xF80FEB00, BGBCC_SH_NMID_DIVUL,	BGBCC_SH_FMID_REGREGREG},
@@ -989,7 +1003,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	case BGBCC_SH_FMID_REGIMM16_N:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg1->ty=BGBCC_SH_OPVTY_REG;
-		arg0->disp=(opw>>16)|(~65535);
+		arg0->disp=(opw>>16)|(~65535LL);
 		arg1->breg=(opw&31);
 		break;
 
@@ -1008,7 +1022,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		break;
 	case BGBCC_SH_FMID_IMM12A_N:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
-		arg0->disp=opw|(~4095);
+		arg0->disp=opw|(~4095LL);
 		arg1->ty=BGBCC_SH_OPVTY_REG;
 		arg1->breg=BGBCC_SH_REG_R0;
 		break;
@@ -1023,7 +1037,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	case BGBCC_SH_FMID_PCDISP20:
 		arg0->ty=BGBCC_SH_OPVTY_RDMEM;
 		arg0->breg=BGBCC_SH_REG_PC;
-		arg0->disp=(((sbyte)opw)<<12)|((opw>>16)&4095);
+		arg0->disp=(s32)((((sbyte)opw)<<12)|((opw>>16)&4095));
 		arg0->sc=2;
 		break;
 
@@ -1144,7 +1158,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg1->ty=BGBCC_SH_OPVTY_IMM;
 		arg2->ty=BGBCC_SH_OPVTY_REG;
 		arg0->breg=((opw    )&15)|(((ex>>1)&1)<<4)|(((exw>>1)&1)<<5);
-		arg1->disp=((opw>>16)&511)|(~511);
+		arg1->disp=((opw>>16)&511)|(~511LL);
 		arg2->breg=((opw>> 4)&15)|(((ex>>2)&1)<<4)|(((exw>>2)&1)<<5);
 		break;
 
@@ -1166,7 +1180,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	case BGBCC_SH_FMID_REGIMM_10_N:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg1->ty=BGBCC_SH_OPVTY_REG;
-		arg0->disp=((opw>>16)&1023)|(~1023);
+		arg0->disp=((opw>>16)&1023)|(~1023LL);
 		arg1->breg=((opw>> 4)&15)|(((ex>>2)&1)<<4)|(((exw>>2)&1)<<5);
 		break;
 
@@ -1214,7 +1228,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		break;
 	case BGBCC_SH_FMID_IMM24_N:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
-		arg0->disp=((opw&255)<<16)|((opw>>16)&65535)|(~16777215);
+		arg0->disp=((opw&255)<<16)|((opw>>16)&65535)|(~16777215LL);
 		arg1->ty=BGBCC_SH_OPVTY_REG;
 		arg1->breg=BGBCC_SH_REG_R0;
 		break;

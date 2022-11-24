@@ -1,0 +1,55 @@
+Another TLV Format (ATLV).
+
+== Tag Structure ==
+
+Tags:
+* { BYTE tag; BYTE len; }
+* { TWOCC tag; WORD len; }
+* { FOURCC tag; DWORD len; }
+* { EIGHTCC tag; QWORD len; }
+
+With the following rules:
+* Tags may only contain values in the ASCII range.
+* Lengths are stored as Negative.
+** As a result, the MSB of the length will always be set.
+
+In this case, the tag length can be determined unambiguously by looking at the bytes. All values here will be Little Endian by default.
+
+This format will assumed byte-aligned tags and data.
+* The length will be given as the number of payload bytes including the tag.
+
+
+Tag Case (TWOCC/FOURCC):
+* First Character:
+** 'A'..'Z': Compound Tag
+** 'a'..'z': Leaf/Data
+** '0'..'9': Leaf/Data
+* Second Character:
+** 'A'..'Z': Public Tag
+** 'a'..'z': Private Tag
+** '0'..'9': Private Tag
+* BYTE Tags will always be Private.
+* FOURCC Tags will use the same rule as TWOCC.
+* Narrower tags may be padded to a larger size by zero extension.
+
+Where:
+* Compund Tags will contain a list of other tags.
+* Leaf/Data tags will contain other or unstructured data.
+* Public Tags will assume that the meaning does not depend on context.
+* Private Tags will depend on where they are used.
+** The structure of their contents may differ from one context to another.
+
+Special Tags:
+* Zero Tags (tag==0) will be pad tags, with their contents ignored.
+* 0xFF, Will be interpreted as a 1-byte padding-byte.
+* 0x80..0xFE: Invalid/Reserved
+
+
+== Top Level ==
+
+Will start with a top-level FOURCC of 'ATLV'.
+* The first child tag will identify the sub-format.
+
+Alternately:
+* EIGHTCC: ATLVxxxx
+* Where xxxx identifies the sub-format.

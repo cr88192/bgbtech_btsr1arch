@@ -339,10 +339,10 @@ begin
 		4'hF: tBoundFail = 0;	/* Raw Pointer 60 */
 	endcase
 
-	if(tBoundFail && isBndChk)
-	begin
-		$display("Bound Fail tag=%X ri=%X", tag, regRi);
-	end
+//	if(tBoundFail && isBndChk)
+//	begin
+//		$display("Bound Fail tag=%X ri=%X", tag, regRi);
+//	end
 
 `ifndef def_true	
 	case(tag[7:6])

@@ -409,6 +409,9 @@ int stat_imm3ri_hjmb;
 int stat_fp16_isfpa;
 int stat_fp16_tot;
 int stat_fp16_hit5;
+int stat_fp16_hit5b;
+
+int stat_fp16_exp[32];
 
 
 int ofs_curbdl;

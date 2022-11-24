@@ -207,6 +207,13 @@ begin
 //			tRegOutSr[1:0]	= regValAluRes[65:64];
 		end
 
+		JX2_UCMD_CONV2_RR: begin
+//			tValOutDfl		= regValAluRes[63:0];
+//			tDoOutDfl		= 1;
+			tRegIdRn2		= regIdRm;			//
+			tRegValRn2		= regValAluRes[63:0];		//
+		end
+
 		JX2_UCMD_ALUCMP: begin
 		end
 		

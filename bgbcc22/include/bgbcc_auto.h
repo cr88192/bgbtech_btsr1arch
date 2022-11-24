@@ -2759,6 +2759,8 @@ int BGBCC_JX2_ConstConvDoubleToFloat(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv);
 int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv);
 int BGBCC_JX2_ConstConvHalfToFP8U(u16 v, byte *rv);
+int BGBCC_JX2_ConstConvHalfToFP5A(u16 imm_f16);
+int BGBCC_JX2_ConstConvHalfToFP5B(u16 imm_f16);
 int BGBCC_JX2_ConstConvV4HToV4FP8S(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvV4HToV4FP8U(u64 v, u32 *rv);
 u32 BGBCC_ConstConvHalfToFloat(u16 v);
@@ -3243,6 +3245,7 @@ int BGBCC_JX2C_EmitConvFromVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Cont
 int BGBCC_JX2C_EmitConvFromVRegVRegVarString(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
 int BGBCC_JX2C_EmitConvFromVRegVRegVariant2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 int BGBCC_JX2C_EmitJCmpVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp, int lbl);
+int BGBCC_JX2C_EmitCompareVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int cmp, ccxl_register sreg, ccxl_register treg);
 //AHSRC:jx2cc/jx2_lxarith.c
 int BGBCC_JX2C_IndexLitInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, s64 val_lo, s64 val_hi);
 int BGBCC_JX2C_EmitBinaryVRegVRegInt128(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);

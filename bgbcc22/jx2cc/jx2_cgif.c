@@ -7218,10 +7218,22 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		(100.0*sctx->stat_imm3ri_hjmb)/(sctx->stat_imm3ri_hmtot+1)
 		);
 	
-	printf("Imm-Hit: IsFp=%.2f%% Fp16=%.2f%% Fp5=%.2f%%\n",
+	printf("Imm-Hit: IsFp=%.2f%% Fp16=%.2f%% Fp5=%.2f%% Fp5b=%.2f%%\n",
 		(100.0*sctx->stat_fp16_isfpa)/(sctx->stat_const_masktot+1),
 		(100.0*sctx->stat_fp16_tot)/(sctx->stat_const_masktot+1),
-		(100.0*sctx->stat_fp16_hit5)/(sctx->stat_const_masktot+1));
+		(100.0*sctx->stat_fp16_hit5)/(sctx->stat_const_masktot+1),
+		(100.0*sctx->stat_fp16_hit5b)/(sctx->stat_const_masktot+1));
+
+	printf("Exp-Fp16:\n");
+	for(i=0; i<4; i++)
+	{
+		for(j=0; j<8; j++)
+		{
+			printf("%.2f%% ",
+				(100.0*sctx->stat_fp16_exp[i*8+j])/sctx->stat_fp16_tot);
+		}
+		printf("\n");
+	}
 
 	if(sctx->stat_ldst_pbotot>0)
 	{

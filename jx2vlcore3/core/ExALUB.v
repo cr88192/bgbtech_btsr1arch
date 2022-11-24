@@ -77,6 +77,15 @@ S1, S2, S3 -> V
 `include "ExOpClz.v"
 `endif
 
+`ifdef jx2_do_convfp16_alu
+
+`ifdef jx2_enable_convfp16
+`include "ExConv_Fp16Exp32.v"
+`include "ExConv_Fp32Pck16.v"
+`endif
+
+`endif
+
 module ExALUB(
 	/* verilator lint_off UNUSED */
 	clock,
@@ -135,6 +144,33 @@ ExOpClz	clz(
 	clock,		reset,
 	idUCmd,		idUIxt,
 	regValRs,	tClzVal);
+`endif
+
+wire			tOpIsWx;
+
+assign	tOpIsWx =
+		(idUIxt[8:6] == JX2_IUC_WX) ||
+		(idUIxt[8:6] == JX2_IUC_WT) ||
+		(idUIxt[8:6] == JX2_IUC_WF) ||
+		(idUIxt[8:6] == JX2_IUC_WXA);
+
+
+`ifdef jx2_enable_conv2_alu
+
+`ifdef jx2_enable_convfp16
+wire[63:0]	tRegFp16Upck32;
+
+wire[9:0]	tRegFp16UPckE = 10'h000;
+
+// wire[31:0]	tRegFp16UPckT = (idUIxt[0] || tOpIsWx) ?
+wire[31:0]	tRegFp16UPckT = idUIxt[0] ?
+	regValRs[63:32] : regValRs[31: 0];
+ExConv_Fp16Exp32	conv_fp16upcka(
+	tRegFp16UPckT[15: 0], tRegFp16UPckE[4:0], tRegFp16Upck32[31: 0]);
+ExConv_Fp16Exp32	conv_fp16upckb(
+	tRegFp16UPckT[31:16], tRegFp16UPckE[9:5], tRegFp16Upck32[63:32]);
+`endif
+
 `endif
 
 
@@ -242,6 +278,10 @@ reg[32:0]	tResult1W;
 reg[64:0]	tResult2W;
 reg[32:0]	tResultShufB;
 reg[64:0]	tResultShufW;
+
+reg[63:0]	tRegConvVal;
+reg			tRegConvSrT;
+reg			tRegConvSrS;
 
 
 always @*
@@ -388,6 +428,8 @@ begin
 	tResult2A=UV65_XX;
 	tResult1T=regInSrT;
 	tResult2T=regInSrT;
+	tRegConvSrT=regInSrT;
+	tRegConvSrS=regInSrS;
 
 	tResult1B=UV33_XX;
 	tResult1S=regInSrS;
@@ -627,6 +669,25 @@ begin
 	end
 `endif
 
+`ifdef jx2_enable_conv2_alu
+	tRegConvVal = UV64_XX;
+	case(idUIxt[5:0])
+`ifdef jx2_enable_convfp16
+		JX2_UCIX_CONV_FP16UPCK32L: begin
+			tRegConvVal = tRegFp16Upck32;
+		end
+		JX2_UCIX_CONV_FP16UPCK32H: begin
+			tRegConvVal = tRegFp16Upck32;
+		end
+`endif
+
+		default: begin
+			tRegConvVal = UV64_XX;
+		end
+
+	endcase
+`endif
+
 `ifdef jx2_enable_gsv
 	if(idUCmd[5:0]==JX2_UCMD_ALUW3)
 	begin
@@ -706,6 +767,15 @@ begin
 	end
 //`endif
 //`endif
+`endif
+
+`ifdef jx2_enable_conv2_alu
+	if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
+	begin
+		tRegOutVal = tRegConvVal;
+		tRegOutSrT = tRegConvSrT;
+		tRegOutSrS = tRegConvSrS;
+	end	
 `endif
 
 end

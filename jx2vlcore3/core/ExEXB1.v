@@ -355,7 +355,8 @@ begin
 		end
 `endif
 
-		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
+		JX2_UCMD_CONV2_RR, JX2_UCMD_ALUB3: begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
 		end
@@ -399,6 +400,17 @@ begin
 //					tRegValRn1	= { regValRs[31:0], regValRt[31:0] };
 					tValOutDfl	= { regValRs[31:0], regValRt[31:0] };
 
+				end
+
+				4'b0101: begin /* FLDCH */
+					tValOutDfl	= {
+						regValRt[15:14],
+						(regValRt[14] || (regValRt[14:10]==0)) ?
+							6'h00 : 6'h3F,
+						regValRt[13: 0],
+						10'h0,
+						32'h0
+						};
 				end
 
 				default: begin

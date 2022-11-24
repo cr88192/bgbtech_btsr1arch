@@ -103,12 +103,16 @@ assign		regOutSeq = tRegOutSeq2;
 
 reg[15:0]		tRegOutExc;
 reg[15:0]		tRegOutExc2;
+reg[15:0]		tRegOutExc3;
 reg[63:0]		tRegOutTea;
 reg[63:0]		tRegOutTea2;
+reg[63:0]		tRegOutTea3;
 reg[63:0]		tRegOutTeaHi;
 reg[63:0]		tRegOutTeaHi2;
+reg[63:0]		tRegOutTeaHi3;
 
-assign		regOutExc = { tRegOutTeaHi2[63:0], tRegOutTea2[47:0], tRegOutExc2 };
+// assign		regOutExc = { tRegOutTeaHi2[63:0], tRegOutTea2[47:0], tRegOutExc2 };
+assign		regOutExc = { tRegOutTeaHi3[63:0], tRegOutTea3[47:0], tRegOutExc3 };
 
 
 `reg_l1addr		regInAddrA;		//input Address
@@ -1280,6 +1284,10 @@ begin
 		tRegOutExc2		<= tRegOutExc;
 		tRegOutTea2		<= tRegOutTea;
 		tRegOutTeaHi2	<= tRegOutTeaHi;
+
+		tRegOutExc3		<= tRegOutExc2;
+		tRegOutTea3		<= tRegOutTea2;
+		tRegOutTeaHi3	<= tRegOutTeaHi2;
 
 //		tRegInAddr		<= regInAddr;
 //		tRegInData		<= regInData;

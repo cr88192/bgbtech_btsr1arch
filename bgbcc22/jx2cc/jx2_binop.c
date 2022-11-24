@@ -3005,6 +3005,12 @@ int BGBCC_JX2C_EmitCompareVRegVRegVReg(
 			type, dreg, opr, sreg, treg));
 	}
 
+	if(BGBCC_CCXL_TypeVariantP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitCompareVRegVRegVRegVariant(ctx, sctx,
+			type, dreg, opr, sreg, treg));
+	}
+
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
 }
@@ -3954,6 +3960,41 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SWAPW, cdreg);
 			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SWAPL, cdreg);
 
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		}
+		
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if(	!strcmp(name, "__int_clz") ||
+		!strcmp(name, "__int_ctz") ||
+		!strcmp(name, "__int64_clz") ||
+		!strcmp(name, "__int64_ctz"))
+	{
+		nm1=BGBCC_SH_NMID_CLZQ;
+		if(!strcmp(name, "__int_clz"))
+			nm1=BGBCC_SH_NMID_CLZ;
+		if(!strcmp(name, "__int_ctz"))
+			nm1=BGBCC_SH_NMID_CTZ;
+		if(!strcmp(name, "__int64_clz"))
+			nm1=BGBCC_SH_NMID_CLZQ;
+		if(!strcmp(name, "__int64_ctz"))
+			nm1=BGBCC_SH_NMID_CTZQ;
+		nm2=-1;
+	
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+		{
+			cdreg=BGBCC_JX2C_EmitTryGetRegisterDirty(ctx, sctx, dst);
+			BGBCC_JX2_EmitOpReg(sctx, nm1, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		}else
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+				nm1, csreg, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
 		}

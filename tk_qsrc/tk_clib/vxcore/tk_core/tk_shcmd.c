@@ -49,6 +49,9 @@ int tksh_cmdentry;
 #include "tk_shcmd_ed.c"
 #include "tk_shcmd_hex.c"
 
+TKSH_EditCtx *tksh_editctx=NULL;
+	
+
 int TKSH_HashFast(char *name)
 {
 	int i;
@@ -944,7 +947,9 @@ int TKSH_Cmds_Ed(char **args)
 	if(darg)
 	{
 		THSH_QualifyPathArg(tb, darg);
-		TKSH_EdLoadFile(tb);
+		if(!tksh_editctx)
+			tksh_editctx=TKSH_EdAllocContext();
+		TKSH_EdLoadFile(tksh_editctx, tb);
 	}
 
 	return(0);
@@ -971,10 +976,14 @@ int TKSH_Cmds_Edit(char **args)
 	if(darg)
 	{
 		THSH_QualifyPathArg(tb, darg);
-		TKSH_EdLoadFile(tb);
+		if(!tksh_editctx)
+			tksh_editctx=TKSH_EdAllocContext();
+		TKSH_EdLoadFile(tksh_editctx, tb);
 	}
 	
-	TKSH_EditUpdateLoop();
+	if(!tksh_editctx)
+		tksh_editctx=TKSH_EdAllocContext();
+	TKSH_EditUpdateLoop(tksh_editctx);
 
 	tk_con_reset();
 
@@ -1152,7 +1161,9 @@ int TKSH_ExecCmdEntry(char *cmd)
 			tksh_cmdentry=0;
 			return(0);
 		}
-		TKSH_EdParseCommand(cmd);
+		if(!tksh_editctx)
+			tksh_editctx=TKSH_EdAllocContext();
+		TKSH_EdParseCommand(tksh_editctx, cmd);
 		return(0);
 	}
 }

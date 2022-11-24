@@ -298,6 +298,17 @@ begin
 
 				end
 
+				4'b0101: begin /* FLDCH */
+					tValOutDfl	= {
+						regValRt[15:14],
+						(regValRt[14] || (regValRt[14:10]==0)) ?
+							6'h00 : 6'h3F,
+						regValRt[13: 0],
+						10'h0,
+						32'h0
+						};
+				end
+
 				default: begin
 					$display("ExEXB1: MOV_IR, Invalid UIxt %X", opUIxt);
 				end

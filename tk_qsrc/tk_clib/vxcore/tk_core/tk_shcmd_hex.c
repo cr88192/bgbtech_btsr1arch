@@ -1,6 +1,15 @@
 byte *tksh_hex_buf;
 int tksh_hex_bufsz;
 
+char *tksh_hex_fname;
+
+int tksh_hex_base_x;
+int tksh_hex_base_y;
+int tksh_hex_cur_x;
+int tksh_hex_cur_y;
+byte tksh_hex_redraw;
+byte tksh_hex_ctrl;
+
 int TKSH_HexLoadFile(char *fname)
 {
 	byte *buf;
@@ -31,31 +40,31 @@ int TKSH_HexRedraw()
 	byte *s, *t;
 	int i, j, k;
 
-	if(tksh_edit_cur_x>=32)
+	if(tksh_hex_cur_x>=32)
 	{
-		tksh_edit_cur_y++;
-		tksh_edit_cur_x=0;
+		tksh_hex_cur_y++;
+		tksh_hex_cur_x=0;
 	}
 
-	if(tksh_edit_cur_x<0)
+	if(tksh_hex_cur_x<0)
 	{
-		tksh_edit_cur_y--;
-		tksh_edit_cur_x=31;
+		tksh_hex_cur_y--;
+		tksh_hex_cur_x=31;
 	}
 	
-	while((tksh_edit_cur_y*16)>=tksh_hex_bufsz)
-		tksh_edit_cur_y--;
+	while((tksh_hex_cur_y*16)>=tksh_hex_bufsz)
+		tksh_hex_cur_y--;
 
-	while(((tksh_edit_cur_y*16)+(tksh_edit_cur_x/2))>=tksh_hex_bufsz)
-		tksh_edit_cur_x--;
+	while(((tksh_hex_cur_y*16)+(tksh_hex_cur_x/2))>=tksh_hex_bufsz)
+		tksh_hex_cur_x--;
 	
-	if(tksh_edit_cur_y<0)
-		tksh_edit_cur_y=0;
+	if(tksh_hex_cur_y<0)
+		tksh_hex_cur_y=0;
 
-	if(tksh_edit_cur_y<tksh_edit_base_y)
-		{ tksh_edit_base_y=tksh_edit_cur_y; }
-	if(tksh_edit_cur_y>(tksh_edit_base_y+23))
-		{ tksh_edit_base_y=tksh_edit_cur_y-23; }
+	if(tksh_hex_cur_y<tksh_hex_base_y)
+		{ tksh_hex_base_y=tksh_hex_cur_y; }
+	if(tksh_hex_cur_y>(tksh_hex_base_y+23))
+		{ tksh_hex_base_y=tksh_hex_cur_y-23; }
 
 
 	for(i=0; i<24; i++)
@@ -79,7 +88,7 @@ int TKSH_HexRedraw()
 		sprintf(tb, "\x1B[%d;1H", i+1);
 		tk_puts(tb);
 
-		j=tksh_edit_base_y+i;
+		j=tksh_hex_base_y+i;
 		if((j*16)>=tksh_hex_bufsz)
 		{
 #if 1
@@ -136,15 +145,15 @@ int TKSH_HexRedraw()
 			"%02X %02X %02X %02X  %02X %02X %02X %02X  "
 			"%02X %02X %02X %02X  %02X %02X %02X %02X  "
 			"%s   ",
-			(tksh_edit_base_y+i)*16,
+			(tksh_hex_base_y+i)*16,
 			tbu0[ 0], tbu0[ 1], tbu0[ 2], tbu0[ 3],
 			tbu0[ 4], tbu0[ 5], tbu0[ 6], tbu0[ 7],
 			tbu0[ 8], tbu0[ 9], tbu0[10], tbu0[11],
 			tbu0[12], tbu0[13], tbu0[14], tbu0[15],
 			s);
-		if(((tksh_edit_base_y+i+1)*16)>tksh_hex_bufsz)
+		if(((tksh_hex_base_y+i+1)*16)>tksh_hex_bufsz)
 		{
-			k=tksh_hex_bufsz-((tksh_edit_base_y+i)*16);
+			k=tksh_hex_bufsz-((tksh_hex_base_y+i)*16);
 			k=k+k;
 			j=k+(k>>1)+(k>>3);
 			j=j+9;
@@ -154,9 +163,9 @@ int TKSH_HexRedraw()
 		tk_puts(tb);
 	}
 
-	j=tksh_edit_cur_x+(tksh_edit_cur_x>>1)+(tksh_edit_cur_x>>3);
+	j=tksh_hex_cur_x+(tksh_hex_cur_x>>1)+(tksh_hex_cur_x>>3);
 	sprintf(tb, "\x1B[%d;%dH",
-		(tksh_edit_cur_y-tksh_edit_base_y)+1,
+		(tksh_hex_cur_y-tksh_hex_base_y)+1,
 		j+10);
 	tk_puts(tb);
 }
@@ -169,11 +178,11 @@ int TKSH_HexUpdateLoop()
 	int key, dn, kk;
 	int i, j, k, l, brk;
 
-	tksh_edit_base_y=0;
+	tksh_hex_base_y=0;
 
-	tksh_edit_cur_x=0;
-	tksh_edit_cur_y=0;
-	tksh_edit_redraw=1;
+	tksh_hex_cur_x=0;
+	tksh_hex_cur_y=0;
+	tksh_hex_redraw=1;
 
 	brk=0;
 	while(!brk)
@@ -198,21 +207,21 @@ int TKSH_HexUpdateLoop()
 
 			if(key==TK_K_CTRL)
 			{
-				tksh_edit_ctrl=dn;
+				tksh_hex_ctrl=dn;
 				continue;
 			}
 			
-			if(tksh_edit_ctrl && (key=='q'))
+			if(tksh_hex_ctrl && (key=='q'))
 			{
 				brk=1;
 				break;
 			}
 
-			if(tksh_edit_ctrl && (key=='s'))
+			if(tksh_hex_ctrl && (key=='s'))
 			{
-				if(tksh_edit_fname)
+				if(tksh_hex_fname)
 				{
-//					TKSH_EdStoreFile(tksh_edit_fname,
+//					TKSH_EdStoreFile(tksh_hex_fname,
 //						0, tksh_num_editlines-1);
 				}
 				continue;
@@ -221,41 +230,41 @@ int TKSH_HexUpdateLoop()
 			if(!dn)
 				continue;
 
-			if((key>=' ') && (key<='~') && !tksh_edit_ctrl)
+			if((key>=' ') && (key<='~') && !tksh_hex_ctrl)
 			{
-				TKSH_HexGetRow(tksh_edit_cur_y, tbu);
+				TKSH_HexGetRow(tksh_hex_cur_y, tbu);
 				
 				if((key>='0') && (key<='9'))
 				{
-					j=tksh_edit_cur_x;
+					j=tksh_hex_cur_x;
 					tbu[j>>1]&=~(0xF0>>((j&1)*4));
 					tbu[j>>1]|=((key-'0')*16)>>((j&1)*4);
 				}
 
 				if((key>='a') && (key<='f'))
 				{
-					j=tksh_edit_cur_x;
+					j=tksh_hex_cur_x;
 					tbu[j>>1]&=~(0xF0>>((j&1)*4));
 					tbu[j>>1]|=((10+key-'a')*16)>>((j&1)*4);
 				}
 
 				if((key>='A') && (key<='F'))
 				{
-					j=tksh_edit_cur_x;
+					j=tksh_hex_cur_x;
 					tbu[j>>1]&=~(0xF0>>((j&1)*4));
 					tbu[j>>1]|=((10+key-'A')*16)>>((j&1)*4);
 				}
 				
-				tksh_edit_cur_x++;
+				tksh_hex_cur_x++;
 				
-				TKSH_HexSetRow(tksh_edit_cur_y, tbu);
+				TKSH_HexSetRow(tksh_hex_cur_y, tbu);
 			
 #if 0
-				cs1=tksh_editlines[tksh_edit_cur_y];
+				cs1=tksh_editlines[tksh_hex_cur_y];
 				if(cs1)
 				{
 					l=strlen(cs1);
-					j=tksh_edit_cur_x;
+					j=tksh_hex_cur_x;
 					memcpy(tbuf, cs1, l+1);
 					memcpy(tbuf+j+1, cs1+j, (l-j)+1);
 				}else
@@ -265,73 +274,73 @@ int TKSH_HexUpdateLoop()
 					j=0;
 				}
 				tbuf[j]=key;
-				tksh_edit_cur_x++;
-				TKSH_EdUpdateLine(tksh_edit_cur_y, tbuf);
+				tksh_hex_cur_x++;
+				TKSH_EdUpdateLine(tksh_hex_cur_y, tbuf);
 #endif
-				tksh_edit_redraw=1;
+				tksh_hex_redraw=1;
 				continue;
 			}
 
 			if(key==TK_K_UPARROW)
 			{
-				tksh_edit_cur_y--;
-				tksh_edit_redraw=1;
+				tksh_hex_cur_y--;
+				tksh_hex_redraw=1;
 				continue;
 			}
 			if(key==TK_K_DOWNARROW)
 			{
-				tksh_edit_cur_y++;
-				tksh_edit_redraw=1;
+				tksh_hex_cur_y++;
+				tksh_hex_redraw=1;
 				continue;
 			}
 			if(key==TK_K_LEFTARROW)
 			{
-				tksh_edit_cur_x--;
-				tksh_edit_redraw=1;
+				tksh_hex_cur_x--;
+				tksh_hex_redraw=1;
 				continue;
 			}
 			if(key==TK_K_RIGHTARROW)
 			{
-				tksh_edit_cur_x++;
-				tksh_edit_redraw=1;
+				tksh_hex_cur_x++;
+				tksh_hex_redraw=1;
 				continue;
 			}
 
 			if(key==TK_K_HOME)
 			{
-				tksh_edit_cur_x=0;
-				tksh_edit_redraw=1;
+				tksh_hex_cur_x=0;
+				tksh_hex_redraw=1;
 				continue;
 			}
 
 			if(key==TK_K_END)
 			{
-				tksh_edit_cur_x=31;
-//				cs1=tksh_editlines[tksh_edit_cur_y];
+				tksh_hex_cur_x=31;
+//				cs1=tksh_editlines[tksh_hex_cur_y];
 //				l=strlen(cs1);
-//				tksh_edit_cur_x=l;
-				tksh_edit_redraw=1;
+//				tksh_hex_cur_x=l;
+				tksh_hex_redraw=1;
 				continue;
 			}
 
 			if(key==TK_K_PGUP)
 			{
-				tksh_edit_cur_y-=23;
-				tksh_edit_redraw=1;
+				tksh_hex_cur_y-=23;
+				tksh_hex_redraw=1;
 				continue;
 			}
 
 			if(key==TK_K_PGDN)
 			{
-				tksh_edit_cur_y+=23;
-				tksh_edit_redraw=1;
+				tksh_hex_cur_y+=23;
+				tksh_hex_redraw=1;
 				continue;
 			}
 		}
 		
-		if(tksh_edit_redraw)
+		if(tksh_hex_redraw)
 		{
-			tksh_edit_redraw=0;
+			tksh_hex_redraw=0;
 			TKSH_HexRedraw();
 		}
 	}

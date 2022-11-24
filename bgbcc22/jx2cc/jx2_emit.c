@@ -2568,6 +2568,59 @@ int BGBCC_JX2_ConstConvHalfToFP8U(u16 v, byte *rv)
 	return(ret);
 }
 
+int BGBCC_JX2_ConstConvHalfToFP5A(u16 imm_f16)
+{
+	u16 imm_f16b;
+	int i, j, k, ex, fr;
+
+	j=((imm_f16-0x3000)>>8)&0x1F;
+//	if(!imm_f16)
+//		j=0;
+	imm_f16b=0x3000+(j<<8);
+//	if(!j)
+//		imm_f16b=0;
+
+	if(imm_f16==imm_f16b)
+		return(j);
+	return(-1);
+}
+
+int BGBCC_JX2_ConstConvHalfToFP5B(u16 imm_f16)
+{
+	u16 imm_f16b;
+	int i, j, k, ex, fr;
+
+	if(!imm_f16)
+		return(0);
+
+	j=((imm_f16-0x3A00)>>8)&0x0F;
+	imm_f16b=0x3A00+(j<<8);
+	if(imm_f16==imm_f16b)
+		return(0x10+j);
+
+
+	ex=(imm_f16>>10)&31;
+	j=10-(ex-15);
+	k=(0x400|(imm_f16&0x03FF));
+	if(j>0)
+	{
+		fr=k&((1<<j)-1);
+		k=k>>j;
+	}
+	else
+	{
+		k=k<<(-j);
+		fr=0;
+	}
+	
+	if((k>0) && (k<=15))
+	{
+		return(k);
+	}
+
+	return(-1);
+}
+
 int BGBCC_JX2_ConstConvV4HToV4FP8S(u64 v, u32 *rv)
 {
 	byte tv[4];
@@ -2742,11 +2795,34 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 			{
 				k=imm_f16&0x7F00;
 			}
+			
+			ctx->stat_fp16_exp[(imm_f16>>10)&31]++;
 		
 			ctx->stat_fp16_tot++;
-			if(k==imm_f16)
+//			if(k==imm_f16)
+//			{
+//				ctx->stat_fp16_hit5++;
+//			}
+
+			k=BGBCC_JX2_ConstConvHalfToFP5A(imm_f16);
+			if((k>=0) && (k<=31))
 			{
 				ctx->stat_fp16_hit5++;
+			}
+
+//			j=((((imm_f16)>>10)&31)-15)+2;
+//			k=imm_f16&0x7F00;
+//			if((j<0) || (j>3))
+//				k=-1;			
+//			if(k==imm_f16)
+//			{
+//				ctx->stat_fp16_hit5b++;
+//			}
+
+			k=BGBCC_JX2_ConstConvHalfToFP5B(imm_f16);
+			if((k>=0) && (k<=31))
+			{
+				ctx->stat_fp16_hit5b++;
 			}
 		}
 #endif

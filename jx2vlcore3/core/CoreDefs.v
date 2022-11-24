@@ -672,6 +672,7 @@ REGIMMREG, Fz:
 	UW:	Rm, Imm9u, Rn
 	UL: Imm9u, Rm, Rn
 
+	NB:	Rm, Imm5f, Rn
 	NW:	Rm, Imm9n, Rn
 
 
@@ -1105,6 +1106,7 @@ parameter[5:0] JX2_UCIX_LDI_LDISH8	= 6'h01;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH16	= 6'h02;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH32	= 6'h03;		//
 parameter[5:0] JX2_UCIX_LDI_JLDIX	= 6'h04;		//
+parameter[5:0] JX2_UCIX_LDI_FLDCH	= 6'h05;		//
 
 parameter[5:0] JX2_UCIX_SHAD_SHAD3	= 6'h00;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLD3	= 6'h01;		//

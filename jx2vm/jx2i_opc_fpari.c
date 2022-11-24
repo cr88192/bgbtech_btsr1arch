@@ -1784,3 +1784,140 @@ void BJX2_Op_PCVTH2UW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vc=(vc<<16)	|	((((va>> 2)&0xFF)^0x00)<<8);
 	ctx->regs[op->rn]=vc;
 }
+
+
+
+void BJX2_Op_FCMPEQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+//	double a, b, c;
+
+	va=ctx->regs[op->rn];
+//	vb=ctx->regs[op->rm];
+
+	vb=BJX2_CvtHalfToFloat(op->imm);
+	vb=BJX2_CvtFloatToDouble(vb);
+
+	isnan=(((va>>52)&2047)==2047) && (((va>>48)&15)!=0);
+	
+	if((((va>>52)&2047)==0) && (((vb>>52)&2047)==0))
+		{ va=0; vb=0; }
+
+//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rn);
+//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+
+//	if(a==b)
+	if((va==vb) && !isnan)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_FCMPGT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isgt;
+
+//	double a, b, c;
+	
+//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rn);
+//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+
+	va=ctx->regs[op->rn];
+//	vb=ctx->regs[op->rm];
+
+	vb=BJX2_CvtHalfToFloat(op->imm);
+	vb=BJX2_CvtFloatToDouble(vb);
+
+	if(va>>63)
+	{
+		if(vb>>63)
+			{ isgt=vb>va; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vb>>63)
+			{ isgt=1; }
+		else
+			{ isgt=va>vb; }
+	}
+
+//	if(a>b)
+	if(isgt)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_FCMPGE_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isgt;
+
+//	double a, b, c;
+	
+//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rn);
+//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+
+	va=ctx->regs[op->rn];
+//	vb=ctx->regs[op->rm];
+
+	vb=BJX2_CvtHalfToFloat(op->imm);
+	vb=BJX2_CvtFloatToDouble(vb);
+
+	if(va>>63)
+	{
+		if(vb>>63)
+			{ isgt=vb>=va; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vb>>63)
+			{ isgt=1; }
+		else
+			{ isgt=va>=vb; }
+	}
+
+//	if(a>b)
+	if(isgt)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_FADD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vb;
+	vb=BJX2_CvtHalfToFloat(op->imm);
+	vb=BJX2_CvtFloatToDouble(vb);
+	ctx->regs[op->rn]=BJX2_FAddSoft(ctx->regs[op->rm], vb);
+}
+
+void BJX2_Op_FSUB_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vb;
+	vb=BJX2_CvtHalfToFloat(op->imm);
+	vb=BJX2_CvtFloatToDouble(vb);
+	ctx->regs[op->rn]=BJX2_FSubSoft(ctx->regs[op->rm], vb);
+}
+
+void BJX2_Op_FMUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vb;
+	vb=BJX2_CvtHalfToFloat(op->imm);
+	vb=BJX2_CvtFloatToDouble(vb);
+	ctx->regs[op->rn]=BJX2_FMulSoft(ctx->regs[op->rm], vb);
+}
+
+int BJX2_OpI_ImmFp5ToFp16(BJX2_Context *ctx, int v)
+{
+//	if(!v)
+//		return(0);
+	return(0x3000+(v<<8));
+//	return(0x3200+(v<<8));
+//	return(0x3400+(v<<8));
+//	return(0x3800+(v<<8));
+}

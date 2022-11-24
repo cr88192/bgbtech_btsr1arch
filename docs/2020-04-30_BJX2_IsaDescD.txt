@@ -2949,6 +2949,8 @@ Get the absolute value of the double precision value in Rm and store the result 
 * F0nm_5go8            FADD		Rm, Ro, Rn
 * F0nm_5Go8            FADDX	Xm, Xo, Xn		//(GFPX)
 * F0nm_6goD            FADDG	Rm, Ro, Rn
+* F0nm_6GoD          ? FADD		Rm, Imm5fp, Rn		//(FpImm)
+* F2nE_DHjj          ? FADD		Imm10fp, Rn			//(FpImm) (E.q=1) FADD
 * FFw0_00ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8
 * FFw0_00ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8
 
@@ -2980,15 +2982,37 @@ Behavior of the Single Modes may depend on implementation:
 * May serve as a hint to use a faster but less precise FPU.
 
 
+The Imm5fp and Imm10fp encodings will be part of the FpImm extension.
+
+In the Imm5fp case, the value will represent an E3.F2 microfloat.
+These will be decoded as-if they were first expanded to Binary16 as:
+* 000xx: 3000, 3100, 3200, 3300 ( 0.125,  0.156,  0.188,  0.219)
+* 001xx: 3400, 3500, 3600, 3700 ( 0.250,  0.313,  0.375,  0.438)
+* 010xx: 3800, 3900, 3A00, 3B00 ( 0.500,  0.625,  0.750,  0.875)
+* 011xx: 3C00, 3D00, 3E00, 3F00 ( 1.000,  1.250,  1.500,  1.750)
+* 100xx: 4000, 4100, 4200, 4300 ( 2.000,  2.500,  3.000,  3.500)
+* 101xx: 4400, 4500, 4600, 4700 ( 4.000,  5.000,  6.000,  7.000)
+* 110xx: 4800, 4900, 4A00, 4B00 ( 8.000, 10.000, 12.000, 14.000)
+* 111xx: 4C00, 4D00, 4E00, 4F00 (16.000, 20.000, 24.000, 28.000)
+
+The Imm10fp case will be be encoded as (S.E5.F4).
+This is effectively a truncated form of Binary16, and may be converted to the Binary16 format by adding 6 zero bits onto the bottom.
+
+In both the Imm5fp and Imm10fp cases, the value will be decoded as-if it were first converted to Binary16 and then converted to Binary64 using similar behavior as the FLDCH instruction.
+
+
 === FCMPEQ (GFP) ===
 
 * 64nm       FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
 * F0nm_1gAD  FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
 * F0nm_1GAD  FCMPXEQ	Rm, Rn			//SR.T=(Rn EQ Rm)
+* F2nC_Dhjj ? FCMPEQ	Imm10fp, Rn		//(FpImm) (E.q=0) Rn==Imm
 
 Compare the double precision values in Rm and Rn for equality, setting SR.T if both values are equal, otherwise clearing SR.T.
 
 If either value encodes a NaN, SR.T will be cleared.
+
+For Imm10fp, see FADD.
 
 
 === FCMPGT (GFP) ===
@@ -2996,10 +3020,13 @@ If either value encodes a NaN, SR.T will be cleared.
 * 65nm       FCMPGT		Rm, Rn			//(GFP) FCMPGT
 * F0nm_1gBD  FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
 * F0nm_1GBD  FCMPXGT	Rm, Rn			//SR.T=(Rn GT Rm)
+* F2nE_Dhjj ? FCMPGT	Imm10fp, Rn		//(FpImm) (E.q=0) FCMPGT
 
 Compare if the double precision value in Rn is greated than the value in Rm, setting SR.T if this is the case, and clearing otherwise.
 
 If either value is NaN, the resulting state of SR.T is undefined.
+
+For Imm10fp, see FADD.
 
 
 === FCONV (GFPX) ===
@@ -3139,6 +3166,8 @@ FMACX will operate instead on a LongDouble value (partial precision).
 * F0nm_5goA            FMUL		Rm, Ro, Rn		//(GFP) FMUL
 * F0nm_5GoA            FMULX	Xm, Xo, Xn		//(GFPX) FMUL
 * F0nm_6goF            FMULG	Rm, Ro, Rn		//(GFP) FMUL
+* F0nm_6GoF          ? FMUL		Rm, Imm5fp, Rn	//(FpImm)
+* F2nF_DHjj          ? FMUL		Imm10fp, Rn		//(FpImm) (E.q=1) FMUL
 * FFw0_00ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8
 * FFw0_00ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8
 
@@ -3148,6 +3177,8 @@ FMULX will operate instead on a LongDouble value.
 
 The basic forms of FMUL will be fixed at Round-Nearest.
 The FMULG form will use a dynamic rounding mode.
+
+For Imm5fp or Imm10fp, see FADD.
 
 
 === FNEG (GFP) ===
@@ -3201,12 +3232,15 @@ Conversion to integer will truncate towards zero. Its output will be a 64-bit in
 * F0nm_5go9            FSUB		Rm, Ro, Rn		//(GFP) FSUB
 * F0nm_5Go9            FSUBX	Rm, Ro, Rn		//(GFPX) FSUB
 * F0nm_6goE            FSUBG	Rm, Ro, Rn		//(GFPX) FSUB
+* F0nm_6GoE          ? FSUB		Rm, Imm5fp, Rn		//(FpImm)
 * FFw0_00ii_F0nm_5go9  FSUB		Rm, Ro, Rn, Imm8
 * FFw0_00ii_F0nm_5Go9  FSUBX	Xm, Xo, Xn, Imm8
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 
 FSUBX will operate instead on a LongDouble value.
+
+For Imm5fp, see FADD.
 
 
 == Jumbo Instructions ==

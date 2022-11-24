@@ -430,8 +430,10 @@ begin
 	//0.011-10.00-zzzz-zzzz
 	//0.011-11.00-zzzz-zzzz
 
+`ifndef def_true
+// `ifdef def_true
 	case(opRegO_Dfl[4:0])
-		5'h00: opImm_imm5f0 = 16'h0000;		5'h01: opImm_imm5f0 = 16'h3100;
+		5'h00: opImm_imm5f0 = 16'h3000;		5'h01: opImm_imm5f0 = 16'h3100;
 		5'h02: opImm_imm5f0 = 16'h3200;		5'h03: opImm_imm5f0 = 16'h3300;
 		5'h04: opImm_imm5f0 = 16'h3400;		5'h05: opImm_imm5f0 = 16'h3500;
 		5'h06: opImm_imm5f0 = 16'h3600;		5'h07: opImm_imm5f0 = 16'h3700;
@@ -449,6 +451,14 @@ begin
 		5'h1E: opImm_imm5f0 = 16'h4E00;		5'h1F: opImm_imm5f0 = 16'h4F00;
 	endcase
 	opImm_imm5f = { UV17_00, opImm_imm5f0 };
+`endif
+
+`ifdef def_true
+	opImm_imm5f = { UV17_00,
+		opRegO_Dfl[4] ? 4'h4 : 4'h3,
+		opRegO_Dfl[3:0],
+		8'h00 };
+`endif
 
 	opIsNotFx	= (istrWord[15:13]!=3'b111);
 	
@@ -2110,10 +2120,13 @@ begin
 						opNmid		= JX2_UCMD_CONV2_RR;
 						opFmid		= JX2_FMID_REGREG;
 						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_CONV_RGB30APCK64F;
+
 						if(opExQ)
-							opUCmdIx	= JX2_UCIX_CONV_RGB30APCK64F;
-						else
-							opUCmdIx	= JX2_UCIX_CONV_RGB30APCK64F;
+						begin
+							opUCmdIx	= JX2_UCIX_CONV_FP16UPCK32L;
+							opUCty		= JX2_IUC_WX;
+						end
 					end
 
 `ifdef jx2_enable_convfp16
@@ -3771,6 +3784,13 @@ begin
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_FPU_FADD_G;
+`ifdef jx2_use_fpu_fpimm
+				if(opExQ)
+				begin
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_NB;
+				end
+`endif
 
 `ifdef jx2_use_fpu_v2sd
 				if(fpuLowPrec)
@@ -3782,6 +3802,13 @@ begin
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_FPU_FSUB_G;
+`ifdef jx2_use_fpu_fpimm
+				if(opExQ)
+				begin
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_NB;
+				end
+`endif
 
 `ifdef jx2_use_fpu_v2sd
 				if(fpuLowPrec)
@@ -3793,6 +3820,14 @@ begin
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
+
+`ifdef jx2_use_fpu_fpimm
+				if(opExQ)
+				begin
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_NB;
+				end
+`endif
 
 `ifdef jx2_use_fpu_v2sd
 				if(fpuLowPrec)
@@ -4586,6 +4621,47 @@ begin
 					end
 `endif
 
+`ifdef jx2_use_fpu_fpimm
+					4'b1100: begin
+						opNmid		= JX2_UCMD_FCMP;
+						opUCmdIx	= JX2_UCIX_FPU_CMPEQ;
+						opFmid		= JX2_FMID_IMM8REG;
+						opIty		= JX2_ITY_XQ;
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_CONV2_RR;
+							opUCmdIx	= JX2_UCIX_CONV_MOV;
+							opIty		= JX2_ITY_XB;
+						end
+					end
+					4'b1101: begin
+//						opNmid		= JX2_UCMD_FCMP;
+//						opUCmdIx	= JX2_UCIX_FPU_CMPEQ;
+					end
+					4'b1110: begin
+						opNmid		= JX2_UCMD_FCMP;
+						opUCmdIx	= JX2_UCIX_FPU_CMPGT;
+						opFmid		= JX2_FMID_IMM8REG;
+						opIty		= JX2_ITY_XQ;
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_FPU3;
+							opUCmdIx	= JX2_UCIX_FPU_FADD;
+						end
+					end
+					4'b1111: begin
+						opNmid		= JX2_UCMD_FCMP;
+						opUCmdIx	= JX2_UCIX_FPU_CMPGE;
+						opFmid		= JX2_FMID_IMM8REG;
+						opIty		= JX2_ITY_XQ;
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_FPU3;
+							opUCmdIx	= JX2_UCIX_FPU_FMUL;
+						end
+					end
+`endif
+
 					default: begin
 					end
 				endcase
@@ -4719,8 +4795,21 @@ begin
 
 `ifdef def_true
 			3'b100: begin
-				if(opIsJumboAu)
+				if(opIsJumbo96)
 				begin
+					opNmid		= JX2_UCMD_CONV2_RR;
+					opFmid		= JX2_FMID_IMM8REG;
+					opIty		= JX2_ITY_SB;
+					opUCmdIx	= JX2_UCIX_CONV_FP16UPCK32L;
+					opUCty		= JX2_IUC_WX;
+				end
+				else if(opIsJumboAu)
+				begin
+//					opNmid		= JX2_UCMD_MOV_IR;
+//					opFmid		= JX2_FMID_IMM8REG;
+//					opIty		= JX2_ITY_NB;
+//					opUCmdIx	= JX2_UCIX_LDI_FLDCH;
+
 					opNmid		= JX2_UCMD_FLDCX;
 					opFmid		= JX2_FMID_IMM8REG;
 					opIty		= JX2_ITY_UW;
@@ -4743,21 +4832,24 @@ begin
 				end
 				else
 				begin
-					opNmid		= JX2_UCMD_FLDCX;
-	//				opFmid		= JX2_FMID_REGREG;
-	//				opIty		= JX2_ITY_UB;
+					opNmid		= JX2_UCMD_MOV_IR;
 					opFmid		= JX2_FMID_IMM8REG;
-					opIty		= JX2_ITY_UW;
-					opUCmdIx	= JX2_UCIX_FPCX_HG;
-				end
+					opIty		= JX2_ITY_NB;
+					opUCmdIx	= JX2_UCIX_LDI_FLDCH;
 
-//				if(opRegO_Df2_IsSP)
-//				if(istrWord[4:0]==5'h0F)
-				if((istrWord[4:0]==5'h0F) && !opIsJumboAu)
-				begin
-					/* "FLDCH Imm16, SP" is a BREAK */
-					opNmid		= JX2_UCMD_OP_IXT;
-					opUCmdIx	= JX2_UCIX_IXT_BREAK;
+//					opNmid		= JX2_UCMD_FLDCX;
+//					opFmid		= JX2_FMID_IMM8REG;
+//					opIty		= JX2_ITY_UW;
+//					opUCmdIx	= JX2_UCIX_FPCX_HG;
+
+	//				if(opRegO_Df2_IsSP)
+					if(istrWord[4:0]==5'h0F)
+//					if((istrWord[4:0]==5'h0F) && !opIsJumboAu)
+					begin
+						/* "FLDCH Imm16, SP" is a BREAK */
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_BREAK;
+					end
 				end
 			end
 `endif
@@ -5121,7 +5213,7 @@ begin
 			UW:	Rm, Imm9u, Rn
 			UL: Imm9u, Rm, Rn
 
-			UB:	Rm, Imm5f, Rn
+			NB:	Rm, Imm5f, Rn
 			NW:	Rm, Imm9n, Rn
 		 */
 		JX2_FMID_REGIMMREG: begin
@@ -5152,7 +5244,7 @@ begin
 					end
 					else
 					begin
-						opImm	= { opImm_imm9u[27:0], 6'h00 };
+						opImm	= { opImm_imm9u[26:0], 6'h00 };
 						opRegO	= JX2_GR_FPIMM16;
 					end
 
@@ -5445,8 +5537,10 @@ begin
 			XB: / Fzeo_zzjj		Imm8x, Ro
 			XW: / Fzeo_jjjj		Imm16x, Ro
 
+			XB: Fznz_zejj		ImmFp10, Rn, Rn
+			XW: Fzeo_jjjj		ImmFp16, Ro, Ro
 			XL: Fznz_zzjj		(GBR, Disp10u), Rn
-			XQ: -
+			XQ: Fznz_zejj		Rn, ImmFp10, Rn
 
 		 */
 	
@@ -5579,7 +5673,7 @@ begin
 				JX2_ITY_XB: begin
 //					opImm		= opImm_imm10u;
 //					opRegM		= JX2_GR_FPIMM10;
-					opImm		= { opImm_imm16u[27:0], 6'h0 };
+					opImm		= { opImm_imm10u[26:0], 6'h0 };
 					opRegM		= JX2_GR_FPIMM16;
 					opRegO		= opRegN_Dfl;
 					opRegN		= opRegN_Dfl;
@@ -5591,6 +5685,15 @@ begin
 					opImm		= opImm_imm16u;
 					opRegM		= JX2_GR_FPIMM16;
 					opRegO		= opRegN_Dfl;
+					opRegN		= opRegN_Dfl;
+					opRegP		= opRegN_Dfl;
+					opIsImm9	= 1;
+				end
+
+				JX2_ITY_XQ: begin
+					opImm		= { opImm_imm10u[26:0], 6'h0 };
+					opRegM		= opRegN_Dfl;
+					opRegO		= JX2_GR_FPIMM16;
 					opRegN		= opRegN_Dfl;
 					opRegP		= opRegN_Dfl;
 					opIsImm9	= 1;

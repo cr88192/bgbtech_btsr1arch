@@ -44,7 +44,10 @@ LDFLAGS=$(TK_LDFL) -lvxcore
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz
 
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
-	-fxgpr_ena -fqmul -fldtex -fptropts -ffdiv -ffpu_fpvsf -fldgbr
+	-fxgpr_ena -fqmul -fldtex -fptropts -ffpu_fpvsf -fldgbr \
+	-ffpu_fpimm
+
+#	 -ffdiv
 
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w_io2fp2 -fwexj -Zz \
 #	-fxgpr -fqmul -fldtex -ptropts

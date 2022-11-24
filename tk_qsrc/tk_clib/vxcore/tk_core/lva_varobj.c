@@ -299,7 +299,7 @@ u64 TKMM_LVA_TryGetSigPtrVar(void *ptr, char *sig)
 		}
 		break;
 	}
-	return(0);
+	return(v);
 }
 
 int TKMM_LVA_TryGetSigTty(char *sig)
@@ -1112,3 +1112,9 @@ void *__lva_unwrap(__variant obj)
 {
 }
 
+__object __lvo_wrapstring(char *str)
+{
+	u64 v;	
+	v=TKMM_LVA_WrapString(str);
+	return(__object_frombits(v));
+}

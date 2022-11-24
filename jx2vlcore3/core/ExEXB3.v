@@ -228,7 +228,9 @@ begin
 		
 		JX2_UCMD_CONV_RR: begin
 		end
-		
+		JX2_UCMD_CONV2_RR: begin
+		end
+
 		JX2_UCMD_MOV_RC: begin
 		end
 		JX2_UCMD_MOV_CR: begin

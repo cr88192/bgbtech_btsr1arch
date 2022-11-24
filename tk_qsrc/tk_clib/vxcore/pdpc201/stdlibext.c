@@ -4,6 +4,7 @@
 #include "string.h"
 #include "ctype.h"
 #include "stddef.h"
+#include "stdint.h"
 
 #include "wchar.h"
 
@@ -760,4 +761,34 @@ errno_t wcscpy_s(
 		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
 	wcscpy(dest, src);
 	return(0);
+}
+
+void *aligned_alloc(size_t alignment, size_t size)
+{
+	size_t size1, frac, align_n1;
+	void *ptr;
+	
+	if(alignment<=16)
+		return(malloc(size));
+	if(alignment&(alignment-1))
+		return(NULL);
+	
+	align_n1=(alignment-1);
+	size1=(size+align_n1)&(~align_n1);
+	ptr=malloc(size1+align_n1);
+	
+	frac=(((intptr_t)ptr)&align_n1);
+	if(frac)
+		{ ptr=((char *)ptr)+(alignment-frac); }
+	return(ptr);
+}
+
+void free_sized(void *ptr, size_t size)
+{
+	free(ptr);
+}
+
+void free_aligned_sized(void *ptr, size_t alignment, size_t size)
+{
+	free(ptr);
 }
