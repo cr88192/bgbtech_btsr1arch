@@ -3141,8 +3141,9 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 			dreg2=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, dreg);
 
 			BGBCC_CCXL_GetRegImmX128Value(ctx, sreg, &li, &lj);
-			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+0, li);
-			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+1, lj);
+//			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+0, li);
+//			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+1, lj);
+			BGBCC_JX2_EmitLoadRegImm128P(sctx, dreg2, li, lj);
 			return(1);
 		}
 

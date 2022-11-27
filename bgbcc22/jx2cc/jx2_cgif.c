@@ -7162,7 +7162,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	printf("Consts: MaskHit=%d MaskJumbo=%d MaskTot=%d\n"
 		"\tTot_J64=%d (Fp32=%d 2xFp16=%d 4xFp8=%d i33l=%d i32h=%d i32c=%d)\n"
-		"\tTot_J96=%d\n",
+		"\tTot_J96=%d (PH=%d)\n",
 		sctx->stat_const_maskhit,
 		sctx->stat_const_maskjumbo,
 		sctx->stat_const_masktot,
@@ -7173,7 +7173,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		sctx->stat_const_jumbo64_imm33l,
 		sctx->stat_const_jumbo64_imm32h,
 		sctx->stat_const_jumbo64_imm32c,
-		sctx->stat_const_jumbo96
+		sctx->stat_const_jumbo96,
+		sctx->stat_const_jumbo96ph
 		);
 	
 	printf("Disp-Hit(Scale): 5u=%.2f%% 9u=%.2f%% "

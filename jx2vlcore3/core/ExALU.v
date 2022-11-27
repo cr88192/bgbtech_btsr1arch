@@ -256,23 +256,36 @@ ExConv_Rgb30aExp	conv_upck30a(
 //wire[63:0]	tRegFp16Upck32L;
 //wire[63:0]	tRegFp16Upck32H;
 wire[63:0]	tRegFp16Upck32;
-wire[31:0]	tRegFp32Pck16;
+
+wire[63:0]	tRegFp32Pck16;
+wire[31:0]	tRegFp32Pck16L;
+wire[31:0]	tRegFp32Pck16H;
 
 wire[9:0]	tRegFp16UPckE = idUIxt[1] ?
-//	( idUIxt[0] ? { 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
-	( (idUIxt[0] || tOpIsWx) ?
-		{ 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
+	( idUIxt[0] ? { 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
+//	( (idUIxt[0] || tOpIsWx) ?
+//		{ 5'h0, regValRs[62:58] } : regValRs[57:48] ) : 10'h000;
 
-// wire[31:0]	tRegFp16UPckT = idUIxt[0] ? regValRs[63:32] : regValRs[31: 0];
-wire[31:0]	tRegFp16UPckT = (idUIxt[0] || tOpIsWx) ?
-	regValRs[63:32] : regValRs[31: 0];
+wire[31:0]	tRegFp16UPckT = idUIxt[0] ? regValRs[63:32] : regValRs[31: 0];
+// wire[31:0]	tRegFp16UPckT = (idUIxt[0] || tOpIsWx) ?
+// 	regValRs[63:32] : regValRs[31: 0];
 ExConv_Fp16Exp32	conv_fp16upcka(
 	tRegFp16UPckT[15: 0], tRegFp16UPckE[4:0], tRegFp16Upck32[31: 0]);
 ExConv_Fp16Exp32	conv_fp16upckb(
 	tRegFp16UPckT[31:16], tRegFp16UPckE[9:5], tRegFp16Upck32[63:32]);
 
-ExConv_Fp32Pck16	conv_fp16pcka(regValRs[31: 0], tRegFp32Pck16[15: 0]);
-ExConv_Fp32Pck16	conv_fp16pckb(regValRs[63:32], tRegFp32Pck16[31:16]);
+ExConv_Fp32Pck16	conv_fp16pcka(regValRs[31: 0], tRegFp32Pck16L[15: 0]);
+ExConv_Fp32Pck16	conv_fp16pckb(regValRs[63:32], tRegFp32Pck16L[31:16]);
+ExConv_Fp32Pck16	conv_fp16pckc(regValXs[31: 0], tRegFp32Pck16H[15: 0]);
+ExConv_Fp32Pck16	conv_fp16pckd(regValXs[63:32], tRegFp32Pck16H[31:16]);
+
+//assign		tRegFp32Pck16 = tOpIsWx ?
+//	{ tRegFp32Pck16H, tRegFp32Pck16L } :
+//	{ UV32_00, tRegFp32Pck16L };
+
+assign		tRegFp32Pck16 =
+	{ tOpIsWx ? tRegFp32Pck16H : UV32_00, tRegFp32Pck16L };
+
 `endif
 
 `endif
@@ -1724,7 +1737,8 @@ begin
 			tRegConvVal = { UV32_00, tRegFp16Upck32[31:0] };
 		end
 		JX2_UCIX_CONV_FP16PCK32: begin
-			tRegConvVal = { UV32_00, tRegFp32Pck16 };
+//			tRegConvVal = { UV32_00, tRegFp32Pck16 };
+			tRegConvVal = tRegFp32Pck16;
 		end
 `endif
 

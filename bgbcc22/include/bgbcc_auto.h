@@ -2757,6 +2757,8 @@ int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm)
 int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm);
 int BGBCC_JX2_ConstConvDoubleToFloat(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv);
+int BGBCC_JX2_ConstConvPackedFloatToHalf2x(u64 v, u32 *rv);
+int BGBCC_JX2_ConstConvPackedFloatToHalf4x(u64 va, u64 vb, u64 *rv);
 int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv);
 int BGBCC_JX2_ConstConvHalfToFP8U(u16 v, byte *rv);
 int BGBCC_JX2_ConstConvHalfToFP5A(u16 imm_f16);
@@ -2765,6 +2767,7 @@ int BGBCC_JX2_ConstConvV4HToV4FP8S(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvV4HToV4FP8U(u64 v, u32 *rv);
 u32 BGBCC_ConstConvHalfToFloat(u16 v);
 int BGBCC_JX2_ConstIsFull64(BGBCC_JX2_Context *ctx, s64 v);
+int BGBCC_JX2_EmitLoadRegImm128P(BGBCC_JX2_Context *ctx, int dreg, s64 imma, s64 immb);
 int BGBCC_JX2_EmitLoadRegImm64P(BGBCC_JX2_Context *ctx, int reg, s64 imm);
 int BGBCC_JX2_EmitLoadRegImmPair32(BGBCC_JX2_Context *ctx, int reg, s32 imma, s32 immb);
 int BGBCC_JX2_EmitCheckFlushIndexImmP(BGBCC_JX2_Context *ctx);

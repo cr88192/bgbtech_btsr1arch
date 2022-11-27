@@ -2491,6 +2491,42 @@ int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv)
 	return(ret);
 }
 
+int BGBCC_JX2_ConstConvPackedFloatToHalf2x(u64 v, u32 *rv)
+{
+	u32 v2;
+	u16 v0, v1;
+	int r0, r1;
+	
+	r0=BGBCC_JX2_ConstConvFloatToHalf((u32)(v>> 0), &v0);
+	r1=BGBCC_JX2_ConstConvFloatToHalf((u32)(v>>32), &v1);
+	v2=(v1<<16)|v0;
+	if((r0<=0) || (r1<=0))
+	{
+		*rv=v2;
+		return(0);
+	}
+	*rv=v2;
+	return(1);
+}
+
+int BGBCC_JX2_ConstConvPackedFloatToHalf4x(u64 va, u64 vb, u64 *rv)
+{
+	u64 v2;
+	u32 v0, v1;
+	int r0, r1;
+	
+	r0=BGBCC_JX2_ConstConvPackedFloatToHalf2x(va, &v0);
+	r1=BGBCC_JX2_ConstConvPackedFloatToHalf2x(vb, &v1);
+	v2=(((u64)v1)<<32)|v0;
+	if((r0<=0) || (r1<=0))
+	{
+		*rv=v2;
+		return(0);
+	}
+	*rv=v2;
+	return(1);
+}
+
 int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv)
 {
 	int sg, exp, fra, ret, v1;
@@ -2693,6 +2729,102 @@ int BGBCC_JX2_ConstIsFull64(BGBCC_JX2_Context *ctx, s64 v)
 //	if(((u32)v)==0)
 //		return(0);
 
+	return(1);
+}
+
+int BGBCC_JX2_EmitLoadRegImm128P(
+	BGBCC_JX2_Context *ctx, int dreg, s64 imma, s64 immb)
+{
+	u64 immv;
+	int opw1, opw2, opw3, opw4, opw5, opw6;
+	int reg, xreg, rt;
+
+	if(BGBCC_JX2C_EmitRegIsExtLpReg(NULL, ctx, dreg))
+	{
+		reg=BGBCC_JX2C_MapLpRegToQgr(NULL, ctx, dreg);
+		xreg=dreg&31;
+	}else
+	{
+		reg=dreg;
+		xreg=BGBCC_JX2_TryNormalizeXReg(ctx, BGBCC_SH_NMID_MOVX2, dreg);
+	}
+
+#if 1
+	opw1=-1;	opw2=-1;
+	opw3=-1;	opw4=-1;
+	opw5=-1;	opw6=-1;
+
+	if(ctx->has_fpim&1)
+	{
+		rt=BGBCC_JX2_ConstConvPackedFloatToHalf4x(imma, immb, &immv);
+
+#if 0
+		if(!immv)
+		{
+			/* More compact to load two zeroes. */
+			rt=0;
+		}
+#endif
+	
+		if(	(opw1<0) &&
+			(xreg>0) &&
+			(rt>0))
+		{
+			BGBCC_JX2DA_EmitLoadRegImm64(ctx, BGBCC_SH_NMID_PLDCXH, dreg, immv);
+
+			if(!ctx->is_simpass)
+			{
+				ctx->stat_const_masktot++;
+			}
+
+//			if(msk_hi>=0)
+//				{ ctx->stat_const_maskjumbo++; }
+
+			if(!ctx->is_simpass)
+			{
+				ctx->stat_const_jumbo96++;
+				ctx->stat_const_jumbo96ph++;
+			}
+
+			if(ctx->cgen_log)
+			{
+				fprintf(ctx->cgen_log, "Imm96_PH: %016llX\n", immv);
+			}
+
+#if 1
+			opw1=0xFE00|((immv>>56)&  255);
+			opw2=0x0000|((immv>>40)&65535);
+			opw3=0xFE00|((immv>>32)&  255);
+			opw4=0x0000|((immv>>16)&65535);
+			opw5=0xF880|(xreg&31);
+			opw6=0x0000|((immv>> 0)&65535);
+#endif
+		}else
+		{
+			fprintf(ctx->cgen_log, "Imm96_PH Reject: %016llX-%016llX\n",
+				immb, imma);
+		}
+	}
+
+	if(opw1>=0)
+	{
+		BGBCC_JX2_EmitWord(ctx, opw1);
+		if(opw2>=0)
+			BGBCC_JX2_EmitWord(ctx, opw2);
+		if(opw3>=0)
+			BGBCC_JX2_EmitWord(ctx, opw3);
+		if(opw4>=0)
+			BGBCC_JX2_EmitWord(ctx, opw4);
+		if(opw5>=0)
+			BGBCC_JX2_EmitWord(ctx, opw5);
+		if(opw6>=0)
+			BGBCC_JX2_EmitWord(ctx, opw6);
+		return(1);
+	}
+#endif
+
+	BGBCC_JX2_EmitLoadRegImm64P(ctx, reg+0, imma);
+	BGBCC_JX2_EmitLoadRegImm64P(ctx, reg+1, immb);
 	return(1);
 }
 

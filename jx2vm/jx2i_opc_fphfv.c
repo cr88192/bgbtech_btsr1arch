@@ -269,6 +269,7 @@ void BJX2_Op_PMULF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 
 
+#ifndef BJX2_CFG_SIMDFXASS
 u32 BJX2_OpI_FaddSf(u32 va, u32 vb)
 {
 	int fra, frb, frc, exa, exb, exc, sga, sgb, sgc;
@@ -367,6 +368,123 @@ u32 BJX2_OpI_FmulSf(u32 va, u32 vb)
 	vc=(sgc<<31)|(exc<<23)|((frc&0xFFFF)<<7);
 	return(vc);
 }
+#endif
+
+#ifdef BJX2_CFG_SIMDFXASS
+u32 BJX2_OpI_FaddSf(u32 va, u32 vb)
+{
+	int fra, frb, frc, exa, exb, exc, sga, sgb, sgc;
+	int d, bn;
+	u32 vc;
+
+	sga=va>>31;
+	exa=(va>>23)&255;
+	fra=((va>>0)&0x7FFFFF);
+	if(exa!=0)
+		fra|=0x800000;
+
+	sgb=vb>>31;
+	exb=(vb>>23)&255;
+	frb=((vb>>0)&0x7FFFFF);
+	if(exb!=0)
+		frb|=0x800000;
+	
+	if(exb>exa)
+	{
+		d=sga; sga=sgb; sgb=d;
+		d=exa; exa=exb; exb=d;
+		d=fra; fra=frb; frb=d;
+	}
+	
+	d=exa-exb;
+	if(d>31)
+		d=31;
+	
+	bn=frb>>d;
+	if(sgb!=sga)
+	{
+//		bn=~bn;
+		bn=-bn;
+	}
+	
+	sgc=sga;
+	exc=exa;
+	frc=fra+bn;
+	
+	if(frc>>31)
+	{
+		sgc=!sgc;
+		frc=~frc;
+	}
+	
+	if(frc&0x1000000)
+	{
+		frc>>=1;
+		exc++;
+	}else
+	{
+		if(!(frc&(~1)))
+			return(0);
+		if(!(frc&0xFFFF00))
+			{ exc-=16; frc<<=16; }
+		if(!(frc&0xFF0000))
+			{ exc-= 8; frc<<= 8; }
+		if(!(frc&0xF00000))
+			{ exc-= 4; frc<<= 4; }
+		if(!(frc&0xC00000))
+			{ exc-= 2; frc<<= 2; }
+		if(!(frc&0x800000))
+			{ exc-= 1; frc<<= 1; }
+	}
+	
+	if(exc<=0)
+		return(0);
+		
+	vc=(sgc<<31)|(exc<<23)|((frc&0x7FFFFF)<<0);
+	return(vc);
+}
+
+u32 BJX2_OpI_FmulSf(u32 va, u32 vb)
+{
+	int fra, frb, frc, exa, exb, exc, sga, sgb, sgc;
+	int d, bn;
+	u32 vc;
+	
+	if(!va || !vb)
+		return(0);
+
+	sga=va>>31;
+	exa=(va>>23)&255;
+	fra=((va>>0)&0x7FFFFF)|0x800000;
+
+	sgb=vb>>31;
+	exb=(vb>>23)&255;
+	frb=((vb>>0)&0x7FFFFF)|0x800000;
+	
+	sgc=sga^sgb;
+	exc=(exa+exb)-127;
+	if(exc<=0)
+		return(0);
+	
+//	frc=(((s64)fra)*(frb))>>16;
+	frc=(((s64)fra)*(frb))>>23;
+
+	/* Cheese the multiply. */
+//	frc=(((s64)(fra>>7))*(frb>>7))>>9;
+//	frc+=(fra&127)+(frb&127);
+//	frc+=((fra&127)*(frb>>20)+(frb&127)*(fra>>20))>>3;
+//	frc+=((fra&127)*(frb>>17)+(frb&127)*(fra>>17))>>6;
+	
+	if(frc&0x1000000)
+	{
+		exc++;
+		frc=frc>>1;
+	}
+
+	vc=(sgc<<31)|(exc<<23)|((frc&0x7FFFFF)<<0);
+	return(vc);
+}
+#endif
 
 u64 BJX2_OpI_PAddSf(u64 va, u64 vb)
 {
@@ -2123,6 +2241,26 @@ void BJX2_Op_PLDCHH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_PLDCXH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1, v2, v3;
+	u64	vs, vt, vn0, vn1;
+
+	vs=ctx->regs[op->rm];
+	
+	v0=BJX2_CvtHalfToFloat(vs>> 0);
+	v1=BJX2_CvtHalfToFloat(vs>>16);
+	v2=BJX2_CvtHalfToFloat(vs>>32);
+	v3=BJX2_CvtHalfToFloat(vs>>48);
+	
+	vn0=(((u64)v1)<<32)|v0;
+	vn1=(((u64)v3)<<32)|v2;
+
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+}
+
 void BJX2_Op_PLDCH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float tv0[4], tv1[4], tv2[4];
@@ -2140,6 +2278,25 @@ void BJX2_Op_PLDCH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	vn=(((u64)v1)<<32)|v0;
 	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PLDCXH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u32 v0, v1, v2, v3;
+	u64	vs, vt, vn0, vn1;
+
+	vs=op->imm;
+
+	v0=BJX2_CvtHalfToFloat(vs>> 0);
+	v1=BJX2_CvtHalfToFloat(vs>>16);
+	v2=BJX2_CvtHalfToFloat(vs>>32);
+	v3=BJX2_CvtHalfToFloat(vs>>48);
+
+	vn0=(((u64)v1)<<32)|v0;
+	vn1=(((u64)v3)<<32)|v2;
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
 }
 
 void BJX2_Op_PLDCEHL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -2193,6 +2350,7 @@ void BJX2_Op_PLDCEHH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ctx->regs[op->rn]=vn;
 }
 
+#if 0
 void BJX2_Op_PLDCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float tv0[4], tv1[4], tv2[4];
@@ -2214,7 +2372,7 @@ void BJX2_Op_PLDCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
 //	ctx->regs[op->rn]=vn;
 }
-
+#endif
 
 void BJX2_Op_PSTCH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -2242,7 +2400,8 @@ void BJX2_Op_PSTCH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
-void BJX2_Op_PSTCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+// void BJX2_Op_PSTCHX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+void BJX2_Op_PSTCXH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float tv0[4], tv1[4], tv2[4];
 	u32 v0, v1, v2, v3;

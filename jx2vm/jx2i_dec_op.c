@@ -500,15 +500,29 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_PADDXF:
 		case BJX2_NMID_PSUBXF:
 		case BJX2_NMID_PMULXF:
-		case BJX2_NMID_PADDH:
-		case BJX2_NMID_PSUBH:
-		case BJX2_NMID_PMULH:
 			op->cyc=10;
 //			op->cyc=1;
 //			op->cyc=2;
 
 			if(op->imm&8)
 				op->cyc=2;
+
+#ifdef BJX2_CFG_SIMDFXASS
+			op->cyc=2;
+#endif
+
+			break;
+
+		case BJX2_NMID_PADDH:
+		case BJX2_NMID_PSUBH:
+		case BJX2_NMID_PMULH:
+//			op->cyc=10;
+//			op->cyc=3;
+//			op->cyc=1;
+			op->cyc=2;
+
+//			if(op->imm&8)
+//				op->cyc=2;
 
 			break;
 

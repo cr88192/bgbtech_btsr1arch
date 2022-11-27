@@ -162,8 +162,8 @@ wire[63:0]	tRegFp16Upck32;
 
 wire[9:0]	tRegFp16UPckE = 10'h000;
 
-// wire[31:0]	tRegFp16UPckT = (idUIxt[0] || tOpIsWx) ?
-wire[31:0]	tRegFp16UPckT = idUIxt[0] ?
+wire[31:0]	tRegFp16UPckT = (idUIxt[0] || tOpIsWx) ?
+// wire[31:0]	tRegFp16UPckT = idUIxt[0] ?
 	regValRs[63:32] : regValRs[31: 0];
 ExConv_Fp16Exp32	conv_fp16upcka(
 	tRegFp16UPckT[15: 0], tRegFp16UPckE[4:0], tRegFp16Upck32[31: 0]);

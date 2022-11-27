@@ -1781,11 +1781,11 @@ F0zz Instruction Block:
 *** F0nm_1g8E  PLDCM8SH		Rm, Rn		//(GSVF) RGB32SF Unpack to RGB64F
 *** F0nm_1G8E  PLDCM8UH		Rm, Rn		//(GSVF) RGB32UF Unpack to RGB64F
 *** F0nm_1g9E  PLDCM30AH	Rm, Rn		//(RGBF) RGB30A Unpack to RGB64F
-*** F0nm_1G9E  -
+*** F0nm_1G9E ? PLDCXH		Rm, Xn		//(GSVFX?) Packed Half to Single (4x)
 *** F0nm_1gAE  PSTCM8SH		Rm, Rn		//(GSVF) RGB32SF Pack from RGB64F
 *** F0nm_1GAE  PSTCM8UH		Rm, Rn		//(GSVF) RGB32UF Pack from RGB64F
 *** F0nm_1gBE  PSTCM30AH	Rm, Rn		//(RGBF) RGB30A Pack from RGB64F
-*** F0nm_1GBE ? PLDCXH		Rm, Xn		//(GSVFX?) Packed Half to Single (4x)
+*** F0nm_1GBE ? PSTCXH		Xm, Rn		//(GSVFX?) Packed Half to Single (4x)
 *** F0nm_1gCE  PLDCH		Rm, Rn		//(GSVF) Packed Half to Single (2x)
 *** F0nm_1GCE  PLDCHH		Rm, Rn		//(GSVF) Packed Half to Single (Hi)
 *** F0nm_1gDE  PLDCEHL		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Lo)
@@ -1849,7 +1849,7 @@ F0zz Instruction Block:
 ** F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
 ** F0nm_2GoA  PSCHEQ.B	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
 ** F0nm_2goB  PSCHNE.W	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
-** F0nm_2GoA  PSCHNE.B	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
+** F0nm_2GoB  PSCHNE.B	Rm, Ro, Rn			//(GSV) Check if Rm contains Ro
 ** F0nm_2goC  BLKUTX1	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX1
 ** F0nm_2GoC  BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2
 ** F0nm_2goD  PADD.H	Rm, Ro, Rn			//(GSVF) Packed FADD (4x Half)

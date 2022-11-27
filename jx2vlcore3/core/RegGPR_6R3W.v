@@ -699,6 +699,13 @@ begin
 
 		JX2_GR_SSP:	tValRuA=regValSsp;
 
+`ifdef jx2_enable_wexjumbo
+		JX2_GR_JIMM: begin
+			tValRuA=tValJimm;
+			tValRuZz=1;
+		end
+`endif
+
 		JX2_GR_IMM:begin
 			tValRuA={
 				regValImmB[32]?UV32_FF:UV32_00,
@@ -736,6 +743,13 @@ begin
 //		JX2_GR_SP:	tValRvA=regInSp;
 
 //		JX2_GR_SSP:	tValRvA=regValSsp;
+
+`ifdef jx2_enable_wexjumbo
+		JX2_GR_JIMM: begin
+			tValRvA=tValJimm;
+			tValRvZz=1;
+		end
+`endif
 
 		JX2_GR_IMM:begin
 			tValRvA={

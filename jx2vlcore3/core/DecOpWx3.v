@@ -1374,7 +1374,22 @@ begin
 `endif
 
 			if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
-				opDualLaneSw	= 1;
+			begin
+//				opDualLaneSw	= 1;
+
+				if(opUIxtA0[5:0] == JX2_UCIX_CONV_FP16PCK32)
+				begin
+					opIsDualLaneRm	= 1;
+					opIsDualLaneRo	= 0;
+					opIsDualLaneRn	= 0;
+				end
+				else
+				begin
+					opIsDualLaneRm	= 0;
+					opIsDualLaneRo	= 0;
+					opIsDualLaneRn	= 1;
+				end
+			end
 
 			if(opUCmdA0[5:0] == JX2_UCMD_FLDCX)
 			begin
