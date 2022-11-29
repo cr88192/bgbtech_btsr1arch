@@ -26,6 +26,8 @@ wire[5:0]	tResCC;
 reg[8:0]	tValC;
 assign	valC = tValC;
 
+reg[11:0]	tValCa;
+
 ExLuMul3Ra8		luMulAA(valA[2:0], valB[2:0], tResAA);
 ExLuMul3Ra8		luMulAB(valA[2:0], valB[5:3], tResAB);
 ExLuMul3Ra8		luMulAC(valA[2:0], valB[8:6], tResAC);
@@ -38,8 +40,10 @@ ExLuMul3Ra8		luMulCA(valA[8:6], valB[2:0], tResCA);
 ExLuMul3Ra8		luMulCB(valA[8:6], valB[5:3], tResCB);
 ExLuMul3Ra8		luMulCC(valA[8:6], valB[8:6], tResCC);
 
+wire[6:0]	tResABpBA;
 wire[6:0]	tResACpCA;
 wire[6:0]	tResBCpCB;
+assign	tResABpBA = {1'b0, tResAB} + {1'b0, tResBA};
 assign	tResACpCA = {1'b0, tResAC} + {1'b0, tResCA};
 assign	tResBCpCB = {1'b0, tResBC} + {1'b0, tResCB};
 
@@ -52,10 +56,16 @@ begin
 //		{      3'b000,      3'b000, tResCA[5:3] } +
 //		{      3'b000,      3'b000, tResBB[5:3] } ;
 
-	tValC =
-		{ tResCC[5:0], tResBB[5:3] } +
-		{       2'b00, tResBCpCB[5:0] } +
-		{       5'b00, tResACpCA[5:3] } + 1;
+//	tValC =
+//		{ tResCC[5:0], tResBB[5:3] } +
+//		{       2'b00, tResBCpCB[5:0] } +
+//		{       5'b00, tResACpCA[5:3] } + 1;
+	
+	tValCa = 
+		{ tResCC[5:0], tResBB[5:0] } +
+		{       2'b00, tResBCpCB[5:0], tResABpBA[5:3] } +
+		{       5'b00, tResACpCA[5:0] } + 1;
+	tValC = tValCa[11:3];
 end
 
 endmodule

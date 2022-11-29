@@ -1724,6 +1724,11 @@ begin
 
 `ifdef jx2_enable_convfp16
 		JX2_UCIX_CONV_FP16UPCK32L: begin
+			if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
+			begin
+				$display("JX2_UCIX_CONV_FP16UPCK32L: %X-%X %X",
+					regValXs, regValRs, tRegFp16Upck32);
+			end
 			tRegConvVal = tRegFp16Upck32;
 		end
 		JX2_UCIX_CONV_FP16UPCK32H: begin

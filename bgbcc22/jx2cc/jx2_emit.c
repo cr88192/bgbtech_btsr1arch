@@ -2649,9 +2649,47 @@ int BGBCC_JX2_ConstConvHalfToFP5B(u16 imm_f16)
 		fr=0;
 	}
 	
-	if((k>0) && (k<=15))
+	if((k>0) && (k<=15) && !fr)
 	{
 		return(k);
+	}
+
+	return(-1);
+}
+
+int BGBCC_JX2_ConstConvHalfToFP5C(u16 imm_f16)
+{
+	u16 imm_f16b;
+	int i, j, k, ex, fr;
+
+	j=((imm_f16-0x3000)>>8)&0x1F;
+
+	if(j>=24)
+		j=-1;
+
+	imm_f16b=0x3000+(j<<8);
+
+	if(imm_f16==imm_f16b)
+		return(j);
+
+
+	ex=(imm_f16>>10)&31;
+	j=10-(ex-15);
+	k=(0x400|(imm_f16&0x03FF));
+	if(j>0)
+	{
+		fr=k&((1<<j)-1);
+		k=k>>j;
+	}
+	else
+	{
+		k=k<<(-j);
+		fr=0;
+	}
+	
+	if((k>8) && (k<=15) && !fr)
+	{
+		return(24+(k-8));
 	}
 
 	return(-1);
@@ -2951,7 +2989,8 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 //				ctx->stat_fp16_hit5b++;
 //			}
 
-			k=BGBCC_JX2_ConstConvHalfToFP5B(imm_f16);
+//			k=BGBCC_JX2_ConstConvHalfToFP5B(imm_f16);
+			k=BGBCC_JX2_ConstConvHalfToFP5C(imm_f16);
 			if((k>=0) && (k<=31))
 			{
 				ctx->stat_fp16_hit5b++;

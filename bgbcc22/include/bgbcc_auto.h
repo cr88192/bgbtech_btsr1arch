@@ -2763,6 +2763,7 @@ int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv);
 int BGBCC_JX2_ConstConvHalfToFP8U(u16 v, byte *rv);
 int BGBCC_JX2_ConstConvHalfToFP5A(u16 imm_f16);
 int BGBCC_JX2_ConstConvHalfToFP5B(u16 imm_f16);
+int BGBCC_JX2_ConstConvHalfToFP5C(u16 imm_f16);
 int BGBCC_JX2_ConstConvV4HToV4FP8S(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvV4HToV4FP8U(u64 v, u32 *rv);
 u32 BGBCC_ConstConvHalfToFloat(u16 v);

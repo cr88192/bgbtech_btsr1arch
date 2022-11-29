@@ -645,7 +645,7 @@ begin
 	opCmRemapRxA[6'h3B]=JX2_GR_ZZR;
 	opCmRemapRxA[6'h3C]=JX2_GR_ZZR;
 	opCmRemapRxA[6'h3D]=JX2_GR_ZZR;
-	opCmRemapRxA[6'h3E]=JX2_GR_ZZR;
+	opCmRemapRxA[6'h3E]=JX2_GR_IMM;
 	opCmRemapRxA[6'h3F]=JX2_GR_ZZR;
 
 	opCmRemapRxB[6'h20]=JX2_GR_PC_HI;
@@ -678,7 +678,7 @@ begin
 	opCmRemapRxB[6'h3B]=JX2_GR_ZZR;
 	opCmRemapRxB[6'h3C]=JX2_GR_ZZR;
 	opCmRemapRxB[6'h3D]=JX2_GR_ZZR;
-	opCmRemapRxB[6'h3E]=JX2_GR_ZZR;
+	opCmRemapRxB[6'h3E]=JX2_GR_IMM;
 	opCmRemapRxB[6'h3F]=JX2_GR_ZZR;
 `endif
 
@@ -1367,12 +1367,6 @@ begin
 				opIsDualLaneRn	= 1;
 			end
 
-`ifdef jx2_fpu_longdbl
-`ifdef jx2_fcmp_alu
-			if(opUCmdA0[5:0] == JX2_UCMD_FCMP)
-				opDualLaneSw	= 1;
-`endif
-
 			if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
 			begin
 //				opDualLaneSw	= 1;
@@ -1390,6 +1384,12 @@ begin
 					opIsDualLaneRn	= 1;
 				end
 			end
+
+`ifdef jx2_fpu_longdbl
+`ifdef jx2_fcmp_alu
+			if(opUCmdA0[5:0] == JX2_UCMD_FCMP)
+				opDualLaneSw	= 1;
+`endif
 
 			if(opUCmdA0[5:0] == JX2_UCMD_FLDCX)
 			begin
@@ -1648,7 +1648,8 @@ begin
 		opRegBN	= opRegAN;
 		opRegBM	= opRegAM;
 		opRegBO	= opRegAO;
-		opImmB	= opImmA;
+		if(!opIsWexJumbo96)
+			opImmB	= opImmA;
 		opUCmdB	= opUCmdA;
 		opUIxtB	= opUIxtA;
 		
@@ -1702,6 +1703,18 @@ begin
 //			opRegCM	= opRegBN;
 //			opRegCO	= opRegAN;
 		end
+	end
+
+	if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
+	begin
+		$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
+			opUCmdA0, opUIxtA0,
+			opRegAM, opRegAO,
+			opRegBM, opRegBO,
+			opRegCM, opRegCO,
+			opRegAN, opRegBN, opRegCN,
+			opIsDualLaneRm, opIsDualLaneRo, opIsDualLaneRn);
+		$display("  %X-%X", opImmB, opImmA);
 	end
 end
 

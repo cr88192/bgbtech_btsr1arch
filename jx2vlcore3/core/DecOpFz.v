@@ -4810,7 +4810,7 @@ begin
 				begin
 					opNmid		= JX2_UCMD_CONV2_RR;
 					opFmid		= JX2_FMID_IMM8REG;
-					opIty		= JX2_ITY_SB;
+					opIty		= JX2_ITY_UW;
 					opUCmdIx	= JX2_UCIX_CONV_FP16UPCK32L;
 					opUCty		= JX2_IUC_WX;
 				end

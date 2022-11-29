@@ -187,7 +187,7 @@ begin
 //	tFraN	= tFraN0A[33: 9] +
 //		{ 17'h0, {1'b0, tFraS[6:0]} + {1'b0, tFraT[6:0]}};
 
-	tFraN0B = tFraN0A[33: 8] + { 16'h0, tMulLoC0[9:0] };
+	tFraN0B = tFraN0A[33: 8] + { 16'h0, tMulLoC0[9:0] } + 1;
 	tFraN	= tFraN0B[25:1];
 
 //	tFraN	= tFraN0A[33: 9] + { 16'h0, tMulLoC0[9:1] };

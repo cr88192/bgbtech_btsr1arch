@@ -1799,7 +1799,7 @@ ExALUB	exAluB(
 	exB1OpUCmd,			exB1OpUIxt,
 	exHold2,			ex1RegInSr[1:0],
 	exB1ValAlu[63:0],	exB1ValAlu[65:64],
-	exB1ValCarryD);
+	exB1ValCarryD,		1);
 
 ExMulW	exB1MulW(
 	clock,				exResetL,
@@ -1978,7 +1978,7 @@ ExALUB	exAluC(
 	exC1OpUCmd,			exC1OpUIxt,
 	exHold2,			ex1RegInSr[1:0],
 	exC1ValAlu[63:0],	exC1ValAlu[65:64],
-	exC1ValCarryD);
+	exC1ValCarryD,		2);
 
 ExMulW	exC1MulW(
 	clock,				exResetL,

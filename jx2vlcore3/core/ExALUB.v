@@ -98,7 +98,8 @@ module ExALUB(
 	regInSrST,
 	regOutVal,
 	regOutSrST,
-	regOutCarryD
+	regOutCarryD,
+	idLane
 	);
 
 input			clock;
@@ -114,6 +115,8 @@ input[1:0]		regInSrST;
 output[63:0]	regOutVal;
 output[1:0]		regOutSrST;
 output[7:0]		regOutCarryD;
+
+input[1:0]		idLane;
 
 wire			regInSrT;
 wire			regInSrS;
@@ -674,10 +677,19 @@ begin
 	case(idUIxt[5:0])
 `ifdef jx2_enable_convfp16
 		JX2_UCIX_CONV_FP16UPCK32L: begin
-			tRegConvVal = tRegFp16Upck32;
+			if(!idLane[1])
+			begin
+				tRegConvVal = tRegFp16Upck32;
+				if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
+				begin
+					$display("JX2_UCIX_CONV_FP16UPCK32L(B): %X %X",
+						regValRs, tRegFp16Upck32);
+				end
+			end
 		end
 		JX2_UCIX_CONV_FP16UPCK32H: begin
-			tRegConvVal = tRegFp16Upck32;
+			if(!idLane[1])
+				tRegConvVal = tRegFp16Upck32;
 		end
 `endif
 
