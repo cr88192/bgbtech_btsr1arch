@@ -4226,6 +4226,8 @@ begin
 	tDelay4Exc		<= tNxtDelay4Exc;
 
 	if(tNxtRegExc[15] && (tNxtRegExc[15:12] != 4'hC))
+//	if(1'b1)
+//	if(tNxtRegExc[15])
 	begin
 		tRegExc		<= tNxtRegExc;
 	end

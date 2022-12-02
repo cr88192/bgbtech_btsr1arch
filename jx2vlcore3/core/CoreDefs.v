@@ -707,6 +707,8 @@ IMM8REG, Fz
 
 	XB: Fznz_zejj		ImmFp10, Rn, Rn
 	XW: Fzeo_jjjj		ImmFp16, Ro, Ro
+	XL: Fznz_zzjj		(GBR, Disp10u), Rn
+	XQ: Fznz_zejj		Rn, ImmFp10, Rn
 
 	/ SQ: Fzze_zznz_iiii	Rn, Imm17s, Rn
 	/ UQ: Fzze_zznz_iiii	Rn, Imm17u, Rn

@@ -115,6 +115,19 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 			nm1=BGBCC_SH_NMID_FMULG;
 	}
 
+	if(	(BGBCC_CCXL_TypeFloatP(ctx, type) ||
+		 BGBCC_CCXL_TypeFloat16P(ctx, type)) &&
+		 (sctx->has_fpvsf&2))
+	{
+		if(nm1==BGBCC_SH_NMID_FADD)
+			nm1=BGBCC_SH_NMID_FADDA;
+		if(nm1==BGBCC_SH_NMID_FSUB)
+			nm1=BGBCC_SH_NMID_FSUBA;
+		if(nm1==BGBCC_SH_NMID_FMUL)
+			nm1=BGBCC_SH_NMID_FMULA;
+	}
+
+
 	if(sctx->fpu_lite)
 	{
 		if(opr==CCXL_BINOP_DIV)
@@ -136,9 +149,15 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 			rt2=BGBCC_JX2_ConstConvFloatToHalf(imm_f32, &imm_f16);
 			imm_f16b=imm_f16&0xFFC0;
 
+			if(!sctx->is_simpass)
+				{ sctx->stat_fpimm_totchk10++; }
+
 			if((rt1>0) && (rt2>0) && (imm_f16b==imm_f16) &&
 				(nm3>=0))
 			{
+				if(!sctx->is_simpass)
+					{ sctx->stat_fpimm_hitchk10++; }
+
 				cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 				BGBCC_JX2_EmitOpImmReg(sctx, nm3, imm_f16, cdreg);
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
@@ -415,6 +434,18 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 				nm1=BGBCC_SH_NMID_FMULG;
 		}
 
+		if(	(BGBCC_CCXL_TypeFloatP(ctx, type) ||
+			 BGBCC_CCXL_TypeFloat16P(ctx, type)) &&
+			 (sctx->has_fpvsf&2))
+		{
+			if(nm1==BGBCC_SH_NMID_FADD)
+				nm1=BGBCC_SH_NMID_FADDA;
+			if(nm1==BGBCC_SH_NMID_FSUB)
+				nm1=BGBCC_SH_NMID_FSUBA;
+			if(nm1==BGBCC_SH_NMID_FMUL)
+				nm1=BGBCC_SH_NMID_FMULA;
+		}
+
 		if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
 			BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
 		{
@@ -462,12 +493,18 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 					imm_f16b=0;
 #endif
 
+				if(!sctx->is_simpass)
+					{ sctx->stat_fpimm_totchk5++; }
+
 				j=BGBCC_JX2_ConstConvHalfToFP5A(imm_f16);
 
 //				if((rt1>0) && (rt2>0) && (imm_f16b==imm_f16) &&
 				if((rt1>0) && (rt2>0) && (j>=0) &&
 					(nm3>=0))
 				{
+					if(!sctx->is_simpass)
+						{ sctx->stat_fpimm_hitchk5++; }
+
 					csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 					cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 					BGBCC_JX2_EmitOpRegImmReg(sctx, nm3, csreg, j, cdreg);
@@ -1189,9 +1226,15 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 			rt2=BGBCC_JX2_ConstConvFloatToHalf(imm_f32, &imm_f16);
 			imm_f16b=imm_f16&0xFFC0;
 
+			if(!sctx->is_simpass)
+				{ sctx->stat_fpimm_totchk10++; }
+
 			if((rt1>0) && (rt2>0) && (imm_f16b==imm_f16) &&
 				(nm1>=0) && !sw)
 			{
+				if(!sctx->is_simpass)
+					{ sctx->stat_fpimm_hitchk10++; }
+
 				csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
 				BGBCC_JX2_EmitOpImmReg(sctx, nm1, imm_f16, csreg);
 				BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);

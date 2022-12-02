@@ -246,10 +246,13 @@ void BJX2_Op_FADDA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 a, b, c;
 	a=ctx->regs[op->rm];
 	b=ctx->regs[op->ro];
-	a=(a>>36)<<36;
-	b=(b>>36)<<36;
+//	a=(a>>36)<<36;
+//	b=(b>>36)<<36;
+	a=(a>>30)<<30;
+	b=(b>>30)<<30;
 	c=BJX2_FAddSoft(a, b);
-	c=(c>>36)<<36;
+//	c=(c>>36)<<36;
+	c=(c>>30)<<30;
 	ctx->regs[op->rn]=c;
 }
 
@@ -258,10 +261,13 @@ void BJX2_Op_FSUBA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 a, b, c;
 	a=ctx->regs[op->rm];
 	b=ctx->regs[op->ro];
-	a=(a>>36)<<36;
-	b=(b>>36)<<36;
+//	a=(a>>36)<<36;
+//	b=(b>>36)<<36;
+	a=(a>>30)<<30;
+	b=(b>>30)<<30;
 	c=BJX2_FSubSoft(a, b);
-	c=(c>>36)<<36;
+//	c=(c>>36)<<36;
+	c=(c>>30)<<30;
 	ctx->regs[op->rn]=c;
 }
 
@@ -270,10 +276,13 @@ void BJX2_Op_FMULA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 a, b, c;
 	a=ctx->regs[op->rm];
 	b=ctx->regs[op->ro];
-	a=(a>>36)<<36;
-	b=(b>>36)<<36;
+//	a=(a>>36)<<36;
+//	b=(b>>36)<<36;
+	a=(a>>30)<<30;
+	b=(b>>30)<<30;
 	c=BJX2_FMulSoft(a, b);
-	c=(c>>36)<<36;
+//	c=(c>>36)<<36;
+	c=(c>>30)<<30;
 	ctx->regs[op->rn]=c;
 }
 #endif

@@ -104,7 +104,9 @@ assign		icExecAcl = tIcExecAcl;
 
 reg[127: 0]	tRegOutExc;
 reg[127: 0]	tRegOutExc2;
-assign	regOutExc = tRegOutExc2;
+reg[127: 0]	tRegOutExc3;
+// assign	regOutExc = tRegOutExc2;
+assign	regOutExc = tRegOutExc3;
 
 reg[ 15:0]		tMemSeqOut;		//operation sequence
 reg[ 15:0]		tMemOpmOut;		//memory operation mode
@@ -1856,6 +1858,7 @@ begin
 	tRegOutHoldL	<= tRegOutHold;
 
 	tRegOutExc2		<= tRegOutExc;
+	tRegOutExc3		<= tRegOutExc2;
 
 	tMsgLatch 		<= tNxtMsgLatch;
 	tMsgLatchTmiss	<= tNxtMsgLatchTmiss;

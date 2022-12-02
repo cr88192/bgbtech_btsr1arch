@@ -2010,11 +2010,11 @@ F0zz Instruction Block:
 ** F0nm_4goB  -
 ** F0nm_4GoB  -
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
-** F0nm_4GoC  -
+** F0nm_4GoC  ? FADDA	Rm, Ro, Rn
 ** F0nm_4goD  MOV.C		(Rm, Ro), Cn		//(MOVC)
-** F0nm_4GoD  -
+** F0nm_4GoD  ? FSUBA	Rm, Ro, Rn
 ** F0nm_4goE  FMOV.S	(Rm, Ro), Rn		//(FMOV)
-** F0nm_4GoE  -
+** F0nm_4GoE  ? FMULA	Rm, Ro, Rn
 ** F0nm_4goF  FMOV.H	(Rm, Ro), Rn		//(FMOV)
 ** F0nm_4GoF  -
 

@@ -680,11 +680,14 @@ begin
 			if(!idLane[1])
 			begin
 				tRegConvVal = tRegFp16Upck32;
+
+`ifndef def_true
 				if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
 				begin
 					$display("JX2_UCIX_CONV_FP16UPCK32L(B): %X %X",
 						regValRs, tRegFp16Upck32);
 				end
+`endif
 			end
 		end
 		JX2_UCIX_CONV_FP16UPCK32H: begin

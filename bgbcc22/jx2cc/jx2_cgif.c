@@ -212,9 +212,15 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	}
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpu_fpimm"))
+	{
 		shctx->has_fpim=1;
+		shctx->has_fpvsf|=2;		/* Has Full Binary32 */
+	}
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpu_fpvsf"))
+	{
 		shctx->has_fpvsf=1;
+	}
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "loadop"))
 		shctx->has_ldop=1;
@@ -7224,6 +7230,17 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		(100.0*sctx->stat_fp16_tot)/(sctx->stat_const_masktot+1),
 		(100.0*sctx->stat_fp16_hit5)/(sctx->stat_const_masktot+1),
 		(100.0*sctx->stat_fp16_hit5b)/(sctx->stat_const_masktot+1));
+
+	if(sctx->stat_fpimm_totchk5>0)
+	{
+		printf("Imm-Hit Fp5: %.2f%%\n",
+			(100.0*sctx->stat_fpimm_hitchk5)/(sctx->stat_fpimm_totchk5));
+	}
+	if(sctx->stat_fpimm_totchk10>0)
+	{
+		printf("Imm-Hit Fp10: %.2f%%\n",
+			(100.0*sctx->stat_fpimm_hitchk10)/(sctx->stat_fpimm_totchk10));
+	}
 
 	printf("Exp-Fp16:\n");
 	for(i=0; i<4; i++)

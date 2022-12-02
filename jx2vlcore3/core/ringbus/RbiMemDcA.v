@@ -470,8 +470,11 @@ reg				tBlkIsDirtyF;
 reg[3:0]		tBlkEpochDeltaA;
 reg[3:0]		tBlkEpochDeltaB;
 
-`jx2_mem_l1darr_addr		tBlkMemAddr2A;
-`jx2_mem_l1darr_addr		tBlkMemAddr2B;
+(* max_fanout = 50 *)
+	`jx2_mem_l1darr_addr		tBlkMemAddr2A;
+(* max_fanout = 50 *)
+	`jx2_mem_l1darr_addr		tBlkMemAddr2B;
+
 reg[127:0]		tBlkMemData2A;
 reg[127:0]		tBlkMemData2B;
 reg[15:0]		tBlkMemDext2A;
@@ -531,8 +534,12 @@ reg[ 63:0]		tBlkInsData4;
 
 reg[127:0]		tBlk2MemDataA;
 reg[127:0]		tBlk2MemDataB;
-`jx2_mem_l1darr_addr		tBlk2MemAddrA;
-`jx2_mem_l1darr_addr		tBlk2MemAddrB;
+
+(* max_fanout = 50 *)
+	`jx2_mem_l1darr_addr		tBlk2MemAddrA;
+(* max_fanout = 50 *)
+	`jx2_mem_l1darr_addr		tBlk2MemAddrB;
+
 reg[ 15:0]		tBlk2MemDextA;
 reg[ 15:0]		tBlk2MemDextB;
 reg[ 19:0]		tBlk2MemAextA;

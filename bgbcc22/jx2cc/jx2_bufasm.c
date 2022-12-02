@@ -2122,6 +2122,14 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "has_jcmp"))
 		return((ctx->has_jcmp&3)==3);
 
+	if(!bgbcc_stricmp(sym, "has_fpvsf"))
+		return((ctx->has_fpvsf&1)!=0);
+	if(!bgbcc_stricmp(sym, "has_fpvsf_sp"))
+		return((ctx->has_fpvsf&2)!=0);
+
+	if(!bgbcc_stricmp(sym, "has_fpimm"))
+		return((ctx->has_fpim&1)!=0);
+
 
 	if(!bgbcc_stricmp(sym, "abi_evenonly"))
 		return(ctx->abi_evenonly);

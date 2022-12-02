@@ -353,6 +353,12 @@ int stat_const_jumbo64_4xf8;
 
 int stat_const_jumbo96ph;
 
+int stat_fpimm_totchk5;
+int stat_fpimm_hitchk5;
+
+int stat_fpimm_totchk10;
+int stat_fpimm_hitchk10;
+
 int stat_ldst_disp12s;
 int stat_ldst_disp10s;
 int stat_ldst_disp9u;

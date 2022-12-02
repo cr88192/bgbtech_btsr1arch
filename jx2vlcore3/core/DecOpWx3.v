@@ -1705,6 +1705,7 @@ begin
 		end
 	end
 
+`ifndef def_true
 	if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
 	begin
 		$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
@@ -1716,6 +1717,7 @@ begin
 			opIsDualLaneRm, opIsDualLaneRo, opIsDualLaneRn);
 		$display("  %X-%X", opImmB, opImmA);
 	end
+`endif
 end
 
 endmodule
