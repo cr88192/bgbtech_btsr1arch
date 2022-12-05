@@ -2238,6 +2238,12 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix3W(
 		return(0);
 	}
 
+	if((opw1&0xEFE0)==0xE880)
+	{
+		/* Disallow "FLDCH Imm, Rn" in Lane 3. */
+		return(0);
+	}
+
 	return(1);
 }
 

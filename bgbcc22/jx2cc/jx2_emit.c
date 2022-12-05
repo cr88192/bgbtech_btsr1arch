@@ -2695,6 +2695,26 @@ int BGBCC_JX2_ConstConvHalfToFP5C(u16 imm_f16)
 	return(-1);
 }
 
+int BGBCC_JX2_ConstConvHalfToFP5D(u16 imm_f16)
+{
+	static short tab[32]={
+	0x0000, 0x3800, 0x3C00, 0x3E00,		// 0.0,  0.5,  1.0,  1.5
+	0x4000, 0x4100, 0x4200, 0x4300,		// 2.0,  2.5,  3.0,  3.5
+	0x4400, 0x4480, 0x4500, 0x4580,		// 4.0,  4.5,  5.0,  5.5
+	0x4600, 0x4680, 0x4700, 0x4780,		// 6.0,  6.5,  7.0,  7.5
+	0x4800, 0x4840, 0x4880, 0x48C0,		// 8.0,  8.5,  9.0,  9.5
+	0x4900, 0x4940, 0x4980, 0x49C0,		//10.0, 10.5, 11.0, 11.5
+	0x4A00, 0x4A40, 0x4A80, 0x4AC0,		//12.0, 12.5, 13.0, 13.5
+	0x4B00, 0x4B40, 0x4B80, 0x4BC0		//14.0, 14.5, 15.0, 15.5
+	};
+	
+	int i;
+	for(i=0; i<32; i++)
+		if(imm_f16==tab[i])
+			return(i);
+	return(-1);
+}
+
 int BGBCC_JX2_ConstConvV4HToV4FP8S(u64 v, u32 *rv)
 {
 	byte tv[4];
@@ -2990,7 +3010,8 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 //			}
 
 //			k=BGBCC_JX2_ConstConvHalfToFP5B(imm_f16);
-			k=BGBCC_JX2_ConstConvHalfToFP5C(imm_f16);
+//			k=BGBCC_JX2_ConstConvHalfToFP5C(imm_f16);
+			k=BGBCC_JX2_ConstConvHalfToFP5D(imm_f16);
 			if((k>=0) && (k<=31))
 			{
 				ctx->stat_fp16_hit5b++;

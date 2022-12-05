@@ -59,6 +59,15 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	for(i=0; i<obj->n_vop; i++)
 	{
 		vop=obj->vop[i];
+
+		if(	(vop->opn==CCXL_VOP_CALL) ||
+			(vop->opn==CCXL_VOP_OBJCALL) )
+		{
+			j=vop->imm.call.na*2;
+			if(j>obj->n_cargs)
+				obj->n_cargs=j;
+		}
+
 		if(vop->opn==CCXL_VOP_LDAVAR)
 		{
 			reg=vop->srca;
@@ -611,6 +620,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //	if(obj->regflags&BGBCC_REGFL_HASARRAY)
 	if((obj->regflags&BGBCC_REGFL_HASARRAY) &&
 		!(obj->regflags&BGBCC_REGFL_GOFAST))
+//	if(1)
 	{
 		i=(nlint)obj;
 		i=(u16)((i*65521)>>16);
@@ -618,6 +628,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		k-=16; k&=~15;
 		sctx->frm_offs_sectoken=k;
 		sctx->frm_val_sectoken=i;
+		k-=16; k&=~15;
 	}else
 	{
 		sctx->frm_offs_sectoken=0;
@@ -653,6 +664,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_AR_REF:
 		case BGBCC_SH_REGCLS_VO_REF2:
 		case BGBCC_SH_REGCLS_AR_REF2:
+			kf=(kf+15)&(~15);
+
 			obj->locals[i]->fxmoffs=kf;
 			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->locals[i]->type);
 			if(!j)
@@ -661,7 +674,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			if(j>BGBCC_MAXSTACKOBJ)
 				{ BGBCC_DBGBREAK }
 
-			j=(j+15)&(~15);
+//			j=(j+15)&(~15);
+			j=(j+23)&(~15);
+//			j=(j+31)&(~15);
 
 //			if(sctx->has_xgpr&2)
 //				{ j=(j+15)&(~15); }
@@ -709,10 +724,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			if(!(obj->regs[i]->regflags&BGBCC_REGFL_INITIALIZED))
 				break;
 
+			kf=(kf+15)&(~15);
+
 			obj->regs[i]->fxmoffs=kf;
 			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->regs[i]->type);
 
-			j=(j+15)&(~15);
+//			j=(j+15)&(~15);
+			j=(j+23)&(~15);
 
 //			if(sctx->has_xgpr&2)
 //				{ j=(j+15)&(~15); }
@@ -814,6 +832,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(	(rcls==BGBCC_SH_REGCLS_VO_REF) ||
 			(rcls==BGBCC_SH_REGCLS_VO_REF2))
 		{
+			kf=(kf+15)&(~15);
+
 //			k-=4; obj->args[i]->fxoffs=k;
 			obj->args[i]->fxmoffs=kf;
 			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->args[i]->type);
@@ -1274,6 +1294,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	i=obj->n_cargs;
 	
+//	i=24;
+	
 	if(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF)
 	{
 		i=(i+3)&(~3);
@@ -1281,7 +1303,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			i=8;
 	}
 
-	k&=~7;
+//	k&=~7;
+	k&=~15;
 	k-=i*8;
 
 //	if(sctx->is_addr64)

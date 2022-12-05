@@ -835,6 +835,8 @@ static int			l2dc_miss_addr;
 static int			l2dc_miss_seq;
 static int			l2dc_miss_ldb;
 
+static int			l2dc_miss_pogocnt;
+
 static int			l2dc_stat_hit;
 static int			l2dc_stat_hit2;
 static int			l2dc_stat_miss;
@@ -1116,7 +1118,8 @@ void MemUpdateForBusRing()
 		}
 
 		ix=(addr>>4);
-		ix=ix^(ix>>13)^(ix>>7);
+//		ix=ix^(ix>>13)^(ix>>7);
+		ix=ix^(ix>>12);
 
 //		ix=(addr>>4)^(addr>>16)^(addr>>20);
 
@@ -1198,6 +1201,13 @@ void MemUpdateForBusRing()
 					if((l2dc_miss_cyc<=0) && (l2dc_miss_seq>0))
 					{
 						printf("L2: POGO\n");
+						l2dc_miss_pogocnt++;
+						if(l2dc_miss_pogocnt>4096)
+						{
+							printf("L2: POGO RESET\n");
+							l2dc_miss_pogocnt=0;
+							l2dc_miss_seq=0;
+						}
 					}
 				}
 			}
