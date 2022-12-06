@@ -519,6 +519,7 @@ int lbl_ret;			//label ID for function exit
 int lbl_got;			//label ID for got
 int frm_offs_retstr;	//offset of return struct
 int frm_offs_save;		//offset of register-save area
+int frm_offs_save_rsv;	//offset of register-save area
 
 int frm_offs_thisptr;	//offset of 'this' pointer
 int frm_offs_sectoken;	//offset of security token

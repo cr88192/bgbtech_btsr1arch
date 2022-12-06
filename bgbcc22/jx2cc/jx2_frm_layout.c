@@ -559,61 +559,66 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	ni=0; nf=0;
 	k=0; ka=0; kf=0;
-	k-=2*4;		//saved PR, R14
+	k-=2*8;		//saved PR, R14
 //	k-=6*4;		//saved R8/9/10/11/13, R2
-	k-=8*4;		//saved R8/9/10/11/13, R2
+	k-=8*8;		//saved R8/9/10/11/13, R2
 
 //	if(sctx->has_bjx1egpr)
 	if(sctx->has_bjx1egpr && sctx->use_egpr)
-		k-=8*4;		//saved R24..R31
+		k-=8*8;		//saved R24..R31
 
 //	if(sctx->is_pbo)
 	if((sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR)) ||
 		(obj->flagsint&BGBCC_TYFL_INTERRUPT))
-		k-=4;		//saved GBR
+		k-=8;		//saved GBR
 
 //	if(sctx->has_xgpr&2)
 //	if((sctx->has_xgpr&2) ||
 //		((sctx->has_xgpr&1) && (sctx->use_egpr&2)))
 	if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
-		k-=16*4;		//saved R40..R47, R56..R63
+		k-=16*8;		//saved R40..R47, R56..R63
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
 	{
-		k-=2*4;		//saved SPC, EXSR
+		k-=2*8;		//saved SPC, EXSR
 
 #if 0
-		k-=8*4;		//saved R0..R7
+		k-=8*8;		//saved R0..R7
 		if(sctx->has_bjx1egpr)
-			k-=8*4;		//saved R16..R23
+			k-=8*8;		//saved R16..R23
 
 		if(sctx->has_xgpr&2)
-			k-=16*4;		//saved R32..R39,R48..R55
+			k-=16*8;		//saved R32..R39,R48..R55
 #endif
 
 #if 1
-		k-=16*4;		//saved R0..R15
+		k-=16*8;		//saved R0..R15
 		if(sctx->has_bjx1egpr)
-			k-=16*4;		//saved R16..R31
+			k-=16*8;		//saved R16..R31
 
 //		if(sctx->has_xgpr&2)
 		if(sctx->has_xgpr&1)
-			k-=32*4;		//saved R32..R64
+			k-=32*8;		//saved R32..R64
 #endif
 	}
 
-	if(sctx->is_addr64)
-		k*=2;
-		
+//	if(sctx->is_addr64)
+//		k*=2;
+	
+	sctx->frm_offs_save_rsv=k;
+	
 	if((obj->flagsint&BGBCC_TYFL_VIRTUAL) ||
 		obj->thisstr)
 	{
 		if(sctx->has_xgpr&2)
 			{ k-=16; k&=~15; }
-		else if(sctx->is_addr64)
-			{ k-=8; k&=~7; }
 		else
-			{ k-=4; k&=~3; }
+			{ k-=8; k&=~7; }
+
+//		else if(sctx->is_addr64)
+//			{ k-=8; k&=~7; }
+//		else
+//			{ k-=4; k&=~3; }
 		sctx->frm_offs_thisptr=k;
 	}
 	
@@ -628,10 +633,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		k-=16; k&=~15;
 		sctx->frm_offs_sectoken=k;
 		sctx->frm_val_sectoken=i;
-		k-=16; k&=~15;
+//		k-=16; k&=~15;
 	}else
 	{
 		sctx->frm_offs_sectoken=0;
+		k-=16; k&=~15;
 	}
 
 	if((obj->regflags&BGBCC_REGFL_ALLOCA))

@@ -1876,6 +1876,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //	BGBCC_JX2_EmitWord(sctx, 0x0858);	//Debug, Set Token
 	
 	sctx->frm_offs_save=sctx->frm_size-(k*4);
+	
+	if(sctx->frm_offs_save<(sctx->frm_size+sctx->frm_offs_save_rsv))
+	{
+		printf("Sanity: offs_save is below offs_save_rsv\n");
+		BGBCC_CCXL_StubError(ctx);
+	}
 
 //	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 
