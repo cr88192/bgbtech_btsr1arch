@@ -2492,15 +2492,25 @@ begin
 			exHold1C = 1;
 `endif
 
-`ifdef def_true
 // `ifndef def_true
+`ifdef def_true
 //	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
 //		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM))	&&
+
 	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_FMOV_MR) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_FMOV_RM) ||
+
 		 (ex1OpUCmd[5:0]==JX2_UCMD_FPUV4SF) ||
+
+		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_IR) ||
+		 (ex1OpUCmd[5:0]==JX2_UCMD_CONV2_RR) ||
+
+		 (ex1OpUCmd[5:0]==JX2_UCMD_FPU3) ||
+		 (ex1OpUCmd[5:0]==JX2_UCMD_FLDCX) ||
+		 (ex1OpUCmd[5:0]==JX2_UCMD_FSTCX) ||
+		 
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MULW3) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MUL3))	&&
 		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
@@ -2508,6 +2518,21 @@ begin
 		 (idA2IdUCmd[5:0]==JX2_UCMD_BRA) ||
 		 (idA2IdUCmd[5:0]==JX2_UCMD_BSR) ||
 		 (idA2IdUCmd[5:0]==JX2_UCMD_JCMP)))
+			exHold1C = 1;
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+	if(	(	(ex1OpUCmd[5:0]!=JX2_UCMD_NOP) &&
+			(ex1OpUCmd[5:0]!=JX2_UCMD_INVOP) &&
+			(ex1OpUCmd[5:0]!=JX2_UCMD_OP_IXT) &&
+			(ex1OpUCmd[5:0]!=JX2_UCMD_ALUCMP)	)
+		&&
+		(	(idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
+			(idA2IdUCmd[5:0]==JX2_UCMD_JSR) ||
+			(idA2IdUCmd[5:0]==JX2_UCMD_BRA) ||
+			(idA2IdUCmd[5:0]==JX2_UCMD_BSR) ||
+			(idA2IdUCmd[5:0]==JX2_UCMD_JCMP))	)
 			exHold1C = 1;
 `endif
 
@@ -2551,6 +2576,7 @@ begin
 
 `endif
 
+`ifdef jx2_enable_prebra
 `ifdef jx2_prebra_rts
 		id1BraPipelineLr =
 //			(ex1RegIdCn1 == JX2_CR_LR) ||
@@ -2583,6 +2609,7 @@ begin
 			(ex1PreBra!=0) ||
 			(ex2PreBra!=0) ||
 			(ex3PreBra!=0) ;
+`endif
 `endif
 
 `ifdef jx2_enable_xgpr

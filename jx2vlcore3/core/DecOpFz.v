@@ -2948,6 +2948,12 @@ begin
 						opUCmdIx	= JX2_UCIX_IXS_MOVNT;
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_SB;
+
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_NOP;
+							opFmid		= JX2_FMID_Z;
+						end
 					end
 
 					8'h36: begin
@@ -3037,6 +3043,11 @@ begin
 						opUCmdIx	= JX2_UCIX_IXS_MOVT;
 						opFmid		= JX2_FMID_REG;
 						opIty		= JX2_ITY_SB;
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_NOP;
+							opFmid		= JX2_FMID_Z;
+						end
 					end
 
 					default: begin

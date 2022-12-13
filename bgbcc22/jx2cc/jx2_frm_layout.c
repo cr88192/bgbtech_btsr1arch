@@ -138,6 +138,32 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		}
 	}
 
+	for(i=0; i<obj->n_regs; i++)
+	{
+		if((sctx->is_simpass&15)==1)
+			obj->regs[i]->regflags&=~BGBCC_REGFL_CULL;
+		obj->regs[i]->fxoffs=-1;
+	}
+
+	for(i=0; i<obj->n_args; i++)
+	{
+		if((sctx->is_simpass&15)==1)
+			obj->args[i]->regflags&=~BGBCC_REGFL_CULL;
+		obj->args[i]->fxoffs=-1;
+	}
+
+	for(i=0; i<obj->n_locals; i++)
+	{
+		if((sctx->is_simpass&15)==1)
+			obj->locals[i]->regflags&=~BGBCC_REGFL_CULL;
+		obj->locals[i]->fxoffs=-1;
+
+//		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
+//			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
+//		else
+//			{ obj->locals[i]->regflags|=BGBCC_REGFL_CULL; }
+	}
+
 #if 1
 
 	for(i=0; i<obj->n_locals; i++)
@@ -623,8 +649,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	}
 	
 //	if(obj->regflags&BGBCC_REGFL_HASARRAY)
-	if((obj->regflags&BGBCC_REGFL_HASARRAY) &&
-		!(obj->regflags&BGBCC_REGFL_GOFAST))
+//	if((obj->regflags&BGBCC_REGFL_HASARRAY) &&
+//		!(obj->regflags&BGBCC_REGFL_GOFAST))
+	if(	(obj->regflags&BGBCC_REGFL_HASARRAY) ||
+		(sctx->abi_spillpad&8))
 //	if(1)
 	{
 		i=(nlint)obj;
@@ -633,7 +661,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		k-=16; k&=~15;
 		sctx->frm_offs_sectoken=k;
 		sctx->frm_val_sectoken=i;
-//		k-=16; k&=~15;
+		k-=16; k&=~15;
 	}else
 	{
 		sctx->frm_offs_sectoken=0;
@@ -869,6 +897,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //		sctx->frm_offs_retstr=k-8;
 //		BGBCC_DBGBREAK
 //	}
+
+	k=k&(~15);
+	kf=(kf+15)&(~15);
 
 	k-=kf;
 	sctx->frm_offs_fix=k;
@@ -1175,7 +1206,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	for(i=0; i<obj->n_locals; i++)
 	{
 		if(obj->locals[i]->regflags&BGBCC_REGFL_CULL)
+//		if(0)
+		{
+			obj->locals[i]->fxoffs=k;
 			continue;
+		}
 
 		j=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->locals[i]->type);
 		switch(j)
@@ -1193,9 +1228,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_AR_REF:
 		case BGBCC_SH_REGCLS_VO_QGR:
 		case BGBCC_SH_REGCLS_QGR:
-			if(sctx->is_addr64)
-				{ k&=~7; k-=8; obj->locals[i]->fxoffs=k; break; }
-			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
+//			if(sctx->is_addr64)
+//				{ k&=~7; k-=8; obj->locals[i]->fxoffs=k; break; }
+//			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
+			k&=~7; k-=8;
+			obj->locals[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_GR2:
 		case BGBCC_SH_REGCLS_QGR2:
@@ -1203,12 +1240,15 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_QGR2:
 		case BGBCC_SH_REGCLS_VO_REF2:
 		case BGBCC_SH_REGCLS_AR_REF2:
-			if(sctx->is_addr64)
+//			if(sctx->is_addr64)
 //				{ k&=~7; k-=16; obj->locals[i]->fxoffs=k; break; }
-				{ k&=~15; k-=16; obj->locals[i]->fxoffs=k; break; }
-			k&=~3; k-=8; obj->locals[i]->fxoffs=k;
+//				{ k&=~15; k-=16; obj->locals[i]->fxoffs=k; break; }
+//			k&=~3; k-=8; obj->locals[i]->fxoffs=k;
+			k&=~15; k-=16;
+			obj->locals[i]->fxoffs=k;
 			break;
 
+#if 0
 		case BGBCC_SH_REGCLS_FR:
 			sctx->use_fpr=1;
 			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
@@ -1225,6 +1265,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			sctx->use_dbr=1;
 			k&=~7; k-=8; obj->locals[i]->fxoffs=k;
 			break;
+#endif
 
 		default:
 			BGBCC_DBGBREAK
@@ -1256,9 +1297,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_AR_REF:
 		case BGBCC_SH_REGCLS_VO_QGR:
 		case BGBCC_SH_REGCLS_QGR:
-			if(sctx->is_addr64)
-				{ k&=~7; k-=8; obj->regs[i]->fxoffs=k; break; }
-			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
+//			if(sctx->is_addr64)
+//				{ k&=~7; k-=8; obj->regs[i]->fxoffs=k; break; }
+//			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
+			k&=~7; k-=8;
+			obj->regs[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_GR2:
@@ -1267,10 +1310,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_QGR2:
 		case BGBCC_SH_REGCLS_VO_REF2:
 		case BGBCC_SH_REGCLS_AR_REF2:
-			if(sctx->is_addr64)
+//			if(sctx->is_addr64)
 //				{ k&=~7; k-=16; obj->regs[i]->fxoffs=k; break; }
-				{ k&=~15; k-=16; obj->regs[i]->fxoffs=k; break; }
-			k&=~3; k-=8; obj->regs[i]->fxoffs=k;
+//				{ k&=~15; k-=16; obj->regs[i]->fxoffs=k; break; }
+//			k&=~3; k-=8; obj->regs[i]->fxoffs=k;
+			k&=~15; k-=16;
+			obj->regs[i]->fxoffs=k;
 			break;
 
 #if 0
@@ -1290,6 +1335,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			k&=~7; k-=8; obj->regs[i]->fxoffs=k;
 			break;
 #endif
+
 		default:
 			BGBCC_DBGBREAK
 			break;

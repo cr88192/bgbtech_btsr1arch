@@ -136,6 +136,9 @@ byte is_mergece;	//merge CC0e/CC3e into CExx
 byte is_tr_leaf;	//given trace is a leaf
 byte is_addr_x32;	//target uses 32-bit addresses (on 64-bit ISA)
 
+byte is_prolog;		//emitting prolog
+byte is_epilog;		//emitting epilog
+
 byte no_fpu;		//no hardware FPU instructions
 byte no_ext32;		//no 32-bit instruction forms
 byte fpu_soft;		//use SoftFPU design.

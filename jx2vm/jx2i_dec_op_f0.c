@@ -3277,6 +3277,11 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REG;
 				op->Run=BJX2_Op_MOVNT_Reg;
 //				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_REGCHKG;
+					op->Run=BJX2_Op_REGCHKG_Reg;
+				}
 				break;
 			case 0x34:	/* 33z4 */
 				op->nmid=BJX2_NMID_ROTL;
@@ -3386,6 +3391,11 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REG;
 				op->Run=BJX2_Op_MOVT_Reg;
 //				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_REGCHKC;
+					op->Run=BJX2_Op_REGCHKC_Reg;
+				}
 				break;
 
 #if 0

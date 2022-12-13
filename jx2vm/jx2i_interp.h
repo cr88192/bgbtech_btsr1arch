@@ -696,6 +696,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_BNDCMP		0x178	//
 #define BJX2_NMID_FCMPGE		0x179		//
 
+#define BJX2_NMID_REGCHKG		0x17A		//
+#define BJX2_NMID_REGCHKC		0x17B		//
+
 // #define BJX2_NMID_PLDCXH		0x17A		//
 // #define BJX2_NMID_PSTCXH		0x17B		//
 

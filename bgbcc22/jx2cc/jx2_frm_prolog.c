@@ -1987,6 +1987,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		{
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_VSKG,
 				BGBCC_SH_REG_R16, BGBCC_SH_REG_R16);
+//			BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_REGCHKG,
+//				BGBCC_SH_REG_R16);
 		}
 			
 		BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, BGBCC_SH_REG_RQ16);

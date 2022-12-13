@@ -2647,7 +2647,8 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 		case 4:		case 5:		ret=1;	break;
 		case 6:		case 7:		ret=1;	break;
 //		case 8:		case 9:		ret=0;	break;
-		case 8:		case 9:		ret=1;	break;
+//		case 8:		case 9:		ret=1;	break;
+		case 8:		case 9:		ret=sctx->has_fpim&1;	break;
 		default:
 			break;
 		}

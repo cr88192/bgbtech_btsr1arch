@@ -164,6 +164,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->abi_spillpad=1;
 //	shctx->abi_spillpad|=2;
 
+//	shctx->abi_spillpad|=8;		//global canary checks
+
 	if(ctx->optmode==BGBCC_OPT_SIZE)
 		shctx->use_wexmd=0;
 
@@ -173,6 +175,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->abi_spillpad|= 2;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "dobounds"))
 		shctx->abi_spillpad|= 4;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "vskglobal"))
+		shctx->abi_spillpad|= 8;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "shuffle"))
 		shctx->do_shuffle=1;
@@ -2270,7 +2274,10 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 
 	bs=BGBCC_JX2_EmitGetOffs(sctx);
 
+	sctx->is_prolog=1;
 	BGBCC_JX2C_EmitFrameProlog(ctx, sctx, obj, fcnlbl);
+	sctx->is_prolog=0;
+
 //	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 	BGBCC_JX2_EmitPadForLabel(sctx);
 	
@@ -2306,7 +2313,10 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 
 	sctx->is_tr_leaf=0;
 
+	sctx->is_epilog=1;
 	BGBCC_JX2C_EmitFrameEpilog(ctx, sctx, obj);
+	sctx->is_epilog=0;
+
 //	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 	BGBCC_JX2_EmitPadForLabel(sctx);
 	
@@ -2589,7 +2599,9 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		BGBCC_JX2C_BuildFunctionBody(ctx, sctx, obj, l0);
 
 #if 0
+		sctx->is_prolog=1;
 		BGBCC_JX2C_EmitFrameProlog(ctx, sctx, obj);
+		sctx->is_prolog=0;
 		
 		for(i=0; i<obj->n_vtr; i++)
 		{
@@ -2742,7 +2754,9 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 	BGBCC_JX2C_BuildFunctionBody(ctx, sctx, obj, l0);
 
 #if 0
+	sctx->is_prolog=1;
 	BGBCC_JX2C_EmitFrameProlog(ctx, sctx, obj);
+	sctx->is_prolog=0;
 	
 	for(i=0; i<obj->n_vtr; i++)
 	{

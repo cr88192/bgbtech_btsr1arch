@@ -4552,6 +4552,11 @@ void BGBCC_CCXL_CompileVarStatement2(BGBCC_TransState *ctx, BCCX_Node *l)
 		n=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
 		ntl=BCCX_FindTagCst(l, &bgbcc_rcst_argdecls, "argdecls");
 
+		if(!strcmp(s, "LinkPolyobj"))
+		{
+			i=-1;
+		}
+
 		BGBCC_CCXL_CompileBlock2(ctx, t, s, n, v, ntl);
 		return;
 	}
@@ -6466,6 +6471,11 @@ void BGBCC_CCXL_CompileTopStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		n=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
 		ntl=BCCX_FindTagCst(l, &bgbcc_rcst_argdecls, "argdecls");
+
+		if(!strcmp(s, "LinkPolyobj"))
+		{
+			i=-1;
+		}
 
 		if(ctx->ccxl_top_only)
 		{

@@ -2790,6 +2790,9 @@ int BGBCC_JX2C_EmitTryGetRegister(
 				sctx->regalc_noval&=~(1ULL<<i);
 				BGBCC_JX2C_EmitTempLoadReg(ctx, sctx, reg);
 				BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg, creg);
+			}else
+			{
+				BGBCC_JX2C_EmitMarkFrameVReg(ctx, sctx, reg);
 			}
 			return(creg);
 		}
@@ -3300,6 +3303,9 @@ int BGBCC_JX2C_EmitGetRegister(
 			sctx->regalc_noval&=~(1ULL<<i);
 			BGBCC_JX2C_EmitTempLoadReg(ctx, sctx, reg);
 			BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg, creg);
+		}else
+		{
+			BGBCC_JX2C_EmitMarkFrameVReg(ctx, sctx, reg);
 		}
 
 		sctx->rov_rshuf++;

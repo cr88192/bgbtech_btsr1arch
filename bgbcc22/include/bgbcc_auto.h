@@ -3162,6 +3162,7 @@ int BGBCC_JX2C_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx
 int BGBCC_JX2C_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitLoadGblNameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name, int dreg);
 int BGBCC_JX2C_EmitLoadFrameNmidForVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
+int BGBCC_JX2C_EmitMarkFrameVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
 int BGBCC_JX2C_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_SizeToFp8(int sz);

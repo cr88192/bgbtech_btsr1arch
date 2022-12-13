@@ -1961,6 +1961,65 @@ void BJX2_Op_MOVNT_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=!(ctx->regs[BJX2_REG_SR]&1);
 }
 
+u32 BJX2_OpI_GenRegChk(BJX2_Context *ctx)
+{
+	u64 v0;
+
+	v0=	ctx->regs[BJX2_REG_R8] ^
+		ctx->regs[BJX2_REG_R9] ^
+		ctx->regs[BJX2_REG_R10] ^
+		ctx->regs[BJX2_REG_R11] ^
+		ctx->regs[BJX2_REG_R12] ^
+		ctx->regs[BJX2_REG_R13] ^
+		ctx->regs[BJX2_REG_R14] ^
+		ctx->regs[BJX2_REG_R24] ^
+		ctx->regs[BJX2_REG_R25] ^
+		ctx->regs[BJX2_REG_R26] ^
+		ctx->regs[BJX2_REG_R27] ^
+		ctx->regs[BJX2_REG_R28] ^
+		ctx->regs[BJX2_REG_R29] ^
+		ctx->regs[BJX2_REG_R30] ^
+		ctx->regs[BJX2_REG_R31] ^
+		ctx->regs[BJX2_REG_R40] ^
+		ctx->regs[BJX2_REG_R41] ^
+		ctx->regs[BJX2_REG_R42] ^
+		ctx->regs[BJX2_REG_R43] ^
+		ctx->regs[BJX2_REG_R44] ^
+		ctx->regs[BJX2_REG_R45] ^
+		ctx->regs[BJX2_REG_R46] ^
+		ctx->regs[BJX2_REG_R47] ^
+		ctx->regs[BJX2_REG_R56] ^
+		ctx->regs[BJX2_REG_R57] ^
+		ctx->regs[BJX2_REG_R58] ^
+		ctx->regs[BJX2_REG_R59] ^
+		ctx->regs[BJX2_REG_R60] ^
+		ctx->regs[BJX2_REG_R61] ^
+		ctx->regs[BJX2_REG_R62] ^
+		ctx->regs[BJX2_REG_R63] ;
+	v0=v0^(v0>>32);
+	
+	return(v0);
+}
+
+void BJX2_Op_REGCHKG_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+	v=BJX2_OpI_GenRegChk(ctx);
+	ctx->regs[op->rn]=((u32)(ctx->regs[op->rn]))|(v<<32);
+}
+
+void BJX2_Op_REGCHKC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1;
+	v0=BJX2_OpI_GenRegChk(ctx);
+	v1=ctx->regs[op->rn]>>32;
+//	ctx->regs[op->rn]=((u32)(ctx->regs[op->rn]))|(v<<32);
+	if(v0!=v1)
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
+	}
+}
+
 void BJX2_Op_SWAPB_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=
