@@ -1924,6 +1924,17 @@ int BGBCC_JX2C_SizeToFp8(int sz)
 	return(i);
 }
 
+int BGBCC_JX2C_Fp8ToSize(int v)
+{
+	int f, e, sz;
+	if(v<16)
+		return(v);
+
+	f=8|(v&7); e=(v>>3)&31;
+	sz=f<<(e-1);
+	return(sz);
+}
+
 int BGBCC_JX2C_SizeToBndTag16(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -1983,11 +1994,50 @@ int BGBCC_JX2C_SizeToBndTag16(
 		return(0);
 	
 	i=BGBCC_JX2C_SizeToFp8(sz*sc);
+//	i=BGBCC_JX2C_SizeToFp8(sz*sc+3);
 	if(!i)
 		return(0);
 	
 //	return(0x3000|(tt<<8)|i);
-	return(0x3000|i);
+//	return(0x3000|i);
+	return(0x3100|(i+2));		/* lax pad */
+}
+
+int BGBCC_JX2C_CheckPadToBndTag16(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int sz)
+{
+	int sz1, tg;
+	
+	if(!(sctx->abi_spillpad&4))
+		return(sz);
+
+//	tg=BGBCC_JX2C_SizeToFp8(sz+3);
+	tg=BGBCC_JX2C_SizeToFp8(sz)+2;
+	sz1=BGBCC_JX2C_Fp8ToSize(tg);
+	return(sz1);
+}
+
+int BGBCC_JX2C_CheckPadOffsetToBndTag16(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int ofs, int sz)
+{
+	int ofs1, tg;
+	
+	if(!(sctx->abi_spillpad&4))
+		return(ofs);
+
+	tg=BGBCC_JX2C_SizeToFp8(sz);
+	tg+=2;
+
+	if(tg<0x10)
+		return(ofs);
+	ofs1=ofs+(1<<((tg>>3)-1));
+//	sz1=BGBCC_JX2C_Fp8ToSize(tg);
+	return(ofs1);
+//	return(ofs);
 }
 
 int BGBCC_JX2C_EmitLoadFrameVRegReg(
@@ -2033,6 +2083,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 			{
 				BGBCC_CCXL_TypeDerefType(ctx, tty, &bty);
 				asz=BGBCC_CCXL_TypeGetArrayDimSize(ctx, tty);
+//				tag=BGBCC_JX2C_SizeToBndTag16(ctx, sctx, asz+3, bty);
 				tag=BGBCC_JX2C_SizeToBndTag16(ctx, sctx, asz, bty);
 				if(tag>0)
 				{

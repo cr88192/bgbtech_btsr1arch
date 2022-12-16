@@ -775,6 +775,8 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FLAG_SR_T			0x00000001ULL
 #define BJX2_FLAG_SR_S			0x00000002ULL
+
+#define BJX2_FLAG_SR_XG2		0x00800000ULL
 #define BJX2_FLAG_SR_RVE		0x04000000ULL
 #define BJX2_FLAG_SR_WXE		0x08000000ULL
 #define BJX2_FLAG_SR_BL			0x10000000ULL

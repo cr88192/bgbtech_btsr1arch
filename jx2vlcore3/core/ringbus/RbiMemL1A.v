@@ -100,7 +100,8 @@ output[ 1: 0]	icOutPcOK;		//set if we have a valid value.
 output[ 3: 0]	icOutPcStep;	//PC step (Normal Op)
 output[ 3: 0]	icOutPcSxo;		//Secure Execute
 input			icInPcHold;
-input[1:0]		icInPcWxe;
+// input[1:0]		icInPcWxe;
+input[5:0]		icInPcWxe;
 
 `input_vaddr	dcInAddr;		//input address A
 input [ 4: 0]	dcInOpm;		//input command A

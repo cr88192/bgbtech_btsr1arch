@@ -364,6 +364,12 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 		sr0=ctx->regs[BJX2_REG_SR];
 		if(sr0&(1<<28))
 			return(0);
+		if(sr0&(1<<29))
+		{
+//			ctx->tr_rnxt=NULL;
+//			ctx->tr_rjmp=NULL;
+			return(0);
+		}
 
 //		return(0);
 	}
@@ -428,7 +434,11 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 
 	if(sr0&(1<<29))
 	{
-		JX2_DBGBREAK
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		ctx->status=0x9996;
+//		JX2_DBGBREAK
+		return(0);
 	}
 
 //	exc=(ctx->regs[BJX2_REG_TEA]<<16)|(status&65535);
@@ -575,6 +585,11 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 	va=(va&0xFFFFFFFF00000000ULL)|((u32)(vb>>32));
 	ctx->regs[BJX2_REG_SR]=va;
 
+	if(va>>32)
+	{
+		ctx->status=0x9995;
+	}
+
 	if(va&(1<<29))
 	{
 		JX2_DBGBREAK
@@ -587,6 +602,8 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 
 	va=ctx->regs[BJX2_REG_SPC];
 	vb=ctx->regs[BJX2_REG_SPC_HI];
+	va&=0x0000FFFFFFFFFFFEULL;
+	vb&=0x0000FFFFFFFFFFFFULL;
 	ctx->regs[BJX2_REG_PC]=va;
 	ctx->regs[BJX2_REG_PC_HI]=vb;
 
@@ -702,6 +719,11 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 	vbr=ctx->regs[BJX2_REG_VBR];
 	vbrh=ctx->regs[BJX2_REG_VBR_HI];
 	exsr=ctx->regs[BJX2_REG_EXSR];
+
+	ctx->regs[BJX2_REG_SR]&=~0x0CF00000ULL;	//Clear CPU Mode
+	ctx->regs[BJX2_REG_SR]|=((vbr>>48)&0x000C)<<24;
+	ctx->regs[BJX2_REG_SR]|=((vbr>>48)&0x00F0)<<16;
+
 	if((exsr&0xF000)==0xE000)
 	{
 		pc1=vbr+0x20;
@@ -2805,12 +2827,12 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			if(!pc && ctx->tot_cyc>1000)
 			{
 				if(!ctx->status)
-					ctx->status=0x9999;
+					ctx->status=0x9998;
 				break;
 			}
-			if(pc!=(pc&0x0000FFFFFFFFFFFFULL))
+			if(pc!=(pc&0x0000FFFFFFFFFFFEULL))
 			{
-				ctx->status=0x9999;
+				ctx->status=0x9997;
 				break;
 			}
 			

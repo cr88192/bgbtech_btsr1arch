@@ -340,6 +340,9 @@ begin
 //			if(regIdRm[6])
 //				tDoOutDfl	= 0;
 
+			if(regIdRm[6:5]==2'b11)
+				tDoOutDfl	= 0;
+
 		end
 `endif
 

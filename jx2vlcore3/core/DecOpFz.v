@@ -40,7 +40,8 @@ module DecOpFz(
 input			clock;		//clock
 input			reset;		//reset
 // input			srUser;		//usermode
-input[2:0]		srMod;		//mode
+// input[2:0]		srMod;		//mode
+input[3:0]		srMod;		//mode
 
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;
@@ -69,6 +70,9 @@ wire			srUser;				//Usermode
 wire			srSuperuser;		//Superuser mode
 assign		srUser = srMod[0];
 assign		srSuperuser = (srMod[0] && srMod[1]) || (srMod[0] && srMod[2]);
+
+wire			srXG2;		//Superuser mode
+assign		srXG2 = srMod[3];
 
 `reg_gpr		opRegN;
 `reg_gpr		opRegM;
@@ -310,6 +314,18 @@ begin
 	opExWI		= istrWord[ 8] && tOpIsXGprX0;
 //	opExWI		= istrWord[ 8] && opIsXGpr && (istrWord[15:12]!=4'b1001);
 
+	if(srXG2)
+	begin
+		opIsXGpr		= 0;
+		tOpIsXGprX0		= 0;
+		tOpIsXGprX1		= 0;
+		tOpIsXGprX2		= 0;
+
+		opExWN		= !istrWord[15];
+		opExWM		= !istrWord[14];
+		opExWI		= !istrWord[13];
+	end
+
 //	opExWIS		= opExWI;
 //	if(istrWord[15:12]==4'b1001)
 //		opExWI		= 0;
@@ -347,7 +363,7 @@ begin
 	opRegP_Dfl	= opRegN_Dfl;
 
 	opRegO_Df2	= {tRegRmIsRs && !(istrWord[4]) && !opExWN,
-		1'b0, istrWord[4], istrWord[3:0]};
+		opExWN, istrWord[4], istrWord[3:0]};
 
 	if(opIsJumbo96 && istrWord[5])
 		opRegO_Df2[6:5]	= 2'b01;
@@ -460,7 +476,8 @@ begin
 		8'h00 };
 `endif
 
-	opIsNotFx	= (istrWord[15:13]!=3'b111);
+//	opIsNotFx	= (istrWord[15:13]!=3'b111);
+	opIsNotFx	= (istrWord[15:13]!=3'b111) && !srXG2;
 	
 	tNextMsgLatch	= 0;
 	opImm_imm8au	= 0;
@@ -5183,6 +5200,7 @@ begin
 					opImm	= opImm_imm8au;
 				end
 
+`ifdef jx2_enable_ops24
 				JX2_ITY_SL: begin
 					opImm	= opImm_imm5n;
 
@@ -5194,6 +5212,7 @@ begin
 							opRegP	= opRegO_Dfl;
 					end
 				end
+`endif
 
 `ifndef def_true
 				JX2_ITY_SQ: begin

@@ -437,6 +437,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 #endif
 	}
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "xg2mode"))
+		{ shctx->is_fixed32|=3; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
 		shctx->use_wexmd=0;
@@ -6941,7 +6943,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	
 	for(i=0; i<16; i++)
 	{
-		if((i==0xA) || (i==0xB) || (i==0xC) || (i==0xD))
+		if(((i==0xA) || (i==0xB) || (i==0xC) || (i==0xD)) &&
+			!(sctx->is_fixed32&1))
 		{
 			k=0;
 			for(j=0; j<16; j++)
@@ -7256,6 +7259,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			(100.0*sctx->stat_fpimm_hitchk10)/(sctx->stat_fpimm_totchk10));
 	}
 
+#if 0
 	printf("Exp-Fp16:\n");
 	for(i=0; i<4; i++)
 	{
@@ -7263,6 +7267,21 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		{
 			printf("%.2f%% ",
 				(100.0*sctx->stat_fp16_exp[i*8+j])/sctx->stat_fp16_tot);
+		}
+		printf("\n");
+	}
+#endif
+
+	printf("Exp-Funarg:\n");
+	k=0;
+	for(i=0; i<8; i++)
+	{
+		for(j=0; j<4; j++)
+		{
+			k+=sctx->stat_funarg_exp[i*4+j];
+			printf("%.2f%%(%.2f%%) ",
+				(100.0*sctx->stat_funarg_exp[i*4+j])/sctx->stat_funarg_tot,
+				(100.0*k)/sctx->stat_funarg_tot);
 		}
 		printf("\n");
 	}

@@ -328,6 +328,15 @@ begin
 		tIsRtsR1	= 0;
 	end
 
+	if(pipeHasLr[7])
+	begin
+		/* XG2 */
+		tIsBraCc8	= 0;
+		tIsBraCc8B	= 0;
+		tIsRtsu		= 0;
+		tIsRtsR1	= 0;
+	end
+
 //	tIsBra8		= 0;
 //	tIsBra20	= 0;
 //	tIsRtsu		= 0;
@@ -433,8 +442,11 @@ begin
 //			istrWord[15:0], istrWord[31:16], regValLr);
 		tPreBraPc	= regValLr[47:0];
 //		tPreBra		= 1;
-		tPreBra		= !regValLr[0] ||
-			(regValLr[1] && (regValLr[50]==pipeHasLr[4]));
+//		tPreBra		= !regValLr[0] ||
+//			(regValLr[1] && (regValLr[50]==pipeHasLr[4]));
+		tPreBra		=
+			(	(regValLr[51:50]==pipeHasLr[5:4]) && 
+				(regValLr[55:54]==pipeHasLr[7:6]) );
 	end
 
 `ifdef jx2_prebra_rts
@@ -444,8 +456,11 @@ begin
 		tPreBraPc	= regValDhr[47:0];
 //		tPreBra		= 1;
 //		tPreBra		= !regValDhr[0];
-		tPreBra		= !regValDhr[0] ||
-			(regValDhr[1] && (regValDhr[50]==pipeHasLr[4]));
+//		tPreBra		= !regValDhr[0] ||
+//			(regValDhr[1] && (regValDhr[50]==pipeHasLr[4]));
+		tPreBra		=
+			(	(regValDhr[51:50]==pipeHasLr[5:4]) && 
+				(regValDhr[55:54]==pipeHasLr[7:6]) );
 	end
 `endif
 

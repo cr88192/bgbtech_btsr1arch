@@ -2988,6 +2988,7 @@ int BGBCC_JX2_CheckPipelineMin(BGBCC_JX2_Context *ctx, int cnt);
 int BGBCC_JX2_EmitPadTryAlignWord(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadAlignWord(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadForLabel(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_EmitPadCheckAligned(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val);
 int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2);
 int BGBCC_JX2_EmitCheckRepackOp(BGBCC_JX2_Context *ctx);
@@ -3166,7 +3167,10 @@ int BGBCC_JX2C_EmitMarkFrameVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
 int BGBCC_JX2C_EmitLoadFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitStoreFrameVRegByValReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_SizeToFp8(int sz);
+int BGBCC_JX2C_Fp8ToSize(int v);
 int BGBCC_JX2C_SizeToBndTag16(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int sz, ccxl_type tty);
+int BGBCC_JX2C_CheckPadToBndTag16(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int sz);
+int BGBCC_JX2C_CheckPadOffsetToBndTag16(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ofs, int sz);
 int BGBCC_JX2C_EmitLoadFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitStoreFrameVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register dreg, int sreg);
 int BGBCC_JX2C_CheckEmitLookupVRegForName(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name, ccxl_register *rreg);

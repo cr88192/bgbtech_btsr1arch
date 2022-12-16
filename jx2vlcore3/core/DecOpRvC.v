@@ -44,7 +44,8 @@ input			clock;		//clock
 input			reset;		//clock
 
 input[63:0]		istrWord;	//source instruction word
-input[2:0]		srMod;		//mode
+// input[2:0]		srMod;		//mode
+input[3:0]		srMod;		//mode
 
 `output_gpr		idRegN;
 `output_gpr		idRegM;

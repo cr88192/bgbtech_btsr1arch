@@ -77,6 +77,7 @@ input[63:0]		regSr;
 input[3:0]		istrSxo;	//source instruction word
 
 wire			srWxe;
+wire			srXG2;
 wire			srRiscv;
 wire			srUser;
 wire			srSxo;
@@ -85,8 +86,16 @@ assign		srUser	= !regSr[30];
 assign		srSxo	= istrSxo[0];
 assign		srRiscv	= (regSr[27:26] == 2'b01);
 
-wire[2:0]		srMod;
-assign		srMod = { regSr[29], srSxo, srUser };
+`ifdef jx2_enable_xg2mode
+assign		srXG2	= regSr[23];
+`else
+assign		srXG2	= 0;
+`endif
+
+// wire[2:0]		srMod;
+wire[3:0]		srMod;
+// assign		srMod = { regSr[29], srSxo, srUser };
+assign		srMod = { srXG2, regSr[29], srSxo, srUser };
 
 `output_gpr		idRegS;
 `output_gpr		idRegT;
@@ -410,8 +419,14 @@ reg opIsWfC;		//WEX
 
 assign	opIsWexJumboA =
 		(istrWord[15: 9] == 7'b1111_111) ;
+//		(istrWord[12: 9] == 4'b1111) ;
+//		(istrWord[12: 9] == 4'b1111) &&
+//		((istrWord[15:13] == 3'b111) || srXG2) ;
 assign	opIsWexJumboB =
 		(istrWord[47:41] == 7'b1111_111) ;
+//		(istrWord[44:41] == 4'b1111) ;
+//		(istrWord[44:41] == 4'b1111) &&
+//		((istrWord[47:45] == 3'b111) || srXG2) ;
 
 assign	opIsWexJumboXA =
 		((istrWord[15:12] == 4'b0111) && (istrWord[10:8] == 3'b000)) ||
@@ -435,7 +450,8 @@ assign	opIsWexaB =
 `ifdef jx2_enable_2x40b
 assign	opIsWex2x40B =
 //	opIsWexJumboA && istrWord[8] && opIsWexaB;
-	opIsWexJumboXA && opIsWexaB;
+//	opIsWexJumboXA && opIsWexaB;
+	opIsWexJumboXA && opIsWexaB && !srXG2;
 `else
 assign	opIsWex2x40B = 0;
 `endif
@@ -850,6 +866,40 @@ begin
 		end
 	end
 `endif
+
+	if(srXG2)
+	begin
+		opIsFxA = 1;		opIsFzA = 1;
+		opIsFxB = 1;		opIsFzB = 1;
+		opIsFxC = 1;		opIsFzC = 1;
+		opIsFCA = 0;		opIsFCB = 0;
+		opIsFCC = 0;
+		opIsDfA = istrWord[10];
+		opIsDfB = istrWord[42];
+		opIsDfC = istrWord[74];
+		opIsDzA = 0;
+		opIsDzB = 0;
+		opIsDzC = 0;
+
+		if(!istrWord[12])
+		begin
+			opIsDzA = 1;
+			opIsDwA = istrWord[11] && istrWord[9];
+		end
+
+		if(!istrWord[44])
+		begin
+			opIsDzB = 1;
+			opIsDwB = istrWord[43] && istrWord[41];
+		end
+
+		if(!istrWord[76])
+		begin
+			opIsDzC = 1;
+			opIsDwC = istrWord[75] && istrWord[73];
+		end
+	end
+
 
 //	opIsWfA = opIsDfA && !opIsDzA && srWxe;
 //	opIsWfB = opIsDfB && !opIsDzB && srWxe;

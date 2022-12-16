@@ -362,14 +362,24 @@ begin
 		end
 		JX2_UCMD_JMP: begin
 `ifdef def_true
-			if(	(regIdRs==JX2_GR_LR) ||
-				(regIdRs==JX2_GR_DHR))
+//			if(	(regIdRs==JX2_GR_LR) ||
+//				(regIdRs==JX2_GR_DHR))
+//			if(	(regIdRs==JX2_GR_LR) ||
+//				(regIdRs==JX2_GR_DHR) ||
+//				regValRs[0])
+			if(regValRs[0])
 			begin
 //				tRegOutSr[15: 4]	= regValRs[15:4];
 //				tRegOutSr[27:26]	= regValRs[3:2];
 //				tRegOutSr[ 1: 0]	= regValRs[1:0];
 
-				tRegOutSr[15: 4] = regValRs[63:52];
+//				tRegOutSr[15: 4] = regValRs[63:52];
+//				tRegOutSr[23:20] = regValRs[63:60];
+//				tRegOutSr[11: 4] = regValRs[59:52];
+
+				tRegOutSr[15: 8] = regValRs[63:56];
+				tRegOutSr[23:20] = regValRs[55:52];
+
 				tRegOutSr[27:26] = regValRs[51:50];
 				tRegOutSr[ 1: 0] = regValRs[49:48];
 			end

@@ -835,12 +835,13 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 	u32 pv, pv0, pv1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
-	int isriscv, isbjx2;
+	int isriscv, isbjx2, isbjx2xg2;
 	int tg;
 
 
 	isriscv=(mach==0x5064);
 	isbjx2=(mach==0xB264);
+	isbjx2xg2=(mach==0xB265);
 
 //	printf("TKPE_ApplyStaticRelocs: disp=%X rlc=%p sz=%d\n",
 //		(int)disp, rlc, szrlc);
@@ -907,7 +908,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 					break;
 				}
 			
-				if(isbjx2)
+				if(isbjx2 || isbjx2xg2)
 				{
 					pv=*((u32 *)pdst);
 					if((pv&0x0000FE00U)==0x0000FE00U)
@@ -945,7 +946,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 
 			case 6:
-				if(isbjx2)
+				if(isbjx2 || isbjx2xg2)
 				{
 					pv=*((u16 *)pdst);
 					if((pv==0xA000) && pboix)
@@ -956,6 +957,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 					}
 					break;
 				}
+				__debugbreak();
 				break;
 				
 			case 7:
@@ -983,7 +985,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 
 			case 9:
-				if(isbjx2)
+				if(isbjx2 || isbjx2xg2)
 				{
 					pv=*((u32 *)pdst);
 					if((pv==0xFA000000UL) && pboix)
@@ -1084,7 +1086,10 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 
 	mach=tkfat_getWord(tbuf+ofs_pe+0x04);
 //	if(mach!=0xB264)
-	if((mach!=0xB264) && (mach!=0x5064))
+//	if((mach!=0xB264) && (mach!=0x5064))
+	if(	(mach!=0xB264) && (mach!=0xB265) &&
+		(mach!=0x5064) &&
+		(mach!=0xB296) && (mach!=0xB297))
 	{
 		printf("TKPE: Unexpected Arch %04X\n", mach);
 		return(-1);
@@ -1276,6 +1281,12 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 	{
 //		entry|=0x0004000000000003ULL;
 		entry|=0x0004000000000001ULL;
+	}
+
+	if((mach==0xB265) || (mach==0xB297))
+	{
+//		entry|=0x8008000000000001ULL;
+		entry|=0x0088000000000001ULL;
 	}
 
 	*rbootptr=(void *)entry;

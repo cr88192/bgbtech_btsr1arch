@@ -221,7 +221,11 @@ SR Bits:
 ** Used by GSV for Vector Compare (Word/Half).
 * 8..15: U0..U7, Context Dependent
 ** May be used as a Predicate Stack.
-* 16..23: Reserved
+* 16..19: Reserved
+* 20: WM2, Reserved
+* 21: WM1, Reserved
+* 22: WX4, Mode 4
+* 23: WX3, Mode 3
 * 24: XMOV Copy / Add (0 = Copy, 1 = Add, Possible)
 * 25: XMOV User Enable (0 = Supervisor Only, 1 = User/Supervisor)
 * 26: WX2, WEX Secondary (RISC-V Enable)
@@ -257,7 +261,8 @@ Clearing the WEX Enable flag will cause WEX instructions to be executed as scala
 
 
 The Link Register (LR) will have the layout:
-* (63:52), Saved SR(15: 4), U and PQRO
+* (63:56), Saved SR(15: 8), U0..U7
+* (55:52), Saved SR(23:20), WX3, WX4, WM1, WM2
 * (51:50), Saved SR(27:26), WXE, WX2
 * (49:48), Saved SR( 1: 0), S and T
 * (47: 0), Saved PC Address
@@ -276,11 +281,22 @@ FPSCR Will be defined as:
 * (3:0), Rounding Mode
 
 The Vector Base Register (VBR) will have the layout:
-* (63:52), Reserved (MBZ)
+* (63:56), Reserved (MBZ)
+* (55:52), WX3/WX4/WM1/WM2 on ISR Entry
 * (51:50), WXE and WX2 on ISR Entry
 * (49:48), Reserved (MBZ)
 * (47: 0), VBR Base Address
 
+(WX4,WX3,WX2,WXE) will Enocde a 4-bit CPU Mode:
+* 0000: BJX2 Scalar (16/32+)
+* 0001: BJX2 WEX (16/32+)
+* 0010: RISC-V
+* 0011: RISC-V (Reserved)
+* 0100: BJX2-XG2 Mode (No WEX, 32+)
+* 0101: BJX2-XG2 Mode (WEX, 32+)
+* 0110: Reserved
+* 0111: Reserved
+* 1zzz: Reserved
 
 === Special Restrictions ===
 
@@ -1926,7 +1942,8 @@ F0zz Instruction Block:
 *** F02E_3en0  BT.L		(PC, Rn)	//Branch, DWord Scale
 *** F02F_3en0  BF.L		(PC, Rn)	//Branch, DWord Scale
 
-*** F033_3en0  MOVNT	Rn
+*** F033_3gn0  MOVNT		Rn
+*** F033_3Gn0  REGCHKG		Rn		//Debug: Generate Register Check Value
 *** F034_3en0 ? ROTL		Rn
 *** F035_3en0 ? ROTR		Rn
 *** F036_3en0  ROTCL{Q}		Rn
@@ -1945,7 +1962,9 @@ F0zz Instruction Block:
 *** F069_3en0  WEXMD	Imm5u
 *** F06A_3en0  CPUID	Imm5u
 *** F06B_3en0 ? SRTTWID	Imm5u	//SR.T Twiddle
-*** F06F_3en0  MOVT		Rn
+*** F06C_3en0 ? SRTPROP	Imm5u	//SR.T Predicate Op
+*** F06F_3gn0  MOVT		Rn
+*** F06F_3Gn0  REGCHKC	Rn		//Debug: Verify Register Check Value
 
 *** F082_3en0  /
 *** F083_3en0  /
@@ -1988,9 +2007,9 @@ F0zz Instruction Block:
 ** F0nm_4Go0  LEAT.B		(Rm, Disp5), Rn		//(TTAG)
 ** F0nm_4go1  ? MOV.C		Cn, (Rm, Disp5)		//(MOVC)
 ** F0nm_4Go1  LEAT.W		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4go2  -
+** F0nm_4go2  FMOV.S		Rn, (Rm, Disp5)		//(FMOV)
 ** F0nm_4Go2  LEAT.L		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4go3  -
+** F0nm_4go3  FMOV.H		Rn, (Rm, Disp5)		//(FMOV)
 ** F0nm_4Go3  LEAT.Q		(Rm, Disp5), Rn		//(TTAG)
 ** F0nm_4go4  MOV.X		Xn, (Rm, Ro)		//(MOVX2) Store Pair
 ** F0nm_4Go4  ? LEAT.B		(Rm, Ro), Rn	//(TTAG)
@@ -2005,9 +2024,9 @@ F0zz Instruction Block:
 ** F0nm_4Go8  -
 ** F0nm_4go9  MOV.C		(Rm, Disp5), Cn		//(MOVC)
 ** F0nm_4Go9  -
-** F0nm_4goA  -
+** F0nm_4goA  FMOV.S	(Rm, Disp5), Rn		//(FMOV)
 ** F0nm_4GoA  -
-** F0nm_4goB  -
+** F0nm_4goB  FMOV.H	(Rm, Disp5), Rn		//(FMOV)
 ** F0nm_4GoB  -
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
 ** F0nm_4GoC  ? FADDA	Rm, Ro, Rn
@@ -2798,6 +2817,25 @@ XGPR Encodings which are redundant with the Fz encodings will be reserved/invali
 * 91 (F1), Reserved
 * 98 (F6), Jumbo Reserved
 * 99 (F5), Jumbo Reserved
+
+
+=== XG2 Mode (Possible / Optional) ===
+
+This mode will disable both 16-bit ops and the normal XGPR encodings.
+
+Instruction formats will become:
+* WZnm_ZeoZ
+* Wznm_Zeii
+
+Where the high 3 bits of the first instruction word become the inverted N,M,I bits for Bit5 of each register field.
+If no register field exists, and no other meaning is assigned to the bit, it is to be kept as 1. Behaviors will be otherwise similar to normal XGPR encodings.
+
+Apart from the loss of 16-bit encodings (setting 32 bits as the smallest instruction size), the encoding rules for XG2 will be the same as those for the base ISA and XGPR.
+
+This mode will also lose Op40x2, which will become non-encodable.
+
+
+Possibly, this mode may use (WX4,WX3,WX2,WXE) == 0100 or 0101.
 
 
 === Wide Execution 2 (Optional) ===

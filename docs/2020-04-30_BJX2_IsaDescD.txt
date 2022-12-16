@@ -2058,6 +2058,19 @@ These operations will only work for direct-mapped caches.
 The SNIPExx instructions will generate a NULL result if SNIPExx is not valid (such as due to using an associative cache). In this case, an INVDC or INVIC cache-flush process will be required instead.
 
 
+=== SRTPROP (?) ===
+
+* F06C_3en0  SRTPROP	Imm5u
+
+Perform an operation between SR.T and U0..U7.
+* (4:2): Bit Index
+* (1:0): Op
+** 00: U(x) = SR.T
+** 01: SR.T = U(x)
+** 10: SR.T = SR.T & U(x)
+** 11: SR.T = SR.T | U(x)
+
+
 === SRTTWID (?) ===
 
 * 36nB       SRTTWID	Imm4

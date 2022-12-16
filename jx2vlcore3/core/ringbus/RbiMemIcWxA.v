@@ -58,7 +58,8 @@ output[ 3: 0]	regOutPcStep;	//PC step (Normal Op)
 output[ 3: 0]	regOutPcSxo;
 (* max_fanout = 100 *)
 	input			icInPcHold;
-input[1:0]		icInPcWxm;
+// input[1:0]		icInPcWxm;
+input[5:0]		icInPcWxm;
 input[5:0]		icInPcOpm;		//OPM (Used for cache-control)
 
 input [63: 0]	regInSr;
@@ -120,6 +121,13 @@ assign		memDataOut = tMemDataOut;
 
 wire		icInPcWxe;
 assign		icInPcWxe = icInPcWxm[1];
+
+wire		icInPcXG2;
+`ifdef jx2_enable_xg2mode
+assign		icInPcXG2 = icInPcWxm[5];
+`else
+assign		icInPcXG2 = 0;
+`endif
 
 `define	jx2_mem_l1i_regicdata	reg[143:0]
 `define	jx2_mem_l1i_regicaddr	reg[ 71:0]
@@ -364,8 +372,10 @@ reg[5:0]		tInOpmB;		//OPM (Used for cache-control)
 reg[5:0]		tInOpmC;		//OPM (Used for cache-control)
 reg[5:0]		tInPcOpm;		//OPM (Used for cache-control)
 reg				tInPcWxe;
+reg				tInPcXG2;
 reg				tInPcRiscv;
 reg				tNxtInPcWxe;
+reg				tNxtInPcXG2;
 reg				tNxtInPcRiscv;
 
 reg[3:0]		tInPmode;
@@ -733,7 +743,9 @@ begin
 	end
 
 	tNxtInPcWxe		= icInPcWxe;
-	tNxtInPcRiscv	= (icInPcWxm == 2'b01);
+	tNxtInPcXG2		= icInPcXG2;
+//	tNxtInPcRiscv	= (icInPcWxm == 2'b01);
+	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01);
 
 	if(icInPcHold)
 	begin
@@ -744,6 +756,7 @@ begin
 		tNxtAxH			= tReqAxH;
 		tNxtInPmode		= tInPmode;
 		tNxtInPcWxe		= tInPcWxe;
+		tNxtInPcXG2		= tInPcXG2;
 		tNxtInPcRiscv	= tInPcRiscv;
 		tNxtSkipTlb		= tSkipTlb;
 		tNxtSkipMiss	= tSkipMiss;
@@ -1306,6 +1319,15 @@ begin
 		end
 	endcase
 	
+`ifdef jx2_enable_xg2mode
+	if(tInPcXG2)
+	begin
+		/* XG2 Mode, Eliminate 16-bit ops */
+		tPcStepBA		= 0;
+		tPcStepBB		= 0;
+	end
+`endif
+
 `ifdef jx2_enable_wex3w
 
 `ifdef jx2_enable_wexjumbo
@@ -1898,6 +1920,7 @@ begin
 //		tInPcRiscv		<= (icInPcWxm == 2'b01);
 
 		tInPcWxe		<= tNxtInPcWxe;
+		tInPcXG2		<= tNxtInPcXG2;
 		tInPcRiscv		<= tNxtInPcRiscv;
 
 	end

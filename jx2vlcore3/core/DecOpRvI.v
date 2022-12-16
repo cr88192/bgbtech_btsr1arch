@@ -41,7 +41,8 @@ module DecOpRvI(
 
 input			clock;		//clock
 input			reset;		//reset
-input[2:0]		srMod;		//mode
+// input[2:0]		srMod;		//mode
+input[3:0]		srMod;		//mode
 
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;

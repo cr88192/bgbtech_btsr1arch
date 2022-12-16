@@ -423,6 +423,8 @@ int stat_fp16_hit5;
 int stat_fp16_hit5b;
 
 int stat_fp16_exp[32];
+int stat_funarg_exp[32];
+int stat_funarg_tot;
 
 
 int ofs_curbdl;

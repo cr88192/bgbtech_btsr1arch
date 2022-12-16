@@ -343,12 +343,15 @@ reg[127:0]		tRegExc;
 reg				ifValBraOk;
 reg				ifNxtValBraOk;
 
-wire[1:0]			ifInPcWxe;
+// wire[1:0]			ifInPcWxe;
+wire[5:0]			ifInPcWxe;
 
 `ifdef jx2_enable_wex
-assign	ifInPcWxe = crOutSr[27:26];
+// assign	ifInPcWxe = crOutSr[27:26];
+assign	ifInPcWxe = { crOutSr[23:20], crOutSr[27:26] };
 `else
-assign	ifInPcWxe = 2'b00;
+// assign	ifInPcWxe = 2'b00;
+assign	ifInPcWxe = 6'b00;
 `endif
 
 // assign	dbgOutPc	= ifLastPcW;
@@ -1258,9 +1261,13 @@ ExEX1	ex1(
 //		crOutSr[1:0],
 //		ex1RegValPc },
 
-	{	ex1RegInSr[15:4],
+//	{	ex1RegInSr[15:4],
+//	{	ex1RegInSr[23:20],
+//		ex1RegInSr[11: 4],
+	{	ex1RegInSr[15:8],
+		ex1RegInSr[23:20],
 		ex1RegInSr[27:26],
-		ex1RegInSr[1:0],
+		ex1RegInSr[ 1: 0],
 		ex1RegValPc },
 
 	ex1RegValImm,
@@ -2506,6 +2513,7 @@ begin
 
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_IR) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_CONV2_RR) ||
+		 (ex1OpUCmd[5:0]==JX2_UCMD_QMULDIV) ||
 
 		 (ex1OpUCmd[5:0]==JX2_UCMD_FPU3) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_FLDCX) ||
@@ -3573,7 +3581,9 @@ begin
 				crInTeaHi		= { tRegExc[127:64] };
 				crInSr			= ex1RegOutSr;
 				crInSr[30:28]	= 3'b111;
-				crInSr[27:26]	= 2'b00;
+//				crInSr[27:26]	= 2'b00;
+				crInSr[27:26]	= crOutVbrCm[ 3: 2];
+				crInSr[23:20]	= crOutVbrCm[15:12];
 
 				crInLr			= crOutLr;
 //					gprInDlr		= gprOutDlr;
@@ -3589,7 +3599,8 @@ begin
 				braNxtInSr			= ex1RegOutSr;
 				braNxtInSr[30:28]	= 3'b111;
 //				braNxtInSr[27:26]	= 2'b00;
-				braNxtInSr[27:26]	= crOutVbrCm[3:2];
+				braNxtInSr[27:26]	= crOutVbrCm[ 3: 2];
+				braNxtInSr[23:20]	= crOutVbrCm[15:12];
 				braNxtInLr			= crOutLr;
 //				braNxtInDlr			= ex1RegOutDlr;
 //				braNxtInDhr			= ex1RegOutDhr;
@@ -4490,7 +4501,7 @@ begin
 //		id1BraPipelineLrL	<= id1BraPipelineLr;
 //		id1BraPipelineLrL	<= { id1BraPipelineR1, id1BraPipelineLr };
 		id1BraPipelineLrL	<= {
-			2'b00,
+			crOutSr[23:22],
 			crOutSr[27:26],
 			1'b1,
 			id1BraPipelineDbl,

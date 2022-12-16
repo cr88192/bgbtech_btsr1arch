@@ -644,6 +644,14 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 
 		return(ret);
 	}
+
+	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2)
+	{
+		ret=BJX2_DecodeOpcode_DecXG2(ctx, op, addr, opw, opw2);
+		BJX2_DecodeOpcodePostFixup(ctx, op);
+		return(ret);
+	}
+
 	
 #ifdef BJX2_FLIPSTNM
 	fnm=0;

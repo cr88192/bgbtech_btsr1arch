@@ -1,0 +1,147 @@
+BSR4E:
+* R0..R63: 64-bit
+** X0,X2,X62: Paired, 128-bit
+* Variable-Bundle VLIW
+** Pointers: 64-bit (Narrow) / 128-bit (Tag/Bound)
+* C0..C63:
+** Control Registers
+
+SR:
+* (1): S (ALU Status Bit)
+* (0): T (Primary Predicate)
+
+
+Registers:
+* R0..R31: Scratch
+* R32..R59: Callee Save
+* R60..R63: Context / Port Sensitive
+
+Base Register (Rs):
+* R60: GB (Global Base Register)
+* R61: SP (Stack Pointer)
+* R62: LR (Link Register)
+* R63: PC (Program Counter)
+
+Index / ALU Register (Rt):
+* R60: Imm C (24b)
+* R61: Imm B (24b)
+* R62: Imm CB (48-bit)
+* R63: ZR (Zero)
+
+Dest Register (Rn):
+* R60: GB
+* R61: SP
+* R62: LR
+* R63: ZR (Ignore)
+
+Opcode Format (32-bit):
+* zzz-tttttt-zzz-ssssss-nnnnnn-zz-zzz-ppp  //3R
+* iii-iiiiii-zzz-ssssss-nnnnnn-zz-zzz-ppp  //3RI Imm9
+
+* iii-iiiiii-iii-iiiiiz-nnnnnn-zz-zzz-ppp  //2RI Imm17
+* ddd-dddddd-ddd-dddddz-nnnnnn-zz-zzz-ppp  //2RI Disp17
+* ddd-dddddd-ddd-dddddd-ddddzz-zz-zzz-ppp  //2RI Disp22
+
+ppp:
+* 000: Scalar
+* 001: WEX
+* 010: ?T
+* 011: ?F
+* 100: Special (Scalar Only)
+* 101: Jumbo (Combiner Only)
+* 110: WEX?T
+* 111: WEX?F
+
+
+* iii-iiiiii-zzz-ssssss-nnnnnn-00-000-ppp  //Store (Disp9u)
+** B/W/L/Q, LEA=B/W/L/Q
+* iii-iiiiii-zzz-ssssss-nnnnnn-01-000-ppp  //Store (Disp9u)
+** S/H/C/X
+* iii-iiiiii-zzz-ssssss-nnnnnn-10-000-ppp  //Load (Disp9u)
+** SB/SW/SL/Q/UB/UW/UL/X
+* iii-iiiiii-zzz-ssssss-nnnnnn-11-000-ppp  //Load (Disp9u)
+** S/H/C/X
+
+* iii-iiiiii-zzz-ssssss-nnnnnn-zz-001-ppp  //ALU 3RI
+** 000-00: ADD
+** 000-01: SHAD.X
+** 000-10: ADDS.L
+** 000-11: ADDU.L
+
+** 001-00: SUB
+** 001-01: SHLD.X
+** 001-10: SUBS.L
+** 001-11: SUBU.L
+
+** 010-00: MUL.Q
+** 010-01: RSUB
+** 010-10: MULS.L
+** 010-11: MULU.L
+
+** 100-00: AND
+** 100-01: -
+** 100-10: -
+** 100-11: -
+
+** 101-00: OR
+** 101-01: -
+** 101-10: -
+** 101-11: -
+
+** 110-00: XOR
+** 110-01: -
+** 110-10: -
+** 110-11: -
+
+** 111-00: SHAD.Q (Imm Bit8=0)
+** 111-01: SHLD.Q (Imm Bit8=0)
+** 111-10: SHAD.L (Imm Bit8=0)
+** 111-11: SHLD.L (Imm Bit8=0)
+
+* zzz-zzzzzz-zzz-ssssss-nnnnnn-0z-010-ppp  //2R
+* iii-iiiiii-zzz-zzzzzz-nnnnnn-1z-010-ppp  //2RI (Imm9u)
+
+* iii-iiiiii-iii-iiiis0-nnnnnn-00-011-ppp  //MOV Imm17s, Rn
+* iii-iiiiii-iii-iiiis1-nnnnnn-00-011-ppp  //ADD Imm17s, Rn
+* iii-iiiiii-iii-iiii00-nnnnnn-01-011-ppp  //FLCH Imm16fp, Rn
+* iii-iiiiii-iii-iiii01-nnnnnn-01-011-ppp  //-
+
+* iii-iiiiii-iii-iiii00-nnnnnn-11-011-ppp  //MOV.L Rn, (GBR, Imm16u)
+* iii-iiiiii-iii-iiii01-nnnnnn-11-011-ppp  //MOV.L (GBR, Imm16u), Rn
+* iii-iiiiii-iii-iiii10-nnnnnn-11-011-ppp  //MOV.Q Rn, (GBR, Imm16u)
+* iii-iiiiii-iii-iiii11-nnnnnn-11-011-ppp  //MOV.Q (GBR, Imm16u), Rn
+
+* zzz-tttttt-zzz-ssssss-nnnnnn-zz-100-ppp  //ALU 3R
+** 000-000-00: ADD
+** 000-000-01: -
+** 000-000-10: ADDS.L
+** 000-000-11: ADDU.L
+
+** 000-001-00: SUB
+** 000-001-01: -
+** 000-001-10: SUBS.L
+** 000-001-11: SUBU.L
+
+** 000-010-00: MUL.Q
+** 000-010-01: -
+** 000-010-10: MULS.L
+** 000-010-11: MULU.L
+
+** 000-100-00: AND
+** 000-101-00: OR
+** 000-110-00: XOR
+
+** 000-111-00: SHAD.Q
+** 000-111-01: SHLD.Q
+** 000-111-10: SHAD.L
+** 000-111-11: SHLD.L
+
+* zzz-tttttt-zzz-ssssss-nnnnnn-zz-101-ppp  //3R
+* zzz-tttttt-zzz-ssssss-nnnnnn-zz-110-ppp  //3R
+
+
+** ddd-dddddd-ddd-dddddd-dddd00-00-111-000  //BRA Disp22
+** ddd-dddddd-ddd-dddddd-dddd01-00-111-000  //BSR Disp22
+
+** ddd-dddddd-ddd-dddddd-dddd00-00-111-010  //BT Disp22
+** ddd-dddddd-ddd-dddddd-dddd00-00-111-011  //BF Disp22

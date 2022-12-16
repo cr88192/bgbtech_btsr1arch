@@ -644,7 +644,8 @@ begin
 //		regInSr[27:26],
 //		regInSr[ 1: 0],
 //		regValPc };
-	tRegBraLr	= regValPc;
+//	tRegBraLr	= regValPc;
+	tRegBraLr	= { regValPc[63:1], 1'b1 };
 
 //	tValBra			= tValAguBra[47:0];
 //	tValBra			= { tRegBraLr[63:48], tValAguBra[47:0] };
@@ -904,6 +905,7 @@ begin
 //				tValBra		= regValPc[47:0];
 				tValBra		= regValPc[63:0];
 //				tValBra		= { tRegBraLr[63:48], regValPc[47:0] };
+				tValBra[63:48] = UV16_00;
 				tDoBra		= 1;
 			end
 		end
@@ -918,6 +920,7 @@ begin
 			begin
 //				tValBra		= tValAguBra[47:0];
 				tValBra		= { tRegBraLr[63:48], tValAguBra[47:0] };
+				tValBra[63:48] = UV16_00;
 				tDoBra		= 1;
 			end
 		end
@@ -988,12 +991,13 @@ begin
 //			tDoBra		= !opPreBra;
 			tDoBra		= (opPreBra != 2'b01);
 
-`ifndef jx2_enable_riscv
+// `ifndef jx2_enable_riscv
 // `ifdef def_true
+`ifndef def_true
 			if(	(regIdRs==JX2_GR_LR) ||
 				(regIdRs==JX2_GR_DHR))
 			begin
-				tValBra[63:48] = regValRs[63:48];
+//				tValBra[63:48] = regValRs[63:48];
 			end
 `endif
 
@@ -1007,15 +1011,17 @@ begin
 			end
 `endif
 
-`ifdef jx2_enable_riscv
+// `ifdef jx2_enable_riscv
 // `ifndef def_true
+`ifdef def_true
 			tValBra		= { regValPc[63:48], tValAgu[47:0] };
 
 			if(	(regIdRs==JX2_GR_LR) ||
 				(regIdRs==JX2_GR_DHR))
 			begin
-				tValBra[63:48] = regValRs[63:48];
+//				tValBra[63:48] = regValRs[63:48];
 			end
+			tValBra[63:48] = UV16_00;
 
 			if(regInSr[26])
 			begin
@@ -1024,9 +1030,12 @@ begin
 			
 			if(tValAgu[0])
 			begin
-				$display("EX: JMP: Inter-ISA RV=%d Ixt=%X Rs=%X Tgt-PC=%X",
-					regInSr[26], opUIxt,
-					regValRs, tValBra);
+				if(regInSr[26]!=regValRs[50])
+				begin
+					$display("EX: JMP: Inter-ISA RV=%d Ixt=%X Rs=%X Tgt-PC=%X",
+						regInSr[26], opUIxt,
+						regValRs, tValBra);
+				end
 				tRegOutSr[26]	= !regInSr[26];
 //				tRegOutSr[27]	= tValAgu[1];
 				tRegOutSr[27]	= 0;
@@ -1034,8 +1043,11 @@ begin
 				if(1'b1)
 				begin
 					tRegOutSr[27:26]	= regValRs[51:50];
+//					tRegOutSr[23:20]	= regValRs[63:60];
+					tRegOutSr[23:20]	= regValRs[55:52];
 				end
-				tValBra[1:0]	= 0;
+//				tValBra[1:0]	= 0;
+				tValBra[0]	= 0;
 			end
 `endif
 		end
@@ -1088,12 +1100,18 @@ begin
 			if(	(regIdRs==JX2_GR_LR) ||
 				(regIdRs==JX2_GR_DHR))
 			begin
-				tValBra[63:48] = regValRs[63:48];
+//				tValBra[63:48] = regValRs[63:48];
 			end
+			tValBra[63:48] = UV16_00;
 
 			if(tValAgu[0])
 			begin
-				$display("EX: JSR: Inter-ISA %d PC=%X", regInSr[26], tValBra);
+				if(regInSr[26]!=regValRs[50])
+				begin
+					$display("EX: JSR: Inter-ISA %d PC=%X",
+						regInSr[26], tValBra);
+				end
+
 				tRegOutSr[26]	= !regInSr[26];
 //				tRegOutSr[27]	= tValAgu[1];
 				tRegOutSr[27]	= 0;
@@ -1101,8 +1119,11 @@ begin
 				if(1'b1)
 				begin
 					tRegOutSr[27:26]	= regValRs[51:50];
+//					tRegOutSr[23:20]	= regValRs[63:60];
+					tRegOutSr[23:20]	= regValRs[55:52];
 				end
-				tValBra[1:0]	= 0;
+//				tValBra[1:0]	= 0;
+				tValBra[0]	= 0;
 			end
 `endif
 		end

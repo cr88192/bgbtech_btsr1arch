@@ -2634,6 +2634,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		else
 			mach=0xB232;
 	}
+	
+	if(sctx->is_fixed32&2)
+		mach=0xB265;
 
 	szstack=1<<19;
 	

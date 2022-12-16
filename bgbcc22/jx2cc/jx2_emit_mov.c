@@ -355,6 +355,7 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -728,6 +729,7 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -888,6 +890,7 @@ int BGBCC_JX2_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -1117,6 +1120,7 @@ int BGBCC_JX2_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -2303,6 +2307,7 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -3890,6 +3895,7 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -4335,6 +4341,7 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -4985,6 +4992,7 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -5131,6 +5139,7 @@ int BGBCC_JX2_TryEmitOpRegStReg2Disp(
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 
@@ -5258,6 +5267,7 @@ int BGBCC_JX2_TryEmitOpLdReg2DispReg(
 			BGBCC_JX2_EmitWord(ctx, opw3);
 		if(opw4>=0)
 			BGBCC_JX2_EmitWord(ctx, opw4);
+		BGBCC_JX2_EmitPadCheckAligned(ctx);
 		return(1);
 	}
 

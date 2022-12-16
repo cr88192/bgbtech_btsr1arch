@@ -346,11 +346,15 @@ Machine:
 * SH-DSP:   0x01A3
 * SH-4:     0x01A6
 * SH-5:     0x01A8
+* RISC-V:   0x5064
 * BJX1-32:  0xB132 (Old)
 * BJX1-64:  0xB164 (Old)
 * BJX1-64C: 0xB64C (Old)
 * BJX2-32:  0xB232 (Resv)
-* BJX2-64:  0xB264
+* BJX2-64:  0xB264 (64-bit ABI)
+* BJX2-64:  0xB265 (64-bit ABI, XGPR2 Mode)
+* BJX2-64:  0xB296 (128-bit ABI)
+* BJX2-64:  0xB297 (128-bit ABI, XGPR2 Mode)
 
 The Image starts with an 'MZ' header for traditional PE/COFF.
 

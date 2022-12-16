@@ -119,6 +119,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 		}
 	}
+	
+	if(!(sctx->is_simpass))
+	{
+		sctx->stat_funarg_exp[obj->n_cargs/2]++;
+		sctx->stat_funarg_tot++;
+	}
 
 	k=0;
 	for(i=0; i<obj->n_vop; i++)
@@ -700,8 +706,14 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_AR_REF2:
 			kf=(kf+15)&(~15);
 
-			obj->locals[i]->fxmoffs=kf;
+//			obj->locals[i]->fxmoffs=kf;
 			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->locals[i]->type);
+
+			obj->locals[i]->fxmoffs=
+				BGBCC_JX2C_CheckPadOffsetToBndTag16(
+					ctx, sctx, kf, j);
+
+			j=BGBCC_JX2C_CheckPadToBndTag16(ctx, sctx, j);
 			if(!j)
 				{ BGBCC_DBGBREAK }
 
