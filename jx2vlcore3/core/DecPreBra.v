@@ -328,7 +328,7 @@ begin
 		tIsRtsR1	= 0;
 	end
 
-	if(pipeHasLr[7])
+	if(pipeHasLr[7:6] != 2'b00)
 	begin
 		/* XG2 */
 		tIsBraCc8	= 0;

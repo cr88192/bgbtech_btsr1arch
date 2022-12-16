@@ -1152,28 +1152,28 @@ begin
 		4'b00zz:	opLenA3=4'b0010;		//E0..E7
 	endcase
 
-	if(tBlkData[15:13]!=3'b111)
+	if((tBlkData[15:13]!=3'b111) && !tInPcXG2)
 		opLenA0=4'b0001;
-	if(tBlkData[31:29]!=3'b111)
+	if((tBlkData[31:29]!=3'b111) && !tInPcXG2)
 		opLenA1=4'b0001;
-	if(tBlkData[47:45]!=3'b111)
+	if((tBlkData[47:45]!=3'b111) && !tInPcXG2)
 		opLenA2=4'b0001;
-	if(tBlkData[63:61]!=3'b111)
+	if((tBlkData[63:61]!=3'b111) && !tInPcXG2)
 		opLenA3=4'b0001;
 
 `ifdef jx2_enable_xgpr
 // `ifndef def_true
-	if(	(tBlkData[15:12]==4'b0111) ||
-		(tBlkData[15:12]==4'b1001))
+	if(	((tBlkData[15:12]==4'b0111) ||
+		(tBlkData[15:12]==4'b1001)) && !tInPcXG2)
 			opLenA0=tBlkData[11]?4'b0110:4'b0010;
-	if(	(tBlkData[31:28]==4'b0111) ||
-		(tBlkData[31:28]==4'b1001))
+	if(	((tBlkData[31:28]==4'b0111) ||
+		(tBlkData[31:28]==4'b1001)) && !tInPcXG2)
 			opLenA1=tBlkData[27]?4'b0110:4'b0010;
-	if(	(tBlkData[47:44]==4'b0111) ||
-		(tBlkData[47:44]==4'b1001))
+	if(	((tBlkData[47:44]==4'b0111) ||
+		(tBlkData[47:44]==4'b1001)) && !tInPcXG2)
 			opLenA2=tBlkData[43]?4'b0110:4'b0010;
-	if(	(tBlkData[63:60]==4'b0111) ||
-		(tBlkData[63:60]==4'b1001))
+	if(	((tBlkData[63:60]==4'b0111) ||
+		(tBlkData[63:60]==4'b1001)) && !tInPcXG2)
 			opLenA3=tBlkData[59]?4'b0110:4'b0010;
 `endif
 
@@ -1204,18 +1204,18 @@ begin
 		4'b0100:	opLenA5=4'b0010;		//E8/E9
 		4'b00zz:	opLenA5=4'b0010;		//E0..E7
 	endcase
-	if(tBlkData[79:77]!=3'b111)
+	if((tBlkData[79:77]!=3'b111) && !tInPcXG2)
 		opLenA4=4'b0001;
-	if(tBlkData[95:93]!=3'b111)
+	if((tBlkData[95:93]!=3'b111) && !tInPcXG2)
 		opLenA5=4'b0001;
 
 `ifdef jx2_enable_xgpr
 // `ifndef def_true
-	if(	(tBlkData[79:76]==4'b0111) ||
-		(tBlkData[79:76]==4'b1001))
+	if(	((tBlkData[79:76]==4'b0111) ||
+		(tBlkData[79:76]==4'b1001)) && !tInPcXG2)
 			opLenA4=tBlkData[75]?4'b0110:4'b0010;
-	if(	(tBlkData[95:92]==4'b0111) ||
-		(tBlkData[95:92]==4'b1001))
+	if(	((tBlkData[95:92]==4'b0111) ||
+		(tBlkData[95:92]==4'b1001)) && !tInPcXG2)
 			opLenA5=tBlkData[91]?4'b0110:4'b0010;
 `endif
 
@@ -1319,7 +1319,8 @@ begin
 		end
 	endcase
 	
-`ifdef jx2_enable_xg2mode
+// `ifdef jx2_enable_xg2mode
+`ifndef def_true
 	if(tInPcXG2)
 	begin
 		/* XG2 Mode, Eliminate 16-bit ops */
@@ -1920,8 +1921,13 @@ begin
 //		tInPcRiscv		<= (icInPcWxm == 2'b01);
 
 		tInPcWxe		<= tNxtInPcWxe;
-		tInPcXG2		<= tNxtInPcXG2;
 		tInPcRiscv		<= tNxtInPcRiscv;
+
+`ifdef jx2_enable_xg2mode
+		tInPcXG2		<= tNxtInPcXG2;
+`else
+		tInPcXG2		<= 0;
+`endif
 
 	end
 	else
