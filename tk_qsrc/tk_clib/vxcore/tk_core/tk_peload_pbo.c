@@ -34,7 +34,7 @@ If pboix is used, this skips over relocations in the areas covered by GBR. These
 */
 int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 	s64 disp, int pboix,
-	s64 imgbase, int gbr_rva, int gbr_sz)
+	s64 imgbase, int gbr_rva, int gbr_sz, int mach)
 {
 	byte *cs, *cse, *cs1, *cs1e;
 	byte *pdst;
@@ -42,7 +42,12 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 	s64 v0, v1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
+	int isriscv, isbjx2, isbjx2xg2;
 	int tg;
+
+	isriscv=(mach==0x5064);
+	isbjx2=(mach==0xB264);
+	isbjx2xg2=(mach==0xB265);
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
@@ -87,53 +92,74 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				*((u32 *)pdst)=(*((u32 *)pdst))+(disp>>32);
 				break;
 			case 5:
-				pv=*((u32 *)pdst);
-				if((pv&0x0000FE00U)==0x0000FE00U)
+				if(isriscv)
 				{
-					pv0=((u32 *)pdst)[0];
-					pv1=((u32 *)pdst)[1];
-					v0=((pv0&0x00FF)<<16)|((pv0>>16)&0xFFFF);
-					v1=((pv1&0x00FF)<<16)|((pv1>>16)&0xFFFF);
-					v1+=disp;
-					v0+=(disp>>24)+(v1>>24);
-					pv0=(pv0&0x0000FF00U)|
-						((v0>>16)&0x000000FFU)|
-						((v0<<16)&0xFFFF0000U);
-					pv1=(pv1&0x0000FF00U)|
-						((v1>>16)&0x000000FFU)|
-						((v1<<16)&0xFFFF0000U);
-					((u32 *)pdst)[0]=pv0;
-					((u32 *)pdst)[1]=pv1;
-					break;
-				}
-			
-				v0=((pv&0x01FF)<<16)|((pv>>16)&0xFFFF);
-				v1=v0+disp;
-				pv=(pv&0x0000FE00U)|
-					((v1>>16)&0x1FF)|
-					((v1<<16)&0xFFFF0000U);
-				*((u32 *)pdst)=pv;
-				break;
-
-			case 6:
-				pv=*((u16 *)pdst);
-				if((pv==0xA000) && pboix)
-				{
-					pv=pv|(((-pboix)*8)&0x1FFF);
-					*((u16 *)pdst)=pv;
-					break;
-				}
-
-				pv=*((u32 *)pdst);
-				if((pv==0x0000FA00UL) && pboix)
-				{
-					v0=((pboix*8)&0x01FFFFFF);
-					pv=(pv&0x0000FF00U)|
-						((v0>>16)&0x000000FFU)|
-						((v0<<16)&0xFFFF0000U);
+					/* RISC-V: Disp High 20 */
+					pv=*((u32 *)pdst);
+					pv+=disp&0xFFFFF000U;
 					*((u32 *)pdst)=pv;
 					break;
 				}
+			
+				if(isbjx2 || isbjx2xg2)
+				{
+					pv=*((u32 *)pdst);
+					if((pv&0x0000FE00U)==0x0000FE00U)
+					{
+						pv0=((u32 *)pdst)[0];
+						pv1=((u32 *)pdst)[1];
+						v0=((pv0&0x00FF)<<16)|((pv0>>16)&0xFFFF);
+						v1=((pv1&0x00FF)<<16)|((pv1>>16)&0xFFFF);
+						v1+=disp;
+						v0+=(disp>>24)+(v1>>24);
+						pv0=(pv0&0x0000FF00U)|
+							((v0>>16)&0x000000FFU)|
+							((v0<<16)&0xFFFF0000U);
+						pv1=(pv1&0x0000FF00U)|
+							((v1>>16)&0x000000FFU)|
+							((v1<<16)&0xFFFF0000U);
+						((u32 *)pdst)[0]=pv0;
+						((u32 *)pdst)[1]=pv1;
+						break;
+					}
+				
+					v0=((pv&0x01FF)<<16)|((pv>>16)&0xFFFF);
+					v1=v0+disp;
+					pv=(pv&0x0000FE00U)|
+						((v1>>16)&0x1FF)|
+						((v1<<16)&0xFFFF0000U);
+					*((u32 *)pdst)=pv;
+					break;
+				}
+				__debugbreak();
+				break;
+
+			case 6:
+				if(isbjx2 || isbjx2xg2)
+				{
+					pv=*((u16 *)pdst);
+					if((pv==0xA000) && pboix)
+					{
+						pv=pv|(((-pboix)*8)&0x1FFF);
+						*((u16 *)pdst)=pv;
+						break;
+					}
+
+					pv=*((u32 *)pdst);
+					if((pv==0x0000FA00UL) && pboix)
+					{
+						v0=((pboix*8)&0x01FFFFFF);
+						pv=(pv&0x0000FF00U)|
+							((v0>>16)&0x000000FFU)|
+							((v0<<16)&0xFFFF0000U);
+						*((u32 *)pdst)=pv;
+						break;
+					}
+
+					break;
+				}
+				__debugbreak();
+				break;
 
 #if 0
 				pv0=((u32 *)pdst)[0];
@@ -176,24 +202,48 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 				
 			case 7:
-				break;
-			case 8:
-				break;
-
-			case 9:
-				pv=*((u32 *)pdst);
-//				if((pv==0xFA000000UL) && pboix)
-				if((pv==0x0000FA00UL) && pboix)
+				if(isriscv)
 				{
-//					v0=((pv&0x00FF)<<16)|((pv>>16)&0xFFFF);
-//					pv=pv|(((-pboix)*8)&0x01FFFFFF);
-					v0=(((-pboix)*8)&0x01FFFFFF);
-					pv=(pv&0x0000FF00U)|
-						((v0>>16)&0x000000FFU)|
-						((v0<<16)&0xFFFF0000U);
+					/* RISC-V: Low 12 I */
+					pv=*((u32 *)pdst);
+					pv+=(disp<<20)&0xFFF00000U;
 					*((u32 *)pdst)=pv;
 					break;
 				}
+				__debugbreak();
+				break;
+			case 8:
+				if(isriscv)
+				{
+					/* RISC-V: Low 12 S */
+					pv=*((u32 *)pdst);
+					pv+=((disp<<20)&0xFE000000);
+					pv+=((disp<< 7)&0x00000F80);
+					*((u32 *)pdst)=pv;
+					break;
+				}
+				__debugbreak();
+				break;
+
+			case 9:
+				if(isbjx2 || isbjx2xg2)
+				{
+					pv=*((u32 *)pdst);
+	//				if((pv==0xFA000000UL) && pboix)
+					if((pv==0x0000FA00UL) && pboix)
+					{
+	//					v0=((pv&0x00FF)<<16)|((pv>>16)&0xFFFF);
+	//					pv=pv|(((-pboix)*8)&0x01FFFFFF);
+						v0=(((-pboix)*8)&0x01FFFFFF);
+						pv=(pv&0x0000FF00U)|
+							((v0>>16)&0x000000FFU)|
+							((v0<<16)&0xFFFF0000U);
+						*((u32 *)pdst)=pv;
+						break;
+					}
+					break;
+				}
+				__debugbreak();
 				break;
 			case 10:
 				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
@@ -372,7 +422,10 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 
 	mach=tkfat_getWord(tbuf+ofs_pe+0x04);
 //	if(mach!=0xB264)
-	if((mach!=0xB264) && (mach!=0x5064))
+//	if((mach!=0xB264) && (mach!=0x5064))
+	if(	(mach!=0xB264) && (mach!=0xB265) &&
+		(mach!=0x5064) &&
+		(mach!=0xB296) && (mach!=0xB297))
 	{
 		printf("TKPE: Unexpected Arch %04X\n", mach);
 		return(NULL);
@@ -573,7 +626,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	}
 	
 	TKPE_ApplyBaseRelocs(imgptr, imgptr+rva_rlc, sz_rlc, rlc_disp, pboix,
-		imgbase, gbr_rva, gbr_sz);
+		imgbase, gbr_rva, gbr_sz, mach);
 
 	entry=((u64)imgptr)+startrva;
 
@@ -581,6 +634,12 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	{
 //		entry|=0x0004000000000003ULL;
 		entry|=0x0004000000000001ULL;
+	}
+
+	if((mach==0xB265) || (mach==0xB297))
+	{
+//		entry|=0x8008000000000001ULL;
+		entry|=0x0088000000000001ULL;
 	}
 
 //	img->bootptr=imgptr+startrva;

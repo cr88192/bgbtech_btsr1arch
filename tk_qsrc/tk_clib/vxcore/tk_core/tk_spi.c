@@ -127,7 +127,8 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	}
 
 	n=buf[0];
-	n+=buf[len];
+//	n+=buf[len];
+	n+=buf[len-1];
 
 //	count=(1<<16);
 	count=(1<<20);

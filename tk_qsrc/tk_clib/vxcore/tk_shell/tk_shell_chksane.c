@@ -398,8 +398,22 @@ tk_shell_chksane_rgb5_asm:
 
 
 	/* Test FLDCH Immed */
-	MOV			0x40159C0000000000, R20
-	MOV			0x40E2680000000000, R21
+//	MOV			0x40159C0000000000, R20
+//	MOV			0x40E2680000000000, R21
+
+//	MOV			0xC0159C0000000000, R22
+//	MOV			0xC0E2680000000000, R23
+
+	MOV			0x40159C00, R20
+	MOV			0x40E26800, R21
+
+	MOV			0xC0159C00, R22
+	MOV			0xC0E26800, R23
+	
+	SHLD.Q		R20, 32, R20
+	SHLD.Q		R21, 32, R21
+	SHLD.Q		R22, 32, R22
+	SHLD.Q		R23, 32, R23
 
 	FLDCH	0x4567, R4
 	FLDCH	0x789A, R5
@@ -407,6 +421,20 @@ tk_shell_chksane_rgb5_asm:
 	CMPQEQ		R4, R20
 	BREAK?F
 	CMPQEQ		R5, R21
+	BREAK?F
+
+	FLDCH	0x4567, R6	|	FLDCH	0x789A, R7 | NOP
+
+	CMPQEQ		R6, R20
+	BREAK?F
+	CMPQEQ		R7, R21
+	BREAK?F
+
+	FLDCH	0xC567, R6	|	FLDCH	0xF89A, R7 | NOP
+
+	CMPQEQ		R6, R22
+	BREAK?F
+	CMPQEQ		R7, R23
 	BREAK?F
 
 
@@ -606,17 +634,32 @@ int tk_shell_chksane_simd()
 	
 	tk_shell_chksane_simd_asm();
 	tk_shell_chksane_rgb5_asm();
+
+//	__hint_cc_dbgbreak();
 	
 //	mv0=__m128_float4(1.0, 2.0, 3.0, 5.0);
 	mv0=(__vec4f){1.0, 2.0, 3.0, 5.0};
+	
+//	__debugbreak();
 	
 	tk_shell_fv0_gbl = mv0;
 	
 //	__hint_cc_dbgbreak();
 	
 	fv0=mv0;
+	
+//	if(fv0.x!=1.0)
+//		__debugbreak();
+//	if(fv0.z!=3.0)
+//		__debugbreak();
+	
 	fv1=fv0+fv0;
 	fv2=fv1*fv0;
+
+//	if(fv2.x!=2.0)
+//		__debugbreak();
+//	if(fv2.z!=18.0)
+//		__debugbreak();
 	
 //	__debugbreak();
 
@@ -631,6 +674,11 @@ int tk_shell_chksane_simd()
 
 	tk_printf("SIMD A0-0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
 	tk_printf("SIMD A0-1: %f %f %f %f\n", fv2.x, fv2.y, fv2.z, fv2.w);
+
+	if(fv2.x!=2.0)
+		__debugbreak();
+	if(fv2.z!=18.0)
+		__debugbreak();
 
 	fv1=tk_shell_chksane_padds_sf(fv0, fv0);
 	fv2=tk_shell_chksane_pmuls_sf(fv1, fv0);
@@ -937,7 +985,54 @@ void Sys_CheckSanityC(void)
 	a=g;
 	if(a!=0)
 		__debugbreak();
-		
+
+	g=f*1.75;
+	a=g*1000000;
+//	if(g!=5.4977825)
+	if(a!=5497782)
+		__debugbreak();
+
+	g=f*0.125;
+	a=g*1000000;
+//	if(g!=0.39269875)
+	if(a!=392698)
+		__debugbreak();
+
+	g=f*0.15625;
+	a=g*1000000;
+//	if(g!=0.4908734375)
+	if(a!=490873)
+		__debugbreak();
+	
+	if(g>0.5)
+		__debugbreak();
+	if(g>=0.5)
+		__debugbreak();
+
+	if(g<0.25)
+		__debugbreak();
+	if(g<=0.25)
+		__debugbreak();
+
+	g=0.21875;
+	a=0;
+	if(g>0.21875)
+		__debugbreak();
+	if(g>=0.21875)
+		a=1;
+	if(!a)
+		__debugbreak();
+
+//	__debugbreak();
+
+	a=0;
+	if(g<0.21875)
+		__debugbreak();
+	if(g<=0.21875)
+		a=1;
+	if(!a)
+		__debugbreak();
+	
 	g=sqrt(f);
 	h=g*g;
 	
@@ -1526,8 +1621,12 @@ int tk_shell_chksane()
 	unsigned int	ui;
 	int			i, j, k, l;
 
+	tk_printf("CS B0\n");
+
 	tk_shell_chksane_arith();
 	tk_shell_chksane_arith2();
+
+	tk_printf("CS B1\n");
 
 	tk_shell_chksane_memset();
 
@@ -1535,8 +1634,15 @@ int tk_shell_chksane()
 
 	Sys_CheckSanityB();
 
+	tk_printf("CS B2: CLZ\n");
+
 	tk_shell_chksane_clz();
+
+	tk_printf("CS B3: SIMD\n");
+
 	tk_shell_chksane_simd();
+
+	tk_printf("CS B4\n");
 	
 	Sys_CheckSanityC();
 

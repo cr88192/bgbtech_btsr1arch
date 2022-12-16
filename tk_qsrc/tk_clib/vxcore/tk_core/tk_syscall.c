@@ -83,6 +83,37 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //	return(TK_HandleSyscall(task, sObj, uMsg, vParm1, vParm2));
 }
 
+void tk_isr_syscall_rv();
+
+__asm {
+//called from RISC-V mode into BJX2 mode
+tk_isr_syscall_rv:
+	MOV		R10, R4
+	MOV		R11, R5
+	MOV		R12, R6
+	MOV		R13, R7
+	
+	MOV		R18, R10
+	MOV		R19, R11
+	MOV		R20, R28
+	MOV		R21, R29
+	MOV		R22, R30
+	MOV		R23, R31
+	
+	BSR		tk_isr_syscall
+
+	MOV		R10, R18
+	MOV		R11, R19
+	MOV		R28, R20
+	MOV		R29, R21
+	MOV		R30, R22
+	MOV		R31, R23
+	
+	MOV		R2, R10
+	
+	RTS
+};
+
 
 int TK_HandleSyscall(TKPE_TaskInfo *task,
 	void *sObj, int uMsg, void *vParm1, void *vParm2)

@@ -1220,6 +1220,7 @@ static int vvprintf(const char *format, va_list arg,
 	int width, prec;
 	char *nptr, *dste;
 	int *viptr;
+	int j, k;
 
 	dste=s+nmax;
 
@@ -1301,11 +1302,36 @@ static int vvprintf(const char *format, va_list arg,
 					{ uvint = vint; }
 
 				nptr = numbuf;
-				do
+				if(uvint>0)
 				{
-					*nptr++ = (char)('0' + uvint % 10);
-					uvint /= 10;
-				} while (uvint > 0);
+#if 0
+					if(!uvint)*nptr++='0';	
+					while(uvint>0)
+					{
+						j=uvint%10;
+						*nptr++='0'+j;
+						uvint=uvint/10;
+					}
+#endif
+
+#if 1
+					do
+					{
+						j = uvint % 10;
+//						if((j<0) || (j>9))
+//						{
+//							/* errm? ... */
+//							break;
+//						}
+						*nptr++ = (char)('0' + j);
+						uvint /= 10;
+					} while (uvint > 0);
+//					__debugbreak();
+#endif
+				}else
+				{
+					*nptr++ = '0';
+				}
 
 				if (vint < 0)
 					{ *nptr++ = '-'; }
@@ -1315,8 +1341,8 @@ static int vvprintf(const char *format, va_list arg,
 				do
 				{
 					nptr--;
-					outch(*nptr);
 					chcount++;
+					outch(*nptr);
 				} while (nptr != numbuf);
 
 			}

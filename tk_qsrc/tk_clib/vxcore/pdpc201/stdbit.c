@@ -71,10 +71,16 @@ int stdc_trailing_ones(stdbit_generic_value_type value)
 
 int stdc_first_leading_zerouc(unsigned char value);
 int stdc_first_leading_zerous(unsigned short value);
-int stdc_first_leading_zeroui(unsigned int value);
-int stdc_first_leading_zeroul(unsigned long value);
-int stdc_first_leading_zeroull(unsigned long long value);
-int stdc_first_leading_zero(stdbit_generic_value_type value);
+int stdc_first_leading_zeroui(unsigned int value)
+	{ return(__int_clz(~value)); }
+int stdc_first_leading_zeroul(unsigned long value)
+	{ return(__int64_clz(~value)); }
+int stdc_first_leading_zeroull(unsigned long long value)
+	{ return(__int64_clz(~value)); }
+
+int stdc_first_leading_zero(stdbit_generic_value_type value)
+{
+}
 
 int stdc_first_leading_oneuc(unsigned char value);
 int stdc_first_leading_oneus(unsigned short value);

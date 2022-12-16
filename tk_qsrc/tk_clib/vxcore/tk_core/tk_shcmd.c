@@ -1320,6 +1320,8 @@ int tk_sysc_exitpt();
 int tk_syscall_utxt(void *sobj, int umsg, void *pptr, void *args);
 int tk_syscall_rv_utxt(void *sobj, int umsg, void *pptr, void *args);
 
+void tk_isr_syscall_rv();
+
 volatile int tksh_runstate;
 
 int TKSH_TryLoad(char *img, char **args0)
@@ -1334,6 +1336,8 @@ int TKSH_TryLoad(char *img, char **args0)
 	char *buf;
 //	u64 bootgbr;
 	u64	pb_gbr;
+	u64	pb_boot;
+	u64	pb_sysc;
 	TKPE_TaskInfo *task;
 	TKPE_TaskInfo *ctask, *ptask;
 	TKPE_TaskInfoKern *tkern;
@@ -1555,15 +1559,21 @@ int TKSH_TryLoad(char *img, char **args0)
 
 			i=TK_GetRandom16ASLR()&0x03F0;
 			boot_newspb=TKMM_PageAlloc(1<<19);
+//			boot_newspb=TKMM_PageAlloc(1<<20);
 //			boot_newspb=TKMM_PageAllocUsc(1<<19);
+//			boot_newspb=TKMM_PageAllocUsc(1<<20);
 //			boot_newsp=boot_newspb+((1<<19)-1024);
 			boot_newsp=boot_newspb+(((1<<19)-1024)-i);
+//			boot_newsp=boot_newspb+(((1<<20)-1024)-i);
 
-			i=TK_GetRandom16ASLR()&0x00F0;
-			boot_newspbk=TKMM_PageAlloc(1<<16);
+//			i=TK_GetRandom16ASLR()&0x00F0;
+//			boot_newspbk=TKMM_PageAlloc(1<<16);
 //			boot_newspk=boot_newspb+((1<<16)-1024);
 //			boot_newspk=boot_newspbk+((1<<16)-1024);
-			boot_newspk=boot_newspbk+(((1<<16)-1024)-i);
+//			boot_newspk=boot_newspbk+(((1<<16)-1024)-i);
+
+			boot_newspbk=NULL;
+			boot_newspk=NULL;
 
 			env0=TK_GetCurrentEnvContext();
 			env1=TK_EnvCtx_CloneContext(env0);
@@ -1601,11 +1611,21 @@ int TKSH_TryLoad(char *img, char **args0)
 			task->envctx=(tk_kptr)env1;
 //			task->SysCall=tk_isr_syscall;
 
-			sysc=tk_isr_syscall;
-//			sysc=tk_syscall_utxt;
-			
+//			sysc=tk_isr_syscall;
+			sysc=tk_syscall_utxt;
+
+			pb_sysc=(tk_kptr)sysc;
+			pb_sysc&=0x0000FFFFFFFFFFFEULL;
+			pb_sysc|=0x0000000000000001ULL;
+			sysc=(void *)pb_sysc;
+
+			pb_boot=(u64)bootptr;
+
 //			if((bootptr>>50)&1)
 //				{ sysc=tk_syscall_rv_utxt; }
+
+			if((pb_boot>>50)&1)
+				{ sysc=tk_syscall_rv_utxt; }
 
 			task->SysCall=(tk_kptr)sysc;
 
@@ -1733,12 +1753,20 @@ int TKSH_TryLoad(char *img, char **args0)
 					__debugbreak();
 				tkern->task_join_ret=ctask;
 			}
+			
+			pb_boot=(u64)bootptr;
 
 			tkern->ctx_regsave[TKPE_REGSAVE_TTB]=tk_vmem_pageglobal;
-			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
+//			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
+			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=
+				pb_boot&0x0000FFFFFFFFFFFEULL;
 			tkern->ctx_regsave[TKPE_REGSAVE_GBR]=bootgbr;
 			tkern->ctx_regsave[TKPE_REGSAVE_SSP]=boot_newsp;
-			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
+//			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
+			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=
+				0xC000000000000000ULL|
+				(((pb_boot>>48)&0x000C)<<56)|
+				(((pb_boot>>48)&0x00F0)<<48);
 //			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
 			TK_Task_SyscallReturnToUser(task);
 

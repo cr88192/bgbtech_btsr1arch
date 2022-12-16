@@ -955,7 +955,10 @@ int TKPE_LoadStaticPE(
 
 	mach=tkfat_getWord(tbuf+ofs_pe+0x04);
 //	if(mach!=0xB264)
-	if((mach!=0xB264) && (mach!=0x5064))
+//	if((mach!=0xB264) && (mach!=0x5064))
+	if(	(mach!=0xB264) && (mach!=0xB265) &&
+		(mach!=0x5064) &&
+		(mach!=0xB296) && (mach!=0xB297))
 	{
 		tk_printf("TKPE: Unexpected Arch %04X\n", mach);
 		return(-1);
@@ -1162,6 +1165,12 @@ int TKPE_LoadStaticPE(
 	{
 //		entry|=0x0004000000000003ULL;
 		entry|=0x0004000000000001ULL;
+	}
+
+	if((mach==0xB265) || (mach==0xB297))
+	{
+//		entry|=0x8008000000000001ULL;
+		entry|=0x0088000000000001ULL;
 	}
 
 	*rbootptr=(void *)entry;
