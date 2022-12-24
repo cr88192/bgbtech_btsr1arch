@@ -139,14 +139,14 @@ STlib_drawNum
     // draw the new number
     while (num && numdigits--)
     {
-	x -= w;
-	V_DrawPatchDirect(x, n->y, FG, n->p[ num % 10 ]);
-	num /= 10;
+		x -= w;
+		V_DrawPatchDirect(x, n->y, FG, n->p[ num % 10 ]);
+		num /= 10;
     }
 
     // draw a minus sign if necessary
     if (neg)
-	V_DrawPatchDirect(x - 8, n->y, FG, sttminus);
+		V_DrawPatchDirect(x - 8, n->y, FG, sttminus);
 }
 
 

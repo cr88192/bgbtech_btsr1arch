@@ -214,6 +214,7 @@ qpic_t *Draw_PicFromWad (char *name)
 		int		i, j, k;
 		int		texnum;
 
+		x=0;		y=0;
 		texnum = Scrap_AllocBlock (p->width, p->height, &x, &y);
 		scrap_dirty = true;
 		k = 0;
@@ -1883,6 +1884,7 @@ int GL_LoadTexture (char *identifier,
 			sprintf(tid1, "x%08x", i);
 		}
 		
+		imgbufsz=0;
 //		sprintf(tname, "texcache/%s.lmp", tid1);
 		sprintf(tname, "texcache/%s.dds", tid1);
 //		imgbuf = COM_LoadFileSz(tname, 1, &imgbufsz);
@@ -1997,6 +1999,7 @@ int GL_LoadTexture32 (char *identifier,
 			sprintf(tid1, "x%08x", i);
 		}
 		
+		imgbufsz=0;
 //		sprintf(tname, "texcache/%s.lmp", tid1);
 		sprintf(tname, "texcache/%s.dds", tid1);
 //		imgbuf = COM_LoadFileSz(tname, 1, &imgbufsz);

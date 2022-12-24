@@ -20,7 +20,15 @@ _checksane_ldrts_asm:
 //	nop
 //	rts
 
+//	nop
+//	nop
+//	break
+//	nop
+
 .val0: 	.long	0xE87AD268
+// .val0: 	.long	0xE87AD468
+
+//	break
 
 .global X(tk_checksane_mem_asm)
 X(tk_checksane_mem_asm):

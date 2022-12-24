@@ -75,7 +75,12 @@ int BGBCC_JX2C_EmitLoadFrameOfsReg(
 	}
 
 	if(nmid<=0)
-		nmid=BGBCC_SH_NMID_MOVL;
+	{
+		if(BGBCC_JX2_EmitCheckRegQuad(sctx, dreg))
+			nmid=BGBCC_SH_NMID_MOVQ;
+		else
+			nmid=BGBCC_SH_NMID_MOVL;
+	}
 
 //	if(sctx->is_addr64 && sctx->is_addr_x32)
 	if(0)
@@ -89,11 +94,13 @@ int BGBCC_JX2C_EmitLoadFrameOfsReg(
 	if(((dreg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_RD0) && !sctx->is_addr64)
 		nmid=BGBCC_SH_NMID_MOVW;
 
+#if 0
 	if(BGBCC_JX2_EmitCheckRegQuad(sctx, dreg))
 	{
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 		nmid=BGBCC_SH_NMID_MOVQ;
 	}
+#endif
 
 	if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
 	{

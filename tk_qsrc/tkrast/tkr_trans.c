@@ -1049,7 +1049,7 @@ tkra_mat4 TKRA_MatrixTranspose(tkra_mat4 mata)
 
 tkra_mat4 TKRA_MatrixMultiply(tkra_mat4 mata, tkra_mat4 matb)
 {
-	float xyz0[16];
+//	float xyz0[16];
 	tkra_mat4 matbt;
 	tkra_mat4 matc;
 	tkra_vec4f v0a, v1a, v2a, v3a;

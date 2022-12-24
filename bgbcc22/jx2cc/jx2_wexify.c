@@ -72,7 +72,7 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		BGBCC_SH_REG_ZZR
 	};
 
-	u16 rs, rt, rn, rp, rs2, spr, spw, spfl;
+	u16 rs, rt, rn, rp, rnb, rs2, spr, spw, spfl;
 	
 	if(!(sctx->is_fixed32&2))
 	{
@@ -88,6 +88,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 	rt=((opw2>>4)&15)|((opw2>>4)&16);
 	rp=BGBCC_SH_REG_ZZR;
 	
+	rnb=opw1&0x001F;
+	
 	if(!(sctx->is_fixed32&2))
 	{
 		if(	((opw1&0xF000)==0x7000) ||
@@ -99,6 +101,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 		}
 	}else
 	{
+		if(!(opw1&0x8000))	rnb+=32;
+
 		if(!(opw1&0x8000))	rn+=32;
 		if(!(opw1&0x4000))	rs+=32;
 		if(!(opw1&0x2000))	rt+=32;
@@ -603,7 +607,8 @@ int BGBCC_JX2_CheckOps32GetRegs(
 //	if((opw1&0xEE00)==0xE800)
 	if((opw1&0xEB00)==0xE800)
 	{
-		rn=opw1&0x001F;
+//		rn=opw1&0x001F;
+		rn=rnb;
 		rs=rn;
 		rt=BGBCC_SH_REG_ZZR;
 
@@ -2408,6 +2413,13 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	rn=(opw1>>4)&15;
 	if(opw2&0x0400)
 		rn|=16;
+
+	if(sctx->is_fixed32&2)
+	{
+		if(!(opw1&0x8000))
+			rn|=32;
+	}
+
 //	if((rn==0) || (rn==1) || (rn==15))
 	if((rn==1) || (rn==15))
 	{

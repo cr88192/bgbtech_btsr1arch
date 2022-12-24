@@ -761,7 +761,8 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 	int i, j, k, cnt, ix;
 	
 //	return;
-	
+//	return(0);
+
 	if(!xyz)xyz_ty=0;
 	if(!st )st_ty=0;
 	if(!rgb)rgb_ty=0;
@@ -795,6 +796,8 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 		}
 	}
 #endif
+	
+//	return(0);
 	
 	getptr_xyz=TKRA_PrimitiveGetGetPtrXYZ(xyz_n, xyz_ty);
 	getptr_st =TKRA_PrimitiveGetGetPtrST(st_n, st_ty);

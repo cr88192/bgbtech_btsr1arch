@@ -52,6 +52,10 @@ _start:
 	or 		#0x00C0, r7
 
 	mov		isr_table, r4
+.ifarch bjx2_xg2
+	mov		0x0080000000000000, r16
+	or		r16, r4
+.endif
 	tst		r2, r2
 	nop
 	mov?t	r4, vbr

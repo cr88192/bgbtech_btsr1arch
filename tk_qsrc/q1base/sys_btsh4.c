@@ -1043,7 +1043,7 @@ int main (int argc, char **argv)
 		parms.memsize,
 		parms.membase, parms.membase+parms.memsize);
 
-	tk_con_disable();
+//	tk_con_disable();
 
 	tk_puts("Q A1\n");
 
@@ -1058,6 +1058,8 @@ int main (int argc, char **argv)
 	Host_Init (&parms);
 
 	printf ("Host_Init: Done\n");
+
+	tk_con_disable();
 
 //	Sys_CheckSanity();
 

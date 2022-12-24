@@ -87,8 +87,10 @@ output[1:0]		preIsBra;
 
 reg[47:0]	tPreBraPc;
 reg			tPreBra;
+reg			tNonBra;
 assign	preBraPc	= tPreBraPc;
-assign	preIsBra	= { 1'b0, tPreBra };
+// assign	preIsBra	= { 1'b0, tPreBra };
+assign	preIsBra	= { tNonBra, tPreBra };
 
 
 // reg[32:0]	tBraDisp8;
@@ -171,6 +173,7 @@ begin
 //	tPreBraPc	= UV48_XX;
 	tPreBraPc	= istrBraPc;
 	tPreBra		= 0;
+	tNonBra		= 1;
 	tHistBitsB	= tHistBits;
 	
 `ifdef jx2_prebra_do_vtlb
@@ -351,6 +354,7 @@ begin
 	begin
 //		tDoBraCc8 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
 		tDoBraCc8 = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tNonBra		= 0;
 		
 //		tDoBraCc8 = tPreBit;
 //		tDoBraCc8 = tPreIfCnt[2];
@@ -363,6 +367,7 @@ begin
 	begin
 //		tDoBraCc20 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
 		tDoBraCc20 = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tNonBra		= 0;
 		
 //		tDoBraCc20 = tPreBit;
 //		tDoBraCc20 = tPreIfCnt[2];
@@ -373,6 +378,7 @@ begin
 	if(tIsBraCc8B && (tPreIbIx==tPreIdIx))
 	begin
 		tDoBraCc8B = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tNonBra		= 0;
 	end
 `endif
 	
@@ -405,12 +411,17 @@ begin
 //			tBraDisp8);
 //		tPreBraPc	= tBraDisp8;
 //		tPreBraPc	= { istrBraPc[47:32], tBraDisp8 };
+		tNonBra		= 0;
 		tPreBra		= 1;
 		
 //		if(tBraDisp8[32])
 //		if(tBraDisp8[24])
 		if(tBraDisp8[12])
+		begin
+//			$display("PreBra: Reject Cc8");
+			tNonBra		= 1;
 			tPreBra		= 0;
+		end
 	end
 
 //	if(tIsBra20)
@@ -420,19 +431,29 @@ begin
 //			istrWord[15:0], istrWord[31:16], tBraDisp20);
 //		tPreBraPc	= tBraDisp20;
 //		tPreBraPc	= { istrBraPc[47:32], tBraDisp20 };
+		tNonBra		= 0;
 		tPreBra		= 1;
 
 //		if(tBraDisp20[32])
 		if(tBraDisp20[24])
+		begin
+//			$display("PreBra: Reject Cc20");
+			tNonBra		= 1;
 			tPreBra		= 0;
+		end
 	end
 	
 `ifdef jx2_alu_jcmp
 	if(tDoBraCc8B)
 	begin
+		tNonBra		= 0;
 		tPreBra		= 1;
 		if(tBraDisp8B[12])
+		begin
+//			$display("PreBra: Reject Cc8B");
+			tNonBra		= 1;
 			tPreBra		= 0;
+		end
 	end
 `endif
 
@@ -447,6 +468,12 @@ begin
 		tPreBra		=
 			(	(regValLr[51:50]==pipeHasLr[5:4]) && 
 				(regValLr[55:54]==pipeHasLr[7:6]) );
+		tNonBra		= !tPreBra;
+
+//		if(tNonBra)
+//		begin
+//			$display("PreBra: Reject RTS");
+//		end
 	end
 
 `ifdef jx2_prebra_rts
@@ -461,6 +488,10 @@ begin
 		tPreBra		=
 			(	(regValDhr[51:50]==pipeHasLr[5:4]) && 
 				(regValDhr[55:54]==pipeHasLr[7:6]) );
+		tNonBra		= !tPreBra;
+
+//		if(tNonBra)
+//			$display("PreBra: Reject JMP-R1");
 	end
 `endif
 
@@ -468,8 +499,15 @@ begin
 //	if(tPreBraPc[21:14] != istrBraPc[21:14])
 //		tPreBra		= 0;
 
-	if(pipeHasLr[2])
+//	if(pipeHasLr[2])
+	if(1'b1)
+	begin
+//		if(!tNonBra)
+//			$display("PreBra: Reject LR2");
+
 		tPreBra		= 0;
+		tNonBra		= 1;
+	end
 
 //	tPreBra		= 0;
 end

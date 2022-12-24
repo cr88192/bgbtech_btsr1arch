@@ -908,6 +908,12 @@ begin
 				tValBra[63:48] = UV16_00;
 				tDoBra		= 1;
 			end
+			
+//			if(opPreBra[1])
+			if(1'b1)
+			begin
+//				$display("EX1 Non-BRA_NB %X", opPreBra);
+			end
 		end
 	
 		JX2_UCMD_BRA: begin
@@ -922,6 +928,12 @@ begin
 				tValBra		= { tRegBraLr[63:48], tValAguBra[47:0] };
 				tValBra[63:48] = UV16_00;
 				tDoBra		= 1;
+			end
+
+//			if(opPreBra[1])
+			if(1'b1)
+			begin
+//				$display("EX1 Non-BRA %X", opPreBra);
 			end
 		end
 
@@ -974,6 +986,11 @@ begin
 //				tValBra		= { tRegBraLr[63:48], tValAguBra[47:0] };
 				tValBra		= { regValPc[63:48], tValAguBra[47:0] };
 				tDoBra		= 1;
+			end
+
+			if(opPreBra[1])
+			begin
+//				$display("EX1 Non-BSR %X", opPreBra);
 			end
 		end
 

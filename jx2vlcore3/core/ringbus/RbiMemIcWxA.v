@@ -34,7 +34,8 @@ module RbiMemIcWxA(
 	clock,			reset,
 	regInPc,
 	regOutPcVal,	regOutPcOK,
-	regOutPcStep,
+	regOutPcStep,	icOutPcLow,
+
 	icInPcHold,		icInPcWxm,
 	icInPcOpm,		regInSr,
 	icMemWait,		regOutExc,
@@ -67,6 +68,7 @@ input [ 7: 0]	regKrrHash;
 input [127:0]	tlbExc;
 
 output[15:0]	icExecAcl;
+output[11:0]	icOutPcLow;
 
 output			icMemWait;
 output[127: 0]	regOutExc;
@@ -91,11 +93,13 @@ reg[ 1:0]		tRegOutPcOK;	//set if we have a valid value.
 reg[ 3: 0]		tRegOutPcStep;	//PC step (Normal Op)
 reg[ 3: 0]		tRegOutPcStepA;	//PC step (Normal Op)
 reg[ 3: 0]		tRegOutPcSxo;	//
+reg[11: 0]		tRegOutPcLow;	//
 
 assign	regOutPcVal		= tRegOutPcVal;
 assign	regOutPcOK		= tRegOutPcOK;
 assign	regOutPcStep	= tRegOutPcStep;
 assign	regOutPcSxo		= tRegOutPcSxo;
+assign	icOutPcLow		= tRegOutPcLow;
 
 reg			tMemWait;
 assign	icMemWait = tMemWait;
@@ -1271,6 +1275,7 @@ begin
 	tPcStepWA		= 0;
 	tPcStepWB		= 0;
 	tPcStepJA		= 0;
+	tRegOutPcLow	= tInAddr[11:0];
 
 	if(tBlkIsSxo)
 		tRegOutPcSxo[0]=1;
@@ -1328,6 +1333,23 @@ begin
 		tPcStepBB		= 0;
 	end
 `endif
+
+	if(tInPcXG2)
+	begin
+		if(tPcStepBA || tPcStepBB)
+		begin
+			$display("L1 I$: XG2 Bad Step");
+		end
+		if(tInWordIx[0])
+		begin
+			$display("L1 I$: XG2 Misaligned Fetch, A=%X", tInAddr);
+		end
+	end
+
+	if(tInAddr[0])
+	begin
+		$display("L1 I$: Misaligned Fetch, A=%X", tInAddr);
+	end
 
 `ifdef jx2_enable_wex3w
 

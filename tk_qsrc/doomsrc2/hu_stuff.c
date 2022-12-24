@@ -836,6 +836,8 @@ int HU_DrawDecNum(int xo, int yo, int val, int w)
 		tb[w-i-1]=v%10;
 		v/=10;
 	}
+	
+//	__debugbreak();
 
 	x=xo; y=yo;
 	for(i=0; i<w; i++)

@@ -296,7 +296,9 @@ begin
 //			tRegValRn2	= memDataIn;
 			tValOutDfl		= memDataIn;
 			tDoOutDfl		= 1;
-			
+
+//			tRegHeld		= 1;
+
 `ifndef def_true
 			if(memDataIn[31:0]==32'h55BAADAA)
 			begin

@@ -1302,7 +1302,8 @@ static int vvprintf(const char *format, va_list arg,
 					{ uvint = vint; }
 
 				nptr = numbuf;
-				if(uvint>0)
+//				if(uvint>0)
+				if(1)
 				{
 #if 0
 					if(!uvint)*nptr++='0';	

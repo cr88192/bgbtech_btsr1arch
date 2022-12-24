@@ -63,7 +63,7 @@ module RbiMemL1A(
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
-	icOutPcSxo,
+	icOutPcSxo,		icOutPcLow,
 
 	dcInAddr,		dcInOpm,
 	dcInAddrB,		dcInOpmB,
@@ -102,6 +102,7 @@ output[ 3: 0]	icOutPcSxo;		//Secure Execute
 input			icInPcHold;
 // input[1:0]		icInPcWxe;
 input[5:0]		icInPcWxe;
+output[11:0]	icOutPcLow;
 
 `input_vaddr	dcInAddr;		//input address A
 input [ 4: 0]	dcInOpm;		//input command A
@@ -322,6 +323,8 @@ RbiMemIcWxA		memIc(
 	clock,			tResetL,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
+	icOutPcLow,
+
 	icInPcHold,		icInPcWxe,
 	dfInOpm,		regInSr,
 	ifMemWait,		ifOutExc,

@@ -508,6 +508,10 @@ int TKRA_TransformProjectTriangle(
 
 	lim=4096;
 
+	w0=0;
+	w1=0;
+	w2=0;
+
 	nosubdiv=0;
 	if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))
 		nosubdiv=1;
@@ -1018,6 +1022,8 @@ int TKRA_TransformProjectQuad(
 	int				ecfl, lim;
 	byte			wasfrag, nosubdiv, isinit, inosubdiv;
 	
+//	return(0);
+	
 	TKRA_SetupDrawBlend(ctx);
 
 	v0stk=ctx->v0stk;
@@ -1088,6 +1094,10 @@ int TKRA_TransformProjectQuad(
 	isinit=1;
 
 	lim=4096;
+
+	w0=0;
+	w1=0;
+	w2=0;
 
 	inosubdiv=0;
 	if((ctx->tex_xshl==0) && (ctx->tex_yshl==0))

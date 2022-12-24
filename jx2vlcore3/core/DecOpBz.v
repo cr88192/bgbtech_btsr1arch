@@ -67,6 +67,9 @@ wire			srSuperuser;		//Superuser mode
 assign		srUser = srMod[0];
 assign		srSuperuser = (srMod[0] && srMod[1]) || (srMod[0] && srMod[2]);
 
+wire			srXG2;		//Superuser mode
+assign		srXG2 = srMod[3];
+
 `reg_gpr		opRegN;
 `reg_gpr		opRegM;
 `reg_gpr		opRegO;
@@ -1764,6 +1767,13 @@ begin
 		end
 
 	endcase
+
+	if(srXG2)
+	begin
+		opIsFx	= 1;
+		opNmid	= JX2_UCMD_INVOP;
+		opFmid	= JX2_FMID_Z;
+	end
 
 	if(opBty == JX2_BTY_UQ)
 		opUCty		= JX2_IUC_WX;

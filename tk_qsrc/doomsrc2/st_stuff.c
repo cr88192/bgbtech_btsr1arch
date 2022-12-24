@@ -1102,8 +1102,8 @@ void ST_drawWidgets(boolean refresh)
 
     for (i=0;i<4;i++)
     {
-	STlib_updateNum(&w_ammo[i], refresh);
-	STlib_updateNum(&w_maxammo[i], refresh);
+		STlib_updateNum(&w_ammo[i], refresh);
+		STlib_updateNum(&w_maxammo[i], refresh);
     }
 
     STlib_updatePercent(&w_health, refresh);

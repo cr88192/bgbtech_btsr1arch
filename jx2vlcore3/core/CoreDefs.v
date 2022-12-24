@@ -758,6 +758,8 @@ parameter[4:0] JX2_FMID_REGSTDLR		= JX2_FMID_LDDLRREG;
 // parameter[4:0] JX2_FMID_REGSTREGDISP	= JX2_FMID_LDREGDISPREG;
 parameter[4:0] JX2_FMID_REGSTDI4SP		= JX2_FMID_LDDI4SPREG;
 
+parameter[8:0] JX2_UCMDSP_BRANOP	= 9'b001_000000;		//
+
 
 parameter[5:0] JX2_UCMD_NOP			= 6'h00;		//
 parameter[5:0] JX2_UCMD_OP_IXS		= 6'h01;		//1R
@@ -1517,6 +1519,7 @@ parameter[63:0] JX2_L1D_FLUSHMSK	= UV64_FF;		//
 `endif
 
 `ifdef jx2_bra2stage
+// parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h3F;		//
 parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h1F;		//
 // parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
 `else

@@ -2038,6 +2038,8 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "bjx2_fix32"))
 		return((ctx->is_fixed32)!=0);
+	if(!bgbcc_stricmp(sym, "bjx2_xg2"))
+		return((ctx->is_fixed32&2)!=0);
 
 	if(!bgbcc_stricmp(sym, "bjx1_egpr"))
 		return(ctx->has_bjx1egpr);

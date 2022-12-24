@@ -133,7 +133,8 @@ void BJX2_ContextFreeTrace(BJX2_Context *ctx, BJX2_Trace *tmp)
 BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 {
 	BJX2_Trace *cur, *prv, *tmp;
-	int i, h;
+	u64 sr;
+	int i, h, hsr;
 
 	if(ctx->status && !(fl&2))
 		return(NULL);
@@ -149,32 +150,41 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 	}
 #endif
 
+	sr=ctx->regs[BJX2_REG_SR];
+	hsr=(sr>>16)&0xFCF0;
+	hsr=(u16)((hsr*65521)>>16);
+
 #if 1
 	cur=ctx->prttr;
-	if(cur && (cur->addr==addr))
+//	if(cur && (cur->addr==addr))
+	if(cur && (cur->addr==addr) && (cur->addr_hsr==hsr))
 		return(cur);
 #endif
 
 #if 1
 //	h=((addr*65521)>>16)&1023;
 	h=((addr*65521)>>16)&4095;
+//	h^=hsr;
 
 #if 1
 	cur=ctx->rttr[h&63];
-	if(cur && (cur->addr==addr))
+//	if(cur && (cur->addr==addr))
+	if(cur && (cur->addr==addr) && (cur->addr_hsr==hsr))
 		return(cur);
 #endif
 
 	cur=ctx->trhash[h];
 	if(cur)
 	{
-		if(cur->addr==addr)
+//		if(cur->addr==addr)
+		if((cur->addr==addr) && (cur->addr_hsr==hsr))
 			return(cur);
 
 		if(cur->hnext)
 		{
 			cur=cur->hnext;
-			if(cur->addr==addr)
+//			if(cur->addr==addr)
+			if((cur->addr==addr) && (cur->addr_hsr==hsr))
 				return(cur);
 		}
 
@@ -184,7 +194,8 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 		cur=cur->hnext;
 		while(cur)
 		{
-			if(cur->addr==addr)
+//			if(cur->addr==addr)
+			if((cur->addr==addr) && (cur->addr_hsr==hsr))
 			{
 //				prv->hnext=cur->hnext;
 //				cur->hnext=ctx->trhash[h];
@@ -210,6 +221,7 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 
 	cur=BJX2_ContextAllocTrace(ctx);
 	cur->addr=addr;
+	cur->addr_hsr=hsr;
 	ctx->rttr[h&63]=cur;
 //	ctx->rttr[h&63]=NULL;
 
@@ -739,6 +751,9 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 	{
 		pc1=vbr+0x08;
 	}
+	
+	pc1&=0x0000FFFFFFFFFFFEULL;
+	
 	ctx->regs[BJX2_REG_PC]=pc1;
 	ctx->regs[BJX2_REG_PC_HI]=vbrh;
 	ctx->trcur=NULL;

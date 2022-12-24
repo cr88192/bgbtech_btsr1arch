@@ -435,6 +435,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	if(sctx->has_bjx1egpr)
 	{
 		k=64;
+
+		if(ctx->optmode==BGBCC_OPT_SPEED2)
+			k=16;
+
 		if(ctx->optmode==BGBCC_OPT_SPEED)
 //			k=32;
 //			k=24;
@@ -470,11 +474,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			sctx->use_egpr|=2;
 		}
 
-#if 0
+#if 1
 		if(ctx->optmode==BGBCC_OPT_SPEED2)
 		{
 //			if(sctx->vspan_num>=24)
-			if(sctx->vspan_num>=36)
+//			if(sctx->vspan_num>=36)
+			if(sctx->vspan_num>=k)
 				sctx->use_egpr|=2;
 		}
 #endif
@@ -502,6 +507,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //	if((sctx->vspan_num>12) && (sctx->vspan_num<24))
 //		sctx->use_egpr|=2;
 
+//	sctx->use_egpr|=3;
 
 	if(!sctx->use_egpr)
 	{

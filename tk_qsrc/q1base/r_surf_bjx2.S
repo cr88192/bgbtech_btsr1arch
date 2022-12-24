@@ -794,6 +794,27 @@ X(D_SoftDivB):
 	CMP/HI #16, R5
 	BT		D_SoftDivB_Dn
 //	BRA		D_SoftDivB_Dn
+.ifarch bjx2_fix32
+	ADD		R5, R5
+	BRAF	R5
+	BRA4B	D_SoftDivB_D0
+	BRA4B	D_SoftDivB_D1
+	BRA4B	D_SoftDivB_D2
+	BRA4B	D_SoftDivB_D3
+	BRA4B	D_SoftDivB_D4
+	BRA4B	D_SoftDivB_D5
+	BRA4B	D_SoftDivB_D6
+	BRA4B	D_SoftDivB_D7
+	BRA4B	D_SoftDivB_D8
+	BRA4B	D_SoftDivB_D9
+	BRA4B	D_SoftDivB_D10
+	BRA4B	D_SoftDivB_D11
+	BRA4B	D_SoftDivB_D12
+	BRA4B	D_SoftDivB_D13
+	BRA4B	D_SoftDivB_D14
+	BRA4B	D_SoftDivB_D15
+	BRA4B	D_SoftDivB_D16
+.else
 	BRAF	R5
 	BRA2B	D_SoftDivB_D0
 	BRA2B	D_SoftDivB_D1
@@ -812,6 +833,7 @@ X(D_SoftDivB):
 	BRA2B	D_SoftDivB_D14
 	BRA2B	D_SoftDivB_D15
 	BRA2B	D_SoftDivB_D16
+.endif
 
 #endif
 

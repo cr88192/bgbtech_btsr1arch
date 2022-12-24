@@ -245,6 +245,8 @@ reg				exHold1C1;
 reg				exHold1C2;
 reg				exHold1C3;
 
+reg				exHold1D1;
+
 reg				tDbgExHold1;
 reg				tDbgExHold2;
 
@@ -338,6 +340,8 @@ reg[3:0]		ifLastPcStep;
 reg				ifInPcHold;
 wire[3:0]		ifOutPcSxo;
 
+wire[11:0]		ifOutPcLow;
+
 reg[127:0]		tRegExc;
 
 reg				ifValBraOk;
@@ -396,7 +400,7 @@ RbiMemL1A		memL1(
 	ifValPcW,		ifIstrWord,
 	ifOutPcOK,		ifOutPcStep,
 	ifInPcHold,		ifInPcWxe,
-	ifOutPcSxo,
+	ifOutPcSxo,		ifOutPcLow,
 
 	dcInAddr,		dcInOpm,
 	dcInAddrB,		dcInOpmB,
@@ -473,8 +477,11 @@ reg[95:0]		id1IstrWordL1;	//source instruction word
 reg[95:0]		id1IstrWordL2;	//source instruction word
 reg[3:0]		id1IstrSxo;
 
+reg[63:0]		ifValFetchSr;
 reg[63:0]		id1ValFetchSr;
 reg[63:0]		id2ValFetchSr;
+
+reg[1:0]		id2PreBra;
 
 `ifdef jx2_enable_wex
 
@@ -500,6 +507,17 @@ wire[32:0]		idC1IdImm;
 wire[8:0]		idC1IdUCmd;
 wire[8:0]		idC1IdUIxt;
 
+wire[8:0]		idA1IdUCmd0;
+wire[8:0]		idB1IdUCmd0;
+wire[8:0]		idC1IdUCmd0;
+
+assign		idA1IdUCmd = (id2PreBra == 2'b01) ?
+	JX2_UCMDSP_BRANOP : idA1IdUCmd0;
+assign		idB1IdUCmd = (id2PreBra == 2'b01) ?
+	JX2_UCMDSP_BRANOP : idB1IdUCmd0;
+assign		idC1IdUCmd = (id2PreBra == 2'b01) ?
+	JX2_UCMDSP_BRANOP : idC1IdUCmd0;
+
 DecOpWx3	decOp(
 	clock,			exResetL,
 //	id1IstrWord,	ifInPcWxe,
@@ -510,15 +528,15 @@ DecOpWx3	decOp(
 
 	idA1IdRegM,		idA1IdRegO,
 	idA1IdRegN,		idA1IdImm,
-	idA1IdUCmd,		idA1IdUIxt,
+	idA1IdUCmd0,	idA1IdUIxt,
 
 	idB1IdRegM,		idB1IdRegO,
 	idB1IdRegN,		idB1IdImm,
-	idB1IdUCmd,		idB1IdUIxt,
+	idB1IdUCmd0,	idB1IdUIxt,
 
 	idC1IdRegM,		idC1IdRegO,
 	idC1IdRegN,		idC1IdImm,
-	idC1IdUCmd,		idC1IdUIxt
+	idC1IdUCmd0,	idC1IdUIxt
 	);
 `endif
 
@@ -563,15 +581,17 @@ assign		id1PreBra	= 0;
 `ifdef jx2_prebra_rts
 reg				id1BraPipelineLr;
 reg				id1BraPipelineR1;
-reg				id1BraPipelineDbl;
+// reg				id1BraPipelineDbl;
 `else
 wire			id1BraPipelineLr;
 wire			id1BraPipelineR1;
-wire			id1BraPipelineDbl;
+// wire			id1BraPipelineDbl;
 assign		id1BraPipelineLr = 1'b1;
 assign		id1BraPipelineR1 = 1'b1;
-assign		id1BraPipelineDbl = 1'b1;
+// assign		id1BraPipelineDbl = 1'b1;
 `endif
+
+reg				id1BraPipelineDbl;
 
 reg[7:0]			id1BraPipelineLrL;
 
@@ -592,7 +612,7 @@ reg[47:0]		id2ValBPc;
 // reg[8:0]		id2IdUCmd;
 // reg[8:0]		id2IdUIxt;
 reg[47:0]		id2PreBraPc;
-reg[1:0]		id2PreBra;
+// reg[1:0]		id2PreBra;
 // reg[31:0]		id2IstrWord;	//source instruction word
 reg[95:0]		id2IstrWord;	//source instruction word
 // reg[31:0]		id2IstrWordL;	//source instruction word
@@ -2323,6 +2343,7 @@ begin
 	exHold1C1		= 0;
 	exHold1C2		= 0;
 	exHold1C3		= 0;
+	exHold1D1		= 0;
 
 	exHold2			= 0;
 	tNxtRegExc		= 0;
@@ -2375,9 +2396,13 @@ begin
 	ex2TrapFlush	= 0;
 	ex3TrapFlush	= 0;
 
-	gprEx1DualLane	= (ex1OpUIxt[7:6] == 2'b11);
-	gprEx2DualLane	= (ex2OpUIxt[7:6] == 2'b11);
-	gprEx3DualLane	= (ex3OpUIxt[7:6] == 2'b11);
+//	gprEx1DualLane	= (ex1OpUIxt[7:6] == 2'b11);
+//	gprEx2DualLane	= (ex2OpUIxt[7:6] == 2'b11);
+//	gprEx3DualLane	= (ex3OpUIxt[7:6] == 2'b11);
+
+	gprEx1DualLane	= (ex1OpUIxt[7:6] != 2'b00);
+	gprEx2DualLane	= (ex2OpUIxt[7:6] != 2'b00);
+	gprEx3DualLane	= (ex3OpUIxt[7:6] != 2'b00);
 
 
 `ifdef jx2_debug_hitmiss
@@ -2447,9 +2472,27 @@ begin
 			(exC2RegIdRm == gprIdRy)	) &&
 			(exC2Hold[1]));
 
+	exHold1D1	=
+		((	(ex3RegIdRm == gprIdRs) ||
+			(ex3RegIdRm == gprIdRt) ||
+			(ex3RegIdRm == gprIdRu) ||
+			(ex3RegIdRm == gprIdRv) ||
+			(ex3RegIdRm == gprIdRx) ||
+			(ex3RegIdRm == gprIdRy)	) &&
+			(ex3Hold[1]));
+
 	exHold1B	=
 		(( exHold1B1 || exHold1B2 || exHold1B3) && !ex1BraFlush) ||
-		(( exHold1C1 || exHold1C2 || exHold1C3) && !ex2BraFlush) ;
+		(( exHold1C1 || exHold1C2 || exHold1C3) && !ex2BraFlush) ||
+		(exHold1D1 && !ex3BraFlush);
+
+//	if(idA2IdUCmd[5:0]==JX2_UCMD_NOP)
+	if(idA2IdUCmd == JX2_UCMDSP_BRANOP)
+		exHold1B	= 0;
+	if(opBraFlushMask[1])
+		exHold1B	= 0;
+	if(ex1RegIdCn1 == JX2_CR_PC)
+		exHold1B	= 0;
 
 `endif
 
@@ -2499,34 +2542,53 @@ begin
 			exHold1C = 1;
 `endif
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 //	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
 //		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM))	&&
 
 	if(	((ex1OpUCmd[5:0]==JX2_UCMD_MOV_MR) ||
-		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_RM) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_FMOV_MR) ||
-		 (ex1OpUCmd[5:0]==JX2_UCMD_FMOV_RM) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_FMOV_RM) ||
 
 		 (ex1OpUCmd[5:0]==JX2_UCMD_FPUV4SF) ||
 
-		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_IR) ||
-		 (ex1OpUCmd[5:0]==JX2_UCMD_CONV2_RR) ||
-		 (ex1OpUCmd[5:0]==JX2_UCMD_QMULDIV) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_MOV_IR) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_CONV2_RR) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_QMULDIV) ||
 
-		 (ex1OpUCmd[5:0]==JX2_UCMD_FPU3) ||
-		 (ex1OpUCmd[5:0]==JX2_UCMD_FLDCX) ||
-		 (ex1OpUCmd[5:0]==JX2_UCMD_FSTCX) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_FPU3) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_FLDCX) ||
+//		 (ex1OpUCmd[5:0]==JX2_UCMD_FSTCX) ||
 		 
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MULW3) ||
 		 (ex1OpUCmd[5:0]==JX2_UCMD_MUL3))	&&
-		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
-		 (idA2IdUCmd[5:0]==JX2_UCMD_JSR) ||
-		 (idA2IdUCmd[5:0]==JX2_UCMD_BRA) ||
-		 (idA2IdUCmd[5:0]==JX2_UCMD_BSR) ||
-		 (idA2IdUCmd[5:0]==JX2_UCMD_JCMP)))
-			exHold1C = 1;
+
+		(idA2IdUCmd[5:0]==JX2_UCMD_JMP)	)
+
+//		((idA2IdUCmd[5:0]==JX2_UCMD_JMP) ||
+//		 (idA2IdUCmd[5:0]==JX2_UCMD_JSR) ||
+//		 (idA2IdUCmd[5:0]==JX2_UCMD_BRA) ||
+//		 (idA2IdUCmd[5:0]==JX2_UCMD_BSR) ||
+//		 (idA2IdUCmd[5:0]==JX2_UCMD_JCMP)) &&
+//			id2PreBra[1])
+	begin
+		$display("ExUnit: Branch Hold ID2=%X EX1=%X PreBra=%X",
+			idA2IdUCmd, ex1OpUCmd, id2PreBra);
+		$display("  ID2.Rs/Rt/Rm=%X/%X/%X EX1.Rm=%X",
+			gprIdRs, gprIdRt, gprIdRm, ex1RegIdRm);
+			
+		$display("  A: DLR=%X DHR=%X SR=%X", gprOutDlr, gprOutDhr, crOutSr);
+//		exHold1C = 1;
+	end
+
+
+	if(	(ex1OpUCmd[5:0]==JX2_UCMD_NOP)	&&
+		(idA2IdUCmd[5:0]==JX2_UCMD_JMP)	)
+	begin
+		$display("  B: DLR=%X DHR=%X SR=%X", gprOutDlr, gprOutDhr, crOutSr);
+	end
 `endif
 
 // `ifdef def_true
@@ -2611,13 +2673,37 @@ begin
 			(ex3RegIdRm == JX2_GR_DHR) ||
 			(ewbRegIdRm == JX2_GR_DHR) ;
 		
-		id1BraPipelineDbl =
-			(id1PreBra!=0) ||
-			(id2PreBra!=0) ||
-			(ex1PreBra!=0) ||
-			(ex2PreBra!=0) ||
-			(ex3PreBra!=0) ;
+//		id1BraPipelineDbl =
+//			(id1PreBra!=0) ||
+//			(id2PreBra!=0) ||
+//			(ex1PreBra!=0) ||
+//			(ex2PreBra!=0) ||
+//			(ex3PreBra!=0) ;
+
 `endif
+
+		id1BraPipelineDbl =
+			(!id1PreBra[1]) ||
+			(!id2PreBra[1]) ||
+			(!ex1PreBra[1]) ;
+//			(!ex1PreBra[1]) ||
+//			(!ex2PreBra[1]) ;
+//			(!ex2PreBra[1]) ||
+//			(!ex3PreBra[1]) ;
+
+`ifndef def_true
+		if(	(idA1IdUCmd[5:0]==JX2_UCMD_MOV_MR) ||
+			(idA1IdUCmd[5:0]==JX2_UCMD_MOV_RM) ||
+			(idA1IdUCmd[5:0]==JX2_UCMD_FMOV_MR) ||
+			(idA1IdUCmd[5:0]==JX2_UCMD_FMOV_RM) ||
+			(idA1IdUCmd[5:0]==JX2_UCMD_FPUV4SF) ||
+			(idA1IdUCmd[5:0]==JX2_UCMD_MUL3) ||
+			(idA1IdUCmd[5:0]==JX2_UCMD_MULW3))
+		begin
+			id1BraPipelineDbl = 1;
+		end
+`endif
+
 `endif
 
 `ifdef jx2_enable_xgpr
@@ -3075,7 +3161,9 @@ begin
 
 	if(tNxtRegExc[15])
 	begin
+`ifdef jx2_debug_isr
 		$display("tNxtRegExc %X PC=%X", tNxtRegExc, ifLastPc);
+`endif
 	end
 
 	if(tRegExc[15])
@@ -3090,7 +3178,9 @@ begin
 		if(!tNxtRegExc[15] && (!ifValBraOk || exHold1 || exHold2 ||
 			((ifOutPcStep==0) && (tRegExc[15:12]==4'hA))))
 		begin
+`ifdef jx2_debug_isr
 			$display("EXC Sustain %X PC=%X", tRegExc, ifLastPc);
+`endif
 			tNxtRegExc = tRegExc;
 		end
 	end
@@ -3145,12 +3235,19 @@ begin
 		tValAddPc0[5] ? tValPcAdd1 : ifLastPc[31:5],
 		tValAddPc0[4:0] };
 
+	if(ifOutPcLow[11:0] != ifLastPc[11:0])
+	begin
+		$display("ExUnit: PC-Low Mismatch %X %X",
+			ifOutPcLow[11:0], ifLastPc[11:0]);
+	end
+
 	tValNextPcHi	= crOutPcHi;
 
 	tOpNextPc		= tValNextPc;
 	/* Hold current PC if branching. */
 //	if(opBraFlushMask[2])
 	if(opBraFlushMask[3])
+//	if(opBraFlushMask[4])
 //	if(opBraFlushMask[2] || exHold1)
 //	if(opBraFlushMask[3] || exHold1)
 //		tValNextPc		= ifValPc;
@@ -3185,7 +3282,8 @@ begin
 //	if(id1PreBra)
 //	if(id1PreBra && !opBraFlushMask[3])		//IF
 //	if(id1PreBra && !opBraFlushMask[2])		//ID1
-	if((id1PreBra!=0) && !opBraFlushMask[2])		//ID1
+//	if((id1PreBra!=0) && !opBraFlushMask[2])		//ID1
+	if((id1PreBra==2'b01) && !opBraFlushMask[2])		//ID1
 //	if(id1PreBra && !opBraFlushMask[1])		//ID2
 //	if(id1PreBra && !opBraFlushMask[0])		//EX1
 	begin
@@ -3193,12 +3291,12 @@ begin
 		tValNextPc = id1PreBraPc;
 //		tValNextBraPc = id1PreBraPc;
 `ifdef jx2_bra2stage
-		nxtBraFlushMask[2] = 1;
+//		nxtBraFlushMask[2] = 1;		//2022-12-19
 //		nxtBraFlushMask[3] = 1;
 //		nxtBraFlushMask[4] = 1;
 `else
 //		nxtBraFlushMask[1] = 1;
-		nxtBraFlushMask[2] = 1;
+//		nxtBraFlushMask[2] = 1;		//2022-12-19
 //		nxtBraFlushMask[3] = 1;
 `endif
 
@@ -3269,12 +3367,13 @@ begin
 //	nxtBraFlushMask	= { 1'b0, opBraFlushMask[7:1] };
 //	if(({1'b1, ex1RegIdCn1} == JX2_CR_PC) && !ex1PreBra)
 //	if({1'b1, ex1RegIdCn1} == JX2_CR_PC)
-//	if(ex1RegIdCn1 == JX2_CR_PC)
+	if(ex1RegIdCn1 == JX2_CR_PC)
 //	if((ex1RegIdCn1 == JX2_CR_PC) && !ex1BraFlush)
 //	if((ex1RegIdCn1 == JX2_CR_PC) && !ex1TrapFlush)
 //	if((ex1RegIdCn1 == JX2_CR_PC) && !tRegExc[15] && !ifValBraOk)
-	if((ex1RegIdCn1 == JX2_CR_PC) && !tRegExc[15] &&
-		!ifValBraOk && ((ifOutPcStep!=0) || tRegExc[15:12]==4'hF))
+
+//	if((ex1RegIdCn1 == JX2_CR_PC) && !tRegExc[15] &&
+//		!ifValBraOk && ((ifOutPcStep!=0) || tRegExc[15:12]==4'hF))
 	begin
 //		if(crOutSr[28])
 //		begin
@@ -3290,6 +3389,7 @@ begin
 //		nxtBraFlushMask = 8'h07;
 //		nxtBraFlushMask = 8'h0F;
 		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
+//		nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
 //		ex1ValBraDir[2]	= 1;
 
 //		if(ex1RegValCn1[19:12]!=ifLastPc[19:12])
@@ -3442,7 +3542,9 @@ begin
 	begin
 		if(tRegExc[15:10]==6'b111111)
 		begin
+`ifdef jx2_debug_isr
 			$display("ExUnit: RTE, SPC=%X", crOutSpc);
+`endif
 			tValNextBraPc	= crOutSpc;
 			tValNextBraPcHi	= crOutSpcHi;
 //			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
@@ -3532,8 +3634,10 @@ begin
 		else if(!crOutSr[28] || !ifValBraOk)
 		begin
 // `ifndef def_true
-`ifdef def_true
-			if(tRegExc[15:12]!=4'b1010)
+// `ifdef def_true
+`ifdef jx2_debug_isr
+//			if(tRegExc[15:12]!=4'b1010)
+			if((tRegExc[15:12]!=4'b1010) && (tRegExc[15:12]!=4'b1110))
 			begin
 				$display("ExUnit: Fault %X, id2.PC=%X ex1.PC=%X ex2.PC=%X",
 					tRegExc, id2ValBPc, ex1ValBPc, ex2ValBPc);
@@ -3555,7 +3659,8 @@ begin
 			begin
 
 // `ifndef def_true
-`ifdef def_true
+// `ifdef def_true
+`ifdef jx2_debug_isr
 				if(crOutSr[30] && (crOutSr[29] || crOutSr[28]))
 				begin
 					$display("Fault, RB Set, SPC=%X SR=",
@@ -3565,8 +3670,10 @@ begin
 
 				if(!crOutSr[28])
 				begin
+`ifdef jx2_debug_isr
 					$display("ISR VBR=%X PC=%X, SPC=%X PC.b=%X",
 						crOutVbr, tValNextBraPc, crInSpc, tValBraPc);
+`endif
 				end
 			end
 
@@ -3684,6 +3791,7 @@ begin
 //						(ex2OpUCmd[5:1]!=2) ||
 //						(ex3OpUCmd[5:1]==2)))
 				begin
+`ifdef jx2_debug_isr
 					$display("ISR from EX3 Op=%X-%X Exc=%X",
 						ex3OpUCmd, ex3OpUIxt, tRegExc);
 					$display("    EX2 Op=%X-%X",
@@ -3691,6 +3799,7 @@ begin
 
 					if(!(ex2BraFlush || (ex2OpUCmd==0)))
 						$display("ISR: EX3 Diverge");
+`endif
 
 `ifndef jx2_isr2stage
 					crInSpc			= ex3ValBPc;
@@ -3727,8 +3836,11 @@ begin
 `ifdef def_true
 				if(!ex2BraFlush)
 				begin
+`ifdef jx2_debug_isr
 					$display("ISR from EX2 Op=%X-%X Exc=%X",
 						ex2OpUCmd, ex2OpUIxt, tRegExc);
+`endif
+
 `ifndef jx2_isr2stage
 					crInSpc			= ex2ValBPc;
 					crInExsr[39:32]	= ex2RegInLastSr;
@@ -3761,8 +3873,10 @@ begin
 `endif
 				if(!ex1BraFlush)
 				begin
+`ifdef jx2_debug_isr
 					$display("ISR from EX1 Op=%X-%X Exc=%X",
 						ex1OpUCmd, ex1OpUIxt, tRegExc);
+`endif
 
 `ifndef jx2_isr2stage
 					crInSpc			= ex1ValBPc;
@@ -3799,7 +3913,9 @@ begin
 //				else if(!nxtBraFlushMask[0])
 				else if(!tIsrBraFlushMask[0])
 				begin
+`ifdef jx2_debug_isr
 					$display("ISR from ID2");
+`endif
 
 `ifndef jx2_isr2stage
 					crInSpc			= id2ValBPc;
@@ -3832,6 +3948,7 @@ begin
 //				else if(!nxtBraFlushMask[1])
 				else if(!tIsrBraFlushMask[1])
 				begin
+`ifdef jx2_debug_isr
 //					$display("ISR from ID1, Msk=%X", opBraFlushMask);
 					$display("ISR from ID1, Msk=%X/%X",
 						nxtBraFlushMask, opBraFlushMask);
@@ -3842,6 +3959,7 @@ begin
 					$display("  ID1 PC=%X %X",
 						id1ValBPc, id1IstrWord);
 					$display("  IF PC=%X", ifLastPc);
+`endif
 
 `ifndef jx2_isr2stage
 					crInSpc			= id1ValBPc;
@@ -3872,6 +3990,7 @@ begin
 `ifdef def_true
 				else
 				begin
+`ifdef jx2_debug_isr
 //					$display("ISR from IF");
 //					$display("ISR from IF, Msk=%X", opBraFlushMask);
 					$display("ISR from IF, Msk=%X/%X",
@@ -3883,6 +4002,7 @@ begin
 					$display("  ID1 PC=%X %X",
 						id1ValBPc, id1IstrWord);
 					$display("  IF PC=%X / %X", ifLastPc, tIsrNextPc);
+`endif
 
 `ifndef jx2_isr2stage
 					crInSpc			= ifLastPc;
@@ -3915,7 +4035,9 @@ begin
 `ifdef jx2_bra2stage
 					if(opBraFlushMask[4])
 					begin
+`ifdef jx2_debug_isr
 						$display("ISR In Branch %X", tIsrBraPc);
+`endif
 
 `ifndef jx2_isr2stage
 //						crInSpc = tIsrBraPc;
@@ -3926,7 +4048,9 @@ begin
 `else
 					if(tIsrBraFlushMask[3])
 					begin
+`ifdef jx2_debug_isr
 						$display("ISR In Branch %X", tIsrBraPc);
+`endif
 
 `ifndef jx2_isr2stage
 //						crInSpc = tIsrBraPc;
@@ -3939,8 +4063,10 @@ begin
 				end
 `endif
 
+`ifdef jx2_debug_isr
 				$display("ISR VBR=%X PC=%X, SPC=%X",
 					crOutVbr, tValNextBraPc, crInSpc);
+`endif
 
 				if(tRegExc[15:12]==4'b1110)
 				begin
@@ -4051,7 +4177,11 @@ begin
 //		if(crOutSr[28])
 //		if(crOutSr[28] && !ifNxtValBraOk && !tIsrBranchMsgLatch)
 		if(crOutSr[28] && !ifValBraOk && !tIsrBranchMsgLatch)
+		begin
+`ifdef jx2_debug_isr
 			$display("ISR Branch %X %X", tValNextBraPc, tValBraPc);
+`endif
+		end
 		tNxtIsrBranchMsgLatch = 1;
 
 		tValNextPc		= tValBraPc;
@@ -4239,6 +4369,12 @@ begin
 	ex2RegInSr		= crOutSr;
 	ex2RegInSchm	= 0;
 
+//	if((ex1PreBra==2'b10) && (ex1OpUCmd[5:0]==JX2_UCMD_BRA))
+//	begin
+//		$display("ExUnit BRA: EX2=%X EX1=%X ID2=%X",
+//			ex2PreBra, ex1PreBra, id2PreBra);
+//	end
+
 end
 
 
@@ -4338,7 +4474,8 @@ begin
 		ex1OpUCmd		<= UV8_00;
 		ex1OpUIxt		<= UV8_00;
 		ex1PreBraPc		<= 0;
-		ex1PreBra		<= 0;
+//		ex1PreBra		<= 0;
+		ex1PreBra		<= 2'b11;
 
 //		ex1IstrWord		<= UV32_XX;
 //		ex1RegValPc		<= UV32_XX;
@@ -4484,6 +4621,7 @@ begin
 //		ifValPc			<= tValNextPc;
 		ifValBraOk		<= ifNxtValBraOk;
 //		ifValBraOk		<= ifNxtValBraOk && (ifOutPcStep!=0);
+		ifValFetchSr	<= crOutSr;
 
 
 		/* ID1 */
@@ -4495,7 +4633,8 @@ begin
 		id1ValPc		<= tOpNextPc;
 		id1IstrWord		<= ifIstrWord;
 		id1IstrSxo		<= ifOutPcSxo;
-		id1ValFetchSr	<= crOutSr;
+//		id1ValFetchSr	<= crOutSr;
+		id1ValFetchSr	<= ifValFetchSr;
 
 `ifdef jx2_enable_prebra
 //		id1BraPipelineLrL	<= id1BraPipelineLr;
@@ -4646,11 +4785,13 @@ begin
 //		ex1OpUIxt		<= id2IdUIxt;
 		ex1PreBraPc		<= id2PreBraPc;
 //		ex1PreBra		<= id2PreBra;
-		ex1PreBra		<= exHold1L ? { 1'b1, id2PreBra[0] } : id2PreBra;
+//		ex1PreBra		<= exHold1L ? { 1'b1, id2PreBra[0] } : id2PreBra;
+		ex1PreBra		<= exHold1L ? 2'b11 : id2PreBra;
 
 		ex1RegValPc		<= gprValPc;
 		ex1RegValImm	<= gprValImm;
 		ex1BraFlush		<= nxtBraFlushMask[0];
+//		ex1BraFlush		<= nxtBraFlushMask[0] || (ex1PreBra==2'b01);
 		
 //		ex1Timers		<= timers[11:0];
 		ex1Timers		<= { timers[11:1], memOpmIn[15] };
@@ -4739,8 +4880,10 @@ begin
 `endif
 
 	end
-	else
-		if(!exHold2)
+//	else
+//		if(!exHold2)
+
+	if(exHold1 && !exHold2)
 	begin
 //		ex1OpUCmd		<= { JX2_IXC_NV, ex1OpUCmd[5:0] };
 //		ex1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
@@ -4767,7 +4910,8 @@ begin
 //		ex1OpUIxt		<= UV8_XX;
 //		ex1OpUIxt		<= UV9_00;
 		ex1PreBraPc		<= 0;
-		ex1PreBra		<= 0;
+//		ex1PreBra		<= 0;
+		ex1PreBra		<= 2'b11;
 //		ex1IstrWord		<= UV32_XX;
 		ex1IstrWord		<= UV96_XX;
 
@@ -5266,6 +5410,11 @@ begin
 		end
 `endif
 
+	end
+
+	if(exHold2 && !exHold1)
+	begin
+		$display("ExUnit: Hold2 and !Hold1");
 	end
 
 	tDbgExHold1			<= exHold1;

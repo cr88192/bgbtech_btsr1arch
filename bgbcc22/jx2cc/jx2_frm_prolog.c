@@ -1189,9 +1189,18 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		cnt+=sctx->vspan[i]->cnt;
 		reg=sctx->vspan[i]->reg;
 
-#if 1
+#if 0
 //		if((cnt<(sctx->vsp_tcnt/8)) && !(ismaxrsv>0))
 		if((cnt<(sctx->vsp_tcnt/16)) && !(ismaxrsv>0))
+//		if((cnt<(sctx->vsp_tcnt/32)) && !(ismaxrsv>0))
+//		if((cnt<((sctx->vsp_tcnt*8)>>8)) && !(ismaxrsv>0))
+//		if((cnt<((sctx->vsp_tcnt*6)>>8)) && !(ismaxrsv>0))
+			{ sctx->vsp_rsv=i; break; }
+#endif
+
+#if 1
+//		if((cnt<(sctx->vsp_tcnt/8)) && !(ismaxrsv>0))
+		if((cnt>((sctx->vsp_tcnt-cnt)*32)) && !(ismaxrsv>0))
 //		if((cnt<(sctx->vsp_tcnt/32)) && !(ismaxrsv>0))
 //		if((cnt<((sctx->vsp_tcnt*8)>>8)) && !(ismaxrsv>0))
 //		if((cnt<((sctx->vsp_tcnt*6)>>8)) && !(ismaxrsv>0))
@@ -1241,6 +1250,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 #endif
 	}
 #endif
+
+//	sctx->vsp_rsv=0;
 
 	if(sctx->vspan_num!=sctx->vsp_rsv)
 	{

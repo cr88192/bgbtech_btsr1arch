@@ -1214,6 +1214,7 @@ sbyte n_nbops;
 s16 n_cyc;				//Baseline Cycles
 s16 ip_cyc;				//Interlock Penalty Cycles
 s16	jit_inh;
+u16 addr_hsr;			//hash of status registers
 s64 runcnt;
 s64 acc_pencyc;			//accumulated penalty cycles
 

@@ -1414,7 +1414,7 @@ int BGBCC_JX2C_EmitReloadSavedFrameReg(
 			return(0);
 
 //		sctx->reg_save|=1ULL<<(reg&15);
-		BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, ofs, reg);
+		BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, ofs, reg);
 		return(1);
 	}
 
@@ -1425,7 +1425,7 @@ int BGBCC_JX2C_EmitReloadSavedFrameReg(
 		if(!(sctx->freg_save&(1ULL<<(reg&31))))
 			return(0);
 
-		BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, ofs, reg);
+		BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, ofs, reg);
 		return(1);
 	}
 #endif

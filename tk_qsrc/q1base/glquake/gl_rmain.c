@@ -692,6 +692,8 @@ void GL_DrawAliasAsSprite (aliashdr_t *phdr, int posenum)
 	int x0, y0, z0;
 	int tx, ty, tc, tpx, tsz;
 
+//	return;
+
 	qglColor4f (shadelight,shadelight,shadelight,1);
 //	GL_Bind(phdr->spr_texnum[0]);
 
@@ -771,6 +773,8 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 		GL_DrawAliasAsSprite (paliashdr, pose);
 		return;
 	}
+
+//	return;
 
 	GL_DrawAliasFrame (paliashdr, pose);
 //	GL_DrawAliasAsSprite (paliashdr, pose);
@@ -914,14 +918,28 @@ void R_DrawAliasModel (entity_t *e)
 	qglPushMatrix ();
 	R_RotateForEntity (e);
 
-	if (!strcmp (clmodel->name, "progs/eyes.mdl") && gl_doubleeyes.value) {
+#if 0
+	if (!strcmp (clmodel->name, "progs/eyes.mdl") && gl_doubleeyes.value)
+	{
 		qglTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2] - (22 + 8));
 // double size of eyes, since they are really hard to see in gl
 		qglScalef (paliashdr->scale[0]*2, paliashdr->scale[1]*2, paliashdr->scale[2]*2);
-	} else {
+	}
+	else
+	{
 		qglTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
 		qglScalef (paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
 	}
+#else
+	qglTranslatef (
+		paliashdr->scale_origin[0],
+		paliashdr->scale_origin[1],
+		paliashdr->scale_origin[2]);
+	qglScalef (
+		paliashdr->scale[0],
+		paliashdr->scale[1],
+		paliashdr->scale[2]);
+#endif
 
 	anim = (int)(cl.time*10) & 3;
 	GL_Bind(paliashdr->gl_texturenum[currententity->skinnum][anim]);
@@ -939,8 +957,8 @@ void R_DrawAliasModel (entity_t *e)
 		qglShadeModel (GL_SMOOTH);
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-	if (gl_affinemodels.value)
-		qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+//	if (gl_affinemodels.value)
+//		qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 
 //	qglEnable (GL_ALPHA_TEST);
 
@@ -949,11 +967,12 @@ void R_DrawAliasModel (entity_t *e)
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	qglShadeModel (GL_FLAT);
-	if (gl_affinemodels.value)
-		qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+//	if (gl_affinemodels.value)
+//		qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	qglPopMatrix ();
 
+#if 0
 	if (r_shadows.value)
 	{
 		qglPushMatrix ();
@@ -967,6 +986,7 @@ void R_DrawAliasModel (entity_t *e)
 		qglColor4f (1,1,1,1);
 		qglPopMatrix ();
 	}
+#endif
 
 }
 

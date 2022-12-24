@@ -284,8 +284,11 @@ BoxOnPlaneSide:
 //	PADD.FA		R16, R17, R3
 	FLDCF		R3, R16
 	FLDCFH		R3, R17
+.ifarch has_fpvsf_sp
+	FADDA		R16, R17, R4
+.else
 	FADD		R16, R17, R4
-//	FADDA		R16, R17, R4
+.endif
 	/* R4 = dist1 */
 
 	/* dist2 = _DotProduct (p->normal, cmins); */
@@ -295,8 +298,11 @@ BoxOnPlaneSide:
 //	PADD.FA		R16, R17, R3
 	FLDCF		R3, R16
 	FLDCFH		R3, R17
+.ifarch has_fpvsf_sp
+	FADDA		R16, R17, R5
+.else
 	FADD		R16, R17, R5
-//	FADDA		R16, R17, R5
+.endif
 	/* R5 = dist2 */
 
 	MOV			0, R2
@@ -560,7 +566,11 @@ _DotProduct:
 //	PADD.FA		R16, R17, R3
 	FLDCF		R3, R18
 	FLDCFH		R3, R19
+.ifarch has_fpvsf_sp
+	FADDA		R18, R19, R2
+.else
 	FADD		R18, R19, R2
+.endif
 	RTSU
 
 _VectorCopy:

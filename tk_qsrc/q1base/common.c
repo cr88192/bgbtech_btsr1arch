@@ -2462,7 +2462,7 @@ void COM_AddGameDirectory (char *dir)
 //
 	for(i=0; i<10; i++)
 	{
-		sprintf (pakfile, "%s/pak%dlz.wad", dir, i);
+		sprintf (pakfile, "%s/pak%ilz.wad", dir, i);
 		pak = COM_LoadWad2AFile (pakfile);
 		COM_TrapBadPtr(pak);
 

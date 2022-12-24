@@ -2097,6 +2097,10 @@ __asm {
 .section .utext
 
 tk_syscall_utxt:
+	nop
+	nop
+	nop
+	nop
 	syscall	0
 	nop
 	nop
@@ -2107,6 +2111,12 @@ tk_syscall_utxt:
 	nop
 	nop
 	rts
+	nop
+	nop
+	nop
+	nop
+	brk
+	brk
 
 tkgdi_comglue_wrapcall_gen:
 	ADD		-256, SP
@@ -2194,6 +2204,10 @@ tkgdi_comglue_wrapcall19:
 .riscv
 
 tk_syscall_rv_utxt:
+	nop
+	nop
+	nop
+	nop
 	syscall
 	nop
 	nop
@@ -2204,6 +2218,10 @@ tk_syscall_rv_utxt:
 	nop
 	nop
 	rts
+	nop
+	nop
+	nop
+	nop
 
 tkgdi_comglue_rv_wrapcall_gen:
 	ADD		-256, SP
@@ -2363,10 +2381,12 @@ int tkgdi_n_gcontexts;
 void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 	u64 apiname, u64 subname)
 {
+	void **ppv, *pv;
 	_tkgdi_context_t *ctx;
 	_tkgdi_context_t *ctx2;
 	TKPE_TaskInfo *ctask;
-	int i, j, k;
+	u64 lv;
+	int i, j, k, n;
 	
 	tk_printf("TKGDI_GetHalContext:\n");
 	
@@ -2397,6 +2417,22 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 		memcpy(tkgdi_context_vtable_grvvtc,
 			&tkgdi_context_vtable_grvvt,
 			sizeof(_tkgdi_context_vtable_t));
+			
+		n=sizeof(_tkgdi_context_vtable_t)/sizeof(void *);
+		ppv=(void **)tkgdi_context_vtable_gvtc;
+		for(i=0; i<n; i++)
+		{
+			pv=ppv[i];
+			lv=(u64)pv;
+			if(!lv)
+				continue;
+			if(lv==0x12345678)
+				continue;
+
+			lv&=0x0000FFFFFFFFFFFEULL;
+			lv|=0x0000000000000001ULL;
+			ppv[i]=(void *)lv;
+		}
 	}
 	
 	ctx=tk_malloc_usr(sizeof(_tkgdi_context_t));
