@@ -637,6 +637,7 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 {
 	ccxl_register srcb;
 	BGBCC_CCXL_VirtOp *op;
+	int i;
 	
 	if(ctx->cgif_no3ac)
 		return(0);
@@ -662,9 +663,12 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 	{
 		if(BGBCC_CCXL_TypeRealP(ctx, dtype))
 		{
-			BGBCC_CCXL_NormalizeImmVReg(ctx, dtype, src, &srcb);
-			BGBCC_CCXL_EmitMov(ctx, dtype, dst, srcb);
-			return(0);
+			i=BGBCC_CCXL_NormalizeImmVReg(ctx, dtype, src, &srcb);
+			if(i>0)
+			{
+				BGBCC_CCXL_EmitMov(ctx, dtype, dst, srcb);
+				return(0);
+			}
 		}
 	}
 			

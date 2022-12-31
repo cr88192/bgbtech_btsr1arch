@@ -238,6 +238,7 @@ assign	dcBusWait	= tDcBusWait;
 
 wire[  7:0]		tlbMemNodeId;
 
+reg[127:0]		tTlbInLdtlbL;
 wire[127:0]		tTlbInLdtlb;
 assign		tTlbInLdtlb = { regInDhr, regInDlr };
 
@@ -265,7 +266,7 @@ RbiMmuTlb	tlb(
 	tTlbDataI,		tTlbDataO,
 	tTlbOpmI,		tTlbOpmO,
 	tTlbSeqI,		tTlbSeqO,
-	tlbMemNodeId,	tTlbInLdtlb,
+	tlbMemNodeId,	tTlbInLdtlbL,
 
 //	tTlbExc,		dcInHold,
 	tTlbExc,		1'b0,
@@ -640,6 +641,8 @@ begin
 	tRegOutExc3		<= tRegOutExc2;
 	tRegTraPc2		<= tRegTraPc;
 	tDcOutOK2		<= tDcOutOK;
+	
+	tTlbInLdtlbL	<= tTlbInLdtlb;
 
 	ifMemWaitL		<= ifMemWait;
 

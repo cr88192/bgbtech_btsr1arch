@@ -1432,6 +1432,14 @@ void BGBCC_CCXL_CompileExprRef(BGBCC_TransState *ctx, BCCX_Node *l)
 		return;
 	}
 
+	if(BGBCC_CCXL_IsUnaryP(ctx, l, "*"))
+	{
+		v=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+		BGBCC_CCXL_CompileExpr(ctx, v);
+//		BGBCC_CCXL_StackStoreIndexConst(ctx, 0);
+		return;
+	}
+
 	s1=BCCX_Tag(t);
 	BGBCC_CCXL_Error(ctx, "Bad expression type for '&', %s\n", s1);
 	return;

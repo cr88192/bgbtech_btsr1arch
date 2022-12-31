@@ -1643,6 +1643,7 @@ int BGBCC_CCXL_TypeCompatibleStorageP(BGBCC_TransState *ctx, ccxl_type dty, ccxl
 int BGBCC_CCXL_TypeCompatibleFlP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty, int fl);
 bool BGBCC_CCXL_TypeSupportsOperatorP(BGBCC_TransState *ctx, ccxl_type ty, int opr);
 ccxl_status BGBCC_CCXL_GetTypeBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
+ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty, int flag);
 ccxl_status BGBCC_CCXL_GetTypeCompareBinaryDest(BGBCC_TransState *ctx, int opr, ccxl_type lty, ccxl_type rty, ccxl_type *rdty);
 ccxl_status BGBCC_CCXL_TypeCheckConvImplicit(BGBCC_TransState *ctx, int opr, ccxl_type dty, ccxl_type sty);
 ccxl_status BGBCC_CCXL_TypeCheckConvTransparentP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);

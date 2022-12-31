@@ -22,8 +22,10 @@ input[63:0]		regInVal;
 input			regHold;
 input			regFlush;
 
-reg[63:0]		tRegVal;
-reg[63:0]		tNxtRegVal;
+(* max_fanout = 200 *)
+	reg[63:0]		tRegVal;
+(* max_fanout = 200 *)
+	reg[63:0]		tNxtRegVal;
 
 assign 		regVal = tRegVal;
 

@@ -80,6 +80,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	ctx->arch_sizeof_long=8;
 	ctx->arch_sizeof_ptr=8;
+	ctx->arch_sizeof_int=4;
 //	ctx->arch_sizeof_valist=128;
 	ctx->arch_sizeof_valist=192;
 	ctx->arch_align_max=8;

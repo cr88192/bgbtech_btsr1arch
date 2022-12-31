@@ -40,6 +40,8 @@ ccxl_status BGBCC_CCXL_StackUnaryOp(BGBCC_TransState *ctx, char *op)
 	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
+	BGBCC_CCXL_TypeAutoPromoteType(ctx, sty, &sty);
+
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
 	{
 		if((opr==CCXL_UNOP_INC) ||
@@ -295,6 +297,7 @@ ccxl_status BGBCC_CCXL_StackUnaryOpStore(BGBCC_TransState *ctx,
 	if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
 	{
 		dreg2=dreg; cnv=1;
+		BGBCC_CCXL_TypeAutoPromoteType(ctx, sty, &sty);
 		BGBCC_CCXL_RegisterAllocTemporary(ctx, sty, &dreg);
 	}else
 	{

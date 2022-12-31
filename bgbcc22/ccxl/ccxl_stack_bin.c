@@ -302,6 +302,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		}
 
 		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty);
+//		BGBCC_CCXL_TypeAutoPromoteType(ctx, dty, &dty);
 		dty2=dty;
 		
 		if(BGBCC_CCXL_TypeFloatP(ctx, dty2))
@@ -936,7 +937,10 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			}
 		}
 
-		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty2);
+		dty2=dty;
+//		BGBCC_CCXL_GetTypeBinaryDest(ctx, opr, sty, tty, &dty2);
+		BGBCC_CCXL_GetTypeBinaryDestB(ctx, opr, sty, tty, &dty2, 2);
+//		BGBCC_CCXL_TypeAutoPromoteType(ctx, dty2, &dty2);
 
 		if(	BGBCC_CCXL_TypeRealP(ctx, dty) &&
 			BGBCC_CCXL_TypeRealP(ctx, dty2))
@@ -952,6 +956,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			(opr!=CCXL_BINOP_MOD) &&
 			(opr!=CCXL_BINOP_SHL) &&
 			(opr!=CCXL_BINOP_SHR) &&
+			(opr!=CCXL_BINOP_SHRR) &&
 			!BGBCC_CCXL_TypeSmallShortP(ctx, dty))
 		{
 			if(	BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty) &&
@@ -962,7 +967,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 				if(	!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, sty) ||
 					!BGBCC_CCXL_TypeCompatibleP(ctx, dty2, tty))
 			{
-				dty2=dty;
+//				dty2=dty;
 			}
 		}
 #endif

@@ -105,16 +105,16 @@ void *bsearch(const void *key, const void *base,
 #define		min(a, b)	(((a)<(b))?(a):(b))
 #define		max(a, b)	(((a)>(b))?(a):(b))
 
-#ifdef __WATCOMC__
-#pragma intrinsic (abs,labs,div,ldiv)
-#endif
+// #ifdef __WATCOMC__
+// #pragma intrinsic (abs,labs,div,ldiv)
+// #endif
 
-#ifdef __IBMC__
-int _Builtin __abs(int j);
-#define abs(j) (__abs((j)))
-long int _Builtin __labs(long int j);
-#define labs(j) (__labs((j)))
-#endif
+// #ifdef __IBMC__
+// int _Builtin __abs(int j);
+// #define abs(j) (__abs((j)))
+// long int _Builtin __labs(long int j);
+// #define labs(j) (__labs((j)))
+// #endif
 
 constraint_handler_t set_constraint_handler_s( constraint_handler_t handler );
 errno_t call_constraint_handler_s(const char * msg, void *ptr, errno_t error);

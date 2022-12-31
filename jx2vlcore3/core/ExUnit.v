@@ -247,8 +247,10 @@ reg				exHold1C3;
 
 reg				exHold1D1;
 
-reg				tDbgExHold1;
-reg				tDbgExHold2;
+(* max_fanout = 100 *)
+	reg				tDbgExHold1;
+(* max_fanout = 100 *)
+	reg				tDbgExHold2;
 
 // assign		dbgExHold1 = exHold1;
 // assign		dbgExHold2 = exHold2;
@@ -256,14 +258,22 @@ reg				tDbgExHold2;
 assign		dbgExHold1 = tDbgExHold1;
 assign		dbgExHold2 = tDbgExHold2;
 
-reg			tDbgOutStatus1;
-reg			tDbgOutStatus2;
-reg			tDbgOutStatus3;
-reg			tDbgOutStatus4;
-reg			tDbgOutStatus5;
-reg			tDbgOutStatus6;
-reg			tDbgOutStatus7;
-reg			tDbgOutStatus8;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus1;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus2;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus3;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus4;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus5;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus6;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus7;
+(* max_fanout = 100 *)
+	reg			tDbgOutStatus8;
 
 reg			tDbgOutStatus1B;
 reg			tDbgOutStatus2B;
@@ -721,6 +731,15 @@ reg [63:0]		gprInDhr;
 wire[63:0]		gprOutSp;
 reg [63:0]		gprInSp;
 
+wire[63:0]		gprInDlrB;
+wire[63:0]		gprInDhrB;
+
+// assign		gprInDlrB = gprInDlr;
+// assign		gprInDhrB = gprInDhr;
+
+assign		gprInDlrB = gprOutDlr;
+assign		gprInDhrB = gprOutDhr;
+
 `ifdef jx2_sprs_elrehr
 wire[63:0]		gprOutElr;
 reg [63:0]		gprInElr;
@@ -797,8 +816,8 @@ RegGPR_6R3W regGpr(
 	gprEx2DualLane,
 	gprEx3DualLane,
 
-	gprOutDlr,	gprInDlr,
-	gprOutDhr,	gprInDhr,
+	gprOutDlr,	gprInDlrB,
+	gprOutDhr,	gprInDhrB,
 `ifdef jx2_sprs_elrehr
 	gprOutElr,	gprInElr,
 	gprOutEhr,	gprInEhr,

@@ -1254,6 +1254,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(s0)
 		{
 			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref"))
+//			if(0)
 			{
 				s1=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
 
@@ -1300,6 +1301,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 			if(BGBCC_CCXL_InferExprCleanP(ctx, ln))
 //			if(1)
+//			if(0)
 			{
 				BGBCC_CCXL_CompileExpr(ctx, ln);
 				BGBCC_CCXL_CompileExpr(ctx, rn);
@@ -1452,6 +1454,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(BGBCC_CCXL_TypeCompatibleArchP(ctx, lty, rty) &&
 			!BGBCC_CCXL_TypeVariantP(ctx, lty) &&
 			!BGBCC_CCXL_TypeVariantP(ctx, rty))
+//		if(0)
 		{
 			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref") &&
 				BCCX_TagIsCstP(rn, &bgbcc_rcst_objref, "objref"))

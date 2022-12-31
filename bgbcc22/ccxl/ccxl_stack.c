@@ -865,12 +865,14 @@ ccxl_status BGBCC_CCXL_PopStore(BGBCC_TransState *ctx, char *name)
 	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
+#if 1
 	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) && 
 		BGBCC_CCXL_IsRegImmILFDP(ctx, sreg))
 	{
 		BGBCC_CCXL_ConvImm(ctx, dty, sty, sreg, &sreg);
 		sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	}
+#endif
 
 
 //	if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
@@ -1801,7 +1803,7 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 		return(CCXL_STATUS_YES);
 	}
 
-#if 1
+#if 0
 	if(can_inline)
 	{
 		for(i=0; i<rfn->n_args; i++)

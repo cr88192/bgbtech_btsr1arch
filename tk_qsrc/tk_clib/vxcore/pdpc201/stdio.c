@@ -457,7 +457,8 @@ static void checkMode(void)
 	}
 	else
 	{
-		myfile->textMode = 1;
+//		myfile->textMode = 1;
+		myfile->textMode = 0;
 	}
 
 	myfile->textMode = 0;
@@ -2135,7 +2136,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 
 	errind=-1;
 
-	if (stream->quickText)
+//	if (stream->quickText)
+	if(0)
 	{
 		p = stream->upto + n - 1;
 		t = stream->upto;
@@ -2221,7 +2223,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 			c = *p;
 			*p = '\n';
 		}
-		if (stream->noNl)
+//		if (stream->noNl)
+		if(0)
 		{
 			while (((*u++ = *t) != '\n') && (*t++ != '\r')) ;
 			if (*(u - 1) == '\n')
@@ -2245,7 +2248,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 		if (((t <= p) && (p < stream->endbuf))
 		   || ((t <= stream->endbuf) && (p >= stream->endbuf)))
 		{
-			if (stream->textMode)
+//			if (stream->textMode)
+			if(0)
 			{
 				if (stream->noNl)
 				{
@@ -2269,10 +2273,10 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 				}
 			}
 			stream->upto = t;
-			if (stream->textMode)
-			{
-				stream->quickText = 1;
-			}
+//			if (stream->textMode)
+//			{
+//				stream->quickText = 1;
+//			}
 			return (s);
 		}
 		else if (((t > p) && (p < stream->endbuf))
@@ -2280,7 +2284,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 		{
 			int leave = 1;
 
-			if (stream->textMode)
+//			if (stream->textMode)
+			if(0)
 			{
 				if (t > stream->endbuf)
 				{
@@ -2318,10 +2323,10 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 			if (leave)
 			{
 				stream->upto = t;
-				if (stream->textMode)
-				{
-					stream->quickText = 1;
-				}
+//				if (stream->textMode)
+//				{
+//					stream->quickText = 1;
+//				}
 				return (s);
 			}
 		}
@@ -3042,17 +3047,22 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 							{
 								lval = (long)x;
 							}
-							if (modlong) *lptr=lval;
+							if (modlong)
+								*lptr=lval;
 								/* l modifier: assign to long */
-							else if (modshort) *hptr = (short)lval;
+							else if (modshort)
+								*hptr = (short)lval;
 								/* h modifier */
 							else *iptr=(int)lval;
 						}
 						else
 						{
-							if (modlong) *luptr = (unsigned long)x;
-							else if (modshort) *huptr = (unsigned short)x;
-							else *uptr = (unsigned int)x;
+							if (modlong)
+								*luptr = (unsigned long)x;
+							else if (modshort)
+								*huptr = (unsigned short)x;
+							else
+								*uptr = (unsigned int)x;
 						}
 					}
 					cnt++;
@@ -3203,7 +3213,8 @@ __PDPCLIB_API__ char *gets(char *s)
 	char *ret;
 
 	stdin->quickText = 0;
-	stdin->noNl = 1;
+//	stdin->noNl = 1;
+	stdin->noNl = 0;
 	ret = fgets(s, INT_MAX, stdin);
 	stdin->noNl = 0;
 	stdin->quickText = 1;
