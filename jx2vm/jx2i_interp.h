@@ -1100,9 +1100,15 @@ u64 mem_ldtlb_lox;
 char *map_iname[256];
 bjx2_addr *map_addr[256];
 char **map_name[256];
+u16 *map_mode[256];
 int map_n_ents[256];
 bjx2_addr map_addr_min[256];
 bjx2_addr map_addr_max[256];
+
+int map_b_lln[256];
+int map_n_lln[256];
+char *map_pbase[256];
+
 int n_map;
 
 bjx2_addr	dbg_data_start;

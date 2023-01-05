@@ -5690,13 +5690,13 @@ int BGBCC_JX2C_EmitCallVReg(
 				}else if((ni<12) && (sctx->has_xgpr&2))
 				{
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-						treg, BGBCC_SH_REG_RD36+(ni-4));
+						treg, BGBCC_SH_REG_RD36+(ni-8));
 					ni++;
 					continue;
 				}else if((ni<16) && (sctx->has_xgpr&2))
 				{
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-						treg, BGBCC_SH_REG_RD52+(ni-4));
+						treg, BGBCC_SH_REG_RD52+(ni-12));
 					ni++;
 					continue;
 				}else
@@ -5761,13 +5761,13 @@ int BGBCC_JX2C_EmitCallVReg(
 				}else if((ni<12) && (sctx->has_xgpr&2))
 				{
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-						treg, BGBCC_SH_REG_RQ36+(ni-4));
+						treg, BGBCC_SH_REG_RQ36+(ni-8));
 					ni++;
 					continue;
 				}else if((ni<16) && (sctx->has_xgpr&2))
 				{
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-						treg, BGBCC_SH_REG_RQ52+(ni-4));
+						treg, BGBCC_SH_REG_RQ52+(ni-12));
 					ni++;
 					continue;
 				}else
@@ -5850,13 +5850,13 @@ int BGBCC_JX2C_EmitCallVReg(
 				}else if((ni<12) && (sctx->has_xgpr&2))
 				{
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-						treg, BGBCC_SH_REG_RD36+(ni-4));
+						treg, BGBCC_SH_REG_RD36+(ni-8));
 					ni++;
 					continue;
 				}else if((ni<16) && (sctx->has_xgpr&2))
 				{
 					BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-						treg, BGBCC_SH_REG_RD52+(ni-4));
+						treg, BGBCC_SH_REG_RD52+(ni-12));
 					ni++;
 					continue;
 				}else
@@ -5915,13 +5915,13 @@ int BGBCC_JX2C_EmitCallVReg(
 			}else if((ni<12) && (sctx->has_xgpr&2))
 			{
 				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-					treg, BGBCC_SH_REG_RQ36+(ni-4));
+					treg, BGBCC_SH_REG_RQ36+(ni-8));
 				ni++;
 				continue;
 			}else if((ni<16) && (sctx->has_xgpr&2))
 			{
 				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-					treg, BGBCC_SH_REG_RQ52+(ni-4));
+					treg, BGBCC_SH_REG_RQ52+(ni-12));
 				ni++;
 				continue;
 			}else
@@ -6004,13 +6004,13 @@ int BGBCC_JX2C_EmitCallVReg(
 			}else if((ni<11) && (sctx->has_xgpr&2))
 			{
 				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-					treg, BGBCC_SH_REG_LR5+(ni-4));
+					treg, BGBCC_SH_REG_LR5+(ni-8));
 				ni+=2;
 				continue;
 			}else if((ni<15) && (sctx->has_xgpr&2))
 			{
 				BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx,
-					treg, BGBCC_SH_REG_LR21+(ni-4));
+					treg, BGBCC_SH_REG_LR21+(ni-12));
 				ni+=2;
 				continue;
 			}else

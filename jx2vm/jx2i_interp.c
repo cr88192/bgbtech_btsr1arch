@@ -899,12 +899,214 @@ char *BJX2_DbgNameForAddr(BJX2_Context *ctx,
 	return(BJX2_DbgNameForAddrSz(ctx, addr, raddr2, NULL));
 }
 
+byte *JX2R_LoadFileTCache(char *path, int *rsz);
+char *JX2R_RStrDup(char *str);
+
+char *BJX2_DbgFetchSourceLineIx(BJX2_Context *ctx,
+	int ix, char *lln)
+{
+	char tb[256], tb1[256];
+	char *s, *se, *t, *buf;
+	int ln, sz, cl;
+	
+	strcpy(tb1, lln);
+	s=tb1+strlen(tb1);
+	while((s>tb1) && (*s!=':'))
+		s--;
+	ln=atoi(s+1);
+	*s=0;
+	
+	sprintf(tb, "%s/%s", ctx->map_pbase[ix], tb1);
+	
+	buf=(char *)JX2R_LoadFileTCache(tb, &sz);
+	if(!buf)
+		return(NULL);
+		
+	s=buf; se=buf+sz; cl=1;
+	while(s<se)
+	{
+		if(cl==ln)
+		{
+			JX2R_BufGetLine(tb, s, se);
+			t=JX2R_RStrDup(tb);
+			return(t);
+		}
+
+		if(*s=='\n')
+		{
+			s++;
+			cl++;
+		}
+		s++;
+	}
+	return(NULL);
+}
+
+char *BJX2_DbgLLnForAddrIx(BJX2_Context *ctx,
+	bjx2_addr addr, int ix, s64 imgadj, bjx2_addr *raddr2, int *rsz2,
+	char **rllsln)
+{
+	bjx2_addr ba, ba2, addr1;
+	char *bn, *sln, *s;
+	int i, j, k, m, n, min, max, sz;
+
+	min=ctx->map_b_lln[ix];
+	max=min+ctx->map_n_lln[ix];
+	m=min;
+	n=max;
+	bn=NULL;
+	
+	addr1=addr-imgadj;
+	
+	while(n>(m+3))
+	{
+		i=(m+n)/2;
+		if(ctx->map_addr[ix][i]>=addr1)
+		{
+			n=i;
+		}else
+		{
+			m=i;
+		}
+	}
+
+	i=m;
+	while(i<max)
+	{
+		if(addr1<ctx->map_addr[ix][i])
+			break;
+		ba=ctx->map_addr[ix][i];
+		bn=ctx->map_name[ix][i];
+		ba2=ctx->map_addr[ix][i+1];
+		i++;
+	}
+	
+	sz=ba2-ba;
+	
+	if(rllsln)
+	{
+		*rllsln=NULL;
+		if(bn && ((ba+imgadj)==addr))
+		{
+			sln=BJX2_DbgFetchSourceLineIx(ctx, ix, bn);
+			if(sln)
+			{
+				while(*sln && (*sln<=' '))
+					sln++;
+				s=sln;
+				while(*s)
+				{
+					if(*s=='\t')
+						*s=' ';
+					s++;
+				}
+			}
+			*rllsln=sln;
+		}
+	}
+
+	if(raddr2)
+		*raddr2=ba+imgadj;
+	if(rsz2)
+		*rsz2=sz;
+	return(bn);
+}
+
+char *BJX2_DbgLLnForAddrSz(BJX2_Context *ctx,
+	bjx2_addr addr, bjx2_addr *raddr2, int *rsz2, char **rllsln)
+{
+	char *s;
+	s64 adj;
+	int i, j, k;
+
+	for(i=0; i<ctx->n_map; i++)
+	{
+		if(ctx->map_iname[i])
+		{
+			for(j=0; j<ctx->n_map_img; j++)
+			{
+				if(!strcmp(ctx->map_img_name[j], ctx->map_iname[i]))
+					break;
+			}
+			
+			if(j<ctx->n_map_img)
+			{
+				adj=ctx->map_img_base[j]-(ctx->map_addr_min[i]&(~16383));
+
+				if(
+					((addr-adj)>=ctx->map_addr_min[i]) &&
+					((addr-adj)<=ctx->map_addr_max[i]) )
+				{
+					s=BJX2_DbgLLnForAddrIx(ctx,
+						addr, i, adj, raddr2, rsz2, rllsln);
+					return(s);
+				}
+			}
+
+		}else if(
+			(addr>=ctx->map_addr_min[i]) &&
+			(addr<=ctx->map_addr_max[i]) )
+		{
+			s=BJX2_DbgLLnForAddrIx(ctx, addr, i, 0, raddr2, rsz2, rllsln);
+			return(s);
+		}
+	}
+
+	return(NULL);
+}
+
+char *BJX2_DbgLLnForAddr(BJX2_Context *ctx,
+	bjx2_addr addr, bjx2_addr *raddr2, char **rllsln)
+{
+	return(BJX2_DbgLLnForAddrSz(ctx, addr, raddr2, NULL, rllsln));
+}
+
+
 bjx2_addr BJX2_DbgAddrForNameIx(BJX2_Context *ctx, char *name,
 	int ix, s64 imgadj);
 
 bjx2_addr BJX2_DbgAddrForName(BJX2_Context *ctx, char *name)
 {
-	return(BJX2_DbgAddrForNameIx(ctx, name, 0, 0));
+	bjx2_addr pc;
+	s64 adj;
+	int i, j, k;
+
+//	for(i=0; i<ctx->n_map; i++)
+//	{
+//		pc=BJX2_DbgAddrForNameIx(ctx, name, i, 0);
+//		if(pc>0)
+//			return(pc);
+//	}
+
+	for(i=0; i<ctx->n_map; i++)
+	{
+		if(ctx->map_iname[i])
+		{
+			for(j=0; j<ctx->n_map_img; j++)
+			{
+				if(!strcmp(ctx->map_img_name[j], ctx->map_iname[i]))
+					break;
+			}
+			
+			if(j<ctx->n_map_img)
+			{
+				adj=ctx->map_img_base[j]-(ctx->map_addr_min[i]&(~16383));
+
+				pc=BJX2_DbgAddrForNameIx(ctx,
+					name, i, adj);
+				if(pc>0)
+					return(pc);
+			}
+
+		}else
+		{
+			pc=BJX2_DbgAddrForNameIx(ctx, name, i, 0);
+			if(pc>0)
+				return(pc);
+		}
+	}
+
+	return(0);
 }
 
 bjx2_addr BJX2_DbgAddrForNameIx(BJX2_Context *ctx, char *name,
@@ -1508,6 +1710,30 @@ char *BJX2_DbgPrintNameForFReg(BJX2_Context *ctx, int reg)
 	return(s);
 }
 
+int BJX2_DbgPrintf(BJX2_Context *ctx, char *str, ...)
+{
+	char tb[256];
+	va_list lst;
+	
+	va_start(lst, str);
+
+//	vsprintf(tb, str, lst);
+	if(jx2i_gfxcon_isdbg)
+	{
+		vsprintf(tb, str, lst);
+		BJX2_DebugConPuts(ctx, tb);
+	}
+	else
+	{
+		vprintf(str, lst);
+//		puts(tb);
+	}
+
+	va_end(lst);
+
+	return(0);
+}
+
 int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 {
 	char tb1[64];
@@ -1515,7 +1741,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	s64 li;
 	int msc, psc, brpc, nonl, nosc;
 
-//	printf("%05X  %04X %-8s ", op->pc, op->opn,
+//	BJX2_DbgPrintf(ctx, "%05X  %04X %-8s ", op->pc, op->opn,
 //		BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 
 	if(fl&4)
@@ -1527,23 +1753,23 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			op1=op->data;
 
-//			printf("%08X  (%2d) %04X_%04X_%04X -\n",
+//			BJX2_DbgPrintf(ctx, "%08X  (%2d) %04X_%04X_%04X -\n",
 //				(u32)op->pc, op->cyc,
 //				op->opn, op->opn2, op->opn3);
-//			printf("%08X       %04X_%04X_%04X   %-8s ",
+//			BJX2_DbgPrintf(ctx, "%08X       %04X_%04X_%04X   %-8s ",
 //				(u32)op1->pc,
 //				op1->opn, op1->opn2, op1->opn3,
 //				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 
-			printf("%04X_%08X  (%2d) %04X_%04X   -\n",
+			BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X   -\n",
 				(u32)((op->pc+0)>>32),
 				(u32)op->pc+0, op->cyc,
 				op->opn, op->opn2);
-			printf("%04X_%08X       %04X_%04X   -\n",
+			BJX2_DbgPrintf(ctx, "%04X_%08X       %04X_%04X   -\n",
 				(u32)((op->pc+4)>>32),
 				(u32)op->pc+4,
 				op->opn3, op->opn);
-			printf("%04X_%08X       %04X_%04X   %-8s ",
+			BJX2_DbgPrintf(ctx, "%04X_%08X       %04X_%04X   %-8s ",
 				(u32)((op->pc+8)>>32),
 				(u32)op->pc+8,
 				op1->opn2, op1->opn3,
@@ -1567,11 +1793,11 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			}
 
 
-			printf("%04X_%08X  (%2d) %04X_%04X   -\n",
+			BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X   -\n",
 				(u32)((op->pc+0)>>32),
 				(u32)op->pc, op->cyc,
 				op->opn, op->opn2);
-			printf("%04X_%08X       %04X_%04X   %-8s ",
+			BJX2_DbgPrintf(ctx, "%04X_%08X       %04X_%04X   %-8s ",
 				(u32)((op->pc+4)>>32),
 				(u32)op1->pc,
 				op1->opn, op1->opn2,
@@ -1581,7 +1807,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		}else
 		if(op->fl&BJX2_OPFL_TRIWORD)
 		{
-			printf("%04X_%08X  (%2d) %04X_%04X_%04X %c %-8s ",
+			BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X_%04X %c %-8s ",
 				(u32)((op->pc+0)>>32),
 				(u32)op->pc, op->cyc,
 				op->opn, op->opn2, op->opn3,
@@ -1601,7 +1827,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 
 				if(fl&2)
 				{
-					printf("%04X_%08X  (%2d) %04X_%04X     %c %-8s ",
+					BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X     %c %-8s ",
 						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
@@ -1609,7 +1835,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 						tb1);
 				}else
 				{
-					printf("%04X_%08X  (%2d) %04X_%04X %c %-8s ",
+					BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X %c %-8s ",
 						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
@@ -1620,7 +1846,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			{
 				if(fl&2)
 				{
-					printf("%04X_%08X  (%2d) %04X_%04X      %c %-8s ",
+					BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X      %c %-8s ",
 						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
@@ -1628,7 +1854,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 				}else
 				{
-					printf("%04X_%08X  (%2d) %04X_%04X %c %-8s ",
+					BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X %c %-8s ",
 						(u32)((op->pc+0)>>32),
 						(u32)op->pc, op->cyc,
 						op->opn, op->opn2,
@@ -1641,7 +1867,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		{
 			if(fl&2)
 			{
-				printf("%04X_%08X  (%2d) %04X           %c %-8s ",
+				BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X           %c %-8s ",
 					(u32)((op->pc+0)>>32),
 					(u32)op->pc, op->cyc,
 					op->opn,
@@ -1651,7 +1877,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}else
 			{
-				printf("%04X_%08X  (%2d) %04X      %c %-8s ",
+				BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X      %c %-8s ",
 					(u32)((op->pc+0)>>32),
 					(u32)op->pc, op->cyc,
 					op->opn,
@@ -1733,24 +1959,24 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	switch(op->fmid)
 	{
 	case BJX2_FMID_NONE:
-		printf("?");
+		BJX2_DbgPrintf(ctx, "?");
 		break;
 	case BJX2_FMID_REG:
-		printf("%s", BJX2_DbgPrintNameForReg(ctx, op->rn));
+		BJX2_DbgPrintf(ctx, "%s", BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGREG:
-		printf("%s, %s",
+		BJX2_DbgPrintf(ctx, "%s, %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGREGREG:
-		printf("%s, %s, %s",
+		BJX2_DbgPrintf(ctx, "%s, %s, %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->ro),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGREGREGREG:
-		printf("%s, %s, %s, %s",
+		BJX2_DbgPrintf(ctx, "%s, %s, %s, %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->ro),
 			BJX2_DbgPrintNameForReg(ctx, op->rp),
@@ -1762,45 +1988,45 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if(	(((sbyte)op->imm)!=op->imm) &&
 			(((byte)op->imm)!=op->imm)	)
 		{
-			printf("#0x%llX", op->imm);
+			BJX2_DbgPrintf(ctx, "#0x%llX", op->imm);
 		}
 		else
 		{
-			printf("#%lld", op->imm);
+			BJX2_DbgPrintf(ctx, "#%lld", op->imm);
 		}
 		break;
 	case BJX2_FMID_PCREG:
-		printf("(PC, %s)", BJX2_DbgPrintNameForReg(ctx, op->rn));
+		BJX2_DbgPrintf(ctx, "(PC, %s)", BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_PCDISP:
 		if(
 			(((sbyte)op->imm)!=op->imm) &&
 			(((byte)op->imm)!=op->imm)	)
 		{
-//			printf("(PC, 0x%X)", op->imm*psc);
-			printf("(0x%llX)", brpc+op->imm*psc);
+//			BJX2_DbgPrintf(ctx, "(PC, 0x%X)", op->imm*psc);
+			BJX2_DbgPrintf(ctx, "(0x%llX)", brpc+op->imm*psc);
 		}else
 		{
-			printf("(PC, %lld)", op->imm*psc);
+			BJX2_DbgPrintf(ctx, "(PC, %lld)", op->imm*psc);
 		}
 		break;
 	case BJX2_FMID_LDREGREG:
-		printf("(%s), %s",
+		BJX2_DbgPrintf(ctx, "(%s), %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGSTREG:
-		printf("%s, (%s)",
+		BJX2_DbgPrintf(ctx, "%s, (%s)",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_LDDRREGREG:
-		printf("(%s, DLR), %s",
+		BJX2_DbgPrintf(ctx, "(%s, DLR), %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGSTDRREG:
-		printf("%s, (%s, DLR)",
+		BJX2_DbgPrintf(ctx, "%s, (%s, DLR)",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
@@ -1812,7 +2038,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
 				(op->rq!=BJX2_REG_PC_HI)	)
 		{
-			printf("(%s:%s, 0x%llX), %s",
+			BJX2_DbgPrintf(ctx, "(%s:%s, 0x%llX), %s",
 				BJX2_DbgPrintNameForReg(ctx, op->rq),
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				(op->imm*msc),
@@ -1821,13 +2047,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			if(	(((sbyte)op->imm)!=op->imm) &&
 				(((byte)op->imm)!=op->imm)	)
 		{
-			printf("(%s, 0x%llX), %s",
+			BJX2_DbgPrintf(ctx, "(%s, 0x%llX), %s",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				(op->imm*msc),
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}else
 		{
-			printf("(%s, %lld), %s",
+			BJX2_DbgPrintf(ctx, "(%s, %lld), %s",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				(op->imm*msc),
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
@@ -1841,7 +2067,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
 				(op->rq!=BJX2_REG_PC_HI)	)
 		{
-			printf("%s, (%s:%s, 0x%llX)",
+			BJX2_DbgPrintf(ctx, "%s, (%s:%s, 0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rq),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
@@ -1850,13 +2076,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if(	(((sbyte)op->imm)!=op->imm) &&
 			(((byte)op->imm)!=op->imm)	)
 		{
-			printf("%s, (%s, 0x%llX)",
+			BJX2_DbgPrintf(ctx, "%s, (%s, 0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*msc));
 		}else
 		{
-			printf("%s, (%s, %lld)",
+			BJX2_DbgPrintf(ctx, "%s, (%s, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*msc));
@@ -1868,33 +2094,33 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if(	(((sbyte)op->imm)!=op->imm) &&
 			(((byte)op->imm)!=op->imm)	)
 		{
-			printf("(%s, 0x%llX)",
+			BJX2_DbgPrintf(ctx, "(%s, 0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*msc));
 		}else
 		{
-			printf("(%s, %lld)",
+			BJX2_DbgPrintf(ctx, "(%s, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*msc));
 		}
 		break;
 
 	case BJX2_FMID_REGDRREG:
-		printf("%s, DLR, %s",
+		BJX2_DbgPrintf(ctx, "%s, DLR, %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 
 	case BJX2_FMID_PCDR:
-		printf("(PC, DLR)");
+		BJX2_DbgPrintf(ctx, "(PC, DLR)");
 		break;
 
 	case BJX2_FMID_LDDRPCREG:
-		printf("(PC, DLR), %s",
+		BJX2_DbgPrintf(ctx, "(PC, DLR), %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGSTDRPC:
-		printf("%s, (PC, DLR)",
+		BJX2_DbgPrintf(ctx, "%s, (PC, DLR)",
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_IMMREG:
@@ -1903,11 +2129,11 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if((((s16)op->imm)!=op->imm) &&
 			(((u16)op->imm)!=op->imm))
 		{
-			printf("#0x%llX, %s", op->imm,
+			BJX2_DbgPrintf(ctx, "#0x%llX, %s", op->imm,
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}else
 		{
-			printf("#%lld, %s", op->imm,
+			BJX2_DbgPrintf(ctx, "#%lld, %s", op->imm,
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}
 		break;
@@ -1916,7 +2142,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		op1=op->data;
 		li=((u32)op1->imm)|
 			(((u64)op->imm)<<32);
-		printf("#0x%llX, %s", li,
+		BJX2_DbgPrintf(ctx, "#0x%llX, %s", li,
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 
@@ -1924,7 +2150,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_FMID_IMMXREG:
 		li=((u32)op->imm)|
 			(((((u32)op->imm)>>31)-1LL)<<32);
-		printf("#0x%llX, %s", li,
+		BJX2_DbgPrintf(ctx, "#0x%llX, %s", li,
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 #endif
@@ -1932,54 +2158,54 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 #if 1
 	case BJX2_FMID_IMMZREG:
 		li=((u32)op->imm);
-		printf("#0x%llX, %s", li,
+		BJX2_DbgPrintf(ctx, "#0x%llX, %s", li,
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_IMMNREG:
 //		li=((u32)op->imm)|((-1LL)<<32);
 		li=((u32)op->imm)|(~((1LL<<32)-1));
-		printf("#0x%llX, %s", li,
+		BJX2_DbgPrintf(ctx, "#0x%llX, %s", li,
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 #endif
 
 	case BJX2_FMID_LDDRABSREG:
-		printf("(DLR), %s",
+		BJX2_DbgPrintf(ctx, "(DLR), %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGSTDRABS:
-		printf("%s, (DLR)",
+		BJX2_DbgPrintf(ctx, "%s, (DLR)",
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 
 	case BJX2_FMID_PCDR4:
-		printf("(PC, DLR:%lld)", op->imm);
+		BJX2_DbgPrintf(ctx, "(PC, DLR:%lld)", op->imm);
 		break;
 	case BJX2_FMID_LDDR4PCREG:
-		printf("(PC, DLR:%lld), %s",
+		BJX2_DbgPrintf(ctx, "(PC, DLR:%lld), %s",
 			op->imm, BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGSTDR4PC:
-		printf("%s, (PC, DLR:%lld)",
+		BJX2_DbgPrintf(ctx, "%s, (PC, DLR:%lld)",
 			BJX2_DbgPrintNameForReg(ctx, op->rn), op->imm);
 		break;
 	case BJX2_FMID_DR4REG:
-		printf("DLR:%lld, %s",
+		BJX2_DbgPrintf(ctx, "DLR:%lld, %s",
 			op->imm, BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 
 	case BJX2_FMID_LDPCDISPREG:
 		if(op->imm>256)
 		{
-//			printf("(PC, 0x%X), %s",
+//			BJX2_DbgPrintf(ctx, "(PC, 0x%X), %s",
 //				(op->imm*psc),
 //				BJX2_DbgPrintNameForReg(ctx, op->rn));
-			printf("(0x%llX), %s",
+			BJX2_DbgPrintf(ctx, "(0x%llX), %s",
 				brpc+(op->imm*psc),
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}else
 		{
-			printf("(PC, %lld), %s",
+			BJX2_DbgPrintf(ctx, "(PC, %lld), %s",
 				(op->imm*psc),
 				BJX2_DbgPrintNameForReg(ctx, op->rn));
 		}
@@ -1987,15 +2213,15 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_FMID_REGSTPCDISP:
 		if(op->imm>256)
 		{
-//			printf("%s, (PC, 0x%X)",
+//			BJX2_DbgPrintf(ctx, "%s, (PC, 0x%X)",
 //				BJX2_DbgPrintNameForReg(ctx, op->rn),
 //				(op->imm*psc));
-			printf("%s, (0x%llX)",
+			BJX2_DbgPrintf(ctx, "%s, (0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				brpc+(op->imm*psc));
 		}else
 		{
-			printf("%s, (PC, %lld)",
+			BJX2_DbgPrintf(ctx, "%s, (PC, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*psc));
 		}
@@ -2005,7 +2231,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
 				(op->rq!=BJX2_REG_PC_HI)	)
 		{
-			printf("(%s:%s, %s), %s",
+			BJX2_DbgPrintf(ctx, "(%s:%s, %s), %s",
 				BJX2_DbgPrintNameForReg(ctx, op->rq),
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->ro),
@@ -2013,7 +2239,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			break;
 		}
 
-		printf("(%s, %s), %s",
+		BJX2_DbgPrintf(ctx, "(%s, %s), %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->ro),
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
@@ -2023,7 +2249,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
 				(op->rq!=BJX2_REG_PC_HI)	)
 		{
-			printf("%s, (%s:%s, %s)",
+			BJX2_DbgPrintf(ctx, "%s, (%s:%s, %s)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rq),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
@@ -2031,27 +2257,27 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			break;
 		}
 
-		printf("%s, (%s, %s)",
+		BJX2_DbgPrintf(ctx, "%s, (%s, %s)",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			BJX2_DbgPrintNameForReg(ctx, op->rn),
 			BJX2_DbgPrintNameForReg(ctx, op->ro));
 		break;
 
 //	case BJX2_FMID_REGREGREG:
-//		printf("%s, %s, %s",
+//		BJX2_DbgPrintf(ctx, "%s, %s, %s",
 //			BJX2_DbgPrintNameForReg(ctx, op->rm),
 //			BJX2_DbgPrintNameForReg(ctx, op->ro),
 //			BJX2_DbgPrintNameForReg(ctx, op->rn));
 //		break;
 
 	case BJX2_FMID_REGIMMREG:
-		printf("%s, #%lld, %s",
+		BJX2_DbgPrintf(ctx, "%s, #%lld, %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			op->imm,
 			BJX2_DbgPrintNameForReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_REGIMMREGREG:
-		printf("%s, #%lld, %s, %s",
+		BJX2_DbgPrintf(ctx, "%s, #%lld, %s, %s",
 			BJX2_DbgPrintNameForReg(ctx, op->rm),
 			op->imm,
 			BJX2_DbgPrintNameForReg(ctx, op->ro),
@@ -2059,15 +2285,15 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 
 	case BJX2_FMID_FREG:
-		printf("%s", BJX2_DbgPrintNameForFReg(ctx, op->rn));
+		BJX2_DbgPrintf(ctx, "%s", BJX2_DbgPrintNameForFReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_FREGREG:
-		printf("%s, %s",
+		BJX2_DbgPrintf(ctx, "%s, %s",
 			BJX2_DbgPrintNameForFReg(ctx, op->rm),
 			BJX2_DbgPrintNameForFReg(ctx, op->rn));
 		break;
 	case BJX2_FMID_FREGREGREG:
-		printf("%s, %s, %s",
+		BJX2_DbgPrintf(ctx, "%s, %s, %s",
 			BJX2_DbgPrintNameForFReg(ctx, op->rm),
 			BJX2_DbgPrintNameForFReg(ctx, op->ro),
 			BJX2_DbgPrintNameForFReg(ctx, op->rn));
@@ -2076,12 +2302,12 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_FMID_REGPCDISP:
 		if(op->imm>256)
 		{
-			printf("%s, (0x%llX)",
+			BJX2_DbgPrintf(ctx, "%s, (0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				brpc+(op->imm*psc));
 		}else
 		{
-			printf("%s, (PC, %lld)",
+			BJX2_DbgPrintf(ctx, "%s, (PC, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*psc));
 		}
@@ -2089,13 +2315,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_FMID_REGREGPCDISP:
 		if(op->imm>256)
 		{
-			printf("%s, %s, (0x%llX)",
+			BJX2_DbgPrintf(ctx, "%s, %s, (0x%llX)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				brpc+(op->imm*psc));
 		}else
 		{
-			printf("%s, %s, (PC, %lld)",
+			BJX2_DbgPrintf(ctx, "%s, %s, (PC, %lld)",
 				BJX2_DbgPrintNameForReg(ctx, op->rm),
 				BJX2_DbgPrintNameForReg(ctx, op->rn),
 				(op->imm*psc));
@@ -2109,16 +2335,16 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 
 	default:
-		printf("?");
+		BJX2_DbgPrintf(ctx, "?");
 		break;
 	}
 
 //	if(op->fl&BJX2_OPFL_WEX)
-//		printf("\t|");
+//		BJX2_DbgPrintf(ctx, "\t|");
 
 //	if(!op1)
 	if(!nonl)
-		printf("\n");
+		BJX2_DbgPrintf(ctx, "\n");
 	return(0);
 }
 
@@ -2126,7 +2352,7 @@ int BJX2_DbgPrintTraceOps(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 	BJX2_Opcode *op;
 	bjx2_addr ba2;
-	char *bn2;
+	char *bn2, *sln;
 	int i, fl;
 
 	fl=0;
@@ -2144,6 +2370,17 @@ int BJX2_DbgPrintTraceOps(BJX2_Context *ctx, BJX2_Trace *tr)
 
 	for(i=0; i<tr->n_ops; i++)
 	{
+		op=tr->ops[i];
+		bn2=BJX2_DbgLLnForAddr(ctx, op->pc, &ba2, &sln);
+		if(bn2 && (ba2==op->pc))
+		{
+			if(!sln)
+				sln="";
+			BJX2_DbgPrintf(ctx,
+//				"                "
+				"    %s  %s\n", bn2, sln);
+		}
+
 		BJX2_DbgPrintOp(ctx, tr->ops[i], fl);
 	}
 	return(0);
@@ -2157,7 +2394,7 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 	
 	if(!tr)
 	{
-		printf("PC @ ...  NULL Trace\n");
+		BJX2_DbgPrintf(ctx, "PC @ ...  NULL Trace\n");
 		return(0);
 	}
 	
@@ -2165,11 +2402,11 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 
 	if(bn2)
 	{
-		printf("PC @ %08X (%s+%d)\n", (u32)(tr->addr),
+		BJX2_DbgPrintf(ctx, "PC @ %08X (%s+%d)\n", (u32)(tr->addr),
 			bn2, (int)(tr->addr-ba2));
 	}else
 	{
-		printf("PC @ %08X\n", (u32)(tr->addr));
+		BJX2_DbgPrintf(ctx, "PC @ %08X\n", (u32)(tr->addr));
 	}
 	
 	BJX2_DbgPrintTraceOps(ctx, tr);
@@ -2232,27 +2469,27 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 #if 0
 		if(((i*2)>=BJX2_REG_R32) && ((i*2)<BJX2_REG_R63))
 		{
-			printf("X%2d=%08X_%08X_%08X_%08X",
+			BJX2_DbgPrintf(ctx, "X%2d=%08X_%08X_%08X_%08X",
 				i*2,
 				(u32)(ctx->regs[i*2+1]>>32),
 				(u32)(ctx->regs[i*2+1]    ),
 				(u32)(ctx->regs[i*2+0]>>32),
 				(u32)(ctx->regs[i*2+0]    )
 				);
-			printf("\n");
+			BJX2_DbgPrintf(ctx, "\n");
 			continue;
 		}
 #endif
 	
 		for(j=0; j<2; j++)
 		{
-			if(j)printf("  ");
-			printf("%-4s=%08X_%08X",
+			if(j)BJX2_DbgPrintf(ctx, "  ");
+			BJX2_DbgPrintf(ctx, "%-4s=%08X_%08X",
 				BJX2_DbgPrintNameForReg(ctx, i*2+j),
 				(u32)(ctx->regs[i*2+j]>>32),
 				(u32)(ctx->regs[i*2+j]    ));
 		}
-		printf("\n");
+		BJX2_DbgPrintf(ctx, "\n");
 	}
 	return(0);
 }
@@ -2277,13 +2514,13 @@ int BJX2_DbgPrintFpRegs(BJX2_Context *ctx)
 	
 		for(j=0; j<2; j++)
 		{
-			if(j)printf("  ");
-			printf("%-4s=%08X_%08X",
+			if(j)BJX2_DbgPrintf(ctx, "  ");
+			BJX2_DbgPrintf(ctx, "%-4s=%08X_%08X",
 				BJX2_DbgPrintNameForFReg(ctx, i*2+j),
 				(u32)(ctx->fpreg[i*2+j]>>32),
 				(u32)(ctx->fpreg[i*2+j]    ));
 		}
-		printf("\n");
+		BJX2_DbgPrintf(ctx, "\n");
 	}
 	return(0);
 }
@@ -2447,7 +2684,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		}
 	}
 
-	printf("Top Funcs:\n");
+	BJX2_DbgPrintf(ctx, "Top Funcs:\n");
 
 //	float topfn_pcnt[64];
 //	float topfn_tpcnt[64];
@@ -2481,15 +2718,15 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		if(!strncmp(bn2, "tkra_", 5) || !strncmp(bn2, "TKRA_", 5))
 			tkra_pcnt+=pcnt;
 
-		printf(" %-40s %.2f%% %.2f%%\n", bn2, pcnt, tpcnt);
+		BJX2_DbgPrintf(ctx, " %-40s %.2f%% %.2f%%\n", bn2, pcnt, tpcnt);
 	}
 	
 	if(tkra_pcnt>5)
 	{
-		printf(" TKRA: %.2f%%\n", tkra_pcnt);
+		BJX2_DbgPrintf(ctx, " TKRA: %.2f%%\n", tkra_pcnt);
 	}
 	
-	printf("Top Traces:\n");
+	BJX2_DbgPrintf(ctx, "Top Traces:\n");
 
 	for(i=0; i<48; i++)
 	{
@@ -2508,7 +2745,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 		if(bn2)
 		{
-			printf("PC @ %04X_%08X (%-20s+%04X) "
+			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X (%-20s+%04X) "
 				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%%\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), bn2,
@@ -2519,7 +2756,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 				pcnt);
 		}else
 		{
-			printf("PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
+			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), cyc>>20, pcnt);
 		}
@@ -2539,7 +2776,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 		if(bn2)
 		{
-			printf("PC @ %04X_%08X (%-20s+%04X) "
+			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X (%-20s+%04X) "
 				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%%\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), bn2,
@@ -2550,7 +2787,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 				pcnt);
 		}else
 		{
-			printf("PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
+			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), cyc>>20, pcnt);
 		}
@@ -2580,22 +2817,22 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	}
 
 #if 0
-	printf("Cyc/Nmid:\n");
+	BJX2_DbgPrintf(ctx, "Cyc/Nmid:\n");
 	for(i=0; i<64; i++)
 	{
-		printf("%2X ", i*2);
+		BJX2_DbgPrintf(ctx, "%2X ", i*2);
 		for(j=0; j<2; j++)
 		{
-			printf("%8s(%10lld) ",
+			BJX2_DbgPrintf(ctx, "%8s(%10lld) ",
 				BJX2_DbgPrintNameForNmid(ctx, i*2+j),
 				cyc_nmid[i*2+j]);
 		}
-		printf("\n");
+		BJX2_DbgPrintf(ctx, "\n");
 	}
 #endif
 
 #if 1
-	printf("Cyc/Nmid:\n");
+	BJX2_DbgPrintf(ctx, "Cyc/Nmid:\n");
 //	for(i=0; i<64; i++)
 //	for(i=0; i<128; i++)
 	for(i=0; i<512; i++)
@@ -2604,7 +2841,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		if(!cyc_nmid[k])
 			break;
 
-//		printf("%2X ", i*2);
+//		BJX2_DbgPrintf(ctx, "%2X ", i*2);
 		for(j=0; j<2; j++)
 		{
 			k=idx_nmid[i*2+j];
@@ -2612,106 +2849,106 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			pcnt2=(100.0*ipcyc_nmid[k])/(ctx->tot_cyc);
 
 			if(j)
-				printf(" ");
+				BJX2_DbgPrintf(ctx, " ");
 
-			printf("%10s(%11lld) %2d.%02d%%(i%2d.%02d%%)",
+			BJX2_DbgPrintf(ctx, "%10s(%11lld) %2d.%02d%%(i%2d.%02d%%)",
 				BJX2_DbgPrintNameForNmid(ctx, k),
 				cyc_nmid[k],
 					(int)pcnt,		((int)(pcnt*100))%100,
 					(int)pcnt2,		((int)(pcnt2*100))%100);
 		}
-		printf("\n");
+		BJX2_DbgPrintf(ctx, "\n");
 	}
 #endif
 
 	pcnt=((double)trtops)/trn;
-	printf("Average Trace Length: %.2f\n", pcnt);
+	BJX2_DbgPrintf(ctx, "Average Trace Length: %.2f\n", pcnt);
 
 	pcnt=(100.0*ctx->tot_cyc_ip)/(ctx->tot_cyc);
-	printf("Cycles Spent, Interlock: %.2f%%\n", pcnt);
+	BJX2_DbgPrintf(ctx, "Cycles Spent, Interlock: %.2f%%\n", pcnt);
 
 #ifdef BJX2_EM_MEMSTAT
 	if(ctx->tot_cyc_mem>0)
 	{
 		pcnt=(100.0*ctx->tot_cyc_mem)/(ctx->tot_cyc);
-		printf("Cycles Spent, Mem Op: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Cycles Spent, Mem Op: %.2f%%\n", pcnt);
 		pcnt=(100.0*(ctx->tot_cyc_mem+ctx->tot_cyc_miss))/(ctx->tot_cyc);
-		printf("Cycles Spent, Mem Tot: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Cycles Spent, Mem Tot: %.2f%%\n", pcnt);
 
 
 		pcnt=(100.0*ctx->tot_cyc_miss)/(ctx->tot_cyc);
-		printf("Cycles Spent, Cache Miss: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Cycles Spent, Cache Miss: %.2f%%\n", pcnt);
 //		pcnt=(100.0*ctx->tot_cyc_miss_l1)/(ctx->tot_cyc);
 		pcnt=(100.0*
 			(ctx->tot_cyc_miss_l1+ctx->tot_cyc_miss_l1i))/
 			(ctx->tot_cyc);
-		printf("Cycles Spent, Cache Miss L1: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Cycles Spent, Cache Miss L1: %.2f%%\n", pcnt);
 
 //		pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
 		pcnt=(100.0*(
 			ctx->tot_cyc_miss_l2+
 			ctx->tot_cyc_miss_l2i+
 			ctx->tot_cyc_miss_l2v))/(ctx->tot_cyc);
-		printf("Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Cycles Spent, Cache Miss L2: %.2f%%\n", pcnt);
 
 		pcnt=(100.0*ctx->tot_cyc_miss_l2)/(ctx->tot_cyc);
-		printf("    D$: %.2f%%", pcnt);
+		BJX2_DbgPrintf(ctx, "    D$: %.2f%%", pcnt);
 		pcnt=(100.0*ctx->tot_cyc_miss_l2i)/(ctx->tot_cyc);
-		printf("  I$: %.2f%%", pcnt);
+		BJX2_DbgPrintf(ctx, "  I$: %.2f%%", pcnt);
 		pcnt=(100.0*ctx->tot_cyc_miss_l2v)/(ctx->tot_cyc);
-		printf("  VRAM: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "  VRAM: %.2f%%\n", pcnt);
 
 		pcnt=(100.0*ctx->tot_cyc_mmio)/(ctx->tot_cyc);
-		printf("Cycles Spent, MMIO: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Cycles Spent, MMIO: %.2f%%\n", pcnt);
 
 #ifdef BJX2_EM_BPRED
 		pcnt=(100.0*ctx->tot_cyc_miss_bra)/(ctx->tot_cyc);
-		printf("Cycles Spent, Branch Miss: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Cycles Spent, Branch Miss: %.2f%%\n", pcnt);
 #endif
 
 		pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_miss_l1i))/
 			(ctx->tot_cnt_mem_l1i);
-		printf("Total Count, Cache Hit  L1 I$: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit  L1 I$: %.2f%%\n", pcnt);
 		pcnt=(100.0*ctx->tot_cnt_miss_l1i)/(ctx->tot_cnt_mem_l1i);
-		printf("Total Count, Cache Miss L1 I$: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Miss L1 I$: %.2f%%\n", pcnt);
 
 		pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_miss_l1))/
 			(ctx->tot_cnt_mem_l1);
-		printf("Total Count, Cache Hit  L1 D$: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit  L1 D$: %.2f%%\n", pcnt);
 		pcnt=(100.0*ctx->tot_cnt_miss_l1)/(ctx->tot_cnt_mem_l1);
-		printf("Total Count, Cache Miss L1 D$: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Miss L1 D$: %.2f%%\n", pcnt);
 
 		pcnt=(100.0*(ctx->tot_cnt_mem_l2-ctx->tot_cnt_miss_l2))/
 			(ctx->tot_cnt_mem_l2);
-		printf("Total Count, Cache Hit  L2   : %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit  L2   : %.2f%%\n", pcnt);
 
 //		pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
 		pcnt=(100.0*
 			(ctx->tot_cnt_miss_l2+ctx->tot_cnt_miss_l2i+ctx->tot_cnt_miss_l2v))/
 			(ctx->tot_cnt_mem_l2+ctx->tot_cnt_mem_l2i+ctx->tot_cnt_mem_l2v);
-		printf("Total Count, Cache Miss L2   : %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Miss L2   : %.2f%%\n", pcnt);
 
 		if(ctx->l2_vict)
 		{
 			pcnt=(100.0*ctx->tot_cnt_mem_l2vihit)/(ctx->tot_cnt_mem_l2);
-			printf("    L2-ViHit: %.2f%%\n", pcnt);
+			BJX2_DbgPrintf(ctx, "    L2-ViHit: %.2f%%\n", pcnt);
 		}
 
 		pcnt=(100.0*ctx->tot_cnt_miss_l2)/(ctx->tot_cnt_mem_l2);
-		printf("    L2-D$: %.2f%%", pcnt);
+		BJX2_DbgPrintf(ctx, "    L2-D$: %.2f%%", pcnt);
 		pcnt=(100.0*ctx->tot_cnt_miss_l2i)/(ctx->tot_cnt_mem_l2i);
-		printf("  L2-I$: %.2f%%", pcnt);
+		BJX2_DbgPrintf(ctx, "  L2-I$: %.2f%%", pcnt);
 		pcnt=(100.0*ctx->tot_cnt_miss_l2v)/(ctx->tot_cnt_mem_l2v);
-		printf("  L2-VR: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "  L2-VR: %.2f%%\n", pcnt);
 
 		pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_mem_dri))/
 			(ctx->tot_cnt_mem_l1i);
-		printf("Total Count, Cache Hit Combined I$: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit Combined I$: %.2f%%\n", pcnt);
 		pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_mem_drd))/
 			(ctx->tot_cnt_mem_l1);
-		printf("Total Count, Cache Hit Combined D$: %.2f%%\n", pcnt);
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit Combined D$: %.2f%%\n", pcnt);
 
-		printf("Ratio, L2/L1: %.2f, L2i/L1i %.2f, DRAM/L2: %.2f\n",
+		BJX2_DbgPrintf(ctx, "Ratio, L2/L1: %.2f, L2i/L1i %.2f, DRAM/L2: %.2f\n",
 			(1.0*ctx->tot_cnt_mem_l2)/(ctx->tot_cnt_miss_l1+1.0),
 			(1.0*ctx->tot_cnt_mem_l2i)/(ctx->tot_cnt_miss_l1i+1.0),
 			(1.0*ctx->tot_cnt_mem_dram)/
@@ -2754,7 +2991,7 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	
 	if(ctx->bpr_cnt>0)
 	{
-		printf("Branch Pred Hit %.2f%%\n",
+		BJX2_DbgPrintf(ctx, "Branch Pred Hit %.2f%%\n",
 			(100.0*ctx->bpr_hit)/ctx->bpr_cnt);
 	}
 	
@@ -2807,7 +3044,7 @@ int BJX2_UpdateForStatus(BJX2_Context *ctx)
 		
 	if((ctx->status&0xF000)==0xC000)
 	{
-		printf("BJX2_UpdateForStatus: Missed IRQ %04X\n", ctx->status);
+		BJX2_DbgPrintf(ctx, "BJX2_UpdateForStatus: Missed IRQ %04X\n", ctx->status);
 		ctx->status=0;
 		return(1);
 	}

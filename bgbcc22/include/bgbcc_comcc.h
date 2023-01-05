@@ -254,6 +254,7 @@ int nrlc, mrlc;
 int nvlbl;
 u16 lblrov;			//labels (local)
 u16 lbltrov;		//labels (temp)
+u16 lblllnrov;		//labels (line number)
 
 s32 lbl_hash[1024];		//label chain hash (lblid)
 s32 lbl_simhash[64];	//label chain hash (simulation)
@@ -576,6 +577,10 @@ s64 t_lvt16_val[1024*2];
 int *genlabel_srcpos;
 int genlabel_limit;
 int t_genlabel_srcpos[4096];
+
+int *dbglln_srcpos;
+int dbglln_limit;
+// int t_dbglln_srcpos[4096];
 
 /* Epilog Caching */
 u64 epihash_key[1024];

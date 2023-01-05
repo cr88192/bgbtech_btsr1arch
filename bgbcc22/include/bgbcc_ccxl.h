@@ -529,10 +529,17 @@ Base, Q1..Q3:
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
 
 #define CCXL_LBL_GENSYMBASE			0x800000	//gensyms (middle)
+//#define CCXL_LBL_GENSYM2BASE		0xC00000	//gensyms (backend, stable)
+//#define CCXL_LBL_GENSYM2BASE2		0xE00000	//gensyms (backend, temp)
+
 #define CCXL_LBL_GENSYM2BASE		0xC00000	//gensyms (backend, stable)
-#define CCXL_LBL_GENSYM2BASE2		0xE00000	//gensyms (backend, temp)
+#define CCXL_LBL_GENSYM2BASE2		0xC10000	//gensyms (backend, temp)
+#define CCXL_LBL_GENLLNBASE			0xC20000	//debug file/line
+
 
 #define CCXL_LBL_SPMASK				0xFF0000	//mask
+
+// #define CCXL_LBL_GENLLNBASE			0x7A0000	//debug file/line
 
 #define CCXL_LBL_ABS16UP			0x7C0000	//16 bit, z-ext, sz_ptr
 #define CCXL_LBL_ABS16NP			0x7D0000	//16 bit, n-ext, sz_ptr

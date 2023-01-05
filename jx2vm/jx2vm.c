@@ -593,7 +593,33 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 	while(*kb)
 	{
 		k=*kb++;
-		BJX2_MainAddTranslateKey(ctx, k);
+
+		if(FRGL_KeyDown(K_SHIFT))
+		{
+			if(k==K_F5)
+			{
+				/* Graphical Debugger Escape */
+				jx2i_gfxcon_isdbg=!jx2i_gfxcon_isdbg;
+				jx2i_gfxcon_dirty=1;
+				BJX2_GfxDebugActivate(ctx);
+				continue;
+			}
+		}
+
+		if(!jx2i_gfxcon_isdbg)
+		{
+			BJX2_MainAddTranslateKey(ctx, k);
+		}else
+		{
+			if(k==K_F5)
+			{
+				/* Continue */
+				jx2i_gfxcon_isdbg=0;
+				jx2i_gfxcon_dirty=1;
+				continue;
+			}
+			BJX2_GfxDebugAddKey(ctx, k);
+		}
 
 #if 0
 		if(k&0x8000)
@@ -830,6 +856,10 @@ void btesh_main_iterate()
 
 	ms1=FRGL_TimeMS();
 	ms=ms1-ms0;
+	
+//	if((ms>1000) || (ms<0))
+//		ms=0;
+	
 //	cyc=100000LL*ms;
 //	cyc=ctx->tgt_mhz*1000LL*ms;
 	cyc=ctx->tgt_mhz*1000LL*(ms+120);
@@ -847,6 +877,12 @@ void btesh_main_iterate()
 		Sleep(0);
 #endif
 		return;
+	}
+
+	if(jx2i_gfxcon_isdbg)
+	{
+		ms0+=dtms;
+//		cyc=0;
 	}
 
 	BJX2_SndSblk_Update(ctx, dtms);
@@ -876,35 +912,50 @@ void btesh_main_iterate()
 //	i=BJX2_RunLimit(ctx, 2500000);
 //	i=BJX2_RunLimit(ctx, rcy);
 //	lms2=ms1;
-	do {
-		i=BJX2_RunLimit(ctx, rcy);
 
-		if(i || ctx->req_kill)
-			break;
+	if(jx2i_gfxcon_isdbg)
+	{
+		BJX2_GfxDebugRefresh(ctx);
+	}
 
-		ms1=FRGL_TimeMS();
-		ms=ms1-lms1;
-
-//		dtms2=ms1-lms2;
-//		lms2=ms1;
-//		BJX2_SndSblk_Update(ctx, dtms2);
-	} while((ctx->tot_cyc<cyc) && (ms<28));
-
-	if(i || ctx->req_kill)
-		gfxdrv_kill=1;
-
-#if 1
-	if(ctx_c2)
+	if(!jx2i_gfxcon_isdbg)
 	{
 		do {
-			i=BJX2_RunLimit(ctx_c2, rcy);
+			i=BJX2_RunLimit(ctx, rcy);
 
-			if(i || ctx_c2->req_kill)
+			if(i || ctx->req_kill)
 				break;
 
 			ms1=FRGL_TimeMS();
 			ms=ms1-lms1;
-		} while((ctx_c2->tot_cyc<cyc) && (ms<28));
+
+	//		dtms2=ms1-lms2;
+	//		lms2=ms1;
+	//		BJX2_SndSblk_Update(ctx, dtms2);
+		} while((ctx->tot_cyc<cyc) && (ms<28));
+	}
+
+	if(i || ctx->req_kill)
+	{
+		jx2i_gfxcon_isdbg=0;
+		gfxdrv_kill=1;
+	}
+
+#if 1
+	if(!jx2i_gfxcon_isdbg)
+	{
+		if(ctx_c2)
+		{
+			do {
+				i=BJX2_RunLimit(ctx_c2, rcy);
+
+				if(i || ctx_c2->req_kill)
+					break;
+
+				ms1=FRGL_TimeMS();
+				ms=ms1-lms1;
+			} while((ctx_c2->tot_cyc<cyc) && (ms<28));
+		}
 	}
 #endif
 

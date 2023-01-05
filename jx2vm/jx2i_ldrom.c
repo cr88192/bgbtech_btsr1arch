@@ -431,21 +431,46 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 {
 //	static bjx2_addr tmap_addr[16384];
 //	static char *tmap_name[16384];
-	static bjx2_addr tmap_addr[32768];
-	static char *tmap_name[32768];
+//	static bjx2_addr tmap_addr[32768];
+//	static char *tmap_name[32768];
+
+	static bjx2_addr *tmap_addr=NULL;
+	static char **tmap_name=NULL;
+	static u16 *tmap_mode=NULL;
+	static int tmap_max;
 	char tb[256];
 	BJX2_FILE *fd;
 	char **a;
-	char *s, *t;
-	int tmn, ta, mn;
-	int sz, sz1;
+	char *s, *t, *pbase;
+	int tmn, ta, mn, tmnb;
+	int sz, sz1, sw;
 	int i, j, k;
 
+	strcpy(tb, name);
+	s=tb+strlen(tb);
+	while(s>tb)
+	{
+		if((*s=='/') || (*s=='\\'))
+			break;
+		s--;
+	}
+	*s=0;
+	pbase=strdup(tb);
+	
 	fd=bjx2_fopen(name, "rb");
 	if(!fd)
 	{
 		printf("Failed open %s\n", name);
 		return(-1);
+	}
+
+	if(!tmap_addr)
+	{
+		k=32768;
+		tmap_addr=malloc(k*sizeof(bjx2_addr));
+		tmap_name=malloc(k*sizeof(char *));
+		tmap_mode=malloc(k*sizeof(u16));
+		tmap_max=k;
 	}
 
 	tmn=0;
@@ -467,6 +492,16 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 	
 	while(!bjx2_feof(fd))
 	{
+		if((tmn+64)>=tmap_max)
+		{
+			k=tmap_max;
+			k=k+(k>>1);
+			tmap_addr=realloc(tmap_addr, k*sizeof(bjx2_addr));
+			tmap_name=realloc(tmap_name, k*sizeof(char *));
+			tmap_mode=realloc(tmap_mode, k*sizeof(u16));
+			tmap_max=k;
+		}
+	
 		s=bjx2_fgets(tb, 255, fd);
 		a=JX2R_SplitLine(tb);
 		if(!a[0])
@@ -476,6 +511,7 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 		
 		tmap_addr[tmn]=ta;
 		tmap_name[tmn]=strdup(a[2]);
+		tmap_mode[tmn]=a[1][0];
 		tmn++;
 	}
 
@@ -483,27 +519,49 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 	{
 		for(j=i+1; j<tmn; j++)
 		{
-			if(tmap_addr[j]<tmap_addr[i])
+			sw=(tmap_addr[j]<tmap_addr[i]);
+
+			if((tmap_mode[j]=='L') && (tmap_mode[i]!='L'))
+				sw=0;
+			if((tmap_mode[j]!='L') && (tmap_mode[i]=='L'))
+				sw=1;
+			
+//			if(tmap_addr[j]<tmap_addr[i])
+			if(sw)
 			{
 				ta=tmap_addr[j];
 				s=tmap_name[j];
+				k=tmap_mode[j];
 				tmap_addr[j]=tmap_addr[i];
 				tmap_name[j]=tmap_name[i];
+				tmap_mode[j]=tmap_mode[i];
 				tmap_addr[i]=ta;
 				tmap_name[i]=s;
+				tmap_mode[i]=k;
 			}
 		}
 	}
 	
+	for(i=0; i<tmn; i++)
+	{
+		if(tmap_mode[i]=='L')
+			break;
+	}
+	tmnb=i;
 	
 	mn=ctx->n_map++;
 	ctx->map_addr[mn]=malloc((tmn+64)*sizeof(bjx2_addr));
 	ctx->map_name[mn]=malloc((tmn+64)*sizeof(char *));
-	ctx->map_n_ents[mn]=tmn;
+	ctx->map_mode[mn]=malloc((tmn+64)*sizeof(u16));
+	ctx->map_n_ents[mn]=tmnb;
 	ctx->map_iname[mn]=NULL;
+	ctx->map_pbase[mn]=pbase;
 
 	ctx->map_addr_min[mn]=tmap_addr[0];
 	ctx->map_addr_max[mn]=tmap_addr[tmn-1];
+	
+	ctx->map_b_lln[mn]=tmnb;
+	ctx->map_n_lln[mn]=tmn-tmnb;
 	
 	if(imgname)
 	{
@@ -526,6 +584,7 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 	{
 		ctx->map_addr[mn][i]=tmap_addr[i];
 		ctx->map_name[mn][i]=tmap_name[i];
+		ctx->map_mode[mn][i]=tmap_mode[i];
 	}
 	return(0);
 }

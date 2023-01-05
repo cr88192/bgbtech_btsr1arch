@@ -6,8 +6,10 @@
 *_asm.txt
 *_dasm.txt
 *.vspx
+*.VC.db-shm
 *.db-shm
 *.db-wal
+*.ipch
 
 randbits.txt
 

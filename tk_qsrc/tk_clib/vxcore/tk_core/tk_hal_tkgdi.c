@@ -670,6 +670,8 @@ int TKGDI_BlitUpdate_BlkRgb555(
 		flip=!flip;
 	}
 
+//	__debugbreak();
+
 	__hint_use_egpr();
 
 //	conbufa=(u32 *)0xA00A0000;

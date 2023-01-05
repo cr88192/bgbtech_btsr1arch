@@ -494,13 +494,17 @@ byte btesh2_gfxcon_swaprb=0;
 
 u32 *jx2i_gfxcon_conbuf;
 u32 *jx2i_gfxcon_lconbuf;
+u32 *jx2i_gfxcon_dbgconbuf;
 byte jx2i_gfxcon_dirty;
+byte jx2i_gfxcon_isdbg;
 byte jx2i_gfxcon_is80col;
 byte jx2i_gfxcon_is50row;
 byte jx2i_gfxcon_ishalfcell;
 byte jx2i_gfxcon_isqtrcell;
 byte jx2i_gfxcon_is800px;
 byte jx2i_gfxcon_ispow2;
+
+u32 jx2i_gfxcon_dbgcursor;
 
 byte jx2i_gfxcon_isbmap;
 byte jx2i_gfxcon_isccrgb;
@@ -552,6 +556,7 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 	jx2i_gfxcon_isbmap=0;
 	jx2i_gfxcon_isccrgb=0;
 	jx2i_gfxcon_is800px=0;
+	jx2i_gfxcon_isdbg=0;
 
 	jx2i_gfxcon_ncx=40;
 	jx2i_gfxcon_ncy=25;
@@ -574,6 +579,7 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 
 	jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
 	jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+	jx2i_gfxcon_dbgconbuf=malloc(32768*sizeof(u32));
 	
 	sp=BJX2_MemSpanForName(ctx, "DRAM");
 	if(sp)
@@ -623,9 +629,9 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 	}
 #endif
 
-	if(jx2i_gfxcon_is80col)
+	if(jx2i_gfxcon_is80col || jx2i_gfxcon_isdbg)
 	{
-		if(jx2i_gfxcon_is50row)
+		if(jx2i_gfxcon_is50row || jx2i_gfxcon_isdbg)
 		{
 			((u32 *)btesh2_gfxcon_framebuf)[(py*fbxs)+px]=clrc;
 		}else
@@ -665,9 +671,9 @@ int JX2I_GfxCon_PutPix400(int px, int py, int clrc)
 			((clrc>>16)&0x000000FFU);
 	}
 #endif
-	if(jx2i_gfxcon_is50row)
+	if(jx2i_gfxcon_is50row || jx2i_gfxcon_isdbg)
 	{
-		if(jx2i_gfxcon_is80col)
+		if(jx2i_gfxcon_is80col || jx2i_gfxcon_isdbg)
 		{
 			((u32 *)btesh2_gfxcon_framebuf)[((py/2)*fbxs)+px]=clrc;
 		}else
@@ -985,7 +991,7 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		return(0);
 	
 //	if(jx2i_gfxcon_isbmap)
-	if(jx2i_gfxcon_isbmap&7)
+	if((jx2i_gfxcon_isbmap&7) && !jx2i_gfxcon_isdbg)
 //	if(0)
 	{
 		return(JX2I_GfxCon_UpdateCellBM(cx, cy));
@@ -993,6 +999,13 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 
 	i=jx2i_gfxcon_ctrlreg[1];
 	px=(i&255); py=(i>>8)&255;
+
+	if(jx2i_gfxcon_isdbg)
+	{
+		i=jx2i_gfxcon_dbgcursor;
+		px=(i&255); py=(i>>8)&255;
+	}
+
 	docurblnk=(cx==px)&&(cy==py);
 
 //	ncx=40;
@@ -1000,7 +1013,18 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 //		ncx=80;
 	ncx=jx2i_gfxcon_ncx;
 
-	if(jx2i_gfxcon_isqtrcell)
+	if(jx2i_gfxcon_isdbg)
+	{
+		c0=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+0)&32767];
+		c1=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+1)&32767];
+		c2=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+2)&32767];
+		c3=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+3)&32767];
+		c4=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+4)&32767];
+		c5=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+5)&32767];
+		c6=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+6)&32767];
+		c7=jx2i_gfxcon_dbgconbuf[((cy*ncx+cx)*8+7)&32767];
+	}else
+		if(jx2i_gfxcon_isqtrcell)
 	{
 		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+0)&32767];
 		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+1)&32767];
@@ -2085,6 +2109,12 @@ int JX2I_GfxCon_Update()
 
 	ncx=jx2i_gfxcon_ncx;
 	ncy=jx2i_gfxcon_ncy;
+	
+	if(jx2i_gfxcon_isdbg)
+	{
+		ncx=80;
+		ncy=50;
+	}
 
 //	for(y=0; y<25; y++)
 	for(y=0; y<ncy; y++)

@@ -1497,6 +1497,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		break;
 	case CCXL_VOP_DBGLN:
 		ctx->lln=op->imm.si;
+		BGBCC_JX2_EmitDebugLine(sctx, ctx->lfn, ctx->lln);
 		break;
 	case CCXL_VOP_LABEL:
 		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
@@ -4694,6 +4695,35 @@ int BGBCC_JX2C_LookupLabelImgVA(
 	k=sctx->sec_lva[sctx->lbl_sec[j]]+sctx->lbl_ofs[j];
 	return(k);
 }
+
+int BGBCC_JX2C_LookupLabelImgMapTag(
+	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+	int lblid)
+{
+	int i, j, k;
+	
+	
+	j=BGBCC_JX2C_LookupLabelIndex(ctx, sctx, lblid);
+
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_ABS)
+		return('A');
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_TEXT)
+		return('T');
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_BSS)
+		return('B');
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_DATA)
+		return('D');
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_RODATA)
+		return('R');
+
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_UTEXT)
+		return('T');
+	if(sctx->lbl_sec[j]==BGBCC_SH_CSEG_UDATA)
+		return('D');
+
+	return('D');
+}
+
 
 extern char *bgbcc_jx2_srcidx[256];
 extern int bgbcc_jx2_nsrcidx;

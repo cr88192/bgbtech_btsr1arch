@@ -43,6 +43,11 @@ int bgbcc_jx2_indexSrcIdx(char *name)
 	return(i);
 }
 
+char *bgbcc_jx2_NameForSrcIdx(int idx)
+{
+	return(bgbcc_jx2_srcidx[idx]);
+}
+
 int BGBCC_JX2_GenLabelTempLLn(BGBCC_JX2_Context *ctx, char *file, int line)
 {
 	int i, j, k;
@@ -129,6 +134,54 @@ int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx)
 	}
 
 	return(0);
+}
+
+int BGBCC_JX2_EmitDebugLine(BGBCC_JX2_Context *ctx,
+	char *lfn, int lln)
+{
+	int lbl;
+	int i, j, k;
+
+	if(!ctx->is_simpass)
+	{
+		i=ctx->lblllnrov;
+		while(i>0)
+		{
+			k=ctx->dbglln_srcpos[i-1];
+			if(!(k&0x8000))
+				break;
+			i--;
+		}
+		ctx->lblllnrov=i;
+	}
+
+	i=ctx->lblllnrov++;
+	
+	if(!ctx->dbglln_srcpos)
+	{
+		k=4096;
+//		ctx->dbglln_srcpos=ctx->t_dbglln_srcpos;
+		ctx->dbglln_srcpos=bgbcc_malloc(k*sizeof(int));
+		ctx->dbglln_limit=k;
+	}
+
+	if(i>=ctx->dbglln_limit)
+	{
+		k=ctx->dbglln_limit;
+		k=k+(k>>1);
+		ctx->dbglln_srcpos=bgbcc_realloc(ctx->dbglln_srcpos, k*sizeof(int));
+		ctx->dbglln_limit=k;
+	}
+
+	j=bgbcc_jx2_indexSrcIdx(lfn);
+	k=(j<<16)|lln;
+	if(ctx->is_simpass)
+		k|=0x8000;
+//	if(i<ctx->dbglln_limit)
+	ctx->dbglln_srcpos[i]=k;
+
+	lbl=(CCXL_LBL_GENLLNBASE+i);
+	return(BGBCC_JX2_EmitLabel(ctx, lbl));
 }
 
 int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)

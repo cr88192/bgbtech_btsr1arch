@@ -2372,6 +2372,105 @@ int TKFAT_ListDir(JX2R_TKFAT_ImageInfo *img, int clid)
 }
 
 
+void *JX2R_RAlloc(int sz)
+{
+	static char *ralloc_buf=NULL;
+	static int ralloc_rov;
+	char *ptr;
+	
+	if(!ralloc_buf)
+	{
+		ralloc_buf=malloc(1<<18);
+		ralloc_rov=0;
+	}
+	
+	if((ralloc_rov+sz+1)>=(1<<18))
+		ralloc_rov=0;
+
+	ptr=ralloc_buf+ralloc_rov;
+	ralloc_rov=(ralloc_rov+sz+17)&(~15);
+	if(ralloc_rov>=(1<<18))
+		ralloc_rov=0;
+	
+	return(ptr);
+}
+
+s64 JX2R_Ratoi(char *str)
+{
+	s64 tv;
+	int sg;
+	char *s;
+	int i;
+	
+	if(*str=='0')
+	{
+		if((str[1]=='x') || (str[1]=='X'))
+		{
+			s=str+2;
+			tv=0;
+			while(*s)
+			{
+				i=*s++;
+				if(i=='_')
+					{ continue; }
+				if((i>='0') && (i<='9'))
+					{ tv=(tv*16)+(i-'0'); continue; }
+				if((i>='A') && (i<='F'))
+					{ tv=(tv*16)+((i-'A')+10); continue; }
+				if((i>='a') && (i<='f'))
+					{ tv=(tv*16)+((i-'a')+10); continue; }
+				break;
+			}
+			return(tv);
+		}
+
+		if((str[1]>='0') && (str[1]<='7'))
+		{
+			s=str+1;
+			tv=0;
+			while(*s)
+			{
+				i=*s++;
+				if(i=='_')
+					{ continue; }
+				if((i>='0') && (i<='8'))
+					{ tv=(tv*8)+(i-'0'); continue; }
+				break;
+			}
+			return(tv);
+		}
+	}
+
+	s=str;
+	tv=0; sg=0;
+	if(*s=='-')
+		{ s++; sg=1; }
+	while(*s)
+	{
+		i=*s++;
+		if(i=='_')
+			{ continue; }
+		if((i>='0') && (i<='9'))
+			{ tv=(tv*10)+(i-'0'); continue; }
+		break;
+	}
+	if(sg)
+		tv=-tv;
+	return(tv);
+}
+
+
+char *JX2R_RStrDup(char *str)
+{
+	char *t;
+	
+	if(!str)
+		return(NULL);
+	
+	t=JX2R_RAlloc(strlen(str)+1);
+	strcpy(t, str);
+	return(t);
+}
 
 char *JX2R_BufGetLine(char *tbuf, char *str, char *stre)
 {
@@ -2485,6 +2584,46 @@ int JX2R_StoreFile(char *path, byte *buf, int sz)
 	bjx2_fwrite(buf, 1, sz, fd);
 	bjx2_fclose(fd);
 	return(0);
+}
+
+char *jx2r_loadfile_tcache_name[64];
+byte *jx2r_loadfile_tcache_buf[64];
+int jx2r_loadfile_tcache_sz[64];
+
+byte *JX2R_LoadFileTCache(char *path, int *rsz)
+{
+	byte *buf;
+	char *s;
+	int h, hi, sz;
+	
+	s=path; h=0;
+	while(*s)
+		h=h*251+(*s++);
+	h=h*251+1;
+	hi=(h>>8)&63;
+	
+	if(	jx2r_loadfile_tcache_name[hi] &&
+		!strcmp(jx2r_loadfile_tcache_name[hi], path))
+	{
+		if(rsz)
+			*rsz=jx2r_loadfile_tcache_sz[hi];
+		return(jx2r_loadfile_tcache_buf[hi]);
+	}
+	
+	if(jx2r_loadfile_tcache_buf[hi])
+	{
+		free(jx2r_loadfile_tcache_buf[hi]);
+		jx2r_loadfile_tcache_buf[hi]=NULL;
+	}
+	
+	buf=JX2R_LoadFile(path, &sz);
+	jx2r_loadfile_tcache_name[hi]=strdup(path);
+	jx2r_loadfile_tcache_buf[hi]=buf;
+	jx2r_loadfile_tcache_sz[hi]=sz;
+
+	if(rsz)
+		*rsz=sz;
+	return(buf);
 }
 
 int JX2R_SetUseImage(char *name)

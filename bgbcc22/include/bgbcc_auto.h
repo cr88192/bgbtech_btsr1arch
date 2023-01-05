@@ -2714,6 +2714,7 @@ ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo
 int BGBCC_JX2C_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2C_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2C_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
+int BGBCC_JX2C_LookupLabelImgMapTag(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
 void bgbcc_jx2cc_setu16en(byte *ct, int en, u16 v);
 ccxl_status BGBCC_JX2C_RelocRangeError(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rlcix, int lblix, int rlcty, int disp);
 ccxl_status BGBCC_JX2C_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, byte *imgbase);
@@ -2851,9 +2852,11 @@ int BGBCC_JX2_EmitOpAutoLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2_TryEmitOpAutoLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 //AHSRC:jx2cc/jx2_emit_lbl.c
 int bgbcc_jx2_indexSrcIdx(char *name);
+char *bgbcc_jx2_NameForSrcIdx(int idx);
 int BGBCC_JX2_GenLabelTempLLn(BGBCC_JX2_Context *ctx, char *file, int line);
 int BGBCC_JX2_GenLabelLLn(BGBCC_JX2_Context *ctx, char *file, int line);
 int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_EmitDebugLine(BGBCC_JX2_Context *ctx,char *lfn, int lln);
 int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid);
 int BGBCC_JX2_EmitLabelAbs(BGBCC_JX2_Context *ctx, int lblid, s64 addr);
 char *BGBCC_JX2_LookupNameForLabel(BGBCC_JX2_Context *ctx, int lblid);
