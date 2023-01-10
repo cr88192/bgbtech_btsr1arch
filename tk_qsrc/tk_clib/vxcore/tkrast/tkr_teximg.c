@@ -299,7 +299,9 @@ void TKRA_EncodeImgMortUtx2(tkra_rastpixel *pix, u32 *blk, int shl)
 	}
 }
 
-void TKRA_UpdateTexImg(TKRA_TexImage *img,
+void TKRA_UpdateTexImgI(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
 	tkra_rastpixel *buf, int xs, int ys, int mip, int flag)
 {
 	int xshl, yshl, xsh1, ysh1, txfl, pix;
@@ -469,9 +471,10 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 	}
 }
 
-
-void TKRA_UpdateTexImgUtx2(TKRA_TexImage *img,
-	u64 *buf, int xs, int ys, int mip)
+void TKRA_UpdateTexImgUtx2I(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
+	u64 *buf, int xs, int ys, int mip, int flag)
 {
 	u64 *timg;
 	u64 blk;
@@ -800,7 +803,9 @@ u64 TKRA_ConvBlockDxt5ToUtx2(u64 cblk, u64 ablk)
 	return(blk2);
 }
 
-void TKRA_UpdateTexImgDxt1(TKRA_TexImage *img,
+void TKRA_UpdateTexImgDxt1(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
 	u64 *src, int xs, int ys, int mip, int flag)
 {
 	static u64 *tmpbuf=NULL;
@@ -843,10 +848,12 @@ void TKRA_UpdateTexImgDxt1(TKRA_TexImage *img,
 		}
 	}
 
-	TKRA_UpdateTexImgUtx2(img, tmpbuf, xs, ys, mip);
+	TKRA_UpdateTexImgUtx2(ctx, img, tmpbuf, xs, ys, mip, flag);
 }
 
-void TKRA_UpdateTexImgDxt5(TKRA_TexImage *img,
+void TKRA_UpdateTexImgDxt5(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
 	u64 *src, int xs, int ys, int mip, int flag)
 {
 	static u64 *tmpbuf=NULL;
@@ -877,10 +884,10 @@ void TKRA_UpdateTexImgDxt5(TKRA_TexImage *img,
 		tmpbuf[z]=dblk;
 	}
 
-	TKRA_UpdateTexImgUtx2(img, tmpbuf, xs, ys, mip);
+	TKRA_UpdateTexImgUtx2(ctx, img, tmpbuf, xs, ys, mip, flag);
 }
 
-TKRA_TexImage *TKRA_LookupTexImg(TKRA_Context *ctx, int num)
+TKRA_TexImage *TKRA_LookupTexImgI(TKRA_Context *ctx, int num)
 {
 	TKRA_TexImage *cur;
 	int h;
@@ -896,7 +903,7 @@ TKRA_TexImage *TKRA_LookupTexImg(TKRA_Context *ctx, int num)
 	return(NULL);
 }
 
-TKRA_TexImage *TKRA_GetTexImg(TKRA_Context *ctx, int num)
+TKRA_TexImage *TKRA_GetTexImgI(TKRA_Context *ctx, int num)
 {
 	TKRA_TexImage *cur;
 	int h;
@@ -934,7 +941,7 @@ int TKRA_AllocTexnum(TKRA_Context *ctx)
 	return(id);
 }
 
-int TKRA_BindTexImg(TKRA_Context *ctx, TKRA_TexImage *img)
+int TKRA_BindTexImgI(TKRA_Context *ctx, TKRA_TexImage *img)
 {
 	ctx->tex_cur=img;
 //	ctx->tex_img=img->tex_img;

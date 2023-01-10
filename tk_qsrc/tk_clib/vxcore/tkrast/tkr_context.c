@@ -1,13 +1,65 @@
 void TKRA_DumpMatrix(tkra_mat4 matc, char *str);
 void TKRA_DumpVec4(tkra_vec4f vec, char *str);
 
+int TKRA_DrawPrimitiveIndexArrayObjI(
+	TKRA_Context *ctx,
+	TKRA_DrawPrimArrays	*parr,
+	int mode,		int count);
+
+void TKRA_UpdateTexImgI(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
+	tkra_rastpixel *buf, int xs, int ys, int mip, int flag);
+void TKRA_UpdateTexImgUtx2I(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
+	u64 *buf, int xs, int ys, int mip, int flag);
+
+TKRA_TexImage *TKRA_LookupTexImgI(TKRA_Context *ctx, int num);
+TKRA_TexImage *TKRA_GetTexImgI(TKRA_Context *ctx, int num);
+int TKRA_BindTexImgI(TKRA_Context *ctx, TKRA_TexImage *img);
+
+TKRA_ContextVt tkra_context_vt = {
+NULL,			//Reserved 0
+NULL,			//Reserved 1
+NULL,			//Reserved 2
+NULL,			//Reserved 3
+TKRA_DrawPrimitiveIndexArrayObjI,
+TKRA_UpdateTexImgI,
+TKRA_UpdateTexImgUtx2I,
+TKRA_LookupTexImgI,
+TKRA_GetTexImgI,
+TKRA_BindTexImgI
+};
+
 TKRA_Context *TKRA_AllocContext()
 {
 	TKRA_Context *tmp;
 	
 	tmp=tkra_malloc(sizeof(TKRA_Context));
 	memset(tmp, 0, sizeof(TKRA_Context));
+	tmp->vt=&tkra_context_vt;
 	return(tmp);
+}
+
+void *TKRA_GetHalContextComGlue(TKPE_TaskInfo *task,
+	u64 apiname, u64 subname)
+{
+	TKRA_Context *tmp;
+	
+	if(((u32)apiname)!=TK_FCC_TKRA)
+		return(NULL);
+	
+	tmp=TKRA_AllocContext();
+	tmp->vt=TKGDI_GetWrapVTableForTask(task,
+		&tkra_context_vt, sizeof(tkra_context_vt));
+	return(tmp);
+}
+
+int TKRA_RegisterHalGetContext()
+{
+	TK_RegisterGetApiContextFn(TK_FCC_TKRA, TKRA_GetHalContextComGlue);
+	return(0);
 }
 
 int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)

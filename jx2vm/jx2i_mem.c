@@ -1701,6 +1701,15 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 	}
 	
 //	BJX2_MemSimAddrL1Multi(ctx, addr, opm);
+
+#if 1
+	/* Fast path, would be an L1 hit anyways... */
+	h=(addr>>4)&15;
+	a0=ctx->mem_l1ht[h];
+	if((a0>>4)==(addr>>4))
+		return(0);
+	ctx->mem_l1ht[h]=addr;
+#endif
 	
 	a0=addr;
 	a1=a0+(1<<(opm&3));

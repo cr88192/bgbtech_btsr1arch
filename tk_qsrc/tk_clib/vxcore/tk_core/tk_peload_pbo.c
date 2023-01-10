@@ -1290,7 +1290,41 @@ void *TK_DlSymA(void *handle, const char *symbol, int flags)
 	return(p);
 }
 
+void	*tk_GetApiContext_fcn[256];
+u32		tk_GetApiContext_fcc[256];
+byte	tk_GetApiContext_chn[256];
+int		tk_n_GetApiContext=1;
+
+byte	tk_GetApiContext_hash[256];
+
+int TK_RegisterGetApiContextFn(u32 fcc, void *fn)
+{
+	int i, j, k, h;
+	
+	for(i=1; i<tk_n_GetApiContext; i++)
+	{
+		if((tk_GetApiContext_fcn[i]==fn) &&
+			(tk_GetApiContext_fcc[i]==fcc))
+			return(0);
+	}
+	
+//	h=((((u16)(fcc^(fcc>>16)))*65521)>>8)&255;
+	h=fcc^(fcc>>16);
+	h=(h^(h>>8))&255;
+	
+	i=tk_n_GetApiContext++;
+	tk_GetApiContext_fcn[i]=fn;
+	tk_GetApiContext_fcc[i]=fcc;
+
+	tk_GetApiContext_chn[i]=tk_GetApiContext_hash[h];
+	tk_GetApiContext_hash[h]=i;
+
+	return(1);
+}
+
 void *TKGDI_GetHalContext(TKPE_TaskInfo *task,
+	u64 apiname, u64 subname);
+void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 	u64 apiname, u64 subname);
 
 void *TK_DlGetApiContextB(TKPE_TaskInfo *task, u64 apiname, u64 subname)
@@ -1305,9 +1339,32 @@ void *TK_DlGetApiContextB(TKPE_TaskInfo *task, u64 apiname, u64 subname)
 
 void *TK_DlGetApiContextWrapB(TKPE_TaskInfo *task, u64 apiname, u64 subname)
 {
-	if(((u32)apiname)==TK_FCC_GDI)
+	void *(*fcn)(TKPE_TaskInfo *task, u64 apiname, u64 subname);
+	void *p;
+	u32 fcc;
+	int h, i;
+
+	fcc=(u32)apiname;
+
+	if(fcc==TK_FCC_GDI)
 	{
 		return(TKGDI_GetHalContextComGlue(task, apiname, subname));
+	}
+
+	h=fcc^(fcc>>16);
+	h=(h^(h>>8))&255;
+	
+	i=tk_GetApiContext_hash[h];
+	while(i>0)
+	{
+		fcn=tk_GetApiContext_fcn[i];
+		if(fcc==tk_GetApiContext_fcc[i])
+		{
+			p=fcn(task, apiname, subname);
+			if(p)
+				return(p);
+		}
+		i=tk_GetApiContext_chn[i];
 	}
 	
 	return(NULL);

@@ -1066,6 +1066,8 @@ s64			mem_l1m_cnt;
 bjx2_addr mem_l1h4k[8192];		//L1 addr (4kB)
 bjx2_addr mem_l1ih4k[8192];		//L1 addr (4kB)
 
+bjx2_addr mem_l1ht[16];			//L1 tiny
+
 // bjx2_addr mem_l2h32k[8192];	//L2 addr (32/64kB)
 bjx2_addr mem_l2h32k[16384];	//L2 addr (32/64kB)
 

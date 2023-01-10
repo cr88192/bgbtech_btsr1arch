@@ -152,12 +152,14 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 
 	sr=ctx->regs[BJX2_REG_SR];
 	hsr=(sr>>16)&0xFCF0;
+	hsr+=(fl&0x04);
 	hsr=(u16)((hsr*65521)>>16);
 
 #if 1
 	cur=ctx->prttr;
 //	if(cur && (cur->addr==addr))
-	if(cur && (cur->addr==addr) && (cur->addr_hsr==hsr))
+//	if(cur && (cur->addr==addr) && (cur->addr_hsr==hsr))
+	if(cur && (cur->addr==addr) && ((cur->addr_hsr==hsr) || (fl&2)))
 		return(cur);
 #endif
 
@@ -169,7 +171,7 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 #if 1
 	cur=ctx->rttr[h&63];
 //	if(cur && (cur->addr==addr))
-	if(cur && (cur->addr==addr) && (cur->addr_hsr==hsr))
+	if(cur && (cur->addr==addr) && ((cur->addr_hsr==hsr) || (fl&2)))
 		return(cur);
 #endif
 
@@ -177,14 +179,14 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 	if(cur)
 	{
 //		if(cur->addr==addr)
-		if((cur->addr==addr) && (cur->addr_hsr==hsr))
+		if((cur->addr==addr) && ((cur->addr_hsr==hsr) || (fl&2)))
 			return(cur);
 
 		if(cur->hnext)
 		{
 			cur=cur->hnext;
 //			if(cur->addr==addr)
-			if((cur->addr==addr) && (cur->addr_hsr==hsr))
+			if((cur->addr==addr) && ((cur->addr_hsr==hsr) || (fl&2)))
 				return(cur);
 		}
 
@@ -195,7 +197,7 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 		while(cur)
 		{
 //			if(cur->addr==addr)
-			if((cur->addr==addr) && (cur->addr_hsr==hsr))
+			if((cur->addr==addr) && ((cur->addr_hsr==hsr) || (fl&2)))
 			{
 //				prv->hnext=cur->hnext;
 //				cur->hnext=ctx->trhash[h];
@@ -2975,7 +2977,13 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
 			ctx->trapc=pc;
 			cur=BJX2_GetTraceForAddr(ctx, pc, 2);
-			BJX2_DbgPrintTrace(ctx, cur);
+			if(cur)
+			{
+				BJX2_DbgPrintTrace(ctx, cur);
+			}else
+			{
+				BJX2_DbgPrintf(ctx, "PC @ %08X, NULL Trace\n", pc);
+			}
 		}
 	}
 
@@ -3056,7 +3064,7 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 {
 	BJX2_Trace *cur;
 	bjx2_addr pc;
-	int cn, cn0, cn1, nc, no, nbo, nc_ip;
+	int cn, cn0, cn1, nc, no, nbo, nc_ip, trfl;
 	int i, j, k;
 
 	cn=lim;
@@ -3069,10 +3077,24 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			return(ctx->status);
 	}
 
+	trfl=0;
+	if(lim==1)
+	{
+		trfl|=4;
+
+		cur=ctx->trcur;
+		if(cur)
+		{
+			ctx->regs[BJX2_REG_PC]=cur->addr;
+			ctx->trcur=NULL;
+		}
+	}
+
 	while(cn>0)
 	{
 		cur=ctx->trcur;
 		if(!cur)
+//		if(!cur || (trfl&4))
 		{
 			pc=ctx->regs[BJX2_REG_PC];
 			
@@ -3089,7 +3111,8 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			}
 			
 			ctx->trapc=pc;
-			cur=BJX2_GetTraceForAddr(ctx, pc, 0);
+//			cur=BJX2_GetTraceForAddr(ctx, pc, 0);
+			cur=BJX2_GetTraceForAddr(ctx, pc, trfl);
 
 			if(ctx->status)
 			{

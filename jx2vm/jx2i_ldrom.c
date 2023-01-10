@@ -427,6 +427,128 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 	return(0);
 }
 
+int BJX2_MapSortTMapCmp(BJX2_Context *ctx,
+	bjx2_addr *tmap_addr,
+	char **tmap_name,
+	u16 *tmap_mode,
+	int i, int j)
+{
+	int sw;
+	sw=(tmap_addr[j]<tmap_addr[i]);
+	if((tmap_mode[j]=='L') && (tmap_mode[i]!='L'))
+		sw=0;
+	if((tmap_mode[j]!='L') && (tmap_mode[i]=='L'))
+		sw=1;
+	return(sw);
+}
+
+int BJX2_MapSortTMapCmpPv(BJX2_Context *ctx,
+	bjx2_addr *tmap_addr,
+	char **tmap_name,
+	u16 *tmap_mode,
+	int ix,
+	bjx2_addr pva, u16 pvm)
+{
+	int sw;
+	sw=(pva<tmap_addr[ix]);
+	if((pvm=='L') && (tmap_mode[ix]!='L'))
+		sw=0;
+	if((pvm!='L') && (tmap_mode[ix]=='L'))
+		sw=1;
+	return(sw);
+}
+
+int BJX2_MapSortTMapBase(BJX2_Context *ctx,
+	bjx2_addr *tmap_addr,
+	char **tmap_name,
+	u16 *tmap_mode,
+	int min, int max)
+{
+	char *s;
+	bjx2_addr ta;
+	int i, j, k, sw;
+
+	for(i=min; i<max; i++)
+	{
+		for(j=i+1; j<max; j++)
+		{
+			sw=BJX2_MapSortTMapCmp(ctx,
+				tmap_addr, tmap_name, tmap_mode,
+				i, j);
+			if(sw)
+			{
+				ta=tmap_addr[j];
+				s=tmap_name[j];
+				k=tmap_mode[j];
+				tmap_addr[j]=tmap_addr[i];
+				tmap_name[j]=tmap_name[i];
+				tmap_mode[j]=tmap_mode[i];
+				tmap_addr[i]=ta;
+				tmap_name[i]=s;
+				tmap_mode[i]=k;
+			}
+		}
+	}
+	return(0);
+}
+
+int BJX2_MapSortTMapRec(BJX2_Context *ctx,
+	bjx2_addr *tmap_addr,
+	char **tmap_name,
+	u16 *tmap_mode,
+	int min, int max, int lim)
+{
+	char *s;
+	bjx2_addr ta, pa;
+	int i, j, k, m, n, pm, sw;
+
+	n=max-min;
+	
+	if((n<16) || (lim<=0))
+	{
+		BJX2_MapSortTMapBase(ctx,
+			tmap_addr, tmap_name, tmap_mode, min, max);
+		return(0);
+	}
+
+	k=(min+max)>>1;
+	pa=tmap_addr[k];
+	pm=tmap_mode[k];
+
+	m=min;
+	n=max;
+	while(m<n)
+	{
+		sw=BJX2_MapSortTMapCmpPv(ctx,
+			tmap_addr, tmap_name, tmap_mode,
+			m, pa, pm);
+		if(sw)
+		{
+			n--;
+			ta=tmap_addr[n];
+			s=tmap_name[n];
+			k=tmap_mode[n];
+			tmap_addr[n]=tmap_addr[m];
+			tmap_name[n]=tmap_name[m];
+			tmap_mode[n]=tmap_mode[m];
+			tmap_addr[m]=ta;
+			tmap_name[m]=s;
+			tmap_mode[m]=k;
+		}else
+		{
+			m++;
+		}
+	}
+	
+	BJX2_MapSortTMapRec(
+		ctx, tmap_addr, tmap_name, tmap_mode, min, m, lim-1);
+	BJX2_MapSortTMapRec(
+		ctx, tmap_addr, tmap_name, tmap_mode, m, max, lim-1);
+		
+	return(0);
+}
+
+
 int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 {
 //	static bjx2_addr tmap_addr[16384];
@@ -515,6 +637,7 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 		tmn++;
 	}
 
+#if 0
 	for(i=0; i<tmn; i++)
 	{
 		for(j=i+1; j<tmn; j++)
@@ -541,7 +664,14 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 			}
 		}
 	}
-	
+#endif
+
+//	BJX2_MapSortTMapBase(ctx,
+//		tmap_addr, tmap_name, tmap_mode, 0, tmn);
+
+	BJX2_MapSortTMapRec(ctx,
+		tmap_addr, tmap_name, tmap_mode, 0, tmn, 32);
+
 	for(i=0; i<tmn; i++)
 	{
 		if(tmap_mode[i]=='L')

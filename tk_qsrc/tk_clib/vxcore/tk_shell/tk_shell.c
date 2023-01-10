@@ -23,6 +23,8 @@ int main(int argc, char *argv[])
 	
 	TKSH_InitCmds();
 
+	TKRA_RegisterHalGetContext();
+
 	tk_printf("TKSH 1\n");
 
 	strcpy(tb_cwd, "/");

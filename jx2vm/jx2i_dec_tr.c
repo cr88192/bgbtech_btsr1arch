@@ -25,13 +25,23 @@
 
 void BJX2_MemSimTraceIS(BJX2_Context *ctx, BJX2_Trace *tr)
 {
+	bjx2_addr pc, lpc;
 	int i;
 
 	if(ctx->no_memcost)
 		return;
 	
+	lpc=~0;
 	for(i=0; i<tr->n_ops; i++)
-		BJX2_MemSimAddrL1I(ctx, tr->ops[i]->pc);
+	{
+		pc=tr->ops[i]->pc;
+		if((pc>>4)==(lpc>>4))
+			continue;
+		BJX2_MemSimAddrL1I(ctx, pc);
+		lpc=pc;
+
+//		BJX2_MemSimAddrL1I(ctx, tr->ops[i]->pc);
+	}
 }
 
 force_inline void BJX2_DecTraceCb_SetupForTrace(
@@ -1871,7 +1881,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			{ BJX2_MemTranslateTlb(ctx, addr+(32*8), 4); }
 	}
 
-	if(ctx->status)
+//	if(ctx->status)
+	if((ctx->status) && !(tfl&2))
 	{
 //		__debugbreak();
 
@@ -1902,11 +1913,18 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	
 //	ctx->v_wexmd=0xFF;
 	
+	op=NULL;
 	ldrl=0; vdrl=0;
 	nc=0; ncyc=0;
 	pc=addr; npc=0; jpc=0; brk=0;
 	while(nc<BJX2_TR_MAXOP)
 	{
+		if(tfl&4)
+		{
+			if((nc>0) && !(op->fl&BJX2_OPFL_WEX))
+				break;
+		}
+	
 //		ctx->trapc=pc;
 	
 		op=BJX2_ContextAllocOpcode(ctx);
@@ -2524,7 +2542,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		}
 	}
 
-	if(nc>=BJX2_TR_MAXOP)
+	if((nc>=BJX2_TR_MAXOP) || (tfl&4))
 		{ npc=pc; }
 
 	tr->n_ops=nc;

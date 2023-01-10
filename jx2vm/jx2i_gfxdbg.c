@@ -335,7 +335,7 @@ int BJX2_GfxDebugRunCommand(BJX2_Context *ctx, char *cmd)
 
 	if(!strcmp(a[0], "next"))
 	{
-		BJX2_RunLimit(ctx, 1);
+		BJX2_RunLimit(ctx, 2);
 		pc=ctx->regs[BJX2_REG_PC];
 		BJX2_DebugConPrintf(ctx, "Debug PC=%012llX\n", pc);
 		return(0);
@@ -452,12 +452,14 @@ int BJX2_GfxDebugRunCommand(BJX2_Context *ctx, char *cmd)
 	}
 
 	
-	if(!strcmp(a[0], "help"))
+	if(	!strcmp(a[0], "help")	||
+		!strcmp(a[0], "h")		)
 	{
 		BJX2_DbgPrintf(ctx, "next           Run current trace\n");
 		BJX2_DbgPrintf(ctx, "step           Step one instruction\n");
-		BJX2_DbgPrintf(ctx, "list           List current trace\n");
+		BJX2_DbgPrintf(ctx, "list [addr]    List current trace\n");
 		BJX2_DbgPrintf(ctx, "regs           Dump registers\n");
+		BJX2_DbgPrintf(ctx, "dump addr [sz] Hex Dump\n");
 		BJX2_DbgPrintf(ctx, "quit           Exit VM\n");
 		BJX2_DbgPrintf(ctx, "c              Continue running\n");
 		BJX2_DbgPrintf(ctx, "print [var]    Print a variable\n");

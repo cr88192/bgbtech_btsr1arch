@@ -65,10 +65,14 @@ void tkra_glVertexPointer(int size, int type, int stride,
 	if(!stride)
 		stride=TKRA_CalcDefaultStride(size, type);
 	
-	ctx->tkgl_vptr_xyz_nsz=size;
-	ctx->tkgl_vptr_xyz_ty=type;
-	ctx->tkgl_vptr_xyz_str=stride;
-	ctx->tkgl_vptr_xyz_ptr=(void *)pointer;
+//	ctx->tkgl_vptr_xyz_nsz=size;
+//	ctx->tkgl_vptr_xyz_ty=type;
+//	ctx->tkgl_vptr_xyz_str=stride;
+//	ctx->tkgl_vptr_xyz_ptr=(void *)pointer;
+
+	ctx->vptr->vptr_xyz_fmt=TKRA_PrimitiveGetFmt(size, type);
+	ctx->vptr->vptr_xyz_str=stride;
+	ctx->vptr->vptr_xyz_ptr=(void *)pointer;
 
 	ctx->VaGetPtr_xyz=TKRA_PrimitiveGetGetPtrXYZ(size, type);
 
@@ -89,10 +93,14 @@ void tkra_glTexCoordPointer(int size, int type, int stride,
 	if(!stride)
 		stride=TKRA_CalcDefaultStride(size, type);
 
-	ctx->tkgl_vptr_st_nsz=size;
-	ctx->tkgl_vptr_st_ty=type;
-	ctx->tkgl_vptr_st_str=stride;
-	ctx->tkgl_vptr_st_ptr=(void *)pointer;
+//	ctx->tkgl_vptr_st_nsz=size;
+//	ctx->tkgl_vptr_st_ty=type;
+//	ctx->tkgl_vptr_st_str=stride;
+//	ctx->tkgl_vptr_st_ptr=(void *)pointer;
+
+	ctx->vptr->vptr_st_fmt=TKRA_PrimitiveGetFmt(size, type);
+	ctx->vptr->vptr_st_str=stride;
+	ctx->vptr->vptr_st_ptr=(void *)pointer;
 
 	ctx->VaGetPtr_st =TKRA_PrimitiveGetGetPtrST(size, type);
 }
@@ -107,10 +115,14 @@ void tkra_glColorPointer(int size, int type, int stride,
 	if(!stride)
 		stride=TKRA_CalcDefaultStride(size, type);
 
-	ctx->tkgl_vptr_rgb_nsz=size;
-	ctx->tkgl_vptr_rgb_ty=type;
-	ctx->tkgl_vptr_rgb_str=stride;
-	ctx->tkgl_vptr_rgb_ptr=(void *)pointer;
+//	ctx->tkgl_vptr_rgb_nsz=size;
+//	ctx->tkgl_vptr_rgb_ty=type;
+//	ctx->tkgl_vptr_rgb_str=stride;
+//	ctx->tkgl_vptr_rgb_ptr=(void *)pointer;
+
+	ctx->vptr->vptr_rgb_fmt=TKRA_PrimitiveGetFmt(size, type);
+	ctx->vptr->vptr_rgb_str=stride;
+	ctx->vptr->vptr_rgb_ptr=(void *)pointer;
 
 	ctx->VaGetPtr_rgb=TKRA_PrimitiveGetGetPtrRGB(size, type);
 }
@@ -125,9 +137,14 @@ void tkra_glNormalPointer(int type, int stride,
 	if(!stride)
 		stride=TKRA_CalcDefaultStride(3, type);
 
-	ctx->tkgl_vptr_nv_ty=type;
-	ctx->tkgl_vptr_nv_str=stride;
-	ctx->tkgl_vptr_nv_ptr=(void *)pointer;
+//	ctx->tkgl_vptr_nv_nsz=3;
+//	ctx->tkgl_vptr_nv_ty=type;
+//	ctx->tkgl_vptr_nv_str=stride;
+//	ctx->tkgl_vptr_nv_ptr=(void *)pointer;
+
+	ctx->vptr->vptr_nv_fmt=TKRA_PrimitiveGetFmt(3, type);
+	ctx->vptr->vptr_nv_str=stride;
+	ctx->vptr->vptr_nv_ptr=(void *)pointer;
 }
 
 void tkra_glInterleavedArrays(int format, int stride, const void *pointer)
@@ -143,6 +160,8 @@ void tkra_glDrawArrays(int mode, int first, int count)
 	ctx=TKRA_GetCurrentContext();
 	
 	ixp=(void *)((nlint)first);
+
+#if 0
 	TKRA_DrawPrimitiveIndexArrayBasic(
 		ctx,
 		ctx->tkgl_vptr_xyz_ptr,	ctx->tkgl_vptr_xyz_nsz,
@@ -151,8 +170,18 @@ void tkra_glDrawArrays(int mode, int first, int count)
 		ctx->tkgl_vptr_st_ty,	ctx->tkgl_vptr_st_str,
 		ctx->tkgl_vptr_rgb_ptr,	ctx->tkgl_vptr_rgb_nsz,
 		ctx->tkgl_vptr_rgb_ty,	ctx->tkgl_vptr_rgb_str,
+		ctx->tkgl_vptr_nv_ptr,	ctx->tkgl_vptr_nv_nsz,
+		ctx->tkgl_vptr_nv_ty,	ctx->tkgl_vptr_nv_str,
 		ixp,	0,
 		mode,	count);
+#endif
+
+	ctx->vptr->vptr_ix_fmt=0;
+	ctx->vptr->vptr_ix_str=1;
+	ctx->vptr->vptr_ix_ptr=ixp;
+
+	TKRA_DrawPrimitiveIndexArrayObj(ctx,
+		ctx->vptr, mode, count);
 }
 
 void tkra_glDrawElements(int mode, int count,
@@ -164,6 +193,8 @@ void tkra_glDrawElements(int mode, int count,
 	ctx=TKRA_GetCurrentContext();
 	
 	ixp=(void *)indices;
+
+#if 0
 	TKRA_DrawPrimitiveIndexArrayBasic(
 		ctx,
 		ctx->tkgl_vptr_xyz_ptr,	ctx->tkgl_vptr_xyz_nsz,
@@ -172,8 +203,18 @@ void tkra_glDrawElements(int mode, int count,
 		ctx->tkgl_vptr_st_ty,	ctx->tkgl_vptr_st_str,
 		ctx->tkgl_vptr_rgb_ptr,	ctx->tkgl_vptr_rgb_nsz,
 		ctx->tkgl_vptr_rgb_ty,	ctx->tkgl_vptr_rgb_str,
+		ctx->tkgl_vptr_nv_ptr,	ctx->tkgl_vptr_nv_nsz,
+		ctx->tkgl_vptr_nv_ty,	ctx->tkgl_vptr_nv_str,
 		ixp,	type,
 		mode,	count);
+#endif
+
+	ctx->vptr->vptr_ix_fmt=TKRA_PrimitiveGetFmt(1, type);
+	ctx->vptr->vptr_ix_str=1;
+	ctx->vptr->vptr_ix_ptr=indices;
+
+	TKRA_DrawPrimitiveIndexArrayObj(ctx,
+		ctx->vptr, mode, count);
 }
 
 void tkra_glBegin(int mode)
@@ -205,6 +246,7 @@ void tkra_glEnd(void)
 		vtxa+0,	4,	TKRA_FLOAT,	8*4,
 		vtxa+4,	2,	TKRA_FLOAT,	8*4,
 		vtxa+6,	4,	TKRA_UBYTE,	8*4,
+		vtxa+7,	3,	TKRA_BYTE,	8*4,
 		NULL,		0,
 		ctx->tkgl_begin_mode,
 		ctx->tkgl_begin_nvtx);
@@ -601,9 +643,14 @@ void tkra_glArrayElement(int idx)
 
 	if(ctx->stateflag1&TKRA_STFL1_TEXCOORD_ARRAY)
 	{
+//		st=ctx->VaGetPtr_st(
+//			((byte *)(ctx->tkgl_vptr_st_ptr))+
+//			(idx*ctx->tkgl_vptr_st_str));
+
 		st=ctx->VaGetPtr_st(
-			((byte *)(ctx->tkgl_vptr_st_ptr))+
-			(idx*ctx->tkgl_vptr_st_str));
+			((byte *)(ctx->vptr->vptr_st_ptr))+
+			(idx*ctx->vptr->vptr_st_str));
+
 		ctx->tkgl_begin_st[0]=tkra_v2f_x(st);
 		ctx->tkgl_begin_st[1]=tkra_v2f_y(st);
 //		tkra_glTexCoord2fv((float *)(&st));
@@ -611,9 +658,12 @@ void tkra_glArrayElement(int idx)
 
 	if(ctx->stateflag1&TKRA_STFL1_COLOR_ARRAY)
 	{
+//		rgb=ctx->VaGetPtr_rgb(
+//			((byte *)(ctx->tkgl_vptr_rgb_ptr))+
+//			(idx*ctx->tkgl_vptr_rgb_str));
 		rgb=ctx->VaGetPtr_rgb(
-			((byte *)(ctx->tkgl_vptr_rgb_ptr))+
-			(idx*ctx->tkgl_vptr_rgb_str));
+			((byte *)(ctx->vptr->vptr_rgb_ptr))+
+			(idx*ctx->vptr->vptr_rgb_str));
 		rgb=((rgb    )&0xFF00FF00U) |
 			((rgb>>16)&0x000000FFU) |
 			((rgb<<16)&0x00FF0000U) ;
@@ -623,9 +673,12 @@ void tkra_glArrayElement(int idx)
 
 	if(ctx->stateflag1&TKRA_STFL1_VERTEX_ARRAY)
 	{
+//		xyz=ctx->VaGetPtr_xyz(
+//			((byte *)(ctx->tkgl_vptr_xyz_ptr))+
+//			(idx*ctx->tkgl_vptr_xyz_str));
 		xyz=ctx->VaGetPtr_xyz(
-			((byte *)(ctx->tkgl_vptr_xyz_ptr))+
-			(idx*ctx->tkgl_vptr_xyz_str));
+			((byte *)(ctx->vptr->vptr_xyz_ptr))+
+			(idx*ctx->vptr->vptr_xyz_str));
 //		tkra_glVertex3fv((float *)(&xyz));
 		tkra_glVertex4fv((float *)(&xyz));
 	}

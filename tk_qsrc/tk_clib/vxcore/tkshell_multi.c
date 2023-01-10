@@ -4,4 +4,6 @@
 
 #include <tk_core.h>
 
+#include "tkrast/tkr_multi.c"
+
 #include "tk_shell/tk_shell.c"

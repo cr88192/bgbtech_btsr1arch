@@ -130,34 +130,20 @@ typedef u32 nlint;
 // #define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(24*24*3)
 
-// #define		TKRA_PARAM_TRISUBDIV_DFL	(64*64*3)
 #define		TKRA_PARAM_TRISUBDIV_DFL	(48*48*3)
 // #define		TKRA_PARAM_TRISUBDIV_DFL	(36*36*3)
-
-// #define		TKRA_PARAM_TRISUBDIV_EDGE	(40*40*3)
-// #define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
-#define		TKRA_PARAM_TRISUBDIV_EDGE	(24*24*3)
-
+#define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(24*24*3)
-// #define		TKRA_PARAM_TRISUBDIV_NEAR	(16*16*3)
-#define		TKRA_PARAM_TRISUBDIV_NEAR	(12*12*3)
+#define		TKRA_PARAM_TRISUBDIV_NEAR	(16*16*3)
 
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(48*48*4)
 // #define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
 
-// #define		TKRA_PARAM_QUADSUBDIV_DFL	(72*72*4)
-// #define		TKRA_PARAM_QUADSUBDIV_DFL	(64*64*4)
-#define		TKRA_PARAM_QUADSUBDIV_DFL	(60*60*4)
-// #define		TKRA_PARAM_QUADSUBDIV_DFL	(56*56*4)
-// #define		TKRA_PARAM_QUADSUBDIV_DFL	(40*40*4)
-
-// #define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
+#define		TKRA_PARAM_QUADSUBDIV_DFL	(40*40*4)
 #define		TKRA_PARAM_QUADSUBDIV_EDGE	(32*32*4)
-
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
-// #define		TKRA_PARAM_QUADSUBDIV_NEAR	(16*16*4)
-#define		TKRA_PARAM_QUADSUBDIV_NEAR	(12*12*4)
+#define		TKRA_PARAM_QUADSUBDIV_NEAR	(16*16*4)
 
 /*
 DrawSpan Parameter Array
@@ -458,11 +444,6 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_TEXTURE2D					0x00008000
 #define TKRA_STFL1_FILL_LINE					0x00010000
 #define TKRA_STFL1_NOSUBDIV						0x00020000
-#define TKRA_STFL1_LIGHTING						0x00040000
-#define TKRA_STFL1_FOG							0x00080000
-#define TKRA_STFL1_USESHADER					0x00100000
-
-#define TKRA_STFL1_DOSHADER_MASK				0x001C0000
 
 
 typedef unsigned short	tkra_rastpixel;
@@ -479,7 +460,6 @@ typedef float		tkra_f32;
 typedef double		tkra_f64;
 
 typedef struct TKRA_Context_s		TKRA_Context;
-typedef struct TKRA_ContextVt_s	TKRA_ContextVt;
 typedef struct TKRA_TexImage_s		TKRA_TexImage;
 
 // #ifdef __BJX2__
@@ -528,32 +508,25 @@ typedef struct {
 }tkra_mat4;
 
 typedef struct {
-	tkra_vec4f	xyz;			//00
-	tkra_vec4f	pv;				//10
-	tkra_vec2f	st;				//20
-	u32			rgb;			//28
-	u32			nv;				//2C
-
-	int			fl;				//30
-	u32			mrgb;			//34, RGBA (Material)
-	int			pad1;			//38
-	int			pad2;			//3C
-
-//	tkra_vec4f	norm;			//40
-	u64			attrib[8];		//40
-	//80
+	tkra_vec4f	xyz;
+	tkra_vec2f	st;
+	u32			rgb;
 }tkra_trivertex;
 
 typedef struct {
-	s32 x;		//00
-	s32 y;		//04
-	s32 z;		//08
-	s32	s;		//0C
-	s32 t;		//10
-	u32 rgb;	//14
-	//18
-	u64 pad;
-	u64 attrib[4];
+	s32 x;
+	s32 y;
+	s32 z;
+	s32	s;
+	s32 t;
+
+//	u16 x;
+//	u16 y;
+//	u16 z;
+//	u16 w;
+//	s16	s;
+//	s16 t;
+	u32 rgb;
 }tkra_projvertex;
 
 typedef u64 (*tkra_blendfunc_t)(u64 sclr, u64 dclr);
@@ -562,76 +535,10 @@ typedef int (*tkra_zatest_t)(
 	s32 zsrc, s32 ztgt, s32 zref, s32 *zmod,
 	u64 csrc, u64 ctgt, u64 cref, u64 *cmod);
 
-typedef struct TKRA_ShaderProg_s		TKRA_ShaderProg;
-typedef struct TKRA_ShaderTrace_s		TKRA_ShaderTrace;
-typedef struct TKRA_ShaderOp_s			TKRA_ShaderOp;
-typedef struct TKRA_DrawPrimArrays_s	TKRA_DrawPrimArrays;
-
-
-struct TKRA_ShaderProg_s
-{
-	TKRA_ShaderProg *next;
-	u16 sdr_id;
-	u64 vars_uniform[256];	//uniform variables
-	u64 *wordcode_img[4];	//wordcode image (vertex)
-};
-
-#define TKRA_SHADER_MAXTROPS	16
-
-struct TKRA_ShaderTrace_s
-{
-	TKRA_ShaderTrace *(*Run)(TKRA_Context *ctx, TKRA_ShaderTrace *tr);
-	u32 sdr_idpc;			//Shader ID+PC
-	byte n_ops;
-	TKRA_ShaderTrace	*tr_next;		//Next Trace (PC Order)
-	TKRA_ShaderTrace	*tr_jump;		//Jump Trace
-	TKRA_ShaderOp		*ops[TKRA_SHADER_MAXTROPS];
-};
-
-struct TKRA_ShaderOp_s
-{
-	void (*Run)(TKRA_Context *ctx, TKRA_ShaderOp *op);
-	byte nmid;
-	byte fmid;
-	byte rn;
-	byte rs;
-	byte rt;
-	byte opfl;
-	u32	imm;
-};
-
-struct TKRA_ContextVt_s
-{
-void *resv0;		//reserved 0
-void *resv1;		//reserved 0
-void *resv2;		//reserved 0
-void *resv3;		//reserved 0
-
-int (*DrawPrimitiveIndexArrayObj)(
-	TKRA_Context *ctx,
-	TKRA_DrawPrimArrays	*parr,
-	int mode,		int count);
-
-void (*UpdateTexImg)(
-	TKRA_Context *ctx,
-	TKRA_TexImage *img,
-	tkra_rastpixel *buf,
-	int xs, int ys, int mip, int flag);
-void (*UpdateTexImgUtx2)(
-	TKRA_Context *ctx,
-	TKRA_TexImage *img,
-	u64 *buf,
-	int xs, int ys, int mip, int flag);
-
-TKRA_TexImage *(*LookupTexImg)(TKRA_Context *ctx, int num);
-TKRA_TexImage *(*GetTexImg)(TKRA_Context *ctx, int num);
-int (*BindTexImg)(TKRA_Context *ctx, TKRA_TexImage *img);
-};
+typedef struct TKRA_DrawPrimArrays_s TKRA_DrawPrimArrays;
 
 struct TKRA_Context_s
 {
-TKRA_ContextVt	*vt;			//vtable
-
 byte			*screen_mem;	//combined screen memory
 tkra_rastpixel	*screen_rgb;	//display buffer (RGB)
 tkra_zbufpixel	*screen_zbuf;	//display buffer (Z buffer)
@@ -740,52 +647,11 @@ byte		zat_alfunc;
 byte		zat_zfunc;
 byte		blend_isready;
 
-byte		light_mask;
-
-tkra_vec4f	light_model_ambient;
-tkra_vec4f	light_ambient[8];
-tkra_vec4f	light_diffuse[8];
-tkra_vec4f	light_specular[8];
-tkra_vec4f	light_position[8];
-tkra_vec4f	light_spot_dir[8];
-float		light_spot_exp[8];
-float		light_spot_cutoff[8];
-float		light_attn_const[8];
-float		light_attn_linear[8];
-float		light_attn_quadratic[8];
-
 tkra_blendfunc_t	Blend;
 tkra_zatest_t		ZaTest;
 
 u32		zat_cref;
 
-int		tkgl_usepgm_vtx;		//vertex shader
-u64		*tkgl_sdr_uniform;		//uniform parameters
-u64		*tkgl_sdr_local;		//local parameters
-u64		*tkgl_sdr_attrib;		//local parameters
-
-TKRA_ShaderTrace *sdr_trcache[1024];
-u16 sdr_trchain[1024];
-u16 sdr_n_trace;
-u16 sdr_trhash[256];
-
-TKRA_ShaderProg		*sdr_progs;
-TKRA_ShaderTrace	*sdr_tr_free;
-TKRA_ShaderTrace	*sdr_tr_next;
-TKRA_ShaderOp		*sdr_op_free;
-
-TKRA_ShaderProg		*sdr_prog_cur;
-TKRA_ShaderTrace	*sdr_tr_e_vtx;
-
-tkra_trivertex v0stk[64];
-tkra_trivertex v1stk[64];
-tkra_trivertex v2stk[64];
-tkra_trivertex v3stk[64];
-
-TKRA_DrawPrimArrays t_vptr;
-TKRA_DrawPrimArrays *vptr;
-
-#if 0
 int		tkgl_vptr_xyz_nsz;
 int		tkgl_vptr_xyz_ty;
 int		tkgl_vptr_xyz_str;
@@ -805,7 +671,6 @@ int		tkgl_vptr_nv_nsz;
 int		tkgl_vptr_nv_ty;
 int		tkgl_vptr_nv_str;
 void 	*tkgl_vptr_nv_ptr;
-#endif
 
 int		tkgl_begin_mode;
 u32		tkgl_begin_rgba;

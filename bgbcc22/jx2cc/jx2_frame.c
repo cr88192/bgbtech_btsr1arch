@@ -1949,6 +1949,9 @@ int BGBCC_JX2C_SizeToBndTag16(
 {
 	int i, tt, sc;
 	
+	if(BGBCC_CCXL_TypeArrayP(ctx, tty))
+		return(0);
+	
 	tt=-1;
 	switch(tty.val)
 	{
@@ -2007,7 +2010,8 @@ int BGBCC_JX2C_SizeToBndTag16(
 	
 //	return(0x3000|(tt<<8)|i);
 //	return(0x3000|i);
-	return(0x3100|(i+2));		/* lax pad */
+//	return(0x3100|(i+2));		/* lax pad */
+	return(0x3100|(i+3));		/* lax pad */
 }
 
 int BGBCC_JX2C_CheckPadToBndTag16(
@@ -2089,7 +2093,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 			if(sctx->abi_spillpad&4)
 			{
 				BGBCC_CCXL_TypeDerefType(ctx, tty, &bty);
-				asz=BGBCC_CCXL_TypeGetArrayDimSize(ctx, tty);
+//				asz=BGBCC_CCXL_TypeGetArrayDimSize(ctx, tty);
+				asz=BGBCC_CCXL_TypeGetArraySize(ctx, tty);
 //				tag=BGBCC_JX2C_SizeToBndTag16(ctx, sctx, asz+3, bty);
 				tag=BGBCC_JX2C_SizeToBndTag16(ctx, sctx, asz, bty);
 				if(tag>0)
@@ -3059,6 +3064,23 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		}
 
 		tty=BGBCC_CCXL_GetRegType(ctx, sreg);
+
+#if 1
+		if((sctx->abi_spillpad&4) &&
+			BGBCC_CCXL_TypeArrayP(ctx, tty))
+		{
+			BGBCC_CCXL_TypeDerefType(ctx, tty, &bty);
+			asz=BGBCC_CCXL_TypeGetArrayDimSize(ctx, tty);
+//			asz=BGBCC_CCXL_TypeGetArraySize(ctx, tty);
+//				tag=BGBCC_JX2C_SizeToBndTag16(ctx, sctx, asz+3, bty);
+			tag=BGBCC_JX2C_SizeToBndTag16(ctx, sctx, asz, bty);
+			if(tag>0)
+			{
+				BGBCC_JX2_EmitOpRegImmReg(sctx,
+					BGBCC_SH_NMID_MOVTT, treg, tag, treg);
+			}
+		}
+#endif
 
 		if(BGBCC_CCXL_TypeValueObjectP(ctx, tty) ||
 //			BGBCC_CCXL_TypeFunctionP(ctx, tty) ||

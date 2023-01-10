@@ -1,3 +1,34 @@
+void TKRA_UpdateTexImg(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
+	tkra_rastpixel *buf, int xs, int ys, int mip, int flag)
+{
+	return(ctx->vt->UpdateTexImg(ctx, img, buf, xs, ys, mip, flag));
+}
+
+void TKRA_UpdateTexImgUtx2(
+	TKRA_Context *ctx,
+	TKRA_TexImage *img,
+	u64 *buf, int xs, int ys, int mip, int flag)
+{
+	return(ctx->vt->UpdateTexImgUtx2(ctx, img, buf, xs, ys, mip, flag));
+}
+
+TKRA_TexImage *TKRA_LookupTexImg(TKRA_Context *ctx, int img)
+{
+	return(ctx->vt->LookupTexImg(ctx, img));
+}
+
+TKRA_TexImage *TKRA_GetTexImg(TKRA_Context *ctx, int img)
+{
+	return(ctx->vt->GetTexImg(ctx, img));
+}
+
+int TKRA_BindTexImg(TKRA_Context *ctx, TKRA_TexImage *img)
+{
+	return(ctx->vt->BindTexImg(ctx, img));
+}
+
 int tkra_teximg_packrgb555(int cr, int cg, int cb, int ca)
 {
 	int v;
@@ -213,8 +244,8 @@ void tkra_glTexImage2D(
 	ctx=TKRA_GetCurrentContext();
 	img=ctx->tex_cur;
 
-//	TKRA_UpdateTexImg(img, txbuf, width, height, level);
-	TKRA_UpdateTexImg(img, ixbuf, ixw, ixh, level, flag);
+//	TKRA_UpdateTexImg(ctx, img, txbuf, width, height, level);
+	TKRA_UpdateTexImg(ctx, img, ixbuf, ixw, ixh, level, flag);
 	TKRA_BindTexImg(ctx, img);
 }
 
@@ -277,17 +308,17 @@ void tkra_glCompressedTexImage2D(int target,
 
 	if(internalformat==TKRA_GL_CMPR_RGB_S3TC_DXT1)
 	{
-		TKRA_UpdateTexImgDxt1(img, data, width, height, level,
+		TKRA_UpdateTexImgDxt1(ctx, img, data, width, height, level,
 			TKRA_TRFL_NOALPHA);
 	}else
 		if(internalformat==TKRA_GL_CMPR_RGBA_S3TC_DXT1)
 	{
-		TKRA_UpdateTexImgDxt1(img, data, width, height, level,
+		TKRA_UpdateTexImgDxt1(ctx, img, data, width, height, level,
 			TKRA_TRFL_ALPHA);
 	}else
 		if(internalformat==TKRA_GL_CMPR_RGBA_S3TC_DXT5)
 	{
-		TKRA_UpdateTexImgDxt5(img, data, width, height, level,
+		TKRA_UpdateTexImgDxt5(ctx, img, data, width, height, level,
 			TKRA_TRFL_ALPHA);
 	}
 
@@ -309,7 +340,7 @@ void tkra_glBindTexture(int target, int texture)
 	TKRA_BindTexImg(ctx, img);
 
 //	img=ctx->tex_cur;
-//	TKRA_UpdateTexImg(img, txbuf, width, height, level);
+//	TKRA_UpdateTexImg(ctx, img, txbuf, width, height, level);
 }
 
 void tkra_glTexParameteri(int target, int pname, int param);
@@ -476,8 +507,8 @@ void tkra_glDeleteTextures(int cnt, int *list)
 		TKRA_BindTexImg(ctx, img);
 
 		px=0x7FFF;
-//		TKRA_UpdateTexImg(img, NULL, 0, 0, 0, 0);
-		TKRA_UpdateTexImg(img, &px, 1, 1, 0, 0);
+//		TKRA_UpdateTexImg(ctx, img, NULL, 0, 0, 0, 0);
+		TKRA_UpdateTexImg(ctx, img, &px, 1, 1, 0, 0);
 		
 		if(img==ctx->tex_cur)
 		{
@@ -486,7 +517,7 @@ void tkra_glDeleteTextures(int cnt, int *list)
 	}
 
 //	img=ctx->tex_cur;
-//	TKRA_UpdateTexImg(img, txbuf, width, height, level);
+//	TKRA_UpdateTexImg(ctx, img, txbuf, width, height, level);
 }
 
 #if 0
