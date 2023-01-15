@@ -1903,11 +1903,14 @@ int BGBCC_JX2C_EmitDiffPtrVRegVRegVReg(
 		{
 			if(sctx->abi_spillpad&4)
 			{
-				BGBCC_JX2_EmitOpRegReg(sctx,
-					BGBCC_SH_NMID_MOVZT, cdreg, cdreg);
-			}
-
-			if(shl>0)
+//				BGBCC_JX2_EmitOpRegReg(sctx,
+//					BGBCC_SH_NMID_MOVZT, cdreg, cdreg);
+				BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_SHADQ,
+					cdreg, 16, cdreg);
+				BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_SHADQ,
+					cdreg, -(16+shl), cdreg);
+			}else
+				if(shl>0)
 			{
 //				if(sctx->is_addr64)
 				if(1)

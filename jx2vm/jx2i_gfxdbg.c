@@ -11,6 +11,11 @@ int BJX2_DebugConScrollUp(BJX2_Context *ctx)
 	
 	for(y=0; y<49; y++)
 	{
+		memcpy(
+			jx2i_gfxcon_dbgconbuf+(y+0)*80*8,
+			jx2i_gfxcon_dbgconbuf+(y+1)*80*8,
+			80*8*sizeof(u32));
+#if 0
 		for(x=0; x<80; x++)
 		{
 			for(z=0; z<8; z++)
@@ -19,8 +24,15 @@ int BJX2_DebugConScrollUp(BJX2_Context *ctx)
 					jx2i_gfxcon_dbgconbuf[((y+1)*80+x)*8+z];
 			}
 		}
+#endif
 	}
 
+	memset(
+		jx2i_gfxcon_dbgconbuf+49*80*8,
+		0,
+		80*8*sizeof(u32));
+
+#if 0
 	for(x=0; x<80; x++)
 	{
 		for(z=0; z<8; z++)
@@ -28,6 +40,7 @@ int BJX2_DebugConScrollUp(BJX2_Context *ctx)
 			jx2i_gfxcon_dbgconbuf[(49*80+x)*8+z] = 0;
 		}
 	}
+#endif
 	return(0);
 }
 

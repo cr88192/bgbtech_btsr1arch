@@ -1114,8 +1114,13 @@ ccxl_status BGBCC_CCXL_MovLoadStore(BGBCC_TransState *ctx,
 	j=BGBCC_CCXL_LookupAsRegisterStore(ctx, dname, &dreg);
 	if((i<=0) || (j<=0))
 	{
+		BGBCC_CCXL_TagError(ctx,
+			CCXL_TERR_STATUS(CCXL_STATUS_ERR_LOOKUPFAIL));
+
 		if(!i || !j)
+		{
 			return(CCXL_STATUS_ERR_LOOKUPFAIL);
+		}
 		if(i<0)return(i);
 		if(j<0)return(j);
 		return(CCXL_STATUS_ERR_GENERIC);
@@ -4040,6 +4045,15 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
 	st=BGBCC_CCXL_LookupStructureForType(ctx, sty);
+	if(!st)
+	{
+		st=BGBCC_CCXL_LookupStructureForType(ctx, sty);
+
+		BGBCC_CCXL_PushRegister(ctx, sreg);
+
+		BGBCC_CCXL_Error(ctx, "Can't access %s in non-structure\n", name);
+		return(CCXL_STATUS_ERR_BADOPARGS);
+	}
 
 	if(BGBCC_CCXL_IsRegThisP(ctx, sreg))
 	{
@@ -4123,6 +4137,9 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 	
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 
+	BGBCC_CCXL_Error(ctx, "Undefined Member %s -> %s\n",
+		st->decl->qname, name);
+
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS));
 	return(CCXL_STATUS_ERR_BADOPARGS);
@@ -4154,6 +4171,9 @@ ccxl_status BGBCC_CCXL_StackStoreSlot(BGBCC_TransState *ctx, char *name)
 	if(!st)
 	{
 		st=BGBCC_CCXL_LookupStructureForType(ctx, sty);
+
+		BGBCC_CCXL_Error(ctx, "Can't access %s in non-structure\n", name);
+		return(CCXL_STATUS_ERR_BADOPARGS);
 	}
 
 	if(BGBCC_CCXL_IsRegThisP(ctx, dreg))
@@ -4234,6 +4254,9 @@ ccxl_status BGBCC_CCXL_StackStoreSlot(BGBCC_TransState *ctx, char *name)
 	}
 #endif
 	
+	BGBCC_CCXL_Error(ctx, "Undefined Member %s -> %s\n",
+		st->decl->qname, name);
+
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS));
 	return(CCXL_STATUS_ERR_BADOPARGS);
@@ -4255,6 +4278,15 @@ ccxl_status BGBCC_CCXL_StackLoadSlotAddr(BGBCC_TransState *ctx, char *name)
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
 	st=BGBCC_CCXL_LookupStructureForType(ctx, sty);
+	if(!st)
+	{
+		st=BGBCC_CCXL_LookupStructureForType(ctx, sty);
+
+		BGBCC_CCXL_PushRegister(ctx, sreg);
+
+		BGBCC_CCXL_Error(ctx, "Can't access %s in non-structure\n", name);
+		return(CCXL_STATUS_ERR_BADOPARGS);
+	}
 
 //	st=BGBCC_CCXL_LookupStructureForSig(ctx, sig);
 //	bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_I);
@@ -4296,7 +4328,12 @@ ccxl_status BGBCC_CCXL_StackLoadSlotAddr(BGBCC_TransState *ctx, char *name)
 		ctx->ril3_noril--;
 		return(i);
 	}
-	
+
+	BGBCC_CCXL_Error(ctx, "Undefined Member %s -> %s\n",
+		st->decl->qname, name);
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS));
 	return(CCXL_STATUS_ERR_BADOPARGS);

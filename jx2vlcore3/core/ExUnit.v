@@ -1343,7 +1343,7 @@ ExEX1	ex1(
 wire[7:0]	exB1ValCarryD;
 
 // wire[65:0]	ex1ValAlu;
-wire[69:0]	ex1ValAlu;
+wire[72:0]	ex1ValAlu;
 // wire		ex1AluSrT;
 
 ExALU	exAlu(
@@ -1355,7 +1355,7 @@ ExALU	exAlu(
 	exHold2,			{ ex1RegInSr[7:4], ex1RegInSr[1:0] },
 //	ex1ValAlu,			ex1AluSrT);
 //	ex1ValAlu[63:0],	ex1ValAlu[65:64]);
-	ex1ValAlu[63:0],	ex1ValAlu[69:64],
+	ex1ValAlu[63:0],	ex1ValAlu[72:64],
 	exB1ValCarryD,		ex1AluSrJcmpT);
 
 // ExMul	ex1Mul(
@@ -1616,7 +1616,7 @@ wire[63:0]		ex2RegValCn2;		//Destination Value (CR, EX1)
 reg[47:0]		ex2RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex2RegValImm;		//Immediate (Decode)
 // reg[65:0]		ex2RegAluRes;		//Arithmetic Result
-reg[69:0]		ex2RegAluRes;		//Arithmetic Result
+reg[72:0]		ex2RegAluRes;		//Arithmetic Result
 reg[63:0]		ex2RegMulRes;		//Multiplier Result
 reg[63:0]		ex2RegMulWRes;		//Multiplier Result (Word)
 // reg[63:0]		ex2RegFpuGRn;		//FPU GPR Result

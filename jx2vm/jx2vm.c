@@ -918,6 +918,7 @@ void btesh_main_iterate()
 		BJX2_GfxDebugRefresh(ctx);
 	}
 
+	i=0;
 	if(!jx2i_gfxcon_isdbg)
 	{
 		do {

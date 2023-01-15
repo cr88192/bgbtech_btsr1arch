@@ -132,7 +132,8 @@ input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
 // input[65:0]		regValAluRes;	//ALU Result
-input[69:0]		regValAluRes;	//ALU Result
+// input[69:0]		regValAluRes;	//ALU Result
+input[72:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulRes;	//Multiplier Result
 input[63:0]		regValMulwRes;	//Multiplier Result
 input[65:0]		regValKrreRes;	//Keyring Result
@@ -336,7 +337,8 @@ begin
 			tRegHeld	= 1;
 		end
 
-		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
+		JX2_UCMD_ALU3, JX2_UCMD_UNARY,
+		JX2_UCMD_ALUW3,
 //		JX2_UCMD_CONV2_RR,
 		JX2_UCMD_ALUB3: begin
 //			tRegIdRn2		= regIdRm;			//
@@ -344,6 +346,26 @@ begin
 			tDoAluSrT		= 1;
 			tValOutDfl		= regValAluRes[63:0];
 			tDoOutDfl		= 1;
+
+`ifndef def_true
+			if(tOpUCmd1==JX2_UCMD_ALU3)
+			begin
+				casez(opUIxt[3:0])
+					4:b000z:	tDoAluSrT		= 0;
+					4:b0101:	tDoAluSrT		= 0;
+					4:b011z:	tDoAluSrT		= 0;
+					default:	begin end
+				endcase
+			end
+			
+			if(tOpUCmd1==JX2_UCMD_ALUW3)
+			begin
+				if(!opUIxt[3])
+					tDoAluSrT		= 0;
+				if(opUIxt[5:0] == JX2_UCIX_ALUW_MOVTA16)
+					tDoAluSrT		= 0;
+			end
+`endif
 		end
 
 		JX2_UCMD_CONV2_RR: begin
@@ -517,7 +539,12 @@ begin
 
 	if(tDoAluSrT)
 	begin
-		tRegOutSr[1:0]	= regValAluRes[65:64];
+		if(regValAluRes[70])
+			tRegOutSr[0]	= regValAluRes[64];
+		if(regValAluRes[71])
+			tRegOutSr[1]	= regValAluRes[65];
+
+//		tRegOutSr[1:0]	= regValAluRes[65:64];
 		tRegOutSr[7:4]	= regValAluRes[69:66];
 
 `ifndef def_true
