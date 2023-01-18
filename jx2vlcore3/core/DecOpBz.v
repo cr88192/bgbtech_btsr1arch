@@ -1783,7 +1783,7 @@ begin
 	case(opFmid)
 		JX2_FMID_INV: begin
 //			$display("Jx2DecOp: Inv %x", istrWord);
-			$display("Jx2DecOp: Inv %X-%X-%X",
+			$display("Jx2DecOp Bz: Inv %X-%X-%X",
 			istrWord[15:0], istrWord[31:16], istrWord[47:32]);
 		end
 

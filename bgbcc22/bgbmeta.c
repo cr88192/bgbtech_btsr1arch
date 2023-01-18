@@ -43,6 +43,8 @@ int bgbcc_msec_tot;
 char *bgbcc_opts[256];
 int bgbcc_nopts;
 
+int bgbcc_istool;
+int bgbcc_verbose;
 
 #if 0
 // BGBCC_API int BGBCC_BindSig(BGBCC_State *ctx, char *name, char *sig)
@@ -883,7 +885,10 @@ int BGBCC_LoadCMeta(char *name)
 		return(-1);
 	}
 
-	printf("BGBCC_LoadCMeta: %s %d bytes\n", name, sz);
+	if(bgbcc_verbose)
+	{
+		printf("BGBCC_LoadCMeta: %s %d bytes\n", name, sz);
+	}
 
 	strcpy(tb, name);
 	s=tb;
@@ -1029,8 +1034,11 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 		return(NULL);
 	}
 
-//	printf("BGBCC_LoadCSourceAST: %s %d bytes\n", name, sz);
-	printf("%s %d bytes\n", name, sz);
+	if(bgbcc_verbose)
+	{
+//		printf("BGBCC_LoadCSourceAST: %s %d bytes\n", name, sz);
+		printf("%s %d bytes\n", name, sz);
+	}
 
 	strcpy(tb, name);
 	s=tb;
@@ -1133,6 +1141,7 @@ int BGBCC_LoadCSourcesCCXL(
 	ctx->imgbasename=dllname;
 	ctx->imgname=bgbcc_strdup(bgbcc_imgname);
 	ctx->optmode=bgbcc_optmode;
+	ctx->verbose=bgbcc_verbose;
 	ctx->imgfmt=imgfmt;
 	
 	ctx->optstrs=bgbcc_opts;
@@ -1195,16 +1204,23 @@ int BGBCC_LoadCSourcesCCXL(
 
 		lang=BGBCP_LangForName(names[i]);
 
-#if 0
+#if 1
 //		lang=BGBCP_LangForName(names[i]);
-		if(lang==BGBCC_IMGFMT_RIL3)
+		if(	(lang==BGBCC_IMGFMT_RIL3) ||
+			(lang==BGBCC_IMGFMT_OBJ))
 		{
 			buf=bgbcc_loadfile2(names[i], &sz);
 			if(buf)
-				{ BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz); }
+			{
+				BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
+				if(ctx->n_error)
+					break;
+			}
 			continue;
 		}
+#endif
 
+#if 0
 		if(lang==BGBCC_IMGFMT_DLL)
 		{
 			buf=bgbcc_loadfile2(names[i], &sz);
@@ -1346,14 +1362,17 @@ int BGBCC_LoadCSourcesCCXL(
 //		BGBCC_StoreFile(tb, ctx->ril_ips, ctx->ril_ip-ctx->ril_ips);
 //	}
 
-	if(bgbcc_msec_tot>0)
+	if(ctx->verbose)
 	{
-		printf("Preproc Module tot=%dms, avg=%d\n",
-			bgbcc_msec_pp, bgbcc_msec_pp/bgbcc_msec_tot);
-		printf("Parse Module tot=%dms, avg=%d\n",
-			bgbcc_msec_cp, bgbcc_msec_cp/bgbcc_msec_tot);
-		printf("Compile Module tot=%dms, avg=%d\n",
-			bgbcc_msec_cc, bgbcc_msec_cc/bgbcc_msec_tot);
+		if(bgbcc_msec_tot>0)
+		{
+			printf("Preproc Module tot=%dms, avg=%d\n",
+				bgbcc_msec_pp, bgbcc_msec_pp/bgbcc_msec_tot);
+			printf("Parse Module tot=%dms, avg=%d\n",
+				bgbcc_msec_cp, bgbcc_msec_cp/bgbcc_msec_tot);
+			printf("Compile Module tot=%dms, avg=%d\n",
+				bgbcc_msec_cc, bgbcc_msec_cc/bgbcc_msec_tot);
+		}
 	}
 
 	if(imgfmt==BGBCC_IMGFMT_RIL3)
@@ -1384,7 +1403,10 @@ int BGBCC_LoadCSourcesCCXL(
 	i=BGBCC_CCXL_FlattenImage(ctx, obuf, &sz, imgfmt);
 	t1=clock();
 	t2=t1-t0;
-	printf("Flatten Image %dms\n", t2);
+	if(ctx->verbose)
+	{
+		printf("Flatten Image %dms\n", t2);
+	}
 
 	BGBCC_CCXL_PrintTagWarn(ctx);
 
@@ -1397,6 +1419,10 @@ int BGBCC_LoadCSourcesCCXL(
 }
 #endif
 
+
+char *bgbcc_share_base;
+char *bgbcc_share_inc;
+char *bgbcc_share_lib;
 
 u32 BGBCC_GetArch()
 	{ return(bgbcc_arch); }
@@ -1411,12 +1437,18 @@ int BGBCC_LoadConfig(char *name)
 	FILE *fd;
 	int i;
 	
-	printf("BGBCC_LoadConfig: Try %s\n", name);
+	if(bgbcc_verbose)
+	{
+		printf("BGBCC_LoadConfig: Try %s\n", name);
+	}
 	
 	fd=fopen(name, "rt");
 	if(!fd)
 	{
-		printf("BGBCC_LoadConfig: Fail %s\n", name);
+		if(bgbcc_verbose)
+		{
+			printf("BGBCC_LoadConfig: Fail %s\n", name);
+		}
 		return(-1);
 	}
 	
@@ -1461,9 +1493,30 @@ int BGBCC_LoadConfig(char *name)
 				{ bgbcc_subarch=BGBCP_SubArchForName(bgbcc_arch, a[1]); }
 			continue;
 		}
+
+		if(!strcmp(a[0], "share_base"))
+		{
+			bgbcc_share_base=bgbcc_strdup(a[1]);
+			continue;
+		}
+
+		if(!strcmp(a[0], "share_include"))
+		{
+			bgbcc_share_inc=bgbcc_strdup(a[1]);
+			continue;
+		}
+
+		if(!strcmp(a[0], "share_lib"))
+		{
+			bgbcc_share_lib=bgbcc_strdup(a[1]);
+			continue;
+		}
 	}
 
-	printf("BGBCC_LoadConfig: Done %s\n", name);
+	if(bgbcc_verbose)
+	{
+		printf("BGBCC_LoadConfig: Done %s\n", name);
+	}
 
 	return(0);
 }
@@ -1513,6 +1566,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	int i, j, k, m, endian;
 	char *s, *t;
 	char *mach_name, *gcc_ver, *home, *base, *cfg, *prefix;
+	char *usrlib_home;
 	time_t tt0;
 	struct tm *tm0;
 //#ifdef linux
@@ -1546,9 +1600,31 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	home=NULL;
 	base=NULL;
 	prefix=NULL;
+	bgbcc_share_base=NULL;
+	usrlib_home=NULL;
+	
 	bgbcc_gshash=0;
 	bgbcc_dumpast=0;
 	bgbcc_optmode=BGBCC_OPT_DEFAULT;
+//	bgbcc_verbose=1;
+	bgbcc_verbose=0;
+
+	bgbcc_istool=0;
+	if(!strcmp(argv[0]+strlen(argv[0])-3, "-cc"))
+		bgbcc_istool=1;
+	if(!strcmp(argv[0]+strlen(argv[0])-4, "-gcc"))
+		bgbcc_istool=1;
+
+	if(!strcmp(argv[0]+strlen(argv[0])-3, "-ld"))
+		bgbcc_istool=2;
+	if(!strcmp(argv[0]+strlen(argv[0])-3, "-as"))
+		bgbcc_istool=3;
+
+	if(bgbcc_istool)
+	{
+		bgbcc_verbose=0;
+//		printf("BGBCC_InitEnv: IsTool=%d\n", bgbcc_istool);
+	}
 
 	m=0;
 	for(i=1; i<argc; i++)
@@ -1567,6 +1643,12 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			if(!strncmp(argv[i]+2, "home=", 5))
 			{
 				home=argv[i]+7;
+				continue;
+			}
+
+			if(!strncmp(argv[i]+2, "usrlib_home=", 5))
+			{
+				usrlib_home=argv[i]+7;
 				continue;
 			}
 
@@ -1607,6 +1689,12 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 				continue;
 			}
 
+			if(!strcmp(argv[i]+1, "v"))
+			{
+				bgbcc_verbose=1;
+				continue;
+			}
+
 			if(!strncmp(argv[i]+1, "m", 1))
 			{
 				if(!strcmp(argv[i]+1, "m?"))
@@ -1621,25 +1709,32 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 
 			if(!strncmp(argv[i]+1, "cfg=", 4))
 			{
-				cfg=argv[i]+5;
+				cfg=argv[i]+4;
 				continue;
 			}
 
 			if(!strncmp(argv[i]+1, "home=", 5))
 			{
-				home=argv[i]+6;
+				home=argv[i]+5;
+				continue;
+			}
+
+			if(!strncmp(argv[i]+1, "usrlib_home=", 12))
+			{
+				usrlib_home=argv[i]+12;
 				continue;
 			}
 
 			if(!strncmp(argv[i]+1, "locale=", 7))
 			{
-				BGBCP_SetDefaultLocale(argv[i]+8);
+				BGBCP_SetDefaultLocale(argv[i]+7);
 				continue;
 			}
 
 			if(!strncmp(argv[i]+1, "Zz", 2))
 			{
 				bgbcc_dumpast=1;
+				bgbcc_verbose=1;
 				continue;
 			}
 
@@ -1765,6 +1860,22 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			continue;
 		}
 #endif
+
+		k=BGBCP_LangForName(argv[i]);
+		
+		if(bgbcc_istool==1)
+		{
+			if((k==BGBCC_LANG_C) ||
+				(k==BGBCC_LANG_CPP) ||
+				(k==BGBCC_LANG_CS) ||
+				(k==BGBCC_LANG_BS) ||
+				(k==BGBCC_LANG_BS2) ||
+				(k==BGBCC_LANG_JAVA) ||
+				(k==BGBCC_LANG_ASM))
+			{
+				m|=64;
+			}
+		}
 	}
 
 	if(m&128)
@@ -1826,6 +1937,14 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			prefix=s;
 		}
 #endif
+
+#if 1
+		if(!strnicmp(env[i], "USRLIB_HOME=", strlen("USRLIB_HOME=")))
+		{
+			s=env[i]+strlen("USRLIB_HOME=");
+			usrlib_home=s;
+		}
+#endif
 	}
 
 #ifdef _WIN32
@@ -1833,13 +1952,20 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 #else
 	strcpy(buf, argv[0]);
 #endif
-	printf("BGBCC_InitEnv: Try %s\n", buf);
+
+	if(bgbcc_verbose)
+	{
+		printf("BGBCC_InitEnv: Try %s\n", buf);
+	}
 
 	s=buf+strlen(buf);
 	while((s>buf) && (*s!='/') && (*s!='\\'))
 		s--;
 
-	printf("BGBCC_InitEnv: Try %s\n", s);
+	if(bgbcc_verbose)
+	{
+		printf("BGBCC_InitEnv: Try %s\n", s);
+	}
 
 	if(s>buf)
 	{
@@ -1847,7 +1973,10 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 		base=bgbcc_strdup(buf);
 	}
 
-	printf("BGBCC_InitEnv: Buf %s\n", buf);
+	if(bgbcc_verbose)
+	{
+		printf("BGBCC_InitEnv: Buf %s\n", buf);
+	}
 
 #ifdef linux
 	if(!home)home="~";
@@ -1863,22 +1992,46 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			base=bgbcc_strdup("/usr/bin");
 		}
 	}
+	
+	if(!bgbcc_share_base)
+	{
+		if(usrlib_home)
+		{
+			bgbcc_share_base=bgbcc_strdup(usrlib_home);
+		}else
+			if(prefix)
+		{
+			sprintf(tb, "%s/share/bgbcc", prefix);
+			bgbcc_share_base=bgbcc_strdup(tb);
+		}else
+		{
+			bgbcc_share_base=bgbcc_strdup("/usr/share/bgbcc");
+		}
+	}
 #endif
 
-	if(home)
-		printf("BGBCC_InitEnv: Home %s\n", home);
-	if(base)
-		printf("BGBCC_InitEnv: Base %s\n", base);
+#ifdef _WIN32
+	if(!bgbcc_share_base)
+	{
+		if(usrlib_home)
+		{
+			bgbcc_share_base=bgbcc_strdup(usrlib_home);
+		}else
+		{
+		}
+	}
+#endif
+
+	if(bgbcc_verbose)
+	{
+		if(home)
+			printf("BGBCC_InitEnv: Home %s\n", home);
+		if(base)
+			printf("BGBCC_InitEnv: Base %s\n", base);
+	}
 
 	if(m&64)
 	{
-		if(home)
-		{
-//			sprintf(buf, "%s/frvmcfg.txt", home);
-			sprintf(buf, "%s/bgbcc.cfg", home);
-			BGBCC_LoadConfig(buf);
-		}
-
 		if(base)
 		{
 			BGBCC_CCXL_SetBasePath(base);
@@ -1888,6 +2041,13 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			BGBCC_LoadConfig(buf);
 
 			sprintf(buf, "%s/../etc/bgbcc.cfg", base);
+			BGBCC_LoadConfig(buf);
+		}
+
+		if(home)
+		{
+//			sprintf(buf, "%s/frvmcfg.txt", home);
+			sprintf(buf, "%s/bgbcc.cfg", home);
 			BGBCC_LoadConfig(buf);
 		}
 	}
@@ -1912,6 +2072,42 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	{
 		bgbcc_arch=BGBCP_ArchForName(mach_name);
 		bgbcc_subarch=BGBCP_SubArchForName(bgbcc_arch, mach_name);
+	}
+
+	if(bgbcc_share_base && bgbcc_arch)
+	{
+		if(!bgbcc_share_inc)
+		{
+			sprintf(tb, "%s/include", bgbcc_share_base);
+
+//			sprintf(tb, "%s/%s/include", bgbcc_share_base, 
+//				BGBCP_NameSuffixForArch(bgbcc_arch));
+			bgbcc_share_inc=bgbcc_strdup(tb);
+		}
+
+		if(!bgbcc_share_lib)
+		{
+//			sprintf(tb, "%s/%s/lib", bgbcc_share_base, 
+//				BGBCP_NameSuffixForArch(bgbcc_arch));
+			sprintf(tb, "%s/lib", bgbcc_share_base);
+			bgbcc_share_lib=bgbcc_strdup(tb);
+		}
+	}
+
+	if(bgbcc_share_inc)
+	{
+		ccAddInclude(bgbcc_share_inc);
+
+		sprintf(tb, "%s/bgbcc", bgbcc_share_inc);
+		ccAddInclude(tb);
+	}
+
+	if(bgbcc_share_lib)
+	{
+		ccAddLibrary(bgbcc_share_lib);
+
+		sprintf(tb, "%s/bgbcc", bgbcc_share_lib);
+		ccAddLibrary(tb);
 	}
 
 // #ifdef linux
@@ -2077,9 +2273,17 @@ void ccAddInclude(char *path)
 {
 	int i;
 
-	printf("Add include path '%s'\n", path);
+	if(bgbcc_verbose)
+	{
+		printf("Add include path '%s'\n", path);
+	}
 
 	BGBCC_Init();
+	
+	for(i=0; i<bgbcc_ninc; i++)
+		if(!strcmp(bgbcc_inc[i], path))
+			return;
+	
 	i=bgbcc_ninc++;
 	bgbcc_inc[i]=bgbcc_strdup(path);
 	BGBPP_AddIncludePathFront(path);
@@ -2089,9 +2293,17 @@ void ccAddLibrary(char *path)
 {
 	int i;
 
-	printf("Add library path '%s'\n", path);
+	if(bgbcc_verbose)
+	{
+		printf("Add library path '%s'\n", path);
+	}
 
 	BGBCC_Init();
+
+	for(i=0; i<bgbcc_nlib; i++)
+		if(!strcmp(bgbcc_lib[i], path))
+			return;
+
 	i=bgbcc_nlib++;
 	bgbcc_lib[i]=bgbcc_strdup(path);
 }
@@ -2101,6 +2313,11 @@ void ccAddSource(char *path)
 	int i;
 
 	BGBCC_Init();
+
+	for(i=0; i<bgbcc_nsrc; i++)
+		if(!strcmp(bgbcc_src[i], path))
+			return;
+
 	i=bgbcc_nsrc++;
 	bgbcc_src[i]=bgbcc_strdup(path);
 }
@@ -2155,6 +2372,7 @@ int main(int argc, char *argv[], char **env)
 	char *s, *t, *s0;
 	fourcc fmt;
 	int n, m, nuds, nargs, nadds, minuds;
+	int is_compile_only;
 	int t0, dt, te, sz;
 	int i, j;
 
@@ -2181,6 +2399,7 @@ int main(int argc, char *argv[], char **env)
 	uds[nuds++]="$protos$.c";
 	
 	minuds=nuds;
+	is_compile_only=0;
 
 	n=0; m=0; nadds=0;
 	for(i=1; i<argc; i++)
@@ -2235,6 +2454,13 @@ int main(int argc, char *argv[], char **env)
 			if(!strcmp(argv[i]+1, "o"))
 			{
 				frbcfn=argv[i+1];
+				i++;
+				continue;
+			}
+			
+			if(!strcmp(argv[i]+1, "c"))
+			{
+				is_compile_only=1;
 				i++;
 				continue;
 			}
@@ -2438,16 +2664,36 @@ int main(int argc, char *argv[], char **env)
 	}
 
 //	if(!nuds)
-	if(nuds<minuds)
+	if(nuds<=minuds)
 	{
-		printf("No input files\n");
+		printf("%s: No input files\n", argv[0]);
 //		help(argv[0]);
 		return(0);
 	}
+	
+	if(bgbcc_istool==1)
+	{
+		if(!metafn && !wadfn && !frbcfn)
+//		if(!frbcfn)
+		{
+			s=BGBCP_BaseNameForName(uds[minuds]);
+			sprintf(tb, "%s.exe", s);
+			frbcfn=bgbcc_strdup(tb);
+
+			if(bgbcc_verbose)
+			{
+				printf("%s: automatic output name = %s\n",
+					argv[0], frbcfn);
+			}
+			
+//			frbcfn="a.exe";
+		}
+	}
+	
 
 	if(!metafn && !wadfn && !frbcfn)
 	{
-		printf("No output file\n");
+		printf("%s: No output file\n", argv[0]);
 //		help(argv[0]);
 		return(0);
 	}
@@ -2458,6 +2704,11 @@ int main(int argc, char *argv[], char **env)
 	
 //		fmt=BGBCC_IMGFMT_OBJ;
 		fmt=BGBCP_ImageFormatForName(frbcfn);
+
+		if(!fmt && !is_compile_only)
+		{
+			fmt=BGBCC_IMGFMT_EXE;
+		}
 
 		if((fmt==BGBCC_IMGFMT_EXE) || (fmt==BGBCC_IMGFMT_DLL))
 		{
@@ -2480,8 +2731,19 @@ int main(int argc, char *argv[], char **env)
 				j=nuds++;
 				while(j>0)
 					{ uds[j]=uds[j-1]; j--; }
-				uds[0]=bgbcc_strdup("-lc");
+//				uds[0]=bgbcc_strdup("-lc");
+				uds[0]=bgbcc_strdup("-lvxcore64");
 			}
+		}
+		
+		if(is_compile_only)
+		{
+			fmt=BGBCC_IMGFMT_RIL3;
+		}
+		
+		if(fmt==BGBCC_IMGFMT_OBJ)
+		{
+			fmt=BGBCC_IMGFMT_RIL3;
 		}
 
 		obuf=malloc(1<<24); sz=1<<24;

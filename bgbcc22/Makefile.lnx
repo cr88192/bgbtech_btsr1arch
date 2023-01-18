@@ -35,3 +35,7 @@ INST_BIN=$(PREFIX)/usr/bin
 
 include Makefile.inc
 
+mk_link:
+	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-cc
+	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-as
+	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-ld

@@ -858,6 +858,8 @@ byte pel_cmpr;			//PEL compression method
 
 byte optmode;			//optimization mode
 byte curprd;			//current predication mode
+byte verbose;			//optimization mode
+
 int loop_localstate;	
 
 int trace_mult;

@@ -29,5 +29,7 @@ TOOL_CFLAGS=/Iinclude /Zi
 
 INST_BIN=$(USRLIB_HOME)/bin
 
+mk_link:
+
 include Makefile.inc
 

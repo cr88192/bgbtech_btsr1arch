@@ -122,7 +122,7 @@ If present, the size of the spill space will be equivalent to the number of regi
 
 Items on the stack will have a 8-byte alignment in the 64 and 128-bit ABI variants, with the size of stack frames kept to a 16-byte alignment. The creation of a stack frame is optional for leaf functions.
 
-Within the 32 bit ABI, 32 bit types will have a 32-bit alignment. However, the stack frame will still be required to have a 128-bit alignment.
+Within the 32 bit ABI, 32 bit types will have a 32-bit alignment. However, the stack frame will still be required to have a 16-byte alignment.
 
 
 Primitive Types:
@@ -139,7 +139,7 @@ Structure Passing by value:
 * Structures larger than 16 bytes will be passed by reference.
 ** This reference may be either in a register or on the stack.
 
-When passing and returning structures by value, the structure will be padded up to a multiple of 8 bytes. Structures on-stack will have a nominal 8-byte alignment.
+When passing and returning structures by value, the structure will be padded up to a multiple of 8 bytes. Structures on-stack will have a nominal 8-byte minimum alignment.
 
 
 Non-POD classes will always be passed by reference or by pointer, including in cases where the class could otherwise be passed in registers.
@@ -164,7 +164,7 @@ Packed floating point types will be passed in GPRs, with each element represente
 
 === Passing 128-bit Types ===
 
-Passing 128-bit types will be via a pair of GPRs, if both values will fit into GPRs (otherwise both will be passed on the stack). The passing of 128-bit types will not respect register alignment for SIMD types, and the passed pair may also straddle R7 and R20.
+Passing 128-bit types will be via a pair of GPRs, if both values will fit into GPRs (otherwise both will be passed on the stack).
 
 The Extended Xn registers are not used for argument passing in the base ABI.
 
@@ -199,37 +199,22 @@ General:
 ** Each binary will have its offset fixed up to the appropriate index.
 * GBR reload will be required for functions which may be called externally.
 ** This includes exported functions and function pointers.
-
-Example of a GBR reload (64 bit address space, Old):
- LDI #offs_pbo_base, R0		//special reloc
- MOV.Q (GBR, DLR), R1
- NOP4
- MOV R1, GBR
-
-Example of a GBR reload (32 bit address space, Old):
- LDI #offs_pbo_base, R0		//special reloc
- MOV.L (GBR, DLR), R1
- NOP4
- MOV R1, GBR
-
-Change (Old 2):
-Example of a GBR reload (No Jumbo):
- MOV.Q (GBR, 0), R18
- LDI #offs_pbo_base, R0		//(No Jumbo)
- MOV.Q (R18, DLR), R18
- MOV R18, GBR
  
-Example of a GBR reload (Jumbo):
+Example of a GBR reload (Non-Jumbo):
  MOV.Q (GBR, 0), R18
- MOV.Q (R18, Disp33s), R18
- MOV R18, GBR
-
-Change (New):
- MOV.Q (GBR), R18
  ( TBR12 Reloc / PEL4 Reloc 6 )
  LDIZ #offs_pbo_base, R0
  MOV.Q (R18, DLR), R18
  MOV R18, GBR
+
+Example of a GBR reload (Jumbo):
+ MOV.Q (GBR, 0), R18
+ ( TBR12 Reloc / PEL4 Reloc 6 )
+ MOV.Q (R18, Disp33s), R18
+ MOV R18, GBR
+
+Note that ABI variants which use R18 for 'this' may instead use R3 or similar for GBR reload. The choice of register is not fixed in this mechanism.
+
 
 
 As emitted by the compiler, the PBO base offset will point to the start of the PBO data region, which will hold a pointer back to itself.
@@ -262,6 +247,8 @@ This space will consist of two 48 bit parts:
 * The high 48 bits will represent the quadrant.
 
 Within this space, narrow pointers will be relative to the base quadrant of the program (GBR).
+
+For normal use, in this ABI it will be assumed that the code and data quadrants are equal. Cases which have these as non-equal will not be defined here.
 
 
 === Fat Pointers ===
@@ -505,7 +492,7 @@ The POD case will be informally referred to as a "struct" case, and will apply t
 
 The Non-POD case will be the "class" case, and will apply to all classes in BS2, as well as to C++ classes which don't qualify as POD types.
 
-The form of C++ variant defined here will not define support for multiple inheritence.
+The form of C++ variant defined here will not define support for multiple inheritence. If multiple inheritence is to be used, it may be emulated in terms of clusters of single inheritence objects (such as by putting each additional parent class into an member field).
 
 In C++ mode, class pointers will be represented as native pointers.
 In BS2 and C#, the classes will be represented as Tagged References.
@@ -540,8 +527,8 @@ In the case of a SI class, only a single VTable pointer will be used, which will
 VTable Layout:
 * Pointer 0: ClassInfo Pointer
 * Pointer 1: Displacement from start of the base object (Interface)
-* Pointer 2: Reserved
-* Pointer 3: Reserved
+* Pointer 2: Reserved / InterTask
+* Pointer 3: Reserved / InterTask
 * Pointer 4: Index of first virtual method for class.
 
 The structure for an Interface VTable will match that of a class VTable, but will give a list of methods matching the layout for the Interface. These will generally be duplicates for those given in the main class.
@@ -549,6 +536,8 @@ The structure for an Interface VTable will match that of a class VTable, but wil
 The 'this' passed to a called interface method will be adjusted by the caller to point to the base-class.
 
 Dynamic Classes will have a pointer to the dynamic storage of the object. This will be located at the start of the data area for the first class in the heirarchy to be marked as dynamic.
+
+Pointers 2 and 3 are to be NULL for local VTables, but may be used by intertask for internal object-routing and daisy-chaining purposes and similar.
 
 
 === Class Info ===
@@ -569,6 +558,15 @@ ClassInfo:
  }
 
 The self_ptr field will be a pointer for the structure back to itself.
+* This will define the base-address from which the other RVAs will be computed.
+* An RVA of 0 relative to this base will be understood as being a NULL pointer.
+
+The qname field will give the qualified name of the class.
+* qnames will use '/' as a package/namespace separator.
+** For C++ mode, '::' will be expressed as '/'
+* These will be the bare name, rather than a signature string.
+
+The super field will point to the parent class, or NULL if none exists.
 
 The fields, methods, and interfaces tables will be NULL terminated.
 If absent, these fields will be set to NULL. A list which is empty (but present) will point to a lone NULL pointer.
@@ -593,6 +591,10 @@ FieldInfoSmall:
    DWORD flags;
    WORD offset;
  }
+
+The name gives the name, and the sig gives the type signature.
+* For normal class fields, these may not be NULL.
+* If an empty field is needed, it will be expressed as an empty string.
 
 For interfaces, the FieldInfo is similar, but differs mostly in that name gives the interface QName, and sig gives an interface pointer.
 

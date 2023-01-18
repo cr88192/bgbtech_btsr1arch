@@ -579,6 +579,20 @@ int BGBCC_JX2_LookupLabelAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
 #endif
 }
 
+int BGBCC_JX2_LookupLabelAtOffsNoLLn(BGBCC_JX2_Context *ctx, int sec, int ofs)
+{
+	int l;
+	
+	l=BGBCC_JX2_LookupLabelAtOffs(ctx, sec, ofs);
+	if(l<0)
+		return(l);
+	
+	if((l&CCXL_LBL_SPMASK)==CCXL_LBL_GENLLNBASE)
+		return(-1);
+	
+	return(l);
+}
+
 int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
 {
 	int i, j, k, h;

@@ -3393,13 +3393,13 @@ ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(
 #endif
 
 #if 1
-		i=BGBCC_JX2_LookupLabelAtOffs(sctx, sctx->sec, cp+4);
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+4);
 		if(i>=0)
 			{ cp+=4; continue; }
-		i=BGBCC_JX2_LookupLabelAtOffs(sctx, sctx->sec, cp+8);
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+8);
 		if(i>=0)
 			{ imv5=1; imv7=1; }
-		i=BGBCC_JX2_LookupLabelAtOffs(sctx, sctx->sec, cp+12);
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+12);
 		if(i>=0)
 			{ imv7=1; }
 #endif
@@ -3903,10 +3903,10 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 //			imv1=1;
 
 #if 1
-		i=BGBCC_JX2_LookupLabelAtOffs(sctx, sctx->sec, cp+4);
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+4);
 		if(i>=0)
 			{ cp+=4; continue; }
-		i=BGBCC_JX2_LookupLabelAtOffs(sctx, sctx->sec, cp+8);
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+8);
 		if(i>=0)
 			{ imv5=1; }
 #endif

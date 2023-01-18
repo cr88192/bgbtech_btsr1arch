@@ -2453,7 +2453,7 @@ F2 block immediates will be expanded to being 33-bit sign-extended.
 Use with the F0 block will depend on the instruction:
 * Branch ops will extend the size of the displacement to 44 bits.
 ** However, branches beyond 32-bits are currently undefined.
-* Imm5u/Disp5u ops will be expanded to 29-bits sign-extended.
+* Imm5u/Disp5u ops will be expanded to 29-bits sign-extended (Imm29s).
 ** Bits (27:4) will come from the Jumbo Prefix, (3:0) from the op.
 ** EI will serve as a sign-extension bit.
 

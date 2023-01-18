@@ -3523,6 +3523,11 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			{
 				op->fmid=BJX2_FMID_REGIMMREG;
 				op->Run=BJX2_Op_MOVTT_RegImmReg;
+				
+				if(jbits&0x02000000U)
+				{
+					op->Run=BJX2_Op_MOVTT_RegImm17Reg;
+				}
 			}
 			break;
 
@@ -5829,6 +5834,9 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 		case 0x72:	case 0x73:
 		case 0x74:	case 0x75:
 		case 0x76:	case 0x77:
+			if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2)
+				break;
+		
 			opw5=0xF000|(opw3&0x00FF);
 			opw6=opw4;
 			immb|=(opw3&0x0700)<<20;
@@ -5842,6 +5850,9 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 		case 0x92:	case 0x93:
 		case 0x94:	case 0x95:
 		case 0x96:	case 0x97:
+			if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2)
+				break;
+
 			opw5=0xF000|(opw3&0x00FF);
 			opw6=opw4;
 			immb|=(opw3&0x0600)<<20;
@@ -5940,7 +5951,8 @@ int BJX2_DecodeOpcode_DecFK(BJX2_Context *ctx,
 	}
 
 	if(	((opw1&0xFF00)==0x7800)	&&
-		((opw3&0xFC00)==0xF400)	)
+		((opw3&0xFC00)==0xF400)	&&
+		!(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2))
 	{
 		op1=BJX2_ContextAllocOpcode(ctx);
 		op2=BJX2_ContextAllocOpcode(ctx);
@@ -6321,6 +6333,11 @@ int BJX2_DecodeOpcode_DecXz(BJX2_Context *ctx,
 	BJX2_Opcode *op1;
 	int opw3, opw4;
 	int ret, z, imm;
+
+	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2)
+	{
+		return(-1);
+	}
 
 	if((opw1&0xFF00) == 0x7800)
 	{

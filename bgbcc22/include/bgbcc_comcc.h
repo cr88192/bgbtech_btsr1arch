@@ -218,6 +218,7 @@ byte use_padcross;	//use padding across cache lines
 
 byte optmode;		//optimization mode
 byte pred_tfmd;
+byte verbose;		//verbosity level
 
 int simfnsz;		//simulation's function size
 int simfnmsz;		//simulation's min function size
@@ -607,6 +608,9 @@ int tlsi_lbl;		//label for TLS Index
 int opcnt_hi8[256];
 int opcnt_3xx[256];
 int n_opcnt_3xx;
+
+int opcnt_f03xx[256];
+int n_opcnt_f03xx;
 
 // int opcnt_7xx[256];
 // int opcnt_9xx[256];

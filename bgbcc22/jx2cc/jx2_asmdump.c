@@ -647,14 +647,20 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 
 	case BGBCC_SH_NMID_JIMM:		sn="J_IMM";			break;	//0x01F0
 	case BGBCC_SH_NMID_JOP64:		sn="J_OP64";		break;	//0x01F1
-
 	case BGBCC_SH_NMID_LDIHI:		sn="LDIHI";			break;
 	case BGBCC_SH_NMID_LDIHIQ:		sn="LDIHIQ";		break;
 	case BGBCC_SH_NMID_CMPNANTTEQ:	sn="CMPNANTTEQ";	break;
 	case BGBCC_SH_NMID_SETTRAP:		sn="SETTRAP";		break;
-
 	case BGBCC_SH_NMID_MULHSQ:		sn="MULHSQ";		break;
 	case BGBCC_SH_NMID_MULHUQ:		sn="MULHUQ";		break;
+	case BGBCC_SH_NMID_BNDCHKB:		sn="BNDCHK.B";		break;
+	case BGBCC_SH_NMID_BNDCHKW:		sn="BNDCHK.W";		break;
+	case BGBCC_SH_NMID_BNDCHKL:		sn="BNDCHK.L";		break;
+	case BGBCC_SH_NMID_BNDCHKQ:		sn="BNDCHK.Q";		break;
+	case BGBCC_SH_NMID_EXTUTT:		sn="EXTUTT";		break;
+	case BGBCC_SH_NMID_FCMPGE:		sn="FCMPGE";		break;
+	case BGBCC_SH_NMID_BITSEL:		sn="BITSEL";		break;
+	case BGBCC_SH_NMID_BITSELX:		sn="BITSELX";		break;
 
 	case BGBCC_SH_NMID_FADDA:		sn="FADDA";			break;
 	case BGBCC_SH_NMID_FSUBA:		sn="FSUBA";			break;
@@ -662,13 +668,17 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_PADDXDA:		sn="PADDX.DA";		break;
 	case BGBCC_SH_NMID_PSUBXDA:		sn="PSUBX.DA";		break;
 	case BGBCC_SH_NMID_PMULXDA:		sn="PMULX.DA";		break;
-
+	case BGBCC_SH_NMID_VSKG:		sn="VSKG";			break;
+	case BGBCC_SH_NMID_VSKC:		sn="VSKC";			break;
+	case BGBCC_SH_NMID_BNDCHK:		sn="BNDCHK";		break;
+	case BGBCC_SH_NMID_BNDCMP:		sn="BNDCMP";		break;
 	case BGBCC_SH_NMID_RSUBSL:		sn="RSUBS.L";		break;
 	case BGBCC_SH_NMID_RSUBUL:		sn="RSUBU.L";		break;
 	case BGBCC_SH_NMID_RSUB:		sn="RSUB";			break;
 	case BGBCC_SH_NMID_ANDL:		sn="ANDL";			break;
 	case BGBCC_SH_NMID_ORL:			sn="ORL";			break;
 	case BGBCC_SH_NMID_XORL:		sn="XORL";			break;
+
 	case BGBCC_SH_NMID_ANDW:		sn="ANDW";			break;
 	case BGBCC_SH_NMID_ORW:			sn="ORW";			break;
 	case BGBCC_SH_NMID_XORW:		sn="XORW";			break;
@@ -711,6 +721,25 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_PRELUH:		sn="PRELU.H";		break;
 	case BGBCC_SH_NMID_PRCPAF:		sn="PRCPA.F";		break;
 	case BGBCC_SH_NMID_PRELUF:		sn="PRELU.F";		break;
+
+	case BGBCC_SH_NMID_LEATB:		sn="LEAT.B";		break;
+	case BGBCC_SH_NMID_LEATW:		sn="LEAT.W";		break;
+	case BGBCC_SH_NMID_LEATL:		sn="LEAT.L";		break;
+	case BGBCC_SH_NMID_LEATQ:		sn="LEAT.Q";		break;
+	case BGBCC_SH_NMID_BNDCMPB:		sn="BNDCMP.B";		break;
+	case BGBCC_SH_NMID_BNDCMPW:		sn="BNDCMP.W";		break;
+	case BGBCC_SH_NMID_BNDCMPL:		sn="BNDCMP.L";		break;
+	case BGBCC_SH_NMID_BNDCMPQ:		sn="BNDCMP.Q";		break;
+
+	case BGBCC_SH_NMID_PSTCXH:		sn="PSTCX.H";		break;
+	case BGBCC_SH_NMID_PLDCXH:		sn="PDLCX.H";		break;
+	case BGBCC_SH_NMID_REGCHKG:		sn="REGCHKG";		break;
+	case BGBCC_SH_NMID_REGCHKC:		sn="REGCHKC";		break;
+
+	case BGBCC_SH_NMID_MULUX:		sn="MULU.X";		break;
+	case BGBCC_SH_NMID_MULHUX:		sn="MULHU.X";		break;
+	case BGBCC_SH_NMID_DIVUX:		sn="DIVU.X";		break;
+	case BGBCC_SH_NMID_MODUX:		sn="MODU.X";		break;
 
 	default:
 		sprintf(tb, "UNK_%04X", nmid);

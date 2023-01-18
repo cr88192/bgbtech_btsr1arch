@@ -2867,6 +2867,7 @@ int BGBCC_JX2_EmitNamedGlobal(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz, int al);
 int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,int sz, int al);
 int BGBCC_JX2_LookupLabelAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs);
+int BGBCC_JX2_LookupLabelAtOffsNoLLn(BGBCC_JX2_Context *ctx, int sec, int ofs);
 int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs);
 int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty);
 int BGBCC_JX2_EmitNamedReloc(BGBCC_JX2_Context *ctx, char *name, int ty);

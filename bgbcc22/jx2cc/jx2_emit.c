@@ -8210,13 +8210,17 @@ int BGBCC_JX2_ComposeJumboRegImmRegF0(BGBCC_JX2_Context *ctx,
 		if(BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
 			opw1|=0x0020;
 
+		if(imm>>63)
+			opw1|=0x0010;
+
 		if((imm>>15)&1)
 			opw4|=0x0010;
 
 		imm1=((opw2&0x07FF)<<4)|((opw4&0x00F0)>>4);
 		if(opw4&0x0100)
 			imm1|=0x0000000000008000LL;
-		if(opw1&0x0100)
+//		if(opw1&0x0100)
+		if(opw1&0x0010)
 			imm1|=0xFFFFFFFFFFFF0000LL;
 
 		if(imm!=imm1)
@@ -8365,11 +8369,14 @@ int BGBCC_JX2_ComposeOp64RegImm17sRegF0(BGBCC_JX2_Context *ctx,
 		opw1|=0x0040;
 	if(BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
 		opw1|=0x0020;
+	if(imm>>63)
+		opw1|=0x0010;
 
 	imm1=((opw2&0x07FF)<<4)|((opw4&0x00F0)>>4);
 	if(opw4&0x0100)
 		imm1|=0x0000000000008000LL;
-	if(opw1&0x0100)
+
+	if(opw1&0x0010)
 		imm1|=0xFFFFFFFFFFFF0000LL;
 
 	if(imm!=imm1)

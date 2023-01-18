@@ -605,12 +605,13 @@ REG, Bz:
 	SB: ZZR, Rx, Rx
 	SW: ZZR, Rn, Rn
 	SL: Rx, ZZR, Rx
-	SQ: Rn, ZZR, Rn
+	SQ: / Rn, ZZR, Rn
+	SQ: Rn, ZZR, LR
 
 	XB: ZZR, Rx, DLR
 	XW: ZZR, Rn, DLR
-	SL: Rx, FixImm, Rx
-	SQ: Rn, FixImm, Rn
+	XL: Rx, FixImm, Rx
+	XQ: Rn, FixImm, Rn
 
 REG, Fz:
 	SB: // Ro, ZZR, Ro
@@ -618,6 +619,9 @@ REG, Fz:
 	SW: ZZR, Rm, Rn
 
 	UB: Ro, ZZR, Ro
+	
+	XB: ZZR, Ro, DLR
+	XW: Ro, ZZR, LR
 
 REGREG, Bz:
 	SB: Rm, Rn / Rm, DLR, Rn
@@ -1274,6 +1278,7 @@ parameter[5:0] JX2_UCIX_IXS_MOVT	= 6'h01;		//Copy SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_MOVNT	= 6'h02;		//Copy !SR.T to Reg
 parameter[5:0] JX2_UCIX_IXS_LDSRMSK	= 6'h03;		//?
 parameter[5:0] JX2_UCIX_IXS_TRAPB	= 6'h04;		//Trap
+// parameter[5:0] JX2_UCIX_IXS_MOVTA16	= 6'h05;		//Trap
 
 parameter[5:0] JX2_UCIX_IXS_MOVST	= 6'h06;		//Copy SR.ST to Reg
 parameter[5:0] JX2_UCIX_IXS_MOVPQ	= 6'h07;		//Copy SR.PQRO to Reg

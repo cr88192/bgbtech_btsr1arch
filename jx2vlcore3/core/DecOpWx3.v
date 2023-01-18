@@ -909,7 +909,8 @@ begin
 	opIsWfA = ((opIsDfA && !opIsDzA) || opIsDwA) && srWxe;
 	opIsWfB = ((opIsDfB && !opIsDzB) || opIsDwB) && srWxe;
 
-`ifdef jx2_enable_wexjumbo
+// `ifdef jx2_enable_wexjumbo
+`ifndef def_true
 	opIsWexJumboLdi = opIsWexJumbo96 &&
 //		(istrWord[47:40] == 8'b1111_0100) &&
 		(istrWord[79:73] == 7'b1111_101 );

@@ -1692,6 +1692,16 @@ void BJX2_Op_XMOVTT_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 
 
+void BJX2_Op_MOVTT_RegImm17Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v, vi;
+	
+	v=ctx->regs[op->rm];
+	vi=op->imm;
+	v=(v&0x0000FFFFFFFFFFFFULL)|(vi<<48);
+	ctx->regs[op->rn]=v;
+}
+
 void BJX2_Op_NOP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 }

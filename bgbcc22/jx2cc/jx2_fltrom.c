@@ -576,7 +576,8 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 			ct=obuf+il;
 		}
 
-		lbl=BGBCC_JX2_LookupLabelAtOffs(sctx, BGBCC_SH_CSEG_TEXT, cs-css);
+//		lbl=BGBCC_JX2_LookupLabelAtOffs(sctx, BGBCC_SH_CSEG_TEXT, cs-css);
+		lbl=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, BGBCC_SH_CSEG_TEXT, cs-css);
 		if(lbl>=0)
 		{
 			s0=BGBCC_JX2DA_NameForLabel(sctx, lbl);

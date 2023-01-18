@@ -910,7 +910,7 @@ begin
 		begin
 			if(tRegInSR[29] && tRegInSR[28])
 			begin
-				$display("Miss while in ISR, A=%X", tRegInAddr);
+				$display("TLB: Miss while in ISR, A=%X", tRegInAddr);
 			end
 
 //			$display("Miss A=%X B=%X SR=%X_%X",
@@ -988,10 +988,12 @@ begin
 		(tRegInOpm[5:4]!=0) && !tlbMmuSkip)
 	begin
 		if(tlbMiss)
+//		if(tlbMiss && !(tRegInSR[29] && tRegInSR[28]))
 		begin
 //			$display("TLB Miss %X", regInAddr);
 //			if(!tlbMmuIsInIsr)
-			tRegOutExc = 16'hA001;
+			if(!(tRegInSR[29] && tRegInSR[28]))
+				tRegOutExc = 16'hA001;
 			tRegOutOpm[11:8] = 4'hF;
 		end
 		else

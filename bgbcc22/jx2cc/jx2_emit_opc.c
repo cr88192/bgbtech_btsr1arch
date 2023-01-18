@@ -7285,6 +7285,15 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 		case BGBCC_SH_NMID_MOVTT:
 			if(imm>=32)
 			{
+				if(ctx->has_jumbo)
+				{
+					i=BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
+						&opw1, &opw2, &opw3, &opw4,
+						0xFF00, 0x0000, 0xF000, 0x3801,
+						rm, imm, rn);
+					if(i>0)break;
+				}
+
 				opw1=0xF000|ex; odr=1;
 				opw2=0x3100|((rn&15)<<4)|((rm&15)<<0);
 				break;

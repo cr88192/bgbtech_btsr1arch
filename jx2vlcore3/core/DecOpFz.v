@@ -922,6 +922,16 @@ begin
 					opNmid	= JX2_UCMD_MOV_RM;
 					opFmid	= JX2_FMID_REGSTREGDISP;
 				end
+
+`ifdef def_true
+				if(	(opRegM_Dfl[4:0] == 5'h00) &&
+					(opRegN_Dfl[4:0] == 5'h00) )
+				begin
+					opNmid		= JX2_UCMD_OP_IXT;
+					opFmid		= JX2_FMID_Z;
+					opUCmdIx	= JX2_UCIX_IXT_BREAK;
+				end
+`endif
 			end
 			16'h0zz1: begin		/* F0nm_0eo1 */
 				opBty	= JX2_BTY_SW;
@@ -3078,7 +3088,8 @@ begin
 				opUCmdIx	= JX2_UCIX_ALUW_MOVTA16;
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_SW;
-				if(opExQ && !opIsJumbo)
+//				if(opExQ && !opIsJumbo)
+				if(opExQ && !opIsJumbo && !opIsJumboAu)
 //				if((opExQ && !opIsJumboAu) ||
 //					(opIsJumboAu && opIsImm4R && !opExQ))
 				begin

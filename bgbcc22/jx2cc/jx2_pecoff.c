@@ -2410,11 +2410,13 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		k+=j;
 		k=(k+63)&(~63);
 
-		s0=sctx->sec_name[i];
-		printf("%d: %s %08X..%08X %d\n", i, s0,
-			sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
-			sctx->sec_lsz[i]);
-
+		if(sctx->verbose)
+		{
+			s0=sctx->sec_name[i];
+			printf("%d: %s %08X..%08X %d\n", i, s0,
+				sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
+				sctx->sec_lsz[i]);
+		}
 	}
 
 	/* If .utext exists, pad data sections to a new page. */
@@ -2450,10 +2452,13 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			k+=j;
 			k=(k+63)&(~63);
 
-			s0=sctx->sec_name[i];
-			printf("%d: %s %08X..%08X %d\n", i, s0,
-				sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
-				sctx->sec_lsz[i]);
+			if(sctx->verbose)
+			{
+				s0=sctx->sec_name[i];
+				printf("%d: %s %08X..%08X %d\n", i, s0,
+					sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
+					sctx->sec_lsz[i]);
+			}
 
 		}
 	}
@@ -2470,10 +2475,13 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	k+=j;
 	k=(k+63)&(~63);
 
-	s0=sctx->sec_name[i];
-	printf("%d: %s %08X..%08X %d\n", i, s0,
-		sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
-		sctx->sec_lsz[i]);
+	if(sctx->verbose)
+	{
+		s0=sctx->sec_name[i];
+		printf("%d: %s %08X..%08X %d\n", i, s0,
+			sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
+			sctx->sec_lsz[i]);
+	}
 
 
 	if((sctx->gbr_rva!=sctx->sec_rva[BGBCC_SH_CSEG_DATA]) && (sctx->is_pbo))
@@ -3027,7 +3035,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	ct=obuf+of_phdr;
 	bgbcc_setu32en(ct+0x58, en, csum);	//mCheckSum
 	
-	printf("PE Checksum: %08X / %dkB\n", csum, ofs_iend2>>10);
+	if(sctx->verbose)
+	{
+		printf("PE Checksum: %08X / %dkB\n", csum, ofs_iend2>>10);
+	}
 
 	if(is_pel)
 	{
@@ -3046,10 +3057,13 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 //		if(j<ofs_iend)
 		if(j<ofs_iend2)
 		{
-//			printf("PEL: %d->%d %d%%\n",
-			printf("PEL%d: %d->%d %d%%\n", ctx->pel_cmpr,
-//				ofs_iend, j, (j*100)/ofs_iend);
-				ofs_iend2, j, (j*100)/ofs_iend2);
+			if(sctx->verbose)
+			{
+	//			printf("PEL: %d->%d %d%%\n",
+				printf("PEL%d: %d->%d %d%%\n", ctx->pel_cmpr,
+	//				ofs_iend, j, (j*100)/ofs_iend);
+					ofs_iend2, j, (j*100)/ofs_iend2);
+			}
 		
 			memcpy(obuf, ctb, j);
 			*rosz=j;

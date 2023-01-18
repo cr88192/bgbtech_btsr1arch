@@ -1698,7 +1698,10 @@ int BGBCC_JX2C_EmitLoadFrameVRegByValReg(
 
 		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_TEMPLOAD))
 		{
-			printf("Mark Tempload\n");
+			if(ctx->verbose)
+			{
+				printf("Mark Tempload\n");
+			}
 		}
 
 		ctx->cur_func->regs[j]->regflags|=BGBCC_REGFL_TEMPLOAD;
@@ -2259,7 +2262,10 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_TEMPLOAD))
 		{
-			printf("Mark Tempload\n");
+			if(ctx->verbose)
+			{
+				printf("Mark Tempload\n");
+			}
 		}
 
 		ctx->cur_func->regs[j]->regflags|=BGBCC_REGFL_TEMPLOAD;
