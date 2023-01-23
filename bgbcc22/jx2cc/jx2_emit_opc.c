@@ -776,6 +776,14 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		break;
 	}
 
+	if(BGBCC_JX2_EmitCheckRegExt5(ctx, reg))
+	{
+		if((opw1&0xF000)!=0xF000)
+		{
+			opw1=-1;
+		}
+	}
+
 	if(ctx->is_fixed32 || ctx->op_is_wex2)
 	{
 		switch(nmid)
@@ -787,7 +795,8 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 			opw1=-1;
 			break;
 		}
-	
+
+#if 0
 		if((opw1&0xF000)==0x3000)
 		{
 //			opw2=0x3000|((opw1>>4)&0x00F0)|(opw1&0x000F);
@@ -797,6 +806,8 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 //				((opw1>>5)&0x0040);
 				((opw1>>7)&0x0010);
 		}else
+#endif
+
 			if((opw1&0xF000)!=0xF000)
 		{
 			opw1=-1;
@@ -806,6 +817,7 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	if(opw1<0)
 		switch(nmid)
 	{
+#if 0
 	case BGBCC_SH_NMID_PUSH:
 		if(BGBCC_JX2_EmitCheckRegExt32GPR(ctx, reg))
 		{
@@ -854,6 +866,7 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 			break;
 		}
 		break;
+#endif
 
 #if 0
 	case BGBCC_SH_NMID_FLDCF:
@@ -917,6 +930,22 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	{
 		switch(nmid)
 		{
+		case BGBCC_SH_NMID_BSRF:
+			opw1=0xF000|(reg&31);
+//			opw2=0x3069; break;
+			opw2=0x3011; break;
+		case BGBCC_SH_NMID_BRAF:
+			opw1=0xF000|(reg&31);
+//			opw2=0x3068; break;
+			opw2=0x3010; break;
+
+		case BGBCC_SH_NMID_INVIC:
+			opw1=0xF000|(reg&31);
+			opw2=0x301C; break;
+		case BGBCC_SH_NMID_INVDC:
+			opw1=0xF000|(reg&31);
+			opw2=0x301D; break;
+
 		case BGBCC_SH_NMID_JSR:
 			opw1=0xF000|(reg&31);
 			opw2=0x3021; break;
@@ -930,15 +959,6 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		case BGBCC_SH_NMID_XJMP:
 			opw1=0xF080|(reg&31);
 			opw2=0x3020; break;
-
-		case BGBCC_SH_NMID_BSRF:
-			opw1=0xF000|(reg&31);
-//			opw2=0x3069; break;
-			opw2=0x3011; break;
-		case BGBCC_SH_NMID_BRAF:
-			opw1=0xF000|(reg&31);
-//			opw2=0x3068; break;
-			opw2=0x3010; break;
 
 		case BGBCC_SH_NMID_BSRL:
 			opw1=0xF000|(reg&31);
@@ -1342,7 +1362,7 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	if(ctx->op_is_wex2&8)
 		exw|=0x1000;
 	
-	if((opw1&0xE000)==0xE000)
+	if((opw1>=0) && ((opw1&0xE000)==0xE000))
 	{
 		if(((opw1&0xEB00)==0xE000) && ((opw2&0xFF00)==0x3000))
 		{

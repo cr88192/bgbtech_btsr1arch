@@ -2146,6 +2146,7 @@ void BJX2_Op_BNDCHKB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(i)
 	{
 		ctx->trapc=op->pc;
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
 	}
 }
@@ -2162,6 +2163,7 @@ void BJX2_Op_BNDCHKW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(i)
 	{
 		ctx->trapc=op->pc;
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
 	}
 }
@@ -2178,6 +2180,7 @@ void BJX2_Op_BNDCHKL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(i)
 	{
 		ctx->trapc=op->pc;
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
 	}
 }
@@ -2194,6 +2197,7 @@ void BJX2_Op_BNDCHKQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(i)
 	{
 		ctx->trapc=op->pc;
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BOUNDCHK);
 	}
 }

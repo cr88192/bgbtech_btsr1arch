@@ -116,6 +116,12 @@ reg			tIsBra20;		//Unconditional Branch (16-bit Disp)
 reg			tIsRtsu;
 reg			tIsRtsR1;
 
+reg			tIsFz;
+reg			tIsFz3x;
+
+reg			tIsRtsuFz;
+reg			tIsRtsR1Fz;
+
 reg			tIsBraFz;		//Fn
 
 reg			tIsBraCc8;		//Conditional Branch (8-bit Disp)
@@ -315,6 +321,41 @@ begin
 //	tIsRtsR1		= 0;
 	tIsRtsR1		=
 		(istrWord[15:0] == 16'h3210) && !pipeHasLr[1];
+
+`ifdef def_true
+
+	tIsFz	=
+		(istrWord[15:12]==4'hF) &&
+		(istrWord[11: 8]==4'h0) ;
+		
+	tIsFz3x	=
+		tIsFz	&&
+		(istrWord[31:28]==4'h3) &&
+		(istrWord[19:16]==4'h0) ;
+
+	tIsRtsuFz	=
+		tIsFz3x &&
+		(istrWord[27:24]==4'h0) &&
+		(istrWord[ 7: 4]==4'h0) &&
+		(	((istrWord[ 3: 0]==4'h0) && !pipeHasLr[0]) ||
+			(istrWord[ 3: 0]==4'h2)	) &&
+		(istrWord[23:20]==4'h1) ;
+
+	tIsRtsR1Fz	=
+		tIsFz3x &&
+		(istrWord[27:24]==4'h0) &&
+		(istrWord[ 7: 4]==4'h2) &&
+		(istrWord[ 3: 0]==4'h0) &&
+		(istrWord[23:20]==4'h1) ;
+
+	if(tIsRtsuFz)
+		tIsRtsu = 1;
+
+	if(tIsRtsR1Fz)
+		tIsRtsR1 = 1;
+
+`endif
+
 `else
 	tIsRtsu			=
 		(istrWord[15:0] == 16'h3012);

@@ -2425,6 +2425,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			if(!strcmp(s, "cstring"))
 				{ *t++='P'; *t++='c'; }
 
+			if(!strcmp(s, "wstring"))
+				{ *t++='D'; *t++='s'; }
+			if(!strcmp(s, "ustring"))
+				{ *t++='D'; *t++='t'; }
+
 			if(!strcmp(s, "bool"))*t++='b';
 
 			if(!strcmp(s, "byte"))*t++='h';

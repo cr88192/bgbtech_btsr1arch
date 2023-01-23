@@ -1098,9 +1098,7 @@
 #define BGBCC_SH_FMID_REGREGREGREG	0x32	//Rm, Ro, Rp, Rn
 #define BGBCC_SH_FMID_REGREGIMMREG	0x33	//Rm, Ro, Imm, Rn
 #define BGBCC_SH_FMID_REGREGREGIMM	0x34	//Rm, Ro, Rn, Imm
-
 #define BGBCC_SH_FMID_REGREGLBL		0x35	//Rm, Rn, <Lbl>
-
 #define BGBCC_SH_FMID_DREGST		0x36	//DRm, @Rn
 #define BGBCC_SH_FMID_DREGLD		0x37	//@Rm, DRn
 #define BGBCC_SH_FMID_DREGDECST		0x38	//DRm, @-Rn
@@ -1113,17 +1111,14 @@
 #define BGBCC_SH_FMID_DREGLDRODISP	0x3F	//@(Rm,Ro,Disp), DRn
 
 #define BGBCC_SH_FMID_REGIMMREGREG	0x40	//Rm, Imm, Rp, Rn
-
 #define BGBCC_SH_FMID_REGREG55A		0x41	//Rm, Rn (16-bit, 2R)
 #define BGBCC_SH_FMID_REGREGB		0x42	//Rm, Rn (32-bit 2R)
 #define BGBCC_SH_FMID_REGIMM_10		0x44	//Imm10, Rn (32-bit)
 #define BGBCC_SH_FMID_REGIMM_10_N	0x45	//Imm10, Rn (32-bit)
 #define BGBCC_SH_FMID_REGSTSPVIMM	0x46	//Rn, (SP,Disp4)
 #define BGBCC_SH_FMID_REGLDSPVIMM	0x47	//(SP,Disp4), Rn
-
 #define BGBCC_SH_FMID_REGKVIMM_U	0x48	//Imm4u, Rk
 #define BGBCC_SH_FMID_REGKVIMM_N	0x49	//Imm4n, Rk
-
 #define BGBCC_SH_FMID_REGSTRON		0x4A	//Rm, @(Ro+Rn)
 #define BGBCC_SH_FMID_REGLDROM		0x4B	//@(Ro+Rm), Rn
 #define BGBCC_SH_FMID_REGSTDISP5	0x4C	//Rm, @(Rn+Disp5)
@@ -1131,30 +1126,31 @@
 #define BGBCC_SH_FMID_PCDISP20		0x4E	//(PC,Disp20s)
 #define BGBCC_SH_FMID_PCDISP8		0x4F	//(PC,Disp8s)
 
-#define BGBCC_SH_FMID_IMM12A_U		0x50	//Imm12u (16-bit)
-#define BGBCC_SH_FMID_IMM12A_N		0x51	//Imm12n (16-bit)
-#define BGBCC_SH_FMID_REGIMM8S		0x52	//Imm8s, Rn (16-bit)
-#define BGBCC_SH_FMID_REGIMM16S		0x53	//Imm16u, Rn (32-bit)
-#define BGBCC_SH_FMID_REGVIMM_N		0x54	//Imm4n, Rn (16-bit)
-#define BGBCC_SH_FMID_REGRON		0x55	//Ro as Rn
-#define BGBCC_SH_FMID_IMM24_U		0x56	//Imm
-#define BGBCC_SH_FMID_IMM24_N		0x57	//Imm
-#define BGBCC_SH_FMID_REGIMM16_U	0x58	//Imm16u, Rn (32-bit)
-#define BGBCC_SH_FMID_REGIMM16_N	0x59	//Imm16n, Rn (32-bit)
-
-#define BGBCC_SH_FMID_REGR0REG		0x5A	//Rm, R0, Rn (16-bit)
-#define BGBCC_SH_FMID_IMM5RN		0x5B	//Rn as Imm5 (16-bit)
-
-#define BGBCC_SH_FMID_REGSTDISP3	0x5C	//Rm, @(Rn+Disp3) (16-bit)
-#define BGBCC_SH_FMID_REGLDDISP3	0x5D	//@(Rm+Disp3), Rn (16-bit)
-
+#define BGBCC_SH_FMID_IMM12A_U			0x50	//Imm12u (16-bit)
+#define BGBCC_SH_FMID_IMM12A_N			0x51	//Imm12n (16-bit)
+#define BGBCC_SH_FMID_REGIMM8S			0x52	//Imm8s, Rn (16-bit)
+#define BGBCC_SH_FMID_REGIMM16S			0x53	//Imm16u, Rn (32-bit)
+#define BGBCC_SH_FMID_REGVIMM_N			0x54	//Imm4n, Rn (16-bit)
+#define BGBCC_SH_FMID_REGRON			0x55	//Ro as Rn
+#define BGBCC_SH_FMID_IMM24_U			0x56	//Imm
+#define BGBCC_SH_FMID_IMM24_N			0x57	//Imm
+#define BGBCC_SH_FMID_REGIMM16_U		0x58	//Imm16u, Rn (32-bit)
+#define BGBCC_SH_FMID_REGIMM16_N		0x59	//Imm16n, Rn (32-bit)
+#define BGBCC_SH_FMID_REGR0REG			0x5A	//Rm, R0, Rn (16-bit)
+#define BGBCC_SH_FMID_IMM5RN			0x5B	//Rn as Imm5 (16-bit)
+#define BGBCC_SH_FMID_REGSTDISP3		0x5C	//Rm, @(Rn+Disp3) (16-bit)
+#define BGBCC_SH_FMID_REGLDDISP3		0x5D	//@(Rm+Disp3), Rn (16-bit)
 #define BGBCC_SH_FMID_REGSTGBRDISP10	0x5E	//Rn, @(GBR,Disp)
 #define BGBCC_SH_FMID_REGLDGBRDISP10	0x5F	//@(GBR,Disp), Rn
 
 
-#define BGBCC_SH_FMID_REGIMM5REG	0x60	//Rn, Imm5u, Ro
-#define BGBCC_SH_FMID_REGIMMREG_8S	0x61	//Rn, Imm8s, Ro
-#define BGBCC_SH_FMID_REGIMMREG_N	0x62	//Rn, Imm9n, Ro
+#define BGBCC_SH_FMID_REGIMM5REG		0x60	//Rn, Imm5u, Ro
+#define BGBCC_SH_FMID_REGIMMREG_8S		0x61	//Rn, Imm8s, Ro
+#define BGBCC_SH_FMID_REGIMMREG_N		0x62	//Rn, Imm9n, Ro
+#define BGBCC_SH_FMID_PCDISP8REG		0x63	//(PC,Disp8s), Rn
+
+#define BGBCC_SH_FMID_REGSTGBRDISP10N	0x64	//Rn, @(GBR,Disp)
+#define BGBCC_SH_FMID_REGLDGBRDISP10N	0x65	//@(GBR,Disp), Rn
 
 
 #define BGBCC_SH_OPVTY_NONE			0x00	//None

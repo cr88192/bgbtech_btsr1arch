@@ -103,6 +103,7 @@ assign	idUFl = { opULdOp, opUFl };
 
 `reg_gpr	opRegM_OrgDfl;
 `reg_gpr	opRegN_OrgDfl;
+`reg_gpr	opRegO_OrgDfl;
 
 `reg_gpr	opRegM_Fix;
 `reg_gpr	opRegO_Fix;
@@ -736,6 +737,7 @@ begin
 
 	opRegM_OrgDfl	= opRegM_Dfl;
 	opRegN_OrgDfl	= opRegN_Dfl;
+	opRegO_OrgDfl	= opRegO_Dfl;
 
 `ifdef jx2_reg_spdecswap
 	if(srMod[2])
@@ -885,7 +887,12 @@ begin
 //		tBlockIsPrWxB = 0;
 //	end
 
-	tBlockIsEz		= (istrWord[15:12] == 4'b1110);
+//	tBlockIsEz		= (istrWord[15:12] == 4'b1110);
+//	if(tOpIsXGprX2)
+//		tBlockIsEz	= !istrWord[12];
+
+	tBlockIsEz	= !istrWord[12] && !opIsNotFx;
+
 //	tBlockIsEA_09	= !istrWord[31] || (istrWord[30:29]==0);
 	tBlockIsEA_09	= !istrWord[31];
 //	tBlockIsEA_F0	= tBlockIsEz && tBlockIsFA && tBlockIsEA_09;
@@ -3044,7 +3051,8 @@ begin
 						opNmid		= JX2_UCMD_OP_IXT;
 						opUCmdIx	= JX2_UCIX_IXT_WEXMD;
 						opFmid		= JX2_FMID_REG;
-						opIty		= JX2_ITY_SB;
+//						opIty		= JX2_ITY_SB;
+						opIty		= JX2_ITY_XB;
 `else
 						opNmid		= JX2_UCMD_NOP;
 						opFmid		= JX2_FMID_Z;
@@ -5109,7 +5117,8 @@ begin
 
 				JX2_ITY_XB: begin
 					opRegM	= JX2_GR_ZZR;
-					opRegO	= opRegO_Dfl;
+//					opRegO	= opRegO_Dfl;
+					opRegO	= opRegO_OrgDfl;
 					opRegN	= JX2_GR_DLR;
 					opRegP	= JX2_GR_DLR;
 				end

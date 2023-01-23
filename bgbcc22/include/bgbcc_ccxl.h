@@ -95,6 +95,9 @@
 #define CCXL_TY_VEC3FQ			0x4C		//64-bit 3x float21
 #define CCXL_TY_VEC3FX			0x4D		//128-bit 3x float42
 
+#define CCXL_TY_VARWSTRING		0x4E		//Variant String
+#define CCXL_TY_VARUSTRING		0x4F		//Variant String
+
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'
 #define CCXL_VTY_PCHAR			0x00001008	//'char *'

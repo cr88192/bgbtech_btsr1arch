@@ -620,7 +620,8 @@ REG, Fz:
 
 	UB: Ro, ZZR, Ro
 	
-	XB: ZZR, Ro, DLR
+	XB: / ZZR, Ro, DLR
+	XB: ZZR, RoOrg, DLR
 	XW: Ro, ZZR, LR
 
 REGREG, Bz:

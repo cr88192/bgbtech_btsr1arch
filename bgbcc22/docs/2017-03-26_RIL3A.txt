@@ -271,7 +271,10 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Do': __bcd128
 * 'Dp':
 * 'Dq': __quatd
-
+* 'Dr':
+* 'Ds': wstring
+* 'Dt': ustring
+* 'Du':
 * 'Dv': __vec4_fp8s
 * 'Dw': __vec4_fp8u
 

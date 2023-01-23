@@ -953,6 +953,8 @@ static char *bgbcp_basetypes_bs2[]={
 "object",
 "auto",
 "cstring",
+"wstring",
+"ustring",
 
 "__int128", "__uint128",
 "__float128", "__float16", "__m64", "__m128",

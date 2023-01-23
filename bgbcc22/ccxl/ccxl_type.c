@@ -795,6 +795,8 @@ bool BGBCC_CCXL_TypeVarRefP(
 	if(	(bt==CCXL_TY_VARIANT) ||
 		(bt==CCXL_TY_VAROBJECT) ||
 		(bt==CCXL_TY_VARSTRING) ||
+		(bt==CCXL_TY_VARWSTRING) ||
+		(bt==CCXL_TY_VARUSTRING) ||
 		(bt==CCXL_TY_FIXNUM) ||
 		(bt==CCXL_TY_FLONUM) ||
 		(bt==CCXL_TY_BIGINT))
@@ -1841,6 +1843,10 @@ bool BGBCC_CCXL_TypeRefStringP(
 	{
 		if(i==CCXL_TY_VARSTRING)
 			return(true);
+		if(i==CCXL_TY_VARWSTRING)
+			return(true);
+		if(i==CCXL_TY_VARUSTRING)
+			return(true);
 		return(false);
 	}
 
@@ -2351,6 +2357,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 
 	case CCXL_TY_VARIANT:
 	case CCXL_TY_VARSTRING:
+	case CCXL_TY_VARWSTRING:
+	case CCXL_TY_VARUSTRING:
 	case CCXL_TY_VAROBJECT:
 	case CCXL_TY_FIXNUM:
 	case CCXL_TY_FLONUM:
@@ -2510,6 +2518,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 
 	case CCXL_TY_VARIANT:
 	case CCXL_TY_VARSTRING:
+	case CCXL_TY_VARWSTRING:
+	case CCXL_TY_VARUSTRING:
 	case CCXL_TY_VAROBJECT:
 		if(ctx->arch_sizeof_ptr==16)
 		{
@@ -2934,8 +2944,14 @@ ccxl_status BGBCC_CCXL_TypeDerefType(
 		case CCXL_TY_VARIANT:
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_VARIANT);
 			return(CCXL_STATUS_YES);
+
 		case CCXL_TY_VARSTRING:
+		case CCXL_TY_VARWSTRING:
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_US);
+			return(CCXL_STATUS_YES);
+
+		case CCXL_TY_VARUSTRING:
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UB);
 			return(CCXL_STATUS_YES);
 
 		default:
@@ -4025,6 +4041,9 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'm':	bty=CCXL_TY_BCD64; break;
 		case 'o':	bty=CCXL_TY_BCD128; break;
 
+		case 's':	bty=CCXL_TY_VARWSTRING; break;
+		case 't':	bty=CCXL_TY_VARUSTRING; break;
+
 		case 'v':	bty=CCXL_TY_VEC4_FP8S; break;
 		case 'w':	bty=CCXL_TY_VEC4_FP8U; break;
 
@@ -4414,6 +4433,9 @@ char *BGBCC_CCXL_TypeGetSig(
 
 		case CCXL_TY_VARSTRING:		*t++='C'; *t++='s'; break;
 		case CCXL_TY_VAROBJECT:		*t++='C'; *t++='o'; break;
+
+		case CCXL_TY_VARWSTRING:	*t++='D'; *t++='s'; break;
+		case CCXL_TY_VARUSTRING:	*t++='D'; *t++='t'; break;
 
 		case CCXL_TY_VEC2F:			*t++='C'; *t++='a'; break;
 		case CCXL_TY_VEC3F:			*t++='C'; *t++='b'; break;

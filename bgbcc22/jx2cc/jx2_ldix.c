@@ -279,7 +279,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 		i=-1;
 	}
 
-	if(BGBCC_CCXL_TypeVarObjP(ctx, stype))
+	if(BGBCC_CCXL_TypeVarObjP(ctx, stype) ||
+		BGBCC_CCXL_TypeRefStringP(ctx, stype))
 	{
 		s0=NULL;
 
@@ -310,6 +311,9 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 			s0="__lvo_loadindex_ui";
 		if(ty==CCXL_TY_UL)
 			s0="__lvo_loadindex_ul";
+
+		if(BGBCC_CCXL_TypeRefStringP(ctx, stype))
+			s0="__lvo_loadindex_str";
 
 		if(s0)
 		{
@@ -539,7 +543,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 	ty=type.val;
 
 
-	if(BGBCC_CCXL_TypeVarObjP(ctx, stype))
+	if(	BGBCC_CCXL_TypeVarObjP(ctx, stype) ||
+		BGBCC_CCXL_TypeRefStringP(ctx, stype))
 	{
 		s0=NULL;
 
@@ -570,6 +575,9 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 			s0="__lvo_loadindex_ui";
 		if(ty==CCXL_TY_UL)
 			s0="__lvo_loadindex_ul";
+
+		if(BGBCC_CCXL_TypeRefStringP(ctx, stype))
+			s0="__lvo_loadindex_str";
 
 		if(s0)
 		{
