@@ -268,7 +268,9 @@ s32 rlc_hash[1024];		//reloc chain hash (sec, offs)
 char **lbln_name;		//named label names
 u32 *lbln_id;			//named label IDs
 s16 *lbln_chn;			//named label chain
-s16 lbln_hash[256];
+s16 *lbln_ichn;			//named label chain (by ID)
+s16 lbln_hash[256];		//hash by name
+s16 lbln_ihash[256];	//hash by ID
 int nlbln, mlbln;
 int nvlbln;
 

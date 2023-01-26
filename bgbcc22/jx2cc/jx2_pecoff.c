@@ -529,7 +529,7 @@ int BGBCC_JX2C_CoffSectionFlags(
 //	return(0);
 }
 
-int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd)
+int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd, u32 mask)
 {
 	int lo, hi, cn, pvt;
 	u32 v, v0, v1, v2;
@@ -540,7 +540,8 @@ int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd)
 		for(i=0; i<cnt; i++)
 			for(j=i+1; j<cnt; j++)
 		{
-			if(arr[j]<arr[i])
+//			if(arr[j]<arr[i])
+			if((arr[j]&mask)<(arr[i]&mask))
 				{ v=arr[i]; arr[i]=arr[j]; arr[j]=v; }
 		}
 		return(0);
@@ -550,9 +551,11 @@ int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd)
 	v0=arr[cn>>1];
 	v1=arr[cn];
 	v2=arr[cn+(cn>>1)];
+	v0&=mask;	v1&=mask;	v2&=mask;
 	if(v0>v1) { v=v0; v0=v1; v1=v; }
 	if(v0>v2) { v=v0; v0=v2; v2=v; }
 	if(v1>v2) { v=v1; v1=v2; v2=v; }
+//	pvt=v1;
 	pvt=v1;
 	
 	lo=0; hi=cnt;
@@ -560,14 +563,15 @@ int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd)
 	while(lo<hi)
 	{
 		v=arr[lo];
-		if(v<=pvt)
+//		if(v<=pvt)
+		if((v&mask)<=pvt)
 			{ lo++; continue; }
 		hi--;		v1=arr[hi];
 		arr[hi]=v;	arr[lo]=v1;
 	}
 	
-	bgbcc_jx2c_qrsort(arr, lo, rd+1);
-	bgbcc_jx2c_qrsort(arr+lo, cnt-lo, rd+1);
+	bgbcc_jx2c_qrsort(arr, lo, rd+1, mask);
+	bgbcc_jx2c_qrsort(arr+lo, cnt-lo, rd+1, mask);
 	return(0);
 }
 
@@ -2057,6 +2061,94 @@ u32 BGBCC_JX2C_CalculateImagePel4BChecksum(byte *buf, int size, int en)
 	return(csum);
 }
 
+int BGBCC_JX2C_MapSortAddrArrays(
+	s32 *map_lvatab, char **map_lvntab, byte *map_lvmtab,
+	int map_nlbln, int rdepth)
+{
+	char *s0;
+	s32 a0, a1, a2, ap;
+	int i, j, k;
+	int m, n;
+
+#if 1
+	if((map_nlbln<16) || (rdepth>=20))
+	{
+	//	for(i=0; i<sctx->nlbln; i++)
+		for(i=0; i<map_nlbln; i++)
+		{
+	//		for(j=i+1; j<sctx->nlbln; j++)
+			for(j=i+1; j<map_nlbln; j++)
+			{
+				if(map_lvatab[j]<map_lvatab[i])
+				{
+					k=map_lvatab[j];
+					map_lvatab[j]=map_lvatab[i];
+					map_lvatab[i]=k;
+
+					s0=map_lvntab[j];
+					map_lvntab[j]=map_lvntab[i];
+					map_lvntab[i]=s0;
+
+					k=map_lvmtab[j];
+					map_lvmtab[j]=map_lvmtab[i];
+					map_lvmtab[i]=k;
+				}
+			}
+		}
+
+		return(0);
+	}
+#endif
+
+	i=map_nlbln>>1;
+	a0=map_lvatab[i];
+	a1=map_lvatab[i>>1];
+	a2=map_lvatab[i+(i>>1)];
+	
+	if(a1<a0)
+		{ k=a0; a0=a1; a1=k; }
+	if(a2<a0)
+		{ k=a0; a0=a2; a2=k; }
+	if(a2<a1)
+		{ k=a1; a1=a2; a2=k; }
+	ap=a1;
+
+	m=0; n=map_nlbln;
+	while(m<n)
+	{
+		a0=map_lvatab[m];
+		if(a0<=ap)
+		{
+			m++;
+			continue;
+		}
+		
+		n--;
+		i=m; j=n;
+
+		k=map_lvatab[j];
+		map_lvatab[j]=map_lvatab[i];
+		map_lvatab[i]=k;
+
+		s0=map_lvntab[j];
+		map_lvntab[j]=map_lvntab[i];
+		map_lvntab[i]=s0;
+
+		k=map_lvmtab[j];
+		map_lvmtab[j]=map_lvmtab[i];
+		map_lvmtab[i]=k;
+	}
+	
+	BGBCC_JX2C_MapSortAddrArrays(
+		map_lvatab, map_lvntab, map_lvmtab,
+		m, rdepth+1);
+	BGBCC_JX2C_MapSortAddrArrays(
+		map_lvatab+m, map_lvntab+m, map_lvmtab+m,
+		map_nlbln-m, rdepth+1);
+
+	return(0);
+}
+
 ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	byte *obuf, int *rosz, fourcc imgfmt)
 {
@@ -2266,7 +2358,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	}
 #endif
 
-//	bgbcc_jx2c_qrsort(rlctab, nrlce, 0);
+//	bgbcc_jx2c_qrsort(rlctab, nrlce, 0, 0x0FFFFFFF);
 
 #if 1
 	lpg=-1; szrlc=0;
@@ -2989,7 +3081,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		map_lvmtab[map_nlbln+i]='L';
 	}
 	map_nlbln+=sctx->lblllnrov;
-	
+
+#if 0
 //	for(i=0; i<sctx->nlbln; i++)
 	for(i=0; i<map_nlbln; i++)
 	{
@@ -3012,6 +3105,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			}
 		}
 	}
+#endif
+
+	BGBCC_JX2C_MapSortAddrArrays(
+		map_lvatab, map_lvntab, map_lvmtab, map_nlbln, 0);
 
 //	for(i=0; i<sctx->nlbln; i++)
 	for(i=0; i<map_nlbln; i++)

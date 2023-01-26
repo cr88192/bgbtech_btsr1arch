@@ -315,8 +315,22 @@ int BGBCC_JX2_EmitLabelAbs(BGBCC_JX2_Context *ctx, int lblid, s64 addr)
 
 char *BGBCC_JX2_LookupNameForLabel(BGBCC_JX2_Context *ctx, int lblid)
 {
+	int h;
 	int i;
-	
+
+#if 1
+	h=((lblid*65521)>>16)&63;
+	i=ctx->lbln_ihash[h];
+	while(i>=0)
+	{
+		if(ctx->lbln_id[i]==lblid)
+			return(ctx->lbln_name[i]);
+		i=ctx->lbln_ichn[i];
+	}
+	return(NULL);
+#endif
+
+#if 0
 	for(i=0; i<ctx->nlbln; i++)
 	{
 		if(ctx->lbln_id[i]==lblid)
@@ -325,6 +339,7 @@ char *BGBCC_JX2_LookupNameForLabel(BGBCC_JX2_Context *ctx, int lblid)
 //			return(ctx->lbln_id[i]);
 	}
 	return(NULL);
+#endif
 }
 
 int BGBCC_JX2_LookupNamedLabel(BGBCC_JX2_Context *ctx, char *name)
@@ -363,7 +378,7 @@ int BGBCC_JX2_LookupNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 {
 	char *s;
-	int h;
+	int h, ih;
 	int lbl;
 	int i;
 
@@ -393,7 +408,10 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 	{
 //		for(i=0; i<256; i++)
 		for(i=0; i<64; i++)
+		{
 			ctx->lbln_hash[i]=-1;
+			ctx->lbln_ihash[i]=-1;
+		}
 	
 //		i=1024;
 		i=4096;
@@ -401,6 +419,7 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 		ctx->lbln_name=bgbcc_malloc(i*sizeof(char *));
 		ctx->lbln_id =bgbcc_malloc(i*sizeof(u32));
 		ctx->lbln_chn=bgbcc_malloc(i*sizeof(s16));
+		ctx->lbln_ichn=bgbcc_malloc(i*sizeof(s16));
 		ctx->nlbln=0;
 		ctx->mlbln=i;
 	}else
@@ -420,6 +439,7 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 		ctx->lbln_name=bgbcc_realloc(ctx->lbln_name, i*sizeof(char *));
 		ctx->lbln_id =bgbcc_realloc(ctx->lbln_id , i*sizeof(u32));
 		ctx->lbln_chn=bgbcc_realloc(ctx->lbln_chn, i*sizeof(s16));
+		ctx->lbln_ichn=bgbcc_realloc(ctx->lbln_ichn, i*sizeof(s16));
 		ctx->mlbln=i;
 	}
 
@@ -429,13 +449,18 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 	}
 
 	lbl=BGBCC_JX2_GenLabel(ctx);
+	ih=((lbl*65521)>>16)&63;
+
 	i=ctx->nlbln++;
 	ctx->lbln_id[i]=lbl;
 	ctx->lbln_name[i]=bgbcc_strdup(name);
 	
 	ctx->lbln_chn[i]=ctx->lbln_hash[h];
 	ctx->lbln_hash[h]=i;
-	
+
+	ctx->lbln_ichn[i]=ctx->lbln_ihash[ih];
+	ctx->lbln_ihash[ih]=i;
+
 	return(lbl);
 }
 

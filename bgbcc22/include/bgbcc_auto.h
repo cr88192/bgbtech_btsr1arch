@@ -3298,7 +3298,7 @@ int BGBCC_JX2C_CoffLoadBufferDLL(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
 int BGBCC_JX2C_CoffBuildExports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_CoffBuildImports(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_CoffSectionFlags(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
-int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd);
+int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd, u32 mask);
 int BGBCC_JX2C_PackBlockLZ_Reset(BGBCC_TransState *ctx);
 int BGBCC_JX2C_PackBlockLZ_LookupMatch(BGBCC_TransState *ctx, byte *cs, byte *cse, int *rbl, int *rbd);
 int BGBCC_JX2C_PackBlockLZ_HashByte(BGBCC_TransState *ctx, byte *cs);
@@ -3319,6 +3319,7 @@ int BGBCC_JX2C_VerifyImagePEL(BGBCC_TransState *ctx,byte *obuf, byte *ibuf, int 
 u32 BGBCC_JX2C_CalculateImagePeChecksum(byte *buf, int size, int en);
 u32 BGBCC_JX2C_CalculateImagePel4Checksum(byte *buf, int size, int en);
 u32 BGBCC_JX2C_CalculateImagePel4BChecksum(byte *buf, int size, int en);
+int BGBCC_JX2C_MapSortAddrArrays(s32 *map_lvatab, char **map_lvntab, byte *map_lvmtab, int map_nlbln, int rdepth);
 ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 //AHSRC:jx2cc/jx2_register.c
 int BGBCC_JX2C_InitRemaps(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);

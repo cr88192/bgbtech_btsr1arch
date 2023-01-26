@@ -1155,6 +1155,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		ctx->lln=i;
 	}
 
+	if(ctx->lln==12271)
+	{
+		i=1;
+	}
+
 	if(ctx->reqlfn)
 	{
 		BGBCC_CCXL_StackFn(ctx, ctx->lfn);
@@ -1162,7 +1167,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		ctx->reqlfn=0;
 	}
 
-	l=BGBCC_CCXL_ReduceExpr(ctx, l);
+	if(!BCCX_TagIsCstP(l, &bgbcc_rcst_begin, "begin"))
+	{
+		l=BGBCC_CCXL_ReduceExpr(ctx, l);
+	}
+
 	if(!l)
 	{
 #if 0
@@ -1668,6 +1677,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_if, "if"))
 	{
+		if(ctx->lln==12271)
+		{
+			i=1;
+		}
+	
 		t=BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond");
 		t=BGBCC_CCXL_ReduceExpr(ctx, t);
 		i=BGBCC_CCXL_BoolExpr(ctx, t);
@@ -4771,6 +4785,11 @@ BCCX_Node *BGBCC_CCXL_CompileBlock2(BGBCC_TransState *ctx,
 
 #if 1
 	if(!strcmp(name, "generateHashValue"))
+		{ k=-1; }
+#endif
+
+#if 1
+	if(!strcmp(name, "SelectPathDir"))
 		{ k=-1; }
 #endif
 	
