@@ -505,6 +505,7 @@ int BJX2_MapSortTMapRec(BJX2_Context *ctx,
 	n=max-min;
 	
 	if((n<16) || (lim<=0))
+//	if(1)
 	{
 		BJX2_MapSortTMapBase(ctx,
 			tmap_addr, tmap_name, tmap_mode, min, max);
@@ -559,7 +560,7 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 	static bjx2_addr *tmap_addr=NULL;
 	static char **tmap_name=NULL;
 	static u16 *tmap_mode=NULL;
-	static int tmap_max;
+	static int tmap_max=0;
 	char tb[256];
 	BJX2_FILE *fd;
 	char **a;
@@ -688,7 +689,8 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 	ctx->map_pbase[mn]=pbase;
 
 	ctx->map_addr_min[mn]=tmap_addr[0];
-	ctx->map_addr_max[mn]=tmap_addr[tmn-1];
+//	ctx->map_addr_max[mn]=tmap_addr[tmn-1];
+	ctx->map_addr_max[mn]=tmap_addr[tmnb-1];
 	
 	ctx->map_b_lln[mn]=tmnb;
 	ctx->map_n_lln[mn]=tmn-tmnb;

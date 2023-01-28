@@ -936,6 +936,13 @@ void btesh_main_iterate()
 		} while((ctx->tot_cyc<cyc) && (ms<28));
 	}
 
+	if(i==BJX2_FLT_EMUBREAK)
+	{
+		ctx->status=0;
+		jx2i_gfxcon_isdbg=1;
+		i=0;
+	}
+
 	if(i || ctx->req_kill)
 	{
 		jx2i_gfxcon_isdbg=0;

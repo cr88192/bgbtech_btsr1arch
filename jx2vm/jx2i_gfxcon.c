@@ -497,6 +497,7 @@ u32 *jx2i_gfxcon_lconbuf;
 u32 *jx2i_gfxcon_dbgconbuf;
 byte jx2i_gfxcon_dirty;
 byte jx2i_gfxcon_isdbg;
+byte jx2i_gfxcon_dbg_cont;
 byte jx2i_gfxcon_is80col;
 byte jx2i_gfxcon_is50row;
 byte jx2i_gfxcon_ishalfcell;

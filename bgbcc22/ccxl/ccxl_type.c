@@ -4268,6 +4268,13 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		}
 	}
 
+#if 1
+	printf("Debug Warning, Bad Sig %s\n", sig);
+	tty.val=CCXL_TY_I;
+	*rty=tty;
+	return(CCXL_STATUS_NO);
+#endif
+
 	BGBCC_DBGBREAK
 	if(*s=='(')
 	{

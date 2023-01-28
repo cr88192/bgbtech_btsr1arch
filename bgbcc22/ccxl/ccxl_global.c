@@ -3161,7 +3161,9 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 		{
 			if(obj->decl->sig[0]=='(')
 			{
-				if(obj->parent && (obj->parent->littype==CCXL_LITID_FUNCTION))
+				if(obj->parent &&
+					((obj->parent->littype==CCXL_LITID_FUNCTION) ||
+					(obj->parent->littype==CCXL_LITID_PROTOTYPE)))
 					{ }
 				else
 					{ BGBCC_DBGBREAK }

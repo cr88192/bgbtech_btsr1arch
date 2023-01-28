@@ -175,6 +175,11 @@ int BJX2_GfxDebugPrintHexdump(BJX2_Context *ctx, bjx2_addr pc, int sz)
 
 		for(j=0; j<16; j++)
 		{
+			if(j && !(j&3))
+				*t++=' ';
+			if(j && !(j&7))
+				*t++=' ';
+
 			if((i*16+j)>=sz)
 			{
 				sprintf(t, "   ");
@@ -183,10 +188,6 @@ int BJX2_GfxDebugPrintHexdump(BJX2_Context *ctx, bjx2_addr pc, int sz)
 				sprintf(t, "%02X ", tba[j]);
 			}
 			t+=strlen(t);
-			if(j && !(j&3))
-				*t++=' ';
-			if(j && !(j&7))
-				*t++=' ';
 		}
 
 		for(j=0; j<16; j++)
@@ -307,7 +308,7 @@ s64 BJX2_GfxDebugValueForName(BJX2_Context *ctx, char *name)
 
 int BJX2_GfxDebugRunCommand(BJX2_Context *ctx, char *cmd)
 {
-	bjx2_addr pc;
+	bjx2_addr pc, pc1;
 	BJX2_Trace *tr;
 	char **a;
 	char *s, *t;
@@ -328,6 +329,7 @@ int BJX2_GfxDebugRunCommand(BJX2_Context *ctx, char *cmd)
 		!strcmp(a[0], "continue"))
 	{
 		jx2i_gfxcon_isdbg=0;
+		jx2i_gfxcon_dbg_cont=1;
 		return(0);
 	}
 
@@ -464,6 +466,62 @@ int BJX2_GfxDebugRunCommand(BJX2_Context *ctx, char *cmd)
 		return(0);
 	}
 
+	if(!strcmp(a[0], "break"))
+	{
+		if(a[1])
+		{
+			pc=BJX2_GfxDebugValueForName(ctx, a[1]);
+
+			BJX2_DbgPrintf(ctx, "Add Breakpoint %016llX\n", pc);
+
+			i=ctx->dbg_setbrk_rov;
+			while(ctx->dbg_setbrk_pc[i])
+				{ i=(i+1)&255; }
+			ctx->dbg_setbrk_pc[i]=pc;
+			ctx->dbg_setbrk_rov=(i+1)&255;
+			ctx->dbg_setbrk_nz++;
+			ctx->cc_flush|=1;
+		}
+		
+		BJX2_DecodeTraceFlushCache(ctx);
+		return(0);
+	}
+
+	if(!strcmp(a[0], "clear"))
+	{
+		if(a[1])
+		{
+			pc=BJX2_GfxDebugValueForName(ctx, a[1]);
+
+			ctx->cc_flush|=1;
+			ctx->dbg_setbrk_nz=0;
+			i=ctx->dbg_setbrk_rov;
+			for(j=0; j<255; j++)
+			{
+				pc1=ctx->dbg_setbrk_pc[(i+j)&255];
+				if(pc1==pc)
+				{
+					BJX2_DbgPrintf(ctx, "Cleared Breakpoint %016llX\n", pc);
+					ctx->dbg_setbrk_pc[(i+j)&255]=0;
+				}else
+				{
+					if(pc1)
+						ctx->dbg_setbrk_nz++;
+				}
+			}
+		}else
+		{
+			ctx->cc_flush|=1;
+			ctx->dbg_setbrk_nz=0;
+			for(j=0; j<255; j++)
+				{ ctx->dbg_setbrk_pc[j]=0; }
+			ctx->dbg_setbrk_rov=0;
+		}
+		
+		BJX2_DecodeTraceFlushCache(ctx);
+		return(0);
+	}
+
 	
 	if(	!strcmp(a[0], "help")	||
 		!strcmp(a[0], "h")		)
@@ -476,6 +534,8 @@ int BJX2_GfxDebugRunCommand(BJX2_Context *ctx, char *cmd)
 		BJX2_DbgPrintf(ctx, "quit           Exit VM\n");
 		BJX2_DbgPrintf(ctx, "c              Continue running\n");
 		BJX2_DbgPrintf(ctx, "print [var]    Print a variable\n");
+		BJX2_DbgPrintf(ctx, "break addr     Set Breakpoint\n");
+		BJX2_DbgPrintf(ctx, "clear [addr]   Clear Breakpoint\n");
 		BJX2_DbgPrintf(ctx, "help [topic]   Help on a given command\n");
 	
 //		BJX2_DbgPrintRegs(ctx);

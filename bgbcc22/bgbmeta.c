@@ -2738,7 +2738,7 @@ int main(int argc, char *argv[], char **env)
 		
 		if(is_compile_only)
 		{
-			fmt=BGBCC_IMGFMT_RIL3;
+//			fmt=BGBCC_IMGFMT_RIL3;
 		}
 		
 		if(fmt==BGBCC_IMGFMT_OBJ)

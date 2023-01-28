@@ -10,8 +10,13 @@ int ril3_nlbl=0;
 
 int BGBCC_CCXLR3_ClearLabels(BGBCC_TransState *ctx)
 {
+	int i;
+
 	ril3_nlbl=0;
 	memset(ril3_lbltab, 0, sizeof(ril3_lbltab));
+
+	for(i=0; i<1024; i++)
+		ril3_lblhash[i]=-1;
 	return(0);
 }
 
@@ -572,12 +577,15 @@ void BGBCC_CCXLR3_EmitArgBlob(
 				break;
 			j=ctx->ril_pschn[j];
 		}
+
+#if 1
 		if((i<16) && (ctx->ril_pslen[j]==len))
 		{
 			k=(ctx->ril_psrov-(j+1))&63;
 			BGBCC_CCXLR3_EmitSVLI(ctx, -(k+1));
 			return;
 		}
+#endif
 
 #if 0
 		i=ctx->ril_psrov;

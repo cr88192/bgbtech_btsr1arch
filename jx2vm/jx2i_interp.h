@@ -267,6 +267,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_TIMER		0xC001		//kHz timer
 #define BJX2_FLT_IOPOKE		0xC002		//IO Poke
 #define BJX2_FLT_SCRPOKE	0xC003		//Screen Poke
+#define BJX2_FLT_EMUBREAK	0xC004		//Emulator Breakpoint
 
 #define BJX2_OPFL_CTRLF		0x0001		//Control-Flow Opcode
 #define BJX2_OPFL_TWOWORD	0x0002		//Uses two instruction words
@@ -695,9 +696,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PRELUF		0x177	//
 #define BJX2_NMID_BNDCMP		0x178	//
 #define BJX2_NMID_FCMPGE		0x179		//
-
 #define BJX2_NMID_REGCHKG		0x17A		//
 #define BJX2_NMID_REGCHKC		0x17B		//
+#define BJX2_NMID_EMUBREAK		0x17C		//
 
 // #define BJX2_NMID_PLDCXH		0x17A		//
 // #define BJX2_NMID_PSTCXH		0x17B		//
@@ -1112,6 +1113,11 @@ int map_n_lln[256];
 char *map_pbase[256];
 
 int n_map;
+
+bjx2_addr dbg_setbrk_pc[256];
+byte dbg_setbrk_rov;
+byte dbg_setbrk_nz;
+
 
 bjx2_addr	dbg_data_start;
 bjx2_addr	dbg_data_end;

@@ -362,6 +362,15 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 		ctx->status=status;
 		return(0);
 	}
+	
+	if(status==BJX2_FLT_EMUBREAK)
+	{
+//		jx2i_gfxcon_isdbg=1;
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		ctx->status=status;
+		return(0);
+	}
 
 	if(	(status==BJX2_FLT_BREAK)	||
 		(status==BJX2_FLT_CCFLUSH))
@@ -3024,6 +3033,9 @@ int BJX2_UpdateForStatus(BJX2_Context *ctx)
 	if(ctx->status==BJX2_FLT_INVOP)
 		return(0);
 
+	if(ctx->status==BJX2_FLT_EMUBREAK)
+		return(0);
+
 	if(ctx->status==BJX2_FLT_SCRPOKE)
 	{
 		ctx->status=0;
@@ -3247,6 +3259,9 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 		ctx->tot_nbops+=nbo;
 		ctx->ttick_hk-=nc;
 		cn-=nc;
+		
+		if(jx2i_gfxcon_isdbg)
+			cn=0;
 
 		ctx->trcur=cur;
 

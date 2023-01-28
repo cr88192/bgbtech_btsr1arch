@@ -877,6 +877,20 @@ void BJX2_Op_BREAK_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->tr_rnxt=NULL;
 }
 
+void BJX2_Op_EMUBREAK_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(jx2i_gfxcon_dbg_cont)
+	{
+		jx2i_gfxcon_dbg_cont=0;
+	}else
+	{
+//		jx2i_gfxcon_isdbg=1;
+		ctx->regs[BJX2_REG_PC]=op->pc2;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_EMUBREAK);
+		ctx->tr_rnxt=NULL;
+	}
+}
+
 void BJX2_Op_SLEEP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 //	ctx->trapc=op->pc;

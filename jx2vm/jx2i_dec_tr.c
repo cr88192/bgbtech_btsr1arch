@@ -1857,7 +1857,9 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	static int rec=0;
 	BJX2_Opcode *op, *op1, *op2, *op3, *op4;
 	int ldrl, vdrl, brk, wexmd;
-	int pc, nc, ncyc, npc, jpc, ilo, nbo;
+	int nc, ncyc, ilo, nbo;
+	bjx2_addr pc, npc, jpc;
+	bjx2_addr br_addr;
 	byte lrseen, r1seen;
 	int i, j;
 	
@@ -1911,6 +1913,22 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 
 	rec++;
 	
+	br_addr=0;
+	if(ctx->dbg_setbrk_nz)
+	{
+		for(i=0; i<256; i++)
+		{
+			pc=ctx->dbg_setbrk_pc[i];
+			if(!pc)
+				continue;
+			if((pc>=addr) && (pc<(addr+256)))
+			{
+				if(!br_addr || (pc<br_addr))
+					br_addr=pc;
+			}
+		}
+	}
+	
 //	ctx->v_wexmd=0xFF;
 	
 	op=NULL;
@@ -1924,7 +1942,22 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			if((nc>0) && !(op->fl&BJX2_OPFL_WEX))
 				break;
 		}
-	
+		
+//		if(br_addr && (pc==br_addr))
+//			break;
+
+		if(br_addr && (pc==br_addr))
+		{
+			op=BJX2_ContextAllocOpcode(ctx);
+
+			op->pc=pc;
+			op->pc2=pc;
+			op->nmid=BJX2_NMID_EMUBREAK;
+			op->Run=BJX2_Op_EMUBREAK_None;
+
+			tr->ops[nc++]=op;
+		}
+
 //		ctx->trapc=pc;
 	
 		op=BJX2_ContextAllocOpcode(ctx);
