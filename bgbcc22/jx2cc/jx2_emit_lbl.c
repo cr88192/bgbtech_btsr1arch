@@ -577,9 +577,22 @@ int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,
 
 int BGBCC_JX2_LookupLabelAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
 {
-	int i, j, k, h;
+	int i, j, k, l, h;
 
 	h=(((ofs*251+sec)*251)>>8)&1023;
+
+#if 1
+	i=ctx->lbl_hashb[h];
+	while(i>=0)
+	{
+		l=ctx->lbl_id[i];
+		if(	(ctx->lbl_sec[i]==sec) &&
+			(ctx->lbl_ofs[i]==ofs) &&
+			((l&CCXL_LBL_SPMASK)!=CCXL_LBL_GENLLNBASE)	)
+				return(l);
+		i=ctx->lbl_cho[i];
+	}
+#endif
 
 	i=ctx->lbl_hashb[h];
 	while(i>=0)
@@ -606,6 +619,23 @@ int BGBCC_JX2_LookupLabelAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
 
 int BGBCC_JX2_LookupLabelAtOffsNoLLn(BGBCC_JX2_Context *ctx, int sec, int ofs)
 {
+	int i, j, k, l, h;
+
+	h=(((ofs*251+sec)*251)>>8)&1023;
+
+	i=ctx->lbl_hashb[h];
+	while(i>=0)
+	{
+		l=ctx->lbl_id[i];
+		if(	(ctx->lbl_sec[i]==sec) &&
+			(ctx->lbl_ofs[i]==ofs) &&
+			((l&CCXL_LBL_SPMASK)!=CCXL_LBL_GENLLNBASE)	)
+				return(l);
+		i=ctx->lbl_cho[i];
+	}
+	return(-1);
+
+#if 0
 	int l;
 	
 	l=BGBCC_JX2_LookupLabelAtOffs(ctx, sec, ofs);
@@ -616,6 +646,7 @@ int BGBCC_JX2_LookupLabelAtOffsNoLLn(BGBCC_JX2_Context *ctx, int sec, int ofs)
 		return(-1);
 	
 	return(l);
+#endif
 }
 
 int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)

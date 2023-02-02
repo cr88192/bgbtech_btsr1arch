@@ -534,6 +534,8 @@ int frm_offs_thisptr;	//offset of 'this' pointer
 int frm_offs_sectoken;	//offset of security token
 int frm_offs_allocamrk;	//offset of alloca mark
 int frm_offs_isrsaves;	//offset of saved registers (ISR)
+int frm_offs_datahi;	//High mark for data area
+int frm_offs_datalo;	//Low mark for data area
 
 s64 frm_val_sectoken;	//value used for security token.
 

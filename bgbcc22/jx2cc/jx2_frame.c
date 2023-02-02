@@ -206,6 +206,10 @@ int BGBCC_JX2C_EmitLdaFrameOfsReg(
 	int ofs1, nm1;
 	int i, j, k;
 
+	if((ofs>=sctx->frm_offs_datahi) && (ofs<0) &&
+		!(sctx->is_prolog) && !(sctx->is_simpass))
+		{ BGBCC_DBGBREAK }
+
 	ofs1=ofs+(sctx->frm_size);
 
 	if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
@@ -2258,7 +2262,24 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 			k=1;
 		}
 
+		rcls=ctx->cur_func->regs[j]->regcls;
+
 		ctx->cur_func->regs[j]->regflags|=BGBCC_REGFL_ACCESSED;
+
+		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_INITIALIZED) &&
+			(	(rcls==BGBCC_SH_REGCLS_VO_REF) ||
+				(rcls==BGBCC_SH_REGCLS_AR_REF) ||
+				(rcls==BGBCC_SH_REGCLS_VO_REF2) ||
+				(rcls==BGBCC_SH_REGCLS_AR_REF2)	))
+//		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_INITIALIZED))
+		{
+			if(ctx->verbose)
+			{
+				printf("LDA Mark Temp Initialized, %s:%d\n",
+					ctx->lfn, ctx->lln);
+			}
+			ctx->cur_func->regs[j]->regflags|=BGBCC_REGFL_INITIALIZED;
+		}
 
 		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_TEMPLOAD))
 		{

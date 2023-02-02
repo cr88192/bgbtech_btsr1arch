@@ -3075,7 +3075,7 @@ ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(
 	int opw9, opw10, opw11, opw12;
 	int opw1v, opw3v, opw5v, opw7v, opw9v, opw11v, opwn1v;
 	int opwn1, opwn2;
-	int wx1, wx3, wx5, wxn1, imv1, imv3, imv5, imv7;
+	int wx1, wx3, wx5, wxn1, imv1, imv3, imv5, imv7, imvn1;
 	int dp, cp, nswap, nadvl;
 	int i, j, k;
 
@@ -3290,6 +3290,7 @@ ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(
 		}
 		
 		imv1=0;		imv3=0;		imv5=0;		imv7=0;
+		imvn1=0;
 
 #if 1
 		/* If ops are immovable, skip. */
@@ -3376,7 +3377,7 @@ ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(
 #if 1
 		i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+0);
 		if(i>=0)
-			{ imv1=1; }
+			{ imv1=1; imvn1=1; }
 //			{ cp+=4; continue; }
 		i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+4);
 		if(i>=0)
@@ -3680,7 +3681,7 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 	int opw1, opw2, opw3, opw4, opw5, opw6;
 	int opw1v, opw3v, opw5v, opw7v, opw9v, opw11v, opwn1v;
 	int opwn1, opwn2;
-	int wx1, wx3, wx5, wxn1, imv1, imv3, imv5;
+	int wx1, wx3, wx5, wxn1, imv1, imv3, imv5, imvn1;
 	int dp, cp, nswap;
 	int i, j, k;
 	
@@ -3849,7 +3850,8 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 		imv1=0;
 		imv3=0;
 		imv5=0;
-		
+		imvn1=0;
+
 		/* If ops are immovable, skip. */
 		if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)>0)
 			{ cp+=4; continue; }
@@ -3868,7 +3870,7 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 		{
 			i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+0);
 			if(i>=0)
-				{ imv1=1; }
+				{ imv1=1; imvn1=1; }
 //				{ cp+=4; continue; }
 		}
 
@@ -3877,7 +3879,7 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 		{
 			i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+4);
 			if(i>=0)
-				{ imv3=1; }
+				{ imv3=1; imv5=1; }
 //				{ cp+=4; continue; }
 		}
 
@@ -4212,6 +4214,14 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 		i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+4);
 		if(i>=0)	{ imv3=1; }
 		i=BGBCC_JX2_LookupRelocAtOffs(sctx, sctx->sec, cp+8);
+		if(i>=0)	{ imv5=1; }
+
+
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+0);
+		if(i>=0)	{ imv1=1; }
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+4);
+		if(i>=0)	{ imv3=1; imv5=1; }
+		i=BGBCC_JX2_LookupLabelAtOffsNoLLn(sctx, sctx->sec, cp+8);
 		if(i>=0)	{ imv5=1; }
 
 #if 0
