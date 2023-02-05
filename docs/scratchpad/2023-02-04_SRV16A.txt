@@ -1,0 +1,320 @@
+SR16 (Idea Spec):
+* Mimic RV32E at the assembly level
+* Using only 16-bit instructions.
+* Will not aim for binary compatibility.
+* Will attempt some level of ASM compatibility.
+* The assembler would be expected to mimic RV32E via multi-op sequences.
+* Not all of RV32E will be encodable.
+
+
+=== Registers ===
+
+Registers (32 bit):
+* X0  Zero / Const / PC (Contextual)
+* X1  RA / LR (Link Register)
+* X2  SP (Stack Pointer)
+* X3  GP (Global Pointer)
+* X4  TP (Task Pointer)
+* X5  T0 (Temporary Link Register)
+* X6  S3 (Saved)
+* X7  S4 (Saved)
+* X8  S0 (Saved)
+* X9  S1 (Saved)
+* X10 A0 (Argument 0, Return, Scratch)
+* X11 A1 (Argument 1, Return, Scratch)
+* X12 A2 (Argument 2, Scratch)
+* X13 A3 (Argument 3, Scratch)
+* X14 S2 (Saved)
+* X15 T1 (Temporary)
+
+X0 will be special:
+* Assembler will treat X0 as a constant 0
+* For most contexts, R0 will be treated as a scratch register.
+* If used as a memory base register, it will be understood as PC.
+
+Control Registers:
+* C0  PC  (Program Counter)
+* C1  S0R (Saved R0)
+* C2  SR  (Status Register)
+* C3  VBR (Vector Base Register)
+* C4  SPC (Saved PC)
+* C5  SSP (Saved SP)
+* C6  ESR (Exception Status Register)
+* C7  TEA (Exception Target Address)
+
+Status Register:
+* (31:16): MBZ (Reserved)
+* (   15): MD2  (0)
+* (   14): MD1  (0=User, 1=Supervisor)
+* (   13): RB  (0=Normal, 1=ISR)
+* (   12): BL  (Interrupt Disable)
+* (11: 4): MBZ (Reserved)
+* ( 3: 2): IPL (Interrupt Priority Level)
+* (    1): S   (Auxilary Status Bit)
+* (    0): T   (True/False Status Bit)
+
+Exception Status Register:
+* (31:16): Exception Code (EXC)
+* (15: 0): Saved from SR
+
+
+=== Instruction Listing ===
+
+Listing:
+* 0nmZ  //Load/Store Ops
+** 0nm0  SB		Xn, Xm, 0		//(Xm)=Xn
+** 0nm1  SH		Xn, Xm, 0
+** 0nm2  SW		Xn, Xm, 0
+** 0nm3  LBU	Xn, Xm, 0
+** 0nm4  SB		Xn, Xm, R0		//(Xm+R0)=Xn
+** 0nm5  SH		Xn, Xm, R0
+** 0nm6  SW		Xn, Xm, R0
+** 0nm7  LBU	Xn, Xm, R0
+** 0nm8  LB		Xn, Xm, 0		//Xn=(Xm)
+** 0nm9  LH		Xn, Xm, 0
+** 0nmA  LW		Xn, Xm, 0
+** 0nmB  LHU	Xn, Xm, 0
+** 0nmC  LB		Xn, Xm, R0		//Xn=(Xm+R0)
+** 0nmD  LH		Xn, Xm, R0
+** 0nmE  LW		Xn, Xm, R0
+** 0nmF  LHU	Xn, Xm, R0
+
+* 1nmZ  //ALU Ops
+** 1nm0  ADD	Xn, Xn, Xm
+** 1nm1  SUB	Xn, Xn, Xm
+** 1nm2  -
+** 1nm3  -
+** 1nm4  TST	Xn, Xm			//SR.T = (Xm AND Xn) EQ 0
+** 1nm5  AND	Xn, Xn, Xm
+** 1nm6  OR		Xn, Xn, Xm
+** 1nm7  EOR	Xn, Xn, Xm
+** 1nm8  MOV	Xn, Xm
+** 1nm9  SLL	Xn, Xm, 1
+** 1nmA  MOV	Xn, Cm
+** 1nmB  MOV	Cn, Xm
+** 1nmC  CMPEQ	Xn, Xm
+** 1nmD  CMPHI	Xn, Xm
+** 1nmE  CMPGT	Xn, Xm
+** 1nmF  CMPGE	Xn, Xm
+
+* 2Zii  //Branch and Misc
+** 20dd  BRA	Disp8s				//PC=PC+Disp8s*2
+** 21dd  BSR	Disp8s				//LR=PC; PC=PC+Disp8s*2
+** 22dd  BT		Disp8s
+** 23dd  BF		Disp8s
+** 24ii  -
+** 25ii  -
+** 26ii  LDSH	R0, Imm8u			//R0=(R0 SHL 8)|Imm8u
+** 27ii  LEA	R0, (PC, Disp8s*2)
+** 28dd  BRAP	Imm8u				//PC=PC+((R0 SHL 8)|Imm8u)*2
+** 29dd  BSRP	Imm8u
+** 2Add  BTP	Imm8u
+** 2Bdd  BFP	Imm8u
+** 2Cii  -
+** 2Dii  -
+** 2Eii  ADD	SP, Disp8s*2		//?
+** 2Fii  LEAP	R0, PC, R0, Imm8	// R0=PC+((R0 SHL 8)|Imm8u)*2
+
+* 3nZZ  //Single Register Ops
+** 3000  NOP			//NOP
+** 3010  -
+** 3020  SLEEP			//Delay
+** 3030  BREAK			//Breakpoint
+** 3040  CLRT			//SR.T=0
+** 3050  SETT			//SR.T=1
+** 3060  -
+** 3070  -
+** 3080  -
+** 3090  -
+** 30A0  -
+** 30B0  -
+** 30C0  RTE			//Return from Exception
+** 30D0  -
+** 30E0  -
+** 30F0  -
+
+** 3n01  BRA	Xn		//PC=PC+Xn
+** 3n11  BSR	Xn
+** 3n21  BT		Xn
+** 3n31  BF		Xn
+** 3n41  NOT	Xn		//Rn=~Rn
+** 3n51  NEG	Xn		//Rn=(~Rn)+1
+** 3n61  MOVT	Xn		//Rn=SR.T
+** 3n71  MOVNT	Xn		//Rn=!SR.T
+
+** 3n02  JMP	Xn		//PC=Xn
+** 3n12  JSR	Xn
+** 3n22  JT		Xn
+** 3n32  JF		Xn
+** 3n42  EXTBU	Xn		//Xn=(unsigned char)Xn
+** 3n52  EXTHU	Xn		//Xn=(unsigned short)Xn
+** 3n62  EXTBS	Xn		//Xn=(signed char)Xn
+** 3n72  EXTHS	Xn		//Xn=(signed short)Xn
+
+* 4niZ  //Load/Store Ops, (SP, Disp4) and Misc
+** 4ni0  ADD	Xn, Xn, Imm4u
+** 4ni1  SH		Xn, SP, Disp4u*2	//(SP+Disp*2)=Xn
+** 4ni2  SW		Xn, SP, Disp4u*4	//(SP+Disp*4)=Xn
+** 4ni3  TST	Imm4u, Rn
+** 4ni4  CMPEQ	Xn, Imm4u
+** 4ni5  CMPHI	Xn, Imm4u
+** 4ni6  CMPGT	Xn, Imm4u
+** 4ni7  CMPGE	Xn, Imm4u
+** 4ni8  ADD	Xn, Xn, Imm4n
+** 4ni9  LH		Xn, SP, Disp4u*2	//Xn=(SP+Disp*2)
+** 4niA  LW		Xn, SP, Disp4u*4	//Xn=(SP+Disp*4)
+** 4niB  LHU	Xn, SP, Disp4u*2
+** 4niC  CMPEQ	Xn, Imm4n
+** 4niD  CMPHI	Xn, Imm4n
+** 4niE  CMPGT	Xn, Imm4n
+** 4niF  CMPGE	Xn, Imm4n
+
+* 5nmZ  //ALU2
+** 5nm0  ADD	Xn, Xm, R0
+** 5nm1  SUB	Xn, Xm, R0
+** 5nm2  SLL	Xn, Xm, R0		//(SHIFT) Shift Left Logical
+** 5nm3  SRL	Xn, Xm, R0		//(SHIFT) Shift Right Logical
+** 5nm4  SRA	Xn, Xm, R0		//(SHIFT) Shift Right Arithmatic
+** 5nm5  AND	Xn, Xm, R0
+** 5nm6  OR		Xn, Xm, R0
+** 5nm7  EOR	Xn, Xm, R0
+
+** 5nm8  MULS	Xn, Xm, R0		//(MUL) Xn=Xm*R0
+** 5nm9  MULU	Xn, Xm, R0		//(MUL) Xn=Xm*R0
+** 5nmA  MULHS	Xn, Xm, R0		//(MUL) Xn=(Xm*R0)>>32
+** 5nmB  MULHU	Xn, Xm, R0		//(MUL) Xn=(Xm*R0)>>32
+** 5nmC  DIVS	Xn, Xm, R0		//(DIV) Xn=Xm/R0
+** 5nmD  DIVU	Xn, Xm, R0		//(DIV) Xn=Xm/R0
+** 5nmE  REMS	Xn, Xm, R0		//(DIV) Xn=Xm%R0
+** 5nmF  REMU	Xn, Xm, R0		//(DIV) Xn=Xm%R0
+
+* 6nmZ
+* 7nmZ
+
+* 8nmZ	//Load/Store, Disp3
+** 8ni0  SRL	Xn, Xm, 1
+** 8nm1  SW		Xn, Xm, 4
+** 8nm2  SW		Xn, Xm, 8
+** 8nm3  SW		Xn, Xm, 12
+** 8nm4  SW		Xn, Xm, 16
+** 8nm5  SW		Xn, Xm, 20
+** 8nm6  SW		Xn, Xm, 24
+** 8nm7  SW		Xn, Xm, 28
+** 8nm8  SRA	Xn, Xm, 1
+** 8nm9  LW		Xn, Xm, 4
+** 8nmA  LW		Xn, Xm, 8
+** 8nmB  LW		Xn, Xm, 12
+** 8nmC  LW		Xn, Xm, 16
+** 8nmD  LW		Xn, Xm, 20
+** 8nmE  LW		Xn, Xm, 24
+** 8nmF  LW		Xn, Xm, 28
+
+* 9zzz / 1001-zzzn-nnss-sttt  (X8..X15)
+** 90zz  ADD	Xn, Xs, Xt
+** 92zz  SUB	Xn, Xs, Xt
+** 94zz  SLL	Xn, Xs, Xt		//(SHIFT)
+** 96zz  SRL	Xn, Xs, Xt		//(SHIFT)
+** 98zz  SRA	Xn, Xs, Xt		//(SHIFT)
+** 9Azz  AND	Xn, Xs, Xt
+** 9Czz  OR 	Xn, Xs, Xt
+** 9Ezz  EOR	Xn, Xs, Xt
+
+* Aiii  MOV		R0, Imm12u
+* Biii  MOV		R0, Imm12n
+* Czzz  (Reserved, Possible 32-bit space)
+* Dzzz  (Reserved, Possible 32-bit space)
+* Ezzz  (Reserved, Possible 32-bit space)
+* Fzzz  (Reserved, Possible 32-bit space)
+
+
+=== Symthesis of RV ops ===
+
+Example Mapping:
+* J Disp20
+** Aiii 28ii
+* JAL Disp20
+** Aiii 29ii
+* BEQ Xn, Xm, Lbl
+** CMPEQ Xn, Xm; BT Lbl
+
+Most immediate forms would be faked by loading the immediate into R0 and then using an instruction which uses R0 as an input.
+
+Support for general case shift instructions will be optional.
+
+Instructions like SLT would be faked using CMPGT+MOVT or similar.
+
+
+=== Address Space ===
+
+Memory Map (28/32 bit):
+* 00000000..0001FFFF: Boot ROM Area
+* 00020000..0003FFFF: Boot SRAM Area
+* 00040000..0007FFFF: Reserved
+* 00080000..000FFFFF: Constant Page Areas / Etc
+* 00100000..00FFFFFF: Misc Memory Maps
+* 01000000..0FFFFFFF: DRAM Area
+* 10000000..EFFFFFFF: Reserved
+* F0000000..F7FFFFFF: System / Reserved
+* F8000000..FFFFFFFF: System / MMIO Area
+
+Memory Map (24 bit):
+* 000000..01FFFF: Boot ROM Area
+* 020000..03FFFF: Boot SRAM Area
+* 040000..07FFFF: Reserved
+* 080000..0FFFFF: Constant Page Areas / Etc
+* 100000..FFFFFF: Misc Memory Maps (and/or DRAM)
+
+Goal will be to allow for a logical 24 or 28 bit address space.
+* Exact address space and sizes of region will depend on the implementation.
+* On a machine with 28-bit addressing, the address space will wrap every 256MB.
+
+
+=== Interrupt Handling ===
+
+On Interrupt Entry:
+* Contents from SR will be copied to ESR.
+* SR.(MD,RB,BL) will be Set
+* PC will be copied to SPC.
+* Processor will perform a computed branch relative to VBR.
+
+Setting RB will also cause R0 to swap places with S0R, and SP to swap places with SSP.
+
+ESR and TEA will be set according to the interrupt that has occured.
+
+On return from interrupt:
+* Bits from ESR are copied back into SR.
+* A branch will be performed to SPC.
+
+Exception Code:
+* (15:12): Exception Catagory
+* (11: 8): Bus Node ID (Nominally 0)
+* ( 7: 0): Exception ID Code (Magic Number)
+
+Exception Catagory:
+* 0..7: Non-Exception (Reserved for internal use)
+* 8: General Fault
+* 9: Reserved
+* A: MMU Fault
+* B: Reserved
+* C: External IRQ
+* D: Reserved
+* E: System Call
+* F: Reserved
+
+The Catagory will be used to calculate an offset relative to VBR:
+* VBR+00: Reset Vector
+* VBR+40: General Fault
+* VBR+50: MMU Fault
+* VBR+60: IRQ
+* VBR+70: System Call
+
+In effect, the Category will be shifted left by 3 bits, and added to VBR.
+The location within the table will presumably contain a branch to the actual entry point for the ISR.
+
+Note that VBR will be required to be aligned to a multiple of 128 bytes.
+Attempting to use an unaligned VBR will be undefined.
+
+
+On Power-On or Reset, VBR will be reset to the start of the Boot ROM.
+The processor will also initiate a branch to this address at this time.
+
