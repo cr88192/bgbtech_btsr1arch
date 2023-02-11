@@ -2234,11 +2234,12 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 			{
 				addr1=(tlblo2&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
 				
-				if(addr!=addr1)
+//				if(addr!=addr1)
+				if((addr!=addr1) && (addr<0x02000000))
 				{
 					k=-1;
-//					printf("BJX2_MemTranslateTlb %llX -> %llX\n",
-//						addr, addr1);
+					printf("BJX2_MemTranslateTlb A %llX -> %llX\n",
+						addr, addr1);
 //					JX2_DBGBREAK
 				}
 
@@ -2299,8 +2300,11 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 //				ctx->mem_tlb_pr1_lo=tlblo0;
 				addr1=(tlblo2&0x0000FFFFFFFF0000ULL)|(addr&0x0000FFFFULL);
 				
-				if(addr!=addr1)
+				if((addr!=addr1) && (addr<0x02000000))
 				{
+					k=-1;
+					printf("BJX2_MemTranslateTlb B %llX -> %llX\n",
+						addr, addr1);
 //					JX2_DBGBREAK
 				}
 
@@ -2347,6 +2351,14 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 //				ctx->mem_tlb_pr1_hi=tlbhi0;
 //				ctx->mem_tlb_pr1_lo=tlblo0;
 				addr1=(tlblo2&0x0000FFFFFFFFF000ULL)|(addr&0x00000FFFULL);
+
+				if((addr!=addr1) && (addr<0x02000000))
+				{
+					k=-1;
+					printf("BJX2_MemTranslateTlb C %llX -> %llX\n",
+						addr, addr1);
+//					JX2_DBGBREAK
+				}
 
 #if 0
 				for(j=i; j>0; j--)

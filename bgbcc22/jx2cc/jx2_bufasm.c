@@ -2132,6 +2132,15 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "has_fpimm"))
 		return((ctx->has_fpim&1)!=0);
 
+	if(!bgbcc_stricmp(sym, "abi_argshadow"))
+		return((ctx->abi_spillpad&1)!=0);
+	if(!bgbcc_stricmp(sym, "abi_vskgen"))
+		return((ctx->abi_spillpad&2)!=0);
+	if(!bgbcc_stricmp(sym, "abi_boundschk"))
+		return((ctx->abi_spillpad&4)!=0);
+	if(!bgbcc_stricmp(sym, "abi_vskglobal"))
+		return((ctx->abi_spillpad&8)!=0);
+
 
 	if(!bgbcc_stricmp(sym, "abi_evenonly"))
 		return(ctx->abi_evenonly);

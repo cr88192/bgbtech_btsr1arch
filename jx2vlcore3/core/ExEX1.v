@@ -1560,6 +1560,10 @@ begin
 				begin
 					if(tValBound8Oob)
 					begin
+						$display("ExEX1: Bound Check Fail, PC=%X Rs=%X Rt=%X",
+							regValPc,
+							regValRs,
+							regValRt);
 						tExTrapExc = { UV112_00, 16'h800F };
 					end
 				end
