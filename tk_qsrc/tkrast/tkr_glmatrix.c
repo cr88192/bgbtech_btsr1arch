@@ -17,6 +17,7 @@ void tkra_glPushMatrix(void)
 	{
 		ix=ctx->stkpos_xform++;
 		ctx->stk_xform[ix]=ctx->mat_xform;
+//		__debugbreak();
 		return;
 	}
 
@@ -31,17 +32,25 @@ void tkra_glPushMatrix(void)
 void tkra_glPopMatrix(void)
 {
 	TKRA_Context *ctx;
+	int arr[10];
 	int ix;
 
 	ctx=TKRA_GetCurrentContext();
 	
+	ix=(int)ctx;
+	arr[5]=ix;
+	ix=arr[4];
+	
 	if(ctx->matmode==0)
 	{
+		ix++;
+
 		ix=ctx->stkpos_xform-1;
 		ctx->stkpos_xform=ix;
 		ctx->mat_xform=ctx->stk_xform[ix];
 		ctx->mat_tproj=TKRA_MatrixMultiply(
 			ctx->mat_xform, ctx->mat_xproj);
+//		__debugbreak();
 		return;
 	}
 
@@ -54,6 +63,8 @@ void tkra_glPopMatrix(void)
 			ctx->mat_xform, ctx->mat_xproj);
 		return;
 	}
+	
+	ix++;
 }
 
 void tkra_glLoadIdentity(void)

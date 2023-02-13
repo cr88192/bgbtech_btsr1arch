@@ -380,3 +380,94 @@ u64 *TKMM_MMCell_GetLnkObjCellHeadPtr(TKMM_MemLnkObj *obj, void *ptr)
 		return(-1);
 	return(chk->data+p);
 }
+
+/** Convert size into a 5.3 minifloat, Round Up */
+int TKMM_SizeToFxiBnd(int sz)
+{
+	int fr, ex;
+	int i;
+	
+	if(sz<16)
+		return(sz);
+	
+	fr=sz;
+	ex=1;
+	while(fr>=16)
+		{ fr=(fr+1)>>1; ex++; }
+	i=(fr&7)|(ex<<3);
+
+	if(i&(~255))
+		__debugbreak();
+
+	return(i);
+}
+
+
+void *tk_ptrsetbound1(void *ptr, int size);
+
+void *tk_ptrsetbound2(void *ptr, int lobnd, int hibnd)
+{
+	int sz1;
+	void *p;
+	u64 v;
+	int ix, b;
+
+	if(lobnd>=0)
+	{
+		return(tk_ptrsetbound1(ptr, hibnd));
+	}
+
+	sz1=hibnd-lobnd;
+
+	if(!ptr)
+		return(ptr);
+
+	v=(long)ptr;
+	if(v>>48)
+		return(ptr);
+
+	ix=TKMM_SizeToFxiBnd(sz1);
+	b=(-lobnd)>>((((ix+3)>>3)&31)-1);
+	ix=0x3000|((ix+3)+((b+1)<<8));
+
+//	v=(long)ptr;
+	v=(v&0x0000FFFFFFFFFFFFULL)|(((u64)ix)<<48);
+	p=(void *)v;
+	return(p);
+}
+
+void *tk_ptrsetbound1(void *ptr, int size)
+{
+	void *p;
+	u64 v;
+	int ix;
+
+	if(!ptr)
+		return(ptr);
+
+	v=(long)ptr;
+	if(v>>48)
+		return(ptr);
+
+	ix=TKMM_SizeToFxiBnd(size);
+	ix=0x3000|((ix+3)+(1<<8));
+	
+//	v=(long)ptr;
+	v=(v&0x0000FFFFFFFFFFFFULL)|(((u64)ix)<<48);
+	p=(void *)v;
+	return(p);
+}
+
+void *tk_ptrstriptag(void *ptr)
+{
+	void *p;
+	u64 v;
+
+	if(!ptr)
+		return(ptr);
+
+	v=(long)ptr;
+	v=(v&0x0000FFFFFFFFFFFFULL);
+	p=(void *)v;
+	return(p);
+}

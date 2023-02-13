@@ -65,7 +65,7 @@ int tk_bdspi_init()
 
 #if 1
 	mbr=&tmbr;
-	TKSPI_ReadSectors(mbr, 0, 1);
+	TKSPI_ReadSectors((byte *)mbr, 0, 1);
 
 	maxlba=0;
 	for(i=0; i<4; i++)

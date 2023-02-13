@@ -72,6 +72,9 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 	dcyc=ctx->tot_cyc-mmgp_spi_lastcyc;
 	mmgp_spi_lastcyc=ctx->tot_cyc;
 	
+	if(dcyc<10)
+		dcyc=10;
+	
 	if(dcyc>mmgp_spi_delcyc)
 		mmgp_spi_delcyc=0;
 	else
@@ -127,6 +130,7 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 
 	case 0x0030:
 		rv=mmio[0x10];
+		rv&=~2;
 		if(mmgp_spi_delcyc>0)
 			rv|=2;
 //		printf("SPI_C(R): D=%08X\n", rv);

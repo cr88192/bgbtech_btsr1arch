@@ -593,7 +593,7 @@ int tk_rename2(TK_USERINFO *usri, char *oldname, char *newname, char *mode)
 	s1=oldname0;
 	while(*s1 && (*s1>='a') && (*s1<='z'))
 		s1++;
-	if(s1==':')
+	if(*s1==':')
 		isuri=1;
 
 //	fd=tk_ird_fopen(NULL, name, mode);
@@ -1260,7 +1260,7 @@ s64 tk_hsend(TKPE_TaskInfo *task, int iHdl, int iCmd,
 	void *sockaddr, int szsockaddr)
 {
 	TK_USERINFO tacc;
-	FILE *fd;
+	TK_FILE *fd;
 	int i, sde;
 
 	TK_InitUserInfoForTask(task, &tacc);
@@ -1278,7 +1278,7 @@ s64 tk_hrecv(TKPE_TaskInfo *task, int iHdl, int iCmd,
 	void *sockaddr, int szsockaddr)
 {
 	TK_USERINFO tacc;
-	FILE *fd;
+	TK_FILE *fd;
 	int i, sde;
 
 	TK_InitUserInfoForTask(task, &tacc);
@@ -1402,7 +1402,7 @@ int tk_closedir(TK_DIR *fd)
 int tk_hopendir(TKPE_TaskInfo *task, char *name)
 {
 	TK_USERINFO tacc;
-	FILE *fd;
+	TK_FILE *fd;
 
 	TK_InitUserInfoForTask(task, &tacc);
 	tacc.mode|=TKFAT_EMODE_ACC_RO;
@@ -1416,7 +1416,7 @@ int tk_hreaddir(TKPE_TaskInfo *task, int iHdl, void *pDe, int szDe, int nDe)
 {
 	TK_DIRENT *de;
 	void *de1;
-	FILE *fd;
+	TK_FILE *fd;
 	int i, sde;
 
 	fd=TK_GetPtrForHandle(task, iHdl);
@@ -1446,7 +1446,7 @@ int tk_hclosedir(TKPE_TaskInfo *task, int iHdl)
 {
 	TK_DIRENT *de;
 	void *de1;
-	FILE *fd;
+	TK_FILE *fd;
 	int i, sde;
 
 	fd=TK_GetPtrForHandle(task, iHdl);

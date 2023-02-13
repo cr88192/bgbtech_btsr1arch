@@ -1005,6 +1005,35 @@ tkra_vec4f TKRA_ProjectVector(tkra_vec4f vec, tkra_mat4 mat)
 	return(v0z);
 }
 
+#ifdef __BJX2__
+
+tkra_mat4 TKRA_MatrixTranspose(tkra_mat4 mata);
+
+__asm {
+TKRA_MatrixTranspose:
+	MOV.X	(R4,  0), R16
+	MOV.X	(R4, 16), R18
+	MOV.X	(R4, 32), R20
+	MOV.X	(R4, 48), R22
+
+	MOVLLD	R18, R16, R6
+	MOVLLD	R22, R20, R7
+	MOV.X	R6, (R2, 0)
+	MOVHHD	R18, R16, R6
+	MOVHHD	R22, R20, R7
+	MOV.X	R6, (R2, 16)
+
+	MOVLLD	R19, R17, R6
+	MOVLLD	R23, R21, R7
+	MOV.X	R6, (R2, 32)
+	MOVHHD	R19, R17, R6
+	MOVHHD	R23, R21, R7
+	MOV.X	R6, (R2, 48)
+	
+	RTS
+};
+
+#else
 tkra_mat4 TKRA_MatrixTranspose(tkra_mat4 mata)
 {
 	tkra_vec4f v0, v1, v2, v3;
@@ -1046,6 +1075,110 @@ tkra_mat4 TKRA_MatrixTranspose(tkra_mat4 mata)
 	return(matc);
 #endif
 }
+#endif
+
+// #ifdef __BJX2__
+#if 0
+
+tkra_mat4 TKRA_MatrixMultiply(tkra_mat4 mata, tkra_mat4 matb);
+
+__asm {
+TKRA_MatrixMultiply:
+	ADD		-512, SP
+	MOV		LR, R1
+	MOV.Q	R1 , (SP, 504)
+	MOV.Q	R14, (SP, 496)
+	MOV.X	R10, (SP, 480)
+	MOV.X	R8 , (SP, 464)
+	
+	MOV		R2,	R8
+	MOV		R4, R14
+	MOV		R5, R4
+	MOV		SP, R2
+	BSR		TKRA_MatrixTranspose
+
+	MOV.X	(SP,  0), R20
+	MOV.X	(SP, 16), R22
+	MOV.X	(SP, 32), R4
+	MOV.X	(SP, 48), R6
+
+	MOV.X	(R14, 0), R18
+	PMULX.F	R18, R20, R32
+	PMULX.F	R18, R22, R34
+	PMULX.F	R18, R4, R36
+	PMULX.F	R18, R6, R38
+	PADD.F	R32, R33, R48
+	PADD.F	R34, R35, R49
+	PADD.F	R36, R37, R50
+	PADD.F	R38, R39, R51
+	MOVLLD	R49, R48, R52
+	MOVHHD	R49, R48, R53
+	MOVLLD	R51, R50, R54
+	MOVHHD	R51, R50, R55
+	PADD.F	R52, R53, R16
+	PADD.F	R54, R55, R17
+	MOV.X	R16, (R8, 0)
+
+	MOV.X	(R14, 16), R18
+	PMULX.F	R18, R20, R32
+	PMULX.F	R18, R22, R34
+	PMULX.F	R18, R4, R36
+	PMULX.F	R18, R6, R38
+	PADD.F	R32, R33, R48
+	PADD.F	R34, R35, R49
+	PADD.F	R36, R37, R50
+	PADD.F	R38, R39, R51
+	MOVLLD	R49, R48, R52
+	MOVHHD	R49, R48, R53
+	MOVLLD	R51, R50, R54
+	MOVHHD	R51, R50, R55
+	PADD.F	R52, R53, R16
+	PADD.F	R54, R55, R17
+	MOV.X	R16, (R8, 16)
+
+	MOV.X	(R14, 32), R18
+	PMULX.F	R18, R20, R32
+	PMULX.F	R18, R22, R34
+	PMULX.F	R18, R4, R36
+	PMULX.F	R18, R6, R38
+	PADD.F	R32, R33, R48
+	PADD.F	R34, R35, R49
+	PADD.F	R36, R37, R50
+	PADD.F	R38, R39, R51
+	MOVLLD	R49, R48, R52
+	MOVHHD	R49, R48, R53
+	MOVLLD	R51, R50, R54
+	MOVHHD	R51, R50, R55
+	PADD.F	R52, R53, R16
+	PADD.F	R54, R55, R17
+	MOV.X	R16, (R8, 32)
+
+	MOV.X	(R14, 48), R18
+	PMULX.F	R18, R20, R32
+	PMULX.F	R18, R22, R34
+	PMULX.F	R18, R4, R36
+	PMULX.F	R18, R6, R38
+	PADD.F	R32, R33, R48
+	PADD.F	R34, R35, R49
+	PADD.F	R36, R37, R50
+	PADD.F	R38, R39, R51
+	MOVLLD	R49, R48, R52
+	MOVHHD	R49, R48, R53
+	MOVLLD	R51, R50, R54
+	MOVHHD	R51, R50, R55
+	PADD.F	R52, R53, R16
+	PADD.F	R54, R55, R17
+	MOV.X	R16, (R8, 48)
+
+	MOV.Q	(SP, 504), R1
+	MOV.Q	(SP, 496), R14
+	MOV.X	(SP, 480), R10
+	MOV.X	(SP, 464), R8
+	ADD		512, SP
+	JMP		R1
+};
+
+#else
 
 tkra_mat4 TKRA_MatrixMultiply(tkra_mat4 mata, tkra_mat4 matb)
 {
@@ -1141,6 +1274,9 @@ tkra_mat4 TKRA_MatrixMultiply(tkra_mat4 mata, tkra_mat4 matb)
 	return(matc);
 #endif
 }
+
+#endif
+
 
 tkra_mat4 TKRA_MatrixIdentify(void)
 {

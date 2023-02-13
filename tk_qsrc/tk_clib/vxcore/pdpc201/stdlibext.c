@@ -11,6 +11,8 @@
 #include "locale.h"
 #include "tk_locale.h"
 
+int tk_unlink(char *name);
+
 
 static const char *itoa_radix="0123456789abcdefghijklmnopqrstuvwxyz";
 static const char *itoa_radix_b="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -664,7 +666,7 @@ errno_t memcpy_s(
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if(count > destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	memcpy(dest, src, count);
 	return(0);
 }
@@ -674,7 +676,7 @@ errno_t memmove_s(void *dest, rsize_t destsz, const void *src, rsize_t count)
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if(count > destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	memmove(dest, src, count);
 	return(0);
 }
@@ -686,7 +688,7 @@ errno_t wmemcpy_s(
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if(count > destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	memcpy(dest, src, count * sizeof(wchar_t));
 	return(0);
 }
@@ -698,7 +700,7 @@ errno_t wmemmove_s(
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if(count > destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	memmove(dest, src, count * sizeof(wchar_t));
 	return(0);
 }
@@ -710,7 +712,7 @@ errno_t strcat_s(
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if((strlen(dest) + strlen(src)) >= destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	strcat(dest, src);
 	return(0);
 }
@@ -722,7 +724,7 @@ errno_t strcpy_s(
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if(strlen(src) >= destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	strcpy(dest, src);
 	return(0);
 }
@@ -734,7 +736,7 @@ errno_t strncat_s(
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if((strlen(dest) + strnlen_s(src, count)) >= destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	strncat(dest, src, count);
 	return(0);
 }
@@ -746,7 +748,7 @@ errno_t strncpy_s(
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
 	if(strnlen_s(src, count) >= destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	strncpy(dest, src, count);
 	return(0);
 }
@@ -757,8 +759,8 @@ errno_t wcscpy_s(
 {
 	if(!dest || !src)
 		{ return(call_constraint_handler_s("null argument", NULL, EFAULT)); }
-	if(strlen(src) >= destsz)
-		{ return(call_constraint_handler_s("bad size argument", ERANGE)); }
+	if(wcslen(src) >= destsz)
+		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	wcscpy(dest, src);
 	return(0);
 }

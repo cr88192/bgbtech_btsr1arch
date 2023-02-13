@@ -65,6 +65,7 @@ int tk_vmem_maxpage;
 int tk_vmem_pagerov;
 
 byte *tk_vmem_page_tcbuf;	//temporary compression buffer
+byte *tk_vmem_page_tdbuf;	//temporary compression buffer
 
 int tk_vmem_varov_lo;
 int tk_vmem_varov_hi;
@@ -80,6 +81,10 @@ extern volatile u64 __arch_sttb;
 
 void TK_VMem_VaEvictPageIndex(int pidx);
 void TK_VMem_VaFlushVaddr(s64 vaddr);
+
+void *tk_ptrsetbound1(void *ptr, int size);
+void *tk_ptrsetbound2(void *ptr, int lobnd, int hibnd);
+
 
 u64 *TK_VMem_PtrForPto(u64 pto)
 {
@@ -1017,6 +1022,9 @@ int TK_VMem_Init()
 	
 //	tk_vmem_pageinf=tk_malloc_cat(np*sizeof(TK_VMem_PageInfo), 2);
 	tk_vmem_pageinf=TKMM_PageAllocL(np*sizeof(TK_VMem_PageInfo));
+	tk_vmem_pageinf=tk_ptrsetbound1(tk_vmem_pageinf,
+		np*sizeof(TK_VMem_PageInfo));
+	
 	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
 #endif
 
@@ -1070,11 +1078,17 @@ int TK_VMem_Init()
 		tk_vmem_pagebmp=TKMM_PageAllocL(i);
 		tk_vmem_pagevnz=TKMM_PageAllocL(i);
 		tk_vmem_pagecmz=TKMM_PageAllocL(i);
+
+		tk_vmem_pagebmp=tk_ptrsetbound1(tk_vmem_pagebmp, i);
+		tk_vmem_pagevnz=tk_ptrsetbound1(tk_vmem_pagevnz, i);
+		tk_vmem_pagecmz=tk_ptrsetbound1(tk_vmem_pagecmz, i);
+
 		memset(tk_vmem_pagebmp, 0, i);
 		memset(tk_vmem_pagevnz, 0, i);
 		memset(tk_vmem_pagecmz, 0, i);
 
 		tk_vmem_page_tcbuf=TKMM_PageAllocL(2<<TK_VMEM_PAGESHL);
+		tk_vmem_page_tdbuf=TKMM_PageAllocL(2<<TK_VMEM_PAGESHL);
 
 		tk_vmem_pagebmp[0]|=1;
 
@@ -1169,6 +1183,9 @@ int TK_VMem_Init()
 	//	tk_vmem_pageinf=tk_malloc(np*sizeof(TK_VMem_PageInfo));
 		tk_vmem_pageinf=TKMM_PageAllocL(np*sizeof(TK_VMem_PageInfo));
 	//	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
+
+		tk_vmem_pageinf=tk_ptrsetbound1(tk_vmem_pageinf,
+			np*sizeof(TK_VMem_PageInfo));
 
 #if 1
 		tk_vmem_lru_free=-1;
@@ -1574,8 +1591,8 @@ void TK_VMem_WritePageToDisk(int cidx)
 {
 	TK_VMem_PageInfo *cpi;
 	u64 *ppq;
-	byte *ppi, *cs, *ct, *tcbuf;
-	u64 nzm;
+	byte *ppi, *cs, *ct, *tcbuf, *tdbuf;
+	u64 nzm, v, sum;
 	s64 lba;
 	int i, j, k, l, cm, pidx;
 
@@ -1590,6 +1607,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 	pidx=cpi->pidx;
 
 	tcbuf=tk_vmem_page_tcbuf;
+	tdbuf=tk_vmem_page_tdbuf;
 
 //	if(!(tk_vmem_pagevnz[cidx>>3]&(1<<(cidx&7))))
 	if(1)
@@ -1602,21 +1620,30 @@ void TK_VMem_WritePageToDisk(int cidx)
 //			if(ppq[i])
 //				break;
 
+		sum=0;
 		for(i=0; i<l; i++)
 		{
-			if(ppq[i])
+			v=ppq[i];
+			sum+=v;
+			if(v)
 				nzm|=1ULL<<(i>>(TK_VMEM_PAGESHL-6-3));
 		}
 
 //		if(i>=l)
 		if(!nzm)
 		{
+			if(nzm|(nzm>>32))
+				{ __debugbreak(); }
+			if(sum)
+				{ __debugbreak(); }
+
 			/* Page is still Zero. */
-			tk_printf("TK_VMem_WritePageToDisk: Page Is Zero\n");
+//			tk_printf("TK_VMem_WritePageToDisk: Page Is Zero\n");
 			tk_vmem_pagevnz[pidx>>3]&=~(1<<(pidx&7));
 			cpi->flags&=~1;
 			return;
 		}
+
 		tk_vmem_pagevnz[pidx>>3]|=1<<(pidx&7);
 
 		tk_printf("TK_VMem_WritePageToDisk: Page Nzm=%08X_%08X\n",
@@ -1675,6 +1702,16 @@ void TK_VMem_WritePageToDisk(int cidx)
 			TK_VMem_PackLz64Page(tcbuf, ppi);
 //			TK_VMem_PackFeLz32Page(tcbuf, ppi);
 			j=tcbuf[1]+1;
+
+#if 1
+			TK_VMem_UnpackLz64Page(tcbuf, tdbuf);
+			if(memcmp(ppi, tdbuf, 1<<TK_VMEM_PAGESHL))
+			{
+				tk_printf("TK_VMem_WritePageToDisk: Page LZ Corrupt\n");
+				cm=0;
+				__debugbreak();
+			}
+#endif
 
 //			if((j<<9)>=(1<<(TK_VMEM_PAGESHL-1)))
 //				cm=0;
@@ -1739,6 +1776,8 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 //		for(i=0; i<l; i++)
 //			ppq[i]=0;
 
+//		tk_printf("TK_VMem_LoadPageFromDisk: Page Was Zero %d\n", pidx);
+
 		memset(ppi, 0, 1<<TK_VMEM_PAGESHL);
 		return;
 	}
@@ -1751,14 +1790,24 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 //		if(tk_vmem_pagecmz[cidx>>3]&(1<<(cidx&7)))
 		if((tk_vmem_pagecmz[pidx>>3]>>(pidx&7))&1)
 		{
+			tk_printf("TK_VMem_LoadPageFromDisk: Page Was Compressed %d\n", 
+				pidx);
+			
 			TKSPI_ReadSectors(tcb, lba, 1);
-			TKSPI_ReadSectors(tcb+512, lba+1, tcb[1]);
+			l=tcb[1];
+			if((l+1)>(1<<TK_VMEM_PGBLKSHL))
+				{ __debugbreak(); }
+			TKSPI_ReadSectors(tcb+512, lba+1, l);
 			TK_VMem_UnpackCompactedPage(tcb, ppi);
 		}else
 		{
+			tk_printf("TK_VMem_LoadPageFromDisk: Page Was Raw %d\n", pidx);
 			TKSPI_ReadSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
 		}
+		return;
 	}
+	
+	__debugbreak();
 }
 
 int TK_VMem_MapVirtToCacheIdx(int pidx)
@@ -1819,7 +1868,7 @@ int TK_VMem_MapVirtToCacheIdx(int pidx)
 		i=tk_vmem_lru_last;
 		cpi=tk_vmem_pageinf+i;
 
-		tk_printf("TK_VMem_MapVirtToCacheIdx: Evict %d\n", i);
+//		tk_printf("TK_VMem_MapVirtToCacheIdx: Evict %d / %d\n", i, cpi->pidx);
 
 		if(cpi->flags&1)
 		{
@@ -2284,6 +2333,8 @@ void TK_VMem_VaFlushVaddr(s64 vaddr)
 
 	tk_vmem_loadpte(vaddr, pte);
 	tk_vmem_loadpte(vaddr, pte);
+	tk_vmem_loadpte(vaddr, pte);
+	tk_vmem_loadpte(vaddr, pte);
 }
 
 void TK_VMem_VaEvictPageIndex(int cidx)
@@ -2708,10 +2759,26 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea)
 			{
 				if((pte>>TKMM_PAGEBITS)!=(tea>>TKMM_PAGEBITS))
 					{ __debugbreak(); }
-			}else
+			}else if((tea>=TKMM_VALOSTART) && (tea<TKMM_VALOEND))
 			{
 				if((pte>=TKMM_RAMBASE) && (pte<TKMM_PAGEBASE))
 					{ __debugbreak(); }
+					
+//				if(pte>TKMM_PAGEEND)
+				if(pte>tkmm_pageend)
+					{ __debugbreak(); }
+				if(pte<TKMM_RAMBASE)
+					{ __debugbreak(); }
+			}else if(tea<0x10000)
+			{
+				/* NULL, Special. */
+//				pte=(0x10000>>TKMM_PAGEBITS)<<TK_VMEM_PTESHL;
+//				pte|=1;
+			}else
+			{
+				tk_printf("tk_vmem_tlbmiss: Unhandled VA Range %08X\n",
+					tea);
+				__debugbreak();
 			}
 		}
 

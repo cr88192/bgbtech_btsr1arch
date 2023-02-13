@@ -1,6 +1,16 @@
 u32 TKFAT_GetDirEntCluster(
 	TKFAT_FAT_DirEntExt *dee);
 
+void TKFAT_ValidateImageMagic(TKFAT_ImageInfo *img);
+int TKFAT_LookupDirEntNameFlag(TKFAT_ImageInfo *img,
+	int clid, int mclid, TKFAT_FAT_DirEntExt *dee, char *name, int flag);
+int TKFAT_SetupDirEntNewDirectory(
+	TKFAT_FAT_DirEntExt *dee);
+int TKFAT_SetDirEntCluster(
+	TKFAT_FAT_DirEntExt *dee,
+	u32 clid);
+
+
 void tkfat_setChs(byte *chs, int lba)
 {
 	int c, h, s, ts;
@@ -267,20 +277,33 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 		tk_printf("TKFAT_GetSectorStaticBuffer: NULL Image\n");
 		__debugbreak();
 	}
+	
+//	tk_printf("TKFAT_GetSectorStaticBuffer A %d %d\n", lba, num);
 
 	TKFAT_ValidateImageMagic(img);
+	
+	if(img->sbc_num<0)
+		{ __debugbreak(); }
+	if(img->sbc_num>64)
+		{ __debugbreak(); }
 
 	for(i=0; i<img->sbc_num; i++)
-		if(img->sbc_lba[i]==lba)
 	{
+		if(img->sbc_lba[i]!=lba)
+			continue;
+		if(img->sbc_lbn[i]!=(num&255))
+			continue;
 		if(!img->sbc_buf[i])
 			continue;
+
 		return(img->sbc_buf[i]);
 	}
 
 	for(i=0; i<img->sbc_num; i++)
+	{
 		if(!img->sbc_buf[i])
 			break;
+	}
 
 	if((i>=img->sbc_num) && (i<64))
 		i=img->sbc_num++;
@@ -302,7 +325,11 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 	if(lba2<0)
 		__debugbreak();
 
+//	tk_printf("TKFAT_GetSectorStaticBuffer B %d %d\n", lba2, num);
+
 	TKSPI_ReadSectors(img->sbc_buf[i], lba2, num&255);
+
+//	tk_printf("TKFAT_GetSectorStaticBuffer C %d %d\n", lba2, num);
 
 	TKFAT_ValidateImageMagic(img);
 
@@ -717,7 +744,10 @@ void TKFAT_ReadImageMBR(TKFAT_ImageInfo *img)
 
 	i=tkfat_getWord(img->mbr->aa55);
 	if(i!=0xAA55)
+	{
 		tk_printf("TKFAT_ReadImageMBR: No 55-AA\n");
+		return;
+	}
 
 	for(i=0; i<4; i++)
 	{
@@ -2044,9 +2074,11 @@ int tkfat_lfn2bytes(u16 *lfn, int sz, byte *dst)
 
 int tkfat_memcmp11(byte *s1, byte *s2)
 {
-	if(((u32 *)s1)[0]!=((u32 *)s2)[0])
-		return(-1);
-	if(((u32 *)s1)[1]!=((u32 *)s2)[1])
+//	if(((u32 *)s1)[0]!=((u32 *)s2)[0])
+//		return(-1);
+//	if(((u32 *)s1)[1]!=((u32 *)s2)[1])
+//		return(-1);
+	if((*(u64 *)s1)!=(*(u64 *)s2))
 		return(-1);
 	if((((u32 *)s1)[2]&0xFFFFFF)!=(((u32 *)s2)[2]&0xFFFFFF))
 		return(-1);
@@ -2057,7 +2089,7 @@ int TKFAT_CheckDebMebMatch(TKFAT_ImageInfo *img,
 	TKFAT_FAT_DirEnt *deb,
 	TKFAT_FAT_MetaEnt *meb)
 {
-	if(!tkfat_memcmp11(deb, meb))
+	if(!tkfat_memcmp11((byte *)deb, (byte *)meb))
 		return(1);
 	return(0);
 }

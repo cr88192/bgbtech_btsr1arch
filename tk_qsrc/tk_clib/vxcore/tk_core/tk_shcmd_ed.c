@@ -159,7 +159,7 @@ int TKSH_EdLoadFile(TKSH_EditCtx *ctx, char *name)
 	int sz, ch, nl;
 
 	sz=0;
-	tbuf=TKSH_LoadFileBuf(name, &sz);
+	tbuf=TKSH_LoadFileBuf(ctx, name, &sz);
 	if(!tbuf)
 		return(0);
 

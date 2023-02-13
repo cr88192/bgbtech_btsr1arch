@@ -56,6 +56,9 @@ void *TKMM_MMList_Malloc(int sz);
 
 s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap);
 
+int TKMM_MMList_WalkHeapObjects(
+	void *ctx, int (*func)(void *ctx, TKMM_MemLnkObj *obj));
+
 
 int TKMM_InitBootParm()
 {
@@ -475,10 +478,15 @@ extern volatile u64 __arch_tbr;
 void *tk_getsavedvbr(void);
 // int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
 
+void *tk_ptrstriptag(void *ptr);
+
 int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
 	int (*SysCall)(void *sObj, int uMsg, void *vParm1, void *vParm2);
 	TKPE_TaskInfo *task;
+	TKPE_TaskInfoUser *tusr;
+	void *msgbuf, *msgp1, *msgp2;
+	int ret;
 
 	task=__arch_tbr;
 	if(!task)
@@ -487,10 +495,38 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //		__debugbreak();
 //	return(task->SysCall(sObj, uMsg, vParm1, vParm2));
 
+	vParm1=tk_ptrstriptag(vParm1);
+	vParm2=tk_ptrstriptag(vParm2);
+
+	tusr=(TKPE_TaskInfoUser *)(task->usrptr);
+	msgbuf=(void *)(tusr->syscmsgbuf);
+
+	msgp1=NULL;
+	msgp2=NULL;
+	if(vParm1)
+	{
+		msgp1=((char *)msgbuf)+0;
+		memcpy(msgp1, vParm1, 32);
+	}
+
+	if(vParm2)
+	{
+		msgp2=((char *)msgbuf)+32;
+		memcpy(msgp2, vParm2, 256);
+	}
+
 	SysCall=(void *)(task->SysCall);
 	if(!SysCall)
 		__debugbreak();
-	return(SysCall(sObj, uMsg, vParm1, vParm2));
+//	return(SysCall(sObj, uMsg, vParm1, vParm2));
+
+	ret=SysCall(sObj, uMsg, msgp1, msgp2);
+	if(vParm1)
+	{
+		memcpy(vParm1, msgp1, 32);
+	}
+	
+	return(ret);
 }
 
 bool tk_iskernel(void)
@@ -577,6 +613,7 @@ void TKMM_Init()
 		tkmm_pageend=TKMM_PAGEBASE+(tkmm_rampage<<TKMM_PAGEBITS);
 
 		memset(tkmm_pagebmp, 0, 16384);
+		tkmm_pagerov=0;
 		
 		if(!TKMM_PageAlloc_f)
 		{
@@ -843,6 +880,16 @@ int TKMM_DecRef(void *ptr)
 	return(0);
 }
 #endif
+
+int TKMM_IncRef(void *ptr)
+{
+	return(0);
+}
+
+int TKMM_DecRef(void *ptr)
+{
+	return(0);
+}
 
 int TKMM_GetTag(void *ptr)
 {

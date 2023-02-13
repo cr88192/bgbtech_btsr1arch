@@ -63,8 +63,8 @@
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
-`define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-// `define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
+// `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
+`define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
 // `define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
@@ -76,8 +76,8 @@
 // `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
 // `define jx2_mem_l1isz_64			//L1 I$ is 64 entries
 
-`define jx2_mem_l1mdsz_64			//L1 D$ is 64 entries
-`define jx2_mem_l1misz_64			//L1 I$ is 64 entries
+`define jx2_mem_l1mdsz_64			//L1 D$ is 64 entries (Mini Core)
+`define jx2_mem_l1misz_64			//L1 I$ is 64 entries (Mini Core)
 
 // `define jx2_expand_l2sz			//Make L2 Bigger
 

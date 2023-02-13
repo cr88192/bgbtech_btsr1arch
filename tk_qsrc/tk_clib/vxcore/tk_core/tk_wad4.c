@@ -7,6 +7,9 @@ TK_WadZBlock	*tk_wad4_zfree;
 int				tk_wad4_zmemuse;
 int				tk_wad4_zmemlim = 4*(1<<20);
 
+void *TK_Wad4_GetCacheLumpNum(TK_WadImage *img, int lump, int *rsz);
+byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp);
+
 TK_WadZBlock *TK_Wad4_ZAllocBlock()
 {
 	TK_WadZBlock *tmp;

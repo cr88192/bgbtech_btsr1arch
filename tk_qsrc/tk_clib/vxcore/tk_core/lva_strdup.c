@@ -233,7 +233,7 @@ u16 *TKMM_LVA_StrdupU16(u16 *str)
 		c=*(char **)c;
 	}
 
-	l=strlen(str);
+	l=wcslen(str);
 	l1=(l+15)&(~15);
 
 	if(l>512)

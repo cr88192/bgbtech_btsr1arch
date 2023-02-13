@@ -537,14 +537,14 @@ void tk_print_hex_u64(u64 v)
 	tk_print_hex(v);
 }
 
-void tk_print_hex_n(u32 v, int n)
+void tk_print_hex_n(u64 v, int n)
 {
 	static char *chrs="0123456789ABCDEF";
 
 //	char *chrs;
 //	chrs="0123456789ABCDEF";
 
-	if(n>8)
+	if(n>16)
 	{
 //		__debugbreak();
 
@@ -556,6 +556,18 @@ void tk_print_hex_n(u32 v, int n)
 
 		tk_puts("\n");
 		__debugbreak();
+	}
+
+	if(n>8)
+	{
+		if(n>15)tk_putc(chrs[(v>>60)&15]);
+		if(n>14)tk_putc(chrs[(v>>56)&15]);
+		if(n>13)tk_putc(chrs[(v>>52)&15]);
+		if(n>12)tk_putc(chrs[(v>>48)&15]);
+		if(n>11)tk_putc(chrs[(v>>44)&15]);
+		if(n>10)tk_putc(chrs[(v>>40)&15]);
+		if(n> 9)tk_putc(chrs[(v>>36)&15]);
+		if(n> 8)tk_putc(chrs[(v>>32)&15]);
 	}
 
 	if(n>7)tk_putc(chrs[(v>>28)&15]);
@@ -578,9 +590,9 @@ void tk_print_hexptr(long v)
 	tk_print_hex((u32)v);
 }
 
-int tk_print_hex_genw(u32 v)
+int tk_print_hex_genw(u64 v)
 {
-	u32 w;
+	u64 w;
 	int i;
 
 	i=1;
@@ -698,7 +710,8 @@ void tk_printf(char *str, ...)
 	va_list lst;
 	char pcfill;
 	char *s, *s1;
-	int i, v, w;
+	long long v;
+	int i, w, ll;
 
 //	plst=(void **)(&str);
 //	plst++;
@@ -737,11 +750,30 @@ void tk_printf(char *str, ...)
 				w=(w*10)+((*s++)-'0');
 		}
 		
+		ll=0;
+		if((*s=='l') || (*s=='L'))
+		{
+			ll=1;
+			s++;
+			if(*s=='l')
+			{
+				s++;
+			}
+		}
+		
+		
 		switch(*s++)
 		{
 		case 'd':
-//			v=(int)(*plst++);
-			v=va_arg(lst, int);
+			if(ll)
+			{
+				v=va_arg(lst, long long);
+			}else
+			{
+	//			v=(int)(*plst++);
+				v=va_arg(lst, int);
+			}
+
 			if(w)
 			{
 				tk_print_decimal_n(v, w);
@@ -750,10 +782,17 @@ void tk_printf(char *str, ...)
 				tk_print_decimal(v);
 			}
 			break;
+
 		case 'X':
-//			if(!w)w=8;
-//			v=(int)(*plst++);
-			v=va_arg(lst, int);
+			if(ll)
+			{
+				v=va_arg(lst, long long);
+			}else
+			{
+//				if(!w)w=8;
+//				v=(int)(*plst++);
+				v=va_arg(lst, int);
+			}
 
 //			__debugbreak();
 
@@ -764,6 +803,7 @@ void tk_printf(char *str, ...)
 			tk_print_hex_n(v, w);
 //			__debugbreak();
 			break;
+
 		case 's':
 //			s1=*plst++;
 			s1=va_arg(lst, char *);
@@ -1047,7 +1087,7 @@ int TK_Dbg_RecvFileXM(char *name)
 			if(ch==0x01)	/* SOH: Start of Packet */
 			{
 				if(tk_dbg_recvfile && (nbufb>=128))
-					{ fwrite(buf, 1, 128, tk_dbg_recvfile); }
+					{ tk_fwrite(buf, 1, 128, tk_dbg_recvfile); }
 				state=2; break;
 			}
 			if(ch==0x04)	/* EOT: End of Data */
@@ -1055,7 +1095,7 @@ int TK_Dbg_RecvFileXM(char *name)
 				while((nbufb>0) && (buf[nbufb-1]==0x1A))
 					nbufb--;
 				if(tk_dbg_recvfile && (nbufb>=0))
-					{ fwrite(buf, 1, nbufb, tk_dbg_recvfile); }
+					{ tk_fwrite(buf, 1, nbufb, tk_dbg_recvfile); }
 				state=0;
 				break;
 			}

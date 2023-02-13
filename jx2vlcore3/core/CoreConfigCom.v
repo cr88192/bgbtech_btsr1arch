@@ -99,7 +99,7 @@
 
 `define jx2_enable_aluunary
 `define jx2_enable_clz
-`define jx2_enable_packbcd
+// `define jx2_enable_packbcd
 
 // `ifndef jx2_cfg_75mhz
 `ifdef def_true
@@ -178,7 +178,7 @@
 
 `define jx2_fbuf_nofont		//Disable Font ROM
 
-// `define jx2_alu_jcmp_rpimm
+// `define jx2_alu_jcmp_rpimm	//Allow JCMP immed via Rp
 
 
 `ifdef jx2_enable_riscv

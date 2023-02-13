@@ -3,7 +3,7 @@
 #if 1
 int	closedir(DIR *dir)
 {
-	tk_closedir(dir);
+	tk_closedir((TK_DIR *)dir);
 }
 
 DIR	*opendir(const char *path)

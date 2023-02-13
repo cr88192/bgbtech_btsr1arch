@@ -3,6 +3,7 @@
 void tk_shell_chksane_simd_asm();
 void tk_shell_chksane_rgb5_asm();
 void tk_shell_chksane_fmovs();
+void tk_shell_chksane_srtmsk();
 
 __vec4f		tk_shell_fv0_gbl;
 
@@ -583,6 +584,31 @@ tk_shell_chksane_pmuls_sf:
 	PMULX.FA	R4, R6, R2
 	RTS
 
+
+tk_shell_chksane_srtmsk:
+	CMPEQ	R4, R4
+	NOP
+	NOP
+	CMPGT	R4, R4
+	ADD		1, R4
+	BREAK?T
+
+	NOP
+	CMPEQ	R4, R4
+	MOVZT	R4, R4
+	BREAK?F
+
+	MOV		0xF123, R0
+	CMPGT	R4, R4
+	MOVTT	R4, R0, R4
+	BREAK?T
+
+	NOP
+	CMPEQ		R4, R4
+	BNDCHK.B	R4, R4
+	BREAK?F
+
+	RTS
 };
 
 __vec4f tk_shell_chksane_padds_sf(__vec4f va, __vec4f vb);
@@ -1390,11 +1416,13 @@ int tk_shell_chksane_memset()
 	long long tba[32];
 	long long tbb[32];
 	char *tb, *ts, *tb1;
+	int *pi;
 	int			i, j, k, l;
 
-#if 0
+#if 1
 	tb=(char *)tba;
 	ts=(char *)tbb;
+	pi=&l;
 	
 	if(((int)tb)&7)
 		__debugbreak();
@@ -1616,6 +1644,28 @@ int tk_shell_chksane_arith2()
 	tk_shell_chksane_switch_i(13);
 }
 
+const int scopetst_done=1;
+
+int tk_shell_chksane_scope1()
+{
+	int scopetst_done;
+	int i, v;
+	
+	scopetst_done=0;
+	if(scopetst_done)
+		{ __debugbreak(); }
+	
+	v=0;
+	for(i=0; i<4; i++)
+	{
+		int v;
+		v=i+1;
+	}
+
+	if(v!=0)
+		{ __debugbreak(); }
+}
+
 int tk_shell_chksane()
 {
 	unsigned int	ui;
@@ -1631,6 +1681,7 @@ int tk_shell_chksane()
 	tk_shell_chksane_memset();
 
 	tk_shell_chksane_fmovs();
+	tk_shell_chksane_srtmsk();
 
 	Sys_CheckSanityB();
 
@@ -1661,6 +1712,7 @@ int tk_shell_chksane()
 	tk_printf("CS B6\n");
 
 	tk_shell_chksane_int128();
+	tk_shell_chksane_scope1();
 
 	tk_printf("CS B7\n");
 

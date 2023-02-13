@@ -93,8 +93,16 @@ float frexpf(float value, int *exp)
 	{ return(frexp(value, exp)); }
 float ldexpf(float x, int exp)
 	{ return(ldexp(x, exp)); }
+
 float modff(float value, float *iptr)
-	{ return(modf(value, iptr)); }
+{
+	double d, v;
+	d=0;
+	v=modf(value, &d);
+	*iptr=d;
+	return(v);
+}
+
 float powf(float x, float y)
 	{ return(pow(x, y)); }
 float sqrtf(float x)
@@ -138,8 +146,16 @@ long double frexpl(long double value, int *exp)
 	{ return(frexp(value, exp)); }
 long double ldexpl(long double x, int exp)
 	{ return(ldexp(x, exp)); }
+
 long double modfl(long double value, long double *iptr)
-	{ return(modf(value, iptr)); }
+{
+	double d, v;
+	d=0;
+	v=modf(value, &d);
+	*iptr=d;
+	return(v);
+}
+
 long double powl(long double x, long double y)
 	{ return(pow(x, y)); }
 long double sqrtl(long double x)

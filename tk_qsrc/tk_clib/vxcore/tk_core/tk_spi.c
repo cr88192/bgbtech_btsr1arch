@@ -116,8 +116,11 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	u64 lv;
 	u32 count, v;
 	int rv;
-	int n;
-	
+	int n, ttn;
+
+//	tk_printf("TKSPI_ReadData: Buf=%016llX Len=%X\n",
+//		buf, len);
+
 	if(tkspi_ctl_status&(SPICTRL_XMIT|SPICTRL_XMIT8X))
 	{
 		tk_printf("TKSPI_ReadData: %X %X\n",
@@ -130,6 +133,8 @@ int TKSPI_ReadData(byte *buf, u32 len)
 //	n+=buf[len];
 	n+=buf[len-1];
 
+//	tk_printf("TKSPI_ReadData: A\n");
+
 //	count=(1<<16);
 	count=(1<<20);
 	while(count>0)
@@ -140,8 +145,18 @@ int TKSPI_ReadData(byte *buf, u32 len)
 		P_SPI_DATA=0xFF;
 		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
 		v=P_SPI_CTRL;
+		ttn=(1<<20);
+//		while(v&SPICTRL_BUSY) 
+//		while((v&SPICTRL_BUSY) && ((ttn--)>0))
+//			v=P_SPI_CTRL;
 		while(v&SPICTRL_BUSY) 
+		{
+			if(ttn<=0)
+				break;
+			ttn--;
 			v=P_SPI_CTRL;
+		}
+
 		v=P_SPI_DATA;
 		rv=(v&0xFF);
 #endif
@@ -161,6 +176,8 @@ int TKSPI_ReadData(byte *buf, u32 len)
 		return(-1);
 	}
 
+//	tk_printf("TKSPI_ReadData: B\n");
+
 //	printf("<");
 
 	if(tkspi_ctl_status&(SPICTRL_XMIT|SPICTRL_XMIT8X))
@@ -179,22 +196,32 @@ int TKSPI_ReadData(byte *buf, u32 len)
 #if 1
 	if(!(len&7))
 	{
-//		while(n>0)
-		while(ct<cte)
+		while(n>0)
+//		while(ct<cte)
 		{
 			lv=0xFFFFFFFFFFFFFFFFULL;
 			P_SPI_QDATA=lv;
 			P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT8X;
 			v=P_SPI_CTRL;
 //			__debugbreak();
+			ttn=(1<<20);
+//			while(v&SPICTRL_BUSY) 
+//			while((v&SPICTRL_BUSY) && ((ttn--)>0))
+//				v=P_SPI_CTRL;
 			while(v&SPICTRL_BUSY) 
+			{
+				if(ttn<=0)
+					break;
+				ttn--;
 				v=P_SPI_CTRL;
+			}
 //			*(u64 *)ct=P_SPI_QDATA;
 			lv=P_SPI_QDATA;
 			*(u64 *)ct=lv;
 //			if(((s64)lv)<0)
 //				__debugbreak();
 			ct+=8;
+			n-=8;
 //			__debugbreak();
 		}
 
@@ -214,8 +241,17 @@ int TKSPI_ReadData(byte *buf, u32 len)
 		P_SPI_DATA=0xFF;
 		P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT;
 		v=P_SPI_CTRL;
+		ttn=1<<20;
+//		while(v&SPICTRL_BUSY) 
+//			v=P_SPI_CTRL;
 		while(v&SPICTRL_BUSY) 
+		{
+			if(ttn<=0)
+				break;
+			ttn--;
 			v=P_SPI_CTRL;
+		}
+
 		v=P_SPI_DATA;
 //		rv=(v&0xFF);
 		*ct++=v;
@@ -425,6 +461,8 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 	ct=buf; la=lba; n=cnt;
 	while(n>0)
 	{
+//		tk_printf("TKSPI_ReadSectors: B %d %d\n", la, n);
+
 		xt+=ct[0]+ct[511];	//Make sure it is paged in.
 
 		h=la>>32;

@@ -424,6 +424,7 @@ void R_DrawPlanes (void)
 	if (lastopening - openings > MAXOPENINGS)
 	I_Error ("R_DrawPlanes: opening overflow (%i)",
 		 lastopening - openings);
+//	__debugbreak();
 #endif
 
 	for (pl = visplanes ; pl < lastvisplane ; pl++)

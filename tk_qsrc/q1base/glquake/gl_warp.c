@@ -222,18 +222,24 @@ float qgl_sintab[256];
 
 float qgl_fastsin(float ra)
 {
+	float f;
 	int ix;
 	ix=ra*(128.0/M_PI)+0.5;
 	ix=ix&255;
-	return(qgl_sintab[ix]);
+	f=qgl_sintab[ix];
+//	__debugbreak();
+	return(f);
 }
 
 float qgl_fastcos(float ra)
 {
+	float f;
 	int ix;
 	ix=ra*(128.0/M_PI)+0.5;
 	ix=(ix+64)&255;
-	return(qgl_sintab[ix]);
+	f=qgl_sintab[ix];
+//	__debugbreak();
+	return(f);
 }
 
 #ifdef __BJX2__

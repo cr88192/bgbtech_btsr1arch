@@ -1558,12 +1558,14 @@ int TKSH_TryLoad(char *img, char **args0)
 //			boot_newsp=boot_newspb+((1<<18)-1024);
 
 			i=TK_GetRandom16ASLR()&0x03F0;
-			boot_newspb=TKMM_PageAlloc(1<<19);
+			boot_newspb=TKMM_PageAlloc(1<<18);
+//			boot_newspb=TKMM_PageAlloc(1<<19);
 //			boot_newspb=TKMM_PageAlloc(1<<20);
 //			boot_newspb=TKMM_PageAllocUsc(1<<19);
 //			boot_newspb=TKMM_PageAllocUsc(1<<20);
 //			boot_newsp=boot_newspb+((1<<19)-1024);
-			boot_newsp=boot_newspb+(((1<<19)-1024)-i);
+			boot_newsp=boot_newspb+(((1<<18)-1024)-i);
+//			boot_newsp=boot_newspb+(((1<<19)-1024)-i);
 //			boot_newsp=boot_newspb+(((1<<20)-1024)-i);
 
 //			i=TK_GetRandom16ASLR()&0x00F0;
@@ -1669,7 +1671,7 @@ int TKSH_TryLoad(char *img, char **args0)
 				}
 
 				ct=boot_newspb;
-				cs1=tk_rovalloc(sza, &ct);
+				cs1=tk_rovalloc(sza, (void **)(&ct));
 				
 				ct1=cs1;
 				for(i=0; args[i]; i++)

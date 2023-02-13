@@ -75,7 +75,12 @@ void TK_VMem_UnpackLz64Page(byte *cpi, byte *ppi)
 			__debugbreak();
 		}
 	}
-	
+
+	if(ctq!=ctqe)
+	{
+		__debugbreak();
+	}
+
 //	if(ctq!=ctqe)
 //	{
 //		printf("Size Error %d\n", ctqe-ctq);

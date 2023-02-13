@@ -131,6 +131,7 @@ tk_kptr		resv_F0;		//F0, reserved pointer
 tk_kptr		resv_F8;		//F8, reserved pointer
 
 tk_kptr		sharebuf[32];	//100, Shared Buffers
+tk_kptr		syscmsgbuf[64];	//200, System Call Message Buffer
 
 //End of fixed area.
 

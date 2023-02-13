@@ -316,6 +316,9 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	note1=note;
 	note2=note+(fineadj-128);
 
+//	note1=__int_clamp(note1, 0, 127);
+//	note2=__int_clamp(note2, 0, 127);
+
 	vol=(tk_midi_chanvol[ch]*d1)>>7;
 	vol=(vol*tk_midi_musicvolume)>>4;
 
@@ -332,6 +335,11 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	
 	note=d0+pbl;
 	note=__int_clamp(note, 0, 127);
+
+	note1=note1+pbl;
+	note2=note2+pbl;
+	note1=__int_clamp(note1, 0, 127);
+	note2=__int_clamp(note2, 0, 127);
 
 	fn=5;
 

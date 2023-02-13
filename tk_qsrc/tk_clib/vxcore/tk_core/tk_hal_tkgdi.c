@@ -137,6 +137,137 @@ void TKGDI_BlitUpdate_ScanCopyGen(u16 *ics, u32 *ict, int blkn, int sbxs)
 	}
 }
 
+void TKGDI_BlitUpdate_ScanCopyIndex8(
+	byte *ics, u32 *ict, int blkn, int sbxs,
+	u16 *pal)
+{
+	u32 *cs0, *cs1, *cs2, *cs3;
+	u32 cp0, cp1, cp2, cp3;
+	u64 cv0, cv1, cv2, cv3;
+	u64 *ct;
+	int i;
+	
+	cs0=(u32 *)(ics       );
+	cs1=(u32 *)(ics+  sbxs);
+	cs2=(u32 *)(ics+2*sbxs);
+	cs3=(u32 *)(ics+3*sbxs);
+	ct=(u64 *)ict;
+	for(i=0; i<blkn; i++)
+	{
+		cp0=*cs0++;		cp1=*cs1++;
+		cp2=*cs2++;		cp3=*cs3++;
+
+		cv0=pal[(cp0>>24)&0xFF];	cv1=pal[(cp1>>24)&0xFF];
+		cv2=pal[(cp2>>24)&0xFF];	cv3=pal[(cp3>>24)&0xFF];
+		cv0=(cv0<<16)|pal[(cp0>>16)&0xFF];	cv1=(cv1<<16)|pal[(cp1>>16)&0xFF];
+		cv2=(cv2<<16)|pal[(cp2>>16)&0xFF];	cv3=(cv3<<16)|pal[(cp3>>16)&0xFF];
+		cv0=(cv0<<16)|pal[(cp0>> 8)&0xFF];	cv1=(cv1<<16)|pal[(cp1>> 8)&0xFF];
+		cv2=(cv2<<16)|pal[(cp2>> 8)&0xFF];	cv3=(cv3<<16)|pal[(cp3>> 8)&0xFF];
+		cv0=(cv0<<16)|pal[(cp0>> 0)&0xFF];	cv1=(cv1<<16)|pal[(cp1>> 0)&0xFF];
+		cv2=(cv2<<16)|pal[(cp2>> 0)&0xFF];	cv3=(cv3<<16)|pal[(cp3>> 0)&0xFF];
+		ct[0]=cv0;		ct[1]=cv1;
+		ct[2]=cv2;		ct[3]=cv3;
+		ct+=4;
+	}
+}
+
+void TKGDI_BlitUpdate_ScanCopyIndex4(
+	byte *ics, u32 *ict, int blkn, int sbxs,
+	u16 *pal)
+{
+	u16 *cs0, *cs1, *cs2, *cs3;
+	u32 cp0, cp1, cp2, cp3;
+	u64 cv0, cv1, cv2, cv3;
+	u64 *ct;
+	int sbxh;
+	int i;
+	
+	sbxh=(sbxs+1)>>1;
+	cs0=(u32 *)(ics       );
+	cs1=(u32 *)(ics+  sbxh);
+	cs2=(u32 *)(ics+2*sbxh);
+	cs3=(u32 *)(ics+3*sbxh);
+	ct=(u64 *)ict;
+	for(i=0; i<blkn; i++)
+	{
+		cp0=*cs0++;		cp1=*cs1++;
+		cp2=*cs2++;		cp3=*cs3++;
+
+		cv0=pal[(cp0>>8)&15];				cv1=pal[(cp1>>8)&15];
+		cv2=pal[(cp2>>8)&15];				cv3=pal[(cp3>>8)&15];
+		cv0=(cv0<<16)|pal[(cp0>>12)&15];	cv1=(cv1<<16)|pal[(cp1>>12)&15];
+		cv2=(cv2<<16)|pal[(cp2>>12)&15];	cv3=(cv3<<16)|pal[(cp3>>12)&15];
+		cv0=(cv0<<16)|pal[(cp0>> 0)&15];	cv1=(cv1<<16)|pal[(cp1>> 0)&15];
+		cv2=(cv2<<16)|pal[(cp2>> 0)&15];	cv3=(cv3<<16)|pal[(cp3>> 0)&15];
+		cv0=(cv0<<16)|pal[(cp0>> 4)&15];	cv1=(cv1<<16)|pal[(cp1>> 4)&15];
+		cv2=(cv2<<16)|pal[(cp2>> 4)&15];	cv3=(cv3<<16)|pal[(cp3>> 4)&15];
+		ct[0]=cv0;		ct[1]=cv1;
+		ct[2]=cv2;		ct[3]=cv3;
+		ct+=4;
+	}
+}
+
+u16 TKGDI_BlitUpdate_Repack32to16(u32 pix);
+
+void TKGDI_BlitUpdate_ScanCopyRGB(
+	byte *ics, u32 *ict, int blkn, int sbxs,
+	int stride)
+{
+	byte *cs0, *cs1, *cs2, *cs3;
+	u32 cp0, cp1, cp2, cp3;
+	u64 cv0, cv1, cv2, cv3;
+	u64 *ct;
+	int i;
+	
+	cs0=(u32 *)(ics              );
+	cs1=(u32 *)(ics+  sbxs*stride);
+	cs2=(u32 *)(ics+2*sbxs*stride);
+	cs3=(u32 *)(ics+3*sbxs*stride);
+	ct=(u64 *)ict;
+	for(i=0; i<blkn; i++)
+	{
+		cp0=*(u32 *)cs0;	cp1=*(u32 *)cs1;
+		cp2=*(u32 *)cs2;	cp3=*(u32 *)cs3;
+		cs0+=stride;	cs1+=stride;
+		cs2+=stride;	cs3+=stride;
+		cv0=TKGDI_BlitUpdate_Repack32to16(cp0);
+		cv1=TKGDI_BlitUpdate_Repack32to16(cp1);
+		cv2=TKGDI_BlitUpdate_Repack32to16(cp2);
+		cv3=TKGDI_BlitUpdate_Repack32to16(cp3);
+
+		cp0=*(u32 *)cs0;	cp1=*(u32 *)cs1;
+		cp2=*(u32 *)cs2;	cp3=*(u32 *)cs3;
+		cs0+=stride;	cs1+=stride;
+		cs2+=stride;	cs3+=stride;
+		cv0=cv0|(((u64)TKGDI_BlitUpdate_Repack32to16(cp0))<<16);
+		cv1=cv1|(((u64)TKGDI_BlitUpdate_Repack32to16(cp1))<<16);
+		cv2=cv2|(((u64)TKGDI_BlitUpdate_Repack32to16(cp2))<<16);
+		cv3=cv3|(((u64)TKGDI_BlitUpdate_Repack32to16(cp3))<<16);
+
+		cp0=*(u32 *)cs0;	cp1=*(u32 *)cs1;
+		cp2=*(u32 *)cs2;	cp3=*(u32 *)cs3;
+		cs0+=stride;	cs1+=stride;
+		cs2+=stride;	cs3+=stride;
+		cv0=cv0|(((u64)TKGDI_BlitUpdate_Repack32to16(cp0))<<32);
+		cv1=cv1|(((u64)TKGDI_BlitUpdate_Repack32to16(cp1))<<32);
+		cv2=cv2|(((u64)TKGDI_BlitUpdate_Repack32to16(cp2))<<32);
+		cv3=cv3|(((u64)TKGDI_BlitUpdate_Repack32to16(cp3))<<32);
+
+		cp0=*(u32 *)cs0;	cp1=*(u32 *)cs1;
+		cp2=*(u32 *)cs2;	cp3=*(u32 *)cs3;
+		cs0+=stride;	cs1+=stride;
+		cs2+=stride;	cs3+=stride;
+		cv0=cv0|(((u64)TKGDI_BlitUpdate_Repack32to16(cp0))<<48);
+		cv1=cv1|(((u64)TKGDI_BlitUpdate_Repack32to16(cp1))<<48);
+		cv2=cv2|(((u64)TKGDI_BlitUpdate_Repack32to16(cp2))<<48);
+		cv3=cv3|(((u64)TKGDI_BlitUpdate_Repack32to16(cp3))<<48);
+
+		ct[0]=cv0;		ct[1]=cv1;
+		ct[2]=cv2;		ct[3]=cv3;
+		ct+=4;
+	}
+}
+
 void TKGDI_BlitUpdate_EncodeCell8x8x1(u16 *ics, u32 *ict, int sbxs)
 {
 	byte clry[64];
@@ -247,6 +378,90 @@ void TKGDI_BlitUpdate_EncodeCell8x8x1(u16 *ics, u32 *ict, int sbxs)
 	((u64 *)ict)[1]=pxb;
 //	ict[2]=pxb;
 //	ict[3]=pxb>>32;
+}
+
+void TKGDI_BlitUpdate_EncodeCell8x8x1IndexM(
+	byte *ics, u32 *ict, int sbxs, u16 *pal, int bc, int md)
+{
+	u16 pxa[64];
+	u16 *cta;
+	byte *csa;
+	int ystr;
+	int i0, i1, i2, i3;
+	int i, j, k;
+	
+	ystr=(sbxs*bc)/8;
+	if(bc==8)
+	{
+		cta=pxa;
+		csa=ics;
+		for(i=0; i<8; i++)
+		{
+			i0=csa[0];	i1=csa[1];
+			i2=csa[2];	i3=csa[3];
+			i0=pal[i0];	i1=pal[i1];
+			i2=pal[i2];	i3=pal[i3];
+			cta[0]=i0;	cta[1]=i1;
+			cta[2]=i2;	cta[3]=i3;
+
+			i0=csa[4];	i1=csa[5];
+			i2=csa[6];	i3=csa[7];
+			i0=pal[i0];	i1=pal[i1];
+			i2=pal[i2];	i3=pal[i3];
+			cta[4]=i0;	cta[5]=i1;
+			cta[6]=i2;	cta[7]=i3;
+
+			csa+=ystr;
+			cta+=8;
+		}
+	}else
+		if(bc==4)
+	{
+		cta=pxa;
+		csa=ics;
+		for(i=0; i<8; i++)
+		{
+			i0=csa[0];	i2=csa[1];
+			i1=i0&15;	i0>>=4;
+			i3=i2&15;	i2>>=4;
+			i0=pal[i0];	i1=pal[i1];
+			i2=pal[i2];	i3=pal[i3];
+			cta[0]=i0;	cta[1]=i1;
+			cta[2]=i2;	cta[3]=i3;
+
+			i0=csa[2];	i2=csa[3];
+			i1=i0&15;	i0>>=4;
+			i3=i2&15;	i2>>=4;
+			i0=pal[i0];	i1=pal[i1];
+			i2=pal[i2];	i3=pal[i3];
+			cta[4]=i0;	cta[5]=i1;
+			cta[6]=i2;	cta[7]=i3;
+
+			csa+=ystr;
+			cta+=8;
+		}
+	}
+	
+	if(md==1)
+	{
+		TKGDI_BlitUpdate_EncodeCell8x8x1(pxa, ict, 8);
+	}else
+		if(md==2)
+	{
+		TKGDI_BlitUpdate_EncodeCell8x8x2(pxa, ict, 8);
+	}
+}
+
+void TKGDI_BlitUpdate_EncodeCell8x8x1Index(
+	byte *ics, u32 *ict, int sbxs, u16 *pal, int bc)
+{
+	TKGDI_BlitUpdate_EncodeCell8x8x1IndexM(ics, ict, sbxs, pal, bc, 1);
+}
+
+void TKGDI_BlitUpdate_EncodeCell8x8x2Index(
+	byte *ics, u32 *ict, int sbxs, u16 *pal, int bc)
+{
+	TKGDI_BlitUpdate_EncodeCell8x8x1IndexM(ics, ict, sbxs, pal, bc, 2);
 }
 
 static byte tkgdi_enc2b_rcptab[256];
@@ -550,6 +765,40 @@ void TKGDI_BlitUpdate_ScanCellEncode256(u16 *ics, u32 *ict,
 	}
 }
 
+
+void TKGDI_BlitUpdate_ScanCellEncode128Index(byte *ics, u32 *ict,
+	int blkn, int sbxs, u16 *pal, int bc)
+{
+	byte *ics1;
+	int i, j, k, step;
+	
+	step=(8*bc)>>3;
+	ics1=(byte *)ics;
+	for(i=0; i<blkn; i++)
+	{
+		TKGDI_BlitUpdate_EncodeCell8x8x1Index(ics1, ict, sbxs, pal, bc);
+		ics1+=step;
+		ict+=4;
+	}
+}
+
+void TKGDI_BlitUpdate_ScanCellEncode256Index(byte *ics, u32 *ict,
+	int blkn, int sbxs, u16 *pal, int bc)
+{
+	byte *ics1;
+	int i, j, k, step;
+	
+	step=(8*bc)>>3;
+	ics1=(byte *)ics;
+	for(i=0; i<blkn; i++)
+	{
+//		TKGDI_BlitUpdate_EncodeCell8x8x1Index(ics1, ict, sbxs, pal, bc);
+		TKGDI_BlitUpdate_EncodeCell8x8x2Index(ics1, ict, sbxs, pal, bc);
+		ics1+=step;
+		ict+=8;
+	}
+}
+
 u32 __int32_bswap(u32 b);
 
 void TKGDI_BlitUpdate_ScanCellTransUTX2(u64 *ics, u32 *ict,
@@ -652,6 +901,28 @@ void TKGDI_BlitUpdate_ScanCellTransUTX2_Mask(
 	}
 }
 
+u32 *TKGDI_BlitUpdate_GetConbuf()
+{
+	u32 *conbufa, *conbufb, *conbufb2;
+
+//	conbufa=(u32 *)0xA00A0000;
+	conbufa=(u32 *)0xFFFFF00A0000ULL;
+//	conbufb=conbufa+(80*61);
+
+//	conbufb=(u32 *)0x0000080A0000ULL;
+	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
+	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
+
+//	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
+//	tkgdi_vid_frnum++;
+
+	conbufa[0]=tkgdi_vid_frnum;
+	if(conbufb2[0]==tkgdi_vid_frnum)		//Detect if MMIO maps here.
+		conbufa=conbufb;
+	
+	return(conbufa);
+}
+
 /* For the 320x200 hi-color mode. */
 int TKGDI_BlitUpdate_BlkRgb555(
 	int dxo, int dyo, int dxs, int dys,
@@ -676,6 +947,7 @@ int TKGDI_BlitUpdate_BlkRgb555(
 
 	__hint_use_egpr();
 
+#if 0
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 //	conbufb=conbufa+(80*61);
@@ -690,6 +962,9 @@ int TKGDI_BlitUpdate_BlkRgb555(
 	conbufa[0]=tkgdi_vid_frnum;
 	if(conbufb2[0]==tkgdi_vid_frnum)		//Detect if MMIO maps here.
 		conbufa=conbufb;
+#endif
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
 
 	bxm=dxo>>2;
 	bxn=(dxo+dxs)>>2;
@@ -739,6 +1014,222 @@ int TKGDI_BlitUpdate_BlkRgb555(
 	return(0);
 }
 
+u16 TKGDI_BlitUpdate_Repack32to16(u32 pix)
+{
+	int cr, cg, cb, p;
+	
+	cr=(pix>>16)&0xFF;
+	cg=(pix>> 8)&0xFF;
+	cb=(pix>> 0)&0xFF;
+	cr>>=3;	cg>>=3;	cb>>=3;
+	p=(cr<<10)|(cg<<5)|cb;
+	return(p);
+}
+
+/* For the 320x200 hi-color mode. */
+int TKGDI_BlitUpdate_BlkIndex8(
+	int dxo, int dyo, int dxs, int dys,
+	u16 *sbuf, u32 *pal,
+	int sbxo, int sbyo,
+	int sbxs, int sbys)
+{
+	u16 pal2[256];
+	u32 *conbufa, *conbufb, *conbufb2;
+	u32 *ict;
+	byte *ics;
+	int bym, byn, bxm, bxn;
+	int bx, by, flip;
+	int i, j, k;
+
+	flip=1;
+	if(sbys<0)
+	{
+		sbys=-sbys;
+		flip=!flip;
+	}
+
+	__hint_use_egpr();
+
+	for(i=0; i<256; i++)
+		{ pal2[i]=TKGDI_BlitUpdate_Repack32to16(pal[i]); }
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
+
+	bxm=dxo>>2;
+	bxn=(dxo+dxs)>>2;
+	bym=dyo>>2;
+	byn=(dyo+dys)>>2;
+
+	ics=sbuf+(sbyo*sbxs)+sbxo;
+	ict=conbufa+((bym*80+bxm)*8);
+
+	if(flip)
+	{
+		ics=sbuf+((sbys-sbyo-1)*sbxs)+sbxo;
+
+		if(sbxs==320)
+		{
+			ics-=3*320;
+		}
+	}
+	
+	for(by=bym; by<byn; by++)
+	{
+		if(flip)
+		{
+			TKGDI_BlitUpdate_ScanCopyIndex8(ics, ict, dxs>>2, -sbxs, pal2);
+			ics-=4*sbxs;
+		}else
+		{
+			TKGDI_BlitUpdate_ScanCopyIndex8(ics, ict, dxs>>2, sbxs, pal2);
+			ics+=4*sbxs;
+		}
+		ict+=tkgdi_vid_rowstride;
+	}
+
+	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
+	tkgdi_vid_frnum++;
+
+	return(0);
+}
+
+/* For the 320x200 hi-color mode. */
+int TKGDI_BlitUpdate_BlkIndex4(
+	int dxo, int dyo, int dxs, int dys,
+	u16 *sbuf, u32 *pal,
+	int sbxo, int sbyo,
+	int sbxs, int sbys)
+{
+	u16 pal2[256];
+	u32 *conbufa, *conbufb, *conbufb2;
+	u32 *ict;
+	byte *ics;
+	int bym, byn, bxm, bxn;
+	int bx, by, flip, sbxh, sbxse;
+	int i, j, k;
+
+	flip=1;
+	if(sbys<0)
+	{
+		sbys=-sbys;
+		flip=!flip;
+	}
+
+	__hint_use_egpr();
+
+	for(i=0; i<256; i++)
+		{ pal2[i]=TKGDI_BlitUpdate_Repack32to16(pal[i]); }
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
+
+	bxm=dxo>>2;
+	bxn=(dxo+dxs)>>2;
+	bym=dyo>>2;
+	byn=(dyo+dys)>>2;
+
+	sbxh=(sbxs+1)>>1;
+	sbxse=sbxh<<1;
+
+	ics=sbuf+(sbyo*sbxh)+(sbxo>>1);
+	ict=conbufa+((bym*80+bxm)*8);
+
+	if(flip)
+	{
+		ics=sbuf+((((sbys-sbyo-1)*sbxse)+sbxo)>>1);
+
+		if(sbxs==320)
+		{
+			ics-=(3*320)>>1;
+		}
+	}
+	
+	for(by=bym; by<byn; by++)
+	{
+		if(flip)
+		{
+			TKGDI_BlitUpdate_ScanCopyIndex4(ics, ict, dxs>>2, -sbxs, pal2);
+			ics-=(4*sbxs+1)>>1;
+		}else
+		{
+			TKGDI_BlitUpdate_ScanCopyIndex4(ics, ict, dxs>>2, sbxs, pal2);
+			ics+=(4*sbxs+1)>>1;
+		}
+		ict+=tkgdi_vid_rowstride;
+	}
+
+	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
+	tkgdi_vid_frnum++;
+
+	return(0);
+}
+
+/* For the 320x200 hi-color mode. */
+int TKGDI_BlitUpdate_BlkRgb888(
+	int dxo, int dyo, int dxs, int dys,
+	u16 *sbuf, int stride,
+	int sbxo, int sbyo,
+	int sbxs, int sbys)
+{
+	u16 pal2[256];
+	u32 *conbufa, *conbufb, *conbufb2;
+	u32 *ict;
+	byte *ics;
+	int bym, byn, bxm, bxn;
+	int bx, by, flip;
+	int i, j, k;
+
+	flip=1;
+	if(sbys<0)
+	{
+		sbys=-sbys;
+		flip=!flip;
+	}
+
+	__hint_use_egpr();
+
+//	for(i=0; i<256; i++)
+//		{ pal2[i]=TKGDI_BlitUpdate_Repack32to16(pal[i]); }
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
+
+	bxm=dxo>>2;
+	bxn=(dxo+dxs)>>2;
+	bym=dyo>>2;
+	byn=(dyo+dys)>>2;
+
+	ics=sbuf+(sbyo*sbxs)+sbxo;
+	ict=conbufa+((bym*80+bxm)*8);
+
+	if(flip)
+	{
+		ics=sbuf+((sbys-sbyo-1)*sbxs)+sbxo;
+
+		if(sbxs==320)
+		{
+			ics-=3*320;
+		}
+	}
+	
+	for(by=bym; by<byn; by++)
+	{
+		if(flip)
+		{
+			TKGDI_BlitUpdate_ScanCopyRGB(ics, ict, dxs>>2, -sbxs, stride);
+			ics-=4*sbxs;
+		}else
+		{
+			TKGDI_BlitUpdate_ScanCopyRGB(ics, ict, dxs>>2, sbxs, stride);
+			ics+=4*sbxs;
+		}
+		ict+=tkgdi_vid_rowstride;
+	}
+
+	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
+	tkgdi_vid_frnum++;
+
+	return(0);
+}
+
 
 /* For RGB555 to Color-Cell Mode. */
 int TKGDI_BlitUpdate_BlkRgb555_CCE(
@@ -768,6 +1259,7 @@ int TKGDI_BlitUpdate_BlkRgb555_CCE(
 
 	TKGDI_BlitUpdate_FillEncode2Tab();
 
+#if 0
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
 	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
@@ -781,6 +1273,9 @@ int TKGDI_BlitUpdate_BlkRgb555_CCE(
 
 	if(!(((long)conbufa)>>16))
 		__debugbreak();
+#endif
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
 
 	bxm=dxo>>3;
 	bxn=(dxo+dxs)>>3;
@@ -828,6 +1323,105 @@ int TKGDI_BlitUpdate_BlkRgb555_CCE(
 	return(0);
 }
 
+/* For RGB555 to Color-Cell Mode. */
+int TKGDI_BlitUpdate_BlkIndex_CCE(
+	int dxo, int dyo, int dxs, int dys,
+	byte *sbuf, u32 *pal,
+	int sbxo, int sbyo,
+	int sbxs, int sbys,
+	int bc)
+{
+	u16 pal2[256];
+	u32 *conbufa, *conbufb, *conbufb2;
+	u32 *ict;
+	byte *ics;
+	int bym, byn, bxm, bxn, ystr;
+	int bx, by, flip;
+	int i, j, k;
+
+	__hint_use_egpr();
+
+	flip=1;
+	if(sbys<0)
+	{
+		sbys=-sbys;
+		flip=!flip;
+	}
+
+	if(pal)
+	{
+		for(i=0; i<256; i++)
+			{ pal2[i]=TKGDI_BlitUpdate_Repack32to16(pal[i]); }
+	}
+
+//	tk_printf("TKGDI_BlitUpdate_BlkRgb555_CCE: %d %d %d %d  %d %d %d %d\n",
+//		dxo, dyo, dxs, dys,
+//		sbxo, sbyo, sbxs, sbys);
+
+	TKGDI_BlitUpdate_FillEncode2Tab();
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
+
+	bxm=dxo>>3;
+	bxn=(dxo+dxs)>>3;
+	bym=dyo>>3;
+	byn=(dyo+dys)>>3;
+
+//	tk_printf("  %d %d  %d %d\n", bxm, bxn, bym, byn);
+//	tk_printf("  %p %p \n", conbufa, sbuf);
+
+	ystr=(sbxs*bc)/8;
+
+	k=(sbyo*sbxs)+sbxo;
+	k=(k*bc)/8;
+	ics=sbuf+k;
+//	ict=conbufa+((bym*80+bxm)*8);
+	ict=conbufa+((bym*tkgdi_vid_rowstride)+(bxm*tkgdi_vid_cellstride));
+	if(flip)
+	{
+//		ics+=((dys>>4)-1)*(4*sbxs);
+//		ics+=(dys-1)*sbxs;
+//		ics+=(sbys-1)*sbxs;
+//		ics=sbuf+((sbys-sbyo-1)*sbxs)+sbxo;
+
+		k=((sbys-sbyo-1)*sbxs)+sbxo;
+		k=(k*bc)/8;
+		ics=sbuf+k;
+	}
+	
+	for(by=bym; by<byn; by++)
+	{
+		if(flip)
+		{
+			if(tkgdi_vid_cellstride>=8)
+				TKGDI_BlitUpdate_ScanCellEncode256Index(
+					ics, ict, dxs>>3, -sbxs, pal2, bc);
+			else
+				TKGDI_BlitUpdate_ScanCellEncode128Index(
+					ics, ict, dxs>>3, -sbxs, pal2, bc);
+//			ics-=8*sbxs;
+			ics-=8*ystr;
+		}else
+		{
+			if(tkgdi_vid_cellstride>=8)
+				TKGDI_BlitUpdate_ScanCellEncode256Index(
+					ics, ict, dxs>>3, sbxs, pal2, bc);
+			else
+				TKGDI_BlitUpdate_ScanCellEncode128Index(
+					ics, ict, dxs>>3, sbxs, pal2, bc);
+//			ics+=8*sbxs;
+			ics+=8*ystr;
+		}
+//		ict+=80*8;
+		ict+=tkgdi_vid_rowstride;
+	}
+
+	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
+	tkgdi_vid_frnum++;
+	
+	return(0);
+}
+
 /* For UTX2 to Color-Cell Mode. */
 int TKGDI_BlitUpdate_BlkUtx2_CCT(
 	int dxo, int dyo, int dxs, int dys,
@@ -848,6 +1442,7 @@ int TKGDI_BlitUpdate_BlkUtx2_CCT(
 		flip=!flip;
 	}
 
+#if 0
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
 	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
@@ -855,6 +1450,9 @@ int TKGDI_BlitUpdate_BlkUtx2_CCT(
 	conbufa[0]=tkgdi_vid_frnum;
 	if(conbufb2[0]==tkgdi_vid_frnum)		//Detect if MMIO maps here.
 		conbufa=conbufb;
+#endif
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
 
 	bxm=dxo>>3;
 	bxn=(dxo+dxs)>>3;
@@ -911,6 +1509,7 @@ int TKGDI_BlitUpdate_BlkUtx2_CCT_Mask(
 		flip=!flip;
 	}
 
+#if 0
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
 	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
@@ -918,6 +1517,9 @@ int TKGDI_BlitUpdate_BlkUtx2_CCT_Mask(
 	conbufa[0]=tkgdi_vid_frnum;
 	if(conbufb2[0]==tkgdi_vid_frnum)		//Detect if MMIO maps here.
 		conbufa=conbufb;
+#endif
+
+	conbufa=TKGDI_BlitUpdate_GetConbuf();
 
 	bxm=dxo>>3;
 	bxn=(dxo+dxs)>>3;
@@ -1202,6 +1804,7 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 	_tkgdi_window_t *wctx;
 	byte *bmct;
 	u16 *cs, *ct;
+	u32 *pal;
 	int xo_dev, yo_dev;
 	int xo_src, yo_src, xs_src, ys_src;
 	int xs, ys, mxs, mys, bxs, bys, nx, ny;
@@ -1240,8 +1843,46 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 			if(ys>mys)
 				ys=mys;
 
-			TKGDI_BlitUpdate_BlkRgb555(xo_dev, yo_dev, xs, ys,
-				data, xo_src, yo_src, info->biWidth, info->biHeight);
+			if(info->biCompression == TKGDI_BI_RGB)
+			{
+				if(info->biBitCount == 16)
+				{
+					TKGDI_BlitUpdate_BlkRgb555(xo_dev, yo_dev, xs, ys,
+						data, xo_src, yo_src, info->biWidth, info->biHeight);
+				}
+
+				if(info->biBitCount == 8)
+				{
+					pal=(u32 *)(((byte *)info)+info->biSize);
+					TKGDI_BlitUpdate_BlkIndex8(xo_dev, yo_dev, xs, ys,
+						data, pal, xo_src, yo_src,
+						info->biWidth, info->biHeight);
+				}
+
+				if(info->biBitCount == 4)
+				{
+					pal=(u32 *)(((byte *)info)+info->biSize);
+					TKGDI_BlitUpdate_BlkIndex4(xo_dev, yo_dev, xs, ys,
+						data, pal, xo_src, yo_src,
+						info->biWidth, info->biHeight);
+				}
+
+				if(info->biBitCount == 24)
+				{
+					pal=(u32 *)(((byte *)info)+info->biSize);
+					TKGDI_BlitUpdate_BlkRgb888(xo_dev, yo_dev, xs, ys,
+						data, 3, xo_src, yo_src,
+						info->biWidth, info->biHeight);
+				}
+
+				if(info->biBitCount == 32)
+				{
+					pal=(u32 *)(((byte *)info)+info->biSize);
+					TKGDI_BlitUpdate_BlkRgb888(xo_dev, yo_dev, xs, ys,
+						data, 4, xo_src, yo_src,
+						info->biWidth, info->biHeight);
+				}
+			}
 		}
 
 //		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_640x400_CC)
@@ -1261,13 +1902,35 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 			if(ys>mys)
 				ys=mys;
 
-			if(info->biCompression==0)
+			if(info->biCompression == TKGDI_BI_RGB)
 			{
-				TKGDI_BlitUpdate_BlkRgb555_CCE(xo_dev, yo_dev, xs, ys,
-					data, xo_src, yo_src, info->biWidth, info->biHeight);
+				if(info->biBitCount == 16)
+				{
+					TKGDI_BlitUpdate_BlkRgb555_CCE(xo_dev, yo_dev, xs, ys,
+						data, xo_src, yo_src, info->biWidth, info->biHeight);
+				}
+
+				if((info->biBitCount == 8) ||
+					(info->biBitCount == 4))
+				{
+					pal=(u32 *)(((byte *)info)+info->biSize);
+					TKGDI_BlitUpdate_BlkIndex_CCE(xo_dev, yo_dev, xs, ys,
+						data, pal, xo_src, yo_src,
+						info->biWidth, info->biHeight,
+						info->biBitCount);
+				}
+
+				if((info->biBitCount == 24) ||
+					(info->biBitCount == 32))
+				{
+					TKGDI_BlitUpdate_BlkIndex_CCE(xo_dev, yo_dev, xs, ys,
+						data, NULL, xo_src, yo_src,
+						info->biWidth, info->biHeight,
+						info->biBitCount);
+				}
 			}
 
-			if(info->biCompression==TKGDI_FCC_UTX2)
+			if(info->biCompression == TKGDI_FCC_UTX2)
 			{
 				TKGDI_BlitUpdate_BlkUtx2_CCT(xo_dev, yo_dev, xs, ys,
 					data, xo_src, yo_src, info->biWidth, info->biHeight);

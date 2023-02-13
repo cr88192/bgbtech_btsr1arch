@@ -6,7 +6,8 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
 
 # TK_LDEXTFS = -fxgpr -fqmul -ffdiv -ffpu_fpvsf
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr
-TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -ffpu_fpimm -fxgpr -fnowexify -fjcmp
+TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -ffpu_fpimm -fxgpr_ena -fnowexify -fjcmp \
+	-fdobounds -fvskglobal
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fnowexify
 
 TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0 $(TK_LDEXTFS)
@@ -28,11 +29,11 @@ CC=$(TOOLPATH)bgbcc
 AR=$(TOOLPATH)bgbcc
 AS=$(TOOLPATH)bgbcc
 
-COPTS= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -Zz
-# COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F -Zz
-COPTS64= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 -Zz
+COPTS= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -Zz
+# COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F -Zz
+COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 -Zz
 
-COPTS96= -g -c -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2G -Zz
+COPTS96= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2G -Zz
 
 SRCS_CLIB = \
 	pdpc201/stdio.c \

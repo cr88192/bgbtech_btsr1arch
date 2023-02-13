@@ -22,6 +22,12 @@
 
 #define TKGDI_FCC_mcmd		RIFF_MAKETAG('m','c','m','d')
 
+#define TKGDI_BI_RGB		0
+#define TKGDI_BI_RLE8		1
+#define TKGDI_BI_RLE4		2
+#define TKGDI_BI_BITFIELDS	3
+#define TKGDI_BI_JPEG		4
+#define TKGDI_BI_PNG		5
 
 #define TKGDI_DSTR_PX			0x000000FF	//Font size in pixels
 #define TKGDI_DSTR_8PX			0x00000008	//8px

@@ -448,7 +448,7 @@ begin
 		};
 `endif
 	
-`ifdef jx2_use_fpu_rpimm
+`ifdef jx2_alu_jcmp_rpimm
 	tValImmRpA = { regIdRy[5] ? UV59_FF, UV59_00, regIdRy[4:0] };
 	tValImmRpB = { regIdRx[5] ? UV59_FF, UV59_00, regIdRx[4:0] };
 `endif

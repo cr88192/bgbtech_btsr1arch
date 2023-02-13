@@ -193,6 +193,10 @@ qboolean R_CullSphere (vec3_t org, vec_t rad)
 
 void R_RotateForEntity (entity_t *e)
 {
+	int arr[8];
+	
+	arr[4]=(long)e;
+	
 	qglTranslatef (e->origin[0],  e->origin[1],  e->origin[2]);
 
 	qglRotatef (e->angles[1],  0, 0, 1);
@@ -739,9 +743,13 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 {
 	int				pose, numposes, isview;
 	float			interval, relsz;
+	int 			arr[10];
+
+	arr[8]=frame;
 
 	if ((frame >= paliashdr->numframes) || (frame < 0))
 	{
+		frame=arr[8];
 		Con_DPrintf ("R_AliasSetupFrame: no such frame %d\n", frame);
 		frame = 0;
 	}
@@ -806,6 +814,8 @@ void R_DrawAliasModel (entity_t *e)
 
 	VectorAdd (currententity->origin, clmodel->mins, mins);
 	VectorAdd (currententity->origin, clmodel->maxs, maxs);
+
+//	__debugbreak();
 
 	if (R_CullBox (mins, maxs))
 		return;
@@ -878,6 +888,8 @@ void R_DrawAliasModel (entity_t *e)
 		shadelight = currententity->shadelight;
 	}
 
+//	return;
+
 	// ZOID: never allow players to go totally black
 //	i = currententity - cl_entities;
 	i = entid;
@@ -892,15 +904,39 @@ void R_DrawAliasModel (entity_t *e)
 
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 	shadelight = shadelight / 200.0;
-	
+
+#if 0
+	shadevector[0] = 0;
+	shadevector[1] = 0;
+	shadevector[2] = 1;
+#endif
+
+#if 1
+//	shadevector[0] = 0;
+//	shadevector[1] = 0;
+
 	an = e->angles[1]/180*M_PI;
+
+//	t = an;
+//	s = 1-t;
+	s = qgl_fastcos(-an);
+	t = qgl_fastsin(-an);
+	shadevector[0] = s;
+	shadevector[1] = t;
+
+//	__debugbreak();
+
 //	shadevector[0] = cos(-an);
-	shadevector[0] = qgl_fastcos(-an);
+//	shadevector[0] = qgl_fastcos(-an);
 //	shadevector[1] = sin(-an);
-	shadevector[1] = qgl_fastsin(-an);
+//	shadevector[1] = qgl_fastsin(-an);
 	shadevector[2] = 1;
 //	VectorNormalize (shadevector);
 	VectorNormalizeFast (shadevector);
+//	__debugbreak();
+#endif
+
+//	return;
 
 	//
 	// locate the proper data
@@ -944,6 +980,7 @@ void R_DrawAliasModel (entity_t *e)
 	anim = (int)(cl.time*10) & 3;
 	GL_Bind(paliashdr->gl_texturenum[currententity->skinnum][anim]);
 
+#if 1
 	// we can't dynamically colormap textures, so they are cached
 	// seperately for the players.  Heads are just uncolored.
 	if (currententity->colormap != vid.colormap && !gl_nocolors.value)
@@ -952,6 +989,7 @@ void R_DrawAliasModel (entity_t *e)
 		if (i >= 1 && i<=cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
 			GL_Bind(playertextures - 1 + i);
 	}
+#endif
 
 	if (gl_smoothmodels.value)
 		qglShadeModel (GL_SMOOTH);

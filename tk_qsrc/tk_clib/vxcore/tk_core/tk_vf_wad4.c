@@ -1,3 +1,6 @@
+int TK_VF_FlagsFromModeString(char *mode);
+void TKSH_NormalizePath(char *dst, char *src);
+
 TK_MOUNT *tk_wad4_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
 TK_FILE *tk_wad4_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);

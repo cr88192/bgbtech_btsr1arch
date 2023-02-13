@@ -1,0 +1,42 @@
+BUILD = .
+PATH := $(BUILD):$(PATH)
+
+INST_BIN=$(USRLIB_HOME)/bin
+INST_LIB=$(USRLIB_HOME)/lib
+INST_INC=$(USRLIB_HOME)/include/msvc
+CC_DLL=cl /LD /Fe
+DLL=.dll
+
+DLL_CFLAGS=/Iinclude /DTKW_ISDLL \
+	opengl32.lib gdi32.lib user32.lib \
+	winmm.lib kernel32.lib ole32.lib ws2_32.lib
+
+SRCS = \
+	src/tkw_puts.c		\
+	src/tkw_tkgdi.c		\
+	src/tk_vfile.c		\
+	src/tk_fat.c		\
+	src/tk_wad4.c		\
+	src/tk_vf_wad4.c	\
+	src/gfxdrv_w32.c	\
+	src/gfxdrv_input.c	\
+	src/sound_w32.c		\
+	src/jx2i_gfxcon.c		\
+	\
+	tk_gdi/tkg_display.c	\
+	tk_gdi/tk_ramavi.c	\
+	
+
+all: install FORCE
+
+install: build FORCE
+	cp -rf $(BUILD)/include/* $(INST_INC)
+	cp -rf $(BUILD)/*.dll $(INST_BIN)
+	cp -rf $(BUILD)/*.lib $(INST_LIB)
+
+build: tkcorew32.dll
+
+tkcorew32.dll: $(SRCS)
+	$(CC_DLL)tkcorew32$(DLL) $(SRCS) $(DLL_CFLAGS)
+
+FORCE:

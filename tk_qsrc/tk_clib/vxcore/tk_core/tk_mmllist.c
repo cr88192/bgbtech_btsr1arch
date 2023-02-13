@@ -22,6 +22,7 @@ int tkmm_mmlist_n_vrm=0;
 byte *tkmm_mmlist_brkbuf_c[8];
 byte *tkmm_mmlist_brkend_c[8];
 byte *tkmm_mmlist_brkpos_c[8];
+int tkmm_mmlist_brkpos_init=0;
 
 int tk_mprotect(void *addr, size_t len, int prot);
 
@@ -256,12 +257,40 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 	}
 
 
+	if(tkmm_mmlist_brkpos_init!=0x1234)
+	{
+		for(i=0; i<8; i++)
+		{
+			brkbuf=tkmm_mmlist_brkbuf_c[i];
+			brkpos=tkmm_mmlist_brkpos_c[i];
+			brkend=tkmm_mmlist_brkend_c[i];
+//			__debugbreak();
+			if(brkbuf || brkpos || brkend)
+			{
+//				__debugbreak();
+				tk_printf("TKMM_MMList_AllocBrkCat: Non-Zero init "
+						"%d %016llX %016llX %016llX\n",
+					i, brkbuf, brkpos, brkend);
+			}
+//			__debugbreak();
+
+			tkmm_mmlist_brkbuf_c[i]=NULL;
+			tkmm_mmlist_brkpos_c[i]=NULL;
+			tkmm_mmlist_brkend_c[i]=NULL;
+		}
+	
+		tkmm_mmlist_brkpos_init=0x1234;
+	}
+
 //	sz=(sz+15)&(~15);
 	sz=(sz+31)&(~15);
 	
 	brkbuf=tkmm_mmlist_brkbuf_c[cat];
 	brkpos=tkmm_mmlist_brkpos_c[cat];
 	brkend=tkmm_mmlist_brkend_c[cat];
+
+	if(((long)(brkpos))&15)
+		__debugbreak();
 	
 	if(brkbuf &&
 		((brkpos+sz)>brkend))
@@ -286,6 +315,9 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 			tk_puts("TKMM_MMList_AllocBrk C: Fail\n");
 			return(NULL);
 		}
+
+		if(((long)(brkbuf))&15)
+			__debugbreak();
 		
 		TKMM_MMList_MProtectCat(
 			(u64)(brkbuf),
@@ -829,12 +861,20 @@ void *tk_malloc_cat(int sz, int cat)
 
 void *tk_malloc_krn(int sz)
 {
-	return(TKMM_MallocCat(sz, TKMM_MCAT_KRN_RW));
+	void *ptr;
+	ptr=TKMM_MallocCat(sz, TKMM_MCAT_KRN_RW);
+	ptr=tk_ptrsetbound1(ptr, sz);
+	return(ptr);
 }
 
 void *tk_malloc_usr(int sz)
 {
-	return(TKMM_MallocCat(sz, TKMM_MCAT_USR_RW));
+	void *ptr;
+	ptr=TKMM_MallocCat(sz, TKMM_MCAT_USR_RW);
+	ptr=tk_ptrsetbound1(ptr, sz);
+	return(ptr);
+
+//	return(TKMM_MallocCat(sz, TKMM_MCAT_USR_RW));
 }
 
 void *tk_malloc_wxe(int sz)
@@ -878,6 +918,9 @@ void *tk_realloc(void *ptr, int sz)
 	tk_free(ptr);
 	return(ptr1);
 }
+
+int TKMM_IncRef(void *ptr);
+int TKMM_DecRef(void *ptr);
 
 int tk_mincref(void *ptr)
 {

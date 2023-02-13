@@ -24,6 +24,9 @@ TKPE_ImageInfo	*tkpe_pbo_dllimg[256];
 // void *tkpe_pbo_imgbase[256];
 // char *tkpe_pbo_imgname[256];
 
+int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll);
+void *TKPE_LookupImageDllExport(TKPE_ImageInfo *img, char *name);
+
 
 /*
 Apply base relocations.
@@ -1108,7 +1111,10 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 	gbrszcpy=img->gbr_szcpy;
 	gbrszcpy&=~15;
 	if(gbrsz>gbrszcpy)
-		memset(gbrdat+gbrszcpy, 0, gbrsz-gbrszcpy);
+	{
+//		memset(gbrdat+gbrszcpy, 0, gbrsz-gbrszcpy);
+		memset(gbrdat, 0, gbrsz);
+	}
 
 	memcpy(gbrdat, img->imgbase+img->gbr_rva, img->gbr_szcpy);
 

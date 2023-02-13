@@ -171,6 +171,8 @@ static void freadSlowB(void *ptr,
 static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 				   int chcount, char *dste);
 
+void tk_puts(char *msg);
+char *__lva_conv_tostring(unsigned long long val);
 
 __PDPCLIB_API__ int printf(const char *format, ...)
 {
@@ -188,13 +190,30 @@ __PDPCLIB_API__ int printf(const char *format, ...)
 	return (ret);
 }
 
+__PDPCLIB_API__ int vprintf(const char *format, va_list arg)
+{
+	char tbuf[1024];
+	int ret;
+
+//	ret = vfprintf(stdout, format, arg);
+	ret = vsprintf(tbuf, format, arg);
+//	fflush(stdout);
+	tk_puts(tbuf);
+
+	return (ret);
+}
+
 __PDPCLIB_API__ int fprintf(FILE *stream, const char *format, ...)
 {
 	va_list arg;
 	int ret;
 
 	va_start(arg, format);
-	ret = vfprintf(stream, format, arg);
+	
+	if(stream==stdout)
+		{ ret=vprintf(format, arg); }
+	else
+		{ ret = vfprintf(stream, format, arg); }
 	va_end(arg);
 	return (ret);
 }
@@ -203,8 +222,16 @@ __PDPCLIB_API__ int vfprintf(FILE *stream, const char *format, va_list arg)
 {
 	int ret;
 
-	stream->quickText = 0;
-	ret = vvprintf(format, arg, stream, NULL, 99999999);
+	if(stream==stdout)
+	{
+		ret=vprintf(format, arg);
+	}
+	else
+	{
+		stream->quickText = 0;
+		ret = vvprintf(format, arg, stream, NULL, 99999999);
+	}
+
 	return (ret);
 }
 

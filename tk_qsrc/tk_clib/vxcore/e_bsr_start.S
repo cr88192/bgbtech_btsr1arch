@@ -1390,6 +1390,15 @@ X(_memcpyf):
 
 .global X(memcpy)
 X(memcpy):
+
+.ifarch abi_boundschk
+	add			r6, -1, r7
+	bndchk.b	0, r4
+	bndchk.b	0, r5
+	bndchk.b	r7, r4
+	bndchk.b	r7, r5
+.endif
+
 	or		r4, r6, r3
 	or		r3, r20, r3
 	test	7, r3
