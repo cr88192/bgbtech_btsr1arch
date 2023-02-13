@@ -57,6 +57,12 @@ s64 TK_DateToEpochUsec(TK_DATETIME *date)
 	hr=date->hour;
 	mm=date->min;
 	sc=date->sec;
+	
+	if(mo==0xFF)
+		mo=0;
+	if(dy==0xFF)
+		dy=0;
+	
 	us=((date->msc4)<<12) | date->usc4;
 	
 	y4=(yr-1968)>>2;					//leap year was 1968
