@@ -650,6 +650,7 @@ int ddr_mr0;
 int ddr_mr1;
 int ddr_mr2;
 int ddr_mr3;
+int ddr_is_ddr3;
 
 uint16_t	*ddr_ram;
 
@@ -809,7 +810,23 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //				ddr_parm_wl=ddr_parm_rl-2;	//CAS WL=RL-1
 				ddr_parm_rl=cas;			//CAS RL*2+1
 				ddr_parm_wl=ddr_parm_rl-1;	//CAS WL=RL-1
-				
+
+				if(ddr_is_ddr3)
+				{
+					switch(ddr_mr0&3)
+					{
+					case 0:		ddr_burstlen=8;		break;
+					case 1:		ddr_burstlen=4;		break;
+					case 2:		ddr_burstlen=4;		break;
+					case 3:		ddr_burstlen=-1;	break;
+					}
+
+					cas=((ddr_mr0>>4)&7)+4;
+					ddr_parm_rl=cas;
+					col=((ddr_mr2>>3)&7)+5;
+					ddr_parm_wl=col;
+				}
+
 				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
 
 #if 1
@@ -865,9 +882,13 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 			nxtburst = ddr_burst-1;
 
 			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_bcol;
-			pos&=(1<<28)-1;
-			data=ddr_ram[pos>>1];
-			nxtbcol=ddr_bcol+2;
+//			pos&=(1<<28)-1;
+//			data=ddr_ram[pos>>1];
+//			nxtbcol=ddr_bcol+2;
+
+			pos&=(1<<27)-1;
+			data=ddr_ram[pos];
+			nxtbcol=ddr_bcol+1;
 
 			*rdata=data;
 //			*rdqs=(ddr_burst&1)?1:2;
@@ -893,9 +914,13 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 
 			data=*rdata;
 			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_bcol;
-			pos&=(1<<28)-1;
-			ddr_ram[pos>>1]=data;
-			nxtbcol=ddr_bcol+2;
+//			pos&=(1<<28)-1;
+//			ddr_ram[pos>>1]=data;
+//			nxtbcol=ddr_bcol+2;
+
+			pos&=(1<<27)-1;
+			ddr_ram[pos]=data;
+			nxtbcol=ddr_bcol+1;
 			
 //			printf("ST %08X = %04X\n", pos, data);
 		}
@@ -1017,7 +1042,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 				ddr_rowopen=0;
 			}else
 			{
-				printf("Load Mode Register C=%04X\n", cmd&0xFFFF);
+				printf("Load Mode Register MR%u C=%04X\n",
+					(cmd>>13)&7, cmd&0xFFFF);
 //				switch((cmd>>14)&3)
 				switch((cmd>>13)&7)
 				{
@@ -1035,7 +1061,25 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 				ddr_parm_rl=cas;			//CAS RL*2+1
 				ddr_parm_wl=ddr_parm_rl-1;	//CAS WL=RL-1
 				
-				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
+				if(ddr_is_ddr3)
+				{
+					switch(ddr_mr0&3)
+					{
+					case 0:		ddr_burstlen=8;		break;
+					case 1:		ddr_burstlen=4;		break;
+					case 2:		ddr_burstlen=4;		break;
+					case 3:		ddr_burstlen=-1;	break;
+					}
+
+					cas=((ddr_mr0>>4)&7)+4;
+					ddr_parm_rl=cas;
+					col=((ddr_mr2>>3)&7)+5;
+					ddr_parm_wl=col;
+				}
+
+//				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
+				printf("BurstLen=%d, CAS(RL)=%d CAS(WL)=%d\n",
+					ddr_burstlen, ddr_parm_rl, ddr_parm_wl);
 
 #if 1
 				printf("  DLL=%s\n", (ddr_mr1&1)?"Disable":"Enable");
@@ -1102,6 +1146,118 @@ int update_ddr()
 
 int update_uart();
 
+int update_usb()
+{
+	static byte xmit;
+	static byte xmitpos;
+	static byte xmitclk_val;
+	static int xmitclk_cnt;
+	static byte xmit_upd, txwin;
+	static byte tclk, tdat, lclk, tlclk, tdatl;
+	static byte b, pb;
+
+//	if(top->clock_50 && !tlclk)
+	if(top->clock_100 && !tlclk)
+//	if(!top->clock_100 && tlclk)
+	{
+		if(xmitpos<=0)
+		{
+			xmitclk_cnt--;
+			if(xmitclk_cnt<=0)
+			{
+				if(!xmitclk_val)
+				{
+					tclk=1;
+					tdat=1;
+
+					xmitclk_val=1;
+					xmitclk_cnt=67;
+				}else
+				{
+					if(ps2kbirov!=ps2kbrov)
+					{
+//						xmit=ps2kbbuf[ps2kbirov];
+//						ps2kbirov=(ps2kbirov+1)&255;
+//						xmitpos=11;
+						
+						printf("update_usb: scan=%02X\n", xmit);
+					}
+
+					tclk=1;
+					tdat=1;
+
+					xmitclk_val=1;
+					xmitclk_cnt=67;
+					xmit_upd=1;
+				}
+			}
+		}else
+		{
+			if(xmit_upd)
+			{
+				switch(xmitpos)
+				{
+					case  8: b=(xmit>>0)&1; break;
+					case  7: b=(xmit>>1)&1; break;
+					case  6: b=(xmit>>2)&1; break;
+					case  5: b=(xmit>>3)&1; break;
+					case  4: b=(xmit>>4)&1; break;
+					case  3: b=(xmit>>5)&1; break;
+					case  2: b=(xmit>>6)&1; break;
+					case  1: b=(xmit>>7)&1; break;
+				}
+				tdat=b;
+				xmit_upd=0;
+			}
+
+			xmitclk_cnt--;
+			if(xmitclk_cnt<=0)
+			{
+				xmitclk_val=!xmitclk_val;
+				xmitclk_cnt=67;
+				tclk=xmitclk_val;
+				xmit_upd=1;
+				
+				if((txwin&0xFC)==0x00)
+				{
+					/* bit stuff */
+					b=1;
+				}else
+					if(!xmitclk_val)
+				{
+					xmitpos--;
+					xmit_upd=0;
+				}else
+				{
+					tdat=b;
+				}
+				
+				if(b)
+				{
+					if(tdatl==1)
+						tdat=2;
+					if(tdatl==2)
+						tdat=1;
+					tdatl=tdat;
+				}else
+				{
+					tdat=tdatl;
+				}
+				
+				txwin=(txwin>>1)|(b<<8);
+			}
+		}
+	}
+
+	tlclk=top->clock_100;
+	top->usb_clkdat_i=tdat;
+	
+	if(tclk!=lclk)
+	{
+		lclk=tclk;
+	}
+}
+
 int update_ps2kb()
 {
 	static byte xmit;
@@ -1113,6 +1269,7 @@ int update_ps2kb()
 	static byte b, pb;
 	
 	update_uart();
+	update_usb();
 	
 //	if(top->clock_50 && !tlclk)
 	if(top->clock_100 && !tlclk)
@@ -1662,6 +1819,11 @@ int main(int argc, char **argv, char **env)
 	tt_frame=tt_start;
 	tt_reset=1024;
 
+//	top->ddrModeIn=0;
+	top->ddrModeIn=1;
+//	ddr_is_ddr3 = 0;
+	ddr_is_ddr3 = top->ddrModeIn&1;
+
 	while (!Verilated::gotFinish())
 	{
 		t1=FRGL_TimeMS();
@@ -1934,7 +2096,7 @@ int main(int argc, char **argv, char **env)
 			}
 			
 		}
-		
+
 //		if(!top->ps2kb_clk_i)
 //			printf("sim: ps2kb_clk_i=%d\n", top->ps2kb_clk_i);
 

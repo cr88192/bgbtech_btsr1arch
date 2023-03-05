@@ -1039,6 +1039,7 @@ begin
 	end
 
 	if(tResetL)
+//	if(reset)
 	begin
 		tRegOutExc = 0;
 		tRegOutOpm   = UV16_00;
@@ -1263,7 +1264,9 @@ begin
 		tRegOutAddr2	<= tRegOutAddr;
 		tRegOutData2	<= tRegOutData;
 	//	tRegOutOpm2		<= tRegOutOpm;
-		tRegOutOpm2		<= { 2'b00,
+		tRegOutOpm2		<= {
+//			2'b00,
+			tRegOutOpm[15:14],
 			tChkAccNoRwx | tRegOutOpm[13:8],
 //			tChkAccNoRwx,
 			tRegOutOpm[7:0] };

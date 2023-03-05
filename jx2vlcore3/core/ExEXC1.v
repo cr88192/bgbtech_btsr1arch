@@ -199,7 +199,7 @@ always @*
 begin
 
 	tRegIdRn1		= JX2_GR_ZZR;		//Destination ID (EX1)
-	tRegValRn1		= UV64_XX;			//Destination Value (EX1)
+	tRegValRn1		= UV64_00;			//Destination Value (EX1)
 	tHeldIdRn1		= JX2_GR_ZZR;
 
 	tExHold			= 0;
@@ -207,7 +207,7 @@ begin
 	tNextMsgLatch	= 0;
 	tSlotUSup		= 0;
 
-	tValOutDfl		= UV64_XX;
+	tValOutDfl		= UV64_00;
 	tDoOutDfl		= 0;
 
 `ifdef jx2_enable_pred_s

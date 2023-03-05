@@ -294,6 +294,18 @@ begin
 	end
 `endif
 
+// `ifdef def_true
+`ifndef def_true
+	if(reset)
+	begin
+		tL2mSeqOut		= 0;
+		tL2mOpmOut		= 0;
+
+		tL2bSeqOut		= 0;
+		tL2bOpmOut		= 0;
+	end
+`endif
+
 `ifndef def_true
 	if(memSeqIn[7:0]!=0)
 	begin

@@ -28,48 +28,36 @@ Deal with tristate IO interfacing.
 This is handled in its own module as Verilator can't deal with it.
  */
 
-`define jx2_xc7a100		// Enable options for XC7A100T
+`define jx2_xc7a200		// Enable options for XC7A200T
 
 `include "CoreUnit.v"
 
-module TopUnit(
+module TopUnitQmt(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-//	gpioPins,
-//	fixedPins,
 
 	ddrData,	ddrAddr,	ddrBa,
-	ddrCs,		ddrRas,		ddrCas,
+//	ddrCs,		ddrRas,		ddrCas,
+	ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP,	ddrDqsN,
+	ddrReset,	ddrOdt,
+	ddrDqm0,	ddrDqm1,
 
 	vgaRed,		vgaGrn,		vgaBlu,
 	vgaHsync,	vgaVsync,
 
 	uartTxD,	uartRxD,
-	uartCtS,	uartRtS,
-	ps2_clk,	ps2_data,
+//	uartCtS,	uartRtS,
 
-	sdc_dat,	sdc_clk,	sdc_cmd,	sdc_ena,
+//	ps2_clk,	ps2_data,
 
-	aud_mono_out,	aud_mono_en,
-	seg_outCharBit,
-	seg_outSegBit,
-
-	aud_mic_clk,
-	aud_mic_data,
-	aud_mic_lr,
+	sdc_dat,	sdc_clk,	sdc_cmd,
 
 	dbg_exHold1,
 	dbg_exHold2,
-	dbg_outStatus1,
-	dbg_outStatus2,
-	dbg_outStatus3,
-	dbg_outStatus4,
-	dbg_outStatus5,
-	dbg_outStatus6,
-	dbg_outStatus7,
-	dbg_outStatus8
+	
+	usb_pins
 	);
 
 input			clock;
@@ -83,16 +71,29 @@ output[13:0]	ddrAddr;		//Address pins
 // output[12:0]	ddrAddr;		//Address pins
 output[2:0]		ddrBa;			//Bank Address pins
 
-output			ddrCs;
+// output			ddrCs;
+wire			ddrCs;
+
 output			ddrRas;
 output			ddrCas;
 output			ddrWe;
 output			ddrCke;
+output			ddrReset;
+output			ddrOdt;
+output			ddrDqm0;
+output			ddrDqm1;
+
+assign		ddrReset	= 1'b1;
+assign		ddrOdt		= 1'b0;
+assign		ddrDqm0		= 1'b0;
+assign		ddrDqm1		= 1'b0;
 
 output[1:0]		ddrClk;			//clock pins
 
 inout[1:0]		ddrDqsP;
 inout[1:0]		ddrDqsN;
+
+inout[3:0]		usb_pins;
 
 wire	reset2_200;
 wire	reset2_150;
@@ -172,46 +173,43 @@ assign			ddrDqsN_I	= ddrDqsN;
 
 `endif
 
-output[3:0]		vgaRed;
-output[3:0]		vgaGrn;
-output[3:0]		vgaBlu;
+output[4:0]		vgaRed;
+output[5:0]		vgaGrn;
+output[4:0]		vgaBlu;
 output			vgaHsync;
 output			vgaVsync;
 
+wire[3:0]		vgaRed1;
+wire[3:0]		vgaGrn1;
+wire[3:0]		vgaBlu1;
+assign		vgaRed = { vgaRed1, vgaRed[3] };
+assign		vgaGrn = { vgaGrn1, vgaGrn[3], 1'b0 };
+assign		vgaBlu = { vgaBlu1, vgaBlu[3] };
+
 output			uartTxD;
 input			uartRxD;
-input			uartCtS;
-output			uartRtS;
+// input			uartCtS;
+// output			uartRtS;
 
-inout			ps2_clk;
-inout			ps2_data;
+wire			uartCtS;
+wire			uartRtS;
+assign		uartCtS = 1'b1;
+
+// inout			ps2_clk;
+// inout			ps2_data;
 
 inout[3:0]		sdc_dat;
 output			sdc_clk;
 output			sdc_cmd;
-output			sdc_ena;
-
-output			aud_mono_out;
-output			aud_mono_en;
-output[7:0]		seg_outCharBit;
-output[7:0]		seg_outSegBit;
-
-output			aud_mic_clk;
-input			aud_mic_data;
-output			aud_mic_lr;
-assign	aud_mic_lr = 1'b0;
+// output			sdc_ena;
 
 output			dbg_exHold1;
 output			dbg_exHold2;
 
-output			dbg_outStatus1;
-output			dbg_outStatus2;
-output			dbg_outStatus3;
-output			dbg_outStatus4;
-output			dbg_outStatus5;
-output			dbg_outStatus6;
-output			dbg_outStatus7;
-output			dbg_outStatus8;
+wire			dbg_exHold1b;
+wire			dbg_exHold2b;
+assign		dbg_exHold1 = !dbg_exHold1b;
+assign		dbg_exHold2 = !dbg_exHold2b;
 
 wire		ps2_clk_i;
 wire		ps2_data_i;
@@ -219,10 +217,13 @@ wire		ps2_clk_o;
 wire		ps2_data_o;
 wire		ps2_clk_d;
 wire		ps2_data_d;
-assign		ps2_clk		= ps2_clk_d  ? ps2_clk_o  : 1'bz;
-assign		ps2_data	= ps2_data_d ? ps2_data_o : 1'bz;
-assign		ps2_clk_i	= ps2_clk;
-assign		ps2_data_i	= ps2_data;
+// assign		ps2_clk		= ps2_clk_d  ? ps2_clk_o  : 1'bz;
+// assign		ps2_data	= ps2_data_d ? ps2_data_o : 1'bz;
+// assign		ps2_clk_i	= ps2_clk;
+// assign		ps2_data_i	= ps2_data;
+
+assign		ps2_clk_i	= 1'b1;
+assign		ps2_data_i	= 1'b1;
 
 wire[3:0]		sdc_dat_i;
 wire[3:0]		sdc_dat_o;
@@ -239,11 +240,23 @@ assign	sdc_dat_i[3]	= sdc_dat[3];
 
 wire aud_mono_out1;
 wire aud_mono_ena1;
-assign	aud_mono_out	= aud_mono_out1 ? 1'bz : 1'b0;
-// assign	aud_mono_out = aud_mono_out1;
-// assign	aud_mono_en		= 1'b1;
-assign	aud_mono_en			= aud_mono_ena1;
-//assign	aud_mono_en		= !aud_mono_ena1;
+wire[7:0]		seg_outCharBit;
+wire[7:0]		seg_outSegBit;
+
+wire			aud_mic_clk;
+wire			aud_mic_data;
+assign	aud_mic_data = 1'b0;
+
+wire	sdc_ena;
+
+wire	dbg_outStatus1;
+wire	dbg_outStatus2;
+wire	dbg_outStatus3;
+wire	dbg_outStatus4;
+wire	dbg_outStatus5;
+wire	dbg_outStatus6;
+wire	dbg_outStatus7;
+wire	dbg_outStatus8;
 
 wire	clock_300mhz;
 wire	clock_200mhz;
@@ -262,9 +275,6 @@ reg			reset3_100;
 reg			reset3_75;
 reg			reset3_50;
 
-// assign		reset_sanity = (regInitSanity!=8'h55);
-// assign		reset2 = reset || reset_sanity;
-
 wire[31:0]		gpioPinsIn;
 wire[31:0]		gpioPinsOut;
 wire[31:0]		gpioPinsDir;
@@ -275,14 +285,17 @@ wire[3:0]		usb_clkdat_i;
 wire[3:0]		usb_clkdat_o;
 wire[3:0]		usb_clkdat_d;
 
-assign		usb_clkdat_i = 4'h0;
+assign		usb_clkdat_i	= usb_pins;
+assign		usb_pins[0]		= usb_clkdat_d[0] ? usb_clkdat_o[0] : 1'bZ;
+assign		usb_pins[1]		= usb_clkdat_d[1] ? usb_clkdat_o[1] : 1'bZ;
+assign		usb_pins[2]		= usb_clkdat_d[2] ? usb_clkdat_o[2] : 1'bZ;
+assign		usb_pins[3]		= usb_clkdat_d[3] ? usb_clkdat_o[3] : 1'bZ;
 
 wire[3:0]		ddrModeIn;
-assign		ddrModeIn = 0;
+assign		ddrModeIn = 1;
 
 
 CoreUnit core(
-//	clock, 		reset2,
 	clock_300mhz,
 	clock_200mhz,
 	clock_150mhz,
@@ -305,8 +318,7 @@ CoreUnit core(
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
 	ddrModeIn,
 
-	vgaRed,		vgaGrn,		vgaBlu,
-//	vgaBlu,		vgaGrn,		vgaRed,
+	vgaRed1,	vgaGrn1,	vgaBlu1,
 	vgaHsync,	vgaVsync,
 	uartTxD,	uartRxD,
 	uartCtS,	uartRtS,
@@ -322,8 +334,8 @@ CoreUnit core(
 
 	aud_mic_clk,	aud_mic_data,
 
-	dbg_exHold1,
-	dbg_exHold2,
+	dbg_exHold1b,
+	dbg_exHold2b,
 	dbg_outStatus1,
 	dbg_outStatus2,
 	dbg_outStatus3,
@@ -341,6 +353,8 @@ CoreUnit core(
 	usb_clkdat_o,
 	usb_clkdat_d
 	);
+
+defparam	core.ddr.DDR_IS_DDR3 = 1;
 
 `ifdef def_true
 wire	sys_clk;
@@ -363,64 +377,13 @@ wire	gen_clk_100mhz_nobuf;
 wire	gen_clk_75mhz_nobuf;
 wire	gen_clk_50mhz_nobuf;
 
-`ifndef def_true
-PLLE2_BASE	#(
-	.BANDWIDTH("OPTIMIZED"),	// OPTIMIZED, HIGH, LOW
-	.CLKFBOUT_PHASE(0.0),		// Phase offset in degrees of CLKFB, (-360-360)
-	.CLKIN1_PERIOD(10.0),		// Input clock period in ns resolution
-	// CLKOUT0_DIVIDE - CLKOUT5_DIVIDE: divide amount for each CLKOUT(1-128)
-	.CLKFBOUT_MULT(8),			// Multiply value for all CLKOUT (2-64)
-	.CLKOUT0_DIVIDE(8),			// 100 MHz
-//	.CLKOUT1_DIVIDE(4),			// 200 MHz
-//	.CLKOUT1_DIVIDE(6),			// 133 MHz
-	.CLKOUT1_DIVIDE(5),			// 160 MHz
-	.CLKOUT2_DIVIDE(16),		//  50 MHz
-	.CLKOUT3_DIVIDE(32),		//  25 MHz
-	.CLKOUT4_DIVIDE(10),		//  80 MHz
-	.CLKOUT5_DIVIDE(12),		//  66 MHz
-	// CLKOUT0_DUTY_CYCLE -- Duty cycle for each CLKOUT
-	.CLKOUT0_DUTY_CYCLE(0.5),
-	.CLKOUT1_DUTY_CYCLE(0.5),
-	.CLKOUT2_DUTY_CYCLE(0.5),
-	.CLKOUT3_DUTY_CYCLE(0.5),
-	.CLKOUT4_DUTY_CYCLE(0.5),
-	.CLKOUT5_DUTY_CYCLE(0.5),
-	// CLKOUT0_PHASE -- phase offset for each CLKOUT
-	.CLKOUT0_PHASE(0.0),
-	.CLKOUT1_PHASE(0.0),
-	.CLKOUT2_PHASE(0.0),
-	.CLKOUT3_PHASE(0.0),
-	.CLKOUT4_PHASE(0.0),
-	.CLKOUT5_PHASE(0.0),
-	.DIVCLK_DIVIDE(1),		// Master division value , (1-56)
-	.REF_JITTER1(0.0),		// Ref. input jitter in UI (0.000-0.999)
-	.STARTUP_WAIT("TRUE")	// Delay DONE until PLL Locks, ("TRUE"/"FALSE")
-) genclock(
-	// Clock outputs: 1-bit (each) output
-	.CLKOUT0(gen_clk_100mhz_nobuf),
-	.CLKOUT1(gen_clk_200mhz_nobuf),
-	.CLKOUT2(gen_clk_50mhz_nobuf),
-//	.CLKOUT3(gen_clk_25mhz),
-	.CLKOUT3(gen_clk_300mhz_nobuf),
-	.CLKOUT4(gen_clk_75mhz_nobuf),
-//	.CLKOUT5(gen_clk_66mhz),
-	.CLKOUT5(gen_clk_150mhz_nobuf),
-	.CLKFBOUT(clk_feedback), // 1-bit output, feedback clock
-	.LOCKED(clk_locked),
-	.CLKIN1(sys_clk),
-	.PWRDWN(1'b0),
-	.RST(1'b0),
-	.CLKFBIN(clk_feedback_bufd)	// 1-bit input, feedback clock
-);
-`endif
-
 `ifdef def_true
 PLLE2_BASE	#(
 	.BANDWIDTH("OPTIMIZED"),	// OPTIMIZED, HIGH, LOW
 	.CLKFBOUT_PHASE(0.0),		// Phase offset in degrees of CLKFB, (-360-360)
-	.CLKIN1_PERIOD(10.0),		// Input clock period in ns resolution
+	.CLKIN1_PERIOD(20.0),		// Input clock period in ns resolution
 	// CLKOUT0_DIVIDE - CLKOUT5_DIVIDE: divide amount for each CLKOUT(1-128)
-	.CLKFBOUT_MULT(12),			// Multiply value for all CLKOUT (2-64)
+	.CLKFBOUT_MULT(24),			// Multiply value for all CLKOUT (2-64)
 	.CLKOUT0_DIVIDE(6),			// 200 MHz
 	.CLKOUT1_DIVIDE(8),			// 150 MHz
 	.CLKOUT2_DIVIDE(12),		// 100 MHz
@@ -522,9 +485,6 @@ always @(posedge clock_50mhz)
 `endif
 begin
 	reset_sanity 	<= (regInitSanity!=16'hAA55);
-//	reset3			<= reset2a || reset_sanity;
-//	reset3			<= reset_sanity;
-//	reset3_50		<= reset_sanity;
 
 	if(reset2a)
 	begin

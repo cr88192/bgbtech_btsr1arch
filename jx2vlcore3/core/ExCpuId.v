@@ -92,10 +92,10 @@ begin
 	arrCpuIdLo[2]=UV64_00;
 	arrCpuIdLo[3]=UV64_00;
 
-	arrCpuIdLo[4]=UV64_XX;
-	arrCpuIdLo[5]=UV64_XX;
-	arrCpuIdLo[6]=UV64_XX;
-	arrCpuIdLo[7]=UV64_XX;
+	arrCpuIdLo[4]=UV64_00;
+	arrCpuIdLo[5]=UV64_00;
+	arrCpuIdLo[6]=UV64_00;
+	arrCpuIdLo[7]=UV64_00;
 
 //	arrCpuIdLo[1][0] = isAltCore;
 //	arrCpuIdLo[1][3:0] = isAltCore;
@@ -148,10 +148,10 @@ begin
 	arrCpuIdHi[2]=UV64_00;
 	arrCpuIdHi[3]=UV64_00;
 
-	arrCpuIdHi[4]=UV64_XX;
-	arrCpuIdHi[5]=UV64_XX;
-	arrCpuIdHi[6]=UV64_XX;
-	arrCpuIdHi[7]=UV64_XX;
+	arrCpuIdHi[4]=UV64_00;
+	arrCpuIdHi[5]=UV64_00;
+	arrCpuIdHi[6]=UV64_00;
+	arrCpuIdHi[7]=UV64_00;
 `endif
 end
 
@@ -378,16 +378,6 @@ begin
 		end
 		5'b1_1111: begin
 			tResLo = tOutRng;
-//			tResLo = {
-//				tRngA[31:28], tRngB[ 3: 0],
-//				tRngA[27:24], tRngB[ 7: 4],
-//				tRngA[23:20], tRngB[11: 8],
-//				tRngA[19:16], tRngB[15:12],
-//				tRngA[15:12], tRngB[19:16],
-//				tRngA[11: 8], tRngB[23:20],
-//				tRngA[ 7: 4], tRngB[27:24],
-//				tRngA[ 3: 0], tRngB[31:28]
-//			};
 		end
 //		default: begin
 //			tResLo = UV64_00;

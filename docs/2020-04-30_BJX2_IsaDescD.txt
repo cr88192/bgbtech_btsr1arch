@@ -196,8 +196,9 @@ The bound is given in bits (55:48) as an E5.F3 microfloat.
 * 18: 32  19: 36  1A: 40  1B: 44  1C: 48  1D: 52  1E: 56  1F: 60
 * 20: 64  21: 72  22: 80  23: 88  24: 96  25:104  26:112  27:120
 * 28:128  29:144  2A:160  2B:176  2C:192  2D:208  2E:224  2F:240
-* 30:256  ...
-* 38:512  ...
+* 30:256  31:288  32:320  33:352  34:384  35:416  36:448  37:480
+* 38:512  39:576  3A:640  3B:704  3C:768  3D:832  3E:896  3F:960
+* 40:1024 ...
 * ...
 
 The Bias is a value with the same exponent as the Bound, but represents a non-normalized value. It is added to the index prior to checking against the bound.
@@ -1523,6 +1524,15 @@ As with other MOV.x ops, encodings using PC or GBR as a base will use a byte sca
 The results of trying to load or store using a misaligned address are undefined.
 
 See MOV.B for general Load/Store semantics.
+
+
+=== MOVST (TTAG) ===
+
+* F0nm_1gFE MOVST		Rm, Rn			//MOV, Sign-Extend Tag
+* F0nm_1GFE XMOVST		Xm, Xn			//XMOV, Sign-Extend Tag
+
+Move value from Rm to Rn, but sign extend the tag bits (63:48) from bit 47.
+The XMOVST will sign extend both registers in the pair.
 
 
 === MOVTT (TTAG) ===

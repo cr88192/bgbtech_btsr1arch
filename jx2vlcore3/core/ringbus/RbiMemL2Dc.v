@@ -460,6 +460,7 @@ reg		tBlkAddrIsRam;
 reg 	tOpmIsNz;
 reg 	tOpmIsLoad;
 reg 	tOpmIsStore;
+reg 	tOpmIsPrefetch;
 reg		tDoAcc;
 reg		tDoSwAcc;
 reg		tNxtDoAcc;
@@ -716,6 +717,10 @@ begin
 	tOpmIsStore	=
 		(tReqOpm[7:0]==JX2_RBI_OPM_STX) ||
 		(tReqOpm[7:0]==JX2_RBI_OPM_SPX);
+	tOpmIsPrefetch = 
+		(tReqOpm[7:0]==JX2_RBI_OPM_PFX)	||
+		(tReqOpm[7:0]==JX2_RBI_OPM_SPX);
+
 	tOpmIsNz	= tOpmIsLoad || tOpmIsStore ;
 
 //	tAccStoreOnly	= tOpmIsStore;
@@ -1252,8 +1257,11 @@ begin
 	
 	if(tNxtDoAcc)
 	begin
-		tNxtReqMissSeq = tReqSeq;
-		tNxtReqMissIx = tReqIx;
+		if(!tOpmIsPrefetch)
+		begin
+			tNxtReqMissSeq = tReqSeq;
+			tNxtReqMissIx = tReqIx;
+		end
 	
 //		$display("L2 Hold: Do Acc");
 		tHold = 1;

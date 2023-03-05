@@ -526,7 +526,7 @@ ASID:
 * (15:10) = AGID (0=Shared, Global)
 * ( 9: 0) = APID (0=Shared, Group)
 
-KR Access:
+KR Access (VUGID):
 * (11): Other X
 * (10): Other W
 * ( 9): Other R
@@ -561,10 +561,8 @@ The Restricted Execute mode would operate as-if the KRR contained only the VUGID
 Page Control:
 * (11): PR.U3 (User 3, OS / Virtual Memory)
 * (10): PR.U2 (User 2, OS / Virtual Memory)
-* ( 9): PR.U1 (User 1, OS / Virtual Memory)
-* ( 8): PR.U0 (User 0, OS / Virtual Memory)
-* ( 9): PR.S1 (Size 1)
-* ( 8): PR.S0 (Size 0)
+* ( 9): PR.S1 (Size 1) / PR.U1 (User 1, OS / Virtual Memory)
+* ( 8): PR.S0 (Size 0) / PR.U0 (User 0, OS / Virtual Memory)
 * ( 7): PR.NU (Not User Accessible)
 ** Disallow access from User Mode.
 * ( 6): PR.NX (Execute Disable)
@@ -590,19 +588,19 @@ Valid 1/0:
 
 Size 1/0 (Base=4K):
 * 00:  4K Page (Single Page)
-* 01: 2MB Page (512 Pages)
+* 01: 2MB Page (512 Pages, PDE)
 * 10: 64K Page (16 Pages)
 * 11: -
 
 Size 1/0 (Base=64K):
 * 00: 64K Page (1 Page)
-* 01: 512M Page (8192 Pages)
+* 01: 512M Page (8192 Pages, PDE)
 * 10: 64K Page (1 Page)
 * 11: -
 
 Size 1/0 (Base=16K):
 * 00: 16K Page (1 Page)
-* 01: 32M Page (2048 Pages)
+* 01: 32M Page (2048 Pages, PDE)
 * 10: 64K Page (4 Pages)
 * 11: -
 
@@ -1808,8 +1806,8 @@ F0zz Instruction Block:
 *** F0nm_1GDE  PLDCEHH		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Hi)
 *** F0nm_1gEE  PSTCH		Rm, Rn		//(GSVF) Packed Single to Half (2x)
 *** F0nm_1GEE -
-*** F0nm_1gFE -
-*** F0nm_1GFE -
+*** F0nm_1gFE ? MOVST		Rm, Rn		//(TTAG) Move Sign-Extend Low 48 bits
+*** F0nm_1GFE ? XMOVST		Rm, Rn		//(TTAG) Move Sign-Extend Low 48 bits
 
 ** F0nm_1ezF  -
 *** F0nm_1g0F  PCVTSB2HL	Rm, Rn		//(GSVF) Packed SB to FP16 (Low32)
@@ -2339,8 +2337,8 @@ F8zz Instruction Block:
 * F87n_iiii  LDISH16	Imm16u, Rk		//R16..R31
 * F88n_iiii  FLDCH		Imm16u, Rn		//R0..R15, Load Half-Float
 * F89n_iiii  FLDCH		Imm16u, Rk		//R16..R31, Load Half-Float
-* F8An_iiii  -
-* F8Bn_iiii  -
+* F8An_Xddd ? Bxx       Rn, Disp12s		//? Conditional Branch
+* F8Bn_Xddd ? Bxx       Rk, Disp12s		//? Conditional Branch
 * F8Cn_iiii  -
 * F8Dn_iiii  -
 * F8En_iiii  -
@@ -2833,6 +2831,9 @@ If no register field exists, and no other meaning is assigned to the bit, it is 
 Apart from the loss of 16-bit encodings (setting 32 bits as the smallest instruction size), the encoding rules for XG2 will be the same as those for the base ISA and XGPR.
 
 This mode will also lose Op40x2, which will become non-encodable.
+
+In XG2 Mode, Disp9u encodings will use W.i as a sign-extension bit.
+Imm9u and Imm9n encodings will use W.i as an additional immediate bit.
 
 
 Possibly, this mode may use (WX4,WX3,WX2,WXE) == 0100 or 0101.

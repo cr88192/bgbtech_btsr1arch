@@ -211,17 +211,17 @@ TKFAT_FAT32_Boot *boot32;
 u32	magic3;
 
 /* Static Buffer Cache */
-u32 sbc_lba[64];
-s16 sbc_lbn[64];
-void *sbc_buf[64];
-int sbc_num;
+void *sbc_buf[80];
+u32 sbc_lba[80];
+s16 sbc_lbn[80];
+byte sbc_num;
 
 u32	magic4;
 
 /* Temp Buffer Cache */
-u32 tbc_lba[256];
-s16 tbc_lbn[256];
-void *tbc_buf[256];
+void *tbc_buf[160];
+u32 tbc_lba[160];
+s16 tbc_lbn[160];
 
 u32	magic5;
 
@@ -229,13 +229,13 @@ u32	magic5;
 //s16 tbc_lbn[1024];
 //void *tbc_buf[1024];
 
-int tbc_num;
-int tbc_max;
-int tbc_pred0;
-int tbc_pred1;
-int tbc_rov;
+byte tbc_num;
+byte tbc_max;
+byte tbc_pred0;
+byte tbc_pred1;
+byte tbc_rov;
 
-#if 1
+#if 0
 /* Temp FAT Buffer Cache */
 
 // u32 tfbc_lba[1024];

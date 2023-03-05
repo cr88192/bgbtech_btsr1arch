@@ -1113,8 +1113,8 @@ begin
 	tRegOutDoSrT=0;
 	tRegOutDoSrP=0;
 
-	tResult1A=UV33_XX;
-	tResult2A=UV65_XX;
+	tResult1A=UV33_00;
+	tResult2A=UV65_00;
 	tResult1T=regInSrT;
 	tResult2T=regInSrT;
 	tResultw1T=regInSrT;
@@ -1130,14 +1130,14 @@ begin
 	tResultb1Tv=0;
 	tResult1Sv=0;
 
-	tResult1B=UV33_XX;
+	tResult1B=UV33_00;
 	tResult1S=regInSrS;
 
-	tResult1W=UV33_XX;
-	tResult2W=UV65_XX;
+	tResult1W=UV33_00;
+	tResult2W=UV65_00;
 
-	tResultb1W = UV33_XX;
-	tResultb2W = UV65_XX;
+	tResultb1W = UV33_00;
+	tResultb2W = UV65_00;
 
 	tResult1P=regInSrP;
 	tResult1Q=regInSrQ;
@@ -1245,8 +1245,8 @@ begin
 		end
 		
 		4'h4: begin		/* TST */
-			tResult1A=UV33_XX;
-			tResult2A=UV65_XX;
+			tResult1A=UV33_00;
+			tResult2A=UV65_00;
 			tResult1T=tTst1ZF;
 			tResult2T=tTst2ZF;
 			tResult1S=tTst1BZF;
@@ -1283,8 +1283,8 @@ begin
 		end
 
 		4'h8: begin		/* CMPNE */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+//			tResult1A=UV33_00;
+//			tResult2A=UV65_00;
 			tResult1T=!tSub1ZF;
 			tResult2T=!tSub2ZF;
 			tResult1S=!tSub1BZF;
@@ -1348,8 +1348,8 @@ begin
 //			endcase
 		end
 		4'h9: begin		/* CMPHS */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+//			tResult1A=UV33_00;
+//			tResult2A=UV65_00;
 //			tResult1T=!tSub1CF;
 //			tResult2T=!tSub2CF;
 //			tResult1S=!tSub1BCF;
@@ -1369,8 +1369,8 @@ begin
 			tResultb1Tv	= 1;
 		end
 		4'hA: begin		/* CMPGE */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+//			tResult1A=UV33_00;
+//			tResult2A=UV65_00;
 //			tResult1T=tSub1ZF || (tSub1SF^tSub1VF);
 //			tResult2T=tSub2ZF || (tSub2SF^tSub2VF);
 //			tResult1S=tSub1BZF || (tSub1BSF^tSub1BVF);
@@ -1434,16 +1434,16 @@ begin
 //			tResult1T=regInSrT;
 //			tResult2T=regInSrT;
 
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+//			tResult1A=UV33_00;
+//			tResult2A=UV65_00;
 //			tResult1T=regInSrT;
 //			tResult2T=regInSrT;
 		end
 `endif
 
 		4'hC: begin		/* CMPEQ */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+//			tResult1A=UV33_00;
+//			tResult2A=UV65_00;
 			tResult1T=tSub1ZF;
 			tResult2T=tSub2ZF;
 			tResult1S=tSub1BZF;
@@ -1519,8 +1519,8 @@ begin
 
 		end
 		4'hD: begin		/* CMPHI */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+//			tResult1A=UV33_00;
+//			tResult2A=UV65_00;
 //			tResult1T=!tSub1CF && !tSub1ZF;
 //			tResult2T=!tSub2CF && !tSub2ZF;
 //			tResult1S=!tSub1BCF && !tSub1BZF;
@@ -1551,8 +1551,8 @@ begin
 			tResultb1Tv	= 1;
 		end
 		4'hE: begin		/* CMPGT */
-//			tResult1A=UV33_XX;
-//			tResult2A=UV65_XX;
+//			tResult1A=UV33_00;
+//			tResult2A=UV65_00;
 
 //			tResult1T=(tSub1SF^tSub1VF);
 //			tResult2T=(tSub2SF^tSub2VF);
@@ -1768,7 +1768,7 @@ begin
 `endif
 
 `ifdef jx2_enable_conv2_alu
-	tRegConvVal = UV64_XX;
+	tRegConvVal = UV64_00;
 	case(idUIxt[5:0])
 
 `ifdef jx2_do_convfp16_alu
@@ -1934,7 +1934,7 @@ begin
 `endif
 
 		default: begin
-			tRegConvVal = UV64_XX;
+			tRegConvVal = UV64_00;
 		end
 
 	endcase

@@ -972,6 +972,8 @@ parameter[5:0] JX2_UCIX_CONV_FABS		= 6'h13;		//Float FABS
 parameter[5:0] JX2_UCIX_CONV_SNIPEIC	= 6'h14;		//
 parameter[5:0] JX2_UCIX_CONV_SNIPEDC	= 6'h15;		//
 
+parameter[5:0] JX2_UCIX_CONV_MOVZT		= 6'h16;		//
+parameter[5:0] JX2_UCIX_CONV_MOVST		= 6'h17;		//
 
 parameter[5:0] JX2_UCIX_CONV_RGBSHR1		= 6'h18;	//RGB555, Shift Right 1
 parameter[5:0] JX2_UCIX_CONV_RGB5PCK32		= 6'h1A;	//RGB32->RGB555

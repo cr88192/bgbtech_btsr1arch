@@ -891,6 +891,25 @@ int nmid;
 {"cmpqge",	BGBCC_SH_NMID_CMPQGE},
 {"cmpqgt",	BGBCC_SH_NMID_CMPQGT},
 
+{"cmphs.l",	BGBCC_SH_NMID_CMPHS},
+{"cmphi.l",	BGBCC_SH_NMID_CMPHI},
+{"cmpeq.l",	BGBCC_SH_NMID_CMPEQ},
+{"cmpge.l",	BGBCC_SH_NMID_CMPGE},
+{"cmpgt.l",	BGBCC_SH_NMID_CMPGT},
+{"cmphs.q",	BGBCC_SH_NMID_CMPQHS},
+{"cmphi.q",	BGBCC_SH_NMID_CMPQHI},
+{"cmpeq.q",	BGBCC_SH_NMID_CMPQEQ},
+{"cmpge.q",	BGBCC_SH_NMID_CMPQGE},
+{"cmpgt.q",	BGBCC_SH_NMID_CMPQGT},
+
+{"cmppeq",	BGBCC_SH_NMID_CMPPEQ},
+{"cmppge",	BGBCC_SH_NMID_CMPPGE},
+{"cmppgt",	BGBCC_SH_NMID_CMPPGT},
+
+{"cmpeq.p",	BGBCC_SH_NMID_CMPPEQ},
+{"cmpge.p",	BGBCC_SH_NMID_CMPPGE},
+{"cmpgt.p",	BGBCC_SH_NMID_CMPPGT},
+
 {"cmtteq",	BGBCC_SH_NMID_CMPTTEQ},
 {"cmtaeq",	BGBCC_SH_NMID_CMPTAEQ},
 {"cmtahi",	BGBCC_SH_NMID_CMPTAHI},
@@ -1220,6 +1239,7 @@ int nmid;
 {"ldish16",	BGBCC_SH_NMID_LDSH16},
 {"ldsh8",	BGBCC_SH_NMID_LDSH8},
 {"ldsh16",	BGBCC_SH_NMID_LDSH16},
+{"shori",	BGBCC_SH_NMID_LDSH16},
 
 {"fabs",	BGBCC_SH_NMID_FABS},
 {"fadd",	BGBCC_SH_NMID_FADD},
@@ -1309,6 +1329,8 @@ int nmid;
 {"xmovtt",		BGBCC_SH_NMID_XMOVTT},
 {"movzt",		BGBCC_SH_NMID_MOVZT},
 {"xmovzt",		BGBCC_SH_NMID_XMOVZT},
+{"movst",		BGBCC_SH_NMID_MOVST},
+{"xmovst",		BGBCC_SH_NMID_XMOVST},
 
 
 {"pscheq.w",	BGBCC_SH_NMID_PSCHEQW},

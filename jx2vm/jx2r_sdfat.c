@@ -842,13 +842,14 @@ void JX2R_TKFAT_SetupImageFAT(JX2R_TKFAT_ImageInfo *img)
 			cln=img->lba_count;
 //			while(cln>268435445)
 //			while(cln>(1<<18))
-			while(cln>(1<<17))
+//			while(cln>(1<<17))
+			while((cln>(1<<17)) && (clsz<64))
 			{
 				clsh++; clsz=1<<clsh;
 				cln=img->lba_count>>clsh;
 			}
 
-#if 0
+#if 1
 			clsh=6; clsz=1<<clsh;
 			cln=img->lba_count>>clsh;
 #endif
@@ -2884,7 +2885,8 @@ int JX2R_UseImageCreateRamdisk(int imgsz)
 {
 	JX2R_TKFAT_ImageInfo *img;
 //	img=JX2R_CreateRamImage(imgsz*2, 0);
-	img=JX2R_CreateRamImage(imgsz*2, 6);
+//	img=JX2R_CreateRamImage(imgsz*2, 6);
+	img=JX2R_CreateRamImage(imgsz*2, 0x0C);
 	spimmc_img=img;
 	return(0);
 }

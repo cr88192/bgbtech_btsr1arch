@@ -532,7 +532,7 @@ begin
 		end
 `endif
 
-		default: 	tValRsA=UV64_XX;
+		default: 	tValRsA=UV64_00;
 	endcase
 
 	casez(regIdRt)
@@ -595,7 +595,7 @@ begin
 		end
 `endif
 
-		default: 	tValRtA=UV64_XX;
+		default: 	tValRtA=UV64_00;
 	endcase
 
 	casez(regIdRu)
@@ -651,7 +651,7 @@ begin
 			tValRuZz=1;
 		end
 
-		default: 	tValRuA=UV64_XX;
+		default: 	tValRuA=UV64_00;
 	endcase
 
 	casez(regIdRv)
@@ -707,7 +707,7 @@ begin
 			tValRvZz=1;
 		end
 
-		default: 	tValRvA=UV64_XX;
+		default: 	tValRvA=UV64_00;
 	endcase
 
 	casez(regIdRx)
@@ -763,7 +763,7 @@ begin
 			tValRxZz=1;
 		end
 
-		default: 	tValRxA=UV64_XX;
+		default: 	tValRxA=UV64_00;
 	endcase
 
 	casez(regIdRy)
@@ -819,7 +819,7 @@ begin
 			tValRyZz=1;
 		end
 
-		default: 	tValRyA=UV64_XX;
+		default: 	tValRyA=UV64_00;
 	endcase
 
 	tRegValRs = tValRsA;

@@ -315,12 +315,18 @@ reg[15:0]		tBlkDext2A;
 reg[15:0]		tBlkDext2B;
 
 `ifdef jx2_enable_vaddr48
-reg[43:0]		tBlkAddrA;
-reg[43:0]		tBlkAddrB;
-reg[43:0]		tBlkAddrC;
-reg[43:0]		tBlkAddrD;
-reg[43:0]		tBlkAddr2A;
-reg[43:0]		tBlkAddr2B;
+(* max_fanout = 200 *)
+	reg[43:0]		tBlkAddrA;
+(* max_fanout = 200 *)
+	reg[43:0]		tBlkAddrB;
+(* max_fanout = 200 *)
+	reg[43:0]		tBlkAddrC;
+(* max_fanout = 200 *)
+	reg[43:0]		tBlkAddrD;
+(* max_fanout = 200 *)
+	reg[43:0]		tBlkAddr2A;
+(* max_fanout = 200 *)
+	reg[43:0]		tBlkAddr2B;
 `else
 reg[27:0]		tBlkAddrA;
 reg[27:0]		tBlkAddrB;

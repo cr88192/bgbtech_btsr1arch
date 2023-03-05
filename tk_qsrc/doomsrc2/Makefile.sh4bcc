@@ -10,9 +10,12 @@ CC=bgbcc
 #	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
 #	/fjcmp /fdobounds /fxg2mode
 
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
+#	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
+#	/fjcmp /fdobounds /fxg2mode
+
 TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
-	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
-	/fjcmp /fdobounds /fxg2mode
+	/Zz /fshuffle /fqmul /fptropts /fxgpr_ena /fnoexcept /fldgbr
 
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 \
 #	/fwex3w_io2fp2 /fwexj /Zz /fshuffle /fqmul /ptropts

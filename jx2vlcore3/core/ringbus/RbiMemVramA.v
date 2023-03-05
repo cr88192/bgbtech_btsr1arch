@@ -679,6 +679,12 @@ begin
 	nxtScrRegCtrl7	= scrRegCtrl7;
 	nxtScrRegCtrl8	= scrRegCtrl8;
 	nxtScrRegCtrl9	= scrRegCtrl9;
+	
+	if(reset)
+	begin
+		nxtScrRegCtrl0	= 0;
+		nxtScrRegCtrl1	= 0;
+	end
 
 	tReqSeqIdx		= tReqSeqIdxArr[memSeqIn[3:0]];
 	tReqSeqVa		= tReqSeqVaArr[memSeqIn[3:0]];

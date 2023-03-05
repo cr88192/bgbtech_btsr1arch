@@ -25,6 +25,10 @@
 
 /*
 MMIO Space:
+* 00008000..000087FF: USB RX-A
+* 00008800..00008FFF: USB TX-A
+* 00009000..000097FF: USB RX-B
+* 00009800..00009FFF: USB TX-B
 
 * 0000E000 (R): 1MHz Timer Low
 * 0000E004 (R): 1MHz Timer High
@@ -76,6 +80,15 @@ MMIO Space:
 * 0000E108(R/W): GPIO Direction
 * 0000E110(W): GPIO Set (Out=Out|Val)
 * 0000E114(W): GPIO Clear (Out=Out&(~Val))
+
+* 0000E800: USB RX-A Buffer Start (Byte9 Index)
+* 0000E804: USB RX-A Buffer End (Byte9 Index)
+* 0000E810: USB TX-A Buffer Start (Byte9 Index)
+* 0000E814: USB TX-A Buffer End (Byte9 Index)
+* 0000E820: USB RX-B Buffer Start (Byte9 Index)
+* 0000E824: USB RX-B Buffer End (Byte9 Index)
+* 0000E830: USB TX-B Buffer Start (Byte9 Index)
+* 0000E834: USB TX-B Buffer End (Byte9 Index)
 
 * 00080000 .. 00080FFF: Audio Loop Buffer / Registers
 
@@ -135,6 +148,8 @@ MMIO Space:
 
 `include "Mod7Seg.v"
 
+`include "ModUsbBuf.v"
+
 module CoreUnit(
 	/* verilator lint_off UNUSED */
 	clock_300,
@@ -157,6 +172,7 @@ module CoreUnit(
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP_I,	ddrDqsN_I,
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
+	ddrModeIn,
 
 	vgaRed,		vgaGrn,		vgaBlu,
 	vgaHsync,	vgaVsync,
@@ -192,7 +208,11 @@ module CoreUnit(
 
 	gpioPinsIn,
 	gpioPinsOut,
-	gpioPinsDir
+	gpioPinsDir,
+	
+	usb_clkdat_i,
+	usb_clkdat_o,
+	usb_clkdat_d
 	);
 
 input			clock_300;
@@ -235,6 +255,8 @@ input[1:0]		ddrDqsN_I;
 output[1:0]		ddrDqsP_O;
 output[1:0]		ddrDqsN_O;
 output			ddrDqs_En;
+
+input[3:0]		ddrModeIn;
 
 
 // reg[15:0]		ddrData_I;		//DDR data pins
@@ -294,6 +316,12 @@ output			dbg_outStatus5;
 output			dbg_outStatus6;
 output			dbg_outStatus7;
 output			dbg_outStatus8;
+
+
+input[3:0]		usb_clkdat_i;
+output[3:0]		usb_clkdat_o;
+output[3:0]		usb_clkdat_d;
+
 
 reg[7:0]		tSegOutCharBit;
 reg[7:0]		tSegOutSegBit;
@@ -557,7 +585,8 @@ MmiModDdr3		ddr(
 	ddrCs,		ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP_I,	ddrDqsN_I,
-	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
+	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
+	ddrModeIn);
 
 `endif
 
@@ -583,6 +612,11 @@ defparam cpu2.isAltCore = 1;
 
 defparam cpu1.isGpu = 0;
 defparam cpu2.isGpu = 1;
+
+// parameter	DDR_IS_DDR3 = 0;
+// defparam ddr.DDR_IS_DDR3 = DDR_IS_DDR3;
+
+
 
 `wire_tile		memInData;
 `wire_tile		memOutData;
@@ -1226,7 +1260,7 @@ assign		memAddrIn	= mmiAddrOut;
 assign		memOpmIn	= mmiOpmOut;
 assign		memSeqIn	= mmiSeqOut;
 
-assign		l2aNodeId	= 8'h82;
+assign		l2aNodeId	= 8'h84;
 
 assign		memOK = 2'b00;
 
@@ -1274,7 +1308,7 @@ assign	vgaVsync	= scrnPwmOut[13];
 
 wire[7:0]	scrnNodeId;
 // assign		scrnNodeId	= 8'h84;
-assign		scrnNodeId	= 8'h86;
+assign		scrnNodeId	= 8'h8A;
 
 ModTxtNtW	scrn(
 //	clock_100,		reset2_100,
@@ -1439,6 +1473,16 @@ ModSdSpi	sdspi(
 	mmioOutDataQ,	sdMmioOutData,	mmioAddr,
 	mmioOpm,		sdMmioOK,		12'hE03);
 
+wire[63:0]	usbMmioOutData;
+wire[1:0]	usbMmioOK;
+
+ModUsbBuf modusb(
+	clock_mmio,		reset2_mmio,
+	usb_clkdat_i,	usb_clkdat_o,	usb_clkdat_d,
+	mmioOutDataQ,	usbMmioOutData,	mmioAddr,		
+	mmioOpm,		usbMmioOK
+	);
+
 
 reg[31:0]		mmioAddrL1;
 reg[31:0]		mmioAddrL2;
@@ -1531,6 +1575,13 @@ begin
 		mmioInData	= sdMmioOutData;
 		mmioOK		= sdMmioOK;
 	end
+`ifdef def_true
+	else if(usbMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= usbMmioOutData;
+		mmioOK		= usbMmioOK;
+	end
+`endif
 	else if(audMmioOK != UMEM_OK_READY)
 	begin
 		mmioInData	= { UV32_00, audMmioOutData };

@@ -427,14 +427,14 @@ begin
 		tSub2ZF,
 		tSubCa2A1[3], tSubCa2A0[3], tAddCa2A1[3], tAddCa2A0[3] };
 
-	tResult1A=UV33_XX;
-	tResult2A=UV65_XX;
+	tResult1A=UV33_00;
+	tResult2A=UV65_00;
 	tResult1T=regInSrT;
 	tResult2T=regInSrT;
 	tRegConvSrT=regInSrT;
 	tRegConvSrS=regInSrS;
 
-	tResult1B=UV33_XX;
+	tResult1B=UV33_00;
 	tResult1S=regInSrS;
 
 	tResult1W = UV33_00;
@@ -673,7 +673,7 @@ begin
 `endif
 
 `ifdef jx2_enable_conv2_alu
-	tRegConvVal = UV64_XX;
+	tRegConvVal = UV64_00;
 	case(idUIxt[5:0])
 `ifdef jx2_enable_convfp16
 		JX2_UCIX_CONV_FP16UPCK32L: begin
@@ -697,7 +697,7 @@ begin
 `endif
 
 		default: begin
-			tRegConvVal = UV64_XX;
+			tRegConvVal = UV64_00;
 		end
 
 	endcase

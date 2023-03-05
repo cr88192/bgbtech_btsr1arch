@@ -217,7 +217,7 @@ begin
 	tNextMsgLatch	= 0;
 	tDoHoldCyc		= 0;
 
-	tValOutDfl		= UV64_XX;
+	tValOutDfl		= UV64_00;
 	tDoOutDfl		= 0;
 
 `ifndef def_true
@@ -501,6 +501,11 @@ begin
 //		if(!tExHold)
 //			$display("Hold Cyc %d %d", tHoldCyc, tDoHoldCyc);
 		tExHold=1;
+	end
+
+	if(reset)
+	begin
+		tExHold		= 0;
 	end
 end
 

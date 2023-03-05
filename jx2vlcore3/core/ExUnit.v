@@ -133,7 +133,7 @@ module ExUnit(
 
 input			clock;
 
-(* max_fanout = 50 *)
+(* max_fanout = 100 *)
 	input			reset;
 
 input[11:0]		timers;
@@ -220,14 +220,14 @@ defparam		decOp.fpuLowPrec = fpuLowPrec;
 defparam		exAlu.noBcd = isGpu;
 defparam		exAlu.noAlux = isGpu;
 
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg				exHold1;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg				exHold2;
 
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg				exResetL;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg				exResetL2;
 
 reg				exHold1L;
@@ -247,9 +247,9 @@ reg				exHold1C3;
 
 reg				exHold1D1;
 
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg				tDbgExHold1;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg				tDbgExHold2;
 
 // assign		dbgExHold1 = exHold1;
@@ -258,21 +258,21 @@ reg				exHold1D1;
 assign		dbgExHold1 = tDbgExHold1;
 assign		dbgExHold2 = tDbgExHold2;
 
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus1;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus2;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus3;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus4;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus5;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus6;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus7;
-(* max_fanout = 100 *)
+(* max_fanout = 200 *)
 	reg			tDbgOutStatus8;
 
 reg			tDbgOutStatus1B;
@@ -1206,7 +1206,8 @@ assign		ex1RegValRm = exC1RegValRt;
 /* GPR Only: Timing Hack. */
 wire[63:0]		ex1RegValRsGpo;		//Source A Value (GPR Only)
 wire[63:0]		ex1RegValRtGpo;		//Source B Value (GPR Only)
-assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UV64_XX : ex1RegValRs;
+// assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UV64_XX : ex1RegValRs;
+assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UV64_00 : ex1RegValRs;
 // assign	ex1RegValRsGpo = ex1RegValRs;
 // assign	ex1RegValRtGpo = ex1RegIdRt[6] ? UV64_XX : ex1RegValRt;
 assign	ex1RegValRtGpo = ex1RegValRt;
@@ -4726,8 +4727,10 @@ begin
 //		id2IstrWordL	<= id2IstrWord;
 		id2ValBPc		<= id1ValBPc;
 `else
-		id2IstrWord		<= UV32_XX;
-		id2ValBPc		<= UV48_XX;
+//		id2IstrWord		<= UV32_XX;
+//		id2ValBPc		<= UV48_XX;
+		id2IstrWord		<= UV32_00;
+		id2ValBPc		<= UV48_00;
 `endif
 
 `else
@@ -4757,8 +4760,10 @@ begin
 		id2IstrWord		<= id1IstrWord[31:0];
 		id2ValBPc		<= id1ValBPc;
 `else
-		id2IstrWord		<= UV32_XX;
-		id2ValBPc		<= UV48_XX;
+//		id2IstrWord		<= UV32_XX;
+//		id2ValBPc		<= UV48_XX;
+		id2IstrWord		<= UV32_00;
+		id2ValBPc		<= UV48_00;
 `endif
 
 `endif
@@ -4769,8 +4774,10 @@ begin
 		ex1ValBPc		<= id2ValBPc;
 		ex1IstrWord		<= id2IstrWord;
 `else
-		ex1ValBPc		<= UV48_XX;
-		ex1IstrWord		<= UV32_XX;
+//		ex1ValBPc		<= UV48_XX;
+//		ex1IstrWord		<= UV32_XX;
+		ex1ValBPc		<= UV48_00;
+		ex1IstrWord		<= UV32_00;
 `endif
 
 		ex1RegPcHi		<= crOutPcHi;
@@ -4932,12 +4939,14 @@ begin
 //		ex1PreBra		<= 0;
 		ex1PreBra		<= 2'b11;
 //		ex1IstrWord		<= UV32_XX;
-		ex1IstrWord		<= UV96_XX;
+//		ex1IstrWord		<= UV96_XX;
+		ex1IstrWord		<= UV96_00;
 
 //		ex1RegValPc		<= UV32_XX;
 //		ex1RegValPc		<= UV48_XX;
 		ex1RegValPc		<= ex1RegValPc;
-		ex1RegValImm	<= UV33_XX;
+//		ex1RegValImm	<= UV33_XX;
+		ex1RegValImm	<= UV33_00;
 
 //		ex1RegValSp		<= gprOutSp[47:0];
 		ex1RegValSp		<= id2RegValSp;
@@ -4957,8 +4966,10 @@ begin
 		ex1RegIdRs		<= JX2_GR_ZZR;
 		ex1RegIdRt		<= JX2_GR_ZZR;
 		ex1RegIdRm		<= JX2_GR_ZZR;
-		ex1RegValRs		<= UV64_XX;
-		ex1RegValRt		<= UV64_XX;
+//		ex1RegValRs		<= UV64_XX;
+//		ex1RegValRt		<= UV64_XX;
+		ex1RegValRs		<= UV64_00;
+		ex1RegValRt		<= UV64_00;
 
 `ifndef jx2_cpu_merge_rxy
 		ex1RegValRm		<= UV64_XX;

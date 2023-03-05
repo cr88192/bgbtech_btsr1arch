@@ -81,6 +81,23 @@
 
 // `define jx2_expand_l2sz			//Make L2 Bigger
 
+`ifdef jx2_xc7a200
+
+`define jx2_mem_l2sz_8192			//L2 is 8192 entries
+// `define jx2_mem_l2sz_4096		//L2 is 4096 entries
+// `define jx2_mem_l2sz_2048		//L2 is 2048 entries
+// `define jx2_mem_l2sz_1024		//L2 is 1024 entries
+
+// `define jx2_mem_l2wsz_1024		//L2 is 1024 entries
+// `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
+// `define jx2_mem_l2wsz_4096			//L2 is 4096 entries
+`define jx2_mem_l2wsz_8192			//L2 is 8192 entries
+
+`endif
+
+
+`ifdef jx2_xc7a100
+
 // `define jx2_mem_l2sz_8192			//L2 is 8192 entries
 `define jx2_mem_l2sz_4096		//L2 is 4096 entries
 // `define jx2_mem_l2sz_2048		//L2 is 2048 entries
@@ -89,6 +106,22 @@
 // `define jx2_mem_l2wsz_1024		//L2 is 1024 entries
 // `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
 `define jx2_mem_l2wsz_4096			//L2 is 4096 entries
+
+`endif
+
+
+`ifdef jx2_xc7s50
+
+// `define jx2_mem_l2sz_8192			//L2 is 8192 entries
+// `define jx2_mem_l2sz_4096		//L2 is 4096 entries
+// `define jx2_mem_l2sz_2048		//L2 is 2048 entries
+`define jx2_mem_l2sz_1024		//L2 is 1024 entries
+
+`define jx2_mem_l2wsz_1024		//L2 is 1024 entries
+// `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
+// `define jx2_mem_l2wsz_4096			//L2 is 4096 entries
+
+`endif
 
 // `define jx2_mem_l1i2way			//Use 2-Way L1 I$
 // `define jx2_mem_l1d2way			//Use 2-Way L1 D$
@@ -125,6 +158,8 @@
 
 `endif
 
+`ifndef jx2_xc7s50
+
 // `define jx2_expand_tlb		//Make TLB Bigger
 // `define jx2_tlbsz_1024		//Make TLB 1024x
 `define jx2_tlbsz_256			//Make TLB 256x
@@ -134,6 +169,16 @@
 
 // `define jx2_reduce_l1sz		//Make L1 smaller
 // `define jx2_reduce_l2sz		//Make L2 smaller
+
+`endif
+
+`ifdef jx2_xc7s50
+
+`define jx2_tlbsz_64			//Make TLB 64x
+// `define jx2_tlbsz_32			//Make TLB 32x
+// `define jx2_tlbsz_16			//Make TLB 16x
+
+`endif
 
 
 `define mod_ddr_isddr2			//We are dealing with DDR2, not DDR3

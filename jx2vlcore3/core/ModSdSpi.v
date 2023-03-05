@@ -105,7 +105,7 @@ reg				tNxtRegXmitDeb;
 
 always @*
 begin
-	tMmioOutData	= UV64_XX;
+	tMmioOutData	= UV64_00;
 	tMmioOK			= UMEM_OK_READY;
 
 	mmioInOE		= (tMmioOpm[3]) && tMmioSelfCSel;

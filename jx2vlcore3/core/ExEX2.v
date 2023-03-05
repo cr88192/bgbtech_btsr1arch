@@ -239,7 +239,7 @@ begin
 	tDoAluSrT		= 0;
 	tAluSrbOp		= 0;
 
-	tValOutDfl		= UV64_XX;
+	tValOutDfl		= UV64_00;
 	tDoOutDfl		= 0;
 
 `ifndef def_true
@@ -575,6 +575,11 @@ begin
 	if(tHoldCyc < tDoHoldCyc)
 	begin
 		tExHold=1;
+	end
+
+	if(reset)
+	begin
+		tExHold		= 0;
 	end
 end
 

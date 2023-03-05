@@ -616,8 +616,6 @@ begin
 		end
 `endif
 
-//		default: 	tValRsA=UV64_XX;
-//		default: 	tValRsA=tValRsA0;
 		default: 	tValRsA=UV64_00;
 	endcase
 	
@@ -694,8 +692,6 @@ begin
 `endif
 
 
-//		default: 	tValRtA=UV64_XX;
-//		default: 	tValRtA=tValRtA0;
 		default: 	tValRtA=UV64_00;
 	endcase
 
@@ -746,8 +742,6 @@ begin
 		end
 `endif
 
-//		default: 	tValRuA=UV64_XX;
-//		default: 	tValRuA=tValRuA0;
 		default: 	tValRuA=UV64_00;
 	endcase
 
@@ -799,8 +793,6 @@ begin
 		end
 `endif
 
-//		default: 	tValRvA=UV64_XX;
-//		default: 	tValRvA=tValRvA0;
 		default: 	tValRvA=UV64_00;
 	endcase
 
@@ -854,8 +846,6 @@ begin
 			tValRxZz=1;
 		end
 `endif
-//		default: 	tValRxA=UV64_XX;
-//		default: 	tValRxA=tValRxA0;
 		default: 	tValRxA=UV64_00;
 	endcase
 
@@ -940,8 +930,6 @@ begin
 		end
 `endif
 
-//		default: 	tValRyA=UV64_XX;
-//		default: 	tValRyA=tValRyA0;
 		default: 	tValRyA=UV64_00;
 	endcase
 

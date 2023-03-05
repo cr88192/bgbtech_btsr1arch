@@ -23,6 +23,8 @@ int ddr_mr1;
 int ddr_mr2;
 int ddr_mr3;
 
+int ddr_is_ddr3;
+
 
 #define	SIMDDR_BUSRT	4
 // #define	SIMDDR_BUSRT	8
@@ -46,7 +48,6 @@ int ddr_mr3;
 #define SIMDDR_MSK_BA	(3<<14)
 
 #define SIMDDR_MSK_NOP	(SIMDDR_MSK_RAS|SIMDDR_MSK_CAS|SIMDDR_MSK_WE)
-
 
 #if 1
 int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
@@ -87,9 +88,13 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 			nxtburst = ddr_burst-1;
 
 			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_bcol;
-			pos&=(1<<28)-1;
-			data=ddr_ram[pos>>1];
-			nxtbcol=ddr_bcol+2;
+//			pos&=(1<<28)-1;
+//			data=ddr_ram[pos>>1];
+//			nxtbcol=ddr_bcol+2;
+
+			pos&=(1<<27)-1;
+			data=ddr_ram[pos];
+			nxtbcol=ddr_bcol+1;
 
 			*rdata=data;
 //			*rdqs=(ddr_burst&1)?1:2;
@@ -107,7 +112,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 		{
 			if((dqs&3)!=(clk&3))
 			{
-				printf("DDR DQS Issue %d!=%d\n", dqs&3, clk&3);
+				printf("DDR DQS Issue %d!=%d  Bcyc=%d\n",
+					dqs&3, clk&3, ddr_burst);
 			}
 			
 //			ddr_burst--;
@@ -115,9 +121,13 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 
 			data=*rdata;
 			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_bcol;
-			pos&=(1<<28)-1;
-			ddr_ram[pos>>1]=data;
-			nxtbcol=ddr_bcol+2;
+//			pos&=(1<<28)-1;
+//			ddr_ram[pos>>1]=data;
+//			nxtbcol=ddr_bcol+2;
+
+			pos&=(1<<27)-1;
+			ddr_ram[pos]=data;
+			nxtbcol=ddr_bcol+1;
 			
 //			printf("ST %08X = %04X\n", pos, data);
 		}
@@ -257,7 +267,25 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 				ddr_parm_rl=cas;			//CAS RL*2+1
 				ddr_parm_wl=ddr_parm_rl-1;	//CAS WL=RL-1
 				
-				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
+				if(ddr_is_ddr3)
+				{
+					switch(ddr_mr0&3)
+					{
+					case 0:		ddr_burstlen=8;		break;
+					case 1:		ddr_burstlen=4;		break;
+					case 2:		ddr_burstlen=4;		break;
+					case 3:		ddr_burstlen=-1;	break;
+					}
+
+					cas=((ddr_mr0>>4)&7)+4;
+					ddr_parm_rl=cas;
+					col=((ddr_mr2>>3)&7)+5;
+					ddr_parm_wl=col;
+				}
+				
+//				printf("BurstLen=%d, CAS=%d\n", ddr_burstlen, cas);
+				printf("BurstLen=%d, CAS(RL)=%d CAS(WL)=%d\n",
+					ddr_burstlen, ddr_parm_rl, ddr_parm_wl);
 
 #if 1
 				printf("  DLL=%s\n", (ddr_mr1&1)?"Disable":"Enable");
@@ -289,7 +317,7 @@ int main(int argc, char **argv, char **env)
 
 	Verilated::commandArgs(argc, argv);
 	
-	ddr_ram=(uint16_t *)malloc(256<<20);
+	ddr_ram=(uint16_t *)malloc((256<<20)+128);
 	
 //	for(i=0; i<(128<<20); i++)
 //		ddr_ram[i]=rand();
@@ -297,6 +325,10 @@ int main(int argc, char **argv, char **env)
 //	memset(ddr_ram, 0, 256<<20);
 	memset(ddr_ram, 0x55, 256<<20);
 
+	top->ddrModeIn=0;
+//	top->ddrModeIn=1;
+//	ddr_is_ddr3 = 0;
+	ddr_is_ddr3 = top->ddrModeIn&1;
 
 	imgbuf=(uint32_t *)malloc((1<<28)+128);
 	

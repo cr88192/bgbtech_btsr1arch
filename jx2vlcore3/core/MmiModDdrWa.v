@@ -113,7 +113,8 @@ module MmiModDdrWa(
 	ddrCs,		ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP_I,	ddrDqsN_I,
-	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
+	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
+	ddrModeIn);
 
 input			clock;
 input			clock2;
@@ -152,31 +153,56 @@ output[1:0]		ddrDqsP_O;
 output[1:0]		ddrDqsN_O;
 output			ddrDqs_En;
 
-// parameter[15:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
-// parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
-parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1
-// parameter[15:0]	DDR_CAS_RL_M1	= 2;	//CAS RL Minus 1
-// parameter[15:0]	DDR_CAS_WL_M1	= 4;	//CAS WL Minus 1
-// parameter[15:0]	DDR_CAS_WL_M1	= 2;	//CAS WL Minus 1
-// parameter[15:0]	DDR_CAS_WL_M1	= 1;	//CAS WL Minus 1
-parameter[15:0]	DDR_CAS_WL_M1	= 0;	//CAS WL Minus 1
-// parameter[15:0]	DDR_RAS_M1		= 8;	//RAS Minus 1
-// parameter[15:0]	DDR_RAS_M1		= 4;	//RAS Minus 1
-// parameter[15:0]	DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
+input[3:0]		ddrModeIn;
+
+parameter	DDR_IS_DDR3 = 0;
+
+// parameter[15:0]	DDR2_CAS_RL_M1	= 4;	//CAS RL Minus 1
+// parameter[15:0]	DDR2_CAS_RL_M1	= 3;	//CAS RL Minus 1
+parameter[15:0]	DDR2_CAS_RL_M1	= 3;	//CAS RL Minus 1
+// parameter[15:0]	DDR2_CAS_RL_M1	= 2;	//CAS RL Minus 1
+// parameter[15:0]	DDR2_CAS_WL_M1	= 4;	//CAS WL Minus 1
+// parameter[15:0]	DDR2_CAS_WL_M1	= 2;	//CAS WL Minus 1
+// parameter[15:0]	DDR2_CAS_WL_M1	= 1;	//CAS WL Minus 1
+parameter[15:0]	DDR2_CAS_WL_M1	= 0;	//CAS WL Minus 1
+// parameter[15:0]	DDR2_RAS_M1		= 8;	//RAS Minus 1
+// parameter[15:0]	DDR2_RAS_M1		= 4;	//RAS Minus 1
+// parameter[15:0]	DDR2_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
 
 `ifdef jx2_cpu_ddrclock_150
-parameter[15:0]		DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
-// parameter[15:0]		DDR_RAS_M1		= 4;	//RAS Minus 1 (~ 40ns needed)
+parameter[15:0]		DDR2_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
+// parameter[15:0]		DDR2_RAS_M1		= 4;	//RAS Minus 1 (~ 40ns needed)
 `else
-// parameter[15:0]		DDR_RAS_M1		= 4;	//RAS Minus 1
-// parameter[15:0]		DDR_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
-parameter[15:0]		DDR_RAS_M1		= 2;	//RAS Minus 1 (~ 40ns needed)
+// parameter[15:0]		DDR2_RAS_M1		= 4;	//RAS Minus 1
+// parameter[15:0]		DDR2_RAS_M1		= 3;	//RAS Minus 1 (~ 40ns needed)
+parameter[15:0]		DDR2_RAS_M1		= 2;	//RAS Minus 1 (~ 40ns needed)
 `endif
+
+parameter[15:0]	DDR3_CAS_RL_M1	= 5;	//CAS RL Minus 1
+// parameter[15:0]	DDR3_CAS_WL_M1	= 5;	//CAS WL Minus 1
+parameter[15:0]	DDR3_CAS_WL_M1	= 4;	//CAS WL Minus 1
+// parameter[15:0]	DDR3_CAS_WL_M1	= 2;	//CAS WL Minus 1
+
+wire[15:0]	DDR_CAS_RL_M1;
+wire[15:0]	DDR_CAS_WL_M1;
+wire[15:0]	DDR_RAS_M1;
+
+// assign 	DDR_CAS_RL_M1	= DDR_IS_DDR3 ? DDR3_CAS_RL_M1 : DDR2_CAS_RL_M1;
+// assign 	DDR_CAS_WL_M1	= DDR_IS_DDR3 ? DDR3_CAS_RL_M1 : DDR2_CAS_WL_M1;
+assign 	DDR_CAS_RL_M1	= ddrModeIn[0] ? DDR3_CAS_RL_M1 : DDR2_CAS_RL_M1;
+assign 	DDR_CAS_WL_M1	= ddrModeIn[0] ? DDR3_CAS_WL_M1 : DDR2_CAS_WL_M1;
+assign 	DDR_RAS_M1		= DDR2_RAS_M1;
 
 // parameter[15:0]		DDR_TRP_M1		= 4;	//Precharge Time
 // parameter[15:0]		DDR_TRP_M1		= 2;	//Precharge Time
-parameter[15:0]		DDR_TRP_M1		= 1;	//Precharge Time
+// parameter[15:0]		DDR_TRP_M1		= 1;	//Precharge Time
 // parameter[15:0]		DDR_TRP_M1		= 0;	//Precharge Time
+
+parameter[15:0]		DDR2_TRP_M1		= 1;	//Precharge Time
+parameter[15:0]		DDR3_TRP_M1		= 5;	//Precharge Time
+
+wire[15:0]		DDR_TRP_M1;	//Precharge Time
+assign		DDR_TRP_M1 = ddrModeIn[0] ? DDR3_TRP_M1 : DDR2_TRP_M1;
 
 parameter[15:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 
@@ -187,23 +213,37 @@ parameter[15:0]	DDR_RAS_INIT	= 128;	//Wait several uS
 //	128'h2000_2380_0033_8202_0133_2000_6000_4000_8201_8628;
 
 
-parameter[15:0]	DDR_DRI_INIT_13	=	16'h8201;	/* Delay, NOP, 200+ cyc */
-// parameter[15:0]	DDR_DRI_INIT_12	=	16'h2004;	/* Load EMR, OCD Exit */
-parameter[15:0]	DDR_DRI_INIT_12	=	16'h2005;	/* Load EMR, OCD Exit */
-// parameter[15:0]	DDR_DRI_INIT_11	=	16'h2384;	/* Load EMR, OCD Default */
-parameter[15:0]	DDR_DRI_INIT_11	=	16'h2385;	/* Load EMR, OCD Default */
-parameter[15:0]	DDR_DRI_INIT_10	=	16'h0233;	/* Load MR, Normal */
-parameter[15:0]	DDR_DRI_INIT_9	=	16'h8900;	/* REFRESH */
-parameter[15:0]	DDR_DRI_INIT_8	=	16'h8900;	/* REFRESH */
-parameter[15:0]	DDR_DRI_INIT_7	=	16'h8800;	/* PRELOAD ALL */
-parameter[15:0]	DDR_DRI_INIT_6	=	16'h0333;	/* Load MR, Reset DLL */
-// parameter[15:0]	DDR_DRI_INIT_5	=	16'h2004;	/* Load EMR, DLL Enable */
-parameter[15:0]	DDR_DRI_INIT_5	=	16'h2005;	/* Load EMR, DLL Disable */
-parameter[15:0]	DDR_DRI_INIT_4	=	16'h6000;	/* Load EMR3 */
-parameter[15:0]	DDR_DRI_INIT_3	=	16'h4000;	/* Load EMR2 */
-parameter[15:0]	DDR_DRI_INIT_2	=	16'h8800;	/* PRELOAD ALL */
-parameter[15:0]	DDR_DRI_INIT_1	=	16'h8201;	/* Delay, NOP, 200+ cyc */
-parameter[15:0]	DDR_DRI_INIT_0	=	16'h8628;	/* Delay, CKE=0, 200+ us */
+parameter[15:0]	DDR2_DRI_INIT_13	=	16'h8201;	/* Delay, NOP, 200+ cyc */
+parameter[15:0]	DDR2_DRI_INIT_12	=	16'h2005;	/* Load MR1, OCD Exit */
+parameter[15:0]	DDR2_DRI_INIT_11	=	16'h2385;	/* Load MR1, OCD Default */
+parameter[15:0]	DDR2_DRI_INIT_10	=	16'h0233;	/* Load MR0, Normal */
+parameter[15:0]	DDR2_DRI_INIT_9		=	16'h8900;	/* REFRESH */
+parameter[15:0]	DDR2_DRI_INIT_8		=	16'h8900;	/* REFRESH */
+parameter[15:0]	DDR2_DRI_INIT_7		=	16'h8800;	/* PRELOAD ALL */
+parameter[15:0]	DDR2_DRI_INIT_6		=	16'h0333;	/* Load MR0, Reset DLL */
+parameter[15:0]	DDR2_DRI_INIT_5		=	16'h2005;	/* Load EMR1, DLL Disable */
+parameter[15:0]	DDR2_DRI_INIT_4		=	16'h6000;	/* Load EMR3 */
+parameter[15:0]	DDR2_DRI_INIT_3		=	16'h4000;	/* Load EMR2 */
+parameter[15:0]	DDR2_DRI_INIT_2		=	16'h8800;	/* PRELOAD ALL */
+parameter[15:0]	DDR2_DRI_INIT_1		=	16'h8201;	/* Delay, NOP, 200+ cyc */
+parameter[15:0]	DDR2_DRI_INIT_0		=	16'h8628;	/* Delay, CKE=0, 200+ us */
+
+
+parameter[15:0]	DDR3_DRI_INIT_13	=	16'h8201;	/* Delay, NOP, 200+ cyc */
+parameter[15:0]	DDR3_DRI_INIT_12	=	16'h2001;	/* Load MR1, OCD Exit */
+parameter[15:0]	DDR3_DRI_INIT_11	=	16'h2001;	/* Load MR1, OCD Default */
+parameter[15:0]	DDR3_DRI_INIT_10	=	16'h0220;	/* Load MR0, Normal */
+parameter[15:0]	DDR3_DRI_INIT_9		=	16'h8900;	/* REFRESH */
+parameter[15:0]	DDR3_DRI_INIT_8		=	16'h8900;	/* REFRESH */
+parameter[15:0]	DDR3_DRI_INIT_7		=	16'h8800;	/* PRELOAD ALL */
+parameter[15:0]	DDR3_DRI_INIT_6		=	16'h0320;	/* Load MR0, Reset DLL */
+parameter[15:0]	DDR3_DRI_INIT_5		=	16'h2005;	/* Load MR1, DLL Disable */
+parameter[15:0]	DDR3_DRI_INIT_4		=	16'h6000;	/* Load MR3 */
+parameter[15:0]	DDR3_DRI_INIT_3		=	16'h4008;	/* Load MR2 */
+parameter[15:0]	DDR3_DRI_INIT_2		=	16'h8800;	/* PRELOAD ALL */
+parameter[15:0]	DDR3_DRI_INIT_1		=	16'h8201;	/* Delay, NOP, 200+ cyc */
+parameter[15:0]	DDR3_DRI_INIT_0		=	16'h8628;	/* Delay, CKE=0, 200+ us */
+
 
 // parameter[127:0]	DDR_DRI_INIT	= 
 
@@ -678,23 +718,47 @@ begin
 //	driStillInit	= (driInitState != 5'h1F);
 	driNextInitState	= driInitState;
 
-	case(driInitState)
-		5'h00:		driInitCmd=DDR_DRI_INIT_0;
-		5'h01:		driInitCmd=DDR_DRI_INIT_1;
-		5'h02:		driInitCmd=DDR_DRI_INIT_2;
-		5'h03:		driInitCmd=DDR_DRI_INIT_3;
-		5'h04:		driInitCmd=DDR_DRI_INIT_4;
-		5'h05:		driInitCmd=DDR_DRI_INIT_5;
-		5'h06:		driInitCmd=DDR_DRI_INIT_6;
-		5'h07:		driInitCmd=DDR_DRI_INIT_7;
-		5'h08:		driInitCmd=DDR_DRI_INIT_8;
-		5'h09:		driInitCmd=DDR_DRI_INIT_9;
-		5'h0A:		driInitCmd=DDR_DRI_INIT_10;
-		5'h0B:		driInitCmd=DDR_DRI_INIT_11;
-		5'h0C:		driInitCmd=DDR_DRI_INIT_12;
-		5'h0D:		driInitCmd=DDR_DRI_INIT_13;
-		default:	driInitCmd=0;
-	endcase
+//	if(DDR_IS_DDR3)
+	if(ddrModeIn[0])
+	begin
+		case(driInitState)
+			5'h00:		driInitCmd=DDR3_DRI_INIT_0;
+			5'h01:		driInitCmd=DDR3_DRI_INIT_1;
+			5'h02:		driInitCmd=DDR3_DRI_INIT_2;
+			5'h03:		driInitCmd=DDR3_DRI_INIT_3;
+			5'h04:		driInitCmd=DDR3_DRI_INIT_4;
+			5'h05:		driInitCmd=DDR3_DRI_INIT_5;
+			5'h06:		driInitCmd=DDR3_DRI_INIT_6;
+			5'h07:		driInitCmd=DDR3_DRI_INIT_7;
+			5'h08:		driInitCmd=DDR3_DRI_INIT_8;
+			5'h09:		driInitCmd=DDR3_DRI_INIT_9;
+			5'h0A:		driInitCmd=DDR3_DRI_INIT_10;
+			5'h0B:		driInitCmd=DDR3_DRI_INIT_11;
+			5'h0C:		driInitCmd=DDR3_DRI_INIT_12;
+			5'h0D:		driInitCmd=DDR3_DRI_INIT_13;
+			default:	driInitCmd=0;
+		endcase
+	end
+	else
+	begin
+		case(driInitState)
+			5'h00:		driInitCmd=DDR2_DRI_INIT_0;
+			5'h01:		driInitCmd=DDR2_DRI_INIT_1;
+			5'h02:		driInitCmd=DDR2_DRI_INIT_2;
+			5'h03:		driInitCmd=DDR2_DRI_INIT_3;
+			5'h04:		driInitCmd=DDR2_DRI_INIT_4;
+			5'h05:		driInitCmd=DDR2_DRI_INIT_5;
+			5'h06:		driInitCmd=DDR2_DRI_INIT_6;
+			5'h07:		driInitCmd=DDR2_DRI_INIT_7;
+			5'h08:		driInitCmd=DDR2_DRI_INIT_8;
+			5'h09:		driInitCmd=DDR2_DRI_INIT_9;
+			5'h0A:		driInitCmd=DDR2_DRI_INIT_10;
+			5'h0B:		driInitCmd=DDR2_DRI_INIT_11;
+			5'h0C:		driInitCmd=DDR2_DRI_INIT_12;
+			5'h0D:		driInitCmd=DDR2_DRI_INIT_13;
+			default:	driInitCmd=0;
+		endcase
+	end
 
 //	driStillInit	= (driInitCmd != 0);
 	driNextStillInit	= (driInitCmd != 0);
@@ -781,7 +845,9 @@ begin
 
 //			tNxtSwapStLd	= 1;
 //			tNxtSwapStLd	= (tMemAddrSw[21:6] == tMemAddr[21:6]);
-			tNxtSwapStLd	= (tMemAddrSw[27:4] == tMemAddr[27:4]);
+//			tNxtSwapStLd	= (tMemAddrSw[27:4] == tMemAddr[27:4]);
+//			tNxtSwapStLd	= (tMemAddrSw[28:4] == tMemAddr[28:4]);
+			tNxtSwapStLd	= (tMemAddrSw[26:4] == tMemAddr[26:4]);
 
 			tMemOK		= UMEM_OK_HOLD;
 			if(accCkLo)
@@ -789,13 +855,15 @@ begin
 				if(tNxtSwapStLd)
 				begin
 					accNextState	= 6'b011000;
-					accNextAddr		= {4'h0, tMemAddrSw[27:4], 4'h0};
+//					accNextAddr		= {4'h0, tMemAddrSw[27:4], 4'h0};
+					accNextAddr		= {4'h0, tMemAddrSw[28:4], 3'h0};
 					tNxtDoSwap		= 0;
 				end
 				else
 				begin
 					accNextState = 6'b010000;
-					accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+//					accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+					accNextAddr	= {4'h0, tMemAddr[28:4], 3'h0};
 				end
 
 				tNxtReqOpSq	= tMemOpSq;
@@ -821,7 +889,8 @@ begin
 
 				tNxtReqOpSq	= tMemOpSq;
 
-				accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+//				accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+				accNextAddr	= {4'h0, tMemAddr[28:4], 3'h0};
 
 //				accNextRowAddr = accNextAddr[24:9];
 //				accNextColAddr = {7'b0, accNextAddr[ 8:0]};
@@ -862,7 +931,8 @@ begin
 //					if(accSkipRowOpen)
 //						accNextState = 6'b011100;
 
-					accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+//					accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+					accNextAddr	= {4'h0, tMemAddr[28:4], 3'h0};
 					accNextRowAddr = accNextAddr[28:13];
 					accNextBaAddr = accNextAddr[12:10];
 					accNextColAddr = {6'b0, accNextAddr[ 9:0]};
@@ -1091,13 +1161,15 @@ begin
 	//			tMemOK			= UMEM_OK_HOLD;
 	//			tMemOkSq		= 0;
 				accNextState	= 6'b010000;
-				accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+//				accNextAddr	= {4'h0, tMemAddr[27:4], 4'h0};
+				accNextAddr	= {4'h0, tMemAddr[28:4], 3'h0};
 			end
 			else
 			begin
 	//			$display("Swap, StB Store");
 				accNextState	= 6'b011000;
-				accNextAddr	= {4'h0, tMemAddrSw[27:4], 4'h0};
+//				accNextAddr	= {4'h0, tMemAddrSw[27:4], 4'h0};
+				accNextAddr	= {4'h0, tMemAddrSw[28:4], 3'h0};
 				tMemOK			= UMEM_OK_OK;
 			end
 			
@@ -1231,7 +1303,8 @@ begin
 //		if(accSkipRowClose)
 			tDdrAddr[10]	= 0;
 
-		accNextColAddr = accColAddr + 16;
+//		accNextColAddr = accColAddr + 16;
+		accNextColAddr = accColAddr + 8;
 
 		accNextState	= 6'b010101;
 	end
@@ -1310,7 +1383,8 @@ begin
 //		if(accSkipRowClose)
 			tDdrAddr[10]	= 0;
 
-		accNextColAddr = accColAddr + 16;
+//		accNextColAddr = accColAddr + 16;
+		accNextColAddr = accColAddr + 8;
 
 		accNextState	= 6'b011101;
 	end
@@ -1346,6 +1420,8 @@ begin
 	/* Read Burst States */
 	
 	6'b100000: begin
+		/* Read Burst, Cycle 0, Rise */
+
 		accNextState			= 6'b100001;
 
 		/* Attempt to align with DQS */
@@ -1387,7 +1463,8 @@ begin
 				tDdrCas	= 0;	tDdrWe	= 1;
 				if(tBurstCnt != 1)
 					tDdrAddr[10]	= 0;
-				accNextColAddr = accColAddr + 16;
+//				accNextColAddr = accColAddr + 16;
+				accNextColAddr = accColAddr + 8;
 			end
 
 			accNextCkCas	= DDR_CAS_RL_M1 - 3;
@@ -1396,24 +1473,31 @@ begin
 
 	end
 	6'b100001: begin
+		/* Read Burst, Cycle 0, Fall */
 		accNextState			= 6'b100010;
 	end
 	6'b100010: begin
+		/* Read Burst, Cycle 1, Rise */
 		accNextState			= 6'b100011;
 	end
 	6'b100011: begin
+		/* Read Burst, Cycle 1, Fall */
 		accNextState			= 6'b100100;
 	end
 	6'b100100: begin
+		/* Read Burst, Cycle 2, Rise */
 		accNextState			= 6'b100101;
 	end
 	6'b100101: begin
+		/* Read Burst, Cycle 2, Fall */
 		accNextState			= 6'b100110;
 	end
 	6'b100110: begin
+		/* Read Burst, Cycle 3, Rise */
 		accNextState			= 6'b100111;
 	end
 	6'b100111: begin
+		/* Read Burst, Cycle 3, Fall */
 //		accNextState			= 6'b000001;
 		accNextState			= 6'b101000;
 		if(tBurstCnt != 0)
@@ -1426,21 +1510,42 @@ begin
 	end
 
 	6'b101000: begin
+		/* Read Finish, Rise */
 		accNextReadBlk			= accLoadFifo;
 		accNextState			= 6'b101001;
 	end
 	6'b101001: begin
+		/* Read Finish, Fall */
 //		accNextState			= 6'b100110;
 		accNextState			= 6'b000001;
+
+//		accNextCkCas	= 3;
+//		accNextState	= 6'b101010;
+	end
+
+	6'b101010: begin
+		/* Delay hold before returning to Done. */
+		accNextState			= 6'b101011;
+	end
+	6'b101011: begin
+		/* Delay hold before returning to Done. */
+		accNextState			= 6'b000001;
+		if(accCkCas!=0)
+		begin
+			accNextCkCas	= accCkCas - 1;
+			accNextState	= 6'b101010;
+		end
 	end
 
 
 	/* Write Burst States */
 	
 	6'b110000: begin
+		/* Write Burst, Cycle 0, Rise */
 		accNextState			= 6'b110001;
 
-		if(DDR_CAS_WL_M1 == 2)
+//		if((DDR_CAS_WL_M1 == 2) || (DDR_CAS_WL_M1 == 2))
+		if(DDR_CAS_WL_M1 >= 2)
 		begin
 			if(tBurstCnt != 0)
 			begin
@@ -1456,15 +1561,21 @@ begin
 
 				if(tBurstCnt != 1)
 					tDdrAddr[10]	= 0;
-				accNextColAddr = accColAddr + 16;
+//				accNextColAddr = accColAddr + 16;
+				accNextColAddr = accColAddr + 8;
 			end
+
+			if(DDR_CAS_WL_M1 > 2)
+				accNextCkCas	= DDR_CAS_WL_M1 - 3;
 		end
 	end
 	6'b110001: begin
+		/* Write Burst, Cycle 0, Fall */
 		accNextState			= 6'b110010;
 	end
 
 	6'b110010: begin
+		/* Write Burst, Cycle 1, Rise */
 		accNextState			= 6'b110011;
 
 		if(DDR_CAS_WL_M1 == 1)
@@ -1483,15 +1594,18 @@ begin
 
 				if(tBurstCnt != 1)
 					tDdrAddr[10]	= 0;
-				accNextColAddr = accColAddr + 16;
+//				accNextColAddr = accColAddr + 16;
+				accNextColAddr = accColAddr + 8;
 			end
 		end
 	end
 	6'b110011: begin
+		/* Write Burst, Cycle 1, Fall */
 		accNextState			= 6'b110100;
 	end
 
 	6'b110100: begin
+		/* Write Burst, Cycle 2, Rise */
 		accNextState			= 6'b110101;
 
 		if(DDR_CAS_WL_M1 == 0)
@@ -1510,23 +1624,30 @@ begin
 
 				if(tBurstCnt != 1)
 					tDdrAddr[10]	= 0;
-				accNextColAddr = accColAddr + 16;
+//				accNextColAddr = accColAddr + 16;
+				accNextColAddr = accColAddr + 8;
 			end
 		end
 	end
 	6'b110101: begin
+		/* Write Burst, Cycle 2, Fall */
 		accNextState			= 6'b110110;
 	end
 
 	6'b110110: begin
+		/* Write Burst, Cycle 3, Rise */
 		accNextState			= 6'b110111;
 	end
 	6'b110111: begin
+		/* Write Burst, Cycle 3, Fall */
 		accNextState			= 6'b000001;
 		if(tBurstCnt != 0)
 		begin
 			tNxtBurstCnt	= tBurstCnt - 1;
 			accNextState	= 6'b110000;
+
+			if(accCkCas != 0)
+				accNextState	= 6'b011110;
 		end
 	end
 
@@ -1535,6 +1656,19 @@ begin
 	end
 
 	endcase
+
+`ifdef def_true
+	if(tDdrCs)
+	begin
+		/* If CS is high, make sure Command is NOP.
+		   It seems some boards omit the CS signal.
+		 */
+		tDdrRas		= 1;
+		tDdrCas		= 1;
+		tDdrWe		= 1;
+	end
+`endif
+
 
 //	accNextLoadFifo	= { tDdrDataIn, accLoadFifo[511:16] };
 

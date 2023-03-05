@@ -230,16 +230,16 @@ begin
 //				2: tBusData = scrRegCtrl[2];
 //				3: tBusData = scrRegCtrl[3];
 
-				0: tBusData = { UV32_XX, scrRegCtrl0 };
-				1: tBusData = { UV32_XX, scrRegCtrl1 };
-				2: tBusData = { UV32_XX, scrRegCtrl2 };
-				3: tBusData = { UV32_XX, scrRegCtrl3 };
-				4: tBusData = { UV32_XX, scrRegCtrl4 };
-				5: tBusData = { UV32_XX, scrRegCtrl5 };
-				6: tBusData = { UV32_XX, scrRegCtrl6 };
-				7: tBusData = { UV32_XX, scrRegCtrl7 };
+				0: tBusData = { UV32_00, scrRegCtrl0 };
+				1: tBusData = { UV32_00, scrRegCtrl1 };
+				2: tBusData = { UV32_00, scrRegCtrl2 };
+				3: tBusData = { UV32_00, scrRegCtrl3 };
+				4: tBusData = { UV32_00, scrRegCtrl4 };
+				5: tBusData = { UV32_00, scrRegCtrl5 };
+				6: tBusData = { UV32_00, scrRegCtrl6 };
+				7: tBusData = { UV32_00, scrRegCtrl7 };
 //				8: tBusData = {18'h0, pixCellIx};
-				8: tBusData = { UV32_XX, 18'h0, pixCellIx};
+				8: tBusData = { UV32_00, 18'h0, pixCellIx};
 				
 				9: tBusData = { UV32_00, scrRegCtrl9 };
 
@@ -271,14 +271,14 @@ begin
 			else
 			begin
 				case(busAddr[4:2])
-					3'b000: tBusData = { UV32_XX, tCell1[ 31:  0] };
-					3'b001: tBusData = { UV32_XX, tCell1[ 63: 32] };
-					3'b010: tBusData = { UV32_XX, tCell1[ 95: 64] };
-					3'b011: tBusData = { UV32_XX, tCell1[127: 96] };
-					3'b100: tBusData = { UV32_XX, tCell1[159:128] };
-					3'b101: tBusData = { UV32_XX, tCell1[191:160] };
-					3'b110: tBusData = { UV32_XX, tCell1[223:192] };
-					3'b111: tBusData = { UV32_XX, tCell1[255:224] };
+					3'b000: tBusData = { UV32_00, tCell1[ 31:  0] };
+					3'b001: tBusData = { UV32_00, tCell1[ 63: 32] };
+					3'b010: tBusData = { UV32_00, tCell1[ 95: 64] };
+					3'b011: tBusData = { UV32_00, tCell1[127: 96] };
+					3'b100: tBusData = { UV32_00, tCell1[159:128] };
+					3'b101: tBusData = { UV32_00, tCell1[191:160] };
+					3'b110: tBusData = { UV32_00, tCell1[223:192] };
+					3'b111: tBusData = { UV32_00, tCell1[255:224] };
 				endcase
 			end
 			

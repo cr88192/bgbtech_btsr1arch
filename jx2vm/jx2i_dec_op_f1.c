@@ -100,6 +100,12 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 	imm9n=(opw2&511)|(~511);
 	imm9us=imm9u;
 
+	if(jbits&0x10000000U)
+	{
+		imm9u=imm9n;
+		imm9us=imm9u;
+	}
+
 //	if(jbits)
 	if(jbits&0x01000000U)
 	{

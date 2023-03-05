@@ -113,7 +113,8 @@ module MmiModDdr3(
 	ddrCs,		ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP_I,	ddrDqsN_I,
-	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En);
+	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
+	ddrModeIn);
 
 input			clock;
 input			clock2;
@@ -151,6 +152,8 @@ input[1:0]		ddrDqsN_I;
 output[1:0]		ddrDqsP_O;
 output[1:0]		ddrDqsN_O;
 output			ddrDqs_En;
+
+input[3:0]		ddrModeIn;
 
 // parameter[15:0]	DDR_CAS_RL_M1	= 4;	//CAS RL Minus 1
 // parameter[15:0]	DDR_CAS_RL_M1	= 3;	//CAS RL Minus 1

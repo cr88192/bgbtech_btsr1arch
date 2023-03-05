@@ -70,7 +70,7 @@ Operation Category:
 Access Status Bits(Request/Response):
   (7): Noise Bit (Random)
   (6): Prefetch Hit/Miss (L2 Response)
-  (5): Reserved
+  (5): Write Through
   (4): No User (Supervisor Only)
   (3): No Cache
   (2): No Execute

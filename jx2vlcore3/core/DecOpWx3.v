@@ -251,7 +251,7 @@ wire[7:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
 	clock,		reset,	srMod,
-	{ UV32_XX, istrWord[95:64] },	4'h5,
+	{ UV32_00, istrWord[95:64] },	4'h5,
 		{ tOpJBitsB[24], tOpJBitsC[24],
 			opIsWexJumbo96,
 			opIsWexJumboB | opIsWex2x40B,
@@ -275,7 +275,7 @@ wire[7:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
 	clock,		reset,	srMod,
-	{ UV32_XX, istrWord[63:32] },	4'h1,
+	{ UV32_00, istrWord[63:32] },	4'h1,
 		{ 1'b0, tOpJBitsB[24],
 			1'b0,
 			opIsWexJumboA | opIsWex2x40B,
@@ -299,7 +299,7 @@ wire[7:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
 	clock,		reset,	srMod,
-	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV28_00,
+	{ UV32_00, istrWord[31: 0] },	4'h0,	UV28_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idRegP,
 	decOpFzA_idImm,
@@ -321,7 +321,7 @@ wire[7:0]		decOpRvA_idUFl;
 
 DecOpRvI	decOpRvA(
 	clock,		reset,	srMod,
-	{ UV32_XX, istrWord[31: 0] },
+	{ UV32_00, istrWord[31: 0] },
 	{srRiscv, srWxe, 2'b00},		UV28_00,
 	decOpRvA_idRegN,		decOpRvA_idRegM,
 	decOpRvA_idRegO,		decOpRvA_idRegP,
@@ -360,7 +360,7 @@ wire[3:0]		decOpHz_idUFl;
 
 DecOpHz	decOpHz(
 	clock,		reset,
-	{ UV32_XX, istrWord[31: 0] },	4'h0,	UV26_00,
+	{ UV32_00, istrWord[31: 0] },	4'h0,	UV26_00,
 	decOpHz_idRegN,		decOpHz_idRegM,
 	decOpHz_idRegO,		decOpHz_idImm,
 	decOpHz_idUCmd,		decOpHz_idUIxt,
@@ -957,7 +957,7 @@ begin
 		opRegCM	= JX2_GR_ZZR;
 		opRegCO	= JX2_GR_ZZR;
 		opRegCN	= JX2_GR_ZZR;
-		opImmC	= UV33_XX;
+		opImmC	= UV33_00;
 		opUCmdC	= UV9_00;
 		opUIxtC	= UV9_00;
 
@@ -1001,14 +1001,14 @@ begin
 			opRegBN	= JX2_GR_ZZR;
 			opRegBM	= JX2_GR_ZZR;
 			opRegBO	= decOpFC_idRegN;
-			opImmB	= UV33_XX;
+			opImmB	= UV33_00;
 			opUCmdB	= UV9_00;
 			opUIxtB	= UV9_00;
 				
 			opRegCM	= JX2_GR_ZZR;
 			opRegCO	= decOpFC_idRegN;
 			opRegCN	= JX2_GR_ZZR;
-			opImmC	= UV33_XX;
+			opImmC	= UV33_00;
 			opUCmdC	= UV9_00;
 			opUIxtC	= UV9_00;
 
@@ -1059,7 +1059,7 @@ begin
 					opRegCM	= JX2_GR_ZZR;
 					opRegCO	= JX2_GR_ZZR;
 					opRegCN	= JX2_GR_ZZR;
-//					opImmC	= UV33_XX;
+//					opImmC	= UV33_00;
 					opImmC	= 0;
 					opUCmdC	= 0;
 					opUIxtC	= 0;
@@ -1118,7 +1118,7 @@ begin
 				opRegCM	= decOpFzA_idRegP;
 				opRegCO	= decOpFzB_idRegP;
 				opRegCN	= JX2_GR_ZZR;
-				opImmC	= UV33_XX;
+				opImmC	= UV33_00;
 				opUCmdC	= UV9_00;
 //				opUIxtC	= UV9_00;
 				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
@@ -1224,7 +1224,7 @@ begin
 //				opRegBO	= decOpFzA_idRegN;
 				opRegBO	= opRegAN0;
 				opRegBN	= JX2_GR_ZZR;
-				opImmB	= UV33_XX;
+				opImmB	= UV33_00;
 				opUCmdB	= UV9_00;
 				opUIxtB	= UV9_00;
 				
@@ -1233,7 +1233,7 @@ begin
 //				opRegCO	= decOpFzA_idRegP;
 				opRegCO	= opRegAP0;
 				opRegCN	= JX2_GR_ZZR;
-				opImmC	= UV33_XX;
+				opImmC	= UV33_00;
 				opUCmdC	= UV9_00;
 //				opUIxtC	= UV9_00;
 				opUIxtC	= { 5'h0, decOpFzA_idUFl[7:4] };
@@ -1317,7 +1317,7 @@ begin
 		opRegBM	= JX2_GR_ZZR;
 //		opRegBO	= decOpBz_idRegN;
 		opRegBO	= opRegAN;
-		opImmB	= UV33_XX;
+		opImmB	= UV33_00;
 		opUCmdB	= UV9_00;
 		opUIxtB	= UV9_00;
 
@@ -1325,7 +1325,7 @@ begin
 //		opRegCO	= decOpBz_idRegN;
 		opRegCO	= opRegAN;
 		opRegCN	= JX2_GR_ZZR;
-		opImmC	= UV33_XX;
+		opImmC	= UV33_00;
 		opUCmdC	= UV9_00;
 		opUIxtC	= UV9_00;
 		

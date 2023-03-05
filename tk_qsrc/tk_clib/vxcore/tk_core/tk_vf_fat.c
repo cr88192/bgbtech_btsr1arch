@@ -73,6 +73,8 @@ int tk_mount_sdfat(char *path)
 
 	img=TKFAT_CreateSdFatContext();
 
+	tk_puts("tk_mount_sdfat: B\n");
+
 	mnt=tk_alloc_mount();
 	mnt->vt=&tk_vfile_fat_vt;
 	mnt->udata0=img;
@@ -90,6 +92,8 @@ int tk_mount_sdfat(char *path)
 
 	dee=&tdee;
 	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
+
+	tk_puts("tk_mount_sdfat: C\n");
 
 	i=TKFAT_LookupDirEntPath(img, dee, "swapfile.sys");
 	if(i>=0)

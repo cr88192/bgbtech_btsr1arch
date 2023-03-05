@@ -486,10 +486,10 @@ always @*
 begin
 
 	tRegIdRn1	= JX2_GR_ZZR;		//Destination ID (EX1)
-	tRegValRn1	= UV64_XX;			//Destination Value (EX1)
+	tRegValRn1	= UV64_00;			//Destination Value (EX1)
 //	tRegIdCn1	= JX2_CR_ZZR[4:0];	//Destination ID (CR, EX1)
 	tRegIdCn1	= JX2_CR_ZZR;	//Destination ID (CR, EX1)
-	tRegValCn1	= UV64_XX;			//Destination Value (CR, EX1)
+	tRegValCn1	= UV64_00;			//Destination Value (CR, EX1)
 	
 	tHeldIdRn1	= JX2_GR_ZZR;
 //	tHeldIdCn1	= JX2_CR_ZZR[4:0];
@@ -562,7 +562,7 @@ begin
 	tExTrapExc		= 0;
 	tDoDelayCycle	= 0;
 
-	tValOutDfl		= UV64_XX;
+	tValOutDfl		= UV64_00;
 	tDoOutDfl		= 0;
 
 //	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
@@ -1850,6 +1850,11 @@ begin
 
 //	if(tHeldIdRn1 != JX2_GR_ZZR)
 //		tRegHeld		= 1;
+
+	if(reset)
+	begin
+		tExHold		= 0;
+	end
 
 end
 

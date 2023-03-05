@@ -319,7 +319,6 @@ begin
 		
 		default: begin
 //			$display("Reg CR: Unhandled %X", regIdCm);
-//			tValCmA=UV64_XX;
 			tValCmA=UV64_00;
 		end
 	endcase

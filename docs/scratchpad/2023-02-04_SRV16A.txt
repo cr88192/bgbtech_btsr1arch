@@ -82,8 +82,8 @@ Listing:
 * 1nmZ  //ALU Ops
 ** 1nm0  ADD	Xn, Xn, Xm
 ** 1nm1  SUB	Xn, Xn, Xm
-** 1nm2  -
-** 1nm3  -
+** 1nm2  MOV	Xn, Imm4u		//Xn=Imm4u
+** 1nm3  MOV	Xn, Imm4n		//Xn=Imm4n
 ** 1nm4  TST	Xn, Xm			//SR.T = (Xm AND Xn) EQ 0
 ** 1nm5  AND	Xn, Xn, Xm
 ** 1nm6  OR		Xn, Xn, Xm

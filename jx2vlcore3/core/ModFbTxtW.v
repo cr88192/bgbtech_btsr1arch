@@ -336,6 +336,8 @@ reg[1:0]	tClrNxtIx32;
 
 reg[3:0]	tScrMode;
 reg[3:0]	tScrClrsMod;
+reg[3:0]	tScrClrsModB;
+reg[3:0]	tScrClrsModC;
 
 reg[31:0]	tCellData33;
 reg[31:0]	tNextCellData33;
@@ -1271,6 +1273,54 @@ begin
 		2'b00: tPixClrBm1i = tPixClrBmYv4_C[3];
 	endcase
 
+	tScrClrsModB = tScrClrsMod;
+	tScrClrsModC = tScrClrsMod;
+
+	case(tScrClrsMod)
+		4'h0:		tScrClrsModC = 4'hF;
+		4'h8:		tScrClrsModC = 4'h2;
+		4'h9:		tScrClrsModC = 4'h6;
+		4'hA:		tScrClrsModC = 4'h3;
+		4'hB:		tScrClrsModC = 4'h5;
+		default:	tScrClrsModC = tScrClrsMod;
+	endcase
+
+	if(tScrClrsMod[3:2]==2'b11)
+	begin
+		case( { tScrClrsMod[1:0], tPixCellGx_C[3] ^ tPixCellGx_C[0] } )
+			3'b000: tScrClrsModB = 4'hB;
+			3'b001: tScrClrsModB = 4'h6;
+			3'b010: tScrClrsModB = 4'h7;
+			3'b011: tScrClrsModB = 4'h6;
+			3'b100: tScrClrsModB = 4'h5;
+			3'b101: tScrClrsModB = 4'h4;
+			3'b110: tScrClrsModB = 4'h3;
+			3'b111: tScrClrsModB = 4'h2;
+		endcase
+
+		case( { tScrClrsMod[1:0], tPixCellGx_C[3], tPixCellGx_C[0] } )
+			4'b0000: tScrClrsModC = 4'h2;
+			4'b0001: tScrClrsModC = 4'h1;
+			4'b0010: tScrClrsModC = 4'h4;
+			4'b0011: tScrClrsModC = 4'h2;
+
+			4'b0100: tScrClrsModC = 4'h3;
+			4'b0101: tScrClrsModC = 4'h1;
+			4'b0110: tScrClrsModC = 4'h4;
+			4'b0111: tScrClrsModC = 4'h6;
+
+			4'b1000: tScrClrsModC = 4'h2;
+			4'b1001: tScrClrsModC = 4'h3;
+			4'b1010: tScrClrsModC = 4'h5;
+			4'b1011: tScrClrsModC = 4'h6;
+
+			4'b1100: tScrClrsModC = 4'h7;
+			4'b1101: tScrClrsModC = 4'h3;
+			4'b1110: tScrClrsModC = 4'h5;
+			4'b1111: tScrClrsModC = 4'h6;
+		endcase
+	end
+
 	if(useQtrCell)
 	begin
 		case(tScrMode)
@@ -1278,7 +1328,7 @@ begin
 				tPixClrBmRgbi = tPixClrBmYv4_C;
 			end
 			4'h2: begin
-				tPixClrBmRgbi = tPixClrBm1i ? tScrClrsMod : 4'h0;
+				tPixClrBmRgbi = tPixClrBm1i ? tScrClrsModC : 4'h0;
 			end
 			default: begin
 			end
@@ -1305,13 +1355,17 @@ begin
 		4'hF:	tPixClrBmRgbiYV12 = 12'hFFF;
 	endcase
 
-	casez( { tScrClrsMod, tPixClrBm2i } )
-		//Palette 0/1
-		6'b000z00:	tPixClrBm2iYV12 = 12'h000;	//Black
-		6'b000z01:	tPixClrBm2iYV12 = 12'h555;	//Dark Gray
-		6'b000z10:	tPixClrBm2iYV12 = 12'hAAA;	//Light Gray
-		6'b000z11:	tPixClrBm2iYV12 = 12'hFFF;	//White
-
+	casez( { tScrClrsModB, tPixClrBm2i } )
+		//Palette 0
+		6'b000000:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b000001:	tPixClrBm2iYV12 = 12'h555;	//Dark Gray
+		6'b000010:	tPixClrBm2iYV12 = 12'hAAA;	//Light Gray
+		6'b000011:	tPixClrBm2iYV12 = 12'hFFF;	//White
+		//Palette 1
+		6'b000100:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b000101:	tPixClrBm2iYV12 = 12'h0F0;	//Green
+		6'b000110:	tPixClrBm2iYV12 = 12'hF00;	//Red
+		6'b000111:	tPixClrBm2iYV12 = 12'hFF0;	//Yellow
 		//Palette 2
 		6'b001000:	tPixClrBm2iYV12 = 12'h000;	//Black
 		6'b001001:	tPixClrBm2iYV12 = 12'h0F0;	//Green
@@ -1336,38 +1390,95 @@ begin
 		6'b011000:	tPixClrBm2iYV12 = 12'h000;	//Black
 		6'b011001:	tPixClrBm2iYV12 = 12'h0F0;	//Green
 		6'b011010:	tPixClrBm2iYV12 = 12'hF00;	//Red
-		6'b011011:	tPixClrBm2iYV12 = 12'hFF0;	//Yellow
+		6'b011011:	tPixClrBm2iYV12 = 12'hFFF;	//White
 		//Palette 7
 		6'b011100:	tPixClrBm2iYV12 = 12'h000;	//Black
 		6'b011101:	tPixClrBm2iYV12 = 12'h0FF;	//Cyan
 		6'b011110:	tPixClrBm2iYV12 = 12'hF0F;	//Magenta
 		6'b011111:	tPixClrBm2iYV12 = 12'hFFF;	//White
-
-		//Palette 8-15
-		6'b1zzz00:	tPixClrBm2iYV12 = 12'h000;	//Black
-		6'b1zzz01:	tPixClrBm2iYV12 = 12'h555;	//Dark Gray
-		6'b1zzz10:	tPixClrBm2iYV12 = 12'hAAA;	//Light Gray
-		6'b1zzz11:	tPixClrBm2iYV12 = 12'hFFF;	//White
+		//Palette 8
+		6'b100000:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b100001:	tPixClrBm2iYV12 = 12'h050;	//Dark Olive
+		6'b100010:	tPixClrBm2iYV12 = 12'h5A0;	//Medium Olive
+		6'b100011:	tPixClrBm2iYV12 = 12'hAF0;	//Olive
+		//Palette 9
+		6'b100100:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b100101:	tPixClrBm2iYV12 = 12'h500;	//Dark Sepia
+		6'b100110:	tPixClrBm2iYV12 = 12'hA50;	//Light Sepia
+		6'b100111:	tPixClrBm2iYV12 = 12'hFA0;	//Sepia
+		//Palette 10
+		6'b101000:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b101001:	tPixClrBm2iYV12 = 12'h050;	//Dark Azure
+		6'b101010:	tPixClrBm2iYV12 = 12'h0A5;	//Light Azure
+		6'b101011:	tPixClrBm2iYV12 = 12'h0FA;	//Azure
+		//Palette 11
+		6'b101100:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b101101:	tPixClrBm2iYV12 = 12'h0F0;	//Green
+		6'b101110:	tPixClrBm2iYV12 = 12'h00F;	//Blue
+		6'b101111:	tPixClrBm2iYV12 = 12'hFFF;	//White
+		//Palette 12-15
+		6'b11zz00:	tPixClrBm2iYV12 = 12'h000;	//Black
+		6'b11zz01:	tPixClrBm2iYV12 = 12'h555;	//Dark Gray
+		6'b11zz10:	tPixClrBm2iYV12 = 12'hAAA;	//Light Gray
+		6'b11zz11:	tPixClrBm2iYV12 = 12'hFFF;	//White
 	endcase
 	
+//	tPixClrBmRgbiYV16_C = {
+//		tPixClrBmRgbiYV12[11:8], tPixClrBmRgbiYV12[ 11],
+//		tPixClrBmRgbiYV12[ 7:4], tPixClrBmRgbiYV12[7:6],
+//		tPixClrBmRgbiYV12[ 3:0], tPixClrBmRgbiYV12[  3]
+//	};
+//	tPixClrBm2iYV16_C = {
+//		tPixClrBm2iYV12[11:8], tPixClrBm2iYV12[ 11],
+//		tPixClrBm2iYV12[ 7:4], tPixClrBm2iYV12[7:6],
+//		tPixClrBm2iYV12[ 3:0], tPixClrBm2iYV12[  3]
+//	};
+
 	tPixClrBmRgbiYV16_C = {
-		tPixClrBmRgbiYV12[11:8], tPixClrBmRgbiYV12[ 11],
-		tPixClrBmRgbiYV12[ 7:4], tPixClrBmRgbiYV12[7:6],
-		tPixClrBmRgbiYV12[ 3:0], tPixClrBmRgbiYV12[  3]
+		1'b0,
+		tPixClrBmRgbiYV12[11:8], tPixClrBmRgbiYV12[11],
+		tPixClrBmRgbiYV12[ 7:4], tPixClrBmRgbiYV12[ 7],
+		tPixClrBmRgbiYV12[ 3:0], tPixClrBmRgbiYV12[ 3]
 	};
-
 	tPixClrBm2iYV16_C = {
-		tPixClrBm2iYV12[11:8], tPixClrBm2iYV12[ 11],
-		tPixClrBm2iYV12[ 7:4], tPixClrBm2iYV12[7:6],
-		tPixClrBm2iYV12[ 3:0], tPixClrBm2iYV12[  3]
+		1'b0,
+		tPixClrBm2iYV12[11:8], tPixClrBm2iYV12[11],
+		tPixClrBm2iYV12[ 7:4], tPixClrBm2iYV12[ 7],
+		tPixClrBm2iYV12[ 3:0], tPixClrBm2iYV12[ 3]
 	};
 
+`ifndef def_true
 	case(tPixClrBmYv8_C[1:0])
 		2'b00: tPixClrBmPalYV16_C=tFontData_C[15: 0];
 		2'b01: tPixClrBmPalYV16_C=tFontData_C[31:16];
 		2'b10: tPixClrBmPalYV16_C=tFontData_C[47:32];
 		2'b11: tPixClrBmPalYV16_C=tFontData_C[63:48];
 	endcase
+`endif
+
+`ifdef def_true
+	if(tPixClrBmYv8_C[7])
+	begin
+		tPixClrBmPalYV16_C={
+			1'b0,
+			tPixClrBmYv8_C[6] ?
+				{ tPixClrBmYv8_C[3:0], tPixClrBmYv8_C[3] } : 5'h00,
+			tPixClrBmYv8_C[5] ?
+				{ tPixClrBmYv8_C[3:0], tPixClrBmYv8_C[3] } : 5'h00,
+			tPixClrBmYv8_C[4] ?
+				{ tPixClrBmYv8_C[3:0], tPixClrBmYv8_C[3] } : 5'h00
+			};
+	end
+	else
+	begin
+		tPixClrBmPalYV16_C={
+			1'b0,
+			tPixClrBmYv8_C[6:5], tPixClrBmYv8_C[6:5], tPixClrBmYv8_C[6],
+			tPixClrBmYv8_C[4:2], tPixClrBmYv8_C[4:3],
+			tPixClrBmYv8_C[1:0], tPixClrBmYv8_C[1:0], tPixClrBmYv8_C[1]
+			};
+	end
+`endif
 
 	if((tScrMode!=0) && useHalfCell)
 	begin

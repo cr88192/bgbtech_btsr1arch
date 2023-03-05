@@ -665,10 +665,16 @@ begin
 		opImm_disp20s = { istrWord[7] ? UV13_FF : UV13_00,
 			istrWord[7:0], istrWord[27:16] };
 
-		opImm_imm9u	= {UV24_00, istrWord[24:16]};
-		opImm_imm9n	= {UV24_FF, istrWord[24:16]};
+//		opImm_imm9u	= {UV24_00, istrWord[24:16]};
+//		opImm_imm9n	= {UV24_FF, istrWord[24:16]};
+//		opImm_imm9s	= opImm_imm9u;
+//		opImm_disp9s	= opImm_imm9u;
+		opImm_disp9s	= opExWI ? opImm_imm9n : opImm_imm9u;
+
+		opImm_imm9u	= {UV23_00,  opExWI, istrWord[24:16]};
+		opImm_imm9n	= {UV23_FF, !opExWI, istrWord[24:16]};
 		opImm_imm9s	= opImm_imm9u;
-		opImm_disp9s	= opImm_imm9u;
+		opImm_disp9s	= { opExWI ? UV24_FF : UV24_00, istrWord[24:16] };
 
 		opImm_imm10u	= {UV23_00, istrWord[25:16]};
 		opImm_imm10n	= {UV23_FF, istrWord[25:16]};
@@ -1398,10 +1404,16 @@ begin
 `endif
 
 					4'hA: begin		/* F0nm_1eA8 */
-						opNmid		= JX2_UCMD_ALUW3;
-						opUCmdIx	= JX2_UCIX_ALUW_MOVTA16;
-						opFmid		= JX2_FMID_REGIMMREG;
-						opIty		= JX2_ITY_SB;
+//						opNmid		= JX2_UCMD_ALUW3;
+//						opUCmdIx	= JX2_UCIX_ALUW_MOVTA16;
+//						opFmid		= JX2_FMID_REGIMMREG;
+//						opIty		= JX2_ITY_SB;
+
+						opNmid		= JX2_UCMD_CONV_RR;
+						opUCmdIx	= JX2_UCIX_CONV_MOVZT;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+
 						if(opExQ)
 						begin
 							opUCty		= JX2_IUC_WX;
@@ -2196,6 +2208,18 @@ begin
 							opUCmdIx	= JX2_UCIX_CONV_FP16PCK32;
 					end
 `endif
+
+					4'hF: begin		/* F0nm_1eFE */
+						opNmid		= JX2_UCMD_CONV_RR;
+						opUCmdIx	= JX2_UCIX_CONV_MOVST;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+						end
+					end
 
 					default: begin
 					end

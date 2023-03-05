@@ -202,6 +202,8 @@ begin
 		tL2mAddrOut = l1mAddrIn;
 `endif
 
+// `ifndef def_true
+`ifdef def_true
 	if(l2mOpmIn_IsReq || l2mRingIsRespOther)
 	begin
 		if(l1mRingIsIdle)
@@ -219,6 +221,25 @@ begin
 			tL2mDataOut = l2mDataIn;
 		end
 	end
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+	if(reset)
+	begin
+		/* Clear ring during reset */
+	
+		tL1mSeqOut  = 0;
+		tL1mOpmOut  = 0;
+//		tL1mAddrOut = 0;
+//		tL1mDataOut = 0;
+
+		tL2mSeqOut  = 0;
+		tL2mOpmOut  = 0;
+//		tL2mAddrOut = 0;
+//		tL2mDataOut = 0;
+	end
+`endif
 
 `endif
 

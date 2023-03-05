@@ -424,13 +424,19 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 
 //	if(((s32)lba)!=lba)
 	if(lba>>32)
+	{
+		tk_puts("TKSPI_ReadSectors: Bad LBA\n");
 		__debugbreak();
+	}
 	
 	if(cnt!=(cnt&255))
+	{
+		tk_printf("TKSPI_ReadSectors: Bad Count %d\n", cnt);
 		__debugbreak();
+	}
 	
 
-//	tk_printf("TKSPI_ReadSectors: %d %d\n", lba, cnt);
+//	tk_printf("TKSPI_ReadSectors: %016llX %d %d\n", buf, lba, cnt);
 
 #if 0
 	if(cnt>1)
@@ -456,12 +462,13 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 #endif
 
 #if 1
-	xt=buf[0]+buf[(cnt<<9)-1];	//Make sure it is paged in.
+//	xt=buf[0]+buf[(cnt<<9)-1];	//Make sure it is paged in.
+	xt=0;
 
 	ct=buf; la=lba; n=cnt;
 	while(n>0)
 	{
-//		tk_printf("TKSPI_ReadSectors: B %d %d\n", la, n);
+//		tk_printf("TKSPI_ReadSectors: B %016llX %d %d\n", ct, la, n);
 
 		xt+=ct[0]+ct[511];	//Make sure it is paged in.
 

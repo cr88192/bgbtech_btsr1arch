@@ -151,7 +151,7 @@ always @*
 begin
 	tRegOutVal	= regValRs;
 	tRegOutSrT	= regInSrT;
-	tRegOutVal	= UV64_XX;
+	tRegOutVal	= UV64_00;
 
 	tRegRgb5Upck32	=
 		{ (regValRs[15]) ?
@@ -248,6 +248,12 @@ begin
 			tRegOutVal	= { ~regValRs[63], regValRs[62:0] };
 		JX2_UCIX_CONV_FABS:
 			tRegOutVal	= { 1'b0, regValRs[62:0] };
+
+		JX2_UCIX_CONV_MOVZT:
+			tRegOutVal	= { 16'h0000, regValRs[47:0] };
+		JX2_UCIX_CONV_MOVST:
+			tRegOutVal	= { regValRs[47] ? 16'hFFFF: 16'h0000,
+				regValRs[47:0] };
 
 `ifdef def_true
 		JX2_UCIX_CONV_RGBSHR1:

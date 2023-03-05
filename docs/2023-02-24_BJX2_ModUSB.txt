@@ -1,0 +1,31 @@
+This device will map two logical USB ports.
+* Each USB port will have a pair of circular buffers.
+* One will be an RX buffer, the other a TX buffer.
+
+Each buffer will contain data in the form of 9 bit "bytes" padded to 16 bits.
+The low 8 bits will hold the data byte, and the high bit will indicate control bytes.
+* 000..0FF: Data Byte
+* 100: End of Packet
+* 101..1FF: Reserved
+* Any additional bits are reserved and must be zero.
+
+These will be accessed in terms of 64-bit words each holding 4 bytes.
+
+
+MMIO Space:
+* 00008000..000087FF: RX-A
+* 00008800..00008FFF: TX-A
+* 00009000..000097FF: RX-B
+* 00009800..00009FFF: TX-B
+
+* 0000E800: RX-A Buffer Start (Byte9 Index)
+* 0000E804: RX-A Buffer End (Byte9 Index)
+
+* 0000E810: TX-A Buffer Start (Byte9 Index)
+* 0000E814: TX-A Buffer End (Byte9 Index)
+
+* 0000E820: RX-B Buffer Start (Byte9 Index)
+* 0000E824: RX-B Buffer End (Byte9 Index)
+
+* 0000E830: TX-B Buffer Start (Byte9 Index)
+* 0000E834: TX-B Buffer End (Byte9 Index)

@@ -185,26 +185,26 @@ Addr:
 
 `ifdef jx2_mem_l1dsz_1024
 `define			reg_l1d_ix	reg[9:0]
-`jx2_mem_l1darr_addrb		arrMemAddrA[1023:0];
-`jx2_mem_l1darr_addrb		arrMemAddrB[1023:0];
-`jx2_mem_l1darr_data		arrMemDataA[1023:0];
-`jx2_mem_l1darr_data		arrMemDataB[1023:0];
+	`jx2_mem_l1darr_addrb		arrMemAddrA[1023:0];
+	`jx2_mem_l1darr_addrb		arrMemAddrB[1023:0];
+	`jx2_mem_l1darr_data		arrMemDataA[1023:0];
+	`jx2_mem_l1darr_data		arrMemDataB[1023:0];
 `endif
 
 `ifdef jx2_mem_l1dsz_512
 `define			reg_l1d_ix	reg[8:0]
-`jx2_mem_l1darr_addrb		arrMemAddrA[511:0];
-`jx2_mem_l1darr_addrb		arrMemAddrB[511:0];
-`jx2_mem_l1darr_data		arrMemDataA[511:0];
-`jx2_mem_l1darr_data		arrMemDataB[511:0];
+	`jx2_mem_l1darr_addrb		arrMemAddrA[511:0];
+	`jx2_mem_l1darr_addrb		arrMemAddrB[511:0];
+	`jx2_mem_l1darr_data		arrMemDataA[511:0];
+	`jx2_mem_l1darr_data		arrMemDataB[511:0];
 `endif
 
 `ifdef jx2_mem_l1dsz_256
 `define			reg_l1d_ix	reg[7:0]
-`jx2_mem_l1darr_addrb		arrMemAddrA[255:0];
-`jx2_mem_l1darr_addrb		arrMemAddrB[255:0];
-`jx2_mem_l1darr_data		arrMemDataA[255:0];
-`jx2_mem_l1darr_data		arrMemDataB[255:0];
+	`jx2_mem_l1darr_addrb		arrMemAddrA[255:0];
+	`jx2_mem_l1darr_addrb		arrMemAddrB[255:0];
+	`jx2_mem_l1darr_data		arrMemDataA[255:0];
+	`jx2_mem_l1darr_data		arrMemDataB[255:0];
 `endif
 
 `ifdef jx2_mem_l1dsz_128
@@ -439,19 +439,33 @@ reg				tReqDoSpxA;
 reg				tReqDoSpxB;
 
 
-`jx2_mem_l1darr_addr		tBlkMemAddrA;
-`jx2_mem_l1darr_addr		tBlkMemAddrB;
-reg[127:0]		tBlkMemDataA;
-reg[127:0]		tBlkMemDataB;
-reg[15:0]		tBlkMemDextA;
-reg[15:0]		tBlkMemDextB;
-reg[19:0]		tBlkMemAextA;
-reg[19:0]		tBlkMemAextB;
+(* max_fanout = 200 *)
+	`jx2_mem_l1darr_addr		tBlkMemAddrA;
+(* max_fanout = 200 *)
+	`jx2_mem_l1darr_addr		tBlkMemAddrB;
+
+(* max_fanout = 200 *)
+	reg[127:0]		tBlkMemDataA;
+(* max_fanout = 200 *)
+	reg[127:0]		tBlkMemDataB;
+
+(* max_fanout = 200 *)
+	reg[15:0]		tBlkMemDextA;
+(* max_fanout = 200 *)
+	reg[15:0]		tBlkMemDextB;
+(* max_fanout = 200 *)
+	reg[19:0]		tBlkMemAextA;
+(* max_fanout = 200 *)
+	reg[19:0]		tBlkMemAextB;
+
 `reg_l1d_ix		tBlkMemIdxA;
 `reg_l1d_ix		tBlkMemIdxB;
 reg				tBlkIsDirtyA;
 reg				tBlkIsDirtyB;
-
+reg				tBlkIsNoCacheA;
+reg				tBlkIsNoCacheB;
+reg				tBlkIsWriteThruA;
+reg				tBlkIsWriteThruB;
 
 `ifdef jx2_mem_lane2
 `jx2_mem_l1darr_addr	tBlkMemAddrE;
@@ -465,22 +479,32 @@ reg[19:0]				tBlkMemAextF;
 
 reg				tBlkIsDirtyE;
 reg				tBlkIsDirtyF;
+reg				tBlkIsNoCacheE;
+reg				tBlkIsNoCacheF;
+reg				tBlkIsWriteThruE;
+reg				tBlkIsWriteThruF;
 `endif
 
 reg[3:0]		tBlkEpochDeltaA;
 reg[3:0]		tBlkEpochDeltaB;
 
-(* max_fanout = 50 *)
+(* max_fanout = 200 *)
 	`jx2_mem_l1darr_addr		tBlkMemAddr2A;
-(* max_fanout = 50 *)
+(* max_fanout = 200 *)
 	`jx2_mem_l1darr_addr		tBlkMemAddr2B;
 
 reg[127:0]		tBlkMemData2A;
 reg[127:0]		tBlkMemData2B;
-reg[15:0]		tBlkMemDext2A;
-reg[15:0]		tBlkMemDext2B;
-reg[19:0]		tBlkMemAext2A;
-reg[19:0]		tBlkMemAext2B;
+
+(* max_fanout = 200 *)
+	reg[15:0]		tBlkMemDext2A;
+(* max_fanout = 200 *)
+	reg[15:0]		tBlkMemDext2B;
+(* max_fanout = 200 *)
+	reg[19:0]		tBlkMemAext2A;
+(* max_fanout = 200 *)
+	reg[19:0]		tBlkMemAext2B;
+
 reg[7:0]		tBlkMemChk2A;
 reg[7:0]		tBlkMemChk2B;
 reg[7:0]		tBlkMemRChk2A;
@@ -497,14 +521,22 @@ reg[19:0]				tBlkMemAext2E;
 reg[19:0]				tBlkMemAext2F;
 `endif
 
-`jx2_mem_l1darr_addr		tBlk2StoreAddrA;
-`jx2_mem_l1darr_addr		tBlk2StoreAddrB;
+(* max_fanout = 200 *)
+	`jx2_mem_l1darr_addr		tBlk2StoreAddrA;
+(* max_fanout = 200 *)
+	`jx2_mem_l1darr_addr		tBlk2StoreAddrB;
 reg[127:0]		tBlk2StoreDataA;
 reg[127:0]		tBlk2StoreDataB;
-reg[15:0]		tBlk2StoreDextA;
-reg[15:0]		tBlk2StoreDextB;
-reg[19:0]		tBlk2StoreAextA;
-reg[19:0]		tBlk2StoreAextB;
+
+(* max_fanout = 200 *)
+	reg[15:0]		tBlk2StoreDextA;
+(* max_fanout = 200 *)
+	reg[15:0]		tBlk2StoreDextB;
+(* max_fanout = 200 *)
+	reg[19:0]		tBlk2StoreAextA;
+(* max_fanout = 200 *)
+	reg[19:0]		tBlk2StoreAextB;
+
 // reg[ 7:0]		tBlk2StoreChkA;
 // reg[ 7:0]		tBlk2StoreChkB;
 
@@ -535,15 +567,19 @@ reg[ 63:0]		tBlkInsData4;
 reg[127:0]		tBlk2MemDataA;
 reg[127:0]		tBlk2MemDataB;
 
-(* max_fanout = 50 *)
+(* max_fanout = 100 *)
 	`jx2_mem_l1darr_addr		tBlk2MemAddrA;
-(* max_fanout = 50 *)
+(* max_fanout = 100 *)
 	`jx2_mem_l1darr_addr		tBlk2MemAddrB;
 
-reg[ 15:0]		tBlk2MemDextA;
-reg[ 15:0]		tBlk2MemDextB;
-reg[ 19:0]		tBlk2MemAextA;
-reg[ 19:0]		tBlk2MemAextB;
+(* max_fanout = 200 *)
+	reg[ 15:0]		tBlk2MemDextA;
+(* max_fanout = 200 *)
+	reg[ 15:0]		tBlk2MemDextB;
+(* max_fanout = 200 *)
+	reg[ 19:0]		tBlk2MemAextA;
+(* max_fanout = 200 *)
+	reg[ 19:0]		tBlk2MemAextB;
 
 reg[255:0]		tBlk2InsData;
 `reg_l1d_ix		tReq2IxA;
@@ -1194,6 +1230,15 @@ begin
 	tBlk2StoreAextA		= tBlk2MemAextA;
 	tBlk2StoreAextB		= tBlk2MemAextB;
 
+	tMemArrInterlockA	= tArrMemDidStA && (tReqIxA == tArrMemDidStIxA);
+	tMemArrInterlockB	= tArrMemDidStB && (tReqIxB == tArrMemDidStIxB);
+
+`ifdef jx2_mem_lane2
+	tMemArrInterlockE	= tArrMemDidStA && (tReqIxE == tArrMemDidStIxE);
+	tMemArrInterlockF	= tArrMemDidStB && (tReqIxF == tArrMemDidStIxF);
+`endif
+
+
 // `ifdef def_true
 `ifndef def_true
 	/* If entirely replacing the block, update to current epoch. */
@@ -1211,21 +1256,46 @@ begin
 
 `ifdef jx2_mem_l1d_fwstore
 	if(tReg2MissInterlockA)
-	begin
+	begin		
+`ifdef def_true
+		/* If store forwarding does not forward address... */
+		tReg2StoreFwA = 1;
+		tBlkMemAddr2A[4] = 1'b1;
+		tBlkMemData2A = tBlk2StoreDataA;
+		if(tMemArrInterlockA)
+		begin
+			tReg2StoreFwA = 0;
+			tReqReady	= 0;
+		end
+`else
 		tReg2StoreFwA = 1;
 		tBlkMemAddr2A = tBlk2StoreAddrA;
 		tBlkMemData2A = tBlk2StoreDataA;
 		tBlkMemDext2A = tBlk2StoreDextA;
 		tBlkMemAext2A = tBlk2StoreAextA;
+`endif
 	end
 
 	if(tReg2MissInterlockB)
 	begin
+`ifdef def_true
+		/* If store forwarding does not forward address... */
+		tReg2StoreFwB = 1;
+		tBlkMemAddr2B[4] = 1'b1;
+		tBlkMemData2B = tBlk2StoreDataB;
+		if(tMemArrInterlockB)
+		begin
+			tReg2StoreFwB = 0;
+			tReqReady	= 0;
+		end
+`else
 		tReg2StoreFwB = 1;
 		tBlkMemAddr2B = tBlk2StoreAddrB;
 		tBlkMemData2B = tBlk2StoreDataB;
 		tBlkMemDext2B = tBlk2StoreDextB;
 		tBlkMemAext2B = tBlk2StoreAextB;
+
+`endif
 	end
 `else
 	if(tReg2MissInterlockA)
@@ -1251,14 +1321,6 @@ begin
 //		$display("L1 D$: Line F Interlock");
 		tReqReady	= 0;
 	end
-`endif
-
-	tMemArrInterlockA	= tArrMemDidStA && (tReqIxA == tArrMemDidStIxA);
-	tMemArrInterlockB	= tArrMemDidStB && (tReqIxB == tArrMemDidStIxB);
-
-`ifdef jx2_mem_lane2
-	tMemArrInterlockE	= tArrMemDidStA && (tReqIxE == tArrMemDidStIxE);
-	tMemArrInterlockF	= tArrMemDidStB && (tReqIxF == tArrMemDidStIxF);
 `endif
 
 `ifdef jx2_mem_l1d_fwarray
@@ -1336,10 +1398,20 @@ begin
 	tBlkIsDirtyA	= tBlkMemAddr2A[4];
 	tBlkIsDirtyB	= tBlkMemAddr2B[4];
 
+	tBlkIsNoCacheA		= tBlkMemAext2A[7];
+	tBlkIsNoCacheB		= tBlkMemAext2B[7];
+	tBlkIsWriteThruA	= tBlkMemAext2A[9];
+	tBlkIsWriteThruB	= tBlkMemAext2B[9];
+
 `ifdef jx2_mem_lane2
 	tBlkIsDirtyE	= tBlkMemAddr2E[4];
 	tBlkIsDirtyF	= tBlkMemAddr2F[4];
+	tBlkIsNoCacheE		= tBlkMemAext2E[7];
+	tBlkIsNoCacheF		= tBlkMemAext2F[7];
+	tBlkIsWriteThruE	= tBlkMemAext2E[9];
+	tBlkIsWriteThruF	= tBlkMemAext2F[9];
 `endif
+
 
 	tBlkEpochDeltaA	=
 		{	tSyncEpoch[7:6] - tBlkMemAext2A[3:2],
@@ -1506,10 +1578,18 @@ begin
 			if(tBlkMemAddr2A[3:2] == 2'b10)
 			begin
 				tReqFlushAddrA	= 1;
+
+				/* If Write-Through, Don't evict if not dirty. */
+				if(tBlkIsWriteThruA && !tBlkIsDirtyA)
+					tReqFlushAddrA	= 0;
 			end
 			if(tBlkMemAddr2B[3:2] == 2'b10)
 			begin
 				tReqFlushAddrB	= 1;
+				
+				/* If Write-Through, Don't evict if not dirty. */
+				if(tBlkIsWriteThruB && !tBlkIsDirtyB)
+					tReqFlushAddrB	= 0;
 			end
 		end
 		
@@ -2094,7 +2174,9 @@ begin
 			tArrMemIdxStA = tReqSeqIdx;
 //			tArrMemIdxStA = tReqIxA;
 			tArrMemDextStA	= tReqAxH;
-			tArrMemAextStA	= { 16'h0, tSyncEpoch[7:6], tSyncEpoch[3:2] };
+//			tArrMemAextStA	= { 16'h0, tSyncEpoch[7:6], tSyncEpoch[3:2] };
+			tArrMemAextStA	= { 8'h0, memOpmIn[15:8],
+				tSyncEpoch[7:6], tSyncEpoch[3:2] };
 			tArrMemDoStA = 1;
 			tNxtMemRespLdA = 1;
 
@@ -2170,7 +2252,9 @@ begin
 			tArrMemIdxStB = tReqSeqIdx;
 //			tArrMemIdxStB = tReqIxB;
 			tArrMemDextStB	= tReqAxH;
-			tArrMemAextStB	= { 16'h0, tSyncEpoch[7:6], tSyncEpoch[3:2] };
+//			tArrMemAextStB	= { 16'h0, tSyncEpoch[7:6], tSyncEpoch[3:2] };
+			tArrMemAextStB	= { 8'h0, memOpmIn[15:8],
+				tSyncEpoch[7:6], tSyncEpoch[3:2] };
 			tArrMemDoStB	= 1;
 			tNxtMemRespLdB	= 1;
 

@@ -30,7 +30,7 @@ Control Register 0 Bits:
 * (7:4): Screen Buffer Mode
 ** 0=Color Cell, CLR15=YVU654.
 ** 1=4x4x16bpp (256b) or 4x4x8bpp (128b)
-** 2=8x8x4bpp (256b) or 8x8x2bpp (128b)
+** 2=8x8x4bpp (256b) or 8x8x2bpp (128b) or 8x8x1bpp (64b)
 ** 8=ColorCell, CLR15=RGB555.
 ** 9=4x4x16bpp RGB555
 * 8: Display Resolution 2
@@ -81,6 +81,47 @@ The mode bits will select which of the formats is used.
 ** Each 8-bit element is further split into 2x2 2I values.
 
 Pixels will be organized in the cells in raster order starting from the top-left, with the first pixel in the LSB. This will match a typical in-memory order in the 16-bit case.
+
+Hardware Palette, 8-bit:
+* 00..7F: RGB232
+* 80..FF: Gradient of each of the 8 primarry colors.
+
+Hardware Palette, 4-bit:
+* 0-7=Low Intensity, 8-F=High Intensity
+** Low Intensity maps each RGB bit to (00,AA).
+** High Intensity maps each RGB bit to (55,FF).
+* 0=HiBlack, 1=LoBlue   , 2=LoGreen , 3=LoCyan
+* 4=LoRed  , 5=LoMagenta, 6=LoYellow, 7=LoWhite
+* 8=HiBlack, 9=HiBlue   , A=HiGreen , B=HiCyan
+* C=HiRed  , D=HiMagenta, E=HiYellow, F=HiWhite
+
+In 4-color modes, the Colorspace Modifier will select a palette:
+* 0: Black,  33% Gray,  67% Gray, White
+* 1: Black,     Green,       Red, Yellow
+* 2: Black,     Green,       Red, Blue
+* 3: Black,      Cyan,   Magenta, Yellow
+* 4: Black,      Cyan,    Yellow, White
+* 5: Black,   Magenta,    Yellow, White
+* 6: Black,     Green,       Red, White
+* 7: Black,      Cyan,   Magenta, White
+* 8: Black, 33% Olive, 67% Olive, 100% Olive (AAFF00)
+* 9: Black, 33% Sepia, 67% Sepia, 100% Sepia (FFAA00)
+* A: Black, 33% Azure, 67% Azure, 100% Azure (00AAFF)
+* B: Black,     Green,      Blue, White
+* C: X^Y Bayer, Alternates 11 or 6 (Even/Odd)
+* D: X^Y Bayer, Alternates  7 or 6
+* E: X^Y Bayer, Alternates  5 or 4
+* F: X^Y Bayer, Alternates  3 or 2 
+
+In 1-bit mode, Colorspace Modifier palettes:
+* 0..7: Selects a single RGB Color (Traditional Monochrome).
+* 8..B: Extra Colors (Olive, Amber, Azure, Magenta)
+* C: (Green, Blue),(    Red, Green), Bayer Pattern
+* D: ( Cyan, Blue),(    Red,Yellow), Bayer Pattern
+* E: (Green, Cyan),(Magenta,Yellow), Bayer Pattern
+* F: (White, Cyan),(Magenta,Yellow), Bayer Pattern
+
+If the pixel bit is clear in 1-bit mode, it will be black. If set, it will be one of the colors given by the colorspace modifier. Modes C..F will give Bayer-Patterned modes.
 
 
 == Color Cell Mode ==

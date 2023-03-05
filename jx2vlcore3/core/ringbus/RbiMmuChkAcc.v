@@ -365,6 +365,8 @@ begin
 
 	tUsDeny = (tlbInAcc[3] && !regInSR[30]);
 
+	tRegOutNoRwx[5] = tlbInAcc[34] && tlbInAcc[35];
+
 	tRegOutNoRwx[3] = tlbInAcc[35];
 
 	if(tUsDeny)

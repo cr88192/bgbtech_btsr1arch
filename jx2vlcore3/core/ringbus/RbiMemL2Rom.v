@@ -231,7 +231,7 @@ begin
 //	tMemDataOut		= UV128_00;
 
 	tRamStBlkData	= UV128_XX;
-	tRamStBlkIx		= UV9_XX;
+	tRamStBlkIx		= UV9_00;
 	tRamDoSt		= 0;
 
 	if(memAddrIsRam && memRingIsStx)

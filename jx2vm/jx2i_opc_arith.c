@@ -1639,6 +1639,37 @@ void BJX2_Op_XLEAQ_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	BJX2_Op_XLEA_AdjustBounds(ctx, op);
 }
 
+void BJX2_Op_MOVZT_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=
+		(ctx->regs[op->rm]&0x0000FFFFFFFFFFFFULL);
+}
+
+void BJX2_Op_XMOVZT_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn+0]=
+		(ctx->regs[op->rm+0]&0x0000FFFFFFFFFFFFULL);
+	ctx->regs[op->rn+1]=
+		(ctx->regs[op->rm+1]&0x0000FFFFFFFFFFFFULL);
+}
+
+void BJX2_Op_MOVST_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=
+		(ctx->regs[op->rm]&0x0000FFFFFFFFFFFFULL)|
+		((((ctx->regs[op->rm]>>47)&1)?0xFFFFULL:0x0000ULL)<<48);
+}
+
+void BJX2_Op_XMOVST_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn+0]=
+		(ctx->regs[op->rm+0]&0x0000FFFFFFFFFFFFULL)|
+		((((ctx->regs[op->rm+0]>>47)&1)?0xFFFFULL:0x0000ULL)<<48);
+	ctx->regs[op->rn+1]=
+		(ctx->regs[op->rm+1]&0x0000FFFFFFFFFFFFULL)|
+		((((ctx->regs[op->rm+1]>>47)&1)?0xFFFFULL:0x0000ULL)<<48);
+}
+
 
 void BJX2_Op_MOVTT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

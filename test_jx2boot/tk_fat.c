@@ -801,11 +801,14 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 	img->tot_clust=cln;
 	img->clid_root=rootcl;
 		
-	img->isfat16=false;
-	if(cln<=65525)
+	if(!img->fsty)
 	{
-		img->isfat16=true;
-//		__debugbreak();
+		img->isfat16=false;
+		if(cln<=65525)
+		{
+			img->isfat16=true;
+	//		__debugbreak();
+		}
 	}
 	
 	printf("TKFAT_ReadImageFAT: Read FAT%d\n", img->isfat16?16:32);
