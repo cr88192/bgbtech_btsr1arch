@@ -1140,6 +1140,25 @@ u32 msgbuf_rxepos;
 u32 msgbuf_txspos;
 u32 msgbuf_txepos;
 
+byte usbkb_report[8];
+byte do_usb_hid;
+
+u64 *usbbuf;
+u64 *usbbuf_rxa;
+u64 *usbbuf_txa;
+u64 *usbbuf_rxb;
+u64 *usbbuf_txb;
+
+u32 usbbuf_rxsposa;
+u32 usbbuf_rxeposa;
+u32 usbbuf_txsposa;
+u32 usbbuf_txeposa;
+
+u32 usbbuf_rxsposb;
+u32 usbbuf_rxeposb;
+u32 usbbuf_txsposb;
+u32 usbbuf_txeposb;
+
 char puts_linebuf[256];
 byte puts_linepos;
 

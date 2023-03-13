@@ -2666,6 +2666,13 @@ begin
 
 `endif
 
+`ifdef def_true
+	/* Double Divide Bug? */
+	if(	(ex1OpUCmd[5:0]==JX2_UCMD_QMULDIV)	&&
+		(idA2IdUCmd[5:0]==JX2_UCMD_QMULDIV))
+			exHold1C = 1;
+`endif
+
 `ifdef jx2_enable_prebra
 `ifdef jx2_prebra_rts
 		id1BraPipelineLr =

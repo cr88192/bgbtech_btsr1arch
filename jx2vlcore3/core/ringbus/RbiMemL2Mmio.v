@@ -180,6 +180,13 @@ begin
 	begin
 		tNxtRingDoExc	= 1;
 		tNxtRingExc		= tMmioExcIn;
+
+		if(	(tMmioExcIn[15:12]!=4'hC) &&
+			(tMmioExcIn[15:12]!=4'hE))
+		begin
+			$display("MMIO: Invalid IRQ %X", tMmioExcIn);
+			tNxtRingExc[15:12] = 0;
+		end
 	end
 
 	tNxtReqSeq		= tReqSeq;

@@ -284,6 +284,7 @@ assign		gpioPinsIn = 0;
 wire[3:0]		usb_clkdat_i;
 wire[3:0]		usb_clkdat_o;
 wire[3:0]		usb_clkdat_d;
+wire[1:0]		usb_clkref;
 
 assign		usb_clkdat_i	= usb_pins;
 assign		usb_pins[0]		= usb_clkdat_d[0] ? usb_clkdat_o[0] : 1'bZ;
@@ -351,7 +352,8 @@ CoreUnit core(
 	
 	usb_clkdat_i,
 	usb_clkdat_o,
-	usb_clkdat_d
+	usb_clkdat_d,
+	usb_clkref
 	);
 
 defparam	core.ddr.DDR_IS_DDR3 = 1;

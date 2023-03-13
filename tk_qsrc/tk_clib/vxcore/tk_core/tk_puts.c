@@ -140,6 +140,8 @@ int tk_kbhit_i(void)
 			return(1);
 	}
 #endif
+	if(TKUSB_KbHit())
+		return(1);
 	return(tk_ps2kb_kbhit());
 }
 
@@ -152,13 +154,24 @@ int tk_getch_i(void)
 		{
 			if(tk_dbg_kbhit())
 				return(tk_dbg_getch());
+			if(TKUSB_KbHit())
+				return(TKUSB_KbTryGetch());
 			if(tk_ps2kb_kbhit())
 				return(tk_ps2getch());
 			__halt();
 		}
 	}
 #endif
-	return(tk_ps2getch());
+	while(1)
+	{
+		if(tk_ps2kb_kbhit())
+			return(tk_ps2trygetch());
+		if(TKUSB_KbHit())
+			return(TKUSB_KbTryGetch());
+	}
+
+	return(-1);
+//	return(tk_ps2getch());
 }
 #endif
 

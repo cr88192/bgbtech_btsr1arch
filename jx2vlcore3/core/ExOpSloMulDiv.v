@@ -332,32 +332,60 @@ begin
 
 		end
 	end
+	
+//	if(exInHold && !tDoHold)
+//	begin
+//		tNxtValRn	= tValRn;
+//		tNxtValRnHi	= tValRnHi;
+//	end
+
+	if((tOpCnt!=0) && (tNxtOpCnt==0))
+	begin
+//		$display("SloMulDiv: Out %X %X", tNxtValRn, tNxtValRnHi);
+	end
 end
 
 always @(posedge clock)
 begin
-	tValQ		<= tNxtValQ;
-	tValR		<= tNxtValR;
-	tValC		<= tNxtValC;
-	tOpCnt		<= tNxtOpCnt;
-	tValAddD	<= tNxtValAddD;
-	tValAddDc	<= tNxtValAddDc;
-	tValOp		<= tNxtValOp;
-	tValSg		<= tNxtValSg;
 
-	tValSgFdiv	<= tNxtValSgFdiv;
-	tValExpFdiv	<= tNxtValExpFdiv;
+//	if(tDoHold)
+//	if((tDoHold || (tNxtOpCnt!=0)) && !exInHold)
+	if(tDoHold || (tNxtOpCnt!=0))
+//	if(tNxtOpCnt!=0)
+	begin
+		tOpCnt		<= tNxtOpCnt;
+	end
 
-	tValAQ		<= tNxtValAQ;
-	tValAR		<= tNxtValAR;
+//	if(tNxtOpCnt!=0)
+	if(tDoHold || (tNxtOpCnt!=0))
+	begin
+		tValQ		<= tNxtValQ;
+		tValR		<= tNxtValR;
+		tValC		<= tNxtValC;
+		tValAddD	<= tNxtValAddD;
+		tValAddDc	<= tNxtValAddDc;
+//		tValOp		<= tNxtValOp;
+		tValSg		<= tNxtValSg;
 
-	tValRn		<= tNxtValRn;
-	tValRnHi	<= tNxtValRnHi;
+		tValSgFdiv	<= tNxtValSgFdiv;
+		tValExpFdiv	<= tNxtValExpFdiv;
+
+		tValAQ		<= tNxtValAQ;
+		tValAR		<= tNxtValAR;
+	end
+
+	if(tDoHold)
+	begin
+		tValRn		<= tNxtValRn;
+		tValRnHi	<= tNxtValRnHi;
+	end
 	
 	if(!tDoHold)
+//	if(!tDoHold && !exInHold)
 	begin
-		tValRs	<= valRs;
-		tValRt	<= valRt;
+		tValRs		<= valRs;
+		tValRt		<= valRt;
+		tValOp		<= tNxtValOp;
 	end
 end
 

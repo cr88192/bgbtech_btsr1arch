@@ -27,7 +27,8 @@ s32		prev;		//12, prev in LRU
 u32		vapidx;		//16, virtual address page index
 s32		hnext;		//20, next in hash
 s32		hprev;		//24, prev in hash
-u32		pad3;		//28, pad
+u16		pgchk;		//28, page checksum
+u16		pad3;		//30, pad
 //32
 };
 
@@ -1592,7 +1593,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 	TK_VMem_PageInfo *cpi;
 	u64 *ppq;
 	byte *ppi, *cs, *ct, *tcbuf, *tdbuf;
-	u64 nzm, v, sum;
+	u64 nzm, v, sum, ch0, ch1, csum;
 	s64 lba;
 	int i, j, k, l, cm, pidx;
 
@@ -1620,14 +1621,29 @@ void TK_VMem_WritePageToDisk(int cidx)
 //			if(ppq[i])
 //				break;
 
-		sum=0;
+		sum=0; ch0=1; ch1=1;
 		for(i=0; i<l; i++)
 		{
 			v=ppq[i];
 			sum+=v;
+			ch0+=v;
+			ch1+=ch0;
 			if(v)
 				nzm|=1ULL<<(i>>(TK_VMEM_PAGESHL-6-3));
 		}
+		
+		csum=ch0^ch1;
+		csum=csum+(csum>>32);
+		csum=csum+(csum>>16);
+		csum=(u16)csum;
+
+		if((csum==cpi->pgchk) && csum)
+		{
+			cpi->flags&=~1;
+			cpi->pgchk=csum;
+			return;
+		}
+
 
 //		if(i>=l)
 		if(!nzm)
@@ -1745,6 +1761,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 		}
 
 		cpi->flags&=~1;
+		cpi->pgchk=csum;
 	}
 }
 
@@ -1753,6 +1770,7 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 	TK_VMem_PageInfo *cpi;
 	u64 *ppq;
 	byte *ppi, *tcb;
+	u64 v, ch0, ch1, csum;
 	s64 lba;
 	int pidx;
 	int i, l;
@@ -1779,6 +1797,7 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 //		tk_printf("TK_VMem_LoadPageFromDisk: Page Was Zero %d\n", pidx);
 
 		memset(ppi, 0, 1<<TK_VMEM_PAGESHL);
+		cpi->pgchk=0;
 		return;
 	}
 
@@ -1804,6 +1823,27 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 			tk_printf("TK_VMem_LoadPageFromDisk: Page Was Raw %d\n", pidx);
 			TKSPI_ReadSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
 		}
+
+		cpi->pgchk=0;
+
+#if 1
+		ppq=(u64 *)ppi;
+		l=1<<(TK_VMEM_PAGESHL-3);
+		ch0=1; ch1=1;
+		for(i=0; i<l; i++)
+		{
+			v=ppq[i];
+			ch0+=v;
+			ch1+=ch0;
+		}
+		csum=ch0^ch1;
+		csum=csum+(csum>>32);
+		csum=csum+(csum>>16);
+		csum=(u16)csum;
+
+		cpi->pgchk=csum;
+#endif
+
 		return;
 	}
 	

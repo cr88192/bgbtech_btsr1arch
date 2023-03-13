@@ -465,6 +465,153 @@ int BJX2_MainAddScanKeyByte(BJX2_Context *ctx, int k)
 	return(0);
 }
 
+int BJX2_MainAddUsbKey(BJX2_Context *ctx, int key)
+{
+	static const short usb_key2scan[256]={
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//00..07
+		0x02A, 0x02B, 0x000, 0x000,  0x000, 0x028, 0x000, 0x000,	//08..0F
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//10..17
+		0x000, 0x000, 0x000, 0x029,  0x000, 0x000, 0x000, 0x000,	//18..1F
+
+		0x02C, 0x31E, 0x334, 0x320,  0x321, 0x322, 0x324, 0x234,	//20..27
+		0x326, 0x327, 0x325, 0x32E,  0x236, 0x22D, 0x237, 0x238,	//28..2F
+		0x227, 0x21E, 0x21F, 0x220,  0x221, 0x222, 0x223, 0x224,	//30..37
+		0x225, 0x226, 0x333, 0x233,  0x336, 0x22E, 0x337, 0x338,	//38..3F
+
+		0x01F, 0x304, 0x305, 0x306,  0x307, 0x308, 0x309, 0x30A,	//40..47
+		0x30B, 0x30C, 0x30D, 0x30E,  0x30F, 0x310, 0x311, 0x312,	//48..4F
+		0x313, 0x314, 0x315, 0x316,  0x317, 0x318, 0x319, 0x31A,	//50..57
+		0x31B, 0x31C, 0x31D, 0x32F,  0x331, 0x330, 0x323, 0x32D,	//58..5F
+
+		0x235, 0x204, 0x205, 0x206,  0x207, 0x208, 0x209, 0x20A,	//60..67
+		0x20B, 0x20C, 0x20D, 0x20E,  0x20F, 0x210, 0x211, 0x212,	//68..6F
+		0x213, 0x214, 0x215, 0x216,  0x217, 0x218, 0x219, 0x21A,	//70..77
+		0x21B, 0x21C, 0x21D, 0x22F,  0x231, 0x230, 0x235, 0x04C,	//78..7F
+
+		0x052, 0x051, 0x050, 0x04F,  0x000, 0x000, 0x000, 0x03A,	//80..87
+		0x03B, 0x03C, 0x03D, 0x03E,  0x03F, 0x040, 0x041, 0x042,	//88..8F
+		0x043, 0x044, 0x045, 0x04A,  0x04E, 0x04B, 0x04A, 0x04D,	//90..97
+		0x048, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//98..9F
+
+		0x039, 0x047, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//A0..A7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//A8..AF
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//B0..B7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//B8..BF
+
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//C0..C7
+		0x000, 0x000, 0x000, 0x000,  0x057, 0x056, 0x055, 0x054,	//C8..CF
+		0x062, 0x059, 0x05A, 0x05B,  0x05C, 0x05D, 0x05E, 0x05F,	//D0..D7
+		0x060, 0x061, 0x058, 0x063,  0x000, 0x000, 0x000, 0x000,	//D8..DF
+
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//E0..E7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//E8..EF
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//F0..F7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//F8..FF
+	};
+
+	static short shift;
+	static byte keys[8];
+	int kix;
+	int i, j, k;
+	
+	kix=usb_key2scan[key&0xFF];
+	keys[6]=0;
+	keys[7]=0;
+	
+	if(key&0x8000)
+	{
+		for(i=0; i<6; i++)
+		{
+			if(keys[i]==(kix&0xFF))
+			{
+				for(j=0; (i+j)<6; j++)
+					keys[i+j]=keys[i+j+1];
+			}
+		}
+
+		for(i=0; i<6; i++)
+		{
+			if(keys[i])
+				break;
+		}
+		
+		if(i>=6)
+		{
+			if(shift&0x100)
+				shift|= 0x102;
+			else
+				shift&=~0x122;
+		}
+
+		if((key&0xFFF)==K_SHIFT)
+		{
+			shift&=~0x122;
+		}
+
+		if((key&0xFFF)==K_CTRL)
+		{
+			shift&=~0x001;
+		}
+
+		if((key&0xFFF)==K_ALT)
+		{
+			shift&=~0x004;
+		}
+	}else
+	{
+		if(kix&0xFF)
+		{
+			for(i=0; i<6; i++)
+			{
+				if(keys[i]==(kix&0xFF))
+					break;
+				if(!keys[i])
+				{
+					keys[i]=kix&0xFF;
+					break;
+				}
+			}
+		}
+		
+		if(kix&0x200)
+		{
+			if(kix&0x100)
+			{
+				shift|=0x02;
+			}else
+			{
+				shift&=~0x02;
+			}
+		}
+
+		if((key&0xFFF)==K_SHIFT)
+		{
+			shift|=0x102;
+		}
+
+		if((key&0xFFF)==K_CTRL)
+		{
+			shift|=0x001;
+		}
+
+		if((key&0xFFF)==K_ALT)
+		{
+			shift|=0x004;
+		}
+	}
+	
+	ctx->usbkb_report[0]=shift;	//Shift
+	ctx->usbkb_report[1]=0x00;
+	ctx->usbkb_report[2]=keys[0];
+	ctx->usbkb_report[3]=keys[1];
+	ctx->usbkb_report[4]=keys[2];
+	ctx->usbkb_report[5]=keys[3];
+	ctx->usbkb_report[6]=keys[4];
+	ctx->usbkb_report[7]=keys[5];
+
+	return(0);
+}
+
 int BJX2_MainAddTranslateKey(BJX2_Context *ctx, int key)
 {
 	static const short ps2_key2scan[256]={
@@ -503,6 +650,14 @@ int BJX2_MainAddTranslateKey(BJX2_Context *ctx, int key)
 	};
 	
 	int sc;
+	
+	BJX2_MainAddUsbKey(ctx, key);
+	
+	if(ctx->do_usb_hid)
+	{
+		/* USB HID disables PS/2 inputs */
+		return(0);
+	}
 	
 	sc=ps2_key2scan[key&0xFF];
 	if(!sc)
@@ -994,6 +1149,7 @@ int main(int argc, char *argv[])
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
 	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost, walltime;
+	int dousbhid;
 	int i;
 	
 	rd_n_add=0;
@@ -1012,6 +1168,7 @@ int main(int argc, char *argv[])
 	l1dcfg=NULL;
 	l2cfg=NULL;
 	walltime=0;
+	dousbhid=0;
 	
 	for(i=1; i<argc; i++)
 	{
@@ -1068,6 +1225,9 @@ int main(int argc, char *argv[])
 			if(!strcmp(argv[i], "--chkbss"))
 				{ chkbss=1; continue; }
 
+			if(!strcmp(argv[i], "--usbhid"))
+				{ dousbhid=1; continue; }
+
 			continue;
 		}
 		
@@ -1117,7 +1277,8 @@ int main(int argc, char *argv[])
 //	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xA0080000U, 0xA0081FFFU);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xA00A0000U, 0xA00AFFFFU);
 
-	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xF000E000U, 0xF000E3FFU);
+	BJX2_MemDefineUsbBuf(ctx,	"MMSB",	0xF0008000U, 0xF000BFFFU);
+	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xF000E000U, 0xF000EFFFU);
 	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xF0080000U, 0xF0081FFFU);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF00A0000U, 0xF00AFFFFU);
 	BJX2_MemDefineSmus(ctx,		"SMUS",	0xF008C000U, 0xF008FFFFU);
@@ -1130,20 +1291,22 @@ int main(int argc, char *argv[])
 //	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFFFFFA0080000, 0xFFFFFFFFA0081FFF);
 //	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFFFFFA00A0000, 0xFFFFFFFFA00AFFFF);
 
-	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xFFFFF000E000, 0xFFFFF000E3FF);
-	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFF0080000, 0xFFFFF0081FFF);
-//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFF00A0000, 0xFFFFF00AFFFF);
-	BJX2_MemDefineSmus(ctx,		"SMUS",	0xFFFFF008C000, 0xFFFFF008FFFF);
-	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xFFFFF0090000, 0xFFFFF009FFFF);
-	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFF00A0000, 0xFFFFF00BFFFF);
+	BJX2_MemDefineUsbBuf(ctx,	"MUSB",	0xFFFFF0008000LL, 0xFFFFF000BFFFLL);
+	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xFFFFF000E000LL, 0xFFFFF000EFFFLL);
+	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xFFFFF0080000LL, 0xFFFFF0081FFFLL);
+//	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFF00A0000LL, 0xFFFFF00AFFFFLL);
+	BJX2_MemDefineSmus(ctx,		"SMUS",	0xFFFFF008C000LL, 0xFFFFF008FFFFLL);
+	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xFFFFF0090000LL, 0xFFFFF009FFFFLL);
+	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xFFFFF00A0000LL, 0xFFFFF00BFFFFLL);
 #endif
 	
 #ifndef BJX2_ADDR32
-	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xF0000000E000, 0xF0000000E3FF);
-	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xF00000080000, 0xF00000081FFF);
-	BJX2_MemDefineSmus(ctx,		"SMUS",	0xF0000008C000, 0xF0000008FFFF);
-	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xF00000090000, 0xF0000009FFFF);
-	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF000000A0000, 0xF000000BFFFF);
+	BJX2_MemDefineUsbBuf(ctx,	"MUSB",	0xF00000008000LL, 0xF0000000BFFFLL);
+	BJX2_MemDefineMmgp(ctx,		"MMGP",	0xF0000000E000LL, 0xF0000000EFFFLL);
+	BJX2_MemDefineSndSblk(ctx,	"SBAU",	0xF00000080000LL, 0xF00000081FFFLL);
+	BJX2_MemDefineSmus(ctx,		"SMUS",	0xF0000008C000LL, 0xF0000008FFFFLL);
+	BJX2_MemDefineSndAuPcm(ctx,	"SPCM",	0xF00000090000LL, 0xF0000009FFFFLL);
+	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF000000A0000LL, 0xF000000BFFFFLL);
 #endif
 
 	if(!l1icfg)
@@ -1160,6 +1323,7 @@ int main(int argc, char *argv[])
 	BJX2_MemSimSetConfigL2(ctx, l2cfg);
 	
 	ctx->use_walltime=walltime;
+	ctx->do_usb_hid=dousbhid;
 	
 	BJX2_ContextSetupZero(ctx);
 	if(ifn)

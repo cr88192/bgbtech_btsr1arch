@@ -6,6 +6,8 @@ VCoreUnit *top = new VCoreUnit;
 vluint64_t main_time = 0;
 vluint64_t main_time3p = 0;
 
+int do_qmt;
+
 
 #define CLOCK_400MHZ			//Enable 300MHz and 400MHz Clock
 
@@ -211,6 +213,146 @@ int BTSR1_MainAddScanKeyByte(int k)
 	return(0);
 }
 
+byte usb_kbmsg[32];
+byte usb_kbmsgsz;
+byte usb_kbsticky;
+
+u16 usb_kbstbuf[32];
+byte usb_kbstpos;
+
+int BTSR1_MainAddUsbKey(int key)
+{
+	static const short usb_key2scan[256]={
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//00..07
+		0x02A, 0x02B, 0x000, 0x000,  0x000, 0x028, 0x000, 0x000,	//08..0F
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//10..17
+		0x000, 0x000, 0x000, 0x029,  0x000, 0x000, 0x000, 0x000,	//18..1F
+
+		0x02C, 0x31E, 0x334, 0x320,  0x321, 0x322, 0x324, 0x234,	//20..27
+		0x326, 0x327, 0x325, 0x32E,  0x236, 0x22D, 0x237, 0x238,	//28..2F
+		0x227, 0x21E, 0x21F, 0x220,  0x221, 0x222, 0x223, 0x224,	//30..37
+		0x225, 0x226, 0x333, 0x233,  0x336, 0x22E, 0x337, 0x338,	//38..3F
+
+		0x01F, 0x304, 0x305, 0x306,  0x307, 0x308, 0x309, 0x30A,	//40..47
+		0x30B, 0x30C, 0x30D, 0x30E,  0x30F, 0x310, 0x311, 0x312,	//48..4F
+		0x313, 0x314, 0x315, 0x316,  0x317, 0x318, 0x319, 0x31A,	//50..57
+		0x31B, 0x31C, 0x31D, 0x32F,  0x331, 0x330, 0x323, 0x32D,	//58..5F
+
+		0x235, 0x204, 0x205, 0x206,  0x207, 0x208, 0x209, 0x20A,	//60..67
+		0x20B, 0x20C, 0x20D, 0x20E,  0x20F, 0x210, 0x211, 0x212,	//68..6F
+		0x213, 0x214, 0x215, 0x216,  0x217, 0x218, 0x219, 0x21A,	//70..77
+		0x21B, 0x21C, 0x21D, 0x22F,  0x231, 0x230, 0x235, 0x04C,	//78..7F
+
+		0x052, 0x051, 0x050, 0x04F,  0x000, 0x000, 0x000, 0x03A,	//80..87
+		0x03B, 0x03C, 0x03D, 0x03E,  0x03F, 0x040, 0x041, 0x042,	//88..8F
+		0x043, 0x044, 0x045, 0x04A,  0x04E, 0x04B, 0x04A, 0x04D,	//90..97
+		0x048, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//98..9F
+
+		0x039, 0x047, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//A0..A7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//A8..AF
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//B0..B7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//B8..BF
+
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//C0..C7
+		0x000, 0x000, 0x000, 0x000,  0x057, 0x056, 0x055, 0x054,	//C8..CF
+		0x062, 0x059, 0x05A, 0x05B,  0x05C, 0x05D, 0x05E, 0x05F,	//D0..D7
+		0x060, 0x061, 0x058, 0x063,  0x000, 0x000, 0x000, 0x000,	//D8..DF
+
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//E0..E7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//E8..EF
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//F0..F7
+		0x000, 0x000, 0x000, 0x000,  0x000, 0x000, 0x000, 0x000,	//F8..FF
+	};
+
+	static short shift;
+	static byte keys[8];
+	int kix;
+	int i, j, k;
+	
+	kix=usb_key2scan[key&0xFF];
+	keys[6]=0;
+	keys[7]=0;
+
+	if(key&0x8000)
+	{
+		for(i=0; i<6; i++)
+		{
+			if(keys[i]==(kix&0xFF))
+			{
+				for(j=0; (i+j)<6; j++)
+					keys[i+j]=keys[i+j+1];
+			}
+		}
+
+		for(i=0; i<6; i++)
+		{
+			if(keys[i])
+				break;
+		}
+		
+		if(i>=6)
+		{
+			if(shift&0x100)
+				shift|= 0x102;
+			else
+				shift&=~0x122;
+		}
+
+		if((key&0xFFF)==K_SHIFT)
+		{
+			shift&=~0x122;
+		}
+	}else
+	{
+		if(kix&0xFF)
+		{
+			for(i=0; i<6; i++)
+			{
+				if(keys[i]==(kix&0xFF))
+					break;
+				if(!keys[i])
+				{
+					keys[i]=kix&0xFF;
+					break;
+				}
+			}
+		}
+		
+		if(kix&0x200)
+		{
+			if(kix&0x100)
+			{
+				shift|=0x02;
+			}else
+			{
+				shift&=~0x02;
+			}
+		}
+
+		if((key&0xFFF)==K_SHIFT)
+		{
+			shift|=0x102;
+		}
+		
+		usb_kbsticky=1;
+	}
+	
+	usb_kbmsg[ 0]=0xC3;	//PID: IN
+	usb_kbmsg[ 1]=shift;	//Shift
+	usb_kbmsg[ 2]=0x00;
+	usb_kbmsg[ 3]=keys[0];
+	usb_kbmsg[ 4]=keys[1];
+	usb_kbmsg[ 5]=keys[2];
+	usb_kbmsg[ 6]=keys[3];
+	usb_kbmsg[ 7]=keys[4];
+	usb_kbmsg[ 8]=keys[5];
+	usb_kbmsg[ 9]=0;
+	usb_kbmsg[10]=0;
+	usb_kbmsgsz=11;
+
+	return(0);
+}
+
 int BTSR1_MainAddTranslateKey(int key)
 {
 	static const short ps2_key2scan[256]={
@@ -249,7 +391,35 @@ int BTSR1_MainAddTranslateKey(int key)
 	};
 	
 	int sc;
-	
+	int i, j, k;
+
+	if(do_qmt)
+	{
+//		byte usb_kbsticky;
+//		u16 usb_kbstbuf[32];
+//		byte usb_kbstpos;
+
+		if(!usb_kbsticky && usb_kbstpos)
+		{
+			/* Handle held-back key releases. */
+			for(i=0; i<usb_kbstpos; i++)
+			{
+				BTSR1_MainAddUsbKey(usb_kbstbuf[i]);
+			}
+			usb_kbstpos=0;
+		}
+
+		if(usb_kbsticky && (key&0x8000))
+		{
+			/* If sticky and key is released, hold back key release. */
+			usb_kbstbuf[usb_kbstpos++]=key;
+		}else
+		{
+			BTSR1_MainAddUsbKey(key);
+		}
+		return(0);
+	}
+
 	sc=ps2_key2scan[key&0xFF];
 	if(!sc)
 		return(0);
@@ -266,6 +436,7 @@ int BTSR1_MainAddTranslateKey(int key)
 	if(sc&0x100)
 		BTSR1_MainAddScanKeyByte(0xE0);
 	BTSR1_MainAddScanKeyByte(sc&0xFF);
+
 	return(0);
 }
 
@@ -1146,108 +1317,331 @@ int update_ddr()
 
 int update_uart();
 
+short usb_txbuf[256];
+byte usb_txposs;
+byte usb_txpose;
+
+short usb_rxbuf[256];
+byte usb_rxposs;
+byte usb_rxpose;
+
+// byte usb_kbmsg[32];
+// byte usb_kbmsgsz;
+
+int usb_hidkbreport()
+{
+	int i, j, k;
+	
+	printf("usb_hidkbreport sz=%d\n", usb_kbmsgsz);
+	
+	if(usb_txpose==usb_txposs)
+	{
+		usb_txpose=0;
+		usb_txposs=0;
+	}
+	
+	for(i=0; i<usb_kbmsgsz; i++)
+	{
+		usb_txbuf[usb_txpose]=usb_kbmsg[i];
+		usb_txpose=(usb_txpose+1)&255;
+	}
+
+	usb_txbuf[usb_txpose]=0x100;
+	usb_txpose=(usb_txpose+1)&255;
+	
+	usb_kbsticky=0;
+} 
+
+int usb_parserxeop()
+{
+	printf("usb_parserxeop\n");
+
+	if(usb_rxbuf[usb_rxposs]==0x69)
+	{
+//		if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)
+		if(	(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x00) ||
+			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)	)
+		{
+			usb_hidkbreport();
+		}
+	}
+	
+	usb_rxposs=usb_rxpose;
+}
+
 int update_usb()
 {
-	static byte xmit;
-	static byte xmitpos;
+	static short xmit;
+	static byte xmitpos, xmitmd;
 	static byte xmitclk_val;
 	static int xmitclk_cnt;
 	static byte xmit_upd, txwin;
 	static byte tclk, tdat, lclk, tlclk, tdatl;
-	static byte b, pb;
+	static byte b, pb, clkr, lclkr;
+	static byte rxdat, rxldat, rxbit, rxldat2;
+	static byte rxclk, rxclkl, rxmd, rxby, didsb;
+	static int rxwin1, rxwin2, rxacc;
 
-//	if(top->clock_50 && !tlclk)
-	if(top->clock_100 && !tlclk)
-//	if(!top->clock_100 && tlclk)
+	static long acc_clk100, acc_clka, acc_clkb;
+
+	if(top->clock_100==tlclk)
+		return(0);
+	
+	if(!top->clock_100)
 	{
-		if(xmitpos<=0)
+		tlclk=top->clock_100;
+		top->usb_clkdat_i=tdat;
+		return(0);
+	}
+
+	acc_clk100++;
+
+	clkr = top->usb_clkref&1;
+	if(clkr && !lclkr)
+		acc_clkb++;
+	
+	lclkr = clkr;
+
+#if 0
+	if(!(acc_clk100&0xFFFFF))
+	{
+		printf("USB Clk: A=%.3fMHz B=%.3fMHz\n",
+			(100.0*acc_clka)/acc_clk100,
+			(100.0*acc_clkb)/acc_clk100);
+	}
+#endif
+
+	rxdat=top->usb_clkdat_o;
+	if(rxdat!=rxldat)
+	{
+		printf("update_usb: RX State %d, win2=%04X\n", rxdat, rxwin2);
+		rxldat=rxdat;
+		rxclk=0;
+		rxacc=0;
+	}
+	
+//	rxclk=!(((rxacc-16384)>>15)&1);
+	rxclk=!(((rxacc-8192)>>15)&1);
+	
+//	if(rxclk==64)
+	if(rxclk && !rxclkl)
+	{
+		acc_clka++;
+	
+		rxbit=(rxdat!=rxldat2);
+		rxldat2=rxdat;
+		
+		didsb=0;
+		
+		rxwin1=(rxwin1>>1)|(rxbit<<15);
+		rxwin2=(rxwin2>>1)|(rxbit<<15);
+		if((rxwin1&0xFE00)==0x8000)
 		{
-			xmitclk_cnt--;
-			if(xmitclk_cnt<=0)
+			printf("update_usb: Bit Stuff\n");
+			/* Stuffed Bit */
+			rxwin2=(rxwin2<<1)&0xFFFF;
+			didsb=1;
+		}else if((rxwin1&0xFE00)==0x0000)
+		{
+			if(rxmd)
+				printf("update_usb: Missing Stuffed Bit\n");
+		}
+		
+		if(rxdat)
+		{
+			printf("update_usb: RX Bit %d, win1=%04X win2=%04X md=%X\n",
+				rxdat, rxwin1, rxwin2, rxmd);
+		}
+	
+		if(!rxmd)
+		{
+			if((rxwin2&0xFF80)==0x7F80)
 			{
-				if(!xmitclk_val)
-				{
-					tclk=1;
-					tdat=1;
+				printf("update_usb: Sync\n");
+				rxmd=8;
+			}
+		}else if((rxmd>=8) && (rxmd<16))
+		{
+			if(!didsb)
+				rxmd++;
 
-					xmitclk_val=1;
-					xmitclk_cnt=67;
-				}else
-				{
-					if(ps2kbirov!=ps2kbrov)
-					{
-//						xmit=ps2kbbuf[ps2kbirov];
-//						ps2kbirov=(ps2kbirov+1)&255;
-//						xmitpos=11;
-						
-						printf("update_usb: scan=%02X\n", xmit);
-					}
-
-					tclk=1;
-					tdat=1;
-
-					xmitclk_val=1;
-					xmitclk_cnt=67;
-					xmit_upd=1;
-				}
+			if(rxmd==16)
+			{
+				rxby=rxwin2>>8;
+				printf("update_usb: rxby=%02X\n", rxby);
+				usb_rxbuf[usb_rxpose]=rxby;
+				usb_rxpose=(usb_rxpose+1)&255;
+				rxmd=8;
+			}
+			
+			if(rxdat==0)
+			{
+				printf("update_usb: EOP\n");
+				usb_rxbuf[usb_rxpose]=0x100;
+				usb_rxpose=(usb_rxpose+1)&255;
+				rxmd=0;
+				usb_parserxeop();
 			}
 		}else
 		{
-			if(xmit_upd)
-			{
-				switch(xmitpos)
-				{
-					case  8: b=(xmit>>0)&1; break;
-					case  7: b=(xmit>>1)&1; break;
-					case  6: b=(xmit>>2)&1; break;
-					case  5: b=(xmit>>3)&1; break;
-					case  4: b=(xmit>>4)&1; break;
-					case  3: b=(xmit>>5)&1; break;
-					case  2: b=(xmit>>6)&1; break;
-					case  1: b=(xmit>>7)&1; break;
-				}
-				tdat=b;
-				xmit_upd=0;
-			}
-
-			xmitclk_cnt--;
-			if(xmitclk_cnt<=0)
-			{
-				xmitclk_val=!xmitclk_val;
-				xmitclk_cnt=67;
-				tclk=xmitclk_val;
-				xmit_upd=1;
-				
-				if((txwin&0xFC)==0x00)
-				{
-					/* bit stuff */
-					b=1;
-				}else
-					if(!xmitclk_val)
-				{
-					xmitpos--;
-					xmit_upd=0;
-				}else
-				{
-					tdat=b;
-				}
-				
-				if(b)
-				{
-					if(tdatl==1)
-						tdat=2;
-					if(tdatl==2)
-						tdat=1;
-					tdatl=tdat;
-				}else
-				{
-					tdat=tdatl;
-				}
-				
-				txwin=(txwin>>1)|(b<<8);
-			}
+			printf("update_usb: Bad Mode\n");
+			rxmd=0;
 		}
 	}
+//	rxclk+=4;
+
+	if(xmitpos<=0)
+	{
+		if(usb_txposs!=usb_txpose)
+		{
+//			printf("update_usb: TX Non-Empty, %X..%X\n",
+//				usb_txposs, usb_txpose);
+		}
+
+//		xmitclk_cnt--;
+//		if(xmitclk_cnt<=0)
+		if(rxclk && !rxclkl)
+		{
+//			if(!xmitclk_val)
+			if(0)
+			{
+//				tclk=1;
+//				tdat=1;
+
+				xmitclk_val=1;
+				xmitclk_cnt=33;
+			}else
+			{
+				if(usb_txposs!=usb_txpose)
+				{
+					xmit=usb_txbuf[usb_txposs];
+//					if(xmitmd&0x30)
+						usb_txposs=(usb_txposs+1)&255;
+					xmitpos=8;
+					
+					printf("update_usb: send=%02X\n", xmit);
+				}else if(xmitmd&0x30)
+				{
+					xmit=0x100;
+					xmitpos=8;
+					printf("update_usb: send EOP\n", xmit);
+				}
+
+//				tclk=1;
+//				tdat=1;
+
+				xmitclk_val=1;
+				xmitclk_cnt=33;
+				xmit_upd=1;
+			}
+		}
+
+		if(xmitmd==0)
+		{
+			tdat=2;		/* Low Speed */
+		}
+	}else
+	{
+//		printf("update_usb: Bit-Active, xmit=%02X pos=%d md=%X\n",
+//			xmit, xmitpos, xmitmd);
+
+//		if(xmit_upd)
+		if(1)
+		{
+			switch(xmitpos)
+			{
+				case  8: b=(xmit>>0)&1; break;
+				case  7: b=(xmit>>1)&1; break;
+				case  6: b=(xmit>>2)&1; break;
+				case  5: b=(xmit>>3)&1; break;
+				case  4: b=(xmit>>4)&1; break;
+				case  3: b=(xmit>>5)&1; break;
+				case  2: b=(xmit>>6)&1; break;
+				case  1: b=(xmit>>7)&1; break;
+			}
+//			tdat=b;
+			xmit_upd=0;
+		}
+
+//		xmitclk_cnt--;
+//		if(xmitclk_cnt<=0)
+		if(rxclk && !rxclkl)
+		{
+			xmitclk_val=!xmitclk_val;
+			xmitclk_cnt=67;
+			tclk=xmitclk_val;
+			xmit_upd=1;
+
+			txwin=(txwin>>1)|(b<<7);
+			
+			if(!(xmitmd&0x30))
+			{
+//				if(xmitmd<8)
+				if(xmitmd<10)
+				{
+					b=1;
+//					if(!xmitclk_val)
+					xmitmd++;
+				}else
+				{
+					b=0;
+//					if(!xmitclk_val)
+					xmitmd=0x10;
+				}
+			}
+//			else if((txwin&0xFC)==0x00)
+			else if((txwin&0xFE)==0x00)
+			{
+				printf("update_usb: Bit Stuff\n");
+
+				/* bit stuff */
+				txwin|=0x80;
+				b=1;
+			}else
+			{
+				xmitpos--;
+				xmit_upd=0;
+				
+				if((xmitpos<=0) && (usb_txposs!=usb_txpose) && !(xmit&0x100))
+				{
+					xmit=usb_txbuf[usb_txposs];
+					usb_txposs=(usb_txposs+1)&255;
+					xmitpos=8;
+					printf("update_usb: B-send=%02X\n", xmit);
+				}
+			}
+			
+			if(b)
+			{
+				if(tdatl==1)
+					tdat=2;
+				if(tdatl==2)
+					tdat=1;
+				tdatl=tdat;
+			}else
+			{
+				tdat=tdatl;
+			}
+			
+			if(xmit&0x100)
+			{
+				printf("update_usb: EOP Byte\n");
+				tdat=0;
+				if(xmitpos<=0)
+					xmitmd=0;
+			}
+			
+//			if(!xmitclk_val)
+//			txwin=(txwin>>1)|(b<<7);
+			
+			printf("update_usb: Send Bit %X pos=%d\n",
+				tdat, xmitpos);
+		}
+	}
+
+
+	rxclkl=rxclk;
+	rxacc+=983;
 
 	tlclk=top->clock_100;
 	top->usb_clkdat_i=tdat;
@@ -1683,6 +2077,13 @@ int main(int argc, char **argv, char **env)
 	int i, j, k;
 
 	mhz=100;
+	do_qmt=0;
+
+	for(i=1; i<argc; i++)
+	{
+		if(!strcmp(argv[i], "--qmt"))
+			do_qmt=1;
+	}
 
 	Verilated::commandArgs(argc, argv);
 
@@ -1785,6 +2186,8 @@ int main(int argc, char **argv, char **env)
 	SoundDev_Init();
 	BTSR1_MainInitKeyboard();
 
+	BTSR1_MainAddUsbKey(0);
+
 	ddr_ram=(uint16_t *)malloc(1<<28);
 	memset(ddr_ram, 0, 1<<28);
 	
@@ -1819,8 +2222,10 @@ int main(int argc, char **argv, char **env)
 	tt_frame=tt_start;
 	tt_reset=1024;
 
-//	top->ddrModeIn=0;
-	top->ddrModeIn=1;
+	top->ddrModeIn=0;
+	if(do_qmt)
+		top->ddrModeIn=1;
+
 //	ddr_is_ddr3 = 0;
 	ddr_is_ddr3 = top->ddrModeIn&1;
 

@@ -1035,6 +1035,14 @@ begin
 			tRegOutExc	= regInData[15:0];
 			if(regInData[11:8]!=4'hF)
 				tRegOutOpm	= UV16_00;
+			
+			if(	(regInData[15:12]!=4'h0) &&
+				(regInData[15:12]!=4'hC) &&
+				(regInData[15:12]!=4'hE))
+			begin
+				$display("TLB: Invalid IRQ %X", regInData);
+				tRegOutExc[15:12] = 0;
+			end
 		end
 	end
 

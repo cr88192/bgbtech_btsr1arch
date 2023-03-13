@@ -30,6 +30,103 @@ int mmgp_spi_delcyc;
 
 char *bjx2_fgets(char *buf, int lim, BJX2_FILE *fd);
 
+int BJX2_Interp_ProcessUsbMsg(BJX2_Context *ctx, byte *ibuf, int isz,
+	byte *obuf, int *rosz)
+{
+	if((ibuf[0]==0x69) &&
+		((ibuf[1]==0x00) || (ibuf[1]==0x01)))
+	{
+		if(!ctx->do_usb_hid)
+			return(0);
+
+#if 0
+		printf("BJX2_Interp_ProcessUsbMsg: KB Report "
+			"%02X %02X %02X %02X  %02X %02X %02X %02X\n",
+			ctx->usbkb_report[0],
+			ctx->usbkb_report[1],
+			ctx->usbkb_report[2],
+			ctx->usbkb_report[3],
+			ctx->usbkb_report[4],
+			ctx->usbkb_report[5],
+			ctx->usbkb_report[6],
+			ctx->usbkb_report[7]);
+#endif
+
+		obuf[ 0]=0xC3;
+		obuf[ 1]=ctx->usbkb_report[0];
+		obuf[ 2]=ctx->usbkb_report[1];
+		obuf[ 3]=ctx->usbkb_report[2];
+		obuf[ 4]=ctx->usbkb_report[3];
+		obuf[ 5]=ctx->usbkb_report[4];
+		obuf[ 6]=ctx->usbkb_report[5];
+		obuf[ 7]=ctx->usbkb_report[6];
+		obuf[ 8]=ctx->usbkb_report[7];
+		obuf[ 9]=0x00;
+		obuf[10]=0x00;
+		*rosz=11;
+		return(1);
+	}
+	return(0);
+}
+
+int BJX2_Interp_CheckUpdateUsb(BJX2_Context *ctx)
+{
+	byte tbuf[512], tbuf2[512];
+	u16 *txba, *rxba;
+	int i, j, k, txs, txe, osz;
+	int rxs, rxe;
+	
+	if(ctx->usbbuf_txsposa!=ctx->usbbuf_txeposa)
+	{
+		txba=(u16 *)ctx->usbbuf_txa;
+		txs=ctx->usbbuf_txsposa;
+		txe=ctx->usbbuf_txeposa;
+		
+		i=0;
+		while(txs!=txe)
+		{
+			k=txba[txs];
+			if(k&0x100)
+				break;
+			txs=(txs+1)&1023;
+			tbuf[i++]=k;
+		}
+		while(txs!=txe)
+		{
+			k=txba[txs];
+			if(!(k&0x100))
+				break;
+			txs=(txs+1)&1023;
+		}
+		ctx->usbbuf_txsposa=txs;
+
+		osz=0;
+		BJX2_Interp_ProcessUsbMsg(ctx, tbuf, i, tbuf2, &osz);
+		if(osz>0)
+		{
+			rxba=(u16 *)ctx->usbbuf_rxa;
+			rxs=ctx->usbbuf_rxsposa;
+			rxe=ctx->usbbuf_rxeposa;
+			
+			for(i=0; i<osz; i++)
+			{
+				rxba[rxe]=tbuf2[i];
+				rxe=(rxe+1)&1023;
+			}
+			rxba[rxe]=0x100;
+			rxe=(rxe+1)&1023;
+			ctx->usbbuf_rxeposa=rxe;
+		}
+	}
+
+	if(ctx->usbbuf_txsposb!=ctx->usbbuf_txeposb)
+	{
+		txs=ctx->usbbuf_txsposb;
+		txe=ctx->usbbuf_txeposb;
+		ctx->usbbuf_txsposb=txe;
+	}
+}
+
 int BJX2_MemMmgpCb_GetByte(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr)
 {
@@ -222,6 +319,40 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		rv=rvq>>32;
 		break;
 
+	case 0x0800:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_rxsposa;
+		break;
+	case 0x0804:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_rxeposa;
+		break;
+	case 0x0810:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_txsposa;
+		break;
+	case 0x0814:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_txeposa;
+		break;
+
+	case 0x0820:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_rxsposb;
+		break;
+	case 0x0824:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_rxeposb;
+		break;
+	case 0x0830:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_txsposb;
+		break;
+	case 0x0834:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=ctx->usbbuf_txeposb;
+		break;
+
 	default:
 //		JX2_DBGBREAK
 		break;
@@ -371,6 +502,33 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 		ctx->msgbuf_txepos=val;
 		BJX2_VmMsgTxUpdate(ctx);
 		break;
+	
+	case 0x0800:
+		ctx->usbbuf_rxsposa=val;
+		break;
+	case 0x0804:
+		ctx->usbbuf_rxeposa=val;
+		break;
+	case 0x0810:
+		ctx->usbbuf_txsposa=val;
+		break;
+	case 0x0814:
+		ctx->usbbuf_txeposa=val;
+		break;
+
+	case 0x0820:
+		ctx->usbbuf_rxsposb=val;
+		break;
+	case 0x0824:
+		ctx->usbbuf_rxeposb=val;
+		break;
+	case 0x0830:
+		ctx->usbbuf_txsposb=val;
+		break;
+	case 0x0834:
+		ctx->usbbuf_txeposb=val;
+		break;
+
 	default:
 		JX2_DBGBREAK
 		break;
@@ -430,6 +588,81 @@ int BJX2_MemDefineMmgp(BJX2_Context *ctx,
 	BJX2_MemAddSpan(ctx, sp);
 	return(0);
 }
+
+
+s32 BJX2_MemMmUsbCb_GetDWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr)
+{
+	return(0);
+}
+
+int BJX2_MemMmUsbCb_SetDWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, s32 val)
+{
+	return(0);
+}
+
+s64 BJX2_MemMmUsbCb_GetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr)
+{
+	u32 lo, hi;
+	int ra;
+
+	if(((s64)addr)>0)
+	{
+		lo=-1;
+	}
+
+	ra=addr-sp->addr_base;
+	ra=(ra&16383);
+	return(ctx->usbbuf[ra>>3]);
+}
+
+int BJX2_MemMmUsbCb_SetQWord(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, s64 val)
+{
+	int ra;
+	ra=addr-sp->addr_base;
+	ra=(ra&16383);
+	ctx->usbbuf[ra>>3]=val;
+	return(0);
+}
+
+int BJX2_MemDefineUsbBuf(BJX2_Context *ctx,
+	char *name, bjx2_addr base, bjx2_addr lim)
+{
+	BJX2_MemSpan *sp;
+
+	ctx->usbbuf=malloc(16384);
+	ctx->usbbuf_rxa=ctx->usbbuf+  0;
+	ctx->usbbuf_txa=ctx->usbbuf+256;
+	ctx->usbbuf_rxb=ctx->usbbuf+512;
+	ctx->usbbuf_txb=ctx->usbbuf+768;
+
+	sp=BJX2_MemAllocSpan(ctx);
+	
+	sp->name=name;
+	sp->addr_base=base;
+	sp->addr_lim=lim;
+	sp->addr_sz=lim-base;
+//	sp->data=malloc((lim-base)+8);
+	
+	sp->GetByte=BJX2_MemMmgpCb_GetByte;
+	sp->GetWord=BJX2_MemMmgpCb_GetWord;
+	sp->GetDWord=BJX2_MemMmUsbCb_GetDWord;
+	sp->GetQWord=BJX2_MemMmUsbCb_GetQWord;
+	sp->GetXWord=BJX2_MemRamCb_GetFaultXW;
+	
+	sp->SetByte=BJX2_MemMmgpCb_SetByte;
+	sp->SetWord=BJX2_MemMmgpCb_SetWord;
+	sp->SetDWord=BJX2_MemMmUsbCb_SetDWord;
+	sp->SetQWord=BJX2_MemMmUsbCb_SetQWord;
+	sp->SetXWord=BJX2_MemRamCb_SetFaultXW;
+
+	BJX2_MemAddSpan(ctx, sp);
+	return(0);
+}
+
 
 int BJX2_MapSortTMapCmp(BJX2_Context *ctx,
 	bjx2_addr *tmap_addr,

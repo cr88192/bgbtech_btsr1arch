@@ -29,3 +29,5 @@ MMIO Space:
 
 * 0000E830: TX-B Buffer Start (Byte9 Index)
 * 0000E834: TX-B Buffer End (Byte9 Index)
+
+If the buffer start/end positions are accessed using a 64 bit access, this will read or write both the start and end positions at the same time.

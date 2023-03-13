@@ -2318,6 +2318,29 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nz_Ffjj
 
 
+Neural Net Extension (possible):
+* FE F2nm_8pjj  FADD		Rm, Imm32f, Rn			//(NNX)
+* FE F2nm_8Pjj  PADD.F		Rm, Imm32fv, Rn			//(NNX)
+* FE F2nm_8qjj  FMUL		Rm, Imm32f, Rn			//(NNX)
+* FE F2nm_8Qjj  PMUL.F		Rm, Imm32fv, Rn			//(NNX)
+* FE F2nm_9pjj  -
+* FE F2nm_9Pjj  -
+* FE F2nm_9qjj  -
+* FE F2nm_9Qjj  -
+
+* FE-FE F2nm_7Pjj  PMACSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
+* FE-FE F2nm_7Qjj  PMACSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
+
+* FE-FE F2nm_8pjj  PADD.H		Rm, Imm56fv, Rn			//(NNX)
+* FE-FE F2nm_8Pjj  PADD.F		Xm, Imm56fv, Xn			//(NNX)
+* FE-FE F2nm_8qjj  PMUL.H		Rm, Imm56fv, Rn			//(NNX)
+* FE-FE F2nm_8Qjj  PMUL.F		Xm, Imm56fv, Xn			//(NNX)
+* FE-FE F2nm_9pjj  PADDSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
+* FE-FE F2nm_9Pjj  PADDSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
+* FE-FE F2nm_9qjj  PMULSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
+* FE-FE F2nm_9Qjj  PMULSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
+
+
 ==== F3zz Instruction Block ====
 
 The F3zz Block is currently intended for user-defined or implementation dependent instructions. It will be assumed that it followes the same basic instruction format as the F0, F1, or F2 blocks.

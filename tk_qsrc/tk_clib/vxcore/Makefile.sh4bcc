@@ -96,6 +96,7 @@ SRCS_CLIB = \
 	tk_core/tk_shcmd.c \
 	tk_core/tk_spi.c \
 	tk_core/tk_syscall.c \
+	tk_core/tk_usb.c \
 	tk_core/tk_vf_fat.c \
 	tk_core/tk_vf_ird.c \
 	tk_core/tk_vf_wad4.c \

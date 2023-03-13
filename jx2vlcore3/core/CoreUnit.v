@@ -212,7 +212,8 @@ module CoreUnit(
 	
 	usb_clkdat_i,
 	usb_clkdat_o,
-	usb_clkdat_d
+	usb_clkdat_d,
+	usb_clkref
 	);
 
 input			clock_300;
@@ -321,6 +322,7 @@ output			dbg_outStatus8;
 input[3:0]		usb_clkdat_i;
 output[3:0]		usb_clkdat_o;
 output[3:0]		usb_clkdat_d;
+output[1:0]		usb_clkref;
 
 
 reg[7:0]		tSegOutCharBit;
@@ -1478,7 +1480,8 @@ wire[1:0]	usbMmioOK;
 
 ModUsbBuf modusb(
 	clock_mmio,		reset2_mmio,
-	usb_clkdat_i,	usb_clkdat_o,	usb_clkdat_d,
+	usb_clkdat_i,	usb_clkdat_o,
+	usb_clkdat_d,	usb_clkref,
 	mmioOutDataQ,	usbMmioOutData,	mmioAddr,		
 	mmioOpm,		usbMmioOK
 	);

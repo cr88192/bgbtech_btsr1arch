@@ -1723,6 +1723,28 @@ Then this will produce as output:
 * u7,v7,u6,v6,u5,v5,u4,v4,u3,v3,u2,v2,u1,v1,u0,v0
 
 
+=== PxxxSH.x (NNX, Possible) ===
+
+* FE-FE F2nm_7Pjj  PMACSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
+* FE-FE F2nm_7Qjj  PMACSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
+* FE-FE F2nm_8pjj  PADD.H		Rm, Imm56fv, Rn			//(NNX)
+* FE-FE F2nm_8Pjj  PADD.F		Xm, Imm56fv, Xn			//(NNX)
+* FE-FE F2nm_8qjj  PMUL.H		Rm, Imm56fv, Rn			//(NNX)
+* FE-FE F2nm_8Qjj  PMUL.F		Xm, Imm56fv, Xn			//(NNX)
+* FE-FE F2nm_9pjj  PADDSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
+* FE-FE F2nm_9Pjj  PADDSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
+* FE-FE F2nm_9qjj  PMULSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
+* FE-FE F2nm_9Qjj  PMULSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
+
+These would be part of a Neural Net extension.
+These instructions would combine a SIMD shuffle with a vector operation against a vector immediate.
+
+In this case, an Imm56 field would be interpreted as:
+* Imm56fv:		4x S.E5.F8		(No Shuffle)
+* Imm48fv8sh:	4x S.E5.F6.I2	(Shuffle)
+** The I2 gives the source element within Rm. 
+
+
 === ROTCL ===
 
 * F036_3gn0  ROTCL.L	Rn
@@ -2974,6 +2996,7 @@ Get the absolute value of the double precision value in Rm and store the result 
 * F0nm_6goD            FADDG	Rm, Ro, Rn
 * F0nm_6GoD          ? FADD		Rm, Imm5fp, Rn		//(FpImm)
 * F2nE_DHjj          ? FADD		Imm10fp, Rn			//(FpImm) (E.q=1) FADD
+* FEjj_jjjj_F2nm_8pjj? FADD		Rm, Imm32f, Rn		//(NNX)
 * FFw0_00ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8
 * FFw0_00ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8
 
@@ -3191,6 +3214,7 @@ FMACX will operate instead on a LongDouble value (partial precision).
 * F0nm_6goF            FMULG	Rm, Ro, Rn		//(GFP) FMUL
 * F0nm_6GoF          ? FMUL		Rm, Imm5fp, Rn	//(FpImm)
 * F2nF_DHjj          ? FMUL		Imm10fp, Rn		//(FpImm) (E.q=1) FMUL
+* FEjj_jjjj_F2nm_8qjj? FMUL		Rm, Imm32f, Rn		//(NNX)
 * FFw0_00ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8
 * FFw0_00ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8
 
