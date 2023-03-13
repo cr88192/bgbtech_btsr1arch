@@ -334,7 +334,10 @@ int BTSR1_MainAddUsbKey(int key)
 			shift|=0x102;
 		}
 		
-		usb_kbsticky=1;
+		if(kix&0xFF)
+		{
+			usb_kbsticky=1;
+		}
 	}
 	
 	usb_kbmsg[ 0]=0xC3;	//PID: IN
@@ -390,7 +393,7 @@ int BTSR1_MainAddTranslateKey(int key)
 		0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000, 0x000,		//F8..FF
 	};
 	
-	int sc;
+	int sc, wasst;
 	int i, j, k;
 
 	if(do_qmt)
@@ -399,20 +402,30 @@ int BTSR1_MainAddTranslateKey(int key)
 //		u16 usb_kbstbuf[32];
 //		byte usb_kbstpos;
 
-		if(!usb_kbsticky && usb_kbstpos)
+		wasst=0;
+		if(!usb_kbsticky && (usb_kbstpos>0))
 		{
 			/* Handle held-back key releases. */
 			for(i=0; i<usb_kbstpos; i++)
 			{
-				BTSR1_MainAddUsbKey(usb_kbstbuf[i]);
+				k=usb_kbstbuf[i];
+				BTSR1_MainAddUsbKey(k);
+				if(!(k&0x8000))
+					break;
+				for(j=i; j<usb_kbstpos; j++)
+					usb_kbstbuf[i]=usb_kbstbuf[i+1];
+				usb_kbstpos--;
 			}
-			usb_kbstpos=0;
+//			usb_kbstpos=0;
+//			usb_kbsticky=0;
+			wasst=1;
 		}
 
-		if(usb_kbsticky && (key&0x8000))
+		if((usb_kbsticky && (key&0x8000)) || wasst)
 		{
 			/* If sticky and key is released, hold back key release. */
 			usb_kbstbuf[usb_kbstpos++]=key;
+			usb_kbstbuf[usb_kbstpos]=0;
 		}else
 		{
 			BTSR1_MainAddUsbKey(key);

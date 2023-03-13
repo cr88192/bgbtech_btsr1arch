@@ -113,6 +113,9 @@ reg			doUsbStTxA;
 reg[7:0]	idxUsbLdRxAL;
 reg[7:0]	idxUsbStRxAL;
 
+reg[7:0]	idxUsbLdRxM;
+reg[7:0]	idxUsbStRxM;
+
 reg[35:0]	arrUsbRxB[255:0];
 reg[35:0]	arrUsbTxB[255:0];
 reg[9:0]	idxUsbRxsB;
@@ -311,8 +314,16 @@ begin
 		nxtClkAccRxB = tClkAccRxB + 15728;
 `endif
 
-	inhClkAccRxA	= tClkAccRxA + 7864;
-	inhClkAccRxB	= tClkAccRxB + 7864;
+//	inhClkAccRxA	= tClkAccRxA + 7864;
+//	inhClkAccRxB	= tClkAccRxB + 7864;
+
+	inhClkAccRxA	= tClkAccRxA + 3932;
+	inhClkAccRxB	= tClkAccRxB + 3932;
+
+	if(tLinkTypeA == 2'b01)
+		inhClkAccRxA	= tClkAccRxA + 15728;
+	if(tLinkTypeB == 2'b01)
+		inhClkAccRxB	= tClkAccRxB + 15728;
 
 //	tClkStrobeRxA		= tClkAccRxA[12];
 //	tClkStrobeRxB		= tClkAccRxB[12];
@@ -347,6 +358,11 @@ begin
 		tClkStrobeInhA = 1;
 	if(tClkPulseRxPhB)
 		tClkStrobeInhB = 1;
+
+	if((tPacketStateA==4'h0) && (tPacketStateTxA==4'h0))
+		tClkStrobeInhA = 0;
+	if((tPacketStateB==4'h0) && (tPacketStateTxB==4'h0))
+		tClkStrobeInhB = 0;
 
 	if(tNxtLinkStateA != tLinkStateA)
 	begin
@@ -588,16 +604,19 @@ begin
 		end
 		else if(tLinkStateA==2'b00)
 		begin
-//			$display("ModUsbBuf: See EOP");
+			if(tPacketStateA[3])
+			begin
+				$display("ModUsbBuf: See EOP");
 
-			case(idxUsbRxeA[1:0])
-				2'b00: valUsbStRxA[ 8: 0] = 9'h100;
-				2'b01: valUsbStRxA[17: 9] = 9'h100;
-				2'b10: valUsbStRxA[26:18] = 9'h100;
-				2'b11: valUsbStRxA[35:27] = 9'h100;
-			endcase
-			nxtIdxUsbRxeA	= idxUsbRxeA + 1;
-			doUsbStRxA		= 1;
+				case(idxUsbRxeA[1:0])
+					2'b00: valUsbStRxA[ 8: 0] = 9'h100;
+					2'b01: valUsbStRxA[17: 9] = 9'h100;
+					2'b10: valUsbStRxA[26:18] = 9'h100;
+					2'b11: valUsbStRxA[35:27] = 9'h100;
+				endcase
+				nxtIdxUsbRxeA	= idxUsbRxeA + 1;
+				doUsbStRxA		= 1;
+			end
 
 			tNxtPacketStateA = 0;
 			tNxtBitStateA = 0;
@@ -705,14 +724,17 @@ begin
 		end
 		else if(tLinkStateB==2'b00)
 		begin
-			case(idxUsbRxeB[1:0])
-				2'b00: valUsbStRxB[ 8: 0] = 9'h100;
-				2'b01: valUsbStRxB[17: 9] = 9'h100;
-				2'b10: valUsbStRxB[26:18] = 9'h100;
-				2'b11: valUsbStRxB[35:27] = 9'h100;
-			endcase
-			nxtIdxUsbRxeB	= idxUsbRxeB + 1;
-			doUsbStRxB		= 1;
+			if(tPacketStateB[3])
+			begin
+				case(idxUsbRxeB[1:0])
+					2'b00: valUsbStRxB[ 8: 0] = 9'h100;
+					2'b01: valUsbStRxB[17: 9] = 9'h100;
+					2'b10: valUsbStRxB[26:18] = 9'h100;
+					2'b11: valUsbStRxB[35:27] = 9'h100;
+				endcase
+				nxtIdxUsbRxeB	= idxUsbRxeB + 1;
+				doUsbStRxB		= 1;
+			end
 
 			tNxtPacketStateB = 0;
 			tNxtBitStateB = 0;
@@ -743,12 +765,14 @@ begin
 		end
 		else
 		begin
+			idxUsbLdRxM = tMmioAddr[10:3];
+		
 			if(!tClkStrobeInhA && !tClkStrobeInhB)
 			begin
-				idxUsbLdRxA = tMmioAddr[10:3];
-				idxUsbLdTxA	= idxUsbLdRxA;
-				idxUsbLdRxB = tMmioAddr[10:3];
-				idxUsbLdTxB	= idxUsbLdRxB;
+				idxUsbLdRxA = idxUsbLdRxM;
+				idxUsbLdTxA	= idxUsbLdRxM;
+				idxUsbLdRxB = idxUsbLdRxM;
+				idxUsbLdTxB	= idxUsbLdRxM;
 			end
 
 			tMmioOutData = {
@@ -758,8 +782,12 @@ begin
 				{ 7'b0, valUsbLdSel[ 8: 0] }
 			};
 			
-			if(idxUsbLdRxAL	== idxUsbLdRxA)
+			tMmioOK = UMEM_OK_HOLD;
+
+			if(idxUsbLdRxAL	== idxUsbLdRxM)
 			begin
+				$display("ModUsbBuf: Read Data A=%X V=%X",
+					tMmioAddr, tMmioOutData);
 				tMmioOK = UMEM_OK_OK;
 				tMmioOutAddr = tMmioAddr;
 			end
@@ -776,12 +804,14 @@ begin
 		end
 		else
 		begin
+			idxUsbStRxM = tMmioAddr[10:3];
+
 			if(!tClkStrobeInhA && !tClkStrobeInhB)
 			begin
-				idxUsbStRxA = tMmioAddr[10:3];
-				idxUsbStTxA	= idxUsbStRxA;
-				idxUsbStRxB = tMmioAddr[10:3];
-				idxUsbStTxB	= idxUsbStRxB;
+				idxUsbStRxA = idxUsbStRxM;
+				idxUsbStTxA	= idxUsbStRxM;
+				idxUsbStRxB = idxUsbStRxM;
+				idxUsbStTxB	= idxUsbStRxM;
 
 				valUsbStRxA	= valUsbStSel;
 				valUsbStTxA	= valUsbStSel;
@@ -796,7 +826,9 @@ begin
 				endcase
 			end
 
-			if(idxUsbStRxAL	== idxUsbStRxA)
+			tMmioOK = UMEM_OK_HOLD;
+
+			if(idxUsbStRxAL	== idxUsbStRxM)
 			begin
 				tMmioOK = UMEM_OK_OK;
 				tMmioOutAddr = tMmioAddr;
