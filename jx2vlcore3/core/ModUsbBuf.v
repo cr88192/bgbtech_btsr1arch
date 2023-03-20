@@ -209,6 +209,9 @@ reg[11:0]	tBitShiftNsB;
 reg[11:0]	tNxtBitShiftNsA;
 reg[11:0]	tNxtBitShiftNsB;
 
+reg[7:0]	tGetByteNsA;
+reg[7:0]	tGetByteNsB;
+
 reg[11:0]	tBitShiftTxA;
 reg[11:0]	tBitShiftTxB;
 reg[11:0]	tNxtBitShiftTxA;
@@ -235,6 +238,14 @@ reg[8:0]	tNxtPacketTxByte2B;
 
 reg			tPacketTxBitA;
 reg			tPacketTxBitB;
+
+reg[31:0]	tLinkStatusRegA;
+reg[31:0]	tLinkStatusRegB;
+
+reg[15:0]	tIdleTimerCntA;
+reg[15:0]	tIdleTimerCntB;
+reg[15:0]	tNxtIdleTimerCntA;
+reg[15:0]	tNxtIdleTimerCntB;
 
 always @*
 begin
@@ -297,6 +308,11 @@ begin
 	tNxtLinkStateB		= tUsbClkdatIn[3:2];
 	tNxtLinkStateCntA	= tLinkStateCntA + 1;
 	tNxtLinkStateCntB	= tLinkStateCntB + 1;
+
+	if(tUsbClkdatDir2[0])
+		tNxtLinkStateA = tLinkTypeA;
+	if(tUsbClkdatDir2[2])
+		tNxtLinkStateB = tLinkTypeB;
 
 //	nxtClkAccRxA = tClkAccRxA + 123;
 //	nxtClkAccRxB = tClkAccRxB + 123;
@@ -402,6 +418,21 @@ begin
 	tNxtPacketTxByteB	= tPacketTxByteB;
 	tNxtPacketTxByte2A	= tPacketTxByte2A;
 	tNxtPacketTxByte2B	= tPacketTxByte2B;
+
+	tNxtIdleTimerCntA	= tIdleTimerCntA;
+	tNxtIdleTimerCntB	= tIdleTimerCntB;
+
+	tLinkStatusRegA	= {
+		22'h0,
+		tNxtLinkTypeA,
+		tPacketStateTxA,
+		tPacketStateA };
+
+	tLinkStatusRegB	= {
+		22'h0,
+		tNxtLinkTypeB,
+		tPacketStateTxB,
+		tPacketStateB };
 	
 	case(idxUsbTxsA[1:0])
 		2'b00: tNxtPacketTxByte2A = valUsbLdTxA[ 8: 0];
@@ -467,6 +498,34 @@ begin
 		begin
 			tNxtUsbClkdatOut[1:0]	= 2'b00;
 			tNxtUsbClkdatDir[1:0]	= 2'b00;
+
+			if(tIdleTimerCntA != 0)
+			begin
+				tNxtIdleTimerCntA = tIdleTimerCntA - 1;
+			end
+			else
+			begin
+				tNxtIdleTimerCntA = 1500;
+				tNxtPacketStateTxA = 4'h4;
+			end
+		end
+
+		if(tPacketStateTxA == 4'h1)
+		begin
+			tNxtLinkStateTxA		= 2'b00;
+			tNxtUsbClkdatOut[1:0]	= tNxtLinkStateTxA;
+			tNxtUsbClkdatDir[1:0]	= 2'b11;
+
+			if(tIdleTimerCntA != 0)
+			begin
+				tNxtIdleTimerCntA = tIdleTimerCntA - 1;
+			end
+			else
+			begin
+				tNxtIdleTimerCntA = 1500;
+				if(tPacketStateA == 4'h0)
+					tNxtPacketStateTxA = 4'h4;
+			end
 		end
 	
 		if(tPacketStateTxA[3:1]==3'b010)
@@ -488,9 +547,20 @@ begin
 //			$display("ModUsbBuf: tClkPulseRxPhA B0");
 
 			tNxtLinkStateTxA		= tPacketStateTxA[0] ? 2'b10 : 2'b01;
-			tNxtUsbClkdatOut[1:0]	= tNxtLinkStateTxA;
 			tNxtUsbClkdatDir[1:0]	= 2'b11;
 			tNxtPacketStateTxA		= tPacketStateTxA + 1;
+
+			if(tPacketTxByte2A[8] && tPacketTxByte2A[0])
+			begin
+				$display("ModUsbBuf: Reset Command A");
+				tNxtLinkStateTxA	= 0;
+//				tNxtIdleTimerCntA	= 3750;
+				tNxtIdleTimerCntA	= 4095;
+				tNxtPacketStateTxA	= 4'h1;
+				nxtIdxUsbTxsA		= idxUsbTxsA + 1;
+			end
+
+			tNxtUsbClkdatOut[1:0]	= tNxtLinkStateTxA;
 
 //			$display("ModUsbBuf: tClkPulseRxPhA B1 %X", tNxtLinkStateTxA);
 		end
@@ -530,7 +600,11 @@ begin
 				begin
 					$display("ModUsbBuf: Begin Send Byte %X S/E=%X/%X",
 						tPacketTxByte2A, idxUsbTxsA, idxUsbTxeA);
-					tNxtPacketTxByteA	= tPacketTxByte2A;
+//					tNxtPacketTxByteA	= tPacketTxByte2A;
+//					tNxtPacketTxByteA	= ~tPacketTxByte2A;
+					tNxtPacketTxByteA	= 	{
+						tPacketTxByte2A[8],
+						~tPacketTxByte2A[7:0] };
 					nxtIdxUsbTxsA	= idxUsbTxsA + 1;
 					tNxtPacketStateTxA = 4'h8;
 				end
@@ -563,7 +637,7 @@ begin
 				
 				if((tNxtBitShiftA[11:5] == 7'b0000000) && tPacketStateA[3])
 				begin
-					$display("ModUsbBuf: Missing expected stuff bit");
+					$display("ModUsbBuf: Missing expected stuff bit A");
 				end
 			end
 
@@ -581,21 +655,28 @@ begin
 				end
 			end
 
-			if((tBitShiftA[11:3]==9'b011111111) && !tPacketStateA[3])
+//			if((tBitShiftA[11:3]==9'b011111111) && !tPacketStateA[3])
+//			if((tNxtBitShiftA[11:3]==9'b011111111) && !tPacketStateA[3])
+//			if((tNxtBitShiftA[11:4]==8'b01111111) && !tPacketStateA[3])
+//			if((tNxtBitShiftA[11:5]==7'b0111111) && !tPacketStateA[3])
+			if((tNxtBitShiftA[11:6]==6'b011111) && !tPacketStateA[3])
 			begin
-				$display("ModUsbBuf: Seen Sync");
+				$display("ModUsbBuf: Seen Sync A");
 				tNxtPacketStateA = 4'h8;
 			end
 
 			if(tPacketStateA==4'hF)
 			begin
+//				tGetByteNsA = tBitShiftNsA[11:4];
+//				tGetByteNsA = ~tBitShiftNsA[11:4];
+				tGetByteNsA = ~tNxtBitShiftNsA[11:4];
 				$display("USB A: Get Byte %X %X..%X blk0=%X",
-					tBitShiftNsA[11:4], idxUsbRxsA, idxUsbRxeA, valUsbStRxA);
+					tGetByteNsA, idxUsbRxsA, idxUsbRxeA, valUsbStRxA);
 				case(idxUsbRxeA[1:0])
-					2'b00: valUsbStRxA[ 8: 0] = {1'b0, tBitShiftNsA[11:4]};
-					2'b01: valUsbStRxA[17: 9] = {1'b0, tBitShiftNsA[11:4]};
-					2'b10: valUsbStRxA[26:18] = {1'b0, tBitShiftNsA[11:4]};
-					2'b11: valUsbStRxA[35:27] = {1'b0, tBitShiftNsA[11:4]};
+					2'b00: valUsbStRxA[ 8: 0] = {1'b0, tGetByteNsA};
+					2'b01: valUsbStRxA[17: 9] = {1'b0, tGetByteNsA};
+					2'b10: valUsbStRxA[26:18] = {1'b0, tGetByteNsA};
+					2'b11: valUsbStRxA[35:27] = {1'b0, tGetByteNsA};
 				endcase
 				$display("  blk1=%X", valUsbStRxA);
 				nxtIdxUsbRxeA	= idxUsbRxeA + 1;
@@ -620,6 +701,9 @@ begin
 
 			tNxtPacketStateA = 0;
 			tNxtBitStateA = 0;
+			
+			tNxtBitShiftA	= 12'h555;
+			tNxtBitShiftNsA	= 12'h555;
 		end
 	end
 
@@ -629,8 +713,36 @@ begin
 		begin
 			tNxtUsbClkdatOut[3:2]	= 2'b00;
 			tNxtUsbClkdatDir[3:2]	= 2'b00;
+
+			if(tIdleTimerCntB != 0)
+			begin
+				tNxtIdleTimerCntB = tIdleTimerCntB - 1;
+			end
+			else
+			begin
+				tNxtIdleTimerCntB = 1500;
+				if(tPacketStateB == 4'h0)
+					tNxtPacketStateTxB = 4'h4;
+			end
 		end
-	
+
+		if(tPacketStateTxB == 4'h1)
+		begin
+			tNxtLinkStateTxB		= 2'b00;
+			tNxtUsbClkdatOut[3:2]	= tNxtLinkStateTxB;
+			tNxtUsbClkdatDir[3:2]	= 2'b11;
+
+			if(tIdleTimerCntB != 0)
+			begin
+				tNxtIdleTimerCntB = tIdleTimerCntB - 1;
+			end
+			else
+			begin
+				tNxtIdleTimerCntB = 1500;
+				tNxtPacketStateTxB = 4'h4;
+			end
+		end
+
 		if(tPacketStateTxB[3:1]==3'b010)
 		begin
 			tNxtUsbClkdatOut[3:2]	= 2'b00;
@@ -643,9 +755,20 @@ begin
 		if(tPacketStateTxB[3:1]==3'b011)
 		begin
 			tNxtLinkStateTxB		= tPacketStateTxB[0] ? 2'b10 : 2'b01;
-			tNxtUsbClkdatOut[3:2]	= tNxtLinkStateTxB;
 			tNxtUsbClkdatDir[3:2]	= 2'b11;
 			tNxtPacketStateTxB		= tPacketStateTxB + 1;
+
+			if(tPacketTxByte2B[8] && tPacketTxByte2B[0])
+			begin
+				$display("ModUsbBuf: Reset Command B");
+				tNxtLinkStateTxB	= 0;
+//				tNxtIdleTimerCntB	= 3750;
+				tNxtIdleTimerCntB	= 4095;
+				tNxtPacketStateTxB	= 4'h1;
+				nxtIdxUsbTxsB		= idxUsbTxsB + 1;
+			end
+
+			tNxtUsbClkdatOut[3:2]	= tNxtLinkStateTxB;
 		end
 
 		if(tPacketStateTxB[3])
@@ -679,7 +802,11 @@ begin
 				if(!tPacketTxByte2B[8] && (idxUsbTxsB!=idxUsbTxeB))
 //				if(idxUsbTxsB!=idxUsbTxeB)
 				begin
-					tNxtPacketTxByteB	= tPacketTxByte2B;
+//					tNxtPacketTxByteB	= tPacketTxByte2B;
+//					tNxtPacketTxByteB	= ~tPacketTxByte2B;
+					tNxtPacketTxByteB	= 	{
+						tPacketTxByte2B[8],
+						~tPacketTxByte2B[7:0] };
 					nxtIdxUsbTxsB		= idxUsbTxsB + 1;
 					tNxtPacketStateTxB	= 4'h8;
 				end
@@ -698,24 +825,44 @@ begin
 		if(tLinkStateB[1]^tLinkStateB[0])
 		begin
 			tNxtBitShiftB = { tBitStateB != tNxtBitStateB, tBitShiftB[11:1] };
-			if(tBitShiftB[11:6] != 6'b000000)
+//			if(tBitShiftB[11:6] != 6'b000000)
+			if(tNxtBitShiftB[11:5] != 7'b1000000)
+			begin
 				tNxtBitShiftNsB = {
-					tBitStateA != tNxtBitStateA,
+					tBitStateB != tNxtBitStateB,
 					tBitShiftNsB[11:1] };
-			if(tPacketStateB[3])
-				tNxtPacketStateB[2:0] = tPacketStateB[2:0] + 1;
-			if((tBitShiftB[11:3]==9'b011111111) && !tPacketStateB[3])
+				if(tPacketStateB[3])
+					tNxtPacketStateB[2:0] = tPacketStateB[2:0] + 1;
+				
+				if((tNxtBitShiftB[11:5] == 7'b0000000) && tPacketStateB[3])
+				begin
+					$display("ModUsbBuf: Missing expected stuff bit B");
+				end
+			end
+
+//			if((tBitShiftB[11:3]==9'b011111111) && !tPacketStateB[3])
+//			if((tNxtBitShiftB[11:3]==9'b011111111) && !tPacketStateB[3])
+//			if((tNxtBitShiftB[11:4]==8'b01111111) && !tPacketStateB[3])
+//			if((tNxtBitShiftB[11:5]==7'b0111111) && !tPacketStateB[3])
+			if((tNxtBitShiftB[11:6]==6'b011111) && !tPacketStateB[3])
+			begin
+				$display("ModUsbBuf: Seen Sync B");
 				tNxtPacketStateB = 4'h8;
+			end
+
 
 			if(tPacketStateB==4'hF)
 			begin
+//				tGetByteNsB = tBitShiftNsB[11:4];
+//				tGetByteNsB = ~tBitShiftNsB[11:4];
+				tGetByteNsB = ~tNxtBitShiftNsB[11:4];
 				$display("USB B: Get Byte %X  %X..%X",
-					tBitShiftNsB[11:4], idxUsbRxsB, idxUsbRxeB);
+					tGetByteNsB, idxUsbRxsB, idxUsbRxeB);
 				case(idxUsbRxeB[1:0])
-					2'b00: valUsbStRxB[ 8: 0] = {1'b0, tBitShiftNsB[11:4]};
-					2'b01: valUsbStRxB[17: 9] = {1'b0, tBitShiftNsB[11:4]};
-					2'b10: valUsbStRxB[26:18] = {1'b0, tBitShiftNsB[11:4]};
-					2'b11: valUsbStRxB[35:27] = {1'b0, tBitShiftNsB[11:4]};
+					2'b00: valUsbStRxB[ 8: 0] = {1'b0, tGetByteNsB};
+					2'b01: valUsbStRxB[17: 9] = {1'b0, tGetByteNsB};
+					2'b10: valUsbStRxB[26:18] = {1'b0, tGetByteNsB};
+					2'b11: valUsbStRxB[35:27] = {1'b0, tGetByteNsB};
 				endcase
 				nxtIdxUsbRxeB	= idxUsbRxeB + 1;
 				doUsbStRxB		= 1;
@@ -738,6 +885,9 @@ begin
 
 			tNxtPacketStateB = 0;
 			tNxtBitStateB = 0;
+			
+			tNxtBitShiftB	= 12'h555;
+			tNxtBitShiftNsB	= 12'h555;
 		end
 	end
 
@@ -853,18 +1003,26 @@ begin
 						tMmioOutData = {
 							22'h00, idxUsbRxeA,
 							22'h00, idxUsbRxsA };
+					6'h02:
+						tMmioOutData = { 32'h00, tLinkStatusRegA };
 					6'h04:
 						tMmioOutData = {
 							22'h00, idxUsbTxeA,
 							22'h00, idxUsbTxsA };
+					6'h06:
+						tMmioOutData = { 32'h00, tLinkStatusRegA };
 					6'h08:
 						tMmioOutData = {
 							22'h00, idxUsbRxeB,
 							22'h00, idxUsbRxsB };
+					6'h0A:
+						tMmioOutData = { 32'h00, tLinkStatusRegB };
 					6'h0C:
 						tMmioOutData = {
 							22'h00, idxUsbTxeB,
 							22'h00, idxUsbTxsB };
+					6'h0E:
+						tMmioOutData = { 32'h00, tLinkStatusRegB };
 					default: begin	end
 				endcase
 //				$display("ModUsbBuf: Read 64b %X %X", tMmioAddr, tMmioOutData);
@@ -874,12 +1032,23 @@ begin
 				case(tMmioAddr[7:2])
 					6'h00: tMmioOutData = { 54'h00, idxUsbRxsA };
 					6'h01: tMmioOutData = { 54'h00, idxUsbRxeA };
+					6'h02: tMmioOutData = { 32'h00, tLinkStatusRegA };
+					6'h03: tMmioOutData = 0;
+
 					6'h04: tMmioOutData = { 54'h00, idxUsbTxsA };
 					6'h05: tMmioOutData = { 54'h00, idxUsbTxeA };
+					6'h06: tMmioOutData = { 32'h00, tLinkStatusRegA };
+					6'h07: tMmioOutData = 0;
+
 					6'h08: tMmioOutData = { 54'h00, idxUsbRxsB };
 					6'h09: tMmioOutData = { 54'h00, idxUsbRxeB };
+					6'h0A: tMmioOutData = { 32'h00, tLinkStatusRegB };
+					6'h0B: tMmioOutData = 0;
+
 					6'h0C: tMmioOutData = { 54'h00, idxUsbTxsB };
 					6'h0D: tMmioOutData = { 54'h00, idxUsbTxeB };
+					6'h0E: tMmioOutData = { 32'h00, tLinkStatusRegB };
+					6'h0F: tMmioOutData = 0;
 					default: begin	end
 				endcase
 //				$display("ModUsbBuf: Read 32b %X %X", tMmioAddr, tMmioOutData);
@@ -968,6 +1137,12 @@ begin
 
 		tNxtUsbClkdatOut	= 0;
 		tNxtUsbClkdatDir	= 0;
+
+		tNxtIdleTimerCntA	= 4095;
+		tNxtPacketStateTxA	= 4'h1;
+
+		tNxtIdleTimerCntB	= 4095;
+		tNxtPacketStateTxB	= 4'h1;
 	end
 end
 
@@ -1060,6 +1235,9 @@ begin
 	tPacketTxByteB		<= tNxtPacketTxByteB;
 	tPacketTxByte2A		<= tNxtPacketTxByte2A;
 	tPacketTxByte2B		<= tNxtPacketTxByte2B;
+
+	tIdleTimerCntA		<= tNxtIdleTimerCntA;
+	tIdleTimerCntB		<= tNxtIdleTimerCntB;
 
 end
 

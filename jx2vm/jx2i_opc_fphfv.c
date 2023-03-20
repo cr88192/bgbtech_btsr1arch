@@ -687,6 +687,76 @@ void BJX2_Op_PMULH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_PADDH_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];
+//	vt=ctx->regs[op->ro];
+	vt=op->imm;
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	tv2[0]=tv0[0]+tv1[0];	tv2[1]=tv0[1]+tv1[1];
+	tv2[2]=tv0[2]+tv1[2];	tv2[3]=tv0[3]+tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PMULH_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];
+//	vt=ctx->regs[op->ro];
+	vt=op->imm;
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	tv2[0]=tv0[0]*tv1[0];	tv2[1]=tv0[1]*tv1[1];
+	tv2[2]=tv0[2]*tv1[2];	tv2[3]=tv0[3]*tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PADDXF_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs0, vs1, vt0, vt1, vn0, vn1;
+
+	vs0=ctx->regs[op->rm+0];
+	vs1=ctx->regs[op->rm+1];
+
+	jx2_upvec_f(tv0+0, vs0);
+	jx2_upvec_f(tv0+2, vs1);
+	jx2_upvec_hf(tv1, op->imm);
+	tv2[0]=tv0[0]+tv1[0];	tv2[1]=tv0[1]+tv1[1];
+	tv2[2]=tv0[2]+tv1[2];	tv2[3]=tv0[3]+tv1[3];
+	vn0=jx2_mkvec_f(tv2[0], tv2[1]);
+	vn1=jx2_mkvec_f(tv2[2], tv2[3]);
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+}
+
+void BJX2_Op_PMULXF_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs0, vs1, vt0, vt1, vn0, vn1;
+
+	vs0=ctx->regs[op->rm+0];
+	vs1=ctx->regs[op->rm+1];
+
+	jx2_upvec_f(tv0+0, vs0);
+	jx2_upvec_f(tv0+2, vs1);
+	jx2_upvec_hf(tv1, op->imm);
+	tv2[0]=tv0[0]*tv1[0];	tv2[1]=tv0[1]*tv1[1];
+	tv2[2]=tv0[2]*tv1[2];	tv2[3]=tv0[3]*tv1[3];
+	vn0=jx2_mkvec_f(tv2[0], tv2[1]);
+	vn1=jx2_mkvec_f(tv2[2], tv2[3]);
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+}
+
 #if 1
 void BJX2_Op_PADDXD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

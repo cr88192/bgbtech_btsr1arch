@@ -1373,10 +1373,15 @@ int usb_parserxeop()
 	{
 //		if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)
 		if(	(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x00) ||
-			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)	)
+			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01) ||
+			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x80) ||
+			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x81)	)
 		{
 			usb_hidkbreport();
 		}
+	}else
+	{
+	printf("usb_parserxeop: unhandled %02X\n", usb_rxbuf[usb_rxposs]);
 	}
 	
 	usb_rxposs=usb_rxpose;
@@ -1384,11 +1389,11 @@ int usb_parserxeop()
 
 int update_usb()
 {
-	static short xmit;
-	static byte xmitpos, xmitmd;
+	static short xmit, xmit0;
+	static byte xmitpos, xmitmd, xmitmd0, xmitpos0;
 	static byte xmitclk_val;
 	static int xmitclk_cnt;
-	static byte xmit_upd, txwin;
+	static byte xmit_upd, txwin, txwin0;
 	static byte tclk, tdat, lclk, tlclk, tdatl;
 	static byte b, pb, clkr, lclkr;
 	static byte rxdat, rxldat, rxbit, rxldat2;
@@ -1448,9 +1453,16 @@ int update_usb()
 		
 		rxwin1=(rxwin1>>1)|(rxbit<<15);
 		rxwin2=(rxwin2>>1)|(rxbit<<15);
+
+		if(rxdat==0)
+		{
+			rxwin1=0x55;
+			rxwin2=0x55;
+		}
+		
 		if((rxwin1&0xFE00)==0x8000)
 		{
-			printf("update_usb: Bit Stuff\n");
+			printf("update_usb: RX Bit Stuff\n");
 			/* Stuffed Bit */
 			rxwin2=(rxwin2<<1)&0xFFFF;
 			didsb=1;
@@ -1481,6 +1493,7 @@ int update_usb()
 			if(rxmd==16)
 			{
 				rxby=rxwin2>>8;
+				rxby=~rxby;
 				printf("update_usb: rxby=%02X\n", rxby);
 				usb_rxbuf[usb_rxpose]=rxby;
 				usb_rxpose=(usb_rxpose+1)&255;
@@ -1493,6 +1506,8 @@ int update_usb()
 				usb_rxbuf[usb_rxpose]=0x100;
 				usb_rxpose=(usb_rxpose+1)&255;
 				rxmd=0;
+				rxwin1=0x5555;
+				rxwin2=0x5555;
 				usb_parserxeop();
 			}
 		}else
@@ -1533,6 +1548,7 @@ int update_usb()
 					xmitpos=8;
 					
 					printf("update_usb: send=%02X\n", xmit);
+					xmit^=0xFF;
 				}else if(xmitmd&0x30)
 				{
 					xmit=0x100;
@@ -1553,11 +1569,18 @@ int update_usb()
 		{
 			tdat=2;		/* Low Speed */
 		}
+
+		tdatl=tdat;
 	}else
 	{
 //		printf("update_usb: Bit-Active, xmit=%02X pos=%d md=%X\n",
 //			xmit, xmitpos, xmitmd);
 
+		xmitpos0=xmitpos;
+		xmitmd0=xmitmd;
+		xmit0=xmit;
+		txwin0=txwin;
+		
 //		if(xmit_upd)
 		if(1)
 		{
@@ -1572,6 +1595,8 @@ int update_usb()
 				case  2: b=(xmit>>6)&1; break;
 				case  1: b=(xmit>>7)&1; break;
 			}
+//			b=!b;
+			
 //			tdat=b;
 			xmit_upd=0;
 		}
@@ -1585,27 +1610,32 @@ int update_usb()
 			tclk=xmitclk_val;
 			xmit_upd=1;
 
-			txwin=(txwin>>1)|(b<<7);
+//			txwin=(txwin>>1)|(b<<7);
+			txwin=(txwin0>>1)|(b<<7);
 			
 			if(!(xmitmd&0x30))
 			{
 //				if(xmitmd<8)
-				if(xmitmd<10)
+				if(xmitmd<7)
+//				if(xmitmd<10)
 				{
 					b=1;
 //					if(!xmitclk_val)
 					xmitmd++;
+					txwin=0x55;
 				}else
 				{
 					b=0;
 //					if(!xmitclk_val)
 					xmitmd=0x10;
 				}
+
+				txwin=(txwin0>>1)|(b<<7);
 			}
 //			else if((txwin&0xFC)==0x00)
 			else if((txwin&0xFE)==0x00)
 			{
-				printf("update_usb: Bit Stuff\n");
+				printf("update_usb: TX Bit Stuff\n");
 
 				/* bit stuff */
 				txwin|=0x80;
@@ -1621,6 +1651,7 @@ int update_usb()
 					usb_txposs=(usb_txposs+1)&255;
 					xmitpos=8;
 					printf("update_usb: B-send=%02X\n", xmit);
+					xmit^=0xFF;
 				}
 			}
 			
@@ -1630,26 +1661,34 @@ int update_usb()
 					tdat=2;
 				if(tdatl==2)
 					tdat=1;
-				tdatl=tdat;
+//				tdatl=tdat;
 			}else
 			{
 				tdat=tdatl;
 			}
 			
-			if(xmit&0x100)
+			if(xmit0&0x100)
 			{
 				printf("update_usb: EOP Byte\n");
 				tdat=0;
 				if(xmitpos<=0)
+				{
 					xmitmd=0;
+					txwin=0x55;
+				}
 			}
 			
 //			if(!xmitclk_val)
 //			txwin=(txwin>>1)|(b<<7);
 			
-			printf("update_usb: Send Bit %X pos=%d\n",
-				tdat, xmitpos);
+			printf("update_usb: Send Bit %d %X->%X pos=%d->%d md=%02X->%02X\n",
+				b,
+				tdatl, tdat,
+				xmitpos0, xmitpos,
+				xmitmd0, xmitmd);
 		}
+
+		tdatl=tdat;
 	}
 
 

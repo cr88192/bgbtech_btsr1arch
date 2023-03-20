@@ -4476,6 +4476,28 @@ begin
 					opFmid	= JX2_FMID_REGIMMREG;
 					opIty	= JX2_ITY_UW;
 				end
+
+				if(opIsJumbo96)
+				begin
+					opNmid		= JX2_UCMD_FPUV4SF;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_UB;
+
+					if(opExQ)
+					begin
+						if(opExI)
+							opUCmdIx	= JX2_UCIX_FPU_PMULX;
+						else
+							opUCmdIx	= JX2_UCIX_FPU_PADDX;
+						opUCty		= JX2_IUC_WX;
+					end else begin
+						if(opExI)
+							opUCmdIx	= JX2_UCIX_FPU_PMULH;
+						else
+							opUCmdIx	= JX2_UCIX_FPU_PADDH;
+					end
+
+				end
 			end
 			4'h9: begin		/* F2nm_9ejj */
 				if(opExI)
@@ -5345,6 +5367,7 @@ begin
 		REGIMMREG, Fz:
 			SB: Rm, 0, Rn
 			SW:	Rm, Imm9s, Rn
+			/ SL: Rm, ImmVf, Rn
 
 			UB:	Rm, Imm9f/Imm16f, Rn
 			UW:	Rm, Imm9u, Rn
@@ -5360,6 +5383,7 @@ begin
 			opRegO	= JX2_GR_IMM;
 			opUIxt	= { opUCty, opUCmdIx };
 			opImm	= opImm_imm9u;
+			opIsImm9	= 0;
 
 			case(opIty)
 				JX2_ITY_SB: begin
@@ -5367,13 +5391,21 @@ begin
 				end
 				JX2_ITY_SW: begin
 					opImm	= opImm_imm9s;
+					opIsImm9	= 1;
 				end
 
 `ifdef jx2_use_fpu_fpimm
 				JX2_ITY_UB: begin
 					opImm		= opImm_imm9u;
+					opIsImm9	= 1;
 					
 //					opRegO	= JX2_GR_FPIMM10;
+					if(opIsJumbo96)
+					begin
+						opImm	= opImm_imm9u;
+						opRegO	= JX2_GR_FPIMM56VF;
+					end
+					else
 					if(opIsJumboAu)
 					begin
 						opImm	= opImm_imm9u;
@@ -5400,13 +5432,16 @@ begin
 
 				JX2_ITY_UW: begin
 					opImm	= opImm_imm9u;
+					opIsImm9	= 1;
 				end
 				JX2_ITY_NW: begin
 					opImm	= opImm_imm9n;
+					opIsImm9	= 1;
 				end
 
 				JX2_ITY_UL: begin
 					opImm	= opImm_imm9u;
+					opIsImm9	= 1;
 
 					opRegM	= JX2_GR_IMM;
 					opRegO	= opRegM_Dfl;
@@ -5417,6 +5452,8 @@ begin
 				end
 
 			endcase
+
+			opUFl[0]	= opIsImm9;
 		end
 
 `ifndef def_true

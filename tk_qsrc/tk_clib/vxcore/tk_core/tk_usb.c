@@ -8,6 +8,7 @@ int TKUSB_SendPacket(int port, byte *buf, int sz)
 	volatile u64 *txba;
 	volatile u64 *txra;
 	u16 *txbuf;
+	u64 v;
 	int i, n;
 
 //	tk_printf("TKUSB_SendPacket: %d\n", sz);
@@ -26,6 +27,10 @@ int TKUSB_SendPacket(int port, byte *buf, int sz)
 		return(-1);
 	}
 	
+	v=txra[1];
+	while(v&0xFF)
+		{ v=txra[1]; }
+
 	txbuf=tk_usb_txbuf1;
 	for(i=0; i<sz; i++)
 		txbuf[i]=buf[i];
@@ -39,6 +44,10 @@ int TKUSB_SendPacket(int port, byte *buf, int sz)
 
 	txra[0]=((u64)(sz+1))<<32;
 
+	v=txra[1];
+	while(v&0xFF)
+		{ v=txra[1]; }
+
 //	txra[0]=0;
 //	txra[1]=sz+1;
 }
@@ -49,7 +58,7 @@ int TKUSB_GetPacket(int port, byte *buf, int *rsz)
 	volatile u64 *txba;
 	volatile u64 *txra;
 	u16 *txbuf;
-	u64 txpos, txs, txe, ks, ke;
+	u64 txpos, txs, txe, ks, ke, v;
 	int i, j, k, n;
 
 	if(port==0)
@@ -68,6 +77,10 @@ int TKUSB_GetPacket(int port, byte *buf, int *rsz)
 		return(-1);
 	}
 	
+	v=txra[1];
+	while(v&0xFF)
+		{ v=txra[1]; }
+
 	txpos=txra[0];
 	txs=(u32)(txpos>> 0);
 	txe=(u32)(txpos>>32);
@@ -131,6 +144,324 @@ int TKUSB_GetPacket(int port, byte *buf, int *rsz)
 	txpos=(txpos&(~1023LL))|txs;
 	txra[0]=txpos;
 	return(1);
+}
+
+int TKUSB_GetLinkState(int port)
+{
+	volatile u64 *txba;
+	volatile u64 *txra;
+	u16 *txbuf;
+	u64 v;
+	int i, j, k, n;
+
+	if(port==0)
+	{
+		txba=(volatile u64 *)0xFFFFF0008000ULL;
+		txra=(volatile u64 *)0xFFFFF000E800ULL;
+		txbuf=tk_usb_rxbuf1;
+	}else
+		if(port==1)
+	{
+		txba=(volatile u64 *)0xFFFFF0009000ULL;
+		txra=(volatile u64 *)0xFFFFF000E820ULL;
+		txbuf=tk_usb_rxbuf2;
+	}else
+	{
+		return(0);
+	}
+	
+	v=txra[1];
+	return((v>>8)&3);
+}
+
+int TKUSB_WaitNotBusy(int port)
+{
+//	volatile u64 *txba;
+	volatile u64 *txra;
+//	u16 *txbuf;
+	u64 v;
+	int i, j, k, n;
+
+	if(port==0)
+	{
+//		txba=(volatile u64 *)0xFFFFF0008000ULL;
+		txra=(volatile u64 *)0xFFFFF000E800ULL;
+//		txbuf=tk_usb_rxbuf1;
+	}else
+		if(port==1)
+	{
+//		txba=(volatile u64 *)0xFFFFF0009000ULL;
+		txra=(volatile u64 *)0xFFFFF000E820ULL;
+//		txbuf=tk_usb_rxbuf2;
+	}else
+	{
+		return(0);
+	}
+	
+	v=txra[1];
+	while(v&0xFF)
+		{ v=txra[1]; }
+	return(0);
+}
+
+byte tk_usb_datarov[4];
+
+u16 TKUSB_DoCrc16Step(u16 crc0, byte value)
+{
+	u16 crc;
+	int i;
+	crc=crc0^(((u16)value)<<8);
+	for(i=0; i<8; i++)
+	{
+		if(crc&0x8000)
+//			{ crc=(crc<<1)^0x1021; }
+			{ crc=(crc<<1)^0x8005; }
+		else
+			{ crc=crc<<1; }
+	}
+	return(crc);
+}
+
+u16 TKUSB_Crc16(byte *data, u32 sz)
+{
+	byte *cs, *cse;
+	u16 crc;
+
+	crc=0xFFFF;
+	cs=data; cse=data+sz;
+	while (cs<cse)
+		{ crc=TKUSB_DoCrc16Step(crc, *cs++); }
+	return(crc);
+}
+
+byte TKUSB_Crc5(u32 v, int vl, int ival)
+{
+	static const byte bvtab[19] = {
+		0x1E, 0x15, 0x03, 0x06, 0x0C, 0x18, 0x19, 0x1B,
+		0x1F, 0x17, 0x07, 0x0E, 0x1C, 0x11, 0x0B, 0x16,
+		0x05, 0x0A, 0x14
+	};
+	byte rv;
+	int i;
+
+	rv = ival;
+	for(i=0; i<vl; i++)
+	{
+		if (v&(1<<i))
+			{ rv^=bvtab[19-vl+i]; }
+	}
+	return(rv);
+}
+
+byte TKUSB_Crc5_11b(u16 val)
+	{ return(TKUSB_Crc5(val, 11, 0x02)); }
+byte TKUSB_Crc5_19b(u32 val)
+	{ return(TKUSB_Crc5(val, 19, 0x1D)); }
+
+
+int TKUSB_SendDataPacket(int port, byte *msg, int sz)
+{
+	byte bmsg[640];
+	int crc;
+
+	crc=TKUSB_Crc16(msg, sz);
+
+	bmsg[0]=tk_usb_datarov[port]?0x4B:0xC3;
+	tk_usb_datarov[port]=!tk_usb_datarov[port];
+	memcpy(bmsg+1, msg, sz);
+	bmsg[sz+(1+0)]=crc;
+	bmsg[sz+(1+1)]=crc>>8;
+	TKUSB_SendPacket(port, bmsg, sz+3);
+	return(0);
+}
+
+int TKUSB_SendSetupToken(int port, int addr, int endp)
+{
+	byte bmsg[16];
+	int tg, crc;
+	
+	tg=addr|(endp<<7);
+	crc=TKUSB_Crc5_11b(tg);
+	tg|=crc<<11;
+
+	bmsg[0]=0x2D;
+	bmsg[1]=tg;
+	bmsg[2]=tg>>8;
+	TKUSB_SendPacket(port, bmsg, 3);
+	return(0);
+}
+
+int TKUSB_SendInToken(int port, int addr, int endp)
+{
+	byte bmsg[16];
+	int tg, crc;
+	
+	tg=addr|(endp<<7);
+	crc=TKUSB_Crc5_11b(tg);
+	tg|=crc<<11;
+
+	bmsg[0]=0x69;
+	bmsg[1]=tg;
+	bmsg[2]=tg>>8;
+	TKUSB_SendPacket(port, bmsg, 3);
+	return(0);
+}
+
+int TKUSB_SendAckToken(int port)
+{
+	byte bmsg[16];
+
+	bmsg[0]=0xD2;
+	TKUSB_SendPacket(port, bmsg, 1);
+	return(0);
+}
+
+int TKUSB_SetAddress(int port, int oldaddr, int newaddr)
+{
+	byte bmsg[16];
+
+	TKUSB_SendSetupToken(port, oldaddr, 0);
+
+	bmsg[0]=0x00;
+	bmsg[1]=0x05;
+	bmsg[2]=newaddr;
+	bmsg[3]=0x00;
+	bmsg[4]=0x00;
+	bmsg[5]=0x00;
+	bmsg[6]=0x00;
+	bmsg[7]=0x00;
+	TKUSB_SendDataPacket(port, bmsg, 8);
+	return(0);
+}
+
+
+int TKUSB_SetConfiguration(int port, int addr, int index)
+{
+	byte bmsg[16];
+
+	TKUSB_SendSetupToken(port, addr, 0);
+
+	bmsg[0]=0x00;
+	bmsg[1]=0x09;
+	bmsg[2]=index;
+	bmsg[3]=0x00;
+	bmsg[4]=0x00;
+	bmsg[5]=0x00;
+	bmsg[6]=0x00;
+	bmsg[7]=0x00;
+	TKUSB_SendDataPacket(port, bmsg, 8);
+	return(0);
+}
+
+int TKUSB_SendGetDescriptor(int port, int addr,
+	int dtype, int dindex, int sz)
+{
+	byte bmsg[16];
+
+	TKUSB_SendSetupToken(port, addr, 0);
+
+	bmsg[0]=0x80;
+	bmsg[1]=0x06;
+	bmsg[2]=dindex;
+	bmsg[3]=dtype;
+	bmsg[4]=0x00;
+	bmsg[5]=0x00;
+	bmsg[6]=sz;
+	bmsg[7]=sz>>8;
+	TKUSB_SendDataPacket(port, bmsg, 8);
+	return(0);
+}
+
+int TKUSB_GetDescriptor(int port, int addr,
+	int dtype, int dindex, byte *buf, int sz)
+{
+	static byte msgbuf[1536];
+	s64 tt, te;
+	int rt, msgsz, tg;
+	
+	TKUSB_SendGetDescriptor(port, addr, dtype, dindex, sz);
+
+	tt=TK_GetTimeUs();
+	te=tt+10000;
+	while(tt<te)
+	{
+		rt=TKUSB_GetPacket(port, msgbuf, &msgsz);
+		if(rt>0)
+		{
+			tk_printf("TKUSB_GetDescriptor: Got %02X\n", msgbuf[0]);
+
+//			TKUSB_HandlePacket(0, msgbuf, msgsz);
+//			continue;
+			if((msgbuf[0]==0xC3) || (msgbuf[0]==0x4B))
+			{
+				memcpy(buf, msgbuf, sz);
+//				TKUSB_HandleKbReport(buf+1);
+				TKUSB_SendAckToken(port);
+			}else
+				if(msgbuf[0]==0x5A)
+			{
+			}else
+				if(msgbuf[0]==0x1E)
+			{
+				TKUSB_SendAckToken(port);
+			}else
+			{
+			}
+			break;
+		}
+		tt=TK_GetTimeUs();
+	}
+}
+
+int TKUSB_GetReport(int port, int addr)
+{
+	byte bmsg[16];
+
+	TKUSB_SendSetupToken(port, addr, 0);
+
+	bmsg[0]=0x1A;
+	bmsg[1]=0x01;
+	bmsg[2]=0x00;
+	bmsg[3]=0x01;
+	bmsg[4]=0x08;
+	bmsg[5]=0x00;
+	bmsg[6]=0x00;
+	bmsg[7]=0x00;
+	TKUSB_SendDataPacket(port, bmsg, 8);
+	return(0);
+}
+
+int TKUSB_PumpDelay(int port, int usec)
+{
+	static byte msgbuf[1536];
+	s64 tt, te;
+	int rt, msgsz, tg;
+	
+	tt=TK_GetTimeUs();
+	te=tt+usec;
+	while(tt<te)
+	{
+		rt=TKUSB_GetPacket(port, msgbuf, &msgsz);
+		if(rt>0)
+		{
+			tk_printf("TKUSB_PumpDelay: Got %02X\n", msgbuf[0]);
+			if((msgbuf[0]==0xC3) || (msgbuf[0]==0x4B))
+			{
+				TKUSB_SendAckToken(port);
+			}else
+				if(msgbuf[0]==0x5A)
+			{
+			}else
+				if(msgbuf[0]==0x1E)
+			{
+				TKUSB_SendAckToken(port);
+			}else
+			{
+			}
+		}
+		tt=TK_GetTimeUs();
+	}
+	return(0);
 }
 
 static const byte tkusb_kbscan2key_sh0[256]={
@@ -298,21 +629,56 @@ int TKUSB_HandleKbReport(byte *buf)
 
 int TKUSB_HandlePacket(int port, byte *buf, int sz)
 {
+//	tk_printf("TKUSB_HandlePacket: A Packet Pid=%X sz=%d "
+//		"%02X %02X %02X\n",
+//		buf[0], sz, buf[1], buf[2], buf[3]);
+
 	if((buf[0]==0xC3) || (buf[0]==0x4B))
 	{
 //		tk_printf("TKUSB_HandlePacket: Packet Pid=%X sz=%d "
 //			"%02X %02X %02X\n",
 //			buf[0], sz, buf[1], buf[2], buf[3]);
 		TKUSB_HandleKbReport(buf+1);
+		TKUSB_SendAckToken(port);
+	}else
+		if(buf[0]==0x5A)
+	{
+	}else
+		if(buf[0]==0x1E)
+	{
+		TKUSB_SendAckToken(port);
 	}else
 	{
-		tk_printf("TKUSB_HandlePacket: Packet Pid=%X sz=%d "
-			"%02X %02X %02X\n",
-			buf[0], sz, buf[1], buf[2], buf[3]);
+//		tk_printf("TKUSB_HandlePacket: B Packet Pid=%X sz=%d "
+//			"%02X %02X %02X\n",
+//			buf[0], sz, buf[1], buf[2], buf[3]);
 	}
+	return(0);
+}
+
+int TKUSB_DumpDeviceDescriptor(byte *buf)
+{
+	tk_printf("bLength           =%d\n", buf[0]);
+	tk_printf("bDescriptorType   =%d\n", buf[1]);
+	tk_printf("bcdUsb            =%02X-%02X\n", buf[2], buf[3]);
+	tk_printf("bDeviceClass      =%d\n", buf[4]);
+	tk_printf("bDeviceSubClass   =%d\n", buf[5]);
+	tk_printf("bDeviceProtocol   =%d\n", buf[6]);
+	tk_printf("bMaxPacketSize    =%d\n", buf[7]);
+	tk_printf("idVendor          =%02X-%02X\n",  buf[ 8], buf[ 9]);
+	tk_printf("idProduct         =%02X-%02X\n", buf[10], buf[11]);
+	tk_printf("bcdDevice         =%02X-%02X\n", buf[12], buf[13]);
+	tk_printf("iManufacturer     =%d\n", buf[14]);
+	tk_printf("iProduct          =%d\n", buf[15]);
+	tk_printf("iSerial           =%d\n", buf[16]);
+	tk_printf("bNumConfigurations=%d\n", buf[17]);
+	return(0);
 }
 
 s64 tk_usb_kbpolltime;
+
+byte tk_usb_p1lstate;
+byte tk_usb_p2lstate;
 
 int TKUSB_DoPoll(void)
 {
@@ -324,14 +690,54 @@ int TKUSB_DoPoll(void)
 	if(tt>=tk_usb_kbpolltime)
 	{
 //		tg=0xE801;
-		tg=0x1000;
-		msgbuf[0]=0x69;
-		msgbuf[1]=tg>>0;
-		msgbuf[2]=tg>>8;
-		TKUSB_SendPacket(0, msgbuf, 3);
-		
+//		tg=0x1000;
+
+//		tg=0xA080;
+//		msgbuf[0]=0x69;
+//		msgbuf[1]=tg>>0;
+//		msgbuf[2]=tg>>8;
+//		TKUSB_SendPacket(0, msgbuf, 3);
+
+//		TKUSB_SendInToken(0, 0, 0);
+//		TKUSB_SendInToken(0, 0, 1);
+//		TKUSB_SendInToken(0, 0, 2);
+//		TKUSB_SendInToken(0, 1, 1);
+
+		TKUSB_GetReport(0, 1);
+	
 //		tk_usb_kbpolltime=tt+10000;
 		tk_usb_kbpolltime=tt+20000;
+	}
+
+	tg=TKUSB_GetLinkState(0);
+	if(tg!=tk_usb_p1lstate)
+	{
+		tk_printf("TKUSB_DoPoll: Port 1, Changed Link-State %X\n", tg);
+		tk_usb_p1lstate=tg;
+		
+		if(tg)
+		{
+			TKUSB_GetDescriptor(0, 0,
+				1, 0, msgbuf, 64);
+			TKUSB_DumpDeviceDescriptor(msgbuf);
+
+			TKUSB_SetAddress(0, 0, 1);
+			TKUSB_PumpDelay(0, 2000);
+			TKUSB_SetConfiguration(0, 1, 1);
+			TKUSB_PumpDelay(0, 2000);
+		}
+	}
+
+	tg=TKUSB_GetLinkState(1);
+	if(tg!=tk_usb_p2lstate)
+	{
+		tk_printf("TKUSB_DoPoll: Port 2, Changed Link-State %X\n", tg);
+		tk_usb_p2lstate=tg;
+		
+		if(tg)
+		{
+//			TKUSB_SetAddress(1, 0, 1);
+		}
 	}
 
 	

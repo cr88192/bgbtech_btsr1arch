@@ -134,6 +134,8 @@ parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
 // parameter[6:0] JX2_GR_PC2_HI	= 7'h58;
 // parameter[6:0] JX2_GR_LR2_HI	= 7'h59;
 
+parameter[6:0] JX2_GR_FPIMM56VF	= 7'h5B;		//FP Immed, 4x S.E5.F8
+
 parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
 parameter[6:0] JX2_GR_FPIMM10	= 7'h5D;		//FP Immed, 10-bit
 parameter[6:0] JX2_GR_IMM_RP	= 7'h5E;		//Immed via Rp

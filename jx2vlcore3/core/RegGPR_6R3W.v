@@ -313,6 +313,7 @@ reg[63:0]	tValRyA;
 
 reg[63:0]	tValJimm;
 reg[63:0]	tValJimm56;
+reg[63:0]	tValJimm56Vf;
 
 reg[63:0]	tValFpImm16A;
 reg[63:0]	tValFpImm10A;
@@ -446,6 +447,13 @@ begin
 		10'h0,
 		32'h0
 		};
+	
+	tValJimm56Vf = {
+		tValJimm[55:42], 2'b0,
+		tValJimm[41:28], 2'b0,
+		tValJimm[27:14], 2'b0,
+		tValJimm[13: 0], 2'b0
+	};
 `endif
 	
 `ifdef jx2_alu_jcmp_rpimm
@@ -585,6 +593,11 @@ begin
 			tValRsA=tValFpImm16A;
 			tValRsZz=1;
 		end
+
+//		JX2_GR_FPIMM56VF: begin
+//			tValRsA=tValJimm56Vf;
+//			tValRsZz=1;
+//		end
 `endif
 
 `ifdef jx2_alu_jcmp_rpimm
@@ -660,6 +673,11 @@ begin
 
 		JX2_GR_FPIMM16: begin
 			tValRtA=tValFpImm16A;
+			tValRtZz=1;
+		end
+
+		JX2_GR_FPIMM56VF: begin
+			tValRtA=tValJimm56Vf;
 			tValRtZz=1;
 		end
 `endif
