@@ -206,6 +206,16 @@ int TKUSB_WaitNotBusy(int port)
 
 byte tk_usb_datarov[4];
 
+byte TKUSB_BitFlip8(byte v)
+{
+	static const byte fliptab[16]={
+		0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE,
+		0x1, 0x9, 0x5, 0xD, 0x3, 0xB, 0x7, 0xF};
+	byte v1;
+	v1=(fliptab[v&15]<<4)|(fliptab[(v>>4)&15]);
+	return(v1);
+}
+
 u16 TKUSB_DoCrc16Step(u16 crc0, byte value)
 {
 	u16 crc;
@@ -230,7 +240,10 @@ u16 TKUSB_Crc16(byte *data, u32 sz)
 	crc=0xFFFF;
 	cs=data; cse=data+sz;
 	while (cs<cse)
-		{ crc=TKUSB_DoCrc16Step(crc, *cs++); }
+	{
+//		crc=TKUSB_DoCrc16Step(crc, *cs++);
+		crc=TKUSB_DoCrc16Step(crc, TKUSB_BitFlip8(*cs++));
+	}
 	return(crc);
 }
 
@@ -261,17 +274,64 @@ byte TKUSB_Crc5_19b(u32 val)
 
 int TKUSB_SendDataPacket(int port, byte *msg, int sz)
 {
+	static byte msgbuf[1536];
 	byte bmsg[640];
+	s64 tt, tt1, te;
+	int rt, msgsz, tg;
 	int crc;
 
-	crc=TKUSB_Crc16(msg, sz);
+	crc=~TKUSB_Crc16(msg, sz);
 
-	bmsg[0]=tk_usb_datarov[port]?0x4B:0xC3;
-	tk_usb_datarov[port]=!tk_usb_datarov[port];
+//	bmsg[0]=tk_usb_datarov[port]?0x4B:0xC3;
+//	tk_usb_datarov[port]=!tk_usb_datarov[port];
+	bmsg[0]=0xC3;
 	memcpy(bmsg+1, msg, sz);
 	bmsg[sz+(1+0)]=crc;
 	bmsg[sz+(1+1)]=crc>>8;
 	TKUSB_SendPacket(port, bmsg, sz+3);
+
+	tt=TK_GetTimeUs();
+	tt1=tt+1000;
+	te=tt+100000;
+	while(tt<te)
+	{
+		rt=TKUSB_GetPacket(port, msgbuf, &msgsz);
+		if(rt>0)
+		{
+			tk_printf("TKUSB_SendDataPacket: Got %02X\n", msgbuf[0]);
+			if(msgbuf[0]==0xD2)
+			{
+				/* ACK */
+				break;
+			}
+			if(msgbuf[0]==0x5A)
+			{
+				/* NAK */
+				TKUSB_SendPacket(port, bmsg, sz+3);
+				tt=TK_GetTimeUs();
+				tt1=tt+5000;
+				continue;
+			}
+			break;
+		}
+		
+		if(tt<tt1)
+		{
+			tt=TK_GetTimeUs();
+			continue;
+		}
+
+		TKUSB_SendPacket(port, bmsg, sz+3);
+		tt=TK_GetTimeUs();
+		tt1=tt+5000;
+	}
+
+	if(tt>=te)
+	{
+		tk_printf("TKUSB_SendDataPacket: Timeout\n");
+		return(-1);
+	}
+
 	return(0);
 }
 
@@ -319,6 +379,7 @@ int TKUSB_SendAckToken(int port)
 int TKUSB_SetAddress(int port, int oldaddr, int newaddr)
 {
 	byte bmsg[16];
+	int rt;
 
 	TKUSB_SendSetupToken(port, oldaddr, 0);
 
@@ -330,14 +391,16 @@ int TKUSB_SetAddress(int port, int oldaddr, int newaddr)
 	bmsg[5]=0x00;
 	bmsg[6]=0x00;
 	bmsg[7]=0x00;
-	TKUSB_SendDataPacket(port, bmsg, 8);
-	return(0);
+
+	rt=TKUSB_SendDataPacket(port, bmsg, 8);
+	return(rt);
 }
 
 
 int TKUSB_SetConfiguration(int port, int addr, int index)
 {
 	byte bmsg[16];
+	int rt;
 
 	TKUSB_SendSetupToken(port, addr, 0);
 
@@ -349,14 +412,15 @@ int TKUSB_SetConfiguration(int port, int addr, int index)
 	bmsg[5]=0x00;
 	bmsg[6]=0x00;
 	bmsg[7]=0x00;
-	TKUSB_SendDataPacket(port, bmsg, 8);
-	return(0);
+	rt=TKUSB_SendDataPacket(port, bmsg, 8);
+	return(rt);
 }
 
 int TKUSB_SendGetDescriptor(int port, int addr,
 	int dtype, int dindex, int sz)
 {
 	byte bmsg[16];
+	int rt;
 
 	TKUSB_SendSetupToken(port, addr, 0);
 
@@ -368,27 +432,28 @@ int TKUSB_SendGetDescriptor(int port, int addr,
 	bmsg[5]=0x00;
 	bmsg[6]=sz;
 	bmsg[7]=sz>>8;
-	TKUSB_SendDataPacket(port, bmsg, 8);
-	return(0);
+
+	rt=TKUSB_SendDataPacket(port, bmsg, 8);
+	return(rt);
 }
 
-int TKUSB_GetDescriptor(int port, int addr,
-	int dtype, int dindex, byte *buf, int sz)
+int TKUSB_GetInPacket(int port, int addr, int endp,
+	byte *buf, int sz)
 {
 	static byte msgbuf[1536];
 	s64 tt, te;
 	int rt, msgsz, tg;
-	
-	TKUSB_SendGetDescriptor(port, addr, dtype, dindex, sz);
+
+	TKUSB_SendInToken(port, addr, 0);
 
 	tt=TK_GetTimeUs();
-	te=tt+10000;
+	te=tt+100000;
 	while(tt<te)
 	{
 		rt=TKUSB_GetPacket(port, msgbuf, &msgsz);
 		if(rt>0)
 		{
-			tk_printf("TKUSB_GetDescriptor: Got %02X\n", msgbuf[0]);
+			tk_printf("TKUSB_GetInPacket: Got %02X\n", msgbuf[0]);
 
 //			TKUSB_HandlePacket(0, msgbuf, msgsz);
 //			continue;
@@ -411,11 +476,42 @@ int TKUSB_GetDescriptor(int port, int addr,
 		}
 		tt=TK_GetTimeUs();
 	}
+	if(tt>=te)
+	{
+		tk_printf("TKUSB_GetInPacket: Timeout\n");
+		return(-1);
+	}
+	return(0);
+}
+
+int TKUSB_GetDescriptor(int port, int addr,
+	int dtype, int dindex, byte *buf, int sz)
+{
+	int rt;
+
+	rt=TKUSB_SendGetDescriptor(port, addr, dtype, dindex, sz);
+	if(rt<0)
+	{
+		memset(buf, 0, sz);
+		return(rt);
+	}
+
+	rt=TKUSB_GetInPacket(port, addr, 0, buf, sz);
+	if(rt<0)
+	{
+		memset(buf, 0, sz);
+		return(rt);
+	}
+
+	return(0);
 }
 
 int TKUSB_GetReport(int port, int addr)
 {
 	byte bmsg[16];
+
+	if(TKUSB_GetLinkState(port)<=0)
+		return(-1);
 
 	TKUSB_SendSetupToken(port, addr, 0);
 
@@ -428,6 +524,8 @@ int TKUSB_GetReport(int port, int addr)
 	bmsg[6]=0x00;
 	bmsg[7]=0x00;
 	TKUSB_SendDataPacket(port, bmsg, 8);
+
+	TKUSB_SendInToken(port, addr, 0);
 	return(0);
 }
 
@@ -680,6 +778,9 @@ s64 tk_usb_kbpolltime;
 byte tk_usb_p1lstate;
 byte tk_usb_p2lstate;
 
+byte tk_usb_p1cfgstate;
+byte tk_usb_p2cfgstate;
+
 int TKUSB_DoPoll(void)
 {
 	static byte msgbuf[2072];
@@ -698,12 +799,15 @@ int TKUSB_DoPoll(void)
 //		msgbuf[2]=tg>>8;
 //		TKUSB_SendPacket(0, msgbuf, 3);
 
-//		TKUSB_SendInToken(0, 0, 0);
-//		TKUSB_SendInToken(0, 0, 1);
-//		TKUSB_SendInToken(0, 0, 2);
-//		TKUSB_SendInToken(0, 1, 1);
+		if(tk_usb_p1cfgstate==2)
+		{
+	//		TKUSB_SendInToken(0, 0, 0);
+	//		TKUSB_SendInToken(0, 0, 1);
+	//		TKUSB_SendInToken(0, 0, 2);
+			TKUSB_SendInToken(0, 1, 1);
 
-		TKUSB_GetReport(0, 1);
+	//		TKUSB_GetReport(0, 1);
+		}
 	
 //		tk_usb_kbpolltime=tt+10000;
 		tk_usb_kbpolltime=tt+20000;
@@ -717,14 +821,38 @@ int TKUSB_DoPoll(void)
 		
 		if(tg)
 		{
-			TKUSB_GetDescriptor(0, 0,
-				1, 0, msgbuf, 64);
-			TKUSB_DumpDeviceDescriptor(msgbuf);
+			tk_usb_p1cfgstate=1;
 
-			TKUSB_SetAddress(0, 0, 1);
-			TKUSB_PumpDelay(0, 2000);
-			TKUSB_SetConfiguration(0, 1, 1);
-			TKUSB_PumpDelay(0, 2000);
+			rt=TKUSB_GetDescriptor(0, 0,
+				1, 0, msgbuf, 18);
+			if(rt>=0)
+			{
+				TKUSB_DumpDeviceDescriptor(msgbuf+1);
+
+				rt=TKUSB_SetAddress(0, 0, 1);
+				TKUSB_PumpDelay(0, 2000);
+				if(rt>=0)
+				{
+					rt=TKUSB_SetConfiguration(0, 1, 1);
+					TKUSB_PumpDelay(0, 2000);
+					if(rt>=0)
+					{
+						tk_usb_p1cfgstate=2;
+					}else
+					{
+						tk_printf("TKUSB_DoPoll: Failed Set Configuration\n");
+					}
+				}else
+				{
+					tk_printf("TKUSB_DoPoll: Failed Set Address\n");
+				}
+			}else
+			{
+				tk_printf("TKUSB_DoPoll: Failed get descriptor\n");
+			}
+		}else
+		{
+			tk_usb_p1cfgstate=0;
 		}
 	}
 

@@ -41,6 +41,9 @@
 `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
 // `define	jx2_use_mem_ldop		//Load/Store Operations
 
+`define jx2_use_imm_vec4h		//Enable SIMD Immediates
+`define jx2_use_imm_shuffle		//Enable SIMD Shuffle+Op
+
 `define	jx2_fpu_enable_fdiv		//enable FDIV
 
 `define	jx2_alu_wx				//Enable Wide-ALU

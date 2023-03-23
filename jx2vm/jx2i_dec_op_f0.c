@@ -5928,6 +5928,37 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 					}
 				}
 				break;
+
+			case 0x9:	/* F2nm_9ejj */
+				op->imm=imm56fv;
+				if(eq)
+				{
+					if(eo)
+					{
+						op->nmid=BJX2_NMID_PSHMULXF;
+						op->fmid=BJX2_FMID_REGIMMREG;
+						op->Run=BJX2_Op_PSHMULXF_RegImmReg;
+					}else
+					{
+						op->nmid=BJX2_NMID_PSHADDXF;
+						op->fmid=BJX2_FMID_REGIMMREG;
+						op->Run=BJX2_Op_PSHADDXF_RegImmReg;
+					}
+				}else
+				{
+					if(eo)
+					{
+						op->nmid=BJX2_NMID_PSHMULH;
+						op->fmid=BJX2_FMID_REGIMMREG;
+						op->Run=BJX2_Op_PSHMULH_RegImmReg;
+					}else
+					{
+						op->nmid=BJX2_NMID_PSHADDH;
+						op->fmid=BJX2_FMID_REGIMMREG;
+						op->Run=BJX2_Op_PSHADDH_RegImmReg;
+					}
+				}
+				break;
 			}
 		}
 #endif

@@ -161,7 +161,9 @@ defparam		decOpBz.fpuLowPrec		= fpuLowPrec;
 reg[32:0]		opImmA;
 reg[8:0]		opUCmdA;
 reg[8:0]		opUIxtA;
-reg[7:0]		opUFlA;
+// reg[7:0]		opUFlA;
+// reg[12:0]		opUFlA;
+reg[18:0]		opUFlA;
 
 reg[15:0]		opFpImmA;
 
@@ -176,7 +178,9 @@ reg[8:0]		opUIxtC;
 reg[32:0]		opImmA0;
 reg[8:0]		opUCmdA0;
 reg[8:0]		opUIxtA0;
-reg[7:0]		opUFlA0;
+// reg[7:0]		opUFlA0;
+// reg[12:0]		opUFlA0;
+reg[18:0]		opUFlA0;
 
 assign	idRegS = opRegAM;
 assign	idRegT = opRegAO;
@@ -247,7 +251,9 @@ wire[32:0]		decOpFzC_idImm;
 wire[8:0]		decOpFzC_idUCmd;
 wire[8:0]		decOpFzC_idUIxt;
 // wire[3:0]		decOpFzC_idUFl;
-wire[7:0]		decOpFzC_idUFl;
+// wire[7:0]		decOpFzC_idUFl;
+// wire[12:0]		decOpFzC_idUFl;
+wire[18:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
 	clock,		reset,	srMod,
@@ -256,6 +262,10 @@ DecOpFz	decOpFzC(
 			opIsWexJumbo96,
 			opIsWexJumboB | opIsWex2x40B,
 			tOpJBitsC[23:0] },
+		{ 1'b0, tOpJBitsB[24],
+			1'b0,
+			opIsWexJumboA | opIsWex2x40B,
+			tOpJBitsB[23:0] },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idRegP,
 	decOpFzC_idImm,
@@ -271,7 +281,9 @@ wire[32:0]		decOpFzB_idImm;
 wire[8:0]		decOpFzB_idUCmd;
 wire[8:0]		decOpFzB_idUIxt;
 // wire[3:0]		decOpFzB_idUFl;
-wire[7:0]		decOpFzB_idUFl;
+// wire[7:0]		decOpFzB_idUFl;
+// wire[12:0]		decOpFzB_idUFl;
+wire[18:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
 	clock,		reset,	srMod,
@@ -280,6 +292,7 @@ DecOpFz	decOpFzB(
 			1'b0,
 			opIsWexJumboA | opIsWex2x40B,
 			tOpJBitsB[23:0] },
+		UV28_00,
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idRegP,
 	decOpFzB_idImm,
@@ -295,11 +308,15 @@ wire[32:0]		decOpFzA_idImm;
 wire[8:0]		decOpFzA_idUCmd;
 wire[8:0]		decOpFzA_idUIxt;
 // wire[3:0]		decOpFzA_idUFl;
-wire[7:0]		decOpFzA_idUFl;
+// wire[7:0]		decOpFzA_idUFl;
+// wire[12:0]		decOpFzA_idUFl;
+wire[18:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
 	clock,		reset,	srMod,
-	{ UV32_00, istrWord[31: 0] },	4'h0,	UV28_00,
+	{ UV32_00, istrWord[31: 0] },	4'h0,
+		UV28_00,
+		UV28_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idRegP,
 	decOpFzA_idImm,
@@ -317,7 +334,9 @@ wire[32:0]		decOpRvA_idImm;
 wire[8:0]		decOpRvA_idUCmd;
 wire[8:0]		decOpRvA_idUIxt;
 // wire[3:0]		decOpRvA_idUFl;
-wire[7:0]		decOpRvA_idUFl;
+// wire[7:0]		decOpRvA_idUFl;
+// wire[12:0]		decOpRvA_idUFl;
+wire[18:0]		decOpRvA_idUFl;
 
 DecOpRvI	decOpRvA(
 	clock,		reset,	srMod,
@@ -961,6 +980,9 @@ begin
 		opUCmdC	= UV9_00;
 		opUIxtC	= UV9_00;
 
+//		opUCmdC		= { 3'b001, decOpFzC_idUFl[18:13] };
+		opUIxtC		= decOpFzC_idUFl[12:4];
+
 		opIsScalar	= 1;
 
 //		if(opIsDzC)
@@ -1121,7 +1143,10 @@ begin
 				opImmC	= UV33_00;
 				opUCmdC	= UV9_00;
 //				opUIxtC	= UV9_00;
-				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
+//				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
+				opUIxtC	= decOpFzB_idUFl[12:4];
+
+				opUCmdC		= { 3'b001, decOpFzB_idUFl[18:13] };
 
 				opIsScalar	= opIsWexJumboA;
 
@@ -1236,7 +1261,16 @@ begin
 				opImmC	= UV33_00;
 				opUCmdC	= UV9_00;
 //				opUIxtC	= UV9_00;
-				opUIxtC	= { 5'h0, decOpFzA_idUFl[7:4] };
+//				opUIxtC	= { 5'h0, decOpFzA_idUFl[7:4] };
+				opUIxtC	= decOpFzA_idUFl[12:4];
+
+//				opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };
+//				opUCmdC		= { 2'b00,
+//					decOpFzA_idUFl[18:13] != 0,
+//					decOpFzA_idUFl[18:13] };
+
+				if(decOpFzA_idUFl[12])
+					opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };
 
 				opIsScalar	= 1;
 

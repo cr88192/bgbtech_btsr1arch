@@ -30,7 +30,9 @@ Redo to use new F0 block, and merge F0/F1/F2.
 module DecOpFz(
 	/* verilator lint_off UNUSED */
 	clock,		reset,		srMod,
-	istrWord,	isAltOpB,	istrJBits,
+	istrWord,	isAltOpB,
+	istrJBits,
+	istrJ2Bits,
 	idRegN,		idRegM,
 	idRegO,		idRegP,
 	idImm,		idUCmd,
@@ -46,6 +48,7 @@ input[3:0]		srMod;		//mode
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;
 input[27:0]		istrJBits;
+input[27:0]		istrJ2Bits;
 
 `output_gpr		idRegN;
 `output_gpr		idRegM;
@@ -55,7 +58,9 @@ output[32:0]	idImm;
 output[8:0]		idUCmd;
 output[8:0]		idUIxt;
 // output[3:0]		idUFl;
-output[7:0]		idUFl;
+// output[7:0]		idUFl;
+// output[12:0]		idUFl;
+output[18:0]		idUFl;
 
 parameter		fpuLowPrec = 0;
 
@@ -84,7 +89,10 @@ reg[32:0]		opImm;
 reg[8:0]		opUCmd;
 reg[8:0]		opUIxt;
 reg[3:0]		opUFl;			//[0]=Imm16+24, [1]=SplitImm, [2]=FpImm
-reg[3:0]		opULdOp;		//Operation for Load/Store, etc
+// reg[3:0]		opULdOp;		//Operation for Load/Store, etc
+reg[8:0]		opULdOp;		//Operation for Load/Store, etc
+reg[8:0]		opUShufOp;		//Inline Shuffle
+reg[5:0]		opULdOp2;		//Operation for Load/Store, etc
 
 assign	idRegN = opRegN;
 assign	idRegM = opRegM;
@@ -94,7 +102,7 @@ assign	idImm = opImm;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
 // assign	idUFl = opUFl;
-assign	idUFl = { opULdOp, opUFl };
+assign	idUFl = { opULdOp2, opULdOp, opUFl };
 
 `reg_gpr	opRegM_Dfl;
 `reg_gpr	opRegO_Dfl;
@@ -175,7 +183,10 @@ reg		opIsImm9;
 reg		opIsImm4R;
 reg		opIsImmSplit;
 
-reg[3:0]	opIsImmLdOp;
+// reg[3:0]	opIsImmLdOp;
+reg[8:0]	opIsImmLdOp;
+
+reg[8:0]	opIsImmShufOp;
 
 reg			opExWQ;
 reg			opExWN;
@@ -286,6 +297,7 @@ begin
 //	opExWIS		= 0;
 	opIsImm4R	= 0;
 	opIsImmLdOp	= 0;
+	opIsImmShufOp	= 0;
 	opIsExWB2	= 0;
 
 	tOpIsXGprX0	= 0;
@@ -488,6 +500,18 @@ begin
 //	opImm_disp9as	= 0;
 	opImm_dispasc	= 0;
 
+`ifdef jx2_use_imm_shuffle
+	if(opIsJumbo96)
+	begin
+		opIsImmShufOp = { 1'b1,
+			istrJ2Bits[11:10],
+			istrJBits [21:20],
+			istrJBits [ 7: 6],
+			istrWord  [17:16]
+		};
+	end
+`endif
+
 	if(opIsJumboAu)
 	begin
 //		opRegO_Df2[5]	= opExWN;
@@ -536,7 +560,8 @@ begin
 //			opExWI, opExI, istrJBits[7:0], istrWord[23:20]};
 
 		opIsImm4R	= istrJBits[11];
-		opIsImmLdOp	= istrJBits[15:12];
+//		opIsImmLdOp	= istrJBits[15:12];
+		opIsImmLdOp	= { 5'h0, istrJBits[15:12] };
 
 //		opImm_disp5u	= {opExWI ? UV20_FF : UV20_00,
 //			opExI, istrJBits[7:0], istrWord[23:20]};
@@ -567,6 +592,10 @@ begin
 
 			opImm_disp11as	= {	UV24_00, istrJBits[8:0] };
 			opImm_dispasc = { 1'b1, istrJBits[10:9] };
+
+`ifdef jx2_use_imm_shuffle
+			opIsImmShufOp = { 1'b1, istrJBits [ 7: 0] };
+`endif
 
 //			opImm_disp5u	= {
 //				istrJBits[8] ? UV24_FF : UV24_FF, 
@@ -780,6 +809,8 @@ begin
 	opRegM_Fix	= JX2_GR_ZZR;
 	opRegO_Fix	= JX2_GR_ZZR;
 	opRegN_Fix	= JX2_GR_ZZR;
+
+	opUShufOp	= 0;
 
 	tBlockIsF0 =
 		(istrWord[11:8] == 4'b0000) ||
@@ -2414,12 +2445,16 @@ begin
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_FPU_PADD;
+				opUShufOp	= opIsImmShufOp;
 				if(opExQ)
 				begin
 					opUCmdIx	= JX2_UCIX_FPU_PADDX;
 					opUCty		= JX2_IUC_WX;
 				end
+
 `ifdef jx2_use_fpu_v4sf
+				if(opIsImmShufOp[8])
+					opNmid		= JX2_UCMD_FPUV4SF;
 				if(opImm_disp11as[7:2]==6'h02)
 					opNmid		= JX2_UCMD_FPUV4SF;
 				if(fpuLowPrec)
@@ -2434,12 +2469,16 @@ begin
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_FPU_PSUB;
+				opUShufOp	= opIsImmShufOp;
 				if(opExQ)
 				begin
 					opUCmdIx	= JX2_UCIX_FPU_PSUBX;
 					opUCty		= JX2_IUC_WX;
 				end
+
 `ifdef jx2_use_fpu_v4sf
+				if(opIsImmShufOp[8])
+					opNmid		= JX2_UCMD_FPUV4SF;
 				if(opImm_disp11as[7:2]==6'h02)
 					opNmid		= JX2_UCMD_FPUV4SF;
 				if(fpuLowPrec)
@@ -2454,12 +2493,16 @@ begin
 				opFmid		= JX2_FMID_REGREG;
 				opIty		= JX2_ITY_SB;
 				opUCmdIx	= JX2_UCIX_FPU_PMUL;
+				opUShufOp	= opIsImmShufOp;
 				if(opExQ)
 				begin
 					opUCmdIx	= JX2_UCIX_FPU_PMULX;
 					opUCty		= JX2_IUC_WX;
 				end
+
 `ifdef jx2_use_fpu_v4sf
+				if(opIsImmShufOp[8])
+					opNmid		= JX2_UCMD_FPUV4SF;
 				if(opImm_disp11as[7:2]==6'h02)
 					opNmid		= JX2_UCMD_FPUV4SF;
 				if(fpuLowPrec)
@@ -4344,7 +4387,8 @@ begin
 				opIty		= JX2_ITY_UW;
 				opUCmdIx	= JX2_UCIX_ALU_ADD;
 `ifdef jx2_use_fpu_fpimm
-				case(opIsImmLdOp)
+//				case(opIsImmLdOp)
+				case(opIsImmLdOp[3:0])
 					4'h8: begin
 						opNmid		= JX2_UCMD_FPU3;
 						opUCmdIx	= JX2_UCIX_FPU_FADD;
@@ -4515,6 +4559,30 @@ begin
 					opFmid	= JX2_FMID_REGIMMREG;
 					opIty	= JX2_ITY_UW;
 				end
+
+`ifdef jx2_use_imm_shuffle
+				if(opIsJumbo96)
+				begin
+					opNmid		= JX2_UCMD_FPUV4SF;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_UB;
+					opUShufOp	= opIsImmShufOp;
+
+					if(opExQ)
+					begin
+						if(opExI)
+							opUCmdIx	= JX2_UCIX_FPU_PMULX;
+						else
+							opUCmdIx	= JX2_UCIX_FPU_PADDX;
+						opUCty		= JX2_IUC_WX;
+					end else begin
+						if(opExI)
+							opUCmdIx	= JX2_UCIX_FPU_PMULH;
+						else
+							opUCmdIx	= JX2_UCIX_FPU_PADDH;
+					end
+				end
+`endif
 			end
 `endif
 
@@ -5099,8 +5167,10 @@ begin
 	end
 `endif
 
-	opUFl	= 0;
-	opULdOp	= 0;
+	opUFl		= 0;
+	opULdOp		= 0;
+	opULdOp2	= 0;
+//	opUShufOp	= 0;
 	
 	case(opFmid)
 		JX2_FMID_Z: begin
@@ -5229,6 +5299,11 @@ begin
 			opImm	= opImm_imm5u;
 
 			opUIxt	= { opUCty, opUCmdIx };
+
+`ifdef jx2_use_imm_shuffle
+			opULdOp		= opUShufOp;
+			opULdOp2	= { 4'h0, opImm_dispasc[1:0] };
+`endif
 
 			case(opIty)
 				JX2_ITY_SB: begin
@@ -5454,6 +5529,10 @@ begin
 			endcase
 
 			opUFl[0]	= opIsImm9;
+
+`ifdef jx2_use_imm_shuffle
+			opULdOp	= opUShufOp;
+`endif
 		end
 
 `ifndef def_true

@@ -19,17 +19,24 @@ Performs SIMD faster but at lower accuracy than with the main FPU.
 `include "FpuConvD2SA.v"
 `endif
 
+`ifdef jx2_use_imm_shuffle
+`include "FpuVecShMux4.v"
+`endif
+
 module FpuVec4SF(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
 	opCmdA,		regIdIxtA,
 	opCmdB,		regIdIxtB,
+	opCmdC,		regIdIxtC,
 	exHold,
 
 	regValImmA,	regValImmB,
 
-	regValRsA,	regValRsB,
-	regValRtA,	regValRtB,
+	regIdRsA,	regValRsA,
+	regIdRsB,	regValRsB,
+	regIdRtA,	regValRtA,
+	regIdRtB,	regValRtB,
 	regValRpA,	regValRpB,
 	
 	regValRnA,	regValRnB
@@ -43,6 +50,8 @@ input[8:0]		opCmdA;			//command opcode
 input[8:0]		regIdIxtA;		//ALU Index / Opcode Extension
 input[8:0]		opCmdB;			//command opcode
 input[8:0]		regIdIxtB;		//ALU Index / Opcode Extension
+input[8:0]		opCmdC;			//command opcode
+input[8:0]		regIdIxtC;		//ALU Index / Opcode Extension
 
 input[32:0]		regValImmA;
 input[32:0]		regValImmB;
@@ -53,6 +62,11 @@ input[63:0]		regValRtA;
 input[63:0]		regValRtB;
 input[63:0]		regValRpA;
 input[63:0]		regValRpB;
+
+`input_gpr		regIdRsA;
+`input_gpr		regIdRsB;
+`input_gpr		regIdRtA;
+`input_gpr		regIdRtB;
 
 output[63:0]	regValRnA;
 output[63:0]	regValRnB;
@@ -73,10 +87,21 @@ assign		opCmdLaneB =
 wire[8:0]		opCmd;
 wire[8:0]		regIdIxt;
 wire[7:0]		regRMode;
+`wire_gpr		regIdRt;
+wire			regIdRtIsHalf;
 
 assign		opCmd		= opCmdLaneB ? opCmdB : opCmdA;
 assign		regIdIxt	= opCmdLaneB ? regIdIxtB : regIdIxtA;
 assign		regRMode	= opCmdLaneB ? regValImmB[7:0] : regValImmA[7:0];
+assign		regIdRt		= opCmdLaneB ? regIdRtB : regIdRtA;
+
+`ifdef jx2_use_imm_vec4h
+assign		regIdRtIsHalf	=
+	(regIdRt == JX2_GR_FPIMM56VF)	||
+	(regIdRt == JX2_GR_JIMM)		;
+`else
+assign		regIdRtIsHalf	= 0;
+`endif
 
 reg[8:0]		opCmd1;
 reg[8:0]		regIdIxt1;
@@ -154,10 +179,15 @@ wire[31:0]		fpValRtA;
 wire[31:0]		fpValRtB;
 wire[31:0]		fpValRtC;
 wire[31:0]		fpValRtD;
-assign		fpValRtA = tVecIsHalf ? fpConvValRtA : regValRtA[31: 0];
+// assign		fpValRtA = tVecIsHalf ? fpConvValRtA : regValRtA[31: 0];
 // assign		fpValRtB = tVecIsHalf ? fpConvValRtB : regValRtA[63:32];
-assign		fpValRtC = tVecIsHalf ? fpConvValRtC : regValRtB[31: 0];
+// assign		fpValRtC = tVecIsHalf ? fpConvValRtC : regValRtB[31: 0];
 // assign		fpValRtD = tVecIsHalf ? fpConvValRtD : regValRtB[63:32];
+
+assign		fpValRtA = (tVecIsHalf || regIdRtIsHalf) ?
+	fpConvValRtA : regValRtA[31: 0];
+assign		fpValRtC = (tVecIsHalf || regIdRtIsHalf) ?
+	fpConvValRtC : regValRtB[31: 0];
 
 `ifdef jx2_ena_fpu_v2sd
 
@@ -171,11 +201,11 @@ assign		fpValRsD =
 	regValRsB[63:32];
 
 assign		fpValRtB =
-	tVecIsHalf ? fpConvValRtB :
+	(tVecIsHalf || regIdRtIsHalf) ? fpConvValRtB :
 	tVecIsDbl ? fpConvValDblRtB :
 	regValRtA[63:32];
 assign		fpValRtD =
-	tVecIsHalf ? fpConvValRtD :
+	(tVecIsHalf || regIdRtIsHalf) ? fpConvValRtD :
 	tVecIsDbl ? fpConvValDblRtD :
 	regValRtB[63:32];
 
@@ -184,8 +214,73 @@ assign		fpValRtD =
 assign		fpValRsB = tVecIsHalf ? fpConvValRsB : regValRsA[63:32];
 assign		fpValRsD = tVecIsHalf ? fpConvValRsD : regValRsB[63:32];
 
-assign		fpValRtB = tVecIsHalf ? fpConvValRtB : regValRtA[63:32];
-assign		fpValRtD = tVecIsHalf ? fpConvValRtD : regValRtB[63:32];
+//assign		fpValRtB = tVecIsHalf ? fpConvValRtB : regValRtA[63:32];
+// assign		fpValRtD = tVecIsHalf ? fpConvValRtD : regValRtB[63:32];
+
+assign		fpValRtB = (tVecIsHalf || regIdRtIsHalf) ?
+	fpConvValRtB : regValRtA[63:32];
+assign		fpValRtD = (tVecIsHalf || regIdRtIsHalf) ?
+	fpConvValRtD : regValRtB[63:32];
+
+`endif
+
+wire[31:0]		fpValRs1A;
+wire[31:0]		fpValRs1B;
+wire[31:0]		fpValRs1C;
+wire[31:0]		fpValRs1D;
+
+wire[31:0]		fpValRt1A;
+wire[31:0]		fpValRt1B;
+wire[31:0]		fpValRt1C;
+wire[31:0]		fpValRt1D;
+
+`ifdef jx2_use_imm_shuffle
+
+wire	doShuffleRs;
+wire	doShuffleRt;
+
+assign	doShuffleRs = regIdIxtC[8] &&
+	((opCmdC[1:0]!=2'b00) ? opCmdC[0] : regIdRtIsHalf);
+assign	doShuffleRt = regIdIxtC[8] &&
+	((opCmdC[1:0]!=2'b00) ? opCmdC[1] : !regIdRtIsHalf);
+
+FpuVecShMux4 fpShufRs1A(
+	fpValRsA, fpValRsB, fpValRsC, fpValRsD,
+	fpValRs1A,	regIdIxtC[1:0], 2'b00, doShuffleRs);
+FpuVecShMux4 fpShufRs1B(
+	fpValRsA, fpValRsB, fpValRsC, fpValRsD,
+	fpValRs1B,	regIdIxtC[3:2], 2'b01, doShuffleRs);
+FpuVecShMux4 fpShufRs1C(
+	fpValRsA, fpValRsB, fpValRsC, fpValRsD,
+	fpValRs1C,	regIdIxtC[5:4], 2'b10, doShuffleRs);
+FpuVecShMux4 fpShufRs1D(
+	fpValRsA, fpValRsB, fpValRsC, fpValRsD,
+	fpValRs1D,	regIdIxtC[7:6], 2'b11, doShuffleRs);
+
+FpuVecShMux4 fpShufRt1A(
+	fpValRtA, fpValRtB, fpValRtC, fpValRtD,
+	fpValRt1A,	regIdIxtC[1:0], 2'b00, doShuffleRt);
+FpuVecShMux4 fpShufRt1B(
+	fpValRtA, fpValRtB, fpValRtC, fpValRtD,
+	fpValRt1B,	regIdIxtC[3:2], 2'b01, doShuffleRt);
+FpuVecShMux4 fpShufRt1C(
+	fpValRtA, fpValRtB, fpValRtC, fpValRtD,
+	fpValRt1C,	regIdIxtC[5:4], 2'b10, doShuffleRt);
+FpuVecShMux4 fpShufRt1D(
+	fpValRtA, fpValRtB, fpValRtC, fpValRtD,
+	fpValRt1D,	regIdIxtC[7:6], 2'b11, doShuffleRt);
+
+`else
+
+assign		fpValRs1A = fpValRsA;
+assign		fpValRs1B = fpValRsB;
+assign		fpValRs1C = fpValRsC;
+assign		fpValRs1D = fpValRsD;
+
+assign		fpValRt1A = fpValRtA;
+assign		fpValRt1B = fpValRtB;
+assign		fpValRt1C = fpValRtC;
+assign		fpValRt1D = fpValRtD;
 
 `endif
 
@@ -195,16 +290,16 @@ wire[31:0]		fpAddValRnC;
 wire[31:0]		fpAddValRnD;
 
 FpuAddSF	fpvAddA(clock, reset, exHold,
-	fpValRsA, fpValRtA, fpAddValRnA,
+	fpValRs1A, fpValRt1A, fpAddValRnA,
 	regExOp, regRMode);
 FpuAddSF	fpvAddB(clock, reset, exHold,
-	fpValRsB, fpValRtB, fpAddValRnB,
+	fpValRs1B, fpValRt1B, fpAddValRnB,
 	regExOp, regRMode);
 FpuAddSF	fpvAddC(clock, reset, exHold,
-	fpValRsC, fpValRtC, fpAddValRnC,
+	fpValRs1C, fpValRt1C, fpAddValRnC,
 	regExOp, regRMode);
 FpuAddSF	fpvAddD(clock, reset, exHold,
-	fpValRsD, fpValRtD, fpAddValRnD,
+	fpValRs1D, fpValRt1D, fpAddValRnD,
 	regExOp, regRMode);
 
 wire[31:0]		fpMulValRnA;
@@ -213,16 +308,16 @@ wire[31:0]		fpMulValRnC;
 wire[31:0]		fpMulValRnD;
 
 FpuMulSF	fpvMulA(clock, reset, exHold,
-	fpValRsA, fpValRtA, fpMulValRnA,
+	fpValRs1A, fpValRt1A, fpMulValRnA,
 	regExOp, regRMode);
 FpuMulSF	fpvMulB(clock, reset, exHold,
-	fpValRsB, fpValRtB, fpMulValRnB,
+	fpValRs1B, fpValRt1B, fpMulValRnB,
 	regExOp, regRMode);
 FpuMulSF	fpvMulC(clock, reset, exHold,
-	fpValRsC, fpValRtC, fpMulValRnC,
+	fpValRs1C, fpValRt1C, fpMulValRnC,
 	regExOp, regRMode);
 FpuMulSF	fpvMulD(clock, reset, exHold,
-	fpValRsD, fpValRtD, fpMulValRnD,
+	fpValRs1D, fpValRt1D, fpMulValRnD,
 	regExOp, regRMode);
 
 

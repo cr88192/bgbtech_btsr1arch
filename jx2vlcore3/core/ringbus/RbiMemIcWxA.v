@@ -1433,6 +1433,11 @@ begin
 	if(tMiss)
 		tRegOutHold = 1;
 
+	if(tMemReqLdA && !tMemRespLdA)
+		tRegOutHold = 1;
+	if(tMemReqLdB && !tMemRespLdB)
+		tRegOutHold = 1;
+
 //	tRegOutPcOK = tRegOutHold ? UMEM_OK_HOLD : UMEM_OK_OK;
 
 
@@ -1491,12 +1496,12 @@ begin
 
 		if(tReqSeqIdx != tReqIxA)
 		begin
-			$display("L1 I$, Mismatch Index A, %X!=!X",
+			$display("L1 I$, Mismatch Index A, %X!=%X",
 				tReqSeqIdx, tReqIxA);
 		end
 		if(tReqSeqVa[43:0] != tReqAddrA[43:0])
 		begin
-			$display("L1 I$, Mismatch Index A, %X!=!X",
+			$display("L1 I$, Mismatch Index A, %X!=%X",
 				tReqSeqVa[43:0], tReqAddrA[43:0]);
 		end
 		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
@@ -1554,12 +1559,12 @@ begin
 
 		if(tReqSeqIdx != tReqIxB)
 		begin
-			$display("L1 I$, Mismatch Index B, %X!=!X",
+			$display("L1 I$, Mismatch Index B, %X!=%X",
 				tReqSeqIdx, tReqIxB);
 		end
 		if(tReqSeqVa[43:0] != tReqAddrB[43:0])
 		begin
-			$display("L1 I$, Mismatch Index B, %X!=!X",
+			$display("L1 I$, Mismatch Index B, %X!=%X",
 				tReqSeqVa[43:0], tReqAddrB[43:0]);
 		end
 		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&

@@ -33,8 +33,26 @@ char *bjx2_fgets(char *buf, int lim, BJX2_FILE *fd);
 int BJX2_Interp_ProcessUsbMsg(BJX2_Context *ctx, byte *ibuf, int isz,
 	byte *obuf, int *rosz)
 {
+	int i, j, k, l;
+
 	if((ibuf[0]==0x69) &&
 		((ibuf[1]==0x00) || (ibuf[1]==0x01)))
+	{
+		if(!ctx->do_usb_hid)
+			return(0);
+			
+		l=ctx->usbkb_hidctrl_sz;
+
+		obuf[ 0]=0xC3;
+		
+		memcpy(obuf+1, ctx->usbkb_hidctrl, l);
+		*rosz=l+3;
+		return(1);
+	}
+
+	if((ibuf[0]==0x69) &&
+//		((ibuf[1]==0x00) || (ibuf[1]==0x01)))
+		((ibuf[1]==0x80) || (ibuf[1]==0x81)))
 	{
 		if(!ctx->do_usb_hid)
 			return(0);
@@ -66,6 +84,65 @@ int BJX2_Interp_ProcessUsbMsg(BJX2_Context *ctx, byte *ibuf, int isz,
 		*rosz=11;
 		return(1);
 	}
+
+	if((ibuf[0]==0xC3) || (ibuf[0]==0x4B))
+	{
+		if(ctx->usbkb_hidctrl_st==1)
+		{
+			ctx->usbkb_hidctrl_st=0;
+
+			if(ibuf[1]==0x00)
+			{
+				if(ibuf[2]==0x05)
+				{
+					printf("BJX2_Interp_ProcessUsbMsg: Set Address\n");
+				}
+
+				if(ibuf[2]==0x09)
+				{
+					printf("BJX2_Interp_ProcessUsbMsg: Set Configuration\n");
+				}
+			}
+
+			if(ibuf[1]==0x80)
+			{
+				if(ibuf[2]==0x06)
+				{
+					printf("BJX2_Interp_ProcessUsbMsg: Get Descriptor\n");
+					ctx->usbkb_hidctrl_sz=ibuf[7];
+					
+					memset(ctx->usbkb_hidctrl, 0, 64);
+					ctx->usbkb_hidctrl[ 0]=18;
+					ctx->usbkb_hidctrl[ 1]=0x01;
+					ctx->usbkb_hidctrl[ 2]=0x01;
+					ctx->usbkb_hidctrl[ 3]=0x10;
+					ctx->usbkb_hidctrl[17]=0x01;
+				}
+			}
+
+			if(ibuf[1]==0x1A)
+			{
+				if(ibuf[2]==0x01)
+				{
+					memcpy(ctx->usbkb_hidctrl, ctx->usbkb_report, 8);
+					ctx->usbkb_hidctrl_sz=8;
+				}
+			}
+		}
+
+		obuf[0]=0xD2;
+		*rosz=1;
+		return(1);
+	}
+
+	if(ibuf[0]==0x2D)
+	{
+		printf("BJX2_Interp_ProcessUsbMsg: Setup\n");
+		ctx->usbkb_hidctrl_st=1;
+		*rosz=0;
+		return(0);
+	}
+
 	return(0);
 }
 
@@ -327,6 +404,15 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		BJX2_Interp_CheckUpdateUsb(ctx);
 		rv=ctx->usbbuf_rxeposa;
 		break;
+	case 0x0808:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0200;
+		break;
+	case 0x080C:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0000;
+		break;
+
 	case 0x0810:
 		BJX2_Interp_CheckUpdateUsb(ctx);
 		rv=ctx->usbbuf_txsposa;
@@ -334,6 +420,14 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 	case 0x0814:
 		BJX2_Interp_CheckUpdateUsb(ctx);
 		rv=ctx->usbbuf_txeposa;
+		break;
+	case 0x0818:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0200;
+		break;
+	case 0x081C:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0000;
 		break;
 
 	case 0x0820:
@@ -344,6 +438,15 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		BJX2_Interp_CheckUpdateUsb(ctx);
 		rv=ctx->usbbuf_rxeposb;
 		break;
+	case 0x0828:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0200;
+		break;
+	case 0x082C:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0000;
+		break;
+
 	case 0x0830:
 		BJX2_Interp_CheckUpdateUsb(ctx);
 		rv=ctx->usbbuf_txsposb;
@@ -351,6 +454,14 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 	case 0x0834:
 		BJX2_Interp_CheckUpdateUsb(ctx);
 		rv=ctx->usbbuf_txeposb;
+		break;
+	case 0x0838:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0200;
+		break;
+	case 0x083C:
+		BJX2_Interp_CheckUpdateUsb(ctx);
+		rv=0x0000;
 		break;
 
 	default:

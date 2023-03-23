@@ -679,6 +679,17 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 			val|=1;
 		break;
 
+	case 0xE800:	case 0xE804:
+	case 0xE808:	case 0xE80C:
+	case 0xE810:	case 0xE814:
+	case 0xE818:	case 0xE81C:
+	case 0xE820:	case 0xE824:
+	case 0xE828:	case 0xE82C:
+	case 0xE830:	case 0xE834:
+	case 0xE838:	case 0xE83C:
+		val=0;
+		break;
+
 	default:
 //		val=0;
 		val=0x55AA55AA;

@@ -421,7 +421,8 @@ int BTSR1_MainAddTranslateKey(int key)
 			wasst=1;
 		}
 
-		if((usb_kbsticky && (key&0x8000)) || wasst)
+//		if((usb_kbsticky && (key&0x8000)) || wasst)
+		if(0)
 		{
 			/* If sticky and key is released, hold back key release. */
 			usb_kbstbuf[usb_kbstpos++]=key;
@@ -1338,6 +1339,11 @@ short usb_rxbuf[256];
 byte usb_rxposs;
 byte usb_rxpose;
 
+uint16_t TKUSB_Crc16(byte *data, uint32_t sz);
+
+byte usb_hidmsg[64];
+byte usb_hidmsgsz;
+
 // byte usb_kbmsg[32];
 // byte usb_kbmsgsz;
 
@@ -1363,7 +1369,178 @@ int usb_hidkbreport()
 	usb_txpose=(usb_txpose+1)&255;
 	
 	usb_kbsticky=0;
-} 
+}
+
+int usb_hidctrlreport()
+{
+	int i, j, k;
+	
+	printf("usb_hidkbreport sz=%d\n", usb_kbmsgsz);
+	
+	if(usb_txpose==usb_txposs)
+	{
+		usb_txpose=0;
+		usb_txposs=0;
+	}
+	
+	for(i=0; i<usb_hidmsgsz; i++)
+	{
+		usb_txbuf[usb_txpose]=usb_hidmsg[i];
+		usb_txpose=(usb_txpose+1)&255;
+	}
+
+	usb_txbuf[usb_txpose]=0x100;
+	usb_txpose=(usb_txpose+1)&255;
+}
+
+int usb_gethiddesc(int len)
+{
+	int i, j, k, l;
+	
+	printf("usb_gethiddesc sz=%d\n", len);
+	
+	if(usb_txpose==usb_txposs)
+	{
+		usb_txpose=0;
+		usb_txposs=0;
+	}
+	
+	l=len+3;
+	memset(usb_hidmsg, 0, 64);
+	usb_hidmsg[0]=0xC3;
+	usb_hidmsg[1]=18;
+	usb_hidmsg[2]=1;
+	usb_hidmsg[3]=0x10;
+	usb_hidmsg[4]=0x01;
+
+	usb_hidmsg[18]=0x01;
+	
+	k=~TKUSB_Crc16(usb_hidmsg+1, len);
+	usb_hidmsg[len+1]=k;
+	usb_hidmsg[len+2]=k>>8;
+	
+	usb_hidmsgsz=l;
+}
+
+int usb_issetup;
+
+int usb_parsesetup()
+{
+	printf("usb_parsesetup: %02X %02X %02X %02X %02X %02X %02X %02X\n",
+		usb_rxbuf[(usb_rxposs+1)&0xFF],
+		usb_rxbuf[(usb_rxposs+2)&0xFF],
+		usb_rxbuf[(usb_rxposs+3)&0xFF],
+		usb_rxbuf[(usb_rxposs+4)&0xFF],
+		usb_rxbuf[(usb_rxposs+5)&0xFF],
+		usb_rxbuf[(usb_rxposs+6)&0xFF],
+		usb_rxbuf[(usb_rxposs+7)&0xFF],
+		usb_rxbuf[(usb_rxposs+8)&0xFF]);
+	
+	if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x00)
+	{
+		if(usb_rxbuf[(usb_rxposs+2)&0xFF]==0x05)
+		{
+			printf("usb_parsesetup: Set Address\n");
+		}
+
+		if(usb_rxbuf[(usb_rxposs+2)&0xFF]==0x09)
+		{
+			printf("usb_parsesetup: Set Configuration\n");
+		}
+	}
+
+
+	if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x80)
+	{
+		if(usb_rxbuf[(usb_rxposs+2)&0xFF]==0x06)
+		{
+			printf("usb_parsesetup: Get Descriptor\n");
+			usb_gethiddesc(usb_rxbuf[(usb_rxposs+7)&0xFF]);
+		}
+	}
+
+	if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x1A)
+	{
+		if(usb_rxbuf[(usb_rxposs+2)&0xFF]==0x01)
+		{
+			memcpy(usb_hidmsg, usb_kbmsg, usb_kbmsgsz);
+			usb_hidmsgsz=usb_kbmsgsz;
+//			usb_hidkbreport();
+		}
+	}
+	
+	usb_txbuf[usb_txpose]=0xD2;
+	usb_txpose=(usb_txpose+1)&255;
+
+	usb_txbuf[usb_txpose]=0x100;
+	usb_txpose=(usb_txpose+1)&255;
+
+	return(0);
+}
+
+uint16_t TKUSB_DoCrc16Step(uint16_t crc0, byte value)
+{
+	uint16_t crc;
+	int i;
+	crc=crc0^(((uint16_t)value)<<8);
+	for(i=0; i<8; i++)
+	{
+		if(crc&0x8000)
+//			{ crc=(crc<<1)^0x1021; }
+			{ crc=(crc<<1)^0x8005; }
+		else
+			{ crc=crc<<1; }
+	}
+	return(crc);
+}
+
+uint16_t TKUSB_Crc16(byte *data, uint32_t sz)
+{
+	byte *cs, *cse;
+	uint16_t crc;
+
+	crc=0xFFFF;
+	cs=data; cse=data+sz;
+	while (cs<cse)
+		{ crc=TKUSB_DoCrc16Step(crc, *cs++); }
+	return(crc);
+}
+
+int usb_parsedata()
+{
+	int i, j, k, l;
+
+	l=usb_rxpose-usb_rxposs;
+	l=(l-4)&255;
+	j=0xFFFF;
+	for(i=0; i<l; i++)
+	{
+		j=TKUSB_DoCrc16Step(j, usb_rxbuf[(usb_rxposs+i+1)&0xFF]);
+	}
+	j=j^0xFFFF;
+	
+	k=	(usb_rxbuf[(usb_rxpose-2)&0xFF]<<8) |
+		usb_rxbuf[(usb_rxpose-3)&0xFF];
+
+	if(j!=k)
+	{
+		printf("usb_parsedata: CRC Problem: %04X %04X\n", j, k);
+	}else
+	{
+		printf("usb_parsedata: CRC OK: %04X\n", j);
+	}
+
+	if(usb_issetup)
+	{
+		usb_parsesetup();
+		usb_issetup=0;
+		return(0);
+	}
+
+	printf("usb_parsedata: Unhandled Data\n", j);
+
+	return(0);
+}
 
 int usb_parserxeop()
 {
@@ -1372,16 +1549,37 @@ int usb_parserxeop()
 	if(usb_rxbuf[usb_rxposs]==0x69)
 	{
 //		if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)
-		if(	(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x00) ||
-			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01) ||
-			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x80) ||
+		if(	(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x80) ||
 			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x81)	)
 		{
 			usb_hidkbreport();
 		}
+
+//		if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)
+		if(	(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x00) ||
+			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)	)
+		{
+			usb_hidctrlreport();
+		}
 	}else
+		if(usb_rxbuf[usb_rxposs]==0x2D)
 	{
-	printf("usb_parserxeop: unhandled %02X\n", usb_rxbuf[usb_rxposs]);
+//		usb_parsesetup();
+		usb_issetup=1;
+	}else
+		if(	(usb_rxbuf[usb_rxposs]==0x4B) ||
+			(usb_rxbuf[usb_rxposs]==0xC3))
+	{
+		usb_parsedata();
+	}else
+		if(usb_rxbuf[usb_rxposs]==0xD2)
+	{
+		/* ACK */
+	}
+	else
+	{
+		printf("usb_parserxeop: unhandled %02X\n",
+			usb_rxbuf[usb_rxposs]);
 	}
 	
 	usb_rxposs=usb_rxpose;
@@ -1468,7 +1666,7 @@ int update_usb()
 			didsb=1;
 		}else if((rxwin1&0xFE00)==0x0000)
 		{
-			if(rxmd)
+			if(rxmd && rxdat)
 				printf("update_usb: Missing Stuffed Bit\n");
 		}
 		

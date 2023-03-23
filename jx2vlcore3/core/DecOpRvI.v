@@ -56,7 +56,8 @@ output[32:0]	idImm;
 output[8:0]		idUCmd;
 output[8:0]		idUIxt;
 // output[3:0]		idUFl;
-output[7:0]		idUFl;
+// output[7:0]		idUFl;
+output[18:0]		idUFl;
 
 wire			isAltOp;
 wire			isOp24;
@@ -92,7 +93,7 @@ assign	idImm = opImm;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
 // assign	idUFl = opUFl;
-assign	idUFl = { opULdOp, opUFl };
+assign	idUFl = { 6'h0, 5'h0, opULdOp, opUFl };
 
 `reg_gpr	opRegM_Dfl;
 `reg_gpr	opRegO_Dfl;

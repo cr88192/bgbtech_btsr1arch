@@ -1486,12 +1486,16 @@ FpuVec4SF	ex1FpuV4(
 
 	ex1OpUCmd,		ex1OpUIxt,
 	exB1OpUCmd,		exB1OpUIxt,
+	exC1OpUCmd,		exC1OpUIxt,
 	exHold2,
 
 	ex1RegValImm,	exB1RegValImm,
 
-	ex1RegValRs,	exB1RegValRs,
-	ex1RegValRt,	exB1RegValRt,
+	ex1RegIdRs,		ex1RegValRs,
+	exB1RegIdRs,	exB1RegValRs,
+	ex1RegIdRt,		ex1RegValRt,
+	exB1RegIdRt,	exB1RegValRt,
+
 	ex1RegValRm,	exB1RegValRm,
 
 	exA1FpuV4SfRn,	exB1FpuV4SfRn);

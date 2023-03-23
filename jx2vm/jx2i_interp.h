@@ -722,6 +722,13 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVST			0x18E		//
 #define BJX2_NMID_XMOVST		0x18F		//
 
+#define BJX2_NMID_PSHADDF		0x190		//
+#define BJX2_NMID_PSHADDXF		0x191		//
+#define BJX2_NMID_PSHMULF		0x192		//
+#define BJX2_NMID_PSHMULXF		0x193		//
+#define BJX2_NMID_PSHADDH		0x194		//
+#define BJX2_NMID_PSHMULH		0x195		//
+
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -1140,8 +1147,11 @@ u32 msgbuf_rxepos;
 u32 msgbuf_txspos;
 u32 msgbuf_txepos;
 
+byte usbkb_hidctrl[128];
 byte usbkb_report[8];
 byte do_usb_hid;
+byte usbkb_hidctrl_sz;
+byte usbkb_hidctrl_st;
 
 u64 *usbbuf;
 u64 *usbbuf_rxa;
