@@ -331,6 +331,7 @@ RbiMemIcWxA		memIc(
 	ifMemWait,		ifOutExc,
 	icOutPcSxo,		regKrrHashIsL,
 	tTlbExc,		tIcExecAcl,
+	regInMmcr,
 
 	ifMemAddrI,		ifMemAddrO,
 	ifMemDataI,		ifMemDataO,
@@ -425,6 +426,9 @@ reg		tNxtMsgLatch;
 
 reg		tExcLatch;
 reg		tNxtExcLatch;
+
+reg[9:0]	tExcLatchInhCnt;
+reg[9:0]	tNxtExcLatchInhCnt;
 
 always @*
 begin
@@ -529,7 +533,8 @@ begin
 	tRegOutExc		= UV128_00;
 	tRegTraPc		= UV64_00;
 
-	tNxtExcLatch	= tExcLatch;
+	tNxtExcLatch		= tExcLatch;
+	tNxtExcLatchInhCnt	= (tExcLatchInhCnt!=0) ? (tExcLatchInhCnt-1) : 0;
 
 	regNxtKrrRngDs	= regKrrRngDs;
 	regNxtKrrRngIs	= regKrrRngIs;
@@ -589,12 +594,18 @@ begin
 			tRegOutExc = dfOutExc;
 		else if(ifOutExc[15])
 			tRegOutExc = ifOutExc;
+		
+//		if((regInSr[29] && regInSr[28]) && (tRegOutExc[15:12]==4'hC))
+		if((regInSr[29] && regInSr[28]) && (tRegOutExc[15:12]!=4'h8))
+//		if(regInSr[29] && regInSr[28])
+			tRegOutExc = UV128_00;
 	end
 
 	if(tRegOutExc[15])
 	begin
 		tDcOutHold		= 1;
 		tNxtExcLatch	= 1;
+		tNxtExcLatchInhCnt	= 1023;
 //		if(	(tRegOutExc[15:12]==4'h8) ||
 //			(tRegOutExc[15:12]==4'hA) )
 //				regNxtKrrRng	= tNxtRngN[11:4];
@@ -624,10 +635,28 @@ begin
 //		(dcInOpm==UMEM_OPM_FLUSHIS))
 //			regNxtKrrRng	= tNxtRngN[11:4];
 	
-	if(tExcLatch)
+//	if(tExcLatch)
+	if(tExcLatch && !(regInSr[29] && regInSr[28]))
 		tDcOutHold		= 1;
 
+	if(tResetL)
+	begin
+		tDcOutHold		= 0;
+		tNxtExcLatch	= 0;
+	end
+
 	if(regInCurExc[15])
+	begin
+		tNxtExcLatch	= 0;
+	end
+
+	if((tExcLatchInhCnt == 0) && tExcLatch)
+	begin
+		$display("RbiMemL1A: Clear stuck EXC Latch");
+		tNxtExcLatch	= 0;
+	end
+
+	if(regInSr[29] && regInSr[28])
 	begin
 		tNxtExcLatch	= 0;
 	end
@@ -675,6 +704,9 @@ begin
 	tRngN			<= tNxtRngN;
 	tRngN2			<= tRngN;
 	tResetL			<= reset;
+
+
+	tExcLatchInhCnt	<= tNxtExcLatchInhCnt;
 
 `ifndef def_true
 // `ifdef def_true

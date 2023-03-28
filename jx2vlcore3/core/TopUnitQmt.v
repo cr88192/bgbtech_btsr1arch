@@ -50,14 +50,15 @@ module TopUnitQmt(
 	uartTxD,	uartRxD,
 //	uartCtS,	uartRtS,
 
-//	ps2_clk,	ps2_data,
+	ps2_clk,	ps2_data,
 
 	sdc_dat,	sdc_clk,	sdc_cmd,
 
 	dbg_exHold1,
 	dbg_exHold2,
 	
-	usb_pins
+	usb_pins,
+	aud_out
 	);
 
 input			clock;
@@ -94,6 +95,7 @@ inout[1:0]		ddrDqsP;
 inout[1:0]		ddrDqsN;
 
 inout[3:0]		usb_pins;
+output[1:0]		aud_out;
 
 wire	reset2_200;
 wire	reset2_150;
@@ -179,12 +181,19 @@ output[4:0]		vgaBlu;
 output			vgaHsync;
 output			vgaVsync;
 
-wire[3:0]		vgaRed1;
-wire[3:0]		vgaGrn1;
-wire[3:0]		vgaBlu1;
-assign		vgaRed = { vgaRed1, vgaRed[3] };
-assign		vgaGrn = { vgaGrn1, vgaGrn[3], 1'b0 };
-assign		vgaBlu = { vgaBlu1, vgaBlu[3] };
+//wire[3:0]		vgaRed1;
+//wire[3:0]		vgaGrn1;
+//wire[3:0]		vgaBlu1;
+//assign		vgaRed = { vgaRed1, vgaRed[3] };
+//assign		vgaGrn = { vgaGrn1, vgaGrn[3], 1'b0 };
+//assign		vgaBlu = { vgaBlu1, vgaBlu[3] };
+
+wire[4:0]		vgaRed1;
+wire[4:0]		vgaGrn1;
+wire[4:0]		vgaBlu1;
+assign		vgaRed = vgaRed1;
+assign		vgaGrn = { vgaGrn1, 1'b0 };
+assign		vgaBlu = vgaBlu1;
 
 output			uartTxD;
 input			uartRxD;
@@ -195,8 +204,8 @@ wire			uartCtS;
 wire			uartRtS;
 assign		uartCtS = 1'b1;
 
-// inout			ps2_clk;
-// inout			ps2_data;
+inout			ps2_clk;
+inout			ps2_data;
 
 inout[3:0]		sdc_dat;
 output			sdc_clk;
@@ -217,13 +226,13 @@ wire		ps2_clk_o;
 wire		ps2_data_o;
 wire		ps2_clk_d;
 wire		ps2_data_d;
-// assign		ps2_clk		= ps2_clk_d  ? ps2_clk_o  : 1'bz;
-// assign		ps2_data	= ps2_data_d ? ps2_data_o : 1'bz;
-// assign		ps2_clk_i	= ps2_clk;
-// assign		ps2_data_i	= ps2_data;
+assign		ps2_clk		= ps2_clk_d  ? ps2_clk_o  : 1'bz;
+assign		ps2_data	= ps2_data_d ? ps2_data_o : 1'bz;
+assign		ps2_clk_i	= ps2_clk;
+assign		ps2_data_i	= ps2_data;
 
-assign		ps2_clk_i	= 1'b1;
-assign		ps2_data_i	= 1'b1;
+// assign		ps2_clk_i	= 1'b1;
+// assign		ps2_data_i	= 1'b1;
 
 wire[3:0]		sdc_dat_i;
 wire[3:0]		sdc_dat_o;
@@ -238,14 +247,19 @@ assign	sdc_dat_i[1]	= sdc_dat[1];
 assign	sdc_dat_i[2]	= sdc_dat[2];
 assign	sdc_dat_i[3]	= sdc_dat[3];
 
-wire aud_mono_out1;
-wire aud_mono_ena1;
+wire[1:0]		aud_mono_out1;
+wire			aud_mono_ena1;
 wire[7:0]		seg_outCharBit;
 wire[7:0]		seg_outSegBit;
 
 wire			aud_mic_clk;
 wire			aud_mic_data;
 assign	aud_mic_data = 1'b0;
+
+// assign	aud_out = !aud_mono_ena1 ?
+//	{ !aud_mono_out1, !aud_mono_out1 } : 2'bZZ;
+// assign	aud_out = { !aud_mono_out1, !aud_mono_out1 } ;
+assign	aud_out = { !aud_mono_out1[0], !aud_mono_out1[1] } ;
 
 wire	sdc_ena;
 

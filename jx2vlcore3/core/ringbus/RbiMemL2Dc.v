@@ -564,12 +564,15 @@ reg		mem4RingIsSpx;
 reg		mem4RingAddrIsRam;
 reg		mem4RingAddrIsRamReq;
 
+reg		tResetL;
+
 always @*
 begin
 	tNxtEpochCyc	= tCurEpochCyc + 1;
 	tNxtEpoch		= tCurEpochCyc[17:14];
 
-	if(reset)
+//	if(reset)
+	if(tResetL)
 		tNxtEpochCyc = 0;
 
 	/* Cycle 1 */
@@ -657,7 +660,8 @@ begin
 	end
 
 //	if((tCurFrov == 4'h0) && !tDoFlushL2 && !tDoFlushL2L)
-	if((tCurFrov == 4'h0) && !tDoFlushL2 && !tDoFlushL2L && !reset)
+//	if((tCurFrov == 4'h0) && !tDoFlushL2 && !tDoFlushL2L && !reset)
+	if((tCurFrov == 4'h0) && !tDoFlushL2 && !tDoFlushL2L && !tResetL)
 		tNxtDoFlushL2 = 1;
 
 	tNxtFrov	= tCurFrov;
@@ -668,7 +672,8 @@ begin
 		tNxtFrov	= tCurFrov + 1;
 	end
 
-	if(reset)
+//	if(reset)
+	if(tResetL)
 	begin
 		tNxtFrov	= 0;
 	end
@@ -1227,13 +1232,15 @@ begin
 		tSkipC2 = 1;
 
 	tNxtDoAcc	= (tAccess && tMiss && !tSkipC2) &&
-		tAccReady && !tAccDone && !(tBlkDoStL || tBlkDoStBL) && !reset;
+//		tAccReady && !tAccDone && !(tBlkDoStL || tBlkDoStBL) && !reset;
+		tAccReady && !tAccDone && !(tBlkDoStL || tBlkDoStBL) && !tResetL;
 	tNxtAccBlkDirty	= tBlkDirty;
 	
 //	if(tAccDone || reset)
 //		tNxtDoAcc = 0;
 
-	if(tAccBusyLatch && !reset)
+//	if(tAccBusyLatch && !reset)
+	if(tAccBusyLatch && !tResetL)
 	begin
 		tNxtAccIx			= tAccIx;
 		tNxtAccAddr			= tAccAddr;
@@ -1398,7 +1405,8 @@ begin
 //		$display("L2DC: tAccIsOkSeq");
 	end
 
-	if(reset)
+//	if(reset)
+	if(tResetL)
 	begin
 		tNxtDoAcc		= 0;
 		tNxtReqMissSeq	= 0;
@@ -1475,6 +1483,8 @@ begin
 	tMissL2			<= tMissL;
 	tMissL3			<= tMissL2;
 	tMissAddrL		<= tMissAddr;
+
+	tResetL			<= reset;
 
 `ifdef jx2_mem_l2d2way
 	tMissAddrBL		<= tMissAddrB;
@@ -1573,7 +1583,8 @@ begin
 	end
 `endif
 
-	if(reset)
+//	if(reset)
+	if(tResetL)
 	begin
 		tAccLatch		<= 0;
 		tAccBusyLatch	<= 0;

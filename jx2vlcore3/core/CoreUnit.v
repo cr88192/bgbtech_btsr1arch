@@ -269,9 +269,9 @@ assign			ddrDataO	= ddrData_O;
 assign			ddrData_I	= ddrDataI;
 assign			ddrDataEn	= ddrData_En;
 
-output[3:0]		vgaRed;
-output[3:0]		vgaGrn;
-output[3:0]		vgaBlu;
+output[4:0]		vgaRed;
+output[4:0]		vgaGrn;
+output[4:0]		vgaBlu;
 output			vgaHsync;
 output			vgaVsync;
 
@@ -294,7 +294,7 @@ output			sdc_clk;
 output			sdc_cmd;
 output			sdc_ena;
 
-output			aud_mono_out;
+output[1:0]		aud_mono_out;
 output			aud_mono_ena;
 output[7:0]		seg_outCharBit;
 output[7:0]		seg_outSegBit;
@@ -364,6 +364,20 @@ assign	dbg_outStatus5 = tDbgOutStatus5B;
 assign	dbg_outStatus6 = tDbgOutStatus6B;
 assign	dbg_outStatus7 = tDbgOutStatus7B;
 assign	dbg_outStatus8 = tDbgOutStatus8B;
+
+wire[9:0]		tDbgLeds;
+assign tDbgLeds = {
+	tDbgOutStatus8B,
+	tDbgOutStatus7B,
+	tDbgOutStatus6B,
+	tDbgOutStatus5B,
+	tDbgOutStatus4B,
+	tDbgOutStatus3B,
+	tDbgOutStatus2B,
+	tDbgOutStatus1B,
+	tDbgExHold2B,
+	tDbgExHold1B
+	};
 
 // assign			ps2kb_clk_o	= 1'bz;
 // assign			ps2kb_data_o	= 1'bz;
@@ -1294,16 +1308,23 @@ assign	ddrOpSqI = 0;
 `endif
 
 
-wire[15:0]	scrnPwmOut;
+// wire[15:0]	scrnPwmOut;
+wire[16:0]	scrnPwmOut;
 // wire[31:0]	scrnMmioOutData;
 wire[63:0]	scrnMmioOutData;
 wire[1:0]	scrnMmioOK;
 
-assign	vgaRed		= scrnPwmOut[11:8];
-assign	vgaGrn		= scrnPwmOut[ 7:4];
-assign	vgaBlu		= scrnPwmOut[ 3:0];
-assign	vgaHsync	= scrnPwmOut[12];
-assign	vgaVsync	= scrnPwmOut[13];
+//assign	vgaRed		= scrnPwmOut[11:8];
+//assign	vgaGrn		= scrnPwmOut[ 7:4];
+//assign	vgaBlu		= scrnPwmOut[ 3:0];
+//assign	vgaHsync	= scrnPwmOut[12];
+//assign	vgaVsync	= scrnPwmOut[13];
+
+assign	vgaRed		= scrnPwmOut[14:10];
+assign	vgaGrn		= scrnPwmOut[ 9: 5];
+assign	vgaBlu		= scrnPwmOut[ 4: 0];
+assign	vgaHsync	= scrnPwmOut[15];
+assign	vgaVsync	= scrnPwmOut[16];
 
 
 `ifndef jx2_cfg_novga
@@ -1316,9 +1337,11 @@ ModTxtNtW	scrn(
 //	clock_100,		reset2_100,
 	clock_mmio,		reset2_mmio,
 	scrnPwmOut,
+
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
 	mmioOpm,		scrnMmioOK,
 	timerNoise,		timer256Hz,
+	tDbgLeds,
 
 	mmiAddrIn,		mmiAddrOut,
 	mmiDataIn,		mmiDataOut,
@@ -1349,7 +1372,7 @@ wire		audPwmEna;
 wire[31:0]	audMmioOutData;
 wire[1:0]	audMmioOK;
 
-reg			audPwmOut2;
+reg[1:0]	audPwmOut2;
 reg			audPwmEna2;
 // assign		aud_mono_out	= audPwmOut[0];
 assign		aud_mono_out	= audPwmOut2;
@@ -1413,7 +1436,7 @@ assign		timerNoise_NS0 = (scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0]);
 assign		timerNoise_NS1 = (sdc_di ^ sdc_do) ^ timerNoise_S4;
 // assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
 assign		timerNoise_NS2 =
-	dbg_exHold1 ^ audPwmOut2 ^ clock_halfMhz ^
+	dbg_exHold1 ^ audPwmOut2[0] ^ clock_halfMhz ^
 	timerNPat ^ tAudMicData ^ tSbitX;
 assign		timerNoise_NS3 =
 //	memAddr[1] ^ memAddr[2] ^ memAddr[3] ^
@@ -1799,7 +1822,8 @@ begin
 	tSegOutCharBit		<= ssOutCharBit;
 	tSegOutSegBit		<= ssOutSegBit;
 	
-	audPwmOut2			<= audPwmOut[0];
+//	audPwmOut2			<= audPwmOut[0];
+	audPwmOut2			<= audPwmOut;
 	audPwmEna2			<= audPwmEna;
 
 `ifndef def_true

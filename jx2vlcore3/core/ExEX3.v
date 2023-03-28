@@ -473,7 +473,7 @@ begin
 `endif
 			end
 `ifndef	jx2_mem_l1dstall
-			tExHold=1;
+//			tExHold=1;
 `endif
 		end
 		else
@@ -500,7 +500,7 @@ begin
 	begin
 //		if(!tExHold)
 //			$display("Hold Cyc %d %d", tHoldCyc, tDoHoldCyc);
-		tExHold=1;
+//		tExHold=1;
 	end
 
 	if(reset)

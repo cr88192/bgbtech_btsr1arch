@@ -107,6 +107,7 @@ reg[8:0]		tValFdivRnd;
 
 reg[6:0]		tOpCnt;
 reg[6:0]		tNxtOpCnt;
+reg[6:0]		tLstOpCnt;
 
 always @*
 begin
@@ -217,6 +218,7 @@ begin
 
 	end
 	else
+		if(tLstOpCnt==0)
 	begin
 		tNxtValRn		= tValRn;
 		tNxtValRnHi		= tValRnHi;
@@ -343,6 +345,13 @@ begin
 	begin
 //		$display("SloMulDiv: Out %X %X", tNxtValRn, tNxtValRnHi);
 	end
+	
+	if(reset)
+	begin
+		tNxtOpCnt		= 0;
+		tDoHold			= 0;
+		tNxtValOp		= 0;
+	end
 end
 
 always @(posedge clock)
@@ -350,11 +359,14 @@ begin
 
 //	if(tDoHold)
 //	if((tDoHold || (tNxtOpCnt!=0)) && !exInHold)
-	if(tDoHold || (tNxtOpCnt!=0))
+//	if(tDoHold || (tNxtOpCnt!=0))
+	if(tDoHold || (tNxtOpCnt!=0) || reset)
 //	if(tNxtOpCnt!=0)
 	begin
 		tOpCnt		<= tNxtOpCnt;
 	end
+
+	tLstOpCnt	<= tOpCnt;
 
 //	if(tNxtOpCnt!=0)
 	if(tDoHold || (tNxtOpCnt!=0))

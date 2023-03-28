@@ -181,6 +181,10 @@
 
 `define jx2_fbuf_nofont		//Disable Font ROM
 
+`define jx2_fbuf_nodither	//Disable VGA Dithering
+
+`define	jx2_fbuf_dbgleds	//Draw on-screen LEDs
+
 // `define jx2_alu_jcmp_rpimm	//Allow JCMP immed via Rp
 
 

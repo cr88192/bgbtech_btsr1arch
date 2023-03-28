@@ -259,11 +259,11 @@ begin
 //	mmioInCtlOE			= (tMmioOpm[3]) && tMmioCtlCSel;
 //	mmioInCtlWR			= (tMmioOpm[4]) && tMmioCtlCSel;
 
-	mmioInBufOE			= (tMmioOpm[4:3]==2'b01) && tMmioBufCSel;
-	mmioInBufWR			= (tMmioOpm[4:3]==2'b10) && tMmioBufCSel;
+	mmioInBufOE			= (tMmioOpm[4:3]==2'b01) && tMmioBufCSel && !reset;
+	mmioInBufWR			= (tMmioOpm[4:3]==2'b10) && tMmioBufCSel && !reset;
 
-	mmioInCtlOE			= (tMmioOpm[4:3]==2'b01) && tMmioCtlCSel;
-	mmioInCtlWR			= (tMmioOpm[4:3]==2'b10) && tMmioCtlCSel;
+	mmioInCtlOE			= (tMmioOpm[4:3]==2'b01) && tMmioCtlCSel && !reset;
+	mmioInCtlWR			= (tMmioOpm[4:3]==2'b10) && tMmioCtlCSel && !reset;
 
 	nxtIdxUsbRxsA		= idxUsbRxsA;
 	nxtIdxUsbRxeA		= idxUsbRxeA;
@@ -457,6 +457,7 @@ begin
 
 		tNxtPacketTxByteA	= 9'h07F;
 		tNxtPacketStateTxA = 4'h6;
+//		tNxtPacketStateTxA = 4'h8;
 	end
 	if((tPacketStateB==4'h0) && (tPacketStateTxB==4'h0) &&
 		(idxUsbTxsB!=idxUsbTxeB))
@@ -465,6 +466,7 @@ begin
 
 		tNxtPacketTxByteB	= 9'h07F;
 		tNxtPacketStateTxB = 4'h6;
+//		tNxtPacketStateTxB = 4'h8;
 	end
 
 	case(tPacketStateTxA[2:0])
@@ -498,6 +500,8 @@ begin
 		begin
 			tNxtUsbClkdatOut[1:0]	= 2'b00;
 			tNxtUsbClkdatDir[1:0]	= 2'b00;
+
+			tNxtLinkStateTxA		= tLinkTypeA;
 
 			if(tIdleTimerCntA != 0)
 			begin
@@ -546,7 +550,9 @@ begin
 		begin
 //			$display("ModUsbBuf: tClkPulseRxPhA B0");
 
-			tNxtLinkStateTxA		= tPacketStateTxA[0] ? 2'b10 : 2'b01;
+//			tNxtLinkStateTxA		= tPacketStateTxA[0] ? 2'b10 : 2'b01;
+			tNxtLinkStateTxA		= tLinkTypeA;
+
 			tNxtUsbClkdatDir[1:0]	= 2'b11;
 			tNxtPacketStateTxA		= tPacketStateTxA + 1;
 
@@ -659,7 +665,8 @@ begin
 //			if((tNxtBitShiftA[11:3]==9'b011111111) && !tPacketStateA[3])
 //			if((tNxtBitShiftA[11:4]==8'b01111111) && !tPacketStateA[3])
 //			if((tNxtBitShiftA[11:5]==7'b0111111) && !tPacketStateA[3])
-			if((tNxtBitShiftA[11:6]==6'b011111) && !tPacketStateA[3])
+//			if((tNxtBitShiftA[11:6]==6'b011111) && !tPacketStateA[3])
+			if((tNxtBitShiftA[11:7]==5'b01111) && !tPacketStateA[3])
 			begin
 				$display("ModUsbBuf: Seen Sync A");
 				tNxtPacketStateA = 4'h8;
@@ -714,6 +721,8 @@ begin
 			tNxtUsbClkdatOut[3:2]	= 2'b00;
 			tNxtUsbClkdatDir[3:2]	= 2'b00;
 
+			tNxtLinkStateTxB		= tLinkTypeB;
+
 			if(tIdleTimerCntB != 0)
 			begin
 				tNxtIdleTimerCntB = tIdleTimerCntB - 1;
@@ -754,7 +763,9 @@ begin
 
 		if(tPacketStateTxB[3:1]==3'b011)
 		begin
-			tNxtLinkStateTxB		= tPacketStateTxB[0] ? 2'b10 : 2'b01;
+//			tNxtLinkStateTxB		= tPacketStateTxB[0] ? 2'b10 : 2'b01;
+			tNxtLinkStateTxB		= tLinkTypeB;
+
 			tNxtUsbClkdatDir[3:2]	= 2'b11;
 			tNxtPacketStateTxB		= tPacketStateTxB + 1;
 
@@ -844,7 +855,8 @@ begin
 //			if((tNxtBitShiftB[11:3]==9'b011111111) && !tPacketStateB[3])
 //			if((tNxtBitShiftB[11:4]==8'b01111111) && !tPacketStateB[3])
 //			if((tNxtBitShiftB[11:5]==7'b0111111) && !tPacketStateB[3])
-			if((tNxtBitShiftB[11:6]==6'b011111) && !tPacketStateB[3])
+//			if((tNxtBitShiftB[11:6]==6'b011111) && !tPacketStateB[3])
+			if((tNxtBitShiftB[11:7]==5'b01111) && !tPacketStateB[3])
 			begin
 				$display("ModUsbBuf: Seen Sync B");
 				tNxtPacketStateB = 4'h8;
@@ -1143,6 +1155,8 @@ begin
 
 		tNxtIdleTimerCntB	= 4095;
 		tNxtPacketStateTxB	= 4'h1;
+
+		tMmioOK				= UMEM_OK_READY;
 	end
 end
 

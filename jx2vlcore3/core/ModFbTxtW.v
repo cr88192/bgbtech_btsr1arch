@@ -59,7 +59,8 @@ module ModFbTxtW(clock, reset,
 	pixCellIx,	cellData,
 	fontGlyph,	fontData,
 	ctrlRegVal,	pixLineOdd,
-	blinkSlow,	blinkFast);
+	blinkSlow,	blinkFast,
+	dbgLeds);
 
 /* verilator lint_off UNUSED */
 
@@ -84,6 +85,8 @@ input			pixLineOdd;
 
 input			blinkSlow;
 input			blinkFast;
+
+input[9:0]		dbgLeds;
 
 reg[11:0]	tPixPosX;
 reg[11:0]	tPixPosY;
@@ -276,6 +279,10 @@ reg[15:0]	tSprCurSelClr;
 reg[15:0]	tSprCurSelClrL;
 
 `endif
+
+reg		tDbgLedEna;
+reg		tDbgLedBit;
+
 
 reg[5:0]	tClrA;
 reg[5:0]	tClrB;
@@ -1593,6 +1600,86 @@ begin
 		tPixCy		= { tSprCurSelClrL[ 9: 4], tSprCurSelClrL[ 9: 8] };
 		tPixCu		= { tSprCurSelClrL[ 4: 0], tSprCurSelClrL[ 4: 2] };
 		tPixCv		= { tSprCurSelClrL[14:10], tSprCurSelClrL[14:12] };
+		tPixAux[0]	= 1;
+	end
+`endif
+
+`ifdef jx2_fbuf_dbgleds
+	tDbgLedEna = 0;
+	tDbgLedBit = 0;
+
+	case(tPixPosY_Z[9:2])
+		8'h01: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[9];
+		end
+		8'h03: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[8];
+		end
+		8'h05: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[7];
+		end
+		8'h07: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[6];
+		end
+		8'h09: begin
+//			tDbgLedEna = 1;
+//			tDbgLedBit = 1;
+		end
+		8'h0B: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[5];
+		end
+		8'h0D: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[4];
+		end
+		8'h0F: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[3];
+		end
+		8'h11: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[2];
+		end
+		8'h13: begin
+//			tDbgLedEna = 1;
+//			tDbgLedBit = 1;
+		end
+		8'h15: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[1];
+		end
+		8'h17: begin
+			tDbgLedEna = 1;
+			tDbgLedBit = dbgLeds[0];
+		end
+
+		default: begin
+		end
+	endcase
+	
+//	if(tPixPosX_Z[9:3]<79)
+	if(tPixPosX_Z[9:2]<159)
+		tDbgLedEna = 0;
+
+	if(tDbgLedEna)
+	begin
+		if(tDbgLedBit)
+		begin
+			tPixCy		= 8'hFF;
+			tPixCu		= 8'h00;
+			tPixCv		= 8'hFF;
+		end
+		else
+		begin
+			tPixCy		= 8'h00;
+			tPixCu		= 8'h40;
+			tPixCv		= 8'h00;
+		end
 		tPixAux[0]	= 1;
 	end
 `endif

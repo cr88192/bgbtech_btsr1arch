@@ -141,6 +141,12 @@ begin
 	ps2NxtDebP		= ps2DebP;
 	
 	ps2DebInhP		= ps2DebP || ps2Deb2P || ps2Deb3P;
+	
+	if(reset)
+	begin
+		ps2DebInhP	= 0;
+		ps2NxtDebP	= 0;
+	end
 
 `ifndef def_true
 	tNxtBitTimeout	= tBitTimeout-1;

@@ -159,7 +159,12 @@ assign	memAddrIsBad2		= (memAddrIn[31:30] != UV2_00);
 `endif
 
 `ifdef def_true
-assign	memAddrIsLo128k		= (memAddrIn[31:18] == UV14_00);
+// assign	memAddrIsLo128k		= (memAddrIn[31:18] == UV14_00);
+assign	memAddrIsLo128k		= 	(memAddrIn[31:18] == UV14_00) &&
+								(memAddrIn[43:32] == UV12_00) &&
+								(	(memAddrIn[47:44] == 4'h0) ||
+									(memAddrIn[47:44] == 4'hC) ||
+									(memAddrIn[47:44] == 4'hD));
 
 `ifdef jx2_enable_rom48k
 assign	memAddrIsRom		= memAddrIsLo128k &&

@@ -44,6 +44,7 @@
 module ModTxtNtW(clock, reset, pwmOut,
 	busInData, busOutData, busAddr, busOpm, busOK,
 	timerNoise, timer256Hz,
+	dbgLeds,
 	
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -57,7 +58,7 @@ module ModTxtNtW(clock, reset, pwmOut,
 input clock;
 input reset;
 
-output[15:0] 	pwmOut;
+output[16:0] 	pwmOut;
 input[31:0]		busAddr;
 // input[31:0]		busInData;
 // output[31:0]	busOutData;
@@ -67,6 +68,8 @@ input[4:0]		busOpm;
 output[1:0]		busOK;
 input			timerNoise;
 input			timer256Hz;
+
+input[9:0]		dbgLeds;
 
 input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
@@ -158,7 +161,8 @@ ModFbTxtW fbcc(clock, reset,
 	pixCellIx,	cellData1,
 	fontGlyph,	fontData1,
 	ctrlRegVal,	pixLineOdd,
-	tBlinkSlow,	tBlinkFast);
+	tBlinkSlow,	tBlinkFast,
+	dbgLeds);
 
 always @*
 begin

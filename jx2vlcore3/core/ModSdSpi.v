@@ -366,6 +366,16 @@ begin
 		tMmioOK			= mmioLatchWR ? UMEM_OK_OK : UMEM_OK_HOLD;
 	end
 
+	if(reset)
+	begin
+		tNxtRegXmitDeb	= 0;
+		mmioNxtLatchWR	= 0;
+		tNxtByteCnt			= 0;
+		tNxtBitCnt			= 0;
+
+		tMmioOK			= UMEM_OK_READY;
+	end
+
 end
 
 always @(posedge clock)

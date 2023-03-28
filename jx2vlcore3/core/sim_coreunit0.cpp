@@ -1478,6 +1478,31 @@ int usb_parsesetup()
 	return(0);
 }
 
+byte TKUSB_Crc5(uint32_t v, int vl, int ival)
+{
+	static const byte bvtab[19] = {
+		0x1E, 0x15, 0x03, 0x06, 0x0C, 0x18, 0x19, 0x1B,
+		0x1F, 0x17, 0x07, 0x0E, 0x1C, 0x11, 0x0B, 0x16,
+		0x05, 0x0A, 0x14
+	};
+	byte rv;
+	int i;
+
+	rv = ival;
+	for(i=0; i<vl; i++)
+	{
+		if (v&(1<<i))
+			{ rv^=bvtab[19-vl+i]; }
+	}
+	return(rv);
+}
+
+byte TKUSB_Crc5_11b(uint16_t val)
+	{ return(TKUSB_Crc5(val, 11, 0x02)); }
+byte TKUSB_Crc5_19b(uint32_t val)
+	{ return(TKUSB_Crc5(val, 19, 0x1D)); }
+
+
 uint16_t TKUSB_DoCrc16Step(uint16_t crc0, byte value)
 {
 	uint16_t crc;
@@ -1506,6 +1531,16 @@ uint16_t TKUSB_Crc16(byte *data, uint32_t sz)
 	return(crc);
 }
 
+byte TKUSB_BitFlip8(byte v)
+{
+	static const byte fliptab[16]={
+		0x0, 0x8, 0x4, 0xC, 0x2, 0xA, 0x6, 0xE,
+		0x1, 0x9, 0x5, 0xD, 0x3, 0xB, 0x7, 0xF};
+	byte v1;
+	v1=(fliptab[v&15]<<4)|(fliptab[(v>>4)&15]);
+	return(v1);
+}
+
 int usb_parsedata()
 {
 	int i, j, k, l;
@@ -1515,7 +1550,9 @@ int usb_parsedata()
 	j=0xFFFF;
 	for(i=0; i<l; i++)
 	{
-		j=TKUSB_DoCrc16Step(j, usb_rxbuf[(usb_rxposs+i+1)&0xFF]);
+//		j=TKUSB_DoCrc16Step(j, usb_rxbuf[(usb_rxposs+i+1)&0xFF]);
+		j=TKUSB_DoCrc16Step(j,
+			TKUSB_BitFlip8(usb_rxbuf[(usb_rxposs+i+1)&0xFF]));
 	}
 	j=j^0xFFFF;
 	
@@ -1544,10 +1581,22 @@ int usb_parsedata()
 
 int usb_parserxeop()
 {
+	int tg, k;
+
 	printf("usb_parserxeop\n");
 
 	if(usb_rxbuf[usb_rxposs]==0x69)
 	{
+		tg=	(usb_rxbuf[(usb_rxposs+1)&0xFF]   )	|
+			(usb_rxbuf[(usb_rxposs+2)&0xFF]<<8) ;
+		k=TKUSB_Crc5_11b(tg&0x07FF);
+		if((tg>>11)!=k)
+		{
+			printf("usb_parserxeop: CRC5 Bad %04X\n", tg);
+			usb_rxposs=usb_rxpose;
+			return(0);
+		}
+		
 //		if(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x01)
 		if(	(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x80) ||
 			(usb_rxbuf[(usb_rxposs+1)&0xFF]==0x81)	)
@@ -1564,6 +1613,16 @@ int usb_parserxeop()
 	}else
 		if(usb_rxbuf[usb_rxposs]==0x2D)
 	{
+		tg=	(usb_rxbuf[(usb_rxposs+1)&0xFF]   )	|
+			(usb_rxbuf[(usb_rxposs+2)&0xFF]<<8) ;
+		k=TKUSB_Crc5_11b(tg&0x07FF);
+		if((tg>>11)!=k)
+		{
+			printf("usb_parserxeop: CRC5 Bad %04X\n", tg);
+			usb_rxposs=usb_rxpose;
+			return(0);
+		}
+
 //		usb_parsesetup();
 		usb_issetup=1;
 	}else
@@ -1678,7 +1737,8 @@ int update_usb()
 	
 		if(!rxmd)
 		{
-			if((rxwin2&0xFF80)==0x7F80)
+//			if((rxwin2&0xFF80)==0x7F80)
+			if((rxwin2&0xFF00)==0x7F00)
 			{
 				printf("update_usb: Sync\n");
 				rxmd=8;
@@ -2708,8 +2768,12 @@ int main(int argc, char **argv, char **env)
 		
 		if(top->clock_100 && (lclk!=top->clock_100))
 		{
-			i=(top->vgaRed<<8)|(top->vgaGrn<<4)|(top->vgaBlu<<0)|
+//			i=(top->vgaRed<<8)|(top->vgaGrn<<4)|(top->vgaBlu<<0)|
+//				(top->vgaHsync<<12)|(top->vgaVsync<<13);
+
+			i=((top->vgaRed>>1)<<8)|((top->vgaGrn>>1)<<4)|((top->vgaBlu>>1)<<0)|
 				(top->vgaHsync<<12)|(top->vgaVsync<<13);
+
 			CDEC_UpdateForStreamCycle(vgactx, i);
 
 //			printf("Cycle\n");

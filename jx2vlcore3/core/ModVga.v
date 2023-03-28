@@ -27,14 +27,24 @@
 VGA Module
 
 pwmOut
-	[  13]=VSync
-	[  12]=HSync
-	[11:8]=Red
-	[ 7:4]=Green
-	[ 3:0]=Blue
+/	[  13]=VSync
+/	[  12]=HSync
+/	[11:8]=Red
+/	[ 7:4]=Green
+/	[ 3:0]=Blue
+
+pwmOut
+	[   16]=VSync
+	[   15]=HSync
+	[14:10]=Red
+	[ 9: 5]=Green
+	[ 4: 0]=Blue
+
  */
 
+`ifndef jx2_fbuf_nodither
 `include "ModVgaDith.v"
+`endif
 
 module ModVga(
 	clock,		reset,
@@ -55,7 +65,8 @@ input[63:0]		ctrlRegVal;		//Control Register
 input[15:0]		pixAux;			//Pixel Aux Bits
 input			timerNoise;
 
-output[15:0] pwmOut;
+// output[15:0] pwmOut;
+output[16:0] pwmOut;
 
 output[11:0] pixPosX;
 output[11:0] pixPosY;
@@ -64,10 +75,10 @@ output		pixLineOdd;
 
 reg[7:0]	cbPwmTab[31:0];
 
-reg[15:0]	tPwmOutA;			//PWM output bits
-reg[15:0]	tPwmOutB;			//PWM output bits
-reg[15:0]	tPwmOutC;			//PWM output bits
-reg[15:0]	tPwmOut;			//PWM output bits
+reg[16:0]	tPwmOutA;			//PWM output bits
+reg[16:0]	tPwmOutB;			//PWM output bits
+reg[16:0]	tPwmOutC;			//PWM output bits
+reg[16:0]	tPwmOut;			//PWM output bits
 
 reg[4:0]	tPwmStR;			//PWM State
 reg[4:0]	tPwmNextStR;		//Next PWM State
@@ -179,6 +190,9 @@ reg[11:0]	tPixNextPosX;
 reg[11:0]	tPixNextPosY;
 reg			tPixLineOdd;
 
+reg[11:0]	tPixPosXL;
+reg[11:0]	tPixPosYL;
+
 reg[7:0]	tPixCy;
 reg[7:0]	tPixCu;
 reg[7:0]	tPixCv;
@@ -247,10 +261,22 @@ ModVgaDith	dithB(
 	tPwmValB[3:0], dithRndUpB);
 `endif
 
-`ifdef def_true
+// `ifdef def_true
+// `ifndef def_true
+`ifndef jx2_fbuf_nodither
 ModVgaDith	dithR(tBayerIx, tPwmValR[3:0], dithRndUpR);
 ModVgaDith	dithG(tBayerIx, tPwmValG[3:0], dithRndUpG);
 ModVgaDith	dithB(tBayerIx, tPwmValB[3:0], dithRndUpB);
+`endif
+
+// `ifdef def_true
+// `ifndef def_true
+`ifdef jx2_fbuf_nodither
+
+assign dithRndUpR = 0;
+assign dithRndUpG = 0;
+assign dithRndUpB = 0;
+
 `endif
 
 
@@ -382,7 +408,8 @@ begin
 	tPwmOut[ 3:0] = tPwmOutAB;
 `endif
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 	tPwmOut[11:8] = (dithRndUpR && !tPwmOutCarryR && tPwmEn) ?
 		tPwmOutBR : tPwmOutAR;
 	tPwmOut[ 7:4] = (dithRndUpG && !tPwmOutCarryG && tPwmEn) ?
@@ -391,12 +418,32 @@ begin
 		tPwmOutBB : tPwmOutAB;
 `endif
 
+// `ifdef def_true
+// `ifndef def_true
+`ifndef jx2_fbuf_nodither
+	tPwmOut[14:11] = (dithRndUpR && !tPwmOutCarryR && tPwmEn) ?
+		tPwmOutBR : tPwmOutAR;
+	tPwmOut[ 9: 6] = (dithRndUpG && !tPwmOutCarryG && tPwmEn) ?
+		tPwmOutBG : tPwmOutAG;
+	tPwmOut[ 4: 1] = (dithRndUpB && !tPwmOutCarryB && tPwmEn) ?
+		tPwmOutBB : tPwmOutAB;
+`endif
+
+`ifdef jx2_fbuf_nodither
+	tPwmOut[14:10] = tPwmValR[7:3];
+	tPwmOut[ 9: 5] = tPwmValG[7:3];
+	tPwmOut[ 4: 0] = tPwmValB[7:3];
+`endif
+
 	tScanNextRowLim		= tScanRowLim;
 
-	tPwmOut[12] = !tHsync;
-	tPwmOut[13] = !tVsync;
-	tPwmOut[14] = 0;
-	tPwmOut[15] = 0;
+//	tPwmOut[12] = !tHsync;
+//	tPwmOut[13] = !tVsync;
+//	tPwmOut[14] = 0;
+//	tPwmOut[15] = 0;
+
+	tPwmOut[15] = !tHsync;
+	tPwmOut[16] = !tVsync;
 
 	tNextHsync	= 0;
 	tNextVsync	= 0;
@@ -744,6 +791,9 @@ begin
 
 	tPixPosX		<= tPixNextPosX;
 	tPixPosY		<= tPixNextPosY;
+
+	tPixPosXL		<= tPixPosX;
+	tPixPosYL		<= tPixPosY;
 
 //	tPixCy			<= pixCy;
 //	tPixCu			<= pixCu;

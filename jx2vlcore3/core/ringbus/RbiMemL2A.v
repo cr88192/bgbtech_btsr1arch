@@ -294,8 +294,8 @@ begin
 	end
 `endif
 
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 	if(reset)
 	begin
 		tL2mSeqOut		= 0;

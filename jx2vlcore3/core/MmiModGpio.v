@@ -532,7 +532,10 @@ begin
 					tNxtUartRxDebP	= 0;
 					uartRxNextFifo[79: 0]=
 						{ 10'b0, uartRxFifo[79:10] };
-					tMmioOK			= UMEM_OK_HOLD;
+					if(!reset)
+					begin
+						tMmioOK			= UMEM_OK_HOLD;
+					end
 				end
 			end
 

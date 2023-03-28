@@ -41,6 +41,7 @@ module RbiMemIcWxA(
 	icMemWait,		regOutExc,
 	regOutPcSxo,	regKrrHash,
 	tlbExc,			icExecAcl,
+	regInMmcr,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -83,6 +84,10 @@ output[ 15:0]	memOpmOut;		//memory operation mode
 `output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
+
+input[63:0]		regInMmcr;
+
+reg[63:0]		tRegInMmcr;
 
 
 reg [63: 0]		tRegInSr;
@@ -697,6 +702,12 @@ begin
 	tNxtSkipTlb			= tRegInSr[29] && tRegInSr[30];
 //	tNxtSkipMiss		= tRegInSr[29] != regInSr[29];
 	tNxtSkipMiss		= !tRegInSr[29] && regInSr[29];
+
+//	if(disableTlb)
+//		tNxtSkipTlb = 1;
+
+	if(!tRegInMmcr[0])
+		tNxtSkipTlb = 1;
 
 // `ifndef def_true
 `ifdef def_true
@@ -1905,6 +1916,9 @@ begin
 	tRegInSrL		<= tRegInSr;
 	tResetL			<= reset;
 
+	tRegInMmcr		<= regInMmcr;
+
+
 //	if(!icInPcHold)
 //	begin
 //		tRegInSr		<= regInSr;
@@ -2062,6 +2076,9 @@ begin
 		tMemReqLdB	<= 0;
 //		tMemReqLdM	<= 0;
 		tMemSeqRov	<= 0;
+
+		tMemRespLdA	<= 0;
+		tMemRespLdB	<= 0;
 	end
 	else
 		if(memRingIsIdle || memRingIsResp)
@@ -2095,10 +2112,10 @@ begin
 		tMemReqLdB	<= tNxtMemReqLdB;
 //		tMemReqLdM	<= tNxtMemReqLdM;
 `endif
-		tMemSeqRov	<= tNxtMemSeqRov;
 
 		tReqSeqIdxArr[tMemSeqRov]	<= tMemSeqIx;
 		tReqSeqVaArr[tMemSeqRov]	<= tMemSeqVa;
+		tMemSeqRov					<= tNxtMemSeqRov;
 	end
 	else
 	begin

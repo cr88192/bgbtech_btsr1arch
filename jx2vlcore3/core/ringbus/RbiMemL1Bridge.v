@@ -223,8 +223,8 @@ begin
 	end
 `endif
 
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 	if(reset)
 	begin
 		/* Clear ring during reset */

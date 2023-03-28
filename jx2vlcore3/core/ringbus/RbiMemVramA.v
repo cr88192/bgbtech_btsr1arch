@@ -464,6 +464,9 @@ reg[13:0]		tPixCellIxLim;
 reg[13:0]		tNxtPixCellIxLim;
 reg[14:0]		tPixCellIxCi;
 
+reg[13:0]		tPixCellIxCL;
+reg[13:0]		tPixCellIxDL;
+
 
 `ifndef jx2_fbuf_nofont
 reg[63:0]	fontMem[255:0];
@@ -589,7 +592,8 @@ begin
 	tNxtReqIsCRs = tNxtReqIsCSel && (tRegInAddr[16:8] == 9'h1FF);
 	
 	tNxtReqIsNz		=
-		(tRegInOpm[5:4] != 2'b00) && tNxtReqIsCSel;
+		(tRegInOpm[5:4] != 2'b00) && tNxtReqIsCSel &&
+		!reset;
 `endif
 
 //	tPixCellIxLim = 80 * 25;
@@ -783,6 +787,9 @@ begin
 	begin
 		if(tReqOpm[5])
 		begin
+//			$display("RbiMemVRam: Set Ctrl %X %X",
+//				tReqAddr[7:2], tReqInValA[31:0]);
+		
 			case(tReqAddr[7:2])
 				6'h00: nxtScrRegCtrl0 = tReqInValA[31:0];
 				6'h01: nxtScrRegCtrl1 = tReqInValA[31:0];
@@ -1222,12 +1229,20 @@ begin
 		end
 	end
 
+	if(tPixCellIxCL	!= tPixCellIxC)
+		tNxtMemReqLdC	= 0;
+	if(tPixCellIxDL	!= tPixCellIxD)
+		tNxtMemReqLdD	= 0;
+
 	if(reset)
 	begin
 		tReqMiss		= 0;
 		tReqMissA		= 0;
 		tReqMissB		= 0;
 		tReqWaitResp	= 0;
+
+		tNxtMemReqLdC	= 0;
+		tNxtMemReqLdD	= 0;
 	end
 
 	/* Miss Handling */
@@ -1472,6 +1487,12 @@ begin
 		tRegOutOK		= tRegOutOKL;
 	end
 	
+	if(reset)
+	begin
+		tRegOutOK		= UMEM_OK_READY;
+		tRegOutHold		= 0;
+	end
+	
 //	if(tRegOutOK)
 //		$display("OK=%X", tRegOutOK);
 end
@@ -1555,6 +1576,10 @@ begin
 	tReqIxD			<= tNxtReqIxD;
 	tReqAxC			<= tNxtReqAxC;
 	tReqAxD			<= tNxtReqAxD;
+
+	tPixCellIxCL	<= tPixCellIxC;
+	tPixCellIxDL	<= tPixCellIxD;
+
 
 //	tRegOutValL		<= tRegOutVal;
 //	tRegOutOKL		<= tRegOutOK;

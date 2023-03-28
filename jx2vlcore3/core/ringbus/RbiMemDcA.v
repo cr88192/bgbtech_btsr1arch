@@ -951,8 +951,12 @@ begin
 	if(disableTlb)
 		tNxtSkipTlb = 1;
 
+	if(!tRegInMmcr[0])
+		tNxtSkipTlb = 1;
+
 	if(tNxtSkipTlb && (regInAddr[47:28]!=0) &&
 		(regInAddr[47:44]!=4'hF) &&
+		(regInAddr[31:28]!=4'hF) &&
 		!dcInHold &&
 		(regInOpm[5:4] != 2'b00))
 	begin

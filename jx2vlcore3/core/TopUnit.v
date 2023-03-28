@@ -237,9 +237,9 @@ assign	sdc_dat_i[1]	= sdc_dat[1];
 assign	sdc_dat_i[2]	= sdc_dat[2];
 assign	sdc_dat_i[3]	= sdc_dat[3];
 
-wire aud_mono_out1;
+wire[1:0] aud_mono_out1;
 wire aud_mono_ena1;
-assign	aud_mono_out	= aud_mono_out1 ? 1'bz : 1'b0;
+assign	aud_mono_out	= aud_mono_out1[0] ? 1'bz : 1'b0;
 // assign	aud_mono_out = aud_mono_out1;
 // assign	aud_mono_en		= 1'b1;
 assign	aud_mono_en			= aud_mono_ena1;
@@ -281,6 +281,14 @@ assign		usb_clkdat_i = 4'h0;
 wire[3:0]		ddrModeIn;
 assign		ddrModeIn = 0;
 
+wire[4:0]	vgaRed1;
+wire[4:0]	vgaGrn1;
+wire[4:0]	vgaBlu1;
+
+assign		vgaRed = vgaRed1[4:1];
+assign		vgaGrn = vgaGrn1[4:1];
+assign		vgaBlu = vgaBlu1[4:1];
+
 
 CoreUnit core(
 //	clock, 		reset2,
@@ -306,7 +314,7 @@ CoreUnit core(
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
 	ddrModeIn,
 
-	vgaRed,		vgaGrn,		vgaBlu,
+	vgaRed1,	vgaGrn1,	vgaBlu1,
 //	vgaBlu,		vgaGrn,		vgaRed,
 	vgaHsync,	vgaVsync,
 	uartTxD,	uartRxD,

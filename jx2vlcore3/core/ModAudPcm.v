@@ -517,6 +517,16 @@ begin
 // `ifdef def_true
 	tPcmAddValL = 
 		{ tPcmValL[15], tPcmValL[15:1] } +
+		{ tAuxPcmL[11], tAuxPcmL[11:0], tTimerNoiseC, 2'b0 };
+	tPcmAddValR =
+		{ tPcmValR[15], tPcmValR[15:1] } +
+		{ tAuxPcmR[11], tAuxPcmR[11:0], tTimerNoiseC, 2'b0 };
+`endif
+
+`ifndef def_true
+// `ifdef def_true
+	tPcmAddValL = 
+		{ tPcmValL[15], tPcmValL[15:1] } +
 		{ tAuxPcmL[ 7], tAuxPcmL[7:0], 6'h0, tTimerNoise };
 	tPcmAddValR =
 		{ tPcmValR[15], tPcmValR[15:1] } +

@@ -1680,10 +1680,10 @@ begin
 		accNextLoadFifo	= { tDdrDataIn, accLoadFifo[511:16] };
 	end
 
-	if(reset)
+	if(tReset)
 	begin
 		tMemOK			= UMEM_OK_READY;
-		accNextState	= 6'b000000;
+//		accNextState	= 6'b000000;
 	end
 	
 	if(tReset)
