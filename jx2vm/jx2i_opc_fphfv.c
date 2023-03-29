@@ -771,6 +771,135 @@ void bjx2_opr_shuffle4xfloat(float *vec, int sh)
 	vec[3]=tv[3];
 }
 
+void BJX2_Op_PSHADDXF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs0, vs1, vt0, vt1, vn0, vn1;
+
+	vs0=ctx->regs[op->rm+0];	vt0=ctx->regs[op->ro+0];
+	vs1=ctx->regs[op->rm+1];	vt1=ctx->regs[op->ro+1];
+
+	jx2_upvec_f(tv0+0, vs0);	jx2_upvec_f(tv1+0, vt0);
+	jx2_upvec_f(tv0+2, vs1);	jx2_upvec_f(tv1+2, vt1);
+
+	if(op->imm&0x200)
+		bjx2_opr_shuffle4xfloat(tv0, op->imm);
+	if(op->imm&0x400)
+		bjx2_opr_shuffle4xfloat(tv1, op->imm);
+
+	tv2[0]=tv0[0]+tv1[0];	tv2[1]=tv0[1]+tv1[1];
+	tv2[2]=tv0[2]+tv1[2];	tv2[3]=tv0[3]+tv1[3];
+	vn0=jx2_mkvec_f(tv2[0], tv2[1]);
+	vn1=jx2_mkvec_f(tv2[2], tv2[3]);
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+}
+
+void BJX2_Op_PSHSUBXF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs0, vs1, vt0, vt1, vn0, vn1;
+
+	vs0=ctx->regs[op->rm+0];	vt0=ctx->regs[op->ro+0];
+	vs1=ctx->regs[op->rm+1];	vt1=ctx->regs[op->ro+1];
+
+	jx2_upvec_f(tv0+0, vs0);	jx2_upvec_f(tv1+0, vt0);
+	jx2_upvec_f(tv0+2, vs1);	jx2_upvec_f(tv1+2, vt1);
+
+	if(op->imm&0x200)
+		bjx2_opr_shuffle4xfloat(tv0, op->imm);
+	if(op->imm&0x400)
+		bjx2_opr_shuffle4xfloat(tv1, op->imm);
+
+	tv2[0]=tv0[0]-tv1[0];	tv2[1]=tv0[1]-tv1[1];
+	tv2[2]=tv0[2]-tv1[2];	tv2[3]=tv0[3]-tv1[3];
+	vn0=jx2_mkvec_f(tv2[0], tv2[1]);
+	vn1=jx2_mkvec_f(tv2[2], tv2[3]);
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+}
+
+void BJX2_Op_PSHMULXF_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs0, vs1, vt0, vt1, vn0, vn1;
+
+	vs0=ctx->regs[op->rm+0];	vt0=ctx->regs[op->ro+0];
+	vs1=ctx->regs[op->rm+1];	vt1=ctx->regs[op->ro+1];
+
+	jx2_upvec_f(tv0+0, vs0);	jx2_upvec_f(tv1+0, vt0);
+	jx2_upvec_f(tv0+2, vs1);	jx2_upvec_f(tv1+2, vt1);
+
+	if(op->imm&0x200)
+		bjx2_opr_shuffle4xfloat(tv0, op->imm);
+	if(op->imm&0x400)
+		bjx2_opr_shuffle4xfloat(tv1, op->imm);
+
+	tv2[0]=tv0[0]*tv1[0];	tv2[1]=tv0[1]*tv1[1];
+	tv2[2]=tv0[2]*tv1[2];	tv2[3]=tv0[3]*tv1[3];
+	vn0=jx2_mkvec_f(tv2[0], tv2[1]);
+	vn1=jx2_mkvec_f(tv2[2], tv2[3]);
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+}
+
+void BJX2_Op_PSHADDH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	if(op->imm&0x200)
+		bjx2_opr_shuffle4xfloat(tv0, op->imm);
+	if(op->imm&0x400)
+		bjx2_opr_shuffle4xfloat(tv1, op->imm);
+	
+	tv2[0]=tv0[0]+tv1[0];	tv2[1]=tv0[1]+tv1[1];
+	tv2[2]=tv0[2]+tv1[2];	tv2[3]=tv0[3]+tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSHSUBH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	if(op->imm&0x200)
+		bjx2_opr_shuffle4xfloat(tv0, op->imm);
+	if(op->imm&0x400)
+		bjx2_opr_shuffle4xfloat(tv1, op->imm);
+
+	tv2[0]=tv0[0]-tv1[0];	tv2[1]=tv0[1]-tv1[1];
+	tv2[2]=tv0[2]-tv1[2];	tv2[3]=tv0[3]-tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PSHMULH_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	float tv0[4], tv1[4], tv2[4];
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	jx2_upvec_hf(tv0, vs);	jx2_upvec_hf(tv1, vt);
+	if(op->imm&0x200)
+		bjx2_opr_shuffle4xfloat(tv0, op->imm);
+	if(op->imm&0x400)
+		bjx2_opr_shuffle4xfloat(tv1, op->imm);
+
+	tv2[0]=tv0[0]*tv1[0];	tv2[1]=tv0[1]*tv1[1];
+	tv2[2]=tv0[2]*tv1[2];	tv2[3]=tv0[3]*tv1[3];
+	vn=jx2_mkvec_hf(tv2[0], tv2[1], tv2[2], tv2[3]);
+	
+	ctx->regs[op->rn]=vn;
+}
+
 void BJX2_Op_PSHADDH_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	float tv0[4], tv1[4], tv2[4];

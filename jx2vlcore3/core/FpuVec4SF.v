@@ -239,9 +239,14 @@ wire[31:0]		fpValRt1D;
 wire	doShuffleRs;
 wire	doShuffleRt;
 
-assign	doShuffleRs = regIdIxtC[8] &&
+wire	chkShuffleValid;
+assign	chkShuffleValid = regIdIxtC[8] &&
+	(	(opCmdC == UV9_00)			||
+		(opCmdC[8:6]==JX2_IXC_NV)	);
+
+assign	doShuffleRs = chkShuffleValid &&
 	((opCmdC[1:0]!=2'b00) ? opCmdC[0] : regIdRtIsHalf);
-assign	doShuffleRt = regIdIxtC[8] &&
+assign	doShuffleRt = chkShuffleValid &&
 	((opCmdC[1:0]!=2'b00) ? opCmdC[1] : !regIdRtIsHalf);
 
 FpuVecShMux4 fpShufRs1A(

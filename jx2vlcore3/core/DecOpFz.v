@@ -594,7 +594,10 @@ begin
 			opImm_dispasc = { 1'b1, istrJBits[10:9] };
 
 `ifdef jx2_use_imm_shuffle
-			opIsImmShufOp = { 1'b1, istrJBits [ 7: 0] };
+//			opIsImmShufOp = { 1'b1, istrJBits [ 7: 0] };
+			opIsImmShufOp = {
+				istrJBits[11] && (istrJBits[10:9] != 2'b00),
+				istrJBits [ 7: 0] };
 `endif
 
 //			opImm_disp5u	= {

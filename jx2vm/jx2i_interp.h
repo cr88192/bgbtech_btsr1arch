@@ -728,6 +728,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PSHMULXF		0x193		//
 #define BJX2_NMID_PSHADDH		0x194		//
 #define BJX2_NMID_PSHMULH		0x195		//
+#define BJX2_NMID_PSHSUBH		0x196		//
+#define BJX2_NMID_PSHSUBXF		0x197		//
 
 
 
@@ -782,6 +784,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_LDREGDISP1REG	0x2A		//(Rm, Disp1), Rn
 #define BJX2_FMID_REGSTREGDISP1	0x2B		//Rm, (Rn, Disp1)
 #define BJX2_FMID_LDREGDISP1	0x2C		//(Rn, Disp1)
+
+#define BJX2_FMID_REGREGIMMREG	0x2D		//Rm, Ro, Imm, Rn
 
 #define BJX2_FMID_REGREGREGREG	0x2E		//Rm, Ro, Rp, Rn
 #define BJX2_FMID_REGIMMREGREG	0x2F		//Rm, Imm, Rp, Rn
