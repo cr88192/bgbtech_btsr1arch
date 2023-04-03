@@ -2360,8 +2360,8 @@ F8zz Instruction Block:
 * F87n_iiii  LDISH16	Imm16u, Rk		//R16..R31
 * F88n_iiii  FLDCH		Imm16u, Rn		//R0..R15, Load Half-Float
 * F89n_iiii  FLDCH		Imm16u, Rk		//R16..R31, Load Half-Float
-* F8An_Xddd ? Bxx       Rn, Disp12s		//? Conditional Branch
-* F8Bn_Xddd ? Bxx       Rk, Disp12s		//? Conditional Branch
+* F8An_Zddd ? Bxx       Rn, Disp12s		//? Conditional Branch
+* F8Bn_Zddd ? Bxx       Rk, Disp12s		//? Conditional Branch
 * F8Cn_iiii  -
 * F8Dn_iiii  -
 * F8En_iiii  -

@@ -3165,7 +3165,8 @@ begin
 				opNmid		= JX2_UCMD_ALUW3;
 				opUCmdIx	= JX2_UCIX_ALUW_MOVTA16;
 				opFmid		= JX2_FMID_REGREG;
-				opIty		= JX2_ITY_SW;
+//				opIty		= JX2_ITY_SW;
+				opIty		= JX2_ITY_SQ;
 //				if(opExQ && !opIsJumbo)
 				if(opExQ && !opIsJumbo && !opIsJumboAu)
 //				if((opExQ && !opIsJumboAu) ||
@@ -5265,6 +5266,7 @@ begin
 			SW: Rm, Q?Imm5u:Ro, Rn
 			SL: Rm, Q?Imm5n:Ro, Rn
 			/ SQ: Q?Imm5n:Ro, Rm, Rn
+			SQ: Rm, Q?Disp5u:Ro, Rn
 
 			UB: Rm, Rn, Rn
 			UW: Rm, Rn, Rn
@@ -5277,6 +5279,11 @@ begin
 			NQ: Sm, Rn, Rn
 
 			SW: Rm, Eq?Imm5:Ro, Rn
+
+			XB: Rm, Ro, Rn
+			XW: Rm, Ro, Rn
+
+			XL: Rn, RmImm6u, Rn
 		*/
 
 		JX2_FMID_REGREG: begin
@@ -5375,6 +5382,15 @@ begin
 					end
 				end
 `endif
+
+				JX2_ITY_SQ: begin
+					opImm	= opImm_disp5u;
+					if(opExQ)
+					begin
+						opRegO	= JX2_GR_IMM;
+						opRegP	= opRegN_Dfl;
+					end
+				end
 
 				JX2_ITY_UL: begin
 					opRegM	= opRegM_Dfl;

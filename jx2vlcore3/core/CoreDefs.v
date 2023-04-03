@@ -1536,7 +1536,8 @@ parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h1F;		//
 parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
 `endif
 
-parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h3F;		//
+// parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h3F;		//
+parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h7F;		//
 
 `include "ExModKrrKeys.v"
 

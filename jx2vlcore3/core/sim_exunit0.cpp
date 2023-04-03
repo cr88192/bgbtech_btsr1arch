@@ -2241,6 +2241,27 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_ports/HticSrc/hticulz.wad");
 #endif
 
+#if 1
+	JX2R_UseImageAddFile(
+		(char *)"ROTT/ROTT.EXE",
+		(char *)"../../tk_ports/RottSrc/rott/rott_bjx2.exe");
+	JX2R_UseImageAddFile(
+		(char *)"ROTT/DARKWAR.WAD",
+		(char *)"../../tk_ports/RottSrc/darkwlz.wad");
+	JX2R_UseImageAddFile(
+		(char *)"ROTT/DARKWAR.RTL",
+		(char *)"../../tk_ports/RottSrc/darkwar.rtl");
+	JX2R_UseImageAddFile(
+		(char *)"ROTT/DARKWAR.RTC",
+		(char *)"../../tk_ports/RottSrc/darkwar.rtc");
+	JX2R_UseImageAddFile(
+		(char *)"ROTT/DEMO1_3.DMO",
+		(char *)"../../tk_ports/RottSrc/demo1_3.dmo");
+	JX2R_UseImageAddFile(
+		(char *)"ROTT/DEMO2_3.DMO",
+		(char *)"../../tk_ports/RottSrc/demo2_3.dmo");
+#endif
+
 #ifndef NOSWAP
 	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 #endif

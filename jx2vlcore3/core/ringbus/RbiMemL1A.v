@@ -149,6 +149,8 @@ defparam		tlb.disableTlb		= disableTlb;
 defparam		memDc.noLdOp		= disableTlb;
 defparam		memDc.disableTlb	= disableTlb;
 
+reg[63:0]		tRegInSr;
+
 reg			tResetL;
 
 reg[15:0]	tRngA;
@@ -596,7 +598,8 @@ begin
 			tRegOutExc = ifOutExc;
 		
 //		if((regInSr[29] && regInSr[28]) && (tRegOutExc[15:12]==4'hC))
-		if((regInSr[29] && regInSr[28]) && (tRegOutExc[15:12]!=4'h8))
+//		if((regInSr[29] && regInSr[28]) && (tRegOutExc[15:12]!=4'h8))
+		if((tRegInSr[29] && tRegInSr[28]) && (tRegOutExc[15:12]!=4'h8))
 //		if(regInSr[29] && regInSr[28])
 			tRegOutExc = UV128_00;
 	end
@@ -605,7 +608,10 @@ begin
 	begin
 		tDcOutHold		= 1;
 		tNxtExcLatch	= 1;
-		tNxtExcLatchInhCnt	= 1023;
+
+		if(tExcLatch==0)
+			tNxtExcLatchInhCnt	= 1023;
+
 //		if(	(tRegOutExc[15:12]==4'h8) ||
 //			(tRegOutExc[15:12]==4'hA) )
 //				regNxtKrrRng	= tNxtRngN[11:4];
@@ -636,7 +642,7 @@ begin
 //			regNxtKrrRng	= tNxtRngN[11:4];
 	
 //	if(tExcLatch)
-	if(tExcLatch && !(regInSr[29] && regInSr[28]))
+	if(tExcLatch && !(tRegInSr[29] && tRegInSr[28]))
 		tDcOutHold		= 1;
 
 	if(tResetL)
@@ -656,8 +662,9 @@ begin
 		tNxtExcLatch	= 0;
 	end
 
-	if(regInSr[29] && regInSr[28])
+	if((tRegInSr[29] && tRegInSr[28]) && tExcLatch)
 	begin
+		$display("RbiMemL1A: Clear EXC Latch, In ISR");
 		tNxtExcLatch	= 0;
 	end
 
@@ -672,6 +679,7 @@ begin
 	tDcOutOK2		<= tDcOutOK;
 	
 	tTlbInLdtlbL	<= tTlbInLdtlb;
+	tRegInSr		<= regInSr;
 
 	ifMemWaitL		<= ifMemWait;
 

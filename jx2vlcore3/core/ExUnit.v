@@ -3423,6 +3423,13 @@ begin
 //		nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
 //		ex1ValBraDir[2]	= 1;
 
+		if(	(ex1RegOutSr[27:26]!=crOutSr[27:26]) ||
+			(ex1RegOutSr[23:20]!=crOutSr[23:20]) )
+		begin
+			$display("ExUnit: Do Slow Branch");
+			nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
+		end
+
 //		if(ex1RegValCn1[19:12]!=ifLastPc[19:12])
 //			nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
 

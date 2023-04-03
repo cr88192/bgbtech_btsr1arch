@@ -1420,7 +1420,8 @@ begin
 			tResult2A= { UV64_00, tResult2T };
 `endif
 //			tResult2W = { 1'b0, regValRs[63:48], regValRt[47:0] };
-			tResult2W = { 1'b0, regValRt[63:48], regValRs[47:0] };
+//			tResult2W = { 1'b0, regValRt[63:48], regValRs[47:0] };
+			tResult2W = { 1'b0, regValRt[15: 0], regValRs[47:0] };
 
 			tResultb1T	= tSubNaZF;		//Tag Equal
 			tResultb1Tv	= 1;
@@ -1676,6 +1677,13 @@ begin
 		
 		tResult1T	= tResultw1T;
 		tResult1Tv	= tResultw1Tv;
+		
+		if(	(idUCmd[5:0]==JX2_UCMD_ALUW3) &&
+			(idUIxt[5:0]==JX2_UCIX_ALUW_MOVTA16))
+		begin
+			$display("JX2_UCIX_ALUW_MOVTA16: %X, Rs=%X, Rt=%X",
+				tResult2A, regValRs, regValRt);
+		end
 	end
 
 //	if(idUCmd[5:0]==JX2_UCMD_ALUB3)

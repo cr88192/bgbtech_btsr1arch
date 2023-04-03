@@ -597,7 +597,8 @@ begin
 		end
 		4'hB: begin		/* NOR */
 //			tResult2W = { 1'b0, regValRs[63:48], regValRt[47:0] };
-			tResult2W = { 1'b0, regValRt[63:48], regValRs[47:0] };
+//			tResult2W = { 1'b0, regValRt[63:48], regValRs[47:0] };
+			tResult2W = { 1'b0, regValRt[15: 0], regValRs[47:0] };
 		end
 
 		4'hC: begin		/* CMPEQ */

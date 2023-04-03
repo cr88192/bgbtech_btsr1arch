@@ -1723,7 +1723,37 @@ Then this will produce as output:
 * u7,v7,u6,v6,u5,v5,u4,v4,u3,v3,u2,v2,u1,v1,u0,v0
 
 
-=== PxxxSH.x (NNX, Possible) ===
+=== PxxxSH.x (3R, NNX, Possible) ===
+
+* FFw0_0Vii_F0nm_2Go5  PADDSHX.X	Xm, Xo, Imm11u, Xn
+* FFw0_0Vii_F0nm_2Go6  PSUBSHX.X	Xm, Xo, Imm11u, Xn
+* FFw0_0Vii_F0nm_2Go7  PMULSHX.X	Xm, Xo, Imm11u, Xn
+
+* FFw0_0Vii_F0nm_2goD  PADDSH.H		Rm, Ro, Imm11u, Rn
+* FFw0_0Vii_F0nm_2goE  PADDSH.H		Rm, Ro, Imm11u, Rn
+* FFw0_0Vii_F0nm_2goF  PADDSH.H		Rm, Ro, Imm11u, Rn
+
+These would be part of a Neural Net extension.
+These instructions would combine a SIMD shuffle with a vector operation.
+
+The immediate consists of a low and high part:
+* ( 7:0): Shuffle Mask
+** (1:0): First Element
+** (3:2): Second Element
+** (5:4): Third Element
+** (7:6): Fourth Element
+* (   8): MBZ
+* (10:9): Shuffle Mode
+** 00: Non-Shuffle, Rounding Mode
+** 01: Shuffle Rm
+** 10: Shuffle Ro
+** 11: Shuffle both Rm and Ro
+
+In the Non-Shuffle Mode, these overlap with the Rounding Mode encodings, thus the Shuffle form of the instruction will be defined by the Shuffle Mode being non-zero.
+
+
+
+=== PxxxSH.x (3RI, NNX, Possible) ===
 
 * FE-FE F2nm_7Pjj  PMACSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
 * FE-FE F2nm_7Qjj  PMACSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
@@ -2413,8 +2443,8 @@ MOVLHD will select the low bits from Rm, and the high bits from Ro.
 * F0nm_2Go5  PADDX.F	Xm, Xo, Xn		//(GSVFX) Packed FADD (4x Float)
 * F0nm_2goD  PADD.H 	Rm, Ro, Rn		//(GSVF) Packed FADD (4x Half)
 * F0nm_2GoD  PADDX.D	Xm, Xo, Xn		//(GSVFX) Packed FADD (2x Double)
-* FFw0_00ii_F0nm_2go5  PADD.X		Rm, Ro, Rn, Imm8		//(GSVFX)
-* FFw0_00ii_F0nm_2Go5  PADDX.X		Xm, Xo, Xn, Imm8		//(GSVFX)
+* FFw0_08ii_F0nm_2go5  PADD.X		Rm, Ro, Rn, Imm8		//(GSVFX)
+* FFw0_08ii_F0nm_2Go5  PADDX.X		Xm, Xo, Xn, Imm8		//(GSVFX)
 
 Packed ADD, but in 3-register form.
 PADDX.x will operate on a 128-bit vector.
@@ -2582,8 +2612,8 @@ If Bit(30) is 0:
 * F0nm_2Go7  PMULX.F	Xm, Xo, Xn			//(GSVFX) Packed FMUL (4x Float)
 * F0nm_2goF  PMUL.H		Rm, Ro, Rn			//(GSVF) Packed FMUL (4x Half)
 * F0nm_2GoF  PMULX.D	Xm, Xo, Xn			//(GSVFX) Packed FMUL (2x Double)
-* FFw0_00ii_F0nm_2go7  PMUL.X		Rm, Ro, Rn, Imm8
-* FFw0_00ii_F0nm_2Go7  PMULX.X		Xm, Xo, Xn, Imm8
+* FFw0_08ii_F0nm_2go7  PMUL.X		Rm, Ro, Rn, Imm8
+* FFw0_08ii_F0nm_2Go7  PMULX.X		Xm, Xo, Xn, Imm8
 
 
 Floating point packed multiply.
@@ -2997,8 +3027,8 @@ Get the absolute value of the double precision value in Rm and store the result 
 * F0nm_6GoD          ? FADD		Rm, Imm5fp, Rn		//(FpImm)
 * F2nE_DHjj          ? FADD		Imm10fp, Rn			//(FpImm) (E.q=1) FADD
 * FEjj_jjjj_F2nm_8pjj? FADD		Rm, Imm32f, Rn		//(NNX)
-* FFw0_00ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8
-* FFw0_00ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8
+* FFw0_08ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8
+* FFw0_08ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8
 
 Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
 
@@ -3215,8 +3245,8 @@ FMACX will operate instead on a LongDouble value (partial precision).
 * F0nm_6GoF          ? FMUL		Rm, Imm5fp, Rn	//(FpImm)
 * F2nF_DHjj          ? FMUL		Imm10fp, Rn		//(FpImm) (E.q=1) FMUL
 * FEjj_jjjj_F2nm_8qjj? FMUL		Rm, Imm32f, Rn		//(NNX)
-* FFw0_00ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8
-* FFw0_00ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8
+* FFw0_08ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8
+* FFw0_08ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8
 
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
 
@@ -3280,8 +3310,8 @@ Conversion to integer will truncate towards zero. Its output will be a 64-bit in
 * F0nm_5Go9            FSUBX	Rm, Ro, Rn		//(GFPX) FSUB
 * F0nm_6goE            FSUBG	Rm, Ro, Rn		//(GFPX) FSUB
 * F0nm_6GoE          ? FSUB		Rm, Imm5fp, Rn		//(FpImm)
-* FFw0_00ii_F0nm_5go9  FSUB		Rm, Ro, Rn, Imm8
-* FFw0_00ii_F0nm_5Go9  FSUBX	Xm, Xo, Xn, Imm8
+* FFw0_08ii_F0nm_5go9  FSUB		Rm, Ro, Rn, Imm8
+* FFw0_08ii_F0nm_5Go9  FSUBX	Xm, Xo, Xn, Imm8
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 
