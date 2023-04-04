@@ -1047,7 +1047,9 @@ begin
 			
 			if(tValAgu[0])
 			begin
-				if(regInSr[26]!=regValRs[50])
+//				if(regInSr[26]!=regValRs[50])
+				if(	(regInSr[26]!=regValRs[50]) ||
+					(regInSr[23:22]!=regValRs[55:54]))
 				begin
 					$display("EX: JMP: Inter-ISA RV=%d Ixt=%X Rs=%X Tgt-PC=%X",
 						regInSr[26], opUIxt,
@@ -1123,7 +1125,9 @@ begin
 
 			if(tValAgu[0])
 			begin
-				if(regInSr[26]!=regValRs[50])
+//				if(regInSr[26]!=regValRs[50])
+				if(	(regInSr[26]!=regValRs[50]) ||
+					(regInSr[23:22]!=regValRs[55:54]))
 				begin
 					$display("EX: JSR: Inter-ISA %d PC=%X",
 						regInSr[26], tValBra);
@@ -1497,8 +1501,14 @@ begin
 				end
 
 				JX2_UCIX_IXT_SYSE: begin
+					$display("EX1: Do SYSE");
 //					tExTrapExc = { UV112_00, 4'hE, regInDlr[11:0] };
 					tExTrapExc = { UV112_00, 4'hE, regValRs[11:0] };
+
+					if(regInSr[29] && regInSr[28])
+					begin
+						$display("EX1: SYSE in ISR");
+					end
 				end
 				
 				JX2_UCIX_IXT_LDTLB: begin

@@ -596,12 +596,14 @@ begin
 			tRegOutExc = dfOutExc;
 		else if(ifOutExc[15])
 			tRegOutExc = ifOutExc;
-		
+
+`ifndef def_true
 //		if((regInSr[29] && regInSr[28]) && (tRegOutExc[15:12]==4'hC))
 //		if((regInSr[29] && regInSr[28]) && (tRegOutExc[15:12]!=4'h8))
 		if((tRegInSr[29] && tRegInSr[28]) && (tRegOutExc[15:12]!=4'h8))
 //		if(regInSr[29] && regInSr[28])
 			tRegOutExc = UV128_00;
+`endif
 	end
 
 	if(tRegOutExc[15])

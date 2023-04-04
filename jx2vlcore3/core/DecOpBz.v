@@ -835,6 +835,7 @@ begin
 				opNmid		= JX2_UCMD_BSR;
 				opFmid		= JX2_FMID_REGPC;
 				opBty		= JX2_BTY_SW;
+				opIty		= JX2_ITY_SW;
 			end
 			11'h1z2: begin
 				opNmid		= JX2_UCMD_BRA;
@@ -1000,6 +1001,7 @@ begin
 				opNmid		= JX2_UCMD_BSR;
 				opFmid		= JX2_FMID_REGPC;
 				opBty		= JX2_BTY_SB;
+				opIty		= JX2_ITY_SW;
 			end
 			11'h2zA: begin
 				opNmid		= JX2_UCMD_BRA;
@@ -1025,6 +1027,7 @@ begin
 				opNmid		= JX2_UCMD_BSR;
 				opFmid		= JX2_FMID_REGPC;
 				opBty		= JX2_BTY_SL;
+				opIty		= JX2_ITY_SW;
 			end
 			11'h2zE: begin
 				opNmid		= JX2_UCMD_BRA;
@@ -2174,6 +2177,17 @@ begin
 			opRegO	= opRegN_Xr;
 //			opUIxt	= {opUCty, opBty[1:0], 1'b1, opBty};
 			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
+			case(opIty)
+				JX2_ITY_SB: begin
+					opRegN	= JX2_GR_ZZR;
+				end
+				JX2_ITY_SW: begin
+					opRegN	= JX2_GR_LR;
+				end
+				default: begin
+					opRegN	= JX2_GR_ZZR;
+				end
+			endcase
 		end
 
 		JX2_FMID_DRREG: begin

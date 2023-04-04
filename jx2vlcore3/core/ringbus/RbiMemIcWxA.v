@@ -1361,6 +1361,16 @@ begin
 		begin
 			$display("L1 I$: XG2 Misaligned Fetch, A=%X", tInAddr);
 		end
+
+// `ifdef def_true
+`ifndef def_true
+//		$display("L1 I$: XG2 Debug A=%X V=%X", tInAddr, tRegOutPcVal);
+		$display("L1 I$: XG2 Debug A=%X V=%X-%X-%X-%X-%X-%X",
+			tInAddr,
+			tRegOutPcVal[15: 0], tRegOutPcVal[31:16],
+			tRegOutPcVal[47:32], tRegOutPcVal[63:48],
+			tRegOutPcVal[79:64], tRegOutPcVal[95:80] );
+`endif
 	end
 
 	if(tInAddr[0])
@@ -1840,9 +1850,12 @@ begin
 
 	if(tDoStallNop)
 	begin
+		$display("RbiMemIcWxA: NOP Stall");
 		tRegOutPcVal = 96'h30023002_30023002_30023002;
 		if(tInPcRiscv)
 			tRegOutPcVal = 96'h00000013_00000013_00000013;
+		if(tInPcXG2)
+			tRegOutPcVal = 96'h3000F000_3000F000_3000F000;
 		tRegOutPcStep = 0;
 	end
 

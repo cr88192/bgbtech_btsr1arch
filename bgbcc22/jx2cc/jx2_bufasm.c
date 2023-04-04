@@ -1372,6 +1372,9 @@ int nmid;
 {"pldcxh",	BGBCC_SH_NMID_PLDCXH},
 {"pstcxh",	BGBCC_SH_NMID_PSTCXH},
 
+{"keybrk_xg2",	BGBCC_SH_NMID_KEYBRK_XG2},
+{"keybrk_base",	BGBCC_SH_NMID_KEYBRK_BASE},
+
 
 {"movd.l",	BGBCC_SH_NMID_MOVDL},
 {"movd",	BGBCC_SH_NMID_MOVD},

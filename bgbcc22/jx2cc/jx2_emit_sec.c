@@ -1952,6 +1952,7 @@ int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2)
 		if(ctx->is_align_wexj)
 		{
 			if(	((val&0xFE00)==0xFE00) ||
+				((val&0xF400)==0xF400) ||
 				(((val&0xE000)==0xE000) && (ctx->is_align_wexj&2)) ||
 				ctx->op_is_wex2)
 			{

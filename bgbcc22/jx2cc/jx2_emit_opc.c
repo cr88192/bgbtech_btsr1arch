@@ -89,6 +89,17 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 		opw2=0x3000;
 		break;
 
+	case BGBCC_SH_NMID_KEYBRK_XG2:
+		/* NOP in Baseline, BREAK in XG2. */
+		opw1=0x3002;
+		opw2=0x3000;
+		break;
+	case BGBCC_SH_NMID_KEYBRK_BASE:
+		/* NOP in XG2, BREAK in Baseline. */
+		opw1=0x3002;
+		opw2=0x3030;
+		break;
+
 //	case BGBCC_SH_NMID_RET:		opw1=0x300B; break;
 //	case BGBCC_SH_NMID_RET:		opw1=0x310B; break;
 //	case BGBCC_SH_NMID_RET:
@@ -102,7 +113,9 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	}
 
 //	if(ctx->is_fixed32)
-	if(ctx->is_fixed32 || ctx->op_is_wex2)
+	if(	(ctx->is_fixed32 || ctx->op_is_wex2) &&
+		(nmid!=BGBCC_SH_NMID_KEYBRK_XG2) &&
+		(nmid!=BGBCC_SH_NMID_KEYBRK_BASE))
 	{
 //		if(opw1>=0)
 //		if((opw1&0xF000)==0x3000)
@@ -7330,6 +7343,7 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 			if(imm>=32)
 			{
 				if(ctx->has_jumbo)
+//				if(0)
 				{
 					i=BGBCC_JX2_ComposeOp64RegImm17sRegF0(ctx,
 						&opw1, &opw2, &opw3, &opw4,

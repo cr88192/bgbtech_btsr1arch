@@ -313,7 +313,12 @@ begin
 		(istrWord[31:29]==3'b111);
 
 	tIsBraCc20		= tIsBraCcF20 || tIsBraCcP20;
-	
+
+	tIsRtsu			= 0;
+	tIsRtsR1		= 0;
+	tIsRtsuFz		= 0;
+	tIsRtsR1Fz		= 0;
+
 `ifdef jx2_prebra_rts
 	tIsRtsu			=
 		(istrWord[15:0] == 16'h3012) ||
@@ -379,6 +384,12 @@ begin
 		tIsBraCc8B	= 0;
 		tIsRtsu		= 0;
 		tIsRtsR1	= 0;
+
+		if(tIsRtsuFz)
+			tIsRtsu = 1;
+
+		if(tIsRtsR1Fz)
+			tIsRtsR1 = 1;
 	end
 
 //	tIsBra8		= 0;

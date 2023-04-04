@@ -3581,7 +3581,10 @@ begin
 		if(tRegExc[15:10]==6'b111111)
 		begin
 `ifdef jx2_debug_isr
-			$display("ExUnit: RTE, SPC=%X", crOutSpc);
+			$display("ExUnit: RTE, SPC=%X SR0=%X SR1=%X",
+				crOutSpc,
+				crOutSr[31: 0],
+				crOutExsr[63:32]);
 `endif
 			tValNextBraPc	= crOutSpc;
 			tValNextBraPcHi	= crOutSpcHi;
