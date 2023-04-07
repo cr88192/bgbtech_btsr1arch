@@ -6198,7 +6198,9 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 		BGBCC_JX2_EmitOpCheckRepack6(ctx,
 			&opw1, &opw2, &opw3,
 			&opw4, &opw5, &opw6);
-		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
+		
+		BGBCC_JX2_EmitPadForOpWord6(ctx, opw1, opw2, opw3, opw4, opw5, opw5);	
+//		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
 			BGBCC_JX2_EmitWord(ctx, opw2);

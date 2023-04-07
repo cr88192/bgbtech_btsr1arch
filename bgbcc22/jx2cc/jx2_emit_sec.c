@@ -1887,6 +1887,63 @@ int BGBCC_JX2_EmitPadCheckAligned(BGBCC_JX2_Context *ctx)
 	return(0);
 }
 
+/* Detect cases where an Op96 should not be used. */
+int BGBCC_JX2_EmitCheckInhibitOp96(BGBCC_JX2_Context *ctx)
+{
+	if(!BGBCC_JX2_CheckPadAlign32(ctx))
+	{
+		if(ctx->is_fixed32)
+		{
+			return(1);
+		}
+	}
+
+	return(0);
+}
+
+int BGBCC_JX2_EmitPadForOpWord6(BGBCC_JX2_Context *ctx,
+	int opw1, int opw2,
+	int opw3, int opw4,
+	int opw5, int opw6)
+{
+	int twx2;
+
+	if(	(ctx->sec==BGBCC_SH_CSEG_TEXT) ||
+		(ctx->sec==BGBCC_SH_CSEG_UTEXT))
+	{
+		if(
+			(opw1>=0) && (opw2>=0) &&
+			(opw3>=0) && (opw4>=0) &&
+			(opw5>=0) && (opw6>=0) &&
+			((opw1&0xFE00)==0xFE00) &&
+			((opw3&0xFE00)==0xFE00) )
+		{
+			if(!BGBCC_JX2_CheckPadAlign32(ctx))
+			{
+				if(ctx->is_fixed32)
+				{
+					printf("BGBCC_JX2_EmitPadForOpWord6: Op96 Fail Align\n");
+					return(0);
+				}
+			
+				if(!BGBCC_JX2_EmitPadCheckExpandLastOp(ctx))
+//				if(1)
+//				if(0)
+				{
+					twx2=ctx->op_is_wex2;
+					ctx->op_is_wex2=0;
+					BGBCC_JX2_EmitWordI(ctx, 0x3000);
+					ctx->op_is_wex2=twx2;
+					
+					return(1);
+				}
+			}
+		}
+	}
+	
+	return(BGBCC_JX2_EmitPadForOpWord2(ctx, opw1, opw2));
+}
+
 int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val)
 {
 	return(BGBCC_JX2_EmitPadForOpWord2(ctx, val, 0));

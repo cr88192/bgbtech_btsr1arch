@@ -2994,6 +2994,8 @@ int BGBCC_JX2_EmitPadTryAlignWord(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadAlignWord(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadForLabel(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitPadCheckAligned(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_EmitCheckInhibitOp96(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_EmitPadForOpWord6(BGBCC_JX2_Context *ctx,int opw1, int opw2, int opw3, int opw4, int opw5, int opw6);
 int BGBCC_JX2_EmitPadForOpWord(BGBCC_JX2_Context *ctx, int val);
 int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2);
 int BGBCC_JX2_EmitCheckRepackOp(BGBCC_JX2_Context *ctx);

@@ -2774,6 +2774,16 @@ int main(int argc, char **argv, char **env)
 			i=((top->vgaRed>>1)<<8)|((top->vgaGrn>>1)<<4)|((top->vgaBlu>>1)<<0)|
 				(top->vgaHsync<<12)|(top->vgaVsync<<13);
 
+			if(top->clock_50)
+			{
+				if((top->vgaRed&1) && ((i&0xF00)!=0xF00))
+					i+=0x100;
+				if((top->vgaGrn&1) && ((i&0x0F0)!=0x0F0))
+					i+=0x010;
+				if((top->vgaBlu&1) && ((i&0x00F)!=0x00F))
+					i+=0x001;
+			}
+
 			CDEC_UpdateForStreamCycle(vgactx, i);
 
 //			printf("Cycle\n");

@@ -2262,6 +2262,24 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_ports/RottSrc/demo2_3.dmo");
 #endif
 
+#if 1
+	JX2R_UseImageAddFile(
+		(char *)"BTMINI2/BTM.EXE",
+		(char *)"../../tk_ports/BtMini2/tst_btm_bjx2.exe");
+	JX2R_UseImageAddFile(
+		(char *)"BTMINI2/RESOURCE/WAD0.WD4",
+		(char *)"../../tk_ports/BtMini2/resource/wad0.wd4");
+	JX2R_UseImageAddFile(
+		(char *)"BTMINI2/RESOURCE/WAD1.WD4",
+		(char *)"../../tk_ports/BtMini2/resource/wad1.wd4");
+	JX2R_UseImageAddFile(
+		(char *)"BTMINI2/RESOURCE/WAD2.WD4",
+		(char *)"../../tk_ports/BtMini2/resource/wad2.wd4");
+	JX2R_UseImageAddFile(
+		(char *)"BTMINI2/RESOURCE/WAD3.WD4",
+		(char *)"../../tk_ports/BtMini2/resource/wad3.wd4");
+#endif
+
 #ifndef NOSWAP
 	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 #endif

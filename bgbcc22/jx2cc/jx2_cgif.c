@@ -155,8 +155,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 //	shctx->is_pbo=1;
 
 //	shctx->is_align_wexj=3;
-	shctx->is_align_wexj=1;
-//	shctx->is_align_wexj=0;
+//	shctx->is_align_wexj=1;
+	shctx->is_align_wexj=0;
 	
 	shctx->abi_evenonly=0;
 	shctx->abi_noexcept=0;

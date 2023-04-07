@@ -4669,8 +4669,8 @@ ccxl_status BGBCC_JX2_BeginWex(
 //		if(!BGBCC_JX2_CheckPadAlign32(sctx))
 		if(sctx->op_wex_align && !BGBCC_JX2_CheckPadAlign32(sctx))
 		{
-			BGBCC_JX2_EmitPad32AlignLastOp(sctx);
-//			BGBCC_JX2_EmitWord(sctx, 0x3000);
+//			BGBCC_JX2_EmitPad32AlignLastOp(sctx);
+			BGBCC_JX2_EmitWord(sctx, 0x3000);
 		}
 
 		sctx->is_fixed32|=16;

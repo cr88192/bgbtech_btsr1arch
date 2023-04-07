@@ -1788,6 +1788,7 @@ int BGBCC_JX2_EmitLoadDrImm(
 #if 1
 //		if(ctx->has_jumbo)
 		if(ctx->has_jumbo &&
+			!BGBCC_JX2_EmitCheckInhibitOp96(ctx) &&
 			((ctx->tctx->optmode!=BGBCC_OPT_SIZE) ||
 			ctx->is_fixed32 || ctx->op_is_wex2))
 		{
@@ -1800,7 +1801,9 @@ int BGBCC_JX2_EmitLoadDrImm(
 
 			BGBCC_JX2_EmitOpCheckRepack6(ctx,
 				&opw1, &opw2, &opw3, &opw4, &opw5, &opw6);
-			BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
+//			BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
+			BGBCC_JX2_EmitPadForOpWord6(ctx,
+				opw1, opw2, opw3, opw4, opw5, opw6);	
 			BGBCC_JX2_EmitWord(ctx, opw1);
 			BGBCC_JX2_EmitWord(ctx, opw2);
 			BGBCC_JX2_EmitWord(ctx, opw3);
@@ -2909,7 +2912,9 @@ int BGBCC_JX2_EmitLoadRegImm128P(
 		}
 #endif
 	
-		if(	(opw1<0) &&
+		if(
+			!BGBCC_JX2_EmitCheckInhibitOp96(ctx) &&
+			(opw1<0) &&
 			(xreg>0) &&
 			(rt>0))
 		{
@@ -2951,6 +2956,8 @@ int BGBCC_JX2_EmitLoadRegImm128P(
 
 	if(opw1>=0)
 	{
+		BGBCC_JX2_EmitPadForOpWord6(ctx,
+			opw1, opw2, opw3, opw4, opw5, opw6);	
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)
 			BGBCC_JX2_EmitWord(ctx, opw2);
@@ -3285,6 +3292,9 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 		opw5=0x4F800|(reg&63);
 		opw6=0x50000|((imm>> 0)&65535);
 
+		BGBCC_JX2_EmitPadForOpWord6(ctx,
+			opw1, opw2, opw3, opw4, opw5, opw6);	
+
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		BGBCC_JX2_EmitWord(ctx, opw2);
 		BGBCC_JX2_EmitWord(ctx, opw3);
@@ -3587,7 +3597,8 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 
 			if(	(opw1<0) &&
 				ctx->has_bra48 &&
-				((reg&31)==0))
+//				((reg&31)==0))
+				((reg&63)==0))
 			{
 				if((imm&0x0000FFFFFFFFFFFFULL)==imm)
 				{
@@ -3711,6 +3722,7 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 #endif
 
 			if(	(opw1<0) &&
+				!BGBCC_JX2_EmitCheckInhibitOp96(ctx) &&
 //				BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg) &&
 //				BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg) &&
 				BGBCC_JX2_EmitCheckRegExt32GPR(ctx, reg) &&
@@ -3757,6 +3769,8 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 			{
 //				BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2);
 //				BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
+				BGBCC_JX2_EmitPadForOpWord6(ctx,
+					opw1, opw2, opw3, opw4, opw5, opw6);	
 				BGBCC_JX2_EmitWord(ctx, opw1);
 
 				if(opw2>=0)

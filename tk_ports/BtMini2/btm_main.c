@@ -39,6 +39,8 @@ int I_SystemInit()
 	int cr, cg, cb;
 	int i, j, k;
 
+	printf("I_SystemInit: A0\n");
+
 	for(i=0; i<65536; i++)
 	{
 		cr=(i>>10)&31;	cg=(i>>5)&31;	cb=(i>>0)&31;
@@ -49,8 +51,15 @@ int I_SystemInit()
 		d_16to24table[i]=j;
 	}
 
+	printf("I_SystemInit: A1\n");
+
 	SoundDev_Init();
+
+	printf("I_SystemInit: A2\n");
+
 	GfxDrv_Start();
+
+	printf("I_SystemInit: A3\n");
 
 //	tk_con_disable();
 	
@@ -60,6 +69,9 @@ int I_SystemInit()
 	
 	GfxDrv_PrepareFramebuf();
 #endif
+
+	printf("I_SystemInit: A4\n");
+
 	return(0);
 }
 
@@ -163,8 +175,8 @@ int I_SystemInit()
 {
 //	SoundDev_Init();
 
-	conbufa=(u32 *)0xF00A0000;
-	((u32 *)0xF00BFF00)[0]=0x0095;		//320x200x16bpp, RGB555
+	conbufa=(u32 *)0xFFFFF00A0000ULL;
+	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0095;		//320x200x16bpp, RGB555
 	tk_con_disable();
 }
 
@@ -269,7 +281,7 @@ int I_SystemFrame(u16 *fbuf, int xs, int ys)
 #endif
 	}
 
-	((u32 *)0xF00BFF00)[8]=vid_frnum;
+	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
 	vid_frnum++;
 }
 
@@ -909,7 +921,12 @@ int main(int argc, char *argv[])
 	float f0, f1, f2, f3;
 	float ang, dtf, frc;
 
+	printf("Init VFS\n");
+
 	FS_Init();
+
+	printf("Def Cvar 1\n");
+
 //	BTM_ConAddCommand("noclip", BTM_ConCmd_Noclip);
 	BTM_ConAddCmdVar("noclip", BTM_ConCmd_Noclip, &btm_noclip, 0x3F);
 	BTM_ConAddCommand("time", BTM_ConCmd_Time);
@@ -923,7 +940,12 @@ int main(int argc, char *argv[])
 	BTM_ConAddCvar("vol_music", &tkm_vol_music,
 		BTM_UITY_PERCENT256|BTM_CVTY_UBYTE);
 
+	printf("System Init 1\n");
+
 	I_SystemInit();
+
+	printf("System Init 2\n");
+
 	BTM_PGL_InitOpenGlFuncs();
 
 	printf("Init Skybox\n");
