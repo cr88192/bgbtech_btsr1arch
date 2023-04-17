@@ -4,6 +4,7 @@ void tk_shell_chksane_simd_asm();
 void tk_shell_chksane_rgb5_asm();
 void tk_shell_chksane_fmovs();
 void tk_shell_chksane_srtmsk();
+void tk_shell_chksane_movtt();
 
 __vec4f		tk_shell_fv0_gbl;
 
@@ -609,6 +610,20 @@ tk_shell_chksane_srtmsk:
 	BREAK?F
 
 	RTS
+
+tk_shell_chksane_movtt:
+	MOV		0x0000456789ABCDEF, R4
+	MOV		0x123A456789ABCDEF, R5
+
+	MOVTT	R4, 0x123A, R6
+	CMPQEQ	R5, R6
+	BREAK?F
+
+	MOVZT	R6, R7
+	CMPQEQ	R4, R7
+	BREAK?F
+
+	RTS
 };
 
 __vec4f tk_shell_chksane_padds_sf(__vec4f va, __vec4f vb);
@@ -699,7 +714,9 @@ int tk_shell_chksane_simd()
 //	tk_printf("SIMD A0-0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
 
 	tk_printf("SIMD A0-0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
+	tk_printf("   Expect: %f %f %f %f\n", 2.0, 4.0, 6.0, 10.0);
 	tk_printf("SIMD A0-1: %f %f %f %f\n", fv2.x, fv2.y, fv2.z, fv2.w);
+	tk_printf("   Expect: %f %f %f %f\n", 2.0, 8.0, 18.0, 50.0);
 
 	if(fv2.x!=2.0)
 		__debugbreak();
@@ -712,7 +729,9 @@ int tk_shell_chksane_simd()
 	tk_printf("\n");
 
 	tk_printf("SIMD A0-2: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
+	tk_printf("   Expect: %f %f %f %f\n", 2.0, 4.0, 6.0, 10.0);
 	tk_printf("SIMD A0-3: %f %f %f %f\n", fv2.x, fv2.y, fv2.z, fv2.w);
+	tk_printf("   Expect: %f %f %f %f\n", 2.0, 8.0, 18.0, 50.0);
 
 	tk_printf("\n");
 
@@ -1681,6 +1700,7 @@ int tk_shell_chksane()
 	tk_shell_chksane_memset();
 
 	tk_shell_chksane_fmovs();
+	tk_shell_chksane_movtt();
 	tk_shell_chksane_srtmsk();
 
 	Sys_CheckSanityB();

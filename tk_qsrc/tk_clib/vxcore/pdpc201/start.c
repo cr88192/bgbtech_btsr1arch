@@ -101,7 +101,11 @@ __PDPCLIB_API__ int CTYP __start()
 	char **penv;
 
 	__start_first();
+
+//	__debugbreak();
+
 //	tk_puts("TK: Start A0\n");
+
 	__start_early();
 
 	p=__get_cmdline();

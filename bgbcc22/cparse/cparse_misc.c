@@ -575,6 +575,11 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".obj"))
 			lang=BGBCC_IMGFMT_OBJ;
 
+		if(!bgbcp_strcmp(s, ".frb"))
+			lang=BGBCC_IMGFMT_FR2E;
+		if(!bgbcp_strcmp(s, ".frb"))
+			lang=BGBCC_IMGFMT_FR2E;
+
 		if(!bgbcp_strcmp(s, ".dll"))lang=BGBCC_IMGFMT_DLL;
 		if(!bgbcp_strcmp(s, ".DLL"))lang=BGBCC_IMGFMT_DLL;
 		if(!bgbcp_strcmp(s, ".exe"))lang=BGBCC_IMGFMT_EXE;

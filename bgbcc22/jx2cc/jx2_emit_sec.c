@@ -1922,7 +1922,11 @@ int BGBCC_JX2_EmitPadForOpWord6(BGBCC_JX2_Context *ctx,
 			{
 				if(ctx->is_fixed32)
 				{
-					printf("BGBCC_JX2_EmitPadForOpWord6: Op96 Fail Align\n");
+					if(!ctx->is_simpass)
+					{
+						printf("BGBCC_JX2_EmitPadForOpWord6: "
+							"Op96 Fail Align\n");
+					}
 					return(0);
 				}
 			
@@ -2060,6 +2064,7 @@ int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2)
 	if(	(ctx->sec==BGBCC_SH_CSEG_TEXT) ||
 		(ctx->sec==BGBCC_SH_CSEG_UTEXT))
 	{
+#if 0
 		if((val&0xFC00)==0xFC00)
 		{
 			if((i&31)==30)
@@ -2073,7 +2078,9 @@ int BGBCC_JX2_EmitPadForOpWord2(BGBCC_JX2_Context *ctx, int val, int val2)
 				BGBCC_JX2_EmitWordI(ctx, 0xF000);
 				BGBCC_JX2_EmitWordI(ctx, 0x1600);
 			}
-		}else if((val&0xF000)==0xF000)
+		}else
+#endif
+		if((val&0xF000)==0xF000)
 		{
 			if((i&31)==30)
 			{

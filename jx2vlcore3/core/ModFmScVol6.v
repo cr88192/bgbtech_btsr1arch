@@ -1,3 +1,6 @@
+`ifndef has_ModFmScVol6
+`define has_ModFmScVol6
+
 module ModFmScVol6(
 	clock,	reset,
 	valI,	valO,
@@ -101,3 +104,5 @@ begin
 end
 
 endmodule
+
+`endif

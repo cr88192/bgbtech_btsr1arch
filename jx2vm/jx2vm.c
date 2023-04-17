@@ -1445,6 +1445,7 @@ int main(int argc, char *argv[])
 	GfxDrv_Start();
 	SoundDev_Init();
 	JX2I_GfxCon_Startup(ctx);
+	SMus_Init(ctx);
 
 //	t0=clock();
 	t0=FRGL_TimeMS();

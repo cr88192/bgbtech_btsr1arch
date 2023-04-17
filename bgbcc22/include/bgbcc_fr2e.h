@@ -7,6 +7,9 @@
 #define BGBCC_FCC_vops		BGBCC_FOURCC('v', 'o', 'p', 's')
 #define BGBCC_FCC_vtrs		BGBCC_FOURCC('v', 't', 'r', 's')
 
+#define BGBCC_FCC_vosi		BGBCC_FOURCC('v', 'o', 's', 'i')
+#define BGBCC_FCC_vtsi		BGBCC_FOURCC('v', 't', 's', 'i')
+
 #define BGBCC_TCC_LI		BGBCC_TWOCC('L', 'I')
 #define BGBCC_TCC_RI		BGBCC_TWOCC('R', 'I')
 #define BGBCC_TCC_ST		BGBCC_TWOCC('S', 'T')
@@ -18,6 +21,21 @@
 
 
 typedef struct BGBCC_FR2E_ImgState_s BGBCC_FR2E_ImgState;
+
+typedef struct BGBCC_FR2E_ImgVosiEnt_s BGBCC_FR2E_ImgVosiEnt;
+
+struct BGBCC_FR2E_ImgVosiEnt_s {
+int b_vops;
+int b_vtrs;
+int n_vops;
+int n_vtrs;
+int o_vops;
+int o_vtrs;
+int s_vops;
+int s_vtrs;
+int gblid;
+int flags;
+};
 
 struct BGBCC_FR2E_ImgState_s {
 byte *imgdat;		//image data
@@ -55,8 +73,26 @@ byte *vtrdat;		//trace data
 int sz_vtrdat;
 int msz_vtrdat;
 
+byte *vosidat;		//opcode segment index
+int sz_vosidat;
+int msz_vosidat;
+
+byte *vtsidat;		//trace segment index
+int sz_vtsidat;
+int msz_vtsidat;
+
+BGBCC_CCXL_VirtOp **vop;
+BGBCC_CCXL_VirtTr **vtr;
+BGBCC_FR2E_ImgVosiEnt **vosi;
+
 int n_vop;
 int n_vtr;
+int n_vosi;
+
+BGBCC_CCXL_RegisterInfo **gbls;
+BGBCC_CCXL_LiteralInfo **lits;
+int n_gbls;
+int n_lits;
 
 int stat_vop_cnt;
 int stat_vop_mskb;
@@ -68,6 +104,8 @@ int stat_vop_immb;
 int stat_vopn_ty;
 int stat_vopn_reg;
 int stat_vopn_imm;
+
+int vop_lmsk;
 
 int vopm_hist[32];
 ccxl_type typehist[32];

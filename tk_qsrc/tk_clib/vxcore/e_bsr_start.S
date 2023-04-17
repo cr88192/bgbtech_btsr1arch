@@ -254,8 +254,14 @@ X(tk_getsavedvbr):
 	nop
 	nop
 
+	nop
+	nop
+
 //	xor r2, r2
 	rts
+	
+	nop
+	nop
 
 #if 0
 .global X(tk_syscall)

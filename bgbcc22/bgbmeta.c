@@ -1181,6 +1181,16 @@ int BGBCC_LoadCSourcesCCXL(
 						break;
 					continue;
 				}
+
+				sprintf(tb, "lib%s.%s.frb", names[i]+2, archsfx);
+				buf=bgbcc_loadfile2(tb, &sz);
+				if(buf)
+				{
+					BGBCC_FR2E_LoadBufferFRB(ctx, buf, sz);
+					if(ctx->n_error)
+						break;
+					continue;
+				}
 			}
 			
 			sprintf(tb, "lib%s.ril", names[i]+2);
@@ -1188,6 +1198,16 @@ int BGBCC_LoadCSourcesCCXL(
 			if(buf)
 			{
 				BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
+				if(ctx->n_error)
+					break;
+				continue;
+			}
+
+			sprintf(tb, "lib%s.frb", names[i]+2);
+			buf=bgbcc_loadfile2(tb, &sz);
+			if(buf)
+			{
+				BGBCC_FR2E_LoadBufferFRB(ctx, buf, sz);
 				if(ctx->n_error)
 					break;
 				continue;
@@ -1379,6 +1399,14 @@ int BGBCC_LoadCSourcesCCXL(
 	{
 		sz=ctx->ril_ip-ctx->ril_ips;
 		memcpy(obuf, ctx->ril_ips, sz);
+		if(*rsz)*rsz=sz;
+		return(0);
+	}
+
+	if(imgfmt==BGBCC_IMGFMT_FR2E)
+	{
+		tb1=BGBCC_FR2E_FlattenImage(ctx, &sz);
+		memcpy(obuf, tb1, sz);
 		if(*rsz)*rsz=sz;
 		return(0);
 	}

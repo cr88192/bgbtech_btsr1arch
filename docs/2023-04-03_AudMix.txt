@@ -1,0 +1,53 @@
+PCM Mixer Module
+* 16 voice PCM Mixer
+
+Registers:
+* F008D000: Channel Registers
+** F008D000: Voice Control Register A, Voice  0
+** F008D004: Voice Control Register B, Voice  0
+** F008D008: Voice Control Register C, Voice  0
+** F008D00C: Voice Status Register A,  Voice  0
+** F008D010: Voice Control Register D, Voice  0
+** F008D014: Voice Control Register E, Voice  0
+** F008D018: Voice Control Register F, Voice  0
+** F008D01C: Voice Status Register B,  Voice  0
+** F008D020: Channel 1
+** F008D040: Channel 2
+** ...
+** F008D1E0: Channel 15
+
+Control Register A:
+* Each voice will have a 32-bit control register.
+** Setting this register to zero cause the voice to reset.
+** The voice will stay in reset and not produce any output when set to 0.
+* 19.. 0: Clocked Accumulator Step
+** Interpreted as a fractional step that is accumulated at ~ 62.5kHz.
+*** May be driven at 1MHz internally, but shifted right by 4 bits.
+*** Some variation may exist as to what is the exact frequency.
+* 20: -
+* 21: Loop-Repeat
+* 27..22: Volume Left
+* 31..28: -
+
+
+Control Register C:
+* 15.. 0: Sample Base Address (Sample RAM, multiple of 16B).
+* 31..16: Sample End (Samples)
+
+Control Register D:
+* 27..22: Volume Right
+
+Control Register E:
+* -
+
+Control Register F:
+* 15.. 0: Sample Loop Repeat Start (Samples)
+* 31..16: Sample Loop Repeat End (Samples)
+
+
+Voice Status Register A:
+* Flags and stuff
+
+Voice Status Register B:
+* 15.. 0: Accumulator Position Fraction
+* 31..16: Accumulator Position Sample

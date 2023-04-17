@@ -173,7 +173,7 @@
 `define jx2_debug_isr		//Debug ISR
 
 
-`define jx2_audio_leftonly		//Only left audio channel is used.
+// `define jx2_audio_leftonly		//Only left audio channel is used.
 // `define jx2_fmsyn_dyndcbias		//FM Synth: Dynamic DC Bias
 
 
@@ -186,6 +186,8 @@
 `define	jx2_fbuf_dbgleds	//Draw on-screen LEDs
 
 // `define jx2_alu_jcmp_rpimm	//Allow JCMP immed via Rp
+
+`define jx2_audio_fmaumem		//Enable Audio Mixer Memory
 
 
 `ifdef jx2_enable_riscv

@@ -21,6 +21,13 @@
 #define TKGDI_FCC_auds		RIFF_MAKETAG('a','u','d','s')
 
 #define TKGDI_FCC_mcmd		RIFF_MAKETAG('m','c','m','d')
+#define TKGDI_FCC_msmp		RIFF_MAKETAG('m','s','m','p')
+#define TKGDI_FCC_mpat		RIFF_MAKETAG('m','p','a','t')
+
+#define TKGDI_FCC_IWAD		RIFF_MAKETAG('I','W','A','D')
+#define TKGDI_FCC_SND_		RIFF_MAKETAG('S','N','D','_')
+
+#define TKGDI_ECC_PATCHIDX	RIFF_MAKE8CC('P','A','T','C','H','I','D','X')
 
 #define TKGDI_BI_RGB		0
 #define TKGDI_BI_RLE8		1
@@ -185,6 +192,7 @@ byte	*buf_dirty2;	//buffer (dirty, cells since last redraw)
 };
 
 typedef struct TKGDI_MIDI_COMMAND_s TKGDI_MIDI_COMMAND;
+typedef struct TKGDI_MIDI_PATCHINFO_s TKGDI_MIDI_PATCHINFO;
 
 struct TKGDI_MIDI_COMMAND_s {
 byte op;	//operation
@@ -193,6 +201,24 @@ byte d0;	//first parameter
 byte d1;	//second parameter
 u32 u0;		//first large parameter
 u32 u1;		//second large parameter
+};
+
+struct TKGDI_MIDI_PATCHINFO_s {
+	u16 wFormatTag;
+	u16 nChannels;
+	u32 nSamplesPerSec;
+	u32 nAvgBytesPerSec;
+	u16 nBlockAlign;
+	u16 wBitsPerSample;
+	u16 cbSize;
+	u16 ptIndex;
+	u32 ptLength;
+	u32 ptLoopBeg;
+	u32 ptLoopEnd;
+	u16 ptRefHz;
+	u16 ptMinHz;
+	u16 ptMaxHz;
+	u16 ptFlags;
 };
 
 /* Blit an image to Display Device.

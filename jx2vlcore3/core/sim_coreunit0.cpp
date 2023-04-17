@@ -1659,6 +1659,12 @@ int update_usb()
 
 	static long acc_clk100, acc_clka, acc_clkb;
 
+	if(!do_qmt)
+	{
+		top->usb_clkdat_i=0x0F;
+		return(0);
+	}
+
 	if(top->clock_100==tlclk)
 		return(0);
 	

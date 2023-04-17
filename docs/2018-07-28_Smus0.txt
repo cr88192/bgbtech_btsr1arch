@@ -18,14 +18,14 @@ Registers (Old):
 
 Registers (New):
 * F008C000: SMUS Channel Registers
-** F008C000: Voice Control Register A, Voice  0 Base
-** F008C004: Voice Control Register B, Voice  0 Base
-** F008C008: Voice Control Register C, Voice  0 Base
-** F008C00C: Voice Status Register,    Voice  0 Base
-** F008C010: Voice Control Register A, Voice  0 Modulator
-** F008C014: Voice Control Register B, Voice  0 Modulator
-** F008C018: Voice Control Register C, Voice  0 Modulator
-** F008C01C: Voice Status Register,    Voice  0 Modulator
+** F008C000: Voice Control Register A  , Voice  0 Base
+** F008C004: Voice Control Register B  , Voice  0 Base
+** F008C008: Voice Control Register C  , Voice  0 Base
+** F008C00C: Voice Status Register     , Voice  0 Base
+** F008C010: Voice Control Register A/D, Voice  0 Modulator
+** F008C014: Voice Control Register B/E, Voice  0 Modulator
+** F008C018: Voice Control Register C/F, Voice  0 Modulator
+** F008C01C: Voice Status Register     , Voice  0 Modulator
 ** F008C020: Channel 1
 ** F008C040: Channel 2
 ** ...
@@ -40,18 +40,29 @@ Control Register A:
 ** Interpreted as a phase angle that is accumulated at ~ 62.5kHz.
 *** May be driven at 1MHz internally, but shifted right by 4 bits.
 *** Some variation may exist as to what is the exact frequency.
-* 20: -
-* 21: Pair-Link
+* 20: 0=FM, 1=PCM
+* 21: Pair-Link (FM), Loop-Repeat (PCM)
 * 27..22: Volume
-* 31..28: Waveform
+* 31..28: Waveform (FM)
 
 Control Register B:
 * 3..0: Pan
 ** 0: Mono Center
 ** 1..15, With 8 being Center
 
-Voice Control Register B and C:
-* Reserved for future expansion.
+Control Register C:
+* 15.. 0: Sample Base Address (Audio RAM, multiple of 16B).
+* 31..16: Sample End (Samples)
+
+Control Register D:
+* 19.. 0: Clocked Accumulator Step (FM)
+* 20: Reserved (FM), Reversed (PCM)
+* 21: Reserved (FM), Bidirectional (PCM)
+
+
+Control Register F:
+* 15.. 0: Sample Loop Repeat Start (Samples)
+* 31..16: Sample Loop Repeat End (Samples)
 
 Accumulator:
 * Interpreted as a normalized value in the range of 0 to 2PI.
@@ -66,7 +77,6 @@ Voice Status Register:
 
 Pair Link Flag
 * A paired sub-voice may be used as a modulator.
-** 0..7, Will use Voice 8..15 as a Modulator
 ** 0: Unpaired, Each voice plays independently
 ** 1: Paired, Sub-Voice used as a modulator.
 
@@ -127,6 +137,8 @@ Volume(6-bit):
 ** Then value is shifted right by the exponent.
 
 
+=== FM Synthesis ===
+
 Waveforms:
 * 0: Full Triangle
 ** Acc(23:22):
@@ -181,3 +193,12 @@ Waveforms:
 ** Psuedo-random noise pattern.
 ** Will probably flip and XOR some of the accumulator bits.
 
+
+=== PCM Loop ===
+
+Waveform:
+* Waveform 0 will be used for PCM voices.
+* Other values are reserved.
+
+Audio RAM:
+* C000_20800000 (Up to 1MB)

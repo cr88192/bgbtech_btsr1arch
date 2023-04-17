@@ -111,6 +111,8 @@ MMIO Space:
 `include "MemL2A.v"
 `endif
 
+`include "ringbus/RbiMemAuMix.v"
+
 `ifndef jx2_use_ringbus
 `ifdef jx2_enable_dualcore
 `include "ExMemJoin.v"
@@ -1226,6 +1228,24 @@ wire[ 15:0]		mmiOpmOut;		//memory operation mode
 `wire_tile		mmiDataIn;		//memory input data
 `wire_tile		mmiDataOut;		//memory output data
 
+wire[ 15:0]		vmmiSeqIn;		//operation sequence
+wire[ 15:0]		vmmiSeqOut;		//operation sequence
+wire[ 15:0]		vmmiOpmIn;		//memory operation mode
+wire[ 15:0]		vmmiOpmOut;		//memory operation mode
+`wire_l2addr	vmmiAddrIn;		//memory input address
+`wire_l2addr	vmmiAddrOut;		//memory output address
+`wire_tile		vmmiDataIn;		//memory input data
+`wire_tile		vmmiDataOut;		//memory output data
+
+wire[ 15:0]		ammiSeqIn;		//operation sequence
+wire[ 15:0]		ammiSeqOut;		//operation sequence
+wire[ 15:0]		ammiOpmIn;		//memory operation mode
+wire[ 15:0]		ammiOpmOut;		//memory operation mode
+`wire_l2addr	ammiAddrIn;		//memory input address
+`wire_l2addr	ammiAddrOut;		//memory output address
+`wire_tile		ammiDataIn;		//memory input data
+`wire_tile		ammiDataOut;		//memory output data
+
 `wire_tile		l2aDataIn;
 `wire_tile		l2aDataOut;
 `wire_l2addr	l2aAddrIn;
@@ -1343,10 +1363,10 @@ ModTxtNtW	scrn(
 	timerNoise,		timer256Hz,
 	tDbgLeds,
 
-	mmiAddrIn,		mmiAddrOut,
-	mmiDataIn,		mmiDataOut,
-	mmiOpmIn,		mmiOpmOut,
-	mmiSeqIn,		mmiSeqOut,
+	vmmiAddrIn,		vmmiAddrOut,
+	vmmiDataIn,		vmmiDataOut,
+	vmmiOpmIn,		vmmiOpmOut,
+	vmmiSeqIn,		vmmiSeqOut,
 	scrnNodeId		);
 
 `else
@@ -1397,6 +1417,36 @@ ModAudPcm	pcm(
 	timer1MHz,		timer64kHz,
 	timer1kHz,		timerNoise);
 
+wire[7:0]	aumemNodeId;
+assign		aumemNodeId	= 8'h8C;
+
+wire[15:0]		fmCellIdx;
+wire[127:0]		fmCellData;
+
+`ifdef jx2_audio_fmaumem
+
+RbiMemAuMix		fmMemAuMix(
+	clock_mmio,		reset2_mmio,
+	fmCellIdx,		fmCellData,
+	ammiAddrIn,		ammiAddrOut,
+	ammiDataIn,		ammiDataOut,
+	ammiOpmIn,		ammiOpmOut,
+	ammiSeqIn,		ammiSeqOut,
+	aumemNodeId		
+	);
+
+`else
+
+assign	fmCellData	= 128'h0;
+
+`ifdef jx2_use_ringbus
+assign	ammiAddrOut = ammiAddrIn;
+assign	ammiDataOut = ammiDataIn;
+assign	ammiOpmOut = ammiOpmIn;
+assign	ammiSeqOut = ammiSeqIn;
+`endif
+
+`endif
 
 ModAudFm	fmsyn(
 //	clock_100,		reset2_100,
@@ -1404,6 +1454,7 @@ ModAudFm	fmsyn(
 	audAuxPcmL,		audAuxPcmR,
 	mmioOutData,	fmMmioOutData,		mmioAddr,
 	mmioOpm,		fmMmioOK,
+	fmCellIdx,		fmCellData,
 	timer4MHz,		timer1MHz,		timer64kHz,
 	timer1kHz,		timerNoise);
 
@@ -1417,6 +1468,30 @@ assign	audMmioOK		= 0;
 assign	fmMmioOutData	= 0;
 assign	fmMmioOK		= 0;
 
+`ifdef jx2_use_ringbus
+assign	ammiAddrOut = ammiAddrIn;
+assign	ammiDataOut = ammiDataIn;
+assign	ammiOpmOut = ammiOpmIn;
+assign	ammiSeqOut = ammiSeqIn;
+`endif
+
+`endif
+
+`ifdef jx2_use_ringbus
+assign	vmmiAddrIn = mmiAddrIn;
+assign	vmmiDataIn = mmiDataIn;
+assign	vmmiOpmIn = mmiOpmIn;
+assign	vmmiSeqIn = mmiSeqIn;
+
+assign	ammiAddrIn = vmmiAddrOut;
+assign	ammiDataIn = vmmiDataOut;
+assign	ammiOpmIn = vmmiOpmOut;
+assign	ammiSeqIn = vmmiSeqOut;
+
+assign	mmiAddrOut = ammiAddrOut;
+assign	mmiDataOut = ammiDataOut;
+assign	mmiOpmOut = ammiOpmOut;
+assign	mmiSeqOut = ammiSeqOut;
 `endif
 
 reg			tSbitX;
@@ -1457,6 +1532,9 @@ assign		timerNoiseL0 =
 
 wire[31:0]	kbMmioOutData;
 wire[1:0]	kbMmioOK;
+wire[31:0]	msMmioOutData;
+wire[1:0]	msMmioOK;
+
 reg			ps2kb_lclk_i;
 reg			ps2kb_lclk2_i;
 
@@ -1469,7 +1547,20 @@ wire[1:0]	ps2_clkdat_i;
 wire[1:0]	ps2_clkdat_o;
 wire[1:0]	ps2_clkdat_d;
 
-assign		ps2_clkdat_i = { ps2kb_clk_i, ps2kb_data_i };
+wire[1:0]	ps2_clkdat2_i;
+wire[1:0]	ps2_clkdat2_o;
+wire[1:0]	ps2_clkdat2_d;
+
+wire[1:0]	usbLinkState3;
+
+// assign		ps2_clkdat_i = { ps2kb_clk_i, ps2kb_data_i };
+assign		ps2_clkdat_i = {
+	ps2kb_clk_i		&& (usb_clkdat_i[0] || !usbLinkState3[0]),
+	ps2kb_data_i	&& (usb_clkdat_i[1] || !usbLinkState3[0]) };
+
+assign		ps2_clkdat2_i = {
+	usb_clkdat_i[2] || !usbLinkState3[1],
+	usb_clkdat_i[3] || !usbLinkState3[1] };
 
 assign		ps2kb_clk_o = ps2_clkdat_o[1];
 assign		ps2kb_data_o = ps2_clkdat_o[0];
@@ -1485,7 +1576,13 @@ ModPs2Kb	ps2kb(
 //	ps2kb_dati,		ps2kb_data_o,	ps2kb_data_d,
 	ps2_clkdat_i,	ps2_clkdat_o,	ps2_clkdat_d,
 	mmioOutData,	kbMmioOutData,	mmioAddr,
-	mmioOpm,		kbMmioOK);
+	mmioOpm,		kbMmioOK,		12'hE04);
+
+ModPs2Kb	ps2ms(
+	clock_mmio,		reset2_mmio,
+	ps2_clkdat2_i,	ps2_clkdat2_o,	ps2_clkdat2_d,
+	mmioOutData,	msMmioOutData,	mmioAddr,
+	mmioOpm,		msMmioOK,		12'hE05);
 
 wire[63:0]	sdMmioOutData;
 wire[1:0]	sdMmioOK;
@@ -1500,11 +1597,13 @@ ModSdSpi	sdspi(
 
 wire[63:0]	usbMmioOutData;
 wire[1:0]	usbMmioOK;
+// wire[1:0]	usbLinkState3;
 
 ModUsbBuf modusb(
 	clock_mmio,		reset2_mmio,
 	usb_clkdat_i,	usb_clkdat_o,
 	usb_clkdat_d,	usb_clkref,
+	usbLinkState3,
 	mmioOutDataQ,	usbMmioOutData,	mmioAddr,		
 	mmioOpm,		usbMmioOK
 	);
@@ -1622,6 +1721,11 @@ begin
 	begin
 		mmioInData	= { UV32_00, kbMmioOutData };
 		mmioOK		= kbMmioOK;
+	end
+	else if(msMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= { UV32_00, msMmioOutData };
+		mmioOK		= msMmioOK;
 	end
 	else if(mmioOpm!=0)
 	begin

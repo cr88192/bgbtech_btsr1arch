@@ -300,6 +300,10 @@ addsfx
 	int		rightvol, lv;
 	int		leftvol, rv;
 
+	volume *= 4;
+	if(volume>63)
+		volume=63;
+
 	// Chainsaw troubles.
 	// Play these sound effects only one at a time.
 	if ( sfxid == sfx_sawup

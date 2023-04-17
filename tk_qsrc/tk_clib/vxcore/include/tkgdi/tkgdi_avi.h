@@ -5,6 +5,12 @@
 #define RIFF_MAKETAG(a, b, c, d)	((a)+((b)<<8)+((c)<<16)+((d)<<24))
 #endif
 
+#ifndef RIFF_MAKE8CC
+#define RIFF_MAKE8CC(a, b, c, d, e, f, g, h)	\
+	(RIFF_MAKETAG(a, b, c, d) + \
+	(((long long)RIFF_MAKETAG(e, f, g, h))<<32))
+#endif
+
 #define RIFF_UNHEX_NIBBLE(a)		( \
 	(((a)>='0')&&((a)<='9'))?((a)-'0') : \
 	(((a)>='A')&&((a)<='F'))?((a)-'A'+10) : \

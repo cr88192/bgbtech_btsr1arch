@@ -495,8 +495,12 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //		__debugbreak();
 //	return(task->SysCall(sObj, uMsg, vParm1, vParm2));
 
+//	__debugbreak();
+
 	vParm1=tk_ptrstriptag(vParm1);
 	vParm2=tk_ptrstriptag(vParm2);
+
+//	__debugbreak();
 
 	tusr=(TKPE_TaskInfoUser *)(task->usrptr);
 	msgbuf=(void *)(tusr->syscmsgbuf);
@@ -533,7 +537,10 @@ bool tk_iskernel(void)
 {
 #ifndef __TK_CLIB_ONLY__
 	if(tk_getsavedvbr())
+	{
+//		__debugbreak();
 		return(0);
+	}
 	return(1);
 #else
 	return(0);

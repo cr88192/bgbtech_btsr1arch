@@ -89,7 +89,13 @@ void BGBCC_FR2E_BufEmitTwocc(byte **rct, u16 tag, byte *dat, int sz)
 	byte *ct;
 	int sz1;
 	
-	if((((byte)tag)==tag) && (sz<30))
+//	if((((byte)tag)==tag) && (sz<30))
+//	{
+//		BGBCC_FR2E_BufEmitOnecc(rct, tag, dat, sz);
+//		return;
+//	}
+
+	if((((byte)tag)==tag) && (sz<127))
 	{
 		BGBCC_FR2E_BufEmitOnecc(rct, tag, dat, sz);
 		return;
@@ -98,10 +104,16 @@ void BGBCC_FR2E_BufEmitTwocc(byte **rct, u16 tag, byte *dat, int sz)
 	ct=*rct;
 	
 	sz1=sz+4;
-	if(sz1<16384)
+//	if(sz1<16384)
+	if(sz<32767)
 	{
-		bgbcc_setu16le(ct+0, (sz1<<2)|0);
-		bgbcc_setu16le(ct+2, tag);
+		ct[0]=(tag>>0)&0x7F;
+		ct[1]=(tag>>8)&0x7F;
+		ct[2]=((~sz)>>0)&0xFF;
+		ct[3]=((~sz)>>8)&0xFF;
+
+//		bgbcc_setu16le(ct+0, (sz1<<2)|0);
+//		bgbcc_setu16le(ct+2, tag);
 		if(dat)
 			memcpy(ct+4, dat, sz);
 		else
@@ -110,6 +122,9 @@ void BGBCC_FR2E_BufEmitTwocc(byte **rct, u16 tag, byte *dat, int sz)
 		return;
 	}
 
+	BGBCC_FR2E_BufEmitFourcc(rct, tag, dat, sz);
+
+#if 0
 	sz1=sz+6;
 	if(sz1<(1<<30))
 	{
@@ -124,6 +139,7 @@ void BGBCC_FR2E_BufEmitTwocc(byte **rct, u16 tag, byte *dat, int sz)
 	}
 	
 	BGBCC_DBGBREAK
+#endif
 }
 
 void BGBCC_FR2E_BufEmitOnecc(byte **rct, byte tag, byte *dat, int sz)
@@ -134,9 +150,13 @@ void BGBCC_FR2E_BufEmitOnecc(byte **rct, byte tag, byte *dat, int sz)
 	ct=*rct;
 	
 	sz1=sz+2;
-	if(sz1<32)
+//	if(sz1<32)
+	if(sz1<127)
 	{
-		bgbcc_setu16le(ct+0, (tag<<8)|(sz1<<3)|3);
+		ct[0]=tag;
+		ct[1]=~sz;
+
+//		bgbcc_setu16le(ct+0, (tag<<8)|(sz1<<3)|3);
 		if(dat)
 			memcpy(ct+2, dat, sz);
 		else
@@ -153,7 +173,8 @@ void BGBCC_FR2E_BufEmitFourcc(byte **rct, u32 tag, byte *dat, int sz)
 	byte *ct;
 	int sz1;
 	
-	if(((u16)tag)==tag)
+//	if(((u16)tag)==tag)
+	if((((u16)tag)==tag) && (sz<32767))
 	{
 		BGBCC_FR2E_BufEmitTwocc(rct, tag, dat, sz);
 		return;
@@ -164,8 +185,18 @@ void BGBCC_FR2E_BufEmitFourcc(byte **rct, u32 tag, byte *dat, int sz)
 	sz1=sz+8;
 	if(sz1<(1<<30))
 	{
-		bgbcc_setu32le(ct+0, (sz1<<2)|2);
-		bgbcc_setu32le(ct+4, tag);
+//		bgbcc_setu32le(ct+0, (sz1<<2)|2);
+//		bgbcc_setu32le(ct+4, tag);
+
+		ct[0]=(tag>> 0)&0x7F;
+		ct[1]=(tag>> 8)&0x7F;
+		ct[3]=(tag>>16)&0x7F;
+		ct[4]=(tag>>24)&0x7F;
+		ct[5]=((~sz)>> 0)&0xFF;
+		ct[6]=((~sz)>> 8)&0xFF;
+		ct[7]=((~sz)>>16)&0xFF;
+		ct[8]=((~sz)>>24)&0xFF;
+
 		if(dat)
 			memcpy(ct+8, dat, sz);
 		else
@@ -522,6 +553,23 @@ void BGBCC_FR2E_CheckExpandVtrData(
 		img->msz_vtrdat=sz1;
 	}
 #endif
+}
+
+
+void BGBCC_FR2E_CheckExpandVosiData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, int sz)
+{
+	BGBCC_FR2E_CheckExpandTableData(
+		&(img->vosidat), &(img->sz_vosidat),
+		&(img->msz_vosidat), sz);
+}
+
+void BGBCC_FR2E_CheckExpandVtsiData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img, int sz)
+{
+	BGBCC_FR2E_CheckExpandTableData(
+		&(img->vtsidat), &(img->sz_vtsidat),
+		&(img->msz_vtsidat), sz);
 }
 
 byte *BGBCC_FR2E_BufEmitType(
@@ -1092,15 +1140,23 @@ int BGBCC_FR2E_EmitVirtTrace(
 	return(bn);
 }
 
-int BGBCC_FR2E_FlattenFunctionTraces(
+u64 BGBCC_FR2E_FlattenFunctionTraces(
 	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
 	BGBCC_CCXL_RegisterInfo *inf, int fl)
 {
 	BGBCC_CCXL_VirtTr *vtr;
 	byte *ct;
+	u64 v;
 	int bn, bn1, n;
+	int bo, bo1, vo;
+	int svo, svo1;
+	int svt, svt1;
 	int i, j, k;
 
+	svo=img->sz_vopdat;
+	svt=img->sz_vtrdat;
+
+	bo=img->n_vop;
 	bn=img->n_vtr;
 	n=inf->n_vtr;
 	for(i=0; i<n; i++)
@@ -1109,7 +1165,10 @@ int BGBCC_FR2E_FlattenFunctionTraces(
 		BGBCC_FR2E_EmitVirtTrace(ctx, img, inf, vtr);
 	}
 
-	bn1=img->n_vtr++;
+	bo1=img->n_vop;
+	bn1=img->n_vtr;
+
+	img->n_vtr++;
 
 	BGBCC_FR2E_CheckExpandVtrData(ctx, img, 256);
 	ct=img->vtrdat+img->sz_vtrdat;
@@ -1121,7 +1180,36 @@ int BGBCC_FR2E_FlattenFunctionTraces(
 	if(img->sz_vtrdat>=img->msz_vtrdat)
 		{ BGBCC_DBGBREAK }
 
-	return(bn1);
+	svo1=img->sz_vopdat;
+	svt1=img->sz_vtrdat;
+
+	BGBCC_FR2E_CheckExpandVosiData(ctx, img, 128);
+//	BGBCC_FR2E_CheckExpandVtsiData(ctx, img, 64);
+
+	vo=img->n_vosi++;
+
+	ct=img->vosidat+img->sz_vosidat;
+
+	ct=BGBCC_FR2E_BufEmitUVli(ct, bo);
+	ct=BGBCC_FR2E_BufEmitUVli(ct, bn);
+	ct=BGBCC_FR2E_BufEmitUVli(ct, bo1-bo);
+	ct=BGBCC_FR2E_BufEmitUVli(ct, bn1-bn);
+
+	ct=BGBCC_FR2E_BufEmitUVli(ct, svo);
+	ct=BGBCC_FR2E_BufEmitUVli(ct, svt);
+	ct=BGBCC_FR2E_BufEmitUVli(ct, svo1-svo);
+	ct=BGBCC_FR2E_BufEmitUVli(ct, svt1-svt);
+
+	ct=BGBCC_FR2E_BufEmitUVli(ct, inf->gblid);
+	ct=BGBCC_FR2E_BufEmitUVli(ct, 0);
+
+	img->sz_vosidat=ct-img->vosidat;
+
+//	return(bn1);
+//	return(vo);
+
+	v=bn1 | (((u64)vo)<<32);
+	return(v);
 }
 
 void BGBCC_FR2E_FlattenFunctionTracesBuf(
@@ -1129,12 +1217,16 @@ void BGBCC_FR2E_FlattenFunctionTracesBuf(
 	BGBCC_CCXL_RegisterInfo *inf, byte **rct, int fl)
 {
 	byte *ct;
-	int bn;
+	u64 v;
+	int bn, vo;
 	
-	bn=BGBCC_FR2E_FlattenFunctionTraces(ctx, img, inf, fl);
+	v=BGBCC_FR2E_FlattenFunctionTraces(ctx, img, inf, fl);
+	bn=(int)(v>> 0);
+	vo=(int)(v>>32);
 
 	ct=*rct;
 	ct=BGBCC_FR2E_BufEmitSVli(ct, bn);
+	ct=BGBCC_FR2E_BufEmitSVli(ct, vo);
 	*rct=ct;
 }
 
@@ -1380,6 +1472,7 @@ byte *BGBCC_FR2E_FlattenImage(
 	tsz+=img->sz_gbldat;
 	tsz+=img->sz_vopdat;
 	tsz+=img->sz_vtrdat;
+	tsz+=img->sz_vosidat;
 	
 	printf("sz strs %d\n", img->sz_strtab);
 	printf("sz stri %d\n", img->sz_stridxd);
@@ -1387,6 +1480,7 @@ byte *BGBCC_FR2E_FlattenImage(
 	printf("sz gbld %d\n", img->sz_gbldat);
 	printf("sz vops %d\n", img->sz_vopdat);
 	printf("sz vtrs %d\n", img->sz_vtrdat);
+	printf("sz vosi %d\n", img->sz_vosidat);
 	
 	printf("VOP: M=%d O=%d T=%d R=%d I=%d\n",
 		img->stat_vop_mskb,
@@ -1423,6 +1517,9 @@ byte *BGBCC_FR2E_FlattenImage(
 	BGBCC_FR2E_BufEmitFourcc(&ct, BGBCC_FCC_vtrs,
 		img->vtrdat, img->sz_vtrdat);
 
+	BGBCC_FR2E_BufEmitFourcc(&ct, BGBCC_FCC_vosi,
+		img->vosidat, img->sz_vosidat);
+
 	BGBCC_FR2E_BufEmitFourcc(&ct, BGBCC_FCC_LITD,
 		img->litdat, img->sz_litdat);
 	BGBCC_FR2E_BufEmitFourcc(&ct, BGBCC_FCC_GBLD,
@@ -1434,4 +1531,918 @@ byte *BGBCC_FR2E_FlattenImage(
 	
 	*rsz=tsz;
 	return(buf);
+}
+
+
+void BGBCC_FR2E_ReadTag(byte **rcs, u32 *rtag, byte **rdat, int *rsz)
+{
+	byte *cs, *cs1, *cs2;
+	int sz;
+	
+	cs=*rcs;
+
+	if(cs[0]&0x80)
+	{
+		*rtag=cs[0];
+		*rdat=cs+1;
+		*rsz=0;
+		*rcs=cs+1;
+		return;
+	}
+
+	if(cs[1]&0x80)
+	{
+		*rtag=cs[0];
+		sz=cs[1]^0xFF;
+		*rdat=cs+2;
+		*rsz=sz;
+		*rcs=cs+2+sz;
+		return;
+	}
+
+	if(cs[3]&0x80)
+	{
+		*rtag=cs[0]|(cs[1]<<8);
+		sz=(cs[2]|(cs[3]<<8))^0xFFFF;
+		*rdat=cs+4;
+		*rsz=sz;
+		*rcs=cs+4+sz;
+		return;
+	}
+
+	if(cs[7]&0x80)
+	{
+		*rtag=cs[0]|(cs[1]<<8)|(cs[2]<<16)|(cs[3]<<24);
+		sz=(cs[4]|(cs[5]<<8)|(cs[6]<<16)|(cs[7]<<24))^0xFFFFFFFF;
+		*rdat=cs+8;
+		*rsz=sz;
+		*rcs=cs+8+sz;
+		return;
+	}
+}
+
+u64 BGBCC_FR2E_BufReadUVli(byte **rcs)
+{
+	byte *cs;
+	u64 v;
+	int i;
+	
+	cs=*rcs;
+	i=*cs++;
+
+	if(i<0x80)
+	{
+		v=i;
+		*rcs=cs;
+		return(v);
+	}
+
+	if(i<0xC0)
+	{
+		v=((i&0x3F)<<8)|(*cs++);
+		*rcs=cs;
+		return(v);
+	}
+
+	if(i<0xE0)
+	{
+		i=((i&0x1F)<<8)|(*cs++);
+		v=((i&0xFF)<<8)|(*cs++);
+		*rcs=cs;
+		return(v);
+	}
+
+	if(i<0xF0)
+	{
+		i=((i&0x0F)<<8)|(*cs++);
+		i=((i&0xFF)<<8)|(*cs++);
+		v=((i&0xFF)<<8)|(*cs++);
+		*rcs=cs;
+		return(v);
+	}
+
+	if(i<0xF8)
+	{
+		v=((i&0x07)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		*rcs=cs;
+		return(v);
+	}
+
+	if(i<0xFC)
+	{
+		v=((i&0x03)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		*rcs=cs;
+		return(v);
+	}
+
+	if(i<0xFE)
+	{
+		v=((i&0x01)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		*rcs=cs;
+		return(v);
+	}
+
+	if(i<0xFF)
+	{
+		v=((i&0x00)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		v=((v&0xFF)<<8)|(*cs++);
+		*rcs=cs;
+		return(v);
+	}
+
+	v=(*cs++);
+	v=((v&0xFF)<<8)|(*cs++);
+	v=((v&0xFF)<<8)|(*cs++);
+	v=((v&0xFF)<<8)|(*cs++);
+	v=((v&0xFF)<<8)|(*cs++);
+	v=((v&0xFF)<<8)|(*cs++);
+	v=((v&0xFF)<<8)|(*cs++);
+	v=((v&0xFF)<<8)|(*cs++);
+	*rcs=cs;
+	return(v);
+}
+
+s64 BGBCC_FR2E_BufReadSVli(byte **rcs)
+{
+	u64 v0;
+	s64 v;
+	
+	v0=BGBCC_FR2E_BufReadUVli(rcs);
+	v=v0>>1;
+	if(v0&1)
+		v=~v;
+	return(v);
+}
+
+void BGBCC_FR2E_UnpackStridxData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img)
+{
+	byte *cs, *cse, *cs0;
+	u64 v;
+	int i, n;
+	
+	cs=img->stridxd;
+	cse=cs+img->sz_stridxd;
+
+	cs0=cs; n=2;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		n++;
+	}
+	
+	img->stridx=bgbcc_malloc((n+1)*sizeof(int));
+	img->stridx[0]=0;
+	img->stridx[1]=0;
+
+	cs0=cs; i=2;
+	while(cs<cse)
+	{
+		v=BGBCC_FR2E_BufReadUVli(&cs0);
+		img->stridx[i]=v;
+		i++;
+	}
+}
+
+void BGBCC_FR2E_UnpackVirtTraceData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img)
+{
+	BGBCC_CCXL_VirtTr *vtr;
+	byte *cs, *cse, *cs0;
+	u64 v;
+	int i, n;
+	
+	cs=img->vtrdat;
+	cse=cs+img->sz_vtrdat;
+
+	cs0=cs; n=0;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		n++;
+	}
+	
+	img->vtr=bgbcc_malloc((n+1)*sizeof(void *));
+	img->n_vtr=n;
+
+	cs0=cs; i=0;
+	while(cs<cse)
+	{
+		vtr=bgbcc_malloc(sizeof(BGBCC_CCXL_VirtTr));
+		vtr->b_ops=BGBCC_FR2E_BufReadSVli(&cs0);
+		vtr->n_ops=BGBCC_FR2E_BufReadSVli(&cs0);
+		vtr->trfl=BGBCC_FR2E_BufReadSVli(&cs0);
+		vtr->n_fops=vtr->n_ops;
+		img->vtr[i]=vtr;
+		i++;
+	}
+}
+
+void BGBCC_FR2E_UnpackVosiData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img)
+{
+	BGBCC_FR2E_ImgVosiEnt *vtr;
+	byte *cs, *cse, *cs0;
+	u64 v;
+	int i, n;
+	
+	cs=img->vosidat;
+	cse=cs+img->sz_vosidat;
+
+	cs0=cs; n=1;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		BGBCC_FR2E_BufReadUVli(&cs0);
+		n++;
+	}
+	
+	img->vosi=bgbcc_malloc((n+1)*sizeof(void *));
+	img->n_vosi=n;
+
+	cs0=cs; i=1;
+	while(cs<cse)
+	{
+		vtr=bgbcc_malloc(sizeof(BGBCC_FR2E_ImgVosiEnt));
+
+		vtr->b_vops=BGBCC_FR2E_BufReadUVli(&cs0);
+		vtr->b_vtrs=BGBCC_FR2E_BufReadUVli(&cs0);
+		vtr->n_vops=BGBCC_FR2E_BufReadUVli(&cs0);
+		vtr->n_vtrs=BGBCC_FR2E_BufReadUVli(&cs0);
+
+		vtr->o_vops=BGBCC_FR2E_BufReadUVli(&cs0);
+		vtr->o_vtrs=BGBCC_FR2E_BufReadUVli(&cs0);
+		vtr->s_vops=BGBCC_FR2E_BufReadUVli(&cs0);
+		vtr->s_vtrs=BGBCC_FR2E_BufReadUVli(&cs0);
+
+		vtr->gblid=BGBCC_FR2E_BufReadUVli(&cs0);
+		vtr->flags=BGBCC_FR2E_BufReadUVli(&cs0);
+
+		img->vosi[i]=vtr;
+		i++;
+	}
+}
+
+int BGBCC_FR2E_UnMortonValueX(u64 v)
+{
+	int x;
+
+	x=0;
+	if(v&0x00000001)	x|=0x0001;
+	if(v&0x00000004)	x|=0x0002;
+	if(v&0x00000010)	x|=0x0004;
+	if(v&0x00000040)	x|=0x0008;
+	if(v&0x00000100)	x|=0x0010;
+	if(v&0x00000400)	x|=0x0020;
+	if(v&0x00001000)	x|=0x0040;
+	if(v&0x00004000)	x|=0x0080;
+	if(v&0x00010000)	x|=0x0100;
+	if(v&0x00040000)	x|=0x0200;
+	if(v&0x00100000)	x|=0x0400;
+	if(v&0x00400000)	x|=0x0800;
+	if(v&0x01000000)	x|=0x1000;
+	if(v&0x04000000)	x|=0x2000;
+	if(v&0x10000000)	x|=0x4000;
+	if(v&0x40000000)	x|=0x8000;
+	return(x);
+}
+
+void BGBCC_FR2E_UnMortonValue(u64 v, int *rvx, int *rvy)
+{
+	*rvx=BGBCC_FR2E_UnMortonValueX(v);
+	*rvy=BGBCC_FR2E_UnMortonValueX(v>>1);
+}
+
+void BGBCC_FR2E_UnpackType(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
+	byte **rcs, ccxl_type *rty)
+{
+	u64 v0;
+	int i, j, k;
+
+	v0=BGBCC_FR2E_BufReadUVli(rcs);
+	if(!(v0&1))
+	{
+		BGBCC_CCXL_TypeFromSig(ctx, rty, (img->strtab+(v0>>1)));
+
+		for(j=31; j>0; j--)
+			img->typehist[j]=img->typehist[j-1];
+		img->typehist[0]=*rty;
+		return;
+	}
+
+	if(!(v0&2))
+	{
+		i=v0>>2;
+		j=(i&0x00FF)<<0;
+		k=(i&0x0F00)<<4;
+		rty->val=j|k;
+
+		for(j=31; j>0; j--)
+			img->typehist[j]=img->typehist[j-1];
+		img->typehist[0]=*rty;
+		return;
+	}
+	
+	i=v0>>2;
+	*rty=img->typehist[i];
+	for(j=i; j>0; j--)
+		img->typehist[j]=img->typehist[j-1];
+	img->typehist[0]=*rty;
+}
+
+void BGBCC_FR2E_UnpackVopRegister(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
+	byte **rcs, BGBCC_CCXL_VirtOp *vop, ccxl_register *rty)
+{
+	byte *cs;
+	u64 v, uk;
+	int i, j, k, i0, i1;
+
+	cs=*rcs;
+	uk=BGBCC_FR2E_BufReadUVli(&cs);
+
+	if(!(uk&7))
+	{
+		i=uk>>3;
+
+		*rty=img->reghist[i];
+		for(j=i; j>0; j--)
+			img->reghist[j]=img->reghist[j-1];
+		img->reghist[0]=*rty;
+
+		*rcs=cs;
+		return;
+	}
+	
+	if(!(uk&1))
+	{
+		BGBCC_FR2E_UnMortonValue(uk>>3, &i0, &i1);
+		v=i0|(i1<<12);
+
+		if((uk&0x06)==0x02)
+			v|=CCXL_REGTY_TEMP;
+		if((uk&0x06)==0x04)
+			v|=CCXL_REGTY_ARG;
+		if((uk&0x06)==0x06)
+			v|=CCXL_REGTY_LOCAL;
+		
+		v|=((u64)(vop->type.val))<<24;
+	}else
+		if(!(uk&2))
+	{
+		v=uk>>4;
+
+		if((uk&0x0C)==0x00)
+			v|=CCXL_REGTY_GLOBAL;
+		if((uk&0x0C)==0x04)
+			v|=CCXL_REGTY_IMM_LITERAL;
+
+		if((uk&0x0C)==0x08)
+			v|=CCXL_REGTY_IMM_INT;
+
+		if((uk&0x0C)==0x0C)
+		{
+			BGBCC_CCXL_GetRegForStringValue(ctx, rty,
+				(img->strtab+v));
+			v=rty->val;
+		}
+	}else
+		if(!(uk&4))
+	{
+		v=uk>>5;
+
+		if((uk&0x18)==0x00)
+			v|=CCXL_REGTY_IMM_GBLADDR;
+
+		if((uk&0x18)==0x08)
+		{
+			v=(v>>4)|((v&15)<<52);
+			v|=CCXL_REGTY_IMM_INT;
+		}
+
+		if((uk&0x18)==0x10)
+		{
+			v|=CCXL_REGTY_IMM_LONG;
+		}
+
+		if((uk&0x18)==0x18)
+		{
+			BGBCC_CCXL_GetRegForWStringValue(ctx, rty,
+				(img->strtab+v));
+			v=rty->val;
+		}
+	}else
+		if(!(uk&8))
+	{
+	}else
+		if(!(uk&16))
+	{
+		BGBCC_FR2E_BufReadUVli(&cs);
+		if((uk>>6)&1)
+			BGBCC_FR2E_BufReadUVli(&cs);
+	}
+
+	rty->val=v;
+	for(j=63; j>0; j--)
+		img->reghist[j]=img->reghist[j-1];
+	img->reghist[0]=*rty;
+
+	*rcs=cs;
+}
+
+void BGBCC_FR2E_UnpackVopImmed(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
+	byte **rcs, BGBCC_CCXL_VirtOp *vop)
+{
+	byte *cs;
+	int i, j, k, i0, i1;
+	cs=*rcs;
+	k=BGBCC_FR2E_BufReadUVli(&cs);
+	*rcs=cs;
+}
+
+void BGBCC_FR2E_UnpackVirtOpSingle(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
+	byte **rcs,
+	BGBCC_CCXL_VirtOp *vop)
+{
+	byte *cs;
+	u64 v0;
+	int i, j, k, i0, i1;
+
+	cs=*rcs;
+
+	j=BGBCC_FR2E_BufReadUVli(&cs);
+	if(!(j&3))
+		j=img->vop_lmsk;
+
+	img->vop_lmsk=j;
+
+	if(j&1)
+	{
+		vop->opn=BGBCC_FR2E_BufReadUVli(&cs);
+		if(j&2)
+			vop->opr=BGBCC_FR2E_BufReadUVli(&cs);
+	}else
+	{
+		k=BGBCC_FR2E_BufReadUVli(&cs);
+		BGBCC_FR2E_UnMortonValue(k, &i0, &i1);
+		vop->opn=i0;
+		vop->opr=i1;
+	}
+
+	if(j&128)
+		{ vop->prd=BGBCC_FR2E_BufReadUVli(&cs); }
+
+	if(j&4)
+		{ BGBCC_FR2E_UnpackType(ctx, img, &cs, &(vop->type)); }
+
+	if(j&256)
+		{ BGBCC_FR2E_UnpackType(ctx, img, &cs, &(vop->stype)); }
+
+
+	if(j&8)
+		{ BGBCC_FR2E_UnpackVopRegister(ctx, img, &cs, vop, &(vop->dst)); }
+	if(j&16)
+		{ BGBCC_FR2E_UnpackVopRegister(ctx, img, &cs, vop, &(vop->srca)); }
+	if(j&32)
+		{ BGBCC_FR2E_UnpackVopRegister(ctx, img, &cs, vop, &(vop->srcb)); }
+
+	if(j&512)
+		{ BGBCC_FR2E_UnpackVopRegister(ctx, img, &cs, vop, &(vop->srcc)); }
+	if(j&1024)
+		{ BGBCC_FR2E_UnpackVopRegister(ctx, img, &cs, vop, &(vop->srcd)); }
+
+	if(j&64)
+		{ BGBCC_FR2E_UnpackVopImmed(ctx, img, &cs, vop); }
+		
+	*rcs=cs;
+}
+
+void BGBCC_FR2E_UnpackVirtOpData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img)
+{
+	BGBCC_CCXL_VirtOp t_vop;
+	BGBCC_CCXL_VirtOp *vop;
+	byte *cs, *cse, *cs0;
+	u64 v;
+	int i, j, k, n;
+	
+	cs=img->vopdat;
+	cse=cs+img->sz_vopdat;
+
+	cs0=cs; n=0;
+	while(cs<cse)
+	{
+		vop=&t_vop;
+		BGBCC_FR2E_UnpackVirtOpSingle(ctx, img, &cs0, vop);
+		n++;
+	}
+	
+	img->vop=bgbcc_malloc((n+1)*sizeof(void *));
+	img->n_vop=n;
+
+	cs0=cs; i=0;
+	while(cs<cse)
+	{
+		vop=bgbcc_malloc(sizeof(BGBCC_CCXL_VirtOp));
+		BGBCC_FR2E_UnpackVirtOpSingle(ctx, img, &cs0, vop);
+		img->vop[i]=vop;
+		i++;
+	}
+}
+
+char *BGBCC_FR2E_UnpackStringDataObj(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
+	byte *idat, int isz)
+{
+	byte *cs;
+	int i, j, k;
+
+	cs=idat;
+	k=BGBCC_FR2E_BufReadUVli(&cs);
+
+	if(!k)
+		return(NULL);
+
+	if(k>0)
+	{
+		return(bgbcc_strdup(img->strtab+k));
+	}
+	
+	if(k==-1)
+	{
+		return(bgbcc_strdup(cs));
+	}
+	
+	return(NULL);
+}
+
+void BGBCC_FR2E_UnpackRegFieldsArray(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
+	BGBCC_CCXL_RegisterInfo ***rregs, int *rn_regs,
+	byte *idat, int isz)
+{
+	BGBCC_CCXL_RegisterInfo *reg;
+	BGBCC_CCXL_RegisterInfo **regs;
+	byte *cs, *cse, *cs0, *cs1;
+	u32 fcc;
+	int sz, n;
+	int i, j, k;
+
+	cs0=idat;
+	cse=cs0+isz;
+
+	cs=cs0; n=0;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		if(fcc=='V')
+			n++;
+	}
+	
+	regs=bgbcc_malloc(n*sizeof(void *));
+	*rregs=regs;
+
+	cs=cs0; i=0;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+
+		reg=NULL;
+
+		if(fcc=='V')
+		{
+			reg=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+			BGBCC_FR2E_UnpackGlobalObj(ctx, img, reg, cs1, sz, fcc);
+			
+			regs[i]=reg;
+			i++;
+		}
+	}
+}
+
+void BGBCC_FR2E_UnpackGlobalObj(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img,
+	BGBCC_CCXL_RegisterInfo *gbl, byte *idat, int isz, int tag)
+{
+	byte *cs, *cse, *cs0, *cs1;
+	u32 fcc;
+	int sz, n;
+	int i, j, k;
+
+	cs=idat;
+	cse=cs+isz;
+
+	cs0=cs;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		
+		if(fcc=='n')
+		{
+			gbl->name=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+		}
+
+		if(fcc=='q')
+		{
+			gbl->qname=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+		}
+
+		if(fcc=='s')
+		{
+			gbl->sig=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+		}
+
+		if(fcc=='f')
+		{
+			gbl->flagstr=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+		}
+
+		if(fcc=='F')
+		{
+			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
+				&(gbl->fields), &(gbl->n_fields),
+				cs1, sz);
+		}
+
+		if(fcc=='A')
+		{
+			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
+				&(gbl->args), &(gbl->n_args),
+				cs1, sz);
+		}
+
+		if(fcc=='L')
+		{
+			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
+				&(gbl->locals), &(gbl->n_locals),
+				cs1, sz);
+		}
+
+		if(fcc=='R')
+		{
+			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
+				&(gbl->regs), &(gbl->n_regs),
+				cs1, sz);
+		}
+
+		if(fcc=='S')
+		{
+			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
+				&(gbl->statics), &(gbl->n_statics),
+				cs1, sz);
+		}
+	}
+}
+
+void BGBCC_FR2E_UnpackGlobalData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img)
+{
+	BGBCC_CCXL_RegisterInfo *gbl;
+	byte *cs, *cse, *cs0, *cs1;
+	u32 fcc;
+	int sz, n;
+	int i, j, k;
+
+	cs=img->gbldat;
+	cse=cs+img->sz_gbldat;
+
+	cs0=cs; n=1;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		n++;
+	}
+	
+	img->gbls=bgbcc_malloc((n+1)*sizeof(void *));
+	img->n_gbls=n;
+
+	cs=cs0; i=1;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		
+		gbl=NULL;
+
+		if(	(fcc==BGBCC_TCC_RI) ||
+			(fcc==BGBCC_TCC_FN) ||
+			(fcc==BGBCC_TCC_GV) ||
+			(fcc==BGBCC_TCC_SV)	)
+		{
+			gbl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+			BGBCC_FR2E_UnpackGlobalObj(ctx, img, gbl, cs1, sz, fcc);
+		}
+		
+		img->gbls[i]=gbl;
+		i++;
+	}
+}
+
+void BGBCC_FR2E_UnpackLiteralData(
+	BGBCC_TransState *ctx, BGBCC_FR2E_ImgState *img)
+{
+	BGBCC_CCXL_RegisterInfo *decl;
+	BGBCC_CCXL_LiteralInfo *lit;
+	byte *cs, *cse, *cs0, *cs1;
+	u32 fcc;
+	int sz, n;
+	int i, j, k;
+
+	cs=img->litdat;
+	cse=cs+img->sz_litdat;
+
+	cs0=cs; n=1;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		n++;
+	}
+	
+	img->lits=bgbcc_malloc((n+1)*sizeof(void *));
+	img->n_lits=n;
+
+	cs=cs0; i=1;
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		
+		decl=NULL;
+		lit=NULL;
+
+		if(	(fcc==BGBCC_TCC_LI) ||
+			(fcc==BGBCC_TCC_ST) ||
+			(fcc==BGBCC_TCC_UN) ||
+//			(fcc==BGBCC_TCC_CL) ||
+			(fcc==BGBCC_TCC_FN) ||
+			(fcc==BGBCC_TCC_TY)	)
+		{
+			lit=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+			decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+			BGBCC_FR2E_UnpackGlobalObj(ctx, img, decl, cs1, sz, fcc);
+			
+			lit->decl=decl;
+			lit->name=decl->qname;
+			lit->sig=decl->sig;
+		}
+		
+		img->lits[i]=lit;
+		i++;
+	}
+}
+
+void BGBCC_FR2E_LoadBufferFRB(
+	BGBCC_TransState *ctx, byte *buf, int bufsz)
+{
+	BGBCC_FR2E_ImgState *img;	
+	byte *cs, *cse, *cs0, *cs1;
+	byte *strs, *strs_e;
+	byte *stri, *stri_e;
+	byte *vops, *vops_e;
+	byte *vtrs, *vtrs_e;
+	byte *vosi, *vosi_e;
+	byte *litd, *litd_e;
+	byte *gbld, *gbld_e;
+	u32 fcc;
+	int sz;
+
+	
+	cs0=buf;
+	BGBCC_FR2E_ReadTag(&cs0, &fcc, &cs, &sz);
+	cse=cs+sz;
+	
+	if(fcc!=BGBCC_FCC_FR2E)
+	{
+		printf("BGBCC_FR2E_LoadBufferFRB: Root tag not FR2E\n");
+		return;
+	}
+	if(cs0>(buf+bufsz))
+	{
+		printf("BGBCC_FR2E_LoadBufferFRB: Root tag larger than input\n");
+		return;
+	}
+
+	img=bgbcc_malloc(sizeof(BGBCC_FR2E_ImgState));
+	memset(img, 0, sizeof(BGBCC_FR2E_ImgState));
+
+	strs=NULL;	strs_e=NULL;
+	stri=NULL;	stri_e=NULL;
+	vops=NULL;	vops_e=NULL;
+	vtrs=NULL;	vtrs_e=NULL;
+	litd=NULL;	litd_e=NULL;
+	gbld=NULL;	gbld_e=NULL;
+
+	while(cs<cse)
+	{
+		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		
+		if(fcc==BGBCC_FCC_strs)
+		{
+			strs=cs1;
+			strs_e=cs1+sz;
+			continue;
+		}
+
+		if(fcc==BGBCC_FCC_stri)
+		{
+			stri=cs1;
+			stri_e=cs1+sz;
+			continue;
+		}
+
+		if(fcc==BGBCC_FCC_vops)
+		{
+			vops=cs1;
+			vops_e=cs1+sz;
+			continue;
+		}
+
+		if(fcc==BGBCC_FCC_vtrs)
+		{
+			vtrs=cs1;
+			vtrs_e=cs1+sz;
+			continue;
+		}
+
+		if(fcc==BGBCC_FCC_vosi)
+		{
+			vosi=cs1;
+			vosi_e=cs1+sz;
+			continue;
+		}
+
+		if(fcc==BGBCC_FCC_LITD)
+		{
+			litd=cs1;
+			litd_e=cs1+sz;
+			continue;
+		}
+
+		if(fcc==BGBCC_FCC_GBLD)
+		{
+			gbld=cs1;
+			gbld_e=cs1+sz;
+			continue;
+		}
+	}
+
+	img->strtab=strs;
+	img->sz_strtab=strs_e-strs;
+
+	img->stridxd=stri;
+	img->sz_stridxd=stri_e-stri;
+
+	img->vopdat=vops;
+	img->sz_vopdat=vops_e-vops;
+
+	img->vtrdat=vtrs;
+	img->sz_vtrdat=vtrs_e-vtrs;
+
+	img->vosidat=vosi;
+	img->sz_vosidat=vosi_e-vosi;
+
+
+	img->litdat=litd;
+	img->sz_litdat=litd_e-litd;
+
+	img->gbldat=litd;
+	img->sz_gbldat=gbld_e-gbld;
+	
+	BGBCC_FR2E_UnpackStridxData(ctx, img);
+	BGBCC_FR2E_UnpackLiteralData(ctx, img);
+
+	BGBCC_FR2E_UnpackVosiData(ctx, img);
+	BGBCC_FR2E_UnpackGlobalData(ctx, img);
+	BGBCC_FR2E_UnpackVirtTraceData(ctx, img);
+
 }

@@ -627,6 +627,9 @@ int SMus_NoteOn(int ch, int d0, int d1)
 	TKGDI_MIDI_COMMAND t_mcmd;
 	TKGDI_MIDI_COMMAND *mcmd;
 
+	if((ch==8) || (ch==9))
+		ch^=1;
+	
 	mcmd=&t_mcmd;
 	mcmd->op=1;
 	mcmd->ch=ch;
@@ -642,6 +645,9 @@ int SMus_NoteOff(int ch, int d0, int d1)
 	TKGDI_MIDI_COMMAND t_mcmd;
 	TKGDI_MIDI_COMMAND *mcmd;
 
+	if((ch==8) || (ch==9))
+		ch^=1;
+	
 	mcmd=&t_mcmd;
 	mcmd->op=0;
 	mcmd->ch=ch;
@@ -657,6 +663,9 @@ int SMus_PitchBlend(int ch, int d0)
 	TKGDI_MIDI_COMMAND t_mcmd;
 	TKGDI_MIDI_COMMAND *mcmd;
 
+	if((ch==8) || (ch==9))
+		ch^=1;
+	
 	mcmd=&t_mcmd;
 	mcmd->op=2;
 	mcmd->ch=ch;
@@ -672,6 +681,9 @@ int SMus_Controller(int ch, int d0, int d1)
 	TKGDI_MIDI_COMMAND t_mcmd;
 	TKGDI_MIDI_COMMAND *mcmd;
 
+	if((ch==8) || (ch==9))
+		ch^=1;
+	
 	mcmd=&t_mcmd;
 	mcmd->op=3;
 	mcmd->ch=ch;
@@ -687,6 +699,9 @@ int SMus_ProgramChange(int ch, int d0)
 	TKGDI_MIDI_COMMAND t_mcmd;
 	TKGDI_MIDI_COMMAND *mcmd;
 
+	if((ch==8) || (ch==9))
+		ch^=1;
+	
 	mcmd=&t_mcmd;
 	mcmd->op=4;
 	mcmd->ch=ch;

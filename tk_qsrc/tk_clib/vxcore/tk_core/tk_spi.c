@@ -288,15 +288,47 @@ int TKSPI_WaitReady(void)
 	return(0);
 }
 
+u16 TKSPI_DoCrc16Step(u16 crc0, byte value)
+{
+	u16 crc;
+	int i;
+	crc=crc0^(((u16)value)<<8);
+	for(i=0; i<8; i++)
+	{
+		if(crc&0x8000)
+			{ crc=(crc<<1)^0x1021; }
+		else
+			{ crc=crc<<1; }
+	}
+	return(crc);
+}
+
+u16 TKSPI_Crc16(byte *data, u32 sz)
+{
+	byte *cs, *cse;
+	u16 crc;
+
+	crc=0xFFFF;
+	cs=data; cse=data+sz;
+	while (cs<cse)
+	{
+		crc=TKSPI_DoCrc16Step(crc, *cs++);
+	}
+	return(crc);
+}
+
 int TKSPI_WriteData(byte *buf, u32 len)
 {
 	byte *ct;
 	u32 count;
+	u16 crc;
 	int rv;
 	int n;
 	
 	if(!TKSPI_WaitReady())
 		return(-1);
+	
+	crc=TKSPI_Crc16(buf, len);
 	
 #if 0
 //	count=(1<<16);
@@ -328,6 +360,29 @@ int TKSPI_WriteData(byte *buf, u32 len)
 	}
 
 //	printf(">\n");
+
+	TKSPI_XchByte((crc>>8)&0xFF);
+	TKSPI_XchByte((crc>>0)&0xFF);
+
+//	TKSPI_XchByte(0xFF);
+//	TKSPI_XchByte(0xFF);
+
+	n=4096;
+	while(n--)
+	{
+		if(rv!=0xFF)
+			break;
+		rv=TKSPI_XchByte(0xFF);
+	}
+	
+	if((rv&0x1F)==0x05)
+	{
+		n=65536;
+		rv=TKSPI_XchByte(0xFF);
+//		while(rv==0x00)
+		while((rv==0x00) && (n--))
+			{ rv=TKSPI_XchByte(0xFF); }
+	}
 
 	TKSPI_XchByte(0xFF);
 	TKSPI_XchByte(0xFF);

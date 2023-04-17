@@ -17,6 +17,7 @@ module ModUsbBuf(
 	clock,			reset,
 	usb_clkdat_i,	usb_clkdat_o,
 	usb_clkdat_d,	usb_clkref,
+	usbLinkState3,
 	mmioInData,		mmioOutData,	mmioAddr,		
 	mmioOpm,		mmioOK
 	);
@@ -28,6 +29,8 @@ input[3:0]			usb_clkdat_i;
 output[3:0]			usb_clkdat_o;
 output[3:0]			usb_clkdat_d;
 output[1:0]			usb_clkref;
+
+output[1:0]			usbLinkState3;
 
 input[63:0]		mmioInData;
 output[63:0]	mmioOutData;
@@ -184,6 +187,8 @@ reg[1:0]	tLinkStateA;
 reg[1:0]	tLinkStateB;
 reg[1:0]	tNxtLinkStateA;
 reg[1:0]	tNxtLinkStateB;
+
+assign	usbLinkState3 = { tLinkStateB == 2'b11, tLinkStateA == 2'b11 };
 
 reg[1:0]	tLinkStateTxA;
 reg[1:0]	tLinkStateTxB;

@@ -11,7 +11,7 @@ module ModPs2Kb(
 //	ps2_data_i,		ps2_data_o,		ps2_data_d,
 	ps2_clkdat_i,	ps2_clkdat_o,	ps2_clkdat_d,
 	mmioInData,		mmioOutData,	mmioAddr,		
-	mmioOpm,		mmioOK
+	mmioOpm,		mmioOK,			mmioCsBase
 	);
 
 input			clock;
@@ -34,6 +34,8 @@ output[31:0]	mmioOutData;
 input[31:0]		mmioAddr;
 input[4:0]		mmioOpm;
 output[1:0]		mmioOK;
+
+input[11:0]		mmioCsBase;
 
 reg[31:0]		tMmioOutData;
 reg[1:0]		tMmioOK;

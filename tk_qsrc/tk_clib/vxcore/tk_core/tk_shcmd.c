@@ -2126,6 +2126,7 @@ int TKSH_TryLoad(char *img, char **args0)
 			tk_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
 
 			tk_printf("TKPE_SetupTaskForImage: GBR=%p\n", bootgbr);
+			tk_printf("TKPE_SetupTaskForImage: Entry=%p\n", bootptr);
 
 			sza=0;
 //			if(args)

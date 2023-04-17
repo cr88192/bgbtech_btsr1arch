@@ -2498,6 +2498,8 @@ TKGSTATUS TKGDI_ModifyAudioDevice(
 	void *ofmt)
 {
 	TKGDI_MIDI_COMMAND *mcmd;
+	TKGDI_MIDI_PATCHINFO *mpat;
+	byte *mdat;
 	int op, ch, d0, d1;
 
 	if(parm==TKGDI_FCC_mcmd)
@@ -2520,7 +2522,8 @@ TKGSTATUS TKGDI_ModifyAudioDevice(
 			TK_Midi_NoteOn(ch, d0, d1);
 			break;
 		case 2:
-			TK_Midi_PitchBlend(ch, d0<<6);
+//			TK_Midi_PitchBlend(ch, d0<<6);
+			TK_Midi_PitchBlend(ch, d0<<7);
 			break;
 		case 3:
 			TK_Midi_Controller(ch,  d0, d1);
@@ -2544,6 +2547,13 @@ TKGSTATUS TKGDI_ModifyAudioDevice(
 		default:
 			break;
 		}
+	}
+	
+	if(parm==TKGDI_FCC_mpat)
+	{
+		mpat=ifmt;
+		mdat=((byte *)ifmt)+mpat->cbSize;
+		TK_Midi_UploadPatch(mpat, mdat);
 	}
 
 	return(0);
@@ -2791,9 +2801,12 @@ int tk_syscall_rv_utxt(void *sobj, int umsg, void *pptr, void *args);
 __asm {
 .section .utext
 
+.balign	16
+
 tk_syscall_utxt:
 	nop
 	nop
+	keybrk_xg2
 	nop
 	nop
 	syscall	0
@@ -2802,7 +2815,9 @@ tk_syscall_utxt:
 	nop
 	nop
 	nop
+	keybrk_xg2
 	nop
+	keybrk_xg2
 	nop
 	nop
 	rts

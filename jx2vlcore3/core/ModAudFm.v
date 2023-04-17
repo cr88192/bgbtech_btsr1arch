@@ -5,6 +5,7 @@ FM Synth
 `include "CoreDefs.v"
 
 `include "ModFmScVol6.v"
+`include "ExConv_Al8Pcm12.v"
 
 module ModAudFm(
 	/* verilator lint_off UNUSED */
@@ -12,6 +13,7 @@ module ModAudFm(
 	outPcmL,	outPcmR,
 	busInData,	busOutData,
 	busAddr,	busOpm,		busOK,
+	cellIdx,	cellData,
 	timer4MHz,	timer1MHz,	timer64kHz,
 	timer1kHz,	timerNoise
 	);
@@ -26,6 +28,9 @@ output[11:0]	outPcmL;
 output[11:0]	outPcmR;
 output[31:0]	busOutData;
 output[1:0]		busOK;
+
+output[15:0]	cellIdx;
+input[127:0]	cellData;
 
 input			timer4MHz;
 input			timer1MHz;
@@ -60,6 +65,11 @@ reg[11:0]	tOutPcmL2;
 reg[11:0]	tOutPcmR2;
 assign		outPcmL		= tOutPcmL2;
 assign		outPcmR		= tOutPcmR2;
+
+reg[15:0]	tCellIdx;
+reg[15:0]	tCellIdx2;
+reg[127:0]	tCellData;
+assign		cellIdx	= tCellIdx2;
 
 wire		tDevCSel;
 // wire		tDevCSelCtr;
@@ -98,6 +108,10 @@ reg			chNxtClkLatch;
 
 reg[35:0]	chCtr0A;
 reg[35:0]	chCtr0B;
+reg[31:0]	chCtr1A;
+reg[31:0]	chCtr1B;
+reg[31:0]	chCtr2A;
+reg[31:0]	chCtr2B;
 
 reg[31:0]	chStsA;
 reg[31:0]	chStsB;
@@ -162,6 +176,9 @@ reg[11:0]	chTabPcmB3A;
 wire[5:0]		chTabScA;
 wire[5:0]		chTabScB;
 
+wire[11:0]		chTabPcmA1_Al8;
+ExConv_Al8Pcm12	mixAl8(chTabPcmA1, chTabPcmA1_Al8);
+
 wire[11:0]		chTabPcmScA2;
 wire[11:0]		chTabPcmScB2;
 ModFmScVol6		fmScA(
@@ -191,6 +208,8 @@ reg[3:0]	tNxtFlushRov;
 reg			tNxtFlushRovAdv;
 reg			tFlushRovAdv;
 reg			tFlushRovAdvL;
+
+reg			tPcmDoStep;
 
 initial
 begin
@@ -310,11 +329,75 @@ begin
 	begin
 //		$display("ModeFm: Step %d", chRov);
 
-		chNxtStsA[19:0]	= chStsA[19:0] + chCtr0A[19:0];
-		chNxtStsB[19:0]	= chStsB[19:0] + chCtr0B[19:0];
+		if(chCtr0A[20])
+		begin
+			{ tPcmDoStep, chNxtStsA[19:0] }	=
+				{ 1'b0, chStsA[19:0] } + { 1'b0, chCtr0A[19:0] };
 
-//		chNxtStsA[19:0]	= chStsA[19:0] + 20'h003FF;
-//		chNxtStsB[19:0]	= chStsB[19:0] + 20'h003FF;
+			chNxtStsB[15:0]	= chStsB[15:0] +
+				(tPcmDoStep ?
+					((chStsB[20] ^ chCtr0B[20]) ? 16'hFFFF : 16'h0001) :
+					16'h0000);
+
+//			{ chNxtStsB[15:0], chNxtStsA[19:0] }	=
+//				{ chStsB[15:0], chStsA[19:0] } +
+//				{ 16'h0, chCtr0A[19:0] };
+
+			if((chStsB[15:0] >= chCtr2A[31:16]) && !chCtr0A[21] &&
+				!(chStsB[20] ^ chCtr0B[20]))
+			begin
+				/* End of sample and not loop, Hold at end */
+				chNxtStsB[15:0] = chCtr2A[31:16];
+			end
+
+			if((chStsB[15:0] >= chCtr2A[31:16]) && !chCtr0A[21] &&
+				(chStsB[20] ^ chCtr0B[20]))
+			begin
+				/* End of sample and not loop, Reversed, Hold at 0 */
+				chNxtStsB[15:0] = 16'h00;
+			end
+
+			if((chStsB[15:0] >= chCtr2B[31:16]) && chCtr0A[21] &&
+				!(chStsB[20] ^ chCtr0B[20]))
+			begin
+				if(chCtr0B[21])
+				begin
+					/* Bidirectional Loop, Change Direction */
+					chNxtStsB[15:0] = chCtr2B[31:16];
+					chNxtStsB[20] = 1;
+				end
+				else
+				begin
+					/* End of Loop and Loop, Return Loop Start */
+					chNxtStsB[15:0] = chCtr2B[15:0];
+				end
+			end
+
+			if((chStsB[15:0] <= chCtr2B[15: 0]) && chCtr0A[21] &&
+				(chStsB[20] ^ chCtr0B[20]))
+			begin
+				if(chCtr0B[21])
+				begin
+					/* Bidirectional Loop, Change Direction */
+					chNxtStsB[15:0] = chCtr2B[15:0];
+					chNxtStsB[20] = 0;
+				end
+				else
+				begin
+					/* Before Start of Loop and Loop, Reversed,
+						Return Loop End */
+					chNxtStsB[15:0] = chCtr2B[31:16];
+				end
+			end
+
+		end
+		begin
+			chNxtStsA[19:0]	= chStsA[19:0] + chCtr0A[19:0];
+			chNxtStsB[19:0]	= chStsB[19:0] + chCtr0B[19:0];
+
+//			chNxtStsA[19:0]	= chStsA[19:0] + 20'h003FF;
+//			chNxtStsB[19:0]	= chStsB[19:0] + 20'h003FF;
+		end
 
 //		if(chRov==12)
 //			chNxtStsA[19:0]	= chStsA[19:0] + 20'h003FF;
@@ -332,6 +415,11 @@ begin
 //	chTabPcmD	= cbSinTab[chTabIxD];
 	chTabPcmB1		= chTabPcmB;
 	chTabPcmBiB1	= 0;
+
+	tCellIdx	= 0;
+
+	if(chCtr0A[20])
+		tCellIdx	= chCtr2A[15:0] + { 4'h0, chStsB[15: 4] };
 
 	case(chCtr0B[31:28])
 		4'h0: 		chTabPcmBiB1	= 8'h00;
@@ -464,6 +552,28 @@ begin
 		default: chTabPcmA1	= chTabPcmA;
 	endcase
 
+	if(chCtr0A[20])
+	begin
+		case(chStsB[3:0])
+			4'h0: chTabPcmA1	= tCellData[  7:  0];
+			4'h1: chTabPcmA1	= tCellData[ 15:  8];
+			4'h2: chTabPcmA1	= tCellData[ 23: 16];
+			4'h3: chTabPcmA1	= tCellData[ 31: 24];
+			4'h4: chTabPcmA1	= tCellData[ 39: 32];
+			4'h5: chTabPcmA1	= tCellData[ 47: 40];
+			4'h6: chTabPcmA1	= tCellData[ 55: 48];
+			4'h7: chTabPcmA1	= tCellData[ 63: 56];
+			4'h8: chTabPcmA1	= tCellData[ 71: 64];
+			4'h9: chTabPcmA1	= tCellData[ 79: 72];
+			4'hA: chTabPcmA1	= tCellData[ 87: 80];
+			4'hB: chTabPcmA1	= tCellData[ 95: 88];
+			4'hC: chTabPcmA1	= tCellData[103: 96];
+			4'hD: chTabPcmA1	= tCellData[111:104];
+			4'hE: chTabPcmA1	= tCellData[119:112];
+			4'hF: chTabPcmA1	= tCellData[127:120];
+		endcase
+	end
+
 	/* Clock Edge */
 
 `ifndef def_true
@@ -533,7 +643,8 @@ begin
 //	chPcmA = (chCtr0A[21]) ? chTabPcmA3 : (chTabPcmA3 + chTabPcmB3);
 	chPcmA = 
 		{ chTabPcmA3[11] ? 4'hF : 4'h0, chTabPcmA3[11:0] } + 
-		( (chCtr0A[21]) ? 0 :
+//		( (chCtr0A[21]) ? 0 :
+		( (chCtr0A[21] || chCtr0A[20]) ? 0 :
 			{ chTabPcmB3[11] ? 4'hF : 4'h0, chTabPcmB3[11:0] } );
 
 //	if(chRov[0])
@@ -739,6 +850,9 @@ begin
 	tBusInData		<= busInData;
 	tBusOpm			<= busOpm;
 
+	tCellIdx2		<= tCellIdx;
+	tCellData		<= cellData;
+
 //	fracTimer1MHz	<= nextFracTimer1MHz;
 //	fracTimer4MHz	<= nextFracTimer4MHz;
 //	fracTimer32MHz	<= nextFracTimer32MHz;
@@ -750,6 +864,10 @@ begin
 
 	chCtr0A			<= regCtr0A[chRov];
 	chCtr0B			<= regCtr0B[chRov];
+	chCtr1A			<= regCtr1A[chRov];
+	chCtr1B			<= regCtr1B[chRov];
+	chCtr2A			<= regCtr2A[chRov];
+	chCtr2B			<= regCtr2B[chRov];
 	chStsA			<= regStsA[chRov];
 	chStsB			<= regStsB[chRov];
 
@@ -806,12 +924,20 @@ begin
 `endif
 
 `ifdef def_true
-	chTabPcmA1B		<=
-		{ chTabPcmA1[7], chTabPcmA1, 3'b0 } -
-		{ chTabPcmBiA1[7], chTabPcmBiA1, 3'b0 };
-	chTabPcmB1B		<=
-		{ chTabPcmB1[7], chTabPcmB1, 3'b0 } -
-		{ chTabPcmBiB1[7], chTabPcmBiB1, 3'b0 };
+	if(chCtr0A[20])
+	begin
+		chTabPcmA1B		<= chTabPcmA1_Al8;
+		chTabPcmB1B		<= 0;
+	end
+	else
+	begin
+		chTabPcmA1B		<=
+			{ chTabPcmA1[7], chTabPcmA1, 3'b0 } -
+			{ chTabPcmBiA1[7], chTabPcmBiA1, 3'b0 };
+		chTabPcmB1B		<=
+			{ chTabPcmB1[7], chTabPcmB1, 3'b0 } -
+			{ chTabPcmBiB1[7], chTabPcmBiB1, 3'b0 };
+	end
 `endif
 
 //	chTabPcmA1B		<= { chTabPcmA1[7], chTabPcmA1, 3'b0 };

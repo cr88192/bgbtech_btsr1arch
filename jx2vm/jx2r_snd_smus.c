@@ -27,7 +27,7 @@ s64 BJX2_Interp_GetVirtualUsec(BJX2_Context *ctx);
 int SMus_CheckApplyRegisters();
 
 
-u32 jx2i_smus_ctrl[64];		//SMus Control Registers
+u32 jx2i_smus_ctrl[128];		//SMus Control Registers
 u32 jx2i_smus_accum[64];	//SMus Accumulators
 s64 jx2i_smus_usec;			//microsecond timer
 
@@ -43,6 +43,8 @@ short jx2i_smus_rgbuf_spos;
 short jx2i_smus_rgbuf_epos;
 
 u16		jx2i_smus_sintab[256];
+
+u32		*jx2i_smus_aupcmbuf;
 
 int SMus_ScaleWaveAttn(int val, int attn)
 {
@@ -69,28 +71,6 @@ void SMus_Step64k()
 	
 	for(i=0; i<32; i++)
 		jx2i_smus_accum[i]+=jx2i_smus_ctrl[i];
-
-#if 0
-	jx2i_smus_accum[ 0]+=jx2i_smus_ctrl[ 0];
-	jx2i_smus_accum[ 1]+=jx2i_smus_ctrl[ 1];
-	jx2i_smus_accum[ 2]+=jx2i_smus_ctrl[ 2];
-	jx2i_smus_accum[ 3]+=jx2i_smus_ctrl[ 3];
-	jx2i_smus_accum[ 4]+=jx2i_smus_ctrl[ 4];
-	jx2i_smus_accum[ 5]+=jx2i_smus_ctrl[ 5];
-	jx2i_smus_accum[ 6]+=jx2i_smus_ctrl[ 6];
-	jx2i_smus_accum[ 7]+=jx2i_smus_ctrl[ 7];
-	jx2i_smus_accum[ 8]+=jx2i_smus_ctrl[ 8];
-	jx2i_smus_accum[ 9]+=jx2i_smus_ctrl[ 9];
-	jx2i_smus_accum[10]+=jx2i_smus_ctrl[10];
-	jx2i_smus_accum[11]+=jx2i_smus_ctrl[11];
-	jx2i_smus_accum[12]+=jx2i_smus_ctrl[12];
-	jx2i_smus_accum[13]+=jx2i_smus_ctrl[13];
-	jx2i_smus_accum[14]+=jx2i_smus_ctrl[14];
-	jx2i_smus_accum[15]+=jx2i_smus_ctrl[15];
-
-//	jx2i_smus_accum[ 7]+=jx2i_smus_ctrl[ 7];
-//	jx2i_smus_accum[15]+=jx2i_smus_ctrl[15];
-#endif
 	
 	jx2i_smus_usec+=16;
 	SMus_CheckApplyRegisters();
@@ -100,27 +80,25 @@ void SMus_Step32k()
 {
 	int i;
 	
-	for(i=0; i<32; i++)
-		jx2i_smus_accum[i]+=jx2i_smus_ctrl[i]<<1;
+//	for(i=0; i<32; i++)
+//		jx2i_smus_accum[i]+=jx2i_smus_ctrl[i]<<1;
 
-#if 0
-	jx2i_smus_accum[ 0]+=jx2i_smus_ctrl[ 0]<<1;
-	jx2i_smus_accum[ 1]+=jx2i_smus_ctrl[ 1]<<1;
-	jx2i_smus_accum[ 2]+=jx2i_smus_ctrl[ 2]<<1;
-	jx2i_smus_accum[ 3]+=jx2i_smus_ctrl[ 3]<<1;
-	jx2i_smus_accum[ 4]+=jx2i_smus_ctrl[ 4]<<1;
-	jx2i_smus_accum[ 5]+=jx2i_smus_ctrl[ 5]<<1;
-	jx2i_smus_accum[ 6]+=jx2i_smus_ctrl[ 6]<<1;
-	jx2i_smus_accum[ 7]+=jx2i_smus_ctrl[ 7]<<1;
-	jx2i_smus_accum[ 8]+=jx2i_smus_ctrl[ 8]<<1;
-	jx2i_smus_accum[ 9]+=jx2i_smus_ctrl[ 9]<<1;
-	jx2i_smus_accum[10]+=jx2i_smus_ctrl[10]<<1;
-	jx2i_smus_accum[11]+=jx2i_smus_ctrl[11]<<1;
-	jx2i_smus_accum[12]+=jx2i_smus_ctrl[12]<<1;
-	jx2i_smus_accum[13]+=jx2i_smus_ctrl[13]<<1;
-	jx2i_smus_accum[14]+=jx2i_smus_ctrl[14]<<1;
-	jx2i_smus_accum[15]+=jx2i_smus_ctrl[15]<<1;
-#endif
+	for(i=0; i<16; i++)
+	{
+		if(jx2i_smus_ctrl[i*2+0]&0x00100000)
+		{
+			jx2i_smus_accum[i*2+0]+=(jx2i_smus_ctrl[i*2+0]&0x000FFFFF)<<1;
+			if(jx2i_smus_ctrl[i*2+1]&0x00100000)
+				jx2i_smus_accum[i*2+1]-=jx2i_smus_accum[i*2+0]>>20;
+			else
+				jx2i_smus_accum[i*2+1]+=jx2i_smus_accum[i*2+0]>>20;
+			jx2i_smus_accum[i*2+0]&=0x000FFFFF;
+		}else
+		{
+			jx2i_smus_accum[i*2+0]+=jx2i_smus_ctrl[i*2+0]<<1;
+			jx2i_smus_accum[i*2+1]+=jx2i_smus_ctrl[i*2+1]<<1;
+		}
+	}
 
 	jx2i_smus_usec+=32;
 	SMus_CheckApplyRegisters();
@@ -130,27 +108,25 @@ void SMus_Step16k()
 {
 	int i;
 	
-	for(i=0; i<32; i++)
-		jx2i_smus_accum[i]+=jx2i_smus_ctrl[i]<<2;
+//	for(i=0; i<32; i++)
+//		jx2i_smus_accum[i]+=jx2i_smus_ctrl[i]<<2;
 
-#if 0
-	jx2i_smus_accum[ 0]+=jx2i_smus_ctrl[ 0]<<2;
-	jx2i_smus_accum[ 1]+=jx2i_smus_ctrl[ 1]<<2;
-	jx2i_smus_accum[ 2]+=jx2i_smus_ctrl[ 2]<<2;
-	jx2i_smus_accum[ 3]+=jx2i_smus_ctrl[ 3]<<2;
-	jx2i_smus_accum[ 4]+=jx2i_smus_ctrl[ 4]<<2;
-	jx2i_smus_accum[ 5]+=jx2i_smus_ctrl[ 5]<<2;
-	jx2i_smus_accum[ 6]+=jx2i_smus_ctrl[ 6]<<2;
-	jx2i_smus_accum[ 7]+=jx2i_smus_ctrl[ 7]<<2;
-	jx2i_smus_accum[ 8]+=jx2i_smus_ctrl[ 8]<<2;
-	jx2i_smus_accum[ 9]+=jx2i_smus_ctrl[ 9]<<2;
-	jx2i_smus_accum[10]+=jx2i_smus_ctrl[10]<<2;
-	jx2i_smus_accum[11]+=jx2i_smus_ctrl[11]<<2;
-	jx2i_smus_accum[12]+=jx2i_smus_ctrl[12]<<2;
-	jx2i_smus_accum[13]+=jx2i_smus_ctrl[13]<<2;
-	jx2i_smus_accum[14]+=jx2i_smus_ctrl[14]<<2;
-	jx2i_smus_accum[15]+=jx2i_smus_ctrl[15]<<2;
-#endif
+	for(i=0; i<16; i++)
+	{
+		if(jx2i_smus_ctrl[i*2]&0x00100000)
+		{
+			jx2i_smus_accum[i*2+0]+=(jx2i_smus_ctrl[i*2+0]&0x000FFFFF)<<2;
+			if(jx2i_smus_ctrl[i*2+1]&0x00100000)
+				jx2i_smus_accum[i*2+1]-=jx2i_smus_accum[i*2+0]>>20;
+			else
+				jx2i_smus_accum[i*2+1]+=jx2i_smus_accum[i*2+0]>>20;
+			jx2i_smus_accum[i*2+0]&=0x000FFFFF;
+		}else
+		{
+			jx2i_smus_accum[i*2+0]+=jx2i_smus_ctrl[i*2+0]<<2;
+			jx2i_smus_accum[i*2+1]+=jx2i_smus_ctrl[i*2+1]<<2;
+		}
+	}
 
 	jx2i_smus_usec+=64;
 //	jx2i_smus_usec+=23;
@@ -299,6 +275,91 @@ int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 	return(v);
 }
 
+/** Get raw sample value for a voice waveform */
+int SMus_GetVoiceWaveRsVal_Pcm(int vnfl)
+{
+	u32 ctrl_a, ctrl_d, ctrl_c, ctrl_f;
+	int fn, acc, v, v0, v1, vn, vm, am;
+	int an, lofs, llen, lbeg, lend;
+	int ph0, ph1, ph2, ph3;
+	int x19, x18;
+	
+	vn=vnfl&31;
+	
+	ctrl_a=jx2i_smus_ctrl[vn+0];
+	ctrl_d=jx2i_smus_ctrl[vn+1];
+	ctrl_c=jx2i_smus_ctrl[64+vn+0];
+	ctrl_f=jx2i_smus_ctrl[64+vn+1];
+
+	an=(ctrl_a>>22)&63;
+	
+	if(!ctrl_a)
+	{
+		return(0);
+	}
+	
+	if(!jx2i_smus_aupcmbuf)
+	{
+		return(0);
+	}
+	
+	lofs=(ctrl_c>> 0)&0xFFFF;
+	llen=(ctrl_c>>16)&0xFFFF;
+	lbeg=(ctrl_f>> 0)&0xFFFF;
+	lend=(ctrl_f>>16)&0xFFFF;
+	
+	if(ctrl_a&0x00200000)
+	{
+		if(jx2i_smus_accum[vn+1]<lbeg)
+		{
+			if(ctrl_d&0x00100000)
+			{
+				jx2i_smus_accum[vn+1]=lbeg;
+				jx2i_smus_ctrl[vn+1]=ctrl_d&(~0x00100000);
+			}
+		}
+
+		if(jx2i_smus_accum[vn+1]>lend)
+		{
+			if(ctrl_d&0x00200000)
+			{
+				jx2i_smus_accum[vn+1]=lend;
+				jx2i_smus_ctrl[vn+1]=ctrl_d|0x00100000;
+			}else
+			{
+				jx2i_smus_accum[vn+1]=lbeg;
+			}
+		}
+	}else
+	{
+		if(ctrl_d&0x00100000)
+		{
+			if(jx2i_smus_accum[vn+1]>llen)
+				{ jx2i_smus_accum[vn+1]=0; }
+		}else
+		{
+			if(jx2i_smus_accum[vn+1]>llen)
+				{ jx2i_smus_accum[vn+1]=llen; }
+		}
+	}
+	
+	ph0=(lofs<<4)+(jx2i_smus_accum[vn+1]&0xFFFF);
+	ph1=(jx2i_smus_accum[vn+0]>>16)&15;
+
+//	ph1=jx2i_smus_aupcmbuf[ph0>>2];
+//	v=sblk0_dec(ph1>>((ph0&3)*8));
+
+	v0=((byte *)jx2i_smus_aupcmbuf)[ph0+0];
+	v1=((byte *)jx2i_smus_aupcmbuf)[ph0+1];
+	if(ctrl_d&0x00100000)
+		v1=((byte *)jx2i_smus_aupcmbuf)[ph0-1];
+	v0=sblk0_dec(v0);
+	v1=sblk0_dec(v1);
+	v=(((16-ph1)*v0)+(ph1*v1))>>4;
+
+	v=SMus_ScaleWaveAttn(v, an);
+	return(v);
+}
 
 
 /** Get raw sample value for a voice waveform */
@@ -392,34 +453,6 @@ int SMus_GetStepSample(int step)
 		v+=SMus_GetVoiceWaveRsVal[i](i);
 	}
 
-#if 0
-	v+=SMus_GetVoiceWaveRsVal[ 0]( 0);
-	v+=SMus_GetVoiceWaveRsVal[ 1]( 1);
-	v+=SMus_GetVoiceWaveRsVal[ 2]( 2);
-	v+=SMus_GetVoiceWaveRsVal[ 3]( 3);
-	v+=SMus_GetVoiceWaveRsVal[ 4]( 4);
-
-#if 1
-	v+=SMus_GetVoiceWaveRsVal[ 5]( 5);
-	v+=SMus_GetVoiceWaveRsVal[ 6]( 6);
-	v+=SMus_GetVoiceWaveRsVal[ 7]( 7);
-#endif
-
-#if 1
-	v+=SMus_GetVoiceWaveRsVal[ 8]( 8);
-	v+=SMus_GetVoiceWaveRsVal[ 9]( 9);
-	v+=SMus_GetVoiceWaveRsVal[10](10);
-	v+=SMus_GetVoiceWaveRsVal[11](11);
-	v+=SMus_GetVoiceWaveRsVal[12](12);
-#endif
-
-#if 1
-	v+=SMus_GetVoiceWaveRsVal[13](13);
-	v+=SMus_GetVoiceWaveRsVal[14](14);
-	v+=SMus_GetVoiceWaveRsVal[15](15);
-#endif
-#endif
-
 //	v=sin(jx2i_smus_usec*(220/1000000.0)*(2*M_PI))*4096;
 
 //	printf("%lld %d\n", jx2i_smus_usec, v);
@@ -429,12 +462,6 @@ int SMus_GetStepSample(int step)
 
 int smus_clamp16s(int v)
 {
-//	if(((s16)v)!=v)
-//	{
-//		if(v<0)
-//			return(-32768);
-//		return(32767);
-//	}
 	if(v<-32768)	v=-32768;
 	if(v> 32767)	v= 32767;
 	return(v);
@@ -442,20 +469,15 @@ int smus_clamp16s(int v)
 
 int smus_clamp14s(int v)
 {
-//	if(((s16)v)!=v)
-//	{
-//		if(v<0)
-//			return(-32768);
-//		return(32767);
-//	}
 	if(v<-8192)		v=-8192;
 	if(v> 8192)		v= 8192;
 	return(v);
 }
 
-int SMus_Init()
+int SMus_Init(BJX2_Context *ctx)
 {
 	static int init=0;
+	BJX2_MemSpan *sp;
 	int i, j, k;
 	
 	if(init)
@@ -475,6 +497,16 @@ int SMus_Init()
 		jx2i_smus_sintab[i]=sin((i/256.0)*2*M_PI)*32767+32768;
 	}
 
+	jx2i_smus_aupcmbuf = NULL;
+
+	sp=BJX2_MemSpanForName(ctx, "DRAM");
+	if(sp)
+	{
+		jx2i_smus_aupcmbuf=(u32 *)(((byte *)sp->data)+
+			((0x20800000-sp->modbase)&sp->modmask));
+//		jx2i_gfxcon_lconbuf=jx2i_gfxcon_conbuf+262144;
+	}
+
 	return(1);
 }
 
@@ -483,7 +515,7 @@ int SMus_Init()
 {
 	int i, j, k;
 	
-	SMus_Init();
+//	SMus_Init();
 	
 	for(i=0; i<16; i++)
 	{
@@ -502,7 +534,7 @@ int SMus_GetStepSamples(short *pcm, int nsamp, int step)
 {
 	int i, j, k;
 	
-	SMus_Init();
+//	SMus_Init();
 	
 	for(i=0; i<nsamp; i++)
 	{
@@ -534,6 +566,9 @@ u32 SMus_GetRegister(BJX2_Context *ctx, int reg)
 		if((reg&3)==1)
 //			rv=jx2i_smus_ctrl[16+vn];
 			rv=jx2i_smus_ctrl[32+vn];
+		if((reg&3)==2)
+			rv=jx2i_smus_ctrl[64+vn];
+
 		if((reg&3)==3)
 			rv=jx2i_smus_accum[vn]&0x000FFFFF;
 	}
@@ -554,11 +589,12 @@ int SMus_SetRegisterI(BJX2_Context *ctx, int reg, u32 val)
 		{
 			jx2i_smus_ctrl[vn]=val;
 			
-			if(!val)
-			{
-				SMus_GetVoiceWaveRsVal[vn]=SMus_GetVoiceWaveRsVal_Rst;
-				SMus_GetVoiceWaveRsVal_Mod[vn]=SMus_GetVoiceWaveRsVal_Mute;
-			}else
+//			if(!val)
+//			{
+//				SMus_GetVoiceWaveRsVal[vn]=SMus_GetVoiceWaveRsVal_Rst;
+//				SMus_GetVoiceWaveRsVal_Mod[vn]=SMus_GetVoiceWaveRsVal_Mute;
+//			}else
+			if(1)
 			{
 				SMus_GetVoiceWaveRsVal[vn]=
 					SMus_GetVoiceWaveRsVal_Dfl;
@@ -572,11 +608,27 @@ int SMus_SetRegisterI(BJX2_Context *ctx, int reg, u32 val)
 					SMus_GetVoiceWaveRsVal[(vn&0x1E)|1]=
 						SMus_GetVoiceWaveRsVal_Mute;
 				}
+
+				if(jx2i_smus_ctrl[vn&0x1E]&0x00100000)
+				{
+					SMus_GetVoiceWaveRsVal[(vn&0x1E)|0]=
+						SMus_GetVoiceWaveRsVal_Pcm;
+					SMus_GetVoiceWaveRsVal[(vn&0x1E)|1]=
+						SMus_GetVoiceWaveRsVal_Mute;
+				}
+			}
+
+			if(jx2i_smus_ctrl[vn&0x1E]==0)
+			{
+				SMus_GetVoiceWaveRsVal[vn]=SMus_GetVoiceWaveRsVal_Rst;
+				SMus_GetVoiceWaveRsVal_Mod[vn]=SMus_GetVoiceWaveRsVal_Mute;
 			}
 		}
 
 		if((reg&3)==1)
 			jx2i_smus_ctrl[32+vn]=val;
+		if((reg&3)==2)
+			jx2i_smus_ctrl[64+vn]=val;
 		if((reg&3)==3)
 			jx2i_smus_accum[vn]=val;
 		return(1);
@@ -621,7 +673,7 @@ int SMus_CheckApplyRegisters()
 	int reg;
 	int i, j;
 
-	SMus_Init();
+//	SMus_Init();
 
 	/* If no register write queue is empty, do nothing. */
 	if(jx2i_smus_rgbuf_spos==jx2i_smus_rgbuf_epos)

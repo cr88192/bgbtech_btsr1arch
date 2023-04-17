@@ -1896,6 +1896,9 @@ F0zz Instruction Block:
 *** F000_30E0 / DIV1		//Drop
 *** F000_30F0  LDTLB
 
+*** 3002_3000  KEYBRK_XG2	//NOP in Baseline, BREAK in XG2
+*** 3002_3030  KEYBRK_BASE	//NOP in XG2, BREAK in Baseline
+
 *** F002_3010  RTSU
 *** F002_3020  SYSCALL
 

@@ -13,12 +13,22 @@ Will use a TLV package.
 Words will be encoded in little-endian order, with structures being byte-aligned.
 
 TLV Chunks will begin with a 16-bit WORD, with LSB bits identifying the type:
-* zz00: WORD,TWOCC (16K)
-* zz01: DWORD,TWOCC (1GB)
-* zz10: DWORD,FOURCC (1GB)
-* z011: Small Tag (32B with a BYTE tag)
-** Tag is in bits (15:8)
-** Length is in bits (7:3)
+* / zz00: WORD,TWOCC (16K)
+* / zz01: DWORD,TWOCC (1GB)
+* / zz10: DWORD,FOURCC (1GB)
+* / z011: Small Tag (32B with a BYTE tag)
+** / Tag is in bits (15:8)
+** / Length is in bits (7:3)
+
+TLV Format has been changed:
+* Tag:ONECC,Sz:INVBYTE
+* Tag:TWOCC,Sz:INVWORD
+* Tag:FOURCC,Sz:INVDWORD
+
+Where, the size will be encoded as a bit-inverted value.
+* INVBYTE: Encodes 0..127 as FF..80
+* INVWORD: Encodes 0..32767 as FFFF..8000
+
 
 TWOCC tags will use case to identify Tag Type:
 * 'aa': Structure or Data
@@ -27,19 +37,19 @@ TWOCC tags will use case to identify Tag Type:
 ** Contains TLV tags.
 * A letter followed by a non-leter will behave as one of the above.
 
-Non-ASCII characters are not allowed in a TWOCC or FOURCC. A valid TWOCC or FOURCC will be padded as needed with spaces.
+Non-ASCII characters are not allowed in a ONECC, TWOCC or FOURCC. A valid TWOCC or FOURCC will be padded as needed with spaces.
 
 A narrower tag may be promoted to a wider one by padding with zeroes.
 As such, the value range of the tag will be able to identify the type of the tag if it had been promoted from a narrower type.
 
-Tags will include the tag header in their length, thus the small BYTE tag is limited to 30 bytes of data. If this limit is exceeded, it will be promoted to a TWOCC.
+/ Tags will include the tag header in their length, thus the small BYTE tag is limited to 30 bytes of data. If this limit is exceeded, it will be promoted to a TWOCC.
 
 BYTE tags:
 * 00: Reserved
 * 01..7F: Context Dependent
-* 80: Long String Attribute
-* 81: Short String Attribute
-* 82: Integer Attribute
+* 80: / Long String Attribute
+* 81: / Short String Attribute
+* 82: / Integer Attribute
 
 
 === Top-Level ===
@@ -83,6 +93,10 @@ FOURCC: 'vtrs'
 * Virtual Traces
 * Will consist of an array of serialized traces.
 * Each trace will exist as a span of opcodes.
+
+FOURCC: 'vosi'
+* Virtual Sequence Index
+* Will encode offsets into the vops and vtrs tables.
 
 
 Within LITD:
@@ -568,8 +582,8 @@ Virtual Traces will encode a span of Virtual Opcodes.
 
 Layout:
 * SVLI b_ops;		//base opcode
-* SVLI n_ops;		//number of opcodes
-* SVLI tr_fl;		//trace flags
+* SVLI n_ops;		//number of opcodes (positive)
+* SVLI tr_fl;		//trace flags (positive)
 
 The base for a trace will be relative to the start of the parent function.
 For normal traces, all three fields will be positive.
@@ -588,4 +602,21 @@ A function body header will be defined as:
 * SVLI gblid;		//Global-Index for function (neg index)
 
 The function header will use up 1 index in the trace table, and typically follow after the traces for the function.
+
+
+== Virtual Sequence Indices ==
+
+Layout:
+* UVLI b_vop;	//Starting Virtual Opcode index
+* UVLI b_vtr;	//Starting Virtual Trace index
+* UVLI n_vop;	//Number of Virtual Opcodes
+* UVLI n_vtr;	//Number of Virtual Traces
+* UVLI o_vop;	//Starting Virtual Opcode offset
+* UVLI o_vtr;	//Starting Virtual Trace offset
+* UVLI s_vop;	//Size of Virtual Opcodes
+* UVLI s_vtr;	//Size of Virtual Traces
+* UVLI gblid;	//Global index of owner
+* UVLI flags;	//Flags
+
+These will define the contents of a function (in terms of opcodes and traces) in terms of a span within the 'vops' and 'vtrs' table.
 

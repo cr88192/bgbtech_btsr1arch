@@ -1,0 +1,89 @@
+Idea:
+* Possible IR to function both as a VM format, and as a compiler IR.
+* Will encode things as a 3-register form.
+
+Instructions will consist of 1 or more 16 bit words:
+* Opcode Word
+* Argument Word(s)
+
+
+=== Dense Encoding ===
+
+Instruction Word:
+* zzzz-zzzz-yyyy-yy00
+** zzzz = Opcode
+** yyyy = Type
+
+Argument Word (3R):
+*                     dddd-dsss-sstt-ttt0  Packed 5-bit Register
+* dddd-dddd-ssss-ssss tttt-tttt-0000-0001  R0..R255
+* dddd-dddd-ssss-ssss iiii-iiii-iiii-0101  R0..R255, Imm12s
+
+Register Space (Nominal, 8-bit):
+* 00..7F: Locals (L0..L127)
+* 80: 'this' (A0)
+* 81..9F: Arguments (A1..A31)
+* A0..FF: Temporaries (Top Down, T95..T0)
+
+The Packed 5-bit form will use a subset.
+* 00..0F: L0..L15
+* 10..17: A0
+* 18..1F: T0..T7
+
+
+=== Low Density Encoding ===
+
+Instruction Format:
+* Instruction Word
+* Type Word(s)
+* Argument Word(s)
+* Immediate
+
+Instruction Word:
+* tttt-xxxx-mmmm-mmmm zzzz-zzzz-yyyy-yy01
+** zzzz = Opcode
+** yyyy = Operator
+** mmmm = Argument Mask
+** tttt = Immediate Type
+
+Argument Mask:
+*  1: DstType
+*  2: SrcType
+*  4: Dest
+*  8: SrcA
+* 16: SrcB
+* 32: SrcC
+* 64: SrcD
+
+Immediate Type:
+* 0: None
+* 1: S32
+* 2: U32
+* 3: Label
+* 4: String
+* 5: Call Args
+* 6: Jump Table
+* 7: Struct+Field ID
+
+Type Word (Compact):
+* yyyy-yyyy-yyyy-ppp0
+** yyyy: Base Type
+** ppp: Pointer Level
+*** 000: T
+*** 001: *T
+*** 010: **T
+*** 011: ***T
+*** 100: &T
+*** 101: T[]
+*** 110: T[0]
+*** 111: *T[0]
+
+* ssss-ssss-ssss-pppp yyyy-yyyy-yyyy-0001
+** ssss = Array Size
+
+Argument Word:
+* iiii-iiii-ssss-aat0
+** iiii = Base Index
+** ssss = Sequence (Temp/Arg/Local)
+** aa = Temp/Arg/Local/Other
+** t = Type Present
