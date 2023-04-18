@@ -8,6 +8,8 @@
 
 #include "h2def.h"
 
+#include <tkgdi/tkgdi.h>
+
 #include <stdarg.h>
 
 #ifndef BASEWIDTH
@@ -296,6 +298,8 @@ int vid_flashblend;
 
 u16 *vid_lastscreen;
 
+u16 *screen_tmp;
+
 int vid_clamp255(int v)
 {
 	if(v<0)return(0);
@@ -325,6 +329,7 @@ void I_InitGraphics (void)
 	tk_con_disable();
 	
 	screen=malloc(BASEWIDTH*BASEHEIGHT*2);
+	screen_tmp=malloc(BASEWIDTH*BASEHEIGHT*2);
 	
 	vid_lastscreen=malloc(BASEWIDTH*BASEHEIGHT*2);
 	
@@ -1880,6 +1885,88 @@ void I_DrawFramerate()
 #endif
 }
 
+// TKGDI_BITMAPINFOHEADER i_t_dibinfo;
+TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
+TKGHDC i_hDc;
+
+void I_InitTkGdi()
+{
+	if(i_dibinfo)
+		return;
+		
+//	i_dibinfo = &i_t_dibinfo;
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+
+//	i_dibinfo->biWidth=640;
+//	i_dibinfo->biHeight=400;
+
+//	i_dibinfo->biWidth=800;
+//	i_dibinfo->biHeight=600;
+
+	i_dibinfo->biBitCount=16;
+
+//	tk_printf("  1\n", hDc);
+
+	i_hDc=tkgCreateDisplay(i_dibinfo);
+
+#if 0
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+	
+	i_hDc=tkgCreateWindow(i_hDc, "Doom", 0, 160, 100, i_dibinfo);
+
+	tk_printf("  hDc=%d\n", i_hDc);
+#endif
+
+	i_dibinfo->biHeight=-200;
+}
+
+#if 1
+void I_FinishUpdate (void)
+{
+	int i, j, k;
+
+	I_InitTkGdi();
+
+	I_DrawFramerate();
+
+	if(!screen)
+		return;
+
+	if(vid_flashblend)
+//	if(0)
+	{
+//		screen_tmp
+
+		for(i=0; i<((BASEWIDTH*BASEHEIGHT)>>2); i++)
+		{
+			((u64 *)screen_tmp)[i]=VID_BlendFlash4x(
+				((u64 *)screen)[i], vid_flashblend);
+		}
+
+		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_tmp);
+	}else
+	{
+		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen);
+	}
+
+//	vid_frnum++;
+
+	IN_Commands();
+	
+	M_ClearBox(dirtybox);
+//	R_ClearCZBuf();
+	
+	for(i=0; i<25; i++)
+		r_colmask[i]=0;
+}
+#endif
+
+#if 0
 void I_FinishUpdate (void)
 {
 	u32 *conbufa;
@@ -2185,6 +2272,7 @@ void I_FinishUpdate (void)
 	for(i=0; i<25; i++)
 		r_colmask[i]=0;
 }
+#endif
 
 #if 0
 void I_FinishUpdate (void)

@@ -16,7 +16,7 @@ BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib
 # -DNORMALUNIX
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
-LDFLAGS=$(TK_LDFL) -lvxcore64
+LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
 
 #		i_system.c		\
 #		i_sound.c		\

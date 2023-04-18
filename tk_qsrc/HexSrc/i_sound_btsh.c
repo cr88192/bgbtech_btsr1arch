@@ -49,6 +49,8 @@ rcsid[] = "$Id: i_unix.c,v 1.5 1997/02/03 22:45:10 b1 Exp $";
 
 #include "h2def.h"
 
+#include <tkgdi/tkgdi.h>
+
 extern sfxinfo_t S_sfx[];
 
 int snd_Channels;
@@ -773,6 +775,10 @@ I_SubmitSound(void)
 	I_SubmitSound2(0);
 }
 
+TKGHSND hSndDev;
+TKGDI_WAVEFORMATEX i_snd_t_info;
+TKGDI_WAVEFORMATEX *i_snd_info = NULL;
+
 void
 I_SubmitSound2(int extra)
 {
@@ -785,6 +791,22 @@ I_SubmitSound2(int extra)
 	int n, ns, dt, musvol;
 	// Write it to DSP device.
 //	write(audio_fd, mixbuffer, SAMPLECOUNT*BUFMUL);
+
+	if(!i_snd_info)
+	{
+		i_snd_info = &i_snd_t_info;
+		memset(i_snd_info, 0, sizeof(TKGDI_WAVEFORMATEX));
+		
+		i_snd_info->wFormatTag=TKGDI_WAVE_FORMAT_PCM;
+		i_snd_info->nChannels=2;
+		i_snd_info->nSamplesPerSec=16000;
+		i_snd_info->nAvgBytesPerSec=16000*4;
+		i_snd_info->nBlockAlign=4;
+		i_snd_info->wBitsPerSample=16;
+		i_snd_info->cbSize=sizeof(TKGDI_WAVEFORMATEX);
+
+		hSndDev = tkgCreateAudioDevice(0, TKGDI_FCC_auds, i_snd_info);
+	}
 
 //	n=SAMPLECOUNT*1.451247;
 	n=(SAMPLECOUNT*1486)>>10;
@@ -829,11 +851,13 @@ I_SubmitSound2(int extra)
 //		SoundDev_WriteStereoSamples(mixbuffer, SAMPLECOUNT);
 		if(extra&1)
 		{
-			SoundDev_WriteStereoSamples2(mixbuf2, n, n);
+//			SoundDev_WriteStereoSamples2(mixbuf2, n, n);
+			tkgWriteSamples(hSndDev, mixbuf2, n, n);
 		}else
 		{
 //			SoundDev_WriteStereoSamples(mixbuf2, ns);
-			SoundDev_WriteStereoSamples2(mixbuf2, ns, n);
+//			SoundDev_WriteStereoSamples2(mixbuf2, ns, n);
+			tkgWriteSamples(hSndDev, mixbuf2, ns, n);
 		}
 		SoundDev_Submit();
 	}
