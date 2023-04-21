@@ -201,6 +201,9 @@ int TK_Midi_WadLookupLump(byte *wad, u64 lname, int *roffs, int *rsz)
 	int dofs, dsz;
 	int i, j, k;
 
+	if(!wad)
+		return(-1);
+
 	if((*(u32 *)wad)!=TKGDI_FCC_IWAD)
 	{
 		tk_printf("TK_Midi_WadLookupLump: Not IWAD\n");
@@ -541,13 +544,18 @@ int TK_Midi_Init()
 		tk_printf("TK_Midi_Init: Patch WAD Live\n");
 	}
 
-	i=TK_Midi_WadLookupLump(tk_midi_patchwad, TKGDI_ECC_PATCHIDX, &lofs, &lsz);
-	if(i>=0)
+	if(tk_midi_patchwad)
 	{
-		tk_midi_patchwad_index=tk_midi_patchwad+lofs;
-		tk_midi_patchwad_indexsz=lsz>>4;
+		i=TK_Midi_WadLookupLump(tk_midi_patchwad,
+			TKGDI_ECC_PATCHIDX, &lofs, &lsz);
+		if(i>=0)
+		{
+			tk_midi_patchwad_index=tk_midi_patchwad+lofs;
+			tk_midi_patchwad_indexsz=lsz>>4;
 
-		tk_printf("TK_Midi_Init: Patch WAD Index ofs=%d sz=%d\n", lofs, lsz);
+			tk_printf("TK_Midi_Init: Patch WAD Index ofs=%d sz=%d\n",
+				lofs, lsz);
+		}
 	}
 
 	return(0);
@@ -656,8 +664,9 @@ int TK_Midi_NoteOff(int ch, int d0, int d1)
 				v1=tk_midi_regs[vn1*4+0];
 
 //				if(ch==8)
-				if(!(v1&0x00200000))
-					tk_midi_chanvn[ch]=0xFF;
+
+//				if(!(v1&0x00200000))
+//					tk_midi_chanvn[ch]=0xFF;
 			}
 
 			v1=tk_midi_regs[vn2*4+3];

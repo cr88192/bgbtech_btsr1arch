@@ -1779,8 +1779,10 @@ F0zz Instruction Block:
 *** F0nm_1eFD  -
 
 ** F0nm_1ezE ? (RGB 2R Block)
-*** F0nm_1e0E  RGB5SHR1		Rm, Rn		//(RGB) RGB555 Shift Right
-*** F0nm_1e1E  PMORT{L/Q}	Rm, Rn		//(GSV) Morton Shuffle
+*** F0nm_1g0E  RGB5SHR1		Rm, Rn		//(RGB) RGB555 Shift Right
+*** F0nm_1G0E ? RGB5MINMAX	Rm, Rn		//(RGB) RGB555 Min and Max
+*** F0nm_1g1E  PMORT.L		Rm, Rn		//(GSV) Morton Shuffle
+*** F0nm_1G1E  PMORT.Q		Rm, Rn		//(GSV) Morton Shuffle
 *** F0nm_1g2E  RGB5PCK32	Rm, Rn		//(RGB) RGB555 Pack from RGB32
 *** F0nm_1G2E  RGB5PCK64	Rm, Rn		//(RGB) RGB555 Pack from RGB64
 *** F0nm_1g3E  RGB5UPCK32	Rm, Rn		//(RGB) RGB555 Unpack to RGB32
@@ -1837,6 +1839,15 @@ F0zz Instruction Block:
 *** F0nm_1gBF  PRCPA.F		Rm, Rn		//(GSVF) RCPA (2x FP32)
 *** F0nm_1GBF  PRELU.F		Rm, Rn		//(GSVF) RELU (2x FP32)
 
+*** F0nm_1gCF ? PCVTH2AL	Rm, Rn		//(GSVF) Packed FP16 to A-Law (4x)
+*** F0nm_1GCF  -
+*** F0nm_1gDF ? PCVTAL2H	Rm, Rn		//(GSVF) Packed A-Law to FP16 (4x)
+*** F0nm_1GDF  -
+*** F0nm_1gEF  -
+*** F0nm_1GEF  -
+*** F0nm_1gFF  -
+*** F0nm_1GFF  -
+
 
 * F0zz_2zzz (More 3R Ops)
 ** 
@@ -1846,10 +1857,8 @@ F0zz Instruction Block:
 ** F0nm_2Go1  PSUB.L	Rm, Ro, Rn			//(GSV) Packed SUB DWord
 ** F0nm_2eo2  SHAR{Q}	Rm, Ro, Rn			//Shift Arithmetic Right
 ** F0nm_2eo3  SHLR{Q}	Rm, Ro, Rn			//Shift Logical Right
-
 ** F0nm_2go4  PCSELT.W	Rm, Ro, Rn			//(GSV) Packed CSELT (Word)
 ** F0nm_2Go4  PCSELT.L	Rm, Ro, Rn			//(GSV) Packed CSELT (DWord)
-
 ** F0nm_2go5  PADD.F	Rm, Ro, Rn			//(GSVF) Packed FADD (2x Float)
 ** F0nm_2Go5  PADDX.F	Xm, Xo, Xn			//(GSVFX) Packed FADD (4x Float)
 ** F0nm_2go6  PSUB.F	Rm, Ro, Rn			//(GSVF) Packed FSUB (2x Float)
@@ -2118,7 +2127,7 @@ F0zz Instruction Block:
 ** F0nm_7Go4  DIVU.L	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Unsigned)
 ** F0nm_7go5  MODS.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
 ** F0nm_7Go5  MODU.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
-** F0nm_7go6  -
+** F0nm_7go6 ? RGB5CCENC	Rm, Ro, Rn		//(RGB-CCE)	Color-Cell Enc Helper
 ** F0nm_7Go6  -
 ** F0nm_7go7  -
 ** F0nm_7Go7  -

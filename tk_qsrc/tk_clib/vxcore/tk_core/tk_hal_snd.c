@@ -230,6 +230,36 @@ int sblk0_enc(int v)
 	return(v1);
 }
 
+#if 1
+u32 sblk0_enc4x(u64 v);
+
+__asm {
+sblk0_enc4x:
+	PCVTSW2H	R4, R6
+	MOV			0xC200C200C200C200, R3
+	PADD.H		R6, R3, R7
+	PCVTH2AL	R7, R2
+	
+//	BREAK
+	
+	RTS
+};
+
+#else
+u32 sblk0_enc4x(u64 v)
+{
+	u32 v1;
+	int s0, s1, s2, s3;
+	
+	s0=sblk0_enc((s16)(v>> 0));
+	s1=sblk0_enc((s16)(v>>16));
+	s2=sblk0_enc((s16)(v>>32));
+	s3=sblk0_enc((s16)(v>>48));
+	v1=s0|(s1<<8)|(s2<<16)|(s3<<24);
+	return(v1);
+}
+#endif
+
 static volatile u32 *snd_dmabuf=NULL;
 static byte snd_dmarov=0;
 static u32 snd_dmapred=0;
@@ -241,6 +271,7 @@ int TK_GetApproxMHz(void);
 void TKGDI_Snd_Submit(void)
 {
 	static int olddma;
+	u64 v0, v1, v2;
 //	short *sbufl, *sbufr;
 	short *buf;
 	int dma, idma, tdma;
@@ -291,12 +322,26 @@ void TKGDI_Snd_Submit(void)
 		j=(i+b1)&8191;
 		k=(d1+i)&8191;
 
+#if 0
 		s0=sblk0_enc(buf[(j+0)*2+0]);
 		s1=sblk0_enc(buf[(j+1)*2+0]);
 		s2=sblk0_enc(buf[(j+2)*2+0]);
 		s3=sblk0_enc(buf[(j+3)*2+0]);
 
 		snd_dmabuf[k>>2]=s0|(s1<<8)|(s2<<16)|(s3<<24);
+#endif
+
+#if 1
+		l=(j+0)*2;
+		s0=buf[l+0];	s1=buf[l+2];
+		s2=buf[l+4];	s3=buf[l+6];
+		v0=	(((u64)(s0&0xFFFF))<< 0) |
+			(((u64)(s1&0xFFFF))<<16) |
+			(((u64)(s2&0xFFFF))<<32) |
+			(((u64)(s3&0xFFFF))<<48) ;
+		snd_dmabuf[k>>2]=sblk0_enc4x(v0);
+#endif
+
 	}
 #endif
 

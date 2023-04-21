@@ -123,10 +123,14 @@
 `define jx2_enable_convrgb32f		//RGBA32F Conversion Op
 // `define jx2_enable_convrgb30a		//RGB30A Conversion Op
 
-`define jx2_enable_convfp16
+`define jx2_enable_convfp16				//FP16 conversion ops
+`define jx2_enable_convfp16al			//FP16 <-> A-Law Conversion Ops
 
 `define jx2_enable_conv_vubtof16		//Packed Byte/Word <-> F16/F32
 `define jx2_enable_conv_psqrta
+
+`define jx2_enable_rgb5minmax			//RGB5 Min/Max Op
+`define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
 
 `endif
 

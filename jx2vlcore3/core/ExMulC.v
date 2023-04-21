@@ -32,6 +32,10 @@
 `include "ExBtcUab1.v"
 `endif
 
+`ifdef jx2_enable_rgb5btcenccc
+`include "ExBtcEncCc.v"
+`endif
+
 module ExMulC(
 	clock,		reset,
 	valRs,		valRt,		valRm,
@@ -74,6 +78,17 @@ ExBtcUab1	uab1(
 	valRs, valRt[3:0],
 	idUIxt,
 	tValUab1);
+`endif
+
+`ifdef jx2_enable_rgb5btcenccc
+wire[31:0]		tValEncCc1;
+ExBtcEncCc		encCc1(
+	clock, reset,
+	valRs,
+	valRt[31:0],
+	valRm[31:0],
+	idUIxt,
+	tValEncCc1);
 `endif
 
 // reg[31:0]		tValRsSx;
@@ -175,9 +190,20 @@ begin
 //	if(tIdUIxt2[4])
 	if(tIdUIxt2[5])
 	begin
+		case(tIdUIxt2[5:0])
 `ifdef jx2_enable_btcuab1
-		tMul3C = tValUab1;
+			JX2_UCIX_MUL3_BLKUAB1, JX2_UCIX_MUL3_BLKUAB2: begin
+				tMul3C = tValUab1;
+			end
 `endif
+
+`ifdef jx2_enable_rgb5btcenccc
+			JX2_UCIX_MUL3_ENCCC1: begin
+				tMul3C = { UV32_00, tValEncCc1 };
+			end
+`endif
+			default: begin	end
+		endcase
 	end
 
 	tValRn	= tMul3C;

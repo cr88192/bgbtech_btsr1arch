@@ -92,6 +92,15 @@ S1, S2, S3 -> V
 `include "ExConv_Fp32Pck16.v"
 `endif
 
+`ifdef jx2_enable_convfp16al
+`include "ExConv_Fp16PckAl.v"
+`include "ExConv_Fp16UPckAl.v"
+`endif
+
+`endif
+
+`ifdef jx2_enable_rgb5minmax
+`include "ExConv_Rgb5MinMax.v"
 `endif
 
 `ifdef jx2_enable_conv_vubtof16
@@ -297,6 +306,29 @@ assign		tRegFp32Pck16 =
 
 `endif
 
+wire[31:0]	tRegFp16PckAL;
+wire[63:0]	tRegFp16UPckAL;
+
+`ifdef jx2_enable_convfp16al
+ExConv_Fp16PckAl	conv_fp16pckAl0(regValRs[15: 0], tRegFp16PckAL[ 7: 0]);
+ExConv_Fp16PckAl	conv_fp16pckAl1(regValRs[31:16], tRegFp16PckAL[15: 8]);
+ExConv_Fp16PckAl	conv_fp16pckAl2(regValRs[47:32], tRegFp16PckAL[23:16]);
+ExConv_Fp16PckAl	conv_fp16pckAl3(regValRs[63:48], tRegFp16PckAL[31:24]);
+
+ExConv_Fp16UPckAl	conv_fp16upckAl0(regValRs[ 7: 0], tRegFp16UPckAL[15: 0]);
+ExConv_Fp16UPckAl	conv_fp16upckAl1(regValRs[15: 8], tRegFp16UPckAL[31:16]);
+ExConv_Fp16UPckAl	conv_fp16upckAl2(regValRs[23:16], tRegFp16UPckAL[47:32]);
+ExConv_Fp16UPckAl	conv_fp16upckAl3(regValRs[31:24], tRegFp16UPckAL[63:48]);
+`else
+assign	tRegFp16PckAL = UV32_00;
+assign	tRegFp16UPckAL = UV64_00;
+`endif
+
+`endif
+
+`ifdef jx2_enable_rgb5minmax
+wire[31:0]	tRegRgb5MinMax;
+ExConv_Rgb5MinMax	rgb5minmax(regValRs, tRegRgb5MinMax);
 `endif
 
 `ifdef jx2_enable_conv_vubtof16
@@ -1830,9 +1862,23 @@ begin
 //			tRegConvVal = { UV32_00, tRegFp32Pck16 };
 			tRegConvVal = tRegFp32Pck16;
 		end
+		
+		JX2_UCIX_CONV_FP16PCKAL: begin
+			tRegConvVal = { UV32_00, tRegFp16PckAL };
+		end
+		JX2_UCIX_CONV_FP16UPCKAL: begin
+			tRegConvVal = tRegFp16UPckAL;
+		end
 `endif
 
 `endif
+
+`ifdef jx2_enable_rgb5minmax
+		JX2_UCIX_CONV_RGB5MINMAX: begin
+			tRegConvVal = { UV32_00, tRegRgb5MinMax };
+		end
+`endif
+
 
 `ifdef jx2_do_btcutx_alu
 `ifdef jx2_enable_btcutx

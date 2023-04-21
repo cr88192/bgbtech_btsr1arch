@@ -3012,6 +3012,13 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			opw2=0x1A00|((rn&15)<<4)|((rm&15)<<0);			break;
 #endif
 
+		case BGBCC_SH_NMID_RGB5SHR1:
+			opw1=0xF000|ex;
+			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_RGB5MINMAX:
+			opw1=0xF080|ex;
+			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
+
 		case BGBCC_SH_NMID_RGB5PCK32:
 			opw1=0xF002|ex;
 			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
@@ -3030,6 +3037,13 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		case BGBCC_SH_NMID_RGB32UPCK64:
 			opw1=0xF085|ex;
 			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
+
+		case BGBCC_SH_NMID_PCVTH2AL:
+			opw1=0xF00C|ex;
+			opw2=0x1F00|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_PCVTAL2H:
+			opw1=0xF00D|ex;
+			opw2=0x1F00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_SWAPB:
 			opw1=0xF000|ex;
@@ -3823,6 +3837,11 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 		case BGBCC_SH_NMID_MODUL:
 			opw1=0xF080|ex|(rt&15);
 			opw2=0x7500|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_RGB5CCENC:
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x7600|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
 		case BGBCC_SH_NMID_FDIV:

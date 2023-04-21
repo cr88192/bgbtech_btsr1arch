@@ -1586,7 +1586,8 @@ void BJX2_Op_CMPXHI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 int BJX2_OpI_SByteToF16ALU(int va)
 {
-	return(0x4000|((va&0xFF)<<2));
+//	return(0x4000|((va&0xFF)<<2));
+	return(0x4000|(((va&0xFF)^0x80)<<2));
 }
 
 int BJX2_OpI_UByteToF16ALU(int va)
@@ -1596,7 +1597,16 @@ int BJX2_OpI_UByteToF16ALU(int va)
 
 int BJX2_OpI_SWordToF16ALU(int va)
 {
-	return(0x4000|((va&0xFFFF)>>6));
+	int v;
+	
+	va&=0xFFFF;
+	
+	v=0x4000|(((va&0xFFFF)^0x8000)>>6);
+//	if(va)
+//		printf("BJX2_OpI_SWordToF16ALU: %04X %04X\n", va, v);
+
+//	return(0x4000|((va&0xFFFF)>>6));
+	return(v);
 }
 
 int BJX2_OpI_UWordToF16ALU(int va)
@@ -1606,7 +1616,8 @@ int BJX2_OpI_UWordToF16ALU(int va)
 
 int BJX2_OpI_SWordToF32ALU(int va)
 {
-	return(0x40000000U|((va&0xFFFF)<<7));
+//	return(0x40000000U|((va&0xFFFF)<<7));
+	return(0x40000000U|(((va&0xFFFF)^0x8000)<<7));
 }
 
 int BJX2_OpI_UWordToF32ALU(int va)

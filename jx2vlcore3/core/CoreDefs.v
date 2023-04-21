@@ -994,6 +994,8 @@ parameter[5:0] JX2_UCIX_CONV_RGB30APCK64F	= 6'h24;	//RGB64F->RGB30A
 parameter[5:0] JX2_UCIX_CONV_RGB30AUPCK64F	= 6'h25;	//RGB30A->RGB64F
 parameter[5:0] JX2_UCIX_CONV_FP16PCK32		= 6'h26;	//2x FP32->FP16
 
+parameter[5:0] JX2_UCIX_CONV_RGB5MINMAX		= 6'h27;	//RGB5 Min and Max
+
 // parameter[5:0] JX2_UCIX_CONV_FP16UPCK32L	= 6'h26;	//2x FP16->FP32 (Lo)
 // parameter[5:0] JX2_UCIX_CONV_FP16UPCK32H	= 6'h27;	//2x FP16->FP32 (Hi)
 // parameter[5:0] JX2_UCIX_CONV_FP16PCK32		= 6'h28;	//2x FP32->FP16
@@ -1002,6 +1004,9 @@ parameter[5:0] JX2_UCIX_CONV_FP16UPCK32L	= 6'h28;	//2x FP16->FP32 (Lo)
 parameter[5:0] JX2_UCIX_CONV_FP16UPCK32H	= 6'h29;	//2x FP16->FP32 (Hi)
 parameter[5:0] JX2_UCIX_CONV_FP16EUPCK32L	= 6'h2A;	//2x FP16E->FP32 (Lo)
 parameter[5:0] JX2_UCIX_CONV_FP16EUPCK32H	= 6'h2B;	//2x FP16E->FP32 (Hi)
+
+parameter[5:0] JX2_UCIX_CONV_FP16PCKAL		= 6'h2C;	//4x FP16 -> A-Law
+parameter[5:0] JX2_UCIX_CONV_FP16UPCKAL		= 6'h2D;	//4x A-Law -> FP16
 
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX1		= 6'h08;	//Get pixel, UTX1
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX2		= 6'h09;	//Get pixel, UTX2
@@ -1049,7 +1054,6 @@ parameter[5:0] JX2_UCIX_CONV2_VF16TOUB	= 6'h38;	//
 parameter[5:0] JX2_UCIX_CONV2_VUWTOF16	= 6'h39;	//
 parameter[5:0] JX2_UCIX_CONV2_VF16TOSB	= 6'h3A;	//
 parameter[5:0] JX2_UCIX_CONV2_VSWTOF16	= 6'h3B;	//
-
 parameter[5:0] JX2_UCIX_CONV2_VF32TOUW	= 6'h3C;	//
 parameter[5:0] JX2_UCIX_CONV2_VF16TOUW	= 6'h3D;	//
 parameter[5:0] JX2_UCIX_CONV2_VF32TOSW	= 6'h3E;	//
@@ -1087,6 +1091,7 @@ parameter[5:0] JX2_UCIX_MUL3_DMAC3U	= 6'h15;		//
 
 parameter[5:0] JX2_UCIX_MUL3_BLKUAB1	= 6'h2C;	//Get Sample, UAB1
 parameter[5:0] JX2_UCIX_MUL3_BLKUAB2	= 6'h2D;	//Get Sample, UAB2
+parameter[5:0] JX2_UCIX_MUL3_ENCCC1		= 6'h2E;	//Encode Color-Cell
 
 
 parameter[5:0] JX2_UCIX_QMUL_MULS	= 6'h00;		//

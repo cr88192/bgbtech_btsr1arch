@@ -699,6 +699,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_REGCHKG		0x17A		//
 #define BJX2_NMID_REGCHKC		0x17B		//
 #define BJX2_NMID_EMUBREAK		0x17C		//
+#define BJX2_NMID_RGB5MINMAX	0x17D		//
+#define BJX2_NMID_PCVTH2AL		0x17E		//
+#define BJX2_NMID_PCVTAL2H		0x17F		//
 
 // #define BJX2_NMID_PLDCXH		0x17A		//
 // #define BJX2_NMID_PSTCXH		0x17B		//
@@ -711,12 +714,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_LEATW			0x185	//
 #define BJX2_NMID_LEATL			0x186	//
 #define BJX2_NMID_LEATQ			0x187	//
-
 #define BJX2_NMID_BNDCMPB		0x188	//
 #define BJX2_NMID_BNDCMPW		0x189	//
 #define BJX2_NMID_BNDCMPL		0x18A	//
 #define BJX2_NMID_BNDCMPQ		0x18B	//
-
 #define BJX2_NMID_MOVZT			0x18C		//
 #define BJX2_NMID_XMOVZT		0x18D		//
 #define BJX2_NMID_MOVST			0x18E		//
@@ -730,6 +731,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PSHMULH		0x195		//
 #define BJX2_NMID_PSHSUBH		0x196		//
 #define BJX2_NMID_PSHSUBXF		0x197		//
+
+#define BJX2_NMID_RGB5CCENC		0x198		//
 
 
 

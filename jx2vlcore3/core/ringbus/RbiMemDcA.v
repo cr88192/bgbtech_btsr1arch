@@ -670,12 +670,19 @@ reg				tDoFlushTlb;
 reg				tDoFlushL;
 reg				tDoFlushTlbL;
 
-reg				tTlbMissInh;
+(* max_fanout = 400 *)
+	reg				tTlbMissInh;
+
 reg				tNxtTlbMissInh;
 reg				tNxtTlbMissInh2;
-reg				tSkipTlb;
-reg				tNxtSkipTlb;
-reg				tReqAddrIsVirt;
+
+(* max_fanout = 400 *)
+	reg			tSkipTlb;
+(* max_fanout = 400 *)
+	reg			tNxtSkipTlb;
+
+(* max_fanout = 400 *)
+	reg			tReqAddrIsVirt;
 reg				tWasMissInh;
 
 reg[2:0]		tVolatileInhSet;	//Volatile Inhibit Cycles (Set)

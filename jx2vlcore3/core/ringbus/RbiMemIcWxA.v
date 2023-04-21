@@ -396,14 +396,21 @@ reg				tNxtInPcRiscv;
 reg[3:0]		tInPmode;
 reg[3:0]		tNxtInPmode;
 
-reg				tTlbMissInh;
+(* max_fanout = 200 *)
+	reg				tTlbMissInh;
+
 reg				tNxtTlbMissInh;
 reg				tClrTlbMissInh;
 reg				tClrTlbMissInhL;
 
-reg				tSkipTlb;
-reg				tNxtSkipTlb;
-reg				tSkipMiss;
+(* max_fanout = 400 *)
+	reg			tSkipTlb;
+
+(* max_fanout = 400 *)
+	reg			tNxtSkipTlb;
+(* max_fanout = 400 *)
+	reg			tSkipMiss;
+
 reg				tNxtSkipMiss;
 
 reg				tReqAddrIsVirt;
