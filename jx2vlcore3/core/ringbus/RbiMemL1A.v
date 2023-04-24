@@ -421,7 +421,8 @@ assign		ifMemNodeId		= { unitNodeId[7:2], 2'b01 };
 assign		dfMemNodeId		= { unitNodeId[7:2], 2'b10 };
 assign		tlbMemNodeId	= { unitNodeId[7:2], 2'b11 };
 
-reg		tSkipTlb;
+(* max_fanout = 400 *)
+	reg		tSkipTlb;
 
 reg		tMsgLatch;
 reg		tNxtMsgLatch;
@@ -456,8 +457,9 @@ begin
 	tBridgeOpmI		= tTlbOpmO;
 	tBridgeSeqI		= tTlbSeqO;
 
-`ifdef def_true
+// `ifdef def_true
 // `ifndef def_true
+`ifdef jx2_l1a_ena_tlbskip
 	/* Check if L1 D$ request should skip over L1 I$ and TLB. */
 	tSkipTlb		= 0;
 	if(tTlbOpmO[7:0] == JX2_RBI_OPM_IDLE)

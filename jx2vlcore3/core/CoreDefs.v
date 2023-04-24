@@ -1008,6 +1008,9 @@ parameter[5:0] JX2_UCIX_CONV_FP16EUPCK32H	= 6'h2B;	//2x FP16E->FP32 (Hi)
 parameter[5:0] JX2_UCIX_CONV_FP16PCKAL		= 6'h2C;	//4x FP16 -> A-Law
 parameter[5:0] JX2_UCIX_CONV_FP16UPCKAL		= 6'h2D;	//4x A-Law -> FP16
 
+parameter[5:0] JX2_UCIX_CONV_SWAPE2B		= 6'h2E;	//Swap Every 2 Bits
+parameter[5:0] JX2_UCIX_CONV_SWAPE4B		= 6'h2F;	//Swap Every 4 Bits
+
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX1		= 6'h08;	//Get pixel, UTX1
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX2		= 6'h09;	//Get pixel, UTX2
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX3H		= 6'h0A;	//Get pixel, UTX3H
@@ -1089,9 +1092,11 @@ parameter[5:0] JX2_UCIX_MUL3_DMAC3S	= 6'h14;		//
 parameter[5:0] JX2_UCIX_MUL3_DMAC3U	= 6'h15;		//
 
 
+parameter[5:0] JX2_UCIX_MUL3_ENCCC1		= 6'h2A;	//Encode Color-Cell
+parameter[5:0] JX2_UCIX_MUL3_ENCCC2		= 6'h2B;	//Encode Color-Cell
 parameter[5:0] JX2_UCIX_MUL3_BLKUAB1	= 6'h2C;	//Get Sample, UAB1
 parameter[5:0] JX2_UCIX_MUL3_BLKUAB2	= 6'h2D;	//Get Sample, UAB2
-parameter[5:0] JX2_UCIX_MUL3_ENCCC1		= 6'h2E;	//Encode Color-Cell
+parameter[5:0] JX2_UCIX_MUL3_RGB5MINMAX	= 6'h2F;	//Encode Color-Cell
 
 
 parameter[5:0] JX2_UCIX_QMUL_MULS	= 6'h00;		//

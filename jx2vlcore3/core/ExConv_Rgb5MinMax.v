@@ -66,17 +66,17 @@ begin
 
 `ifdef def_true
 	tValY0 = {
-		tValI0[ 9], tValI0[ 8], tValI0[15], tValI0[ 4], 
-		tValI0[ 7], tValI0[14], tValI0[ 3], tValI0[ 6] };
+		tValI0[ 9], tValI0[ 8], tValI0[14], tValI0[ 4], 
+		tValI0[ 7], tValI0[13], tValI0[ 3], tValI0[ 6] };
 	tValY1 = {
-		tValI1[ 9], tValI1[ 8], tValI1[15], tValI1[ 4], 
-		tValI1[ 7], tValI1[14], tValI1[ 3], tValI1[ 6] };
+		tValI1[ 9], tValI1[ 8], tValI1[14], tValI1[ 4], 
+		tValI1[ 7], tValI1[13], tValI1[ 3], tValI1[ 6] };
 	tValY2 = {
-		tValI2[ 9], tValI2[ 8], tValI2[15], tValI2[ 4], 
-		tValI2[ 7], tValI2[14], tValI2[ 3], tValI2[ 6] };
+		tValI2[ 9], tValI2[ 8], tValI2[14], tValI2[ 4], 
+		tValI2[ 7], tValI2[13], tValI2[ 3], tValI2[ 6] };
 	tValY3 = {
-		tValI3[ 9], tValI3[ 8], tValI3[15], tValI3[ 4], 
-		tValI3[ 7], tValI3[14], tValI3[ 3], tValI3[ 6] };
+		tValI3[ 9], tValI3[ 8], tValI3[14], tValI3[ 4], 
+		tValI3[ 7], tValI3[13], tValI3[ 3], tValI3[ 6] };
 `endif
 
 	tValGt01 = tValY0 > tValY1;

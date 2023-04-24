@@ -89,7 +89,9 @@
 `define jx2_l1i_nohash			//Disable L1 address hashing.
 
 
-// `define jx2_enable_dualcore			//Enable Second Core
+`ifdef jx2_xc7a200
+`define jx2_enable_dualcore			//Enable Second Core
+`endif
 
 `define jx2_use_ringbus			//Use Ring-Bus
 
@@ -129,7 +131,8 @@
 `define jx2_enable_conv_vubtof16		//Packed Byte/Word <-> F16/F32
 `define jx2_enable_conv_psqrta
 
-`define jx2_enable_rgb5minmax			//RGB5 Min/Max Op
+// `define jx2_enable_rgb5minmax_alu			//RGB5 Min/Max Op (ALU/CONV2)
+`define jx2_enable_rgb5minmax_mul			//RGB5 Min/Max Op (CCENC)
 `define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
 
 `endif

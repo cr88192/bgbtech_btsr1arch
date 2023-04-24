@@ -140,6 +140,8 @@
 
 `define jx2_reg_spdecswap			//Swap SP and SSP in Decode
 
+// `define jx2_l1a_ena_tlbskip			//L1A: Allow requests to skip over TLB
+
 
 // `ifndef def_true
 `ifdef def_true

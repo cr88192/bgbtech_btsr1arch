@@ -2004,6 +2004,11 @@ F0zz Instruction Block:
 *** F0nm_3g38 BNDCMP.Q	Rm, Rn				//Bounds Compare (QWord Scale)
 *** F0nm_3G38 -
 
+*** F0nm_3g48 ? SWAPE2B.L	Rm, Rn				//Swap Every 2-bits
+*** F0nm_3G48 -
+*** F0nm_3g58 ? SWAPE4B.L	Rm, Rn				//Swap Every 4-bits
+*** F0nm_3G58 -
+
 ** F0nm_3ez9  (Reserved 2R Block Space)
 ** F0nm_3ezA  (Reserved 2R Block Space)
 ** F0nm_3ezB  (Reserved 2R Block Space)

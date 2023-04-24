@@ -4855,12 +4855,15 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			break;
 
 		case 0x6:	/* F0ez_76zz */
-			if(eq)
-				break;
 			op->nmid=BJX2_NMID_RGB5CCENC;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_RGB5CCENC_RegRegReg;
 			op->fl|=BJX2_OPFL_NOWEX;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_RGB5CCENC2;
+				break;
+			}
 			break;
 		}
 		break;

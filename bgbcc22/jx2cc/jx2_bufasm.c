@@ -1199,6 +1199,9 @@ int nmid;
 {"brk",		BGBCC_SH_NMID_BRK},
 {"movrt",	BGBCC_SH_NMID_MOVRT},
 {"movca.l",	BGBCC_SH_NMID_MOVCAL},
+
+{"shad.l",	BGBCC_SH_NMID_SHAD},
+{"shld.l",	BGBCC_SH_NMID_SHLD},
 {"shad.q",	BGBCC_SH_NMID_SHADQ},
 {"shld.q",	BGBCC_SH_NMID_SHLDQ},
 
@@ -1463,7 +1466,9 @@ int nmid;
 
 {"rgb5shr1",	BGBCC_SH_NMID_RGB5SHR1},
 {"rgb5minmax",	BGBCC_SH_NMID_RGB5MINMAX},
-{"rgb5ccenc",	BGBCC_SH_NMID_RGB5CCENC},
+{"rgb5ccenc",	BGBCC_SH_NMID_RGB5CCENC1},
+{"rgb5ccenc1",	BGBCC_SH_NMID_RGB5CCENC1},
+{"rgb5ccenc2",	BGBCC_SH_NMID_RGB5CCENC2},
 
 {"rgb5pck32",	BGBCC_SH_NMID_RGB5PCK32},
 {"rgb5pck64",	BGBCC_SH_NMID_RGB5PCK64},

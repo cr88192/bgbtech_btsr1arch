@@ -198,11 +198,18 @@ begin
 `endif
 
 `ifdef jx2_enable_rgb5btcenccc
-			JX2_UCIX_MUL3_ENCCC1: begin
+			JX2_UCIX_MUL3_ENCCC1,
+			JX2_UCIX_MUL3_ENCCC2,
+			JX2_UCIX_MUL3_RGB5MINMAX:
+			begin
 				tMul3C = { UV32_00, tValEncCc1 };
 			end
 `endif
-			default: begin	end
+
+			default:
+			begin
+				tMul3C = UV64_XX;
+			end
 		endcase
 	end
 

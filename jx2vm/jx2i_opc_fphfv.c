@@ -3123,6 +3123,32 @@ int bjx2_rgb5y_apx8(int vi)
 	return(y);
 }
 
+int bjx2_rgb5_shr1(int vi)
+{
+	return((vi&0x7BDE)>>1);
+}
+
+/* 5/8*vi + 3/8*vj */
+int bjx2_rgb5_blend1p2(int vi, int vj)
+{
+	int vk;
+	vk=	((vi&0x7BDE)>>1) +
+		((vj&0x7BDE)>>1) ;
+	return(vk);
+}
+
+/* 5/8*vi + 3/8*vj */
+int bjx2_rgb5_blend5p8(int vi, int vj)
+{
+	int vk;
+	vk=
+		((vi&0x7BDE)>>1) +
+		((vj&0x739C)>>2) +
+		((vi&0x6318)>>3) +
+		((vj&0x6318)>>3) ;
+	return(vk);
+}
+
 void BJX2_Op_RGB5MINMAX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u16 vi0, vi1, vi2, vi3;
@@ -3178,7 +3204,7 @@ void BJX2_Op_RGB5CCENC_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64	vs, vt, vp, vn;
 	u16 vi0, vi1, vi2, vi3;
 	byte vy0, vy1, vy2, vy3;
-	u16 cmin, cmax;
+	u16 cmin, cmax, chi, clo, cmi;
 	byte ymin, ymax, ylo, yhi, ymi;
 	int i, j, k;
 
@@ -3188,12 +3214,24 @@ void BJX2_Op_RGB5CCENC_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	
 	cmin=(vt>>16)&0xFFFF;
 	cmax=(vt>> 0)&0xFFFF;
+	chi=bjx2_rgb5_blend5p8(cmax, cmin);
+	clo=bjx2_rgb5_blend5p8(cmin, cmax);
+	cmi=bjx2_rgb5_blend1p2(cmin, cmax);
 	ymin=bjx2_rgb5y_apx8(cmin);
 	ymax=bjx2_rgb5y_apx8(cmax);
 
-	ymi=(ymin+ymax)>>1;
-	ylo=(ymin+ymi )>>1;
-	yhi=(ymax+ymi )>>1;
+	yhi=bjx2_rgb5y_apx8(chi);
+	ylo=bjx2_rgb5y_apx8(clo);
+	ymi=bjx2_rgb5y_apx8(cmi);
+
+//	ymi=(ymin+ymax)>>1;
+//	ylo=(ymin+ymi )>>1;
+//	yhi=(ymax+ymi )>>1;
+
+//	ylo=(5*ymin+3*ymax)>>3;
+//	yhi=(5*ymax+3*ymin)>>3;
+
+//	ylo=
 
 	vi0=(vs>> 0)&0xFFFF;
 	vi1=(vs>>16)&0xFFFF;
@@ -3205,12 +3243,23 @@ void BJX2_Op_RGB5CCENC_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vy3=bjx2_rgb5y_apx8(vi3);
 
 	k=0;
-	k=(k<<2) | ((vy3>ymi)?((vy3>yhi)?3:2):((vy3>ylo)?1:0));
-	k=(k<<2) | ((vy2>ymi)?((vy2>yhi)?3:2):((vy2>ylo)?1:0));
-	k=(k<<2) | ((vy1>ymi)?((vy1>yhi)?3:2):((vy1>ylo)?1:0));
-	k=(k<<2) | ((vy2>ymi)?((vy0>yhi)?3:2):((vy0>ylo)?1:0));
 
-	vn=((vp>>8)&0x00FFFFFF)|(((u64)k)<<24);
+	if(op->nmid==BJX2_NMID_RGB5CCENC2)
+	{
+		k=(k<<2) | ((vy0>ymi)?((vy0>yhi)?3:2):((vy0>ylo)?1:0));
+		k=(k<<2) | ((vy1>ymi)?((vy1>yhi)?3:2):((vy1>ylo)?1:0));
+		k=(k<<2) | ((vy2>ymi)?((vy2>yhi)?3:2):((vy2>ylo)?1:0));
+		k=(k<<2) | ((vy3>ymi)?((vy3>yhi)?3:2):((vy3>ylo)?1:0));
+	}else
+	{
+		k=(k<<2) | ((vy3>ymi)?((vy3>yhi)?3:2):((vy3>ylo)?1:0));
+		k=(k<<2) | ((vy2>ymi)?((vy2>yhi)?3:2):((vy2>ylo)?1:0));
+		k=(k<<2) | ((vy1>ymi)?((vy1>yhi)?3:2):((vy1>ylo)?1:0));
+		k=(k<<2) | ((vy0>ymi)?((vy0>yhi)?3:2):((vy0>ylo)?1:0));
+	}
+
+//	vn=((vp>>8)&0x00FFFFFF)|(((u64)k)<<24);
+	vn=(vp<<8)|k;
 
 	ctx->regs[op->rn]=vn;
 }
@@ -3225,6 +3274,9 @@ int bjx2_opi_cvth2al(int vi)
 	if(vi&0x4000)
 		v2=0x7F;
 	v2|=((vi>>8)&0x80);
+	
+	if(v2==0x80)
+		v2=0x00;
 	
 //	if(vi!=0)
 //		printf("bjx2_opi_cvth2al: %04X->%02X\n", vi, v2);

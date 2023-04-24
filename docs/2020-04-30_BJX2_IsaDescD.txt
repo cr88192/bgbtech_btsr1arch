@@ -2781,29 +2781,31 @@ Color-Cell Encode Helper.
 
 This operation will classify the pixel colors relative to the endpoints, generating a selector between 00 (Minimum) and 11 (Maximum).
 
-The low order 32 bits of Rn will be shifted right by 8 bits, with the new endpoint selectors being added to bits (31:24).
+/ The low order 32 bits of Rn will be shifted right by 8 bits, with the new endpoint selectors being added to bits (31:24).
+
+The low order 32 bits of Rn will be shifted left by 8 bits, with the new endpoint selectors being added to bits (7:0).
 
 This operation will be Lane 1 only.
 
 
 === SWxP.x (GSV) ===
 
-* F0nm_3e07  SWAP.B		Rm, Rn		//(1032) Swap E/O Bytes (Low Four Bytes)
-* F0nm_3e17  SWAP.W		Rm, Rn		//(1032) Swap E/O Words (All words)
-* F0nm_3e27  SWAP.8B	Rm, Rn		//       Swap E/O Bytes (All Eight Bytes)
-* F0nm_3e37  SWAP.L		Rm, Rn		//(2301) Swap DWord
-* F0nm_3e47  SWAP.LB	Rm, Rn		//(1023) Swap Low Two Bytes (GSV)
-* F0nm_3e57  SWAP.LW	Rm, Rn		//(1023) Swap Low Two Words (GSV)
-* F0nm_3e67  SWCP.LB	Rm, Rn		//(0023) Copy Low Bytes (GSV)
-* F0nm_3e77  SWCP.LW	Rm, Rn		//(0023) Copy Low Words (GSV)
-* F0nm_3e87  SWAP.MB	Rm, Rn		//(2103) Swap Low and Middle Byte (GSV)
-* F0nm_3e97  SWAP.MW	Rm, Rn		//(2103) Swap Low and Middle Word (GSV)
-* F0nm_3eA7  SWCP.MB	Rm, Rn		//(0103) Copy Low To Middle Byte (GSV)
-* F0nm_3eB7  SWCP.MW	Rm, Rn		//(0103) Copy Low To Middle Word (GSV)
-* F0nm_3eC7  SWAP.HB	Rm, Rn		//(3120) Swap Low and High Byte (GSV)
-* F0nm_3eD7  SWAP.HW	Rm, Rn		//(3120) Swap Low and High Word (GSV)
-* F0nm_3eE7  SWCP.HB	Rm, Rn		//(0120) Copy Low To High Bytes (GSV)
-* F0nm_3eF7  SWCP.HW	Rm, Rn		//(0120) Copy Low To High Word (GSV)
+* F0nm_3g07  SWAP.B		Rm, Rn		//(1032) Swap E/O Bytes (Low Four Bytes)
+* F0nm_3g17  SWAP.W		Rm, Rn		//(1032) Swap E/O Words (All words)
+* F0nm_3g27  SWAP.8B	Rm, Rn		//       Swap E/O Bytes (All Eight Bytes)
+* F0nm_3g37  SWAP.L		Rm, Rn		//(2301) Swap DWord
+* F0nm_3g47  SWAP.LB	Rm, Rn		//(1023) Swap Low Two Bytes (GSV)
+* F0nm_3g57  SWAP.LW	Rm, Rn		//(1023) Swap Low Two Words (GSV)
+* F0nm_3g67  SWCP.LB	Rm, Rn		//(0023) Copy Low Bytes (GSV)
+* F0nm_3g77  SWCP.LW	Rm, Rn		//(0023) Copy Low Words (GSV)
+* F0nm_3g87  SWAP.MB	Rm, Rn		//(2103) Swap Low and Middle Byte (GSV)
+* F0nm_3g97  SWAP.MW	Rm, Rn		//(2103) Swap Low and Middle Word (GSV)
+* F0nm_3gA7  SWCP.MB	Rm, Rn		//(0103) Copy Low To Middle Byte (GSV)
+* F0nm_3gB7  SWCP.MW	Rm, Rn		//(0103) Copy Low To Middle Word (GSV)
+* F0nm_3gC7  SWAP.HB	Rm, Rn		//(3120) Swap Low and High Byte (GSV)
+* F0nm_3gD7  SWAP.HW	Rm, Rn		//(3120) Swap Low and High Word (GSV)
+* F0nm_3gE7  SWCP.HB	Rm, Rn		//(0120) Copy Low To High Bytes (GSV)
+* F0nm_3gF7  SWCP.HW	Rm, Rn		//(0120) Copy Low To High Word (GSV)
 
 Swap or Copy elements within a register.
 

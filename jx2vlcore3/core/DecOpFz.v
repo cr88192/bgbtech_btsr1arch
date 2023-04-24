@@ -2119,11 +2119,19 @@ begin
 						opIty		= JX2_ITY_UB;
 						opUCmdIx	= JX2_UCIX_CONV_RGBSHR1;
 
-`ifdef jx2_enable_rgb5minmax
+`ifdef jx2_enable_rgb5minmax_alu
 						if(opExQ)
 						begin
 							opNmid		= JX2_UCMD_CONV2_RR;
 							opUCmdIx	= JX2_UCIX_CONV_RGB5MINMAX;
+						end
+`endif
+
+`ifdef jx2_enable_rgb5minmax_mul
+						if(opExQ)
+						begin
+							opNmid		= JX2_UCMD_MUL3;
+							opUCmdIx	= JX2_UCIX_MUL3_RGB5MINMAX;
 						end
 `endif
 					end
@@ -3354,6 +3362,28 @@ begin
 						end
 					end
 
+					4'h4: begin
+						opNmid		= JX2_UCMD_CONV_RR;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_CONV_SWAPE2B;
+						if(opExQ)
+						begin
+//							opIty		= JX2_ITY_XL;
+						end
+					end
+
+					4'h5: begin
+						opNmid		= JX2_UCMD_CONV_RR;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_CONV_SWAPE4B;
+						if(opExQ)
+						begin
+//							opIty		= JX2_ITY_XL;
+						end
+					end
+
 					default: begin end
 				endcase
 			end
@@ -4078,8 +4108,7 @@ begin
 				
 				if(opExQ)
 				begin
-//					opNmid		= JX2_UCMD_QMULDIV;
-//					opUCmdIx	= JX2_UCIX_QMUL_MULS;
+					opUCmdIx	= JX2_UCIX_MUL3_ENCCC2;
 				end
 			end
 `endif

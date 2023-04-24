@@ -629,7 +629,8 @@ defparam cpu1.isAltCore = 0;
 defparam cpu2.isAltCore = 1;
 
 defparam cpu1.isGpu = 0;
-defparam cpu2.isGpu = 1;
+//defparam cpu2.isGpu = 1;
+defparam cpu2.isGpu = 0;
 
 // parameter	DDR_IS_DDR3 = 0;
 // defparam ddr.DDR_IS_DDR3 = DDR_IS_DDR3;

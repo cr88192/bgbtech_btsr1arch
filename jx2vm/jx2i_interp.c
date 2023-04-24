@@ -1575,6 +1575,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_EMUBREAK:	s0="EMUBREAK";	break;
 
 	case BJX2_NMID_RGB5MINMAX:	s0="RGB5MINMAX";	break;
+	case BJX2_NMID_RGB5CCENC:	s0="RGB5CCENC";		break;
+	case BJX2_NMID_RGB5CCENC2:	s0="RGB5CCENC2";	break;
 	case BJX2_NMID_PCVTH2AL:	s0="PCVTH2AL";		break;
 	case BJX2_NMID_PCVTAL2H:	s0="PCVTAL2H";		break;
 

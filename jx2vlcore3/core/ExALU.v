@@ -99,7 +99,7 @@ S1, S2, S3 -> V
 
 `endif
 
-`ifdef jx2_enable_rgb5minmax
+`ifdef jx2_enable_rgb5minmax_alu
 `include "ExConv_Rgb5MinMax.v"
 `endif
 
@@ -326,7 +326,7 @@ assign	tRegFp16UPckAL = UV64_00;
 
 `endif
 
-`ifdef jx2_enable_rgb5minmax
+`ifdef jx2_enable_rgb5minmax_alu
 wire[31:0]	tRegRgb5MinMax;
 ExConv_Rgb5MinMax	rgb5minmax(regValRs, tRegRgb5MinMax);
 `endif
@@ -1873,7 +1873,7 @@ begin
 
 `endif
 
-`ifdef jx2_enable_rgb5minmax
+`ifdef jx2_enable_rgb5minmax_alu
 		JX2_UCIX_CONV_RGB5MINMAX: begin
 			tRegConvVal = { UV32_00, tRegRgb5MinMax };
 		end

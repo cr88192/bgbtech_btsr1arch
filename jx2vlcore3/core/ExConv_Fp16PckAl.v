@@ -20,9 +20,11 @@ begin
 	tExpC	= tExpA[2:0];
 //	if(valI[14] == valI[13])
 //	if(tExpA[4] == tExpA[3])
-	if(tExpA[4] || (tExpA[4:3] == 2'b00))
-		tExpC = tExpA[4] ? 3'h7 : 3'h0 ;
+//	if(tExpA[4] || (tExpA[4:3] == 2'b00))
+//		tExpC = tExpA[4] ? 3'h7 : 3'h0 ;
 	tValO = { tSgn, tExpC, valI[9:6] };
+	if(tExpA[4] || (tExpA[4:3] == 2'b00))
+		tValO = tExpA[4] ? { tSgn, 7'h7F } : 8'h00;
 end
 
 endmodule

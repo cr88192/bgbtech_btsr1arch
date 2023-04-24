@@ -2431,7 +2431,10 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_MACSL)		||
 			(op->nmid==BJX2_NMID_MACUL)		||
 			(op->nmid==BJX2_NMID_DMACSL)	||
-			(op->nmid==BJX2_NMID_DMACUL)	)
+			(op->nmid==BJX2_NMID_DMACUL)	||
+			(op->nmid==BJX2_NMID_RGB5MINMAX)	||
+			(op->nmid==BJX2_NMID_RGB5CCENC)		||
+			(op->nmid==BJX2_NMID_RGB5CCENC2)	)
 		{
 			op->fl|=BJX2_OPFL_OPPIPE;
 			op->cyc=ilo;

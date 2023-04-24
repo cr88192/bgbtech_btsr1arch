@@ -533,6 +533,44 @@ begin
 
 		end
 
+`ifdef def_true
+		JX2_UCIX_CONV_SWAPE2B: begin
+			tRegOutVal	= {
+				regValRs[63:32],
+				regValRs[29:28],
+				regValRs[31:30],
+				regValRs[25:24],
+				regValRs[27:26],
+				regValRs[21:20],
+				regValRs[23:22],
+				regValRs[17:16],
+				regValRs[19:18],
+				regValRs[13:12],
+				regValRs[15:14],
+				regValRs[ 9: 8],
+				regValRs[11:10],
+				regValRs[ 5: 4],
+				regValRs[ 7: 6],
+				regValRs[ 1: 0],
+				regValRs[ 3: 2]
+			};
+		end
+
+		JX2_UCIX_CONV_SWAPE4B: begin
+			tRegOutVal	= {
+				regValRs[63:32],
+				regValRs[27:24],
+				regValRs[31:28],
+				regValRs[19:16],
+				regValRs[23:20],
+				regValRs[11: 8],
+				regValRs[15:12],
+				regValRs[ 3: 0],
+				regValRs[ 7: 4]
+			};
+		end
+`endif
+
 		default: begin
 		end
 	endcase
