@@ -474,13 +474,17 @@ reg[63:0]	fontGfx1Mem[127:0];
 reg[63:0]	fontGfx2Mem[127:0];
 `endif
 
-reg[31:0]	fontRamA[511:0];
-reg[31:0]	fontRamB[511:0];
+// reg[31:0]	fontRamA[511:0];
+// reg[31:0]	fontRamB[511:0];
+reg[31:0]	fontRamA[1023:0];
+reg[31:0]	fontRamB[1023:0];
 
 reg[31:0]	tFontRamStDataA;
 reg[31:0]	tFontRamStDataB;
-reg[8:0]	tFontRamStIxA;
-reg[8:0]	tFontRamStIxB;
+// reg[8:0]	tFontRamStIxA;
+// reg[8:0]	tFontRamStIxB;
+reg[9:0]	tFontRamStIxA;
+reg[9:0]	tFontRamStIxB;
 reg			tFontRamDoStA;
 reg			tFontRamDoStB;
 
@@ -561,14 +565,25 @@ begin
 	
 	tRegInAddrHb = { 3'b000, tRegInAddr[16] };
 
-	if((tRegInOpm[2:0] == 3'b011) && (tRegInAddr[2:0]!=3'b000))
-	begin
-		tRegInAddrHb = { tRegInAddr[16], tRegInAddr[2:0] };
-	end
+//	if((tRegInOpm[2:0] == 3'b011) && (tRegInAddr[2:0]!=3'b000))
+//	begin
+//		tRegInAddrHb = { tRegInAddr[16], tRegInAddr[2:0] };
+//	end
 
 	tNxtReqAddr		= { 8'h0A, tRegInAddrHb, tRegInAddr[15:2], 2'b00 };
 
-	if(tRegInAddr[4])
+	if((tRegInOpm[2:0] == 3'b011) && scrRegCtrl0[16])
+	begin
+		tNxtReqAddr		= { 8'h0A, tRegInAddr[2],
+			tRegInAddr[16:3], tRegInAddr[1:0], 3'b000 };
+		tNxtReqBix		= { tRegInAddr[1:0], 3'b000 };
+	end
+
+	if(tRegInOpm[5:4] == 2'b00)
+		tNxtReqAddr = tRegInAddr;
+
+//	if(tRegInAddr[4])
+	if(tNxtReqAddr[4])
 	begin
 		tNxtReqAxB = tNxtReqAddr[27:4];
 		tNxtReqAxA = tNxtReqAxB + 1;
@@ -764,8 +779,10 @@ begin
 
 	tFontRamStDataA = tReqInValA[31:0];
 	tFontRamStDataB = tReqInValA[31:0];
-	tFontRamStIxA	= tReqInValA[40:32];
-	tFontRamStIxB	= tReqInValA[40:32];
+//	tFontRamStIxA	= tReqInValA[40:32];
+//	tFontRamStIxB	= tReqInValA[40:32];
+	tFontRamStIxA	= tReqInValA[41:32];
+	tFontRamStIxB	= tReqInValA[41:32];
 	tFontRamDoStA	= 0;
 	tFontRamDoStB	= 0;
 
@@ -803,7 +820,8 @@ begin
 				6'h09: nxtScrRegCtrl9 = tReqInValA[31:0];
 
 				6'h0C: tFontRamDoStA = 1;
-				6'h0D: tFontRamDoStB = 1;
+//				6'h0D: tFontRamDoStB = 1;
+				6'h0E: tFontRamDoStB = 1;
 				default: begin end
 			endcase
 		end
@@ -1614,9 +1632,12 @@ begin
 	tFontDataGfx2	<= fontGfx2Mem[tFontGlyph[6:0]];
 `endif
 
+//	tFontDataRam	<= {
+//		fontRamB[tFontGlyph[8:0]],
+//		fontRamA[tFontGlyph[8:0]] };
 	tFontDataRam	<= {
-		fontRamB[tFontGlyph[8:0]],
-		fontRamA[tFontGlyph[8:0]] };
+		fontRamB[tFontGlyph[9:0]],
+		fontRamA[tFontGlyph[9:0]] };
 	tFontGlyph		<= fontGlyph;
 	tFontData1		<= tFontData2;
 

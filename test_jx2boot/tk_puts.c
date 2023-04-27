@@ -47,6 +47,8 @@ int kbhit(void)
 #endif
 	if(tk_dbg_kbhit())
 		return(1);
+//	if(TKUSB_KbHit())
+//		return(1);
 	return(0);
 
 //	return(tk_ps2kb_kbhit());
@@ -61,6 +63,8 @@ int getch(void)
 		if(tk_ps2kb_kbhit())
 //			return(tk_ps2getch());
 			return(tk_ps2trygetch());
+//		if(TKUSB_KbHit())
+//			return(TKUSB_KbTryGetch());
 #endif
 		if(P_MMIO_DEBUG_STS&1)
 			return(P_MMIO_DEBUG_RX);

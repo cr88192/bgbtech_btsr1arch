@@ -85,6 +85,29 @@ reg[ 15:0]		tL2mOpmOut;			//memory operation mode
 `reg_l2addr		tL2mAddrOut;		//memory output address
 `reg_tile		tL2mDataOut;		//memory output data
 
+`ifdef jx2_rbi_bridge_ecyc
+
+reg[ 15:0]		tL1mSeqOut2;			//operation sequence
+reg[ 15:0]		tL1mOpmOut2;			//memory operation mode
+`reg_l1addr		tL1mAddrOut2;		//memory output address
+`reg_tile		tL1mDataOut2;		//memory output data
+
+reg[ 15:0]		tL2mSeqOut2;			//operation sequence
+reg[ 15:0]		tL2mOpmOut2;			//memory operation mode
+`reg_l2addr		tL2mAddrOut2;		//memory output address
+`reg_tile		tL2mDataOut2;		//memory output data
+
+assign		l1mSeqOut	= tL1mSeqOut2;
+assign		l1mOpmOut	= tL1mOpmOut2;
+assign		l1mAddrOut	= tL1mAddrOut2;
+assign		l1mDataOut	= tL1mDataOut2;
+
+assign		l2mSeqOut	= tL2mSeqOut2;
+assign		l2mOpmOut	= tL2mOpmOut2;
+assign		l2mAddrOut	= tL2mAddrOut2;
+assign		l2mDataOut	= tL2mDataOut2;
+
+`else
 
 assign		l1mSeqOut	= tL1mSeqOut;
 assign		l1mOpmOut	= tL1mOpmOut;
@@ -95,6 +118,8 @@ assign		l2mSeqOut	= tL2mSeqOut;
 assign		l2mOpmOut	= tL2mOpmOut;
 assign		l2mAddrOut	= tL2mAddrOut;
 assign		l2mDataOut	= tL2mDataOut;
+
+`endif
 
 reg		tL1mReqSent;
 reg		tL2mReqSent;
@@ -316,6 +341,26 @@ begin
 `endif
 
 end
+
+
+
+`ifdef jx2_rbi_bridge_ecyc
+
+always @(posedge clock)
+begin
+	tL1mSeqOut2		<= tL1mSeqOut;
+	tL1mOpmOut2		<= tL1mOpmOut;
+	tL1mAddrOut2	<= tL1mAddrOut;
+	tL1mDataOut2	<= tL1mDataOut;
+
+	tL2mSeqOut2		<= tL2mSeqOut;
+	tL2mOpmOut2		<= tL2mOpmOut;
+	tL2mAddrOut2	<= tL2mAddrOut;
+	tL2mDataOut2	<= tL2mDataOut;
+end
+
+`endif
+
 
 `ifndef jx2_rbi_nobridge
 

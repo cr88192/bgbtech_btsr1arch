@@ -1,3 +1,18 @@
+Memory Map:
+* FFFF_F00A0000..FFFF_F00BFEFF: Video Memory
+* FFFF_F00BFF00..FFFF_F00BFFFF: Control Registers
+
+Control Registers:
+* FFFF_F00BFF00: Control Register 0
+* FFFF_F00BFF08: Control Register 1
+* FFFF_F00BFF10: Control Register 2
+* FFFF_F00BFF18: Control Register 3
+* FFFF_F00BFF20: Control Register 4
+* FFFF_F00BFF28: Control Register 5
+* FFFF_F00BFF30: Font RAM (Low)
+* FFFF_F00BFF38: Font RAM (High)
+
+
 Cell size may vary with screen type.
 * 40 x 25 x  64 bit:  8kB
 * 40 x 25 x 128 bit: 16kB
@@ -18,13 +33,13 @@ If the hardware cell is narrower than an 8 DWORD stride, then some of the DWORD 
 
 
 Control Register 0 Bits:
-* 0: Horizontal Resolution Adjust
+* (0): Horizontal Resolution Adjust
 ** 0=40/50/64 Column (XRes/16), 1=80/100/128 Column (XRes/8)
 * 1: / Half-Width Cell (0=256b, 1=128b)
-* 1: Cell Width 1
-* 2: Vertical Resolution Adjust
+* (1): Cell Width 1
+* (2): Vertical Resolution Adjust
 ** 0=25 Rows (YRes/16), 1=50 Rows (YRes/8)
-* 3: Display Resolution 1
+* (3): Display Resolution 1
 ** / 0=640x480, 1=800x600
 ** Implicitly selects between 80 and 100 columns.
 * (7:4): Screen Buffer Mode
@@ -38,6 +53,13 @@ Control Register 0 Bits:
 * 10: Cell Width 2
 * 11: Cell Width 3
 * (15:12): Colorspace Modifier
+* (17:16): Addressing Mode
+* (18): Horizontal Resolution Adjust 2
+** Double the horizontal density (80->160 column, etc)
+* (19): Vertical Resolution Adjust 2
+** Double the vertical density (50->100 row, etc)
+* (31:20): Reserved
+
 
 * (39:32): Cursor X
 * (47:40): Cursor Y
@@ -50,7 +72,9 @@ Basic Display Resolution
 ** 000: 640x400
 ** 001: 800x600
 ** 010: 1024x768
+** 011: -
 ** 100: 640x480
+** 101: -
 ** 110: 640x480 (64x32 or 128x64)
 ** 111: 640x400 (64x32 or 128x64)
 
@@ -59,6 +83,21 @@ Cell Width
 ** 000: 256-bit
 ** 001: 128-bit
 ** 010: 64-bit
+
+
+Font RAM:
+A glyph will be uploaded to Font RAM by first storing to the low word, and then to the high word.
+
+The stores to Font RAM will take the form:
+* (31: 0): Pixel Bits
+* (41:32): Glyph Index
+* (63:42): Reserved / MBZ
+
+Address Mode:
+* 00: VRAM MMIO region is 128K, Linearly Addressed
+* 01: Striped Addressing (QWORD)
+** The space will be split into 4 parallel stripes.
+** Low 2 bits of address encode an address stripe.
 
 
 == Bitmapped Modes ==

@@ -1,3 +1,6 @@
+Dropped; Design was folded back into SMus.
+
+
 PCM Mixer Module
 * 16 voice PCM Mixer
 

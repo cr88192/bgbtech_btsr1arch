@@ -505,6 +505,9 @@ byte jx2i_gfxcon_isqtrcell;
 byte jx2i_gfxcon_is800px;
 byte jx2i_gfxcon_ispow2;
 
+byte jx2i_gfxcon_is2xcol;
+byte jx2i_gfxcon_is2xrow;
+
 u32 jx2i_gfxcon_dbgcursor;
 
 byte jx2i_gfxcon_isbmap;
@@ -522,6 +525,7 @@ byte jx2i_gfxcon_ncx;
 byte jx2i_gfxcon_ncy;
 
 u64 jx2i_gfxcon_ctrlreg[64];
+u64 jx2i_gfxcon_fontram[1024];
 
 u64 jx2i_gfxcon_seed=0;
 
@@ -560,6 +564,9 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 	jx2i_gfxcon_is800px=0;
 	jx2i_gfxcon_isdbg=0;
 
+	jx2i_gfxcon_is2xcol=0;
+	jx2i_gfxcon_is2xrow=0;
+
 	jx2i_gfxcon_ncx=40;
 	jx2i_gfxcon_ncy=25;
 
@@ -579,9 +586,10 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 //	jx2i_gfxcon_conbuf=malloc(16384*sizeof(u32));
 //	jx2i_gfxcon_lconbuf=malloc(16384*sizeof(u32));
 
-	jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
-	jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
-	jx2i_gfxcon_dbgconbuf=malloc(32768*sizeof(u32));
+//	jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
+//	jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+//	jx2i_gfxcon_dbgconbuf=malloc(32768*sizeof(u32));
+	jx2i_gfxcon_dbgconbuf=malloc(131072*sizeof(u32));
 	
 	sp=BJX2_MemSpanForName(ctx, "DRAM");
 	if(sp)
@@ -593,8 +601,12 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 //		jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
 	}else
 	{
-		jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
-		jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+//		jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
+//		jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
+
+
+		jx2i_gfxcon_conbuf=malloc(131072*sizeof(u32));
+		jx2i_gfxcon_lconbuf=malloc(131072*sizeof(u32));
 	}
 	
 //	for(i=0; i<40*25*4; i++)
@@ -631,6 +643,19 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 	}
 #endif
 
+	if(jx2i_gfxcon_is2xcol)
+	{
+		if(px&1)
+			return(0);
+		px>>=1;
+	}
+	if(jx2i_gfxcon_is2xrow)
+	{
+		if(py&1)
+			return(0);
+		py>>=1;
+	}
+
 	if(jx2i_gfxcon_is80col || jx2i_gfxcon_isdbg)
 	{
 		if(jx2i_gfxcon_is50row || jx2i_gfxcon_isdbg)
@@ -664,6 +689,19 @@ int JX2I_GfxCon_PutPix400(int px, int py, int clrc)
 	
 	fbxs=btesh2_gfxcon_fbxs;
 //	((u32 *)btesh2_gfxcon_framebuf)[(py*320)+px]=clrc;
+
+	if(jx2i_gfxcon_is2xcol)
+	{
+		if(px&1)
+			return(0);
+		px>>=1;
+	}
+	if(jx2i_gfxcon_is2xrow)
+	{
+		if(py&1)
+			return(0);
+		py>>=1;
+	}
 
 #if 0
 	if(btesh2_gfxcon_swaprb)
@@ -919,8 +957,8 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 
 	if(jx2i_gfxcon_isqtrcell)
 	{
-		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+0)&32767];
-		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+1)&32767];
+		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+0)&131071];
+		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+1)&131071];
 		c2=JX2I_GfxCon_Rng32();
 		c3=JX2I_GfxCon_Rng32();
 		c4=JX2I_GfxCon_Rng32();
@@ -930,25 +968,25 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 	}else
 		if(jx2i_gfxcon_ishalfcell)
 	{
-		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+0)&32767];
-		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+1)&32767];
-		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+2)&32767];
-		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+3)&32767];
+		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+0)&131071];
+		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+1)&131071];
+		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+2)&131071];
+		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+3)&131071];
 		c4=JX2I_GfxCon_Rng32();
 		c5=JX2I_GfxCon_Rng32();
 		c6=JX2I_GfxCon_Rng32();
 		c7=JX2I_GfxCon_Rng32();
 	}else
 	{
-		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+0)&32767];
-		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+1)&32767];
-		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+2)&32767];
-		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+3)&32767];
+		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+0)&131071];
+		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+1)&131071];
+		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+2)&131071];
+		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+3)&131071];
 
-		c4=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+4)&32767];
-		c5=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+5)&32767];
-		c6=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+6)&32767];
-		c7=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+7)&32767];
+		c4=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+4)&131071];
+		c5=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+5)&131071];
+		c6=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+6)&131071];
+		c7=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+7)&131071];
 	}
 
 	if((jx2i_gfxcon_isbmap==0x1) || (jx2i_gfxcon_isbmap==0x9))
@@ -1346,8 +1384,8 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	}else
 		if(jx2i_gfxcon_isqtrcell)
 	{
-		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+0)&32767];
-		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+1)&32767];
+		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+0)&131071];
+		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*2+1)&131071];
 		c2=JX2I_GfxCon_Rng32();
 		c3=JX2I_GfxCon_Rng32();
 		c4=JX2I_GfxCon_Rng32();
@@ -1357,25 +1395,25 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	}else
 		if(jx2i_gfxcon_ishalfcell)
 	{
-		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+0)&32767];
-		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+1)&32767];
-		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+2)&32767];
-		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+3)&32767];
+		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+0)&131071];
+		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+1)&131071];
+		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+2)&131071];
+		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+3)&131071];
 		c4=JX2I_GfxCon_Rng32();
 		c5=JX2I_GfxCon_Rng32();
 		c6=JX2I_GfxCon_Rng32();
 		c7=JX2I_GfxCon_Rng32();
 	}else
 	{
-		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+0)&32767];
-		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+1)&32767];
-		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+2)&32767];
-		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+3)&32767];
+		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+0)&131071];
+		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+1)&131071];
+		c2=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+2)&131071];
+		c3=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+3)&131071];
 
-		c4=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+4)&32767];
-		c5=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+5)&32767];
-		c6=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+6)&32767];
-		c7=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+7)&32767];
+		c4=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+4)&131071];
+		c5=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+5)&131071];
+		c6=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+6)&131071];
+		c7=jx2i_gfxcon_conbuf[((cy*ncx+cx)*8+7)&131071];
 	}
 	
 	clra6=(c0>>16)&63;
@@ -1554,6 +1592,8 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		fontbits=btesh2_gfxcon_glyphs[c0&255];
 		break;
 	}
+	
+	fontbits=jx2i_gfxcon_fontram[c0&1023];
 	
 	celbits=c0&65535;
 	
@@ -2333,6 +2373,9 @@ int JX2I_GfxCon_UpdateForRegs()
 	jx2i_gfxcon_is800px=0;
 	jx2i_gfxcon_ispow2=0;
 
+	jx2i_gfxcon_is2xcol=0;
+	jx2i_gfxcon_is2xrow=0;
+
 	if(jx2i_gfxcon_ctrlreg[0]&0x0001)
 		jx2i_gfxcon_is80col=1;
 	if(jx2i_gfxcon_ctrlreg[0]&0x0002)
@@ -2345,6 +2388,11 @@ int JX2I_GfxCon_UpdateForRegs()
 		jx2i_gfxcon_ispow2=1;
 	if(jx2i_gfxcon_ctrlreg[0]&0x0400)
 		jx2i_gfxcon_isqtrcell=1;
+
+	if(jx2i_gfxcon_ctrlreg[0]&0x040000)
+		jx2i_gfxcon_is2xcol=1;
+	if(jx2i_gfxcon_ctrlreg[0]&0x080000)
+		jx2i_gfxcon_is2xrow=1;
 
 	if(jx2i_gfxcon_ispow2)
 	{
@@ -2378,6 +2426,12 @@ int JX2I_GfxCon_UpdateForRegs()
 		if(jx2i_gfxcon_is50row)
 			ncy=75;
 	}
+	
+	if(jx2i_gfxcon_is2xcol)
+		ncx*=2;
+	if(jx2i_gfxcon_is2xrow)
+		ncy*=2;
+	
 	jx2i_gfxcon_ncx=ncx;
 	jx2i_gfxcon_ncy=ncy;
 
@@ -2472,7 +2526,7 @@ s32 BJX2_MemGfxConCb_GetDWord(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr)
 {
 	s64 rvq;
-	int ra, rv;
+	int ra, rv, ix;
 
 	ra=addr-sp->addr_base;
 	
@@ -2480,10 +2534,17 @@ s32 BJX2_MemGfxConCb_GetDWord(BJX2_Context *ctx,
 
 	if(jx2i_gfxcon_conbuf)
 	{
-//		rv=jx2i_gfxcon_conbuf[(ra>>2)&4095];
-//		rv=jx2i_gfxcon_conbuf[(ra>>2)&8191];
-//		rv=jx2i_gfxcon_conbuf[(ra>>2)&16383];
-		rv=jx2i_gfxcon_conbuf[(ra>>2)&32767];
+		if(jx2i_gfxcon_ctrlreg[0]&65536)
+		{
+			ix=(ra&(~7))|((ra&3)<<1)|((ra>>2)&1);
+			rv=jx2i_gfxcon_conbuf[ix&131071];
+		}else
+		{
+//			rv=jx2i_gfxcon_conbuf[(ra>>2)&4095];
+//			rv=jx2i_gfxcon_conbuf[(ra>>2)&8191];
+//			rv=jx2i_gfxcon_conbuf[(ra>>2)&16383];
+			rv=jx2i_gfxcon_conbuf[(ra>>2)&32767];
+		}
 	}
 
 	return(rv);
@@ -2519,7 +2580,9 @@ int BJX2_MemGfxConCb_SetWord(BJX2_Context *ctx,
 int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val)
 {
-	int ra;
+	u64 tv;
+	u32 va, vb;
+	int ra, ix;
 	ra=addr-sp->addr_base;
 
 	if((addr&0x1FF00)==0x1FF00)
@@ -2546,16 +2609,35 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 			}
 		}
 
+		if(((addr>>2)&63)==0xF)
+		{
+			va=jx2i_gfxcon_ctrlreg[0xC];
+			vb=jx2i_gfxcon_ctrlreg[0xE];
+			ix=jx2i_gfxcon_ctrlreg[0xF];
+			
+			tv=(((u64)vb)<<32)|va;
+			jx2i_gfxcon_fontram[ix&1023]=tv;
+		}
+
 		return(0);
 	}
 
 	if(jx2i_gfxcon_conbuf)
 	{
-//		jx2i_gfxcon_conbuf[(ra>>2)&4095]=val;
-//		jx2i_gfxcon_conbuf[(ra>>2)&8191]=val;
-//		jx2i_gfxcon_conbuf[(ra>>2)&16383]=val;
-		jx2i_gfxcon_conbuf[(ra>>2)&32767]=val;
-		jx2i_gfxcon_dirty=1;
+		if(jx2i_gfxcon_ctrlreg[0]&65536)
+		{
+			ix=(ra&(~7))|((ra&3)<<1)|((ra>>2)&1);
+//			jx2i_gfxcon_conbuf[ix&32767]=val;
+			jx2i_gfxcon_conbuf[ix&131071]=val;
+			jx2i_gfxcon_dirty=1;
+		}else
+		{	
+	//		jx2i_gfxcon_conbuf[(ra>>2)&4095]=val;
+	//		jx2i_gfxcon_conbuf[(ra>>2)&8191]=val;
+	//		jx2i_gfxcon_conbuf[(ra>>2)&16383]=val;
+			jx2i_gfxcon_conbuf[(ra>>2)&32767]=val;
+			jx2i_gfxcon_dirty=1;
+		}
 
 #if 0
 //		if(ra==(40*25*8))

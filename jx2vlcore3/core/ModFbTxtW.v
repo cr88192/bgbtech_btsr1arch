@@ -103,10 +103,10 @@ reg[11:0]	tPixPosY_X;
 reg[13:0]	tPixCellX;			//base cell X
 reg[13:0]	tPixCellY;			//base cell Y
 
-reg[7:0]	tPixCellMaxX;			//
-reg[7:0]	tPixCellMaxY;			//
-reg[7:0]	tNextPixCellMaxX;		//
-reg[7:0]	tNextPixCellMaxY;		//
+reg[9:0]	tPixCellMaxX;			//
+reg[9:0]	tPixCellMaxY;			//
+reg[9:0]	tNextPixCellMaxX;		//
+reg[9:0]	tNextPixCellMaxY;		//
 
 reg[11:0]	tPixRawUsPosX;
 reg[11:0]	tPixRawUsPosY;
@@ -406,6 +406,9 @@ reg		useHorz800;
 reg		useColPow2;
 reg		useVert480;
 
+reg		use2xCol;
+reg		use2xRow;
+
 reg		tCellIsOdd;
 reg		tNextCellIsOdd;
 reg		tCellIsOddB;
@@ -488,13 +491,16 @@ begin
 	useRow50	= tCtrlRegVal[2];
 //	useHorz800	= tCtrlRegVal[3];
 	useHorz800	= tCtrlRegVal[3] && !tCtrlRegVal[9];
-	
+
 	tScrMode	= tCtrlRegVal[7:4];
 	useColPow2	= tCtrlRegVal[8];
 	useVert480	= tCtrlRegVal[9];
 	useQtrCell	= tCtrlRegVal[10];
 
 	tScrClrsMod		= tCtrlRegVal[15:12];
+
+	use2xCol		= tCtrlRegVal[18];
+	use2xRow		= tCtrlRegVal[19];
 
 	tCellCursorX	= tCtrlRegVal[39:32];
 //	tCellCursorY	= tCtrlRegVal[47:40] + 2;
@@ -529,7 +535,8 @@ begin
 		begin
 			if(useRow50)
 			begin
-				tNextPixCellMaxY	= 96;
+//				tNextPixCellMaxY	= 96;
+				tNextPixCellMaxY	= use2xRow ? 192 : 96;
 			end
 			else
 			begin
@@ -540,7 +547,8 @@ begin
 		begin
 			if(useRow50)
 			begin
-				tNextPixCellMaxY	= 64;
+//				tNextPixCellMaxY	= 64;
+				tNextPixCellMaxY	= use2xRow ? 128 : 64;
 			end
 			else
 			begin
@@ -553,11 +561,13 @@ begin
 		if(useRow50)
 	begin
 		tNxtPixRawMaxY		= 400;
-		tNextPixCellMaxY	= 50;
+//		tNextPixCellMaxY	= 50;
+		tNextPixCellMaxY	= use2xRow ? 100 : 50;
 		if(useVert480)
 		begin
 			tNxtPixRawMaxY		= 480;
-			tNextPixCellMaxY	= 60;
+//			tNextPixCellMaxY	= 60;
+			tNextPixCellMaxY	= use2xRow ? 120 : 60;
 		end
 	end
 	else
@@ -576,6 +586,11 @@ begin
 		tNxtPixRawPosY	= tPixRawUsPosY[11:0];
 		tNxtPixRelPosY	= tPixPosY_Z[11:0];
 		tPixCellY[6:0]	= tPixPosY_Z[9:3];
+
+		if(use2xRow)
+		begin
+			tPixCellY[7:0]	= tPixPosY_Z[9:2];
+		end
 	end
 		else
 	begin
@@ -591,7 +606,13 @@ begin
 			tNxtPixRawPosX		= tPixRawUsPosX[11:0];
 			tNxtPixRelPosX		= tPixPosX_Z[11:0];
 			tPixCellX[6:0]		= tPixPosX_Z[9:3];
-			tNextPixCellMaxX	= 128;
+			tNextPixCellMaxX	= 128;			
+
+			if(use2xCol)
+			begin
+				tPixCellX[7:0]		= tPixPosX_Z[9:2];
+				tNextPixCellMaxX	= 256;			
+			end
 		end
 		else
 		begin
@@ -609,15 +630,25 @@ begin
 		tNxtPixRelPosX	= tPixPosX_Z[11:0];
 
 		tPixCellX[6:0] = tPixPosX_Z[9:3];
+
+		if(use2xCol)
+		begin
+			tPixCellX[7:0] = tPixPosX_Z[9:2];
+		end
+
 		if(useHorz800)
 		begin
 			tNxtPixRawMaxX		= 800;
 			tNextPixCellMaxX	= 100;
+			if(use2xCol)
+				tNextPixCellMaxX	= 200;			
 		end
 		else
 		begin
 			tNxtPixRawMaxX		= 640;
 			tNextPixCellMaxX	= 80;
+			if(use2xCol)
+				tNextPixCellMaxX	= 160;			
 		end
 	end
 	else
@@ -641,7 +672,7 @@ begin
 	if(useQtrCell)
 	begin
 		tPixCellIx_A	=
-			(tPixCellY*({ 6'h0, tPixCellMaxX }>>2)) +
+			(tPixCellY*({ 4'h0, tPixCellMaxX }>>2)) +
 			(tPixCellX>>2);
 		tNextCellIsOdd = tPixCellX[0];
 		tNextCellIsOddB = tPixCellX[1];
@@ -650,7 +681,7 @@ begin
 		if(useHalfCell)
 	begin
 		tPixCellIx_A	=
-			(tPixCellY*({6'h0, tPixCellMaxX}>>1)) +
+			(tPixCellY*({4'h0, tPixCellMaxX}>>1)) +
 			(tPixCellX>>1);
 		tNextCellIsOdd = tPixCellX[0];
 	end
@@ -666,8 +697,9 @@ begin
 	end
 
 //	tCellLimitY		= (tPixCellY[5:0] >= tPixCellMaxY) || tPixCellY[6];
-	tCellLimitY		= (tPixCellY[7:0] >= tPixCellMaxY) || tPixCellY[8];
-	tCellLimitX		= tPixCellX[7:0] >= tPixCellMaxX;
+//	tCellLimitY		= (tPixCellY[7:0] >= tPixCellMaxY) || tPixCellY[8];
+	tCellLimitY		= (tPixCellY[9:0] >= tPixCellMaxY) || tPixCellY[10];
+	tCellLimitX		= tPixCellX[9:0] >= tPixCellMaxX;
 	
 	tPixRawLimitX	= tPixRawPosX > tPixRawMaxX;
 	tPixRawLimitY	= tPixRawPosY > tPixRawMaxY;
@@ -683,10 +715,18 @@ begin
 	
 	if(useRow50)
 	begin
-//		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[1:0];
-//		tPixCellGx_A0[5:3]	= 3'h7 - { tPixPosY[1:0], pixLineOdd };
-		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[2:1];
-		tPixCellGx_A0[5:3]	= 3'h7 - tPixPosY[2:0];
+		if(use2xRow)
+		begin
+			tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[1:0];
+			tPixCellGx_A0[5:3] = 3'h7 - {tPixPosY[1:0], 1'b1};
+		end
+		else
+		begin
+//			tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[1:0];
+//			tPixCellGx_A0[5:3] = 3'h7 - { tPixPosY[1:0], pixLineOdd };
+			tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[2:1];
+			tPixCellGx_A0[5:3] = 3'h7 - tPixPosY[2:0];
+		end
 	end
 	else
 	begin
@@ -698,8 +738,16 @@ begin
 	
 	if(useCol80)
 	begin
-		tPixCellFx_A0[1:0] = 2'h3 - tPixPosX[2:1];
-		tPixCellGx_A0[2:0]	= 3'h7 - tPixPosX[2:0];
+		if(use2xCol)
+		begin
+			tPixCellFx_A0[1:0] = 2'h3 - tPixPosX[1:0];
+			tPixCellGx_A0[2:0]	= 3'h7 - {tPixPosX[1:0], 1'b1};
+		end
+		else
+		begin
+			tPixCellFx_A0[1:0] = 2'h3 - tPixPosX[2:1];
+			tPixCellGx_A0[2:0]	= 3'h7 - tPixPosX[2:0];
+		end
 	end
 	else
 	begin

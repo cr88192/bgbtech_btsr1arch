@@ -133,14 +133,15 @@
 `define jx2_mem_l2d_ldatb			//L2: Copy A to B during L2 Miss
 // `define jx2_mem_l2d_stswab		//L2: Stores may swap A and B.
 
-`define jx2_rbi_nobridge			//Ringbus: Bypass Bridge, join rings directly
+`define jx2_rbi_nobridge		//Ringbus: Bypass Bridge, join rings directly
+`define jx2_rbi_bridge_ecyc		//Ringbus: Add extra output cycle on L1 Bridge
 
 // `define jx2_mem_l1inostall			//L1 I$ does not stall pipeline
 
 
 `define jx2_reg_spdecswap			//Swap SP and SSP in Decode
 
-// `define jx2_l1a_ena_tlbskip			//L1A: Allow requests to skip over TLB
+`define jx2_l1a_ena_tlbskip			//L1A: Allow requests to skip over TLB
 
 
 // `ifndef def_true

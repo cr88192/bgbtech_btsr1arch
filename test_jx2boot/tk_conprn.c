@@ -307,6 +307,18 @@ tk_con_14seg2pix:
 };
 #endif
 
+void tk_con_uploadglyph(int idx, u64 tv)
+{
+	u64 ta, tb;
+	
+	ta=(u32)(tv>> 0);
+	tb=(u32)(tv>>32);
+	ta|=((u64)idx)<<32;
+	tb|=((u64)idx)<<32;
+	*((u64 *)0xFFFFF00BFF30ULL)=ta;
+	*((u64 *)0xFFFFF00BFF38ULL)=tb;
+}
+
 void tk_con_init()
 {
 	u64 tv;
@@ -354,6 +366,8 @@ void tk_con_init()
 			tv>>=8;
 		
 		tk_con_glyphs[i]=tv;
+		
+		tk_con_uploadglyph(i+32, tv);
 	}
 #endif
 
@@ -422,6 +436,8 @@ void tk_con_init()
 #endif
 
 		tk_con_glyphs[i]=tv;
+		
+		tk_con_uploadglyph(i+32, tv);
 	}
 
 #if 0
@@ -559,7 +575,7 @@ void tk_con_putc(int ch)
 		return;
 	}
 	
-#if 0
+#if 1
 //	px=0x0FC00000|ch;
 	px=0x003F0000|ch;
 //	tk_con_buf[(tk_con_y*TK_CONWIDTH+tk_con_x)*8+0]=px;
@@ -567,6 +583,7 @@ void tk_con_putc(int ch)
 	buf[(tk_con->y*TK_CONWIDTH+tk_con->x)*8+0]=px;
 #endif
 
+#if 0
 //	q0=(2ULL<<30)|(tk_con->bgclr_555<<15)|tk_con->fgclr_555;
 	q0=(2ULL<<30)|(0<<15)|0x7FFF;
 	q1=tk_con_glyphs[ch-' '];
@@ -574,7 +591,7 @@ void tk_con_putc(int ch)
 	tz=(tk_con->y*TK_CONWIDTH+tk_con->x)*4;
 	((u64 *)buf)[tz+0]=q0;
 	((u64 *)buf)[tz+1]=q1;
-
+#endif
 
 //	tk_con_x++;
 	tk_con->x++;
