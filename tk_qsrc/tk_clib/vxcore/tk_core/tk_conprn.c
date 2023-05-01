@@ -658,6 +658,138 @@ u64 tk_gfxcon_glyphs_cyril0[128]=
 0x0060203C22223C00, /* 7F ' ' */
 };
 
+u64 tk_gfxcon_glyphs_gfx0[128]=
+{
+0x0000000000000000ULL,		//00
+0x00005028D4FAF4EAULL,		//01
+0x0000000000000303ULL,		//02
+0x000000000000C0C0ULL,		//03
+0x0707070707070707ULL,		//04
+0xE0E0E0E0E0E0E0E0ULL,		//05
+0x0101010101010101ULL,		//06
+0x8080808080808080ULL,		//07
+0x000101030307070FULL,		//08
+0x008080C0C0E0E0F0ULL,		//09
+0x0000000001071F7FULL,		//0A
+0x01071F7FFFFFFFFFULL,		//0B
+0xFFFEFCF8F0E0C080ULL,		//0C
+0x0000001F1F181818ULL,		//0D
+0x000000FFFF181818ULL,		//0E
+0x000000F8F8181818ULL,		//0F
+0xDAF4B2E8D4E8B2E8ULL,		//10
+0x00228855AA77DDFFULL,		//11
+0x0303000000000000ULL,		//12
+0xC0C0000000000000ULL,		//13
+0x0000000000FFFFFFULL,		//14
+0xFFFFFF0000000000ULL,		//15
+0x00000000000000FFULL,		//16
+0xFF00000000000000ULL,		//17
+0x0F1F1F3F3F7F7FFFULL,		//18
+0xF0F8F8FCFCFEFEFFULL,		//19
+0xFF3F0F0300000000ULL,		//1A
+0xFFFFFFFF7F1F0701ULL,		//1B
+0xFF7F3F1F0F070301ULL,		//1C
+0x1818181F1F181818ULL,		//1D
+0x181818FFFF181818ULL,		//1E
+0x181818F8F8181818ULL,		//1F
+0x000000070F1C1818ULL,		//20
+0x000000E0F0381818ULL,		//21
+0x000000000F0F0F0FULL,		//22
+0x00000000F0F0F0F0ULL,		//23
+0xCCCC3333CCCC3333ULL,		//24
+0x00000000C0C03030ULL,		//25
+0xF0F0F0F00F0F0F0FULL,		//26
+0xAA55AA55AA55AA55ULL,		//27
+0x02050A152B572F5FULL,		//28
+0x40A050A8D4EAF5FAULL,		//29
+0x0103070F1F3F7FFFULL,		//2A
+0x80C0E0F0F8FCFEFFULL,		//2B
+0x0000000000000000ULL,		//2C, Dummy
+0x1818181F1F000000ULL,		//2D
+0x181818FFFF000000ULL,		//2E
+0x181818F8F8000000ULL,		//2F
+0x18181C0F07000000ULL,		//30
+0x181838F0E0000000ULL,		//31
+0x0F0F0F0F00000000ULL,		//32
+0xF0F0F0F000000000ULL,		//33
+0x00000000CCCC3333ULL,		//34
+0xC0C03030C0C03030ULL,		//35
+0x00000000FFFFFFFFULL,		//36
+0xF0F0F0F0F0F0F0F0ULL,		//37
+0x00008855AA77FFFFULL,		//38
+0xD4E8F0E8D4E8F0E8ULL,		//39
+0xC0E070381C0E0703ULL,		//3A
+0x03070E1C3870E0C0ULL,		//3B
+0x0000183C3C180000ULL,		//3C
+0xFFFFC0C0C0C0C0C0ULL,		//3D
+0xFFFF000000000000ULL,		//3E
+0xFFFF030303030303ULL,		//3F
+0x000000070F1F1F1FULL,		//40
+0x000000E0F0F8F8F8ULL,		//41
+0x0000000000030707ULL,		//42
+0x0000000000C0E0E0ULL,		//43
+0x0000000000FFFFFFULL,		//44
+0x000000FFFFFFFFFFULL,		//45
+0x0000FFFFFFFFFFFFULL,		//46
+0x00FFFFFFFFFFFFFFULL,		//47
+0xFFFFFF7F3F1F0F07ULL,		//48
+0xFFFFFFFEFCF8F0E0ULL,		//49
+0xFFFFFFFFFF7F3F1FULL,		//4A
+0xFFFFFFFFFFFEFCF8ULL,		//4B
+0x003C7E66667E3C00ULL,		//4C
+0xC0C0C0C0C0C0C0C0ULL,		//4D
+0x0000000000000000ULL,		//4E
+0x0303030303030303ULL,		//4F
+0x1F1F1F0F07000000ULL,		//50
+0xF8F8F8F0E0000000ULL,		//51
+0x0707030000000000ULL,		//52
+0xE0E0C00000000000ULL,		//53
+0xE0E0E0E0E0E0E0E0ULL,		//54
+0xF8F8F8F8F8F8F8F8ULL,		//55
+0xFCFCFCFCFCFCFCFCULL,		//56
+0xFEFEFEFEFEFEFEFEULL,		//57
+0x3F1F0F0703010000ULL,		//58
+0xFCF8F0E0C0800000ULL,		//59
+0x0F07030100000000ULL,		//5A
+0xF0E0C08000000000ULL,		//5B
+0x003C7E7E7E7E3C00ULL,		//5C
+0xC0C0C0C0C0C0FFFFULL,		//5D
+0x000000000000FFFFULL,		//5E
+0x030303030303FFFFULL,		//5F
+0x00071F3F3F7F7F7FULL,		//60
+0x00E0F8FCFCFEFEFEULL,		//61
+0x0000000C1E1E0C00ULL,		//62
+0x0000000378780300ULL,		//63
+0x3C3C3C3C3C3C3C3CULL,		//64
+0x0000FFFFFFFF0000ULL,		//65
+0x0F1F3F7FFEFCF8F0ULL,		//66
+0xF0F8FCFE7F3F1F0FULL,		//67
+0x0000000000FFFF00ULL,		//68
+0x00000000FFFF0000ULL,		//69
+0x000000FFFF000000ULL,		//6A
+0x0000FFFF00000000ULL,		//6B
+0x00FFFF0000000000ULL,		//6C
+0x367F7F7F3E1C8000ULL,		//6D
+0x1818666618183C00ULL,		//6E
+0xC3E77E3C3C7EE7C3ULL,		//6F
+0x7F7F7F3F3F1F0700ULL,		//70
+0xFEFEFEFCFCF8E000ULL,		//71
+0x000C1E1E0C000000ULL,		//72
+0x0003787803000000ULL,		//73
+0x6666666666666666ULL,		//74
+0x00FFFF0000FFFF00ULL,		//75
+0x1C3871E3C78E1C38ULL,		//76
+0x381C8EC7E371381CULL,		//77
+0x6060606060606060ULL,		//78
+0x3030303030303030ULL,		//79
+0x1818181818181818ULL,		//7A
+0x0C0C0C0C0C0C0C0CULL,		//7B
+0x0606060606060606ULL,		//7C
+0x081C3E7F7F1C3E00ULL,		//7D
+0x081C3E7F3E1C0800ULL,		//7E
+0x0000000000000000ULL,		//7F, Dummy
+};
+
 byte tk_con_clr16to64[16]={
 	0x00, 0x20, 0x08, 0x28, 0x02, 0x22, 0x0A, 0x2A,
 	0x00, 0x30, 0x0C, 0x3C, 0x03, 0x33, 0x0F, 0x3F };
@@ -703,6 +835,18 @@ void *TK_ConGetCtxV(void)
 void *tk_con_getctx(void)
 {
 	return(tk_con);
+}
+
+void tk_con_uploadglyph(int idx, u64 tv)
+{
+	u64 ta, tb;
+	
+	ta=(u32)(tv>> 0);
+	tb=(u32)(tv>>32);
+	ta|=((u64)idx)<<32;
+	tb|=((u64)idx)<<32;
+	*((u64 *)0xFFFFF00BFF30ULL)=ta;
+	*((u64 *)0xFFFFF00BFF38ULL)=tb;
 }
 
 void tk_con_init()
@@ -760,6 +904,28 @@ void tk_con_init()
 		tk_gfxcon_hexblock[i]=tv;
 	}
 #endif
+
+	for(i=0; i<512; i++)
+	{
+		if((i>=0x0000) && (i<0x0080))
+		{
+			tv=tk_gfxcon_glyphs[i-0x0000];
+		}else if((i>=0x0080) && (i<0x0100))
+		{
+			tv=tk_gfxcon_glyphs_lat1ext[i-0x0080];
+		}else if((i>=0x0100) && (i<0x0180))
+		{
+			tv=tk_gfxcon_glyphs_gfx0[i-0x0100];
+		}else if((i>=0x0180) && (i<0x0200))
+		{
+			tv=tk_gfxcon_glyphs_437ext[i-0x0180];
+		}else
+		{
+			tv=0;
+		}
+		
+		tk_con_uploadglyph(i, tv);
+	}
 }
 
 void tk_con_disable()
@@ -1025,8 +1191,9 @@ void tk_con_scroll_down()
 //		{ *(u64 *)(buf+i0)=0; i0+=8; }
 	{
 //		*(u64 *)(buf+i0)=i1; i0+=8;
-		((u64 *)(buf+i0))[0]=q0;
-		((u64 *)(buf+i0))[1]=q1;
+		*(u64 *)(buf+i0)=i1;
+//		((u64 *)(buf+i0))[0]=q0;
+//		((u64 *)(buf+i0))[1]=q1;
 		i0+=8;
 	}
 #endif
@@ -1508,42 +1675,52 @@ void tk_con_putc(int ch)
 //	tz=(ty*TK_CONWIDTH+tx)*8;
 //	tk_con->buf[tz]=px;
 
-	if(ch>=0x100)
+	if(ch<0x100)
 	{
-		ch=tk_con_doremap(ch);
+//		tz=(ty*TK_CONWIDTH+tx)*8;
+//		tk_con->buf[tz]=px;
+
+		tz=(ty*TK_CONWIDTH+tx)*4;
+		((u64 *)buf)[tz]=px;
+	}else
+	{
+		if(ch>=0x100)
+		{
+			ch=tk_con_doremap(ch);
+		}
+
+		if((ch>=0x00) && (ch<=0x7F))
+		{
+			q1=tk_gfxcon_glyphs[ch];
+		}else
+			if((ch>=0x80) && (ch<=0xFF))
+		{
+			q1=tk_gfxcon_glyphs_lat1ext[ch&0x7F];
+		}else
+			if((ch>=0x100) && (ch<=0x17F))
+		{
+			q1=tk_gfxcon_glyphs_cyril0[ch&0x7F];
+		}else
+			if((ch>=0x180) && (ch<=0x1FF))
+		{
+			q1=tk_gfxcon_glyphs_437ext[ch&0x7F];
+		}else
+	//		if((ch>=0x1F00) && (ch<=0x1FFF))
+			if((ch>=0x0600) && (ch<=0x06FF))
+		{
+			q1=tk_gfxcon_hexblock[ch&0xFF];
+	//		q1=tk_gfxcon_glyphs[0xBF];
+		}else
+		{
+			q1=tk_gfxcon_glyphs[0xBF];
+		}
+
+		q0=(2ULL<<30)|(tk_con->bgclr_555<<15)|tk_con->fgclr_555;
+
+		tz=(ty*TK_CONWIDTH+tx)*4;
+		((u64 *)buf)[tz+0]=q0;
+		((u64 *)buf)[tz+1]=q1;
 	}
-
-	if((ch>=0x00) && (ch<=0x7F))
-	{
-		q1=tk_gfxcon_glyphs[ch];
-	}else
-		if((ch>=0x80) && (ch<=0xFF))
-	{
-		q1=tk_gfxcon_glyphs_lat1ext[ch&0x7F];
-	}else
-		if((ch>=0x100) && (ch<=0x17F))
-	{
-		q1=tk_gfxcon_glyphs_cyril0[ch&0x7F];
-	}else
-		if((ch>=0x180) && (ch<=0x1FF))
-	{
-		q1=tk_gfxcon_glyphs_437ext[ch&0x7F];
-	}else
-//		if((ch>=0x1F00) && (ch<=0x1FFF))
-		if((ch>=0x0600) && (ch<=0x06FF))
-	{
-		q1=tk_gfxcon_hexblock[ch&0xFF];
-//		q1=tk_gfxcon_glyphs[0xBF];
-	}else
-	{
-		q1=tk_gfxcon_glyphs[0xBF];
-	}
-
-	q0=(2ULL<<30)|(tk_con->bgclr_555<<15)|tk_con->fgclr_555;
-
-	tz=(ty*TK_CONWIDTH+tx)*4;
-	((u64 *)buf)[tz+0]=q0;
-	((u64 *)buf)[tz+1]=q1;
 
 //	tk_con->buf[tz+8]=py;
 

@@ -1212,6 +1212,10 @@ static const u32 tst_mandrill0_bmp[] = {
 int TKSH_Cmds_TestGfx(char **args)
 {
 	u64 *conbufa;
+	u64 *conbufa_0;
+	u64 *conbufa_1;
+	u64 *conbufa_2;
+	u64 *conbufa_3;
 	int kk, md, lmd, mdb, clrm, brk;
 	u16 mandril_pal16[256];
 	byte mandril_pal8[256];
@@ -1231,6 +1235,12 @@ int TKSH_Cmds_TestGfx(char **args)
 
 	conbufa=(u64 *)0xFFFFF00A0000ULL;
 //	((u32 *)0xFFFFF00BFF00UL)[0]=0x0095;	//320x200x16bpp, RGB555
+
+	conbufa_0=(u64 *)0xFFFFF00A0000ULL;
+	conbufa_1=(u64 *)0xFFFFF00A0001ULL;
+	conbufa_2=(u64 *)0xFFFFF00A0002ULL;
+	conbufa_3=(u64 *)0xFFFFF00A0003ULL;
+
 	md=0;
 	lmd=-1;
 	clrm=0;
@@ -1299,7 +1309,7 @@ int TKSH_Cmds_TestGfx(char **args)
 	
 	tk_printf("Keys: 1..9 = Graphics Modes; 0=Text\n");
 	tk_printf("  1=320x200 16bpp  , 2=320x200 8bpp , 3=640x400 RGBI\n");
-	tk_printf("  4=640x400 4-color, 5=640x400 1-bpp\n");
+	tk_printf("  4=640x400 4-color, 5=640x400 1-bpp, 6=640x400 16bpp\n");
 	tk_printf("Keys: a..p = Palette Mode Selector (2bpp and 1bpp modes)\n");
 	tk_printf("Keys: Space = Exit\n");
 
@@ -1333,12 +1343,19 @@ int TKSH_Cmds_TestGfx(char **args)
 				mdb=0x0425;	//640x400x1bpp, 2 Color
 				xstr=80;
 				break;
+			case 6:
+				mdb=0x000D0095;	//320x200x16bpp, RGB555
+				xstr=160;
+				break;
 			default:
 				mdb=0x0081;	//80x25 color-cell
 				xstr=80;
 				break;
 			}
 			
+			mdb|=(clrm&15)<<12;
+			((u32 *)0xFFFFF00BFF00UL)[0]=mdb;
+
 			if((md==1) || (md==3))
 			{
 				mandril_pal=mandril_pal16;
@@ -1446,7 +1463,45 @@ int TKSH_Cmds_TestGfx(char **args)
 					conbufa[k]=v0;
 				}
 			}
-			
+
+			if(md==6)
+			{
+				mandril_pal=mandril_pal16;
+				if(md==3)
+					mandril_pal=mandril_pal4;
+				
+				for(i=0; i<16; i++)
+					for(j=0; j<16; j++)
+				{
+					k=(63-(i*4+0))*64+(j*4);
+					v0=         mandril_pal[mandril_pix[k+3]];
+					v0=(v0<<16)|mandril_pal[mandril_pix[k+2]];
+					v0=(v0<<16)|mandril_pal[mandril_pix[k+1]];
+					v0=(v0<<16)|mandril_pal[mandril_pix[k+0]];
+					k=(63-(i*4+1))*64+(j*4);
+					v1=         mandril_pal[mandril_pix[k+3]];
+					v1=(v1<<16)|mandril_pal[mandril_pix[k+2]];
+					v1=(v1<<16)|mandril_pal[mandril_pix[k+1]];
+					v1=(v1<<16)|mandril_pal[mandril_pix[k+0]];
+					k=(63-(i*4+2))*64+(j*4);
+					v2=         mandril_pal[mandril_pix[k+3]];
+					v2=(v2<<16)|mandril_pal[mandril_pix[k+2]];
+					v2=(v2<<16)|mandril_pal[mandril_pix[k+1]];
+					v2=(v2<<16)|mandril_pal[mandril_pix[k+0]];
+					k=(63-(i*4+3))*64+(j*4);
+					v3=         mandril_pal[mandril_pix[k+3]];
+					v3=(v3<<16)|mandril_pal[mandril_pix[k+2]];
+					v3=(v3<<16)|mandril_pal[mandril_pix[k+1]];
+					v3=(v3<<16)|mandril_pal[mandril_pix[k+0]];
+					
+					k=(i*xstr)+j;
+					conbufa_0[k]=v0;
+					conbufa_1[k]=v1;
+					conbufa_2[k]=v2;
+					conbufa_3[k]=v3;
+				}
+			}
+
 			mdb|=(clrm&15)<<12;
 			((u32 *)0xFFFFF00BFF00UL)[0]=mdb;
 			lmd=md;
