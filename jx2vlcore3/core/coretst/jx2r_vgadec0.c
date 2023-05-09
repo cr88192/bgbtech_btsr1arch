@@ -213,6 +213,9 @@ byte bestqi;	//best QAM intensity
 int frame;
 int lbits;
 
+short xshl;
+short yshl;
+
 byte bsmode;	//bitstream mode
 };
 
@@ -273,9 +276,16 @@ int CDEC_PeekPwm8I(cdec_imgbuf *ctx, int ofs, int shl)
 		p2=ctx->bits[(ctx->bpos+ofs)+2];
 		p3=ctx->bits[(ctx->bpos+ofs)+3];
 
-		i=	((p0>>shl)&15)+((p1>>shl)&15)+
-			((p2>>shl)&15)+((p3>>shl)&15);
-		i=i<<2;
+//		i=	((p0>>shl)&15)+((p1>>shl)&15)+
+//			((p2>>shl)&15)+((p3>>shl)&15);
+//		i=i<<2;
+
+//		i=	((p0>>shl)&15)+((p1>>shl)&15);
+//		i=i<<3;
+
+		i=	((p0>>shl)&15);
+		i=i<<4;
+
 		return(i);
 	}
 	
@@ -359,7 +369,7 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 	int p4, p5, p6, p7;
 	int py, pu, pv;
 	int cy, cu, cv;
-	int lcy, lcu, lcv;
+	int lcy, lcu, lcv, pxy, pxx, pxi;
 	int bp, bp1, bp2;
 	int hsyn, vsyn;
 	int i, j, k;
@@ -388,6 +398,22 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 			{
 //				printf("Frame %d %d\n", ctx->xpos, ctx->ypos);
 				ctx->frame++;
+				
+				for(j=0; j<(CDEC_LINE_RAWXMAX*CDEC_LINE_RAWYMAX); j++)
+				{
+//					ctx->ybuf[j]=(ctx->ybuf[j]*15)>>4;
+//					ctx->ubuf[j]=(ctx->ubuf[j]*15)>>4;
+//					ctx->vbuf[j]=(ctx->vbuf[j]*15)>>4;
+
+					ctx->ybuf[j]=(ctx->ybuf[j]*31)>>5;
+					ctx->ubuf[j]=(ctx->ubuf[j]*31)>>5;
+					ctx->vbuf[j]=(ctx->vbuf[j]*31)>>5;
+				}
+				
+				if((ctx->ypos>>ctx->yshl)<200)
+				{
+					ctx->yshl--;
+				}
 			}
 
 			ctx->ypos=0;
@@ -401,8 +427,16 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 
 		if(hsyn)
 		{
-			if(ctx->xpos>600)
+//			if(ctx->xpos>600)
+			if(ctx->xpos>200)
+			{
 				ctx->ypos++;
+
+				if((ctx->xpos>>ctx->xshl)<600)
+				{
+					ctx->xshl--;
+				}
+			}
 			ctx->xpos=0;
 //			ctx->bpos+=8;
 //			ctx->bpos+=4;
@@ -509,6 +543,7 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 	}
 #endif
 
+#if 0
 	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos]=cy;
 	ctx->ubuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos]=cu;
 	ctx->vbuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos]=cv;
@@ -536,6 +571,56 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 //		ctx->ypos=!(ctx->ypos&1);
 		ctx->ypos=0;
 	}
+#endif
+
+#if 1
+	if(ctx->xshl>=0)
+		pxx=ctx->xpos>>ctx->xshl;
+	else
+		pxx=ctx->xpos<<(-ctx->xshl);
+
+	if(ctx->yshl>=0)
+		pxy=(ctx->ypos>>ctx->yshl);
+	else
+		pxy=(ctx->ypos<<(-ctx->yshl));
+
+//	if(ctx->yshl>=0)
+	if(1)
+	{
+		pxi=(pxy*CDEC_LINE_RAWXMAX)+pxx;
+	
+		ctx->ybuf[pxi]=cy;
+		ctx->ubuf[pxi]=cu;
+		ctx->vbuf[pxi]=cv;
+
+		ctx->ybuf[pxi+1]=255;
+		ctx->ybuf[pxi+2]=255;
+		ctx->ybuf[pxi+3]=255;
+		ctx->ybuf[pxi+4]=255;
+	}
+
+//	ctx->ybuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+1]=0;
+//	ctx->ubuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+1]=255;
+//	ctx->vbuf[ctx->ypos*CDEC_LINE_RAWXMAX+ctx->xpos+1]=255;
+	ctx->xpos++;
+//	if((ctx->xpos>>ctx->xshl)>=CDEC_LINE_RAWXMAX)
+	if(pxx>=CDEC_LINE_RAWXMAX)
+	{
+		printf("CDEC_LINE_RAWXMAX\n");
+		ctx->xshl++;
+//		ctx->xpos=0;
+//		ctx->ypos++;
+	}
+	
+//	if(ctx->ypos>=CDEC_LINE_RAWYMAX)
+	if((ctx->ypos>>ctx->yshl)>=CDEC_LINE_RAWYMAX)
+	{
+		printf("CDEC_LINE_RAWYMAX\n");
+		ctx->yshl++;
+//		ctx->ypos=!(ctx->ypos&1);
+//		ctx->ypos=0;
+	}
+#endif
 
 	return(0);
 }

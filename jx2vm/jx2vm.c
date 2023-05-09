@@ -458,6 +458,13 @@ int GfxDrv_MainLoop(void (*fcn)())
 #endif
 
 
+int BJX2_MainAddScanMouseByte(BJX2_Context *ctx, int k)
+{
+	ctx->ps2msbuf[ctx->ps2msrov]=k;
+	ctx->ps2msrov=(ctx->ps2msrov+1)&255;
+	return(0);
+}
+
 int BJX2_MainAddScanKeyByte(BJX2_Context *ctx, int k)
 {
 	ctx->ps2kbbuf[ctx->ps2kbrov]=k;
@@ -689,7 +696,9 @@ int BJX2_MainAddKeyByte(BJX2_Context *ctx, int k)
 
 int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 {
+	static int lmb, msflg, msrt, l1msrt, l2msrt;
 	u16 *kb;
+	int mdx, mdy, mb;
 	int i, j, k;
 
 #ifdef _WIN32
@@ -801,6 +810,128 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 			}
 		}
 #endif
+	}
+
+	if(ctx->ps2txmsrov!=ctx->ps2txmsirov)
+	{
+		i=ctx->ps2txmsbuf[ctx->ps2txmsirov];
+		switch(i)
+		{
+		case 0xFF:
+		case 0xF6:
+			msflg=0;
+			BJX2_MainAddScanMouseByte(ctx, 0xFA);
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+		case 0xFE:
+			lmb=-1;
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+
+		case 0xF5:
+			msflg&=~1;
+			BJX2_MainAddScanMouseByte(ctx, 0xFA);
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+		case 0xF4:
+			msflg|=1;
+			BJX2_MainAddScanMouseByte(ctx, 0xFA);
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+
+		case 0xF3:
+			if(((ctx->ps2txmsirov+1)&0xFF)!=ctx->ps2txmsrov)
+			{
+				l2msrt=l1msrt;
+				l1msrt=msrt;
+				msrt=ctx->ps2txmsbuf[(ctx->ps2txmsirov+1)&0xFF];
+				BJX2_MainAddScanMouseByte(ctx, 0xFA);
+				ctx->ps2txmsirov=(ctx->ps2txmsirov+2)&0xFF;
+				
+				if((l2msrt==200) && (l1msrt==100) && (msrt==80))
+				{
+					msflg|=8;
+				}
+
+				if((l2msrt==200) && (l1msrt==200) && (msrt==80))
+				{
+					msflg|=8;
+				}
+			}
+			break;
+
+		case 0xF2:
+			BJX2_MainAddScanMouseByte(ctx, 0xFA);
+			if(msflg&8)
+				BJX2_MainAddScanMouseByte(ctx, 0x03);
+			else
+				BJX2_MainAddScanMouseByte(ctx, 0x00);
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+
+		case 0xF0:
+			msflg|=2;
+			BJX2_MainAddScanMouseByte(ctx, 0xFA);
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+
+		case 0xEB:
+			msflg|=4;
+			BJX2_MainAddScanMouseByte(ctx, 0xFA);
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+
+		case 0xEA:
+			msflg&=~2;
+			BJX2_MainAddScanMouseByte(ctx, 0xFA);
+			ctx->ps2txmsirov=(ctx->ps2txmsirov+1)&0xFF;
+			break;
+
+
+		default:
+			ctx->ps2txmsirov = ctx->ps2txmsrov;
+			break;
+		}
+	}
+
+	if(((msflg&3)==1) || (msflg&4))
+	{
+		GfxDrv_MouseGetRelPos(&mdx, &mdy, &mb);
+		if(mdx || mdy || (mb!=lmb))
+		{
+//			j=0x08|(mb&7);
+			j=0x08;
+			if(mb&1)
+				j|=0x01;
+			if(mb&2)
+				j|=0x04;
+			if(mb&4)
+				j|=0x02;
+			if(mdx<0)
+				j|=0x10;
+			if(mdy<0)
+				j|=0x20;
+			if((mdx^(mdx>>31))&(~255))
+				j|=0x40;
+			if((mdy^(mdy>>31))&(~255))
+				j|=0x80;
+
+			lmb=mb;
+			msflg&=~4;
+
+			BJX2_MainAddScanMouseByte(ctx, j);
+			BJX2_MainAddScanMouseByte(ctx, mdx&0xFF);
+			BJX2_MainAddScanMouseByte(ctx, mdy&0xFF);
+			
+			if(msflg&8)
+			{
+				j=GfxDrv_MouseGetWheelDelta();
+				if(j<-8)	j=-8;
+				if(j>7)		j= 7;
+				j&=15;
+				BJX2_MainAddScanMouseByte(ctx, j);
+			}
+		}
 	}
 #endif
 

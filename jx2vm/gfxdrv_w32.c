@@ -52,6 +52,7 @@ int gfxdrv_dtt_swap;
 int window_center_x;
 int window_center_y;
 int window_mouse_buttons;
+int window_mouse_whstep;
 int window_width;
 int window_height;
 int window_active;
@@ -705,10 +706,12 @@ LONG WINAPI GfxDrv_MainWndProc(
 			{
 				GfxDrv_KeyEvent(K_MWHEELUP, -1);
 				GfxDrv_KeyEvent(K_MWHEELUP, 0);
+				window_mouse_whstep++;
 			}else
 			{
 				GfxDrv_KeyEvent(K_MWHEELDOWN, -1);
 				GfxDrv_KeyEvent(K_MWHEELDOWN, 0);
+				window_mouse_whstep--;
 			}
 			break;
 
@@ -952,6 +955,115 @@ int GfxDrv_MainLoop(void (*fcn)())
 		fcn();
 		lt=ct;
 	}
+	return(0);
+}
+
+
+int	mouse_lx, mouse_ly, mouse_lb;
+POINT	mouse_pos;
+
+//extern int window_center_x, window_center_y;
+//extern int window_mouse_buttons;
+
+//extern int window_width;
+//extern int window_height;
+
+int window_scalesh = 0;
+int window_mouse_whstep;
+
+int GfxDrv_MouseGetWheelDelta(void)
+{
+	int i;
+	i=window_mouse_whstep;
+	window_mouse_whstep=0;
+	return(i);
+}
+
+int GfxDrv_MouseGetRelPos(int *dx, int *dy, int *mb)
+{
+	int x, y, b;
+
+	GetCursorPos (&mouse_pos);
+//	SetCursorPos (window_center_x, window_center_y);
+//	x=mouse_pos.x-window_center_x;
+//	y=mouse_pos.y-window_center_y;
+
+	x=(mouse_pos.x-window_center_x)>>window_scalesh;
+	y=(mouse_pos.y-window_center_y)>>window_scalesh;
+
+	b=window_mouse_buttons;
+
+//	if ((x<=-400) || (x>=400) || (y<=-300) || (y>=300))
+	if ((x<=-(window_width/2)) || (x>=(window_width/2)) ||
+		(y<=-(window_height/2)) || (y>=(window_height/2)))
+	{
+		x=mouse_lx;
+		y=mouse_ly;
+//		b=mouse_lb;
+	}
+
+	*dx=x-mouse_lx;
+	*dy=y-mouse_ly;
+	mouse_lx=x;
+	mouse_ly=y;
+	mouse_lb=b;
+
+	*mb=b&7;
+
+	return(0);
+}
+
+int GfxDrv_MouseGetPos(int *mx, int *my, int *mb)
+{
+	int x, y, b;
+
+	GetCursorPos (&mouse_pos);
+//	SetCursorPos (window_center_x, window_center_y);
+//	x=mouse_pos.x-window_center_x;
+//	y=mouse_pos.y-window_center_y;
+
+	x=(mouse_pos.x-window_center_x)>>window_scalesh;
+	y=(mouse_pos.y-window_center_y)>>window_scalesh;
+
+	b=window_mouse_buttons;
+
+//	if ((x<=-400) || (x>=400) || (y<=-300) || (y>=300))
+	if ((x<=-(window_width/2)) || (x>=(window_width/2)) ||
+		(y<=-(window_height/2)) || (y>=(window_height/2)))
+	{
+		x=mouse_lx;
+		y=mouse_ly;
+//		b=mouse_lb;
+	}
+
+	*mx=x;
+	*my=y;
+	mouse_lx=x;
+	mouse_ly=y;
+	mouse_lb=b;
+
+	*mb=b&7;
+
+	return(0);
+}
+
+int GfxDrv_MouseSetPos(int mx, int my)
+{
+	int x, y, b;
+
+//	x=window_center_x+mx;
+//	y=window_center_y+my;
+
+	x=window_center_x+(mx<<window_scalesh);
+	y=window_center_y+(my<<window_scalesh);
+
+//	x=(mouse_pos.x-window_center_x)>>window_scalesh;
+//	y=(mouse_pos.y-window_center_y)>>window_scalesh;
+
+	SetCursorPos (x, y);
+	mouse_lx = mx;
+	mouse_ly = my;
+
 	return(0);
 }
 

@@ -58,6 +58,7 @@ module ModFbTxtW(clock, reset,
 	pixCy,		pixCu,		pixCv,	pixAux,
 	pixCellIx,	cellData,
 	fontGlyph,	fontData,
+	palIndex,	palData,
 	ctrlRegVal,	pixLineOdd,
 	blinkSlow,	blinkFast,
 	dbgLeds);
@@ -75,11 +76,15 @@ output[7:0]		pixCu;
 output[7:0]		pixCv;
 output[15:0]	pixAux;
 
-output[13:0] pixCellIx;
-input[255:0] cellData;
+output[13:0]	pixCellIx;
+input[255:0]	cellData;
 
 output[15:0]	fontGlyph;
 input[63:0]		fontData;
+
+output[7:0]		palIndex;
+input[15:0]		palData;
+
 input[63:0]		ctrlRegVal;
 input			pixLineOdd;
 
@@ -372,6 +377,11 @@ reg[7:0]	tPixClrBmYv8_C;
 reg[15:0]	tPixClrBmPalYV16_C;
 reg[15:0]	tPixClrBmPalYV16_D;
 
+reg[4:0]	tPixClrBmYv8_PalVHi;
+reg[4:0]	tPixClrBmYv8_PalVLo;
+reg[2:0]	tPixClrBmYv8_PalVSel;
+reg			tPixClrBmYv8_PalVSelOw;
+
 reg[3:0]	tPixClrBmYv4_D;
 reg[3:0]	tPixClrBmYv4_C;
 reg[3:0]	tPixClrBmYv4Rgbi;
@@ -423,6 +433,11 @@ reg		tPixRawLimitY;
 assign	pixCellIx = tPixCellIx_B;
 // assign	pixCellIx = tPixCellIx_C;
 assign	fontGlyph = tFontGlyph;
+
+reg[7:0]	tPalIndex;
+assign	palIndex = tPalIndex;
+
+reg[15:0]	tPalData_C;
 
 assign	pixCy	= tPixCy2;
 assign	pixCu	= tPixCu2;
@@ -730,6 +745,11 @@ begin
 	end
 	else
 	begin
+		if(use2xRow)
+		begin
+			$display("ModFbTxtW: Used 2xRow in 25-row mode...");
+		end
+
 //		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[2:1];
 //		tPixCellGx_A0[5:3]	= 3'h7 - tPixPosY[2:0];
 		tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[3:2];
@@ -751,6 +771,11 @@ begin
 	end
 	else
 	begin
+		if(use2xCol)
+		begin
+			$display("ModFbTxtW: Used 2xCol in 40-column mode...");
+		end
+
 		tPixCellFx_A0[1:0] = 2'h3 - tPixPosX[3:2];		
 		tPixCellGx_A0[2:0]	= 3'h7 - tPixPosX[3:1];
 	end
@@ -1511,9 +1536,65 @@ begin
 	endcase
 `endif
 
+
 `ifdef def_true
-	if(tPixClrBmYv8_C[7])
+//	if(tPixClrBmYv8_C[7])
+	if(1'b1)
 	begin
+		tPixClrBmYv8_PalVHi = { tPixClrBmYv8_C[3:0], tPixClrBmYv8_C[3] };
+//		tPixClrBmYv8_PalVLo = 5'h00;
+		tPixClrBmYv8_PalVLo = { 2'b00, tPixClrBmYv8_PalVHi[4:2] };
+
+		if(tPixClrBmYv8_C[7])
+			tPixClrBmYv8_PalVLo =
+				{ 1'b0, tPixClrBmYv8_PalVHi[4:1] } +
+				{ 3'b000, tPixClrBmYv8_PalVHi[4:3] };
+
+		case(tPixClrBmYv8_C[7:4])
+			4'b0000: begin
+				tPixClrBmYv8_PalVSel	= 3'b111;
+				tPixClrBmYv8_PalVSelOw	= 1;
+			end
+//			4'b0000: begin
+			4'b0111: begin
+				tPixClrBmYv8_PalVSel	= 3'b101;
+				tPixClrBmYv8_PalVSelOw	= 1;
+			end
+			4'b1000: begin
+				tPixClrBmYv8_PalVSel	= 3'b011;
+				tPixClrBmYv8_PalVSelOw	= 1;
+			end
+			4'b1111: begin
+				tPixClrBmYv8_PalVSel	= 3'b110;
+				tPixClrBmYv8_PalVSelOw	= 1;
+			end
+			default:
+			begin
+				tPixClrBmYv8_PalVSel	= tPixClrBmYv8_C[6:4];
+				tPixClrBmYv8_PalVSelOw	= 0;
+			end
+		endcase
+
+		if(tPixClrBmYv8_PalVSelOw)
+		begin
+			tPixClrBmYv8_PalVLo =
+				tPixClrBmYv8_PalVHi -
+				{3'b000, tPixClrBmYv8_PalVHi[4:3] };
+		end
+
+`ifdef def_true
+		tPixClrBmPalYV16_C={
+			1'b0,
+			tPixClrBmYv8_PalVSel[2] ?
+				tPixClrBmYv8_PalVHi : tPixClrBmYv8_PalVLo,
+			tPixClrBmYv8_PalVSel[1] ?
+				tPixClrBmYv8_PalVHi : tPixClrBmYv8_PalVLo,
+			tPixClrBmYv8_PalVSel[0] ?
+				tPixClrBmYv8_PalVHi : tPixClrBmYv8_PalVLo
+			};
+`endif
+
+`ifndef def_true
 		tPixClrBmPalYV16_C={
 			1'b0,
 			tPixClrBmYv8_C[6] ?
@@ -1523,6 +1604,7 @@ begin
 			tPixClrBmYv8_C[4] ?
 				{ tPixClrBmYv8_C[3:0], tPixClrBmYv8_C[3] } : 5'h00
 			};
+`endif
 	end
 	else
 	begin
@@ -1535,10 +1617,15 @@ begin
 	end
 `endif
 
+	if(tScrClrsModB[3:2]==2'b11)
+		tPixClrBmPalYV16_C=tPalData_C;
+
 	if((tScrMode!=0) && useHalfCell)
 	begin
-		tFontGlyph = { 10'b0000001111, tPixClrBmYv8_C[7:2] };
+//		tFontGlyph = { 10'b0000001111, tPixClrBmYv8_C[7:2] };
 	end
+	
+	tPalIndex = tPixClrBmYv8_C[7:0];
 
 `ifdef jx2_fbuf_hwsprite
 
@@ -1853,6 +1940,8 @@ begin
 //	tFontData_C		<= fontData;
 	tFontData_C		<= tBlinkStrobeB ? UV64_00 : fontData;
 	tFontGlyph_C	<= tFontGlyph;
+
+	tPalData_C		<= palData;
 
 	tFontGlyphY_B	<= tFontGlyphY_A;
 	tFontGlyphU_B	<= tFontGlyphU_A;

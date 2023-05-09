@@ -294,8 +294,8 @@ The Vector Base Register (VBR) will have the layout:
 * 0011: RISC-V (Reserved)
 * 0100: BJX2-XG2 Mode (No WEX, 32+)
 * 0101: BJX2-XG2 Mode (WEX, 32+)
-* 0110: Reserved
-* 0111: Reserved
+* 0110: XG2RV Mode (No WEX)
+* 0111: XG2RV Mode (WEX)
 * 1zzz: Reserved
 
 === Special Restrictions ===
@@ -2857,7 +2857,7 @@ XGPR Encodings which are redundant with the Fz encodings will be reserved/invali
 * 99 (F5), Jumbo Reserved
 
 
-=== XG2 Mode (Possible / Optional) ===
+=== XG2 Mode (Optional) ===
 
 This mode will disable both 16-bit ops and the normal XGPR encodings.
 
@@ -2877,6 +2877,13 @@ Imm9u and Imm9n encodings will use W.i as an additional immediate bit.
 
 
 Possibly, this mode may use (WX4,WX3,WX2,WXE) == 0100 or 0101.
+
+
+=== XG2RV Mode (Optional) ===
+
+In this mode, the encoding scheme will be the same as XG2 Mode, but differing primarily in that it will use RISC-V Mode's register remapping scheme.
+
+Semantically, XG2RV Mode will be treated as if it were part of the RISC-V Context.
 
 
 === Wide Execution 2 (Optional) ===

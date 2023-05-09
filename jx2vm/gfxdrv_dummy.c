@@ -77,3 +77,24 @@ int GfxDrv_MainLoop(void (*fcn)())
 		lt=ct;
 	}
 }
+
+int GfxDrv_MouseGetRelPos(int *dx, int *dy, int *mb)
+{
+	*dx=0;
+	*dy=0;
+	*mb=0;
+	return(0);
+}
+
+int GfxDrv_MouseGetPos(int *mx, int *my, int *mb)
+{
+	*dx=0;
+	*dy=0;
+	*mb=0;
+	return(0);
+}
+
+int GfxDrv_MouseSetPos(int mx, int my)
+{
+	return(0);
+}

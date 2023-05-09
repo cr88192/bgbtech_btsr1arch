@@ -88,6 +88,7 @@ ExBtcEncCc		encCc1(
 	valRt[31:0],
 	valRm[31:0],
 	idUIxt,
+	exHold,
 	tValEncCc1);
 `endif
 

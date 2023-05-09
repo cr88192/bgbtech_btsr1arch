@@ -25,6 +25,27 @@
 
 int BJX2_RemapGPR(BJX2_Context *ctx, int reg)
 {
+	int reg2;
+
+	if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&
+		(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2)	)
+	{
+		switch(reg)
+		{
+			case 0:		reg2=BJX2_REG_ZZR;	break;
+			case 1:		reg2=BJX2_REG_LR;	break;
+			case 2:		reg2=BJX2_REG_SP;	break;
+			case 3:		reg2=BJX2_REG_GBR;	break;
+			case 4:		reg2=BJX2_REG_TBR;	break;
+			case 5:		reg2=BJX2_REG_DHR;	break;
+			case 14:	reg2=BJX2_REG_R2;	break;
+			case 15:	reg2=BJX2_REG_R3;	break;
+			default:	reg2=reg;			break;
+		}
+		
+		return(reg2);
+	}
+
 	if(reg==0)
 		return(BJX2_REG_DLR);
 	if(reg==1)

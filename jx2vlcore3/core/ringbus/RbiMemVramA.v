@@ -47,6 +47,7 @@ module RbiMemVramA(
 
 	pixCellIx,		cellData,
 	fontGlyph,		fontData,
+	palIndex,		palData,
 	ctrlRegVal,
 
 	memAddrIn,		memAddrOut,
@@ -72,6 +73,9 @@ output[255:0]	cellData;
 
 input[15:0]		fontGlyph;
 output[63:0]	fontData;
+
+input[7:0]		palIndex;
+output[15:0]	palData;
 
 output[63:0]	ctrlRegVal;
 
@@ -479,6 +483,9 @@ reg[63:0]	fontGfx2Mem[127:0];
 reg[31:0]	fontRamA[1023:0];
 reg[31:0]	fontRamB[1023:0];
 
+reg[31:0]	palRamA[63:0];
+reg[31:0]	palRamB[63:0];
+
 reg[31:0]	tFontRamStDataA;
 reg[31:0]	tFontRamStDataB;
 // reg[8:0]	tFontRamStIxA;
@@ -487,6 +494,13 @@ reg[9:0]	tFontRamStIxA;
 reg[9:0]	tFontRamStIxB;
 reg			tFontRamDoStA;
 reg			tFontRamDoStB;
+
+reg[31:0]	tPalRamStDataA;
+reg[31:0]	tPalRamStDataB;
+reg[5:0]	tPalRamStIxA;
+reg[5:0]	tPalRamStIxB;
+reg			tPalRamDoStA;
+reg			tPalRamDoStB;
 
 reg[31:0]	scrRegCtrl0;	//Control Registers
 reg[31:0]	scrRegCtrl1;	//Control Registers
@@ -527,11 +541,14 @@ reg[63:0]	tFontDataGfx1;
 reg[63:0]	tFontDataGfx2;
 reg[63:0]	tFontDataRam;
 
+reg[15:0]	tPalData;
 
 // assign fontData = 64'h55AA55AA55AA55AA;
 
 assign fontData = tFontData1;
 // assign fontData = tFontData2;
+
+assign palData = tPalData;
 
 initial begin
 `ifndef jx2_fbuf_nofont
@@ -539,6 +556,22 @@ initial begin
 	$readmemh("gfxfont0.txt", fontGfx1Mem);
 	$readmemh("gfxfont1.txt", fontGfx2Mem);
 `endif
+end
+
+reg[31:0]	tPalDataA;
+reg[31:0]	tPalDataB;
+
+always @*
+begin
+	tPalDataA = palRamA[palIndex[7:2]];
+	tPalDataB = palRamB[palIndex[7:2]];
+	
+	case(palIndex[1:0])
+		2'b00: tPalData = tPalDataA[15: 0];
+		2'b01: tPalData = tPalDataA[31:16];
+		2'b10: tPalData = tPalDataB[15: 0];
+		2'b11: tPalData = tPalDataB[31:16];
+	endcase
 end
 
 always @*
@@ -786,6 +819,13 @@ begin
 	tFontRamDoStA	= 0;
 	tFontRamDoStB	= 0;
 
+	tPalRamStDataA	= tReqInValA[31:0];
+	tPalRamStDataB	= tReqInValA[31:0];
+	tPalRamStIxA	= tReqInValA[37:32];
+	tPalRamStIxB	= tReqInValA[37:32];
+	tPalRamDoStA	= 0;
+	tPalRamDoStB	= 0;
+
 	case(tReqAddr[5:2])
 		4'h0: tScrRegCtrl = scrRegCtrl0;
 		4'h1: tScrRegCtrl = scrRegCtrl1;
@@ -819,9 +859,23 @@ begin
 				6'h08: nxtScrRegCtrl8 = tReqInValA[31:0];
 				6'h09: nxtScrRegCtrl9 = tReqInValA[31:0];
 
-				6'h0C: tFontRamDoStA = 1;
+				6'h0C: begin
+					tFontRamDoStA = 1;
+					if(tReqInValA[48])
+					begin
+						tFontRamDoStA = 0;
+						tPalRamDoStA = 1;
+					end
+				end
 //				6'h0D: tFontRamDoStB = 1;
-				6'h0E: tFontRamDoStB = 1;
+				6'h0E: begin
+					tFontRamDoStB = 1;
+					if(tReqInValA[48])
+					begin
+						tFontRamDoStB = 0;
+						tPalRamDoStB = 1;
+					end
+				end
 				default: begin end
 			endcase
 		end
@@ -1683,6 +1737,15 @@ begin
 	if(tFontRamDoStB)
 	begin
 		fontRamB[tFontRamStIxB]		<= tFontRamStDataB;
+	end
+
+	if(tPalRamDoStA)
+	begin
+		palRamA[tPalRamStIxA]		<= tPalRamStDataA;
+	end
+	if(tPalRamDoStB)
+	begin
+		palRamB[tPalRamStIxB]		<= tPalRamStDataB;
 	end
 
 	tArrMemDidStAddrA	<= tArrMemAddrStA;

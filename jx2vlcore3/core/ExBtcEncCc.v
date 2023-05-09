@@ -18,11 +18,13 @@ module ExBtcEncCc(
 	regValRt,
 	regValRp,
 	idUIxt,
+	exHold,
 	regOutVal
 	);
 
 input			clock;
 input			reset;
+input			exHold;
 
 input[63:0]		regValRs;
 input[31:0]		regValRt;
@@ -257,24 +259,27 @@ end
 
 always @(posedge clock)
 begin
-	tIdUIxtB	<= idUIxt;
+	if(!exHold)
+	begin
+		tIdUIxtB	<= idUIxt;
 
-	tValI0B		<= tValI0;
-	tValI1B		<= tValI1;
-	tValI2B		<= tValI2;
-	tValI3B		<= tValI3;
+		tValI0B		<= tValI0;
+		tValI1B		<= tValI1;
+		tValI2B		<= tValI2;
+		tValI3B		<= tValI3;
 
-	tValY0B		<= tValY0;
-	tValY1B		<= tValY1;
-	tValY2B		<= tValY2;
-	tValY3B		<= tValY3;
+		tValY0B		<= tValY0;
+		tValY1B		<= tValY1;
+		tValY2B		<= tValY2;
+		tValY3B		<= tValY3;
 
-	tRefHiY0B	<= tRefHiY0;
-	tRefLoY0B	<= tRefLoY0;
-	tRefMiY0B	<= tRefMiY0;
-	tRegValRpB	<= regValRp;
-	
-	tRegOutVal2	<= tRegOutVal;
+		tRefHiY0B	<= tRefHiY0;
+		tRefLoY0B	<= tRefLoY0;
+		tRefMiY0B	<= tRefMiY0;
+		tRegValRpB	<= regValRp;
+		
+		tRegOutVal2	<= tRegOutVal;
+	end
 end
 
 

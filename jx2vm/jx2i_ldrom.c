@@ -596,6 +596,18 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 		mmio[0x13]=val;
 		break;
 
+	case 0x0044:
+		i=ctx->ps2txkbrov;
+		ctx->ps2txkbrov=(i+1)&255;
+		ctx->ps2txkbbuf[i]=val;
+		break;
+
+	case 0x0054:
+		i=ctx->ps2txmsrov;
+		ctx->ps2txmsrov=(i+1)&255;
+		ctx->ps2txmsbuf[i]=val;
+		break;
+
 
 	case 0x0300:
 		ctx->msgbuf_rxspos=val;

@@ -633,7 +633,9 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->rq=BJX2_REG_GBR_HI;
 	op->imm=0;
 	
-	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE)
+//	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE)
+	if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&
+		!(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2))
 	{
 		if((ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) || ((opw&3)==3))
 		{
@@ -3765,12 +3767,15 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	}
 	
 #if 1
-	if(op->rm!=BJX2_RemapGPR(ctx, op->rm))
-		{ JX2_DBGBREAK }
-	if(op->rn!=BJX2_RemapGPR(ctx, op->rn))
-		{ JX2_DBGBREAK }
-	if(op->ro!=BJX2_RemapGPR(ctx, op->ro))
-		{ JX2_DBGBREAK }
+	if(!(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE))
+	{
+		if(op->rm!=BJX2_RemapGPR(ctx, op->rm))
+			{ JX2_DBGBREAK }
+		if(op->rn!=BJX2_RemapGPR(ctx, op->rn))
+			{ JX2_DBGBREAK }
+		if(op->ro!=BJX2_RemapGPR(ctx, op->ro))
+			{ JX2_DBGBREAK }
+	}
 #endif
 
 	BJX2_DecodeOpcodePostFixup(ctx, op);

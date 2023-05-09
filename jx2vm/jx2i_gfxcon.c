@@ -526,6 +526,7 @@ byte jx2i_gfxcon_ncy;
 
 u64 jx2i_gfxcon_ctrlreg[64];
 u64 jx2i_gfxcon_fontram[1024];
+u64 jx2i_gfxcon_palram[64];
 
 u64 jx2i_gfxcon_seed=0;
 
@@ -815,9 +816,41 @@ u32 JX2I_GfxCon_Rgb444ToRgb24(int rgb)
 
 u32 JX2I_GfxCon_Rgb232ToRgb24(int rgb)
 {
-	int cr, cg, cb, ca;
+	int cr, cg, cb, ca, ch, cl, cm;
 	u32 clrc;
+
+	if(jx2i_gfxcon_clrsmod>=12)
+	{
+		return(JX2I_GfxCon_Rgb555ToRgb24(
+			jx2i_gfxcon_palram[(rgb>>2)&63]>>((rgb&3)*16)));
+	}
+
+#if 1
+	ch=rgb&15;
+//	ch=(ch<<1)|(ch>>3);
+	ch=(ch<<4)|ch;
 	
+	cm=(rgb>>4)&7;
+	
+	cl=ch>>2;
+	if(rgb&0x80)
+		cl=(ch>>1)|(ch>>3);
+		
+	if((rgb>>4)==0)
+		cm=7;
+	if((rgb>>4)==8)
+		{ cl=ch-(ch>>3); cm=6; }
+	if((rgb>>4)==15)
+		{ cl=ch-(ch>>3); cm=3; }
+	if((rgb>>4)==7)
+		{ cl=ch-(ch>>3); cm=5; }
+
+	cr=(cm&0x4)?ch:cl;
+	cg=(cm&0x2)?ch:cl;
+	cb=(cm&0x1)?ch:cl;
+#endif
+
+#if 0
 	if(rgb&0x80)
 	{
 		ca=rgb&15;
@@ -839,6 +872,7 @@ u32 JX2I_GfxCon_Rgb232ToRgb24(int rgb)
 		cg=(cg<<3)|(cg>>2);
 		cb=(cb<<3)|(cb>>2);
 	}
+#endif
 
 	if(btesh2_gfxcon_swaprb)
 		clrc=0xFF000000|(cr<<16)|(cg<<8)|cb;
@@ -2616,7 +2650,13 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 			ix=jx2i_gfxcon_ctrlreg[0xF];
 			
 			tv=(((u64)vb)<<32)|va;
-			jx2i_gfxcon_fontram[ix&1023]=tv;
+			if(ix&0x10000)
+			{
+				jx2i_gfxcon_palram[ix&63]=tv;
+			}else
+			{
+				jx2i_gfxcon_fontram[ix&1023]=tv;
+			}
 		}
 
 		return(0);

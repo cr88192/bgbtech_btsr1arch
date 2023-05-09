@@ -106,6 +106,9 @@ wire[15:0] fontGlyph;
 wire[63:0] fontData1;
 wire[63:0] ctrlRegVal;
 
+wire[7:0]	palIndex;
+wire[15:0]	palData;
+
 reg[7:0]	tTimer8Acc;
 reg[7:0]	tNxtTimer8Acc;
 reg			tBlinkSlow;
@@ -143,6 +146,7 @@ RbiMemVramA		fbmem(
 
 	pixCellIx,		cellData1,
 	fontGlyph,		fontData1,
+	palIndex,		palData,
 	ctrlRegVal,
 
 	memAddrIn,		memAddrOut,
@@ -160,6 +164,7 @@ ModFbTxtW fbcc(clock, reset,
 	pixCy,		pixCu,		pixCv,	pixAux,
 	pixCellIx,	cellData1,
 	fontGlyph,	fontData1,
+	palIndex,	palData,
 	ctrlRegVal,	pixLineOdd,
 	tBlinkSlow,	tBlinkFast,
 	dbgLeds);

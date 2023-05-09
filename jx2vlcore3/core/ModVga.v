@@ -208,8 +208,11 @@ assign	pixLineOdd	= tPixLineOdd;
 reg			tHsync800;
 reg			tVsync600;
 
+reg			tHsync1280;
 reg			tHsync1024;
 reg			tVsync768;
+
+reg[3:0]	tPixClockMode;
 
 reg			tHsync;
 reg			tVsync;
@@ -312,78 +315,6 @@ begin
 //	{ tPixPosY[1:0], tPixPosX[1:0] } ^ { tVFieldCnt, tVFieldCnt };
 `endif
 
-`ifndef def_true
-	dithPixXor = tPixPosX[1:0] ^ tPixPosY[1:0];
-	case({tVFieldCnt^dithPixXor, tPwmValR[3:1]})
-		/* 75.0% */
-		5'b00000: dithRndUpR = 0;		5'b00001: dithRndUpR = 0;
-		5'b00010: dithRndUpR = 0;		5'b00011: dithRndUpR = 0;
-		5'b00100: dithRndUpR = 0;		5'b00101: dithRndUpR = 0;
-		5'b00110: dithRndUpR = 1;		5'b00111: dithRndUpR = 1;
-		/* 37.5% */
-		5'b01000: dithRndUpR = 0;		5'b01001: dithRndUpR = 0;
-		5'b01010: dithRndUpR = 0;		5'b01011: dithRndUpR = 1;
-		5'b01100: dithRndUpR = 1;		5'b01101: dithRndUpR = 1;
-		5'b01110: dithRndUpR = 1;		5'b01111: dithRndUpR = 1;
-		/* 25.0% */
-		5'b10000: dithRndUpR = 0;		5'b10001: dithRndUpR = 0;
-		5'b10010: dithRndUpR = 1;		5'b10011: dithRndUpR = 1;
-		5'b10100: dithRndUpR = 1;		5'b10101: dithRndUpR = 1;
-		5'b10110: dithRndUpR = 1;		5'b10111: dithRndUpR = 1;
-		/* 62.5% */
-		5'b11000: dithRndUpR = 0;		5'b11001: dithRndUpR = 0;
-		5'b11010: dithRndUpR = 0;		5'b11011: dithRndUpR = 0;
-		5'b11100: dithRndUpR = 0;		5'b11101: dithRndUpR = 1;
-		5'b11110: dithRndUpR = 1;		5'b11111: dithRndUpR = 1;
-	endcase
-
-	case({tVFieldCnt^dithPixXor, tPwmValG[3:1]})
-		/* 75.0% */
-		5'b00000: dithRndUpG = 0;		5'b00001: dithRndUpG = 0;
-		5'b00010: dithRndUpG = 0;		5'b00011: dithRndUpG = 0;
-		5'b00100: dithRndUpG = 0;		5'b00101: dithRndUpG = 0;
-		5'b00110: dithRndUpG = 1;		5'b00111: dithRndUpG = 1;
-		/* 37.5% */
-		5'b01000: dithRndUpG = 0;		5'b01001: dithRndUpG = 0;
-		5'b01010: dithRndUpG = 0;		5'b01011: dithRndUpG = 1;
-		5'b01100: dithRndUpG = 1;		5'b01101: dithRndUpG = 1;
-		5'b01110: dithRndUpG = 1;		5'b01111: dithRndUpG = 1;
-		/* 25.0% */
-		5'b10000: dithRndUpG = 0;		5'b10001: dithRndUpG = 0;
-		5'b10010: dithRndUpG = 1;		5'b10011: dithRndUpG = 1;
-		5'b10100: dithRndUpG = 1;		5'b10101: dithRndUpG = 1;
-		5'b10110: dithRndUpG = 1;		5'b10111: dithRndUpG = 1;
-		/* 62.5% */
-		5'b11000: dithRndUpG = 0;		5'b11001: dithRndUpG = 0;
-		5'b11010: dithRndUpG = 0;		5'b11011: dithRndUpG = 0;
-		5'b11100: dithRndUpG = 0;		5'b11101: dithRndUpG = 1;
-		5'b11110: dithRndUpG = 1;		5'b11111: dithRndUpG = 1;
-	endcase
-
-	case({tVFieldCnt^dithPixXor, tPwmValB[3:1]})
-		/* 75.0% */
-		5'b00000: dithRndUpB = 0;		5'b00001: dithRndUpB = 0;
-		5'b00010: dithRndUpB = 0;		5'b00011: dithRndUpB = 0;
-		5'b00100: dithRndUpB = 0;		5'b00101: dithRndUpB = 0;
-		5'b00110: dithRndUpB = 1;		5'b00111: dithRndUpB = 1;
-		/* 37.5% */
-		5'b01000: dithRndUpB = 0;		5'b01001: dithRndUpB = 0;
-		5'b01010: dithRndUpB = 0;		5'b01011: dithRndUpB = 1;
-		5'b01100: dithRndUpB = 1;		5'b01101: dithRndUpB = 1;
-		5'b01110: dithRndUpB = 1;		5'b01111: dithRndUpB = 1;
-		/* 25.0% */
-		5'b10000: dithRndUpB = 0;		5'b10001: dithRndUpB = 0;
-		5'b10010: dithRndUpB = 1;		5'b10011: dithRndUpB = 1;
-		5'b10100: dithRndUpB = 1;		5'b10101: dithRndUpB = 1;
-		5'b10110: dithRndUpB = 1;		5'b10111: dithRndUpB = 1;
-		/* 62.5% */
-		5'b11000: dithRndUpB = 0;		5'b11001: dithRndUpB = 0;
-		5'b11010: dithRndUpB = 0;		5'b11011: dithRndUpB = 0;
-		5'b11100: dithRndUpB = 0;		5'b11101: dithRndUpB = 1;
-		5'b11110: dithRndUpB = 1;		5'b11111: dithRndUpB = 1;
-	endcase
-`endif
-
 	tPwmOutAR = tPwmValR[7:4];
 	tPwmOutAG = tPwmValG[7:4];
 	tPwmOutAB = tPwmValB[7:4];
@@ -451,33 +382,58 @@ begin
 	tHsync800	= 0;
 	tVsync600	= 0;
 
+	tHsync1280	= 0;
 	tHsync1024	= 0;
 	tVsync768	= 0;
 	
-//	if(ctrlRegVal[8])
-	if(ctrlRegVal[8] && !ctrlRegVal[9])
+	tPixClockMode	= ctrlRegVal[23:20];
+	
+	if(ctrlRegVal[25:24]==2'b00)
 	begin
-		tHsync1024	= 1;
-//		tVsync768	= 1;
-		if(ctrlRegVal[3])
-			tScanNextRowLim = 817;
+	//	if(ctrlRegVal[8])
+		if(ctrlRegVal[8] && !ctrlRegVal[9])
+		begin
+			tHsync1024	= 1;
+	//		tVsync768	= 1;
+	//		if(ctrlRegVal[3])
+			if(!ctrlRegVal[3])
+				tScanNextRowLim = 817;
+			else
+				tScanNextRowLim = 547;
+		end
+		else if(ctrlRegVal[3] && !ctrlRegVal[9])
+		begin
+			tHsync800	= 1;
+			tVsync600	= 1;
+			tScanNextRowLim = 625;
+		end
 		else
-			tScanNextRowLim = 547;
+		begin
+	//		tScanNextRowLim = 525;
+	//		if(ctrlRegVal[9])
+			if(ctrlRegVal[9] && !ctrlRegVal[3])
+				tScanNextRowLim = 525;
+			else
+			begin
+				tScanNextRowLim = 449;
+				
+	//			if(ctrlRegVal[8])
+	//			begin
+	//				tHsync1280	= 1;
+	//				tScanNextRowLim = 817;
+	//			end
+			end
+		end
 	end
-	else if(ctrlRegVal[3] && !ctrlRegVal[9])
+
+	if(ctrlRegVal[25:24]==2'b01)
 	begin
-		tHsync800	= 1;
-		tVsync600	= 1;
-		tScanNextRowLim = 625;
-	end
-	else
-	begin
-//		tScanNextRowLim = 525;
-//		if(ctrlRegVal[9])
-		if(ctrlRegVal[9] && !ctrlRegVal[3])
-			tScanNextRowLim = 525;
-		else
-			tScanNextRowLim = 449;
+		tHsync1280	= 1;
+		tScanNextRowLim = 849;
+		if(ctrlRegVal[9])
+		begin
+			tScanNextRowLim = 1073;
+		end
 	end
 
 //	tHsync800	= 1;
@@ -512,6 +468,16 @@ begin
 `ifdef jx2_cpu_mmioclock_50
 	tScanNextPixClk		= tScanPixClk + 2;
 	tFraNextPixClk		= 0;
+	
+	if(tPixClockMode==4'h1)
+	begin
+		tScanNextPixClk		= tScanPixClk + 3;
+	end
+	if(tPixClockMode==4'h2)
+	begin
+		tScanNextPixClk		= tScanPixClk + 4;
+	end
+	
 `endif
 
 	tScanNextRowClk		= tScanRowClk;
@@ -545,6 +511,13 @@ begin
 	begin
 //		tPixNextPosX = tScanPixClk[12:3] - 59;
 //		tPixNextPosX = tScanPixClk[11:2] - 59;
+
+		if(tHsync1280)
+		begin
+			tPixNextPosX = {1'b0, tScanPixClk[11:1]} - 76;
+			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
+		end
+		else
 		if(tHsync1024)
 		begin
 //			tPixNextPosX =

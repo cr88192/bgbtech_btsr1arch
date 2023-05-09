@@ -17,6 +17,7 @@
 
 `define jx2_enable_2x40b		//Enable 2x40 Encoding
 `define jx2_enable_xg2mode		//Enable XGPR2 Mode
+`define jx2_enable_xg2rvmode	//Enable XG2RV Mode
 
 
 // `define jx2_cfg_75mhz

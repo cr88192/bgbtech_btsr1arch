@@ -79,6 +79,7 @@ input[3:0]		istrSxo;	//source instruction word
 wire			srWxe;
 wire			srXG2;
 wire			srRiscv;
+wire			srXG2RV;
 wire			srUser;
 wire			srSxo;
 assign		srWxe	= regSr[27];
@@ -92,10 +93,14 @@ assign		srXG2	= regSr[23];
 assign		srXG2	= 0;
 `endif
 
+assign		srXG2RV	= srRiscv && srXG2;
+
 // wire[2:0]		srMod;
-wire[3:0]		srMod;
+wire[7:0]		srMod;
 // assign		srMod = { regSr[29], srSxo, srUser };
-assign		srMod = { srXG2, regSr[29], srSxo, srUser };
+assign		srMod = {
+	1'b0, 1'b0, 1'b0, srRiscv,
+	srXG2, regSr[29], srSxo, srUser };
 
 `output_gpr		idRegS;
 `output_gpr		idRegT;
@@ -341,7 +346,7 @@ wire[18:0]		decOpRvA_idUFl;
 DecOpRvI	decOpRvA(
 	clock,		reset,	srMod,
 	{ UV32_00, istrWord[31: 0] },
-	{srRiscv, srWxe, 2'b00},		UV28_00,
+	{srRiscv && !srXG2RV, srWxe, 2'b00},		UV28_00,
 	decOpRvA_idRegN,		decOpRvA_idRegM,
 	decOpRvA_idRegO,		decOpRvA_idRegP,
 	decOpRvA_idImm,
@@ -868,7 +873,8 @@ begin
 	endcase
 
 `ifdef jx2_enable_riscv
-	if(srRiscv)
+//	if(srRiscv)
+	if(srRiscv && !srXG2RV)
 	begin
 		if(istrWord[1:0]==2'b11)
 		begin
@@ -1182,7 +1188,8 @@ begin
 			begin
 `ifdef jx2_enable_riscv
 
-				if(srRiscv && !noNoRiscV)
+//				if(srRiscv && !noNoRiscV)
+				if(srRiscv && !noNoRiscV && !srXG2RV)
 				begin
 					opRegAM0	= decOpRvA_idRegM;
 					opRegAO0	= decOpRvA_idRegO;

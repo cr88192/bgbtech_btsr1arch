@@ -42,7 +42,7 @@ module DecOpRvI(
 input			clock;		//clock
 input			reset;		//reset
 // input[2:0]		srMod;		//mode
-input[3:0]		srMod;		//mode
+input[7:0]		srMod;		//mode
 
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;
@@ -243,7 +243,8 @@ begin
 		4'b0011: opRegO_Sr = JX2_GR_GBR;
 		4'b0100: opRegO_Sr = JX2_GR_TBR;
 		4'b0101: opRegO_Sr = JX2_GR_DHR;
-		4'b0110: opRegO_Sr = JX2_GR_DLR;
+//		4'b0110: opRegO_Sr = JX2_GR_DLR;
+		4'b0110: opRegO_Sr = JX2_GR_R6;
 		4'b0111: opRegO_Sr = JX2_GR_R7;
 		4'b1000: opRegO_Sr = JX2_GR_R8;
 		4'b1001: opRegO_Sr = JX2_GR_R9;
@@ -262,7 +263,8 @@ begin
 		4'b0011: opRegM_Sr = JX2_GR_GBR;
 		4'b0100: opRegM_Sr = JX2_GR_TBR;
 		4'b0101: opRegM_Sr = JX2_GR_DHR;
-		4'b0110: opRegM_Sr = JX2_GR_DLR;
+//		4'b0110: opRegM_Sr = JX2_GR_DLR;
+		4'b0110: opRegM_Sr = JX2_GR_R6;
 		4'b0111: opRegM_Sr = JX2_GR_R7;
 		4'b1000: opRegM_Sr = JX2_GR_R8;
 		4'b1001: opRegM_Sr = JX2_GR_R9;
@@ -281,7 +283,8 @@ begin
 		4'b0011: opRegN_Sr = JX2_GR_GBR;
 		4'b0100: opRegN_Sr = JX2_GR_TBR;
 		4'b0101: opRegN_Sr = JX2_GR_DHR;
-		4'b0110: opRegN_Sr = JX2_GR_DLR;
+//		4'b0110: opRegN_Sr = JX2_GR_DLR;
+		4'b0110: opRegN_Sr = JX2_GR_R6;
 		4'b0111: opRegN_Sr = JX2_GR_R7;
 		4'b1000: opRegN_Sr = JX2_GR_R8;
 		4'b1001: opRegN_Sr = JX2_GR_R9;

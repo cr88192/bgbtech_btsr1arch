@@ -302,3 +302,101 @@ int tk_ps2getch(void)
 
 	return(c);
 }
+
+
+
+int tk_ps2ms_scanhit(void)
+	{ return(P_PS2MS_STAT&1); }
+
+int tk_ps2ms_scanch(void)
+{
+	while(!(P_PS2MS_STAT&1))
+		sleep_0();
+	return(P_PS2MS_RX);
+}
+
+int tk_ps2ms_tryscanch(void)
+{
+	if(!(P_PS2MS_STAT&1))
+		return(0);
+	return(P_PS2MS_RX);
+}
+
+int tk_ps2ms_sendcmd(byte val)
+{
+	P_PS2MS_TX=val;
+	return(0);
+}
+
+int tk_ps2ms_tryscanch_to(void)
+{
+	u64 t0, t0e, tt;
+	
+	tt=TK_GetTimeUs();
+	t0=tt;
+	t0e=t0+10000;
+
+	while(!(P_PS2MS_STAT&1) && (tt<t0e))
+	{
+		sleep_0();
+		tt=TK_GetTimeUs();
+	}
+
+	return(P_PS2MS_RX);
+}
+
+
+int tk_ps2ms_x;
+int tk_ps2ms_y;
+int tk_ps2ms_b;
+
+int tk_ps2ms_c0, tk_ps2ms_c1, tk_ps2ms_c2, tk_ps2ms_c3;
+int tk_ps2ms_init;
+
+int tk_ps2ms_pollupdates(void)
+{
+	if(!tk_ps2ms_init)
+	{
+		tk_ps2ms_sendcmd(0xFF);
+		tk_ps2ms_tryscanch_to();
+		tk_ps2ms_tryscanch_to();
+		tk_ps2ms_sendcmd(0xF4);
+		tk_ps2ms_tryscanch_to();
+		tk_ps2ms_init=1;
+	}
+
+	while(tk_ps2ms_scanhit())
+	{
+		tk_ps2ms_c3=tk_ps2ms_c2;
+		tk_ps2ms_c2=tk_ps2ms_c1;
+		tk_ps2ms_c1=tk_ps2ms_c0;
+		tk_ps2ms_c0=tk_ps2ms_scanch();
+		
+		if(
+			((tk_ps2ms_c2&0xC8)==0x08)	&&
+			(((tk_ps2ms_c2<<2)&0x80)==(tk_ps2ms_c0&0x80))	&&
+			(((tk_ps2ms_c2<<3)&0x80)==(tk_ps2ms_c1&0x80))
+			)
+		{
+			tk_ps2ms_x+=(signed char)tk_ps2ms_c1;
+			tk_ps2ms_y+=(signed char)tk_ps2ms_c0;
+			tk_ps2ms_b=tk_ps2ms_c2&7;
+		}
+	}
+}
+
+int tk_ps2ms_getpos(int *rx, int *ry, int *rb)
+{
+	tk_ps2ms_pollupdates();
+	*rx=tk_ps2ms_x;
+	*ry=tk_ps2ms_y;
+	*rb=tk_ps2ms_b;
+	return(0);
+}
+
+int tk_ps2ms_setpos(int x, int y)
+{
+	tk_ps2ms_x=x;
+	tk_ps2ms_y=y;
+	return(0);
+}

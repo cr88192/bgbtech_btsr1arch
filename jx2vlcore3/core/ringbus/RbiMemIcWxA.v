@@ -773,7 +773,8 @@ begin
 	tNxtInPcWxe		= icInPcWxe;
 	tNxtInPcXG2		= icInPcXG2;
 //	tNxtInPcRiscv	= (icInPcWxm == 2'b01);
-	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01);
+//	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01);
+	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01) && !tNxtInPcXG2;
 
 	if(icInPcHold)
 	begin
