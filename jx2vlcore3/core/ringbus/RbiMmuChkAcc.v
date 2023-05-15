@@ -399,7 +399,7 @@ begin
 
 	if(tRegOutNoRwx!=0)
 	begin
-		$display("RbiMmuChkAcc: NoRwx=%X", tRegOutNoRwx);
+//		$display("RbiMmuChkAcc: NoRwx=%X", tRegOutNoRwx);
 	end
 
 //	tRegOutNoRwx = 0;

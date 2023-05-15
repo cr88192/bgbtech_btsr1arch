@@ -736,7 +736,7 @@ void __exita(int status)
 //	vx_exit(status);
 }
 
-int tk_gettimeus_v(void);
+u64 tk_gettimeus_v(void);
 
 s64 TK_GetTimeUs(void)
 {
@@ -1598,6 +1598,7 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 	*ct++=0;
 }
 
+#if 0
 void tk_sprintf(char *dst, char *str, ...)
 {
 	va_list lst;
@@ -1606,3 +1607,4 @@ void tk_sprintf(char *dst, char *str, ...)
 	tk_vsprintf(dst, str, lst);
 	va_end(lst);
 }
+#endif

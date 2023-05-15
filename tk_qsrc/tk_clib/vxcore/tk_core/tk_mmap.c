@@ -1,3 +1,5 @@
+#ifndef __TK_CLIB_ONLY__
+
 // byte *tkmm_mmap_bufs[512];
 // byte *tkmm_mmap_bufe[512];
 // int tkmm_mmap_prot[512];
@@ -218,6 +220,8 @@ int tk_msync2(TKPE_TaskInfo *task, void *addr, size_t len, int flags)
 {
 }
 
+#endif
+
 
 void *TKMM_MmapV(
 	void *addr, size_t len, int prot, int flags,
@@ -287,6 +291,7 @@ void *TKMM_MSyncV(
 }
 
 
+#ifndef __TK_CLIB_ONLY__
 void *TKMM_MmapL(
 	void *addr, size_t len, int prot, int flags,
 	int fd, off_t offs)
@@ -313,6 +318,7 @@ void *TKMM_MSyncL(
 {
 	return(tk_msync2(NULL, addr, len, flag));
 }
+#endif
 
 void *(*TKMM_MmapF)(
 	void *addr, size_t len, int prot, int flags,

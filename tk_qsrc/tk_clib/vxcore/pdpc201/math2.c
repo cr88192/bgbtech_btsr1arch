@@ -14,6 +14,8 @@
 #define M_TAU_R 0.15915494309189533576888376337251
 #endif
 
+#ifndef MATH2_SINTAB
+#define MATH2_SINTAB
 static const double sintab_c00= 1;
 static const double sintab_c01=-0.16666666666666665741;
 static const double sintab_c02= 0.0083333333333333332177;
@@ -35,7 +37,7 @@ static const double sintab_c17=-9.6775929586318906719e-41;
 static const double sintab_c18= 7.2654601791530723547e-44;
 static const double sintab_c19=-4.9024697565135435190e-47;
 static const double sintab_c20= 2.9893108271424050896e-50;
-
+#endif
 
 double sin(double ang)
 {
@@ -184,3 +186,28 @@ long double logl(long double x)
 	{ return(log(x)); }
 long double log10l(long double x)
 	{ return(log10(x)); }
+
+double atanh(double x)
+{
+	return(0.5*log((1+x)/(1-x)));
+}
+
+double acosh(double x)
+{
+	return(log(x+sqrt(x*x-1)));
+}
+
+double asinh(double x)
+{
+	return(log(x+sqrt(x*x+1)));
+}
+
+int isinf(double x)
+{
+	u64 vi;
+	
+	vi=*(u64 *)(&x);
+	if(((vi>>48)&0x7FFF)==0x7FF0)
+		return(1);
+	return(0);
+}

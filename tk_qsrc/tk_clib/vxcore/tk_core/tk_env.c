@@ -180,3 +180,64 @@ int TK_Env_UpdateForSet(char *estr)
 	TK_EnvCtx_SplitVar(estr, tbn, &tbv);
 	TK_Env_SetEnvVar(tbn, tbv);
 }
+
+
+void TKSH_NormalizePath(char *dst, char *src)
+{
+	char pbuf[512];
+	char tb[256];
+	char *stk[64];
+	char *cs, *ct, *cp;
+	int i, n;
+	
+	cs=src;
+
+	while(*cs=='/')
+		cs++;
+
+	n=0;
+	ct=pbuf;
+	stk[n]=ct;
+	cp=ct;
+	while(1)
+	{
+		if((*cs=='/') || !(*cs))
+		{
+			*ct++=0;
+			while(*cs=='/')
+				cs++;
+			
+			if(!strcmp(cp, "."))
+			{
+				ct=stk[n];
+			}else if(!strcmp(cp, ".."))
+			{
+				if(n>0)n--;
+				ct=stk[n];
+			}else
+			{
+				n++;
+			}
+
+			stk[n]=ct;
+			cp=ct;
+			if(!(*cs))
+				break;
+			continue;
+		}
+		
+		*ct++=*cs++;
+	}
+
+	ct=dst;
+	*ct++='/';
+	for(i=0; i<n; i++)
+	{
+		cs=stk[i];
+		while(*cs)
+			*ct++=*cs++;
+		if((i+1)<n)
+			*ct++='/';
+	}
+	*ct++=0;
+}

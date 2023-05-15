@@ -8,7 +8,7 @@ int	closedir(DIR *dir)
 
 DIR	*opendir(const char *path)
 {
-	return((DIR *)tk_opendir(path));
+	return((DIR *)tk_opendir((char *)path));
 }
 
 struct dirent *readdir(DIR *dir)
@@ -17,7 +17,7 @@ struct dirent *readdir(DIR *dir)
 	TK_DIRENT *tde;
 	struct dirent *de;
 	
-	dir1=(TK_DIR)dir;
+	dir1=(TK_DIR *)dir;
 	tde=tk_readdir(dir1);
 	if(!tde)
 		return(NULL);

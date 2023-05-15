@@ -439,6 +439,31 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 #endif
 	}
 
+
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_X2RV)
+	{
+		shctx->no_ops48=1;
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
+
+		shctx->is_fixed32|=3;
+		shctx->emit_riscv|=0x02;
+
+#if 1
+		if(shctx->use_wexmd==0)
+			shctx->use_wexmd=2;
+
+		shctx->has_jumbo=1;
+		shctx->has_pushx2=1;
+		shctx->has_simdx2=1;
+
+		shctx->has_fmovs|=3;
+
+		shctx->abi_spillpad|=1;
+		shctx->abi_spillpad|=2;
+#endif
+	}
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "xg2mode"))
 		{ shctx->is_fixed32|=3; }
 

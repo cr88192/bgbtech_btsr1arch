@@ -15,6 +15,7 @@
 #include "stddef.h"
 #include "errno.h"
 #include "stdint.h"
+#include "ctype.h"
 
 #ifdef memmove
 #undef memmove
@@ -1429,12 +1430,17 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 	}
 	return (s1);
 }
+
+__PDPCLIB_API__ void *_memcpyf(void *s1, void *s2, size_t n)
+{
+	return(memcpy(s1, s2, n));
+}
 #endif /* 32BIT */
 #endif /* USE_ASSEMBLER */
 #endif
 
 // #if 0
-#ifdef __TK_CLIB_DLLSTUB__
+#if defined(__TK_CLIB_DLLSTUB__) || defined(__riscv)
 
 __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 {
@@ -1443,8 +1449,8 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 	register long long *endi;
 
 //	n=(int)n;
-	if(n!=((int)n))
-		__debugbreak();
+//	if(n!=((int)n))
+//		__debugbreak();
 
 	endi = (long long *)((char *)p + (n & (~0x07)));
 
@@ -1489,5 +1495,47 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 			break;
 	}
 	return (s1);
+}
+
+__PDPCLIB_API__ void *_memcpyf(void *s1, void *s2, size_t n)
+{
+	return(memcpy(s1, s2, n));
+}
+#endif
+
+
+// #ifdef __riscv
+#if 0
+__PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
+{
+	u64 *cs, *ct, *cte;
+	byte *csb, *ctb, *cteb;
+
+	ct=(u64 *)s1; cs=(u64 *)s2; cte=(u64 *)(((byte *)s1)+(n&(~7)));
+	
+	while(ct<cte)
+	{
+		*ct=*cs;
+		ct++; cs++;
+	}
+	
+	if(n&7)
+	{
+		csb=(byte *)cs;
+		ctb=(byte *)ct;
+		cteb=((byte *)s1)+n;
+		while(ctb<cteb)
+		{
+			*ctb=*csb;
+			ctb++;	csb++;
+		}
+	}
+	
+	return(ct);
+}
+
+__PDPCLIB_API__ void *_memcpyf(void *s1, void *s2, size_t n)
+{
+	return(memcpy(s1, s2, n));
 }
 #endif

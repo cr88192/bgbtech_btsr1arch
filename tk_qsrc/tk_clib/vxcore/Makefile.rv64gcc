@@ -1,0 +1,91 @@
+BUILD = .
+PATH := $(BUILD):$(PATH)
+
+TK_CFL=-nostdinc -nostdlib -nostartfiles -fno-builtin -fPIC
+TK_LDFL= $TK_CFL \
+	-Wl,-nostdlib -Wl,-e,_start -Wl,-T,sh4elf.x
+
+TOOLPATH=/usr/local/bin/
+TARGETPFX=riscv64-unknown-elf-
+
+CC=$(TOOLPATH)$(TARGETPFX)gcc
+AR=$(TOOLPATH)$(TARGETPFX)ar
+AS=$(TOOLPATH)$(TARGETPFX)as
+
+# COPTS= -g -c -O2 -Iinclude $(TK_CFL)
+COPTS= -c -Os -Iinclude -Ipdpc201 -Itk_core $(TK_CFL)
+
+SRCS_CLIB = \
+	pdpc201/stdio.c \
+	pdpc201/string.c \
+	pdpc201/stdlib.c \
+	pdpc201/start.c \
+	pdpc201/time.c \
+	pdpc201/errno.c \
+	pdpc201/assert.c \
+	pdpc201/signal.c \
+	pdpc201/locale.c \
+	pdpc201/ctype.c \
+	pdpc201/setjmp.c \
+	pdpc201/math.c \
+	pdpc201/__memmgr.c \
+	pdpc201/btshx_supa.c \
+	\
+	tk_core/tk_clib.c \
+	tk_core/tk_fat.c \
+	tk_core/tk_mmcell.c \
+	tk_core/tk_mmllist.c \
+	tk_core/tk_mmpage.c \
+	tk_core/tk_mmap.c \
+	tk_core/tk_spi.c \
+	tk_core/tk_vf_fat.c \
+	tk_core/tk_vf_ird.c \
+	tk_core/tk_vfile.c \
+	\
+	inttypes.c \
+	wchar.c \
+	wctype.c \
+
+	
+
+all: includes libs apps
+
+includes: FORCE
+#	make -C pdpc201 -f Makefile.rv64 includes
+#	cp -rf pdpc201/*.h	$(BUILD)/include
+
+libs2: FORCE
+#	make -C pdpc201 -f Makefile.rv64 libs
+#	cp pdpc201/*.a		$(BUILD)
+#	cp pdpc201/crt0.o	$(BUILD)
+
+# libs: libs2 libvxcore_rv64.a libclib_rv64.a
+libs: libs2 libclib_rv64.a libcdll_rv64.a
+# libs: libs2 libcdll_rv64.a
+
+apps: FORCE
+#	make -C pdpc201 -f Makefile.vx86 apps
+#	cp pdpc201/*.exe	$(BUILD)
+
+crt0_rv64.o:  e_testkern_rv64.S
+	$(CC) -o crt0_rv64.o e_testkern_rv64.S $(COPTS)
+
+libvxcore_rv64.a: $(SRCS_CLIB) crt0_rv64.o
+	$(CC) -o vxcore_rv64.o vxcore_multi.c $(COPTS)
+	$(AR) -r libvxcore_rv64.a vxcore_rv64.o
+
+libclib_rv64.a: $(SRCS_CLIB) crt0_rv64.o
+	$(CC) -o clib_rv64.o libc_multi.c $(COPTS)
+	$(AR) -r libclib_rv64.a clib_rv64.o crt0_rv64.o
+
+libcdll_rv64.a: $(SRCS_CLIB) crt0_rv64.o
+	$(CC) -o cdll_rv64.o libcdll_multi.c $(COPTS)
+	$(AR) -r libcdll_rv64.a cdll_rv64.o crt0_rv64.o
+
+FORCE:
+
+.c.o:
+	$(CC) $(COPTS) $<
+
+all: includes libs apps
+

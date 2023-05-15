@@ -1,3 +1,5 @@
+#ifdef __BGBCC__
+
 typedef struct
 {
     u32 mFlags;                       //00, Flags
@@ -26,7 +28,6 @@ typedef struct
 extern void __rsrc_start;
 extern void __rsrc_dir;
 extern void __rsrc_types;
-
 
 rwadhead_t *tk_rwad_head;
 rwadlump_t *tk_rwad_dir;
@@ -138,3 +139,5 @@ int TK_RWad_ReadLump(int lump, void *dest)
 	
 	return(-1);
 }
+
+#endif

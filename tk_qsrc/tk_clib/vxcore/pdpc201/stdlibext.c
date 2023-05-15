@@ -64,7 +64,8 @@ char *lltoa(long long value, char *str, int base)
 char *xlltoa_cnt(__int128 value, char *str, int base, int cnt)
 {
 	char tb[160];
-	char *s, *t, *rdx;
+	char *s, *t;
+	const char *rdx;
 //	unsigned long long uv;
 	unsigned __int128 uv;
 	int sg, v, v1, c;
@@ -136,17 +137,17 @@ char *strupr (char *str)
 	return(str);
 }
 
-int unlink(const char *path)
-{
-	return(tk_unlink(path));
-}
+// int unlink(const char *path)
+// {
+// 	return(tk_unlink(path));
+// }
 
 char *getcwd(char *buf, size_t size)
 {
 	return(TK_Env_GetCwd(buf, size));
 }
 
-void MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d);
+uint8_t *MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d);
 
 #if 1
 uint8_t *MemLzCpy_MatchCopy2(uint8_t *dst, long sz, long d)
@@ -535,7 +536,7 @@ int _memlzcmp(void *dst, void *src, size_t n)
 }
 #endif
 
-__PDPCLIB_API__ void *_memmovef(void *s1, const void *s2, size_t n)
+__PDPCLIB_API__ void *_memmovef(void *s1, void *s2, size_t n)
 {
 	uint64_t v0, v1, v2, v3;
 	uint64_t *csl, *ctl, *ctle, *ctls;
@@ -751,6 +752,34 @@ errno_t strncpy_s(
 		{ return(call_constraint_handler_s("bad size argument", NULL, ERANGE)); }
 	strncpy(dest, src, count);
 	return(0);
+}
+
+size_t wcslen(
+	const wchar_t * restrict str)
+{
+	wchar_t *cs;
+	
+	cs=(wchar_t *)str;
+	while(*cs)
+		{ cs++; }
+	return(cs-((wchar_t *)str));
+}
+
+wchar_t *wcscpy(
+	wchar_t * restrict s1,
+	const wchar_t * restrict s2)
+{
+	wchar_t *cs, *ct;
+	
+	cs=(wchar_t *)s2;
+	ct=(wchar_t *)s1;
+	while(*cs)
+	{
+		*ct=*cs;
+		ct++; cs++;
+	}
+	*ct=0;
+	return(ct);
 }
 
 errno_t wcscpy_s(

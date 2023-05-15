@@ -1,3 +1,5 @@
+#ifdef __BJX2__
+
 __int128 __xli_add (__int128 a, __int128 b);
 __int128 __xli_sub (__int128 a, __int128 b);
 __int128 __xli_smul(__int128 a, __int128 b);
@@ -647,4 +649,6 @@ __int128 __xli_smod(__int128 a, __int128 b)
 
 	return(d);
 }
+#endif
+
 #endif

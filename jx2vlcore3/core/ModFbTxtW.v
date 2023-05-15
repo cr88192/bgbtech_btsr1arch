@@ -438,6 +438,7 @@ reg[7:0]	tPalIndex;
 assign	palIndex = tPalIndex;
 
 reg[15:0]	tPalData_C;
+reg[15:0]	tPalData_D;
 
 assign	pixCy	= tPixCy2;
 assign	pixCu	= tPixCu2;
@@ -1617,15 +1618,17 @@ begin
 	end
 `endif
 
-	if(tScrClrsModB[3:2]==2'b11)
-		tPixClrBmPalYV16_C=tPalData_C;
+	tPalIndex = tPixClrBmYv8_C[7:0];
+
+//	tPalData_C		= palData;
+
+//	if(tScrClrsModB[3:2]==2'b11)
+//		tPixClrBmPalYV16_C=tPalData_C;
 
 	if((tScrMode!=0) && useHalfCell)
 	begin
 //		tFontGlyph = { 10'b0000001111, tPixClrBmYv8_C[7:2] };
 	end
-	
-	tPalIndex = tPixClrBmYv8_C[7:0];
 
 `ifdef jx2_fbuf_hwsprite
 
@@ -1941,7 +1944,8 @@ begin
 	tFontData_C		<= tBlinkStrobeB ? UV64_00 : fontData;
 	tFontGlyph_C	<= tFontGlyph;
 
-	tPalData_C		<= palData;
+//	tPalData_C		<= palData;
+	tPalData_D		<= palData;
 
 	tFontGlyphY_B	<= tFontGlyphY_A;
 	tFontGlyphU_B	<= tFontGlyphU_A;
@@ -1973,7 +1977,9 @@ begin
 	tPixClrBmYv8_D		<= tPixClrBmYv8_C;
 	tPixClrBmRgbiYV16_D	<= tPixClrBmRgbiYV16_C;
 	tPixClrBm2iYV16_D	<= tPixClrBm2iYV16_C;
-	tPixClrBmPalYV16_D	<= tPixClrBmPalYV16_C;
+//	tPixClrBmPalYV16_D	<= tPixClrBmPalYV16_C;
+	tPixClrBmPalYV16_D	<= (tScrClrsModB[3:2]==2'b11) ?
+		palData : tPixClrBmPalYV16_C;
 
 	tPixClrBmRgbiB		<= tPixClrBmRgbi;
 

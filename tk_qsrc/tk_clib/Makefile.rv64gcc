@@ -1,0 +1,43 @@
+BUILD = .
+PATH := $(BUILD):$(PATH)
+
+EXE = .elf
+BIN = .bin
+O = .o
+A = .a
+
+all: FORCE build
+
+FORCE:
+
+includes: FORCE
+	make -C vxcore -f Makefile.rv64gcc includes
+	cp -rf vxcore/include/*	$(BUILD)/include
+
+#	make -C pdpc201 -f Makefile.rv64gcc includes
+#	cp -rf pdpc201/*.h	$(BUILD)/include
+
+libs: FORCE
+	make -C vxcore -f Makefile.rv64gcc libs
+	cp vxcore/*.a		$(BUILD)
+	cp vxcore/crt0_rv64.o	$(BUILD)
+
+#	make -C kernel32 -f Makefile.rv64gcc libs
+#	cp kernel32/*.a		$(BUILD)
+
+#	make -C pdpc201 -f Makefile.rv64gcc libs
+#	cp pdpc201/*.a		$(BUILD)
+
+apps: libs FORCE
+	make -C vxcore -f Makefile.rv64gcc apps
+#	cp vxcore/*.exe		$(BUILD)
+
+#	make -C pdpc201 -f Makefile.vx86 apps
+#	cp pdpc201/*.exe	$(BUILD)
+
+
+build: includes libs apps FORCE
+
+clean: FORCE
+clean2: FORCE
+

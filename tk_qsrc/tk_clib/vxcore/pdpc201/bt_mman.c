@@ -12,9 +12,9 @@ int tk_msync(void *addr, size_t len, int flags);
 int tk_mprotect(void *addr, size_t len, int prot);
 
 int		mlock(const void *addr, size_t len)
-	{ return(tk_mlock(addr, len)); }
+	{ return(tk_mlock((void *)addr, len)); }
 int		munlock(const void *addr, size_t len)
-	{ return(tk_munlock(addr, len)); }
+	{ return(tk_munlock((void *)addr, len)); }
 int		mlockall(int flags)
 	{ return(tk_mlockall(flags)); }
 int		munlockall(void)

@@ -237,7 +237,7 @@ void *__lva_conv_toptr(u64 val)
 
 	if((val>>60)==0)
 	{
-		return((void *)(val&0x0000FFFF_FFFFFFFFULL));
+		return((void *)(val&0x0000FFFFFFFFFFFFULL));
 	
 #if 0
 // #ifdef __BJX1_64__
@@ -252,7 +252,7 @@ void *__lva_conv_toptr(u64 val)
 
 	if((val>>60)==15)
 	{
-		return((void *)(val&0x0000FFFF_FFFFFFFFULL));
+		return((void *)(val&0x0000FFFFFFFFFFFFULL));
 
 #if 0
 //#ifdef __BJX1_64__
@@ -286,6 +286,7 @@ void *__lva_conv_toptr(u64 val)
 	return(NULL);
 }
 
+#ifdef __BGBCC__
 u64 __lva_conv_fromi128(__int128 val)
 {
 //	return(TKMM_LVA_NewInt128(val));
@@ -326,6 +327,7 @@ __int128 __lva_conv_toi128(u64 val)
 
 //	return(-1);
 }
+#endif
 
 #ifdef __BJX2__
 
@@ -479,15 +481,19 @@ u64 __lva_conv_fromvec2f(u64 vec)
 
 u64 __lva_conv_fromi64big(s64 val)
 {
+#ifdef __BGBCC__
 //	u64 v;
 	return(__lva_conv_fromi128(val));
+#else
+	return(__lva_conv_fromi64(val));
+#endif
 }
 
 u64 __lva_conv_fromptr(void *val)
 {
 	u64 v;	
 
-	v=((u64)val)&0x0000FFFF_FFFFFFFFULL;
+	v=((u64)val)&0x0000FFFFFFFFFFFFULL;
 	v|=((u64)TKMM_LVA_GetPtrTypeTag(val))<<48;
 	return(v);
 

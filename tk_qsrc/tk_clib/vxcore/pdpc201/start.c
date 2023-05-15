@@ -111,10 +111,10 @@ __PDPCLIB_API__ int CTYP __start()
 	p=__get_cmdline();
 	penv=__get_cmdenv();
 
-	if(p && !(((long)p)>>14))
-	{
-		__debugbreak();
-	}
+//	if(p && !(((long)p)>>14))
+//	{
+//		__debugbreak();
+//	}
 
 //	tk_puts("A1\n");
 

@@ -129,6 +129,9 @@ parameter[6:0] JX2_GR_PC2_HI	= 7'h52;
 // parameter[6:0] JX2_GR_VBR2_HI	= 7'h53;
 parameter[6:0] JX2_GR_SPC2_HI	= 7'h54;
 // parameter[6:0] JX2_GR_SSP2_HI	= 7'h55;
+
+parameter[6:0] JX2_GR_BPC		= 7'h55;		//Base PC
+
 parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
 // parameter[6:0] JX2_GR_SP2_HI	= 7'h57;
 // parameter[6:0] JX2_GR_PC2_HI	= 7'h58;

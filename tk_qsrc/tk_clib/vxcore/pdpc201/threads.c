@@ -17,6 +17,7 @@ int			thr_n_dtor;
 int _mtx_sync_get(int *ptr);
 int _mtx_sync_set(int *ptr, int val);
 
+#ifdef __BJX2__
 __asm {
 _mtx_sync_get:
 	SNIPE.DC	R4, R6
@@ -32,6 +33,19 @@ _mtx_sync_set:
 	MOV.L		(R6), R3
 	RTS
 };
+#else
+
+int _mtx_sync_get(int *ptr)
+{
+	return(*ptr);
+}
+
+int _mtx_sync_set(int *ptr, int val)
+{
+	*ptr=val;
+}
+
+#endif
 
 void call_once( once_flag* flag, void (*func)(void) )
 {
@@ -47,9 +61,11 @@ int thrd_create( thrd_t *thr, thrd_start_t func, void *arg )
 {
 	int tid;
 
+#ifndef __TK_CLIB_DLLSTUB__
 	tid = TK_SpawnNewThread(func, arg);
 	*thr = tid;
 	return(thrd_success);
+#endif
 }
 
 int thrd_equal( thrd_t lhs, thrd_t rhs )
@@ -59,7 +75,9 @@ int thrd_equal( thrd_t lhs, thrd_t rhs )
 
 thrd_t thrd_current(void)
 {
+#ifndef __TK_CLIB_DLLSTUB__
 	return(TK_GetCurrentThreadId());
+#endif
 }
 
 int thrd_sleep(
@@ -68,13 +86,17 @@ int thrd_sleep(
 {
 	int64_t usec;
 	usec = (duration->tv_sec<<20) + (duration->tv_nsec>>10);
+#ifndef __TK_CLIB_DLLSTUB__
 	TK_SleepCurrentThread(usec);
+#endif
 	return(thrd_success);
 }
 
 void thrd_yield(void)
 {
+#ifndef __TK_CLIB_DLLSTUB__
 	TK_YieldCurrentThread();
+#endif
 }
 
 _Noreturn void thrd_exit( int res )
@@ -82,19 +104,26 @@ _Noreturn void thrd_exit( int res )
 	int i;
 
 	for(i=0; i<thr_n_dtor; i++)
-		{ thr_dtor_fun(tss_get(thr_dtor_key[i])); }
+		{ thr_dtor_fun[i](tss_get(thr_dtor_key[i])); }
+#ifndef __TK_CLIB_DLLSTUB__
 	TK_ExitCurrentThread(res);
+#endif
+	while(1);
 }
 
 int thrd_detach( thrd_t thr )
 {
+#ifndef __TK_CLIB_DLLSTUB__
 	TK_DetachThread(thr);
+#endif
 	return(thrd_success);
 }
 
 int thrd_join( thrd_t thr, int *res )
 {
+#ifndef __TK_CLIB_DLLSTUB__
 	*res=TK_JoinThread(thr);
+#endif
 	return(thrd_success);
 }
 
@@ -225,7 +254,10 @@ int tss_create( tss_t* tss_key, tss_dtor_t destructor )
 {
 	int tid, ix;
 	
+#ifndef __TK_CLIB_DLLSTUB__
 	tid=TK_AllocNewTlsA();
+#endif
+
 	*tss_key=tid;
 
 	if(destructor)
@@ -242,13 +274,17 @@ int64_t TK_TlsSet(int key, int64_t val);
 
 void *tss_get( tss_t tss_key )
 {
+#ifndef __TK_CLIB_DLLSTUB__
 	return((void *)TK_TlsGet(tss_key));
+#endif
 }
 
 int tss_set( tss_t tss_id, void *val )
 {
+#ifndef __TK_CLIB_DLLSTUB__
 	TK_TlsSet(tss_id, (int64_t)val);
 	return(thrd_success);
+#endif
 }
 
 void tss_delete( tss_t tss_id )

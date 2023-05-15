@@ -21,6 +21,7 @@ uint64_t htole64(uint64_t host_64bits);
 uint64_t be64toh(uint64_t big_endian_64bits);
 uint64_t le64toh(uint64_t little_endian_64bits);
 
+#ifdef __BJX2__
 __asm {
 htobe64:
 be64toh:
@@ -61,6 +62,7 @@ le16toh:
 	RTS
 
 };
+#endif
 
 #if 1
 
@@ -76,6 +78,7 @@ int  feholdexcept(fenv_t *env);
 int  fesetenv(const fenv_t *env);
 int  feupdateenv(const fenv_t *env);
 
+#ifdef __BJX2__
 __asm {
 feclearexcept:
 	MOV		GBR, R6
@@ -156,5 +159,7 @@ fetestexcept:
 	AND		R7, R4, R2
 	RTS
 };
+#endif
+
 
 #endif

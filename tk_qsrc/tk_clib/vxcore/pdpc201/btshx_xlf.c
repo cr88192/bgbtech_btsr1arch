@@ -1,3 +1,5 @@
+#ifdef __BJX2__
+
 __float128 __xlf_add(__float128 x, __float128 y);
 __float128 __xlf_sub(__float128 x, __float128 y);
 __float128 __xlf_mul(__float128 x, __float128 y);
@@ -447,5 +449,7 @@ __float128 __xlf_div(__float128 x, __float128 y)
 {
 	return(x*__xlf_rcp(y));
 }
+
+#endif
 
 #endif

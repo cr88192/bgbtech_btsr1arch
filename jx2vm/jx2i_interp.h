@@ -291,6 +291,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_OPFL_NOWEX_IO2		0x4000		//Not valid WEX unless IO2
 #define BJX2_OPFL_NOWEXSFX3W	0x8000		//Not valid WEX suffix if 3-Wide
 
+#define BJX2_OPFL_RV64			0x00010000		//RV64
+
 #define BJX2_OPFL_PREDMSK	0xC1		//Mask copied for predicated ops.
 
 

@@ -2744,6 +2744,11 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	if(sctx->is_fixed32&2)
 		mach=0xB265;
 
+	if(sctx->emit_riscv&0x02)
+		mach=0xB250;
+	if(sctx->emit_riscv&0x01)
+		mach=0x5064;
+
 	szstack=1<<19;
 	
 	i=BGBCC_CCXL_CheckForOptParmInt(ctx, "stack");

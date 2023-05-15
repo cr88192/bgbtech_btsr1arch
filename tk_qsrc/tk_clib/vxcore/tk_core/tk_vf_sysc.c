@@ -432,7 +432,7 @@ TK_DIR *tk_multidir_create(TK_DIR **fda, int nfd)
 	int i, j, k;
 
 	void *p;
-	int i;
+//	int i;
 
 //	tde=tk_malloc(sizeof(TK_DIRENT));
 //	memset(tde, 0, sizeof(TK_DIRENT));

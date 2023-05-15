@@ -64,7 +64,7 @@ s32 __sdivsi3(s32 a, s32 b)
 }
 #endif
 
-#if 0
+#ifndef __BJX2__
 static int _fcn_clz64(u64 v)
 {
 	const u64 m1=0x8000000000000000ULL;
@@ -86,7 +86,7 @@ static int _fcn_clz64(u64 v)
 }
 #endif
 
-#if 0
+#ifndef __BJX2__
 u64 __udivdi3(u64 n, u64 d)
 {
 	u64 q, r;
@@ -121,7 +121,7 @@ u64 __udivdi3(u64 n, u64 d)
 }
 #endif
 
-#if 0
+#ifndef __BJX2__
 s64 __sdivdi3(s64 a, s64 b)
 {
 	s64 sga, sgb;
@@ -130,8 +130,15 @@ s64 __sdivdi3(s64 a, s64 b)
 	sga^=sgb;
 	return((__udivdi3(a, b)^sga)-sga);
 }
+
+u64 __udivti3(u64 a, u64 b)
+{
+	return(__udivdi3(a, b));
+}
 #endif
 
+
+#ifdef __BJX2__
 
 __asm {
 
@@ -399,3 +406,4 @@ __udivsi3_tab:
 //	RTS
 };
 
+#endif

@@ -807,6 +807,7 @@ RegGPR_6R3W regGpr(
 	gprValLr,		//LR Value (CR)
 	gprValSsp,		//SSP Value (CR)
 	gprValCm,		//Cm Port (CR)
+	id2ValBPc,		//BPC
 
 	gprEx1Flush,	//Flush EX1
 	gprEx2Flush,	//Flush EX2
@@ -1130,6 +1131,9 @@ reg[63:0]		ex2RegInSr;
 
 reg[127:0]		tNxtRegExc;
 // reg[127:0]		tRegExc;
+
+reg[11:0]		tRegExcCycInh;
+reg[11:0]		tNxtRegExcCycInh;
 
 
 wire[63:0]		ex1MulVal;
@@ -2383,6 +2387,7 @@ begin
 	tDbgOutStatus6	= 0;
 	tDbgOutStatus7	= 0;
 	tDbgOutStatus8	= 0;
+	tNxtRegExcCycInh	= 0;
 
 	tHoldNxtCycCnt		= 0;
 	tNxtDeadlockLatch	= tDeadlockLatch;
@@ -3210,9 +3215,12 @@ begin
 			((ifOutPcStep==0) && (tRegExc[15:12]==4'hA))))
 		begin
 `ifdef jx2_debug_isr
-			$display("EXC Sustain %X PC=%X", tRegExc, ifLastPc);
+			$display("EXC Sustain %X PC=%X Inh=%X",
+				tRegExc, ifLastPc, tRegExcCycInh);
 `endif
 			tNxtRegExc = tRegExc;
+
+			tNxtRegExcCycInh = tRegExcCycInh + 1;
 		end
 	end
 
@@ -3228,6 +3236,12 @@ begin
 //			tNxtRegExc = 0;
 			tNxtRegExc[15] = 0;
 		end
+		
+		if(tRegExcCycInh[11:9] == 3'b111)
+		begin
+			$display("EXC Filter Timeout %X", tNxtRegExc);
+			tNxtRegExc[15] = 0;
+		end
 	end
 
 	if(exResetL2)
@@ -3235,6 +3249,7 @@ begin
 		$display("ExUnit: RESET");
 //		tNxtRegExc = 0;
 		tNxtRegExc[15] = 0;
+		tNxtRegExcCycInh = 0;
 
 		tNxtDelayExc[15] = 0;
 		tNxtDelay2Exc[15] = 0;
@@ -4439,6 +4454,8 @@ begin
 	tDelay2Exc		<= tNxtDelay2Exc;
 	tDelay3Exc		<= tNxtDelay3Exc;
 	tDelay4Exc		<= tNxtDelay4Exc;
+
+	tRegExcCycInh	<= tNxtRegExcCycInh;
 
 	if(tNxtRegExc[15] && (tNxtRegExc[15:12] != 4'hC))
 //	if(1'b1)

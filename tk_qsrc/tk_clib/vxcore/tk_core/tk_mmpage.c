@@ -431,6 +431,11 @@ int TKMM_PageFree(void *ptr, int sz)
 
 void *TKMM_PageAllocVaMap(int sz, int flProt, int flMap)
 {
+#ifdef __TK_CLIB_ONLY__
+	return(TKMM_PageAlloc_f(sz));
+#endif
+
+#ifndef __TK_CLIB_ONLY__
 	s64 va;
 
 	if(!tk_iskernel())
@@ -441,10 +446,16 @@ void *TKMM_PageAllocVaMap(int sz, int flProt, int flMap)
 		return((void *)va);
 
 	return(TKMM_PageAlloc_f(sz));
+#endif
 }
 
 void *TKMM_PageAllocUsc(int sz)
 {
+#ifdef __TK_CLIB_ONLY__
+	return(TKMM_PageAlloc_f(sz));
+#endif
+
+#ifndef __TK_CLIB_ONLY__
 	s64 va;
 
 	if(!tk_iskernel())
@@ -455,10 +466,16 @@ void *TKMM_PageAllocUsc(int sz)
 		return((void *)va);
 
 	return(TKMM_PageAlloc_f(sz));
+#endif
 }
 
 int TKMM_PageFreeUsc(void *ptr, int sz)
 {
+#ifdef __TK_CLIB_ONLY__
+	return(TKMM_PageFree_f(ptr, sz));
+#endif
+
+#ifndef __TK_CLIB_ONLY__
 	s64 tea;
 	if(!tk_iskernel())
 		return(TKMM_PageFree_f(ptr, sz));
@@ -471,9 +488,8 @@ int TKMM_PageFreeUsc(void *ptr, int sz)
 	}
 
 	return(TKMM_PageFree_f(ptr, sz));
+#endif
 }
-
-extern volatile u64 __arch_tbr;
 
 void *tk_getsavedvbr(void);
 // int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
@@ -488,7 +504,8 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	void *msgbuf, *msgp1, *msgp2;
 	int ret;
 
-	task=__arch_tbr;
+//	task=__arch_tbr;
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	if(!task)
 		__debugbreak();
 //	if(!task->SysCall)
@@ -1068,7 +1085,9 @@ int TKMM_FreeZone(int ztag, int zmask)
 	return(0);
 }
 
-#ifndef __TK_CLIB_ONLY__
+// #ifndef __TK_CLIB_ONLY__
+#if 1
+
 void *TKMM_MallocCat(int sz, int cat)
 {
 	TKMM_MemLnkObj *obj;

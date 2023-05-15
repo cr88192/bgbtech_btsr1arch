@@ -16,6 +16,18 @@
 #define M_TAU_R 0.15915494309189533576888376337251
 #endif
 
+#ifdef __BGBCC__
+#define CPX_REAL(x)		x.r
+#define CPX_IMAG(x)		x.i
+#define CPX_NEW(x, y)	((_Complex double) {x, y})
+#else
+#define CPX_REAL(x)		creal(x)
+#define CPX_IMAG(x)		cimag(x)
+#define CPX_NEW(x, y)	(1.0i*y+x)
+#endif
+
+#ifndef MATH2_SINTAB
+#define MATH2_SINTAB
 static const double sintab_c00= 1;
 static const double sintab_c01=-0.16666666666666665741;
 static const double sintab_c02= 0.0083333333333333332177;
@@ -37,21 +49,38 @@ static const double sintab_c17=-9.6775929586318906719e-41;
 static const double sintab_c18= 7.2654601791530723547e-44;
 static const double sintab_c19=-4.9024697565135435190e-47;
 static const double sintab_c20= 2.9893108271424050896e-50;
+#endif
 
 
 double				cabs(double _Complex a)
-	{ return(sqrt((a.r*a.r)+(a.i*a.i))); }
+	{ return(sqrt((CPX_REAL(a)*CPX_REAL(a))+(CPX_IMAG(a)*CPX_IMAG(a)))); }
 double				carg(double _Complex a)
-	{ return(atan2(a.i, a.r)); }
+	{ return(atan2(CPX_IMAG(a), CPX_REAL(a))); }
+
+#ifdef __BGBCC__
 double				cimag(double _Complex a)
-	{ return(a.i); }
+	{ return(CPX_IMAG(a)); }
 double				creal(double _Complex a)
-	{ return(a.r); }
+	{ return(CPX_REAL(a)); }
+#else
+double				cimag(double _Complex a)
+{
+	double *fv;
+	fv=(double *)(&a);
+	return(fv[1]);
+}
+double				creal(double _Complex a)
+{
+	double *fv;
+	fv=(double *)(&a);
+	return(fv[0]);
+}
+#endif
 
 double _Complex	casin(double _Complex a)
 {
-	if(a.i==0.0)
-		return(asin(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(asin(CPX_REAL(a)));
 	return(1.0i*clog(csqrt(1.0-a*a)-(a*1.0i)));
 }
 
@@ -62,66 +91,66 @@ double _Complex	cacos(double _Complex a)
 
 double _Complex	cacosh(double _Complex a)
 {
-	if(a.i==0.0)
-		return(acosh(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(acosh(CPX_REAL(a)));
 	return(clog(a+csqrt(a*a-1.0)));
 }
 
 double _Complex	casinh(double _Complex a)
 {
-	if(a.i==0.0)
-		return(asinh(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(asinh(CPX_REAL(a)));
 	return(clog(a+csqrt(a*a+1.0)));
 }
 
 double _Complex	catan(double _Complex a)
 {
 	double _Complex az;
-	if(a.i==0.0)
-		return(atan(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(atan(CPX_REAL(a)));
 	az=a*1.0i;
 	return(0.5i*clog((1.0+az)/(1.0-az)));
 }
 
 double _Complex	catanh(double _Complex a)
 {
-	if(a.i==0.0)
-		return(atanh(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(atanh(CPX_REAL(a)));
 	return(0.5*clog((1.0+a)/(1.0-a)));
 }
 
 double _Complex	ccosh(double _Complex a)
 {
-	if(a.i==0)
-		return(cosh(a.r));
+	if(CPX_IMAG(a)==0)
+		return(cosh(CPX_REAL(a)));
 	return((cexp(a)+cexp(-a))*0.5);
 }
 
 double _Complex	cexp(double _Complex a)
 {
 	double ex, cy, sy;
-	ex=exp(a.r);
-	cy=cos(a.i);
-	sy=sin(a.i);
+	ex=exp(CPX_REAL(a));
+	cy=cos(CPX_IMAG(a));
+	sy=sin(CPX_IMAG(a));
 //	return((ex*cy)+((ex*sy)*1i));
-	return( (_Complex double) {ex*cy, ex*sy} );
+	return( CPX_NEW(ex*cy, ex*sy) );
 }
 
 double _Complex	clog(double _Complex a)
-//	{ return(log(a.r)+(carg(a)*1i)); }
-	{ return( (_Complex double) {log(a.r), atan2(a.i, a.r)} ); }
+//	{ return(log(CPX_REAL(a))+(carg(a)*1i)); }
+	{ return( CPX_NEW(log(CPX_REAL(a)), atan2(CPX_IMAG(a), CPX_REAL(a))) ); }
 
 double _Complex	conj(double _Complex a)
-//	{ return(a.r-(a.i*1i)); }
-	{ return( (_Complex double) {a.r, -a.i} ); }
+//	{ return(CPX_REAL(a)-(CPX_IMAG(a)*1i)); }
+	{ return( CPX_NEW(CPX_REAL(a), -CPX_IMAG(a)) ); }
 
 double _Complex	cpow(double _Complex a, double _Complex b)
 	{ return(cexp(clog(a)*b)); }
 
 double _Complex	cproj(double _Complex a)
 {
-	if(isinf(a.r))
-		return( (_Complex double) {0.0, a.i} );
+	if(isinf(CPX_REAL(a)))
+		return( CPX_NEW(0.0, CPX_IMAG(a)) );
 	return(a);
 }
 	
@@ -131,10 +160,10 @@ double _Complex	csin(double _Complex a)
 	double f;
 	long li;
 
-	if(a.i==0.0)
-		return(sin(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(sin(CPX_REAL(a)));
 
-	li=a.r*M_TAU_R;
+	li=CPX_REAL(a)*M_TAU_R;
 	f=(li*M_TAU);
 	th=a-f;
 
@@ -168,15 +197,15 @@ double _Complex	csin(double _Complex a)
 
 double _Complex	ccos(double _Complex a)
 {
-	if(a.i==0.0)
-		return(cos(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(cos(CPX_REAL(a)));
 	return(csin(a+M_PI_2));
 }
 
 double _Complex	csinh(double _Complex a)
 {
-	if(a.i==0.0)
-		return(sinh(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(sinh(CPX_REAL(a)));
 	return((cexp(a)-cexp(-a))*0.5);
 }
 
@@ -185,8 +214,8 @@ double _Complex	csqrt(double _Complex a)
 {
 	double r, i, g, d, n;
 	
-	r=a.r;
-	i=a.i;
+	r=CPX_REAL(a);
+	i=CPX_IMAG(a);
 	if(i!=0.0)
 	{
 		n=sqrt(r*r+i*i);
@@ -199,32 +228,32 @@ double _Complex	csqrt(double _Complex a)
 		d=0.0;
 	}
 //	return(g+(d*1i));
-	return( (_Complex double) {g, d} );
+	return( CPX_NEW(g, d) );
 }
 
 double _Complex	ctan(double _Complex a)
 {
-	if(a.i==0.0)
-		return(tan(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(tan(CPX_REAL(a)));
 	return(csin(a)/ccos(a));
 }
 
 double _Complex	ctanh(double _Complex a)
 {
-	if(a.i==0.0)
-		return(tanh(a.r));
+	if(CPX_IMAG(a)==0.0)
+		return(tanh(CPX_REAL(a)));
 	return(csinh(a)/ccosh(a));
 }
 
 
 float				cabsf(float _Complex a)
-	{ return(sqrt((a.r*a.r)+(a.i*a.i))); }
+	{ return(sqrt((CPX_REAL(a)*CPX_REAL(a))+(CPX_IMAG(a)*CPX_IMAG(a)))); }
 float				cargf(float _Complex a)
-	{ return(atan2(a.i, a.r)); }
+	{ return(atan2(CPX_IMAG(a), CPX_REAL(a))); }
 float				cimagf(float _Complex a)
-	{ return(a.i); }
+	{ return(CPX_IMAG(a)); }
 float				crealf(float _Complex a)
-	{ return(a.r); }
+	{ return(CPX_REAL(a)); }
 
 float _Complex		cacosf(float _Complex a)
 	{ return(cacos(a)); }

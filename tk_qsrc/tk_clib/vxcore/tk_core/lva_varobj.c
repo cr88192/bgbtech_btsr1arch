@@ -612,7 +612,7 @@ u64 TKMM_LVA_VarObjFetchKeyR(LVA_VarObject *obj, int key,
 	return(1);
 }
 
-__declspec(nocull)
+TK_NOCULL
 u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 {
 	LVA_VarObject *dsarr[256];
@@ -702,7 +702,7 @@ int TKMM_LVA_VarObjTrySetKeyR(LVA_VarObject *obj, int key, u64 val,
 	return(0);
 }
 
-__declspec(nocull)
+TK_NOCULL
 int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 {
 	LVA_VarObject *dsarr[256];
@@ -804,9 +804,9 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 #if defined(__BJX2__) && !defined(__ADDR_X96__)
 #define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
 #define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
-__declspec(nocull) __variant
+TK_NOCULL __variant
 	__lvo_getslot_cstgen(__object obj, char *name, u16 *rfid);
-__declspec(nocull) void
+TK_NOCULL void
 	__lvo_setslot_cstgen(__object obj, char *name, u16 *rfid, __variant val);
 #endif
 
@@ -830,6 +830,10 @@ LVA_VarObject *TKMM_LVA_AllocVarObj(void)
 	return(ov);
 }
 
+
+#ifdef __BJX2__
+
+
 __object __lvo_emptyobject(void)
 {
 	LVA_VarObject *ov;
@@ -845,9 +849,9 @@ __object __lvo_emptyobject(void)
 // #define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
 // #define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
 
-__declspec(nocull) __variant
+TK_NOCULL __variant
 	__lvo_getslot_cst(__object obj, char *name, u16 *rfid);
-__declspec(nocull) void
+TK_NOCULL void
 	__lvo_setslot_cst(__object obj, char *name, u16 *rfid, __variant val);
 
 // __variant  __lvo_getslot_cstgen(__object obj, char *name, u16 *rfid);
@@ -892,7 +896,7 @@ __lvo_setslot_cst:
 #endif
 
 //__variant  __lvo_getslot_cst(__object obj, char *name, u16 *rfid)
-__declspec(nocull) __variant
+TK_NOCULL __variant
 	LVO_GETSLOT_CST_GEN(__object obj, char *name, u16 *rfid)
 {
 	LVA_ObjectBasic *ob;
@@ -954,7 +958,7 @@ __declspec(nocull) __variant
 }
 
 //void __lvo_setslot_cst(__object obj, char *name, u16 *rfid, __variant val)
-__declspec(nocull) void
+TK_NOCULL void
 	LVO_SETSLOT_CST_GEN(__object obj, char *name, u16 *rfid, __variant val)
 {
 	LVA_ObjectBasic *ob;
@@ -1118,3 +1122,5 @@ __object __lvo_wrapstring(char *str)
 	v=TKMM_LVA_WrapString(str);
 	return(__object_frombits(v));
 }
+
+#endif

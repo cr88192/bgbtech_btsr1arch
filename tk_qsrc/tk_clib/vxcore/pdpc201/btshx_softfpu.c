@@ -192,7 +192,7 @@ u32 __sfp_fsub_f32(u32 f0, u32 f1)
 	return(f2);
 }
 
-#if 0
+#if 1
 u32 __sfp_fmul_f32_asm(u32 f0, u32 f1);
 
 u32 __sfp_fmul_f32(u32 f0, u32 f1)

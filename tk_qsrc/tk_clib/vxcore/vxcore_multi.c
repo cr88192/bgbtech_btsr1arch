@@ -2,6 +2,8 @@
 #define __PDPCLIB_API__
 #endif
 
+#include <tk_core.h>
+
 #include "pdpc201/stdio.c"
 #include "pdpc201/string.c"
 #include "pdpc201/stdlib.c"
@@ -53,6 +55,7 @@
 #include "tk_core/tk_usb.c"
 #include "tk_core/tk_peload.c"
 #include "tk_core/tk_peload_pbo.c"
+#include "tk_core/tk_elfload.c"
 #include "tk_core/tk_syscall.c"
 
 #include "tk_core/tk_env.c"

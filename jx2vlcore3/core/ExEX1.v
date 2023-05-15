@@ -292,6 +292,9 @@ reg				tExHold;
 reg				tRegHeld;
 assign	exHold		= { tRegHeld, tExHold };
 
+wire		tBraIsRiscv;
+assign	tBraIsRiscv = regInSr[26] && (regInSr[23:22]==2'b00);
+
 reg		tAguFlagJq;
 
 wire		tXmovEnable;
@@ -434,6 +437,8 @@ assign		opUCmdOut = tOpUCmd2;
 
 reg[47:0]	tValBraDispSc;
 
+reg[47:0]	tValBraBasePc;
+
 reg[16:0]	tValAguBraA0;
 reg[16:0]	tValAguBraB0;
 reg[16:0]	tValAguBraB1;
@@ -568,10 +573,20 @@ begin
 //	tValAguBra		= { UV16_00, regValPc[47:32], tValAgu[31:0] };
 //	tValAguBra		= { UV16_00, tValAgu };
 
-//	tValAguBraJCmpMi = regValPc[31:16] + 1;
-	tValAguBraJCmpMi0 = regValPc[31:16] + regValImm[30:15] + 0;
-	tValAguBraJCmpMi1 = regValPc[31:16] + regValImm[30:15] + 1;
-	tValAguBraJCmpLo = { 1'b0, regValPc[15:1] } + { 1'b0, regValImm[14:0] };
+	tValBraBasePc	= regValPc[47:0];
+
+	if(tBraIsRiscv)
+	begin
+		/* RISC-V Branches relative to base PC. */
+		tValBraBasePc	= regValBPc[47:0];
+	end
+
+
+//	tValAguBraJCmpMi = tValBraBasePc[31:16] + 1;
+	tValAguBraJCmpMi0 = tValBraBasePc[31:16] + regValImm[30:15] + 0;
+	tValAguBraJCmpMi1 = tValBraBasePc[31:16] + regValImm[30:15] + 1;
+	tValAguBraJCmpLo = { 1'b0, tValBraBasePc[15:1] } +
+		{ 1'b0, regValImm[14:0] };
 	tValAguBraJCmp = {
 		regValPc[47:32],
 //		tValAguBraJCmpLo[15] ? tValAguBraJCmpMi : regValPc[31:16],
@@ -611,21 +626,22 @@ begin
 `endif
 
 `ifdef jx2_agu_bra48
+
 	tValBraDispSc	= { regValRt[46:0], 1'b0 };
 	tValAguBraA0	=
-		{ 1'b0, regValPc[15:0] } +
+		{ 1'b0, tValBraBasePc[15:0] } +
 		{ 1'b0, tValBraDispSc[15:0] };
 	tValAguBraB0	=
-		{ 1'b0, regValPc[31:16] } +
+		{ 1'b0, tValBraBasePc[31:16] } +
 		{ 1'b0, tValBraDispSc[31:16] } + 0;
 	tValAguBraB1	=
-		{ 1'b0, regValPc[31:16] } +
+		{ 1'b0, tValBraBasePc[31:16] } +
 		{ 1'b0, tValBraDispSc[31:16] } + 1;
 	tValAguBraC0	=
-		{ 1'b0, regValPc[47:32] } +
+		{ 1'b0, tValBraBasePc[47:32] } +
 		{ 1'b0, tValBraDispSc[47:32] } + 0;
 	tValAguBraC1	=
-		{ 1'b0, regValPc[47:32] } +
+		{ 1'b0, tValBraBasePc[47:32] } +
 		{ 1'b0, tValBraDispSc[47:32] } + 1;
 	tValAguBra		= {
 		UV16_00,

@@ -5,10 +5,14 @@ DLL Stub Library, GetProcAddress interface.
 #include <tk_core.h>
 #include <tk_libcgpa.h>
 
+#include <stdint.h>
+
 #ifdef __TK_CLIB_DLLSTUB__
 
-extern int __arch_exsr;
-extern void *__arch_tbr;
+// extern int __arch_exsr;
+// extern void *__arch_tbr;
+
+// intptr_t _arch_gettbr(void);
 
 void *TkClGetProcAddress(char *name)
 {
@@ -16,10 +20,12 @@ void *TkClGetProcAddress(char *name)
 	TKPE_TaskInfo *task;
 	TKPE_TaskInfoUser *tusr;
 	
-	task=(TKPE_TaskInfo *)__arch_tbr;
+//	task=(TKPE_TaskInfo *)__arch_tbr;
+//	task=(TKPE_TaskInfo *)_arch_gettbr();
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	tusr=(TKPE_TaskInfoUser *)task->usrptr;
 	
-	GpaFn=tusr->clib_gpa;
+	GpaFn=(void *)(tusr->clib_gpa);
 	if(GpaFn)
 		return(GpaFn(name));
 	return(NULL);
@@ -38,13 +44,24 @@ void *TkClGetProcAddressCn(void **rfptr, char *name)
 void **TK_GetAllocaMark()
 {
 	TKPE_TaskInfo *task;
-	task=__arch_tbr;
+//	task=__arch_tbr;
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	return((void **)(task->allocaptr));
 }
 
-void __exit()
+void __exit(int status)
 {
 }
+
+u32 TK_GetTimeMs(void)
+{
+	return(0);
+}
+
+char *TK_Env_GetCwd(char *buf, int sz)
+{
+}
+
 #endif
 
 

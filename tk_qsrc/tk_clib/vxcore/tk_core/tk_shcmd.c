@@ -123,66 +123,6 @@ TKSH_CommandInfo *TKSH_RegisterCommand(char *name, void *fcn)
 	return(cmdi);
 }
 
-void TKSH_NormalizePath(char *dst, char *src)
-{
-	char pbuf[512];
-	char tb[256];
-	char *stk[64];
-	char *cs, *ct, *cp;
-	int i, n;
-	
-	cs=src;
-
-	while(*cs=='/')
-		cs++;
-
-	n=0;
-	ct=pbuf;
-	stk[n]=ct;
-	cp=ct;
-	while(1)
-	{
-		if((*cs=='/') || !(*cs))
-		{
-			*ct++=0;
-			while(*cs=='/')
-				cs++;
-			
-			if(!strcmp(cp, "."))
-			{
-				ct=stk[n];
-			}else if(!strcmp(cp, ".."))
-			{
-				if(n>0)n--;
-				ct=stk[n];
-			}else
-			{
-				n++;
-			}
-
-			stk[n]=ct;
-			cp=ct;
-			if(!(*cs))
-				break;
-			continue;
-		}
-		
-		*ct++=*cs++;
-	}
-
-	ct=dst;
-	*ct++='/';
-	for(i=0; i<n; i++)
-	{
-		cs=stk[i];
-		while(*cs)
-			*ct++=*cs++;
-		if((i+1)<n)
-			*ct++='/';
-	}
-	*ct++=0;
-}
-
 void TKSH_ListDir(char *path, char **args)
 {
 	char tb[256];
@@ -1875,13 +1815,14 @@ int TKSH_TryLoad(char *img, char **args0)
 	volatile int *rchk;
 	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
 	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
-	int sig_is_pe, sig_is_asc;
+	int sig_is_pe, sig_is_asc, sig_is_elf;
 	int rv, nl, sz, sza, ix;
 	int i, j, k;
 
 	pimg=NULL;
 	fd=NULL;
 	sig_is_pe=0;
+	sig_is_elf=0;
 
 	TK_Env_GetCwd(cwd, 256);
 	
@@ -2034,6 +1975,9 @@ int TKSH_TryLoad(char *img, char **args0)
 			sig_is_pe=1;
 		if((tb[0]=='P') && (tb[1]=='E'))
 			sig_is_pe=1;
+
+		if((tb[0]==0x7F) && (tb[1]=='E') && (tb[2]=='L') && (tb[3]=='F'))
+			sig_is_elf=1;
 	}
 
 	chk=999;
@@ -2041,22 +1985,28 @@ int TKSH_TryLoad(char *img, char **args0)
 	*rchk=0x1234567;
 
 //	if(fd)
-	if(pimg || (fd && sig_is_pe))
+	if(pimg || (fd && sig_is_pe) || (fd && sig_is_elf))
 	{
 		bootgbr=0;
 //		TKPE_LoadStaticPE(fd, plf_fdofs, &bootptr, &bootgbr, tlsix);
 //		tk_printf("Boot Pointer %p, GBR=%p\n", bootptr, (void *)bootgbr);
 
 		if(!pimg)
+//		if(!pimg && sig_is_pe)
 			pimg=TKPE_LoadDynPE(fd, 0, img, NULL, 0);
-
-		bootptr=pimg->bootptr;
 
 		if(fd)
 		{
 			tk_fclose(fd);
 			fd=NULL;
 		}
+
+		if(!pimg)
+		{
+			return(-1);
+		}
+
+		bootptr=pimg->bootptr;
 
 #if 0
 		if(bootgbr)
@@ -2404,6 +2354,12 @@ int TKSH_TryLoad_ext(char *img, char **args)
 	
 	strcpy(tb, img);
 	strcat(tb, ".exe");
+	ri=TKSH_TryLoad(tb, args);
+	if(ri>0)
+		return(ri);
+	
+	strcpy(tb, img);
+	strcat(tb, ".elf");
 	ri=TKSH_TryLoad(tb, args);
 	if(ri>0)
 		return(ri);

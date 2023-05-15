@@ -990,7 +990,8 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 		if(!a[0])
 			continue;
 		
-		sscanf(a[0], "%08X", &ta);
+//		sscanf(a[0], "%08X", &ta);
+		sscanf(a[0], "%X", &ta);
 		
 		tmap_addr[tmn]=ta;
 		tmap_name[tmn]=strdup(a[2]);

@@ -16,6 +16,8 @@ Everything else will assume the use of system calls.
 #define __TK_CLIB_DLLSTUB__
 #endif
 
+#include <tk_core.h>
+
 #include "pdpc201/bt_libcgpa.c"
 #include "pdpc201/stdio_gpa.c"
 

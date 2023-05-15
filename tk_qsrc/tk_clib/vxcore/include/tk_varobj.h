@@ -236,3 +236,14 @@ double TKMM_LVA_UnwrapFlonum(u64 vv);
 u64 TKMM_LVA_WrapPointer(void *val);
 void *TKMM_LVA_UnwrapPointer(u64 val);
 
+
+
+u64 __lva_conv_fromi32(s32 val);
+u64 __lva_conv_fromi64(s64 val);
+u64 __lva_conv_fromf32(float val);
+u64 __lva_conv_fromf64(double val);
+
+s32 __lva_conv_toi32(u64 val);
+s64 __lva_conv_toi64(u64 val);
+float __lva_conv_tof32(u64 val);
+double __lva_conv_tof64(u64 val);

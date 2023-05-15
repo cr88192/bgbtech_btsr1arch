@@ -250,20 +250,76 @@
 #define	__Q8_QS	LL
 #define	__Q8_QF	"ll"
 
+#ifdef __BGBCC__
 #define	__Q8_OW	128
 #define	__Q8_OT	__int128
 #define	__Q8_OS	LLX
 #define	__Q8_OF	"llx"
+#endif
 
-// #define	__Q8_MW	__Q8_QW
-// #define	__Q8_MT	__Q8_QT
-// #define	__Q8_MS	__Q8_QS
-// #define	__Q8_MF	__Q8_QF
-
+#ifdef __BGBCC__
 #define	__Q8_MW	__Q8_OW
 #define	__Q8_MT	__Q8_OT
 #define	__Q8_MS	__Q8_OS
 #define	__Q8_MF	__Q8_OF
+#else
+#define	__Q8_MW	__Q8_QW
+#define	__Q8_MT	__Q8_QT
+#define	__Q8_MS	__Q8_QS
+#define	__Q8_MF	__Q8_QF
+#endif
+
+#define	__Q8_GT	long double
+
+#elif	defined(__riscv)
+
+
+#define	__Q8_TC
+#define	__Q8_SC	/* signed */ char
+#define	__Q8_CW	8
+#define	__Q8_SW	16
+#define	__Q8_IW	32
+// #define	__Q8_LW	64
+#define	__Q8_LW	32
+#define	__Q8_PW	64
+#define	__Q8_DW	64
+#define	__Q8_AW	32
+#undef	__Q8_AU
+#define	__Q8_ZW	32
+#define	__Q8_WW	32
+#undef	__Q8_WU
+#define	__Q8_XW	32
+#undef	__Q8_XU
+
+#if	__STDC_VERSION__ >= 199901
+#define	__Q8_CF	"hh"
+#else
+#undef	__Q8_CF		/* no known length modifier for character type */
+#endif
+
+#define	__Q8_QW	64
+#define	__Q8_QT	long long
+#define	__Q8_QS	LL
+#define	__Q8_QF	"ll"
+
+#ifdef __BGBCC__
+#define	__Q8_OW	128
+#define	__Q8_OT	__int128
+#define	__Q8_OS	LLX
+#define	__Q8_OF	"llx"
+#endif
+
+#ifdef __Q8_OT
+#define	__Q8_MW	__Q8_OW
+#define	__Q8_MT	__Q8_OT
+#define	__Q8_MS	__Q8_OS
+#define	__Q8_MF	__Q8_OF
+#else
+#define	__Q8_MW	__Q8_QW
+#define	__Q8_MT	__Q8_QT
+#define	__Q8_MS	__Q8_QS
+#define	__Q8_MF	__Q8_QF
+#endif
 
 #define	__Q8_GT	long double
 

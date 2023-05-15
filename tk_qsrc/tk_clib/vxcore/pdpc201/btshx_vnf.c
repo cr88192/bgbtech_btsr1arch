@@ -1,3 +1,5 @@
+#ifdef __BJX2__
+
 __fcomplex	__vnf_c2f_add(__fcomplex a, __fcomplex b);
 __fcomplex	__vnf_c2f_sub(__fcomplex a, __fcomplex b);
 __fcomplex	__vnf_c2f_mul(__fcomplex a, __fcomplex b);
@@ -614,3 +616,5 @@ __quatf __vnf_vqf_rcp(__quatf A)
 
 __quatf		__vnf_vqf_div(__quatf A, __quatf B)
 	{ return(A*__vnf_vqf_rcp(B)); }
+
+#endif

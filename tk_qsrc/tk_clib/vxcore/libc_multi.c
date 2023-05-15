@@ -13,6 +13,8 @@ Everything else will assume the use of system calls.
 #endif
 
 
+#include <tk_core.h>
+
 #include "pdpc201/stdio.c"
 #include "pdpc201/string.c"
 #include "pdpc201/stdlib.c"
@@ -37,6 +39,8 @@ Everything else will assume the use of system calls.
 #include "tk_core/tk_mmpage.c"
 #include "tk_core/tk_mmcell.c"
 #include "tk_core/tk_mmllist.c"
+
+#include "tk_core/tk_mmap.c"
 
 // #include "tk_core/tk_spi.c"
 #include "tk_core/tk_epoch.c"
@@ -72,6 +76,8 @@ Everything else will assume the use of system calls.
 #include "pdpc201/btshx_xlf.c"
 #include "pdpc201/btshx_softfpu.c"
 #include "pdpc201/btshx_fpusup.c"
+
+#include "pdpc201/btrv_softfp.c"
 
 #include "pdpc201/btshx_vnf.c"
 #include "pdpc201/btshx_alloca.c"

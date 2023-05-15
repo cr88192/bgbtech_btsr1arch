@@ -1156,11 +1156,11 @@ begin
 		end
 
 		/*
-			SB: Fzdd_xxdd		(PC, disp16s), DLR
-			SW: Fzdd_xddd		(PC, disp20s), DLR
+			SB: Fzdd_xxdd		(PC, disp16s), Rn
+			SW: Fzdd_xddd		(PC, disp20s), Rn
 
-			UB: Fzdd_xxdx		(PC, disp13s), DLR
-			UW: Fzdd_xddd		(PC, disp9s), DLR
+			UB: Fzdd_xxdx		(PC, disp13s), Rn
+			UW: Fzdd_xddd		(PC, disp9s), Rn
 		 */
 		JX2_FMID_PCDISP8: begin
 //			opRegN	= JX2_GR_DLR;
@@ -1178,6 +1178,7 @@ begin
 			end
 			JX2_ITY_SW: begin
 				opImm	= opImm_disp20s;
+				opRegM	= JX2_GR_BPC;	/* JAL Quirk */
 			end
 
 			JX2_ITY_UB: begin

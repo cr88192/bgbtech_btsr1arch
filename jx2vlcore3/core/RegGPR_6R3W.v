@@ -80,6 +80,7 @@ module RegGPR_6R3W(
 	regValLr,		//LR Value (CR)
 	regValSsp,		//SSP Value (CR)
 	regValCm,		//Cm Value (CR)
+	regValBPc,		//Base PC Value
 	
 	gprEx1Flush,
 	gprEx2Flush,
@@ -138,6 +139,7 @@ input[63:0]		regValRnC2;		//Destination Value
 input[63:0]		regValRnC3;		//Destination Value
 
 input [47:0]	regValPc;		//PC Value (Synthesized)
+input [47:0]	regValBPc;		//Base PC Value
 input [47:0]	regValGbr;		//GBR Value (CR)
 input [47:0]	regValTbr;		//GBR Value (CR)
 input [32:0]	regValImmA;		//Immediate (Decode)
@@ -543,6 +545,8 @@ begin
 		JX2_GR_TBR:	tValRsA={ UV16_00, regValTbr };
 //		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
 		JX2_GR_LR:	tValRsA= regValLr;
+
+		JX2_GR_BPC:	tValRsA={ UV16_00, regValBPc };
 `else
 //		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
 		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:1],
@@ -550,6 +554,8 @@ begin
 		JX2_GR_GBR:	tValRsA={ UV32_00, regValGbr[31:0] };
 		JX2_GR_TBR:	tValRsA={ UV32_00, regValTbr[31:0] };
 		JX2_GR_LR:	tValRsA={ UV32_00, regValLr[31:0] };
+
+		JX2_GR_BPC:	tValRsA={ UV32_00, regValBPc[31:0] };
 `endif
 
 `ifdef jx2_gprs_mergecm

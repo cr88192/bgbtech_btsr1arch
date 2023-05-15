@@ -10,11 +10,13 @@ This is a vtable based wrapper for the stdio.h functions.
 
 #include <tk_libcgpa.h>
 
+void __init_stdin(void);
+
 #define		stdio_doinit()		if(!tk_stdio_vtp)__init_stdin()
 
 struct tk_stdio_vt *tk_stdio_vtp;
 
-void *(*_malloc_fptr)(size_t size);
+void *(*_malloc_fptr)(size_t size, int cat);
 void (*_free_fptr)(void *ptr);
 void *(*_realloc_fptr)(void *ptr, size_t size);
 size_t (*_msize_fptr)(void *ptr);
@@ -26,17 +28,17 @@ FILE *__stderr_p;
 __PDPCLIB_API__ FILE **__get_stdin()
 {
 	stdio_doinit();
-	return(__stdin_p);
+	return(&__stdin_p);
 }
 __PDPCLIB_API__ FILE **__get_stdout()
 {
 	stdio_doinit();
-	return(__stdout_p);
+	return(&__stdout_p);
 }
 __PDPCLIB_API__ FILE **__get_stderr()
 {
 	stdio_doinit();
-	return(__stderr_p);
+	return(&__stderr_p);
 }
 
 void __init_stdin(void)
@@ -44,7 +46,7 @@ void __init_stdin(void)
 	if(tk_stdio_vtp)
 		return;
 
-	TkClGetProcAddressCn(&tk_stdio_vtp, "stdio_vt");
+	TkClGetProcAddressCn((void **)(&tk_stdio_vtp), "stdio_vt");
 	__stdin_p=fopen("$STDIN", NULL);
 	__stdout_p=fopen("$STDOUT", NULL);
 	__stderr_p=fopen("$STDERR", NULL);
@@ -101,7 +103,7 @@ int fputc(int c, FILE *stream)
 
 char *fgets(char *s, int n, FILE *stream)
 {
-	int (*fgets_fp)(char *s, int n, FILE *stream);
+	char *(*fgets_fp)(char *s, int n, FILE *stream);
 //	stdio_doinit();
 	fgets_fp=tk_stdio_vtp->fgets_fp;
 	return(fgets_fp(s, n, stream));
@@ -215,7 +217,7 @@ int ferror(FILE *stream)
 
 int remove(const char *filename)
 {
-	int (*remove_fp)(char *s);
+	int (*remove_fp)(const char *s);
 	stdio_doinit();
 	remove_fp=tk_stdio_vtp->remove_fp;
 	return(remove_fp(filename));

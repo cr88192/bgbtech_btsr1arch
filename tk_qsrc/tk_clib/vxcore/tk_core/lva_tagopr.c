@@ -198,6 +198,7 @@ u64 TKMM_LVA_NewBigInt(__int128 val)
 	return(vptr);
 }
 
+#ifdef __BJX2__
 u64 TKMM_LVA_NewBigInt3(__uint128 vala, __uint128 valb, __uint128 valc)
 {
 	void *ptr;
@@ -210,6 +211,7 @@ u64 TKMM_LVA_NewBigInt3(__uint128 vala, __uint128 valb, __uint128 valc)
 	vptr|=((u64)LVA_LVATY_BIGINT)<<48;
 	return(vptr);
 }
+#endif
 
 u64 TKMM_LVA_NewBigInt3v(void *pval)
 {
@@ -312,29 +314,35 @@ u64	tkmm_lva_oprsub_bigig(u64 lva, u64 lvb)
 
 u64	tkmm_lva_oprmul_bigig(u64 lva, u64 lvb)
 {
+#ifdef __BGBCC__
 	__int128 va, vb, vc;
 	va=__lva_conv_toi128(lva);
 	vb=__lva_conv_toi128(lvb);
 	vc=va*vb;
 	return(TKMM_LVA_NewBigInt(vc));
+#endif
 }
 
 u64	tkmm_lva_oprdiv_bigig(u64 lva, u64 lvb)
 {
+#ifdef __BGBCC__
 	__int128 va, vb, vc;
 	va=__lva_conv_toi128(lva);
 	vb=__lva_conv_toi128(lvb);
 	vc=va/vb;
 	return(TKMM_LVA_NewBigInt(vc));
+#endif
 }
 
 u64	tkmm_lva_oprmod_bigig(u64 lva, u64 lvb)
 {
+#ifdef __BGBCC__
 	__int128 va, vb, vc;
 	va=__lva_conv_toi128(lva);
 	vb=__lva_conv_toi128(lvb);
 	vc=va%vb;
 	return(TKMM_LVA_NewBigInt(vc));
+#endif
 }
 
 u64	tkmm_lva_oprand_bigig(u64 lva, u64 lvb)

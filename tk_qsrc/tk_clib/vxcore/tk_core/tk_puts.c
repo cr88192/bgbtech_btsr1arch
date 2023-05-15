@@ -1,4 +1,6 @@
 void __halt(void);
+u64 tk_gettimeus_v(void);
+void tk_sprintf(char *dst, char *str, ...);
 
 byte tk_dbg_iscopy;
 

@@ -5,6 +5,8 @@ void	tkmm_bigint_and(void *lva, void *lvb, void *lvc);
 void	tkmm_bigint_or (void *lva, void *lvb, void *lvc);
 void	tkmm_bigint_xor(void *lva, void *lvb, void *lvc);
 
+void *__alloca(int size);
+
 #ifdef __BJX2__
 
 __asm {
@@ -140,6 +142,31 @@ tkmm_bigint_xor:
 
 #endif
 
+#ifndef __BJX2__
+
+void	tkmm_bigint_add(void *lva, void *lvb, void *lvc)
+{
+}
+
+void	tkmm_bigint_sub(void *lva, void *lvb, void *lvc)
+{
+}
+
+void	tkmm_bigint_and(void *lva, void *lvb, void *lvc)
+{
+}
+
+void	tkmm_bigint_or (void *lva, void *lvb, void *lvc)
+{
+}
+
+void	tkmm_bigint_xor(void *lva, void *lvb, void *lvc)
+{
+}
+
+#endif
+
+#if 1
 TK_BIGINT tk_bigint_add(TK_BIGINT va, TK_BIGINT vb)
 {
 	TK_BIGINT vc;
@@ -174,7 +201,10 @@ TK_BIGINT tk_bigint_xor(TK_BIGINT va, TK_BIGINT vb)
 	tkmm_bigint_xor(&va, &vb, &vc);
 	return(vc);
 }
+#endif
 
+
+#ifdef __BJX2__
 
 void __xbi_add(void *va, void *vb, void *vc, int n);
 void __xbi_sub(void *va, void *vb, void *vc, int n);
@@ -832,4 +862,6 @@ void __xbi_smod(void *va, void *vb, void *vc, int n)
 	__xbi_smul(vq, vb, vt, n);
 	__xbi_sub (va, vt, vc, n);
 }
+
+#endif
 

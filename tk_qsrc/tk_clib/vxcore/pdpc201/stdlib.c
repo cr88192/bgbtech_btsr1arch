@@ -131,22 +131,22 @@ int (*_msetzone_fptr)(void *ptr, int ztag);
 int (*_mfreezone_fptr)(int ztag, int zmask);
 
 __PDPCLIB_API__ void **_getmallocptr(void)
-	{ return(&_malloc_fptr); }
+	{ return((void **)(&_malloc_fptr)); }
 __PDPCLIB_API__ void **_getfreecptr(void)
-	{ return(&_free_fptr); }
+	{ return((void **)(&_free_fptr)); }
 __PDPCLIB_API__ void **_getreallocptr(void)
-	{ return(&_realloc_fptr); }
+	{ return((void **)(&_realloc_fptr)); }
 __PDPCLIB_API__ void **_getmsizeptr(void)
-	{ return(&_msize_fptr); }
+	{ return((void **)(&_msize_fptr)); }
 
 __PDPCLIB_API__ void **_getmgettagptr(void)
-	{ return(&_mgettag_fptr); }
+	{ return((void **)(&_mgettag_fptr)); }
 __PDPCLIB_API__ void **_getmsettagptr(void)
-	{ return(&_msettag_fptr); }
+	{ return((void **)(&_msettag_fptr)); }
 __PDPCLIB_API__ void **_getmgetzoneptr(void)
-	{ return(&_mgetzone_fptr); }
+	{ return((void **)(&_mgetzone_fptr)); }
 __PDPCLIB_API__ void **_getmsetzoneptr(void)
-	{ return(&_msetzone_fptr); }
+	{ return((void **)(&_msetzone_fptr)); }
 
 // #ifdef __BJX2__
 // #if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__)
@@ -243,7 +243,7 @@ __PDPCLIB_API__ int _mgettag(void *ptr)
 
 __PDPCLIB_API__ int _msettag(void *ptr, int tag)
 {
-	return(_msettag_fptr(ptr));
+	return(_msettag_fptr(ptr, tag));
 }
 
 __PDPCLIB_API__ int _mgetzone(void *ptr)
@@ -468,7 +468,7 @@ int rand_r(unsigned int *seedp)
 	int ret;
 	seed=*seedp;
 	seed=seed*65521+1;
-	ret = (int)((seed >> 48) & 0x7FFF);
+	ret = (int)((seed >> 16) & 0x7FFF);
 	*seedp=seed;
 	return (ret);
 }
@@ -1073,7 +1073,7 @@ __PDPCLIB_API__ size_t wcstombs(char *s, const wchar_t *pwcs, size_t n)
 	}
 
 	*ct=0;
-	return(ct-s);
+	return(((char *)ct)-((char *)s));
 
 
 //	strncpy(s, (const char *)pwcs, n);

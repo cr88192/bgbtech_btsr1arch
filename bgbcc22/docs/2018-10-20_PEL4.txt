@@ -351,6 +351,7 @@ Machine:
 * BJX1-64:  0xB164 (Old)
 * BJX1-64C: 0xB64C (Old)
 * BJX2-32:  0xB232 (Resv)
+* BJX2-64:  0xB250 (64-bit RISC-V ABI, XG2RV Mode)
 * BJX2-64:  0xB264 (64-bit ABI)
 * BJX2-64:  0xB265 (64-bit ABI, XGPR2 Mode)
 * BJX2-64:  0xB296 (128-bit ABI)

@@ -37,6 +37,12 @@ typedef u64 tk_kptr;
 #define	true				1
 #define	false				0
 
+#ifdef __BJX2__
+#define TK_NOCULL	__declspec(nocull)
+#else
+#define TK_NOCULL
+#endif
+
 // #define GPIO_BASE 0xABCD0000
 // #define SPI_BASE 0xABCD0040
 // #define UART_BASE 0xABCD0100
@@ -354,7 +360,12 @@ int		magic3;
 
 // #define TKMM_OFFS_DATA	((int)(((TKMM_MemLnkObj *)0)->data))
 // #define TKMM_OFFS_DATA	((long)(((TKMM_MemLnkObj *)0)->data))
+
+#ifdef __BGBCC__
 #define TKMM_OFFS_DATA	__offsetof(TKMM_MemLnkObj, data)
+#else
+#define TKMM_OFFS_DATA	((long)(((TKMM_MemLnkObj *)0)->data))
+#endif
 
 typedef struct TK_FILE_VT_s TK_FILE_VT;
 typedef struct TK_FILE_s TK_FILE;
@@ -534,6 +545,19 @@ u64 val[6];
 #include <tk_pgmimg.h>
 #include <tk_wadimg.h>
 
+
+#ifdef __BJX2__
+#define TK_GET_TBR		__arch_tbr
+#define TK_SET_TBR(x)	__arch_tbr=(x)
+extern volatile u64 __arch_tbr;
+#else
+#define TK_GET_TBR		_arch_gettbr()
+#define TK_SET_TBR(x)	_arch_settbr(x)
+u64 _arch_gettbr();
+u64 _arch_settbr(u64 v);
+#endif
+
+
 u32 __float32_getbits(float f);
 float __float32_frombits(u32 f);
 u64 __float64_getbits(double f);
@@ -541,11 +565,16 @@ double __float64_frombits(u64 f);
 
 void *TKMM_Malloc(int sz);
 int TKMM_Free(void *ptr);
+void *TKMM_MallocCat(int sz, int cat);
+
 char *TKMM_LVA_Strdup(char *str);
 
 u16 TK_GetRandom16ASLR();
 u64 TK_GetRandom48ASLR();
 u64 TK_GetRandom();
+
+s64 TK_GetTimeUs(void);
+
 
 s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap);
 int TK_VMem_VaVirtualFree(s64 vaddr, s64 size);
@@ -560,9 +589,15 @@ int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size);
 
 void *TKMM_MMList_AllocBrk(int sz);
 void *TKMM_MMList_AllocBrkCat(int sz, int cat);
+
 TKMM_MemLnkObj *TKMM_MMList_GetPtrLnkObj(void *ptr);
 int TKMM_MMCell_GetLnkObjCellSize(TKMM_MemLnkObj *obj, void *ptr);
 int TKMM_FxiToSize(int ix);
+
+void *TKMM_MMList_Malloc(int sz);
+void *TKMM_MMList_MallocCat(int sz, int cat);
+
+u64 *TKMM_MMCell_GetLnkObjCellHeadPtr(TKMM_MemLnkObj *obj, void *ptr);
 
 void TK_SetCurrentTask(TKPE_TaskInfo *task);
 TKPE_TaskInfo *TK_GetCurrentTask();
@@ -573,7 +608,7 @@ void *TK_AllocNewTask();
 int TK_SchedAddTask(TKPE_TaskInfo *newtask);
 
 int TK_SpawnNewThread(void *func, void *uptr);
-int TK_SpawnNewThreadB(TKPE_TaskInfo *btask, void *func, void *uptr);
+TKPE_TaskInfo *TK_SpawnNewThreadB(TKPE_TaskInfo *btask, void *func, void *uptr);
 s64 TK_GetThreadStatusB(int pid);
 s64 TK_GetThreadStatusA(int pid);
 void TK_SuspendThreadB(int pid, s64 res);
@@ -620,7 +655,9 @@ int TK_EnvCtx_GetEnvListBuffer(TK_EnvContext *ctx, void *buf, int szbuf);
 int TK_EnvCtx_InitForEnv(TK_EnvContext *ctx, char **envv);
 
 void tk_puts(char *msg);
-int tk_iskernel();
+bool tk_iskernel();
+
+void tk_sprintf(char *dst, char *str, ...);
 
 int tk_vf_register(TK_FILE_VT *fsty);
 int tk_vf_addmount(TK_MOUNT *mnt);

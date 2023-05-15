@@ -534,10 +534,12 @@ tk_lva_variant __lvo_loadindex_va(tk_lva_object obj, int idx)
 #endif
 }
 
+#ifdef __BGBCC__
 __m128 __lvo_loadindex_x(tk_lva_object obj, int idx)
 {
 	return(*(__m128 *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 4));
 }
+#endif
 
 void __lvo_storeindex_i(tk_lva_object obj, int idx, int val)
 {
@@ -624,6 +626,7 @@ void __lvo_storeindex_va(tk_lva_object obj, int idx, tk_lva_variant val)
 //	*(tk_lva_variant *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 3)=val;
 }
 
+#ifdef __BGBCC__
 void __lvo_storeindex_x(tk_lva_object obj, int idx, __m128 val)
 {
 	void *ptr;
@@ -631,6 +634,7 @@ void __lvo_storeindex_x(tk_lva_object obj, int idx, __m128 val)
 	*(__m128 *)ptr=val;
 //	*(short *)TKMM_LVA_GetArrayIndexPtr(obj, idx, 1)=val;
 }
+#endif
 
 tk_lva_variant __lvo_loadindex_var(tk_lva_object obj, int idx)
 {

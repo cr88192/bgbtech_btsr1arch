@@ -1355,6 +1355,16 @@
 #define BGBCC_SHX_GETLREG_LO(reg)		(BGBCC_SH_REG_R0+((reg)&31))
 #define BGBCC_SHX_GETLREG_HI(reg)		(BGBCC_SH_REG_R0+(((reg)&31)+1))
 
+#define	BGBCC_JX2CC_PSREG_ARGTMP(ix)	\
+	BGBCC_JX2C_GetRqRegForArgTempIndex(ctx, sctx, ix)
+
+#define	BGBCC_JX2CC_PSREG_RBRET			BGBCC_JX2C_GetRdRegReturn(ctx, sctx)
+#define	BGBCC_JX2CC_PSREG_RDRET			BGBCC_JX2C_GetRdRegReturn(ctx, sctx)
+#define	BGBCC_JX2CC_PSREG_RQRET			BGBCC_JX2C_GetRqRegReturn(ctx, sctx)
+#define	BGBCC_JX2CC_PSREG_LRRET			BGBCC_JX2C_GetLrRegReturn(ctx, sctx)
+
+#define	BGBCC_JX2CC_PSREG_RQTHIS		BGBCC_JX2C_GetRqRegThis(ctx, sctx)
+#define	BGBCC_JX2CC_PSREG_LRTHIS		BGBCC_JX2C_GetLrRegThis(ctx, sctx)
 
 #if 0
 typedef struct BGBCC_SHX_Context_s BGBCC_SHX_Context;

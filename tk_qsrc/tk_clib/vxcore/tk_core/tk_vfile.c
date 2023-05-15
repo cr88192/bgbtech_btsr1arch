@@ -32,6 +32,9 @@ TK_MOUNT *tk_mnt_freelist=NULL;
 TK_FILE_VT *tk_fsty_root=NULL;
 TK_MOUNT *tk_vf_mount=NULL;
 
+char *tk_rstrdup(char *s);
+s64 tk_atoi(char *str);
+
 int tk_vf_register(TK_FILE_VT *fsty)
 {
 	fsty->next=tk_fsty_root;

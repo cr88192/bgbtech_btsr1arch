@@ -204,7 +204,7 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 		}
 	}
 
-	TK_EnvCtx_RepackEnvbuf();
+	TK_EnvCtx_RepackEnvbuf(ctx);
 	TK_EnvCtx_SetEnvVarI(ctx, varn, varv);
 	return(1);
 }
