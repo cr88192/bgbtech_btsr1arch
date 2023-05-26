@@ -569,6 +569,9 @@ reg[11:0]		tNxtMemReqRtcnt;
 reg[11:0]		tMemTlbInhRtcnt;
 reg[11:0]		tNxtMemTlbInhRtcnt;
 
+reg[11:0]		tMemHeldCyc;
+reg[11:0]		tNxtMemHeldCyc;
+
 reg[ 3:0]		tMemSeqRov;
 reg[ 3:0]		tNxtMemSeqRov;
 
@@ -1621,6 +1624,8 @@ begin
 //	tNxtMemTlbInhRtcnt = 1023;
 	tNxtMemTlbInhRtcnt = 255;
 	
+	tNxtMemHeldCyc	= tMemHeldCyc + 1;
+	
 `ifdef def_true
 	tReqWaitResp = 0;
 	if(tMemReqLdA && !tMemRespLdA)
@@ -1755,6 +1760,8 @@ begin
 	begin
 		if(tMemReqLdA || tMemReqLdB)
 		begin
+			if(!tRegOutHold)
+				$display("L1 I$: Request Hold");
 			tRegOutHold = 1;
 		end
 	end
@@ -1798,7 +1805,9 @@ begin
 		end
 		else
 		begin
-			tRegOutHold = 1;
+//			if(!tRegOutHold)
+//				$display("L1I$: Hold TLB-Missed A=%X", tInAddr);
+//			tRegOutHold = 1;
 		end
 
 	end
@@ -1876,6 +1885,22 @@ begin
 			$display("I$ Unhold");
 	end
 `endif
+
+	if(tMemHeldCyc[11:9] == 3'b111)
+	begin
+		$display("L1 I$: Hold Delay Stalled Cyc=%X", tMemHeldCyc);
+
+			$display("L1 I$ Miss a=%X b=%X Rdy=%X Rt=%x",
+				tMissA, tMissB, tReqReady, tMemReqRtcnt);
+
+			$display("  RqA=%X BlkA=%X", tReqAddrA, tBlkAddr2A);
+			$display("  RqB=%X BlkB=%X", tReqAddrB, tBlkAddr2B);
+
+		/* Ugly hack to avoid deadlock. Needs fixing. */
+//		tRegOutHold = 0;
+//		tRegOutPcOK = UMEM_OK_OK;
+	end
+
 end
 
 wire		tAdvHold;
@@ -2026,6 +2051,8 @@ begin
 	tMissA1L	<= tAdvHold ? tMissA : 0;
 	tMissB1L	<= tAdvHold ? tMissB : 0;
 	tMiss1L		<= tAdvHold ? tMiss : 0;
+
+	tMemHeldCyc		<= tAdvHold ? tNxtMemHeldCyc : 0;
 
 	tInOpm		<= tInPcOpm;
 	tInOpmB		<= tInOpm;

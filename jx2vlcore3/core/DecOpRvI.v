@@ -757,12 +757,14 @@ begin
 				JX2_ITY_SB: begin
 				end
 
+`ifndef def_true
 				JX2_ITY_UB: begin
 					opRegM	= JX2_GR_DLR;
 					opRegO	= JX2_GR_DLR;
 					opRegN	= JX2_GR_DLR;
 					opRegP	= JX2_GR_DLR;
 				end
+`endif
 
 				default: begin
 					$display("Jx2DecOpRvI: Bad Reg, Ity=%X", opIty);
@@ -772,6 +774,7 @@ begin
 			endcase
 		end
 
+`ifndef def_true
 		JX2_FMID_REG: begin
 			opUIxt	= { opUCty, opUCmdIx };
 			case(opIty)
@@ -819,6 +822,7 @@ begin
 				end
 			endcase
 		end
+`endif
 
 		/*
 		RegReg
@@ -1034,7 +1038,8 @@ begin
 					opImm	= opImm_imm16s;
 				end
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 				JX2_ITY_SL: begin
 					opImm	= opImm_imm16s;
 					opRegM	= JX2_GR_DLR;
@@ -1060,6 +1065,8 @@ begin
 					opRegN	= opRegO_Df2;
 					opRegP	= opRegO_Df2;
 				end
+
+`ifndef def_true
 
 				JX2_ITY_UW: begin
 					opImm	= opImm_imm16u;
@@ -1107,6 +1114,7 @@ begin
 					opRegP		= opRegN_Dfl;
 					opIsImm9	= 1;
 				end
+`endif
 
 				default: begin
 					$display("Jx2DecOpRvI: Imm8Reg, Bad Ity=%X", opIty);
@@ -1129,7 +1137,7 @@ begin
 		JX2_FMID_REGPC: begin
 			case(opIty)
 				JX2_ITY_SB: begin
-					opRegM	= JX2_GR_PC;
+					opRegM	= JX2_GR_BPC;
 					opRegO	= opRegO_Dfl;
 					opRegN	= JX2_GR_ZZR;
 					opRegP	= JX2_GR_ZZR;
@@ -1167,7 +1175,7 @@ begin
 //			opRegP	= JX2_GR_DLR;
 			opRegN	= opRegN_Dfl;
 			opRegP	= opRegN_Dfl;
-			opRegM	= JX2_GR_PC;
+			opRegM	= JX2_GR_BPC;
 			opRegO	= JX2_GR_IMM;
 //			opUIxt	= {opUCty, opBty[1:0], 1'b1, opBty};
 			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
@@ -1178,7 +1186,7 @@ begin
 			end
 			JX2_ITY_SW: begin
 				opImm	= opImm_disp20s;
-				opRegM	= JX2_GR_BPC;	/* JAL Quirk */
+//				opRegM	= JX2_GR_BPC;	/* JAL Quirk */
 			end
 
 			JX2_ITY_UB: begin
@@ -1196,6 +1204,7 @@ begin
 			endcase
 		end
 
+`ifndef def_true
 		JX2_FMID_IMM12Z: begin
 //			opImm	= {UV9_00, istrWord[7:0], istrWord[31:16]};
 			opRegM	= JX2_GR_DLR;
@@ -1228,7 +1237,8 @@ begin
 				opRegO	= JX2_GR_JIMM;
 			end
 		end
-		
+`endif
+
 		JX2_FMID_INV: begin
 			if(!opIsNotFx)
 			begin

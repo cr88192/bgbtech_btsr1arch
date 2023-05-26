@@ -48,8 +48,16 @@ reg[1:0]		tMmioOK2;
 // assign			ps2_clk_d	= 1'b0;
 // assign			ps2_data_d	= 1'b0;
 
-assign		ps2_clkdat_o = 2'b00;
-assign		ps2_clkdat_d = 2'b00;
+reg[1:0]	tClkdatO;
+reg[1:0]	tClkdatD;
+reg[1:0]	tClkdatO2;
+reg[1:0]	tClkdatD2;
+
+// assign		ps2_clkdat_o = 2'b00;
+// assign		ps2_clkdat_d = 2'b00;
+
+assign		ps2_clkdat_o = tClkdatO2;
+assign		ps2_clkdat_d = tClkdatD2;
 
 assign		mmioOutData = tMmioOutData2;
 assign		mmioOK		= tMmioOK2;
@@ -122,6 +130,16 @@ reg				ps2_lstClk2_i;
 reg[15:0]		tBitTimeout;
 reg[15:0]		tNxtBitTimeout;
 
+reg[7:0]		tScanOutDat;
+reg				tScanOutDatP;
+reg[3:0]		tScanOutPos;
+reg[7:0]		tNxtScanOutDat;
+reg				tNxtScanOutDatP;
+reg[3:0]		tNxtScanOutPos;
+
+reg[13:0]		tScanOutClk;
+reg[13:0]		tNxtScanOutClk;
+
 always @*
 begin
 	tMmioOutData	= UV32_XX;
@@ -129,7 +147,14 @@ begin
 
 	mmioInOE			= (tMmioOpm[3]) && tMmioPs2CSel;
 	mmioInWR			= (tMmioOpm[4]) && tMmioPs2CSel;
-	
+
+	tClkdatO		= 2'b00;
+	tClkdatD		= 2'b00;
+	tNxtScanOutDat	= tScanOutDat;
+	tNxtScanOutDatP	= tScanOutDatP;
+	tNxtScanOutPos	= tScanOutPos;
+	tNxtScanOutClk	= tScanOutClk + 1;
+
 	scanNxtSpos		= scanSpos;
 	scanNxtEpos		= scanEpos;
 //	scanNxtSpAdv	= 0;
@@ -171,7 +196,8 @@ begin
 
 	ps2NxtWin = ps2Win;
 //	if(ps2_lstClk_i && !ps2_clk_i)
-	if(ps2_lstClk2_i && !ps2_lstClk_i)
+//	if(ps2_lstClk2_i && !ps2_lstClk_i)
+	if(ps2_lstClk2_i && !ps2_lstClk_i && (tScanOutPos==0))
 //	if(!ps2_lstClk_i && ps2_clk_i)
 	begin
 //		ps2NxtWin = { ps2_data_i, ps2Win[11:1] };
@@ -272,9 +298,70 @@ begin
 		tMmioOutData	= 0;
 		tMmioOutData[0] = (scanSpos != scanEpos);
 //		tMmioOutData[0] = (scanSpos != scanEpos) && !ps2DebP;
+
+		tMmioOutData[1] = (tScanOutPos != 0);
+
 //		tMmioOK			= UMEM_OK_OK;
 		tMmioOK			= ps2DebInhP ? UMEM_OK_HOLD : UMEM_OK_OK;
 		ps2NxtDebP		= 0;
+	end
+
+
+	if((tMmioAddr[3:2]==2'b01) && mmioInWR)
+	begin
+		tNxtScanOutDat	= tMmioInData[7:0];
+		tNxtScanOutDatP	=
+			tNxtScanOutDat[7] ^ tNxtScanOutDat[6] ^
+			tNxtScanOutDat[5] ^ tNxtScanOutDat[4] ^
+			tNxtScanOutDat[3] ^ tNxtScanOutDat[2] ^
+			tNxtScanOutDat[1] ^ tNxtScanOutDat[0] ^
+			1;
+		tNxtScanOutPos	= 4'hD;
+		tMmioOK			= UMEM_OK_OK;
+		
+		tNxtScanOutClk	= 0;
+	end
+	
+	if(tScanOutPos!=0)
+	begin
+		if(tScanOutPos == 4'hD)
+		begin
+			tClkdatO[1] = 0;
+			tClkdatD[1] = 1;
+
+			if(tScanOutClk[13])
+			begin
+				tNxtScanOutPos = tScanOutPos - 1;
+			end
+		end
+		else
+		begin
+			if(ps2_lstClk2_i && !ps2_lstClk_i)
+			begin
+				tNxtScanOutPos = tScanOutPos - 1;
+			end
+		end
+		
+		tClkdatD[0] = 1;
+		case(tScanOutPos)
+			4'hF: tClkdatO[1] = 0;
+			4'hE: tClkdatO[1] = 0;
+			4'hD: tClkdatO[1] = 0;
+			4'hC: tClkdatO[1] = 0;
+			4'hB: tClkdatO[1] = tScanOutDat[0];
+			4'hA: tClkdatO[1] = tScanOutDat[1];
+			4'h9: tClkdatO[1] = tScanOutDat[2];
+			4'h8: tClkdatO[1] = tScanOutDat[3];
+			4'h7: tClkdatO[1] = tScanOutDat[4];
+			4'h6: tClkdatO[1] = tScanOutDat[5];
+			4'h5: tClkdatO[1] = tScanOutDat[6];
+			4'h4: tClkdatO[1] = tScanOutDat[7];
+			4'h3: tClkdatO[1] = tScanOutDatP;
+			4'h2: tClkdatO[1] = 1;
+
+			4'h1: tClkdatD[0] = 0;
+			4'h0: tClkdatD[0] = 0;
+		endcase
 	end
 	
 //	if(reset)
@@ -306,6 +393,14 @@ begin
 	ps2Deb3P		<= ps2Deb2P;
 	ps2Deb2P		<= ps2DebP;
 	ps2DebP			<= ps2NxtDebP;
+
+	tClkdatO2		<= tClkdatO;
+	tClkdatD2		<= tClkdatD;
+
+	tScanOutDat		<= tNxtScanOutDat;
+	tScanOutDatP	<= tNxtScanOutDatP;
+	tScanOutPos		<= tNxtScanOutPos;
+	tScanOutClk		<= tNxtScanOutClk;
 
 //	ps2_clk_i1a0	<= ps2_clk_i;
 	ps2_clk_i1a0	<= ps2_clkdat_i[1];
