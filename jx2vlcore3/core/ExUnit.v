@@ -323,6 +323,8 @@ wire[63:0]		gprOutDhr;
 
 wire[63:0]		crOutMmcr;
 wire[63:0]		crOutKrr;
+wire[47:0]		crOutVipt;
+
 wire[63:0]		crOutSr;
 reg [63:0]		crInSr;
 
@@ -421,7 +423,8 @@ RbiMemL1A		memL1(
 	dcInLdOp,
 
 	gprOutDlr,		gprOutDhr,
-	crOutMmcr,		crOutKrr,		crOutSr,
+	crOutMmcr,		crOutKrr,
+	crOutSr,		crOutVipt,
 
 	memRegExc,		memRegTraPc,
 	dcInTraPc,		tDeadlockLatch,
@@ -1097,6 +1100,7 @@ RegCR regCr(
 
 	crOutMmcr,
 	crOutKrr,
+	crOutVipt,
 	crOutVbrCm
 
 	);

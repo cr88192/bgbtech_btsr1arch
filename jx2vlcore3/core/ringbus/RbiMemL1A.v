@@ -75,7 +75,7 @@ module RbiMemL1A(
 
 	regInDlr,		regInDhr,
 	regInMmcr,		regInKrr,
-	regInSr,
+	regInSr,		regInVipt,
 	
 	regOutExc,		regTraPc,
 	dcInTraPc,		deadlockLatch,
@@ -125,6 +125,7 @@ input[63:0]		regInDhr;
 input[63:0]		regInMmcr;
 input[63:0]		regInKrr;
 input[63:0]		regInSr;
+input[47:0]		regInVipt;
 
 input[127:0]	regInCurExc;
 
@@ -273,7 +274,8 @@ RbiMmuTlb	tlb(
 //	tTlbExc,		dcInHold,
 	tTlbExc,		1'b0,
 	regInMmcr,		regInKrr,
-	regInSr,		tIcExecAcl);
+	regInSr,		regInVipt,
+	tIcExecAcl);
 
 `endif
 

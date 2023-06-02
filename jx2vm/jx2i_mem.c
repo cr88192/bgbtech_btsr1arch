@@ -2075,6 +2075,7 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	u64 tlbhi0, tlblo0, tlbhx0;
 	u64 tlbhi1, tlblo1, tlbhx1;
 	u64	krr;
+	int asid;
 	int i, j, k, h;
 
 	if(ctx->regs[BJX2_REG_SR]&(1<<31))
@@ -2106,6 +2107,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 		return(addr);
 	}
 
+	asid=(ctx->regs[BJX2_REG_TTB]>>48)&0xFFFF;
+
 #if 1
 	tlbhx0=ctx->mem_tlb_pr0_hx;
 	tlbhi0=ctx->mem_tlb_pr0_hi;
@@ -2115,7 +2118,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	if(	((tlbhi0&0x0000FFFFFFFFC000ULL) ==
 		(addr   &0x0000FFFFFFFFC000ULL)) &&
 		((tlbhx0&0x0000FFFFFFFFFFFFULL) ==
-		(addrh  &0x0000FFFFFFFFFFFFULL)) )
+		(addrh  &0x0000FFFFFFFFFFFFULL)) &&
+		(asid == ((tlblo0>>48)&0xFFFF)) )
 	{
 		addr1=(tlblo0&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
 		return(addr1);
@@ -2129,7 +2133,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	if(	((tlbhi1&0x0000FFFFFFFFC000ULL) ==
 		(addr   &0x0000FFFFFFFFC000ULL)) &&
 		((tlbhx1&0x0000FFFFFFFFFFFFULL) ==
-		(addrh  &0x0000FFFFFFFFFFFFULL)) )
+		(addrh  &0x0000FFFFFFFFFFFFULL)) &&
+		(asid == ((tlblo1>>48)&0xFFFF)) )
 	{
 		addr1=(tlblo1&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
 		return(addr1);
@@ -2230,7 +2235,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 			if(	((tlbhi2&0x0000FFFFFFFFC000ULL) ==
 				(addr  &0x0000FFFFFFFFC000ULL)) &&
 				((tlbhi3&0x0000FFFFFFFFFFFFULL) ==
-				(addrh1&0x0000FFFFFFFFFFFFULL)))
+				(addrh1&0x0000FFFFFFFFFFFFULL)) &&
+				(asid == ((tlblo2>>48)&0xFFFF)))
 			{
 				addr1=(tlblo2&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
 				
@@ -2292,7 +2298,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 				continue;
 
 			if(	(tlbhi2&0x0000FFFFFFFF0000ULL) ==
-				(addr  &0x0000FFFFFFFF0000ULL))
+				(addr  &0x0000FFFFFFFF0000ULL) &&
+				(asid == ((tlblo2>>48)&0xFFFF)))
 			{
 //				ctx->mem_tlb_pr0_hi=tlbhi2;
 //				ctx->mem_tlb_pr0_lo=tlblo2;
@@ -2344,7 +2351,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 			tlblo2=ctx->mem_tlb_lo[h*4+i];
 
 			if(	(tlbhi2&0x0000FFFFFFFFF000ULL) ==
-				(addr  &0x0000FFFFFFFFF000ULL))
+				(addr  &0x0000FFFFFFFFF000ULL) &&
+				(asid == ((tlblo2>>48)&0xFFFF)))
 			{
 //				ctx->mem_tlb_pr0_hi=tlbhi2;
 //				ctx->mem_tlb_pr0_lo=tlblo2;

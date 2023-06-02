@@ -56,7 +56,7 @@ Addresses in the MMIO ranges will "bypass" the normal memory access mechanisms a
 Addresses in the MMIO range will be masked to 28 bits, which will be used as the corresponding address on the MMIO Bus.
 
 
-Extended 64-bit Memory Map (Old)
+Extended 64-bit Memory Map (Old / Drop)
 * 00000000_00000000 .. 00000000_7FFFFFFF: Userland (MMU, Low 2GB)
 * 00000000_80000000 .. 00000000_FFFFFFFF: Maps 32-bit Base Map
 * 00000001_00000000 .. 00007FFF_FFFFFFFF: Userland (MMU, Extended)
@@ -69,7 +69,7 @@ Extended 64-bit Memory Map (Old)
 * FFFFFFFF_00000000 .. FFFFFFFF_7FFFFFFF: System (MMU, Low 2GB)
 * FFFFFFFF_80000000 .. FFFFFFFF_FFFFFFFF: Maps 32-bit Base Map
 
-Extended 64-bit Memory Map (New)
+Extended 64-bit Memory Map (Old / Drop)
 * 00000000_00000000 .. 00000000_7FFFFFFF: Userland (MMU, Low 2GB)
 * 00000000_80000000 .. 00000000_FFFFFFFF: Maps 32-bit Base Map
 * 00000001_00000000 .. 00007FFF_FFFFFFFF: Userland (MMU, Extended)
@@ -79,6 +79,17 @@ Extended 64-bit Memory Map (New)
 * FFFFF000_00000000 .. FFFFFFFE_FFFFFFFF: Extended MMIO
 * FFFFFFFF_00000000 .. FFFFFFFF_7FFFFFFF: System (MMU, Low 2GB)
 * FFFFFFFF_80000000 .. FFFFFFFF_FFFFFFFF: Maps 32-bit Base Map
+
+BJX2 now uses a 48-bit memory map:
+* 0000_00000000 .. 0000_EFFFFFFF: Userland (MMU, Low 2GB)
+* 0000_F0000000 .. 0000_FFFFFFFF: MMIO (Only if 32-bit Mode), Else Userland
+* 0001_00000000 .. 7FFF_FFFFFFFF: Userland (MMU, Extended)
+* 8000_00000000 .. BFFF_FFFFFFFF: System (MMU, Extended)
+* C000_00000000 .. CFFF_FFFFFFFF: No MMU, Cacheable (Low 44-bit)
+* D000_00000000 .. DFFF_FFFFFFFF: No MMU, Volatile (Low 44-bit)
+* E000_00000000 .. EFFF_EFFFFFFF: Reserved
+* F000_00000000 .. FFFF_EFFFFFFF: MMIO (Expanded)
+* FFFF_F0000000 .. FFFF_FFFFFFFF: MMIO
 
 
 On boot, VBR will be initialized to the start of ROM.

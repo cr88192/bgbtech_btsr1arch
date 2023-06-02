@@ -152,7 +152,7 @@ DEP_HDRS=\
 LIBS=
 APPS=bgbcc$(BINSUF) mkwad2list$(BINSUF) mkwad4list$(BINSUF)
 
-all: libs apps
+all2: libs apps
 
 libs: $(LIBS)
 apps: $(APPS)
@@ -161,7 +161,7 @@ includes: $(DEP_HDRS)
 inst_bin:
 	cp *$(BINSUF) $(INST_BIN)
 
-install: all inst_bin mk_link
+install: all2 inst_bin mk_link
 
 autohead$(BINSUF): autohead.c
 	$(CC_OUTTOOL)autohead$(BINSUF) autohead.c $(TOOL_CFLAGS)

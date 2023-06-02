@@ -73,6 +73,7 @@ module RegCR(
 
 	regOutMmcr,
 	regOutKrr,
+	regOutVipt,
 	regOutVbrCm
 	);
 
@@ -124,6 +125,7 @@ output[47:0]	regOutGbr;
 output[47:0]	regOutTbr;
 output[63:0]	regOutMmcr;
 output[63:0]	regOutKrr;
+output[47:0]	regOutVipt;
 
 output[15:0]	regOutVbrCm;
 
@@ -160,10 +162,12 @@ reg[15:0]	crRegFpsr;
 reg[15:0]	crRegVbrCm;
 
 `ifdef jx2_enable_mmu
-reg[47:0]	crRegTtb;
+// reg[47:0]	crRegTtb;
+reg[63:0]	crRegTtb;
 reg[63:0]	crRegMmcr;
 reg[47:0]	crRegSttb;
 reg[63:0]	crRegKrr;
+reg[47:0]	crRegVipt;
 `endif
 
 `ifdef jx2_enable_vaddr96
@@ -199,11 +203,14 @@ assign	regOutFpsr	= crRegFpsr;
 assign	regOutVbrCm	= crRegVbrCm;
 
 `ifdef jx2_enable_mmu
-assign	regOutMmcr	= crRegMmcr;
+// assign	regOutMmcr	= crRegMmcr;
+assign	regOutMmcr	= { crRegTtb[63:48], crRegMmcr[47:0] };
 assign	regOutKrr	= crRegKrr;
+assign	regOutVipt	= crRegVipt;
 `else
 assign	regOutMmcr	= UV64_00;
 assign	regOutKrr	= UV64_00;
+assign	regOutVipt	= UV48_00;
 `endif
 
 `ifdef jx2_enable_vaddr96
@@ -333,11 +340,13 @@ begin
 
 `ifdef jx2_enable_mmu
 //		JX2_CR_TTB:		tValCmA={UV32_00, crRegTtb[31:0]};
-		JX2_CR_TTB:		tValCmA={UV16_00, crRegTtb[47:0]};
+//		JX2_CR_TTB:		tValCmA={UV16_00, crRegTtb[47:0]};
+		JX2_CR_TTB:		tValCmA=crRegTtb;
 		JX2_CR_MMCR:	tValCmA=crRegMmcr;
 //		JX2_CR_STTB:	tValCmA={UV32_00, crRegSttb[31:0]};
 		JX2_CR_STTB:	tValCmA={UV16_00, crRegSttb[47:0]};
 		JX2_CR_KRR:		tValCmA=crRegKrr;
+		JX2_CR_VIPT:	tValCmA={UV16_00, crRegVipt};
 `else
 		JX2_CR_TTB:		tValCmA=UV64_00;
 		JX2_CR_MMCR:	tValCmA=UV64_00;
@@ -395,6 +404,7 @@ begin
 `ifdef jx2_enable_mmu
 		crRegMmcr	<= UV64_00;
 		crRegKrr	<= UV64_00;
+//		crRegVipt	<= UV48_00;
 
 //		crRegTtb	<= UV48_00;
 //		crRegSttb	<= UV48_00;
@@ -456,13 +466,15 @@ begin
 		begin
 `ifdef jx2_enable_mmu
 			crRegTtb	<= (regIdCn2B==JX2_CR_TTB ) ?
-				regValCn2B[47:0] : crRegTtb;
+				regValCn2B[63:0] : crRegTtb;
 			crRegMmcr	<= (regIdCn2B==JX2_CR_MMCR) ?
 				regValCn2B[63:0] : crRegMmcr;
 			crRegSttb	<= (regIdCn2B==JX2_CR_STTB) ?
 				regValCn2B[47:0] : crRegSttb;
 			crRegKrr	<= (regIdCn2B==JX2_CR_KRR ) ?
 				regValCn2B[63:0] : crRegKrr;
+			crRegVipt	<= (regIdCn2B==JX2_CR_VIPT) ?
+				regValCn2B[47:0] : crRegVipt;
 `endif
 
 `ifdef jx2_enable_vaddr96
@@ -486,6 +498,7 @@ begin
 			crRegMmcr	<= 0;
 			crRegSttb	<= 0;
 			crRegKrr	<= 0;
+			crRegVipt	<= 0;
 `endif
 
 `ifdef jx2_enable_vaddr96

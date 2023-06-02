@@ -311,6 +311,7 @@
 
 #define BGBCC_SH_REG_GBH		0x10C
 #define BGBCC_SH_REG_PCH		0x10D
+#define BGBCC_SH_REG_TEAH		0x10E
 
 #define BGBCC_SH_REG_SP			0x10F
 

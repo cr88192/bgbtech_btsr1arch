@@ -45,7 +45,8 @@ module RbiMmuTlb(
 	unitNodeId,		regInLdtlb,
 	regOutExc,		regInHold,
 	regInMMCR,		regInKRR,
-	regInSR,		regInExecAcl
+	regInSR,		regInVipt,
+	regInExecAcl
 	);
 
 input			clock;			//clock
@@ -67,6 +68,7 @@ input			regInHold;		//Hold Pipeline
 input[63:0]		regInMMCR;		//MMU Control Register
 input[63:0]		regInKRR;		//Keyring Register
 input[63:0]		regInSR;		//Status Register
+input[47:0]		regInVipt;		//VIPT Register
 
 input[127:0]	regInLdtlb;
 input[15:0]		regInExecAcl;
@@ -77,6 +79,7 @@ reg[127:0]		tRegInLdtlbHi;
 reg[127:0]		tNxtRegInLdtlbHi;
 
 reg[63:0]		tRegInSR;		//Status Register
+reg[63:0]		tRegInMMCR;		//MMU Control Register
 
 `reg_l1addr		tRegOutAddr;
 `reg_l1addr		tRegOutAddr2;
@@ -260,6 +263,11 @@ reg			tlbHitB_LoL;
 reg			tlbHitC_LoL;
 reg			tlbHitD_LoL;
 
+reg			tlbHitA_As;		//ASID
+reg			tlbHitB_As;
+reg			tlbHitC_As;
+reg			tlbHitD_As;
+
 reg			tlbHitA;
 reg			tlbHitB;
 reg			tlbHitC;
@@ -322,6 +330,8 @@ wire[15:0]	tTlbExc;
 
 reg[7:0]	tTlbRov;
 reg[7:0]	tNxtTlbRov;
+
+reg[15:0]	tlbMmuAsid;
 
 wire		tRegInIsREADY;
 assign		tRegInIsREADY = (tRegInOpm[7:0]==JX2_RBI_OPM_IDLE);
@@ -412,10 +422,11 @@ begin
 	tlbAcc			= UV36_00;
 	tNxtTlbRov		= tTlbRov;
 
-	tlbMmuEnable	= regInMMCR[0];
-	tlbMmuPg64K		= regInMMCR[4];
-	tlbMmuPg16K		= regInMMCR[5];
+	tlbMmuEnable	= tRegInMMCR[0];
+	tlbMmuPg64K		= tRegInMMCR[4];
+	tlbMmuPg16K		= tRegInMMCR[5];
 	tlbMmuPg4K		= !(tlbMmuPg16K || tlbMmuPg64K);
+	tlbMmuAsid		= tRegInMMCR[63:48];
 
 	tlbIs48b		= tRegInSR[31];
 	if(regInMMCR[2] && !tRegInSR[30])
@@ -716,6 +727,11 @@ begin
 
 
 `ifdef def_true
+	tlbHitA_As = (tlbMmuAsid == tlbHdatA[63:48]);
+	tlbHitB_As = (tlbMmuAsid == tlbHdatB[63:48]);
+	tlbHitC_As = (tlbMmuAsid == tlbHdatC[63:48]);
+	tlbHitD_As = (tlbMmuAsid == tlbHdatD[63:48]);
+
 	tlbHitA_Hi = (tRegInAddr[47:32] == tlbHdatA[111:96]);
 	tlbHitB_Hi = (tRegInAddr[47:32] == tlbHdatB[111:96]);
 	tlbHitC_Hi = (tRegInAddr[47:32] == tlbHdatC[111:96]);
@@ -805,15 +821,19 @@ begin
 	
 `ifdef jx2_tlb_xtlbe
 	tlbHitA =
+		tlbHitA_As &&
 		tlbHitA_Hi && tlbHitA_Mi && tlbHitA_Lo &&
 		tlbHitB_X && (tlbHdatA[1:0] == 2'b01);
 	tlbHitB =
+		tlbHitB_As &&
 		tlbHitB_Hi && tlbHitB_Mi && tlbHitB_Lo &&
 		(tlbHdatB[1:0] == 2'b01);
 	tlbHitC =
+		tlbHitC_As &&
 		tlbHitC_Hi && tlbHitC_Mi && tlbHitC_Lo &&
 		tlbHitD_X && (tlbHdatC[1:0] == 2'b01);
 	tlbHitD =
+		tlbHitD_As &&
 		tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo &&
 		(tlbHdatD[1:0] == 2'b01);
 
@@ -822,10 +842,14 @@ begin
 	tlbHitAE = (tlbHdatB[1:0] == 2'b10);
 	tlbHitCE = (tlbHdatD[1:0] == 2'b10);
 `else
-	tlbHitA = tlbHitA_Hi && tlbHitA_Mi && tlbHitA_Lo && tlbHdatA[0];
-	tlbHitB = tlbHitB_Hi && tlbHitB_Mi && tlbHitB_Lo && tlbHdatB[0];
-	tlbHitC = tlbHitC_Hi && tlbHitC_Mi && tlbHitC_Lo && tlbHdatC[0];
-	tlbHitD = tlbHitD_Hi && tlbHitD_Mi && tlbHitD_Lo && tlbHdatD[0];
+	tlbHitA = tlbHitA_As && tlbHitA_Hi &&
+		tlbHitA_Mi && tlbHitA_Lo && tlbHdatA[0];
+	tlbHitB =  tlbHitB_As && tlbHitB_Hi &&
+		tlbHitB_Mi && tlbHitB_Lo && tlbHdatB[0];
+	tlbHitC =  tlbHitC_As && tlbHitC_Hi &&
+		tlbHitC_Mi && tlbHitC_Lo && tlbHdatC[0];
+	tlbHitD =  tlbHitD_As && tlbHitD_Hi &&
+		tlbHitD_Mi && tlbHitD_Lo && tlbHdatD[0];
 	tlbHitAX = 0;
 	tlbHitCX = 0;
 	tlbHitAE = 0;
@@ -1331,6 +1355,7 @@ begin
 	tlbHbDatD		<= tlbBlkD[tlbHixA];
 
 	tRegInSR		<= regInSR;
+	tRegInMMCR		<= regInMMCR;
 	tResetL			<= reset;
 
 	if(tlbDoLdtlb && !tlbLdtlbOK)

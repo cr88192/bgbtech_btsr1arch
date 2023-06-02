@@ -168,6 +168,7 @@ parameter[6:0] JX2_GR_SSP2		= 7'h75;
 parameter[6:0] JX2_GR_GBR2		= 7'h76;
 parameter[6:0] JX2_GR_TBR2		= 7'h77;
 
+parameter[6:0] JX2_GR_VIPT		= 7'h7C;
 parameter[6:0] JX2_GR_KRR2		= 7'h7D;
 parameter[6:0] JX2_GR_IMM		= 7'h7E;
 parameter[6:0] JX2_GR_ZZR		= 7'h7F;
@@ -190,6 +191,8 @@ parameter[6:0] JX2_CR_KRR		= 7'h6D;
 
 parameter[6:0] JX2_CR_TEAH		= 7'h73;
 
+parameter[6:0] JX2_CR_VIPT		= 7'h7C;
+parameter[6:0] JX2_CR_KRR2		= 7'h7D;
 parameter[6:0] JX2_CR_IMM		= 7'h7E;
 parameter[6:0] JX2_CR_ZZR		= 7'h7F;
 

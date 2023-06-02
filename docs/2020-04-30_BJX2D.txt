@@ -159,10 +159,10 @@ Control Registers:
 * C25: Reserved
 * C26: Reserved
 * C27: Reserved
-* C28: Reserved
+* C28 / VIPT: Virtual Inverted Page-Table (VIPT)
 * C29 / KRR2: MMU Keyring Register (SMT).
-* C30: Reserved
-* C31: Reserved
+* C30 / R0U: R0 Unmapped
+* C31 / R1U: R1 Unmapped
 
 Control Registers (XMOV, Possible):
 * C32: Reserved
@@ -298,6 +298,7 @@ The Vector Base Register (VBR) will have the layout:
 * 0111: XG2RV Mode (WEX)
 * 1zzz: Reserved
 
+
 === Special Restrictions ===
 
 A few special-case restrictions will be defined as part of this ISA:
@@ -317,7 +318,10 @@ Explicit addressing via MOV.x instructions or LEA.x will respect the full addres
 
 
 Optional restrictions as of BJX2D:
-* An implementation may require that 32-bit instruction forms be 32-bit aligned.
+* / An implementation may require that 32-bit instructions be 32-bit aligned.
+** Drop: This has too adverse of an effect.
+* Change: 32 and 64 bit forms will have a 16-bit alignment.
+** 96-bit forms may optionally require a 32-bit alignment.
 
 
 === Interrupts ===
@@ -694,7 +698,7 @@ TTB Bits:
 * ( 3: 2): Will give the type of STTB table.
 * ( 7: 4): Will give the nominal page size.
 * ( 9: 8): Quadrant Extra Levels
-* (11:10): Reserved
+* (11:10): Extendec Table Type
 * (47:12): Physical Page Address
 * (63:48): Process ASID (0 if ASID is unused)
 
@@ -705,6 +709,13 @@ Nominal page size:
 * 0011: Use 64K pages (128-bit PTE)
 * 0100: Use 16K pages (64-bit PTE)
 * 0101: Use 16K pages (128-bit PTE)
+
+* 1000: Use 4K pages, 64-bit PTE, Hashed Top
+* 1001: -
+* 1010: Use 64K pages, 64-bit PTE, Hashed Top
+* 1011: -
+* 1100: Use 16K pages, 64-bit PTE, Hashed Top
+* 1101: -
 * Others: Reserved
 
 Type of STTB table:
@@ -724,8 +735,8 @@ Quadrant Extra Levels (Page Table):
 Quadrant Extra Levels (AVL Tree):
 * 0: AVL Tree
 * 1: B-Tree
-* 2: Reserved
-* 3: Reserved
+* 2: Hybrid B-Tree
+* 3: Hybrid-2 B-Tree
 
 
 The page table level will be defined as its distance from the final level.
@@ -738,6 +749,19 @@ Within the Page tables, the Size field will depend on its depth within the table
 * 11: Large Page (Level 0), Skip 3 levels (Level > 1)
 
 Within skipped levels, the address bits are either 0, or the result of the page walk is returned as 0.
+
+
+==== Hashed Top Tables ====
+
+Hashed Top Tables will follow the same basic structure as a normal page table, except that it will add an extra top-most level representing a hash of any bits above the top level of the table.
+
+
+So, a Hashed 2-level table will be understood as an N+2, or 3-level table.
+Entries in the hashed table will consist of a pair of a masked virtual address for bits (95:32), followed by the associated Page Directory Entry.
+
+The hash will be based on the masked high-order bits of the address in question, with the mask determined by the depth of the table and the page size.
+
+The hash will consist of every non-masked level of the table being XORed together.
 
 
 ==== 4K Page Tables ====
@@ -835,6 +859,30 @@ The NODESZ will depend on page size:
 * 4K: 203 (PAD=4)
 * 16K: 817 (PAD=12)
 * 64K: 3275 (PAD=4)
+
+
+=== VIPT / Virtual Inverted Page Table ===
+
+This may be used as an extended RAM-Backed TLB.
+* The Table base will be a multiple of the page size.
+
+The VIPT may exist as an intermediate between the TLB and a TLB Miss Exception.
+If VIPT support is present, and the table is in-use, it may be checked during a TLB Miss before a TLB Miss exception is raised. If a matching entry in the table is found, then this entry will be used in place of raising a TLB Miss Exception.
+
+Note that the Inverted Page Table is intended as an intermediate stage between the TLB and the main Page Table, not as a replacement for the Page Table. Its existence is intended as a an optional feature to accelerate the Software TLB.
+
+
+VIPT:
+* (63:48): Reserved
+* (47:12): Base Address
+* (11: 5): Reserved
+* ( 4: 0): Table Size in Rows, Log2 (0 if unused)
+
+In the current definiton, each row in the VIPT will be 64 bytes and represent 4 TLB entries. In effect, this table will be 4-way set associative.
+
+The virtual page number will be masked by the table size in order to calculate the row index of the table.
+
+So, for example, if the table size is 0C, and the page size is 16K, then bits (25:14) of the address will be used as the table row index.
 
 
 === Addressing Modes ===

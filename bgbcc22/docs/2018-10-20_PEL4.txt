@@ -451,18 +451,18 @@ The relocations are given as 16 bit numbers:
 *** FAxx/FBxx: DIR24
 *** FExx/FFxx: DIR48
 ** 6: BJX2: TLS/TBR DISP12 (Azzz)
-** 7: BJX2: PBO/GBR DISP32 (FAzz_zzzz-26zz)
+** 7: BJX2: PBO/GBR DISP32 (FAzz_zzzz-26zz)  (Deprecated)
 ** 8: BJX2: PBO/GBR DISP24 (FAzz_zzzz)
 *** Initial Contents: Variable address relative to the PBO base address.
 ** 9: MIPS-specific fixup.
 ** 9: BJX2: TLS/TBR DISP24 (FAzz_zzzz)
 *** Initial: TLS Index, Resolved to TBR-relative address of TLS Variable
 ** 10: Fixup a 64-bit address (Abs64).
-** 11: Set Tripwire
+** 11: Set Tripwire / Set Extended Operator
 ** 12: Fixup a 96-bit address (Abs96), Stored as 128 bits.
-** 13: Reserved
-** 14: Reserved
-** 15: Reserved
+** 13: Extended Reloc Operator B
+** 14: Extended Reloc Operator A
+** 15: Reserved / Escape
 
 TLS Index:
 * This is a pointer-sized scaled index indicating a given TLS Variable.
@@ -479,6 +479,19 @@ Set Tripwire (PBO Only):
 * This address should be set as a tripwire following initialization.
 * Attempts to address across this location may trigger a fault.
 ** A tripwire will normally have a 16-byte alignment and 16-byte size.
+* If the LSB is Set, this functions as a Set Operator Command
+** For Bzz1, (11:4) will update operator A & B.
+** For Bzz3, (11:4) will update operator A.
+** For Bzz5, (11:4) will update operator B.
+
+Extended Reloc Operator A / B:
+* Apply a reloc with a behavior which depends an an operator.
+* The operator will be upated with a Set Extended Operator command.
+* A/B will be set as a single operator.
+* A&B will set A as the operator and B to a complementary operator.
+
+List of Extended Operators:
+* Reserved for future expansion.
 
 
 === Exports Table ===

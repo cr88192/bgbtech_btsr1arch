@@ -347,7 +347,8 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 		op->rm=rm_dfl;
 		op->ro=ro_dfl;
 
-		if(((opw>>25)&31)==0)
+//		if(((opw>>25)&31)==0)
+		if(1)
 		{
 			switch((opw>>12)&7)
 			{
@@ -364,7 +365,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 					op->fmid=BJX2_FMID_REGREGREG;
 					op->Run=BJX2_Op_MULSQ_RegRegReg;
 					break;
-				case 64:
+				case 32:
 					op->nmid=BJX2_NMID_SUB;
 					op->fmid=BJX2_FMID_REGREGREG;
 					op->Run=BJX2_Op_SUB_RegRegReg;
@@ -413,7 +414,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 					op->fmid=BJX2_FMID_REGREGREG;
 					op->Run=BJX2_Op_DIVUQ_RegRegReg;
 					break;
-				case 64:
+				case 32:
 					op->imm=-(imm12l&63);
 					op->nmid=BJX2_NMID_SHARQ;
 					op->fmid=BJX2_FMID_REGREGREG;
@@ -457,7 +458,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 		}
 		break;
 
-	case 0x1C: /* 01-100 */
+	case 0x1C: /* 11-100 */
 		op->rn=rn_dfl;
 		op->rm=rm_dfl;
 		op->ro=ro_dfl;

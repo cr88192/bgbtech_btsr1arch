@@ -185,17 +185,25 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 			{
 				if((str[1]>='0') && (str[1]<='7'))
 					{ return(t+(str[1]-'0')); }
-				if((str[1]=='R') || (str[1]=='r'))
-					return(t);
+//				if((str[1]=='R') || (str[1]=='r'))
+//					return(t);
 				break;
 			}
+			
+			if(!stricmp(str, "ar"))
+				return(BGBCC_SH_REG_R10);
+			if(!stricmp(str, "ar0"))
+				return(BGBCC_SH_REG_R10);
+			if(!stricmp(str, "ar1"))
+				return(BGBCC_SH_REG_R11);
+			
 		}else
 		{
 			i=-1;
 			if(!str[2])
 			{
-				if((str[1]=='R') || (str[1]=='r'))
-					return(BGBCC_SH_REG_R2);
+//				if((str[1]=='R') || (str[1]=='r'))
+//					return(BGBCC_SH_REG_R2);
 
 				if((str[1]>='0') && (str[1]<='9'))
 					{ i=(str[1]-'0'); }
@@ -215,8 +223,13 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 				return(BGBCC_SH_REG_R36+(i-8));
 			if((i>=12) && (i<16))
 				return(BGBCC_SH_REG_R52+(i-12));
-			break;
 
+			if(!stricmp(str, "ar"))
+				return(BGBCC_SH_REG_R2);
+			if(!stricmp(str, "ar0"))
+				return(BGBCC_SH_REG_R2);
+			if(!stricmp(str, "ar1"))
+				return(BGBCC_SH_REG_R3);
 		}
 		break;
 
@@ -283,6 +296,8 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 			return(BGBCC_SH_REG_PR);
 		if(!bgbcc_stricmp(str, "pc"))
 			return(BGBCC_SH_REG_PC);
+		if(!bgbcc_stricmp(str, "pch"))
+			return(BGBCC_SH_REG_PCH);
 		break;
 
 	case 'R':	case 'r':
@@ -552,6 +567,8 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 			return(BGBCC_SH_REG_TTB);
 		if(!bgbcc_stricmp(str, "tea"))
 			return(BGBCC_SH_REG_TEA);
+		if(!bgbcc_stricmp(str, "teah"))
+			return(BGBCC_SH_REG_TEAH);
 
 		break;
 
@@ -585,6 +602,11 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 
 		if(!bgbcc_stricmp(str, "isrsave"))
 			return(BGBCC_SH_REG_ISRSAVE);
+
+		if(!bgbcc_stricmp(str, "gbh"))
+			return(BGBCC_SH_REG_GBH);
+		if(!bgbcc_stricmp(str, "pch"))
+			return(BGBCC_SH_REG_PCH);
 
 		break;
 	}

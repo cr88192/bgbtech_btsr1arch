@@ -444,6 +444,19 @@ begin
 		opRegN_Cr = JX2_GR_R15;
 `endif
 
+`ifdef def_true
+	if(opRegM_Cr[4:0]==5'h1E)
+		opRegM_Cr = JX2_GR_R0;
+	if(opRegN_Cr[4:0]==5'h1E)
+		opRegN_Cr = JX2_GR_R0;
+
+	if(opRegM_Cr[4:0]==5'h1F)
+		opRegM_Cr = JX2_GR_R1;
+	if(opRegN_Cr[4:0]==5'h1F)
+		opRegN_Cr = JX2_GR_R1;
+`endif
+
+
 	opRegO_Df2_IsSP = (opRegO_Df2 == JX2_GR_SP);
 
 	opRegM_RvoDfl = opRegM_Dfl;
