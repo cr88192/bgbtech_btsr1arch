@@ -78,8 +78,8 @@ output[8:0]		idUIxt;
 `reg_gpr		opRegO;
 reg[32:0]		opImm;
 reg[32:0]		opImmB;
-reg[7:0]		opUCmd;
-reg[7:0]		opUIxt;
+reg[8:0]		opUCmd;
+reg[8:0]		opUIxt;
 
 assign	idRegN	= opRegN;
 assign	idRegM	= opRegM;
@@ -89,17 +89,20 @@ assign	idImmB	= opImmB;
 assign	idUCmd	= opUCmd;
 assign	idUIxt	= opUIxt;
 
+wire[7:0]		srMod;
+assign		srMod = 0;
+
 `ifdef jx2_enable_ops16
 `wire_gpr		decOpBz_idRegN;
 `wire_gpr		decOpBz_idRegM;
 `wire_gpr		decOpBz_idRegO;
 wire[32:0]		decOpBz_idImm;
-wire[7:0]		decOpBz_idUCmd;
-wire[7:0]		decOpBz_idUIxt;
+wire[8:0]		decOpBz_idUCmd;
+wire[8:0]		decOpBz_idUIxt;
 
 DecOpBz	decOpBz(
 	clock,		reset,
-	istrWord,
+	istrWord,	srMod,
 	decOpBz_idRegN,		decOpBz_idRegM,
 	decOpBz_idRegO,		decOpBz_idImm,
 	decOpBz_idUCmd,		decOpBz_idUIxt
@@ -111,9 +114,9 @@ DecOpBz	decOpBz(
 `wire_gpr		decOpFz_idRegO;
 `wire_gpr		decOpFz_idRegP;
 wire[32:0]		decOpFz_idImm;
-wire[7:0]		decOpFz_idUCmd;
-wire[7:0]		decOpFz_idUIxt;
-wire[3:0]		decOpFz_idUFl;
+wire[8:0]		decOpFz_idUCmd;
+wire[8:0]		decOpFz_idUIxt;
+wire[18:0]		decOpFz_idUFl;
 
 wire[27:0]		istrJBits;
 wire[27:0]		istrJBits2;
@@ -137,8 +140,8 @@ assign	istrJBits2[15: 0]	= istrWordL[63:48];
 assign	istrJBits2[23:16]	= istrWordL[39:32];
 assign	istrJBits2[   24]	= istrIsJumboB;
 assign	istrJBits2[   25]	= 0;
-assign	istrJBits [   26]	= istrWordL[40];
-assign	istrJBits [   27]	= 0;
+assign	istrJBits2[   26]	= istrWordL[40];
+assign	istrJBits2[   27]	= 0;
 
 `else
 
@@ -149,8 +152,10 @@ assign	istrJBits2	= 0;
 
 
 DecOpFz	decOpFz(
-	clock,		reset,
-	istrWord,	4'h0,	istrJBits,
+	clock,		reset,	srMod,
+	istrWord,	4'h0,
+		istrJBits,
+		istrJBits2,
 	decOpFz_idRegN,		decOpFz_idRegM,
 	decOpFz_idRegO,		decOpFz_idRegP,
 	decOpFz_idImm,

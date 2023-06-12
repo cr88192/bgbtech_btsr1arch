@@ -721,6 +721,7 @@ always @*
 begin
 	/* EX1 */
 
+`ifdef jx2_enable_vaddr48
 	if(regInAddr[4])
 	begin
 		tNxtReqAxB = regInAddr[47:4];
@@ -731,6 +732,18 @@ begin
 		tNxtReqAxA = regInAddr[47:4];
 		tNxtReqAxB = tNxtReqAxA + 1;
 	end
+`else
+	if(regInAddr[4])
+	begin
+		tNxtReqAxB = { 16'h00, regInAddr[31:4] };
+		tNxtReqAxA = tNxtReqAxB + 1;
+	end
+	else
+	begin
+		tNxtReqAxA = { 16'h00, regInAddr[31:4] };
+		tNxtReqAxB = tNxtReqAxA + 1;
+	end
+`endif
 
 `ifdef jx2_mem_lane2
 	if(regInAddrB[4])
@@ -758,7 +771,11 @@ begin
 		tNxtReqAddrHi	= 0;
 `endif
 
+`ifdef jx2_enable_vaddr48
 	tNxtReqAddr		= regInAddr[47:0];
+`else
+	tNxtReqAddr		= { 16'h00, regInAddr[31:0] };
+`endif
 	tNxtReqBix		= regInAddr[4:0];
 	tNxtReqOpm		= regInOpm;
 //	tNxtReqLdOp		= regInLdOp;
@@ -961,6 +978,7 @@ begin
 	if(!tRegInMmcr[0])
 		tNxtSkipTlb = 1;
 
+`ifdef jx2_enable_vaddr48
 	if(tNxtSkipTlb && (regInAddr[47:28]!=0) &&
 		(regInAddr[47:44]!=4'hF) &&
 		(regInAddr[31:28]!=4'hF) &&
@@ -970,6 +988,7 @@ begin
 		$display("L1 D$: Next Skip TLB and Addr is Virt, A=%X",
 			regInAddr);
 	end
+`endif
 
 `ifndef def_true
 // `ifdef def_true

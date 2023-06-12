@@ -33,7 +33,10 @@ Filters output from the L1's memory interface, so that L1 operates with virtual 
 
 `include "ringbus/RbiDefs.v"
 
+// `ifndef jx2_tlb_novugid
+`ifdef def_true
 `include "ringbus/RbiMmuChkAcc.v"
+`endif
 
 module RbiMmuTlb(
 	/* verilator lint_off UNUSED */
@@ -399,6 +402,8 @@ reg		tResetL;
 
 wire[5:0]	tChkAccNoRwx;	//No R/W/X
 
+// `ifndef jx2_tlb_novugid
+`ifdef def_true
 RbiMmuChkAcc tlbChkAcc(
 	clock,	tResetL,
 	regInHold,
@@ -413,6 +418,9 @@ RbiMmuChkAcc tlbChkAcc(
 	aclEntryC,	aclEntryD,
 	tTlbExc,
 	tChkAccNoRwx);
+`else
+assign	tChkAccNoRwx = 0;
+`endif
 
 always @*
 begin
@@ -1087,6 +1095,7 @@ begin
 	end
 `endif
 
+`ifndef jx2_tlb_novugid
 	if(tRegInIsLDACL)
 	begin
 		nxtAclEntryA	= regInLdtlb[47:0];
@@ -1094,6 +1103,7 @@ begin
 		nxtAclEntryC	= aclEntryB;
 		nxtAclEntryD	= aclEntryC;
 	end
+`endif
 
 	tNxtRegInLdtlbHi	= tRegInLdtlbHi;
 
@@ -1344,10 +1354,17 @@ begin
 //		tlbHbIxB		<= tlbHixB;
 	end
 
+`ifndef jx2_tlb_novugid
 	aclEntryA		<= nxtAclEntryA;
 	aclEntryB		<= nxtAclEntryB;
 	aclEntryC		<= nxtAclEntryC;
 	aclEntryD		<= nxtAclEntryD;
+`else
+	aclEntryA		<= 0;
+	aclEntryB		<= 0;
+	aclEntryC		<= 0;
+	aclEntryD		<= 0;
+`endif
 
 	tlbHbDatA		<= tlbBlkA[tlbHixA];
 	tlbHbDatB		<= tlbBlkB[tlbHixA];

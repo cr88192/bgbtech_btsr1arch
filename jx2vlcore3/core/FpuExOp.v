@@ -23,14 +23,14 @@ opUIxt:
 `include "FpuMul.v"
 
 `ifndef jx2_fcmp_alu
-`include "FpuCmp.v"
+// `include "FpuCmp.v"
 `endif
 
 `include "FpuConvS2D.v"
 `include "FpuConvH2D.v"
 `include "FpuConvD2S.v"
 `include "FpuConvD2H.v"
-`include "FpuConvD2I.v"
+// `include "FpuConvD2I.v"
 
 module FpuExOp(
 	/* verilator lint_off UNUSED */
@@ -53,8 +53,8 @@ module FpuExOp(
 input			clock;
 input			reset;
 
-input[7:0]		opCmd;			//command opcode
-input[7:0]		regIdIxt;		//ALU Index / Opcode Extension
+input[8:0]		opCmd;			//command opcode
+input[8:0]		regIdIxt;		//ALU Index / Opcode Extension
 
 `input_gpr		regIdRs;
 `input_gpr		regIdRt;
@@ -102,8 +102,8 @@ assign		regValGRn		= tRegValGRn;
 assign		regValLdGRn		= tRegValLdGRn;
 
 `ifndef def_true
-reg[7:0]		tOpCmd;			//command opcode
-reg[7:0]		tRegIdIxt;		//ALU Index / Opcode Extension
+reg[8:0]		tOpCmd;			//command opcode
+reg[8:0]		tRegIdIxt;		//ALU Index / Opcode Extension
 reg[5:0]		tRegIdRs;
 reg[5:0]		tRegIdRt;
 reg[5:0]		tRegIdRn;
@@ -115,8 +115,8 @@ reg				tBraFlush;
 `endif
 
 `ifdef def_true
-wire[7:0]		tOpCmd;			//command opcode
-wire[7:0]		tRegIdIxt;		//ALU Index / Opcode Extension
+wire[8:0]		tOpCmd;			//command opcode
+wire[8:0]		tRegIdIxt;		//ALU Index / Opcode Extension
 `wire_gpr		tRegIdRs;
 `wire_gpr		tRegIdRt;
 `wire_gpr		tRegIdRn;
@@ -127,8 +127,8 @@ wire[63:0]		tRegInSr;
 wire			tBraFlush;
 `endif
 
-reg[7:0]		tOpCmdL;			//command opcode
-reg[7:0]		tRegIdIxtL;		//ALU Index / Opcode Extension
+reg[8:0]		tOpCmdL;			//command opcode
+reg[8:0]		tRegIdIxtL;		//ALU Index / Opcode Extension
 reg[5:0]		tRegIdRsL;
 reg[5:0]		tRegIdRtL;
 reg[5:0]		tRegIdRnL;
@@ -145,7 +145,8 @@ assign			cnvRegValGRm = tRegIdIxt[3] ?
 //	regValGRm[63:32] : regValGRm[31: 0];
 	tRegValRs[63:32] : tRegValRs[31: 0];
 
-`ifdef jx2_enable_fmov
+// `ifdef jx2_enable_fmov
+`ifndef def_true
 wire[63:0]		memDataLd_S2D;		//memory data (Single To Double)
 FpuConvS2D mem_cnv_s2d(memDataLd[31:0], memDataLd_S2D);
 `endif
@@ -154,7 +155,7 @@ reg[63:0]		ctlInDlr_S2D_L;		//memory data (Single To Double)
 reg[63:0]		ctlInDlr_H2D_L;		//memory data (Half To Double)
 reg[31:0]		fstcx_D2S_L;
 reg[15:0]		fstcx_D2H_L;
-reg[63:0]		fstcx_D2I_L;
+// reg[63:0]		fstcx_D2I_L;
 
 wire[63:0]		ctlInDlr_S2D;		//memory data (Single To Double)
 // FpuConvS2D dlr_cnv_s2d(regValGRm[31:0], ctlInDlr_S2D);
@@ -169,8 +170,8 @@ wire[15:0]		fstcx_D2H;
 FpuConvD2S mem_cnv_d2s(tRegValRs[63:0], fstcx_D2S);
 FpuConvD2H mem_cnv_d2h(tRegValRs[63:0], fstcx_D2H);
 
-wire[63:0]		fstcx_D2I;
-FpuConvD2I mem_cnv_d2i(clock, reset, exHold, tRegValRs[63:0], fstcx_D2I);
+// wire[63:0]		fstcx_D2I;
+// FpuConvD2I mem_cnv_d2i(clock, reset, exHold, tRegValRs[63:0], fstcx_D2I);
 
 
 wire[63:0]	tRegAddRn;		//Rn input value
@@ -182,6 +183,10 @@ assign tRegAddRn =
 assign tRegAddRn = tRegValRs;
 `endif
 
+wire[7:0]		regRMode;
+
+assign		regRMode = 0;
+
 wire[63:0]	tRegAddVal;		//Rn output value
 wire[3:0]	tRegAddExOp;	
 wire[1:0]	tRegAddExOK;	
@@ -191,25 +196,34 @@ FpuAdd	fpu_add(
 	exHold,
 	regValRt,	tRegAddRn,
 	tRegAddVal,	tRegAddExOp,
-	tRegAddExOK);
+	tRegAddExOK,
+	regRMode);
+
+wire[1:0]	tRegMulExOK;	
 
 wire[63:0]	tRegMulVal;		//Rn output value
 FpuMul	fpu_mul(
 	clock,		reset,		exHold,
-	tRegValRt,	tRegValRs,	tRegMulVal);
+	tRegValRt,	tRegValRs,	tRegMulVal,
+	tRegAddExOp,
+	tRegMulExOK, regRMode);
 
 wire	tFpuIsFpu3;
 wire	tFpuIsFldcx;
+wire	tFpuIsFstcx;
 assign	tFpuIsFpu3 = (tOpCmd[5:0]==JX2_UCMD_FPU3);
 assign	tFpuIsFldcx = (tOpCmd[5:0]==JX2_UCMD_FLDCX);
+assign	tFpuIsFstcx = (tOpCmd[5:0]==JX2_UCMD_FSTCX);
 
 assign	tRegAddExOp	=
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 4'h1 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 4'h2 :
 	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 4'h3 :
+	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h2)) ? 4'h4 :
 	4'h0;
 
-`ifndef jx2_fcmp_alu
+// `ifndef jx2_fcmp_alu
+`ifndef def_true
 wire[1:0]	tCmpExOK;
 wire		tCmpSrT;
 reg			tCmpSrTL;
@@ -227,6 +241,7 @@ reg[5:0]	tOpUCmd1;
 reg			tExHold;
 reg			tExValidCmd;
 reg[3:0]	tHoldCyc;
+reg[3:0]	tDoHoldCyc;
 
 `ifndef def_true
 assign	tOpCmd			= exHold ? tOpCmdL : opCmd;
@@ -264,7 +279,10 @@ begin
 	tRegValGRn		= UV64_00;
 	tExHold			= 0;
 	tExValidCmd		= 0;
-`ifndef jx2_fcmp_alu
+	tDoHoldCyc		= 0;
+
+// `ifndef jx2_fcmp_alu
+`ifndef def_true
 //	tRegOutSrT		= tRegInSr[0];
 	tRegOutSrT	= tCmpSrT;
 //	tRegOutSrT	= tCmpSrTL;
@@ -272,7 +290,8 @@ begin
 	tRegOutSrT		= tRegInSr[0];
 `endif
 
-`ifdef jx2_enable_fmov
+//`ifdef jx2_enable_fmov
+`ifndef def_true
 	tRegValLdGRn	= memDataLd_S2D;
 `else
 	tRegValLdGRn	= UV64_XX;
@@ -298,7 +317,8 @@ begin
 
 // `ifdef jx2_enable_fprs
 // `ifdef def_true
-`ifdef jx2_enable_fmov
+// `ifdef jx2_enable_fmov
+`ifndef def_true
 		JX2_UCMD_FMOV_MR: begin
 			if(regIdIxt[4])
 				tRegOutVal	= memDataLd;
@@ -321,25 +341,25 @@ begin
 //			case(tRegIdIxt[3:0])
 			case(tRegIdIxtL[3:0])
 				4'h0: begin
-					if(tHoldCyc != 5)
-//					if(tHoldCyc != 7)
-						tExHold = 1;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
+					tDoHoldCyc = 5;
 					tRegOutVal	= tRegAddVal;
 					tRegValGRn	= tRegAddVal;
 				end
 
 				4'h1: begin
-					if(tHoldCyc != 5)
-//					if(tHoldCyc != 7)
-						tExHold = 1;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
+					tDoHoldCyc = 5;
 					tRegOutVal	= tRegAddVal;
 					tRegValGRn	= tRegAddVal;
 				end
 
 				4'h2: begin
-					if(tHoldCyc != 5)
-//					if(tHoldCyc != 6)
-						tExHold = 1;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
+					tDoHoldCyc = 5;
 					tRegOutVal	= tRegMulVal;
 					tRegValGRn	= tRegMulVal;
 				end
@@ -357,7 +377,8 @@ begin
 //				regIdIxt, regValRs, regValRt, tRegValGRn);
 		end
 
-`ifndef jx2_fcmp_alu
+// `ifndef jx2_fcmp_alu
+`ifndef def_true
 		JX2_UCMD_FCMP: begin
 			tExHold		= tCmpExOK[1];
 //			if(tHoldCyc != 1)
@@ -384,8 +405,9 @@ begin
 					tRegValGRn	= tRegOutVal;
 				end
 				3'h2: begin
-					if(tHoldCyc != 5)
-						tExHold = 1;
+//					if(tHoldCyc != 5)
+//						tExHold = 1;
+					tDoHoldCyc	= 5;
 					tRegOutVal	= tRegAddVal;
 					tRegValGRn	= tRegOutVal;
 				end
@@ -414,9 +436,12 @@ begin
 				end
 
 				4'h2: begin
-					if(tHoldCyc != 3)
-						tExHold = 1;
-					tRegValGRn	= fstcx_D2I;
+//					if(tHoldCyc != 3)
+//						tExHold = 1;
+//					tRegValGRn	= fstcx_D2I;
+
+					tDoHoldCyc = 6;
+					tRegValGRn	= tRegAddVal;
 				end
 
 				4'h3: begin
@@ -462,6 +487,9 @@ begin
 		default: begin
 		end
 	endcase
+
+	if(tHoldCyc < tDoHoldCyc)
+		tExHold = 1;
 
 	if(reset)
 		tExHold = 0;
@@ -514,7 +542,8 @@ begin
 		tBraFlushL		<= tBraFlush;
 `endif
 
-`ifndef	jx2_fcmp_alu
+// `ifndef	jx2_fcmp_alu
+`ifndef	def_true
 		tCmpSrTL		<= tCmpSrT;
 `endif
 
@@ -522,7 +551,7 @@ begin
 		ctlInDlr_H2D_L	<= ctlInDlr_H2D;
 		fstcx_D2S_L		<= fstcx_D2S;
 		fstcx_D2H_L		<= fstcx_D2H;
-		fstcx_D2I_L		<= fstcx_D2I;
+//		fstcx_D2I_L		<= fstcx_D2I;
 	end
 
 //	tLastRegMulExOK		<= tRegMulExOK;

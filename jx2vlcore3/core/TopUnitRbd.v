@@ -28,43 +28,48 @@ Deal with tristate IO interfacing.
 This is handled in its own module as Verilator can't deal with it.
  */
 
-`define jx2_xc7a200		// Enable options for XC7A200T
+`define jx2_xc7s50		// Enable options for XC7S50
+`define jx2_cfg_hbridge
+
+`define jx2_cfg_novga
+`define jx2_cfg_noaudio
+`define jx2_cfg_nousb
+`define jx2_cfg_nops2
 
 `include "CoreUnit.v"
 
-module TopUnitQmt(
+module TopUnitRbd(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
+	gpioPins,
+	hbrPins,
 
 	ddrData,	ddrAddr,	ddrBa,
-//	ddrCs,		ddrRas,		ddrCas,
 	ddrRas,		ddrCas,
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP,	ddrDqsN,
 	ddrReset,	ddrOdt,
 	ddrDqm0,	ddrDqm1,
 
-	vgaRed,		vgaGrn,		vgaBlu,
-	vgaHsync,	vgaVsync,
+//	vgaRed,		vgaGrn,		vgaBlu,
+//	vgaHsync,	vgaVsync,
 
 	uartTxD,	uartRxD,
-//	uartCtS,	uartRtS,
 
-	ps2_clk,	ps2_data,
+//	ps2_clk,	ps2_data,
 
 	sdc_dat,	sdc_clk,	sdc_cmd,
 
 	dbg_exHold1,
-	dbg_exHold2,
-	
-	usb_pins,
-	aud_out
+	dbg_exHold2
 	);
 
 input			clock;
 input			reset;
-// inout[31:0]		gpioPins;
+inout[15:0]		gpioPins;
 // inout[15:0]		fixedPins;
+
+output[7:0]		hbrPins;
 
 inout[15:0]		ddrData;		//DDR data pins
 
@@ -94,8 +99,8 @@ output[1:0]		ddrClk;			//clock pins
 inout[1:0]		ddrDqsP;
 inout[1:0]		ddrDqsN;
 
-inout[3:0]		usb_pins;
-output[1:0]		aud_out;
+// inout[3:0]		usb_pins;
+// output[1:0]		aud_out;
 
 wire	reset2_200;
 wire	reset2_150;
@@ -175,11 +180,11 @@ assign			ddrDqsN_I	= ddrDqsN;
 
 `endif
 
-output[4:0]		vgaRed;
-output[5:0]		vgaGrn;
-output[4:0]		vgaBlu;
-output			vgaHsync;
-output			vgaVsync;
+//output[4:0]		vgaRed;
+//output[5:0]		vgaGrn;
+//output[4:0]		vgaBlu;
+//output			vgaHsync;
+//output			vgaVsync;
 
 //wire[3:0]		vgaRed1;
 //wire[3:0]		vgaGrn1;
@@ -191,9 +196,9 @@ output			vgaVsync;
 wire[4:0]		vgaRed1;
 wire[4:0]		vgaGrn1;
 wire[4:0]		vgaBlu1;
-assign		vgaRed = vgaRed1;
-assign		vgaGrn = { vgaGrn1, 1'b0 };
-assign		vgaBlu = vgaBlu1;
+// assign		vgaRed = vgaRed1;
+// assign		vgaGrn = { vgaGrn1, 1'b0 };
+// assign		vgaBlu = vgaBlu1;
 
 output			uartTxD;
 input			uartRxD;
@@ -204,8 +209,8 @@ wire			uartCtS;
 wire			uartRtS;
 assign		uartCtS = 1'b1;
 
-inout			ps2_clk;
-inout			ps2_data;
+// inout			ps2_clk;
+// inout			ps2_data;
 
 inout[3:0]		sdc_dat;
 output			sdc_clk;
@@ -226,13 +231,13 @@ wire		ps2_clk_o;
 wire		ps2_data_o;
 wire		ps2_clk_d;
 wire		ps2_data_d;
-assign		ps2_clk		= ps2_clk_d  ? ps2_clk_o  : 1'bz;
-assign		ps2_data	= ps2_data_d ? ps2_data_o : 1'bz;
-assign		ps2_clk_i	= ps2_clk;
-assign		ps2_data_i	= ps2_data;
+//assign		ps2_clk		= ps2_clk_d  ? ps2_clk_o  : 1'bz;
+//assign		ps2_data	= ps2_data_d ? ps2_data_o : 1'bz;
+//assign		ps2_clk_i	= ps2_clk;
+//assign		ps2_data_i	= ps2_data;
 
-// assign		ps2_clk_i	= 1'b1;
-// assign		ps2_data_i	= 1'b1;
+assign		ps2_clk_i	= 1'b1;
+assign		ps2_data_i	= 1'b1;
 
 wire[3:0]		sdc_dat_i;
 wire[3:0]		sdc_dat_o;
@@ -259,7 +264,7 @@ assign	aud_mic_data = 1'b0;
 // assign	aud_out = !aud_mono_ena1 ?
 //	{ !aud_mono_out1, !aud_mono_out1 } : 2'bZZ;
 // assign	aud_out = { !aud_mono_out1, !aud_mono_out1 } ;
-assign	aud_out = { !aud_mono_out1[0], !aud_mono_out1[1] } ;
+// assign	aud_out = { !aud_mono_out1[0], !aud_mono_out1[1] } ;
 
 wire	sdc_ena;
 
@@ -293,24 +298,64 @@ wire[31:0]		gpioPinsIn;
 wire[31:0]		gpioPinsOut;
 wire[31:0]		gpioPinsDir;
 
-assign		gpioPinsIn = 0;
+// assign		gpioPinsIn = 0;
+
+assign		gpioPins[ 0] = gpioPinsDir[ 0] ? gpioPinsOut[ 0] : 1'bz;
+assign		gpioPins[ 1] = gpioPinsDir[ 1] ? gpioPinsOut[ 1] : 1'bz;
+assign		gpioPins[ 2] = gpioPinsDir[ 2] ? gpioPinsOut[ 2] : 1'bz;
+assign		gpioPins[ 3] = gpioPinsDir[ 3] ? gpioPinsOut[ 3] : 1'bz;
+assign		gpioPins[ 4] = gpioPinsDir[ 4] ? gpioPinsOut[ 4] : 1'bz;
+assign		gpioPins[ 5] = gpioPinsDir[ 5] ? gpioPinsOut[ 5] : 1'bz;
+assign		gpioPins[ 6] = gpioPinsDir[ 6] ? gpioPinsOut[ 6] : 1'bz;
+assign		gpioPins[ 7] = gpioPinsDir[ 7] ? gpioPinsOut[ 7] : 1'bz;
+assign		gpioPins[ 8] = gpioPinsDir[ 8] ? gpioPinsOut[ 8] : 1'bz;
+assign		gpioPins[ 9] = gpioPinsDir[ 9] ? gpioPinsOut[ 9] : 1'bz;
+assign		gpioPins[10] = gpioPinsDir[10] ? gpioPinsOut[10] : 1'bz;
+assign		gpioPins[11] = gpioPinsDir[11] ? gpioPinsOut[11] : 1'bz;
+assign		gpioPins[12] = gpioPinsDir[12] ? gpioPinsOut[12] : 1'bz;
+assign		gpioPins[13] = gpioPinsDir[13] ? gpioPinsOut[13] : 1'bz;
+assign		gpioPins[14] = gpioPinsDir[14] ? gpioPinsOut[14] : 1'bz;
+assign		gpioPins[15] = gpioPinsDir[15] ? gpioPinsOut[15] : 1'bz;
+
+assign		gpioPinsIn[ 0] = gpioPins[ 0];
+assign		gpioPinsIn[ 1] = gpioPins[ 1];
+assign		gpioPinsIn[ 2] = gpioPins[ 2];
+assign		gpioPinsIn[ 3] = gpioPins[ 3];
+assign		gpioPinsIn[ 4] = gpioPins[ 4];
+assign		gpioPinsIn[ 5] = gpioPins[ 5];
+assign		gpioPinsIn[ 6] = gpioPins[ 6];
+assign		gpioPinsIn[ 7] = gpioPins[ 7];
+assign		gpioPinsIn[ 8] = gpioPins[ 8];
+assign		gpioPinsIn[ 9] = gpioPins[ 9];
+assign		gpioPinsIn[10] = gpioPins[10];
+assign		gpioPinsIn[11] = gpioPins[11];
+assign		gpioPinsIn[12] = gpioPins[12];
+assign		gpioPinsIn[13] = gpioPins[13];
+assign		gpioPinsIn[14] = gpioPins[14];
+assign		gpioPinsIn[15] = gpioPins[15];
+
+// assign		gpioPinsIn[31:16] = 0;
+
 
 wire[3:0]		usb_clkdat_i;
 wire[3:0]		usb_clkdat_o;
 wire[3:0]		usb_clkdat_d;
 wire[1:0]		usb_clkref;
 
-assign		usb_clkdat_i	= usb_pins;
-assign		usb_pins[0]		= usb_clkdat_d[0] ? usb_clkdat_o[0] : 1'bZ;
-assign		usb_pins[1]		= usb_clkdat_d[1] ? usb_clkdat_o[1] : 1'bZ;
-assign		usb_pins[2]		= usb_clkdat_d[2] ? usb_clkdat_o[2] : 1'bZ;
-assign		usb_pins[3]		= usb_clkdat_d[3] ? usb_clkdat_o[3] : 1'bZ;
+assign		usb_clkdat_i	= 0;
+
+// assign		usb_clkdat_i	= usb_pins;
+//assign		usb_pins[0]		= usb_clkdat_d[0] ? usb_clkdat_o[0] : 1'bZ;
+//assign		usb_pins[1]		= usb_clkdat_d[1] ? usb_clkdat_o[1] : 1'bZ;
+//assign		usb_pins[2]		= usb_clkdat_d[2] ? usb_clkdat_o[2] : 1'bZ;
+//assign		usb_pins[3]		= usb_clkdat_d[3] ? usb_clkdat_o[3] : 1'bZ;
 
 wire[3:0]		ddrModeIn;
 assign		ddrModeIn = 1;
 
 wire[7:0]	hbrPwmOut;
 
+assign		hbrPins = hbrPwmOut;
 
 CoreUnit core(
 	clock_300mhz,
@@ -374,7 +419,7 @@ CoreUnit core(
 	hbrPwmOut
 	);
 
-defparam	core.ddr.DDR_IS_DDR3 = 1;
+// defparam	core.ddr.DDR_IS_DDR3 = 1;
 
 `ifdef def_true
 wire	sys_clk;
@@ -401,9 +446,9 @@ wire	gen_clk_50mhz_nobuf;
 PLLE2_BASE	#(
 	.BANDWIDTH("OPTIMIZED"),	// OPTIMIZED, HIGH, LOW
 	.CLKFBOUT_PHASE(0.0),		// Phase offset in degrees of CLKFB, (-360-360)
-	.CLKIN1_PERIOD(20.0),		// Input clock period in ns resolution
+	.CLKIN1_PERIOD(10.0),		// Input clock period in ns resolution
 	// CLKOUT0_DIVIDE - CLKOUT5_DIVIDE: divide amount for each CLKOUT(1-128)
-	.CLKFBOUT_MULT(24),			// Multiply value for all CLKOUT (2-64)
+	.CLKFBOUT_MULT(12),			// Multiply value for all CLKOUT (2-64)
 	.CLKOUT0_DIVIDE(6),			// 200 MHz
 	.CLKOUT1_DIVIDE(8),			// 150 MHz
 	.CLKOUT2_DIVIDE(12),		// 100 MHz

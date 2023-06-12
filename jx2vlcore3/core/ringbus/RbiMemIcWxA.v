@@ -723,7 +723,11 @@ begin
 `ifdef def_true
 //	if(tNxtSkipTlb && (regInPc[47:28]!=0) && !icInPcHold)
 //	if(tNxtSkipTlb && (regInPc[47:28]!=0))
+`ifdef jx2_enable_vaddr48
 	if(tSkipTlb && (tInAddr[47:28]!=0))
+`else
+	if(tSkipTlb && (tInAddr[31:28]!=0))
+`endif
 	begin
 		$display("L1 I$: Next Skip TLB and Addr is Virt, A=%X",
 			tInAddr);
@@ -760,6 +764,7 @@ begin
 //	tNxtInPmode		= regInSr[31:28];
 	tNxtInPmode		= regInSr[31:28] ^ regKrrHash[3:0] ^ regKrrHash[7:4];
 
+`ifdef jx2_enable_vaddr48
 	tRegInPcP0	= tRegInPc[47:4];
 	tRegInPcP1[27: 0]	= tRegInPcP0[27: 0]+1;
 	tRegInPcP1[43:28]	= tRegInPcP0[43:28];
@@ -772,6 +777,20 @@ begin
 		tNxtAddrA			= tRegInPcP0;
 		tNxtAddrB			= tRegInPcP1;
 	end
+`else
+	tRegInPcP0	= { 16'h00, tRegInPc[31:4] };
+	tRegInPcP1[27: 0]	= tRegInPcP0[27: 0]+1;
+	tRegInPcP1[43:28]	= tRegInPcP0[43:28];
+
+	if(tRegInPc[4])
+	begin
+		tNxtAddrB			= tRegInPcP0[27:0];
+		tNxtAddrA			= tRegInPcP1[27:0];
+	end else begin
+		tNxtAddrA			= tRegInPcP0[27:0];
+		tNxtAddrB			= tRegInPcP1[27:0];
+	end
+`endif
 
 	tNxtInPcWxe		= icInPcWxe;
 	tNxtInPcXG2		= icInPcXG2;
@@ -973,18 +992,32 @@ begin
 //	tIcExecAcl = tBlkPFlA;
 	tIcExecAcl = tBlkPFlB;
 	
+`ifdef jx2_enable_vaddr48
 	tReqAddrIsVirt		= (tInAddr[47:28] != 0) && !tInAddr[47];
+`else
+	tReqAddrIsVirt		= (tInAddr[31:28] != 0) && !tInAddr[31];
+`endif
+
 	tReqAddrNoExecute	= 0;
 
+`ifdef jx2_enable_vaddr48
 	tRegOutExc[ 63:16] = tInAddr[47:0];
 	tRegOutExc[111:64] = tReqAddrHi[47:0];
+`else
+	tRegOutExc[ 47:16] = tInAddr[31:0];
+	tRegOutExc[111:48] = 0;
+`endif
 
 	if(!tRegInSr[30])
 	begin
 	//	if(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])
 		if(	(tBlkFlagA[2] && !tBlkFlagA[3] && !tInAddr[4])	||
 			(tBlkFlagB[2] && !tBlkFlagB[3] &&  tInAddr[4])	||
+`ifdef jx2_enable_vaddr48
 			tInAddr[47] )
+`else
+			tInAddr[31] )
+`endif
 		begin
 			tReqAddrNoExecute	= 0;
 //			$display("L1 I$: Bad Execute %X %X/%X",
@@ -1048,7 +1081,7 @@ begin
 		tReqReady	= 0;
 
 
-`ifdef def_true
+`ifdef jx2_enable_vaddr48
 	tMissAddrA =
 		(tBlkAddr2A[43:36] != tReqAddrA[43:36]) ||
 		(tBlkAddr2A[35:24] != tReqAddrA[35:24]) ||
@@ -1057,6 +1090,15 @@ begin
 	tMissAddrB =
 		(tBlkAddr2B[43:36] != tReqAddrB[43:36]) ||
 		(tBlkAddr2B[35:24] != tReqAddrB[35:24]) ||
+		(tBlkAddr2B[23:12] != tReqAddrB[23:12]) ||
+		(tBlkAddr2B[11: 0] != tReqAddrB[11: 0]) ;
+`else
+	tMissAddrA =
+		(tBlkAddr2A[27:24] != tReqAddrA[27:24]) ||
+		(tBlkAddr2A[24:12] != tReqAddrA[24:12]) ||
+		(tBlkAddr2A[11: 0] != tReqAddrA[11: 0]) ;
+	tMissAddrB =
+		(tBlkAddr2B[27:24] != tReqAddrB[27:24]) ||
 		(tBlkAddr2B[23:12] != tReqAddrB[23:12]) ||
 		(tBlkAddr2B[11: 0] != tReqAddrB[11: 0]) ;
 `endif
@@ -1526,6 +1568,7 @@ begin
 `endif
 		end
 
+`ifdef jx2_enable_vaddr48
 		if(tReqSeqIdx != tReqIxA)
 		begin
 			$display("L1 I$, Mismatch Index A, %X!=%X",
@@ -1540,6 +1583,7 @@ begin
 				(tReqSeqVa[43:24]==0))
 			$display("L1I$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
+`endif
 	end
 
 	if(memRingIsRespOkLdB && !tResetL)
@@ -1589,6 +1633,7 @@ begin
 `endif
 		end
 
+`ifdef jx2_enable_vaddr48
 		if(tReqSeqIdx != tReqIxB)
 		begin
 			$display("L1 I$, Mismatch Index B, %X!=%X",
@@ -1603,6 +1648,7 @@ begin
 				(tReqSeqVa[43:24]==0))
 			$display("L1I$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
+`endif
 	end
 
 	
@@ -1690,14 +1736,22 @@ begin
 		begin
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxA;
+`ifdef jx2_enable_vaddr48
 			tMemSeqVa		= tReqAddrA;
+`else
+			tMemSeqVa		= { 16'h00, tReqAddrA };
+`endif
 			tMemSeqReq		= { unitNodeId, 4'b1000, tMemSeqRov };
 
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 `ifdef jx2_enable_l1addr96
 			tMemAddrReq		= { tReqAddrHi, tReqAddrA, 4'h00 };
 `else
+`ifdef jx2_enable_vaddr48
 			tMemAddrReq		= { tReqAddrA, 4'h00 };
+`else
+			tMemAddrReq		= { 16'h00, tReqAddrA, 4'h00 };
+`endif
 `endif
 			tNxtMemReqLdA = 1;
 
@@ -1722,14 +1776,22 @@ begin
 
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqIx		= tReqIxB;
+`ifdef jx2_enable_vaddr48
 			tMemSeqVa		= tReqAddrB;
+`else
+			tMemSeqVa		= { 16'h00, tReqAddrB };
+`endif
 			tMemSeqReq		= { unitNodeId, 4'b1100, tMemSeqRov};
 
 			tMemOpmReq		= { UV8_00, JX2_RBI_OPM_LDX };
 `ifdef jx2_enable_l1addr96
 			tMemAddrReq		= { tReqAddrHi, tReqAddrB, 4'h00 };
 `else
+`ifdef jx2_enable_vaddr48
 			tMemAddrReq		= { tReqAddrB, 4'h00 };
+`else
+			tMemAddrReq		= { 16'h00, tReqAddrB, 4'h00 };
+`endif
 `endif
 			tNxtMemReqLdB = 1;
 
@@ -1950,6 +2012,9 @@ assign		tAdvHold = tRegOutHold || icInPcHold;
 assign		tNx2IxA = tAdvHold ? tReqIxA : tNxtIxA;
 assign		tNx2IxB = tAdvHold ? tReqIxB : tNxtIxB;
 
+reg[15:0]	tBlkAddrHwA;
+reg[15:0]	tBlkAddrHwB;
+
 always @(posedge clock)
 begin
 //	tTlbMissInh		<= tNxtTlbMissInh;
@@ -2066,8 +2131,15 @@ begin
 
 	{ tBlkDextA, tBlkDataA }	<= icCaMemA[tNx2IxA];
 	{ tBlkDextB, tBlkDataB }	<= icCaMemB[tNx2IxB];
+`ifdef jx2_enable_vaddr48
 	{ tBlkPFlA, tBlkPRovA, tBlkFlagA, tBlkAddrA }	<= icCaAddrA[tNx2IxA];
 	{ tBlkPFlB, tBlkPRovB, tBlkFlagB, tBlkAddrB }	<= icCaAddrB[tNx2IxB];
+`else
+	{ tBlkPFlA, tBlkPRovA, tBlkFlagA, tBlkAddrHwA, tBlkAddrA }	<= 
+		icCaAddrA[tNx2IxA];
+	{ tBlkPFlB, tBlkPRovB, tBlkFlagB, tBlkAddrHwB, tBlkAddrB }	<=
+		icCaAddrB[tNx2IxB];
+`endif
 
 	tNx2IxAL	<= tNx2IxA;
 	tNx2IxBL	<= tNx2IxB;

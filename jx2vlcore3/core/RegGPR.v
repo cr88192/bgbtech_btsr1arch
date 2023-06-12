@@ -43,8 +43,8 @@ input			clock;
 input			reset;
 input			hold;
 
-input[7:0]		regIdUCmd;
-input[7:0]		regIdUIxt;
+input[8:0]		regIdUCmd;
+input[8:0]		regIdUIxt;
 
 `input_gpr		regIdRs;		//Source A, ALU / Base
 `input_gpr		regIdRt;		//Source B, ALU / Index
@@ -66,7 +66,7 @@ input [47:0]	regValGbr;		//GBR Value (CR)
 input [32:0]	regValImm;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
 input [63:0]	regValLr;		//LR Value (CR)
-input [63:0]	regValSsp;		//SSP Value (CR)
+input [47:0]	regValSsp;		//SSP Value (CR)
 input [63:0]	regValCm;		//Cm Value (CR)
 	
 output[63:0]	regOutDlr;

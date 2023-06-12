@@ -10,6 +10,8 @@ _start:
 	addi  gp, gp, %pcrel_lo(1b)
 	.option pop
 
+	call	__basetests
+
     call	__start
 	li		a0, 0
 	call	__exit
@@ -26,6 +28,7 @@ __longj:
 
 
 __debugbreak:
+	ebreak
 
 .globl __halt
 __halt:
@@ -38,3 +41,25 @@ __object_getbits:
 .globl __start_init
 __start_init:
 	jr	ra
+
+
+__basetests:
+	li		a0, 0
+	addi	a0, a0, 123
+	li		a1, 123
+	bne		a0, a1, __debugbreak
+	
+	lw		a2, __baseimm0
+	li		a3, 0x12345678
+	bne		a2, a3, __debugbreak
+
+	beq		a0, a3, __debugbreak
+
+	lw		a4, __baseimm1
+	li		a5, 0xFFFFFFFFC2345678
+	bne		a4, a5, __debugbreak
+	
+	jr	ra
+
+__baseimm0:	.dword	0x12345678
+__baseimm1:	.dword	0xC2345678

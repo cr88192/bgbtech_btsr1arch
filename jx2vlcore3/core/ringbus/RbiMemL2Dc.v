@@ -99,7 +99,7 @@ reg[  3:0]		tDdrMemOpSqIB;
 // `ifndef def_true
 assign	ddrMemDataOut	= tDdrMemDataOutB;
 assign	ddrMemAddr		= tDdrMemAddrB;
-assign	ddrMemAddr		= tDdrMemAddrSwB;
+assign	ddrMemAddrSw	= tDdrMemAddrSwB;
 assign	ddrMemOpm		= tDdrMemOpmB;
 assign	ddrOpSqO		= tDdrMemOpSqB;
 `endif

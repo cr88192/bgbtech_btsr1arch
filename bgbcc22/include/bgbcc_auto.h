@@ -3264,6 +3264,8 @@ int BGBCC_JX2C_StompLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sc
 int BGBCC_JX2C_ConvLpRegisterNarrowing(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, ccxl_register sreg, ccxl_register dreg);
 int BGBCC_JX2C_ConvLpRegisterWiden(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type stype, ccxl_register sreg, ccxl_register dreg);
 //AHSRC:jx2cc/jx2_lqarith.c
+int BGBCC_JX2C_GetMulSh2xForImm(int val);
+int BGBCC_JX2C_GetMulSh3xForImm(int val);
 int BGBCC_JX2C_EmitBinaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitUnaryVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg);

@@ -26,6 +26,9 @@
 #define TKPE_REGSAVE_TBR	0x44
 #define TKPE_REGSAVE_TTB	0x45
 
+#define TKPE_REGSAVE_PCH	0x46
+#define TKPE_REGSAVE_GBH	0x47
+
 #define TKPE_REGSAVE_KRR	0x48
 
 typedef struct TKPE_ImageInfo_s		TKPE_ImageInfo;
@@ -241,4 +244,11 @@ TKSH_CommandInfo *next;
 TKSH_CommandInfo *hnext;
 char *name;
 int (*Cmd)(char **args);
+};
+
+typedef struct tk_hugeptr_s tk_hugeptr;
+
+struct tk_hugeptr_s {
+u64 addr_lo;
+u64 addr_hi;
 };

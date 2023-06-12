@@ -1764,10 +1764,17 @@ int BGBCC_JX2_TryMapRegCn(BGBCC_JX2_Context *ctx, int reg)
 	case BGBCC_SH_REG_STTB:		reg1=0x8C; break;
 	case BGBCC_SH_REG_KRR:		reg1=0x8D; break;
 
-	case BGBCC_SH_REG_TEAH:		reg1=0x93; break;
+	case BGBCC_SH_REG_R15U:		reg1=0x8F; break;
 
-	case BGBCC_SH_REG_GBH:		reg1=0xA6; break;
+	case BGBCC_SH_REG_TEAH:		reg1=0x93; break;
+	case BGBCC_SH_REG_VIPT:		reg1=0x9C; break;
+
+	case BGBCC_SH_REG_R0U:		reg1=0x9E; break;
+	case BGBCC_SH_REG_R1U:		reg1=0x9F; break;
+
 	case BGBCC_SH_REG_PCH:		reg1=0xA2; break;
+	case BGBCC_SH_REG_GBH:		reg1=0xA6; break;
+
 #endif
 
 	}

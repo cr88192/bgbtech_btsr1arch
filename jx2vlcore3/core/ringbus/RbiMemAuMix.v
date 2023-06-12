@@ -168,8 +168,8 @@ reg				tReqWaitResp;
 reg				tReqSx;
 
 reg				tReqNoCross;
-reg				tReqMissNoSkip;
-reg				tReqMissNoSkipL;
+// reg				tReqMissNoSkip;
+// reg				tReqMissNoSkipL;
 reg				tReq2NoCross;
 
 reg				tNxtReqIsCSel;
@@ -450,7 +450,7 @@ begin
 	tPixCellIxDL	<= tPixCellIxD;
 
 	tRegOutHoldL	<= tRegOutHold;
-	tReqMissNoSkipL	<= tReqMissNoSkip;
+//	tReqMissNoSkipL	<= tReqMissNoSkip;
 
 	/* EX1->EX2 */
 	tBlkMemAddrC	<= arrMemAddrC[tNxtReqIxC];

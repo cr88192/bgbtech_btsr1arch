@@ -111,7 +111,9 @@ MMIO Space:
 `include "MemL2A.v"
 `endif
 
+`ifndef jx2_cfg_noaudio
 `include "ringbus/RbiMemAuMix.v"
+`endif
 
 `ifndef jx2_use_ringbus
 `ifdef jx2_enable_dualcore
@@ -145,12 +147,21 @@ MMIO Space:
 `include "ModAudFm.v"
 `endif
 
+`ifdef jx2_cfg_hbridge
+`include "ModHBridge.v"
+`endif
+
+`ifndef jx2_cfg_nops2
 `include "ModPs2Kb.v"
+`endif
+
 `include "ModSdSpi.v"
 
 `include "Mod7Seg.v"
 
+`ifndef jx2_cfg_nousb
 `include "ModUsbBuf.v"
+`endif
 
 module CoreUnit(
 	/* verilator lint_off UNUSED */
@@ -215,7 +226,9 @@ module CoreUnit(
 	usb_clkdat_i,
 	usb_clkdat_o,
 	usb_clkdat_d,
-	usb_clkref
+	usb_clkref,
+	
+	hbr_pwmout
 	);
 
 input			clock_300;
@@ -326,6 +339,7 @@ output[3:0]		usb_clkdat_o;
 output[3:0]		usb_clkdat_d;
 output[1:0]		usb_clkref;
 
+output[7:0]		hbr_pwmout;
 
 reg[7:0]		tSegOutCharBit;
 reg[7:0]		tSegOutSegBit;
@@ -555,6 +569,7 @@ assign		ddrAddr = ddrAddr1[13:0];
 `ifdef jx2_cfg_noddr
 assign		ddrMemOK		= 0;
 assign		ddrMemDataOut	= 0;
+assign		ddrOpSqO		= 0;
 
 assign		ddrData_O	= 0;
 assign		ddrData_En	= 0;
@@ -1385,6 +1400,13 @@ assign	scrnMmioOutData	= 0;
 assign	scrnMmioOK		= (tScrnCSel && tScrnOpmNz) ?
 	UMEM_OK_OK : UMEM_OK_READY;
 
+`ifdef jx2_use_ringbus
+assign	vmmiAddrOut = vmmiAddrIn;
+assign	vmmiDataOut = vmmiDataIn;
+assign	vmmiOpmOut = vmmiOpmIn;
+assign	vmmiSeqOut = vmmiSeqIn;
+`endif
+
 `endif
 
 
@@ -1568,6 +1590,8 @@ assign		ps2kb_data_o = ps2_clkdat_o[0];
 assign		ps2kb_clk_d = ps2_clkdat_d[1];
 assign		ps2kb_data_d = ps2_clkdat_d[0];
 
+`ifndef jx2_cfg_nops2
+
 ModPs2Kb	ps2kb(
 //	clock_100,		reset2_100,
 	clock_mmio,		reset2_mmio,
@@ -1585,6 +1609,8 @@ ModPs2Kb	ps2ms(
 	mmioOutData,	msMmioOutData,	mmioAddr,
 	mmioOpm,		msMmioOK,		12'hE05);
 
+`endif
+
 wire[63:0]	sdMmioOutData;
 wire[1:0]	sdMmioOK;
 
@@ -1596,6 +1622,7 @@ ModSdSpi	sdspi(
 	mmioOutDataQ,	sdMmioOutData,	mmioAddr,
 	mmioOpm,		sdMmioOK,		12'hE03);
 
+`ifndef jx2_cfg_nousb
 wire[63:0]	usbMmioOutData;
 wire[1:0]	usbMmioOK;
 // wire[1:0]	usbLinkState3;
@@ -1608,6 +1635,32 @@ ModUsbBuf modusb(
 	mmioOutDataQ,	usbMmioOutData,	mmioAddr,		
 	mmioOpm,		usbMmioOK
 	);
+`endif
+
+`ifdef jx2_cfg_hbridge
+wire[63:0]	hbrMmioOutData;
+wire[1:0]	hbrMmioOK;
+
+wire[7:0]	hbrPwmOut;
+assign	hbr_pwmout = hbrPwmOut;
+
+wire[11:0]	hbrBaseAddr;
+assign	hbrBaseAddr = 12'hE18;
+
+ModHBridge	modhbridge(
+	clock_mmio,		reset2_mmio,
+	
+	hbrPwmOut,
+
+	mmioOutDataQ,	hbrMmioOutData,	mmioAddr,		
+	mmioOpm,		hbrMmioOK,		hbrBaseAddr
+	);
+	
+`else
+
+assign	hbr_pwmout = 8'h00;
+
+`endif
 
 
 reg[31:0]		mmioAddrL1;
@@ -1701,11 +1754,19 @@ begin
 		mmioInData	= sdMmioOutData;
 		mmioOK		= sdMmioOK;
 	end
-`ifdef def_true
+// `ifdef def_true
+`ifndef jx2_cfg_nousb
 	else if(usbMmioOK != UMEM_OK_READY)
 	begin
 		mmioInData	= usbMmioOutData;
 		mmioOK		= usbMmioOK;
+	end
+`endif
+`ifdef jx2_cfg_hbridge
+	else if(hbrMmioOK != UMEM_OK_READY)
+	begin
+		mmioInData	= hbrMmioOutData;
+		mmioOK		= hbrMmioOK;
 	end
 `endif
 	else if(audMmioOK != UMEM_OK_READY)
@@ -1718,6 +1779,7 @@ begin
 		mmioInData	= { UV32_00, fmMmioOutData };
 		mmioOK		= fmMmioOK;
 	end
+`ifndef jx2_cfg_nops2
 	else if(kbMmioOK != UMEM_OK_READY)
 	begin
 		mmioInData	= { UV32_00, kbMmioOutData };
@@ -1728,6 +1790,7 @@ begin
 		mmioInData	= { UV32_00, msMmioOutData };
 		mmioOK		= msMmioOK;
 	end
+`endif
 	else if(mmioOpm!=0)
 	begin
 		tNxtBusMissCnt = tBusMissCnt + 1;

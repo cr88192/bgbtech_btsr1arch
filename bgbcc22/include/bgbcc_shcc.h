@@ -309,6 +309,11 @@
 // #define BGBCC_SH_REG_R6B		0x6E
 // #define BGBCC_SH_REG_R7B		0x6F
 
+#define BGBCC_SH_REG_R0U		0x108
+#define BGBCC_SH_REG_R1U		0x109
+#define BGBCC_SH_REG_R15U		0x10A
+
+#define BGBCC_SH_REG_VIPT		0x10B
 #define BGBCC_SH_REG_GBH		0x10C
 #define BGBCC_SH_REG_PCH		0x10D
 #define BGBCC_SH_REG_TEAH		0x10E

@@ -538,10 +538,13 @@ assign	tOpJBitsC		= 0;
 
 `endif
 
+
 // `reg_gpr	opCmRemapRxA[31:0];
 
 `reg_gpr	opCmRemapRxA[63:0];
 `reg_gpr	opCmRemapRxB[63:0];
+
+`ifdef jx2_enable_xgpr
 
 initial
 begin
@@ -723,6 +726,8 @@ begin
 `endif
 
 end
+
+`endif
 
 always @*
 begin
@@ -1690,6 +1695,11 @@ begin
 	opRegXO	= { opRegAO0[0], opRegAO0[4:1], opDualLaneSw };
 	opRegXN	= { opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
 	opRegXP	= { opRegAP0[0], opRegAP0[4:1], opDualLaneSw };
+
+	opRegXMv = { opRegXM[5:1], !opRegXM[0] };
+	opRegXOv = { opRegXO[5:1], !opRegXO[0] };
+	opRegXNv = { opRegXN[5:1], !opRegXN[0] };
+	opRegXPv = { opRegXP[5:1], !opRegXP[0] };
 
 `endif
 

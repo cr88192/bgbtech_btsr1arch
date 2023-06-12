@@ -49,6 +49,16 @@ _tkgdi_context_t *tkgGetCurrentContext()
 	return(ctx);
 }
 
+void *tkgGlobalAlloc(size_t size)
+{
+	return(tk_malloc(size));
+}
+  
+TKGSTATUS tkgGlobalFree(void *obj)
+{
+	tk_free(obj);
+}
+  
 TKGSTATUS tkgBlitSubImage(TKGHDC dev, int xo_dev, int yo_dev,
 	TKGDI_BITMAPINFOHEADER *info, void *data,
 	int xo_src, int yo_src, int xs_src, int ys_src)

@@ -700,17 +700,21 @@ int BGBCC_JX2C_ScratchAllocTsReg(
 	BGBCC_JX2_Context *sctx,
 	int cls)
 {
-	int i;
+	static const byte tslist[4]={1, 16, 17};
+	int i, j;
 
-	i=1;
-	if(!(sctx->sreg_live&(1ULL<<i)))
+	for(j=0; j<3; j++)
 	{
-		sctx->sreg_live|=(1ULL<<i);
-		if(sctx->is_addr64)
-			return(BGBCC_SH_REG_RQ0+i);
-		return(BGBCC_SH_REG_R0+i);
-	}
-	
+//		i=1;
+		i=tslist[j];
+		if(!(sctx->sreg_live&(1ULL<<i)))
+		{
+			sctx->sreg_live|=(1ULL<<i);
+			if(sctx->is_addr64)
+				return(BGBCC_SH_REG_RQ0+i);
+			return(BGBCC_SH_REG_R0+i);
+		}
+	}	
 	i=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, cls);
 	return(i);
 }

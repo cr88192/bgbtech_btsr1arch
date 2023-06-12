@@ -45,6 +45,8 @@ input			reset;
 inout[15:0]		gpioPins;
 // inout[15:0]		fixedPins;
 
+output[7:0]		pwmPins;
+
 wire	reset2_200;
 wire	reset2_150;
 wire	reset2_100;
@@ -233,7 +235,9 @@ CoreUnitUc core(
 
 	gpioPinsIn,
 	gpioPinsOut,
-	gpioPinsDir
+	gpioPinsDir,
+	
+	pwmPins
 	);
 
 // reg			dbg_LedDuty;

@@ -533,7 +533,8 @@ begin
 
 		end
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 		JX2_UCIX_CONV_SWAPE2B: begin
 			tRegOutVal	= {
 				regValRs[63:32],

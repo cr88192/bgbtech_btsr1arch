@@ -37,8 +37,10 @@
 // `define jx2_mem_line32B				//Use 32-byte cache line
 // `define jx2_mem_ddr32B				//Use 32-byte DDR line
 
+`ifndef jx2_xc7s50
 `define jx2_mem_useddrwa			//Use DDR Wide-Access (512-bit)
 `define jx2_mem_ddrswap				//Enable DDR Swap Requests
+`endif
 
 `define jx2_mem_fasttdown			//Faster teardown
 
@@ -55,10 +57,14 @@
 
 // `define jx2_mem_fwstore			//Store Forwarding
 
+`ifndef jx2_xc7s50
+
 `define jx2_mem_l1d_fwstore			//Store Forwarding
 // `define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
 // `define jx2_mem_l1d_utlb			//Micro TLB
+
+`endif
 
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
@@ -98,8 +104,8 @@
 
 `ifdef jx2_xc7a100
 
-// `define jx2_mem_l2sz_8192			//L2 is 8192 entries
-`define jx2_mem_l2sz_4096		//L2 is 4096 entries
+`define jx2_mem_l2sz_8192			//L2 is 8192 entries
+// `define jx2_mem_l2sz_4096		//L2 is 4096 entries
 // `define jx2_mem_l2sz_2048		//L2 is 2048 entries
 // `define jx2_mem_l2sz_1024		//L2 is 1024 entries
 
@@ -113,9 +119,9 @@
 `ifdef jx2_xc7s50
 
 // `define jx2_mem_l2sz_8192			//L2 is 8192 entries
-// `define jx2_mem_l2sz_4096		//L2 is 4096 entries
+`define jx2_mem_l2sz_4096		//L2 is 4096 entries
 // `define jx2_mem_l2sz_2048		//L2 is 2048 entries
-`define jx2_mem_l2sz_1024		//L2 is 1024 entries
+// `define jx2_mem_l2sz_1024		//L2 is 1024 entries
 
 `define jx2_mem_l2wsz_1024		//L2 is 1024 entries
 // `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
@@ -136,13 +142,19 @@
 `define jx2_rbi_nobridge		//Ringbus: Bypass Bridge, join rings directly
 `define jx2_rbi_bridge_ecyc		//Ringbus: Add extra output cycle on L1 Bridge
 
+`ifndef jx2_xc7s50
+`define jx2_rbi_l2reqloop		//Ringbus: Loop L2 Requests around L2
+`define jx2_rbi_l2respfw		//Ringbus: Forward L2 responses
+`endif
+
 // `define jx2_mem_l1inostall			//L1 I$ does not stall pipeline
 
 
 `define jx2_reg_spdecswap			//Swap SP and SSP in Decode
 
+`ifndef jx2_xc7s50
 `define jx2_l1a_ena_tlbskip			//L1A: Allow requests to skip over TLB
-
+`endif
 
 // `ifndef def_true
 `ifdef def_true

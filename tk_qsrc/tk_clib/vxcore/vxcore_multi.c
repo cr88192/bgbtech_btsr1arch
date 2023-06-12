@@ -31,6 +31,8 @@
 
 #include "tk_core/tk_mmap.c"
 
+#include "tk_core/tk_hugeptr.c"
+
 #include "tk_core/tk_spi.c"
 #include "tk_core/tk_epoch.c"
 #include "tk_core/tk_fat.c"

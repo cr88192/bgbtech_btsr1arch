@@ -43,7 +43,7 @@ module ExAGU(
 
 input[31:0]		regValRm;
 input[31:0]		regValRi;
-input[7:0]		idUIxt;
+input[8:0]		idUIxt;
 
 output[31:0]	regOutAddr;
 

@@ -249,7 +249,8 @@ begin
 	tL2bDataOut		= l2bDataOut;
 
 // `ifndef def_true
-`ifdef def_true
+// `ifdef def_true
+`ifdef jx2_rbi_l2reqloop
 	if(	(memOpmIn[7:0] == 8'h00) &&
 		((l2mOpmOut[7:0] == JX2_RBI_OPM_LDX) ||
 		(l2mOpmOut[7:0] == JX2_RBI_OPM_STX) ||
@@ -275,7 +276,8 @@ begin
 `endif
 
 // `ifndef def_true
-`ifdef def_true
+// `ifdef def_true
+`ifdef jx2_rbi_l2respfw
 	if(	(l2bOpmOut[7:0] == 8'h00) &&
 //		(l2mOpmOut[7:0] != 8'h00) && 
 		(l2mOpmOut[7:6] == 2'b01))

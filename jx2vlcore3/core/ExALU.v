@@ -651,6 +651,7 @@ begin
 	tSubAA1		= 0;
 	tSubABZF	= 0;
 	tSubTZF		= 0;
+	tSubNaZF	= 0;
 
 `endif
 

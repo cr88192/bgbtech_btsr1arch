@@ -546,7 +546,10 @@ begin
 //		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
 		JX2_GR_LR:	tValRsA= regValLr;
 
+`ifdef jx2_enable_riscv
 		JX2_GR_BPC:	tValRsA={ UV16_00, regValBPc };
+`endif
+
 `else
 //		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:0] };
 		JX2_GR_PC:	tValRsA={ UV32_00, regValPc[31:1],
@@ -555,14 +558,22 @@ begin
 		JX2_GR_TBR:	tValRsA={ UV32_00, regValTbr[31:0] };
 		JX2_GR_LR:	tValRsA={ UV32_00, regValLr[31:0] };
 
+`ifdef jx2_enable_riscv
 		JX2_GR_BPC:	tValRsA={ UV32_00, regValBPc[31:0] };
+`endif
+
 `endif
 
 `ifdef jx2_gprs_mergecm
 		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
 		JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
-		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR, JX2_GR_TEAH:
+		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
 			tValRsA = regValCm;
+
+`ifdef jx2_enable_xgpr
+		JX2_GR_TEAH, JX2_GR_VIPT: 
+			tValRsA = regValCm;
+`endif
 `endif
 
 
@@ -923,8 +934,12 @@ begin
 `ifdef jx2_gprs_mergecm
 		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
 		JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
-		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR, JX2_GR_TEAH:
+		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
 			tValRyA = regValCm;
+`ifdef jx2_enable_xgpr
+		JX2_GR_TEAH, JX2_GR_VIPT: 
+			tValRsA = regValCm;
+`endif
 `endif
 
 `endif

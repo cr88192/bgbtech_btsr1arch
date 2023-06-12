@@ -365,6 +365,14 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 //					return(BGBCC_SH_REG_R32+(i-32));
 			}
 		}
+
+		if(!bgbcc_stricmp(str, "r0u"))
+			return(BGBCC_SH_REG_R0U);
+		if(!bgbcc_stricmp(str, "r1u"))
+			return(BGBCC_SH_REG_R1U);
+		if(!bgbcc_stricmp(str, "r15u"))
+			return(BGBCC_SH_REG_R15U);
+
 		break;
 
 
@@ -607,6 +615,9 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 			return(BGBCC_SH_REG_GBH);
 		if(!bgbcc_stricmp(str, "pch"))
 			return(BGBCC_SH_REG_PCH);
+
+		if(!bgbcc_stricmp(str, "vipt"))
+			return(BGBCC_SH_REG_VIPT);
 
 		break;
 	}

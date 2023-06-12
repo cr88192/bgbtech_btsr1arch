@@ -141,6 +141,10 @@ extern volatile u64 __arch_mmcr;
 extern volatile u64 __arch_sttb;
 extern volatile u64 __arch_krr;
 extern volatile u64 __arch_tbr;
+
+extern volatile u64 __arch_pch;
+extern volatile u64 __arch_gbh;
+
 extern volatile void *__arch_isrsave;		/* Pseudo */
 
 // int __isr_interrupt(int irq)
@@ -178,6 +182,9 @@ void __isr_interrupt(void)
 				taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
 				taskern->ctx_regsave[TKPE_REGSAVE_TTB]=__arch_ttb;
 
+				taskern->ctx_regsave[TKPE_REGSAVE_PCH]=__arch_pch;
+				taskern->ctx_regsave[TKPE_REGSAVE_GBH]=__arch_gbh;
+
 				taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
 				memcpy(
 					__arch_isrsave, 
@@ -186,6 +193,9 @@ void __isr_interrupt(void)
 
 				__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
 				__arch_ttb=taskern2->ctx_regsave[TKPE_REGSAVE_TTB];
+
+				__arch_pch=taskern2->ctx_regsave[TKPE_REGSAVE_PCH];
+				__arch_gbh=taskern2->ctx_regsave[TKPE_REGSAVE_GBH];
 
 				task2->qtick=16;
 				__arch_tbr=(u64 *)task2;
@@ -365,6 +375,9 @@ __interrupt void __isr_syscall(void)
 		taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
 		taskern->ctx_regsave[TKPE_REGSAVE_TTB]=__arch_ttb;
 
+		taskern->ctx_regsave[TKPE_REGSAVE_PCH]=__arch_pch;
+		taskern->ctx_regsave[TKPE_REGSAVE_GBH]=__arch_gbh;
+
 		memcpy(
 			isrsave, 
 			taskern2->ctx_regsave,
@@ -376,6 +389,10 @@ __interrupt void __isr_syscall(void)
 
 		__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
 		__arch_ttb=ttb;
+
+		__arch_pch=taskern2->ctx_regsave[TKPE_REGSAVE_PCH];
+		__arch_gbh=taskern2->ctx_regsave[TKPE_REGSAVE_GBH];
+
 		__arch_tbr=(u64 *)task2;
 	}
 

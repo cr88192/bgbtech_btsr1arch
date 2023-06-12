@@ -409,6 +409,7 @@ begin
 
 	tValC4		= { tSgnC4B, tExpC4B[10:0], tFraC4B[60:9] };
 
+`ifndef jx2_fpu_noround
 	if(regRMode[3:0]==1)
 		tFraRbit4B=0;
 	if(regRMode[3:0]==2)
@@ -429,6 +430,7 @@ begin
 
 	if(regRMode[3:0]==4)
 		tValC4[1:0] = tInxC4B ? 2'b01 : 2'b00;
+`endif
 
 	if(tRegExOp4[2:0] == 4)
 	begin

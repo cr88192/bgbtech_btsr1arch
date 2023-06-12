@@ -26,7 +26,7 @@ CC=$(TOOLPATH)$(TARGETPFX)gcc
 AR=$(TOOLPATH)$(TARGETPFX)ar
 AS=$(TOOLPATH)$(TARGETPFX)as
 
-TK_CFL= -nostdinc -nostdlib -nostartfiles -fPIC # -fno-builtin
+TK_CFL= -nostdinc -nostdlib -nostartfiles -fPIC -fPIE -static-pie # -fno-builtin
 TK_LDFL= $(TK_CFL) \
 	-Wl,-nostdlib -Wl,-e,_start
 

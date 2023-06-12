@@ -53,7 +53,9 @@ module CoreUnitUc(
 
 	gpioPinsIn,
 	gpioPinsOut,
-	gpioPinsDir
+	gpioPinsDir,
+	
+	hbrPwmOut
 	);
 
 input			clock_300;
@@ -102,6 +104,7 @@ input[31:0]			gpioPinsIn;
 output[31:0]		gpioPinsOut;
 output[31:0]		gpioPinsDir;
 
+output[7:0]		hbrPwmOut;
 
 
 
@@ -131,9 +134,9 @@ wire			ddrDqs_En;
 assign		ddrDqsP_I = 0;
 assign		ddrDqsN_I = 0;
 
-wire[3:0]		vgaRed;
-wire[3:0]		vgaGrn;
-wire[3:0]		vgaBlu;
+wire[4:0]		vgaRed;
+wire[4:0]		vgaGrn;
+wire[4:0]		vgaBlu;
 wire			vgaHsync;
 wire			vgaVsync;
 
@@ -148,11 +151,27 @@ wire			ps2kb_data_d;
 assign		ps2kb_clk_i = 1;
 assign		ps2kb_data_i = 1;
 
+wire			aud_mic_clk;
+wire			aud_mic_data;
+assign	aud_mic_data = 1'b0;
 
-wire			aud_mono_out;
+
+wire[1:0]		aud_mono_out;
 wire			aud_mono_ena;
 wire[7:0]		seg_outCharBit;
 wire[7:0]		seg_outSegBit;
+
+wire[3:0]		usb_clkdat_i;
+wire[3:0]		usb_clkdat_o;
+wire[3:0]		usb_clkdat_d;
+wire[1:0]		usb_clkref;
+
+assign		usb_clkdat_i = 0;
+
+wire[3:0]		ddrModeIn;
+assign		ddrModeIn = 0;
+
+// wire[7:0]	hbrPwmOut;
 
 
 CoreUnit	core(
@@ -177,6 +196,7 @@ CoreUnit	core(
 	ddrWe,		ddrCke,		ddrClk,
 	ddrDqsP_I,	ddrDqsN_I,
 	ddrDqsP_O,	ddrDqsN_O,	ddrDqs_En,
+	ddrModeIn,
 
 	vgaRed,		vgaGrn,		vgaBlu,
 	vgaHsync,	vgaVsync,
@@ -196,6 +216,9 @@ CoreUnit	core(
 	seg_outCharBit,
 	seg_outSegBit,
 
+	aud_mic_clk,
+	aud_mic_data,
+
 	dbg_exHold1,
 	dbg_exHold2,
 	dbg_outStatus1,
@@ -209,7 +232,14 @@ CoreUnit	core(
 
 	gpioPinsIn,
 	gpioPinsOut,
-	gpioPinsDir
+	gpioPinsDir,
+	
+	usb_clkdat_i,
+	usb_clkdat_o,
+	usb_clkdat_d,
+	usb_clkref,
+	
+	hbrPwmOut
 	);
 
 endmodule

@@ -6,6 +6,8 @@
 `define jx2_enable_mmu_acl		//Enable ACL Checks
 // `define jx2_enable_ldekey		//Enable ACL Checks
 
+`ifndef jx2_xc7s50
+
 `define jx2_enable_riscv		//Enable RISC-V Decoder
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
@@ -17,30 +19,63 @@
 
 `define jx2_enable_2x40b		//Enable 2x40 Encoding
 `define jx2_enable_xg2mode		//Enable XGPR2 Mode
-`define jx2_enable_xg2rvmode	//Enable XG2RV Mode
 
+`endif
+
+`ifdef jx2_enable_riscv
+`ifdef jx2_enable_xg2mode
+`define jx2_enable_xg2rvmode	//Enable XG2RV Mode
+`endif
+`endif
+
+`ifdef jx2_xc7s50
+`define jx2_tlb_novugid
+`endif
 
 // `define jx2_cfg_75mhz
+
+`ifndef jx2_xc7s50
 
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)
 `define jx2_enable_xgpr		//Enable R32..R63 and XGPR ops
 
 // `define jx2_enable_pred_s	//SR.S Predication
 
+`endif
+
+`ifndef jx2_xc7s50
+
 `define jx2_enable_rom48k	//Expand ROM to 48K
 // `define jx2_enable_sram16k	//Expand SRAM to 16K
 
+`endif
+
+
+`ifndef jx2_xc7s50
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
+`endif
+
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
 `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
+
+`ifndef jx2_xc7s50
 `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
 `define	jx2_ena_fpu_v2sd		//Enable Binary64 via V4SF Unit
+`endif
 
+// `define	jx2_use_fpu_v4sf_wx		//Allow 128-bit ops with scalar FPU
+
+`ifndef jx2_xc7s50
 `define	jx2_fpu_v4sf_fullsp		//Enable full Binary32 in V4SF Unit
+`endif
 
+`ifndef jx2_xc7s50
 `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
 // `define	jx2_use_mem_ldop		//Load/Store Operations
+`endif
+
+`ifndef jx2_xc7s50
 
 `define jx2_use_imm_vec4h		//Enable SIMD Immediates
 `define jx2_use_imm_shuffle		//Enable SIMD Shuffle+Op
@@ -49,14 +84,27 @@
 
 `define	jx2_alu_wx				//Enable Wide-ALU
 
+`endif
+
+`ifndef jx2_xc7s50
+
 // `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext (GFPX)
 `define	jx2_fpu_fmac			//Enable FMAC Operation
+
+`endif
 
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
 // `define	jx2_mem_lane2			//Allow Loads from Lane 2
 
 // `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
+
+`ifdef jx2_xc7s50
+// `define	jx2_fpu_noround		//FPU: Disable Rounding
+`define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
+`endif
+
+`ifndef jx2_xc7s50
 
 `define jx2_enable_fmov			//FPU Load/Store
 `define jx2_enable_fmovh			//FPU Load/Store
@@ -66,8 +114,13 @@
 
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
 
+`endif
+
+
+`ifndef jx2_xc7s50
 `define jx2_alu_slomuldiv			//Enable Slow MUL/DIV Unit
 `define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
+`endif
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
 `define jx2_bra2stage			//Use 2-stage branch initiation
@@ -96,7 +149,7 @@
 
 `define jx2_use_ringbus			//Use Ring-Bus
 
-`define jx2_tlb_xtlbe			//Enable 256-bit compound TLBEs
+// `define jx2_tlb_xtlbe			//Enable 256-bit compound TLBEs
 
 `define jx2_enable_ops16
 // `define jx2_enable_ops48
@@ -113,28 +166,37 @@
 // `define jx2_enable_blint			//Enable Bilinear Interpolator
 
 `define jx2_enable_cmptag			//Enable Tag Compare
+`define jx2_do_btcutx_alu			//Route UTX through ALU
+
+`ifndef jx2_xc7s50
 
 `define jx2_enable_btcutx			//UTXn Block Conversion Ops
 // `define jx2_enable_btcutx1			//UTX1 Block Conversion Op
 `define jx2_enable_btcutx2			//UTX2 Block Conversion Op
 // `define jx2_enable_btcutx3			//UTX3 Block Conversion Op
 
-`define jx2_do_btcutx_alu
-
 // `define jx2_enable_btcuab1			//UAB1/2 Block Conversion Op
+
+`endif
+
 
 `define jx2_enable_convrgb32f		//RGBA32F Conversion Op
 // `define jx2_enable_convrgb30a		//RGB30A Conversion Op
 
 `define jx2_enable_convfp16				//FP16 conversion ops
-`define jx2_enable_convfp16al			//FP16 <-> A-Law Conversion Ops
 
 `define jx2_enable_conv_vubtof16		//Packed Byte/Word <-> F16/F32
 `define jx2_enable_conv_psqrta
 
+`ifndef jx2_xc7s50
+
+`define jx2_enable_convfp16al			//FP16 <-> A-Law Conversion Ops
+
 // `define jx2_enable_rgb5minmax_alu			//RGB5 Min/Max Op (ALU/CONV2)
 `define jx2_enable_rgb5minmax_mul			//RGB5 Min/Max Op (CCENC)
 `define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
+
+`endif
 
 `endif
 
@@ -152,11 +214,18 @@
 
 // `define jx2_enable_vaddr96qadd			//Enable Quadrant Add
 
-`define jx2_enable_vaddr96				//Enable 96-bit virtual addresses
 `define jx2_enable_vaddr48				//Enable 48-bit virtual addresses
+
+
+`ifndef jx2_xc7s50
+
+`define jx2_enable_vaddr96				//Enable 96-bit virtual addresses
 
 `define jx2_enable_l1addr96			//Enable 96-bit bus addresses (L1)
 // `define jx2_enable_l2addr96			//Enable 96-bit bus addresses (L2)
+
+`endif
+
 
 `define jx2_mem_l1dstall			//L1 D$ initiates stall directly
 
@@ -178,7 +247,7 @@
 
 // `define jx2_debug_hitmiss	//Debug Branch Predictor
 
-`define jx2_debug_isr		//Debug ISR
+`define jx2_debug_isr		//Debug prints for ISR
 
 
 // `define jx2_audio_leftonly		//Only left audio channel is used.
@@ -201,13 +270,13 @@
 `ifdef jx2_enable_riscv
 
 `ifndef jx2_alu_jcmp
-`define jx2_alu_jcmp
+`define jx2_alu_jcmp		//Enable Jump-Compare is RISC-V is Enabled
 `endif
 
 `endif
 
 `ifdef jx2_enable_vaddr96
 `ifndef jx2_tlb_xtlbe
-`define jx2_tlb_xtlbe
+`define jx2_tlb_xtlbe		//Enable 256-bit TLBE's if Addr96 is enabled
 `endif
 `endif

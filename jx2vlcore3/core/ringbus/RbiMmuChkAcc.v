@@ -361,7 +361,10 @@ begin
 		endcase
 	end
 
-//	tRegOutNoRwx = 0;
+`ifdef jx2_tlb_novugid
+	tRegOutNoRwx = 0;
+	tAccOutExc	= 0;
+`endif
 
 	tUsDeny = (tlbInAcc[3] && !regInSR[30]);
 

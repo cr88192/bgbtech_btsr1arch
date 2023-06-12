@@ -44,7 +44,8 @@ In the case of Full-Duplex / Swap operations, a FAULT with a zero exception will
 
 `include "ringbus/RbiMemDcA.v"
 
-`ifdef jx2_enable_wex
+// `ifdef jx2_enable_wex
+`ifdef def_true
 `include "ringbus/RbiMemIcWxA.v"
 `else
 `include "ringbus/RbiMemIcA.v"
@@ -146,7 +147,11 @@ output[ 15:0]	l2mOpmOut;		//memory operation mode
 input [  7:0]	unitNodeId;		//Who Are We?
 
 parameter		disableTlb = 0;
+
+`ifdef jx2_enable_mmu
 defparam		tlb.disableTlb		= disableTlb;
+`endif
+
 defparam		memDc.noLdOp		= disableTlb;
 defparam		memDc.disableTlb	= disableTlb;
 
@@ -276,6 +281,10 @@ RbiMmuTlb	tlb(
 	regInMmcr,		regInKrr,
 	regInSr,		regInVipt,
 	tIcExecAcl);
+
+`else
+
+assign tTlbExc = 0;
 
 `endif
 

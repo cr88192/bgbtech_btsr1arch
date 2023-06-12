@@ -5817,20 +5817,69 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 #if 1
 		if(!(flag&1))
 		{
-			if(	((dtyb==CCXL_TY_SB) ||
-				(dtyb==CCXL_TY_UB)) &&
-				((dtyc!=CCXL_TY_SB) && (dtyc==CCXL_TY_UB)))
+//			if(	((dtyb==CCXL_TY_SB) ||
+//				(dtyb==CCXL_TY_UB)) &&
+//				((dtyc!=CCXL_TY_SB) && (dtyc!=CCXL_TY_UB)))
+//			{
+//				dtyb=CCXL_TY_SS;
+//			}
+
+			if(	(dtyb==CCXL_TY_SB) ||
+				(dtyb==CCXL_TY_UB) )
 			{
-				dtyb=CCXL_TY_SS;
+				if(	(dtyc!=CCXL_TY_SB) &&
+					(dtyc!=CCXL_TY_UB))
+				{
+					dtyb=CCXL_TY_SS;
+				}else
+				{
+					dtyb=dtyc;
+				}
+
+				if(
+					(opr==CCXL_BINOP_ADD) ||
+					(opr==CCXL_BINOP_SUB) ||
+					(opr==CCXL_BINOP_MUL) ||
+					(opr==CCXL_BINOP_SHL) )
+				{
+					dtyb=CCXL_TY_SS;
+				}
 			}
 
-			if(	((dtyb==CCXL_TY_SS) ||
-				(dtyb==CCXL_TY_US)) &&
-				((dtyc!=CCXL_TY_SS) && (dtyc==CCXL_TY_US)) )
+//			if(	((dtyb==CCXL_TY_SS) ||
+//				(dtyb==CCXL_TY_US)) &&
+//				((dtyc!=CCXL_TY_SS) && (dtyc!=CCXL_TY_US)) )
+//			{
+//				if(ctx->arch_sizeof_int!=2)
+//				{
+//					dtyb=CCXL_TY_I;
+//				}
+//			}
+
+			if(	(dtyb==CCXL_TY_SS) ||
+				(dtyb==CCXL_TY_US) )
 			{
-				if(ctx->arch_sizeof_int!=2)
+				if((dtyc!=CCXL_TY_SS) && (dtyc!=CCXL_TY_US))
 				{
-					dtyb=CCXL_TY_I;
+					if(ctx->arch_sizeof_int!=2)
+					{
+						dtyb=CCXL_TY_I;
+					}
+				}else
+				{
+					dtyb=dtyc;
+				}
+
+				if(
+					(opr==CCXL_BINOP_ADD) ||
+					(opr==CCXL_BINOP_SUB) ||
+					(opr==CCXL_BINOP_MUL) ||
+					(opr==CCXL_BINOP_SHL) )
+				{
+					if(ctx->arch_sizeof_int!=2)
+					{
+						dtyb=CCXL_TY_I;
+					}
 				}
 			}
 		}

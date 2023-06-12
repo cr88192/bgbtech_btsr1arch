@@ -269,6 +269,7 @@ begin
 		tInxC4B = tInxC4 || (tFraC4_S[9:0]!=0);
 	end
 	
+`ifndef jx2_fpu_noround
 	if(regRMode[3:0]==1)
 		tFraRbit4B=0;
 	if(regRMode[3:0]==2)
@@ -288,6 +289,7 @@ begin
 
 	if(regRMode[3:0]==4)
 		tFraC4B[1:0] = tInxC4B ? 2'b01 : 2'b00;
+`endif
 
 //	$display("FpuMul: ExpB %X %X", tExpC4, tExpC4B);
 

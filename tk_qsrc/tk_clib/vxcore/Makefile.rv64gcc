@@ -1,7 +1,7 @@
 BUILD = .
 PATH := $(BUILD):$(PATH)
 
-TK_CFL=-nostdinc -nostdlib -nostartfiles -fno-builtin -fPIC -fPIE -pie -static-pie
+TK_CFL=-nostdinc -nostdlib -nostartfiles -fno-builtin
 TK_LDFL= $TK_CFL \
 	-Wl,-nostdlib -Wl,-e,_start -Wl,-T,sh4elf.x
 

@@ -46,9 +46,11 @@ begin
 		regValFRm[55:52],
 		regValFRm[51:42] };
 
+`ifndef jx2_fpu_noround
 	tRound = { 1'b0, regValFRm[45:42] } + 1;
 	if(regValFRm[41] && !tRound[4])
 		tRegValFRn1[3:0]=tRound[3:0];
+`endif
 
 	casez(regValFRm[62:56])
 	7'b0111111:	tRegValFRn = tRegValFRn1;

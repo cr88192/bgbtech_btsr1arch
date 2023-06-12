@@ -333,6 +333,7 @@ wire[15:0]	tAguXLeaTag;
 assign	tValAgu[47:32]	= UV16_00;
 assign	tValAguOob		= 0;
 assign	tAguXLeaTag		= 0;
+assign	regOutXLea		= 0;
 
 ExAGU	exAgu(regValRs[31:0], regValRt[31:0], opUIxt, tValAgu[31:0]);
 `endif
@@ -543,7 +544,11 @@ begin
 `endif
 
 `else
+`ifdef jx2_enable_vaddr48
 	tMemAddr		= tValAgu;
+`else
+	tMemAddr		= tValAgu[31:0];
+`endif
 `endif
 
 	tMemOpm			= UMEM_OPM_READY;
@@ -1333,7 +1338,11 @@ begin
 `else
 					tMemOpm			= UMEM_OPM_FLUSHIS;
 //					tMemAddr		= regValRm[47:0];
+`ifdef jx2_enable_vaddr48
 					tMemAddr[47:0]	= regValRm[47:0];
+`else
+					tMemAddr[31:0]	= regValRm[31:0];
+`endif
 
 //					tValBra		= regValPc[47:0];
 					tValBra		= regValPc;
@@ -1364,7 +1373,11 @@ begin
 `else
 					tMemOpm			= UMEM_OPM_FLUSHDS;
 //					tMemAddr		= regValRm[47:0];
+`ifdef jx2_enable_vaddr48
 					tMemAddr[47:0]	= regValRm[47:0];
+`else
+					tMemAddr[31:0]	= regValRm[31:0];
+`endif
 `endif
 				end
 
