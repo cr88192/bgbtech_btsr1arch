@@ -755,6 +755,11 @@ begin
 //			tExTrapExc = { UV112_00, 16'h800E };
 			tExTrapExc = { UV96_00, regValBPc[15:0], 16'h800E };
 
+			if(opUIxt[5:0]==JX2_UCIX_INVOP_PRIVFAULT)
+				tExTrapExc[7:0]=8'h11;
+			if(opUIxt[5:0]==JX2_UCIX_INVOP_FPUFAULT)
+				tExTrapExc[7:0]=8'h12;
+
 //			tExHold		= 1;
 //			tExHold		= !reset;
 		end

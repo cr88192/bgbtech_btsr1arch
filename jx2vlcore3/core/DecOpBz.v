@@ -1781,6 +1781,23 @@ begin
 	if(opBty == JX2_BTY_UQ)
 		opUCty		= JX2_IUC_WX;
 
+	usrSuAllowEn = 0;
+	case(usrSuAllow)
+		2'b00: usrSuAllowEn = 0;
+		2'b01: usrSuAllowEn = srSuperuser;
+		2'b10: usrSuAllowEn = srMod[1];
+		2'b11: usrSuAllowEn = srMod[1] && srMod[2];
+	endcase
+
+//	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
+	if(usrReject && srUser && !usrSuAllowEn)
+	begin
+		$display("DecOpBz: Usermode Reject %X", istrWord[15:0]);
+		opNmid		= JX2_UCMD_INVOP;
+		opFmid		= JX2_FMID_INV;
+		opUCmdIx	= JX2_UCIX_INVOP_PRIVFAULT;
+	end
+
 	opUCmd = { opCcty, opNmid };
 	
 	case(opFmid)
@@ -2329,23 +2346,6 @@ begin
 		end
 
 	endcase
-
-	usrSuAllowEn = 0;
-	case(usrSuAllow)
-		2'b00: usrSuAllowEn = 0;
-		2'b01: usrSuAllowEn = srSuperuser;
-		2'b10: usrSuAllowEn = srMod[1];
-		2'b11: usrSuAllowEn = srMod[1] && srMod[2];
-	endcase
-
-//	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
-	if(usrReject && srUser && !usrSuAllowEn)
-	begin
-		$display("DecOpBz: Usermode Reject %X", istrWord[15:0]);
-		opNmid	= JX2_UCMD_INVOP;
-		opFmid	= JX2_FMID_INV;
-	end
-
 end
 
 always @(posedge clock)

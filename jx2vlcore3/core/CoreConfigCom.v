@@ -137,12 +137,12 @@
 `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
 `ifndef jx2_xc7s50
-`define jx2_enable_aluptr		//Enable ALU Pointer Ops
+`define jx2_enable_aluptr		//Enable ALU Pointer Ops (ALUPTR)
 `endif
 
 // `ifndef jx2_xc7s50
-//`define jx2_enable_prebra			//Enable PreBranch
-//`define jx2_prebra_rts				//Enable PreBranch on RTS
+`define jx2_enable_prebra			//Enable PreBranch
+`define jx2_prebra_rts				//Enable PreBranch on RTS
 // `endif
 
 `define jx2_l1d_nohash			//Disable L1 address hashing.

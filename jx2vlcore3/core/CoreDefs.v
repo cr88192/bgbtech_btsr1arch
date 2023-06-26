@@ -1329,6 +1329,9 @@ parameter[5:0] JX2_UCIX_JCMP_QGE		= 6'h15;
 parameter[5:0] JX2_UCIX_JCMP_QBL		= 6'h16;
 parameter[5:0] JX2_UCIX_JCMP_QHS		= 6'h17;
 
+parameter[5:0] JX2_UCIX_INVOP_PRIVFAULT	= 6'h10;		//Flush TLB
+parameter[5:0] JX2_UCIX_INVOP_FPUFAULT	= 6'h11;		//Flush TLB
+
 
 `ifdef jx2_mem_line32B
 

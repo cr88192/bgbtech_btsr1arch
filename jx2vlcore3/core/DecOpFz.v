@@ -5451,6 +5451,25 @@ begin
 		opIty	= JX2_ITY_SB;
 	end
 
+	usrSuAllowEn = 0;
+	case(usrSuAllow)
+		2'b00: usrSuAllowEn = 0;					//Supervisor Only
+		2'b01: usrSuAllowEn = srSuperuser;			//Superuser
+		2'b10: usrSuAllowEn = srMod[1];				//Secure Execute
+		2'b11: usrSuAllowEn = srMod[1] && srMod[2];	//Superuser+Secure Exe
+	endcase
+
+//	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
+//	if(usrReject && srUser && !usrSuAllowEn)
+	if(usrReject && srUser && !usrSuAllowEn && (!opIsNotFx || opIsXGpr))
+	begin
+		$display("DecOpFz: Usermode Reject %X-%X %X-%X",
+			istrWord[15:0], istrWord[31:16], opFmid, opIty);
+		opNmid		= JX2_UCMD_INVOP;
+		opFmid		= JX2_FMID_INV;
+		opUCmdIx	= JX2_UCIX_INVOP_PRIVFAULT;
+	end
+
 	opUCmd = { opCcty, opNmid };
 
 `ifndef def_true
@@ -6558,24 +6577,6 @@ begin
 			tNextMsgLatch=1;
 		end
 	endcase
-
-	usrSuAllowEn = 0;
-	case(usrSuAllow)
-		2'b00: usrSuAllowEn = 0;					//Supervisor Only
-		2'b01: usrSuAllowEn = srSuperuser;			//Superuser
-		2'b10: usrSuAllowEn = srMod[1];				//Secure Execute
-		2'b11: usrSuAllowEn = srMod[1] && srMod[2];	//Superuser+Secure Exe
-	endcase
-
-//	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
-//	if(usrReject && srUser && !usrSuAllowEn)
-	if(usrReject && srUser && !usrSuAllowEn && (!opIsNotFx || opIsXGpr))
-	begin
-		$display("DecOpFz: Usermode Reject %X-%X %X-%X",
-			istrWord[15:0], istrWord[31:16], opFmid, opIty);
-		opNmid	= JX2_UCMD_INVOP;
-		opFmid	= JX2_FMID_INV;
-	end
 
 `ifndef def_true
 	if(opIsXGpr && (!isAltOp || opIsJumbo || opIsJumboAu))

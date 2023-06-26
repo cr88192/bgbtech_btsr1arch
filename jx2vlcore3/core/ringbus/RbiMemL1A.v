@@ -617,6 +617,13 @@ begin
 //		if(regInSr[29] && regInSr[28])
 			tRegOutExc = UV128_00;
 `endif
+		if(tRegOutExc[15:12]==4'hC)
+		begin
+			/* If normal interrupts not enabled, cull here. */
+			if(!regInSr[3])
+				tRegOutExc[15] = 0;
+		end
+
 	end
 
 	if(tRegOutExc[15])
@@ -625,7 +632,10 @@ begin
 		tNxtExcLatch	= 1;
 
 		if(tExcLatch==0)
+		begin
 			tNxtExcLatchInhCnt	= 1023;
+//			tNxtExcLatchInhCnt	= 255;
+		end
 
 //		if(	(tRegOutExc[15:12]==4'h8) ||
 //			(tRegOutExc[15:12]==4'hA) )

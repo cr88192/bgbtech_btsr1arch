@@ -185,7 +185,8 @@ begin
 			(tMmioExcIn[15:12]!=4'hE))
 		begin
 			$display("MMIO: Invalid IRQ %X", tMmioExcIn);
-			tNxtRingExc[15:12] = 0;
+			tNxtRingExc[15:12]	= 0;
+			tNxtRingDoExc		= 0;
 		end
 	end
 
@@ -281,6 +282,7 @@ begin
 		tMemOpmReq		= { 8'h00, JX2_RBI_OPM_IRQ };
 		tMemAddrReq		= 0;
 		tMemDataReq		= { UV64_00, tRingExc };
+		tNxtRingExc		= 0;
 		tNxtRingDoExc	= 0;
 	end
 `endif

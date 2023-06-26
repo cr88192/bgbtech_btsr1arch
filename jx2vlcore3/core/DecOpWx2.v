@@ -790,7 +790,7 @@ begin
 		begin
 			if(opIsWfA && opIsWfB)
 			begin
-				$display("DecOpWz2: WEX3 Invalid");
+				$display("DecOpWx2: WEX-3 Invalid if 2-wide");
 				opUCmdA	= { 3'b000, JX2_UCMD_INVOP };
 				opUIxtA	= UV9_00;
 
@@ -1144,10 +1144,10 @@ begin
 		begin
 			opRegAN = opRegXN;
 			opRegBN = opRegXNv;
-//			opRegBO	= opRegXP;
-//			opRegBM	= opRegXPv;
-			opRegBO	= opRegXN;
-			opRegBM	= opRegXNv;
+			opRegBO	= opRegXP;
+			opRegBM	= opRegXPv;
+//			opRegBO	= opRegXN;
+//			opRegBM	= opRegXNv;
 		end
 
 		if(opIsDualLaneRm)

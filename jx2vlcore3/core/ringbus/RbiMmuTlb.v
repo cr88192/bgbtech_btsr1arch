@@ -1058,21 +1058,21 @@ begin
 
 	if(tRegInIsIRQ)
 	begin
-		if(	(unitNodeId[5:2]==regInData[11:8]) ||
-			(regInData[11:8]==4'h0) ||
-			(regInData[11:8]==4'hF))
+		if(	(unitNodeId[5:2]==tRegInData[11:8]) ||
+			(tRegInData[11:8]==4'h0) ||
+			(tRegInData[11:8]==4'hF))
 		begin
-			tRegOutTea  [47:0] = regInData[ 63:16];
-			tRegOutTeaHi[63:0] = regInData[127:64];
-			tRegOutExc	= regInData[15:0];
-			if(regInData[11:8]!=4'hF)
+			tRegOutTea  [47:0] = tRegInData[ 63:16];
+			tRegOutTeaHi[63:0] = tRegInData[127:64];
+			tRegOutExc	= tRegInData[15:0];
+			if(tRegInData[11:8]!=4'hF)
 				tRegOutOpm	= UV16_00;
 			
-			if(	(regInData[15:12]!=4'h0) &&
-				(regInData[15:12]!=4'hC) &&
-				(regInData[15:12]!=4'hE))
+			if(	(tRegInData[15:12]!=4'h0) &&
+				(tRegInData[15:12]!=4'hC) &&
+				(tRegInData[15:12]!=4'hE))
 			begin
-				$display("TLB: Invalid IRQ %X", regInData);
+				$display("TLB: Invalid IRQ %X", tRegInData);
 				tRegOutExc[15:12] = 0;
 			end
 		end
