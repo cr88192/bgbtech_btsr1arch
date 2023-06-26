@@ -439,6 +439,19 @@ The values of the other bits are unchanged by this operation.
 This instruction is only allowed in Lane 1.
 
 
+=== CMPPEQ ===
+
+* F0nm_3g68  CMPPEQ		Rm, Rn				//(ALUPTR) Compare Pointer
+* F0nm_3G68  CMPPEQX	Xm, Xn				//(ALUPTR) Compare 128b Pointer
+
+Compare if source and destination pointers are Equal.
+This instruction compares the low 48 bits for equality.
+
+This is only valid if the ALUPTR extension is enabled (and CMPPEQX if ALUX is also enabled).
+
+This instruction is only allowed in Lane 1.
+
+
 === CMPQEQ ===
 
 * 5Fnm       CMPQEQ		Rm, Rn
@@ -475,6 +488,19 @@ This updates SR.T based on the result of the comparison.
 For the 2R form, if E.i is Set, SR.S is updated and SR.T is unchanged.
 For the 2RI form, if W.m is Set, SR.S is updated and SR.T is unchanged.
 The values of the other bits are unchanged by this operation.
+
+This instruction is only allowed in Lane 1.
+
+
+=== CMPPGT ===
+
+* F0nm_3g78  CMPPGT		Rm, Rn				//(ALUPTR) Compare Pointer
+* F0nm_3G78  CMPPGTX	Xm, Xn				//(ALUPTR) Compare 128b Pointer
+
+Compare if source and destination pointers are Greater Than.
+This instruction compares the low 48 bits, behaving as-if the result had been zero-extended.
+
+This is only valid if the ALUPTR extension is enabled (and CMPPGTX if ALUX is also enabled).
 
 This instruction is only allowed in Lane 1.
 
@@ -2205,6 +2231,18 @@ Subtract the source from the destination, storing the result in the destination 
 Subtract the source from the destination, storing the result in the destination register.
 
 This variant sign or zero extends the 32 bit result to 64 bits.
+
+
+=== SUBx.P ===
+
+* F0nm_7go7  SUB.P	Rm, Ro, Rn
+* F0nm_7Go7  SUBX.P	Xm, Xo, Xn
+
+Subtract the source from the destination, storing the result in the destination register.
+
+This instruction performs an 48-bit subtraction, sign-extending the result to 64 bits. This instruction will only be valid if ALUPTR is Enabled.
+
+The SUBX.P instruction will subtract produce a 128-bit result, behaving as if each 48-bit piece had been zero-extended prior to the operation. This instruction will also require ALUX.
 
 
 === SXENTR / SXEXIT / SVENTR ===

@@ -739,6 +739,14 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_SWAPE4B		0x19A		//
 #define BJX2_NMID_SWAPE2B		0x19B		//
 
+#define BJX2_NMID_SUBP			0x19C		//
+#define BJX2_NMID_SUBXP			0x19D		//
+
+#define BJX2_NMID_CMPPEQ		0x1A0		//
+#define BJX2_NMID_CMPPEQX		0x1A1		//
+#define BJX2_NMID_CMPPGT		0x1A2		//
+#define BJX2_NMID_CMPPGTX		0x1A3		//
+
 
 
 #define BJX2_FMID_NONE			0x00		//?

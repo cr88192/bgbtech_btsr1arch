@@ -529,8 +529,10 @@ TKGDI_BlitUpdate_ScanCopy:
 	MOV.Q	(R4, 1920), R23
 	MOV.Q	R20, (R5,  0)
 	MOV.Q	R21, (R5,  8)
-	ADD		-1, R6			| MOV.Q		R22, (R5, 16)
-	ADD		8, R4			| MOV.Q		R23, (R5, 24)
+	ADD		-1, R6
+	MOV.Q		R22, (R5, 16)
+	ADD		8, R4
+	MOV.Q		R23, (R5, 24)
 	ADD		32, R5			| TEST		R6, R6
 	BF .loop
 #endif
@@ -580,10 +582,13 @@ TKGDI_BlitUpdate_ScanCopy:
 							MOV.Q	R22, (R5,  88)
 							MOV.Q	R17, (R5,  96)
 							MOV.Q	R19, (R5, 104)
-	ADD		-1, R6		|	MOV.Q	R21, (R5, 112)
-	ADD		32, R4		|	MOV.Q	R23, (R5, 120)
+							MOV.Q	R21, (R5, 112)
+							MOV.Q	R23, (R5, 120)
+	ADD		-1, R6
+	ADD		32, R4
 
-	ADD		128, R5		|	TEST	R6, R6
+	ADD		128, R5
+	TEST	R6, R6
 	BF .loop
 #endif
 
@@ -602,9 +607,12 @@ TKGDI_BlitUpdate_ScanCopy_Flip:
 	MOV.Q	(R4,    0), R23
 	MOV.Q	R20, (R5,  0)
 	MOV.Q	R21, (R5,  8)
-	ADD		-1, R6			| MOV.Q		R22, (R5, 16)
-	ADD		8, R4			| MOV.Q		R23, (R5, 24)
-	ADD		32, R5			| TEST		R6, R6
+	MOV.Q	R22, (R5, 16)
+	MOV.Q	R23, (R5, 24)
+	ADD		-1, R6
+	ADD		8, R4
+	ADD		32, R5
+	TEST		R6, R6
 	BF .loop
 
 	.done:

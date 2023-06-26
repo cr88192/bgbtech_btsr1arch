@@ -1573,12 +1573,20 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_REGCHKG:		s0="REGCHKG";	break;
 	case BJX2_NMID_REGCHKC:		s0="REGCHKC";	break;
 	case BJX2_NMID_EMUBREAK:	s0="EMUBREAK";	break;
-
 	case BJX2_NMID_RGB5MINMAX:	s0="RGB5MINMAX";	break;
-	case BJX2_NMID_RGB5CCENC:	s0="RGB5CCENC";		break;
-	case BJX2_NMID_RGB5CCENC2:	s0="RGB5CCENC2";	break;
 	case BJX2_NMID_PCVTH2AL:	s0="PCVTH2AL";		break;
 	case BJX2_NMID_PCVTAL2H:	s0="PCVTAL2H";		break;
+
+	case BJX2_NMID_RGB5CCENC:	s0="RGB5CCENC";		break;
+	case BJX2_NMID_RGB5CCENC2:	s0="RGB5CCENC2";	break;
+
+	case BJX2_NMID_SUBP:		s0="SUB.P";		break;
+	case BJX2_NMID_SUBXP:		s0="SUBX.P";	break;
+
+	case BJX2_NMID_CMPPEQ:		s0="CMPPEQ";	break;
+	case BJX2_NMID_CMPPEQX:		s0="CMPPEQX";	break;
+	case BJX2_NMID_CMPPGT:		s0="CMPPGT";	break;
+	case BJX2_NMID_CMPPGTX:		s0="CMPPGTX";	break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);
@@ -3111,6 +3119,8 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	{
 		for(i=0; i<32; i++)
 		{
+			ctx->v_wexmd=0xFF;
+
 			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
 			ctx->trapc=pc;
 			cur=BJX2_GetTraceForAddr(ctx, pc, 2);
@@ -3250,6 +3260,8 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 				break;
 			}
 			
+			ctx->v_wexmd=0xFF;
+
 			ctx->trapc=pc;
 //			cur=BJX2_GetTraceForAddr(ctx, pc, 0);
 			cur=BJX2_GetTraceForAddr(ctx, pc, trfl);

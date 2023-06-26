@@ -136,8 +136,14 @@
 
 `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
-`define jx2_enable_prebra			//Enable PreBranch
-`define jx2_prebra_rts				//Enable PreBranch on RTS
+`ifndef jx2_xc7s50
+`define jx2_enable_aluptr		//Enable ALU Pointer Ops
+`endif
+
+// `ifndef jx2_xc7s50
+//`define jx2_enable_prebra			//Enable PreBranch
+//`define jx2_prebra_rts				//Enable PreBranch on RTS
+// `endif
 
 `define jx2_l1d_nohash			//Disable L1 address hashing.
 `define jx2_l1i_nohash			//Disable L1 address hashing.
@@ -206,9 +212,19 @@
 // `define jx2_enable_ldirot			//Enable LDIROz
 // `define jx2_enable_srtwid			//Enable SR.T Twiddle
 
-
-`define jx2_enable_wex3w				//Enable 3-wide WEX support
 `define jx2_enable_wex					//Enable WEX support (general)
+
+`ifdef jx2_enable_wex
+
+`ifdef jx2_xc7s50
+`define jx2_enable_wex2w				//Enable 2-wide WEX support
+//`define jx2_enable_wex3w				//Enable 3-wide WEX support
+`else
+`define jx2_enable_wex3w				//Enable 3-wide WEX support
+`endif
+
+// `define jx2_enable_wex3w				//Enable 3-wide WEX support
+`endif
 
 `define jx2_enable_wexjumbo				//Enable Jumbo-Load
 
@@ -264,7 +280,9 @@
 
 // `define jx2_alu_jcmp_rpimm	//Allow JCMP immed via Rp
 
+`ifndef jx2_xc7s50
 `define jx2_audio_fmaumem		//Enable Audio Mixer Memory
+`endif
 
 
 `ifdef jx2_enable_riscv

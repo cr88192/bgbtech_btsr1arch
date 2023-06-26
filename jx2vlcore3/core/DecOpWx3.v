@@ -897,6 +897,7 @@ begin
 	end
 `endif
 
+`ifdef jx2_enable_xg2mode
 	if(srXG2)
 	begin
 		opIsFxA = 1;		opIsFzA = 1;
@@ -929,7 +930,7 @@ begin
 			opIsDwC = istrWord[75] && istrWord[73];
 		end
 	end
-
+`endif
 
 //	opIsWfA = opIsDfA && !opIsDzA && srWxe;
 //	opIsWfB = opIsDfB && !opIsDzB && srWxe;
@@ -1807,9 +1808,12 @@ begin
 		end
 	end
 
-`ifndef def_true
-	if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
+// `ifndef def_true
+`ifdef def_true
+//	if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
+	if(opUCmdA0[5:0] == JX2_UCMD_INVOP)
 	begin
+		$display("DecOpWx3 Istr=%X Mod=%X", istrWord, srMod);
 		$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
 			opUCmdA0, opUIxtA0,
 			opRegAM, opRegAO,

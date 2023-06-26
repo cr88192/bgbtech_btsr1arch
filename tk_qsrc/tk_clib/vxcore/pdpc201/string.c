@@ -631,7 +631,7 @@ memset_movx:
 	OR			R7, R20
 .endif
 
-.ifarch bjx2_wex
+.ifarch bjx2_wex3p
 	CMPGE	8, R6
 	BF		.L3
 	.L2:
@@ -672,7 +672,7 @@ memset_filx:
 	MOV		R5,  R20
 .endif
 
-.ifarch bjx2_wex
+.ifarch bjx2_wex3p
 	CMPGE	8, R6
 	BF		.L3
 	.L2:
@@ -1267,6 +1267,42 @@ strcat:
 
 	RTS
 #endif
+};
+#endif
+
+
+#ifdef __BJX2__
+int _strcmp_util_pack8zp(uint64_t v0);
+int _strcmp_util_cmppack8(uint64_t v0, uint64_t v1);
+
+__asm {
+_strcmp_util_pack8zp:
+	MOV			0, R2
+	PSCHEQ.B	R4, R2, R1
+	MOV?T		1, R2
+	RTS
+
+_strcmp_util_cmppack8:
+	MOV			0, R2
+
+	PSCHNE.B	R4, R5, R1
+	BF			.L2
+	
+	PSCHEQ.B	R4, R2, R3
+	CMPGT		R3, R1
+	BT			.L2
+
+	SHLD		R1, 3, R3
+	NEG			R3, R3
+	SHLD.Q		R4, R3, R6	|	SHLD.Q		R5, R3, R7
+	EXTU.B		R6, R6		|	EXTU.B		R7, R7
+
+	CMPGT		R7, R6
+	MOV?T		1, R2
+	MOV?F		-1, R2	
+
+	.L2:
+	RTS
 
 };
 
@@ -1297,18 +1333,236 @@ __PDPCLIB_API__ size_t strlen(const char *s)
 
 #endif
 
-__PDPCLIB_API__ int stricmp(const char *s1, const char *s2)
+int _string_is_nonascii(const char *s)
+{
+	const unsigned char *p;
+	uint64_t v;
+	int c;
+
+#ifdef __BJX2__
+	p = (const unsigned char *)s;
+	v=*(uint64_t *)p;
+	while(!_strcmp_util_pack8zp(v))
+	{
+		if(v&0x8080808080808080ULL)
+			return(1);
+		p+=8;
+		v=*(uint64_t *)p;
+	}
+
+	if(!(v&0x8080808080808080ULL))
+		return(0);
+#endif
+
+	c=*p;
+	while(c)
+	{
+		if(c&0x80)
+			return(1);
+		p++;
+		c=*p;
+	}
+	return(0);
+}
+
+const unsigned char *_string_readchar_u8(const unsigned char *p, int *rc)
+{
+	int c0, c;
+	
+	c0=*p;
+	if(!(c0&0x80))
+	{
+		*rc=c0;
+		return(p+1);
+	}
+	if(!(c0&0x40))
+	{
+		/* BAD */
+		*rc=c0;
+		return(p+1);
+	}
+
+	if(!(c0&0x20))
+	{
+		c=((c0&0x1F)<<6)|(p[1]&0x3F);
+		*rc=c;
+		return(p+2);
+	}
+
+	if(!(c0&0x10))
+	{
+		c=	((c0&0x0F)<<12)|
+			((p[1]&0x3F)<<6)|
+			(p[2]&0x3F);
+		*rc=c;
+		return(p+3);
+	}
+
+	if(!(c0&0x08))
+	{
+		c=	((c0&0x07)<<18)|
+			((p[1]&0x3F)<<12)|
+			((p[2]&0x3F)<<6)|
+			(p[3]&0x3F);
+		*rc=c;
+		return(p+4);
+	}
+
+	if(!(c0&0x04))
+	{
+		c=	((c0  &0x03)<<24)|
+			((p[1]&0x3F)<<18)|
+			((p[2]&0x3F)<<12)|
+			((p[3]&0x3F)<< 6)|
+			((p[4]&0x3F)    );
+		*rc=c;
+		return(p+5);
+	}
+
+	if(!(c0&0x02))
+	{
+		c=	((c0  &0x01)<<30)|
+			((p[1]&0x3F)<<24)|
+			((p[2]&0x3F)<<18)|
+			((p[3]&0x3F)<<12)|
+			((p[4]&0x3F)<< 6)|
+			((p[5]&0x3F)    );
+		*rc=c;
+		return(p+6);
+	}
+}
+
+__PDPCLIB_API__ int _stricmp_u8(const char *s1, const char *s2)
 {
 	const unsigned char *p1;
 	const unsigned char *p2;
-	int c1, c2;
+	int c1, c2, rl;
 
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
+
+	c1=*p1;
+	c2=*p2;
+	while(c1)
+	{
+		if(c1&0x80)
+			{ p1=_string_readchar_u8(p1, &c1); }
+		else
+			{ p1++; }
+		if(c2&0x80)
+			{ p2=_string_readchar_u8(p2, &c2); }
+		else
+			{ p2++; }
+	
+		c1=tolower(c1);
+		c2=tolower(c2);
+		if (c1 < c2)
+			return (-1);
+		else if (c1 > c2)
+			return (1);
+		c1=*p1;
+		c2=*p2;
+	}
+
+	if(!c2)
+		return (0);
+	return (-1);
+}
+
+__PDPCLIB_API__ int _strnicmp_u8(const char *s1, const char *s2, size_t n)
+{
+	const unsigned char *p1;
+	const unsigned char *p2;
+	int c1, c2, rl, x;
+
+	p1 = (const unsigned char *)s1;
+	p2 = (const unsigned char *)s2;
+
+	c1=*p1;
+	c2=*p2;
+	x=0;
+	while(c1 && (x<n))
+	{
+		if(c1&0x80)
+			{ p1=_string_readchar_u8(p1, &c1); }
+		else
+			{ p1++; }
+		if(c2&0x80)
+			{ p2=_string_readchar_u8(p2, &c2); }
+		else
+			{ p2++; }
+	
+		c1=tolower(c1);
+		c2=tolower(c2);
+		if (c1 < c2)
+			return (-1);
+		else if (c1 > c2)
+			return (1);
+		c1=*p1;
+		x++;
+		c2=*p2;
+	}
+
+	if(!c2)
+		return (0);
+	return (-1);
+}
+
+__PDPCLIB_API__ int _stricmp(const char *s1, const char *s2)
+{
+	const unsigned char *p1;
+	const unsigned char *p2;
+	uint64_t	v1, v2;
+	int c1, c2, rl;
+
+	if(_locale_is_utf8())
+	{
+		if(_string_is_nonascii(s1) || _string_is_nonascii(s2))
+		{
+			return(_stricmp_u8(s1, s2));
+		}
+	}
+
+	p1 = (const unsigned char *)s1;
+	p2 = (const unsigned char *)s2;
+
+#ifdef __BJX2__
+// #if 0
+//	__cytpe_init();
+
+	v1=*(uint64_t *)p1;
+	v2=*(uint64_t *)p2;
+	rl=0;
+	while(!_strcmp_util_pack8zp(v1))
+	{
+//		v1=_toupper_8x(v1);
+//		v2=_toupper_8x(v2);
+		v1=_tolower_8x(v1);
+		v2=_tolower_8x(v2);
+		rl=_strcmp_util_cmppack8(v1, v2);
+		if(rl)break;
+		p1+=8;
+		p2+=8;
+		v1=*(uint64_t *)p1;
+		v2=*(uint64_t *)p2;
+	}
+	if(rl)
+		return(rl);
+
+//	v1=_toupper_8x(v1);
+//	v2=_toupper_8x(v2);
+	v1=_tolower_8x(v1);
+	v2=_tolower_8x(v2);
+	rl=_strcmp_util_cmppack8(v1, v2);
+	return(rl);
+#endif
+
 	while (*p1 != '\0')
 	{
-		c1=toupper(*p1);
-		c2=toupper(*p2);
+//		c1=toupper(*p1);
+//		c2=toupper(*p2);
+		c1=tolower(*p1);
+		c2=tolower(*p2);
 		if (c1 < c2)
 			return (-1);
 		else if (c1 > c2)
@@ -1316,26 +1570,97 @@ __PDPCLIB_API__ int stricmp(const char *s1, const char *s2)
 		p1++;
 		p2++;
 	}
-	if (*p2 == '\0') return (0);
+	if (*p2 == '\0')
+	{
+#if 0
+		if(rl)
+		{
+			printf("stricmp: 0 %016llX %016llX\n", v1, v2);
+			__debugbreak();
+		}
+#endif
+	
+		return (0);
+	}
 	else return (-1);
 }
 
-__PDPCLIB_API__ int strnicmp(const char *s1, const char *s2, size_t n)
+__PDPCLIB_API__ int _strnicmp(const char *s1, const char *s2, size_t n)
 {
 	const unsigned char *p1;
 	const unsigned char *p2;
-	int c1, c2;
-	size_t x = 0;
+	uint64_t	v1, v2, v3;
+	int c1, c2, rl;
+	size_t x;
+
+	if(_locale_is_utf8())
+	{
+		if(_string_is_nonascii(s1) || _string_is_nonascii(s2))
+		{
+			return(_strnicmp_u8(s1, s2, n));
+		}
+	}
 
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
+	x = 0;
+
+#ifdef __BJX2__
+//#if 0
+//	if(n>=16)
+	if(1)
+	{
+//		__cytpe_init();
+
+		v1=*(uint64_t *)p1;
+		v2=*(uint64_t *)p2;
+		rl=0; x=0;
+		while(!_strcmp_util_pack8zp(v1) && ((x+8)<=n))
+		{
+//			v1=_toupper_8x(v1);
+//			v2=_toupper_8x(v2);
+			v1=_tolower_8x(v1);
+			v2=_tolower_8x(v2);
+			rl=_strcmp_util_cmppack8(v1, v2);
+			if(rl)
+				return(rl);
+			p1+=8;	p2+=8;	x+=8;
+			v1=*(uint64_t *)p1;
+			v2=*(uint64_t *)p2;
+		}
+
+		c1=n-x;
+		if(c1<=0)
+			return(0);
+		
+		if(c1<8)
+		{
+			v3=(1LL<<(c1*3))-1;
+			v1&=v3;
+			v2&=v3;
+		}
+
+//		v1=_toupper_8x(v1);
+//		v2=_toupper_8x(v2);
+		v1=_tolower_8x(v1);
+		v2=_tolower_8x(v2);
+		rl=_strcmp_util_cmppack8(v1, v2);
+		return(rl);
+		
+//		if(rl)
+//			return(rl);
+	}
+#endif
+
 	while (x < n)
 	{
-		c1 = toupper(p1[x]);
-		c2 = toupper(p2[x]);
+//		c1 = toupper(p1[x]);
+//		c2 = toupper(p2[x]);
+		c1 = tolower(p1[x]);
+		c2 = tolower(p2[x]);
 		if (c1 < c2)
 			return (-1);
-		else if (toupper(p1[x]) > toupper(p2[x]))
+		else if (c1 > c2)
 			return (1);
 		else if (p1[x] == '\0') return (0);
 		x++;

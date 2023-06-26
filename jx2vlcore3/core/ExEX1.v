@@ -1000,6 +1000,8 @@ begin
 
 `endif
 
+//			$display("BSR: LR=%X", tRegBraLr);
+
 //			if(!opPreBra)
 			if(opPreBra!=2'b01)
 			begin
@@ -1028,6 +1030,8 @@ begin
 //			tDoBra		= 1;
 //			tDoBra		= !opPreBra;
 			tDoBra		= (opPreBra != 2'b01);
+
+//			$display("JMP: Reg=%X", regValRs);
 
 // `ifndef jx2_enable_riscv
 // `ifdef def_true
@@ -1150,8 +1154,10 @@ begin
 				if(	(regInSr[26]!=regValRs[50]) ||
 					(regInSr[23:22]!=regValRs[55:54]))
 				begin
-					$display("EX: JSR: Inter-ISA %d PC=%X",
-						regInSr[26], tValBra);
+					$display("EX: JSR: Inter-ISA Md=%X-%X -> %X-%X PC=%X",
+						regInSr[27:26], regInSr[23:22],
+						regValRs[51:50], regValRs[55:54],
+						tValBra);
 				end
 
 				tRegOutSr[26]	= !regInSr[26];
@@ -1495,8 +1501,12 @@ begin
 `ifdef jx2_enable_wex
 					case(regIdRm[4:0])
 						5'h0:		tRegOutSr[27]	= 0;
+
 						5'h1:		tRegOutSr[27]	= 1;
+
+`ifdef jx2_enable_wex3w
 						5'h2:		tRegOutSr[27]	= 1;
+`endif
 
 `ifdef jx2_mem_lane2
 						5'h3:		tRegOutSr[27]	= 1;

@@ -1018,6 +1018,11 @@ int mfl;
 {"cmtahi",	BGBCC_SH_NMID_CMPTAHI},
 {"cmtahs",	BGBCC_SH_NMID_CMPTAHS},
 
+// {"cmppeq",	BGBCC_SH_NMID_CMPPEQ},
+// {"cmppgt",	BGBCC_SH_NMID_CMPPGT},
+{"cmppeqx",	BGBCC_SH_NMID_CMPPEQX},
+{"cmppgtx",	BGBCC_SH_NMID_CMPPGTX},
+
 {"jmp",		BGBCC_SH_NMID_JMP},
 {"jsr",		BGBCC_SH_NMID_JSR},
 {"bra",		BGBCC_SH_NMID_BRA},
@@ -1293,6 +1298,9 @@ int mfl;
 {"add.q",	BGBCC_SH_NMID_ADD},
 {"sub.q",	BGBCC_SH_NMID_SUB},
 {"rsub.q",	BGBCC_SH_NMID_RSUB},
+
+{"sub.p",	BGBCC_SH_NMID_SUBP},
+{"subx.p",	BGBCC_SH_NMID_SUBXP},
 
 {"shad",	BGBCC_SH_NMID_SHAD},
 {"shld",	BGBCC_SH_NMID_SHLD},
@@ -2231,6 +2239,9 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "bjx2_jumbo"))
 		return(ctx->has_jumbo);
 
+	if(!bgbcc_stricmp(sym, "bjx2_wex3p"))
+		return(ctx->use_wexmd>=2);
+
 	if(!bgbcc_stricmp(sym, "bjx2_movx"))
 		return(ctx->has_pushx2);
 
@@ -2906,7 +2917,7 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		{
 			BGBCC_JX2_EmitBAlign(ctx, 4);
 //			ctx->emit_riscv=1;
-			ctx->emit_riscv|=0x20;
+			ctx->emit_riscv|=0x10;
 			*rcs=cs1;
 			return(1);
 		}

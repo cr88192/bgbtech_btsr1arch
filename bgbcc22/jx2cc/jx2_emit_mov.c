@@ -69,6 +69,8 @@ int BGBCC_JX2_EmitRemapPseudoOp(BGBCC_JX2_Context *ctx, int nmid)
 	{
 		if(ctx->is_addr_x32)
 			return(BGBCC_SH_NMID_CMPEQ);
+		if(ctx->has_qmul&16)
+			return(BGBCC_SH_NMID_CMPPEQ);
 		return(BGBCC_SH_NMID_CMPQEQ);
 	}
 
@@ -76,6 +78,8 @@ int BGBCC_JX2_EmitRemapPseudoOp(BGBCC_JX2_Context *ctx, int nmid)
 	{
 		if(ctx->is_addr_x32)
 			return(BGBCC_SH_NMID_CMPGT);
+		if(ctx->has_qmul&16)
+			return(BGBCC_SH_NMID_CMPPGT);
 		return(BGBCC_SH_NMID_CMPQGT);
 	}
 
@@ -84,6 +88,15 @@ int BGBCC_JX2_EmitRemapPseudoOp(BGBCC_JX2_Context *ctx, int nmid)
 		if(ctx->is_addr_x32)
 			return(BGBCC_SH_NMID_CMPGE);
 		return(BGBCC_SH_NMID_CMPQGE);
+	}
+
+	if(nmid==BGBCC_SH_NMID_SUBP)
+	{
+		if(ctx->is_addr_x32)
+			return(BGBCC_SH_NMID_SUBSL);
+		if(ctx->has_qmul&16)
+			return(BGBCC_SH_NMID_SUBP);
+		return(BGBCC_SH_NMID_SUB);
 	}
 
 	return(nmid);

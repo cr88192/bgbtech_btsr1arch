@@ -47,12 +47,19 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "RegGPR_6R3W.v"
 `endif
 `else
+`ifdef jx2_enable_wex2w
+`include "DecOpWx2.v"
+`include "RegGPR_4R2W.v"
+`else
 `include "DecOp.v"
 `include "RegGPR.v"
+`endif
 `endif
 
 `include "ExEX1.v"
 `include "ExEX2.v"
+`include "ExEX3.v"
+
 `include "ExALU.v"
 // `include "ExMulB.v"
 `include "ExMulC.v"
@@ -62,12 +69,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExEXB1.v"
 `include "ExEXB2.v"
 `include "ExALUB.v"
+`include "ExEXB3.v"
 `endif
 
-`include "ExEX3.v"
-`ifdef jx2_enable_wex
-`include "ExEXB3.v"
-
+`ifdef jx2_enable_wex3w
 `include "ExEXC1.v"
 `include "ExEXC2.v"
 `include "ExEXC3.v"
@@ -569,6 +574,31 @@ DecOpWx3	decOp(
 	);
 `endif
 
+`ifdef jx2_enable_wex2w
+wire[8:0]		idA1IdUCmd0;
+wire[8:0]		idB1IdUCmd0;
+
+assign		idA1IdUCmd = (id2PreBra == 2'b01) ?
+	JX2_UCMDSP_BRANOP : idA1IdUCmd0;
+assign		idB1IdUCmd = (id2PreBra == 2'b01) ?
+	JX2_UCMDSP_BRANOP : idB1IdUCmd0;
+
+DecOpWx2	decOp(
+	clock,			exResetL,
+	id1IstrWord,
+	id1ValFetchSr,
+	id1IstrSxo,
+
+	idA1IdRegM,		idA1IdRegO,
+	idA1IdRegN,		idA1IdImm,
+	idA1IdUCmd0,	idA1IdUIxt,
+
+	idB1IdRegM,		idB1IdRegO,
+	idB1IdRegN,		idB1IdImm,
+	idB1IdUCmd0,	idB1IdUIxt
+	);
+`endif
+
 `else
 
 `wire_gpr		id1IdRegN;
@@ -705,7 +735,7 @@ assign		gprValRo	= gprValRy;
 wire[63:0]		gprValRm;
 wire[63:0]		gprValRn;
 assign		gprValRm	= gprValRv;
-assign		gprValRn	= gprValRv;
+assign		gprValRn	= gprValRu;
 
 `endif
 
@@ -850,8 +880,10 @@ RegGPR_6R3W regGpr(
 RegGPR_4R2W regGpr(
 	clock,
 	exResetL,
-//	exHold2,
 	exHold2 && !crIsIsrEdge,
+
+	idA2IdUCmd,
+	idA2IdUIxt,
 
 	gprIdRs,		//Source A, ALU / Base
 	gprIdRt,		//Source B, ALU / Index
@@ -864,23 +896,39 @@ RegGPR_4R2W regGpr(
 
 	gprIdRn1,		//Destination ID (EX1, L1)
 	gprValRn1,		//Destination Value (EX1, L1)
-	gprIdRn2,		//Destination ID (EX2, L1)
-	gprValRn2,		//Destination Value (EX2, L1)
-	
 	gprIdRnB1,		//Destination ID (EX1, L2)
 	gprValRnB1,		//Destination Value (EX1, L2)
+
+	gprIdRn2,		//Destination ID (EX2, L1)
+	gprValRn2,		//Destination Value (EX2, L1)	
 	gprIdRnB2,		//Destination ID (EX2, L2)
 	gprValRnB2,		//Destination Value (EX2, L2)
 	
+	gprIdRn3,		//Destination ID (EX3, L1)
+	gprValRn3,		//Destination Value (EX3, L1)	
+	gprIdRnB3,		//Destination ID (EX3, L2)
+	gprValRnB3,		//Destination Value (EX3, L2)
+
 	gprValPc,		//PC Value (Synthesized)
 	gprValGbr,		//GBR Value (CR)
+	gprValTbr,		//TBR Value (CR)
 	gprValImm,		//Immediate (Decode, A)
 	gprValImmB,		//Immediate (Decode, B)
 	gprValLr,		//LR Value (CR)
+	gprValSsp,		//SSP Value (CR)
 	gprValCm,		//Cm Port (CR)
-	
-	gprOutDlr,	gprInDlr,
-	gprOutDhr,	gprInDhr,
+	id2ValBPc,		//BPC
+
+	gprEx1Flush,	//Flush EX1
+	gprEx2Flush,	//Flush EX2
+	gprEx3Flush,	//Flush EX3
+
+	gprEx1DualLane,
+	gprEx2DualLane,
+	gprEx3DualLane,
+
+	gprOutDlr,	gprInDlrB,
+	gprOutDhr,	gprInDhrB,
 `ifdef jx2_sprs_elrehr
 	gprOutElr,	gprInElr,
 	gprOutEhr,	gprInEhr,
@@ -1162,6 +1210,10 @@ reg[11:0]		tNxtRegExcCycInh;
 wire[63:0]		ex1MulVal;
 wire[63:0]		ex1MulWVal;
 
+wire			ex1MulFaz;
+wire			ex3MulFaz;
+
+
 // `ifdef jx2_enable_fpu
 `wire_gpr		ex1RegIdFRn;
 wire[63:0]		ex1RegValFRn;
@@ -1223,12 +1275,54 @@ reg				ex1TrapFlush;
 reg[63:0]		ex1RegValRs;		//Source A Value
 reg[63:0]		ex1RegValRt;		//Source B Value
 
+
 `ifndef jx2_cpu_merge_rxy
+
 reg[63:0]		ex1RegValRm;		//Source C Value
+reg[63:0]		ex2RegValRm;		//Source C Value
+reg[63:0]		ex3RegValRm;		//Source C Value
+
 `else
+
 wire[63:0]		ex1RegValRm;		//Source C Value
+wire[63:0]		ex2RegValRm;		//Source C Value
+wire[63:0]		ex3RegValRm;		//Source C Value
+
+`ifdef jx2_enable_wex3w
 assign		ex1RegValRm = exC1RegValRt;
+assign		ex2RegValRm = exC2RegValRt;
+assign		ex3RegValRm = exC3RegValRt;
+`else
+assign		ex1RegValRm = exB1RegValRt;
+assign		ex2RegValRm = exB2RegValRt;
+assign		ex3RegValRm = exB3RegValRt;
 `endif
+`endif
+
+
+`ifndef jx2_cpu_merge_rxy
+
+reg[63:0]		exB1RegValRm;		//Source C Value
+reg[63:0]		exB2RegValRm;		//Source C Value
+reg[63:0]		exB3RegValRm;		//Source C Value
+
+`else
+
+wire[63:0]		exB1RegValRm;		//Source C Value
+wire[63:0]		exB2RegValRm;		//Source C Value
+wire[63:0]		exB3RegValRm;		//Source C Value
+
+`ifdef jx2_enable_wex3w
+assign		exB1RegValRm = exC1RegValRs;
+assign		exB2RegValRm = exC2RegValRs;
+assign		exB3RegValRm = exC3RegValRs;
+`else
+assign		exB1RegValRm = exB1RegValRs;
+assign		exB2RegValRm = exB2RegValRs;
+assign		exB3RegValRm = exB3RegValRs;
+`endif
+`endif
+
 
 /* GPR Only: Timing Hack. */
 wire[63:0]		ex1RegValRsGpo;		//Source A Value (GPR Only)
@@ -1306,7 +1400,7 @@ wire			ex1AluSrJcmpT;
 wire[63:0]		ex1AguOutXLea;		//XLEA Output
 wire[7:0]		ex1ExfFl;
 
-`ifdef jx2_enable_wex
+`ifdef jx2_enable_wex3w
 assign		ex1ExfFl =
 	(exC1OpUCmd[5:0] == 0) ? exC1OpUIxt[7:0] : 0;
 `else
@@ -1402,7 +1496,8 @@ ExMulC	ex1Mul(
 	clock,			exResetL,
 	ex1RegValRs,	ex1RegValRt,		ex1RegValRm,
 	ex1OpUCmd,		ex1OpUIxt,
-	exHold2,		ex1MulVal
+	exHold2,		ex1MulVal,
+	ex1MulFaz,		ex3MulFaz
 	);
 
 ExMulW	ex1MulW(
@@ -1441,6 +1536,7 @@ assign		ex1KrreHi = UV66_00;
 wire[63:0]				exA1FpuV4SfRn;
 wire[63:0]				exB1FpuV4SfRn;
 
+
 `ifdef jx2_enable_fpu
 
 `ifdef jx2_use_fpu_w
@@ -1455,13 +1551,6 @@ reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 // reg[63:0]		exB1RegValRs;		//Source A Value
 reg[63:0]		exB1RegValRt;		//Source B Value
 //reg[63:0]		exB1RegValRm;		//Source C Value
-
-`ifndef jx2_cpu_merge_rxy
-reg[63:0]		exB1RegValRm;		//Source C Value
-`else
-wire[63:0]		exB1RegValRm;		//Source C Value
-assign		exB1RegValRm = exC1RegValRs;
-`endif
 
 
 wire[8:0]		fpuExA1OpUCmd;
@@ -1523,7 +1612,11 @@ FpuVec4SF	ex1FpuV4(
 
 	ex1OpUCmd,		ex1OpUIxt,
 	exB1OpUCmd,		exB1OpUIxt,
+`ifdef jx2_enable_wex3w
 	exC1OpUCmd,		exC1OpUIxt,
+`else
+	UV9_00, UV9_00,
+`endif
 	exHold2,
 
 	ex1RegValImm,	exB1RegValImm,
@@ -1651,7 +1744,8 @@ ExOpSloMulDiv	ex1SloMul(
 	smulEx1OpUCmd,	smulEx1OpUIxt,
 	ex1RegValRsGpo,	ex1RegValRtGpo,
 	ex1SloMulVal,	ex1SloMulValHi,
-	exHold2,		ex1SloMulDoHold
+	exHold2,		ex1SloMulDoHold,
+	ex1MulFaz
 	);
 
 `else
@@ -1682,13 +1776,6 @@ reg[63:0]		ex2RegValRs;		//Source A Value
 reg[63:0]		ex2RegValRt;		//Source B Value
 
 // reg[63:0]		ex2RegValRm;		//Source C Value
-
-`ifndef jx2_cpu_merge_rxy
-reg[63:0]		ex2RegValRm;		//Source C Value
-`else
-wire[63:0]		ex2RegValRm;		//Source C Value
-assign		ex2RegValRm = exC2RegValRt;
-`endif
 
 //reg[63:0]		ex2RegValFRs;		//Source A Value (FPR)
 //reg[63:0]		ex2RegValFRt;		//Source B Value (FPR)
@@ -1807,12 +1894,6 @@ reg[63:0]		ex3RegValRt;		//Source B Value
 
 // reg[63:0]		ex3RegValRm;		//Source C Value
 
-`ifndef jx2_cpu_merge_rxy
-reg[63:0]		ex3RegValRm;		//Source C Value
-`else
-wire[63:0]		ex3RegValRm;		//Source C Value
-assign		ex3RegValRm = exC3RegValRt;
-`endif
 
 `reg_gpr		ex3RegIdRn2;		//Destination ID (EX2)
 reg[63:0]		ex3RegValRn2;		//Destination Value (EX2)
@@ -1866,7 +1947,9 @@ ExEX3	ex3(
 
 //	ex3BraFlush || exResetL,
 	ex3BraFlush,
+
 	ex3RegInLastSr,
+	ex3MulFaz,
 
 	ex2MemDataIn,
 	ex2MemDataInB,
@@ -1886,9 +1969,9 @@ reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 `reg_gpr		exB1RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exB1RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exB1RegIdRm;		//Source C, MemStore
-reg[63:0]		exB1RegValRs;		//Source A Value
+// reg[63:0]		exB1RegValRs;		//Source A Value
 reg[63:0]		exB1RegValRt;		//Source B Value
-reg[63:0]		exB1RegValRm;		//Source C Value
+// reg[63:0]		exB1RegValRm;		//Source C Value
 `endif
 
 wire[1:0]		exB1Hold;
@@ -1970,12 +2053,6 @@ reg[63:0]		exB2RegValRt;		//Source B Value
 
 // reg[63:0]		exB2RegValRm;		//Source C Value
 
-`ifndef jx2_cpu_merge_rxy
-reg[63:0]		exB2RegValRm;		//Source C Value
-`else
-wire[63:0]		exB2RegValRm;		//Source C Value
-assign		exB2RegValRm = exC2RegValRs;
-`endif
 
 `reg_gpr		exB2RegIdRn1;		//Destination ID (EX1)
 reg[63:0]		exB2RegValRn1;		//Destination Value (EX1)
@@ -2019,12 +2096,6 @@ reg[63:0]		exB3RegValRs;		//Source A Value
 reg[63:0]		exB3RegValRt;		//Source B Value
 // reg[63:0]		exB3RegValRm;		//Source C Value
 
-`ifndef jx2_cpu_merge_rxy
-reg[63:0]		exB3RegValRm;		//Source C Value
-`else
-wire[63:0]		exB3RegValRm;		//Source C Value
-assign		exB3RegValRm = exC3RegValRs;
-`endif
 
 `reg_gpr		exB3RegIdRn2;		//Destination ID (EX1)
 reg[63:0]		exB3RegValRn2;		//Destination Value (EX1)
@@ -2353,25 +2424,31 @@ reg				braNxtIsIsr;
 assign		id2RegValSp		=
 			(ex1RegIdRn1==JX2_GR_SP) ?
 				ex1RegValRn1[47:0] :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB1RegIdRn1==JX2_GR_SP) ?
 				exB1RegValRn1[47:0] :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC1RegIdRn1==JX2_GR_SP) ?
 				exC1RegValRn1[47:0] :
 `endif
 			(ex2RegIdRn2==JX2_GR_SP) ?
 				ex2RegValRn2[47:0] :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB2RegIdRn2==JX2_GR_SP) ?
 				exB2RegValRn2[47:0] :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC2RegIdRn2==JX2_GR_SP) ?
 				exC2RegValRn2[47:0] :
 `endif
 			(ex3RegIdRn2==JX2_GR_SP) ?
 				ex3RegValRn2[47:0] :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB3RegIdRn2==JX2_GR_SP) ?
 				exB3RegValRn2[47:0] :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC3RegIdRn2==JX2_GR_SP) ?
 				exC3RegValRn2[47:0] :
 `endif
@@ -2390,25 +2467,31 @@ assign		id2RegValLr		=
 assign		id2RegValDlr		=
 			(ex1RegIdRn1==JX2_GR_DLR) ?
 				ex1RegValRn1 :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB1RegIdRn1==JX2_GR_DLR) ?
 				exB1RegValRn1 :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC1RegIdRn1==JX2_GR_DLR) ?
 				exC1RegValRn1 :
 `endif
 			(ex2RegIdRn2==JX2_GR_DLR) ?
 				ex2RegValRn2 :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB2RegIdRn2==JX2_GR_DLR) ?
 				exB2RegValRn2 :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC2RegIdRn2==JX2_GR_DLR) ?
 				exC2RegValRn2 :
 `endif
 			(ex3RegIdRn2==JX2_GR_DLR) ?
 				ex3RegValRn2 :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB3RegIdRn2==JX2_GR_DLR) ?
 				exB3RegValRn2 :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC3RegIdRn2==JX2_GR_DLR) ?
 				exC3RegValRn2 :
 `endif
@@ -2417,25 +2500,31 @@ assign		id2RegValDlr		=
 assign		id2RegValDhr		=
 			(ex1RegIdRn1==JX2_GR_DHR) ?
 				ex1RegValRn1 :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB1RegIdRn1==JX2_GR_DHR) ?
 				exB1RegValRn1 :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC1RegIdRn1==JX2_GR_DHR) ?
 				exC1RegValRn1 :
 `endif
 			(ex2RegIdRn2==JX2_GR_DHR) ?
 				ex2RegValRn2 :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB2RegIdRn2==JX2_GR_DHR) ?
 				exB2RegValRn2 :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC2RegIdRn2==JX2_GR_DHR) ?
 				exC2RegValRn2 :
 `endif
 			(ex3RegIdRn2==JX2_GR_DHR) ?
 				ex3RegValRn2 :
-`ifdef jx2_enable_wex3w
+`ifdef jx2_enable_wex
 			(exB3RegIdRn2==JX2_GR_DHR) ?
 				exB3RegValRn2 :
+`endif
+`ifdef jx2_enable_wex3w
 			(exC3RegIdRn2==JX2_GR_DHR) ?
 				exC3RegValRn2 :
 `endif
@@ -2609,7 +2698,59 @@ begin
 
 `endif
 
-`else
+`endif
+
+
+`ifdef jx2_enable_wex2w
+	exHold1B1	=
+		((	(ex1RegIdRm == gprIdRs) ||
+			(ex1RegIdRm == gprIdRt) ||
+			(ex1RegIdRm == gprIdRu) ||
+			(ex1RegIdRm == gprIdRv) ) &&
+			(ex1Hold[1]));
+	exHold1B2	=
+		((	(exB1RegIdRm == gprIdRs) ||
+			(exB1RegIdRm == gprIdRt) ||
+			(exB1RegIdRm == gprIdRu) ||
+			(exB1RegIdRm == gprIdRv) ) &&
+			(exB1Hold[1]));
+
+	exHold1C1	=
+		((	(ex2RegIdRm == gprIdRs) ||
+			(ex2RegIdRm == gprIdRt) ||
+			(ex2RegIdRm == gprIdRu) ||
+			(ex2RegIdRm == gprIdRv)	) &&
+			(ex2Hold[1]));
+	exHold1C2	=
+		((	(exB2RegIdRm == gprIdRs) ||
+			(exB2RegIdRm == gprIdRt) ||
+			(exB2RegIdRm == gprIdRu) ||
+			(exB2RegIdRm == gprIdRv) ) &&
+			(exB2Hold[1]));
+
+	exHold1D1	=
+		((	(ex3RegIdRm == gprIdRs) ||
+			(ex3RegIdRm == gprIdRt) ||
+			(ex3RegIdRm == gprIdRu) ||
+			(ex3RegIdRm == gprIdRv)	) &&
+			(ex3Hold[1]));
+
+	exHold1B	=
+		(( exHold1B1 || exHold1B2) && !ex1BraFlush) ||
+		(( exHold1C1 || exHold1C2) && !ex2BraFlush) ||
+		(exHold1D1 && !ex3BraFlush);
+
+	if(idA2IdUCmd == JX2_UCMDSP_BRANOP)
+		exHold1B	= 0;
+	if(opBraFlushMask[1])
+		exHold1B	= 0;
+	if(ex1RegIdCn1 == JX2_CR_PC)
+		exHold1B	= 0;
+
+`endif
+
+
+`ifndef jx2_enable_wex
 //	exHold1B	=
 //		(	(ex1RegIdRm == gprIdRs) ||
 //			(ex1RegIdRm == gprIdRt) ||
@@ -2628,10 +2769,23 @@ begin
 			(ex2RegIdRm == gprIdRm)	) &&
 		ex2Hold[1];
 
+	exHold1D1	=
+		((	(ex3RegIdRm == gprIdRs) ||
+			(ex3RegIdRm == gprIdRt) ||
+			(ex3RegIdRm == gprIdRm)	) &&
+			(ex3Hold[1]));
+
 	exHold1B	=
 		(exHold1B1 && !ex1BraFlush) ||
-		(exHold1C1 && !ex2BraFlush) ;
+		(exHold1C1 && !ex2BraFlush) ||
+		(exHold1D1 && !ex3BraFlush) ;
 
+	if(idA2IdUCmd == JX2_UCMDSP_BRANOP)
+		exHold1B	= 0;
+	if(opBraFlushMask[1])
+		exHold1B	= 0;
+	if(ex1RegIdCn1 == JX2_CR_PC)
+		exHold1B	= 0;
 `endif
 
 	exHold1C = 0;

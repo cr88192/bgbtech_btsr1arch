@@ -158,6 +158,9 @@ MMIO Space:
 * 0000E110(W): GPIO Set (Out=Out|Val)
 * 0000E114(W): GPIO Clear (Out=Out&(~Val))
 
+* 0000E180: H-Bridge 0 Control
+* 0000E188: H-Bridge 0 Data
+
 * 00080000 .. 00080FFF: Audio Loop Buffer / Registers
 
 * 000A0000 .. 000BFFFF: Reserved for Display Memory (Bypass)
