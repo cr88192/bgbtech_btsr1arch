@@ -1905,11 +1905,13 @@ int BGBCC_JX2C_EmitDiffPtrVRegVRegVReg(
 //			{ BGBCC_JX2_EmitOpRegReg(sctx, nm2, cdreg, cdreg); }
 
 #if 1
-		i=BGBCC_JX2_TryEmitOpRegRegReg(sctx, BGBCC_SH_NMID_SUB,
+//		i=BGBCC_JX2_TryEmitOpRegRegReg(sctx, BGBCC_SH_NMID_SUB,
+		i=BGBCC_JX2_TryEmitOpRegRegReg(sctx, BGBCC_SH_NMID_SUBP,
 			csreg, ctreg, cdreg);
 		if(i>0)
 		{
-			if(sctx->abi_spillpad&4)
+//			if(sctx->abi_spillpad&4)
+			if((sctx->abi_spillpad&4) && !(sctx->has_qmul&16))
 			{
 //				if(shl>0)
 				if(1)

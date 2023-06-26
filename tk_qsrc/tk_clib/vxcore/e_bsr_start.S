@@ -1545,8 +1545,9 @@ memcpy_movx:
 //	CMPEQ	R16, R17
 //	BF		.L0A
 	ADD		-8, R6		|	MOV.Q	(R5,  0), R20
-	ADD		8, R5		|	MOV.Q	R20, (R4,  0)
+	ADD		8, R5
 	ADD		8, R4
+	MOV.Q	R20, (R4,  0)
 
 	.L0A:
 #endif
@@ -1585,7 +1586,8 @@ memcpy_movx:
 	BF		.L3
 	.L2:
 	ADD		-8, R6		|	MOV.Q	(R5,  0), R20
-	ADD		8, R5		|	MOV.Q	R20, (R4,  0)
+	ADD		8, R5
+	MOV.Q	R20, (R4,  0)
 	ADD		8, R4		|	CMPGE	8, R6
 	BT		.L2
 	.L3:
@@ -1674,7 +1676,7 @@ X(memcpy):
 .endif
 #endif
 
-.ifarch bjx2_wex
+.ifarch bjx2_wex3p
 	cmpge	#32, r6
 	bf		.L1
 	.L0:
@@ -1784,7 +1786,7 @@ X(_memcpyf):
 
 	mov		r4, r2
 
-.ifarch bjx2_wex
+.ifarch bjx2_wex3p
 	cmpge	#32, r6
 	bf		.L1
 	.L0:

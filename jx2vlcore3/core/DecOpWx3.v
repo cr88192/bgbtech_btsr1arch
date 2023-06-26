@@ -897,6 +897,7 @@ begin
 	end
 `endif
 
+`ifdef jx2_enable_xg2mode
 	if(srXG2)
 	begin
 		opIsFxA = 1;		opIsFzA = 1;
@@ -929,7 +930,7 @@ begin
 			opIsDwC = istrWord[75] && istrWord[73];
 		end
 	end
-
+`endif
 
 //	opIsWfA = opIsDfA && !opIsDzA && srWxe;
 //	opIsWfB = opIsDfB && !opIsDzB && srWxe;

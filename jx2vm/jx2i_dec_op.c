@@ -573,6 +573,9 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 
 		case BJX2_NMID_DIVSL:
 		case BJX2_NMID_DIVUL:
+			op->cyc=3;
+			break;
+
 		case BJX2_NMID_MODSL:
 		case BJX2_NMID_MODUL:
 			op->cyc=36;
@@ -2360,6 +2363,10 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_IMM;
 				op->Run=BJX2_Op_WEXMD_Imm;
 				op->imm=op->rn;
+				if(op->imm==BJX2_REG_DLR)
+					op->imm=0;
+				if(op->imm==BJX2_REG_DHR)
+					op->imm=1;
 				ctx->v_wexmd=op->imm;
 				break;
 

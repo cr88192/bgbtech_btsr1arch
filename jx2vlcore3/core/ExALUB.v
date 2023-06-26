@@ -237,6 +237,9 @@ reg			tSub2CF;
 reg			tSub2SF;
 reg			tSub2VF;
 
+reg			tSubPZF;
+reg			tSubPCF;
+
 reg			tSub1BZF;
 reg			tSub1BCF;
 reg			tSub1BSF;
@@ -272,6 +275,8 @@ reg[64:0]	tResult_Add64;
 reg[64:0]	tResult_Sub64;
 reg[32:0]	tResult_Add32;
 reg[32:0]	tResult_Sub32;
+reg[64:0]	tResult_Add48;
+reg[64:0]	tResult_Sub48;
 
 reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
@@ -389,6 +394,13 @@ begin
 
 	tResult_Add32 = { tAddCa2_Add[2], tResult_Add64[31:0] };
 	tResult_Sub32 = { tSubCa2_Sub[2], tResult_Sub64[31:0] };
+
+	tResult_Add48 = { tAddCa2_Add[3], 
+		tAddCa2_Add[3] ? 16'hFFFF : 16'h0000,
+		tResult_Add64[47:0] };
+	tResult_Sub48 = { tSubCa2_Sub[3],
+		tSubCa2_Sub[3] ? 16'hFFFF : 16'h0000,
+		tResult_Sub64[47:0] };
 `endif
 
 	tSub1WZF_A	= (tSub2A1[15: 0]==0);
@@ -410,11 +422,14 @@ begin
 	tSub1BZF	= tSub1WZF_C && tSub1WZF_D;
 
 	tSub2ZF		= tSub1ZF && tSub1BZF;
+	tSubPZF		= tSub1ZF && tSub1WZF_C;
 
 //	tSub1CF = tSub2A1[32];
 //	tSub2CF = tSub3A1[64];
 	tSub1CF = tSubCa2A1[1];
 	tSub2CF = tSubCa2A1[3];
+
+	tSubPCF = tSubCa2A1[2];
 
 	tSub1SF = tSub2A1[31];
 	tSub2SF = tSub3A1[63];
@@ -423,7 +438,8 @@ begin
 	tSub1BSF = tSub2B1[31];
 
 	tRegOutCarryD = {
-		3'b000,
+		tSubPCF, tSubPZF, 1'b0,
+//		3'b000,
 		tSub2ZF,
 		tSubCa2A1[3], tSubCa2A0[3], tAddCa2A1[3], tAddCa2A0[3] };
 
@@ -512,6 +528,13 @@ begin
 			tResult2W = { 1'b0,
 				tAdd1D0[15:0], tAdd1C0[15:0],
 				tAdd1B0[15:0], tAdd1A0[15:0] };
+
+`ifdef jx2_enable_aluptr
+			if(idUIxt[5:4]==2'b11)
+			begin
+//				tResult2W=tResult_Add48;
+			end
+`endif
 		end
 		4'h1: begin		/* SUB */
 //			tResult1A=tSub2A1;
@@ -527,6 +550,13 @@ begin
 			tResult2W = { 1'b0,
                 tSub1D1[15:0], tSub1C1[15:0],
 				tSub1B1[15:0], tSub1A1[15:0] };
+
+`ifdef jx2_enable_aluptr
+			if(idUIxt[5:4]==2'b11)
+			begin
+				tResult2W=tResult_Sub48;
+			end
+`endif
 		end
 		4'h2: begin		/* ADC */
 //			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;

@@ -48,6 +48,7 @@ int flags;
 } locale_list[] = {
 { "C", TK_LOCALE_FLAG_CP1252 },
 { "POSIX", TK_LOCALE_FLAG_CP1252 },
+{ "ISO-8859-1", TK_LOCALE_FLAG_CP1252 },
 { ".UTF8", TK_LOCALE_FLAG_UTF8 },
 { "EN_US.UTF8", TK_LOCALE_FLAG_UTF8 },
 { NULL, 0 }
@@ -56,19 +57,32 @@ int flags;
 short locale_id;
 int locale_flags;
 
+int _locale_is_utf8(void)
+{
+	return((locale_flags&TK_LOCALE_FLAG_UTF8)!=0);
+}
+
+int _locale_is_cp1252(void)
+{
+	return((locale_flags&TK_LOCALE_FLAG_CP1252)!=0);
+}
+
 __PDPCLIB_API__ char *setlocale(int category, const char *locale)
 {
 	int i;
 //    (void)category;
     if (locale == NULL)
     {
-        return ("C");
+//		return ("C");
+		return(locale_list[locale_id].name);
     }
     else if ((strcmp(locale, "C") == 0)
              || (strcmp(locale, "") == 0))
     {
 		locale_id = 0;
-        return ("C");
+		locale_flags = locale_list[0].flags;
+		return(locale_list[locale_id].name);
+//        return ("C");
     }
     else
     {

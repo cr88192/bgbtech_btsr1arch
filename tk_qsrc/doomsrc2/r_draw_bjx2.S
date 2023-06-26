@@ -24,6 +24,8 @@ EDI -> R23
 .global X(R_DrawColumn)
 X(R_DrawColumn):
 
+	WEXMD
+
 	MOV.L		X(dc_yh), R4
 	MOV.L		X(dc_yl), R20
 	ADD			#1, R4	
@@ -94,8 +96,10 @@ X(R_DrawColumn):
 
 #if 1
 .doubleloop:
-	SHLD	R20, #-25, R5	| MOV.W		R18, (R23)
-	ADD		R21, R20		| MOV.W		R19, (R23, 640)
+	SHLD	R20, #-25, R5
+	MOV.W	R18, (R23)
+	ADD		R21, R20
+	MOV.W	R19, (R23, 640)
 	SHLD	R20, #-25, R6	| MOVU.B	(R22, R5), R18
 	ADD		R21, R20		| MOVU.B	(R22, R6), R19
 	ADD		#1280, R23		| MOVU.W	(R4, R18), R18
@@ -135,6 +139,8 @@ X(R_DrawColumn):
 X(R_DrawSpan):
 
 //	RTS
+
+	WEXMD
 
 	MOV.L		X(ds_x2), R4
 	ADD			#1, R4
@@ -265,10 +271,13 @@ X(R_DrawSpan):
 	OR		R2, R5				|	OR		R0, R6
 	SHLD	R5, #6, R5			|	SHLD	R6, #6, R6
 	OR		R3, R5				|	OR		R1, R6
-	MOV		#4095, R3			|	MOV.W	R18, (R23)
-	AND		R3, R5				|	MOV.W	R19, (R23, 2)	
+	MOV		#4095, R3
+	AND		R3, R5
+	MOV.W	R18, (R23)
+	MOV.W	R19, (R23, 2)	
 	AND		R3, R6				|	MOVU.B	(R22, R5), R18	
 	ADD		R21, R20			|	MOVU.B	(R22, R6), R19	
+
 	ADD		#-1, R17			|	MOVU.W	(R4, R18), R18
 	ADD		#4, R23				|	MOVU.W	(R7, R19), R19
 .ifarch has_jcmpz
@@ -293,6 +302,8 @@ X(R_DrawSpan):
 
 .global X(R_DrawColumnLow)
 X(R_DrawColumnLow):
+
+	WEXMD
 
 	MOV.L		X(dc_yh), R4
 	MOV.L		X(dc_yl), R20
@@ -366,9 +377,11 @@ X(R_DrawColumnLow):
 
 #if 1
 .doubleloop:
-	SHLD	R20, #-25, R5	| MOV.W		R18, (R23)
+	SHLD	R20, #-25, R5
+	MOV.W	R18, (R23)
 	MOV.W	R18, (R23, 2)
-	ADD		R21, R20		| MOV.W		R19, (R23, 640)
+	ADD		R21, R20		
+	MOV.W	R19, (R23, 640)
 	MOV.W	R19, (R23, 642)
 	SHLD	R20, #-25, R6	| MOVU.B	(R22, R5), R18
 	ADD		R21, R20		| MOVU.B	(R22, R6), R19
@@ -391,6 +404,8 @@ X(R_DrawColumnLow):
 
 .global X(R_DrawSpanLow)
 X(R_DrawSpanLow):
+	WEXMD
+
 	MOV.L		X(ds_x2), R4
 	ADD			#1, R4
 	MOV.L		X(ds_x1), R3
@@ -510,6 +525,8 @@ X(R_DrawSpanLow):
 
 X(I_FinishUpdate_ScanCopyClear):
 
+	WEXMD
+
 	CMP/GT	#0, R6
 	BF .done
 
@@ -525,16 +542,25 @@ X(I_FinishUpdate_ScanCopyClear):
 							MOV.X	(R4, 1920), R22
 							MOV.Q	R16, (R5,  0)
 							MOV.Q	R17, (R5, 32)
-	MOV		R2, R16		|	MOV.Q	R18, (R5,  8)
-	MOV		R2, R17		|	MOV.Q	R19, (R5, 40)
+	MOV		R2, R16		
+	MOV.Q	R18, (R5,  8)
+	MOV		R2, R17		
+	MOV.Q	R19, (R5, 40)
+
 							MOV.X	R16, (R4,    0)
 							MOV.X	R16, (R4,  640)
-	MOV		R3, R18		|	MOV.Q	R20, (R5, 16)
-	MOV		R3, R19		|	MOV.Q	R22, (R5, 24)
+
+	MOV		R3, R18		
+	MOV.Q	R20, (R5, 16)
+	MOV		R3, R19		
+	MOV.Q	R22, (R5, 24)
+
 							MOV.X	R18, (R4, 1280)
 							MOV.X	R18, (R4, 1920)
-	ADD		#-1, R6		|	MOV.Q	R21, (R5, 48)
-	ADD		#16, R4		|	MOV.Q	R23, (R5, 56)
+	ADD		#-1, R6
+	MOV.Q	R21, (R5, 48)
+	ADD		#16, R4
+	MOV.Q	R23, (R5, 56)
 	ADD		#64, R5		|	TEST	R6, R6
 	BF .loop
 #endif
@@ -553,8 +579,10 @@ X(I_FinishUpdate_ScanCopyClear):
 
 	MOV.Q	R16, (R5,  0)
 	MOV.Q	R17, (R5,  8)
-	ADD		#-1, R6			| MOV.Q		R18, (R5, 16)
-	ADD		#8, R4			| MOV.Q		R19, (R5, 24)
+	ADD		#-1, R6
+	MOV.Q		R18, (R5, 16)
+	ADD		#8, R4
+	MOV.Q		R19, (R5, 24)
 	ADD		#32, R5			| TEST		R6, R6
 	BF .loop
 #endif
@@ -570,6 +598,8 @@ X(I_FinishUpdate_ScanCopyClear):
 
 X(I_FinishUpdate_ScanCopy):
 
+	WEXMD
+
 	CMP/GT	#0, R6
 	BF .done
 
@@ -581,8 +611,10 @@ X(I_FinishUpdate_ScanCopy):
 	MOV.Q	(R4, 1920), R23
 	MOV.Q	R20, (R5,  0)
 	MOV.Q	R21, (R5,  8)
-	ADD		#-1, R6			| MOV.Q		R22, (R5, 16)
-	ADD		#8, R4			| MOV.Q		R23, (R5, 24)
+	ADD		#-1, R6
+	MOV.Q	R22, (R5, 16)
+	ADD		#8, R4
+	MOV.Q	R23, (R5, 24)
 	ADD		#32, R5			| TEST		R6, R6
 	BF .loop
 #endif
@@ -600,8 +632,10 @@ X(I_FinishUpdate_ScanCopy):
 							MOV.Q	R22, (R5, 24)
 							MOV.Q	R17, (R5, 32)
 							MOV.Q	R19, (R5, 40)
-	ADD		#-1, R6		|	MOV.Q	R21, (R5, 48)
-	ADD		#16, R4		|	MOV.Q	R23, (R5, 56)
+	ADD		#-1, R6		
+	MOV.Q	R21, (R5, 48)
+	ADD		#16, R4
+	MOV.Q	R23, (R5, 56)
 	ADD		#64, R5		|	TEST	R6, R6
 	BF .loop
 #endif
@@ -733,8 +767,10 @@ X(I_FinishUpdate_ScanCopyVbl):
 
 								MOV.Q	R24, (R5,  0)
 								MOV.Q	R25, (R5,  8)
-	ADD		#-1, R6			|	MOV.Q	R26, (R5, 16)
-	ADD		#8, R4			|	MOV.Q	R27, (R5, 24)
+	ADD		#-1, R6
+	MOV.Q	R26, (R5, 16)
+	ADD		#8, R4
+	MOV.Q	R27, (R5, 24)
 	ADD		#32, R5			|	TEST	R6, R6
 	BF .loop
 
@@ -791,10 +827,12 @@ X(V_DrawPatchCmap_Col):
 	.loop1:
 	MOVU.B		(R4, 0), R2
 	MOVU.B		(R4, 1), R3
+	ADD			#2, R4
 	MOVU.W		(R6, R2), R2
 	MOVU.W		(R6, R3), R3
-	ADD			#-2, R7			| MOV.W		R2, (R5, 0)
-	ADD			#2, R4			| MOV.W		R3, (R5, 640)
+	ADD			#-2, R7
+	MOV.W		R2, (R5, 0)
+	MOV.W		R3, (R5, 640)
 	ADD			#1280, R5		| CMP/GE	#2, R7
 	BT		.loop1
 	.done1:

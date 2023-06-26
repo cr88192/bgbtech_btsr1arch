@@ -55,6 +55,123 @@ bool BGBCC_CCXL_TypeSmallTypeP(
 	return(false);
 }
 
+/* Check if source type can be promoted to the destination type without any need for a conv step. */
+bool BGBCC_CCXL_TypeImplicitPromoteP(
+	BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty)
+{
+	if(dty.val==CCXL_TY_I)
+	{
+		if(sty.val==CCXL_TY_SB)
+			return(true);
+		if(sty.val==CCXL_TY_SS)
+			return(true);
+		if(sty.val==CCXL_TY_I)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_UI)
+	{
+		if(sty.val==CCXL_TY_UB)
+			return(true);
+		if(sty.val==CCXL_TY_US)
+			return(true);
+		if(sty.val==CCXL_TY_UI)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_NL)
+	{
+		if(sty.val==CCXL_TY_SB)
+			return(true);
+		if(sty.val==CCXL_TY_SS)
+			return(true);
+		if(sty.val==CCXL_TY_I)
+			return(true);
+		if(sty.val==CCXL_TY_NL)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_UNL)
+	{
+		if(sty.val==CCXL_TY_UB)
+			return(true);
+		if(sty.val==CCXL_TY_US)
+			return(true);
+		if(sty.val==CCXL_TY_UI)
+			return(true);
+		if(sty.val==CCXL_TY_UNL)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_SB)
+	{
+		if(sty.val==CCXL_TY_SB)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_UB)
+	{
+		if(sty.val==CCXL_TY_UB)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_SS)
+	{
+		if(sty.val==CCXL_TY_SB)
+			return(true);
+		if(sty.val==CCXL_TY_SS)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_US)
+	{
+		if(sty.val==CCXL_TY_UB)
+			return(true);
+		if(sty.val==CCXL_TY_US)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_L)
+	{
+		if(sty.val==CCXL_TY_SB)
+			return(true);
+		if(sty.val==CCXL_TY_SS)
+			return(true);
+		if(sty.val==CCXL_TY_I)
+			return(true);
+		if(sty.val==CCXL_TY_NL)
+			return(true);
+		if(sty.val==CCXL_TY_L)
+			return(true);
+		return(false);
+	}
+
+	if(dty.val==CCXL_TY_UL)
+	{
+		if(sty.val==CCXL_TY_UB)
+			return(true);
+		if(sty.val==CCXL_TY_US)
+			return(true);
+		if(sty.val==CCXL_TY_UI)
+			return(true);
+		if(sty.val==CCXL_TY_UNL)
+			return(true);
+		if(sty.val==CCXL_TY_UL)
+			return(true);
+		return(false);
+	}
+
+	return(false);
+}
+
 bool BGBCC_CCXL_TypeSmallIntP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {

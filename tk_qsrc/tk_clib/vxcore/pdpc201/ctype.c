@@ -240,90 +240,252 @@ static short __toupR[257] = {
 
 unsigned short *__isbuf;
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if 1
 short *__tolow;
 short *__toup;
 #endif
 
+int _tolower_gen(int c);
+int _toupper_gen(int c);
+
 void __cytpe_init(void)
 {
+	int i;
 	if(__isbuf)
 		return;
 
+	setlocale(1, "");
+
 	__isbuf = &__isbufR[1];
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if 1
 	__tolow = &__tolowR[1];
 	__toup = &__toupR[1];
+#endif
+
+#if 1
+	__tolow[-1]=-1;
+	__toup[-1]=-1;
+	for(i=0; i<256; i++)
+	{
+		__tolow[i]=_tolower_gen(i);
+		__toup[i]=_toupper_gen(i);
+	}
 #endif
 }
 
 #endif
 
+__PDPCLIB_API__ int isascii(int c)
+{
+	if(c<0x00)
+		return(0);
+	if(c>0x7F)
+		return(0);
+	return(1);
+}
+
 __PDPCLIB_API__ int isalnum(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0001U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0001U);
+	return(isalpha(c)||isdigit(c));
 }
 
 __PDPCLIB_API__ int isalpha(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0002U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0002U);
+	return(0);
 }
 
 __PDPCLIB_API__ int iscntrl(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0004U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0004U);
+	return(0);
 }
 
 __PDPCLIB_API__ int isdigit(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0008U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0008U);
+	return(0);
 }
 
 __PDPCLIB_API__ int isgraph(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0010U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0010U);
+	return(0);
 }
 
 __PDPCLIB_API__ int islower(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0020U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0020U);
+	return(0);
 }
 
 __PDPCLIB_API__ int isprint(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0040U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0040U);
+	return(0);
 }
 
 __PDPCLIB_API__ int ispunct(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0080U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0080U);
+
+	return(!isspace(c) && !isalnum(c));
+//	return(0);
 }
 
 __PDPCLIB_API__ int isspace(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0100U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0100U);
+	return(0);
 }
 
 __PDPCLIB_API__ int isupper(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0200U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0200U);
+	return(0);
 }
 
 __PDPCLIB_API__ int isxdigit(int c)
 {
 	__cytpe_init();
-    return (__isbuf[c] & 0x0400U);
+	if(c<0)
+		c=-1;
+	if(c<=0xFF)
+		return (__isbuf[c] & 0x0400U);
+	return(0);
+}
+
+// TK_NOCULL
+int _tolower_gen(int c)
+{
+	if(c<=0x7F)
+	{
+		if((c>='A') && (c<='Z'))
+			return(c+0x20);
+		return(c);
+	}
+
+	if((c>=0xA0) && (c<=0xD6))
+	{
+		return(c+0x20);
+	}
+	
+	if((c>=0xD8) && (c<=0xDE))
+	{
+		return(c+0x20);
+	}
+	
+	if(_locale_is_cp1252(c))
+	{
+		if(c==0x8A)
+			return(0x9A);
+		if(c==0x8C)
+			return(0x9C);
+		if(c==0x8E)
+			return(0x9E);
+		if(c==0x9F)
+			return(0xFF);
+	}
+	
+	if((c>=0x0391) && (c<=0x03AA))
+		return(c+0x20);
+
+	if((c>=0x0400) && (c<=0x040F))
+		return(c+0x50);
+	if((c>=0x0410) && (c<=0x042F))
+		return(c+0x20);
+
+	return(c);
+}
+
+// TK_NOCULL
+int _toupper_gen(int c)
+{
+	if(c<=0x7F)
+	{
+		if((c>='a') && (c<='z'))
+			return(c-0x20);
+		return(c);
+	}
+
+	if((c>=0xE0) && (c<=0xF6))
+	{
+		return(c-0x20);
+	}
+
+	if((c>=0xF8) && (c<=0xFE))
+	{
+		return(c+0x20);
+	}
+	
+	if(_locale_is_cp1252(c))
+	{
+		if(c==0x9A)
+			return(0x8A);
+		if(c==0x9C)
+			return(0x8C);
+		if(c==0x9E)
+			return(0x8E);
+		if(c==0xFF)
+			return(0x9F);
+	}
+
+	if(c==0xFF)
+		return(0x178);
+
+	if((c>=0x03B1) && (c<=0x03CA))
+		return(c-0x20);
+
+	if((c>=0x0450) && (c<=0x045F))
+		return(c-0x50);
+	if((c>=0x0430) && (c<=0x044F))
+		return(c-0x20);
+
+	return(c);
 }
 
 #ifdef __BJX2__
@@ -333,18 +495,26 @@ __PDPCLIB_API__ int toupper(int c);
 
 __asm {
 tolower:
+	TEST	0xFF80, R4
+	BF		.L0
 	MOV		R4, R2
 	SUB		R4, 0x41, R3
 	CMPHI	25, R3
 	ADD?F	32, R2
 	RTS
+	.L0:
+	BRA		_tolower_gen
 
 toupper:
+	TEST	0xFF80, R4
+	BF		.L0
 	MOV		R4, R2
 	SUB		R4, 0x61, R3
 	CMPHI	25, R3
 	ADD?F	-32, R2
 	RTS
+	.L0:
+	BRA		_toupper_gen
 };
 
 #else
@@ -359,6 +529,218 @@ __PDPCLIB_API__ int toupper(int c)
 {
 	__cytpe_init();
     return (__toup[c]);
+}
+#endif
+
+#ifdef __BJX2__
+//#if 0
+
+__PDPCLIB_API__ uint64_t _toupper_8x(uint64_t c);
+__PDPCLIB_API__ uint64_t _tolower_8x(uint64_t c);
+
+__asm {
+
+#if 0
+
+_tolower_8x:
+#if 0
+//	MOV		0x4141414141414141, R3
+//	MOV		R4, R2			|	PSUB.W R4, R3, R5
+	MOV		R4, R2			|	MOV R4, R5
+	SUB		0x4141414141414141, R5
+	SHLD.Q	R5, -8, R17		|	EXTU.B	R5, R16
+	SHLD.Q	R5, -16, R18	|	EXTU.B	R17, R17
+	SHLD.Q	R5, -24, R19	|	EXTU.B	R18, R18
+	SHLD.Q	R5, -32, R20	|	EXTU.B	R19, R19
+	SHLD.Q	R5, -40, R21	|	EXTU.B	R20, R20
+	SHLD.Q	R5, -48, R22	|	EXTU.B	R21, R21
+	SHLD.Q	R5, -56, R23	|	EXTU.B	R22, R22
+	EXTU.B	R23, R23
+	CMPHI	25, R16
+	ADD?F	0x0000000000000020, R2
+	CMPHI	25, R17
+	ADD?F	0x0000000000002000, R2
+	CMPHI	25, R18
+	ADD?F	0x0000000000200000, R2
+	CMPHI	25, R19
+	ADD?F	0x0000000020000000, R2
+	CMPHI	25, R20
+	ADD?F	0x0000002000000000, R2
+	CMPHI	25, R21
+	ADD?F	0x0000200000000000, R2
+	CMPHI	25, R22
+	ADD?F	0x0020000000000000, R2
+	CMPHI	25, R23
+	ADD?F	0x2000000000000000, R2
+	RTS
+#endif
+
+#if 1
+	MOV		R4, R2			|	SHLD.Q	R4, -8, R17		|	EXTU.B	R4, R16
+	SUB		R16, 0x41, R16	|	SHLD.Q	R4, -16, R18	|	EXTU.B	R17, R17
+	SUB		R17, 0x41, R17	|	SHLD.Q	R4, -24, R19	|	EXTU.B	R18, R18
+	SUB		R18, 0x41, R18	|	SHLD.Q	R4, -32, R20	|	EXTU.B	R19, R19
+	SUB		R19, 0x41, R19	|	SHLD.Q	R4, -40, R21	|	EXTU.B	R20, R20
+	SUB		R20, 0x41, R20	|	SHLD.Q	R4, -48, R22	|	EXTU.B	R21, R21
+	SUB		R21, 0x41, R21	|	SHLD.Q	R4, -56, R23	|	EXTU.B	R22, R22
+	SUB		R22, 0x41, R22	|	SUB		R23, 0x41, R23
+	MOV		0x20, R3		|	CMPHI	25, R16
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R17
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R18
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R19
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R20
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R21
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R22
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R23
+								ADD?F	R3, R2
+	RTS
+#endif
+
+
+#if 0
+_toupper_8x:
+	MOV		0x8080808080808080, R5
+	TSTQ	R5, R4
+	BF		_toupper_8x_tab
+
+#if 0
+//	MOV		0x6161616161616161, R3
+//	MOV		R4, R2			|	PSUB.W R4, R3, R5
+	MOV		R4, R2			|	MOV R4, R5
+	SUB		0x6161616161616161, R5
+	SHLD.Q	R5, -8, R17		|	EXTU.B	R5, R16
+	SHLD.Q	R5, -16, R18	|	EXTU.B	R17, R17
+	SHLD.Q	R5, -24, R19	|	EXTU.B	R18, R18
+	SHLD.Q	R5, -32, R20	|	EXTU.B	R19, R19
+	SHLD.Q	R5, -40, R21	|	EXTU.B	R20, R20
+	SHLD.Q	R5, -48, R22	|	EXTU.B	R21, R21
+	SHLD.Q	R5, -56, R23	|	EXTU.B	R22, R22
+#endif
+
+#if 1
+	MOV		R4, R2			|	SHLD.Q	R4, -8, R17		|	EXTU.B	R4, R16
+	SUB		R16, 0x61, R16	|	SHLD.Q	R4, -16, R18	|	EXTU.B	R17, R17
+	SUB		R17, 0x61, R17	|	SHLD.Q	R4, -24, R19	|	EXTU.B	R18, R18
+	SUB		R18, 0x61, R18	|	SHLD.Q	R4, -32, R20	|	EXTU.B	R19, R19
+	SUB		R19, 0x61, R19	|	SHLD.Q	R4, -40, R21	|	EXTU.B	R20, R20
+	SUB		R20, 0x61, R20	|	SHLD.Q	R4, -48, R22	|	EXTU.B	R21, R21
+	SUB		R21, 0x61, R21	|	SHLD.Q	R4, -56, R23	|	EXTU.B	R22, R22
+	SUB		R22, 0x61, R22	|	SUB		R23, 0x61, R23
+#endif
+
+//	EXTU.B	R23, R23
+	MOV		-32, R3			|	CMPHI	25, R16
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R17
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R18
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R19
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R20
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R21
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R22
+								ADD?F	R3, R2
+	SHLD.Q	R3, 8, R3		|	CMPHI	25, R23
+								ADD?F	R3, R2
+	RTS
+#endif
+
+#endif
+
+_tolower_8x:
+// _toupper_8x_tab:
+	MOV.P		__tolow, R5
+
+	SHLD.Q	R4, -8, R17		|	EXTU.B	R4, R16
+	SHLD.Q	R4, -16, R18	|	EXTU.B	R17, R17
+	SHLD.Q	R4, -24, R19	|	EXTU.B	R18, R18
+	SHLD.Q	R4, -32, R20	|	EXTU.B	R19, R19
+	SHLD.Q	R4, -40, R21	|	EXTU.B	R20, R20
+	SHLD.Q	R4, -48, R22	|	MOV.W	(R5, R16), R16
+	SHLD.Q	R4, -56, R23	|	MOV.W	(R5, R17), R17
+	EXTU.B	R21, R21		|	MOV.W	(R5, R18), R18
+	EXTU.B	R22, R22		|	MOV.W	(R5, R19), R19
+	SHLD.Q	R17, 8, R17		|	MOV.W	(R5, R20), R20
+	SHLD.Q	R18, 16, R18	|	MOV.W	(R5, R21), R21
+	SHLD.Q	R19, 24, R19	|	MOV.W	(R5, R22), R22
+	SHLD.Q	R20, 32, R20	|	MOV.W	(R5, R23), R23
+	SHLD.Q	R21, 40, R21	|
+	SHLD.Q	R22, 48, R22	|	SHLD.Q	R23, 56, R23
+
+	OR		R16, R17, R16	|	OR		R18, R19, R18
+	OR		R20, R21, R20	|	OR		R22, R23, R22
+	OR		R16, R18, R16	|	OR		R20, R22, R17
+	OR		R16, R17, R2
+	RTS
+
+_toupper_8x:
+
+#if 1
+// _toupper_8x_tab:
+	MOV.P		__toup, R5
+
+	SHLD.Q	R4, -8, R17		|	EXTU.B	R4, R16
+	SHLD.Q	R4, -16, R18	|	EXTU.B	R17, R17
+	SHLD.Q	R4, -24, R19	|	EXTU.B	R18, R18
+	SHLD.Q	R4, -32, R20	|	EXTU.B	R19, R19
+	SHLD.Q	R4, -40, R21	|	EXTU.B	R20, R20
+	SHLD.Q	R4, -48, R22	|	MOV.W	(R5, R16), R16
+	SHLD.Q	R4, -56, R23	|	MOV.W	(R5, R17), R17
+	EXTU.B	R21, R21		|	MOV.W	(R5, R18), R18
+	EXTU.B	R22, R22		|	MOV.W	(R5, R19), R19
+	SHLD.Q	R17, 8, R17		|	MOV.W	(R5, R20), R20
+	SHLD.Q	R18, 16, R18	|	MOV.W	(R5, R21), R21
+	SHLD.Q	R19, 24, R19	|	MOV.W	(R5, R22), R22
+	SHLD.Q	R20, 32, R20	|	MOV.W	(R5, R23), R23
+	SHLD.Q	R21, 40, R21	|
+	SHLD.Q	R22, 48, R22	|	SHLD.Q	R23, 56, R23
+
+	OR		R16, R17, R16	|	OR		R18, R19, R18
+	OR		R20, R21, R20	|	OR		R22, R23, R22
+	OR		R16, R18, R16	|	OR		R20, R22, R17
+	OR		R16, R17, R2
+	RTS
+#endif
+};
+
+#else
+
+uint64_t _tolower_8x(uint64_t c)
+{
+	uint64_t v;
+	v=         tolower((c>>56)&0xFF);
+	v=(v<<8) | tolower((c>>48)&0xFF);
+	v=(v<<8) | tolower((c>>40)&0xFF);
+	v=(v<<8) | tolower((c>>32)&0xFF);
+	v=(v<<8) | tolower((c>>24)&0xFF);
+	v=(v<<8) | tolower((c>>16)&0xFF);
+	v=(v<<8) | tolower((c>> 8)&0xFF);
+	v=(v<<8) | tolower((c>> 0)&0xFF);
+	return(v);
+}
+
+uint64_t _toupper_8x(uint64_t c)
+{
+	uint64_t v;
+	v=         toupper((c>>56)&0xFF);
+	v=(v<<8) | toupper((c>>48)&0xFF);
+	v=(v<<8) | toupper((c>>40)&0xFF);
+	v=(v<<8) | toupper((c>>32)&0xFF);
+	v=(v<<8) | toupper((c>>24)&0xFF);
+	v=(v<<8) | toupper((c>>16)&0xFF);
+	v=(v<<8) | toupper((c>> 8)&0xFF);
+	v=(v<<8) | toupper((c>> 0)&0xFF);
+	return(v);
 }
 
 #endif

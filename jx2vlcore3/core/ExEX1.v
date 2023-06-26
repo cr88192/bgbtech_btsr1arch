@@ -1000,6 +1000,8 @@ begin
 
 `endif
 
+//			$display("BSR: LR=%X", tRegBraLr);
+
 //			if(!opPreBra)
 			if(opPreBra!=2'b01)
 			begin
@@ -1028,6 +1030,8 @@ begin
 //			tDoBra		= 1;
 //			tDoBra		= !opPreBra;
 			tDoBra		= (opPreBra != 2'b01);
+
+//			$display("JMP: Reg=%X", regValRs);
 
 // `ifndef jx2_enable_riscv
 // `ifdef def_true
@@ -1495,8 +1499,12 @@ begin
 `ifdef jx2_enable_wex
 					case(regIdRm[4:0])
 						5'h0:		tRegOutSr[27]	= 0;
+
 						5'h1:		tRegOutSr[27]	= 1;
+
+`ifdef jx2_enable_wex3w
 						5'h2:		tRegOutSr[27]	= 1;
+`endif
 
 `ifdef jx2_mem_lane2
 						5'h3:		tRegOutSr[27]	= 1;

@@ -147,6 +147,7 @@ X(tk_checksane_wex_asm):
 //	bf _checksane_wex_fail
 	break?f
 
+#ifndef JX2RBD
 	wexmd #2
 
 	mov #0x1234, r4		| mov #0x5678, r5	| mov #0x89AB, r6
@@ -167,7 +168,8 @@ X(tk_checksane_wex_asm):
 	cmpeq r7, r10
 //	bf _checksane_wex_fail
 	break?f
-	
+#endif
+
 	.L4:
 	
 	mov 0x1234, r8

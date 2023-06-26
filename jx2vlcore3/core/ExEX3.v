@@ -77,7 +77,9 @@ module ExEX3(
 	regFpuV4GRn,	//FPU GPR Result
 	opBraFlush,
 
-	regInLastSr,	
+	regInLastSr,
+	ex3MulFaz,
+	
 	memDataIn,
 	memDataInB,
 	memDataOK
@@ -124,6 +126,7 @@ input[63:0]		regFpuV4GRn;		//FPU GPR Result
 input			opBraFlush;
 
 input[ 7:0]		regInLastSr;
+input			ex3MulFaz;
 
 input[63:0]		memDataIn;
 input[63:0]		memDataInB;
@@ -379,6 +382,12 @@ begin
 
 `ifdef jx2_alu_slomuldiv
 		JX2_UCMD_QMULDIV: begin
+			if(ex3MulFaz)
+			begin
+				/* Multiplier has handled this divide. */
+				tValOutDfl		= regValMulRes[63:0];
+				tDoOutDfl		= 1;
+			end
 		end
 `endif
 

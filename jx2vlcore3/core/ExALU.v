@@ -496,11 +496,17 @@ reg			tSub2SF;
 reg			tSub2VF;
 reg			tTst2ZF;
 
+reg			tSubPZF;
+reg			tSubPCF;
+
 reg			tSub1BZF;
 reg			tSub1BCF;
 reg			tSub1BSF;
 reg			tSub1BVF;
 reg			tTst1BZF;
+
+reg			tSub1PZF;
+reg			tSub1PCF;
 
 reg			tSub1WZF_A;
 reg			tSub1WCF_A;
@@ -557,6 +563,9 @@ reg[64:0]	tResult_Add64;
 reg[64:0]	tResult_Sub64;
 // reg[64:0]	tResult_Adc64;
 // reg[64:0]	tResult_Sbb64;
+
+reg[64:0]	tResult_Add48;
+reg[64:0]	tResult_Sub48;
 
 reg[32:0]	tResult_Add32;
 reg[32:0]	tResult_Sub32;
@@ -724,6 +733,15 @@ begin
 		tSubCa2_Sub = {
 			regInCarryD[3] ? tSubCa2A1 : tSubCa2A0,
 			regInCarryD[3] };
+
+`ifdef jx2_enable_aluptr
+		if(idUIxt[5:4]==2'b11)
+		begin
+			tSubCa2_Sub = {
+				regInCarryD[7] ? tSubCa2A1 : tSubCa2A0,
+				regInCarryD[7] };
+		end
+`endif
 	end
 `endif
 
@@ -746,6 +764,13 @@ begin
 
 	tResult_Add32 = { tAddCa2_Add[2], tResult_Add64[31:0] };
 	tResult_Sub32 = { tSubCa2_Sub[2], tResult_Sub64[31:0] };
+
+	tResult_Add48 = { tAddCa2_Add[3], 
+		tAddCa2_Add[3] ? 16'hFFFF : 16'h0000,
+		tResult_Add64[47:0] };
+	tResult_Sub48 = { tSubCa2_Sub[3],
+		tSubCa2_Sub[3] ? 16'hFFFF : 16'h0000,
+		tResult_Sub64[47:0] };
 `endif
 
 	tSub1BZF_A	= (tSub2A1[ 7: 0]==0);
@@ -779,13 +804,16 @@ begin
 //	tSub1BZF	= (tSub3A1[47:32]==0) && (tSub3A1[63:48]==0);
 	tSub1ZF		= tSub1WZF_A && tSub1WZF_B;
 	tSub1BZF	= tSub1WZF_C && tSub1WZF_D;
+	tSub1PZF	= tSub1WZF_C;
 
 	tSub2ZF		= tSub1ZF && tSub1BZF;
+	tSubPZF		= tSub1ZF && tSub1PZF;
 
 //	tSub1CF = tSub2A1[32];
 //	tSub2CF = tSub3A1[64];
 	tSub1CF = tSubCa2A1[1];
 	tSub2CF = tSubCa2A1[3];
+	tSubPCF = tSubCa2A1[2];
 
 	tSub1SF = tSub2A1[31];
 	tSub2SF = tSub3A1[63];
@@ -1202,10 +1230,17 @@ begin
 
 			tResult1B=tAdd2B0;
 			tResult1S=regInSrS;
-			
+
 			tResult2W = { 1'b0,
 				tAdd1D0[15:0], tAdd1C0[15:0],
 				tAdd1B0[15:0], tAdd1A0[15:0] };
+
+`ifdef jx2_enable_aluptr
+			if(idUIxt[5:4]==2'b11)
+			begin
+//				tResult2W=tResult_Add48;
+			end
+`endif
 		end
 		4'h1: begin		/* SUB */
 //			tResult1A=tSub2A1;
@@ -1228,6 +1263,13 @@ begin
 			tResult2W = { 1'b0,
                 tSub1D1[15:0], tSub1C1[15:0],
 				tSub1B1[15:0], tSub1A1[15:0] };
+
+`ifdef jx2_enable_aluptr
+			if(idUIxt[5:4]==2'b11)
+			begin
+				tResult2W=tResult_Sub48;
+			end
+`endif
 		end
 		4'h2: begin		/* ADC */
 //			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;
@@ -1506,6 +1548,25 @@ begin
 				4'b1000: tResult1W = { 29'h0, 4'h3};
 				4'b0000: tResult1W = { 29'h0, 4'h4};
 			endcase
+			
+			tResultw1T =
+				tResult1P || tResult1Q ||
+				tResult1R || tResult1O ;
+			tResultw1Tv=1;
+
+`ifdef jx2_enable_aluptr
+			if(!idUIxt[4])
+			begin
+				tResultw1T=tSubPZF;
+
+`ifdef jx2_alu_wx
+				if(tOpIsWx)
+				begin
+					tResultw1T=tSubPZF && regInCarryD[6];
+				end
+`endif
+			end
+`endif
 
 `ifndef def_true
 			tResultb1P=tSub1BZF_A;
@@ -1604,6 +1665,21 @@ begin
 			begin
 				tResult2T = (!tSub2ZF && !(tSub2SF^tSub2VF)) ||
 					(tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
+			end
+`endif
+
+`ifdef jx2_enable_aluptr
+			if(!idUIxt[4])
+			begin
+				tResultw1T=tSubPCF;
+				tResultw1Tv	= 1;
+
+`ifdef jx2_alu_wx
+				if(tOpIsWx)
+				begin
+					tResultw1T=tSubPCF || (tSubPZF && regInCarryD[7]);
+				end
+`endif
 			end
 `endif
 

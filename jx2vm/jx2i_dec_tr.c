@@ -1792,6 +1792,16 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 	if(op3->fl&BJX2_OPFL_NOWEXSFX3W)
 		return(-1);
 
+	if(ctx->v_wexmd==0xFF)
+	{
+		if(ctx->wexmd==1)
+			return(-1);
+	}else
+	{
+		if(ctx->v_wexmd==1)
+			return(-1);
+	}
+
 	if(op1->rn!=BJX2_REG_ZZR)
 	{
 		if((op1->rn==op2->rm) || (op1->rn==op2->ro))
@@ -1831,6 +1841,16 @@ int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 	{
 		printf("BJX2_CheckWexSanity2W: Invalid Suffix\n");
 		return(-1);
+	}
+
+	if((ctx->wexmd==1) || (ctx->v_wexmd==1))
+	{
+		if(	(op2->fmid==BJX2_FMID_REGSTREGDISP)	||
+			(op2->fmid==BJX2_FMID_REGSTREG)		||
+			(op2->fmid==BJX2_FMID_REGSTREG2)	)
+		{
+			return(-1);
+		}
 	}
 
 	if(op1->rn!=BJX2_REG_ZZR)
