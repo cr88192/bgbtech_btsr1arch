@@ -308,9 +308,6 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "rsub"))
 		{ shctx->has_qmul|=8; }
 
-	if(BGBCC_CCXL_CheckForOptStr(ctx, "aluptr"))
-		{ shctx->has_qmul|=16; }
-
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ldtex"))
 		{ shctx->has_fmovs|=4; }
 
@@ -336,8 +333,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->is_pbo=1;
 
 #if 1
-//		if(shctx->use_wexmd==0)
-		if((shctx->use_wexmd==0) && (ctx->optmode!=BGBCC_OPT_SIZE))
+		if(shctx->use_wexmd==0)
 			shctx->use_wexmd=2;
 
 		shctx->has_jumbo=1;
@@ -428,9 +424,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_alux=1;
 
 #if 1
-//		if(shctx->use_wexmd==0)
-		if((shctx->use_wexmd==0) && (ctx->optmode!=BGBCC_OPT_SIZE))
-			shctx->use_wexmd=2;
+		shctx->use_wexmd=2;
 		shctx->has_jumbo=1;
 		shctx->has_pushx2=1;
 		shctx->has_simdx2=1;
@@ -456,8 +450,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->emit_riscv|=0x02;
 
 #if 1
-//		if(shctx->use_wexmd==0)
-		if((shctx->use_wexmd==0) && (ctx->optmode!=BGBCC_OPT_SIZE))
+		if(shctx->use_wexmd==0)
 			shctx->use_wexmd=2;
 
 		shctx->has_jumbo=1;

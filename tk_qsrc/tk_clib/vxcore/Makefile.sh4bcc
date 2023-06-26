@@ -88,7 +88,6 @@ SRCS_CLIB = \
 	tk_core/tk_mmllist.c \
 	tk_core/tk_mmpage.c \
 	tk_core/tk_msgbuf.c \
-	tk_core/tk_neuron.c \
 	tk_core/tk_peload.c \
 	tk_core/tk_peload_pbo.c \
 	tk_core/tk_ps2keyb.c \

@@ -119,8 +119,7 @@ __PDPCLIB_API__ int CTYP __start()
 //	tk_puts("A1\n");
 
 	__init_stdin();
-	__cytpe_init();
-
+	
 	t_stdin=stdin;
 	t_stdout=stdout;
 	t_stderr=stderr;

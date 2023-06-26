@@ -28,7 +28,7 @@ Several ISA Profiles may exist:
 * D: Fix32 + SoftFPU
 * E: Lite + SoftFPU
 * F: Lite + GFP
-* G: Full Features, 96-bit address space and XGPR.
+* G: Full Features, 96-bit address space.
 
 The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional unless specified as part of the current pofile.
 
@@ -43,8 +43,6 @@ BJX2 Full Profile
 * Will support GSV, GFP, and GSVF.
 * Will support WEX2 3W, Jumbo, and MOVX2.
 * Support MULQ is optional.
-* Support for XGPR is optional for A profile.
-* Support for XGPR is required for G Profile.
 
 ABI: HardFP (GFP), Base-Relocatable or PBO.
 
@@ -58,7 +56,6 @@ BJX2 Basic Profile
 * Support for GSV and JCMP is optional.
 * Will not support MULQ.
 * Will support WEX2 3W.
-* Will not support XGPR.
 
 ABI: HardFP (GFP)
 * Base-Relocatable for kernel
@@ -75,7 +72,6 @@ BJX2 Lite Profile
 * Support for WEX is optional.
 * Support for Jumbo is optional.
 * Support MULQ is optional.
-* Will not support XGPR.
 
 ABI: SoftFP
 * Absolute Addressing for ROM
@@ -1736,12 +1732,9 @@ F0zz Instruction Block:
 *** F0nm_1GA9 SETTRAP	Rn, (Rm)			//(Opt/Dbg) Set Trap Mode
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
 *** F0nm_1GB9 CMPTTEQ	RmImm6u, Rn			//(TTAG) Compare Type-Tag
-*** F0nm_1gC9 CMPEQ	Rm, Rn					//Rn==Rm
-*** F0nm_1GC9 CMPQEQ	Rm, Rn				//Rn==Rm
-*** F0nm_1gD9 CMPHI	Rm, Rn					//Unsigned Rn GT Rm
-*** F0nm_1GD9 CMPQHI	Rm, Rn				//Unsigned Rn GT Rm
-*** F0nm_1gE9 CMPGT	Rm, Rn					//Signed Rn GT Rm
-*** F0nm_1GE9 CMPQGT	Rm, Rn				//Signed Rn GT Rm
+*** F0nm_1eC9 CMP{Q}EQ	Rm, Rn				//Rn==Rm
+*** F0nm_1eD9 CMP{Q}HI	Rm, Rn				//Unsigned Rn GT Rm
+*** F0nm_1eE9 CMP{Q}GT	Rm, Rn				//Signed Rn GT Rm
 *** F0nm_1gF9 /
 *** F0nm_1GF9 /
 
@@ -2064,11 +2057,6 @@ F0zz Instruction Block:
 *** F0nm_3g58 ? SWAPE4B.L	Rm, Rn				//Swap Every 4-bits
 *** F0nm_3G58 -
 
-*** F0nm_3g68 ? CMPPEQ		Rm, Rn				//(ALUPTR) Compare Pointer
-*** F0nm_3G68 ? CMPPEQX		Xm, Xn				//(ALUPTR) Compare 128b Pointer
-*** F0nm_3g78 ? CMPPGT		Rm, Rn				//(ALUPTR) Compare Pointer
-*** F0nm_3G78 ? CMPPGTX		Xm, Xn				//(ALUPTR) Compare 128b Pointer
-
 ** F0nm_3ez9  (Reserved 2R Block Space)
 ** F0nm_3ezA  (Reserved 2R Block Space)
 ** F0nm_3ezB  (Reserved 2R Block Space)
@@ -2194,8 +2182,8 @@ F0zz Instruction Block:
 ** F0nm_7Go5  MODU.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
 ** F0nm_7go6 ? RGB5CCENC	Rm, Ro, Rn		//(RGB-CCE)	Color-Cell Enc Helper
 ** F0nm_7Go6  -
-** F0nm_7go7 ? SUB.P	Rm, Ro, Rn			//(ALUPTR) Pointer Subtract
-** F0nm_7Go7 ? SUBX.P	Xm, Xo, Xn			//(ALUPTR) 128b Pointer Subtract
+** F0nm_7go7  -
+** F0nm_7Go7  -
 ** F0nm_7ez8  (Reserved 2R Block Space)
 ** F0nm_7ez9  (Reserved 2R Block Space)
 ** F0nm_7ezA  (Reserved 2R Block Space)
@@ -2247,13 +2235,12 @@ F0zz Instruction Block:
 
 * F0dd_Cddd  BRA	(PC, disp20s)		//Branch, +/- 1MB
 * F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
-* F0dd_Eddd / BT	(PC, disp20s)		//(Deprecated), Branch True, 1
-* F0dd_Fddd / BF	(PC, disp20s)		//(Deprecated), Branch False, 1
+* F0dd_Eddd ? BT	(PC, disp20s)		//1, Branch True, +/- 1MB
+* F0dd_Fddd ? BF	(PC, disp20s)		//1, Branch False, +/- 1MB
 
 Branch ops may only exist in lane 1.
 
-1: These are now to be encoded as as E0dd_Cddd and E4dd_Cddd.
-This space will now be marked as subject to being reclaimed.
+1: These encodings are being Deprecated in favor of E0dd_Cddd and E4dd_Cddd.
 
 
 ==== F1zz Instruction Block ====
@@ -2466,7 +2453,6 @@ Or, in effect, the Rn field will be expanded to 6 bits.
 As a special case:
 * F88F_iiii  BREAK		Imm16u			//Breakpoint with Imm16
 ** The Imm16 may be used for debugging.
-** This special case will be N/A in XG2RV mode.
 
 
 ==== F9zz Instruction Block ====

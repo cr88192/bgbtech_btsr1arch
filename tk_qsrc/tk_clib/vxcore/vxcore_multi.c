@@ -89,8 +89,6 @@
 
 #include "tk_core/tk_bcd.c"
 
-#include "pdpc201/strings.c"
-
 #include "pdpc201/btshx_vnf.c"
 #include "pdpc201/btshx_alloca.c"
 
@@ -103,5 +101,3 @@
 #include "pdpc201/bt_htonl.c"
 
 #include "pdpc201/bt_libcgpa.c"
-
-#include "tk_core/tk_neuron.c"

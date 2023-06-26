@@ -38,8 +38,7 @@ module ExOpSloMulDiv(
 	idUCmd,		idUIxt,
 	valRs,		valRt,
 	valRn,		valRnHi,
-	exInHold,	exOutHold,
-	ex1MulFaz
+	exInHold,	exOutHold
 	);
 
 input	clock;
@@ -55,8 +54,6 @@ input[63:0]		valRs;
 input[63:0]		valRt;
 output[63:0]	valRn;
 output[63:0]	valRnHi;
-
-input	ex1MulFaz;		//Multiplier has handled divide.
 
 reg				tDoHold;
 assign		exOutHold = tDoHold;
@@ -222,13 +219,11 @@ begin
 	end
 	else
 		if(tLstOpCnt==0)
-//		if((tLstOpCnt==0) && !ex1MulFaz)
 	begin
 		tNxtValRn		= tValRn;
 		tNxtValRnHi		= tValRnHi;
 
 		if(idUCmd[5:0]==JX2_UCMD_QMULDIV)
-//		if((idUCmd[5:0]==JX2_UCMD_QMULDIV) && !ex1MulFaz)
 		begin
 
 //			$display("SloMulDiv: %x %x %x-%d", valRs, valRt, idUCmd, idUIxt);
@@ -336,14 +331,9 @@ begin
 			end
 `endif
 
-			if(ex1MulFaz)
-				tNxtOpCnt		= 0;
 
 		end
 	end
-	
-//	if(ex1MulFaz)
-//		tNxtOpCnt		= 0;
 	
 //	if(exInHold && !tDoHold)
 //	begin

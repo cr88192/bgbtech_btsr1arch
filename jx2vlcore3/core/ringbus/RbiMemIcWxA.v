@@ -1431,8 +1431,7 @@ begin
 		$display("L1 I$: Misaligned Fetch, A=%X", tInAddr);
 	end
 
-// `ifdef jx2_enable_wex3w
-`ifdef jx2_enable_wex
+`ifdef jx2_enable_wex3w
 
 `ifdef jx2_enable_wexjumbo
 
@@ -1951,7 +1950,6 @@ begin
 
 	if(tMemHeldCyc[11:9] == 3'b111)
 	begin
-`ifndef def_true
 		$display("L1 I$: Hold Delay Stalled Cyc=%X", tMemHeldCyc);
 
 			$display("L1 I$ Miss a=%X b=%X Rdy=%X Rt=%x",
@@ -1959,7 +1957,6 @@ begin
 
 			$display("  RqA=%X BlkA=%X", tReqAddrA, tBlkAddr2A);
 			$display("  RqB=%X BlkB=%X", tReqAddrB, tBlkAddr2B);
-`endif
 
 		/* Ugly hack to avoid deadlock. Needs fixing. */
 //		tRegOutHold = 0;

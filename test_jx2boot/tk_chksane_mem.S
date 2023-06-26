@@ -5,8 +5,6 @@ _checksane_fail_mem:
 	break
 
 _checksane_ldrts_asm:
-//	nop
-//	nop
 	mov		lr, r1
 	mov		.val0, r3
 	movu.l	(r3), r2
@@ -58,8 +56,7 @@ X(tk_checksane_mem_asm):
 	mov.q	r10, (sp,  0)
 
 #ifndef JX2UC
-// #if 0
- 
+
 .ifarch bjx2_movx
 
 	.L0:
@@ -137,9 +134,6 @@ X(tk_checksane_mem_asm):
 //	bf _checksane_fail_mem
 	.L4_5: break?f
 
-
-//	break
-
 	.L5:
 
 	exts.b r8, r12
@@ -197,7 +191,6 @@ X(tk_checksane_mem_asm):
 	.L5_3A3: break?f
 
 
-//	break
 
 	mov sp, r3
 	mov.l (sp, 4), r6
@@ -227,15 +220,11 @@ X(tk_checksane_mem_asm):
 //	bf _checksane_fail_mem
 	.L6_1: break?f
 
-//	break
-
 	bsr _checksane_ldrts_asm
 //	break
 	cmpq/eq r2, r11
 	break?f
 //	bf _checksane_fail_mem
-
-//	break
 
 	add	128, sp
 
@@ -269,9 +258,5 @@ X(tk_checksane_mem_asm):
 //	rts
 
 	mov.q	(sp), r1
-	
-	test	1, r1
-	break?t
-	
 	add		8, sp
 	jmp		r1

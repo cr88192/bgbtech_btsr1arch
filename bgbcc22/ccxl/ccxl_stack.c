@@ -1347,15 +1347,9 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 //				if(dty.val==0x1008)
 //					{ BGBCC_DBGBREAK }
 			
-				if(	!	(BGBCC_CCXL_TypeSmallShortP(ctx, dty) &&
-						(sty.val==CCXL_TY_I) &&
-						BGBCC_CCXL_IsRegTempP(ctx, dreg)) &&
-					!BGBCC_CCXL_TypeImplicitPromoteP(ctx, dty, sty))
-				{
-					BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg);
-					BGBCC_CCXL_EmitConv(ctx, dty, sty, treg, dreg);
-					ctx->regstack[ps]=treg;
-				}
+				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg);
+				BGBCC_CCXL_EmitConv(ctx, dty, sty, treg, dreg);
+				ctx->regstack[ps]=treg;
 			}else
 			{
 				BGBCC_CCXL_TypeCheckConvImplicit(ctx, 0, dty, sty);

@@ -458,7 +458,6 @@ begin
 //			$display("QMUL: Out %X", regQMulRes);
 			tValOutDfl		= regQMulRes;
 			tDoOutDfl		= 1;
-			tRegHeld	= 1;
 		end
 `endif
 

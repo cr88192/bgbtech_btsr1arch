@@ -44,11 +44,7 @@
 
 `define jx2_mem_fasttdown			//Faster teardown
 
-`ifndef jx2_xc7s50
 `define jx2_mem_l2vram				//Use external RAM for VRAM
-`endif
-
-`define jx2_mul_fazdiv				//Enable FAZ Divide (N/A w/o slomuldiv)
 
 
 // `define jx2_mem_jnexbuf			//Extra Buffer Y Joiner

@@ -47,12 +47,6 @@ int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	if(ctx->emit_riscv&0x11)
 		return(BGBCC_JX2RV_TryEmitOpNone(ctx, nmid));
 
-	if(nmid==BGBCC_SH_NMID_WEXMD)
-	{
-		printf("BGBCC_JX2_TryEmitOpNone: WEXMD %d\n", ctx->use_wexmd);
-		return(BGBCC_JX2_TryEmitOpImm(ctx, nmid, ctx->use_wexmd));
-	}
-
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
 	opw1=-1; opw2=-1;
@@ -1837,7 +1831,6 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		(nmid==BGBCC_SH_NMID_ADDUL)	||
 		(nmid==BGBCC_SH_NMID_SUBSL)	||
 		(nmid==BGBCC_SH_NMID_SUBUL)	||
-		(nmid==BGBCC_SH_NMID_SUBP)	||
 		(nmid==BGBCC_SH_NMID_SHAR)	||
 		(nmid==BGBCC_SH_NMID_SHARQ) ||
 		(nmid==BGBCC_SH_NMID_SHLR)	||
@@ -1869,7 +1862,6 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		(nmid==BGBCC_SH_NMID_PSUBH) ||
 		(nmid==BGBCC_SH_NMID_PSUBFX) ||
 		(nmid==BGBCC_SH_NMID_PSUBXD) ||
-		(nmid==BGBCC_SH_NMID_SUBXP) ||
 		(nmid==BGBCC_SH_NMID_PMULF) ||
 		(nmid==BGBCC_SH_NMID_PMULH) ||
 		(nmid==BGBCC_SH_NMID_PMULFX) ||
@@ -2877,21 +2869,6 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			opw1=0xF00E|ex|0x0080;
 			opw2=0x1800|((rn&15)<<4)|((rm&15)<<0);			break;
 
-
-		case BGBCC_SH_NMID_CMPPEQ:
-			opw1=0xF006|ex;
-			opw2=0x3800|((rn&15)<<4)|((rm&15)<<0);			break;
-		case BGBCC_SH_NMID_CMPPGT:
-			opw1=0xF007|ex;
-			opw2=0x3800|((rn&15)<<4)|((rm&15)<<0);			break;
-
-		case BGBCC_SH_NMID_CMPPEQX:
-			opw1=0xF006|ex|0x0080;
-			opw2=0x3800|((rn&15)<<4)|((rm&15)<<0);			break;
-		case BGBCC_SH_NMID_CMPPGTX:
-			opw1=0xF007|ex|0x0080;
-			opw2=0x3800|((rn&15)<<4)|((rm&15)<<0);			break;
-
 #if 0
 		case BGBCC_SH_NMID_CMPHS:
 			opw1=0xF00D|ex;
@@ -3337,9 +3314,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 	{
 		if((opw1&0xFF00)==0xF000)
 		{
-//			if((opw2&0xF800)==0x1800)
-			if(	((opw2&0xF800)==0x1800) ||
-				((opw2&0xF800)==0x3800))
+			if((opw2&0xF800)==0x1800)
 			{
 				if(BGBCC_JX2_EmitCheckRegExt5(ctx, rn)) exw|=0x0400;
 				if(BGBCC_JX2_EmitCheckRegExt5(ctx, rm)) exw|=0x0200;
@@ -3557,8 +3532,6 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 
 	case BGBCC_SH_NMID_BCDADDX:
 	case BGBCC_SH_NMID_BCDSUBX:
-
-	case BGBCC_SH_NMID_SUBXP:
 
 		rs=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rs);
 		rt=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rt);
@@ -3939,15 +3912,6 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 		case BGBCC_SH_NMID_SUBUL:
 			opw1=0xF080|ex|(rt&15);
 			opw2=0x5D00|((rn&15)<<4)|((rs&15)<<0);
-			break;
-
-		case BGBCC_SH_NMID_SUBP:
-			opw1=0xF000|ex|(rt&15);
-			opw2=0x7700|((rn&15)<<4)|((rs&15)<<0);
-			break;
-		case BGBCC_SH_NMID_SUBXP:
-			opw1=0xF080|ex|(rt&15);
-			opw2=0x7700|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
 		case BGBCC_SH_NMID_MACSL:

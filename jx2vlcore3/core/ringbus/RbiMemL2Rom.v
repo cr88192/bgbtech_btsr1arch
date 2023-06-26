@@ -213,11 +213,7 @@ initial begin
 `ifdef jx2_cfg_ucrom
 	$readmemh("bootrom_uc_1.txt", romTileData);
 `else
-`ifdef jx2_xc7s50
-	$readmemh("bootrom_rbd_1.txt", romTileData);
-`else
 	$readmemh("bootrom_1.txt", romTileData);
-`endif
 `endif
 end
 

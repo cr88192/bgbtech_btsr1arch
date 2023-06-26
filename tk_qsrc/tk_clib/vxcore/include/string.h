@@ -64,17 +64,6 @@ size_t strlen(const char *s);
 char *strdup(char *str);
 char *strndup(char *str, size_t n);
 
-int _stricmp(const char *s1, const char *s2);
-int _strnicmp(const char *s1, const char *s2, size_t n);
-
-#ifndef stricmp
-#define	stricmp		_stricmp
-#endif
-
-#ifndef strnicmp
-#define	strnicmp	_strnicmp
-#endif
-
 #if 1
 
 errno_t memcpy_s(

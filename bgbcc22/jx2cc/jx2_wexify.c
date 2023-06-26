@@ -161,23 +161,6 @@ int BGBCC_JX2_CheckOps32GetRegs(
 					spw=BGBCC_SH_REG_SR;
 					break;
 				}
-
-				switch((opw2>>4)&15)
-				{
-				case 0x4:	case 0x5:
-				case 0x6:	case 0x7:
-				case 0x8:	case 0x9:
-				case 0xA:	case 0xB:
-				case 0xC:	case 0xD:
-				case 0xE:
-					if(opw2&0x0800)
-					{
-						spfl|=BGBCC_WXSPFL_PXSTN;
-						spfl|=BGBCC_WXSPFL_RXS;
-						spfl|=BGBCC_WXSPFL_RXN;
-					}
-					break;
-				}
 			}
 				
 
@@ -2120,9 +2103,6 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 					return(0);
 
 				break;
-
-			case 0xA9:
-				return(0);
 			}
 		}
 

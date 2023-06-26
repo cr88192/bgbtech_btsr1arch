@@ -912,11 +912,9 @@ parameter[5:0] JX2_UCIX_ALUN_CTZQ	= 6'h21;		//Count Trailing Zeroes (QW)
 parameter[5:0] JX2_UCIX_ALUN_BTRNSQ	= 6'h22;		//Transpose Bits (QW)
 parameter[5:0] JX2_UCIX_ALUN_PMORTQ	= 6'h23;		//Morton-Shuffle Bits (QW)
 
+
 parameter[5:0] JX2_UCIX_ALUW_PADDW	= 6'h20;		//ALU ADD
 parameter[5:0] JX2_UCIX_ALUW_PSUBW	= 6'h21;		//ALU SUB
-
-parameter[5:0] JX2_UCIX_ALUW_PADDP	= 6'h30;		//ALU ADD Pointer
-parameter[5:0] JX2_UCIX_ALUW_PSUBP	= 6'h31;		//ALU SUB Pointer
 
 parameter[5:0] JX2_UCIX_ALUW_MOVHLD	= 6'h22;		//ALU (High, Low)
 parameter[5:0] JX2_UCIX_ALUW_MOVLHD	= 6'h23;		//ALU (Low, High)
@@ -925,9 +923,6 @@ parameter[5:0] JX2_UCIX_ALUW_PSHUFB	= 6'h15;		//ALU PSHUF.B
 parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
 parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
 parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)
-
-parameter[5:0] JX2_UCIX_ALUW_CMPEQP	= 6'h0C;		//ALU Command
-parameter[5:0] JX2_UCIX_ALUW_CMPGTP	= 6'h0E;		//ALU Command
 
 parameter[5:0] JX2_UCIX_ALUW_PSRCHN		= 6'h18;		//Packed Search
 parameter[5:0] JX2_UCIX_ALUW_CMPAHS		= 6'h19;		//

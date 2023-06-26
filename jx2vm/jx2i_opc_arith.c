@@ -174,32 +174,6 @@ void BJX2_Op_SUBUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(u32)(ctx->regs[op->rm])-(u32)(op->imm);
 }
 
-void BJX2_Op_SUBP_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	ctx->regs[op->rn]=
-		((ctx->regs[op->rm])&0x0000FFFFFFFFFFFFULL)-
-		((ctx->regs[op->ro])&0x0000FFFFFFFFFFFFULL);
-}
-
-void BJX2_Op_SUBXP_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	u64 va0, vb0, vc0;
-	u64 va1, vb1, vc1;
-
-	va0=((ctx->regs[op->rm+0])&0x0000FFFFFFFFFFFFULL);
-	vb0=((ctx->regs[op->ro+0])&0x0000FFFFFFFFFFFFULL);
-	vc0=va0-vb0;
-
-	va1=((ctx->regs[op->rm+1])&0x0000FFFFFFFFFFFFULL);
-	vb1=((ctx->regs[op->ro+1])&0x0000FFFFFFFFFFFFULL);
-	vc1=va1-vb1;
-	if((vc0>>63)&1)
-		vc1--;
-
-	ctx->regs[op->rn+0]=vc0;
-	ctx->regs[op->rn+1]=vc1;
-}
-
 void BJX2_Op_MOV_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]=ctx->regs[op->rm];
@@ -910,43 +884,6 @@ void BJX2_Op_MODUQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vc;
 }
 
-void BJX2_Op_DIVSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-//	s64 va, vb, vc;
-	s64 va, vb, vc;
-	va=(s32)(ctx->regs[op->rm]);
-	vb=(s32)(ctx->regs[op->ro]);
-	if(vb!=0)
-		{ vc=va/vb; }
-	else
-		{ vc=0; }
-	ctx->regs[op->rn]=vc;
-	
-	if((va<0) || (vb<0) || (vb>31))
-	{
-		ctx->tr_cur->acc_pencyc+=33;
-		ctx->miss_cyc_bra+=33;
-	}
-}
-
-void BJX2_Op_DIVUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	u64 va, vb, vc;
-	va=(u32)(ctx->regs[op->rm]);
-	vb=(u32)(ctx->regs[op->ro]);
-	if(vb!=0)
-		{ vc=va/vb; }
-	else
-		{ vc=0; }
-	ctx->regs[op->rn]=vc;
-
-	if(vb>31)
-	{
-		ctx->tr_cur->acc_pencyc+=33;
-		ctx->miss_cyc_bra+=33;
-	}
-}
-
 
 void BJX2_Op_MACSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -1255,55 +1192,6 @@ void BJX2_Op_CMPQHI_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_CMPQHS_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(((u64)ctx->regs[op->rn])>=((u64)op->imm))
-		ctx->regs[BJX2_REG_SR]|=1;
-	else
-		ctx->regs[BJX2_REG_SR]&=~1;
-}
-
-
-void BJX2_Op_CMPPEQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	if(	(ctx->regs[op->rn]&0x0000FFFFFFFFFFFFULL) ==
-		(ctx->regs[op->rm]&0x0000FFFFFFFFFFFFULL) )
-		ctx->regs[BJX2_REG_SR]|=1;
-	else
-		ctx->regs[BJX2_REG_SR]&=~1;
-}
-
-void BJX2_Op_CMPPGT_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	if(	(ctx->regs[op->rn]&0x0000FFFFFFFFFFFFULL) >
-		(ctx->regs[op->rm]&0x0000FFFFFFFFFFFFULL) )
-		ctx->regs[BJX2_REG_SR]|=1;
-	else
-		ctx->regs[BJX2_REG_SR]&=~1;
-}
-
-void BJX2_Op_CMPPEQX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	u64 va0, vb0, va1, vb1;
-
-	va0 = ctx->regs[op->rn+0]&0x0000FFFFFFFFFFFFULL;
-	vb0 = ctx->regs[op->rm+0]&0x0000FFFFFFFFFFFFULL;
-	va1 = ctx->regs[op->rn+1]&0x0000FFFFFFFFFFFFULL;
-	vb1 = ctx->regs[op->rm+1]&0x0000FFFFFFFFFFFFULL;
-
-	if(	(va0 == vb0) && (va1 == vb1) )
-		ctx->regs[BJX2_REG_SR]|=1;
-	else
-		ctx->regs[BJX2_REG_SR]&=~1;
-}
-
-void BJX2_Op_CMPPGTX_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
-{
-	u64 va0, vb0, va1, vb1;
-
-	va0 = ctx->regs[op->rn+0]&0x0000FFFFFFFFFFFFULL;
-	vb0 = ctx->regs[op->rm+0]&0x0000FFFFFFFFFFFFULL;
-	va1 = ctx->regs[op->rn+1]&0x0000FFFFFFFFFFFFULL;
-	vb1 = ctx->regs[op->rm+1]&0x0000FFFFFFFFFFFFULL;
-
-	if(	(va1>vb1) || ((va0 > vb0) && (va1 == vb1)) )
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;

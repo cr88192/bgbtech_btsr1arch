@@ -112,9 +112,7 @@ MMIO Space:
 `endif
 
 `ifndef jx2_cfg_noaudio
-`ifdef jx2_audio_fmaumem
 `include "ringbus/RbiMemAuMix.v"
-`endif
 `endif
 
 `ifndef jx2_use_ringbus

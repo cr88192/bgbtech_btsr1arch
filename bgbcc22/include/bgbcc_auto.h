@@ -1515,7 +1515,6 @@ s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str);
 int BGBCC_CCXL_NormalizeImmVReg(BGBCC_TransState *ctx, ccxl_type type, ccxl_register treg, ccxl_register *rtreg);
 //AHSRC:ccxl/ccxl_type.c
 bool BGBCC_CCXL_TypeSmallTypeP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
-bool BGBCC_CCXL_TypeImplicitPromoteP(BGBCC_TransState *ctx, ccxl_type dty, ccxl_type sty);
 bool BGBCC_CCXL_TypeSmallIntP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallShortP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_CCXL_TypeSmallSIntP(BGBCC_TransState *ctx, ccxl_type ty);
