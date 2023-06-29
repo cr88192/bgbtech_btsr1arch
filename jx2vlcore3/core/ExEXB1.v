@@ -80,6 +80,7 @@ module ExEXB1(
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
 	opBraFlush,
+	opPredNoExec,
 	regInSr,
 	idLane,
 
@@ -112,6 +113,7 @@ output[63:0]	regValRn1;		//Destination Value (EX1)
 input[32:0]		regValImm;		//Immediate (Decode)
 input[47:0]		regValPc;
 input			opBraFlush;
+input			opPredNoExec;
 
 input[63:0]		regInSr;
 
@@ -263,6 +265,10 @@ begin
 		4'b0111: 	tOpEnable = 0;
 		4'b1zzz: 	tOpEnable = 0;
 	endcase
+`endif
+
+`ifdef jx2_cpu_pred_id2
+	tOpEnable = !opBraFlush && !opPredNoExec;
 `endif
 
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;

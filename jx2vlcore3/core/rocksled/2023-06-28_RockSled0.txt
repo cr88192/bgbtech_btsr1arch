@@ -1,0 +1,38 @@
+Idea:
+* Rocket Sled Pipeline
+* Main Execute pipeline does not have stalls.
+* Slow-Path ops are shunted to a queue (which does stall)
+** Queue results are added back into pipeline later.
+
+Pipeline (Decode End, Stalls):
+* PF: Prefetch
+* IF: Instruction Fetch
+* ID: Instruction Decode
+* RF: Register Fetch
+
+Execute Pipeline:
+* EX1
+* EX2
+* EX3
+* WB: Register Write-Back
+
+Destination registers are marked "in flight" whenever an instruction travels from RF to EX1. The register is marked Stable once it passes through the WB stage.
+
+Low Speed Queue:
+* Handles long-running instructions and L1 Misses.
+* New instructions may not enter EX1 if the queue is full.
+* Likely can use Lane3's write port to re-merge queue items.
+** Assuming Lane3 will see relatively low traffic otherwise.
+
+
+RF Stage:
+* Use a 6R3W register file.
+* May dispatch 1x6R, 2x3R, or 3x2R bundles.
+* May key Lanes 2/3 as "Bound" to Lane1
+
+EX Stages:
+* Moves at 1 stage per clock, No Stalls
+* Ops that finish in EX1 or EX2 may skip to EX3.
+* For Bound Ops, all ops may only skip at the same time.
+** For unbound ops, only the current Lane is considered.
+

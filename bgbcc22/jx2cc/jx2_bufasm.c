@@ -2260,6 +2260,9 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "has_xgpr"))
 		return((ctx->has_xgpr&1)!=0);
 
+	if(!bgbcc_stricmp(sym, "has_aluptr"))
+		return((ctx->has_qmul&16)!=0);
+
 	if(!bgbcc_stricmp(sym, "abi_is_xgpr"))
 	{
 		if(tctx->arch_sizeof_ptr==8)

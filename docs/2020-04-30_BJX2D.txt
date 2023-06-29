@@ -29,6 +29,8 @@ Several ISA Profiles may exist:
 * E: Lite + SoftFPU
 * F: Lite + GFP
 * G: Full Features, 96-bit address space and XGPR.
+* H: Full Features, similar to G, but assumes a 48-bit Address Space
+* I: Basic, 48-bit Address Space, GFP+GSV+GSVF
 
 The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional unless specified as part of the current pofile.
 
@@ -44,7 +46,7 @@ BJX2 Full Profile
 * Will support WEX2 3W, Jumbo, and MOVX2.
 * Support MULQ is optional.
 * Support for XGPR is optional for A profile.
-* Support for XGPR is required for G Profile.
+* Support for XGPR is required for G and H Profiles.
 
 ABI: HardFP (GFP), Base-Relocatable or PBO.
 
@@ -54,10 +56,11 @@ ABI: HardFP (GFP), Base-Relocatable or PBO.
 BJX2 Basic Profile
 * Will have MMU and FPU.
 * Will use a 32-bit address space (both virtual and physical).
+** May support a 48-bit virtual address space.
 * Will support 16 and 32 bit instruction encodings.
 * Support for GSV and JCMP is optional.
 * Will not support MULQ.
-* Will support WEX2 3W.
+* Will support WEX2 2W or 3W.
 * Will not support XGPR.
 
 ABI: HardFP (GFP)
@@ -370,6 +373,8 @@ EXSR Codes:
 ** 0x800E: Invalid Opcode
 ** 0x800F: Bounds Fault
 ** 0x8010: Canary Fault
+** 0x8011: Privleged Instruction Fault
+** 0x8012: Floating Point Fault (Needs Emulation)
 * Interrupts:
 ** 0xC000: General Interrupt
 ** 0xC001: Interval Timer

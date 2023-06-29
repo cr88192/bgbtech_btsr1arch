@@ -769,7 +769,7 @@ begin
 		tAddCa2_Add[3] ? 16'hFFFF : 16'h0000,
 		tResult_Add64[47:0] };
 	tResult_Sub48 = { tSubCa2_Sub[3],
-		tSubCa2_Sub[3] ? 16'hFFFF : 16'h0000,
+		tSubCa2_Sub[3] ? 16'h0000 : 16'hFFFF,
 		tResult_Sub64[47:0] };
 `endif
 
@@ -1671,13 +1671,14 @@ begin
 `ifdef jx2_enable_aluptr
 			if(!idUIxt[4])
 			begin
-				tResultw1T=tSubPCF;
+				tResultw1T=tSubPCF && !tSubPZF;
 				tResultw1Tv	= 1;
 
 `ifdef jx2_alu_wx
 				if(tOpIsWx)
 				begin
-					tResultw1T=tSubPCF || (tSubPZF && regInCarryD[7]);
+					tResultw1T=(tSubPCF && !tSubPZF) ||
+						(tSubPZF && regInCarryD[7]);
 				end
 `endif
 			end

@@ -215,16 +215,18 @@ wire[8:0]		decOpFzC_idUIxt;
 wire[18:0]		decOpFzC_idUFl;
 
 wire[31:0]		decOpFzC_maskInstr;
-assign		decOpFzC_maskInstr =
-	(	(istrWord[79:77] == 3'b111) &&
-		(istrWord[75] == 1'b1) &&
-		(istrWord[73:72] == 2'b00) ) ?
-	istrWord[95:64] :
-	UV32_00;
+//assign		decOpFzC_maskInstr =
+//	(	(istrWord[79:77] == 3'b111) &&
+//		(istrWord[75] == 1'b1) &&
+//		(istrWord[73:72] == 2'b00) ) ?
+//	istrWord[95:64] :
+//	UV32_00;
+
+assign		decOpFzC_maskInstr = istrWord[95:64] ;
 
 DecOpFz	decOpFzC(
 	clock,		reset,	srMod,
-	{ UV32_00, decOpFzC_maskInstr },	4'h5,
+	{ UV32_00, decOpFzC_maskInstr },	4'h7,
 		{ tOpJBitsB[24], tOpJBitsC[24],
 			opIsWexJumbo96,
 			opIsWexJumboB | opIsWex2x40B,

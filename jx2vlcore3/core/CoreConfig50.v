@@ -32,6 +32,9 @@
 
 `define jx2_cpu_merge_rxy		//Merge Rx/Ry
 
+`define jx2_cpu_pred_id2		//Move predication handling to ID2
+
+
 // `define jx2_mem_useddrb			//Use newer DDR controller.
 
 // `define jx2_mem_line32B				//Use 32-byte cache line

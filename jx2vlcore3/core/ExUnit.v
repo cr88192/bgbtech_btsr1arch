@@ -106,6 +106,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExOpSloMulDiv.v"
 `endif
 
+`ifdef jx2_cpu_pred_id2
+`include "ExPredCheck.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExUnit(
@@ -1269,6 +1273,10 @@ reg				ex1BraFlush;
 reg				ex1TrapFlush;
 // reg[11:0]		ex1Timers;
 
+reg				ex1PredNoExec;
+reg				exB1PredNoExec;
+reg				exC1PredNoExec;
+
 `reg_gpr		ex1RegIdRs;		//Source A, ALU / Base
 `reg_gpr		ex1RegIdRt;		//Source B, ALU / Index
 `reg_gpr		ex1RegIdRm;		//Source C, MemStore
@@ -1323,6 +1331,73 @@ assign		exB3RegValRm = exB3RegValRs;
 `endif
 `endif
 
+`ifdef jx2_cpu_pred_id2
+wire		id2_ex1UpdSrT;
+wire		id2_isPred;
+wire		id2_PredNeedStall;
+
+wire		idA2PredNoExec;
+wire		idB2PredNoExec;
+wire		idC2PredNoExec;
+
+assign		id2_ex1UpdSrT =
+	(ex1OpUCmd[5:0] == JX2_UCMD_OP_IXS)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_OP_IXT)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_ALU3)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_ALUW3)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_ALUB3)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_ALUCMP)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_UNARY)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_CONV_RR)	||
+	(ex1OpUCmd[5:0] == JX2_UCMD_CONV2_RR)	||
+	(ex1OpUCmd[5:0] == JX2_UCMD_FCMP)		||
+	(ex1OpUCmd[5:0] == JX2_UCMD_ALUCMPW)	||
+	(ex1OpUCmd[5:0] == JX2_UCMD_ALUCMPB)	;
+
+`ifdef jx2_enable_wex
+
+`ifdef jx2_enable_wex3w
+assign		id2_isPred =
+	idA2IdUCmd[7]	||
+	idB2IdUCmd[7]	||
+	idC2IdUCmd[7]	;
+`else
+assign		id2_isPred =
+	idA2IdUCmd[7]	||
+	idB2IdUCmd[7]	;
+`endif
+
+`else
+
+assign		id2_isPred =
+	id2IdUCmd[7]	;
+
+`endif
+
+assign	id2_PredNeedStall =
+	id2_ex1UpdSrT &&
+	id2_isPred	;
+`else
+
+wire		id2_PredNeedStall;
+assign	id2_PredNeedStall = 0;
+
+`endif
+
+
+`ifdef jx2_cpu_pred_id2
+
+`ifdef jx2_enable_wex
+ExPredCheck		pred1a(idA2IdUCmd, idA2IdUIxt, ex1RegInSr[7:0], idA2PredNoExec);
+ExPredCheck		pred1b(idB2IdUCmd, idB2IdUIxt, ex1RegInSr[7:0], idB2PredNoExec);
+`ifdef jx2_enable_wex3w
+ExPredCheck		pred1c(idC2IdUCmd, idC2IdUIxt, ex1RegInSr[7:0], idC2PredNoExec);
+`endif
+`else
+ExPredCheck		pred1a(id2IdUCmd, id2IdUIxt, ex1RegInSr[7:0], idA2PredNoExec);
+`endif
+
+`endif
 
 /* GPR Only: Timing Hack. */
 wire[63:0]		ex1RegValRsGpo;		//Source A Value (GPR Only)
@@ -1443,7 +1518,8 @@ ExEX1	ex1(
 
 	ex1RegValImm,
 	ex1FpuValGRn,	ex1FpuSrT,
-	ex1BraFlush,
+//	ex1BraFlush,
+	ex1BraFlush,	ex1PredNoExec,
 //	ex1BraFlush || exResetL,
 	ex1PreBraPc,	ex1PreBra,
 	ex1AluSrJcmpT,
@@ -1521,7 +1597,8 @@ wire[8:0]		krrEx1OpUIxt = isGpu ? 0 : ex1OpUIxt;
 ExModKrrEnc	ex1KrrEnc(
 	clock,				exResetL,
 	krrEx1OpUCmd,		krrEx1OpUIxt,
-	exHold2,			ex1BraFlush,
+//	exHold2,			ex1BraFlush,
+	exHold2,			ex1BraFlush || ex1PredNoExec,
 	ex1RegInDlr,		ex1RegInDhr,	crOutKrr,
 	ex1KrreLo,			ex1KrreHi);
 `else
@@ -1601,6 +1678,7 @@ FpuExOpW	ex1Fpu(
 	ex2RegInSr,
 //	ex1BraFlush || exResetL,
 	ex1BraFlush,
+//	ex1BraFlush || ex1PredNoExec,
 	exHold2,
 	
 	ex1FpuValGRnB,	exB1FpuValGRnB
@@ -1651,6 +1729,7 @@ FpuExOp	ex1Fpu(
 	ex2RegInSr,
 //	ex1BraFlush || exResetL,
 	ex1BraFlush,
+//	ex1BraFlush || (ex1PredNoExec && exB1PredNoExec),
 	exHold2,
 	
 	ex1RegValRs,	ex1FpuValGRn,
@@ -2003,7 +2082,8 @@ ExEXB1	exb1(
 	exB1HldIdRn1,
 	
 	ex1RegValPc,	exB1RegValImm,
-	ex1BraFlush,
+//	ex1BraFlush,
+	ex1BraFlush,	exB1PredNoExec,
 //	ex1BraFlush || exResetL,
 	ex1RegInSr,
 	1,
@@ -2172,7 +2252,8 @@ ExEXC1	exc1(
 	ex1RegValPc,	exC1RegValImm,
 //	ex1BraFlush,	ex1RegInSr
 //	ex1BraFlush || exResetL,
-	ex1BraFlush,
+//	ex1BraFlush,
+	ex1BraFlush,	exC1PredNoExec,
 	ex1RegInSr,
 	2
 	);
@@ -2686,7 +2767,8 @@ begin
 	exHold1B	=
 		(( exHold1B1 || exHold1B2 || exHold1B3) && !ex1BraFlush) ||
 		(( exHold1C1 || exHold1C2 || exHold1C3) && !ex2BraFlush) ||
-		(exHold1D1 && !ex3BraFlush);
+		(exHold1D1 && !ex3BraFlush) ||
+		id2_PredNeedStall			;
 
 //	if(idA2IdUCmd[5:0]==JX2_UCMD_NOP)
 	if(idA2IdUCmd == JX2_UCMDSP_BRANOP)
@@ -2738,7 +2820,8 @@ begin
 	exHold1B	=
 		(( exHold1B1 || exHold1B2) && !ex1BraFlush) ||
 		(( exHold1C1 || exHold1C2) && !ex2BraFlush) ||
-		(exHold1D1 && !ex3BraFlush);
+		(exHold1D1 && !ex3BraFlush) ||
+		id2_PredNeedStall			;
 
 	if(idA2IdUCmd == JX2_UCMDSP_BRANOP)
 		exHold1B	= 0;
@@ -2778,7 +2861,8 @@ begin
 	exHold1B	=
 		(exHold1B1 && !ex1BraFlush) ||
 		(exHold1C1 && !ex2BraFlush) ||
-		(exHold1D1 && !ex3BraFlush) ;
+		(exHold1D1 && !ex3BraFlush) ||
+		id2_PredNeedStall			;
 
 	if(idA2IdUCmd == JX2_UCMDSP_BRANOP)
 		exHold1B	= 0;
@@ -4753,6 +4837,10 @@ begin
 		ex2BraFlush		<= 1;
 		ex3BraFlush		<= 1;
 
+		ex1PredNoExec	<= 0;
+		exB1PredNoExec	<= 0;
+		exC1PredNoExec	<= 0;
+
 		id1BraPipelineLrL	<= 0;
 
 		id1IstrWord		<= 96'h300030003000300030003000;
@@ -5112,6 +5200,34 @@ begin
 //		ex1Timers		<= timers[11:0];
 		ex1Timers		<= { timers[11:1], memOpmIn[15] };
 
+`ifdef jx2_cpu_pred_id2
+
+		if((ex1OpUCmd2[5:0] != ex1OpUCmd[5:0]) &&
+			!ex1BraFlush && !ex1PredNoExec)
+		begin
+			$display("ExUnit: Pred Mismatch A:");
+			$display("  EX1: %X-%X -> %X", ex1OpUCmd, ex1OpUIxt, ex1OpUCmd2);
+			$display("  EX2: %X-%X ", ex2OpUCmd, ex2OpUIxt);
+		end
+
+		if(	(ex1OpUCmd2[5:0] == ex1OpUCmd[5:0]) &&
+			(ex1OpUCmd[5:0] != JX2_UCMD_NOP) &&
+			!ex1BraFlush && ex1PredNoExec)
+		begin
+			$display("ExUnit: Pred Mismatch B:");
+			$display("  EX1: %X-%X ", ex1OpUCmd, ex1OpUIxt);
+			$display("  EX2: %X-%X ", ex2OpUCmd, ex2OpUIxt);
+		end
+
+		ex1PredNoExec	<= idA2PredNoExec;
+		exB1PredNoExec	<= idB2PredNoExec;
+		exC1PredNoExec	<= idC2PredNoExec;
+`else
+		ex1PredNoExec	<= 0;
+		exB1PredNoExec	<= 0;
+		exC1PredNoExec	<= 0;
+`endif
+
 `ifdef jx2_enable_wex
 		ex1OpUCmd		<= idA2IdUCmd;
 		ex1OpUIxt		<= idA2IdUIxt;
@@ -5218,6 +5334,10 @@ begin
 		exC1OpUCmd		<= { JX2_IXC_AL, JX2_UCMD_NOP };
 		exC1OpUIxt		<= UV9_00;
 `endif
+
+		ex1PredNoExec	<= 0;
+		exB1PredNoExec	<= 0;
+		exC1PredNoExec	<= 0;
 
 `ifdef def_true
 //		ex1ValBPc		<= UV32_XX;

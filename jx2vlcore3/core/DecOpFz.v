@@ -67,9 +67,12 @@ parameter		fpuLowPrec = 0;
 wire			isAltOp;
 wire			isAltOpC;
 wire			isOp24;
+wire			isAltOp96Only;
 assign		isAltOp		= isAltOpB[0];
-assign		isOp24		= isAltOpB[1];
+// assign		isOp24		= isAltOpB[1];
+assign		isOp24		= 0;
 assign		isAltOpC	= isAltOpB[0] && isAltOpB[2];
+assign		isAltOp96Only	= isAltOpB[1] && isAltOpC;
 
 wire			srUser;				//Usermode
 wire			srSuperuser;		//Superuser mode
@@ -1067,6 +1070,16 @@ begin
 
 	tBlockIsEA_F0	= tBlockIsEz && tBlockIsPrWxA;
 	tBlockIsEA_F2	= tBlockIsEz && tBlockIsPrWxB;
+
+	if(isAltOp96Only)
+	begin
+		tBlockIsF0 = 0;
+		tBlockIsF1 = 0;
+		tBlockIsF2 = 0;
+
+		tBlockIsEA_F0	= 0;
+		tBlockIsEA_F2	= 0;
+	end
 
 	if(tBlockIsEz)
 	begin
@@ -4318,6 +4331,17 @@ begin
 				if(opExQ)
 				begin
 					opUCty	= JX2_IUC_WX;
+				end
+			end
+`else
+			16'h7zz7: begin		/* F0nm_7eo7 */
+				opNmid		= JX2_UCMD_ALU3;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_ALU_SUB;
+				if(opExQ)
+				begin
+					opUCty		= JX2_IUC_WX;
 				end
 			end
 `endif

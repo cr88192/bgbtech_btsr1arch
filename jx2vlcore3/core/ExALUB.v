@@ -399,7 +399,7 @@ begin
 		tAddCa2_Add[3] ? 16'hFFFF : 16'h0000,
 		tResult_Add64[47:0] };
 	tResult_Sub48 = { tSubCa2_Sub[3],
-		tSubCa2_Sub[3] ? 16'hFFFF : 16'h0000,
+		tSubCa2_Sub[3] ? 16'h0000 : 16'hFFFF,
 		tResult_Sub64[47:0] };
 `endif
 

@@ -117,6 +117,7 @@ module ExEX1(
 	regFpuGRn,		//FPU GPR Result
 	regFpuSrT,		//FPU SR.T Result
 	opBraFlush,
+	opPredNoExec,
 	opPreBraPc,
 	opPreBra,
 	aluSrJcmpT,
@@ -186,6 +187,7 @@ input[32:0]		regValImm;		//Immediate (Decode)
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input			regFpuSrT;
 input			opBraFlush;
+input			opPredNoExec;
 input[47:0]		opPreBraPc;
 input[1:0]		opPreBra;
 input			aluSrJcmpT;
@@ -428,6 +430,8 @@ reg			tOpEnable;
 reg			tDoMemOp;
 reg[4:0]	tDoMemOpm;
 reg			tDoDelayCycle;
+
+reg			tOpEnableB;
 
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
@@ -729,6 +733,24 @@ begin
 		4'b0111: 	tOpEnable = 0;
 		4'b1zzz: 	tOpEnable = 0;
 	endcase
+`endif
+
+`ifdef jx2_cpu_pred_id2
+	tOpEnableB = !opBraFlush && !opPredNoExec;
+	
+	if((tOpEnableB!=tOpEnable) && (opUCmd[5:0]!=JX2_UCMD_NOP))
+	begin
+		$display("ExEX1: Pred Mismatch %d %d",
+			tOpEnableB,
+			tOpEnable);
+	end
+	else
+	begin
+//		$display("ExEX1: Pred Match %d",
+//			tOpEnableB);
+	end
+	
+	tOpEnable	= tOpEnableB;
 `endif
 
 	tOpUCmdF	= ((opUCmd[5:0] == JX2_UCMD_BRA) && !opBraFlush) ?
