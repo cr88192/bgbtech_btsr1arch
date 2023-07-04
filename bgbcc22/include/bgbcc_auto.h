@@ -1239,6 +1239,7 @@ BCCX_Node *BGBCC_CCXL_ReduceExpr(BGBCC_TransState *ctx, BCCX_Node *l);
 BCCX_Node *BGBCC_CCXL_ReduceStatement(BGBCC_TransState *ctx, BCCX_Node *l);
 BCCX_Node *BGBCC_CCXL_ReduceExprConst(BGBCC_TransState *ctx, BCCX_Node *l);
 BCCX_Node *BGBCC_CCXL_ReduceExprConst2(BGBCC_TransState *ctx, BCCX_Node *l);
+BCCX_Node *BGBCC_CCXL_ReduceExprIfArch(BGBCC_TransState *ctx, BCCX_Node *l);
 BCCX_Node *BGBCC_CCXL_TryReduceExprAsTypeSig(BGBCC_TransState *ctx,char *sig, BCCX_Node *l);
 //AHSRC:ccxl/ccxl_register.c
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_AllocRegisterInfo(BGBCC_TransState *ctx);

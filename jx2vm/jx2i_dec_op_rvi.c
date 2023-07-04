@@ -35,6 +35,13 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 	int imm20j, imm20u;
 	int ret, fnm;
 
+	if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
+		BJX2_EXTID_RISCV))
+	{
+		op->Run=NULL;
+		return(-1);
+	}
+
 	op->fl|=BJX2_OPFL_TWOWORD;
 	op->fl|=BJX2_OPFL_RV64;
 	op->opn=opw1;

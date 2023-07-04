@@ -216,8 +216,8 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'm': unsigned long		(uint32 | uint64)
 * 'n': int128				(int128)
 * 'o': unsigned int128		(uint128)
-* 'p': intptr				(int32 | int64)
-* 'q': reserved
+* 'p': intptr				(Signed, pointer-sized, int32 | int64 | int128)
+* 'q': uintptr				(Unsigned, pointer-sized, int32 | int64 | int128)
 * 'r': variant				(64-bit tagged value)
 * 's': short				(int16)
 * 't': unsigned short		(uint116)

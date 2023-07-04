@@ -377,6 +377,9 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 #endif
 		if(eq)
 		{
+			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx, BJX2_EXTID_MOVX2))
+				break;
+
 			if(op->rm&1)
 				op->rm=0x20|((op->rm)&0x1E);
 		
@@ -469,6 +472,9 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 #endif
 		if(eq)
 		{
+			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx, BJX2_EXTID_MOVX2))
+				break;
+
 			if(op->rn&1)
 				op->rn=0x20|((op->rn)&0x1E);
 

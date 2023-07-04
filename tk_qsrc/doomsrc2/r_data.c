@@ -746,7 +746,8 @@ void R_InitTextures (void)
 	printf("[");
 	for (i = 0; i < temp3; i++)
 		printf(" ");
-	printf("		 ]");
+//	printf("		 ]");
+	printf("]");
 //	for (i = 0; i < temp3; i++)
 //		printf("\x8");
 //	printf("\x8\x8\x8\x8\x8\x8\x8\x8\x8\x8");	
@@ -760,7 +761,10 @@ void R_InitTextures (void)
 	for (i=0 ; i<numtextures ; i++, directory++)
 	{
 		if (!(i&63))
+		{
 			printf (".");
+			fflush(stdout);
+		}
 
 		if (i == numtextures1)
 		{
@@ -1584,7 +1588,10 @@ void R_InitSpriteLumps (void)
 	for (i=0 ; i< numspritelumps ; i++)
 	{
 		if (!(i&63))
+		{
 			printf (".");
+			fflush(stdout);
+		}
 
 //		patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
 		patch = W_CachePatchNum (firstspritelump+i, PU_CACHE);
@@ -1903,13 +1910,13 @@ void R_InitData (void)
 //	tk_puts("TI ");
 //	printf ("\nIT");
 	R_InitTextures ();
-	printf ("\nInitTextures");
+//	printf ("\nInitTextures");
 	R_InitFlats ();
-	printf ("\nInitFlats");
+//	printf ("\nInitFlats");
 	R_InitSpriteLumps ();
-	printf ("\nInitSprites");
+//	printf ("\nInitSprites");
 	R_InitColormaps ();
-	printf ("\nInitColormaps");
+//	printf ("\nInitColormaps");
 }
 
 

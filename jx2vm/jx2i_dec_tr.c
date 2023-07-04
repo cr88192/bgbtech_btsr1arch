@@ -2566,6 +2566,50 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			}
 		}
 
+		if(
+			(op->nmid==BJX2_NMID_CMPEQ)		||
+			(op->nmid==BJX2_NMID_CMPGT)		||
+			(op->nmid==BJX2_NMID_CMPGE)		||
+			(op->nmid==BJX2_NMID_CMPQEQ)	||
+			(op->nmid==BJX2_NMID_CMPQGT)	||
+			(op->nmid==BJX2_NMID_CMPQGE)	||
+			(op->nmid==BJX2_NMID_CMPPEQ)	||
+			(op->nmid==BJX2_NMID_CMPPGT)	||
+			(op->nmid==BJX2_NMID_CMPXEQ)	||
+			(op->nmid==BJX2_NMID_CMPXGT)	||
+			(op->nmid==BJX2_NMID_TST)		||
+			(op->nmid==BJX2_NMID_TSTQ)		||
+			(op->nmid==BJX2_NMID_FCMPEQ)	||
+			(op->nmid==BJX2_NMID_FCMPGT)	||
+			(op->nmid==BJX2_NMID_ADC)		||
+			(op->nmid==BJX2_NMID_SBB)		||
+			(op->nmid==BJX2_NMID_BCDADC)	||
+			(op->nmid==BJX2_NMID_BCDSBB)	||
+			(op->nmid==BJX2_NMID_BCDSBB)	||
+			(op->nmid==BJX2_NMID_ROTCLQ)	||
+			(op->nmid==BJX2_NMID_ROTCRQ)	)
+		{
+			if(op1)
+			{
+				if(
+					(op1->nmid==BJX2_NMID_PRED_T)	||
+					(op1->nmid==BJX2_NMID_PRED_F)	||
+					(op1->nmid==BJX2_NMID_BT)		||
+					(op1->nmid==BJX2_NMID_BF)		||
+					(op1->nmid==BJX2_NMID_ADC)		||
+					(op1->nmid==BJX2_NMID_SBB)		||
+					(op1->nmid==BJX2_NMID_BCDADC)	||
+					(op1->nmid==BJX2_NMID_BCDSBB)	||
+					(op1->nmid==BJX2_NMID_BCDSBB)	||
+					(op1->nmid==BJX2_NMID_ROTCLQ)	||
+					(op1->nmid==BJX2_NMID_ROTCRQ)	)
+				{
+					op->cyc=2;
+				}
+			}
+		}
+		
+
 		if(lrseen>0)
 			lrseen--;
 		if(r1seen>0)

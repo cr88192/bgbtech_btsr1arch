@@ -478,6 +478,8 @@ extern "C" {
 #define BGBCC_ARCH_BJX2_JX2F	BGBCC_FOURCC('J', 'X', '2', 'F')	//VL, Lite
 
 #define BGBCC_ARCH_BJX2_JX2G	BGBCC_FOURCC('J', 'X', '2', 'G')	//96b
+#define BGBCC_ARCH_BJX2_JX2H	BGBCC_FOURCC('J', 'X', '2', 'H')	//
+#define BGBCC_ARCH_BJX2_JX2I	BGBCC_FOURCC('J', 'X', '2', 'I')	//
 
 #define BGBCC_ARCH_BJX2_X2RV	BGBCC_FOURCC('X', '2', 'R', 'V')	//XG2RV
 

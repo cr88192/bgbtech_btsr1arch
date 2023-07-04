@@ -817,6 +817,65 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLAG_SR_MD			0x40000000ULL
 #define BJX2_FLAG_SR_JQ			0x80000000ULL
 
+
+#define BJX2_FFLAG_FIX32	(1LL<< 1) //WEX
+
+#define BJX2_FFLAG_WEX		(1LL<< 8) //WEX
+#define BJX2_FFLAG_WEX3W	(1LL<< 9) //WEX-3W
+#define BJX2_FFLAG_JUMBO	(1LL<<10) //Jumbo
+#define BJX2_FFLAG_MMU		(1LL<<11) //MMU
+#define BJX2_FFLAG_ADDR48	(1LL<<12) //Addr48
+#define BJX2_FFLAG_GSV		(1LL<<13) //GSV (64-bit, Packed Integer Ops)
+#define BJX2_FFLAG_PMORT	(1LL<<14) //PMORT.x
+#define BJX2_FFLAG_GFP		(1LL<<15) //FPU (GFP)
+#define BJX2_FFLAG_GSVX		(1LL<<16) //GSVX (128-Bit FP-SIMD)
+#define BJX2_FFLAG_GFPX		(1LL<<17) //GFPX (128-Bit Long-Double Ops)
+#define BJX2_FFLAG_FMAC		(1LL<<18) //FMAC (FPU Multiply-Accumulate)
+#define BJX2_FFLAG_ALUX		(1LL<<19) //ALUX (128-bit ALU Ops)
+#define BJX2_FFLAG_XGPR		(1LL<<20) //XGPR (Set if R32..R63 exist)
+#define BJX2_FFLAG_PREDS	(1LL<<21) //PRED_S (Allow SR.S Predicates)
+#define BJX2_FFLAG_FPULANE2	(1LL<<22) //FPU Lane 2 (Allow FPU ops in Lane 2)
+#define BJX2_FFLAG_CONVFP16	(1LL<<23) //Conv FP16 (Packed FP8 and FP16 Ops)
+#define BJX2_FFLAG_RISCV	(1LL<<24) //RISC-V Mode
+#define BJX2_FFLAG_TTAG		(1LL<<25) //TTAG (Type Tag)
+#define BJX2_FFLAG_XMOV		(1LL<<26) //XMOV Addressing
+#define BJX2_FFLAG_XMOV_QA	(1LL<<27) //XMOV Quadrant Add Mode
+#define BJX2_FFLAG_DMAC		(1LL<<28) //DMAC (Integer Multiply-Accumulate)
+#define BJX2_FFLAG_RIMOV	(1LL<<29) //Op64 RiMOV
+#define BJX2_FFLAG_MULQ		(1LL<<30) //MULQ (64-bit MUL and DIV/MOD ops)
+#define BJX2_FFLAG_FDIV		(1LL<<31) //FDIV (Adds FDIV and FSQRT)
+
+
+#define BJX2_EXTID_WEX		0x0001
+#define BJX2_EXTID_WEX3W	0x0002
+#define BJX2_EXTID_JUMBO	0x0003
+#define BJX2_EXTID_MMU		0x0004
+#define BJX2_EXTID_ADDR48	0x0005
+#define BJX2_EXTID_GSV		0x0006
+#define BJX2_EXTID_PMORT	0x0007
+#define BJX2_EXTID_GFP		0x0008
+#define BJX2_EXTID_GSVX		0x0009
+#define BJX2_EXTID_GFPX		0x000A
+#define BJX2_EXTID_FMAC		0x000B
+#define BJX2_EXTID_ALUX		0x000C
+#define BJX2_EXTID_XGPR		0x000D
+#define BJX2_EXTID_PREDS	0x000E
+#define BJX2_EXTID_FPULANE2	0x000F
+#define BJX2_EXTID_CONVFP16	0x0010
+#define BJX2_EXTID_RISCV	0x0011
+#define BJX2_EXTID_TTAG		0x0012
+#define BJX2_EXTID_XMOV		0x0013
+#define BJX2_EXTID_XMOV_QA	0x0014
+#define BJX2_EXTID_DMAC		0x0015
+#define BJX2_EXTID_RIMOV	0x0016
+#define BJX2_EXTID_MULQ		0x0017
+#define BJX2_EXTID_FDIV		0x0018
+
+#define BJX2_EXTID_MOVX2	0x0040
+#define BJX2_EXTID_XG2		0x0041
+#define BJX2_EXTID_OP16		0x0042
+
+
 #define BJX2_CFG_SIMDFXASS
 
 #define BJX2_FLIPSTNM
@@ -1203,6 +1262,8 @@ byte puts_linepos;
 char		*map_img_name[256];
 bjx2_addr	map_img_base[256];
 byte		n_map_img;
+
+u64			cfg_fflags;
 
 BJX2_MemSpan *(*MemSpanForAddr)(BJX2_Context *ctx, bjx2_addr addr);
 

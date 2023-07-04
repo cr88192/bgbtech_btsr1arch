@@ -1437,7 +1437,21 @@ void BJX2_Op_WEXMD_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]&=~(1<<27);
 		break;
 	case 1:
+		if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx, BJX2_EXTID_WEX))
+		{
+			ctx->wexmd=0;
+			ctx->regs[BJX2_REG_SR]&=~(1<<27);
+			break;
+		}
+		ctx->regs[BJX2_REG_SR]|=(1<<27);
+		break;
 	case 2:
+		if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx, BJX2_EXTID_WEX3W))
+		{
+			ctx->wexmd=0;
+			ctx->regs[BJX2_REG_SR]&=~(1<<27);
+			break;
+		}
 		ctx->regs[BJX2_REG_SR]|=(1<<27);
 		break;
 
@@ -1465,7 +1479,9 @@ u64 BJX2_GetCpuidVal(BJX2_Context *ctx, int ix)
 	u64 v;
 
 //	fflags=0x01D9FF00;
-	fflags=0x77D9FF00;
+//	fflags=0x77D9FF00;
+	fflags=ctx->cfg_fflags;
+	fflags&=~0xFF;
 
 	switch(ix)
 	{

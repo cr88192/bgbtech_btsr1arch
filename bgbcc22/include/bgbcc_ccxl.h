@@ -794,6 +794,7 @@ bccx_cxstate bgbcc_rcst_goto;
 bccx_cxstate bgbcc_rcst_goto_case;
 
 bccx_cxstate bgbcc_rcst_if;
+bccx_cxstate bgbcc_rcst_ifarch;
 bccx_cxstate bgbcc_rcst_imag;
 bccx_cxstate bgbcc_rcst_impl;
 bccx_cxstate bgbcc_rcst_import;

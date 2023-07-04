@@ -237,6 +237,40 @@ X(tk_checksane_mem_asm):
 
 //	break
 
+.ifarch has_aluptr
+	mov	0x3210456789abcdef, r8
+	mov	0xfedc456789abcdef, r9
+	mov	0x3210556789abcdef, r10
+
+	mov	0, r7
+	
+	.L7_0:
+	sub.p	r8, r9, r4
+	cmpqeq	r4, r7
+	break?f
+
+	.L7_1:
+	cmppeq	r8, r9
+	break?f
+
+	.L7_2:
+	cmppeq	r8, r10
+	break?t
+
+	.L7_3:
+	cmppgt	r8, r9
+	break?t
+	cmppgt	r9, r8
+	break?t
+
+	.L7_4:
+	cmppgt	r8, r10
+	break?f
+	cmppgt	r10, r8
+	break?t
+.endif
+
+
 	add	128, sp
 
 //	pop r2

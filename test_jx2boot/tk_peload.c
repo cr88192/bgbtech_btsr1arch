@@ -139,7 +139,8 @@ byte *TKPE_UnpackL6(byte *ct, byte *ibuf, int isz);
 __asm {
 TKPE_UnpackL6:
 //	cs=ibuf; cse=ibuf+isz;
-	WEXMD	2
+//	WEXMD	2
+	WEXMD
 	ADD		R5, R6, R7
 	.L0:
 
@@ -523,7 +524,8 @@ TKPE_DecodeBufferRP2:
 // R21=l
 // R22=d
 
-	WEXMD	2
+//	WEXMD	2
+	WEXMD
 
 	MOV R4, R18
 	MOV R5, R19
@@ -728,7 +730,8 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size);
 
 __asm {
 TKPE_CalculateImagePel4BChecksum:
-	WEXMD	2
+//	WEXMD	2
+	WEXMD
 	ADD		R4, R5, R6
 	MOV		1, R16
 	MOV		0, R17

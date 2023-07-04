@@ -179,13 +179,44 @@ void __isr_interrupt(void)
 					__arch_isrsave, 
 					__ARCH_SIZEOF_REGSAVE__);
 
+//				if(__ARCH_SIZEOF_REGSAVE__<512)
+				__ifarch(!has_xgpr)
+				{
+					taskern->ctx_regsave[TKPE_REGSAVE_GBR] =
+						taskern->ctx_regsave[TKPE_REGSAVE_GBR_LO];
+					taskern->ctx_regsave[TKPE_REGSAVE_LR] =
+						taskern->ctx_regsave[TKPE_REGSAVE_LR_LO];
+					taskern->ctx_regsave[TKPE_REGSAVE_SPC] =
+						taskern->ctx_regsave[TKPE_REGSAVE_SPC_LO];
+					taskern->ctx_regsave[TKPE_REGSAVE_EXSR] =
+						taskern->ctx_regsave[TKPE_REGSAVE_EXSR_LO];
+				}
+
 				taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
 				taskern->ctx_regsave[TKPE_REGSAVE_TTB]=__arch_ttb;
 
-				taskern->ctx_regsave[TKPE_REGSAVE_PCH]=__arch_pch;
-				taskern->ctx_regsave[TKPE_REGSAVE_GBH]=__arch_gbh;
+//				if(__arch_ifarch__has_xmov)
+				__ifarch(has_xmov)
+				{
+					taskern->ctx_regsave[TKPE_REGSAVE_PCH]=__arch_pch;
+					taskern->ctx_regsave[TKPE_REGSAVE_GBH]=__arch_gbh;
+				}
 
 				taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
+
+//				if(__ARCH_SIZEOF_REGSAVE__<512)
+				__ifarch(!has_xgpr)
+				{
+					taskern2->ctx_regsave[TKPE_REGSAVE_GBR_LO] =
+						taskern2->ctx_regsave[TKPE_REGSAVE_GBR];
+					taskern2->ctx_regsave[TKPE_REGSAVE_LR_LO] =
+						taskern2->ctx_regsave[TKPE_REGSAVE_LR];
+					taskern2->ctx_regsave[TKPE_REGSAVE_SPC_LO] =
+						taskern2->ctx_regsave[TKPE_REGSAVE_SPC];
+					taskern2->ctx_regsave[TKPE_REGSAVE_EXSR_LO] =
+						taskern2->ctx_regsave[TKPE_REGSAVE_EXSR];
+				}
+
 				memcpy(
 					__arch_isrsave, 
 					taskern2->ctx_regsave,
@@ -194,8 +225,12 @@ void __isr_interrupt(void)
 				__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
 				__arch_ttb=taskern2->ctx_regsave[TKPE_REGSAVE_TTB];
 
-				__arch_pch=taskern2->ctx_regsave[TKPE_REGSAVE_PCH];
-				__arch_gbh=taskern2->ctx_regsave[TKPE_REGSAVE_GBH];
+//				if(__arch_ifarch__has_xmov)
+				__ifarch(has_xmov)
+				{
+					__arch_pch=taskern2->ctx_regsave[TKPE_REGSAVE_PCH];
+					__arch_gbh=taskern2->ctx_regsave[TKPE_REGSAVE_GBH];
+				}
 
 				task2->qtick=16;
 				__arch_tbr=(u64 *)task2;
@@ -365,18 +400,51 @@ __interrupt void __isr_syscall(void)
 		if(taskern2->magic0!=TKPE_TASK_MAGIC)
 			__debugbreak();
 
+		if(!taskern2->ctx_regsave[TKPE_REGSAVE_SPC])
+			__debugbreak();
+
 		memcpy(
 			taskern->ctx_regsave,
 			isrsave, 
 			__ARCH_SIZEOF_REGSAVE__);
+
+//		if(__ARCH_SIZEOF_REGSAVE__<512)
+		__ifarch(!has_xgpr)
+		{
+			taskern->ctx_regsave[TKPE_REGSAVE_GBR] =
+				taskern->ctx_regsave[TKPE_REGSAVE_GBR_LO];
+			taskern->ctx_regsave[TKPE_REGSAVE_LR] =
+				taskern->ctx_regsave[TKPE_REGSAVE_LR_LO];
+			taskern->ctx_regsave[TKPE_REGSAVE_SPC] =
+				taskern->ctx_regsave[TKPE_REGSAVE_SPC_LO];
+			taskern->ctx_regsave[TKPE_REGSAVE_EXSR] =
+				taskern->ctx_regsave[TKPE_REGSAVE_EXSR_LO];
+		}
 
 	//	__debugbreak();
 
 		taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
 		taskern->ctx_regsave[TKPE_REGSAVE_TTB]=__arch_ttb;
 
-		taskern->ctx_regsave[TKPE_REGSAVE_PCH]=__arch_pch;
-		taskern->ctx_regsave[TKPE_REGSAVE_GBH]=__arch_gbh;
+//		if(__arch_ifarch__has_xmov)
+		__ifarch(has_xmov)
+		{
+			taskern->ctx_regsave[TKPE_REGSAVE_PCH]=__arch_pch;
+			taskern->ctx_regsave[TKPE_REGSAVE_GBH]=__arch_gbh;
+		}
+
+//		if(__ARCH_SIZEOF_REGSAVE__<512)
+		__ifarch(!has_xgpr)
+		{
+			taskern2->ctx_regsave[TKPE_REGSAVE_GBR_LO] =
+				taskern2->ctx_regsave[TKPE_REGSAVE_GBR];
+			taskern2->ctx_regsave[TKPE_REGSAVE_LR_LO] =
+				taskern2->ctx_regsave[TKPE_REGSAVE_LR];
+			taskern2->ctx_regsave[TKPE_REGSAVE_SPC_LO] =
+				taskern2->ctx_regsave[TKPE_REGSAVE_SPC];
+			taskern2->ctx_regsave[TKPE_REGSAVE_EXSR_LO] =
+				taskern2->ctx_regsave[TKPE_REGSAVE_EXSR];
+		}
 
 		memcpy(
 			isrsave, 
@@ -390,8 +458,12 @@ __interrupt void __isr_syscall(void)
 		__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
 		__arch_ttb=ttb;
 
-		__arch_pch=taskern2->ctx_regsave[TKPE_REGSAVE_PCH];
-		__arch_gbh=taskern2->ctx_regsave[TKPE_REGSAVE_GBH];
+//		if(__arch_ifarch__has_xmov)
+		__ifarch(has_xmov)
+		{
+			__arch_pch=taskern2->ctx_regsave[TKPE_REGSAVE_PCH];
+			__arch_gbh=taskern2->ctx_regsave[TKPE_REGSAVE_GBH];
+		}
 
 		__arch_tbr=(u64 *)task2;
 	}

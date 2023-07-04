@@ -824,6 +824,8 @@ static char *bgbcp_basetypes_c[]={
 "__int128",	"__uint128",
 
 "__intptr",	"__uintptr",
+"__ssize_t",	"__usize_t",
+"__ptrdiff",
 
 "__float32", "__float64",
 "__float128", "__float16",

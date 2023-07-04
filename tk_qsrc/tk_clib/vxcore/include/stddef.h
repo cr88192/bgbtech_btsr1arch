@@ -13,7 +13,12 @@
 #ifndef __STDDEF_INCLUDED
 #define __STDDEF_INCLUDED
 
-typedef int ptrdiff_t;
+#ifdef __BGBCC__
+typedef __ptrdiff ptrdiff_t;
+#else
+// typedef int ptrdiff_t;
+typedef long ptrdiff_t;
+#endif
 
 #if 0
 #ifndef __SIZE_T_DEFINED
@@ -31,7 +36,11 @@ typedef unsigned int size_t;
 #ifndef __SIZE_T_DEFINED
 #define __SIZE_T_DEFINED
 // typedef unsigned int size_t;
+#ifdef __BGBCC__
+typedef __usize_t size_t;
+#else
 typedef unsigned long size_t;
+#endif
 // typedef long size_t;
 #endif
 

@@ -827,6 +827,17 @@ ccxl_status BGBCC_CCXL_PushLoad(BGBCC_TransState *ctx, char *name)
 				return(CCXL_STATUS_YES);
 			}
 		}
+
+		if(!strncmp(name, "__arch_ifarch__", 15) &&
+			(strlen(name)>15))
+		{
+			i=BGBCC_CCXL_QueryTargetFeature(ctx, name+15);
+			BGBCC_CCXL_GetRegForIntValue(ctx,
+				&treg, i);
+			BGBCC_CCXL_PushRegister(ctx, treg);
+			return(CCXL_STATUS_YES);
+		}
+
 	}
 
 	i=BGBCC_CCXL_LookupAsRegister(ctx, name, &treg);

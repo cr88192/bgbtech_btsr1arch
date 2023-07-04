@@ -152,6 +152,14 @@ reg[ 15:0]		mem4OpmIn;		//
 `reg_tile		mem4DataIn;		//
 
 
+`ifdef jx2_mem_l2wsz_16384
+reg[127:0]		memTileData0A[16383:0];
+reg[127:0]		memTileData1A[16383:0];
+reg[127:0]		memTileData2A[16383:0];
+reg[127:0]		memTileData3A[16383:0];
+reg[ 37:0]		memTileAddrA[16383:0];
+`endif
+
 `ifdef jx2_mem_l2wsz_8192
 reg[127:0]		memTileData0A[8191:0];
 reg[127:0]		memTileData1A[8191:0];
@@ -185,6 +193,14 @@ reg[ 37:0]		memTileAddrA[1023:0];
 `endif
 
 `ifdef jx2_mem_l2d2way
+
+`ifdef jx2_mem_l2wsz_16384
+reg[127:0]		memTileData0B[16383:0];
+reg[127:0]		memTileData1B[16383:0];
+reg[127:0]		memTileData2B[16383:0];
+reg[127:0]		memTileData3B[16383:0];
+reg[ 37:0]		memTileAddrB[16383:0];
+`endif
 
 `ifdef jx2_mem_l2wsz_8192
 reg[127:0]		memTileData0B[8191:0];
@@ -220,6 +236,27 @@ reg[ 37:0]		memTileAddrB[1023:0];
 
 `endif
 
+
+`ifdef jx2_mem_l2wsz_16384
+reg[13:0]	nxtReqIx;
+reg[13:0]	nxtReqIx2;
+reg[13:0]	tReqIx0;
+reg[13:0]	tReqIx;
+reg[13:0]	tBlkIx;
+reg[13:0]	tReqIxL;
+reg[13:0]	tReqIxL2;
+reg[13:0]	tBlkLdIx;
+reg[13:0]	tBlkStIx;
+reg[13:0]	tBlkStIxL;
+
+reg[13:0]	tAccIx;
+reg[13:0]	tNxtAccIx;
+reg[13:0]	nxtRovIx;
+reg[13:0]	tRovIx;
+
+reg[13:0]	tReqMissIx;
+reg[13:0]	tNxtReqMissIx;
+`endif
 
 `ifdef jx2_mem_l2wsz_8192
 reg[12:0]	nxtReqIx;
@@ -641,7 +678,17 @@ begin
 `endif
 
 `ifdef jx2_mem_l2wsz_8192
-	nxtReqIx	= nxtReqAddr [12:0] ^ nxtReqAddr [24:12];
+//	nxtReqIx	= nxtReqAddr [12:0] ^ nxtReqAddr [24:12];
+//	nxtReqIx	= nxtReqAddr [12:0] ^ nxtReqAddr [25:13];
+	nxtReqIx	= nxtReqAddr [12:0] ^
+		{ nxtReqAddr [18:13], nxtReqAddr [25:19] };
+`endif
+
+`ifdef jx2_mem_l2wsz_16384
+//	nxtReqIx	= nxtReqAddr [13:0] ^ nxtReqAddr [26:14];
+//	nxtReqIx	= nxtReqAddr [13:0] ^ nxtReqAddr [25:13];
+	nxtReqIx	= nxtReqAddr [13:0] ^
+		{ nxtReqAddr [17:14], nxtReqAddr [19:16], nxtReqAddr [25:20] };
 `endif
 
 //	if(memRingAddrIsRamReq)

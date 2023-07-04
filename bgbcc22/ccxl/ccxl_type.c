@@ -4099,12 +4099,25 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 			bty=CCXL_TY_L;
 		if(ctx->arch_sizeof_ptr==4)
 //			bty=CCXL_TY_I;
+			bty=CCXL_TY_I;
+		if(ctx->arch_sizeof_ptr==2)
+//			bty=CCXL_TY_SS;
+			bty=CCXL_TY_US;
+		break;
+	case 'q':
+		bty=CCXL_TY_UNL;
+		if(ctx->arch_sizeof_ptr==16)
+			bty=CCXL_TY_UI128;
+		if(ctx->arch_sizeof_ptr==8)
+			bty=CCXL_TY_UL;
+		if(ctx->arch_sizeof_ptr==4)
+//			bty=CCXL_TY_I;
 			bty=CCXL_TY_UI;
 		if(ctx->arch_sizeof_ptr==2)
 //			bty=CCXL_TY_SS;
 			bty=CCXL_TY_US;
 		break;
-	case 'q': bty=-1; break;
+//		bty=-1; break;
 	case 'r': bty=CCXL_TY_VARIANT; break;
 	case 's': bty=CCXL_TY_SS; break;
 	case 't': bty=CCXL_TY_US; break;

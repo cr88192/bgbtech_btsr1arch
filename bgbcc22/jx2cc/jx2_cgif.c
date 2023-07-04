@@ -316,6 +316,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ldgbr"))
 		{ shctx->has_fmovs|=8; }
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "xmov"))
+		{ shctx->has_fmovs|=16; }
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
@@ -362,7 +364,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->fpu_gfp=1;
 		shctx->is_pbo=1;
 
-		shctx->abi_spillpad=1;
+		shctx->abi_spillpad|=1;
 //		shctx->abi_spillpad|=2;
 	}
 
@@ -385,7 +387,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->is_fixed32=1;
 		shctx->is_addr_x32=1;
 
-		shctx->fpu_gfp=1;
+//		shctx->fpu_gfp=1;
+		shctx->no_fpu=1;
+		shctx->fpu_soft=1;
 		shctx->is_pbo=1;
 	}
 
@@ -435,12 +439,69 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2=1;
 		shctx->has_simdx2=1;
 
-		shctx->has_fmovs=3;
+		shctx->has_fmovs|=3;
+		
+		shctx->has_fmovs|=16;
 
 //		shctx->has_fmovc=1;
 //		shctx->has_dmacl=1;
 
-		shctx->abi_spillpad=1;
+		shctx->abi_spillpad|=1;
+		shctx->abi_spillpad|=2;
+#endif
+	}
+
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2H)
+	{
+		ctx->arch_sizeof_long=8;
+		ctx->arch_sizeof_ptr=8;
+		ctx->arch_align_max=16;
+//		ctx->arch_sizeof_valist=192;
+
+		shctx->no_ops48=1;
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
+
+		shctx->has_bra48=1;
+		shctx->has_xgpr=3;
+		shctx->has_alux=1;
+
+#if 1
+//		if(shctx->use_wexmd==0)
+		if((shctx->use_wexmd==0) && (ctx->optmode!=BGBCC_OPT_SIZE))
+			shctx->use_wexmd=2;
+		shctx->has_jumbo=1;
+		shctx->has_pushx2=1;
+		shctx->has_simdx2=1;
+
+		shctx->has_fmovs|=3;
+		shctx->has_fmovs|=16;
+
+//		shctx->has_fmovc=1;
+//		shctx->has_dmacl=1;
+
+		shctx->abi_spillpad|=1;
+		shctx->abi_spillpad|=2;
+#endif
+	}
+
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_JX2I)
+	{
+		shctx->no_ops48=1;
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
+
+#if 1
+		if((shctx->use_wexmd==0) && (ctx->optmode!=BGBCC_OPT_SIZE))
+			shctx->use_wexmd=1;
+
+		shctx->has_jumbo=1;
+		shctx->has_pushx2=1;
+		shctx->has_simdx2=1;
+
+//		shctx->has_fmovs|=3;
+
+		shctx->abi_spillpad|=1;
 		shctx->abi_spillpad|=2;
 #endif
 	}

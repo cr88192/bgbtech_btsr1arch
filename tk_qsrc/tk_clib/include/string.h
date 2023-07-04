@@ -15,7 +15,12 @@
 
 #ifndef __SIZE_T_DEFINED
 #define __SIZE_T_DEFINED
+//typedef unsigned long size_t;
+#ifdef __BGBCC__
+typedef __usize_t size_t;
+#else
 typedef unsigned long size_t;
+#endif
 #endif
 
 #ifndef __RSIZE_T_DEFINED

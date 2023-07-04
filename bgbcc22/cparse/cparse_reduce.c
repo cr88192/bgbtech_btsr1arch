@@ -438,6 +438,12 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 		}
 #endif
 
+		if(flag&32)
+		{
+			x=BGBCP_BinaryExpr("&", ln, rn);
+			return(x);
+		}
+
 		x=BGBCP_BinaryExpr("&&", ln, rn);
 		return(x);
 	}
@@ -502,6 +508,12 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			return(t);
 		}
 #endif
+
+		if(flag&32)
+		{
+			x=BGBCP_BinaryExpr("|", ln, rn);
+			return(x);
+		}
 
 		x=BGBCP_BinaryExpr("||", ln, rn);
 		return(x);

@@ -2286,6 +2286,10 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return((ctx->has_fmovs&2)!=0);
 	if(!bgbcc_stricmp(sym, "has_ldtex"))
 		return((ctx->has_fmovs&4)!=0);
+	if(!bgbcc_stricmp(sym, "has_ldgbr"))
+		return((ctx->has_fmovs&8)!=0);
+	if(!bgbcc_stricmp(sym, "has_xmov"))
+		return((ctx->has_fmovs&16)!=0);
 
 	if(!bgbcc_stricmp(sym, "has_jcmpz"))
 		return((ctx->has_jcmp&1)!=0);

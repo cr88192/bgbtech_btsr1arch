@@ -665,7 +665,15 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 		ctx->l2_wmask=3;
 		ctx->l2_hshr=11+6;
 	}
-	
+
+	if(!strcmp(str, "1024k4") ||
+		!strcmp(str, "1024k4v"))
+	{
+		ctx->l2_hmask=4095;
+		ctx->l2_wmask=3;
+		ctx->l2_hshr=12+6;
+	}
+
 	if(str[strlen(str)-1]=='v')
 	{
 		ctx->l2_vict=1;

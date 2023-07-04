@@ -704,6 +704,14 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 
 		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
 
+		if(flag&32)
+		{
+			sprintf(tb1, "__arch_ifarch__%s", s);
+			t=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
+			BCCX_SetCst(t, &bgbcc_rcst_name, "name", tb1);
+			return(t);
+		}
+
 		if(	(ctx->lang==BGBCC_LANG_CS)	||
 			(ctx->lang==BGBCC_LANG_BS2)	||
 			(ctx->lang==BGBCC_LANG_JAVA)	)
@@ -2781,6 +2789,23 @@ BCCX_Node *BGBCC_CCXL_ReduceExprConst2(BGBCC_TransState *ctx, BCCX_Node *l)
 	BCCX_Node *t;
 	if(!l)return(NULL);
 	t=BGBCC_CCXL_ReduceForm(ctx, l, 3);
+	
+#ifndef BGBCC_BCCX2
+	if(t)
+	{
+		t->hnext=ctx->reduce_tmp;
+		ctx->reduce_tmp=t;
+	}
+#endif
+
+	return(t);
+}
+
+BCCX_Node *BGBCC_CCXL_ReduceExprIfArch(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	BCCX_Node *t;
+	if(!l)return(NULL);
+	t=BGBCC_CCXL_ReduceForm(ctx, l, 32);
 	
 #ifndef BGBCC_BCCX2
 	if(t)

@@ -797,6 +797,36 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				*str=s;
 				return(n);
 			}
+
+#if 1
+			if(!bgbcp_strcmp(b, "__ifarch"))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
+				n1=BGBCP_Expression2(ctx, &s);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
+				n2=BGBCP_BlockStatement3(ctx, &s);
+
+				BGBCP_Token2(s, b, &ty, ctx->lang);
+				if(bgbcp_strcmp4(b, "else"))
+				{
+					n=BCCX_NewCst2(&bgbcc_rcst_ifarch, "ifarch",
+						BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
+						BCCX_NewCst1V(&bgbcc_rcst_then, "then", n2));
+					*str=s;
+					return(n);
+				}
+
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//else
+				n3=BGBCP_BlockStatement3(ctx, &s);
+				n=BCCX_NewCst3(&bgbcc_rcst_ifarch, "ifarch",
+					BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
+					BCCX_NewCst1V(&bgbcc_rcst_then, "then", n2),
+					BCCX_NewCst1V(&bgbcc_rcst_else, "else", n3));
+
+				*str=s;
+				return(n);
+			}
+#endif
 		}
 
 		if(ctx->lang==BGBCC_LANG_CS)

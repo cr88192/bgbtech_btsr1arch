@@ -20,6 +20,8 @@ TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0 $(TK_LDEXTFS)
 # TK_LDFL64= -L. -lvxcore64
 #  /fwex3w
 
+TK_LDFL64_RBD= -L. -lvxcore64 -fptropt0 -mBJX2I -fnowex
+
 TK_LDFL64_DLL= -L. -lcdll -fwex3w -fwexj -fptropt0
 
 TK_LDFL96= -L. -lvxcore96 -fwex3w -fwexj -fptropt0 $(TK_LDEXTFS)
@@ -191,7 +193,7 @@ libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril \
 	libtkgdi.bjx2.ril
 
-bins: tkshell.sys tkshdll.dll tkshell96.sys
+bins: tkshell.sys tkshdll.dll tkshell96.sys tkshell_rbd.sys
 
 apps: bins FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
@@ -235,6 +237,10 @@ tkshell96.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 tkshdll.dll: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshdll.dll tkshdll_multi.c $(SRCS_TKSH_BS2) \
 		$(COPTS64) $(TK_LDFL64_DLL)
+
+tkshell_rbd.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
+	$(CC) -o tkshell_rbd.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
+		$(COPTS64) $(TK_LDFL64_RBD)
 
 FORCE:
 
