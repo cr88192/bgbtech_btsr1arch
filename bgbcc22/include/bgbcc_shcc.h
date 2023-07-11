@@ -1294,9 +1294,18 @@
 
 #define BGBCC_SH_RLC_ABS96			0x36	//Absolute 96-bit
 
+#define BGBCC_SH_RLC_REL32UI_RVI	0x37	//RISC-V, 20+12 PC-Rel
 
 #define BGBCC_SH_RLC_RELW8_BJCMP	0x38	//JCMPxx (WORD)
 #define BGBCC_SH_RLC_RELW32_BJCMP	0x39	//JCMPxx (WORD, Jumbo)
+
+#define BGBCC_SH_RLC_ABSHI20_RVI	0x3A	//RISC-V, High 12 bits, Abs
+#define BGBCC_SH_RLC_ABSLO12I_RVI	0x3B	//RISC-V, Low 12-bits I
+#define BGBCC_SH_RLC_ABSLO12S_RVI	0x3C	//RISC-V, Low 12-bits I
+
+#define BGBCC_SH_RLC_RELHI20_RVI	0x3D	//RISC-V, High 12 bits, Abs
+#define BGBCC_SH_RLC_RELLO12I_RVI	0x3E	//RISC-V, Low 12-bits I
+#define BGBCC_SH_RLC_RELLO12S_RVI	0x3F	//RISC-V, Low 12-bits I
 
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE

@@ -553,6 +553,23 @@ char **tk_rsplit(char *str)
 }
 
 
+#ifdef __BJX2__
+// #if 0
+u64 TK_GetTimeUs(void);
+
+__asm {
+TK_GetTimeUs:
+	CPUID	28
+	NOP
+	NOP
+	MOV		DLR, R2
+//	BREAK
+	RTS
+};
+#endif
+
+#ifndef __BJX2__
+// #if 1
 u64 TK_GetTimeUs(void)
 {
 	volatile u32 *sreg;
@@ -569,6 +586,7 @@ u64 TK_GetTimeUs(void)
 //	__debugbreak();
 	return(us);
 }
+#endif
 
 u32 TK_GetTimeMs(void)
 {
@@ -577,11 +595,12 @@ u32 TK_GetTimeMs(void)
 	u64 us;
 	int ms;
 
-	sreg=(volatile u32 *)0xF000E000;
-	us_lo=sreg[0];
-//	us=0;
-	us_hi=sreg[1];
-	us=(((u64)us_hi)<<32)|us_lo;
+//	sreg=(volatile u32 *)0xF000E000;
+//	us_lo=sreg[0];
+//	us_hi=sreg[1];
+//	us=(((u64)us_hi)<<32)|us_lo;
+
+	us=TK_GetTimeUs();
 	ms=us>>10;
 
 //	__debugbreak();

@@ -213,6 +213,11 @@ output			dbg_outStatus6;
 output			dbg_outStatus7;
 output			dbg_outStatus8;
 
+wire	dbg_outStatus9;
+wire	dbg_outStatus10;
+wire	dbg_outStatus11;
+wire	dbg_outStatus12;
+
 wire		ps2_clk_i;
 wire		ps2_data_i;
 wire		ps2_clk_o;
@@ -290,6 +295,7 @@ assign		vgaGrn = vgaGrn1[4:1];
 assign		vgaBlu = vgaBlu1[4:1];
 
 wire[7:0]	hbrPwmOut;
+wire[1:0]	dbgExWidth;
 
 CoreUnit core(
 //	clock, 		reset2,
@@ -342,6 +348,12 @@ CoreUnit core(
 	dbg_outStatus6,
 	dbg_outStatus7,
 	dbg_outStatus8,
+	
+	dbg_outStatus9,
+	dbg_outStatus10,
+	dbg_outStatus11,
+	dbg_outStatus12,
+	dbgExWidth,
 
 	gpioPinsIn,
 	gpioPinsOut,

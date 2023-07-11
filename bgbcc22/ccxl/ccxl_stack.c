@@ -760,6 +760,7 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalInfo(
 ccxl_status BGBCC_CCXL_PushLoad(BGBCC_TransState *ctx, char *name)
 {
 	ccxl_register treg;
+	s64 li;
 	int i;
 
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "Load", __FILE__, __LINE__);
@@ -838,6 +839,23 @@ ccxl_status BGBCC_CCXL_PushLoad(BGBCC_TransState *ctx, char *name)
 			return(CCXL_STATUS_YES);
 		}
 
+		i=BGBCC_CCXL_LookupArchVar(ctx, name);
+		if(i>=0)
+		{
+			li=BGBCC_CCXL_GetArchVarValForIndex(ctx, i);
+			if(li==(s32)li)
+			{
+				BGBCC_CCXL_GetRegForIntValue(ctx,
+					&treg, li);
+				BGBCC_CCXL_PushRegister(ctx, treg);
+				return(CCXL_STATUS_YES);
+			}
+
+			BGBCC_CCXL_GetRegForLongValue(ctx,
+				&treg, li);
+			BGBCC_CCXL_PushRegister(ctx, treg);
+			return(CCXL_STATUS_YES);
+		}
 	}
 
 	i=BGBCC_CCXL_LookupAsRegister(ctx, name, &treg);

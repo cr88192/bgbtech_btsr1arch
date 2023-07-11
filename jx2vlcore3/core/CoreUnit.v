@@ -221,6 +221,12 @@ module CoreUnit(
 	dbg_outStatus7,
 	dbg_outStatus8,
 
+	dbg_outStatus9,
+	dbg_outStatus10,
+	dbg_outStatus11,
+	dbg_outStatus12,
+	dbgExWidth,
+
 	gpioPinsIn,
 	gpioPinsOut,
 	gpioPinsDir,
@@ -335,6 +341,11 @@ output			dbg_outStatus6;
 output			dbg_outStatus7;
 output			dbg_outStatus8;
 
+output			dbg_outStatus9;
+output			dbg_outStatus10;
+output			dbg_outStatus11;
+output			dbg_outStatus12;
+
 
 input[3:0]		usb_clkdat_i;
 output[3:0]		usb_clkdat_o;
@@ -342,6 +353,8 @@ output[3:0]		usb_clkdat_d;
 output[1:0]		usb_clkref;
 
 output[7:0]		hbr_pwmout;
+
+output[1:0]		dbgExWidth;
 
 reg[7:0]		tSegOutCharBit;
 reg[7:0]		tSegOutSegBit;
@@ -365,6 +378,11 @@ reg				tDbgOutStatus6B;
 reg				tDbgOutStatus7B;
 reg				tDbgOutStatus8B;
 
+reg				tDbgOutStatus9B;
+reg				tDbgOutStatus10B;
+reg				tDbgOutStatus11B;
+reg				tDbgOutStatus12B;
+
 reg				tDbgOutStatus1;
 reg				tDbgOutStatus2;
 reg				tDbgOutStatus3;
@@ -373,6 +391,10 @@ reg				tDbgOutStatus5;
 reg				tDbgOutStatus6;
 reg				tDbgOutStatus7;
 reg				tDbgOutStatus8;
+reg				tDbgOutStatus9;
+reg				tDbgOutStatus10;
+reg				tDbgOutStatus11;
+reg				tDbgOutStatus12;
 
 assign	dbg_outStatus1 = tDbgOutStatus1B;
 assign	dbg_outStatus2 = tDbgOutStatus2B;
@@ -382,6 +404,11 @@ assign	dbg_outStatus5 = tDbgOutStatus5B;
 assign	dbg_outStatus6 = tDbgOutStatus6B;
 assign	dbg_outStatus7 = tDbgOutStatus7B;
 assign	dbg_outStatus8 = tDbgOutStatus8B;
+
+assign	dbg_outStatus9 = tDbgOutStatus9B;
+assign	dbg_outStatus10 = tDbgOutStatus10B;
+assign	dbg_outStatus11 = tDbgOutStatus11B;
+assign	dbg_outStatus12 = tDbgOutStatus12B;
 
 wire[9:0]		tDbgLeds;
 assign tDbgLeds = {
@@ -530,6 +557,8 @@ wire	timer1kHz;
 wire	timer256Hz;
 wire	timerNPat;
 
+wire	clock1MHz;
+
 reg		timerNoise;
 wire	timerNoiseL0;
 reg		timerNoiseL1;
@@ -548,7 +577,8 @@ MmiModClkp		clkp(
 	timer64kHz,
 	timer1kHz,
 	timer256Hz,
-	timerNPat);
+	timerNPat,
+	clock1MHz);
 
 // assign aud_mic_clk = timer1MHz;
 assign aud_mic_clk = tAudMicClk;
@@ -738,6 +768,8 @@ wire[63:0]		dbg1DcOutVal;
 wire[63:0]		dbg1DcInVal;
 wire[ 1:0]		dbg1DcOutOK;
 
+wire[ 1:0]		dbg1ExWidth;
+
 wire			dbg1OutStatus1;
 wire			dbg1OutStatus2;
 wire			dbg1OutStatus3;
@@ -766,7 +798,7 @@ ExUnit	cpu1(
 	
 	dbg1DcInAddr,	dbg1DcInOpm,
 	dbg1DcOutVal,	dbg1DcInVal,
-	dbg1DcOutOK,
+	dbg1DcOutOK,	dbg1ExWidth,
 
 	dbg1OutStatus1,	dbg1OutStatus2,
 	dbg1OutStatus3,	dbg1OutStatus4,
@@ -817,6 +849,7 @@ wire[ 4:0]		dbg2DcInOpm;
 wire[63:0]		dbg2DcOutVal;
 wire[63:0]		dbg2DcInVal;
 wire[ 1:0]		dbg2DcOutOK;
+wire[ 1:0]		dbg2ExWidth;
 
 wire			dbg2OutStatus1;
 wire			dbg2OutStatus2;
@@ -846,7 +879,7 @@ ExUnit	cpu2(
 	
 	dbg2DcInAddr,	dbg2DcInOpm,
 	dbg2DcOutVal,	dbg2DcInVal,
-	dbg2DcOutOK,
+	dbg2DcOutOK,	dbg2ExWidth,
 
 	dbg2OutStatus1,	dbg2OutStatus2,
 	dbg2OutStatus3,	dbg2OutStatus4,
@@ -863,6 +896,8 @@ assign		dbgDcInOpm		= dbg1DcInOpm;
 assign		dbgDcOutVal		= dbg1DcOutVal;
 assign		dbgDcInVal		= dbg1DcInVal;
 assign		dbgDcOutOK		= dbg1DcOutOK;
+
+assign		dbgExWidth		= dbg1ExWidth | dbg2ExWidth;
 
 assign		dbgOutStatus1 = dbg1OutStatus1 || dbg2OutStatus1;
 assign		dbgOutStatus2 = dbg1OutStatus2 || dbg2OutStatus2;
@@ -1031,6 +1066,7 @@ wire[ 4:0]		dbgDcInOpm;
 wire[63:0]		dbgDcOutVal;
 wire[63:0]		dbgDcInVal;
 wire[ 1:0]		dbgDcOutOK;
+wire[ 1:0]		dbgExWidth;
 
 wire			dbgOutStatus1;
 wire			dbgOutStatus2;
@@ -1060,7 +1096,7 @@ ExUnit	cpu(
 	
 	dbgDcInAddr,	dbgDcInOpm,
 	dbgDcOutVal,	dbgDcInVal,
-	dbgDcOutOK,
+	dbgDcOutOK,		dbgExWidth,
 
 	dbgOutStatus1,	dbgOutStatus2,
 	dbgOutStatus3,	dbgOutStatus4,
@@ -1283,6 +1319,11 @@ RbiMemL2A	l2a(
 	l2aSeqIn,		l2aSeqOut,
 	l2aNodeId,		timers,
 
+	mmiAddrOut,		mmiAddrIn,
+	mmiDataOut,		mmiDataIn,
+	mmiOpmOut,		mmiOpmIn,
+	mmiSeqOut,		mmiSeqIn,
+
 	ddrMemAddr,		ddrMemAddrB,
 	ddrMemOpm,
 	ddrMemDataOut,	ddrMemDataIn,
@@ -1299,20 +1340,20 @@ assign		l2aAddrIn	= memAddr;
 assign		l2aOpmIn	= memOpm;
 assign		l2aSeqIn	= memSeq;
 
-// assign		memInData	= l2aDataOut;
-// assign		memAddrIn	= l2aAddrOut;
-// assign		memOpmIn	= l2aOpmOut;
-// assign		memSeqIn	= l2aSeqOut;
+assign		memInData	= l2aDataOut;
+assign		memAddrIn	= l2aAddrOut;
+assign		memOpmIn	= l2aOpmOut;
+assign		memSeqIn	= l2aSeqOut;
 
-assign		mmiDataIn	= l2aDataOut;
-assign		mmiAddrIn	= l2aAddrOut;
-assign		mmiOpmIn	= l2aOpmOut;
-assign		mmiSeqIn	= l2aSeqOut;
+//assign		mmiDataIn	= l2aDataOut;
+//assign		mmiAddrIn	= l2aAddrOut;
+//assign		mmiOpmIn	= l2aOpmOut;
+//assign		mmiSeqIn	= l2aSeqOut;
 
-assign		memInData	= mmiDataOut;
-assign		memAddrIn	= mmiAddrOut;
-assign		memOpmIn	= mmiOpmOut;
-assign		memSeqIn	= mmiSeqOut;
+//assign		memInData	= mmiDataOut;
+//assign		memAddrIn	= mmiAddrOut;
+//assign		memOpmIn	= mmiOpmOut;
+//assign		memSeqIn	= mmiSeqOut;
 
 assign		l2aNodeId	= 8'h84;
 
@@ -1370,6 +1411,7 @@ assign	vgaVsync	= scrnPwmOut[16];
 wire[7:0]	scrnNodeId;
 // assign		scrnNodeId	= 8'h84;
 assign		scrnNodeId	= 8'h8A;
+// assign		scrnNodeId	= 8'hCA;
 
 ModTxtNtW	scrn(
 //	clock_100,		reset2_100,
@@ -1444,6 +1486,7 @@ ModAudPcm	pcm(
 
 wire[7:0]	aumemNodeId;
 assign		aumemNodeId	= 8'h8C;
+// assign		aumemNodeId	= 8'hCC;
 
 wire[15:0]		fmCellIdx;
 wire[127:0]		fmCellData;
@@ -1835,12 +1878,19 @@ begin
 	tDbgOutStatus6		<= dbgOutStatus6;
 	tDbgOutStatus7		<= dbgOutStatus7;
 	tDbgOutStatus8		<= dbgOutStatus8;
+
+	tDbgOutStatus9		<= (ddrMemOpm != 0);
+	tDbgOutStatus10		<= (ddrMemOK != 0);
+	tDbgOutStatus11		<= (mmioOpm_A0 != 0) || (mmioOK_A0 != 0);
+	tDbgOutStatus12		<=
+		(dbgOutStatus5 || dbgOutStatus6) &&
+		!tDbgOutStatus9 && !tDbgOutStatus11;
 	
 	sevSegVal			<= dbgOutPc[31:0];
 	
 	timers_A2			<= {
 		1'b0,
-		1'b0,
+		clock1MHz,
 		timer4MHz,
 		timer1MHz,
 		timer64kHz,
@@ -1939,7 +1989,8 @@ begin
 
 	tAudMicData1	<= aud_mic_data;
 	tAudMicData		<= tAudMicData1;
-	tAudMicClk		<= timer1MHz;
+//	tAudMicClk		<= timer1MHz;
+	tAudMicClk		<= clock1MHz;
 
 	clock_halfMhz	<= !clock_halfMhz;
 	timer1kHzL		<= timer1kHz;
@@ -1988,6 +2039,11 @@ begin
 	tDbgOutStatus6B		<= tDbgOutStatus6;
 	tDbgOutStatus7B		<= tDbgOutStatus7;
 	tDbgOutStatus8B		<= tDbgOutStatus8;
+
+	tDbgOutStatus9B		<= tDbgOutStatus9;
+	tDbgOutStatus10B	<= tDbgOutStatus10;
+	tDbgOutStatus11B	<= tDbgOutStatus11;
+	tDbgOutStatus12B	<= tDbgOutStatus12;
 
 	tSegOutCharBit		<= ssOutCharBit;
 	tSegOutSegBit		<= ssOutSegBit;

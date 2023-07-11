@@ -363,6 +363,8 @@ Base, Q1..Q3:
 #define CCXL_LITID_ENUMDEF		26			//enum object
 #define CCXL_LITID_NAMESPACE	27			//package/namespace
 
+#define CCXL_LITID_OBJECTBLOB	28			//Object File Blob
+
 #define CCXL_STATUS_YES					1
 #define CCXL_STATUS_NO					0
 #define CCXL_STATUS_ERR_GENERIC			-1

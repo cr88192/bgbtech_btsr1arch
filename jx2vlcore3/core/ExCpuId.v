@@ -85,6 +85,34 @@ reg[63:0]		valCpuIdLo1;
 reg[63:0]		valCpuIdLo2;
 reg[63:0]		valCpuIdLo3;
 
+reg[31:0]		tValCycCnt;
+reg[31:0]		tNxtValCycCnt;
+reg[31:0]		tValCycCntH;
+reg[31:0]		tNxtValCycCntH;
+reg[31:0]		tValCycCntL;
+reg[31:0]		tValCycCntHL;
+
+reg[63:0]		tValCycCntB;
+reg[63:0]		tValCycCntBL;
+
+
+reg				tUsecPulse1;
+reg				tUsecPulse0;
+reg				tUsecPulse;
+reg				tUsecPulseL;
+reg				tUsecStrobe;
+
+reg[31:0]		tValUsecCntLo;
+reg[31:0]		tNxtValUsecCntLo;
+reg[31:0]		tValUsecCntHi;
+reg[31:0]		tNxtValUsecCntHi;
+reg[31:0]		tValUsecCntLoL;
+reg[31:0]		tValUsecCntHiL;
+
+reg[63:0]		tValUsecCntB;
+reg[63:0]		tValUsecCntBL;
+
+
 initial
 begin
 	arrCpuIdLo[0]=64'h2020324632584A42;  //"BJX2F0  ", Arch, Profile, SubVer
@@ -325,6 +353,23 @@ begin
 		tRngA[ 3: 0], tRngB[31:28]
 	};
 
+	tNxtValCycCnt	= tValCycCnt + 1;
+	tNxtValCycCntH	= tValCycCntH + { 31'h0, (tValCycCntL[31]^tValCycCnt[31]) };
+
+	tValCycCntB		= { tValCycCntHL, tValCycCntL };
+//	if(tValCycCntHL[0]^tValCycCntH[0])
+	if(tValCycCnt[31]^tValCycCntL[31])
+		tValCycCntB		= tValCycCntBL;
+
+
+	tNxtValUsecCntLo	= tValUsecCntLo + { 31'h0, tUsecStrobe };
+	tNxtValUsecCntHi	= tValUsecCntHi +
+		{ 31'h0, (tValUsecCntLoL[31]^tValUsecCntLo[31]) };
+
+	tValUsecCntB		= { tValUsecCntHiL, tValUsecCntLoL };
+	if(tValUsecCntLoL[31]^tValUsecCntLo[31])
+		tValUsecCntB	= tValUsecCntBL;
+
 
 `ifdef def_true
 	casez(index[4:0])
@@ -367,14 +412,17 @@ begin
 			tResLo = UV64_00;
 			tResHi = UV64_00;
 		end
-		5'b1_110z: begin
+
+
+		5'b1_1100: begin
+			tResLo = tValUsecCntBL;
+		end
+		5'b1_1101: begin
 			tResLo = UV64_00;
-			tResHi = UV64_00;
 		end
 
 		5'b1_1110: begin
-			tResLo = UV64_00;
-			tResHi = UV64_00;
+			tResLo = tValCycCntBL;
 		end
 		5'b1_1111: begin
 			tResLo = tOutRng;
@@ -400,6 +448,27 @@ begin
 	tRngNoiseA3		<= tRngNoiseA2;
 	tRngNoiseA4		<= tRngNoiseA3;
 	tRngNoiseA		<= tRngNoiseA4 ^ tRngNoiseA3;
+	
+	tValCycCnt		<= tNxtValCycCnt;
+	tValCycCntH		<= tNxtValCycCntH;
+	tValCycCntL		<= tValCycCnt;
+	tValCycCntHL	<= tValCycCntH;
+	tValCycCntBL	<= tValCycCntB;
+	
+//	tUsecPulse1		<= timers[4];
+	tUsecPulse1		<= timers[6];
+	tUsecPulse0		<= tUsecPulse1;
+	tUsecPulse		<= tUsecPulse0;
+	tUsecPulseL		<= tUsecPulse;
+	tUsecStrobe		<= tUsecPulse && !tUsecPulseL;
+
+
+	tValUsecCntLo	<= tNxtValUsecCntLo;
+	tValUsecCntHi	<= tNxtValUsecCntHi;
+	tValUsecCntLoL	<= tValUsecCntLo;
+	tValUsecCntHiL	<= tValUsecCntHi;
+	tValUsecCntBL	<= tValUsecCntB;
+
 end
 
 endmodule

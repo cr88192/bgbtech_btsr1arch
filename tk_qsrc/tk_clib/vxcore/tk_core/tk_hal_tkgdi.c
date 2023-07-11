@@ -1841,28 +1841,68 @@ void TKGDI_BlitUpdate_ScanCellTransUTX2_Mask(
 	}
 }
 
+static int tkgdi_blitupdate_getconbuf_sticky;
+static int tkgdi_blitupdate_getconbuf_sticky_cnt;
+
+
 u32 *TKGDI_BlitUpdate_GetConbuf()
 {
 	u32 *conbufa, *conbufb, *conbufb2;
+	u32 magref;
 
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 //	conbufb=conbufa+(80*61);
 
+	if(tkgdi_blitupdate_getconbuf_sticky_cnt<=0)
+	{
+		conbufa=(u32 *)0xFFFFF00A0000ULL;
+		if(tkgdi_blitupdate_getconbuf_sticky)
+			conbufa=(u32 *)0xC00020A00000ULL;	//RAM backed framebuffer
+		return(conbufa);
+	}
+
+	tkgdi_blitupdate_getconbuf_sticky_cnt--;
+
 //	if(tkgdi_vid_planar)
 //		return(conbufa);
 
 //	conbufb=(u32 *)0x0000080A0000ULL;
-	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
-	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
+//	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
+//	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
+
+	conbufb =(u32 *)0xC00020A00000ULL;		//RAM backed framebuffer
+	conbufb2=(u32 *)0xD00020A00000ULL;		//Volatile / No Cache
+	
+	magref=0xDECA7E57;
 
 //	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
 //	tkgdi_vid_frnum++;
 
-	conbufa[0]=tkgdi_vid_frnum;
-	if(conbufb2[0]==tkgdi_vid_frnum)		//Detect if MMIO maps here.
+	conbufa[0]=magref;
+	conbufb2[8208]=~magref;
+	conbufa[4096]=magref;
+	conbufa[8192]=magref;
+	conbufa[1111]=conbufb2[8192];
+	conbufb2[1113]=conbufa[4112];
+
+	if(conbufb2[0]==magref)		//Detect if MMIO maps here.
+	{
+		tkgdi_blitupdate_getconbuf_sticky=1;
 		conbufa=conbufb;
-	
+	}
+	if(conbufa[8208]==~magref)		//Detect if MMIO maps here.
+	{
+		tkgdi_blitupdate_getconbuf_sticky=1;
+		conbufa=conbufb;
+	}
+
+	if(!tkgdi_blitupdate_getconbuf_sticky_cnt)
+	{
+		tk_printf("TKGDI_BlitUpdate_GetConbuf: RAM_Backed=%d\n",
+			tkgdi_blitupdate_getconbuf_sticky);
+	}
+
 	return(conbufa);
 }
 
@@ -3716,7 +3756,9 @@ TKGHDC TKGDI_CreateDisplay(
 	if((dev<=0) && domodeset)
 	{
 		/* Fullscreen modes. */
-	
+
+		tkgdi_blitupdate_getconbuf_sticky=0;
+		tkgdi_blitupdate_getconbuf_sticky_cnt=64;
 
 		if(tgt_mode==TKGDI_SCRMODE_TEXT)
 		{

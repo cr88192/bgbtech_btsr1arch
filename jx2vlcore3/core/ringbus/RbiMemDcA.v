@@ -980,7 +980,8 @@ begin
 
 `ifdef jx2_enable_vaddr48
 	if(tNxtSkipTlb && (regInAddr[47:28]!=0) &&
-		(regInAddr[47:44]!=4'hF) &&
+//		(regInAddr[47:44]!=4'hF) &&
+		(regInAddr[47:46]!=2'b11) &&
 		(regInAddr[31:28]!=4'hF) &&
 		!dcInHold &&
 		(regInOpm[5:4] != 2'b00))
@@ -2635,6 +2636,9 @@ begin
 			tMemAddrReq		= { tReqMissAxA, 4'h00 };
 `endif
 
+			if(tReqMissAxA[43:40]==4'hD)
+				tMemOpmReq[11]=1;
+
 			if(tSkipTlb)
 			begin
 				/* FIXME: This is ugly hacks. */
@@ -2703,6 +2707,9 @@ begin
 `else
 			tMemAddrReq		= { tReqMissAxB, 4'h00 };
 `endif
+
+			if(tReqMissAxB[43:40]==4'hD)
+				tMemOpmReq[11]=1;
 
 			if(tSkipTlb)
 			begin

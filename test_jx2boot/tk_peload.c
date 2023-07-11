@@ -12,7 +12,8 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 //	register byte *cs1, *cs1e, *ct1;
 	byte *cs1, *cs1e, *ct1;
 //	register int tg, lr, ll, ld;
-	u64 tv;
+	u64 *cs1q, *ct1q, *cs1qe;
+	u64 tv, v0, v1, v2;
 	int tg, lr, ll, ld;
 	int i;
 	
@@ -35,10 +36,24 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		}
 		
 		ct1=ct; cs1=cs; cs1e=cs+lr;
-		while(cs1<cs1e)
+		v0=((u64 *)cs1)[0];
+		v1=((u64 *)cs1)[1];
+		((u64 *)ct1)[0]=v0;
+		((u64 *)ct1)[1]=v1;
+		if(lr>16)
 		{
-			*(u64 *)ct1=*(u64 *)cs1;
-			ct1+=8; cs1+=8;
+			ct1+=16; cs1+=16;
+			while(cs1<cs1e)
+			{
+	//			*(u64 *)ct1=*(u64 *)cs1;
+	//			ct1+=8; cs1+=8;
+
+				v0=((u64 *)cs1)[0];
+				v1=((u64 *)cs1)[1];
+				((u64 *)ct1)[0]=v0;
+				((u64 *)ct1)[1]=v1;
+				ct1+=16; cs1+=16;
+			}
 		}
 		ct+=lr; cs+=lr;
 		
@@ -71,7 +86,36 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		}
 		
 		cs1=ct-ld; cs1e=cs1+ll;
-		if(ld>=8)
+		if(ld>=24)
+		{
+			ct1=ct;
+			cs1q=(u64 *)cs1;
+			ct1q=(u64 *)ct1;
+			v0=cs1q[0];
+			v1=cs1q[1];
+			ct1q[0]=v0;
+			ct1q[1]=v1;
+
+			if(ll>16)
+			{
+				cs1qe=(u64 *)cs1e;
+				cs1q+=2;
+				ct1q+=2;
+				while(cs1q<cs1qe)
+				{
+					v0=cs1q[0];
+					v1=cs1q[1];
+					v2=cs1q[2];
+					cs1q+=3;
+					ct1q[0]=v0;
+					ct1q[1]=v1;
+					ct1q[2]=v2;
+					ct1q+=3;
+				}
+			}
+			ct+=ll;
+		}else
+			if(ld>=8)
 //		if(ld>8)
 //		if(ld>4)
 //		if(0)
@@ -104,6 +148,18 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		}else if(ld==1)
 		{
 			tv=*cs1;		tv|=tv<<8;
+			tv|=tv<<16;		tv|=tv<<32;
+			ct1=ct;
+			while(cs1<cs1e)
+			{
+				((u64 *)ct1)[0]=tv;
+				((u64 *)ct1)[1]=tv;
+				ct1+=16; cs1+=16;
+			}
+			ct+=ll;
+		}else if(ld==2)
+		{
+			tv=*(u16 *)cs1;
 			tv|=tv<<16;		tv|=tv<<32;
 			ct1=ct;
 			while(cs1<cs1e)

@@ -34,7 +34,8 @@ module MmiModClkp(
 	timer64kHz,
 	timer1kHz,
 	timer256Hz,
-	timerNPat
+	timerNPat,
+	clock1MHz
 	);
 
 input	clock;
@@ -46,10 +47,11 @@ output	timer64kHz;
 output	timer1kHz;
 output	timer256Hz;
 output	timerNPat;
+output	clock1MHz;
 
 
-reg[15:0]	fracTimer1MHz;
-reg[15:0]	nextFracTimer1MHz;
+reg[19:0]	fracTimer1MHz;
+reg[19:0]	nextFracTimer1MHz;
 reg			stepTimer1MHz;
 
 reg[15:0]	fracTimer4MHz;
@@ -100,13 +102,16 @@ assign	timer1kHz	= stepTimer1kHzB;
 assign	timer256Hz	= stepTimer256Hz;
 assign	timerNPat	= tTimerNPat;
 
+reg			tClock1MHz;
+assign	clock1MHz	= tClock1MHz;
+
 always @*
 begin
 
 `ifdef jx2_cpu_mmioclock_150
 
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
-		{ 1'b0, fracTimer1MHz } + 17'h01B5;
+		{ 1'b0, fracTimer1MHz } + 21'h01B50;
 
 	{ stepTimer4MHz, nextFracTimer4MHz }	=
 		{ 1'b0, fracTimer4MHz } + 17'h06D4;
@@ -119,7 +124,7 @@ begin
 `ifdef jx2_cpu_mmioclock_100
 
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
-		{ 1'b0, fracTimer1MHz } + 17'h0290;
+		{ 1'b0, fracTimer1MHz } + 21'h02900;
 
 	{ stepTimer4MHz, nextFracTimer4MHz }	=
 		{ 1'b0, fracTimer4MHz } + 17'h0A40;
@@ -135,7 +140,7 @@ begin
 `ifdef jx2_cpu_mmioclock_75
 
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
-		{ 1'b0, fracTimer1MHz } + 17'h036A;
+		{ 1'b0, fracTimer1MHz } + 21'h036A0;
 
 	{ stepTimer4MHz, nextFracTimer4MHz }	=
 		{ 1'b0, fracTimer4MHz } + 17'h0DA8;
@@ -148,7 +153,8 @@ begin
 `ifdef jx2_cpu_mmioclock_50
 
 	{ stepTimer1MHz, nextFracTimer1MHz }	=
-		{ 1'b0, fracTimer1MHz } + 17'h0520;
+//		{ 1'b0, fracTimer1MHz } + 21'h05200;
+		{ 1'b0, fracTimer1MHz } + 21'h051EB;
 
 	{ stepTimer4MHz, nextFracTimer4MHz }	=
 		{ 1'b0, fracTimer4MHz } + 17'h1480;
@@ -214,6 +220,9 @@ begin
 
 	fracTimerNa		<= nextFracTimerNa;
 	fracTimerNb		<= nextFracTimerNb;
+	
+//	tClock1MHz		<= fracTimer1MHz[15];
+	tClock1MHz		<= fracTimer1MHz[19];
 end
 
 endmodule

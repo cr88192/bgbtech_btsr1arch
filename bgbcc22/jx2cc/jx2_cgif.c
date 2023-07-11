@@ -4347,6 +4347,25 @@ ccxl_status BGBCC_JX2C_BuildAsmBlob(BGBCC_TransState *ctx,
 	return(1);
 }
 
+ccxl_status BGBCC_JX2C_BuildObjBlob(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj)
+{
+	BGBCC_JX2_Context *sctx;
+	byte *buf;
+	int l0, sz;
+	int i, j, k;
+
+	sctx=ctx->uctx;
+	
+	buf=obj->text;
+	sz=obj->sz_text;
+	
+	BGBCC_JX2_BuildLoadObj(sctx, buf, sz);
+	
+//	BGBCC_JX2C_AssembleBuffer(ctx, sctx, (char *)(obj->text));
+	return(1);
+}
+
 ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx)
 {
 	char tb[256];
@@ -6922,6 +6941,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			continue;
 		}
 
+		if(obj->regtype==CCXL_LITID_OBJBLOB)
+		{
+			BGBCC_JX2C_BuildObjBlob(ctx, obj);
+			continue;
+		}
+
 #if 0
 		if(obj->regtype==CCXL_LITID_GLOBALVAR)
 		{
@@ -7002,6 +7027,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			if(obj->regtype==CCXL_LITID_ASMBLOB)
 			{
 				BGBCC_JX2C_BuildAsmBlob(ctx, obj);
+				continue;
+			}
+
+			if(obj->regtype==CCXL_LITID_OBJECTBLOB)
+			{
+				BGBCC_JX2C_BuildObjBlob(ctx, obj);
 				continue;
 			}
 		}

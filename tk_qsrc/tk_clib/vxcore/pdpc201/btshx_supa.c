@@ -738,6 +738,19 @@ void __exita(int status)
 
 u64 tk_gettimeus_v(void);
 
+#ifdef __BJX2__
+u64 TK_GetTimeUs(void);
+
+__asm {
+TK_GetTimeUs:
+	CPUID	28
+	MOV		R0, R2
+//	BREAK
+	RTS
+};
+#endif
+
+#ifndef __BJX2__
 s64 TK_GetTimeUs(void)
 {
 #if 1
@@ -785,6 +798,7 @@ s64 TK_GetTimeUs(void)
 	return(us);
 #endif
 }
+#endif
 
 u32 TK_GetTimeMs(void)
 {

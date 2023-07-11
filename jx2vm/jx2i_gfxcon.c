@@ -596,7 +596,8 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 	if(sp)
 	{
 		jx2i_gfxcon_conbuf=(u32 *)(((byte *)sp->data)+
-			((0x200A0000-sp->modbase)&sp->modmask));
+//			((0x200A0000-sp->modbase)&sp->modmask));
+			((0x20A00000-sp->modbase)&sp->modmask));
 		jx2i_gfxcon_lconbuf=jx2i_gfxcon_conbuf+262144;
 //		jx2i_gfxcon_conbuf=malloc(32768*sizeof(u32));
 //		jx2i_gfxcon_lconbuf=malloc(32768*sizeof(u32));
@@ -2759,7 +2760,8 @@ int BJX2_ContextSimVidTick(BJX2_Context *ctx)
 	ix=ctx->mem_vidrov;
 	ctx->mem_vidrov=(ix+1)&15;
 	
-	addr=0x10A00000+(ix*8192);
+//	addr=0x10A00000+(ix*8192);
+	addr=0x20A00000+(ix*8192);
 	
 	for(i=0; i<128; i++)
 	{

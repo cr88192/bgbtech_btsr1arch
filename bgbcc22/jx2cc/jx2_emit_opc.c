@@ -1546,7 +1546,8 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, s64 imm)
 			if(opw2&0x0080)
 			{
 				opw2&=~0x0080;
-				opw1|= 0x0040;
+//				opw1|= 0x0040;
+				opw1|= 0x0010;
 			}
 		}else
 			if((opw1&0xE000)!=0xE000)

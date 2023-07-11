@@ -1232,7 +1232,8 @@ int BGBCC_LoadCSourcesCCXL(
 			buf=bgbcc_loadfile2(names[i], &sz);
 			if(buf)
 			{
-				BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
+//				BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
+				BGBCC_CCXL_LoadBufferObject(ctx, buf, sz);
 				if(ctx->n_error)
 					break;
 			}

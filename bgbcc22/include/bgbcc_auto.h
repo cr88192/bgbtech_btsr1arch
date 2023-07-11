@@ -932,6 +932,9 @@ int BGBCC_CCXL_CheckForOptStr(BGBCC_TransState *ctx, char *str);
 char *BGBCC_CCXL_CheckForOptParmStr(BGBCC_TransState *ctx, char *str);
 int BGBCC_CCXL_CheckForOptParmInt(BGBCC_TransState *ctx, char *str);
 int BGBCC_CCXL_ConstFloatAsHalf(float f, u16 *rv, u16 *rve);
+int BGBCC_CCXL_LookupArchVar(BGBCC_TransState *ctx, char *str);
+s64 BGBCC_CCXL_GetArchVarValForIndex(BGBCC_TransState *ctx, int idx);
+int BGBCC_CCXL_DefineArchVar(BGBCC_TransState *ctx, char *str, s64 val);
 //AHSRC:ccxl/ccxl_expr.c
 char *BGBCC_CCXL_CIfy(char *s);
 void BGBCC_CCXL_CompileAssign(BGBCC_TransState *ctx, BCCX_Node *l);
@@ -1016,6 +1019,7 @@ char *BGBCC_CCXL_GetParentLiteralSigDeref(BGBCC_TransState *ctx, BGBCC_CCXL_Lite
 char *BGBCC_CCXL_GetObjQNameR_I(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj, char *vt);
 char *BGBCC_CCXL_GetObjQName(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj);
 void BGBCC_CCXL_AddAsmBlob(BGBCC_TransState *ctx, char *text);
+void BGBCC_CCXL_AddObjectBlob(BGBCC_TransState *ctx, byte *data, int szdata);
 void BGBCC_CCXL_Begin(BGBCC_TransState *ctx, int tag);
 int BGBCC_CCXL_CheckDefinedContextName(BGBCC_TransState *ctx, int tag, char *name);
 void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name);
@@ -1318,6 +1322,7 @@ char *BGBCC_CCXLR3_ReadSigstr(BGBCC_TransState *ctx, byte **rcs);
 void BGBCC_CCXLR3_DecodeBufCmd(BGBCC_TransState *ctx, byte **rcs);
 int BGBCC_CCXLR3_CheckCanLoadNow(BGBCC_TransState *ctx, byte *buf, int bufsz);
 void BGBCC_CCXLR3_LoadBufferRIL(BGBCC_TransState *ctx, byte *buf, int bufsz);
+void BGBCC_CCXL_LoadBufferObject(BGBCC_TransState *ctx, byte *buf, int bufsz);
 //AHSRC:ccxl/ccxl_stack.c
 void BGBCC_CCXL_DebugPrintStackLLn(BGBCC_TransState *ctx, char *op, char *file, int line);
 ccxl_status BGBCC_CCXL_CheckExpandStack(BGBCC_TransState *ctx);
@@ -2732,6 +2737,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(BGBCC_TransState *ctx, BGBCC_JX
 ccxl_status BGBCC_JX2C_BuildGlobalTls(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildAsmBlob(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
+ccxl_status BGBCC_JX2C_BuildObjBlob(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx);
 ccxl_status BGBCC_JX2C_BuildStruct(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *obj);
 int BGBCC_JX2C_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int lblid);
@@ -2881,11 +2887,13 @@ int BGBCC_JX2_GenLabelLLn(BGBCC_JX2_Context *ctx, char *file, int line);
 int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitDebugLine(BGBCC_JX2_Context *ctx,char *lfn, int lln);
 int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid);
+int BGBCC_JX2_EmitLabelOffs(BGBCC_JX2_Context *ctx, int lblid, int offs);
 int BGBCC_JX2_EmitLabelAbs(BGBCC_JX2_Context *ctx, int lblid, s64 addr);
 char *BGBCC_JX2_LookupNameForLabel(BGBCC_JX2_Context *ctx, int lblid);
 int BGBCC_JX2_LookupNamedLabel(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2_EmitNamedLabel(BGBCC_JX2_Context *ctx, char *name);
+int BGBCC_JX2_EmitNamedLabelOffs(BGBCC_JX2_Context *ctx,char *name, int offs);
 int BGBCC_JX2_EmitNamedGlobal(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2_EmitCommSym(BGBCC_JX2_Context *ctx, int lblid, int sz, int al);
 int BGBCC_JX2_EmitNamedCommSym(BGBCC_JX2_Context *ctx, char *name,int sz, int al);
@@ -2903,6 +2911,7 @@ int BGBCC_JX2_EmitRelocAbs32(BGBCC_JX2_Context *ctx, int lbl);
 int BGBCC_JX2_EmitRelocAbs64(BGBCC_JX2_Context *ctx, int lbl);
 int BGBCC_JX2_EmitRelocRelW12(BGBCC_JX2_Context *ctx, int lbl);
 int BGBCC_JX2_EmitRelocRelW8(BGBCC_JX2_Context *ctx, int lbl);
+int BGBCC_JX2_EmitRelocTyOffs(BGBCC_JX2_Context *ctx,int lblid, int ty, int offs);
 int BGBCC_JX2_LookupLabelIndex(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_LookupSimLabelIndex(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_CheckLabelIsGpRel(BGBCC_JX2_Context *sctx, int lblid);
@@ -3513,6 +3522,12 @@ ccxl_status BGBCC_JX2_CheckWexify(BGBCC_JX2_Context *sctx, int spos, int epos);
 ccxl_status BGBCC_JX2_CheckWexify(BGBCC_JX2_Context *sctx, int spos, int epos);
 ccxl_status BGBCC_JX2_BeginWex(BGBCC_JX2_Context *sctx);
 ccxl_status BGBCC_JX2_EndWex(BGBCC_JX2_Context *sctx);
+//AHSRC:jx2cc/jx2_objelf.c
+int BGBCC_JX2_LoadElfRemapReloc(u32 mach, int rlcid);
+int BGBCC_JX2_LoadElfFixupAddend(byte *dest, int rlc, int addend);
+BGBCC_COFF_Info *BGBCC_JX2_LoadElfObj(BGBCC_JX2_Context *ctx,byte *data, int szdata);
+int BGBCC_JX2_EmitLoadedObject(BGBCC_JX2_Context *ctx,BGBCC_COFF_Info *obj);
+int BGBCC_JX2_BuildLoadObj(BGBCC_JX2_Context *ctx,byte *data, int szdata);
 //AHSRC:mm/inflate.c
 int PDUNZ_ReadBit();
 int PDUNZ_Read2Bits();

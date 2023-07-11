@@ -483,6 +483,9 @@ extern "C" {
 
 #define BGBCC_ARCH_BJX2_X2RV	BGBCC_FOURCC('X', '2', 'R', 'V')	//XG2RV
 
+#define BGBCC_ARCH_RV32		BGBCC_FOURCC('R', 'V', '3', '2')
+#define BGBCC_ARCH_RV64		BGBCC_FOURCC('R', 'V', '6', '4')
+
 
 //output formats.
 //format specifics depend on target.
@@ -575,6 +578,7 @@ typedef union {
 #include <bgbcc_meta.h>
 #include <bgbcc_exwad.h>
 #include <bgbcc_link.h>
+#include <bgbcc_objelf.h>
 #endif
 
 #include <bgbcc_tokord.h>
@@ -880,6 +884,12 @@ int gs_srcmax;
 
 char *fnidx_str[1024];
 int fnidx_num;
+
+char *archvar_name[1024];
+s64 archvar_val[1024];
+short archvar_chn[1024];
+int archvar_num;
+short archvar_hash[256];
 
 int reqlfn;
 // int reqlln;

@@ -331,6 +331,10 @@ void tk_con_init()
 
 //	tk_con->buf=(u32 *)0xF00A0000;
 	tk_con->buf_addr=0xFFFFF00A0000ULL;
+//	tk_con->buf_addr=0xC000200A0000ULL;
+//	tk_con->buf_addr=0xD000200A0000ULL;
+//	tk_con->buf_addr=0xD00020A00000ULL;
+//	tk_con->buf_addr=0xD00020A00000ULL;
 	tk_con->x=0;
 	tk_con->y=0;
 

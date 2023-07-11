@@ -2141,9 +2141,10 @@ int update_uart()
 int sim_fb_drawled(uint32_t *fbuf, int xs, int ys,
 	int led_x, int led_y, int led_r, uint32_t led_c)
 {
-	int lx, ly, tx, ty, ld, lr2;
+	int lx, ly, tx, ty, ld, lr2, pi, lim;
 	
 	lr2=led_r*led_r;
+	lim=xs*ys;
 	
 	for(ly=-led_r; ly<led_r; ly++)
 	{
@@ -2155,7 +2156,13 @@ int sim_fb_drawled(uint32_t *fbuf, int xs, int ys,
 			tx=led_x+lx;
 			ty=led_y+ly;
 			
-			fbuf[ty*xs+tx]=led_c;
+			pi=ty*xs+tx;
+			if(pi<0)
+				continue;
+			if(pi>=lim)
+				continue;
+
+			fbuf[pi]=led_c;
 		}
 	}
 	return(0);
@@ -2164,18 +2171,27 @@ int sim_fb_drawled(uint32_t *fbuf, int xs, int ys,
 int sim_fb_drawbox(uint32_t *fbuf, int xs, int ys,
 	int x0, int y0, int x1, int y1, uint32_t clr)
 {
-	int lx, ly, tx, ty;
-	
+	int lx, ly, tx, ty, pi, lim;
+
+//	return(0);
+
 	if(y0>y1)
 		{ tx=y0; y0=y1; y1=tx; }
 	if(x0>x1)
 		{ tx=x0; x0=x1; x1=tx; }
 	
+	lim=xs*ys;
+	
 	for(ly=y0; ly<=y1; ly++)
 	{
 		for(lx=x0; lx<=x1; lx++)
 		{
-			fbuf[ly*xs+lx]=clr;
+			pi=ly*xs+lx;
+			if(pi<0)
+				continue;
+			if(pi>=lim)
+				continue;
+			fbuf[pi]=clr;
 		}
 	}
 	return(0);
@@ -2386,9 +2402,19 @@ int main(int argc, char **argv, char **env)
 	int tt_start, tt_frame, tt_reset;
 	int cnt_dled, cnt_h1, cnt_h2,
 		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
-		cnt_d5, cnt_d6, cnt_d7, cnt_d8;
+		cnt_d5, cnt_d6, cnt_d7, cnt_d8,
+		cnt_d9, cnt_d10, cnt_d11, cnt_d12;
 	int clk300, lclk300, clk150, lclk150, clk75;
-	uint64_t rvq;
+	int mic_clk, mic_clk_l;
+	uint64_t rvq, rvq1, mic_clk_cnt;
+	uint64_t tot_cnt_led, tot_cnt_led_nostall, tot_cnt_exwidth;
+	uint64_t rt_ms;
+	u32	rcp_mhz_24;
+	
+	double stat_inst_bdl, stat_bdl_clk, stat_mips, clk_ratio;
+	double stat_mips_avg, stat_mips_avg_lo, stat_mips_avg_hi,
+		stat_mips_min, stat_mips_max, stat_mips_tavg;
+	int stat_mips_avg_cnt, stat_mips_avg_cnt_lo, stat_mips_avg_cnt_hi;
 	int t0, t1, t2;
 	int i, j, k;
 
@@ -2524,6 +2550,8 @@ int main(int argc, char **argv, char **env)
 	ctx->ttick_rst=(ctx->tgt_mhz*1000000)/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
 
+	rcp_mhz_24=(((1<<28)/ctx->tgt_mhz)+7)>>4;
+
 	printf("Start CoreUnit\n");
 
 //	btesh2_gfxcon_fbxs = 800;
@@ -2537,6 +2565,21 @@ int main(int argc, char **argv, char **env)
 	tt_start=FRGL_TimeMS();
 	tt_frame=tt_start;
 	tt_reset=1024;
+	cnt_dled=0;
+	mic_clk_cnt=0;
+	tot_cnt_led=0;
+	tot_cnt_led_nostall=0;
+	tot_cnt_exwidth=0;
+	rt_ms=0;
+
+	stat_mips_avg=0;
+	stat_mips_avg_lo=0;
+	stat_mips_avg_hi=0;
+	stat_mips_min=999999;
+	stat_mips_max=0;
+	stat_mips_avg_cnt=1;
+	stat_mips_avg_cnt_lo=1;
+	stat_mips_avg_cnt_hi=1;
 
 	top->ddrModeIn=0;
 	if(do_qmt)
@@ -2562,9 +2605,32 @@ int main(int argc, char **argv, char **env)
 		cnt_d7+=(top->dbg_outStatus7!=0);
 		cnt_d8+=(top->dbg_outStatus8!=0);
 
+		cnt_d9+=(top->dbg_outStatus9!=0);
+		cnt_d10+=(top->dbg_outStatus10!=0);
+		cnt_d11+=(top->dbg_outStatus11!=0);
+		cnt_d12+=(top->dbg_outStatus12!=0);
+
+		mic_clk_l=mic_clk;
+		mic_clk=top->aud_mic_clk;
+		if(mic_clk && !mic_clk_l)
+			mic_clk_cnt++;
+
+		if(tot_cnt_led>=(1<<24))
+		{
+			tot_cnt_led>>=1;
+			tot_cnt_led_nostall>>=1;
+			tot_cnt_exwidth>>=1;
+		}
+
+		tot_cnt_led++;
+		if(!top->dbg_exHold1)
+			tot_cnt_led_nostall++;
+		tot_cnt_exwidth+=top->dbgExWidth;
+
 //		if(t2>16)
 //		if((t2>16) && (cnt_dled>8))
 		if((t2>64) && (cnt_dled>32))
+//		if((t2>128) && (cnt_dled>32))
 		{
 			BTSR1_MainPollKeyboard();
 
@@ -2585,6 +2651,11 @@ int main(int argc, char **argv, char **env)
 			cnt_d6=(256*cnt_d6)/cnt_dled;
 			cnt_d7=(256*cnt_d7)/cnt_dled;
 			cnt_d8=(256*cnt_d8)/cnt_dled;
+
+			cnt_d9=(256*cnt_d9)/cnt_dled;
+			cnt_d10=(256*cnt_d10)/cnt_dled;
+			cnt_d11=(256*cnt_d11)/cnt_dled;
+			cnt_d12=(256*cnt_d12)/cnt_dled;
 			
 			cnt_h1=0xFF000000+(cnt_h1<<16)+(cnt_h1<<8);
 			cnt_h2=0xFF000000+(cnt_h2<<16)+(cnt_h2<<8);
@@ -2597,6 +2668,11 @@ int main(int argc, char **argv, char **env)
 			cnt_d6=0xFF000000+(cnt_d6<<16)+(cnt_d6<<8);
 			cnt_d7=0xFF000000+(cnt_d7<<16)+(cnt_d7<<8);
 			cnt_d8=0xFF000000+(cnt_d8<<16)+(cnt_d8<<8);
+
+			cnt_d9 =0xFF000000+(cnt_d9 <<16)+(cnt_d9 <<8);
+			cnt_d10=0xFF000000+(cnt_d10<<16)+(cnt_d10<<8);
+			cnt_d11=0xFF000000+(cnt_d11<<16)+(cnt_d11<<8);
+			cnt_d12=0xFF000000+(cnt_d12<<16)+(cnt_d12<<8);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
@@ -2641,50 +2717,166 @@ int main(int argc, char **argv, char **env)
 //				12*16, 600-16, 6, top->dbg_outStatus8?0xFFFFFF00:0xFF000000);
 				12*16, 600-16, 6, cnt_d8);
 
+#if 1
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
-				14*16, 600-16, 6, top->aud_mono_out?0xFFFFFF00:0xFF000000);
+				14*16, 600-16, 6, cnt_d9);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+				15*16, 600-16, 6, cnt_d10);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+				16*16, 600-16, 6, cnt_d11);
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+				17*16, 600-16, 6, cnt_d12);
+#endif
+
+#if 1
+			sim_fb_drawled(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
+				20*16, 600-16, 6, top->aud_mono_out?0xFFFFFF00:0xFF000000);
 //				12*16, 600-16, 6, cnt_d8);
 
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
-				16*16, 600-16, 8, (tt_reset>0)?0xFFFF0000:0xFF000000);
+				22*16, 600-16, 8, (tt_reset>0)?0xFFFF0000:0xFF000000);
 //				12*16, 600-16, 6, cnt_d8);
+#endif
 
+#if 1
 			sim_fb_draw7seg_8x(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800, 600,
 //				14*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
-				18*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
+//				18*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
+//				18*16, 600-48, 12, 0xFF000000, 0xFFFFFF00,
+				26*16, 600-16, 12, 0xFF000000, 0xFFFFFF00,
 				top->seg_outSegBit,
 				top->seg_outCharBit
 				);
+#endif
 			
-			rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+//			rvq=(ctx->tot_cyc*ctx->rcp_mhz)>>16;
+			rvq=(ctx->tot_cyc*rcp_mhz_24)>>24;
 //			BTM_DrawDecimalFBuf(
 //				(uint32_t *)btesh2_gfxcon_framebuf, 800,
 //				2*8, 600-48, rvq, 12, 0xFFFFFF80, 0xFF008000);
 
-			sprintf(tb, "%06d.%06d",
+			stat_inst_bdl=(tot_cnt_exwidth+1.0)/(tot_cnt_led+1.0);
+			stat_bdl_clk=(tot_cnt_led_nostall+1.0)/(tot_cnt_led+1.0);
+			stat_mips=stat_inst_bdl*stat_bdl_clk*50;
+			clk_ratio=(1000.0*rt_ms)/(mic_clk_cnt+1);
+
+			sprintf(tb, "%06d.%06d %.3f b/c",
 				(int)(rvq/1000000),
-				(int)(rvq%1000000));
+				(int)(rvq%1000000),
+				(tot_cnt_led_nostall+1.0)/(tot_cnt_led+1.0));
 
 			BTM_DrawStrFBuf2x(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800,
 				2*8, 600-48, tb, 0xFFFFFF80, 0xFF008000);
 
+			rvq1=mic_clk_cnt;
+			sprintf(tb, "%06d.%06d %.3f i/b",
+				(int)(rvq1/1000000),
+				(int)(rvq1%1000000),
+//				(rvq1+1.0)/(rvq+1.0)
+				(tot_cnt_exwidth+1.0)/(tot_cnt_led+1.0)
+				);
+
+			BTM_DrawStrFBuf2x(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800,
+				2*8, 600-64, tb, 0xFFFFBF80, 0xFF008000);
+
+
+			sprintf(tb, "%08d.%03d %.3f MIPs %.1fx",
+				(rt_ms/1000),
+				(rt_ms%1000),
+				stat_mips,
+				clk_ratio);
+
+			BTM_DrawStrFBuf2x(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800,
+				2*8, 600-80, tb, 0xFFFFBF80, 0xFF008000);
+
+			stat_mips_avg+=stat_mips;
+			stat_mips_avg_cnt++;
+			
+			stat_mips_tavg=stat_mips_avg/stat_mips_avg_cnt;
+
+			if(stat_mips<stat_mips_tavg)
+			{
+				stat_mips_avg_lo+=stat_mips;
+				stat_mips_avg_cnt_lo++;
+			}
+			if(stat_mips>stat_mips_tavg)
+			{
+				stat_mips_avg_hi+=stat_mips;
+				stat_mips_avg_cnt_hi++;
+			}
+			
+			if((stat_mips_avg_cnt_lo>256) && (stat_mips_avg_cnt_hi>256))
+			{
+				while((stat_mips_avg_cnt_lo*4) < stat_mips_avg_cnt_hi)
+				{
+					/* Fudge stats towards center if too far off balance. */
+					k=stat_mips_avg_cnt_hi>>4;
+					stat_mips_avg_lo+=stat_mips_tavg*k;
+					stat_mips_avg_cnt_lo+=k;
+				}
+
+				while((stat_mips_avg_cnt_hi*4) < stat_mips_avg_cnt_lo)
+				{
+					/* Fudge stats towards center if too far off balance. */
+					k=stat_mips_avg_cnt_lo>>4;
+					stat_mips_avg_hi+=stat_mips_tavg*k;
+					stat_mips_avg_cnt_hi+=k;
+				}
+			}
+
+			if(stat_mips<stat_mips_min)
+				stat_mips_min=stat_mips;
+			if(stat_mips>stat_mips_max)
+				stat_mips_max=stat_mips;
+
+			sprintf(tb, "MIPs A:%.3f L:%.3f H:%.3f N:%.3f",
+				stat_mips_tavg,
+				stat_mips_avg_lo/stat_mips_avg_cnt_lo,
+				stat_mips_avg_hi/stat_mips_avg_cnt_hi,
+				stat_mips_max);
+
+			BTM_DrawStrFBuf2x(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800,
+				0*8, 600-96, tb, 0xFFFFBF80, 0xFF008000);
 
 			cnt_dled=0;
 			cnt_h1=0;	cnt_h2=0;
 			cnt_d1=0;	cnt_d2=0;	cnt_d3=0;	cnt_d4=0;
 			cnt_d5=0;	cnt_d6=0;	cnt_d7=0;	cnt_d8=0;
 
+			cnt_d9=0;	cnt_d10=0;	cnt_d11=0;	cnt_d12=0;
+
+			GfxDrv_BeginDrawing();
+
+			GfxDrv_EndDrawing();
+			
+			rt_ms+=t2;
+			t1=FRGL_TimeMS();
+			tt_frame=t1;
+//			continue;
+		}else
+			if(t2>64)
+		{
+			BTSR1_MainPollKeyboard();
+
+			GfxDrv_PrepareFramebuf();
+			
 			GfxDrv_BeginDrawing();
 
 			GfxDrv_EndDrawing();
 			
 			t1=FRGL_TimeMS();
 			tt_frame=t1;
-//			continue;
 		}
 
 //		BTSR1_MainPollKeyboard();

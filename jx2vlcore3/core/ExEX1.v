@@ -298,6 +298,7 @@ wire		tBraIsRiscv;
 assign	tBraIsRiscv = regInSr[26] && (regInSr[23:22]==2'b00);
 
 reg		tAguFlagJq;
+reg		tAguFlagSv;
 
 wire		tXmovEnable;
 wire		tXmovAdd;
@@ -324,7 +325,7 @@ ExAGUC	exAgu(
 	regValRs[63:0],		regValRt[63:0],
 	regValImm[15:0],	regValXs[47:0],
 	opUCmd,				opUIxt,
-	tValAgu,			tAguFlagJq,
+	tValAgu,			{tAguFlagSv, tAguFlagJq},
 	tRegBoundX,			tValAguOob,
 	regOutXLea,			tAguXLeaTag);
 `else
@@ -1937,6 +1938,7 @@ end
 always @(posedge clock)
 begin
 	tAguFlagJq	<= regInSr[31];
+	tAguFlagSv	<= regInSr[30];
 	tMsgLatch	<= tNextMsgLatch;
 //	tCanaryMagic	<= tNxtCanaryMagic;
 	tCanaryMagic	<= reset ? 0 : tNxtCanaryMagic;

@@ -130,6 +130,7 @@ SRCS=\
 	jx2cc/jx2_struct.c \
 	jx2cc/jx2_vreg.c \
 	jx2cc/jx2_wexify.c \
+	jx2cc/jx2_objelf.c \
 
 
 META_SRCS = \

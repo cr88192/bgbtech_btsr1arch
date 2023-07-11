@@ -943,3 +943,60 @@ int BGBCC_CCXL_ConstFloatAsHalf(float f, u16 *rv, u16 *rve)
 	*rve=ve;
 	return(ret);
 }
+
+int BGBCC_CCXL_LookupArchVar(BGBCC_TransState *ctx, char *str)
+{
+	int i, h;
+	
+	if(!ctx->archvar_num)
+		return(-1);
+	
+	h=BGBCC_CCXL_HashName(str)&255;
+	i=ctx->archvar_hash[h];
+	while(i>=0)
+	{
+		if(!strcmp(ctx->archvar_name[i], str))
+			return(i);
+		i=ctx->archvar_chn[i];
+	}
+	return(-1);
+}
+
+s64 BGBCC_CCXL_GetArchVarValForIndex(BGBCC_TransState *ctx, int idx)
+{
+	if(idx<0)
+		return(-1);
+	if(idx>=ctx->archvar_num)
+		return(-1);
+
+	return(ctx->archvar_val[idx]);
+}
+
+/* Define a constant that should not be expanded until
+ * specialization for the backend. 
+ */
+int BGBCC_CCXL_DefineArchVar(BGBCC_TransState *ctx, char *str, s64 val)
+{
+	int i, h;
+	
+	if(!ctx->archvar_num)
+	{
+		for(i=0; i<256; i++)
+			ctx->archvar_hash[i]=-1;
+	}
+	
+	i=BGBCC_CCXL_LookupArchVar(ctx, str);
+	if(i>=0)
+	{
+		ctx->archvar_val[i]=val;
+		return(i);
+	}
+	
+	h=BGBCC_CCXL_HashName(str)&255;
+	i=ctx->archvar_num++;
+	ctx->archvar_name[i]=bgbcc_strdup(str);
+	ctx->archvar_val[i]=val;
+	ctx->archvar_chn[i]=ctx->archvar_hash[h];
+	ctx->archvar_hash[h]=i;
+	return(i);
+}

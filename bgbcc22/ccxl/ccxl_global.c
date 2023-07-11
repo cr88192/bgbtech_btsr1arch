@@ -1102,6 +1102,25 @@ void BGBCC_CCXL_AddAsmBlob(BGBCC_TransState *ctx, char *text)
 	BGBCC_CCXL_AddGlobalDecl(ctx, decl);
 }
 
+void BGBCC_CCXL_AddObjectBlob(BGBCC_TransState *ctx, byte *data, int szdata)
+{
+	BGBCC_CCXL_RegisterInfo *decl;
+	int ln;
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_OBJBLOB);
+	BGBCC_CCXLR3_EmitArgBlob(ctx, data, szdata);
+
+	decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+	decl->regtype=CCXL_LITID_OBJECTBLOB;
+	
+	ln=szdata;
+	decl->text=bgbcc_malloc(ln);
+	decl->sz_text=ln;
+	memcpy(decl->text, data, ln);
+
+	BGBCC_CCXL_AddGlobalDecl(ctx, decl);
+}
+
 void BGBCC_CCXL_Begin(BGBCC_TransState *ctx, int tag)
 {
 	BGBCC_CCXL_BeginName(ctx, tag, NULL);

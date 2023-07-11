@@ -105,6 +105,10 @@ wire			dbg_outStatus5;
 wire			dbg_outStatus6;
 wire			dbg_outStatus7;
 wire			dbg_outStatus8;
+wire			dbg_outStatus9;
+wire			dbg_outStatus10;
+wire			dbg_outStatus11;
+wire			dbg_outStatus12;
 
 reg			dbg_LedDuty;
 // reg			dbg_LedDuty1;
@@ -232,6 +236,11 @@ CoreUnitUc core(
 	dbg_outStatus6,
 	dbg_outStatus7,
 	dbg_outStatus8,
+	
+	dbg_outStatus9,
+	dbg_outStatus10,
+	dbg_outStatus11,
+	dbg_outStatus12,
 
 	gpioPinsIn,
 	gpioPinsOut,

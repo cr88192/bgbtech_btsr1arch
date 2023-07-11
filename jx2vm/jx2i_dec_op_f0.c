@@ -3557,6 +3557,12 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_CPUID_Imm;
 				op->fl|=BJX2_OPFL_NOWEX;
 				op->imm=op->rn;
+				if(op->rn==BJX2_REG_DLR)
+					op->imm=0;
+				if(op->rn==BJX2_REG_DHR)
+					op->imm=1;
+				if(op->rn==BJX2_REG_SP)
+					op->imm=15;
 				break;
 
 			case 0x6F:	/* 36zF */

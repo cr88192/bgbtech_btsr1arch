@@ -169,6 +169,9 @@ assign		memRingIsRespOkStB =
 
 reg		tMemRingSkipResp;
 
+reg		tVramFlushInh;
+reg		tNxtVramFlushInh;
+
 /*
 Addr:
   (71:68): Flush Rover
@@ -462,6 +465,8 @@ reg[27:0]		tRegInAddrC;
 reg[27:0]		tRegInAddrD;
 reg[5:0]		tRegInOpm;
 
+reg[13:0]		tPixCellIx2;
+
 reg[13:0]		tPixCellIxC;
 reg[13:0]		tPixCellIxD;
 reg[13:0]		tPixCellIxLim;
@@ -587,9 +592,14 @@ begin
 
 	tRegInOpm = { regInOpm[4:3], 1'b0, regInOpm[2:0] };
 
+	tPixCellIx2 = pixCellIx;
+//	tPixCellIx2 = { 2'b00, pixCellIx[11:0] };
+//	tPixCellIx2 = { 3'b000, pixCellIx[10:0] };
+//	tPixCellIx2 = { 4'b0000, pixCellIx[9:0] };
+
 	if(tRegInOpm[5:4] == 2'b00)
-//		tRegInAddr = { 8'b0, 3'b101, pixCellIx[11:0], 5'h000 };
-		tRegInAddr = { 8'h0A, 1'b0, pixCellIx[13:0], 5'h000 };
+//		tRegInAddr = { 8'b0, 3'b101, tPixCellIx2[11:0], 5'h000 };
+		tRegInAddr = { 8'h0A, 1'b0, tPixCellIx2[13:0], 5'h000 };
 
 //	tNxtReqAddr		= tRegInAddr[27:0];
 	tNxtReqBix		= tRegInAddr[4:0];
@@ -691,12 +701,14 @@ begin
 
 	tNxtProbeCyc	= tProbeCyc + 1;
 
-//	tPixCellIxC = pixCellIx + 14'h0080;
-//	tPixCellIxC = pixCellIx + 14'h0040;
-	tPixCellIxC = pixCellIx + { 7'h00, tProbeCyc[1:0], 5'h0 };
-//	tPixCellIxC = pixCellIx + { 7'h00, tProbeCyc[2:0], 4'h0 };
-//	tPixCellIxC = pixCellIx + { 7'h00, tProbeCyc[3:0], 3'h0 };
-	tPixCellIxD = pixCellIx;
+//	tPixCellIxC = tPixCellIx2 + 14'h0080;
+//	tPixCellIxC = tPixCellIx2 + 14'h0040;
+	tPixCellIxC = tPixCellIx2 + { 7'h00, tProbeCyc[1:0], 5'h0 };
+//	tPixCellIxC = tPixCellIx2 + { 7'h00, tProbeCyc[2:0], 4'h0 };
+//	tPixCellIxC = tPixCellIx2 + { 7'h00, tProbeCyc[3:0], 3'h0 };
+	tPixCellIxD = tPixCellIx2;
+
+//	tPixCellIxD = tPixCellIxC;
 	
 	tPixCellIxCi = { 1'b0, tPixCellIxC } - { 1'b0, tPixCellIxLim };
 //	if(!tPixCellIxCi[14])
@@ -756,6 +768,20 @@ begin
 
 //	tRegOutExc			= 0;
 
+
+	tNxtVramFlushInh	= tVramFlushInh;
+	
+	if((tPixCellIxD[13:8]+1) < tPixCellIxDL[13:8])
+	begin
+		/* On new refresh, re-enable auto-flush. */
+		tNxtVramFlushInh	= 0;
+	end
+	
+	if(tReqIsNz && !tReqIsCRs)
+	begin
+		/* If accessing VRAM MMIO cache area, inhibit auto-flush. */
+		tNxtVramFlushInh	= 1;
+	end
 
 	/* EX2 */
 
@@ -964,6 +990,7 @@ begin
 		 (tBlkMemAddr2C[27: 5] != tReqAxC[23: 1]);
 	tReqMissAddrD	=
 		 (tBlkMemAddr2D[27: 5] != tReqAxC[23: 1]);
+//		 (tBlkMemAddr2D[27: 5] != tReqAxD[23: 1]);
 
 	tReqMissA	= tReqMissAddrA && !tReqMissSkipA;
 	tReqMissB	= tReqMissAddrB && !tReqMissSkipB;
@@ -995,6 +1022,8 @@ begin
 
 	tReqDoMissC	= tReqMissC;
 	tReqDoMissD	= tReqMissD;
+
+//	tReqDoMissD	= 0;
 
 // `ifdef def_true
 `ifndef def_true
@@ -1047,7 +1076,20 @@ begin
 //		tCellData[255:128] = tBlkMemData2B;
 		tArrMemDoStD	= tBlkIsDirtyB;
 	end
-		
+	
+//	if(!tReqIsNz && !tReq2IsNz && (tRegOutOKL == UMEM_OK_READY) && 	
+//		!tVramFlushInh)
+	if(!tReqIsNz &&	!tVramFlushInh)
+	begin
+		/* If no request and not inhibited.
+		 * Flush MMIO cache to external RAM.
+		 */
+		if(tBlkIsDirtyA)
+			tReqDoMissA	= 1;
+		if(tBlkIsDirtyB)
+			tReqDoMissB	= 1;
+	end
+	
 //	tCellData[31:0]	= 32'h0F300041;
 	
 	if(tReqBix[4])
@@ -1319,16 +1361,17 @@ begin
 
 	/* Miss Handling */
 
-`ifdef def_true
+//`ifdef def_true
+`ifndef def_true
 	if(tMemReqStA && !tMemReqLdA && !tReqDoMissA)
 	begin
-		$display("VRAM: Store Without Load A");
-//		tReqDoMissA = 1;
+//		$display("VRAM: Store Without Load A");
+		tReqDoMissA = 1;
 	end
 	if(tMemReqStB && !tMemReqLdB && !tReqDoMissB)
 	begin
-		$display("VRAM: Store Without Load B");
-//		tReqDoMissB = 1;
+//		$display("VRAM: Store Without Load B");
+		tReqDoMissB = 1;
 	end
 
 //	if(!tMemReqStA && tMemReqLdA && tBlkIsDirtyA)
@@ -1374,6 +1417,9 @@ begin
 `else
 		tMemAddrReq		= { 20'hC0002, tReqAxC[23:1], 5'h00 };
 `endif
+
+//		$display("VRAM: Send LDC Req A=%X", tMemAddrReq);
+
 		tNxtMemReqLdC	= 1;
 	end
 	else
@@ -1386,10 +1432,14 @@ begin
 		tMemOpmReq		= { UV8_00, JX2_RBI_OPM_PFX };
 `ifdef jx2_enable_l2addr96
 		tMemAddrReq		= { UV48_00, 20'hC0002, tReqAxC[23:1], 5'h10 };
+//		tMemAddrReq		= { UV48_00, 20'hC0002, tReqAxD[23:1], 5'h10 };
 `else
 		tMemAddrReq		= { 20'hC0002, tReqAxC[23:1], 5'h10 };
+//		tMemAddrReq		= { 20'hC0002, tReqAxD[23:1], 5'h10 };
 `endif
 		tNxtMemReqLdD	= 1;
+
+//		$display("VRAM: Send LDD Req A=%X", tMemAddrReq);
 	end
 	else
 `endif
@@ -1775,6 +1825,8 @@ begin
 	tReqMissAL		<= tReqMissA;
 	tReqMissBL		<= tReqMissB;
 	tReqMissL		<= tReqMiss;
+
+	tVramFlushInh	<= tNxtVramFlushInh;
 
 //	tRegOutExc2		<= tRegOutExc;
 

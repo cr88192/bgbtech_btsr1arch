@@ -67,9 +67,9 @@
 `ifndef jx2_xc7s50
 
 `define jx2_mem_l1d_fwstore			//Store Forwarding
-// `define jx2_mem_l1d_fwarray			//Block Array Forwarding
+`define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
-// `define jx2_mem_l1d_utlb			//Micro TLB
+`define jx2_mem_l1d_utlb			//Micro TLB
 
 `endif
 
@@ -104,8 +104,8 @@
 // `define jx2_mem_l2wsz_1024		//L2 is 1024 entries
 // `define jx2_mem_l2wsz_2048		//L2 is 2048 entries
 // `define jx2_mem_l2wsz_4096			//L2 is 4096 entries
-// `define jx2_mem_l2wsz_8192			//L2 is 8192 entries
-`define jx2_mem_l2wsz_16384			//L2 is 16384 entries
+`define jx2_mem_l2wsz_8192			//L2 is 8192 entries
+// `define jx2_mem_l2wsz_16384			//L2 is 16384 entries
 
 `endif
 
@@ -150,7 +150,9 @@
 // `define jx2_mem_l2d_stswab		//L2: Stores may swap A and B.
 
 `define jx2_rbi_nobridge		//Ringbus: Bypass Bridge, join rings directly
-`define jx2_rbi_bridge_ecyc		//Ringbus: Add extra output cycle on L1 Bridge
+// `define jx2_rbi_bridge_ecyc		//Ringbus: Add extra output cycle on L1 Bridge
+`define jx2_rbi_bridge_ecyc_l1	//Ringbus: Add output cycle on L1 Bridge
+`define jx2_rbi_bridge_ecyc_l2	//Ringbus: Add output cycle on L1 Bridge
 
 `ifndef jx2_xc7s50
 `define jx2_rbi_l2reqloop		//Ringbus: Loop L2 Requests around L2

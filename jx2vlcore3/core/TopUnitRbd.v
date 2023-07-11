@@ -277,6 +277,11 @@ wire	dbg_outStatus6;
 wire	dbg_outStatus7;
 wire	dbg_outStatus8;
 
+wire	dbg_outStatus9;
+wire	dbg_outStatus10;
+wire	dbg_outStatus11;
+wire	dbg_outStatus12;
+
 wire	clock_300mhz;
 wire	clock_200mhz;
 // wire	clock_150mhz;
@@ -354,6 +359,8 @@ wire[3:0]		ddrModeIn;
 assign		ddrModeIn = 1;
 
 wire[7:0]	hbrPwmOut;
+wire[1:0]	dbgExWidth;
+
 
 assign		hbrPins = hbrPwmOut;
 
@@ -406,6 +413,12 @@ CoreUnit core(
 	dbg_outStatus6,
 	dbg_outStatus7,
 	dbg_outStatus8,
+
+	dbg_outStatus9,
+	dbg_outStatus10,
+	dbg_outStatus11,
+	dbg_outStatus12,
+	dbgExWidth,
 
 	gpioPinsIn,
 	gpioPinsOut,

@@ -70,23 +70,31 @@ int tsz, dsz;	//size of in-memory code/data
 
 int peoffs, coff_hdr, symoffs, nsyms;
 int secoffs, nsecs, stroffs;
+int nrlc;
 
 
-char *sec_name[16];
-int sec_flag[16];
+char *sec_name[64];
+int sec_flag[64];
 
-int sec_rva_off[16];
-int sec_rva_sz[16];
-int sec_buf_off[16];
-int sec_buf_sz[16];
-int sec_rlc_off[16];
-int sec_rlc_num[16];
+int sec_rva_off[64];
+int sec_rva_sz[64];
+int sec_buf_off[64];
+int sec_buf_sz[64];
+int sec_rlc_off[64];
+int sec_rlc_num[64];
 
 char **sym_name;	//symbol name
 void **sym_addr;	//symbol address, internal or external
 int *sym_offs;		//offset of symbol
 int *sym_sec;		//section for symbol
+// int *sym_lblid;		//section for symbol
 byte *sym_stype;		//storage type for symbol
+
+int *rlc_offs;		//offset of reloc
+int *rlc_sym;		//symbol for reloc
+byte *rlc_sec;		//section for reloc
+byte *rlc_type;		//reloc type
+int *rlc_addend;	//symbol for reloc
 };
 
 #endif

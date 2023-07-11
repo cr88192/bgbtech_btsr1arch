@@ -44,6 +44,11 @@ module RbiMemL2A(
 	memSeqIn,		memSeqOut,
 	unitNodeId,		timers,
 
+	mmiAddrIn,		mmiAddrOut,
+	mmiDataIn,		mmiDataOut,
+	mmiOpmIn,		mmiOpmOut,
+	mmiSeqIn,		mmiSeqOut,
+
 	ddrMemAddr,		ddrMemAddrB,
 	ddrMemOpm,
 	ddrMemDataIn,	ddrMemDataOut,
@@ -69,6 +74,15 @@ output[ 15:0]	memOpmOut;		//memory operation mode
 
 input [  7:0]	unitNodeId;		//Who Are We?
 input [  7:0]	timers;			//Timer Signals
+
+input [ 15:0]	mmiSeqIn;		//operation sequence
+output[ 15:0]	mmiSeqOut;		//operation sequence
+input [ 15:0]	mmiOpmIn;		//memory operation mode
+output[ 15:0]	mmiOpmOut;		//memory operation mode
+`input_l2addr	mmiAddrIn;		//memory input address
+`output_l2addr	mmiAddrOut;		//memory output address
+`input_tile		mmiDataIn;		//memory input data
+`output_tile	mmiDataOut;		//memory output data
 
 `input_ddrtile	ddrMemDataIn;
 `output_ddrtile	ddrMemDataOut;
@@ -221,6 +235,17 @@ assign		memAddrOut	= tL2bAddrOut;
 assign		memDataOut	= tL2bDataOut;
 
 
+reg[ 15:0]		tMmiSeqOut;
+reg[ 15:0]		tMmiOpmOut;
+`reg_l2addr		tMmiAddrOut;
+`reg_tile		tMmiDataOut;
+
+assign		mmiSeqOut	= tMmiSeqOut;
+assign		mmiOpmOut	= tMmiOpmOut;
+assign		mmiAddrOut	= tMmiAddrOut;
+assign		mmiDataOut	= tMmiDataOut;
+
+
 always @*
 begin
 	tL2mSeqIn	= memSeqIn;
@@ -231,11 +256,13 @@ begin
 	tL2mOpmIn[15] = timers[0];
 
 //	if(memOpmIn[11])
-	if(memOpmIn[11] && memOpmIn[8])
+//	if(memOpmIn[11] && memOpmIn[8])
+	if(memOpmIn[11] && memOpmIn[8] && (memAddrIn[47:46]!=2'b11))
 		$display("L2A: TLB Missed A O=%X A=%X", memOpmIn, memAddrIn);
 
 //	if(memOpmOut[11])
-	if(memOpmOut[11] && memOpmOut[8])
+//	if(memOpmOut[11] && memOpmOut[8])
+	if(memOpmOut[11] && memOpmOut[8] && (memAddrOut[47:46]!=2'b11))
 		$display("L2A: TLB Missed B O=%X A=%X", memOpmOut, memAddrOut);
 
 	tL2mSeqOut		= l2mSeqOut;
@@ -243,10 +270,20 @@ begin
 	tL2mAddrOut		= l2mAddrOut;
 	tL2mDataOut		= l2mDataOut;
 
-	tL2bSeqOut		= l2bSeqOut;
-	tL2bOpmOut		= l2bOpmOut;
-	tL2bAddrOut		= l2bAddrOut;
-	tL2bDataOut		= l2bDataOut;
+//	tL2bSeqOut		= l2bSeqOut;
+//	tL2bOpmOut		= l2bOpmOut;
+//	tL2bAddrOut		= l2bAddrOut;
+//	tL2bDataOut		= l2bDataOut;
+
+	tMmiSeqOut		= l2bSeqOut;
+	tMmiOpmOut		= l2bOpmOut;
+	tMmiAddrOut		= l2bAddrOut;
+	tMmiDataOut		= l2bDataOut;
+
+	tL2bSeqOut		= mmiSeqIn;
+	tL2bOpmOut		= mmiOpmIn;
+	tL2bAddrOut		= mmiAddrIn;
+	tL2bDataOut		= mmiDataIn;
 
 // `ifndef def_true
 // `ifdef def_true
@@ -278,16 +315,26 @@ begin
 // `ifndef def_true
 // `ifdef def_true
 `ifdef jx2_rbi_l2respfw
-	if(	(l2bOpmOut[7:0] == 8'h00) &&
+//	if(	(l2bOpmOut[7:0] == 8'h00) &&
 //		(l2mOpmOut[7:0] != 8'h00) && 
-		(l2mOpmOut[7:6] == 2'b01))
+//		(l2mOpmOut[7:6] == 2'b01))
+
+	if(	(mmiOpmIn[7:0] == 8'h00) &&
+		(l2mOpmOut[7:0] != 8'h00) && 
+		(l2mOpmOut[7:6] == 2'b01) &&
+		(l2mSeqOut[15:14]==2'b00))
 	begin
 		/* Shortcut: Forward Responses to output. */
 	
-		tL2mSeqOut		= l2bSeqOut;
-		tL2mOpmOut		= l2bOpmOut;
-		tL2mAddrOut		= l2bAddrOut;
-		tL2mDataOut		= l2bDataOut;
+//		tL2mSeqOut		= l2bSeqOut;
+//		tL2mOpmOut		= l2bOpmOut;
+//		tL2mAddrOut		= l2bAddrOut;
+//		tL2mDataOut		= l2bDataOut;
+
+		tL2mSeqOut		= mmiSeqIn;
+		tL2mOpmOut		= mmiOpmIn;
+		tL2mAddrOut		= mmiAddrIn;
+		tL2mDataOut		= mmiDataIn;
 
 		tL2bSeqOut		= l2mSeqOut;
 		tL2bOpmOut		= l2mOpmOut;
@@ -322,6 +369,18 @@ begin
 	begin
 		$display("L2A-0: S=%X O=%X A=%X D=%X",
 			memSeqOut, memOpmOut, memAddrOut, memDataOut);
+	end
+`endif
+
+`ifndef def_true
+	if(	(l2mOpmOut[7:0] != 8'h00) &&
+		(l2bOpmOut[7:0] != 8'h00) &&
+		(l2rOpmOut[7:0] != 8'h00)	)
+	begin
+		$display("L2A: Bus Congestion Check %X-%X %X-%X %X-%X",
+			l2mOpmOut, l2mSeqOut,
+			l2bOpmOut, l2bSeqOut,
+			l2rOpmOut, l2rSeqOut);
 	end
 `endif
 

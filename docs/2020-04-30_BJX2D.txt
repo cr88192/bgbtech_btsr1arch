@@ -23,16 +23,27 @@ Multiple subset profiles will exist, and some features will be optional.
 
 Several ISA Profiles may exist:
 * A: Full, Full Features, 48-bit address space.
-* B: Fix32 + GFP
+* B: Fix32 + GFP, 32-bit physical space
 * C: Basic, Partial Features, 32-bit address space.
-* D: Fix32 + SoftFPU
-* E: Lite + SoftFPU
-* F: Lite + GFP
+* D: Fix32 + SoftFPU, 32-bit physical space
+* E: Lite + SoftFPU, 32-bit physical space
+* F: Lite + GFP, 32-bit physical space
 * G: Full Features, 96-bit address space and XGPR.
 * H: Full Features, similar to G, but assumes a 48-bit Address Space
 * I: Basic, 48-bit Address Space, GFP+GSV+GSVF
 
 The compiler is not to use features which are absent in a given profile, and will not assume the presence of features marked as optional unless specified as part of the current pofile.
+
+Features assumed:
+* A: GFP, JUMBO, MOVX, GSV, GSVF, GSFVX, FMOVS, WEX3W
+* B: FIX32, GFP
+* C: GFP
+* D: FIX32
+* E: None
+* F: GFP
+* G: GFP, JUMBO, MOVX, GSV, GSVF, GSFVX, FMOVS, XGPR, XMOV, WEX3W
+* H: GFP, JUMBO, MOVX, GSV, GSVF, GSFVX, FMOVS, XGPR, XMOV, WEX3W
+* I: GFP, JUMBO, MOVX, GSV, GSVF, GSFVX, WEX2W
 
 
 ==== BJX2 Full Profile ====

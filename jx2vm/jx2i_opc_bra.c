@@ -1515,6 +1515,14 @@ u64 BJX2_GetCpuidVal(BJX2_Context *ctx, int ix)
 		v=(ctx->core_id)|fflags;
 		break;
 	
+	case 28:
+		v=BJX2_Interp_GetVirtualUsec(ctx);
+		break;
+	
+	case 30:
+		v=ctx->tot_cyc;
+		break;
+	
 	case 31:
 		BJX2_AdvanceRngB(ctx, ctx->tot_cyc);
 		v=	((ctx->hw_rng[0]>>48)<<48)	|

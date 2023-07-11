@@ -276,6 +276,83 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 	return(i);
 }
 
+int BGBCC_JX2_EmitLabelOffs(BGBCC_JX2_Context *ctx, int lblid, int offs)
+{
+	int h, h2, sec, ofs;
+	int i;
+	
+	if(lblid<=0)
+		return(0);
+
+	BGBCC_JX2_CheckExpandLabel(ctx);
+
+//	ofs=BGBCC_JX2_EmitGetOffs(ctx);
+	sec=ctx->sec;
+	ofs=offs;
+
+	if(ctx->is_simpass)
+	{
+		h=lblid*65521+31;
+		h=h*65521+31;
+		h=(h>>16)&63;
+
+		h2=(((ofs*251+sec)*251)>>8)&63;
+
+		i=ctx->nvlbl++;
+
+		if(ctx->lbl_id[i]==lblid)
+		{
+			ctx->sim_voffs=ofs-ctx->lbl_ofs[i];
+			if((ctx->sim_voffs!=0) && ctx->is_stable)
+				ctx->is_stable|=2;
+		}else
+		{
+			ctx->is_stable|=6;
+		}
+
+		ctx->lbl_id[i]=lblid;
+		ctx->lbl_ofs[i]=ofs;
+		ctx->lbl_sec[i]=ctx->sec;
+
+		ctx->lbl_chn[i]=ctx->lbl_simhash[h];
+		ctx->lbl_simhash[h]=i;
+
+		ctx->lbl_cho[i]=ctx->lbl_simhashb[h2];
+		ctx->lbl_simhashb[h2]=i;
+
+		return(i);
+	}
+
+	i=ctx->nlbl;
+	if(ctx->lbl_id[i]==lblid)
+	{
+		ctx->sim_voffs=ofs-ctx->lbl_ofs[i];
+		if((ctx->sim_voffs!=0) && ctx->is_stable)
+			ctx->is_stable|=2;
+	}
+
+	h=lblid*65521+31;
+	h=h*65521+31;
+	h=(h>>16)&1023;
+
+	h2=(((ofs*251+sec)*251)>>8)&1023;
+
+	i=ctx->nlbl++;
+	ctx->lbl_id[i]=lblid;
+	ctx->lbl_ofs[i]=ofs;
+	ctx->lbl_sec[i]=ctx->sec;
+	
+	ctx->lbl_chn[i]=ctx->lbl_hash[h];
+	ctx->lbl_hash[h]=i;
+
+	ctx->lbl_cho[i]=ctx->lbl_hashb[h2];
+	ctx->lbl_hashb[h2]=i;
+		
+//	BGBCC_JX2DA_EmitLabel(ctx, lblid);
+	
+	return(i);
+}
+
 #if 1
 int BGBCC_JX2_EmitLabelAbs(BGBCC_JX2_Context *ctx, int lblid, s64 addr)
 {
@@ -382,6 +459,9 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 	int lbl;
 	int i;
 
+	if(!name)
+		return(-1);
+
 	if(!bgbcp_strncmp2(name, "__"))
 	{
 		if(!bgbcp_strncmp7(name, "__arch_"))
@@ -472,6 +552,19 @@ int BGBCC_JX2_EmitNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 	if(lbl>0)
 	{
 		return(BGBCC_JX2_EmitLabel(ctx, lbl));
+	}
+	return(0);
+}
+
+int BGBCC_JX2_EmitNamedLabelOffs(BGBCC_JX2_Context *ctx,
+	char *name, int offs)
+{
+	int lbl;
+	
+	lbl=BGBCC_JX2_GetNamedLabel(ctx, name);
+	if(lbl>0)
+	{
+		return(BGBCC_JX2_EmitLabelOffs(ctx, lbl, offs));
 	}
 	return(0);
 }
@@ -764,6 +857,63 @@ int BGBCC_JX2_EmitRelocRelW12(BGBCC_JX2_Context *ctx, int lbl)
 int BGBCC_JX2_EmitRelocRelW8(BGBCC_JX2_Context *ctx, int lbl)
 	{ return(BGBCC_JX2_EmitRelocTy(ctx, lbl, BGBCC_SH_RLC_RELW8)); }
 
+
+int BGBCC_JX2_EmitRelocTyOffs(BGBCC_JX2_Context *ctx,
+	int lblid, int ty, int offs)
+{
+	int h, sec, ofs;
+	int i;
+	
+	if(lblid<=0)
+		return(0);
+
+	if(!ctx->rlc_ofs)
+	{
+//		i=4096;
+		i=65536;
+		ctx->rlc_ofs=bgbcc_malloc(i*sizeof(u32));
+		ctx->rlc_id =bgbcc_malloc(i*sizeof(u32));
+		ctx->rlc_sec=bgbcc_malloc(i*sizeof(byte));
+		ctx->rlc_ty =bgbcc_malloc(i*sizeof(byte));
+		ctx->rlc_chn=bgbcc_malloc(i*sizeof(s32));
+		ctx->nrlc=0;
+		ctx->mrlc=i;
+		
+		for(i=0; i<1024; i++)
+			ctx->rlc_hash[i]=-1;
+	}
+	
+	if((ctx->nrlc+1)>=ctx->mrlc)
+	{
+		i=ctx->mrlc+(ctx->mrlc>>1);
+		ctx->rlc_ofs=bgbcc_realloc(ctx->rlc_ofs, i*sizeof(u32));
+		ctx->rlc_id =bgbcc_realloc(ctx->rlc_id , i*sizeof(u32));
+		ctx->rlc_sec=bgbcc_realloc(ctx->rlc_sec, i*sizeof(byte));
+		ctx->rlc_ty =bgbcc_realloc(ctx->rlc_ty , i*sizeof(byte));
+		ctx->rlc_chn=bgbcc_realloc(ctx->rlc_chn, i*sizeof(s32));
+		ctx->mrlc=i;
+	}
+
+	if(ctx->is_simpass)
+	{
+		return(0);
+	}
+
+	sec=ctx->sec;
+//	ofs=BGBCC_JX2_EmitGetOffs(ctx);
+	ofs=offs;
+	h=(((ofs*251+sec)*251)>>8)&1023;
+
+	i=ctx->nrlc++;
+	ctx->rlc_id[i]=lblid;
+	ctx->rlc_ofs[i]=ofs;
+	ctx->rlc_sec[i]=sec;
+	ctx->rlc_ty[i]=ty;
+	
+	ctx->rlc_chn[i]=ctx->rlc_hash[h];
+	ctx->rlc_hash[h]=i;
+	return(1);
+}
 
 int BGBCC_JX2_LookupLabelIndex(
 	BGBCC_JX2_Context *sctx, int lblid)

@@ -1301,6 +1301,14 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_AttribStr(ctx, i0, s1);
 		break;
 
+	case BGBCC_RIL3OP_OBJBLOB:
+		tbuf=(byte *)tb; tsz=4096;
+		BGBCC_CCXLR3_ReadTextBlob(ctx, &cs, &tbuf, &tsz);
+		BGBCC_CCXL_AddObjectBlob(ctx, tbuf, tsz);
+		if(tbuf!=((byte *)tb))
+			bgbcc_free(tbuf);
+		break;
+
 	case BGBCC_RIL3OP_LITSETFID:
 		i0=BGBCC_CCXLR3_ReadTag(ctx, &cs);
 		s1=BGBCC_CCXLR3_ReadString(ctx, &cs);
@@ -2166,6 +2174,29 @@ void BGBCC_CCXLR3_LoadBufferRIL(
 			}
 		}
 		
+		return;
+	}
+}
+
+void BGBCC_CCXL_LoadBufferObject(
+	BGBCC_TransState *ctx, byte *buf, int bufsz)
+{
+	if(!memcmp(buf, "RIL3", 4))
+	{
+		BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, bufsz);
+		return;
+	}
+
+	if(	!memcmp(buf+0, "RIFF", 4) &&
+		!memcmp(buf+8, "RIL3", 4))
+	{
+		BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, bufsz);
+		return;
+	}
+
+	if(!memcmp(buf, "\x7F" "ELF", 4))
+	{
+		BGBCC_CCXL_AddObjectBlob(ctx, buf, bufsz);
 		return;
 	}
 }

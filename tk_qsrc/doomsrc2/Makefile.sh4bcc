@@ -122,4 +122,5 @@ doom_bjx2.exe:	$(SRCS) i_main.c
 
 tstputc_bjx2.exe:	tests/tst_putcperf.c
 	$(CC) $(CFLAGS) $(LDFLAGS) tests/tst_putcperf.c \
+	tst_putcperf.o \
 	/Fetstputc_bjx2.exe $(LIBS)

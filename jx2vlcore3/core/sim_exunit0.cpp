@@ -835,11 +835,11 @@ int MemBusRand()
 	return((membus_seed>>24)&255);
 }
 
-static int			l2dc_hash_addr[8192];
-static int			l2dc_hash_addr2[8192];
-static byte		l2dc_hash_dirty[8192];
-static byte		l2dc_hash_dirty2[8192];
-static byte		l2dc_hash_epoch[8192];
+static int			l2dc_hash_addr[65536];
+static int			l2dc_hash_addr2[65536];
+static byte		l2dc_hash_dirty[65536];
+static byte		l2dc_hash_dirty2[65536];
+static byte		l2dc_hash_epoch[65536];
 static int			l2dc_miss_cyc;
 static int			l2dc_miss_ix;
 static int			l2dc_miss_addr;
@@ -1134,7 +1134,8 @@ void MemUpdateForBusRing()
 
 //		ix=(addr>>4)^(addr>>16)^(addr>>20);
 
-		ix=ix&8191;
+//		ix=ix&8191;
+		ix=ix&32767;
 		
 		if(!isL2mRepeat)
 		{
@@ -2174,6 +2175,8 @@ int main(int argc, char **argv, char **env)
 	int cnt_dled, cnt_h1, cnt_h2,
 		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
 		cnt_d5, cnt_d6, cnt_d7, cnt_d8;
+	int clk_4mhz, clk_1mhz, clk_64khz, clk_1khz, clk_256hz;
+	int timers, seed;
 	int i, j, k;
 
 //	mhz=100;
@@ -2330,6 +2333,7 @@ int main(int argc, char **argv, char **env)
 	tt_start=FRGL_TimeMS();
 	tt_frame=tt_start;
 	membus_256bit=0;
+	seed=1;
 	
 //	ctick_rst=48828;
 //	ctick=ctick_rst;
@@ -2470,6 +2474,26 @@ int main(int argc, char **argv, char **env)
 		}
 
 		top->clock = (main_time>>0)&1;
+
+		clk_4mhz =(main_time/    13)&1;
+		clk_1mhz =(main_time/    50)&1;
+		clk_64khz=(main_time/   781)&1;
+		clk_1khz =(main_time/ 50000)&1;
+		clk_256hz=(main_time/200000)&1;
+
+		seed=(seed*65521)+31;
+
+		timers=
+			((seed>>16)&1)	|
+			(clk_256hz<<1)	|
+			(clk_1khz <<2)	|
+			(clk_64khz<<3)	|
+			(clk_1mhz <<4)	|
+			(clk_4mhz <<5)	|
+			(clk_1mhz <<6)	;
+
+		top->timers=timers;
+
 
 		top->reset=0;
 		if(main_time<256)

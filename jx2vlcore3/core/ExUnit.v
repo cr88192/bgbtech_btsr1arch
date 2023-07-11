@@ -108,6 +108,7 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 
 `ifdef jx2_cpu_pred_id2
 `include "ExPredCheck.v"
+`include "ExPredChkSrT.v"
 `endif
 
 /* verilator lint_off DEFPARAM */
@@ -132,7 +133,7 @@ module ExUnit(
 
 	dbgDcInAddr,	dbgDcInOpm,
 	dbgDcOutVal,	dbgDcInVal,
-	dbgDcOutOK,
+	dbgDcOutOK,		dbgExWidth,
 	
 	dbgOutStatus1,	dbgOutStatus2,
 	dbgOutStatus3,	dbgOutStatus4,
@@ -200,6 +201,8 @@ output[4:0]		dbgDcInOpm;
 output[63:0]	dbgDcOutVal;
 output[63:0]	dbgDcInVal;
 output[ 1:0]	dbgDcOutOK;
+
+output[ 1:0]	dbgExWidth;
 
 output			dbgOutStatus1;
 output			dbgOutStatus2;
@@ -327,6 +330,11 @@ assign		dbgOutStatus7 = tDbgOutStatus7C;
 assign		dbgOutStatus8 = tDbgOutStatus8C;
 `endif
 
+reg[1:0]	tDbgExWidth;
+reg[1:0]	tDbgExWidthB;
+reg[1:0]	tDbgExWidthC;
+
+assign	dbgExWidth	= tDbgExWidthC;
 
 /* IF */
 
@@ -1340,6 +1348,7 @@ wire		idA2PredNoExec;
 wire		idB2PredNoExec;
 wire		idC2PredNoExec;
 
+`ifndef def_true
 assign		id2_ex1UpdSrT =
 	(ex1OpUCmd[5:0] == JX2_UCMD_OP_IXS)		||
 	(ex1OpUCmd[5:0] == JX2_UCMD_OP_IXT)		||
@@ -1353,6 +1362,9 @@ assign		id2_ex1UpdSrT =
 	(ex1OpUCmd[5:0] == JX2_UCMD_FCMP)		||
 	(ex1OpUCmd[5:0] == JX2_UCMD_ALUCMPW)	||
 	(ex1OpUCmd[5:0] == JX2_UCMD_ALUCMPB)	;
+`endif
+
+ExPredChkSrT	ex1UpdSr1a(ex1OpUCmd, ex1OpUIxt, id2_ex1UpdSrT);
 
 `ifdef jx2_enable_wex
 
@@ -4608,6 +4620,8 @@ begin
 	gprValRn2		= ex2RegValRn2;
 	gprIdRn3		= ex3RegIdRn3;
 	gprValRn3		= ex3RegValRn3;
+	
+	tDbgExWidth		= 1;
 
 `ifdef jx2_enable_wex
 	gprIdRnB1		= exB1RegIdRn1;
@@ -4619,6 +4633,9 @@ begin
 	exB3RegAluRes	= 0;
 	
 	exB2RegAluRes	= exB1ValAlu;
+	
+	if(idB2IdUCmd[5:0]!=0)
+		tDbgExWidth		= 2;
 `endif
 
 `ifdef jx2_enable_wex3w
@@ -4631,6 +4648,9 @@ begin
 	exC3RegAluRes	= 0;
 	
 	exC2RegAluRes	= exC1ValAlu;
+
+	if(idC2IdUCmd[5:0]!=0)
+		tDbgExWidth		= 3;
 `endif
 
 //`ifndef def_true
@@ -5879,6 +5899,10 @@ begin
 	tDbgOutStatus7C		<= tDbgOutStatus7B;
 	tDbgOutStatus8C		<= tDbgOutStatus8B;
 `endif
+
+// reg[1:0]	tDbgExWidth;
+	tDbgExWidthB	<= tDbgExWidth;
+	tDbgExWidthC	<= tDbgExWidthB;
 
 end
 

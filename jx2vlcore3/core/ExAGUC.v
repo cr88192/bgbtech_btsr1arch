@@ -62,7 +62,8 @@ input[47:0]		regValXm;
 
 input[8:0]		idUCmd;
 input[8:0]		idUIxt;
-input			addrEnJq;
+// input		addrEnJq;
+input[1:0]		addrEnJq;
 input[33:0]		regBoundX;
 
 output[47:0]	regOutAddr;
@@ -497,7 +498,9 @@ begin
 	tCaVal0C = tCaVal0B ? tAddrSc0B1[16] : tAddrSc0B0[16];
 
 	tAddrSc0C = 16'h0000;
-	if(addrEnJq)
+//	if(addrEnJq)
+//	if(addrEnJq || (regValRm[47:46]==2'b11))
+	if(addrEnJq[0] || ((regValRm[47:46]==2'b11) && addrEnJq[1]))
 	begin
 //		tAddrSc0C = tAddrSc0B[16] ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
 		tAddrSc0C = tCaVal0C ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];

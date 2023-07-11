@@ -49,7 +49,11 @@ module CoreUnitUc(
 	dbg_outStatus5,
 	dbg_outStatus6,
 	dbg_outStatus7,
-	dbg_outStatus8,
+	dbg_outStatus8,	
+	dbg_outStatus9,
+	dbg_outStatus10,
+	dbg_outStatus11,
+	dbg_outStatus12,
 
 	gpioPinsIn,
 	gpioPinsOut,
@@ -99,6 +103,10 @@ output			dbg_outStatus5;
 output			dbg_outStatus6;
 output			dbg_outStatus7;
 output			dbg_outStatus8;
+output			dbg_outStatus9;
+output			dbg_outStatus10;
+output			dbg_outStatus11;
+output			dbg_outStatus12;
 
 input[31:0]			gpioPinsIn;
 output[31:0]		gpioPinsOut;
@@ -229,6 +237,11 @@ CoreUnit	core(
 	dbg_outStatus6,
 	dbg_outStatus7,
 	dbg_outStatus8,
+	
+	dbg_outStatus9,
+	dbg_outStatus10,
+	dbg_outStatus11,
+	dbg_outStatus12,
 
 	gpioPinsIn,
 	gpioPinsOut,
