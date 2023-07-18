@@ -112,6 +112,9 @@
 // `define jx2_enable_movclite		//MOV.C (Lite)
 `define jx2_enable_bitsel		//Bit Select
 
+`define jx2_enable_pmov			//SIMD Load/Store
+// `define jx2_enable_pmov_m8		//FPU Load (FP8)
+
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
 
 `endif
@@ -137,7 +140,8 @@
 `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
 
 `ifndef jx2_xc7s50
-`define jx2_enable_aluptr		//Enable ALU Pointer Ops (ALUPTR)
+// `define jx2_enable_aluptr		//Enable ALU Pointer Ops (ALUPTR)
+`define jx2_agu_disp48				//Enable 48-bit AGU displacements
 `endif
 
 // `ifndef jx2_xc7s50
@@ -229,6 +233,8 @@
 `define jx2_enable_wexjumbo				//Enable Jumbo-Load
 
 // `define jx2_enable_vaddr96qadd			//Enable Quadrant Add
+
+`define jx2_enable_vaddr96q64		//Enable 64-bit Address Mode
 
 `define jx2_enable_vaddr48				//Enable 48-bit virtual addresses
 

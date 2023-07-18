@@ -69,11 +69,11 @@ int tk_mount_sdfat(char *path)
 	int		lba, clid, sz;
 	int i, j, k;
 
-	tk_puts("tk_mount_sdfat\n");
+	tk_dbg_printf("tk_mount_sdfat\n");
 
 	img=TKFAT_CreateSdFatContext();
 
-	tk_puts("tk_mount_sdfat: B\n");
+	tk_dbg_printf("tk_mount_sdfat: B\n");
 
 	mnt=tk_alloc_mount();
 	mnt->vt=&tk_vfile_fat_vt;
@@ -93,7 +93,7 @@ int tk_mount_sdfat(char *path)
 	dee=&tdee;
 	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));
 
-	tk_puts("tk_mount_sdfat: C\n");
+	tk_dbg_printf("tk_mount_sdfat: C\n");
 
 	i=TKFAT_LookupDirEntPath(img, dee, "swapfile.sys");
 	if(i>=0)
@@ -127,7 +127,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	int clid, lba;
 	int i;
 
-//	tk_printf("tk_fat_fopen: %s\n", name);
+//	tk_dbg_printf("tk_fat_fopen: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -143,7 +143,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	}
 	if(i<0)
 	{
-//		tk_printf("tk_fat_fopen: fail %s\n", name);
+//		tk_dbg_printf("tk_fat_fopen: fail %s\n", name);
 		return(NULL);
 	}
 
@@ -171,7 +171,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 				/* Magic Symlink File */
 				name1=clbuf+64;
 
-	//			tk_printf("tk_fat_fopen: Symlink %s %s\n", name, name1);
+	//			tk_dbg_printf("tk_fat_fopen: Symlink %s %s\n", name, name1);
 
 				if(*name1=='/')
 				{
@@ -194,7 +194,7 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 				return(tk_fat_fopen(mnt, usri, name1, mode));
 			}else
 			{
-	//			tk_printf("tk_fat_fopen: Not Link %s %X\n",
+	//			tk_dbg_printf("tk_fat_fopen: Not Link %s %X\n",
 	//				name, ((u64 *)clbuf)[0]);
 			}
 		}
@@ -222,7 +222,7 @@ int tk_fat_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	TK_FILE *fd;
 	int i;
 
-//	tk_printf("tk_fat_unlink: %s\n", name);
+//	tk_dbg_printf("tk_fat_unlink: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -230,7 +230,7 @@ int tk_fat_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	i=TKFAT_LookupDirEntPath(img, dee, name);
 	if(i<0)
 	{
-//		tk_printf("tk_fat_unlink: fail %s\n", name);
+//		tk_dbg_printf("tk_fat_unlink: fail %s\n", name);
 		return(-1);
 	}
 
@@ -254,7 +254,7 @@ int tk_fat_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	TK_FILE *fd;
 	int i;
 
-//	tk_printf("tk_fat_unlink: %s\n", name);
+//	tk_dbg_printf("tk_fat_unlink: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -262,7 +262,7 @@ int tk_fat_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	i=TKFAT_LookupDirEntPath(img, dee, name);
 	if(i<0)
 	{
-//		tk_printf("tk_fat_unlink: fail %s\n", name);
+//		tk_dbg_printf("tk_fat_unlink: fail %s\n", name);
 		return(-1);
 	}
 
@@ -287,7 +287,7 @@ int tk_fat_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	TK_FILE *fd;
 	int i;
 
-//	tk_printf("tk_fat_fopen: %s\n", name);
+//	tk_dbg_printf("tk_fat_fopen: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -341,28 +341,28 @@ int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
 				strcpy(tbuf+64, oldfn);
 			}
 
-//			tk_printf("tk_fat_rename: ln %s %s\n", oldfn, newfn);
+//			tk_dbg_printf("tk_fat_rename: ln %s %s\n", oldfn, newfn);
 
 			i=TKFAT_CreateDirEntPath(img, dee2, newfn);
 			if(i<0)
 				return(-1);
 
-//			tk_printf("tk_fat_rename: A1\n");
+//			tk_dbg_printf("tk_fat_rename: A1\n");
 
 			TKFAT_ReadWriteDirEntFile(
 				dee2, 0, true, tbuf, sz);
 
-//			tk_printf("tk_fat_rename: A2\n");
+//			tk_dbg_printf("tk_fat_rename: A2\n");
 
 			dee2->is_dirty=1;
 			TKFAT_SetDirEntSize(dee2, sz);
 			dee2->deb.attrib=TKFAT_ATTR_LINKHINT;
 
-//			tk_printf("tk_fat_rename: A3\n");
+//			tk_dbg_printf("tk_fat_rename: A3\n");
 
 			TKFAT_UpdateDirEnt(dee2);
 
-//			tk_printf("tk_fat_rename: A4\n");
+//			tk_dbg_printf("tk_fat_rename: A4\n");
 
 #if 0
 			if(sz>256)
@@ -373,7 +373,7 @@ int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
 			
 			if(memcmp(tbuf, tbuf+256, sz))
 			{
-				tk_printf("tk_fat_rename: read mismatch\n");
+				tk_dbg_printf("tk_fat_rename: read mismatch\n");
 			}
 
 #endif
@@ -387,14 +387,14 @@ int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
 	i=TKFAT_LookupDirEntPath(img, dee1, oldfn);
 	if(i<0)
 	{
-//		tk_printf("tk_fat_rename: fail %s\n", oldfn);
+//		tk_dbg_printf("tk_fat_rename: fail %s\n", oldfn);
 		return(-1);
 	}
 	
 	i=TKFAT_CreateDirEntPath(img, dee2, newfn);
 	if(i<0)
 	{
-//		tk_printf("tk_fat_rename: fail %s\n", oldfn);
+//		tk_dbg_printf("tk_fat_rename: fail %s\n", oldfn);
 		return(-1);
 	}
 	
@@ -450,12 +450,12 @@ int tk_fat_fclose(TK_FILE *fd)
 {
 	TKFAT_FAT_DirEntExt *dee;
 
-//	printf("tk_fat_fclose: %p\n", fd);
+//	tk_dbg_printf("tk_fat_fclose: %p\n", fd);
 
 	dee=fd->udata1;
 	if(dee->is_dirty)
 	{
-//		printf("tk_fat_sync: %p\n", fd);
+//		tk_dbg_printf("tk_fat_sync: %p\n", fd);
 		TKFAT_SyncDirEntFile(dee);
 	}
 	free(fd->udata1);
@@ -483,7 +483,7 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 
 	if(!(dee->is_write))
 	{
-		tk_printf("tk_fat_fwrite: write to file in read mode\n");
+		tk_dbg_printf("tk_fat_fwrite: write to file in read mode\n");
 //		__debugbreak();
 		return(-1);
 	}
@@ -491,7 +491,7 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 //	if((dee->is_write))
 //	{
 //		__debugbreak();
-//		tk_printf("tk_fat_fwrite: write to file in read mode\n");
+//		tk_dbg_printf("tk_fat_fwrite: write to file in read mode\n");
 //		return(-1);
 //	}
 
@@ -540,7 +540,7 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	int dcli, mcli;
 	int i;
 
-//	tk_printf("tk_fat_opendir: %s\n", name);
+//	tk_dbg_printf("tk_fat_opendir: %s\n", name);
 
 	img=mnt->udata0;
 	dee=&tdee;
@@ -550,7 +550,7 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	i=TKFAT_LookupDirEntPath(img, dee, name);
 	if(i<0)
 	{
-//		tk_printf("tk_fat_opendir: fail %s\n", name);
+//		tk_dbg_printf("tk_fat_opendir: fail %s\n", name);
 		return(NULL);
 	}
 

@@ -63,7 +63,7 @@ input[47:0]		regValXm;
 input[8:0]		idUCmd;
 input[8:0]		idUIxt;
 // input		addrEnJq;
-input[1:0]		addrEnJq;
+input[3:0]		addrEnJq;
 input[33:0]		regBoundX;
 
 output[47:0]	regOutAddr;
@@ -173,9 +173,12 @@ reg[23:0]	tRegTexBix;
 
 always @*
 begin
-//	tRegValRi = regValRi;
+`ifdef jx2_agu_disp48
+	tRegValRi = regValRi[47:0];
 //	tRegValRi = { regValRi[31] ? 16'hFFFF : 16'h0000, regValRi[31:0] };
+`else
 	tRegValRi = { regValRi[32] ? 15'h7FFF : 15'h0000, regValRi[32:0] };
+`endif
 
 	tRiSc0 = tRegValRi;
 	tRiSc1 = { tRegValRi[46:0], 1'b0 };
@@ -484,8 +487,16 @@ begin
 
 	tAddrSc0B0 = { 1'b0, regValRm[31:16] } + { 1'b0, tRiSc[31:16] } + 0;
 	tAddrSc0B1 = { 1'b0, regValRm[31:16] } + { 1'b0, tRiSc[31:16] } + 1;
+
+`ifdef jx2_agu_disp48
 	tAddrSc0C0 = { 1'b0, regValRm[47:32] } + { 1'b0, tRiSc[47:32] } + 0;
 	tAddrSc0C1 = { 1'b0, regValRm[47:32] } + { 1'b0, tRiSc[47:32] } + 1;
+`else
+	tAddrSc0C0 = { 1'b0, regValRm[47:32] } +
+		{ 1'b0, tRiSc[35] ? 12'hFFF : 12'h000, tRiSc[35:32] } + 0;
+	tAddrSc0C1 = { 1'b0, regValRm[47:32] } +
+		{ 1'b0, tRiSc[35] ? 12'hFFF : 12'h000, tRiSc[35:32] } + 1;
+`endif
 
 `ifdef jx2_agu_ridisp
 	tAddrSc0B = (tAddrSc0A[17:16]!=0) ? tAddrSc0B1 : tAddrSc0B0;
@@ -508,6 +519,13 @@ begin
 
 	tAddrSc0 = { tAddrSc0C[15:0], tAddrSc0B[15:0], tAddrSc0A[15:0] };
 	tAddr = tAddrSc0;
+	
+`ifdef jx2_enable_vaddr96q64
+	if(addrEnJq[2])
+	begin
+		tRegOutXLeaTag			= regValRm[63:48];
+	end
+`endif
 end
 
 endmodule

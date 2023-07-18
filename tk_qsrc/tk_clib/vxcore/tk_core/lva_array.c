@@ -263,6 +263,7 @@ void *TKMM_LVA_GetArrayIndexPtr(tk_lva_object obj, int idx, int sc)
 	if((obits>>60)==0)
 	{
 		bti=(obits>>48)&4095;
+		bsi=0;
 		
 //		if(bti!=tkmm_lvatyi_tagarray)
 //		{
@@ -455,6 +456,25 @@ tk_lva_object __lvo_newvararray_8(
 	arrd[6]=a6;		arrd[7]=a7;
 	
 	return(TKMM_LVA_WrapVarArray(arr));
+}
+
+tk_lva_object __lvo_newvararray_vn(
+	tk_lva_object *ra, int n)
+{
+	LVA_TagArray *arr;
+	tk_lva_object	*arrd;
+	int i;
+
+	arr=TKMM_LVA_NewVarArray(n);
+	arrd=(tk_lva_object *)(arr->data);
+	for(i=0; i<n; i++)
+		arrd[i]=ra[i];
+	return(TKMM_LVA_WrapVarArray(arr));
+}
+
+void *__lvo_arraygetptr(tk_lva_object obj)
+{
+	return(TKMM_LVA_GetArrayIndexPtr(obj, 0, 0));
 }
 
 s32 __lvo_loadindex_i(tk_lva_object obj, int idx)

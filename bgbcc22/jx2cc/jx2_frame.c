@@ -123,8 +123,11 @@ int BGBCC_JX2C_EmitStoreFrameOfsReg(
 	int ofs1;
 	int i, j, k;
 
-	if((ofs>=sctx->frm_offs_fix) && (ofs<0) && !(sctx->is_prolog))
-		{ BGBCC_DBGBREAK }
+	if(!sctx->is_simpass)
+	{
+		if((ofs>=sctx->frm_offs_fix) && (ofs<0) && !(sctx->is_prolog))
+			{ BGBCC_DBGBREAK }
+	}
 		
 	if(ofs>(24*8))
 		{ BGBCC_DBGBREAK }
@@ -1702,7 +1705,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegByValReg(
 
 		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_TEMPLOAD))
 		{
-			if(ctx->verbose)
+//			if(ctx->verbose)
+			if(0)
 			{
 				printf("Mark Tempload\n");
 			}
@@ -2273,7 +2277,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 				(rcls==BGBCC_SH_REGCLS_AR_REF2)	))
 //		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_INITIALIZED))
 		{
-			if(ctx->verbose)
+//			if(ctx->verbose)
+			if(0)
 			{
 				printf("LDA Mark Temp Initialized, %s:%d\n",
 					ctx->lfn, ctx->lln);
@@ -2283,7 +2288,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 		if(!(ctx->cur_func->regs[j]->regflags&BGBCC_REGFL_TEMPLOAD))
 		{
-			if(ctx->verbose)
+//			if(ctx->verbose)
+			if(0)
 			{
 				printf("Mark Tempload\n");
 			}
@@ -3403,8 +3409,11 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegLocalP(ctx, dreg))
 	{
-		if(sctx->is_leaftiny&1)
-			{ BGBCC_DBGBREAK }
+		if(!sctx->is_simpass)
+		{
+			if(sctx->is_leaftiny&1)
+				{ BGBCC_DBGBREAK }
+		}
 	
 		j=dreg.val&CCXL_REGID_BASEMASK;
 		ctx->cur_func->locals[j]->regflags|=BGBCC_REGFL_ACCESSED;
@@ -3538,8 +3547,11 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 		}
 
 		k=ctx->cur_func->locals[j]->fxoffs;
-		if(k>=sctx->frm_offs_fix)
-			{ BGBCC_DBGBREAK }
+		if(!sctx->is_simpass)
+		{
+			if(k>=sctx->frm_offs_fix)
+				{ BGBCC_DBGBREAK }
+		}
 
 		i=BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, k, sreg);
 		return(i);
@@ -3547,8 +3559,11 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 	if(BGBCC_CCXL_IsRegTempP(ctx, dreg))
 	{
-		if(sctx->is_leaftiny&1)
-			{ BGBCC_DBGBREAK }
+		if(!sctx->is_simpass)
+		{
+			if(sctx->is_leaftiny&1)
+				{ BGBCC_DBGBREAK }
+		}
 	
 		j=dreg.val&CCXL_REGID_BASEMASK;
 

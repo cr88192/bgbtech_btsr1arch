@@ -4193,32 +4193,38 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 			break;
 
 		case BGBCC_SH_NMID_FADDA:
+#if 0
 			if(ctx->has_fpvsf&2)
 			{
 				opw1=0xF080|ex|(rt&15);
 				opw2=0x4C00|((rn&15)<<4)|((rs&15)<<0);
 				break;
 			}
+#endif
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x5800|((rn&15)<<4)|((rs&15)<<0);
 			break;
 		case BGBCC_SH_NMID_FSUBA:
+#if 0
 			if(ctx->has_fpvsf&2)
 			{
 				opw1=0xF080|ex|(rt&15);
 				opw2=0x4D00|((rn&15)<<4)|((rs&15)<<0);
 				break;
 			}
+#endif
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x5900|((rn&15)<<4)|((rs&15)<<0);
 			break;
 		case BGBCC_SH_NMID_FMULA:
+#if 0
 			if(ctx->has_fpvsf&2)
 			{
 				opw1=0xF080|ex|(rt&15);
 				opw2=0x4E00|((rn&15)<<4)|((rs&15)<<0);
 				break;
 			}
+#endif
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x5A00|((rn&15)<<4)|((rs&15)<<0);
 			break;

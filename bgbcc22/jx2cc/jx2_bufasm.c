@@ -906,8 +906,10 @@ int BGBCC_JX2A_ParseOperand(
 			opv->ty=BGBCC_SH_OPVTY_NAME;
 			if(strlen(tk0+1)<8)
 			{
+				opv->disp=0;
 				opv->name=(char *)(&opv->disp);
-				strncpy(opv->name, tk0+1, 7);
+//				strncpy(opv->name, tk0+1, 7);
+				strncpy(opv->name, tk0+1, 8);
 			}else
 			{
 				opv->name=bgbcc_strdup(tk0+1);

@@ -235,6 +235,8 @@ byte tbc_pred0;
 byte tbc_pred1;
 byte tbc_rov;
 
+short bdev;
+
 #if 0
 /* Temp FAT Buffer Cache */
 
@@ -278,6 +280,8 @@ u32	magic8;
 int walk_luhint[65536];		//lookup, once per 128 clusters
 int walk_lumax;
 
+TKFAT_FAT_DirEntExt *dee_cache;
+
 u32	magic9;
 
 };
@@ -291,6 +295,7 @@ int clid;				//cluster ID of parent directory
 int mclid;				//cluster ID of parent directory
 int idx;				//index within directory
 int midx;				//index within metadata
+int sidx;
 
 u32 de_clid;			//dirent cluster (cache)
 u32 de_size;
@@ -304,8 +309,8 @@ bool is_write;
 bool is_dirty;
 
 
-byte de_name[512];		//name (UTF-8, LFN)
-byte de_aname[512];		//alt name (UTF-8, LFN)
+byte de_name[384];		//name (UTF-8, LFN)
+byte de_aname[384];		//alt name (UTF-8, LFN)
 };
 
 struct TKFAT_FAT_DirInfo_s {

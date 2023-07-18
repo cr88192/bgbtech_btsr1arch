@@ -1238,7 +1238,9 @@ begin
 `ifdef jx2_enable_aluptr
 			if(idUIxt[5:4]==2'b11)
 			begin
-//				tResult2W=tResult_Add48;
+`ifdef jx2_cpu_addp
+				tResult2W=tResult_Add48;
+`endif
 			end
 `endif
 		end

@@ -41,7 +41,9 @@
 `include "ringbus/RbiMemVramA.v"
 `endif
 
-module ModTxtNtW(clock, reset, pwmOut,
+module ModTxtNtW(clock, reset,
+	clock_100,
+	pwmOut,
 	busInData, busOutData, busAddr, busOpm, busOK,
 	timerNoise, timer256Hz,
 	dbgLeds,
@@ -57,6 +59,7 @@ module ModTxtNtW(clock, reset, pwmOut,
 
 input clock;
 input reset;
+input clock_100;
 
 output[16:0] 	pwmOut;
 input[31:0]		busAddr;
@@ -116,7 +119,7 @@ reg			tBlinkFast;
 
 // ModNtsc ntsc(
 ModVga fbvga(
-	clock,		reset,
+	clock,		reset,		clock_100,
 	pixCy,		pixCu,		pixCv,
 	ctrlRegVal,	pixAux,
 	pwmOut,

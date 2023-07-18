@@ -3020,6 +3020,12 @@ ccxl_status BGBCC_CCXL_TypeDerefType(
 				BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
 				*rdty=tty;
 				return(CCXL_STATUS_YES);
+
+			case CCXL_TY_PN4_Q1P1:
+				tty.val=(sty.val&(~CCXL_TY_PTRMASK))|CCXL_TY_PTRIDX1;
+				BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
+				*rdty=tty;
+				return(CCXL_STATUS_YES);
 			}
 		}
 		

@@ -73,6 +73,7 @@ SRCS_CLIB = \
 	tk_core/tk_bdev_spi.c \
 	tk_core/tk_bdev_vfb.c \
 	tk_core/tk_bdev_ram.c \
+	tk_core/tk_blkdev.c \
 	tk_core/tk_clib.c \
 	tk_core/tk_conprn.c \
 	tk_core/tk_devfs.c \

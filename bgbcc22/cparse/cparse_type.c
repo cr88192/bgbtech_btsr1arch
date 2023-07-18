@@ -1594,8 +1594,14 @@ BCCX_Node *BGBCP_DefClassC(BGBCP_ParseState *ctx, char **str)
 
 		if(!bgbcp_strcmp1(b, "{"))
 		{
+			i=ctx->in_struct_body;
+			ctx->in_struct_body++;
+
 			s=BGBCP_Token2(s, b, &ty, ctx->lang); //'{'
 			n1=BGBCP_Block(ctx, &s);
+			
+			ctx->in_struct_body=i;
+			
 			BCCX_AddV(n, BCCX_NewCst1(&bgbcc_rcst_body, "body", n1));
 
 //			ctx->structs=BCCX_AddEnd(ctx->structs, n);
@@ -2137,6 +2143,14 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 		{
 			fl&=~BGBCC_TYFL_AUTO;
 			bty="auto";
+		}
+	}
+	
+	if(ctx->in_func_body && !ctx->in_struct_body)
+	{
+		if(!(fl&BGBCC_TYFL_EXTERN) && !(fl&BGBCC_TYFL_STATIC))
+		{
+			fl|=BGBCC_TYFL_LOCAL;
 		}
 	}
 

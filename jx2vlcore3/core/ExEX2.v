@@ -55,6 +55,8 @@ module ExEX2(
 	regValRt,		//Source B Value
 	regValRm,		//Source C Value / Dest
 
+	regValLea,		//LEA Output
+
 //	regValFRs,		//Source A Value (FPR)
 //	regValFRt,		//Source B Value (FPR)
 	regValCRm,		//Source C Value (CR)
@@ -111,6 +113,8 @@ output[1:0]		exHold;
 input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
+
+input[63:0]		regValLea;		//LEA Value
 
 // input[63:0]		regValFRs;		//Source A Value (FPR)
 // input[63:0]		regValFRt;		//Source B Value (FPR)
@@ -322,7 +326,12 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
+`ifdef jx2_cpu_lea_ex2
+			tValOutDfl		= regValLea;
+			tDoOutDfl		= 1;
+`endif
 		end
+
 		JX2_UCMD_MOV_RM: begin
 //			tRegHeld	= 1;
 		end
@@ -334,6 +343,9 @@ begin
 //			tRegHeld	= 1;
 		end
 		JX2_UCMD_FMOV_MR: begin
+			tRegHeld	= 1;
+		end
+		JX2_UCMD_PMOV_MR: begin
 			tRegHeld	= 1;
 		end
 

@@ -794,6 +794,8 @@ byte tk_con_clr16to64[16]={
 	0x00, 0x20, 0x08, 0x28, 0x02, 0x22, 0x0A, 0x2A,
 	0x00, 0x30, 0x0C, 0x3C, 0x03, 0x33, 0x0F, 0x3F };
 
+u16 tk_con_clr64to555[64];
+
 u64 tk_con_hexdig[16] = {
 	0x0000020505050200ULL, /* 0 */
 	0x0000060202020700ULL, /* 1 */
@@ -820,6 +822,10 @@ u64 tk_gfxcon_hexblock[256];
 #define TK_CONWIDTH		80
 #define TK_CONHEIGHT	25
 #define TK_CONHEIGHTN1	24
+
+u32 *TKGDI_BlitUpdate_GetConbuf();
+
+u32 *tk_con_conbuf2;
 
 void *TK_ConGetCtxV(void)
 {
@@ -852,6 +858,7 @@ void tk_con_uploadglyph(int idx, u64 tv)
 void tk_con_init()
 {
 	u64 tv;
+	int cr, cg, cb;
 	int i, j, k;
 
 	if(tk_iskernel())
@@ -894,43 +901,83 @@ void tk_con_init()
 //		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0001;		//
 		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0081;		//
 
-		tk_con_clear();
-	}
+		tk_con_conbuf2=TKGDI_BlitUpdate_GetConbuf();
+		tk_con_conbuf2=TKGDI_BlitUpdate_GetConbuf();
+		tk_con_conbuf2=TKGDI_BlitUpdate_GetConbuf();
+		tk_con_conbuf2=TKGDI_BlitUpdate_GetConbuf();
 
+		tk_con_clear();
 #if 1
-	for(i=0; i<256; i++)
-	{
-		tv=tk_con_hexdig[i&15] | (tk_con_hexdig[(i>>4)&15]<<4);
-		tk_gfxcon_hexblock[i]=tv;
-	}
+		for(i=0; i<256; i++)
+		{
+			tv=tk_con_hexdig[i&15] | (tk_con_hexdig[(i>>4)&15]<<4);
+			tk_gfxcon_hexblock[i]=tv;
+		}
 #endif
 
-	for(i=0; i<512; i++)
-	{
-		if((i>=0x0000) && (i<0x0080))
+		for(i=0; i<512; i++)
 		{
-			tv=tk_gfxcon_glyphs[i-0x0000];
-		}else if((i>=0x0080) && (i<0x0100))
-		{
-			tv=tk_gfxcon_glyphs_lat1ext[i-0x0080];
-		}else if((i>=0x0100) && (i<0x0180))
-		{
-			tv=tk_gfxcon_glyphs_gfx0[i-0x0100];
-		}else if((i>=0x0180) && (i<0x0200))
-		{
-			tv=tk_gfxcon_glyphs_437ext[i-0x0180];
-		}else
-		{
-			tv=0;
+			if((i>=0x0000) && (i<0x0080))
+			{
+				tv=tk_gfxcon_glyphs[i-0x0000];
+			}else if((i>=0x0080) && (i<0x0100))
+			{
+				tv=tk_gfxcon_glyphs_lat1ext[i-0x0080];
+			}else if((i>=0x0100) && (i<0x0180))
+			{
+				tv=tk_gfxcon_glyphs_gfx0[i-0x0100];
+			}else if((i>=0x0180) && (i<0x0200))
+			{
+				tv=tk_gfxcon_glyphs_437ext[i-0x0180];
+			}else
+			{
+				tv=0;
+			}
+			
+			tk_con_uploadglyph(i, tv);
 		}
 		
-		tk_con_uploadglyph(i, tv);
+		for(i=0; i<64; i++)
+		{
+			cr=i&0x30; cg=i&0x0C; cb=i&0x03;
+			k=(cr<<9)|(cr<<7)|(cg<<6)|(cg<<4)|(cb<<3)|(cb<<1);
+			tk_con_clr64to555[i]=k;
+		}
 	}
 }
 
 void tk_con_disable()
 {
 	tk_con->ena=0;
+}
+
+void tk_con_bufferpokeall()
+{
+	volatile u32 *buf;
+	u64 q0, q1, tv;
+	int i0, i1;
+	int i, j, k;
+
+	if(!tk_con_conbuf2)
+		return;
+	
+	tv=(u64)tk_con_conbuf2;
+	if(((tv>>44)&15)==15)
+		return;
+
+	buf=(volatile u32 *)tk_con_conbuf2;
+
+	for(i=0; i<25; i++)
+	{
+		i0=(i*TK_CONWIDTH)*8;
+		i0+=16384;
+		for(j=0; j<TK_CONWIDTH; j++)
+		{
+			q0=*(u64 *)(buf+i0+0);
+			q1=*(u64 *)(buf+i0+2);
+			i0+=8;
+		}
+	}
 }
 
 void tk_con_clear()
@@ -944,6 +991,9 @@ void tk_con_clear()
 	i1=tk_con->text_attr;
 
 	buf=(volatile u32 *)(tk_con->buf_addr);
+
+	if(tk_con_conbuf2)
+		buf=(volatile u32 *)tk_con_conbuf2;
 
 	q1=0;
 	q0=(2ULL<<30)|(tk_con->bgclr_555<<15)|tk_con->fgclr_555;
@@ -978,6 +1028,8 @@ void tk_con_clear()
 		tk_gfxcon_hexblock[i]=tv;
 	}
 #endif
+
+	tk_con_bufferpokeall();
 }
 
 void TK_Con_UpdateHwCursor()
@@ -1053,6 +1105,9 @@ void tk_con_scroll_up()
 
 //	buf=tk_con->buf;
 	buf=(volatile u32 *)(tk_con->buf_addr);
+
+	if(tk_con_conbuf2)
+		buf=(volatile u32 *)tk_con_conbuf2;
 
 #if 1
 	for(i=0; i<TK_CONHEIGHTN1; i++)
@@ -1153,6 +1208,8 @@ void tk_con_scroll_up()
 		tk_con->buf[((24*TK_CONWIDTH)+j)*8]=0;
 	}
 #endif
+
+	tk_con_bufferpokeall();
 }
 
 void tk_con_scroll_down()
@@ -1165,6 +1222,9 @@ void tk_con_scroll_down()
 
 //	buf=tk_con->buf;
 	buf=(volatile u32 *)(tk_con->buf_addr);
+
+	if(tk_con_conbuf2)
+		buf=(volatile u32 *)tk_con_conbuf2;
 
 #if 1
 	for(i=TK_CONHEIGHTN1; i>0; i--)
@@ -1197,6 +1257,8 @@ void tk_con_scroll_down()
 		i0+=8;
 	}
 #endif
+
+	tk_con_bufferpokeall();
 }
 
 void tk_con_newline()

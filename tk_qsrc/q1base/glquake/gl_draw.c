@@ -733,9 +733,15 @@ Only used for the player color selection menu
 void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
 {
 	int				v, u, c;
-	unsigned		trans[64*64], *dest;
+//	static
+//	unsigned		trans[64*64];
+	static unsigned *trans=NULL;
+	unsigned		*dest;
 	byte			*src;
 	int				p;
+
+	if(!trans)
+		trans=malloc(64*64*sizeof(unsigned));
 
 	GL_Bind (translate_texture);
 

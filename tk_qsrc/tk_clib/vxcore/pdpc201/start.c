@@ -89,6 +89,8 @@ int __start_early();
 int __start_late();
 int __start_first();
 
+short *__tolow;
+short *__toup;
 
 __PDPCLIB_API__ int CTYP __start()
 {
@@ -117,6 +119,9 @@ __PDPCLIB_API__ int CTYP __start()
 //	}
 
 //	tk_puts("A1\n");
+
+	__tolow=NULL;
+	__toup=NULL;
 
 	__init_stdin();
 	__cytpe_init();

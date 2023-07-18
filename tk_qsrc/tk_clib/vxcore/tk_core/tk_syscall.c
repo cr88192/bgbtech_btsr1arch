@@ -153,7 +153,7 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 			case 0x01:
 				p=tk_con_getctx();
 				*((void **)vParm1)=p;
-				tk_printf("SYSC: ConGetCtx vParm=%p, p=%p\n", vParm1, p);
+				tk_dbg_printf("SYSC: ConGetCtx vParm=%p, p=%p\n", vParm1, p);
 				ret=TK_URES_TRUE;
 				break;
 			case 0x02:
@@ -172,7 +172,7 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				p=TKMM_PageAllocUsc(sz);
 				*((void **)vParm1)=p;
 				TK_TaskAddPageAlloc(task, p, sz);
-//				tk_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
+//				tk_dbg_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
 				ret=TK_URES_TRUE;
 				break;
 			case 0x05:

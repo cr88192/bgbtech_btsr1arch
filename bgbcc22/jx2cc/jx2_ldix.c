@@ -174,6 +174,9 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	case CCXL_TY_VAROBJECT:
 		sctx->is_leaftiny|=8;
 
+		if(ctx->arch_sizeof_ptr==16)
+			{ sz=16; nm1=BGBCC_SH_NMID_MOVX2; nm2=-1; break; }
+
 		if(sctx->is_addr64)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }
 		sz=8; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break;

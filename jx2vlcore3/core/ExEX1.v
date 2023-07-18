@@ -98,6 +98,7 @@ module ExEX1(
 	regValRm,		//Source C Value
 
 	regValXs,		//Source A, 128-bit
+	regOutLea,		//LEA Output
 	regOutXLea,		//XLEA Output
 
 //	regValFRs,		//Source A Value (FPR)
@@ -165,6 +166,7 @@ input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
 
 input[63:0]		regValXs;		//Source C Value
+output[63:0]	regOutLea;
 output[63:0]	regOutXLea;
 
 // input[63:0]		regValFRs;		//Source A Value (FPR)
@@ -325,9 +327,11 @@ ExAGUC	exAgu(
 	regValRs[63:0],		regValRt[63:0],
 	regValImm[15:0],	regValXs[47:0],
 	opUCmd,				opUIxt,
-	tValAgu,			{tAguFlagSv, tAguFlagJq},
+	tValAgu,			{ 1'b0, tXmovAdd, tAguFlagSv, tAguFlagJq},
 	tRegBoundX,			tValAguOob,
 	regOutXLea,			tAguXLeaTag);
+
+assign	regOutLea = { tAguXLeaTag, tValAgu };
 `else
 wire[47:0]	tValAgu;
 wire		tValAguOob;
@@ -538,13 +542,42 @@ begin
 		tMemAddr[95:48] = regValXs[47:0];
 	end
 
-`ifdef jx2_enable_vaddr96qadd	
+`ifdef jx2_enable_vaddr96qadd
 //	else if(tXmovAdd)
 	else if(tXmovAdd && regValRs[63:60]==4'b1111)
 	begin
 //		tMemAddr[63:48] = tMemAddr[63:48] + regValRs[63:48];
 		tMemAddr[   47] = 0;
 		tMemAddr[63:48] = regValGbrHi[15:0] + { 3'h0, regValRs[59:47] };
+	end
+`endif
+
+`ifdef jx2_enable_vaddr96q64
+	else if(tXmovAdd)
+	begin
+//		tMemAddr[63:48] = regValRs[59:44];
+//		tMemAddr[47:44] = regValRs[63:60];
+
+//		tMemAddr[46:44] = regValRs[   63] ? regValRs[62:60] : regValRs[46:44];
+//		tMemAddr[   47] = regValRs[   63];
+//		tMemAddr[50:48] = regValRs[   63] ? regValRs[46:44] : regValRs[62:60];
+//		tMemAddr[63:51] = regValRs[59:47];
+
+`ifndef def_true
+//		tMemAddr[46:44] = tAguXLeaTag[15] ?
+//			tAguXLeaTag[14:12] :     tValAgu[46:44];
+//		tMemAddr[   47] = tAguXLeaTag[15];
+//		tMemAddr[50:48] = tAguXLeaTag[15] ?
+//			    tValAgu[46:44] : tAguXLeaTag[14:12];
+//		tMemAddr[   51] = tValAgu    [47];
+//		tMemAddr[63:52] = tAguXLeaTag[11:0];
+`endif
+
+`ifdef def_true
+		tMemAddr[47:44] = tValAgu[47:44];
+		tMemAddr[63:48] = tAguXLeaTag[15:0];
+`endif
+	
 	end
 `endif
 
@@ -791,8 +824,14 @@ begin
 //			tRegIdRn1	= regIdRm;
 //			tRegValRn1	= { UV16_00, tValAgu };
 //			tValOutDfl		= { UV16_00, tValAgu };
+
+`ifdef jx2_cpu_lea_ex2
+			tRegHeld		= 1;
+`else
 			tValOutDfl		= { tAguXLeaTag, tValAgu };
 			tDoOutDfl		= 1;
+`endif
+
 		end
 		JX2_UCMD_MOV_RM: begin
 			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
@@ -847,6 +886,22 @@ begin
 
 `ifdef jx2_debug_ldst
 			$display("FLOAD(1): A=%X R=%X",
+				tMemAddr, regIdRm);
+`endif
+		end
+`endif
+
+`ifdef jx2_enable_pmov
+		JX2_UCMD_PMOV_MR: begin
+			/* Always fetch 64 bits.
+			 * EX3 will ignore what it doesn't need.
+			 */
+			tDoMemOpm = { 2'b01, 3'b011 };
+			tDoMemOp	= 1;
+			tRegHeld		= 1;
+
+`ifdef jx2_debug_ldst
+			$display("PLOAD(1): A=%X R=%X",
 				tMemAddr, regIdRm);
 `endif
 		end

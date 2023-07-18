@@ -3873,11 +3873,26 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 
 	sctx=ctx->uctx;
 	
-	if(obj->regflags&BGBCC_REGFL_CULL)
-		return(0);
-
 	if(!obj->qname)
 		obj->qname=obj->name;
+
+	if(obj->regflags&BGBCC_REGFL_CULL)
+	{
+		if(sctx->cgen_log)
+		{
+			fprintf(sctx->cgen_log, "BGBCC_JX2C_BuildGlobal: Culled %s\n",
+				obj->qname);
+			fflush(sctx->cgen_log);
+		}
+
+		s0=obj->qname;
+		if((s0[0]=='_') && (s0[1]=='_'))
+		{
+			k=-1;
+		}
+
+		return(0);
+	}
 
 //	if(	(obj->flagsint&BGBCC_TYFL_THREAD)	||
 //		(obj->flagsint&BGBCC_TYFL_DYNAMIC)	)
@@ -3901,11 +3916,27 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 				BGBCC_JX2C_CheckRWadInit(ctx);
 			}
 		}
+		
+		if(!strcmp(s0, "__tolow"))
+		{
+			if(!(sctx->is_simpass))
+			{
+				k=-1;
+			}
+		}
 
 //		lbl=BGBCC_JX2_LookupNamedLabel(ctx, name);
 //		l0=BGBCC_JX2_GenLabel(sctx);
 		l0=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
 		obj->fxoffs=l0;
+	}
+
+	if(l0<=0)
+	{
+		if(!(sctx->is_simpass))
+		{
+			k=-1;
+		}
 	}
 	
 	if((l0>=BGBCC_SH_LBL_ARCHSTRT) && (l0<BGBCC_SH_LBL_ARCHEND))
@@ -3939,6 +3970,13 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 		{
 			return(0);
 		}
+	}
+
+	if(sctx->cgen_log)
+	{
+		fprintf(sctx->cgen_log, "BGBCC_JX2C_BuildGlobal: %s\n",
+			obj->qname);
+		fflush(sctx->cgen_log);
 	}
 
 	hasval=1;
@@ -4923,7 +4961,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if(s0)
 			{
 				printf("BGBCC_JX2C_ApplyImageRelocs: "
-					"Missing Label N=%s\n", s0);
+					"Missing Label N='%s'\n", s0);
 			}else
 			{
 				printf("BGBCC_JX2C_ApplyImageRelocs: "
@@ -6259,7 +6297,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj, *obj1, *obj2;
 	BGBCC_CCXL_LiteralInfo *litobj;
 	double f, g;
-	int *shufarr;
+	int *shufarr, *shufarr_rev;
 	int t0, t1, t2, t3;
 	int l0;
 	int shufgbl, sz, al, sz1, al1, sz2, al2, tsz, nswap;
@@ -6615,8 +6653,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	shufgbl=ctx->n_reg_globals;
 	shufarr=malloc(shufgbl*sizeof(int));
+	shufarr_rev=malloc(shufgbl*sizeof(int));
 	for(i=0; i<shufgbl; i++)
+	{
 		shufarr[i]=i;
+		shufarr_rev[i]=-1;
+	}
 
 	if(sctx->do_shuffle)
 	{
@@ -6665,6 +6707,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 	}else
 	{
+#if 1
 		/* Sort globals by use-count. */
 		for(i=1; i<shufgbl; i++)
 		{
@@ -6680,8 +6723,10 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				}
 			}
 		}
+#endif
 	}
 
+#if 1
 	/* Shuffle global variables for space compacting. */
 	for(i=0; i<512; i++)
 	{
@@ -6737,7 +6782,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 					shufarr[j+1]=k;
 					nswap++;
 					
-					j--;
+					if(j>1)
+						j--;
 					continue;
 				}
 			}
@@ -6745,6 +6791,20 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		
 		if(!nswap)
 			break;
+	}
+#endif
+
+	for(i=0; i<shufgbl; i++)
+	{
+		j=shufarr[i];
+		shufarr_rev[j]=i;
+	}
+
+	for(i=0; i<shufgbl; i++)
+	{
+		j=shufarr_rev[i];
+		if(j<0)
+			{ BGBCC_DBGBREAK }
 	}
 
 	for(i=0; i<ctx->n_reg_globals; i++)

@@ -1416,6 +1416,7 @@ assign		scrnNodeId	= 8'h8A;
 ModTxtNtW	scrn(
 //	clock_100,		reset2_100,
 	clock_mmio,		reset2_mmio,
+	clock_100,
 	scrnPwmOut,
 
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,

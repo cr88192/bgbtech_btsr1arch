@@ -336,8 +336,9 @@ void R_DrawSolidClippedSubmodelPolygons (model_t *pmodel)
 	msurface_t	*psurf;
 	int			numsurfaces;
 	mplane_t	*pplane;
-	mvertex_t	bverts[MAX_BMODEL_VERTS];
-	bedge_t		bedges[MAX_BMODEL_EDGES], *pbedge;
+	static	mvertex_t	bverts[MAX_BMODEL_VERTS];
+	static	bedge_t		bedges[MAX_BMODEL_EDGES];
+	bedge_t		*pbedge;
 	medge_t		*pedge, *pedges;
 
 // FIXME: use bounding-box-based frustum clipping info?
@@ -684,7 +685,7 @@ void R_RenderWorld (void)
 {
 	int			i;
 	model_t		*clmodel;
-	btofpoly_t	btofpolys[MAX_BTOFPOLYS];
+	static	btofpoly_t	btofpolys[MAX_BTOFPOLYS];
 
 	pbtofpolys = btofpolys;
 

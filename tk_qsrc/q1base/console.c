@@ -153,12 +153,17 @@ If the line width has changed, reformat the buffer.
 void Con_CheckResize (void)
 {
 	int		i, j, width, oldwidth, oldtotallines, numlines, numchars;
-	char	tbuf[CON_TEXTSIZE];
+//	static	
+//	char	tbuf[CON_TEXTSIZE];
+	static char *tbuf=NULL;
 
 	width = (vid.width >> 3) - 2;
 
 	if (width == con_linewidth)
 		return;
+
+	if(!tbuf)
+		tbuf=malloc(CON_TEXTSIZE);
 
 	if (width < 1)			// video hasn't been initialized yet
 	{

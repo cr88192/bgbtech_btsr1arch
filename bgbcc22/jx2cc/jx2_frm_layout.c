@@ -183,6 +183,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			obj->locals[i]->regflags&=~BGBCC_REGFL_CULL;
 		obj->locals[i]->fxoffs=-1;
 
+		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
+			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
+
 //		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
 //			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
 //		else

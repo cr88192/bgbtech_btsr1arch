@@ -3251,10 +3251,10 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 	char buf[256];
 	int asz[16];
 	int nasz, nqlvl, isvla;
-	char *s, *t, *t1;
+	char *s, *t, *t1, *tyn;
 	BCCX_Node *c, *n, *n0;
 	s64 li;
-	int ind, vsz;
+	int ind, vsz, vsc, atsz;
 	int i, j, k, na, ci;
 
 	if(!ty)return(NULL);
@@ -3351,7 +3351,26 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 		ind=BCCX_GetIntCst(ty, &bgbcc_rcst_ind, "ind");
 
 		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
-		
+		tyn=BCCX_GetCst(ty, &bgbcc_rcst_name, "name");
+
+		vsc=64;
+		if(tyn)
+		{
+			if(!strcmp(tyn, "char"))	vsc=1;
+			if(!strcmp(tyn, "short"))	vsc=2;
+			if(!strcmp(tyn, "int"))		vsc=4;
+			if(!strcmp(tyn, "long"))	vsc=8;
+			if(!strcmp(tyn, "llong"))	vsc=8;
+			if(!strcmp(tyn, "int128"))	vsc=16;
+
+			if(!strcmp(tyn, "float"))	vsc=4;
+			if(!strcmp(tyn, "double"))	vsc=8;
+
+			i=BCCX_GetIntCst(ty, &bgbcc_rcst_ind, "ind");
+			if(i)
+				vsc=8;
+		}
+
 		if(ind!=0)
 		{
 			if(li&BGBCC_TYFL_HUGE)
@@ -3410,6 +3429,7 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 //			c=BCCX_Next(c);
 		}
 
+		atsz=1;
 //		c=BCCX_FetchCst(ty, &bgbcc_rcst_size, "size");
 		n0=BCCX_FindTagCst(ty, &bgbcc_rcst_size, "size");
 //		if(c)
@@ -3461,8 +3481,22 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 				}
 				
 				asz[nasz++]=i;
+				
+				if(i>0)
+					atsz*=i;
 
 //				c=BCCX_Next(c);
+			}
+		}
+		
+		if((atsz*vsc)>8192)
+		{
+			if(li&BGBCC_TYFL_LOCAL)
+			{
+				BGBCC_CCXL_Warn(ctx, "Large Local Array, szest=%d\n",
+					atsz*vsc);
+				if((nasz==1) && (vsc<32))
+					isvla=1;
 			}
 		}
 
@@ -3544,9 +3578,11 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 	char buf[256];
 	int asz[16];
 	int nasz, nqlvl, isvla;
-	char *s, *t, *t1;
+	char *s, *t, *t1, *tyn;
 	BCCX_Node *c, *n, *n0;
-	int i, j, vsz, na, ci;
+	s64 li;
+
+	int i, j, vsz, na, ci, atsz, vsc;
 
 	if(!ty)return(NULL);
 
@@ -3626,6 +3662,28 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 		}
 #endif
 
+		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+		tyn=BCCX_GetCst(ty, &bgbcc_rcst_name, "name");
+		
+		vsc=64;
+		if(tyn)
+		{
+			if(!strcmp(tyn, "char"))	vsc=1;
+			if(!strcmp(tyn, "short"))	vsc=2;
+			if(!strcmp(tyn, "int"))		vsc=4;
+			if(!strcmp(tyn, "long"))	vsc=8;
+			if(!strcmp(tyn, "llong"))	vsc=8;
+			if(!strcmp(tyn, "int128"))	vsc=16;
+
+			if(!strcmp(tyn, "float"))	vsc=4;
+			if(!strcmp(tyn, "double"))	vsc=8;
+
+
+			i=BCCX_GetIntCst(ty, &bgbcc_rcst_ind, "ind");
+			if(i)
+				vsc=8;
+		}
+
 #if 1
 		nasz=0;		nqlvl=0;
 		isvla=0;
@@ -3660,6 +3718,7 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 //			c=BCCX_Next(c);
 		}
 
+		atsz=1;
 //		c=BCCX_FetchCst(ty, &bgbcc_rcst_size, "size");
 		n0=BCCX_FindTagCst(ty, &bgbcc_rcst_size, "size");
 //		if(c)
@@ -3710,6 +3769,8 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 				}
 				
 				asz[nasz++]=i;
+				if(i>0)
+					atsz*=i;
 
 //				c=BCCX_Next(c);
 			}
@@ -3717,6 +3778,18 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 
 		for(i=0; i<nqlvl; i++)
 			*t++='Q';
+
+		if((atsz*vsc)>8192)
+		{
+			if(li&BGBCC_TYFL_LOCAL)
+			{
+				BGBCC_CCXL_Warn(ctx, "Large Local Array, szest=%d\n",
+					atsz*vsc);
+				if((nasz==1) && (vsc<32))
+					isvla=1;
+			}
+		}
+		
 
 		if(isvla)
 		{
@@ -3737,10 +3810,10 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 		}
 #endif
 
-		i=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
 		s=BCCX_GetCst(ty, &bgbcc_rcst_name, "name");
 
-		if(i&BGBCC_TYFL_WIDE)
+		if(li&BGBCC_TYFL_WIDE)
 		{
 			i=BCCX_GetIntCst(ty, &bgbcc_rcst_ind, "ind");
 			while(i--)*t++='W';
@@ -3750,17 +3823,17 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 			while(i--)*t++='P';
 		}
 
-		i=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
+		li=BCCX_GetIntCst(ty, &bgbcc_rcst_flags, "flags");
 
 		n=BCCX_FetchCst(ty, &bgbcc_rcst_expr, "expr");
 		if(n)
 		{
-			t=BGBCC_CCXL_VarTypeString_FlattenExpr(ctx, t, n, i);
+			t=BGBCC_CCXL_VarTypeString_FlattenExpr(ctx, t, n, li);
 		}else
 		{
 			if(s)
 			{
-				t=BGBCC_CCXL_VarTypeString_FlattenName(ctx, t, s, i, vsz);
+				t=BGBCC_CCXL_VarTypeString_FlattenName(ctx, t, s, li, vsz);
 			}else
 			{
 				*t++='v';

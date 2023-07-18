@@ -287,6 +287,9 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
+`ifdef jx2_cpu_lea_ex2
+			tRegHeld		= 1;
+`else
 //			tSlotUSup		= 0;
 			tSlotUSup		= 1;
 
@@ -303,6 +306,7 @@ begin
 				tRegValRn1	= regValXLea;
 				tSlotUSup	= 0;
 			end
+`endif
 		end
 
 		JX2_UCMD_MOV_RM: begin

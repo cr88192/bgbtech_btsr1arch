@@ -68,7 +68,7 @@ int tk_mount_sysc()
 {
 	TK_MOUNT *mnt;
 
-	tk_puts("tk_mount_sysc\n");
+	tk_dbg_printf("tk_mount_sysc\n");
 
 	mnt=tk_alloc_mount();
 	mnt->vt=&tk_vfile_sysc_vt;
@@ -101,7 +101,7 @@ TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 //	TK_Env_GetCwdQualifyName(tfname, 512, name);
 	strcpy(tfname, name);
 	
-	tk_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
+	tk_dbg_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
 	
 	p=NULL;
 //	ar[0].p=name;
@@ -130,7 +130,7 @@ TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 //	TK_Env_GetCwdQualifyName(tfname, 512, name);
 	strcpy(tfname, name);
 
-	tk_printf("tk_sysc_opendir: %s -> %s\n", name, tfname);
+	tk_dbg_printf("tk_sysc_opendir: %s -> %s\n", name, tfname);
 	
 	p=NULL;
 //	ar[0].p=name;
@@ -169,7 +169,7 @@ int tk_sysc_rename(TK_MOUNT *mnt,
 	strcpy(tfoname, oldname);
 	strcpy(tfnname, newname);
 	
-//	tk_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
+//	tk_dbg_printf("tk_sysc_fopen: %s -> %s\n", name, tfname);
 	
 	p=NULL;
 //	ar[0].p=name;

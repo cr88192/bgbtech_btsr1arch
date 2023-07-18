@@ -1481,6 +1481,66 @@ int TKSH_Cmds_TestGfx(char **args)
 	return(0);
 }
 
+#include <tkgdi/tkgdi.h>
+
+int TKSH_Cmds_StartGui(char **args)
+{
+	TKGDI_BITMAPINFOHEADER t_info, t_info2;
+	_tkgdi_context_t *ctx;
+	TKGDI_BITMAPINFOHEADER *info, *info2;
+	TKGHDC hdcScrn, hdcWin;
+	TKGDI_RECT tRect;
+	int i;
+
+	info=&t_info;
+	info2=&t_info2;
+
+	tk_con_disable();
+
+	info->biWidth=800;
+	info->biHeight=600;
+	info->biBitCount=16;
+
+	ctx=TKGDI_GetHalContext(TK_FCC_GDI, TK_FCC_GDI);
+	hdcScrn=ctx->vt->CreateDisplay(ctx, 0, TKGDI_FCC_crea, info);
+
+	info2->biWidth=640;
+	info2->biHeight=200;
+	info2->biBitCount=16;
+
+	hdcWin=ctx->vt->CreateDisplay(ctx, hdcScrn, TKGDI_FCC_crea, info2);
+
+	tRect.left=80;
+	tRect.top=100;
+	tRect.right=80+640;
+	tRect.bottom=100+200;
+	ctx->vt->ModifyDisplay(ctx, hdcWin, TKGDI_FCC_move, &tRect, NULL);
+
+	while(1)
+	{
+		TKGDI_UpdateWindowStack();
+
+		if(!tk_kbhit())
+			continue;
+
+		i=tk_getch();
+		if(i<=0)
+			continue;
+
+		if(i>=0x7F)
+			continue;
+
+		if(i==TK_K_ESC)
+			break;
+	}
+
+	info->biWidth=640;
+	info->biHeight=200;
+	hdcScrn=ctx->vt->CreateDisplay(ctx, 0, TKGDI_FCC_crea, info);
+	
+	tk_con_reset();
+}
+
 int TKSH_InitCmds(void)
 {
 	TKSH_CommandInfo *cmdi;
@@ -1523,6 +1583,8 @@ int TKSH_InitCmds(void)
 	TKSH_RegisterCommand("set",		TKSH_Cmds_Set);
 
 	TKSH_RegisterCommand("testgfx",	TKSH_Cmds_TestGfx);
+
+	TKSH_RegisterCommand("startgui",	TKSH_Cmds_StartGui);
 
 	return(1);
 }
@@ -1661,7 +1723,7 @@ int TKSH_ExecCmd(char *cmd)
 	if(ri>0)
 	{
 		if(ri&65535)
-			{ tk_printf("Return Status=%d\n", (ri&65535)); }
+			{ tk_dbg_printf("Return Status=%d\n", (ri&65535)); }
 		return(ri);
 	}
 	
@@ -1701,11 +1763,20 @@ int TKSH_ExecCmd(char *cmd)
 	return(1);
 }
 
-int TKSH_ExecCmdBuf(char *cmd)
+int TKSH_ExecCmdBuf(char *cmd, char *ext)
 {
 	byte tb[256];
 	char *cs, *ct;
 	int i;
+	
+	if(ext)
+	{
+		if(!strcmp(ext, "bas"))
+		{
+			TKSH_BasRunBasicBuffer(cmd, strlen(cmd));
+			return(0);
+		}
+	}
 	
 	cs=cmd;
 	while(*cs)
@@ -1726,6 +1797,7 @@ int TKSH_ExecCmdBuf(char *cmd)
 		if(i=='\n')cs++;
 //		while(*cs && (*cs<=' '))cs++;
 	}
+	return(0);
 }
 
 void *tk_rovalloc(int sz, void **rov)
@@ -1795,7 +1867,7 @@ int TKSH_TryLoad(char *img, char **args0)
 	TK_FILE *fd;
 	char **a1;
 	char *cs, *ct, *cs1, *ct1;
-	char *buf;
+	char *buf, *ext;
 //	u64 bootgbr;
 	u64	pb_gbr;
 	u64	pb_boot;
@@ -1823,6 +1895,13 @@ int TKSH_TryLoad(char *img, char **args0)
 	fd=NULL;
 	sig_is_pe=0;
 	sig_is_elf=0;
+	ext=NULL;
+	
+	cs=img+strlen(img);
+	while((cs>img) && (*cs!='.'))
+		cs--;
+	if((cs>img) && (*cs=='.') && ((*(cs-1))!='/'))
+		ext=cs+1;
 
 	TK_Env_GetCwd(cwd, 256);
 	
@@ -1830,10 +1909,10 @@ int TKSH_TryLoad(char *img, char **args0)
 	if(ix>0)
 	{
 		pimg=TK_GetImageForIndex(ix);
-//		tk_printf("TKSH_TryLoad: Got Image %d %p\n", ix, pimg);
+//		tk_dbg_printf("TKSH_TryLoad: Got Image %d %p\n", ix, pimg);
 	}else
 	{
-//		tk_printf("TKSH_TryLoad: Not Yet Loaded\n");
+//		tk_dbg_printf("TKSH_TryLoad: Not Yet Loaded\n");
 	}
 
 	if(args0)
@@ -1854,7 +1933,7 @@ int TKSH_TryLoad(char *img, char **args0)
 		
 		if(!fd)
 		{
-			tk_printf("Failed to open %s\n", img);
+			tk_dbg_printf("Failed to open %s\n", img);
 			return(-1);
 		}
 
@@ -2128,10 +2207,10 @@ int TKSH_TryLoad(char *img, char **args0)
 			
 			TK_SchedAddTask(task);
 
-			tk_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
+			tk_dbg_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
 
-			tk_printf("TKPE_SetupTaskForImage: GBR=%p\n", bootgbr);
-			tk_printf("TKPE_SetupTaskForImage: Entry=%p\n", bootptr);
+			tk_dbg_printf("TKPE_SetupTaskForImage: GBR=%p\n", bootgbr);
+			tk_dbg_printf("TKPE_SetupTaskForImage: Entry=%p\n", bootptr);
 
 			sza=0;
 //			if(args)
@@ -2324,7 +2403,7 @@ int TKSH_TryLoad(char *img, char **args0)
 			tk_fclose(fd);
 			fd=NULL;
 
-			TKSH_ExecCmdBuf(buf);
+			TKSH_ExecCmdBuf(buf, ext);
 			tk_free(buf);
 			return(1);
 		}

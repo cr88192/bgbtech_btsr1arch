@@ -544,7 +544,7 @@ int TK_VMem_SetPageTableEntry2(s64 vaddr, s64 vaddrh, u64 ptval)
 //				ptpn=TKMM_AllocPages(1);
 //				ptpn=TKMM_AllocPages(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
 				ptpn=TKMM_AllocPagesZeroed(1)+(TKMM_PAGEBASE>>TKMM_PAGEBITS);
-//				tk_printf("TK_VMem_SetPageTableEntry: "
+//				tk_dbg_printf("TK_VMem_SetPageTableEntry: "
 //					"AllocPage: %d %p\n",
 //					ptpn, (void *)(ptpn<<16));
 				pde=(((u64)ptpn)<<TK_VMEM_PTESHL)|1;
@@ -1050,7 +1050,7 @@ int TK_VMem_Init()
 //		return(0);
 	}
 	
-	tk_printf("TK_VMem_Init\n");
+	tk_dbg_printf("TK_VMem_Init\n");
 
 	tk_vmem_swap_disable=0;
 
@@ -1098,7 +1098,7 @@ int TK_VMem_Init()
 	{
 		if(tblk1[i]!=tblk2[i])
 		{
-			tk_printf("TK_VMem_Init: Swap IO Check Fail\n");
+			tk_dbg_printf("TK_VMem_Init: Swap IO Check Fail\n");
 			tk_vmem_swap_disable=1;
 			break;
 		}
@@ -1121,7 +1121,7 @@ int TK_VMem_Init()
 #endif
 
 #if 0
-	tk_printf("TK_VMem_Init: A-0\n");
+	tk_dbg_printf("TK_VMem_Init: A-0\n");
 
 //	np=8192;
 	np=(32768<<10)>>TK_VMEM_PAGESHL;
@@ -1136,7 +1136,7 @@ int TK_VMem_Init()
 	memset(tk_vmem_pageinf, 0, np*sizeof(TK_VMem_PageInfo));
 #endif
 
-	tk_printf("TK_VMem_Init: A-1\n");
+	tk_dbg_printf("TK_VMem_Init: A-1\n");
 
 	pg=TKMM_AllocPagesZeroedApn(1);
 	tk_vmem_aclroot=((u64)pg)<<TK_VMEM_PAGESHL;
@@ -1207,7 +1207,7 @@ int TK_VMem_Init()
 	}
 #endif
 
-	tk_printf("TK_VMem_Init: A-2\n");
+	tk_dbg_printf("TK_VMem_Init: A-2\n");
 
 #if 0
 	/* Identity Map RAM/etc */
@@ -1259,7 +1259,7 @@ int TK_VMem_Init()
 #endif
 
 
-	tk_printf("TK_VMem_Init: A-3\n");
+	tk_dbg_printf("TK_VMem_Init: A-3\n");
 
 	tk_vmem_varov_lo=TKMM_VAS_START_LO>>TK_VMEM_PAGESHL;
 	tk_vmem_varov_hi=TKMM_VAS_START_HI>>TK_VMEM_PAGESHL;
@@ -1274,7 +1274,7 @@ int TK_VMem_Init()
 	TK_VMem_SetPageTableEntry(tva, (i<<TK_VMEM_PTESHL)|1);
 
 #if 1
-	tk_printf("TK_VMem_Init: A-4\n");
+	tk_dbg_printf("TK_VMem_Init: A-4\n");
 
 	if(!tk_vmem_swap_disable)
 	{
@@ -1284,7 +1284,7 @@ int TK_VMem_Init()
 		tk_vmem_npage=np;
 		
 		k=(np+1)*sizeof(TK_VMem_PageInfo);
-//		tk_printf("sizeof(TK_VMem_PageInfo)=%d, np=%d np*sz=%d\n",
+//		tk_dbg_printf("sizeof(TK_VMem_PageInfo)=%d, np=%d np*sz=%d\n",
 //			sizeof(TK_VMem_PageInfo), np, k);
 		
 //		__debugbreak();
@@ -1317,7 +1317,7 @@ int TK_VMem_Init()
 		&__utext_end-&__utext_start,
 		TKMM_PROT_RWX);
 
-	tk_printf("TK_VMem_Init: A-5\n");
+	tk_dbg_printf("TK_VMem_Init: A-5\n");
 
 	/* Enable MMU */
 
@@ -1350,7 +1350,7 @@ int TK_VMem_Init()
 #endif
 	
 //	__arch_ttb=tpte;
-//	tk_printf("");
+//	tk_dbg_printf("");
 //	TK_VMem_GetPageTableEntry(0);
 	
 	__arch_mmcr=tmmcr;
@@ -1358,7 +1358,7 @@ int TK_VMem_Init()
 //	__debugbreak();
 #endif
 
-	tk_printf("TK_VMem_Init: OK\n");
+	tk_dbg_printf("TK_VMem_Init: OK\n");
 
 	return(1);
 }
@@ -1380,7 +1380,7 @@ int TK_VMem_MProtectPages2(u64 addr, u64 addrh, size_t len, int prot)
 		return(0);
 	}
 
-//	tk_printf("TK_VMem_MProtectPages: %p..%p sz=%d %X\n",
+//	tk_dbg_printf("TK_VMem_MProtectPages: %p..%p sz=%d %X\n",
 //		addr, addr+len, len, prot);
 
 	b=(addr>>TK_VMEM_PAGESHL);
@@ -1395,7 +1395,7 @@ int TK_VMem_MProtectPages2(u64 addr, u64 addrh, size_t len, int prot)
 		tpte=TK_VMem_GetPageTableEntry2(tva, addrh);
 		if(!tpte)
 		{
-			tk_printf("TK_VMem_MProtectPages: No page at %p\n",
+			tk_dbg_printf("TK_VMem_MProtectPages: No page at %p\n",
 				tva);
 			__debugbreak();
 		}
@@ -1708,7 +1708,7 @@ void TK_VMem_PackCompactedPage(byte *cpi, byte *ppi)
 #if 1
 	if((j<<9)>=(1<<(TK_VMEM_PAGESHL-1)))
 	{
-		tk_printf("TK_VMem_PackCompactedPage: Pack64\n");
+		tk_dbg_printf("TK_VMem_PackCompactedPage: Pack64\n");
 		TK_VMem_PackLz64Page(cpi, ppi);
 		return;
 	}
@@ -1717,7 +1717,7 @@ void TK_VMem_PackCompactedPage(byte *cpi, byte *ppi)
 #if 0
 	if((j<<9)>=(1<<(TK_VMEM_PAGESHL-1)))
 	{
-		tk_printf("TK_VMem_PackCompactedPage: FeLz32\n");
+		tk_dbg_printf("TK_VMem_PackCompactedPage: FeLz32\n");
 		TK_VMem_PackFeLz32Page(cpi, ppi);
 		return;
 	}
@@ -1790,7 +1790,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 				{ __debugbreak(); }
 
 			/* Page is still Zero. */
-//			tk_printf("TK_VMem_WritePageToDisk: Page Is Zero\n");
+//			tk_dbg_printf("TK_VMem_WritePageToDisk: Page Is Zero\n");
 			tk_vmem_pagevnz[pidx>>3]&=~(1<<(pidx&7));
 			cpi->flags&=~1;
 			return;
@@ -1798,7 +1798,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 
 		tk_vmem_pagevnz[pidx>>3]|=1<<(pidx&7);
 
-		tk_printf("TK_VMem_WritePageToDisk: Page Nzm=%08X_%08X\n",
+		tk_dbg_printf("TK_VMem_WritePageToDisk: Page Nzm=%08X_%08X\n",
 			(u32)(nzm>>32), (u32)(nzm>>0));
 		
 //		k=0;
@@ -1820,7 +1820,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 			if((j<<9)>=(1<<(TK_VMEM_PAGESHL-1)))
 				cm=0;
 			
-			tk_printf("TK_VMem_WritePageToDisk: Page Compact, %dK\n",
+			tk_dbg_printf("TK_VMem_WritePageToDisk: Page Compact, %dK\n",
 				(j+2)>>1);
 
 			if((j<<9)>=(1<<TK_VMEM_PAGESHL))
@@ -1835,7 +1835,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 			*(u64 *)(ct+8)=nzm;
 			ct+=16;
 
-			tk_printf("TK_VMem_WritePageToDisk: Page Compact, %dK\n",
+			tk_dbg_printf("TK_VMem_WritePageToDisk: Page Compact, %dK\n",
 				(j+2)>>1);
 			
 			for(i=0; i<64; i++)
@@ -1859,7 +1859,7 @@ void TK_VMem_WritePageToDisk(int cidx)
 			TK_VMem_UnpackLz64Page(tcbuf, tdbuf);
 			if(memcmp(ppi, tdbuf, 1<<TK_VMEM_PAGESHL))
 			{
-				tk_printf("TK_VMem_WritePageToDisk: Page LZ Corrupt\n");
+				tk_dbg_printf("TK_VMem_WritePageToDisk: Page LZ Corrupt\n");
 				cm=0;
 				__debugbreak();
 			}
@@ -1872,12 +1872,12 @@ void TK_VMem_WritePageToDisk(int cidx)
 			
 			if(cm!=0)
 			{
-				tk_printf("TK_VMem_WritePageToDisk: Page LZ(%d), %dK\n",
+				tk_dbg_printf("TK_VMem_WritePageToDisk: Page LZ(%d), %dK\n",
 					tcbuf[0], (j+2)>>1);
 			}
 
 			cm=0;
-//			tk_printf("TK_VMem_WritePageToDisk: Page Is Store\n");
+//			tk_dbg_printf("TK_VMem_WritePageToDisk: Page Is Store\n");
 		}
 	}
 
@@ -1930,7 +1930,7 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 //		for(i=0; i<l; i++)
 //			ppq[i]=0;
 
-//		tk_printf("TK_VMem_LoadPageFromDisk: Page Was Zero %d\n", pidx);
+//		tk_dbg_printf("TK_VMem_LoadPageFromDisk: Page Was Zero %d\n", pidx);
 
 		memset(ppi, 0, 1<<TK_VMEM_PAGESHL);
 		cpi->pgchk=0;
@@ -1945,7 +1945,7 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 //		if(tk_vmem_pagecmz[cidx>>3]&(1<<(cidx&7)))
 		if((tk_vmem_pagecmz[pidx>>3]>>(pidx&7))&1)
 		{
-			tk_printf("TK_VMem_LoadPageFromDisk: Page Was Compressed %d\n", 
+			tk_dbg_printf("TK_VMem_LoadPageFromDisk: Page Was Compressed %d\n", 
 				pidx);
 			
 			TKSPI_ReadSectors(tcb, lba, 1);
@@ -1956,7 +1956,7 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 			TK_VMem_UnpackCompactedPage(tcb, ppi);
 		}else
 		{
-			tk_printf("TK_VMem_LoadPageFromDisk: Page Was Raw %d\n", pidx);
+			tk_dbg_printf("TK_VMem_LoadPageFromDisk: Page Was Raw %d\n", pidx);
 			TKSPI_ReadSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
 		}
 
@@ -2019,7 +2019,7 @@ int TK_VMem_MapVirtToCacheIdx(int pidx)
 			}
 #endif
 
-			tk_printf("TK_VMem_MapVirtToCacheIdx: Reuse %d\n", i);
+			tk_dbg_printf("TK_VMem_MapVirtToCacheIdx: Reuse %d\n", i);
 
 			return(i);
 		}
@@ -2044,7 +2044,7 @@ int TK_VMem_MapVirtToCacheIdx(int pidx)
 		i=tk_vmem_lru_last;
 		cpi=tk_vmem_pageinf+i;
 
-//		tk_printf("TK_VMem_MapVirtToCacheIdx: Evict %d / %d\n", i, cpi->pidx);
+//		tk_dbg_printf("TK_VMem_MapVirtToCacheIdx: Evict %d / %d\n", i, cpi->pidx);
 
 		if(cpi->flags&1)
 		{
@@ -2056,7 +2056,7 @@ int TK_VMem_MapVirtToCacheIdx(int pidx)
 		TK_VMem_UnlinkPageLRU(i);
 	}
 		
-//	tk_printf("TK_VMem_MapVirtToCacheIdx: Load Ci=%d Pi=%d\n", i, pidx);
+//	tk_dbg_printf("TK_VMem_MapVirtToCacheIdx: Load Ci=%d Pi=%d\n", i, pidx);
 
 	cpi->pidx=pidx;
 	cpi->hi=hi;
@@ -2103,7 +2103,7 @@ int TK_VMem_FindFreeSwapPages(int n)
 	
 	if(n<=0)
 	{
-		tk_printf("TK_VMem_FindFreeSwapPages: n=%d\n", n);
+		tk_dbg_printf("TK_VMem_FindFreeSwapPages: n=%d\n", n);
 		return(-1);
 	}
 	
@@ -2140,7 +2140,7 @@ int TK_VMem_FindFreeSwapPages(int n)
 		return(i);
 	}
 
-	tk_printf("TK_VMem_FindFreeSwapPages: Failed to find, n=%d\n", n);
+	tk_dbg_printf("TK_VMem_FindFreeSwapPages: Failed to find, n=%d\n", n);
 	return(-1);
 }
 
@@ -2176,7 +2176,7 @@ int TK_VMem_AllocSwapPage()
 		return(i);
 	}
 
-	tk_printf("TK_VMem_AllocSwapPage: Failed to alloc\n");
+	tk_dbg_printf("TK_VMem_AllocSwapPage: Failed to alloc\n");
 	return(-1);
 }
 
@@ -2194,7 +2194,7 @@ int TK_VMem_AllocSwapPages(int n)
 	i=TK_VMem_FindFreeSwapPages(n);
 	if(i<0)
 	{
-		tk_printf("TK_VMem_AllocSwapPages: Out Of Memory, n=%d\n", n);
+		tk_dbg_printf("TK_VMem_AllocSwapPages: Out Of Memory, n=%d\n", n);
 		return(-1);
 	}
 
@@ -2502,7 +2502,7 @@ int TK_VMem_VaDoAllocRemapedPages2(s64 vaddr, s64 vaddrh, int cnt)
 
 			pte=(pg<<TK_VMEM_PTESHL)|(0<<8)|(1<<10)|1;
 			
-//			tk_printf("    %p %08X\n", (void *)vtaddr, pg<<14);
+//			tk_dbg_printf("    %p %08X\n", (void *)vtaddr, pg<<14);
 
 //			pte=(((phaddr>>TKMM_PAGEBITS)+i)<<TK_VMEM_PTESHL)|
 //				(0<<8)|(1<<10)|1;
@@ -2619,7 +2619,7 @@ void TK_VMem_VaPageInAddr2(s64 vaddr, s64 vaddrh)
 	if(!ptpn)
 	{
 #if 1
-		tk_printf("TK_VMem_VaPageInAddr: Debug Pad, %p\n", vaddr1);
+		tk_dbg_printf("TK_VMem_VaPageInAddr: Debug Pad, %p\n", vaddr1);
 		ptpn=TK_VMem_AllocSwapPages(1);
 		pte|=((u64)ptpn)<<TK_VMEM_PTESHL;
 		pte&=~1;
@@ -2650,7 +2650,7 @@ void TK_VMem_VaPageInAddr2(s64 vaddr, s64 vaddrh)
 //	TK_VMem_SetPageTableEntry(vaddr1, pte);
 	TK_VMem_SetPageTableEntry2(vaddr1, vaddrh, pte);
 	
-//	tk_printf("TK_VMem_VaPageInAddr: %p %p\n", vaddr, pte);
+//	tk_dbg_printf("TK_VMem_VaPageInAddr: %p %p\n", vaddr, pte);
 
 //	TK_VMem_VaFlushVaddr(vaddr1);
 	TK_VMem_VaFlushVaddr2(vaddr1, vaddrh);
@@ -2884,7 +2884,7 @@ s64 TK_VMem_VaVirtualAlloc2(s64 addr, s64 addrh, s64 size,
 //	vpn=((size+32)+((1<<TKMM_PAGEBITS)-1))>>TKMM_PAGEBITS;
 //	vpn=(size+(1<<TKMM_PAGEBITS))>>TKMM_PAGEBITS;
 
-//	tk_printf("TK_VMem_VaVirtualAlloc: size=%d vpn=%d\n", size, vpn);
+//	tk_dbg_printf("TK_VMem_VaVirtualAlloc: size=%d vpn=%d\n", size, vpn);
 
 	if(addr)
 	{
@@ -2913,16 +2913,16 @@ s64 TK_VMem_VaVirtualAlloc2(s64 addr, s64 addrh, s64 size,
 //	if(0)
 	if(tk_vmem_swap_disable || (flMap&TKMM_MAP_32BIT))
 	{
-//		tk_printf("TK_VMem_VaVirtualAlloc: A0\n");
+//		tk_dbg_printf("TK_VMem_VaVirtualAlloc: A0\n");
 		addr=TK_VMem_VaFindFreePagesLow(vpn, flMap);
-//		tk_printf("TK_VMem_VaVirtualAlloc: A1\n");
+//		tk_dbg_printf("TK_VMem_VaVirtualAlloc: A1\n");
 		if(!addr)
 			return(0);
-//		tk_printf("TK_VMem_VaVirtualAlloc: A2 %p\n", (void *)addr);
+//		tk_dbg_printf("TK_VMem_VaVirtualAlloc: A2 %p\n", (void *)addr);
 //		TK_VMem_VaDoAllocRemapedPages(addr, vpn);
 		TK_VMem_VaDoAllocRemapedPages2(addr, addrh, vpn);
 		tk_vmem_varov_lo=(addr>>TKMM_PAGEBITS)+vpn;
-//		tk_printf("TK_VMem_VaVirtualAlloc: A3\n");
+//		tk_dbg_printf("TK_VMem_VaVirtualAlloc: A3\n");
 		return(addr);
 	}
 
@@ -2932,7 +2932,7 @@ s64 TK_VMem_VaVirtualAlloc2(s64 addr, s64 addrh, s64 size,
 	if(!addr)
 		return(0);
 	
-//	tk_printf("TK_VMem_VaVirtualAlloc: VA=%p..%p Vpn=%d\n",
+//	tk_dbg_printf("TK_VMem_VaVirtualAlloc: VA=%p..%p Vpn=%d\n",
 //		addr, addr+(vpn<<TKMM_PAGEBITS), vpn);
 	
 	if(flMap&TKMM_MAP_DIRECT)
@@ -3080,7 +3080,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea, u64 teah)
 //				pte|=1;
 			}else
 			{
-				tk_printf("tk_vmem_tlbmiss: Unhandled VA Range %08X\n",
+				tk_dbg_printf("tk_vmem_tlbmiss: Unhandled VA Range %08X\n",
 					tea);
 				__debugbreak();
 			}

@@ -105,8 +105,13 @@ Grab six views for environment mapping tests
 */
 void R_Envmap_f (void)
 {
-	byte	buffer[256*256*4];
+//	static
+//	byte	buffer[256*256*4];
+	static byte *buffer=NULL;
 	char	name[1024];
+	
+	if(!buffer)
+		buffer=malloc(256*256*4);
 
 	qglDrawBuffer  (GL_FRONT);
 	qglReadBuffer  (GL_FRONT);

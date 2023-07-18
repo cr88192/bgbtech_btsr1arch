@@ -105,6 +105,7 @@ BGBCC_COFF_Info *BGBCC_JX2_LoadElfObj(BGBCC_JX2_Context *ctx,
 	shsymndx=-1;
 	shsymstrndx=-1;
 	n_isec_reloc=0;
+	symstrtab=NULL;
 	
 	for(i=1; i<shnum; i++)
 	{

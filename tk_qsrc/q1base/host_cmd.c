@@ -582,7 +582,10 @@ void Host_Loadgame_f (void)
 	FILE	*f;
 	char	mapname[MAX_QPATH];
 	float	time, tfloat;
-	char	str[32768], *start;
+//	static
+//	char	str[32768];
+	static char *str=NULL;
+	char	*start;
 	int		i, r;
 	edict_t	*ent;
 	int		entnum;
@@ -597,6 +600,9 @@ void Host_Loadgame_f (void)
 		Con_Printf ("load <savename> : load a game\n");
 		return;
 	}
+	
+	if(!str)
+		str=malloc(32768);
 
 	cls.demonum = -1;		// stop demo loop in case this fails
 

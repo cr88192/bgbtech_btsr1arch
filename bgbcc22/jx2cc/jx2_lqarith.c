@@ -90,6 +90,7 @@ int BGBCC_JX2C_GetMulSh2xForImm(
 			}
 		}
 
+#if 0
 		for(i=0; i<32; i++)
 		{
 			printf("%d: ", i*8);
@@ -99,6 +100,7 @@ int BGBCC_JX2C_GetMulSh2xForImm(
 			}
 			printf("\n");
 		}
+#endif
 	}
 	
 	if((val>=3) && (val<BGBCC_JX2CC_MULSH2XLUMAX))
@@ -106,10 +108,10 @@ int BGBCC_JX2C_GetMulSh2xForImm(
 		j=lutab[val];
 		if(j>0)
 		{
-			printf("BGBCC_JX2C_GetMulSh2xForImm: Hit %d %04X\n", val, j);
+//			printf("BGBCC_JX2C_GetMulSh2xForImm: Hit %d %04X\n", val, j);
 			return(j);
 		}
-		printf("BGBCC_JX2C_GetMulSh2xForImm: Missed %d\n", val);
+//		printf("BGBCC_JX2C_GetMulSh2xForImm: Missed %d\n", val);
 		return(-1);
 	}
 	return(-1);

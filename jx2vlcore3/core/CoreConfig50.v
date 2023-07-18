@@ -33,6 +33,9 @@
 `define jx2_cpu_merge_rxy		//Merge Rx/Ry
 
 `define jx2_cpu_pred_id2		//Move predication handling to ID2
+`define jx2_cpu_lea_ex2			//Move LEA output to EX2
+
+// `define jx2_cpu_addp			//Move LEA output to EX2
 
 
 // `define jx2_mem_useddrb			//Use newer DDR controller.
@@ -67,9 +70,10 @@
 `ifndef jx2_xc7s50
 
 `define jx2_mem_l1d_fwstore			//Store Forwarding
-`define jx2_mem_l1d_fwarray			//Block Array Forwarding
+// `define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
 `define jx2_mem_l1d_utlb			//Micro TLB
+`define jx2_mem_l1i_utlb			//Micro TLB
 
 `endif
 
@@ -83,8 +87,8 @@
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
 
-// `define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
-`define jx2_mem_l1isz_512			//L1 I$ is 512 entries
+`define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
+// `define jx2_mem_l1isz_512			//L1 I$ is 512 entries
 // `define jx2_mem_l1isz_256			//L1 I$ is 256 entries
 // `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
 // `define jx2_mem_l1isz_64			//L1 I$ is 64 entries

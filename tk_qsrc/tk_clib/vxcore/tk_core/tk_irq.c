@@ -598,12 +598,12 @@ int TK_Task_SyscallLoop(void *uptr)
 	umsg=NULL;	rptr=NULL;
 	args=NULL;
 
-	tk_printf("TK_Task_SyscallLoop: Start 0\n");
+	tk_dbg_printf("TK_Task_SyscallLoop: Start 0\n");
 
 	/* Not handling syscalls yet, return to spawner. */
 	TK_Task_SyscallReturnToUser(uptr);
 
-	tk_printf("TK_Task_SyscallLoop: Start 1\n");
+	tk_dbg_printf("TK_Task_SyscallLoop: Start 1\n");
 
 	/* This loop spins indefinately as part of a syscall handler task. */
 	while(1)
@@ -735,7 +735,7 @@ void *TK_AllocNewTask()
 	tusr=TKMM_MallocUsr(sizeof(TKPE_TaskInfoUser));
 	tknl=TKMM_MallocKrn(sizeof(TKPE_TaskInfoKern));
 
-	tk_printf("TK_AllocNewTask: task=%p tknl=%p pid=%d\n", task, tknl, pid);
+	tk_dbg_printf("TK_AllocNewTask: task=%p tknl=%p pid=%d\n", task, tknl, pid);
 
 	memset(task, 0, sizeof(TKPE_TaskInfo));
 	memset(tusr, 0, sizeof(TKPE_TaskInfoUser));
@@ -761,7 +761,7 @@ int TK_DestroyTaskInfo(void *tkptr)
 	TKPE_TaskInfo *task;
 	int pid;
 	
-	tk_puts("TK_DestroyTask\n");
+	tk_dbg_printf("TK_DestroyTask\n");
 
 	task=tkptr;
 
@@ -846,7 +846,7 @@ TK_EnvContext *TK_GetCurrentEnvContext()
 	if(env)
 		return(env);
 
-	tk_printf("TK_GetCurrentEnvContext: New %p:%p\n", task, env);
+	tk_dbg_printf("TK_GetCurrentEnvContext: New %p:%p\n", task, env);
 
 	env=TK_EnvCtx_AllocContext();
 	task->envctx=(tk_kptr)env;
@@ -1724,7 +1724,7 @@ TKPE_TaskInfo *TK_SpawnNewThreadB(TKPE_TaskInfo *btask, void *func, void *uptr)
 	boot_newspb=TKMM_PageAlloc(spusz);
 	boot_newsp=boot_newspb+(spusz-1024);
 
-	tk_printf("TK_SpawnNewThreadB: task=%p stack=%p..%p pid=%d\n",
+	tk_dbg_printf("TK_SpawnNewThreadB: task=%p stack=%p..%p pid=%d\n",
 		task, boot_newspb, boot_newsp);
 
 //	boot_newspbk=TKMM_PageAlloc(spksz);

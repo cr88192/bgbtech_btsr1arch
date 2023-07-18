@@ -395,7 +395,7 @@ int TK_Midi_LookupGetPatchAuMem(
 				break;
 		}
 
-		tk_printf("TK_Midi_LookupGetPatchAuMem: "
+		tk_dbg_printf("TK_Midi_LookupGetPatchAuMem: "
 			"Loaded Patch %04X B=%04X L=%d Rt=%d\n", sidx, sbase, slen, srate);
 
 		tk_midi_patchwad_sndofs[sidx]=sbase;
@@ -411,7 +411,7 @@ int TK_Midi_LookupGetPatchAuMem(
 
 #if 0
 	if(f>4000)
-		tk_printf("TK_Midi_LookupGetPatchAuMem: Debug 0, f=%f, "
+		tk_dbg_printf("TK_Midi_LookupGetPatchAuMem: Debug 0, f=%f, "
 			"srate=%d hz=%d bhz=%d\n", f,
 			srate, hz, bhz);
 #endif
@@ -541,7 +541,7 @@ int TK_Midi_Init()
 
 		tk_midi_patchwad_live=1;
 
-		tk_printf("TK_Midi_Init: Patch WAD Live\n");
+		tk_dbg_printf("TK_Midi_Init: Patch WAD Live\n");
 	}
 
 	if(tk_midi_patchwad)
@@ -553,7 +553,7 @@ int TK_Midi_Init()
 			tk_midi_patchwad_index=tk_midi_patchwad+lofs;
 			tk_midi_patchwad_indexsz=lsz>>4;
 
-			tk_printf("TK_Midi_Init: Patch WAD Index ofs=%d sz=%d\n",
+			tk_dbg_printf("TK_Midi_Init: Patch WAD Index ofs=%d sz=%d\n",
 				lofs, lsz);
 		}
 	}
@@ -803,7 +803,8 @@ int TK_Midi_FindFreeVoice(int fl)
 			j=tk_midi_vnchn[vn1];
 			if((tk_midi_chanvn[j]&15)!=i)
 			{
-				tk_printf("TK_Midi_FindFreeVoice: Alloc orphaned voice A.\n");
+				tk_dbg_printf("TK_Midi_FindFreeVoice: "
+					"Alloc orphaned voice A.\n");
 				return(16|i);
 			}
 		}
@@ -824,7 +825,8 @@ int TK_Midi_FindFreeVoice(int fl)
 			j=tk_midi_vnchn[vn1];
 			if((tk_midi_chanvn[j]&15)!=i)
 			{
-				tk_printf("TK_Midi_FindFreeVoice: Alloc orphaned voice B.\n");
+				tk_dbg_printf("TK_Midi_FindFreeVoice: "
+					"Alloc orphaned voice B.\n");
 				return(i);
 			}
 		}
@@ -1123,13 +1125,13 @@ int TK_Midi_Controller(int ch, int d0, int d1)
 		return(1);
 	}
 
-	printf("TK_Midi_Controller: ch=%d var=%d val=%d\n", ch, d0, d1);
+	tk_dbg_printf("TK_Midi_Controller: ch=%d var=%d val=%d\n", ch, d0, d1);
 	return(0);
 }
 
 int TK_Midi_ProgramChange(int ch, int d0)
 {
-	printf("TK_Midi_ProgramChange: %d %d\n", ch, d0);
+	tk_dbg_printf("TK_Midi_ProgramChange: %d %d\n", ch, d0);
 	tk_midi_chanprg[ch]=d0;
 	return(0);
 }

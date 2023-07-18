@@ -468,6 +468,10 @@ reg[3:0]		opLenA5;
 reg				icDoFlush;
 reg				icNxtDoFlush;
 
+reg				tNxtDoFlushTlb;
+reg				tDoFlushTlb;
+reg				tDoFlushTlbL;
+
 reg[43:0]		tRegInPcP0;
 reg[43:0]		tRegInPcP1;
 reg[14:0]		tRegInPcP1L;
@@ -477,6 +481,9 @@ reg[7:0]		tFlushRov;
 reg[7:0]		tNxtFlushRov;
 reg				tAdvFlushRov;
 reg				tNxtAdvFlushRov;
+
+reg[3:0]		tFlushRovTlb;
+reg[3:0]		tNxtFlushRovTlb;
 
 
 wire			memRingIsIdle;
@@ -652,6 +659,27 @@ reg[5:0]		tStBlkIxB;
 reg[127:0]		tStickyTlbExc;
 reg[127:0]		tNxtStickyTlbExc;
 
+
+reg[95:0]		tUtlbArr[15:0];
+reg[95:0]		tUtlbStAddr;
+reg[3:0]		tUtlbStIx;
+reg				tUtlbDoSt;
+
+reg[95:0]		tUtlbBlkAddr;
+reg[3:0]		tUtlbBlkIx;
+reg[3:0]		tUtlb1BlkIx;
+reg[3:0]		tNxtUtlbBlkIx;
+reg				tUtlbBlkFlush;
+
+reg[43:0]		tReqUtlbAxA;
+reg[43:0]		tReqUtlbAxB;
+reg[15:0]		tReqUtlbAxH;
+reg[3:0]		tReqUtlbAccA;
+reg[3:0]		tReqUtlbAccB;
+reg				tReqUtlbHitHi;
+reg				tReqUtlbHitAxA;
+reg				tReqUtlbHitAxB;
+
 reg				tResetL;
 
 always @*
@@ -705,6 +733,7 @@ begin
 //		tSkipTlb		= 1;
 	end
 	
+	tNxtUtlbBlkIx	= regInPc[15:12] ^ regInPc[19:16];
 
 	/* Stage A */
 
@@ -811,6 +840,7 @@ begin
 		tNxtInPcRiscv	= tInPcRiscv;
 		tNxtSkipTlb		= tSkipTlb;
 		tNxtSkipMiss	= tSkipMiss;
+		tUtlb1BlkIx		= tUtlbBlkIx;
 	end
 
 `ifdef jx2_l1i_nohash
@@ -875,22 +905,38 @@ begin
 
 `endif
 
-	icNxtDoFlush = 0;
+	icNxtDoFlush		= 0;
+	tNxtDoFlushTlb		= 0;
 
-	tNxtFlushRov	= tFlushRov;
-	tNxtAdvFlushRov	= 0;
+	tNxtFlushRov		= tFlushRov;
+	tNxtFlushRovTlb		= tFlushRovTlb;
+	tNxtAdvFlushRov		= 0;
 
 //	if(((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS)) || tResetL)
 //	if((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS) && !tResetL)
 	if((tInOpmB==JX2_DCOPM_FLUSHIS) && (tInOpmC!=JX2_DCOPM_FLUSHIS))
 	begin
 		icNxtDoFlush = 1;
+		tNxtDoFlushTlb = 1;
+	end
+
+	if((tInOpmB==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB) && !tResetL)
+	begin
+		tNxtDoFlushTlb = 1;
+	end
+
+	if((tInOpmB == JX2_DCOPM_LDTLB) && (tInOpmC!=JX2_DCOPM_LDTLB) && !tResetL)
+	begin
+		tNxtDoFlushTlb = 1;
 	end
 
 //	if((tFlushRov == 0) && !tAdvFlushRov && !tResetL)
 	if((tFlushRov == 0) && !tAdvFlushRov)
 		icNxtDoFlush = 1;
-	
+
+	if((tFlushRovTlb == 0) && !tDoFlushTlb && !tResetL)
+		tNxtDoFlushTlb = 1;
+
 	if(icDoFlush)
 	begin
 		if(!tAdvFlushRov)
@@ -1121,6 +1167,39 @@ begin
 	begin
 		$display("L1I$: Debug Miss B");
 		tMissAddrB = 1;
+	end
+`endif
+
+`ifdef jx2_mem_l1i_utlb
+	tUtlbBlkFlush	= (tUtlbBlkAddr[7:4] != tFlushRovTlb);
+	tReqUtlbAxA		= { tUtlbBlkAddr[79:46], tReqAddrA[9:0] };
+	tReqUtlbAxB		= { tUtlbBlkAddr[79:46], tReqAddrB[9:0] };
+	tReqUtlbAxH		= tUtlbBlkAddr[95:80];
+	tReqUtlbAccA	= tUtlbBlkAddr[3:0];
+	tReqUtlbAccB	= tUtlbBlkAddr[3:0];
+
+	tReqUtlbHitHi	=
+		(tReqAddrA[43:28] == tUtlbBlkAddr[43:28]) &&
+		(tReqAddrA[27:16] == tUtlbBlkAddr[27:16]) &&
+		(tReqAxH == tReqUtlbAxH);
+	if(tReqAddrA[16] != tReqAddrB[16])
+		tReqUtlbHitHi = 0;
+	tReqUtlbHitAxA	= tReqUtlbHitHi &&
+		(tReqAddrA[15:10] == tUtlbBlkAddr[15:10]) &&
+		!tUtlbBlkFlush && tRegInMmcr[0];
+	tReqUtlbHitAxB	= tReqUtlbHitHi &&
+		(tReqAddrB[15:10] == tUtlbBlkAddr[15:10]) &&
+		!tUtlbBlkFlush && tRegInMmcr[0];
+
+	if(tRegInMmcr[5:4]==2'b00)
+	begin
+		/* 4K pages. */
+		tReqUtlbAxA[9:8]=tUtlbBlkAddr[45:44];
+		tReqUtlbAxB[9:8]=tUtlbBlkAddr[45:44];
+		if(tReqAddrA[9:8] != tUtlbBlkAddr[9:8])
+			tReqUtlbHitAxA = 0;
+		if(tReqAddrB[9:8] != tUtlbBlkAddr[9:8])
+			tReqUtlbHitAxB = 0;
 	end
 `endif
 
@@ -1516,6 +1595,10 @@ begin
 //	tRegOutPcOK = tRegOutHold ? UMEM_OK_HOLD : UMEM_OK_OK;
 
 
+	tUtlbStAddr		= 0;
+	tUtlbStIx		= 0;
+	tUtlbDoSt		= 0;
+
 	tReqSeqIdx	= tReqSeqIdxArr[memSeqIn[3:0]];
 	tReqSeqVa	= tReqSeqVaArr[memSeqIn[3:0]];
 
@@ -1553,6 +1636,15 @@ begin
 			tDoStBlkA		= 1;
 
 			tNxtMemRespLdA	= 1;
+
+			tUtlbStAddr		= {
+				tReqAxH,
+				memAddrIn[47:12],
+				tReqSeqVa[43: 8],
+				tFlushRovTlb,
+				memOpmIn[3:0] };
+			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
+			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
 
 			if(memOpmIn[3:2]==2'b11)
 	//		if((memOpmIn[3:2]==2'b11) && !(tRegInSr[29] && tRegInSr[30]))
@@ -1613,6 +1705,15 @@ begin
 			tDoStBlkB		= 1;
 
 			tNxtMemRespLdB	= 1;
+
+			tUtlbStAddr		= {
+				tReqAxH,
+				memAddrIn[47:12],
+				tReqSeqVa[43: 8],
+				tFlushRovTlb,
+				memOpmIn[3:0] };
+			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
+			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
 
 			if(tStickyTlbExc[15:12]==4'h7)
 	//			tStBlkPFlB[15:8]=tStickyTlbExc[119:112];
@@ -1769,6 +1870,18 @@ begin
 					tMemOpmReq[11:8] = 4'hF;
 			end
 
+`ifdef jx2_mem_l1i_utlb
+			if(tReqUtlbHitAxA && !tSkipTlb)
+			begin
+`ifdef jx2_enable_l1addr96
+				tMemAddrReq			= { UV48_00, tReqUtlbAxA, 4'h00 };
+`else
+				tMemAddrReq			= { tReqUtlbAxA, 4'h00 };
+`endif
+				tMemOpmReq[11:8]	= tReqUtlbAccA;
+			end
+`endif
+
 //			$display("I$ LDA %X %X %X Ix=%X",
 //				tMemOpmReq, tMemSeqReq, tMemAddrReq, tReqIxA);
 		end
@@ -1809,6 +1922,18 @@ begin
 				if(tReqAddrIsVirt)
 					tMemOpmReq[11:8] = 4'hF;
 			end
+
+`ifdef jx2_mem_l1i_utlb
+			if(tReqUtlbHitAxB && !tSkipTlb)
+			begin
+`ifdef jx2_enable_l1addr96
+				tMemAddrReq			= { UV48_00, tReqUtlbAxB, 4'h00 };
+`else
+				tMemAddrReq			= { tReqUtlbAxB, 4'h00 };
+`endif
+				tMemOpmReq[11:8]	= tReqUtlbAccB;
+			end
+`endif
 
 //			$display("I$ LDB %X %X %X Ix=%X",
 //				tMemOpmReq, tMemSeqReq, tMemAddrReq, tReqIxB);
@@ -2077,6 +2202,9 @@ begin
 		tFlushRov		<= tNxtFlushRov;
 		tAdvFlushRov	<= tNxtAdvFlushRov;
 
+		tFlushRovTlb	<= tNxtFlushRovTlb;
+		tDoFlushTlb		<= tNxtDoFlushTlb;
+
 		tInPmode		<= tNxtInPmode;
 //		tInPcWxe		<= icInPcWxe;
 //		tInPcRiscv		<= (icInPcWxm == 2'b01);
@@ -2089,6 +2217,9 @@ begin
 `else
 		tInPcXG2		<= 0;
 `endif
+
+//		tUtlbBlkIx		<= tNxtReqAddr[11:8];
+		tUtlbBlkIx		<= tNxtUtlbBlkIx;
 
 	end
 	else
@@ -2177,6 +2308,14 @@ begin
 
 	tDidStBlkA		<= tDoStBlkA;
 	tDidStBlkB		<= tDoStBlkB;
+
+`ifdef jx2_mem_l1i_utlb
+	if(tUtlbDoSt)
+	begin
+		tUtlbArr[tUtlbStIx]		 <= tUtlbStAddr;
+	end
+	tUtlbBlkAddr		<= tUtlbArr[tUtlb1BlkIx];
+`endif
 
 	/* Stage B */
 

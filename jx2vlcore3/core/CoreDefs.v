@@ -688,6 +688,8 @@ REGIMMREG, Fz:
 	NB:	Rm, Imm5f, Rn
 	NW:	Rm, Imm9n, Rn
 
+	XW:	Rm, Imm9u, Rn (Decoded like REGDISPREG)
+
 
 LDREGDISPREG, Fz:
 	SW: (Rm, Disp9u/17s), Rn
@@ -698,9 +700,15 @@ LDREGDISPREG, Fz:
 
 	NB: (Rm, Disp5u), Rn  (Keeps Scale)
 
+	NL: (Rm, Disp5u*4), Rn
+	NQ: (Rm, Disp5u*8), Rn
+
 LDDRREGREG, Fz:
 	UB: (Rm, Ro), Rn
 	UL: (Rm, Ro), Cn
+
+	NL: (Rm, Ro*4), Rn
+	NQ: (Rm, Ro*8), Rn
 
 IMM8REG, Fz
 	SB: Fzeo_iiii		Ro, Imm16s, Ro
@@ -789,6 +797,7 @@ parameter[5:0] JX2_UCMD_QMULDIV		= 6'h0B;		//Slow MUL/DIV
 
 parameter[5:0] JX2_UCMD_CONV2_RR	= 6'h0C;		//Convert (Via ALU)
 parameter[5:0] JX2_UCMD_FPUV4SF		= 6'h0D;		//FPU Vec4SF Unit
+parameter[5:0] JX2_UCMD_PMOV_MR		= 6'h0E;		//SIMD Load+Conv
 
 parameter[5:0] JX2_UCMD_INVOP		= 6'h0F;		//
 parameter[5:0] JX2_UCMD_ALU3		= 6'h10;		//ALU Command (3R)

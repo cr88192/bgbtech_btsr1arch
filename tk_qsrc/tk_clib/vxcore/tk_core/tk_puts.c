@@ -416,6 +416,30 @@ void tk_puts_n(char *msg, int n)
 #endif
 }
 
+void tk_dbg_puts_n(char *msg, int n)
+{
+	char *s;
+	int i;
+	
+	if(tk_iskernel())
+	{
+		s=msg;
+		while(n--)
+		{
+			i=TK_ReadCharUtf8((byte **)(&s));
+			tk_dbg_putc(i);
+		}
+		return;
+	}
+}
+
+void tk_dbg_puts(char *msg)
+{
+#ifndef __TK_CLIB_ONLY__
+	tk_dbg_puts_n(msg, strlen(msg));
+#endif
+}
+
 void tk_gets(char *buf)
 {
 	char *t;
@@ -719,10 +743,11 @@ void tk_print_float(double val)
 }
 #endif
 
-void tk_printf(char *str, ...)
+// void tk_printf(char *str, ...)
+void tk_vprintf(char *str, va_list lst)
 {
 //	void **plst;
-	va_list lst;
+//	va_list lst;
 	char pcfill;
 	char *s, *s1;
 	long long v;
@@ -730,7 +755,7 @@ void tk_printf(char *str, ...)
 
 //	plst=(void **)(&str);
 //	plst++;
-	va_start(lst, str);
+//	va_start(lst, str);
 	
 //	__debugbreak();
 	
@@ -846,18 +871,27 @@ void tk_printf(char *str, ...)
 	va_end(lst);
 }
 
+void tk_printf(char *str, ...)
+{
+	va_list lst;
 
-void tk_sprintf(char *buf, char *str, ...)
+	va_start(lst, str);
+	tk_vprintf(str, lst);
+	va_end(lst);
+}
+
+// void tk_sprintf(char *buf, char *str, ...)
+void tk_vsprintf(char *buf, char *str, va_list lst)
 {
 //	void **plst;
-	va_list lst;
+//	va_list lst;
 	char pcfill;
 	char *s, *s1, *ct;
 	int v, w;
 
 //	plst=(void **)(&str);
 //	plst++;
-	va_start(lst, str);
+//	va_start(lst, str);
 	
 //	__debugbreak();
 	
@@ -943,8 +977,29 @@ void tk_sprintf(char *buf, char *str, ...)
 		}
 	}
 	*ct=0;
+//	va_end(lst);
+}
+
+void tk_sprintf(char *buf, char *str, ...)
+{
+	va_list lst;
+
+	va_start(lst, str);
+	tk_vsprintf(buf, str, lst);
 	va_end(lst);
 }
+
+void tk_dbg_printf(char *str, ...)
+{
+	char tbuf[512];
+	va_list lst;
+
+	va_start(lst, str);
+	tk_vsprintf(tbuf, str, lst);
+	tk_dbg_puts(tbuf);
+	va_end(lst);
+}
+
 
 
 byte *tk_ralloc_bufs=NULL;

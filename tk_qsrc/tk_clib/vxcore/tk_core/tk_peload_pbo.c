@@ -288,16 +288,16 @@ int TKPE_ApplyDataRelocs(
 
 //	__debugbreak();
 
-	tk_printf("TKPE_ApplyDataRelocs: disp_base=%X, disp_data=%X\n",
+	tk_dbg_printf("TKPE_ApplyDataRelocs: disp_base=%X, disp_data=%X\n",
 		disp_base, disp_data);
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
-	tk_printf("TKPE_ApplyDataRelocs: gbr_rva=%X..%X\n",
+	tk_dbg_printf("TKPE_ApplyDataRelocs: gbr_rva=%X..%X\n",
 		gbr_rva, gbr_end_rva);
 
 	cs=rlc;		cse=rlc+szrlc;
-	tk_printf("TKPE_ApplyDataRelocs: relocs=%p..%p\n",
+	tk_dbg_printf("TKPE_ApplyDataRelocs: relocs=%p..%p\n",
 		cs, cse);
 
 	while(cs<cse)
@@ -443,7 +443,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		return(NULL);
 	}
 
-	tk_printf("TKPE: PE Sig OK\n");
+	tk_dbg_printf("TKPE: PE Sig OK\n");
 	
 	mmagic=tkfat_getWord(tbuf+ofs_pe+0x18);
 	if(mmagic==0x020B)
@@ -457,7 +457,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		is64=0;
 	}else
 	{
-		tk_printf("TKPE: Unexpected mMagic %04X\n", mach);
+		tk_dbg_printf("TKPE: Unexpected mMagic %04X\n", mach);
 		return(-1);
 	}
 
@@ -502,7 +502,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		sz_imp=*(u32 *)(tbuf+ofs_pe+0x84);
 	}
 	
-	tk_printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X\n",
+	tk_dbg_printf("TKPE: Base=%08X Sz=%d BootRVA=%08X GbrRVA=%08X\n",
 		imgbase, imgsz, startrva, gbr_rva);
 	
 	img=tk_malloc_krn(sizeof(TKPE_ImageInfo));
@@ -531,7 +531,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	img->imgname=TKMM_LVA_Strdup(imgname);
 
 	imgbase1=(u64)imgptr;
-	printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
+	tk_dbg_printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
 		(u16)(imgbase1>>32), (u32)imgbase1);
 
 	rlc_disp=((byte *)imgptr)-((byte *)imgbase);
@@ -544,13 +544,13 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		ct=imgptr; cte=imgptr+imgsz;
 		while((ct+1024)<=cte)
 		{
-			tk_printf("%d/%dkB\r", cb, nb);
+			tk_dbg_printf("%d/%dkB\r", cb, nb);
 			tk_fread(ct, 1, 1024, fd);
 			ct+=1024; cb++;
 		}
-		tk_printf("%d/%dkB\r", cb, nb);
+		tk_dbg_printf("%d/%dkB\r", cb, nb);
 		tk_fread(ct, 1, cte-ct, fd);
-		tk_printf("\n", cb, nb);
+		tk_dbg_printf("\n", cb, nb);
 	}else
 	{
 		memcpy(imgptr, tbuf, 1024);
@@ -561,8 +561,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		while((ct+1024)<=cte)
 		{
 			kb=(ct-imgptr)>>10;
-//			tk_printf("%d/%dkB\r", cb, nb);
-			tk_printf("%d/%dkB\r", kb, nb);
+//			tk_dbg_printf("%d/%dkB\r", cb, nb);
+			tk_dbg_printf("%d/%dkB\r", kb, nb);
 			l=tk_fread(tbuf, 1, 1024, fd);
 //			ct=TKPE_UnpackL4(ct, tbuf, l);
 			ct=TKPE_UnpackBuffer(ct, tbuf, l, cmp);
@@ -571,15 +571,15 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 			cb++;
 		}
 		kb=(ct-imgptr)>>10;
-//		tk_printf("%d/%dkB\r", cb, nb);
-		tk_printf("%d/%dkB\r", kb, nb);
+//		tk_dbg_printf("%d/%dkB\r", cb, nb);
+		tk_dbg_printf("%d/%dkB\r", kb, nb);
 		if(l>=1024)
 		{
 			l=tk_fread(tbuf, 1, 1024, fd);
 //			ct=TKPE_UnpackL4(ct, tbuf, l);
 			ct=TKPE_UnpackBuffer(ct, tbuf, l, cmp);
 		}
-		tk_printf("\n");
+		tk_dbg_printf("\n");
 	}
 
 
@@ -782,22 +782,22 @@ TK_FILE *TKPE_TryOpenImage(
 
 	isext=(strchr(imgname, '.')!=NULL);
 
-//	tk_printf("TKPE_TryOpenImage: name=%s\n", imgname);
+//	tk_dbg_printf("TKPE_TryOpenImage: name=%s\n", imgname);
 
 	if((imgname[0]=='/') || (isdll&2))
 	{
-//		tk_printf("TKPE_TryOpenImage: try %s\n", imgname);
+//		tk_dbg_printf("TKPE_TryOpenImage: try %s\n", imgname);
 		fd=tk_fopen(imgname, "rb");
 		if(!fd && !isext && (isdll&1))
 		{
 			tk_sprintf(tbuf, "%s.dll", imgname);
-//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(!fd && !isext && !(isdll&1))
 		{
 			tk_sprintf(tbuf, "%s.exe", imgname);
-//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(fd)
@@ -813,18 +813,18 @@ TK_FILE *TKPE_TryOpenImage(
 	if(cwd)
 	{
 		tk_sprintf(tbuf, "%s/%s", cwd, imgname);
-//		tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//		tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 		fd=tk_fopen(tbuf, "rb");
 		if(!fd && !isext && (isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.dll", cwd, imgname);
-//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(!fd && !isext && !(isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.exe", cwd, imgname);
-//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(fd)
@@ -840,18 +840,18 @@ TK_FILE *TKPE_TryOpenImage(
 	for(i=0; i<npath; i++)
 	{
 		tk_sprintf(tbuf, "%s/%s", path[i], imgname);
-//		tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//		tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 		fd=tk_fopen(tbuf, "rb");
 		if(!fd && !isext && (isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.dll", path[i], imgname);
-//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(!fd && !isext && !(isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.exe", path[i], imgname);
-//			tk_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(fd)
@@ -873,14 +873,14 @@ int TKPE_LookupPboImageName(char *imgname, int isdll)
 	{
 		img=tkpe_pbo_image[i];
 
-		tk_printf("TKPE_TryLoadProgramImage: Check %s\n", img->imgname);
+		tk_dbg_printf("TKPE_TryLoadProgramImage: Check %s\n", img->imgname);
 
 		if((isdll&1) && !(img->pboix))
 			continue;
 		if(!strcmp(img->imgname, imgname))
 			return(i);
 	}
-	tk_printf("TKPE_TryLoadProgramImage: Not Found %s\n", imgname);
+	tk_dbg_printf("TKPE_TryLoadProgramImage: Not Found %s\n", imgname);
 	return(0);
 }
 
@@ -893,7 +893,7 @@ int TKPE_LookupPboImagePath(char *imgpath, int isdll)
 	{
 		img=tkpe_pbo_image[i];
 
-//		tk_printf("TKPE_LookupPboImagePath: Check %s\n", img->imgpath);
+//		tk_dbg_printf("TKPE_LookupPboImagePath: Check %s\n", img->imgpath);
 
 		if((isdll&1) && !(img->pboix))
 			continue;
@@ -901,7 +901,7 @@ int TKPE_LookupPboImagePath(char *imgpath, int isdll)
 			return(i);
 	}
 
-//	tk_printf("TKPE_LookupPboImagePath: Not Found %s\n", imgpath);
+//	tk_dbg_printf("TKPE_LookupPboImagePath: Not Found %s\n", imgpath);
 	return(0);
 }
 
@@ -1146,7 +1146,7 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 		TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
 	}
 	
-	tk_printf("TK_InstanceImageInTask: GBR RVA=%X sz_cpy=%d sz=%d pboix=%d\n",
+	tk_dbg_printf("TK_InstanceImageInTask: GBR RVA=%X sz_cpy=%d sz=%d pboix=%d\n",
 		img->gbr_rva, img->gbr_szcpy, gbrsz, img->pboix);
 	
 	if(gbrdat)
@@ -1212,7 +1212,7 @@ int TKPE_SetupTaskForImage(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 
 	gbrdat=(byte *)TK_PboGbrGetB(task, img->pboix);
 
-	tk_printf("TKPE_SetupTaskForImage: GBR=%p\n", gbrdat);
+	tk_dbg_printf("TKPE_SetupTaskForImage: GBR=%p\n", gbrdat);
 
 #if 0
 	szpbix=(256*sizeof(void *));

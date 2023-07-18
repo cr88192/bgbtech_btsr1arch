@@ -310,6 +310,9 @@ extern "C" {
 #define BGBCC_TYFL_RESTRICT			(1LL<<46)
 #define BGBCC_TYFL_MAYALIAS			(1LL<<47)
 
+#define BGBCC_TYFL_LOCAL			(1LL<<48)
+#define BGBCC_TYFL_GLOBAL			(1LL<<49)
+
 
 #define BGBCC_TYFL_DFL_MASK			\
 	(BGBCC_TYFL_PUBLIC|BGBCC_TYFL_PRIVATE|BGBCC_TYFL_PROTECTED)
@@ -627,6 +630,7 @@ int blkidx;				//block index
 
 byte expect_type;		//force detecting a type
 byte in_func_body;		//parsing a function body
+byte in_struct_body;	//parsing a structure
 short cur_codepage;
 byte	fenv_access;
 

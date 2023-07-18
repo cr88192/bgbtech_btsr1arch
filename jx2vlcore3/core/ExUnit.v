@@ -1484,6 +1484,7 @@ wire[8:0]		ex1OpUCmd2;
 
 wire			ex1AluSrJcmpT;
 
+wire[63:0]		ex1AguOutLea;		//LEA Output
 wire[63:0]		ex1AguOutXLea;		//XLEA Output
 wire[7:0]		ex1ExfFl;
 
@@ -1503,7 +1504,9 @@ ExEX1	ex1(
 
 	ex1RegIdRs,		ex1RegIdRt,		ex1RegIdRm,
 	ex1RegValRs,	ex1RegValRt,	ex1RegValRm,
-	exB1RegValRs,	ex1AguOutXLea,
+	exB1RegValRs,
+	
+	ex1AguOutLea,	ex1AguOutXLea,
 	
 //	ex1RegValFRs,	ex1RegValFRt,
 	ex1RegValCRm,	ex1ValBPc,
@@ -1916,6 +1919,9 @@ reg[7:0]		ex2RegInLastSr;
 // reg[63:0]		ex2MemDataIn;
 // reg[1:0]		ex2MemDataOK;
 
+reg[63:0]		ex2AguOutLea;		//LEA Output
+reg[63:0]		ex2AguOutXLea;		//XLEA Output
+
 ExEX2	ex2(
 	clock,			exResetL,
 	ex2OpUCmd,		ex2OpUIxt,
@@ -1923,6 +1929,9 @@ ExEX2	ex2(
 
 	ex2RegIdRs,		ex2RegIdRt,		ex2RegIdRm,
 	ex2RegValRs,	ex2RegValRt,	ex2RegValRm,
+
+	ex2AguOutLea,
+
 //	ex2RegValFRs,	ex2RegValFRt,
 	ex2RegValCRm,
 
@@ -2163,6 +2172,9 @@ ExEXB2		exb2(
 	exB2RegIdRs,	exB2RegIdRt,
 	exB2RegIdRm,	exB2RegValRs,
 	exB2RegValRt,	exB2RegValRm,
+
+	ex2AguOutXLea,
+
 	exB2RegIdRn1,	exB2RegValRn1,
 	exB2RegIdRn2,	exB2RegValRn2,
 	
@@ -5678,6 +5690,9 @@ begin
 		ex2RegValLr		<= ex1RegValLr;
 		ex2RegValDlr	<= ex1RegValDlr;
 		ex2RegValDhr	<= ex1RegValDhr;
+
+		ex2AguOutLea	<= ex1AguOutLea;
+		ex2AguOutXLea	<= ex1AguOutXLea;
 
 `ifdef jx2_enable_wex
 //		exB2OpUCmd		<= exB1OpUCmd;

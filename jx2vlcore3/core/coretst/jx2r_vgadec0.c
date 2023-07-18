@@ -283,8 +283,12 @@ int CDEC_PeekPwm8I(cdec_imgbuf *ctx, int ofs, int shl)
 //		i=	((p0>>shl)&15)+((p1>>shl)&15);
 //		i=i<<3;
 
-		i=	((p0>>shl)&15);
-		i=i<<4;
+		i=	((p0>>shl)&15)+((p1>>shl)&15)+
+			((p1>>shl)&15)+((p2>>shl)&15);
+		i=i<<2;
+
+//		i=	((p0>>shl)&15);
+//		i=i<<4;
 
 		return(i);
 	}

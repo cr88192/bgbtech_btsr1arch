@@ -1144,7 +1144,9 @@ void R_InitSky (texture_t *mt)
 {
 	int			i, j, p;
 	byte		*src;
-	unsigned	trans[128*128];
+//	static	
+//	unsigned	trans[128*128];
+	unsigned	*trans=NULL;
 	unsigned	transpix;
 	int			r, g, b;
 	unsigned	*rgba;
@@ -1154,6 +1156,11 @@ void R_InitSky (texture_t *mt)
 
 	// make an average value for the back to avoid
 	// a fringe on the top level
+
+//	__debugbreak();
+
+	if(!trans)
+		trans=malloc(128*128*sizeof(unsigned));
 
 	r = g = b = 0;
 	for (i=0 ; i<128 ; i++)
@@ -1172,6 +1179,7 @@ void R_InitSky (texture_t *mt)
 	((byte *)&transpix)[2] = b/(128*128);
 	((byte *)&transpix)[3] = 0;
 
+//	__debugbreak();
 
 	if (!solidskytexture)
 		solidskytexture = texture_extension_number++;

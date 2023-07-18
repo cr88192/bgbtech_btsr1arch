@@ -296,6 +296,9 @@ reg[11:0]		tSyncEpochL;
 reg[47:0]		tNxtReqAddrHi;
 reg[47:0]		tReqAddrHi;
 
+reg				tNxtReqAddrHiIsNz;
+reg				tReqAddrHiIsNz;
+
 reg[47:0]		tNxtReqAddr;
 `reg_l1d_ix		tNxtReqIxA;
 `reg_l1d_ix		tNxtReqIxB;
@@ -771,6 +774,8 @@ begin
 		tNxtReqAddrHi	= 0;
 `endif
 
+	tNxtReqAddrHiIsNz = (tNxtReqAddrHi != 0);
+
 `ifdef jx2_enable_vaddr48
 	tNxtReqAddr		= regInAddr[47:0];
 `else
@@ -1152,6 +1157,14 @@ begin
 
 	tReqAddrIsVirt	= (tReqAddr[47:28] != 0) && !tReqAddr[47] &&
 		!tReqIsMmio && !tReqIsCcmd;
+	
+//	if(tReqAddrHi != 0)
+	if(tReqAddrHiIsNz)
+	begin
+		/* Outside of Quadrant 0, there is no MMIO. */
+		tReqIsMmio		= 0;
+		tReqAddrIsVirt	= (tReqAddr[47:28] != 0) && !tReqIsCcmd;
+	end
 	
 	tReqNoCross		= 0;
 	casez(tReqOpm[2:0])
@@ -2636,7 +2649,8 @@ begin
 			tMemAddrReq		= { tReqMissAxA, 4'h00 };
 `endif
 
-			if(tReqMissAxA[43:40]==4'hD)
+//			if(tReqMissAxA[43:40]==4'hD)
+			if((tReqMissAxA[43:40]==4'hD) && !tReqAddrHiIsNz)
 				tMemOpmReq[11]=1;
 
 			if(tSkipTlb)
@@ -2708,7 +2722,8 @@ begin
 			tMemAddrReq		= { tReqMissAxB, 4'h00 };
 `endif
 
-			if(tReqMissAxB[43:40]==4'hD)
+//			if(tReqMissAxB[43:40]==4'hD)
+			if((tReqMissAxB[43:40]==4'hD) && !tReqAddrHiIsNz)
 				tMemOpmReq[11]=1;
 
 			if(tSkipTlb)
@@ -2824,6 +2839,7 @@ begin
 		/* EX1 -> EX2 */
 		tReqAddr		<= tNxtReqAddr;
 		tReqAddrHi		<= tNxtReqAddrHi;
+		tReqAddrHiIsNz	<= tNxtReqAddrHiIsNz;
 		tReqIxA			<= tNxtReqIxA;
 		tReqIxB			<= tNxtReqIxB;
 		tReqAxA			<= tNxtReqAxA;

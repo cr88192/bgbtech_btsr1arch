@@ -16,7 +16,7 @@ CC=bgbcc
 
 TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
 	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
-	/fjcmp /fxg2mode /faluptr
+	/fjcmp /fxg2mode
 
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
 #	/Zz /fshuffle /fqmul /fptropts /fxgpr_ena /fnoexcept /fldgbr
@@ -112,7 +112,7 @@ SRCS=				\
 #		tst_bs2a.bs		\
 #		tst_cpp1a.cpp
 
-all:	 doom_bjx2.exe tstputc_bjx2.exe
+all:	 doom_bjx2.exe tstputc_bjx2.exe tstshellcmd_bjx2.exe
 
 clean:
 
@@ -122,5 +122,8 @@ doom_bjx2.exe:	$(SRCS) i_main.c
 
 tstputc_bjx2.exe:	tests/tst_putcperf.c
 	$(CC) $(CFLAGS) $(LDFLAGS) tests/tst_putcperf.c \
-	tst_putcperf.o \
 	/Fetstputc_bjx2.exe $(LIBS)
+
+tstshellcmd_bjx2.exe:	tests/tst_shellcmd.c
+	$(CC) $(CFLAGS) $(LDFLAGS) tests/tst_shellcmd.c \
+	/Fetstshellcmd_bjx2.exe $(LIBS)

@@ -38,6 +38,11 @@ Continues on the work from the first 2 stages.
 `include "FpuConvH2D.v"
 `endif
 
+`ifdef jx2_enable_pmov
+`include "ExConv_Fp16Exp32.v"
+`include "ExConv_Fp8Exp12.v"
+`endif
+
 `ifdef jx2_agu_ldtex
 `ifdef jx2_enable_btcutx
 `include "ExBtcUtx1.v"
@@ -169,6 +174,34 @@ wire[63:0]	memDataIn_H2D;		//memory data (Single To Double)
 FpuConvS2D	mem_cnv_s2d(memDataIn[31:0], memDataIn_S2D);
 FpuConvH2D	mem_cnv_h2d(memDataIn[15:0], memDataIn_H2D);
 `endif
+
+`ifdef jx2_enable_pmov
+wire[63:0]	memDataIn_2xHtoS;
+wire[63:0]	memDataIn_4xM8toH;
+
+ExConv_Fp16Exp32 mem_2xh2s_a(memDataIn[15: 0], 0, memDataIn_2xHtoS[31: 0]);
+ExConv_Fp16Exp32 mem_2xh2s_b(memDataIn[31:16], 0, memDataIn_2xHtoS[63:32]);
+
+wire[1:0]	mem_4xm2h_mode;
+// assign		mem_4xm2h_mode = { 1'b0, opUIxt[4] };
+assign		mem_4xm2h_mode = 2'b01;
+
+ExConv_Fp8Exp12 mem_4xm2h_a(
+	memDataIn[ 7: 0], memDataIn_4xM8toH[15: 4], mem_4xm2h_mode);
+ExConv_Fp8Exp12 mem_4xm2h_b(
+	memDataIn[15: 8], memDataIn_4xM8toH[31:20], mem_4xm2h_mode);
+ExConv_Fp8Exp12 mem_4xm2h_c(
+	memDataIn[23:16], memDataIn_4xM8toH[47:36], mem_4xm2h_mode);
+ExConv_Fp8Exp12 mem_4xm2h_d(
+	memDataIn[31:24], memDataIn_4xM8toH[63:52], mem_4xm2h_mode);
+
+assign	memDataIn_4xM8toH[ 3: 0]=0;
+assign	memDataIn_4xM8toH[19:16]=0;
+assign	memDataIn_4xM8toH[35:32]=0;
+assign	memDataIn_4xM8toH[51:48]=0;
+
+`endif
+
 
 `ifdef jx2_agu_ldtex
 `ifdef jx2_enable_btcutx
@@ -321,6 +354,7 @@ begin
 		JX2_UCMD_FMOV_MR: begin
 			tDoMemOp		= 1;
 			tValOutDfl		= memDataIn_S2D;
+
 `ifdef jx2_enable_fmovh
 //			if(opUIxt[4])
 			if(opUIxt[5:4]==2'b01)
@@ -348,6 +382,16 @@ begin
 			if(regIdRm[6:5]==2'b11)
 				tDoOutDfl	= 0;
 
+		end
+`endif
+
+`ifdef jx2_enable_pmov
+		JX2_UCMD_PMOV_MR: begin
+			tDoMemOp		= 1;
+			tValOutDfl		= memDataIn_2xHtoS;
+			if(opUIxt[5])
+				tValOutDfl		= memDataIn_4xM8toH;
+			tDoOutDfl		= 1;
 		end
 `endif
 

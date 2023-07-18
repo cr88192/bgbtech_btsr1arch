@@ -174,6 +174,7 @@ void *sobj;
 };
 
 typedef struct _tkgdi_window_s		_tkgdi_window_t;
+typedef struct _tkgdi_conparm_s 	_tkgdi_conparm;
 
 struct _tkgdi_window_s {
 int base_x, base_y;
@@ -194,7 +195,35 @@ u16		*buf_data;		//backbuffer data
 u64		*buf_utx2;		//backbuffer (UTX2)
 byte	*buf_dirty1;	//buffer (dirty, pixel data)
 byte	*buf_dirty2;	//buffer (dirty, cells since last redraw)
+
+_tkgdi_conparm	*con;
 };
+
+struct _tkgdi_conparm_s {
+u32 text_attr;
+u32 text_attr_dfl;
+
+u16 fgclr_555;
+u16 bgclr_555;
+
+byte x;
+byte y;
+byte ena;
+byte resv_1;
+
+u64 *conbuf;
+u16 *pixbuf;
+u64 *conmask;
+u64 conrowmask;
+
+int isesc;
+int escval0;
+int escval1;
+int escval2;
+int escval3;
+};
+
+
 
 typedef struct TKGDI_MIDI_COMMAND_s TKGDI_MIDI_COMMAND;
 typedef struct TKGDI_MIDI_PATCHINFO_s TKGDI_MIDI_PATCHINFO;

@@ -44,6 +44,8 @@ module ExEXB2(
 	regValRt,		//Source B Value
 	regValRm,		//Source C Value / Dest
 
+	regValLea,		//LEA Output
+
 	regIdRn1,		//Destination ID (EX1)
 	regValRn1,		//Destination Value (EX1)
 
@@ -77,6 +79,8 @@ output[1:0]		exHold;
 input[63:0]		regValRs;		//Source A Value
 input[63:0]		regValRt;		//Source B Value
 input[63:0]		regValRm;		//Source C Value
+
+input[63:0]		regValLea;		//LEA Value
 
 `input_gpr		regIdRn1;		//Destination ID (EX1)
 input[63:0]		regValRn1;		//Destination Value (EX1)
@@ -184,6 +188,10 @@ begin
 		end
 	
 		JX2_UCMD_LEA_MR: begin
+`ifdef jx2_cpu_lea_ex2
+			tRegIdRn2		= regIdRm;			//
+			tRegValRn2		= regValLea;		//
+`endif
 		end
 
 		JX2_UCMD_MOV_RM: begin

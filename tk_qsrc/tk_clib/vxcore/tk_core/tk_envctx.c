@@ -35,7 +35,7 @@ TK_EnvContext *TK_EnvCtx_CloneContext(TK_EnvContext *ctx)
 	tmp=TK_EnvCtx_AllocContext();	
 	if(!ctx)
 	{
-		tk_puts("TK_EnvCtx_CloneContext: Clone Null Context\n");
+		tk_dbg_printf("TK_EnvCtx_CloneContext: Clone Null Context\n");
 		return(tmp);
 	}
 
@@ -46,7 +46,7 @@ TK_EnvContext *TK_EnvCtx_CloneContext(TK_EnvContext *ctx)
 			ctx->envlst_val[i]);
 	}
 
-	tk_printf("TK_EnvCtx_CloneContext: Cwd=%s\n", ctx->cwd);
+	tk_dbg_printf("TK_EnvCtx_CloneContext: Cwd=%s\n", ctx->cwd);
 
 	TK_EnvCtx_SetCwd(tmp, ctx->cwd);
 	
@@ -151,7 +151,7 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 	char *cn1, *cv1;
 	int i, j, k;
 
-	tk_printf("TK_EnvCtx_SetEnvVarI: %s=%s\n", varn, varv);
+	tk_dbg_printf("TK_EnvCtx_SetEnvVarI: %s=%s\n", varn, varv);
 	
 	if(!ctx->envbufs)
 	{
@@ -222,18 +222,18 @@ char *TK_EnvCtx_GetCwd(TK_EnvContext *ctx, char *buf, int sz)
 	char *cwd;
 	int l;
 	
-//	tk_printf("TK_EnvCtx_GetCwd env=%p\n", ctx);
+//	tk_dbg_printf("TK_EnvCtx_GetCwd env=%p\n", ctx);
 	
 	cwd=NULL;
 	if(ctx)	
 		{ cwd=ctx->cwd; }
 	if(!cwd)
 	{
-//		tk_printf("TK_EnvCtx_GetCwd env=%p, CWD was NULL\n", ctx);
+//		tk_dbg_printf("TK_EnvCtx_GetCwd env=%p, CWD was NULL\n", ctx);
 		cwd="/";
 	}else
 	{
-//		tk_printf("TK_EnvCtx_GetCwd env=%p, CWD=%s (%p)\n", ctx, cwd, cwd);
+//		tk_dbg_printf("TK_EnvCtx_GetCwd env=%p, CWD=%s (%p)\n", ctx, cwd, cwd);
 	}
 	
 	l=strlen(cwd);

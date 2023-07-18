@@ -18,6 +18,7 @@ __object __lvo_emptyobject(void);
 __variant  __lvo_getslot(__object obj, char *name);
 void __lvo_setslot(__object obj, char *name, __variant val);
 
+__variant TKSH_BasParseEvalExpr(TKSH_BasicCtx *ctx, void *rva);
 
 TKSH_BasicCtx *TKSH_BasAllocContext()
 {
@@ -28,6 +29,12 @@ TKSH_BasicCtx *TKSH_BasAllocContext()
 	ctx->rootenv=__lvo_emptyobject();
 	
 	return(ctx);
+}
+
+int TKSH_BasDestroyContext(TKSH_BasicCtx *ctx)
+{
+	tk_free(ctx);
+	return(0);
 }
 
 char *TKSK_BasEatWhite(char *str)
@@ -121,6 +128,21 @@ char *TKSK_BasReadToken(char *str, char *buf, int *rtokty)
 		return(s);
 	}
 
+	if(s[1]=='=')
+	{
+		if(	(s[0]=='<') ||
+			(s[0]=='>') ||
+			(s[0]=='=') ||
+			(s[0]=='!'))
+		{
+			*rtokty=4;
+			*t++=*s++;
+			*t++=*s++;
+			*t=0;
+			return(s);
+		}
+	}
+
 	*rtokty=4;
 	*t++=*s++;
 	*t=0;
@@ -200,10 +222,51 @@ int TKSH_BasSetVar(TKSH_BasicCtx *ctx, char *name, __variant val)
 	__lvo_setslot(ctx->rootenv, name, val);
 }
 
+__variant TKSH_BasParseEvalFunArgs(TKSH_BasicCtx *ctx, void *rva)
+{
+	__variant va[16];
+
+	__variant v0, v1;
+	char **a;
+	char *s0, *s1;
+	int na;
+
+	a=*(char ***)rva;
+
+	na=0;
+	s0=a[0];
+	while(s0)
+	{
+		if(!strcmp(s0, ")"))
+		{
+			a++;
+			break;
+		}
+		
+		v0=TKSH_BasParseEvalExpr(ctx, &a);
+		va[na++]=v0;
+
+		s0=a[0];
+		if(!strcmp(s0, ","))
+		{
+			a++;
+			s0=a[0];
+		}
+	}
+	
+	v0=__lvo_newvararray_vn(va, na);
+	return(v0);
+}
+
+__variant TKSH_BasEvalDispatchFunction(TKSH_BasicCtx *ctx,
+	char *name, __variant args)
+{
+}
+
 __variant TKSH_BasParseEvalExprI(TKSH_BasicCtx *ctx, void *rva)
 {
 	char **a;
-	char *s0;
+	char *s0, *s1;
 	__variant v0, v1;
 	long li;
 	double f;
@@ -213,6 +276,17 @@ __variant TKSH_BasParseEvalExprI(TKSH_BasicCtx *ctx, void *rva)
 	if(TKSH_BasTokenNameP(a[0]))
 	{
 		s0=a[0];
+		
+		s1=a[1];
+		if(s1 && !strcmp(s1, "("))
+		{
+			a+=2;
+			v1=TKSH_BasParseEvalFunArgs(ctx, &a);
+			v0=TKSH_BasEvalDispatchFunction(ctx, s0, v1);
+			*(char ***)rva=a+1;
+			return(v1);
+		}
+		
 		*(char ***)rva=a+1;
 		return(TKSH_BasGetVar(ctx, s0));
 	}
@@ -256,7 +330,8 @@ __variant TKSH_BasParseEvalExprI(TKSH_BasicCtx *ctx, void *rva)
 		}
 	}
 
-	__debugbreak();
+	tk_printf("?%s?\n", a[0]);
+//	__debugbreak();
 
 	*(char ***)rva=a+1;
 	return(__object_null);
@@ -421,14 +496,50 @@ __variant TKSH_BasParseEvalExprRelCmp(TKSH_BasicCtx *ctx, void *rva)
 	return(v0);
 }
 
+__variant TKSH_BasParseEvalExprLogic(TKSH_BasicCtx *ctx, void *rva)
+{
+	char **a;
+	char *s0;
+	__variant v0, v1;
+
+	a=*(char ***)rva;
+	v0=TKSH_BasParseEvalExprRelCmp(ctx, &a);
+	while(a[0])
+	{
+		s0=a[0];
+		if(!strcmp(s0, "&&") || !stricmp(s0, "and"))
+		{
+			a++;
+			v1=TKSH_BasParseEvalExprRelCmp(ctx, &a);
+			v0=(v0!=0)&(v1!=0);
+			continue;
+		}
+
+		if(!strcmp(s0, "||") || !stricmp(s0, "or"))
+		{
+			a++;
+			v1=TKSH_BasParseEvalExprRelCmp(ctx, &a);
+			v0=(v0!=0)|(v1!=0);
+			continue;
+		}
+
+		break;
+	}
+	*(char ***)rva=a;
+	return(v0);
+}
+
+
 __variant TKSH_BasParseEvalExpr(TKSH_BasicCtx *ctx, void *rva)
 {
 //	return(TKSH_BasParseEvalExprAS(ctx, rva));
-	return(TKSH_BasParseEvalExprRelCmp(ctx, rva));
+//	return(TKSH_BasParseEvalExprRelCmp(ctx, rva));
+	return(TKSH_BasParseEvalExprLogic(ctx, rva));
 }
 
 int TKSH_BasRunCommandTok(TKSH_BasicCtx *ctx, int seq, char **args)
 {
+	char tbuf[256];
 	char **a1;
 	char *s0;
 	long li;
@@ -571,6 +682,43 @@ int TKSH_BasRunCommandTok(TKSH_BasicCtx *ctx, int seq, char **args)
 		return(seq+1);
 	}
 
+	if(	!stricmp(args[0], "input") &&
+		TKSH_BasTokenStringP(args[1]) &&
+		(!strcmp(args[2], ";") || !strcmp(args[2], ",")) &&
+		TKSH_BasTokenNameP(args[3]))
+	{
+		tk_puts(args[1]);
+		tk_gets(tbuf);
+
+		a1=TKSH_BasSplitLine(tbuf);
+		if(a1[0] && !a1[1])
+		{
+			if(TKSH_BasTokenNumberP(a1[0]))
+			{
+				v1=TKSH_BasParseEvalExprI(ctx, &a1);
+				TKSH_BasSetVar(ctx, args[3], v1);
+			}else
+			{
+				v1=__lvo_wrapstring(a1[0]);
+				TKSH_BasSetVar(ctx, args[3], v1);
+			}
+		}else
+		{
+			i=strlen(tbuf);
+			if((i>0) && (tbuf[i-1]=='\r'))
+				tbuf[i-1]=0;
+
+			v1=__lvo_wrapstring(tbuf);
+			TKSH_BasSetVar(ctx, args[3], v1);
+		}
+
+//		a1=args+3;
+//		v1=TKSH_BasParseEvalExpr(ctx, &a1);
+//		TKSH_BasSetVar(ctx, args[1], v1);
+		return(seq+1);
+	}
+
+
 
 	tk_printf("? Syntax Error, %s\n", args[0]);
 	return(-1);
@@ -629,4 +777,133 @@ int TKSH_BasPreScanCommand(TKSH_BasicCtx *ctx, int seq, char *line)
 	}
 
 	return(seq+1);
+}
+
+int TKSH_BasCountBufferLines(char *buf, int szbuf)
+{
+	char *cs, *cse;
+	int i, ln;
+	
+	cs=buf; cse=buf+szbuf; ln=1;
+	while(cs<cse)
+	{
+		i=*cs++;
+		if(i==0)
+			break;
+		if(i=='\n')
+			ln++;
+	}
+	return(ln);
+}
+
+int TKSH_BasSplitBufferLines(
+	char **linebuf, char *txtbuf,
+	char *buf, int szbuf)
+{
+	char *cs, *cse, *ct, *ct0;
+	int i, ln;
+	
+	ct=txtbuf; ct0=ct;
+	cs=buf; cse=buf+szbuf; ln=0;
+	while(cs<cse)
+	{
+		i=*cs++;
+
+		if(i==0)
+			break;
+
+		if(i=='\n')
+		{
+			*ct++=0;
+			linebuf[ln++]=ct0;
+			ct0=ct;
+		}
+		if(i=='\r')
+			continue;
+
+		*ct++=i;
+	}
+	
+	if(ct>ct0)
+	{
+		*ct++=0;
+		linebuf[ln++]=ct0;
+	}
+
+	return(ln);
+}
+
+int TKSH_BasRunBasicBufferCtx(TKSH_BasicCtx *ctx, char *buf, int szbuf)
+{
+	char **lbuf;
+	char *tbuf;
+	int lc, runseq, kk, key, dn, ctrl;
+	int i, j, k;
+	
+	lc=TKSH_BasCountBufferLines(buf, szbuf);
+
+	lbuf=tk_malloc((lc+8)*sizeof(char *));
+	tbuf=tk_malloc(szbuf+(2*lc));
+	lc=TKSH_BasSplitBufferLines(lbuf, tbuf, buf, szbuf);
+
+	TKSH_BasPreScanCommand(ctx, 0, NULL);
+	for(j=1; j<=lc; j++)
+	{
+		TKSH_BasPreScanCommand(ctx, j, lbuf[j-1]);
+	}
+	
+	runseq=1; ctrl=0;
+	while((runseq>0) && (runseq<=lc))
+	{
+		while(tk_kbhit())
+		{
+			kk=tk_getch();
+			if(kk==0x7F)
+				{ key=tk_getch(); dn=1; }
+			else if(kk==0xFF)
+				{ key=tk_getch(); dn=0; }
+			else if(kk==0x80)
+			{
+				key=tk_getch();
+				key=(key<<8)|tk_getch();
+				dn=!(key&0x8000);
+			}else
+			{
+				key=kk&0x7F;
+				dn=!(kk&0x80);
+			}
+
+			if(key==TK_K_CTRL)
+			{
+				ctrl=dn;
+				continue;
+			}
+
+			if(ctrl && (key=='c'))
+			{
+				runseq=-10;
+				continue;
+			}
+		}
+
+		runseq=TKSH_BasRunCommand(
+			ctx, runseq,
+			lbuf[runseq-1]);
+	}
+	
+	tk_free(tbuf);
+	tk_free(lbuf);
+	
+	return(0);
+}
+
+int TKSH_BasRunBasicBuffer(char *buf, int szbuf)
+{
+	TKSH_BasicCtx *ctx;
+	int i;
+
+	ctx=TKSH_BasAllocContext();
+	i=TKSH_BasRunBasicBufferCtx(ctx, buf, szbuf);
+	TKSH_BasDestroyContext(ctx);
+	return(i);
 }

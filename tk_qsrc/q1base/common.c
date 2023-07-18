@@ -2174,8 +2174,8 @@ pack_t *COM_LoadPackFile (char *packfile)
 	int                             numpackfiles;
 	pack_t                  *pack;
 	int                             packhandle;
-	dpackfile_t             info[MAX_FILES_IN_PACK];
-//	static dpackfile_t             info[MAX_FILES_IN_PACK];
+//	dpackfile_t             info[MAX_FILES_IN_PACK];
+	static dpackfile_t             info[MAX_FILES_IN_PACK];
 	unsigned short          crc;
 
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
@@ -2289,7 +2289,7 @@ pack_t *COM_LoadWad2AFile (char *packfile)
 	int                             numpackfiles;
 	pack_t                  *pack;
 	int                             packhandle;
-	wad2lump_t             info[MAX_FILES_IN_PACK];
+	static	wad2lump_t      info[MAX_FILES_IN_PACK];
 	char					w2paths[64][64];
 	char					tn[256];
 	char					tytab[64][5];

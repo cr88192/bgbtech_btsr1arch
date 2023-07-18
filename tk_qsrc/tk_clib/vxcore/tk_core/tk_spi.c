@@ -567,13 +567,33 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 	return(0);
 }
 
+int TKSPI_bdev_ReadSectors(TK_BLKDEV_CTX *ctx, byte *buf, s64 lba, int cnt)
+{
+	return(TKSPI_ReadSectors(buf, lba, cnt));
+}
+
+int TKSPI_bdev_WriteSectors(TK_BLKDEV_CTX *ctx, byte *buf, s64 lba, int cnt)
+{
+	return(TKSPI_WriteSectors(buf, lba, cnt));
+}
+
+TK_BLKDEV_VT tkspi_blkdev_vt = {
+"sdspi",
+NULL,
+NULL,
+NULL,
+TKSPI_bdev_ReadSectors,
+TKSPI_bdev_WriteSectors
+};
 
 static int tkspi_is_init=0;
+static int tkspi_id_bdev=0;
 
 int TKSPI_InitDevice(void)
 {
 //	static const char *hexchars="0123456789ABCDEF";
 	byte ocr[4];
+	TK_BLKDEV_CTX *bdctx;
 	byte s, cmd, ty;
 	u32 n, count;
 	
@@ -666,5 +686,10 @@ int TKSPI_InitDevice(void)
 		tkspi_init_ok=0;
 		printf("TKSPI_InitDevice: Init Failed\n");
 	}
+	
+	bdctx=TKBDEV_AllocNewDevice();
+	tkspi_id_bdev=bdctx->bdev;
+	bdctx->vt=&tkspi_blkdev_vt;
+	
 	return(tkspi_init_ok);
 }

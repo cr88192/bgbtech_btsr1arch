@@ -199,7 +199,7 @@ int tk_vfile_init()
 	if(tk_vf_init==1)return(0);
 	tk_vf_init=1;
 	
-	tk_puts("tk_vfile_init\n");
+	tk_dbg_printf("tk_vfile_init\n");
 	
 #ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
@@ -232,7 +232,7 @@ int tk_vfile_init()
 	tk_mount_sysc();
 #endif
 
-	tk_puts("tk_vfile_init: OK\n");
+	tk_dbg_printf("tk_vfile_init: OK\n");
 
 	return(1);
 }
@@ -433,7 +433,7 @@ int tk_unlink2(TK_USERINFO *usri, char *name)
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_unlink: Fail %s\n", name);
+	tk_dbg_printf("tk_unlink: Fail %s\n", name);
 	return(-1);
 }
 
@@ -490,7 +490,7 @@ int tk_rmdir2(TK_USERINFO *usri, char *name)
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_rmdir: Fail %s\n", name);
+	tk_dbg_printf("tk_rmdir: Fail %s\n", name);
 	return(-1);
 }
 
@@ -546,7 +546,7 @@ int tk_mkdir2(TK_USERINFO *usri, char *name, char *mode)
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_mkdir: Fail %s\n", name);
+	tk_dbg_printf("tk_mkdir: Fail %s\n", name);
 	return(-1);
 }
 
@@ -611,14 +611,14 @@ int tk_rename2(TK_USERINFO *usri, char *oldname, char *newname, char *mode)
 		{
 			if(strncmp(mnt->src, newname, mnt->szSrc))
 			{
-				tk_printf("tk_rename: skip %s, newname mismatch\n", mnt->src);
+				tk_dbg_printf("tk_rename: skip %s, newname mismatch\n", mnt->src);
 				mnt=mnt->next;
 				continue;
 			}
 		
 			if(strncmp(mnt->src, oldname, mnt->szSrc) && !(islink&2))
 			{
-				tk_printf("tk_rename: skip %s, oldname mismatch\n", mnt->src);
+				tk_dbg_printf("tk_rename: skip %s, oldname mismatch\n", mnt->src);
 				mnt=mnt->next;
 				continue;
 			}
@@ -652,7 +652,7 @@ int tk_rename2(TK_USERINFO *usri, char *oldname, char *newname, char *mode)
 			{
 				if(*s1 && (*s1!='/') && (*(s1-1)!=':'))
 				{
-					tk_printf("tk_rename: skip %s, oldname no slash\n",
+					tk_dbg_printf("tk_rename: skip %s, oldname no slash\n",
 						mnt->src);
 					mnt=mnt->next;
 					continue;
@@ -663,7 +663,7 @@ int tk_rename2(TK_USERINFO *usri, char *oldname, char *newname, char *mode)
 
 			if(*t1 && (*t1!='/') && (*(t1-1)!=':'))
 			{
-				tk_printf("tk_rename: skip %s, newname no slash\n",
+				tk_dbg_printf("tk_rename: skip %s, newname no slash\n",
 					mnt->src);
 				mnt=mnt->next;
 				continue;
@@ -685,7 +685,7 @@ int tk_rename2(TK_USERINFO *usri, char *oldname, char *newname, char *mode)
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_rename: Fail old=%s new=%s mode=%s\n",
+	tk_dbg_printf("tk_rename: Fail old=%s new=%s mode=%s\n",
 		oldname0, newname0, mode);
 	return(-1);
 }
@@ -705,7 +705,7 @@ int tk_fcopy2(TK_USERINFO *usri, char *oldname, char *newname)
 
 	if(!oldfd)
 	{
-//		tk_printf("fail open %s\n", oldname);
+//		tk_dbg_printf("fail open %s\n", oldname);
 		return(-1);
 	}
 
@@ -713,7 +713,7 @@ int tk_fcopy2(TK_USERINFO *usri, char *oldname, char *newname)
 	
 	if(!newfd)
 	{
-//		tk_printf("fail open %s\n", newname);
+//		tk_dbg_printf("fail open %s\n", newname);
 		tk_fclose(oldfd);
 		return(-1);
 	}
@@ -787,7 +787,7 @@ int tk_fstat2(TK_USERINFO *usri, char *name, TK_FSTAT *st)
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_fstat: Fail %s\n", name);
+	tk_dbg_printf("tk_fstat: Fail %s\n", name);
 	return(-1);
 }
 
@@ -842,7 +842,7 @@ int tk_fsctl2(TK_USERINFO *usri, char *name, int cmd, void *ptr)
 		mnt=mnt->next;
 	}
 
-	tk_printf("tk_fsctl: Fail %s\n", name);
+	tk_dbg_printf("tk_fsctl: Fail %s\n", name);
 	return(-1);
 }
 
@@ -921,7 +921,7 @@ TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode)
 		mnt=mnt->next;
 	}
 
-//	tk_printf("tk_fopen: Fail %s\n", name);
+//	tk_dbg_printf("tk_fopen: Fail %s\n", name);
 
 	tk_open_reclim--;
 	return(NULL);
@@ -1169,11 +1169,11 @@ int tk_hfopen(TKPE_TaskInfo *task, char *name, char *mode)
 	fd=tk_fopen2(&tacc, name, mode);
 	if(!fd)
 	{
-//		tk_printf("tk_hfopen: failed open %s\n", name);
+//		tk_dbg_printf("tk_hfopen: failed open %s\n", name);
 		return(0);
 	}
 	hdl=TK_GetHandleForPtr(task, fd);
-//	tk_printf("tk_hfopen: open %s h=%d\n", name, hdl);
+//	tk_dbg_printf("tk_hfopen: open %s h=%d\n", name, hdl);
 	return(hdl);
 }
 
@@ -1323,7 +1323,7 @@ TK_DIR *tk_opendir2(TK_USERINFO *usri, char *name)
 		s1=name;
 		if(mnt->src && (mnt->szSrc>0))
 		{
-//			tk_printf("tk_opendir: Src=%s\n", mnt->src);
+//			tk_dbg_printf("tk_opendir: Src=%s\n", mnt->src);
 
 			if(strncmp(mnt->src, name, mnt->szSrc))
 			{
@@ -1340,7 +1340,7 @@ TK_DIR *tk_opendir2(TK_USERINFO *usri, char *name)
 				s1++;
 		}
 
-//		tk_printf("tk_opendir: Check %s\n", mnt->src);
+//		tk_dbg_printf("tk_opendir: Check %s\n", mnt->src);
 	
 		if(mnt->vt->opendir)
 		{
@@ -1371,7 +1371,7 @@ TK_DIR *tk_opendir2(TK_USERINFO *usri, char *name)
 		return(fd);
 	}
 
-	tk_printf("tk_opendir: Fail %s\n", name);
+	tk_dbg_printf("tk_opendir: Fail %s\n", name);
 	tk_opendir_reclim--;
 	return(NULL);
 }

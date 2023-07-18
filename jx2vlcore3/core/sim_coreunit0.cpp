@@ -2411,6 +2411,10 @@ int main(int argc, char **argv, char **env)
 	uint64_t rt_ms;
 	u32	rcp_mhz_24;
 	
+	int stat_reason_cnt[8];
+	char *stat_reason_name[8];
+	int stat_reason_idx[8];
+	
 	double stat_inst_bdl, stat_bdl_clk, stat_mips, clk_ratio;
 	double stat_mips_avg, stat_mips_avg_lo, stat_mips_avg_hi,
 		stat_mips_min, stat_mips_max, stat_mips_tavg;
@@ -2581,6 +2585,16 @@ int main(int argc, char **argv, char **env)
 	stat_mips_avg_cnt_lo=1;
 	stat_mips_avg_cnt_hi=1;
 
+	for(i=0; i<8; i++)
+		stat_reason_cnt[i]=0;
+
+	stat_reason_name[0]="L1I";
+	stat_reason_name[1]="L1D";
+	stat_reason_name[2]="IL";
+	stat_reason_name[3]="RAM";
+	stat_reason_name[4]="MMIO";
+	stat_reason_name[5]="Misc";
+
 	top->ddrModeIn=0;
 	if(do_qmt)
 		top->ddrModeIn=1;
@@ -2596,10 +2610,12 @@ int main(int argc, char **argv, char **env)
 		cnt_dled++;
 		cnt_h1+=(top->dbg_exHold1!=0);
 		cnt_h2+=(top->dbg_exHold2!=0);
+
 		cnt_d1+=(top->dbg_outStatus1!=0);
 		cnt_d2+=(top->dbg_outStatus2!=0);
 		cnt_d3+=(top->dbg_outStatus3!=0);
 		cnt_d4+=(top->dbg_outStatus4!=0);
+
 		cnt_d5+=(top->dbg_outStatus5!=0);
 		cnt_d6+=(top->dbg_outStatus6!=0);
 		cnt_d7+=(top->dbg_outStatus7!=0);
@@ -2620,12 +2636,45 @@ int main(int argc, char **argv, char **env)
 			tot_cnt_led>>=1;
 			tot_cnt_led_nostall>>=1;
 			tot_cnt_exwidth>>=1;
+			
+			for(i=0; i<8; i++)
+				stat_reason_cnt[i]>>=1;
 		}
 
 		tot_cnt_led++;
 		if(!top->dbg_exHold1)
 			tot_cnt_led_nostall++;
 		tot_cnt_exwidth+=top->dbgExWidth;
+
+		if(top->dbg_outStatus2!=0)
+			stat_reason_cnt[2]++;
+
+		if(top->dbg_outStatus5!=0)
+			stat_reason_cnt[0]++;
+		if(top->dbg_outStatus6!=0)
+			stat_reason_cnt[1]++;
+
+		if((top->dbg_outStatus9!=0) || (top->dbg_outStatus10!=0))
+			stat_reason_cnt[3]++;
+		if(top->dbg_outStatus11!=0)
+			stat_reason_cnt[4]++;
+		if(top->dbg_outStatus12!=0)
+			stat_reason_cnt[5]++;
+
+		for(i=0; i<8; i++)
+			stat_reason_idx[i]=i;
+
+		for(i=0; i<8; i++)
+			for(j=i+1; j<8; j++)
+		{
+			if(	stat_reason_cnt[stat_reason_idx[i]] <
+				stat_reason_cnt[stat_reason_idx[j]])
+			{
+				k=stat_reason_idx[i];
+				stat_reason_idx[i]=stat_reason_idx[j];
+				stat_reason_idx[j]=k;
+			}
+		}
 
 //		if(t2>16)
 //		if((t2>16) && (cnt_dled>8))
@@ -2848,6 +2897,22 @@ int main(int argc, char **argv, char **env)
 			BTM_DrawStrFBuf2x(
 				(uint32_t *)btesh2_gfxcon_framebuf, 800,
 				0*8, 600-96, tb, 0xFFFFBF80, 0xFF008000);
+
+
+			sprintf(tb, "%s:%.2f%% %s:%.2f%% %s:%.2f%%",
+				stat_reason_name[stat_reason_idx[0]],
+				(stat_reason_cnt[stat_reason_idx[0]]+1.0)/(tot_cnt_led+1.0),
+				stat_reason_name[stat_reason_idx[1]],
+				(stat_reason_cnt[stat_reason_idx[1]]+1.0)/(tot_cnt_led+1.0),
+				stat_reason_name[stat_reason_idx[2]],
+				(stat_reason_cnt[stat_reason_idx[2]]+1.0)/(tot_cnt_led+1.0)
+				);
+
+			BTM_DrawStrFBuf2x(
+				(uint32_t *)btesh2_gfxcon_framebuf, 800,
+				2*8, 600-112, tb, 0xFFFFBF80, 0xFF008000);
+
+
 
 			cnt_dled=0;
 			cnt_h1=0;	cnt_h2=0;

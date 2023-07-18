@@ -238,12 +238,13 @@ static short __toupR[257] = {
 // short *__tolow = &__tolowR[1];
 // short *__toup = &__toupR[1];
 
-unsigned short *__isbuf;
+// unsigned short *__isbuf;
+unsigned short *__isbuf = NULL;
 
 // #ifndef __BJX2__
 #if 1
-short *__tolow;
-short *__toup;
+short *__tolow = NULL;
+short *__toup = NULL;
 #endif
 
 int _tolower_gen(int c);
@@ -252,6 +253,7 @@ int _toupper_gen(int c);
 void __cytpe_init(void)
 {
 	int i;
+
 	if(__isbuf)
 		return;
 

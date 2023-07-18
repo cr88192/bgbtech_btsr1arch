@@ -61,7 +61,7 @@ int tk_bdspi_init()
 
 	TKSPI_InitDevice();
 
-	printf("tk_bdspi_init\n");
+	tk_dbg_printf("tk_bdspi_init\n");
 
 #if 1
 	mbr=&tmbr;
@@ -79,10 +79,10 @@ int tk_bdspi_init()
 		if((lba+lbn)>maxlba)
 			maxlba=lba+lbn;
 		
-		printf("  %08X %08X %02X %s\n", lba, lbn, fsty, s0);
+		tk_dbg_printf("  %08X %08X %02X %s\n", lba, lbn, fsty, s0);
 	}
 
-	printf("tk_bdspi_init: sda 0\n");
+	tk_dbg_printf("tk_bdspi_init: sda 0\n");
 
 	tmp=TK_DevFS_AllocDevice();
 	tmp->vt=&tk_vfile_bdspi_vt;

@@ -45,8 +45,9 @@ LDFLAGS=$(TK_LDFL) -lvxcore
 
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
 	-fqmul -fldtex -fptropts -ffpu_fpvsf -fldgbr \
-	-ffpu_fpimm -fxgpr_ena -fnoshuffle
+	-fxgpr_ena -fnoshuffle
 
+# -ffpu_fpimm 
 # -fxg2mode
 #	-fxgpr_ena 
 #	 -ffdiv

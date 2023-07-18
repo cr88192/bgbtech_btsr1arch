@@ -32,6 +32,7 @@
 #include "tk_core/tk_mmap.c"
 
 #include "tk_core/tk_hugeptr.c"
+#include "tk_core/tk_blkdev.c"
 
 #include "tk_core/tk_spi.c"
 #include "tk_core/tk_epoch.c"
@@ -75,7 +76,10 @@
 
 #include "tk_core/tk_rwad.c"
 
+#include "tk_core/tkgdi_blitupdate.c"
+#include "tk_core/tkgdi_drawcon.c"
 #include "tk_core/tk_hal_tkgdi.c"
+
 #include "tk_core/tk_hal_snd.c"
 #include "tk_core/tk_hal_midi.c"
 

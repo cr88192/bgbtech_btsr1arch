@@ -4181,6 +4181,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		case 0xC:	/* F0ez_4Czz */
 			if(eq)
 			{
+				break;
+			
 				if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 					BJX2_EXTID_GFP))
 				{
@@ -4259,6 +4261,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		case 0xD:	/* F0ez_4Dzz */
 			if(eq)
 			{
+				break;
+			
 				if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 					BJX2_EXTID_GFP))
 				{
@@ -4288,6 +4292,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		case 0xE:	/* F0ez_4Ezz */
 			if(eq)
 			{
+				break;
+			
 				if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 					BJX2_EXTID_GFP))
 				{

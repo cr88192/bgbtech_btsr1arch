@@ -473,6 +473,19 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 				return(lbl);
 			}
 		}
+
+		if(!bgbcp_strcmp(name, "__tolow"))
+		{
+			if(!(ctx->is_simpass))
+			{
+				i=-1;
+			}
+		}
+
+		if(!bgbcp_strcmp(name, "__tolow\xff"))
+		{
+				i=-1;
+		}
 	}
 
 	s=name; h=0;
@@ -525,7 +538,7 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 
 	if(ctx->is_simpass)
 	{
-		return(-1);
+//		return(-1);
 	}
 
 	lbl=BGBCC_JX2_GenLabel(ctx);

@@ -2489,6 +2489,12 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_SUBSL)		||
 			(op->nmid==BJX2_NMID_ADDUL)		||
 			(op->nmid==BJX2_NMID_SUBUL)		||
+
+			(op->nmid==BJX2_NMID_LEAB)		||
+			(op->nmid==BJX2_NMID_LEAW)		||
+			(op->nmid==BJX2_NMID_LEAD)		||
+			(op->nmid==BJX2_NMID_LEAQ)		||
+
 			(op->nmid==BJX2_NMID_MULSW)		||
 			(op->nmid==BJX2_NMID_MULUW)		||
 			(op->nmid==BJX2_NMID_PADDW)		||
