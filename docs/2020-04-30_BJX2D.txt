@@ -2075,9 +2075,9 @@ F0zz Instruction Block:
 *** F0nm_3g38 BNDCMP.Q	Rm, Rn				//Bounds Compare (QWord Scale)
 *** F0nm_3G38 -
 
-*** F0nm_3g48 ? SWAPE2B.L	Rm, Rn				//Swap Every 2-bits
+*** F0nm_3g48 ? SWAPE2B.L	Rm, Rn				//(?) Swap Every 2-bits
 *** F0nm_3G48 -
-*** F0nm_3g58 ? SWAPE4B.L	Rm, Rn				//Swap Every 4-bits
+*** F0nm_3g58 ? SWAPE4B.L	Rm, Rn				//(?) Swap Every 4-bits
 *** F0nm_3G58 -
 
 *** F0nm_3g68 ? CMPPEQ		Rm, Rn				//(ALUPTR) Compare Pointer
@@ -2094,39 +2094,39 @@ F0zz Instruction Block:
 ** F0nm_3ezF  (Reserved 2R Block Space)
 
 * F0nm_4eoz (Follows a similar pattern as F0nm_0zz0)
-** F0nm_4go0  MOV.X		Xn, (Rm, Disp5)		//(MOVX2) Store Pair
+** F0nm_4go0  MOV.X			Xn, (Rm, Disp5)		//(MOVX2) Store Pair
 ** F0nm_4Go0  LEAT.B		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4go1  ? MOV.C		Cn, (Rm, Disp5)		//(MOVC)
+** F0nm_4go1 ? MOV.C		Cn, (Rm, Disp5)		//(MOVC)
 ** F0nm_4Go1  LEAT.W		(Rm, Disp5), Rn		//(TTAG)
 ** F0nm_4go2  FMOV.S		Rn, (Rm, Disp5)		//(FMOV)
 ** F0nm_4Go2  LEAT.L		(Rm, Disp5), Rn		//(TTAG)
 ** F0nm_4go3  FMOV.H		Rn, (Rm, Disp5)		//(FMOV)
 ** F0nm_4Go3  LEAT.Q		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4go4  MOV.X		Xn, (Rm, Ro)		//(MOVX2) Store Pair
-** F0nm_4Go4  ? LEAT.B		(Rm, Ro), Rn	//(TTAG)
-** F0nm_4go5  ? MOV.C		Cn, (Rm, Ro)	//(MOVC)
-** F0nm_4Go5  ? LEAT.W		(Rm, Ro), Rn	//(TTAG)
-** F0nm_4go6  FMOV.S	Rn, (Rm, Ro)		//(FMOV)
-** F0nm_4Go6  ? LEAT.L		(Rm, Ro), Rn	//(TTAG)
-** F0nm_4go7  FMOV.H	Rn, (Rm, Ro)		//(FMOV)
-** F0nm_4Go7  ? LEAT.Q		(Rm, Ro), Rn	//(TTAG)
+** F0nm_4go4  MOV.X			Xn, (Rm, Ro)		//(MOVX2) Store Pair
+** F0nm_4Go4 ? LEAT.B		(Rm, Ro), Rn		//(TTAG)
+** F0nm_4go5 ? MOV.C		Cn, (Rm, Ro)		//(MOVC)
+** F0nm_4Go5 ? LEAT.W		(Rm, Ro), Rn		//(TTAG)
+** F0nm_4go6  FMOV.S		Rn, (Rm, Ro)		//(FMOV)
+** F0nm_4Go6 ? LEAT.L		(Rm, Ro), Rn		//(TTAG)
+** F0nm_4go7  FMOV.H		Rn, (Rm, Ro)		//(FMOV)
+** F0nm_4Go7 ? LEAT.Q		(Rm, Ro), Rn		//(TTAG)
 
 ** F0nm_4go8  MOV.X		(Rm, Disp5), Xn		//(MOVX2) Load Pair
 ** F0nm_4Go8  -
 ** F0nm_4go9  MOV.C		(Rm, Disp5), Cn		//(MOVC)
 ** F0nm_4Go9  -
 ** F0nm_4goA  FMOV.S	(Rm, Disp5), Rn		//(FMOV)
-** F0nm_4GoA  -
+** F0nm_4GoA ? PMOV.4M	(Rm, Disp5), Rn		//(PMOV) 4x FP8S to Binary16
 ** F0nm_4goB  FMOV.H	(Rm, Disp5), Rn		//(FMOV)
-** F0nm_4GoB  -
+** F0nm_4GoB ? PMOV.2H	(Rm, Disp5), Rn		//(PMOV) 2x Binary16 to Binary32
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
-** F0nm_4GoC  ? FADDA	Rm, Ro, Rn
+** F0nm_4GoC  -
 ** F0nm_4goD  MOV.C		(Rm, Ro), Cn		//(MOVC)
-** F0nm_4GoD  ? FSUBA	Rm, Ro, Rn
+** F0nm_4GoD  -
 ** F0nm_4goE  FMOV.S	(Rm, Ro), Rn		//(FMOV)
-** F0nm_4GoE  ? FMULA	Rm, Ro, Rn
+** F0nm_4GoE ? PMOV.4M	(Rm, Ro), Rn		//(PMOV) 4x FP8S to Binary16
 ** F0nm_4goF  FMOV.H	(Rm, Ro), Rn		//(FMOV)
-** F0nm_4GoF  -
+** F0nm_4GoF ? PMOV.2H	(Rm, Ro), Rn		//(PMOV) 2x Binary16 to Binary32
 
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
@@ -2196,11 +2196,11 @@ F0zz Instruction Block:
 
 
 * F0zz_7zzz
-** F0nm_7go0  -
+** F0nm_7go0 ? FADDA	Rm, Ro, Rn
 ** F0nm_7Go0  -
-** F0nm_7go1  -
+** F0nm_7go1 ? FSUBA	Rm, Ro, Rn
 ** F0nm_7Go1  -
-** F0nm_7go2  -
+** F0nm_7go2 ? FMULA	Rm, Ro, Rn
 ** F0nm_7Go2  -
 ** F0nm_7go3  -
 ** F0nm_7Go3  -

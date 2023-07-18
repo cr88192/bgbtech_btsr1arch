@@ -652,6 +652,14 @@ Index 1:
 * ( 30): MULQ (64-bit MUL and DIV/MOD instructions)
 * ( 31): FDIV (Adds FDIV and FSQRT)
 
+Index 28:
+* 1MHz Clock Counter
+* Clock count that increments at 1MHz.
+
+Index 30:
+* Clock Cycle Counter
+* Gives the total clock-cycle count for the current core.
+
 Index 31:
 * Hardware Random Number
 * Gives a random number generated internally by the CPU.
