@@ -1100,6 +1100,34 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 				dreg, BGBCC_SH_REG_RQ2);
 			return(1);
 		}
+
+		if(BGBCC_CCXL_TypeBitFieldP(ctx, stype))
+		{
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
+				BGBCC_SH_REGCLS_QGR);
+			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, tr0);
+			
+			j=BGBCC_CCXL_TypeBitFieldGetBits(ctx, stype);
+			k=BGBCC_CCXL_TypeBitFieldGetOffset(ctx, stype);
+			
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, stype))
+			{
+				BGBCC_JX2_EmitOpRegImmReg(sctx,
+					BGBCC_SH_NMID_SHLDQ, tr0, 64-(j+k), tr0);
+				BGBCC_JX2_EmitOpRegImmReg(sctx,
+					BGBCC_SH_NMID_SHLDQ, tr0, -(64-j), tr0);
+			}else
+			{
+				BGBCC_JX2_EmitOpRegImmReg(sctx,
+					BGBCC_SH_NMID_SHADQ, tr0, 64-(j+k), tr0);
+				BGBCC_JX2_EmitOpRegImmReg(sctx,
+					BGBCC_SH_NMID_SHADQ, tr0, -(64-j), tr0);
+			}
+			
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			return(1);
+		}
 	}
 
 #if 1
@@ -1826,6 +1854,15 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 		return(
 			BGBCC_JX2C_EmitConvFromVRegVRegVarString(ctx, sctx,
 				stype, dreg, sreg));
+	}
+
+	if(BGBCC_CCXL_TypeBitFieldP(ctx, dtype))
+	{
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, stype))
+		{
+			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+				stype, dreg, sreg));
+		}
 	}
 
 	BGBCC_CCXL_StubError(ctx);

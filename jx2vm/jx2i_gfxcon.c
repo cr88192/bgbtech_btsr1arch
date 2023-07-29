@@ -1325,6 +1325,9 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	static byte clrt4_v[4];
 	static int pixv_init=0;
 
+	u32 clra4[4];
+	u32 clrb4[4];
+
 	u32 c0, c1, c2, c3;
 	u32 c4, c5, c6, c7;
 	int c2ya, c2yb, c2ua, c2ub, c2va, c2vb;
@@ -1349,8 +1352,8 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 		for(i=0; i<64; i++)
 		{
 			clra=(255<<24)|
-				(pixv_c2[(i>>4)&3]<<0)|
-				(pixv_c2[(i>>2)&3]<<8)|
+				(pixv_c2[(i>>4)&3]<< 0)|
+				(pixv_c2[(i>>2)&3]<< 8)|
 				(pixv_c2[(i>>0)&3]<<16);
 
 			if(btesh2_gfxcon_swaprb)
@@ -1544,70 +1547,86 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 #if 1
 	if(((c0>>30)&3)==2)
 	{
-#if 1
-		pxubits=c0>>15;
-		pxvbits=c0>>0;
-
-		cy0=(pxubits>>10)&31;
-		cv0=(pxubits>> 5)&31;	
-		cu0=(pxubits    )&31;
-
-		cy1=(pxvbits>>10)&31;
-		cv1=(pxvbits>> 5)&31;
-		cu1=(pxvbits    )&31;
-
-		if(jx2i_gfxcon_isbmap&8)
+		if(((c1>>30)&3)==1)
 		{
-			cr0=(cy0<<3)|(cy0>>2);
-			cg0=(cv0<<3)|(cv0>>2);
-			cb0=(cu0<<3)|(cu0>>2);
-
-			cr1=(cy1<<3)|(cy1>>2);
-			cg1=(cv1<<3)|(cv1>>2);
-			cb1=(cu1<<3)|(cu1>>2);
+			clra4[0]=pixv6[(c0>> 0)&63];
+			clrb4[0]=pixv6[(c0>> 6)&63];
+			clra4[1]=pixv6[(c0>>16)&63];
+			clrb4[1]=pixv6[(c0>>22)&63];
+			clra4[2]=pixv6[(c1>> 0)&63];
+			clrb4[2]=pixv6[(c1>> 6)&63];
+			clra4[3]=pixv6[(c1>>16)&63];
+			clrb4[3]=pixv6[(c1>>22)&63];
 			
-//			cr1=127;
-//			cg1=127;
-//			cb1=127;
+			clra=clra4[0];
+			clrb=clrb4[0];
 		}else
 		{
-			cy0=(cy0<<3)|(cy0>>2);
-			cu0=(cu0<<3)|(7-(cu0>>2));
-			cv0=(cv0<<3)|(7-(cv0>>2));
+#if 1
+			pxubits=c0>>15;
+			pxvbits=c0>>0;
 
-			cu2=cu0-128; cv2=cv0-128;
-			cr0=(256*cy0        +359*cv2+128)>>8;
-			cg0=(256*cy0- 88*cu2-183*cv2+128)>>8;
-			cb0=(256*cy0+454*cu2        +128)>>8;
+			cy0=(pxubits>>10)&31;
+			cv0=(pxubits>> 5)&31;	
+			cu0=(pxubits    )&31;
+
+			cy1=(pxvbits>>10)&31;
+			cv1=(pxvbits>> 5)&31;
+			cu1=(pxvbits    )&31;
+
+			if(jx2i_gfxcon_isbmap&8)
+			{
+				cr0=(cy0<<3)|(cy0>>2);
+				cg0=(cv0<<3)|(cv0>>2);
+				cb0=(cu0<<3)|(cu0>>2);
+
+				cr1=(cy1<<3)|(cy1>>2);
+				cg1=(cv1<<3)|(cv1>>2);
+				cb1=(cu1<<3)|(cu1>>2);
+				
+	//			cr1=127;
+	//			cg1=127;
+	//			cb1=127;
+			}else
+			{
+				cy0=(cy0<<3)|(cy0>>2);
+				cu0=(cu0<<3)|(7-(cu0>>2));
+				cv0=(cv0<<3)|(7-(cv0>>2));
+
+				cu2=cu0-128; cv2=cv0-128;
+				cr0=(256*cy0        +359*cv2+128)>>8;
+				cg0=(256*cy0- 88*cu2-183*cv2+128)>>8;
+				cb0=(256*cy0+454*cu2        +128)>>8;
 
 
-			cy1=(cy1<<3)|(cy1>>2);
-			cu1=(cu1<<3)|(7-(cu1>>2));
-			cv1=(cv1<<3)|(7-(cv1>>2));
+				cy1=(cy1<<3)|(cy1>>2);
+				cu1=(cu1<<3)|(7-(cu1>>2));
+				cv1=(cv1<<3)|(7-(cv1>>2));
 
-			cu2=cu1-128; cv2=cv1-128;
-			cr1=(256*cy1        +359*cv2+128)>>8;
-			cg1=(256*cy1- 88*cu2-183*cv2+128)>>8;
-			cb1=(256*cy1+454*cu2        +128)>>8;
-		}
+				cu2=cu1-128; cv2=cv1-128;
+				cr1=(256*cy1        +359*cv2+128)>>8;
+				cg1=(256*cy1- 88*cu2-183*cv2+128)>>8;
+				cb1=(256*cy1+454*cu2        +128)>>8;
+			}
 
-		if((cr0|cg0|cb0)&(~255))
-		{
-			cr0=jx2i_gfxcon_clamp255(cr0);
-			cg0=jx2i_gfxcon_clamp255(cg0);
-			cb0=jx2i_gfxcon_clamp255(cb0);
-		}
+			if((cr0|cg0|cb0)&(~255))
+			{
+				cr0=jx2i_gfxcon_clamp255(cr0);
+				cg0=jx2i_gfxcon_clamp255(cg0);
+				cb0=jx2i_gfxcon_clamp255(cb0);
+			}
 
-		if((cr1|cg1|cb1)&(~255))
-		{
-			cr1=jx2i_gfxcon_clamp255(cr1);
-			cg1=jx2i_gfxcon_clamp255(cg1);
-			cb1=jx2i_gfxcon_clamp255(cb1);
-		}
+			if((cr1|cg1|cb1)&(~255))
+			{
+				cr1=jx2i_gfxcon_clamp255(cr1);
+				cg1=jx2i_gfxcon_clamp255(cg1);
+				cb1=jx2i_gfxcon_clamp255(cb1);
+			}
 
-		clrb=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
-		clra=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
+			clrb=0xFF000000|(cb0<<16)|(cg0<<8)|cr0;
+			clra=0xFF000000|(cb1<<16)|(cg1<<8)|cr1;
 #endif
+		}
 	}
 #endif
 
@@ -1896,6 +1915,17 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 //						((by+py)*320)+(bx+px)]=clrc;
 					JX2I_GfxCon_PutPix200(bx+px, by+py, clrc);
 				}
+			}
+		}else
+			if(((c1>>30)&3)==1)
+		{
+			for(py=0; py<8; py++)
+				for(px=0; px<8; px++)
+			{
+				clra=clra4[(((py>>1)&2)|(px>>3))^3];
+				clrb=clrb4[(((py>>1)&2)|(px>>3))^3];
+				clrc=((pixbits>>((7-py)*8+(7-px)))&1)?clra:clrb;
+				JX2I_GfxCon_PutPix200(cx*8+px, cy*8+py, clrc);
 			}
 		}else
 		{
@@ -2749,8 +2779,8 @@ int BJX2_ContextSimVidTick(BJX2_Context *ctx)
 	int ix;
 	int i, j, k;
 
-	if(ctx->use_jit || ctx->no_memcost)
-		return(0);
+//	if(ctx->use_jit || ctx->no_memcost)
+//		return(0);
 	
 	if(!jx2i_gfxcon_conbuf)
 		return(0);
@@ -2763,19 +2793,22 @@ int BJX2_ContextSimVidTick(BJX2_Context *ctx)
 //	addr=0x10A00000+(ix*8192);
 	addr=0x20A00000+(ix*8192);
 	
-	for(i=0; i<128; i++)
+	if(!ctx->no_memcost)
 	{
-		BJX2_MemSimAddrL2(ctx, addr+i*64, 16);
-		
-//		if(jx2i_gfxcon_dirty)
-//			continue;
+		for(i=0; i<128; i++)
+		{
+			BJX2_MemSimAddrL2(ctx, addr+i*64, 16);
+			
+	//		if(jx2i_gfxcon_dirty)
+	//			continue;
 
-//		j=ix*2048+i*16;
-//		if(memcmp(jx2i_gfxcon_conbuf+j, jx2i_gfxcon_lconbuf+j, 64))
-//		{
-//			memcpy(jx2i_gfxcon_lconbuf+j, jx2i_gfxcon_conbuf+j, 64);
-//			jx2i_gfxcon_dirty=1;
-//		}
+	//		j=ix*2048+i*16;
+	//		if(memcmp(jx2i_gfxcon_conbuf+j, jx2i_gfxcon_lconbuf+j, 64))
+	//		{
+	//			memcpy(jx2i_gfxcon_lconbuf+j, jx2i_gfxcon_conbuf+j, 64);
+	//			jx2i_gfxcon_dirty=1;
+	//		}
+		}
 	}
 
 	if(!jx2i_gfxcon_dirty)

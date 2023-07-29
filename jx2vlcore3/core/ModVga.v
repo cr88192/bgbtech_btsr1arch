@@ -59,9 +59,20 @@ input clock;
 input reset;
 input clock_100;
 
-input[7:0]		pixCy;			//Y Component
-input[7:0]		pixCu;			//U Component
-input[7:0]		pixCv;			//V Component
+//input[7:0]		pixCy;			//Y Component
+//input[7:0]		pixCu;			//U Component
+//input[7:0]		pixCv;			//V Component
+
+`ifdef jx2_modvga_pix4x
+input[31:0]		pixCy;			//Y Component
+input[31:0]		pixCu;			//U Component
+input[31:0]		pixCv;			//V Component
+`else
+input[15:0]		pixCy;			//Y Component
+input[15:0]		pixCu;			//U Component
+input[15:0]		pixCv;			//V Component
+`endif
+
 input[63:0]		ctrlRegVal;		//Control Register
 input[15:0]		pixAux;			//Pixel Aux Bits
 input			timerNoise;
@@ -133,6 +144,16 @@ reg			tFraPixClkCarry;
 reg[12:0]	tScanPixClk;		//Scan Pixel Clock
 reg[12:0]	tScanNextPixClk;	//Next Scan Pixel Clock
 
+reg[12:0]	tScanPixClk_236;
+reg[12:0]	tScanPixClk_240;
+reg[12:0]	tScanPixClk_1472;
+reg[12:0]	tScanPixClk_1588;
+reg[12:0]	tScanPixClk_2880;
+reg[12:0]	tScanPixClk_2944;
+reg[12:0]	tScanPixClk_3176;
+
+
+
 reg[10:0]	tScanPixClkP0;		//Scan Pixel Clock (+0)
 reg[10:0]	tScanPixClkP1;		//Scan Pixel Clock (+1)
 
@@ -174,24 +195,88 @@ reg[15:0]	tBaseNextCy;
 reg[15:0]	tBaseNextCu;
 reg[15:0]	tBaseNextCv;
 
-reg[15:0]	tBaseCr;
-reg[15:0]	tBaseCg;
-reg[15:0]	tBaseCb;
-reg[15:0]	tBaseCrL;
-reg[15:0]	tBaseCgL;
-reg[15:0]	tBaseCbL;
+reg[15:0]	tBaseCr0;
+reg[15:0]	tBaseCg0;
+reg[15:0]	tBaseCb0;
+reg[15:0]	tBaseCrL0;
+reg[15:0]	tBaseCgL0;
+reg[15:0]	tBaseCbL0;
 
-reg[15:0]	tBaseNextCr;
-reg[15:0]	tBaseNextCg;
-reg[15:0]	tBaseNextCb;
+reg[15:0]	tBaseNextCr0;
+reg[15:0]	tBaseNextCg0;
+reg[15:0]	tBaseNextCb0;
 
-reg[15:0]	tBaseCrB;
-reg[15:0]	tBaseCgB;
-reg[15:0]	tBaseCbB;
+reg[15:0]	tBaseCrB0;
+reg[15:0]	tBaseCgB0;
+reg[15:0]	tBaseCbB0;
 
-reg[15:0]	tBaseNextCrB;
-reg[15:0]	tBaseNextCgB;
-reg[15:0]	tBaseNextCbB;
+reg[15:0]	tBaseNextCrB0;
+reg[15:0]	tBaseNextCgB0;
+reg[15:0]	tBaseNextCbB0;
+
+
+reg[15:0]	tBaseCr1;
+reg[15:0]	tBaseCg1;
+reg[15:0]	tBaseCb1;
+reg[15:0]	tBaseCrL1;
+reg[15:0]	tBaseCgL1;
+reg[15:0]	tBaseCbL1;
+
+reg[15:0]	tBaseNextCr1;
+reg[15:0]	tBaseNextCg1;
+reg[15:0]	tBaseNextCb1;
+
+reg[15:0]	tBaseCrB1;
+reg[15:0]	tBaseCgB1;
+reg[15:0]	tBaseCbB1;
+
+reg[15:0]	tBaseNextCrB1;
+reg[15:0]	tBaseNextCgB1;
+reg[15:0]	tBaseNextCbB1;
+
+`ifdef jx2_modvga_pix4x
+
+reg[15:0]	tBaseCr2;
+reg[15:0]	tBaseCg2;
+reg[15:0]	tBaseCb2;
+reg[15:0]	tBaseCrL2;
+reg[15:0]	tBaseCgL2;
+reg[15:0]	tBaseCbL2;
+
+reg[15:0]	tBaseNextCr2;
+reg[15:0]	tBaseNextCg2;
+reg[15:0]	tBaseNextCb2;
+
+reg[15:0]	tBaseCrB2;
+reg[15:0]	tBaseCgB2;
+reg[15:0]	tBaseCbB2;
+
+reg[15:0]	tBaseNextCrB2;
+reg[15:0]	tBaseNextCgB2;
+reg[15:0]	tBaseNextCbB2;
+
+
+reg[15:0]	tBaseCr3;
+reg[15:0]	tBaseCg3;
+reg[15:0]	tBaseCb3;
+reg[15:0]	tBaseCrL3;
+reg[15:0]	tBaseCgL3;
+reg[15:0]	tBaseCbL3;
+
+reg[15:0]	tBaseNextCr3;
+reg[15:0]	tBaseNextCg3;
+reg[15:0]	tBaseNextCb3;
+
+reg[15:0]	tBaseCrB3;
+reg[15:0]	tBaseCgB3;
+reg[15:0]	tBaseCbB3;
+
+reg[15:0]	tBaseNextCrB3;
+reg[15:0]	tBaseNextCgB3;
+reg[15:0]	tBaseNextCbB3;
+
+`endif
+
 
 reg[17:0]	tScPwmCy;
 reg[15:0]	tScPwmCu;
@@ -209,6 +294,8 @@ reg[15:0]	tScPwmCtR1;
 reg[15:0]	tScPwmCtG1;
 reg[15:0]	tScPwmCtB1;
 
+`ifdef jx2_modvga_pix4x
+
 reg[15:0]	tScPwmCtR2;
 reg[15:0]	tScPwmCtG2;
 reg[15:0]	tScPwmCtB2;
@@ -216,6 +303,8 @@ reg[15:0]	tScPwmCtB2;
 reg[15:0]	tScPwmCtR3;
 reg[15:0]	tScPwmCtG3;
 reg[15:0]	tScPwmCtB3;
+
+`endif
 
 reg[11:0]	tPixPosX;
 reg[11:0]	tPixPosY;
@@ -226,9 +315,20 @@ reg			tPixLineOdd;
 reg[11:0]	tPixPosXL;
 reg[11:0]	tPixPosYL;
 
-reg[7:0]	tPixCy;
-reg[7:0]	tPixCu;
-reg[7:0]	tPixCv;
+//reg[7:0]	tPixCy;
+//reg[7:0]	tPixCu;
+//reg[7:0]	tPixCv;
+
+`ifdef jx2_modvga_pix4x
+reg[31:0]	tPixCy;
+reg[31:0]	tPixCu;
+reg[31:0]	tPixCv;
+`else
+reg[15:0]	tPixCy;
+reg[15:0]	tPixCu;
+reg[15:0]	tPixCv;
+`endif
+
 reg			tPixCyStrobe;
 
 // assign	pwmOut		= tPwmOut;
@@ -243,6 +343,7 @@ reg			tHsync800;
 reg			tVsync600;
 
 reg			tHsync1280;
+reg			tHsync1440;
 reg			tHsync1024;
 reg			tVsync768;
 
@@ -333,6 +434,7 @@ begin
 	tPwmOut1[ 9: 5] = tPwmValG1[7:3];
 	tPwmOut1[ 4: 0] = tPwmValB1[7:3];
 
+`ifdef jx2_modvga_pix4x
 	tPwmOut2[14:10] = tPwmValR2[7:3];
 	tPwmOut2[ 9: 5] = tPwmValG2[7:3];
 	tPwmOut2[ 4: 0] = tPwmValB2[7:3];
@@ -340,6 +442,8 @@ begin
 	tPwmOut3[14:10] = tPwmValR3[7:3];
 	tPwmOut3[ 9: 5] = tPwmValG3[7:3];
 	tPwmOut3[ 4: 0] = tPwmValB3[7:3];
+`endif
+
 `endif
 
 	tScanNextRowLim		= tScanRowLim;
@@ -350,11 +454,13 @@ begin
 	tPwmOut1[15] = !tHsync;
 	tPwmOut1[16] = !tVsync;
 
+`ifdef jx2_modvga_pix4x
 	tPwmOut2[15] = !tHsync;
 	tPwmOut2[16] = !tVsync;
 
 	tPwmOut3[15] = !tHsync;
 	tPwmOut3[16] = !tVsync;
+`endif
 
 	tPwmOutStrobe	= tPwmValStrobe;
 
@@ -365,6 +471,7 @@ begin
 	tVsync600	= 0;
 
 	tHsync1280	= 0;
+	tHsync1440	= 0;
 	tHsync1024	= 0;
 	tVsync768	= 0;
 	
@@ -399,11 +506,20 @@ begin
 
 	if(ctrlRegVal[25:24]==2'b01)
 	begin
-		tHsync1280	= 1;
-		tScanNextRowLim = 849;
-		if(ctrlRegVal[9])
+		
+		if(ctrlRegVal[3])
 		begin
-			tScanNextRowLim = 1073;
+			tHsync1440	= 1;
+			tScanNextRowLim = 932;
+		end
+		else
+		begin
+			tHsync1280	= 1;
+			tScanNextRowLim = 849;
+			if(ctrlRegVal[9])
+			begin
+				tScanNextRowLim = 1073;
+			end
 		end
 	end
 
@@ -434,11 +550,11 @@ begin
 	
 	if(tPixClockMode==4'h1)
 	begin
-		tScanNextPixClk		= tScanPixClk + 3;
+//		tScanNextPixClk		= tScanPixClk + 3;
 	end
 	if(tPixClockMode==4'h2)
 	begin
-		tScanNextPixClk		= tScanPixClk + 4;
+//		tScanNextPixClk		= tScanPixClk + 4;
 	end
 	
 `endif
@@ -457,9 +573,24 @@ begin
 	tBaseNextCv			= 0;
 	tBaseNextCy			= 0;
 
-	tBaseNextCr			= 0;
-	tBaseNextCg			= 0;
-	tBaseNextCb			= 0;
+	tBaseNextCr0		= 0;
+	tBaseNextCg0		= 0;
+	tBaseNextCb0		= 0;
+
+	tBaseNextCr1		= 0;
+	tBaseNextCg1		= 0;
+	tBaseNextCb1		= 0;
+
+`ifdef jx2_modvga_pix4x
+	tBaseNextCr2		= 0;
+	tBaseNextCg2		= 0;
+	tBaseNextCb2		= 0;
+
+	tBaseNextCr3		= 0;
+	tBaseNextCg3		= 0;
+	tBaseNextCb3		= 0;
+`endif
+
 	tBaseNextCgStrobe	= tPixCyStrobe;
 
 	tPwmNextValR0		= 76;	
@@ -470,6 +601,7 @@ begin
 	tPwmNextValG1		= 76;	
 	tPwmNextValB1		= 76;
 	
+`ifdef jx2_modvga_pix4x
 	tPwmNextValR2		= 76;	
 	tPwmNextValG2		= 76;	
 	tPwmNextValB2		= 76;
@@ -477,6 +609,7 @@ begin
 	tPwmNextValR3		= 76;	
 	tPwmNextValG3		= 76;	
 	tPwmNextValB3		= 76;
+`endif
 	
 	tScPwmCy			= 0;
 	tNextHorzStrobe		= 0;
@@ -485,11 +618,15 @@ begin
 
 	if(1'b1)
 	begin
-		if(tHsync1280)
+//		if(tHsync1280)
+		if(tHsync1280 || tHsync1440 ||
+			tHsync800 || tHsync1024)
 		begin
 			tPixNextPosX = {1'b0, tScanPixClk[11:1]} - 76;
 			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
 		end
+
+`ifndef def_true
 		else
 		if(tHsync1024)
 		begin
@@ -507,83 +644,159 @@ begin
 
 			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 62;
 		end
+`endif
+
 		else
 		begin
 			tPixNextPosX = {1'b0, tScanPixClk[12:2]} - 76;
 			tPixNextPosY = {1'b0, tScanRowClk[10:0]} - 43;
 		end
 
-		tBaseNextCg			= { 8'h0, tPixCy };
-		tBaseNextCr			= { 8'h0, tPixCv };
-		tBaseNextCb			= { 8'h0, tPixCu };
+		tBaseNextCg0			= { 8'h0, tPixCy[7:0] };
+		tBaseNextCr0			= { 8'h0, tPixCv[7:0] };
+		tBaseNextCb0			= { 8'h0, tPixCu[7:0] };
+
+		tBaseNextCg1			= { 8'h0, tPixCy[15:8] };
+		tBaseNextCr1			= { 8'h0, tPixCv[15:8] };
+		tBaseNextCb1			= { 8'h0, tPixCu[15:8] };
+
+`ifdef jx2_modvga_pix4x
+		tBaseNextCg2			= { 8'h0, tPixCy[23:16] };
+		tBaseNextCr2			= { 8'h0, tPixCv[23:16] };
+		tBaseNextCb2			= { 8'h0, tPixCu[23:16] };
+
+		tBaseNextCg3			= { 8'h0, tPixCy[31:24] };
+		tBaseNextCr3			= { 8'h0, tPixCv[31:24] };
+		tBaseNextCb3			= { 8'h0, tPixCu[31:24] };
+`endif
+
 		tBaseNextCgStrobe	= tPixCyStrobe;
 
 //		tBaseNextCrB	= tBaseCrL;
 //		tBaseNextCgB	= tBaseCgL;
 //		tBaseNextCbB	= tBaseCbL;
 
-		tBaseNextCrB	= tBaseCr;
-		tBaseNextCgB	= tBaseCg;
-		tBaseNextCbB	= tBaseCb;
+		tBaseNextCrB0	= tBaseCr0;
+		tBaseNextCgB0	= tBaseCg0;
+		tBaseNextCbB0	= tBaseCb0;
+
+		tBaseNextCrB1	= tBaseCr1;
+		tBaseNextCgB1	= tBaseCg1;
+		tBaseNextCbB1	= tBaseCb1;
+
+`ifdef jx2_modvga_pix4x
+		tBaseNextCrB2	= tBaseCr2;
+		tBaseNextCgB2	= tBaseCg2;
+		tBaseNextCbB2	= tBaseCb2;
+
+		tBaseNextCrB3	= tBaseCr3;
+		tBaseNextCgB3	= tBaseCg3;
+		tBaseNextCbB3	= tBaseCb3;
+`endif
 
 //		tScPwmCtR[15:0] = (tBaseCrB << 7) + (tBaseCrB << 5) + 20480;
 //		tScPwmCtG[15:0] = (tBaseCgB << 7) + (tBaseCgB << 5) + 20480;
 //		tScPwmCtB[15:0] = (tBaseCbB << 7) + (tBaseCbB << 5) + 20480;
 
-		tScPwmCtR0[15:0] = (tBaseCrB << 7) + (tBaseCr << 5) + 20480;
-		tScPwmCtG0[15:0] = (tBaseCgB << 7) + (tBaseCg << 5) + 20480;
-		tScPwmCtB0[15:0] = (tBaseCbB << 7) + (tBaseCb << 5) + 20480;
+		tScPwmCtR0[15:0] = (tBaseCrB0 << 7) + (tBaseCrB0 << 5) + 20480;
+		tScPwmCtG0[15:0] = (tBaseCgB0 << 7) + (tBaseCgB0 << 5) + 20480;
+		tScPwmCtB0[15:0] = (tBaseCbB0 << 7) + (tBaseCbB0 << 5) + 20480;
 
-		tScPwmCtR1[15:0] = (tBaseCrB << 7) + (tBaseCr << 5) + 20480;
-		tScPwmCtG1[15:0] = (tBaseCgB << 7) + (tBaseCg << 5) + 20480;
-		tScPwmCtB1[15:0] = (tBaseCbB << 7) + (tBaseCb << 5) + 20480;
+		tScPwmCtR1[15:0] = (tBaseCrB1 << 7) + (tBaseCrB1 << 5) + 20480;
+		tScPwmCtG1[15:0] = (tBaseCgB1 << 7) + (tBaseCgB1 << 5) + 20480;
+		tScPwmCtB1[15:0] = (tBaseCbB1 << 7) + (tBaseCbB1 << 5) + 20480;
 
-		tScPwmCtR2[15:0] = (tBaseCrB << 7) + (tBaseCr << 5) + 20480;
-		tScPwmCtG2[15:0] = (tBaseCgB << 7) + (tBaseCg << 5) + 20480;
-		tScPwmCtB2[15:0] = (tBaseCbB << 7) + (tBaseCb << 5) + 20480;
+`ifdef jx2_modvga_pix4x
+		tScPwmCtR2[15:0] = (tBaseCrB2 << 7) + (tBaseCrB2 << 5) + 20480;
+		tScPwmCtG2[15:0] = (tBaseCgB2 << 7) + (tBaseCgB2 << 5) + 20480;
+		tScPwmCtB2[15:0] = (tBaseCbB2 << 7) + (tBaseCbB2 << 5) + 20480;
 
-		tScPwmCtR3[15:0] = (tBaseCrB << 7) + (tBaseCr << 5) + 20480;
-		tScPwmCtG3[15:0] = (tBaseCgB << 7) + (tBaseCg << 5) + 20480;
-		tScPwmCtB3[15:0] = (tBaseCbB << 7) + (tBaseCb << 5) + 20480;
+		tScPwmCtR3[15:0] = (tBaseCrB3 << 7) + (tBaseCrB3 << 5) + 20480;
+		tScPwmCtG3[15:0] = (tBaseCgB3 << 7) + (tBaseCgB3 << 5) + 20480;
+		tScPwmCtB3[15:0] = (tBaseCbB3 << 7) + (tBaseCbB3 << 5) + 20480;
+`endif
 		
 		tScPwmCtStrobe	= tBaseCgStrobeB;
 	end
 
 	tPwmNextValStrobe	= tScPwmCtStrobe;
 
+	tScanPixClk_236 = 236;
+	tScanPixClk_240 = 240;
+	tScanPixClk_1472=1472;
+	tScanPixClk_1588=1588;
+	tScanPixClk_2880=2880;
+	tScanPixClk_2944=2944;
+	tScanPixClk_3176=3176;
+
+	if(tHsync1024)
+	begin
+//		tScanPixClk_2880=4416;
+//		tScanPixClk_2944=4480;
+//		tScanPixClk_3176=4712;
+
+		tScanPixClk_2880=2368;
+		tScanPixClk_2944=2432;
+		tScanPixClk_3176=2664;
+	end
+
+	if(tHsync800)
+	begin
+//		tScanPixClk_2880=3520;
+//		tScanPixClk_2944=3584;
+//		tScanPixClk_3176=3816;
+
+		tScanPixClk_2880=1920;
+		tScanPixClk_2944=1984;
+		tScanPixClk_3176=2216;
+	end
+
+	if(tHsync1440)
+	begin
+//		tScanPixClk_2880=3200;
+//		tScanPixClk_2944=3264;
+//		tScanPixClk_3176=3469;
+
+		tScanPixClk_2880=1760;
+		tScanPixClk_2944=1824;
+		tScanPixClk_3176=2056;
+	end
+
 	if(tVSyncClk>0)		/* VSync */
 	begin
 		tScanNextRowClk = 0;
 		tNextVsync		= 1;
 
-		if((tScanPixClk>=3176) && pixAux[1])
+		if((tScanPixClk>=tScanPixClk_3176) && pixAux[1])
 		begin
 			tVSyncNextClk = tVSyncClk - 1;
 			tScanNextPixClk = 0;
 			tNextHorzStrobe	= 1;
 		end
-		else if(tScanPixClk>=236)
+		else if(tScanPixClk>=tScanPixClk_236)
 		begin
 			tNextHsync		= 1;
 		end
 	end
+`ifndef def_true
 	else if(tVEqPulseClk>0)		/* Equalizing Pulse */
 	begin
 		tScanNextRowClk = 0;
-		if(tScanPixClk>=1588)
+		if(tScanPixClk>=tScanPixClk_1588)
 		begin
 			tVEqPulseNextClk = tVEqPulseClk - 1;
 			tScanNextPixClk = 0;
 			tNextHorzStrobe	= 1;
 		end
-		else if(tScanPixClk>=1472)
+		else if(tScanPixClk>=tScanPixClk_1472)
 		begin
 			tNextHsync		= 1;
 		end
 	end
+`endif
 	else		/* VBlank or Scanline */
 	begin
-		if((tScanPixClk>=3176) && pixAux[1])
+		if((tScanPixClk>=tScanPixClk_3176) && pixAux[1])
 		begin
 			tScanNextRowClk = tScanRowClk + 1;
 			tScanNextPixClk = 0;
@@ -596,11 +809,13 @@ begin
 				tVEqPulseNextClk = 0;
 			end
 		end
-		else if(tScanPixClk>=2944)
+		else if(tScanPixClk>=tScanPixClk_2944)
 		begin
 			tNextHsync		= 1;
 		end
-		else if((tScanPixClk>=240) && (tScanPixClk<2880))
+		else if(
+			(tScanPixClk>=tScanPixClk_240) &&
+			(tScanPixClk< tScanPixClk_2880))
 		begin
 			tPwmNextValR0	= tScPwmCtR0[15:8];
 			tPwmNextValG0	= tScPwmCtG0[15:8];
@@ -610,6 +825,7 @@ begin
 			tPwmNextValG1	= tScPwmCtG1[15:8];
 			tPwmNextValB1	= tScPwmCtB1[15:8];
 
+`ifdef jx2_modvga_pix4x
 			tPwmNextValR2	= tScPwmCtR2[15:8];
 			tPwmNextValG2	= tScPwmCtG2[15:8];
 			tPwmNextValB2	= tScPwmCtB2[15:8];
@@ -617,6 +833,7 @@ begin
 			tPwmNextValR3	= tScPwmCtR3[15:8];
 			tPwmNextValG3	= tScPwmCtG3[15:8];
 			tPwmNextValB3	= tScPwmCtB3[15:8];
+`endif
 
 			tNextPwmEn		= 1;
 		end
@@ -665,26 +882,34 @@ begin
 	if(tPwmOutStrobeA && !tPwmOutStrobeB)
 		tNxtPwmState	= 0;
 	
+`ifdef jx2_modvga_pix4x
 	case(tPwmState)
 		2'b00: tPwmOut=tPwmOut0B;
 		2'b01: tPwmOut=tPwmOut1B;
 		2'b10: tPwmOut=tPwmOut2B;
 		2'b11: tPwmOut=tPwmOut3B;
 	endcase
+`else
+	tPwmOut=tPwmState[0] ? tPwmOut1B : tPwmOut0B;
+`endif
 end
 
 always @ (posedge clock_100)
 begin
 	tPwmOut0A		<= tPwmOut0;
 	tPwmOut1A		<= tPwmOut1;
+`ifdef jx2_modvga_pix4x
 	tPwmOut2A		<= tPwmOut2;
 	tPwmOut3A		<= tPwmOut3;
+`endif
 	tPwmOutStrobeA	<= tPwmOutStrobe;
 
 	tPwmOut0B		<= tPwmOut0A;
 	tPwmOut1B		<= tPwmOut1A;
+`ifdef jx2_modvga_pix4x
 	tPwmOut2B		<= tPwmOut2A;
 	tPwmOut3B		<= tPwmOut3A;
+`endif
 	tPwmOutStrobeB	<= tPwmOutStrobeA;
 
 	tPwmOutA		<= tPwmOut;
@@ -731,19 +956,44 @@ begin
 	tBaseCuL		<= tBaseCu;
 	tBaseCvL		<= tBaseCv;
 
-	tBaseCr			<= tBaseNextCr;
-	tBaseCg			<= tBaseNextCg;
-	tBaseCb			<= tBaseNextCb;
+	tBaseCr0		<= tBaseNextCr0;
+	tBaseCg0		<= tBaseNextCg0;
+	tBaseCb0		<= tBaseNextCb0;
+	tBaseCr1		<= tBaseNextCr1;
+	tBaseCg1		<= tBaseNextCg1;
+	tBaseCb1		<= tBaseNextCb1;
+
+`ifdef jx2_modvga_pix4x
+	tBaseCr2		<= tBaseNextCr2;
+	tBaseCg2		<= tBaseNextCg2;
+	tBaseCb2		<= tBaseNextCb2;
+	tBaseCr3		<= tBaseNextCr3;
+	tBaseCg3		<= tBaseNextCg3;
+	tBaseCb3		<= tBaseNextCb3;
+`endif
+
 	tBaseCgStrobe	<= tBaseNextCgStrobe;
 	tBaseCgStrobeB	<= tBaseCgStrobe;
 
-	tBaseCrL		<= tBaseCr;
-	tBaseCgL		<= tBaseCg;
-	tBaseCbL		<= tBaseCb;
+//	tBaseCrL		<= tBaseCr;
+//	tBaseCgL		<= tBaseCg;
+//	tBaseCbL		<= tBaseCb;
 
-	tBaseCrB		<= tBaseNextCrB;
-	tBaseCgB		<= tBaseNextCgB;
-	tBaseCbB		<= tBaseNextCbB;
+	tBaseCrB0		<= tBaseNextCrB0;
+	tBaseCgB0		<= tBaseNextCgB0;
+	tBaseCbB0		<= tBaseNextCbB0;
+	tBaseCrB1		<= tBaseNextCrB1;
+	tBaseCgB1		<= tBaseNextCgB1;
+	tBaseCbB1		<= tBaseNextCbB1;
+
+`ifdef jx2_modvga_pix4x
+	tBaseCrB2		<= tBaseNextCrB2;
+	tBaseCgB2		<= tBaseNextCgB2;
+	tBaseCbB2		<= tBaseNextCbB2;
+	tBaseCrB3		<= tBaseNextCrB3;
+	tBaseCgB3		<= tBaseNextCgB3;
+	tBaseCbB3		<= tBaseNextCbB3;
+`endif
 
 	tPwmValStrobe	<= tPwmNextValStrobe;
 
@@ -757,6 +1007,7 @@ begin
 		tPwmValG1		<= tPwmNextValG1;
 		tPwmValB1		<= tPwmNextValB1;
 
+`ifdef jx2_modvga_pix4x
 		tPwmValR2		<= tPwmNextValR2;
 		tPwmValG2		<= tPwmNextValG2;
 		tPwmValB2		<= tPwmNextValB2;
@@ -764,6 +1015,8 @@ begin
 		tPwmValR3		<= tPwmNextValR3;
 		tPwmValG3		<= tPwmNextValG3;
 		tPwmValB3		<= tPwmNextValB3;
+`endif
+
 	end
 
 	tPixCyStrobe	<= pixAux[1];

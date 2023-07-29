@@ -436,7 +436,8 @@ int cdec_decode0y(cdec_imgbuf *ctx)
 			{
 				ctx->ypos++;
 
-				if((ctx->xpos>>ctx->xshl)<600)
+//				if((ctx->xpos>>ctx->xshl)<600)
+				if((ctx->xpos>>ctx->xshl)<380)
 				{
 					ctx->xshl--;
 				}

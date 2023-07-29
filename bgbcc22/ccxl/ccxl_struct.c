@@ -795,6 +795,15 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 	ala[0]=0;
 	ala[1]=0;
 
+	if((sig[0]=='B') && (sig[1]>='0') && (sig[1]<='9'))
+	{
+		/* bitfields return the size/alignment of base type. */
+		s=sig+1;
+		while((*s>='0') && (*s<='9'))
+			s++;
+		return(BGBCC_CCXL_GetSigMinMaxSize(ctx, s, rsz, ral));
+	}
+
 	ret=0;
 	switch(*sig)
 	{

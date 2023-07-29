@@ -448,6 +448,15 @@ bool BGBCC_CCXL_TypeUnsignedP(
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_BCD;
 		return(true);
 	}
+
+	if((bty==CCXL_TY_BITFIELD_UB) ||
+		(bty==CCXL_TY_BITFIELD_US) ||
+		(bty==CCXL_TY_BITFIELD_UI) ||
+		(bty==CCXL_TY_BITFIELD_UL))
+	{
+		return(true);
+	}
+
 #endif
 
 #if 0
@@ -1335,6 +1344,12 @@ bool BGBCC_CCXL_TypeArrayP(
 					return(false);
 				if((ty.val&CCXL_TY_BASEMASK)==CCXL_TY_BCDBIG_P4)
 					return(false);
+
+				if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+					((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+				{
+					return(false);
+				}
 			}
 
 			return(true);
@@ -1395,6 +1410,12 @@ bool BGBCC_CCXL_TypeArrayOrPointerP(
 					return(false);
 				if((ty.val&CCXL_TY_BASEMASK)==CCXL_TY_BCDBIG_P4)
 					return(false);
+
+				if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+					((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+				{
+					return(false);
+				}
 			}
 
 			return(true);
@@ -1590,6 +1611,151 @@ bool BGBCC_CCXL_TypeSquareArrayPtrP(
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_UNHANDLEDTYPE));
 	return(false);
+}
+
+bool BGBCC_CCXL_TypeBitFieldP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+			((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+		{
+			return(true);
+		}
+
+		return(false);
+	}
+
+	return(false);
+}
+
+bool BGBCC_CCXL_TypeBitFieldSmallIntP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int j;
+
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+			((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+		{
+			j=BGBCC_CCXL_TypeBitFieldGetBits(ctx, ty);
+			if(j<32)
+				return(true);
+			return(false);
+		}
+
+		return(false);
+	}
+
+	return(false);
+}
+
+bool BGBCC_CCXL_TypeBitFieldSmallLongP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+			((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+		{
+			return(true);
+		}
+
+		return(false);
+	}
+
+	return(false);
+}
+
+int BGBCC_CCXL_TypeBitFieldGetBits(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i;
+
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+			((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+		{
+			i=(ty.val>>CCXL_TY_ARRSHL)&63;
+			return(i);
+		}
+		return(-1);
+	}
+	
+	return(-1);
+}
+
+int BGBCC_CCXL_TypeBitFieldGetMaxBits(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i, j;
+
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+			((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+		{
+			i=(ty.val&CCXL_TY_BASEMASK);	j=0;
+			if(i==CCXL_TY_BITFIELD_SB)		j=8;
+			if(i==CCXL_TY_BITFIELD_UB)		j=8;
+			if(i==CCXL_TY_BITFIELD_SS)		j=16;
+			if(i==CCXL_TY_BITFIELD_US)		j=16;
+			if(i==CCXL_TY_BITFIELD_SI)		j=32;
+			if(i==CCXL_TY_BITFIELD_UI)		j=32;
+			if(i==CCXL_TY_BITFIELD_SL)		j=64;
+			if(i==CCXL_TY_BITFIELD_UL)		j=64;
+			return(j);
+		}
+		return(-1);
+	}
+	
+	return(-1);
+}
+
+int BGBCC_CCXL_TypeBitFieldGetOffset(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i;
+
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+			((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+		{
+			i=(ty.val>>(CCXL_TY_ARRSHL+6))&63;
+			return(i);
+		}
+		return(-1);
+	}
+	
+	return(-1);
+}
+
+int BGBCC_CCXL_TypeBitFieldSetOffset(
+	BGBCC_TransState *ctx, ccxl_type *rty, int ofs)
+{
+	ccxl_type ty;
+	int i;
+
+	ty=*rty;
+	if((ty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC)
+	{
+		if(	((ty.val&CCXL_TY_BASEMASK)>=CCXL_TY_BITFIELD_SB) &&
+			((ty.val&CCXL_TY_BASEMASK)<=CCXL_TY_BITFIELD_UL) )
+		{
+//			i=(ty.val>>(CCXL_TY_ARRSHL+6))&63;
+			ty.val&=~(63ULL<<(CCXL_TY_ARRSHL+6));
+			ty.val|=(ofs<<(CCXL_TY_ARRSHL+6));
+			*rty=ty;
+			return(ofs);
+		}
+		return(-1);
+	}
+	
+	return(-1);
 }
 
 bool BGBCC_CCXL_TypeMethodPointerP(
@@ -3310,6 +3476,7 @@ ccxl_status BGBCC_CCXL_TypeAutoPromoteType(
 	ccxl_type sty, ccxl_type *rdty)
 {
 	ccxl_type tty;
+	int i, j, k;
 
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, sty) &&
 		!BGBCC_CCXL_TypeSgIntP(ctx, sty))
@@ -3324,6 +3491,23 @@ ccxl_status BGBCC_CCXL_TypeAutoPromoteType(
 	{
 		tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_F);
 		if(rdty)*rdty=tty;
+		return(CCXL_STATUS_YES);
+	}
+
+	if(BGBCC_CCXL_TypeBitFieldP(ctx, sty))
+	{
+		j=BGBCC_CCXL_TypeBitFieldGetBits(ctx, sty);
+
+		if(j<32)
+		{
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_I);
+			if(rdty)*rdty=tty;
+		}else
+		{
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_L);
+			if(rdty)*rdty=tty;
+		}
+
 		return(CCXL_STATUS_YES);
 	}
 
@@ -3975,11 +4159,12 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 	BGBCC_CCXL_LiteralInfo *st;
 	ccxl_type tty;
 	char *s;
-	int an, pn, qn, rn, bty, pn4, pcls;
+	int an, pn, qn, rn, bty, pn4, pcls, bits;
 	int i, j, k;
 	
 	s=sig; an=0; pn=0; bty=-1;
 	qn=0; rn=0; pcls=0;
+	bits=0;
 
 	while(*s=='R')
 		{ rn++; s++; }
@@ -4077,6 +4262,25 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 			}
 		}
 #endif
+	}
+
+	while((*s=='B') && (s[1]>='0') && (s[1]<='9'))
+	{
+		s++; i=0;
+		while(*s)
+		{
+			if(*s==';')
+			{
+				s++; break;
+			}
+			if((*s>='0') && (*s<='9'))
+			{
+				i=(i*10)+((*s++)-'0');
+				continue;
+			}
+			break;
+		}
+		bits=i;
 	}
 
 	switch(*s)
@@ -4256,6 +4460,22 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		break;
 
 	default:  bty=-1; break;
+	}
+	
+	if(bits)
+	{
+		switch(bty)
+		{
+		case CCXL_TY_SB:	bty=CCXL_TY_BITFIELD_SB;	break;
+		case CCXL_TY_UB:	bty=CCXL_TY_BITFIELD_UB;	break;
+		case CCXL_TY_SS:	bty=CCXL_TY_BITFIELD_SS;	break;
+		case CCXL_TY_US:	bty=CCXL_TY_BITFIELD_US;	break;
+		case CCXL_TY_I:		bty=CCXL_TY_BITFIELD_SI;	break;
+		case CCXL_TY_UI:	bty=CCXL_TY_BITFIELD_UI;	break;
+		case CCXL_TY_L:		bty=CCXL_TY_BITFIELD_SL;	break;
+		case CCXL_TY_UL:	bty=CCXL_TY_BITFIELD_UL;	break;
+		}
+		asz[an++]=bits;
 	}
 	
 	if((an==0) && (pn==0) && (bty>=256))
@@ -4509,14 +4729,35 @@ char *BGBCC_CCXL_TypeGetSig(
 			bsz[an]=3;
 		}
 	}
+
+	if(	(bt>=CCXL_TY_BITFIELD_SB) &&
+		(bt<=CCXL_TY_BITFIELD_UL) )
+	{
+		sprintf(t, "B%u", bsz[0]);
+		t+=strlen(t);
+
+		an=0;
+		
+		switch(bt)
+		{
+			case CCXL_TY_BITFIELD_SB:	bt=CCXL_TY_SB;	break;
+			case CCXL_TY_BITFIELD_UB:	bt=CCXL_TY_UB;	break;
+			case CCXL_TY_BITFIELD_SS:	bt=CCXL_TY_SS;	break;
+			case CCXL_TY_BITFIELD_US:	bt=CCXL_TY_US;	break;
+			case CCXL_TY_BITFIELD_SI:	bt=CCXL_TY_I;	break;
+			case CCXL_TY_BITFIELD_UI:	bt=CCXL_TY_UI;	break;
+			case CCXL_TY_BITFIELD_SL:	bt=CCXL_TY_L;	break;
+			case CCXL_TY_BITFIELD_UL:	bt=CCXL_TY_UL;	break;
+		}
+	}
 	
 	if(an>1)
 	{
-		sprintf(t, "A%d", bsz[0]);
+		sprintf(t, "A%u", bsz[0]);
 		t+=strlen(t);
 		for(i=1; i<an; i++)
 		{
-			sprintf(t, ",%d", bsz[i]);
+			sprintf(t, ",%u", bsz[i]);
 			t+=strlen(t);
 		}
 		*t++=';';
@@ -4524,7 +4765,7 @@ char *BGBCC_CCXL_TypeGetSig(
 	}else if(an==1)
 	{
 //		sprintf(t, "A%d;", asz);
-		sprintf(t, "A%d", asz);
+		sprintf(t, "A%u", asz);
 		t+=strlen(t);
 	}
 
@@ -5801,6 +6042,7 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 {
 	ccxl_type dty2;
 	int i0, i1, i2, sgz, ltyb, rtyb, dtyb, dtyc;
+	int j;
 
 	ltyb=BGBCC_CCXL_GetTypeBaseType(ctx, lty);
 	rtyb=BGBCC_CCXL_GetTypeBaseType(ctx, rty);
@@ -5842,15 +6084,22 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 //		BGBCC_CCXL_TypeSmallIntP(ctx, rty))
 
 	if(	(BGBCC_CCXL_TypeSmallIntP(ctx, lty) ||
-			BGBCC_CCXL_TypeSgIntP(ctx, lty)) &&
+			BGBCC_CCXL_TypeSgIntP(ctx, lty) ||
+			BGBCC_CCXL_TypeBitFieldSmallIntP(ctx, lty)) &&
 		(BGBCC_CCXL_TypeSmallIntP(ctx, rty) ||
-			BGBCC_CCXL_TypeSgIntP(ctx, rty)))
+			BGBCC_CCXL_TypeSgIntP(ctx, rty) ||
+			BGBCC_CCXL_TypeBitFieldSmallIntP(ctx, rty)))
 	{
 //		ltyb=lty.val&CCXL_TY_BASEMASK;
 //		rtyb=rty.val&CCXL_TY_BASEMASK;
 		ltyb=BGBCC_CCXL_GetTypeBaseType(ctx, lty);
 		rtyb=BGBCC_CCXL_GetTypeBaseType(ctx, rty);
 		dtyb=CCXL_TY_I;
+		
+		if((ltyb>=CCXL_TY_BITFIELD_SB) && (ltyb<=CCXL_TY_BITFIELD_UL))
+			ltyb=CCXL_TY_I;
+		if((rtyb>=CCXL_TY_BITFIELD_SB) && (rtyb<=CCXL_TY_BITFIELD_UL))
+			rtyb=CCXL_TY_I;
 		
 		switch(ltyb)
 		{
@@ -6026,8 +6275,10 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 			CCXL_STATUS_YES:CCXL_STATUS_NO);
 	}
 
-	if(BGBCC_CCXL_TypeSmallLongP(ctx, lty) &&
-		BGBCC_CCXL_TypeSmallLongP(ctx, rty))
+	if((BGBCC_CCXL_TypeSmallLongP(ctx, lty) ||
+		BGBCC_CCXL_TypeBitFieldSmallLongP(ctx, lty)) &&
+		(BGBCC_CCXL_TypeSmallLongP(ctx, rty) ||
+		BGBCC_CCXL_TypeBitFieldSmallLongP(ctx, rty)))
 	{
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, lty))
 		{

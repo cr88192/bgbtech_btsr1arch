@@ -929,8 +929,8 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 		if(	(ifmt->biWidth		== 800) &&
 			(ifmt->biHeight		== 600) )
 		{
-//			ofmt_mode=TKGDI_SCRMODE_800x600_CC;	//Use 100x75 color cell
-			ofmt_mode=TKGDI_SCRMODE_800x600_PAL8B;	//Use 800x600 8bpp
+			ofmt_mode=TKGDI_SCRMODE_800x600_CC;	//Use 100x75 color cell
+//			ofmt_mode=TKGDI_SCRMODE_800x600_PAL8B;	//Use 800x600 8bpp
 		}
 	}
 	
@@ -1129,10 +1129,16 @@ TKGHDC TKGDI_CreateDisplay(
 
 		if(tgt_mode==TKGDI_SCRMODE_800x600_CC)
 		{
-			((u32 *)0xFFFFF00BFF00UL)[0]=0x008F;	//100x75 color-cell
 			tkgdi_vid_scrmode=tgt_mode;
+
+			((u32 *)0xFFFFF00BFF00UL)[0]=0x008F;	//100x75 color-cell
 			tkgdi_vid_cellstride=4;
 			tkgdi_vid_rowstride=100*4;
+
+//			((u32 *)0xFFFFF00BFF00UL)[0]=0x008D;	//100x75 color-cell
+//			tkgdi_vid_cellstride=8;
+//			tkgdi_vid_rowstride=100*8;
+
 			tkgdi_vid_xsize=800;
 			tkgdi_vid_ysize=600;
 			tkgdi_vid_planar=0;
@@ -1204,7 +1210,8 @@ TKGHDC TKGDI_CreateDisplay(
 		if(tgt_mode==TKGDI_SCRMODE_800x600_PAL8B)
 		{
 //			((u32 *)0xFFFFF00BFF00UL)[0]=0x000D009F;	//200x150 Pal8
-			((u32 *)0xFFFFF00BFF00UL)[0]=0x000DC09F;	//200x150 Pal8
+//			((u32 *)0xFFFFF00BFF00UL)[0]=0x000DC09F;	//200x150 Pal8
+			((u32 *)0xFFFFF00BFF00UL)[0]=0x002DC09F;	//200x150 Pal8
 			tkgdi_vid_scrmode=tgt_mode;
 			tkgdi_vid_cellstride=1;
 			tkgdi_vid_rowstride=200*1;

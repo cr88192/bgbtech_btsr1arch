@@ -253,6 +253,30 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 			nm1=BGBCC_SH_NMID_MOVL; nm2=-1;
 		}
 	}
+
+	if(BGBCC_CCXL_TypeBitFieldP(ctx, type))
+	{
+		ty=BGBCC_CCXL_GetTypeBaseType(ctx, type);
+		switch(ty)
+		{
+		case CCXL_TY_BITFIELD_SB:
+		case CCXL_TY_BITFIELD_UB:
+			sz=1; nm1=BGBCC_SH_NMID_MOVUB;
+			break;
+		case CCXL_TY_BITFIELD_SS:
+		case CCXL_TY_BITFIELD_US:
+			sz=2; nm1=BGBCC_SH_NMID_MOVUW;
+			break;
+		case CCXL_TY_BITFIELD_SI:
+		case CCXL_TY_BITFIELD_UI:
+			sz=4; nm1=BGBCC_SH_NMID_MOVUL;
+			break;
+		case CCXL_TY_BITFIELD_SL:
+		case CCXL_TY_BITFIELD_UL:
+			sz=8; nm1=BGBCC_SH_NMID_MOVQ;
+			break;
+		}
+	}
 	
 	*rsz=sz;
 	*rnm1=nm1;

@@ -3579,7 +3579,7 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 	int asz[16];
 	int nasz, nqlvl, isvla;
 	char *s, *t, *t1, *tyn;
-	BCCX_Node *c, *n, *n0;
+	BCCX_Node *c, *n, *n0, *n1;
 	s64 li;
 
 	int i, j, vsz, na, ci, atsz, vsc;
@@ -3807,6 +3807,20 @@ char *BGBCC_CCXL_VarImageTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 					*t++=',';
 			}
 			*t++=';';
+		}
+#endif
+
+#if 1
+		n0=BCCX_FetchCst(ty, &bgbcc_rcst_bits, "bits");
+		if(n0)
+		{
+			n1=BGBCC_CCXL_ReduceExprConst(ctx, n0);
+			if(BCCX_TagIsCstP(n1, &bgbcc_rcst_int, "int"))
+			{
+				i=BCCX_GetIntCst(n1, &bgbcc_rcst_value, "value");
+				*t++='B';
+				t=BGBCC_CCXL_StrPrintInt(t, i);
+			}
 		}
 #endif
 

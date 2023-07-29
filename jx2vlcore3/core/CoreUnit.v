@@ -1840,7 +1840,8 @@ begin
 	else if(mmioOpm!=0)
 	begin
 		tNxtBusMissCnt = tBusMissCnt + 1;
-		if(tBusMissCnt == 511)
+		if(tBusMissCnt == 2047)
+//		if(tBusMissCnt == 511)
 //		if(tBusMissCnt == 255)
 //		if(tBusMissCnt == 63)
 //		if(tBusMissCnt == 15)
@@ -1851,13 +1852,14 @@ begin
 		end
 
 //		if(mmioAddr == mmioAddrL4)
-		if(tBusMissCnt == 511)
+		if(tBusMissCnt == 2047)
+//		if(tBusMissCnt == 511)
 //		if(tBusMissCnt == 255)
 //		if(tBusMissCnt == 63)
 //		if(tBusMissCnt == 15)
 		begin
 			if(!tBusMissLatch)
-				$display("MMIO Bus Miss A=%X", mmioAddr);
+				$display("MMIO Bus Miss A=%X OPM=%X", mmioAddr, mmioOpm);
 			tNxtBusMissLatch = 1;
 		end		
 	end

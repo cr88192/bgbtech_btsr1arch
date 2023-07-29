@@ -299,6 +299,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 
 * 'A{sz};{sig}: Array
 * 'A{a..z}{sig}': Pointer/Array Class Modifier
+* 'B{sz}{sig}': Bitfield
 * 'L{qname};': Tag Class
 * 'P{sig}': Pointer
 * 'Q{sig}': Tag Array

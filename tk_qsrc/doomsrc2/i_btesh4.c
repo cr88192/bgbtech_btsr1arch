@@ -1995,8 +1995,8 @@ void I_InitTkGdi()
 //	i_dibinfo->biWidth=640;
 //	i_dibinfo->biHeight=400;
 
-//	i_dibinfo->biWidth=800;
-//	i_dibinfo->biHeight=600;
+	i_dibinfo->biWidth=800;
+	i_dibinfo->biHeight=600;
 
 	i_dibinfo->biBitCount=16;
 
@@ -2004,7 +2004,7 @@ void I_InitTkGdi()
 
 	i_hDc=tkgCreateDisplay(i_dibinfo);
 
-#if 0
+#if 1
 	i_dibinfo->biWidth=320;
 	i_dibinfo->biHeight=200;
 	

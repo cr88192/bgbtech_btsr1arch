@@ -253,6 +253,10 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 		mmgp_spi_delcyc=0;
 	else
 		mmgp_spi_delcyc-=dcyc;
+
+	if(ctx->no_memcost)
+		mmgp_spi_delcyc=0;
+
 	ctx->iodel_cyc=mmgp_spi_delcyc;
 
 
@@ -505,6 +509,10 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 		mmgp_spi_delcyc=0;
 	else
 		mmgp_spi_delcyc-=dcyc;
+
+	if(ctx->no_memcost)
+		mmgp_spi_delcyc=0;
+
 	ctx->iodel_cyc=mmgp_spi_delcyc;
 
 

@@ -71,9 +71,19 @@ input reset;
 input[11:0] pixPosX;
 input[11:0] pixPosY;
 
-output[7:0]		pixCy;
-output[7:0]		pixCu;
-output[7:0]		pixCv;
+//output[7:0]		pixCy;
+//output[7:0]		pixCu;
+//output[7:0]		pixCv;
+
+`ifdef jx2_modvga_pix4x
+output[31:0]	pixCy;
+output[31:0]	pixCu;
+output[31:0]	pixCv;
+`else
+output[15:0]	pixCy;
+output[15:0]	pixCu;
+output[15:0]	pixCv;
+`endif
 output[15:0]	pixAux;
 
 output[13:0]	pixCellIx;
@@ -305,6 +315,9 @@ reg[15:0]	tClrYuvA;
 reg[15:0]	tClrYuvB;
 reg[15:0]	tClrYuvC;
 
+reg[15:0]	tClrYuvC1;
+reg			tClrYuvC2x;
+
 reg[15:0]	tClrYuvA_B;
 reg[15:0]	tClrYuvB_B;
 reg[15:0]	tClrYuvC_B;
@@ -392,14 +405,31 @@ reg			tBlinkStrobeA;
 reg			tBlinkStrobeB;
 
 
-reg[7:0]	tPixCy;
-reg[7:0]	tPixCu;
-reg[7:0]	tPixCv;
-reg[15:0]	tPixAux;
+//reg[7:0]	tPixCy;
+//reg[7:0]	tPixCu;
+//reg[7:0]	tPixCv;
 
-reg[7:0]	tPixCy2;
-reg[7:0]	tPixCu2;
-reg[7:0]	tPixCv2;
+//reg[7:0]	tPixCy2;
+//reg[7:0]	tPixCu2;
+//reg[7:0]	tPixCv2;
+
+`ifdef jx2_modvga_pix4x
+reg[31:0]	tPixCy;
+reg[31:0]	tPixCu;
+reg[31:0]	tPixCv;
+reg[31:0]	tPixCy2;
+reg[31:0]	tPixCu2;
+reg[31:0]	tPixCv2;
+`else
+reg[15:0]	tPixCy;
+reg[15:0]	tPixCu;
+reg[15:0]	tPixCv;
+reg[15:0]	tPixCy2;
+reg[15:0]	tPixCu2;
+reg[15:0]	tPixCv2;
+`endif
+
+reg[15:0]	tPixAux;
 reg[15:0]	tPixAux2;
 
 reg[11:0]	cbClrTab[63:0];
@@ -413,8 +443,14 @@ reg		useRow50;
 reg		useHalfCell;
 reg		useQtrCell;
 reg		useHorz800;
+reg		useHorz1280;
+reg		useHorz1440;
+
 reg		useColPow2;
 reg		useVert480;
+reg		useVert600;
+reg		useVert800;
+reg		useVert900;
 
 reg		use2xCol;
 reg		use2xRow;
@@ -498,6 +534,8 @@ begin
 	useHalfCell	= 0;
 	useQtrCell	= 0;
 	useHorz800	= 0;
+	useHorz1280	= 0;
+	useHorz1440	= 0;
 	
 //	useCol80 = 1;
 //	useCol80 = 0;
@@ -513,6 +551,27 @@ begin
 	useVert480	= tCtrlRegVal[9];
 	useQtrCell	= tCtrlRegVal[10];
 
+	useVert600	= useHorz800;
+	useVert900	= 0;
+	useVert800	= 0;
+
+	if(tCtrlRegVal[25:24]==2'b01)
+	begin
+		useHorz800	= 0;
+		useVert600	= 0;
+		
+		if(tCtrlRegVal[3])
+		begin
+			useHorz1440 = 1;
+			useVert900	= 1;
+		end
+		else
+		begin
+			useHorz1280	= 1;
+			useVert800	= 1;
+		end
+	end
+
 	tScrClrsMod		= tCtrlRegVal[15:12];
 
 	use2xCol		= tCtrlRegVal[18];
@@ -526,6 +585,8 @@ begin
 	tNextCellIsOdd	= 0;
 	tNextCellIsOddB	= 0;
 	tPixAux			= 0;
+	tClrYuvC1		= 0;
+	tClrYuvC2x		= 0;
 
 //	tPixRgb565		= 0;
 	tPixRgb565		= tScrMode[3];
@@ -547,7 +608,8 @@ begin
 	/* Z Stage */
 	if(useColPow2)
 	begin
-		if(useHorz800)
+//		if(useHorz800)
+		if(useVert600)
 		begin
 			if(useRow50)
 			begin
@@ -585,6 +647,24 @@ begin
 //			tNextPixCellMaxY	= 60;
 			tNextPixCellMaxY	= use2xRow ? 120 : 60;
 		end
+
+		if(useVert600)
+		begin
+			tNxtPixRawMaxY		= 600;
+			tNextPixCellMaxY	= use2xRow ? 150 : 75;
+		end
+
+		if(useVert800)
+		begin
+			tNxtPixRawMaxY		= 800;
+			tNextPixCellMaxY	= use2xRow ? 200 : 100;
+		end
+
+		if(useVert900)
+		begin
+			tNxtPixRawMaxY		= 900;
+			tNextPixCellMaxY	= use2xRow ? 224 : 112;
+		end
 	end
 	else
 	begin
@@ -594,6 +674,24 @@ begin
 		begin
 			tNxtPixRawMaxY		= 240;
 			tNextPixCellMaxY	= 30;
+		end
+
+		if(useVert600)
+		begin
+			tNxtPixRawMaxY		= 300;
+			tNextPixCellMaxY	= use2xRow ? 75 : 38;
+		end
+
+		if(useVert800)
+		begin
+			tNxtPixRawMaxY		= 400;
+			tNextPixCellMaxY	= use2xRow ? 100 : 50;
+		end
+
+		if(useVert900)
+		begin
+			tNxtPixRawMaxY		= 450;
+			tNextPixCellMaxY	= use2xRow ? 112 : 56;
 		end
 	end
 
@@ -666,6 +764,22 @@ begin
 			if(use2xCol)
 				tNextPixCellMaxX	= 160;			
 		end
+
+		if(useHorz1280)
+		begin
+			tNxtPixRawMaxX		= 1280;
+			tNextPixCellMaxX	= 160;
+			if(use2xCol)
+				tNextPixCellMaxX	= 320;			
+		end
+
+		if(useHorz1440)
+		begin
+			tNxtPixRawMaxX		= 1440;
+			tNextPixCellMaxX	= 180;
+			if(use2xCol)
+				tNextPixCellMaxX	= 360;			
+		end
 	end
 	else
 	begin
@@ -682,6 +796,22 @@ begin
 		begin
 			tNxtPixRawMaxX		= 320;
 			tNextPixCellMaxX	= 40;
+		end
+
+		if(useHorz1280)
+		begin
+			tNxtPixRawMaxX		= 640;
+			tNextPixCellMaxX	= 80;
+			if(use2xCol)
+				tNextPixCellMaxX	= 160;			
+		end
+
+		if(useHorz1440)
+		begin
+			tNxtPixRawMaxX		= 720;
+			tNextPixCellMaxX	= 90;
+			if(use2xCol)
+				tNextPixCellMaxX	= 180;			
 		end
 	end
 
@@ -1692,24 +1822,32 @@ begin
 	endcase
 `endif
 
-	if(tPixRgb565)
+	if(!tClrYuvC2x)
+		tClrYuvC1 = tClrYuvC;
+
+//	if(tPixRgb565)
+	if(1'b1)
 	begin
-//		tPixCy		= { tClrYuvC[10: 5], tClrYuvC[10: 9] };
-		tPixCy		= { tClrYuvC[ 9: 4], tClrYuvC[ 9: 8] };
-		tPixCu		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
-//		tPixCv		= { tClrYuvC[15:11], tClrYuvC[15:13] };
-		tPixCv		= { tClrYuvC[14:10], tClrYuvC[14:12] };
+//		tPixCy[7:0]		= { tClrYuvC[10: 5], tClrYuvC[10: 9] };
+		tPixCy[7:0]		= { tClrYuvC[ 9: 4], tClrYuvC[ 9: 8] };
+		tPixCu[7:0]		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
+//		tPixCv[7:0]		= { tClrYuvC[15:11], tClrYuvC[15:13] };
+		tPixCv[7:0]		= { tClrYuvC[14:10], tClrYuvC[14:12] };
 		tPixAux[0]	= 1;
+
+		tPixCy[15:8]	= { tClrYuvC1[ 9: 4], tClrYuvC1[ 9: 8] };
+		tPixCu[15:8]	= { tClrYuvC1[ 4: 0], tClrYuvC1[ 4: 2] };
+		tPixCv[15:8]	= { tClrYuvC1[14:10], tClrYuvC1[14:12] };
 
 //		tPixCu=0;
 	end
 	else
 	begin
-		tPixCy		= { tClrYuvC[15:10], tClrYuvC[15:14] };
-//		tPixCu		= { tClrYuvC[ 9: 5], tClrYuvC[ 9: 7] };
-//		tPixCv		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
-		tPixCv		= { tClrYuvC[ 9: 5], tClrYuvC[ 9: 7] };
-		tPixCu		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
+		tPixCy[7:0]		= { tClrYuvC[15:10], tClrYuvC[15:14] };
+//		tPixCu[7:0]		= { tClrYuvC[ 9: 5], tClrYuvC[ 9: 7] };
+//		tPixCv[7:0]		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
+		tPixCv[7:0]		= { tClrYuvC[ 9: 5], tClrYuvC[ 9: 7] };
+		tPixCu[7:0]		= { tClrYuvC[ 4: 0], tClrYuvC[ 4: 2] };
 		tPixAux[0]	= 0;
 		
 //		tPixCu=128;
@@ -1735,9 +1873,14 @@ begin
 
 	if(tSprCurSelClrL[15])
 	begin
-		tPixCy		= { tSprCurSelClrL[ 9: 4], tSprCurSelClrL[ 9: 8] };
-		tPixCu		= { tSprCurSelClrL[ 4: 0], tSprCurSelClrL[ 4: 2] };
-		tPixCv		= { tSprCurSelClrL[14:10], tSprCurSelClrL[14:12] };
+		tPixCy[7:0]		= { tSprCurSelClrL[ 9: 4], tSprCurSelClrL[ 9: 8] };
+		tPixCu[7:0]		= { tSprCurSelClrL[ 4: 0], tSprCurSelClrL[ 4: 2] };
+		tPixCv[7:0]		= { tSprCurSelClrL[14:10], tSprCurSelClrL[14:12] };
+
+		tPixCy[15:8]	= tPixCy[7:0];
+		tPixCu[15:8]	= tPixCu[7:0];
+		tPixCv[15:8]	= tPixCv[7:0];
+
 		tPixAux[0]	= 1;
 	end
 `endif
@@ -1804,20 +1947,28 @@ begin
 	if(tPixPosX_Z[9:2]<159)
 		tDbgLedEna = 0;
 
+	if(useHorz800 && (tPixPosX_Z[9:2]<199))
+		tDbgLedEna = 0;
+
 	if(tDbgLedEna)
 	begin
 		if(tDbgLedBit)
 		begin
-			tPixCy		= 8'hFF;
-			tPixCu		= 8'h00;
-			tPixCv		= 8'hFF;
+			tPixCy[7:0]		= 8'hFF;
+			tPixCu[7:0]		= 8'h00;
+			tPixCv[7:0]		= 8'hFF;
 		end
 		else
 		begin
-			tPixCy		= 8'h00;
-			tPixCu		= 8'h40;
-			tPixCv		= 8'h00;
+			tPixCy[7:0]		= 8'h00;
+			tPixCu[7:0]		= 8'h40;
+			tPixCv[7:0]		= 8'h00;
 		end
+
+		tPixCy[15:8]	= tPixCy[7:0];
+		tPixCu[15:8]	= tPixCu[7:0];
+		tPixCv[15:8]	= tPixCv[7:0];
+
 		tPixAux[0]	= 1;
 	end
 `endif
@@ -1830,7 +1981,8 @@ begin
 	
 	if(tPixPosX[11] || tPixPosY[11])
 	begin
-		if(tPixRgb565)
+//		if(tPixRgb565)
+		if(1'b1)
 		begin
 			tPixCy=0;
 			tPixCu=0;
@@ -1843,6 +1995,17 @@ begin
 			tPixCv=128;
 		end
 	end
+
+//	tPixCy[15:8]=tPixCy[7:0];
+//	tPixCu[15:8]=tPixCu[7:0];
+//	tPixCv[15:8]=tPixCv[7:0];
+
+`ifdef jx2_modvga_pix4x
+//	tPixCy[31:16]=tPixCy[15:0];
+//	tPixCu[31:16]=tPixCu[15:0];
+//	tPixCv[31:16]=tPixCv[15:0];
+`endif
+
 
 `ifndef def_true
 // `ifdef def_true

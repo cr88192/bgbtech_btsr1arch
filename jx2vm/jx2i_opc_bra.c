@@ -439,6 +439,9 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 	int pr, prb, pri, prj;
 	int sc, sc1, srb, prc, p;
 
+	if(ctx->no_memcost)
+		return;
+
 	pri=((op->pc)>>1)&63;
 //	pri=((op->pc)>>1)&255;
 

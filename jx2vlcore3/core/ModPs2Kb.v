@@ -80,7 +80,8 @@ wire		tMmioLowCSel;
 assign		tMmioLowCSel = (tMmioAddr[27:16]==12'h000);
 
 wire		tMmioPs2CSel;
-assign		tMmioPs2CSel = tMmioLowCSel && (tMmioAddr[15:4]==12'hE04);
+// assign		tMmioPs2CSel = tMmioLowCSel && (tMmioAddr[15:4]==12'hE04);
+assign		tMmioPs2CSel = tMmioLowCSel && (tMmioAddr[15:4]==mmioCsBase);
 
 reg				mmioInOE;
 reg				mmioInWR;
@@ -321,7 +322,13 @@ begin
 		
 		tNxtScanOutClk	= 0;
 	end
-	
+
+	if((tMmioAddr[3:2]==2'b10) && mmioInWR)
+	begin
+		/* Ignore writes to status register for now. */
+		tMmioOK			= UMEM_OK_OK;
+	end
+
 	if(tScanOutPos!=0)
 	begin
 		if(tScanOutPos == 4'hD)

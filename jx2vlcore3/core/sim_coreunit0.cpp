@@ -2649,9 +2649,15 @@ int main(int argc, char **argv, char **env)
 		if(top->dbg_outStatus2!=0)
 			stat_reason_cnt[2]++;
 
-		if(top->dbg_outStatus5!=0)
+//		if(top->dbg_outStatus5!=0)
+		if((top->dbg_outStatus5!=0) &&
+				!((top->dbg_outStatus9!=0) || (top->dbg_outStatus10!=0)) &&
+				!(top->dbg_outStatus11!=0))
 			stat_reason_cnt[0]++;
-		if(top->dbg_outStatus6!=0)
+//		if(top->dbg_outStatus6!=0)
+		if((top->dbg_outStatus6!=0) &&
+				!((top->dbg_outStatus9!=0) || (top->dbg_outStatus10!=0)) &&
+				!(top->dbg_outStatus11!=0))
 			stat_reason_cnt[1]++;
 
 		if((top->dbg_outStatus9!=0) || (top->dbg_outStatus10!=0))
@@ -2899,13 +2905,15 @@ int main(int argc, char **argv, char **env)
 				0*8, 600-96, tb, 0xFFFFBF80, 0xFF008000);
 
 
-			sprintf(tb, "%s:%.2f%% %s:%.2f%% %s:%.2f%%",
+			sprintf(tb, "%s:%.2f%% %s:%.2f%% %s:%.2f%% %s:%.2f%%",
 				stat_reason_name[stat_reason_idx[0]],
-				(stat_reason_cnt[stat_reason_idx[0]]+1.0)/(tot_cnt_led+1.0),
+				(stat_reason_cnt[stat_reason_idx[0]]*100.0)/(tot_cnt_led+1.0),
 				stat_reason_name[stat_reason_idx[1]],
-				(stat_reason_cnt[stat_reason_idx[1]]+1.0)/(tot_cnt_led+1.0),
+				(stat_reason_cnt[stat_reason_idx[1]]*100.0)/(tot_cnt_led+1.0),
 				stat_reason_name[stat_reason_idx[2]],
-				(stat_reason_cnt[stat_reason_idx[2]]+1.0)/(tot_cnt_led+1.0)
+				(stat_reason_cnt[stat_reason_idx[2]]*100.0)/(tot_cnt_led+1.0),
+				stat_reason_name[stat_reason_idx[3]],
+				(stat_reason_cnt[stat_reason_idx[3]]*100.0)/(tot_cnt_led+1.0)
 				);
 
 			BTM_DrawStrFBuf2x(

@@ -2046,7 +2046,7 @@ void BGBCC_CCXL_SanityObjSize(BGBCC_TransState *ctx,
 	ccxl_type tty, tty2;
 	int msz, nsz, msz2, nsz2, sz;
 	int mal, nal, mal2, nal2, al;
-	int vtix;
+	int vtix, bitofs;
 	int i, j, k;
 
 	if(!obj)
@@ -2279,7 +2279,7 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 	ccxl_type tty, tty2;
 	int msz, nsz, msz2, nsz2, sz;
 	int mal, nal, mal2, nal2, al;
-	int nsbc, nsbcv, vtix;
+	int nsbc, nsbcv, vtix, bitofs;
 	int i, j, k;
 
 	if(!obj)
@@ -2517,6 +2517,7 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 #endif
 		}
 
+		bitofs=0;
 		for(i=0; i<obj->decl->n_fields; i++)
 		{
 
@@ -2529,6 +2530,45 @@ void BGBCC_CCXL_FixupObjSize(BGBCC_TransState *ctx,
 					vtix++;
 				}
 				continue;
+			}
+
+			tty=obj->decl->fields[i]->type;
+			if(BGBCC_CCXL_TypeBitFieldP(ctx, tty))
+			{
+				j=BGBCC_CCXL_TypeBitFieldGetBits(ctx, tty);
+				k=BGBCC_CCXL_TypeBitFieldGetMaxBits(ctx, tty);
+				
+				if((bitofs>0) && ((bitofs+j)<=k))
+				{
+					BGBCC_CCXL_TypeBitFieldSetOffset(ctx, &tty, bitofs);
+					obj->decl->fields[i]->type=tty;
+					bitofs+=j;
+
+					/* copy offset from preceding field */
+					obj->decl->fields[i]->fxmoffs=
+						obj->decl->fields[i-1]->fxmoffs;
+					obj->decl->fields[i]->fxnoffs=
+						obj->decl->fields[i-1]->fxnoffs;
+					obj->decl->fields[i]->fxoffs=
+						obj->decl->fields[i-1]->fxoffs;
+						
+					obj->decl->fields[i]->fxmsize=0;
+					obj->decl->fields[i]->fxnsize=0;
+					obj->decl->fields[i]->fxmalgn=
+						obj->decl->fields[i-1]->fxmalgn;
+					obj->decl->fields[i]->fxnalgn=
+						obj->decl->fields[i-1]->fxnalgn;
+					continue;
+				}else
+				{
+					BGBCC_CCXL_TypeBitFieldSetOffset(ctx, &tty, bitofs);
+					obj->decl->fields[i]->type=tty;
+					bitofs+=j;
+				}
+			
+			}else
+			{
+				bitofs=0;
 			}
 
 			msz2=obj->decl->fields[i]->fxmsize;

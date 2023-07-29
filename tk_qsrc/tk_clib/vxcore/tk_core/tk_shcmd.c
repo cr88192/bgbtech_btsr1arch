@@ -1287,6 +1287,13 @@ int TKSH_Cmds_TestGfx(char **args)
 				mdb=0x000D0095;	//320x200x16bpp, RGB555
 				xstr=160;
 				break;
+
+			case 7:
+//				mdb=0x0020008F;	//800x600x8bpp, RGB232
+				mdb=0x002DC09F;	//800x600x8bpp, RGB232
+				xstr=200;
+				break;
+
 			default:
 				mdb=0x0081;	//80x25 color-cell
 				xstr=80;
@@ -1334,7 +1341,7 @@ int TKSH_Cmds_TestGfx(char **args)
 				}
 			}
 
-			if((md==2) || (md==4))
+			if((md==2) || (md==4) || (md==7))
 			{
 				mandril_pal8b=mandril_pal8;
 				if(md==4)

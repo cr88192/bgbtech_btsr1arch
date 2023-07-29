@@ -778,6 +778,48 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 		BGBCC_JX2C_EmitDebugCheckReg(ctx, sctx, type, csreg);
 #endif
 
+		if(BGBCC_CCXL_TypeBitFieldP(ctx, type))
+		{
+			ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);
+
+			tr0=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);
+			tr1=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);
+
+			j=BGBCC_CCXL_TypeBitFieldGetBits(ctx, type);
+			k=BGBCC_CCXL_TypeBitFieldGetOffset(ctx, type);
+			
+			
+			BGBCC_JX2_EmitLoadRegImm64P(sctx, tr0,
+				(1LL<<j)-1);
+			BGBCC_JX2_EmitLoadRegImm64P(sctx, tr1,
+				~(((1LL<<j)-1)<<k));
+
+			BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
+				nm1, cdreg, fi->fxoffs, ctreg);
+
+			BGBCC_JX2_EmitOpRegRegReg(sctx,
+				BGBCC_SH_NMID_AND, csreg, tr0, tr0);
+			BGBCC_JX2_EmitOpRegRegReg(sctx,
+				BGBCC_SH_NMID_AND, ctreg, tr1, ctreg);
+
+			BGBCC_JX2_EmitOpRegImmReg(sctx,
+				BGBCC_SH_NMID_SHLDQ, tr0, k, tr0);
+
+			BGBCC_JX2_EmitOpRegRegReg(sctx,
+				BGBCC_SH_NMID_OR, ctreg, tr0, ctreg);
+
+			BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
+				nm1, cdreg, fi->fxoffs, ctreg);
+
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+			return(1);
+		}
+
 		if(nm2>=0)
 		{
 //			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);

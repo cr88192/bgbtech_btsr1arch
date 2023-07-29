@@ -4068,6 +4068,7 @@ int BJX2_MemGetByteW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 	int ix, ra;
 	
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ix=(addr0>>12)&63;
@@ -4089,6 +4090,7 @@ int BJX2_MemGetWordW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 	int ix, ra;
 	
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+1)&0x0000FFFFFFFFF000ULL;
@@ -4114,6 +4116,7 @@ s32 BJX2_MemGetDWordW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 	int ix, ra;
 	
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+3)&0x0000FFFFFFFFF000ULL;
@@ -4139,6 +4142,7 @@ s64 BJX2_MemGetQWordW(BJX2_Context *ctx, bjx2_addr addr0, bjx2_addr addrh)
 	int ix, ra;
 	
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+7)&0x0000FFFFFFFFF000ULL;
@@ -4167,6 +4171,7 @@ int BJX2_MemGetXWordW(BJX2_Context *ctx,
 	int v;
 
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0   )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+15)&0x0000FFFFFFFFF000ULL;
@@ -4196,6 +4201,7 @@ int BJX2_MemSetByteW(BJX2_Context *ctx,
 	int v;
 
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ix=(addr0>>12)&63;
@@ -4218,6 +4224,7 @@ int BJX2_MemSetWordW(BJX2_Context *ctx,
 	int v;
 
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+1)&0x0000FFFFFFFFF000ULL;
@@ -4244,6 +4251,7 @@ int BJX2_MemSetDWordW(BJX2_Context *ctx,
 	int v;
 
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+3)&0x0000FFFFFFFFF000ULL;
@@ -4270,6 +4278,7 @@ int BJX2_MemSetQWordW(BJX2_Context *ctx,
 	int v;
 
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0  )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+7)&0x0000FFFFFFFFF000ULL;
@@ -4297,6 +4306,7 @@ int BJX2_MemSetXWordW(BJX2_Context *ctx,
 	int v;
 
 	if(ctx->no_memcost)
+//	if(0)
 	{
 		ppga1=(addr0   )&0x0000FFFFFFFFF000ULL;
 		ppga2=(addr0+15)&0x0000FFFFFFFFF000ULL;
