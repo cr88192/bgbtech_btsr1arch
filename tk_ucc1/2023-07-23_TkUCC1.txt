@@ -1,0 +1,18 @@
+Goal:
+* Smaller, faster, and lower memory footprint C compiler.
+
+Will focus more on keeping code size and memory footprint manageable, rather than on generating high-performance code.
+
+Will aim to have a more conventional structure:
+* Preproces, Parse, Compile, Codegen, Assemble, Link
+* But, will not fully separate passes or stages.
+* Will also avoid the use of temporary files.
+
+Will aim to hopefully have a smaller code footprint than BGBCC.
+
+
+'WOFF':
+* Will use a fairly simplistic object format based on the WAD2 format.
+* Will use a "compile to translation units and then link" strategy.
+
+Will likely deal with the "address distance and displacement" issues by using explicit memory-model flags.
