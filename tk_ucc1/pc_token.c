@@ -1,9 +1,85 @@
-char *TKUCC_TokEatWhite(char *str)
+char *TKUCC_TokEatWhiteOnly(char *str)
 {
 	char *s;
 	s=str;
 	while(*s && *s<=' ')
 		s++;
+	return(s);
+}
+
+char *TKUCC_TokEatWhiteOnlyNlb(char *str)
+{
+	char *s;
+	s=str;
+	while(*s && *s<=' ' && *s!='\r' && *s!='\n')
+		s++;
+	return(s);
+}
+
+char *TKUCC_TokEatWhite(char *str)
+{
+	char *s, *s0;
+	int inc;
+
+	s=str;
+	s=TKUCC_TokEatWhiteOnly(s);
+
+	if((s[0]=='/') && (s[1]=='*'))
+	{
+		s0=s;
+		s+=2;
+		inc=1;
+		while(*s)
+		{
+			if((s[0]=='*') && (s[1]=='/'))
+			{
+				s+=2;
+				inc=0;
+				break;
+			}
+			s++;
+		}
+		
+		if(!*s && inc)
+			return(s0);
+
+		s=TKUCC_TokEatWhiteOnly(s);
+		return(s);
+	}
+
+	return(s);
+}
+
+char *TKUCC_TokEatWhiteNlb(char *str)
+{
+	char *s, *s0;
+	int inc;
+
+	s=str;
+	s=TKUCC_TokEatWhiteOnlyNlb(s);
+
+	if((s[0]=='/') && (s[1]=='*'))
+	{
+		s0=s;
+		s+=2;
+		inc=1;
+		while(*s)
+		{
+			if((s[0]=='*') && (s[1]=='/'))
+			{
+				s+=2;
+				inc=0;
+				break;
+			}
+		}
+		
+		if(!*s && inc)
+			return(s0);
+
+		s=TKUCC_TokEatWhiteOnlyNlb(s);
+		return(s);
+	}
+
 	return(s);
 }
 
@@ -125,11 +201,12 @@ int TKUCC_TokOperatorLength(char *s)
 char *TKUCC_TokReadToken(char *str, char *buf, int *rtokty)
 {
 	char *s, *t;
-	int opl;
+	int opl, pfxws;
 	
 	t=buf;
 	s=str;
 	s=TKUCC_TokEatWhite(s);
+	pfxws=(s!=str);
 
 	if(!*s)
 	{
@@ -210,7 +287,7 @@ char *TKUCC_TokReadToken(char *str, char *buf, int *rtokty)
 		if(*s=='\'')
 			s++;
 
-		*rtokty=3;
+		*rtokty=5;
 		*t=0;
 		return(s);
 	}
@@ -221,7 +298,7 @@ char *TKUCC_TokReadToken(char *str, char *buf, int *rtokty)
 	{
 		if(opl==1)
 		{
-			*rtokty=4;
+			*rtokty=pfxws?6:4;
 			*t++=*s++;
 			*t=0;
 			return(s);
@@ -229,7 +306,7 @@ char *TKUCC_TokReadToken(char *str, char *buf, int *rtokty)
 
 		if(opl==2)
 		{
-			*rtokty=4;
+			*rtokty=pfxws?6:4;
 			*t++=*s++;
 			*t++=*s++;
 			*t=0;
@@ -238,7 +315,7 @@ char *TKUCC_TokReadToken(char *str, char *buf, int *rtokty)
 
 		if(opl==3)
 		{
-			*rtokty=4;
+			*rtokty=pfxws?6:4;
 			*t++=*s++;
 			*t++=*s++;
 			*t++=*s++;
@@ -248,7 +325,7 @@ char *TKUCC_TokReadToken(char *str, char *buf, int *rtokty)
 
 		if(opl==4)
 		{
-			*rtokty=4;
+			*rtokty=pfxws?6:4;
 			*t++=*s++;
 			*t++=*s++;
 			*t++=*s++;
@@ -258,7 +335,7 @@ char *TKUCC_TokReadToken(char *str, char *buf, int *rtokty)
 		}
 	}
 
-	*rtokty=4;
+	*rtokty=pfxws?6:4;
 	*t++=*s++;
 	*t=0;
 	return(s);
@@ -315,16 +392,34 @@ int TKUCC_TokenStringP(char *tok)
 	return(0);
 }
 
+int TKUCC_TokenCharStringP(char *tok)
+{
+	if(*(tok-1)=='F')
+		return(1);
+	return(0);
+}
+
 int TKUCC_TokenOperatorP(char *tok)
 {
-	if(*(tok-1)=='E')
+	if((*(tok-1)=='E') || (*(tok-1)=='G'))
 		return(1);
 	return(0);
 }
 
 int TKUCC_TokenCheckOperatorP(char *tok, char *sref)
 {
+//	if(*(tok-1)!='E')
+	if((*(tok-1)!='E') && (*(tok-1)!='G'))
+		return(0);
+	if(!strcmp(tok, sref))
+		return(1);
+	return(0);
+}
+
+int TKUCC_TokenCheckOperatorNoWsP(char *tok, char *sref)
+{
 	if(*(tok-1)!='E')
+//	if((*(tok-1)!='E') && (*(tok-1)!='G'))
 		return(0);
 	if(!strcmp(tok, sref))
 		return(1);
@@ -333,9 +428,16 @@ int TKUCC_TokenCheckOperatorP(char *tok, char *sref)
 
 int TKUCC_TokenCheckNameP(char *tok, char *sref)
 {
-	if(*(tok-1)!='D')
+	if(*(tok-1)!='B')
 		return(0);
 	if(!strcmp(tok, sref))
+		return(1);
+	return(0);
+}
+
+int TKUCC_TokenPrefixWhitespaceP(char *tok)
+{
+	if(*(tok-1)=='G')
 		return(1);
 	return(0);
 }
@@ -388,6 +490,9 @@ char *TKUCC_TokFlattenTokenBufNoPad(char *buf, char *tok)
 		*t=0;
 		return(t);
 	}
+	
+	if(TKUCC_TokenPrefixWhitespaceP(tok))
+		*t++=' ';
 	
 	strcpy(t, s);
 	t+=strlen(t);
@@ -765,3 +870,32 @@ s64 tkucc_atoll(char *str)
 }
 
 
+double tkucc_atof(char *str)
+{
+	return(atof(str));
+}
+
+int tkucc_tolower(int ch)
+{
+	if((ch>='A') && (ch<='Z'))
+		return((ch-'A')+'a');
+	return(ch);
+}
+
+int tkucc_stricmp(char *str1, char *str2)
+{
+	char *s1, *s2;
+	int c1, c2;
+	
+	s1=str1;
+	s2=str2;
+	c1=tkucc_tolower(*s1);
+	c2=tkucc_tolower(*s2);
+	while(c1 && (c1==c2))
+	{
+		s1++;	s2++;
+		c1=tkucc_tolower(*s1);
+		c2=tkucc_tolower(*s2);
+	}
+	return(c1-c2);
+}

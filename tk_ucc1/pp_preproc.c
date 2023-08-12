@@ -1,16 +1,35 @@
+s64 TKUCC_PpParseEvalExprInt(TKUCC_MainContext *ctx, char **toks);
+s64 TKUCC_PpParseEvalExprLogic(TKUCC_MainContext *ctx, void *rva);
+
+void TKUCC_PpError(TKUCC_MainContext *ctx, char *strs, ...)
+{
+	char tb[256];
+	va_list lst;
+	
+	va_start(lst, strs);
+	vsprintf(tb, strs, lst);
+	printf("PP Error: %s\n", tb);
+	
+	va_end(lst);
+}
+
 int TKUCC_PpEnterInclude(TKUCC_MainContext *ctx, char *name)
 {
 	char tb[256];
 	FILE *fd;
 	int i, j;
 	
-	fd=NULL;
-	for(i=0; i<ctx->pp_n_incpath; i++)
+//	fd=NULL;
+	fd=fopen(name, "rb");
+	if(!fd)
 	{
-		sprintf(tb, "%s/%s", ctx->pp_incpath[i], name);
-		fd=fopen(tb, "rb");
-		if(fd)
-			break;
+		for(i=0; i<ctx->pp_n_incpath; i++)
+		{
+			sprintf(tb, "%s/%s", ctx->pp_incpath[i], name);
+			fd=fopen(tb, "rb");
+			if(fd)
+				break;
+		}
 	}
 	
 	if(fd)
@@ -26,22 +45,28 @@ int TKUCC_PpEnterInclude(TKUCC_MainContext *ctx, char *name)
 
 int TKUCC_PpGetRawLine(TKUCC_MainContext *ctx, char *obuf)
 {
-	if(feof(ctx->src_fd))
+	if(ctx->src_fd)
 	{
-		if(ctx->src_fd_stkpos>0)
+		if(feof(ctx->src_fd))
 		{
-			fclose(ctx->src_fd);
-			ctx->src_fd_stkpos--;
-			ctx->src_fd=ctx->src_fd_stk[ctx->src_fd_stkpos];
-			return(TKUCC_PpGetRawLine(ctx, obuf));
-		}
+			if(ctx->src_fd_stkpos>0)
+			{
+				fclose(ctx->src_fd);
+				ctx->src_fd_stkpos--;
+				ctx->src_fd=ctx->src_fd_stk[ctx->src_fd_stkpos];
+				return(TKUCC_PpGetRawLine(ctx, obuf));
+			}
 
-		obuf[0]=0;
-		return(-1);
+			obuf[0]=0;
+			return(-1);
+		}
+		
+		fgets(obuf, 256, ctx->src_fd);
+		return(0);
 	}
-	
-	fgets(obuf, 256, ctx->src_fd);
-	return(0);
+
+	obuf[0]=0;
+	return(-1);
 }
 
 int TKUCC_PpGetRawLineNoWs(TKUCC_MainContext *ctx, char *obuf)
@@ -81,10 +106,10 @@ int TKUCC_PpGetRawLineNoWs(TKUCC_MainContext *ctx, char *obuf)
 
 TKUCC_LineBuf *TKUCC_PpGetSourceLine(TKUCC_MainContext *ctx)
 {
-	char tbuf[256];
+	char tbuf[1024];
 	TKUCC_LineBuf *tmp;
 	char *s, *t;
-	int instr, inchr;
+	int instr, inchr, incom;
 	int i, j, k, l;
 	
 	i=TKUCC_PpGetRawLineNoWs(ctx, tbuf);
@@ -93,7 +118,7 @@ TKUCC_LineBuf *TKUCC_PpGetSourceLine(TKUCC_MainContext *ctx)
 
 #if 1
 	/* Strip comments but ignore those inside strings */
-	s=tbuf; instr=0; inchr=0;
+	s=tbuf; instr=0; inchr=0; incom=0;
 	while(*s)
 	{
 		if((s[0]=='\"') && !inchr)
@@ -118,10 +143,24 @@ TKUCC_LineBuf *TKUCC_PpGetSourceLine(TKUCC_MainContext *ctx)
 			}
 		}else
 		{
-			if((s[0]=='/') && (s[1]=='/'))
+			if((s[0]=='/') && (s[1]=='/') && !incom)
 			{
 				s[0]=0;
 				break;
+			}
+
+			if((s[0]=='/') && (s[1]=='*'))
+			{
+				incom=1;
+				s+=2;
+				continue;
+			}
+
+			if((s[0]=='*') && (s[1]=='/'))
+			{
+				incom=0;
+				s+=2;
+				continue;
 			}
 		}
 		
@@ -130,10 +169,43 @@ TKUCC_LineBuf *TKUCC_PpGetSourceLine(TKUCC_MainContext *ctx)
 #endif
 	
 	l=strlen(tbuf);
-	while(tbuf[l-1]=='\\')
+	while((tbuf[l-1]=='\\') || incom)
 	{
-		TKUCC_PpGetRawLineNoWs(ctx, tbuf+(l-1));
-		l=strlen(tbuf);
+		if(incom)
+		{
+			TKUCC_PpGetRawLineNoWs(ctx, tbuf+l);
+			s=tbuf+l;
+			while(*s)
+			{
+				if((s[0]=='/') && (s[1]=='*'))
+				{
+					incom=1;
+					s+=2;
+					continue;
+				}
+
+				if((s[0]=='*') && (s[1]=='/'))
+				{
+					incom=0;
+					s+=2;
+					continue;
+				}
+				
+				s++;
+			}
+
+			l=strlen(tbuf);
+			continue;
+		}
+	
+		if(tbuf[l-1]=='\\')
+		{
+			TKUCC_PpGetRawLineNoWs(ctx, tbuf+(l-1));
+			l=strlen(tbuf);
+			continue;
+		}
+		
+		break;
 	}
 
 	tmp=TKUCC_AllocLineForString(ctx, tbuf);
@@ -218,16 +290,19 @@ int TKUCC_PpDoExpandLine(TKUCC_MainContext *ctx,
 	char *otbuf, char *osbuf)
 {
 	char *tda[256];
+	char *exp_n[16];
+	char *exp_v[16];
+	char tb0[256];
 	TKUCC_PpDefine *ppd;
-	char **a;
-	char *t, *s0;
-	int ntda, nt;
+	char **a, *a1, **b;
+	char *t, *s0, *t1;
+	int ntda, nt, nea, npl;
 	int i, j, k, l;
 
 	a=TKUCC_TokSplitLine(osbuf);
 	
 	for(i=0; a[i]; i++)
-		{ tda[i]=TKUCC_StrdupInternPpTemp(ctx, a[i]); }
+		{ tda[i]=TKUCC_StrdupTokInternPpTemp(ctx, a[i]); }
 	tda[i]=0;
 	
 	nt=1;
@@ -241,9 +316,79 @@ int TKUCC_PpDoExpandLine(TKUCC_MainContext *ctx,
 			ppd=TKUCC_PpLookupDefineTok(ctx, s0);
 			if(ppd)
 			{
-				strcpy(t, ppd->body);
-				t+=strlen(t);
-				nt++;
+//				if(TKUCC_TokenCheckOperatorP(tda[i+1], "(") && ppd->args[0])
+				if(TKUCC_TokenCheckOperatorNoWsP(tda[i+1], "(") && ppd->args[0])
+				{
+					j=i+2; t1=tb0; k=0;
+					*t1=0; npl=0;
+					while(tda[j])
+					{
+						if(TKUCC_TokenCheckOperatorP(tda[j], ")") && !npl)
+						{
+							exp_n[k]=ppd->args[k];
+							exp_v[k]=TKUCC_StrdupInternPpTemp(ctx, tb0);
+							k++;
+							j++;
+							break;
+						}
+						
+						if(TKUCC_TokenCheckOperatorP(tda[j], ",") && !npl)
+						{
+							exp_n[k]=ppd->args[k];
+							exp_v[k]=TKUCC_StrdupInternPpTemp(ctx, tb0);
+							k++;
+							
+							t1=tb0;
+							*t1=0;
+							j++;
+							continue;
+						}
+
+						if(TKUCC_TokenCheckOperatorP(tda[j], "("))
+							{ npl++; }
+						if(TKUCC_TokenCheckOperatorP(tda[j], ")"))
+							{ npl--; }
+
+						t1=TKUCC_TokFlattenTokenBuf(t1, tda[j]);
+						j++;
+					}
+					
+					if(ppd->args[k-1] && !ppd->args[k])
+					{
+						nea=k;
+						i=j-1;
+
+						b=TKUCC_TokSplitLine(ppd->body);
+						for(j=0; b[j]; j++)
+						{
+							for(k=0; k<nea; k++)
+							{
+								if(!strcmp(b[j], exp_n[k]))
+									break;
+							}
+							
+							if(k<nea)
+							{
+								t=TKUCC_TokFlattenTokenBuf(t, exp_v[k]);
+							}else
+							{
+								t=TKUCC_TokFlattenTokenBuf(t, b[j]);
+							}
+						}
+						nt++;
+					}else
+					{
+						t=TKUCC_TokFlattenTokenBuf(t, s0);
+					}
+				}else if(!ppd->args[0])
+				{
+					strcpy(t, ppd->body);
+					t+=strlen(t);
+					nt++;
+				}else
+				{
+					t=TKUCC_TokFlattenTokenBuf(t, s0);
+				}
 				continue;
 			}
 
@@ -255,7 +400,7 @@ int TKUCC_PpDoExpandLine(TKUCC_MainContext *ctx,
 			a=TKUCC_TokSplitLine(otbuf);
 
 			for(i=0; a[i]; i++)
-				{ tda[i]=TKUCC_StrdupInternPpTemp(ctx, a[i]); }
+				{ tda[i]=TKUCC_StrdupTokInternPpTemp(ctx, a[i]); }
 			tda[i]=0;
 		}
 	}
@@ -320,7 +465,7 @@ s64 TKUCC_PpParseEvalExprI(TKUCC_MainContext *ctx, void *rva)
 	if(!strcmp(a[0], "("))
 	{
 		a++;
-		v0=TKUCC_PpParseEvalExpr(ctx, &a);
+		v0=TKUCC_PpParseEvalExprLogic(ctx, &a);
 
 		if(!strcmp(a[0], ")"))
 		{
@@ -546,6 +691,8 @@ TKUCC_LineBuf *TKUCC_PpGetProcessedLines(TKUCC_MainContext *ctx)
 	int i, j, k, l;
 	
 	line=TKUCC_PpGetSourceLine(ctx);
+	if(!line)
+		return(NULL);
 
 	strcpy(osbuf, line->text);
 	l=strlen(osbuf);
@@ -559,6 +706,11 @@ TKUCC_LineBuf *TKUCC_PpGetProcessedLines(TKUCC_MainContext *ctx)
 	TKUCC_FreeLine(ctx, line);
 
 	a=TKUCC_TokSplitLine(osbuf);
+	if(!a[0])
+	{
+		line=TKUCC_AllocLineForString(ctx, "");
+		return(line);
+	}
 	
 	if(TKUCC_TokenCheckOperatorP(a[0], "#"))
 	{		
@@ -669,6 +821,7 @@ TKUCC_LineBuf *TKUCC_PpGetProcessedLines(TKUCC_MainContext *ctx)
 			while(*a1)
 			{
 				t=TKUCC_TokFlattenTokenBuf(t, a1[0]);
+				a1++;
 			}
 
 			if(ctx->pp_lvl_iff>0)
@@ -703,11 +856,20 @@ TKUCC_LineBuf *TKUCC_PpGetProcessedLines(TKUCC_MainContext *ctx)
 	{
 		/* No macro expansions. */
 		TKUCC_TokFlattenTokenListBuf(otbuf, a);
+		if(!strncmp(otbuf, "MOV.R", 5))
+		{
+			__debugbreak();
+		}
 		line=TKUCC_AllocLineForString(ctx, otbuf);
 		return(line);
 	}
 
 	TKUCC_PpDoExpandLine(ctx, otbuf, osbuf);
+
+	if(!strncmp(otbuf, "MOV.R", 5))
+	{
+		__debugbreak();
+	}
 
 	line=TKUCC_AllocLineForString(ctx, otbuf);
 	return(line);

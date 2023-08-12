@@ -12,5 +12,19 @@
 #include "ps_type.c"
 #include "ps_stmt.c"
 
+#include "ir_type.c"
+#include "ir_vreg.c"
+
+#include "cg_cgtac.c"
+#include "cg_decl.c"
+
 #include "as_sec.c"
 #include "as_list.c"
+#include "as_woff.c"
+#include "as_parse.c"
+
+#include "ln_link.c"
+#include "ln_woff.c"
+#include "ln_pel.c"
+
+#include "tkucc_main.c"

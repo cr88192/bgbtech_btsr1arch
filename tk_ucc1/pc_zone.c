@@ -35,8 +35,17 @@ char *tkucc_rstrdup(char *str)
 	char *p;
 	
 	p=tkucc_ralloc(strlen(str)+1);
-	strcpt(p, str);
+	strcpy(p, str);
 	return(p);
+}
+
+TKUCC_MainContext *TKUCC_AllocMainContext(void)
+{
+	TKUCC_MainContext *ctx;
+	
+	ctx=tkucc_malloc(sizeof(TKUCC_MainContext));
+	memset(ctx, 0, sizeof(TKUCC_MainContext));
+	return(ctx);
 }
 
 int TKUCC_ZmSizeToIndex(int sz)
@@ -88,6 +97,18 @@ void *TKUCC_ZMalloc(TKUCC_MainContext *ctx,
 	zhd->szix=ix;
 	zhd->ctx=ctx;
 	return((char *)(zhd->data)+sizeof(void *));
+}
+
+void *TKUCC_ZMallocZero(TKUCC_MainContext *ctx,
+	int sz, int zid)
+{
+	void *p;
+	
+	p=TKUCC_ZMalloc(ctx, sz, zid);
+	if(!p)
+		return(NULL);
+	memset(p, 0, sz);
+	return(p);
 }
 
 void TKUCC_ZUnlinkHeader(TKUCC_MainContext *ctx,
@@ -335,6 +356,13 @@ char *TKUCC_StrdupIntern(TKUCC_MainContext *ctx, char *str, int zid)
 	return(TKUCC_InternIndexToString(ctx, ix));
 }
 
+char *TKUCC_StrdupTokIntern(TKUCC_MainContext *ctx, char *str, int zid)
+{
+	int ix;
+	ix=TKUCC_InternTokenToIndex(ctx, str, zid);
+	return(TKUCC_InternIndexToString(ctx, ix));
+}
+
 char *TKUCC_StrdupInternPp(TKUCC_MainContext *ctx, char *str)
 {
 	return(TKUCC_StrdupIntern(ctx, str, TKUCC_ZID_PREPROC));
@@ -343,6 +371,11 @@ char *TKUCC_StrdupInternPp(TKUCC_MainContext *ctx, char *str)
 char *TKUCC_StrdupInternPpTemp(TKUCC_MainContext *ctx, char *str)
 {
 	return(TKUCC_StrdupIntern(ctx, str, TKUCC_ZID_PPTEMP));
+}
+
+char *TKUCC_StrdupTokInternPpTemp(TKUCC_MainContext *ctx, char *str)
+{
+	return(TKUCC_StrdupTokIntern(ctx, str, TKUCC_ZID_PPTEMP));
 }
 
 char *TKUCC_StrdupInternTokStrm(TKUCC_MainContext *ctx, char *str)
@@ -355,7 +388,22 @@ char *TKUCC_StrdupInternParse(TKUCC_MainContext *ctx, char *str)
 	return(TKUCC_StrdupIntern(ctx, str, TKUCC_ZID_PARSE));
 }
 
+char *TKUCC_StrdupInternTac(TKUCC_MainContext *ctx, char *str)
+{
+	return(TKUCC_StrdupIntern(ctx, str, TKUCC_ZID_TAC));
+}
+
+char *TKUCC_StrdupInternAsm(TKUCC_MainContext *ctx, char *str)
+{
+	return(TKUCC_StrdupIntern(ctx, str, TKUCC_ZID_ASM));
+}
+
 char *TKUCC_StrdupInternLink(TKUCC_MainContext *ctx, char *str)
 {
 	return(TKUCC_StrdupIntern(ctx, str, TKUCC_ZID_LINK));
+}
+
+char *TKUCC_StrdupInternNameSym(TKUCC_MainContext *ctx, char *str)
+{
+	return(TKUCC_StrdupIntern(ctx, str, TKUCC_ZID_NAMESYM));
 }

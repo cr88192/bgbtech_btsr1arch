@@ -289,7 +289,7 @@
 #define TKUCC_NMID_LDIHIQ		0x0113
 #define TKUCC_NMID_MULSW		0x0114
 #define TKUCC_NMID_MULUW		0x0115
-#define TKUCC_NMID_XLEAB		0x0116
+// #define TKUCC_NMID_XLEAB		0x0116
 #define TKUCC_NMID_LDSH16		0x0117
 #define TKUCC_NMID_BREQL		0x0118
 #define TKUCC_NMID_BREQ			0x0119
@@ -307,6 +307,110 @@
 
 #define TKUCC_NMID_JIMM			0x0124
 #define TKUCC_NMID_JOP64		0x0125
+#define TKUCC_NMID_MOVP			0x0126
+#define TKUCC_NMID_LEAP			0x0127
+#define TKUCC_NMID_XMOVP		0x0128
+#define TKUCC_NMID_XLEAP		0x0129
+#define TKUCC_NMID_CMPPEQX		0x012A
+#define TKUCC_NMID_CMPPGTX		0x012B
+#define TKUCC_NMID_XLEAB		0x012C
+#define TKUCC_NMID_XLEAW		0x012D
+#define TKUCC_NMID_XLEAL		0x012E
+#define TKUCC_NMID_XLEAQ		0x012F
+
+#define TKUCC_NMID_XMOVB		0x0130
+#define TKUCC_NMID_XMOVW		0x0131
+#define TKUCC_NMID_XMOVL		0x0132
+#define TKUCC_NMID_XMOVQ		0x0133
+#define TKUCC_NMID_XMOVUB		0x0134
+#define TKUCC_NMID_XMOVUW		0x0135
+#define TKUCC_NMID_XMOVUL		0x0136
+#define TKUCC_NMID_XMOVX		0x0137
+#define TKUCC_NMID_CMPPEQ		0x0138
+#define TKUCC_NMID_CMPPGT		0x0139
+#define TKUCC_NMID_CMPPGE		0x013A
+#define TKUCC_NMID_FSTCFH		0x013B
+#define TKUCC_NMID_BNDCMPB		0x013C
+#define TKUCC_NMID_BNDCMPW		0x013D
+#define TKUCC_NMID_BNDCMPL		0x013E
+#define TKUCC_NMID_BNDCMPQ		0x013F
+
+#define TKUCC_NMID_BRGTU		0x0140
+#define TKUCC_NMID_BRLTU		0x0141
+#define TKUCC_NMID_BRLEU		0x0142
+#define TKUCC_NMID_BRGEU		0x0143
+#define TKUCC_NMID_BRAF			0x0144
+#define TKUCC_NMID_BSRF			0x0145
+#define TKUCC_NMID_SUBP			0x0146
+#define TKUCC_NMID_SUBXP		0x0147
+#define TKUCC_NMID_BRA2B		0x0148
+#define TKUCC_NMID_BRA4B		0x0149
+#define TKUCC_NMID_BRA8B		0x014A
+#define TKUCC_NMID_JLDI			0x014B
+#define TKUCC_NMID_XMOVTT		0x014C
+#define TKUCC_NMID_MOVST		0x014D
+#define TKUCC_NMID_XMOVST		0x014E
+#define TKUCC_NMID_FSQRTA		0x014F
+
+#define TKUCC_NMID_PADDFA		0x0150
+#define TKUCC_NMID_PSUBFA		0x0151
+#define TKUCC_NMID_PMULFA		0x0152
+#define TKUCC_NMID_PSHUFL		0x0153
+#define TKUCC_NMID_PADDFAX		0x0154
+#define TKUCC_NMID_PSUBFAX		0x0155
+#define TKUCC_NMID_PMULFAX		0x0156
+#define TKUCC_NMID_PSHUFXL		0x0157
+#define TKUCC_NMID_PADDXDA		0x0158
+#define TKUCC_NMID_PSUBXDA		0x0159
+#define TKUCC_NMID_PMULXDA		0x015A
+#define TKUCC_NMID_RGB5CCENC2	0x015B
+#define TKUCC_NMID_PCMPEQW		0x015C
+#define TKUCC_NMID_PCMPEQL		0x015D
+#define TKUCC_NMID_PCMPGTW		0x015E
+#define TKUCC_NMID_PCMPGTL		0x015F
+
+#define TKUCC_NMID_PCMPHIW		0x0160
+#define TKUCC_NMID_PCMPHIL		0x0161
+#define TKUCC_NMID_PCMPEQH		0x0162
+#define TKUCC_NMID_PCMPEQF		0x0163
+#define TKUCC_NMID_PCMPGTH		0x0164
+#define TKUCC_NMID_PCMPGTF		0x0165
+
+#define TKUCC_NMID_RGB5MINMAX	0x0166
+#define TKUCC_NMID_RGB5CCENC1	0x0167
+
+#define TKUCC_NMID_PCVTSB2HL	0x0168
+#define TKUCC_NMID_PCVTUB2HL	0x0169
+#define TKUCC_NMID_PCVTSB2HH	0x016A
+#define TKUCC_NMID_PCVTUB2HH	0x016B
+
+#define TKUCC_NMID_PCVTSW2FL	0x016C
+#define TKUCC_NMID_PCVTUW2FL	0x016D
+#define TKUCC_NMID_PCVTSW2FH	0x017E
+#define TKUCC_NMID_PCVTUW2FH	0x017F
+
+#define TKUCC_NMID_PCVTH2SB		0x0174
+#define TKUCC_NMID_PCVTH2UB		0x0175
+#define TKUCC_NMID_PCVTSW2H		0x0176
+#define TKUCC_NMID_PCVTUW2H		0x0177
+
+#define TKUCC_NMID_PCVTF2SW		0x0178
+#define TKUCC_NMID_PCVTF2UW		0x0179
+#define TKUCC_NMID_PCVTH2SW		0x017A
+#define TKUCC_NMID_PCVTH2UW		0x017B
+
+#define TKUCC_NMID_PCVTH2AL		0x017C
+#define TKUCC_NMID_PCVTAL2H		0x017D
+
+
+#define TKUCC_NMID_PSQRTAH		0x0180
+#define TKUCC_NMID_PSQRTUAH		0x0181
+#define TKUCC_NMID_PSQRTAF		0x0182
+#define TKUCC_NMID_PSQRTUAF		0x0183
+#define TKUCC_NMID_PRCPAH		0x0184
+#define TKUCC_NMID_PRELUH		0x0185
+#define TKUCC_NMID_PRCPAF		0x0186
+#define TKUCC_NMID_PRELUF		0x0187
 
 
 #define TKUCC_FMID_REGREG4		0x01
@@ -361,7 +465,25 @@
 #define TKUCC_FMID_IMM24_N			0x2F
 
 #define TKUCC_FMID_REGIMM16S		0x30
+#define TKUCC_FMID_IMM5RON			0x31
+#define TKUCC_FMID_NONEB			0x32
 
+#define TKUCC_FMID_REGIMM_J64		0x33
+
+#define TKUCC_FMID_REGSTDISP_GBL25	0x34
+#define TKUCC_FMID_REGLDDISP_GBL25	0x35
+#define TKUCC_FMID_REGSTDISP_GBLJ33	0x36
+#define TKUCC_FMID_REGLDDISP_GBLJ33	0x37
+
+#define TKUCC_FMID_REGIMM_10_J33	0x38
+#define TKUCC_FMID_REGIMMREG_J33	0x39
+#define TKUCC_FMID_REGSTDISP_J33	0x3A
+#define TKUCC_FMID_REGLDDISP_J33	0x3B
+
+#define	TKUCC_FMID_IMM				0x40
+#define	TKUCC_FMID_REG				0x41
+#define	TKUCC_FMID_LABEL			0x42
+#define	TKUCC_FMID_REGLBL			0x43
 
 #define TKUCC_REG_R0				0x00
 #define TKUCC_REG_R1				0x01
@@ -430,6 +552,79 @@
 #define TKUCC_REG_R62				0x3E
 #define TKUCC_REG_R63				0x3F
 
+#define TKUCC_REG_LR0				0x40
+#define TKUCC_REG_LR1				0x41
+#define TKUCC_REG_LR2				0x42
+#define TKUCC_REG_LR3				0x43
+#define TKUCC_REG_LR4				0x44
+#define TKUCC_REG_LR5				0x45
+#define TKUCC_REG_LR6				0x46
+#define TKUCC_REG_LR7				0x47
+#define TKUCC_REG_LR8				0x48
+#define TKUCC_REG_LR9				0x49
+#define TKUCC_REG_LR10				0x4A
+#define TKUCC_REG_LR11				0x4B
+#define TKUCC_REG_LR12				0x4C
+#define TKUCC_REG_LR13				0x4D
+#define TKUCC_REG_LR14				0x4E
+#define TKUCC_REG_LR15				0x4F
+#define TKUCC_REG_LR16				0x50
+#define TKUCC_REG_LR17				0x51
+#define TKUCC_REG_LR18				0x52
+#define TKUCC_REG_LR19				0x53
+#define TKUCC_REG_LR20				0x54
+#define TKUCC_REG_LR21				0x55
+#define TKUCC_REG_LR22				0x56
+#define TKUCC_REG_LR23				0x57
+#define TKUCC_REG_LR24				0x58
+#define TKUCC_REG_LR25				0x59
+#define TKUCC_REG_LR26				0x5A
+#define TKUCC_REG_LR27				0x5B
+#define TKUCC_REG_LR28				0x5C
+#define TKUCC_REG_LR29				0x5D
+#define TKUCC_REG_LR30				0x5E
+#define TKUCC_REG_LR31				0x5F
+
+#define TKUCC_REG_PC				0x80
+#define TKUCC_REG_LR				0x81
+#define TKUCC_REG_SR				0x82
+#define TKUCC_REG_VBR				0x83
+#define TKUCC_REG_SPC				0x84
+#define TKUCC_REG_SSP				0x85
+#define TKUCC_REG_GBR				0x86
+#define TKUCC_REG_TBR				0x87
+#define TKUCC_REG_TTB				0x88
+#define TKUCC_REG_TEA				0x89
+#define TKUCC_REG_MMCR				0x8A
+#define TKUCC_REG_EXSR				0x8B
+#define TKUCC_REG_STTB				0x8C
+#define TKUCC_REG_KRR				0x8D
+
+#define TKUCC_REG_R15U				0x8F
+
+#define TKUCC_REG_PC2				0x90
+#define TKUCC_REG_PR2				0x91
+#define TKUCC_REG_SR2				0x92
+#define TKUCC_REG_TEAH				0x93
+#define TKUCC_REG_SPC2				0x94
+#define TKUCC_REG_SSP2				0x95
+#define TKUCC_REG_GBR2				0x96
+#define TKUCC_REG_TBR2				0x97
+
+#define TKUCC_REG_VIPT				0x9C
+#define TKUCC_REG_KRR2				0x9D
+#define TKUCC_REG_R0U				0x9E
+#define TKUCC_REG_R1U				0x9F
+
+#define TKUCC_REG_DLR				0xA0
+#define TKUCC_REG_DHR				0xA1
+#define TKUCC_REG_PCH				0xA2
+#define TKUCC_REG_VBH				0xA3
+#define TKUCC_REG_SPCH				0xA4
+#define TKUCC_REG_SP				0xA5
+#define TKUCC_REG_GBH				0xA6
+#define TKUCC_REG_ISRSAVE			0xA7
+
 
 #define TKUCC_ARGTY_REG				0x01
 #define TKUCC_ARGTY_IMM				0x02
@@ -442,20 +637,29 @@
 #define TKUCC_RELOC_DIR32				0x01	//Absolute 32-bit
 #define TKUCC_RELOC_DIR64				0x02	//Absolute 64-bit
 
-#define TKUCC_RELOC_JX2_RELW8S			0x04	//XXdd
-#define TKUCC_RELOC_JX2_RELW20S			0x05	//XXdd-Xddd
-#define TKUCC_RELOC_JX2_RELW24A			0x06	//FAdd-dddd
+#define TKUCC_RELOC_REL32				0x04	//Relative 32-bit
+#define TKUCC_RELOC_REL64				0x05	//Relative 64-bit
+#define TKUCC_RELOC_REL32B				0x06	//Relative 32-bit
+#define TKUCC_RELOC_REL64B				0x07	//Relative 64-bit
 
+#define TKUCC_RELOC_JX2_RELW8S			0x08	//XXdd			(disp8 word)
+#define TKUCC_RELOC_JX2_RELW20S			0x09	//XXdd-Xddd		(disp20 word)
+#define TKUCC_RELOC_JX2_RELW24A			0x0A	//FAdd-dddd		(disp24a word)
 
-typedef struct TKUCC_LinkObjectLbl_s	TKUCC_LinkObjectLbl;
-typedef struct TKUCC_LinkObjectSec_s	TKUCC_LinkObjectSec;
-typedef struct TKUCC_LinkObject_s		TKUCC_LinkObject;
+#define TKUCC_RELOC_JX2_RELGBLJ33		0x0B	//
 
-typedef struct TKUCC_AsmOpArg_s		TKUCC_AsmOpArg;
-typedef struct TKUCC_AsmOp_s			TKUCC_AsmOp;
+#define	TKUCC_ASMMODE_RVREGS			0x01
+#define	TKUCC_ASMMODE_RVOPS				0x02
+#define	TKUCC_ASMMODE_RVOPNREGS			0x03
+#define	TKUCC_ASMMODE_ALIGN_WEXJ1		0x04
+#define	TKUCC_ASMMODE_ALIGN_WEXJ2		0x08
+#define	TKUCC_ASMMODE_ALIGN_WEXJ12		0x0C
+#define	TKUCC_ASMMODE_FIX32				0x10
+#define	TKUCC_ASMMODE_XG2				0x20
+#define	TKUCC_ASMMODE_XG2RV				0x40
 
 struct TKUCC_LinkObjectLbl_s {
-u32 sym_name;
+u32 sym_name;		//string-table name for symbols, sym index for reloc
 u32 sym_ofs;
 byte sym_sec;
 byte sym_type;
@@ -468,9 +672,11 @@ char *name;
 byte **buf;
 int ct_ofs;
 int ct_size;
+u32 ct_rva;
 };
 
 struct TKUCC_LinkObject_s {
+TKUCC_LinkObject *next;
 TKUCC_LinkObjectSec *sec[16];
 char n_sec;
 char c_sec;
@@ -486,15 +692,20 @@ struct TKUCC_AsmOpArg_s {
 short rb;
 short ri;
 byte aty;
+byte sc;
 int lbl;
 s64 imm;	//immed / disp
+char *name;
 };
 
 struct TKUCC_AsmOp_s {
+TKUCC_AsmOp *next;
+
 short nmid;
 short fmid;
 byte n_arg;
 byte pred;
 
-TKUCC_AsmOpArg arg[4];
+TKUCC_AsmOpArg *arg[4];
+TKUCC_AsmOpArg t_arg[4];
 };

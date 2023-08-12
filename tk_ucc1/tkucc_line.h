@@ -1,12 +1,12 @@
-typedef struct TKUCC_LineBuf_s			TKUCC_LineBuf;
-typedef struct TKUCC_AstNode_s			TKUCC_AstNode;
-typedef struct TKUCC_PpDefine_s		TKUCC_PpDefine;
-typedef struct TKUCC_ZoneAllocHead_s	TKUCC_ZoneAllocHead;
-typedef struct TKUCC_ZoneStrHead_s		TKUCC_ZoneStrHead;
-typedef struct TKUCC_MainContext_s		TKUCC_MainContext;
-
 #define TKUCC_LINEBUF_FIXEDLIM	48
 #define TKUCC_ASTNODE_NKEYS		16
+
+#define TKUCC_TOK_NAME			1
+#define TKUCC_TOK_NUMBER		2
+#define TKUCC_TOK_STRING		3
+#define TKUCC_TOK_OPERATOR		4
+#define TKUCC_TOK_CHARSTRING	5
+#define TKUCC_TOK_OPERATOR_WS	6
 
 #define TKUCC_ASTNODE_KTAG_INT		0x1000
 #define TKUCC_ASTNODE_KTAG_STR		0x2000
@@ -26,7 +26,9 @@ typedef struct TKUCC_MainContext_s		TKUCC_MainContext;
 #define TKUCC_ZID_PARSE			4
 #define TKUCC_ZID_TAC			5
 #define TKUCC_ZID_CGEN			6
-#define TKUCC_ZID_LINK			7
+#define TKUCC_ZID_ASM			7
+#define TKUCC_ZID_LINK			8
+#define TKUCC_ZID_NAMESYM		9
 
 #define TKUCC_ATAG_REF			1
 #define TKUCC_ATAG_STRING		2
@@ -172,6 +174,8 @@ typedef struct TKUCC_MainContext_s		TKUCC_MainContext;
 #define TKUCC_TYFL_TY_VOID		(TKUCC_TYFL_VOID)
 #define TKUCC_TYFL_TY_AUTO		(TKUCC_TYFL_AUTO)
 
+#define TKUCC_LBLID_GENSYN		0x100000
+
 
 struct TKUCC_LineBuf_s {
 TKUCC_LineBuf *next;
@@ -206,6 +210,7 @@ int src_fd_stkpos;
 char *pp_incpath[32];
 int pp_n_incpath;
 
+/* zone */
 char *longline;
 TKUCC_ZoneAllocHead *zfirst[256];
 TKUCC_ZoneAllocHead *zfree[256];
@@ -214,6 +219,8 @@ TKUCC_ZoneStrHead *zstr[256];
 TKUCC_ZoneStrHead *zstrfree;
 u16 zstrbix[256];
 
+/* preproc / etc */
+
 TKUCC_PpDefine *ppdef[256];
 int pp_lvl_ift;
 int pp_lvl_iff;
@@ -221,6 +228,54 @@ int pp_lvl_iff;
 int *tokstrm_span[512];
 int tokstrm_idx;
 int tokstrm_max;
+
+int *namesym_stix[512];
+int *namesym_lbl[512];
+int namesym_max;
+
+
+int gensym_seq;
+u64 asm_modefl;
+
+byte op_is_wex2;
+byte wexmd_dfl;
+
+int iflvl_f;
+int iflvl_t;
+
+/* variables or functions. */
+TKUCC_IRDECL	*ir_gbls;
+TKUCC_IRDECL	*ir_gbl_ihash[256];
+TKUCC_IRDECL	*ir_gbl_nhash[256];
+int				ir_gblid_seq;
+
+TKUCC_IRDECL	*cur_func;
+
+/* struct/union declarations and similar. */
+TKUCC_IRDECL	*ir_objs;
+TKUCC_IRDECL	*ir_obj_ihash[256];
+TKUCC_IRDECL	*ir_obj_nhash[256];
+int				ir_objid_seq;
+
+/* register allocator */
+tkucc_valreg	relalc_val[64];
+byte			relalc_lcnt[64];
+u64				regalc_regsaved;
+u64				regalc_regcansave;
+u64				regalc_regdirty;
+byte regalc_rov;
+
+/* For 64-bit values that don't fit inline. */
+u64 *longtab_v[256];	//long table values
+u16 *longtab_c[256];	//long table chain
+u16 longtab_h[256];		//long table hash
+int longtab_rov;
+
+TKUCC_AsmOp *cblk_asm_first;
+TKUCC_AsmOp *cblk_asm_last;
+
+TKUCC_LinkObject *cur_obj;
+TKUCC_LinkObject *link_inobj;
 };
 
 struct TKUCC_ZoneAllocHead_s {

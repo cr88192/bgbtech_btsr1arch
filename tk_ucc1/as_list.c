@@ -413,25 +413,25 @@ int fmid;	//form index
 {0x200FE000, 0xF80FEB00,	TKUCC_NMID_PMULH,	TKUCC_FMID_REGREGREG},
 {0x280FE000, 0xF80FEB00,	TKUCC_NMID_PMULXD,	TKUCC_FMID_REGREGREG},
 
-{0x3000E000, 0xFFFFEBFF,	TKUCC_NMID_NOP,		TKUCC_FMID_NONE},
-{0x3010E000, 0xFFFFEBFF,	TKUCC_NMID_RTS,		TKUCC_FMID_NONE},
-{0x3020E000, 0xFFFFEBFF,	TKUCC_NMID_SLEEP,	TKUCC_FMID_NONE},
-{0x3030E000, 0xFFFFEBFF,	TKUCC_NMID_BRK,		TKUCC_FMID_NONE},
+{0x3000E000, 0xFFFFEBFF,	TKUCC_NMID_NOP,		TKUCC_FMID_NONEB},
+{0x3010E000, 0xFFFFEBFF,	TKUCC_NMID_RTS,		TKUCC_FMID_NONEB},
+{0x3020E000, 0xFFFFEBFF,	TKUCC_NMID_SLEEP,	TKUCC_FMID_NONEB},
+{0x3030E000, 0xFFFFEBFF,	TKUCC_NMID_BRK,		TKUCC_FMID_NONEB},
 
-{0x3040E000, 0xFFFFEBFF,	TKUCC_NMID_CLRT,	TKUCC_FMID_NONE},
-{0x3050E000, 0xFFFFEBFF,	TKUCC_NMID_SETT,	TKUCC_FMID_NONE},
-{0x3060E000, 0xFFFFEBFF,	TKUCC_NMID_CLRS,	TKUCC_FMID_NONE},
-{0x3070E000, 0xFFFFEBFF,	TKUCC_NMID_SETS,	TKUCC_FMID_NONE},
-{0x3080E000, 0xFFFFEBFF,	TKUCC_NMID_NOTT,	TKUCC_FMID_NONE},
-{0x3090E000, 0xFFFFEBFF,	TKUCC_NMID_NOTS,	TKUCC_FMID_NONE},
+{0x3040E000, 0xFFFFEBFF,	TKUCC_NMID_CLRT,	TKUCC_FMID_NONEB},
+{0x3050E000, 0xFFFFEBFF,	TKUCC_NMID_SETT,	TKUCC_FMID_NONEB},
+{0x3060E000, 0xFFFFEBFF,	TKUCC_NMID_CLRS,	TKUCC_FMID_NONEB},
+{0x3070E000, 0xFFFFEBFF,	TKUCC_NMID_SETS,	TKUCC_FMID_NONEB},
+{0x3080E000, 0xFFFFEBFF,	TKUCC_NMID_NOTT,	TKUCC_FMID_NONEB},
+{0x3090E000, 0xFFFFEBFF,	TKUCC_NMID_NOTS,	TKUCC_FMID_NONEB},
 
-{0x30C0E000, 0xFFFFEBFF,	TKUCC_NMID_RTE,		TKUCC_FMID_NONE},
-{0x30F0E000, 0xFFFFEBFF,	TKUCC_NMID_LDTLB,	TKUCC_FMID_NONE},
+{0x30C0E000, 0xFFFFEBFF,	TKUCC_NMID_RTE,		TKUCC_FMID_NONEB},
+{0x30F0E000, 0xFFFFEBFF,	TKUCC_NMID_LDTLB,	TKUCC_FMID_NONEB},
 
-{0x30F0E000, 0xFFFFEBFF,	TKUCC_NMID_LDTLB,	TKUCC_FMID_NONE},
+{0x30F0E000, 0xFFFFEBFF,	TKUCC_NMID_LDTLB,	TKUCC_FMID_NONEB},
 
-{0x3010E002, 0xFFFFEBFF,	TKUCC_NMID_RTSU,	TKUCC_FMID_NONE},
-{0x3040E002, 0xFFFFEBFF,	TKUCC_NMID_LDACL,	TKUCC_FMID_NONE},
+{0x3010E002, 0xFFFFEBFF,	TKUCC_NMID_RTSU,	TKUCC_FMID_NONEB},
+{0x3040E002, 0xFFFFEBFF,	TKUCC_NMID_LDACL,	TKUCC_FMID_NONEB},
 
 {0x3000E010, 0xF80FEBFF,	TKUCC_NMID_BRA,		TKUCC_FMID_REGRON},
 {0x3000E011, 0xF80FEBFF,	TKUCC_NMID_BSR,		TKUCC_FMID_REGRON},
@@ -451,8 +451,8 @@ int fmid;	//form index
 {0x3000E037, 0xF80FEBFF,	TKUCC_NMID_ROTCR,	TKUCC_FMID_REGRON},
 
 {0x3000E068, 0xF80FEBFF,	TKUCC_NMID_TRAPA,	TKUCC_FMID_REGRON},
-{0x3000E069, 0xF80FEBFF,	TKUCC_NMID_WEXMD,	TKUCC_FMID_REGRON},
-{0x3000E06A, 0xF80FEBFF,	TKUCC_NMID_CPUID,	TKUCC_FMID_REGRON},
+{0x3000E069, 0xF80FEBFF,	TKUCC_NMID_WEXMD,	TKUCC_FMID_IMM5RON},
+{0x3000E06A, 0xF80FEBFF,	TKUCC_NMID_CPUID,	TKUCC_FMID_IMM5RON},
 
 {0x3000E06F, 0xF80FEBFF,	TKUCC_NMID_MOVT,	TKUCC_FMID_REGRON},
 
@@ -597,6 +597,9 @@ int fmid;	//form index
 {0xC000E000, 0xF000EB00,	TKUCC_NMID_BRA,		TKUCC_FMID_PCDISP20},
 {0xD000E000, 0xF000EB00,	TKUCC_NMID_BSR,		TKUCC_FMID_PCDISP20},
 
+{0xC000E000, 0xF000FF00,	TKUCC_NMID_BT,		TKUCC_FMID_PCDISP20},
+{0xC000E400, 0xF000FF00,	TKUCC_NMID_BF,		TKUCC_FMID_PCDISP20},
+
 {0x0000E100, 0xF800EB00,	TKUCC_NMID_MOVB,	TKUCC_FMID_REGSTDISP},
 {0x0800E100, 0xF800EB00,	TKUCC_NMID_LEAB,	TKUCC_FMID_REGLDDISP},
 {0x1000E100, 0xF800EB00,	TKUCC_NMID_MOVW,	TKUCC_FMID_REGSTDISP},
@@ -740,6 +743,8 @@ int fmid;	//form index
 {0x0000FE00, 0x0000FF00,	TKUCC_NMID_JIMM,	TKUCC_FMID_IMM24_U},
 {0x0000FF00, 0x0000FF00,	TKUCC_NMID_JOP64,	TKUCC_FMID_IMM24_U},
 
+{0x0000E800, 0x0000EBE0,	TKUCC_NMID_JLDI,	TKUCC_FMID_REGIMM_J64},
+
 {0, 0, 0, 0}
 };
 
@@ -783,7 +788,9 @@ int TKUCC_AsmCheckRegLow16(TKUCC_MainContext *ctx, int reg)
 	if(reg<0)
 		return(0);
 	if(reg>=16)
+	{
 		return(0);
+	}
 	return(1);
 }
 
@@ -814,24 +821,60 @@ int TKUCC_AsmCheckRegGpr32(TKUCC_MainContext *ctx, int reg)
 	return(1);
 }
 
+int TKUCC_AsmCheckRegGpr64(TKUCC_MainContext *ctx, int reg)
+{
+	if(reg<0)
+		return(0);
+	if(reg>=64)
+		return(0);
+	return(1);
+}
+
 int TKUCC_AsmCheckRegGpr32BI(TKUCC_MainContext *ctx, int rb, int ri)
 {
 	if(!TKUCC_AsmCheckRegGpr32(ctx, rb))
 		return(0);
 	if(!TKUCC_AsmCheckRegGpr32(ctx, ri))
 		return(0);
-	if(rb<2)
-		return(0);
-	if((ri<2) && (ri!=TKUCC_REG_R0))
-		return(0);
+//	if(rb<2)
+//		return(0);
+//	if((ri<2) && (ri!=TKUCC_REG_R0))
+//		return(0);
 	return(1);
 }
 
 int TKUCC_AsmCheckRegIsSp(TKUCC_MainContext *ctx, int reg)
 {
-	if(reg!=15)
+	if(reg!=TKUCC_REG_R15)
 		return(0);
 	return(1);
+}
+
+int TKUCC_AsmCheckRemapCreg(TKUCC_MainContext *ctx, int reg)
+{
+	int rt;
+
+	rt=-1;
+
+	switch(reg)
+	{
+	case TKUCC_REG_PC:		rt=TKUCC_REG_R0; break;
+	case TKUCC_REG_LR:		rt=TKUCC_REG_R1; break;
+	case TKUCC_REG_SR:		rt=TKUCC_REG_R2; break;
+	case TKUCC_REG_VBR:		rt=TKUCC_REG_R3; break;
+	case TKUCC_REG_SPC:		rt=TKUCC_REG_R4; break;
+	case TKUCC_REG_SSP:		rt=TKUCC_REG_R5; break;
+	case TKUCC_REG_GBR:		rt=TKUCC_REG_R6; break;
+	case TKUCC_REG_TBR:		rt=TKUCC_REG_R7; break;
+	case TKUCC_REG_TTB:		rt=TKUCC_REG_R8; break;
+	case TKUCC_REG_TEA:		rt=TKUCC_REG_R9; break;
+	case TKUCC_REG_MMCR:	rt=TKUCC_REG_R10; break;
+	case TKUCC_REG_EXSR:	rt=TKUCC_REG_R11; break;
+	case TKUCC_REG_STTB:	rt=TKUCC_REG_R12; break;
+	case TKUCC_REG_KRR:		rt=TKUCC_REG_R13; break;
+	}
+
+	return(rt);
 }
 
 int TKUCC_AsmGetDispScale(TKUCC_MainContext *ctx,
@@ -863,6 +906,9 @@ int TKUCC_AsmGetDispScale(TKUCC_MainContext *ctx,
 	case TKUCC_NMID_MOVQ:
 	case TKUCC_NMID_LEAQ:
 	case TKUCC_NMID_LEATQ:
+		sc=3;
+		break;
+	case TKUCC_NMID_MOVX:
 		sc=3;
 		break;
 	}
@@ -917,592 +963,780 @@ int TKUCC_AsmCheckDispBits(TKUCC_MainContext *ctx,
 int TKUCC_AsmCheckOpFmid(TKUCC_MainContext *ctx,
 	TKUCC_AsmOp *op, int fmid)
 {
-	int rt;
+	int rt, no16p;
+
+	no16p=0;
+	if(op->pred)
+		no16p=1;
 
 	rt=0;
 	switch(fmid)
 	{
 	case TKUCC_FMID_REGREG4:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
+
 	case TKUCC_FMID_REGST4:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_MEM_R)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_MEM_R)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
+
 	case TKUCC_FMID_REGLD4:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_MEM_R)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_MEM_R)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGSTR0N:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_MEM_RI)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_MEM_RI)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		if(op->arg[1].ri!=TKUCC_REG_R0)
+		if(op->arg[1]->ri!=TKUCC_REG_R0)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
+
 	case TKUCC_FMID_REGLDR0M:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_MEM_RI)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_MEM_RI)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		if(op->arg[0].ri!=TKUCC_REG_R0)
+		if(op->arg[0]->ri!=TKUCC_REG_R0)
 			break;
-		rt=1;
+		rt=fmid;
+		break;
+
+	case TKUCC_FMID_PCDISP8:
+		if(no16p)
+			break;
+		if(op->n_arg!=1)
+			break;
+		if(op->arg[0]->aty!=TKUCC_ARGTY_LABEL)
+			break;
+		/* Not enabled for now. */
 		break;
 
 	case TKUCC_FMID_IMM8:
+		if(no16p)
+			break;
 		if(op->n_arg!=1)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[0].imm!=(op->arg[0].imm&0xFF))
+		if(op->arg[0]->imm!=(op->arg[0]->imm&0xFF))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_IMM12A_U:
-		if(op->n_arg!=1)
+		if(no16p)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if((op->n_arg!=1) && (op->n_arg!=2))
 			break;
-		if(op->arg[0].imm!=(op->arg[0].imm&0xFFF))
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		rt=1;
+		if(op->n_arg==2)
+		{
+			if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
+				break;
+			if(	(op->arg[1]->rb!=TKUCC_REG_R0) &&
+				(op->arg[1]->rb!=TKUCC_REG_DLR))
+					break;
+		}
+		if(op->arg[0]->imm!=(op->arg[0]->imm&0xFFF))
+			break;
+		rt=fmid;
 		break;
+
 	case TKUCC_FMID_IMM12A_N:
-		if(op->n_arg!=1)
+		if(no16p)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if((op->n_arg!=1) && (op->n_arg!=2))
 			break;
-		if(op->arg[0].imm!=(op->arg[0].imm|(~0xFFF)))
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		rt=1;
+		if(op->n_arg==2)
+		{
+			if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
+				break;
+			if(	(op->arg[1]->rb!=TKUCC_REG_R0) &&
+				(op->arg[1]->rb!=TKUCC_REG_DLR))
+					break;
+		}
+		if(op->arg[0]->imm!=(op->arg[0]->imm|(~0xFFF)))
+			break;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGREG55A:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow32(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow32(ctx, op->arg[1]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGRN4:
+		if(no16p)
+			break;
 		if(op->n_arg!=1)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_IMM5RN4:
+		if(no16p)
+			break;
 		if(op->n_arg!=1)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if((op->arg[0].imm&31)!=op->arg[0].imm)
+		if((op->arg[0]->imm&31)!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_NONE:
+		if(no16p)
+			break;
 		if(op->n_arg!=0)
 			break;
+		rt=fmid;
+		break;
+
+	case TKUCC_FMID_NONEB:
+		if(op->n_arg!=0)
+			break;
+		rt=fmid;
+		break;
 
 	case TKUCC_FMID_REGSTSPVIMM4:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_MEM_RD)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_MEM_RD)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegIsSp(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegIsSp(ctx, op->arg[1]->rb))
 			break;
 		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[1].rb, op->arg[1].imm, 4))
+			op->arg[1]->rb, op->arg[1]->imm, 4))
 				break;
-		rt=1;
+		rt=fmid;
 		break;
+
 	case TKUCC_FMID_REGLDSPVIMM4:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_MEM_RD)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_MEM_RD)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegIsSp(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegIsSp(ctx, op->arg[1]->rb))
 			break;
 		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[0].rb, op->arg[0].imm, 4))
+			op->arg[0]->rb, op->arg[0]->imm, 4))
 				break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGVIMM4:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		if((op->arg[0].imm&15)!=op->arg[0].imm)
+		if((op->arg[0]->imm&15)!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGVIMM4_N:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		if((op->arg[0].imm|(~15LL))!=op->arg[0].imm)
+		if((op->arg[0]->imm|(~15LL))!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGR0REG4:
+		if(no16p)
+			break;
 		if(op->n_arg!=3)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[2].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[2]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[2].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[2]->rb))
 			break;
-		if(op->arg[1].rb!=TKUCC_REG_R0)
+		if(op->arg[1]->rb!=TKUCC_REG_R0)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMM8S:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
-		if(((sbyte)(op->arg[0].imm))!=op->arg[0].imm)
+		if(((sbyte)(op->arg[0]->imm))!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGSTDISP3:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_MEM_RD)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_MEM_RD)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
 		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[1].rb, op->arg[1].imm, 3))
+			op->arg[1]->rb, op->arg[1]->imm, 3))
 				break;
-		if(op->arg[1].imm==0)
+		if(op->arg[1]->imm==0)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
+
 	case TKUCC_FMID_REGLDDISP3:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_MEM_RD)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_MEM_RD)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1]->rb))
 			break;
 		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[0].rb, op->arg[0].imm, 3))
+			op->arg[0]->rb, op->arg[0]->imm, 3))
 				break;
-		if(op->arg[0].imm==0)
+		if(op->arg[0]->imm==0)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGKVIMM4_U:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16K(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16K(ctx, op->arg[1]->rb))
 			break;
-		if((op->arg[0].imm&15)!=op->arg[0].imm)
+		if((op->arg[0]->imm&15)!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGKVIMM4_N:
+		if(no16p)
+			break;
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16K(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegLow16K(ctx, op->arg[1]->rb))
 			break;
-		if((op->arg[0].imm|(~15LL))!=op->arg[0].imm)
+		if((op->arg[0]->imm|(~15LL))!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
-
 
 	case TKUCC_FMID_REGSTDISP5:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_MEM_RD)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_MEM_RD)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
 		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[1].rb, op->arg[1].imm, 5))
+			op->arg[1]->rb, op->arg[1]->imm, 5))
 				break;
-		rt=1;
+		rt=fmid;
 		break;
+
 	case TKUCC_FMID_REGLDDISP5:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_MEM_RD)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_MEM_RD)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
 		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[0].rb, op->arg[0].imm, 5))
+			op->arg[0]->rb, op->arg[0]->imm, 5))
 				break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGSTRON:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_MEM_RI)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_MEM_RI)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32BI(ctx, op->arg[1].rb, op->arg[1].ri))
+		if(!TKUCC_AsmCheckRegGpr32BI(ctx, op->arg[1]->rb, op->arg[1]->ri))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 	case TKUCC_FMID_REGLDROM:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_MEM_RI)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_MEM_RI)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32BI(ctx, op->arg[0].rb, op->arg[0].ri))
+		if(!TKUCC_AsmCheckRegGpr32BI(ctx, op->arg[0]->rb, op->arg[0]->ri))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGREGREG:
 		if(op->n_arg!=3)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[2].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[2]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGREGB:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGRON:
 		if(op->n_arg!=1)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		rt=1;
+		rt=fmid;
+		break;
+
+	case TKUCC_FMID_IMM5RON:
+		if(op->n_arg!=1)
+			break;
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
+			break;
+		if((op->arg[1]->imm&31)!=op->arg[1]->imm)
+			break;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMM5REG:
 		if(op->n_arg!=3)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[2].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[2]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2]->rb))
 			break;
-		if((op->arg[1].imm&31)!=op->arg[1].imm)
+		if((op->arg[1]->imm&31)!=op->arg[1]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGSTDISP:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_MEM_RD)
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
-			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1].rb))
-			break;
-		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[1].rb, op->arg[1].imm, 9))
+		if(	(op->arg[1]->aty==TKUCC_ARGTY_MEM_RD) ||
+			(op->arg[1]->aty==TKUCC_ARGTY_MEM_R))
+		{
+			if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 				break;
-		rt=1;
+			if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
+				op->arg[1]->rb, op->arg[1]->imm, 9))
+			{
+				rt=TKUCC_FMID_REGSTDISP_J33;
+				break;
+			}
+			rt=fmid;
+			break;
+		}
+		if(op->arg[1]->aty==TKUCC_ARGTY_LABEL)
+		{
+			rt=TKUCC_FMID_REGSTDISP_GBLJ33;
+			break;
+		}
 		break;
+
 	case TKUCC_FMID_REGLDDISP:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_MEM_RD)
+//		if(op->arg[0]->aty!=TKUCC_ARGTY_MEM_RD)
+//			break;
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
-			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1].rb))
-			break;
-		if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
-			op->arg[0].rb, op->arg[0].imm, 9))
+		if(	(op->arg[0]->aty==TKUCC_ARGTY_MEM_RD) ||
+			(op->arg[0]->aty==TKUCC_ARGTY_MEM_R))
+		{
+			if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 				break;
-		rt=1;
+			if(!TKUCC_AsmCheckDispBits(ctx, op->nmid,
+				op->arg[0]->rb, op->arg[0]->imm, 9))
+			{
+				rt=TKUCC_FMID_REGLDDISP_J33;
+				break;
+			}
+			rt=fmid;
+			break;
+		}
+		if(op->arg[0]->aty==TKUCC_ARGTY_LABEL)
+		{
+			rt=TKUCC_FMID_REGLDDISP_GBLJ33;
+			break;
+		}
+		break;
+
+	case TKUCC_FMID_PCDISP20:
+		if(op->n_arg!=1)
+			break;
+		if(op->arg[0]->aty!=TKUCC_ARGTY_LABEL)
+			break;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMMREG:
 		if(op->n_arg!=3)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[2].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[2]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2]->rb))
 			break;
-		if((op->arg[1].imm&511)!=op->arg[1].imm)
+		if((op->arg[1]->imm&511)!=op->arg[1]->imm)
+		{
+			if(	(((u32)op->arg[1]->imm)==op->arg[1]->imm) ||
+				(((s32)op->arg[1]->imm)==op->arg[1]->imm))
+			{
+				rt=TKUCC_FMID_REGIMMREG_J33;
+				break;
+			}
 			break;
-		rt=1;
+		}
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMMREG_N:
 		if(op->n_arg!=3)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[2].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[2]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2]->rb))
 			break;
-		if((op->arg[1].imm|(~511LL))!=op->arg[1].imm)
+		if((op->arg[1]->imm|(~511LL))!=op->arg[1]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMMREG_8S:
 		if(op->n_arg!=3)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[2].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[2]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[0]->rb))
 			break;
-		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[2]->rb))
 			break;
-		if(((sbyte)(op->arg[1].imm))!=op->arg[1].imm)
+		if(((sbyte)(op->arg[1]->imm))!=op->arg[1]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMM_10:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		if(((op->arg[0].imm)&1023)!=op->arg[0].imm)
+		if(((op->arg[0]->imm)&1023)!=op->arg[0]->imm)
+		{
+			if(((s32)(op->arg[0]->imm))==op->arg[0]->imm)
+				rt=TKUCC_FMID_REGIMM_10_J33;
+			if(((u32)(op->arg[0]->imm))==op->arg[0]->imm)
+				rt=TKUCC_FMID_REGIMM_10_J33;
 			break;
-		rt=1;
+		}
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMM_10_N:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		if(((op->arg[0].imm)|(~1023LL))!=op->arg[0].imm)
+		if(((op->arg[0]->imm)|(~1023LL))!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMM16_U:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		if(((op->arg[0].imm)&65535)!=op->arg[0].imm)
+		if(((op->arg[0]->imm)&65535)!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_REGIMM16_N:
 		if(op->n_arg!=2)
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[1].aty!=TKUCC_ARGTY_REG)
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
 			break;
-		if(!TKUCC_AsmCheckRegLow16(ctx, op->arg[1].rb))
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
 			break;
-		if(((op->arg[0].imm)|(~65535LL))!=op->arg[0].imm)
+		if(((op->arg[0]->imm)|(~65535LL))!=op->arg[0]->imm)
 			break;
-		rt=1;
+		rt=fmid;
+		break;
+
+	case TKUCC_FMID_REGIMM16S:
+		if(op->n_arg!=2)
+			break;
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
+			break;
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
+			break;
+		if(!TKUCC_AsmCheckRegGpr32(ctx, op->arg[1]->rb))
+			break;
+		if(((s16)(op->arg[0]->imm))!=op->arg[0]->imm)
+			break;
+		rt=fmid;
 		break;
 
 	case TKUCC_FMID_IMM24_U:
-		if(op->n_arg!=1)
+		if((op->n_arg!=1) && (op->n_arg!=2))
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[0].imm!=(op->arg[0].imm&0xFFFFFF))
+		if(op->n_arg==2)
+		{
+			if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
+				break;
+			if(	(op->arg[1]->rb!=TKUCC_REG_R0) &&
+				(op->arg[1]->rb!=TKUCC_REG_DLR))
+					break;
+		}
+		if(op->arg[0]->imm!=(op->arg[0]->imm&0xFFFFFF))
 			break;
-		rt=1;
+		rt=fmid;
 		break;
 	case TKUCC_FMID_IMM24_N:
-		if(op->n_arg!=1)
+		if((op->n_arg!=1) && (op->n_arg!=2))
 			break;
-		if(op->arg[0].aty!=TKUCC_ARGTY_IMM)
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
 			break;
-		if(op->arg[0].imm!=(op->arg[0].imm|(~0xFFFFFF)))
+		if(op->n_arg==2)
+		{
+			if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
+				break;
+			if(	(op->arg[1]->rb!=TKUCC_REG_R0) &&
+				(op->arg[1]->rb!=TKUCC_REG_DLR))
+					break;
+		}
+		if(op->arg[0]->imm!=(op->arg[0]->imm|(~0xFFFFFF)))
 			break;
-		rt=1;
+		rt=fmid;
+		break;
+
+	case TKUCC_FMID_REGIMM_J64:
+		if(op->n_arg!=2)
+			break;
+		if(op->arg[0]->aty!=TKUCC_ARGTY_IMM)
+			break;
+		if(op->arg[1]->aty!=TKUCC_ARGTY_REG)
+			break;
+		if(!TKUCC_AsmCheckRegGpr64(ctx, op->arg[1]->rb))
+			break;
+		rt=fmid;
 		break;
 
 
 	default:
+		printf("TKUCC_AsmCheckOpFmid: Unhandled FMID %X\n", fmid);
 		break;
 	}
 	return(rt);
@@ -1524,7 +1758,8 @@ int TKUCC_AsmLookupOpEnodeIdx(TKUCC_MainContext *ctx,
 	{
 		if(tkucc_jx2_optab[i].nmid==nmid)
 		{
-			if(TKUCC_AsmCheckOpFmid(ctx, op, tkucc_jx2_optab[i].fmid))
+			j=TKUCC_AsmCheckOpFmid(ctx, op, tkucc_jx2_optab[i].fmid);
+			if(j>0)
 				return(i);
 		}
 		i=tkucc_jx2_opchn[i];
@@ -1532,44 +1767,193 @@ int TKUCC_AsmLookupOpEnodeIdx(TKUCC_MainContext *ctx,
 	return(-1);
 }
 
+int TKUCC_AsmCheckRemapVirtualOpArg(TKUCC_MainContext *ctx,
+	TKUCC_AsmOp *op, TKUCC_AsmOpArg *opv)
+{
+	if(!opv)
+		return(0);
+
+	if(opv->aty==TKUCC_ARGTY_REG)
+	{
+		if(opv->rb==TKUCC_REG_DLR)
+			opv->rb=TKUCC_REG_R0;
+		if(opv->rb==TKUCC_REG_DHR)
+			opv->rb=TKUCC_REG_R1;
+		if(opv->rb==TKUCC_REG_SP)
+			opv->rb=TKUCC_REG_R15;
+		return(1);
+	}
+
+	if(	(opv->aty==TKUCC_ARGTY_MEM_R) ||
+		(opv->aty==TKUCC_ARGTY_MEM_RD) ||
+		(opv->aty==TKUCC_ARGTY_MEM_RI))
+	{
+		if(opv->rb==TKUCC_REG_SP)
+			opv->rb=TKUCC_REG_R15;
+		if(opv->rb==TKUCC_REG_PC)
+			opv->rb=TKUCC_REG_R0;
+		if(opv->rb==TKUCC_REG_GBR)
+			opv->rb=TKUCC_REG_R1;
+	}
+
+	if(opv->aty==TKUCC_ARGTY_LABEL)
+	{
+		if(opv->name && !opv->lbl)
+			opv->lbl=TKUCC_AsmGetNamedLabel(ctx, opv->name);
+	}
+
+	return(0);
+}
+
+int TKUCC_AsmCheckRemapVirtualOp(TKUCC_MainContext *ctx,
+	TKUCC_AsmOp *op)
+{
+	int cm, cn;
+
+	TKUCC_AsmCheckRemapVirtualOpArg(ctx, op, op->arg[0]);
+	TKUCC_AsmCheckRemapVirtualOpArg(ctx, op, op->arg[1]);
+	TKUCC_AsmCheckRemapVirtualOpArg(ctx, op, op->arg[2]);
+	TKUCC_AsmCheckRemapVirtualOpArg(ctx, op, op->arg[3]);
+
+	if(op->nmid==TKUCC_NMID_WEXMD)
+	{
+		if(op->n_arg==0)
+		{
+			op->arg[0]=&op->t_arg[0];
+			op->arg[0]->aty=TKUCC_ARGTY_IMM;
+			op->arg[0]->imm=ctx->wexmd_dfl;
+
+			op->n_arg=1;
+			
+			return(1);
+		}
+		return(0);
+	}
+
+	if(op->nmid==TKUCC_NMID_MOV)
+	{
+		if(op->n_arg==2)
+		{
+			cm=TKUCC_AsmCheckRemapCreg(ctx, op->arg[0]->rb);
+			cn=TKUCC_AsmCheckRemapCreg(ctx, op->arg[1]->rb);
+
+			if(	(op->arg[0]->aty==TKUCC_ARGTY_REG) &&
+				(op->arg[1]->aty==TKUCC_ARGTY_REG))
+			{
+				if(cm>=TKUCC_REG_R0)
+				{
+					op->nmid=TKUCC_NMID_STC;
+					op->arg[0]->rb=cm;
+					return(1);
+				}
+
+				if(cn>=TKUCC_REG_R0)
+				{
+					op->nmid=TKUCC_NMID_LDC;
+					op->arg[1]->rb=cn;
+					return(1);
+				}
+			}
+
+			if(	(op->arg[0]->aty==TKUCC_ARGTY_LABEL) &&
+				(op->arg[1]->aty==TKUCC_ARGTY_REG))
+			{
+				op->nmid=TKUCC_NMID_LEAB;
+				return(1);
+			}
+
+			if(	(op->arg[0]->aty==TKUCC_ARGTY_IMM) &&
+				(op->arg[1]->aty==TKUCC_ARGTY_REG))
+			{
+				if((op->arg[0]->imm<0) &&
+					(((s32)(op->arg[0]->imm))==op->arg[0]->imm))
+				{
+					op->nmid=TKUCC_NMID_LDIN;
+				}
+				else if(((u32)(op->arg[0]->imm))==op->arg[0]->imm)
+				{
+					op->nmid=TKUCC_NMID_LDIZ;
+				}else
+				{
+					op->nmid=TKUCC_NMID_JLDI;
+				}
+				return(1);
+			}
+		}
+	}
+
+	if(	(op->nmid==TKUCC_NMID_AND) ||
+		(op->nmid==TKUCC_NMID_OR ) ||
+		(op->nmid==TKUCC_NMID_XOR))
+	{
+		if(op->n_arg==2)
+		{
+			if(	(op->arg[0]->aty==TKUCC_ARGTY_IMM) &&
+				(op->arg[1]->aty==TKUCC_ARGTY_REG))
+			{
+				op->arg[2]=op->arg[1];
+				op->arg[1]=op->arg[0];
+				op->arg[0]=op->arg[2];
+				op->n_arg=3;
+			}
+		}
+	}
+
+	if(op->nmid==TKUCC_NMID_MOVP)
+	{
+		op->nmid=TKUCC_NMID_MOVQ;
+		return(1);
+	}
+
+	return(0);
+}
+
+char *TKUCC_AsmNameForNmid(int nmid);
+
 int TKUCC_AsmEncodeOp(TKUCC_MainContext *ctx,
-	TKUCC_LinkObject *obj,
 	TKUCC_AsmOp *op)
 {
 	u64 opn, opm;
 	s64 imm0, imm1;
-	int opw0, opw1, opw2, opw3;
+	int opw0, opw1, opw2, opw3, opw4, opw5;
 	int rlc0, rlc1, rlc2;
 	int rn_2r, rm_2r, rn_1r, sc;
 	int ri0_2r, ri1_2r;
 	int rm_3r, ro_3r, rn_3r;
 	int idx, nmid, fmid, lbl;
 	
+	TKUCC_AsmCheckRemapVirtualOp(ctx, op);
 	idx=TKUCC_AsmLookupOpEnodeIdx(ctx, op);
 	if(idx<0)
+	{
+		printf("TKUCC_AsmEncodeOp: Fail Lookup for NMID %X(%s)\n",
+			op->nmid, TKUCC_AsmNameForNmid(op->nmid));
 		return(-1);
+	}
 	opn=tkucc_jx2_optab[idx].opn;
 	opm=tkucc_jx2_optab[idx].opm;
 	nmid=tkucc_jx2_optab[idx].nmid;
 	fmid=tkucc_jx2_optab[idx].fmid;
-	
-	rn_2r=op->arg[1].rb;
-	rm_2r=op->arg[0].rb;
-	imm0=op->arg[0].imm;
-	imm1=op->arg[1].imm;
+	fmid=TKUCC_AsmCheckOpFmid(ctx, op, fmid);
+
+	rn_2r=op->arg[1]->rb;
+	rm_2r=op->arg[0]->rb;
+	imm0=op->arg[0]->imm;
+	imm1=op->arg[1]->imm;
 	rn_1r=rm_2r;
 	rm_3r=rm_2r;
 	ro_3r=rn_2r;
-	rn_3r=op->arg[2].rb;
+	rn_3r=op->arg[2]->rb;
 	
-	ri0_2r=op->arg[0].ri;
-	ri1_2r=op->arg[1].ri;
+	ri0_2r=op->arg[0]->ri;
+	ri1_2r=op->arg[1]->ri;
 	
 	lbl=-1;
 	rlc0=-1;	rlc1=-1;
 	rlc2=-1;
 	opw0=-1; opw1=-1;
 	opw2=-1; opw3=-1;
+	opw4=-1; opw5=-1;
 
 	switch(fmid)
 	{
@@ -1591,15 +1975,13 @@ int TKUCC_AsmEncodeOp(TKUCC_MainContext *ctx,
 		if(rn_2r&16)
 			opw0|=0x0200;
 		break;
+
 	case TKUCC_FMID_NONE:
-		if(opm>>16)
-		{
-			opw0=(u16)(opn    );
-			opw1=(u16)(opn>>16);
-		}else
-		{
-			opw0=((u16)opn);
-		}
+		opw0=((u16)opn);
+		break;
+	case TKUCC_FMID_NONEB:
+		opw0=(u16)(opn    );
+		opw1=(u16)(opn>>16);
 		break;
 
 	case TKUCC_FMID_REGSTSPVIMM4:
@@ -1731,11 +2113,20 @@ int TKUCC_AsmEncodeOp(TKUCC_MainContext *ctx,
 	case TKUCC_FMID_REGLDDISP:
 		sc=TKUCC_AsmGetDispScale(ctx, nmid, rm_2r);
 		opw0=((u16)opn) | ((rn_2r&15)<<4) | ((rm_2r&15)<<0);
-		opw1=((u16)(opn>>16)) | ((imm1>>sc)&511);
+		opw1=((u16)(opn>>16)) | ((imm0>>sc)&511);
 		if(rn_2r&16)
 			opw1|=0x0400;
 		if(rm_2r&16)
 			opw1|=0x0200;
+		break;
+
+	case TKUCC_FMID_PCDISP20:
+		opw0=((u16)opn)|0x00FF;
+		opw1=((u16)(opn>>16))|0x0FFE;
+		if(rm_2r&16)
+			opw1|=0x0400;
+		rlc0=TKUCC_RELOC_JX2_RELW20S;
+		lbl=op->arg[0]->lbl;
 		break;
 
 	case TKUCC_FMID_REGIMMREG:
@@ -1777,11 +2168,97 @@ int TKUCC_AsmEncodeOp(TKUCC_MainContext *ctx,
 		opw0=((u16)opn) | ((imm0>>16)&255);
 		opw1=(imm0&65535);
 		break;
+
+	case TKUCC_FMID_REGSTDISP_GBLJ33:
+		opw0=0xFE00;
+		opw1=0x0000;
+		opw2=((u16)opn) | ((rm_2r&15)<<4);
+		opw3=((u16)(opn>>16));
+		if(rm_2r&16)
+			opw3|=0x0400;
+		rlc0=TKUCC_RELOC_JX2_RELGBLJ33;
+		lbl=op->arg[1]->lbl;
+		break;
+	case TKUCC_FMID_REGLDDISP_GBLJ33:
+		opw0=0xFE00;
+		opw1=0x0000;
+		opw2=((u16)opn) | ((rn_2r&15)<<4);
+		opw3=((u16)(opn>>16));
+		if(rn_2r&16)
+			opw3|=0x0400;
+		rlc0=TKUCC_RELOC_JX2_RELGBLJ33;
+		lbl=op->arg[0]->lbl;
+		break;
+
+	case TKUCC_FMID_REGSTDISP_J33:
+		sc=TKUCC_AsmGetDispScale(ctx, nmid, rn_2r);
+		opw0=0xFE00|((imm1>>(sc+24))&0x00FF);
+		opw1=0x0000|((imm1>>(sc+ 8))&0xFFFF);
+		opw2=((u16)opn) | ((rm_2r&15)<<4) | ((rn_2r&15)<<0);
+		opw3=((u16)(opn>>16)) | ((imm1>>sc)&255);
+		if(rm_2r&16)
+			opw3|=0x0400;
+		if(rn_2r&16)
+			opw3|=0x0200;
+		if((imm1>>(sc+32))&1)
+			opw3|=0x0100;
+		break;
+	case TKUCC_FMID_REGLDDISP_J33:
+		sc=TKUCC_AsmGetDispScale(ctx, nmid, rm_2r);
+		opw0=0xFE00|((imm0>>(sc+24))&0x00FF);
+		opw1=0x0000|((imm0>>(sc+ 8))&0xFFFF);
+		opw2=((u16)opn) | ((rn_2r&15)<<4) | ((rm_2r&15)<<0);
+		opw3=((u16)(opn>>16)) | ((imm0>>sc)&255);
+		if(rn_2r&16)
+			opw3|=0x0400;
+		if(rm_2r&16)
+			opw3|=0x0200;
+		if((imm0>>(sc+32))&1)
+			opw3|=0x0100;
+		break;
+	
+
+	case TKUCC_FMID_REGIMM_10_J33:
+		opw0=0xFE00|((imm0>>24)&0x00FF);
+		opw1=((imm0>>8)&0xFFFF);
+		opw2=((u16)opn) | ((rn_2r&15)<<4);
+		opw3=((u16)(opn>>16)) | (imm0&0x00FF);
+		if(rn_2r&16)
+			opw3|=0x0400;
+		if(imm0<0)
+			opw3|=0x0100;
+		break;
+
+	case TKUCC_FMID_REGIMMREG_J33:
+		opw0=0xFE00|((imm1>>24)&0x00FF);
+		opw1=((imm1>>8)&0xFFFF);
+		opw2=((u16)opn) | ((rn_3r&15)<<4) | ((rm_3r&15)<<0);
+		opw3=((u16)(opn>>16)) | (imm1&0x00FF);
+		if(rn_3r&16)
+			opw3|=0x0400;
+		if(rm_3r&16)
+			opw3|=0x0200;
+		if(imm1<0)
+			opw3|=0x0100;
+		break;
+
+	case TKUCC_FMID_REGIMM_J64:
+		opw0=0xFE00|((imm1>>56)&0x00FF);
+		opw1=((imm1>>40)&0xFFFF);
+		opw2=0xFE00|((imm1>>32)&0x00FF);
+		opw3=((imm1>>16)&0xFFFF);
+		opw4=((u16)opn) | (rn_2r&63);
+		opw5=(imm0&65535);
+		break;
+
+	default:
+		printf("TKUCC_AsmEncodeOp: Unhandled FMID %X\n", fmid);
+		break;
 	}
 	
-	if((opw0>=0) && ((opw0&0xE000)==0xE000))
+	if((opw0>=0) && ((opw0&0xE000)==0xE000) && ((opw0&0xEA00)!=0xEA00))
 	{
-		if(op->pred&2)
+		if(op->pred&4)
 		{
 			if(op->pred&1)
 			{
@@ -1789,23 +2266,52 @@ int TKUCC_AsmEncodeOp(TKUCC_MainContext *ctx,
 			}
 		}else
 		{
+			if(!(opm&0x1000))
 			opw0|=0x1000;
+		}
+	}
+
+	if((opw2>=0) && ((opw2&0xE000)==0xE000) && ((opw2&0xEA00)!=0xEA00))
+	{
+		if(op->pred&4)
+		{
+			if(op->pred&1)
+			{
+				opw2|=0x0400;
+			}
+		}else
+		{
+			if(!(opm&0x1000))
+				opw2|=0x1000;
 		}
 	}
 	
 	if(opw0>=0)
 	{
 		if(rlc0>=0)
-			TKUCC_AsmEmitReloc(ctx, obj, lbl, rlc0);
-		TKUCC_AsmEmitSectionWord(ctx, obj, opw0);
+			TKUCC_AsmEmitReloc(ctx, lbl, rlc0);
+		TKUCC_AsmEmitWord(ctx, opw0);
 		if(opw1>=0)
-			TKUCC_AsmEmitSectionWord(ctx, obj, opw1);
+			TKUCC_AsmEmitWord(ctx, opw1);
 		if(opw2>=0)
-			TKUCC_AsmEmitSectionWord(ctx, obj, opw2);
+			TKUCC_AsmEmitWord(ctx, opw2);
 		if(opw3>=0)
-			TKUCC_AsmEmitSectionWord(ctx, obj, opw3);
+			TKUCC_AsmEmitWord(ctx, opw3);
+		if(opw4>=0)
+			TKUCC_AsmEmitWord(ctx, opw4);
+		if(opw5>=0)
+			TKUCC_AsmEmitWord(ctx, opw5);
 		
 		return(1);
 	}
+	
+	printf("TKUCC_AsmEncodeOp: No Op-Word\n");
 	return(0);
+}
+
+TKUCC_AsmOp *TKUCC_AsmAllocOp(TKUCC_MainContext *ctx)
+{
+	TKUCC_AsmOp *tmp;
+	tmp=TKUCC_ZMallocZero(ctx, sizeof(TKUCC_AsmOp), TKUCC_ZID_ASM);
+	return(tmp);
 }
