@@ -309,6 +309,57 @@ int BTIC1H_Img_SaveTGA(
 }
 
 
+
+int BTIC1H_Img_SaveTGA555(
+	char *name, u16 *buf, int w, int h)
+{
+	byte *tbuf;
+	FILE *fd;
+	int i, j, k, n, px, cr, cg, cb, flip;
+	
+	fd=fopen(name, "wb");
+	if(!fd)return(-1);
+	
+	flip=0;
+	if(h<0)
+	{
+		h=-h;
+		flip=1;
+	}
+	
+	n=w*h;
+	tbuf=(byte *)malloc(w*h*4);
+//	for(i=0; i<n; i++)
+	for(i=0; i<h; i++)
+		for(j=0; j<w; j++)
+	{
+		if(flip)
+			k=(h-i-1)*w+j;
+		else
+			k=i*w+j;
+		px=buf[k];
+		cr=(px>>10)&31;
+		cg=(px>> 5)&31;
+		cb=(px>> 0)&31;
+		cr=(cr<<3)|(cr>>2);
+		cg=(cg<<3)|(cg>>2);
+		cb=(cb<<3)|(cb>>2);
+
+		k=i*w+j;
+		tbuf[k*4+0]=cr;
+		tbuf[k*4+1]=cg;
+		tbuf[k*4+2]=cb;
+		tbuf[k*4+3]=255;
+	}
+	
+	BTIC1H_Img_StoreTGA(fd, tbuf, w, h);
+	
+	free(tbuf);
+
+	return(0);
+}
+
+
 #if 0
 int BTIC1H_Img_StoreTGAPixel(
 	FILE *fd, btic1g_pixel *buf, int w, int h)

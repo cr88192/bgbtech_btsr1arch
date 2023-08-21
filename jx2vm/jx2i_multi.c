@@ -47,6 +47,8 @@
 #include "jx2i_mem.c"
 #include "jx2i_ldrom.c"
 
+#include "jx2r_edgewalk.c"
+
 void BJX2_Op_MOVW_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op);
 
 #if defined(BTESH2_HASJIT_X64)

@@ -430,6 +430,13 @@ int stat_fp16_exp[32];
 int stat_funarg_exp[32];
 int stat_funarg_tot;
 
+int stat_lbl_tot;
+int stat_lbl_disp8;
+int stat_lbl_disp12;
+int stat_lbl_disp16;
+int stat_lbl_disp20;
+int stat_lbl_disp24;
+int stat_lbl_disp33;
 
 int ofs_curbdl;
 

@@ -59,9 +59,10 @@ Control Register 0 Bits:
 * (19): Vertical Resolution Adjust 2
 ** Double the vertical density (50->100 row, etc)
 * (23:20): Pixel Clock Control
-** 0: 25.0 MHz
-** 1: 37.5 MHz
-** 2: 50.0 MHz
+** 0:  25.0 MHz
+** 1:  37.5 MHz
+** 2:  50.0 MHz
+** 3: 100.0 MHz
 * (24): Display Resolution 4
 * (25): Display Resolution 5
 * (31:26): Reserved
@@ -83,6 +84,7 @@ Basic Display Resolution
 ** 00110: 640x480 (64x32 or 128x64)
 ** 00111: 640x400 (64x32 or 128x64)
 ** 01000: 1280x800
+** 01001: 1440x900
 ** 01100: 1280x1024
 
 Cell Width

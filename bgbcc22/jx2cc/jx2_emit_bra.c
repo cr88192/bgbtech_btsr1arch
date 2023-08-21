@@ -151,6 +151,27 @@ int BGBCC_JX2_TryEmitOpRegLbl(BGBCC_JX2_Context *ctx,
 		return(BGBCC_JX2_EmitStoreRegLabelVarRel24(ctx, nmid, reg, lbl));
 	}
 
+	if(!ctx->is_simpass)
+	{
+//		if(flcl)
+		if(1)
+		{
+			ctx->stat_lbl_tot++;
+			if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp8++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear12B(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp12++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear16(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp16++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear20(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp20++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear24(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp24++; }
+			else
+				{ ctx->stat_lbl_disp33++; }
+		}
+	}
+	
 	prlty=BGBCC_SH_RLC_RELW32_BJCMP;
 	if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
 	{
@@ -747,6 +768,27 @@ int BGBCC_JX2_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 		return(BGBCC_JX2RV_TryEmitOpRegRegLbl(ctx, nmid, rm, rn, lbl));
 	}
 
+	if(!ctx->is_simpass)
+	{
+//		if(flcl)
+		if(1)
+		{
+			ctx->stat_lbl_tot++;
+			if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp8++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear12B(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp12++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear16(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp16++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear20(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp20++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear24(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp24++; }
+			else
+				{ ctx->stat_lbl_disp33++; }
+		}
+	}
+	
 	prlty=BGBCC_SH_RLC_RELW32_BJCMP;
 	if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
 	{
@@ -2187,6 +2229,27 @@ int BGBCC_JX2_TryEmitOpAutoLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 		if(!ctx->need_farjmp)
 			fn16=1;
 	}
+	
+	if(!ctx->is_simpass)
+	{
+		if(flcl)
+		{
+			ctx->stat_lbl_tot++;
+			if(BGBCC_JX2_EmitCheckAutoLabelNear8(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp8++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear12B(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp12++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear16(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp16++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear20(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp20++; }
+			else if(BGBCC_JX2_EmitCheckAutoLabelNear24(ctx, lbl, nmid))
+				{ ctx->stat_lbl_disp24++; }
+			else
+				{ ctx->stat_lbl_disp33++; }
+		}
+	}
+	
 
 	if(ndfl)
 	{

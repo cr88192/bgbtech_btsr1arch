@@ -1444,6 +1444,9 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineGfxCon(ctx,	"CGFX",	0xF000000A0000LL, 0xF000000BFFFFLL);
 #endif
 
+	BJX2_MemDefineEdgeWalk(ctx, "EDGE", 0x0000F000C000LL, 0x0000F000CFFFLL);
+	BJX2_MemDefineEdgeWalk(ctx, "EDGE", 0xFFFFF000C000LL, 0xFFFFF000CFFFLL);
+
 	BJX2_SetCpuConfig(ctx, isacfg);
 
 	if(!l1icfg)

@@ -2497,7 +2497,7 @@ FAzz/FBzz Instructions:
 * FAjj_jjjj	 LDIZ	Imm24u, DLR		//Zero Extend
 * FBjj_jjjj	 LDIN	Imm24n, DLR		//One Extend
 
-Jumbo64 (Possible):
+Jumbo64 (Optional):
 * FEjj_jjjj_FAjj_jjjj	 LDIZ	Imm48u, DLR		//Zero Extend
 * FEjj_jjjj_FBjj_jjjj	 LDIN	Imm48n, DLR		//One Extend
 * FFjj_jjjj_FAjj_jjjj	 JMP	Abs48			//Abs48 Branch

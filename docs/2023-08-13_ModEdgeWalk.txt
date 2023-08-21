@@ -1,0 +1,146 @@
+Edge Walker Module
+
+Edge Walker Module
+
+Purpose is to walk a pair of edges and draw spans into a framebuffer.
+
+Framebuffer will be RGB555, with a 16-bit Z buffer.
+Textures will be in UTX2 format, with Morton ordering.
+
+Framebuffer will have a stride, with positions given in scanline and pixel.
+Framebuffer and texture buffers are to be located in physically-mapped 32-bit address ranges.
+
+Will walk spans in terms of a left and right pixel offsets.
+
+Base Address:
+* F000C000
+
+Control Regs:
+	00: Main Control/Status
+	01:
+		(15: 0): Y start
+		(31:16): Y end
+		(47:32): Raster Stride
+	02: Framebuffer
+		(31: 0): Base Address (RGB555)
+		(63:32): Base Address (Z)
+	03: Texture
+		(31: 0): Base Address
+		(51:32): MBZ (Reserved)
+		(56:52): Size (Bits)
+		(59:57): Texture Block Mode
+		(63:60): MBZ
+
+	04:	Base Left  Z,X (Low 32=Z, High 32=X)
+	05: Base Right Z,X
+	06: Step Left  Z,X
+	07: Step Right Z,X
+
+	08:	Base Left  S,T (Low 32=S, High 32=T)
+	09: Base Right S,T
+	0A: Step Left  S,T
+	0B: Step Right S,T
+
+	0C: Base Left  B,G,R,A (Low 16=B, High 16=A)
+	0D: Base Right B,G,R,A
+	0E: Step Left  B,G,R,A
+	0F: Step Right B,G,R,A
+
+	10: X/Y Clip   X0,Y0,X1,Y1
+
+
+Control Reg 00:
+*	(19:17): ZFunc
+*	(   16): Linear
+*	(15:12): Dst Blend Op
+*	(11: 8): Src Blend Op			
+*	(    7): ZMask (Z Buffer Store)
+*	(    6): ZTest
+*	(    5): ClrMask (Color Buffer Store)
+*	(    4): AlphaTest (Skip store based on Alpha)
+*	(    3): -
+*	(    2): Status: Still Working
+*	(    1): Probe (Always Read as 0)
+*	(    0): Busy / Initiate
+
+Raster Stride is given in terms of 16-bit pixels.
+
+Src/Dst Blend Op gives the blending function.
+
+The Texel color is modulated by the interpolated RGBA for the Source, and may then be modulated by another value. The Destination (framebuffer) color may also be modulated, and the two colors are added for the output pixel.
+
+If Depth and Alpha tests Pass, the pixel may be written back to the framebuffer.
+* ClrMask: Enables writing the color to the Color Buffer.
+* ZMask: Enables writing the Z to the Z Buffer.
+* If ZTest is Clear, Z test always passes.
+* If ATest is Clear, Alpha Test always passes.
+
+If Linear is Set, interpolate between texels. This may be either Bilinear, or an approximation. If not set, NEAREST will be used.
+
+
+If the Busy/Initiate is set during a store, this will initiate a new request based on the contents of the other registers. If this bit is set when the register is read, the module is busy and may not (yet) be given a new request. If a FIFO is used, this bit will indicate that the FIFO is full.
+
+The Still Working bit will indicate if the module is still working in the background. It will be clear when the module is idle.
+
+
+The Probe bit will always be read as 0, but a write with Probe Set may set or clear other bits to indicate support for optional features.
+
+If Probe is read as non-zero, or the bits for core features are cleared, the module may be assumed to be disabled or non-functional.
+
+Blend Op:
+* 0: Special/Reserved
+* 1: Special/Reserved
+* 2: Reserved
+* 3: Reserved
+* 4: Reserved
+* 5: Reserved
+* 6: ZERO
+* 7: ONE
+* 8: SRC_ALPHA
+* 9: SRC_COLOR
+* A: DST_ALPHA
+* B: DST_COLOR
+* C: ONE_MINUS_SRC_ALPHA
+* D: ONE_MINUS_SRC_COLOR
+* E: ONE_MINUS_DST_ALPHA
+* F: ONE_MINUS_DST_COLOR
+
+ZFunc:
+* 0: LESS
+* 1: GEQUAL
+* 2: LEQUAL
+* 3: GREATER
+* 4: EQUAL
+* 5: NOTEQUAL
+* 6: ALWAYS
+* 7: NEVER
+
+If ZTest is set, ZFunc compares the interpolated Z against the value from the Z buffer.
+
+Vars:
+* X, S, T will be expressed as 16.16 fixed point.
+* Z will be expressed as 0.32 fixed point
+
+
+S/T coordinates will be expressed in linear texels.
+The texture will be in UTX2 format, and in Morton order.
+
+The size will give the texture in bits, relative to Morton order:
+* 00: 1x1
+* 01: 2x1
+* 02: 2x2
+* 03: 4x2
+* 04: 4x4
+* 05: 8x4
+* 06: 8x8
+* ...
+
+Texture Block Mode:
+* 000: UTX2
+* 001: RGBA64
+* 010: UTX3 (LDR), Reserved
+* 011: UTX3 (HDR), Reserved
+* 100: Resv
+* 101: RGB555A
+* 110: RGBA32 (RGBA8888), Reserved
+* 111: Resv

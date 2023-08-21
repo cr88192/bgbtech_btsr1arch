@@ -153,8 +153,11 @@
 `define jx2_l1i_nohash			//Disable L1 address hashing.
 
 
+`define jx2_enable_edgewalk		//Hardware rasterizer / edge-walker
+
 `ifdef jx2_xc7a200
 `define jx2_enable_dualcore			//Enable Second Core
+
 `endif
 
 `define jx2_use_ringbus			//Use Ring-Bus

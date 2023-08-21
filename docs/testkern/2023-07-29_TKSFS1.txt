@@ -1,0 +1,124 @@
+TestKern Simple File System (Idea Spec)
+* Goal: Moderately simple filesystem.
+** Should be moderately usable and able to manage largish volumes.
+** Should be kept relatively simple to implement.
+
+General Volume Structure:
+* Blocks will be identified with absolute block numbers.
+* Logical Block Size, 1K to 64K
+* Inodes will be located within an "inode file".
+** There will not be a designated area for inodes.
+
+Superblock:
+* Located at the 1K mark
+** First 1K will be left unused (possible boot loader).
+* Any unused space in the superblock is to be set to 0.
+
+ SuperblockHeader {
+ EIGHTCC magic;		//00, Filesystem Magic 'TKSFS100'
+ u64 inode_root;	//08, Start of Inode File
+ u64 image_size;	//10, Logical image size (Blocks)
+ byte log2_block;	//18, Block-Size, Log2 (0A..10)
+ byte log2_ino;		//19, Inode Size, Log2 (08..0C)
+ //Remaining space reserved for future expansion, must be zero.
+ }
+
+
+Inode:
+* Inodes will nominally be 512 byte.
+* Will consist of sub-headers with a TWOCC format.
+** { TWOCC tag; u16 len; byte data[len]; }
+** The length will be stored bitwise inverted.
+* 'FH': File Header
+* 'I1': Block Index (32-bit entry, 128 bytes)
+* 'I2': Block Index (64-bit entry, 256 bytes)
+* 'ID': Inline Data (128 or 256 bytes)
+* '  ': Pad bytes
+* 0000: NULL Tag
+** Small file data, stored inline.
+** Will nominally match size of a corresponding I1/I2 entry.
+* Inode data will terminate with a NULL tag.
+** An unused INode will start with a NULL tag.
+
+Inode Block Index (128 or 256 bytes):
+* 00..0F: Direct Block
+* 10..17: Indirect Block
+* 18..1B: Double Indirect Block
+* 1C..1D: Triple Indirect
+* 1E: Quad Indirect
+* 1F: Reserved
+
+Higher indirection levels will only be used if the file is large enough to justify them. Blocks from shorter indirection levels will be mirrored in higher indirection levels.
+
+
+The first several entries of the INode File will have special pre-assigned uses.
+* Inode 0: Inode File
+* Inode 1: Root Directory
+* Inode 2: Block Bitmap
+** Bits are set within bitmap if block is in use.
+
+File Header:
+ Inode_FileHeader {
+   u64 size;		//00, File size (Basic / Uncompressed)
+   u64 ctime;		//08, Creation Time (microseconds since epoch)
+   u64 mtime;		//10, Modification Time (microseconds since epoch)
+   u16 uid;			//18, User ID
+   u16 gid;			//1A, Group ID
+   u16 mode;		//1C, Access Mode / File-Type
+   byte lcount;		//1E, Hard-Link Count (actual links only)
+   byte etype;		//1F, Inode Entry Type (01=File-Like)
+ }
+
+File Mode:
+* 0001: XO (Execute Other)
+* 0002: WO (Write Other)
+* 0004: RO (Read Other)
+* 0008: XG (Execute Group)
+* 0010: WG (Write Group)
+* 0020: RG (Read Group)
+* 0040: XU (Execute User)
+* 0080: WU (Write User)
+* 0100: RU (Read User)
+* 0400: SetGID
+* 0800: SetUID
+* High Bits give Type:
+** 4000: DIR
+** 8000: FILE
+** A000: SYMLINK
+
+
+DirEnt (64 byte):
+ DirEnt_Base {
+   byte name[48];	//00..2F
+   u32 inode;		//30, inode number
+   u16 ci_lt;		//34, left (less) index
+   u16 ci_gt;		//36, right (greater) index
+   byte depth;		//38, tree depth
+   byte etype;		//39, entry type
+   byte ci_lt_h;	//3A, left index, high
+   byte ci_gt_h;	//3B, right index, high
+   u32 resv3;		//3C
+ };
+ DirEnt_Name {
+   byte name[56];	//00..37
+   byte resv1;		//38
+   byte etype;		//39, entry type
+   u16 resv2;		//3A
+   u32 resv3;		//3C
+ };
+
+Directory:
+* Names larger then 48 bytes will use multi-part entries.
+* Each name will be nominally UTF-8, NUL padded.
+* Directory entries will be organized into AVL trees.
+
+For sake of name comparison, they will be compared as-if they had been expanded to 256 bytes via NUL padding and compared using "memcmp()". Comparisons between shorter names will use a 48-byte compare.
+
+Dirent Type:
+* 00: Unused
+* 01: Single part name
+* 02: Resv
+* 03: First entry of multi-part name
+* 04..07: Entry within multi-part name.
+
+Directories in this filesystem will not include "." or ".." as normal entires.

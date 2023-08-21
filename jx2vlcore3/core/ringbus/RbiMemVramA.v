@@ -50,6 +50,10 @@ module RbiMemVramA(
 	palIndex,		palData,
 	ctrlRegVal,
 
+	edsDataOut,		edsDataIn,
+	edsAddr,		edsOpm,
+	edsOK,
+
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
 	memOpmIn,		memOpmOut,
@@ -80,6 +84,13 @@ output[15:0]	palData;
 output[63:0]	ctrlRegVal;
 
 
+input[63:0]		edsDataIn;
+output[63:0]	edsDataOut;
+input[31:0]		edsAddr;
+input[4:0]		edsOpm;
+output[1:0]		edsOK;
+
+
 input [ 15:0]	memSeqIn;		//operation sequence
 output[ 15:0]	memSeqOut;		//operation sequence
 input [ 15:0]	memOpmIn;		//memory operation mode
@@ -92,13 +103,30 @@ output[ 15:0]	memOpmOut;		//memory operation mode
 input [  7:0]	unitNodeId;		//Who Are We?
 
 
+reg			tReqIsEds;
+reg			tNxtReqIsEds;
+reg			tReqIsEds2;
+
+reg			tReqIsEdsLatch;
+reg			tNxtReqIsEdsLatch;
+
 reg[63: 0]	tRegOutVal;
 reg[63: 0]	tRegOutValL;
-assign	regOutVal = tRegOutVal;
+reg[63: 0]	tRegOutVal2;
+
+// assign	regOutVal = tRegOutVal;
+assign	regOutVal = tRegOutVal2;
 
 reg[1:0]	tRegOutOK;
 reg[1:0]	tRegOutOKL;
-assign	regOutOK = tRegOutOK;
+reg[1:0]	tRegOutOK2;
+
+// assign	regOutOK = !tReqIsEds ? tRegOutOK : 0;
+assign	regOutOK = !tReqIsEds2 ? tRegOutOK2 : 0;
+
+assign	edsDataOut	= tRegOutVal;
+// assign	edsOK		= tReqIsEds ? tRegOutOK : 0;
+assign	edsOK		= tReqIsEds2 ? tRegOutOK2 : 0;
 
 reg[255:0]	tCellData;
 reg[255:0]	tCellDataL;
@@ -592,6 +620,9 @@ begin
 
 	tRegInOpm = { regInOpm[4:3], 1'b0, regInOpm[2:0] };
 
+	if((tRegOutOK2!=0) && tReqIsEds2)
+		tRegInOpm = 0;
+
 	tPixCellIx2 = pixCellIx;
 //	tPixCellIx2 = { 2'b00, pixCellIx[11:0] };
 //	tPixCellIx2 = { 3'b000, pixCellIx[10:0] };
@@ -601,10 +632,12 @@ begin
 //		tRegInAddr = { 8'b0, 3'b101, tPixCellIx2[11:0], 5'h000 };
 		tRegInAddr = { 8'h0A, 1'b0, tPixCellIx2[13:0], 5'h000 };
 
-//	tNxtReqAddr		= tRegInAddr[27:0];
-	tNxtReqBix		= tRegInAddr[4:0];
-	tNxtReqOpm		= tRegInOpm;
-	tNxtReqInValA	= regInVal;
+//	tNxtReqAddr			= tRegInAddr[27:0];
+	tNxtReqBix			= tRegInAddr[4:0];
+	tNxtReqOpm			= tRegInOpm;
+	tNxtReqInValA		= regInVal;
+	tNxtReqIsEds		= tReqIsEds;
+	tNxtReqIsEdsLatch	= tReqIsEdsLatch;
 	
 	tRegInAddrHb = { 3'b000, tRegInAddr[16] };
 
@@ -624,6 +657,26 @@ begin
 
 	if(tRegInOpm[5:4] == 2'b00)
 		tNxtReqAddr = tRegInAddr;
+
+//	if(edsOpm[4:3] != 0)
+//	if((edsOpm[4:3] != 0) && (tHoldCyc==0))
+	if((edsOpm[4:3] != 0) && ((tRegOutOK2==0) || tReqIsEds2))
+	begin
+		tRegInOpm = { edsOpm[4:3], 1'b0, edsOpm[2:0] };
+
+		tNxtReqAddr			= edsAddr[27:0];
+		tNxtReqBix			= edsAddr[4:0];
+		tNxtReqOpm			= tRegInOpm;
+		tNxtReqInValA		= edsDataIn;
+
+		tNxtReqIsEds		= 1;
+		tNxtReqIsEdsLatch	= 1;
+	end
+	else
+	begin
+		tNxtReqIsEds		= 0;
+		tNxtReqIsEdsLatch	= 0;
+	end
 
 //	if(tRegInAddr[4])
 	if(tNxtReqAddr[4])
@@ -652,6 +705,14 @@ begin
 	tNxtReqIsNz		=
 		(tRegInOpm[5:4] != 2'b00) && tNxtReqIsCSel &&
 		!reset;
+	
+//	if((edsOpm[4:3] != 0) && !reset)
+	if(tNxtReqIsEds && !reset)
+	begin
+		tNxtReqIsCSel		= 1;
+		tNxtReqIsCRs		= 0;
+		tNxtReqIsNz			= 1;
+	end
 `endif
 
 //	tPixCellIxLim = 80 * 25;
@@ -1582,7 +1643,8 @@ begin
 	
 	if(!tReqIsNz)
 		tNxtHoldCyc = 0;
-	if(tHoldCyc[10])
+//	if(tHoldCyc[10])
+	if(tHoldCyc[11])
 	begin
 		$display("VRAM: Timeout");
 		tRegOutHold = 0;
@@ -1639,6 +1701,8 @@ begin
 		tReqBix			<= tNxtReqBix;
 		tReqOpm			<= tNxtReqOpm;
 		tReqInValA		<= tNxtReqInValA;
+		tReqIsEds		<= tNxtReqIsEds;
+		tReqIsEdsLatch	<= tNxtReqIsEdsLatch;
 
 		tReqIsCSel		<= tNxtReqIsCSel;
 		tReqIsCRs		<= tNxtReqIsCRs;
@@ -1705,6 +1769,10 @@ begin
 
 //	tRegOutValL		<= tRegOutVal;
 //	tRegOutOKL		<= tRegOutOK;
+
+	tRegOutVal2		<= tRegOutVal;
+	tRegOutOK2		<= tRegOutOK;
+	tReqIsEds2		<= tReqIsEds;
 
 	tReqReadyL		<= tReqReady;
 

@@ -2356,6 +2356,183 @@ R31		tstep_r
 };
 #endif
 
+/*
+ * 0: Not Configured
+ * 1: Permanently disable MMIO Edge-Walker (eg: Not Present)
+ * 2: Use Edge Walker
+ * 3: Temporarily disable Edge Walker (eg: Texture Incompatibilty)
+ */
+static int tkra_nommio;
+
+#ifdef __BJX2__
+
+void TKRA_Probe_WalkEdgesMMIO(TKRA_Context *ctx)
+{
+	volatile u64 *mmio;
+	u64 tex, scrn, zbuf, sts;
+	int n;
+
+	if(tkra_nommio==1)
+		return;
+
+//	if(tkra_nommio==3)
+//		tkra_nommio=2;
+
+	if(tkra_nommio&2)
+	{
+		tkra_nommio&=~1;
+		return;
+	}
+
+#if 0
+	tex=(u64)(ctx->tex_img_bcn);
+	if(tkra_nommio&2)
+	{
+		if(!tex)
+			tkra_nommio|=1;
+	
+		if(tex&0xFFFFF0000000ULL)
+		{
+			tkra_nommio|=1;
+		}
+		
+//		if(((tex>>57)&7)!=0)
+//			tkra_nommio|=1;
+
+		return;
+	}
+#endif
+
+	scrn=(u64)(ctx->screen_rgb);
+	zbuf=(u64)(ctx->screen_zbuf);
+	
+	if(scrn&0xFFFFF0000000ULL)
+		tkra_nommio=1;
+	if(zbuf&0xFFFFF0000000ULL)
+		tkra_nommio=1;
+
+	mmio=(volatile u64 *)0xFFFFF000C000ULL;
+
+	mmio[0]=0x00F2; n=16;
+	while(n--)
+		sts=mmio[0];
+
+	if((sts&0x00FA)!=0x00F0)
+		tkra_nommio=1;
+
+	if(tkra_nommio&1)
+	{
+//		__debugbreak();
+		return;
+	}
+
+	tkra_nommio|=2;
+
+	if(tex&0xFFFFF0000000ULL)
+	{
+		tkra_nommio|=1;
+	}
+}
+
+void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
+{
+	static byte blfntab[16]={
+		0x6, 0x7, 0x9, 0xD, 0x8, 0xC, 0xA, 0xE, 0xB, 0xF
+	};
+	volatile u64 *mmio;
+	u64 tex, scrn, zbuf, sts, mdfl;
+	int clip_x0, clip_x1, clip_y0, clip_y1, ymax;
+	
+	tex=(u64)(ctx->tex_img_bcn);
+	scrn=(u64)(ctx->screen_rgb);
+	zbuf=(u64)(ctx->screen_zbuf);
+	
+	if(tkra_nommio&1)
+	{
+		TKRA_WalkEdges_Zbuf(ctx, ytop, edge_l, edge_r, cnt);
+		return;
+	}
+
+	if(!tex || (tex&0xFFFFF0000000ULL) || (((tex>>57)&7)!=0))
+	{
+		TKRA_WalkEdges_Zbuf(ctx, ytop, edge_l, edge_r, cnt);
+		return;
+	}
+	
+	if(cnt<=0)
+		return;
+
+	clip_x0	= ctx->clip_x0;
+	clip_x1	= ctx->clip_x1;
+	clip_y0	= ctx->clip_y0;
+	clip_y1	= ctx->clip_y1;
+
+	if(ytop>=clip_y1)
+		return;
+	ymax=ytop+cnt;
+	if(ymax<=clip_y0)
+		return;
+	if(ymax>=clip_y1)
+		cnt=clip_y1-ytop;
+
+	mmio=(volatile u64 *)0xFFFFF000C000ULL;
+	
+	sts=mmio[0];
+	while(sts&1)
+	{
+		sts=mmio[0];
+	}
+
+	mmio[3]=tex;
+
+#if 1
+	mmio[4]=edge_l[TKRA_ES_ZPOS];
+	mmio[5]=edge_r[TKRA_ES_ZPOS];
+	mmio[6]=edge_l[TKRA_ES_ZSTEP];
+	mmio[7]=edge_r[TKRA_ES_ZSTEP];
+#endif
+
+	mmio[ 8]=edge_l[TKRA_ES_TPOS];
+	mmio[ 9]=edge_r[TKRA_ES_TPOS];
+	mmio[10]=edge_l[TKRA_ES_TSTEP];
+	mmio[11]=edge_r[TKRA_ES_TSTEP];
+
+	mmio[12]=edge_l[TKRA_ES_CPOS];
+	mmio[13]=edge_r[TKRA_ES_CPOS];
+	mmio[14]=edge_l[TKRA_ES_CSTEP];
+	mmio[15]=edge_r[TKRA_ES_CSTEP];
+	
+	mmio[16]=
+		(((u64)clip_x0)<< 0) |
+		(((u64)clip_y0)<<16) |
+		(((u64)clip_x1)<<32) |
+		(((u64)clip_y1)<<48) ;
+
+	mmio[1]=((u16)ytop) | (((u64)(ytop+cnt-1))<<16) |
+		(((u64)(ctx->screen_xsize))<<32);
+	mmio[2]=((u32)scrn) | (((u64)zbuf)<<32);
+
+	mdfl=0x0021;
+	if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
+		mdfl|=0x10;
+	if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
+		mdfl|=0xC0;
+
+	if(ctx->span_trifl&TKRA_TRFL_NOZWRITE)
+		mdfl&=~0x80;
+
+	mdfl|=
+			(blfntab[ctx->blend_sfunc]<< 8) |
+		(blfntab[ctx->blend_dfunc]<<12) ;
+
+	mmio[0]=mdfl;
+
+//	mmio[0]=
+//		mdfl|((ctx->screen_xsize)<<16);
+}
+#endif
+
 #ifndef __BJX2__
 // #if 1
 /* Z-Buffer */
@@ -3372,12 +3549,27 @@ int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 //			ctx->RasterWalkEdges=TKRA_WalkEdges_ZbufNZb;
 #endif
 
+#ifdef __BJX2__
+		TKRA_Probe_WalkEdgesMMIO(ctx);
+		if(!(tkra_nommio&1))
+		{
+			ctx->RasterWalkEdges=TKRA_WalkEdges_MMIO;
+			ctx->RasterWalkEdgesNcp=TKRA_WalkEdges_MMIO;
+		}
+#endif
+
 //		ctx->RasterWalkEdgesNcp=ctx->RasterWalkEdges;
 
 	}else
 	{
 		ctx->RasterWalkEdges=TKRA_WalkEdges_Dfl;
 		ctx->RasterWalkEdgesNcp=ctx->RasterWalkEdges;
+
+#ifdef __BJX2__
+		TKRA_Probe_WalkEdgesMMIO(ctx);
+		if(!(tkra_nommio&1))
+			ctx->RasterWalkEdgesNcp=TKRA_WalkEdges_MMIO;
+#endif
 	}
 
 //	ctx->RasterWalkEdges=TKRA_WalkEdges_Dfl;

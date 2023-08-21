@@ -7552,6 +7552,19 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				(100.0*sctx->stat_fpimm_hitchk10)/(sctx->stat_fpimm_totchk10));
 		}
 
+		if(sctx->stat_lbl_tot>0)
+		{
+			printf("Lbl Disp-Hit 8s=%.2f%% 12s=%.2f%% 16s=%.2f%% "
+				"20s=%.2f%% 24s=%.2f%% 33s=%.2f%%\n",
+				(100.0*sctx->stat_lbl_disp8 )/(sctx->stat_lbl_tot),
+				(100.0*sctx->stat_lbl_disp12)/(sctx->stat_lbl_tot),
+				(100.0*sctx->stat_lbl_disp16)/(sctx->stat_lbl_tot),
+				(100.0*sctx->stat_lbl_disp20)/(sctx->stat_lbl_tot),
+				(100.0*sctx->stat_lbl_disp24)/(sctx->stat_lbl_tot),
+				(100.0*sctx->stat_lbl_disp33)/(sctx->stat_lbl_tot)
+				);
+		}
+
 	#if 0
 		printf("Exp-Fp16:\n");
 		for(i=0; i<4; i++)

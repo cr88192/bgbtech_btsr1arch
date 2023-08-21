@@ -43,6 +43,10 @@
 `include "ringbus/RbiMemVramA.v"
 `endif
 
+`ifdef jx2_enable_edgewalk
+`include "ModEdgeWalk.v"
+`endif
+
 module ModTxtNtW(clock, reset,
 	clock_100,
 	pwmOut,
@@ -153,17 +157,36 @@ ModTxtMemW fbmem(clock, reset,
 `endif
 
 `ifdef jx2_mem_l2vram
+
+wire[63:0]	edsDataIn;
+wire[63:0]	edsDataOut;
+wire[31:0]	edsAddr;
+wire[4:0]	edsOpm;
+wire[1:0]	edsOK;
+
+wire[63:0]	ebusOutData;
+wire[63:0]	fbusOutData;
+wire[1:0]	ebusOK;
+wire[1:0]	fbusOK;
+
+assign	busOutData = (ebusOK!=0) ? ebusOutData : fbusOutData;
+assign	busOK = (ebusOK!=0) ? ebusOK : fbusOK;
+
 RbiMemVramA		fbmem(
 	clock,			reset,
 
 	busAddr,		busOpm,
-	busOutData,		busInData,
-	busOK,
+	fbusOutData,	busInData,
+	fbusOK,
 
 	pixCellIx,		cellData1,
 	fontGlyph,		fontData1,
 	palIndex,		palData,
 	ctrlRegVal,
+
+	edsDataIn,		edsDataOut,
+	edsAddr,		edsOpm,
+	edsOK,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -172,6 +195,29 @@ RbiMemVramA		fbmem(
 
 	unitNodeId
 	);
+
+`ifdef jx2_enable_edgewalk
+ModEdgeWalk edgewalk(
+	clock,			reset,
+	edsDataIn,		edsDataOut,
+	edsAddr,		edsOpm,
+	edsOK,
+
+	busInData,		ebusOutData,
+	busAddr,		busOpm,
+	ebusOK
+	);
+`else
+
+assign	edsDataOut = 0;
+assign	edsAddr = 0;
+assign	edsOpm = 0;
+
+assign	ebusOutData = 0;
+assign	ebusOK		= 0;
+
+`endif
+
 `endif
 
 

@@ -166,6 +166,25 @@ int BJX2_MemRamCb_GetFaultXW(BJX2_Context *ctx,
 	return(0);
 }
 
+s32 BJX2_MemRamCb_GetFault(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr)
+{
+	if((ctx->status&0xF000)==0xC000)
+		ctx->status=0;
+
+	if(!(ctx->status))
+	{
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+		ctx->regs[BJX2_REG_TEA]=addr;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MWR);
+	}else
+	{
+//		JX2_DBGBREAK
+	}
+	return(0);
+}
+
 int BJX2_MemRamCb_SetFault(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val)
 {
@@ -3237,6 +3256,42 @@ s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx,
 //	t=sp->GetDWord(ctx, sp, addr+4);
 //	t=(t<<32)|((u32)(sp->GetDWord(ctx, sp, addr+0)));
 	return(t);
+}
+
+s32 BJX2_MemSetWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh, s32 val)
+{
+	BJX2_MemSpan *sp;
+	bjx2_addr addr;
+	int ra;
+
+	addr=(u32)addr0;
+	sp=ctx->span_pr0;
+	if(sp && (((u32)(addr-sp->addr_base))<(sp->addr_sz)))
+	{
+		return(sp->SetWord(ctx, sp, addr, val));
+	}
+
+	sp=ctx->MemSpanForAddr(ctx, addr);
+	if(!sp)
+	{
+		if((ctx->status&0xF000)==0xC000)
+			ctx->status=0;
+
+		if(!(ctx->status))
+		{
+			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+			ctx->regs[BJX2_REG_TEA]=addr;
+			ctx->regs[BJX2_REG_TEAH]=addrh;
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVADDR);
+		}else
+		{
+			JX2_DBGBREAK
+		}
+		return(0);
+	}
+
+	return(sp->SetWord(ctx, sp, addr, val));
 }
 
 
