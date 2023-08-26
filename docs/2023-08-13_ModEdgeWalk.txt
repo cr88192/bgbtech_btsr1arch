@@ -50,6 +50,8 @@ Control Regs:
 
 
 Control Reg 00:
+*	(   21): Reciprocal Z
+*	(   20): Perspective Correct S/T
 *	(19:17): ZFunc
 *	(   16): Linear
 *	(15:12): Dst Blend Op
@@ -117,9 +119,19 @@ ZFunc:
 
 If ZTest is set, ZFunc compares the interpolated Z against the value from the Z buffer.
 
-Vars:
-* X, S, T will be expressed as 16.16 fixed point.
-* Z will be expressed as 0.32 fixed point
+Vars (Affine Mode):
+* X will be expressed as S.15.16 fixed point.
+* S, T will be expressed as S.15.16 fixed point.
+* Z will be expressed as S.31 fixed point
+
+Vars (Perspective Mode):
+* S, T will be expressed as S.19.12 fixed point (Scaled by 1/Z).
+* For each pixel, the S and T coords will be multiplied with the interpolated Z value.
+
+Reciprocal Z
+* Z will be expressed as S.8.23 fixed point.
+** Value will be expressed as 1/Z rather than Z.
+* Z will be interpolated as a reciprocal and then inverted per-pixel.
 
 
 S/T coordinates will be expressed in linear texels.

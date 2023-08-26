@@ -2908,6 +2908,12 @@ s64 TK_VMem_VaVirtualAlloc2(s64 addr, s64 addrh, s64 size,
 			}
 		}
 	}
+	
+	if(flMap&TKMM_MAP_PHYSICAL)
+	{
+		addr=(s64)(TKMM_PageAlloc(size));
+		return(addr);
+	}
 
 //	if(1)
 //	if(0)

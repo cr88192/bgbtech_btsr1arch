@@ -4947,6 +4947,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 	en=(sctx->is_le==0);
 	sctx->stat_ovlbl8=0;
+	sctx->stat_rlbl_tot=0;
 	
 	gbr_base=imgbase+sctx->gbr_rva;
 
@@ -5023,6 +5024,20 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d=val-(var&(~1));
 			break;
 		}
+
+		sctx->stat_rlbl_tot++;
+		if(abs(d)<256)
+			{ sctx->stat_rlbl_disp8++; }
+		else if(abs(d)<4096)
+			{ sctx->stat_rlbl_disp12++; }
+		else if(abs(d)<65536)
+			{ sctx->stat_rlbl_disp16++; }
+		else if(abs(d)<(1<<20))
+			{ sctx->stat_rlbl_disp20++; }
+		else if(abs(d)<(1<<24))
+			{ sctx->stat_rlbl_disp24++; }
+		else
+			{ sctx->stat_rlbl_disp33++; }
 
 		switch(sctx->rlc_ty[i])
 		{
@@ -6069,7 +6084,20 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				sctx->stat_ovlbl8, sctx->stat_ovlbl8*2);
 		}
 	}
-	
+
+	if(sctx->stat_rlbl_tot>0)
+	{
+		printf("Rlc-Lbl Disp-Hit 8s=%.2f%% 12s=%.2f%% 16s=%.2f%% "
+			"20s=%.2f%% 24s=%.2f%% 33s=%.2f%%  tot=%d\n",
+			(100.0*sctx->stat_rlbl_disp8 )/(sctx->stat_rlbl_tot),
+			(100.0*sctx->stat_rlbl_disp12)/(sctx->stat_rlbl_tot),
+			(100.0*sctx->stat_rlbl_disp16)/(sctx->stat_rlbl_tot),
+			(100.0*sctx->stat_rlbl_disp20)/(sctx->stat_rlbl_tot),
+			(100.0*sctx->stat_rlbl_disp24)/(sctx->stat_rlbl_tot),
+			(100.0*sctx->stat_rlbl_disp33)/(sctx->stat_rlbl_tot),
+			sctx->stat_rlbl_tot);
+	}
+
 	return(0);
 }
 
@@ -7555,14 +7583,14 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		if(sctx->stat_lbl_tot>0)
 		{
 			printf("Lbl Disp-Hit 8s=%.2f%% 12s=%.2f%% 16s=%.2f%% "
-				"20s=%.2f%% 24s=%.2f%% 33s=%.2f%%\n",
+				"20s=%.2f%% 24s=%.2f%% 33s=%.2f%%  tot=%d\n",
 				(100.0*sctx->stat_lbl_disp8 )/(sctx->stat_lbl_tot),
 				(100.0*sctx->stat_lbl_disp12)/(sctx->stat_lbl_tot),
 				(100.0*sctx->stat_lbl_disp16)/(sctx->stat_lbl_tot),
 				(100.0*sctx->stat_lbl_disp20)/(sctx->stat_lbl_tot),
 				(100.0*sctx->stat_lbl_disp24)/(sctx->stat_lbl_tot),
-				(100.0*sctx->stat_lbl_disp33)/(sctx->stat_lbl_tot)
-				);
+				(100.0*sctx->stat_lbl_disp33)/(sctx->stat_lbl_tot),
+				sctx->stat_lbl_tot);
 		}
 
 	#if 0

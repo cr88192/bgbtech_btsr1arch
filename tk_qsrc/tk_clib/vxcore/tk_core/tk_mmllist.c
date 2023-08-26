@@ -233,6 +233,19 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 
 	if(sz>=TKMM_MAXMMLISTSZ)
 	{
+		if(cat==TKMM_MCAT_PHYSDFL)
+		{
+			ptr=tk_mmap(NULL, sz+256, TKMM_PROT_RWX,
+				TKMM_MAP_PHYSICAL|TKMM_MAP_PRIVATE|TKMM_MAP_ANONYMOUS,
+				-1, 0);
+
+			if(ptr)
+			{
+				memset(ptr, 0, sz);
+				return(ptr);
+			}
+		}
+	
 //		tk_dbg_printf("TKMM_MMList_AllocBrk A, cat=%d\n", cat);
 
 //		if((cat==0) || (cat==4))

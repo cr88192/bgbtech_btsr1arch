@@ -77,6 +77,15 @@ void tkra_free(void *ptr)
 	tkra_freelist[ix]=ptr1;
 }
 
+void *tkra_malloc_phys(int sz)
+{
+#ifdef __BJX2__
+	return(tk_malloc_cat(sz, TKMM_MCAT_PHYSDFL));
+#else
+	return(tkra_malloc(sz));
+#endif
+}
+
 
 int tkra_log2dn(int val)
 {
@@ -429,7 +438,8 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 				if((j<=6) && (i<4))
 					img->tex_img_bcn=(u32 *)(img->tex_mipofs_bcn+4);
 				else
-					img->tex_img_bcn=tkra_malloc(j*sizeof(u32));
+//					img->tex_img_bcn=tkra_malloc(j*sizeof(u32));
+					img->tex_img_bcn=tkra_malloc_phys(j*sizeof(u32));
 			}
 #endif
 		}

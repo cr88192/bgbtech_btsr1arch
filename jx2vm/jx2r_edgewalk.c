@@ -88,14 +88,42 @@ u16 bjx2_rgb64pck16(u64 vs)
 
 // #define JX2_EDGEWALK_XSUB	0
 // #define JX2_EDGEWALK_ZSUB	0
-#define JX2_EDGEWALK_STSUB	8
-#define JX2_EDGEWALK_STHI	2
+#define JX2_EDGEWALK_STSUB	4
+#define JX2_EDGEWALK_STHI	6
 
-#define JX2_EDGEWALK_XSUB	8
-#define JX2_EDGEWALK_XHI	2
+#define JX2_EDGEWALK_XSUB	4
+#define JX2_EDGEWALK_XHI	0
 
-#define JX2_EDGEWALK_ZSUB	8
+#define JX2_EDGEWALK_ZSUB	4
 #define JX2_EDGEWALK_ZHI	0
+
+static u16 jx2_edgewalk_rcptab[1024];
+
+u64 BJX2_MemEdgeWalk_LerpRgbFrac16(u64 v0, u64 v1, int fr)
+{
+	u64 v2;
+	int cr0, cr1, cg0, cg1, cb0, cb1, ca0, ca1;
+	int cr2, cg2, cb2, ca2;
+	
+	ca0=(v0>>48)&0xFFFF;	cr0=(v0>>32)&0xFFFF;
+	cg0=(v0>>16)&0xFFFF;	cb0=(v0>> 0)&0xFFFF;
+
+	ca1=(v1>>48)&0xFFFF;	cr1=(v1>>32)&0xFFFF;
+	cg1=(v1>>16)&0xFFFF;	cb1=(v1>> 0)&0xFFFF;
+	
+	fr&=15;
+	cr2=(cr0*(16-fr))+(cr1*fr)>>4;
+	cg2=(cg0*(16-fr))+(cg1*fr)>>4;
+	cb2=(cb0*(16-fr))+(cb1*fr)>>4;
+	ca2=(ca0*(16-fr))+(ca1*fr)>>4;
+	
+	v2=
+		(((u64)ca2)<<48) |
+		(((u64)cr2)<<32) |
+		(((u64)cg2)<<16) |
+		(((u64)cb2)<< 0) ;
+	return(v2);
+}
 
 int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 {
@@ -105,10 +133,10 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 	u64 addr_o, addr_c, addr_z, addr_u;
 	int x0, x1, z0, z1, s0, s1, t0, t1, rcp;
 	int r0, r1, g0, g1, b0, b1, a0, a1;
-	int x, z, s, t, zs, ss, ts, z2;
+	int x, z, s, t, zs, ss, ts, z2, s_p, t_p, z_p;
 	int r, g, b, a, rs, gs, bs, as;
-	int txs, txt, txi, ztest, atest, zmask, cmask;
-	int bfs, bfd, txm;
+	int txs, txt, txi, ztest, atest, zmask, cmask, islin;
+	int bfs, bfd, txm, zfn, zpn, ispersp, isrcpz;
 	
 //	x0=((s16)bjx2_edgewalk_var_scanlfx)>>6;
 //	x1=((s16)bjx2_edgewalk_var_scanrtx)>>6;
@@ -124,10 +152,17 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 	cmask=(bjx2_edgewalk_regs[0]>>5)&1;
 	atest=(bjx2_edgewalk_regs[0]>>4)&1;
 
+	islin=(bjx2_edgewalk_regs[0]>>16)&1;
+	zfn=(bjx2_edgewalk_regs[0]>>17)&7;
+
+	ispersp=(bjx2_edgewalk_regs[0]>>20)&1;
+	isrcpz=(bjx2_edgewalk_regs[0]>>21)&1;
+
 	x=x1-x0;
 	if(x<0)
 		return(0);
-	rcp=0x10000/(x+1);
+//	rcp=0x10000/(x+1);
+	rcp=jx2_edgewalk_rcptab[x];
 
 	z0=bjx2_edgewalk_var_scanlfz;
 	z1=bjx2_edgewalk_var_scanrtz;
@@ -194,8 +229,26 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 		blk_c=BJX2_MemGetWord_NoAT(ctx, addr_c, 0);
 		blk_z=BJX2_MemGetWord_NoAT(ctx, addr_z, 0);
 
-		txs=s>>(6+JX2_EDGEWALK_STSUB);
-		txt=t>>(6+JX2_EDGEWALK_STSUB);
+		if(isrcpz)
+		{
+			z_p=(1LL<<(2*(16+JX2_EDGEWALK_ZSUB)))/z;
+		}else
+		{
+			z_p=z;
+		}
+
+		if(ispersp)
+		{
+			s_p=((s64)s*z_p)>>(16+JX2_EDGEWALK_ZSUB);
+			t_p=((s64)t*z_p)>>(16+JX2_EDGEWALK_ZSUB);
+		}else
+		{
+			s_p=s;
+			t_p=t;
+		}
+
+		txs=s_p>>(6+JX2_EDGEWALK_STSUB);
+		txt=t_p>>(6+JX2_EDGEWALK_STSUB);
 		txi=	(BJX2_PMORT_U16(txt)<<1)|
 				(BJX2_PMORT_U16(txs)   );
 		txi&=txm;
@@ -205,6 +258,32 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 
 		rgb_c=tkra_rgbupck64(blk_c);
 		rgb_u=TKRA_CachedBlkUtx2(blk_u, txi);
+
+		if(islin)
+		{
+			txi=	(BJX2_PMORT_U16(txt+0)<<1)|
+					(BJX2_PMORT_U16(txs+1)   );
+			txi&=txm;
+			addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
+			blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+
+			rgb_bs=TKRA_CachedBlkUtx2(blk_u, txi);
+
+			txi=	(BJX2_PMORT_U16(txt+1)<<1)|
+					(BJX2_PMORT_U16(txs+0)   );
+			txi&=txm;
+			addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
+			blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+
+			rgb_bd=TKRA_CachedBlkUtx2(blk_u, txi);
+			
+			rgb_bs=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_u, rgb_bs,
+				(s_p>>(2+JX2_EDGEWALK_STSUB))&15);
+			rgb_bd=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_u, rgb_bd,
+				(t_p>>(2+JX2_EDGEWALK_STSUB))&15);
+			rgb_u=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_bs, rgb_bd, 8);
+		}
+
 		rgb_m=(((u64)a)<<48)|(((u64)r)<<32)|(((u64)g)<<16)|(((u64)b)<<0);
 
 //		rgb_u=0xFFFF7FFF7FFF7FFFULL;
@@ -286,7 +365,22 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 
 		z2=z>>JX2_EDGEWALK_ZSUB;
 //		z2=z;
-		if((z2<=blk_z) || !ztest)
+
+		switch(zfn)
+		{
+			case 0: zpn=(z2< blk_z); break;
+			case 1: zpn=(z2>=blk_z); break;
+			case 2: zpn=(z2<=blk_z); break;
+			case 3: zpn=(z2> blk_z); break;
+			case 4: zpn=(z2==blk_z); break;
+			case 5: zpn=(z2!=blk_z); break;
+			case 6: zpn=1; break;
+			case 7: zpn=0; break;
+			default: zpn=1; break;
+		}
+
+//		if((z2<=blk_z) || !ztest)
+		if(zpn || !ztest)
 		{
 			if(((rgb_bl>>63)&1) || !atest)
 			{
@@ -367,8 +461,28 @@ s32 BJX2_ValExtractSx(u64 ref, int ofs, int width)
 
 int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 {
+	int i, j, k, stadj;
 	if(ctx->status)
 		return;
+
+	if(!jx2_edgewalk_rcptab[0])
+	{
+		jx2_edgewalk_rcptab[0]=0xFFFF;
+		jx2_edgewalk_rcptab[1]=0xFFFF;
+		
+		for(i=2; i<64; i++)
+		{
+			jx2_edgewalk_rcptab[i]=0x10000/i;
+		}
+
+		for(i=64; i<1024; i++)
+		{
+			j=i; k=0;
+			while(j>=64)
+				{ j=j>>1; k++; }
+			jx2_edgewalk_rcptab[i]=jx2_edgewalk_rcptab[32+(j&31)]>>k;
+		}
+	}
 
 	if(bjx2_edgewalk_regs[0]&2)
 	{
@@ -406,13 +520,18 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 
 		if((s32)(bjx2_edgewalk_var_steplfx^(bjx2_edgewalk_regs[ 6]>>32))<0)
 		{
-			bjx2_edgewalk_var_steplfx=0;
+			printf("EdgeWalk: X Step Range Issue\n");
+//			bjx2_edgewalk_var_steplfx=0;
 		}
 
 		if((s32)(bjx2_edgewalk_var_steprtx^(bjx2_edgewalk_regs[ 7]>>32))<0)
 		{
-			bjx2_edgewalk_var_steprtx=0;
+			printf("EdgeWalk: X Step Range Issue\n");
+//			bjx2_edgewalk_var_steprtx=0;
 		}
+		
+//		bjx2_edgewalk_var_steplfx<<=1;
+//		bjx2_edgewalk_var_steprtx<<=1;
 
 //		bjx2_edgewalk_var_steplfx=0;
 //		bjx2_edgewalk_var_steprtx=0;
@@ -442,31 +561,45 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 //			(32-(16+JX2_EDGEWALK_ZSUB));
 
 #if 1
+		stadj=0;
+		if(bjx2_edgewalk_regs[0]&(1<<20))
+		{
+			stadj=4;
+		}
+
 		bjx2_edgewalk_var_scanlfs=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[ 8],
-				10-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				10-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 		bjx2_edgewalk_var_scanrts=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[ 9],
-				10-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				10-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 		bjx2_edgewalk_var_steplfs=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[10],
-				10-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				10-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 		bjx2_edgewalk_var_steprts=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[11],
-				10-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				10-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 
 		bjx2_edgewalk_var_scanlft=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[ 8],
-				42-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				42-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 		bjx2_edgewalk_var_scanrtt=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[ 9],
-				42-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				42-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 		bjx2_edgewalk_var_steplft=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[10],
-				42-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				42-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 		bjx2_edgewalk_var_steprtt=
 			BJX2_ValExtractSx(bjx2_edgewalk_regs[11],
-				42-JX2_EDGEWALK_STSUB, 16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
+				42-JX2_EDGEWALK_STSUB-stadj,
+				16+JX2_EDGEWALK_STSUB+JX2_EDGEWALK_STHI);
 #endif
 
 		bjx2_edgewalk_var_scanlfa=(bjx2_edgewalk_regs[12]>>48)&0xFFFF;

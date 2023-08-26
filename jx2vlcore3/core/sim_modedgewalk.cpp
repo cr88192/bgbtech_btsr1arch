@@ -9,6 +9,10 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 
+typedef int16_t s16;
+typedef int32_t s32;
+typedef int64_t s64;
+
 #include "bt1h_targa.c"
 
 VModEdgeWalk *top = new VModEdgeWalk;
@@ -27,10 +31,10 @@ struct ew_request_s ew_reqarr[] = {
 
 {	0x00000000014000A1ULL,	//00: Control
 	0x0000014001400000ULL,	//01: Ystrt, Yend
-	0x0000400000020000ULL,	//02: Cbuf, Zbuf
+	0x0004000000020000ULL,	//02: Cbuf, Zbuf
 	0x0000000000010000ULL,	//03: Texture
-	0x00000000FFFF0000ULL,	//04: Base Left  Z/X
-	0x01400000FFFF0000ULL,	//05: Base Right Z/X
+	0x000000007FFF0000ULL,	//04: Base Left  Z/X
+	0x014000007FFF0000ULL,	//05: Base Right Z/X
 	0x0000000000000000ULL,	//06: Step Left  Z/X
 	0x0000000000000000ULL,	//07: Step Right Z/X
 	0x0000000000000000ULL,	//08: Base Left  S/T
@@ -45,21 +49,19 @@ struct ew_request_s ew_reqarr[] = {
 },
 
 
-//{	0x000000000140C8A1ULL,	//00: Control
-//{	0x00000000014067B1ULL,	//00: Control
-//{	0x00000000014067A1ULL,	//00: Control
-{	0x00000000000167A1ULL,	//00: Control
+//{	0x00000000000167E1ULL,	//00: Control
+{	0x00000000001167E1ULL,	//00: Control
 	0x0000014000960032ULL,	//01: Ystrt, Yend
-	0x0000400000020000ULL,	//02: Cbuf, Zbuf
+	0x0004000000020000ULL,	//02: Cbuf, Zbuf
 	0x00A0000000010020ULL,	//03: Texture
-	0x00780000FFFF0000ULL,	//04: Base Left  Z/X
-	0x00C80000FFFF0000ULL,	//05: Base Right Z/X
+	0x007800001FFF0000ULL,	//04: Base Left  Z/X
+	0x00C800001FFF0000ULL,	//05: Base Right Z/X
 	0xFFFF000000000000ULL,	//06: Step Left  Z/X
 	0x0001000000000000ULL,	//07: Step Right Z/X
 	0x0000000000000000ULL,	//08: Base Left  S/T
-	0x0000000000800000ULL,	//09: Base Right S/T
-	0x0002000000000000ULL,	//0A: Step Left  S/T
-	0x0002000000000000ULL,	//0B: Step Right S/T
+	0x0000000000200000ULL,	//09: Base Right S/T
+	0x0000500000000000ULL,	//0A: Step Left  S/T
+	0x0000500000000000ULL,	//0B: Step Right S/T
 	0xFF0000FFFF0000FFULL,	//0C: Base Left  RGBA
 	0xFF00FF0000FFFF00ULL,	//0D: Base Right RGBA
 	0x00000146FEB90146ULL,	//0E: Step Left  RGBA
@@ -67,8 +69,51 @@ struct ew_request_s ew_reqarr[] = {
 	0x00C8014000000000ULL	//10: Clip X0/Y0/X1/Y1
 },
 
+{	0x00000000000167E1ULL,	//00: Control
+	0x0000014000960032ULL,	//01: Ystrt, Yend
+	0x0004000000020000ULL,	//02: Cbuf, Zbuf
+	0x00A0000000010020ULL,	//03: Texture
+	0x006000003FFF0000ULL,	//04: Base Left  Z/X
+	0x00E000003FFF0000ULL,	//05: Base Right Z/X
+	0xFFFF000000000000ULL,	//06: Step Left  Z/X
+	0x0001000000000000ULL,	//07: Step Right Z/X
+	0x0000000000000000ULL,	//08: Base Left  S/T
+	0x0000000000200000ULL,	//09: Base Right S/T
+	0x0000500000000000ULL,	//0A: Step Left  S/T
+	0x0000500000000000ULL,	//0B: Step Right S/T
+	0xFF00FF0000FFFF00ULL,	//0D: Base Right RGBA
+	0xFF0000FFFF0000FFULL,	//0C: Base Left  RGBA
+	0x0000FEB90146FEB9ULL,	//0F: Step Right RGBA
+	0x00000146FEB90146ULL,	//0E: Step Left  RGBA
+	0x00C8014000000000ULL	//10: Clip X0/Y0/X1/Y1
+},
+
 {0,0,0,0}  //End
 };
+
+u64 scale_st_rcp_z(u64 st, u16 z)
+{
+	u64 st1;
+	s32 s0, t0, s1, t1, s2, t2;
+	s32 z_rcp;
+	
+	if(z==0)
+		return(st);
+	
+	s0=(s32)(st>> 0);
+	t0=(s32)(st>>32);
+	
+	z_rcp=0x100000000LL/z;
+	
+	s1=(((s64)s0)*z_rcp)>>20;
+	t1=(((s64)t0)*z_rcp)>>20;
+	
+	st1=(((u64)((u32)t1))<<32)|((u32)s1);
+	
+//	printf("scale_st_rcp_z")
+	
+	return(st1);
+}
 
 static int addr_rgbbuf=0x020000;
 static int addr_zbuf=0x040000;
@@ -109,7 +154,8 @@ void update_bus()
 
 	if(top->dsOpm&8)
 	{
-		top->dsDataIn=dram_buf[ta];
+		top->dsDataInLo=dram_buf[ta+0];
+		top->dsDataInHi=dram_buf[ta+1];
 		top->dsOK=1;
 
 		if(inh>0)
@@ -122,7 +168,9 @@ void update_bus()
 			printf("RD A=%08X D=%016llX\n", ta*8, dram_buf[ta]);
 	}else if(top->dsOpm&16)
 	{
-		dram_buf[ta]=top->dsDataOut;
+		dram_buf[ta]=top->dsDataOutLo;
+		if((top->dsOpm&7)==7)
+			dram_buf[ta+1]=top->dsDataOutHi;
 		top->dsOK=1;
 
 		if(inh>0)
@@ -425,6 +473,15 @@ int main(int argc, char **argv, char **env)
 			top->busAddr=rq_addr;
 			top->busOpm=rq_opm;
 			top->busDataIn=ew_reqarr[rn].parm[wn];
+			
+			if((wn>=0x08) && (wn<=0x0B) &&
+				ew_reqarr[rn].parm[0]&(1<<20))
+			{
+				top->busDataIn=scale_st_rcp_z(
+					ew_reqarr[rn].parm[wn],
+					(signed short)(ew_reqarr[rn].parm[4]>>16));
+			}
+			
 			if(wn>=18)
 			{
 				rq_addr=0xC000+(0*8);

@@ -438,6 +438,14 @@ int stat_lbl_disp20;
 int stat_lbl_disp24;
 int stat_lbl_disp33;
 
+int stat_rlbl_tot;
+int stat_rlbl_disp8;
+int stat_rlbl_disp12;
+int stat_rlbl_disp16;
+int stat_rlbl_disp20;
+int stat_rlbl_disp24;
+int stat_rlbl_disp33;
+
 int ofs_curbdl;
 
 int sim_voffs;		//est' offset between real PC and sim PC

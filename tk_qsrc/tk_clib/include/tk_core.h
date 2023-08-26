@@ -229,6 +229,8 @@ typedef u64 tk_kptr;
 #define TKMM_MCAT_USR_RW	3
 #define TKMM_MCAT_USR_RWX	4
 
+#define TKMM_MCAT_PHYSDFL	6
+
 #define TKMM_PROT_NONE		0x0000
 #define TKMM_PROT_READ		0x0001
 #define TKMM_PROT_WRITE		0x0002
@@ -251,6 +253,8 @@ typedef u64 tk_kptr;
 #define TKMM_MAP_NORESERVE	0x0020
 #define TKMM_MAP_32BIT		0x0040
 #define TKMM_MAP_DIRECT		0x0080
+
+#define TKMM_MAP_PHYSICAL	0x0100
 
 // #define INITRD_ADDR	0x1003F010
 // #define INITRD_SIZE	0x1003F014

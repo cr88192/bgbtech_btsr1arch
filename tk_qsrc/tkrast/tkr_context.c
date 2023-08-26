@@ -58,7 +58,8 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 //	scr_memsz += (xs+2)*(ys+4)*sizeof(byte);
 	scr_memsz += (frsz+ofs_pad)*sizeof(byte);
 
-	ptr=tkra_malloc(scr_memsz+31);
+//	ptr=tkra_malloc(scr_memsz+31);
+	ptr=tkra_malloc_phys(scr_memsz+31);
 	ctx->screen_mem=ptr;
 	
 	k=(nlint)ptr;

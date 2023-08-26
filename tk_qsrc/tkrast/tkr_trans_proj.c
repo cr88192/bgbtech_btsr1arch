@@ -1020,7 +1020,7 @@ int TKRA_TransformProjectQuad(
 	float			w0, w1, w2, skew;
 	int				i0, i1, i2, tfl;
 	int				ecfl, lim;
-	byte			wasfrag, nosubdiv, isinit, inosubdiv;
+	byte			wasfrag, nosubdiv, isinit, inosubdiv, nopersp;
 	
 //	return(0);
 	
@@ -1057,6 +1057,8 @@ int TKRA_TransformProjectQuad(
 //		v2stk[0].rgb=0xFFFFFFFFU;
 //		v3stk[0].rgb=0xFFFFFFFFU;
 //	}
+
+	nopersp=TKRA_WalkCheckNoPersp(ctx);
 
 	v0=iv0;		v1=iv1;
 	v2=iv2;		v3=iv3;
@@ -1105,6 +1107,9 @@ int TKRA_TransformProjectQuad(
 			
 	if(ctx->stateflag1&TKRA_STFL1_NOSUBDIV)
 		inosubdiv=1;
+
+//	if(!nopersp)
+//		inosubdiv=1;
 
 	while((vstkpos>0) && (lim>0))
 	{
@@ -1300,6 +1305,12 @@ int TKRA_TransformProjectQuad(
 
 #if 1
 		f4=TKRA_PARAM_QUADSUBDIV_DFL;
+
+		if(!nopersp)
+		{
+//			f4=f4*4;
+			f4=f4*6;
+		}
 
 //		if(ecfl&4)
 		if(ecfl&6)

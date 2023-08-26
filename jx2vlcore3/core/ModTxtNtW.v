@@ -158,8 +158,10 @@ ModTxtMemW fbmem(clock, reset,
 
 `ifdef jx2_mem_l2vram
 
-wire[63:0]	edsDataIn;
-wire[63:0]	edsDataOut;
+wire[63:0]	edsDataInLo;
+wire[63:0]	edsDataInHi;
+wire[63:0]	edsDataOutLo;
+wire[63:0]	edsDataOutHi;
 wire[31:0]	edsAddr;
 wire[4:0]	edsOpm;
 wire[1:0]	edsOK;
@@ -184,7 +186,8 @@ RbiMemVramA		fbmem(
 	palIndex,		palData,
 	ctrlRegVal,
 
-	edsDataIn,		edsDataOut,
+	edsDataInLo,	edsDataInHi,
+	edsDataOutLo,	edsDataOutHi,
 	edsAddr,		edsOpm,
 	edsOK,
 
@@ -197,9 +200,13 @@ RbiMemVramA		fbmem(
 	);
 
 `ifdef jx2_enable_edgewalk
+
+// assign	edsDataOutHi = 0;
+
 ModEdgeWalk edgewalk(
 	clock,			reset,
-	edsDataIn,		edsDataOut,
+	edsDataInLo,	edsDataInHi,
+	edsDataOutLo,	edsDataOutHi,
 	edsAddr,		edsOpm,
 	edsOK,
 
@@ -209,7 +216,8 @@ ModEdgeWalk edgewalk(
 	);
 `else
 
-assign	edsDataOut = 0;
+assign	edsDataOutLo = 0;
+assign	edsDataOutHi = 0;
 assign	edsAddr = 0;
 assign	edsOpm = 0;
 

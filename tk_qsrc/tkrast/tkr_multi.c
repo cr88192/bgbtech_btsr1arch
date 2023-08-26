@@ -3,6 +3,10 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef __BJX2__
+#include <tk_core.h>
+#endif
+
 #include "tkr_info.h"
 #include "tkr_glconst.h"
 
