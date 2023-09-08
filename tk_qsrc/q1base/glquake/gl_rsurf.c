@@ -1757,7 +1757,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	int			luma, luma1;
 	qboolean	visible;
 	float		*vec, *vec1;
-	float		s, t, f;
+	float		s, t, f, g;
 	glpoly_t	*poly;
 	qgl_hfloat	*pv;
 
@@ -1782,6 +1782,41 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	if((fa->minmaxs[4]-fa->minmaxs[1])<1) k++;
 	if((fa->minmaxs[5]-fa->minmaxs[2])<1) k++;
 	if(k>1)
+	{
+		fa->polys = NULL;
+		return;
+	}
+#endif
+
+#if 1
+	g=0;
+	for (i=0 ; i<lnumverts ; i++)
+	{
+		lindex = currentmodel->surfedges[fa->firstedge + i];
+
+		if (lindex > 0)
+		{
+			r_pedge = &pedges[lindex];
+			vec = r_pcurrentvertbase[r_pedge->v[0]].position;
+			vec1 = r_pcurrentvertbase[r_pedge->v[1]].position;
+			luma = r_pedge->luma[0];
+			luma1 = r_pedge->luma[1];
+		}
+		else
+		{
+			r_pedge = &pedges[-lindex];
+			vec = r_pcurrentvertbase[r_pedge->v[1]].position;
+			vec1 = r_pcurrentvertbase[r_pedge->v[0]].position;
+			luma = r_pedge->luma[1];
+			luma1 = r_pedge->luma[0];
+		}
+		
+		f=VectorDistance(vec, vec1);
+		
+		g+=f;
+	}
+	
+	if(g<(9*4))
 	{
 		fa->polys = NULL;
 		return;

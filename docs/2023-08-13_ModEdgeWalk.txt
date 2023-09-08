@@ -12,8 +12,8 @@ Framebuffer and texture buffers are to be located in physically-mapped 32-bit ad
 
 Will walk spans in terms of a left and right pixel offsets.
 
-Base Address:
-* F000C000
+MMIO Base Address:
+* FFFF_F000C000
 
 Control Regs:
 	00: Main Control/Status
@@ -47,9 +47,16 @@ Control Regs:
 	0F: Step Right B,G,R,A
 
 	10: X/Y Clip   X0,Y0,X1,Y1
+	11: Stencil Control
 
+
+=== Main Control Register ===
 
 Control Reg 00:
+*	(63:32): Reserved
+*	(31:24): Reserved
+*	(   23): Use 32-bit RGBA/ZBuffer (Reserved)
+*	(   22): Enable Stencil Buffer
 *	(   21): Reciprocal Z
 *	(   20): Perspective Correct S/T
 *	(19:17): ZFunc
@@ -60,10 +67,11 @@ Control Reg 00:
 *	(    6): ZTest
 *	(    5): ClrMask (Color Buffer Store)
 *	(    4): AlphaTest (Skip store based on Alpha)
-*	(    3): -
+*	(    3): Reset / Command Flag
 *	(    2): Status: Still Working
 *	(    1): Probe (Always Read as 0)
 *	(    0): Busy / Initiate
+
 
 Raster Stride is given in terms of 16-bit pixels.
 
@@ -88,6 +96,12 @@ The Still Working bit will indicate if the module is still working in the backgr
 The Probe bit will always be read as 0, but a write with Probe Set may set or clear other bits to indicate support for optional features.
 
 If Probe is read as non-zero, or the bits for core features are cleared, the module may be assumed to be disabled or non-functional.
+
+If Command/Flag is set, this will not be a normal drawing request.
+* Blend Mode will indicate command.
+* 00: Reset
+* 01: Invalidate Texture Cache
+** May be used if one or more of the active textures was modified.
 
 Blend Op:
 * 0: Special/Reserved
@@ -119,6 +133,18 @@ ZFunc:
 
 If ZTest is set, ZFunc compares the interpolated Z against the value from the Z buffer.
 
+If Stencil Test is set, then stencil tests may be performed as defined in the Stencil Control register, otherwise stencil operations will be ignored.
+
+
+=== Screen ===
+
+Screen/ZBuffer:
+* Screen buffer will be in RGB555A format
+* (Reserved) Screen buffer in 32-bit mode will be RGBA32
+* ZBuffer will be in S.0.15 (No Stencil) or S.0.12.T4 (Stencil)
+* (Reserved) ZBuffer in 32-bit mode will be S.0.23.T8
+* Screen and ZBuffer will require a 64-byte alignment.
+
 Vars (Affine Mode):
 * X will be expressed as S.15.16 fixed point.
 * S, T will be expressed as S.15.16 fixed point.
@@ -132,6 +158,12 @@ Reciprocal Z
 * Z will be expressed as S.8.23 fixed point.
 ** Value will be expressed as 1/Z rather than Z.
 * Z will be interpolated as a reciprocal and then inverted per-pixel.
+
+
+=== Texture ===
+
+Texture Base:
+* Texture will require a 16-byte alignment.
 
 
 S/T coordinates will be expressed in linear texels.
@@ -154,5 +186,37 @@ Texture Block Mode:
 * 011: UTX3 (HDR), Reserved
 * 100: Resv
 * 101: RGB555A
-* 110: RGBA32 (RGBA8888), Reserved
+* 110: RGBA32 (RGBA8888)
 * 111: Resv
+
+
+=== Stencil ===
+
+Control Reg 11:
+*	(31:24): Stencil Mask
+*	(23:16): Stencil Ref
+*   (15:13): Stencil Op Zpass (Stencil and Z Pass)
+*   (12:10): Stencil Op Zfail (Stencil Pass, Z Fail)
+*   ( 9: 7): Stencil Op Sfail (Stencil Fail)
+*   ( 6: 4): Stencil Func
+*   ( 3: 0): Reserved
+
+Stencil Func:
+* 0: LESS
+* 1: GEQUAL
+* 2: LEQUAL
+* 3: GREATER
+* 4: EQUAL
+* 5: NOTEQUAL
+* 6: ALWAYS
+* 7: NEVER
+
+Stencil Op:
+* 0: KEEP
+* 1: ZERO
+* 2: INVERT (Invert Dest Stencil Value)
+* 3: REPLACE (Replace Dest Stencil with Ref)
+* 4: INCR_CLAMP (Clamp to 0xFF)
+* 5: DECR_CLAMP (Clamp to 0x00)
+* 6: INCR_WRAP
+* 7: DECR_WRAP

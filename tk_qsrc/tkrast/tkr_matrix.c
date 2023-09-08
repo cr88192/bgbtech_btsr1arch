@@ -51,11 +51,13 @@ float TKRA_Vec4F_DotProduct(float *a, float *b)
 float TKRA_Vec3F_Normalize(float *a, float *b)
 {
 	float f, g;
-	f=sqrt(TKRA_Vec3F_DotProduct(a, a));
+//	f=sqrt(TKRA_Vec3F_DotProduct(a, a));
+	f=_sqrt_fast(TKRA_Vec3F_DotProduct(a, a));
 	g=(f==0)?1:f;
-	b[0]=a[0]/g;
-	b[1]=a[1]/g;
-	b[2]=a[2]/g;
+	g=1.0/g;
+	b[0]=a[0]*g;
+	b[1]=a[1]*g;
+	b[2]=a[2]*g;
 	return(f);
 }
 
@@ -63,12 +65,14 @@ float TKRA_Vec4F_Normalize(float *a, float *b)
 {
 	float f, g;
 
-	f=sqrt(TKRA_Vec4F_DotProduct(a, a));
+//	f=sqrt(TKRA_Vec4F_DotProduct(a, a));
+	f=_sqrt_fast(TKRA_Vec4F_DotProduct(a, a));
 	g=(f==0)?1:f;
-	b[0]=a[0]/g;
-	b[1]=a[1]/g;
-	b[2]=a[2]/g;
-	b[3]=a[3]/g;
+	g=1.0/g;
+	b[0]=a[0]*g;
+	b[1]=a[1]*g;
+	b[2]=a[2]*g;
+	b[3]=a[3]*g;
 	return(f);
 }
 
@@ -79,8 +83,8 @@ void TKRA_Mat4F_AxisTo4MatrixT(float *a, float th, float *b)
 	float sa, ca;
 	int i;
 
-	sa=sin(th/2);
-	ca=cos(th/2);
+	sa=_sin_fast(th/2);
+	ca=_cos_fast(th/2);
 	TKRA_Vec4F_Normalize(a, v);
 
 	for(i=0; i<16; i++)b[i]=0;

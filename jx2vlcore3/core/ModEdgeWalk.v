@@ -67,7 +67,9 @@ RGBA: Logical 8.8 or 0.15 (Unit Range)
 
 `include "ExBtcUtx1.v"
 
+`ifdef jx2_edgewalk_rcpz
 `include "ExLuRcpFix32A_8p24.v"
+`endif
 
 module ModEdgeWalk(
 	clock, reset,
@@ -169,25 +171,30 @@ reg[63:0]		tRegCtrl15;
 reg[63:0]		tNxtRegCtrl15;
 reg[63:0]		tRegCtrl16;
 reg[63:0]		tNxtRegCtrl16;
+reg[63:0]		tRegCtrl17;
+reg[63:0]		tNxtRegCtrl17;
 
 
-reg[63:0]		tFifoCtrl0[15:0];
-reg[63:0]		tFifoCtrl1[15:0];
-reg[63:0]		tFifoCtrl2[15:0];
-reg[63:0]		tFifoCtrl3[15:0];
-reg[63:0]		tFifoCtrl4[15:0];
-reg[63:0]		tFifoCtrl5[15:0];
-reg[63:0]		tFifoCtrl6[15:0];
-reg[63:0]		tFifoCtrl7[15:0];
-reg[63:0]		tFifoCtrl8[15:0];
-reg[63:0]		tFifoCtrl9[15:0];
-reg[63:0]		tFifoCtrl10[15:0];
-reg[63:0]		tFifoCtrl11[15:0];
-reg[63:0]		tFifoCtrl12[15:0];
-reg[63:0]		tFifoCtrl13[15:0];
-reg[63:0]		tFifoCtrl14[15:0];
-reg[63:0]		tFifoCtrl15[15:0];
-reg[63:0]		tFifoCtrl16[15:0];
+reg[63:0]		tFifoCtrl0[31:0];
+reg[63:0]		tFifoCtrl1[31:0];
+reg[63:0]		tFifoCtrl2[31:0];
+reg[63:0]		tFifoCtrl3[31:0];
+reg[63:0]		tFifoCtrl4[31:0];
+reg[63:0]		tFifoCtrl5[31:0];
+reg[63:0]		tFifoCtrl6[31:0];
+reg[63:0]		tFifoCtrl7[31:0];
+reg[63:0]		tFifoCtrl8[31:0];
+reg[63:0]		tFifoCtrl9[31:0];
+reg[63:0]		tFifoCtrl10[31:0];
+reg[63:0]		tFifoCtrl11[31:0];
+reg[63:0]		tFifoCtrl12[31:0];
+reg[63:0]		tFifoCtrl13[31:0];
+reg[63:0]		tFifoCtrl14[31:0];
+reg[63:0]		tFifoCtrl15[31:0];
+reg[63:0]		tFifoCtrl16[31:0];
+reg[63:0]		tFifoCtrl17[31:0];
+
+reg[63:0]		tStFifoCtrl0L;
 
 reg[63:0]		tStFifoCtrl0;
 reg[63:0]		tStFifoCtrl1;
@@ -206,6 +213,7 @@ reg[63:0]		tStFifoCtrl13;
 reg[63:0]		tStFifoCtrl14;
 reg[63:0]		tStFifoCtrl15;
 reg[63:0]		tStFifoCtrl16;
+reg[63:0]		tStFifoCtrl17;
 
 reg[63:0]		tNxtFifoCtrl0;
 reg[63:0]		tNxtFifoCtrl1;
@@ -224,11 +232,18 @@ reg[63:0]		tNxtFifoCtrl13;
 reg[63:0]		tNxtFifoCtrl14;
 reg[63:0]		tNxtFifoCtrl15;
 reg[63:0]		tNxtFifoCtrl16;
+reg[63:0]		tNxtFifoCtrl17;
 
-reg[3:0]		tFifoStRov;
-reg[3:0]		tFifoRqRov;
-reg[3:0]		tNxtFifoStRov;
-reg[3:0]		tNxtFifoRqRov;
+reg[15:0]		tStFifoStatus0;
+reg[15:0]		tNxtFifoStatus0;
+
+reg[4:0]		tFifoStRov;
+reg[4:0]		tFifoRqRov;
+reg[4:0]		tNxtFifoStRov;
+reg[4:0]		tNxtFifoRqRov;
+
+reg[4:0]		tFifoStRovP1;
+reg[4:0]		tFifoStRovP2;
 
 wire			tCtrlZTest;
 wire			tCtrlZMask;
@@ -240,6 +255,9 @@ wire[2:0]		tCtrlZFcn;
 
 wire			tCtrlPerspZ;
 wire			tCtrlRecipZ;
+
+wire			tCtrlFbufDWord;
+wire			tCtrlUseStencil;
 
 assign		tCtrlZTest		= tRegCtrl0[6];
 // assign		tCtrlZTest		= 1'b0;
@@ -254,6 +272,9 @@ assign		tCtrlZFcn		= tRegCtrl0[19:17];
 assign		tCtrlPerspZ		= tRegCtrl0[20];
 assign		tCtrlRecipZ		= tRegCtrl0[21];
 
+assign		tCtrlFbufDWord	= tRegCtrl0[23];
+assign		tCtrlUseStencil	= tRegCtrl0[22];
+
 wire[11:0]		tClipX0;
 wire[11:0]		tClipY0;
 wire[11:0]		tClipX1;
@@ -263,6 +284,27 @@ assign		tClipX0	= tRegCtrl16[11: 0];
 assign		tClipY0	= tRegCtrl16[27:16];
 assign		tClipX1	= tRegCtrl16[43:32];
 assign		tClipY1	= tRegCtrl16[59:48];
+
+wire[2:0]		tCtrlTexMode;
+assign		tCtrlTexMode	= tRegCtrl3[59:57];
+
+wire[2:0]		tStencilFunc;
+wire[2:0]		tStencilOpSfail;
+wire[2:0]		tStencilOpZfail;
+wire[2:0]		tStencilOpZpass;
+
+wire[7:0]		tStencilRef;
+wire[7:0]		tStencilMask;
+
+assign		tStencilFunc	= tRegCtrl16[ 6: 4];
+assign		tStencilOpSfail	= tRegCtrl16[ 9: 7];
+assign		tStencilOpZfail	= tRegCtrl16[12:10];
+assign		tStencilOpZpass	= tRegCtrl16[15:13];
+
+assign		tStencilRef		= tRegCtrl16[23:16];
+assign		tStencilMask	= tRegCtrl16[31:24];
+
+reg[2:0]		tStencilOp;
 
 
 // reg[63:0]		tMemBlockFbRgb;
@@ -277,10 +319,10 @@ reg[15:0]		tMemBlockFbZIx;
 reg[31:0]		tMemBlockFbZAddr;
 reg				tMemBlockFbZDirty;
 
-reg[63:0]		tMemBlockUtxA;
-reg[63:0]		tMemBlockUtxB;
-reg[63:0]		tMemBlockUtxC;
-reg[63:0]		tMemBlockUtxD;
+reg[127:0]		tMemBlockUtxA;
+reg[127:0]		tMemBlockUtxB;
+reg[127:0]		tMemBlockUtxC;
+reg[127:0]		tMemBlockUtxD;
 
 reg[15:0]		tMemBlockUtxIxA;
 reg[15:0]		tMemBlockUtxIxB;
@@ -298,6 +340,11 @@ reg[15:0]		tReqBlockUtxIxB;
 reg[15:0]		tReqBlockUtxIxC;
 reg[15:0]		tReqBlockUtxIxD;
 
+reg				tReqBlockUtxIxlA;
+reg				tReqBlockUtxIxlB;
+reg				tReqBlockUtxIxlC;
+reg				tReqBlockUtxIxlD;
+
 reg[31:0]		tReqBlockFbRgbAddr;
 reg[31:0]		tReqBlockFbZAddr;
 reg[31:0]		tReqBlockUtxAddr;
@@ -312,22 +359,36 @@ reg[127:0]		tNxtMemBlockFbZ;
 reg[15:0]		tNxtMemBlockFbZIx;
 reg[31:0]		tNxtMemBlockFbZAddr;
 
-reg[63:0]		tArrUtxData[255:0];
+// `define jx2_edgewalk_utxarr_256
+`define jx2_edgewalk_utxarr_1024
+
+`ifdef jx2_edgewalk_utxarr_256
+reg[127:0]		tArrUtxData[255:0];
 reg[31:0]		tArrUtxAddr[255:0];
-reg[63:0]		tLdBlkUtxData;
-reg[31:0]		tLdBlkUtxAddr;
 reg[7:0]		tLdBlkUtxIx;
 reg[7:0]		tNxtLdBlkUtxIx;
-
-reg[63:0]		tStBlkUtxData;
-reg[31:0]		tStBlkUtxAddr;
 reg[7:0]		tStBlkUtxIx;
+`endif
+
+`ifdef jx2_edgewalk_utxarr_1024
+reg[127:0]		tArrUtxData[1023:0];
+reg[31:0]		tArrUtxAddr[1023:0];
+reg[9:0]		tLdBlkUtxIx;
+reg[9:0]		tNxtLdBlkUtxIx;
+reg[9:0]		tStBlkUtxIx;
+`endif
+
+reg[127:0]		tLdBlkUtxData;
+reg[31:0]		tLdBlkUtxAddr;
+
+reg[127:0]		tStBlkUtxData;
+reg[31:0]		tStBlkUtxAddr;
 reg				tDoStBlkUtx;
 
-reg[63:0]		tNxtMemBlockUtxA;
-reg[63:0]		tNxtMemBlockUtxB;
-reg[63:0]		tNxtMemBlockUtxC;
-reg[63:0]		tNxtMemBlockUtxD;
+reg[127:0]		tNxtMemBlockUtxA;
+reg[127:0]		tNxtMemBlockUtxB;
+reg[127:0]		tNxtMemBlockUtxC;
+reg[127:0]		tNxtMemBlockUtxD;
 
 reg[15:0]		tNxtMemBlockUtxIxA;
 reg[15:0]		tNxtMemBlockUtxIxB;
@@ -347,7 +408,15 @@ reg[15:0]		tNxtReqBlockUtxIxB;
 reg[15:0]		tNxtReqBlockUtxIxC;
 reg[15:0]		tNxtReqBlockUtxIxD;
 
+reg				tNxtReqBlockUtxIxlA;
+reg				tNxtReqBlockUtxIxlB;
+reg				tNxtReqBlockUtxIxlC;
+reg				tNxtReqBlockUtxIxlD;
+
 reg				tReqBlockUtxReady;
+
+reg[3:0]		tUtxFlushRov;
+reg[3:0]		tNxtUtxFlushRov;
 
 
 reg				tNxtMemBlockFbRgbDirty;
@@ -464,6 +533,8 @@ reg[31:0]		tScanDiffG;
 reg[31:0]		tScanDiffB;
 reg[31:0]		tScanDiffA;
 
+reg[31:0]		tScanDiffXp1;
+
 reg[31:0]		tScanMulDiffZ;
 reg[31:0]		tScanMulDiffS;
 reg[31:0]		tScanMulDiffT;
@@ -487,6 +558,9 @@ reg[15:0]		tScanRcp1X;
 reg[31:0]		tScanRcpX;
 // reg[3:0]		tScanRcpiX;
 reg[4:0]		tScanRcpiX;
+
+reg[31:0]		tScanRcpXL;
+reg[31:0]		tScanRcpX2;
 
 reg[19:0]		tScanStepPixZ;
 reg[19:0]		tNxtScanStepPixZ;
@@ -567,6 +641,9 @@ reg				tDoScanStep;
 reg				tDoPixStep;
 reg				tDoPixStepL;
 
+reg[3:0]		tScanStepInh;
+reg[3:0]		tNxtScanStepInh;
+
 reg[3:0]		tPixStepInh;
 reg[3:0]		tNxtPixStepInh;
 
@@ -583,45 +660,72 @@ reg[63:0]		tPixUtxRgbA;
 reg[63:0]		tPixUtxRgbB;
 reg[63:0]		tPixUtxRgbC;
 
-wire[63:0]		wMemBlockUtxA =
+reg[5:0]		tTexUIxt;
+
+always @*
+begin
+	case(tCtrlTexMode)
+		3'b000: tTexUIxt = JX2_UCIX_CONV2_BLKUTX2;
+		3'b001: tTexUIxt = JX2_UCIX_CONV_RGB30APCK64F;
+		3'b010: tTexUIxt = JX2_UCIX_CONV2_BLKUTX3L;
+		3'b011: tTexUIxt = JX2_UCIX_CONV2_BLKUTX3H;
+		3'b100: tTexUIxt = JX2_UCIX_CONV2_BLKUTX2;
+		3'b101: tTexUIxt = JX2_UCIX_CONV2_BLKRGB15A;
+		3'b110: tTexUIxt = JX2_UCIX_CONV2_BLKRGBA32;
+		3'b111: tTexUIxt = JX2_UCIX_CONV2_BLKUTX2;
+	endcase
+end
+
+wire[127:0]		wMemBlockUtxA =
 	(tReqBlockUtxIxA==tMemBlockUtxIxB) ? tMemBlockUtxB :
 	(tReqBlockUtxIxA==tMemBlockUtxIxC) ? tMemBlockUtxC :
 	(tReqBlockUtxIxA==tMemBlockUtxIxD) ? tMemBlockUtxD :
 	tMemBlockUtxA;
-wire[63:0]		wMemBlockUtxB =
+wire[127:0]		wMemBlockUtxB =
 	(tReqBlockUtxIxB==tMemBlockUtxIxB) ? tMemBlockUtxB :
 	(tReqBlockUtxIxB==tMemBlockUtxIxC) ? tMemBlockUtxC :
 	(tReqBlockUtxIxB==tMemBlockUtxIxD) ? tMemBlockUtxD :
 	tMemBlockUtxA;
-wire[63:0]		wMemBlockUtxC =
+wire[127:0]		wMemBlockUtxC =
 	(tReqBlockUtxIxC==tMemBlockUtxIxB) ? tMemBlockUtxB :
 	(tReqBlockUtxIxC==tMemBlockUtxIxC) ? tMemBlockUtxC :
 	(tReqBlockUtxIxC==tMemBlockUtxIxD) ? tMemBlockUtxD :
 	tMemBlockUtxA;
 
+reg[3:0]		tBlockUtxPixIxA;
+reg[3:0]		tBlockUtxPixIxB;
+reg[3:0]		tBlockUtxPixIxC;
+
+reg[3:0]		tNxtBlockUtxPixIxA;
+reg[3:0]		tNxtBlockUtxPixIxB;
+reg[3:0]		tNxtBlockUtxPixIxC;
+
 ExBtcUtx1	exUtx1a(
-	wMemBlockUtxA,
-	64'h0,
-	tPixMortST[15:12],
-	{ 3'b000, JX2_UCIX_CONV2_BLKUTX2 },
+	tReqBlockUtxIxlA ? wMemBlockUtxA[127:64] : wMemBlockUtxA[63:0],
+	wMemBlockUtxA[127:64],
+//	tPixMortST[15:12],
+	tBlockUtxPixIxA,
+	{ 3'b000, tTexUIxt },
 	tPixUtxRgb0a,
 	1'b1
 	);
 
 ExBtcUtx1	exUtx1b(
-	wMemBlockUtxB,
-	64'h0,
-	tPixMortSTB[15:12],
-	{ 3'b000, JX2_UCIX_CONV2_BLKUTX2 },
+	tReqBlockUtxIxlB ? wMemBlockUtxB[127:64] : wMemBlockUtxB[63:0],
+	wMemBlockUtxB[127:64],
+//	tPixMortSTB[15:12],
+	tBlockUtxPixIxB,
+	{ 3'b000, tTexUIxt },
 	tPixUtxRgb0b,
 	1'b1
 	);
 
 ExBtcUtx1	exUtx1c(
-	wMemBlockUtxC,
-	64'h0,
-	tPixMortSTC[15:12],
-	{ 3'b000, JX2_UCIX_CONV2_BLKUTX2 },
+	tReqBlockUtxIxlC ? wMemBlockUtxC[127:64] : wMemBlockUtxC[63:0],
+	wMemBlockUtxC[127:64],
+//	tPixMortSTC[15:12],
+	tBlockUtxPixIxC,
+	{ 3'b000, tTexUIxt },
 	tPixUtxRgb0c,
 	1'b1
 	);
@@ -635,8 +739,13 @@ reg[33:0]		tPixModRgbG;
 reg[33:0]		tPixModRgbB;
 
 reg[15:0]		tPixDstZ;
+reg[ 7:0]		tPixDstSt;
+
+reg[ 7:0]		tPixUpdSt;
 
 reg[15:0]		tPixDstRgb5;
+reg[31:0]		tPixDstRgb8;
+
 reg[63:0]		tPixDestRgb;
 reg[63:0]		tPixDestRgbL;
 reg[63:0]		tPixBlendRgb;
@@ -661,6 +770,9 @@ reg[15:0]		tPixUpdRgb;
 reg				tPixUpdRgbAf;
 reg				tPixDoUpdRgb;
 reg				tPixDoUpdZ;
+reg				tPixDoUpdSt;
+
+reg[31:0]		tPixUpdRgb8;
 
 reg[15:0]		tReqBlkUtxAx;
 
@@ -671,10 +783,18 @@ reg			tRegZLtP;
 reg			tRegZEqP;
 reg			tRegZtP;
 
+reg			tRegStLtP;
+reg			tRegStEqP;
+reg			tRegStP;
+
 wire[31:0]	tPixRcpZ0;
 reg[15:0]	tPixRcpZ;
 
+`ifdef jx2_edgewalk_rcpz
 ExLuRcpFix32A_8p24		modRcpZ( {tPixZ, 12'hFFF}, tPixRcpZ0);
+`else
+assign tPixRcpZ0 = 0;
+`endif
 
 always @*
 begin
@@ -707,6 +827,7 @@ begin
 	tNxtRegCtrl14			= tRegCtrl14;
 	tNxtRegCtrl15			= tRegCtrl15;
 	tNxtRegCtrl16			= tRegCtrl16;
+	tNxtRegCtrl17			= tRegCtrl17;
 
 	tNxtFifoCtrl0			= tStFifoCtrl0;
 	tNxtFifoCtrl1			= tStFifoCtrl1;
@@ -725,6 +846,7 @@ begin
 	tNxtFifoCtrl14			= tStFifoCtrl14;
 	tNxtFifoCtrl15			= tStFifoCtrl15;
 	tNxtFifoCtrl16			= tStFifoCtrl16;
+	tNxtFifoCtrl17			= tStFifoCtrl17;
 
 	tNxtFifoStRov			= tFifoStRov;
 	tNxtFifoRqRov			= tFifoRqRov;
@@ -761,6 +883,11 @@ begin
 	tNxtReqBlockUtxIxC		= tReqBlockUtxIxC;
 	tNxtReqBlockUtxIxD		= tReqBlockUtxIxD;
 
+	tNxtReqBlockUtxIxlA		= tReqBlockUtxIxlA;
+	tNxtReqBlockUtxIxlB		= tReqBlockUtxIxlB;
+	tNxtReqBlockUtxIxlC		= tReqBlockUtxIxlC;
+	tNxtReqBlockUtxIxlD		= tReqBlockUtxIxlD;
+
 	tNxtReqBlockFbRgbAddr	= tReqBlockFbRgbAddr;
 	tNxtReqBlockFbZAddr		= tReqBlockFbZAddr;
 	tNxtReqBlockUtxAddr		= tReqBlockUtxAddr;
@@ -773,16 +900,20 @@ begin
 	tNxtMissUtxDone			= tMissUtxDone;
 
 //	tReqBlkUtxAx			= tReqBlockUtxAddr[31:16] ^ tReqBlockUtxAddr[15:0];
-	tReqBlkUtxAx			= tRegCtrl3[31:16] ^ tRegCtrl3[15:0];
+//	tReqBlkUtxAx			= tRegCtrl3[31:16] ^ tRegCtrl3[15:0];
+	tReqBlkUtxAx			= tRegCtrl3[31:16] ^
+		{ tUtxFlushRov, tRegCtrl3[15:4] };
 	
 //	tLdBlkUtxIx				= tReqBlockUtxIx[5:0];
 //	tLdBlkUtxData			= tArrUtxData[tLdBlkUtxIx];
 //	tLdBlkUtxAddr			= tArrUtxAddr[tLdBlkUtxIx];
 
-	tStBlkUtxData			= UV64_XX;
+	tStBlkUtxData			= UV128_XX;
 	tStBlkUtxAddr			= { tReqBlkUtxAx, tReqBlockUtxIx };
 	tStBlkUtxIx				= tLdBlkUtxIx;
 	tDoStBlkUtx				= 0;
+
+	tNxtUtxFlushRov			= tUtxFlushRov;
 
 
 	tNxtScanY		= tScanY;
@@ -839,6 +970,7 @@ begin
 	tScanDiffX			=
 		{ tScanRtX[15]?16'hFFFF:16'h0000, tScanRtX } -
 		{ tScanLfX[15]?16'hFFFF:16'h0000, tScanLfX } ;
+	tScanDiffXp1		= tScanDiffX + 32'h40;
 
 	tScanDiffZ			=
 		{ tScanRtZ[19]?16'hFFFF:16'h0000, tScanRtZ[19:4] } -
@@ -919,7 +1051,7 @@ begin
 
 
 `ifdef def_true
-	case(tScanDiffX[10:6])
+	case(tScanDiffXp1[10:6])
 		5'h00: tScanRcp0X			= 16'hFFFF;
 		5'h01: tScanRcp0X			= 16'hFFFF;
 		5'h02: tScanRcp0X			= 16'h8000;
@@ -954,12 +1086,12 @@ begin
 		5'h1F: tScanRcp0X			= 16'h0842;
 	endcase
 
-	casez(tScanDiffX[15:11])
-		5'b0000z: tScanRcpiX=tScanDiffX[10: 6];
-		5'b0001z: tScanRcpiX=tScanDiffX[11: 7];
-		5'b001zz: tScanRcpiX=tScanDiffX[12: 8];
-		5'b01zzz: tScanRcpiX=tScanDiffX[13: 9];
-		5'b1zzzz: tScanRcpiX=tScanDiffX[14:10];
+	casez(tScanDiffXp1[15:11])
+		5'b0000z: tScanRcpiX=tScanDiffXp1[10: 6];
+		5'b0001z: tScanRcpiX=tScanDiffXp1[11: 7];
+		5'b001zz: tScanRcpiX=tScanDiffXp1[12: 8];
+		5'b01zzz: tScanRcpiX=tScanDiffXp1[13: 9];
+		5'b1zzzz: tScanRcpiX=tScanDiffXp1[14:10];
 	endcase
 
 	case(tScanRcpiX)
@@ -997,7 +1129,7 @@ begin
 		5'h1F: tScanRcp1X			= 16'h0410;
 	endcase
 	
-	casez(tScanDiffX[15:11])
+	casez(tScanDiffXp1[15:11])
 		5'b00000: tScanRcpX		= { 16'h0, tScanRcp0X };
 		5'b00001: tScanRcpX		= { 16'h0, tScanRcp1X };
 		5'b0001z: tScanRcpX		= { 17'b0, tScanRcp1X[15: 1] };
@@ -1010,13 +1142,15 @@ begin
 	
 //	$display("Rcp %X -> %X", tScanDiffX[15:6], tScanRcpX);
 	
-	tScanMulDiffZ = tScanDiffZ * tScanRcpX;
-	tScanMulDiffS = tScanDiffS * tScanRcpX;
-	tScanMulDiffT = tScanDiffT * tScanRcpX;
-	tScanMulDiffR = tScanDiffR * tScanRcpX;
-	tScanMulDiffG = tScanDiffG * tScanRcpX;
-	tScanMulDiffB = tScanDiffB * tScanRcpX;
-	tScanMulDiffA = tScanDiffA * tScanRcpX;
+	tScanRcpX2 = { 16'h00, tScanRcpXL[15:0] };
+	
+	tScanMulDiffZ = tScanDiffZ * tScanRcpX2;
+	tScanMulDiffS = tScanDiffS * tScanRcpX2;
+	tScanMulDiffT = tScanDiffT * tScanRcpX2;
+	tScanMulDiffR = tScanDiffR * tScanRcpX2;
+	tScanMulDiffG = tScanDiffG * tScanRcpX2;
+	tScanMulDiffB = tScanDiffB * tScanRcpX2;
+	tScanMulDiffA = tScanDiffA * tScanRcpX2;
 
 //	$display("Lf/Rt G %X,%X D=%X M=%X",
 //		tScanLfG, tScanRtG, tScanDiffG, tScanMulDiffG);
@@ -1078,6 +1212,7 @@ begin
 
 
 	tNxtPixStepInh	= tPixStepInh;
+	tNxtScanStepInh	= tScanStepInh;
 
 	tDoScanStep		= 0;
 	tDoPixStep		= 0;
@@ -1089,6 +1224,11 @@ begin
 	else
 	begin
 		tDoPixStep		= 1;
+	end
+
+	if(tScanStepInh!=0)
+	begin
+		tNxtScanStepInh	= tScanStepInh - 1;
 	end
 
 	tMissFbRgb		= tMemBlockFbRgbIx != tReqBlockFbRgbIx;
@@ -1145,15 +1285,49 @@ begin
 		3'b110: tPixDstZ = tMemBlockFbZ[111: 96];
 		3'b111: tPixDstZ = tMemBlockFbZ[127:112];
 	endcase
+	
+	tPixDstSt = { 4'h0, tPixDstZ[3:0] };
+
 
 	tPixDestRgb = {
 		tPixDstRgb5[15] ?
 			{ tPixDstRgb5[10], tPixDstRgb5[5], tPixDstRgb5[0], 13'h0 } :
-			16'hFFFF,
-		tPixDstRgb5[14:10], tPixDstRgb5[14:10], 6'h0,
-		tPixDstRgb5[ 9: 5], tPixDstRgb5[ 9: 5], 6'h0,
-		tPixDstRgb5[ 4: 0], tPixDstRgb5[ 4: 0], 6'h0
+			16'hFF80,
+		tPixDstRgb5[14:10], tPixDstRgb5[14:10], 6'h20,
+		tPixDstRgb5[ 9: 5], tPixDstRgb5[ 9: 5], 6'h20,
+		tPixDstRgb5[ 4: 0], tPixDstRgb5[ 4: 0], 6'h20
 	};
+
+	if(tCtrlFbufDWord)
+	begin
+		case(tPixX[1:0])
+			2'b00: tPixDstRgb8 = tMemBlockFbRgb[ 31:  0];
+			2'b01: tPixDstRgb8 = tMemBlockFbRgb[ 63: 32];
+			2'b10: tPixDstRgb8 = tMemBlockFbRgb[ 95: 64];
+			2'b11: tPixDstRgb8 = tMemBlockFbRgb[127: 96];
+		endcase
+
+		case(tPixX[1:0])
+			2'b00: tPixDstZ = tMemBlockFbZ[ 31: 16];
+			2'b01: tPixDstZ = tMemBlockFbZ[ 63: 48];
+			2'b10: tPixDstZ = tMemBlockFbZ[ 95: 80];
+			2'b11: tPixDstZ = tMemBlockFbZ[127:112];
+		endcase
+
+		case(tPixX[1:0])
+			2'b00: tPixDstSt = tMemBlockFbZ[  7:  0];
+			2'b01: tPixDstSt = tMemBlockFbZ[ 39: 32];
+			2'b10: tPixDstSt = tMemBlockFbZ[ 71: 64];
+			2'b11: tPixDstSt = tMemBlockFbZ[103: 96];
+		endcase
+
+		tPixDestRgb = {
+			tPixDstRgb8[31:24], 8'h80,
+			tPixDstRgb8[23:16], 8'h80,
+			tPixDstRgb8[15: 8], 8'h80,
+			tPixDstRgb8[ 7: 0], 8'h80
+		};
+	end
 
 	tPixUtxRgb1s =
 	{
@@ -1356,13 +1530,21 @@ begin
 		tPixBlendRgbL[15:12],
 		tPixUpdRgbAf ? tPixBlendRgbL[61] : tPixBlendRgbL[11] };
 
+	tPixUpdRgb8 = {
+		tPixBlendRgbL[63:56],
+		tPixBlendRgbL[47:40],
+		tPixBlendRgbL[31:24],
+		tPixBlendRgbL[15: 8] };
+
 	tPixDoUpdRgb = 1;
 	tPixDoUpdZ = 1;
+	tPixDoUpdSt = 1;
 
 	if(tCtrlATest && !tPixModRgbL[63])
 //	if(1'b0)
 	begin
-		tPixDoUpdRgb = 0;
+		tPixDoUpdRgb	= 0;
+		tPixDoUpdZ		= 0;
 	end
 
 //	tRegZLtP = (tPixZp < tPixDstZ);
@@ -1384,11 +1566,46 @@ begin
 		3'h7:		tRegZtP = 0;						//NEVER
 	endcase
 
+	tRegStLtP = (tStencilRef < tPixDstSt);
+	tRegStEqP = (tStencilRef == tPixDstSt);
+
+	case(tStencilFunc)
+		3'h0:		tRegStP = tRegStLtP;					//LESS
+		3'h1:		tRegStP = !tRegStLtP;					//GEQUAL
+		3'h2:		tRegStP = (tRegStLtP || tRegStEqP);		//LEQUAL
+		3'h3:		tRegStP = !(tRegStLtP || tRegStEqP);	//GREATER
+		3'h4:		tRegStP = tRegStEqP;					//EQUAL
+		3'h5:		tRegStP = !tRegStEqP;					//NOTEQUAL
+		3'h6:		tRegStP = 1;							//ALWAYS
+		3'h7:		tRegStP = 0;							//NEVER
+	endcase
+
+	tStencilOp	= tRegZtP ? tStencilOpZpass : tStencilOpZfail;
+	if(!tRegStP)
+		tStencilOp	= tStencilOpSfail;
+
+	case(tStencilOp)
+		3'b000: tPixUpdSt = tPixDstSt;
+		3'b001: tPixUpdSt = 0;
+		3'b010: tPixUpdSt = ~tPixDstSt;
+		3'b011: tPixUpdSt = tStencilRef;
+		3'b100: tPixUpdSt = tPixDstSt + { 7'h00, (tPixDstSt != 8'hFF) };
+		3'b101: tPixUpdSt = tPixDstSt - { 7'h00, (tPixDstSt != 8'h00) };
+		3'b110: tPixUpdSt = tPixDstSt + 1;
+		3'b111: tPixUpdSt = tPixDstSt - 1;
+	endcase
+
 //	tRegZtP = 1;
 
 	if(!tRegZtP && tCtrlZTest && tDoPixStep && !tMiss)
 	begin
 //		$display("Z Fail Pz=%X Dz=%X", tPixZp, tPixDstZ);
+	end
+
+	if(!tRegStP && tCtrlUseStencil)
+	begin
+		tPixDoUpdRgb = 0;
+		tPixDoUpdZ = 0;
 	end
 
 	if(!tRegZtP && tCtrlZTest)
@@ -1401,24 +1618,36 @@ begin
 	begin
 		tPixDoUpdRgb = 0;
 		tPixDoUpdZ = 0;
+		tPixDoUpdSt = 0;
 	end
 	
 	if(!tDoPixStep || tDoPixStepL)
 	begin
 		tPixDoUpdRgb = 0;
 		tPixDoUpdZ = 0;
+		tPixDoUpdSt = 0;
 	end
 	
-	if((tPixX<tClipX0) || (tPixX>tClipX1))
+	if((tPixX<tClipX0) || (tPixX>=tClipX1))
 	begin
 		tPixDoUpdRgb = 0;
 		tPixDoUpdZ = 0;
+		tPixDoUpdSt = 0;
 	end
 
-	if((tScanY<tClipY0) || (tScanY>tClipY1))
+	if((tScanY<tClipY0) || (tScanY>=tClipY1))
 	begin
 		tPixDoUpdRgb = 0;
 		tPixDoUpdZ = 0;
+		tPixDoUpdSt = 0;
+	end
+
+//	if((tPixX>tPixLimX) || tPixX[11])
+	if((tPixX>tPixLimX) || tPixX[11] || tPixLimX[11])
+	begin
+		tPixDoUpdRgb = 0;
+		tPixDoUpdZ = 0;
+		tPixDoUpdSt = 0;
 	end
 	
 	if(!tCtrlZMask)
@@ -1428,44 +1657,112 @@ begin
 	
 	if(tPixDoUpdRgb)
 	begin
-		if(tPixX[2:0]==0)
-			tNxtMemBlockFbRgb[ 15:  0] = tPixUpdRgb;
-		if(tPixX[2:0]==1)
-			tNxtMemBlockFbRgb[ 31: 16] = tPixUpdRgb;
-		if(tPixX[2:0]==2)
-			tNxtMemBlockFbRgb[ 47: 32] = tPixUpdRgb;
-		if(tPixX[2:0]==3)
-			tNxtMemBlockFbRgb[ 63: 48] = tPixUpdRgb;
-		if(tPixX[2:0]==4)
-			tNxtMemBlockFbRgb[ 79: 64] = tPixUpdRgb;
-		if(tPixX[2:0]==5)
-			tNxtMemBlockFbRgb[ 95: 80] = tPixUpdRgb;
-		if(tPixX[2:0]==6)
-			tNxtMemBlockFbRgb[111: 96] = tPixUpdRgb;
-		if(tPixX[2:0]==7)
-			tNxtMemBlockFbRgb[127:112] = tPixUpdRgb;
+		if(tCtrlFbufDWord)
+		begin
+			if(tPixX[1:0]==0)
+				tNxtMemBlockFbRgb[ 31:  0] = tPixUpdRgb8;
+			if(tPixX[1:0]==1)
+				tNxtMemBlockFbRgb[ 63: 32] = tPixUpdRgb8;
+			if(tPixX[1:0]==2)
+				tNxtMemBlockFbRgb[ 95: 64] = tPixUpdRgb8;
+			if(tPixX[1:0]==3)
+				tNxtMemBlockFbRgb[127: 96] = tPixUpdRgb8;
+		end
+		else
+		begin
+			if(tPixX[2:0]==0)
+				tNxtMemBlockFbRgb[ 15:  0] = tPixUpdRgb;
+			if(tPixX[2:0]==1)
+				tNxtMemBlockFbRgb[ 31: 16] = tPixUpdRgb;
+			if(tPixX[2:0]==2)
+				tNxtMemBlockFbRgb[ 47: 32] = tPixUpdRgb;
+			if(tPixX[2:0]==3)
+				tNxtMemBlockFbRgb[ 63: 48] = tPixUpdRgb;
+			if(tPixX[2:0]==4)
+				tNxtMemBlockFbRgb[ 79: 64] = tPixUpdRgb;
+			if(tPixX[2:0]==5)
+				tNxtMemBlockFbRgb[ 95: 80] = tPixUpdRgb;
+			if(tPixX[2:0]==6)
+				tNxtMemBlockFbRgb[111: 96] = tPixUpdRgb;
+			if(tPixX[2:0]==7)
+				tNxtMemBlockFbRgb[127:112] = tPixUpdRgb;
+		end
 		tNxtMemBlockFbRgbDirty	= 1;
 	end
 
 	if(tPixDoUpdZ)
 	begin
-		if(tPixX[2:0]==0)
-			tNxtMemBlockFbZ[ 15:  0] = tPixZp;
-		if(tPixX[2:0]==1)
-			tNxtMemBlockFbZ[ 31: 16] = tPixZp;
-		if(tPixX[2:0]==2)
-			tNxtMemBlockFbZ[ 47: 32] = tPixZp;
-		if(tPixX[2:0]==3)
-			tNxtMemBlockFbZ[ 63: 48] = tPixZp;
-		if(tPixX[2:0]==4)
-			tNxtMemBlockFbZ[ 79: 64] = tPixZp;
-		if(tPixX[2:0]==5)
-			tNxtMemBlockFbZ[ 95: 80] = tPixZp;
-		if(tPixX[2:0]==6)
-			tNxtMemBlockFbZ[111: 96] = tPixZp;
-		if(tPixX[2:0]==7)
-			tNxtMemBlockFbZ[127:112] = tPixZp;
+		if(tCtrlFbufDWord)
+		begin
+			if(tPixX[1:0]==0)
+				tNxtMemBlockFbZ[ 31: 16] = tPixZp;
+			if(tPixX[1:0]==1)
+				tNxtMemBlockFbZ[ 63: 48] = tPixZp;
+			if(tPixX[1:0]==2)
+				tNxtMemBlockFbZ[ 95: 80] = tPixZp;
+			if(tPixX[1:0]==3)
+				tNxtMemBlockFbZ[127:112] = tPixZp;
+		end
+		else
+		begin
+			if(tPixX[2:0]==0)
+				tNxtMemBlockFbZ[ 15:  0] = tPixZp;
+			if(tPixX[2:0]==1)
+				tNxtMemBlockFbZ[ 31: 16] = tPixZp;
+			if(tPixX[2:0]==2)
+				tNxtMemBlockFbZ[ 47: 32] = tPixZp;
+			if(tPixX[2:0]==3)
+				tNxtMemBlockFbZ[ 63: 48] = tPixZp;
+			if(tPixX[2:0]==4)
+				tNxtMemBlockFbZ[ 79: 64] = tPixZp;
+			if(tPixX[2:0]==5)
+				tNxtMemBlockFbZ[ 95: 80] = tPixZp;
+			if(tPixX[2:0]==6)
+				tNxtMemBlockFbZ[111: 96] = tPixZp;
+			if(tPixX[2:0]==7)
+				tNxtMemBlockFbZ[127:112] = tPixZp;
+		end
 		tNxtMemBlockFbZDirty	= 1;
+	end
+	
+	if(tCtrlUseStencil)
+	begin
+		if(!tPixDoUpdSt)
+			tPixUpdSt = tPixDstSt;
+
+		if(tCtrlFbufDWord)
+		begin
+			if(tPixX[1:0]==0)
+				tNxtMemBlockFbZ[  7:  0] = tPixUpdSt[7:0];
+			if(tPixX[1:0]==1)
+				tNxtMemBlockFbZ[ 39: 32] = tPixUpdSt[7:0];
+			if(tPixX[1:0]==2)
+				tNxtMemBlockFbZ[ 71: 64] = tPixUpdSt[7:0];
+			if(tPixX[1:0]==3)
+				tNxtMemBlockFbZ[103: 96] = tPixUpdSt[7:0];
+		end
+		else
+		begin
+			if(tPixX[2:0]==0)
+				tNxtMemBlockFbZ[  3:  0] = tPixUpdSt[3:0];
+			if(tPixX[2:0]==1)
+				tNxtMemBlockFbZ[ 19: 16] = tPixUpdSt[3:0];
+			if(tPixX[2:0]==2)
+				tNxtMemBlockFbZ[ 35: 32] = tPixUpdSt[3:0];
+			if(tPixX[2:0]==3)
+				tNxtMemBlockFbZ[ 51: 48] = tPixUpdSt[3:0];
+			if(tPixX[2:0]==4)
+				tNxtMemBlockFbZ[ 67: 64] = tPixUpdSt[3:0];
+			if(tPixX[2:0]==5)
+				tNxtMemBlockFbZ[ 83: 80] = tPixUpdSt[3:0];
+			if(tPixX[2:0]==6)
+				tNxtMemBlockFbZ[ 99: 96] = tPixUpdSt[3:0];
+			if(tPixX[2:0]==7)
+				tNxtMemBlockFbZ[115:112] = tPixUpdSt[3:0];
+		end
+
+		if(tPixDoUpdSt)
+			tNxtMemBlockFbZDirty	= 1;
 	end
 
 	
@@ -1476,7 +1773,12 @@ begin
 	
 //	tNxtReqBlockFbRgbIx	= tNxtReqBlockFbRgbMul[17:2];
 	tNxtReqBlockFbRgbIx	= tNxtReqBlockFbRgbMul[18:3];
+
+	if(tCtrlFbufDWord)
+		tNxtReqBlockFbRgbIx	= tNxtReqBlockFbRgbMul[17:2];
+
 	tNxtReqBlockFbZIx = tNxtReqBlockFbRgbIx;
+
 	tNxtReqBlockFbRgbAddr = tRegCtrl2[31:0] +
 //		{ 13'b0, tNxtReqBlockFbRgbIx, 3'b0 } ;
 		{ 12'b0, tNxtReqBlockFbRgbIx, 4'h0 } ;
@@ -1532,6 +1834,285 @@ begin
 		tPixTp1[ 5], tPixSp[ 5], tPixTp1[ 4], tPixSp[ 4]
 		};
 
+`ifdef def_true
+	if(tRegCtrl3[56:52]<5'h13)
+	begin
+		tPixMortST [31]=0;
+		tPixMortSTB[31]=0;
+		tPixMortSTC[31]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h12)
+	begin
+		tPixMortST [30]=0;
+		tPixMortSTB[30]=0;
+		tPixMortSTC[30]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h11)
+	begin
+		tPixMortST [29]=0;
+		tPixMortSTB[29]=0;
+		tPixMortSTC[29]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h10)
+	begin
+		tPixMortST [28]=0;
+		tPixMortSTB[28]=0;
+		tPixMortSTC[28]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0F)
+	begin
+		tPixMortST [27]=0;
+		tPixMortSTB[27]=0;
+		tPixMortSTC[27]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0F)
+	begin
+		tPixMortST [26]=0;
+		tPixMortSTB[26]=0;
+		tPixMortSTC[26]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0E)
+	begin
+		tPixMortST [25]=0;
+		tPixMortSTB[25]=0;
+		tPixMortSTC[25]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0D)
+	begin
+		tPixMortST [24]=0;
+		tPixMortSTB[24]=0;
+		tPixMortSTC[24]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0C)
+	begin
+		tPixMortST [23]=0;
+		tPixMortSTB[23]=0;
+		tPixMortSTC[23]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0B)
+	begin
+		tPixMortST [22]=0;
+		tPixMortSTB[22]=0;
+		tPixMortSTC[22]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0A)
+	begin
+		tPixMortST [21]=0;
+		tPixMortSTB[21]=0;
+		tPixMortSTC[21]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h09)
+	begin
+		tPixMortST [20]=0;
+		tPixMortSTB[20]=0;
+		tPixMortSTC[20]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h08)
+	begin
+		tPixMortST [19]=0;
+		tPixMortSTB[19]=0;
+		tPixMortSTC[19]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h07)
+	begin
+		tPixMortST [18]=0;
+		tPixMortSTB[18]=0;
+		tPixMortSTC[18]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h06)
+	begin
+		tPixMortST [17]=0;
+		tPixMortSTB[17]=0;
+		tPixMortSTC[17]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h05)
+	begin
+		tPixMortST [16]=0;
+		tPixMortSTB[16]=0;
+		tPixMortSTC[16]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h04)
+	begin
+		tPixMortST [15]=0;
+		tPixMortSTB[15]=0;
+		tPixMortSTC[15]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h03)
+	begin
+		tPixMortST [14]=0;
+		tPixMortSTB[14]=0;
+		tPixMortSTC[14]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h02)
+	begin
+		tPixMortST [13]=0;
+		tPixMortSTB[13]=0;
+		tPixMortSTC[13]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h01)
+	begin
+		tPixMortST [12]=0;
+		tPixMortSTB[12]=0;
+		tPixMortSTC[12]=0;
+	end
+`endif
+
+`ifndef def_true
+	tNxtReqBlockUtxIxA = {  4'h0, tPixMortST [27:16] };
+	tNxtReqBlockUtxIxB = {  4'h0, tPixMortSTB[27:16] };
+	tNxtReqBlockUtxIxC = {  4'h0, tPixMortSTC[27:16] };
+	
+	tNxtReqBlockUtxIxlA = 0;
+	tNxtReqBlockUtxIxlB = 0;
+	tNxtReqBlockUtxIxlC = 0;
+`endif
+
+`ifdef def_true
+	case(tCtrlTexMode)
+		3'b000: begin
+			if(tRegCtrl3[3])
+			begin
+				tNxtReqBlockUtxIxA = {  4'h0, tPixMortST [27:16] };
+				tNxtReqBlockUtxIxB = {  4'h0, tPixMortSTB[27:16] };
+				tNxtReqBlockUtxIxC = {  4'h0, tPixMortSTC[27:16] };
+				tNxtReqBlockUtxIxlA = 0;
+				tNxtReqBlockUtxIxlB = 0;
+				tNxtReqBlockUtxIxlC = 0;
+			end
+			else
+			begin
+				tNxtReqBlockUtxIxA = {  5'h0, tPixMortST [27:17] };
+				tNxtReqBlockUtxIxB = {  5'h0, tPixMortSTB[27:17] };
+				tNxtReqBlockUtxIxC = {  5'h0, tPixMortSTC[27:17] };
+				tNxtReqBlockUtxIxlA = tPixMortST [16];
+				tNxtReqBlockUtxIxlB = tPixMortSTB[16];
+				tNxtReqBlockUtxIxlC = tPixMortSTC[16];
+			end
+		end
+
+		3'b001: begin
+			tNxtReqBlockUtxIxA = { 1'b0, tPixMortST [27:13] };
+			tNxtReqBlockUtxIxB = { 1'b0, tPixMortSTB[27:13] };
+			tNxtReqBlockUtxIxC = { 1'b0, tPixMortSTC[27:13] };
+			tNxtReqBlockUtxIxlA = tPixMortST [12];
+			tNxtReqBlockUtxIxlB = tPixMortSTB[12];
+			tNxtReqBlockUtxIxlC = tPixMortSTC[12];
+		end
+
+		3'b010, 3'b011: begin
+			tNxtReqBlockUtxIxA = {  4'h0, tPixMortST [27:16] };
+			tNxtReqBlockUtxIxB = {  4'h0, tPixMortSTB[27:16] };
+			tNxtReqBlockUtxIxC = {  4'h0, tPixMortSTC[27:16] };
+			tNxtReqBlockUtxIxlA = 0;
+			tNxtReqBlockUtxIxlB = 0;
+			tNxtReqBlockUtxIxlC = 0;
+		end
+
+		3'b101: begin
+			tNxtReqBlockUtxIxA = {  3'h0, tPixMortST [27:15] };
+			tNxtReqBlockUtxIxB = {  3'h0, tPixMortSTB[27:15] };
+			tNxtReqBlockUtxIxC = {  3'h0, tPixMortSTC[27:15] };
+			tNxtReqBlockUtxIxlA = tPixMortST [14];
+			tNxtReqBlockUtxIxlB = tPixMortSTB[14];
+			tNxtReqBlockUtxIxlC = tPixMortSTC[14];
+		end
+
+		3'b110: begin
+			tNxtReqBlockUtxIxA = {  2'h0, tPixMortST [27:14] };
+			tNxtReqBlockUtxIxB = {  2'h0, tPixMortSTB[27:14] };
+			tNxtReqBlockUtxIxC = {  2'h0, tPixMortSTC[27:14] };
+			tNxtReqBlockUtxIxlA = tPixMortST [13];
+			tNxtReqBlockUtxIxlB = tPixMortSTB[13];
+			tNxtReqBlockUtxIxlC = tPixMortSTC[13];
+		end
+		
+		default: begin
+			tNxtReqBlockUtxIxA = {  5'h0, tPixMortST [27:17] };
+			tNxtReqBlockUtxIxB = {  5'h0, tPixMortSTB[27:17] };
+			tNxtReqBlockUtxIxC = {  5'h0, tPixMortSTC[27:17] };
+			tNxtReqBlockUtxIxlA = tPixMortST [16];
+			tNxtReqBlockUtxIxlB = tPixMortSTB[16];
+			tNxtReqBlockUtxIxlC = tPixMortSTC[16];
+		end
+	endcase
+`endif
+
+`ifndef def_true
+	if(tRegCtrl3[56:52]<5'h0F)
+	begin
+		tNxtReqBlockUtxIxA[11]=0;
+		tNxtReqBlockUtxIxB[11]=0;
+		tNxtReqBlockUtxIxC[11]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0F)
+	begin
+		tNxtReqBlockUtxIxA[10]=0;
+		tNxtReqBlockUtxIxB[10]=0;
+		tNxtReqBlockUtxIxC[10]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0E)
+	begin
+		tNxtReqBlockUtxIxA[9]=0;
+		tNxtReqBlockUtxIxB[9]=0;
+		tNxtReqBlockUtxIxC[9]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0D)
+	begin
+		tNxtReqBlockUtxIxA[8]=0;
+		tNxtReqBlockUtxIxB[8]=0;
+		tNxtReqBlockUtxIxC[8]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0C)
+	begin
+		tNxtReqBlockUtxIxA[7]=0;
+		tNxtReqBlockUtxIxB[7]=0;
+		tNxtReqBlockUtxIxC[7]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0B)
+	begin
+		tNxtReqBlockUtxIxA[6]=0;
+		tNxtReqBlockUtxIxB[6]=0;
+		tNxtReqBlockUtxIxC[6]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h0A)
+	begin
+		tNxtReqBlockUtxIxA[5]=0;
+		tNxtReqBlockUtxIxB[5]=0;
+		tNxtReqBlockUtxIxC[5]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h09)
+	begin
+		tNxtReqBlockUtxIxA[4]=0;
+		tNxtReqBlockUtxIxB[4]=0;
+		tNxtReqBlockUtxIxC[4]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h08)
+	begin
+		tNxtReqBlockUtxIxA[3]=0;
+		tNxtReqBlockUtxIxB[3]=0;
+		tNxtReqBlockUtxIxC[3]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h07)
+	begin
+		tNxtReqBlockUtxIxA[2]=0;
+		tNxtReqBlockUtxIxB[2]=0;
+		tNxtReqBlockUtxIxC[2]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h06)
+	begin
+		tNxtReqBlockUtxIxA[1]=0;
+		tNxtReqBlockUtxIxB[1]=0;
+		tNxtReqBlockUtxIxC[1]=0;
+	end
+	if(tRegCtrl3[56:52]<5'h05)
+	begin
+		tNxtReqBlockUtxIxA[0]=0;
+		tNxtReqBlockUtxIxB[0]=0;
+		tNxtReqBlockUtxIxC[0]=0;
+	end
+`endif
+
+`ifndef def_true
 	case(tRegCtrl3[56:52])
 		5'h00:		tNxtReqBlockUtxIxA = 0;	//1x1
 		5'h01:		tNxtReqBlockUtxIxA = 0;	//1x2
@@ -1594,6 +2175,11 @@ begin
 		5'h10:		tNxtReqBlockUtxIxC = {  4'h0, tPixMortSTC[27:16] };
 		default:	tNxtReqBlockUtxIxC = {  4'h0, tPixMortSTC[27:16] };
 	endcase
+`endif
+
+	tNxtBlockUtxPixIxA	= tPixMortST[15:12];
+	tNxtBlockUtxPixIxB	= tPixMortSTB[15:12];
+	tNxtBlockUtxPixIxC	= tPixMortSTC[15:12];
 
 //	if(!tCtrlLinear)
 //	begin
@@ -1623,14 +2209,28 @@ begin
 
 	tReqBlockUtxReady = (tNxtReqBlockUtxIx == tReqBlockUtxIx);
 
-	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[7:0];
+`ifdef jx2_edgewalk_utxarr_256
+//	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[7:0];
+	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[7:0] ^ tReqBlkUtxAx[7:0];
+`endif
 
-	tNxtReqBlockUtxAddr = tRegCtrl3[31:0] + { 13'b0, tNxtReqBlockUtxIx, 3'b0 };
+`ifdef jx2_edgewalk_utxarr_1024
+//	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[9:0];
+	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[9:0] ^ tReqBlkUtxAx[9:0];
+`endif
+
+//	tNxtReqBlockUtxAddr = tRegCtrl3[31:0] + { 13'b0, tNxtReqBlockUtxIx, 3'b0 };
+	tNxtReqBlockUtxAddr = tRegCtrl3[31:0] + { 12'b0, tNxtReqBlockUtxIx, 4'b0 };
+
+	if(tRegCtrl3[3])
+		tNxtReqBlockUtxAddr = tRegCtrl3[31:0] +
+			{ 13'b0, tNxtReqBlockUtxIx, 3'b0 };
 
 	if(tMiss)
 	begin
 		tDoPixStep		= 0;
 		tNxtPixStepInh	= 5;
+		tNxtScanStepInh	= 5;
 	end
 
 	if(tScanY[11])
@@ -1639,24 +2239,36 @@ begin
 		tDoScanStep = 1;
 	end
 	else
-		if((tScanY<tClipY0) || (tScanY>tClipY1))
+		if((tScanY<tClipY0) || (tScanY>=tClipY1))
 	begin
 //		$display("ModEdgeWalk: Adv Y, Y Outside Clip");
 		tDoScanStep = 1;
 	end
+	
+	if(tPixLimX[11])
+	begin
+//		$display("ModEdgeWalk: Adv Y, X Limit Negative);
+		tDoScanStep = 1;
+	end
 
 //	if(tScanY >= tScanLimY)
-	if((tScanY > tScanLimY) && !(tScanY[11] && !tScanLimY[11]))
+//	if((tScanY > tScanLimY) && !(tScanY[11] && !tScanLimY[11]))
+	if((tScanY > tScanLimY) && !(tScanY[11] && !tScanLimY[11]) && 
+		(tScanStepInh==0))
 	begin
 		if(tRegCtrl0[0])
-			$display("ModEdgeWalk: Request Done");
+		begin
+			$display("ModEdgeWalk: Request Done, %X", tFifoRqRov);
+			$display("ModEdgeWalk: Done Ystrt=%X Yend=%X",
+				tScanY, tScanLimY);
+		end
 		tNxtRegCtrl0[0] = 0;
 		tDoPixStep = 0;
 		tDoScanStep = 0;
 		
 		if((tFifoRqRov != tFifoStRov) && (tRegCtrl0[0]==0))
 		begin
-			$display("ModEdgeWalk: Advance Request");
+			$display("ModEdgeWalk: Advance Request, %X", tFifoRqRov);
 			tNxtFifoRqRov = tFifoRqRov + 1;
 		end
 	end
@@ -1665,7 +2277,6 @@ begin
 	begin
 //		$display("ModEdgeWalk: Scan X Step X=%X Y=%X", tPixX, tScanY);
 
-		tNxtPixX		= tPixX + 1;
 //		if(tPixX >= tPixLimX)
 		if((tPixX >= tPixLimX) && !(tPixX[11] && !tPixLimX[11]))
 		begin
@@ -1673,15 +2284,20 @@ begin
 //				tPixX, tPixLimX);
 			tDoScanStep = 1;
 		end
-		tNxtPixStepInh	= 5;
 
-		tNxtPixZ		= tPixZ + tPixStepZ;
-		tNxtPixS		= tPixS + tPixStepS;
-		tNxtPixT		= tPixT + tPixStepT;
-		tNxtPixR		= tPixR + tPixStepR;
-		tNxtPixG		= tPixG + tPixStepG;
-		tNxtPixB		= tPixB + tPixStepB;
-		tNxtPixA		= tPixA + tPixStepA;
+//		if(!tDoScanStep)
+		if(1'b1)
+		begin
+			tNxtPixStepInh	= 5;
+			tNxtPixX		= tPixX + 1;
+			tNxtPixZ		= tPixZ + tPixStepZ;
+			tNxtPixS		= tPixS + tPixStepS;
+			tNxtPixT		= tPixT + tPixStepT;
+			tNxtPixR		= tPixR + tPixStepR;
+			tNxtPixG		= tPixG + tPixStepG;
+			tNxtPixB		= tPixB + tPixStepB;
+			tNxtPixA		= tPixA + tPixStepA;
+		end
 
 //		$display(  "ModEdgeWalk: Pix S=%X T=%X Z=%X",
 //			tPixS, tPixT, tPixZ);
@@ -1701,7 +2317,8 @@ begin
 	tNxtScanStepPixB	= tScanScaleDiffB;
 	tNxtScanStepPixA	= tScanScaleDiffA;
 
-	if(tDoScanStep)
+//	if(tDoScanStep)
+	if(tDoScanStep && (tScanStepInh==0))
 	begin
 		$display("ModEdgeWalk: Scan Y Step Y=%X", tScanY);
 		if(tPixLimX!=12'h7FF)
@@ -1713,7 +2330,7 @@ begin
 			tNxtScanLfZ		= tScanLfZ + tScanStepLfZ;
 			tNxtScanRtZ		= tScanRtZ + tScanStepRtZ;
 
-	//		$display(  "ModEdgeWalk: LfX=%X RtX=%X", tNxtScanLfX, tNxtScanRtX);
+//			$display(  "ModEdgeWalk: LfX=%X RtX=%X", tNxtScanLfX, tNxtScanRtX);
 
 			tNxtScanLfS		= tScanLfS + tScanStepLfS;
 			tNxtScanRtS		= tScanRtS + tScanStepRtS;
@@ -1730,8 +2347,11 @@ begin
 			tNxtScanRtA		= tScanRtA + tScanStepRtA;
 		end
 
-		tNxtPixX		= { 2'b00, tScanLfX[15:6] };
-		tNxtPixLimX		= { 2'b00, tScanRtX[15:6] };
+//		tNxtPixX		= { 2'b00, tScanLfX[15:6] };
+//		tNxtPixLimX		= { 2'b00, tScanRtX[15:6] };
+
+		tNxtPixX		= { tScanLfX[15] ? 2'b11 : 2'b00, tScanLfX[15:6] };
+		tNxtPixLimX		= { tScanRtX[15] ? 2'b11 : 2'b00, tScanRtX[15:6] };
 
 		tNxtPixZ		= tScanLfZ;
 
@@ -1757,6 +2377,8 @@ begin
 		tNxtPixStepB	= tScanStepPixB;
 		tNxtPixStepA	= tScanStepPixA;
 
+		tNxtScanStepInh	= 5;
+
 //		$display(  "ModEdgeWalk: LfST=%X RtST=%X",
 //			{tScanLfS,tScanLfT},
 //			{tScanRtS,tScanRtT});
@@ -1771,7 +2393,21 @@ begin
 
 	tNxtHeldCyc = tHeldCyc-1;
 
-	if(tMissFbRgb || tMissFbRgbLatch)
+	if(((tDsOK!=UMEM_OK_READY) || (tHeldCyc[23:10]==0)) && 
+		!(tMissFbRgbLatch||tMissFbZLatch||tMissUtxLatch))
+	begin
+//		$display("ModEdgeWalk: Fetch Wait Return Ready");
+		tDsOpm = UMEM_OPM_READY;
+
+		tNxtMissFbRgbDone			= 0;
+		tNxtMissFbZDone				= 0;
+		tNxtMissUtxDone				= 0;
+//		tNxtHeldCyc					= 4096;
+//		tNxtHeldCyc					= 16384;
+		tNxtHeldCyc					= 131072;
+	end
+	else
+		if(tMissFbRgb || tMissFbRgbLatch)
 	begin
 		if(tDsOK==UMEM_OK_OK)
 		begin
@@ -1885,6 +2521,14 @@ begin
 	begin
 `ifdef def_true
 // `ifndef def_true
+
+`ifdef def_true
+		if((tLdBlkUtxIx!=tNxtLdBlkUtxIx) && !tMissUtxLatch)
+		begin
+			$display("Wait UTX Array Ready");
+		end
+		else
+`endif
 		if(	(tLdBlkUtxAddr[31:16] == tReqBlkUtxAx) &&
 			(tLdBlkUtxAddr[15: 0] == tReqBlockUtxIx) &&
 			!tMissUtxLatch)
@@ -1921,7 +2565,7 @@ begin
 			begin
 				tNxtMemBlockUtxAddr		= tReqBlockUtxAddr;
 
-				tNxtMemBlockUtxA		= tDsDataInLo;
+				tNxtMemBlockUtxA		= { tDsDataInHi, tDsDataInLo };
 				tNxtMemBlockUtxIxA		= tReqBlockUtxIx;
 
 				tNxtMemBlockUtxB		= tMemBlockUtxA;
@@ -1933,7 +2577,7 @@ begin
 				tNxtMemBlockUtxD		= tMemBlockUtxC;
 				tNxtMemBlockUtxIxD		= tMemBlockUtxIxC;
 
-				tStBlkUtxData			= tDsDataInLo;
+				tStBlkUtxData			= { tDsDataInHi, tDsDataInLo };
 				tStBlkUtxAddr			= { tReqBlkUtxAx, tReqBlockUtxIx };
 				tDoStBlkUtx				= 1;
 			end
@@ -1952,7 +2596,10 @@ begin
 			end
 			else
 			begin
-				tDsOpm				= UMEM_OPM_RD_Q;
+//				tDsOpm				= UMEM_OPM_RD_Q;
+				tDsOpm				= UMEM_OPM_RD_TILE;
+				if(tReqBlockUtxAddr[3])
+					tDsOpm			= UMEM_OPM_RD_Q;
 				tDsAddr				= tReqBlockUtxAddr;
 				tNxtMissUtxLatch	= 1;
 			end
@@ -1964,45 +2611,50 @@ begin
 		tNxtMissFbRgbDone			= 0;
 		tNxtMissFbZDone				= 0;
 		tNxtMissUtxDone				= 0;
-//		tNxtHeldCyc					= 131072;
-		tNxtHeldCyc					= 4096;
+		tNxtHeldCyc					= 131072;
+//		tNxtHeldCyc					= 4096;
+//		tNxtHeldCyc					= 16384;
 	end
 
 	if(tHeldCyc[23:8]==0)
 	begin
-		$display("ModEdgeWalk: Miss Timeout %d", tHeldCyc);
-
-		tNxtMemBlockFbRgbIx		= tReqBlockFbRgbIx;
-		tNxtMemBlockFbRgbAddr	= tReqBlockFbRgbAddr;
-
-		tNxtMemBlockFbZIx		= tReqBlockFbZIx;
-		tNxtMemBlockFbZAddr		= tReqBlockFbZAddr;
-
-		tNxtMemBlockUtxIxA		= tReqBlockUtxIx;
-		tNxtMemBlockUtxAddr		= tReqBlockUtxAddr;
-
-		tNxtMemBlockUtxB		= tMemBlockUtxA;
-		tNxtMemBlockUtxIxB		= tMemBlockUtxIxA;
-
-		tNxtMemBlockUtxC		= tMemBlockUtxB;
-		tNxtMemBlockUtxIxC		= tMemBlockUtxIxB;
-
-		tNxtMemBlockUtxD		= tMemBlockUtxC;
-		tNxtMemBlockUtxIxD		= tMemBlockUtxIxC;
+		$display("ModEdgeWalk: Miss Timeout %X", tHeldCyc);
 
 		if(tMissFbRgbLatch)
 		begin
 			$display("  FbRGB A=%X", tReqBlockFbRgbAddr);
+
+			tNxtMemBlockFbRgbIx		= tReqBlockFbRgbIx;
+			tNxtMemBlockFbRgbAddr	= tReqBlockFbRgbAddr;
+			tNxtMemBlockFbRgbDirty	= 0;
 		end
 
 		if(tMissFbZLatch)
 		begin
 			$display("  FbZ A=%X", tReqBlockFbZAddr);
+
+			tNxtMemBlockFbZIx		= tReqBlockFbZIx;
+			tNxtMemBlockFbZAddr		= tReqBlockFbZAddr;
+			tNxtMemBlockFbZDirty	= 0;
 		end
 
 		if(tMissUtxLatch)
 		begin
-			$display("  UTX A=%X", tReqBlockUtxAddr);
+			$display("  UTX A=%X IX=%X", tReqBlockUtxAddr, tReqBlockUtxIx);
+
+			tNxtMemBlockUtxAddr		= tReqBlockUtxAddr;
+
+			tNxtMemBlockUtxA		= UV128_00;
+			tNxtMemBlockUtxIxA		= tReqBlockUtxIx;
+
+			tNxtMemBlockUtxB		= tMemBlockUtxA;
+			tNxtMemBlockUtxIxB		= tMemBlockUtxIxA;
+
+			tNxtMemBlockUtxC		= tMemBlockUtxB;
+			tNxtMemBlockUtxIxC		= tMemBlockUtxIxB;
+
+			tNxtMemBlockUtxD		= tMemBlockUtxC;
+			tNxtMemBlockUtxIxD		= tMemBlockUtxIxC;
 		end
 
 		tDsOpm						= UMEM_OPM_READY;
@@ -2016,10 +2668,15 @@ begin
 		tNxtMissUtxLatch			= 0;
 	end
 
+	tNxtFifoStatus0		= tStFifoStatus0;
+
+
 	if(tBusCSelOE)
 	begin
 		case(tBusAddr[7:3])
-			5'h00:		tBusDataOut	= tStFifoCtrl0;
+//			5'h00:		tBusDataOut	= tStFifoCtrl0;
+			5'h00:		tBusDataOut	=
+				{ tStFifoCtrl0[63:4], tStFifoStatus0[3:0] };
 			5'h01:		tBusDataOut	= tStFifoCtrl1;
 			5'h02:		tBusDataOut	= tStFifoCtrl2;
 			5'h03:		tBusDataOut	= tStFifoCtrl3;
@@ -2036,6 +2693,7 @@ begin
 			5'h0E:		tBusDataOut	= tStFifoCtrl14;
 			5'h0F:		tBusDataOut	= tStFifoCtrl15;
 			5'h10:		tBusDataOut	= tStFifoCtrl16;
+			5'h11:		tBusDataOut	= tStFifoCtrl17;
 			default:	tBusDataOut	= 0;
 		endcase
 		
@@ -2044,6 +2702,7 @@ begin
 
 //		if((tBusAddr[7:3]!=0) || !tStFifoCtrl0[0])
 		if(tBusAddr[7:3]!=0)
+//		if(1'b1)
 		begin
 			$display("ModEdgeWalk: Get %X = %X", tBusAddr[7:3], tBusDataOut);
 		end
@@ -2074,35 +2733,67 @@ begin
 				5'h0E: tNxtFifoCtrl14 = tBusDataIn;
 				5'h0F: tNxtFifoCtrl15 = tBusDataIn;
 				5'h10: tNxtFifoCtrl16 = tBusDataIn;
+				5'h11: tNxtFifoCtrl17 = tBusDataIn;
 				default: begin end
 			endcase
 		end
 
-		if(tNxtFifoCtrl0[0] && !tStFifoCtrl0[0])
-		begin
-			$display("Mod Edge Walk: Add Request %X", tFifoStRov);
-			tNxtFifoStRov = tFifoStRov + 1;
-		end
+//		if(tNxtFifoCtrl0[0] && !tStFifoCtrl0[0])
+//		begin
+//			$display("Mod Edge Walk: Add Request %X", tFifoStRov);
+//			tNxtFifoStRov = tFifoStRov + 1;
+//		end
 
 		tBusOK			= 1;
 	end
 	else
 	begin
-		tNxtFifoCtrl0[0] = (tFifoStRov + 1) == tFifoRqRov;
+		tNxtFifoCtrl0[0] = 0;
 		tNxtFifoCtrl0[1] = 0;
 		tNxtFifoCtrl0[2] = 0;
 		tNxtFifoCtrl0[3] = 0;
+	end
+
+	tFifoStRovP1 = tFifoStRov + 1;
+	tFifoStRovP2 = tFifoStRov + 2;
+
+	if(tStFifoCtrl0[0] && !tStFifoCtrl0L[0])
+	begin
+		$display("ModEdgeWalk: Add Request %X, Rq=%X",
+			tFifoStRov, tFifoRqRov);
+//		tNxtFifoStRov = tFifoStRov + 1;
+		tNxtFifoStRov = tFifoStRovP1;
+
+		if(tFifoStRovP1 == tFifoRqRov)
+		begin
+			$display("ModEdgeWalk: FIFO Overflow %X", tFifoStRov);
+		end
+	end
+
+	if(1'b1)
+	begin
+		tNxtFifoStatus0[0] = 0;
+		tNxtFifoStatus0[1] = 0;
+		tNxtFifoStatus0[2] = 0;
+		tNxtFifoStatus0[3] = 0;
+				
+		if(tFifoStRovP1 == tFifoRqRov)
+			tNxtFifoStatus0[0] = 1;
+		if(tFifoStRovP2 == tFifoRqRov)
+			tNxtFifoStatus0[0] = 1;
 
 		if((tScanY <= tScanLimY) || (tScanY[11] && !tScanLimY[11]))
-			tNxtFifoCtrl0[2] = 1;
+			tNxtFifoStatus0[2] = 1;
 		if(tFifoStRov != tFifoRqRov)
-			tNxtFifoCtrl0[2] = 1;
+			tNxtFifoStatus0[2] = 1;
 		if(tNxtRegCtrl0[0])
-			tNxtFifoCtrl0[2] = 1;
+			tNxtFifoStatus0[2] = 1;
 		if(tNxtFifoRqRov != tFifoRqRov)
-			tNxtFifoCtrl0[2] = 1;
+			tNxtFifoStatus0[2] = 1;
 		if(tRegCtrl0[0] && !tRegCtrl0L[0])
-			tNxtFifoCtrl0[2] = 1;
+			tNxtFifoStatus0[2] = 1;
+
+//		$display("ModEdgeWalk: tNxtFifoStatus0=%X", tNxtFifoStatus0);
 	end
 	
 	if(tNxtFifoRqRov != tFifoRqRov)
@@ -2125,10 +2816,13 @@ begin
 		tNxtRegCtrl14 = tFifoCtrl14[tFifoRqRov];
 		tNxtRegCtrl15 = tFifoCtrl15[tFifoRqRov];
 		tNxtRegCtrl16 = tFifoCtrl16[tFifoRqRov];
+		tNxtRegCtrl17 = tFifoCtrl17[tFifoRqRov];
 		$display("  ModEdgeWalk: Ctrl0=%X", tNxtRegCtrl0);
 		$display("  ModEdgeWalk: Ctrl1=%X", tNxtRegCtrl1);
 		$display("  ModEdgeWalk: Ctrl2=%X", tNxtRegCtrl2);
 		$display("  ModEdgeWalk: Ctrl3=%X", tNxtRegCtrl3);
+
+		tNxtScanStepInh	= 5;
 	end
 	
 	tNxtRegCtrl0[1] = 0;
@@ -2136,11 +2830,19 @@ begin
 //	if(tNxtRegCtrl0[0] && !tRegCtrl0[0])
 	if(tRegCtrl0[0] && !tRegCtrl0L[0])
 	begin
-		$display("ModEdgeWalk: Begin Request");
+		$display("ModEdgeWalk: Begin Request, %X", tFifoRqRov);
 
-		tNxtScanY		= tRegCtrl1[11: 0];
-		tNxtScanLimY	= tRegCtrl1[27:16];
-		$display("ModEdgeWalk: Ystrt=%X Yend=%X", tNxtScanY, tNxtScanLimY);
+//		if(!tRegCtrl0[3])
+		if(1'b1)
+		begin
+			tNxtScanY		= tRegCtrl1[11: 0];
+			tNxtScanLimY	= tRegCtrl1[27:16];
+			$display("ModEdgeWalk: Ystrt=%X Yend=%X", tNxtScanY, tNxtScanLimY);
+		end
+		else
+		begin
+			$display("ModEdgeWalk: Command: %X", tRegCtrl0[15:8]);
+		end
 
 		tNxtScanLfX		= tRegCtrl4[57:42];
 		tNxtScanRtX		= tRegCtrl5[57:42];
@@ -2211,7 +2913,23 @@ begin
 		tNxtPixX		= 12'h7FF;
 		tNxtPixLimX		= 12'h7FF;
 
-		if(tRegCtrl3[31:0]!=tRegCtrl3L[31:0])
+		tNxtScanStepInh	= 5;
+
+		if(tRegCtrl0[3])
+		begin
+			case(tRegCtrl0[13:8])
+				6'h01: begin
+					tNxtUtxFlushRov		= tUtxFlushRov + 1;
+				end
+				
+				default: begin
+				end
+			endcase
+		end
+
+//		if(tRegCtrl3[31:0]!=tRegCtrl3L[31:0])
+		if((tRegCtrl3[31:0]!=tRegCtrl3L[31:0]) ||
+			(tNxtUtxFlushRov != tUtxFlushRov))
 		begin
 			tNxtMemBlockUtxIxA	= 16'hFFFF;
 			tNxtMemBlockUtxIxB	= 16'hFFFF;
@@ -2268,6 +2986,7 @@ begin
 	tRegCtrl14		<= tNxtRegCtrl14;
 	tRegCtrl15		<= tNxtRegCtrl15;
 	tRegCtrl16		<= tNxtRegCtrl16;
+	tRegCtrl17		<= tNxtRegCtrl17;
 
 	tStFifoCtrl0	<= tNxtFifoCtrl0;
 	tStFifoCtrl1	<= tNxtFifoCtrl1;
@@ -2286,13 +3005,18 @@ begin
 	tStFifoCtrl14	<= tNxtFifoCtrl14;
 	tStFifoCtrl15	<= tNxtFifoCtrl15;
 	tStFifoCtrl16	<= tNxtFifoCtrl16;
+	tStFifoCtrl17	<= tNxtFifoCtrl17;
+
+	tStFifoCtrl0L	<= tStFifoCtrl0;
+	tStFifoStatus0	<= tNxtFifoStatus0;
 
 	tFifoStRov		<= tNxtFifoStRov;
 	tFifoRqRov		<= tNxtFifoRqRov;
 
 	if(tNxtFifoStRov != tFifoStRov)
 	begin
-		tFifoCtrl0[tFifoStRov]	<= tNxtFifoCtrl0;
+//		tFifoCtrl0[tFifoStRov]	<= tNxtFifoCtrl0;
+		tFifoCtrl0[tFifoStRov]	<= tStFifoCtrl0;
 
 		tFifoCtrl1[tFifoStRov]	<= tStFifoCtrl1;
 		tFifoCtrl2[tFifoStRov]	<= tStFifoCtrl2;
@@ -2310,6 +3034,7 @@ begin
 		tFifoCtrl14[tFifoStRov]	<= tStFifoCtrl14;
 		tFifoCtrl15[tFifoStRov]	<= tStFifoCtrl15;
 		tFifoCtrl16[tFifoStRov]	<= tStFifoCtrl16;
+		tFifoCtrl17[tFifoStRov]	<= tStFifoCtrl17;
 	end
 
 	tMemBlockFbRgb			<= tNxtMemBlockFbRgb;
@@ -2335,6 +3060,8 @@ begin
 	tMemBlockFbRgbDirty		<= tNxtMemBlockFbRgbDirty;
 	tMemBlockFbZDirty		<= tNxtMemBlockFbZDirty;
 
+	tUtxFlushRov			<= tNxtUtxFlushRov;
+
 	tReqBlockFbRgbIx		<= tNxtReqBlockFbRgbIx;
 	tReqBlockFbZIx			<= tNxtReqBlockFbZIx;
 
@@ -2343,6 +3070,11 @@ begin
 	tReqBlockUtxIxB			<= tNxtReqBlockUtxIxB;
 	tReqBlockUtxIxC			<= tNxtReqBlockUtxIxC;
 	tReqBlockUtxIxD			<= tNxtReqBlockUtxIxD;
+
+	tReqBlockUtxIxlA		<= tNxtReqBlockUtxIxlA;
+	tReqBlockUtxIxlB		<= tNxtReqBlockUtxIxlB;
+	tReqBlockUtxIxlC		<= tNxtReqBlockUtxIxlC;
+	tReqBlockUtxIxlD		<= tNxtReqBlockUtxIxlD;
 
 	tReqBlockFbRgbAddr		<= tNxtReqBlockFbRgbAddr;
 	tReqBlockFbZAddr		<= tNxtReqBlockFbZAddr;
@@ -2413,6 +3145,7 @@ begin
 
 	tPixX				<= tNxtPixX;
 	tPixLimX			<= tNxtPixLimX;
+	tScanRcpXL			<= tScanRcpX;
 
 	tPixZ				<= tNxtPixZ;
 	tPixStepZ			<= tNxtPixStepZ;
@@ -2429,6 +3162,11 @@ begin
 	tPixStepB			<= tNxtPixStepB;
 	tPixA				<= tNxtPixA;
 	tPixStepA			<= tNxtPixStepA;
+
+	tBlockUtxPixIxA		<= tNxtBlockUtxPixIxA;
+	tBlockUtxPixIxB		<= tNxtBlockUtxPixIxB;
+	tBlockUtxPixIxC		<= tNxtBlockUtxPixIxC;
+
 
 	tPixUtxRgbA			<= tPixUtxRgb0a;
 	tPixUtxRgbB			<= tPixUtxRgb0b;
@@ -2450,6 +3188,7 @@ begin
 	tMissFbZDone		<= tNxtMissFbZDone;
 	tMissUtxDone		<= tNxtMissUtxDone;
 
+	tScanStepInh		<= tNxtScanStepInh;
 	tPixStepInh			<= tNxtPixStepInh;
 end
 

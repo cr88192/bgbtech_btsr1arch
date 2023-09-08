@@ -108,7 +108,7 @@ tkra_vec4f TKRA_ProjectVertexB(tkra_vec4f vec, tkra_mat4 mat)
 
 #ifdef __BJX2__
 // #if 0
-int TKRA_FinalProjectVertex_Float2Fixed32pN(double val, int qb);
+int TKRA_FinalProjectVertex_Float2Fixed32pN(float val, int qb);
 u64 TKRA_FinalProjectVertex_Vec4F2H(u64 va, u64 vb);
 
 __asm {
@@ -430,30 +430,17 @@ int TKRA_TransformProjectTriangle(
 	float			scr_xc, scr_yc;
 	float			scr_clip_l, scr_clip_r;
 	float			scr_clip_t, scr_clip_b;
+	float			scr_clip_la, scr_clip_ra;
+	float			scr_clip_ta, scr_clip_ba;
 	float			txs, tys, txsn1, tysn1, xbi, ybi;
 	float			f0, f1, f2, f3, f4, f5, fdx, fdy;
 	float			g0, g1, g2, g3, g4, g5;
 	float			w0, w1, w2, skew;
 	int				i0, i1, i2, tfl;
 	int				ecfl, lim;
-	byte			wasfrag, nosubdiv;
+	byte			wasfrag, nosubdiv, nopersp;
 	
 	TKRA_SetupDrawBlend(ctx);
-
-	v0stk=ctx->v0stk;
-	v1stk=ctx->v1stk;
-	v2stk=ctx->v2stk;
-//	v3stk=ctx->v3stk;
-
-	v0stk[0]=iv0;
-	v1stk[0]=iv1;
-	v2stk[0]=iv2;
-	vstkpos=1;
-	ctx->stat_base_tris++;
-
-	v0stk[0].fl=0;
-	v1stk[0].fl=0;
-	v2stk[0].fl=0;
 	
 	tfl=0;
 
@@ -463,12 +450,32 @@ int TKRA_TransformProjectTriangle(
 //	ctx->triflag=tfl;
 	TKRA_SetupDrawEdgeForTriFlag(ctx, tfl);
 	tfl=ctx->triflag;
-	
+
+
+	v0=iv0;	v1=iv1;	v2=iv2;
+	v0p=TKRA_ProjectVertexB(v0.xyz, prjmat);
+	v1p=TKRA_ProjectVertexB(v1.xyz, prjmat);
+	v2p=TKRA_ProjectVertexB(v2.xyz, prjmat);
+	v0.pv=v0p;	v1.pv=v1p;	v2.pv=v2p;
+	v0.fl=1;	v1.fl=1;	v2.fl=1;
+
+//	v0stk[0]=iv0;
+//	v1stk[0]=iv1;
+//	v2stk[0]=iv2;
+
+//	v0stk[0].fl=0;
+//	v1stk[0].fl=0;
+//	v2stk[0].fl=0;
+
 	if(tfl&TKRA_TRFL_NOCMOD)
 	{
-		v0stk[0].rgb=0xFFFFFFFFU;
-		v1stk[0].rgb=0xFFFFFFFFU;
-		v2stk[0].rgb=0xFFFFFFFFU;
+//		v0stk[0].rgb=0xFFFFFFFFU;
+//		v1stk[0].rgb=0xFFFFFFFFU;
+//		v2stk[0].rgb=0xFFFFFFFFU;
+
+		v0.rgb=0xFFFFFFFFU;
+		v1.rgb=0xFFFFFFFFU;
+		v2.rgb=0xFFFFFFFFU;
 	}
 	
 	prj_xyzsc=ctx->prj_xyzsc;
@@ -485,6 +492,89 @@ int TKRA_TransformProjectTriangle(
 	scr_clip_r=ctx->scr_clip_r;
 	scr_clip_t=ctx->scr_clip_t;
 	scr_clip_b=ctx->scr_clip_b;
+
+	scr_clip_la=scr_clip_l-((scr_clip_r-scr_clip_l)*0.1875);
+	scr_clip_ra=scr_clip_r+((scr_clip_r-scr_clip_l)*0.1875);
+	scr_clip_ta=scr_clip_t+((scr_clip_t-scr_clip_b)*0.1875);
+	scr_clip_ba=scr_clip_b-((scr_clip_t-scr_clip_b)*0.1875);
+
+
+	ctx->stat_base_tris++;
+
+	v0ww=tkra_v4f_bboxmins3(v0p, v1p, v2p);
+	v1ww=tkra_v4f_bboxmaxs3(v0p, v1p, v2p);
+	
+	if(tkra_v4f_w(v1ww)<=0.0)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_negw_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_x(v0ww)>scr_clip_r)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_x(v1ww)<scr_clip_l)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_y(v0ww)>scr_clip_t)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_y(v1ww)<scr_clip_b)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+#if 1
+	if(	(tkra_v4f_w(v0ww)>0.0) &&
+		(tkra_v4f_x(v0ww)>=scr_clip_l) &&
+		(tkra_v4f_x(v1ww)<=scr_clip_r) &&
+		(tkra_v4f_y(v0ww)>=scr_clip_b) &&
+		(tkra_v4f_y(v1ww)<=scr_clip_t) )
+	{
+		f0=tkra_v4f_x(v1ww)-tkra_v4f_x(v0ww);
+		f1=tkra_v4f_y(v1ww)-tkra_v4f_y(v0ww);
+		if((f0*f1)<(32*32))
+		{
+			ctx->stat_draw_tris++;
+
+			TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
+			TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
+			TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
+
+			TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
+
+			return(1);
+		}
+	}
+#endif
+
+
+	v0.fl=0;	v1.fl=0;	v2.fl=0;
+
+	v0stk=ctx->v0stk;
+	v1stk=ctx->v1stk;
+	v2stk=ctx->v2stk;
+//	v3stk=ctx->v3stk;
+
+	vstkpos=1;
+	v0stk[0]=v0;
+	v1stk[0]=v1;
+	v2stk[0]=v2;
 
 
 //	txs=(1<<(ctx->tex_xshl));
@@ -518,6 +608,8 @@ int TKRA_TransformProjectTriangle(
 			
 	if(ctx->stateflag1&TKRA_STFL1_NOSUBDIV)
 		nosubdiv=1;
+		
+	nopersp=TKRA_WalkCheckNoPersp(ctx);
 
 	while((vstkpos>0) && (lim>0))
 	{
@@ -616,11 +708,15 @@ int TKRA_TransformProjectTriangle(
 
 //		if((tkra_v4f_z(v0ww)<0.0) && (tkra_v4f_z(v1ww)>0.0))
 //			{ ecfl|=1; }
-		if(	(tkra_v4f_x(v1ww)>scr_clip_r) ||
-			(tkra_v4f_x(v0ww)<scr_clip_l) )
+//		if(	(tkra_v4f_x(v1ww)>scr_clip_r) ||
+//			(tkra_v4f_x(v0ww)<scr_clip_l) )
+		if(	(tkra_v4f_x(v1ww)>scr_clip_ra) ||
+			(tkra_v4f_x(v0ww)<scr_clip_la) )
 				{ ecfl|=2; }
-		if(	(tkra_v4f_y(v1ww)>scr_clip_t) ||
-			(tkra_v4f_y(v0ww)<scr_clip_b) )
+//		if(	(tkra_v4f_y(v1ww)>scr_clip_t) ||
+//			(tkra_v4f_y(v0ww)<scr_clip_b) )
+		if(	(tkra_v4f_y(v1ww)>scr_clip_ta) ||
+			(tkra_v4f_y(v0ww)<scr_clip_ba) )
 				{ ecfl|=4; }
 #endif
 
@@ -705,6 +801,7 @@ int TKRA_TransformProjectTriangle(
 				continue;				
 			}
 
+#if 0
 //			if(1)
 //			if(f3 < (2*3))
 			if(f3 < (3*3))
@@ -723,15 +820,22 @@ int TKRA_TransformProjectTriangle(
 				TKRA_EmitProjectedPoint(ctx, pv0);
 				continue;
 			}
+#endif
 
 #if 1
-			TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
-			TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
-			TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
+			if(1)
+			{
+				TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
+				TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
+				TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
 
-			ctx->stat_drawpts3_tris++;
-			TKRA_EmitProjectedTrianglePts(ctx, pv0, pv1, pv2);
-			continue;
+				ctx->stat_drawpts3_tris++;
+				if(nopersp)
+					TKRA_EmitProjectedTrianglePts(ctx, pv0, pv1, pv2);
+				else
+					TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
+				continue;
+			}
 #endif
 		}
 
@@ -760,10 +864,17 @@ int TKRA_TransformProjectTriangle(
 //		if(ecfl)
 //			f4=(32*32*3);
 
+		if(!nopersp)
+		{
+			f4=f4*4;
+//			f4=f4*6;
+//			f4=f4*8;
+		}
+
 //		if(ecfl&4)
 		if(ecfl&6)
 		{
-			f4=(32*32*3);
+//			f4=(32*32*3);
 			f4=TKRA_PARAM_TRISUBDIV_EDGE;
 //			f4=(48*48*3);
 		}
@@ -1014,6 +1125,10 @@ int TKRA_TransformProjectQuad(
 	float			scr_xc, scr_yc;
 	float			scr_clip_l, scr_clip_r;
 	float			scr_clip_t, scr_clip_b;
+
+	float			scr_clip_la, scr_clip_ra;
+	float			scr_clip_ta, scr_clip_ba;
+
 	float			txs, tys, txsn1, tysn1, xbi, ybi;
 	float			f0, f1, f2, f3, f4, f5, fdx, fdy;
 	float			g0, g1, g2, g3;
@@ -1083,6 +1198,16 @@ int TKRA_TransformProjectQuad(
 	scr_clip_r=ctx->scr_clip_r;
 	scr_clip_t=ctx->scr_clip_t;
 	scr_clip_b=ctx->scr_clip_b;
+	
+//	scr_clip_la=scr_clip_l-((scr_clip_r-scr_clip_l)*0.375);
+//	scr_clip_ra=scr_clip_r+((scr_clip_r-scr_clip_l)*0.375);
+//	scr_clip_ta=scr_clip_t+((scr_clip_t-scr_clip_b)*0.375);
+//	scr_clip_ba=scr_clip_b-((scr_clip_t-scr_clip_b)*0.375);
+
+	scr_clip_la=scr_clip_l-((scr_clip_r-scr_clip_l)*0.1875);
+	scr_clip_ra=scr_clip_r+((scr_clip_r-scr_clip_l)*0.1875);
+	scr_clip_ta=scr_clip_t+((scr_clip_t-scr_clip_b)*0.1875);
+	scr_clip_ba=scr_clip_b-((scr_clip_t-scr_clip_b)*0.1875);
 
 	img=ctx->tex_cur;
 	txs=1<<img->tex_xshl;
@@ -1214,18 +1339,31 @@ int TKRA_TransformProjectQuad(
 		}
 
 #if 1
-		if((tkra_v4f_w(v0ww)<0.0) && (tkra_v4f_w(v1ww)>0.0))
+//		if((tkra_v4f_w(v0ww)<0.0) && (tkra_v4f_w(v1ww)>0.0))
+		if(tkra_v4f_w(v0ww)<0.01)
 			{ ecfl|=1; }
 
 //		if((tkra_v4f_z(v0ww)<0.0) && (tkra_v4f_z(v1ww)>0.0))
 //			{ ecfl|=1; }
 
-		if(	(tkra_v4f_x(v1ww)>scr_clip_r) ||
-			(tkra_v4f_x(v0ww)<scr_clip_l) )
-				{ ecfl|=2; }
-		if(	(tkra_v4f_y(v1ww)>scr_clip_t) ||
-			(tkra_v4f_y(v0ww)<scr_clip_b) )
-				{ ecfl|=4; }
+//		if(!nopersp)
+		if(1)
+		{
+			if(	(tkra_v4f_x(v1ww)>scr_clip_ra) ||
+				(tkra_v4f_x(v0ww)<scr_clip_la) )
+					{ ecfl|=2; }
+			if(	(tkra_v4f_y(v1ww)>scr_clip_ta) ||
+				(tkra_v4f_y(v0ww)<scr_clip_ba) )
+					{ ecfl|=4; }
+		}else
+		{
+			if(	(tkra_v4f_x(v1ww)>scr_clip_r) ||
+				(tkra_v4f_x(v0ww)<scr_clip_l) )
+					{ ecfl|=2; }
+			if(	(tkra_v4f_y(v1ww)>scr_clip_t) ||
+				(tkra_v4f_y(v0ww)<scr_clip_b) )
+					{ ecfl|=4; }
+		}
 #endif		
 
 #if 0
@@ -1282,7 +1420,8 @@ int TKRA_TransformProjectQuad(
 
 		f5=f0+f1+f2+f3;
 
-		if(f5 < (4*4))
+//		if(f5 < (4*4))
+		if(f5 < (9*4))
 		{
 			if(f5 < (1*4))
 			{
@@ -1292,6 +1431,12 @@ int TKRA_TransformProjectQuad(
 
 			if(1)
 			{
+				if(!nopersp)
+				{
+					ctx->stat_microbase_tris++;
+					continue;				
+				}
+
 				TKRA_TransformCalcMidpointVertex(ctx, &v8, &v0, &v2, prjmat);
 				if(!(v8.fl&1))
 					TKRA_TransformProjectVertexShader(ctx, &v8, &v8, prjmat);
@@ -1308,8 +1453,9 @@ int TKRA_TransformProjectQuad(
 
 		if(!nopersp)
 		{
-//			f4=f4*4;
-			f4=f4*6;
+			f4=f4*4;
+//			f4=f4*6;
+//			f4=f4*8;
 		}
 
 //		if(ecfl&4)

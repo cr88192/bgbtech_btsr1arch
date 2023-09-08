@@ -4359,6 +4359,56 @@ begin
 `endif
 			end
 
+
+			16'h7zz0: begin		/* F0nm_7eo0 */
+`ifdef jx2_ena_fpu_v2sd
+`ifdef jx2_use_fpu_v4sf
+				opNmid		= JX2_UCMD_FPUV4SF;
+`else
+				opNmid		= JX2_UCMD_FPU3;
+`endif
+`else
+				opNmid		= JX2_UCMD_FPU3;
+`endif
+
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_FPU_FADD;
+			end
+
+			16'h7zz1: begin		/* F0nm_7eo1 */
+`ifdef jx2_ena_fpu_v2sd
+`ifdef jx2_use_fpu_v4sf
+				opNmid		= JX2_UCMD_FPUV4SF;
+`else
+				opNmid		= JX2_UCMD_FPU3;
+`endif
+`else
+				opNmid		= JX2_UCMD_FPU3;
+`endif
+
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_FPU_FSUB;
+			end
+
+			16'h7zz2: begin		/* F0nm_7eo2 */
+`ifdef jx2_ena_fpu_v2sd
+`ifdef jx2_use_fpu_v4sf
+				opNmid		= JX2_UCMD_FPUV4SF;
+`else
+				opNmid		= JX2_UCMD_FPU3;
+`endif
+`else
+				opNmid		= JX2_UCMD_FPU3;
+`endif
+
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				opUCmdIx	= JX2_UCIX_FPU_FMUL;
+			end
+
+
 			16'h7zz4: begin		/* F0nm_7eo4 */
 				opNmid		= JX2_UCMD_QMULDIV;
 				opFmid		= JX2_FMID_REGREG;

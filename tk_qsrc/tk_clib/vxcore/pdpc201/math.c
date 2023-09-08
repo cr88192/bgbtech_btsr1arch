@@ -725,6 +725,78 @@ double fsqrt_approx(double x)
 
 __PDPCLIB_API__ double sqrt(double x)
 {
+	double xs, yn, xsr;
+
+	if (x < 0.0)
+	{
+		errno=EDOM;
+		return(0.0);
+	}
+
+	if (x == 0.0)
+		return (0.0);
+
+	if (x != x)
+		return (0.0);
+
+	xs=fsqrt_approx(x);
+	xsr=0.5f/((float)xs);		//faster approximate
+
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+
+	return(xs);
+}
+
+
+__PDPCLIB_API__ double _sqrt_fast(double x)
+{
+	float xs, yn, xsr;
+
+	if (x < 0.0)
+	{
+		errno=EDOM;
+		return(0.0);
+	}
+
+	if (x == 0.0)
+		return (0.0);
+
+	if (x != x)
+		return (0.0);
+
+	xs=fsqrt_approx(x);
+	xsr=0.5f/((float)xs);		//faster approximate
+
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+	yn=xs*xs;
+	xs-=(yn-x)*xsr;
+//	yn=xs*xs;
+//	xs-=(yn-x)*xsr;
+//	yn=xs*xs;
+//	xs-=(yn-x)*xsr;
+//	yn=xs*xs;
+//	xs-=(yn-x)*xsr;
+
+	return(xs);
+}
+
+#if 0
+__PDPCLIB_API__ double sqrt(double x)
+{
 	double xs, yn, xsr, ynn;
 	double pow1;
 	int i, n;
@@ -807,6 +879,7 @@ __PDPCLIB_API__ double sqrt(double x)
 	return (ynn*pow1);
 #endif
 }
+#endif
 
 
 __PDPCLIB_API__ double frexp(double x, int *rexp)

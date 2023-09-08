@@ -668,7 +668,7 @@ begin
 
 //	nxtReqIx	= nxtReqAddr [11:0] ^ nxtReqAddr [23:12];
 	nxtReqIx	= nxtReqAddr [11:0] ^
-		{ nxtReqAddr [15:12], nxtReqAddr [19:16], nxtReqAddr [23:20] };
+		{ nxtReqAddr [15:12], nxtReqAddr [19:16], nxtReqAddr [21:18] };
 //	nxtReqIx	= nxtReqAddr [11:0] ^
 //		{ nxtReqAddr [17:12], nxtReqAddr [23:18] };
 //	nxtReqIx	= nxtReqAddr [11:0] ^
@@ -681,14 +681,14 @@ begin
 //	nxtReqIx	= nxtReqAddr [12:0] ^ nxtReqAddr [24:12];
 //	nxtReqIx	= nxtReqAddr [12:0] ^ nxtReqAddr [25:13];
 	nxtReqIx	= nxtReqAddr [12:0] ^
-		{ nxtReqAddr [18:13], nxtReqAddr [25:19] };
+		{ nxtReqAddr [18:13], nxtReqAddr [21:15] };
 `endif
 
 `ifdef jx2_mem_l2wsz_16384
 //	nxtReqIx	= nxtReqAddr [13:0] ^ nxtReqAddr [26:14];
 //	nxtReqIx	= nxtReqAddr [13:0] ^ nxtReqAddr [25:13];
 	nxtReqIx	= nxtReqAddr [13:0] ^
-		{ nxtReqAddr [17:14], nxtReqAddr [19:16], nxtReqAddr [25:20] };
+		{ nxtReqAddr [17:14], nxtReqAddr [19:16], nxtReqAddr [21:16] };
 `endif
 
 //	if(memRingAddrIsRamReq)
@@ -805,13 +805,17 @@ begin
 `endif
 
 	tMissAddr	=
-		(tReqAddr [25:16] != tBlkAddrA[25:16]) ||
+//		(tReqAddr [25:16] != tBlkAddrA[25:16]) ||
+		(tReqAddr [22:16] != tBlkAddrA[22:16]) ||
+//		(tReqAddr [21:16] != tBlkAddrA[21:16]) ||
 		(tReqAddr [15: 8] != tBlkAddrA[15: 8]) ||
 		(tReqAddr [ 7: 0] != tBlkAddrA[ 7: 0]);
 
 `ifdef jx2_mem_l2d2way
 	tMissAddrB	=
-		(tReqAddr [25:16] != tBlkAddrB[25:16]) ||
+//		(tReqAddr [25:16] != tBlkAddrB[25:16]) ||
+		(tReqAddr [22:16] != tBlkAddrB[22:16]) ||
+//		(tReqAddr [21:16] != tBlkAddrB[21:16]) ||
 		(tReqAddr [15: 8] != tBlkAddrB[15: 8]) ||
 		(tReqAddr [ 7: 0] != tBlkAddrB[ 7: 0]);
 `endif

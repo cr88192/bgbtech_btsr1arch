@@ -130,13 +130,13 @@ typedef u32 nlint;
 // #define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(24*24*3)
 
-#define		TKRA_PARAM_TRISUBDIV_DFL	(64*64*3)
-// #define		TKRA_PARAM_TRISUBDIV_DFL	(48*48*3)
+// #define		TKRA_PARAM_TRISUBDIV_DFL	(64*64*3)
+#define		TKRA_PARAM_TRISUBDIV_DFL	(48*48*3)
 // #define		TKRA_PARAM_TRISUBDIV_DFL	(36*36*3)
 
 // #define		TKRA_PARAM_TRISUBDIV_EDGE	(40*40*3)
-#define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
-// #define		TKRA_PARAM_TRISUBDIV_EDGE	(24*24*3)
+// #define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
+#define		TKRA_PARAM_TRISUBDIV_EDGE	(24*24*3)
 
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(24*24*3)
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(16*16*3)
@@ -147,13 +147,13 @@ typedef u32 nlint;
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
 
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(72*72*4)
-#define		TKRA_PARAM_QUADSUBDIV_DFL	(64*64*4)
-// #define		TKRA_PARAM_QUADSUBDIV_DFL	(60*60*4)
+// #define		TKRA_PARAM_QUADSUBDIV_DFL	(64*64*4)
+#define		TKRA_PARAM_QUADSUBDIV_DFL	(60*60*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(56*56*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(40*40*4)
 
-#define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
-// #define		TKRA_PARAM_QUADSUBDIV_EDGE	(32*32*4)
+// #define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
+#define		TKRA_PARAM_QUADSUBDIV_EDGE	(32*32*4)
 
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(16*16*4)
@@ -671,6 +671,7 @@ byte		zat_zfunc;
 byte		blend_isready;
 
 byte		light_mask;
+byte		cachemode;
 
 tkra_vec4f	light_model_ambient;
 tkra_vec4f	light_ambient[8];
@@ -764,7 +765,9 @@ TKRA_TexImage *next;
 TKRA_TexImage *chain;
 
 tkra_rastpixel *tex_img;			//texture images
+tkra_rastpixel *tex_img_org;		//texture images
 u32		*tex_img_bcn;				//texture images (block compressed)
+u32		*tex_img_bcn_org;			//texture images (block compressed)
 int		tex_id;
 int		tex_mipofs[16];				//mip offs, pixels
 int		tex_mipofs_bcn[16];			//mip offs, block DWORDs

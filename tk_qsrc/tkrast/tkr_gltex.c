@@ -78,6 +78,9 @@ void tkra_glTexImage2D(
 	{
 		flag|=TKRA_TRFL_NOALPHA;
 	}
+	
+//	if(internalformat==4)
+	flag|=TKRA_TRFL_DOCMP;
 
 	if(!txbuf)
 	{

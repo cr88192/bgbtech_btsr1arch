@@ -3048,11 +3048,11 @@ Profile 3 (WEX 3-Wide): Triple Lane ALU, Dual Lane IO
 * Accessing MMIO is only allowed from Lane 1.
 * Simultaneous load and store to the same cache line will be undefined as to whether the old or new value is read.
 
-Profile 4 (WEX 3-Wide): Triple Lane ALU, Single IO Lane, Dual Lane FPU.
+Profile 4 (WEX 3-Wide): Triple Lane ALU, Single IO Lane, Dual Lane FPU (FP2).
 * Similar to 2, but allows FPU ops to be issued from Lane 2.
 ** Only certain ops may be co-issued.
 
-Profile 5 (WEX 3-Wide): Triple Lane ALU, Dual Lane IO, Dual Lane FPU
+Profile 5 (WEX 3-Wide): Triple Lane ALU, Dual Lane IO, Dual Lane FPU (FP2)
 * Similar to 3, but allows FPU ops to be issued from Lane 2.
 ** Only certain ops may be co-issued.
 

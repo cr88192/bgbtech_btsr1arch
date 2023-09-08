@@ -80,6 +80,89 @@ double cos(double ang)
 	return(sin(ang+M_PI_2));
 }
 
+#if 0
+double _sin_fast(double ang)
+{
+	static const float sin_fast_tab[64]={
+		 0.000000, 0.098017, 0.195090, 0.290285,
+		 0.382683, 0.471397, 0.555570, 0.634393,
+		 0.707107, 0.773010, 0.831470, 0.881921,
+		 0.923880, 0.956940, 0.980785, 0.995185,
+		 1.000000, 0.995185, 0.980785, 0.956940,
+		 0.923880, 0.881921, 0.831470, 0.773010,
+		 0.707107, 0.634393, 0.555570, 0.471397,
+		 0.382683, 0.290285, 0.195090, 0.098017,
+		 0.000000,-0.098017,-0.195090,-0.290285,
+		-0.382683,-0.471397,-0.555570,-0.634393,
+		-0.707107,-0.773010,-0.831470,-0.881921,
+		-0.923880,-0.956940,-0.980785,-0.995185,
+		-1.000000,-0.995185,-0.980785,-0.956940,
+		-0.923880,-0.881921,-0.831470,-0.773010,
+		-0.707107,-0.634393,-0.555570,-0.471397,
+		-0.382683,-0.290285,-0.195090,-0.098017
+	};
+	double t, x, th, th2, t0, t1, t2, t3, s0, s1;
+	int i;
+
+	th=ang*(M_TAU_R*64);
+    i=th;
+    x=th-i;
+
+	t0=sin_fast_tab[(i-1)&63];
+	t1=sin_fast_tab[(i  )&63];
+	t2=sin_fast_tab[(i+1)&63];
+	t3=sin_fast_tab[(i+2)&63];
+	s0=(1.0-(x+1))*t0+((x+1)*t1);
+	s1=(1.0-(x-1))*t2+((x-1)*t3);
+	t=(1.0-x)*s0+(x*s1);
+	return(t);
+}
+#endif
+
+#if 1
+double _sin_fast(double ang)
+{
+	float t, x, th, th2;
+	int i;
+
+    i=ang*M_TAU_R;
+    th=ang-(i*M_TAU);
+
+	th2=th*th;
+	t =th*sintab_c00; x=th*th2;
+	t+=x*sintab_c01; x*=th2;
+	t+=x*sintab_c02; x*=th2;
+	t+=x*sintab_c03; x*=th2;
+	t+=x*sintab_c04; x*=th2;
+	t+=x*sintab_c05; x*=th2;
+	t+=x*sintab_c06; x*=th2;
+	t+=x*sintab_c07; x*=th2;
+	t+=x*sintab_c08; x*=th2;
+	t+=x*sintab_c09; x*=th2;
+
+#if 0
+	t+=x*sintab_c10; x*=th2;
+	t+=x*sintab_c11; x*=th2;
+	t+=x*sintab_c12; x*=th2;
+	t+=x*sintab_c13; x*=th2;
+	t+=x*sintab_c14; x*=th2;
+	t+=x*sintab_c15; x*=th2;
+	t+=x*sintab_c16; x*=th2;
+	t+=x*sintab_c17; x*=th2;
+	t+=x*sintab_c18; x*=th2;
+	t+=x*sintab_c19; x*=th2;
+	t+=x*sintab_c20; x*=th2;
+#endif
+
+	return(t);
+}
+#endif
+
+
+double _cos_fast(double ang)
+{
+	return(_sin_fast(ang+M_PI_2));
+}
 
 float ceilf(float x)
 	{ return(ceil(x)); }

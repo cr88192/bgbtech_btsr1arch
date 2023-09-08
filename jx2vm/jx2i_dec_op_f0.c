@@ -4182,7 +4182,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			if(eq)
 			{
 				break;
-			
+
+#if 0
 				if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 					BJX2_EXTID_GFP))
 				{
@@ -4193,9 +4194,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_FADD;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_FADDA_RegRegReg;
-				op->fl|=BJX2_OPFL_NOWEX;
+				op->fl|=BJX2_OPFL_NOWEX_FP2;
 				op->imm=8;
 				break;
+#endif
 			}
 
 #if 0
@@ -4262,7 +4264,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			if(eq)
 			{
 				break;
-			
+
+#if 0			
 				if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 					BJX2_EXTID_GFP))
 				{
@@ -4276,6 +4279,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fl|=BJX2_OPFL_NOWEX;
 				op->imm=8;
 				break;
+#endif
 			}
 
 			op->rn=cn_dfl;
@@ -4293,7 +4297,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			if(eq)
 			{
 				break;
-			
+
+#if 0
 				if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 					BJX2_EXTID_GFP))
 				{
@@ -4307,6 +4312,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fl|=BJX2_OPFL_NOWEX;
 				op->imm=8;
 				break;
+#endif
 			}
 
 			if(	(op->rn==BJX2_REG_DLR) ||
@@ -4609,7 +4615,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_FADD;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_FADDD_RegRegReg;
-			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEX_FP2;
 			
 			if(disp11as&8)
 				op->Run=BJX2_Op_FADDA_RegRegReg;
@@ -4618,6 +4624,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			{
 				op->nmid=BJX2_NMID_FADDX;
 				op->Run=BJX2_Op_FADDX_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
 				op->fl|=BJX2_OPFL_NOWEXSFX;
 				op->fl|=BJX2_OPFL_REGX3R;
 			}
@@ -4635,7 +4642,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_FSUB;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_FSUBD_RegRegReg;
-			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEX_FP2;
 
 			if(disp11as&8)
 				op->Run=BJX2_Op_FSUBA_RegRegReg;
@@ -4644,6 +4651,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			{
 				op->nmid=BJX2_NMID_FSUBX;
 				op->Run=BJX2_Op_FSUBX_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
 				op->fl|=BJX2_OPFL_NOWEXSFX;
 				op->fl|=BJX2_OPFL_REGX3R;
 			}
@@ -4661,7 +4669,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_FMUL;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_FMULD_RegRegReg;
-			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEX_FP2;
 
 			if(disp11as&8)
 				op->Run=BJX2_Op_FMULA_RegRegReg;
@@ -4670,6 +4678,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			{
 				op->nmid=BJX2_NMID_FMULX;
 				op->Run=BJX2_Op_FMULX_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
 				op->fl|=BJX2_OPFL_NOWEXSFX;
 				op->fl|=BJX2_OPFL_REGX3R;
 			}
@@ -5007,7 +5016,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_FADD;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_FADDG_RegRegReg;
-			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEX_FP2;
 			if(eq)
 			{
 //				op->nmid=BJX2_NMID_FADDX;
@@ -5079,6 +5088,52 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		op->imm=imm5;
 		switch((opw2>>8)&15)
 		{
+		case 0x0:	/* F0ez_70zz */
+			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
+				BJX2_EXTID_GFP))
+			{
+				op->Run=NULL;
+				break;
+			}
+
+			op->nmid=BJX2_NMID_FADD;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FADDA_RegRegReg;
+			op->fl|=BJX2_OPFL_NOWEX_FP2;
+			op->imm=8;
+			break;
+
+		case 0x1:	/* F0ez_71zz */
+			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
+				BJX2_EXTID_GFP))
+			{
+				op->Run=NULL;
+				break;
+			}
+
+			op->nmid=BJX2_NMID_FSUB;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FSUBA_RegRegReg;
+			op->fl|=BJX2_OPFL_NOWEX_FP2;
+			op->imm=8;
+			break;
+
+		case 0x2:	/* F0ez_72zz */
+			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
+				BJX2_EXTID_GFP))
+			{
+				op->Run=NULL;
+				break;
+			}
+
+			op->nmid=BJX2_NMID_FMUL;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_FMULA_RegRegReg;
+			op->fl|=BJX2_OPFL_NOWEX_FP2;
+			op->imm=8;
+			break;
+
+
 		case 0x4:	/* F0ez_74zz */
 			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 				BJX2_EXTID_MULQ))

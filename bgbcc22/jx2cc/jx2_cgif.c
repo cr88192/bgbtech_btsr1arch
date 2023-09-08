@@ -218,17 +218,22 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpu_fpimm"))
 	{
-		shctx->has_fpim=1;
+		shctx->has_fpim|=1;
 		shctx->has_fpvsf|=2;		/* Has Full Binary32 */
 	}
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpu_fpvsf"))
 	{
-		shctx->has_fpvsf=1;
+		shctx->has_fpvsf|=1;
+	}
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpu_fpvsf2"))
+	{
+		shctx->has_fpvsf|=3;
 	}
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "loadop"))
-		shctx->has_ldop=1;
+		shctx->has_ldop|=1;
 
 	if(	BGBCC_CCXL_CheckForOptStr(ctx, "wexj") ||
 		BGBCC_CCXL_CheckForOptStr(ctx, "jumbo"))

@@ -1782,6 +1782,17 @@ BJX2_Trace *BJX2_DecTraceCb_Bad(BJX2_Context *ctx, BJX2_Trace *tr)
 int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 	BJX2_Opcode *op1, BJX2_Opcode *op2, BJX2_Opcode *op3)
 {
+	int sppfx;
+
+	sppfx=0;
+	
+	if((op2->nmid==BJX2_NMID_PADDF) && (op3->nmid==BJX2_NMID_PADDF))
+		sppfx=1;
+	if((op2->nmid==BJX2_NMID_PSUBF) && (op3->nmid==BJX2_NMID_PSUBF))
+		sppfx=1;
+	if((op2->nmid==BJX2_NMID_PMULF) && (op3->nmid==BJX2_NMID_PMULF))
+		sppfx=1;
+		
 	if(op1->fl&BJX2_OPFL_NOWEX)
 		return(-1);
 	if(op2->fl&BJX2_OPFL_NOWEX)
@@ -1791,6 +1802,22 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 
 	if(op3->fl&BJX2_OPFL_NOWEXSFX3W)
 		return(-1);
+
+	if(op1->fl&BJX2_OPFL_NOWEX_FP2)
+		return(-1);
+	if(op1->fl&BJX2_OPFL_NOWEX_IO2)
+		return(-1);
+
+	if(op2->fl&BJX2_OPFL_NOWEX_FP2)
+	{
+		if(op3->fl&BJX2_OPFL_NOWEX_FP2)
+		{
+			if(!sppfx)
+			{
+				return(-1);
+			}
+		}
+	}
 
 	if(ctx->v_wexmd==0xFF)
 	{
@@ -1832,16 +1859,43 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 	BJX2_Opcode *op1, BJX2_Opcode *op2)
 {
+	int sppfx;
+
+	sppfx=0;
+	
+	if((op1->nmid==BJX2_NMID_PADDF) && (op2->nmid==BJX2_NMID_PADDF))
+		sppfx=1;
+	if((op1->nmid==BJX2_NMID_PSUBF) && (op2->nmid==BJX2_NMID_PSUBF))
+		sppfx=1;
+	if((op1->nmid==BJX2_NMID_PMULF) && (op2->nmid==BJX2_NMID_PMULF))
+		sppfx=1;
+		
 	if(op1->fl&BJX2_OPFL_NOWEX)
 	{
-		printf("BJX2_CheckWexSanity2W: Invalid Prefix\n");
-		return(-1);
+		if(!sppfx)
+		{
+			printf("BJX2_CheckWexSanity2W: Invalid Prefix\n");
+			return(-1);
+		}
 	}
 	if(op2->fl&BJX2_OPFL_NOWEXSFX)
 	{
 		printf("BJX2_CheckWexSanity2W: Invalid Suffix\n");
 		return(-1);
 	}
+
+	if(op1->fl&BJX2_OPFL_NOWEX_FP2)
+	{
+		if(op2->fl&BJX2_OPFL_NOWEX_FP2)
+		{
+			if(!sppfx)
+			{
+				printf("BJX2_CheckWexSanity2W: Invalid FP Pair\n");
+				return(-1);
+			}
+		}
+	}
+
 
 	if((ctx->wexmd==1) || (ctx->v_wexmd==1))
 	{
@@ -2201,7 +2255,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			}
 #endif
 
-#if 1
+#if 0
 			if(op->fl&BJX2_OPFL_NOWEX)
 			{
 				op->nmid=BJX2_NMID_BREAK;
@@ -2209,7 +2263,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			}
 #endif
 
-#if 1
+#if 0
 			if(op->fl&BJX2_OPFL_NOWEX_FP2)
 			{
 				if((wexmd!=4) && (wexmd!=5))

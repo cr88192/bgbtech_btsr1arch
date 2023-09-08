@@ -10,6 +10,32 @@ TKRA_Context *TKRA_AllocContext()
 	return(tmp);
 }
 
+int TKRA_SyncScreenCacheMode(TKRA_Context *ctx, int md)
+{
+	u64 *ptr;
+
+	int i0, i1, i2, i3;
+	int i, j, k;
+
+	if(md==ctx->cachemode)
+		return(0);
+	
+	ptr=(u64 *)(ctx->screen_sten);
+	k=0;
+	for(i=0; i<512; i++)
+	{
+		j=(i<<3);
+		i0=ptr[j+0];
+		i1=ptr[j+2];
+		i2=ptr[j+4];
+		i3=ptr[j+6];
+		k+=i0+i1+i2+i3;
+	}
+	
+	ctx->cachemode=md;
+	return(1);
+}
+
 int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 {
 	byte *ptr;
@@ -96,6 +122,8 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 
 	TKRA_InitSpanRcp();
 	
+	TKRA_SyncScreenCacheMode(ctx, 0);
+	
 	for(i=0; i<xs*ys; i++)
 	{
 //		((short *)(ctx->screen_rgb))[i]=0x7FFF;
@@ -108,7 +136,7 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 
 int TKRA_DebugPrintStats(TKRA_Context *ctx)
 {
-#if 1
+#if 0
 	if(ctx->stat_base_tris)
 	{
 //		TKRA_DumpVec4(ctx->prj_xyzsc, "Clip: XyzSc:");

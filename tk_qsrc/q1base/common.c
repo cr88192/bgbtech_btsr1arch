@@ -2074,7 +2074,7 @@ byte *COM_LoadFileSz (char *path, int usehunk, int *rlen)
 // extract the filename base name for hunk tag
 	COM_FileBase (path, base);
 	
-	tk_printf("COM_LoadFile: %s hdl=%d uh=%d\n", path, h, usehunk);
+//	tk_printf("COM_LoadFile: %s hdl=%d uh=%d\n", path, h, usehunk);
 	
 	if (usehunk == 1)
 		buf = Hunk_AllocName (len+32+1, base);
@@ -2087,8 +2087,8 @@ byte *COM_LoadFileSz (char *path, int usehunk, int *rlen)
 		buf = Cache_Alloc (loadcache, len+32+1, base);
 	else if (usehunk == 4)
 	{
-		tk_printf("COM_LoadFile: loadbuf=%p loadsz=%d len=%d\n",
-			loadbuf, loadsize, len);
+//		tk_printf("COM_LoadFile: loadbuf=%p loadsz=%d len=%d\n",
+//			loadbuf, loadsize, len);
 
 //		if (len+1 > loadsize)
 		if ((len+32+1) > loadsize)
@@ -2104,7 +2104,7 @@ byte *COM_LoadFileSz (char *path, int usehunk, int *rlen)
 	if (!buf)
 		Sys_Error ("COM_LoadFile: not enough space for %s", path);
 	
-	tk_printf("COM_LoadFile: buf=%p\n", buf);
+//	tk_printf("COM_LoadFile: buf=%p\n", buf);
 	
 	((byte *)buf)[len] = 0;
 

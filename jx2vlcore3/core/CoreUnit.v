@@ -1410,7 +1410,8 @@ assign	vgaVsync	= scrnPwmOut[16];
 
 wire[7:0]	scrnNodeId;
 // assign		scrnNodeId	= 8'h84;
-assign		scrnNodeId	= 8'h8A;
+// assign		scrnNodeId	= 8'h8A;
+assign		scrnNodeId	= 8'h88;
 // assign		scrnNodeId	= 8'hCA;
 
 ModTxtNtW	scrn(

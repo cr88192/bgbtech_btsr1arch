@@ -113,6 +113,10 @@ float expf(float x);
 float logf(float x);
 float log10f(float x);
 
+double _sin_fast(double ang);
+double _cos_fast(double ang);
+double _sqrt_fast(double x);
+
 long double ceill(long double x);
 long double fabsl(long double x);
 long double floorl(long double x);

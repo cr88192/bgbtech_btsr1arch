@@ -23,6 +23,9 @@ uint64_t *dram_buf;
 int dsaddr_l;
 int dsopm_l;
 
+uint64_t dsdatalo_l;
+uint64_t dsdatahi_l;
+
 struct ew_request_s {
 uint64_t parm[20];
 };
@@ -88,6 +91,48 @@ struct ew_request_s ew_reqarr[] = {
 	0x00C8014000000000ULL	//10: Clip X0/Y0/X1/Y1
 },
 
+{	0x0000000000000109ULL,	//00: Control
+},
+
+{	0x00000000000167E1ULL,	//00: Control
+	0x0000014000960032ULL,	//01: Ystrt, Yend
+	0x0004000000020000ULL,	//02: Cbuf, Zbuf
+	0x00A0000000010020ULL,	//03: Texture
+	0x001000003FFF0000ULL,	//04: Base Left  Z/X
+	0x006000003FFF0000ULL,	//05: Base Right Z/X
+	0xFFFF000000000000ULL,	//06: Step Left  Z/X
+	0x0001000000000000ULL,	//07: Step Right Z/X
+	0x0000000000000000ULL,	//08: Base Left  S/T
+	0x0000000000200000ULL,	//09: Base Right S/T
+	0x0000500000000000ULL,	//0A: Step Left  S/T
+	0x0000500000000000ULL,	//0B: Step Right S/T
+	0xFF00FF0000FFFF00ULL,	//0D: Base Right RGBA
+	0xFF0000FFFF0000FFULL,	//0C: Base Left  RGBA
+	0x0000FEB90146FEB9ULL,	//0F: Step Right RGBA
+	0x00000146FEB90146ULL,	//0E: Step Left  RGBA
+	0x00C8014000000000ULL	//10: Clip X0/Y0/X1/Y1
+},
+
+
+{	0x00000000000167E1ULL,	//00: Control
+	0x0000014000960032ULL,	//01: Ystrt, Yend
+	0x0004000000020000ULL,	//02: Cbuf, Zbuf
+	0x00A0000000010020ULL,	//03: Texture
+	0xF01000003FFF0000ULL,	//04: Base Left  Z/X
+	0xF06000003FFF0000ULL,	//05: Base Right Z/X
+	0xFFFF000000000000ULL,	//06: Step Left  Z/X
+	0x0001000000000000ULL,	//07: Step Right Z/X
+	0x0000000000000000ULL,	//08: Base Left  S/T
+	0x0000000000200000ULL,	//09: Base Right S/T
+	0x0000500000000000ULL,	//0A: Step Left  S/T
+	0x0000500000000000ULL,	//0B: Step Right S/T
+	0xFF00FF0000FFFF00ULL,	//0D: Base Right RGBA
+	0xFF0000FFFF0000FFULL,	//0C: Base Left  RGBA
+	0x0000FEB90146FEB9ULL,	//0F: Step Right RGBA
+	0x00000146FEB90146ULL,	//0E: Step Left  RGBA
+	0x00C8014000000000ULL	//10: Clip X0/Y0/X1/Y1
+},
+
 {0,0,0,0}  //End
 };
 
@@ -137,6 +182,18 @@ void update_bus()
 			printf("update_bus: Bad Addr Shift %02X %02X\n",
 				dsaddr_l, top->dsAddr);
 		}
+
+		if(dsdatalo_l!=top->dsDataOutLo)
+		{
+			printf("update_bus: Bad Data-Lo Shift %016llX %016llX\n",
+				dsdatalo_l, top->dsDataOutLo);
+		}
+
+		if(dsdatahi_l!=top->dsDataOutHi)
+		{
+			printf("update_bus: Bad Data-Hi Shift %016llX %016llX\n",
+				dsdatahi_l, top->dsDataOutHi);
+		}
 	}
 
 	if(dsopm_l && !top->dsOpm)
@@ -168,9 +225,12 @@ void update_bus()
 			printf("RD A=%08X D=%016llX\n", ta*8, dram_buf[ta]);
 	}else if(top->dsOpm&16)
 	{
-		dram_buf[ta]=top->dsDataOutLo;
-		if((top->dsOpm&7)==7)
-			dram_buf[ta+1]=top->dsDataOutHi;
+		if(dsopm_l==0)
+		{
+			dram_buf[ta]=top->dsDataOutLo;
+			if((top->dsOpm&7)==7)
+				dram_buf[ta+1]=top->dsDataOutHi;
+		}
 		top->dsOK=1;
 
 		if(inh>0)
@@ -180,12 +240,15 @@ void update_bus()
 		}
 		
 //		printf("WR %08X\n", ta);
-		if(top->dsOpm!=dsopm_l)
-			printf("WR A=%08X D=%016llX\n", ta*8, dram_buf[ta]);
+//		if(top->dsOpm!=dsopm_l)
+//			printf("WR A=%08X D=%016llX\n", ta*8, dram_buf[ta]);
 	}else
 	{
 		inh=8;
 	}
+	
+	dsdatalo_l=top->dsDataOutLo;
+	dsdatahi_l=top->dsDataOutHi;
 	
 	dsaddr_l=top->dsAddr;
 	dsopm_l=top->dsOpm;

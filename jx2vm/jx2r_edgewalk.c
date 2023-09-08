@@ -59,6 +59,7 @@ u16 bjx2_edgewalk_var_clip_y1;
 
 u64 tkra_pmuluhw(u64 a, u64 b);
 u64 tkra_rgbupck64(u16 a);
+u64 tkra_rgb32upck64(u32 a);
 u32 BJX2_PMORT_U16(u16 x);
 u64 TKRA_CachedBlkUtx2(u64 blk, int ix);
 
@@ -84,6 +85,16 @@ u16 bjx2_rgb64pck16(u64 vs)
 	}
 	
 	return(vn);
+}
+
+u32 bjx2_rgb64pck32(u64 vs)
+{
+	u32 tv;
+	tv=	(((vs>>56)&0xFF)<<24) |
+		(((vs>>40)&0xFF)<<16) |
+		(((vs>>24)&0xFF)<< 8) |
+		(((vs>> 8)&0xFF)<< 0) ;
+	return(tv);
 }
 
 // #define JX2_EDGEWALK_XSUB	0
@@ -125,19 +136,26 @@ u64 BJX2_MemEdgeWalk_LerpRgbFrac16(u64 v0, u64 v1, int fr)
 	return(v2);
 }
 
+u64 jx2_edgewalk_utxcache_dt[1024];
+u16 jx2_edgewalk_utxcache_ix[1024];
+u16 jx2_edgewalk_utxcache_ax[1024];
+
+s64 jx2_edgewalk_busycyc;
+
 int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 {
 	u64 blk_u, rgb_u, rgb_m, rgb_c, rgb_bl;
 	u64 rgb_ms, rgb_md, rgb_bs, rgb_bd;
-	u16 blk_c, blk_z;
+	u32 blk_c, blk_z;
 	u64 addr_o, addr_c, addr_z, addr_u;
 	int x0, x1, z0, z1, s0, s1, t0, t1, rcp;
 	int r0, r1, g0, g1, b0, b1, a0, a1;
 	int x, z, s, t, zs, ss, ts, z2, s_p, t_p, z_p;
-	int r, g, b, a, rs, gs, bs, as;
+	int r, g, b, a, rs, gs, bs, as, ix, ax;
 	int txs, txt, txi, ztest, atest, zmask, cmask, islin;
-	int bfs, bfd, txm, zfn, zpn, ispersp, isrcpz;
-	
+	int bfs, bfd, txm, zfn, zpn, ispersp, isrcpz, isdword;
+	int i, j, k;
+
 //	x0=((s16)bjx2_edgewalk_var_scanlfx)>>6;
 //	x1=((s16)bjx2_edgewalk_var_scanrtx)>>6;
 
@@ -157,12 +175,18 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 
 	ispersp=(bjx2_edgewalk_regs[0]>>20)&1;
 	isrcpz=(bjx2_edgewalk_regs[0]>>21)&1;
+	isdword=(bjx2_edgewalk_regs[0]>>23)&1;
+
+	ax=(bjx2_edgewalk_addr_ubuf^(bjx2_edgewalk_addr_ubuf>>16))&0xFFFF;
 
 	x=x1-x0;
 	if(x<0)
 		return(0);
+	
+	jx2_edgewalk_busycyc+=(x+1)*8+10;
+		
 //	rcp=0x10000/(x+1);
-	rcp=jx2_edgewalk_rcptab[x];
+	rcp=jx2_edgewalk_rcptab[x+1];
 
 	z0=bjx2_edgewalk_var_scanlfz;
 	z1=bjx2_edgewalk_var_scanrtz;
@@ -224,10 +248,21 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			continue;
 		}
 
-		addr_c=bjx2_edgewalk_addr_cbuf+(addr_o+x)*2;
-		addr_z=bjx2_edgewalk_addr_zbuf+(addr_o+x)*2;
-		blk_c=BJX2_MemGetWord_NoAT(ctx, addr_c, 0);
-		blk_z=BJX2_MemGetWord_NoAT(ctx, addr_z, 0);
+		if(isdword)
+		{
+			addr_c=bjx2_edgewalk_addr_cbuf+(addr_o+x)*4;
+			addr_z=bjx2_edgewalk_addr_zbuf+(addr_o+x)*4;
+			blk_c=BJX2_MemGetDWord_NoAT(ctx, addr_c, 0);
+			blk_z=BJX2_MemGetDWord_NoAT(ctx, addr_z, 0);
+			
+			blk_z>>=16;
+		}else
+		{
+			addr_c=bjx2_edgewalk_addr_cbuf+(addr_o+x)*2;
+			addr_z=bjx2_edgewalk_addr_zbuf+(addr_o+x)*2;
+			blk_c=BJX2_MemGetWord_NoAT(ctx, addr_c, 0);
+			blk_z=BJX2_MemGetWord_NoAT(ctx, addr_z, 0);
+		}
 
 		if(isrcpz)
 		{
@@ -253,10 +288,28 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 				(BJX2_PMORT_U16(txs)   );
 		txi&=txm;
 
-		addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
-		blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+		ix=(txi>>4)&0xFFFF;
+		j=ix&1023;
+		if(	(jx2_edgewalk_utxcache_ix[j]==ix) &&
+			(jx2_edgewalk_utxcache_ax[j]==ax))
+		{
+			blk_u=jx2_edgewalk_utxcache_dt[j];
+		}else
+		{
+			addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
+			blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+			jx2_edgewalk_utxcache_dt[j]=blk_u;
+			jx2_edgewalk_utxcache_ix[j]=ix;
+			jx2_edgewalk_utxcache_ax[j]=ax;
+		}
 
-		rgb_c=tkra_rgbupck64(blk_c);
+		if(isdword)
+		{
+			rgb_c=tkra_rgb32upck64(blk_c);
+		}else
+		{
+			rgb_c=tkra_rgbupck64(blk_c);
+		}
 		rgb_u=TKRA_CachedBlkUtx2(blk_u, txi);
 
 		if(islin)
@@ -361,7 +414,13 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 
 //		rgb_bl=0xFFFF7FFF7FFF7FFFULL;
 
-		blk_c=bjx2_rgb64pck16(rgb_bl);
+		if(isdword)
+		{
+			blk_c=bjx2_rgb64pck32(rgb_bl);
+		}else
+		{
+			blk_c=bjx2_rgb64pck16(rgb_bl);
+		}
 
 		z2=z>>JX2_EDGEWALK_ZSUB;
 //		z2=z;
@@ -386,11 +445,23 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			{
 				if(cmask)
 				{
-					BJX2_MemSetWord_NoAT(ctx, addr_c, 0, blk_c);
+					if(isdword)
+					{
+						BJX2_MemSetDWord_NoAT(ctx, addr_c, 0, blk_c);
+					}else
+					{
+						BJX2_MemSetWord_NoAT(ctx, addr_c, 0, blk_c);
+					}
 				}
 				if(zmask)
 				{
-					BJX2_MemSetWord_NoAT(ctx, addr_z, 0, z2);
+					if(isdword)
+					{
+						BJX2_MemSetWord_NoAT(ctx, addr_z, 0, z2<<16);
+					}else
+					{
+						BJX2_MemSetWord_NoAT(ctx, addr_z, 0, z2);
+					}
 				}
 			}
 		}
@@ -459,9 +530,13 @@ s32 BJX2_ValExtractSx(u64 ref, int ofs, int width)
 	return(tv);
 }
 
+s64 jx2_edgewalk_lastcyc;
+int jx2_edgewalk_busyqueue;
+
 int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 {
 	int i, j, k, stadj;
+	s64 dcyc;
 	if(ctx->status)
 		return;
 
@@ -484,14 +559,30 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 		}
 	}
 
+	dcyc=ctx->tot_cyc-jx2_edgewalk_lastcyc;
+	jx2_edgewalk_lastcyc=ctx->tot_cyc;
+	
+	if(dcyc<0)
+		dcyc=0;
+	jx2_edgewalk_busycyc-=dcyc;
+	if(jx2_edgewalk_busycyc<0)
+		jx2_edgewalk_busycyc=0;
+
 	if(bjx2_edgewalk_regs[0]&2)
 	{
 		bjx2_edgewalk_regs[0]&=BJX2_EDGEWALK_FEATUREMASK;
 		return(0);
 	}
 
-	if((bjx2_edgewalk_regs[0]&1) && !(bjx2_edgewalk_regs0l&1))
+//	if((bjx2_edgewalk_regs[0]&1) && !(bjx2_edgewalk_regs0l&1))
+	if((bjx2_edgewalk_regs[0]&1) && !(bjx2_edgewalk_regs0l&1) &&
+		(jx2_edgewalk_busyqueue<31))
 	{
+		if(bjx2_edgewalk_regs[0]&(1<<3))
+		{
+			bjx2_edgewalk_regs0l=bjx2_edgewalk_regs[0];
+			return(0);
+		}
 	
 		bjx2_edgewalk_var_scany		=(s16)((bjx2_edgewalk_regs[1]    )&0xFFFF);
 		bjx2_edgewalk_var_scanymax	=(s16)((bjx2_edgewalk_regs[1]>>16)&0xFFFF);
@@ -626,6 +717,9 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 		bjx2_edgewalk_var_clip_y0=(bjx2_edgewalk_regs[16]>>16)&0xFFFF;
 		bjx2_edgewalk_var_clip_x1=(bjx2_edgewalk_regs[16]>>32)&0xFFFF;
 		bjx2_edgewalk_var_clip_y1=(bjx2_edgewalk_regs[16]>>48)&0xFFFF;
+		
+		if(jx2_edgewalk_busycyc>0)
+			jx2_edgewalk_busyqueue++;
 	}
 
 #if 1
@@ -644,7 +738,19 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 		bjx2_edgewalk_regs[0]&=~1;
 	}
 #endif
+
+	bjx2_edgewalk_regs[0]&=~4;
+	if(jx2_edgewalk_busycyc>0)
+	{
+		bjx2_edgewalk_regs[0]|=4;
+	}else
+	{
+		jx2_edgewalk_busyqueue=0;
+	}
 	
+	if(jx2_edgewalk_busyqueue>=28)
+		bjx2_edgewalk_regs[0]|=1;
+
 	bjx2_edgewalk_regs0l=bjx2_edgewalk_regs[0];
 	return(0);
 }

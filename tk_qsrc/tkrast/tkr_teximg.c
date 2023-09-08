@@ -1,4 +1,5 @@
 void	*tkra_freelist[256];
+void	*tkra_freelist_phys[256];
 int		tkra_totbrk=0;
 
 #ifdef GLQUAKE
@@ -7,16 +8,39 @@ void Q_FreeLLn(void *ptr, char *lfn, int lln);
 
 void *TKRA_Brk(int sz)
 {
+	byte *ptr;
 	tkra_totbrk+=sz;
-	return(Q_MallocLLn(sz, __FILE__, __LINE__));
+	
+	ptr=Q_MallocLLn(sz+16, __FILE__, __LINE__);
+	while(((long)ptr)&15)
+		ptr++;
+	return(ptr);
 }
 #else
 void *TKRA_Brk(int sz)
 {
+	byte *ptr;
 	tkra_totbrk+=sz;
-	return(malloc(sz));
+	ptr=malloc(sz);
+	while(((long)ptr)&15)
+		ptr++;
+	return(ptr);
 }
 #endif
+
+void *TKRA_BrkPhys(int sz)
+{
+	byte *ptr;
+	tkra_totbrk+=sz;
+#ifdef __BJX2__
+	ptr=tk_malloc_cat(sz+16, TKMM_MCAT_PHYSDFL);
+	while(((long)ptr)&15)
+		ptr++;
+	return(ptr);
+#else
+	return(TKRA_Brk(sz));
+#endif
+}
 
 int TKRA_MallocIndexForSize(int sz)
 {
@@ -47,43 +71,72 @@ void *tkra_malloc(int sz)
 	byte *ptr;
 	int ix, sz1;
 	
-	ix=TKRA_MallocIndexForSize(sz+8);
+	ix=TKRA_MallocIndexForSize(sz+16);
 	
 	ptr=tkra_freelist[ix];
 	if(ptr)
 	{
 		tkra_freelist[ix]=*(byte **)ptr;
-		*(int *)ptr=ix;
-		return(ptr+8);
+		((int *)ptr)[0]=ix;
+		((int *)ptr)[1]=0x6789;
+		return(ptr+16);
 	}
 	
 	sz1=TKRA_SizeForIndex(ix);
 	ptr=TKRA_Brk(sz1);
-	*(int *)ptr=ix;
-	return(ptr+8);
+	((int *)ptr)[0]=ix;
+	((int *)ptr)[1]=0x6789;
+	return(ptr+16);
 }
 
 void tkra_free(void *ptr)
 {
 	byte *ptr1;
-	int ix;
+	int ix, tag;
 	
 	if(!ptr)
 		return;
 
-	ptr1=((byte *)ptr)-8;
-	ix=*(int *)ptr1;
-	*(byte **)ptr1=tkra_freelist[ix];
-	tkra_freelist[ix]=ptr1;
+	ptr1=((byte *)ptr)-16;
+	ix=((int *)ptr1)[0];
+	tag=((int *)ptr1)[1];
+	
+	if(tag==0x6789)
+	{
+		*(byte **)ptr1=tkra_freelist[ix];
+		tkra_freelist[ix]=ptr1;
+	}else
+		if(tag==0x1234)
+	{
+		*(byte **)ptr1=tkra_freelist_phys[ix];
+		tkra_freelist_phys[ix]=ptr1;
+	}else
+	{
+		printf("tkra_free: Bad Tag %08X\n", tag);
+	}
 }
 
 void *tkra_malloc_phys(int sz)
 {
-#ifdef __BJX2__
-	return(tk_malloc_cat(sz, TKMM_MCAT_PHYSDFL));
-#else
-	return(tkra_malloc(sz));
-#endif
+	byte *ptr;
+	int ix, sz1;
+	
+	ix=TKRA_MallocIndexForSize(sz+16);
+	
+	ptr=tkra_freelist_phys[ix];
+	if(ptr)
+	{
+		tkra_freelist_phys[ix]=*(byte **)ptr;
+		((int *)ptr)[0]=ix;
+		((int *)ptr)[1]=0x1234;
+		return(ptr+16);
+	}
+	
+	sz1=TKRA_SizeForIndex(ix);
+	ptr=TKRA_BrkPhys(sz1);
+	((int *)ptr)[0]=ix;
+	((int *)ptr)[1]=0x1234;
+	return(ptr+16);
 }
 
 
@@ -375,15 +428,25 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 		{
 			if(img->tex_img)
 			{
-				if(img->tex_img != (tkra_rastpixel *)(img->tex_mipofs+4))
-					tkra_free(img->tex_img);
+//				if(img->tex_img != (tkra_rastpixel *)(img->tex_mipofs+4))
+				if(img->tex_img_org &&
+					(img->tex_img_org != (tkra_rastpixel *)(img->tex_mipofs+4)))
+				{
+					tkra_free(img->tex_img_org);
+				}
 				img->tex_img=NULL;
+				img->tex_img_org=NULL;
 			}
 			if(img->tex_img_bcn)
 			{
-				if(img->tex_img_bcn != (u32 *)(img->tex_mipofs_bcn+4))
-					tkra_free(img->tex_img_bcn);
+//				if(img->tex_img_bcn != (u32 *)(img->tex_mipofs_bcn+4))
+				if(img->tex_img_bcn_org &&
+					(img->tex_img_bcn_org != (u32 *)(img->tex_mipofs_bcn+4)))
+				{
+					tkra_free(img->tex_img_bcn_org);
+				}
 				img->tex_img_bcn=NULL;
+				img->tex_img_bcn_org=NULL;
 			}
 
 			i=0; j=0; xsh1=xshl; ysh1=yshl;
@@ -391,20 +454,27 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 			{
 				img->tex_mipofs[i]=j;
 				j+=(1<<xsh1)*(1<<ysh1);
+				j=(j+7)&(~7);
 				i++;
 				if(xsh1>0)xsh1--;
 				if(ysh1>0)ysh1--;
 			}
 			img->tex_mipofs[i]=j;
 			j+=(1<<xsh1)*(1<<ysh1);
+			j=(j+7)&(~7);
 
-			if(j<=24)
-				img->tex_img=(tkra_rastpixel *)(img->tex_mipofs+4);
-			else
-				img->tex_img=tkra_malloc(j*sizeof(tkra_rastpixel));
+//			if(j<=24)
+//				img->tex_img=(tkra_rastpixel *)(img->tex_mipofs+4);
+//			else
+//				img->tex_img=tkra_malloc(j*sizeof(tkra_rastpixel));
 			img->tex_xshl=xshl;
 			img->tex_yshl=yshl;
-			
+
+			img->tex_img=tkra_malloc_phys(j*sizeof(tkra_rastpixel));
+			img->tex_img_org=img->tex_img;
+//			while(((int)(img->tex_img))&15)
+//				img->tex_img++;
+
 			k=i;
 			if(k>xshl)k=xshl;
 			if(k>yshl)k=yshl;
@@ -417,7 +487,9 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 
 #if 1
 //			if((xshl==yshl) && (xshl>=3) && (yshl>=3))
-			if((xshl==yshl) && (xshl>=3) && (yshl>=3) &&
+//			if((xshl==yshl) && (xshl>=3) && (yshl>=3) &&
+//				(flag&TKRA_TRFL_DOCMP))
+			if((xshl==yshl) && (xshl>=2) && (yshl>=2) &&
 				(flag&TKRA_TRFL_DOCMP))
 			{
 				bsz=1;
@@ -426,20 +498,37 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 				{
 					img->tex_mipofs_bcn[i]=j;
 					j+=1<<(xsh1+ysh1+bsz);
+					j=(j+3)&(~3);
 					i++;
 					if(xsh1>0)xsh1--;
 					if(ysh1>0)ysh1--;
 				}
-				img->tex_mipofs_bcn[i+0]=j+(0<<bsz);	//4x4
-				img->tex_mipofs_bcn[i+1]=j+(1<<bsz);	//2x2
-				img->tex_mipofs_bcn[i+2]=j+(2<<bsz);	//1x1
-				i+=2; j+=(3<<bsz);
+//				img->tex_mipofs_bcn[i+0]=j+(0<<bsz);	//4x4
+//				img->tex_mipofs_bcn[i+1]=j+(1<<bsz);	//2x2
+//				img->tex_mipofs_bcn[i+2]=j+(2<<bsz);	//1x1
 
+				img->tex_mipofs_bcn[i+0]=j;	//4x4
+				j+=1<<bsz;	j=(j+3)&(~3);
+				img->tex_mipofs_bcn[i+1]=j;	//2x2
+				j+=1<<bsz;	j=(j+3)&(~3);
+				img->tex_mipofs_bcn[i+2]=j;	//1x1
+				j+=1<<bsz;	j=(j+3)&(~3);
+
+				i+=2;
+				//j+=(3<<bsz);
+
+#if 0
 				if((j<=6) && (i<4))
 					img->tex_img_bcn=(u32 *)(img->tex_mipofs_bcn+4);
 				else
 //					img->tex_img_bcn=tkra_malloc(j*sizeof(u32));
 					img->tex_img_bcn=tkra_malloc_phys(j*sizeof(u32));
+#endif
+
+				img->tex_img_bcn=tkra_malloc_phys(j*sizeof(u32));
+				img->tex_img_bcn_org=img->tex_img_bcn;
+//				while(((int)(img->tex_img_bcn))&15)
+//					img->tex_img_bcn++;
 			}
 #endif
 		}
@@ -538,15 +627,23 @@ void TKRA_UpdateTexImgUtx2(TKRA_TexImage *img,
 		{
 			if(img->tex_img)
 			{
-				if(img->tex_img != (tkra_rastpixel *)(img->tex_mipofs+4))
-					tkra_free(img->tex_img);
+				if(img->tex_img_org &&
+					(img->tex_img_org != (tkra_rastpixel *)(img->tex_mipofs+4)))
+				{
+					tkra_free(img->tex_img_org);
+				}
 				img->tex_img=NULL;
+				img->tex_img_org=NULL;
 			}
 			if(img->tex_img_bcn)
 			{
-				if(img->tex_img_bcn != (u32 *)(img->tex_mipofs_bcn+4))
-					tkra_free(img->tex_img_bcn);
+				if(img->tex_img_bcn_org &&
+					(img->tex_img_bcn_org != (u32 *)(img->tex_mipofs_bcn+4)))
+				{
+					tkra_free(img->tex_img_bcn_org);
+				}
 				img->tex_img_bcn=NULL;
+				img->tex_img_bcn_org=NULL;
 			}
 
 			i=0; j=0; xsh1=xshl; ysh1=yshl;
@@ -554,12 +651,14 @@ void TKRA_UpdateTexImgUtx2(TKRA_TexImage *img,
 			{
 				img->tex_mipofs[i]=j;
 				j+=(1<<xsh1)*(1<<ysh1);
+				j=(j+7)&(~7);
 				i++;
 				if(xsh1>0)xsh1--;
 				if(ysh1>0)ysh1--;
 			}
 			img->tex_mipofs[i]=j;
 			j+=(1<<xsh1)*(1<<ysh1);
+			j=(j+7)&(~7);
 
 //			if(j<=24)
 //				img->tex_img=(tkra_rastpixel *)(img->tex_mipofs+4);
@@ -584,19 +683,35 @@ void TKRA_UpdateTexImgUtx2(TKRA_TexImage *img,
 			{
 				img->tex_mipofs_bcn[i]=j;
 				j+=1<<(xsh1+ysh1+bsz);
+				j=(j+3)&(~3);
 				i++;
 				if(xsh1>0)xsh1--;
 				if(ysh1>0)ysh1--;
 			}
-			img->tex_mipofs_bcn[i+0]=j+(0<<bsz);	//4x4
-			img->tex_mipofs_bcn[i+1]=j+(1<<bsz);	//2x2
-			img->tex_mipofs_bcn[i+2]=j+(2<<bsz);	//1x1
-			i+=2; j+=(3<<bsz);
+//			img->tex_mipofs_bcn[i+0]=j+(0<<bsz);	//4x4
+//			img->tex_mipofs_bcn[i+1]=j+(1<<bsz);	//2x2
+//			img->tex_mipofs_bcn[i+2]=j+(2<<bsz);	//1x1
 
-			if((j<=6) && (i<4))
-				img->tex_img_bcn=(u32 *)(img->tex_mipofs_bcn+4);
-			else
-				img->tex_img_bcn=tkra_malloc(j*sizeof(u32));
+			img->tex_mipofs_bcn[i+0]=j;	//4x4
+			j+=1<<bsz;	j=(j+3)&(~3);
+			img->tex_mipofs_bcn[i+1]=j;	//2x2
+			j+=1<<bsz;	j=(j+3)&(~3);
+			img->tex_mipofs_bcn[i+2]=j;	//1x1
+			j+=1<<bsz;	j=(j+3)&(~3);
+
+			i+=2;
+//			j+=(3<<bsz);
+
+//			if((j<=6) && (i<4))
+//				img->tex_img_bcn=(u32 *)(img->tex_mipofs_bcn+4);
+//			else
+//				img->tex_img_bcn=tkra_malloc(j*sizeof(u32));
+
+			img->tex_img_bcn=tkra_malloc_phys(j*sizeof(u32));
+			img->tex_img_bcn_org=img->tex_img_bcn;
+			
+//			while(((int)(img->tex_img_bcn))&15)
+//				img->tex_img_bcn++;
 		}
 
 		txfl=img->tex_flag;
@@ -929,8 +1044,10 @@ TKRA_TexImage *TKRA_GetTexImg(TKRA_Context *ctx, int num)
 	cur->tex_yshl=0;
 	cur->tex_mmip=0;
 	cur->tex_img=(tkra_rastpixel *)(cur->tex_mipofs+4);
+	cur->tex_img_org=NULL;
 	cur->tex_img[0]=0x7FFF;
 	cur->tex_img_bcn=NULL;
+	cur->tex_img_bcn_org=NULL;
 	
 	return(cur);
 }
@@ -957,6 +1074,8 @@ int TKRA_BindTexImg(TKRA_Context *ctx, TKRA_TexImage *img)
 
 	ctx->tex_img=NULL;
 	ctx->tex_img_bcn=NULL;
+//	ctx->tex_img_org=NULL;
+//	ctx->tex_img_bcn_org=NULL;
 
 	ctx->span_trifl=-1;
 	ctx->span_tex_cur=NULL;

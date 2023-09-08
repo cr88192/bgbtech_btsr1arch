@@ -177,6 +177,8 @@ void tkra_glClear(unsigned int mask)
 	
 	ctx=TKRA_GetCurrentContext();
 
+	TKRA_SyncScreenCacheMode(ctx, 0);
+
 	xs=ctx->screen_xsize;
 	ys=ctx->screen_ysize;
 	rgb=ctx->screen_rgb;
@@ -743,6 +745,8 @@ void tkra_glFinish(void)
 	TKRA_Context *ctx;
 
 	ctx=TKRA_GetCurrentContext();
+	
+	TKRA_SyncScreenCacheMode(ctx, 0);
 	
 	TKRA_DebugPrintStats(ctx);
 }

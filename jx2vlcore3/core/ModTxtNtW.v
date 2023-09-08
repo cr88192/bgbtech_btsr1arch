@@ -45,7 +45,13 @@
 
 `ifdef jx2_enable_edgewalk
 `include "ModEdgeWalk.v"
+`define jx2_enable_edgewalk_ewds
 `endif
+
+`ifdef jx2_enable_edgewalk_ewds
+`include "ringbus/RbiMemEwDs.v"
+`endif
+
 
 module ModTxtNtW(clock, reset,
 	clock_100,
@@ -90,6 +96,13 @@ output[ 15:0]	memOpmOut;		//memory operation mode
 `output_tile	memDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
+
+
+wire[  7:0]		vmemNodeId;
+wire[  7:0]		ememNodeId;
+
+assign		vmemNodeId = { unitNodeId[7:2], 2'b00 };
+assign		ememNodeId = { unitNodeId[7:2], 2'b01 };
 
 wire	busOE;
 wire	busWR;
@@ -171,8 +184,26 @@ wire[63:0]	fbusOutData;
 wire[1:0]	ebusOK;
 wire[1:0]	fbusOK;
 
+wire[63:0]	vedsDataLo;
+wire[63:0]	vedsDataHi;
+wire[1:0]	vedsOK;
+
 assign	busOutData = (ebusOK!=0) ? ebusOutData : fbusOutData;
 assign	busOK = (ebusOK!=0) ? ebusOK : fbusOK;
+
+wire [ 15:0]	vmemSeqIn;
+wire[ 15:0]		vmemSeqOut;
+wire [ 15:0]	vmemOpmIn;
+wire[ 15:0]		vmemOpmOut;
+`wire_l2addr	vmemAddrIn;
+`wire_l2addr	vmemAddrOut;
+`wire_tile		vmemDataIn;
+`wire_tile		vmemDataOut;
+
+assign		vmemSeqIn	= memSeqIn;
+assign		vmemOpmIn	= memOpmIn;
+assign		vmemAddrIn	= memAddrIn;
+assign		vmemDataIn	= memDataIn;
 
 RbiMemVramA		fbmem(
 	clock,			reset,
@@ -186,18 +217,71 @@ RbiMemVramA		fbmem(
 	palIndex,		palData,
 	ctrlRegVal,
 
+`ifdef jx2_enable_edgewalk_ewds
+	vedsDataLo,		vedsDataHi,
+	0,				0,
+	0,				0,
+	vedsOK,
+`else
+	edsDataInLo,	edsDataInHi,
+	edsDataOutLo,	edsDataOutHi,
+	edsAddr,		edsOpm,
+	edsOK,
+`endif
+
+	vmemAddrIn,		vmemAddrOut,
+	vmemDataIn,		vmemDataOut,
+	vmemOpmIn,		vmemOpmOut,
+	vmemSeqIn,		vmemSeqOut,
+
+	vmemNodeId
+	);
+
+`ifdef jx2_enable_edgewalk_ewds
+
+wire [ 15:0]	ememSeqIn;
+wire[ 15:0]		ememSeqOut;
+wire [ 15:0]	ememOpmIn;
+wire[ 15:0]		ememOpmOut;
+`wire_l2addr	ememAddrIn;
+`wire_l2addr	ememAddrOut;
+`wire_tile		ememDataIn;
+`wire_tile		ememDataOut;
+
+assign		ememSeqIn	= vmemSeqOut;
+assign		ememOpmIn	= vmemOpmOut;
+assign		ememAddrIn	= vmemAddrOut;
+assign		ememDataIn	= vmemDataOut;
+
+assign		memSeqOut		= ememSeqOut;
+assign		memOpmOut		= ememOpmOut;
+assign		memAddrOut		= ememAddrOut;
+assign		memDataOut		= ememDataOut;
+
+RbiMemEwDs	edsmem(
+	clock,		reset,
+
 	edsDataInLo,	edsDataInHi,
 	edsDataOutLo,	edsDataOutHi,
 	edsAddr,		edsOpm,
 	edsOK,
 
-	memAddrIn,		memAddrOut,
-	memDataIn,		memDataOut,
-	memOpmIn,		memOpmOut,
-	memSeqIn,		memSeqOut,
+	ememAddrIn,		ememAddrOut,
+	ememDataIn,		ememDataOut,
+	ememOpmIn,		ememOpmOut,
+	ememSeqIn,		ememSeqOut,
 
-	unitNodeId
+	ememNodeId
 	);
+
+`else
+
+assign		memSeqOut		= vmemSeqOut;
+assign		memOpmOut		= vmemOpmOut;
+assign		memAddrOut		= vmemAddrOut;
+assign		memDataOut		= vmemDataOut;
+
+`endif
 
 `ifdef jx2_enable_edgewalk
 

@@ -730,15 +730,15 @@ I_FinishUpdate_ScanCopy_Flip:
 	BF .done
 
 	.loop:
-	MOV.Q	(R4,    0), R23
-	MOV.Q	(R4,  640), R22
-	MOV.Q	(R4, 1280), R21
-	MOV.Q	(R4, 1920), R20
-	MOV.Q	R20, (R5,  0)
-	MOV.Q	R21, (R5,  8)
-	ADD		-1, R6			| MOV.Q		R22, (R5, 16)
-	ADD		8, R4			| MOV.Q		R23, (R5, 24)
-	ADD		32, R5			| TEST		R6, R6
+								MOV.Q	(R4, 1920), R20
+								MOV.Q	(R4, 1280), R21
+								MOV.Q	(R4,  640), R22
+								MOV.Q	(R4,    0), R23
+								MOV.Q	R20, (R5,  0)
+								MOV.Q	R21, (R5,  8)
+	ADD		-1, R6			|	MOV.Q	R22, (R5, 16)
+	ADD		8, R4			|	MOV.Q	R23, (R5, 24)
+	ADD		32, R5			|	TEST	R6, R6
 	BF .loop
 
 	.done:
@@ -1602,15 +1602,20 @@ void	VID_Update (vrect_t *rects)
 //	conbufb=conbufa+(80*61);
 
 //	conbufb=(u32 *)0x0000080A0000ULL;
-	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
-	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
+//	conbufb =(u32 *)0xC000200A0000ULL;		//RAM backed framebuffer
+//	conbufb2=(u32 *)0xD000200A0000ULL;		//Volatile / No Cache
+
+	conbufb =(u32 *)0xC00020A00000ULL;		//RAM backed framebuffer
+	conbufb2=(u32 *)0xD00020A00000ULL;		//Volatile / No Cache
 
 	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
 	vid_frnum++;
 
-	conbufa[0]=vid_frnum;
-	if(conbufb2[0]==vid_frnum)				//Detect if MMIO maps here.
-		conbufa=conbufb;
+//	conbufa[0]=vid_frnum;
+//	if(conbufb2[0]==vid_frnum)				//Detect if MMIO maps here.
+//		conbufa=conbufb;
+
+	conbufa=conbufb;
 
 	if(host_colormap16)
 //	if(1)

@@ -668,6 +668,7 @@ reg				tUtlbDoSt;
 reg[95:0]		tUtlbBlkAddr;
 reg[3:0]		tUtlbBlkIx;
 reg[3:0]		tUtlb1BlkIx;
+reg[3:0]		tUtlb1BlkIxL;
 reg[3:0]		tNxtUtlbBlkIx;
 reg				tUtlbBlkFlush;
 
@@ -826,6 +827,9 @@ begin
 //	tNxtInPcRiscv	= (icInPcWxm == 2'b01);
 //	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01);
 	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01) && !tNxtInPcXG2;
+
+//	tUtlb1BlkIx		= tUtlb1BlkIxL;
+	tUtlb1BlkIx		= tNxtUtlbBlkIx;
 
 	if(icInPcHold)
 	begin
@@ -2315,6 +2319,7 @@ begin
 		tUtlbArr[tUtlbStIx]		 <= tUtlbStAddr;
 	end
 	tUtlbBlkAddr		<= tUtlbArr[tUtlb1BlkIx];
+	tUtlb1BlkIxL		<= tUtlb1BlkIx;
 `endif
 
 	/* Stage B */

@@ -120,10 +120,10 @@ void Sys_FileSeek (int handle, int position)
 int Sys_FileRead (int handle, void *dest, int count)
 {
 	int rlen;
-	tk_printf("Sys_FileRead hdl=%d dst=%p sz=%d fd=%p\n",
-		handle, dest, count, sys_handles[handle]);
+//	tk_printf("Sys_FileRead hdl=%d dst=%p sz=%d fd=%p\n",
+//		handle, dest, count, sys_handles[handle]);
 	rlen = fread (dest, 1, count, sys_handles[handle]);
-	tk_printf("Sys_FileRead rlen=%d\n", rlen);
+//	tk_printf("Sys_FileRead rlen=%d\n", rlen);
 	return(rlen);
 }
 
