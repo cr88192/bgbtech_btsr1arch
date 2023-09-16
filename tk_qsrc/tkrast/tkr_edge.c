@@ -2437,13 +2437,34 @@ void TKRA_Probe_WalkEdgesMMIO(TKRA_Context *ctx)
 static u64 tkra_edgemmio_mdfl;
 static u64 tkra_edgemmio_scrn;
 static u64 tkra_edgemmio_clip;
+static u64 tkra_edgemmio_sten;
 static byte tkra_edgemmio_scrnchg;
+
+void TKRA_WaitFinish_WalkEdgesMMIO(TKRA_Context *ctx)
+{
+	volatile u64 *mmio;
+	u64 sts;
+
+	if(!(tkra_nommio&2))
+		return;
+
+	mmio=(volatile u64 *)0xFFFFF000C000ULL;
+
+	sts=mmio[0];
+	while(sts&0x05)
+	{
+		sts=mmio[0];
+	}
+
+}
 
 void TKRA_UpdateVars_WalkEdgesMMIO(TKRA_Context *ctx)
 {
 	static byte blfntab[16]=
 		{ 0x6, 0x7, 0x9, 0xD, 0x8, 0xC, 0xA, 0xE, 0xB, 0xF };
-	u64 tex, scrn, zbuf, sts, mdfl, cscr, cclip;
+	static byte zfunctab[7]=
+		{ 7, 6, 4, 5, 0, 2, 3, 1 };
+	u64 tex, scrn, zbuf, sts, mdfl, cscr, cclip, csten;
 	int clip_x0, clip_x1, clip_y0, clip_y1, ymax;
 	int dopersp;
 
@@ -2461,17 +2482,33 @@ void TKRA_UpdateVars_WalkEdgesMMIO(TKRA_Context *ctx)
 		(((u64)clip_x1)<<32) |
 		(((u64)clip_y1)<<48) ;
 
+	if(ctx->stateflag1&TKRA_STFL1_STENCILTEST)
+	{
+		csten=
+			(zfunctab[ctx->zat_stfunc]<< 4)	|
+			((ctx->zat_sto_stfail)    << 7)	|
+			((ctx->zat_sto_zfail)     <<10)	|
+			((ctx->zat_sto_zpass)     <<13)	|
+			((ctx->zat_stref)         <<16)	|
+			((u32)(ctx->zat_stmask)   <<24)	;
+	}else
+	{
+		csten=(6<<4);
+	}
+
 //	mmio[1]=((u16)ytop) | (((u64)(ytop+cnt-1))<<16) |
 //		(((u64)(ctx->screen_xsize))<<32);
 	cscr=
 		((u32)scrn) | (((u64)zbuf)<<32);
 
 	if(	(tkra_edgemmio_clip!=cclip) ||
-		(tkra_edgemmio_scrn!=cscr)	)
+		(tkra_edgemmio_scrn!=cscr )	||
+		(tkra_edgemmio_sten!=csten)	)
 			tkra_edgemmio_scrnchg = 1;
 
 	tkra_edgemmio_clip=cclip;
 	tkra_edgemmio_scrn=cscr;
+	tkra_edgemmio_sten=csten;
 
 	mdfl=0x0021;
 	if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
@@ -2484,9 +2521,13 @@ void TKRA_UpdateVars_WalkEdgesMMIO(TKRA_Context *ctx)
 
 	if(ctx->span_trifl&TKRA_TRFL_MAGBL)
 		mdfl|=1<<16;
+		
+	mdfl|=zfunctab[ctx->zat_zfunc]<<17;
+
+	mdfl|=1<<22;
 
 	mdfl|=
-			(blfntab[ctx->blend_sfunc]<< 8) |
+		(blfntab[ctx->blend_sfunc]<< 8) |
 		(blfntab[ctx->blend_dfunc]<<12) ;
 
 //	if(dopersp)
@@ -2505,7 +2546,7 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 //	u64 tex, scrn, zbuf, sts, mdfl;
 //	u64 scrn, zbuf;
 	u64 scr, clip, yspan;
-	u64 tex, sts, mdfl;
+	u64 tex, sts, mdfl, sten;
 	int clip_x0, clip_x1, clip_y0, clip_y1, ymax;
 	int dopersp, xsize;
 
@@ -2531,7 +2572,7 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 	
 	if(tkra_nommio&1)
 	{
-		TKRA_SyncScreenCacheMode(ctx, 0);
+		TKRA_SyncScreenCacheMode(ctx, 1);
 	
 //		tk_printf("TKRA_WalkEdges_MMIO: mmio&1\n");
 		TKRA_WalkEdges_Zbuf(ctx, ytop, edge_l, edge_r, cnt);
@@ -2540,14 +2581,17 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 
 	if(!tex || (tex&0xFFFFF0000000ULL) || (((tex>>57)&7)!=0))
 	{
-		TKRA_SyncScreenCacheMode(ctx, 0);
+		TKRA_SyncScreenCacheMode(ctx, 1);
 	
 //		printf("TKRA_WalkEdges_MMIO: tex %016llX\n", tex);
 		TKRA_WalkEdges_Zbuf(ctx, ytop, edge_l, edge_r, cnt);
 		return;
 	}
 	
-	TKRA_SyncScreenCacheMode(ctx, 1);
+	if(ctx->cachemode!=3)
+	{
+		TKRA_SyncScreenCacheMode(ctx, 3);
+	}
 	
 	clip_x0	= ctx->clip_x0;
 	clip_x1	= ctx->clip_x1;
@@ -2618,17 +2662,19 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 	mmio[14]=cstep_l;
 	mmio[15]=cstep_r;
 
-	clip=tkra_edgemmio_clip;
-	scr=tkra_edgemmio_scrn;
-
 	mmio[1]=yspan;
 
 	mdfl=tkra_edgemmio_mdfl;
 
 	if(tkra_edgemmio_scrnchg&1)
 	{
+		clip=tkra_edgemmio_clip;
+		scr =tkra_edgemmio_scrn;
+		sten=tkra_edgemmio_sten;
+
 		mmio[16]=clip;
 		mmio[ 2]=scr;
+		mmio[17]=sten;
 		tkra_edgemmio_scrnchg=0;
 	}
 
@@ -3043,7 +3089,8 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	dopersp=0;
 //	if((z3m>256) && (z3n>256) && ((z3n-z3m)>256))
 //	if((z3m>2048) && ((z3n-z3m)>128) && ((tkra_nommio&3)==2))
-	if((z3m>4096) && ((z3n-z3m)>128) && !nopersp)
+//	if((z3m>4096) && ((z3n-z3m)>128) && !nopersp)
+	if((z3m>4096) && ((z3n-z3m)>64) && !nopersp)
 	{
 		dopersp=1;
 	}
@@ -3320,11 +3367,11 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 		tp0=TKRA_FillEParm_ScaleTexPerspZ(tp0, z0);
 		tp1=TKRA_FillEParm_ScaleTexPerspZ(tp1, z1);
 		tp0|=1;
-		tp1|=1;
+//		tp1|=1;
 	}else
 	{
 		tp0&=~1;
-		tp1&=~1;
+//		tp1&=~1;
 	}
 	t1step_c=TKRA_CalcTexStepRcp(tp1, tp0, y1rcp);
 
@@ -3337,11 +3384,19 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 
 //	z1step_c = 0;
 
-	e_parm[TKRA_ES_XPOS]=vec0[TKRA_VX_XPOS];
+	t0=vec0[TKRA_VX_XPOS];
+	t1=vec0[TKRA_VX_CPOS];
+	t2=vec0[TKRA_VX_ZPOS];
+
+//	e_parm[TKRA_ES_XPOS]=vec0[TKRA_VX_XPOS];
 //	e_parm[TKRA_ES_TPOS]=vec0[TKRA_VX_TPOS];
 	e_parm[TKRA_ES_TPOS]=tp0;
-	e_parm[TKRA_ES_CPOS]=vec0[TKRA_VX_CPOS];
-	e_parm[TKRA_ES_ZPOS]=vec0[TKRA_VX_ZPOS];
+//	e_parm[TKRA_ES_CPOS]=vec0[TKRA_VX_CPOS];
+//	e_parm[TKRA_ES_ZPOS]=vec0[TKRA_VX_ZPOS];
+
+	e_parm[TKRA_ES_XPOS]=t0;
+	e_parm[TKRA_ES_CPOS]=t1;
+	e_parm[TKRA_ES_ZPOS]=t2;
 
 	e_parm[TKRA_ES_XSTEP]=x1step_c;
 	e_parm[TKRA_ES_TSTEP]=t1step_c;
@@ -3580,7 +3635,8 @@ void TKRA_WalkQuadB(TKRA_Context *ctx,
 	dopersp=0;
 //	if((z3m>256) && (z3n>256) && ((z3n-z3m)>256))
 //	if((z3m>2048) && ((z3n-z3m)>128) && ((tkra_nommio&3)==2))
-	if((z3m>4096) && ((z3n-z3m)>128) && !nopersp)
+//	if((z3m>4096) && ((z3n-z3m)>128) && !nopersp)
+	if((z3m>4096) && ((z3n-z3m)>64) && !nopersp)
 	{
 		dopersp=1;
 	}

@@ -731,6 +731,8 @@ void GL_DrawAliasAsSprite (aliashdr_t *phdr, int posenum)
 //	qglEnable(GL_BLEND);
 }
 
+float r_time0;
+float r_time1;
 int r_timecut;
 
 /*
@@ -742,7 +744,7 @@ R_SetupAliasFrame
 void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 {
 	int				pose, numposes, isview;
-	float			interval, relsz;
+	float			interval, relsz, relsc, dt;
 	int 			arr[10];
 
 	arr[8]=frame;
@@ -766,7 +768,23 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 //		pose = (pose + (int)(cl.time / interval)) % numposes;
 	}
 
+	relsc = 1.0;
+	if(!r_timecut && !isview)
+	{
+		r_time1 = Sys_FloatTime ();
+		dt = r_time1 - r_time0;
+		if(dt>0.10)
+			r_timecut = 1;
+		
+		if(dt>0.05)
+		{
+			relsc = 1.0 - (dt-0.05)*5;
+		}
+	}
+
 	relsz=paliashdr->boundingradius/(modeldist+1);
+	
+	relsz*=relsc;
 //	if(relsz<0.1)
 //	if((relsz<0.15) && (paliashdr->spr_texnum[0]>0))
 //	if((relsz<0.25) && (paliashdr->spr_texnum[0]>0))

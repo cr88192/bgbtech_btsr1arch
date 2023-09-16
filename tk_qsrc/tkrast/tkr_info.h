@@ -400,6 +400,15 @@ Vertex Parameter Arrays
 #define TKRA_ZAT_GT_NZ							0xE
 #define TKRA_ZAT_GE_NZ							0xF
 
+#define TKRA_STO_KEEP							0x0
+#define TKRA_STO_ZERO							0x1
+#define TKRA_STO_INVERT							0x2
+#define TKRA_STO_REPLACE						0x3
+#define TKRA_STO_INCR_CLAMP						0x4
+#define TKRA_STO_DECR_CLAMP						0x5
+#define TKRA_STO_INCR_WRAP						0x6
+#define TKRA_STO_DECR_WRAP						0x7
+
 #define TKRA_STFL1_DEPTHTEST					0x00000001
 #define TKRA_STFL1_NODEPTHWRITE					0x00000002
 #define TKRA_STFL1_ALPHATEST					0x00000004
@@ -426,6 +435,8 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_USESHADER					0x00100000
 
 #define TKRA_STFL1_DOSHADER_MASK				0x001C0000
+
+#define TKRA_STFL1_STENCILTEST					0x00200000
 
 
 typedef unsigned short	tkra_rastpixel;
@@ -566,7 +577,7 @@ byte			*screen_mem;	//combined screen memory
 tkra_rastpixel	*screen_rgb;	//display buffer (RGB)
 tkra_zbufpixel	*screen_zbuf;	//display buffer (Z buffer)
 tkra_zbufpixel	*screen_zbuf2;	//display buffer (Z buffer)
-byte			*screen_sten;	//stencil buffer
+byte			*screen_sten;	//stencil buffer (if separate)
 int		screen_xsize;
 int		screen_ysize;
 
@@ -646,7 +657,6 @@ int			(*VaGetPtr_idx)(void *ptr);
 
 int tex_rov;
 TKRA_TexImage *tex_list;
-TKRA_TexImage *tex_hash[256];
 
 
 float		trans_znear;
@@ -658,8 +668,6 @@ tkra_mat4	mat_tproj;		//modelview*projection
 tkra_mat4	mat_xform;		//modelview
 tkra_mat4	mat_xproj;		//projection
 
-tkra_mat4	stk_xform[64];		//modelview
-tkra_mat4	stk_xproj[8];		//projection
 int			stkpos_xform;
 int			stkpos_xproj;
 byte		matmode;
@@ -670,20 +678,18 @@ byte		zat_alfunc;
 byte		zat_zfunc;
 byte		blend_isready;
 
+byte		zat_stfunc;
+byte		zat_stref;
+byte		zat_stmask;
+byte		zat_stclear;
+byte		zat_sto_stfail;
+byte		zat_sto_zfail;
+byte		zat_sto_zpass;
+
 byte		light_mask;
 byte		cachemode;
 
 tkra_vec4f	light_model_ambient;
-tkra_vec4f	light_ambient[8];
-tkra_vec4f	light_diffuse[8];
-tkra_vec4f	light_specular[8];
-tkra_vec4f	light_position[8];
-tkra_vec4f	light_spot_dir[8];
-float		light_spot_exp[8];
-float		light_spot_cutoff[8];
-float		light_attn_const[8];
-float		light_attn_linear[8];
-float		light_attn_quadratic[8];
 
 tkra_blendfunc_t	Blend;
 tkra_zatest_t		ZaTest;
@@ -695,11 +701,6 @@ u64		*tkgl_sdr_uniform;		//uniform parameters
 u64		*tkgl_sdr_local;		//local parameters
 u64		*tkgl_sdr_attrib;		//local parameters
 
-TKRA_ShaderTrace *sdr_trcache[1024];
-u16 sdr_trchain[1024];
-u16 sdr_n_trace;
-u16 sdr_trhash[256];
-
 TKRA_ShaderProg		*sdr_progs;
 TKRA_ShaderTrace	*sdr_tr_free;
 TKRA_ShaderTrace	*sdr_tr_next;
@@ -707,11 +708,6 @@ TKRA_ShaderOp		*sdr_op_free;
 
 TKRA_ShaderProg		*sdr_prog_cur;
 TKRA_ShaderTrace	*sdr_tr_e_vtx;
-
-tkra_trivertex v0stk[64];
-tkra_trivertex v1stk[64];
-tkra_trivertex v2stk[64];
-tkra_trivertex v3stk[64];
 
 int		tkgl_vptr_xyz_nsz;
 int		tkgl_vptr_xyz_ty;
@@ -757,6 +753,33 @@ int		stat_microfrag_tris;
 int		stat_backface_tris;
 int		stat_negw_tris;
 int		stat_zocc_tris;
+
+tkra_trivertex v0stk[64];
+tkra_trivertex v1stk[64];
+tkra_trivertex v2stk[64];
+tkra_trivertex v3stk[64];
+
+TKRA_TexImage *tex_hash[256];
+
+tkra_mat4	stk_xform[64];		//modelview
+tkra_mat4	stk_xproj[8];		//projection
+
+tkra_vec4f	light_ambient[8];
+tkra_vec4f	light_diffuse[8];
+tkra_vec4f	light_specular[8];
+tkra_vec4f	light_position[8];
+tkra_vec4f	light_spot_dir[8];
+float		light_spot_exp[8];
+float		light_spot_cutoff[8];
+float		light_attn_const[8];
+float		light_attn_linear[8];
+float		light_attn_quadratic[8];
+
+TKRA_ShaderTrace *sdr_trcache[1024];
+u16 sdr_trchain[1024];
+u16 sdr_n_trace;
+u16 sdr_trhash[256];
+
 };
 
 struct TKRA_TexImage_s

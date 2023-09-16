@@ -303,6 +303,9 @@
 #define GL_INCR                                 0x1E02
 #define GL_DECR                                 0x1E03
 
+#define GL_INCR_WRAP                      0x8507
+#define GL_DECR_WRAP                      0x8508
+
 /* Buffers, Pixel Drawing/Reading */
 #define GL_NONE                                 0x0
 #define GL_LEFT                                 0x0406

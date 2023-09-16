@@ -7625,6 +7625,22 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			printf("\n");
 		}
 
+		printf("Exp-Varcount:\n");
+		k=0;
+		for(i=0; i<16; i++)
+		{
+			printf("%3u: ", i*4*4);
+			for(j=0; j<4; j++)
+			{
+				k+=sctx->stat_varcount_exp[i*4+j];
+				printf("%.2f%%(%.2f%%) ",
+					(100.0*sctx->stat_varcount_exp[i*4+j])/
+						sctx->stat_varcount_tot,
+					(100.0*k)/sctx->stat_varcount_tot);
+			}
+			printf("\n");
+		}
+
 		if(sctx->stat_ldst_pbotot>0)
 		{
 			printf("PBO: Indexed=%.2f%% Disp9=%.2f%% "

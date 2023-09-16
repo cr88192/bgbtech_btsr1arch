@@ -296,13 +296,13 @@ wire[2:0]		tStencilOpZpass;
 wire[7:0]		tStencilRef;
 wire[7:0]		tStencilMask;
 
-assign		tStencilFunc	= tRegCtrl16[ 6: 4];
-assign		tStencilOpSfail	= tRegCtrl16[ 9: 7];
-assign		tStencilOpZfail	= tRegCtrl16[12:10];
-assign		tStencilOpZpass	= tRegCtrl16[15:13];
+assign		tStencilFunc	= tRegCtrl17[ 6: 4];
+assign		tStencilOpSfail	= tRegCtrl17[ 9: 7];
+assign		tStencilOpZfail	= tRegCtrl17[12:10];
+assign		tStencilOpZpass	= tRegCtrl17[15:13];
 
-assign		tStencilRef		= tRegCtrl16[23:16];
-assign		tStencilMask	= tRegCtrl16[31:24];
+assign		tStencilRef		= tRegCtrl17[23:16];
+assign		tStencilMask	= tRegCtrl17[31:24];
 
 reg[2:0]		tStencilOp;
 
@@ -662,6 +662,11 @@ reg[63:0]		tPixUtxRgbC;
 
 reg[5:0]		tTexUIxt;
 
+reg[31:0]		tStatPixelsTotal;
+reg[31:0]		tNxtStatPixelsTotal;
+reg[31:0]		tStatPixelsZPass;
+reg[31:0]		tNxtStatPixelsZPass;
+
 always @*
 begin
 	case(tCtrlTexMode)
@@ -790,6 +795,9 @@ reg			tRegStP;
 wire[31:0]	tPixRcpZ0;
 reg[15:0]	tPixRcpZ;
 
+reg			tGetSetMsgLatch;
+reg			tNxtGetSetMsgLatch;
+
 `ifdef jx2_edgewalk_rcpz
 ExLuRcpFix32A_8p24		modRcpZ( {tPixZ, 12'hFFF}, tPixRcpZ0);
 `else
@@ -914,6 +922,11 @@ begin
 	tDoStBlkUtx				= 0;
 
 	tNxtUtxFlushRov			= tUtxFlushRov;
+
+	tNxtStatPixelsTotal		= tStatPixelsTotal;
+	tNxtStatPixelsZPass		= tStatPixelsZPass;
+
+	tNxtGetSetMsgLatch		= 0;
 
 
 	tNxtScanY		= tScanY;
@@ -1191,6 +1204,11 @@ begin
 		tNxtPixZp		= tPixRcpZ;
 	end
 
+	if(tCtrlUseStencil)
+	begin
+		tNxtPixZp[3:0]	= 0;
+	end
+
 	if(tCtrlPerspZ)
 	begin
 		tMulPixSp		=
@@ -1286,7 +1304,12 @@ begin
 		3'b111: tPixDstZ = tMemBlockFbZ[127:112];
 	endcase
 	
-	tPixDstSt = { 4'h0, tPixDstZ[3:0] };
+	tPixDstSt = 0;
+	if(tCtrlUseStencil)
+	begin
+		tPixDstSt = { 4'h0, tPixDstZ[3:0] };
+		tPixDstZ[3:0] = 4'h0;
+	end
 
 
 	tPixDestRgb = {
@@ -1602,11 +1625,15 @@ begin
 //		$display("Z Fail Pz=%X Dz=%X", tPixZp, tPixDstZ);
 	end
 
+// `ifndef def_true
+`ifdef def_true
 	if(!tRegStP && tCtrlUseStencil)
 	begin
+		$display("ModEdgeWalk: Stencil Test Fail");
 		tPixDoUpdRgb = 0;
 		tPixDoUpdZ = 0;
 	end
+`endif
 
 	if(!tRegZtP && tCtrlZTest)
 	begin
@@ -1725,10 +1752,10 @@ begin
 		tNxtMemBlockFbZDirty	= 1;
 	end
 	
-	if(tCtrlUseStencil)
+	if(tCtrlUseStencil && tPixDoUpdSt)
 	begin
-		if(!tPixDoUpdSt)
-			tPixUpdSt = tPixDstSt;
+//		if(!tPixDoUpdSt)
+//			tPixUpdSt = tPixDstSt;
 
 		if(tCtrlFbufDWord)
 		begin
@@ -1761,7 +1788,7 @@ begin
 				tNxtMemBlockFbZ[115:112] = tPixUpdSt[3:0];
 		end
 
-		if(tPixDoUpdSt)
+		if(tPixDoUpdSt && (tPixDoUpdZ || (tPixUpdSt != tPixDstSt)))
 			tNxtMemBlockFbZDirty	= 1;
 	end
 
@@ -2288,6 +2315,13 @@ begin
 //		if(!tDoScanStep)
 		if(1'b1)
 		begin
+			if(tPixDoUpdSt)
+			begin
+				tNxtStatPixelsTotal		= tStatPixelsTotal + 1;
+				if(tRegZtP)
+					tNxtStatPixelsZPass		= tStatPixelsZPass + 1;
+			end
+
 			tNxtPixStepInh	= 5;
 			tNxtPixX		= tPixX + 1;
 			tNxtPixZ		= tPixZ + tPixStepZ;
@@ -2396,20 +2430,134 @@ begin
 	if(((tDsOK!=UMEM_OK_READY) || (tHeldCyc[23:10]==0)) && 
 		!(tMissFbRgbLatch||tMissFbZLatch||tMissUtxLatch))
 	begin
-//		$display("ModEdgeWalk: Fetch Wait Return Ready");
-		tDsOpm = UMEM_OPM_READY;
+		$display("ModEdgeWalk: Fetch Wait Return Ready");
+		tDsOpm						= UMEM_OPM_READY;
 
 		tNxtMissFbRgbDone			= 0;
 		tNxtMissFbZDone				= 0;
 		tNxtMissUtxDone				= 0;
 //		tNxtHeldCyc					= 4096;
 //		tNxtHeldCyc					= 16384;
-		tNxtHeldCyc					= 131072;
+//		tNxtHeldCyc					= 131072;
+		tNxtHeldCyc					= 262144;
 	end
 	else
-		if(tMissFbRgb || tMissFbRgbLatch)
+		if((tMissUtx && tReqBlockUtxReady && 
+			!(tMissFbRgbLatch||tMissFbZLatch)) || tMissUtxLatch)
+//		if(tMissUtx || tMissUtxLatch)
 	begin
-		if(tDsOK==UMEM_OK_OK)
+
+//		if(!tReqBlockUtxReady && !tMissUtxLatch)
+//		begin
+//			$display("Wait UTX Request Ready");
+//		end
+//		else
+
+`ifdef def_true
+// `ifndef def_true
+
+`ifdef def_true
+		if((tLdBlkUtxIx!=tNxtLdBlkUtxIx) && !tMissUtxLatch)
+		begin
+			$display("Wait UTX Array Ready");
+		end
+		else
+`endif
+		if(	(tLdBlkUtxAddr[31:16] == tReqBlkUtxAx) &&
+			(tLdBlkUtxAddr[15: 0] == tReqBlockUtxIx) &&
+//			!tMissUtxLatch)
+			!tMissUtxLatch && !tMissUtxDone)
+		begin
+			tNxtMissUtxDone			= 1;
+//			tNxtMissUtxLatch		= 0;
+//			tDsOpm					= UMEM_OPM_READY;
+
+			if(!tMissUtxDone)
+			begin
+//				$display("ModEdgeWalk: UTX Array Ix=%X Ax=%X D=%X", 
+//					tReqBlockUtxIx, tReqBlkUtxAx, tLdBlkUtxData);
+
+				tNxtMemBlockUtxAddr		= tReqBlockUtxAddr;
+
+				tNxtMemBlockUtxA		= tLdBlkUtxData;
+				tNxtMemBlockUtxIxA		= tReqBlockUtxIx;
+
+				tNxtMemBlockUtxB		= tMemBlockUtxA;
+				tNxtMemBlockUtxIxB		= tMemBlockUtxIxA;
+
+				tNxtMemBlockUtxC		= tMemBlockUtxB;
+				tNxtMemBlockUtxIxC		= tMemBlockUtxIxB;
+
+				tNxtMemBlockUtxD		= tMemBlockUtxC;
+				tNxtMemBlockUtxIxD		= tMemBlockUtxIxC;
+			end
+		end
+		else
+`endif
+			if((tDsOK==UMEM_OK_OK) && tMissUtxLatch)
+		begin
+			$display("ModEdgeWalk: Fetch UTX Ix=%X A=%X D=%X", 
+				tReqBlockUtxIx, tReqBlockUtxAddr,
+				{ tDsDataInHi, tDsDataInLo });
+
+//			tNxtMissUtxLatch		= 0;
+			tNxtMissUtxDone			= 1;
+
+			if(!tMissUtxDone)
+			begin
+				$display("ModEdgeWalk: Fetch UTX B Ix=%X D=%X",
+					tReqBlockUtxIx,
+					{ tDsDataInHi, tDsDataInLo });
+
+				tNxtMemBlockUtxAddr		= tReqBlockUtxAddr;
+
+				tNxtMemBlockUtxA		= { tDsDataInHi, tDsDataInLo };
+				tNxtMemBlockUtxIxA		= tReqBlockUtxIx;
+
+				tNxtMemBlockUtxB		= tMemBlockUtxA;
+				tNxtMemBlockUtxIxB		= tMemBlockUtxIxA;
+
+				tNxtMemBlockUtxC		= tMemBlockUtxB;
+				tNxtMemBlockUtxIxC		= tMemBlockUtxIxB;
+
+				tNxtMemBlockUtxD		= tMemBlockUtxC;
+				tNxtMemBlockUtxIxD		= tMemBlockUtxIxC;
+
+				tStBlkUtxData			= { tDsDataInHi, tDsDataInLo };
+				tStBlkUtxAddr			= { tReqBlkUtxAx, tReqBlockUtxIx };
+				tDoStBlkUtx				= 1;
+			end
+
+			tDsOpm = UMEM_OPM_READY;
+		end
+		else
+			if(tDsOK==UMEM_OK_READY)
+		begin
+			if(tMissUtxDone)
+			begin
+				tNxtMissUtxLatch	= 0;
+				tNxtMissUtxDone		= 0;
+				tDsOpm				= UMEM_OPM_READY;
+			end
+			else
+			begin
+				$display("ModEdgeWalk: Send UTX Load Ix=%X", tReqBlockUtxIx);
+
+//				tDsOpm				= UMEM_OPM_RD_Q;
+				tDsOpm				= UMEM_OPM_RD_TILE;
+				if(tReqBlockUtxAddr[3])
+					tDsOpm			= UMEM_OPM_RD_Q;
+				tDsAddr				= tReqBlockUtxAddr;
+				tNxtMissUtxLatch	= 1;
+			end
+		end
+	end
+	else
+		if((tMissFbRgb && 
+			!(tMissUtxLatch||tMissFbZLatch)) || tMissFbRgbLatch)
+	begin
+//		if(tDsOK==UMEM_OK_OK)
+		if((tDsOK==UMEM_OK_OK) && tMissFbRgbLatch)
 		begin
 //			if(tDsOpm2 == UMEM_OPM_WR_Q)
 			if(tDsOpm2 == UMEM_OPM_WR_TILE)
@@ -2441,7 +2589,6 @@ begin
 			begin
 				tNxtMissFbRgbLatch		= 0;
 				tNxtMissFbRgbDone		= 0;
-//				tNxtHeldCyc				= 4096;
 				tDsOpm = UMEM_OPM_READY;
 			end
 			else
@@ -2462,9 +2609,11 @@ begin
 		end
 	end
 	else
-		if(tMissFbZ || tMissFbZLatch)
+		if((tMissFbZ && 
+			!(tMissUtxLatch||tMissFbRgbLatch)) || tMissFbZLatch)
 	begin
-		if(tDsOK==UMEM_OK_OK)
+//		if(tDsOK==UMEM_OK_OK)
+		if((tDsOK==UMEM_OK_OK) && tMissFbZLatch)
 		begin
 //			if(tDsOpm2 == UMEM_OPM_WR_Q)
 			if(tDsOpm2 == UMEM_OPM_WR_TILE)
@@ -2496,7 +2645,6 @@ begin
 			begin
 				tNxtMissFbZLatch		= 0;
 				tNxtMissFbZDone			= 0;
-//				tNxtHeldCyc				= 4096;
 				tDsOpm = UMEM_OPM_READY;
 			end
 			else
@@ -2517,101 +2665,13 @@ begin
 		end
 	end
 	else
-		if((tMissUtx && tReqBlockUtxReady) || tMissUtxLatch)
-	begin
-`ifdef def_true
-// `ifndef def_true
-
-`ifdef def_true
-		if((tLdBlkUtxIx!=tNxtLdBlkUtxIx) && !tMissUtxLatch)
-		begin
-			$display("Wait UTX Array Ready");
-		end
-		else
-`endif
-		if(	(tLdBlkUtxAddr[31:16] == tReqBlkUtxAx) &&
-			(tLdBlkUtxAddr[15: 0] == tReqBlockUtxIx) &&
-			!tMissUtxLatch)
-		begin
-			tNxtMissUtxDone			= 1;
-			if(!tMissUtxDone)
-			begin
-				tNxtMemBlockUtxAddr		= tReqBlockUtxAddr;
-
-				tNxtMemBlockUtxA		= tLdBlkUtxData;
-				tNxtMemBlockUtxIxA		= tReqBlockUtxIx;
-
-				tNxtMemBlockUtxB		= tMemBlockUtxA;
-				tNxtMemBlockUtxIxB		= tMemBlockUtxIxA;
-
-				tNxtMemBlockUtxC		= tMemBlockUtxB;
-				tNxtMemBlockUtxIxC		= tMemBlockUtxIxB;
-
-				tNxtMemBlockUtxD		= tMemBlockUtxC;
-				tNxtMemBlockUtxIxD		= tMemBlockUtxIxC;
-			end
-		end
-		else
-`endif
-			if(tDsOK==UMEM_OK_OK)
-		begin
-			$display("ModEdgeWalk: Fetch UTX Ix=%X A=%X", 
-				tReqBlockUtxIx, tReqBlockUtxAddr);
-
-//			tNxtMissUtxLatch		= 0;
-			tNxtMissUtxDone			= 1;
-
-			if(!tMissUtxDone)
-			begin
-				tNxtMemBlockUtxAddr		= tReqBlockUtxAddr;
-
-				tNxtMemBlockUtxA		= { tDsDataInHi, tDsDataInLo };
-				tNxtMemBlockUtxIxA		= tReqBlockUtxIx;
-
-				tNxtMemBlockUtxB		= tMemBlockUtxA;
-				tNxtMemBlockUtxIxB		= tMemBlockUtxIxA;
-
-				tNxtMemBlockUtxC		= tMemBlockUtxB;
-				tNxtMemBlockUtxIxC		= tMemBlockUtxIxB;
-
-				tNxtMemBlockUtxD		= tMemBlockUtxC;
-				tNxtMemBlockUtxIxD		= tMemBlockUtxIxC;
-
-				tStBlkUtxData			= { tDsDataInHi, tDsDataInLo };
-				tStBlkUtxAddr			= { tReqBlkUtxAx, tReqBlockUtxIx };
-				tDoStBlkUtx				= 1;
-			end
-
-			tDsOpm = UMEM_OPM_READY;
-		end
-		else
-			if(tDsOK==UMEM_OK_READY)
-		begin
-			if(tMissUtxDone)
-			begin
-				tNxtMissUtxLatch	= 0;
-				tNxtMissUtxDone		= 0;
-//				tNxtHeldCyc			= 4096;
-				tDsOpm				= UMEM_OPM_READY;
-			end
-			else
-			begin
-//				tDsOpm				= UMEM_OPM_RD_Q;
-				tDsOpm				= UMEM_OPM_RD_TILE;
-				if(tReqBlockUtxAddr[3])
-					tDsOpm			= UMEM_OPM_RD_Q;
-				tDsAddr				= tReqBlockUtxAddr;
-				tNxtMissUtxLatch	= 1;
-			end
-		end
-	end
-	else
 	begin
 		tDsOpm = UMEM_OPM_READY;
 		tNxtMissFbRgbDone			= 0;
 		tNxtMissFbZDone				= 0;
 		tNxtMissUtxDone				= 0;
-		tNxtHeldCyc					= 131072;
+		tNxtHeldCyc					= 262144;
+//		tNxtHeldCyc					= 131072;
 //		tNxtHeldCyc					= 4096;
 //		tNxtHeldCyc					= 16384;
 	end
@@ -2694,6 +2754,8 @@ begin
 			5'h0F:		tBusDataOut	= tStFifoCtrl15;
 			5'h10:		tBusDataOut	= tStFifoCtrl16;
 			5'h11:		tBusDataOut	= tStFifoCtrl17;
+
+			5'h1C:		tBusDataOut	= { tStatPixelsZPass, tStatPixelsTotal};
 			default:	tBusDataOut	= 0;
 		endcase
 		
@@ -2704,7 +2766,12 @@ begin
 		if(tBusAddr[7:3]!=0)
 //		if(1'b1)
 		begin
-			$display("ModEdgeWalk: Get %X = %X", tBusAddr[7:3], tBusDataOut);
+			if(!tGetSetMsgLatch)
+			begin
+				$display("ModEdgeWalk: Get %X = %X",
+					tBusAddr[7:3], tBusDataOut);
+			end
+			tNxtGetSetMsgLatch	= 1;
 		end
 
 		tBusOK			= 1;
@@ -2712,7 +2779,13 @@ begin
 
 	if(tBusCSelWR)
 	begin
-		$display("ModEdgeWalk: Set %X = %X", tBusAddr[7:3], tBusDataIn);
+		if(!tGetSetMsgLatch)
+		begin
+			$display("ModEdgeWalk: Set %X = %X",
+				tBusAddr[7:3], tBusDataIn);
+		end
+		tNxtGetSetMsgLatch = 1;
+
 		if(tBusAddr[11:8]==0)
 		begin
 			case(tBusAddr[7:3])
@@ -3086,6 +3159,7 @@ begin
 
 	if(tDoStBlkUtx)
 	begin
+//		$display("Store UTX Array A=%X D=%X", tStBlkUtxAddr, tStBlkUtxData);
 		tArrUtxData[tStBlkUtxIx]	<= tStBlkUtxData;
 		tArrUtxAddr[tStBlkUtxIx]	<= tStBlkUtxAddr;
 	end
@@ -3190,6 +3264,11 @@ begin
 
 	tScanStepInh		<= tNxtScanStepInh;
 	tPixStepInh			<= tNxtPixStepInh;
+
+	tStatPixelsTotal	<= tNxtStatPixelsTotal;
+	tStatPixelsZPass	<= tNxtStatPixelsZPass;
+
+	tGetSetMsgLatch		<= tNxtGetSetMsgLatch;
 end
 
 endmodule

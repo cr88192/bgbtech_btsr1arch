@@ -2508,10 +2508,11 @@ Pzzz.H / Pzzz.F:
 * In WEX Mode 2, these will be Lane 1 only.
 * In modes with Dual Lane FPU (FP2) these may be issued from Lane 2.
 * Normally, FPU or FP-SIMD ops may not be co-issued with other FPU/FP-SIMD ops.
-* In WEX-FP2 Modes, Pxxx.F may be co-issued with itself.
+* In WEX-FP2 Modes, Pzzz.F may be co-issued with itself.
 ** Matching pairs will be allowed for 2x Single.
 ** These co-issue cases will be functionally similar to PzzzX.F.
 ** However, the co-issue case will allow free selection of registers.
+** It will be undefined if the paired instructions do not perform the same operation.
 
 Note that FPU SIMD ops will nominally defined as using truncate rounding.
 * However, minimal guerantees will be made as to rounding behavior or accuracy.

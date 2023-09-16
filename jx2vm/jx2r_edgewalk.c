@@ -63,6 +63,9 @@ u64 tkra_rgb32upck64(u32 a);
 u32 BJX2_PMORT_U16(u16 x);
 u64 TKRA_CachedBlkUtx2(u64 blk, int ix);
 
+u32 bjx2_edgewalk_var_pixtot;
+u32 bjx2_edgewalk_var_pixzpass;
+
 u16 bjx2_rgb64pck16(u64 vs)
 {
 	u16 vn, av;
@@ -153,7 +156,9 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 	int x, z, s, t, zs, ss, ts, z2, s_p, t_p, z_p;
 	int r, g, b, a, rs, gs, bs, as, ix, ax;
 	int txs, txt, txi, ztest, atest, zmask, cmask, islin;
-	int bfs, bfd, txm, zfn, zpn, ispersp, isrcpz, isdword;
+	int bfs, bfd, txm, zfn, zpn, ispersp, isrcpz, isdword, issten;
+	int blk_st, ref_st, upd_st, stfn, st_op, zupd;
+	int stpn;
 	int i, j, k;
 
 //	x0=((s16)bjx2_edgewalk_var_scanlfx)>>6;
@@ -175,7 +180,11 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 
 	ispersp=(bjx2_edgewalk_regs[0]>>20)&1;
 	isrcpz=(bjx2_edgewalk_regs[0]>>21)&1;
+	issten=(bjx2_edgewalk_regs[0]>>22)&1;
 	isdword=(bjx2_edgewalk_regs[0]>>23)&1;
+
+	stfn	= (bjx2_edgewalk_regs[17]>>4)&7;
+	ref_st	= (bjx2_edgewalk_regs[17]>>16)&0xFF;
 
 	ax=(bjx2_edgewalk_addr_ubuf^(bjx2_edgewalk_addr_ubuf>>16))&0xFFFF;
 
@@ -255,6 +264,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			blk_c=BJX2_MemGetDWord_NoAT(ctx, addr_c, 0);
 			blk_z=BJX2_MemGetDWord_NoAT(ctx, addr_z, 0);
 			
+			blk_st=blk_z&0xFF;
 			blk_z>>=16;
 		}else
 		{
@@ -262,7 +272,10 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			addr_z=bjx2_edgewalk_addr_zbuf+(addr_o+x)*2;
 			blk_c=BJX2_MemGetWord_NoAT(ctx, addr_c, 0);
 			blk_z=BJX2_MemGetWord_NoAT(ctx, addr_z, 0);
+			blk_st=blk_z&0x000F;
 		}
+		
+		upd_st=blk_st;
 
 		if(isrcpz)
 		{
@@ -437,13 +450,65 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			case 7: zpn=0; break;
 			default: zpn=1; break;
 		}
+		
+		stpn=1;
+		if(issten)
+		{
+			switch(stfn)
+			{
+				case 0: stpn=ref_st< blk_st;	break;
+				case 1: stpn=ref_st>=blk_st;	break;
+				case 2: stpn=ref_st<=blk_st;	break;
+				case 3: stpn=ref_st> blk_st;	break;
+				case 4: stpn=ref_st==blk_st;	break;
+				case 5: stpn=ref_st!=blk_st;	break;
+				case 6: stpn=1; break;
+				case 7: stpn=0; break;
+			}
 
+			if(stpn)
+			{
+				if(zpn)
+					st_op=(bjx2_edgewalk_regs[17]>>13)&7;
+				else
+					st_op=(bjx2_edgewalk_regs[17]>>10)&7;
+			}else
+			{
+				st_op=(bjx2_edgewalk_regs[17]>>7)&7;
+			}
+		}
+
+		switch(st_op)
+		{
+			case 0: upd_st=blk_st;		break;
+			case 1: upd_st=0;			break;
+			case 2: upd_st=~blk_st;		break;
+			case 3: upd_st=ref_st;		break;
+			case 4:
+				upd_st=blk_st+1;
+				if(upd_st>255)
+					upd_st=255;
+				break;
+			case 5:
+				upd_st=blk_st-1;
+				if(upd_st<0)
+					upd_st=0;
+				break;
+			case 6: upd_st=blk_st+1;	break;
+			case 7: upd_st=blk_st-1;	break;
+		}
+
+		bjx2_edgewalk_var_pixtot++;
+		if(zpn)
+			bjx2_edgewalk_var_pixzpass++;
+
+		zupd=0;
 //		if((z2<=blk_z) || !ztest)
 		if(zpn || !ztest)
 		{
 			if(((rgb_bl>>63)&1) || !atest)
 			{
-				if(cmask)
+				if(cmask && stpn)
 				{
 					if(isdword)
 					{
@@ -453,15 +518,44 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 						BJX2_MemSetWord_NoAT(ctx, addr_c, 0, blk_c);
 					}
 				}
-				if(zmask)
+				if(zmask && stpn)
 				{
+					zupd=1;
 					if(isdword)
 					{
-						BJX2_MemSetWord_NoAT(ctx, addr_z, 0, z2<<16);
+						BJX2_MemSetWord_NoAT(ctx, addr_z, 0, (z2<<16)|upd_st);
 					}else
 					{
-						BJX2_MemSetWord_NoAT(ctx, addr_z, 0, z2);
+						if(issten)
+						{
+							BJX2_MemSetWord_NoAT(ctx,
+								addr_z, 0, (z2&0xFFF0)|upd_st);
+						}else
+						{
+							BJX2_MemSetWord_NoAT(ctx,
+								addr_z, 0, z2);
+						}
 					}
+				}
+			}
+		}
+
+		if(issten && !zupd)
+		{
+			if(isdword)
+			{
+				BJX2_MemSetWord_NoAT(ctx,
+					addr_z, 0, (blk_z<<16)|upd_st);
+			}else
+			{
+				if(issten)
+				{
+					BJX2_MemSetWord_NoAT(ctx,
+						addr_z, 0, (blk_z&0xFFF0)|upd_st);
+				}else
+				{
+					BJX2_MemSetWord_NoAT(ctx,
+						addr_z, 0, blk_z);
 				}
 			}
 		}
@@ -750,6 +844,11 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 	
 	if(jx2_edgewalk_busyqueue>=28)
 		bjx2_edgewalk_regs[0]|=1;
+
+	bjx2_edgewalk_regs[0x1C]	=
+	((u64)bjx2_edgewalk_var_pixtot) |
+	(((u64)bjx2_edgewalk_var_pixzpass)<<32);
+
 
 	bjx2_edgewalk_regs0l=bjx2_edgewalk_regs[0];
 	return(0);

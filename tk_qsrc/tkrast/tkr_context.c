@@ -14,22 +14,38 @@ int TKRA_SyncScreenCacheMode(TKRA_Context *ctx, int md)
 {
 	u64 *ptr;
 
-	int i0, i1, i2, i3;
+	u64 i0, i1, i2, i3, ik;
 	int i, j, k;
 
 	if(md==ctx->cachemode)
 		return(0);
+
+	if((md&0xE)==(ctx->cachemode&0xE))
+	{
+		if(md&1)
+		{
+			ctx->cachemode=md;
+			return(1);
+		}
+		return(0);
+	}
+
+	if(!(ctx->cachemode&1))
+	{
+		ctx->cachemode=md;
+		return(1);
+	}
 	
 	ptr=(u64 *)(ctx->screen_sten);
-	k=0;
+	ik=0; j=0;
 	for(i=0; i<512; i++)
 	{
-		j=(i<<3);
 		i0=ptr[j+0];
 		i1=ptr[j+2];
 		i2=ptr[j+4];
 		i3=ptr[j+6];
-		k+=i0+i1+i2+i3;
+		j+=8;
+		ik+=i0+i1+i2+i3;
 	}
 	
 	ctx->cachemode=md;
@@ -122,13 +138,13 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 
 	TKRA_InitSpanRcp();
 	
-	TKRA_SyncScreenCacheMode(ctx, 0);
+	TKRA_SyncScreenCacheMode(ctx, 1);
 	
 	for(i=0; i<xs*ys; i++)
 	{
 //		((short *)(ctx->screen_rgb))[i]=0x7FFF;
 		((short *)(ctx->screen_rgb))[i]=0x3CEF;
-		((short *)(ctx->screen_zbuf))[i]=0x7FFF;
+		((short *)(ctx->screen_zbuf))[i]=0x7FF0;
 	}
 
 	return(0);

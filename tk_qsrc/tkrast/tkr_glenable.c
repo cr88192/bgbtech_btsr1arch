@@ -177,7 +177,7 @@ void tkra_glClear(unsigned int mask)
 	
 	ctx=TKRA_GetCurrentContext();
 
-	TKRA_SyncScreenCacheMode(ctx, 0);
+	TKRA_SyncScreenCacheMode(ctx, 1);
 
 	xs=ctx->screen_xsize;
 	ys=ctx->screen_ysize;
@@ -231,36 +231,15 @@ void tkra_glClear(unsigned int mask)
 		px=ctx->clear_zbuf;
 //		n=(xs>>1)*(ys>>1);
 		n=xs*ys;
+		
+		px=(px&0x7FF0)|(ctx->zat_stclear&15);
 
 		tkra_memset_word(zbuf, px, n);
-
-#if 0
-//		for(i=0; i<n; i++)
-//			{ zbuf[i]=px; }
-		px4=px|(px<<16); px4=px4|(px4<<32);
-		zct=zbuf;	zcte=zbuf+n;
-		while((zct+32)<=zcte)
-		{
-			((u64 *)zct)[0]=px4;	((u64 *)zct)[1]=px4;
-			((u64 *)zct)[2]=px4;	((u64 *)zct)[3]=px4;
-			((u64 *)zct)[4]=px4;	((u64 *)zct)[5]=px4;
-			((u64 *)zct)[6]=px4;	((u64 *)zct)[7]=px4;
-			zct+=32;
-		}
-		while((zct+8)<=zcte)
-		{
-			((u64 *)zct)[0]=px4;
-			((u64 *)zct)[1]=px4;
-			zct+=8;
-		}
-		while(zct<zcte)
-			{ *zct++=px; }
-#endif
 	}
 
 	if(mask&TKRA_GL_STENCIL_BUFFER_BIT)
 	{
-		px=0;
+		px=ctx->zat_stclear;
 		n=(xs>>1)*(ys>>1);
 		for(i=0; i<n; i++)
 			{ sten[i]=px; }
@@ -519,6 +498,7 @@ void tkra_glEnable(int cap)
 	case GL_SCISSOR_TEST:
 		break;
 	case GL_STENCIL_TEST:
+		ctx->stateflag1|=TKRA_STFL1_STENCILTEST;
 		break;
 	case GL_CLIP_PLANE0:
 		break;
@@ -745,7 +725,11 @@ void tkra_glFinish(void)
 	TKRA_Context *ctx;
 
 	ctx=TKRA_GetCurrentContext();
-	
+
+#ifdef __BJX2__
+	TKRA_WaitFinish_WalkEdgesMMIO();
+#endif
+
 	TKRA_SyncScreenCacheMode(ctx, 0);
 	
 	TKRA_DebugPrintStats(ctx);

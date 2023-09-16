@@ -185,6 +185,9 @@ reg[127:0]		tNxtMemBlkData;
 reg[ 23:0]		tNxtMemBlkAddr;
 reg				tNxtMemBlkDirty;
 
+reg[ 15:0]		tRetryCyc;
+reg[ 15:0]		tNxtRetryCyc;
+
 reg				tReqIsNz;
 reg				tReqMissAddr;
 reg				tReqDoMiss;
@@ -205,6 +208,8 @@ begin
 	tNxtMemSeqRov		= tMemSeqRov;
 	tMemRingSkipResp	= 0;
 	tReqHold			= 0;
+	tNxtRetryCyc		= tRetryCyc - 1;
+//	tNxtRetryCyc		= 8192;
 
 	tNxtMemRespSt		= tMemRespSt;
 	tNxtMemRespLd		= tMemRespLd;
@@ -363,12 +368,29 @@ begin
 		tNxtMemReqLd	= 1;
 	end
 	
+	if(tRetryCyc[15:8]==0)
+	begin
+		if(tMemReqSt && !tMemRespSt)
+		begin
+			tNxtMemReqSt	= 0;
+		end
+		else if(tMemReqLd && !tMemRespLd)
+		begin
+			tNxtMemReqLd	= 0;
+		end
+		else
+		begin
+			tNxtRetryCyc	= 8192;
+		end
+	end
+	
 	if(!tReqHold)
 	begin
 		tNxtMemReqSt	= 0;
 		tNxtMemReqLd	= 0;
 		tNxtMemRespSt	= 0;
 		tNxtMemRespLd	= 0;
+		tNxtRetryCyc	= 8192;
 	end
 
 	if(tReqIsNz)
@@ -396,6 +418,7 @@ begin
 
 	tMemRespSt		<= tNxtMemRespSt;
 	tMemRespLd		<= tNxtMemRespLd;
+	tRetryCyc		<= tNxtRetryCyc;
 
 	if(reset)
 	begin

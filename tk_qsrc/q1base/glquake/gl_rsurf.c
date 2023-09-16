@@ -1450,9 +1450,18 @@ void R_RecursiveWorldNode (mnode_t *node)
 //	if(r_totalsurfs > 400)
 //		return;
 
-//	r_time1 = Sys_FloatTime ();
-//	if((r_time1-r_time0)>0.07)
+//	if(r_totalsurfs > 700)
 //		return;
+
+#if 0
+	r_time1 = Sys_FloatTime ();
+//	if((r_time1-r_time0)>0.07)
+	if((r_time1-r_time0)>0.12)
+	{
+		r_timecut = 1;
+		return;
+	}
+#endif
 
 
 // recurse down the back side

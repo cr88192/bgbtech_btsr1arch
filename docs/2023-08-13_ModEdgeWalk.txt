@@ -16,38 +16,43 @@ MMIO Base Address:
 * FFFF_F000C000
 
 Control Regs:
-	00: Main Control/Status
-	01:
-		(15: 0): Y start
-		(31:16): Y end
-		(47:32): Raster Stride
-	02: Framebuffer
-		(31: 0): Base Address (RGB555)
-		(63:32): Base Address (Z)
-	03: Texture
-		(31: 0): Base Address
-		(51:32): MBZ (Reserved)
-		(56:52): Size (Bits)
-		(59:57): Texture Block Mode
-		(63:60): MBZ
+*	00: Main Control/Status
+*	01:
+**		(15: 0): Y start
+**		(31:16): Y end
+**		(47:32): Raster Stride
+*	02: Framebuffer
+**		(31: 0): Base Address (RGB555)
+**		(63:32): Base Address (Z)
+*	03: Texture
+**		(31: 0): Base Address
+**		(51:32): MBZ (Reserved)
+**		(56:52): Size (Bits)
+**		(59:57): Texture Block Mode
+**		(63:60): MBZ
 
-	04:	Base Left  Z,X (Low 32=Z, High 32=X)
-	05: Base Right Z,X
-	06: Step Left  Z,X
-	07: Step Right Z,X
+*	04:	Base Left  Z,X (Low 32=Z, High 32=X)
+*	05: Base Right Z,X
+*	06: Step Left  Z,X
+*	07: Step Right Z,X
 
-	08:	Base Left  S,T (Low 32=S, High 32=T)
-	09: Base Right S,T
-	0A: Step Left  S,T
-	0B: Step Right S,T
+*	08:	Base Left  S,T (Low 32=S, High 32=T)
+*	09: Base Right S,T
+*	0A: Step Left  S,T
+*	0B: Step Right S,T
 
-	0C: Base Left  B,G,R,A (Low 16=B, High 16=A)
-	0D: Base Right B,G,R,A
-	0E: Step Left  B,G,R,A
-	0F: Step Right B,G,R,A
+*	0C: Base Left  B,G,R,A (Low 16=B, High 16=A)
+*	0D: Base Right B,G,R,A
+*	0E: Step Left  B,G,R,A
+*	0F: Step Right B,G,R,A
 
-	10: X/Y Clip   X0,Y0,X1,Y1
-	11: Stencil Control
+*	10: X/Y Clip   X0,Y0,X1,Y1
+*	11: Stencil Control
+
+*	1C: Stat Pixel Count
+**		Low 32: Total pixels attempted drawn within clip.
+**		High 32: Total pixels drawn within clip that passed Z Test.
+**		These ignore Z and Color masking, along with Alpha Test.
 
 
 === Main Control Register ===
@@ -60,7 +65,7 @@ Control Reg 00:
 *	(   21): Reciprocal Z
 *	(   20): Perspective Correct S/T
 *	(19:17): ZFunc
-*	(   16): Linear
+*	(   16): Linear Filtering
 *	(15:12): Dst Blend Op
 *	(11: 8): Src Blend Op			
 *	(    7): ZMask (Z Buffer Store)

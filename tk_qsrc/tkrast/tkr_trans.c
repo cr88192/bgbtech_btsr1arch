@@ -1583,8 +1583,11 @@ int TKRA_EmitProjectedTriangle(
 	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;
 	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;
 
-	if(TKRA_CheckZCullTriangle(ctx, pv0, pv1, pv2))
-		return(-1);
+	if((tkra_nommio&3)!=2)
+	{
+		if(TKRA_CheckZCullTriangle(ctx, pv0, pv1, pv2))
+			return(-1);
+	}
 
 #if 0
 	if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
@@ -2035,8 +2038,11 @@ int TKRA_EmitProjectedQuad(
 	int tx0, ty0, tz0, shx, shy, flipst;
 	int clip_mx, clip_nx, clip_my, clip_ny;
 
-	if(TKRA_CheckZCullQuad(ctx, pv0, pv1, pv2, pv3))
-		return(-1);
+	if((tkra_nommio&3)!=2)
+	{
+		if(TKRA_CheckZCullQuad(ctx, pv0, pv1, pv2, pv3))
+			return(-1);
+	}
 
 	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;	is3=pv3.s;
 	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;	it3=pv3.t;

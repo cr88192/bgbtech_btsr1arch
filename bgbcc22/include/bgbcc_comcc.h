@@ -430,6 +430,9 @@ int stat_fp16_exp[32];
 int stat_funarg_exp[32];
 int stat_funarg_tot;
 
+int stat_varcount_exp[64];
+int stat_varcount_tot;
+
 int stat_lbl_tot;
 int stat_lbl_disp8;
 int stat_lbl_disp12;

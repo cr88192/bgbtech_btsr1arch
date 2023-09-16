@@ -517,6 +517,19 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //		sctx->use_egpr=1;
 	}
 
+	if(!sctx->is_simpass)
+	{
+		i=sctx->vspan_num>>2;
+		if(i>63)i=63;
+		sctx->stat_varcount_exp[i]++;
+		sctx->stat_varcount_tot++;
+
+		if(sctx->vspan_num>64)
+		{
+			printf("large-var-count: %s: %d\n", obj->name, sctx->vspan_num);
+		}
+	}
+
 	if(ctx->optmode==BGBCC_OPT_SPEED2)
 		sctx->use_egpr|=1;
 
