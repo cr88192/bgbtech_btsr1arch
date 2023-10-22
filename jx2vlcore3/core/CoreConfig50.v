@@ -15,16 +15,17 @@
 // `define jx2_agu_bra48				//Enable 48-bit branches
 
 
-`define jx2_cpu_halfclock				//Reduce CPU core clock speed by half
+// `define jx2_cpu_halfclock				//Reduce CPU core clock speed by half
 // `define jx2_cpu_masterclock_150			//Use 150MHz Master Clock
 
 // `define jx2_cpu_masterclock_100			//Use 100MHz Master Clock
-`define jx2_cpu_masterclock_50			//Use 50MHz Master Clock
+`define jx2_cpu_masterclock_75			//Use 75MHz Master Clock
+// `define jx2_cpu_masterclock_50			//Use 50MHz Master Clock
 
 // `define jx2_cpu_mmioclock_150		//Use 150MHz MMIO Clock
 // `define jx2_cpu_mmioclock_100		//Use 100MHz MMIO Clock
-// `define jx2_cpu_mmioclock_75			//Use 75MHz MMIO Clock
-`define jx2_cpu_mmioclock_50		//Use 50MHz MMIO Clock
+`define jx2_cpu_mmioclock_75			//Use 75MHz MMIO Clock
+// `define jx2_cpu_mmioclock_50		//Use 50MHz MMIO Clock
 
 // `define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
 `define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
@@ -32,10 +33,15 @@
 
 `define jx2_cpu_merge_rxy		//Merge Rx/Ry
 
+`define jx2_cpu_shad_ex2
+`define jx2_cpu_conv_ex2
+
 `define jx2_cpu_pred_id2		//Move predication handling to ID2
 `define jx2_cpu_lea_ex2			//Move LEA output to EX2
 
 // `define jx2_cpu_addp			//Move LEA output to EX2
+
+// `define jx2_cpu_nofw_lane3		//Disable Lane 3 Register Forwarding
 
 
 // `define jx2_mem_useddrb			//Use newer DDR controller.
@@ -54,7 +60,7 @@
 `define jx2_mem_l2vram				//Use external RAM for VRAM
 `endif
 
-`define jx2_mul_fazdiv				//Enable FAZ Divide (N/A w/o slomuldiv)
+// `define jx2_mul_fazdiv				//Enable FAZ Divide (N/A w/o slomuldiv)
 
 
 // `define jx2_mem_jnexbuf			//Extra Buffer Y Joiner
@@ -72,23 +78,25 @@
 `define jx2_mem_l1d_fwstore			//Store Forwarding
 // `define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
-`define jx2_mem_l1d_utlb			//Micro TLB
-`define jx2_mem_l1i_utlb			//Micro TLB
+// `define jx2_mem_l1d_utlb			//Micro TLB
+// `define jx2_mem_l1i_utlb			//Micro TLB
+
+// `define jx2_mem_l1i_fastix		//Try to get block index quickly
 
 `endif
 
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
-`define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-// `define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
+// `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
+`define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
 // `define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
 
-`define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
-// `define jx2_mem_l1isz_512			//L1 I$ is 512 entries
+// `define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
+`define jx2_mem_l1isz_512			//L1 I$ is 512 entries
 // `define jx2_mem_l1isz_256			//L1 I$ is 256 entries
 // `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
 // `define jx2_mem_l1isz_64			//L1 I$ is 64 entries
@@ -158,6 +166,8 @@
 `define jx2_rbi_bridge_ecyc_l1	//Ringbus: Add output cycle on L1 Bridge
 `define jx2_rbi_bridge_ecyc_l2	//Ringbus: Add output cycle on L1 Bridge
 
+// `define jx2_rbi_ecyc_tlbfw	//Ringbus: Add extra cycles for TLB skip
+
 `ifndef jx2_xc7s50
 `define jx2_rbi_l2reqloop		//Ringbus: Loop L2 Requests around L2
 `define jx2_rbi_l2respfw		//Ringbus: Forward L2 responses
@@ -169,7 +179,7 @@
 `define jx2_reg_spdecswap			//Swap SP and SSP in Decode
 
 `ifndef jx2_xc7s50
-`define jx2_l1a_ena_tlbskip			//L1A: Allow requests to skip over TLB
+// `define jx2_l1a_ena_tlbskip		//L1A: Allow requests to skip over TLB
 `endif
 
 // `ifndef def_true

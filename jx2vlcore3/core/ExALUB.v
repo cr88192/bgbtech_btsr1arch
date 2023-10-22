@@ -118,6 +118,12 @@ output[7:0]		regOutCarryD;
 
 input[1:0]		idLane;
 
+
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
 wire			regInSrT;
 wire			regInSrS;
 assign		regInSrT = regInSrST[0];
@@ -560,7 +566,9 @@ begin
 			end
 `endif
 		end
+
 		4'h2: begin		/* ADC */
+`ifndef def_true
 //			tResult1A=regInSrT ? tAdd2A1 : tAdd2A0;
 //			tResult2A=regInSrT ? tAdd3A1 : tAdd3A0;
 			tResult1A=tResult_Add32;
@@ -570,10 +578,12 @@ begin
 
 			tResult1B=regInSrS ? tAdd2B1 : tAdd2B0;
 			tResult1S=tResult1B[32];
+`endif
 
 			tResult2W = { 1'b0, regValRs[63:32], regValRt[31:0] };
 		end
 		4'h3: begin		/* SBB */
+`ifndef def_true
 //			tResult1A=regInSrT ? tSub2A0 : tSub2A1;
 //			tResult2A=regInSrT ? tSub3A0 : tSub3A1;
 			tResult1A=tResult_Sub32;
@@ -583,6 +593,7 @@ begin
 
 			tResult1B=regInSrS ? tSub2B0 : tSub2B1;
 			tResult1S=!tResult1B[32];
+`endif
 
 			tResult2W = { 1'b0, regValRs[31:0], regValRt[63:32] };
 		end
@@ -709,7 +720,7 @@ begin
 	tRegConvVal = UV64_00;
 	case(idUIxt[5:0])
 `ifdef jx2_enable_convfp16
-		JX2_UCIX_CONV_FP16UPCK32L: begin
+		JX2_UCIX_CONV2_FP16UPCK32L: begin
 			if(!idLane[1])
 			begin
 				tRegConvVal = tRegFp16Upck32;
@@ -717,13 +728,13 @@ begin
 `ifndef def_true
 				if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
 				begin
-					$display("JX2_UCIX_CONV_FP16UPCK32L(B): %X %X",
+					$display("JX2_UCIX_CONV2_FP16UPCK32L(B): %X %X",
 						regValRs, tRegFp16Upck32);
 				end
 `endif
 			end
 		end
-		JX2_UCIX_CONV_FP16UPCK32H: begin
+		JX2_UCIX_CONV2_FP16UPCK32H: begin
 			if(!idLane[1])
 				tRegConvVal = tRegFp16Upck32;
 		end
@@ -783,14 +794,14 @@ begin
 	end
 
 `ifdef jx2_debug_alu
-	if((idUCmd[5:0]==JX2_UCMD_ALU3) && !exHold)
+	if((idUCmd[5:0]==JX2_UCMD_ALU3) && exHoldN)
 	begin
 		$display("ALU: Op=%X Rs=%X Rt=%X Rn=%X",
 			idUIxt,
 			regValRs, regValRt, tRegOutVal);
 	end
 
-	if((idUCmd[5:0]==JX2_UCMD_ALUCMP) && !exHold)
+	if((idUCmd[5:0]==JX2_UCMD_ALUCMP) && exHoldN)
 	begin
 		$display("ALUCMP: Op=%X Rs=%X Rt=%X SR.T=%X, S=%d V=%d Z=%d C=%d",
 			idUIxt,
@@ -830,7 +841,7 @@ end
 
 always @(posedge clock)
 begin
-	if(!exHold)
+	if(exHoldN)
 	begin
 		idUIxt2			<= idUIxt;
 		tRegOutVal2		<= tRegOutVal;

@@ -1064,6 +1064,7 @@ int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
 			}
 		}
 	}
+	return(0);
 }
 
 int bjx2_vmputc(BJX2_Context *ctx, int val)

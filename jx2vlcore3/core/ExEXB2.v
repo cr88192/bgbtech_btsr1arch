@@ -58,6 +58,8 @@ module ExEXB2(
 	regValMulwRes,	//ALU Result
 	regValKrreRes,	//Keyring Result
 
+	exDelayIn,
+
 	regFpuGRn,		//FPU GPR Result
 	opBraFlush,
 
@@ -94,6 +96,8 @@ input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulwRes;	//MUL.W Result
 input[65:0]		regValKrreRes;	//Keyring Result
 
+input[63:0]		exDelayIn;
+
 input[63:0]		regFpuGRn;		//FPU GPR Result
 
 input			opBraFlush;
@@ -115,6 +119,10 @@ assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
 
 
+reg[63:0]	tValOutDfl;
+reg			tDoOutDfl;
+
+
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
 
@@ -133,6 +141,9 @@ begin
 	tExHold			= 0;
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
+
+	tValOutDfl		= UV64_00;
+	tDoOutDfl		= 0;
 
 // `ifdef def_true
 `ifndef def_true
@@ -185,6 +196,12 @@ begin
 		end
 		
 		JX2_UCMD_MOV_IR: begin
+`ifdef def_true
+//			tRegIdRn2		= regIdRm;			//
+//			tRegValRn2		= exDelayIn;
+			tValOutDfl		= exDelayIn;
+			tDoOutDfl		= 1;
+`endif
 		end
 	
 		JX2_UCMD_LEA_MR: begin
@@ -206,8 +223,8 @@ begin
 			tRegHeld	= 1;
 		end
 
-		JX2_UCMD_ADDSP: begin
-		end
+//		JX2_UCMD_ADDSP: begin
+//		end
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 			tRegIdRn2		= regIdRm;			//
@@ -234,6 +251,12 @@ begin
 		end
 
 		JX2_UCMD_SHAD3: begin
+`ifdef jx2_cpu_shad_ex2
+//			tRegIdRn2		= regIdRm;			//
+//			tRegValRn2		= exDelayIn;
+			tValOutDfl		= exDelayIn;
+			tDoOutDfl		= 1;
+`endif
 		end
 `ifndef jx2_merge_shadq
 		JX2_UCMD_SHLD3: begin
@@ -245,6 +268,12 @@ begin
 `endif
 		
 		JX2_UCMD_CONV_RR: begin
+`ifdef jx2_cpu_conv_ex2
+//			tRegIdRn2		= regIdRm;			//
+//			tRegValRn2		= exDelayIn;
+			tValOutDfl		= exDelayIn;
+			tDoOutDfl		= 1;
+`endif
 		end
 		
 		JX2_UCMD_MOV_RC: begin
@@ -285,6 +314,12 @@ begin
 	
 	endcase
 
+	if(tDoOutDfl)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= tValOutDfl;
+	end
+	
 	if(opBraFlush)
 	begin
 		tRegIdRn2	= JX2_GR_ZZR;

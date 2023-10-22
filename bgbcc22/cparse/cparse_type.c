@@ -864,22 +864,19 @@ static char *bgbcp_basetypes_c[]={
 
 "_BitInt",
 
-"__object",
-"__string",
+"__object",		"__string",
 "__number",
 
-"__fixnum",
-"__flonum",
-"__boxint",
+"__fixnum",		"__flonum",		"__boxint",
 
-"__bcd64",
-"__bcd128",
+"__bcd64",		"__bcd128",
 
-"__float8s",
-"__float8u",
+"__float8s",	"__float8u",
+"__vec4fp8s",	"__vec4fp8u",
 
-"__vec4fp8s",
-"__vec4fp8u",
+"__int48",		"__uint48",
+"__float48",
+ "__vec3h_48",	"__vec3sf_48",
 
 NULL
 };
@@ -958,6 +955,10 @@ static char *bgbcp_basetypes_bs2[]={
 "wstring",
 "ustring",
 
+"vec2f",	"vec3f",
+"vec4f",	"vec2d",
+"vec3h",	"vec4h",
+
 "__int128", "__uint128",
 "__float128", "__float16", "__m64", "__m128",
 "__vec2", "__vec3", "__vec4", "__quat", 
@@ -967,6 +968,16 @@ static char *bgbcp_basetypes_bs2[]={
 "__v2f", "__v3f", "__v4f",
 "__m2f", "__m3f", "__m4f",
 "__variantf",
+
+
+"__bcd64",		"__bcd128",
+
+"__float8s",	"__float8u",
+"__vec4fp8s",	"__vec4fp8u",
+
+"__int48",		"__uint48",
+"__float48",
+ "__vec3h_48",	"__vec3sf_48",
 NULL
 };
 

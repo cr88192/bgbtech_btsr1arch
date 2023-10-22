@@ -337,7 +337,7 @@ begin
 		tSelRgb32[15: 8], tSelRgb32[15: 8],
 		tSelRgb32[ 7: 0], tSelRgb32[ 7: 0]	};
 
-	if(idUIxt[5:0]==JX2_UCIX_CONV_RGB32UPCK64FU)
+	if(idUIxt[5:0]==JX2_UCIX_CONV2_RGB32UPCK64FU)
 	begin
 		tDoSelPix	= 1;
 		tSelRgb64	= {
@@ -349,7 +349,7 @@ begin
 	end
 	
 `ifdef def_true
-	if(idUIxt[5:0]==JX2_UCIX_CONV_RGB30APCK64F)
+	if(idUIxt[5:0]==JX2_UCIX_CONV2_RGB30APCK64F)
 	begin
 		tDoSelPix	= 1;
 		tSelRgb64	= regValRs;

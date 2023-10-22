@@ -87,7 +87,9 @@ output[15:0]	accOutExc;		//Output Exception Code
 output[5:0]		regOutNoRwx;	//No R/W/X
 
 reg[15:0]		tAccOutExc2;	//Output Exception Code
-assign			accOutExc = tAccOutExc2;
+reg[15:0]		tAccOutExc3;	//Output Exception Code
+assign			accOutExc = tAccOutExc3;
+// assign			accOutExc = tAccOutExc2;
 // assign			accOutExc = tAccOutExc;
 
 reg[15:0]		tAccOutExc;		//Output Exception Code
@@ -177,6 +179,12 @@ begin
 	tVugid		= tTlbInAcc[31:16];
 	tAccMode	= tTlbInAcc[15: 4];
 
+	tAclUse = 0;
+	tAclUseA = 0;
+	tAclUseB = 0;
+	tAclUseC = 0;
+	tAclUseD = 0;
+
 `ifdef jx2_enable_mmu_acl
 
 	tAclKrrMatchA	=
@@ -205,14 +213,14 @@ begin
 	tAclTlbMatchC = (aclEntryC[15:0] == tTlbInAcc[31:16]);
 	tAclTlbMatchD = (aclEntryD[15:0] == tTlbInAcc[31:16]);
 
-	tAclUse = 0;
-	tAclUseA = 0;
-	tAclUseB = 0;
-	tAclUseC = 0;
-	tAclUseD = 0;
+	tAclUseA	= (tAclTlbMatchA && tAclKrrMatchA) && (aclEntryA[34:32]!=0);
+	tAclUseB	= (tAclTlbMatchB && tAclKrrMatchB) && (aclEntryB[34:32]!=0);
+	tAclUseC	= (tAclTlbMatchC && tAclKrrMatchC) && (aclEntryC[34:32]!=0);
+	tAclUseD	= (tAclTlbMatchD && tAclKrrMatchD) && (aclEntryD[34:32]!=0);
 
 	if(tTlbInAcc[5])
 	begin
+`ifndef def_true
 		if(tAclTlbMatchA && tAclKrrMatchA)
 		begin
 			tAclUseA	= 1;
@@ -229,26 +237,31 @@ begin
 		begin
 			tAclUseD	= 1;
 		end
+`endif
 
-		if(tAclUseA && (aclEntryA[34:32]!=0))
+//		if(tAclUseA && (aclEntryA[34:32]!=0))
+		if(tAclUseA)
 		begin
 			tVugid		= aclEntryA[31:16];
 			tAccMode	= aclEntryA[43:32];
 			tAclUse		= 1;
 		end
-		else if(tAclUseB && (aclEntryB[34:32]!=0))
+//		else if(tAclUseB && (aclEntryB[34:32]!=0))
+		else if(tAclUseB)
 		begin
 			tVugid		= aclEntryB[31:16];
 			tAccMode	= aclEntryB[43:32];
 			tAclUse		= 1;
 		end
-		else if(tAclUseC && (aclEntryC[34:32]!=0))
+//		else if(tAclUseC && (aclEntryC[34:32]!=0))
+		else if(tAclUseC)
 		begin
 			tVugid		= aclEntryC[31:16];
 			tAccMode	= aclEntryC[43:32];
 			tAclUse		= 1;
 		end
-		else if(tAclUseD && (aclEntryD[34:32]!=0))
+//		else if(tAclUseD && (aclEntryD[34:32]!=0))
+		else if(tAclUseD)
 		begin
 			tVugid		= aclEntryD[31:16];
 			tAccMode	= aclEntryD[43:32];
@@ -424,6 +437,7 @@ begin
 		tRegInOpm	<= regInOpm;
 
 		tAccOutExc2		<= tAccOutExc;
+		tAccOutExc3		<= tAccOutExc2;
 		tRegOutNoRwx2	<= tRegOutNoRwx;
 	end
 end

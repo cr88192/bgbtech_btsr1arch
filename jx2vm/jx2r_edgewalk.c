@@ -66,16 +66,56 @@ u64 TKRA_CachedBlkUtx2(u64 blk, int ix);
 u32 bjx2_edgewalk_var_pixtot;
 u32 bjx2_edgewalk_var_pixzpass;
 
-u16 bjx2_rgb64pck16(u64 vs)
+u64 tkra_rgbupck64b(u16 a)
+{
+	int ax, ay, az, aw, av;
+	u64 c;
+
+//	av=(a&0x0001)|((a&0x0020)>>5)|((a&0x0400)>>10);
+	av=(a&0x0001)|((a&0x0020)>>4)|((a&0x0400)>>8);
+//	av=av<<13;
+//	ax=(a&0x001F)<<11;
+//	ay=(a&0x03E0)<< 6;
+//	az=(a&0x7C00)<< 1;
+
+	av=av<<5;
+	ax=(a&0x001F)<<3;
+	ay=(a&0x03E0)>>2;
+	az=(a&0x7C00)>>7;
+
+#if 0
+	if(a&0x8000)
+	{
+		ax&=0xF0;
+		ay&=0xF0;
+		az&=0xF0;
+	}
+#endif
+	
+	ax|=(ax>>5);	ay|=(ay>>5);	az|=(az>>5);
+	ax=0x80|(ax<<8);	ay=0x80|(ay<<8);
+	az=0x80|(az<<8);	av=0x80|(av<<8);
+
+	aw=(a&0x8000)?av:0xFF80;
+	c=	(((u64)ax)<< 0) | (((u64)ay)<<16) |
+		(((u64)az)<<32) | (((u64)aw)<<48) ;
+	return(c);
+	
+}
+
+u16 bjx2_rgb64pck16b(u64 vs)
 {
 	u16 vn, av;
 
 	vn=	((vs>>11)&0x001F)|
 		((vs>>22)&0x03E0)|
 		((vs>>33)&0x7C00);
-	
-	av=(vs>>60)&15;
-	if(av!=15)
+
+#if 1
+//	av=(vs>>60)&15;
+	av=(vs>>60)&0xE;
+//	if(av!=15)
+	if(av!=0xE)
 	{
 		vn&=0x7BDE;
 		vn|=0x8000;
@@ -86,6 +126,7 @@ u16 bjx2_rgb64pck16(u64 vs)
 		if(av&2)
 			vn|=0x0001;
 	}
+#endif
 	
 	return(vn);
 }
@@ -192,7 +233,10 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 	if(x<0)
 		return(0);
 	
-	jx2_edgewalk_busycyc+=(x+1)*8+10;
+	if(!ctx->no_memcost)
+	{
+		jx2_edgewalk_busycyc+=(x+1)*8+10;
+	}
 		
 //	rcp=0x10000/(x+1);
 	rcp=jx2_edgewalk_rcptab[x+1];
@@ -321,9 +365,14 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			rgb_c=tkra_rgb32upck64(blk_c);
 		}else
 		{
-			rgb_c=tkra_rgbupck64(blk_c);
+			rgb_c=tkra_rgbupck64b(blk_c);
 		}
 		rgb_u=TKRA_CachedBlkUtx2(blk_u, txi);
+		
+//		if(((rgb_u>>61)&7)==7)
+//		{
+//			rgb_u|=0x1C00000000000000ULL;
+//		}
 
 		if(islin)
 		{
@@ -348,6 +397,12 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			rgb_bd=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_u, rgb_bd,
 				(t_p>>(2+JX2_EDGEWALK_STSUB))&15);
 			rgb_u=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_bs, rgb_bd, 8);
+
+//			if(((rgb_u>>61)&7)==7)
+//			{
+//				rgb_u|=0x1C00000000000000ULL;
+//			}
+
 		}
 
 		rgb_m=(((u64)a)<<48)|(((u64)r)<<32)|(((u64)g)<<16)|(((u64)b)<<0);
@@ -376,6 +431,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 				rgb_ms=(rgb_m>>16)&0xFFFF;
 				rgb_ms|=rgb_ms<<16;		rgb_ms|=rgb_ms<<32;
 				if(bfs&4)rgb_ms=~rgb_ms;
+//				rgb_ms&=~0xFFFF000000000000ULL;
 				break;
 			case 10:	case 14:
 				rgb_ms=rgb_c>>48;
@@ -386,6 +442,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 				rgb_ms=(rgb_c>>16)&0xFFFF;
 				rgb_ms|=rgb_ms<<16;		rgb_ms|=rgb_ms<<32;
 				if(bfs&4)rgb_ms=~rgb_ms;
+//				rgb_ms&=~0xFFFF000000000000ULL;
 				break;
 		}
 
@@ -408,6 +465,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 				rgb_md=(rgb_m>>16)&0xFFFF;
 				rgb_md|=rgb_md<<16;		rgb_md|=rgb_md<<32;
 				if(bfd&4)rgb_md=~rgb_md;
+				rgb_md|=0xFFFF000000000000ULL;
 				break;
 			case 10:	case 14:
 				rgb_md=rgb_c>>48;
@@ -418,6 +476,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 				rgb_md=(rgb_c>>16)&0xFFFF;
 				rgb_md|=rgb_md<<16;		rgb_md|=rgb_md<<32;
 				if(bfd&4)rgb_md=~rgb_md;
+				rgb_md|=0xFFFF000000000000ULL;
 				break;
 		}
 
@@ -432,11 +491,30 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			blk_c=bjx2_rgb64pck32(rgb_bl);
 		}else
 		{
-			blk_c=bjx2_rgb64pck16(rgb_bl);
+#if 0
+			if(((rgb_bl>>60)&15)!=15)
+			{
+				printf("EdgeWalk: Alpha in Output\n");
+				printf(	"  Out=%016llX Mod-Src=%016llX\n"
+						"  Dst=%016llX Tex=%016llX\n"
+						"  UTX=%016llX\n",
+					rgb_bl, rgb_m,
+					rgb_c, rgb_u,
+					blk_u);
+			}
+#endif
+
+			blk_c=bjx2_rgb64pck16b(rgb_bl);
 		}
 
 		z2=z>>JX2_EDGEWALK_ZSUB;
 //		z2=z;
+
+		if(issten && !isdword)
+		{
+			z2&=0xFFF0;
+			blk_z&=0xFFF0;
+		}
 
 		switch(zfn)
 		{
@@ -571,7 +649,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 	{
 		printf("BJX2_MemEdgeWalk_ProbeUpdateXspan: Bad Mem\n");
 		ctx->status=0;
-		return;
+		return(0);
 	}
 
 	return(0);
@@ -632,7 +710,7 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 	int i, j, k, stadj;
 	s64 dcyc;
 	if(ctx->status)
-		return;
+		return(0);
 
 	if(!jx2_edgewalk_rcptab[0])
 	{

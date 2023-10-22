@@ -172,7 +172,9 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 #endif
 
 //	if(img->tbc_num<256)
-	if(img->tbc_num<32)
+//	if(img->tbc_num<32)
+//	if(img->tbc_num<8)
+	if(img->tbc_num<16)
 	{
 		i=img->tbc_num++;
 		tbd=malloc(n*512);
@@ -190,7 +192,9 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 //		i=255;
 		i=img->tbc_rov;
 //		img->tbc_rov=(i+1)&255;
-		img->tbc_rov=(i+1)&31;
+//		img->tbc_rov=(i+1)&31;
+//		img->tbc_rov=(i+1)&7;
+		img->tbc_rov=(i+1)&15;
 
 #ifndef TKFAT_READONLY
 		if(img->tbc_lbn[i]&TKFAT_SFL_DIRTY)

@@ -2405,6 +2405,9 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			if(!strcmp(s, "float16"))
 				{ *t++='C'; *t++='k'; }
 
+			if(!strcmp(s, "int48"))
+				{ *t++='G'; *t++='j'; }
+
 			if(!strcmp(s, "long_double"))
 				{ *t++='C'; *t++='e'; }
 		}else
@@ -2709,6 +2712,15 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 
 		if(!strcmp(s, "vec3h") || !strcmp(s, "vec3sf"))
 			{ *t++='D'; *t++='k'; }
+
+		if(!strcmp(s, "int48"))
+			{ *t++='G'; *t++='i'; }
+		if(!strcmp(s, "uint48"))
+			{ *t++='G'; *t++='j'; }
+		if(!strcmp(s, "float48"))
+			{ *t++='D'; *t++='u'; }
+		if(!strcmp(s, "vec3h_48") || !strcmp(s, "vec3sf_48"))
+			{ *t++='G'; *t++='l'; }
 
 		if(!strcmp(s, "bigint"))
 			{ *t++='G'; *t++='w'; }

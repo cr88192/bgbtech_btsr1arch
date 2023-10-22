@@ -1,0 +1,63 @@
+BSR4F:
+* R0..R63: 64-bit
+** X0,X2,X62: Paired, 128-bit
+* Variable-Bundle VLIW
+** Pointers: 64-bit (Narrow) / 128-bit (Tag/Bound)
+* C0..C63:
+** Control Registers
+
+SR:
+* (1): S (ALU Status Bit)
+* (0): T (Primary Predicate)
+
+
+Opcode Formats:
+* Wpp0-ZZZZ-ZZnn-nnnn ssss-sstt-tttt-ZZZZ  //A: 3R Space
+* Wpp1-0ZZZ-ZZnn-nnnn ssss-ss0i-iiii-iiii  //B: 3RI Space (Imm9u)
+* Wpp1-0ZZZ-ZZnn-nnnn ssss-ss1i-iiii-iiii  //C: LD/ST Block (Disp9u)
+
+* Wpp1-10ZZ-ZZnn-nnnn iiii-iiii-iiii-iiii  //D: 2RI block (Imm16u)
+
+* Wpp1-1100-ZZnn-nnnn ssss-ssZZ-ZZZZ-ZZZZ  //E: 2R Space
+
+* Wpp1-1101-ZZnn-nnnn ZZZZ-ZZii-iiii-iiii  //F: 2RI Space
+
+* Wpp1-111Z-iiii-iiii iiii-iiii-iiii-iiii  //J: Branch or Jumbo
+**  W=0: Z=0: pp: BRA/BSR/BT/BF  Disp24s
+**  W=0: Z=1: "MOV Imm24s, R0"
+**  W=1, Z=0: Jumbo Prefix
+
+W: Wide Execute Flag:
+  0: 32-bit or final instruction word.
+  1: More instruction words follow.
+
+pp:
+  00: Always
+  01: Special / Unconditional-only (W=0)
+  10: Execute if True
+  11: Execute if False
+
+3R Space:
+* 3R, 0-0-Z: Load/Store (Index)
+** 0=STB, 1=STW, 2=STL, 3=STQ
+** 4=  -, 5=  -, 6=  -, 7=STX
+
+** 8=LDSB, 1=LDSW, 2=LDSL, 3=LDQ
+** 4=LDUB, 5=LSUW, 6=LDUL, 7=LDX
+
+* 3R, 0-1-Z: ALU
+** ADD, SUB, ADDW, SUBW. -, AND, OR, XOR
+
+
+* 3RI, 0-Z: ADD  , SUB  , SHAD*, SHLD*
+* 3RI, 1-Z: ADDSL, SUBSL, ADDUL, SUBUL
+* 3RI, 2-Z: -    , AND  , OR   , XOR
+
+SHAD/SHLD (Imm):
+** (6:0): Shift Value (Ext)
+** (8:7): L, Q, X+, X-
+
+* LD/ST, 0-Z: STB , STW , STL , STQ
+* LD/ST, 1-Z: -   , -   , -   , STX
+* LD/ST, 2-Z: LDSB, LDSW, LDSL, LDQ
+* LD/ST, 3-Z: LDUB, LDUW, LDUL, LDX

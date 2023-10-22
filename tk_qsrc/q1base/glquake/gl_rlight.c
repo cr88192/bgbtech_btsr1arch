@@ -32,8 +32,31 @@ R_AnimateLight
 void R_AnimateLight (void)
 {
 	int			i,j,k;
+	
+	if(r_vertex.value)
+	{
+		for (j=0 ; j<MAX_LIGHTSTYLES ; j++)
+			d_lightstylevalue[j] = 256;
+
+		return;
+	}
+	
+//
+// light animations
+// 'm' is normal light, 'a' is no light, 'z' is double bright
+	i = (int)(cl.time*10);
 	for (j=0 ; j<MAX_LIGHTSTYLES ; j++)
-		d_lightstylevalue[j] = 256;
+	{
+		if (!cl_lightstyle[j].length)
+		{
+			d_lightstylevalue[j] = 256;
+			continue;
+		}
+		k = i % cl_lightstyle[j].length;
+		k = cl_lightstyle[j].map[k] - 'a';
+		k = k*22;
+		d_lightstylevalue[j] = k;
+	}	
 }
 
 /*
@@ -101,6 +124,36 @@ R_RenderDlights
 */
 void R_RenderDlights (void)
 {
+	int		i;
+	dlight_t	*l;
+
+	if (!gl_flashblend.value)
+		return;
+
+	if(r_vertex.value)
+		return;
+	
+	r_dlightframecount = r_framecount + 1;	// because the count hasn't
+											//  advanced yet for this frame
+	qglDepthMask (0);
+	qglDisable (GL_TEXTURE_2D);
+	qglShadeModel (GL_SMOOTH);
+	qglEnable (GL_BLEND);
+	qglBlendFunc (GL_ONE, GL_ONE);
+
+	l = cl_dlights;
+	for (i=0 ; i<MAX_DLIGHTS ; i++, l++)
+	{
+		if (l->die < cl.time || !l->radius)
+			continue;
+		R_RenderDlight (l);
+	}
+
+	qglColor3f (1,1,1);
+	qglDisable (GL_BLEND);
+	qglEnable (GL_TEXTURE_2D);
+	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	qglDepthMask (1);
 }
 
 
@@ -119,6 +172,45 @@ R_MarkLights
 */
 void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 {
+	mplane_t	*splitplane;
+	float		dist;
+	msurface_t	*surf;
+	int			i;
+	
+	if(r_vertex.value)
+		return;
+	
+	if (node->contents < 0)
+		return;
+
+	splitplane = node->plane;
+	dist = DotProduct (light->origin, splitplane->normal) - splitplane->dist;
+	
+	if (dist > light->radius)
+	{
+		R_MarkLights (light, bit, node->children[0]);
+		return;
+	}
+	if (dist < -light->radius)
+	{
+		R_MarkLights (light, bit, node->children[1]);
+		return;
+	}
+		
+// mark the polygons
+	surf = cl.worldmodel->surfaces + node->firstsurface;
+	for (i=0 ; i<node->numsurfaces ; i++, surf++)
+	{
+		if (surf->dlightframe != r_dlightframecount)
+		{
+			surf->dlightbits = 0;
+			surf->dlightframe = r_dlightframecount;
+		}
+		surf->dlightbits |= bit;
+	}
+
+	R_MarkLights (light, bit, node->children[0]);
+	R_MarkLights (light, bit, node->children[1]);
 }
 
 
@@ -129,7 +221,7 @@ R_PushDlights
 */
 void R_PushDlights (void)
 {
-#if 0
+#if 1
 	int		i;
 	dlight_t	*l;
 

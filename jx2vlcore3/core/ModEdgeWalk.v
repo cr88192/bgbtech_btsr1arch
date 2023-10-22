@@ -671,7 +671,7 @@ always @*
 begin
 	case(tCtrlTexMode)
 		3'b000: tTexUIxt = JX2_UCIX_CONV2_BLKUTX2;
-		3'b001: tTexUIxt = JX2_UCIX_CONV_RGB30APCK64F;
+		3'b001: tTexUIxt = JX2_UCIX_CONV2_RGB30APCK64F;
 		3'b010: tTexUIxt = JX2_UCIX_CONV2_BLKUTX3L;
 		3'b011: tTexUIxt = JX2_UCIX_CONV2_BLKUTX3H;
 		3'b100: tTexUIxt = JX2_UCIX_CONV2_BLKUTX2;
@@ -1522,6 +1522,12 @@ begin
 	tPixBlendRgb_ScDstB =
 		{ 1'b0, tPixDestRgbL[15: 0] } *
 		{ 1'b0, tPixBlendRgb_ScDstS };
+
+	if((tCtrlBlendMode[7:4]==4'h9) || (tCtrlBlendMode[7:4]==4'hD))
+	begin
+		/* lightmap hack */
+		tPixBlendRgb_ScDstA = { 2'b00, tPixDestRgbL[63:48], 16'h0000 } ;
+	end
 
 	tPixBlendRgb_ScSrc = {
 		tPixBlendRgb_ScSrcA [31:16],

@@ -98,14 +98,19 @@
 #define CCXL_TY_VARWSTRING		0x4E		//Variant String
 #define CCXL_TY_VARUSTRING		0x4F		//Variant String
 
-#define CCXL_TY_BITFIELD_SB		0x50		//Variant String
-#define CCXL_TY_BITFIELD_UB		0x51		//Variant String
-#define CCXL_TY_BITFIELD_SS		0x52		//Variant String
-#define CCXL_TY_BITFIELD_US		0x53		//Variant String
-#define CCXL_TY_BITFIELD_SI		0x54		//Variant String
-#define CCXL_TY_BITFIELD_UI		0x55		//Variant String
-#define CCXL_TY_BITFIELD_SL		0x56		//Variant String
-#define CCXL_TY_BITFIELD_UL		0x57		//Variant String
+#define CCXL_TY_BITFIELD_SB		0x50		//Bitfield, SB
+#define CCXL_TY_BITFIELD_UB		0x51		//Bitfield
+#define CCXL_TY_BITFIELD_SS		0x52		//Bitfield
+#define CCXL_TY_BITFIELD_US		0x53		//Bitfield
+#define CCXL_TY_BITFIELD_SI		0x54		//Bitfield
+#define CCXL_TY_BITFIELD_UI		0x55		//Bitfield
+#define CCXL_TY_BITFIELD_SL		0x56		//Bitfield
+#define CCXL_TY_BITFIELD_UL		0x57		//Bitfield
+
+#define CCXL_TY_SI48			0x58		//
+#define CCXL_TY_UI48			0x59		//
+#define CCXL_TY_F48				0x5A		//
+#define CCXL_TY_VEC3H_48		0x5B		//
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'

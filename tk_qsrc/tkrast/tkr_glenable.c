@@ -339,6 +339,9 @@ void tkra_glBlendFunc(int sfactor, int dfactor)
 	ctx->blend_sfunc=sfn;
 	ctx->blend_dfunc=dfn;
 	
+	ctx->blend_sfunc_mtx[ctx->tex2d_active]=sfn;
+	ctx->blend_dfunc_mtx[ctx->tex2d_active]=dfn;
+	
 //	TKRA_SetupDrawBlend(ctx);
 	ctx->blend_isready=0;
 }
@@ -493,7 +496,15 @@ void tkra_glEnable(int cap)
 		ctx->stateflag1|=TKRA_STFL1_CULLFACE;
 		break;
 	case GL_TEXTURE_2D:
-		ctx->stateflag1|=TKRA_STFL1_TEXTURE2D;
+		if(ctx->tex2d_active)
+		{
+			ctx->tex2d_mask|=1<<ctx->tex2d_active;
+		}
+		else
+		{
+			ctx->stateflag1|=TKRA_STFL1_TEXTURE2D;
+			ctx->tex2d_mask|=1;
+		}
 		break;
 	case GL_SCISSOR_TEST:
 		break;
@@ -550,7 +561,15 @@ void tkra_glDisable(int cap)
 		ctx->stateflag1&=~TKRA_STFL1_CULLFACE;
 		break;
 	case GL_TEXTURE_2D:
-		ctx->stateflag1&=~TKRA_STFL1_TEXTURE2D;
+		if(ctx->tex2d_active)
+		{
+			ctx->tex2d_mask&=~(1<<ctx->tex2d_active);
+		}
+		else
+		{
+			ctx->stateflag1&=~TKRA_STFL1_TEXTURE2D;
+			ctx->tex2d_mask&=~1;
+		}
 		break;
 	case GL_SCISSOR_TEST:
 		break;

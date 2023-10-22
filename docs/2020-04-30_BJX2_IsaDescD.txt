@@ -240,6 +240,16 @@ Trigger a Breakpoint exception.
 The BREAK1/2/3 forms overlap with MOV.B, but will be regarded as invalid special cases which will result in an exception rather than a MOV.
 
 
+=== BSWAP ===
+
+* F0nm_1gFA  BSWAPU.L	Rm, Rn			//(TTAG) Byte Swap DWORD
+* F0nm_1GFA  BSWAP.Q	Rm, Rn			//(TTAG) Byte Swap QWORD
+
+Byte swap a DWORD or QWORD.
+* BSWAP.L will swap the low 4 bytes, zero extending the result.
+* BSWAP.Q will swap all 8 bytes.
+
+
 === BSR / JSR ===
 
 * 21dd       BSR		(PC, disp8s)
@@ -872,6 +882,24 @@ The (Rm(0),Em,Ei) bits will encode the operator:
 * 111: -
 
 This operation will only be present if JCMP is present.
+
+
+* F2n4_Efjj ? BREQ.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn EQ 0)
+* F2n5_Efjj ? BREQ.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn EQ 0)
+* F2n6_Efjj ? BRNE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn NE 0)
+* F2n7_Efjj ? BRNE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn NE 0)
+
+* F2n8_Efjj ? BRLT.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn LT 0)
+* F2n9_Efjj ? BRLT.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn LT 0)
+* F2nA_Efjj ? BRGE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn GE 0)
+* F2nB_Efjj ? BRGE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn GE 0)
+
+* F2nC_Efjj ? BRLE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn LE 0)
+* F2nD_Efjj ? BRLE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn LE 0)
+* F2nE_Efjj ? BRGT.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn GT 0)
+* F2nF_Efjj ? BRGT.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn GT 0)
+
+These cases allow for a slightly larger displacement.
 
 
 === LDACL ===
@@ -1560,10 +1588,29 @@ The results of trying to load or store using a misaligned address are undefined.
 See MOV.B for general Load/Store semantics.
 
 
+=== MOV.TW (LDST48) ===
+
+* F0nm_9go0  MOV.TW		Rn, (Rm, Disp5)		//(LDST48) Store TWORD
+* F0nm_9go1  MOV.HTW	Rn, (Rm, Disp5)		//(LDST48) Store High TWORD
+* F0nm_9go4  MOV.TW		Rn, (Rm, Ro)		//(LDST48) Store TWORD
+* F0nm_9go5  MOV.HTW	Rn, (Rm, Ro)		//(LDST48) Store High TWORD
+* F0nm_9go8  MOV.TW		(Rm, Disp5), Rn		//(LDST48) Load TWORD
+* F0nm_9Go8  MOVU.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
+* F0nm_9go9  MOV.HTW	(Rm, Disp5), Rn		//(LDST48) Load High TWORD
+* F0nm_9goC  MOV.TW		(Rm, Ro), Rn		//(LDST48) Load TWORD
+* F0nm_9GoC  MOVU.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
+* F0nm_9goD  MOV.HTW	(Rm, Ro), Rn		//(LDST48) Load High TWORD
+
+Load or Store a TWORD, or Logical 48-bit value.
+These operations will have a scale and alignment of 2, so using a TWORD in an array will require a pre-scale by 3 (may be accomplished via a LEA).
+
+There will be MOV.TWV/MOVU.TWV/MOV.HTWV pseudo instructions which will synthesize the pre-scale-by-3.
+
+
 === MOVST (TTAG) ===
 
-* F0nm_1gFE MOVST		Rm, Rn			//MOV, Sign-Extend Tag
-* F0nm_1GFE XMOVST		Xm, Xn			//XMOV, Sign-Extend Tag
+* F0nm_1gFE  MOVST		Rm, Rn			//MOV, Sign-Extend Tag
+* F0nm_1GFE  XMOVST		Xm, Xn			//XMOV, Sign-Extend Tag
 
 Move value from Rm to Rn, but sign extend the tag bits (63:48) from bit 47.
 The XMOVST will sign extend both registers in the pair.
@@ -1592,8 +1639,8 @@ XMOVTT will load the 32-bit immediate into the high 16 bits of each target regis
 
 === MOVZT (TTAG) ===
 
-* F0nm_1gA8 MOVZT		Rm, Rn			//MOV, Zero Tag
-* F0nm_1GA8 XMOVZT		Xm, Xn			//XMOV, Zero Tag
+* F0nm_1gA8  MOVZT		Rm, Rn			//MOV, Zero Tag
+* F0nm_1GA8  XMOVZT		Xm, Xn			//XMOV, Zero Tag
 
 Move value from Rm to Rn, but zero the tag bits (63:48).
 The XMOVZT will zero (63:48) in both registers in the pair.

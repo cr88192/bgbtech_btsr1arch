@@ -245,12 +245,17 @@ begin
 	end
 	else
 	begin
+		tEdsDataOutLo	= 0;
+
+`ifndef def_true
 		case(tEdsAddr[3:2])
 			2'b00: tEdsDataOutLo = { 32'h00, tMemBlkData[ 31: 0]};
 			2'b01: tEdsDataOutLo = { 32'h00, tMemBlkData[ 63:32]};
 			2'b10: tEdsDataOutLo = { 32'h00, tMemBlkData[ 95:64]};
 			2'b11: tEdsDataOutLo = { 32'h00, tMemBlkData[127:96]};
 		endcase
+`endif
+
 		tEdsDataOutHi	= 0;
 	end
 `endif
@@ -295,6 +300,7 @@ begin
 		end
 		else
 		begin
+`ifndef def_true
 			if(tEdsAddr[3:2]==2'b00)
 				tNxtMemBlkData[ 31: 0] = tEdsDataInLo[31:0];
 			if(tEdsAddr[3:2]==2'b01)
@@ -302,7 +308,8 @@ begin
 			if(tEdsAddr[3:2]==2'b10)
 				tNxtMemBlkData[ 95:64] = tEdsDataInLo[31:0];
 			if(tEdsAddr[3:2]==2'b11)
-				tNxtMemBlkData[127:96] = tEdsDataInLo[31:0];
+				tNxtMemBlkData[127:96] = tEdsDataInLo[31:0];\
+`endif
 		end
 		tNxtMemBlkDirty		= 1;
 	end

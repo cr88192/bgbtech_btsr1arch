@@ -33,6 +33,11 @@ input[8:0]		idUIxt;
 
 output[31:0]	regOutVal;
 
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
 reg[31:0]	tRegOutVal;
 reg[31:0]	tRegOutVal2;
 assign	regOutVal = tRegOutVal2;
@@ -259,7 +264,7 @@ end
 
 always @(posedge clock)
 begin
-	if(!exHold)
+	if(exHoldN)
 	begin
 		tIdUIxtB	<= idUIxt;
 

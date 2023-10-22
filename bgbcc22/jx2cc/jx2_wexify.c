@@ -26,14 +26,14 @@
 #define	BGBCC_WXSPFL_ISMEM		1
 #define	BGBCC_WXSPFL_USE_SR		2
 #define	BGBCC_WXSPFL_PXN		4
-#define	BGBCC_WXSPFL_PXSTN		8
+#define	BGBCC_WXSPFL_PXSTN		8		//Xs,Xt,Xn
 #define	BGBCC_WXSPFL_2STAGE		16
 #define	BGBCC_WXSPFL_3STAGE		32
 #define	BGBCC_WXSPFL_IS_STORE	64
 
-#define	BGBCC_WXSPFL_RXN		0x100
-#define	BGBCC_WXSPFL_RXS		0x200
-#define	BGBCC_WXSPFL_RXT		0x400
+#define	BGBCC_WXSPFL_RXN		0x100	//Xn
+#define	BGBCC_WXSPFL_RXS		0x200	//Xs
+#define	BGBCC_WXSPFL_RXT		0x400	//Xt
 
 /*
 Flag:
@@ -1903,8 +1903,8 @@ int BGBCC_JX2_CheckOps32ImmovableFl(
 }
 
 
-u64		bgbcc_jx2_seqonly_opex[256];
-byte	bgbcc_jx2_seqonly_res[256];
+u64		bgbcc_jx2_seqonly_opex[4096];
+byte	bgbcc_jx2_seqonly_res[4096];
 
 int BGBCC_JX2_CheckOps32SequenceOnly(
 	BGBCC_JX2_Context *sctx,
@@ -1919,7 +1919,8 @@ int BGBCC_JX2_CheckOps32SequenceOnly(
 			(((u64)opw4)<<48) ;
 
 	opeh=opex+(opex>>7)+(opex>>13)+(opex>>21);
-	h=((opeh*65521)>>16)&255;
+//	h=((opeh*65521)>>16)&255;
+	h=((opeh*65521)>>16)&4095;
 	
 	if(bgbcc_jx2_seqonly_opex[h]==opex)
 	{
@@ -1933,6 +1934,18 @@ int BGBCC_JX2_CheckOps32SequenceOnly(
 	bgbcc_jx2_seqonly_opex[h]=opex;
 	bgbcc_jx2_seqonly_res[h]=res;
 	
+#if 0
+	if(res &&
+		((opw1&0xFF00)==0xF200) &&
+		((opw3&0xFF00)==0xF200) &&
+		(((opw1>>4)&15)!=(opw3&15)) &&
+		(((opw3>>4)&15)!=(opw1&15)) &&
+		(((opw1>>4)&15)!=((opw1>>4)&15)))
+	{
+		printf("Sequence-Only: %04X-%04X %04X-%04X\n", opw1, opw2, opw3, opw4);
+	}
+#endif
+
 	return(res);
 
 //	if(ret!=0)
@@ -2423,7 +2436,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix2B(
 				if((opw2&0xF00C)==0x5008)
 				{
 					/* Allow FPU paired with Mem */
-					return(0);
+					return(1);
 				}
 
 //					((opw2&0xF00F)==0x100D) ||
@@ -4085,6 +4098,7 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 	int spos, int epos)
 {
 	int opw1, opw2, opw3, opw4, opw5, opw6;
+	int opw7, opw8, opw9, opw10, opw11, opw12;
 	int opw1v, opw3v, opw5v, opwn1v;
 	int opwn1, opwn2, imv1, imv3, imv5;
 	int dp, cp, nswap;
@@ -4118,6 +4132,12 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 		opw4=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 6);
 		opw5=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 8);
 		opw6=BGBCC_JX2_EmitGetOffsWord(sctx, cp+10);
+
+		opw7=BGBCC_JX2_EmitGetOffsWord(sctx, cp+12);
+		opw8=BGBCC_JX2_EmitGetOffsWord(sctx, cp+14);
+		opw9=BGBCC_JX2_EmitGetOffsWord(sctx, cp+16);
+		opw10=BGBCC_JX2_EmitGetOffsWord(sctx, cp+18);
+
 		opwn1=-1;
 
 		opw1v =opw1;		opw3v =opw3;
@@ -4136,6 +4156,19 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 			opw5=0;
 			opw6=0;
 		}
+
+		if(!((cp+15)<epos))
+		{
+			opw7=0;
+			opw8=0;
+		}
+
+		if(!((cp+19)<epos))
+		{
+			opw9=0;
+			opw10=0;
+		}
+
 
 		if(!(sctx->is_fixed32&2))
 		{
@@ -4271,6 +4304,12 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 				opw3, opw4, opw5, opw6) &&
 			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
 				opw1, opw2, opw5, opw6) &&
+
+			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
+				opw1, opw2, opw7, opw8) &&
+			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
+				opw1, opw2, opw9, opw10) &&
+
 			!(imv1|imv3|imv5))
 		{
 			BGBCC_JX2_AdjustWexifyOp(sctx, &opw1, &opw2);
@@ -4301,6 +4340,19 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 			cp+=8;
 			continue;
 		}
+
+#if 0
+		if(1 &&
+			((opw1&0xFF00)==0xF200) &&
+			((opw3&0xFF00)==0xF200) &&
+			(((opw1>>4)&15)!=(opw3&15)) &&
+			(((opw3>>4)&15)!=(opw1&15)) &&
+			(((opw1>>4)&15)!=((opw1>>4)&15)))
+		{
+			printf("Bundle Fail: %04X-%04X %04X-%04X\n",
+				opw1, opw2, opw3, opw4);
+		}
+#endif
 
 		cp+=4;
 		continue;
@@ -4379,293 +4431,6 @@ ccxl_status BGBCC_JX2_CheckWexify(
 #endif
 
 	BGBCC_JX2_CheckWexify_DoBundle(sctx, spos, epos);
-	return(1);
-}
-#endif
-
-
-#if 0
-ccxl_status BGBCC_JX2_CheckWexify(
-	BGBCC_JX2_Context *sctx,
-	int spos, int epos)
-{
-	int opw1, opw2, opw3, opw4, opw5, opw6;
-	int dp, cp;
-	
-	dp=epos-spos;
-	if(dp&3)
-	{
-		BGBCC_DBGBREAK
-		return(0);
-	}
-
-	if(dp<0)
-	{
-		BGBCC_DBGBREAK
-		return(0);
-	}
-
-	if(sctx->no_wexify)
-		return(0);
-
-//	if(sctx->is_simpass)
-//		return(0);
-
-//	return(0);
-	
-	cp=spos;
-	while((cp+7)<epos)
-	{
-		opw1=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 0);
-		opw2=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 2);
-		opw3=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 4);
-		opw4=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 6);
-		opw5=BGBCC_JX2_EmitGetOffsWord(sctx, cp+ 8);
-		opw6=BGBCC_JX2_EmitGetOffsWord(sctx, cp+10);
-		
-		if(!((cp+11)<epos))
-		{
-			opw5=0;
-			opw6=0;
-		}
-
-		if((opw1&0xE000)!=0xE000)
-			{ BGBCC_DBGBREAK }
-		if((opw3&0xE000)!=0xE000)
-			{ BGBCC_DBGBREAK }
-
-		if((cp+11)<epos)
-		{
-			if((opw5&0xE000)!=0xE000)
-				{ BGBCC_DBGBREAK }
-		}
-
-		/* Skip predicated ops. */
-		if((opw1&0xF000)==0xE000)
-			{ cp+=4; continue; }
-
-		/* Skip DLR loads. */
-		if((opw1&0xFE00)==0xFA00)
-			{ cp+=4; continue; }
-
-#if 0
-		/* Skip Jumbo Forms */
-		if(((opw1&0xFF00)==0xF400) &&
-			((opw2&0xC000)==0xC000))
-		{
-			if(((opw3&0xFF00)==0xF400) &&
-				((opw4&0xC000)==0xC000))
-			{
-				cp+=12;
-				continue;
-			}
-
-			cp+=8;
-			continue;
-		}
-#endif
-
-		/* Skip Jumbo Forms (New) */
-		if((opw1&0xFE00)==0xFE00)
-		{
-			if((opw3&0xFF00)==0xFE00)
-			{
-				cp+=12;
-				continue;
-			}
-
-			cp+=8;
-			continue;
-		}
-
-//		if(((opw1&0xFC00)==0xF400) ||
-//			((opw1&0xFF00)==0xF900))
-//		if(((opw1&0xFC00)==0xF400) ||
-//			((opw1&0xFE00)==0xFC00))
-		if(	((opw1&0xFC00)==0xF400) ||
-			((opw1&0xFE00)==0xFC00)	||
-			((opw1&0xFE00)==0xEA00) ||
-			((opw1&0xFE00)==0xEE00))
-		{
-			/* Wexify Ignores existing WEX sequences. */
-			if((opw3&0xFC00)==0xF000)
-				{ cp+=8; continue; }
-			if((opw3&0xFC00)==0xF400)
-				{ cp+=4; continue; }
-//			if((opw3&0xFF00)==0xF900)
-			if((opw3&0xFE00)==0xFC00)
-				{ cp+=4; continue; }
-
-			if((opw3&0xFE00)==0xEA00)
-				{ cp+=4; continue; }
-			if((opw3&0xFE00)==0xEE00)
-				{ cp+=4; continue; }
-
-			cp+=8;
-			continue;
-		}
-		
-		/* If ops are immovable, skip. */
-		if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)>0)
-			{ cp+=4; continue; }
-		if(BGBCC_JX2_CheckOps32Immovable(sctx, opw3, opw4)>0)
-			{ cp+=4; continue; }
-		
-		if(!BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2))
-		{
-#if 1
-			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
-				BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw5, opw6) &&
-				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw1, opw2) &&
-//				!BGBCC_JX2_CheckOps32SequenceOnly(ctx, sctx,
-				BGBCC_JX2_CheckCanSwapOps32(sctx, opw1, opw2, opw3, opw4) &&
-				BGBCC_JX2_CheckCanSwapOps32(sctx, opw1, opw2, opw5, opw6))
-			{
-				if(sctx->is_simpass)
-					{ cp+=4; continue; }
-			
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 0, opw3);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 2, opw4);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 4, opw5);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 6, opw6);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 8, opw1);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+10, opw2);
-				continue;
-			}
-#endif
-
-#if 1
-			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
-				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw1, opw2) &&
-//				!BGBCC_JX2_CheckOps32SequenceOnly(ctx, sctx,
-				BGBCC_JX2_CheckCanSwapOps32(sctx,
-					opw1, opw2, opw3, opw4))
-			{
-				if(sctx->is_simpass)
-					{ cp+=4; continue; }
-			
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+0, opw3);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+2, opw4);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+4, opw1);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+6, opw2);
-				continue;
-			}
-#endif
-
-			cp+=4; continue;
-		}
-
-		if(!BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw3, opw4) &&
-			!sctx->is_simpass && ((cp+11)<epos))
-		{
-#if 1
-			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw5, opw6) &&
-				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
-//				!BGBCC_JX2_CheckOps32SequenceOnly(ctx, sctx,
-				BGBCC_JX2_CheckCanSwapOps32(sctx,
-					opw3, opw4, opw5, opw6) &&
-//				(	!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-//						opw1, opw2, opw5, opw6) ||
-//					BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-//						opw1, opw2, opw3, opw4)))
-				(	!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-						opw1, opw2, opw5, opw6) &&
-					BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-						opw1, opw2, opw3, opw4)))
-			{
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 4, opw5);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 6, opw6);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+ 8, opw3);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+10, opw4);
-				continue;
-			}
-#endif
-		}
-
-		/* If next op begins WEX sequence, skip. */
-//		if(((opw3&0xFC00)==0xF400) ||
-//			((opw3&0xFF00)==0xF900))
-		if(	((opw3&0xFC00)==0xF400) ||
-			((opw3&0xFC00)==0xFC00))
-				{ cp+=4; continue; }
-
-		/* If next op is a DLR load, skip. */
-		if((opw3&0xFE00)==0xFA00)
-			{ cp+=4; continue; }
-
-		/* Skip Mem Load/Store (Lane 1 only) */
-		if((opw1&0xFF00)==0xF100)
-			{ cp+=4; continue; }
-
-#if 1
-		if(	BGBCC_JX2_CheckOps32ValidWexPrefix3W(sctx, opw1, opw2) &&
-			BGBCC_JX2_CheckOps32ValidWexPrefix  (sctx, opw3, opw4) &&
-			BGBCC_JX2_CheckOps32ValidWexSuffix3W(sctx, opw5, opw6) &&
-			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-				opw1, opw2, opw3, opw4) &&
-			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-				opw3, opw4, opw5, opw6) &&
-			!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-				opw1, opw2, opw5, opw6))
-		{
-			BGBCC_JX2_AdjustWexifyOp(sctx, &opw1, &opw2);
-			BGBCC_JX2_AdjustWexifyOp(sctx, &opw3, &opw4);
-
-			BGBCC_JX2_EmitSetOffsWord(sctx, cp+0, opw1);
-			BGBCC_JX2_EmitSetOffsWord(sctx, cp+2, opw2);
-			BGBCC_JX2_EmitSetOffsWord(sctx, cp+4, opw3);
-			BGBCC_JX2_EmitSetOffsWord(sctx, cp+6, opw4);
-			cp+=12;
-			continue;
-		}
-#endif
-
-#if 0
-		if((opw1&0xFF00)==0xF800)
-		{
-			if(BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
-				!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-					opw1, opw2, opw3, opw4))
-			{
-				BGBCC_JX2_AdjustWexifyOp(sctx, &opw1, &opw2);
-
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+0, opw1);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+2, opw2);
-				cp+=8;
-				continue;
-			}
-
-			cp+=4;
-			continue;
-		}
-#endif
-
-//		if(((opw1&0xFF00)==0xF000) ||
-//			((opw1&0xFF00)==0xF200))
-		if(1)
-//		if(0)
-		{
-			if(	BGBCC_JX2_CheckOps32ValidWexPrefix(sctx, opw1, opw2) &&
-				BGBCC_JX2_CheckOps32ValidWexSuffix(sctx, opw3, opw4) &&
-				!BGBCC_JX2_CheckOps32SequenceOnly(sctx,
-					opw1, opw2, opw3, opw4))
-			{
-				BGBCC_JX2_AdjustWexifyOp(sctx, &opw1, &opw2);
-
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+0, opw1);
-				BGBCC_JX2_EmitSetOffsWord(sctx, cp+2, opw2);
-				cp+=8;
-				continue;
-			}
-
-			cp+=4;
-			continue;
-		}
-
-		/* Dunno, Leave it as-is. */
-		cp+=4;
-	}
-	
 	return(1);
 }
 #endif

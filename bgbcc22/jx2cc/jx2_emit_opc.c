@@ -231,6 +231,16 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 			{ BGBCC_DBGBREAK }
 	}
 
+	if(	(nmid==BGBCC_SH_NMID_BSWAPW)	||
+		(nmid==BGBCC_SH_NMID_BSWAPUW)	||
+		(nmid==BGBCC_SH_NMID_BSWAPL)	||
+		(nmid==BGBCC_SH_NMID_BSWAPUL)	||
+		(nmid==BGBCC_SH_NMID_BSWAPQ)	)
+	{
+		i=BGBCC_JX2_TryEmitOpRegReg(ctx, nmid, reg, reg);
+		return(i);
+	}
+
 	ex=0;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, reg)) ex|=0x0040;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, reg)) ex|=0x0020;
@@ -1992,6 +2002,52 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			return(1);
 	}
 
+	if(!ctx->emit_isprobe && (
+		(nmid==BGBCC_SH_NMID_BSWAPW)	||
+		(nmid==BGBCC_SH_NMID_BSWAPUW)	||
+		(nmid==BGBCC_SH_NMID_BSWAPL)	)
+//		(nmid==BGBCC_SH_NMID_BSWAPL)	||
+//		(nmid==BGBCC_SH_NMID_BSWAPUL)	)
+		)
+	{
+#if 0
+		if(nmid==BGBCC_SH_NMID_BSWAPW)
+			{ opw1=0x11; opw2=BGBCC_SH_NMID_EXTSW; }
+		if(nmid==BGBCC_SH_NMID_BSWAPUW)
+			{ opw1=0x11; opw2=BGBCC_SH_NMID_EXTUW; }
+		if(nmid==BGBCC_SH_NMID_BSWAPL)
+			{ opw1=0x17; opw2=BGBCC_SH_NMID_EXTSL; }
+		if(nmid==BGBCC_SH_NMID_BSWAPUL)
+			{ opw1=0x17; opw2=BGBCC_SH_NMID_EXTUL; }
+		BGBCC_JX2_EmitOpRegImmReg(ctx, BGBCC_SH_NMID_PSHUFB, rm, opw1, rn);
+		BGBCC_JX2_EmitOpRegReg(ctx, opw2, rn, rn);
+#endif
+
+#if 1
+		if(nmid==BGBCC_SH_NMID_BSWAPW)
+			{ opw1=48; opw2=BGBCC_SH_NMID_SHADQ; }
+		if(nmid==BGBCC_SH_NMID_BSWAPUW)
+			{ opw1=48; opw2=BGBCC_SH_NMID_SHLDQ; }
+		if(nmid==BGBCC_SH_NMID_BSWAPL)
+			{ opw1=32; opw2=BGBCC_SH_NMID_SHADQ; }
+		if(nmid==BGBCC_SH_NMID_BSWAPUL)
+			{ opw1=32; opw2=BGBCC_SH_NMID_SHLDQ; }
+		BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_BSWAPQ, rm, rn);
+		BGBCC_JX2_EmitOpRegImmReg(ctx, opw2, rn, opw1, rn);
+#endif
+
+		return(1);
+	}
+
+#if 0
+	if(!ctx->emit_isprobe && (nmid==BGBCC_SH_NMID_BSWAPQ))
+	{
+		BGBCC_JX2_EmitOpRegImmReg(ctx, BGBCC_SH_NMID_PSHUFB, rm, 0xB1, rn);
+		BGBCC_JX2_EmitOpRegImmReg(ctx, BGBCC_SH_NMID_PSHUFW, rm, 0x17, rn);
+		BGBCC_JX2_EmitOpRegImmReg(ctx, BGBCC_SH_NMID_PSHUFB, rm, 0xB1, rn);
+		return(1);
+	}
+#endif
 
 	ex=0;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, rn)) ex|=0x0040;
@@ -3249,6 +3305,13 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		case BGBCC_SH_NMID_PSTCXH:
 			opw1=0xF08B|ex;
 			opw2=0x1E00|((rn&15)<<4)|(rm&15); break;
+
+		case BGBCC_SH_NMID_BSWAPUL:
+			opw1=0xF00F|ex;
+			opw2=0x1A00|((rn&15)<<4)|(rm&15); break;
+		case BGBCC_SH_NMID_BSWAPQ:
+			opw1=0xF08F|ex;
+			opw2=0x1A00|((rn&15)<<4)|(rm&15); break;
 
 		case BGBCC_SH_NMID_PCVTSB2HL:
 			opw1=0xF000|ex;

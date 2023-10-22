@@ -359,8 +359,16 @@ assign		tRegInIsCCmd = (tRegInOpm[7:4]==4'h8);
 
 wire		tRegInIsLDX;
 wire		tRegInIsSTX;
-assign		tRegInIsLDX = (tRegInOpm[7:4]==4'h9);
-assign		tRegInIsSTX = (tRegInOpm[7:4]==4'hA);
+// assign		tRegInIsLDX = (tRegInOpm[7:4]==4'h9);
+// assign		tRegInIsSTX = (tRegInOpm[7:4]==4'hA);
+
+wire		tRegInIsPFX;
+wire		tRegInIsSPX;
+
+assign		tRegInIsLDX = (tRegInOpm[7:0]==JX2_RBI_OPM_LDX);
+assign		tRegInIsSTX = (tRegInOpm[7:0]==JX2_RBI_OPM_STX);
+assign		tRegInIsPFX = (tRegInOpm[7:0]==JX2_RBI_OPM_PFX);
+assign		tRegInIsSPX = (tRegInOpm[7:0]==JX2_RBI_OPM_SPX);
 
 
 wire		regInIsREADY;
@@ -913,7 +921,7 @@ begin
 	if(tRegInIsIRQ)
 		tlbMmuSkip = 1;
 
-	if(!(tRegInIsLDX || tRegInIsSTX))
+	if(!(tRegInIsLDX || tRegInIsSTX || tRegInIsPFX || tRegInIsSPX))
 		tlbMmuSkip = 1;
 
 	tRegOutOpm   = tRegInOpm;
@@ -922,7 +930,8 @@ begin
 	if(tAddrIsPhysV)
 		tRegOutOpm[11]	= 1;
 
-	if((tRegInAddr[47] && !tAddrIsPhys && tRegInIsLDX) || tAddrIsMMIO)
+	if((tRegInAddr[47] && !tAddrIsPhys && (tRegInIsLDX || tRegInIsPFX)) || 
+		tAddrIsMMIO)
 	begin
 		if(tlbMmuEnable && !tRegInSR[30])
 		begin

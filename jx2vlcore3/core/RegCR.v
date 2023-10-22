@@ -146,6 +146,9 @@ output[47:0]	regOutGbrHi;
 
 parameter		disableTlb = 0;
 
+(* max_fanout = 200 *)
+	wire		holdN = !hold;
+
 reg[63:0]	crRegSr;
 reg[63:0]	crRegExsr;
 
@@ -206,7 +209,11 @@ assign	regOutVbrCm	= crRegVbrCm;
 // assign	regOutMmcr	= crRegMmcr;
 assign	regOutMmcr	= { crRegTtb[63:48], crRegMmcr[47:0] };
 assign	regOutKrr	= crRegKrr;
+`ifdef jx2_enable_mmu_vipt
 assign	regOutVipt	= crRegVipt;
+`else
+assign	regOutVipt	= UV48_00;
+`endif
 `else
 assign	regOutMmcr	= UV64_00;
 assign	regOutKrr	= UV64_00;
@@ -352,7 +359,9 @@ begin
 		JX2_CR_KRR:		tValCmA=crRegKrr;
 
 `ifdef jx2_enable_xgpr
+`ifdef jx2_enable_mmu_vipt
 		JX2_CR_VIPT:	tValCmA={UV16_00, crRegVipt};
+`endif
 `endif
 
 `else
@@ -361,13 +370,13 @@ begin
 		JX2_CR_STTB:	tValCmA=UV64_00;
 		JX2_CR_KRR:		tValCmA=UV64_00;
 `endif
-		
-		JX2_CR_IMM:	begin
-			tValCmA=UV64_00;
-			tValCmZz=1;
-		end
 
-		JX2_CR_ZZR:	begin
+//		JX2_CR_IMM:	begin
+//			tValCmA=UV64_00;
+//			tValCmZz=1;
+//		end
+
+		JX2_CR_ZZR, JX2_CR_IMM:	begin
 			tValCmA=UV64_00;
 			tValCmZz=1;
 		end
@@ -400,7 +409,7 @@ begin
 
 	if(tResetL)
 	begin
-		crRegPc		<= UV48_00;
+//		crRegPc		<= UV48_00;
 //		crRegLr		<= UV48_00;
 //		crRegVbr	<= UV48_00;
 //		crRegGbr	<= UV48_00;
@@ -427,7 +436,8 @@ begin
 
 	end
 	else
-		if(!hold)
+//		if(!hold)
+		if(holdN)
 //		if(!hold || tIsIsrEdge)
 	begin
 		crRegSr		<= (regIdCn2B==JX2_CR_SR  ) ? regValCn2B[63:0] : regInSr;
@@ -489,8 +499,12 @@ begin
 				regValCn2B[63:0] : crRegKrr;
 
 `ifdef jx2_enable_xgpr
+`ifdef jx2_enable_mmu_vipt
 			crRegVipt	<= (regIdCn2B==JX2_CR_VIPT) ?
 				regValCn2B[47:0] : crRegVipt;
+`else
+			crRegVipt	<= 0;
+`endif
 `else
 			crRegVipt	<= 0;
 `endif

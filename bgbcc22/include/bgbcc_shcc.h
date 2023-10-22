@@ -1061,11 +1061,24 @@
 #define BGBCC_SH_NMID_PCVTAL2H		0x0251	//
 #define BGBCC_SH_NMID_RGB5CCENC1	0x0252	//
 #define BGBCC_SH_NMID_RGB5CCENC2	0x0253	//
-
 #define BGBCC_SH_NMID_SUBP			0x0254	//
 #define BGBCC_SH_NMID_SUBXP			0x0255	//
 #define BGBCC_SH_NMID_CMPPEQX		0x0256	//
 #define BGBCC_SH_NMID_CMPPGTX		0x0257	//
+
+#define BGBCC_SH_NMID_MOVTW			0x0258	//
+#define BGBCC_SH_NMID_MOVUTW		0x0259	//
+#define BGBCC_SH_NMID_MOVHTW		0x025A	//
+
+#define BGBCC_SH_NMID_MOVTW_V		0x025C	//Virtual
+#define BGBCC_SH_NMID_MOVUTW_V		0x025D	//Virtual
+#define BGBCC_SH_NMID_MOVHTW_V		0x025E	//Virtual
+#define BGBCC_SH_NMID_BSWAPQ		0x025F	//Byte Swap QWORD (Virtual)
+
+#define BGBCC_SH_NMID_BSWAPW		0x0260	//Byte Swap WORD (Virtual)
+#define BGBCC_SH_NMID_BSWAPUW		0x0261	//Byte Swap WORD (Virtual)
+#define BGBCC_SH_NMID_BSWAPL		0x0262	//Byte Swap DWORD (Virtual)
+#define BGBCC_SH_NMID_BSWAPUL		0x0263	//Byte Swap DWORD (Virtual)
 
 
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
@@ -1306,6 +1319,9 @@
 #define BGBCC_SH_RLC_RELHI20_RVI	0x3D	//RISC-V, High 12 bits, Abs
 #define BGBCC_SH_RLC_RELLO12I_RVI	0x3E	//RISC-V, Low 12-bits I
 #define BGBCC_SH_RLC_RELLO12S_RVI	0x3F	//RISC-V, Low 12-bits I
+
+#define BGBCC_SH_RLC_RELW11_BJCMP	0x40	//JCMPxx (WORD)
+#define BGBCC_SH_RLC_RELW33_BJCMP	0x41	//JCMPxx (WORD)
 
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE

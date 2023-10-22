@@ -90,6 +90,14 @@ input [  7:0]	unitNodeId;		//Who Are We?
 parameter		noLdOp		= 0;
 parameter		disableTlb	= 0;
 
+
+(* max_fanout = 200 *)
+	wire			dcInHoldN;
+
+assign	dcInHoldN = !dcInHold;
+
+
+
 reg[63: 0]	tRegOutValA;
 reg[63: 0]	tRegOutValB;
 assign	regOutValA = tRegOutValA;
@@ -99,7 +107,7 @@ reg[127: 0]	tRegOutExc;
 reg[127: 0]	tRegOutExc2;
 reg[127: 0]	tRegOutExc3;
 assign	regOutExc = tRegOutExc2;
-assign	regOutExc = tRegOutExc3;
+// assign	regOutExc = tRegOutExc3;
 
 reg[63: 0]		tRegInSr;
 reg[63: 0]		tRegInSrL;
@@ -436,6 +444,10 @@ reg				tReq2IsMmio;
 reg				tReqIsCcmd;
 reg				tReq2IsCcmd;
 
+reg				tNxtReqIsNz;
+reg				tNxtReqIsMmio;
+reg				tNxtReqIsCcmd;
+
 reg				tReqDoPfxA;
 reg				tReqDoPfxB;
 reg				tReqDoSpxA;
@@ -688,6 +700,8 @@ reg				tNxtTlbMissInh2;
 	reg			tReqAddrIsVirt;
 reg				tWasMissInh;
 
+reg				tNxtReqAddrIsVirt;
+
 reg[2:0]		tVolatileInhSet;	//Volatile Inhibit Cycles (Set)
 reg[2:0]		tVolatileInhCnt;	//Volatile Inhibit Cycles (Count)
 reg[2:0]		tNxtVolatileInh;
@@ -744,7 +758,8 @@ begin
 	else
 	begin
 		tNxtReqAxA = { 16'h00, regInAddr[31:4] };
-		tNxtReqAxB = tNxtReqAxA + 1;
+//		tNxtReqAxB = tNxtReqAxA + 1;
+		tNxtReqAxB = { tNxtReqAxA[43:1], 1'b1 };
 	end
 `endif
 
@@ -805,8 +820,8 @@ begin
 //		tNxtReqAddrHi[31:16] ^
 //		tNxtReqAddrHi[47:32] ;
 
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 	tNxtReqAxH		=
 		tNxtReqAddrHi[15: 0] ^
 		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } ^
@@ -816,8 +831,8 @@ begin
 		{	4'h0, tRegInSr[31:28], regKrrHash[7:0] } ;
 `endif
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 	tNxtReqAxH		=
 		tNxtReqAddrHi[15: 0] +
 		{	tNxtReqAddrHi[23:16], tNxtReqAddrHi[31:24] } +
@@ -921,6 +936,32 @@ begin
 		end
 	end
 
+
+`ifdef def_true
+	tNxtReqIsNz		= tNxtReqOpm[5:4] != 2'b00;
+
+	tNxtReqIsMmio		= tNxtReqIsNz &&
+		((((tNxtReqAddr[47:32] == 16'h0000) && !tSrJQ) ||
+			(tNxtReqAddr[47:32] == 16'hFFFF)) &&
+			(tNxtReqAddr[31:28] == 4'hF)) ||
+//		(tNxtReqAddr[47:32] == 16'hF000);
+		((tNxtReqAddr[47:44] == 4'hF) && tSrJQ);
+	tNxtReqIsCcmd		=
+		(tNxtReqOpm[5:4] == 2'b00) &&
+		(tNxtReqOpm[3:0] != 4'b0000);
+
+	tNxtReqAddrIsVirt	=
+		(tNxtReqAddr[47:28] != 0) &&
+		!tNxtReqAddr[47] &&
+		!tNxtReqIsMmio && !tNxtReqIsCcmd;
+
+	if(tNxtReqAddrHiIsNz)
+	begin
+		tNxtReqIsMmio		= 0;
+		tNxtReqAddrIsVirt	= 1;
+	end
+`endif
+
 	tNxtReqInValA	= regInValA;
 	tNxtReqInValB	= regInValB;
 
@@ -988,7 +1029,7 @@ begin
 //		(regInAddr[47:44]!=4'hF) &&
 		(regInAddr[47:46]!=2'b11) &&
 		(regInAddr[31:28]!=4'hF) &&
-		!dcInHold &&
+		dcInHoldN &&
 		(regInOpm[5:4] != 2'b00))
 	begin
 		$display("L1 D$: Next Skip TLB and Addr is Virt, A=%X",
@@ -1139,6 +1180,10 @@ begin
 	tNxtMemMmioReady = tMemMmioReady;
 	
 
+
+`ifndef def_true
+// `ifdef def_true
+
 	tReqIsNz		= tReqOpm[5:4] != 2'b00;
 
 `ifdef jx2_mem_lane2
@@ -1157,7 +1202,9 @@ begin
 
 	tReqAddrIsVirt	= (tReqAddr[47:28] != 0) && !tReqAddr[47] &&
 		!tReqIsMmio && !tReqIsCcmd;
-	
+`endif
+
+`ifndef def_true
 //	if(tReqAddrHi != 0)
 	if(tReqAddrHiIsNz)
 	begin
@@ -1165,8 +1212,11 @@ begin
 		tReqIsMmio		= 0;
 		tReqAddrIsVirt	= (tReqAddr[47:28] != 0) && !tReqIsCcmd;
 	end
+`endif
 	
 	tReqNoCross		= 0;
+
+`ifndef def_true
 	casez(tReqOpm[2:0])
 		3'bz00:		tReqNoCross = 1;
 		3'bz01:		tReqNoCross = !tReqBix[0] || (tReqBix[3:1]!=3'b111);
@@ -1175,6 +1225,37 @@ begin
 		3'b011:		tReqNoCross = (tReqBix[2:0]==3'h0) || !tReqBix[3];
 		3'b111:		tReqNoCross = (tReqBix[3:0]==4'h0);
 	endcase
+`endif
+
+`ifdef def_true
+	casez( { tReqOpm[2:0], tReqBix[3:0] } )
+		7'bz00_zzzz:	tReqNoCross = 1;
+		
+		7'bz01_0zzz:	tReqNoCross = 1;
+		7'bz01_10zz:	tReqNoCross = 1;
+		7'bz01_110z:	tReqNoCross = 1;
+		7'bz01_1110:	tReqNoCross = 1;
+		7'bz01_1111:	tReqNoCross = 0;
+
+		7'bz10_0zzz:	tReqNoCross = 1;
+		7'bz10_10zz:	tReqNoCross = 1;
+		7'bz10_1100:	tReqNoCross = 1;
+		7'bz10_1101:	tReqNoCross = 0;
+		7'bz10_111z:	tReqNoCross = 0;
+
+		7'b011_0zzz:	tReqNoCross = 1;
+		7'b011_1000:	tReqNoCross = 1;
+		7'b011_1001:	tReqNoCross = 0;
+		7'b011_101z:	tReqNoCross = 0;
+		7'b011_11zz:	tReqNoCross = 0;
+
+		7'b111_0000:	tReqNoCross = 1;
+		7'b111_0001:	tReqNoCross = 0;
+		7'b111_001z:	tReqNoCross = 0;
+		7'b111_01zz:	tReqNoCross = 0;
+		7'b111_1zzz:	tReqNoCross = 0;
+	endcase
+`endif
 
 `ifdef jx2_mem_lane2
 	tReqNoCrossB		= 0;
@@ -1474,10 +1555,14 @@ begin
 
 	tReqMissAddrA	=
 		((tBlkMemAddr2A[47:32] != tReqAxA[43:28]) && tSrJQ) ||
-		 (tBlkMemAddr2A[31: 5] != tReqAxA[27: 1]);
+//		 (tBlkMemAddr2A[31: 5] != tReqAxA[27: 1]);
+		 (tBlkMemAddr2A[31:20] != tReqAxA[27:16]) ||
+		 (tBlkMemAddr2A[19: 5] != tReqAxA[15: 1]);
 	tReqMissAddrB	=
 		((tBlkMemAddr2B[47:32] != tReqAxB[43:28]) && tSrJQ) ||
-		 (tBlkMemAddr2B[31: 5] != tReqAxB[27: 1]);
+//		 (tBlkMemAddr2B[31: 5] != tReqAxB[27: 1]);
+		 (tBlkMemAddr2B[31:20] != tReqAxB[27:16]) ||
+		 (tBlkMemAddr2B[19: 5] != tReqAxB[15: 1]);
 
 `ifdef jx2_mem_lane2
 	tReqMissAddrE	=
@@ -1616,6 +1701,8 @@ begin
 			tBlkIsDirtyB		= 0;
 		end
 
+`ifndef def_true
+		/* write through */
 //		if(tVolatileInhCnt == 0)
 		if((tVolatileInhCnt == 0) && !tReqIsNz)
 		begin
@@ -1636,6 +1723,7 @@ begin
 					tReqFlushAddrB	= 0;
 			end
 		end
+`endif
 		
 `ifndef def_true
 // `ifdef def_true
@@ -1693,8 +1781,18 @@ begin
 		end
 	end
 
-	tReqMissA	= (tReqMissAddrA && !tReqMissSkipA) || tReqFlushAddrA;
-	tReqMissB	= (tReqMissAddrB && !tReqMissSkipB) || tReqFlushAddrB;
+//	tReqMissA	= (tReqMissAddrA && !tReqMissSkipA) || tReqFlushAddrA;
+//	tReqMissB	= (tReqMissAddrB && !tReqMissSkipB) || tReqFlushAddrB;
+
+//	tReqMissA	= (tReqMissAddrA && !tReqMissSkipA && tReqIsNz) || 
+//		tReqFlushAddrA;
+//	tReqMissB	= (tReqMissAddrB && !tReqMissSkipB && tReqIsNz) || 
+//		tReqFlushAddrB;
+
+	tReqMissA	= (tReqMissAddrA && (!tReqMissSkipA || tReqMissAddrB)) || 
+		tReqFlushAddrA;
+	tReqMissB	= (tReqMissAddrB && (!tReqMissSkipB || tReqMissAddrA)) || 
+		tReqFlushAddrB;
 
 	tReqMissE	= 0;
 	tReqMissF	= 0;
@@ -1724,8 +1822,8 @@ begin
 		!(tReqIsMmio || tReqIsCcmd);
 `endif
 
-	if(tReqMiss)
-		tRegOutExc[15] = 0;
+//	if(tReqMiss)
+//		tRegOutExc[15] = 0;
 
 //	if(!tReqIsNz)
 //	begin
@@ -1733,11 +1831,15 @@ begin
 //		tReqMissB	= 0;
 //	end
 
-	if(tReqMiss && !tReqIsMmio && !tReqIsCcmd)
-		tRegOutHold = 1;
+//	if(tReqMiss && !tReqIsMmio && !tReqIsCcmd)
+//		tRegOutHold = 1;
 
-	if(!tReqReady && !tReqIsMmio && !tReqIsCcmd)
-		tRegOutHold = 1;
+//	if(!tReqReady && !tReqIsMmio && !tReqIsCcmd)
+//		tRegOutHold = 1;
+
+	if(((tReqMiss || !tReqReady) && !tReqIsMmio && !tReqIsCcmd) ||
+		((tReqIsMmio || tReqIsCcmd) && (!tMemMmioReady)))
+			tRegOutHold = 1;
 
 	/* Hold until EXC forwards. */
 //	if(tRegOutExc[15] && !tRegOutExc3[15])
@@ -1805,8 +1907,8 @@ begin
 	end
 `endif
 	
-`ifdef def_true
-// `ifndef def_true
+// `ifdef def_true
+`ifndef def_true
 
 //	if(tReqMiss || (tReqMissNoSkipL && tRegOutHoldL))
 //	if((tReqMiss && tReqReady) || (tReqMissNoSkipL && tRegOutHoldL))
@@ -1880,13 +1982,13 @@ begin
 		if(!tReqReady)
 		begin
 //			$display("L1 D$: Not Ready Stall");
-			tRegOutHold = 1;
+//			tRegOutHold = 1;
 		end
 
 		if(tReqMiss)
 		begin
 //			$display("L1 D$: Miss Stall");
-			tRegOutHold = 1;
+//			tRegOutHold = 1;
 		end
 
 `ifndef def_true
@@ -1894,7 +1996,7 @@ begin
 			(tReg2MissInterlockB && !tReg2StoreFwB)	)
 		begin
 //			$display("L1 D$: Interlock Stall");
-			tRegOutHold = 1;
+//			tRegOutHold = 1;
 		end
 `endif
 	end
@@ -2074,6 +2176,13 @@ begin
 		(tReqOpm[1:0]==2'b00) ? tBlkExData4[15: 8] : tBlkInsData4[15: 8],
 		tBlkInsData4[7:0]
 	};
+	
+`ifdef jx2_enable_ldst48a
+	if(tReqOpm[2:0]==3'b110)
+	begin
+		tBlkInsData4 = { tBlkExData4[63:48], tBlkInsData4[47:0] };
+	end
+`endif
 
 	tBlkInsData3 = tReqBix[0] ?
 		{ tBlkInsData4[63: 0], tBlkExData3 [ 7:0] } :
@@ -2122,7 +2231,7 @@ begin
 		if(!tMemMmioReady)
 		begin
 //			$display("L1 D$: MMIO Stall");			
-			tRegOutHold = 1;
+//			tRegOutHold = 1;
 		end
 
 		tBlkExDataA = tMemMmioData;
@@ -2523,6 +2632,13 @@ begin
 		begin
 //			$display("L1 D$ MMIO Req A=%X", tReqAddr);
 		
+//			if(tReqAddr[27:16]==12'h001)
+			if(tReqAddr[31:28]!=4'hF)
+			begin
+				$display("L1 D$ MMIO Req Dbg A=%X IsMMIO=%d IsCCMD=%d", 
+					tReqAddr, tReqIsMmio, tReqIsCcmd);
+			end
+		
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqReq		= { unitNodeId, 4'b1000, tMemSeqRov };
 //			tMemDataReq		= { UV64_00, tReqInValA };
@@ -2571,7 +2687,7 @@ begin
 //		tReqAliasB		= tBlkMemAddr2B[23: 8] == tRegAxB[19:4];
 
 		tRegOutWait		= 1;
-		tRegOutHold		= 1;
+//		tRegOutHold		= 1;
 
 // `ifndef def_true
 `ifdef def_true
@@ -2776,7 +2892,7 @@ begin
 			tMemReqLdM )
 		begin
 //			$display("L1 D$: Wait Response");
-			tRegOutHold = 1;
+//			tRegOutHold = 1;
 		end
 `endif
 	end
@@ -2797,7 +2913,7 @@ end
 
 always @(posedge clock)
 begin
-	if(tRegOutHold && !dcInHold)
+	if(tRegOutHold && dcInHoldN)
 		$display("L1D$: Hold Signal Fault");
 end
 
@@ -2817,7 +2933,7 @@ begin
 	tRegRng1		<= { tRegRng1[47:0], regRng };
 	tResetL			<= reset;
 
-	if(!dcInHold)
+	if(dcInHoldN)
 	begin
 		tSyncRov		<= tNxtSyncRov;
 		tSyncEpoch		<= tNxtSyncEpoch;
@@ -2850,6 +2966,13 @@ begin
 		tReqLdOp		<= tNxtReqLdOp;
 		tReqInValA		<= tNxtReqInValA;
 		tReqInValB		<= tNxtReqInValB;
+
+`ifdef def_true
+		tReqIsNz		<= tNxtReqIsNz;
+		tReqIsMmio		<= tNxtReqIsMmio;
+		tReqIsCcmd		<= tNxtReqIsCcmd;
+		tReqAddrIsVirt	<= tNxtReqAddrIsVirt;
+`endif
 
 `ifdef jx2_mem_lane2
 		tReqAddrB		<= tNxtReqAddrB;

@@ -224,73 +224,165 @@ int TKRA_GetPixel444A3_Alpha(int a)
 	return(av);
 }
 
-void TKRA_EncodeBlockUtx2(tkra_rastpixel *pix, u32 *blk)
+void TKRA_EncodeBlockUtx2(tkra_rastpixel *pix, u32 *blk, int flag)
 {
+	static byte lutab[1024];
 	byte pxy[16], pxa[16];
+	tkra_rastpixel *pcs;
+	byte *pct;
 	u32 pxv;
 	u64 argb, pvrgb, mrgb, nrgb, a2rgb;
 	int mv, nv, my, ny, pv, py;
 	int ma, na, pa;
+	int i0, i1, i2, i3;
+	int j0, j1, j2, j3;
 	int acy, aca, isam;
 	int i, j, k;
+	
+	if(!lutab[1023])
+	{
+		for(i=0; i<1024; i++)
+		{
+			pv=(i&0x3F8)|(i&7)<<12;
+			pv|=0x0804;
+			py=TKRA_GetPixel555Luma(pv);
+			lutab[i]=py;
+		}
+	}
 	
 	argb=0;
 	mv=0x7FFF;	nv=0x0000;
 	my=256;		ny=0;
 	ma=256;		na=0;
 	acy=0;		aca=0;
-	for(i=0; i<16; i++)
+
+	if(flag&TKRA_TRFL_NOALPHA)
 	{
-		pv=pix[i];
-		py=TKRA_GetPixel555Luma(pv);
-		pa=TKRA_GetPixel555Alpha(pv);
-		
-		pvrgb=tkra_rgbupck64(pv);
-		pvrgb=tkra_pmuluhw(pvrgb, 0x0FFF0FFF0FFF0FFFULL);
-		argb+=pvrgb;
-		
-		if(py<my)
-			{ mv=pv; my=py; }
-		if(py>ny)
-			{ nv=pv; ny=py; }
-		if(pa<ma)	{ ma=pa; }
-		if(pa>na)	{ na=pa; }
-		pxy[i]=py;
-		pxa[i]=pa;
-		acy+=py;
-		aca+=pa;
-	}
-	acy=acy/16;
-	aca=aca/16;
+#if 0
+		for(i=0; i<16; i++)
+		{
+			pv=pix[i];
+
+//			py=TKRA_GetPixel555Luma(pv);
+			j=(pv&0x3F8)|((pv>>12)&7);
+			py=lutab[j];
+			
+//			pvrgb=tkra_rgbupck64(pv);
+//			pvrgb=tkra_pmuluhw(pvrgb, 0x0FFF0FFF0FFF0FFFULL);
+//			argb+=pvrgb;
+			
+			if(py<my)
+				{ mv=pv; my=py; }
+			if(py>ny)
+				{ nv=pv; ny=py; }
+			pxy[i]=py;
+			acy+=py;
+			aca+=pa;
+		}
+#endif
 
 #if 1
-	mrgb =tkra_rgbupck64(mv);
-	nrgb =tkra_rgbupck64(nv);
-//	mrgb =tkra_pmuluhw(mrgb, 0x7FFF7FFF7FFF7FFFULL);
-//	nrgb =tkra_pmuluhw(nrgb, 0x7FFF7FFF7FFF7FFFULL);
-//	a2rgb=tkra_pmuluhw(argb, 0x7FFF7FFF7FFF7FFFULL);
+		pcs=pix;
+		pct=pxy;
+//		for(i=0; i<16; i+=4)
+		for(i=0; i<4; i++)
+		{
+//			i0=pix[i+0];	i1=pix[i+1];
+//			i2=pix[i+2];	i3=pix[i+3];
+			i0=pcs[0];		i1=pcs[1];
+			i2=pcs[2];		i3=pcs[3];
 
-	mrgb =tkra_pmuluhw(mrgb, 0xAAAAAAAAAAAAAAAAULL);
-	nrgb =tkra_pmuluhw(nrgb, 0xAAAAAAAAAAAAAAAAULL);
-	a2rgb=tkra_pmuluhw(argb, 0x5555555555555555ULL);
-
-	mrgb =mrgb+a2rgb;
-	nrgb =nrgb+a2rgb;
-	mv=tkra_rgbpck64(mrgb);
-	nv=tkra_rgbpck64(nrgb);
-
-	my=TKRA_GetPixel555Luma(mv);
-	ny=TKRA_GetPixel555Luma(nv);
+			j0=(i0&0x3F8)|((i0>>12)&7);
+			j1=(i1&0x3F8)|((i1>>12)&7);
+			j2=(i2&0x3F8)|((i2>>12)&7);
+			j3=(i3&0x3F8)|((i3>>12)&7);
+			j0=lutab[j0];	j1=lutab[j1];
+			j2=lutab[j2];	j3=lutab[j3];
+			pcs+=4;
+			
+			if(j0<my)	{ mv=i0; my=j0; }
+			if(j0>ny)	{ nv=i0; ny=j0; }
+			if(j1<my)	{ mv=i1; my=j1; }
+			if(j1>ny)	{ nv=i1; ny=j1; }
+			if(j2<my)	{ mv=i2; my=j2; }
+			if(j2>ny)	{ nv=i2; ny=j2; }
+			if(j3<my)	{ mv=i3; my=j3; }
+			if(j3>ny)	{ nv=i3; ny=j3; }
+//			pxy[i+0]=j0;	pxy[i+1]=j1;
+//			pxy[i+2]=j2;	pxy[i+3]=j3;
+			pct[0]=j0;		pct[1]=j1;
+			pct[2]=j2;		pct[3]=j3;
+			acy+=j0+j1+j2+j3;
+			pct+=4;
+		}
 #endif
+
+		acy=acy>>4;
+		aca=255;
+		
+		isam=0;
+	}else
+	{
+		for(i=0; i<16; i++)
+		{
+			pv=pix[i];
+			py=TKRA_GetPixel555Luma(pv);
+			pa=TKRA_GetPixel555Alpha(pv);
+			
+			pvrgb=tkra_rgbupck64(pv);
+			pvrgb=tkra_pmuluhw(pvrgb, 0x0FFF0FFF0FFF0FFFULL);
+			argb+=pvrgb;
+			
+			if(py<my)
+				{ mv=pv; my=py; }
+			if(py>ny)
+				{ nv=pv; ny=py; }
+			if(pa<ma)	{ ma=pa; }
+			if(pa>na)	{ na=pa; }
+			pxy[i]=py;
+			pxa[i]=pa;
+			acy+=py;
+			aca+=pa;
+		}
+//		acy=acy/16;
+//		aca=aca/16;
+		acy=acy>>4;
+		aca=aca>>4;
+
+#if 1
+		mrgb =tkra_rgbupck64(mv);
+		nrgb =tkra_rgbupck64(nv);
+	//	mrgb =tkra_pmuluhw(mrgb, 0x7FFF7FFF7FFF7FFFULL);
+	//	nrgb =tkra_pmuluhw(nrgb, 0x7FFF7FFF7FFF7FFFULL);
+	//	a2rgb=tkra_pmuluhw(argb, 0x7FFF7FFF7FFF7FFFULL);
+
+		mrgb =tkra_pmuluhw(mrgb, 0xAAAAAAAAAAAAAAAAULL);
+		nrgb =tkra_pmuluhw(nrgb, 0xAAAAAAAAAAAAAAAAULL);
+		a2rgb=tkra_pmuluhw(argb, 0x5555555555555555ULL);
+
+		mrgb =mrgb+a2rgb;
+		nrgb =nrgb+a2rgb;
+		mv=tkra_rgbpck64(mrgb);
+		nv=tkra_rgbpck64(nrgb);
+
+		my=TKRA_GetPixel555Luma(mv);
+		ny=TKRA_GetPixel555Luma(nv);
+#endif
+
+//		isam = ((ma&0xF0)!=(na&0xF0)) || ((ma&0xF0)!=0xF0);
+		isam = ((ma&0xE0)!=(na&0xE0)) || ((ma&0xE0)!=0xE0);
+	}
 
 	acy=(my+ny)/2;
 	
-	isam = ((ma&0xF0)!=(na&0xF0)) || ((ma&0xF0)!=0xF0);
+//	if(flag&TKRA_TRFL_NOALPHA)
+//		isam=0;
 
 	j=ny-acy;
 	if(!j)j++;
 	k=384/j;
 
+#if 0
 	pxv=0;
 	for(i=0; i<16; i++)
 	{
@@ -334,12 +426,82 @@ void TKRA_EncodeBlockUtx2(tkra_rastpixel *pix, u32 *blk)
 		mv&=0x7FFF;
 		nv&=0x7FFF;
 	}
-	
+#endif
+
+
+#if 1
+	if(isam)
+	{
+		pxv=0;
+		for(i=0; i<16; i++)
+		{
+			py=pxy[i];
+			pa=pxa[i];
+			if(py>acy)
+				pxv|=1<<(i*2+1);
+			if(pa>aca)
+				pxv|=1<<(i*2+0);
+		}
+
+		nv&=0x7BDE;
+		mv&=0x7BDE;
+
+		if(na&0x80)nv|=0x0400;
+		if(na&0x40)nv|=0x0020;
+		if(na&0x20)nv|=0x0001;
+
+		if(ma&0x80)mv|=0x0400;
+		if(ma&0x40)mv|=0x0020;
+		if(ma&0x20)mv|=0x0001;
+		mv|=0x8000;
+	}else
+	{
+		pxv=0;
+#if 0
+		for(i=0; i<16; i++)
+		{
+			py=pxy[i];
+			j=2+(((py-acy)*k)>>8);
+			if(j<0)j=0;
+			if(j>3)j=3;
+			pxv|=j<<(i*2);
+		}
+#endif
+
+#if 1
+		for(i=0; i<16; i+=4)
+		{
+			i0=pxy[i+0];	i1=pxy[i+1];
+			i2=pxy[i+2];	i3=pxy[i+3];
+			j0=(i0-acy)*k;	j1=(i1-acy)*k;
+			j2=(i2-acy)*k;	j3=(i3-acy)*k;
+			j0=2+(j0>>8);	j1=2+(j1>>8);
+			j2=2+(j2>>8);	j3=2+(j3>>8);
+			if(j0<0)j0=0;
+			if(j1<0)j1=0;
+			if(j2<0)j2=0;
+			if(j3<0)j3=0;
+			if(j0>3)j0=3;
+			if(j1>3)j1=3;
+			if(j2>3)j2=3;
+			if(j3>3)j3=3;
+			pxv|=	(j0<<(i*2+0))	|
+					(j1<<(i*2+2))	|
+					(j2<<(i*2+4))	|
+					(j3<<(i*2+6))	;
+		}
+#endif
+
+		mv&=0x7FFF;
+		nv&=0x7FFF;
+	}
+#endif
+
 	blk[1]=pxv;
 	blk[0]=(nv<<0)|(mv<<16);
 }
 
-void TKRA_EncodeImgMortUtx2(tkra_rastpixel *pix, u32 *blk, int shl)
+void TKRA_EncodeImgMortUtx2(tkra_rastpixel *pix, u32 *blk, int shl, int flag)
 {
 	tkra_rastpixel *cs;
 	u32 *ct;
@@ -356,7 +518,7 @@ void TKRA_EncodeImgMortUtx2(tkra_rastpixel *pix, u32 *blk, int shl)
 	cs=pix; ct=blk;
 	for(i=0; i<n; i++)
 	{
-		TKRA_EncodeBlockUtx2(cs, ct);
+		TKRA_EncodeBlockUtx2(cs, ct, flag);
 		cs+=16; ct+=2;
 	}
 }
@@ -364,8 +526,11 @@ void TKRA_EncodeImgMortUtx2(tkra_rastpixel *pix, u32 *blk, int shl)
 void TKRA_UpdateTexImg(TKRA_TexImage *img,
 	tkra_rastpixel *buf, int xs, int ys, int mip, int flag)
 {
-	int xshl, yshl, xsh1, ysh1, txfl, pix;
+	tkra_rastpixel *imbuf;
+	int xshl, yshl, xsh1, ysh1, txfl, pix, pixor;
 	int x, y, m, bsz;
+	int i0, i1, i2, i3;
+	int k0, k1, k2, k3;
 	int i, j, k;
 	
 	if(xs&(xs-1))
@@ -373,8 +538,15 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 	if(ys&(ys-1))
 		return;
 
-	xshl=tkra_log2dn(xs);
-	yshl=tkra_log2dn(ys);
+	if(xs!=ys)
+	{
+		xshl=tkra_log2dn(xs);
+		yshl=tkra_log2dn(ys);
+	}else
+	{
+		xshl=tkra_log2dn(xs);
+		yshl=xshl;
+	}
 
 	if(mip>0)
 	{
@@ -394,6 +566,7 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 
 		if(xshl==yshl)
 		{
+			pixor=0;
 			for(y=0; y<ys; y++)
 				for(x=0; x<xs; x++)
 			{
@@ -402,16 +575,23 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 				k=tkra_morton8(x, y)+img->tex_mipofs[mip];
 				pix=buf[j];
 				img->tex_img[k]=pix;
-				if(pix&0x8000)
-					txfl|=TKRA_TRFL_ALPHA;
+				pixor|=pix;
+//				if(pix&0x8000)
+//					txfl|=TKRA_TRFL_ALPHA;
 			}
+			
+			if(pixor&0x8000)
+				txfl|=TKRA_TRFL_ALPHA;
+
+			if(flag&TKRA_TRFL_NOALPHA)
+				txfl&=~TKRA_TRFL_ALPHA;
 
 			if(img->tex_img_bcn)
 			{
 				TKRA_EncodeImgMortUtx2(
 					img->tex_img+img->tex_mipofs[mip],
 					img->tex_img_bcn+img->tex_mipofs_bcn[mip],
-					xshl);
+					xshl, flag);
 			}
 		}else
 		{
@@ -535,18 +715,55 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 
 		txfl=img->tex_flag;
 
+		if(!img->tex_img)
+		{
+			printf("TKRA_UpdateTexImg: Dest Texture Image is NULL\n");
+			return;
+		}
+
 		if(xshl==yshl)
 		{
+			pixor=0;
+			imbuf=img->tex_img;
+#if 0
 			for(y=0; y<ys; y++)
 				for(x=0; x<xs; x++)
 			{
 				j=(y<<xshl)+x;
 				k=tkra_morton8(x, y);
 				pix=buf[j];
-				img->tex_img[k]=pix;
-				if(pix&0x8000)
-					txfl|=TKRA_TRFL_ALPHA;
+//				img->tex_img[k]=pix;
+				imbuf[k]=pix;
+				pixor|=pix;
+//				if(pix&0x8000)
+//					txfl|=TKRA_TRFL_ALPHA;
 			}
+#endif
+
+#if 1
+			for(y=0; y<ys; y++)
+				for(x=0; x<xs; x+=4)
+			{
+				j=(y<<xshl)+x;
+				k0=tkra_morton8(x+0, y);
+				k1=tkra_morton8(x+1, y);
+				k2=tkra_morton8(x+2, y);
+				k3=tkra_morton8(x+3, y);
+				i0=buf[j+0];	i1=buf[j+1];
+				i2=buf[j+2];	i3=buf[j+3];
+				imbuf[k0]=i0;	imbuf[k1]=i1;
+				imbuf[k2]=i2;	imbuf[k3]=i3;
+				pixor|=i0;
+				pixor|=i1;
+				pixor|=i2;
+				pixor|=i3;
+			}
+#endif
+
+			if(pixor&0x8000)
+				txfl|=TKRA_TRFL_ALPHA;
+			if(flag&TKRA_TRFL_NOALPHA)
+				txfl&=~TKRA_TRFL_ALPHA;
 
 #if 1
 			if(img->tex_img_bcn)
@@ -554,7 +771,7 @@ void TKRA_UpdateTexImg(TKRA_TexImage *img,
 				TKRA_EncodeImgMortUtx2(
 					img->tex_img+img->tex_mipofs[mip],
 					img->tex_img_bcn+img->tex_mipofs_bcn[mip],
-					xshl);
+					xshl, flag);
 			}
 #endif
 		}else
@@ -1063,6 +1280,11 @@ int TKRA_AllocTexnum(TKRA_Context *ctx)
 
 int TKRA_BindTexImg(TKRA_Context *ctx, TKRA_TexImage *img)
 {
+	if(!img)
+		return(-1);
+	if((((long)img)>>60)!=0)
+		return(-1);
+
 	ctx->tex_cur=img;
 //	ctx->tex_img=img->tex_img;
 //	ctx->tex_img_bcn=img->tex_img_bcn;
@@ -1088,5 +1310,31 @@ int TKRA_BindTexImg(TKRA_Context *ctx, TKRA_TexImage *img)
 int TKRA_SetupForState(TKRA_Context *ctx)
 {
 	TKRA_SetupDrawEdgeForState(ctx);
+	return(0);
+}
+
+
+int TKRA_BindTexImg2(TKRA_Context *ctx, TKRA_TexImage *img)
+{
+	if(!img)
+		return(-1);
+	if((((long)img)>>60)!=0)
+		return(-1);
+
+	ctx->tex_cur2=img;
+	ctx->tex_xshl2=img->tex_xshl;
+	ctx->tex_yshl2=img->tex_yshl;
+	ctx->tex_mmip2=img->tex_mmip;
+	ctx->tex_nmip2=img->tex_nmip;
+	ctx->tex_flag2=img->tex_flag;
+
+	ctx->tex_img2=NULL;
+	ctx->tex_img_bcn2=NULL;
+
+//	ctx->span_trifl=-1;
+//	ctx->span_tex_cur=NULL;
+
+	TKRA_SetupForState(ctx);
+	
 	return(0);
 }

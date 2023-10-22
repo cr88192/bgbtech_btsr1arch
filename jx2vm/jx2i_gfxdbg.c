@@ -61,6 +61,7 @@ int BJX2_DebugConClear(BJX2_Context *ctx)
 
 	bjx2_dbgcon_cx=0;
 	bjx2_dbgcon_cy=0;
+	return(0);
 }
 
 int BJX2_DebugConPutc(BJX2_Context *ctx, int ch)
@@ -170,7 +171,7 @@ int BJX2_GfxDebugPrintHexdump(BJX2_Context *ctx, bjx2_addr pc, int sz)
 		memcpy(tba+8, &v1, 8);
 		
 		t=tb;
-		sprintf(t, "%08X  ", (pc+i*16)&0xFFFFFFFF);
+		sprintf(t, "%08llX  ", (pc+i*16)&0xFFFFFFFF);
 		t+=strlen(t);
 
 		for(j=0; j<16; j++)
@@ -591,10 +592,12 @@ int BJX2_GfxDebugAddKey(BJX2_Context *ctx, int key)
 		BJX2_DebugConPrintf(ctx, "$  \b");
 		bjx2_dbgcon_cmdpos=0;
 	}
+	return(0);
 }
 
 int BJX2_GfxDebugRefresh(BJX2_Context *ctx)
 {
+	return(0);
 }
 
 int BJX2_GfxDebugActivate(BJX2_Context *ctx)

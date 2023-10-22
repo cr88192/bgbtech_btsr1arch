@@ -2408,8 +2408,9 @@ int main(int argc, char **argv, char **env)
 	int mic_clk, mic_clk_l;
 	uint64_t rvq, rvq1, mic_clk_cnt;
 	uint64_t tot_cnt_led, tot_cnt_led_nostall, tot_cnt_exwidth;
-	uint64_t rt_ms;
+	uint64_t rt_ms, cnt_clk_cpu, cnt_clk_100;
 	u32	rcp_mhz_24;
+	int 	dbg_cpu_lclk, dbg_cpu_clk;
 	
 	int stat_reason_cnt[8];
 	char *stat_reason_name[8];
@@ -2418,6 +2419,7 @@ int main(int argc, char **argv, char **env)
 	double stat_inst_bdl, stat_bdl_clk, stat_mips, clk_ratio;
 	double stat_mips_avg, stat_mips_avg_lo, stat_mips_avg_hi,
 		stat_mips_min, stat_mips_max, stat_mips_tavg;
+	double f, g;
 	int stat_mips_avg_cnt, stat_mips_avg_cnt_lo, stat_mips_avg_cnt_hi;
 	int t0, t1, t2;
 	int i, j, k;
@@ -2574,6 +2576,8 @@ int main(int argc, char **argv, char **env)
 	tot_cnt_led=0;
 	tot_cnt_led_nostall=0;
 	tot_cnt_exwidth=0;
+	cnt_clk_cpu=0;
+	cnt_clk_100=0;
 	rt_ms=0;
 
 	stat_mips_avg=0;
@@ -2817,9 +2821,11 @@ int main(int argc, char **argv, char **env)
 //				(uint32_t *)btesh2_gfxcon_framebuf, 800,
 //				2*8, 600-48, rvq, 12, 0xFFFFFF80, 0xFF008000);
 
+			f=(100.0*cnt_clk_cpu+1.0)/(cnt_clk_100+1.0);
+
 			stat_inst_bdl=(tot_cnt_exwidth+1.0)/(tot_cnt_led+1.0);
 			stat_bdl_clk=(tot_cnt_led_nostall+1.0)/(tot_cnt_led+1.0);
-			stat_mips=stat_inst_bdl*stat_bdl_clk*50;
+			stat_mips=stat_inst_bdl*stat_bdl_clk*f;
 			clk_ratio=(1000.0*rt_ms)/(mic_clk_cnt+1);
 
 			sprintf(tb, "%06d.%06d %.3f b/c",
@@ -3004,6 +3010,8 @@ int main(int argc, char **argv, char **env)
 //		top->clock_75 = ((main_time*96)>>9)&1;
 		top->clock_50  = (main_time>>3)&1;
 		ctx->tot_cyc=main_time>>3;
+
+		cnt_clk_100 = main_time>>3;
 #else
 
 #ifdef CLOCK_200MHZ
@@ -3014,6 +3022,8 @@ int main(int argc, char **argv, char **env)
 		top->clock_75 = ((main_time*96)>>8)&1;
 		top->clock_50  = (main_time>>2)&1;
 		ctx->tot_cyc=main_time>>2;
+
+		cnt_clk_100 = main_time>>2;
 
 // #ifdef CLOCK_200_AS_133
 //		top->clock_200 = ((main_time*170)>>8)&1;
@@ -3032,8 +3042,18 @@ int main(int argc, char **argv, char **env)
 		top->clock_75  = (main_time>>1)&1;
 		top->clock_50  = (main_time>>1)&1;
 		ctx->tot_cyc=main_time>>1;
+
+		cnt_clk_100 = main_time>>1;
 #endif
 #endif
+
+		dbg_cpu_clk = top->dbgClkOut&1;
+		if(dbg_cpu_clk && !dbg_cpu_lclk)
+		{
+			cnt_clk_cpu++;
+		}
+		dbg_cpu_lclk = dbg_cpu_clk;
+
 		main_time++;
 		top->sdc_dat_i=sdc_cbit;
 		

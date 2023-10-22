@@ -414,6 +414,22 @@ begin
 		end
 `endif
 
+		JX2_UCIX_CONV_BSWAPL: begin
+			tRegOutVal = {
+				32'h00,
+				regValRs[ 7: 0], regValRs[15: 8],
+				regValRs[23:16], regValRs[31:24]
+			};
+		end
+		JX2_UCIX_CONV_BSWAPQ: begin
+			tRegOutVal = {
+				regValRs[ 7: 0], regValRs[15: 8],
+				regValRs[23:16], regValRs[31:24],
+				regValRs[39:32], regValRs[47:40],
+				regValRs[55:48], regValRs[63:56]
+			};
+		end
+
 `ifndef jx2_do_convfp16_alu
 
 `ifdef jx2_enable_convrgb32f

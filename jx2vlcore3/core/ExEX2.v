@@ -81,6 +81,8 @@ module ExEX2(
 	regBlintRes,	//ALU Result (ALUB)
 	regQMulRes,		//QMUL/QDIV Result
 
+	exDelayIn,
+
 	regFpuGRn,		//FPU GPR Result
 	regFpuLdGRn,		//FPU GPR Result
 	regFpuSrT,
@@ -146,6 +148,9 @@ input[65:0]		regValAluResB;	//ALU Result (ALUB)
 
 input[63:0]		regBlintRes;	//BLINT Result
 input[63:0]		regQMulRes;		//QMUL / QDIV Result
+
+input[63:0]		exDelayIn;
+
 
 input[63:0]		regFpuGRn;		//FPU GPR Result
 input[63:0]		regFpuLdGRn;	//FPU GPR Result (Mem Load)
@@ -316,6 +321,16 @@ begin
 					tRegValRn2	= regValKrreRes[63:0];
 				end
 `endif
+
+				JX2_UCIX_IXT_CPUID: begin
+					tValOutDfl		= exDelayIn;
+					tDoOutDfl		= 1;
+				end
+
+				JX2_UCIX_IXT_VSKG: begin
+					tValOutDfl		= exDelayIn;
+					tDoOutDfl		= 1;
+				end
 				
 				default: begin
 				end
@@ -323,6 +338,12 @@ begin
 		end
 		
 		JX2_UCMD_MOV_IR: begin
+`ifdef def_true
+//			tRegIdRn2		= regIdRm;			//
+//			tRegValRn2		= exDelayIn;
+			tValOutDfl		= exDelayIn;
+			tDoOutDfl		= 1;
+`endif
 		end
 	
 		JX2_UCMD_LEA_MR: begin
@@ -436,6 +457,11 @@ begin
 		JX2_UCMD_JCMP: begin
 		end
 `endif
+
+`ifdef jx2_alu_jcmpz
+		JX2_UCMD_JCMPZ: begin
+		end
+`endif
 		
 		JX2_UCMD_MULW3: begin
 //			tRegIdRn2	= regIdRm;			//
@@ -445,6 +471,10 @@ begin
 		end
 		
 		JX2_UCMD_SHAD3: begin
+`ifdef jx2_cpu_shad_ex2
+			tValOutDfl		= exDelayIn;
+			tDoOutDfl		= 1;
+`endif
 		end
 `ifndef jx2_merge_shadq
 		JX2_UCMD_SHLD3: begin
@@ -475,6 +505,10 @@ begin
 `endif
 
 		JX2_UCMD_CONV_RR: begin
+`ifdef jx2_cpu_conv_ex2
+			tValOutDfl		= exDelayIn;
+			tDoOutDfl		= 1;
+`endif
 		end
 		
 		JX2_UCMD_MOV_RC: begin

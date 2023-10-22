@@ -72,6 +72,11 @@ input[3:0]		regExOp;
 output[1:0]		regExOK;
 input[7:0]		regRMode;
 
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
 reg[63:0]		tRegValRo2;
 reg[1:0]		tRegExOK2;
 
@@ -445,8 +450,8 @@ begin
 	tRegValRo2	<= tRegValRo;
 	tRegExOK2	<= tRegExOK;
 
-//	if(!exHold && tExEn1)
-	if(!exHold)
+//	if(exHoldN && tExEn1)
+	if(exHoldN)
 	begin
 		if(tFraUseA)
 		begin

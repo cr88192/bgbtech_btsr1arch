@@ -699,6 +699,138 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 				op->Run=BJX2_Op_XLEAB_LdRegDispReg;
 			}
 			break;
+
+		case 0x4:	/* F2n4_Egdd */
+		case 0x5:	/* F2n5_Egdd */
+			op->rn=rn_dfl;
+			op->rm=BJX2_REG_ZZR;
+
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
+
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BREQ;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BREQ_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BREQL;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BREQL_RegRegPcDisp;
+			}
+			break;
+
+		case 0x6:	/* F2n6_Egdd */
+		case 0x7:	/* F2n7_Egdd */
+			op->rn=rn_dfl;
+			op->rm=BJX2_REG_ZZR;
+
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
+
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BRNE;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRNE_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BRNEL;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRNEL_RegRegPcDisp;
+			}
+			break;
+
+		case 0x8:	/* F2n8_Egdd */
+		case 0x9:	/* F2n9_Egdd */
+			op->rn=rn_dfl;
+			op->rm=BJX2_REG_ZZR;
+
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
+
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BRLT;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRLT_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BRLTL;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRLTL_RegRegPcDisp;
+			}
+			break;
+
+		case 0xA:	/* F2nA_Egdd */
+		case 0xB:	/* F2nB_Egdd */
+			op->rn=rn_dfl;
+			op->rm=BJX2_REG_ZZR;
+
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
+
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BRGE;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRGE_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BRGEL;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRGEL_RegRegPcDisp;
+			}
+			break;
+
+		case 0xC:	/* F2nC_Egdd */
+		case 0xD:	/* F2nD_Egdd */
+			op->rn=rn_dfl;
+			op->rm=BJX2_REG_ZZR;
+
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
+
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BRLE;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRLE_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BRLEL;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRLEL_RegRegPcDisp;
+			}
+			break;
+
+		case 0xE:	/* F2nE_Egdd */
+		case 0xF:	/* F2nF_Egdd */
+			op->rn=rn_dfl;
+			op->rm=BJX2_REG_ZZR;
+
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
+
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BRGT;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRGT_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BRGTL;
+				op->fmid=BJX2_FMID_REGPCDISP;
+				op->Run=BJX2_Op_BRGTL_RegRegPcDisp;
+			}
+			break;
 		}
 		break;
 

@@ -476,13 +476,17 @@ int main(int argc, char **argv, char **env)
 		top->clock = (main_time>>0)&1;
 		main_time++;
 
-		top->dcInAddr=0;
+		top->dcInAddr[0]=0;
+		top->dcInAddr[1]=0;
+		top->dcInAddr[2]=0;
 		top->dcInOpm=0;
 		top->icInPcWxe=1;
 
 //		addr=0xC000|(n*2);
 		addr=0x0000|(n*2);
-		top->icInPcAddr=addr;
+		top->icInPcAddr[0]=addr;
+		top->icInPcAddr[1]=0;
+		top->icInPcAddr[2]=0;
 //		top->icRegInOpm=0xA;
 //		top->icRegInData=rand();
 
@@ -644,13 +648,17 @@ int main(int argc, char **argv, char **env)
 		top->clock = (main_time>>0)&1;
 		main_time++;
 
-		top->dcInAddr=0;
+		top->dcInAddr[0]=0;
+		top->dcInAddr[1]=0;
+		top->dcInAddr[2]=0;
 		top->dcInOpm=0;
 
 		n1=(n^(n>>8))&1023;
 
 		addr=0x0000|(n1*2);
-		top->icInPcAddr=addr;
+		top->icInPcAddr[0]=0;
+		top->icInPcAddr[1]=0;
+		top->icInPcAddr[2]=0;
 
 //		if(top->clock)
 			MemUpdateForBus();
@@ -780,7 +788,9 @@ int main(int argc, char **argv, char **env)
 
 //		addr=0xC000|(n*4);
 		addr=0x01000000|(n*4);
-		top->dcInAddr=addr;
+		top->dcInAddr[0]=addr;
+		top->dcInAddr[1]=0;
+		top->dcInAddr[2]=0;
 		top->dcInOpm=0x12;
 		top->dcInVal=membuf[n];
 		top->dcInHold=0;
@@ -896,7 +906,9 @@ int main(int argc, char **argv, char **env)
 
 //		addr=0xC000|(n*4);
 		addr=0x01000000|(n*4);
-		top->dcInAddr=addr;
+		top->dcInAddr[0]=addr;
+		top->dcInAddr[1]=0;
+		top->dcInAddr[2]=0;
 		top->dcInOpm=0x0A;
 		top->dcInHold=0;
 //		top->dcInVal=membuf[n];
@@ -1002,7 +1014,9 @@ int main(int argc, char **argv, char **env)
 
 //		addr=0xC000|(n*4);
 		addr=0x01000000|(n*8);
-		top->dcInAddr=addr;
+		top->dcInAddr[0]=addr;
+		top->dcInAddr[1]=0;
+		top->dcInAddr[2]=0;
 		top->dcInOpm=0x0F;
 		top->dcInHold=0;
 //		top->dcInVal=membuf[n];
@@ -1134,7 +1148,9 @@ int main(int argc, char **argv, char **env)
 		}
 
 		addr=0xF0000000|(n*4);
-		top->dcInAddr=addr;
+		top->dcInAddr[0]=addr;
+		top->dcInAddr[1]=0;
+		top->dcInAddr[2]=0;
 		top->dcInOpm=0x12;
 		top->dcInHold=0;
 		top->dcInVal=membuf[n];
@@ -1216,7 +1232,9 @@ int main(int argc, char **argv, char **env)
 
 //		addr=0xC000|(n*4);
 		addr=0xF0000000|(n*4);
-		top->dcInAddr=addr;
+		top->dcInAddr[0]=addr;
+		top->dcInAddr[1]=0;
+		top->dcInAddr[2]=0;
 		top->dcInOpm=0x0A;
 		top->dcInHold=0;
 //		top->dcInVal=membuf[n];

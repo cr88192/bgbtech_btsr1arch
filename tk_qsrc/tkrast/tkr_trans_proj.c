@@ -227,7 +227,7 @@ void TKRA_FinalProjectVertex(
 	tkra_trivertex *iv,
 	tkra_vec4f	v0p)
 {
-	TKRA_TexImage *img;
+	TKRA_TexImage *img, *img2;
 	float xbi, ybi, s, t;
 	int txs, tys;
 	int i0, i1, i2;
@@ -237,6 +237,7 @@ void TKRA_FinalProjectVertex(
 //	ybi=0.5;
 
 	img=ctx->tex_cur;
+	img2=ctx->tex_cur2;
 	txs=1<<img->tex_xshl;
 	tys=1<<img->tex_yshl;
 
@@ -267,6 +268,17 @@ void TKRA_FinalProjectVertex(
 			&(pv0->s), 16+img->tex_xshl, iv->st);
 		pv0->s+=32768;
 		pv0->t-=65536;
+
+//		if(1)
+//		if(ctx->blend_sfunc2|ctx->blend_dfunc2)
+		if(ctx->tex_cur2)
+		{
+			TKRA_FinalProjectVertex_Vec2Float2Fixed32pN(
+				&(pv0->s2), 16+img2->tex_xshl, iv->st2);
+//			pv0->s2+=32768;
+//			pv0->t2-=65536;
+//			pv0->t2+=32768;
+		}
 	}else
 	{
 		s=tkra_v2f_x(iv->st);
@@ -275,6 +287,18 @@ void TKRA_FinalProjectVertex(
 			s, 16+img->tex_xshl)+32767;
 		pv0->t=TKRA_FinalProjectVertex_Float2Fixed32pN(
 			t, 16+img->tex_yshl)-65535;
+
+//		if(1)
+//		if(ctx->blend_sfunc2|ctx->blend_dfunc2)
+		if(ctx->tex_cur2)
+		{
+			s=tkra_v2f_x(iv->st2);
+			t=tkra_v2f_y(iv->st2);
+			pv0->s2=TKRA_FinalProjectVertex_Float2Fixed32pN(
+				s, 16+img2->tex_xshl);
+			pv0->t2=TKRA_FinalProjectVertex_Float2Fixed32pN(
+				t, 16+img2->tex_yshl);
+		}
 	}
 #else
 	s=tkra_v2f_x(iv->st);
@@ -283,6 +307,18 @@ void TKRA_FinalProjectVertex(
 		s, 16+img->tex_xshl)+32767;
 	pv0->t=TKRA_FinalProjectVertex_Float2Fixed32pN(
 		t, 16+img->tex_yshl)-65535;
+
+//	if(1)
+//	if(ctx->blend_sfunc2|ctx->blend_dfunc2)
+	if(ctx->tex_cur2)
+	{
+		s=tkra_v2f_x(iv->st2);
+		t=tkra_v2f_y(iv->st2);
+		pv0->s2=TKRA_FinalProjectVertex_Float2Fixed32pN(
+			s, 16+img2->tex_xshl);
+		pv0->t2=TKRA_FinalProjectVertex_Float2Fixed32pN(
+			t, 16+img2->tex_yshl);
+	}
 #endif
 
 	pv0->rgb=iv->rgb;
@@ -427,6 +463,7 @@ void TKRA_TransformCalcMidpointVertex(
 
 	rv3->xyz=tkra_v4f_midpoint (rv0->xyz, rv1->xyz);
 	rv3->st =tkra_v2f_midpoint (rv0->st , rv1->st );
+	rv3->st2=tkra_v2f_midpoint (rv0->st2, rv1->st2);
 	rv3->rgb=tkra_rgba_midpoint(rv0->rgb, rv1->rgb);
 
 //	if((ctx->tkgl_usepgm_vtx<=0) &&
@@ -500,17 +537,37 @@ int TKRA_TransformProjectTriangle(
 	int				i0, i1, i2, tfl;
 	int				ecfl, lim;
 	byte			wasfrag, nosubdiv, nopersp;
-	
+
+	if((((long)ctx->tex_cur)>>60)!=0)
+	{
+		__debugbreak();
+		printf("TKRA_TransformProjectTriangle: Bad texture A %016llX\n",
+			(long)ctx->tex_cur);
+		return(-1);
+	}
+
 	TKRA_SetupDrawBlend(ctx);
 	
 	tfl=0;
 
 	if((iv0.rgb&iv1.rgb&iv2.rgb&0xF0000000)!=0xF0000000)
 		tfl|=1;
-	
+
+#if 0
+	if((((long)ctx->tex_cur)>>60)!=0)
+	{
+		printf("TKRA_TransformProjectTriangle: Bad texture B %016llX\n",
+			(long)ctx->tex_cur);
+		return(-1);
+	}
+#endif
+
 //	ctx->triflag=tfl;
 	TKRA_SetupDrawEdgeForTriFlag(ctx, tfl);
 	tfl=ctx->triflag;
+
+	if(!ctx->tex_cur)
+		return(-1);
 
 
 	v0=iv0;	v1=iv1;	v2=iv2;
@@ -1201,7 +1258,14 @@ int TKRA_TransformProjectQuad(
 	byte			wasfrag, nosubdiv, isinit, inosubdiv, nopersp;
 	
 //	return(0);
-	
+
+	if((((long)ctx->tex_cur)>>60)!=0)
+	{
+		printf("TKRA_TransformProjectQuad: Bad texture A %016llX\n",
+			(long)ctx->tex_cur);
+		return(-1);
+	}
+
 	TKRA_SetupDrawBlend(ctx);
 
 	v0stk=ctx->v0stk;
@@ -1219,14 +1283,35 @@ int TKRA_TransformProjectQuad(
 //	v0stk[0].fl=0;	v1stk[0].fl=0;
 //	v2stk[0].fl=0;	v3stk[0].fl=0;
 
+#if 0
+	if((((long)ctx->tex_cur)>>60)!=0)
+	{
+		printf("TKRA_TransformProjectQuad: Bad texture B %016llX\n",
+			(long)ctx->tex_cur);
+		return(-1);
+	}
+#endif
+
 	tfl=0;
 
 	if((iv0.rgb&iv1.rgb&iv2.rgb&iv3.rgb&0xF0000000)!=0xF0000000)
 		tfl|=1;
-	
+
+#if 0
+	if((((long)ctx->tex_cur)>>60)!=0)
+	{
+		printf("TKRA_TransformProjectQuad: Bad texture C %016llX\n",
+			(long)ctx->tex_cur);
+		return(-1);
+	}
+#endif
+
 //	ctx->triflag=tfl;
 	TKRA_SetupDrawEdgeForTriFlag(ctx, tfl);
 	tfl=ctx->triflag;
+
+	if(!ctx->tex_cur)
+		return(-1);
 	
 //	if(tfl&TKRA_TRFL_NOCMOD)
 //	{

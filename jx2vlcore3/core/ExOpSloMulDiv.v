@@ -84,6 +84,20 @@ reg[63:0]		tNxtValAR;
 reg[63:0]		tValRsubD;
 reg				tValRsubDc;
 
+reg[16:0]		tValRsubD_Cs0p0;
+reg[16:0]		tValRsubD_Cs0p1;
+reg[16:0]		tValRsubD_Cs1p0;
+reg[16:0]		tValRsubD_Cs1p1;
+reg[16:0]		tValRsubD_Cs2p0;
+reg[16:0]		tValRsubD_Cs2p1;
+reg[16:0]		tValRsubD_Cs3p0;
+reg[16:0]		tValRsubD_Cs3p1;
+reg				tValRsubD_Sel0;
+reg				tValRsubD_Sel1;
+reg				tValRsubD_Sel2;
+reg				tValRsubD_Sel3;
+reg				tValRsubD_Sel4;
+
 reg[63:0]		tValAddD;
 reg[63:0]		tNxtValAddD;
 reg				tValAddDc;
@@ -132,10 +146,34 @@ begin
 
 //	tValRsubD	= tNxtValR[63:0] + tValAddD;
 //	tValRsubD	= tNxtValR[63:0] + tValAddD + { 63'h0, tValAddDc };
-	{ tValRsubDc, tValRsubD }	=
-		{  1'b0, tNxtValR[63:0] } +
-		{  1'b0, tValAddD } +
-		{ 64'h0, tValAddDc };
+
+//	{ tValRsubDc, tValRsubD }	=
+//		{  1'b0, tNxtValR[63:0] } +
+//		{  1'b0, tValAddD } +
+//		{ 64'h0, tValAddDc };
+
+	tValRsubD_Cs0p0 = { 1'b0, tNxtValR[15: 0] } + { 1'b0, tValAddD[15: 0] } + 0;
+	tValRsubD_Cs0p1 = { 1'b0, tNxtValR[15: 0] } + { 1'b0, tValAddD[15: 0] } + 1;
+	tValRsubD_Cs1p0 = { 1'b0, tNxtValR[31:16] } + { 1'b0, tValAddD[31:16] } + 0;
+	tValRsubD_Cs1p1 = { 1'b0, tNxtValR[31:16] } + { 1'b0, tValAddD[31:16] } + 1;
+	tValRsubD_Cs2p0 = { 1'b0, tNxtValR[47:32] } + { 1'b0, tValAddD[47:32] } + 0;
+	tValRsubD_Cs2p1 = { 1'b0, tNxtValR[47:32] } + { 1'b0, tValAddD[47:32] } + 1;
+	tValRsubD_Cs3p0 = { 1'b0, tNxtValR[63:48] } + { 1'b0, tValAddD[63:48] } + 0;
+	tValRsubD_Cs3p1 = { 1'b0, tNxtValR[63:48] } + { 1'b0, tValAddD[63:48] } + 1;
+
+	tValRsubD_Sel0 = tValAddDc;
+	tValRsubD_Sel1 = tValRsubD_Sel0 ? tValRsubD_Cs0p1[16] : tValRsubD_Cs0p0[16];
+	tValRsubD_Sel2 = tValRsubD_Sel1 ? tValRsubD_Cs1p1[16] : tValRsubD_Cs1p0[16];
+	tValRsubD_Sel3 = tValRsubD_Sel2 ? tValRsubD_Cs2p1[16] : tValRsubD_Cs2p0[16];
+	tValRsubD_Sel4 = tValRsubD_Sel3 ? tValRsubD_Cs3p1[16] : tValRsubD_Cs3p0[16];
+
+	tValRsubD	= {
+		tValRsubD_Sel3 ? tValRsubD_Cs3p1[15:0] : tValRsubD_Cs3p0[15:0],
+		tValRsubD_Sel2 ? tValRsubD_Cs2p1[15:0] : tValRsubD_Cs2p0[15:0],
+		tValRsubD_Sel1 ? tValRsubD_Cs1p1[15:0] : tValRsubD_Cs1p0[15:0],
+		tValRsubD_Sel0 ? tValRsubD_Cs0p1[15:0] : tValRsubD_Cs0p0[15:0]
+		};
+	tValRsubDc	= tValRsubD_Sel4;
 
 //	if(tValRsubDc && !tNxtValOp[2])
 //		tValC1 = 1;

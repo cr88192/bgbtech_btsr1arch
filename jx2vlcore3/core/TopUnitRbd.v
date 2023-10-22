@@ -360,6 +360,7 @@ assign		ddrModeIn = 1;
 
 wire[7:0]	hbrPwmOut;
 wire[1:0]	dbgExWidth;
+wire		dbgClkOut;
 
 
 assign		hbrPins = hbrPwmOut;
@@ -429,7 +430,8 @@ CoreUnit core(
 	usb_clkdat_d,
 	usb_clkref,
 	
-	hbrPwmOut
+	hbrPwmOut,
+	dbgClkOut
 	);
 
 // defparam	core.ddr.DDR_IS_DDR3 = 1;

@@ -54,7 +54,8 @@
 
 
 module ModTxtNtW(clock, reset,
-	clock_100,
+	clock_100,	clock_rbi,
+
 	pwmOut,
 	busInData, busOutData, busAddr, busOpm, busOK,
 	timerNoise, timer256Hz,
@@ -72,6 +73,7 @@ module ModTxtNtW(clock, reset,
 input clock;
 input reset;
 input clock_100;
+input clock_rbi;
 
 output[16:0] 	pwmOut;
 input[31:0]		busAddr;
@@ -207,6 +209,7 @@ assign		vmemDataIn	= memDataIn;
 
 RbiMemVramA		fbmem(
 	clock,			reset,
+	clock_rbi,
 
 	busAddr,		busOpm,
 	fbusOutData,	busInData,
@@ -259,7 +262,8 @@ assign		memAddrOut		= ememAddrOut;
 assign		memDataOut		= ememDataOut;
 
 RbiMemEwDs	edsmem(
-	clock,		reset,
+//	clock,		reset,
+	clock_rbi,	reset,
 
 	edsDataInLo,	edsDataInHi,
 	edsDataOutLo,	edsDataOutHi,

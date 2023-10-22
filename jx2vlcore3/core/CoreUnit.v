@@ -236,7 +236,8 @@ module CoreUnit(
 	usb_clkdat_d,
 	usb_clkref,
 	
-	hbr_pwmout
+	hbr_pwmout,
+	dbgClkOut
 	);
 
 input			clock_300;
@@ -355,19 +356,36 @@ output[1:0]		usb_clkref;
 output[7:0]		hbr_pwmout;
 
 output[1:0]		dbgExWidth;
+output			dbgClkOut;
 
 reg[7:0]		tSegOutCharBit;
 reg[7:0]		tSegOutSegBit;
 assign	seg_outCharBit = tSegOutCharBit;
 assign	seg_outSegBit = tSegOutSegBit;
 
+reg				tDbgExHold1C;
+reg				tDbgExHold2C;
 reg				tDbgExHold1B;
 reg				tDbgExHold2B;
 reg				tDbgExHold1;
 reg				tDbgExHold2;
-assign	dbg_exHold1 = tDbgExHold1B;
-assign	dbg_exHold2 = tDbgExHold2B;
+assign	dbg_exHold1 = tDbgExHold1C;
+assign	dbg_exHold2 = tDbgExHold2C;
 
+
+reg				tDbgOutStatus1C;
+reg				tDbgOutStatus2C;
+reg				tDbgOutStatus3C;
+reg				tDbgOutStatus4C;
+reg				tDbgOutStatus5C;
+reg				tDbgOutStatus6C;
+reg				tDbgOutStatus7C;
+reg				tDbgOutStatus8C;
+
+reg				tDbgOutStatus9C;
+reg				tDbgOutStatus10C;
+reg				tDbgOutStatus11C;
+reg				tDbgOutStatus12C;
 
 reg				tDbgOutStatus1B;
 reg				tDbgOutStatus2B;
@@ -396,32 +414,32 @@ reg				tDbgOutStatus10;
 reg				tDbgOutStatus11;
 reg				tDbgOutStatus12;
 
-assign	dbg_outStatus1 = tDbgOutStatus1B;
-assign	dbg_outStatus2 = tDbgOutStatus2B;
-assign	dbg_outStatus3 = tDbgOutStatus3B;
-assign	dbg_outStatus4 = tDbgOutStatus4B;
-assign	dbg_outStatus5 = tDbgOutStatus5B;
-assign	dbg_outStatus6 = tDbgOutStatus6B;
-assign	dbg_outStatus7 = tDbgOutStatus7B;
-assign	dbg_outStatus8 = tDbgOutStatus8B;
+assign	dbg_outStatus1 = tDbgOutStatus1C;
+assign	dbg_outStatus2 = tDbgOutStatus2C;
+assign	dbg_outStatus3 = tDbgOutStatus3C;
+assign	dbg_outStatus4 = tDbgOutStatus4C;
+assign	dbg_outStatus5 = tDbgOutStatus5C;
+assign	dbg_outStatus6 = tDbgOutStatus6C;
+assign	dbg_outStatus7 = tDbgOutStatus7C;
+assign	dbg_outStatus8 = tDbgOutStatus8C;
 
-assign	dbg_outStatus9 = tDbgOutStatus9B;
-assign	dbg_outStatus10 = tDbgOutStatus10B;
-assign	dbg_outStatus11 = tDbgOutStatus11B;
-assign	dbg_outStatus12 = tDbgOutStatus12B;
+assign	dbg_outStatus9 = tDbgOutStatus9C;
+assign	dbg_outStatus10 = tDbgOutStatus10C;
+assign	dbg_outStatus11 = tDbgOutStatus11C;
+assign	dbg_outStatus12 = tDbgOutStatus12C;
 
 wire[9:0]		tDbgLeds;
 assign tDbgLeds = {
-	tDbgOutStatus8B,
-	tDbgOutStatus7B,
-	tDbgOutStatus6B,
-	tDbgOutStatus5B,
-	tDbgOutStatus4B,
-	tDbgOutStatus3B,
-	tDbgOutStatus2B,
-	tDbgOutStatus1B,
-	tDbgExHold2B,
-	tDbgExHold1B
+	tDbgOutStatus8C,
+	tDbgOutStatus7C,
+	tDbgOutStatus6C,
+	tDbgOutStatus5C,
+	tDbgOutStatus4C,
+	tDbgOutStatus3C,
+	tDbgOutStatus2C,
+	tDbgOutStatus1C,
+	tDbgExHold2C,
+	tDbgExHold1C
 	};
 
 // assign			ps2kb_clk_o	= 1'bz;
@@ -511,6 +529,9 @@ assign		clock_cpu	= clock_100;
 assign		reset2_cpu	= reset_100;
 `endif
 `endif
+
+assign		dbgClkOut = clock_cpu;
+
 
 `ifdef jx2_cpu_mmioclock_75
 assign		clock_mmio		= clock_75;
@@ -1417,7 +1438,8 @@ assign		scrnNodeId	= 8'h88;
 ModTxtNtW	scrn(
 //	clock_100,		reset2_100,
 	clock_mmio,		reset2_mmio,
-	clock_100,
+	clock_100,		clock_master,
+
 	scrnPwmOut,
 
 	mmioOutDataQ,	scrnMmioOutData,	mmioAddr,
@@ -1496,7 +1518,8 @@ wire[127:0]		fmCellData;
 `ifdef jx2_audio_fmaumem
 
 RbiMemAuMix		fmMemAuMix(
-	clock_mmio,		reset2_mmio,
+//	clock_mmio,		reset2_mmio,
+	clock_master,	reset2_master,
 	fmCellIdx,		fmCellData,
 	ammiAddrIn,		ammiAddrOut,
 	ammiDataIn,		ammiDataOut,
@@ -2034,6 +2057,9 @@ begin
 	tDbgExHold1B		<= tDbgExHold1;
 	tDbgExHold2B		<= tDbgExHold2;
 
+	tDbgExHold1C		<= tDbgExHold1B;
+	tDbgExHold2C		<= tDbgExHold2B;
+
 	tDbgOutStatus1B		<= tDbgOutStatus1;
 	tDbgOutStatus2B		<= tDbgOutStatus2;
 	tDbgOutStatus3B		<= tDbgOutStatus3;
@@ -2048,6 +2074,21 @@ begin
 	tDbgOutStatus10B	<= tDbgOutStatus10;
 	tDbgOutStatus11B	<= tDbgOutStatus11;
 	tDbgOutStatus12B	<= tDbgOutStatus12;
+
+	tDbgOutStatus1C		<= tDbgOutStatus1B;
+	tDbgOutStatus2C		<= tDbgOutStatus2B;
+	tDbgOutStatus3C		<= tDbgOutStatus3B;
+	tDbgOutStatus4C		<= tDbgOutStatus4B;
+
+	tDbgOutStatus5C		<= tDbgOutStatus5B;
+	tDbgOutStatus6C		<= tDbgOutStatus6B;
+	tDbgOutStatus7C		<= tDbgOutStatus7B;
+	tDbgOutStatus8C		<= tDbgOutStatus8B;
+
+	tDbgOutStatus9C		<= tDbgOutStatus9B;
+	tDbgOutStatus10C	<= tDbgOutStatus10B;
+	tDbgOutStatus11C	<= tDbgOutStatus11B;
+	tDbgOutStatus12C	<= tDbgOutStatus12B;
 
 	tSegOutCharBit		<= ssOutCharBit;
 	tSegOutSegBit		<= ssOutSegBit;

@@ -159,6 +159,11 @@ output[8:0]		regOutSrST;
 input[7:0]		regInCarryD;
 output			regOutJcmpT;
 
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
 wire			regInSrT;
 wire			regInSrS;
 assign		regInSrT = regInSrST[0];
@@ -1894,31 +1899,31 @@ begin
 `ifdef jx2_do_convfp16_alu
 
 `ifdef jx2_enable_convrgb32f
-		JX2_UCIX_CONV_RGB32PCK64FU: begin
+		JX2_UCIX_CONV2_RGB32PCK64FU: begin
 			tRegConvVal = { UV32_00, tRegRgb32Pck64F };
 		end
-		JX2_UCIX_CONV_RGB32PCK64FS: begin
+		JX2_UCIX_CONV2_RGB32PCK64FS: begin
 			tRegConvVal = { UV32_00, tRegRgb32Pck64F };
 		end
-		JX2_UCIX_CONV_RGB32UPCK64FU: begin
+		JX2_UCIX_CONV2_RGB32UPCK64FU: begin
 			tRegConvVal = tRegRgb32Upck64F;
 		end
-		JX2_UCIX_CONV_RGB32UPCK64FS: begin
+		JX2_UCIX_CONV2_RGB32UPCK64FS: begin
 			tRegConvVal = tRegRgb32Upck64F;
 		end
 `endif
 
 `ifdef jx2_enable_convrgb30a
-		JX2_UCIX_CONV_RGB30APCK64F: begin
+		JX2_UCIX_CONV2_RGB30APCK64F: begin
 //			tRegConvVal = { UV32_00, tRegRgb30aPck64F };
 		end
-		JX2_UCIX_CONV_RGB30AUPCK64F: begin
+		JX2_UCIX_CONV2_RGB30AUPCK64F: begin
 			tRegConvVal = tRegRgb30aUpck64F;
 		end
 `endif
 
 `ifdef jx2_enable_convfp16
-		JX2_UCIX_CONV_FP16UPCK32L: begin
+		JX2_UCIX_CONV2_FP16UPCK32L: begin
 `ifndef def_true
 			if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
 			begin
@@ -1928,25 +1933,25 @@ begin
 `endif
 			tRegConvVal = tRegFp16Upck32;
 		end
-		JX2_UCIX_CONV_FP16UPCK32H: begin
+		JX2_UCIX_CONV2_FP16UPCK32H: begin
 			tRegConvVal = tRegFp16Upck32;
 		end
-		JX2_UCIX_CONV_FP16EUPCK32L: begin
+		JX2_UCIX_CONV2_FP16EUPCK32L: begin
 			tRegConvVal = tRegFp16Upck32;
 		end
-		JX2_UCIX_CONV_FP16EUPCK32H: begin
+		JX2_UCIX_CONV2_FP16EUPCK32H: begin
 //			tRegConvVal = tRegFp16Upck32;
 			tRegConvVal = { UV32_00, tRegFp16Upck32[31:0] };
 		end
-		JX2_UCIX_CONV_FP16PCK32: begin
+		JX2_UCIX_CONV2_FP16PCK32: begin
 //			tRegConvVal = { UV32_00, tRegFp32Pck16 };
 			tRegConvVal = tRegFp32Pck16;
 		end
 		
-		JX2_UCIX_CONV_FP16PCKAL: begin
+		JX2_UCIX_CONV2_FP16PCKAL: begin
 			tRegConvVal = { UV32_00, tRegFp16PckAL };
 		end
-		JX2_UCIX_CONV_FP16UPCKAL: begin
+		JX2_UCIX_CONV2_FP16UPCKAL: begin
 			tRegConvVal = tRegFp16UPckAL;
 		end
 `endif
@@ -1954,7 +1959,7 @@ begin
 `endif
 
 `ifdef jx2_enable_rgb5minmax_alu
-		JX2_UCIX_CONV_RGB5MINMAX: begin
+		JX2_UCIX_CONV2_RGB5MINMAX: begin
 			tRegConvVal = { UV32_00, tRegRgb5MinMax };
 		end
 `endif
@@ -2179,14 +2184,14 @@ begin
 `endif
 
 `ifdef jx2_debug_alu
-	if((idUCmd[5:0]==JX2_UCMD_ALU3) && !exHold)
+	if((idUCmd[5:0]==JX2_UCMD_ALU3) && exHoldN)
 	begin
 		$display("ALU: Op=%X Rs=%X Rt=%X Rn=%X",
 			idUIxt,
 			regValRs, regValRt, tRegOutVal);
 	end
 
-	if((idUCmd[5:0]==JX2_UCMD_ALUCMP) && !exHold)
+	if((idUCmd[5:0]==JX2_UCMD_ALUCMP) && exHoldN)
 	begin
 		$display("ALUCMP: Op=%X Rs=%X Rt=%X SR.T=%X, S=%d V=%d Z=%d C=%d",
 			idUIxt,
@@ -2198,7 +2203,7 @@ end
 
 always @(posedge clock)
 begin
-	if(!exHold)
+	if(exHoldN)
 	begin
 		idUIxt2			<= idUIxt;
 		tRegOutVal2		<= tRegOutVal;

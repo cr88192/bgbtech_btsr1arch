@@ -202,6 +202,7 @@ int BJX2_Interp_CheckUpdateUsb(BJX2_Context *ctx)
 		txe=ctx->usbbuf_txeposb;
 		ctx->usbbuf_txsposb=txe;
 	}
+	return(0);
 }
 
 int BJX2_MemMmgpCb_GetByte(BJX2_Context *ctx,

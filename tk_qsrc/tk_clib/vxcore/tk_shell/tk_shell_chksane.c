@@ -29,6 +29,8 @@ tk_shell_chksane_simd_asm:
 	CMPQEQ		R19, R7
 	BREAK?F
 
+	.L0A0:
+
 	MOV		0xAD7844303F08ACE0, R6
 	MOV		0x03B828BC7228D110, R7
 
@@ -41,6 +43,7 @@ tk_shell_chksane_simd_asm:
 	MOV		0xAD7844303F08ACE0, R6
 	MOV		0x03B828BC1A8E020E, R7
 
+	.L0A1:
 	PMULS.LW	R4, R5, R18		|	PMULS.HW	R4, R5, R19
 	CMPQEQ		R18, R6
 	BREAK?F
@@ -50,6 +53,7 @@ tk_shell_chksane_simd_asm:
 	MOV		0xDEF09ABC56781234, R6
 	MOV		0xF012BCDE789A3456, R7
 
+	.L0A2:
 	PSHUF.W		R4, 0x1B, R18	|	PSHUF.W		R5, 0x1B, R19
 	CMPQEQ		R18, R6
 	BREAK?F
@@ -59,6 +63,7 @@ tk_shell_chksane_simd_asm:
 	MOV		0x9ABCDEF0BCDEF012, R6
 	MOV		0x123456783456789A, R7
 
+	.L0A3:
 	MOVLD	R4, R5, R18
 	MOVHD	R4, R5, R19
 	CMPQEQ		R18, R6
@@ -69,6 +74,7 @@ tk_shell_chksane_simd_asm:
 	MOV		0x12345678BCDEF012, R6
 	MOV		0x9ABCDEF03456789A, R7
 
+	.L0A4:
 	MOVHLD	R4, R5, R18
 	MOVLHD	R4, R5, R19
 	CMPQEQ		R18, R6
@@ -93,6 +99,7 @@ tk_shell_chksane_simd_asm:
 	MOV		0x3456789abcdef012, R6
 	MOV		0xb456789a3cdef012, R7
 
+	.L0A5:
 	PADD.F		R4, R5, R18
 	PSUB.F		R4, R5, R19
 //	PMUL.F		R4, R5, R20
@@ -101,6 +108,7 @@ tk_shell_chksane_simd_asm:
 	CMPQEQ		R19, R7
 	BREAK?F
 
+	.L0A6:
 	MOV		0x0717153D18247A72, R6
 	PMUL.F		R4, R5, R18
 	CMPQEQ		R18, R6
@@ -118,6 +126,7 @@ tk_shell_chksane_simd_asm:
 	MOV		0x3456789abcdef012, R6
 	MOV		0xb456789a3cdef012, R7
 
+	.L0A7:
 	PADDX.F		R20, R22, R18
 	CMPQEQ		R18, R6
 	BREAK?F
@@ -127,6 +136,7 @@ tk_shell_chksane_simd_asm:
 	XOR		R18, R18
 	XOR		R19, R19
 
+	.L0A8:
 	PSUBX.F		R20, R22, R18
 	CMPQEQ		R18, R7
 	BREAK?F
@@ -135,12 +145,14 @@ tk_shell_chksane_simd_asm:
 
 	MOV		0x0717153D18247A72, R16
 
+	.L0A9:
 	PMULX.F		R20, R22, R18
 	CMPQEQ		R18, R16
 	BREAK?F
 	CMPQEQ		R19, R16
 	BREAK?F
 
+	.L0A10:
 	MOV.X		(SP, 0), R18
 	PMULX.F		R20, R22, R18
 	CMPQEQ		R18, R16
@@ -159,6 +171,7 @@ tk_shell_chksane_simd_asm:
 	NOP
 	MOV.X		tk_shell_fv0_gbl, R18
 
+	.L0A11:
 	CMPQEQ		R18, R4
 	BREAK?F
 	CMPQEQ		R19, R5
@@ -170,6 +183,7 @@ tk_shell_chksane_simd_asm:
 //	MOV.X		(GBR, 384), R18
 	MOV.X		(GBR, 6144), R18
 
+	.L0A12:
 	CMPQEQ		R18, R6
 	BREAK?F
 	CMPQEQ		R19, R7
@@ -451,7 +465,7 @@ tk_shell_chksane_rgb5_asm:
 	BREAK?F
 #endif
 
-#if 1
+#if 0
 	RGB5MINMAX	R16, R6
 	MOV			0, R7
 	RGB5CCENC	R16, R6, R7
@@ -1020,6 +1034,8 @@ void Sys_CheckSanityC(void)
 	long long la, lb, lc;
 	int a, b, c;
 	
+	tk_printf("CS-C A0\n");
+
 	f=0.0;
 	h=3.14159;
 	*(&f)=h;
@@ -1037,6 +1053,8 @@ void Sys_CheckSanityC(void)
 	a=g;
 	if(a!=31415)
 		__debugbreak();
+
+	tk_printf("CS-C A1\n");
 
 	g=f*100000;
 	a=g;
@@ -1058,6 +1076,8 @@ void Sys_CheckSanityC(void)
 	if(a!=0)
 		__debugbreak();
 
+	tk_printf("CS-C A2\n");
+
 	g=f*1.75;
 	a=g*1000000;
 //	if(g!=5.4977825)
@@ -1075,7 +1095,9 @@ void Sys_CheckSanityC(void)
 //	if(g!=0.4908734375)
 	if(a!=490873)
 		__debugbreak();
-	
+
+	tk_printf("CS-C A3\n");
+
 	if(g>0.5)
 		__debugbreak();
 	if(g>=0.5)
@@ -1085,6 +1107,8 @@ void Sys_CheckSanityC(void)
 		__debugbreak();
 	if(g<=0.25)
 		__debugbreak();
+
+	tk_printf("CS-C A4\n");
 
 	g=0.21875;
 	a=0;
@@ -1097,6 +1121,8 @@ void Sys_CheckSanityC(void)
 
 //	__debugbreak();
 
+	tk_printf("CS-C A5\n");
+
 	a=0;
 	if(g<0.21875)
 		__debugbreak();
@@ -1104,7 +1130,9 @@ void Sys_CheckSanityC(void)
 		a=1;
 	if(!a)
 		__debugbreak();
-	
+
+	tk_printf("CS-C A6\n");
+
 	g=sqrt(f);
 	h=g*g;
 	
@@ -1173,20 +1201,35 @@ void sanity_glColor4f(float red, float green, float blue, float alpha)
 	int cr, cg, cb, ca;
 	u32 px;
 
-//	cr=(int)(red*255);
-//	cg=(int)(green*255);
-//	cb=(int)(blue*255);
-//	ca=(int)(alpha*255);
-//	cr=tkra_clamp255(cr);
-//	cg=tkra_clamp255(cg);
-//	cb=tkra_clamp255(cb);
-//	ca=tkra_clamp255(ca);
+	tk_printf("%f %f %f %f\n", red, green, blue, alpha);
+
+	tk_printf("%f %f %f %f  %f\n",
+		red*255, green*255, blue*255, alpha*255, 255.0);
+
+	cr=(int)(red*255);
+	cg=(int)(green*255);
+	cb=(int)(blue*255);
+	ca=(int)(alpha*255);
+
+	tk_printf("A0 %d %d %d %d\n", cr, cg, cb, ca);
+
+	cr=tkra_clamp255(cr);
+	cg=tkra_clamp255(cg);
+	cb=tkra_clamp255(cb);
+	ca=tkra_clamp255(ca);
+
+	tk_printf("A1 %d %d %d %d\n", cr, cg, cb, ca);
 
 	cr=tkra_clamp255((int)(red*255));
 	cg=tkra_clamp255((int)(green*255));
 	cb=tkra_clamp255((int)(blue*255));
 	ca=tkra_clamp255((int)(alpha*255));
 	px=(ca<<24)|(cr<<16)|(cg<<8)|cb;
+
+//	__debugbreak();
+
+	tk_printf("A2 %d %d %d %d\n", cr, cg, cb, ca);
+	tk_printf("A3 %08X\n", px);
 
 //	return(px);
 

@@ -2435,6 +2435,7 @@ void TKRA_Probe_WalkEdgesMMIO(TKRA_Context *ctx)
 }
 
 static u64 tkra_edgemmio_mdfl;
+static u64 tkra_edgemmio_mdfl2;
 static u64 tkra_edgemmio_scrn;
 static u64 tkra_edgemmio_clip;
 static u64 tkra_edgemmio_sten;
@@ -2464,7 +2465,7 @@ void TKRA_UpdateVars_WalkEdgesMMIO(TKRA_Context *ctx)
 		{ 0x6, 0x7, 0x9, 0xD, 0x8, 0xC, 0xA, 0xE, 0xB, 0xF };
 	static byte zfunctab[7]=
 		{ 7, 6, 4, 5, 0, 2, 3, 1 };
-	u64 tex, scrn, zbuf, sts, mdfl, cscr, cclip, csten;
+	u64 tex, scrn, zbuf, sts, mdfl, cscr, cclip, csten, mdfl2;
 	int clip_x0, clip_x1, clip_y0, clip_y1, ymax;
 	int dopersp;
 
@@ -2526,25 +2527,76 @@ void TKRA_UpdateVars_WalkEdgesMMIO(TKRA_Context *ctx)
 
 	mdfl|=1<<22;
 
+	mdfl2=mdfl;
+
 	mdfl|=
 		(blfntab[ctx->blend_sfunc]<< 8) |
 		(blfntab[ctx->blend_dfunc]<<12) ;
+
+	mdfl2|=
+		(blfntab[ctx->blend_sfunc2]<< 8) |
+		(blfntab[ctx->blend_dfunc2]<<12) ;
 
 //	if(dopersp)
 //		mdfl|=1<<20;
 	
 	tkra_edgemmio_mdfl=mdfl;
+	tkra_edgemmio_mdfl2=mdfl2;
+}
+
+void TKRA_WalkEdgesB_MMIO(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
+{
+	static u64 lasttex;
+	volatile u64 *mmio;
+	u64 scr, clip, yspan;
+	u64 tex, sts, mdfl, sten;
+	int clip_x0, clip_x1, clip_y0, clip_y1, ymax;
+	int dopersp, xsize;
+
+	u64 tpos_l, tstep_l;
+	u64 tpos_r, tstep_r;
+
+	tex=(u64)(ctx->tex_img_bcn2);
+
+	mmio=(volatile u64 *)0xFFFFF000C000ULL;
+	
+	yspan=((u16)ytop) | (((u64)(ymax-1))<<16) |
+		(((u64)xsize)<<32);
+
+	sts=mmio[0];
+	while(sts&1)
+	{
+		sts=mmio[0];
+	}
+
+	tpos_l	= edge_l[TKRA_ES_T2POS];
+	tpos_r	= edge_r[TKRA_ES_T2POS];
+	tstep_l	= edge_l[TKRA_ES_T2STEP];
+	tstep_r	= edge_r[TKRA_ES_T2STEP];
+
+	dopersp=(tpos_l&1);
+
+	mmio[3]=tex;
+	mmio[ 8]=tpos_l;
+	mmio[ 9]=tpos_r;
+	mmio[10]=tstep_l;
+	mmio[11]=tstep_r;
+
+	mdfl=tkra_edgemmio_mdfl2;
+
+	if(dopersp)
+		mdfl|=1<<20;
+	mmio[0]=mdfl;
+	
+	return(0);
 }
 
 void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
 {
-//	static byte blfntab[16]=
-//		{0x6, 0x7, 0x9, 0xD, 0x8, 0xC, 0xA, 0xE, 0xB, 0xF};
 	static u64 lasttex;
 	volatile u64 *mmio;
-//	u64 tex, scrn, zbuf, sts, mdfl;
-//	u64 scrn, zbuf;
 	u64 scr, clip, yspan;
 	u64 tex, sts, mdfl, sten;
 	int clip_x0, clip_x1, clip_y0, clip_y1, ymax;
@@ -2555,6 +2607,8 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 	s64 xzpos_r, xzstep_r;
 	u64 tpos_l, tstep_l;
 	u64 tpos_r, tstep_r;
+	u64 t2pos_l, t2step_l;
+	u64 t2pos_r, t2step_r;
 	u64 cpos_l, cstep_l;
 	u64 cpos_r, cstep_r;
 	u64 tstep_d, tstep_c;
@@ -2683,6 +2737,16 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 	mmio[0]=mdfl;
 
 
+	if(ctx->tex_cur2)
+	{
+		t2pos_l		= edge_l[TKRA_ES_T2POS];
+		t2pos_r		= edge_r[TKRA_ES_T2POS];
+		t2step_l	= edge_l[TKRA_ES_T2STEP];
+		t2step_r	= edge_r[TKRA_ES_T2STEP];
+
+		lasttex=-1;
+		TKRA_WalkEdgesB_MMIO(ctx, ytop, edge_l, edge_r, cnt);
+	}
 
 #if 1
 	
@@ -2694,16 +2758,18 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 #if 1
 	while(y>=16)
 	{
-		tpos_l+=tstep_l<<4;		tpos_r+=tstep_r<<4;
-		cpos_l+=cstep_l<<4;		cpos_r+=cstep_r<<4;
+		tpos_l +=tstep_l <<4;	tpos_r +=tstep_r <<4;
+		t2pos_l+=t2step_l<<4;	t2pos_r+=t2step_r<<4;
+		cpos_l +=cstep_l <<4;	cpos_r +=cstep_r <<4;
 		xzpos_l+=xzstep_l<<4;	xzpos_r+=xzstep_r<<4;
 		y-=16;
 	}
 
 	while(y>=4)
 	{
-		tpos_l+=tstep_l<<2;		tpos_r+=tstep_r<<2;
-		cpos_l+=cstep_l<<2;		cpos_r+=cstep_r<<2;
+		tpos_l +=tstep_l <<2;	tpos_r +=tstep_r <<2;
+		t2pos_l+=t2step_l<<2;	t2pos_r+=t2step_r<<2;
+		cpos_l +=cstep_l <<2;	cpos_r +=cstep_r <<2;
 		xzpos_l+=xzstep_l<<2;	xzpos_r+=xzstep_r<<2;
 		y-=4;
 	}
@@ -2711,13 +2777,17 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 
 	while(y--)
 	{
-		tpos_l+=tstep_l;	tpos_r+=tstep_r;
-		cpos_l+=cstep_l;	cpos_r+=cstep_r;
+		tpos_l +=tstep_l;	tpos_r +=tstep_r;
+		t2pos_l+=t2step_l;	t2pos_r+=t2step_r;
+		cpos_l +=cstep_l;	cpos_r +=cstep_r;
 		xzpos_l+=xzstep_l;	xzpos_r+=xzstep_r;
 	}
 
 	tpos_l&=~1;
 	tpos_l|=dopersp;
+
+	t2pos_l&=~1;
+	t2pos_l|=dopersp;
 
 	edge_l[TKRA_ES_TPOS] = tpos_l;
 	edge_r[TKRA_ES_TPOS] = tpos_r;
@@ -2725,6 +2795,9 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 	edge_r[TKRA_ES_CPOS] = cpos_r;
 	edge_l[TKRA_ES_ZPOS] = xzpos_l;
 	edge_r[TKRA_ES_ZPOS] = xzpos_r;
+
+	edge_l[TKRA_ES_T2POS] = t2pos_l;
+	edge_r[TKRA_ES_T2POS] = t2pos_r;
 #endif
 }
 #endif
@@ -2896,6 +2969,26 @@ void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 
 static s32 tkra_zrcpbitab[256];
 
+int TKRA_FillEParm_InitRcpTab()
+{
+	s32 z_rcp;
+	u32 v;
+	int i, j, k;
+
+	if(!tkra_zrcpbitab[64])
+	{
+		for(i=0; i<256; i++)
+		{
+			j=((i<<7)+64);
+			z_rcp=0x100000000LL/j;
+			k=0x10000-j;
+			tkra_zrcpbitab[i]=z_rcp-k;
+		}
+	}
+	
+	return(0);
+}
+
 s32 TKRA_FillEParm_CalcRcpApxZ(s16 z)
 {
 	s32 z_rcp;
@@ -2907,17 +3000,6 @@ s32 TKRA_FillEParm_CalcRcpApxZ(s16 z)
 		return(TKRA_FillEParm_CalcRcpApxZ(-z));
 	}
 	
-	if(!tkra_zrcpbitab[64])
-	{
-		for(i=0; i<256; i++)
-		{
-			j=((i<<7)+64);
-			z_rcp=0x100000000LL/j;
-			k=0x10000-j;
-			tkra_zrcpbitab[i]=z_rcp-k;
-		}
-	}
-
 //	z_rcp=0x100000000LL/z;
 
 	k=0x10000-z;
@@ -2929,9 +3011,10 @@ s32 TKRA_FillEParm_CalcRcpApxZ(s16 z)
 u64 TKRA_FillEParm_ScaleTexPerspZ(u64 st, s16 z)
 {
 	u64 tv;
+	s64 s1a, t1a;
 	s32 s0, t0, s1, t1;
-	s32 z_rcp;
-	int az, zs1;
+	s32 z_rcp, z1;
+	int k, az, zs1;
 
 	az=z;
 	if(z<0)
@@ -2944,7 +3027,19 @@ u64 TKRA_FillEParm_ScaleTexPerspZ(u64 st, s16 z)
 	t0=(s32)(st>>32);
 	
 //	z_rcp=0x100000000LL/z;
-	z_rcp=0x7FFFFFFF/zs1;
+//	z_rcp=0x7FFFFFFF/zs1;
+	
+	if(z<0)
+	{
+		z1=-z;
+		k=0x10000-z1;
+		z_rcp=k+tkra_zrcpbitab[(z1>>7)&255];
+		z_rcp=-z_rcp;
+	}else
+	{
+		k=0x10000-z;
+		z_rcp=k+tkra_zrcpbitab[(z>>7)&255];
+	}
 	
 //	z_rcp=TKRA_FillEParm_CalcRcpApxZ(z);
 //	s1=(((s64)s0)*z_rcp)>>24;
@@ -2953,8 +3048,10 @@ u64 TKRA_FillEParm_ScaleTexPerspZ(u64 st, s16 z)
 //	s1=(((s64)s0)*z_rcp)>>20;
 //	t1=(((s64)t0)*z_rcp)>>20;
 
-	s1=tkra_dmuls(s0, z_rcp)>>20;
-	t1=tkra_dmuls(t0, z_rcp)>>20;
+	s1a=tkra_dmuls(s0, z_rcp);
+	t1a=tkra_dmuls(t0, z_rcp);
+	s1=s1a>>20;
+	t1=t1a>>20;
 
 	tv=(u32)t1;
 	tv=(tv<<32)|((u32)s1);
@@ -2980,6 +3077,7 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	int y1cnt, y2cnt, y3cnt, y1rcp, y2rcp, y3rcp;
 	u64 t0, t1, t2;
 	u64 tp0, tp1, tp2;
+	u64 tpb0, tpb1, tpb2;
 	s64 l1, l2, l3;
 
 	int x1pos, x2pos, x3pos, x1step, x2step, x3step;
@@ -2992,6 +3090,12 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	u64 t1step_d, t1step_c;
 	u64 t2step_d, t2step_c;
 	u64 t3step_d, t3step_c;
+
+	u64 t1posb, t2posb, t3posb, t1stepb, t2stepb, t3stepb;
+	u64 t1stepb_d, t1stepb_c;
+	u64 t2stepb_d, t2stepb_c;
+	u64 t3stepb_d, t3stepb_c;
+
 	u64 c1pos, c2pos, c3pos, c1step, c2step, c3step;
 	u64 c1step_d, c1step_c, c2step_d, c2step_c, c3step_d, c3step_c;
 	int z1step_d, z1step_c, z2step_d, z2step_c, z3step_d, z3step_c;
@@ -3189,7 +3293,29 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 		tp1&=~1;
 		tp2&=~1;
 	}
-	
+
+	if(ctx->tex_cur2)
+	{
+		tpb0=tve0[TKRA_VX_T2POS];
+		tpb1=tve1[TKRA_VX_T2POS];
+		tpb2=tve2[TKRA_VX_T2POS];
+		
+		if(dopersp)
+		{
+			tpb0=TKRA_FillEParm_ScaleTexPerspZ(tpb0, z0);
+			tpb1=TKRA_FillEParm_ScaleTexPerspZ(tpb1, z1);
+			tpb2=TKRA_FillEParm_ScaleTexPerspZ(tpb2, z2);
+			tpb0|=1;
+			tpb1|=1;
+			tpb2|=1;
+		}else
+		{
+			tpb0&=~1;
+			tpb1&=~1;
+			tpb2&=~1;
+		}
+	}
+
 	t0=tp0;
 	t1=tp1;
 	t2=tp2;
@@ -3203,6 +3329,17 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 //	t3step_d=t2-t1;
 //	t3step_c=TKRA_ScaleTexStepRcp(t3step_d, y3rcp);
 	t3step_c=TKRA_CalcTexStepRcp(t2, t1, y3rcp);
+
+	if(ctx->tex_cur2)
+	{
+		t0=tpb0;
+		t1=tpb1;
+		t2=tpb2;
+		
+		t1stepb_c=TKRA_CalcTexStepRcp(t1, t0, y1rcp);
+		t2stepb_c=TKRA_CalcTexStepRcp(t2, t0, y2rcp);
+		t3stepb_c=TKRA_CalcTexStepRcp(t2, t1, y3rcp);
+	}
 
 	t0=tve0[TKRA_VX_CPOS];
 	t1=tve1[TKRA_VX_CPOS];
@@ -3235,36 +3372,42 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	e1_parm[TKRA_ES_TPOS]=tp0;
 	e1_parm[TKRA_ES_CPOS]=tve0[TKRA_VX_CPOS];
 	e1_parm[TKRA_ES_ZPOS]=tve0[TKRA_VX_ZPOS];
+	e1_parm[TKRA_ES_T2POS]=tpb0;
 
 	e2_parm[TKRA_ES_XPOS]=tve0[TKRA_VX_XPOS];
 //	e2_parm[TKRA_ES_TPOS]=tve0[TKRA_VX_TPOS];
 	e2_parm[TKRA_ES_TPOS]=tp0;
 	e2_parm[TKRA_ES_CPOS]=tve0[TKRA_VX_CPOS];
 	e2_parm[TKRA_ES_ZPOS]=tve0[TKRA_VX_ZPOS];
+	e2_parm[TKRA_ES_T2POS]=tpb0;
 
 	e3_parm[TKRA_ES_XPOS]=tve1[TKRA_VX_XPOS];
 //	e3_parm[TKRA_ES_TPOS]=tve1[TKRA_VX_TPOS];
 	e3_parm[TKRA_ES_TPOS]=tp1;
 	e3_parm[TKRA_ES_CPOS]=tve1[TKRA_VX_CPOS];
 	e3_parm[TKRA_ES_ZPOS]=tve1[TKRA_VX_ZPOS];
+	e3_parm[TKRA_ES_T2POS]=tpb1;
 
 	e1_parm[TKRA_ES_XSTEP]=x1step_c;	/* v1-v0 */
 	e1_parm[TKRA_ES_TSTEP]=t1step_c;
 	e1_parm[TKRA_ES_CSTEP]=c1step_c;
 //	e1_parm[TKRA_ES_ZSTEP]=z1step_c;
 	e1_parm[TKRA_ES_ZSTEP]=((u32)z1step_c) | (((s64)x1step_c)<<32);
+	e1_parm[TKRA_ES_T2STEP]=t1stepb_c;
 
 	e2_parm[TKRA_ES_XSTEP]=x2step_c;	/* v2-v0 */
 	e2_parm[TKRA_ES_TSTEP]=t2step_c;
 	e2_parm[TKRA_ES_CSTEP]=c2step_c;
 //	e2_parm[TKRA_ES_ZSTEP]=z2step_c;
 	e2_parm[TKRA_ES_ZSTEP]=((u32)z2step_c) | (((s64)x2step_c)<<32);
+	e2_parm[TKRA_ES_T2STEP]=t2stepb_c;
 
 	e3_parm[TKRA_ES_XSTEP]=x3step_c;	/* v2-v1 */
 	e3_parm[TKRA_ES_TSTEP]=t3step_c;
 	e3_parm[TKRA_ES_CSTEP]=c3step_c;
 //	e3_parm[TKRA_ES_ZSTEP]=z3step_c;
 	e3_parm[TKRA_ES_ZSTEP]=((u32)z3step_c) | (((s64)x3step_c)<<32);
+	e3_parm[TKRA_ES_T2STEP]=t3stepb_c;
 
 #if 0
 	t0=((u32)(tve0[TKRA_VX_TPOS]))|((t0>>48)<<(32+xshl));
@@ -3324,7 +3467,8 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 	u64 t1step_d, t1step_c;
 	u64 c1step_d, c1step_c;
 	int z1step_d, z1step_c;
-	u64 t0, t1, t2, tp0, tp1;
+	u64 t2step_d, t2step_c;
+	u64 t0, t1, t2, tp0, tp1, tp2, tp3;
 
 	int y0, y1, y1cnt, y1rcp;
 	int z0, z1;
@@ -3341,11 +3485,13 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 		e_parm[TKRA_ES_TPOS]=vec0[TKRA_VX_TPOS];
 		e_parm[TKRA_ES_CPOS]=vec0[TKRA_VX_CPOS];
 		e_parm[TKRA_ES_ZPOS]=vec0[TKRA_VX_ZPOS];
+		e_parm[TKRA_ES_T2POS]=vec0[TKRA_VX_T2POS];
 
 		e_parm[TKRA_ES_XSTEP]=0;
 		e_parm[TKRA_ES_TSTEP]=0;
 		e_parm[TKRA_ES_CSTEP]=0;
 		e_parm[TKRA_ES_ZSTEP]=0;
+		e_parm[TKRA_ES_T2STEP]=0;
 		
 		return;
 	}
@@ -3354,8 +3500,8 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 	if(y1cnt<0)
 		y1cnt=-y1cnt;
 	
-//	y1rcp=TKRA_SpanRcp(y1cnt+1);
-	y1rcp=TKRA_SpanRcp(y1cnt+0);
+	y1rcp=TKRA_SpanRcp(y1cnt+1);
+//	y1rcp=TKRA_SpanRcp(y1cnt+0);
 
 	t0=vec0[TKRA_VX_XPOS];	t1=vec1[TKRA_VX_XPOS];
 	x1step_d=t1-t0;
@@ -3374,6 +3520,24 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 //		tp1&=~1;
 	}
 	t1step_c=TKRA_CalcTexStepRcp(tp1, tp0, y1rcp);
+
+	if(ctx->tex_cur2)
+	{
+		tp2=vec0[TKRA_VX_T2POS];	tp3=vec1[TKRA_VX_T2POS];
+		if(dopersp&1)
+		{
+			tp2=TKRA_FillEParm_ScaleTexPerspZ(tp2, z0);
+			tp3=TKRA_FillEParm_ScaleTexPerspZ(tp3, z1);
+			tp2|=1;
+	//		tp3|=1;
+		}else
+		{
+			tp2&=~1;
+	//		tp3&=~1;
+		}
+		t2step_c=TKRA_CalcTexStepRcp(tp3, tp2, y1rcp);
+	}
+
 
 	t0=vec0[TKRA_VX_CPOS];	t1=vec1[TKRA_VX_CPOS];
 	c1step_c=TKRA_CalcClrStepRcp(t1, t0, y1rcp);
@@ -3394,6 +3558,8 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 //	e_parm[TKRA_ES_CPOS]=vec0[TKRA_VX_CPOS];
 //	e_parm[TKRA_ES_ZPOS]=vec0[TKRA_VX_ZPOS];
 
+	e_parm[TKRA_ES_T2POS]=tp2;
+
 	e_parm[TKRA_ES_XPOS]=t0;
 	e_parm[TKRA_ES_CPOS]=t1;
 	e_parm[TKRA_ES_ZPOS]=t2;
@@ -3402,6 +3568,7 @@ void TKRA_WalkQuad_FillEParm(TKRA_Context *ctx,
 	e_parm[TKRA_ES_TSTEP]=t1step_c;
 	e_parm[TKRA_ES_CSTEP]=c1step_c;
 	e_parm[TKRA_ES_ZSTEP]=((u32)z1step_c) | (((s64)x1step_c)<<32);
+	e_parm[TKRA_ES_T2STEP]=t2step_c;
 }
 
 int TKRA_WalkCheckNoPersp(TKRA_Context *ctx)
@@ -4004,6 +4171,15 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 
 	if(trifl&TKRA_TRFL_NOCMOD)
 		trifl&=~TKRA_TRFL_ALPHA;
+
+	if((((long)ctx->tex_cur)>>60)!=0)
+	{
+		__debugbreak();
+		printf("TKRA_SetupDrawEdgeForTriFlag: Nullify bad texture %016llX\n",
+			(long)ctx->tex_cur);
+		ctx->tex_cur=NULL;
+	}
+
 		
 	if(		(trifl==ctx->span_trifl) &&
 			(ctx->tex_cur==ctx->span_tex_cur))
@@ -4207,7 +4383,7 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_DirClrZt;
 		}else
 #endif
-			if(ctx->tex_cur->tex_img_bcn)
+			if(ctx->tex_cur && ctx->tex_cur->tex_img_bcn)
 		{
 #if 0
 			ctx->DrawSpan=TKRA_DrawSpan_BlendModUtx2Mort;
@@ -4339,7 +4515,7 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 		}else
 #endif
 
-		if(ctx->tex_cur->tex_img_bcn)
+		if(ctx->tex_cur && ctx->tex_cur->tex_img_bcn)
 		{
 			if(trifl&TKRA_TRFL_MINBL)
 			{
@@ -4500,7 +4676,7 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 //			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_AlphaModBlTexMortZt;
 //		}
 
-		if(ctx->tex_cur->tex_img_bcn)
+		if(ctx->tex_cur && ctx->tex_cur->tex_img_bcn)
 		{
 #if 0
 			ctx->DrawSpan=TKRA_DrawSpan_AlphaModUtx2Mort;
@@ -4718,7 +4894,7 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 			ctx->DrawSpanZt_Min=TKRA_DrawSpan_DirClrZt;
 			ctx->DrawSpanZt_Mag=TKRA_DrawSpan_DirClrZt;
 		}else
-			if(ctx->tex_cur->tex_img_bcn)
+			if(ctx->tex_cur && ctx->tex_cur->tex_img_bcn)
 		{
 #if 0
 //			ctx->DrawSpan=TKRA_DrawSpan_AlphaModUtx2Mort;

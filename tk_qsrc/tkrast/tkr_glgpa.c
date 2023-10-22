@@ -217,6 +217,45 @@ const struct tkra_glfunc_s tkra_glfuncs[]={
 { "glStencilOp",			tkra_glStencilOp },
 { "glClearStencil",			tkra_glClearStencil },
 
+{ "glMultiTexCoord1s",		tkra_glMultiTexCoord1s },
+{ "glMultiTexCoord1i",		tkra_glMultiTexCoord1i },
+{ "glMultiTexCoord1f",		tkra_glMultiTexCoord1f },
+{ "glMultiTexCoord1d",		tkra_glMultiTexCoord1d },
+{ "glMultiTexCoord2s",		tkra_glMultiTexCoord2s },
+{ "glMultiTexCoord2i",		tkra_glMultiTexCoord2i },
+{ "glMultiTexCoord2f",		tkra_glMultiTexCoord2f },
+{ "glMultiTexCoord2d",		tkra_glMultiTexCoord2d },
+{ "glMultiTexCoord3s",		tkra_glMultiTexCoord3s },
+{ "glMultiTexCoord3i",		tkra_glMultiTexCoord3i },
+{ "glMultiTexCoord3f",		tkra_glMultiTexCoord3f },
+{ "glMultiTexCoord3d",		tkra_glMultiTexCoord3d },
+{ "glMultiTexCoord4s",		tkra_glMultiTexCoord4s },
+{ "glMultiTexCoord4i",		tkra_glMultiTexCoord4i },
+{ "glMultiTexCoord4f",		tkra_glMultiTexCoord4f },
+{ "glMultiTexCoord4d",		tkra_glMultiTexCoord4d },
+
+{ "glMultiTexCoord1sv",		tkra_glMultiTexCoord1sv },
+{ "glMultiTexCoord1iv",		tkra_glMultiTexCoord1iv },
+{ "glMultiTexCoord1fv",		tkra_glMultiTexCoord1fv },
+{ "glMultiTexCoord1dv",		tkra_glMultiTexCoord1dv },
+{ "glMultiTexCoord2sv",		tkra_glMultiTexCoord2sv },
+{ "glMultiTexCoord2iv",		tkra_glMultiTexCoord2iv },
+{ "glMultiTexCoord2fv",		tkra_glMultiTexCoord2fv },
+{ "glMultiTexCoord2dv",		tkra_glMultiTexCoord2dv },
+{ "glMultiTexCoord3sv",		tkra_glMultiTexCoord3sv },
+{ "glMultiTexCoord3iv",		tkra_glMultiTexCoord3iv },
+{ "glMultiTexCoord3fv",		tkra_glMultiTexCoord3fv },
+{ "glMultiTexCoord3dv",		tkra_glMultiTexCoord3dv },
+{ "glMultiTexCoord4sv",		tkra_glMultiTexCoord4sv },
+{ "glMultiTexCoord4iv",		tkra_glMultiTexCoord4iv },
+{ "glMultiTexCoord4fv",		tkra_glMultiTexCoord4fv },
+{ "glMultiTexCoord4dv",		tkra_glMultiTexCoord4dv },
+
+{ "glActiveTexture",		tkra_glActiveTexture },
+
+{ "glMTexCoord2fSGIS",		tkra_glMultiTexCoord2f },
+{ "glSelectTextureSGIS",	tkra_glActiveTexture },
+
 { NULL,						NULL }
 };
 

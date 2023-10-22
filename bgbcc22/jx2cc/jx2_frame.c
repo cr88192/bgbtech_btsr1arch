@@ -867,6 +867,10 @@ int BGBCC_JX2C_CheckNmidScaleMatch(
 	case BGBCC_SH_NMID_XMOVUW: rt=(sc==2); break;
 	case BGBCC_SH_NMID_XMOVUL: rt=(sc==4); break;
 
+	case BGBCC_SH_NMID_MOVTW_V:		rt=(sc==6); break;
+	case BGBCC_SH_NMID_MOVUTW_V:	rt=(sc==6); break;
+	case BGBCC_SH_NMID_MOVHTW_V:	rt=(sc==6); break;
+
 	default:	rt=0; break;
 	}
 	return(rt);

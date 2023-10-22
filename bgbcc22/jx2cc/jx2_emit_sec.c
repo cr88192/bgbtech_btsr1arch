@@ -657,6 +657,16 @@ void BGBCC_JX2_UpdatePszxWordF0(BGBCC_JX2_Context *ctx,
 		}
 		break;
 
+	case 0x8:
+		if(((opw2>>0)&15)>=8)
+			{ rn=rn_dfl;	sx=BGBCC_PSZX_UNK; }
+		break;
+
+	case 0x9:
+		if(((opw2>>0)&15)>=8)
+			{ rn=rn_dfl;	sx=BGBCC_PSZX_UNK; }
+		break;
+
 	case 0xA:
 	case 0xB:
 	case 0xC:
@@ -2598,6 +2608,23 @@ int BGBCC_JX2_EmitQWordI(BGBCC_JX2_Context *ctx, s64 val)
 	}
 }
 
+int BGBCC_JX2_EmitTWordI(BGBCC_JX2_Context *ctx, s64 val)
+{
+	if(ctx->is_le)
+	{
+		BGBCC_JX2_EmitWordI(ctx, (val    )&65535);
+		BGBCC_JX2_EmitWordI(ctx, (val>>16)&65535);
+		BGBCC_JX2_EmitWordI(ctx, (val>>32)&65535);
+	}else
+	{
+		BGBCC_JX2_EmitWordI(ctx, (val>>32)&65535);
+		BGBCC_JX2_EmitWordI(ctx, (val>>16)&65535);
+		BGBCC_JX2_EmitWordI(ctx, (val    )&65535);
+	}
+
+	return(0);
+}
+
 int BGBCC_JX2_EmitString(BGBCC_JX2_Context *ctx, char *str)
 {
 	byte *s;
@@ -3646,6 +3673,13 @@ int BGBCC_JX2_EmitQWord(BGBCC_JX2_Context *ctx, s64 val)
 {
 	BGBCC_JX2_EmitQWordI(ctx, val);
 	BGBCC_JX2DA_EmitQWord(ctx, val);
+	return(0);
+}
+
+int BGBCC_JX2_EmitTWord(BGBCC_JX2_Context *ctx, s64 val)
+{
+	BGBCC_JX2_EmitTWordI(ctx, val);
+	BGBCC_JX2DA_EmitTWord(ctx, val);
 	return(0);
 }
 

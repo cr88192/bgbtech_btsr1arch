@@ -188,7 +188,11 @@ Edge Parameter Arrays
 #define		TKRA_ES_CSTEP	5			//color step
 #define		TKRA_ES_ZPOS	6			//Z position
 #define		TKRA_ES_ZSTEP	7			//Z step
-#define		TKRA_ES_NPARM	8			//number of edge params
+
+#define		TKRA_ES_T2POS	8			//texture position
+#define		TKRA_ES_T2STEP	9			//texture step
+
+#define		TKRA_ES_NPARM	12			//number of edge params
 
 /*
 Vertex Parameter Arrays
@@ -198,7 +202,8 @@ Vertex Parameter Arrays
 #define		TKRA_VX_ZPOS	2			//screen Z position
 #define		TKRA_VX_TPOS	3			//texture position
 #define		TKRA_VX_CPOS	4			//color position
-#define		TKRA_VX_NPARM	5			//number of edge params
+#define		TKRA_VX_T2POS	5			//texture position
+#define		TKRA_VX_NPARM	8			//number of edge params
 
 #define		TKRA_TRFL_ALPHA			0x0001	//Activity seen in alpha channel.
 #define		TKRA_TRFL_HASMIP		0x0002	//Mipmaps Used
@@ -274,7 +279,9 @@ Vertex Parameter Arrays
 
 #define TKRA_RGB								0x1907
 #define TKRA_RGBA								0x1908
+#define TKRA_LUMINANCE							0x1909
 #define TKRA_BGR								0x80E0
+#define TKRA_BGRA								0x80E1
 #define TKRA_BGRA								0x80E1
 
 #define TKRA_TEXTURE_2D							0x0DE1
@@ -509,8 +516,10 @@ typedef struct {
 
 	int			fl;				//30
 	u32			mrgb;			//34, RGBA (Material)
-	int			pad1;			//38
-	int			pad2;			//3C
+//	int			pad1;			//38
+//	int			pad2;			//3C
+
+	tkra_vec2f	st2;			//38, Second Coords
 
 //	tkra_vec4f	norm;			//40
 	u64			attrib[8];		//40
@@ -525,7 +534,9 @@ typedef struct {
 	s32 t;		//10
 	u32 rgb;	//14
 	//18
-	u64 pad;
+//	u64 pad;
+	s32	s2;		//18
+	s32 t2;		//1C
 	u64 attrib[4];
 }tkra_projvertex;
 
@@ -605,8 +616,12 @@ float			scr_clip_t, scr_clip_b;
 
 
 TKRA_TexImage *tex_cur;
+TKRA_TexImage *tex_cur2;
+TKRA_TexImage *tex_cur_mtx[8];
 tkra_rastpixel *tex_img;			//bound texture image
+tkra_rastpixel *tex_img2;			//bound texture image
 u32		*tex_img_bcn;				//texture images (block compressed)
+u32		*tex_img_bcn2;				//texture images (block compressed)
 byte	tex_xshl;
 byte	tex_yshl;
 byte	tex_mmip;
@@ -614,6 +629,12 @@ byte	tex_nmip;
 int		triflag;
 int		tex_flag;			//texture state flags
 int		bfn_flag;			//blend state flags
+
+byte	tex_xshl2;
+byte	tex_yshl2;
+byte	tex_mmip2;
+byte	tex_nmip2;
+int		tex_flag2;			//texture state flags
 
 TKRA_TexImage *span_tex_cur;
 int		span_trifl;
@@ -673,6 +694,11 @@ int			stkpos_xproj;
 byte		matmode;
 byte		blend_sfunc;
 byte		blend_dfunc;
+byte		blend_sfunc2;
+byte		blend_dfunc2;
+
+byte		blend_sfunc_mtx[8];
+byte		blend_dfunc_mtx[8];
 
 byte		zat_alfunc;
 byte		zat_zfunc;
@@ -688,6 +714,9 @@ byte		zat_sto_zpass;
 
 byte		light_mask;
 byte		cachemode;
+
+byte		tex2d_mask;
+byte		tex2d_active;
 
 tkra_vec4f	light_model_ambient;
 
@@ -717,7 +746,7 @@ void 	*tkgl_vptr_xyz_ptr;
 int		tkgl_vptr_st_nsz;
 int		tkgl_vptr_st_ty;
 int		tkgl_vptr_st_str;
-void 	*tkgl_vptr_st_ptr;
+void 	*tkgl_vptr_st_ptr[8];
 
 int		tkgl_vptr_rgb_nsz;
 int		tkgl_vptr_rgb_ty;
@@ -732,10 +761,13 @@ void 	*tkgl_vptr_nv_ptr;
 int		tkgl_begin_mode;
 u32		tkgl_begin_rgba;
 u32		tkgl_begin_norm;
-float	tkgl_begin_st[2];
+// float	tkgl_begin_st[2];
 //float	tkgl_begin_nv[3];
 
+float	tkgl_begin_st[16];
+
 float	*tkgl_begin_vtxa;
+float	*tkgl_begin_stxa;
 int		tkgl_begin_nvtx;
 int		tkgl_begin_mvtx;
 
@@ -754,15 +786,15 @@ int		stat_backface_tris;
 int		stat_negw_tris;
 int		stat_zocc_tris;
 
-tkra_trivertex v0stk[64];
-tkra_trivertex v1stk[64];
-tkra_trivertex v2stk[64];
-tkra_trivertex v3stk[64];
-
 TKRA_TexImage *tex_hash[256];
 
 tkra_mat4	stk_xform[64];		//modelview
 tkra_mat4	stk_xproj[8];		//projection
+
+tkra_trivertex v0stk[64];
+tkra_trivertex v1stk[64];
+tkra_trivertex v2stk[64];
+tkra_trivertex v3stk[64];
 
 tkra_vec4f	light_ambient[8];
 tkra_vec4f	light_diffuse[8];

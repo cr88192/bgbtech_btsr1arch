@@ -335,6 +335,24 @@ begin
 		nxtClkAccRxB = tClkAccRxB + 15728;
 `endif
 
+`ifdef jx2_cpu_mmioclock_75
+	nxtClkAccRxA = tClkAccRxA + 2949;
+	nxtClkAccRxB = tClkAccRxB + 2949;
+	if(tLinkTypeA == 2'b01)
+		nxtClkAccRxA = tClkAccRxA + 23592;
+	if(tLinkTypeB == 2'b01)
+		nxtClkAccRxB = tClkAccRxB + 23592;
+`endif
+
+`ifdef jx2_cpu_mmioclock_100
+	nxtClkAccRxA = tClkAccRxA + 3932;
+	nxtClkAccRxB = tClkAccRxB + 3932;
+	if(tLinkTypeA == 2'b01)
+		nxtClkAccRxA = tClkAccRxA + 31456;
+	if(tLinkTypeB == 2'b01)
+		nxtClkAccRxB = tClkAccRxB + 31456;
+`endif
+
 //	inhClkAccRxA	= tClkAccRxA + 7864;
 //	inhClkAccRxB	= tClkAccRxB + 7864;
 

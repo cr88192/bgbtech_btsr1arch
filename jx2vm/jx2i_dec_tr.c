@@ -2549,6 +2549,41 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_LEAD)		||
 			(op->nmid==BJX2_NMID_LEAQ)		||
 
+			(op->nmid==BJX2_NMID_FLDCF)		||
+			(op->nmid==BJX2_NMID_FLDCH)		||
+			(op->nmid==BJX2_NMID_FLDCFH)	||
+			(op->nmid==BJX2_NMID_FSTCF)		||
+			(op->nmid==BJX2_NMID_FSTCH)		||
+
+			(op->nmid==BJX2_NMID_SHAD)		||
+			(op->nmid==BJX2_NMID_SHLD)		||
+			(op->nmid==BJX2_NMID_SHADQ)		||
+			(op->nmid==BJX2_NMID_SHLDQ)		||
+			(op->nmid==BJX2_NMID_SHAR)		||
+			(op->nmid==BJX2_NMID_SHLR)		||
+			(op->nmid==BJX2_NMID_SHARQ)		||
+			(op->nmid==BJX2_NMID_SHLRQ)		||
+
+			(op->nmid==BJX2_NMID_RGB32PCK64)	||
+			(op->nmid==BJX2_NMID_RGB32UPCK64)	||
+			(op->nmid==BJX2_NMID_RGB5PCK32)		||
+			(op->nmid==BJX2_NMID_RGB5UPCK32)	||
+			(op->nmid==BJX2_NMID_RGB5PCK64)		||
+			(op->nmid==BJX2_NMID_RGB5UPCK64)	||
+			(op->nmid==BJX2_NMID_RGBSHR1)		||
+			(op->nmid==BJX2_NMID_RGBAVG)		||
+
+#if 1
+			(op->nmid==BJX2_NMID_MOV)		||
+			(op->nmid==BJX2_NMID_NOT)		||
+			(op->nmid==BJX2_NMID_EXTSB)		||
+			(op->nmid==BJX2_NMID_EXTUB)		||
+			(op->nmid==BJX2_NMID_EXTSW)		||
+			(op->nmid==BJX2_NMID_EXTUW)		||
+			(op->nmid==BJX2_NMID_EXTSL)		||
+			(op->nmid==BJX2_NMID_EXTUL)		||
+#endif
+
 			(op->nmid==BJX2_NMID_MULSW)		||
 			(op->nmid==BJX2_NMID_MULUW)		||
 			(op->nmid==BJX2_NMID_PADDW)		||
@@ -2611,6 +2646,11 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_BT)		||
 			(op->nmid==BJX2_NMID_BF)		)
 		{
+			if(i<2)
+			{
+				op->cyc=8;
+			}
+		
 			if(op->fmid==BJX2_FMID_REG)
 			{
 				op->cyc=8;
@@ -2656,6 +2696,9 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 					(op1->nmid==BJX2_NMID_PRED_F)	||
 					(op1->nmid==BJX2_NMID_BT)		||
 					(op1->nmid==BJX2_NMID_BF)		||
+					(op1->nmid==BJX2_NMID_CSELT)	||
+					(op1->nmid==BJX2_NMID_MOVT)		||
+					(op1->nmid==BJX2_NMID_MOVNT)	||
 					(op1->nmid==BJX2_NMID_ADC)		||
 					(op1->nmid==BJX2_NMID_SBB)		||
 					(op1->nmid==BJX2_NMID_BCDADC)	||

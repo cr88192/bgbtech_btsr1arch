@@ -498,16 +498,18 @@ begin
 		{ 1'b0, tRiSc[35] ? 12'hFFF : 12'h000, tRiSc[35:32] } + 1;
 `endif
 
-`ifdef jx2_agu_ridisp
-	tAddrSc0B = (tAddrSc0A[17:16]!=0) ? tAddrSc0B1 : tAddrSc0B0;
-`else
-	tAddrSc0B = tAddrSc0A[16] ? tAddrSc0B1 : tAddrSc0B0;
-`endif
-
 	tCaVal0A = 0;
 	tCaVal0B = tAddrSc0A[16];
 	tCaVal0C = tCaVal0B ? tAddrSc0B1[16] : tAddrSc0B0[16];
 
+
+`ifdef jx2_agu_ridisp
+	tAddrSc0B = (tAddrSc0A[17:16]!=0) ? tAddrSc0B1 : tAddrSc0B0;
+`else
+	tAddrSc0B = tCaVal0B ? tAddrSc0B1 : tAddrSc0B0;
+`endif
+
+`ifndef def_true
 	tAddrSc0C = 16'h0000;
 //	if(addrEnJq)
 //	if(addrEnJq || (regValRm[47:46]==2'b11))
@@ -516,15 +518,26 @@ begin
 //		tAddrSc0C = tAddrSc0B[16] ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
 		tAddrSc0C = tCaVal0C ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
 	end
+`endif
+
+`ifdef def_true
+	tAddrSc0C = tCaVal0C ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
+	if(!addrEnJq[0] && ((regValRm[47:46]!=2'b11) || !addrEnJq[1]))
+	begin
+		tAddrSc0C = 16'h0000;
+	end
+`endif
 
 	tAddrSc0 = { tAddrSc0C[15:0], tAddrSc0B[15:0], tAddrSc0A[15:0] };
 	tAddr = tAddrSc0;
 	
+`ifdef jx2_enable_vaddr96
 `ifdef jx2_enable_vaddr96q64
 	if(addrEnJq[2])
 	begin
 		tRegOutXLeaTag			= regValRm[63:48];
 	end
+`endif
 `endif
 end
 

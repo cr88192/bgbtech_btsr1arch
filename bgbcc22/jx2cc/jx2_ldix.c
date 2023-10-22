@@ -218,6 +218,19 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	case CCXL_TY_M128P:
 		sz=16; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1;
 		break;
+
+	case CCXL_TY_SI48:
+		sctx->is_leaftiny|=8;
+		sz=6; nm1=BGBCC_SH_NMID_MOVTW_V;
+		nm2=-1; break;
+	case CCXL_TY_UI48:
+		sctx->is_leaftiny|=8;
+		sz=6; nm1=BGBCC_SH_NMID_MOVUTW_V;
+		nm2=-1; break;
+	case CCXL_TY_F48:
+		sctx->is_leaftiny|=8;
+		sz=6; nm1=BGBCC_SH_NMID_MOVHTW_V;
+		nm2=-1; break;
 	}
 
 	if(BGBCC_CCXL_TypePointerP(ctx, type))
@@ -275,6 +288,21 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 		case CCXL_TY_BITFIELD_UL:
 			sz=8; nm1=BGBCC_SH_NMID_MOVQ;
 			break;
+		}
+	}
+
+	if(BGBCC_CCXL_TypeBigEndianP(ctx, type))
+	{
+		if(nm2<0)
+		{
+			switch(nm1)
+			{
+			case BGBCC_SH_NMID_MOVW:	nm2=BGBCC_SH_NMID_BSWAPW;	break;
+			case BGBCC_SH_NMID_MOVUW:	nm2=BGBCC_SH_NMID_BSWAPUW;	break;
+			case BGBCC_SH_NMID_MOVL:	nm2=BGBCC_SH_NMID_BSWAPL;	break;
+			case BGBCC_SH_NMID_MOVUL:	nm2=BGBCC_SH_NMID_BSWAPUL;	break;
+			case BGBCC_SH_NMID_MOVQ:	nm2=BGBCC_SH_NMID_BSWAPQ;	break;
+			}
 		}
 	}
 	

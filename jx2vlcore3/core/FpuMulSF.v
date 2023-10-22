@@ -27,6 +27,12 @@ output[31:0]	regValRo;
 input[3:0]		regExOp;
 input[7:0]		regRMode;
 
+
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
 reg[31:0]		tRegValRo2;
 reg[1:0]		tRegExOK2;
 
@@ -245,7 +251,7 @@ end
 
 always @(posedge clock)
 begin
-	if(!exHold)
+	if(exHoldN)
 	begin
 		tSgN2		<= tSgN;
 		tExpN2		<= tExpN;

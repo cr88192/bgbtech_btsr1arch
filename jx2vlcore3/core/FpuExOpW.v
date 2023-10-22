@@ -132,6 +132,12 @@ input			exHold;
 input[15:0]		regInFpsr;
 output[15:0]	regOutFpsr;
 
+
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
 reg[15:0]		tRegOutFpsr;
 assign		regOutFpsr = tRegOutFpsr;
 
@@ -242,6 +248,12 @@ reg[63:0]		tRegDifRcpA;		//Reciprocal Delta
 reg[63:0]		tRegTgtRcpL;		//Reciprocal Target
 reg[63:0]		tRegTgtRcp;			//Reciprocal Target
 
+reg[63:0]		tRegDifRcpL2;		//Reciprocal Delta
+reg[63:0]		tRegDifRcpL3;		//Reciprocal Delta
+reg[63:0]		tRegDifRcpL4;		//Reciprocal Delta
+reg[63:0]		tRegDifRcpL5;		//Reciprocal Delta
+reg[63:0]		tRegDifRcpL6;		//Reciprocal Delta
+
 
 `reg_gpr		tRegIdRsAL;
 `reg_gpr		tRegIdRtAL;
@@ -291,6 +303,13 @@ FpuConvD2H mem_cnv_d2h(tRegValRs[63:0], fstcx_D2H);
 
 // wire[63:0]		fstcx_D2I;
 // FpuConvD2I mem_cnv_d2i(clock, reset, exHold, tRegValRs[63:0], fstcx_D2I);
+
+reg[63:0]	tVecCnvRsOL;
+reg[63:0]	tVecCnvRtOL;
+reg[63:0]	tVechCnvRsOL;
+reg[63:0]	tVechCnvRtOL;
+reg[63:0]	tVecdCnvRsL;
+reg[63:0]	tVecdCnvRtL;
 
 reg[31:0]	tVecCnvRsI;
 reg[31:0]	tVecCnvRtI;
@@ -369,6 +388,7 @@ wire[3:0]	tRegAddSimdExOp;
 wire[1:0]	tRegAddExOK;	
 
 reg[3:0]	tRegAddExOpL;
+reg[3:0]	tRegMulExOpL;
 
 reg[63:0]	tRegMulValL;	//Rn output value (last cycle)
 wire[63:0]	tRegMulVal;		//Rn output value
@@ -385,7 +405,8 @@ FpuAddG	fpu_add(
 	tRegAddRt,	tRegAddRtHi,
 	tRegAddRs,	tRegAddRsHi,
 	tRegAddVal,	tRegAddValHi,
-	tRegAddExOp,
+//	tRegAddExOp,
+	tRegAddExOpL,
 	tRegAddExOK, tRegMulRMode);
 
 FpuMulG	fpu_mul(
@@ -395,7 +416,8 @@ FpuMulG	fpu_mul(
 	tRegMulRt,		tRegMulRtHi,
 	tRegMulRs,		tRegMulRsHi,
 	tRegMulVal,		tRegMulValHi,
-	tRegMulExOp,	tRegMulExOK,
+//	tRegMulExOp,	tRegMulExOK,
+	tRegMulExOpL,	tRegMulExOK,
 	tRegMulRMode
 	);
 
@@ -409,7 +431,8 @@ FpuAdd	fpu_add(
 	tAddExHold,
 	tRegAddRt,	tRegAddRs,
 	tRegAddVal,
-	tRegAddExOp,
+//	tRegAddExOp,
+	tRegAddExOpL,
 	tRegAddExOK,
 	tRegMulRMode);
 
@@ -417,7 +440,8 @@ FpuMul	fpu_mul(
 	clock,			reset,		tMulExHold,
 //	tRegAddRt,		tRegAddRs,	tRegMulVal);
 	tRegMulRt,		tRegMulRs,	tRegMulVal,
-	tRegMulExOp,	tRegMulExOK,
+//	tRegMulExOp,	tRegMulExOK,
+	tRegMulExOpL,	tRegMulExOK,
 	tRegMulRMode);
 
 `endif
@@ -425,16 +449,17 @@ FpuMul	fpu_mul(
 wire tExCmdIsCnvLd;
 
 wire	tFpuIsLongDbl;
-assign	tFpuIsLongDbl = tRegIdIxtL[5];
-
-assign	tRegAddSimdExOp	=
-	(tRegIdIxtL[3:0]==JX2_UCIX_FPU_PADD[3:0]) ? 4'h1 :
-	(tRegIdIxtL[3:0]==JX2_UCIX_FPU_PSUB[3:0]) ? 4'h2 :
-	4'h0;
 
 wire[3:0]	tRegAddCnvLdExOp;
 
-`ifndef def_true
+`ifdef def_true
+assign	tFpuIsLongDbl = tRegIdIxt[5];
+
+assign	tRegAddSimdExOp	=
+	(tRegIdIxt[3:0]==JX2_UCIX_FPU_PADD[3:0]) ? 4'h1 :
+	(tRegIdIxt[3:0]==JX2_UCIX_FPU_PSUB[3:0]) ? 4'h2 :
+	4'h0;
+
 assign	tFpuIsFpu3 = (tOpCmd[5:0]==JX2_UCMD_FPU3);
 assign	tFpuIsFldcx = (tOpCmd[5:0]==JX2_UCMD_FLDCX);
 assign	tFpuIsFstcx = (tOpCmd[5:0]==JX2_UCMD_FSTCX);
@@ -475,23 +500,30 @@ assign	tExCmdIsCnvLd =
 		(tRegIdIxt[5:0]==JX2_UCIX_FPCX_XI) );
 
 assign	tExCmdIsSimd =
-	(tOpCmdL[5:0]==JX2_UCMD_FPU3) 	&&
-	(	(tRegIdIxtL[3:0]==4'h5) ||
-		(tRegIdIxtL[3:0]==4'h6) ||
-		(tRegIdIxtL[3:0]==4'h7)	);
+	(tOpCmd[5:0]==JX2_UCMD_FPU3) 	&&
+	(	(tRegIdIxt[3:0]==4'h5) ||
+		(tRegIdIxt[3:0]==4'h6) ||
+		(tRegIdIxt[3:0]==4'h7)	);
 
 assign	tExCmdIsMac =
-	(tOpCmdL[5:0]==JX2_UCMD_FPU3) 	&&
-	(	(tRegIdIxtL[3:0]==4'h9) ||
-		(tRegIdIxtL[3:0]==4'hB) ||
-		(tRegIdIxtL[3:0]==4'hD)	);
+	(tOpCmd[5:0]==JX2_UCMD_FPU3) 	&&
+	(	(tRegIdIxt[3:0]==4'h9) ||
+		(tRegIdIxt[3:0]==4'hB) ||
+		(tRegIdIxt[3:0]==4'hD)	);
 
 `endif
 
 
 reg	tMulFlipSign;
 
-`ifdef def_true
+`ifndef def_true
+assign	tFpuIsLongDbl = tRegIdIxtL[5];
+
+assign	tRegAddSimdExOp	=
+	(tRegIdIxtL[3:0]==JX2_UCIX_FPU_PADD[3:0]) ? 4'h1 :
+	(tRegIdIxtL[3:0]==JX2_UCIX_FPU_PSUB[3:0]) ? 4'h2 :
+	4'h0;
+
 assign	tFpuIsFpu3 = (tOpCmdL[5:0]==JX2_UCMD_FPU3);
 assign	tFpuIsFldcx = (tOpCmdL[5:0]==JX2_UCMD_FLDCX);
 assign	tFpuIsFstcx = (tOpCmdL[5:0]==JX2_UCMD_FSTCX);
@@ -546,11 +578,18 @@ assign	tExCmdIsMac =
 
 reg			tOpEnable;
 reg[5:0]	tOpUCmd1;
+reg[5:0]	tNxtOpUCmd1;
 
 reg			tExHold;
 reg			tExValidCmd;
+
+`ifdef jx2_fpu_enable_fdiv
 reg[11:0]	tHoldCyc;
 reg[11:0]	tDoHoldCyc;
+`else
+reg[4:0]	tHoldCyc;
+reg[4:0]	tDoHoldCyc;
+`endif
 
 reg			tDivHold;
 reg			tDoHoldDiv;
@@ -588,6 +627,8 @@ wire	tExCmdLaneB1;
 wire	tExCmdLaneB;
 reg		tExCmdVecW;
 
+wire	tExCmdLaneCoW;
+
 assign	tExCmdLaneA =
 	(tOpCmdA[5:0]==JX2_UCMD_FPU3) 	||
 //	(tOpCmdA[5:0]==JX2_UCMD_FCMP)	||
@@ -600,6 +641,11 @@ assign	tExCmdLaneB1 =
 //	(tOpCmdB[5:0]==JX2_UCMD_FCMP)	||
 	(tOpCmdB[5:0]==JX2_UCMD_FLDCX)	||
 	(tOpCmdB[5:0]==JX2_UCMD_FSTCX)	;
+
+assign	tExCmdLaneCoW =
+	(tOpCmdA[5:0]==JX2_UCMD_FPU3) 	&&
+	(tOpCmdB[5:0]==JX2_UCMD_FPU3)	;
+	
 
 wire[7:0]		regRModeA;
 wire[7:0]		regRModeB;
@@ -712,7 +758,7 @@ begin
 	endcase
 `endif
 
-`ifdef def_true
+`ifndef def_true
 //	casez( { opBraFlush, opUCmd[7:6], regInSr[0] } )
 //	casez( { tBraFlushL || reset, tOpCmdL[7:6], regInSr[0] } )
 	casez( { tBraFlushL || reset, tOpCmdL[7:6], tRegInSrL[0] } )
@@ -726,7 +772,23 @@ begin
 	endcase
 `endif
 
-	tOpUCmd1	= tOpEnable ? tOpCmdL[5:0] : JX2_UCMD_NOP;
+//	tOpUCmd1	= tOpEnable ? tOpCmdL[5:0] : JX2_UCMD_NOP;
+
+
+`ifdef def_true
+	casez( { tBraFlush || reset, tOpCmd[7:6], tRegInSr[0] } )
+		4'b000z: 	tOpEnable = 1;
+		4'b001z: 	tOpEnable = 0;
+		4'b0100: 	tOpEnable = 0;
+		4'b0101: 	tOpEnable = 1;
+		4'b0110: 	tOpEnable = 1;
+		4'b0111: 	tOpEnable = 0;
+		4'b1zzz: 	tOpEnable = 0;
+	endcase
+`endif
+
+	tNxtOpUCmd1	= tOpEnable ? tOpCmd[5:0] : JX2_UCMD_NOP;
+
 
 // `ifdef def_true
 `ifndef def_true
@@ -807,6 +869,7 @@ begin
 	tRegAddIsLD	= 0;
 
 `ifndef def_true
+// `ifdef def_true
 	tVecCnvRsI	= tRegValRsA[31:0];
 	tVecCnvRtI	= tRegValRtA[31:0];
 	tVecCnvRnI	= tRegAddVal;
@@ -821,6 +884,7 @@ begin
 `endif
 
 `ifdef def_true
+// `ifndef def_true
 	tVecCnvRsI	= tRegValRsAL[31:0];
 	tVecCnvRtI	= tRegValRtAL[31:0];
 	tVecCnvRnI	= tRegAddVal;
@@ -870,6 +934,7 @@ begin
 		5: begin
 		end
 
+`ifndef def_true
 		6: begin
 			tNxtVecRnA [31:0] = tVecCnvRnO;
 			tNxtVechRn [15:0] = tVechCnvRnO;
@@ -888,7 +953,32 @@ begin
 			tNxtVecRnB[63:32] = tVecCnvRnO;
 			tNxtVechRn[63:48] = tVechCnvRnO;
 		end
-		
+`endif
+
+`ifdef def_true
+		6: begin
+		end
+
+		7: begin
+			tNxtVecRnA [31:0] = tVecCnvRnO;
+			tNxtVechRn [15:0] = tVechCnvRnO;
+			tNxtVecdRnA[63:0] = tVecCnvRnI;
+		end
+		8: begin
+			tNxtVecRnA [63:32] = tVecCnvRnO;
+			tNxtVechRn [31:16] = tVechCnvRnO;
+			tNxtVecdRnB[63: 0] = tVecCnvRnI;
+		end
+		9: begin
+			tNxtVecRnB[31: 0] = tVecCnvRnO;
+			tNxtVechRn[47:32] = tVechCnvRnO;
+		end
+		10: begin
+			tNxtVecRnB[63:32] = tVecCnvRnO;
+			tNxtVechRn[63:48] = tVechCnvRnO;
+		end
+`endif
+
 		default: begin
 		end
 	endcase
@@ -916,11 +1006,23 @@ begin
 
 //	tRegDifRcp	= {
 //		tRegDifRcpA[63], tRegDifRcpA[63], 
+//		tRegDifRcpA[63:3],
+//		!tRegDifRcpA[63] };
+
+	if(tHoldCyc < 8)
+		tRegDifRcp = 0;
+
+//	tRegDifRcp	= {
+//		tRegDifRcpA[63], tRegDifRcpA[63], 
 //		tRegDifRcpA[63], tRegDifRcpA[63], 
 //		tRegDifRcpA[63], tRegDifRcpA[63:5] };
 
 	tRegValRcp	= tRegValRcpL + tRegDifRcpL;
+//	tRegValRcp	= tRegValRcpL + tRegDifRcpL4;
+//	tRegValRcp	= tRegValRcpL + tRegDifRcpL5;
+//	tRegValRcp	= tRegValRcpL + tRegDifRcpL6;
 //	tRegValRcp	= tRegValRcpL6 + tRegDifRcpL;
+//	tRegValRcp	= tRegValRcpL2 + tRegDifRcpL;
 //	tRegValRcp	= tRegValRcpL2 + tRegDifRcpL;
 
 	if(tRegValRcpDoSL)
@@ -1060,37 +1162,50 @@ begin
 `endif
 
 				4'h4: begin
-					tRegValGRn	= tRegValRs;
-					tRegValGRnA	= tRegValGRn;
-					tRegValGRnB	= tRegValGRn;
+//					tRegValGRn	= tRegValRs;
+//					tRegValGRnA	= tRegValGRn;
+//					tRegValGRnB	= tRegValGRn;
 				end
 
 				4'h5: begin
-					tRegAddRs	= tVecCnvRsO;
-					tRegAddRt	= tVecCnvRtO;
-					tVecCnvRnI	= tRegAddVal;
-					tDoHoldCyc = 10;
+//					tRegAddRs	= tVecCnvRsO;
+//					tRegAddRt	= tVecCnvRtO;
 
-					tExCmdVecW	= tRegIdIxtL[5];
+					tRegAddRs	= tVecCnvRsOL;
+					tRegAddRt	= tVecCnvRtOL;
+					tVecCnvRnI	= tRegAddVal;
+//					tDoHoldCyc = 10;
+					tDoHoldCyc = 11;
+
+//					tExCmdVecW	= tRegIdIxtL[5];
+					tExCmdVecW	= tRegIdIxtL[5] || tExCmdLaneCoW;
 					tRegValGRnB	= tVecRnB;
 					tRegValGRnA	= tVecRnA;
 					tRegValGRn	= tVecRnA;
+					
+//					$display("FPU SIMD ADD: %X %X %X  %X",
+//						tVecCnvRsO, tVecCnvRtO, tRegAddVal, tVecRnA);
 					
 					if(tRegIdIxtL[4])
 					begin
 						if(tRegIdIxtL[5])
 						begin
-							tRegAddRs	= tVecdCnvRs;
-							tRegAddRt	= tVecdCnvRt;
+//							tRegAddRs	= tVecdCnvRs;
+//							tRegAddRt	= tVecdCnvRt;
+							tRegAddRs	= tVecdCnvRsL;
+							tRegAddRt	= tVecdCnvRtL;
 							tRegValGRnB	= tVecdRnB;
 							tRegValGRnA	= tVecdRnA;
 							tRegValGRn	= tVecdRnA;
-							tDoHoldCyc	= 8;
+//							tDoHoldCyc	= 8;
+							tDoHoldCyc	= 9;
 						end
 						else
 						begin
-							tRegAddRs	= tVechCnvRsO;
-							tRegAddRt	= tVechCnvRtO;
+//							tRegAddRs	= tVechCnvRsO;
+//							tRegAddRt	= tVechCnvRtO;
+							tRegAddRs	= tVechCnvRsOL;
+							tRegAddRt	= tVechCnvRtOL;
 							tRegValGRnA	= tVechRn;
 							tRegValGRnB	= tVechRn;
 							tRegValGRn	= tVechRn;
@@ -1099,17 +1214,22 @@ begin
 					else
 					begin
 						if(!tExCmdVecW)
-							tDoHoldCyc	= 8;
+//							tDoHoldCyc	= 8;
+							tDoHoldCyc	= 9;
 					end
 				end
 				4'h6: begin
-					tRegAddRs	= tVecCnvRsO;
-					tRegAddRt	= tVecCnvRtO;
+//					tRegAddRs	= tVecCnvRsO;
+//					tRegAddRt	= tVecCnvRtO;
+					tRegAddRs	= tVecCnvRsOL;
+					tRegAddRt	= tVecCnvRtOL;
 					tVecCnvRnI	= tRegAddVal;
 
-					tDoHoldCyc = 10;
+//					tDoHoldCyc = 10;
+					tDoHoldCyc = 11;
 
-					tExCmdVecW = tRegIdIxtL[5];
+//					tExCmdVecW = tRegIdIxtL[5];
+					tExCmdVecW = tRegIdIxtL[5] || tExCmdLaneCoW;
 					tRegValGRnB = tVecRnB;
 					tRegValGRnA = tVecRnA;
 					tRegValGRn	= tVecRnA;
@@ -1118,17 +1238,22 @@ begin
 					begin
 						if(tRegIdIxtL[5])
 						begin
-							tRegAddRs	= tVecdCnvRs;
-							tRegAddRt	= tVecdCnvRt;
+//							tRegAddRs	= tVecdCnvRs;
+//							tRegAddRt	= tVecdCnvRt;
+							tRegAddRs	= tVecdCnvRsL;
+							tRegAddRt	= tVecdCnvRtL;
 							tRegValGRnB	= tVecdRnB;
 							tRegValGRnA	= tVecdRnA;
 							tRegValGRn	= tVecdRnA;
-							tDoHoldCyc	= 8;
+//							tDoHoldCyc	= 8;
+							tDoHoldCyc	= 9;
 						end
 						else
 						begin
-							tRegAddRs	= tVechCnvRsO;
-							tRegAddRt	= tVechCnvRtO;
+//							tRegAddRs	= tVechCnvRsO;
+//							tRegAddRt	= tVechCnvRtO;
+							tRegAddRs	= tVechCnvRsOL;
+							tRegAddRt	= tVechCnvRtOL;
 							tRegValGRnA	= tVechRn;
 							tRegValGRnB	= tVechRn;
 							tRegValGRn	= tVechRn;
@@ -1137,19 +1262,22 @@ begin
 					else
 					begin
 						if(!tExCmdVecW)
-							tDoHoldCyc	= 8;
+//							tDoHoldCyc	= 8;
+							tDoHoldCyc	= 9;
 					end
 				end
 				4'h7: begin
-//					tRegAddRs	= tVecCnvRsO;
-//					tRegAddRt	= tVecCnvRtO;
-					tRegMulRs	= tVecCnvRsO;
-					tRegMulRt	= tVecCnvRtO;
+//					tRegMulRs	= tVecCnvRsO;
+//					tRegMulRt	= tVecCnvRtO;
+					tRegMulRs	= tVecCnvRsOL;
+					tRegMulRt	= tVecCnvRtOL;
 					tVecCnvRnI	= tRegMulValL;
 
-					tDoHoldCyc = 10;
+//					tDoHoldCyc = 10;
+					tDoHoldCyc = 11;
 
-					tExCmdVecW	= tRegIdIxtL[5];
+//					tExCmdVecW	= tRegIdIxtL[5];
+					tExCmdVecW	= tRegIdIxtL[5] || tExCmdLaneCoW;
 					tRegValGRnB	= tVecRnB;
 					tRegValGRnA	= tVecRnA;
 					tRegValGRn	= tVecRnA;
@@ -1158,21 +1286,22 @@ begin
 					begin
 						if(tRegIdIxtL[5])
 						begin
-//							tRegAddRs	= tVecdCnvRs;
-//							tRegAddRt	= tVecdCnvRt;
-							tRegMulRs	= tVecdCnvRs;
-							tRegMulRt	= tVecdCnvRt;
+//							tRegMulRs	= tVecdCnvRs;
+//							tRegMulRt	= tVecdCnvRt;
+							tRegMulRs	= tVecdCnvRsL;
+							tRegMulRt	= tVecdCnvRtL;
 							tRegValGRnB	= tVecdRnB;
 							tRegValGRnA	= tVecdRnA;
 							tRegValGRn	= tVecdRnA;
-							tDoHoldCyc	= 8;
+//							tDoHoldCyc	= 8;
+							tDoHoldCyc	= 9;
 						end
 						else
 						begin
-//							tRegAddRs	= tVechCnvRsO;
-//							tRegAddRt	= tVechCnvRtO;
-							tRegMulRs	= tVechCnvRsO;
-							tRegMulRt	= tVechCnvRtO;
+//							tRegMulRs	= tVechCnvRsO;
+//							tRegMulRt	= tVechCnvRtO;
+							tRegMulRs	= tVechCnvRsOL;
+							tRegMulRt	= tVechCnvRtOL;
 							tRegValGRnA	= tVechRn;
 							tRegValGRnB	= tVechRn;
 							tRegValGRn	= tVechRn;
@@ -1181,14 +1310,16 @@ begin
 					else
 					begin
 						if(!tExCmdVecW)
-							tDoHoldCyc	= 8;
+//							tDoHoldCyc	= 8;
+							tDoHoldCyc	= 9;
 					end
 				end
 
 `ifdef jx2_fpu_fmac
 				4'h9: begin
 					tDoHoldCyc	= 10;
-					tExCmdVecW	= tRegIdIxtL[5];
+//					tExCmdVecW	= tRegIdIxtL[5];
+					tExCmdVecW	= tRegIdIxtL[5] || tExCmdLaneCoW;
 
 					tRegAddRs	= tRegValRnL;
 					tRegAddRsHi	= tRegValRnBL;
@@ -1396,7 +1527,7 @@ reg[1:0]	tLastRegMulExOK;
 
 always @(posedge clock)
 begin
-	if(!exHold)
+	if(exHoldN)
 	begin
 //		tRegOutVal2		<= tRegOutVal;
 //		tRegOutId2		<= tRegOutId;
@@ -1406,11 +1537,13 @@ begin
 //		tRegValLdGRn2	<= tRegValLdGRn;
 
 		tRegAddExOpL	<= tRegAddExOp;
+		tRegMulExOpL	<= tRegMulExOp;
 
 `ifdef def_true
 		tOpCmdL			<= tOpCmd;
 		tRegIdIxtL		<= tRegIdIxt;
 		tExCmdLaneBL	<= tExCmdLaneB;
+		tOpUCmd1		<= tNxtOpUCmd1;
 
 		tRegIdRsL		<= tRegIdRs;
 		tRegIdRtL		<= tRegIdRt;
@@ -1452,6 +1585,13 @@ begin
 	tVecdRnB	<= tNxtVecdRnB;
 	tRegMulValL	<= tRegMulVal;
 
+	tVecCnvRsOL		<= tVecCnvRsO;
+	tVecCnvRtOL		<= tVecCnvRtO;
+	tVechCnvRsOL	<= tVechCnvRsO;
+	tVechCnvRtOL	<= tVechCnvRtO;
+	tVecdCnvRsL		<= tVecdCnvRs;
+	tVecdCnvRtL		<= tVecdCnvRt;
+
 
 	tRegValRcpL		<= tRegValRcp;
 	tRegValRcpL2	<= tRegValRcpL;
@@ -1460,6 +1600,13 @@ begin
 	tRegValRcpL5	<= tRegValRcpL4;
 	tRegValRcpL6	<= tRegValRcpL5;
 	tRegDifRcpL		<= tRegDifRcp;
+
+	tRegDifRcpL2	<= tRegDifRcpL;
+	tRegDifRcpL3	<= tRegDifRcpL2;
+	tRegDifRcpL4	<= tRegDifRcpL3;
+	tRegDifRcpL5	<= tRegDifRcpL4;
+	tRegDifRcpL6	<= tRegDifRcpL5;
+
 	tRegTgtRcpL		<= tRegTgtRcp;
 	tDoHoldDivL		<= tDoHoldDiv;
 

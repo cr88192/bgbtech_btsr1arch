@@ -572,6 +572,30 @@ int BJX2_MemSimSetConfigL2(BJX2_Context *ctx, char *str)
 	ctx->l2_vict=0;
 	ctx->l2_hshr=17;
 
+	if(!strcmp(str, "2k1") ||
+		!strcmp(str, "2k") ||
+		!strcmp(str, "2k1v"))
+	{
+		ctx->l2_hmask=31;
+		ctx->l2_hshr=8+6;
+	}
+
+	if(!strcmp(str, "4k1") ||
+		!strcmp(str, "4k") ||
+		!strcmp(str, "4k1v"))
+	{
+		ctx->l2_hmask=63;
+		ctx->l2_hshr=8+6;
+	}
+
+	if(!strcmp(str, "8k1") ||
+		!strcmp(str, "8k") ||
+		!strcmp(str, "8k1v"))
+	{
+		ctx->l2_hmask=127;
+		ctx->l2_hshr=8+6;
+	}
+
 	if(!strcmp(str, "16k1") ||
 		!strcmp(str, "16k") ||
 		!strcmp(str, "16k1v"))
@@ -1084,6 +1108,18 @@ int BJX2_MemSimSetConfigL1D(BJX2_Context *ctx, char *str)
 {
 	ctx->l1d_hmask=255;
 	ctx->l1d_wmask=0;
+
+	if(!strcmp(str, "2k1") ||
+		!strcmp(str, "2k"))
+	{
+		ctx->l1d_hmask=63;
+	}
+
+	if(!strcmp(str, "4k1") ||
+		!strcmp(str, "4k"))
+	{
+		ctx->l1d_hmask=127;
+	}
 
 	if(!strcmp(str, "8k1") ||
 		!strcmp(str, "8k"))
@@ -1694,6 +1730,7 @@ int BJX2_MemSimAddrL1Multi(BJX2_Context *ctx, bjx2_addr addr, int opm)
 		fprintf(mlogfd, "\n");
 		fflush(mlogfd);
 	}
+	return(0);
 }
 
 
@@ -4095,6 +4132,7 @@ int BJX2_MemSetXWord(BJX2_Context *ctx, bjx2_addr addr0,
 int BJX2_MemSetTrip(BJX2_Context *ctx, bjx2_addr addr0, int val)
 {
 //	return(ctx->MemSetTripwire(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
+	return(0);
 }
 
 int BJX2_MemQueryTransit(BJX2_Context *ctx,

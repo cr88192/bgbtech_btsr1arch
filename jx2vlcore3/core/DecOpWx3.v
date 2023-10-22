@@ -26,7 +26,7 @@
 /*
 BJX2 Instruction Decoder (WEX, 3-Wide)
 
-Takes a 16/32/48 bit instruction word.
+Takes a 16/32 bit instruction word.
 
 Ex block is predicated.
 Fx block is unconditional.
@@ -46,11 +46,6 @@ For scalar Ops, Lane 2/3 will hold:
 
 `include "DecOpBz.v"
 `include "DecOpFz.v"
-// `include "DecOpFC.v"
-
-`ifdef jx2_enable_ops24
-`include "DecOpHz.v"
-`endif
 
 `ifdef jx2_enable_riscv
 `include "DecOpRvI.v"
@@ -166,8 +161,6 @@ defparam		decOpBz.fpuLowPrec		= fpuLowPrec;
 reg[32:0]		opImmA;
 reg[8:0]		opUCmdA;
 reg[8:0]		opUIxtA;
-// reg[7:0]		opUFlA;
-// reg[12:0]		opUFlA;
 reg[18:0]		opUFlA;
 
 reg[15:0]		opFpImmA;
@@ -183,8 +176,6 @@ reg[8:0]		opUIxtC;
 reg[32:0]		opImmA0;
 reg[8:0]		opUCmdA0;
 reg[8:0]		opUIxtA0;
-// reg[7:0]		opUFlA0;
-// reg[12:0]		opUFlA0;
 reg[18:0]		opUFlA0;
 
 assign	idRegS = opRegAM;
@@ -211,9 +202,6 @@ assign	idImmC = opImmC;
 assign	idUCmdC = opUCmdC;
 assign	idUIxtC = opUIxtC;
 
-// wire[21:0]		tOpJBitsA;
-// wire[21:0]		tOpJBitsB;
-// wire[21:0]		tOpJBitsC;
 wire[24:0]		tOpJBitsA;
 wire[24:0]		tOpJBitsB;
 wire[24:0]		tOpJBitsC;
@@ -222,7 +210,6 @@ wire		opIsWexJumboA;
 wire		opIsWexJumboB;
 wire		opIsWexJumbo96;
 reg			opIsWexJumboLdi;
-`reg_gpr	opWexJumboRn;
 
 wire		opIsWexJumboXA;
 wire		opIsWexJumboXB;
@@ -255,9 +242,6 @@ DecOpBz	decOpBz(
 wire[32:0]		decOpFzC_idImm;
 wire[8:0]		decOpFzC_idUCmd;
 wire[8:0]		decOpFzC_idUIxt;
-// wire[3:0]		decOpFzC_idUFl;
-// wire[7:0]		decOpFzC_idUFl;
-// wire[12:0]		decOpFzC_idUFl;
 wire[18:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
@@ -285,9 +269,6 @@ DecOpFz	decOpFzC(
 wire[32:0]		decOpFzB_idImm;
 wire[8:0]		decOpFzB_idUCmd;
 wire[8:0]		decOpFzB_idUIxt;
-// wire[3:0]		decOpFzB_idUFl;
-// wire[7:0]		decOpFzB_idUFl;
-// wire[12:0]		decOpFzB_idUFl;
 wire[18:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
@@ -312,9 +293,6 @@ DecOpFz	decOpFzB(
 wire[32:0]		decOpFzA_idImm;
 wire[8:0]		decOpFzA_idUCmd;
 wire[8:0]		decOpFzA_idUIxt;
-// wire[3:0]		decOpFzA_idUFl;
-// wire[7:0]		decOpFzA_idUFl;
-// wire[12:0]		decOpFzA_idUFl;
 wire[18:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
@@ -338,9 +316,6 @@ DecOpFz	decOpFzA(
 wire[32:0]		decOpRvA_idImm;
 wire[8:0]		decOpRvA_idUCmd;
 wire[8:0]		decOpRvA_idUIxt;
-// wire[3:0]		decOpRvA_idUFl;
-// wire[7:0]		decOpRvA_idUFl;
-// wire[12:0]		decOpRvA_idUFl;
 wire[18:0]		decOpRvA_idUFl;
 
 DecOpRvI	decOpRvA(
@@ -356,42 +331,6 @@ DecOpRvI	decOpRvA(
 
 `endif
 
-`ifdef jx2_enable_ops48
-`wire_gpr		decOpFC_idRegN;
-`wire_gpr		decOpFC_idRegM;
-`wire_gpr		decOpFC_idRegO;
-wire[32:0]		decOpFC_idImm;
-wire[8:0]		decOpFC_idUCmd;
-wire[8:0]		decOpFC_idUIxt;
-
-DecOpFC	decOpFC(
-	clock,		reset,
-	istrWord[63:0],
-	decOpFC_idRegN,		decOpFC_idRegM,
-	decOpFC_idRegO,		decOpFC_idImm,
-	decOpFC_idUCmd,		decOpFC_idUIxt
-	);
-`endif
-
-`ifdef jx2_enable_ops24
-`wire_gpr		decOpHz_idRegN;
-`wire_gpr		decOpHz_idRegM;
-`wire_gpr		decOpHz_idRegO;
-wire[32:0]		decOpHz_idImm;
-wire[8:0]		decOpHz_idUCmd;
-wire[8:0]		decOpHz_idUIxt;
-wire[3:0]		decOpHz_idUFl;
-
-DecOpHz	decOpHz(
-	clock,		reset,
-	{ UV32_00, istrWord[31: 0] },	4'h0,	UV26_00,
-	decOpHz_idRegN,		decOpHz_idRegM,
-	decOpHz_idRegO,		decOpHz_idImm,
-	decOpHz_idUCmd,		decOpHz_idUIxt,
-	decOpHz_idUFl
-	);
-`endif
-
 reg opIsFxA;
 reg opIsFzA;
 reg opIsFCA;
@@ -402,8 +341,6 @@ reg opIsWfA;	//WEX
 
 reg opIsScalar;		//Scalar Operation
 reg opIsDualLane;	//Op uses both lanes
-// reg opIsDualLane3R;	//Op uses both lanes (with all 3 regs as 128b)
-// reg opIsDualLane2R;	//Op uses both lanes (with Rm and Rn regs as 128b)
 reg opIsDualLaneRm;	//Op uses both lanes (with Rm as 128b)
 reg opIsDualLaneRn;	//Op uses both lanes (with Rn as 128b)
 reg opIsDualLaneRo;	//Op uses both lanes (with Ro as 128b)
@@ -548,49 +485,6 @@ assign	tOpJBitsC		= 0;
 
 initial
 begin
-`ifndef def_true
-	opCmRemapRx[ 0]=JX2_GR_PC_HI;
-//	opCmRemapRx[ 1]=JX2_GR_LR_HI;
-	opCmRemapRx[ 1]=JX2_GR_ZZR;
-	opCmRemapRx[ 2]=JX2_GR_ZZR;
-	opCmRemapRx[ 3]=JX2_GR_VBR_HI;
-	opCmRemapRx[ 4]=JX2_GR_SPC_HI;
-//	opCmRemapRx[ 5]=JX2_GR_SSP_HI;
-	opCmRemapRx[ 5]=JX2_GR_ZZR;
-	opCmRemapRx[ 6]=JX2_GR_GBR_HI;
-	opCmRemapRx[ 7]=JX2_GR_ZZR;
-	opCmRemapRx[ 8]=JX2_GR_ZZR;
-	opCmRemapRx[ 9]=JX2_GR_ZZR;
-	opCmRemapRx[10]=JX2_GR_ZZR;
-	opCmRemapRx[11]=JX2_GR_ZZR;
-	opCmRemapRx[12]=JX2_GR_ZZR;
-	opCmRemapRx[13]=JX2_GR_ZZR;
-	opCmRemapRx[14]=JX2_GR_ZZR;
-	opCmRemapRx[15]=JX2_GR_ZZR;
-//	opCmRemapRx[15]=JX2_GR_SP_HI;
-
-	opCmRemapRx[16]=JX2_GR_PC2_HI;
-//	opCmRemapRx[17]=JX2_GR_LR2_HI;
-	opCmRemapRx[17]=JX2_GR_ZZR;
-	opCmRemapRx[18]=JX2_GR_ZZR;
-//	opCmRemapRx[19]=JX2_GR_VBR2_HI;
-	opCmRemapRx[19]=JX2_GR_ZZR;
-	opCmRemapRx[20]=JX2_GR_SPC2_HI;
-//	opCmRemapRx[21]=JX2_GR_SSP2_HI;
-	opCmRemapRx[21]=JX2_GR_ZZR;
-	opCmRemapRx[22]=JX2_GR_GBR2_HI;
-	opCmRemapRx[23]=JX2_GR_ZZR;
-	opCmRemapRx[24]=JX2_GR_ZZR;
-	opCmRemapRx[25]=JX2_GR_ZZR;
-	opCmRemapRx[26]=JX2_GR_ZZR;
-	opCmRemapRx[27]=JX2_GR_ZZR;
-	opCmRemapRx[28]=JX2_GR_ZZR;
-	opCmRemapRx[29]=JX2_GR_ZZR;
-	opCmRemapRx[30]=JX2_GR_ZZR;
-	opCmRemapRx[31]=JX2_GR_ZZR;
-//	opCmRemapRx[31]=JX2_GR_SP2_HI;
-`endif
-
 `ifdef def_true
 	opCmRemapRxA[6'h00]=JX2_GR_DLR;
 	opCmRemapRxA[6'h01]=JX2_GR_R32;
@@ -772,6 +666,8 @@ begin
 	opDualLaneSw	= 0;
 	opIsBaseRm		= 0;
 
+`ifndef def_true
+
 	casez(istrWord[15:10])
 `ifdef jx2_enable_xgpr
 		6'b0111zz: begin	//70..7F
@@ -877,6 +773,119 @@ begin
 		end
 	endcase
 
+`endif
+
+
+`ifdef def_true
+
+	casez({srXG2, istrWord[15:10]})
+`ifdef jx2_enable_xgpr
+		7'b0_0111zz: begin	//70..7F
+			opIsFxA = 1;		opIsFzA = 1;
+			opIsFCA = 0;		opIsDzA = 0;
+			opIsDfA = istrWord[11];
+		end
+
+		7'b0_1001zz: begin	//70..7F
+			opIsFxA = 1;		opIsFzA = 1;
+			opIsFCA = 0;		opIsDzA = 0;
+			opIsDfA = istrWord[11];
+		end
+`endif
+
+		7'b0_1110zz, 7'b1_zzz0zz: begin	//E0..EF
+			opIsFxA = 1;		opIsFzA = 1;
+			opIsFCA = 0;		opIsDzA = 1;
+			opIsDfA = istrWord[10];
+			opIsDwA = istrWord[11] && istrWord[9];
+		end
+
+		7'b0_1111zz, 7'b1_zzz1zz: begin	//F0..FF
+			opIsFxA = 1;		opIsFzA = 1;
+			opIsFCA = 0;		opIsDzA = 0;
+			opIsDfA = istrWord[10];
+		end
+
+		default: begin
+			opIsFxA = 0;	opIsFzA = 0;
+			opIsFCA = 0;	opIsDzA = 0;
+			opIsDfA = 0;
+		end
+	endcase
+
+	casez({srXG2, istrWord[47:42]})
+`ifdef jx2_enable_xgpr
+		7'b0_0111zz: begin	//70..7F
+			opIsFxB = 1;		opIsFzB = 1;
+			opIsFCB = 0;		opIsDzB = 0;
+			opIsDfB = istrWord[43];
+		end
+
+		7'b0_1001zz: begin	//70..7F
+			opIsFxB = 1;		opIsFzB = 1;
+			opIsFCB = 0;		opIsDzB = 0;
+			opIsDfB = istrWord[43];
+		end
+`endif
+
+		7'b0_1110zz, 7'b1_zzz0zz: begin	//E0..EF
+			opIsFxB = 1;		opIsFzB = 1;
+			opIsFCB = 0;		opIsDzB = 1;
+			opIsDfB = istrWord[42];
+			opIsDwB = istrWord[43] && istrWord[41];
+		end
+
+		7'b0_1111zz, 7'b1_zzz1zz: begin	//F0..FF
+			opIsFxB = 1;		opIsFzB = 1;
+			opIsFCB = 0;		opIsDzB = 0;
+			opIsDfB = istrWord[42];
+		end
+
+		default: begin
+			opIsFxB = 0;	opIsFzB = 0;
+			opIsFCB = 0;	opIsDzB = 0;
+			opIsDfB = 0;
+		end
+	endcase
+
+	casez({srXG2, istrWord[79:74]})
+`ifdef jx2_enable_xgpr
+		7'b0_0111zz: begin	//70..7F
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 0;
+			opIsDfC = istrWord[75];
+		end
+
+		7'b0_1001zz: begin	//70..7F
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 0;
+			opIsDfC = istrWord[75];
+		end
+`endif
+
+		7'b0_1110zz, 7'b1_zzz0zz: begin	//E0..EF
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 1;
+			opIsDfC = istrWord[74];
+			opIsDwC = istrWord[75] && istrWord[73];
+		end
+
+		7'b0_1111zz, 7'b1_zzz1zz: begin	//F0..FF
+			opIsFxC = 1;		opIsFzC = 1;
+			opIsFCC = 0;		opIsDzC = 0;
+			opIsDfC = istrWord[74];
+		end
+
+		default: begin
+			opIsFxC = 0;	opIsFzC = 0;
+			opIsFCC = 0;	opIsDzC = 0;
+			opIsDfC = 0;
+		end
+	endcase
+
+`endif
+
+
 `ifdef jx2_enable_riscv
 //	if(srRiscv)
 	if(srRiscv && !srXG2RV)
@@ -897,7 +906,8 @@ begin
 	end
 `endif
 
-`ifdef jx2_enable_xg2mode
+// `ifdef jx2_enable_xg2mode
+`ifndef def_true
 	if(srXG2)
 	begin
 		opIsFxA = 1;		opIsFzA = 1;
@@ -940,18 +950,6 @@ begin
 	opIsWfA = ((opIsDfA && !opIsDzA) || opIsDwA) && srWxe;
 	opIsWfB = ((opIsDfB && !opIsDzB) || opIsDwB) && srWxe;
 
-// `ifdef jx2_enable_wexjumbo
-`ifndef def_true
-	opIsWexJumboLdi = opIsWexJumbo96 &&
-//		(istrWord[47:40] == 8'b1111_0100) &&
-		(istrWord[79:73] == 7'b1111_101 );
-
-	opWexJumboRn[3:2] = istrWord[29:28];
-	opWexJumboRn[1:0] = istrWord[61:60];
-	opWexJumboRn[  4] = istrWord[72];
-	opWexJumboRn[  5] = (opWexJumboRn[4:1] == 0);
-`endif
-
 `ifdef jx2_enable_wexjumbo
 	if(opIsWexJumbo96)
 	begin
@@ -975,12 +973,15 @@ begin
 		opRegBM	= JX2_GR_ZZR;
 		opRegBO	= JX2_GR_ZZR;
 		opRegBN	= JX2_GR_ZZR;
-//		opImmB	= { 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
-		
+
+`ifdef jx2_use_fpu_fpimm
 		opImmB	= decOpFzC_idUFl[0] ?
 //			{ 9'b0, tOpJBitsB[23:0] } :
 			{ opImmA[32] ? 9'h1FF : 9'h000, tOpJBitsB[23:0] } :
 			{ 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
+`else
+		opImmB	= { 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
+`endif
 
 		opUCmdB	= UV9_00;
 		opUIxtB	= UV9_00;
@@ -1006,220 +1007,130 @@ begin
 `endif
 	if(opIsFxA)
 	begin
-//		opRegXM = { istrWord[ 0], istrWord[25], istrWord[ 3: 1], 1'b0 };
-//		opRegXO = { istrWord[20], istrWord[24], istrWord[23:21], 1'b0 };
-//		opRegXN = { istrWord[ 4], istrWord[26], istrWord[ 7: 5], 1'b0 };
-
-`ifdef jx2_enable_ops48
-		if(opIsFCA)
-`else
-		if(1'b0)
-`endif
+		if(opIsWfA && opIsWfB)
 		begin
-`ifdef jx2_enable_ops48
-			opRegAN	= decOpFC_idRegN;
-			opRegAM	= decOpFC_idRegM;
-			opRegAO	= decOpFC_idRegO;
-			opImmA	= decOpFC_idImm;
-			opUCmdA	= decOpFC_idUCmd;
-			opUIxtA	= decOpFC_idUIxt;
+//			$display("DecOpWz3: WEX3");
+		
+			opRegAM	= decOpFzC_idRegM;
+			opRegAO	= decOpFzC_idRegO;
+			opRegAN	= decOpFzC_idRegN;
+			opImmA	= decOpFzC_idImm;
+			opUCmdA	= decOpFzC_idUCmd;
+			opUIxtA	= decOpFzC_idUIxt;
 
-			opRegAN0	= decOpFC_idRegN;
-			opRegAP0	= decOpFC_idRegN;
-			opRegAM0	= decOpFC_idRegM;
-			opRegAO0	= decOpFC_idRegO;
-			opUCmdA0	= decOpFC_idUCmd;
-			opUIxtA0	= decOpFC_idUIxt;
-//			opUFlA0		= decOpFzC_idUFl;
+			opRegAM0	= decOpFzC_idRegM;
+			opRegAO0	= decOpFzC_idRegO;
+			opRegAN0	= decOpFzC_idRegN;
+			opRegAP0	= decOpFzC_idRegP;
+			opUCmdA0	= decOpFzC_idUCmd;
+			opUIxtA0	= decOpFzC_idUIxt;
+			opUFlA0		= decOpFzC_idUFl;
 
-			opRegBN	= JX2_GR_ZZR;
-			opRegBM	= JX2_GR_ZZR;
-			opRegBO	= decOpFC_idRegN;
-			opImmB	= UV33_00;
-			opUCmdB	= UV9_00;
-			opUIxtB	= UV9_00;
-				
-			opRegCM	= JX2_GR_ZZR;
-			opRegCO	= decOpFC_idRegN;
+			opRegBM	= decOpFzB_idRegM;
+			opRegBO	= decOpFzB_idRegO;
+			opRegBN	= decOpFzB_idRegN;
+			opImmB	= decOpFzB_idImm;
+			opUCmdB	= decOpFzB_idUCmd;
+			opUIxtB	= decOpFzB_idUIxt;
+
+			opRegCM	= decOpFzA_idRegM;
+			opRegCO	= decOpFzA_idRegO;
+			opRegCN	= decOpFzA_idRegN;
+			opImmC	= decOpFzA_idImm;
+			opUCmdC	= decOpFzA_idUCmd;
+			opUIxtC	= decOpFzA_idUIxt;
+
+			if(noLane3)
+			begin
+				opRegCM	= JX2_GR_ZZR;
+				opRegCO	= JX2_GR_ZZR;
+				opRegCN	= JX2_GR_ZZR;
+				opImmC	= 0;
+				opUCmdC	= 0;
+				opUIxtC	= 0;
+			end
+		end
+		else
+		if(opIsWfA || opIsWexJumboA)
+		begin
+		
+			if(!opIsWexJumboA)
+			begin
+//				$display("DecOpWz3: WEX2 %X-%X %X-%X",
+//					istrWord[15:0], istrWord[31:16],
+//					istrWord[47:32], istrWord[63:48]);
+			end
+
+			opRegAM	= decOpFzB_idRegM;
+			opRegAO	= decOpFzB_idRegO;
+			opRegAN	= decOpFzB_idRegN;
+			opImmA	= decOpFzB_idImm;
+			opUCmdA	= decOpFzB_idUCmd;
+			opUIxtA	= decOpFzB_idUIxt;
+
+			opRegAM0	= decOpFzB_idRegM;
+			opRegAO0	= decOpFzB_idRegO;
+			opRegAN0	= decOpFzB_idRegN;
+			opRegAP0	= decOpFzB_idRegP;
+			opUCmdA0	= decOpFzB_idUCmd;
+			opUIxtA0	= decOpFzB_idUIxt;
+			opUFlA0		= decOpFzB_idUFl;
+
+			opRegBM	= decOpFzA_idRegM;
+			opRegBO	= decOpFzA_idRegO;
+			opRegBN	= decOpFzA_idRegN;
+			opImmB	= decOpFzA_idImm;
+			opUCmdB	= decOpFzA_idUCmd;
+			opUIxtB	= decOpFzA_idUIxt;
+
+			opRegCM	= decOpFzA_idRegP;
+			opRegCO	= decOpFzB_idRegP;
 			opRegCN	= JX2_GR_ZZR;
 			opImmC	= UV33_00;
 			opUCmdC	= UV9_00;
-			opUIxtC	= UV9_00;
+//				opUIxtC	= UV9_00;
+//				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
+			opUIxtC	= decOpFzB_idUFl[12:4];
 
-//			if(opIsDzA)
-//			begin
-//				opUCmdA[8:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
-//			end
-`endif
+			opUCmdC		= { 3'b001, decOpFzB_idUFl[18:13] };
+
+			opIsScalar	= opIsWexJumboA;
+
+			if(opIsWexJumboA)
+			begin
+//				if(decOpFzB_idUFl[0])
+				if(1'b0)
+				begin
+					/* Jumbo24 + Imm16 */
+					opImmB	= {
+						opImmA[32] ? UV25_FF : UV25_00,
+						tOpJBitsB[23:16] };
+				end else begin
+					/* Jumbo24 + Imm24 */
+					opImmB	= {
+						opImmA[32] ? UV17_FF : UV17_00,
+						tOpJBitsB[23:8] };
+				end
+			end
 		end
 		else
 		begin
-			if(opIsWfA && opIsWfB)
-			begin
-//				$display("DecOpWz3: WEX3");
-			
-				opRegAM	= decOpFzC_idRegM;
-				opRegAO	= decOpFzC_idRegO;
-				opRegAN	= decOpFzC_idRegN;
-//				opRegAN	= decOpFzC_idRegN;
-				opImmA	= decOpFzC_idImm;
-				opUCmdA	= decOpFzC_idUCmd;
-				opUIxtA	= decOpFzC_idUIxt;
-
-				opRegAM0	= decOpFzC_idRegM;
-				opRegAO0	= decOpFzC_idRegO;
-				opRegAN0	= decOpFzC_idRegN;
-				opRegAP0	= decOpFzC_idRegP;
-				opUCmdA0	= decOpFzC_idUCmd;
-				opUIxtA0	= decOpFzC_idUIxt;
-				opUFlA0		= decOpFzC_idUFl;
-
-				opRegBM	= decOpFzB_idRegM;
-				opRegBO	= decOpFzB_idRegO;
-				opRegBN	= decOpFzB_idRegN;
-				opImmB	= decOpFzB_idImm;
-				opUCmdB	= decOpFzB_idUCmd;
-				opUIxtB	= decOpFzB_idUIxt;
-
-				opRegCM	= decOpFzA_idRegM;
-				opRegCO	= decOpFzA_idRegO;
-				opRegCN	= decOpFzA_idRegN;
-				opImmC	= decOpFzA_idImm;
-				opUCmdC	= decOpFzA_idUCmd;
-				opUIxtC	= decOpFzA_idUIxt;
-
-				if(noLane3)
-				begin
-					opRegCM	= JX2_GR_ZZR;
-					opRegCO	= JX2_GR_ZZR;
-					opRegCN	= JX2_GR_ZZR;
-//					opImmC	= UV33_00;
-					opImmC	= 0;
-					opUCmdC	= 0;
-					opUIxtC	= 0;
-				end
-
-`ifndef def_true
-				if(opIsDzA)
-				begin
-					opUCmdC[8:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
-				end
-				if(opIsDzB)
-				begin
-					opUCmdB[8:6]=opIsDfB?JX2_IXC_CF:JX2_IXC_CT;
-				end
-				if(opIsDzC)
-				begin
-					opUCmdA[8:6]=opIsDfC?JX2_IXC_CF:JX2_IXC_CT;
-				end
-`endif
-			end
-			else
-			if(opIsWfA || opIsWexJumboA)
-			begin
-			
-				if(!opIsWexJumboA)
-				begin
-//					$display("DecOpWz3: WEX2 %X-%X %X-%X",
-//						istrWord[15:0], istrWord[31:16],
-//						istrWord[47:32], istrWord[63:48]);
-				end
-
-				opRegAM	= decOpFzB_idRegM;
-				opRegAO	= decOpFzB_idRegO;
-				opRegAN	= decOpFzB_idRegN;
-				opImmA	= decOpFzB_idImm;
-				opUCmdA	= decOpFzB_idUCmd;
-				opUIxtA	= decOpFzB_idUIxt;
-
-				opRegAM0	= decOpFzB_idRegM;
-				opRegAO0	= decOpFzB_idRegO;
-				opRegAN0	= decOpFzB_idRegN;
-				opRegAP0	= decOpFzB_idRegP;
-				opUCmdA0	= decOpFzB_idUCmd;
-				opUIxtA0	= decOpFzB_idUIxt;
-				opUFlA0		= decOpFzB_idUFl;
-
-				opRegBM	= decOpFzA_idRegM;
-				opRegBO	= decOpFzA_idRegO;
-				opRegBN	= decOpFzA_idRegN;
-				opImmB	= decOpFzA_idImm;
-				opUCmdB	= decOpFzA_idUCmd;
-				opUIxtB	= decOpFzA_idUIxt;
-
-//				opRegCM	= decOpFzA_idRegN;
-//				opRegCO	= decOpFzB_idRegN;
-				opRegCM	= decOpFzA_idRegP;
-				opRegCO	= decOpFzB_idRegP;
-				opRegCN	= JX2_GR_ZZR;
-				opImmC	= UV33_00;
-				opUCmdC	= UV9_00;
-//				opUIxtC	= UV9_00;
-//				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
-				opUIxtC	= decOpFzB_idUFl[12:4];
-
-				opUCmdC		= { 3'b001, decOpFzB_idUFl[18:13] };
-
-				opIsScalar	= opIsWexJumboA;
-
-				if(opIsWexJumboA)
-				begin
-//					if(decOpFzC_idUFl[0])
-					if(decOpFzB_idUFl[0])
-					begin
-						/* Jumbo24 + Imm16 */
-						opImmB	= {
-							opImmA[32] ? UV25_FF : UV25_00,
-							tOpJBitsB[23:16] };
-					end else begin
-						/* Jumbo24 + Imm24 */
-						opImmB	= {
-							opImmA[32] ? UV17_FF : UV17_00,
-							tOpJBitsB[23:8] };
-					end
-				end
-
-`ifndef def_true
-				if(opIsDzA)
-				begin
-					opUCmdB[8:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
-				end
-				if(opIsDzB)
-				begin
-					opUCmdA[8:6]=opIsDfB?JX2_IXC_CF:JX2_IXC_CT;
-				end
-`endif
-			end
-			else
-			begin
 `ifdef jx2_enable_riscv
 
-//				if(srRiscv && !noNoRiscV)
-				if(srRiscv && !noNoRiscV && !srXG2RV)
-				begin
-					opRegAM0	= decOpRvA_idRegM;
-					opRegAO0	= decOpRvA_idRegO;
-					opRegAN0	= decOpRvA_idRegN;
-					opRegAP0	= decOpRvA_idRegP;
-					opImmA0		= decOpRvA_idImm;
-					opUCmdA0	= decOpRvA_idUCmd;
-					opUIxtA0	= decOpRvA_idUIxt;
-					opUFlA0		= decOpRvA_idUFl;
-				end
-				else
-				begin
-					opRegAM0	= decOpFzA_idRegM;
-					opRegAO0	= decOpFzA_idRegO;
-					opRegAN0	= decOpFzA_idRegN;
-					opRegAP0	= decOpFzA_idRegP;
-					opImmA0		= decOpFzA_idImm;
-					opUCmdA0	= decOpFzA_idUCmd;
-					opUIxtA0	= decOpFzA_idUIxt;
-					opUFlA0		= decOpFzA_idUFl;
-				end
-
-`else
-
+//			if(srRiscv && !noNoRiscV)
+			if(srRiscv && !noNoRiscV && !srXG2RV)
+			begin
+				opRegAM0	= decOpRvA_idRegM;
+				opRegAO0	= decOpRvA_idRegO;
+				opRegAN0	= decOpRvA_idRegN;
+				opRegAP0	= decOpRvA_idRegP;
+				opImmA0		= decOpRvA_idImm;
+				opUCmdA0	= decOpRvA_idUCmd;
+				opUIxtA0	= decOpRvA_idUIxt;
+				opUFlA0		= decOpRvA_idUFl;
+			end
+			else
+			begin
 				opRegAM0	= decOpFzA_idRegM;
 				opRegAO0	= decOpFzA_idRegO;
 				opRegAN0	= decOpFzA_idRegN;
@@ -1228,71 +1139,68 @@ begin
 				opUCmdA0	= decOpFzA_idUCmd;
 				opUIxtA0	= decOpFzA_idUIxt;
 				opUFlA0		= decOpFzA_idUFl;
+			end
+
+`else
+
+			opRegAM0	= decOpFzA_idRegM;
+			opRegAO0	= decOpFzA_idRegO;
+			opRegAN0	= decOpFzA_idRegN;
+			opRegAP0	= decOpFzA_idRegP;
+			opImmA0		= decOpFzA_idImm;
+			opUCmdA0	= decOpFzA_idUCmd;
+			opUIxtA0	= decOpFzA_idUIxt;
+			opUFlA0		= decOpFzA_idUFl;
 
 `endif
 
 `ifdef def_true
-				opRegAM	= opRegAM0;
-				opRegAO	= opRegAO0;
-				opRegAN	= opRegAN0;
-				opImmA	= opImmA0;
-				opUCmdA	= opUCmdA0;
-				opUIxtA	= opUIxtA0;
-				opUFlA	= opUFlA0;
+			opRegAM	= opRegAM0;
+			opRegAO	= opRegAO0;
+			opRegAN	= opRegAN0;
+			opImmA	= opImmA0;
+			opUCmdA	= opUCmdA0;
+			opUIxtA	= opUIxtA0;
+			opUFlA	= opUFlA0;
 `endif
 
 `ifndef def_true
-				opRegAM	= decOpFzA_idRegM;
-				opRegAO	= decOpFzA_idRegO;
-				opRegAN	= decOpFzA_idRegN;
-				opImmA	= decOpFzA_idImm;
-				opUCmdA	= decOpFzA_idUCmd;
-				opUIxtA	= decOpFzA_idUIxt;
+			opRegAM	= decOpFzA_idRegM;
+			opRegAO	= decOpFzA_idRegO;
+			opRegAN	= decOpFzA_idRegN;
+			opImmA	= decOpFzA_idImm;
+			opUCmdA	= decOpFzA_idUCmd;
+			opUIxtA	= decOpFzA_idUIxt;
 
-				opRegAM0	= decOpFzA_idRegM;
-				opRegAO0	= decOpFzA_idRegO;
-				opRegAN0	= decOpFzA_idRegN;
-				opRegAP0	= decOpFzA_idRegP;
-				opUCmdA0	= decOpFzA_idUCmd;
-				opUIxtA0	= decOpFzA_idUIxt;
-				opUFlA0		= decOpFzA_idUFl;
+			opRegAM0	= decOpFzA_idRegM;
+			opRegAO0	= decOpFzA_idRegO;
+			opRegAN0	= decOpFzA_idRegN;
+			opRegAP0	= decOpFzA_idRegP;
+			opUCmdA0	= decOpFzA_idUCmd;
+			opUIxtA0	= decOpFzA_idUIxt;
+			opUFlA0		= decOpFzA_idUFl;
 `endif
 
-				opRegBM	= JX2_GR_ZZR;
-//				opRegBO	= decOpFzA_idRegN;
-				opRegBO	= opRegAN0;
-				opRegBN	= JX2_GR_ZZR;
-				opImmB	= UV33_00;
-				opUCmdB	= UV9_00;
-				opUIxtB	= UV9_00;
-				
-				opRegCM	= JX2_GR_ZZR;
-//				opRegCO	= decOpFzA_idRegN;
-//				opRegCO	= decOpFzA_idRegP;
-				opRegCO	= opRegAP0;
-				opRegCN	= JX2_GR_ZZR;
-				opImmC	= UV33_00;
-				opUCmdC	= UV9_00;
-//				opUIxtC	= UV9_00;
-//				opUIxtC	= { 5'h0, decOpFzA_idUFl[7:4] };
-				opUIxtC	= decOpFzA_idUFl[12:4];
+			opRegBM	= JX2_GR_ZZR;
+			opRegBO	= opRegAN0;
+			opRegBN	= JX2_GR_ZZR;
+			opImmB	= UV33_00;
+			opUCmdB	= UV9_00;
+			opUIxtB	= UV9_00;
+			
+			opRegCM	= JX2_GR_ZZR;
+			opRegCO	= opRegAP0;
+			opRegCN	= JX2_GR_ZZR;
+			opImmC	= UV33_00;
+			opUCmdC	= UV9_00;
+//			opUIxtC	= UV9_00;
+//			opUIxtC	= { 5'h0, decOpFzA_idUFl[7:4] };
+			opUIxtC	= decOpFzA_idUFl[12:4];
 
-//				opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };
-//				opUCmdC		= { 2'b00,
-//					decOpFzA_idUFl[18:13] != 0,
-//					decOpFzA_idUFl[18:13] };
+			if(decOpFzA_idUFl[12])
+				opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };
 
-				if(decOpFzA_idUFl[12])
-					opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };
-
-				opIsScalar	= 1;
-
-//				if(opIsDzA)
-//				begin
-//					opUCmdA[8:6]=opIsDfA?JX2_IXC_CF:JX2_IXC_CT;
-//				end
-				
-			end
+			opIsScalar	= 1;				
 		end
 	end
 	else
@@ -1300,57 +1208,16 @@ begin
 		opRegAM	= decOpBz_idRegM;
 		opRegAO	= decOpBz_idRegO;
 		opRegAN	= decOpBz_idRegN;
-		opImmA	= decOpBz_idImm;
+//		opImmA	= decOpBz_idImm;
+//		opImmA	= {
+//			decOpBz_idImm[15] ? UV17_FF : UV17_00,
+//			decOpBz_idImm[15:0] };
+		opImmA	= {
+			decOpBz_idImm[12] ? UV20_FF : UV20_00,
+			decOpBz_idImm[12:0] };
+
 		opUCmdA	= decOpBz_idUCmd;
 		opUIxtA	= decOpBz_idUIxt;
-
-`ifdef jx2_enable_ops24
-		if(	(istrWord[15:12] == 4'h9) ||
-			(istrWord[15:12] == 4'h7)	)
-		begin
-			opRegAM	= decOpHz_idRegM;
-			opRegAO	= decOpHz_idRegO;
-			opRegAN	= decOpHz_idRegN;
-			opImmA	= decOpHz_idImm;
-			opUCmdA	= decOpHz_idUCmd;
-			opUIxtA	= decOpHz_idUIxt;
-		end
-`endif
-
-`ifndef def_true
-
-`ifdef jx2_use_fpu_fpimm
-		opFpImmA = opImmA0[15:0];
-		if(opUFlA0[0])
-			opFpImmA = { opImmA0[9:0], 6'h0 };
-`endif
-
-`ifdef jx2_use_fpu_fpimm
-		if(opUFlA0[2])
-		begin
-			opImmB	= {
-				1'b0,
-				opFpImmA[15:14],
-				(opFpImmA[14] || (opFpImmA[14:10]==0)) ?
-					6'h00 : 6'h3F,
-				opFpImmA[13: 0],
-				10'h0
-				};
-			opImmA = 0;
-		end
-`endif
-
-`endif
-
-//		opRegXM = decOpBz_idRegM;
-//		opRegXO = decOpBz_idRegO;
-//		opRegXN = decOpBz_idRegN;
-
-//		opRegAM0	= decOpBz_idRegM;
-//		opRegAO0	= decOpBz_idRegO;
-//		opRegAN0	= decOpBz_idRegN;
-//		opUCmdA0	= decOpBz_idUCmd;
-//		opUIxtA0	= decOpBz_idUIxt;
 
 		opRegAM0	= opRegAM;
 		opRegAO0	= opRegAO;
@@ -1362,14 +1229,12 @@ begin
 
 		opRegBN	= JX2_GR_ZZR;
 		opRegBM	= JX2_GR_ZZR;
-//		opRegBO	= decOpBz_idRegN;
 		opRegBO	= opRegAN;
 		opImmB	= UV33_00;
 		opUCmdB	= UV9_00;
 		opUIxtB	= UV9_00;
 
 		opRegCM	= JX2_GR_ZZR;
-//		opRegCO	= decOpBz_idRegN;
 		opRegCO	= opRegAN;
 		opRegCN	= JX2_GR_ZZR;
 		opImmC	= UV33_00;
@@ -1379,71 +1244,9 @@ begin
 		opIsScalar	= 1;
 	end
 
-`ifndef def_true
-	if(opIsFxA)
-	begin
-//		opRegXM = { istrWord[ 0], istrWord[25], istrWord[ 3: 1], 1'b0 };
-//		opRegXO = { istrWord[20], istrWord[24], istrWord[23:21], 1'b0 };
-//		opRegXN = { istrWord[ 4], istrWord[26], istrWord[ 7: 5], 1'b0 };
-
-//		opRegXM	= { decOpFzA_idRegM[0], decOpFzA_idRegM[4:1], 1'b0 };
-//		opRegXO	= { decOpFzA_idRegO[0], decOpFzA_idRegO[4:1], 1'b0 };
-//		opRegXN	= { decOpFzA_idRegN[0], decOpFzA_idRegN[4:1], 1'b0 };
-
-		opRegXM	= { opRegAM0[0], opRegAM0[4:1], 1'b0 };
-		opRegXO	= { opRegAO0[0], opRegAO0[4:1], 1'b0 };
-		opRegXN	= { opRegAN0[0], opRegAN0[4:1], 1'b0 };
-
-	end
-	else
-	begin
-		opRegXM = decOpBz_idRegM;
-		opRegXO = decOpBz_idRegO;
-		opRegXN = decOpBz_idRegN;
-	end
-`endif
-
-//	opRegXM	= { opRegAM0[0], opRegAM0[4:1], 1'b0 };
-//	opRegXO	= { opRegAO0[0], opRegAO0[4:1], 1'b0 };
-//	opRegXN	= { opRegAN0[0], opRegAN0[4:1], 1'b0 };
-
 //	if(opIsScalar)
 	if(1'b1)
 	begin
-
-`ifndef def_true
-// `ifdef def_true
-
-`ifndef def_true
-//		if(opUCmdA[5:0]==JX2_UCMD_POPX)
-		if(opUCmdA0[5:1]==5'h03)
-		begin
-//			opIsDualLane = decOpBz_idUIxt[2];
-			opIsDualLane = opUIxtA0[2];
-		end
-`endif
-
-`ifndef def_true
-//		if(opUCmdA0[5:0]==JX2_UCMD_MOV_MR)
-		if(opUCmdA0[5:1]==5'h02)
-		begin
-//			opIsDualLane = (decOpBz_idUIxt[2:0]==3'b111);
-//			opIsDualLane = (opUIxtA[2:0]==3'b111);
-			opIsDualLane = ( {opUIxtA0[2], opUIxtA0[5:4]} == 3'b111);
-			opIsDualLaneRn	= 1;
-		end
-`endif
-
-`ifndef def_true
-		if(opUCmdA0[5:0]==JX2_UCMD_FPU3)
-		begin
-			opIsDualLane = opUIxtA0[5];
-			opIsDualLane3R = 1;
-		end
-`endif
-
-`endif
-
 		if(opUCmdA0[5:1] == 5'h02)
 		begin
 			opIsBaseRm	= 1;
@@ -1469,7 +1272,7 @@ begin
 			begin
 //				opDualLaneSw	= 1;
 
-				if(opUIxtA0[5:0] == JX2_UCIX_CONV_FP16PCK32)
+				if(opUIxtA0[5:0] == JX2_UCIX_CONV2_FP16PCK32)
 				begin
 					opIsDualLaneRm	= 1;
 					opIsDualLaneRo	= 0;
@@ -1539,7 +1342,9 @@ begin
 	opRegXOv = { opRegXO[6:1], !opRegXO[0] };
 	opRegXNv = { opRegXN[6:1], !opRegXN[0] };
 	opRegXPv = { opRegXP[6:1], !opRegXP[0] };
-	
+
+`ifdef jx2_enable_vaddr96
+
 	if(opRegAM0[6])
 	begin
 		if(opDualLaneSw)
@@ -1550,32 +1355,6 @@ begin
 			opRegXM		= opCmRemapRxA[opRegAM0[5:0]];
 			opRegXMv	= opCmRemapRxB[opRegAM0[5:0]];
 		end
-
-`ifndef def_true
-		if(opIsDualLaneRm && (opRegAM0!=JX2_GR_ZZR))
-		begin
-			$display("XGPR: Dual Lane Special Rm %X -> %X:%X",
-				opRegAM0, opRegXMv, opRegXM);
-		end
-`endif
-
-`ifndef def_true
-		if((opRegAM0==JX2_GR_SP) || (opRegAM0==JX2_GR_SSP))
-		begin
-			opRegXM	= { 2'b01, 4'h7, opDualLaneSw };
-			opRegXMv = { opRegXM[6:1], !opRegXM[0] };
-		end
-		else
-		begin
-			opRegXM		= opRegAM0;
-			opRegXMv	= opCmRemapRx[opRegAM0[4:0]];
-			
-			if(opIsDualLaneRm && (opRegAM0!=JX2_GR_ZZR))
-			begin
-				$display("XGPR: Dual Lane Special Rm %X", opRegAM0);
-			end
-		end
-`endif
 	end
 
 	if(opRegAN0[6])
@@ -1588,34 +1367,9 @@ begin
 			opRegXN		= opCmRemapRxA[opRegAN0[5:0]];
 			opRegXNv	= opCmRemapRxB[opRegAN0[5:0]];
 		end
-
-`ifndef def_true
-		if(opIsDualLaneRn && (opRegAN0!=JX2_GR_ZZR))
-		begin
-			$display("XGPR: Dual Lane Special Rn %X -> %X:%X",
-				opRegAN0, opRegXNv, opRegXN);
-		end
-`endif
-
-`ifndef def_true
-		if((opRegAN0==JX2_GR_SP) || (opRegAN0==JX2_GR_SSP))
-		begin
-			opRegXN	= { 2'b01, 4'h7, opDualLaneSw };
-			opRegXNv = { opRegXN[6:1], !opRegXN[0] };
-		end
-		else
-		begin
-			opRegXN		= opRegAN0;
-			opRegXNv	= opCmRemapRx[opRegAN0[4:0]];
-			
-			if(opIsDualLaneRn)
-			begin
-				$display("XGPR: Dual Lane Special Rn %X", opRegAN0);
-			end
-		end
-`endif
 	end
 
+`ifndef def_true
 	if(opRegAP0[6])
 	begin
 		if(opDualLaneSw)
@@ -1626,33 +1380,6 @@ begin
 			opRegXP		= opCmRemapRxA[opRegAP0[5:0]];
 			opRegXPv	= opCmRemapRxB[opRegAP0[5:0]];
 		end
-
-`ifndef def_true
-		if(opIsDualLaneRn && (opRegAP0!=JX2_GR_ZZR))
-		begin
-			$display("XGPR: Dual Lane Special Rp %X -> %X:%X",
-				opRegAP0, opRegXPv, opRegXP);
-		end
-`endif
-
-`ifndef def_true
-		if((opRegAP0==JX2_GR_SP) || (opRegAP0==JX2_GR_SSP))
-		begin
-			opRegXP	= { 2'b01, 4'h7, opDualLaneSw };
-			opRegXPv = { opRegXP[6:1], !opRegXP[0] };
-		end
-		else
-		begin
-			opRegXP		= opRegAP0;
-			opRegXPv	= opCmRemapRx[opRegAP0[4:0]];
-			
-			if(opIsDualLaneRn)
-			begin
-				$display("XGPR: Dual Lane Special Rp %X", opRegAP0);
-			end
-		end
-`endif
-
 	end
 
 	if(opRegAO0[6])
@@ -1665,30 +1392,11 @@ begin
 			opRegXO		= opCmRemapRxA[opRegAO0[5:0]];
 			opRegXOv	= opCmRemapRxB[opRegAO0[5:0]];
 		end
-
-`ifndef def_true
-		if(opIsDualLaneRo && (opRegAO0!=JX2_GR_ZZR))
-		begin
-			$display("XGPR: Dual Lane Special Ro %X -> %X:%X",
-				opRegAO0, opRegXOv, opRegXO);
-		end
-`endif
-
-`ifndef def_true
-		if((opRegAO0==JX2_GR_SP) || (opRegAO0==JX2_GR_SSP))
-		begin
-			opRegXO	= { 2'b01, 4'h7, opDualLaneSw };
-			opRegXOv = { opRegXO[6:1], !opRegXO[0] };
-		end
-		else
-		begin
-			if(opIsDualLaneRo)
-			begin
-				$display("XGPR: Dual Lane Special Ro %X", opRegAO0);
-			end
-		end
-`endif
 	end
+`endif
+
+`endif
+
 	
 `else
 
@@ -1704,37 +1412,18 @@ begin
 
 `endif
 
-//	opRegXM	= { opRegAM0[0]^opRegAM0[5], opRegAM0[4:1], opDualLaneSw };
-//	opRegXO	= { opRegAO0[0]^opRegAO0[5], opRegAO0[4:1], opDualLaneSw };
-//	opRegXN	= { opRegAN0[0]^opRegAN0[5], opRegAN0[4:1], opDualLaneSw };
-
-//	opRegXM	= { opRegAM0[0]^(opRegAM0[4:1]==4'b0), opRegAM0[4:1], opDualLaneSw };
-//	opRegXO	= { opRegAO0[0]^(opRegAO0[4:1]==4'b0), opRegAO0[4:1], opDualLaneSw };
-//	opRegXN	= { opRegAN0[0]^(opRegAN0[4:1]==4'b0), opRegAN0[4:1], opDualLaneSw };
-
 `ifdef jx2_enable_vaddr96
-// `ifndef def_true
-	if(opIsBaseRm)
+	if(	(opUIxtA0[8:6]==JX2_IUC_WA) ||
+		(opUIxtA0[8:6]==JX2_IUC_WXA))
 	begin
-		if(	(opUIxtA0[8:6]==JX2_IUC_WA) ||
-			(opUIxtA0[8:6]==JX2_IUC_WXA))
-//		if(1'b0)
-		begin
-			opRegAM = opRegXM;
-			opRegBM = opRegXMv;
-		end
-		else
-		begin
-//			opRegBM = JX2_GR_GBR_HI;
-//			if(opRegAM0 == JX2_GR_PC)
-//				opRegBM = JX2_GR_PC_HI;
-		end
-
+		opRegAM = opRegXM;
+		opRegBM = opRegXMv;
 	end
 `endif
 
 	if(opIsDualLane)
 	begin
+`ifndef def_true
 		if(!opIsScalar && !noLane3)
 		begin
 			/* WEX+DualLane: Shove Lane2 into Lane3
@@ -1747,7 +1436,8 @@ begin
 			opUCmdC	= opUCmdB;
 			opUIxtC	= opUIxtB;
 		end
-		
+`endif
+
 		opRegBN	= opRegAN;
 		opRegBM	= opRegAM;
 		opRegBO	= opRegAO;
@@ -1773,15 +1463,11 @@ begin
 		begin
 			opRegAN = opRegXN;
 			opRegBN = opRegXNv;
-//			opRegBN	= opRegAN;
-//			opRegBN[0] = !opRegAN[0];
 
 			if(opIsScalar)
 			begin
 				opRegCO		= opRegXP;
 				opRegCM		= opRegXPv;
-//				opRegCM		= opRegCO;
-//				opRegCM[0]	= !opRegCO[0];
 			end
 		end
 
@@ -1790,22 +1476,14 @@ begin
 		begin
 			opRegAM = opRegXM;
 			opRegBM = opRegXMv;
-//			opRegBM[0] = !opRegAM[0];
 		end
 
 		if(opIsDualLaneRo)
 		begin
 			opRegAO = opRegXO;
 			opRegBO = opRegXOv;
-//			opRegBO[0] = !opRegAO[0];
 		end
 `endif
-
-		if(opIsScalar)
-		begin
-//			opRegCM	= opRegBN;
-//			opRegCO	= opRegAN;
-		end
 	end
 
 // `ifndef def_true
@@ -1813,7 +1491,12 @@ begin
 //	if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
 	if(opUCmdA0[5:0] == JX2_UCMD_INVOP)
 	begin
-		$display("DecOpWx3 Istr=%X Mod=%X", istrWord, srMod);
+//		$display("DecOpWx3 Istr=%X Mod=%X", istrWord, srMod);
+		$display("DecOpWx3 Istr=%X-%X-%X-%X-%X-%X Mod=%X",
+			istrWord[15: 0], istrWord[31:16],
+			istrWord[47:32], istrWord[63:48],
+			istrWord[79:64], istrWord[95:80],
+			srMod);
 		$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
 			opUCmdA0, opUIxtA0,
 			opRegAM, opRegAO,

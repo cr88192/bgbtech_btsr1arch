@@ -65,6 +65,7 @@ module RbiMemL1A(
 	icOutPcOK,		icOutPcStep,
 	icInPcHold,		icInPcWxe,
 	icOutPcSxo,		icOutPcLow,
+	icInPcAddrInc,
 
 	dcInAddr,		dcInOpm,
 	dcInAddrB,		dcInOpmB,
@@ -104,6 +105,8 @@ input			icInPcHold;
 // input[1:0]		icInPcWxe;
 input[5:0]		icInPcWxe;
 output[11:0]	icOutPcLow;
+
+`input_vaddr	icInPcAddrInc;
 
 `input_vaddr	dcInAddr;		//input address A
 input [ 4: 0]	dcInOpm;		//input command A
@@ -327,6 +330,22 @@ reg			ifMemWaitL;
 reg[ 15:0]		ifMemOpmI;
 reg[ 15:0]		ifMemSeqI;
 
+`ifdef jx2_rbi_ecyc_tlbfw
+
+`reg_tile		ifMemDataI2;
+`reg_l1addr		ifMemAddrI2;
+reg[ 15:0]		ifMemOpmI2;
+reg[ 15:0]		ifMemSeqI2;
+
+`else
+
+`wire_tile		ifMemDataI2 = ifMemDataI;
+`wire_l1addr	ifMemAddrI2 = ifMemAddrI;
+wire[ 15:0]		ifMemOpmI2 = ifMemOpmI;
+wire[ 15:0]		ifMemSeqI2 = ifMemSeqI;
+
+`endif
+
 `wire_tile		ifMemDataO;
 `wire_l1addr	ifMemAddrO;
 wire[ 15:0]		ifMemOpmO;
@@ -337,7 +356,7 @@ RbiMemIcWxA		memIc(
 	clock,			tResetL,
 	icInPcAddr,		icOutPcVal,
 	icOutPcOK,		icOutPcStep,
-	icOutPcLow,
+	icOutPcLow,		icInPcAddrInc,
 
 	icInPcHold,		icInPcWxe,
 	dfInOpm,		regInSr,
@@ -346,10 +365,10 @@ RbiMemIcWxA		memIc(
 	tTlbExc,		tIcExecAcl,
 	regInMmcr,
 
-	ifMemAddrI,		ifMemAddrO,
-	ifMemDataI,		ifMemDataO,
-	ifMemOpmI,		ifMemOpmO,
-	ifMemSeqI,		ifMemSeqO,
+	ifMemAddrI2,	ifMemAddrO,
+	ifMemDataI2,	ifMemDataO,
+	ifMemOpmI2,		ifMemOpmO,
+	ifMemSeqI2,		ifMemSeqO,
 
 	ifMemNodeId
 	);
@@ -367,6 +386,22 @@ wire[127:0]		dfOutExc;
 `reg_l1addr		dfMemAddrI;
 reg[ 15:0]		dfMemOpmI;
 reg[ 15:0]		dfMemSeqI;
+
+`ifdef jx2_rbi_ecyc_tlbfw
+
+`reg_tile		dfMemDataI2;
+`reg_l1addr		dfMemAddrI2;
+reg[ 15:0]		dfMemOpmI2;
+reg[ 15:0]		dfMemSeqI2;
+
+`else
+
+`wire_tile		dfMemDataI2 = dfMemDataI;
+`wire_l1addr	dfMemAddrI2 = dfMemAddrI;
+wire[ 15:0]		dfMemOpmI2 = dfMemOpmI;
+wire[ 15:0]		dfMemSeqI2 = dfMemSeqI;
+
+`endif
 
 `wire_tile		dfMemDataO;
 `wire_l1addr	dfMemAddrO;
@@ -386,10 +421,10 @@ RbiMemDcA		memDc(
 	regKrrHashDsL,	tRngN2,
 	dfInLdOp,
 
-	dfMemAddrI,		dfMemAddrO,
-	dfMemDataI,		dfMemDataO,
-	dfMemOpmI,		dfMemOpmO,
-	dfMemSeqI,		dfMemSeqO,
+	dfMemAddrI2,	dfMemAddrO,
+	dfMemDataI2,	dfMemDataO,
+	dfMemOpmI2,		dfMemOpmO,
+	dfMemSeqI2,		dfMemSeqO,
 
 	dfMemNodeId
 	);
@@ -702,6 +737,18 @@ begin
 	tRegOutExc3		<= tRegOutExc2;
 	tRegTraPc2		<= tRegTraPc;
 	tDcOutOK2		<= tDcOutOK;
+
+`ifdef jx2_rbi_ecyc_tlbfw
+	ifMemDataI2		<= ifMemDataI;
+	ifMemAddrI2		<= ifMemAddrI;
+	ifMemOpmI2		<= ifMemOpmI;
+	ifMemSeqI2		<= ifMemSeqI;
+
+	dfMemDataI2		<= dfMemDataI;
+	dfMemAddrI2		<= dfMemAddrI;
+	dfMemOpmI2		<= dfMemOpmI;
+	dfMemSeqI2		<= dfMemSeqI;
+`endif
 	
 	tTlbInLdtlbL	<= tTlbInLdtlb;
 	tRegInSr		<= regInSr;

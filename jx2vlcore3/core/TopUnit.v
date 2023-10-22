@@ -296,6 +296,7 @@ assign		vgaBlu = vgaBlu1[4:1];
 
 wire[7:0]	hbrPwmOut;
 wire[1:0]	dbgExWidth;
+wire		dbgClkOut;
 
 CoreUnit core(
 //	clock, 		reset2,
@@ -364,7 +365,8 @@ CoreUnit core(
 	usb_clkdat_d,
 	usb_clkref,
 	
-	hbrPwmOut
+	hbrPwmOut,
+	dbgClkOut
 	);
 
 `ifdef def_true

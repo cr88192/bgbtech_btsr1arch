@@ -29,6 +29,7 @@ This is handled in its own module as Verilator can't deal with it.
  */
 
 `define jx2_xc7a200		// Enable options for XC7A200T
+`define jx2_isfpga
 
 `include "CoreUnit.v"
 
@@ -316,6 +317,7 @@ assign		ddrModeIn = 1;
 
 wire[7:0]	hbrPwmOut;
 wire[1:0]	dbgExWidth;
+wire		dbgClkOut;
 
 
 CoreUnit core(
@@ -383,7 +385,8 @@ CoreUnit core(
 	usb_clkdat_d,
 	usb_clkref,
 	
-	hbrPwmOut
+	hbrPwmOut,
+	dbgClkOut
 	);
 
 defparam	core.ddr.DDR_IS_DDR3 = 1;

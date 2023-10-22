@@ -2662,6 +2662,12 @@ int BGBCC_JX2C_EmitPredCmpVRegVReg(
 			type, sreg, treg, cmp));
 	}
 
+	if(	BGBCC_CCXL_TypeSmallLongP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitPredCmpVRegVRegQLong(ctx, sctx,
+			type, sreg, treg, cmp));
+	}
+
 //	if(BGBCC_CCXL_TypePointerP(ctx, type) && sctx->is_addr_x32)
 	if(	BGBCC_CCXL_TypePointerP(ctx, type) &&
 		!BGBCC_CCXL_TypeQuadPointerP(ctx, type) &&

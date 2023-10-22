@@ -2296,6 +2296,36 @@ void BJX2_Op_SWCPHW_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 #endif
 
+void BJX2_Op_BSWAPUL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 rm, rn;
+
+	rm=ctx->regs[op->rm];
+	rn=	(((rm>>24)&0xFF)<< 0) |
+		(((rm>>16)&0xFF)<< 8) |
+		(((rm>> 8)&0xFF)<<16) |
+		(((rm>> 0)&0xFF)<<24) ;
+	ctx->regs[op->rn]=rn;
+}
+
+
+void BJX2_Op_BSWAPQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 rm, rn;
+
+	rm=ctx->regs[op->rm];
+	rn=	(((rm>>56)&0xFF)<< 0) |
+		(((rm>>48)&0xFF)<< 8) |
+		(((rm>>40)&0xFF)<<16) |
+		(((rm>>32)&0xFF)<<24) |
+		(((rm>>24)&0xFF)<<32) |
+		(((rm>>16)&0xFF)<<40) |
+		(((rm>> 8)&0xFF)<<48) |
+		(((rm>> 0)&0xFF)<<56) ;
+	ctx->regs[op->rn]=rn;
+}
+
+
 
 void BJX2_Op_SHAD_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

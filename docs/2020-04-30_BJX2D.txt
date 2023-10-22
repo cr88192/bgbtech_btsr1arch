@@ -1791,8 +1791,8 @@ F0zz Instruction Block:
 *** F0nm_1GDA  PCMPHI.L		Rm, Rn			//Pack Compare DWord, Above
 *** F0nm_1gEA  PCMPGT.W		Rm, Rn			//Pack Compare Word, Greater
 *** F0nm_1GEA  PCMPGT.L		Rm, Rn			//Pack Compare DWord, Greater
-*** F0nm_1gFA  /
-*** F0nm_1GFA  /
+*** F0nm_1gFA  ? BSWAPU.L	Rm, Rn			//(TTAG) Byte Swap DWORD
+*** F0nm_1GFA  ? BSWAP.Q	Rm, Rn			//(TTAG) Byte Swap QWORD
 
 ** F0nm_1ezB  / (GSV Block)
 
@@ -1878,7 +1878,7 @@ F0zz Instruction Block:
 *** F0nm_1gDE  PLDCEHL		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Lo)
 *** F0nm_1GDE  PLDCEHH		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Hi)
 *** F0nm_1gEE  PSTCH		Rm, Rn		//(GSVF) Packed Single to Half (2x)
-*** F0nm_1GEE -
+*** F0nm_1GEE  -
 *** F0nm_1gFE ? MOVST		Rm, Rn		//(TTAG) Move Sign-Extend Low 48 bits
 *** F0nm_1GFE ? XMOVST		Rm, Rn		//(TTAG) Move Sign-Extend Low 48 bits
 
@@ -1995,8 +1995,8 @@ F0zz Instruction Block:
 
 *** F010_3en0  BRA		(PC, Rn)
 *** F011_3en0  BSR		(PC, Rn)
-*** F012_3en0  BT		(PC, Rn)
-*** F013_3en0  BF		(PC, Rn)
+*** F012_3en0 / BT		(PC, Rn)
+*** F013_3en0 / BF		(PC, Rn)
 *** F014_3en0  NOP3		Rn			//(WEX2) NOP with Register
 
 *** F018_3en0  /
@@ -2011,17 +2011,17 @@ F0zz Instruction Block:
 *** F020_3Gn0  JMPX		Rn			//(XMOV) JMP
 *** F021_3gn0  JSR		Rn
 *** F021_3Gn0  JSRX		Rn			//(XMOV) JSR
-*** F022_3gn0  JT		Rn
-*** F023_3gn0  JF		Rn
+*** F022_3gn0 / JT		Rn
+*** F023_3gn0 / JF		Rn
 
-*** F028_3en0  BRA.B	(PC, Rn)	//(Op24) BRA, Byte Scale
-*** F029_3en0  BSR.B	(PC, Rn)	//(Op24) BSR, Byte Scale
-*** F02A_3en0  BT.B		(PC, Rn)	//(Op24) BT, Byte Scale
-*** F02B_3en0  BF.B		(PC, Rn)	//(Op24) BF, Byte Scale
+*** F028_3en0 / BRA.B	(PC, Rn)	//(Op24) BRA, Byte Scale
+*** F029_3en0 / BSR.B	(PC, Rn)	//(Op24) BSR, Byte Scale
+*** F02A_3en0 / BT.B		(PC, Rn)	//(Op24) BT, Byte Scale
+*** F02B_3en0 / BF.B		(PC, Rn)	//(Op24) BF, Byte Scale
 *** F02C_3en0  BRA.L	(PC, Rn)	//Branch, DWord Scale
 *** F02D_3en0  BSR.L	(PC, Rn)	//Branch, DWord Scale
-*** F02E_3en0  BT.L		(PC, Rn)	//Branch, DWord Scale
-*** F02F_3en0  BF.L		(PC, Rn)	//Branch, DWord Scale
+*** F02E_3en0 / BT.L		(PC, Rn)	//Branch, DWord Scale
+*** F02F_3en0 / BF.L		(PC, Rn)	//Branch, DWord Scale
 
 *** F033_3gn0  MOVNT		Rn
 *** F033_3Gn0  REGCHKG		Rn		//Debug: Generate Register Check Value
@@ -2256,7 +2256,40 @@ F0zz Instruction Block:
 ** F0nm_8GoF  XMOV.X	(Xm, Ro), Xn		//
 
 
-* F0nm_9eoZ  (3R Space / Dedicated FPU)
+* F0nm_9eoZ  (More Load/Store Space)
+** F0nm_9go0 ? MOV.TW	Rn, (Rm, Disp5)		//(LDST48) Store TWORD
+** F0nm_9Go0 -
+** F0nm_9go1 ? MOV.HTW	Rn, (Rm, Disp5)		//(LDST48) Store High TWORD
+** F0nm_9Go1 -
+** F0nm_9go2 -
+** F0nm_9Go2 -
+** F0nm_9go3 -
+** F0nm_9Go3 -
+** F0nm_9go4 ? MOV.TW	Rn, (Rm, Ro)		//(LDST48) Store TWORD
+** F0nm_9Go4 -
+** F0nm_9go5 ? MOV.HTW	Rn, (Rm, Ro)		//(LDST48) Store High TWORD
+** F0nm_9Go5 -
+** F0nm_9go6 -
+** F0nm_9Go6 -
+** F0nm_9go7 -
+** F0nm_9Go7 -
+
+** F0nm_9go8 ? MOV.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
+** F0nm_9Go8 ? MOVU.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
+** F0nm_9go9 ? MOV.HTW	(Rm, Disp5), Rn		//(LDST48) Load High TWORD
+** F0nm_9Go9 -
+** F0nm_9goA -
+** F0nm_9GoA -
+** F0nm_9goB -
+** F0nm_9GoB -
+** F0nm_9goC ? MOV.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
+** F0nm_9GoC ? MOVU.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
+** F0nm_9goD ? MOV.HTW	(Rm, Ro), Rn		//(LDST48) Load High TWORD
+** F0nm_9GoD -
+** F0nm_9goE -
+** F0nm_9GoE -
+** F0nm_9goF -
+** F0nm_9GoF -
 
 * F0nm_AeoZ  (3R Space)
 * F0nm_BeoZ  (3R Space)
@@ -2383,8 +2416,8 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n3_Dfjj  MUL{S/U}.W	Imm10n, Rn			//Rn=Rn*Imm10n
 ** F2n4_Dfjj ? LDIROZ{Q}	Imm10u, Rn			//Load + ROTL
 ** F2n5_Dfjj ? LDIRON{Q}	Imm10n, Rn			//Load + ROTL
-** F2n6_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMP) JCmp (Rn xx 0)
-** F2n7_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMP) JCmp (Rn xx 0)
+** F2n6_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMPZ) JCmp (Rn xx 0)
+** F2n7_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMPZ) JCmp (Rn xx 0)
 
 ** F2n8_Dhjj ? MOV.L	Rn, (GBR, Disp10u*4)	// (E.q=0)
 ** F2n8_DHjj ? -
@@ -2408,6 +2441,21 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n0_EHjj  XLEA.B	Imm10u, Rn				//(TTAG) XLEA.B (Xn, Imm10u), Xn
 ** F2n1_Ehjj  LEAT.B	Imm10n, Rn				//(TTAG) LEAT.B (Rn, Imm10n), Rn
 ** F2n1_EHjj  XLEA.B	Imm10n, Rn				//(TTAG) XLEA.B (Xn, Imm10n), Xn
+
+** F2n4_Efjj ? BREQ.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn == 0)
+** F2n5_Efjj ? BREQ.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn == 0)
+** F2n6_Efjj ? BRNE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn != 0)
+** F2n7_Efjj ? BRNE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn != 0)
+
+** F2n8_Efjj ? BRLT.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn LT 0)
+** F2n9_Efjj ? BRLT.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn LT 0)
+** F2nA_Efjj ? BRGE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn GE 0)
+** F2nB_Efjj ? BRGE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn GE 0)
+
+** F2nC_Efjj ? BRLE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn LE 0)
+** F2nD_Efjj ? BRLE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn LE 0)
+** F2nE_Efjj ? BRGT.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn GT 0)
+** F2nF_Efjj ? BRGT.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn GT 0)
 
 * F2nz_Ffjj
 
@@ -2454,8 +2502,8 @@ F8zz Instruction Block:
 * F87n_iiii  LDISH16	Imm16u, Rk		//R16..R31
 * F88n_iiii  FLDCH		Imm16u, Rn		//R0..R15, Load Half-Float
 * F89n_iiii  FLDCH		Imm16u, Rk		//R16..R31, Load Half-Float
-* F8An_Zddd ? Bxx       Rn, Disp12s		//? Conditional Branch
-* F8Bn_Zddd ? Bxx       Rk, Disp12s		//? Conditional Branch
+* F8An_Zddd / Bxx		Rn, Disp12s		//? Conditional Branch
+* F8Bn_Zddd / Bxx		Rk, Disp12s		//? Conditional Branch
 * F8Cn_iiii  -
 * F8Dn_iiii  -
 * F8En_iiii  -

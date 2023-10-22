@@ -324,6 +324,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "xmov"))
 		{ shctx->has_fmovs|=16; }
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "mov48"))
+		{ shctx->has_fmovs|=32; }
+
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
 
@@ -6066,6 +6069,47 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			w0=(w0&0xFF00)|((d1>>24)&0x00FF);
 			w1=(w1&0x0000)|((d1>> 8)&0xFFFF);
 			w3=(w3&0xFF00)|((d1    )&0x00FF);
+
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			bgbcc_jx2cc_setu16en(ctr+4, en, w2);
+			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
+			break;
+
+
+		case BGBCC_SH_RLC_RELW11_BJCMP:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+
+			b1=((s32)(w1<<21))>>21;
+			d1=b1+((d-4)>>1);
+			if((((s32)(d1<<21))>>21)!=d1)
+			{
+				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW11)\n");
+				break;
+			}
+			w0=(w0&0xFFFE)|((d1>>16)&0x0001);
+			w1=(w1&0xFC00)|(d1&0x03FF);
+
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_RELW33_BJCMP:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+			w2=bgbcc_getu16en(ctr+4, en);
+			w3=bgbcc_getu16en(ctr+6, en);
+
+			b=((w0&255)<<16)|(w1&65535);
+			b=(b<<8)|(w3&0x00FF);
+			b1=(s32)b;
+
+			d1=b1+((d-8)>>1);
+
+			w0=(w0&0xFF00)|((d1>>24)&0x00FF);
+			w1=(w1&0x0000)|((d1>> 8)&0xFFFF);
+			w3=(w3&0xFE00)|((d1    )&0x00FF)|((d1>>23)&0x0100);
 
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
 			bgbcc_jx2cc_setu16en(ctr+2, en, w1);

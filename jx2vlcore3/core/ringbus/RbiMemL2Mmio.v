@@ -268,9 +268,20 @@ begin
 	begin
 		if(tReqLive && !tRespDone)
 		begin
-			tNxtMmioOutData		= tReqData;
-			tNxtMmioAddr		= tReqAddr[31:0];
-			tNxtMmioOpm			= tReqOpm2;
+			if(tReqAddr[27:16]==12'h001)
+			begin
+				$display("MMIO: Debug Reject Range O=%X A=%X O-S=%X-%X",
+					tReqAddr, tReqOpm2,
+					tReqOpm, tReqSeq);
+				tNxtRespDone		= 1;
+				tNxtRespData		= 0;
+			end
+			else
+			begin
+				tNxtMmioOutData		= tReqData;
+				tNxtMmioAddr		= tReqAddr[31:0];
+				tNxtMmioOpm			= tReqOpm2;
+			end
 		end
 	end
 

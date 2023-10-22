@@ -41,6 +41,8 @@ For QWord access via MMIO, if the access is misaligned, then the low order bits 
 module RbiMemVramA(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
+	clock_rbi,
+	
 	regInAddr,		regInOpm,
 	regOutVal,		regInVal,
 	regOutOK,
@@ -64,6 +66,7 @@ module RbiMemVramA(
 
 input			clock;
 input			reset;
+input			clock_rbi;
 
 input [31: 0]	regInAddr;		//input address
 input [ 4: 0]	regInOpm;		//operation mode
@@ -1872,7 +1875,8 @@ begin
 //		$display("OK=%X", tRegOutOK);
 end
 
-always @(posedge clock)
+// always @(posedge clock)
+always @(posedge clock_rbi)
 begin
 	tProbeCyc		<= tNxtProbeCyc;
 	tHoldCyc		<= tNxtHoldCyc;

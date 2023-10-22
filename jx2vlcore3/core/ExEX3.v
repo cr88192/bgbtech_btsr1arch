@@ -71,6 +71,9 @@ module ExEX3(
 	regIdCn2,		//Destination ID (EX2)
 	regValCn2,		//Destination Value (EX2)
 	
+	regIdRn4,		//Destination ID (EX2)
+	regValRn4,		//Destination Value (EX2)
+
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
 	regValAluRes,	//ALU Result
@@ -116,6 +119,9 @@ output[63:0]	regValRn2;		//Destination Value (EX1)
 `output_gpr		regIdCn2;		//Destination ID (CR, EX1)
 output[63:0]	regValCn2;		//Destination Value (CR, EX1)
 
+`output_gpr		regIdRn4;		//Destination ID (EX1)
+output[63:0]	regValRn4;		//Destination Value (EX1)
+
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
@@ -147,14 +153,21 @@ reg[63:0]		tRegValRn2;
 `reg_gpr		tRegIdCn2;
 reg[63:0]		tRegValCn2;
 
+`reg_gpr		tRegIdRn4;
+reg[63:0]		tRegValRn4;
+
 assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
 assign	regIdCn2	= tRegIdCn2;
 assign	regValCn2	= tRegValCn2;
 
+assign	regIdRn4	= tRegIdRn4;
+assign	regValRn4	= tRegValRn4;
+
 
 reg[63:0]	tValOutDfl;
 reg			tDoOutDfl;
+reg			tDoOutHeld;
 
 
 (* max_fanout = 50 *)
@@ -219,14 +232,14 @@ begin
 	case(regValRs[59:57])
 		3'b000: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX2 };
 //		3'b001: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX1 };
-		3'b001: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV_RGB30APCK64F };
+		3'b001: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_RGB30APCK64F };
 		3'b010: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX3L };
 		3'b011: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKUTX3H };
 		3'b100: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB15F };
 		3'b101: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB15A };
 		3'b110: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGBA32 };
 //		3'b111: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_BLKRGB30A };
-		3'b111: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV_RGB32UPCK64FU };
+		3'b111: tUtxIdUIxt = { 3'b000, JX2_UCIX_CONV2_RGB32UPCK64FU };
 	endcase
 end
 
@@ -246,6 +259,8 @@ begin
 	tRegValRn2	= regValRn1;	//Forward by default
 	tRegIdCn2	= regIdCn1;		//Forward by default
 	tRegValCn2	= regValCn1;	//Forward by default
+	tRegIdRn4	= regIdRn1;		//Forward by default
+	tRegValRn4	= regValRn1;	//Forward by default
 
 	tDoMemOp		= 0;
 	tExHold			= 0;
@@ -255,6 +270,7 @@ begin
 
 	tValOutDfl		= UV64_00;
 	tDoOutDfl		= 0;
+	tDoOutHeld		= 0;
 
 `ifndef def_true
 // `ifdef def_true
@@ -332,6 +348,7 @@ begin
 //			tRegValRn2	= memDataIn;
 			tValOutDfl		= memDataIn;
 			tDoOutDfl		= 1;
+//			tDoOutHeld		= 1;
 
 //			tRegHeld		= 1;
 
@@ -355,6 +372,9 @@ begin
 			tDoMemOp		= 1;
 			tValOutDfl		= memDataIn_S2D;
 
+			tDoOutHeld		= 1;
+			tRegHeld		= 1;
+
 `ifdef jx2_enable_fmovh
 //			if(opUIxt[4])
 			if(opUIxt[5:4]==2'b01)
@@ -368,19 +388,36 @@ begin
 			end
 `endif
 
+`ifdef jx2_enable_ldst48a
+			if(opUIxt[2])
+			begin
+				if(opUIxt[5])
+				begin
+					tValOutDfl		= { memDataIn[47:0], 16'h0000 };
+				end
+				else
+				begin
+					tValOutDfl		= {
+						(memDataIn[47] && !opUIxt[4]) ? 16'hFFFF : 16'h0000,
+						memDataIn[47:0] };
+				end
+			end
+`endif
+
 //			if(regIdRm[6])
 //				tValOutDfl	= UV64_XX;
 
-			tDoOutDfl		= 1;
+//			tDoOutDfl		= 1;
 `ifdef jx2_debug_ldst
 			$display("LOAD(3): R=%X V=%X", regIdRm, memDataIn);
 `endif
 
-//			if(regIdRm[6])
+			if(regIdRm[6])
 //				tDoOutDfl	= 0;
+				tDoOutHeld	= 0;
 
-			if(regIdRm[6:5]==2'b11)
-				tDoOutDfl	= 0;
+//			if(regIdRm[6:5]==2'b11)
+//				tDoOutDfl	= 0;
 
 		end
 `endif
@@ -395,8 +432,8 @@ begin
 		end
 `endif
 
-		JX2_UCMD_ADDSP: begin
-		end
+//		JX2_UCMD_ADDSP: begin
+//		end
 
 		JX2_UCMD_BRA: begin
 		end
@@ -425,7 +462,8 @@ begin
 //			tRegIdRn2	= regIdRm;					//
 //			tRegValRn2	= regValMulRes[63:0];		//
 			tValOutDfl		= regValMulRes[63:0];
-			tDoOutDfl		= 1;
+//			tDoOutDfl		= 1;
+			tDoOutHeld		= 1;
 		end
 
 `ifdef jx2_alu_slomuldiv
@@ -448,6 +486,11 @@ begin
 
 `ifdef jx2_alu_jcmp
 		JX2_UCMD_JCMP: begin
+		end
+`endif
+
+`ifdef jx2_alu_jcmpz
+		JX2_UCMD_JCMPZ: begin
 		end
 `endif
 
@@ -485,7 +528,12 @@ begin
 //			tRegIdRn2		= regIdRm;
 //			tRegValRn2		= regFpuV4GRn;
 			tValOutDfl		= regFpuV4GRn;
-			tDoOutDfl		= 1;
+//			tDoOutDfl		= 1;
+//			tRegHeld		= 1;
+			tDoOutHeld		= 1;
+
+			if(regIdRm[6])
+				tDoOutHeld	= 0;
 			
 //			$display("(A): Rs=%X Rt=%X Rn=%X Ixt=%X",
 //				regValRs, regValRt, regFpuV4GRn, opUIxt);
@@ -499,10 +547,21 @@ begin
 	
 	endcase
 
+	if(tDoOutHeld)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= UV64_00;
+		tRegIdRn4		= regIdRm;
+		tRegValRn4		= tValOutDfl;
+		tRegHeld		= 1;
+	end
+	
 	if(tDoOutDfl)
 	begin
 		tRegIdRn2		= regIdRm;
 		tRegValRn2		= tValOutDfl;
+		tRegIdRn4		= regIdRm;
+		tRegValRn4		= tValOutDfl;
 	end
 	
 	if(tDoMemOp)
@@ -551,6 +610,7 @@ begin
 		tRegIdRn2	= JX2_GR_ZZR;
 //		tRegIdCn2	= JX2_CR_ZZR[4:0];
 		tRegIdCn2	= JX2_CR_ZZR;
+		tRegIdRn4	= JX2_CR_ZZR;
 	end
 
 	if(tHoldCyc < tDoHoldCyc)

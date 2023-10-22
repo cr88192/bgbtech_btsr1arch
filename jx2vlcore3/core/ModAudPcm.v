@@ -328,6 +328,27 @@ begin
 	endcase
 `endif
 
+`ifdef jx2_cpu_mmioclock_75
+	case(tRegCtrl0[7:4])
+		4'h0: tNxtClkDivRst= 9375;
+		4'h1: tNxtClkDivRst= 6803;
+		4'h2: tNxtClkDivRst= 4688;
+		4'h3: tNxtClkDivRst= 3401;
+		4'h4: tNxtClkDivRst= 2344;
+		4'h5: tNxtClkDivRst= 1701;
+		4'h6: tNxtClkDivRst= 1172;
+		4'h7: tNxtClkDivRst=  850;
+		4'h8: tNxtClkDivRst=  586;
+		4'h9: tNxtClkDivRst= 1562;
+		4'hA: tNxtClkDivRst=  586;
+		4'hB: tNxtClkDivRst=  782;
+		4'hC: tNxtClkDivRst=  586;
+		4'hD: tNxtClkDivRst=  586;
+		4'hE: tNxtClkDivRst=  586;
+		4'hF: tNxtClkDivRst=  586;
+	endcase
+`endif
+
 `ifdef jx2_cpu_mmioclock_100
 	case(tRegCtrl0[7:4])
 		4'h0: tNxtClkDivRst=12500;

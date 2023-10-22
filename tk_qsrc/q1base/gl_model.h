@@ -158,7 +158,7 @@ typedef struct msurface_s
 	qgl_hfloat	minmaxs[6];		// for bounding box culling
 	qgl_hfloat	porg[4];		//bounding sphere
 
-//	int			light_s, light_t;	// gl lightmap coordinates
+	int			light_s, light_t;	// gl lightmap coordinates
 
 	glpoly_t	*polys;				// multiple if warped
 	struct	msurface_s	*texturechain;
@@ -171,7 +171,7 @@ typedef struct msurface_s
 
 	int			lightmaptexturenum;
 	byte		styles[MAXLIGHTMAPS];
-//	int			cached_light[MAXLIGHTMAPS];	// values currently used in lightmap
+	int			cached_light[MAXLIGHTMAPS];	// values currently used in lightmap
 	qboolean	cached_dlight;				// true if dynamic light in cache
 	byte		*samples;		// [numstyles*surfsize]
 } msurface_t;

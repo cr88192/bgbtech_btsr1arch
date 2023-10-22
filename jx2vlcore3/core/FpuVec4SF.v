@@ -71,6 +71,12 @@ input[63:0]		regValRpB;
 output[63:0]	regValRnA;
 output[63:0]	regValRnB;
 
+
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
 wire[63:0]		tRegValRnA;
 wire[63:0]		tRegValRnB;
 assign	regValRnA	= tRegValRnA;
@@ -394,7 +400,7 @@ assign	tRegValRnB = tVecRnIsHalf ? fpConvRnA : { fpValRnD, fpValRnC };
 
 always @(posedge clock)
 begin
-	if(!exHold)
+	if(exHoldN)
 	begin
 		opCmd1		<= opCmd;
 		regIdIxt1	<= regIdIxt;

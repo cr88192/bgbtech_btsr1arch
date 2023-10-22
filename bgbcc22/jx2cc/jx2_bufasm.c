@@ -1628,6 +1628,14 @@ int mfl;
 {"prcpa.f",		BGBCC_SH_NMID_PRCPAF},
 {"prelu.f",		BGBCC_SH_NMID_PRELUF},
 
+{"mov.tw",		BGBCC_SH_NMID_MOVTW},
+{"movu.tw",		BGBCC_SH_NMID_MOVUTW},
+{"mov.htw",		BGBCC_SH_NMID_MOVHTW},
+
+{"mov.twv",		BGBCC_SH_NMID_MOVTW_V},
+{"movu.twv",	BGBCC_SH_NMID_MOVUTW_V},
+{"mov.htwv",	BGBCC_SH_NMID_MOVHTW_V},
+
 
 {"mv",			BGBCC_SH_NMID_MOV,		2},
 {"li",			BGBCC_SH_NMID_MOV,		2},
@@ -2293,6 +2301,9 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	if(!bgbcc_stricmp(sym, "has_xmov"))
 		return((ctx->has_fmovs&16)!=0);
 
+	if(!bgbcc_stricmp(sym, "has_mov48"))
+		return((ctx->has_fmovs&32)!=0);
+
 	if(!bgbcc_stricmp(sym, "has_jcmpz"))
 		return((ctx->has_jcmp&1)!=0);
 	if(!bgbcc_stricmp(sym, "has_jcmpr"))
@@ -2762,6 +2773,23 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 					cs2++;
 				cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 				BGBCC_JX2_EmitQWord(ctx, bgbcc_atoi(tk0+1));
+			}
+
+			*rcs=cs2;
+			return(1);
+		}
+
+		if(!strcmp(tk0, "I.tword"))
+		{
+			cs2=cs1;
+			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
+			BGBCC_JX2_EmitTWord(ctx, bgbcc_atoi(tk0+1));
+			while(*cs2 && *cs2==',')
+			{
+				if(*cs2==',')
+					cs2++;
+				cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
+				BGBCC_JX2_EmitTWord(ctx, bgbcc_atoi(tk0+1));
 			}
 
 			*rcs=cs2;

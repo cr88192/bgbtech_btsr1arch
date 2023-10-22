@@ -627,6 +627,10 @@ void	VID_Init (unsigned char *palette)
 	vid.buffer = vid.conbuffer = vid_buffer;
 
 	QGL_Init(NULL);
+
+	qglMTexCoord2fSGIS = qglMultiTexCoord2f;
+	qglSelectTextureSGIS = qglActiveTexture;
+	gl_mtexable = true;
 	
 	GL_Init();
 

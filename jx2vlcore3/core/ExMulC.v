@@ -58,6 +58,13 @@ input			exHold;
 output			ex1MulFaz;
 output			ex3MulFaz;
 
+
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
+
 reg[63:0]	tValRn;
 assign 	valRn = tValRn;
 
@@ -77,8 +84,11 @@ reg[8:0]		tIdUIxt2;
 reg[8:0]		tIdUCmd3;
 reg[8:0]		tIdUIxt3;
 
-reg[31:0]		tValRs;
-reg[31:0]		tValRt;
+(* max_fanout = 200 *)
+	reg[31:0]		tValRs;
+(* max_fanout = 200 *)
+	reg[31:0]		tValRt;
+
 reg[63:0]		tValRm;
 
 `ifdef jx2_enable_btcuab1
@@ -167,9 +177,13 @@ begin
 	tEx1MulFaz	= 0;
 //	tEx3MulFaz	= 0;
 
+`ifdef jx2_alu_dmac
 //	tValRm	= idUIxt[4] ? valRm[63:0] : UV64_00;
 	tValRm	= (idUIxt[4] && (idUCmd[5:0]==JX2_UCMD_MUL3)) ?
 		valRm[63:0] : UV64_00;
+`else
+	tValRm	= 0;
+`endif
 
 `ifdef jx2_alu_slomuldiv
 `ifdef jx2_mul_fazdiv
@@ -388,7 +402,7 @@ end
 
 always @(posedge clock)
 begin
-	if(!exHold)
+	if(exHoldN)
 	begin
 		/* Stage 1 */
 		tIdUCmd1	<= tIdUCmd;

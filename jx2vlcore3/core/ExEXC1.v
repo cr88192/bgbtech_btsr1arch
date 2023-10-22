@@ -76,6 +76,8 @@ module ExEXC1(
 	regValRn1,		//Destination Value (EX1)
 	heldIdRn1,		//Held Destination ID (EX1)
 	
+	exDelayOut,
+
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
 	opBraFlush,
@@ -106,6 +108,8 @@ input[63:0]		regValXs;		//Source C Value
 output[63:0]	regValRn1;		//Destination Value (EX1)
 `output_gpr		heldIdRn1;		//Held Destination ID (EX1)
 
+output[63:0]	exDelayOut;
+
 input[32:0]		regValImm;		//Immediate (Decode)
 input[47:0]		regValPc;
 input			opBraFlush;
@@ -121,6 +125,9 @@ reg[63:0]		tRegValRn1;		//Destination Value (EX1)
 assign	regIdRn1	= tRegIdRn1;		//Destination ID (EX1)
 assign	regValRn1	= tRegValRn1;		//Destination Value (EX1)
 assign	heldIdRn1	= tHeldIdRn1;		//Held Destination ID (EX1)
+
+reg[63:0]	tExDelayOut;
+assign	exDelayOut = tExDelayOut;
 
 reg				tExHold;
 reg				tRegHeld;
@@ -211,6 +218,7 @@ begin
 
 	tValOutDfl		= UV64_00;
 	tDoOutDfl		= 0;
+	tExDelayOut		= 0;
 
 `ifdef jx2_enable_pred_s
 	casez( { opBraFlush, opUCmd[8:6], regInSr[1:0] } )
@@ -283,9 +291,27 @@ begin
 		end
 	
 		JX2_UCMD_CONV_RR: begin
-			tRegIdRn1		= regIdRm;
-			tRegValRn1		= tValCnv;
+`ifdef jx2_cpu_conv_ex2
+			tExDelayOut		= tValCnv;
+			tRegHeld		= 1;
+`else
+//			tRegIdRn1		= regIdRm;
+//			tRegValRn1		= tValCnv;
+
+			tValOutDfl		= tValCnv;
+			tDoOutDfl		= 1;
+`endif
 		end
+
+`ifdef jx2_gprs_mergecm
+		JX2_UCMD_MOV_RC, JX2_UCMD_MOV_CR: begin
+//			tRegIdRn1		= regIdRm;
+//			tRegValRn1		= regValRs;
+
+			tValOutDfl		= regValRs;
+			tDoOutDfl		= 1;
+		end
+`endif
 		JX2_UCMD_MOV_IR: begin
 			tValOutDfl		= regValRt;
 			tDoOutDfl		= 1;
@@ -320,6 +346,14 @@ begin
 					$display("ExEXB1: MOV_IR, Invalid UIxt %X", opUIxt);
 				end
 			endcase
+
+`ifdef def_true
+			tExDelayOut		= tValOutDfl;
+			tRegHeld		= 1;
+
+			tValOutDfl		= UV64_00;
+			tDoOutDfl		= 0;
+`endif
 		end
 		
 		JX2_UCMD_MULW3: begin
@@ -335,36 +369,33 @@ begin
 		JX2_UCMD_SHAD3:
 		begin
 `ifndef jx2_shadq_nolane3
-//			tRegIdRn1	= regIdRm;
-//			tRegValRn1	= tValShad64;
+
+`ifdef jx2_cpu_shad_ex2
+			tExDelayOut		= tValShad64;
+			tRegHeld		= 1;
+`else
 			tValOutDfl		= tValShad64;
 			tDoOutDfl		= 1;
+`endif
+
 `endif
 		end
 
 `else
 		JX2_UCMD_SHAD3: begin
-//			tRegIdRn1	= regIdRm;
-//			tRegValRn1	= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
 			tValOutDfl		= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
 			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_SHLD3: begin
-//			tRegIdRn1	= regIdRm;
-//			tRegValRn1	= { UV32_00, tValShad32 };
 			tValOutDfl		= { UV32_00, tValShad32 };
 			tDoOutDfl		= 1;
 		end
 	
 		JX2_UCMD_SHADQ3: begin
-//			tRegIdRn1	= regIdRm;
-//			tRegValRn1	= tValShad64;
 			tValOutDfl		= tValShad64;
 			tDoOutDfl		= 1;
 		end
 		JX2_UCMD_SHLDQ3: begin
-//			tRegIdRn1	= regIdRm;
-//			tRegValRn1	= tValShad64;
 			tValOutDfl		= tValShad64;
 			tDoOutDfl		= 1;
 		end
@@ -415,7 +446,7 @@ begin
 					if(!tMsgLatch)
 						$display("EX1B: BREAK");
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
 				end
 
 				JX2_UCIX_IXT_SVEKRR: begin
@@ -435,7 +466,7 @@ begin
 					if(!tMsgLatch)
 						$display("EX1B: Unhandled Op-IXT %X", opUIxt);
 					tNextMsgLatch	= 1;
-					tExHold		= 1;
+//					tExHold		= 1;
 //					tExHold		= !reset;
 				end
 			endcase
@@ -443,7 +474,7 @@ begin
 
 		default: begin
 			if(!tMsgLatch)
-				$display("EX1B: Unhandled UCmd %X", opUCmd);
+				$display("EX1C: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
 			tExHold		= 1;
 //			tExHold		= !reset;

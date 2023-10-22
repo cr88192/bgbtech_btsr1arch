@@ -137,6 +137,7 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 	ctx->trans_zrange=1;
 
 	TKRA_InitSpanRcp();
+	TKRA_FillEParm_InitRcpTab();
 	
 	TKRA_SyncScreenCacheMode(ctx, 1);
 	

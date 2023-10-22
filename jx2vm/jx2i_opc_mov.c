@@ -448,6 +448,91 @@ void BJX2_Op_MOVQ_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=lv;
 }
 
+
+
+void BJX2_Op_MOVTW_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+
+	BJX2_MemSetDWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2)+0, ctx->regs[op->rq],
+		ctx->regs[op->rm]);
+	BJX2_MemSetWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2)+4, ctx->regs[op->rq],
+		ctx->regs[op->rm]>>32);
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rn]),
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2), 8);
+}
+
+void BJX2_Op_MOVHTW_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+
+	BJX2_MemSetDWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2)+2, ctx->regs[op->rq],
+		ctx->regs[op->rm]>>32);
+	BJX2_MemSetWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2)+0, ctx->regs[op->rq],
+		ctx->regs[op->rm]>>16);
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rn]),
+		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2), 8);
+}
+
+void BJX2_Op_MOVTW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 addr, lv;
+
+	addr=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2);
+
+	ctx->trapc=op->pc;
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2), 8);
+
+	lv=BJX2_MemGetQWordW(ctx, addr, ctx->regs[op->rq]);
+	lv=((s64)(lv<<16))>>16;
+	ctx->regs[op->rn]=lv;
+}
+
+void BJX2_Op_MOVUTW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 addr, lv;
+
+	addr=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2);
+
+	ctx->trapc=op->pc;
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2), 8);
+
+	lv=BJX2_MemGetQWordW(ctx, addr, ctx->regs[op->rq]);
+	lv=lv&0x0000FFFFFFFFFFFFLL;
+	ctx->regs[op->rn]=lv;
+}
+
+void BJX2_Op_MOVHTW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 addr, lv;
+
+	addr=(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2);
+
+	ctx->trapc=op->pc;
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm*2), 8);
+
+	lv=BJX2_MemGetQWordW(ctx, addr, ctx->regs[op->rq]);
+	lv=lv<<16;
+	ctx->regs[op->rn]=lv;
+}
+
 #if 1
 void BJX2_Op_MOVB_RegStRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -1243,6 +1328,79 @@ void BJX2_Op_MOVUL_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 		(bjx2_addr)(ctx->regs[op->rm])+((ctx->regs[op->ro])*4), 4);
 	ctx->regs[op->rn]=(u32)BJX2_MemGetDWord(ctx,
 		(bjx2_addr)(ctx->regs[op->rm])+((bjx2_addr)(ctx->regs[op->ro])*4));
+}
+
+
+void BJX2_Op_MOVTW_RegStReg2(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+((bjx2_addr)(ctx->regs[op->ro])*2)+0,
+		ctx->regs[op->rm]);
+	BJX2_MemSetDWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+((bjx2_addr)(ctx->regs[op->ro])*2)+2,
+		ctx->regs[op->rm]>>16);
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rn]),
+		(bjx2_addr)(ctx->regs[op->rn])+((ctx->regs[op->ro])*2), 8);
+}
+
+void BJX2_Op_MOVHTW_RegStReg2(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+	BJX2_MemSetWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+((bjx2_addr)(ctx->regs[op->ro])*2)+0,
+		ctx->regs[op->rm]>>16);
+	BJX2_MemSetDWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rn])+((bjx2_addr)(ctx->regs[op->ro])*2)+2,
+		ctx->regs[op->rm]>>32);
+
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rn]),
+		(bjx2_addr)(ctx->regs[op->rn])+((ctx->regs[op->ro])*2), 8);
+}
+
+void BJX2_Op_MOVTW_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 lv;
+	ctx->trapc=op->pc;
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+((ctx->regs[op->ro])*2), 2);
+
+	lv=(s16)BJX2_MemGetQWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+((bjx2_addr)(ctx->regs[op->ro])*2));
+	lv=((s64)(lv<<16))>>16;
+	ctx->regs[op->rn]=lv;
+}
+
+void BJX2_Op_MOVUTW_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 lv;
+	ctx->trapc=op->pc;
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+((ctx->regs[op->ro])*2), 2);
+
+	lv=(s16)BJX2_MemGetQWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+((bjx2_addr)(ctx->regs[op->ro])*2));
+	lv=((u64)(lv<<16))>>16;
+	ctx->regs[op->rn]=lv;
+}
+
+void BJX2_Op_MOVHTW_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 lv;
+	ctx->trapc=op->pc;
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+((ctx->regs[op->ro])*2), 2);
+
+	lv=(s16)BJX2_MemGetQWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+((bjx2_addr)(ctx->regs[op->ro])*2));
+	lv=lv<<16;
+	ctx->regs[op->rn]=lv;
 }
 
 

@@ -7,7 +7,7 @@ input [63:0]	valIn;
 output[63:0]	valOut;
 input [ 7:0]	valShr;
 
-reg[ 7:0]		tValShr;
+reg[ 6:0]		tValShr;
 
 reg[63:0]		tVal0;
 reg[63:0]		tVal1;
@@ -25,9 +25,9 @@ assign			valOut = tValO;
 always @*
 begin
 
-	tValShr	= valShr;
+	tValShr	= valShr[6:0];
 	if(valShr[7:6]!=0)
-		tValShr	= 8'hFF;
+		tValShr	= 7'h7F;
 
 //	tVal0 = (tValShr[7:6]!=0) ? 0 : valIn;
 //	tVal1 = tVal0;
@@ -40,7 +40,7 @@ begin
 	tVal7 = tValShr[0] ? {  1'h0, tVal6[63: 1] } : tVal6;
 	
 	tValO = tVal7;
-	if(tValShr[7])
+	if(tValShr[6])
 		tValO[0] = 0;
 
 //	tValO = (valShr[7:6]!=0) ? 0 : tVal7;

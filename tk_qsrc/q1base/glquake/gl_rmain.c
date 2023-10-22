@@ -1507,6 +1507,7 @@ void R_RenderScene (void)
 	qglEnable(GL_BLEND);
 //	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 	qglHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 #endif
 
 	if(gl_wireframe.value)
@@ -1530,6 +1531,8 @@ void R_RenderScene (void)
 	R_DrawWorld ();		// adds static entities to the list
 
 	S_ExtraUpdate ();	// don't let sound get messed up if going slow
+
+	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 //	R_DrawEntitiesOnList ();
 	R_DrawEntitiesOnList_NoBrush ();

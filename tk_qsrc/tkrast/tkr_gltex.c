@@ -39,6 +39,7 @@ void tkra_glTexImage2D(
  	int type,
  	const void *data)
 {
+	static u16 texlumatab[256];
 	static tkra_rastpixel *txbuf;
 	static tkra_rastpixel *txbuf2;
 	static int sz_txbuf;
@@ -51,6 +52,7 @@ void tkra_glTexImage2D(
 	int		width2, height2;
 	int		ixw, ixh, flag;
 	byte *cs;
+	int i0, i1, i2, i3;
 	int i, j, k;
 
 	if(target!=TKRA_TEXTURE_2D)
@@ -74,13 +76,18 @@ void tkra_glTexImage2D(
 		(internalformat==TKRA_GL_CMPR_RGB_S3TC_DXT1) ||
 		(internalformat==GL_RGB8) ||
 		(internalformat==GL_RGB5) ||
-		(internalformat==3))
+		(internalformat==3) ||
+		(internalformat==1))
 	{
 		flag|=TKRA_TRFL_NOALPHA;
 	}
 	
 //	if(internalformat==4)
-	flag|=TKRA_TRFL_DOCMP;
+//	if(format!=TKRA_LUMINANCE)
+	if(1)
+	{
+		flag|=TKRA_TRFL_DOCMP;
+	}
 
 	if(!txbuf)
 	{
@@ -159,6 +166,40 @@ void tkra_glTexImage2D(
 				}
 			}
 		}else
+//			if((format==TKRA_LUMINANCE) || (format==TKRA_INTENSITY))
+			if(format==TKRA_LUMINANCE)
+		{
+			if(!texlumatab[255])
+			{
+				for(i=0; i<256; i++)
+					texlumatab[i]=tkra_teximg_packrgb555(i, i, i, 255);
+			}
+		
+			flag|=TKRA_TRFL_NOALPHA;
+			k=width*height;
+#if 0
+			for(i=0; i<k; i++)
+			{
+//				txbuf[i]=tkra_teximg_packrgb555(cs[0], cs[0], cs[0], 255);
+				txbuf[i]=texlumatab[cs[0]];
+				cs++;
+			}
+#endif
+
+#if 1
+			for(i=0; i<k; i+=4)
+			{
+				i0=cs[0];				i1=cs[1];
+				i2=cs[2];				i3=cs[3];
+				i0=texlumatab[i0];		i1=texlumatab[i1];
+				i2=texlumatab[i2];		i3=texlumatab[i3];
+				txbuf[i+0]=i0;			txbuf[i+1]=i1;
+				txbuf[i+2]=i2;			txbuf[i+3]=i3;
+				cs+=4;
+			}
+#endif
+		}
+		else
 		{
 			__debugbreak();
 		}
@@ -248,6 +289,9 @@ void tkra_glTexSubImage2D(
 		(height==(1<<img->tex_yshl))	)
 	{
 		ifmt=(img->tex_flag&TKRA_TRFL_ALPHA)?4:3;
+		if(format==TKRA_LUMINANCE)
+			ifmt=1;
+
 		tkra_glTexImage2D(
 			target,	level, ifmt,
 			width, height, 0,
@@ -302,6 +346,7 @@ void tkra_glBindTexture(int target, int texture)
 {
 	TKRA_Context *ctx;
 	TKRA_TexImage *img;
+	int i;
 
 	if(target!=TKRA_TEXTURE_2D)
 		return;
@@ -309,7 +354,19 @@ void tkra_glBindTexture(int target, int texture)
 	ctx=TKRA_GetCurrentContext();
 
 	img=TKRA_GetTexImg(ctx, texture);
-	TKRA_BindTexImg(ctx, img);
+	
+	i=ctx->tex2d_active;
+//	if(i)
+	if(1)
+	{
+		ctx->tex_cur_mtx[i&7]=img;
+		TKRA_BindTexImg(ctx, img);
+	}else
+	{
+		ctx->tex_cur_mtx[0]=img;
+		TKRA_BindTexImg(ctx, img);
+	}
+
 
 //	img=ctx->tex_cur;
 //	TKRA_UpdateTexImg(img, txbuf, width, height, level);
@@ -503,3 +560,26 @@ void glTextureParameteriv(int texture, int pname, const int *params);
 void glTextureParameterIiv(int texture, int pname, const int *params);
 void glTextureParameterIuiv(int texture, int pname, const unsigned int *params);
 #endif
+
+
+void tkra_glActiveTexture(int texture)
+{
+	TKRA_Context *ctx;
+	int ix;
+
+	ctx=TKRA_GetCurrentContext();
+
+	ix=texture-GL_TEXTURE0;
+	if((ix<0) || (ix>=8))
+	{
+		ix=texture-0x835E;
+		if((ix<0) || (ix>=8))
+			return;
+	}
+	
+	ctx->tex2d_active=ix&7;
+
+//	ctx->blend_sfunc=ctx->blend_sfunc_mtx[ix];
+//	ctx->blend_dfunc=ctx->blend_dfunc_mtx[ix];
+//	TKRA_BindTexImg(ctx, ctx->tex_cur_mtx[ix]);
+}

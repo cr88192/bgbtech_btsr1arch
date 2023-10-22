@@ -51,6 +51,9 @@ module ExEXB3(
 	regIdRn2,		//Destination ID (EX2)
 	regValRn2,		//Destination Value (EX2)
 	
+	regIdRn4,		//Destination ID (EX2)
+	regValRn4,		//Destination Value (EX2)
+	
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
 	regValAluRes,	//ALU Result
@@ -85,6 +88,9 @@ input[63:0]		regValRn1;		//Destination Value (EX1)
 `output_gpr		regIdRn2;		//Destination ID (EX1)
 output[63:0]	regValRn2;		//Destination Value (EX1)
 
+`output_gpr		regIdRn4;		//Destination ID (EX1)
+output[63:0]	regValRn4;		//Destination Value (EX1)
+
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
@@ -110,10 +116,19 @@ assign	exHold		= { tRegHeld, tExHold };
 reg[63:0]		tRegValRn2;
 `reg_gpr		tRegIdCn2;
 reg[63:0]		tRegValCn2;
+`reg_gpr		tRegIdRn4;
+reg[63:0]		tRegValRn4;
 
 assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
 
+assign	regIdRn4	= tRegIdRn4;
+assign	regValRn4	= tRegValRn4;
+
+
+reg[63:0]	tValOutDfl;
+reg			tDoOutDfl;
+reg			tDoOutHeld;
 
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
@@ -129,10 +144,16 @@ always @*
 begin
 	tRegIdRn2	= regIdRn1;		//Forward by default
 	tRegValRn2	= regValRn1;	//Forward by default
+	tRegIdRn4	= regIdRn1;		//Forward by default
+	tRegValRn4	= regValRn1;	//Forward by default
 
 	tExHold			= 0;
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
+
+	tValOutDfl		= UV64_00;
+	tDoOutDfl		= 0;
+	tDoOutHeld		= 0;
 
 `ifndef def_true
 	casez( { opBraFlush, opUCmd[7:6], regInLastSr[0] } )
@@ -161,7 +182,8 @@ begin
 				JX2_UCIX_IXT_NOP: begin
 				end
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 				JX2_UCIX_IXT_LDEENC: begin
 					tRegIdRn2	= JX2_GR_DHR;
 					tRegValRn2	= regValKrreRes[63:0];
@@ -187,8 +209,10 @@ begin
 		JX2_UCMD_MOV_RM: begin
 		end
 		JX2_UCMD_MOV_MR: begin
-			tRegIdRn2	= regIdRm;
-			tRegValRn2	= memDataInB;
+//			tRegIdRn2	= regIdRm;
+//			tRegValRn2	= memDataInB;
+			tValOutDfl		= memDataInB;
+			tDoOutHeld		= 1;
 		end
 
 		JX2_UCMD_FMOV_RM: begin
@@ -198,8 +222,8 @@ begin
 //			tRegValRn2	= memDataInB;
 		end
 
-		JX2_UCMD_ADDSP: begin
-		end
+//		JX2_UCMD_ADDSP: begin
+//		end
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 		end
@@ -242,8 +266,11 @@ begin
 		end
 
 		JX2_UCMD_FPUV4SF: begin
-			tRegIdRn2		= regIdRm;
-			tRegValRn2		= regFpuV4GRn;
+//			tRegIdRn2		= regIdRm;
+//			tRegValRn2		= regFpuV4GRn;
+//			tRegHeld		= 1;
+			tValOutDfl		= regFpuV4GRn;
+			tDoOutHeld		= 1;
 
 //			$display("(B): Rs=%X Rt=%X Rn=%X Ixt=%X",
 //				regValRs, regValRt, regFpuV4GRn, opUIxt);
@@ -260,9 +287,27 @@ begin
 	
 	endcase
 
+	if(tDoOutHeld)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= UV64_00;
+		tRegIdRn4		= regIdRm;
+		tRegValRn4		= tValOutDfl;
+		tRegHeld		= 1;
+	end
+
+	if(tDoOutDfl)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= tValOutDfl;
+		tRegIdRn4		= regIdRm;
+		tRegValRn4		= tValOutDfl;
+	end
+	
 	if(opBraFlush)
 	begin
 		tRegIdRn2	= JX2_GR_ZZR;
+		tRegIdRn4	= JX2_CR_ZZR;
 	end
 
 end

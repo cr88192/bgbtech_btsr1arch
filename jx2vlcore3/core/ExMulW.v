@@ -53,6 +53,12 @@ input[8:0]		idUIxt;
 input			exHold;
 input[1:0]		idLane;
 
+(* max_fanout = 200 *)
+	wire			exHoldN;
+
+assign	exHoldN = !exHold;
+
+
 reg[63:0]	tValRn;
 assign 	valRn = tValRn;
 
@@ -184,7 +190,7 @@ begin
 //		tValRt	<= valRt;
 //	end
 	
-	if(!exHold)
+	if(exHoldN)
 	begin
 		tIdUCmdB	<= tIdUCmd;
 		tIdUIxtB	<= tIdUIxt;

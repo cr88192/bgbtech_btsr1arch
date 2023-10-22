@@ -51,6 +51,9 @@ module ExEXC3(
 	regIdRn2,		//Destination ID (EX2)
 	regValRn2,		//Destination Value (EX2)
 	
+	regIdRn4,		//Destination ID (EX2)
+	regValRn4,		//Destination Value (EX2)
+	
 	regValPc,		//PC Value (Synthesized)
 	regValImm,		//Immediate (Decode)
 	regValAluRes,	//ALU Result
@@ -84,6 +87,9 @@ input[63:0]		regValRn1;		//Destination Value (EX1)
 `output_gpr		regIdRn2;		//Destination ID (EX1)
 output[63:0]	regValRn2;		//Destination Value (EX1)
 
+`output_gpr		regIdRn4;		//Destination ID (EX1)
+output[63:0]	regValRn4;		//Destination Value (EX1)
+
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
 
@@ -112,6 +118,12 @@ reg[63:0]		tRegValCn2;
 assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
 
+assign	regIdRn4	= tRegIdRn2;
+assign	regValRn4	= tRegValRn2;
+
+
+reg[63:0]	tValOutDfl;
+reg			tDoOutDfl;
 
 (* max_fanout = 50 *)
 	reg[5:0]	tOpUCmd1;
@@ -131,6 +143,9 @@ begin
 	tExHold			= 0;
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
+
+	tValOutDfl		= UV64_00;
+	tDoOutDfl		= 0;
 
 	tOpEnable	= !opBraFlush;
 	tOpUCmd1	= tOpEnable ? opUCmd[5:0] : JX2_UCMD_NOP;
@@ -178,8 +193,8 @@ begin
 //			tRegValRn2	= memDataInB;
 		end
 
-		JX2_UCMD_ADDSP: begin
-		end
+//		JX2_UCMD_ADDSP: begin
+//		end
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
 		end
@@ -224,15 +239,22 @@ begin
 
 		default: begin
 			if(!tMsgLatch)
-				$display("EX3B: Unhandled UCmd %X", opUCmd);
+				$display("EX3C: Unhandled UCmd %X", opUCmd);
 			tNextMsgLatch	= 1;
 		end
 	
 	endcase
 
+	if(tDoOutDfl)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= tValOutDfl;
+	end
+	
 	if(opBraFlush)
 	begin
 		tRegIdRn2	= JX2_GR_ZZR;
+//		tRegIdRn4	= JX2_CR_ZZR;
 	end
 
 end

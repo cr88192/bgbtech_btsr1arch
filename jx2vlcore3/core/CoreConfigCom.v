@@ -3,22 +3,27 @@
 
 // `define jx2_mc_enable_fpu
 
-`define jx2_enable_mmu_acl		//Enable ACL Checks
+// `define jx2_enable_mmu_acl		//Enable ACL Checks
 // `define jx2_enable_ldekey		//Enable ACL Checks
+
+// `define jx2_enable_mmu_vipt		//Enable ACL Checks
 
 `ifndef jx2_xc7s50
 
-`define jx2_enable_riscv		//Enable RISC-V Decoder
+// `define jx2_enable_riscv		//Enable RISC-V Decoder
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
 // `define jx2_agu_ribound			//Enable AGU Bounds Checks
-`define jx2_agu_ribound64		//Enable AGU Bounds Checks (64b pointers)
+// `define jx2_agu_ribound64		//Enable AGU Bounds Checks (64b pointers)
 
-`define jx2_agu_ldtex			//Texture Load
+// `define jx2_agu_ldtex			//Texture Load
 
-`define jx2_enable_2x40b		//Enable 2x40 Encoding
+// `define jx2_enable_2x40b		//Enable 2x40 Encoding
+
 `define jx2_enable_xg2mode		//Enable XGPR2 Mode
+
+// `define jx2_enable_ldst48a		//Enable 48-bit Load/Store ops.
 
 `endif
 
@@ -45,7 +50,7 @@
 
 `ifndef jx2_xc7s50
 
-`define jx2_enable_rom48k	//Expand ROM to 48K
+// `define jx2_enable_rom48k	//Expand ROM to 48K
 // `define jx2_enable_sram16k	//Expand SRAM to 16K
 
 `endif
@@ -57,7 +62,7 @@
 
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
-`define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
+// `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
 
 `ifndef jx2_xc7s50
 `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
@@ -67,29 +72,29 @@
 // `define	jx2_use_fpu_v4sf_wx		//Allow 128-bit ops with scalar FPU
 
 `ifndef jx2_xc7s50
-`define	jx2_fpu_v4sf_fullsp		//Enable full Binary32 in V4SF Unit
+// `define	jx2_fpu_v4sf_fullsp		//Enable full Binary32 in V4SF Unit
 `endif
 
 `ifndef jx2_xc7s50
-`define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
+// `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
 // `define	jx2_use_mem_ldop		//Load/Store Operations
 `endif
 
 `ifndef jx2_xc7s50
 
-`define jx2_use_imm_vec4h		//Enable SIMD Immediates
-`define jx2_use_imm_shuffle		//Enable SIMD Shuffle+Op
+// `define jx2_use_imm_vec4h		//Enable SIMD Immediates
+// `define jx2_use_imm_shuffle		//Enable SIMD Shuffle+Op
 
-`define	jx2_fpu_enable_fdiv		//enable FDIV
+// `define	jx2_fpu_enable_fdiv		//enable FDIV
 
-`define	jx2_alu_wx				//Enable Wide-ALU
+// `define	jx2_alu_wx				//Enable Wide-ALU
 
 `endif
 
 `ifndef jx2_xc7s50
 
 // `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext (GFPX)
-`define	jx2_fpu_fmac			//Enable FMAC Operation
+// `define	jx2_fpu_fmac			//Enable FMAC Operation
 
 `endif
 
@@ -98,6 +103,8 @@
 // `define	jx2_mem_lane2			//Allow Loads from Lane 2
 
 // `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
+
+`define	jx2_mulw_nolane3		//Disallow MULW from Lane 3
 
 `ifdef jx2_xc7s50
 // `define	jx2_fpu_noround		//FPU: Disable Rounding
@@ -110,19 +117,21 @@
 `define jx2_enable_fmovh			//FPU Load/Store
 // `define jx2_enable_movc			//MOV.C
 // `define jx2_enable_movclite		//MOV.C (Lite)
-`define jx2_enable_bitsel		//Bit Select
+// `define jx2_enable_bitsel		//Bit Select
 
-`define jx2_enable_pmov			//SIMD Load/Store
+// `define jx2_enable_pmov			//SIMD Load/Store
 // `define jx2_enable_pmov_m8		//FPU Load (FP8)
 
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
+
+// `define jx2_reg_rp			//Enable separate Rp port.
 
 `endif
 
 
 `ifndef jx2_xc7s50
 `define jx2_alu_slomuldiv			//Enable Slow MUL/DIV Unit
-`define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
+// `define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
 `endif
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
@@ -141,12 +150,12 @@
 
 `ifndef jx2_xc7s50
 // `define jx2_enable_aluptr		//Enable ALU Pointer Ops (ALUPTR)
-`define jx2_agu_disp48				//Enable 48-bit AGU displacements
+// `define jx2_agu_disp48			//Enable 48-bit AGU displacements
 `endif
 
 // `ifndef jx2_xc7s50
-`define jx2_enable_prebra			//Enable PreBranch
-`define jx2_prebra_rts				//Enable PreBranch on RTS
+// `define jx2_enable_prebra			//Enable PreBranch
+// `define jx2_prebra_rts				//Enable PreBranch on RTS
 // `endif
 
 `define jx2_l1d_nohash			//Disable L1 address hashing.
@@ -156,7 +165,7 @@
 `define jx2_enable_edgewalk		//Hardware rasterizer / edge-walker
 
 `ifdef jx2_xc7a200
-`define jx2_enable_dualcore			//Enable Second Core
+// `define jx2_enable_dualcore			//Enable Second Core
 
 `endif
 
@@ -199,15 +208,15 @@
 `define jx2_enable_convfp16				//FP16 conversion ops
 
 `define jx2_enable_conv_vubtof16		//Packed Byte/Word <-> F16/F32
-`define jx2_enable_conv_psqrta
+// `define jx2_enable_conv_psqrta
 
 `ifndef jx2_xc7s50
 
 `define jx2_enable_convfp16al			//FP16 <-> A-Law Conversion Ops
 
 // `define jx2_enable_rgb5minmax_alu			//RGB5 Min/Max Op (ALU/CONV2)
-`define jx2_enable_rgb5minmax_mul			//RGB5 Min/Max Op (CCENC)
-`define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
+// `define jx2_enable_rgb5minmax_mul			//RGB5 Min/Max Op (CCENC)
+// `define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
 
 `endif
 
@@ -244,9 +253,9 @@
 
 `ifndef jx2_xc7s50
 
-`define jx2_enable_vaddr96				//Enable 96-bit virtual addresses
+// `define jx2_enable_vaddr96				//Enable 96-bit virtual addresses
 
-`define jx2_enable_l1addr96			//Enable 96-bit bus addresses (L1)
+// `define jx2_enable_l1addr96			//Enable 96-bit bus addresses (L1)
 // `define jx2_enable_l2addr96			//Enable 96-bit bus addresses (L2)
 
 `endif
@@ -290,7 +299,7 @@
 // `define jx2_alu_jcmp_rpimm	//Allow JCMP immed via Rp
 
 `ifndef jx2_xc7s50
-`define jx2_audio_fmaumem		//Enable Audio Mixer Memory
+// `define jx2_audio_fmaumem		//Enable Audio Mixer Memory
 `endif
 
 
@@ -305,5 +314,13 @@
 `ifdef jx2_enable_vaddr96
 `ifndef jx2_tlb_xtlbe
 `define jx2_tlb_xtlbe		//Enable 256-bit TLBE's if Addr96 is enabled
+`endif
+`endif
+
+`ifndef jx2_xc7s50
+`ifndef jx2_alu_jcmp
+`ifndef jx2_alu_jcmpz
+`define jx2_alu_jcmpz		//Enable Jump-Compare Zero
+`endif
 `endif
 `endif

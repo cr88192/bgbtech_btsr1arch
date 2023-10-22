@@ -1,5 +1,5 @@
 module RegSpr_3W(
-	clock,	reset,
+	clock,	// reset,
 	regId,	regVal,
 	wrIdA,	wrValA,
 	wrIdB,	wrValB,
@@ -9,7 +9,7 @@ module RegSpr_3W(
 	);
 
 input			clock;
-input			reset;
+// input			reset;
 `input_gpr		regId;
 output[63:0]	regVal;
 `input_gpr		wrIdA;
@@ -27,11 +27,16 @@ input			regFlush;
 (* max_fanout = 200 *)
 	reg[63:0]		tNxtRegVal;
 
+(* max_fanout = 200 *)
+	wire		regHoldN = !regHold;
+
+
 assign 		regVal = tRegVal;
 
 reg				tIsIdA;
 reg				tIsIdB;
 reg				tIsIdC;
+reg[1:0]		tSel;
 
 always @*
 begin
@@ -52,6 +57,25 @@ begin
 `endif
 
 `ifdef def_true
+	tIsIdA	= (wrIdA == regId);
+	tIsIdB	= (wrIdB == regId);
+	tIsIdC	= (wrIdC == regId);
+	casez( {regFlush, tIsIdC, tIsIdB, tIsIdA} )
+		4'b0000:	tSel = 0;
+		4'b0zz1:	tSel = 1;
+		4'b0z10:	tSel = 2;
+		4'b0100:	tSel = 3;
+		4'b1zzz:	tSel = 0;
+	endcase
+	case(tSel)
+		2'b00:	tNxtRegVal	= regInVal;
+		2'b01:	tNxtRegVal	= wrValA;
+		2'b10:	tNxtRegVal	= wrValB;
+		2'b11:	tNxtRegVal	= wrValC;
+	endcase
+`endif
+
+`ifndef def_true
 	tNxtRegVal	= regInVal;
 	if(!regFlush)
 	begin
@@ -67,7 +91,7 @@ end
 
 always @(posedge clock)
 begin
-	if(!regHold)
+	if(regHoldN)
 	begin
 		tRegVal		<= tNxtRegVal;
 	end

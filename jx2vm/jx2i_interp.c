@@ -1588,6 +1588,10 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_CMPPGT:		s0="CMPPGT";	break;
 	case BJX2_NMID_CMPPGTX:		s0="CMPPGTX";	break;
 
+	case BJX2_NMID_MOVTW:		s0="MOV.TW";	break;
+	case BJX2_NMID_MOVUTW:		s0="MOVU.TW";	break;
+	case BJX2_NMID_MOVHTW:		s0="MOV.HTW";	break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;

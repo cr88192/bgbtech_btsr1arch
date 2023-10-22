@@ -431,6 +431,9 @@ void ( APIENTRY * qglVertex4sv )(const GLshort *v);
 void ( APIENTRY * qglVertexPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 void ( APIENTRY * qglViewport )(GLint x, GLint y, GLsizei width, GLsizei height);
 
+void ( APIENTRY * qglMultiTexCoord2f)(int target, GLfloat s, GLfloat t);
+void ( APIENTRY * qglActiveTexture)(GLenum texture);
+
 
 #if 0
 
@@ -1721,6 +1724,9 @@ qboolean QGL_Init( const char *dllname )
 	qglVertex4sv			= GPA( "glVertex4sv" );
 	qglVertexPointer		= GPA( "glVertexPointer" );
 	qglViewport				= GPA( "glViewport" );
+
+	qglMultiTexCoord2f		= GPA( "glMultiTexCoord2f" );
+	qglActiveTexture		= GPA( "glActiveTexture" );
 
 #ifdef _WIN32
 

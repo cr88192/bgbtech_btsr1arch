@@ -2008,6 +2008,15 @@ int BGBCC_JX2DA_EmitQWord(BGBCC_JX2_Context *ctx, s64 val)
 	return(1);
 }
 
+int BGBCC_JX2DA_EmitTWord(BGBCC_JX2_Context *ctx, s64 val)
+{
+	if(ctx->is_simpass || !ctx->do_asm)
+		return(0);
+
+	BGBCC_JX2DA_EmitPrintf(ctx, "  .tword 0x%016llX\n", val);
+	return(1);
+}
+
 int BGBCC_JX2DA_EmitDWordAbs(BGBCC_JX2_Context *ctx, int lbl)
 {
 	char *sro;

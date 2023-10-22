@@ -96,10 +96,9 @@ X(R_DrawColumn):
 
 #if 1
 .doubleloop:
-	SHLD	R20, #-25, R5
-	MOV.W	R18, (R23)
-	ADD		R21, R20
-	MOV.W	R19, (R23, 640)
+	SHLD	R20, #-25, R5	| ADD		R21, R20
+								MOV.W	R18, (R23)
+								MOV.W	R19, (R23, 640)
 	SHLD	R20, #-25, R6	| MOVU.B	(R22, R5), R18
 	ADD		R21, R20		| MOVU.B	(R22, R6), R19
 	ADD		#1280, R23		| MOVU.W	(R4, R18), R18
@@ -190,25 +189,17 @@ X(R_DrawSpan):
 // R16		pixelcount
 // R17		loopcount
 
-	SHLD	R5, #22, R5
-	SHLD	R20, #-10, R3
+	SHLD	R5, #22, R5		| SHLD	R20, #-10, R3
 	OR		R3, R5
-	SHLD	R5, #6, R5
-	SHLD	R20, #-26, R3
-	OR		R3, R5
+	SHLD	R5, #6, R5		| SHLD	R20, #-26, R3
+	OR		R3, R5			| ADD	R7, R20
+	AND		#4095, R5
 
-	ADD		R7, R20					// advance frac pointer
-	AND		#4095, R5				// finish calculation for third pixel
-
-	SHLD	R6, #22, R6
-	SHLD	R20, #-10, R3
+	SHLD	R6, #22, R6		| SHLD	R20, #-10, R3
 	OR		R3, R6
-	SHLD	R6, #6, R6
-	SHLD	R20, #-26, R3
-	OR		R3, R6
-
-	ADD		R7, R20					// advance frac pointer
-	AND		#4095, R6				// finish calculation for fourth pixel
+	SHLD	R6, #6, R6		| SHLD	R20, #-26, R3
+	OR		R3, R6			| ADD R7, R20
+	AND		#4095, R6
 
 //	MOV.L	X(ds_colormap), R4
 	MOV.P	X(ds_colormap), R4
@@ -272,8 +263,8 @@ X(R_DrawSpan):
 	SHLD	R5, #6, R5			|	SHLD	R6, #6, R6
 	OR		R3, R5				|	OR		R1, R6
 	MOV		#4095, R3
-	AND		R3, R5
 	MOV.W	R18, (R23)
+	AND		R3, R5
 	MOV.W	R19, (R23, 2)	
 	AND		R3, R6				|	MOVU.B	(R22, R5), R18	
 	ADD		R21, R20			|	MOVU.B	(R22, R6), R19	

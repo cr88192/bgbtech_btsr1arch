@@ -227,6 +227,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'x': long long			(int64)
 * 'y': unsigned long long	(uint64)
 * 'z': vararg
+
 * 'Ca': __vec2f
 * 'Cb': __vec3f
 * 'Cc': __vec4f
@@ -274,7 +275,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dr':
 * 'Ds': wstring
 * 'Dt': ustring
-* 'Du':
+* 'Du': __float48
 * 'Dv': __vec4_fp8s
 * 'Dw': __vec4_fp8u
 
@@ -289,6 +290,10 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Gf': _Imaginary float
 * 'Gg': _Imaginary float128
 * 'Gh': __float8u
+* 'Gi': __int48
+* 'Gj': __uint48
+* 'Gk': _Imaginary float16
+* 'Gl': __vec3f_48
 
 * 'Gw': bigint
 * 'Gx': fixnum

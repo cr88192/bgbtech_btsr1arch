@@ -140,7 +140,10 @@ int BGBCC_JX2_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,
 	}
 
 
-	if(nmid==BGBCC_SH_NMID_MOVC)
+	if(	(nmid==BGBCC_SH_NMID_MOVC)		||
+		(nmid==BGBCC_SH_NMID_MOVTW)		||
+		(nmid==BGBCC_SH_NMID_MOVUTW)	||
+		(nmid==BGBCC_SH_NMID_MOVHTW)	)
 	{
 		return(BGBCC_JX2_TryEmitOpRegStRegDisp(ctx, nmid, rm, rn, 0));
 	}
@@ -452,7 +455,10 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 		return(BGBCC_JX2_TryEmitOpLdRegDispReg(ctx, nmid, rm, 0, rn));
 	}
 
-	if(nmid==BGBCC_SH_NMID_MOVC)
+	if(	(nmid==BGBCC_SH_NMID_MOVC)		||
+		(nmid==BGBCC_SH_NMID_MOVTW)		||
+		(nmid==BGBCC_SH_NMID_MOVUTW)	||
+		(nmid==BGBCC_SH_NMID_MOVHTW)	)
 	{
 		return(BGBCC_JX2_TryEmitOpLdRegDispReg(ctx, nmid, rm, 0, rn));
 	}
@@ -1181,6 +1187,9 @@ int BGBCC_JX2_EmitOpStatDisp(BGBCC_JX2_Context *ctx, int nmid, int disp)
 	case BGBCC_SH_NMID_MOVUW:
 	case BGBCC_SH_NMID_FMOVH:
 	case BGBCC_SH_NMID_LEAW:
+	case BGBCC_SH_NMID_MOVTW:
+	case BGBCC_SH_NMID_MOVUTW:
+	case BGBCC_SH_NMID_MOVHTW:
 		disp1=disp>>1; break;
 	case BGBCC_SH_NMID_MOVL:
 	case BGBCC_SH_NMID_MOVUL:
@@ -1335,7 +1344,10 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 		(nmid!=BGBCC_SH_NMID_XLEAB)		&&
 		(nmid!=BGBCC_SH_NMID_XLEAW)		&&
 		(nmid!=BGBCC_SH_NMID_XLEAL)		&&
-		(nmid!=BGBCC_SH_NMID_XLEAQ)	)
+		(nmid!=BGBCC_SH_NMID_XLEAQ)		&&
+		(nmid!=BGBCC_SH_NMID_MOVTW)		&&
+		(nmid!=BGBCC_SH_NMID_MOVUTW)	&&
+		(nmid!=BGBCC_SH_NMID_MOVHTW)	)
 	{
 		return(BGBCC_JX2_TryEmitOpRegStReg(ctx, nmid, rm, rn));
 	}
@@ -1392,6 +1404,60 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 		}
 	}
 
+	if(!(ctx->has_fmovs&32)	&& !(ctx->emit_isprobe) &&
+		(	(nmid==BGBCC_SH_NMID_MOVTW) ||
+			(nmid==BGBCC_SH_NMID_MOVUTW) ||
+			(nmid==BGBCC_SH_NMID_MOVHTW) ))
+	{
+		if(disp&3)
+		{
+			if(nmid==BGBCC_SH_NMID_MOVHTW)
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_SHLR16, rm, BGBCC_SH_REG_R0);
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_SHLR32, rm, BGBCC_SH_REG_R1);
+			}else
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_MOV, rm, BGBCC_SH_REG_R0);
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_SHLR16, rm, BGBCC_SH_REG_R1);
+			}
+			BGBCC_JX2_EmitOpRegStRegDisp(ctx,
+				BGBCC_SH_NMID_MOVW, BGBCC_SH_REG_R0, rn, disp+0);
+			BGBCC_JX2_EmitOpRegStRegDisp(ctx,
+				BGBCC_SH_NMID_MOVL, BGBCC_SH_REG_R1, rn, disp+4);
+		}else
+		{
+			if(nmid==BGBCC_SH_NMID_MOVHTW)
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_SHLR16, rm, BGBCC_SH_REG_R0);
+				BGBCC_JX2_EmitOpRegImmReg(ctx,
+					BGBCC_SH_NMID_SHLD, rm, -48, BGBCC_SH_REG_R1);
+			}else
+			{
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_MOV, rm, BGBCC_SH_REG_R0);
+				BGBCC_JX2_EmitOpRegReg(ctx,
+					BGBCC_SH_NMID_SHLR32, rm, BGBCC_SH_REG_R1);
+			}
+			BGBCC_JX2_EmitOpRegStRegDisp(ctx,
+				BGBCC_SH_NMID_MOVL, BGBCC_SH_REG_R0, rn, disp+0);
+			BGBCC_JX2_EmitOpRegStRegDisp(ctx,
+				BGBCC_SH_NMID_MOVW, BGBCC_SH_REG_R1, rn, disp+4);
+		}
+		return(1);
+	}
+	
+	if(nmid==BGBCC_SH_NMID_MOVTW_V)
+		nmid=BGBCC_SH_NMID_MOVTW;
+	if(nmid==BGBCC_SH_NMID_MOVUTW_V)
+		nmid=BGBCC_SH_NMID_MOVUTW;
+	if(nmid==BGBCC_SH_NMID_MOVHTW_V)
+		nmid=BGBCC_SH_NMID_MOVHTW;
+
 	if(((rn&63)==(rn0&63)) &&
 		((rn0&BGBCC_SH_REG_RTMASK)!=BGBCC_SH_REG_LR0))
 	{
@@ -1428,6 +1494,9 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 		case BGBCC_SH_NMID_MOVW:
 		case BGBCC_SH_NMID_MOVUW:
 		case BGBCC_SH_NMID_FMOVH:
+		case BGBCC_SH_NMID_MOVTW:
+		case BGBCC_SH_NMID_MOVUTW:
+		case BGBCC_SH_NMID_MOVHTW:
 			disp<<=1;
 			break;
 		case BGBCC_SH_NMID_MOVL:
@@ -2142,6 +2211,33 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 			opw2=0x4700|((rn&15)<<4)|((rm&15)<<0);
 			break;
 
+
+		case BGBCC_SH_NMID_MOVTW:
+		case BGBCC_SH_NMID_MOVUTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			if(((disp&0x3E)==disp) && !(nowxi>>1))
+			{
+				opw1=0xF000|ex|((disp>>1)&31);
+				opw2=0x9000|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF000|ex;	odr=2;
+			opw2=0x9400|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MOVHTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			if(((disp&0x3E)==disp) && !(nowxi>>1))
+			{
+				opw1=0xF000|ex|((disp>>1)&31);
+				opw2=0x9100|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF000|ex;	odr=2;
+			opw2=0x9500|((rn&15)<<4)|((rm&15)<<0);
+			break;
+
 #if 0
 		case BGBCC_SH_NMID_CMOVTB:
 		case BGBCC_SH_NMID_CMOVFB:
@@ -2481,6 +2577,9 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 		(nmid!=BGBCC_SH_NMID_XLEAW)		&&
 		(nmid!=BGBCC_SH_NMID_XLEAL)		&&
 		(nmid!=BGBCC_SH_NMID_XLEAQ)		&&
+		(nmid!=BGBCC_SH_NMID_MOVTW)		&&
+		(nmid!=BGBCC_SH_NMID_MOVUTW)	&&
+		(nmid!=BGBCC_SH_NMID_MOVHTW)	&&
 		(rm!=BGBCC_SH_REG_PC) &&
 		(rm!=BGBCC_SH_REG_GBR) &&
 		(rm!=BGBCC_SH_REG_TBR))
@@ -2516,7 +2615,66 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			return(1);
 		}
 	}
+
+	if(!(ctx->has_fmovs&32)	&& !(ctx->emit_isprobe) &&
+		(	(nmid==BGBCC_SH_NMID_MOVTW) ||
+			(nmid==BGBCC_SH_NMID_MOVUTW) ||
+			(nmid==BGBCC_SH_NMID_MOVHTW) ))
+	{
+		/* We don't have these ops, fake them. */
+		if(!(disp&7))
+		{
+			BGBCC_JX2_EmitOpLdRegDispReg(ctx,
+				BGBCC_SH_NMID_MOVQ, rm, disp, rn);
+			BGBCC_JX2_EmitOpReg(ctx, BGBCC_SH_NMID_SHLL16, rn);
+			if(nmid==BGBCC_SH_NMID_MOVTW)
+				BGBCC_JX2_EmitOpReg(ctx, BGBCC_SH_NMID_SHAR16, rn);
+			if(nmid==BGBCC_SH_NMID_MOVUTW)
+				BGBCC_JX2_EmitOpReg(ctx, BGBCC_SH_NMID_SHLR16, rn);
+			return(1);
+		}
+		
+		if(disp&3)
+		{
+			opw4=BGBCC_SH_NMID_MOVUL;
+			if(nmid==BGBCC_SH_NMID_MOVTW)
+				opw4=BGBCC_SH_NMID_MOVL;
 	
+			BGBCC_JX2_EmitOpLdRegDispReg(ctx,
+				opw4, rm, disp+4, BGBCC_SH_REG_R1);
+			BGBCC_JX2_EmitOpLdRegDispReg(ctx,
+				BGBCC_SH_NMID_MOVUW, rm, disp+0, BGBCC_SH_REG_R0);
+			BGBCC_JX2_EmitOpReg(ctx, BGBCC_SH_NMID_SHLL16, BGBCC_SH_REG_R1);
+			BGBCC_JX2_EmitOpRegRegReg(ctx, BGBCC_SH_NMID_OR,
+				BGBCC_SH_REG_R0, BGBCC_SH_REG_R1, rn);
+			if(nmid==BGBCC_SH_NMID_MOVHTW)
+				BGBCC_JX2_EmitOpReg(ctx, BGBCC_SH_NMID_SHLL16, rn);
+		}else
+		{
+			opw4=BGBCC_SH_NMID_MOVUW;
+			if(nmid==BGBCC_SH_NMID_MOVTW)
+				opw4=BGBCC_SH_NMID_MOVW;
+	
+			BGBCC_JX2_EmitOpLdRegDispReg(ctx,
+				opw4, rm, disp+4, BGBCC_SH_REG_R1);
+			BGBCC_JX2_EmitOpLdRegDispReg(ctx,
+				BGBCC_SH_NMID_MOVUL, rm, disp+0, BGBCC_SH_REG_R0);
+			BGBCC_JX2_EmitOpReg(ctx, BGBCC_SH_NMID_SHLL32, BGBCC_SH_REG_R1);
+			BGBCC_JX2_EmitOpRegRegReg(ctx, BGBCC_SH_NMID_OR,
+				BGBCC_SH_REG_R0, BGBCC_SH_REG_R1, rn);
+			if(nmid==BGBCC_SH_NMID_MOVHTW)
+				BGBCC_JX2_EmitOpReg(ctx, BGBCC_SH_NMID_SHLL16, rn);
+		}
+		return(1);
+	}
+	
+	if(nmid==BGBCC_SH_NMID_MOVTW_V)
+		nmid=BGBCC_SH_NMID_MOVTW;
+	if(nmid==BGBCC_SH_NMID_MOVUTW_V)
+		nmid=BGBCC_SH_NMID_MOVUTW;
+	if(nmid==BGBCC_SH_NMID_MOVHTW_V)
+		nmid=BGBCC_SH_NMID_MOVHTW;
+
 	if(
 		(nmid==BGBCC_SH_NMID_LEATB)		||
 		(nmid==BGBCC_SH_NMID_LEATW)		||
@@ -2593,6 +2751,9 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 		case BGBCC_SH_NMID_MOVW:
 		case BGBCC_SH_NMID_MOVUW:
 		case BGBCC_SH_NMID_FMOVH:
+		case BGBCC_SH_NMID_MOVTW:
+		case BGBCC_SH_NMID_MOVUTW:
+		case BGBCC_SH_NMID_MOVHTW:
 			disp<<=1;
 			break;
 		case BGBCC_SH_NMID_MOVL:
@@ -3445,6 +3606,43 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			opw1=0xF000|ex;	odr=2;
 			opw2=0x4F00|((rn&15)<<4)|((rm&15)<<0);			break;
 
+		case BGBCC_SH_NMID_MOVTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			if(((disp&0x3E)==disp) && !(nowxi>>1))
+			{
+				opw1=0xF000|ex|((disp>>1)&31);
+				opw2=0x9800|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF000|ex;	odr=2;
+			opw2=0x9C00|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MOVUTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			if(((disp&0x3E)==disp) && !(nowxi>>1))
+			{
+				opw1=0xF080|ex|((disp>>1)&31);
+				opw2=0x9800|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF080|ex;	odr=2;
+			opw2=0x9C00|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MOVHTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			if(((disp&0x3E)==disp) && !(nowxi>>1))
+			{
+				opw1=0xF000|ex|((disp>>1)&31);
+				opw2=0x9900|((rn&15)<<4)|((rm&15)<<0);
+				break;
+			}
+			opw1=0xF000|ex;	odr=2;
+			opw2=0x9D00|((rn&15)<<4)|((rm&15)<<0);
+			break;
+
 #if 0
 		case BGBCC_SH_NMID_CMOVTB:
 		case BGBCC_SH_NMID_CMOVFB:
@@ -4038,7 +4236,7 @@ int BGBCC_JX2_ProbeEmitOpRegStReg2(BGBCC_JX2_Context *ctx,
 int BGBCC_JX2_TryEmitOpRegStReg2(
 	BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn)
 {
-	int opw1, opw2, opw3, opw4, ex, exw;
+	int opw1, opw2, opw3, opw4, ex, exw, rt;
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
@@ -4075,6 +4273,38 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 			if(rm<0)
 				{ BGBCC_DBGBREAK }
 		}
+	}
+
+	if(	(nmid==BGBCC_SH_NMID_MOVTW_V) ||
+		(nmid==BGBCC_SH_NMID_MOVUTW_V) ||
+		(nmid==BGBCC_SH_NMID_MOVHTW_V) )
+	{
+		if(ctx->emit_isprobe)
+			return(0);
+	
+		opw4=BGBCC_SH_NMID_MOVTW;
+		if(nmid==BGBCC_SH_NMID_MOVHTW_V)
+			opw4=BGBCC_SH_NMID_MOVHTW;
+
+		/* Synthesize the scale-6 index. */
+		BGBCC_JX2_TryEmitOpLdReg2Reg(ctx,
+			BGBCC_SH_NMID_LEAW, ro, ro, BGBCC_SH_REG_R0);
+		rt=BGBCC_JX2_TryEmitOpRegStReg2(ctx,
+			opw4, rm, BGBCC_SH_REG_R0, rn);
+		return(rt);
+	}
+
+	if(!(ctx->has_fmovs&32)	&& !(ctx->emit_isprobe) &&
+		(	(nmid==BGBCC_SH_NMID_MOVTW) ||
+			(nmid==BGBCC_SH_NMID_MOVUTW) ||
+			(nmid==BGBCC_SH_NMID_MOVHTW) ))
+	{
+		/* We don't have these ops, fake them. */
+		BGBCC_JX2_EmitOpLdReg2Reg(ctx,
+			BGBCC_SH_NMID_LEAW, rn, ro, BGBCC_SH_REG_R16);
+		BGBCC_JX2_EmitOpRegStRegDisp(ctx,
+			nmid, rm, BGBCC_SH_REG_R16, 0);
+		return(1);
 	}
 
 	if(((rn&63)>=2) && (ro==BGBCC_SH_REG_R0))
@@ -4375,6 +4605,18 @@ int BGBCC_JX2_TryEmitOpRegStReg2(
 			opw1=0xF000|ex|(ro&15);
 			opw2=0x4700|((rn&15)<<4)|((rm&15)<<0);			break;
 
+		case BGBCC_SH_NMID_MOVTW:
+		case BGBCC_SH_NMID_MOVUTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			opw1=0xF000|ex|(ro&15);
+			opw2=0x9400|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_MOVHTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			opw1=0xF000|ex|(ro&15);
+			opw2=0x9500|((rn&15)<<4)|((rm&15)<<0);			break;
+
 
 		case BGBCC_SH_NMID_XMOVUB:
 		case BGBCC_SH_NMID_XMOVB:
@@ -4484,7 +4726,7 @@ int BGBCC_JX2_ProbeEmitOpLdReg2Reg(BGBCC_JX2_Context *ctx,
 int BGBCC_JX2_TryEmitOpLdReg2Reg(
 	BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn)
 {
-	int opw1, opw2, opw3, opw4, ex, exw;
+	int opw1, opw2, opw3, opw4, ex, exw, rt;
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
@@ -4522,6 +4764,40 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 			if(rn<0)
 				{ BGBCC_DBGBREAK }
 		}
+	}
+
+	if(	(nmid==BGBCC_SH_NMID_MOVTW_V) ||
+		(nmid==BGBCC_SH_NMID_MOVUTW_V) ||
+		(nmid==BGBCC_SH_NMID_MOVHTW_V) )
+	{
+		if(ctx->emit_isprobe)
+			return(0);
+	
+		opw4=BGBCC_SH_NMID_MOVTW;
+		if(nmid==BGBCC_SH_NMID_MOVUTW_V)
+			opw4=BGBCC_SH_NMID_MOVUTW;
+		if(nmid==BGBCC_SH_NMID_MOVHTW_V)
+			opw4=BGBCC_SH_NMID_MOVHTW;
+
+		/* Synthesize the scale-6 index. */
+		BGBCC_JX2_TryEmitOpLdReg2Reg(ctx,
+			BGBCC_SH_NMID_LEAW, ro, ro, BGBCC_SH_REG_R0);
+		rt=BGBCC_JX2_TryEmitOpLdReg2Reg(ctx,
+			opw4, rm, BGBCC_SH_REG_R0, rn);
+		return(rt);
+	}
+
+	if(!(ctx->has_fmovs&32)	&& !(ctx->emit_isprobe) &&
+		(	(nmid==BGBCC_SH_NMID_MOVTW) ||
+			(nmid==BGBCC_SH_NMID_MOVUTW) ||
+			(nmid==BGBCC_SH_NMID_MOVHTW) ))
+	{
+		/* We don't have these ops, fake them. */
+		BGBCC_JX2_EmitOpLdReg2Reg(ctx,
+			BGBCC_SH_NMID_LEAW, rm, ro, BGBCC_SH_REG_R16);
+		BGBCC_JX2_EmitOpLdRegDispReg(ctx,
+			nmid, BGBCC_SH_REG_R16, 0, rn);
+		return(1);
 	}
 
 	if(((rm&63)>=2) && (ro==BGBCC_SH_REG_R0))
@@ -4970,6 +5246,22 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 		case BGBCC_SH_NMID_FMOVH:
 			opw1=0xF000|ex|(ro&15);
 			opw2=0x4F00|((rn&15)<<4)|((rm&15)<<0);			break;
+
+		case BGBCC_SH_NMID_MOVTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			opw1=0xF000|ex|(ro&15);
+			opw2=0x9C00|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_MOVUTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			opw1=0xF080|ex|(ro&15);
+			opw2=0x9C00|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_MOVHTW:
+			if(!(ctx->has_fmovs&32) && ctx->emit_isprobe)
+				break;
+			opw1=0xF000|ex|(ro&15);
+			opw2=0x9D00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 #if 0
 		case BGBCC_SH_NMID_LEAB:

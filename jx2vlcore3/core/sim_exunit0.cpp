@@ -2481,6 +2481,14 @@ int main(int argc, char **argv, char **env)
 		clk_1khz =(main_time/ 50000)&1;
 		clk_256hz=(main_time/200000)&1;
 
+#ifdef DO75MHZ
+		clk_4mhz =(main_time/    19)&1;
+		clk_1mhz =(main_time/    75)&1;
+		clk_64khz=(main_time/  1172)&1;
+		clk_1khz =(main_time/ 75000)&1;
+		clk_256hz=(main_time/300000)&1;
+#endif
+
 		seed=(seed*65521)+31;
 
 		timers=
