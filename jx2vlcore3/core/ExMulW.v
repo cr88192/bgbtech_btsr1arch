@@ -54,9 +54,8 @@ input			exHold;
 input[1:0]		idLane;
 
 (* max_fanout = 200 *)
-	wire			exHoldN;
+	wire		exHoldN = !exHold;
 
-assign	exHoldN = !exHold;
 
 
 reg[63:0]	tValRn;
@@ -65,7 +64,9 @@ assign 	valRn = tValRn;
 reg[8:0]		tIdUCmd;
 reg[8:0]		tIdUIxt;
 reg[8:0]		tIdUCmdB;
-reg[8:0]		tIdUIxtB;
+
+(* max_fanout = 200 *)
+	reg[8:0]		tIdUIxtB;
 
 reg[63:0]		tValRs;
 reg[63:0]		tValRt;
@@ -109,6 +110,24 @@ ModDsp48	macD(
 	tResMacC, tResMacD);
 `endif
 
+(* max_fanout = 200 *)
+	reg	tValRsSxAp;
+(* max_fanout = 200 *)
+	reg	tValRsSxBp;
+(* max_fanout = 200 *)
+	reg	tValRsSxCp;
+(* max_fanout = 200 *)
+	reg	tValRsSxDp;
+
+(* max_fanout = 200 *)
+	reg	tValRtSxAp;
+(* max_fanout = 200 *)
+	reg	tValRtSxBp;
+(* max_fanout = 200 *)
+	reg	tValRtSxCp;
+(* max_fanout = 200 *)
+	reg	tValRtSxDp;
+
 always @*
 begin
 	tIdUCmd	= idUCmd;
@@ -129,14 +148,24 @@ begin
 	end
 `endif
 
-	tValRsSxA={(tValRs[15] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRs[15: 0]};
-	tValRtSxA={(tValRt[15] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRt[15: 0]};
-	tValRsSxB={(tValRs[31] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRs[31:16]};
-	tValRtSxB={(tValRt[31] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRt[31:16]};
-	tValRsSxC={(tValRs[47] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRs[47:32]};
-	tValRtSxC={(tValRt[47] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRt[47:32]};
-	tValRsSxD={(tValRs[63] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRs[63:48]};
-	tValRtSxD={(tValRt[63] && !tIdUIxt[0]) ? UV20_FF:UV20_00, tValRt[63:48]};
+	tValRsSxAp = (tValRs[15] && !tIdUIxt[0]);
+	tValRsSxBp = (tValRs[31] && !tIdUIxt[0]);
+	tValRsSxCp = (tValRs[47] && !tIdUIxt[0]);
+	tValRsSxDp = (tValRs[63] && !tIdUIxt[0]);
+
+	tValRtSxAp = (tValRt[15] && !tIdUIxt[0]);
+	tValRtSxBp = (tValRt[31] && !tIdUIxt[0]);
+	tValRtSxCp = (tValRt[47] && !tIdUIxt[0]);
+	tValRtSxDp = (tValRt[63] && !tIdUIxt[0]);
+
+	tValRsSxA = { tValRsSxAp ? UV20_FF : UV20_00, tValRs[15: 0] };
+	tValRtSxA = { tValRtSxAp ? UV20_FF : UV20_00, tValRt[15: 0] };
+	tValRsSxB = { tValRsSxBp ? UV20_FF : UV20_00, tValRs[31:16] };
+	tValRtSxB = { tValRtSxBp ? UV20_FF : UV20_00, tValRt[31:16] };
+	tValRsSxC = { tValRsSxCp ? UV20_FF : UV20_00, tValRs[47:32] };
+	tValRtSxC = { tValRtSxCp ? UV20_FF : UV20_00, tValRt[47:32] };
+	tValRsSxD = { tValRsSxDp ? UV20_FF : UV20_00, tValRs[63:48] };
+	tValRtSxD = { tValRtSxDp ? UV20_FF : UV20_00, tValRt[63:48] };
 
 //	tValRn1E = UV36_XX;
 //	if(idLane == 0)

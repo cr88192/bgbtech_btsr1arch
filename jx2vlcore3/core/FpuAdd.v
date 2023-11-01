@@ -421,7 +421,7 @@ begin
 		tFraRbit4B=!tSgnC4;
 	if(regRMode[3:0]==3)
 		tFraRbit4B=tSgnC4;
-	if(regRMode[3:0]!=4)
+//	if(regRMode[3:0]!=4)
 		tFraRbit4B2=0;
 
 	tValRoundC4 = { 1'b0, tValC4[7:0] } + {
@@ -433,8 +433,8 @@ begin
 	if(!tValRoundC4[8])
 		tValC4[7:0] = tValRoundC4[7:0];
 
-	if(regRMode[3:0]==4)
-		tValC4[1:0] = tInxC4B ? 2'b01 : 2'b00;
+//	if(regRMode[3:0]==4)
+//		tValC4[1:0] = tInxC4B ? 2'b01 : 2'b00;
 `endif
 
 	if(tRegExOp4[2:0] == 4)

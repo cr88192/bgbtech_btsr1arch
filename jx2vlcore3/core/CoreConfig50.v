@@ -19,13 +19,13 @@
 // `define jx2_cpu_masterclock_150			//Use 150MHz Master Clock
 
 // `define jx2_cpu_masterclock_100			//Use 100MHz Master Clock
-`define jx2_cpu_masterclock_75			//Use 75MHz Master Clock
-// `define jx2_cpu_masterclock_50			//Use 50MHz Master Clock
+// `define jx2_cpu_masterclock_75			//Use 75MHz Master Clock
+`define jx2_cpu_masterclock_50			//Use 50MHz Master Clock
 
 // `define jx2_cpu_mmioclock_150		//Use 150MHz MMIO Clock
 // `define jx2_cpu_mmioclock_100		//Use 100MHz MMIO Clock
-`define jx2_cpu_mmioclock_75			//Use 75MHz MMIO Clock
-// `define jx2_cpu_mmioclock_50		//Use 50MHz MMIO Clock
+// `define jx2_cpu_mmioclock_75			//Use 75MHz MMIO Clock
+`define jx2_cpu_mmioclock_50		//Use 50MHz MMIO Clock
 
 // `define jx2_cpu_ddrclock_150		//Use 150MHz DDR Clock
 `define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
@@ -81,22 +81,22 @@
 // `define jx2_mem_l1d_utlb			//Micro TLB
 // `define jx2_mem_l1i_utlb			//Micro TLB
 
-// `define jx2_mem_l1i_fastix		//Try to get block index quickly
+`define jx2_mem_l1i_fastix		//Try to get block index quickly
 
 `endif
 
 // `define jx2_mem_fulldpx				//Full Duplex Mode
 // `define jx2_mem_fulldpx_syncb	//Full Duplex, Sync L2 AddrB
 
-// `define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
-`define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
+`define jx2_mem_l1dsz_1024		//L1 D$ is 1024 entries
+// `define jx2_mem_l1dsz_512			//L1 D$ is 512 entries
 // `define jx2_mem_l1dsz_256		//L1 D$ is 256 entries
 // `define jx2_mem_l1dsz_128		//L1 D$ is 128 entries
 // `define jx2_mem_l1dsz_64			//L1 D$ is 64 entries
 
 
-// `define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
-`define jx2_mem_l1isz_512			//L1 I$ is 512 entries
+`define jx2_mem_l1isz_1024			//L1 I$ is 1024 entries
+// `define jx2_mem_l1isz_512			//L1 I$ is 512 entries
 // `define jx2_mem_l1isz_256			//L1 I$ is 256 entries
 // `define jx2_mem_l1isz_128		//L1 I$ is 128 entries
 // `define jx2_mem_l1isz_64			//L1 I$ is 64 entries
@@ -232,6 +232,11 @@
 // `define mod_ddr_fastbuf		//Do Fast IO Buffer (Single Clock)
 
 `define mod_ddrb_dllenable		//Enable DLL for DDRB
+
+
+// `define jx2_edgewalk_utxarr_256
+`define jx2_edgewalk_utxarr_1024
+
 
 
 `define JX2_FBUF_EN128K

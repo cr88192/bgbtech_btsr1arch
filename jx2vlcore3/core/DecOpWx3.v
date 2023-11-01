@@ -340,6 +340,7 @@ reg opIsDfA;	//Pred-False or WEX
 reg opIsWfA;	//WEX
 
 reg opIsScalar;		//Scalar Operation
+reg opIsScalarBase;	//Scalar Operation (Single Op Word)
 reg opIsDualLane;	//Op uses both lanes
 reg opIsDualLaneRm;	//Op uses both lanes (with Rm as 128b)
 reg opIsDualLaneRn;	//Op uses both lanes (with Rn as 128b)
@@ -657,6 +658,7 @@ begin
 	opIsDwC = 0;
 	opIsWexJumboLdi	= 0;
 	opIsScalar		= 0;
+	opIsScalarBase	= 0;
 	opIsDualLane	= 0;
 //	opIsDualLane3R	= 0;
 //	opIsDualLane2R	= 0;
@@ -1200,7 +1202,8 @@ begin
 			if(decOpFzA_idUFl[12])
 				opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };
 
-			opIsScalar	= 1;				
+			opIsScalar		= 1;				
+			opIsScalarBase	= 1;				
 		end
 	end
 	else
@@ -1241,7 +1244,8 @@ begin
 		opUCmdC	= UV9_00;
 		opUIxtC	= UV9_00;
 		
-		opIsScalar	= 1;
+		opIsScalar		= 1;
+		opIsScalarBase	= 1;
 	end
 
 //	if(opIsScalar)
@@ -1252,8 +1256,6 @@ begin
 			opIsBaseRm	= 1;
 		end
 
-`ifdef def_true
-// `ifndef def_true
 		if((opUIxtA0[8:6]==JX2_IUC_WX) || (opUIxtA0[8:6]==JX2_IUC_WXA))
 		begin
 			opIsDualLane = 1;
@@ -1267,11 +1269,13 @@ begin
 				opIsDualLaneRo	= 1;
 				opIsDualLaneRn	= 1;
 			end
+		end
 
+		if(opIsScalarBase &&
+			((opUIxtA0[8:6]==JX2_IUC_WX) || (opUIxtA0[8:6]==JX2_IUC_WXA)))
+		begin
 			if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
 			begin
-//				opDualLaneSw	= 1;
-
 				if(opUIxtA0[5:0] == JX2_UCIX_CONV2_FP16PCK32)
 				begin
 					opIsDualLaneRm	= 1;
@@ -1327,7 +1331,6 @@ begin
 `endif
 
 		end
-`endif
 
 	end
 
@@ -1445,7 +1448,9 @@ begin
 			opImmB	= opImmA;
 		opUCmdB	= opUCmdA;
 		opUIxtB	= opUIxtA;
-		
+
+`ifndef def_true
+		/* Split Immediate, but can't figure out logic path. */
 		if(!opIsScalar)
 		begin
 			if(decOpFzA_idUFl[1])
@@ -1453,6 +1458,7 @@ begin
 				opImmB	= { UV17_00, opImmA[31:16] };
 			end
 		end
+`endif
 
 		if(!opIsDualLaneRn)
 		begin
@@ -1464,11 +1470,11 @@ begin
 			opRegAN = opRegXN;
 			opRegBN = opRegXNv;
 
-			if(opIsScalar)
-			begin
+//			if(opIsScalar)
+//			begin
 				opRegCO		= opRegXP;
 				opRegCM		= opRegXPv;
-			end
+//			end
 		end
 
 `ifdef def_true

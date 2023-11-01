@@ -2442,10 +2442,10 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n1_Ehjj  LEAT.B	Imm10n, Rn				//(TTAG) LEAT.B (Rn, Imm10n), Rn
 ** F2n1_EHjj  XLEA.B	Imm10n, Rn				//(TTAG) XLEA.B (Xn, Imm10n), Xn
 
-** F2n4_Efjj ? BREQ.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn == 0)
-** F2n5_Efjj ? BREQ.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn == 0)
-** F2n6_Efjj ? BRNE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn != 0)
-** F2n7_Efjj ? BRNE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn != 0)
+** F2n4_Efjj ? BREQ.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn EQ 0)
+** F2n5_Efjj ? BREQ.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn EQ 0)
+** F2n6_Efjj ? BRNE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn NE 0)
+** F2n7_Efjj ? BRNE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn NE 0)
 
 ** F2n8_Efjj ? BRLT.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn LT 0)
 ** F2n9_Efjj ? BRLT.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn LT 0)
@@ -2876,7 +2876,7 @@ While following a generic pattern:
 * FEzz_zzzz_Fzzz  (N/E)
 
 
-=== Op24 (Possible/Drop) ===
+=== Op24 (Drop) ===
 
 These are intended to only exist in microcontroller configurations.
 This encoding is mutually exclusive with Op32_XGPR.
@@ -3000,6 +3000,9 @@ This mode will also lose Op40x2, which will become non-encodable.
 
 In XG2 Mode, Disp9u encodings will use W.i as a sign-extension bit.
 Imm9u and Imm9n encodings will use W.i as an additional immediate bit.
+Imm10u and Imm10n encodings will use W.i as an additional immediate bit.
+
+Possible: W.nmi will expand Disp20 by 3 bits (inverted-xor against the original sign extension), expanding the reach of BRA/BSR to 8MB.
 
 
 Possibly, this mode may use (WX4,WX3,WX2,WXE) == 0100 or 0101.

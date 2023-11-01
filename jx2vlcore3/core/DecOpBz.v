@@ -1342,12 +1342,14 @@ begin
 				opUCmdIx	= JX2_UCIX_IXS_MOVT;
 			end
 
+`ifndef def_true
 			11'h7zz: begin
 				opNmid		= JX2_UCMD_SWAPN;
 				opFmid		= JX2_FMID_REG;
 				opIty		= JX2_ITY_SL;
 				opUCmdIx	= { 2'h0, istrWord[3:0] };
 			end
+`endif
 
 `ifndef def_true
 			11'h8z4: begin

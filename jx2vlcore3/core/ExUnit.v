@@ -135,6 +135,7 @@ module ExUnit(
 	dbgDcInAddr,	dbgDcInOpm,
 	dbgDcOutVal,	dbgDcInVal,
 	dbgDcOutOK,		dbgExWidth,
+	dbgMisc,
 	
 	dbgOutStatus1,	dbgOutStatus2,
 	dbgOutStatus3,	dbgOutStatus4,
@@ -204,6 +205,7 @@ output[63:0]	dbgDcInVal;
 output[ 1:0]	dbgDcOutOK;
 
 output[ 1:0]	dbgExWidth;
+output[ 7:0]	dbgMisc;
 
 output			dbgOutStatus1;
 output			dbgOutStatus2;
@@ -249,14 +251,11 @@ defparam		exAlu.noAlux = isGpu;
 (* max_fanout = 200 *)
 	reg				exResetL2;
 
-(* max_fanout = 200 *)
-	wire			exHold1N;
+(* max_fanout = 300 *)
+	wire			exHold1N = !exHold1;
 
-(* max_fanout = 200 *)
-	wire			exHold2N;
-
-assign	exHold1N = !exHold1;
-assign	exHold2N = !exHold2;
+(* max_fanout = 300 *)
+	wire			exHold2N = !exHold2;
 
 reg				exHold1L;
 
@@ -277,9 +276,9 @@ reg				exHold1D1;
 reg				exHold1D2;
 reg				exHold1D3;
 
-(* max_fanout = 200 *)
+(* max_fanout = 300 *)
 	reg				tDbgExHold1;
-(* max_fanout = 200 *)
+(* max_fanout = 300 *)
 	reg				tDbgExHold2;
 
 reg				tDbgExHold1B;
@@ -291,21 +290,21 @@ reg				tDbgExHold2B;
 assign		dbgExHold1 = tDbgExHold1B;
 assign		dbgExHold2 = tDbgExHold2B;
 
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus1;
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus2;
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus3;
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus4;
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus5;
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus6;
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus7;
-(* max_fanout = 200 *)
+(* max_fanout = 400 *)
 	reg			tDbgOutStatus8;
 
 reg			tDbgOutStatus1B;
@@ -354,10 +353,18 @@ reg[1:0]	tDbgExWidthC;
 
 assign	dbgExWidth	= tDbgExWidthC;
 
+wire[7:0]	tDbgMisc;
+reg[7:0]	tDbgMiscB;
+reg[7:0]	tDbgMiscC;
+
+assign	dbgMisc	= tDbgMiscC;
+
 /* IF */
 
-wire[63:0]		gprOutDlr;
-wire[63:0]		gprOutDhr;
+(* max_fanout = 200 *)
+	wire[63:0]		gprOutDlr;
+(* max_fanout = 200 *)
+	wire[63:0]		gprOutDhr;
 
 wire[63:0]		crOutMmcr;
 wire[63:0]		crOutKrr;
@@ -878,6 +885,9 @@ wire[63:0]		gprOutBp;
 reg [63:0]		gprInBp;
 `endif
 
+(* max_fanout = 200 *)
+	wire exHold2NotIsrEdge = exHold2 && !crIsIsrEdge;
+
 `ifdef jx2_enable_wex3w
 
 `ifdef jx2_gprs_usefsm
@@ -888,7 +898,8 @@ RegGPR_6R3W regGpr(
 	clock,
 	exResetL,
 //	exHold2,
-	exHold2 && !crIsIsrEdge,
+//	exHold2 && !crIsIsrEdge,
+	exHold2NotIsrEdge,
 
 	idA2IdUCmd,
 	idA2IdUIxt,
@@ -971,7 +982,8 @@ RegGPR_6R3W regGpr(
 RegGPR_4R2W regGpr(
 	clock,
 	exResetL,
-	exHold2 && !crIsIsrEdge,
+//	exHold2 && !crIsIsrEdge,
+	exHold2NotIsrEdge,
 
 	idA2IdUCmd,
 	idA2IdUIxt,
@@ -1091,7 +1103,8 @@ RegGPR regGpr(
 	clock,
 	exResetL,
 //	exHold2,
-	exHold2 && !crIsIsrEdge,
+//	exHold2 && !crIsIsrEdge,
+	exHold2NotIsrEdge,
 
 	id2IdUCmd,
 	id2IdUIxt,
@@ -1219,7 +1232,8 @@ assign	crOutLrHi = 0;
 RegCR regCr(
 	clock,	exResetL,
 //	exHold2,
-	exHold2 && !crIsIsrEdge,
+//	exHold2 && !crIsIsrEdge,
+	exHold2NotIsrEdge,
 
 	crIdCm,		//Source ID
 	crValCm,		//Source Value
@@ -1365,7 +1379,8 @@ reg[47:0]		ex1PreBraPc;
 reg[1:0]		ex1PreBra;
 // reg[31:0]	ex1IstrWord;	//source instruction word
 reg[95:0]		ex1IstrWord;	//source instruction word
-reg				ex1BraFlush;
+(* max_fanout = 200 *)
+	reg				ex1BraFlush;
 reg				ex1TrapFlush;
 // reg[11:0]		ex1Timers;
 
@@ -2056,7 +2071,8 @@ reg[63:0]		ex2RegMulWRes;		//Multiplier Result (Word)
 
 reg[65:0]		ex2RegAluResB;		//Arithmetic Result (ALUB)
 
-reg				ex2BraFlush;		//Flush EX2
+(* max_fanout = 200 *)
+	reg				ex2BraFlush;		//Flush EX2
 reg				ex2TrapFlush;		//Flush EX2
 
 wire[63:0]		ex2RegOutDlr;
@@ -2176,7 +2192,8 @@ reg[32:0]		ex3RegValImm;		//Immediate (Decode)
 reg[69:0]		ex3RegAluRes;		//Arithmetic Result
 reg[63:0]		ex3RegMulRes;		//Multiplier Result
 reg[63:0]		ex3RegMulWRes;		//Multiplier Result (Word)
-reg				ex3BraFlush;		//Flush EX3
+(* max_fanout = 200 *)
+	reg				ex3BraFlush;		//Flush EX3
 reg				ex3TrapFlush;		//Flush EX3
 
 reg[7:0]		ex3RegInLastSr;
@@ -2624,7 +2641,8 @@ reg[32:0]		exL4RegValImm;		//Immediate (Decode)
 // reg[69:0]		exL4RegAluRes;		//Arithmetic Result
 // reg[63:0]		exL4RegMulRes;		//Multiplier Result
 // reg[63:0]		exL4RegMulWRes;		//Multiplier Result (Word)
-reg				exL4BraFlush;		//Flush EX2
+(* max_fanout = 200 *)
+	reg				exL4BraFlush;		//Flush EX2
 reg				exL4TrapFlush;		//Flush EX2
 
 `ifndef def_true
@@ -2660,9 +2678,12 @@ reg[15:0]	tValBraSrT;
 reg[15:0]	tValNextBraSrT;
 reg[47:0]	tIsrBraPc;
 
-reg[7:0]	opBraFlushMask;
-reg[7:0]	nxtBraFlushMask;
-reg[7:0]	tIsrBraFlushMask;
+(* max_fanout = 200 *)
+	reg[7:0]	opBraFlushMask;
+(* max_fanout = 200 *)
+	reg[7:0]	nxtBraFlushMask;
+(* max_fanout = 200 *)
+	reg[7:0]	tIsrBraFlushMask;
 
 // reg[63:0]	tNxtRegExc;
 // reg[63:0]	tRegExc;
@@ -2882,7 +2903,14 @@ assign	exHold2a	=
 		(ex3Hold[0])	||	dcOutHold		||
 		(ifOutPcOK[1])	||	(ex1FpuOK[1])	||
 		ex1SloMulDoHold;
-		
+
+assign	tDbgMisc = {
+		ex1Hold[0],			ex2Hold[0],
+		ex3Hold[0],			dcOutHold,
+		ifOutPcOK[1],		ex1FpuOK[1],
+		ex1SloMulDoHold,	ex1BraFlush && (ex1OpUCmd[5:0]!=0)
+		};
+
 //`ifdef jx2_isfpga
 //BUFG	clk50_buf(.I(exHold2a), .O(exHold2));
 //`else
@@ -5294,7 +5322,9 @@ begin
 
 end
 
-
+(* max_fanout = 400 *)
+//	wire exHold1Not2 = exHold1 && exHold2N;
+	wire exHold1Not2 = exHold1 && !exHold2;
 
 always @(posedge clock)
 begin
@@ -5735,8 +5765,8 @@ begin
 
 		ex1RegValPc		<= gprValPc;
 		ex1RegValImm	<= gprValImm;
-		ex1BraFlush		<= nxtBraFlushMask[0];
-//		ex1BraFlush		<= nxtBraFlushMask[0] || (ex1PreBra==2'b01);
+//		ex1BraFlush		<= nxtBraFlushMask[0];
+		ex1BraFlush		<= nxtBraFlushMask[0] || (ex1PreBra==2'b01);
 		
 //		ex1Timers		<= timers[11:0];
 		ex1Timers		<= { timers[11:1], memOpmIn[15] };
@@ -5856,7 +5886,8 @@ begin
 //	else
 //		if(exHold2N)
 
-	if(exHold1 && exHold2N)
+//	if(exHold1 && exHold2N)
+	if(exHold1Not2)
 	begin
 //		ex1OpUCmd		<= { JX2_IXC_NV, ex1OpUCmd[5:0] };
 //		ex1OpUCmd		<= { JX2_IXC_NV, JX2_UCMD_NOP };
@@ -6436,6 +6467,9 @@ begin
 // reg[1:0]	tDbgExWidth;
 	tDbgExWidthB	<= tDbgExWidth;
 	tDbgExWidthC	<= tDbgExWidthB;
+
+	tDbgMiscB	<= tDbgMisc;
+	tDbgMiscC	<= tDbgMiscB;
 
 end
 

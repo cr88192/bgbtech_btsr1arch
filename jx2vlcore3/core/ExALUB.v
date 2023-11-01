@@ -120,9 +120,7 @@ input[1:0]		idLane;
 
 
 (* max_fanout = 200 *)
-	wire			exHoldN;
-
-assign	exHoldN = !exHold;
+	wire			exHoldN = !exHold;
 
 wire			regInSrT;
 wire			regInSrS;

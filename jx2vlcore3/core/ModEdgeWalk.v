@@ -272,8 +272,17 @@ assign		tCtrlZFcn		= tRegCtrl0[19:17];
 assign		tCtrlPerspZ		= tRegCtrl0[20];
 assign		tCtrlRecipZ		= tRegCtrl0[21];
 
+`ifdef jx2_edgewalk_fbdword
 assign		tCtrlFbufDWord	= tRegCtrl0[23];
+`else
+assign		tCtrlFbufDWord	= 0;
+`endif
+
+`ifdef jx2_edgewalk_stencil
 assign		tCtrlUseStencil	= tRegCtrl0[22];
+`else
+assign		tCtrlUseStencil	= 0;
+`endif
 
 wire[11:0]		tClipX0;
 wire[11:0]		tClipY0;
@@ -296,6 +305,8 @@ wire[2:0]		tStencilOpZpass;
 wire[7:0]		tStencilRef;
 wire[7:0]		tStencilMask;
 
+`ifdef jx2_edgewalk_stencil
+
 assign		tStencilFunc	= tRegCtrl17[ 6: 4];
 assign		tStencilOpSfail	= tRegCtrl17[ 9: 7];
 assign		tStencilOpZfail	= tRegCtrl17[12:10];
@@ -303,6 +314,18 @@ assign		tStencilOpZpass	= tRegCtrl17[15:13];
 
 assign		tStencilRef		= tRegCtrl17[23:16];
 assign		tStencilMask	= tRegCtrl17[31:24];
+
+`else
+
+assign		tStencilFunc	= 0;
+assign		tStencilOpSfail	= 0;
+assign		tStencilOpZfail	= 0;
+assign		tStencilOpZpass	= 0;
+
+assign		tStencilRef		= 0;
+assign		tStencilMask	= 0;
+
+`endif
 
 reg[2:0]		tStencilOp;
 
@@ -358,9 +381,6 @@ reg[31:0]		tNxtMemBlockFbRgbAddr;
 reg[127:0]		tNxtMemBlockFbZ;
 reg[15:0]		tNxtMemBlockFbZIx;
 reg[31:0]		tNxtMemBlockFbZAddr;
-
-// `define jx2_edgewalk_utxarr_256
-`define jx2_edgewalk_utxarr_1024
 
 `ifdef jx2_edgewalk_utxarr_256
 reg[127:0]		tArrUtxData[255:0];
@@ -1204,10 +1224,12 @@ begin
 		tNxtPixZp		= tPixRcpZ;
 	end
 
+`ifdef jx2_edgewalk_stencil
 	if(tCtrlUseStencil)
 	begin
 		tNxtPixZp[3:0]	= 0;
 	end
+`endif
 
 	if(tCtrlPerspZ)
 	begin
@@ -1305,12 +1327,14 @@ begin
 	endcase
 	
 	tPixDstSt = 0;
+
+`ifdef jx2_edgewalk_stencil
 	if(tCtrlUseStencil)
 	begin
 		tPixDstSt = { 4'h0, tPixDstZ[3:0] };
 		tPixDstZ[3:0] = 4'h0;
 	end
-
+`endif
 
 	tPixDestRgb = {
 		tPixDstRgb5[15] ?
@@ -1632,7 +1656,8 @@ begin
 	end
 
 // `ifndef def_true
-`ifdef def_true
+// `ifdef def_true
+`ifdef jx2_edgewalk_stencil
 	if(!tRegStP && tCtrlUseStencil)
 	begin
 		$display("ModEdgeWalk: Stencil Test Fail");
@@ -1757,7 +1782,8 @@ begin
 		end
 		tNxtMemBlockFbZDirty	= 1;
 	end
-	
+
+`ifdef jx2_edgewalk_stencil	
 	if(tCtrlUseStencil && tPixDoUpdSt)
 	begin
 //		if(!tPixDoUpdSt)
@@ -1797,6 +1823,7 @@ begin
 		if(tPixDoUpdSt && (tPixDoUpdZ || (tPixUpdSt != tPixDstSt)))
 			tNxtMemBlockFbZDirty	= 1;
 	end
+`endif
 
 	
 	tNxtReqBlockFbRgbMul =
@@ -2895,7 +2922,11 @@ begin
 		tNxtRegCtrl14 = tFifoCtrl14[tFifoRqRov];
 		tNxtRegCtrl15 = tFifoCtrl15[tFifoRqRov];
 		tNxtRegCtrl16 = tFifoCtrl16[tFifoRqRov];
+
+`ifdef jx2_edgewalk_stencil
 		tNxtRegCtrl17 = tFifoCtrl17[tFifoRqRov];
+`endif
+
 		$display("  ModEdgeWalk: Ctrl0=%X", tNxtRegCtrl0);
 		$display("  ModEdgeWalk: Ctrl1=%X", tNxtRegCtrl1);
 		$display("  ModEdgeWalk: Ctrl2=%X", tNxtRegCtrl2);
@@ -3065,7 +3096,11 @@ begin
 	tRegCtrl14		<= tNxtRegCtrl14;
 	tRegCtrl15		<= tNxtRegCtrl15;
 	tRegCtrl16		<= tNxtRegCtrl16;
+`ifdef jx2_edgewalk_stencil
 	tRegCtrl17		<= tNxtRegCtrl17;
+`else
+	tRegCtrl17		<= 0;
+`endif
 
 	tStFifoCtrl0	<= tNxtFifoCtrl0;
 	tStFifoCtrl1	<= tNxtFifoCtrl1;
@@ -3084,7 +3119,11 @@ begin
 	tStFifoCtrl14	<= tNxtFifoCtrl14;
 	tStFifoCtrl15	<= tNxtFifoCtrl15;
 	tStFifoCtrl16	<= tNxtFifoCtrl16;
+`ifdef jx2_edgewalk_stencil
 	tStFifoCtrl17	<= tNxtFifoCtrl17;
+`else
+	tStFifoCtrl17	<= 0;
+`endif
 
 	tStFifoCtrl0L	<= tStFifoCtrl0;
 	tStFifoStatus0	<= tNxtFifoStatus0;
@@ -3113,7 +3152,9 @@ begin
 		tFifoCtrl14[tFifoStRov]	<= tStFifoCtrl14;
 		tFifoCtrl15[tFifoStRov]	<= tStFifoCtrl15;
 		tFifoCtrl16[tFifoStRov]	<= tStFifoCtrl16;
+`ifdef jx2_edgewalk_stencil
 		tFifoCtrl17[tFifoStRov]	<= tStFifoCtrl17;
+`endif
 	end
 
 	tMemBlockFbRgb			<= tNxtMemBlockFbRgb;

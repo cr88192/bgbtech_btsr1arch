@@ -1,8 +1,9 @@
-module MemIc_GetOpLen(istrBits, opLen, isXG2, isRV);
+module MemIc_GetOpLen(istrBits, opLen, isXG2, isRV, isWXE);
 input[15:0]		istrBits;
 output[3:0]		opLen;
 input			isXG2;
 input			isRV;
+input			isWXE;
 
 reg[3:0]		tOpLen;
 assign		opLen = tOpLen;
@@ -70,6 +71,8 @@ begin
 		default:		opLenA0 = 4'b0001;
 	endcase
 `endif
+
+	opLenA0[1] = opLenA0[3] || (opLenA0[2] && isWXE);
 
 `ifdef jx2_enable_riscv
 	if(isRV)

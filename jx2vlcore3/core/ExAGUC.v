@@ -511,21 +511,33 @@ begin
 
 `ifndef def_true
 	tAddrSc0C = 16'h0000;
+
+	if((regValRm[47:46]==2'b11) && addrEnJq[1])
+		tAddrSc0C = regValRm[47:32];
+
 //	if(addrEnJq)
 //	if(addrEnJq || (regValRm[47:46]==2'b11))
-	if(addrEnJq[0] || ((regValRm[47:46]==2'b11) && addrEnJq[1]))
+//	if(addrEnJq[0] || ((regValRm[47:46]==2'b11) && addrEnJq[1]))
+	if(addrEnJq[0])
 	begin
 //		tAddrSc0C = tAddrSc0B[16] ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
+//		tAddrSc0C = tCaVal0C ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
 		tAddrSc0C = tCaVal0C ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
 	end
 `endif
 
 `ifdef def_true
 	tAddrSc0C = tCaVal0C ? tAddrSc0C1[15:0] : tAddrSc0C0[15:0];
+//	tAddrSc0C[15:12] = regValRm[47:44];
+
 	if(!addrEnJq[0] && ((regValRm[47:46]!=2'b11) || !addrEnJq[1]))
+//	if(!addrEnJq[0])
 	begin
 		tAddrSc0C = 16'h0000;
 	end
+
+//	if((regValRm[47:46]==2'b11) && addrEnJq[1])
+//		tAddrSc0C[15:0] = regValRm[47:32];
 `endif
 
 	tAddrSc0 = { tAddrSc0C[15:0], tAddrSc0B[15:0], tAddrSc0A[15:0] };

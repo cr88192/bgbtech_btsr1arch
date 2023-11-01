@@ -2762,6 +2762,10 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			}
 			break;
 
+		case 0xE:
+			ret=0;
+			break;
+
 		}
 		return(ret);
 	}

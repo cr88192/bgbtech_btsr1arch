@@ -160,9 +160,7 @@ input[7:0]		regInCarryD;
 output			regOutJcmpT;
 
 (* max_fanout = 200 *)
-	wire			exHoldN;
-
-assign	exHoldN = !exHold;
+	wire			exHoldN = !exHold;
 
 wire			regInSrT;
 wire			regInSrS;

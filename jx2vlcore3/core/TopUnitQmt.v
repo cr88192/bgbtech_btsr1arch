@@ -317,6 +317,7 @@ assign		ddrModeIn = 1;
 
 wire[7:0]	hbrPwmOut;
 wire[1:0]	dbgExWidth;
+wire[7:0]	dbgMisc;
 wire		dbgClkOut;
 
 
@@ -375,6 +376,7 @@ CoreUnit core(
 	dbg_outStatus11,
 	dbg_outStatus12,
 	dbgExWidth,
+	dbgMisc,
 
 	gpioPinsIn,
 	gpioPinsOut,

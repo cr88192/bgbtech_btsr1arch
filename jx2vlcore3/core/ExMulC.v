@@ -58,12 +58,8 @@ input			exHold;
 output			ex1MulFaz;
 output			ex3MulFaz;
 
-
 (* max_fanout = 200 *)
-	wire			exHoldN;
-
-assign	exHoldN = !exHold;
-
+	wire	exHoldN = !exHold;
 
 reg[63:0]	tValRn;
 assign 	valRn = tValRn;

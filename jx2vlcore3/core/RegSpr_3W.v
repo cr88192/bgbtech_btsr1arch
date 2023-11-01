@@ -19,8 +19,11 @@ input[63:0]		wrValB;
 `input_gpr		wrIdC;
 input[63:0]		wrValC;
 input[63:0]		regInVal;
-input			regHold;
-input			regFlush;
+
+(* max_fanout = 200 *)
+	input			regHold;
+(* max_fanout = 200 *)
+	input			regFlush;
 
 (* max_fanout = 200 *)
 	reg[63:0]		tRegVal;

@@ -747,7 +747,8 @@ begin
 	else
 	begin
 		tNxtReqAxA = regInAddr[47:4];
-		tNxtReqAxB = tNxtReqAxA + 1;
+//		tNxtReqAxB = tNxtReqAxA + 1;
+		tNxtReqAxB = { tNxtReqAxA[43:1], 1'b1 };
 	end
 `else
 	if(regInAddr[4])
@@ -782,14 +783,15 @@ begin
 	end
 `endif
 
-	tNxtReqAddrHi	= 0;
+	tNxtReqAddrHi		= 0;
+	tNxtReqAddrHiIsNz	= 0;
+
 `ifdef jx2_enable_vaddr96
 	tNxtReqAddrHi	= regInAddr[95:48];
 	if(disableTlb)
 		tNxtReqAddrHi	= 0;
-`endif
-
 	tNxtReqAddrHiIsNz = (tNxtReqAddrHi != 0);
+`endif
 
 `ifdef jx2_enable_vaddr48
 	tNxtReqAddr		= regInAddr[47:0];
@@ -941,9 +943,11 @@ begin
 	tNxtReqIsNz		= tNxtReqOpm[5:4] != 2'b00;
 
 	tNxtReqIsMmio		= tNxtReqIsNz &&
-		((((tNxtReqAddr[47:32] == 16'h0000) && !tSrJQ) ||
-			(tNxtReqAddr[47:32] == 16'hFFFF)) &&
-			(tNxtReqAddr[31:28] == 4'hF)) ||
+//		((((tNxtReqAddr[47:32] == 16'h0000) && !tSrJQ) ||
+//			(tNxtReqAddr[47:32] == 16'hFFFF)) &&
+//			(tNxtReqAddr[31:28] == 4'hF)) ||
+		((tNxtReqAddr[31:28] == 4'hF) && !tSrJQ) ||
+
 //		(tNxtReqAddr[47:32] == 16'hF000);
 		((tNxtReqAddr[47:44] == 4'hF) && tSrJQ);
 	tNxtReqIsCcmd		=
@@ -951,7 +955,9 @@ begin
 		(tNxtReqOpm[3:0] != 4'b0000);
 
 	tNxtReqAddrIsVirt	=
-		(tNxtReqAddr[47:28] != 0) &&
+//		((tNxtReqAddr[47:32] != 0) ||
+//		 (tNxtReqAddr[31:28] != 0)) &&
+		(tNxtReqAddr[31:28] != 0) &&
 		!tNxtReqAddr[47] &&
 		!tNxtReqIsMmio && !tNxtReqIsCcmd;
 
@@ -2784,8 +2790,8 @@ begin
 					$display("L1 D$: Send LDA Req Abs A=%X", tReqAxA);
 //				else
 
-				if(!tReqAddrIsVirt)
-					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
+//				if(!tReqAddrIsVirt)
+				tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 		
 				if(tReqAddrIsVirt)
 				begin
@@ -2851,7 +2857,7 @@ begin
 					$display("L1 D$: Send LDB Req Abs A=%X", tReqAxB);
 //				else
 
-				if(!tReqAddrIsVirt)
+//				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 
 				if(tReqAddrIsVirt)

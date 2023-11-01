@@ -2412,9 +2412,9 @@ int main(int argc, char **argv, char **env)
 	u32	rcp_mhz_24;
 	int 	dbg_cpu_lclk, dbg_cpu_clk;
 	
-	int stat_reason_cnt[8];
-	char *stat_reason_name[8];
-	int stat_reason_idx[8];
+	int stat_reason_cnt[16];
+	char *stat_reason_name[16];
+	int stat_reason_idx[16];
 	
 	double stat_inst_bdl, stat_bdl_clk, stat_mips, clk_ratio;
 	double stat_mips_avg, stat_mips_avg_lo, stat_mips_avg_hi,
@@ -2589,7 +2589,7 @@ int main(int argc, char **argv, char **env)
 	stat_mips_avg_cnt_lo=1;
 	stat_mips_avg_cnt_hi=1;
 
-	for(i=0; i<8; i++)
+	for(i=0; i<16; i++)
 		stat_reason_cnt[i]=0;
 
 	stat_reason_name[0]="L1I";
@@ -2598,6 +2598,9 @@ int main(int argc, char **argv, char **env)
 	stat_reason_name[3]="RAM";
 	stat_reason_name[4]="MMIO";
 	stat_reason_name[5]="Misc";
+	stat_reason_name[6]="BRA";
+	stat_reason_name[7]="QMUL";
+	stat_reason_name[8]="FPU";
 
 	top->ddrModeIn=0;
 	if(do_qmt)
@@ -2641,7 +2644,7 @@ int main(int argc, char **argv, char **env)
 			tot_cnt_led_nostall>>=1;
 			tot_cnt_exwidth>>=1;
 			
-			for(i=0; i<8; i++)
+			for(i=0; i<16; i++)
 				stat_reason_cnt[i]>>=1;
 		}
 
@@ -2668,14 +2671,30 @@ int main(int argc, char **argv, char **env)
 			stat_reason_cnt[3]++;
 		if(top->dbg_outStatus11!=0)
 			stat_reason_cnt[4]++;
-		if(top->dbg_outStatus12!=0)
-			stat_reason_cnt[5]++;
 
-		for(i=0; i<8; i++)
+		if(top->dbgMisc&7)
+		{
+			if(top->dbgMisc&1)
+				stat_reason_cnt[6]++;
+			if(top->dbgMisc&2)
+				stat_reason_cnt[7]++;
+			if(top->dbgMisc&4)
+				stat_reason_cnt[8]++;
+		}else
+		{
+//			if(top->dbg_outStatus12!=0)
+//			if((top->dbg_exHold2!=0) && (top->dbg_outStatus12==0))
+			if((top->dbg_exHold2!=0) &&
+					(top->dbg_outStatus5==0) &&
+					(top->dbg_outStatus6==0))
+				stat_reason_cnt[5]++;
+		}
+
+		for(i=0; i<16; i++)
 			stat_reason_idx[i]=i;
 
-		for(i=0; i<8; i++)
-			for(j=i+1; j<8; j++)
+		for(i=0; i<16; i++)
+			for(j=i+1; j<16; j++)
 		{
 			if(	stat_reason_cnt[stat_reason_idx[i]] <
 				stat_reason_cnt[stat_reason_idx[j]])

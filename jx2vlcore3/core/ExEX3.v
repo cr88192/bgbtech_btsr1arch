@@ -166,6 +166,7 @@ assign	regValRn4	= tRegValRn4;
 
 
 reg[63:0]	tValOutDfl;
+reg[63:0]	tValOutHeld;
 reg			tDoOutDfl;
 reg			tDoOutHeld;
 
@@ -269,6 +270,7 @@ begin
 	tDoHoldCyc		= 0;
 
 	tValOutDfl		= UV64_00;
+	tValOutHeld		= UV64_00;
 	tDoOutDfl		= 0;
 	tDoOutHeld		= 0;
 
@@ -370,7 +372,8 @@ begin
 		end
 		JX2_UCMD_FMOV_MR: begin
 			tDoMemOp		= 1;
-			tValOutDfl		= memDataIn_S2D;
+//			tValOutDfl		= memDataIn_S2D;
+			tValOutHeld		= memDataIn_S2D;
 
 			tDoOutHeld		= 1;
 			tRegHeld		= 1;
@@ -378,13 +381,15 @@ begin
 `ifdef jx2_enable_fmovh
 //			if(opUIxt[4])
 			if(opUIxt[5:4]==2'b01)
-				tValOutDfl	= memDataIn_H2D;
+//				tValOutDfl	= memDataIn_H2D;
+				tValOutHeld	= memDataIn_H2D;
 `endif
 
 `ifdef jx2_agu_ldtex
 			if(opUIxt[5:4]==2'b11)
 			begin
-				tValOutDfl	= tValUtx1;
+//				tValOutDfl	= tValUtx1;
+				tValOutHeld	= tValUtx1;
 			end
 `endif
 
@@ -393,11 +398,13 @@ begin
 			begin
 				if(opUIxt[5])
 				begin
-					tValOutDfl		= { memDataIn[47:0], 16'h0000 };
+//					tValOutDfl		= { memDataIn[47:0], 16'h0000 };
+					tValOutHeld		= { memDataIn[47:0], 16'h0000 };
 				end
 				else
 				begin
-					tValOutDfl		= {
+//					tValOutDfl		= {
+					tValOutHeld		= {
 						(memDataIn[47] && !opUIxt[4]) ? 16'hFFFF : 16'h0000,
 						memDataIn[47:0] };
 				end
@@ -425,10 +432,13 @@ begin
 `ifdef jx2_enable_pmov
 		JX2_UCMD_PMOV_MR: begin
 			tDoMemOp		= 1;
-			tValOutDfl		= memDataIn_2xHtoS;
+//			tValOutDfl		= memDataIn_2xHtoS;
+			tValOutHeld		= memDataIn_2xHtoS;
 			if(opUIxt[5])
-				tValOutDfl		= memDataIn_4xM8toH;
-			tDoOutDfl		= 1;
+//				tValOutDfl		= memDataIn_4xM8toH;
+				tValOutHeld		= memDataIn_4xM8toH;
+//			tDoOutDfl		= 1;
+			tDoOutHeld		= 1;
 		end
 `endif
 
@@ -461,7 +471,8 @@ begin
 		JX2_UCMD_MUL3: begin
 //			tRegIdRn2	= regIdRm;					//
 //			tRegValRn2	= regValMulRes[63:0];		//
-			tValOutDfl		= regValMulRes[63:0];
+//			tValOutDfl		= regValMulRes[63:0];
+			tValOutHeld		= regValMulRes[63:0];
 //			tDoOutDfl		= 1;
 			tDoOutHeld		= 1;
 		end
@@ -471,8 +482,11 @@ begin
 			if(ex3MulFaz)
 			begin
 				/* Multiplier has handled this divide. */
-				tValOutDfl		= regValMulRes[63:0];
-				tDoOutDfl		= 1;
+//				tValOutDfl		= regValMulRes[63:0];
+//				tDoOutDfl		= 1;
+
+				tValOutHeld		= regValMulRes[63:0];
+				tDoOutHeld		= 1;
 			end
 		end
 `endif
@@ -527,7 +541,8 @@ begin
 		JX2_UCMD_FPUV4SF: begin
 //			tRegIdRn2		= regIdRm;
 //			tRegValRn2		= regFpuV4GRn;
-			tValOutDfl		= regFpuV4GRn;
+//			tValOutDfl		= regFpuV4GRn;
+			tValOutHeld		= regFpuV4GRn;
 //			tDoOutDfl		= 1;
 //			tRegHeld		= 1;
 			tDoOutHeld		= 1;
@@ -552,7 +567,8 @@ begin
 		tRegIdRn2		= regIdRm;
 		tRegValRn2		= UV64_00;
 		tRegIdRn4		= regIdRm;
-		tRegValRn4		= tValOutDfl;
+//		tRegValRn4		= tValOutDfl;
+		tRegValRn4		= tValOutHeld;
 		tRegHeld		= 1;
 	end
 	

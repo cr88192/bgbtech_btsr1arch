@@ -743,7 +743,13 @@ begin
 	end
 `endif
 
-	opImm_disp20s = { istrWord[7] ? UV13_FF : UV13_00,
+//	opImm_disp20s = { istrWord[7] ? UV13_FF : UV13_00,
+//		istrWord[7:0], istrWord[27:16] };
+
+	opImm_disp20s = { istrWord[7] ? UV10_FF : UV10_00,
+		istrWord[7] ^ opExWN,
+		istrWord[7] ^ opExWM,
+		istrWord[7] ^ opExWI,
 		istrWord[7:0], istrWord[27:16] };
 
 	if(opIsJumboAu)
@@ -949,9 +955,13 @@ begin
 		opImm_imm9s	= opImm_imm9u;
 		opImm_disp9s	= { opExWI ? UV24_FF : UV24_00, istrWord[24:16] };
 
-		opImm_imm10u	= {UV23_00, istrWord[25:16]};
-		opImm_imm10n	= {UV23_FF, istrWord[25:16]};
-		opImm_imm10s	= {istrWord[25]?UV23_FF:UV23_00, istrWord[25:16]};
+//		opImm_imm10u	= {UV23_00, istrWord[25:16]};
+//		opImm_imm10n	= {UV23_FF, istrWord[25:16]};
+
+		opImm_imm10u	= {UV22_00,  opExWI, istrWord[25:16]};
+		opImm_imm10n	= {UV22_FF, !opExWI, istrWord[25:16]};
+
+//		opImm_imm10s	= {istrWord[25]?UV23_FF:UV23_00, istrWord[25:16]};
 
 //		opImm_disp8s	= {istrWord[7]?UV25_FF:UV25_00, istrWord[7:0]};
 		opImm_disp8s	= {istrWord[23]?UV25_FF:UV25_00, istrWord[23:16]};
@@ -3516,12 +3526,14 @@ begin
 				opIty	= JX2_ITY_SB;
 			end
 
+`ifndef def_true
 			16'h3zz7: begin
 				opNmid		= JX2_UCMD_SWAPN;
 				opFmid		= JX2_FMID_REGREG;
 //				opUCmdIx	= { 2'h0, istrWord[3:0] };
 				opUCmdIx	= { 2'h0, istrWord[23:20] };
 			end
+`endif
 
 			16'h3zz8: begin	/* F0nm_3ez8 */
 				case(istrWord[23:20])
@@ -7034,8 +7046,8 @@ begin
 			opIsImm9	= 0;
 			opIsImmSplit	= 0;
 			
-			if(opUCty == JX2_IUC_WX)
-				opIsImmSplit = (opExWM && opExWI);
+//			if(opUCty == JX2_IUC_WX)
+//				opIsImmSplit = (opExWM && opExWI);
 
 			opRegM	= opRegN_Dfl;
 			opRegO	= opRegN_Dfl;
@@ -7419,11 +7431,12 @@ begin
 		end
 		
 		JX2_FMID_INV: begin
+			opUCmd = { opCcty, JX2_UCMD_INVOP };
 //			if(istrWord[15:12]==4'b1111)
 //			if(!opIsNotFx)
 			if(!opIsNotFx || opIsXGpr)
 			begin
-				opUCmd = { opCcty, JX2_UCMD_INVOP };
+//				opUCmd = { opCcty, JX2_UCMD_INVOP };
 				if(!tMsgLatch && !isAltOp)
 				begin
 					$display("Jx2DecOpFx: Invalid FMID (32)");

@@ -220,26 +220,42 @@ wire		nMaskEnableRyCm =
 // wire		nMaskEnableRyCm = 1;
 
 
-wire		nRegHeldRnA1 = !gprExHeldRegs[0];
-wire		nRegHeldRnA2 = !gprExHeldRegs[3];
-wire		nRegHeldRnA3 = !gprExHeldRegs[6];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnA1 = !gprExHeldRegs[0];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnA2 = !gprExHeldRegs[3];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnA3 = !gprExHeldRegs[6];
 
-wire		nRegHeldRnB1 = !gprExHeldRegs[1];
-wire		nRegHeldRnB2 = !gprExHeldRegs[4];
-wire		nRegHeldRnB3 = !gprExHeldRegs[7];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnB1 = !gprExHeldRegs[1];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnB2 = !gprExHeldRegs[4];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnB3 = !gprExHeldRegs[7];
 
-wire		nRegHeldRnC1 = !gprExHeldRegs[2];
-wire		nRegHeldRnC2 = !gprExHeldRegs[5];
-wire		nRegHeldRnC3 = !gprExHeldRegs[8];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnC1 = !gprExHeldRegs[2];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnC2 = !gprExHeldRegs[5];
+(* max_fanout = 200 *)
+	wire		nRegHeldRnC3 = !gprExHeldRegs[8];
 
 
-`wire_gpr		regIdRnAW;		//Destination ID
-wire[63:0]		regValRnAW;		//Destination Value
-`wire_gpr		regIdRnBW;		//Destination ID
-wire[63:0]		regValRnBW;		//Destination Value
-`wire_gpr		regIdRnCW;		//Destination ID
-wire[63:0]		regValRnCW;		//Destination Value
-wire			regFlushRnW;	//Flush Stage
+(* max_fanout = 200 *)
+	`wire_gpr		regIdRnAW;		//Destination ID
+(* max_fanout = 200 *)
+	wire[63:0]		regValRnAW;		//Destination Value
+(* max_fanout = 200 *)
+	`wire_gpr		regIdRnBW;		//Destination ID
+(* max_fanout = 200 *)
+	wire[63:0]		regValRnBW;		//Destination Value
+(* max_fanout = 200 *)
+	`wire_gpr		regIdRnCW;		//Destination ID
+(* max_fanout = 200 *)
+	wire[63:0]		regValRnCW;		//Destination Value
+(* max_fanout = 200 *)
+	wire			regFlushRnW;	//Flush Stage
 
 // assign	regFlushRnW	= 1'b0;
 
@@ -251,8 +267,7 @@ assign	regValRnBW	= regValRnB3;
 assign	regIdRnCW	= noLane3 ? JX2_GR_ZZR : regIdRnC3;
 assign	regValRnCW	= noLane3 ? 0 : regValRnC3;
 
-(* max_fanout = 200 *)
-	assign	regFlushRnW	= gprEx3Flush;
+assign	regFlushRnW	= gprEx3Flush;
 `endif
 
 `ifdef def_true
@@ -320,9 +335,12 @@ reg[31:0]	gprArrMB;
 // reg[63:0]	gprRegBp;
 
 `ifdef def_true
-wire[63:0]	gprRegDlr;
-wire[63:0]	gprRegDhr;
-wire[63:0]	gprRegSp;
+(* max_fanout = 200 *)
+	wire[63:0]	gprRegDlr;
+(* max_fanout = 200 *)
+	wire[63:0]	gprRegDhr;
+(* max_fanout = 200 *)
+	wire[63:0]	gprRegSp;
 
 RegSpr_3W	gprModDlr(
 	clock,		// reset,

@@ -3,7 +3,7 @@
 
 `include "CoreDefs.v"
 
-`include "ExLuMul9Ra8H.v"
+// `include "ExLuMul9Ra8H.v"
 // `include "ExLuMul9Ra8.v"
 
 module FpuMulSF(
@@ -88,8 +88,8 @@ reg			tExpIsZero;
 
 wire[9:0]	tMulLoC0;
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 wire[8:0]	tMulLoA0;
 wire[8:0]	tMulLoB0;
 
@@ -121,8 +121,8 @@ ExLuMul9Ra8		exMulLoB(
 assign		tMulLoC0 = {1'b0, tMulLoA0[17:9]} + {1'b0, tMulLoB0[17:9]};
 `endif
 
-// `ifdef def_true
-`ifndef def_true
+`ifdef def_true
+// `ifndef def_true
 wire[17:0]	tMulLoA0;
 wire[17:0]	tMulLoB0;
 

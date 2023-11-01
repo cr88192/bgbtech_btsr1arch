@@ -75,6 +75,14 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	imm10u=(opw2&1023);
 //	imm10n=(opw2&1023)|((-1)<<10);
 	imm10n=(opw2&1023)|(~1023);
+
+	if(jbits&0x10000000U)
+	{
+		imm9u|= 512;
+		imm9n&=~512;
+		imm10u|= 1024;
+		imm10n&=~1024;
+	}
 	
 	disp8s=(signed char)opw2;
 	

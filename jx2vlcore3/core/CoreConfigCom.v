@@ -62,7 +62,7 @@
 
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
-// `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
+`define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
 
 `ifndef jx2_xc7s50
 `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
@@ -72,7 +72,7 @@
 // `define	jx2_use_fpu_v4sf_wx		//Allow 128-bit ops with scalar FPU
 
 `ifndef jx2_xc7s50
-// `define	jx2_fpu_v4sf_fullsp		//Enable full Binary32 in V4SF Unit
+`define	jx2_fpu_v4sf_fullsp		//Enable full Binary32 in V4SF Unit
 `endif
 
 `ifndef jx2_xc7s50
@@ -154,8 +154,10 @@
 `endif
 
 // `ifndef jx2_xc7s50
-// `define jx2_enable_prebra			//Enable PreBranch
+`define jx2_enable_prebra			//Enable PreBranch
 // `define jx2_prebra_rts				//Enable PreBranch on RTS
+// `define jx2_prebra_rtsu				//Enable PreBranch on RTSU
+// `define jx2_prebra_no16b			//Disable PreBranch on 16-bit ops
 // `endif
 
 `define jx2_l1d_nohash			//Disable L1 address hashing.
@@ -163,6 +165,9 @@
 
 
 `define jx2_enable_edgewalk		//Hardware rasterizer / edge-walker
+// `define jx2_edgewalk_rcpz	//Enable Z Reciprocal
+// `define jx2_edgewalk_fbdword	//Enable DWORD framebuffer
+// `define jx2_edgewalk_stencil	//Enable Stencil Testing
 
 `ifdef jx2_xc7a200
 // `define jx2_enable_dualcore			//Enable Second Core

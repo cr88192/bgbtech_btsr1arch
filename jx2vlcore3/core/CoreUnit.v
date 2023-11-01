@@ -226,6 +226,7 @@ module CoreUnit(
 	dbg_outStatus11,
 	dbg_outStatus12,
 	dbgExWidth,
+	dbgMisc,
 
 	gpioPinsIn,
 	gpioPinsOut,
@@ -356,6 +357,7 @@ output[1:0]		usb_clkref;
 output[7:0]		hbr_pwmout;
 
 output[1:0]		dbgExWidth;
+output[7:0]		dbgMisc;
 output			dbgClkOut;
 
 reg[7:0]		tSegOutCharBit;
@@ -790,6 +792,7 @@ wire[63:0]		dbg1DcInVal;
 wire[ 1:0]		dbg1DcOutOK;
 
 wire[ 1:0]		dbg1ExWidth;
+wire[ 1:0]		dbg1Misc;
 
 wire			dbg1OutStatus1;
 wire			dbg1OutStatus2;
@@ -820,6 +823,7 @@ ExUnit	cpu1(
 	dbg1DcInAddr,	dbg1DcInOpm,
 	dbg1DcOutVal,	dbg1DcInVal,
 	dbg1DcOutOK,	dbg1ExWidth,
+	dbg1Misc,
 
 	dbg1OutStatus1,	dbg1OutStatus2,
 	dbg1OutStatus3,	dbg1OutStatus4,
@@ -871,6 +875,7 @@ wire[63:0]		dbg2DcOutVal;
 wire[63:0]		dbg2DcInVal;
 wire[ 1:0]		dbg2DcOutOK;
 wire[ 1:0]		dbg2ExWidth;
+wire[ 7:0]		dbg2Misc;
 
 wire			dbg2OutStatus1;
 wire			dbg2OutStatus2;
@@ -901,6 +906,7 @@ ExUnit	cpu2(
 	dbg2DcInAddr,	dbg2DcInOpm,
 	dbg2DcOutVal,	dbg2DcInVal,
 	dbg2DcOutOK,	dbg2ExWidth,
+	dbg2Misc,
 
 	dbg2OutStatus1,	dbg2OutStatus2,
 	dbg2OutStatus3,	dbg2OutStatus4,
@@ -1118,6 +1124,7 @@ ExUnit	cpu(
 	dbgDcInAddr,	dbgDcInOpm,
 	dbgDcOutVal,	dbgDcInVal,
 	dbgDcOutOK,		dbgExWidth,
+	dbgMisc,
 
 	dbgOutStatus1,	dbgOutStatus2,
 	dbgOutStatus3,	dbgOutStatus4,

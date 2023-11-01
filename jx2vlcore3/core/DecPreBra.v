@@ -58,6 +58,12 @@ State Machine 2:
 `ifndef HAS_DECPREBRA
 `define HAS_DECPREBRA
 
+`ifdef jx2_prebra_rts
+`ifndef jx2_prebra_rtsu
+`define jx2_prebra_rtsu
+`endif
+`endif
+
 module DecPreBra(
 	clock,			reset,
 	istrWord,		istrBasePc,	istrBraPc,
@@ -193,6 +199,18 @@ reg[17:0]	tVtlbStVal;
 reg[5:0]	tVtlbStIx;
 reg			tDoVtlbSt;
 
+`ifdef jx2_enable_riscv
+wire	isBase	= (pipeHasLr[7:6] == 2'b00) && !pipeHasLr[4];
+wire	isXG2	= (pipeHasLr[7:6] == 2'b01) && !pipeHasLr[4];
+wire	isRV	= (pipeHasLr[7:6] == 2'b00) && pipeHasLr[4];
+wire	isXG2RV	= (pipeHasLr[7:6] == 2'b01) && pipeHasLr[4];
+`else
+wire	isBase	= (pipeHasLr[7:6] == 2'b00);
+wire	isXG2	= (pipeHasLr[7:6] == 2'b01);
+wire	isRV	= 0;
+wire	isXG2RV	= 0;
+`endif
+
 always @*
 begin
 //	tPreBraPc	= UV48_XX;
@@ -305,10 +323,22 @@ begin
 			tBraDisp20Lo[19:0], istrBraPc[0]	};
 `endif
 
+	tIsBra8		= 0;
+	tIsBraCc8	= 0;
+
+`ifndef jx2_prebra_no16b
 	tIsBra8		=
+		isBase &&
 		(istrWord[15:12]==4'h2) &&
 		(istrWord[11: 9]==3'b000);
 //		(istrWord[11: 8]==4'b0000);
+
+	tIsBraCc8		=
+		isBase &&
+		(istrWord[15:12]==4'h2) &&
+		(istrWord[11: 9]==3'b001);
+`endif
+
 	tIsBra20		=
 		(istrWord[15:12]==4'hF) &&
 		(istrWord[11: 8]==4'h0) &&
@@ -320,10 +350,6 @@ begin
 		((istrWord[11: 8]==4'h0) || (istrWord[11: 8]==4'h4)) &&
 		(istrWord[31:28]==4'b1100);
 //	tIsBraCcP20		= 0;
-
-	tIsBraCc8		=
-		(istrWord[15:12]==4'h2) &&
-		(istrWord[11: 9]==3'b001);
 
 	tIsBraCc8B = 0;
 	tIsBraCc11B = 0;
@@ -365,12 +391,17 @@ begin
 	tIsRtsR1Fz		= 0;
 
 `ifdef jx2_prebra_rts
+
+`ifndef jx2_prebra_no16b
 	tIsRtsu			=
-		(istrWord[15:0] == 16'h3012) ||
-		((istrWord[15:0] == 16'h3010) && !pipeHasLr[0]);
+		isBase &&
+		((istrWord[15:0] == 16'h3012) ||
+		((istrWord[15:0] == 16'h3010) && !pipeHasLr[0]));
 //	tIsRtsR1		= 0;
 	tIsRtsR1		=
+		isBase &&
 		(istrWord[15:0] == 16'h3210) && !pipeHasLr[1];
+`endif
 
 `ifdef def_true
 
@@ -407,25 +438,36 @@ begin
 `endif
 
 `else
+`ifdef jx2_prebra_rtsu
 	tIsRtsu			=
+		isBase &&
 		(istrWord[15:0] == 16'h3012);
 	tIsRtsR1		= 0;
+`else
+	tIsRtsu			= 0;
+	tIsRtsR1		= 0;
+`endif
 `endif
 
+`ifdef jx2_enable_riscv
 	if(pipeHasLr[4])
 	begin
 		/* RISC-V */
+		tIsBra8		= 0;
 		tIsBraCc8	= 0;
 		tIsBraCc8B	= 0;
 		tIsBraCc11B	= 0;
 		tIsBraCc20	= 0;
+		tIsBra20	= 0;
 		tIsRtsu		= 0;
 		tIsRtsR1	= 0;
 	end
+`endif
 
 	if(pipeHasLr[7:6] != 2'b00)
 	begin
 		/* XG2 */
+		tIsBra8		= 0;
 		tIsBraCc8	= 0;
 //		tIsBraCc8B	= 0;
 //		tIsBraCc11B	= 0;
@@ -438,6 +480,15 @@ begin
 		if(tIsRtsR1Fz)
 			tIsRtsR1 = 1;
 	end
+
+`ifndef def_true
+	if(tBraDisp20[23:14] != istrBraPc[23:14])
+	begin
+		// Debug
+		tIsBraCc20	= 0;
+		tIsBra20	= 0;
+	end
+`endif
 
 //	tIsBra8		= 0;
 //	tIsBra20	= 0;
@@ -618,6 +669,7 @@ begin
 	end
 `endif
 
+`ifdef jx2_prebra_rtsu
 	if(tIsRtsu)
 	begin
 //		$display("PreBra: RTSU, I=%X-%X PC2=%X",
@@ -636,6 +688,7 @@ begin
 //			$display("PreBra: Reject RTS");
 //		end
 	end
+`endif
 
 `ifdef jx2_prebra_rts
 // `ifndef def_true

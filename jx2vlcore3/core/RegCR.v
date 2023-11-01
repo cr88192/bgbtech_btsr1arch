@@ -149,11 +149,16 @@ parameter		disableTlb = 0;
 (* max_fanout = 200 *)
 	wire		holdN = !hold;
 
-reg[63:0]	crRegSr;
-reg[63:0]	crRegExsr;
+(* max_fanout = 200 *)
+	reg[63:0]	crRegSr;
+(* max_fanout = 200 *)
+	reg[63:0]	crRegExsr;
 
 reg[47:0]	crRegPc;
-reg[63:0]	crRegLr;
+
+(* max_fanout = 200 *)
+	reg[63:0]	crRegLr;
+
 reg[47:0]	crRegVbr;
 reg[47:0]	crRegSpc;
 reg[47:0]	crRegSsp;
@@ -186,7 +191,8 @@ reg[47:0]	crRegGbrHi;
 reg[63:0]	tRegValCm;
 assign	regValCm = tRegValCm;
 
-reg[63:0]	crRegLr2;
+(* max_fanout = 200 *)
+	reg[63:0]	crRegLr2;
 
 assign	regOutPc	= crRegPc;
 assign	regOutLr	= crRegLr;
@@ -243,8 +249,10 @@ reg[63:0]		regValCn2B;			//Destination Value
 reg[47:0]		regValCn2B_48b;		//Destination Value
 reg[15:0]		regValCn2B_16h;		//Destination Value
 
-reg[63:0]		tRegInLr;
-reg				tResetL;
+(* max_fanout = 200 *)
+	reg[63:0]		tRegInLr;
+(* max_fanout = 200 *)
+	reg				tResetL;
 
 always @*
 begin

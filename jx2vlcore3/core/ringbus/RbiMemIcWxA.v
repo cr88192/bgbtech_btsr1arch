@@ -462,6 +462,7 @@ reg				tPcStepWB;
 reg				tPcStepJA;
 reg				tPcStepBA;
 reg				tPcStepBB;
+reg				tPcStepJWA;
 
 //reg				tPcStepWA0;
 //reg				tPcStepWB0;
@@ -602,6 +603,8 @@ reg				tMemRespLdA;		//Load A
 reg				tMemRespLdB;		//Load B
 reg				tNxtMemRespLdA;		//Load A
 reg				tNxtMemRespLdB;		//Load B
+reg				tMemRespLdAN;		//Load A (Inverted)
+reg				tMemRespLdBN;		//Load B (Inverted)
 
 reg				tReqWaitResp;
 
@@ -623,15 +626,23 @@ reg[ 3:0]		tMemSeqRov;
 reg[ 3:0]		tNxtMemSeqRov;
 
 
-reg				tRegOutHold;
-reg				tRegOutHoldL;
-reg				tReqReady;
+(* max_fanout = 200 *)
+	reg				tRegOutHold;
+(* max_fanout = 200 *)
+	reg				tRegOutHoldL;
+(* max_fanout = 200 *)
+	reg				tReqReady;
+
+(* max_fanout = 200 *)
+	reg				tReqReadyN;
 
 reg				tBlkIsSxo;
 reg				tBlkDoRiscV;
 reg				tBlkDoRvC;
 reg				tBlkDoRvW;
 reg				tDoStallNop;
+
+reg				tCombJWA;
 
 reg				tMsgLatch;
 reg				tNxtMsgLatch;
@@ -732,37 +743,42 @@ reg				tReqUtlbHitHi;
 reg				tReqUtlbHitAxA;
 reg				tReqUtlbHitAxB;
 
-reg				tResetL;
+(* max_fanout = 200 *)
+	reg				tResetL;
 
-wire	icInPcRiscv	= (icInPcWxm[1:0] == 2'b01) && !icInPcXG2;
+//	tNxtInPcXG2		= tInPcXG2;
+//	tNxtInPcRiscv	= tInPcRiscv;
+
+// wire	icInPcRiscv	= (icInPcWxm[1:0] == 2'b01) && !icInPcXG2;
+// wire	tReqPcRiscv	= (tReqPFx[1:0] == 2'b01) && !icInPcXG2;
 
 `ifdef jx2_memic_blklenbits
 
 wire[31:0]	memDataLens;
 MemIc_GetOpLen	get_oplen_p0(
 	memDataIn[ 15:  0], memDataLens[ 3: 0],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_p1(
 	memDataIn[ 31: 16], memDataLens[ 7: 4],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_p2(
 	memDataIn[ 47: 32], memDataLens[11: 8],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_p3(
 	memDataIn[ 63: 48], memDataLens[15:12],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_p4(
 	memDataIn[ 79: 64], memDataLens[19:16],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_p5(
 	memDataIn[ 95: 80], memDataLens[23:20],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_p6(
 	memDataIn[111: 96], memDataLens[27:24],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_p7(
 	memDataIn[127:112], memDataLens[31:28],
-	icInPcXG2, icInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 
 wire[3:0]	tOpGetLen_B0a = tBlkPLenA[ 3: 0];
@@ -936,22 +952,22 @@ wire[3:0]	tOpGetLen_A5;
 
 MemIc_GetOpLen	get_oplen_a0(
 	tBlkDataCMux[15: 0], tOpGetLen_A0,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a1(
 	tBlkDataCMux[31:16], tOpGetLen_A1,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a2(
 	tBlkDataCMux[47:32], tOpGetLen_A2,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a3(
 	tBlkDataCMux[63:48], tOpGetLen_A3,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a4(
 	tBlkDataCMux[79:64], tOpGetLen_A4,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a5(
 	tBlkDataCMux[95:80], tOpGetLen_A5,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 `endif
 
@@ -978,42 +994,42 @@ wire[3:0]	tOpGetLen_B9;
 
 MemIc_GetOpLen	get_oplen_a0(
 	tBlkDataCMux0[ 15:  0], tOpGetLen_B0,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a1(
 	tBlkDataCMux0[ 31: 16], tOpGetLen_B1,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a2(
 	tBlkDataCMux0[ 47: 32], tOpGetLen_B2,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a3(
 	tBlkDataCMux0[ 63: 48], tOpGetLen_B3,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 MemIc_GetOpLen	get_oplen_a4(
 	tBlkDataCMux0[ 79: 64], tOpGetLen_B4,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a5(
 	tBlkDataCMux0[ 95: 80], tOpGetLen_B5,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a6(
 	tBlkDataCMux0[111: 96], tOpGetLen_B6,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a7(
 	tBlkDataCMux0[127:112], tOpGetLen_B7,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 MemIc_GetOpLen	get_oplen_a8(
 	tBlkDataCMux0[143:128], tOpGetLen_B8,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a9(
 	tBlkDataCMux0[159:144], tOpGetLen_B9,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 // MemIc_GetOpLen	get_oplen_a10(
 //	tBlkDataCMux0[175:160], tOpGetLen_B10,
-//	tInPcXG2, tInPcRiscv);
+//	tInPcXG2, tInPcRiscv, tInPcWxe);
 // MemIc_GetOpLen	get_oplen_a11(
 //	tBlkDataCMux0[191:176], tOpGetLen_B11,
-//	tInPcXG2, tInPcRiscv);
+//	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 wire[3:0]	tOpGetLen_A0;
 wire[3:0]	tOpGetLen_A1;
@@ -1061,53 +1077,53 @@ wire[3:0]	tOpGetLen_B7b;
 
 MemIc_GetOpLen	get_oplen_a0a(
 	tBlkDataA[ 15:  0], tOpGetLen_B0a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a1a(
 	tBlkDataA[ 31: 16], tOpGetLen_B1a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a2a(
 	tBlkDataA[ 47: 32], tOpGetLen_B2a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a3a(
 	tBlkDataA[ 63: 48], tOpGetLen_B3a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a4a(
 	tBlkDataA[ 79: 64], tOpGetLen_B4a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a5a(
 	tBlkDataA[ 95: 80], tOpGetLen_B5a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a6a(
 	tBlkDataA[111: 96], tOpGetLen_B6a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a7a(
 	tBlkDataA[127:112], tOpGetLen_B7a,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 MemIc_GetOpLen	get_oplen_a0b(
 	tBlkDataB[ 15:  0], tOpGetLen_B0b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a1b(
 	tBlkDataB[ 31: 16], tOpGetLen_B1b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a2b(
 	tBlkDataB[ 47: 32], tOpGetLen_B2b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a3b(
 	tBlkDataB[ 63: 48], tOpGetLen_B3b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a4b(
 	tBlkDataB[ 79: 64], tOpGetLen_B4b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a5b(
 	tBlkDataB[ 95: 80], tOpGetLen_B5b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a6b(
 	tBlkDataB[111: 96], tOpGetLen_B6b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 MemIc_GetOpLen	get_oplen_a7b(
 	tBlkDataB[127:112], tOpGetLen_B7b,
-	tInPcXG2, tInPcRiscv);
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 wire[3:0]	tOpGetLen_A0;
 wire[3:0]	tOpGetLen_A1;
@@ -1422,6 +1438,7 @@ begin
 		tNxtAddrHi		= tReqAddrHi;
 		tNxtAxH			= tReqAxH;
 		tNxtInPmode		= tInPmode;
+		tNxtReqPFx		= tReqPFx;
 		tNxtInPcWxe		= tInPcWxe;
 		tNxtInPcXG2		= tInPcXG2;
 		tNxtInPcRiscv	= tInPcRiscv;
@@ -1445,12 +1462,14 @@ begin
 		tNxtDoFlushTlb = 1;
 	end
 
-	if((tInOpmB==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB) && !tResetL)
+//	if((tInOpmB==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB) && !tResetL)
+	if((tInOpmB==JX2_DCOPM_INVTLB) && (tInOpmC!=JX2_DCOPM_INVTLB))
 	begin
 		tNxtDoFlushTlb = 1;
 	end
 
-	if((tInOpmB == JX2_DCOPM_LDTLB) && (tInOpmC!=JX2_DCOPM_LDTLB) && !tResetL)
+//	if((tInOpmB == JX2_DCOPM_LDTLB) && (tInOpmC!=JX2_DCOPM_LDTLB) && !tResetL)
+	if((tInOpmB == JX2_DCOPM_LDTLB) && (tInOpmC!=JX2_DCOPM_LDTLB))
 	begin
 		tNxtDoFlushTlb = 1;
 	end
@@ -1459,7 +1478,8 @@ begin
 	if((tFlushRov == 0) && !tAdvFlushRov)
 		icNxtDoFlush = 1;
 
-	if((tFlushRovTlb == 0) && !tDoFlushTlb && !tResetL)
+//	if((tFlushRovTlb == 0) && !tDoFlushTlb && !tResetL)
+	if((tFlushRovTlb == 0) && !tDoFlushTlb)
 		tNxtDoFlushTlb = 1;
 
 	if(icDoFlush)
@@ -1491,11 +1511,11 @@ begin
 	tStBlkIxB		= 0;
 	tStBlkPFlA		= 0;
 	tStBlkPFlB		= 0;
-//	tStBlkPFxA		= tReqPFx;
-//	tStBlkPFxB		= tReqPFx;
+	tStBlkPFxA		= tReqPFx;
+	tStBlkPFxB		= tReqPFx;
 
-	tStBlkPFxA		= { icInPcWxm[5:4], icInPcWxm[1:0] };
-	tStBlkPFxB		= tStBlkPFxA;
+//	tStBlkPFxA		= { icInPcWxm[5:4], icInPcWxm[1:0] };
+//	tStBlkPFxB		= tStBlkPFxA;
 
 	tStBlkPRovA		= tFlushRov;
 	tStBlkPRovB		= tFlushRov;
@@ -1599,7 +1619,8 @@ begin
 	tIcExecAcl = tBlkPFlB;
 	
 `ifdef jx2_enable_vaddr48
-	tReqAddrIsVirt		= (tInAddr[47:28] != 0) && !tInAddr[47];
+//	tReqAddrIsVirt		= (tInAddr[47:28] != 0) && !tInAddr[47];
+	tReqAddrIsVirt		= (tInAddr[31:28] != 0) && !tInAddr[31];
 `else
 	tReqAddrIsVirt		= (tInAddr[31:28] != 0) && !tInAddr[31];
 `endif
@@ -1822,11 +1843,13 @@ begin
 //	if(tMiss)
 //		tRegOutExc[15] = 0;
 
+`ifndef def_true
 	if(tResetL)
 	begin
 		tMiss		= 0;
 		tReqReady	= 0;
 	end
+`endif
 
 	tMissSkipA = 0;
 	tMissSkipB = 0;
@@ -1865,6 +1888,7 @@ begin
 	tPcStepJA		= tOpGetLen_W0[3];
 	tPcStepWB		= tOpGetLen_W1[2];
 	tPcStepBB		= tOpGetLen_W1[0];
+	tPcStepJWA		= tOpGetLen_W0[1];
 
 	if(tBlkIsSxo)
 		tRegOutPcSxo[0]=1;
@@ -1954,7 +1978,7 @@ begin
 		tRegOutPcStep = 0;
 `endif
 
-`ifdef def_true
+`ifndef def_true
 	casez( { tDoStallNop,
 			tInPcWxe, tPcStepJA,
 			tPcStepWA, tPcStepWB,
@@ -1976,6 +2000,24 @@ begin
 		7'b011z1zz: tRegOutPcStep = 4'b1100;
 
 		7'b1zzzzzz: tRegOutPcStep = 4'b0000;
+	endcase
+`endif
+
+`ifdef def_true
+//	tCombJWA = tPcStepJA || (tInPcWxe && tPcStepWA);
+	tCombJWA = tPcStepJWA;
+
+	casez( { tDoStallNop,
+			tCombJWA, tPcStepWB,
+			tPcStepBB , tPcStepBA })
+
+		5'b00zz0: tRegOutPcStep = 4'b0100;
+		5'b00zz1: tRegOutPcStep = 4'b0010;
+		5'b0100z: tRegOutPcStep = 4'b1000;
+		5'b0101z: tRegOutPcStep = 4'b0110;
+		5'b011zz: tRegOutPcStep = 4'b1100;
+		
+		5'b1zzzz: tRegOutPcStep = 4'b0000;
 	endcase
 `endif
 
@@ -2016,12 +2058,15 @@ begin
 //		tMiss = 0;
 //	end
 
+	tReqReadyN = !tReqReady;
+
 `ifndef def_true
-	if(!tReqReady)
+//	if(!tReqReady)
+	if(tReqReadyN)
 	begin
-		if(tMemReqLdA && !tMemRespLdA)
+		if(tMemReqLdA && tMemRespLdAN)
 			tMissA = 1;
-		if(tMemReqLdB && !tMemRespLdB)
+		if(tMemReqLdB && tMemRespLdBN)
 			tMissB = 1;
 //		tMiss = tMiss1L;
 		tMiss = tMissA || tMissB;
@@ -2030,9 +2075,9 @@ begin
 	end
 `endif
 
-	if(tMemReqLdA && !tMemRespLdA)
+	if(tMemReqLdA && tMemRespLdAN)
 		tMissA = 1;
-	if(tMemReqLdB && !tMemRespLdB)
+	if(tMemReqLdB && tMemRespLdBN)
 		tMissB = 1;
 
 //	if(tMiss)
@@ -2040,18 +2085,20 @@ begin
 
 `ifndef def_true
 //	if(tMiss)
-	if(tMiss || !tReqReady)
+//	if(tMiss || !tReqReady)
+	if(tMiss || tReqReadyN)
 		tRegOutHold = 1;
 
-	if(tMemReqLdA && !tMemRespLdA)
+	if(tMemReqLdA && tMemRespLdAN)
 		tRegOutHold = 1;
-	if(tMemReqLdB && !tMemRespLdB)
+	if(tMemReqLdB && tMemRespLdBN)
 		tRegOutHold = 1;
 `endif
 
-	if(	(tMemReqLdA && !tMemRespLdA) ||
-		(tMemReqLdB && !tMemRespLdB) ||
-		(tMiss || !tReqReady)		 )
+	if(	(tMemReqLdA && tMemRespLdAN) ||
+		(tMemReqLdB && tMemRespLdBN) ||
+//		(tMiss || !tReqReady)		 )
+		(tMiss || tReqReadyN)		 )
 			tRegOutHold = 1;
 
 //	tRegOutPcOK = tRegOutHold ? UMEM_OK_HOLD : UMEM_OK_OK;
@@ -2067,7 +2114,8 @@ begin
 	tNxtMemRespLdA	= tMemRespLdA;
 	tNxtMemRespLdB	= tMemRespLdB;
 
-	if(memRingIsRespOkLdA && !tResetL)
+//	if(memRingIsRespOkLdA && !tResetL)
+	if(memRingIsRespOkLdA)
 	begin
 //		$display("L1 I$: Resp A, O=%X S=%X A=%X D=%X",
 //			memOpmIn, memSeqIn, memAddrIn, memDataIn);
@@ -2145,7 +2193,8 @@ begin
 `endif
 	end
 
-	if(memRingIsRespOkLdB && !tResetL)
+//	if(memRingIsRespOkLdB && !tResetL)
+	if(memRingIsRespOkLdB)
 	begin
 //		$display("L1 I$: Resp B, O=%X S=%X A=%X D=%X",
 //			memOpmIn, memSeqIn, memAddrIn, memDataIn);
@@ -2225,14 +2274,21 @@ begin
 `endif
 	end
 
+	if(tResetL)
+	begin
+		tDoStBlkA	= 0;
+		tDoStBlkB	= 0;
+		tUtlbDoSt	= 0;
+		tNxtTlbMissInh = 0;
+	end
 	
 	/* Miss Handling */
 
 `ifndef def_true
 	tReqWaitResp = 0;
-	if(tMemReqLdA && !tMemRespLdA)
+	if(tMemReqLdA && tMemRespLdAN)
 		tReqWaitResp = 1;
-	if(tMemReqLdB && !tMemRespLdB)
+	if(tMemReqLdB && tMemRespLdBN)
 		tReqWaitResp = 1;
 
 	if(tReqWaitResp)
@@ -2284,7 +2340,8 @@ begin
 		end
 `endif
 
-		if(!tReqReady)
+//		if(!tReqReady)
+		if(tReqReadyN)
 		begin
 		end
 		else
@@ -2317,7 +2374,7 @@ begin
 				if(tReqAddrIsVirt)
 					$display("L1 I$: Send LDA Req Abs A=%X", tReqAddrA);
 
-				if(!tReqAddrIsVirt)
+//				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 
 				if(tReqAddrIsVirt)
@@ -2369,7 +2426,7 @@ begin
 				if(tReqAddrIsVirt)
 					$display("L1 I$: Send LDB Req Abs A=%X", tReqAddrB);
 
-				if(!tReqAddrIsVirt)
+//				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 //				tMemAddrReq[47:44]=4'hC;
 
@@ -2427,6 +2484,7 @@ begin
 //	if(tDoStBlkA || tDoStBlkB || tDidStBlkA || tDidStBlkB)
 //		tRegOutHold = 1;
 
+`ifndef def_true
 	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold && !tDoStallNop)
 	begin
 		if(!tMsgLatch)
@@ -2442,6 +2500,7 @@ begin
 		end
 		tNxtMsgLatch = 1;
 	end
+`endif
 		
 	if(tResetL)
 		tRegOutHold = 0;
@@ -2485,7 +2544,8 @@ begin
 
 end
 
-wire		tAdvHold;
+(* max_fanout = 200 *)
+	wire		tAdvHold;
 
 always @*
 begin
@@ -2781,6 +2841,8 @@ begin
 
 		tMemRespLdA	<= 0;
 		tMemRespLdB	<= 0;
+		tMemRespLdAN	<= 1;
+		tMemRespLdBN	<= 1;
 	end
 	else
 		if(memRingIsIdle || memRingIsResp)
@@ -2796,6 +2858,8 @@ begin
 		tMemReqLdB	<= tAdvHold ? tNxtMemReqLdB : 0;
 		tMemRespLdA	<= tAdvHold ? tNxtMemRespLdA : 0;
 		tMemRespLdB	<= tAdvHold ? tNxtMemRespLdB : 0;
+		tMemRespLdAN	<= tAdvHold ? !tNxtMemRespLdA : 1;
+		tMemRespLdBN	<= tAdvHold ? !tNxtMemRespLdB : 1;
 `endif
 
 `ifndef def_true
@@ -2805,6 +2869,8 @@ begin
 		tMemReqLdB	<= tRegOutHold ? tNxtMemReqLdB : 0;
 		tMemRespLdA	<= tRegOutHold ? tNxtMemRespLdA : 0;
 		tMemRespLdB	<= tRegOutHold ? tNxtMemRespLdB : 0;
+		tMemRespLdAN	<= tRegOutHold ? !tNxtMemRespLdA : 1;
+		tMemRespLdBN	<= tRegOutHold ? !tNxtMemRespLdB : 1;
 `endif
 
 `ifndef def_true
@@ -2833,6 +2899,8 @@ begin
 		tMemReqLdB	<= tAdvHold ? tMemReqLdB : 0;
 		tMemRespLdA	<= tAdvHold ? tMemRespLdA : 0;
 		tMemRespLdB	<= tAdvHold ? tMemRespLdB : 0;
+		tMemRespLdAN	<= tAdvHold ? !tMemRespLdA : 1;
+		tMemRespLdBN	<= tAdvHold ? !tMemRespLdB : 1;
 `endif
 
 `ifndef def_true
@@ -2840,6 +2908,8 @@ begin
 		tMemReqLdB	<= tRegOutHold ? tMemReqLdB : 0;
 		tMemRespLdA	<= tRegOutHold ? tNxtMemRespLdA : 0;
 		tMemRespLdB	<= tRegOutHold ? tNxtMemRespLdB : 0;
+		tMemRespLdAN	<= tRegOutHold ? !tNxtMemRespLdA : 1;
+		tMemRespLdBN	<= tRegOutHold ? !tNxtMemRespLdB : 1;
 `endif
 	end
 
