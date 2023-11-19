@@ -37,6 +37,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "gfxdrv_keys.h"
 
+void I_HandleInput (void);
+
 
 #define MAXMESSAGELENGTH		(COM_MAXTEXTSTRINGLENGTH-1)
 

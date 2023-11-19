@@ -66,7 +66,7 @@ static int titleyoffset=0;
 static char titlestring[40]="\0";
 static int readytoflip;
 static boolean MenuBufStarted=false;
-static int mindist=0x2700;
+static int rt_build_mindist=0x2700;
 static boolean BackgroundDrawn=false;
 
 static plane_t planelist[MAXPLANES];
@@ -147,19 +147,19 @@ void GetPoint (int x1, int y1, int px, int py, int * screenx, int * height, int 
 //
 // calculate newx
 //
-  gxt = FixedMul(gx,costable[angle]);
-  gyt = FixedMul(gy,sintable[angle]);
+  gxt = FixedMul(gx,costable[angle&FINEANGLEMSK]);
+  gyt = FixedMul(gy,sintable[angle&FINEANGLEMSK]);
   nx =gxt-gyt;
 
-  if (nx<mindist)
-	  nx=mindist;
+  if (nx<rt_build_mindist)
+	  nx=rt_build_mindist;
 
 
 //
 // calculate newy
 //
-  gxtt = FixedMul(gx,sintable[angle]);
-  gytt = FixedMul(gy,costable[angle]);
+  gxtt = FixedMul(gx,sintable[angle&FINEANGLEMSK]);
+  gytt = FixedMul(gy,costable[angle&FINEANGLEMSK]);
   ny = gytt+gxtt;
 
 // too close, don't overflow the divid'
@@ -523,6 +523,7 @@ void PositionMenuBuf( int angle, int distance, boolean drawbackground )
 	font_t * oldfont;
 	int width,height;
 
+	width=0; height=0;
 
 	if (MenuBufStarted==false)
 		Error("Called PositionMenuBuf without menubuf started\n");
@@ -1239,6 +1240,7 @@ void DrawMenuBufIString (int px, int py, char *string, int color)
 
 	PrintX = px;
 	PrintY = py;
+	ch=-1;
 
 	while ((ch = *string++)!=0)
 	{
@@ -1353,6 +1355,8 @@ void DrawTMenuBufPropString (int px, int py, char *string)
 void MenuBufCPrintLine (char *s)
 {
 	int w, h;
+
+	w=0; h=0;
 
 	USL_MeasureString (s, &w, &h, CurrentFont);
 

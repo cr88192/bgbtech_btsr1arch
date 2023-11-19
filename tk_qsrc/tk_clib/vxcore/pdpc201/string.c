@@ -17,6 +17,11 @@
 #include "stdint.h"
 #include "ctype.h"
 
+int _locale_is_utf8(void);
+
+__PDPCLIB_API__ uint64_t _toupper_8x(uint64_t c);
+__PDPCLIB_API__ uint64_t _tolower_8x(uint64_t c);
+
 #ifdef memmove
 #undef memmove
 #endif

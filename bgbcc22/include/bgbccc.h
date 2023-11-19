@@ -520,6 +520,10 @@ extern "C" {
 #define BGBCC_FMT_AVI		BGBCC_FOURCC('A', 'V', 'I', ' ')
 
 #define BGBCC_FMT_DEF		BGBCC_FOURCC('D', 'E', 'F', ' ')
+#define BGBCC_FMT_WDEF		BGBCC_FOURCC('W', 'D', 'E', 'F')
+
+#define BGBCC_FMT_QOIF		BGBCC_FOURCC('Q', 'O', 'I', 'F')
+#define BGBCC_FMT_LCIF		BGBCC_FOURCC('L', 'C', 'I', 'F')
 
 #endif
 

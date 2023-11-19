@@ -380,15 +380,17 @@ void ConvertPasswordStringToPassword ( void )
 	char temp[3];
 	char key[40];
 
+	x=0;
+
 	memset(temp,0,sizeof(temp));
 	strcpy(&key[0],PASSWORDENCRYPTER);
 
 	for (i=0;i<12;i++)
-		{
+	{
 		memcpy(&temp[0],&key[i<<1],2);
 		sscanf(&temp[0],"%x",&x);
 		pword[i]=passwordstring[i]^x;
-		}
+	}
 	memcpy(&temp[0],&key[i<<1],2);
 	sscanf(&temp[0],"%x",&x);
 	gamestate.violence=passwordstring[i]^x;
@@ -434,15 +436,17 @@ void ConvertPasswordToPasswordString ( void )
 	char temp[3];
 	char key[40];
 
+	x=0;
+
 	memset(temp,0,sizeof(temp));
 	strcpy(&key[0],PASSWORDENCRYPTER);
 
 	for (i=0;i<12;i++)
-		{
+	{
 		memcpy(&temp[0],&key[i<<1],2);
 		sscanf(&temp[0],"%x",&x);
 		passwordstring[i]=pword[i]^x;
-		}
+	}
 	memcpy(&temp[0],&key[i<<1],2);
 	sscanf(&temp[0],"%x",&x);
 	passwordstring[i]=gamestate.violence^x;

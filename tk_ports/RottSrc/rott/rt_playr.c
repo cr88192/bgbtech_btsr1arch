@@ -543,6 +543,8 @@ void SpawnPlayerobj (int tilex, int tiley, int dir, int playerindex)
 
 	pstate = &PLAYERSTATE[playerindex];
 
+//	memset(pstate, 0, sizeof(playertype)); //BGB debug
+
 	GetNewActor();
 	MakeActive(new);
 
@@ -1008,8 +1010,10 @@ void PlayerMissileAttack(objtype*ob)
 		new->x = new->drawx = ob->x + (costable[(new->angle)&FINEANGLEMSK]>>3);
 		new->y = new->drawy = ob->y - (sintable[(new->angle)&FINEANGLEMSK]>>3);
 
-		ob->momentumx = -FixedMul(0x5000l,costable[(ob->angle)&FINEANGLEMSK]);
-		ob->momentumy = FixedMul(0x5000l,sintable[(ob->angle)&FINEANGLEMSK]);
+//		ob->momentumx = -FixedMul(0x5000l,costable[(ob->angle)&FINEANGLEMSK]);
+		ob->momentumx = -FixedMul(0x5000,costable[(ob->angle)&FINEANGLEMSK]);
+//		ob->momentumy = FixedMul(0x5000l,sintable[(ob->angle)&FINEANGLEMSK]);
+		ob->momentumy = FixedMul(0x5000,sintable[(ob->angle)&FINEANGLEMSK]);
 	}
 
 }
@@ -1087,8 +1091,8 @@ void DogAttack(objtype*ob)
 			BATTLE_PlayerKilledPlayer(battle_kill_with_missile,ob->dirchoosetime,temp->dirchoosetime);
 
 		return;
-		}
 	}
+}
 
 
 void DogBlast(objtype*ob)
@@ -1213,7 +1217,8 @@ void DogBlast(objtype*ob)
 */
 
 void BatBlast(objtype*ob)
-{int angle;
+{
+	int angle;
 	playertype *pstate;
 
 	M_LINKSTATE(ob,pstate);
@@ -1309,7 +1314,8 @@ void BatAttack(objtype*ob)
 		}
 	}
 	else // find target to hit grenade back at
-	{int rand;
+	{
+		int rand;
 
 		rand = GameRandomNumber("bat/grenade target",0);
 		if (rand < 80)
@@ -1538,14 +1544,14 @@ void Cmd_Fire (objtype*ob)
 	}
 
 void PlayNoWaySound ( void )
-	{
+{
 	if (player->flags & FL_DOGMODE)
 		SD_Play(SD_DOGMODEBITE2SND);
 	else if ((locplayerstate->player == 1) || (locplayerstate->player == 3))
 		SD_Play(SD_PLAYERTBHURTSND);
 	else
 		SD_Play(SD_NOWAYSND);
-	}
+}
 
 
 /*
@@ -1856,7 +1862,7 @@ void PollKeyboardButtons (void)
 //******************************************************************************
 
 void PollMouseButtons (void)
-	{
+{
 	int i;
 	int buttons;
 	int mask;
@@ -1866,69 +1872,69 @@ void PollMouseButtons (void)
 
 	mask = 1;
 	for( i = 0; i < 3; i++, mask <<= 1 )
-		{
+	{
 		press = buttons & mask;
 
 		if ( press )
-			{
+		{
 //			if ( ( buttonmouse[ i ] != bt_nobutton ) &&
 //				( DoubleClickCount[ i ] != 2 ) )
 			if ( buttonmouse[ i ] != bt_nobutton )
-				{
+			{
 				buttonpoll[ buttonmouse[ i ] ] = true;
-				}
 			}
+		}
 
 		// Check double-click
 		if ( buttonmouse[ i + 3 ] != bt_nobutton )
-			{
+		{
 			if ( press )
-				{
+			{
 				// Was the button pressed last tic?
 				if ( !DoubleClickPressed[ i ] )
-					{
+				{
 					// Yes, take note of it
 					DoubleClickPressed[ i ] = true;
 
 					// Is this the first click, or a really late click?
 					if ( ( DoubleClickCount[ i ] == 0 ) ||
 						( ticcount >= DoubleClickTimer[ i ] ) )
-						{
+					{
 						// Yes, now wait for a second click
 						DoubleClickTimer[ i ] = ticcount + DoubleClickSpeed;
 
 							//( tics << 5 );
 						DoubleClickCount[ i ] = 1;
-						}
+					}
 					else
-						{
+					{
 						// Second click
 						buttonpoll[ buttonmouse[ i + 3 ] ] = true;
 						DoubleClickTimer[ i ] = 0;
 						DoubleClickCount[ i ] = 2;
-						}
 					}
+				}
 				else
-					{
+				{
 					// After second click, button remains pressed
 					// until user releases it
 					if ( DoubleClickCount[ i ] == 2 )
-						{
-						buttonpoll[ buttonmouse[ i + 3 ] ] = true;
-						}
-					}
-				}
-			else
-				{
-				if ( DoubleClickCount[ i ] == 2 )
 					{
-					DoubleClickCount[ i ] = 0;
+						buttonpoll[ buttonmouse[ i + 3 ] ] = true;
 					}
-				DoubleClickPressed[ i ] = false;
 				}
+			}
+			else
+			{
+				if ( DoubleClickCount[ i ] == 2 )
+				{
+					DoubleClickCount[ i ] = 0;
+				}
+				DoubleClickPressed[ i ] = false;
 			}
 		}
 	}
+}
 
 
 //******************************************************************************
@@ -2133,9 +2139,9 @@ void PollKeyboardMove
 int mouse_ry_input_scale = 5000;
 
 int sensitivity_scalar[15] =
-	{
+{
 	0,1,2,3,4,5,6,8,11,13,15,18,12,13,14
-	};
+};
 
 //#define MOUSE_RY_SCALE 65535
 
@@ -2381,29 +2387,29 @@ void PollMove (void)
 	y = KY + MY + JY + CY + VY;
 
 	if (buttonpoll[bt_aimbutton])
-		{
+	{
 		if (y>0)
-			{
+		{
 			buttonpoll[bt_horizonup]=1;
 			y=0;
 			aimbuttonpressed=true;
-			}
+		}
 		else if (y<0)
-			{
+		{
 			buttonpoll[bt_horizondown]=1;
 			y=0;
 			aimbuttonpressed=true;
-			}
+		}
 		else if (aimbuttonpressed==false)
-			{
+		{
 			buttonpoll[bt_lookup]=1;
 			buttonpoll[bt_lookdown]=1;
-			}
 		}
+	}
 	else
-		{
+	{
 		aimbuttonpressed=false;
-		}
+	}
 
 	if (player->flags & FL_FLEET)
 		y += y>>1;
@@ -2417,20 +2423,21 @@ void PollMove (void)
 		}
 
 		if (x > 0)
-			{
+		{
 			rightmom += NETMOM;
 			if (lastmom!=0)
 				controlbuf[2]=x<<1;
 			lastmom=0;
-			}
+		}
 		else
+		{
 			if (x < 0)
-				{
+			{
 				leftmom += NETMOM;
 				if (lastmom!=1)
 					controlbuf[2]=x<<1;
 				lastmom=1;
-				}
+			}
 			else
 			{
 				rightmom -= (NETMOM >> 2);
@@ -2440,9 +2447,11 @@ void PollMove (void)
 				if (leftmom < 0)
 					leftmom = 0;
 			}
+		}
 
-		if ((ticcount > nettics) && (rightmom > (NETMOM * 2)) &&
-											(leftmom > (NETMOM * 2)))
+		if (	(ticcount > nettics) &&
+				(rightmom > (NETMOM * 2)) &&
+				(leftmom > (NETMOM * 2)))
 		{
 			rightmom = 0;
 			leftmom  = 0;
@@ -2451,65 +2460,67 @@ void PollMove (void)
 			locplayerstate->NETCAPTURED = 0;
 			MISCVARS->NET_IN_FLIGHT = false;
 			NewState(player, &s_player);
-			locplayerstate->weaponuptics = WEAPONS[locplayerstate->weapon].screenheight/GMOVE;
-			locplayerstate->weaponheight = locplayerstate->weaponuptics*GMOVE ;
+			locplayerstate->weaponuptics =
+				WEAPONS[locplayerstate->weapon].screenheight/GMOVE;
+			locplayerstate->weaponheight =
+				locplayerstate->weaponuptics*GMOVE ;
 		}
 	}
 	else if ((buttonpoll[bt_strafe]) && (turnaround==0))
 	{
 		// strafing
 		if (x < 0)
-			{
-			angle = (player->angle - FINEANGLES/4)&(FINEANGLES-1);
+		{
+			angle = (player->angle - (FINEANGLES/4))&(FINEANGLES-1);
 
 			x = (x>>10) + (x >> 11);
 
 			controlbuf[0] = -(FixedMul (x, costable[angle&FINEANGLEMSK]));
 			controlbuf[1] = FixedMul (x, sintable[angle&FINEANGLEMSK]);
-			}
+		}
 		else if (x > 0)
-			{
+		{
 			angle = (player->angle + FINEANGLES/4)&(FINEANGLES-1);
 
 			x = (x>>10) + (x >> 11);
 
 			controlbuf[0] = FixedMul (x, costable[angle&FINEANGLEMSK]);
 			controlbuf[1] = -(FixedMul (x, sintable[angle&FINEANGLEMSK]));
-			}
+		}
 		if (y != 0)
-			{
+		{
 			controlbuf[0] += -(FixedMul (y, viewcos));
 			controlbuf[1] += (FixedMul (y, viewsin));
-			}
+		}
 	}
 	else
 	{
 		if (y != 0)
-			{
+		{
 			controlbuf[0] = -FixedMul (y, viewcos);
 			controlbuf[1] = FixedMul (y, viewsin);
-			}
+		}
 
 		if (x != 0)
 			controlbuf[2] = x;
 	}
 
 	if (buttonpoll[bt_strafeleft])
-		{
+	{
 		angle = (player->angle - FINEANGLES/4)&(FINEANGLES-1);
 		controlbuf[0] += -(FixedMul (STRAFEAMOUNT,
 			costable[angle&FINEANGLEMSK]));
 		controlbuf[1] +=	FixedMul (STRAFEAMOUNT,
 			sintable[angle&FINEANGLEMSK]);
-		}
+	}
 	else if (buttonpoll[bt_straferight])
-		{
+	{
 		angle = (player->angle + FINEANGLES/4)&(FINEANGLES-1);
 		controlbuf[0] += -(FixedMul (STRAFEAMOUNT,
 			costable[angle&FINEANGLEMSK]));
 		controlbuf[1] +=	FixedMul (STRAFEAMOUNT,
 			sintable[angle&FINEANGLEMSK]);
-		}
+	}
 }
 
 
@@ -2901,7 +2912,8 @@ void PollControls (void)
 
 
 void ResetWeapons(objtype *ob)
-{playertype *pstate;
+{
+	playertype *pstate;
 
 	M_LINKSTATE(ob,pstate);
 
@@ -2917,7 +2929,8 @@ void ResetWeapons(objtype *ob)
 
 
 void SaveWeapons(objtype*ob)
-{playertype *pstate;
+{
+	playertype *pstate;
 
 	if ((ob->flags&FL_DOGMODE) || (ob->flags&FL_GODMODE))
 	return;
@@ -3004,18 +3017,18 @@ boolean GivePowerup(objtype *ob,int flag,int time,int sound)
 
 
 void GiveLifePoints(objtype *ob,int points)
-	{
+{
 	SD_PlaySoundRTP(SD_GETBONUSSND,ob->x, ob->y);
 
 	UpdateTriads (ob,points);
 	if (ob==player)
 		DrawTriads (false);
 
-	}
+}
 
 
 boolean GiveBulletWeapon(objtype *ob,int bulletweapon,statobj_t*check)
-	{
+{
 	playertype *pstate;
 
 	M_LINKSTATE(ob,pstate);
@@ -3031,18 +3044,18 @@ boolean GiveBulletWeapon(objtype *ob,int bulletweapon,statobj_t*check)
 
 	GiveWeapon(ob,bulletweapon);
 	if ( gamestate.BattleOptions.WeaponPersistence )
-		{
+	{
 		LASTSTAT->z = check->z;
-		}
+	}
 	SD_PlaySoundRTP(SD_GETWEAPONSND,ob->x, ob->y);
 	return true;
 
-	}
+}
 
 
 boolean GivePlayerMissileWeapon(objtype *ob, playertype *pstate,
 										statobj_t *check)
-	{
+{
 	if  ((ob->flags & FL_DOGMODE) || (ob->flags & FL_GODMODE))
 		return false;
 
@@ -3064,11 +3077,12 @@ boolean GivePlayerMissileWeapon(objtype *ob, playertype *pstate,
 	gamestate.missilecount ++;
 
 	if (BATTLEMODE && (gamestate.BattleOptions.Ammo != bo_normal_shots))
-		{if (gamestate.BattleOptions.Ammo == bo_one_shot)
+	{
+		if (gamestate.BattleOptions.Ammo == bo_one_shot)
 			pstate->ammo = 1;
 		else
 			pstate->ammo = -1;
-		}
+	}
 	else
 		pstate->ammo = check->ammo;
 	if ((ob==player) && SHOW_BOTTOM_STATUS_BAR() )
@@ -3076,7 +3090,7 @@ boolean GivePlayerMissileWeapon(objtype *ob, playertype *pstate,
 
 	return true;
 
-	}
+}
 
 
 #define LocalBonusMessage(string)  \
@@ -3154,7 +3168,7 @@ int GetBonusTimeForItem(int itemnumber)
 
 
 int GetRespawnTimeForItem(int itemnumber)
-	{
+{
 	switch(itemnumber)
 		{
 		case stat_godmode:
@@ -3184,9 +3198,7 @@ int GetRespawnTimeForItem(int itemnumber)
 		}
 
 	return gamestate.BattleOptions.RespawnTime * VBLCOUNTER;
-
-
-	}
+}
 
 
 /*
@@ -3675,8 +3687,9 @@ keys:
 			}
 		}
 	else
-	{if (check == sprites[check->tilex][check->tiley])
-			{
+	{
+		if (check == sprites[check->tilex][check->tiley])
+		{
 			statobj_t *checkstat;
 
 			checkstat = (statobj_t*)DiskAt(check->tilex,check->tiley);
@@ -3684,7 +3697,7 @@ keys:
 				sprites[check->tilex][check->tiley] = checkstat;
 			else
 				sprites[check->tilex][check->tiley] = NULL;
-			}
+		}
 
 		if (randompowerup==true)
 			check->itemnumber = stat_random;
@@ -3702,7 +3715,8 @@ keys:
 */
 
 void DropWeapon(objtype *ob)
-{playertype *pstate;
+{
+	playertype *pstate;
 	int dtilex,dtiley;
 
 
@@ -3736,7 +3750,7 @@ void DropWeapon(objtype *ob)
 	pstate->ammo = -1;
 	pstate->missileweapon = -1;
 	if ((ob==player) && SHOW_BOTTOM_STATUS_BAR() )
-	DrawBarAmmo (false);
+		DrawBarAmmo (false);
 }
 
 
@@ -3749,7 +3763,8 @@ void DropWeapon(objtype *ob)
 */
 
 void Thrust ( objtype * ob )
-{statobj_t *tstat;
+{
+	statobj_t *tstat;
 	int dx,dy,dz,rad,index,otherteam;
 	objtype*temp;
 	playertype * pstate;
@@ -3761,12 +3776,13 @@ void Thrust ( objtype * ob )
 		(ob->flags & FL_DESIGNATED) &&
 		(ob->tilex == TEAM[pstate->team].tilex) &&
 		(ob->tiley == TEAM[pstate->team].tiley))
-		{if (ob == player)
-			SD_Play(PlayerSnds[locplayerstate->player]);
+		{
+			if (ob == player)
+				SD_Play(PlayerSnds[locplayerstate->player]);
 
 		if (BATTLE_CheckGameStatus(battle_captured_triad,ob->dirchoosetime)==
 			battle_no_event)
-			{
+		{
 			ob->flags &= ~FL_DESIGNATED;
 			UpdateKills = true;
 			otherteam = (pstate->team ^ 1);
@@ -3775,9 +3791,9 @@ void Thrust ( objtype * ob )
 			LASTSTAT->hitpoints = otherteam;
 			LASTSTAT->flags |= FL_ABP;
 			MakeStatActive(LASTSTAT);
-			}
-		return;
 		}
+		return;
+	}
 
 	if ((ob->tilex != pstate->weaponx) || (ob->tiley != pstate->weapony))
 	pstate->weaponx = pstate->weapony = 0;
@@ -4143,7 +4159,8 @@ void PlayerTiltHead (objtype * ob)
 			}
 			else
 			{
-				SetPlayerHorizon(pstate,(pstate->horizon-HORIZONYZOFFSET-YZHORIZONSPEED));
+				SetPlayerHorizon(pstate,
+					(pstate->horizon-HORIZONYZOFFSET-YZHORIZONSPEED));
 			}
 		}
 		if (pstate->buttonstate[bt_lookup] || CYBERLOOKUP)
@@ -5369,8 +5386,8 @@ void CheckFlying(objtype*ob,playertype *pstate)
 	}
 
 	/*
-	if (!M_ISDOOR(((ob->x + costable[ob->angle])>>16),
-			((ob->y - sintable[ob->angle])>>16)) &&
+	if (!M_ISDOOR(((ob->x + costable[(ob->angle)&FINEANGLEMSK])>>16),
+			((ob->y - sintable[(ob->angle)&FINEANGLEMSK])>>16)) &&
 			(pstate->buttonstate[bt_use]) &&
 			(!pstate->buttonheld[bt_use])
 		)
@@ -5435,7 +5452,8 @@ void CheckTemp2Codes(objtype *ob,playertype *pstate)
 		{
 			if (IN_AIR(ob))
 				pstate->heightoffset = FixedMulShift(0x4000,
-					sintable[(oldpolltime<<6)&2047],28);
+//					sintable[(oldpolltime<<6)&2047],28);
+					sintable[(oldpolltime<<6)&FINEANGLEMSK],28);
 
 			ob->z += ((ob->momentumz+0x8000)>>16);
 			ob->momentumz = 0;

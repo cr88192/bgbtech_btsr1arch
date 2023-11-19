@@ -621,6 +621,26 @@ fourcc BGBCP_LangForName(char *name)
 
 		if(!bgbcp_strcmp(s, ".def"))	lang=BGBCC_FMT_DEF;
 		if(!bgbcp_strcmp(s, ".DEF"))	lang=BGBCC_FMT_DEF;
+
+		if(!bgbcp_strcmp(s, ".wdef"))	lang=BGBCC_FMT_WDEF;
+		if(!bgbcp_strcmp(s, ".WDEF"))	lang=BGBCC_FMT_WDEF;
+
+		if(!bgbcp_strcmp(s, ".wde"))	lang=BGBCC_FMT_WDEF;
+		if(!bgbcp_strcmp(s, ".WDE"))	lang=BGBCC_FMT_WDEF;
+
+		if(!bgbcp_strcmp(s, ".qoi"))	lang=BGBCC_FMT_QOIF;
+		if(!bgbcp_strcmp(s, ".QOI"))	lang=BGBCC_FMT_QOIF;
+		if(!bgbcp_strcmp(s, ".qol"))	lang=BGBCC_FMT_QOIF;
+		if(!bgbcp_strcmp(s, ".QOL"))	lang=BGBCC_FMT_QOIF;
+		if(!bgbcp_strcmp(s, ".qolz"))	lang=BGBCC_FMT_QOIF;
+		if(!bgbcp_strcmp(s, ".QOLZ"))	lang=BGBCC_FMT_QOIF;
+		if(!bgbcp_strcmp(s, ".qoli"))	lang=BGBCC_FMT_QOIF;
+		if(!bgbcp_strcmp(s, ".QOLI"))	lang=BGBCC_FMT_QOIF;
+
+		if(!bgbcp_strcmp(s, ".lci"))	lang=BGBCC_FMT_LCIF;
+		if(!bgbcp_strcmp(s, ".LCI"))	lang=BGBCC_FMT_LCIF;
+		if(!bgbcp_strcmp(s, ".lcif"))	lang=BGBCC_FMT_LCIF;
+		if(!bgbcp_strcmp(s, ".LCIF"))	lang=BGBCC_FMT_LCIF;
 	}
 	
 	if(lang==BGBCC_LANG_BS)

@@ -973,7 +973,7 @@ static boolean SCMusicVolume(int option)
 	{
 		snd_MusicVolume--;
 	}
-	S_SetMusicVolume();
+	S_SetMusicVolume(snd_MusicVolume);
 	return true;
 }
 

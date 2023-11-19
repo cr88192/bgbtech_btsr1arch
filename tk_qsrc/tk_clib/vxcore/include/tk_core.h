@@ -230,6 +230,7 @@ typedef u64 tk_kptr;
 #define TKMM_MCAT_USR_RWX	4
 
 #define TKMM_MCAT_PHYSDFL	6
+#define TKMM_MCAT_GLOBAL	7
 
 #define TKMM_PROT_NONE		0x0000
 #define TKMM_PROT_READ		0x0001
@@ -255,6 +256,7 @@ typedef u64 tk_kptr;
 #define TKMM_MAP_DIRECT		0x0080
 
 #define TKMM_MAP_PHYSICAL	0x0100
+#define TKMM_MAP_GLOBAL		0x0200
 
 // #define INITRD_ADDR	0x1003F010
 // #define INITRD_SIZE	0x1003F014
@@ -675,6 +677,11 @@ int TK_GetHandleForPtr(TKPE_TaskInfo *task, void *ptr);
 void *TK_GetPtrForHandle(TKPE_TaskInfo *task, int ix);
 int TK_CheckUserAccess(TK_USERINFO *usr, TK_USERINFO *tgt);
 
+byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz);
+int TKPE_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz);
+
+
 int tk_vfile_init();
 TK_FILE *tk_alloc_file();
 TK_DIR *tk_alloc_dir();
@@ -751,6 +758,22 @@ int tk_hreaddir(TKPE_TaskInfo *task, int iHdl,
 	void *pDe, int szDe, int nDe);
 int tk_hclosedir(TKPE_TaskInfo *task, int iHdl);
 
+void *tk_malloc(int sz);
+void *tk_malloc_cat(int sz, int cat);
+int tk_free(void *ptr);
+int tk_msize(void *ptr);
+void *tk_realloc(void *ptr, int sz);
+
+int tk_mdecref(void *ptr);
+int tk_mgettag(void *ptr);
+int tk_msettag(void *ptr, int tag);
+int tk_mgetzone(void *ptr);
+int tk_msetzone(void *ptr, int tag);
+void *tk_mgetbase(void *ptr);
+int tk_mfreezone(int ztag, int zmask);
+char *tk_strdup_in(char *str);
+
+void tk_printf(char *str, ...);
 
 // void printf(char *str, ...);
 

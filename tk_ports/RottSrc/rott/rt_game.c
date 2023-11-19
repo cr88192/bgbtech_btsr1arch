@@ -446,6 +446,9 @@ void DrawPlayScreen
 		int width;
 		int height;
 
+		width=0;
+		height=0;
+
 		character = locplayerstate->player;
 		if(rott_iswolf)
 			character = 5;
@@ -549,6 +552,8 @@ void GetShortCodeName
 	int width;
 	int height;
 	int length;
+
+	width=0; height=0;
 
 	strcpy( dest, source );
 
@@ -860,6 +865,8 @@ void DrawPlayers
 	pic_t *pic;
 	pic_t *enemy;
 	pic_t *friend;
+
+	width=0; height=0;
 
 	num = W_GetNumForName( "botpic1" );
 
@@ -2634,6 +2641,8 @@ void DrawHighScores (void)
 		  h;
 	HighScore *s;
 
+	w=0; h=0;
+
 	for (i = 0, s = Scores; i < MaxScores; i++, s++)
 	{
 		PrintY = 25 + (16 * i);
@@ -2855,6 +2864,7 @@ void DrawEOLHeader( int playstate )
 			break;
 	}
 
+	w=0; h=0;
 	VW_MeasurePropString( string, &w, &h );
 
 	px = ( 320 - w ) / 2;
@@ -2978,6 +2988,8 @@ void DrawEndBonus
 		VWB_TBar( 5, EndBonusStartY - 2, 310, 4 );
 		EndBonusFirst = false;
 	}
+
+	w=0; h=0;
 
 	VWB_TBar( 5, EndBonusStartY + 2, 310, 10 );
 	VW_MeasurePropString( string, &w, &h );
@@ -3548,6 +3560,8 @@ void ShowKills( int localplayer )
 			strcpy( tempstr, "Tie" );
 			}
 
+		w=0; h=0;
+
 		VW_MeasureIntensityPropString ( tempstr, &w, &h);
 		DrawIntensityString( BT_RANK_X - w, py, tempstr, color );
 
@@ -3599,6 +3613,8 @@ void ShowDeaths( int localplayer )
 	int  DeathCount[ MAXPLAYERS ];
 	int  Order[ MAXPLAYERS ];
 	int  NumPlayers;
+
+	w=0; h=0;
 
 	// show at the most 11 players
 	NumPlayers = min( numplayers, 11 );
@@ -3698,6 +3714,8 @@ void ShowEndScore( int localplayer )
 	char tempstr[15];
 	boolean dofullstats;
 	int  NumPlayers;
+
+	w=0; h=0;
 
 	// show at the most 11 players
 	NumPlayers = min( numplayers, 11 );
@@ -3819,6 +3837,9 @@ void BattleLevelCompleted ( int localplayer )
 	int LastScreen;
 	int Player;
 	char text[80];
+
+	w=0;
+	h=0;
 
 	IN_ClearKeysDown ();
 
@@ -4095,15 +4116,15 @@ void Died (void)
 			player->z=dummy->z;
 			player->angle=(iangle+ANG180)&(FINEANGLES-1);
 			if (dopefish==true)
-				{
-				int dx,dy;
+			{
+				int dx2,dy2;
 
-				dx = dummy->x - player->x;
-				dy = player->y - dummy->y;
+				dx2 = dummy->x - player->x;
+				dy2 = player->y - dummy->y;
 
-				if (dx && dy)
-					player->angle = atan2_appx (dx,dy);
-				}
+				if (dx2 && dy2)
+					player->angle = atan2_appx (dx2,dy2);
+			}
 			pstate->heightoffset=heightoffset;
 			player->yzangle=0;
 			UpdateGameObjects();
@@ -4452,6 +4473,8 @@ boolean SaveTheGame (int num, gamestorage_t * game)
 	if (num > 15 || num < 0)
 		Error("Illegal Saved game value=%ld\n",num);
 
+	altbuffer=NULL;
+
 	//
 	// Save Alternate Game Level information for reloading game
 	//
@@ -4738,6 +4761,7 @@ int LoadBuffer (byte ** dest, byte ** src)
 {
 	int size;
 
+	size=0;
 	memcpy(&size,*src,sizeof(size));
 	*src+=sizeof(size);
 	*dest=SafeMalloc(size);
@@ -4769,6 +4793,9 @@ boolean LoadTheGame (int num, gamestorage_t * game)
 	int	 i;
 	word	mapcrc;
 
+	loadbuffer=NULL;
+	altbuffer=NULL;
+	savedchecksum=0;
 
 	if (num>15 || num<0)
 		Error("Illegal Load game value=%ld\n",num);
@@ -5172,6 +5199,8 @@ void GetSavedHeader (int num, gamestorage_t * game)
 	GetPathFromEnvironment( filename, ApogeePath, loadname );
 
 	// Load the file
+
+	loadbuffer=NULL;
 
 	size=LoadFile(filename,(void **)(&loadbuffer));
 	bufptr=loadbuffer;

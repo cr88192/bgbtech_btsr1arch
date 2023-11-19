@@ -8,6 +8,321 @@ void TKGDI_ConvBGRA2RGBA(byte *sbuf, byte *tbuf, int sz);
 #define CRAM_GETU16(cs)	((cs)[0]|((cs)[1]<<8))
 #endif
 
+
+int cram_decompress_inner8_rgb555(byte *ibuf, u16 *obuf,
+	int isz, int osz, cram_ctxinfo *info, byte *pal)
+{
+	u16 pal16[256];
+	u16 aclr[2], bclr[2], cclr[2], dclr[2];
+	u16 *bbuf, *bb0, *bb1, *bb2, *bb3;
+	u16 px;
+	u16 clra, clrb;
+	u16 clrc, clrd;
+	byte *cs, *cse;
+	int xs, ys;
+	int n, bx, by, by2, bxs, bys;
+	int i;
+	
+	xs=info->ohead->biWidth;
+	ys=info->ohead->biHeight;
+	if(ys<0)
+		ys=-ys;
+	bxs=xs>>2;
+	bys=ys>>2;
+	
+	for(i=0; i<256; i++)
+	{
+		clra=pal[i*4+0];	clrb=pal[i*4+1];	clrc=pal[i*4+2];
+		clra>>=3;			clrb>>=3;			clrc>>=3;
+		clrd=(clrc<<10)|(clrb<<5)|clra;
+		pal16[i]=clrd;
+	}
+	
+	cs=ibuf; cse=ibuf+isz; bx=0; by=0;
+	by2=bys-by-1;
+	while(cs<cse)
+	{
+//		px=cs[0]|(cs[1]<<8);
+		px=CRAM_GETU16(cs);
+		if(!px && (by>=bys))
+//		if(!px)
+			break;
+		if(px&0x8000)
+		{
+			cs+=2;
+
+			if((px&0xFC00)==0x8400)
+			{
+				n=px&1023;
+//				if(!n)n=1024;
+				bx+=n;
+//				bx+=n+1;
+				while(bx>=bxs)
+				{
+					by++; bx-=bxs;
+					by2=bys-by-1;
+					if(by>=bys)
+						break;
+				}
+				if(by>=bys)
+					break;
+				continue;
+			}
+			
+			if(px>=0x9000)
+			{
+				aclr[1]=pal16[cs+0];
+				aclr[0]=pal16[cs+1];
+				bclr[1]=pal16[cs+2];
+				bclr[0]=pal16[cs+3];
+				cclr[1]=pal16[cs+4];
+				cclr[0]=pal16[cs+5];
+				dclr[1]=pal16[cs+6];
+				dclr[0]=pal16[cs+7];
+				cs+=8;
+
+				bb0[0]=aclr[(px>> 0)&1];	bb0[1]=aclr[(px>> 1)&1];
+				bb0[2]=bclr[(px>> 2)&1];	bb0[3]=bclr[(px>> 3)&1];
+				bb1[0]=aclr[(px>> 4)&1];	bb1[1]=aclr[(px>> 5)&1];
+				bb1[2]=bclr[(px>> 6)&1];	bb1[3]=bclr[(px>> 7)&1];
+				bb2[0]=cclr[(px>> 8)&1];	bb2[1]=cclr[(px>> 9)&1];
+				bb2[2]=dclr[(px>>10)&1];	bb2[3]=dclr[(px>>11)&1];
+				bb3[0]=cclr[(px>>12)&1];	bb3[1]=cclr[(px>>13)&1];
+				bb3[2]=dclr[(px>>14)&1];	bb3[3]=dclr[(px>>15)&1];
+
+				bx++;
+				if(bx>=bxs)
+				{
+					by++; bx-=bxs;
+					by2=bys-by-1;
+					if(by>=bys)
+						break;
+				}
+				continue;
+			}
+			
+			clrc=pal[px&255];
+			
+			bbuf=obuf+(by2*4*xs+bx*4);
+			bb0=bbuf;
+			bb1=bb0+xs;
+			bb2=bb1+xs;
+			bb3=bb2+xs;
+
+			bb0[0]=clrc; bb0[1]=clrc; bb0[2]=clrc; bb0[3]=clrc;
+			bb1[0]=clrc; bb1[1]=clrc; bb1[2]=clrc; bb1[3]=clrc;
+			bb2[0]=clrc; bb2[1]=clrc; bb2[2]=clrc; bb2[3]=clrc;
+			bb3[0]=clrc; bb3[1]=clrc; bb3[2]=clrc; bb3[3]=clrc;
+			
+			bx++;
+			if(bx>=bxs)
+			{
+				by++; bx-=bxs;
+				by2=bys-by-1;
+				if(by>=bys)
+					break;
+			}
+			continue;
+		}
+
+		clra=*(cs+2);
+		clrb=*(cs+3);
+
+		bbuf=obuf+(by2*4*xs+bx*4);
+		bb3=bbuf;		bb2=bb3+xs;
+		bb1=bb2+xs;		bb0=bb1+xs;
+
+		cs+=4;
+		aclr[1]=pal16[clra];
+		aclr[0]=pal16[clrb];
+		bb0[0]=aclr[(px>> 0)&1];	bb0[1]=aclr[(px>> 1)&1];
+		bb0[2]=aclr[(px>> 2)&1];	bb0[3]=aclr[(px>> 3)&1];
+		bb1[0]=aclr[(px>> 4)&1];	bb1[1]=aclr[(px>> 5)&1];
+		bb1[2]=aclr[(px>> 6)&1];	bb1[3]=aclr[(px>> 7)&1];
+		bb2[0]=aclr[(px>> 8)&1];	bb2[1]=aclr[(px>> 9)&1];
+		bb2[2]=aclr[(px>>10)&1];	bb2[3]=aclr[(px>>11)&1];
+		bb3[0]=aclr[(px>>12)&1];	bb3[1]=aclr[(px>>13)&1];
+		bb3[2]=aclr[(px>>14)&1];	bb3[3]=aclr[(px>>15)&1];
+
+		bx++;
+		if(bx>=bxs)
+		{
+			by++; bx-=bxs;
+			by2=bys-by-1;
+			if(by>=bys)
+				break;
+		}
+		continue;
+	}
+	
+	return(0);
+}
+
+u16 cram_tclr_rgb555fl(u16 pxa)
+{
+	u16 pxc;
+	pxc=(pxa&0x03E0)|
+		((pxa>>10)&0x001F)|
+		((pxa<<10)&0x7C00);
+	return(pxc);
+}
+
+int cram_decompress_inner_rgb555(byte *ibuf, u16 *obuf,
+	int isz, int osz, cram_ctxinfo *info)
+{
+	u16 aclr[2], bclr[2], cclr[2], dclr[2];
+	u16 *bbuf, *bb0, *bb1, *bb2, *bb3;
+	u16 px;
+	u16 clra, clrb;
+	u16 clrc, clrd;
+	byte *cs, *cse;
+	int xs, ys;
+	int n, bx, by, by2, bxs, bys;
+	
+	xs=info->ohead->biWidth;
+	ys=info->ohead->biHeight;
+	if(ys<0)
+		ys=-ys;
+	bxs=xs>>2;
+	bys=ys>>2;
+	
+	cs=ibuf; cse=ibuf+isz; bx=0; by=0;
+	by2=bys-by-1;
+	while(cs<cse)
+	{
+//		px=cs[0]|(cs[1]<<8);
+		px=CRAM_GETU16(cs);
+		if(!px && (by>=bys))
+//		if(!px)
+			break;
+		if(px&0x8000)
+		{
+			cs+=2;
+
+			if((px&0xFC00)==0x8400)
+			{
+				n=px&1023;
+//				if(!n)n=1024;
+				bx+=n;
+//				bx+=n+1;
+				while(bx>=bxs)
+				{
+					by++; bx-=bxs;
+					by2=bys-by-1;
+					if(by>=bys)
+						break;
+				}
+				if(by>=bys)
+					break;
+				continue;
+			}
+			
+			clrc=cram_tclr_rgb555fl(px);
+			
+			bbuf=obuf+(by2*4*xs+bx*4);
+			bb0=bbuf;
+			bb1=bb0+xs;
+			bb2=bb1+xs;
+			bb3=bb2+xs;
+
+			bb0[0]=clrc; bb0[1]=clrc; bb0[2]=clrc; bb0[3]=clrc;
+			bb1[0]=clrc; bb1[1]=clrc; bb1[2]=clrc; bb1[3]=clrc;
+			bb2[0]=clrc; bb2[1]=clrc; bb2[2]=clrc; bb2[3]=clrc;
+			bb3[0]=clrc; bb3[1]=clrc; bb3[2]=clrc; bb3[3]=clrc;
+			
+			bx++;
+			if(bx>=bxs)
+			{
+				by++; bx-=bxs;
+				by2=bys-by-1;
+				if(by>=bys)
+					break;
+			}
+			continue;
+		}
+
+//		clra=cs[2]|(cs[3]<<8);
+//		clrb=cs[4]|(cs[5]<<8);
+		clra=CRAM_GETU16(cs+2);
+		clrb=CRAM_GETU16(cs+4);
+
+		bbuf=obuf+(by2*4*xs+bx*4);
+//		bb0=bbuf;		bb1=bb0+xs;
+//		bb2=bb1+xs;		bb3=bb2+xs;
+
+		bb3=bbuf;		bb2=bb3+xs;
+		bb1=bb2+xs;		bb0=bb1+xs;
+
+		if(clra&0x8000)
+		{
+			cs+=6;
+			aclr[1]=cram_tclr_rgb555fl(clra);
+			aclr[0]=cram_tclr_rgb555fl(clrb);
+
+#if 1
+			bclr[1]=cram_tclr_rgb555fl(CRAM_GETU16(cs+ 0));
+			bclr[0]=cram_tclr_rgb555fl(CRAM_GETU16(cs+ 2));
+			cclr[1]=cram_tclr_rgb555fl(CRAM_GETU16(cs+ 4));
+			cclr[0]=cram_tclr_rgb555fl(CRAM_GETU16(cs+ 6));
+			dclr[1]=cram_tclr_rgb555fl(CRAM_GETU16(cs+ 8));
+			dclr[0]=cram_tclr_rgb555fl(CRAM_GETU16(cs+10));
+#endif
+
+			cs+=12;
+
+#if 1
+			bb0[0]=aclr[(px>> 0)&1];	bb0[1]=aclr[(px>> 1)&1];
+			bb0[2]=bclr[(px>> 2)&1];	bb0[3]=bclr[(px>> 3)&1];
+			bb1[0]=aclr[(px>> 4)&1];	bb1[1]=aclr[(px>> 5)&1];
+			bb1[2]=bclr[(px>> 6)&1];	bb1[3]=bclr[(px>> 7)&1];
+			bb2[0]=cclr[(px>> 8)&1];	bb2[1]=cclr[(px>> 9)&1];
+			bb2[2]=dclr[(px>>10)&1];	bb2[3]=dclr[(px>>11)&1];
+			bb3[0]=cclr[(px>>12)&1];	bb3[1]=cclr[(px>>13)&1];
+			bb3[2]=dclr[(px>>14)&1];	bb3[3]=dclr[(px>>15)&1];
+#endif
+
+#if 0
+			bb0[0]=aclr[(px>> 0)&1];	bb0[1]=aclr[(px>> 1)&1];
+			bb0[2]=aclr[(px>> 2)&1];	bb0[3]=aclr[(px>> 3)&1];
+			bb1[0]=aclr[(px>> 4)&1];	bb1[1]=aclr[(px>> 5)&1];
+			bb1[2]=aclr[(px>> 6)&1];	bb1[3]=aclr[(px>> 7)&1];
+			bb2[0]=aclr[(px>> 8)&1];	bb2[1]=aclr[(px>> 9)&1];
+			bb2[2]=aclr[(px>>10)&1];	bb2[3]=aclr[(px>>11)&1];
+			bb3[0]=aclr[(px>>12)&1];	bb3[1]=aclr[(px>>13)&1];
+			bb3[2]=aclr[(px>>14)&1];	bb3[3]=aclr[(px>>15)&1];
+#endif
+		}else
+		{
+			cs+=6;
+			aclr[1]=cram_tclr_rgb555fl(clra);
+			aclr[0]=cram_tclr_rgb555fl(clrb);
+
+#if 1
+			bb0[0]=aclr[(px>> 0)&1];	bb0[1]=aclr[(px>> 1)&1];
+			bb0[2]=aclr[(px>> 2)&1];	bb0[3]=aclr[(px>> 3)&1];
+			bb1[0]=aclr[(px>> 4)&1];	bb1[1]=aclr[(px>> 5)&1];
+			bb1[2]=aclr[(px>> 6)&1];	bb1[3]=aclr[(px>> 7)&1];
+			bb2[0]=aclr[(px>> 8)&1];	bb2[1]=aclr[(px>> 9)&1];
+			bb2[2]=aclr[(px>>10)&1];	bb2[3]=aclr[(px>>11)&1];
+			bb3[0]=aclr[(px>>12)&1];	bb3[1]=aclr[(px>>13)&1];
+			bb3[2]=aclr[(px>>14)&1];	bb3[3]=aclr[(px>>15)&1];
+#endif
+		}
+
+		bx++;
+		if(bx>=bxs)
+		{
+			by++; bx-=bxs;
+			by2=bys-by-1;
+			if(by>=bys)
+				break;
+		}
+		continue;
+	}
+	
+	return(0);
+}
+
 u32 cram_tclr_rgb555(u16 pxa)
 {
 	u32 pxc;
@@ -32,6 +347,8 @@ int cram_decompress_inner_bgra(byte *ibuf, u32 *obuf,
 	
 	xs=info->ohead->biWidth;
 	ys=info->ohead->biHeight;
+	if(ys<0)
+		ys=-ys;
 	bxs=xs>>2;
 	bys=ys>>2;
 	

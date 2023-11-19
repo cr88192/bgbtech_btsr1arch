@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #ifndef _rt_sqrt_public
 #define _rt_sqrt_public
 
+#include "rt_def.h"
+
 /*
 FUNCTION:
     Fixed32 FixedSqrtHP(Fixed32 n);
@@ -37,8 +39,8 @@ DESCRIPTION:
 
 
 
-long FixedSqrtLP(long n);  // Low  Precision (8.8)
-long FixedSqrtHP(long n);  // High Precision (8.16)
+fixed_t FixedSqrtLP(fixed_t n);  // Low  Precision (8.8)
+fixed_t FixedSqrtHP(fixed_t n);  // High Precision (8.16)
 
 #if 0
 #pragma aux FixedSqrtLP =            \

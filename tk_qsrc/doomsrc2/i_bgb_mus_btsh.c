@@ -591,7 +591,8 @@ int SMus_SetFmRegisterData(int prg, int idx, u32 val)
 	mcmd->d1=idx;
 	mcmd->u0=val;
 	
-	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 
@@ -618,7 +619,8 @@ int SMus_SpecialParm(int parm, int val)
 	mcmd->d0=parm;
 	mcmd->d1=val;
 	
-	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 
@@ -636,7 +638,8 @@ int SMus_NoteOn(int ch, int d0, int d1)
 	mcmd->d0=d0;
 	mcmd->d1=d1;
 	
-	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 
@@ -654,7 +657,8 @@ int SMus_NoteOff(int ch, int d0, int d1)
 	mcmd->d0=d0;
 	mcmd->d1=d1;
 	
-	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 
@@ -672,7 +676,8 @@ int SMus_PitchBlend(int ch, int d0)
 	mcmd->d0=d0;
 //	mcmd->d1=d1;
 	
-	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 
@@ -690,7 +695,8 @@ int SMus_Controller(int ch, int d0, int d1)
 	mcmd->d0=d0;
 	mcmd->d1=d1;
 	
-	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 
@@ -708,7 +714,8 @@ int SMus_ProgramChange(int ch, int d0)
 	mcmd->d0=d0;
 //	mcmd->d1=d1;
 	
-	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 

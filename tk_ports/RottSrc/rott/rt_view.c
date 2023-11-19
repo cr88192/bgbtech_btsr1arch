@@ -237,6 +237,8 @@ void CalcProjection ( void )
 // get size of table
 //
 
+	length=0;
+
    memcpy(&length,ptr,sizeof(int));
    ptr+=sizeof(int);
    pangle=SafeMalloc(length*sizeof(int));
@@ -374,6 +376,8 @@ void DrawCPUJape
    {
    int width;
    int height;
+
+	width=0; height=0;
 
    CurrentFont = tinyfont;
    VW_MeasurePropString( YourComputerSucksString, &width, &height );

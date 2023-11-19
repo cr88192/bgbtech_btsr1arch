@@ -9,6 +9,8 @@
 
 #include <stdarg.h>
 
+#include <tkgdi/tkgdi.h>
+
 #ifndef BASEWIDTH
 #define BASEWIDTH SCREENWIDTH
 #define BASEHEIGHT SCREENHEIGHT
@@ -23,6 +25,7 @@ typedef signed int s32;
 // int	mb_used = 16;
 int		mb_used = 20;
 
+dt_scrpix *screen_tmp;
 
 void S_StartSong(int song, boolean loop)
 {
@@ -139,9 +142,10 @@ void I_ShutdownMusic(void)
 }
 #endif
 
-#if 0
+#if 1
 void I_SetMusicVolume(int volume)
 {
+	SMus_UpdateVolume();
 }
 #endif
 
@@ -286,7 +290,8 @@ byte* I_AllocLow (int length)
 {
     byte*	mem;
         
-    mem = (byte *)malloc (length);
+//    mem = (byte *)malloc (length);
+    mem = (byte *)tkgGlobalAlloc (length);
     memset (mem,0,length);
     return mem;
 }
@@ -357,6 +362,7 @@ void I_InitGraphics (void)
 	tk_con_disable();
 	
 	screen=malloc(BASEWIDTH*BASEHEIGHT*2);
+	screen_tmp=malloc(BASEWIDTH*BASEHEIGHT*2);
 	
 	vid_lastscreen=malloc(BASEWIDTH*BASEHEIGHT*2);
 	
@@ -399,6 +405,13 @@ void I_SetPalette (byte* palette)
 		cv=vid_clamp255(cv+4)>>3;
 		d_8to16table[i]=(cy<<10)|(cv<<5)|cu;
 #endif
+
+		cr+=4;
+		cg+=4;
+		cb+=4;
+		if(cr>255)cr=255;
+		if(cg>255)cg=255;
+		if(cb>255)cb=255;
 
 		d_8to16table[i]=
 			((cr<<7)&0x7C00)|
@@ -1906,6 +1919,89 @@ void I_DrawFramerate()
 #endif
 }
 
+// TKGDI_BITMAPINFOHEADER i_t_dibinfo;
+TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
+TKGHDC i_hDc;
+
+void I_InitTkGdi()
+{
+	if(i_dibinfo)
+		return;
+		
+//	i_dibinfo = &i_t_dibinfo;
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+
+//	i_dibinfo->biWidth=640;
+//	i_dibinfo->biHeight=400;
+
+//	i_dibinfo->biWidth=800;
+//	i_dibinfo->biHeight=600;
+
+	i_dibinfo->biBitCount=16;
+
+//	tk_printf("  1\n", hDc);
+
+	i_hDc=tkgCreateDisplay(i_dibinfo);
+
+#if 0
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+	
+	i_hDc=tkgCreateWindow(i_hDc, "Doom", 0, 160, 100, i_dibinfo);
+
+	tk_printf("  hDc=%d\n", i_hDc);
+#endif
+
+	i_dibinfo->biHeight=-200;
+}
+
+#if 1
+void I_FinishUpdate (void)
+{
+	int i, j, k;
+
+	I_InitTkGdi();
+
+	I_DrawFramerate();
+
+	if(!screen)
+		return;
+
+	if(vid_flashblend)
+//	if(0)
+	{
+//		screen_tmp
+
+		for(i=0; i<((BASEWIDTH*BASEHEIGHT)>>2); i++)
+		{
+			((u64 *)screen_tmp)[i]=VID_BlendFlash4x(
+				((u64 *)screen)[i], vid_flashblend);
+		}
+
+		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_tmp);
+	}else
+	{
+		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen);
+	}
+
+//	vid_frnum++;
+
+	IN_Commands();
+	
+	M_ClearBox(dirtybox);
+//	R_ClearCZBuf();
+	
+	for(i=0; i<25; i++)
+		r_colmask[i]=0;
+}
+#endif
+
+#if 0
 void I_FinishUpdate (void)
 {
 	u32 *conbufa;
@@ -1925,7 +2021,12 @@ void I_FinishUpdate (void)
 
 	__hint_use_egpr();
 
+//	I_InitTkGdi();
+
 	I_DrawFramerate();
+
+//	if(!screen)
+//		return;
 
 //	R_CellMarkBox(
 //		dirtybox[BOXLEFT],		dirtybox[BOXRIGHT],
@@ -2161,6 +2262,7 @@ void I_FinishUpdate (void)
 	for(i=0; i<25; i++)
 		r_colmask[i]=0;
 }
+#endif
 
 #if 0
 void I_FinishUpdate (void)

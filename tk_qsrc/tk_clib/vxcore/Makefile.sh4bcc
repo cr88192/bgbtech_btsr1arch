@@ -12,7 +12,7 @@ TK_LDEXTFS = -fqmul -ffpu_fpvsf2 -fxgpr_ena
 #	-fdobounds -fvskglobal
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fnowexify
 
-TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0 $(TK_LDEXTFS)
+TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0 -mBJX2 $(TK_LDEXTFS)
 # TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fqmul
 # TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fwexify
 # TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fnomovx -fnowexify
@@ -177,6 +177,7 @@ SRCS_TKGDI = \
 	tkrast/tkr_multi.c \
 	tk_gdi/tk_codec_cram.c \
 	tk_gdi/tk_ramavi.c \
+	tk_gdi/tk_qoilz_dec.c \
 	tk_gdi/tkg_display.c
 
 all: includes libs apps
@@ -193,7 +194,7 @@ libs2: FORCE
 libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libvxcore_bjx2.ril \
 	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril \
-	libtkgdi.bjx2.ril
+	libtkgdi.bjx2.ril libtkgl.bjx2.ril
 
 bins: tkshell.sys tkshdll.dll tkshell96.sys tkshell_rbd.sys
 
@@ -228,20 +229,27 @@ libcdll.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM_DLL)
 libtkgdi.bjx2.ril: $(SRCS_TKGDI) $(TKRA_SRCS)
 	$(CC) -o libtkgdi.bjx2.ril tkgdi_multi.c $(COPTS64)
 
+libtkgl.bjx2.ril: $(TKRA_SRCS)
+	$(CC) -o libtkgl.bjx2.ril tkgl_multi.c $(COPTS64)
+
 tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshell.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
+		tkshell.wdef \
 		$(COPTS64) $(TK_LDFL64)
 
 tkshell96.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshell96.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
+		tkshell.wdef \
 		$(COPTS96) $(TK_LDFL96)
 
 tkshdll.dll: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshdll.dll tkshdll_multi.c $(SRCS_TKSH_BS2) \
+		tkshell.wdef \
 		$(COPTS64) $(TK_LDFL64_DLL)
 
 tkshell_rbd.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshell_rbd.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
+		tkshell.wdef \
 		$(COPTS64) $(TK_LDFL64_RBD)
 
 FORCE:

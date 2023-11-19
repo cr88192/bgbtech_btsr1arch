@@ -119,6 +119,15 @@ void tkra_glTexImage2D(
 	TKRA_BindTexImg(ctx, img);
 }
 
+void tkra_glTexSubImage2D(
+	int target, int level,
+	int xoffset, int yoffset,
+	int width, int height,
+	int format, int type,
+	void *pixels )
+{
+}
+
 void tkra_glBindTexture(int target, int texture)
 {
 	TKRA_Context *ctx;

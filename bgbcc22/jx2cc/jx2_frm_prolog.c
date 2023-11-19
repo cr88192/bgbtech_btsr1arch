@@ -167,9 +167,108 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 	return(0);
 }
 
+/* Estimate permutation RAW/WAW cost.
+ * This cost may happens if a subsequent store overlaps with the same
+ * Cache lines as a preceding store.
+ */
+int BGBCC_JX2C_EmitFrameProlog_EstPermRawCost(int *rja, int *perm, int n)
+{
+	int ix0, ix1, ix0l, ix1l;
+	int pen;
+	int i, j, k;
+	
+	ix0l=-1;
+	ix1l=-1;
+	pen=0;
+	
+	for(i=0; i<n; i++)
+	{
+		j=rja[perm[i]];
+		k=512-j*4;
+		
+		if(k&16)
+		{
+			ix0=(k>>4)+1;
+			ix1=(k>>4)+0;
+		}else
+		{
+			ix0=(k>>4)+0;
+			ix1=(k>>4)+1;
+		}
+		
+		if((ix0==ix0l) || (ix1==ix1l))
+		{
+			pen++;
+		}
+		
+		ix0l=ix0;
+		ix1l=ix1;
+	}
+	return(pen);
+}
+
+/* Try to find the permutation that would give the fewest RAW stalls. */
+int BGBCC_JX2C_EmitFrameProlog_GenBestPerm(int *rja, int *perm)
+{
+	int pta[64], pba[64];
+	int d, db, seed;
+	int i0, i1;
+	int i, j, k, n;
+	
+	n=0; seed=0;
+	for(i=63; i>=0; i--)
+	{
+		j=i^2;
+		k=rja[j];
+		if(k<0)
+			continue;
+		pba[n++]=j;
+		seed=seed*251+k+1;
+	}
+	
+	if(n<2)
+	{
+		if(n)
+			memcpy(perm, pba, n*sizeof(int));
+		return(n);
+	}
+
+	db=BGBCC_JX2C_EmitFrameProlog_EstPermRawCost(rja, pba, n);
+	if(db==0)
+	{
+		memcpy(perm, pba, n*sizeof(int));
+		return(n);
+	}
+	
+	memcpy(pta, pba, n*sizeof(int));
+	
+	for(i=0; i<10; i++)
+	{
+		for(j=0; j<n; j++)
+		{
+			k=((seed>>16)&255)%n;
+			seed=seed*65521+1;
+			i0=pta[j];	i1=pta[k];
+			pta[j]=i1;	pta[k]=i0;
+		}
+
+		d=BGBCC_JX2C_EmitFrameProlog_EstPermRawCost(rja, pta, n);
+		if(d<db)
+		{
+			memcpy(pba, pta, n*sizeof(int));
+			db=d;
+		}
+	}
+
+	memcpy(perm, pba, n*sizeof(int));
+	return(n);
+}
+
 int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx, int fl, int *rfl2)
 {
+	int rja[64], perm[64];
+	int i0, i1, pn;
 	int i, j, k, n, fl2;
 
 //	if(	(ctx->optmode==BGBCC_OPT_SPEED) ||
@@ -185,6 +284,9 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 			k+=2;
 		if(fl&2)
 			k+=4;
+
+		for(i=0; i<64; i++)
+			rja[i]=-1;
 
 //		for(i=31; i>0; i--)
 		for(i=63; i>0; i--)
@@ -206,7 +308,9 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 				{
 					sctx->reg_save|=(3ULL<<(i-1));
 					k+=4;
+					rja[i]=k;
 					i--;
+//					rja[i]=k;
 					continue;
 				}
 			}
@@ -215,6 +319,7 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 			{
 				sctx->reg_save|=(1ULL<<i);
 				k+=2;
+				rja[i]=k;
 			}
 		}
 
@@ -254,6 +359,7 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 			}
 		}
 
+#if 0
 //		for(i=31; i>0; i--)
 		for(i=63; i>0; i--)
 		{
@@ -293,6 +399,57 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 				n++;
 			}
 		}
+#endif
+
+		pn=BGBCC_JX2C_EmitFrameProlog_GenBestPerm(rja, perm);
+		
+#if 1
+//		for(i=31; i>0; i--)
+//		for(i=63; i>0; i--)
+//		for(i0=63; i0>0; i0--)
+		for(i0=0; i0<pn; i0++)
+		{
+//			if(!(sctx->has_xgpr&1) && (i>=32))
+//				continue;
+//			if(!(sctx->has_bjx1egpr) && (i>=16))
+//				continue;
+//			if(i==15)
+//				continue;
+
+//			if(!(sctx->reg_vsave&((2ULL<<i)-1)))
+//				break;
+
+//			i=i0^2;
+			i=perm[i0];
+
+			if(rja[i]<0)
+				continue;
+
+			if(sctx->has_pushx2 && (i&1))
+//			if(0)
+			{
+				if((sctx->reg_vsave&(3ULL<<(i-1)))==(3ULL<<(i-1)))
+				{
+					sctx->reg_save|=(3ULL<<(i-1));
+					j=rja[i];
+					BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVX2,
+						BGBCC_SH_REG_R0+(i-1), BGBCC_SH_REG_SP, (k-j)*4);
+					n++;
+					i--;
+					continue;
+				}
+			}
+
+			if(sctx->reg_vsave&(1ULL<<i))
+			{
+				j=rja[i];
+				sctx->reg_save|=(1ULL<<i);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R0+i, BGBCC_SH_REG_SP, (k-j)*4);
+				n++;
+			}
+		}
+#endif
 		
 		if(n>=6)
 			fl2|=1;

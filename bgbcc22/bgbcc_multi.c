@@ -93,6 +93,14 @@
 #include "mm/dyll_metapath.c"
 #include "mm/dyll_metabin.c"
 
+#include "mm/cc_fmt_targa.c"
+#include "mm/cc_fmt_bmp.c"
+
+#include "mm/qoilz_dec.c"
+#include "mm/qoilz_enc.c"
+#include "mm/lcif_dec.c"
+#include "mm/lcif_enc.c"
+
 
 #include "ccxl/ccxl_cgif.c"
 #include "ccxl/ccxl_compile.c"

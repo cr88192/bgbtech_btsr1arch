@@ -395,7 +395,7 @@ static int	keyboxes[3];
 // a random number per tick
 static int	st_randomnumber;  
 
-
+byte	st_oddframe;		//BGB: Odd Frame
 
 // Massive bunches of cheat shit
 //  to keep it from being easy to figure them out.
@@ -1123,9 +1123,11 @@ void ST_drawWidgets(boolean refresh)
 
 }
 
+byte	st_firsttime_last;
+
 void ST_doRefresh(void)
 {
-
+	st_firsttime_last = st_firsttime;
     st_firsttime = false;
 
     // draw status bar background to off-screen buff
@@ -1143,10 +1145,17 @@ void ST_diffDraw(void)
 }
 
 byte	st_didsbar;
+byte	st_diddraweven;		//BGB: Odd Frame
 
 void ST_Drawer (boolean fullscreen, boolean refresh)
 {
-  
+//	st_oddframe	= !st_oddframe;
+
+//	if(!st_oddframe)
+
+	if(st_diddraweven == 3)
+		st_diddraweven = 0;
+
     st_statusbaron = (!fullscreen) || automapactive;
     st_firsttime = st_firsttime || refresh;
 
@@ -1158,14 +1167,14 @@ void ST_Drawer (boolean fullscreen, boolean refresh)
 		st_didsbar--;
 
     // If just after ST_Start(), refresh all
-    if (st_firsttime)
+//    if (st_firsttime)
+    if (st_firsttime || st_firsttime_last)
     {
 		ST_doRefresh();
 		st_didsbar = 8;
 	}
     // Otherwise, update as little as possible
     else ST_diffDraw();
-
 }
 
 void ST_loadGraphics(void)

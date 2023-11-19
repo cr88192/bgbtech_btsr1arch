@@ -9,10 +9,15 @@ AFLAGS =
 LNKOPT = 
 
 # LIBS=-lm -lvxcore_bjx2
-LIBS = -lvxcore_bjx2
+# LIBS = -lvxcore_bjx2
+LIBS = -lvxcore64 -ltkgdi
 
-# CFLAGS = -I. -mBJX2F -O2 -fwex3w -fwexj -Zz
-CFLAGS = -I. -mBJX2 -O2 -fwex3w -fwexj -Zz
+# CFLAGS = -I. -mBJX2 -Os -Zz
+# CFLAGS = -I. -mBJX2 -O2 -fwex3w -fwexj -Zz
+CFLAGS = -I. -mBJX2 -O2 -fwex3w -fwexj -fmulq -fnoshuffle -fldgbr -fptropt0 \
+	-Zz -fxgpr_ena -fxg2mode -fjcmpz # -fnowexify
+#	-Zz -fdobounds -fxgpr_ena # -fvskglobal # -fxg2mode # -fnowexify
+# CFLAGS = -I. -mBJX2 -O2 -fwex3w -fwexj -fnoshuffle -fldgbr -fptropt0 -Zz
 # CFLAGS = -I. -mBJX2F -O2 -Zz
 
 .EXTENSIONS:

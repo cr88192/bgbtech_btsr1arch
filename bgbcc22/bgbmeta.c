@@ -515,6 +515,76 @@ char *bgbcc_protos_c[] =
 	"__object a4, __object a5, __object a6, __object a7);\n",
 "__object __lvo_array_append_n(int n, ...);\n",
 
+"__fcomplex		__vnf_c2f_add(__fcomplex a, __fcomplex b);\n",
+"__fcomplex		__vnf_c2f_sub(__fcomplex a, __fcomplex b);\n",
+"__fcomplex		__vnf_c2f_mul(__fcomplex a, __fcomplex b);\n",
+"__fcomplex		__vnf_c2f_div(__fcomplex a, __fcomplex b);\n",
+"__dcomplex		__vnf_c2d_add(__dcomplex a, __dcomplex b);\n",
+"__dcomplex		__vnf_c2d_sub(__dcomplex a, __dcomplex b);\n",
+"__dcomplex		__vnf_c2d_mul(__dcomplex a, __dcomplex b);\n",
+"__dcomplex		__vnf_c2d_div(__dcomplex a, __dcomplex b);\n",
+"__vec2f		__vnf_v2f_add(__vec2f a, __vec2f b);\n",
+"__vec2f		__vnf_v2f_sub(__vec2f a, __vec2f b);\n",
+"__vec2f		__vnf_v2f_mul(__vec2f a, __vec2f b);\n",
+"__vec2f		__vnf_v2f_div(__vec2f a, __vec2f b);\n",
+"float			__vnf_v2f_dot(__vec2f a, __vec2f b);\n",
+"float			__vnf_v2f_cross(__vec2f a, __vec2f b);\n",
+
+"__vec2d		__vnf_v2d_add(__vec2d a, __vec2d b);\n",
+"__vec2d		__vnf_v2d_sub(__vec2d a, __vec2d b);\n",
+"__vec2d		__vnf_v2d_mul(__vec2d a, __vec2d b);\n",
+"__vec2d		__vnf_v2d_div(__vec2d a, __vec2d b);\n",
+"double			__vnf_v2d_dot(__vec2d a, __vec2d b);\n",
+"double			__vnf_v2d_cross(__vec2d a, __vec2d b);\n",
+"__quatf		__vnf_vqf_add(__quatf a, __quatf b);\n",
+"__quatf		__vnf_vqf_sub(__quatf a, __quatf b);\n",
+"__quatf		__vnf_vqf_mul(__quatf a, __quatf b);\n",
+"__quatf		__vnf_vqf_div(__quatf a, __quatf b);\n",
+"__vec3f		__vnf_v3f_add(__vec3f a, __vec3f b);\n",
+"__vec3f		__vnf_v3f_sub(__vec3f a, __vec3f b);\n",
+"__vec3f		__vnf_v3f_mul(__vec3f a, __vec3f b);\n",
+"__vec3f		__vnf_v3f_div(__vec3f a, __vec3f b);\n",
+"__vec3f		__vnf_v3f_cross(__vec3f a, __vec3f b);\n",
+"float			__vnf_v3f_dot(__vec3f a, __vec3f b);\n",
+"__vec4f		__vnf_v4f_add(__vec4f a, __vec4f b);\n",
+"__vec4f		__vnf_v4f_sub(__vec4f a, __vec4f b);\n",
+"__vec4f		__vnf_v4f_mul(__vec4f a, __vec4f b);\n",
+"__vec4f		__vnf_v4f_div(__vec4f a, __vec4f b);\n",
+"__vec4f		__vnf_v4f_cross(__vec4f a, __vec4f b);\n",
+"float			__vnf_v4f_dot(__vec4f a, __vec4f b);\n",
+"__vec3fx		__vnf_v3fx_add(__vec3fx a, __vec3fx b);\n",
+"__vec3fx		__vnf_v3fx_sub(__vec3fx a, __vec3fx b);\n",
+"__vec3fx		__vnf_v3fx_mul(__vec3fx a, __vec3fx b);\n",
+"__vec3fx		__vnf_v3fx_div(__vec3fx a, __vec3fx b);\n",
+"__vec3fx		__vnf_v3fx_cross(__vec3fx a, __vec3fx b);\n",
+"double			__vnf_v3fx_dot(__vec3fx a, __vec3fx b);\n",
+"__vec3fq		__vnf_v3fq_add(__vec3fq a, __vec3fq b);\n",
+"__vec3fq		__vnf_v3fq_sub(__vec3fq a, __vec3fq b);\n",
+"__vec3fq		__vnf_v3fq_mul(__vec3fq a, __vec3fq b);\n",
+"__vec3fq		__vnf_v3fq_div(__vec3fq a, __vec3fq b);\n",
+"__vec3fq		__vnf_v3fq_cross(__vec3fq a, __vec3fq b);\n",
+"float			__vnf_v3fq_dot(__vec3fq a, __vec3fq b);\n",
+"__m64			__m64_float2(float x, float y);\n",
+"__m128			__m128_float3(float x, float y, float z);\n",
+"__m128			__m128_float4(float x, float y, float z, float w);\n",
+"__vec2f		__v2f_float2(float x, float y);\n",
+"__vec3f		__v3f_float3(float x, float y, float z);\n",
+"__vec4f		__v4f_float4(float x, float y, float z, float w);\n",
+"__quatf		__vqf_float4(float x, float y, float z, float w);\n",
+"__vec3fq		__v3fq_float3(float x, float y, float z);\n",
+"__vec3fx		__v3fx_float3(double x, double y, double z);\n",
+"__vec4h		__v4h_float4(float x, float y, float z, float w);\n",
+"__fcomplex		__c2f_float2(float x, float y);\n",
+"__m128			__m128_double2(double x, double y);\n",
+"__vec2d		__v2d_double2(double x, double y);\n",
+"__dcomplex		__c2d_double2(double x, double y);\n",
+"__vec3fq		__vnf_v3fq_from_v3f(__vec3f a);\n",
+"__vec3f		__vnf_v3f_from_v3fq(__vec3fq a);\n",
+"__vec4h		__vnf_v4h_from_v4f(__vec4f a);\n",
+"__vec4f		__vnf_v4f_from_v4h(__vec4h a);\n",
+"__vec3fx		__vnf_v3fx_from_v3f(__vec3f a);\n",
+"__vec3f		__vnf_v3f_from_v3fx(__vec3fx a);\n",
+
 NULL
 };
 
@@ -1086,6 +1156,391 @@ BCCX_Node *BGBCC_LoadCSourceAST(char *name)
 }
 #endif
 
+byte bgbcc_dfl_pal256[1024];
+byte bgbcc_dfl_pal16[64];
+byte bgbcc_dfl_pal16t[64];
+byte bgbcc_dfl_pal4[16];
+byte bgbcc_dfl_pal4t[16];
+byte bgbcc_dfl_pal2[8];
+byte bgbcc_dfl_pal2t[8];
+
+int BGBCC_LoadConvResource_SetupPal()
+{
+	byte *tbuf;
+	byte *pal, *pal256;
+	int cr, cg, cb;
+	int ch, cm, cl;
+	int i, j, k;
+	
+	if(bgbcc_dfl_pal256[15*4+0])
+		return(0);
+	
+	pal=bgbcc_dfl_pal256;
+	for(i=0; i<16; i++)
+	{
+		for(j=0; j<16; j++)
+		{
+			ch=j*16;
+			cl=ch>>2;
+			if(i&8)
+				{ cl=(ch*5)/8; }
+			cr=(i&4)?ch:cl;
+			cg=(i&2)?ch:cl;
+			cb=(i&1)?ch:cl;
+			if(i==0)
+				{ cr=ch; cg=ch; cb=ch; }
+			if((i==7) || (i==8) || (i==15))
+			{
+				cl=(ch*7)/8;
+				cr=ch;	cg=ch;	cb=ch;
+				if(i==7)	cg=cl;
+				if(i==8)	cb=cl;
+				if(i==15)	cr=cl;
+			}
+			pal[(i*16+j)*4+0]=cr;
+			pal[(i*16+j)*4+1]=cg;
+			pal[(i*16+j)*4+2]=cb;
+			pal[(i*16+j)*4+3]=255;
+		}
+	}
+
+	for(i=0; i<3; i++)
+	{
+		for(j=1; j<16; j++)
+		{
+			ch=j*16;
+			cm=(ch*5)/8;
+			cl=(ch*3)/8;
+			if(i==0)
+				{ cr=ch; cg=cm; cb=cl; }
+			if(i==1)
+				{ cr=cm; cg=ch; cb=cl; }
+			if(i==2)
+				{ cr=cl; cg=cm; cb=ch; }
+			pal[(j*16+i+1)*4+0]=cr;
+			pal[(j*16+i+1)*4+1]=cg;
+			pal[(j*16+i+1)*4+2]=cb;
+			pal[(j*16+i+1)*4+3]=255;
+		}
+	}
+
+	pal256=pal;
+
+	pal=bgbcc_dfl_pal16;
+	for(i=0; i<16; i++)
+	{
+		if(i&8)
+			{ ch=0xFF; cl=0x55; }
+		else
+			{ ch=0xAA; cl=0x00; }
+		cr=(i&4)?ch:cl;
+		cg=(i&2)?ch:cl;
+		cb=(i&1)?ch:cl;
+		pal[i*4+0]=cr;
+		pal[i*4+1]=cg;
+		pal[i*4+2]=cb;
+		pal[i*4+3]=255;
+
+		pal256[(i*16+0)*4+0]=cr;
+		pal256[(i*16+0)*4+1]=cg;
+		pal256[(i*16+0)*4+2]=cb;
+		pal256[(i*16+0)*4+3]=255;
+	}
+
+	pal256[(8*16+0)*4+0]=0;
+	pal256[(8*16+0)*4+1]=0;
+	pal256[(8*16+0)*4+2]=0;
+	pal256[(8*16+0)*4+3]=0;
+
+	for(i=0; i<64; i++)
+		bgbcc_dfl_pal16t[i]=bgbcc_dfl_pal16[i];
+
+	bgbcc_dfl_pal16t[13*4+0]=0;
+	bgbcc_dfl_pal16t[13*4+1]=0;
+	bgbcc_dfl_pal16t[13*4+2]=0;
+	bgbcc_dfl_pal16t[13*4+3]=0;
+
+	pal=bgbcc_dfl_pal4;
+	for(i=0; i<4; i++)
+	{
+		if(i==0)	ch=0x00;
+		if(i==1)	ch=0x55;
+		if(i==2)	ch=0xAA;
+		if(i==3)	ch=0xFF;
+		pal[i*4+0]=ch;
+		pal[i*4+1]=ch;
+		pal[i*4+2]=ch;
+		pal[i*4+3]=255;
+	}
+
+	pal=bgbcc_dfl_pal2;
+	for(i=0; i<2; i++)
+	{
+		if(i==0)	ch=0x00;
+		if(i==1)	ch=0xFF;
+		pal[i*4+0]=ch;
+		pal[i*4+1]=ch;
+		pal[i*4+2]=ch;
+		pal[i*4+3]=255;
+	}
+
+	pal=bgbcc_dfl_pal4t;
+	pal[0*4+0]=0x00; pal[0*4+1]=0x00; pal[0*4+2]=0x00; pal[0*4+3]=255;
+	pal[1*4+0]=0xFF; pal[1*4+1]=0xFF; pal[1*4+2]=0xFF; pal[1*4+3]=255;
+	pal[2*4+0]=0x7F; pal[2*4+1]=0x7F; pal[2*4+2]=0x7F; pal[2*4+3]=255;
+	pal[3*4+0]=0x00; pal[3*4+1]=0x00; pal[3*4+2]=0x00; pal[3*4+3]=0;
+
+#if 1
+	tbuf=malloc(16*16*8);
+	k=BGBCC_Img_EncodeImageBMP8(
+		tbuf, bgbcc_dfl_pal256, 16, 16, bgbcc_dfl_pal256);
+	BGBCC_StoreFile("dump/rsrc_pal256.bmp", tbuf, k);
+
+	k=BGBCC_Img_EncodeImageBMP16(
+		tbuf, bgbcc_dfl_pal256, 16, 16);
+	BGBCC_StoreFile("dump/rsrc_pal256b.bmp", tbuf, k);
+
+	k=BGBCC_Img_EncodeImageBMP32(
+		tbuf, bgbcc_dfl_pal256, 16, 16);
+	BGBCC_StoreFile("dump/rsrc_pal256c.bmp", tbuf, k);
+
+	k=BGBCC_Img_EncodeImageBMP4(
+		tbuf, bgbcc_dfl_pal256, 16, 16, bgbcc_dfl_pal16);
+	BGBCC_StoreFile("dump/rsrc_pal16.bmp", tbuf, k);
+
+	k=BGBCC_Img_EncodeImageBMP2(
+		tbuf, bgbcc_dfl_pal4, 4, 1, bgbcc_dfl_pal4);
+	BGBCC_StoreFile("dump/rsrc_pal4.bmp", tbuf, k);
+#endif
+
+	return(1);
+}
+
+byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
+	char *cnvstr, int *rsz, fourcc *rfcc)
+{
+	char cnv[16], pvar[8], pval[64];
+	char *cs, *ct;
+	byte *ibuf, *obuf;
+	int qlvl;
+	int xs, ys, sz1, fl;
+
+	cs=cnvstr;
+	ct=cnv;
+	while(*cs && (*cs!=','))
+		*ct++=*cs++;
+	*ct++=0;
+	
+	qlvl=0;
+	
+	while(*cs==',')
+	{
+		cs++;
+		ct=pvar;
+		while(*cs && *cs!='=' && *cs!=',')
+			*ct++=*cs++;
+		*ct++=0;
+		if(*cs=='=')
+		{
+			ct=pval;
+			while(*cs && *cs!='=' && *cs!=',')
+				*ct++=*cs++;
+			*ct++=0;
+			
+			if(!bgbcc_stricmp(pvar, "q"))
+				qlvl=atoi(pval);
+		}
+	}
+
+	if(	!bgbcc_stricmp(cnv, "bmp1") ||
+		!bgbcc_stricmp(cnv, "bmp2") ||
+		!bgbcc_stricmp(cnv, "bmp4") ||
+		!bgbcc_stricmp(cnv, "bmp8") ||
+		!bgbcc_stricmp(cnv, "bmp1a") ||
+		!bgbcc_stricmp(cnv, "bmp2a") ||
+		!bgbcc_stricmp(cnv, "bmp4a") ||
+		!bgbcc_stricmp(cnv, "bmp8a") ||
+		!bgbcc_stricmp(cnv, "bmp2ta") ||
+		!bgbcc_stricmp(cnv, "bmp2t") ||
+		!bgbcc_stricmp(cnv, "bmp4ta") ||
+		!bgbcc_stricmp(cnv, "bmp4t") ||
+		!bgbcc_stricmp(cnv, "bmp16") ||
+		!bgbcc_stricmp(cnv, "bmp16a") )
+	{
+		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
+		if(!ibuf)
+			return(NULL);
+		
+		BGBCC_LoadConvResource_SetupPal();
+		
+		obuf=malloc(xs*ys*2);
+
+		if(!bgbcc_stricmp(cnv, "bmp8"))
+			sz1=BGBCC_Img_EncodeImageBMP8(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
+		if(!bgbcc_stricmp(cnv, "bmp4"))
+			sz1=BGBCC_Img_EncodeImageBMP4(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
+		if(!bgbcc_stricmp(cnv, "bmp2"))
+			sz1=BGBCC_Img_EncodeImageBMP2(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal4);
+		if(!bgbcc_stricmp(cnv, "bmp1"))
+			sz1=BGBCC_Img_EncodeImageBMP1(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal2);
+
+		if(!bgbcc_stricmp(cnv, "bmp8a"))
+			sz1=BGBCC_Img_EncodeImageBMP8A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
+		if(!bgbcc_stricmp(cnv, "bmp4a"))
+			sz1=BGBCC_Img_EncodeImageBMP4A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
+		if(!bgbcc_stricmp(cnv, "bmp2a"))
+			sz1=BGBCC_Img_EncodeImageBMP2A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal4);
+		if(!bgbcc_stricmp(cnv, "bmp1a"))
+			sz1=BGBCC_Img_EncodeImageBMP1A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal2);
+
+		if(!bgbcc_stricmp(cnv, "bmp4t"))
+			sz1=BGBCC_Img_EncodeImageBMP4(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
+		if(!bgbcc_stricmp(cnv, "bmp4ta"))
+			sz1=BGBCC_Img_EncodeImageBMP4A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
+
+		if(!bgbcc_stricmp(cnv, "bmp2t"))
+			sz1=BGBCC_Img_EncodeImageBMP2(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal4t);
+		if(!bgbcc_stricmp(cnv, "bmp2ta"))
+			sz1=BGBCC_Img_EncodeImageBMP2A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal4t);
+
+		if(!bgbcc_stricmp(cnv, "bmp16"))
+			sz1=BGBCC_Img_EncodeImageBMP16(
+				obuf, ibuf, xs, ys);
+		if(!bgbcc_stricmp(cnv, "bmp16a"))
+			sz1=BGBCC_Img_EncodeImageBMP16A(
+				obuf, ibuf, xs, ys);
+
+		*rfcc=BGBCC_FMT_BMP;
+		*rsz=sz1;
+		return(obuf);
+	}
+	
+	if(	!bgbcc_stricmp(cnv, "qoi") ||
+		!bgbcc_stricmp(cnv, "qoli") )
+	{
+		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
+		if(!ibuf)
+			return(NULL);
+		
+		fl=0;
+		if(!bgbcc_stricmp(cnv, "qoli"))
+			fl|=1;
+		
+		fl|=(qlvl&7)<<1;
+		
+		obuf=malloc(xs*ys*2);
+		sz1=QOI_EncodeImageBuffer(obuf, ibuf, xs, ys, fl);
+		
+		*rfcc=BGBCC_FMT_QOIF;
+		*rsz=sz1;
+		return(obuf);
+	}
+	
+	return(NULL);
+}
+
+int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name)
+{
+	char tbuf[256];
+	char tb1[256], tb2[256], tbcnv[64];
+	char *cs, *ct;
+	FILE *fd;
+	byte *buf, *buf1;
+	u32 lang, lang1;
+	int sz, sz1;
+	
+	fd=fopen(name, "rt");
+	if(!fd)
+		return(-1);
+	while(!feof(fd))
+	{
+		tbuf[0]=0;
+		fgets(tbuf, 255, fd);
+		if(!tbuf[0])
+			continue;
+		if((tbuf[0]=='\r') || (tbuf[0]=='\n'))
+			continue;
+		if(tbuf[0]=='/')
+			continue;
+		
+		cs=tbuf;
+		ct=tb1;
+
+		while(*cs && (*cs<=' '))
+			cs++;
+		while(*cs && (*cs>' ') && (*cs!='='))
+		{
+			*ct++=*cs++;
+		}
+		*ct++=0;
+
+		while(*cs && (*cs<=' '))
+			cs++;
+		if(*cs=='=')
+		{
+			cs++;
+			while(*cs && (*cs<=' '))
+				cs++;
+			ct=tb2;
+			while(*cs && (*cs>' '))
+			{
+				*ct++=*cs++;
+			}
+			*ct++=0;
+
+			tbcnv[0]=0;
+			while(*cs && (*cs<=' '))
+				cs++;
+			if(*cs)
+			{
+				ct=tbcnv;
+				while(*cs && (*cs>' '))
+				{
+					*ct++=*cs++;
+				}
+				*ct++=0;
+			}
+
+			lang=BGBCP_LangForName(tb2);
+
+			buf=bgbcc_loadfile2(tb2, &sz);
+			if(buf)
+			{
+				if(tbcnv[1])
+				{
+					buf1=BGBCC_LoadConvResource(buf, sz, lang,
+						tbcnv, &sz1, &lang1);
+					
+					if(buf1)
+					{
+						BGBCC_CCXL_AddResourceData(ctx,
+							tb1, buf1, sz1, lang1);
+						free(buf1);
+						continue;
+					}
+				}
+			
+				BGBCC_CCXL_AddResourceData(ctx,
+					tb1, buf, sz, lang);
+			}
+			continue;
+		}
+	}
+	return(0);
+}
+
 #if 1
 int BGBCC_LoadCSourcesCCXL(
 	char **names, int nnames,
@@ -1255,7 +1710,9 @@ int BGBCC_LoadCSourcesCCXL(
 			(lang==BGBCC_FMT_LUMP) ||
 			(lang==BGBCC_FMT_WAV) ||
 			(lang==BGBCC_FMT_BMP) ||
-			(lang==BGBCC_FMT_AVI) )
+			(lang==BGBCC_FMT_AVI) ||
+			(lang==BGBCC_FMT_QOIF) ||
+			(lang==BGBCC_FMT_LCIF) )
 		{
 			buf=bgbcc_loadfile2(names[i], &sz);
 			if(buf)
@@ -1263,6 +1720,12 @@ int BGBCC_LoadCSourcesCCXL(
 				BGBCC_CCXL_AddResourceData(ctx,
 					names[i], buf, sz, lang);
 			}
+			continue;
+		}
+
+		if(lang==BGBCC_FMT_WDEF)
+		{
+			BGBCC_LoadWDef(ctx, names[i]);
 			continue;
 		}
 

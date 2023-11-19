@@ -327,4 +327,6 @@ void CheckForSyncCheck ( void );
 
 int GamePacketSize( void );
 
+int MaxSpeedForCharacter(playertype *pstate);
+
 #endif

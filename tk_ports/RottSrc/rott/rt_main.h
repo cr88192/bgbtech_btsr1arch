@@ -144,8 +144,8 @@ void UpdateGameObjects ( void );
 extern int programlocation;
 #endif
 
-extern  int polltime;
-extern  int oldpolltime;
+extern  volatile int polltime;
+extern  volatile int oldpolltime;
 extern  volatile int oldtime;
 void PauseLoop ( void );
 #if SAVE_SCREEN

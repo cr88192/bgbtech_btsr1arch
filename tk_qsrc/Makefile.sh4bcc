@@ -45,7 +45,7 @@ LDFLAGS=$(TK_LDFL) -lvxcore
 
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
 	-fqmul -fptropts -ffpu_fpvsf2 -fldgbr \
-	-fxgpr_ena -fnoshuffle -fjcmp -fxg2mode
+	-fxgpr_ena -fnoshuffle -fjcmpz -fxg2mode
 
 # -ffpu_fpimm -fldtex 
 # -fxg2mode
@@ -65,7 +65,7 @@ CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -Os
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2
-LDFLAGS64=$(TK_LDFL) -lvxcore64
+LDFLAGS64=$(TK_LDFL) -lvxcore64 -ltkgdi
 
 GL_CFLAGS64	= $(CFLAGS64) /DGLQUAKE
 
@@ -241,7 +241,9 @@ GLQUAKE_CORESRCS = \
 	q1base/snd_dma.c \
 	q1base/snd_mem.c \
 	q1base/snd_mix.c \
-	q1base/snd_btsh4.c
+	q1base/snd_tkgdi.c
+
+#	q1base/snd_btsh4.c
 
 GLQUAKE_SRCS = \
 	$(GLQUAKE_CORESRCS)			\
@@ -274,6 +276,7 @@ GLQUAKE_TKRA_SRCS = \
 	tkrast/tkr_multi.c			\
 	q1base/vid_btsh4_tkra.c		\
 
+
 DHRY_SRCS =			\
 	dhry/dhry_1.c	\
 	dhry/dhry_2.c
@@ -301,6 +304,7 @@ quake_b64b.exe: $(SQUAKE_SRCS)
 glquake_b64b.exe: $(GLQUAKE_SRCS)
 	$(CC) $(GL_CFLAGS64) -o $@ $(GLQUAKE_SRCS) $(LDFLAGS64)
 
+# glquake_tkra_b64b.exe: $(GLQUAKE_TKRA_SRCS)
 glquake_tkra_b64b.exe: $(GLQUAKE_TKRA_SRCS) $(TKRA_SRCS)
 	$(CC) $(GL_CFLAGS64) -o $@ $(GLQUAKE_TKRA_SRCS) $(LDFLAGS64) -DUSE_TKRA
 

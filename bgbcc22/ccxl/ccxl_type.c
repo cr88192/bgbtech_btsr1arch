@@ -2074,10 +2074,17 @@ bool BGBCC_CCXL_TypeValueObjectP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
 	BGBCC_CCXL_LiteralInfo *obj;
+	ccxl_type ty2;
 	int i;
 
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 		return(false);
+	
+	if(BGBCC_CCXL_TypeIsTypedefP(ctx, ty))
+	{
+		BGBCC_CCXL_TypeGetTypedefType(ctx, ty, &ty2);
+		return(BGBCC_CCXL_TypeValueObjectP(ctx, ty2));
+	}
 	
 	i=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
 	if(i<16)
@@ -3398,6 +3405,7 @@ ccxl_status BGBCC_CCXL_TypeDerefType(
 		}
 	
 		i=BGBCC_CCXL_TypeFromOverflow(ctx, &tty, ovf);
+		BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
 		*rdty=tty;
 		return(i);
 	}

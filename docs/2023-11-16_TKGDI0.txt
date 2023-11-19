@@ -1,0 +1,323 @@
+TKGDI (TestKern Graphics Device Interface)
+* Abstract hardware-level interfaces to graphics and audio devices.
+* Basic Image Loading/Saving
+** For now, assume BMP/DIB, TGA, etc
+** Possibly also PNG and JPEG
+* Basic low-level window management.
+** Each window will be assumed to be a bitmap-backed drawable object.
+** Will not address individual GUI widgets (program will be responsible for UI widgets).
+* Windows and Devices will be accessed via handles.
+** Handles will implicitly know what sort of handle they are.
+* Bitmap graphics will be defined using a TKGDI_BITMAPINFOHEADER structure.
+** Will serve a similar function to that in the WinGDI.
+* Will define several native pixel formats:
+** RGB555A
+** RGBA32 (32-bit, aarrggbb)
+** UTX2
+** RGBI (16-color, 4-bpp)
+*** Non-Planar, 2 pixels per byte.
+
+For full-screen programs, there would be calls for setting up the screen and getting a screen handle.
+* For GUI programs, calls would be used instead to create a window (getting a handle to the window).
+* UI events would be handled via a polling-driven message-pump interface.
+** Possibly consider a PollSleep command?...
+** Would cause the calling program to sleep until an event arrives.
+
+TKBMP
+* Basic case will be a normal DIB Bitmap
+** BMP, TGA, etc, can be differentiated via magic numbers.
+* Mat also support UTX2 (with optional LZ compression)
+* biCompression:
+** 0 / '    ' | 'RGBA': Uncompressed RGBA
+*** biBitcount=16, biPlanes=1: RGB555A
+*** biBitcount=24, biPlanes=1: RGB24
+*** biBitcount=32, biPlanes=1: RGBA32
+*** biBitcount=4, biPlanes=1: Packed RGBI
+*** biBitcount=2, biPlanes=1: 4-color
+*** biBitcount=1, biPlanes=1: Monochrome
+** 'RGL3': RP2 Compressed RGBA
+** 'RGL4': LZ4 Compressed RGBA
+** 'UTX2': Raw UTX2
+** 'U2L3': RP2 Compressed UTX2
+** 'U2L4': LZ4 Compressed UTX2
+
+
+=== tkgGlobalAlloc ===
+
+ void *tkgGlobalAlloc(size_t size);
+ TKGSTATUS tkgGlobalFree(void *obj);
+
+Where tkgGlobalAlloc() will allocate memory in an area that may be shared with TKGDI, and tkgGlobalFree() will free said shared memory.
+
+Note that memory allocated via other means, such as malloc or mmap, may not necessarily be accessible from TKGDI.
+
+
+=== tkgBlitImage ===
+
+ TKGSTATUS tkgBlitImage(TKGHDC dev, int xoffs, int yoffs,
+     TKGDI_BITMAPINFOHEADER *info, void *data);
+
+xoffs/yoffs give the relative offset to blit the image.
+Info describes the format and resolution of the image to blit.
+Will copy entire source image to destination if possible.
+
+The data argument is to be ideally to global memory.
+
+
+=== tkgBlitSubImage ===
+
+ TKGSTATUS tkgBlitSubImage(TKGHDC dev, int xodev, int yodev, 
+     TKGDI_BITMAPINFOHEADER *info, void *data,
+     int xosrc, int yosrc, int xssrc, int yssrc);
+
+Similar to tkgBlitImage, but may perform a "crop" operation from source image.
+
+The data argument is to be ideally to global memory.
+
+
+=== tkgQueryDisplay ===
+
+ TKGSTATUS tkgQueryDisplay(
+     TKGHDC dev,		TKGFOURCC parm,
+     void *ifmt,		void *ofmt);
+
+Query a parameter about the Display, where parm will give the property to be queried. The ifmt and ofmt parameters may give pointers to structures to pass in and out response data.
+
+This will be given a handle to the device or window being queried.
+
+If ifmt or ofmt are non-null, they are to point to sharable memory.
+
+
+=== tkgQueryCreateDisplay ===
+
+ TKGSTATUS tkgQueryCreateDisplay(
+     TKGDI_BITMAPINFOHEADER *ifmt,
+     TKGDI_BITMAPINFOHEADER *ofmt);
+
+Query primary display device if a display with a given format can be created.
+This will be a wrapper over tkgQueryDisplay, however, this call will be preferred over using tkgQueryDisplay directly.
+
+* If ifmt is NULL, Fetch the current screen mode.
+* If ofmt is NULL, Return Status based on if ifmt is a valid mode.
+* If both are non-null, try to find a mode similar to ifmt, and then fill the parameters in ofmt.
+
+
+=== tkgPollEvent ===
+
+ TKGSTATUS tkgPollEvent(TKGHDC dev, TKGDI_EVENT *imsg)
+
+Poll if a new event is available from the device.
+
+
+=== tkgPushEvent ===
+
+ TKGSTATUS tkgPushEvent(TKGHDC dev, TKGDI_EVENT *imsg)
+
+Push an event out to the device.
+
+
+=== tkgTryMapFrameBuffer ===
+
+ void *tkgTryMapFrameBuffer(TKGHDC dev,
+    TKGDI_BITMAPINFOHEADER *info);
+
+Try to fetch the address of a shared memory buffer which may be used as a framebuffer to draw into the window or device. Info will describe the format of the framebuffer being requested.
+
+If a matching framebuffer can't be provided, this call may return NULL. Note that a window or device will not necessarily support this buffer, in which case tkgBlitImage or similar will be needed instead.
+
+Note that this buffer will only be valid during a single frame.
+Subsequent calls on subsequent frames may return a different buffer.
+
+Note that the info should match the parameters that were used to create the window.
+
+
+=== tkgMapReleaseFrameBuffer ===
+
+ TKGSTATUS tkgMapReleaseFrameBuffer(TKGHDC dev,
+     TKGDI_BITMAPINFOHEADER *info, void *ptr);
+
+Release a buffer previously gained from tkgTryMapFrameBuffer.
+This is to be done when the drawing operation has finished, and the buffer's contents are to be displayed.
+
+
+=== tkgMapFlipFrame ===
+
+TKGSTATUS tkgMapFlipFrame(TKGHDC dev);
+
+Signals that the drawing operations for this frame are now complete, and anything drawn into the mapped buffer should be made visible. The buffer is to be released before this function is called.
+
+
+=== tkgCreateDisplay ===
+
+ TKGHDC tkgCreateDisplay(TKGDI_BITMAPINFOHEADER *info);
+
+Create a Display with the requested mode.
+* Returns TKGHDC_NULL if the display can't be created.
+* If running in a GUI, this may create a basic window instead of modifying the display mode.
+
+
+=== tkgCreateWindow ===
+
+ TKGHDC tkgCreateWindow(
+     TKGHDC hDev,
+     char *title,
+     u64 style,
+     int x_org,
+     int y_org,
+     TKGDI_BITMAPINFOHEADER *info);
+
+Create a window.
+* hDev will give the parent context or display.
+* title will give a title-bar name.
+* style will give flags for the window style.
+* x_org and y_org will define a window location.
+* info will describe the requested format of the window's contents.
+
+Each window may be seen as a movable BITMAP image, with a bitmap backing buffer holding the window contents. The info may be used to request the formats of this buffer.
+
+THe actual format of this buffer may depend on the underlying display. The window may not necessarily display more detail than the least common denominator of the requested window format and the underlying display.
+
+
+Note that if a window is created with biCompression set to 'text', the created window will be a text console. The created window resolution will not necessarily match that given by the by the info's dimensions. If the width and height are 0, this will create an 80x25 console in the default console font.
+
+
+=== tkgDestroyDisplay ===
+
+ TKGSTATUS tkgDestroyDisplay(TKGHDC dev);
+
+Destroy a previously created display or window.
+
+
+=== tkgModifyDisplay ===
+
+ TKGSTATUS tkgModifyDisplay(
+     TKGHDC dev, TKGFOURCC parm,
+     void *ifmt, void *ofmt);
+
+Modify a parameter for a given display or window.
+
+
+=== tkgResizeDisplay ===
+
+ TKGSTATUS tkgResizeDisplay(TKGHDC dev,
+     TKGDI_BITMAPINFOHEADER *info);
+
+Attempt to change the size or display parameters of a window or display.
+Display contents will be in an undefined state following this operation.
+
+
+=== tkgDrawString ===
+
+ TKGSTATUS tkgDrawString(TKGHDC dev, int xo_dev, int yo_dev,
+     char *text, TKGHFONT font, long long mode);
+
+Draw a string into a display. In a bitmap display, xo and yo will give the location within the window to draw the string, with a font handle and mode defining the style of the string to be drawn.
+
+If the target is a text console, then behavior will depend on the location:
+* If xo and yo are negative, this will print the string to the console at the current location. The cursor position will be updated following this change.
+* Else, they will be interpreted as a location in the window (in character cells). The string will be drawn at that location, without updating the cursor location.
+
+Note that the font may be NULL and the mode zero with a text console. The current text style in the console will be used for drawing the text.
+
+
+
+=== tkgCreateAudioDevice ===
+
+ TKGHSND tkgCreateAudioDevice(TKGHDC dev,
+     TKGFOURCC clz, TKGDI_WAVEFORMATEX *info);
+
+Create an audio device.
+
+The clz gives the class of audio device, with 'auds' for a PCM output device.
+
+The info gives the format of the audio device to be created. This will define the parameters in a roughly similar way to the RIFF WAVE format.
+
+One may also direct MIDI commands at an audio output device.
+
+
+=== tkgDestroyAudioDevice ===
+
+ TKGSTATUS tkgDestroyAudioDevice(TKGHSND dev);
+
+Destroy a previously created audio device.
+
+
+=== tkgModifyAudioDevice ===
+
+ TKGSTATUS tkgModifyAudioDevice(
+     TKGHSND dev,   TKGFOURCC parm,
+     void *ifmt,    void *ofmt);
+
+Modify a parameter for the audio device.
+
+If parm is 'mcmd', then ifmt will give a MIDI command in the form of a TKGDI_MIDI_COMMAND structure.
+
+
+=== tkgQueryAudioDevice ===
+
+TKGSTATUS tkgQueryAudioDevice(
+     TKGHSND dev,   TKGFOURCC parm,
+     void *ifmt,    void *ofmt);
+
+Query a parameter for the audio device.
+
+
+=== tkgWriteSamples ===
+
+ TKGSTATUS tkgWriteSamples(
+     TKGHSND dev, void *buffer, int cnt, int ovcnt);
+
+Send audio samples to the device. The format of the samples will depend on the format the device was created as.
+
+The cnt argument gives the logical number of samples being written to the device. The count should be roughly proportional to the number of samples that will have been played within the logical time-step.
+
+The ovcnt argument gives the number of samples along with any "overmix" samples. The use of overmix helps reduce the occurence of audio artifacts in the case where there are delays before more samples can be written. If this is the same as cnt, then there is no overmix.
+
+=== tkgDeviceMidiCommand ===
+
+ TKGSTATUS tkgDeviceMidiCommand(
+     TKGHSND dev, TKGDI_MIDI_COMMAND *mcmd);
+
+Send a MIDI command to a device.
+This command will be passed in a TKGDI_MIDI_COMMAND structure.
+This function is a wrapper over tkgModifyAudioDevice.
+
+ struct TKGDI_MIDI_COMMAND_s {
+ byte op;	//operation
+ byte ch;	//channel
+ byte d0;	//first parameter
+ byte d1;	//second parameter
+ u32 u0;	//first large parameter
+ u32 u1;	//second large parameter
+ };
+
+
+Op:
+* 0: NoteOff
+** ch=channel, d0=note, d1=volume
+* 1: NoteOn
+** ch=channel, d0=note, d1=volume
+* 2: PitchBlend
+** ch=channel, d0=note
+* 3: Controller
+** ch=channel, d0=parameter, d1=value
+* 4: ProgramChange
+** ch=channel, d0=instrument
+
+* 16, Set FM Parameter
+** d0=Instrument
+** d1=Index
+** u0=Value
+* 17, Special Parameter
+** d0=0: Reset
+** d0=1: Master Volume
+
+
+=== TKGL ===
+
+Likely, TKGDI should also specify a way to create and bind a TKRA-GL Context.
+* tkglSwapBuffers()
+** This would now manage any necessary blit operation.
+
+Likely also calls for converting images between Bitmap formats, ...
+* Would invoke codecs as necessary.

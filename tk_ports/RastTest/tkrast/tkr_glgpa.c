@@ -15,6 +15,7 @@ const struct tkra_glfunc_s tkra_glfuncs[]={
 { "glEnd",					tkra_glEnd },
 
 { "glTexImage2D",			tkra_glTexImage2D },
+{ "glTexSubImage2D",		tkra_glTexSubImage2D },
 { "glBindTexture",			tkra_glBindTexture },
 { "glTexParameterf",		tkra_glTexParameterf },
 { "glTexParameteri",		tkra_glTexParameteri },

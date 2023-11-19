@@ -2651,6 +2651,8 @@ void CP_OrderInfo
 	int key;
 	boolean newpage;
 
+	key = 0;
+
 	maxpage = W_GetNumForName( "ORDRSTOP" ) - W_GetNumForName( "ORDRSTRT" ) - 2;
 	newpage = false;
 	page = 1;
@@ -3458,6 +3460,8 @@ void QuickSaveGame (void)
 
 	// Create the proper file name
 
+	buf=NULL;
+
 	rt_itoa(quicksaveslot,&loadname[7],16);
 	loadname[8]='.';
 
@@ -3521,6 +3525,9 @@ void UndoQuickSaveGame (void)
 	char	loadname[45]="ROTTGAM0.ROT";
 	char	filename[128];
 	int length;
+
+
+	buf=NULL;
 
 	if (quicksaveslot!=-1)
 		{
@@ -4426,6 +4433,10 @@ int CalibrateJoystick
 	int  checkbits;
 	int  status;
 	boolean done;
+
+	xmin=0; ymin=0;
+	xmax=0; ymax=0;
+
 
 	if ( joypadenabled )
 		{
@@ -5779,6 +5790,8 @@ boolean SliderMenu
 	int			eraseh;
 	int			block;
 
+	width=0; height=0;
+
 	SetAlternateMenuBuf();
 	ClearMenuBuf();
 	SetMenuTitle( title );
@@ -6351,6 +6364,8 @@ void DrawOptionDescription( char ** options, int w )
 	char	*string;
 	font_t *temp;
 
+	width=0; height=0;
+
 	EraseMenuBufRegion (25, 4, 287 - 25, 10 );
 
 	temp = CurrentFont;
@@ -6550,6 +6565,7 @@ void DrawBattleModeName( int which )
 	char	*string;
 	font_t *temp;
 
+	width=0; height=0;
 
 	if ( ( which < battle_Normal ) || ( which > battle_CaptureTheTriad ) )
 		{
@@ -6581,6 +6597,8 @@ void DrawBattleModeDescription( int w )
 	int	  height;
 	char	*string;
 	font_t *temp;
+
+	width=0; height=0;
 
 	EraseMenuBufRegion (25, 4, 287 - 25, 10 );
 
@@ -6780,6 +6798,8 @@ void DrawColorMenu( void )
 	int	height;
 	char *text;
 
+	width=0; height=0;
+
 	SetAlternateMenuBuf();
 	ClearMenuBuf();
 	SetMenuTitle ("Uniform Color");
@@ -6840,6 +6860,8 @@ int ColorMenu
 	int status;
 	boolean update;
 	boolean done;
+
+	width=0; height=0;
 
 	colorindex = DefaultPlayerColor;
 	timer		= ticcount;
@@ -8045,6 +8067,8 @@ void ShowBattleOptions
 	int  height;
 	int  temp;
 
+	width=0; height=0;
+
 	CurrentFont = tinyfont;
 
 	strcpy( text, "CURRENT OPTIONS FOR " );
@@ -8270,6 +8294,8 @@ void SetMenuHeader
 	int width;
 	int height;
 
+	width=0; height=0;
+
 	EraseMenuBufRegion( 16, 0, 256, 16 );
 
 	CurrentFont = tinyfont;
@@ -8329,7 +8355,7 @@ int HandleMultiPageCustomMenu
 	boolean exitonselect
 	)
 
-	{
+{
 	boolean redraw;
 	int  page;
 	int  cursorpos;
@@ -8349,29 +8375,29 @@ int HandleMultiPageCustomMenu
 	redraw = true;
 
 	do
-		{
+	{
 		if ( redraw )
-			{
+		{
 			redraw = false;
 			MultiPageCustomMenu[ 0 ].active = CP_Active;
 			MultiPageCustomMenu[ 1 ].active = CP_Active;
 			if ( page == 0 )
-				{
+			{
 				MultiPageCustomMenu[ 1 ].active = CP_Inactive;
-				}
+			}
 
 			maxpos = page + MAXCUSTOM;
 			if ( maxpos >= amount )
-				{
+			{
 				MultiPageCustomMenu[ 0 ].active = CP_Inactive;
 				maxpos = amount;
-				}
+			}
 
 			numpos = maxpos - page + 2;
 			MultiPageCustomItems.amount = numpos;
 
 			for( i = 2; i < numpos; i++ )
-				{
+			{
 				MultiPageCustomMenu[ i ].active = CP_Active;
 
 				// Set the name of the level
@@ -8382,42 +8408,43 @@ int HandleMultiPageCustomMenu
 
 				// Force it to upper case
 				if ( ( letter >= 'a' ) && ( letter <= 'z' ) )
-					{
+				{
 					letter = letter - 'a' + 'A';
-					}
+				}
 
 				// Only use letters
 				if ( ( letter < 'A' ) || ( letter > 'Z' ) )
-					{
+				{
 					letter = 'a';
-					}
-				MultiPageCustomMenu[ i ].letter = letter;
 				}
+				MultiPageCustomMenu[ i ].letter = letter;
+			}
 
 			// If the cursor is at an invalid position, find a valid one
 			cursorpos = MultiPageCustomItems.curpos;
 			if ( cursorpos >= numpos )
-				{
+			{
 				cursorpos = numpos - 1;
-				}
+			}
 			else
+			{
+				while( MultiPageCustomMenu[ cursorpos ].active ==
+					CP_Inactive )
 				{
-				while( MultiPageCustomMenu[ cursorpos ].active == CP_Inactive )
-					{
 					cursorpos++;
-					}
 				}
+			}
 			MultiPageCustomItems.curpos = cursorpos;
 			MultiPageCustomMenu[ cursorpos ].active = CP_CursorLocation;
 
-			DrawMultiPageCustomMenu( title, redrawfunc );
-			}
+			DrawMultiPageCustomMenu( title, (void *)redrawfunc );
+		}
 
 		which = HandleMenu( &MultiPageCustomItems, &MultiPageCustomMenu[ 0 ],
 			NULL );
 
 		switch( which )
-			{
+		{
 			case ESCPRESSED :
 				selection = -1;
 				break;
@@ -8439,21 +8466,21 @@ int HandleMultiPageCustomMenu
 			default :
 				selection = page + which - 2;
 				if ( routine )
-					{
+				{
 					routine( selection );
-					}
+				}
 
 				if ( exitonselect )
-					{
+				{
 					which = -1;
-					}
+				}
 				break;
-			}
 		}
+	}
 	while( which >= 0 );
 
 	return( selection );
-	}
+}
 
 
 //****************************************************************************
@@ -9414,6 +9441,8 @@ void CP_ErrorMsg
 	WindowH = 158;
 	WindowX = 0;
 	WindowY = 40;
+
+	w=0; h=0;
 
 	IFont = ( cfont_t * )W_CacheLumpName( FontNames[ font ], PU_CACHE );
 

@@ -224,7 +224,8 @@ void D_UpdateSound (void)
 	dt = d_snd_curtime - d_snd_lasttime;
 	d_snd_lasttime = d_snd_curtime;
 
-	if((dt<0) || (dt>1000))
+//	if((dt<0) || (dt>1000))
+	if((dt<0) || (dt>250))
 		return;
 
 #if 1
@@ -689,6 +690,34 @@ void DrawThermo(void)
 	}
 #endif
 	#endif
+
+#ifdef __BJX2__
+	char tbuf[80];
+	char *ct;
+	int     progress;
+	int     i;
+
+	ct=tbuf;
+	*ct++='[';
+
+	progress = (50*thermCurrent)/thermMax+2;
+	for (i = 0; i < progress; i++)
+	{
+		*ct++='.';
+	}
+	for (; i < 51; i++)
+	{
+		*ct++=' ';
+	}
+	*ct++=']';
+//	*ct++='\r';
+	*ct++=0;
+	
+	printf("%s\r", tbuf);
+	
+//	puts(tbuf);
+//	fflush(stdout);
+#endif
 }
 
 #ifdef __WATCOMC__

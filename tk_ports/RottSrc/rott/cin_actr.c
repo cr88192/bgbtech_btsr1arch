@@ -45,16 +45,16 @@ static int numcinematicactors;
 
 void AddCinematicActor ( actortype * actor )
 {
-   if (!firstcinematicactor)
-      {
-      firstcinematicactor  = actor;
-      }
-   else
-      {
-      actor->prev = lastcinematicactor;
-      lastcinematicactor->next = actor;
-      }
-   lastcinematicactor = actor;
+	if (!firstcinematicactor)
+	{
+		firstcinematicactor  = actor;
+	}
+	else
+	{
+		actor->prev = lastcinematicactor;
+		lastcinematicactor->next = actor;
+	}
+	lastcinematicactor = actor;
 }
 
 
@@ -68,30 +68,30 @@ void AddCinematicActor ( actortype * actor )
 
 void DeleteCinematicActor ( actortype * actor)
 {
-   if (actor == lastcinematicactor)
-      {
-      lastcinematicactor = actor->prev;
-      }
-   else
-      {
-      actor->next->prev = actor->prev;
-      }
+	if (actor == lastcinematicactor)
+	{
+		lastcinematicactor = actor->prev;
+	}
+	else
+	{
+		actor->next->prev = actor->prev;
+	}
 
-   if (actor == firstcinematicactor)
-      {
-      firstcinematicactor = actor->next;
-      }
-   else
-      {
-      actor->prev->next = actor->next;
-      }
+	if (actor == firstcinematicactor)
+	{
+		firstcinematicactor = actor->next;
+	}
+	else
+	{
+		actor->prev->next = actor->next;
+	}
 
-   actor->prev = NULL;
-   actor->next = NULL;
+	actor->prev = NULL;
+	actor->next = NULL;
 
-   if (actor->effect != NULL)
-      SafeFree(actor->effect);
-   SafeFree(actor);
+	if (actor->effect != NULL)
+		SafeFree(actor->effect);
+	SafeFree(actor);
 }
 
 /*
@@ -104,21 +104,21 @@ void DeleteCinematicActor ( actortype * actor)
 
 actortype * GetNewCinematicActor ( void )
 {
-   actortype * actor;
+	actortype * actor;
 
-   numcinematicactors++;
+	numcinematicactors++;
 
-   if ( numcinematicactors > MAXCINEMATICACTORS )
-      Error ("Too many Cinematic actors\n");
+	if ( numcinematicactors > MAXCINEMATICACTORS )
+		Error ("Too many Cinematic actors\n");
 
-   actor = SafeMalloc( sizeof (actortype) );
+	actor = SafeMalloc( sizeof (actortype) );
 
-   actor->next=NULL;
-   actor->prev=NULL;
+	actor->next=NULL;
+	actor->prev=NULL;
 
-   AddCinematicActor ( actor );
+	AddCinematicActor ( actor );
 
-   return actor;
+	return actor;
 }
 
 /*
@@ -131,13 +131,13 @@ actortype * GetNewCinematicActor ( void )
 
 void StartupCinematicActors ( void )
 {
-   if (cinematicactorsystemstarted==true)
-      return;
-   cinematicactorsystemstarted=true;
-   firstcinematicactor = NULL;
-   lastcinematicactor  = NULL;
+	if (cinematicactorsystemstarted==true)
+		return;
+	cinematicactorsystemstarted=true;
+	firstcinematicactor = NULL;
+	lastcinematicactor  = NULL;
 
-   numcinematicactors=0;
+	numcinematicactors=0;
 }
 
 /*
@@ -150,20 +150,20 @@ void StartupCinematicActors ( void )
 
 void ShutdownCinematicActors ( void )
 {
-   actortype * actor;
-   if (cinematicactorsystemstarted==false)
-      return;
-   cinematicactorsystemstarted=false;
+	actortype * actor;
+	if (cinematicactorsystemstarted==false)
+		return;
+	cinematicactorsystemstarted=false;
 
-   actor=firstcinematicactor;
-   while (actor != NULL)
-      {
-      actortype * nextactor;
+	actor=firstcinematicactor;
+	while (actor != NULL)
+	{
+		actortype * nextactor;
 
-      nextactor=actor->next;
-      DeleteCinematicActor(actor);
-      actor=nextactor;
-      }
+		nextactor=actor->next;
+		DeleteCinematicActor(actor);
+		actor=nextactor;
+	}
 }
 
 /*
@@ -176,11 +176,11 @@ void ShutdownCinematicActors ( void )
 
 void SpawnCinematicActor ( enum_eventtype type, void * effect )
 {
-   actortype * actor;
+	actortype * actor;
 
-   actor = GetNewCinematicActor ();
-   actor->effecttype=type;
-   actor->effect=effect;
+	actor = GetNewCinematicActor ();
+	actor->effecttype=type;
+	actor->effect=effect;
 }
 
 /*
@@ -192,21 +192,21 @@ void SpawnCinematicActor ( enum_eventtype type, void * effect )
 */
 void UpdateCinematicActors ( void )
 {
-   actortype * actor;
+	actortype * actor;
 
-   for (actor=firstcinematicactor;actor != NULL;)
-      {
-      if (UpdateCinematicEffect ( actor->effecttype, actor->effect ) == false)
-         {
-         actortype * nextactor;
+	for (actor=firstcinematicactor;actor != NULL;)
+	{
+		if (UpdateCinematicEffect ( actor->effecttype, actor->effect ) == false)
+		{
+			actortype * nextactor;
 
-         nextactor=actor->next;
-         DeleteCinematicActor(actor);
-         actor=nextactor;
-         }
-      else
-         actor=actor->next;
-      }
+			nextactor=actor->next;
+			DeleteCinematicActor(actor);
+			actor=nextactor;
+		}
+		else
+			actor=actor->next;
+	}
 }
 
 /*
@@ -217,88 +217,88 @@ void UpdateCinematicActors ( void )
 ===============
 */
 typedef enum {
-        screenfunctions,
-        background,
-        backgroundsprites,
-        backdrop,
-        foregroundsprites,
-        palettefunctions,
-        numdrawphases
+		  screenfunctions,
+		  background,
+		  backgroundsprites,
+		  backdrop,
+		  foregroundsprites,
+		  palettefunctions,
+		  numdrawphases
 } enum_drawphases;
 
 void DrawCinematicActors ( void )
 {
-   actortype * actor;
-   actortype * nextactor;
-   boolean draw;
-   enum_drawphases sequence;
+	actortype * actor;
+	actortype * nextactor;
+	boolean draw;
+	enum_drawphases sequence;
 #if DUMP
-   int numactors=0;
+	int numactors=0;
 #endif
-   boolean flippage=true;
+	boolean flippage=true;
 
-   for (sequence=screenfunctions;sequence<numdrawphases;sequence++)
-      {
-      for (actor=firstcinematicactor;actor != NULL;)
-         {
-         draw=false;
-         switch (actor->effecttype)
-            {
-            case fadeout:
-            case blankscreen:
-            case clearbuffer:
-            case cinematicend:
-            case flic:
-               if (sequence==screenfunctions)
-                  draw=true;
-               flippage=false;
-               break;
-            case palette:
-               if (sequence==palettefunctions)
-                  draw=true;
-               flippage=false;
-               break;
-            case background_noscrolling:
-            case background_scrolling:
-            case background_multi:
-               if (sequence==background)
-                  draw=true;
-               break;
-            case sprite_background:
-               if (sequence==backgroundsprites)
-                  draw=true;
-               break;
-            case backdrop_noscrolling:
-            case backdrop_scrolling:
-               if (sequence==backdrop)
-                  draw=true;
-               break;
-            case sprite_foreground:
-               if (sequence==foregroundsprites)
-                  draw=true;
-               break;
-            }
-         nextactor=actor->next;
-         if (draw==true)
-            {
+	for (sequence=screenfunctions;sequence<numdrawphases;sequence++)
+		{
+		for (actor=firstcinematicactor;actor != NULL;)
+			{
+			draw=false;
+			switch (actor->effecttype)
+				{
+				case fadeout:
+				case blankscreen:
+				case clearbuffer:
+				case cinematicend:
+				case flic:
+					if (sequence==screenfunctions)
+						draw=true;
+					flippage=false;
+					break;
+				case palette:
+					if (sequence==palettefunctions)
+						draw=true;
+					flippage=false;
+					break;
+				case background_noscrolling:
+				case background_scrolling:
+				case background_multi:
+					if (sequence==background)
+						draw=true;
+					break;
+				case sprite_background:
+					if (sequence==backgroundsprites)
+						draw=true;
+					break;
+				case backdrop_noscrolling:
+				case backdrop_scrolling:
+					if (sequence==backdrop)
+						draw=true;
+					break;
+				case sprite_foreground:
+					if (sequence==foregroundsprites)
+						draw=true;
+					break;
+				}
+			nextactor=actor->next;
+			if (draw==true)
+				{
 #if DUMP
-            printf("drawing type=%ld\n",actor->effecttype);
+				printf("drawing type=%ld\n",actor->effecttype);
 #endif
-            if (DrawCinematicEffect ( actor->effecttype, actor->effect ) == false)
-               {
-               DeleteCinematicActor(actor);
-               }
+				if (DrawCinematicEffect ( actor->effecttype, actor->effect ) == false)
+					{
+					DeleteCinematicActor(actor);
+					}
 #if DUMP
-            numactors++;
+				numactors++;
 #endif
-            }
-         actor=nextactor;
-         }
-      }
-      if (flippage==true)
-         XFlipPage ();
+				}
+			actor=nextactor;
+			}
+		}
+		if (flippage==true)
+			XFlipPage ();
 #if DUMP
-      printf("Total actors drawn=%ld\n",numactors);
+		printf("Total actors drawn=%ld\n",numactors);
 #endif
 }
 

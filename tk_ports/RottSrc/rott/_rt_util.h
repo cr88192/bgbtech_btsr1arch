@@ -33,7 +33,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define DEBUGFILE       ("ROTT.DBG")
 #define MAPDEBUGFILE    ("MAPINFO.TXT")
 
+#ifndef SGN_DEFED
+#define SGN_DEFED
 #define SGN(x)          ((x>0) ? (1) : ((x==0) ? (0) : (-1)))
+#endif
 
 #define SLASHES         ('\\')
 #define MAXCHARS        8

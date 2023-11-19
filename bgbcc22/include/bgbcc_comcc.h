@@ -113,6 +113,7 @@ byte need_n12jmp;	//function needs at least 12-bit jumps
 
 byte need_n16bsr;	//image exceeds 16-bit BSR
 byte need_n20bsr;	//image exceeds 20-bit BSR
+byte need_n23bsr;	//image exceeds 23-bit BSR
 byte need_n24bsr;	//image exceeds 24-bit BSR
 
 byte need_n16dat;	//image exceeds 16-bit BSR

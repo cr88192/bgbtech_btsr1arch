@@ -528,6 +528,8 @@ void US_MeasureStr (int *width, int *height, char * s, ...)
 	*width  = 0;
 	*height = 0;
 
+	w=0; h=0;
+
 	memset (&buf[0], 0, sizeof (buf));
 	va_start (strptr, s);
 	vsprintf (&buf[0], s, strptr);
@@ -587,6 +589,8 @@ void US_Print (char *str)
 	char	tbuf[512];
 	char	c, *s, *se;
 	int		w,h;
+
+	w=0; h=0;
 
 	strcpy(tbuf, str);
 	s = tbuf;
@@ -734,6 +738,8 @@ void US_CPrintLine (char *s)
 {
 	int w, h;
 
+	w=0; h=0;
+
 	USL_MeasureString (s, &w, &h, CurrentFont);
 
 	if (w > WindowW)
@@ -801,6 +807,8 @@ static void USL_XORICursor (int x, int y, char *s, int cursor, int color)
 	int		w,h;
 	int		oldx = px;
 	int		oldy = py;
+
+	w=0; h=0;
 
 	strcpy (buf,s);
 	buf[cursor] = '\0';
@@ -872,6 +880,8 @@ boolean US_LineInput (int x, int y, char *buf, char *def, boolean escok,
 
 	int		lastkey;
 	int		cursorwidth;
+
+	w=0; h=0;
 
 	cursorwidth = CurrentFont->width[80-31];
 
@@ -1163,6 +1173,8 @@ boolean US_lineinput (int x, int y, char *buf, char *def, boolean escok,
 
 	int		lastkey;
 	int		cursorwidth;
+
+	w=0; h=0;
 
 	cursorwidth = CurrentFont->width[80-31];
 
@@ -1672,6 +1684,7 @@ void DrawIString (
 
 	px = x;
 	py = y;
+	ch=-1;
 
 	while ((ch = *string++) != 0)
 	{

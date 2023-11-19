@@ -28,6 +28,9 @@ int	mb_used = 20;
 
 dt_scrpix	*screen;
 dt_scrpix	*screen_tmp;
+dt_scrpix		*screens_base;
+
+dt_scrpix	*screen_fbuf;
 
 void IN_Init (void);
 void D_PostEvent (event_t* ev);
@@ -284,7 +287,8 @@ byte* I_AllocLow (int length)
 {
     byte*	mem;
         
-    mem = (byte *)malloc (length);
+//    mem = (byte *)malloc (length);
+    mem = (byte *)tkgGlobalAlloc (length);
 //    memset (mem,0,length);
     return mem;
 }
@@ -1989,6 +1993,7 @@ void I_InitTkGdi()
 	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
 	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
 
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
 	i_dibinfo->biWidth=320;
 	i_dibinfo->biHeight=200;
 
@@ -2014,7 +2019,11 @@ void I_InitTkGdi()
 #endif
 
 	i_dibinfo->biHeight=-200;
+	
+	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
 }
+
+extern byte	st_oddframe;		//BGB: Odd Frame
 
 void I_FinishUpdate (void)
 {
@@ -2026,6 +2035,8 @@ void I_FinishUpdate (void)
 
 	if(!screen)
 		return;
+
+	st_oddframe = !st_oddframe;
 
 //	if(vid_flashblend)
 	if(0)
@@ -2041,7 +2052,28 @@ void I_FinishUpdate (void)
 		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_tmp);
 	}else
 	{
-		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen);
+		if(screen_fbuf)
+		{
+//			memcpy(screen_fbuf, screen, BASEWIDTH*BASEHEIGHT*2);
+			tkgMapReleaseFrameBuffer(i_hDc, i_dibinfo, screen_fbuf);
+			tkgMapFlipFrame(i_hDc);
+
+			screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+			if(screen_fbuf)
+			{
+				screen = screen_fbuf;
+				screens[0] = screen_fbuf;
+				R_InitBuffer(BASEWIDTH, BASEHEIGHT);
+			}
+			else
+			{
+				screen = screens_base;
+				screens[0] = screens_base;
+			}
+		}else
+		{
+			tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen);
+		}
 	}
 
 //	vid_frnum++;

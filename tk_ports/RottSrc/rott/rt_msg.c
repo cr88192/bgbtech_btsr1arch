@@ -499,14 +499,14 @@ void DisplayMessage
       {
       case MSG_REMOTERIDICULE:
       case MSG_REMOTE:
-         fontcolor = egacolor[ WHITE ];
+         fontcolor = egacolor[ CLR_WHITE ];
          break;
 
       case MSG_MODEM:
-         fontcolor = egacolor[ LIGHTBLUE ];
+         fontcolor = egacolor[ CLR_LIGHTBLUE ];
          DrawIString( PrintX, PrintY, "Message>", Messages[ num ].flags );
          PrintX += 8 * 8;
-         fontcolor = egacolor[ LIGHTGRAY ];
+         fontcolor = egacolor[ CLR_LIGHTGRAY ];
          break;
 
       case MSG_GAME:
@@ -514,24 +514,24 @@ void DisplayMessage
       case MSG_BONUS:
       case MSG_BONUS1:
       case MSG_NAMEMENU:
-         fontcolor = egacolor[ GREEN ];
+         fontcolor = egacolor[ CLR_GREEN ];
          break;
 
       case MSG_CHEAT:
-         fontcolor = egacolor[ YELLOW ];
+         fontcolor = egacolor[ CLR_YELLOW ];
          break;
       case MSG_MSGSYSTEM:
       case MSG_SYSTEM:
       case MSG_QUIT:
       case MSG_MACRO:
-         fontcolor = egacolor[ RED ];
+         fontcolor = egacolor[ CLR_RED ];
          break;
 
       default :
 #if ((DEVELOPMENT == 1))
          Error( "DisplayMessage called with invalid priority number." );
 #else
-         fontcolor = egacolor[ LIGHTGREEN ];
+         fontcolor = egacolor[ CLR_LIGHTGREEN ];
 #endif
       }
 

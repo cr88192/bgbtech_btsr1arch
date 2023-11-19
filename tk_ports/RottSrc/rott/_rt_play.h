@@ -53,22 +53,31 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define W_CHANGE(x)   ((x->weapondowntics) || (x->weaponuptics))
 #define NOMOM         ((!ob->momentumx) && (!ob->momentumy))
 #define DISTOK(p1,p2,d)    (abs((p1)-(p2)) <= d)
+
+#ifndef FIX_DEFED
+#define FIX_DEFED
 #define Fix(a)        (a &= (FINEANGLES-1))
+#endif
+
 #define REMOTEPKTSIZE    (sizeof(MoveType))
 #define BJRUNSPEED   2048
 #define BJJUMPSPEED  680
-#define PROJECTILESIZE 0xc000l
+// #define PROJECTILESIZE 0xc000l
 
 #define MOVESCALE       150l
 #define BACKMOVESCALE   100l
-#define EXTRAPOINTS     40000
+// #define EXTRAPOINTS     40000
 #define JETPACKTHRUST (64)
 
 #define RUNMOVE      0xa00
 #define BASEMOVE     0x600
-#define ANGLEMOVE    0x100000
+// #define ANGLEMOVE    0x100000
 
+#ifndef SGN_DEFED
+#define SGN_DEFED
 #define SGN(x)                 (x>0 ? 1 : -1)
+#endif
+
 #define NETMOM    (BASEMOVE+0x10000)
 
 #define DISTANCE(x1,x2,y1,y2)   (FixedMulShift((x1-x2),(x1-x2),16)+FixedMulShift((y1-y2),(y1-y2),16))

@@ -91,8 +91,8 @@ int				warpx=0;
 int				warpy=0;
 int				warpa=0;
 int				NoSound;
-int				polltime;
-int				oldpolltime;
+volatile int				polltime;
+volatile int				oldpolltime;
 boolean			fizzlein = false;
 int				pheight;
 
@@ -224,6 +224,8 @@ void main ( int argc, char *argv[] )
 		if (!NoSound)
 			{
 			int nv, nb, nc;
+
+			nv=0; nb=0; nc=0;
 
 			if (!quiet)
 				printf( "SD_SetupFXCard: " );
@@ -1209,6 +1211,9 @@ void GameLoop (void)
 					char str[50];
 					int width, height;
 
+					width=0;
+					height=0;
+
 					LBM = (lbm_t *) W_CacheLumpName( "deadboss", PU_CACHE);
 					VL_DecompressLBM (LBM,false);
 					MenuFadeOut();
@@ -1232,7 +1237,9 @@ void GameLoop (void)
 						}
 					s = W_CacheLumpNum (shape, PU_CACHE);
 					p = (patch_t *)s;
-					DrawNormalSprite ((320-p->origsize)>>1, (230-(p->height-p->topoffset))>>1, shape);
+					DrawNormalSprite (
+						(320-p->origsize)>>1,
+						(230-((int)(p->height)-p->topoffset))>>1, shape);
 					switch (gamestate.mapon)
 						{
 						case 6:
@@ -1424,12 +1431,19 @@ void QuitGame ( void )
 #endif
 	int k;
 
+#if 0
 	MU_FadeOut(200);
 	while (MU_FadeActive())
-		{
+	{
 		int time=ticcount;
-		while (ticcount==time) {}
+		while (ticcount==time)
+		{
+			I_PollTimer();
 		}
+	}
+#endif
+
+	exit(0);
 
 	PrintMapStats();
 	PrintTileStats();
@@ -1591,7 +1605,8 @@ void UpdateGameObjects ( void )
 
 
 	while (oldpolltime<oldtime)
-		{
+//	while (oldpolltime<=oldtime)
+	{
 		UpdateClientControls ();
 		MoveDoors();
 		ProcessElevators();
@@ -1605,7 +1620,7 @@ void UpdateGameObjects ( void )
 				(gamestate.TimeCount == Clocks[j].time2)))
 				TRIGGER[Clocks[j].linkindex]=1;
 		for (ob = firstactive; ob;)
-			{
+		{
 			temp = ob->nextactive;
 			DoActor (ob);
 #if (DEVELOPMENT == 1)
@@ -1615,13 +1630,13 @@ void UpdateGameObjects ( void )
 				Error("object angle below zero obj->angle=%ld obj->obclass=%ld\n",ob->angle,ob->obclass);
 #endif
 			ob = temp;
-			}
+		}
 
 		BattleStatus = BATTLE_CheckGameStatus( battle_refresh, 0 );
 		if ( BattleStatus != battle_no_event )
-			{
+		{
 			switch( BattleStatus )
-				{
+			{
 				case battle_end_game :
 				case battle_out_of_time :
 					playstate = ex_battledone;
@@ -1630,25 +1645,25 @@ void UpdateGameObjects ( void )
 				case battle_end_round :
 					SetWhoHaveWeapons();
 					break;
-				}
-			if ( playstate == ex_battledone )
-				{
-				break;
-				}
 			}
+			if ( playstate == ex_battledone )
+			{
+				break;
+			}
+		}
 #if (SYNCCHECK == 1)
 		CheckForSyncCheck();
 #endif
 		if (timelimitenabled == true)
-			{
+		{
 			if (timelimit-gamestate.TimeCount>maxtimelimit)
 				timelimit = maxtimelimit+gamestate.TimeCount;
 			if (gamestate.TimeCount == timelimit)
-				{
+			{
 				locplayerstate->lives=-1;
 				playstate=ex_died;
-				}
 			}
+		}
 
 		gamestate.TimeCount ++;
 
@@ -1657,22 +1672,22 @@ void UpdateGameObjects ( void )
 		oldpolltime++;
 		if (GamePaused==true)
 			break;
-		}
+	}
 	actortime=fasttics-atime;
 
 	UpdateClientControls ();
 
 	if (noecho == false)
-		{
+	{
 		if ( player->flags & FL_SHROOMS )
-			{
+		{
 			FX_SetReverb( 230 );
-			}
-		else if (sky == 0)
-			{
-			FX_SetReverb( min( numareatiles[ player->areanumber ] >> 1, 90 ) );
-			}
 		}
+		else if (sky == 0)
+		{
+			FX_SetReverb( min( numareatiles[ player->areanumber ] >> 1, 90 ) );
+		}
+	}
 
 	waminot();
 
@@ -1686,17 +1701,17 @@ void PauseLoop ( void )
 	UpdateClientControls ();
 
 	while (oldpolltime<oldtime)
-		{
+	{
 		CheckUnPause();
 #if (SYNCCHECK == 1)
 		CheckForSyncCheck();
 #endif
 		oldpolltime++;
 		if (GamePaused==false)
-			{
+		{
 			break;
-			}
 		}
+	}
 
 	CalcTics ();
 	if (demoplayback==false)
@@ -1705,10 +1720,10 @@ void PauseLoop ( void )
 	if ((RefreshPause == true) &&
 		(GamePaused == true) &&
 		((ticcount - pausedstartedticcount) >= blanktime))
-		{
+	{
 		RefreshPause = false;
 		StartupScreenSaver();
-		}
+	}
 }
 
 

@@ -34,6 +34,7 @@ randbits.txt
 *.cxlcpdb
 CacheFile.map
 quakei386.exe
+a.out
 
 *.tga
 *.png
@@ -55,12 +56,14 @@ quakei386.exe
 *.DOC
 *.avi
 *.AVI
+*.mod
 
 *.pk3
 
 *_ast.txt
 *_inf.txt
 *_pp.txt
+rsrc_pal*.bmp
 
 *.dat
 
@@ -76,6 +79,14 @@ tk_ports/Q3Src/baseq3/*
 tk_ports/Q3Src/baseq3_0/*
 tk_ports/Q3Src/baseq3_1/*
 tk_ports/Q3Src/demoq3/*
+
+tk_qsrc/tk_clib/vxcore/tkrast_*
+
+tk_ports/RottSrc/w3d2rott/w3d_base/*
+tk_ports/Wolf3D/*
+tk_ports/TestFV3D/*
+tk_ports/bitstr/*
+
 
 vlcore/obj_dir/*
 jx2vlcore3/core/obj_dir/*

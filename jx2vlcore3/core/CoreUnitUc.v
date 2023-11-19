@@ -181,6 +181,9 @@ assign		ddrModeIn = 0;
 
 // wire[7:0]	hbrPwmOut;
 
+wire[1:0]	dbgExWidth;
+wire[7:0]	dbgMisc;
+
 
 CoreUnit	core(
 	/* verilator lint_off UNUSED */
@@ -242,6 +245,8 @@ CoreUnit	core(
 	dbg_outStatus10,
 	dbg_outStatus11,
 	dbg_outStatus12,
+	dbgExWidth,
+	dbgMisc,
 
 	gpioPinsIn,
 	gpioPinsOut,

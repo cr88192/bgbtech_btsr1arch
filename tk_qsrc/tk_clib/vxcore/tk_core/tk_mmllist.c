@@ -246,6 +246,19 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 			}
 		}
 	
+		if(cat==TKMM_MCAT_GLOBAL)
+		{
+			ptr=tk_mmap(NULL, sz+256, TKMM_PROT_RWX,
+				TKMM_MAP_GLOBAL|TKMM_MAP_SHARED|TKMM_MAP_ANONYMOUS,
+				-1, 0);
+
+			if(ptr)
+			{
+				memset(ptr, 0, sz);
+				return(ptr);
+			}
+		}
+	
 //		tk_dbg_printf("TKMM_MMList_AllocBrk A, cat=%d\n", cat);
 
 //		if((cat==0) || (cat==4))
@@ -317,9 +330,30 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 		tk_dbg_printf("TKMM_MMList_AllocBrk C, cat=%d\n", cat);
 //		if((cat==0) || (cat==4))
 		if(cat==0)
-			ptr=TKMM_PageAllocUsc((1<<TKMM_BRKBITS)+256);
+			{ ptr=TKMM_PageAllocUsc((1<<TKMM_BRKBITS)+256); }
 		else
+			if(cat==TKMM_MCAT_PHYSDFL)
+		{
+			ptr=tk_mmap(NULL, (1<<TKMM_BRKBITS)+256, TKMM_PROT_RWX,
+				TKMM_MAP_PHYSICAL|TKMM_MAP_PRIVATE|TKMM_MAP_ANONYMOUS,
+				-1, 0);
+		}else
+			if(cat==TKMM_MCAT_GLOBAL)
+		{
+			ptr=tk_mmap(NULL, (1<<TKMM_BRKBITS)+256, TKMM_PROT_RWX,
+				TKMM_MAP_GLOBAL|TKMM_MAP_SHARED|TKMM_MAP_ANONYMOUS,
+				-1, 0);
+		}
+		else
+		{
 			ptr=TKMM_PageAlloc((1<<TKMM_BRKBITS)+256);
+		}
+		
+		if(!ptr)
+		{
+			ptr=TKMM_PageAlloc((1<<TKMM_BRKBITS)+256);
+		}
+
 		tkmm_mmlist_brkbuf_c[cat]=ptr;
 		brkbuf=ptr;
 

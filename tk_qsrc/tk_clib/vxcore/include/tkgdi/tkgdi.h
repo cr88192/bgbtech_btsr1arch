@@ -1,6 +1,9 @@
 #ifndef __TKGDI_TKGDI_H
 #define __TKGDI_TKGDI_H
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <tk_core.h>
 #include <tkgdi/tkgdi_avi.h>
 
@@ -11,17 +14,28 @@
 #define TKGDI_SCRMODE_320x200_RGB555		4
 #define TKGDI_SCRMODE_640x400_RGB555		5
 
+#define TKGDI_SCRMODE_320x200_RGB555_LFB	6
+
 #define TKGDI_SCRMODE_640x480_PAL8B			8
 #define TKGDI_SCRMODE_640x400_PAL8B			9
 #define TKGDI_SCRMODE_800x600_PAL8B			10
 
 #define TKGHDC_NULL		0
 
+#define TKGDI_FCC_4xSpace	RIFF_MAKETAG(' ',' ',' ',' ')
+
 #define TKGDI_FCC_crea		RIFF_MAKETAG('c','r','e','a')
 #define TKGDI_FCC_resz		RIFF_MAKETAG('r','e','s','z')
 #define TKGDI_FCC_move		RIFF_MAKETAG('m','o','v','e')
 #define TKGDI_FCC_text		RIFF_MAKETAG('t','e','x','t')
 #define TKGDI_FCC_styl		RIFF_MAKETAG('s','t','y','l')
+
+#define TKGDI_FCC_mapf		RIFF_MAKETAG('m','a','p','f')
+#define TKGDI_FCC_umap		RIFF_MAKETAG('u','m','a','p')
+#define TKGDI_FCC_flip		RIFF_MAKETAG('f','l','i','p')
+
+#define TKGDI_FCC_poll		RIFF_MAKETAG('p','o','l','l')
+#define TKGDI_FCC_keyb		RIFF_MAKETAG('k','e','y','b')
 
 #define TKGDI_FCC_auds		RIFF_MAKETAG('a','u','d','s')
 
@@ -32,7 +46,18 @@
 #define TKGDI_FCC_IWAD		RIFF_MAKETAG('I','W','A','D')
 #define TKGDI_FCC_SND_		RIFF_MAKETAG('S','N','D','_')
 
+#define TKGDI_FCC_BMP		RIFF_MAKETAG('B','M','P',' ')
+#define TKGDI_FCC_QOI		RIFF_MAKETAG('Q','O','I',' ')
+
+#define TKGDI_FCC_SpBMP		RIFF_MAKETAG(' ','B','M','P')
+
 #define TKGDI_ECC_PATCHIDX	RIFF_MAKE8CC('P','A','T','C','H','I','D','X')
+
+#define TKGDI_TCC_BM		RIFF_MAKETCC('B', 'M')
+#define TKGDI_TCC_qo		RIFF_MAKETCC('q', 'o')
+#define TKGDI_TCC_if		RIFF_MAKETCC('i', 'f')
+#define TKGDI_TCC_li		RIFF_MAKETCC('l', 'i')
+#define TKGDI_TCC_l4		RIFF_MAKETCC('l', '4')
 
 #define TKGDI_BI_RGB		0
 #define TKGDI_BI_RLE8		1
@@ -79,6 +104,12 @@
 #define TKGDI_DSTR_BG_YELLOW_HI		0x00000E00	//
 #define TKGDI_DSTR_BG_WHITE			0x00000F00	//
 
+#define TKGDI_STATUS_OK				0x0000	//
+
+#define TKGDI_STATUS_YES			0x8000	//
+#define TKGDI_STATUS_NO				0x8001	//
+#define TKGDI_STATUS_FAIL			0x8002	//
+
 
 typedef int TKGHDC;		//TKGDI Handle Display Context
 typedef int TKGHSND;		//TKGDI Handle Sound Device
@@ -87,6 +118,10 @@ typedef int TKGSTATUS;		//TKGDI Error Status
 typedef int TKGHFONT;		//TKGDI Handle Font
 
 typedef unsigned int TKGFOURCC;	//FOURCC
+
+typedef struct TKGDI_EVENT_s TKGDI_EVENT;
+typedef struct TKGDI_EVENTBUF_s TKGDI_EVENTBUF;
+
 
 
 typedef struct _tkgdi_context_vtable_s _tkgdi_context_vtable_t;
@@ -197,6 +232,7 @@ byte	*buf_dirty1;	//buffer (dirty, pixel data)
 byte	*buf_dirty2;	//buffer (dirty, cells since last redraw)
 
 _tkgdi_conparm	*con;
+TKGDI_EVENTBUF	*msgqueue;
 };
 
 struct _tkgdi_conparm_s {
@@ -210,6 +246,10 @@ byte x;
 byte y;
 byte ena;
 byte resv_1;
+
+byte cell_xs;	//width of character cell
+byte cell_ys;	//height of character cell
+byte dirty;
 
 u64 *conbuf;
 u16 *pixbuf;
@@ -255,6 +295,28 @@ struct TKGDI_MIDI_PATCHINFO_s {
 	u16 ptFlags;
 };
 
+struct TKGDI_EVENT_s {
+	u32 evSize;			//00, size of event structure
+	TKGHDC dev;			//04, associated device
+	TKGFOURCC fccMsg;	//08, message tag
+	u32 ptMsec;			//0C, event time in milliseconds
+	u32 wParm1;			//10, first argument
+	u32 wParm2;			//14, second argument
+	u64 lParm1;			//18, third argument
+	u32 ptMsX;			//20, Mouse X (if relevant)
+	u32 ptMsY;			//24, Mouse Y (if relevant)
+	u32 ptMsB;			//28, Mouse Button
+};
+
+struct TKGDI_EVENTBUF_s {
+TKGDI_EVENTBUF *next;
+TKGDI_EVENT ev;
+};
+
+
+void *tkgGlobalAlloc(size_t size);
+TKGSTATUS tkgGlobalFree(void *obj);
+
 /* Blit an image to Display Device.
  * The info field gives the image format.
  *   Should be compatible with the target.
@@ -285,6 +347,10 @@ TKGSTATUS tkgBlitSubImage(TKGHDC dev,
  * ofmt: Output data for request.
  */
 TKGSTATUS tkgQueryDisplay(
+	TKGHDC dev,		TKGFOURCC parm,
+	void *ifmt,		void *ofmt);
+
+TKGSTATUS tkgModifyDisplay(
 	TKGHDC dev,		TKGFOURCC parm,
 	void *ifmt,		void *ofmt);
 
@@ -373,5 +439,33 @@ TKGSTATUS tkgQueryAudioDevice(
  */
 TKGSTATUS tkgWriteSamples(
 	TKGHSND dev, void *buffer, int cnt, int ovcnt);
+
+
+/**
+ * Get image parameters from a compressed image buffer.
+ *
+ * The BITMAPINFOHEADER is to be filled with parameters extracted from the
+ * compressed image. The cmpfmt argument will identify the image format.
+ *
+ * This may return the raw format of the image data, rather than a format
+ * desirable for a buffer which can be used to hold the extracted pixels.
+ */
+TKGSTATUS tkgGetImageInfoFromBuffer(
+	void *cmpbuf, int sz_cmpbuf, TKGFOURCC cmpfmt,
+	TKGDI_BITMAPINFOHEADER *info);
+
+/**
+ * Get image data from a compressed image buffer.
+ *
+ * The BITMAPINFOHEADER is to be filled with parameters compatible with the
+ * compressed image. The cmpfmt argument will identify the image format.
+ *
+ * The BITMAPINFO header will describe the format of the destination image.
+ * If the destination image is NULL, this will return a status for whether the
+ * image could be extracted into the requested format.
+ */
+TKGSTATUS tkgGetImageDataFromBuffer(
+	void *cmpbuf, int sz_cmpbuf, TKGFOURCC cmpfmt,
+	void *destimage, TKGDI_BITMAPINFOHEADER *info);
 
 #endif

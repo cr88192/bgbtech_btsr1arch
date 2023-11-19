@@ -47,6 +47,9 @@ rcsid[] = "$Id: st_lib.c,v 1.4 1997/02/03 16:47:56 b1 Exp $";
 // in AM_map.c
 extern boolean		automapactive; 
 
+extern byte	st_oddframe;		//BGB: Odd Frame
+extern byte	st_diddraweven;		//BGB: Odd Frame
+
 
 
 
@@ -220,31 +223,50 @@ STlib_updateMultIcon
     int			h;
     int			x;
     int			y;
+    int			eo;
 
 	if(!mi->on || !mi->inum)
 		return;
 
+//	eo = (st_diddraweven ^ (st_diddraweven>>1)) & 1;
+	eo = st_diddraweven;
+
     if (*mi->on
-	&& (mi->oldinum != *mi->inum || refresh)
-	&& (*mi->inum!=-1))
+//		&& (mi->oldinum != *mi->inum || refresh)
+		&& (mi->oldinum != *mi->inum || refresh || eo)
+		&& (*mi->inum!=-1))
     {
-	if (mi->oldinum != -1)
-	{
-		if(!mi->p[mi->oldinum])
-			return;
-	
-	    x = mi->x - SHORT(mi->p[mi->oldinum]->leftoffset);
-	    y = mi->y - SHORT(mi->p[mi->oldinum]->topoffset);
-	    w = SHORT(mi->p[mi->oldinum]->width);
-	    h = SHORT(mi->p[mi->oldinum]->height);
+		if (mi->oldinum != -1)
+		{
+			if(!mi->p[mi->oldinum])
+				return;
+		
+			x = mi->x - SHORT(mi->p[mi->oldinum]->leftoffset);
+			y = mi->y - SHORT(mi->p[mi->oldinum]->topoffset);
+			w = SHORT(mi->p[mi->oldinum]->width);
+			h = SHORT(mi->p[mi->oldinum]->height);
 
-	    if (y - ST_Y < 0)
-		I_Error("updateMultIcon: y - ST_Y < 0");
+			if (y - ST_Y < 0)
+				I_Error("updateMultIcon: y - ST_Y < 0");
 
-	    V_CopyRect(x, y-ST_Y, BG, w, h, x, y, FG);
-	}
-	V_DrawPatchDirect(mi->x, mi->y, FG, mi->p[*mi->inum]);
-	mi->oldinum = *mi->inum;
+			V_CopyRect(x, y-ST_Y, BG, w, h, x, y, FG);
+		}
+		V_DrawPatchDirect(mi->x, mi->y, FG, mi->p[*mi->inum]);
+
+		if(!st_oddframe)
+		{
+			st_diddraweven |= 1;
+			if(mi->oldinum != *mi->inum)
+				st_diddraweven &= ~2;
+		}
+		if(st_oddframe)
+		{
+			st_diddraweven |= 2;
+			if(mi->oldinum != *mi->inum)
+				st_diddraweven &= ~1;
+		}
+
+		mi->oldinum = *mi->inum;
     }
 }
 
@@ -285,20 +307,21 @@ STlib_updateBinIcon
     if (*bi->on
 	&& (bi->oldval != *bi->val || refresh))
     {
-	x = bi->x - SHORT(bi->p->leftoffset);
-	y = bi->y - SHORT(bi->p->topoffset);
-	w = SHORT(bi->p->width);
-	h = SHORT(bi->p->height);
+		x = bi->x - SHORT(bi->p->leftoffset);
+		y = bi->y - SHORT(bi->p->topoffset);
+		w = SHORT(bi->p->width);
+		h = SHORT(bi->p->height);
 
-	if (y - ST_Y < 0)
-	    I_Error("updateBinIcon: y - ST_Y < 0");
+		if (y - ST_Y < 0)
+			I_Error("updateBinIcon: y - ST_Y < 0");
 
-	if (*bi->val)
-	    V_DrawPatchDirect(bi->x, bi->y, FG, bi->p);
-	else
-	    V_CopyRect(x, y-ST_Y, BG, w, h, x, y, FG);
+		if (*bi->val)
+			V_DrawPatchDirect(bi->x, bi->y, FG, bi->p);
+		else
+			V_CopyRect(x, y-ST_Y, BG, w, h, x, y, FG);
 
-	bi->oldval = *bi->val;
+		if(!st_oddframe)
+			bi->oldval = *bi->val;
     }
 
 }

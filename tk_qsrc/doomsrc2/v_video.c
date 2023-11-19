@@ -46,6 +46,7 @@ rcsid[] = "$Id: v_video.c,v 1.5 1997/02/03 22:45:13 b1 Exp $";
 dt_scrpix		*screens[5];	
 u16				*screens_zbuf;
 dt_scrpix		*screen;
+dt_scrpix		*screens_base;
 
 int				dirtybox[4]; 
 
@@ -813,6 +814,9 @@ void V_Init (void)
     base = (dt_scrpix *)
 //		I_AllocLow (SCREENWIDTH*SCREENHEIGHT*4*sizeof(dt_scrpix));
 		I_AllocLow (SCREENWIDTH*SCREENHEIGHT*5*sizeof(dt_scrpix));
+
+
+	screens_base = base;
 
     for (i=0 ; i<4 ; i++)
     {

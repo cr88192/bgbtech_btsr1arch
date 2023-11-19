@@ -206,6 +206,7 @@ assign	regValRx = tRegValRx;
 assign	regValRy = tRegValRy;
 
 wire		nMaskEnableRsCm =
+//	(regIdUCmd[5:0] == JX2_UCMD_NOP) ||
 	(regIdUCmd[5:0] == JX2_UCMD_MOV_CR) ;
 
 //	(regIdUCmd[5:0] == JX2_UCMD_MOV_RM) ||
@@ -214,6 +215,7 @@ wire		nMaskEnableRsCm =
 //	(regIdUCmd[5:0] == JX2_UCMD_JSR);
 
 wire		nMaskEnableRyCm =
+//	(regIdUCmd[5:0] == JX2_UCMD_NOP) ||
 	(regIdUCmd[5:0] == JX2_UCMD_MOV_RM) ;
 
 // wire		nMaskEnableRsCm = 1;
@@ -655,7 +657,7 @@ begin
 		begin
 //			tValRsA = regValCm;
 			tValRsA = nMaskEnableRsCm ? regValCm : UV64_XX;
-			if(!nMaskEnableRsCm)
+			if(!nMaskEnableRsCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Masked CRn=%X %X-%X",
 					regIdRs, regIdUCmd, regIdUIxt);
 		end
@@ -665,7 +667,7 @@ begin
 		begin
 //			tValRsA = regValCm;
 			tValRsA = nMaskEnableRsCm ? regValCm : UV64_XX;
-			if(!nMaskEnableRsCm)
+			if(!nMaskEnableRsCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Masked CRn=%X %X-%X",
 					regIdRs, regIdUCmd, regIdUIxt);
 		end
@@ -836,6 +838,8 @@ begin
 //		JX2_GR_SP:	tValRuA=regInSp;
 
 		JX2_GR_SSP:	tValRuA=regValSsp;
+
+		JX2_GR_LR:	tValRuA= regValLr;
 
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
@@ -1034,7 +1038,7 @@ begin
 		begin
 //			tValRyA = regValCm;
 			tValRyA = nMaskEnableRyCm ? regValCm : UV64_XX;
-			if(!nMaskEnableRyCm)
+			if(!nMaskEnableRyCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Ry Masked CRn=%X %X-%X",
 					regIdRy, regIdUCmd, regIdUIxt);
 		end
@@ -1043,7 +1047,7 @@ begin
 		begin
 //			tValRsA = regValCm;
 			tValRyA = nMaskEnableRyCm ? regValCm : UV64_XX;
-			if(!nMaskEnableRyCm)
+			if(!nMaskEnableRyCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Ry Masked CRn=%X %X-%X",
 					regIdRy, regIdUCmd, regIdUIxt);
 		end

@@ -111,7 +111,7 @@ typedef struct {
 #define POWERUP2X 200
 #define POWERUPY  0
 
-#define EXTRAPOINTS        50000
+// #define EXTRAPOINTS        50000
 #define ADRENALINEBONUS    5
 
 #define STR_SAVECHT1 "Your Save Game file is,"

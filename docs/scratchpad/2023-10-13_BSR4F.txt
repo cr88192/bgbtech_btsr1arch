@@ -13,6 +13,11 @@ Width Profiles:
 
 Indexed Store will be allowed in all profiles, however in B it may not co-issue. In C, only 2 wide bundles may be used with Indexed Store. In A, co-issue will not be allowed and will be ignored (with the exception of Jumbo Prefixes).
 
+Address Space:
+* Will have a 48-bit virtual address space.
+* Displacements will be 33 bits.
+
+
 SR:
 * (1): S (ALU Status Bit)
 * (0): T (Primary Predicate)

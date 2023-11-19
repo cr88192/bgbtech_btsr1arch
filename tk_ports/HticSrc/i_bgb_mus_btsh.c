@@ -1,21 +1,29 @@
 #include "doomdef.h"
 
-// #include "i_system.h"
-// #include "i_sound.h"
-// #include "i_video.h"
-// #include "i_net.h"
-// #include "v_video.h"
-// #include "w_wad.h"
-// #include "z_zone.h"
+//#include "i_system.h"
+//#include "i_sound.h"
+//#include "i_video.h"
+//#include "i_net.h"
+//#include "v_video.h"
+//#include "w_wad.h"
+//#include "z_zone.h"
+
+#include <math.h>
 
 // #include "bgbmid1/bgbmid.h"
 
-volatile u32 *smus_regs;
+#include <tkgdi/tkgdi.h>
+
+TKGHSND hSndDev;
 
 byte *i_smus_css;		//start position (active song)
 byte *i_smus_cse;		//end position (active song)
 byte *i_smus_cs;		//current position (active song)
 int i_smus_tt;			//remaining tics until next event
+
+
+#if 0
+volatile u32 *smus_regs;
 
 int smus_notediv[128];
 byte smus_noteatt[128];
@@ -96,6 +104,7 @@ int SMus_Init()
 {
 //	float freq, ph;
 	double freq, ph;
+	double *rph;
 	int i, j, k;
 	
 	if(smus_isinit)
@@ -104,17 +113,47 @@ int SMus_Init()
 
 //	irq_addTimerIrq(smus_timer_irq);
 
-//	smus_regs=(u32 *)0xA0081800;
-//	smus_regs=(u32 *)0xF0081800;
+#if 0
+	ph = pow(3.14159, 6.69);
+	if((ph<2116) || (ph>2120))
+	{
+		rph = &ph;
+		*rph = 3.14159;
+		ph = 1.0 / ph;
+
+		printf("1.0 / 3.14159 = %f (expect ~ 0.318310)\n", ph);
+		
+//		printf("frexp(3.14159) -> (%f * 2^%d)\n", ph, k);
+
+		ph = pow(3.14159, 6.69);
+
+		printf("ph = %f (expect ~ 2118), "
+			"log(3.14159)=%f (expect 1.144729), "
+			"exp(7.65823729) = %f (expect ~ 2118)\n",
+			ph, log(3.14159), exp(7.65823729));
+			
+		ph = frexp(3.14159, &k);
+		printf("frexp(3.14159) -> (%f * 2^%d)\n", ph, k);
+		
+		__debugbreak();
+	}
+#endif
+
+#ifdef __ADDR_X48__
 	smus_regs=(u32 *)0xFFFFF008C000ULL;
+#else
+//	smus_regs=(u32 *)0xA0081800UL;
+//	smus_regs=(u32 *)0xF0081800UL;
+	smus_regs=(u32 *)0xF008C000UL;
+#endif
 	
 	for(i=0; i<128; i++)
 	{
 		smus_noteatt[i]=63-(i>>1);
 		
 //		freq=pow(2, (i-69)/12.0)*440;
-//		freq=pow(2.0, (i-69)/12.0)*440.0;
-		freq=smus_ipow2((i-69)/12.0)*440.0;
+		freq=pow(2.0, (i-69)/12.0)*440.0;
+//		freq=smus_ipow2((i-69)/12.0)*440.0;
 		
 //		ph=freq/62500.0;
 		ph=freq/64000.0;
@@ -383,6 +422,12 @@ int SMus_NoteOn(int ch, int d0, int d1)
 	vol=(smus_chanvol[ch]*d1)>>7;
 	vol=(vol*snd_MusicVolume)>>4;
 
+	vol=__int_clamp(vol, 0, 127);
+
+//	vol=__int_clamp(vol, 0, 63);
+//	if(vol<0)	vol=0;
+//	if(vol>63)	vol=63;
+
 	modvol=63-(modlvl&63);
 	carvol=63-(carlvl&63);
 	
@@ -526,6 +571,140 @@ int SMus_ProgramChange(int ch, int d0)
 {
 	printf("SMus_ProgramChange: %d %d\n", ch, d0);
 	smus_chanprg[ch]=d0;
+	return(0);
+}
+
+#endif
+
+int SMus_Init()
+{
+	SMus_SilenceAll();
+}
+
+int SMus_SetFmRegisterData(int prg, int idx, u32 val)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=16;
+//	mcmd->ch=ch;
+	mcmd->d0=prg;
+	mcmd->d1=idx;
+	mcmd->u0=val;
+	
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
+	return(0);
+}
+
+int SMus_SilenceAll()
+{
+	SMus_SpecialParm(0, 0);
+//	SMus_SpecialParm(1, snd_MusicVolume);
+	SMus_SpecialParm(1, snd_MusicVolume>>2);
+}
+
+int SMus_UpdateVolume()
+{
+//	SMus_SpecialParm(0, 0);
+//	SMus_SpecialParm(1, snd_MusicVolume);
+	SMus_SpecialParm(1, snd_MusicVolume>>2);
+}
+
+int SMus_SpecialParm(int parm, int val)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=17;
+	mcmd->ch=0;
+	mcmd->d0=parm;
+	mcmd->d1=val;
+	
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
+	return(0);
+}
+
+int SMus_NoteOn(int ch, int d0, int d1)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=1;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+	mcmd->d1=d1;
+	
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
+	return(0);
+}
+
+int SMus_NoteOff(int ch, int d0, int d1)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=0;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+	mcmd->d1=d1;
+	
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
+	return(0);
+}
+
+int SMus_PitchBlend(int ch, int d0)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=2;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+//	mcmd->d1=d1;
+	
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
+	return(0);
+}
+
+int SMus_Controller(int ch, int d0, int d1)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=3;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+	mcmd->d1=d1;
+	
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
+	return(0);
+}
+
+int SMus_ProgramChange(int ch, int d0)
+{
+	TKGDI_MIDI_COMMAND t_mcmd;
+	TKGDI_MIDI_COMMAND *mcmd;
+
+	mcmd=&t_mcmd;
+	mcmd->op=4;
+	mcmd->ch=ch;
+	mcmd->d0=d0;
+//	mcmd->d1=d1;
+	
+//	tkgModifyAudioDevice(hSndDev, TKGDI_FCC_mcmd, mcmd, NULL);
+	tkgDeviceMidiCommand(hSndDev, mcmd);
 	return(0);
 }
 
@@ -772,28 +951,6 @@ void I_MusicSubmit(void)
 	I_MusicFineTick();
 }
 
-#if 0
-void I_MusicSubmit(void)	
-{
-#if 0
-	int dt;
-
-	imus_curms=TK_GetTimeMs();
-	dt=imus_curms-imus_lastms;
-	imus_lastms=imus_curms;
-	
-	if(dt>250)
-		dt=0;
-	
-	imus_accdt+=dt;
-	while(imus_accdt>0)
-	{
-		I_SMus_Tick();
-		imus_accdt-=7;
-	}
-#endif
-}
-#endif
 
 //
 // MUSIC API.
@@ -805,9 +962,6 @@ void I_InitMusic(void)
 {
 	byte *rec;
 	int i, j, k;
-
-	if(genmidi)
-		return;
 
 	SMus_Init();
 

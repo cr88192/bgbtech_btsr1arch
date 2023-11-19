@@ -901,6 +901,8 @@ void tk_con_init()
 //		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0001;		//
 		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0081;		//
 
+		((u32 *)(MMIO_BASE+0x000BFF00UL))[2]=0x20A00000;		//
+
 		tk_con_conbuf2=TKGDI_BlitUpdate_GetConbuf();
 		tk_con_conbuf2=TKGDI_BlitUpdate_GetConbuf();
 		tk_con_conbuf2=TKGDI_BlitUpdate_GetConbuf();

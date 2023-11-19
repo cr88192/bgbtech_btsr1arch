@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 // #include "d_local.h"
 
+#include <tkgdi/tkgdi.h>
+
 viddef_t	vid;				// global video state
 
 // #define	BASEWIDTH	320
@@ -474,6 +476,51 @@ void	VID_ShiftPaletteVec (int dr, int dg, int db, int dpcnt)
 		((dpcnt>>4)<<16);
 }
 
+// TKGDI_BITMAPINFOHEADER i_t_dibinfo;
+TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
+TKGHDC i_hDc;
+
+#if 1
+void I_InitTkGdi()
+{
+	if(i_dibinfo)
+		return;
+		
+//	i_dibinfo = &i_t_dibinfo;
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+
+//	i_dibinfo->biWidth=640;
+//	i_dibinfo->biHeight=400;
+
+//	i_dibinfo->biWidth=800;
+//	i_dibinfo->biHeight=600;
+
+	i_dibinfo->biBitCount=16;
+
+//	tk_printf("  1\n", hDc);
+
+	i_hDc=tkgCreateDisplay(i_dibinfo);
+
+#if 0
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+	
+	i_hDc=tkgCreateWindow(i_hDc, "Quake", 0, 160, 100, i_dibinfo);
+
+	tk_printf("  hDc=%d\n", i_hDc);
+#endif
+
+//	i_dibinfo->biHeight=-200;
+	
+//	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+}
+#endif
+
 void	VID_Init (unsigned char *palette)
 {
 	u32 *ict;
@@ -492,6 +539,8 @@ void	VID_Init (unsigned char *palette)
 
 //	vid.maxwarpwidth = vid.width = vid.conwidth = BASEWIDTH;
 //	vid.maxwarpheight = vid.height = vid.conheight = BASEHEIGHT;
+
+	I_InitTkGdi();
 
 	vid.width = vid.conwidth = BASEWIDTH;
 	vid.height = vid.conheight = BASEHEIGHT;
@@ -515,6 +564,8 @@ void	VID_Init (unsigned char *palette)
 //	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*6);
 //	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*8);
 
+#if 0
+
 #ifdef I_SCR_BMP128K
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
 	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0095;		//320x200x16bpp
@@ -523,6 +574,8 @@ void	VID_Init (unsigned char *palette)
 //	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
 #else
 	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0000;		//320x200
+#endif
+
 #endif
 
 // #ifndef CONGFX
@@ -1601,6 +1654,10 @@ void	VID_Update (vrect_t *rects)
 	if(!host_colormap16)
 		{ __debugbreak(); }
 
+	ics16=(u16 *)vid.buffer;
+	tkgBlitImage(i_hDc, 0, 0, i_dibinfo, ics16);
+
+#if 0
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 //	conbufb=conbufa+(80*61);
@@ -1743,6 +1800,8 @@ void	VID_Update (vrect_t *rects)
 	{
 		__debugbreak();
 	}
+
+#endif
 	
 //	memset(vid.buffer, 0, 320*200*2);
 //	memset(zbuffer, 0, 320*200*2);

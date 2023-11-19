@@ -48,6 +48,9 @@ Control Register 0 Bits:
 ** 2=8x8x4bpp (256b) or 8x8x2bpp (128b) or 8x8x1bpp (64b)
 ** 8=ColorCell, CLR15=RGB555.
 ** 9=4x4x16bpp RGB555 (256b) or 4x4x8b (128b)
+*** Vertical Adjust 3: 4x1x16bpp (64b)
+** A=8x8x4bpp (256b) or 8x8x2bpp (128b) or 8x8x1bpp (64b)
+*** Vertical Adjust 3: 8x1x8bpp (64b)
 * ( 8): Display Resolution 2
 * ( 9): Display Resolution 3
 * (10): Cell Width 2
@@ -65,7 +68,17 @@ Control Register 0 Bits:
 ** 3: 100.0 MHz
 * (24): Display Resolution 4
 * (25): Display Resolution 5
-* (31:26): Reserved
+
+* (26): Horizontal Resolution Adjust 3
+* (27): Vertical Resolution Adjust 3
+** Combines with Adjust 2, eg:
+*** 00 = 50 row, 01 = 100 row, 10=200 row, 11 = 400 row.
+*** Row count will depend on resolution.
+** May be used to configure raster-oriented modes.
+*** The 200 and 400 row modes will only emit the 1 row of pixels per cell.
+*** Modes 1 and 9 will always assume 16 bpp.
+
+* (31:28): Reserved
 
 
 * (39:32): Cursor X
@@ -92,6 +105,10 @@ Cell Width
 ** 000: 256-bit
 ** 001: 128-bit
 ** 010: 64-bit
+
+
+Control Register 1:
+* (31: 0): VRAM Base Address
 
 
 Font RAM:

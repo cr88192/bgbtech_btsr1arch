@@ -1869,6 +1869,9 @@ int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 		sppfx=1;
 	if((op1->nmid==BJX2_NMID_PMULF) && (op2->nmid==BJX2_NMID_PMULF))
 		sppfx=1;
+
+	if((op1->nmid==BJX2_NMID_MOV) && (op2->nmid==BJX2_NMID_BSR))
+		sppfx=1;
 		
 	if(op1->fl&BJX2_OPFL_NOWEX)
 	{
@@ -1880,8 +1883,11 @@ int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 	}
 	if(op2->fl&BJX2_OPFL_NOWEXSFX)
 	{
-		printf("BJX2_CheckWexSanity2W: Invalid Suffix\n");
-		return(-1);
+		if(!sppfx)
+		{
+			printf("BJX2_CheckWexSanity2W: Invalid Suffix\n");
+			return(-1);
+		}
 	}
 
 	if(op1->fl&BJX2_OPFL_NOWEX_FP2)
@@ -2574,14 +2580,14 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_RGBAVG)		||
 
 #if 1
-			(op->nmid==BJX2_NMID_MOV)		||
+//			(op->nmid==BJX2_NMID_MOV)		||
 			(op->nmid==BJX2_NMID_NOT)		||
 			(op->nmid==BJX2_NMID_EXTSB)		||
 			(op->nmid==BJX2_NMID_EXTUB)		||
 			(op->nmid==BJX2_NMID_EXTSW)		||
 			(op->nmid==BJX2_NMID_EXTUW)		||
-			(op->nmid==BJX2_NMID_EXTSL)		||
-			(op->nmid==BJX2_NMID_EXTUL)		||
+//			(op->nmid==BJX2_NMID_EXTSL)		||
+//			(op->nmid==BJX2_NMID_EXTUL)		||
 #endif
 
 			(op->nmid==BJX2_NMID_MULSW)		||

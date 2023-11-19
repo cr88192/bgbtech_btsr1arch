@@ -185,7 +185,10 @@ void ScanInfoPlane(void);
 =
 ======================
 */
+#ifndef SGN_DEFED
+#define SGN_DEFED
 #define SGN(x)			((x>0) ? (1) : ((x==0) ? (0) : (-1)))
+#endif
 
 /*--------------------------------------------------------------------------*/
 int CompareTags(s1p,s2p) cachetype *s1p,*s2p;
@@ -342,7 +345,7 @@ void PreCachePlayers(void )
 	int start;
 	int end;
 	int i;
-	playertype*pstate;
+	playertype *pstate;
 
 	for(i=0;i<numplayers;i++)
 	{
@@ -1038,27 +1041,30 @@ extern boolean dopefish;
 void DrawPreCache( void )
 {
 	if (loadedgame==false)
-		{
+	{
 		char temp[80];
 		int width, height, num;
 		char buf[30];
 
+		width=0;
+		height=0;
+
 		if ( BATTLEMODE )
-			{
+		{
 			VL_DrawPostPic (W_GetNumForName("trilogo"));
 			VWB_TBar ( 30, 23, 260, 82 );
 			ShowBattleOptions( false, 56, 26 );
 
 			DrawPlayers ();
-			}
+		}
 		else
-			{
+		{
 			pic_t * pic;
 			pic=(pic_t *)W_CacheLumpName("mmbk",PU_CACHE);
 			VWB_DrawPic (0, 0, pic);
 
 			CheckHolidays();
-			}
+		}
 
 		DrawNormalSprite (PRECACHEBARX, PRECACHEBARY, W_GetNumForName ("cachebar"));
 
@@ -1088,14 +1094,14 @@ void DrawPreCache( void )
 		memcpy (&buf[0], "AREA ", 5);
 
 		if ( !BATTLEMODE )
-			{
+		{
 			rt_itoa( GetLevel( gamestate.episode, gamestate.mapon ),
 				&buf[ 5 ], 10 );
-			}
+		}
 		else
-			{
+		{
 			rt_itoa( gamestate.mapon + 1, &buf[ 5 ], 10 );
-			}
+		}
 		US_MeasureStr (&width, &height, &buf[0]);
 		PrintX = (300-width);
 		VWB_TBar (PrintX-2, PrintY-2, width+4, height+4);
@@ -1122,7 +1128,7 @@ void DrawPreCache( void )
 		VW_UpdateScreen();
 
 		MenuFadeIn ();
-		}
+	}
 }
 
 #define CACHETICDELAY (6)
@@ -1148,6 +1154,9 @@ void PreCache( void )
 	int lastcache=0;
 	int ticdelay;
 	unsigned tempbuf;
+
+//	width=0;
+//	height=0;
 
 	if (CachingStarted==false)
 		{
@@ -1212,6 +1221,9 @@ void PreCache( void )
 			{
 			int width,height;
 			char buf[30];
+
+			width=0;
+			height=0;
 
 			CurrentFont = smallfont;
 			strcpy( buf, "Press Any Key" );
@@ -1424,6 +1436,7 @@ void CheckRTLVersion
 	//
 	// Check the version number
 	//
+	RTLVersion=0;
 	SafeRead( filehandle, &RTLVersion, sizeof( RTLVersion ) );
 	if ( RTLVersion > RTL_VERSION )
 		{
@@ -1937,6 +1950,8 @@ void LoadTedMap
 	maptype mapheader;
 	char	name[ 200 ];
 	mapfiletype *tinf;
+
+	tinf = NULL;
 
 	//
 	// load maphead.ext (offsets and tileinfo for map file)
@@ -3448,7 +3463,10 @@ void SetupElevators (void)
 	doorobj_t* dptr;
 
 	if(rott_iswolf)
+	{
+		printf("SetupElevators: IsWolf\n");
 		return;
+	}
 
 	map = mapplanes[1];
 	map += 4 ;
@@ -7162,12 +7180,20 @@ void InitializePlayerstates(void)
 	if (NewGame || (gamestate.mapon == 0) || tedlevel)
 	{
 		for(i=0;i<numplayers;i++)
+		{
+			pstate=&PLAYERSTATE[i];
+			memset(pstate, 0, sizeof(playertype)); //BGB debug
+
 			InitializeWeapons(&PLAYERSTATE[i]);
+		}
 	}
 
 	for(i=0;i<numplayers;i++)
 	{
 		pstate=&PLAYERSTATE[i];
+
+//		memset(pstate, 0, sizeof(playertype)); //BGB debug
+		
 		if (
 			(pstate->missileweapon == wp_godhand)
 #if (SHAREWARE == 0)

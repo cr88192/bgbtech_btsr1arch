@@ -22,6 +22,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "quakedef.h"
 #include "d_local.h"
 
+#include <tkgdi/tkgdi.h>
+
 viddef_t	vid;				// global video state
 
 // #define	BASEWIDTH	320
@@ -452,8 +454,11 @@ void	VID_Init (unsigned char *palette)
 	u32 *ict;
 	int i, j, k;
 
-	vid_buffer=malloc(BASEWIDTH*BASEHEIGHT*2);
-	vid_backbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
+//	vid_buffer=malloc(BASEWIDTH*BASEHEIGHT*2);
+//	vid_backbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
+	vid_buffer=tkgGlobalAlloc(BASEWIDTH*BASEHEIGHT*2);
+	vid_backbuffer=tkgGlobalAlloc(BASEWIDTH*BASEHEIGHT*2);
+
 	zbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 //	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*2);
 //	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*4);
@@ -1401,6 +1406,51 @@ void I_DrawFramerate()
 
 int vid_frnum;
 
+// TKGDI_BITMAPINFOHEADER i_t_dibinfo;
+TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
+TKGHDC i_hDc;
+
+#if 1
+void I_InitTkGdi()
+{
+	if(i_dibinfo)
+		return;
+		
+//	i_dibinfo = &i_t_dibinfo;
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+
+//	i_dibinfo->biWidth=640;
+//	i_dibinfo->biHeight=400;
+
+//	i_dibinfo->biWidth=800;
+//	i_dibinfo->biHeight=600;
+
+	i_dibinfo->biBitCount=16;
+
+//	tk_printf("  1\n", hDc);
+
+	i_hDc=tkgCreateDisplay(i_dibinfo);
+
+#if 0
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+	
+	i_hDc=tkgCreateWindow(i_hDc, "Quake", 0, 160, 100, i_dibinfo);
+
+	tk_printf("  hDc=%d\n", i_hDc);
+#endif
+
+	i_dibinfo->biHeight=-200;
+	
+//	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+}
+#endif
+
 void	VID_Update (vrect_t *rects)
 {
 	u32 *conbufa, *conbufb;
@@ -1415,14 +1465,16 @@ void	VID_Update (vrect_t *rects)
 	int pix, bn;
 	int i, j, k;
 
+	I_InitTkGdi();
+
 	I_DrawFramerate();
 
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 //	conbufb=conbufa+(80*61);
 
-	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
-	vid_frnum++;
+//	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
+//	vid_frnum++;
 
 	if(host_colormap16)
 	{
@@ -1433,6 +1485,10 @@ void	VID_Update (vrect_t *rects)
 		lcs16=vid_backbuffer;
 		ict=conbufa;
 
+//		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen);
+		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, ics16);
+
+
 #if 0		
 		if(vid_frnum&1)
 		{
@@ -1442,8 +1498,8 @@ void	VID_Update (vrect_t *rects)
 #endif
 		
 // #if 1
-#ifdef I_SCR_BMP128K
-// #if 0
+// #ifdef I_SCR_BMP128K
+#if 0
 		bn=0;
 		for(by=0; by<50; by++)
 		{

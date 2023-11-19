@@ -128,6 +128,22 @@ char *BGBCC_JX2DA_RelocToName(BGBCC_JX2_Context *ctx, int rlc)
 	case BGBCC_SH_RLC_RELW20_RVI:		sn="RELW20_RVI";	break;
 	case BGBCC_SH_RLC_ABS96:			sn="ABS96";			break;
 
+	case BGBCC_SH_RLC_REL32UI_RVI:		sn="REL32UI_RVI";	break;
+
+	case BGBCC_SH_RLC_RELW8_BJCMP:		sn="RELW8_BJX";		break;
+	case BGBCC_SH_RLC_RELW32_BJCMP:		sn="RELW32_BJX";	break;
+
+	case BGBCC_SH_RLC_ABSHI20_RVI:		sn="ABSHI20_RVI";	break;
+	case BGBCC_SH_RLC_ABSLO12I_RVI:		sn="ABSLO12I_RVI";	break;
+	case BGBCC_SH_RLC_ABSLO12S_RVI:		sn="ABSLO12S_RVI";	break;
+
+	case BGBCC_SH_RLC_RELHI20_RVI:		sn="RELHI20_RVI";	break;
+	case BGBCC_SH_RLC_RELLO12I_RVI:		sn="RELLO12I_RVI";	break;
+	case BGBCC_SH_RLC_RELLO12S_RVI:		sn="RELLO12S_RVI";	break;
+
+	case BGBCC_SH_RLC_RELW11_BJCMP:		sn="RELW11_BJX";	break;
+	case BGBCC_SH_RLC_RELW33_BJCMP:		sn="RELW33_BJX";	break;
+
 	default:
 		sprintf(tb, "RLC_%02X", rlc);
 		sn=bgbcc_strdup(tb);

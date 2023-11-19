@@ -102,6 +102,8 @@
 
 // `define	jx2_mem_lane2			//Allow Loads from Lane 2
 
+`define	jx2_mem_misal_movx			//Allow MOV.X to be misaligned
+
 // `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
 
 `define	jx2_mulw_nolane3		//Disallow MULW from Lane 3
@@ -155,8 +157,8 @@
 
 // `ifndef jx2_xc7s50
 `define jx2_enable_prebra			//Enable PreBranch
-// `define jx2_prebra_rts				//Enable PreBranch on RTS
-// `define jx2_prebra_rtsu				//Enable PreBranch on RTSU
+`define jx2_prebra_rts				//Enable PreBranch on RTS
+`define jx2_prebra_rtsu				//Enable PreBranch on RTSU
 // `define jx2_prebra_no16b			//Disable PreBranch on 16-bit ops
 // `endif
 

@@ -1573,6 +1573,13 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 				dtype, dreg, sreg));
 		}
 
+		if(	((st==CCXL_TY_NL) || (st==CCXL_TY_UNL)) &&
+			(ctx->arch_sizeof_long==8))
+		{
+			return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+				dtype, dreg, sreg));
+		}
+
 		BGBCC_CCXL_StubError(ctx);
 		return(0);
 	}

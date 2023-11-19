@@ -250,6 +250,11 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			disp5|=0xF0000000;
 		imm5=disp5;
 	}
+	
+	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2)
+	{
+		imm20s&=~1;
+	}
 
 	op->rn=rn_dfl;
 	op->rm=rm_dfl;

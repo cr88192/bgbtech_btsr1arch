@@ -725,6 +725,8 @@ void DrawMapInfo ( void )
 	int width,height;
 
 	CurrentFont=tinyfont;
+	width=0;
+	height=0;
 
 	PrintX = 2;
 	PrintY = 2;

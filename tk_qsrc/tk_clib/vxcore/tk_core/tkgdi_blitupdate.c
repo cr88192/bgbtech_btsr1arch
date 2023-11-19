@@ -2089,6 +2089,170 @@ u32 *TKGDI_BlitUpdate_GetConbuf()
 	return(conbufa);
 }
 
+int tkgdi_blitupdate_conflip;
+
+u32 *TKGDI_BlitUpdate_GetConbufFast()
+{
+	u32 *conbufa, *conbufb, *conbufb2;
+
+	if(tkgdi_blitupdate_getconbuf_sticky)
+	{
+		conbufb =(u32 *)0xC00020A00000ULL;		//RAM backed framebuffer
+		
+		if(!tkgdi_blitupdate_conflip)
+			conbufb =(u32 *)0xC00020A20000ULL;		//RAM backed framebuffer
+		return(conbufb);
+	}
+	return(NULL);
+}
+
+void TKGDI_BlitUpdate_FlipConbuf()
+{
+	tkgdi_blitupdate_conflip=!tkgdi_blitupdate_conflip;
+	
+	if(tkgdi_blitupdate_conflip)
+	{
+		((u32 *)0xFFFFF00BFF00)[2]=0x20A20000;		//
+	}else
+	{
+		((u32 *)0xFFFFF00BFF00)[2]=0x20A00000;		//
+	}
+}
+
+/* For the 320x200 hi-color mode, linear frame buffer. */
+int TKGDI_BlitUpdate_LfbRgb555(
+	int dxo, int dyo, int dxs, int dys,
+	u16 *sbuf,
+	int sbxo, int sbyo,
+	int sbxs, int sbys)
+{
+	u16 *conbufa;
+	u16 *ict, *ict1;
+	u16 *ics, *ics1, *ict1e;
+	u64 v0, v1, v2, v3;
+	int ofs, pox;
+	int bym, byn, bxm, bxn, ismmio;
+	int bx, by, flip, do4x;
+
+	flip=1;
+	if(sbys<0)
+	{
+		sbys=-sbys;
+		flip=!flip;
+	}
+
+//	__debugbreak();
+
+	__hint_use_egpr();
+
+	conbufa=(u16 *)TKGDI_BlitUpdate_GetConbuf();
+	
+	ismmio=(((((long)conbufa)>>44)&15)==15);
+
+	ics=sbuf+(sbyo*sbxs)+sbxo;
+	ict=conbufa+((dyo*320)+dxo);
+
+	if(flip)
+	{
+		ics=sbuf+((sbys-sbyo-1)*sbxs)+sbxo;
+	}
+	
+	for(by=0; by<dys; by++)
+	{
+//		if(ismmio)
+		if(1)
+		{
+			ics1=ics;
+			ict1=ict;
+			ofs=ict-conbufa;
+			ict1e=ict+(dxs-16);
+			if(ofs&3)
+			{
+				pox=ofs&3;
+				ics1-=pox;
+				ict1-=pox;
+				v0=((u64 *)ics1)[0];
+				v1=((u64 *)ict1)[0];
+				if(pox==1)
+				{
+					v0=	(v1&0x000000000000FFFFULL) |
+						(v0&0xFFFFFFFFFFFF0000ULL) ;
+				}else if(pox==2)
+				{
+					v0=	(v1&0x00000000FFFFFFFFULL) |
+						(v0&0xFFFFFFFF00000000ULL) ;
+				}else if(pox==3)
+				{
+					v0=	(v1&0x0000FFFFFFFFFFFFULL) |
+						(v0&0xFFFF000000000000ULL) ;
+				}
+				((u64 *)ict1)[0]=v0;
+				ics1+=4; ict1+=4;
+			}
+			while(ict1<ict1e)
+			{
+				v0=((u64 *)ics1)[0];
+				v1=((u64 *)ics1)[1];
+				v2=((u64 *)ics1)[2];
+				v3=((u64 *)ics1)[3];
+				((u64 *)ict1)[0]=v0;
+				((u64 *)ict1)[1]=v1;
+				((u64 *)ict1)[2]=v2;
+				((u64 *)ict1)[3]=v3;
+				ics1+=16;
+				ict1+=16;
+			}
+			ict1e=ict+dxs;
+			ofs=ict1e-conbufa;
+			pox=ofs&3;
+			if(pox)
+				{ ict1e-=pox; }
+			while(ict1<ict1e)
+			{
+				v0=((u64 *)ics1)[0];
+				((u64 *)ict1)[0]=v0;
+				ics1+=4; ict1+=4;
+			}
+			if(pox)
+			{
+				pox=ofs&3;
+				ics1-=pox;
+				ict1-=pox;
+				v0=((u64 *)ics1)[0];
+				v1=((u64 *)ict1)[0];
+				if(pox==1)
+				{
+					v0=	(v0&0x000000000000FFFFULL) |
+						(v1&0xFFFFFFFFFFFF0000ULL) ;
+				}else if(pox==2)
+				{
+					v0=	(v0&0x00000000FFFFFFFFULL) |
+						(v1&0xFFFFFFFF00000000ULL) ;
+				}else if(pox==3)
+				{
+					v0=	(v0&0x0000FFFFFFFFFFFFULL) |
+						(v1&0xFFFF000000000000ULL) ;
+				}
+				((u64 *)ict1)[0]=v0;
+				ics1+=4; ict1+=4;
+			}
+		}else
+		{
+			memcpy(ict, ics, dxs*2);
+		}
+		if(flip)
+			{ ics-=sbxs; }
+		else
+			{ ics+=sbxs; }
+		ict+=320;
+	}
+
+	((u32 *)0xFFFFF00BFF00ULL)[8]=tkgdi_vid_frnum;
+	tkgdi_vid_frnum++;
+
+	return(0);
+}
+
 /* For the 320x200 hi-color mode. */
 int TKGDI_BlitUpdate_BlkRgb555(
 	int dxo, int dyo, int dxs, int dys,

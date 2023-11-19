@@ -57,7 +57,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 //MED
 // #include "memcheck.h"
 
+#ifndef SGN_DEFED
+#define SGN_DEFED
 #define SGN(x)  (((x) > 0)?(1):(-1))
+#endif
 
 #define WILEYBLITZCHANCE  20
 #define GIBSOUND		SD_GIBSPLASHSND
@@ -89,10 +92,10 @@ objtype			*FIRSTACTOR,*LASTACTOR;
 
 objtype			*FIRSTFREE,*LASTFREE;
 objtype			*lastactive,*firstactive,**objlist;
-objtype			*firstareaactor[NUMAREAS+1],*lastareaactor[NUMAREAS+1];
+objtype			*firstareaactor[NUMAREAS+17],*lastareaactor[NUMAREAS+17];
 int					objcount;
 
-byte				RANDOMACTORTYPE[10];
+byte				RANDOMACTORTYPE[16];
 
 // #if (SHAREWARE == 0)
 #if 1
@@ -749,6 +752,61 @@ int RandomSign(void)
 	return 1;
 }
 
+void SetTilePosition(objtype *ob, fixed newtilex, fixed newtiley)
+{
+	ob->tilex = newtilex & (MAPSIZE-1);
+	ob->tiley = newtiley & (MAPSIZE-1);
+	ob->x = (ob->tilex << TILESHIFT) + TILEGLOBAL/2;
+	ob->y = (ob->tiley << TILESHIFT) + TILEGLOBAL/2;
+}
+
+void SetFinePosition(objtype *ob, fixed newx, fixed newy)
+{
+	ob->x = newx & ((MAPSIZE<<TILESHIFT)-1);
+	ob->y = newy & ((MAPSIZE<<TILESHIFT)-1);
+	ob->tilex = (ob->x >> TILESHIFT) & (MAPSIZE-1);
+	ob->tiley = (ob->y >> TILESHIFT) & (MAPSIZE-1);
+}
+
+void SetVisiblePosition(objtype *ob, fixed x, fixed y)
+{
+	ob->drawx = x & ((MAPSIZE<<TILESHIFT)-1);
+	ob->drawy = y & ((MAPSIZE<<TILESHIFT)-1);
+}
+
+
+void SetTilePositionStat(statobj_t *ob, fixed newtilex, fixed newtiley)
+{
+	ob->tilex = newtilex & (MAPSIZE-1);
+	ob->tiley = newtiley & (MAPSIZE-1);
+	ob->x = (ob->tilex << TILESHIFT) + TILEGLOBAL/2;
+	ob->y = (ob->tiley << TILESHIFT) + TILEGLOBAL/2;
+}
+
+void SetFinePositionStat(statobj_t *ob, fixed newx, fixed newy)
+{
+	ob->x = newx & ((MAPSIZE<<TILESHIFT)-1);
+	ob->y = newy & ((MAPSIZE<<TILESHIFT)-1);
+	ob->tilex = (ob->x >> TILESHIFT) & (MAPSIZE-1);
+	ob->tiley = (ob->y >> TILESHIFT) & (MAPSIZE-1);
+}
+
+void SetTilePositionTPoint(tpoint *ob, fixed newtilex, fixed newtiley)
+{
+	ob->tilex = newtilex & (MAPSIZE-1);
+	ob->tiley = newtiley & (MAPSIZE-1);
+	ob->x = (ob->tilex << TILESHIFT) + TILEGLOBAL/2;
+	ob->y = (ob->tiley << TILESHIFT) + TILEGLOBAL/2;
+}
+
+void SetFinePositionTPoint(tpoint *ob, fixed newx, fixed newy)
+{
+	ob->x = newx & ((MAPSIZE<<TILESHIFT)-1);
+	ob->y = newy & ((MAPSIZE<<TILESHIFT)-1);
+	ob->tilex = (ob->x >> TILESHIFT) & (MAPSIZE-1);
+	ob->tiley = (ob->y >> TILESHIFT) & (MAPSIZE-1);
+}
+
 void AddToFreeList(objtype*ob)
 {
 	if (!FIRSTFREE)
@@ -1073,7 +1131,7 @@ void CheckBounds(objtype *ob)
 =
 =====================
 */
-void main ( void );
+// void main ( void );
 
 void DoActor (objtype *ob)
 {
@@ -1740,10 +1798,12 @@ void SpawnPatrol (classtype which, int tilex, int tiley, int dir)
 			new->flags |= FL_NOFRICTION;
 			//new->flags &= ~FL_SHOOTABLE;
 			new->dir <<= 1;
-			ParseMomentum(new,dirangle16[new->dir]);
+//			ParseMomentum(new,dirangle16[new->dir]);
 		}
 		else
+		{
 			ParseMomentum(new,dirangle8[new->dir]);
+		}
 
 		if (which == blitzguardobj)
 			ConsiderOutfittingBlitzguard(new);
@@ -4247,7 +4307,7 @@ void TurnActorIntoSprite(objtype *ob)
 		temp->shapenum = ob->shapenum;
 		temp->linked_to = -1;
 		temp->whichstat = statcount ++;
-		SetFinePosition(temp,ob->x,ob->y);
+		SetFinePositionStat(temp,ob->x,ob->y);
 		temp->areanumber = MAPSPOT(temp->tilex,temp->tiley,0)-AREATILE;
 	//	if ((temp->areanumbers<=0) || (temp->areanumber>NUMAREAS))
 		//		Error ("Sprite at x=%ld y=%ld type=%ld has an illegal areanumber\n",tilex,tiley,mtype);
@@ -4775,7 +4835,7 @@ void SpawnMissileSmoke(objtype *ob)
 	SpawnStatic(ob->tilex,ob->tiley,stat_missmoke,-1);
 	LASTSTAT->flags |= FL_ABP;
 	MakeStatActive(LASTSTAT);
-	SetFinePosition(LASTSTAT,ob->x,ob->y);
+	SetFinePositionStat(LASTSTAT,ob->x,ob->y);
 	LASTSTAT->z = ob->z+3;
 }
 
@@ -8167,7 +8227,7 @@ hiding_status HoleStatus(objtype*ob)
 						min = curr;
 						noneleft = 0;
 						dptr->which = ACTOR;
-						SetTilePosition(dptr,tx,ty);
+						SetTilePositionTPoint(dptr,tx,ty);
 						//dptr->x = (tx << TILESHIFT) + TILEGLOBAL/2;
 						//dptr->y = (ty << TILESHIFT) + TILEGLOBAL/2;
 						dptr->z = ob->z;
@@ -9705,7 +9765,7 @@ void T_SnakeFindPath(objtype*ob)
 	mindist = 0x7fffffff;
 	for(i=0;i<whichpath;i++)
 		{
-		SetTilePosition(dummy,SNAKEPATH[i].x,SNAKEPATH[i].y);
+		SetTilePositionTPoint(dummy,SNAKEPATH[i].x,SNAKEPATH[i].y);
 		dummy->z = ob->z;
 		if (CheckLine(ob,dummy,SIGHT))
 		{currdist = FindDistance(ob->tilex-dummy->tilex,ob->tiley-dummy->tiley);
@@ -11644,10 +11704,14 @@ void  A_MissileWeapon(objtype *ob)
 	classtype nobclass;
 	statetype*nstate;
 
-	if ((ob->obclass == wallopobj) || (ob->obclass == roboguardobj));
-	//SelectPathDir(ob);
+	if ((ob->obclass == wallopobj) || (ob->obclass == roboguardobj))
+	{
+		//SelectPathDir(ob);
+	}
 	else
-	ActorMovement(ob);
+	{
+		ActorMovement(ob);
+	}
 
 	if (!ob->ticcount)
 	{
@@ -12185,21 +12249,31 @@ int Near(objtype *ob, void *what, int distance)
 */
 
 void SelectPathDir (objtype *ob)
-	{
+{
+	static byte dirshuf[16] = {
+		 5, 6, 7,8, 9,10,11,12,
+		13,14,15,0, 1, 2, 3, 4 };
 	int spot,centerx,centery,dx,dy,set,done,radius,ocl;
+	int dospot;
 
 	ocl = ob->obclass;
 
 	if ((ocl == bladeobj) && (!(ob->flags & FL_ACTIVE)))
-	return;
+		return;
 
 	spot = MAPSPOT(ob->tilex,ob->tiley,1)-ICONARROWS;
+//	spot = MAPSPOT(ob->tilex,ob->tiley,1);
+//	spot = spot - ICONARROWS;
+
 	set = ((ocl == wallopobj) || (ocl == roboguardobj));
 	done = (((!set) && (ob->dir == spot)) ||
 			(set && (ob->dir == (spot<<1))));
 
+	dospot = ((spot >= 0) && (spot<= 7) && (!done));
+
 	if ((spot >= 0) && (spot<= 7) && (!done))
-		{
+//	if(dospot)
+	{
 		centerx= (ob->tilex << 16) + HALFGLOBAL1;
 		centery= (ob->tiley << 16) + HALFGLOBAL1;
 		dx = abs(centerx - ob->x);
@@ -12209,17 +12283,17 @@ void SelectPathDir (objtype *ob)
 
 		if ((dx < radius) && (dy < radius))
 	// new direction
-			{
+		{
 			ZEROMOM;
 			if ((ocl == wallopobj) || (ocl == roboguardobj))
 			{
-			ob->dir = spot<<1;
-			ParseMomentum(ob,dirangle16[ob->dir]);
+				ob->dir = spot<<1;
+				ParseMomentum(ob,dirangle16[ob->dir]);
 			}
 			else
 			{
-			ob->dir = spot;
-			ParseMomentum(ob,dirangle8[ob->dir]);
+				ob->dir = spot;
+				ParseMomentum(ob,dirangle8[ob->dir]);
 			}
 			dx = centerx - ob->x;
 			dy = centery - ob->y;
@@ -12239,22 +12313,46 @@ void SelectPathDir (objtype *ob)
 //		if (ob==SNAKEHEAD)
 //		Debug("\n path changed at %d, %d",
 //			ob->tilex,ob->tiley);
-			}
 		}
-	if (NOMOM)
+	}else
+	{
+		if(dospot)
 		{
+			__debugbreak();
+		}
+	}
+
+	if (NOMOM)
+	{
 		if ((ocl == wallopobj) || (ocl == roboguardobj))
 			ParseMomentum(ob,dirangle16[ob->dir]);
 		else
 			ParseMomentum(ob,dirangle8[ob->dir]);
-		}
+	}
 
 	//if ((ob->obclass == firejetobj) || (ob->obclass == bladeobj))
 	//MoveActor(ob);
 	//else
 	ActorMovement(ob);
 
+	if(NOMOM && (ocl == roboguardobj))
+	{
+#if 1
+		done = 16;
+		while(NOMOM && (done--)>0)
+		{
+//			robo_rng=(robo_rng*251)+1;		//BGB: Debug 2022-12-06
+//			ob->dir=(robo_rng>>8)&15;
+			ob->dir=dirshuf[(ob->dir)&15];
+			ParseMomentum(ob,dirangle16[(ob->dir)&15]);
+			ActorMovement(ob);
+		}
+#endif
+
+//		printf("SelectPathDir: Robo A-2 %d %d\n",
+//			ob->momentumx, ob->momentumy);
 	}
+}
 
 /*
 ================

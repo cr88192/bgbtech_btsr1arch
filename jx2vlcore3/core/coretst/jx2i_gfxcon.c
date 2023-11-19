@@ -480,6 +480,9 @@ byte jx2i_gfxcon_ispow2;
 byte jx2i_gfxcon_is2xcol;
 byte jx2i_gfxcon_is2xrow;
 
+byte jx2i_gfxcon_is4xrow;
+byte jx2i_gfxcon_is8xrow;
+
 byte jx2i_gfxcon_isbmap;
 byte jx2i_gfxcon_clrsmod;
 
@@ -590,6 +593,20 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 		py>>=1;
 	}
 
+	if(jx2i_gfxcon_is4xrow)
+	{
+		if(py&3)
+			return(0);
+		py>>=2;
+	}
+
+	if(jx2i_gfxcon_is8xrow)
+	{
+		if(py&7)
+			return(0);
+		py>>=3;
+	}
+
 #if 0
 	if(btesh2_gfxcon_swaprb)
 	{
@@ -644,6 +661,20 @@ int JX2I_GfxCon_PutPix400(int px, int py, int clrc)
 		if(py&1)
 			return(0);
 		py>>=1;
+	}
+
+	if(jx2i_gfxcon_is4xrow)
+	{
+		if(py&3)
+			return(0);
+		py>>=2;
+	}
+
+	if(jx2i_gfxcon_is8xrow)
+	{
+		if(py&7)
+			return(0);
+		py>>=3;
 	}
 
 #if 0
@@ -740,6 +771,22 @@ u32 JX2I_GfxCon_Rgb555ToRgb24(int rgb)
 	return(clrc);
 }
 
+u32 JX2I_GfxCon_Rgb444ToRgb24(int rgb)
+{
+	int cr, cg, cb;
+	u32 clrc;
+	
+	cr=(rgb>>8)&15; cr=(cr<<4)|cr;
+	cg=(rgb>>4)&15; cg=(cg<<4)|cg;
+	cb=(rgb>>0)&15; cb=(cb<<4)|cb;
+
+	if(btesh2_gfxcon_swaprb)
+		clrc=0xFF000000|(cr<<16)|(cg<<8)|cb;
+	else
+		clrc=0xFF000000|(cb<<16)|(cg<<8)|cr;
+	return(clrc);
+}
+
 u32 JX2I_GfxCon_Rgb232ToRgb24(int rgb)
 {
 	int cr, cg, cb, ca, ch, cl, cm;
@@ -807,6 +854,92 @@ u32 JX2I_GfxCon_Rgb232ToRgb24(int rgb)
 	return(clrc);
 }
 
+u32 JX2I_GfxCon_RgbSetupPal4(u32 *rgb2tab, int ix)
+{
+	rgb2tab[0]=JX2I_GfxCon_Rgb444ToRgb24(0x000);
+	rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x555);
+	rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xAAA);
+	rgb2tab[3]=JX2I_GfxCon_Rgb444ToRgb24(0xFFF);
+
+	switch(ix)
+	{
+	case 0:
+		break;
+	case 1:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x0F0);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xF00);
+		rgb2tab[3]=JX2I_GfxCon_Rgb444ToRgb24(0xFF0);
+		break;
+	case 2:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x0F0);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xF00);
+		rgb2tab[3]=JX2I_GfxCon_Rgb444ToRgb24(0x00F);
+		break;
+	case 3:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x0FF);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xF0F);
+		rgb2tab[3]=JX2I_GfxCon_Rgb444ToRgb24(0xFF0);
+		break;
+	case 4:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x0FF);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xFF0);
+		break;
+	case 5:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0xF0F);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xFF0);
+		break;
+	case 6:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x0F0);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xF00);
+		break;
+	case 7:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x0FF);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xF0F);
+		break;
+	case 8:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x050);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0x5A0);
+		rgb2tab[3]=JX2I_GfxCon_Rgb444ToRgb24(0xAF0);
+		break;
+	case 9:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x500);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0xA50);
+		rgb2tab[3]=JX2I_GfxCon_Rgb444ToRgb24(0xFA0);
+		break;
+	case 10:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x050);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0x0A5);
+		rgb2tab[3]=JX2I_GfxCon_Rgb444ToRgb24(0x0FA);
+		break;
+	case 11:
+		rgb2tab[1]=JX2I_GfxCon_Rgb444ToRgb24(0x0F0);
+		rgb2tab[2]=JX2I_GfxCon_Rgb444ToRgb24(0x00F);
+		break;
+	default:
+		break;
+	}
+	return(0);
+}
+
+u32 JX2I_GfxCon_RgbSetupPal2(u32 *rgb2tab, int ix)
+{
+	static const u32 rgbitab[16]={
+		0xFF000000,	0xFF0000AA, 0xFF00AA00,	0xFF00AAAA,
+		0xFFAA0000,	0xFFAA00AA, 0xFFAAAA00,	0xFFAAAAAA,
+		0xFF555555,	0xFF5555FF, 0xFF55FF55,	0xFF55FFFF,
+		0xFFFF5555,	0xFFFF55FF, 0xFFFFFF55,	0xFFFFFFFF};
+	
+	if(!ix)
+		ix=15;
+
+	if(!btesh2_gfxcon_swaprb)
+		ix=(ix&0xA)|((ix<<2)&0x4)|((ix>>2)&0x1);
+
+	rgb2tab[0]=0xFF000000;
+	rgb2tab[1]=rgbitab[ix&15];
+	return(0);
+}
+
 int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 {
 	static const u32 rgbitab[16]={
@@ -814,11 +947,14 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 		0xFFAA0000,	0xFFAA00AA, 0xFFAAAA00,	0xFFAAAAAA,
 		0xFF555555,	0xFF5555FF, 0xFF55FF55,	0xFF55FFFF,
 		0xFFFF5555,	0xFFFF55FF, 0xFFFFFF55,	0xFFFFFFFF};
+	u32 rgb2tab0[4], rgb2tab1[4];
+	u32 rgb1tab0[2], rgb1tab1[2], rgb1tab2[2], rgb1tab3[2];
 
 	u32 c0, c1, c2, c3;
 	u32 c4, c5, c6, c7;
 	u32 p0, p1;
 	u32 px, px0, px1, px2, px3;
+	u32 px4, px5, px6, px7;
 	int ncx;
 	int i, j, k;
 
@@ -838,7 +974,7 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 		c6=JX2I_GfxCon_Rng32();
 		c7=JX2I_GfxCon_Rng32();
 	}else
-	if(jx2i_gfxcon_ishalfcell)
+		if(jx2i_gfxcon_ishalfcell)
 	{
 		c0=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+0)&131071];
 		c1=jx2i_gfxcon_conbuf[((cy*ncx+cx)*4+1)&131071];
@@ -865,7 +1001,9 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 	{
 		for(j=0; j<4; j++)
 		{
-			if(jx2i_gfxcon_ishalfcell)
+//			if(jx2i_gfxcon_ishalfcell)
+			if(jx2i_gfxcon_ishalfcell &&
+				!(jx2i_gfxcon_is4xrow || jx2i_gfxcon_is8xrow))
 			{
 				switch(j)
 				{
@@ -888,6 +1026,9 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 				case 2: p0=c4; p1=c5; break;
 				case 3: p0=c6; p1=c7; break;
 				}
+			
+				if((jx2i_gfxcon_is4xrow || jx2i_gfxcon_is8xrow))
+					{ p0=c0; p1=c1; }
 			
 				if(jx2i_gfxcon_isbmap&8)
 				{
@@ -931,6 +1072,202 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 
 	if((jx2i_gfxcon_isbmap==0x2) || (jx2i_gfxcon_isbmap==0xA))
 	{
+		if(jx2i_gfxcon_is4xrow || jx2i_gfxcon_is8xrow)
+		{
+			p0=c0; p1=c1;
+			j=0;
+
+			px0=JX2I_GfxCon_Rgb232ToRgb24((p0>> 0)&0xFF);
+			px1=JX2I_GfxCon_Rgb232ToRgb24((p0>> 8)&0xFF);
+			px2=JX2I_GfxCon_Rgb232ToRgb24((p0>>16)&0xFF);
+			px3=JX2I_GfxCon_Rgb232ToRgb24((p0>>24)&0xFF);
+
+			px4=JX2I_GfxCon_Rgb232ToRgb24((p1>> 0)&0xFF);
+			px5=JX2I_GfxCon_Rgb232ToRgb24((p1>> 8)&0xFF);
+			px6=JX2I_GfxCon_Rgb232ToRgb24((p1>>16)&0xFF);
+			px7=JX2I_GfxCon_Rgb232ToRgb24((p1>>24)&0xFF);
+
+			JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+0, px0);
+			JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+0, px1);
+			JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+1, px0);
+			JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+1, px1);
+			JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+0, px2);
+			JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+0, px3);
+			JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+1, px2);
+			JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+1, px3);
+			JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+0, px4);
+			JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+0, px5);
+			JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+1, px4);
+			JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+1, px5);
+			JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+0, px6);
+			JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+0, px7);
+			JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+1, px6);
+			JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+1, px7);
+
+		}else
+			if(jx2i_gfxcon_isqtrcell)
+		{
+			j=jx2i_gfxcon_clrsmod;
+			switch(j)
+			{
+			case 0:		case 1:		case 2:		case 3:
+			case 4:		case 5:		case 6:		case 7:
+			case 8:		case 9:		case 10:	case 11:
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab0, j);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab1, j);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab2, j);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab3, j);
+				break;
+			case 12:
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab0, 0x2);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab1, 0x1);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab2, 0x4);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab3, 0x2);
+				break;
+			case 13:
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab0, 0x3);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab1, 0x1);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab2, 0x4);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab3, 0x6);
+				break;
+			case 14:
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab0, 0x2);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab1, 0x3);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab2, 0x5);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab3, 0x6);
+				break;
+			case 15:
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab0, 0x7);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab1, 0x3);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab2, 0x5);
+				JX2I_GfxCon_RgbSetupPal2(rgb1tab3, 0x6);
+				break;
+			default:
+				break;
+			}
+
+			/* 1bpp */
+			for(j=0; j<4; j++)
+			{
+				switch(j)
+				{
+				case 0: p0=c0>> 0; break;
+				case 1: p0=c0>>16; break;
+				case 2: p0=c1>> 0; break;
+				case 3: p0=c1>>16; break;
+				}
+
+				px=(p0>> 0)&0xF;
+				px0=rgb1tab3[(px>>3)&1];	px1=rgb1tab2[(px>> 2)&1];
+				px2=rgb1tab1[(px>>1)&1];	px3=rgb1tab0[(px>> 0)&1];
+				JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+1, px3);
+
+				px=(p0>>4)&0xF;
+				px0=rgb1tab3[(px>>3)&1];	px1=rgb1tab2[(px>> 2)&1];
+				px2=rgb1tab1[(px>>1)&1];	px3=rgb1tab0[(px>> 0)&1];
+				JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+1, px3);
+
+				px=(p0>>8)&0xF;
+				px0=rgb1tab3[(px>>3)&1];	px1=rgb1tab2[(px>> 2)&1];
+				px2=rgb1tab1[(px>>1)&1];	px3=rgb1tab0[(px>> 0)&1];
+				JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+1, px3);
+
+				px=(p0>>12)&0xF;
+				px0=rgb1tab3[(px>>3)&1];	px1=rgb1tab2[(px>> 2)&1];
+				px2=rgb1tab1[(px>>1)&1];	px3=rgb1tab0[(px>> 0)&1];
+				JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+1, px3);
+			}
+			return(0);
+		}
+		else if(jx2i_gfxcon_ishalfcell)
+		{
+			j=jx2i_gfxcon_clrsmod;
+			switch(j)
+			{
+			case 0:		case 1:		case 2:		case 3:
+			case 4:		case 5:		case 6:		case 7:
+			case 8:		case 9:		case 10:	case 11:
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab0, j);
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab1, j);
+				break;
+			case 12:
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab0, 11);
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab1, 6);
+				break;
+			case 13:
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab0, 7);
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab1, 6);
+				break;
+			case 14:
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab0, 5);
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab1, 4);
+				break;
+			case 15:
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab0, 3);
+				JX2I_GfxCon_RgbSetupPal4(rgb2tab1, 2);
+				break;
+			default:
+				break;
+			}
+		
+			/* 2bpp */
+			for(j=0; j<4; j++)
+			{
+				switch(j)
+				{
+				case 0: p0=c0; break;
+				case 1: p0=c1; break;
+				case 2: p0=c2; break;
+				case 3: p0=c3; break;
+				}
+
+				px=(p0>> 0)&0xFF;
+				px0=rgb2tab1[(px>>6)&3];	px1=rgb2tab0[(px>> 4)&3];
+				px2=rgb2tab1[(px>>2)&3];	px3=rgb2tab0[(px>> 0)&3];
+				JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+1, px3);
+
+				px=(p0>>8)&0xFF;
+				px0=rgb2tab0[(px>>6)&3];	px1=rgb2tab1[(px>> 4)&3];
+				px2=rgb2tab0[(px>>2)&3];	px3=rgb2tab1[(px>> 0)&3];
+				JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+1, px3);
+
+				px=(p0>>16)&0xFF;
+				px0=rgb2tab1[(px>>6)&3];	px1=rgb2tab0[(px>> 4)&3];
+				px2=rgb2tab1[(px>>2)&3];	px3=rgb2tab0[(px>> 0)&3];
+				JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+1, px3);
+
+				px=(p0>>24)&0xFF;
+				px0=rgb2tab0[(px>>6)&3];	px1=rgb2tab1[(px>> 4)&3];
+				px2=rgb2tab0[(px>>2)&3];	px3=rgb2tab1[(px>> 0)&3];
+				JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+0, px0);
+				JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+0, px1);
+				JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+1, px2);
+				JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+1, px3);
+			}
+			return(0);
+		}
+
 		for(j=0; j<4; j++)
 		{
 			switch(j)
@@ -2037,6 +2374,8 @@ int JX2I_GfxCon_UpdateForRegs()
 
 	jx2i_gfxcon_is2xcol=0;
 	jx2i_gfxcon_is2xrow=0;
+	jx2i_gfxcon_is4xrow=0;
+	jx2i_gfxcon_is8xrow=0;
 
 	if(jx2i_gfxcon_ctrlreg[0]&0x0001)
 		jx2i_gfxcon_is80col=1;
@@ -2055,6 +2394,15 @@ int JX2I_GfxCon_UpdateForRegs()
 		jx2i_gfxcon_is2xcol=1;
 	if(jx2i_gfxcon_ctrlreg[0]&0x080000)
 		jx2i_gfxcon_is2xrow=1;
+
+	if(jx2i_gfxcon_ctrlreg[0]&0x08000000)
+	{
+		jx2i_gfxcon_is2xrow=0;
+		if(jx2i_gfxcon_ctrlreg[0]&0x080000)
+			jx2i_gfxcon_is8xrow=1;
+		else
+			jx2i_gfxcon_is4xrow=1;
+	}
 
 	if(!jx2i_gfxcon_is800px)
 	{
@@ -2078,7 +2426,11 @@ int JX2I_GfxCon_UpdateForRegs()
 		ncx*=2;
 	if(jx2i_gfxcon_is2xrow)
 		ncy*=2;
-	
+	if(jx2i_gfxcon_is4xrow)
+		ncy*=4;
+	if(jx2i_gfxcon_is8xrow)
+		ncy*=8;
+
 	jx2i_gfxcon_ncx=ncx;
 	jx2i_gfxcon_ncy=ncy;
 

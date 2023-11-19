@@ -427,7 +427,8 @@ begin
 		(istrWord[27:24]==4'h0) &&
 		(istrWord[ 7: 4]==4'h2) &&
 		(istrWord[ 3: 0]==4'h0) &&
-		(istrWord[23:20]==4'h1) ;
+		(istrWord[23:20]==4'h1) &&
+		!pipeHasLr[1];
 
 	if(tIsRtsuFz)
 		tIsRtsu = 1;
@@ -617,7 +618,7 @@ begin
 //		if(tBraDisp8[24])
 		if(tBraDisp8[12])
 		begin
-			$display("PreBra: Reject Cc8");
+//			$display("PreBra: Reject Cc8");
 			tNonBra		= 1;
 			tPreBra		= 0;
 		end
@@ -680,7 +681,8 @@ begin
 //			(regValLr[1] && (regValLr[50]==pipeHasLr[4]));
 		tPreBra		=
 			(	(regValLr[51:50]==pipeHasLr[5:4]) && 
-				(regValLr[55:54]==pipeHasLr[7:6]) );
+				(regValLr[55:54]==pipeHasLr[7:6]) &&
+				regValLr[0]);
 		tNonBra		= !tPreBra;
 
 //		if(tNonBra)
@@ -701,7 +703,8 @@ begin
 //			(regValDhr[1] && (regValDhr[50]==pipeHasLr[4]));
 		tPreBra		=
 			(	(regValDhr[51:50]==pipeHasLr[5:4]) && 
-				(regValDhr[55:54]==pipeHasLr[7:6]) );
+				(regValDhr[55:54]==pipeHasLr[7:6]) &&
+				regValDhr[0] );
 		tNonBra		= !tPreBra;
 
 //		if(tNonBra)

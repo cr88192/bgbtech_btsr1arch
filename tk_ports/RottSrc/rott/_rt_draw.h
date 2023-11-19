@@ -35,7 +35,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MINZ                            0x2700
 #define MAXDRAWNTICS                    40
 
-#define W_CHANGE  (WEAPONUPTICS || WEAPONDOWNTICS)
+// #define W_CHANGE  (WEAPONUPTICS || WEAPONDOWNTICS)
 
 // #if (SHAREWARE == 0)
 #if 1

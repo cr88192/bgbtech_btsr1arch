@@ -671,8 +671,13 @@ begin
 //	tPixCellIx2 = { 4'b0000, pixCellIx[9:0] };
 
 	if(tRegInOpm[5:4] == 2'b00)
+	begin
 //		tRegInAddr = { 8'b0, 3'b101, tPixCellIx2[11:0], 5'h000 };
-		tRegInAddr = { 8'h0A, 1'b0, tPixCellIx2[13:0], 5'h000 };
+//		tRegInAddr = { 8'h0A, 1'b0, tPixCellIx2[13:0], 5'h000 };
+		tRegInAddr = 
+			{ scrRegCtrl2[27:4], 4'h0 } +
+			{ 8'h00, 1'b0, tPixCellIx2[13:0], 5'h000 };
+	end
 
 //	tNxtReqAddr			= tRegInAddr[27:0];
 	tNxtReqBix			= tRegInAddr[4:0];
@@ -689,11 +694,19 @@ begin
 //		tRegInAddrHb = { tRegInAddr[16], tRegInAddr[2:0] };
 //	end
 
-	tNxtReqAddr		= { 8'h0A, tRegInAddrHb, tRegInAddr[15:2], 2'b00 };
+//	tNxtReqAddr		= { 8'h0A, tRegInAddrHb, tRegInAddr[15:2], 2'b00 };
+	tNxtReqAddr		= 
+		{ scrRegCtrl2[27:4], 4'h0 } +
+		{ 8'h00, tRegInAddrHb, tRegInAddr[15:2], 2'b00 };
+//	tNxtReqAddr		= tRegInAddr;
 
 	if((tRegInOpm[2:0] == 3'b011) && scrRegCtrl0[16])
 	begin
-		tNxtReqAddr		= { 8'h0A, tRegInAddr[2],
+//		tNxtReqAddr		= { 8'h0A, tRegInAddr[2],
+//			tRegInAddr[16:3], tRegInAddr[1:0], 3'b000 };
+		tNxtReqAddr		=
+			{ scrRegCtrl2[27:4], 4'h0 } +
+			{ 8'h00, tRegInAddr[2],
 			tRegInAddr[16:3], tRegInAddr[1:0], 3'b000 };
 		tNxtReqBix		= { tRegInAddr[1:0], 3'b000 };
 	end
@@ -825,8 +838,15 @@ begin
 //	tRegInAddrC = { 8'b0, 3'b101, tPixCellIxC[11:0], 5'h000 };
 //	tRegInAddrD = { 8'b0, 3'b101, tPixCellIxD[11:0], 5'h000 };
 
-	tRegInAddrC = { 8'h0A, 1'b0, tPixCellIxC[13:0], 5'h000 };
-	tRegInAddrD = { 8'h0A, 1'b0, tPixCellIxD[13:0], 5'h000 };
+//	tRegInAddrC = { 8'h0A, 1'b0, tPixCellIxC[13:0], 5'h000 };
+//	tRegInAddrD = { 8'h0A, 1'b0, tPixCellIxD[13:0], 5'h000 };
+
+	tRegInAddrC = 
+		{ scrRegCtrl2[27:4], 4'h0 } +
+		{ 8'h00, 1'b0, tPixCellIxC[13:0], 5'h000 };
+	tRegInAddrD =
+		{ scrRegCtrl2[27:4], 4'h0 } +
+		{ 8'h00, 1'b0, tPixCellIxD[13:0], 5'h000 };
 
 	tNxtReqAxC = tRegInAddrC[27:4];
 //	tNxtReqAxD = tNxtReqAxC + 1;

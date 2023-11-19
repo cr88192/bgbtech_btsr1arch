@@ -961,6 +961,7 @@ int TKSH_Cmds_HexEdit(char **args)
 	return(0);
 }
 
+#if 0
 static const u32 tst_mandrill0_bmp[] = {
 0x14364D42,0x00000000,0x04360000,0x00280000,0x00400000,0x00400000,0x00010000,
 0x00000008,0x10000000,0x0EC30000,0x0EC30000,0x01000000,0x01000000,0x1C240000,
@@ -1148,6 +1149,9 @@ static const u32 tst_mandrill0_bmp[] = {
 0x38A9A9DD,0x2138587F,0xA59D7F4D,0x5C803B59,0x7E20A55C,0x81818181,0x237E7A59,
 0x3B3880A5,0x9FDAA5A8,0x5E805D9D,0xDFD3C6DD,0xDFC0BEB8,0xFFFF4E27,0xFFFFFFFF,
 };
+#endif
+
+extern void __rsrc__mandril;
 
 int TKSH_Cmds_TestGfx(char **args)
 {
@@ -1187,9 +1191,28 @@ int TKSH_Cmds_TestGfx(char **args)
 	brk=0;
 	xstr=80;
 
-	mandril_bmp=(byte *)(tst_mandrill0_bmp);
-	mandril_pix=mandril_bmp+0x0436;
-	mandril_pal3=mandril_bmp+0x0036;
+//	mandril_bmp=(byte *)(tst_mandrill0_bmp);
+	mandril_bmp=(byte *)(&__rsrc__mandril);
+//	mandril_pix=mandril_bmp+0x0436;
+//	mandril_pal3=mandril_bmp+0x0036;
+
+	if(mandril_bmp[0]==' ')
+	{
+		j=*(u32 *)(mandril_bmp+0x0C);
+		mandril_pix=mandril_bmp+j;
+		mandril_pal3=mandril_bmp+0x0038;
+	}else
+		if(mandril_bmp[0]=='B')
+	{
+		j=*(u32 *)(mandril_bmp+0x0A);
+		mandril_pix=mandril_bmp+j;
+		mandril_pal3=mandril_bmp+0x0036;
+	}else
+	{
+		tk_printf("Image sig not intact D=%08X A=%p\n",
+			*(u32 *)mandril_bmp, mandril_bmp);
+		return(0);
+	}
 
 	for(i=0; i<256; i++)
 	{
@@ -1493,27 +1516,41 @@ int TKSH_Cmds_TestGfx(char **args)
 int TKSH_Cmds_StartGui(char **args)
 {
 	TKGDI_BITMAPINFOHEADER t_info, t_info2;
+	TKGDI_EVENT t_imsg;
 	_tkgdi_context_t *ctx;
 	TKGDI_BITMAPINFOHEADER *info, *info2;
+	TKGDI_EVENT *imsg;
 	TKGHDC hdcScrn, hdcWin;
 	TKGDI_RECT tRect;
 	int i;
 
 	info=&t_info;
 	info2=&t_info2;
+	imsg=&t_imsg;
 
 	tk_con_disable();
 
-	info->biWidth=800;
-	info->biHeight=600;
+	info->biWidth=640;
+	info->biHeight=400;
+
+//	info->biWidth=800;
+//	info->biHeight=600;
 	info->biBitCount=16;
 
 	ctx=TKGDI_GetHalContext(TK_FCC_GDI, TK_FCC_GDI);
 	hdcScrn=ctx->vt->CreateDisplay(ctx, 0, TKGDI_FCC_crea, info);
 
-	info2->biWidth=640;
+//	info2->biWidth=640;
+//	info2->biHeight=200;
+
+	info2->biWidth=480;
 	info2->biHeight=200;
+
+//	info2->biWidth=320;
+//	info2->biHeight=150;
+
 	info2->biBitCount=16;
+	info2->biCompression=TKGDI_FCC_text;
 
 	hdcWin=ctx->vt->CreateDisplay(ctx, hdcScrn, TKGDI_FCC_crea, info2);
 
@@ -1522,6 +1559,9 @@ int TKSH_Cmds_StartGui(char **args)
 	tRect.right=80+640;
 	tRect.bottom=100+200;
 	ctx->vt->ModifyDisplay(ctx, hdcWin, TKGDI_FCC_move, &tRect, NULL);
+
+	ctx->vt->DrawString(ctx, hdcWin, -1, -1,
+		"Console test string", 0, 0);
 
 	while(1)
 	{
@@ -1539,6 +1579,18 @@ int TKSH_Cmds_StartGui(char **args)
 
 		if(i==TK_K_ESC)
 			break;
+		
+		imsg->evSize=sizeof(TKGDI_EVENT);
+		imsg->dev=hdcScrn;
+		imsg->fccMsg=TKGDI_FCC_keyb;
+		imsg->ptMsec=0;
+		imsg->wParm1=i;
+		imsg->wParm2=0;
+		imsg->lParm1=0;
+		imsg->ptMsX=0;
+		imsg->ptMsY=0;
+		imsg->ptMsB=0;
+		ctx->vt->QueryDisplay(ctx, hdcScrn, TKGDI_FCC_poll, imsg, NULL);
 	}
 
 	info->biWidth=640;

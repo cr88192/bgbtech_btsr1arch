@@ -41,6 +41,20 @@ static int rndindex = 0;
 static int sndindex = 0;
 
 
+int PrintHashRng()
+{
+	int i, h;
+	
+	h=0;
+	for(i=0; i<SIZE_OF_RANDOM_TABLE; i++)
+	{
+		h=h*251+RandomTable[i];
+	}
+	
+	printf("Random Hash %08X\n", h);
+	return(0);
+}
+
 //****************************************************************************
 //
 // GetRandomSeed ()
@@ -49,7 +63,8 @@ static int sndindex = 0;
 
 int GetRandomSeed ( void )
 {
-	return ( time (NULL) % (SIZE_OF_RANDOM_TABLE) );
+//	return ( time (NULL) % (SIZE_OF_RANDOM_TABLE) );
+	return ( time (NULL) & (SIZE_OF_RANDOM_TABLE-1) );
 }
 
 //****************************************************************************
@@ -60,8 +75,11 @@ int GetRandomSeed ( void )
 
 void  InitializeRNG ( void )
 {
-	SetRNGindex(GetRandomSeed());
-	sndindex=GetRandomSeed();
+	PrintHashRng();
+//	SetRNGindex(GetRandomSeed());
+	SetRNGindex(0);
+//	sndindex=GetRandomSeed();
+	sndindex=0;
 }
 
 //****************************************************************************
@@ -73,6 +91,9 @@ void  InitializeRNG ( void )
 void  SetRNGindex ( int i )
 {
 	rndindex=i;
+
+	PrintHashRng();
+
 //#if (DEVELOPMENT == 1)
 	SoftError("RNG index set at %ld\n",i);
 //#endif
@@ -88,7 +109,6 @@ int GetRNGindex ( void )
 {
 	return rndindex;
 }
-
 
 #if (RANDOMTEST==1)
 //****************************************************************************

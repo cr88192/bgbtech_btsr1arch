@@ -1,6 +1,10 @@
 #ifndef TKGDI_AVI_H
 #define TKGDI_AVI_H
 
+#ifndef RIFF_MAKETCC
+#define RIFF_MAKETCC(a, b)			((a)+((b)<<8))
+#endif
+
 #ifndef RIFF_MAKETAG
 #define RIFF_MAKETAG(a, b, c, d)	((a)+((b)<<8)+((c)<<16)+((d)<<24))
 #endif

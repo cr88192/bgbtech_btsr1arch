@@ -156,6 +156,52 @@ int TKSPI_DelayUSec(int us)
 {
 }
 
+#ifdef __BJX2__
+int TKSPI_ReadDataQA(byte *sbuf, byte *ebuf);
+
+__asm {
+TKSPI_ReadDataQA:
+	CMPGT	 R4, R5
+	BF		.L1
+
+	MOV		-1, R16
+	MOV.L	tkspi_ctl_status, R17
+	MOV		0xFFFFF000E030, R18		//CTRL
+	MOV		0xFFFFF000E038, R19		//QDATA
+
+	OR		0x20, R17
+
+.L0:
+//	P_SPI_QDATA=0xFFFFFFFFFFFFFFFFULL;
+//	P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT8X;
+//	v=P_SPI_CTRL;
+//	while(v&SPICTRL_BUSY) 
+//		v=P_SPI_CTRL;
+//	*(u64 *)ct=P_SPI_QDATA;
+//	ct+=8;
+
+	MOV.Q	R16, (R19)
+	MOV.L	R17, (R18)
+
+	.L3:
+	MOVU.L	(R18), R2
+	TEST	2, R2
+	BF		.L3
+			
+	MOV.Q	(R19), R3
+	MOV.Q	R3, (R4)
+
+	ADD		8, R4
+
+	CMPGT	 R4, R5
+	BT		.L0
+
+.L1:
+	RTS
+};
+#endif
+
+
 int TKSPI_ReadData(byte *buf, u32 len)
 {
 	byte *ct, *cte;
@@ -201,6 +247,9 @@ int TKSPI_ReadData(byte *buf, u32 len)
 #if 1
 	if(!(len&7))
 	{
+#ifdef __BJX2__
+		TKSPI_ReadDataQA(ct, cte);
+#else
 //		while(n>0)
 		while(ct<cte)
 		{
@@ -212,6 +261,8 @@ int TKSPI_ReadData(byte *buf, u32 len)
 			*(u64 *)ct=P_SPI_QDATA;
 			ct+=8;
 		}
+#endif
+
 
 		TKSPI_XchByte(0xFF);
 		TKSPI_XchByte(0xFF);

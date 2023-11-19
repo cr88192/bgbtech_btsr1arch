@@ -102,6 +102,10 @@ void I_ShutdownMusic(void)
 {
 }
 
+void I_MusicSubmit(void)
+{
+}
+
 static int	looping=0;
 static int	musicdies=-1;
 
@@ -196,7 +200,7 @@ void I_UnRegisterSong(int handle)
 //	}
 }
 
-int I_RegisterSong(void* data)
+int I_RegisterSong(void* data, int sz)
 {
 	int i;
 	

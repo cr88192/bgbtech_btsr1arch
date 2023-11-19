@@ -42,6 +42,7 @@ long long __smullq(int a, int b);
 long long __int32_dmuls(int a, int b);
 
 #ifdef _WIN32
+// #if 0
 long long __int32_dmuls(int a, int b)
 {
 	return(((long long)a) * ((long long)b));
@@ -59,7 +60,7 @@ FixedMul
 //	c = ((long long) a * (long long) b) >> SFRACBITS;
 //	c = __smullq(a, b) >> SFRACBITS;
 	c = __int32_dmuls(a, b) >> SFRACBITS;
-	c = (int)c;
+	c = (fixed_t)c;
 	return(c);
 //	return ((long long) a * (long long) b) >> SFRACBITS;
 }
@@ -72,8 +73,9 @@ FixedMulShift
 {
 	int c;
 //	c = ((long long) a * (long long) b) >> shr;
-	c = __int32_dmuls(a, b) >> shr;
-	c = (int)c;
+//	c = __int32_dmuls(a, b) >> shr;
+	c = __int32_dmuls(a, b) >> (shr&63);
+	c = (fixed_t)c;
 //	__debugbreak();
 	return(c);
 }
@@ -88,7 +90,7 @@ FixedDiv
 ( fixed_t	a,
   fixed_t	b )
 {
-	if ( (abs(a)>>14) >= abs(b))
+	if ( (rt_abs(a)>>14) >= rt_abs(b))
 		return ((a^b)<0) ? MININT : MAXINT;
 	return FixedDiv2 (a,b);
 }
@@ -98,11 +100,34 @@ fixed FixedScale(fixed orig, fixed factor, fixed divisor)
 	return(FixedDiv(FixedMul(orig, factor), divisor));
 }
 
+double sqrt_appx(double val)
+{
+	double f, g;
+	u64 v;
+
+	if(val==0)
+		return(0.0);
+
+	v=0; f=0;
+	memcpy(&v, &val, 8);
+	v=0x1FF8000000000000ULL+(v>>1);
+	memcpy(&f, &v, 8);
+	
+	g=f*f;	f=f*(1.0+(val-g)*0.5);
+	g=f*f;	f=f*(1.0+(val-g)*0.5);
+	g=f*f;	f=f*(1.0+(val-g)*0.5);
+	g=f*f;	f=f*(1.0+(val-g)*0.5);
+	g=f*f;	f=f*(1.0+(val-g)*0.5);
+	
+	return(f);
+}
+
 fixed_t FixedSqrtHP(fixed_t val)
 {
 	fixed v;
 	
 	v=sqrt(val/65536.0)*65536.0;
+//	v=sqrt_appx(val/65536.0)*65536.0;
 	return(v);
 }
 
@@ -111,6 +136,7 @@ fixed_t FixedSqrtLP(fixed_t val)
 	fixed v;
 	
 	v=sqrt(val/256.0)*256.0;
+//	v=sqrt_appx(val/256.0)*256.0;
 	return(v);
 }
 
@@ -123,6 +149,27 @@ FixedDiv2
   fixed_t	b )
 {
 #if 1
+	long long ta, tb, tc, c;
+	int sg;
+	
+	sg=0;
+	ta=a;
+	tb=b;
+	if(ta<0)
+		{ ta=-ta; sg=!sg; }
+	if(tb<0)
+		{ tb=-tb; sg=!sg; }
+	
+	tc = (ta<<16) / (tb);
+	
+	c=tc;
+	if(sg)
+		c=-c;
+	
+	return (fixed_t) c;
+#endif
+
+#if 0
 	long long c;
 	c = (((long long)a)<<16) / ((long long)b);
 	return (fixed_t) c;

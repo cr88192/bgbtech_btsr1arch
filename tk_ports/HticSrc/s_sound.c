@@ -595,6 +595,9 @@ int S_SetMusicVolume(int volume)
 	I_SetMusicVolume(volume);
 	snd_MusicVolume = volume;
 #endif
+
+	I_SetMusicVolume(volume);
+//	snd_MusicVolume = volume;
 }
 #endif
 

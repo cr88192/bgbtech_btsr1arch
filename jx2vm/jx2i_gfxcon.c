@@ -508,6 +508,9 @@ byte jx2i_gfxcon_ispow2;
 byte jx2i_gfxcon_is2xcol;
 byte jx2i_gfxcon_is2xrow;
 
+byte jx2i_gfxcon_is4xrow;
+byte jx2i_gfxcon_is8xrow;
+
 u32 jx2i_gfxcon_dbgcursor;
 
 byte jx2i_gfxcon_isbmap;
@@ -568,6 +571,9 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 	jx2i_gfxcon_is2xcol=0;
 	jx2i_gfxcon_is2xrow=0;
 
+	jx2i_gfxcon_is4xrow=0;
+	jx2i_gfxcon_is8xrow=0;
+
 	jx2i_gfxcon_ncx=40;
 	jx2i_gfxcon_ncy=25;
 
@@ -623,6 +629,26 @@ int JX2I_GfxCon_Startup(BJX2_Context *ctx)
 	return(0);
 }
 
+int JX2I_GfxCon_UpdateVRamBaseAddress(BJX2_Context *ctx)
+{
+	u32 base;
+	BJX2_MemSpan *sp;
+
+	base=jx2i_gfxcon_ctrlreg[2];
+	if(!base)
+		return(0);
+
+	sp=BJX2_MemSpanForName(ctx, "DRAM");
+	if(sp)
+	{
+		jx2i_gfxcon_conbuf=(u32 *)(((byte *)sp->data)+
+			((base-sp->modbase)&sp->modmask));
+		jx2i_gfxcon_lconbuf=jx2i_gfxcon_conbuf+262144;
+	}
+
+	return(0);
+}
+
 int jx2i_gfxcon_clamp255(int v)
 {
 	if(v<  0)	return(0);
@@ -656,6 +682,20 @@ int JX2I_GfxCon_PutPix200(int px, int py, int clrc)
 		if(py&1)
 			return(0);
 		py>>=1;
+	}
+
+	if(jx2i_gfxcon_is4xrow)
+	{
+		if(py&3)
+			return(0);
+		py>>=2;
+	}
+
+	if(jx2i_gfxcon_is8xrow)
+	{
+		if(py&7)
+			return(0);
+		py>>=3;
 	}
 
 	if(jx2i_gfxcon_is80col || jx2i_gfxcon_isdbg)
@@ -704,6 +744,21 @@ int JX2I_GfxCon_PutPix400(int px, int py, int clrc)
 			return(0);
 		py>>=1;
 	}
+
+	if(jx2i_gfxcon_is4xrow)
+	{
+		if(py&3)
+			return(0);
+		py>>=2;
+	}
+
+	if(jx2i_gfxcon_is8xrow)
+	{
+		if(py&7)
+			return(0);
+		py>>=3;
+	}
+
 
 #if 0
 	if(btesh2_gfxcon_swaprb)
@@ -982,6 +1037,7 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 	u32 c4, c5, c6, c7;
 	u32 p0, p1;
 	u32 px, px0, px1, px2, px3;
+	u32 px4, px5, px6, px7;
 	int ncx;
 	int i, j, k;
 
@@ -1028,7 +1084,9 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 	{
 		for(j=0; j<4; j++)
 		{
-			if(jx2i_gfxcon_ishalfcell)
+//			if(jx2i_gfxcon_ishalfcell)
+			if(jx2i_gfxcon_ishalfcell &&
+				!(jx2i_gfxcon_is4xrow || jx2i_gfxcon_is8xrow))
 			{
 				switch(j)
 				{
@@ -1051,6 +1109,9 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 				case 2: p0=c4; p1=c5; break;
 				case 3: p0=c6; p1=c7; break;
 				}
+				
+				if((jx2i_gfxcon_is4xrow || jx2i_gfxcon_is8xrow))
+					{ p0=c0; p1=c1; }
 			
 				if(jx2i_gfxcon_isbmap&8)
 				{
@@ -1094,7 +1155,40 @@ int JX2I_GfxCon_UpdateCellBM(int cx, int cy)
 
 	if((jx2i_gfxcon_isbmap==0x2) || (jx2i_gfxcon_isbmap==0xA))
 	{
-		if(jx2i_gfxcon_isqtrcell)
+		if(jx2i_gfxcon_is4xrow || jx2i_gfxcon_is8xrow)
+		{
+			p0=c0; p1=c1;
+			j=0;
+
+			px0=JX2I_GfxCon_Rgb232ToRgb24((p0>> 0)&0xFF);
+			px1=JX2I_GfxCon_Rgb232ToRgb24((p0>> 8)&0xFF);
+			px2=JX2I_GfxCon_Rgb232ToRgb24((p0>>16)&0xFF);
+			px3=JX2I_GfxCon_Rgb232ToRgb24((p0>>24)&0xFF);
+
+			px4=JX2I_GfxCon_Rgb232ToRgb24((p1>> 0)&0xFF);
+			px5=JX2I_GfxCon_Rgb232ToRgb24((p1>> 8)&0xFF);
+			px6=JX2I_GfxCon_Rgb232ToRgb24((p1>>16)&0xFF);
+			px7=JX2I_GfxCon_Rgb232ToRgb24((p1>>24)&0xFF);
+
+			JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+0, px0);
+			JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+0, px1);
+			JX2I_GfxCon_PutPix200(cx*8+0, cy*8+j*2+1, px0);
+			JX2I_GfxCon_PutPix200(cx*8+1, cy*8+j*2+1, px1);
+			JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+0, px2);
+			JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+0, px3);
+			JX2I_GfxCon_PutPix200(cx*8+2, cy*8+j*2+1, px2);
+			JX2I_GfxCon_PutPix200(cx*8+3, cy*8+j*2+1, px3);
+			JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+0, px4);
+			JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+0, px5);
+			JX2I_GfxCon_PutPix200(cx*8+4, cy*8+j*2+1, px4);
+			JX2I_GfxCon_PutPix200(cx*8+5, cy*8+j*2+1, px5);
+			JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+0, px6);
+			JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+0, px7);
+			JX2I_GfxCon_PutPix200(cx*8+6, cy*8+j*2+1, px6);
+			JX2I_GfxCon_PutPix200(cx*8+7, cy*8+j*2+1, px7);
+
+		}else
+			if(jx2i_gfxcon_isqtrcell)
 		{
 			j=jx2i_gfxcon_clrsmod;
 			switch(j)
@@ -2440,6 +2534,8 @@ int JX2I_GfxCon_UpdateForRegs()
 
 	jx2i_gfxcon_is2xcol=0;
 	jx2i_gfxcon_is2xrow=0;
+	jx2i_gfxcon_is4xrow=0;
+	jx2i_gfxcon_is8xrow=0;
 
 	if(jx2i_gfxcon_ctrlreg[0]&0x0001)
 		jx2i_gfxcon_is80col=1;
@@ -2458,6 +2554,15 @@ int JX2I_GfxCon_UpdateForRegs()
 		jx2i_gfxcon_is2xcol=1;
 	if(jx2i_gfxcon_ctrlreg[0]&0x080000)
 		jx2i_gfxcon_is2xrow=1;
+
+	if(jx2i_gfxcon_ctrlreg[0]&0x08000000)
+	{
+		jx2i_gfxcon_is2xrow=0;
+		if(jx2i_gfxcon_ctrlreg[0]&0x080000)
+			jx2i_gfxcon_is8xrow=1;
+		else
+			jx2i_gfxcon_is4xrow=1;
+	}
 
 	if(jx2i_gfxcon_ispow2)
 	{
@@ -2496,6 +2601,10 @@ int JX2I_GfxCon_UpdateForRegs()
 		ncx*=2;
 	if(jx2i_gfxcon_is2xrow)
 		ncy*=2;
+	if(jx2i_gfxcon_is4xrow)
+		ncy*=4;
+	if(jx2i_gfxcon_is8xrow)
+		ncy*=8;
 	
 	jx2i_gfxcon_ncx=ncx;
 	jx2i_gfxcon_ncy=ncy;
@@ -2654,6 +2763,7 @@ int BJX2_MemGfxConCb_SetDWord(BJX2_Context *ctx,
 	{
 		jx2i_gfxcon_ctrlreg[(addr>>2)&63]=val;
 		JX2I_GfxCon_UpdateForRegs();
+		JX2I_GfxCon_UpdateVRamBaseAddress(ctx);
 
 		if(((addr>>2)&63)==8)
 		{

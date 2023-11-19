@@ -3004,6 +3004,7 @@ Imm10u and Imm10n encodings will use W.i as an additional immediate bit.
 
 Possible: W.nmi will expand Disp20 by 3 bits (inverted-xor against the original sign extension), expanding the reach of BRA/BSR to 8MB.
 
+Within XG2 Mode, the instruction stream will be required to have a 32-bit alignment, and the LSB for branch displacements Must Be Zero.
 
 Possibly, this mode may use (WX4,WX3,WX2,WXE) == 0100 or 0101.
 

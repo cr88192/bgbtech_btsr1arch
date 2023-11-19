@@ -8,6 +8,8 @@
 #include "sounds.h"
 #include "i_sound.h"
 
+#include <tkgdi/tkgdi.h>
+
 
 extern sfxinfo_t S_sfx[];
 
@@ -92,6 +94,8 @@ addsfx
 	oldest = gametic;
 	oldestnum = 0;
 
+	volume*=4;
+
 	// Loop all channels to find oldest SFX.
 	for (i=0; (i<NUM_CHANNELS) && (channels[i]); i++)
 	{
@@ -135,12 +139,15 @@ addsfx
 	rightvol =
 		volume - ((volume*seperation*seperation) >> 16);	
 
+	rightvol = __int_clamp(rightvol, 0, 127);
+	leftvol = __int_clamp(leftvol, 0, 127);
+
 	// Sanity check, clamp volume.
-	if (rightvol < 0 || rightvol > 127)
-		I_Error("rightvol out of bounds");
+//	if (rightvol < 0 || rightvol > 127)
+//		I_Error("rightvol out of bounds");
 	
-	if (leftvol < 0 || leftvol > 127)
-		I_Error("leftvol out of bounds");
+//	if (leftvol < 0 || leftvol > 127)
+//		I_Error("leftvol out of bounds");
 	
 //	channelleftvol_lookup[slot] = &vol_lookup[leftvol*256];
 //	channelrightvol_lookup[slot] = &vol_lookup[rightvol*256];
@@ -410,14 +417,36 @@ void I_SubmitSound(void)
 	I_SubmitSound2(0);
 }
 
+TKGHSND hSndDev;
+TKGDI_WAVEFORMATEX i_snd_t_info;
+TKGDI_WAVEFORMATEX *i_snd_info = NULL;
+
 void I_SubmitSound2(int extra)
 {
-	static short mixbuf2[SAMPLECOUNT*2*2];
+//	static short mixbuf2[SAMPLECOUNT*2*2];
 //	static short mixbuf_mus[SAMPLECOUNT*2*2];
+	static short *mixbuf2;
 	static int curms, lastms;
 	
 	int i, j;
 	int n, ns, dt, musvol;
+
+	if(!i_snd_info)
+	{
+		i_snd_info = &i_snd_t_info;
+		memset(i_snd_info, 0, sizeof(TKGDI_WAVEFORMATEX));
+		
+		i_snd_info->wFormatTag=TKGDI_WAVE_FORMAT_PCM;
+		i_snd_info->nChannels=2;
+		i_snd_info->nSamplesPerSec=16000;
+		i_snd_info->nAvgBytesPerSec=16000*4;
+		i_snd_info->nBlockAlign=4;
+		i_snd_info->wBitsPerSample=16;
+		i_snd_info->cbSize=sizeof(TKGDI_WAVEFORMATEX);
+
+		hSndDev = tkgCreateAudioDevice(0, TKGDI_FCC_auds, i_snd_info);
+		mixbuf2 = tkgGlobalAlloc(SAMPLECOUNT*2*2*sizeof(short));
+	}
 
 	n=(SAMPLECOUNT*1486)>>10;
 
@@ -445,10 +474,12 @@ void I_SubmitSound2(int extra)
 	{
 		if(extra)
 		{
-			SoundDev_WriteStereoSamples(mixbuf2, n);
+//			SoundDev_WriteStereoSamples(mixbuf2, n);
+			tkgWriteSamples(hSndDev, mixbuf2, n, n);
 		}else
 		{
-			SoundDev_WriteStereoSamples(mixbuf2, ns);
+//			SoundDev_WriteStereoSamples(mixbuf2, ns);
+			tkgWriteSamples(hSndDev, mixbuf2, ns, n);
 		}
 
 		SoundDev_Submit();

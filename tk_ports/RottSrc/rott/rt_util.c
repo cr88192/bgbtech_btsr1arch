@@ -157,8 +157,8 @@ int atan2_appx(int dx, int dy)
 
 	absdx = rt_abs(dx);
 	absdy = rt_abs(dy);
-		if (absdx >= absdy)
-	ratio = FixedDiv2(absdy,absdx);
+	if (absdx >= absdy)
+		ratio = FixedDiv2(absdy,absdx);
 	else
 		ratio = FixedDiv2(absdx,absdy);
 
@@ -496,10 +496,14 @@ void DebugError (char *error, ...)
 {
 	va_list	argptr;
 
-	if (DebugStarted==false)
-		return;
+//	if (DebugStarted==false)
+//		return;
 	va_start (argptr, error);
-	vfprintf (debugout, error, argptr);
+
+	vfprintf (stdout, error, argptr);
+	if (DebugStarted!=false)
+		vfprintf (debugout, error, argptr);
+
 	va_end (argptr);
 }
 
@@ -514,8 +518,8 @@ void DebugError (char *error, ...)
 */
 void OpenSoftError ( void )
 {
-  errout = fopen(SOFTERRORFILE,"wt+");
-  SoftErrorStarted=true;
+	errout = fopen(SOFTERRORFILE,"wt+");
+	SoftErrorStarted=true;
 }
 
 /*
@@ -545,13 +549,13 @@ void MapDebug (char *error, ...)
 */
 void OpenMapDebug ( void )
 {
-  char filename[ 128 ];
+	char filename[ 128 ];
 
-  if (MapDebugStarted==true)
-	return;
-  GetPathFromEnvironment( filename, ApogeePath, MAPDEBUGFILE );
-  mapdebugout = fopen(filename,"wt+");
-  MapDebugStarted=true;
+	if (MapDebugStarted==true)
+		return;
+	GetPathFromEnvironment( filename, ApogeePath, MAPDEBUGFILE );
+	mapdebugout = fopen(filename,"wt+");
+	MapDebugStarted=true;
 }
 
 
@@ -565,15 +569,15 @@ void OpenMapDebug ( void )
 void StartupSoftError ( void )
 {
 #if (DEBUG == 1)
-  if (DebugStarted==false)
+	if (DebugStarted==false)
 	{
-	debugout = fopen(DEBUGFILE,"wt+");
-	DebugStarted=true;
+		debugout = fopen(DEBUGFILE,"wt+");
+		DebugStarted=true;
 	}
 #endif
 #if (SOFTERROR == 1)
-  if (SoftErrorStarted==false)
-	OpenSoftError();
+	if (SoftErrorStarted==false)
+		OpenSoftError();
 #endif
 }
 
@@ -586,20 +590,20 @@ void StartupSoftError ( void )
 */
 void ShutdownSoftError ( void )
 {
-  if (DebugStarted==true)
+	if (DebugStarted==true)
 	{
-	fclose(debugout);
-	DebugStarted=false;
+		fclose(debugout);
+		DebugStarted=false;
 	}
-  if (SoftErrorStarted==true)
+	if (SoftErrorStarted==true)
 	{
-	fclose(errout);
-	SoftErrorStarted=false;
+		fclose(errout);
+		SoftErrorStarted=false;
 	}
-  if (MapDebugStarted==true)
+	if (MapDebugStarted==true)
 	{
-	fclose(mapdebugout);
-	MapDebugStarted=false;
+		fclose(mapdebugout);
+		MapDebugStarted=false;
 	}
 }
 
@@ -1297,7 +1301,9 @@ static PFV Switch;								/* pointer to comparison routine					*/
 static int Width;							/* width of an object in bytes						*/
 static char *Base;							/* pointer to element [-1] of array				*/
 
-void hsort(char * base, int nel, int width, int (*compare)(), void (*switcher)())
+void hsort(char * base, int nel, int width,
+	int (*compare)(),
+	void (*switcher)())
 {
 static int i,n,stop;
 		/*		Perform a heap sort on an array starting at base.  The array is
@@ -1316,29 +1322,33 @@ static int i,n,stop;
 	Switch= switcher;
 	n=nel*Width;
 	Base=base-Width;
-	for (i=(n/Width/2)*Width; i>=Width; i-=Width) newsift_down(i,n);
+	for (i=(n/Width/2)*Width; i>=Width; i-=Width)
+		newsift_down(i,n);
 	stop=Width+Width;
 	for (i=n; i>=stop; )
-		{
+	{
 		(*Switch)(base, Base+i);
 		newsift_down(Width,i-=Width);
-		}
+	}
 
 }
 
 /*---------------------------------------------------------------------------*/
 // static
-newsift_down(L,U) int L,U;
+// newsift_down(L,U) int L,U;
+int newsift_down(int L, int U)
 {  int c;
 
 	while(1)
-		{c=L+L;
+	{
+		c=L+L;
 		if(c>U) break;
 		if( (c+Width <= U) && ((*Comp)(Base+c+Width,Base+c)>0) ) c+= Width;
 		if ((*Comp)(Base+L,Base+c)>=0) break;
 		(*Switch)(Base+L, Base+c);
 		L=c;
-		}
+	}
+	return(0);
 }
 
 

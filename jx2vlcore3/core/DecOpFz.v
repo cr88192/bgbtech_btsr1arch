@@ -161,6 +161,8 @@ reg[32:0]		opImm_disp8s;
 reg[32:0]		opImm_disp9s;
 reg[32:0]		opImm_disp13s;
 
+reg				opImm_dispAltLr;
+
 reg[32:0]		opImm_disp5u;
 
 reg[32:0]		opImm_imm5u;
@@ -751,6 +753,7 @@ begin
 		istrWord[7] ^ opExWM,
 		istrWord[7] ^ opExWI,
 		istrWord[7:0], istrWord[27:16] };
+	opImm_dispAltLr	= 0;
 
 	if(opIsJumboAu)
 	begin
@@ -978,6 +981,15 @@ begin
 		opImm_imm16s	= {
 			istrWord[31] ? UV17_FF : UV17_00,
 			istrWord[31:16] };
+	end
+
+	if(srXG2)
+	begin
+		/* If XG2, Disable LSB of branch ops.
+		   The LSB will instead encode an Alt-LR flag.
+		 */
+		opImm_dispAltLr		= opImm_disp20s[0];
+		opImm_disp20s[0]	= 0;
 	end
 
 `ifdef jx2_enable_xgpr
@@ -7359,6 +7371,12 @@ begin
 //				opImm	= opImm_disp20s;
 //				opDoImm	= JX2_FMIMM_NONE;
 				opDoImm	= JX2_FMIMM_DISP20S;
+
+				if(opImm_dispAltLr)
+				begin
+					opRegN	= JX2_GR_DHR;
+					opRegP	= JX2_GR_DHR;
+				end
 			end
 
 			JX2_ITY_UW: begin

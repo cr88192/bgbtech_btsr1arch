@@ -454,6 +454,8 @@ reg		useVert900;
 
 reg		use2xCol;
 reg		use2xRow;
+reg		use4xRow;
+reg		use8xRow;
 
 reg		tCellIsOdd;
 reg		tNextCellIsOdd;
@@ -575,7 +577,9 @@ begin
 	tScrClrsMod		= tCtrlRegVal[15:12];
 
 	use2xCol		= tCtrlRegVal[18];
-	use2xRow		= tCtrlRegVal[19];
+	use2xRow		=  tCtrlRegVal[19] && !tCtrlRegVal[27];
+	use4xRow		= !tCtrlRegVal[19] &&  tCtrlRegVal[27];
+	use8xRow		=  tCtrlRegVal[19] &&  tCtrlRegVal[27];
 
 	tCellCursorX	= tCtrlRegVal[39:32];
 //	tCellCursorY	= tCtrlRegVal[47:40] + 2;
@@ -641,11 +645,23 @@ begin
 		tNxtPixRawMaxY		= 400;
 //		tNextPixCellMaxY	= 50;
 		tNextPixCellMaxY	= use2xRow ? 100 : 50;
+
+		if(use4xRow)
+			tNextPixCellMaxY	= 200;
+		if(use8xRow)
+			tNextPixCellMaxY	= 400;
+
 		if(useVert480)
 		begin
 			tNxtPixRawMaxY		= 480;
 //			tNextPixCellMaxY	= 60;
 			tNextPixCellMaxY	= use2xRow ? 120 : 60;
+
+			if(use4xRow)
+				tNextPixCellMaxY	= 240;
+			if(use8xRow)
+				tNextPixCellMaxY	= 480;
+
 		end
 
 		if(useVert600)
@@ -670,6 +686,7 @@ begin
 	begin
 		tNxtPixRawMaxY		= 200;
 		tNextPixCellMaxY	= 25;
+
 		if(useVert480)
 		begin
 			tNxtPixRawMaxY		= 240;
@@ -704,6 +721,16 @@ begin
 		if(use2xRow)
 		begin
 			tPixCellY[7:0]	= tPixPosY_Z[9:2];
+		end
+
+		if(use4xRow)
+		begin
+			tPixCellY[8:0]	= tPixPosY_Z[9:1];
+		end
+
+		if(use8xRow)
+		begin
+			tPixCellY[9:0]	= tPixPosY_Z[9:0];
 		end
 	end
 		else
@@ -872,6 +899,12 @@ begin
 //			tPixCellGx_A0[5:3] = 3'h7 - { tPixPosY[1:0], pixLineOdd };
 			tPixCellFx_A0[3:2] = 2'h3 - tPixPosY[2:1];
 			tPixCellGx_A0[5:3] = 3'h7 - tPixPosY[2:0];
+		end
+
+		if(use4xRow || use8xRow)
+		begin
+			tPixCellFx_A0[3:2] = 2'h3;
+			tPixCellGx_A0[5:3] = 3'h7;
 		end
 	end
 	else
@@ -1434,6 +1467,20 @@ begin
 		4'h0: tPixClrBmYv8_C = tCellData_C[127:120];
 	endcase
 
+	if(use4xRow || use8xRow)
+	begin
+		case(tPixCellGx_C[2:0])
+			3'h7: tPixClrBmYv8_C = tCellData_C[  7:  0];
+			3'h6: tPixClrBmYv8_C = tCellData_C[ 15:  8];
+			3'h5: tPixClrBmYv8_C = tCellData_C[ 23: 16];
+			3'h4: tPixClrBmYv8_C = tCellData_C[ 31: 24];
+			3'h3: tPixClrBmYv8_C = tCellData_C[ 39: 32];
+			3'h2: tPixClrBmYv8_C = tCellData_C[ 47: 40];
+			3'h1: tPixClrBmYv8_C = tCellData_C[ 55: 48];
+			3'h0: tPixClrBmYv8_C = tCellData_C[ 63: 56];
+		endcase
+	end
+
 	case(tPixCellFx_C)
 		4'hF: tPixClrBmYv4_C = tCellData_C[ 3: 0];
 		4'hE: tPixClrBmYv4_C = tCellData_C[ 7: 4];
@@ -1794,6 +1841,8 @@ begin
 			if(useQtrCell)
 				tClrYuvC	= tPixClrBmRgbiYV16_D;
 			tPixRgb565	= 0;
+			if(use4xRow || use8xRow)
+				tClrYuvC	= tPixClrBmYv16_D;
 		end
 		4'h2: begin
 			tClrYuvC	= useHalfCell ?
@@ -1810,12 +1859,21 @@ begin
 //			tClrYuvC	= tPixClrBmYv16_D;
 			tClrYuvC	= useHalfCell ? tPixClrBmPalYV16_D : tPixClrBmYv16_D;
 			tPixRgb565	= 1;
+
+			if(use4xRow || use8xRow)
+				tClrYuvC	= tPixClrBmYv16_D;
 		end
 		4'hA: begin
 			tClrYuvC	= useHalfCell ?
 				tPixClrBm2iYV16_D : tPixClrBmRgbiYV16_D;
 			tPixRgb565	= 1;
+
+			if(use4xRow || use8xRow)
+				tClrYuvC	= tPixClrBmPalYV16_D;
 		end
+//		4'hB: begin
+//			tClrYuvC	= tPixClrBmYv16_D;
+//		end
 		
 		default: begin
 		end

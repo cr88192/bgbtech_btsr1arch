@@ -782,8 +782,9 @@ TKGDI_WAVEFORMATEX *i_snd_info = NULL;
 void
 I_SubmitSound2(int extra)
 {
-	static short mixbuf2[SAMPLECOUNT*2*2];
+//	static short mixbuf2[SAMPLECOUNT*2*2];
 //	static short mixbuf_mus[SAMPLECOUNT*2*2];
+	static short *mixbuf2;
 
 	short *mix1, *mix2, *mix3, *mix4;
 	
@@ -806,6 +807,7 @@ I_SubmitSound2(int extra)
 		i_snd_info->cbSize=sizeof(TKGDI_WAVEFORMATEX);
 
 		hSndDev = tkgCreateAudioDevice(0, TKGDI_FCC_auds, i_snd_info);
+		mixbuf2 = tkgGlobalAlloc(SAMPLECOUNT*2*2*sizeof(short));
 	}
 
 //	n=SAMPLECOUNT*1.451247;

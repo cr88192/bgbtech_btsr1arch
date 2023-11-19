@@ -12,7 +12,7 @@ LNKOPT =
 LIBS = -lm -lSDL
 
 CFLAGS = -I. -g -pg -DRT_USE_SDL -fwrapv -fno-strict-aliasing \
-	 -Wmaybe-uninitialized -Wuninitialized
+	 -Wmaybe-uninitialized -Wuninitialized -O1
 
 #	-Wimplicit-function-declaration
 
@@ -148,7 +148,7 @@ SRCS =			\
 
 
 rott_lnx.elf   : $(SRCS) $(HEADERS)
-	gcc -o rott_lnx.elf $(SRCS) $(LIBS) $(CFLAGS)
+	clang -o rott_lnx.elf $(SRCS) $(LIBS) $(CFLAGS)
 
 all : rott_lnx.elf
 

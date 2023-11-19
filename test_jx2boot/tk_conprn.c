@@ -343,6 +343,8 @@ void tk_con_init()
 //	((u32 *)0xF00BFF00)[0]=0x0005;		//
 //	((u32 *)0xF00BFF00)[0]=0x0001;		//
 	((u32 *)0xF00BFF00)[0]=0x0081;		//
+
+	((u32 *)0xF00BFF00)[2]=0x20A00000;		//
 #endif
 
 #ifdef TK_CON_USE5X6SEG

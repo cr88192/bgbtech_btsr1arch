@@ -7,6 +7,10 @@
 
 TKGDI_VidCodec *lbxgl_codecs=NULL;
 
+int TKGDI_Codec_Init();
+int TKGDI_AVI_GetMonoSamplesRate(TKGDI_AVI_Context *ctx,
+	short *samples, int cnt, int rate);
+
 TKGDI_VidCodec *TKGDI_VidCodec_New()
 {
 	TKGDI_VidCodec *tmp;

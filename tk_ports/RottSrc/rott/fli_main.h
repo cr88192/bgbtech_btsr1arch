@@ -27,6 +27,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /* Some handy macros I use in lots of programs: */
 
+#ifndef fli_main_h
+#define fli_main_h
+
+
 #define ArrayEls(a) (sizeof(a)/sizeof((a)[0]))
 	/* Count up number of elements in an array */
 
@@ -90,3 +94,4 @@ char *flic_err_string(ErrCode err);
 #define ErrCancel	-10		/* User cancelled. */
 
 
+#endif

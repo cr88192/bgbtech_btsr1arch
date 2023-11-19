@@ -31,3 +31,4 @@ int GetCinematicTime( void );
 boolean CinematicAbort( void );
 void ClearCinematicAbort( void );
 
+void I_PollTimer(void);

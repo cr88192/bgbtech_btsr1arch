@@ -810,4 +810,14 @@ A few type FOURCC's will be defined:
 * 'BMP ': Bitmap Image, Using the DIB BMP format.
 * 'WAV ': WAV audio format.
 * 'AVI ': AVI video format.
+* 'QOIF': QOI Image Format
+* 'LCIF': LCIF Image Format
 
+Change:
+* The BMP format used in RWAD will be tweaked (BMPxA):
+** Magic changed from 'BM' to ' BMP'
+** Header members will now follow natural alignment.
+** The start of the pixel data will be aligned on a 64 or 128 bit boundary.
+** Note that both BMP variants will be considered valid.
+
+The BMP variant used will use the standard BITMAPINFOHEADER.

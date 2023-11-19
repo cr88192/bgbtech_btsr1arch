@@ -34,7 +34,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define SMOKEWALLOFFSET    (0x800)
 #define MZADJUST           0x30000;
 #define MAXSTEPHEIGHT      24
-#define SIGN(x)            ((x)>=0)?(1):(-1)
+#define SIGN(x)            (((x)>=0)?(1):(-1))
 #define MAXRAIN            128
 #define SG_PSTAT      0x4000
 #define SG_PSTATE     0x2000
@@ -72,7 +72,7 @@ enum {
 #define SHOTMOM                0x200l
 #define NEXT                   1
 #define PREV                   0
-#define ANGLEMOVE              0x2b000l
+// #define ANGLEMOVE              0x2b000l
 #define PAINTIME               5l
 #define LOOKAHEAD              (20 << 16)
 #define DRAINTIME              70l
@@ -86,7 +86,7 @@ enum {
 #define ENEMYFASTRUNSPEED      (5*SPDPATROL)
 #define ENEMYINSANESPEED       (7*SPDPATROL)
 #define MAXMOVE                0x2000l
-#define PROJECTILESIZE         0x6000l
+// #define PROJECTILESIZE         0x6000l
 #define DEADFRICTION           0x6000l
 #define ROLLMOMENTUM           0x920l
 #define PROJSIZE               0x4000l
@@ -109,8 +109,11 @@ enum {
 #define M_CHOOSETIME(x)       ((int)(TILEGLOBAL/((x->speed))))
 #define M_DIST(x1,x2,y1,y2)   (((x1-x2)*(x1-x2))+((y1-y2)*(y1-y2)))
 #define M_S(x)                (UPDATE_STATES[x][ob->obclass-lowguardobj])
-#define Fix(a)                (a &= (FINEANGLES - 1))
 
+#ifndef FIX_DEFED
+#define FIX_DEFED
+#define Fix(a)                (a &= (FINEANGLES - 1))
+#endif
 
 #define STOPACTOR(ob)                   \
    {                                    \
@@ -264,11 +267,12 @@ typedef struct  sat
  }saved_actor_type;
 
 
-typedef struct
- {thingtype which;
-  byte tilex,tiley;
-  fixed x,y,z;
- }tpoint;
+typedef struct tpoint_s
+{
+	thingtype which;
+	byte tilex,tiley;
+	fixed x,y,z;
+}tpoint;
 
 
 //========================== Function Prototypes ==============================

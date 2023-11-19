@@ -17,7 +17,7 @@
 #define MAXSCREENWIDTH			 320
 #define SCREENBWIDE				 96
 #define MAXVIEWWIDTH				320
-#define SCREENWIDTH				 96				  // default screen width in bytes
+// #define SCREENWIDTH				 96				  // default screen width in bytes
 
 #define SCREENAWIDTH			 (96*4)
 
@@ -530,6 +530,8 @@ void VL_GetPalette (byte *pal)
 	int cr, cg, cb;
 	int i;
 	
+	cr=0; cg=0; cb=0;
+	
 	cs=pal;
 	for(i=0; i<256; i++)
 	{
@@ -890,6 +892,8 @@ int I_TimeMS(void)
 	return(ms);
 }
 
+long long __int32_dmuls(int a, int b);
+
 void I_PollTimer(void)
 {
 	static int ltic;
@@ -907,9 +911,16 @@ void I_PollTimer(void)
 	ms=FRGL_TimeMS();
 #endif
 
+#ifdef _BGBCC
+	tic=__int32_dmuls(ms, 35)>>10;
+#else
 	tic=ms*(35.0/1000.0);
+#endif
 	dt=tic-ltic;
 	ltic=tic;
+	
+	if(dt<0)
+		dt=0;
 	
 	ticcount+=dt;
 }

@@ -1996,8 +1996,8 @@ void	SpawnStaticDamage(statobj_t * stat, int angle)
 
 	new->obclass = inertobj;
 	new->which = ACTOR;
-	new->x = (stat->x)-(costable[angle]>>4);
-	new->y = (stat->y)+(sintable[angle]>>4);
+	new->x = (stat->x)-(costable[angle&FINEANGLEMSK]>>4);
+	new->y = (stat->y)+(sintable[angle&FINEANGLEMSK]>>4);
 	new->z = (stat->z)+stats[stat->itemnumber].heightoffset;
 	new->drawx = new->x;
 	new->drawy = new->y;

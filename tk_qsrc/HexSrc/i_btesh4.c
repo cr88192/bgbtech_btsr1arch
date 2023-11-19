@@ -256,7 +256,8 @@ byte* I_AllocLow (int length)
 {
     byte*	mem;
         
-    mem = (byte *)malloc (length);
+//    mem = (byte *)malloc (length);
+    mem = (byte *)tkgGlobalAlloc (length);
     memset (mem,0,length);
     return mem;
 }
@@ -1898,6 +1899,7 @@ void I_InitTkGdi()
 	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
 	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
 
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
 	i_dibinfo->biWidth=320;
 	i_dibinfo->biHeight=200;
 

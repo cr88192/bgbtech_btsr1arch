@@ -1,0 +1,162 @@
+BSR4G (Idea Spec):
+* R0..R63: 64-bit
+** X0,X2,X62: Paired, 128-bit
+** Only even register pairs are allowed
+* Variable-Bundle VLIW
+* Pointers: 64-bit (Narrow) / 128-bit (Tag/Bound)
+** Note that 128-bit pointers may only use even register numbers.
+* C0..C63:
+** Control Registers
+
+Width Profiles:
+* A: 1-wide, 4R1W register file
+* B: 2-wide, 4R2W register file
+* C: 3-wide, 6R3W register file
+
+Indexed Store will be allowed in all profiles, however in B it may not co-issue. In C, only 2 wide bundles may be used with Indexed Store. In A, co-issue will not be allowed and will be ignored (with the exception of Jumbo Prefixes).
+
+Address Space:
+* Will have a 48-bit virtual address space.
+* Displacements will be 33 bits.
+** Index or Displacements values beyond 33 bits will be Undefined.
+
+
+SR:
+* (   31): JQ, Address Mode Modifier
+* (   30): MD, Supervisor Mode
+* (   29): RB, Interrupt Handler
+* (   28): BL, Disable Interrupts
+* (27:20): Processor Mode
+* (19:16): Reserved
+* (15: 8): U0..U7 (Predicate Stack)
+* ( 7: 4): SIMD PQ Flags
+* ( 3: 2): IRQ Mask
+* (    1): S (ALU Status Bit)
+* (    0): T (Primary Predicate)
+
+
+Note, nominal pipeline:
+* PF IF ID RF EX1 EX2 EX3 WB
+* Where the predicate will be evaluated in the RF stage.
+* CMPxx will produce a result in EX2, giving a 2 cycle latency.
+
+
+GPRs:
+* R0: ZR / PC         (Src/Dst: Zero         ; LD/ST Base: PC)
+* R1: LR / TP         (Src/Dst: Link Register; LD/ST Base: TP/TBR)
+* R2: SP              (Stack Pointer)
+* R3: GP / GBR        (Global Pointer)
+* R4: Scratch / DLR   (Scratch, Magic Temporary)
+* R5: Scratch / LR2   (Scratch, Alternate Link Register)
+* R6: Scratch / Ret1
+* R7: Scratch / Ret2
+* R8..R15: Scratch / Arg0 .. Arg7
+* R16..R31: Preserved / Callee Save
+* R32..R47: Scratch
+* R48..R63: Preserved / Callee Save
+
+
+Instruction Formats:
+* PwZZ-ZZZZ-ZZnn-nnnn-mmmm-mmoo-oooo-ZZZZ  (3R)
+* PwZZ-ZZZZ-ZZnn-nnnn-mmmm-mmZZ-ZZZZ-ZZZZ  (2R)
+* PwZZ-ZZZZ-ZZnn-nnnn-mmmm-mmii-iiii-iiii  (3RI, Imm10)
+* PwZZ-ZZZZ-ZZnn-nnnn-ZZZZ-ZZii-iiii-iiii  (2RI, Imm10)
+* PwZZ-ZZZZ-ZZnn-nnnn-iiii-iiii-iiii-iiii  (2RI, Imm16)
+* PwZZ-ZZZZ-iiii-iiii-iiii-iiii-iiii-iiii  (Imm24)
+
+Pw:
+* 00: OP?T  (Conditional True)
+* 01: OP?F  (Conditional False)
+* 10: OP    (Scalar)
+* 11: OP|   (Wide Execute)
+
+
+* Pw00-ZZZZ-ZZnn-nnnn-mmmm-mmoo-oooo-ZZZZ  (3R Space)
+* 3R, 0000-00-ZZZZ: Load/Store (Index)
+** 0=STB , 1=STW , 2=STL , 3=STQ
+** 4=-   , 5=-   , 6=-   , 7=STX
+** 8=LDSB, 9=LDSW, A=LDSL, B=LDQ
+** C=LDUB, D=LSUW, E=LDUL, F=LDX
+** Load/Store Index will be scaled by the element size (1/2/4/8).
+
+* 3R, 0000-01-ZZZZ: ALU
+** 0: ADD  , 1: SUB  , 2: SHADQ, 3: SHLDQ
+** 4: ADDSL, 5: SUBSL, 6: ADDUL, 7: SUBUL
+** 8: -    , 9: AND  , A: OR   , B: XOR
+** C: MULSL, D: MULUL, E: SHADL, F: SHLDL
+
+
+* Pw00-1111-ZZnn-nnnn-mmmm-mmZZ-ZZZZ-ZZZZ  (2R Space)
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0000  EXTS.B  Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0001  EXTU.B  Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0010  EXTS.W  Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0011  EXTU.W  Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0100  EXTS.L  Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0101  EXTU.L  Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0110  MOV     Cm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-0111  MOV     Rm, Cn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1000  MOV     Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1001  -
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1010  TST.L   Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1011  TST.Q   Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1100  CMPEQ.L Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1101  CMPEQ.Q Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1110  CMPGT.L Rm, Rn
+** Pw00-1111-00nn-nnnn-mmmm-mm01-0000-1111  CMPGT.Q Rm, Rn
+
+
+* Pw00-1111-00nn-nnnn-ZZZZ-ZZ00-ZZZZ-ZZZZ  (1R Space)
+** Pw00-1111-00nn-nnnn-0000-0000-0000-0000  JMP Rn
+** Pw00-1111-00nn-nnnn-0000-0100-0000-0000  JSR Rn
+
+* Pw01-ZZZZ-ZZnn-nnnn-mmmm-mmii-iiii-iiii  (Ld/St Disp10u)
+** 0000-ZZ: ST{B/W/L/Q}
+** 0001-ZZ: ST{-/-/-/X}
+** 0010-ZZ: LDS{B/W/L/Q}
+** 0011-ZZ: LDU{B/W/L/X}
+** 0100-ZZ: LEA{B/W/L/X}
+** Load/Store Displacement will be scaled by the element size (1/2/4/8).
+
+
+* Pw10-0ZZZ-ZZnn-nnnn-mmmm-mmii-iiii-iiii  (3RI Imm10u, ALU Block)
+** 000-ZZ: ADD  , SUB  , SHADQ, SHLDQ
+** 001-ZZ: ADDSL, SUBSL, ADDUL, SUBUL
+** 010-ZZ: -    , AND  , OR   , XOR
+** 011-ZZ: MULSL, MULUL, SHADL, SHLDL
+
+* Pw10-1ZZZ-ZZnn-nnnn-ZZZZ-ZZii-iiii-iiii  (2RI Imm10)
+* 000-00-0000-00: CMPEQ	Imm10u, Rn		//T = (Rn EQ Imm10u)
+* 000-00-0000-01: CMPGT	Imm10u, Rn		//T = (Rn GT Imm10u)
+* 000-00-0000-10: BEQ	Rn, Disp10u		//Branch if (Rn EQ 0)
+* 000-00-0000-11: BGT	Rn, Disp10u
+
+* 000-00-0001-00: BGE	Rn, Disp10u
+* 000-00-0001-01: BLT	Rn, Disp10u
+* 000-00-0001-10: BNE	Rn, Disp10u		//Branch if (Rn NE 0)
+* 000-00-0001-11: BLE	Rn, Disp10u
+
+* 000-10-0000-00: CMPEQ	Imm10n, Rn		//T = (Rn EQ Imm10n)
+* 000-10-0000-01: CMPGT	Imm10n, Rn		//T = (Rn GT Imm10n)
+* 000-10-0000-10: BEQ	Rn, Disp10n
+* 000-10-0000-11: BGT	Rn, Disp10n
+
+* 000-10-0001-00: BGE	Rn, Disp10n
+* 000-10-0001-01: BLT	Rn, Disp10n
+* 000-10-0001-10: BNE	Rn, Disp10n		//Branch if (Rn NE 0)
+* 000-10-0001-11: BLE	Rn, Disp10n
+
+* Pw11-0ZZZ-ZZnn-nnnn-iiii-iiii-iiii-iiii  (2RI, Imm16)
+* 000-00: LDIZ		Imm16u, Rn	// Rn = Imm16u
+* 000-01: ADD		Imm16u, Rn	// Rn = Rn + Imm16u
+* 000-10: LDIN		Imm16n, Rn	// Rn = Imm16n
+* 000-11: ADD		Imm16n, Rn	// Rn = Rn + Imm16n
+
+* Pw11-1110-iiii-iiii-iiii-iiii-iiii-iiii  BRA Disp24s (+/- 32MB)
+** Pw: 00=BT  , 01=BF  , 10=BRA, 11=Jumbo
+* Pw11-1111-iiii-iiii-iiii-iiii-iiii-iiii  BSR Disp24s (+/- 32MB)
+** Pw: 00=LDIZ, 01=LDIN, 10=BRA, 11=Jumbo
+
+* 1111-111Z-iiii-iiii-iiii-iiii-iiii-iiii  Jumbo
+
+Branch displacements will be relative to the base address of the branch instruction, with an implicit scale of 4 bytes.
+

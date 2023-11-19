@@ -30,6 +30,7 @@ byte tk_img_d8to15ready;
 int tkgdi_blitupdate_getconbuf_sticky;
 int tkgdi_blitupdate_getconbuf_sticky_cnt;
 
+TKGDI_EVENTBUF	*tkgdi_freemsg;
 
 /* Existing Windows */
 _tkgdi_window_t		*tkgdi_windows[256];
@@ -38,6 +39,29 @@ int					tkgdi_n_windows;
 /* Visible Windows */
 _tkgdi_window_t		*tkgdi_window_vis[256];
 int					tkgdi_n_window_vis;
+
+TKGDI_EVENTBUF *TKGDI_AllocEventBuf()
+{
+	TKGDI_EVENTBUF *tmp;
+	
+	tmp=tkgdi_freemsg;
+	if(tmp)
+	{
+		tkgdi_freemsg=tmp->next;
+		tmp->next=NULL;
+		return(tmp);
+	}
+	
+	tmp=tk_malloc(sizeof(TKGDI_EVENTBUF));
+	memset(tmp, 0, sizeof(TKGDI_EVENTBUF));
+	return(tmp);
+}
+
+void TKGDI_FreeEventBuf(TKGDI_EVENTBUF *tmp)
+{
+	tmp->next=tkgdi_freemsg;
+	tkgdi_freemsg=tmp;
+}
 
 int TKGDI_UpdateWindowCells(
 	_tkgdi_window_t *wctx)
@@ -235,6 +259,16 @@ int TKGDI_UpdateWindowStack(void)
 	int x, y, z, z1, bx, by, wxs, wys, wbmxs;
 	int sx, sy, z0a, z1a, b;
 	int i, j, k;
+
+	for(i=0; i<tkgdi_n_window_vis; i++)
+	{
+		wctx=tkgdi_window_vis[i];
+		
+		if(wctx->con && wctx->con->conrowmask)
+		{
+			tkgdi_con_redrawbuffer(wctx->con);
+		}
+	}
 
 	tk_ps2ms_getpos(&tkgdi_ps2ms_x, &tkgdi_ps2ms_y, &tkgdi_ps2ms_b);
 	tkgdi_ps2ms_moved=0;
@@ -601,13 +635,19 @@ _tkgdi_window_t *TKGDI_AllocNewConsoleWindow(
 	
 	wctx->con=con;
 	
-	wctx->size_x=80*8;
-	wctx->size_y=25*8;
+//	wctx->size_x=80*8;
+//	wctx->size_y=25*8;
+//	wctx->size_bxs=wctx->size_x>>2;
+//	wctx->size_bys=wctx->size_y>>2;
+	
+	con->cell_xs=4;
+	con->cell_ys=6;
+	
+	wctx->size_x=80*4;
+	wctx->size_y=25*6;
 	wctx->size_bxs=wctx->size_x>>2;
 	wctx->size_bys=wctx->size_y>>2;
-	
 	return(wctx);
-
 }
 
 TKGSTATUS TKGDI_BlitSubImageNew(
@@ -648,6 +688,30 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 		
 	if(dev==1)
 	{
+		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_320x200_RGB555_LFB)
+		{
+			xs=xs_src;
+			ys=ys_src;
+			
+			mxs=320-xo_dev;
+			mys=200-yo_dev;
+			
+			if(xs>mxs)
+				xs=mxs;
+			if(ys>mys)
+				ys=mys;
+
+			if(info->biCompression == TKGDI_BI_RGB)
+			{
+				if(info->biBitCount == 16)
+				{
+					TKGDI_BlitUpdate_LfbRgb555(xo_dev, yo_dev, xs, ys,
+						data, xo_src, yo_src, info->biWidth, info->biHeight);
+				}
+			}
+
+		}
+	
 //		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_320x200_RGB555)
 		if(	(tkgdi_vid_scrmode==TKGDI_SCRMODE_320x200_RGB555) ||
 			(tkgdi_vid_scrmode==TKGDI_SCRMODE_640x400_RGB555))
@@ -840,6 +904,9 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 		}
 		wctx->dirty1=1;
 
+		if(wctx->con)
+			tkgdi_con_redrawbuffer(wctx->con);
+
 		TKGDI_UpdateWindowCells(wctx);
 		TKGDI_UpdateWindowStack();
 
@@ -900,16 +967,20 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 	if((ifmt->biBitCount == 16) || (ifmt->biBitCount == 15))
 	{
 
+#if 0
 		if(	(ifmt->biWidth		== 320) &&
 			(ifmt->biHeight		== 200) )
 		{
-			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
+//			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
+			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555_LFB;		//Use hi-color
 		}
+#endif
 
 		if(	(ifmt->biWidth		== 320) &&
 			(ifmt->biHeight		== 200) )
 		{
 			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
+//			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555_LFB;		//Use hi-color
 		}
 
 		if(	(ifmt->biWidth		== 640) &&
@@ -1042,6 +1113,157 @@ TKGSTATUS TKGDI_QueryCreateDisplay(
 	return(0);
 }
 
+TKGSTATUS TKGDI_TryMapDisplayBuffer(
+	_tkgdi_context_t *ctx,
+	TKGHDC dev,
+	TKGDI_BITMAPINFOHEADER *info,
+	void **rfbuf)
+{
+	void *ptr;
+
+	if(dev!=1)
+	{
+		*rfbuf=NULL;
+		return(TKGDI_STATUS_FAIL);
+	}
+	
+	if(tkgdi_vid_scrmode==TKGDI_SCRMODE_320x200_RGB555_LFB)
+	{
+		*rfbuf=NULL;
+
+		if((info->biWidth!=320) || (info->biHeight!=(-200)))
+		{
+			tk_printf("TKGDI_TryMapDisplayBuffer: Fail, Resolution, %d x %d\n",
+				info->biWidth, info->biHeight);
+			return(TKGDI_STATUS_FAIL);
+		}
+
+		if((info->biBitCount!=15) && (info->biBitCount!=16))
+		{
+			tk_printf("TKGDI_TryMapDisplayBuffer: Fail, Bit Count\n");
+			return(TKGDI_STATUS_FAIL);
+		}
+		
+		if(tkgdi_blitupdate_getconbuf_sticky_cnt>0)
+		{
+			ptr=TKGDI_BlitUpdate_GetConbuf();
+			ptr=TKGDI_BlitUpdate_GetConbuf();
+		}
+		
+		ptr=TKGDI_BlitUpdate_GetConbufFast();
+
+		if(!ptr)
+			return(TKGDI_STATUS_FAIL);
+		
+//		if(((((long)ptr)>>44)&15)==15)
+//		{
+//			tk_printf("TKGDI_TryMapDisplayBuffer: Fail, MMIO\n");
+//			return(TKGDI_STATUS_FAIL);
+//		}
+
+		*rfbuf=ptr;
+		return(TKGDI_STATUS_OK);
+	}
+
+	*rfbuf=NULL;
+	return(TKGDI_STATUS_FAIL);
+}
+
+TKGSTATUS TKGDI_UnmapDisplayBuffer(
+	_tkgdi_context_t *ctx,
+	TKGHDC dev,
+	TKGDI_BITMAPINFOHEADER *ifmt,
+	void **rfbuf)
+{
+	if(dev!=1)
+	{
+		return(TKGDI_STATUS_FAIL);
+	}
+
+	return(TKGDI_STATUS_OK);
+}
+
+TKGSTATUS TKGDI_MapFlipFrame(
+	_tkgdi_context_t *ctx,
+	TKGHDC dev)
+{
+	if(dev!=1)
+	{
+		return(TKGDI_STATUS_FAIL);
+	}
+	
+	TKGDI_BlitUpdate_FlipConbuf();
+	return(TKGDI_STATUS_OK);
+}
+
+TKGSTATUS TKGDI_DevPushEvent(
+	_tkgdi_context_t *ctx,
+	TKGHDC dev,
+	TKGDI_EVENT *imsg)
+{
+	TKGDI_EVENTBUF *tmsg;
+	_tkgdi_window_t *wctx;
+	int i, j, k;
+
+	if(dev>0)
+	{
+		return(0);
+	}
+
+	for(i=0; i<tkgdi_n_window_vis; i++)
+	{
+		wctx=tkgdi_window_vis[i];
+		
+		tmsg=TKGDI_AllocEventBuf();
+		tmsg->ev=*imsg;
+		
+		tmsg->next=wctx->msgqueue;
+		wctx->msgqueue=tmsg;
+		
+		if(wctx->con && wctx->con->conrowmask)
+		{
+//			tkgdi_con_redrawbuffer(wctx->con);
+		}
+	}
+
+}
+
+TKGSTATUS TKGDI_DevPollEvent(
+	_tkgdi_context_t *ctx,
+	TKGHDC dev,
+	TKGDI_EVENT *imsg)
+{
+	_tkgdi_window_t *wctx;
+	TKGDI_EVENTBUF *tmsg;
+	TKGDI_RECT *rect;
+
+	if(dev<1)
+	{
+		return(-1);
+	}
+
+	wctx=tkgdi_windows[dev];
+	if(!wctx)
+	{
+		return(-1);
+	}
+
+	tmsg=wctx->msgqueue;
+	if(!tmsg)
+	{
+		imsg->dev=0;
+		imsg->fccMsg=0;
+		return(0);
+	}
+	
+	*imsg=tmsg->ev;
+
+	wctx->msgqueue=tmsg->next;
+	TKGDI_FreeEventBuf(tmsg);
+	
+	return(1);
+}
+
 TKGSTATUS TKGDI_QueryDisplay(
 	_tkgdi_context_t *ctx,
 	TKGHDC dev,
@@ -1053,7 +1275,38 @@ TKGSTATUS TKGDI_QueryDisplay(
 	{
 		return(TKGDI_QueryCreateDisplay(ctx, ifmt, ofmt));
 	}
+
+	if(parm==TKGDI_FCC_mapf)
+	{
+		return(TKGDI_TryMapDisplayBuffer(ctx, dev, ifmt, ofmt));
+	}
 	
+	if(parm==TKGDI_FCC_umap)
+	{
+		return(TKGDI_UnmapDisplayBuffer(ctx, dev, ifmt, ofmt));
+	}
+	
+	if(parm==TKGDI_FCC_flip)
+	{
+		return(TKGDI_MapFlipFrame(ctx, dev));
+	}
+
+	if(parm==TKGDI_FCC_poll)
+	{
+		if(ifmt)
+		{
+			TKGDI_DevPushEvent(ctx, dev, ifmt);
+			return(1);
+		}
+
+		if(ofmt)
+		{
+			TKGDI_DevPollEvent(ctx, dev, ofmt);
+			return(1);
+		}
+	}
+	
+	tk_printf("TKGDI_QueryDisplay: Fail, Bad Request\n");
 	return(-1);
 }
 
@@ -1065,7 +1318,7 @@ TKGHDC TKGDI_CreateDisplay(
 {
 	_tkgdi_window_t *wctx;
 	int tgt_mode, domodeset;
-	int xs, ys, bxs, bys;
+	int xs, ys, bxs, bys, cxs, cys;
 	int i, j, k;
 
 	tk_printf("TKGDI_CreateDisplay: A\n");
@@ -1224,13 +1477,33 @@ TKGHDC TKGDI_CreateDisplay(
 			return(1);
 		}
 
+		if(tgt_mode==TKGDI_SCRMODE_320x200_RGB555_LFB)
+		{
+			((u32 *)0xFFFFF00BFF00UL)[0]=0x08000495;	//320x200x16bpp, RGB555
+			tkgdi_vid_scrmode=tgt_mode;
+			tkgdi_vid_cellstride=2;
+			tkgdi_vid_rowstride=80;
+			tkgdi_vid_xsize=320;
+			tkgdi_vid_ysize=200;
+			tkgdi_vid_planar=0;
+			tkgdi_vid_noutx2=1;
+			tkgdi_vid_is8bit=0;
+			return(1);
+		}
+
 		tk_printf("TKGDI_CreateDisplay: Invalid Mode\n");
 		return(TKGHDC_NULL);
 	}
 
 	if(dev<=1)
 	{
-		wctx=TKGDI_AllocNewWindow(ctx);
+		if(info->biCompression==TKGDI_FCC_text)
+		{
+			wctx=TKGDI_AllocNewConsoleWindow(ctx);
+		}else
+		{
+			wctx=TKGDI_AllocNewWindow(ctx);
+		}
 		
 		xs=info->biWidth;
 		ys=info->biHeight;
@@ -1239,7 +1512,44 @@ TKGHDC TKGDI_CreateDisplay(
 			xs=-xs;
 		if(ys<0)
 			ys=-ys;
-		
+
+		if(info->biCompression==TKGDI_FCC_text)
+		{
+			if((xs>0) && (ys)>0)
+			{
+				cxs=xs/80;
+				cys=ys/25;
+				if(cxs<4)	cxs=4;
+				if(cys<6)	cys=6;
+				if(cxs>8)	cxs=8;
+				if(cys>8)	cys=8;
+				
+				if(cxs==5)
+					cxs=4;
+				if(cxs==7)
+					cxs=6;
+
+				if(cxs==4)
+					cys=6;
+				if(cxs==6)
+					cys=8;
+				if(cxs==8)
+					cys=8;
+				
+				xs=cxs*80;
+				ys=cys*25;
+				
+				wctx->con->cell_xs=cxs;
+				wctx->con->cell_ys=cys;
+			}else
+			{
+				cxs=wctx->con->cell_xs;
+				cys=wctx->con->cell_ys;
+				xs=cxs*80;
+				ys=cys*25;
+			}
+		}
+
 		bxs=(xs+3)>>2;
 		bys=(ys+3)>>2;
 		
@@ -1269,8 +1579,14 @@ TKGHDC TKGDI_CreateDisplay(
 		wctx->dirty1=1;
 		wctx->dirty2=0;
 
+		if(wctx->con)
+			wctx->con->pixbuf=wctx->buf_data;
+
 		i=tkgdi_n_window_vis++;
 		tkgdi_window_vis[i]=wctx;
+
+		if(wctx->con)
+			tkgdi_con_redrawbuffer(wctx->con);
 
 		TKGDI_UpdateWindowCells(wctx);
 		TKGDI_UpdateWindowStack();
@@ -1337,9 +1653,51 @@ TKGSTATUS TKGDI_DrawString(
 	TKGHDC dev, int xo_dev, int yo_dev,
 	char *text, TKGHFONT font, long long mode)
 {
+	_tkgdi_window_t *wctx;
+	TKGDI_RECT *rect;
+
 	char *s;
+	int ocx, ocy;
 	int cx, cy, sz, ch;
-	
+
+	if(dev>0)
+	{
+		wctx=tkgdi_windows[dev];
+		if(!wctx)
+		{
+			return(-1);
+		}
+		
+		if(wctx->con)
+		{
+			ocx=wctx->con->x;
+			ocy=wctx->con->y;
+
+			if((xo_dev>=0) && (yo_dev>=0))
+			{
+				wctx->con->x=xo_dev;
+				wctx->con->y=yo_dev;
+			}
+			
+			s=text;
+			while(*s)
+			{
+				ch=*s++;
+				tkgdi_con_putc(wctx->con, ch);
+			}
+
+			if((xo_dev>=0) && (yo_dev>=0))
+			{
+				wctx->con->x=ocx;
+				wctx->con->y=ocy;
+			}
+			
+			return(0);
+		}
+
+		return(-1);
+	}
+
 	cx=xo_dev;
 	cy=yo_dev;
 	sz=mode&255;

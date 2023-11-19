@@ -32,7 +32,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAXSCREENWIDTH			320
 #define SCREENBWIDE				96
 #define MAXVIEWWIDTH				320
+
+#ifndef SCREENWIDTH
 #define SCREENWIDTH				96				// default screen width in bytes
+#endif
 
 //***************************************************************************
 //

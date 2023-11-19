@@ -103,7 +103,21 @@ int M_ABS(int value);
 	 BATTLE_CheckGameStatus(battle_player_killed,ob->dirchoosetime);\
 }
 
+void SetTilePosition(objtype *ob, fixed newtilex, fixed newtiley);
+void SetFinePosition(objtype *ob, fixed newx, fixed newy);
+void SetVisiblePosition(objtype *ob, fixed x, fixed y);
 
+typedef struct statstruct statobj_t;
+typedef struct tpoint_s tpoint;
+
+void SetTilePositionStat(statobj_t *ob, fixed newtilex, fixed newtiley);
+void SetFinePositionStat(statobj_t *ob, fixed newx, fixed newy);
+
+void SetTilePositionTPoint(tpoint *ob, fixed newtilex, fixed newtiley);
+void SetFinePositionTPoint(tpoint *ob, fixed newx, fixed newy);
+
+
+#if 0
 
 #define SetTilePosition(ob, newtilex, newtiley)    \
   {                                                \
@@ -139,6 +153,8 @@ int M_ABS(int value);
 
 //  ob->drawx = x;                                   \
 //  ob->drawy = y;                                   \
+
+#endif
 
 //***************************************************************************
 //
@@ -313,11 +329,14 @@ typedef struct b_struct
 extern  boolean          ludicrousgibs;
 extern  objtype*         PLAYER0MISSILE;
 extern  byte             deathshapeoffset[8];
-extern  byte             RANDOMACTORTYPE[10];
+// extern  byte             RANDOMACTORTYPE[10];
+extern  byte             RANDOMACTORTYPE[16];
 extern  objtype*         FIRSTACTOR,*LASTACTOR;
 extern  objtype          *FIRSTRAIN,*LASTRAIN;
 extern  objtype*         SCREENEYE;
-extern  objtype          *firstareaactor[NUMAREAS+1],*lastareaactor[NUMAREAS+1];
+//extern  objtype          *firstareaactor[NUMAREAS+1],*lastareaactor[NUMAREAS+1];
+extern  objtype          *firstareaactor[NUMAREAS+17],
+								*lastareaactor[NUMAREAS+17];
 extern  misc_stuff       mstruct,*MISCVARS;
 extern  int              actorstart,actorstop;
 extern  exit_t           playstate;

@@ -4169,6 +4169,7 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 		return(i);
 	}
 	
+	j=BGBCC_CCXL_LookupStructContainsFieldID(ctx, st, name);
 	
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 

@@ -1,0 +1,58 @@
+The WDEF files will define files to add to the Resource section.
+
+WDEF lines will have the general format:
+ // comment
+ lumpname=filename [conv]
+
+Where, filename will give the path to the resource file relative to the build location (as with normal source files).
+
+Lumps will be exposed to C land with symbols having the name "__rsrc__lumpname", where in this case lumpname will be limited to a character range such that the result is a valid C identifier.
+
+Within RWAD, there will also be an implicit name length limit of 16 characters, and lump names should not include file extensions (though, RWAD will remember a FOURCC associated with the file type).
+
+
+The conv parameter will be optional, and will have the format:
+ fmt[,arg=val]*
+
+This will specify a format that the loaded resource should be converted into.
+If absent, the original file will be imported as-is.
+
+Where, fmt may be one of:
+* bmp8: BMP image with 8 bits/pixel (256-Color Fixed palette)
+* bmp4: BMP image with 4 bits/pixel (RGBI palette)
+* bmp2: BMP image with 2 bits/pixel (4 shade Monochrome)
+* bmp1: BMP image with 1 bits/pixel (Monochrome)
+* bmp8a: BMPA image with 8 bits/pixel (Fixed palette)
+* bmp4a: BMPA image with 4 bits/pixel (RGBI palette)
+* bmp2a: BMPA image with 2 bits/pixel (4 shade Monochrome)
+* bmp1a: BMPA image with 1 bits/pixel (Monochrome)
+* bmp2t: BMP image with 2 bits/pixel (Black/White/Gray/Transparent)
+* bmp2ta: BMPA image with 2 bits/pixel (Black/White/Gray/Transparent)
+* bmp4t: BMP image with 4 bits/pixel (Transparent)
+* bmp4ta: BMPA image with 4 bits/pixel (Transparent)
+
+* bmp16: BMP with 16 bits/pixel (RGB555)
+* bmp16a: BMPA with 16 bits/pixel (RGB555)
+* bmp32: BMP with 32 bits/pixel (BGRA)
+* bmp32a: BMPA with 32 bits/pixel (BGRA)
+
+* qoi: QOI Format
+* qoli: QOLI (QOI with inline LZ compression)
+* lcif: LCIF Format
+
+BMPA is a modified BMP differing mostly in that the fields and image data will be aligned. The headers will have a native 32-bit alignment, whereas the image data will have a 64-bit alignment. The magic will be changed from 'BM' to ' BMP', but apart from the alignment change the format is basically the same.
+
+The 256 color palette will include a designated transparent color, where any pixels with an alpha less than 128 will be assumed transparent, and any with more than 128 will be opaque.
+
+For 16 color and 4 color, the Transparent versions will be separate and sacrifice 1 color for transparency. For 4-color, this will only have a single shade of gray; for 16 color, the Hi-Magenta (Color 13) will be replaced with a transparent color.
+
+For BMP16 and BMP16A, the MSB of each pixel will encode Alpha:
+* 0rrrrrgggggbbbbb  (A=255)
+* 1rrrraggggabbbba  (8 levels of alpha, 16 of R/G/B)
+
+
+For QOI and QOLI, a 'q' parameter will speficy a lossy quality level (0=lossless, 1=best, 7=worst). The default will be lossless.
+
+For LCIF, the 'q' parameter will speficy a lossy quality level (0=best, 7=worst). The default will be best.
+
+Both QOI and LCIF will include an full Alpha channel.

@@ -1190,6 +1190,8 @@
 #define BGBCC_SH_FMID_REGSTGBRDISP10N	0x64	//Rn, @(GBR,Disp)
 #define BGBCC_SH_FMID_REGLDGBRDISP10N	0x65	//@(GBR,Disp), Rn
 
+#define BGBCC_SH_FMID_PCDISP11REG		0x66	//(PC,Disp11s), Rn
+
 
 #define BGBCC_SH_OPVTY_NONE			0x00	//None
 #define BGBCC_SH_OPVTY_IMM			0x01	//#Imm

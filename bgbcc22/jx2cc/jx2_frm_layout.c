@@ -526,7 +526,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 		if(sctx->vspan_num>64)
 		{
-			printf("large-var-count: %s: %d\n", obj->name, sctx->vspan_num);
+//			printf("large-var-count: %s: %d\n", obj->name, sctx->vspan_num);
 		}
 	}
 

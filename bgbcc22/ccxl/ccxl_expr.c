@@ -2232,7 +2232,10 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		s1=NULL;
 		opr=BGBCC_CCXL_BinaryOpIdForName(ctx, s0);
-		if(opr>=0)
+//		if(opr>=0)
+		if((opr>=0) &&
+			(lty.val!=CCXL_TY_UNDEF_I) &&
+			(rty.val!=CCXL_TY_UNDEF_I))
 		{
 			BGBCC_CCXL_GetTypeBinaryDest(ctx,
 				opr, lty, rty, &dty);

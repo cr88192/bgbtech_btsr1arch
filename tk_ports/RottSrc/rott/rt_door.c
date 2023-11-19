@@ -1140,9 +1140,9 @@ int IsWall (int tilex, int tiley)
 */
 
 void InitElevators(void)
-{_numelevators = 0;
- memset(ELEVATOR,0,sizeof(ELEVATOR));
-
+{
+	_numelevators = 0;
+	memset(ELEVATOR,0,sizeof(ELEVATOR));
 }
 
 
@@ -2816,9 +2816,12 @@ int UpdateMaskedWall (int num)
 */
 
 
-void ExecuteElevatorStopActions(elevator_t *eptr, int teleport_location,
-										int desttilex,int desttiley)
-	{
+void ExecuteElevatorStopActions(
+	elevator_t *eptr, int teleport_location,
+	int desttilex,int desttiley)
+{
+	printf("ExecuteElevatorStopActions\n");
+
 	eptr->state = ev_doorclosing;
 	eptr->doorclosing = eptr->doortoopen;
 	doorobjlist[eptr->doortoopen]->flags &= ~DF_ELEVLOCKED;
@@ -2828,31 +2831,30 @@ void ExecuteElevatorStopActions(elevator_t *eptr, int teleport_location,
 	eptr->ticcount = OPENTICS;
 	eptr->doortoopen = -1;
 	if (MISCVARS->elevatormusicon == true)
-		{
+	{
 		MU_StartSong(song_level);
 		MU_RestoreSongPosition();
 		MISCVARS->elevatormusicon = false;
 
-		}
 	}
+}
 
 
 boolean PlayerInElevator(elevator_t *eptr)
-	{
+{
 	if (eptr->state == ev_mts)
-		{
+	{
 		if ((eptr->dx == player->tilex) && (eptr->dy == player->tiley))
 			return true;
-		}
+	}
 	else if (eptr->state == ev_mtd)
-		{
+	{
 		if ((eptr->sx == player->tilex) && (eptr->sy == player->tiley))
 			return true;
-		}
+	}
 
 	return false;
-
-	}
+}
 
 #define SHOULD_START_ELEVATOR_MUSIC(eptr)										\
 		((demoplayback == false) && (demorecord == false) &&			\
@@ -2874,21 +2876,20 @@ boolean PlayerInElevator(elevator_t *eptr)
 
 
 void SetElevatorOperationTime(elevator_t*eptr)
-	{
+{
 	if (SHOULD_START_ELEVATOR_MUSIC(eptr))
-		{
+	{
 		MU_StoreSongPosition();
 		MU_StartSong(song_elevator);
 		MISCVARS->elevatormusicon = true;
 		eptr->ticcount = ELEVATORMUSICTIME;
-		}
+	}
 
 	else if (AREANUMBER(eptr->sx,eptr->sy) == AREANUMBER(eptr->dx,eptr->dy))
 		eptr->ticcount = 70;
 	else
 		eptr->ticcount = 170;
-
-	}
+}
 
 
 /*
@@ -2900,19 +2901,27 @@ void SetElevatorOperationTime(elevator_t*eptr)
 */
 
 void CheckElevatorStart (elevator_t*eptr)
-	{
+{
+	printf("CheckElevatorStart\n");
+
 	doorobj_t *dptr = doorobjlist[eptr->doorclosing];
 
 	if (dptr->action == dr_closed)
-		{
+	{
+		printf("CheckElevatorStart: A0\n");
 
 		if (eptr->nextaction!=-1)
-			{
+		{
+			printf("CheckElevatorStart: A0-1 nxt_st=%d\n",
+				eptr->nextaction);
+
 			eptr->state = eptr->nextaction;
 			eptr->nextaction = -1;
 			switch (eptr->state)
-				{
+			{
 				case ev_mtd:
+					printf("CheckElevatorStart: A0-2\n");
+
 					eptr->doortoopen = eptr->door2;
 					SD_PlaySoundRTP(SD_ELEVATORONSND,eptr->sx<<16,eptr->sy<<16);
 					//eptr->doorclosing = eptr->door1;
@@ -2921,26 +2930,30 @@ void CheckElevatorStart (elevator_t*eptr)
 					break;
 
 				case ev_mts:
+					printf("CheckElevatorStart: A0-3\n");
+
 					eptr->doortoopen = eptr->door1;
 
 					SD_PlaySoundRTP(SD_ELEVATORONSND,eptr->dx<<16,eptr->dy<<16);
 
 					SetElevatorOperationTime(eptr);
 					break;
-				}
 			}
-
+		}
 		else if (eptr->doorclosing == eptr->door1)
+		{
+			printf("CheckElevatorStart: A1\n");
 			eptr->state = ev_ras;
-
-
+		}
 		else if (eptr->doorclosing == eptr->door2)
+		{
+			printf("CheckElevatorStart: A2\n");
 			eptr->state = ev_rad;
-
+		}
 
 		eptr->doorclosing = -1;
-		}
 	}
+}
 
 
 /*
@@ -2954,19 +2967,21 @@ void CheckElevatorStart (elevator_t*eptr)
 */
 
 void ProcessElevators (void)
-	{
+{
 	int		ectr;
 	elevator_t *eptr;
 
+//	printf("ProcessElevators: A0\n");
+
 	for (ectr = 0 ; ectr < _numelevators ; ectr++)
-		{
+	{
 		eptr = &ELEVATOR[ectr];
 		if (eptr->ticcount)
 			eptr->ticcount --;
 		else
-			{
+		{
 			switch (eptr->state)
-				{
+			{
 				/*
 				case ev_ras:
 					break;
@@ -2975,98 +2990,137 @@ void ProcessElevators (void)
 					break;
 				*/
 				case ev_mts:
-					ExecuteElevatorStopActions(eptr,0,(eptr->sx << 16),(eptr->sy << 16));
+					printf("ProcessElevators: mts st=%d\n", eptr->state);
+					ExecuteElevatorStopActions(eptr,
+						0,(eptr->sx << 16),(eptr->sy << 16));
 					break;
 
 				case ev_mtd:
-					ExecuteElevatorStopActions(eptr,1,(eptr->dx << 16),(eptr->dy << 16));
+					printf("ProcessElevators: mtd st=%d\n", eptr->state);
+					ExecuteElevatorStopActions(eptr,
+						1,(eptr->dx << 16),(eptr->dy << 16));
 					break;
 
 				case ev_doorclosing:
 					CheckElevatorStart(eptr);
 					break;
-				}
 			}
 		}
 	}
+}
 
 
 
-void Teleport(elevator_t*eptr,int destination)
-{statobj_t*tstat;
- objtype*temp;
- int startx,starty,destx,desty;
+void Teleport(elevator_t *eptr, int destination)
+{
+	statobj_t*tstat;
+	objtype*temp;
+	int startx,starty,destx,desty;
 
- if (destination) // move to dest
-	{startx = eptr->sx;
-	starty = eptr->sy;
-	destx = eptr->dx;
-	desty = eptr->dy;
-//	tilemap[eptr->esx][eptr->esy] = (elevatorstart + 5|0x2000);
-	tilemap[eptr->esx][eptr->esy] = (W_GetNumForName("ELEV5")|0x2000);
+	printf("Teleport sx=%d sy=%d dx=%d dy=%d\n",
+		eptr->sx, eptr->sy,
+		eptr->dx, eptr->dy);
 
+	if (destination) // move to dest
+	{
+		printf("Teleport A0\n");
+
+		startx = eptr->sx;
+		starty = eptr->sy;
+		destx = eptr->dx;
+		desty = eptr->dy;
+
+		printf("Teleport A0-1: sx=%d sy=%d\n",
+			startx, starty);
+
+	//	tilemap[eptr->esx][eptr->esy] = (elevatorstart + 5|0x2000);
+		tilemap[eptr->esx][eptr->esy] = (W_GetNumForName("ELEV5")|0x2000);
 	}
- else
-	{startx = eptr->dx;
-	starty = eptr->dy;
-	destx = eptr->sx;
-	desty = eptr->sy;
-//	tilemap[eptr->edx][eptr->edy] = (elevatorstart + 5|0x2000);
-	tilemap[eptr->edx][eptr->edy] = (W_GetNumForName("ELEV5")|0x2000);
+	else
+	{
+		printf("Teleport A1\n");
+
+		startx = eptr->dx;
+		starty = eptr->dy;
+		destx = eptr->sx;
+		desty = eptr->sy;
+
+		printf("Teleport A1-1: sx=%d sy=%d\n",
+			startx, starty);
+
+	//	tilemap[eptr->edx][eptr->edy] = (elevatorstart + 5|0x2000);
+		tilemap[eptr->edx][eptr->edy] = (W_GetNumForName("ELEV5")|0x2000);
 	}
 
- for(tstat=firstactivestat;tstat;tstat=tstat->nextactive)
-	{if ((tstat->tilex == startx) && (tstat->tiley == starty))
+	printf("Teleport A1-2: sx=%d sy=%d\n",
+		startx, starty);
+
+	for(tstat=firstactivestat; tstat; tstat=tstat->nextactive)
+	{
+		if ((tstat->tilex == startx) && (tstat->tiley == starty))
 		{
-		tstat->x += ((destx - tstat->tilex) << TILESHIFT);
-		tstat->y += ((desty - tstat->tiley) << TILESHIFT);
-		tstat->tilex = tstat->x >> TILESHIFT;
-		tstat->tiley = tstat->y >> TILESHIFT;
-		tstat->visspot = &spotvis[tstat->tilex][tstat->tiley];
-		if (sprites[startx][starty] == tstat)
-			{sprites[startx][starty] = NULL;
-			sprites[destx][desty] = tstat;
+			printf("Teleport A2\n");
 
-			}
-
-		}
-	}
-
- for(temp=firstactive;temp;temp=temp->nextactive)
-	{if ((temp->tilex == startx) && (temp->tiley == starty))
-		{temp->x += ((destx - temp->tilex) << TILESHIFT);
-		temp->y += ((desty - temp->tiley) << TILESHIFT);
-		temp->tilex = temp->x >> TILESHIFT;
-		temp->tiley = temp->y >> TILESHIFT;
-		if (temp->obclass!=inertobj)
+			tstat->x += ((destx - tstat->tilex) << TILESHIFT);
+			tstat->y += ((desty - tstat->tiley) << TILESHIFT);
+			tstat->tilex = tstat->x >> TILESHIFT;
+			tstat->tiley = tstat->y >> TILESHIFT;
+			tstat->visspot = &spotvis[tstat->tilex][tstat->tiley];
+			if (sprites[startx][starty] == tstat)
 			{
-			RemoveFromArea (temp);
-			temp->areanumber = AREANUMBER(temp->tilex,temp->tiley);
-			MakeLastInArea (temp);
+				sprites[startx][starty] = NULL;
+				sprites[destx][desty] = tstat;
 			}
-		if (temp == player)
-			SHAKETICS = 10;
 		}
 	}
 
+	for(temp=firstactive; temp; temp=temp->nextactive)
+	{
+		if ((temp->tilex == startx) && (temp->tiley == starty))
+		{
+			printf("Teleport A3\n");
 
-
+			temp->x += ((destx - temp->tilex) << TILESHIFT);
+			temp->y += ((desty - temp->tiley) << TILESHIFT);
+			temp->tilex = temp->x >> TILESHIFT;
+			temp->tiley = temp->y >> TILESHIFT;
+			if (temp->obclass!=inertobj)
+			{
+				RemoveFromArea (temp);
+				temp->areanumber = AREANUMBER(temp->tilex,temp->tiley);
+				MakeLastInArea (temp);
+			}
+			if (temp == player)
+				SHAKETICS = 10;
+		}else
+		{
+			if (temp == player)
+			{
+				printf("Teleport A4: tx=%d ty=%d sx=%d sy=%d\n",
+					temp->tilex, temp->tiley,
+					startx, starty
+					);
+			}
+		}
+	}
 }
 
 
 
 void OperateElevatorDoor(int dnum)
 {
- elevator_t*eptr;
- doorobj_t *dptr,*door1,*door2;
+	elevator_t*eptr;
+	doorobj_t *dptr,*door1,*door2;
 
- dptr = doorobjlist[dnum];
- eptr = &ELEVATOR[dptr->eindex];
- door1 = doorobjlist[eptr->door1];
- door2 = doorobjlist[eptr->door2];
+	dptr = doorobjlist[dnum];
+	eptr = &ELEVATOR[dptr->eindex];
+	door1 = doorobjlist[eptr->door1];
+	door2 = doorobjlist[eptr->door2];
 
- switch(eptr->state)
-	{/*
+	switch(eptr->state)
+	{
+#if 0
+	/*
 	case ev_mtd:					// if already on the way to request,
 										// ignore; else, put request in
 		if (dnum == eptr->door1)
@@ -3092,10 +3146,13 @@ void OperateElevatorDoor(int dnum)
 		}
 		break;
 	*/
-	case ev_rad:								// if ready at other place,
-		if ((dnum == eptr->door1) && (eptr->nextaction != ev_mts))  // process request, lock doors,
+#endif
+	case ev_rad:	
+			// if ready at other place,
+			// process request, lock doors,
 
-			{
+		if ((dnum == eptr->door1) && (eptr->nextaction != ev_mts)) 
+		{
 			#if (DEVELOPMENT == 1)
 			#if (ELEVATORTEST == 1)
 			Debug("\nplayer at source requesting elev %d rad",dptr->eindex);
@@ -3103,13 +3160,12 @@ void OperateElevatorDoor(int dnum)
 			#endif
 												// start moving to current loc;
 			SetNextAction(eptr,0);		// if already there, do nothing
-
-			}
+		}
 		break;
 
 	case ev_ras:
 		if ((dnum == eptr->door2) && (eptr->nextaction != ev_mtd))
-			{
+		{
 			#if (DEVELOPMENT == 1)
 			#if (ELEVATORTEST == 1)
 			Debug("\nplayer at dest requesting elev %d ras",dptr->eindex);
@@ -3117,37 +3173,39 @@ void OperateElevatorDoor(int dnum)
 			#endif
 			SetNextAction(eptr,1);
 
-			}
+		}
 		break;
 
 	case ev_doorclosing:
-		if (eptr->doorclosing == dnum)		// if opening door at current loc,
-														// reset elev state to ready
-		{//if (eptr->door1 == dnum)
+		// if opening door at current loc,
+		// reset elev state to ready
+		if (eptr->doorclosing == dnum)
+		{
+			//if (eptr->door1 == dnum)
 			// eptr->nextaction = ev_ras;
 			//else
 			//eptr->nextaction = ev_rad;
 		}
 		else										//else prepare for movement
-		{if ((eptr->door1 == dnum) && (eptr->nextaction != ev_mts))
+		{
+			if ((eptr->door1 == dnum) && (eptr->nextaction != ev_mts))
 			{
-				#if ((DEVELOPMENT == 1))
-				#if ((ELEVATORTEST == 1))
+//				#if ((DEVELOPMENT == 1))
+//				#if ((ELEVATORTEST == 1))
 				Debug("\nplayer at source requesting elev %d dc",dptr->eindex);
-				#endif
-				#endif
+//				#endif
+//				#endif
 				SetNextAction(eptr,0);
 
 			}
 			else if ((eptr->door2 == dnum) && (eptr->nextaction != ev_mtd))
 			{
-				#if ((DEVELOPMENT == 1))
-				#if ((ELEVATORTEST == 1))
+//				#if ((DEVELOPMENT == 1))
+//				#if ((ELEVATORTEST == 1))
 				Debug("\nplayer at dest requesting elev %d dc",dptr->eindex);
-				#endif
-				#endif
+//				#endif
+//				#endif
 				SetNextAction(eptr,1);
-
 			}
 		}
 	break;
@@ -3159,83 +3217,106 @@ void OperateElevatorDoor(int dnum)
 
 
 int SetNextAction(elevator_t*eptr,int action)
-{int dn;
+{
+	int dn;
 
- if (action)
-	{if (!DoorReadyToClose(eptr->door1))
-	return false;
+	if (action)
+	{
+		if (!DoorReadyToClose(eptr->door1))
+			return false;
 
-	eptr->nextaction = ev_mtd;
-	dn = eptr->door1;
+		printf("SetNextAction: Set MTD\n");
+		eptr->nextaction = ev_mtd;
+		dn = eptr->door1;
 	}
- else
-	{if (!DoorReadyToClose(eptr->door2))
-	return false;
+	else
+	{
+		if (!DoorReadyToClose(eptr->door2))
+			return false;
 
-	eptr->nextaction = ev_mts;
-	dn = eptr->door2;
+		printf("SetNextAction: Set MTS\n");
+		eptr->nextaction = ev_mts;
+		dn = eptr->door2;
 	}
- eptr->state = ev_doorclosing;
 
- eptr->doorclosing = dn;
- #if (DEVELOPMENT == 1)
- #if (ELEVATORTEST == 1)
+	eptr->state = ev_doorclosing;
+
+	eptr->doorclosing = dn;
+//#if (DEVELOPMENT == 1)
+//#if (ELEVATORTEST == 1)
 	Debug("\nCloseDoor %d",dn);
- #endif
- #endif
- if (doorobjlist[dn]->action != dr_closed)
-  CloseDoor(dn);
- doorobjlist[dn]->flags |= DF_ELEVLOCKED;
+//#endif
+//#endif
 
- return true;
+	if (doorobjlist[dn]->action != dr_closed)
+		CloseDoor(dn);
+	doorobjlist[dn]->flags |= DF_ELEVLOCKED;
+
+	return true;
 }
 
 
 void OperateElevatorSwitch(objtype*ob,int elevnum,int checkx,int checky)
-{elevator_t*eptr;
- doorobj_t *door1,*door2;
+{
+	elevator_t*eptr;
+	doorobj_t *door1,*door2;
 
- eptr = &ELEVATOR[elevnum];
+	eptr = &ELEVATOR[elevnum];
 
- if ((eptr->state == ev_mts) ||
-	(eptr->state == ev_mtd))
+	if ((eptr->state == ev_mts) ||
+		(eptr->state == ev_mtd))
 	{
-	#if (DEVELOPMENT == 1)
-	#if (ELEVATORTEST == 1)
-	Debug("\nobj %d tried to use elevator %d switch while in use",ob->obclass,elevnum);
-	#endif
-	#endif
-	return;
+#if (DEVELOPMENT == 1)
+#if (ELEVATORTEST == 1)
+		Debug("\nobj %d tried to use elevator %d switch while in use",
+			ob->obclass, elevnum);
+#endif
+#endif
+		return;
 	}
 
- door1 = doorobjlist[eptr->door1];
- door2 = doorobjlist[eptr->door2];
+	door1 = doorobjlist[eptr->door1];
+	door2 = doorobjlist[eptr->door2];
 
- if ((abs(ob->tilex-door1->tilex)<=1) && //switch at source
-	(abs(ob->tiley-door1->tiley)<=1))
-	{if (!SetNextAction(eptr,1)) // set next to dest
-		return;
-	#if (DEVELOPMENT == 1)
-	#if (ELEVATORTEST == 1)
-	Debug("\nswitch at src %d flipped",elevnum);
-	#endif
-	#endif
-	eptr->ticcount = 0;
+	printf("OperateElevatorSwitch: door1 x=%d y=%d\n",
+		door1->tilex, door1->tiley);
+	printf("OperateElevatorSwitch: door2 x=%d y=%d\n",
+		door2->tilex, door2->tiley);
+	printf("OperateElevatorSwitch: ob x=%d y=%d\n",
+		ob->tilex, ob->tiley);
+
+	printf("OperateElevatorSwitch: at dx=%d dy=%d\n",
+		ob->tilex-door1->tilex,
+		ob->tiley-door1->tiley);
+
+	if ((abs(ob->tilex-door1->tilex)<=1) && //switch at source
+		(abs(ob->tiley-door1->tiley)<=1))
+	{
+		if (!SetNextAction(eptr,1)) // set next to dest
+			return;
+//#if (DEVELOPMENT == 1)
+//#if (ELEVATORTEST == 1)
+		Debug("\nswitch at src %d flipped",elevnum);
+//#endif
+//#endif
+		eptr->ticcount = 0;
 	}
  else //switch at dest
-	{if (!SetNextAction(eptr,0)) // set next to src
-		return;
-	#if (DEVELOPMENT == 1)
-	#if (ELEVATORTEST == 1)
-	Debug("\nswitch at dest %d flipped",elevnum);
-	#endif
-	#endif
-	eptr->ticcount = 0;
+	{
+		if (!SetNextAction(eptr,0)) // set next to src
+			return;
+
+//#if (DEVELOPMENT == 1)
+//#if (ELEVATORTEST == 1)
+		Debug("\nswitch at dest %d flipped",elevnum);
+//#endif
+//#endif
+		eptr->ticcount = 0;
 	}
 
 // tilemap[checkx][checky] = (elevatorstart + 6|0x2000);
- tilemap[checkx][checky] = (W_GetNumForName("ELEV6")|0x2000);
- SD_PlaySoundRTP(SD_TOUCHPLATESND,ob->x,ob->y);
+	tilemap[checkx][checky] = (W_GetNumForName("ELEV6")|0x2000);
+	SD_PlaySoundRTP(SD_TOUCHPLATESND,ob->x,ob->y);
 
 }
 
@@ -4347,6 +4428,12 @@ void LoadDoors (byte * buf, int size)
 	SetupDoors ();
 	FixDoorAreaNumbers();
 	ptr  = buf;
+
+	doorsave=0;
+	doorflag=0;
+	doorlocked=0;
+	doortime=0;
+	dooreindex=0;
 
 	unitsize=0;
 	unitsize+=sizeof(doorsave);

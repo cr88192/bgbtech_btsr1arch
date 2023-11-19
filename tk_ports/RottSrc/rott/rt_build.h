@@ -62,4 +62,6 @@ void MenuTBufPrintLine (char *s, int shade);
 
 void DrawMenuBufPicture (int x, int y, byte * pic, int w, int h);
 
+void  DrawMenuPost (int height, byte * src, unsigned buf); // IN rt_dr_a.asm
+
 #endif

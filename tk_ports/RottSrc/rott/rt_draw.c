@@ -139,7 +139,7 @@ static int nonbobpheight;
 
 static visobj_t * sortedvislist[MAXVISIBLE];
 
-static fixed mindist = 0x1000;
+static fixed rd_draw_mindist = 0x1000;
 
 static int walltime=0;
 
@@ -179,7 +179,33 @@ static int weaponshape[NUMWEAPGRAPHICS] =
 #endif
 		};
 
-void SetColorLightLevel (int x, int y, visobj_t * sprite, int dir, int color, int fullbright);
+void SetColorLightLevel (int x, int y, visobj_t * sprite,
+	int dir, int color, int fullbright);
+
+void rt_memcpy_tst(void *dst, void *src, int sz)
+{
+	byte *cs, *ct, *cte;
+	
+	cs=src; ct=dst; cte=ct+sz;
+	while(ct<cte)
+		*ct++=*cs++;
+}
+
+void rt_checkbufhash(void *buf, int sz, unsigned int ref)
+{
+	unsigned int *cs, *cse;
+	unsigned int h0, h1, h2;
+	
+	cs=buf;
+	cse=cs+(sz>>2);
+	h0=1; h1=1;
+	while(cs<cse)
+		{ h0+=*cs++; h1+=h0; }
+	h2=h0^h1;
+	
+	if(h2!=ref)
+		__debugbreak();
+}
 
 /*
 ==================
@@ -207,6 +233,7 @@ void BuildTables (void)
 // get size of first table
 //
 
+	length=0;
 	memcpy(&length,ptr,sizeof(int));
 
 //
@@ -225,9 +252,13 @@ void BuildTables (void)
 // get sin/cos table
 //
 //	memcpy(&sintable[0],ptr,length*sizeof(long));
-	memcpy(&sintable[0],ptr,length*sizeof(int));
+//	memcpy(&sintable[0],ptr,length*sizeof(int));
+//	memcpy(sintable,ptr,length*sizeof(int));
+	rt_memcpy_tst(sintable,ptr,length*sizeof(int));
 
 	ptr+=(length)*sizeof(int);
+
+	rt_checkbufhash(sintable, length*sizeof(int), 0x1CFE09E7);
 
 //
 // get size of tangent table
@@ -239,9 +270,12 @@ void BuildTables (void)
 //
 // get tangent table
 //
-	memcpy(tantable,ptr,length*sizeof(short));
+//	memcpy(tantable,ptr,length*sizeof(short));
+	rt_memcpy_tst(tantable,ptr,length*sizeof(short));
 
 	ptr+=(length)*sizeof(short);
+
+	rt_checkbufhash(tantable, length*sizeof(short), 0x6DE45935);
 
 //
 // get size of gamma table
@@ -256,7 +290,8 @@ void BuildTables (void)
 	memcpy(&gammatable[0],ptr,length*sizeof(byte));
 	table=W_CacheLumpName("tables",PU_CACHE);
 
-	costable = (fixed *)&(sintable[FINEANGLES/4]);
+//	costable = (fixed *)&(sintable[FINEANGLES/4]);
+	costable = (fixed *)(sintable+(FINEANGLES/4));
 
 //	wstart=W_GetNumForName("WALLSTRT");
 #if (SHAREWARE==0)
@@ -269,15 +304,41 @@ void BuildTables (void)
 	pretics[2]=0x10000;
 	pretics[1]=0x10000;
 
-	for(i=0;i<ANGLES;i++)
+	for(i=0; i<ANGLES; i++)
 	{
-		angletodir[i] = (i + (ANGLES/16))/(ANGLES/8);
+		angletodir[i] = (i + (ANGLES/16)) / (ANGLES/8);
 		if (angletodir[i] == 8)
 			angletodir[i] = 0;
 	}
 
 	// Check out VENDOR.DOC file
 //	CheckVendor();
+
+#if 1
+	i=FixedMul(0x555555, 0xAAAAAA);
+	if(i!=0x38E38DC7)
+		{ __debugbreak(); }
+
+	i=FixedMul(0x555555, -0xAAAAAA);
+	if(i!=~0x38E38DC7)
+		{ __debugbreak(); }
+	i=FixedMul(-0x555555, 0xAAAAAA);
+	if(i!=~0x38E38DC7)
+		{ __debugbreak(); }
+	i=FixedMul(-0x555555, -0xAAAAAA);
+	if(i!=0x38E38DC7)
+		{ __debugbreak(); }
+
+	i=FixedDiv(0xAAAAAA, 0x555555);
+	if(i!=0x20000)
+		{ __debugbreak(); }
+	i=FixedDiv(0xAAAAAA, -0x555555);
+	if(i!=-0x20000)
+		{ __debugbreak(); }
+	i=FixedDiv(-0xAAAAAA, -0x555555);
+	if(i!=0x20000)
+		{ __debugbreak(); }
+#endif
 
 	if (!quiet)
 		printf("RT_DRAW: Tables Initialized\n");
@@ -616,8 +677,8 @@ int		CalcHeight (void)
 	if(nx<0)
 		return(0);
 
-	if (nx<mindist)
-		nx=mindist; // don't let divide overflo'
+	if (nx<rd_draw_mindist)
+		nx=rd_draw_mindist; // don't let divide overflo'
 
 	return (heightnumerator/nx);
 }
@@ -872,7 +933,10 @@ void DrawMaskedWalls (void)
 ======================
 */
 
+#ifndef SGN_DEFED
+#define SGN_DEFED
 #define SGN(x)			((x>0) ? (1) : ((x==0) ? (0) : (-1)))
+#endif
 
 /*--------------------------------------------------------------------------*/
 int CompareHeights(s1p,s2p) visobj_t **s1p,**s2p;
@@ -1599,6 +1663,8 @@ void CalcTics (void)
 	} /* endwhile */
 	tics=tc-oldtime;
 
+	I_MusicSubmit();
+
 //	SoftError("CT ticcount=%ld\n",ticcount);
 //	if (tics>MAXTICS)
 //		{
@@ -1607,19 +1673,20 @@ void CalcTics (void)
 //	tics = MAXTICS;
 //		}
 
-	if (demoplayback || demorecord)
-		{
+//	if (demoplayback || demorecord)
+	if(1)
+	{
 		if (tics>MAXTICS)
-			{
+		{
 			tc=oldtime+MAXTICS;
 			tics=MAXTICS;
 			ISR_SetTime(tc);
-			}
 		}
+	}
 	oldtime=tc;
 #if (DEVELOPMENT == 1)
 	if (graphicsmode==true)
-		{
+	{
 		int drawntics;
 
 		VGAWRITEMAP(1);
@@ -1628,7 +1695,7 @@ void CalcTics (void)
 			drawntics=MAXDRAWNTICS;
 		for (i=0;i<drawntics;i++)
 			*((byte *)displayofs+screenofs+(SCREENBWIDE*3)+i)=egacolor[15];
-		}
+	}
 /*
 		if (drawtime>MAXDRAWNTICS)
 			drawtime=MAXDRAWNTICS;
@@ -3379,6 +3446,7 @@ void RotationFun ( void )
 
 	//save off fastcounter
 
+	x=0; y=0;
 
 	angle=0;
 	scale=FINEANGLES;
@@ -4712,6 +4780,9 @@ void ScrollString ( int cy, char * string, byte * bkgnd, int scrolltime, int pau
 	int width,height;
 	int time1,time2;
 
+	width=0;
+	height=0;
+
 	LastScan=0;
 	US_MeasureStr (&width, &height, string);
 
@@ -5372,6 +5443,8 @@ void DoInBetweenCinematic (int yoffset, int lump, int delay, char * string )
 	int width,height;
 	int x,y;
 
+	width=0; height=0;
+
 	VL_FadeOut (0, 255, 0, 0, 0, 20);
 	VL_ClearBuffer (bufferofs, 0);
 	DrawNormalSprite(0,yoffset,lump);
@@ -5467,6 +5540,8 @@ void DrawPreviousCredits ( int num, CreditType * Credits )
 	int x,y;
 	int i;
 
+	width=0; height=0;
+
 	for(i=0;i<num;i++)
 		{
 		if (Credits[i].font==0)
@@ -5498,6 +5573,7 @@ void WarpCreditString ( int time, byte * back, int num, CreditType * Credits)
 	int height;
 	boolean soundplayed;
 
+	width=0; height=0;
 
 	LastScan = 0;
 

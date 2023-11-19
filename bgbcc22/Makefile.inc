@@ -21,6 +21,13 @@ SRCS=\
 	mm/cc_int128.c \
 	mm/cc_malloc.c \
 	mm/cc_thread.c \
+	mm/cc_fmt_targa.c \
+	mm/cc_fmt_bmp.c \
+	\
+	mm/qoilz_dec.c \
+	mm/qoilz_enc.c \
+	mm/lcif_dec.c \
+	mm/lcif_enc.c \
 	\
 	ccxl/ccxl_cgif.c \
 	ccxl/ccxl_compile.c \

@@ -1162,6 +1162,10 @@ int MU_Startup ( boolean bombonerror )
 			int numbits;
 			int numchannels;
 
+			numvoices=0;
+			numbits=0;
+			numchannels=0;
+
 			FX_SetupSoundBlaster( SBSettings, &numvoices,
 				&numbits, &numchannels );
 			}
@@ -1590,6 +1594,7 @@ void MU_LoadMusic (byte * buf, int size)
 		Error("LoadMusic: Different number of parameters\n");
 
 	ptr  = buf;
+	songnumber=-1;
 
 	vsize=sizeof(songnumber);
 	memcpy(&songnumber,ptr,vsize);
@@ -1600,6 +1605,7 @@ void MU_LoadMusic (byte * buf, int size)
 		differentsong=true;
 		}
 
+	i=0;
 	vsize=sizeof(i);
 	memcpy(&i,ptr,vsize);
 	ptr+=vsize;
