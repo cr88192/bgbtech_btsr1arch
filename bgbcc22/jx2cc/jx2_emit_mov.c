@@ -1477,7 +1477,9 @@ int BGBCC_JX2_TryEmitOpRegStRegDisp(
 
 	if(rn==BGBCC_SH_REG_TBR)
 	{
-		BGBCC_JX2_EmitLoadDrImm(ctx, disp);
+//		BGBCC_JX2_EmitLoadDrImm(ctx, disp);
+		BGBCC_JX2_EmitLoadRegImm(ctx,
+			BGBCC_SH_NMID_MOV, BGBCC_SH_REG_R0, disp);
 		return(BGBCC_JX2_TryEmitOpRegStReg2(ctx, nmid,
 			rm, BGBCC_SH_REG_DLR, BGBCC_SH_REG_TBR));
 	}

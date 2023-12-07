@@ -191,10 +191,24 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				break;
 
 			case 0x08:
+				if(task->ttyid)
+				{
+					tk_putc_tty(args[0].i, task->ttyid);
+					ret=TK_URES_TRUE;
+					break;
+				}
 				tk_putc(args[0].i);
 				ret=TK_URES_TRUE;
 				break;
 			case 0x09:
+				if(task->ttyid)
+				{
+					sz=tk_getch_tty(task->ttyid);
+					*((int *)vParm1)=sz;
+					ret=TK_URES_TRUE;
+					break;
+				}
+				
 				if(args[0].i==0)
 				{
 					sz=tk_getch();
@@ -214,6 +228,14 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0A:
+				if(task->ttyid)
+				{
+					sz=tk_kbhit_tty(task->ttyid);
+					*((int *)vParm1)=sz;
+					ret=TK_URES_TRUE;
+					break;
+				}
+				
 				if(args[0].i==0)
 				{
 					sz=tk_kbhit();
@@ -248,6 +270,12 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0E:
+				if(task->ttyid)
+				{
+					tk_puts_tty(args[0].p, task->ttyid);
+					ret=TK_URES_TRUE;
+					break;
+				}
 				tk_puts_n(args[0].p, args[1].i);
 				ret=TK_URES_TRUE;
 				break;
@@ -299,7 +327,8 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				break;
 
 			case 0x1A:
-				sz=TK_SpawnNewThreadB(task, args[0].p, args[1].p);
+				sz=TK_SpawnNewThread2B(task, args[0].p,
+					args[1].p, args[2].p);
 				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
 				break;
@@ -390,6 +419,13 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				ret=tk_hrecv(task, args[0].i, args[1].i,
 					args[2].p, args[3].i, args[4].i,
 					args[5].p, args[6].i);
+				break;
+
+			case 0x40:
+				ret=TK_CreateProcessB(task,
+					args[0].p, args[1].p,
+					args[2].p, args[3].p,
+					args[4].i, args[5].p);
 				break;
 
 			default:

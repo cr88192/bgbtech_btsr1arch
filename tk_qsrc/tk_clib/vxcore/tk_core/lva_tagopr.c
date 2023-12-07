@@ -79,7 +79,7 @@ LVA_Cons *TKMM_LVA_AllocCons()
 		return(tmp);
 	}
 
-	tmp=TKMM_LVA_TyMalloc(tkmm_lvatyi_cons, sizeof(LVA_Cons));
+	tmp=TKMM_LVA_TagMalloc(tkmm_lvatyi_cons, sizeof(LVA_Cons));
 	return(tmp);
 
 //	return(TKMM_LVA_NewTagArray(n, 5));
@@ -98,7 +98,7 @@ LVA_Cons *TKMM_LVA_NewCons(u64 car, u64 cdr)
 		return(tmp);
 	}
 
-	tmp=TKMM_LVA_TyMalloc(tkmm_lvatyi_cons, sizeof(LVA_Cons));
+	tmp=TKMM_LVA_TagMalloc(tkmm_lvatyi_cons, sizeof(LVA_Cons));
 	tmp->car=car;
 	tmp->cdr=cdr;
 	return(tmp);
@@ -174,7 +174,7 @@ void *TKMM_LVA_AllocBigInt()
 		return(tmp);
 	}
 
-	tmp=TKMM_LVA_TyMalloc(LVA_LVATY_BIGINT, 48);
+	tmp=TKMM_LVA_TagMalloc(LVA_LVATY_BIGINT, 48);
 	return(tmp);
 }
 

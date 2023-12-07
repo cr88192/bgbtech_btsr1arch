@@ -287,6 +287,7 @@ begin
 	
 	endcase
 
+`ifndef def_true
 	if(tDoOutHeld)
 	begin
 		tRegIdRn2		= regIdRm;
@@ -295,6 +296,16 @@ begin
 		tRegValRn4		= tValOutDfl;
 		tRegHeld		= 1;
 	end
+`else
+	if(tDoOutHeld)
+	begin
+		tRegIdRn2		= regIdRm;
+		tRegValRn2		= tValOutDfl;
+		tRegIdRn4		= regIdRm;
+		tRegValRn4		= tValOutDfl;
+	end
+`endif
+	
 
 	if(tDoOutDfl)
 	begin

@@ -1263,6 +1263,10 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 
 				if(!bgbcp_strcmp(tag, "__interrupt"))i=BGBCC_TYFL_INTERRUPT;
 				if(!bgbcp_strcmp(tag, "__syscall"))i=BGBCC_TYFL_SYSCALL;
+				if(!bgbcp_strcmp(tag, "__regsave_tbr"))i=BGBCC_TYFL_TBRSAVE;
+
+				if(!bgbcp_strcmp(tag, "__interrupt_tbrsave"))
+					i=BGBCC_TYFL_INTERRUPT|BGBCC_TYFL_TBRSAVE;
 
 				if(!bgbcp_strcmp(tag, "__w64"))i=BGBCC_TYFL_INLINE;
 				if(!bgbcp_strcmp(tag, "__ptr64"))i=BGBCC_TYFL_INLINE;

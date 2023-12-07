@@ -752,6 +752,18 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVUTW		0x1A5		//
 #define BJX2_NMID_MOVHTW		0x1A6		//
 
+#define BJX2_NMID_FMIN			0x1A8		//
+#define BJX2_NMID_FMAX			0x1A9		//
+#define BJX2_NMID_FMINS			0x1AA		//
+#define BJX2_NMID_FMAXS			0x1AB		//
+
+#define BJX2_NMID_FSGNJ			0x1B0		//
+#define BJX2_NMID_FSGNJN		0x1B1		//
+#define BJX2_NMID_FSGNJX		0x1B2		//
+#define BJX2_NMID_FSGNJS		0x1B3		//
+#define BJX2_NMID_FSGNJNS		0x1B4		//
+#define BJX2_NMID_FSGNJXS		0x1B5		//
+
 
 
 #define BJX2_FMID_NONE			0x00		//?
@@ -1269,6 +1281,9 @@ bjx2_addr	map_img_base[256];
 byte		n_map_img;
 
 u64			cfg_fflags;
+
+bjx2_addr	vm_mousex;
+bjx2_addr	vm_mousey;
 
 BJX2_MemSpan *(*MemSpanForAddr)(BJX2_Context *ctx, bjx2_addr addr);
 

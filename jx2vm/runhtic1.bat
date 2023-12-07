@@ -1,1 +1,1 @@
-jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_ports/HticSrc/htic_bjx2.exe heretic.wad=../tk_ports/HticSrc/hticulz.wad tksys/instrum.wad=../tk_qsrc/tk_clib/instrum.wd1 --rd_map ../tk_ports/HticSrc/htic_bjx2.exe.map %1 %2 %3 %4 %5
+jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_qsrc/tk_clib/tkshell.sys autoexec.exe=../tk_ports/HticSrc/htic_bjx2.exe heretic.wad=../tk_ports/HticSrc/hticulz.wad tksys/instrum.wad=../tk_qsrc/tk_clib/instrum.wd1 %1 %2 %3 %4 %5

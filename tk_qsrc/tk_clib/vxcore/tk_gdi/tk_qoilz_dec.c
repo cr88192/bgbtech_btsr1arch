@@ -756,7 +756,7 @@ int TKG_QOI_DecImageBufferFlatRGBA32(byte *dstbuf,
 	
 	*rxs=xs;
 	*rys=ys;
-	return(imgbuf);
+	return(0);
 }
 
 int TKG_QOI_DecImageBufferFlat555(

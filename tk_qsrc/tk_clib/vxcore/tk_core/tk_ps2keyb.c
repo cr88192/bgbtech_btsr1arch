@@ -355,6 +355,8 @@ int tk_ps2ms_init;
 
 int tk_ps2ms_pollupdates(void)
 {
+	long ta;
+
 	if(!tk_ps2ms_init)
 	{
 		tk_ps2ms_sendcmd(0xFF);
@@ -363,6 +365,13 @@ int tk_ps2ms_pollupdates(void)
 		tk_ps2ms_sendcmd(0xF4);
 		tk_ps2ms_tryscanch_to();
 		tk_ps2ms_init=1;
+		
+		ta=(long)(&tk_ps2ms_x);
+		tk_dbg_printf("TKPE!MS_X:%04X_%08X\n",
+			(u16)(ta>>32), (u32)ta);
+		ta=(long)(&tk_ps2ms_y);
+		tk_dbg_printf("TKPE!MS_Y:%04X_%08X\n",
+			(u16)(ta>>32), (u32)ta);
 	}
 
 	while(tk_ps2ms_scanhit())

@@ -599,6 +599,8 @@ byte **bgbcc_packlz_hash;
 byte *bgbcc_packlz_hrov;
 int bgbcc_packlz_cmp;
 
+int bgbcc_packlz_cblksz;
+
 int BGBCC_JX2C_PackBlockLZ_Reset(BGBCC_TransState *ctx)
 {
 	int i, j, k;
@@ -1087,6 +1089,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 //		if((ct+1)<cte)
 //			{ *(u16 *)ct=0; ct+=2; }
 
+		bgbcc_packlz_cblksz=ct-obuf;
+
 		while(ct<cte)
 			*ct++=0;
 
@@ -1106,6 +1110,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 
 //		if((ct+1)<cte)
 //			{ *(u16 *)ct=0; ct+=2; }
+
+		bgbcc_packlz_cblksz=ct-obuf;
 
 		while(ct<cte)
 			*ct++=0;
@@ -1135,6 +1141,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 //		if((ct+1)<cte)
 //			{ *(u16 *)ct=0; ct+=2; }
 
+		bgbcc_packlz_cblksz=ct-obuf;
+
 		while(ct<cte)
 			*ct++=0;
 
@@ -1163,6 +1171,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 //			*ct++=0xAA; cs++;
 			*ct++=*cs++;
 		}
+
+		bgbcc_packlz_cblksz=ct-obuf;
 
 //		if((ct+1)<cte)
 //			{ *(u16 *)ct=0; ct+=2; }
@@ -1199,6 +1209,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 //		if((ct+1)<cte)
 //			{ *(u16 *)ct=0; ct+=2; }
 
+		bgbcc_packlz_cblksz=ct-obuf;
+
 		while(ct<cte)
 			*ct++=0;
 
@@ -1229,6 +1241,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 //			*ct++=0xAA; cs++;
 			*ct++=*cs++;
 		}
+
+		bgbcc_packlz_cblksz=ct-obuf;
 
 //		if((ct+1)<cte)
 //			{ *(u16 *)ct=0; ct+=2; }
@@ -1263,6 +1277,8 @@ int BGBCC_JX2C_PackBlockLZ4(BGBCC_TransState *ctx,
 //			*ct++=0xAA; cs++;
 			*ct++=*cs++;
 		}
+
+		bgbcc_packlz_cblksz=ct-obuf;
 
 //		if((ct+1)<cte)
 //			{ *(u16 *)ct=0; ct+=2; }
@@ -1526,6 +1542,8 @@ int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
 	if(cs<cte)
 		*ct++=0x1F;
 	
+	bgbcc_packlz_cblksz=ct-obuf;
+
 //	return(ct-obuf);
 	return(lcs-ibuf);
 }

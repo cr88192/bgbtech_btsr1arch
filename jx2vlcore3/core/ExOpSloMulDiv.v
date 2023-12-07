@@ -208,7 +208,7 @@ begin
 		tNxtValRn	= tValAQ[63:0];
 
 `ifdef jx2_alu_slomuldiv_fdiv
-	if(tValOp[5])
+	if(tValOp[5:4]==2'b10)
 	begin
 		tNxtValRn[63] = tValSgFdiv;
 		if(tValAQ[54])
@@ -240,6 +240,45 @@ begin
 				tNxtValRn[62:52]	= 11'h7FF;
 			end		
 		end
+	end
+`endif
+
+`ifdef jx2_alu_slomuldiv_fdivs
+	if(tValOp[5:4]==2'b11)
+//	if(tValOp[5:0]==JX2_UCIX_QMUL_FDIVS)
+	begin
+		tNxtValRn[31] = tValSgFdiv;
+		if(tValAQ[54])
+		begin
+			tNxtValRn[30:23]	= { tValExpFdiv[10], tValExpFdiv[6:0] } +1;
+			tNxtValRn[22:0]		= tValAQ[53:31];
+			tValFdivRndb		= tValAQ[30];
+		end
+		else
+		begin
+			tNxtValRn[30:23]	= { tValExpFdiv[10], tValExpFdiv[6:0] };
+			tNxtValRn[22:0]		= tValAQ[52:30];
+			tValFdivRndb		= tValAQ[29];
+		end
+		
+		tValFdivRnd = { 1'b0, tNxtValRn[7:0] } + { 8'b0, tValFdivRndb };
+		if(!tValFdivRnd[8])
+			tNxtValRn[7:0] = tValFdivRnd[7:0];
+
+		if(tValExpFdiv[11])
+		begin
+			tNxtValRn[23:19]	= 0;
+			if(tValExpFdiv[10])
+			begin
+				tNxtValRn[30:23]	= 8'h00;
+			end
+			else
+			begin
+				tNxtValRn[30:23]	= 8'hFF;
+			end		
+		end
+		
+		tNxtValRn[63:32]=0;
 	end
 `endif
 
@@ -305,6 +344,17 @@ begin
 				{ 1'b0, valRs[62:52] } -
 				{ 1'b0, valRt[62:52] };
 
+`ifdef jx2_alu_slomuldiv_fdivs
+			if(idUIxt[5:4]==2'b11)
+//			if(idUIxt[5:0]==JX2_UCIX_QMUL_FDIVS)
+			begin
+				tNxtValExpFdiv	=
+					1022 +
+					{ 4'b0, valRs[30:23] } -
+					{ 4'b0, valRt[30:23] };
+			end
+`endif
+
 			tNxtValR		= UV64_00;
 			tNxtValAddDc	= 0;
 
@@ -337,10 +387,21 @@ begin
 			end
 
 `ifdef jx2_alu_slomuldiv_fdiv
-			if(idUIxt[5])
+			if(idUIxt[5:4]==2'b10)
 			begin
 				tNxtValQ[63:52]		= 12'h001;
 				tNxtValAddD[63:52]	= 12'hFFE;
+			end
+`endif
+
+`ifdef jx2_alu_slomuldiv_fdivs
+			if(idUIxt[5:4]==2'b11)
+//			if(idUIxt[5:0]==JX2_UCIX_QMUL_FDIVS)
+			begin
+				tNxtValQ[63:52]		= 12'h001;
+				tNxtValAddD[63:52]	= 12'hFFE;
+				tNxtValQ   [51:29]=tNxtValQ   [22:0];
+				tNxtValAddD[51:29]=tNxtValAddD[22:0];
 			end
 `endif
 

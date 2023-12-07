@@ -757,6 +757,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_DIVUX:		sn="DIVU.X";		break;
 	case BGBCC_SH_NMID_MODUX:		sn="MODU.X";		break;
 
+	case BGBCC_SH_NMID_XMOV:		sn="XMOV";			break;	//0x01CC
+
 	default:
 		sprintf(tb, "UNK_%04X", nmid);
 		sn=bgbcc_strdup(tb);
@@ -1541,10 +1543,18 @@ char *BGBCC_JX2DA_NameForLabel(BGBCC_JX2_Context *ctx, int lblid)
 int BGBCC_JX2DA_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 {
 	char *snm, *srm, *srn, *sro;
+	int lln;
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
-		
+	
+	if(BGBCC_JX2_LabelIsDebugLineP(ctx, lblid))
+	{
+		BGBCC_JX2_GetDebugLineForLabel(ctx, lblid, &sro, &lln);
+		BGBCC_JX2DA_EmitPrintf(ctx, "// %s:%d\n", sro, lln);
+		return(0);
+	}
+	
 	sro=BGBCC_JX2DA_NameForLabel(ctx, lblid);
 
 //	BGBCC_JX2DA_EmitPrintf(ctx, "\nL%08X:\n", lblid);

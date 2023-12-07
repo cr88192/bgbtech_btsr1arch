@@ -78,11 +78,11 @@
 #define TKGDI_FCC_theo	RIFF_MAKETAG('t','h','e','o')
 #define TKGDI_FCC_ther	RIFF_MAKETAG('t','h','e','r')
 
-#define TKGDI_FCC_RGBA	RIFF_MAKETAG('B','G','R','A')
-#define TKGDI_FCC_RGBX	RIFF_MAKETAG('B','G','R','X')
+// #define TKGDI_FCC_RGBA	RIFF_MAKETAG('B','G','R','A')
+// #define TKGDI_FCC_RGBX	RIFF_MAKETAG('R','G','B','X')
 
-#define TKGDI_FCC_BGRA	RIFF_MAKETAG('B','G','R','A')
-#define TKGDI_FCC_BGRX	RIFF_MAKETAG('B','G','R','X')
+// #define TKGDI_FCC_BGRA	RIFF_MAKETAG('B','G','R','A')
+// #define TKGDI_FCC_BGRX	RIFF_MAKETAG('B','G','R','X')
 
 #define TKGDI_FCC_RGBA	RIFF_MAKETAG('R','G','B','A')
 #define TKGDI_FCC_RGB	RIFF_MAKETAG('R','G','B',' ')
@@ -117,6 +117,9 @@
 #define TKGDI_FCC_bt2c	RIFF_MAKETAG('b','t','2','c')
 
 #define TKGDI_FCC_UTX2	RIFF_MAKETAG('U','T','X','2')
+
+#define TKGDI_FCC_RGL3	RIFF_MAKETAG('R','G','L','3')
+#define TKGDI_FCC_RGL4	RIFF_MAKETAG('R','G','L','4')
 
 
 #define TKGDI_AVI_FL_UPDATING		1

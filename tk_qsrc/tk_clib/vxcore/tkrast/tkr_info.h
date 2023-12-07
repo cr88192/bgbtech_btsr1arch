@@ -628,6 +628,32 @@ TKRA_TexImage *(*GetTexImg)(TKRA_Context *ctx, int num);
 int (*BindTexImg)(TKRA_Context *ctx, TKRA_TexImage *img);
 };
 
+
+
+struct TKRA_DrawPrimArrays_s
+{
+int		vptr_xyz_fmt;
+int		vptr_xyz_str;
+void 	*vptr_xyz_ptr;
+
+int		vptr_st_fmt;
+int		vptr_st_str;
+void 	*vptr_st_ptr;
+
+int		vptr_rgb_fmt;
+int		vptr_rgb_str;
+void 	*vptr_rgb_ptr;
+
+int		vptr_nv_fmt;
+int		vptr_nv_str;
+void 	*vptr_nv_ptr;
+
+int		vptr_ix_fmt;
+int		vptr_ix_str;
+void 	*vptr_ix_ptr;
+};
+
+
 struct TKRA_Context_s
 {
 TKRA_ContextVt	*vt;			//vtable
@@ -848,27 +874,4 @@ byte	tex_yshl;					//texture Y size (log-2)
 byte	tex_mmip;
 byte	tex_nmip;
 int		tex_flag;
-};
-
-struct TKRA_DrawPrimArrays_s
-{
-int		vptr_xyz_fmt;
-int		vptr_xyz_str;
-void 	*vptr_xyz_ptr;
-
-int		vptr_st_fmt;
-int		vptr_st_str;
-void 	*vptr_st_ptr;
-
-int		vptr_rgb_fmt;
-int		vptr_rgb_str;
-void 	*vptr_rgb_ptr;
-
-int		vptr_nv_fmt;
-int		vptr_nv_str;
-void 	*vptr_nv_ptr;
-
-int		vptr_ix_fmt;
-int		vptr_ix_str;
-void 	*vptr_ix_ptr;
 };

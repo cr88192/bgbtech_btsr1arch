@@ -377,7 +377,7 @@ u64 *TKMM_MMCell_GetLnkObjCellHeadPtr(TKMM_MemLnkObj *obj, void *ptr)
 
 	p=TKMM_MMCell_ChunkFindObjBase(chk, p);
 	if(p<0)
-		return(-1);
+		return(NULL);
 	return(chk->data+p);
 }
 

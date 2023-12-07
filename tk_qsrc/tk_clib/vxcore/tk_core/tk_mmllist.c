@@ -159,13 +159,13 @@ void TKMM_MMList_MProtectCat(byte *ptr, int sz, int cat)
 #ifdef __TK_CLIB_ONLY__
 	if(!cat)
 	{
-		tk_mprotect((u64)ptr, sz,
+		tk_mprotect(ptr, sz,
 			TKMM_PROT_READ|TKMM_PROT_WRITE);
 		return;
 	}
 	if(cat==4)
 	{
-		tk_mprotect((u64)ptr, sz,
+		tk_mprotect(ptr, sz,
 			TKMM_PROT_READ|TKMM_PROT_WRITE|TKMM_PROT_EXEC);
 		return;
 	}
@@ -273,7 +273,7 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 			return(NULL);
 		}
 
-		TKMM_MMList_MProtectCat((u64)ptr, sz, cat);
+		TKMM_MMList_MProtectCat(ptr, sz, cat);
 		
 		memset(ptr, 0, sz);
 
@@ -367,7 +367,7 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 			__debugbreak();
 		
 		TKMM_MMList_MProtectCat(
-			(u64)(brkbuf),
+			brkbuf,
 			1<<TKMM_BRKBITS,
 			cat);
 		

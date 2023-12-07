@@ -23,6 +23,10 @@
 #define MAP_NORESERVE	0x0020
 #define MAP_32BIT		0x0040
 
+struct posix_typed_mem_info {
+size_t  posix_tmi_length;
+};
+
 int		mlock(const void *addr, size_t len);
 int		mlockall(int flags);
 void	*mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offs);

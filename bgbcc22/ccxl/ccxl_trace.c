@@ -641,6 +641,10 @@ s64 BGBCC_CCXL_DecodeFlagStr(BGBCC_TransState *ctx, char *str)
 
 			case 'e':	fl|=BGBCC_TYFL_DLLEXPORT;		break;
 			case 'i':	fl|=BGBCC_TYFL_DLLIMPORT;		break;
+
+			case 's':	fl|=BGBCC_TYFL_TBRSAVE;			break;
+			case 't':	fl|=BGBCC_TYFL_THREAD;			break;
+
 			default:
 				break;
 			}

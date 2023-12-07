@@ -578,13 +578,30 @@ ccxl_status BGBCC_CCXL_EmitCallRetV(BGBCC_TransState *ctx)
 ccxl_status BGBCC_CCXL_EmitCallRetOp(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register src)
 {
-	BGBCC_CCXL_VirtOp *op;
+	BGBCC_CCXL_VirtOp *op, *op1;
 
 	if(ctx->cgif_no3ac)
 		return(0);
 
 	if(BGBCC_CCXL_IsRegZzP(ctx, src))
 		{ BGBCC_DBGBREAK }
+
+	if(ctx->n_vop>2)
+	{
+		op1=ctx->vop[ctx->n_vop-1];
+		if(op1->opn==CCXL_VOP_DBGLN)
+			op1=ctx->vop[ctx->n_vop-2];
+
+		if((op1->opn==CCXL_VOP_CSRV) && (op1->dst.val==src.val) &&
+			(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) ||
+				BGBCC_CCXL_TypeSmallLongP(ctx, type))
+			)
+		{
+			op1->opn=CCXL_VOP_CSRV_RET;
+			BGBCC_CCXL_EmitMarkEndTrace(ctx);
+			return(0);
+		}
+	}
 
 //	BGBCC_CCXL_StackPhiTemporaries(ctx);
 	BGBCC_CCXL_EmitTempPhi(ctx, src);

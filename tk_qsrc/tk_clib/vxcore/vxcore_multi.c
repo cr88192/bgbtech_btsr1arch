@@ -3,6 +3,7 @@
 #endif
 
 #include <tk_core.h>
+#include <tkgdi/tkgdi.h>
 
 #include "pdpc201/stdio.c"
 #include "pdpc201/string.c"

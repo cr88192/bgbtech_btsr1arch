@@ -465,6 +465,11 @@ reg			tResultb1Q;
 reg			tResultb1R;
 reg			tResultb1O;
 
+reg			tResultu1T;
+reg			tResultu2T;
+reg			tResultuT;
+reg			tResultuS;
+
 reg			tAdd1SF;
 reg			tAdd2SF;
 reg			tAdd1BSF;
@@ -1767,6 +1772,48 @@ begin
 		end
 `endif
 
+`ifdef jx2_enable_minmax
+		4'b010z: begin
+			tResultu1T=!(tSub1SF^tSub1VF);
+			tResultu2T=!(tSub2SF^tSub2VF);
+//			tResultuT=idUIxt[5]?tResultu2T:tResultu1T;
+			tResultuT=tResultu2T;
+			tResultuS=tResultuT;
+			if(idUIxt[4])
+			begin
+				tResultuT=idUIxt[5]?tFCmpGtP:tFCmpGtP_FA;
+				tResultuS=idUIxt[5]?tFCmpGtP:tFCmpGtP_FB;
+			end
+			if(idUIxt[0])
+			begin
+				tResultuT=!tResultuT;
+				tResultuS=!tResultuS;
+			end
+//			tResultu2A = { 1'b0, tResultuT ? regValRt : regValRs };
+			tResultu2A = { 1'b0,
+				tResultuS ? regValRt[63:32] : regValRs[63:32],
+				tResultuT ? regValRt[31: 0] : regValRs[31: 0] };
+		end
+
+		4'b0110: begin
+			tResultu2A = { 1'b0,
+				regValRt[63] ^ idUIxt[4],
+				regValRs[62:32],
+				(!idUIxt[5] ? regValRs[31] : (regValRt[31] ^ idUIxt[4])),
+				regValRs[30: 0]
+				};
+		end
+		4'b0111: begin
+			tResultu2A = { 1'b0,
+				regValRs[63] ^ regValRt[63] ^ idUIxt[4],
+				regValRs[62:32],
+				(!idUIxt[5] ? regValRs[31] :
+					(regValRs[31] ^ regValRt[31] ^ idUIxt[4])),
+				regValRs[30: 0]
+				};
+		end
+`endif
+
 		default: begin
 		end
 	endcase
@@ -1827,7 +1874,9 @@ begin
 //			regValRs[63], regValRt[63], tSub2SF, tSub2ZF,
 //			tFCmpGtP);
 	
-		if(idUIxt[3:0]==JX2_UCIX_FPU_CMPEQ[3:0])
+//		if(idUIxt[3:0]==JX2_UCIX_FPU_CMPEQ[3:0])
+		if(	(idUIxt[3:0]==JX2_UCIX_FPU_CMPEQ[3:0])		||
+			(idUIxt[3:0]==JX2_UCIX_FCMP_CMPEQ_R[3:0])	)
 		begin
 			tResult1T	= tFCmpEqP;
 			tResult2T	= tFCmpEqP;
@@ -1861,13 +1910,15 @@ begin
 			tResult2Tv = 1;
 			tResult1Sv = 1;
 
-`ifdef jx2_use_fpu_fpimm
-			if(idUIxt[3:0]==JX2_UCIX_FPU_CMPGE[3:0])
+// `ifdef jx2_use_fpu_fpimm
+//			if(idUIxt[3:0]==JX2_UCIX_FPU_CMPGE[3:0])
+			if(	(idUIxt[3:0]==JX2_UCIX_FPU_CMPGE[3:0])	||
+				(idUIxt[3:0]==JX2_UCIX_FCMP_CMPGE_R[3:0])	)
 			begin
 				tResult1T = tFCmpGtP || tFCmpEqP;
 				tResult2T = tFCmpGtP || tFCmpEqP;
 			end
-`endif
+// `endif
 
 `ifdef jx2_alu_wx
 			if(idUIxt[5:4]==2'b10)
@@ -1885,6 +1936,17 @@ begin
 				tResult1Q	= tFCmpGtP_HB;
 				tResult1R	= tFCmpGtP_HC;
 				tResult1O	= tFCmpGtP_HD;
+
+				if(	(idUIxt[3:0]==JX2_UCIX_FPU_CMPGE[3:0])	||
+					(idUIxt[3:0]==JX2_UCIX_FCMP_CMPGE_R[3:0])	)
+				begin
+					tResult1T	= tFCmpGtP_FA || tSub1ZF;
+					tResult1S	= tFCmpGtP_FB || tSub1BZF;
+					tResult1P	= tFCmpGtP_HA || tSub1WZF_A;
+					tResult1Q	= tFCmpGtP_HB || tSub1WZF_B;
+					tResult1R	= tFCmpGtP_HC || tSub1WZF_C;
+					tResult1O	= tFCmpGtP_HD || tSub1WZF_D;
+				end
 			end
 		end
 	end

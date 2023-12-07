@@ -1,3 +1,6 @@
+#include <tk_core.h>
+#include <tkgdi/tkgdi.h>
+
 int TK_Env_GetEnvVarIdx(int idx, char *bufn, char *bufv, int szn, int szv)
 {
 	TK_EnvContext *env;
@@ -240,4 +243,54 @@ void TKSH_NormalizePath(char *dst, char *src)
 			*ct++='/';
 	}
 	*ct++=0;
+}
+
+
+void *TK_DlGetApiContextB(TKPE_TaskInfo *task, u64 apiname, u64 subname);
+
+void *TK_DlGetApiContextA(u64 apiname, u64 subname)
+{
+	TK_SysArg ar[4];
+	void *p;
+	int tid;
+	
+//	return(NULL);
+	
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskernel())
+	{
+		p=TK_DlGetApiContextB((TKPE_TaskInfo *)__arch_tbr, apiname, subname);
+		return(p);
+	}
+#endif
+
+	p=0;
+	ar[0].l=apiname;
+	ar[1].l=subname;
+	tk_syscall(NULL, TK_UMSG_GETAPICTX, &p, ar);
+	return(p);
+}
+
+_tkgdi_context_t *TKGDI_GetCurrentGdiContext()
+{
+	TKPE_TaskInfo *task;
+	TKPE_TaskInfoUser *tusr;
+	_tkgdi_context_t *ctx;
+
+//	task=TK_GetCurrentTask();
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(!task)
+		return(NULL);
+	
+	tusr=(TKPE_TaskInfoUser *)(task->usrptr);
+	if(!tusr)
+		return(NULL);
+	
+	ctx=(_tkgdi_context_t *)(tusr->gdictx);
+	if(ctx)
+		{ return(ctx); }
+
+	ctx=TK_DlGetApiContextA(TK_FCC_GDI, TK_FCC_GDI);
+	tusr->gdictx=(tk_kptr)ctx;
+	return(ctx);
 }

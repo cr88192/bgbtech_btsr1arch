@@ -173,7 +173,7 @@ char *TKMM_LVA_GetPtrTypeName(void *ptr)
 		return(NULL);
 
 	tyi=TKMM_MMList_GetTag(ptr);
-	return(TKMM_LVA_GetTagNameForIndex(ptr));
+	return(TKMM_LVA_GetTagNameForIndex(tyi));
 }
 
 int TKMM_LVA_GetPtrTypeTag(void *ptr)
@@ -260,7 +260,7 @@ u64 TKMM_LVA_WrapPointer(void *val)
 	v|=TKMM_LVA_GetPtrTypeTag(val);
 	return(v);
 #else
-	v=(u64)((u32)val);
+	v=(u64)((long)val);
 	v|=TKMM_LVA_GetPtrTypeTag(val);
 	return(v);
 #endif

@@ -14,7 +14,7 @@
 #define __STDARG_INCLUDED
 
 // #ifdef __GNUC__
-#if defined(__GNUC__) || defined(_BGBMETA)
+#if defined(__GNUC__) || defined(__gnuc__) || defined(_BGBMETA)
 
 //#ifndef __GNUC_VA_LIST
 //#define __GNUC_VA_LIST

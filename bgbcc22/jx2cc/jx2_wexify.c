@@ -1548,22 +1548,38 @@ int BGBCC_JX2_InferOps32InterlockEx2(
 	int opw1, int opw2, int opw3, int opw4, int opw5, int opw6,
 	int opw7, int opw8, int opw9, int opw10, int fl)
 {
-	int cf1, cf2;
+	int cf1, cf2, cf;
 	
 	cf1=BGBCC_JX2_InferOps32Interlock(sctx,
 		opw1, opw2, opw3, opw4, opw5, opw6, fl);
 	cf2=BGBCC_JX2_InferOps32Interlock(sctx,
 		opw1, opw2, opw7, opw8, opw9, opw10, fl);
-	
+
+#if 0	
 	if(cf1>1)
 		cf1+=2;
 	if(cf2>0)
 		cf2--;
+	return(cf1+cf2);
+#endif
 
 //	if(cf2>0)
 //		cf2=(cf2-1)>>1;
 
-	return(cf1+cf2);
+#if 1
+	if(cf1>1)
+	{
+		cf=cf1+3;
+		if(cf1==3)
+			cf+=1;
+	}
+	else if(cf2>1)
+		{ cf=cf2-1; }
+	else
+		{ cf=1; }
+
+	return(cf);
+#endif
 }
 
 int BGBCC_JX2_InferOps32InterlockI(
@@ -2779,8 +2795,8 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 
 		rn=opw1&31;
 //		if((rn==0) || (rn==1) || (rn==15))
-		if((rn==1) || (rn==15))
-			return(0);
+//		if((rn==1) || (rn==15))
+//			return(0);
 
 		ret=0;
 		switch((opw1>>4)&15)
@@ -3012,6 +3028,12 @@ int BGBCC_JX2_InferInterlockCost(
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opwn1, opwn2))
 	{
 		cn1=cfn1-1;
+//		cn1=cfn1-2;
+		if(cn1<1)
+			cn1=1;
+	}else
+	{
+		cn1=cfn1-3;
 		if(cn1<1)
 			cn1=1;
 	}
@@ -3029,6 +3051,11 @@ int BGBCC_JX2_InferInterlockCost(
 //		c1=cf1-2;
 		if(c1<1)
 			c1=1;
+	}else
+	{
+		c1=cf1-3;
+		if(c1<1)
+			c1=1;
 	}
 
 //	if(	BGBCC_JX2_CheckOps32IsMem(sctx, opw3, opw4) ||
@@ -3044,6 +3071,11 @@ int BGBCC_JX2_InferInterlockCost(
 //		c2=cf2-2;
 		if(c2<1)
 			c2=1;
+	}else
+	{
+		c2=cf2-3;
+		if(c2<1)
+			c2=1;
 	}
 
 #if 1
@@ -3057,6 +3089,12 @@ int BGBCC_JX2_InferInterlockCost(
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opw5, opw6))
 	{
 		c3=cf3-1;
+//		c3=cf3-2;
+		if(c3<1)
+			c3=1;
+	}else
+	{
+		c3=cf3-3;
 		if(c3<1)
 			c3=1;
 	}
@@ -3071,6 +3109,12 @@ int BGBCC_JX2_InferInterlockCost(
 	}else if(BGBCC_JX2_CheckOps32Is2Stage(sctx, opw7, opw8))
 	{
 		c4=cf4-1;
+//		c4=cf4-2;
+		if(c4<1)
+			c4=1;
+	}else
+	{
+		c4=cf4-3;
 		if(c4<1)
 			c4=1;
 	}
@@ -3078,17 +3122,32 @@ int BGBCC_JX2_InferInterlockCost(
 
 	c5=0;
 	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opwn1, opwn2, opw1, opw2))
-		c5++;
+		c5+=2;
 	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw1, opw2, opw3, opw4))
-		c5++;
+		c5+=2;
 	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw3, opw4, opw5, opw6))
-		c5++;
+		c5+=2;
 	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw5, opw6, opw7, opw8))
-		c5++;
+		c5+=2;
 	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw7, opw8, opw9, opw10))
-		c5++;
+		c5+=2;
 	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw9, opw10, opw11, opw12))
-		c5++;
+		c5+=2;
+
+	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opwn1, opwn2, opw3, opw4))
+		c5+=1;
+	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw1, opw2, opw5, opw6))
+		c5+=1;
+	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw3, opw4, opw7, opw8))
+		c5+=1;
+	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw5, opw6, opw9, opw10))
+		c5+=1;
+	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw7, opw8, opw11, opw12))
+		c5+=1;
+//	if(BGBCC_JX2_CheckOps32SequenceOnly(sctx, opw9, opw10, opw11, opw12))
+//		c5+=1;
+	
+	c5>>=1;
 	
 	if(c1<1)	c1=1;
 	if(c2<1)	c2=1;

@@ -324,7 +324,7 @@ static patch_t*		tallpercent;
 // 0-9, short, yellow (,different!) numbers
 static patch_t*		shortnum[10];
 
-patch_t*		hu_shortnum[10];
+extern patch_t*		hu_shortnum[10];
 
 // 3 key-cards, 3 skulls
 static patch_t*		keys[NUMCARDS]; 

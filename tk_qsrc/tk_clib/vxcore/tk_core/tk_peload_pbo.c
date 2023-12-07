@@ -1421,26 +1421,3 @@ void *TK_DlGetApiContextWrapB(TKPE_TaskInfo *task, u64 apiname, u64 subname)
 	
 	return(NULL);
 }
-
-void *TK_DlGetApiContextA(u64 apiname, u64 subname)
-{
-	TK_SysArg ar[4];
-	void *p;
-	int tid;
-	
-//	return(NULL);
-	
-#ifndef __TK_CLIB_ONLY__
-	if(tk_iskernel())
-	{
-		p=TK_DlGetApiContextB((TKPE_TaskInfo *)__arch_tbr, apiname, subname);
-		return(p);
-	}
-#endif
-
-	p=0;
-	ar[0].l=apiname;
-	ar[1].l=subname;
-	tk_syscall(NULL, TK_UMSG_GETAPICTX, &p, ar);
-	return(p);
-}

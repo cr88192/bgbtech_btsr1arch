@@ -515,7 +515,8 @@ void I_InitTkGdi()
 	tk_printf("  hDc=%d\n", i_hDc);
 #endif
 
-//	i_dibinfo->biHeight=-200;
+//	if(i_hDc>1)
+//		i_dibinfo->biHeight=-200;
 	
 //	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
 }

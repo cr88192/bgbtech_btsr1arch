@@ -1460,6 +1460,8 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_CALL_INTRIN:		s0="CALL_INTRIN"; break;
 			case CCXL_VOP_ASMINLINE:		s0="ASM_INLINE"; break;
 			case CCXL_VOP_TEMP_PHI:			s0="TEMP_PHI"; break;
+
+			case CCXL_VOP_CSRV_RET:			s0="CSRV_RET"; break;
 		}
 
 		if(s0)
@@ -1699,6 +1701,13 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		BGBCC_JX2C_EmitCsrvVReg(ctx, sctx,
 			op->type, op->dst);
+		break;
+
+	case CCXL_VOP_CSRV_RET:
+		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
+		BGBCC_JX2C_EmitReturnVoid(ctx, sctx);
+		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+		BGBCC_JX2_EmitFlushIndexImmBasic(sctx);
 		break;
 
 	case CCXL_VOP_CALL_INTRIN:
@@ -2789,7 +2798,8 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		sctx->need_n12jmp=0;
 		if(sctx->simfnsz>244)
 			sctx->need_n12jmp=1;
-		if(sctx->simfnnsz>3840)
+//		if(sctx->simfnnsz>3840)
+		if(sctx->simfnnsz>2032)
 			sctx->need_f16jmp=1;
 		if(sctx->simfnnsz>30720)
 			sctx->need_farjmp=1;
@@ -4953,12 +4963,19 @@ ccxl_status BGBCC_JX2C_RelocRangeError(
 	ctx->n_error++;
 
 	printf("BGBCC_JX2C_RelocRangeError: Symbol Out of Range\n");
-	printf("  rlc_sec=%d(%s) lbl_sec=%d(%s) rlcty=%02X disp=%08X name=%s\n",
+	printf("  rlc_sec=%d(%s) lbl_sec=%d(%s) rlcty=%02X "
+			"disp=%08X name=%s(%08X)\n",
 		sctx->rlc_sec[rlcix], sctx->sec_name[sctx->rlc_sec[rlcix]],
 		sctx->lbl_sec[lblix], sctx->sec_name[sctx->lbl_sec[lblix]],
 		rlcty,
 		disp,
-		lbln);
+		lbln,
+		sctx->lbl_id[lblix]);
+
+	printf("  rlc_ofs=%08X lbl_ofs=%08X disp=%d\n",
+		sctx->rlc_ofs[rlcix],
+		sctx->lbl_ofs[lblix],
+		sctx->lbl_ofs[lblix]-sctx->rlc_ofs[rlcix]);
 	return(0);
 }
 
@@ -4985,15 +5002,23 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		j=BGBCC_JX2C_LookupLabelIndex(ctx, sctx, sctx->rlc_id[i]);
 		if(j<0)
 		{
-			ctx->n_error++;
 			k=sctx->rlc_id[i];
 			s0=BGBCC_JX2_LookupNameForLabel(sctx, k);
-			if(s0)
+			if(s0 && !strncmp(s0, "__rsrc__", 8))
 			{
+//				printf("BGBCC_JX2C_ApplyImageRelocs: "
+//					"Ignore Missing Resource Label N='%s'\n", s0);
+				continue;
+			}else
+				if(s0)
+			{
+				ctx->n_error++;
 				printf("BGBCC_JX2C_ApplyImageRelocs: "
 					"Missing Label N='%s'\n", s0);
 			}else
 			{
+				ctx->n_error++;
+
 				printf("BGBCC_JX2C_ApplyImageRelocs: "
 					"Missing Label ID=%08X\n", k);
 				if((k&(~65535))==CCXL_LBL_GENSYM2BASE)
@@ -6094,7 +6119,9 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<24))>>24)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW8)\n");
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW8)\n");
 				break;
 			}
 			w1=(w1&0xFF00)|(d1&0x00FF);
@@ -6130,11 +6157,18 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			w0=bgbcc_getu16en(ctr+0, en);
 			w1=bgbcc_getu16en(ctr+2, en);
 
-			b1=((s32)(w1<<21))>>21;
+//			b1=((s32)(w1<<21))>>21;
+
+			b1=(w1&0x03FF);
+			if(w0&1)
+				b1|=~0x03FF;
+
 			d1=b1+((d-4)>>1);
 			if((((s32)(d1<<21))>>21)!=d1)
 			{
-				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW11)\n");
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_CCXL_Error(ctx, "Symbol Out of Range (RelW11)\n");
 				break;
 			}
 			w0=(w0&0xFFFE)|((d1>>16)&0x0001);

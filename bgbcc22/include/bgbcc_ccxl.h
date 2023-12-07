@@ -534,6 +534,8 @@ Base, Q1..Q3:
 #define CCXL_VOP_TEMP_PHI			0x31		//Temporary Phi
 #define CCXL_VOP_TRINARY			0x32
 
+#define CCXL_VOP_CSRV_RET			0x33
+
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used
 #define CCXL_VOPITY_SI				0x01		//signed int

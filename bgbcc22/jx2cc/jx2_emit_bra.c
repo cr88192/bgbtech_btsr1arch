@@ -1950,7 +1950,12 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 	int i, j, k, rngb, rngw, rngw16, szrng;
 
 	szrng=ctx->simfnnsz-ctx->simfnmsz;
-	if(szrng<0)szrng=999999;
+//	if(szrng<0)szrng=999999;
+
+	if(szrng<0)
+		return(0);
+
+//	return(0);
 
 	i=BGBCC_JX2_LookupSimLabelIndex(ctx, lbl);
 //	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec) &&
@@ -1962,6 +1967,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 		k=BGBCC_JX2_EmitGetOffs(ctx);
 
 		rngb=2032;
+//		rngb=2008;
+//		rngb=1000;
 		if(i>=ctx->nlbl)
 		{
 			if(j<k)
@@ -1973,6 +1980,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 			}
 			
 			rngb=2032-(szrng/2);
+//			rngb=1920-(szrng/2);
+//			rngb=1000-(szrng/2);
 
 			if(!ctx->is_stable)
 			{
@@ -1980,6 +1989,9 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 				if(ctx->need_f16jmp || ctx->need_farjmp)
 					rngb=0;
 			}
+			
+			if(!ctx->need_f16jmp)
+				rngb=2032;
 		}
 			
 		k=BGBCC_JX2_EmitGetOffs(ctx);
@@ -1988,6 +2000,13 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 		
 		if(j<rngb)
 		{
+#if 0
+			if((!ctx->is_simpass) && (lbl==0x008025E3))
+			{
+				printf("BGBCC_JX2_EmitCheckAutoLabelNear11: "
+					"d=%d rng=%d lbl=%08X\n", j, rngb, lbl);
+			}
+#endif
 			return(1);
 		}
 		

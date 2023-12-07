@@ -1,1 +1,1 @@
-jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_qsrc/quake_b64b.exe id1/pak0lz.wad=../tk_qsrc/id1/pak0lz.wad id1/pak1lz.wad=../tk_qsrc/id1_1/pak1lz.wad --rd_map ../tk_qsrc/quake_b64b.exe.map  %1 %2 %3 %4 %5
+jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_qsrc/tk_clib/tkshell.sys autoexec.exe=../tk_qsrc/quake_b64b.exe id1/pak0lz.wad=../tk_qsrc/id1/pak0lz.wad id1/pak1lz.wad=../tk_qsrc/id1_1/pak1lz.wad %1 %2 %3 %4 %5

@@ -36,6 +36,7 @@
 
 #define TKGDI_FCC_poll		RIFF_MAKETAG('p','o','l','l')
 #define TKGDI_FCC_keyb		RIFF_MAKETAG('k','e','y','b')
+#define TKGDI_FCC_mous		RIFF_MAKETAG('m','o','u','s')
 
 #define TKGDI_FCC_auds		RIFF_MAKETAG('a','u','d','s')
 
@@ -109,6 +110,20 @@
 #define TKGDI_STATUS_YES			0x8000	//
 #define TKGDI_STATUS_NO				0x8001	//
 #define TKGDI_STATUS_FAIL			0x8002	//
+
+
+#define TKGDI_ICOPX_FF			0xFFFFFFFFFFFFFFFFULL	//
+#define TKGDI_ICOPX_00			0x0000000000000000ULL	//
+#define TKGDI_ICOPX_X			0x01452911294501FFULL	//
+#define TKGDI_ICOPX_DN			0x01010101013D01FFULL	//
+#define TKGDI_ICOPX_UP			0x01013D01010101FFULL	//
+
+#define TKGDI_CLR_GRAY50			0x3DEF	//
+#define TKGDI_CLR_GRAY25			0x1CE7	//
+#define TKGDI_CLR_GRAY75			0x5AD6	//
+#define TKGDI_CLR_TITLEORA			0x55AA	//
+#define TKGDI_CLR_TITLEBLU			0x01AA	//
+#define TKGDI_CLR_TITLEBLUSEL		0x01BF	//
 
 
 typedef int TKGHDC;		//TKGDI Handle Display Context
@@ -220,6 +235,7 @@ int		size_bxs;		//size, X cells
 int		size_bys;		//size, Y cells
 int		size_bmxs;		//bitmap X stride
 int		size_bmsz;
+u64		style;
 
 byte dirty1;
 byte dirty2;
@@ -306,6 +322,7 @@ struct TKGDI_EVENT_s {
 	u32 ptMsX;			//20, Mouse X (if relevant)
 	u32 ptMsY;			//24, Mouse Y (if relevant)
 	u32 ptMsB;			//28, Mouse Button
+	u32 evSeqNum;		//2C, Event Sequence Number
 };
 
 struct TKGDI_EVENTBUF_s {
@@ -420,6 +437,11 @@ TKGSTATUS tkgDestroyAudioDevice(TKGHSND dev);
 TKGSTATUS tkgModifyAudioDevice(
 	TKGHSND dev,	TKGFOURCC parm,
 	void *ifmt,		void *ofmt);
+
+/* Send a MIDI command to device.
+ */
+TKGSTATUS tkgDeviceMidiCommand(
+	TKGHSND dev,	TKGDI_MIDI_COMMAND *mcmd);
 
 /* Query Audio Device Parameter:
  * dev: Device to handle query.

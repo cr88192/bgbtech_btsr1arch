@@ -131,12 +131,12 @@ TKGSTATUS tkgGetImageDataFromBuffer(
 		
 		if((*(u32 *)cs)==TKGDI_FCC_SpBMP)
 		{
-			spal=cs+0x10+thdr->biSize;
+			spal=cs + 0x10 + (thdr->biSize);
 			ics=cs+(*(u32 *)(cs+0x0C));
 		}else
 		{
 //			spal=cs+0x36;
-			spal=cs+0x0E+thdr->biSize;
+			spal=cs + 0x0E + (thdr->biSize);
 			ics=cs+(*(u32 *)(cs+0x0A));
 		}
 		

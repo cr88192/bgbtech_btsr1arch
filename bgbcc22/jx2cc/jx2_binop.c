@@ -4079,14 +4079,27 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
-	if(!strcmp(name, "__int_min") && (narg==2))
+	if((!strcmp(name, "__int_min") ||
+		!strcmp(name, "__int32_min") ||
+		!strcmp(name, "__uint32_min") ||
+		!strcmp(name, "__int64_min") ||
+		!strcmp(name, "__uint64_min")) && (narg==2))
 	{
+		nm1=BGBCC_SH_NMID_CMPGT;
+		if(!strcmp(name, "__uint32_min"))
+			nm1=BGBCC_SH_NMID_CMPHI;
+		if(!strcmp(name, "__int64_min"))
+			nm1=BGBCC_SH_NMID_CMPQGT;
+		if(!strcmp(name, "__uint64_min"))
+			nm1=BGBCC_SH_NMID_CMPQHI;
+
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
 		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
 
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
-			BGBCC_SH_NMID_CMPGT, csreg, ctreg);
+//			BGBCC_SH_NMID_CMPGT, csreg, ctreg);
+			nm1, csreg, ctreg);
 		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
 			BGBCC_SH_NMID_CSELT, csreg, ctreg, cdreg);
 
@@ -4099,14 +4112,27 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
-	if(!strcmp(name, "__int_max") && (narg==2))
+	if((!strcmp(name, "__int_max") ||
+		!strcmp(name, "__int32_max") ||
+		!strcmp(name, "__uint32_max") ||
+		!strcmp(name, "__int64_max") ||
+		!strcmp(name, "__uint64_max")) && (narg==2))
 	{
+		nm1=BGBCC_SH_NMID_CMPGT;
+		if(!strcmp(name, "__uint32_max"))
+			nm1=BGBCC_SH_NMID_CMPHI;
+		if(!strcmp(name, "__int64_max"))
+			nm1=BGBCC_SH_NMID_CMPQGT;
+		if(!strcmp(name, "__uint64_max"))
+			nm1=BGBCC_SH_NMID_CMPQHI;
+	
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
 		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
 
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
-			BGBCC_SH_NMID_CMPGT, csreg, ctreg);
+//			BGBCC_SH_NMID_CMPGT, csreg, ctreg);
+			nm1, csreg, ctreg);
 		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
 			BGBCC_SH_NMID_CSELT, ctreg, csreg, cdreg);
 
@@ -4119,7 +4145,9 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
-	if(!strcmp(name, "__int_clamp") && (narg==3))
+	if((!strcmp(name, "__int_clamp") ||
+		!strcmp(name, "__int32_clamp") ||
+		!strcmp(name, "__uint32_clamp")) && (narg==3))
 	{
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
 		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);

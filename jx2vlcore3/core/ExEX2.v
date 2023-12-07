@@ -550,6 +550,15 @@ begin
 			tDoAluSrT		= 1;
 			tAluSrbOp		= 0;
 			
+			if(	(opUIxt[3:0]==JX2_UCIX_FCMP_CMPEQ_R[3:0]) ||
+				(opUIxt[3:0]==JX2_UCIX_FCMP_CMPGT_R[3:0]) ||
+				(opUIxt[3:0]==JX2_UCIX_FCMP_CMPGE_R[3:0]) )
+			begin
+				tValOutDfl		= { 63'h0, regValAluRes[64] };
+				tDoOutDfl		= 1;
+				tDoAluSrT		= 0;
+			end
+
 `ifndef def_true
 			if(opUIxt[5])
 			begin

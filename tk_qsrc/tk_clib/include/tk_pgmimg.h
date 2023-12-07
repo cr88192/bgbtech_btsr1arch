@@ -42,6 +42,7 @@ typedef struct TKPE_ImageInfo_s		TKPE_ImageInfo;
 typedef struct TKPE_TaskInfo_s			TKPE_TaskInfo;
 typedef struct TKPE_TaskInfoUser_s		TKPE_TaskInfoUser;
 typedef struct TKPE_TaskInfoKern_s		TKPE_TaskInfoKern;
+typedef struct TKPE_CreateTaskInfo_s	TKPE_CreateTaskInfo;
 
 typedef struct TK_EnvContext_s			TK_EnvContext;
 typedef struct TKSH_CommandInfo_s		TKSH_CommandInfo;
@@ -119,7 +120,7 @@ tk_kptr		allocamrk;		//48, pointer to alloca mark
 tk_kptr		tlsptr;			//50, pointer to TLS data area
 tk_kptr		clib_gpa;		//58, C Library, GetProcAddress
 tk_kptr		magic0;			//60, magic pointer
-tk_kptr		resv_68;		//68, reserved pointer
+tk_kptr		gdictx;			//68, GDI Context
 tk_kptr		resv_70;		//70, reserved pointer
 tk_kptr		resv_78;		//78, reserved pointer
 tk_kptr		resv_80;		//80, reserved pointer
@@ -141,6 +142,10 @@ tk_kptr		resv_F8;		//F8, reserved pointer
 
 tk_kptr		sharebuf[32];	//100, Shared Buffers
 tk_kptr		syscmsgbuf[64];	//200, System Call Message Buffer
+
+byte		kbfifo_dat[256];
+byte		kbfifo_beg;
+byte		kbfifo_end;
 
 //End of fixed area.
 
@@ -191,8 +196,8 @@ tk_kptr		resv_00;		//00, reserved pointer
 tk_kptr		resv_08;		//08, reserved pointer
 tk_kptr		SysCall;		//10, System Call (Entry Point)
 tk_kptr		resv_18;		//18, reserved function pointer
-tk_kptr		resv_20;		//20, reserved function pointer
-tk_kptr		resv_28;		//28, reserved function pointer
+tk_kptr		regsave;		//20, pointer to register save area
+tk_kptr		resv_28;		//28, reserved pointer
 tk_kptr		krnlptr;		//30, pointer to kernel-only area
 tk_kptr		ystatus;		//38, Sleep / Terminate Status
 tk_kptr		usrptr;			//40, pointer to user-modifiable area
@@ -217,7 +222,7 @@ tk_kptr		envctx;			//98, Environment Context
 tk_kptr		imgbaseptrs;	//A0, list of loaded image Base Pointers.
 tk_kptr		imggbrptrs;		//A8, list of loaded image GBR Pointers
 tk_kptr		imgtlsrvas;		//B0, list of loaded image TLS RVAs.
-tk_kptr		resv_B8;		//B8, reserved pointer
+tk_kptr		resv_B8;		//B8, reserved
 tk_kptr		resv_C0;		//C0, reserved pointer
 tk_kptr		resv_C8;		//C8, reserved pointer
 tk_kptr		resv_D0;		//D0, reserved pointer
@@ -239,10 +244,21 @@ byte		status;			//Status, 0=Running
 byte		prio;			//Priority Level
 byte		qtick;			//Schedule Tick
 
+int			ttyid;			//terminal for console printing
+
 tk_kptr		img_baseptrs[256];
 tk_kptr		img_gbrptrs[256];
 u32			img_tlsrvas[256];
 
+};
+
+struct TKPE_CreateTaskInfo_s {
+int szInfo;		//size of this structure.
+int idTty;		//console ID, 0 for default.
+int szStack;	//requested stack size (bytes), 0 for default
+u64	flSched;
+// char *strDoCmdLine;		//command-line (CreateProcess)
+// char *strDoEnv;			//environment (CreateProcess)
 };
 
 struct TKSH_CommandInfo_s {

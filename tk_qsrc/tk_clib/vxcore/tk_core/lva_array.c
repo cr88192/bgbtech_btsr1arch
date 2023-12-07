@@ -34,6 +34,9 @@ LVA_VTableBasic *tkmm_lva_clsvt;
 
 extern int tkmm_lva_ntag;
 
+void TKMM_LVA_InitTagOpr();
+u64 __object_getbits(tk_lva_variant obj);
+
 
 void TKMM_LVA_ArrayInit(void)
 {
@@ -170,7 +173,7 @@ LVA_TagArray *TKMM_LVA_NewTagArray(int n, int mt)
 	
 	sz=n<<tkmm_lvatyi_arrmsc[mt];
 	
-	arr=TKMM_LVA_TyMalloc(tkmm_lvatyi_tagarray, sizeof(LVA_TagArray)+sz);
+	arr=TKMM_LVA_TagMalloc(tkmm_lvatyi_tagarray, sizeof(LVA_TagArray)+sz);
 //	arr->p.vt=tkmm_lva_clsvt;
 //	arr->p.dptr=arr->p.data;
 //	arr->p.size=n;
@@ -333,7 +336,7 @@ int __lvo_get_length(tk_lva_object obj)
 	}
 		
 	__debugbreak();
-	return(NULL);
+	return(0);
 }
 
 tk_lva_object __lvo_newvararray_0(void)
@@ -1842,7 +1845,7 @@ tk_lva_object TKMM_LVA_CreateShareBuffer(void *pbuf, int sz)
 	{
 		if(!taskusr->sharebuf[i])
 		{
-			pbase=(u64 *)pbuf;
+			pbase=(u64)pbuf;
 			pbsz=(sz+255)>>8;
 			pbase&=0x0000FFFFFFFFFFFFULL;
 			pbase|=pbsz<<48;
@@ -1872,7 +1875,7 @@ int TKMM_LVA_DestroyShareBuffer(tk_lva_object obj)
 		__debugbreak();
 
 	i=tobj&0xFF;
-	taskusr->sharebuf[i]=NULL;
+	taskusr->sharebuf[i]=0;
 	
 	return(0);
 }

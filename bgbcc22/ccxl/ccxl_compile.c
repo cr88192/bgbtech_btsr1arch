@@ -3183,6 +3183,7 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 	case BGBCC_TYFL_DLLEXPORT:		c=('D'<<8)|'e'; break;
 	case BGBCC_TYFL_DLLIMPORT:		c=('D'<<8)|'i'; break;
 
+	case BGBCC_TYFL_TBRSAVE:		c=('D'<<8)|'s'; break;
 	case BGBCC_TYFL_THREAD:			c=('D'<<8)|'t'; break;
 	default: c=0; break;
 	}
@@ -4067,6 +4068,9 @@ void BGBCC_CCXL_EmitVarFunc(BGBCC_TransState *ctx,
 		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "__may_alias__"))
 			{ li|=BGBCC_TYFL_MAYALIAS; }
 
+		if(BGBCC_CCXL_GetNodeAttribute(ctx, ty, "regsave_tbr"))
+			{ li|=BGBCC_TYFL_TBRSAVE; }
+
 		s3=BGBCC_CCXL_GetNodeAttributeStringOrRef(ctx, ty, "ifarch");
 		if(s3)
 		{
@@ -4430,6 +4434,7 @@ int BGBCC_CCXL_CompileVarDummyP(BGBCC_TransState *ctx, BCCX_Node *l)
 {
 	if(	BCCX_TagIsCstP(l, &bgbcc_rcst_assign, "assign") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_begin, "begin") ||
+		BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_break, "break") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_case, "case") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_case_default, "case_default") ||

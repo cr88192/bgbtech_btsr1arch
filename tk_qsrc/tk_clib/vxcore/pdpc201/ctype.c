@@ -421,7 +421,7 @@ int _tolower_gen(int c)
 		return(c+0x20);
 	}
 	
-	if(_locale_is_cp1252(c))
+	if(_locale_is_cp1252())
 	{
 		if(c==0x8A)
 			return(0x9A);
@@ -464,7 +464,7 @@ int _toupper_gen(int c)
 		return(c+0x20);
 	}
 	
-	if(_locale_is_cp1252(c))
+	if(_locale_is_cp1252())
 	{
 		if(c==0x9A)
 			return(0x8A);

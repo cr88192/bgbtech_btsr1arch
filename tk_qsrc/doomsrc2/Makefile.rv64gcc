@@ -1,0 +1,106 @@
+TOOLPATH=/opt/cross/bin/
+
+TOOLPATH=/usr/local/bin/
+TARGETPFX=riscv64-unknown-elf-
+
+CC=$(TOOLPATH)$(TARGETPFX)gcc
+AR=$(TOOLPATH)$(TARGETPFX)ar
+AS=$(TOOLPATH)$(TARGETPFX)as
+
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__
+
+TK_LDFL= $(TK_CFL)
+
+BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib \
+	-nostdinc -nostdlib -nostartfiles -fno-builtin -O3 \
+	-fwrapv -fno-strict-aliasing
+
+# -DNORMALUNIX
+
+CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
+# LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
+LDFLAGS=$(TK_LDFL)
+LIBS = -lclib_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
+	-ffunction-sections -Wl,-gc-sections
+
+SRCS=				\
+		i_btesh4.c		\
+		i_sound_btsh.c	\
+		i_snd_btsh4.c	\
+		i_bgb_mus_btsh.c	\
+		doomdef.c		\
+		doomstat.c		\
+		dstrings.c		\
+		tables.c			\
+		f_finale.c		\
+		f_wipe.c 		\
+		d_main.c			\
+		d_net.c			\
+		d_items.c		\
+		g_game.c			\
+		m_menu.c			\
+		m_misc.c			\
+		m_argv.c  		\
+		m_bbox.c			\
+		m_fixed.c		\
+		m_swap.c			\
+		m_cheat.c		\
+		m_random.c		\
+		am_map.c			\
+		p_acspec.c		\
+		p_ceilng.c		\
+		p_doors.c		\
+		p_enemy.c		\
+		p_floor.c		\
+		p_inter.c		\
+		p_lights.c		\
+		p_map.c			\
+		p_maputl.c		\
+		p_plats.c		\
+		p_pspr.c			\
+		p_setup.c		\
+		p_sight.c		\
+		p_spec.c			\
+		p_switch.c		\
+		p_mobj.c			\
+		p_telept.c		\
+		p_tick.c			\
+		p_saveg.c		\
+		p_user.c			\
+		r_bsp.c			\
+		r_data.c			\
+		r_draw.c			\
+		r_main.c			\
+		r_plane.c		\
+		r_polyobj.c		\
+		r_segs.c			\
+		r_sky.c			\
+		r_things.c		\
+		w_wad.c			\
+		wi_stuff.c		\
+		v_video.c		\
+		st_lib.c			\
+		st_stuff.c		\
+		hu_stuff.c		\
+		hu_lib.c			\
+		s_sound.c		\
+		z_zone.c			\
+		info.c				\
+		sounds.c
+
+all:	 doom_rv64.elf
+# tstputc_rv64.elf tstshellcmd_rv64.elf
+
+clean:
+
+doom_rv64.elf:	$(SRCS) i_main.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c \
+	-o doom_rv64.elf $(LIBS)
+
+tstputc_rv64.elf:	tests/tst_putcperf.c
+	$(CC) $(CFLAGS) $(LDFLAGS) tests/tst_putcperf.c \
+	-o tstputc_rv64.elf $(LIBS)
+
+tstshellcmd_rv64.elf:	tests/tst_shellcmd.c
+	$(CC) $(CFLAGS) $(LDFLAGS) tests/tst_shellcmd.c \
+	-o tstshellcmd_rv64.elf $(LIBS)

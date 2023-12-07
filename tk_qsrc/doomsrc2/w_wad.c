@@ -62,8 +62,8 @@ int			numlumps;
 int			lumphash[64];
 
 void		**lumpcache;
-void		**patchcache;
-void		**utxcache;
+extern void		**patchcache;
+extern void		**utxcache;
 
 
 // #define strcmpi	strcasecmp

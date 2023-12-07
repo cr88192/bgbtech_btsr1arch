@@ -1,6 +1,10 @@
 BUILD = .
 PATH := $(BUILD):$(PATH)
 
+INST_BIN=$(USRLIB_HOME)/bin
+INST_LIB=$(USRLIB_HOME)/lib
+INST_INC=$(USRLIB_HOME)/include/bgbcc
+
 EXE = .elf
 BIN = .bin
 O = .o
@@ -13,6 +17,7 @@ FORCE:
 includes: FORCE
 	make -C vxcore -f Makefile.rv64gcc includes
 	cp -rf vxcore/include/*	$(BUILD)/include
+	cp -rf $(BUILD)/include/* $(INST_INC)
 
 #	make -C pdpc201 -f Makefile.rv64gcc includes
 #	cp -rf pdpc201/*.h	$(BUILD)/include
@@ -21,6 +26,8 @@ libs: FORCE
 	make -C vxcore -f Makefile.rv64gcc libs
 	cp vxcore/*.a		$(BUILD)
 	cp vxcore/crt0_rv64.o	$(BUILD)
+	cp -rf $(BUILD)/*.a $(INST_LIB)
+	cp -rf $(BUILD)/*.o $(INST_LIB)
 
 #	make -C kernel32 -f Makefile.rv64gcc libs
 #	cp kernel32/*.a		$(BUILD)

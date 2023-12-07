@@ -144,11 +144,14 @@ isr_except:
 	nop
 
 isr_inter:
+
+#ifndef __USRONLY__
 //	mov	exsr, r4
 //	break
 //	bsr __isr_interrupt
 //	rte
 	bra __isr_interrupt
+#endif
 
 	nop
 	nop
@@ -158,8 +161,10 @@ isr_inter:
 
 
 isr_tlbfault:
+#ifndef __USRONLY__
 //	break
 	bra __isr_tlbfault
+#endif
 
 	nop
 	nop
@@ -178,6 +183,7 @@ isr_tlbfault:
 isr_syscall:
 //	break
 
+#ifndef __USRONLY__
 	mov		0x123456789ABCDEF, r16	//96-bit pad
 
 	//adjust return point to be somewhere after syscall op
@@ -186,6 +192,7 @@ isr_syscall:
 	mov		r16, spc
 
 	bra __isr_syscall
+#endif
 
 	nop
 	nop

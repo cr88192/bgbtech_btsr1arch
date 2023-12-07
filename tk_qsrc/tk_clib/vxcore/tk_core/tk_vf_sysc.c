@@ -3,7 +3,7 @@ TK_MOUNT *tk_sysc_mount(char *devfn, char *mntfn,
 TK_FILE *tk_sysc_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
 TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 
-int tk_sysc_rename(TK_MOUNT *mnt,
+int tk_sysc_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
 	char *oldname, char *newname, char *mode);
 
 int tk_sysc_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -150,7 +150,7 @@ TK_DIR *tk_sysc_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	return(fd);
 }
 
-int tk_sysc_rename(TK_MOUNT *mnt,
+int tk_sysc_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
 	char *oldname, char *newname, char *mode)
 {
 	char tfoname[512];

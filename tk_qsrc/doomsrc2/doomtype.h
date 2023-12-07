@@ -94,6 +94,8 @@ typedef unsigned short dt_scrpix;
 #define NULL	((void *)0)
 #endif
 
+void __debugbreak(void);
+
 #endif
 //-----------------------------------------------------------------------------
 //

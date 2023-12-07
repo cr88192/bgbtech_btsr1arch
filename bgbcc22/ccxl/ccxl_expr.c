@@ -1922,6 +1922,94 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 		BGBCC_CCXL_GetTypeCompareBinaryDest(ctx, CCXL_CMP_NV, lty, rty, &dty);
 		s0=BGBCC_CCXL_TypeGetSig(ctx, dty);
 
+#if 1
+		if(	BGBCC_CCXL_InferExprCleanP(ctx, ln) &&
+			BGBCC_CCXL_InferExprCleanP(ctx, rn))
+		{
+			if(	BGBCC_CCXL_IsBinaryP(ctx, t, "<") ||
+				BGBCC_CCXL_IsBinaryP(ctx, t, ">") ||
+				BGBCC_CCXL_IsBinaryP(ctx, t, "<=") ||
+				BGBCC_CCXL_IsBinaryP(ctx, t, ">="))
+			{
+				ln2=BCCX_FetchCst(t, &bgbcc_rcst_then, "then");
+				rn2=BCCX_FetchCst(t, &bgbcc_rcst_else, "else");
+				ln2=BGBCC_CCXL_ReduceExpr(ctx, ln2);
+				rn2=BGBCC_CCXL_ReduceExpr(ctx, rn2);
+				s1=NULL;
+				
+				if(	BGBCC_CCXL_InferExprIsEquivP(ctx, ln, ln2) &&
+					BGBCC_CCXL_InferExprIsEquivP(ctx, rn, rn2))
+				{
+					if(	BGBCC_CCXL_IsBinaryP(ctx, t, "<") ||
+						BGBCC_CCXL_IsBinaryP(ctx, t, "<="))
+					{
+						if(	!strcmp(s0, "i") ||
+							!strcmp(s0, "s") ||
+							!strcmp(s0, "t") ||
+							!strcmp(s0, "w") ||
+							!strcmp(s0, "c") ||
+							!strcmp(s0, "a") ||
+							!strcmp(s0, "h"))
+						{
+							s1="__int_min";
+						}
+
+						if(	!strcmp(s0, "l") ||
+							!strcmp(s0, "x") ||
+							!strcmp(s0, "j") )
+						{
+							s1="__int64_min";
+						}
+
+						if(	!strcmp(s0, "m") ||
+							!strcmp(s0, "y") )
+						{
+							s1="__uint64_min";
+						}
+					}
+
+					if(	BGBCC_CCXL_IsBinaryP(ctx, t, ">") ||
+						BGBCC_CCXL_IsBinaryP(ctx, t, ">="))
+					{
+						if(	!strcmp(s0, "i") ||
+							!strcmp(s0, "s") ||
+							!strcmp(s0, "t") ||
+							!strcmp(s0, "w") ||
+							!strcmp(s0, "c") ||
+							!strcmp(s0, "a") ||
+							!strcmp(s0, "h"))
+						{
+							s1="__int_max";
+						}
+
+						if(	!strcmp(s0, "l") ||
+							!strcmp(s0, "x") ||
+							!strcmp(s0, "j") )
+						{
+							s1="__int64_max";
+						}
+
+						if(	!strcmp(s0, "m") ||
+							!strcmp(s0, "y") )
+						{
+							s1="__uint64_max";
+						}
+					}
+				}
+
+				if(s1)
+				{
+					BGBCC_CCXL_PushMark(ctx);
+					BGBCC_CCXL_CompileExpr(ctx, ln);
+					BGBCC_CCXL_CompileExpr(ctx, rn);
+					BGBCC_CCXL_StackCallName(ctx, s1, 0);
+	//				BGBCC_CCXL_StackCallName2(ctx, s1, dname, 0);
+					return;
+				}
+			}
+		}
+#endif
+
 #if 0
 		i0=BGBCC_CCXL_InferExprCleanP(ctx, ln);
 		i1=BGBCC_CCXL_InferExprCleanP(ctx, rn);

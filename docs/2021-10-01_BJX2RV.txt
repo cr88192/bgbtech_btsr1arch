@@ -25,6 +25,9 @@ Register Mapping:
 * X15 -> R3
 * X16..X31 -> R16..R31
 
+Register Mapping (FPR, Opt):
+* F0..F31 -> R32..R63
+
 
 === RISC-V + WEX Extension (Possible) ===
 
@@ -165,9 +168,13 @@ Listing:
 * ddddddd-ttttt-sssss-110-ddddd-11-00011  BLTU	Rs, Rt, Disp12_B
 * ddddddd-ttttt-sssss-111-ddddd-11-00011  BGEU	Rs, Rt, Disp12_B
 
-* iiiiiii-iiiii-mmmmm-zzz-nnnnn-00-00111 (FP LOAD, Unsupported)
+* iiiiiii-iiiii-mmmmm-zzz-nnnnn-00-00111 (FP LOAD)
+* iiiiiii-iiiii-mmmmm-000-nnnnn-00-00111  FLW	Fn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-001-nnnnn-00-00111  FLD	Fn, Rm, Disp12_I
 
-* iiiiiii-iiiii-mmmmm-zzz-nnnnn-01-00111 (FP STORE, Unsupported)
+* iiiiiii-iiiii-mmmmm-zzz-nnnnn-01-00111 (FP STORE)
+* iiiiiii-ttttt-mmmmm-000-iiiii-01-00011  FSW	Rm, Disp12_S, Ft
+* iiiiiii-ttttt-mmmmm-001-iiiii-01-00011  FSD	Rm, Disp12_S, Ft
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-00111  (MSUB, Unsupported)
 
@@ -260,37 +267,49 @@ Listing:
 * 0000000-ttttt-mmmmm-111-nnnnn-01-10011  AND		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-111-nnnnn-01-10011  REMU		Rn, Rm, Rt (M)
 
-* 0000000-ttttt-mmmmm-rrr-nnnnn-10-10011  FADD.S	Rm, Rn, Rt
-* 0000001-ttttt-mmmmm-rrr-nnnnn-10-10011  FADD.D	Rm, Rn, Rt
-* 0000100-ttttt-mmmmm-rrr-nnnnn-10-10011  FSUB.S	Rm, Rn, Rt
-* 0000101-ttttt-mmmmm-rrr-nnnnn-10-10011  FSUB.D	Rm, Rn, Rt
-* 0001000-ttttt-mmmmm-rrr-nnnnn-10-10011  FMUL.S	Rm, Rn, Rt
-* 0001001-ttttt-mmmmm-rrr-nnnnn-10-10011  FMUL.D	Rm, Rn, Rt
-* 0001100-ttttt-mmmmm-rrr-nnnnn-10-10011  (FDIV.S, Unsupported)
-* 0001101-ttttt-mmmmm-rrr-nnnnn-10-10011  (FDIV.D, Unsupported)
+* 0000000-ttttt-mmmmm-rrr-nnnnn-10-10011  FADD.S	Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-rrr-nnnnn-10-10011  FADD.D	Rn, Rm, Rt
+* 0000100-ttttt-mmmmm-rrr-nnnnn-10-10011  FSUB.S	Rn, Rm, Rt
+* 0000101-ttttt-mmmmm-rrr-nnnnn-10-10011  FSUB.D	Rn, Rm, Rt
+* 0001000-ttttt-mmmmm-rrr-nnnnn-10-10011  FMUL.S	Rn, Rm, Rt
+* 0001001-ttttt-mmmmm-rrr-nnnnn-10-10011  FMUL.D	Rn, Rm, Rt
+* 0001100-ttttt-mmmmm-rrr-nnnnn-10-10011  FDIV.S	Rn, Rm, Rt	//FDIV
+* 0001101-ttttt-mmmmm-rrr-nnnnn-10-10011  FDIV.D	Rn, Rm, Rt	//FDIV
 
-* 0100000-ttttt-00001-rrr-nnnnn-10-10011  FCVT.SD	Rm, Rn, Rt
-* 0100001-ttttt-00000-rrr-nnnnn-10-10011  FCVT.DS	Rm, Rn, Rt
+* 0010000-ttttt-mmmmm-000-nnnnn-10-10011  FSGNJ.S	Rn, Rm
+* 0010000-ttttt-mmmmm-001-nnnnn-10-10011  FSGNJN.S	Rn, Rm
+* 0010000-ttttt-mmmmm-010-nnnnn-10-10011  FSGNJX.S	Rn, Rm
+* 0010001-ttttt-mmmmm-000-nnnnn-10-10011  FSGNJ.D	Rn, Rm
+* 0010001-ttttt-mmmmm-001-nnnnn-10-10011  FSGNJN.D	Rn, Rm
+* 0010001-ttttt-mmmmm-010-nnnnn-10-10011  FSGNJX.D	Rn, Rm
 
-* 0101100-ttttt-mmmmm-rrr-nnnnn-10-10011  (FSQRT.S, Unsupported)
-* 0101101-ttttt-mmmmm-rrr-nnnnn-10-10011  (FSQRT.D, Unsupported)
+* 0010100-ttttt-mmmmm-000-nnnnn-10-10011  FMIN.S	Rn, Rm
+* 0010100-ttttt-mmmmm-001-nnnnn-10-10011  FMAX.S	Rn, Rm
+* 0010101-ttttt-mmmmm-000-nnnnn-10-10011  FMIN.D	Rn, Rm
+* 0010101-ttttt-mmmmm-001-nnnnn-10-10011  FMAX.D	Rn, Rm
 
-* 1010000-ttttt-mmmmm-000-nnnnn-10-10011  FLE.S		Rm, Rn, Rt
-* 1010001-ttttt-mmmmm-000-nnnnn-10-10011  FLE.D		Rm, Rn, Rt
-* 1010000-ttttt-mmmmm-001-nnnnn-10-10011  FLT.S		Rm, Rn, Rt
-* 1010001-ttttt-mmmmm-001-nnnnn-10-10011  FLT.D		Rm, Rn, Rt
-* 1010000-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.S		Rm, Rn, Rt
-* 1010001-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.D		Rm, Rn, Rt
+* 0100000-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.SD	Rn, Rm
+* 0100001-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.DS	Rn, Rm
 
-* 1100000-ttttt-00000-rrr-nnnnn-10-10011  FCVT.WS	Rm, Rn, Rt
-* 1100001-ttttt-00000-rrr-nnnnn-10-10011  FCVT.WD	Rm, Rn, Rt
-* 1100000-ttttt-00001-rrr-nnnnn-10-10011  FCVT.WSU	Rm, Rn, Rt
-* 1100001-ttttt-00001-rrr-nnnnn-10-10011  FCVT.WDU	Rm, Rn, Rt
+* 0101100-00000-mmmmm-rrr-nnnnn-10-10011  FSQRT.S	Rn, Rm
+* 0101101-00000-mmmmm-rrr-nnnnn-10-10011  FSQRT.D	Rn, Rm
 
-* 1101000-ttttt-00000-rrr-nnnnn-10-10011  FCVT.SW	Rm, Rn, Rt
-* 1101001-ttttt-00000-rrr-nnnnn-10-10011  FCVT.DW	Rm, Rn, Rt
-* 1101000-ttttt-00001-rrr-nnnnn-10-10011  FCVT.SWU	Rm, Rn, Rt
-* 1101001-ttttt-00001-rrr-nnnnn-10-10011  FCVT.DWU	Rm, Rn, Rt
+* 1010000-ttttt-mmmmm-000-nnnnn-10-10011  FLE.S		Rn, Rm, Rt
+* 1010001-ttttt-mmmmm-000-nnnnn-10-10011  FLE.D		Rn, Rm, Rt
+* 1010000-ttttt-mmmmm-001-nnnnn-10-10011  FLT.S		Rn, Rm, Rt
+* 1010001-ttttt-mmmmm-001-nnnnn-10-10011  FLT.D		Rn, Rm, Rt
+* 1010000-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.S		Rn, Rm, Rt
+* 1010001-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.D		Rn, Rm, Rt
+
+* 1100000-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.WS	Rn, Rm
+* 1100000-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.WSU	Rn, Rm
+* 1100001-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.WD	Rn, Rm
+* 1100001-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.WDU	Rn, Rm
+
+* 1101000-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.SW	Rn, Rm
+* 1101000-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.SWU	Rn, Rm
+* 1101001-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.DW	Rn, Rm
+* 1101001-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.DWU	Rn, Rm
 
 * ddddddd-ddddd-ddddd-ddd-nnnnn-11-10011  (SYSTEM)
 

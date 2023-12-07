@@ -40,10 +40,11 @@ int tk_getch(void)
 }
 #endif
 
+#if 0
 int tk_ptrIsRam(void *ptr)
 {
 	u32 a;
-	a=(u32)ptr;
+	a=(long)ptr;
 	a&=0x1FFFFFFF;
 	if(a<0x0C000000)
 		return(0);
@@ -51,6 +52,7 @@ int tk_ptrIsRam(void *ptr)
 		return(0);
 	return(1);
 }
+#endif
 
 #if 0
 int tk_puts(char *msg)
@@ -642,7 +644,7 @@ int __rename2(const char *oldfn, const char *newfn, const char *mode)
 	
 	tk_printf("__rename2: %s %s %s\n", tfno, tfnn, mode);
 
-	tk_rename(tfno, tfnn, mode);
+	tk_rename((char *)tfno, (char *)tfnn, (char *)mode);
 	return(0);
 }
 
@@ -989,10 +991,10 @@ int tk_mfreezone(int ztag, int zmask);
 int __start_early()
 {
 	TKMM_Init();
-	_malloc_fptr=tk_malloc_cat;
-	_free_fptr=tk_free;
-	_realloc_fptr=tk_realloc;
-	_msize_fptr=tk_msize;
+	_malloc_fptr=(void *(*)(size_t, int))tk_malloc_cat;
+	_free_fptr=(void (*)(void *))tk_free;
+	_realloc_fptr=(void *(*)(void *, size_t))tk_realloc;
+	_msize_fptr=(size_t (*)(void *))tk_msize;
 	
 	_mgetbase_fptr=tk_mgetbase;
 	_mfreezone_fptr=tk_mfreezone;
@@ -1325,7 +1327,7 @@ void tk_printf(char *str, ...)
 }
 #endif
 
-
+#if 0
 void tk_vprintf(char *str, va_list lst)
 {
 	double f;
@@ -1421,10 +1423,11 @@ void tk_vprintf(char *str, va_list lst)
 #endif
 	}
 }
+#endif
 
 
 
-
+#if 1
 char *tk_sprint_hex(char *ct, u32 v)
 {
 	static char *chrs="0123456789ABCDEF";
@@ -1611,6 +1614,7 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 	
 	*ct++=0;
 }
+#endif
 
 #if 0
 void tk_sprintf(char *dst, char *str, ...)

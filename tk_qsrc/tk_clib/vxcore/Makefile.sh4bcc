@@ -109,6 +109,9 @@ SRCS_CLIB = \
 	tk_core/tk_vmem.c \
 	tk_core/tk_wad4.c \
 	\
+	tk_core/tkgdi_blitupdate.c \
+	tk_core/tkgdi_drawcon.c \
+	\
 	tk_core/tku_bigint.c \
 	\
 	tk_core/lva_array.c \
@@ -196,7 +199,7 @@ libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril \
 	libtkgdi.bjx2.ril libtkgl.bjx2.ril
 
-bins: tkshell.sys tkshdll.dll tkshell96.sys tkshell_rbd.sys
+bins: tkshell.sys tkshdll.dll # tkshell96.sys tkshell_rbd.sys
 
 apps: bins FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
@@ -215,16 +218,20 @@ libvxcore_bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libvxcore_bjx2.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS64)
 
 libc.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
-	$(CC) -o libc.bjx2.ril libc_multi.c $(SRCS_ASM) $(COPTS64)
+	$(CC) -o libc.bjx2.ril libc_multi.c $(SRCS_ASM) $(COPTS64) \
+		-D__USRONLY__
 
 libm.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
-	$(CC) -o libm.bjx2.ril libm_multi.c $(COPTS64)
+	$(CC) -o libm.bjx2.ril libm_multi.c $(COPTS64) \
+		-D__USRONLY__
 
 libdl.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
-	$(CC) -o libdl.bjx2.ril libdl_multi.c $(COPTS64)
+	$(CC) -o libdl.bjx2.ril libdl_multi.c $(COPTS64) \
+		-D__USRONLY__
 
 libcdll.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM_DLL)
-	$(CC) -o libcdll.bjx2.ril libcdll_multi.c $(SRCS_ASM_DLL) $(COPTS64)
+	$(CC) -o libcdll.bjx2.ril libcdll_multi.c $(SRCS_ASM_DLL) $(COPTS64) \
+		-D__USRONLY__
 
 libtkgdi.bjx2.ril: $(SRCS_TKGDI) $(TKRA_SRCS)
 	$(CC) -o libtkgdi.bjx2.ril tkgdi_multi.c $(COPTS64)

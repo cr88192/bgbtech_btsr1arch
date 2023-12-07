@@ -32,7 +32,7 @@ polyobj_t	*r_polyobj_lut[256];
 
 byte r_ispolyobj;		//rendering a PolyObj
 byte r_usezbuff;		//need Z buffer?
-int r_nseenpolyobj;		//number of polyobj seen this frame
+extern int r_nseenpolyobj;		//number of polyobj seen this frame
 
 byte r_activepolyobj;	//number of active PolyObj's
 

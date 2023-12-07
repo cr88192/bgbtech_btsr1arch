@@ -5,8 +5,13 @@ CC=bgbcc
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /Os
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj /Zz
-TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 \
-	/fwex3w /fwexj /fqmul /fptropts /Zz
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 \
+#	/fwex3w /fwexj /fqmul /fptropts /Zz
+
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
+	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
+	/fjcmpz /fxg2mode
+
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2
 TK_LDFL= $(TK_CFL)
@@ -16,7 +21,8 @@ BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib
 # -DNORMALUNIX
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
-LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
+# LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
+LDFLAGS=$(TK_LDFL) -lc -ltkgdi
 
 #		i_system.c		\
 #		i_sound.c		\

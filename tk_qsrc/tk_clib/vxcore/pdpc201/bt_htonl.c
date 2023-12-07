@@ -64,6 +64,58 @@ le16toh:
 };
 #endif
 
+#ifndef __BJX2__
+uint32_t htonl(uint32_t v)
+{
+	uint32_t i0, i1, i2, i3;
+	uint32_t v1;
+	
+	i0=(v>> 0)&255; i1=(v>> 8)&255;
+	i2=(v>>16)&255; i3=(v>>24)&255;
+	v1=(i0<<24)|(i1<<16)|(i2<<8)|i3;
+	return(v1);
+}
+
+uint16_t htons(uint16_t v)
+{
+	uint32_t i0, i1;
+	uint32_t v1;
+	i0=(v>> 0)&255; i1=(v>> 8)&255;
+	v1=(i0<<8)|i1;
+	return(v1);
+}
+
+uint32_t ntohl(uint32_t v)
+	{ return(htonl(v)); }
+uint16_t ntohs(uint16_t v)
+	{ return(htons(v)); }
+
+uint16_t htobe16(uint16_t v)
+	{ return(htons(v)); }
+uint16_t htole16(uint16_t v)
+	{ return(v); }
+
+uint16_t be16toh(uint16_t v)
+	{ return(htons(v)); }
+uint16_t le16toh(uint16_t v)
+	{ return(v); }
+
+uint32_t htobe32(uint32_t v)
+	{ return(htonl(v)); }
+uint32_t htole32(uint32_t v)
+	{ return(v); }
+uint32_t be32toh(uint32_t v)
+	{ return(htonl(v)); }
+uint32_t le32toh(uint32_t v)
+	{ return(v); }
+
+uint64_t htobe64(uint64_t v);
+uint64_t htole64(uint64_t v);
+uint64_t be64toh(uint64_t v);
+uint64_t le64toh(uint64_t v);
+
+#endif
+
 #if 1
 
 int  feclearexcept(int v);

@@ -22,7 +22,7 @@
 // Data.
 #include "sounds.h"
 
-line_t		*fakelines;		//BGB: Fake Lines, for ACS stuff
+extern line_t		*fakelines;		//BGB: Fake Lines, for ACS stuff
 line_t		*trigline;		//trigger line
 
 sector_t	*P_AcsNextSectorForTag(int *ridx, int tag)

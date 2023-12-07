@@ -563,6 +563,7 @@ u64 _arch_gettbr();
 u64 _arch_settbr(u64 v);
 #endif
 
+void __debugbreak(void);
 
 u32 __float32_getbits(float f);
 float __float32_frombits(u32 f);
@@ -593,17 +594,22 @@ int TK_VMem_VaFreePages(s64 vaddr, int cnt);
 
 int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size);
 
+int TKMM_MMList_Init(void);
 void *TKMM_MMList_AllocBrk(int sz);
 void *TKMM_MMList_AllocBrkCat(int sz, int cat);
 
 TKMM_MemLnkObj *TKMM_MMList_GetPtrLnkObj(void *ptr);
 int TKMM_MMCell_GetLnkObjCellSize(TKMM_MemLnkObj *obj, void *ptr);
 int TKMM_FxiToSize(int ix);
+int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj);
+int TKMM_MMList_WalkHeapObjects(
+	void *ctx, int (*func)(void *ctx, TKMM_MemLnkObj *obj));
 
 void *TKMM_MMList_Malloc(int sz);
 void *TKMM_MMList_MallocCat(int sz, int cat);
 
 u64 *TKMM_MMCell_GetLnkObjCellHeadPtr(TKMM_MemLnkObj *obj, void *ptr);
+int TKMM_MMCell_FreeLnkObjCellPtr(TKMM_MemLnkObj *obj, void *ptr);
 
 void TK_SetCurrentTask(TKPE_TaskInfo *task);
 TKPE_TaskInfo *TK_GetCurrentTask();
@@ -646,6 +652,9 @@ int TK_Env_SetPath(char *cwd);
 int TK_Env_GetEnvVar(char *varn, char *buf, int sz);
 int TK_Env_SetEnvVar(char *varn, char *varv);
 
+int TK_EnvCtx_GetEnvVarIdx(TK_EnvContext *ctx, int idx,
+	char *bufn, char *bufv, int szn, int szv);
+
 TK_EnvContext *TK_EnvCtx_AllocContext(void);
 void TK_EnvCtx_FreeContext(TK_EnvContext *ctx);
 TK_EnvContext *TK_EnvCtx_CloneContext(TK_EnvContext *ctx);
@@ -661,7 +670,9 @@ int TK_EnvCtx_GetEnvListBuffer(TK_EnvContext *ctx, void *buf, int szbuf);
 int TK_EnvCtx_InitForEnv(TK_EnvContext *ctx, char **envv);
 
 void tk_puts(char *msg);
+void tk_puts_n(char *msg, int n);
 bool tk_iskernel();
+int tk_issyscall();
 
 void tk_sprintf(char *dst, char *str, ...);
 
@@ -774,6 +785,21 @@ int tk_mfreezone(int ztag, int zmask);
 char *tk_strdup_in(char *str);
 
 void tk_printf(char *str, ...);
+void tk_dbg_printf(char *str, ...);
+
+
+void *tk_mmap(void *addr, size_t len, int prot, int flags,
+	int fd, off_t offs);
+int tk_munmap(void *addr, size_t len);
+int tk_mprotect(void *addr, size_t len, int prot);
+int tk_msync(void *addr, size_t len, int flags);
+int tk_mlock(void *addr, size_t len);
+int tk_munlock(void *addr, size_t len);
+int tk_mlockall(int flags);
+int tk_munlockall(void);
+
+
+
 
 // void printf(char *str, ...);
 

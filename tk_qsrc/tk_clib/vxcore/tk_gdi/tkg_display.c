@@ -326,15 +326,63 @@ TKGHDC tkgCreateWindow(
 //		tkgModifyDisplay(hDc, TKGDI_FCC_styl, &style, NULL);
 		tkgModifyDisplay(hDc, TKGDI_FCC_styl, tkgdi_smallbuf_ifmt, NULL);
 	}
-	
+
 	return(hDc);
+}
+
+TKGHDC tkgSetWindowTitle(
+	TKGHDC hDev,
+	char *title)
+{
+	_tkgdi_context_t *ctx;
+	int rt;
+
+	ctx=tkgGetCurrentContext();
+	strcpy(tkgdi_smallbuf_ifmt, title);
+	rt=tkgModifyDisplay(hDev, TKGDI_FCC_text, tkgdi_smallbuf_ifmt, NULL);
+	return(rt);
+}
+
+TKGHDC tkgSetWindowStyle(
+	TKGHDC hDev,
+	u64 style)
+{
+	_tkgdi_context_t *ctx;
+	int rt;
+
+	ctx=tkgGetCurrentContext();
+
+	*(u64 *)tkgdi_smallbuf_ifmt=style;
+	rt=tkgModifyDisplay(hDev, TKGDI_FCC_styl, tkgdi_smallbuf_ifmt, NULL);
+
+	return(rt);
+}
+
+TKGHDC tkgMoveWindow(
+	TKGHDC hDev,
+	int xorg, int yorg)
+{
+	TKGDI_RECT tRect;
+	_tkgdi_context_t *ctx;
+	int rt;
+
+	ctx=tkgGetCurrentContext();
+
+	tRect.left=xorg;
+	tRect.top=yorg;
+	tRect.right=xorg;
+	tRect.bottom=yorg;
+	memcpy(tkgdi_smallbuf_ifmt, &tRect, sizeof(TKGDI_RECT));
+	rt=tkgModifyDisplay(hDev, TKGDI_FCC_move, tkgdi_smallbuf_ifmt, NULL);
+
+	return(rt);
 }
 
 TKGSTATUS tkgDestroyDisplay(TKGHDC dev)
 {
 	_tkgdi_context_t *ctx;
 	ctx=tkgGetCurrentContext();
-	return(ctx->vt->DestroyDisplay(ctx));
+	return(ctx->vt->DestroyDisplay(ctx, dev));
 }
 
 TKGSTATUS tkgModifyDisplay(

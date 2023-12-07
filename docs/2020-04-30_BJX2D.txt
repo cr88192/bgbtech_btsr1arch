@@ -1685,7 +1685,8 @@ F0zz Instruction Block:
 ** F0nm_1Go2  MULS.Q	Rm, Ro, Rn			//(MULQ) Signed 64b Result
 ** F0nm_1go3  MULU		Rm, Ro, Rn			//Rn=Rm*Ro (Unsigned Result)
 ** F0nm_1Go3  MULU.Q	Rm, Ro, Rn			//(MULQ) Unsigned 64b Result
-** F0nm_1eo4  -
+** F0nm_1go4 ? MIN		Rm, Ro, Rn			//(MINMAX) Minimum Value
+** F0nm_1Go4 ? MAX		Rm, Ro, Rn			//(MINMAX) Maximum Value
 ** F0nm_1go5  AND		Rm, Ro, Rn			//Rn=Rm AND Ro
 ** F0nm_1Go5  ANDX		Xm, Xo, Xn			//(ALUX) Xn=Xm&Xo
 ** F0nm_1go6  OR		Rm, Ro, Rn			//Rn=Rm OR  Ro
@@ -2197,9 +2198,9 @@ F0zz Instruction Block:
 
 * F0zz_7zzz
 ** F0nm_7go0 ? FADDA	Rm, Ro, Rn
-** F0nm_7Go0  -
+** F0nm_7Go0 ? FMIN		Rm, Ro, Rn			//(MINMAX) Binary64 Min Value
 ** F0nm_7go1 ? FSUBA	Rm, Ro, Rn
-** F0nm_7Go1  -
+** F0nm_7Go1 ? FMAX		Rm, Ro, Rn			//(MINMAX) Binary64 Max Value
 ** F0nm_7go2 ? FMULA	Rm, Ro, Rn
 ** F0nm_7Go2  -
 ** F0nm_7go3  -

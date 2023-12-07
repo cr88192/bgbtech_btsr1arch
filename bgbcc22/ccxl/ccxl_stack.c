@@ -1466,6 +1466,26 @@ int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name)
 		!strcmp(name, "__int_clamp")		)
 			return(1);
 
+	if(	!strcmp(name, "__int32_min")		||
+		!strcmp(name, "__int32_max")		||
+		!strcmp(name, "__int32_clamp")		)
+			return(1);
+
+	if(	!strcmp(name, "__uint32_min")		||
+		!strcmp(name, "__uint32_max")		||
+		!strcmp(name, "__uint32_clamp")		)
+			return(1);
+
+	if(	!strcmp(name, "__int64_min")		||
+		!strcmp(name, "__int64_max")		||
+		!strcmp(name, "__int64_clamp")		)
+			return(1);
+
+	if(	!strcmp(name, "__uint64_min")		||
+		!strcmp(name, "__uint64_max")		||
+		!strcmp(name, "__uint64_clamp")		)
+			return(1);
+
 	if(BGBCC_CCXL_QueryTargetFeature(ctx, "bjx2"))
 	{
 		if((!strcmp(name, "__float32_getbits") ||

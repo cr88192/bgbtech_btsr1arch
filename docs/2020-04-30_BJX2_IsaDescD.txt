@@ -1271,6 +1271,20 @@ The MACS and MACU instructions will do a multiply-accumulate with a 32-bit resul
 The DMACS and DMACU instructions will multiply two 32-bit quantities and accumulate using a 64-bit result.
 
 
+=== MIN/MAX ===
+
+* F0nm_1go4  MIN		Rm, Ro, Rn			//(MINMAX) Minimum Value
+* F0nm_1Go4  MAX		Rm, Ro, Rn			//(MINMAX) Maximum Value
+* F0nm_7Go0  FMIN		Rm, Ro, Rn			//(MINMAX) Binary64 Min Value
+* F0nm_7Go1  FMAX		Rm, Ro, Rn			//(MINMAX) Binary64 Max Value
+
+Select the Minimum or Maximum value between a pair of registers.
+
+The MIN/MAX instructions will interpret the value as a signed 64-bit value.
+
+The FMIN/FMAX instructions will interpret the value as a Binary64 value.
+
+
 === MODx.Q (3R) ===
 
 * F0nm_6go5  MODS.Q	Rm, Ro, Rn		//(MULQ) 64-bit Signed Modulo

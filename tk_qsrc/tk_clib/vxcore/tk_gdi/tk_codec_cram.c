@@ -71,14 +71,14 @@ int cram_decompress_inner8_rgb555(byte *ibuf, u16 *obuf,
 			
 			if(px>=0x9000)
 			{
-				aclr[1]=pal16[cs+0];
-				aclr[0]=pal16[cs+1];
-				bclr[1]=pal16[cs+2];
-				bclr[0]=pal16[cs+3];
-				cclr[1]=pal16[cs+4];
-				cclr[0]=pal16[cs+5];
-				dclr[1]=pal16[cs+6];
-				dclr[0]=pal16[cs+7];
+				aclr[1]=pal16[cs[0]];
+				aclr[0]=pal16[cs[1]];
+				bclr[1]=pal16[cs[2]];
+				bclr[0]=pal16[cs[3]];
+				cclr[1]=pal16[cs[4]];
+				cclr[0]=pal16[cs[5]];
+				dclr[1]=pal16[cs[6]];
+				dclr[0]=pal16[cs[7]];
 				cs+=8;
 
 				bb0[0]=aclr[(px>> 0)&1];	bb0[1]=aclr[(px>> 1)&1];

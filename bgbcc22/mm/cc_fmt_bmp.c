@@ -321,17 +321,22 @@ byte *BGBCC_Img_DecodeImage(byte *imgbuf, int *rw, int *rh)
 	return(NULL);
 }
 
-static byte *bgbcc_img_bmppallookup;
+byte *bgbcc_img_bmppallookup;
+byte *bgbcc_img_bmppallookupb;
+
 static int bgbcc_img_bmppalhash;
 static byte *bgbcc_img_bmppalmlookup;
+static byte *bgbcc_img_bmppalmlookupb;
 static int bgbcc_img_bmppalmhash[4];
+static byte bgbcc_img_bmppalaki;
+static byte bgbcc_img_bmppalmaki[4];
 
 int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 {
 	int cr0, cg0, cb0, cy0;
 	int cr1, cg1, cb1, cy1;
 	int dr, dg, db, dy, d, d0, d1, d2, d3;
-	int bi, bd;
+	int bi, bd, aki, bi2, bd2;
 	int i, j, k, h;
 
 #if 0
@@ -345,7 +350,8 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 #if 1
 	if(!bgbcc_img_bmppalmlookup)
 	{
-		bgbcc_img_bmppalmlookup=malloc(4*32768);
+		bgbcc_img_bmppalmlookup =malloc(4*32768);
+		bgbcc_img_bmppalmlookupb=malloc(4*32768);
 		for(i=0; i<4; i++)
 			bgbcc_img_bmppalmhash[i]=-1;
 	}
@@ -356,15 +362,27 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 		h=h*251+pal[i];
 	h=((h*251+1)>>8)&65535;
 
-	bgbcc_img_bmppallookup=bgbcc_img_bmppalmlookup+((h&3)<<15);
+	bgbcc_img_bmppallookup =bgbcc_img_bmppalmlookup+((h&3)<<15);
+	bgbcc_img_bmppallookupb=bgbcc_img_bmppalmlookupb+((h&3)<<15);
 	bgbcc_img_bmppalhash=bgbcc_img_bmppalmhash[h&3];
+	bgbcc_img_bmppalaki=bgbcc_img_bmppalmaki[h&3];
 
 	if(bgbcc_img_bmppalhash==h)
 		return(0);
 
-	bgbcc_img_bmppalhash=h;
-	bgbcc_img_bmppalmhash[h&3]=h;
+	aki=0xFF;
+	for(i=0; i<nclr; i++)
+	{
+		j=pal[i*4+3];
+		if(j<16)
+			aki=i;
+	}
 	
+	bgbcc_img_bmppalhash=h;
+	bgbcc_img_bmppalaki=h;
+	bgbcc_img_bmppalmhash[h&3]=h;
+	bgbcc_img_bmppalmaki[h&3]=aki;
+
 	for(i=0; i<32768; i++)
 	{
 		cr0=(i>>10)&31;
@@ -375,8 +393,10 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 		cb0=(cb0<<3)|(cb0>>2);
 		cy0=(8*cg0+5*cr0+3*cb0)/16;
 		
-		bi=0;
+		bi=-1;
+		bi2=-1;
 		bd=999999999;
+		bd2=999999999;
 		
 		for(j=0; j<nclr; j++)
 		{
@@ -390,7 +410,8 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 			db=cb1-cb0;
 			dy=cy1-cy0;
 //			d=(dr*dr)+(2*dg*dg)+(db*db);
-			d=(dr*dr)+(2*dg*dg)+(db*db)+(2*dy*dy);
+//			d=(dr*dr)+(2*dg*dg)+(db*db)+(2*dy*dy);
+			d=(dr*dr)+(dg*dg)+(db*db)+(2*dy*dy);
 
 #if 0
 			dr=dr^(dr>>31);
@@ -418,9 +439,19 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 #endif
 
 			if(d<bd)
-				{ bi=j; bd=d; }
+			{
+				if(bi2<0)
+					{ bi2=j; bd2=d; }
+				else
+					{ bi2=bi; bd2=bd; }
+				bi=j; bd=d;
+			}else if((d<bd2) && (bi!=j))
+			{
+				bi2=j; bd2=d;
+			}
 		}
 		bgbcc_img_bmppallookup[i]=bi;
+		bgbcc_img_bmppallookupb[i]=bi2;
 	}
 	return(1);
 }
@@ -1069,3 +1100,316 @@ int BGBCC_Img_EncodeImageBMP32A(byte *obuf, byte *ibuf,
 {
 	return(BGBCC_Img_EncodeImageBMP32I(obuf, ibuf, xs, ys, 1));
 }
+
+
+byte *BGBCC_Img_EncodeImageBMP_CellCRAM8I(byte *ct, byte *ibuf, int xstr)
+{
+	byte cya[16], caa[16];
+	byte *cs;
+	int cr, cg, cb, cy, ca;
+	int mcr, mcg, mcb, mcy, mca, nca;
+	int ncr, ncg, ncb, ncy;
+	int acy, clra, clrb, px;
+	int x, y;
+	int i, j, k;
+	
+	mcr=0; mcg=0; mcb=0; mcy= 512; mca= 512;
+	ncr=0; ncg=0; ncb=0; ncy=-512; nca=-512;
+	for(y=0; y<4; y++)
+	{
+		cs=ibuf+y*xstr;
+		for(x=0; x<4; x++)
+		{
+			cr=cs[0];	cg=cs[1];	cb=cs[2];	ca=cs[3];
+			cs+=4;
+			cy=(8*cg+5*cr+3*cb)>>4;
+			cya[y*4+x]=cy;
+			caa[y*4+x]=ca;
+			
+			if((cy<mcy) && (ca>=128))
+				{ mcr=cr; mcg=cg; mcb=cb; mcy=cy; }
+			if((cy>ncy) && (ca>=128))
+				{ ncr=cr; ncg=cg; ncb=cb; ncy=cy; }
+			if(ca<mca)
+				{ mca=ca; }
+			if(ca>nca)
+				{ nca=ca; }
+		}
+	}
+	acy=(mcy+ncy)>>1;
+
+	if(nca<=128)
+	{
+		/* Transparent */
+		*ct++=0x80;
+		*ct++=bgbcc_img_bmppalaki;
+		return(ct);
+	}
+
+	cr=(ncr>>3);
+	cg=(ncg>>3);
+	cb=(ncb>>3);
+	j=(cr<<10)|(cg<<5)|cb;
+	clra=bgbcc_img_bmppallookup[j];
+
+	cr=(mcr>>3);
+	cg=(mcg>>3);
+	cb=(mcb>>3);
+	j=(cr<<10)|(cg<<5)|cb;
+	clrb=bgbcc_img_bmppallookup[j];
+
+	if(mca<128)
+	{
+		/* Alpha Mask Block */
+
+		cr=(mcr+ncr)>>1;
+		cg=(mcg+ncg)>>1;
+		cb=(mcb+ncb)>>1;
+		cr=(cr>>3);	cg=(cg>>3);	cb=(cb>>3);
+		j=(cr<<10)|(cg<<5)|cb;
+		clra=bgbcc_img_bmppallookup[j];
+		
+		clrb=bgbcc_img_bmppalaki;
+		
+		acy=128;
+		
+		for(i=0; i<16; i++)
+			cya[i]=caa[i];
+	}
+
+
+	px=0;
+	for(y=0; y<4; y++)
+	{
+		for(x=0; x<4; x++)
+		{
+			cy=cya[y*4+x];
+			if(cy>acy)
+				px|=(1<<(y*4+x));
+//				px|=(1<<(15-(y*4+x)));
+		}
+	}
+	
+	if(px&0x8000)
+	{
+		px=~px;
+		k=clra; clra=clrb; clrb=k;
+	}
+	
+	if(clra==clrb)
+	{
+		*ct++=0x80;
+		*ct++=clra;
+		return(ct);
+	}
+	
+	*ct++=px;
+	*ct++=px>>8;
+	*ct++=clra;
+	*ct++=clrb;
+	return(ct);
+}
+
+int BGBCC_Img_EncodeImageBMP_CRAM8I(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal, int fl)
+{
+	BGBCC_BITMAPINFOHEADER *bmi;
+	byte *bdat, *bpal, *cs, *ct;
+	int ofs_bmi;
+	int ofs_pal;
+	int ofs_dat;
+	int cr, cg, cb, ca, ci, aki;
+	int xstr, sz, bxs, bys;
+	int x, y;
+	int i;
+
+	xstr=(xs+3)&(~3);
+//	sz=ofs_dat+ys*xstr;
+
+	bxs=(xs+3)>>2;
+	bys=(ys+3)>>2;
+
+	if(fl&1)
+	{
+		ofs_bmi=0x0010;
+		ofs_pal=0x0038;
+		ofs_dat=0x0440;
+		sz=ofs_dat+ys*xstr;
+
+		memcpy(obuf, " BMP", 4);
+		exwad_setu32(obuf+0x04, sz);
+		exwad_setu32(obuf+0x08, 0);
+		exwad_setu32(obuf+0x0C, ofs_dat);
+		bmi=(BGBCC_BITMAPINFOHEADER *)(obuf+0x10);
+	}else
+	{
+		ofs_bmi=0x000E;
+		ofs_pal=0x0036;
+		ofs_dat=0x0440;
+		sz=ofs_dat+ys*xstr;
+
+		memcpy(obuf, "BM", 2);
+		exwad_setu32(obuf+0x02, sz);
+		exwad_setu32(obuf+0x06, 0);
+		exwad_setu32(obuf+0x0A, ofs_dat);
+		bmi=(BGBCC_BITMAPINFOHEADER *)(obuf+0x0E);
+	}
+	
+	bmi->biSize=40;
+	bmi->biWidth=xs;
+	bmi->biHeight=ys;
+	bmi->biPlanes=1;
+	bmi->biBitCount=8;
+	bmi->biCompression=BGBCC_FMT_CRAM;
+	bmi->biSizeImage=ys*xstr;
+	bmi->biXPelsPerMeter=2835;
+	bmi->biYPelsPerMeter=2835;
+	bmi->biClrUsed=256;
+	bmi->biClrImportant=256;
+	
+	BGBCC_Img_EncodeImageBmpSetupPal(pal, 256);
+
+	aki=0xFF;
+	
+	bpal=obuf+ofs_pal;
+	bdat=obuf+ofs_dat;
+	for(i=0; i<256; i++)
+	{
+		bpal[i*4+0]=pal[i*4+2];
+		bpal[i*4+1]=pal[i*4+1];
+		bpal[i*4+2]=pal[i*4+0];
+		bpal[i*4+3]=pal[i*4+3];
+		
+		if(pal[i*4+3]<16)
+			aki=i;
+	}
+	
+	ct=bdat;
+	for(y=0; y<bys; y++)
+	{
+		cs=ibuf+((y*4)*xs*4);
+		for(x=0; x<bxs; x++)
+		{
+			ct=BGBCC_Img_EncodeImageBMP_CellCRAM8I(ct, cs, xs*4);
+			cs+=4*4;
+		}
+	}
+
+	bmi->biSizeImage=ct-bdat;
+	
+	sz=ct-obuf;
+	
+	if(fl&1)
+		{ exwad_setu32(obuf+0x04, sz); }
+	else
+		{ exwad_setu32(obuf+0x02, sz); }
+
+	return(sz);
+}
+
+int BGBCC_Img_EncodeImageBMP_CRAM8(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal)
+{
+	return(BGBCC_Img_EncodeImageBMP_CRAM8I(obuf, ibuf, xs, ys, pal, 0));
+}
+
+int BGBCC_Img_EncodeImageBMP_CRAM8A(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal)
+{
+	return(BGBCC_Img_EncodeImageBMP_CRAM8I(obuf, ibuf, xs, ys, pal, 1));
+}
+
+
+extern int bgbcc_packlz_cblksz;
+
+int BGBCC_Img_EncodeImageBMP_LZ8I(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal, int fl)
+{
+	BGBCC_BITMAPINFOHEADER *bmi;
+	byte *bdat, *bpal, *cs, *ct;
+	byte *tbuf;
+	int ofs_bmi;
+	int ofs_pal;
+	int ofs_dat;
+	int cr, cg, cb, ca, ci, aki;
+	int xstr, sz, csz;
+	int x, y;
+	int i;
+
+	BGBCC_Img_EncodeImageBMP8I(obuf, ibuf, xs, ys, pal, fl);
+
+	xstr=(xs+3)&(~3);
+//	sz=ofs_dat+ys*xstr;
+
+	if(fl&1)
+	{
+		ofs_bmi=0x0010;
+		ofs_pal=0x0038;
+		ofs_dat=0x0440;
+		sz=ofs_dat+ys*xstr;
+
+		memcpy(obuf, " BMP", 4);
+		exwad_setu32(obuf+0x04, sz);
+		exwad_setu32(obuf+0x08, 0);
+		exwad_setu32(obuf+0x0C, ofs_dat);
+		bmi=(BGBCC_BITMAPINFOHEADER *)(obuf+0x10);
+	}else
+	{
+		ofs_bmi=0x000E;
+		ofs_pal=0x0036;
+		ofs_dat=0x0440;
+		sz=ofs_dat+ys*xstr;
+
+		memcpy(obuf, "BM", 2);
+		exwad_setu32(obuf+0x02, sz);
+		exwad_setu32(obuf+0x06, 0);
+		exwad_setu32(obuf+0x0A, ofs_dat);
+		bmi=(BGBCC_BITMAPINFOHEADER *)(obuf+0x0E);
+	}
+
+	bmi->biCompression=BGBCC_FMT_RGL3;
+	
+	tbuf=malloc(2*ys*xstr);
+
+	if(1)
+//	if(0)
+	{
+		BGBCC_JX2C_PackBlockLZ_Reset(NULL);
+		BGBCC_JX2C_PackBlockRP2(NULL,
+			obuf+ofs_dat, tbuf, ys*xstr, 2*ys*xstr);
+		csz=bgbcc_packlz_cblksz;
+		printf("BGBCC_Img_EncodeImageBMP_LZ8I: RP2 %d -> %d\n", ys*xstr, csz);
+	}else
+	{
+		BGBCC_JX2C_PackBlockLZ_Reset(NULL);
+		BGBCC_JX2C_PackBlockLZ4(NULL,
+			tbuf, obuf+ofs_dat, 2*ys*xstr, ys*xstr);
+		csz=bgbcc_packlz_cblksz;
+		printf("BGBCC_Img_EncodeImageBMP_LZ8I: LZ4 %d -> %d\n", ys*xstr, csz);
+	}
+
+	memcpy(obuf+ofs_dat, tbuf, csz);
+	bmi->biSizeImage=csz;
+
+	sz=ofs_dat+csz;
+	
+	if(fl&1)
+		{ exwad_setu32(obuf+0x04, sz); }
+	else
+		{ exwad_setu32(obuf+0x02, sz); }
+
+	return(sz);
+}
+
+int BGBCC_Img_EncodeImageBMP_LZ8(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal)
+{
+	return(BGBCC_Img_EncodeImageBMP_LZ8I(obuf, ibuf, xs, ys, pal, 0));
+}
+
+int BGBCC_Img_EncodeImageBMP_LZ8A(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal)
+{
+	return(BGBCC_Img_EncodeImageBMP_LZ8I(obuf, ibuf, xs, ys, pal, 1));
+}
+

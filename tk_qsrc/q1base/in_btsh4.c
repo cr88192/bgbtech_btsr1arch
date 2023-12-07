@@ -21,6 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+#include <tkgdi/tkgdi.h>
+
+TKGHDC i_hDc;
+
 void IN_Init (void)
 {
 	tk_puts("\x1B%~");
@@ -32,7 +36,49 @@ void IN_Shutdown (void)
 
 void IN_Commands (void)
 {
-	int c, dn;
+	TKGDI_EVENT t_imsg;
+	TKGDI_EVENT *imsg;
+	int i, j, c, dn;
+
+	if(i_hDc>1)
+	{
+		thrd_yield();
+		imsg=&t_imsg;
+
+		while(1)
+		{
+			j=tkgPollEvent(i_hDc, imsg);
+			if(j<1)
+				break;
+			if(imsg->fccMsg==0)
+				break;
+			if(imsg->fccMsg==TKGDI_FCC_keyb)
+			{
+				c=imsg->wParm1;
+				dn=!(c&0x8000);
+				c=c&0x7FFF;
+			
+				switch(c)
+				{
+				case   8: c=K_BACKSPACE; break;
+				case 153: c=K_PAUSE; break;
+				case 154: c=K_MWHEELUP; break;
+				case 155: c=K_MWHEELDOWN; break;
+				case 157: c=K_MOUSE1; break;
+				case 158: c=K_MOUSE2; break;
+				case 159: c=K_MOUSE3; break;
+				default: break;
+				}
+				
+				if(c>=256)
+					continue;
+				
+				Key_Event (c, dn);
+			}
+		}
+		
+		return;
+	}
 
 	while(tk_kbhit())
 	{

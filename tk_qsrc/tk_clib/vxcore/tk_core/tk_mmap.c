@@ -246,7 +246,7 @@ void *TKMM_MmapV(
 	return(p);
 }
 
-void *TKMM_MunmapV(
+int TKMM_MunmapV(
 	void *addr, size_t len)
 {
 	TK_SysArg ar[8];
@@ -261,10 +261,10 @@ void *TKMM_MunmapV(
 
 //	tk_printf("TKMM_MmapV: Vp=%p, p=%p\n", &p, p);
 
-	return(p);
+	return((long)p);
 }
 
-void *TKMM_MProtectV(
+int TKMM_MProtectV(
 	void *addr, size_t len, int prot)
 {
 	TK_SysArg ar[8];
@@ -274,10 +274,10 @@ void *TKMM_MProtectV(
 	ar[1].l=len;
 	ar[2].i=prot;
 	tk_syscall(NULL, TK_UMSG_MPROTECT, &p, ar);
-	return(p);
+	return((long)p);
 }
 
-void *TKMM_MSyncV(
+int TKMM_MSyncV(
 	void *addr, size_t len, int prot)
 {
 	TK_SysArg ar[8];
@@ -287,7 +287,7 @@ void *TKMM_MSyncV(
 	ar[1].l=len;
 	ar[2].i=prot;
 	tk_syscall(NULL, TK_UMSG_MSYNC, &p, ar);
-	return(p);
+	return((long)p);
 }
 
 

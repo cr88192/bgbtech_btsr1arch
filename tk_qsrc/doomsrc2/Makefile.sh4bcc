@@ -18,6 +18,10 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
 	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
 	/fjcmpz /fxg2mode
 
+#TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /Os /fwex3w /fwexj \
+#	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
+#	/fjcmpz /fnowex
+
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
 #	/Zz /fshuffle /fqmul /fptropts /fxgpr_ena /fnoexcept /fldgbr
 
@@ -33,7 +37,8 @@ BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib
 # -DNORMALUNIX
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
-LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
+# LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
+LDFLAGS=$(TK_LDFL) -lc -ltkgdi
 
 #		i_system.c		\
 #		i_sound.c		\

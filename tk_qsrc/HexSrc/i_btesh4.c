@@ -26,6 +26,8 @@ typedef signed int s32;
 int	mb_used = 24;
 // int	mb_used = 32;
 
+TKGHDC i_hDc;
+
 
 void I_InitNetwork (void)
 {
@@ -582,7 +584,50 @@ int	Key_Event (int c, int dn)
 
 void IN_Commands (void)
 {
-	int c, dn;
+	TKGDI_EVENT t_imsg;
+	TKGDI_EVENT *imsg;
+	int i, j, c, dn;
+
+
+	if(i_hDc>1)
+	{
+		thrd_yield();
+		imsg=&t_imsg;
+
+		while(1)
+		{
+			j=tkgPollEvent(i_hDc, imsg);
+			if(j<1)
+				break;
+			if(imsg->fccMsg==0)
+				break;
+			if(imsg->fccMsg==TKGDI_FCC_keyb)
+			{
+				c=imsg->wParm1;
+				dn=!(c&0x8000);
+				c=c&0x7FFF;
+			
+				switch(c)
+				{
+				case   8: c=K_BACKSPACE; break;
+				case 153: c=K_PAUSE; break;
+				case 154: c=K_MWHEELUP; break;
+				case 155: c=K_MWHEELDOWN; break;
+				case 157: c=K_MOUSE1; break;
+				case 158: c=K_MOUSE2; break;
+				case 159: c=K_MOUSE3; break;
+				default: break;
+				}
+				
+				if(c>=256)
+					continue;
+				
+				Key_Event (c, dn);
+			}
+		}
+		
+		return;
+	}
 
 	while(tk_kbhit())
 	{
@@ -1888,7 +1933,7 @@ void I_DrawFramerate()
 
 // TKGDI_BITMAPINFOHEADER i_t_dibinfo;
 TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
-TKGHDC i_hDc;
+// TKGHDC i_hDc;
 
 void I_InitTkGdi()
 {
@@ -1914,6 +1959,7 @@ void I_InitTkGdi()
 //	tk_printf("  1\n", hDc);
 
 	i_hDc=tkgCreateDisplay(i_dibinfo);
+	tkgSetWindowTitle(i_hDc, "Hexen");
 
 #if 0
 	i_dibinfo->biWidth=320;

@@ -1276,3 +1276,60 @@ int BGBCC_CCXL_InferLambdaCapRef(BGBCC_TransState *ctx, BCCX_Node *l)
 	ctx->do_lambda_capref=0;
 	return(ctx->n_lambda_capref);
 }
+
+/* Infer if two expressions are equivalent. */
+int BGBCC_CCXL_InferExprIsEquivP(BGBCC_TransState *ctx,
+	BCCX_Node *ln, BCCX_Node *rn)
+{
+	BCCX_Node *ln1, *rn1;
+	BCCX_Node *ln2, *rn2;
+	s64 li, lj;
+	char *s0, *s1;
+
+	if(	BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref") &&
+		BCCX_TagIsCstP(rn, &bgbcc_rcst_ref, "ref"))
+	{
+		s0=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
+		s1=BCCX_GetCst(rn, &bgbcc_rcst_name, "name");
+		if(!strcmp(s0, s1))
+			return(1);
+		return(0);
+	}
+
+	if(	BCCX_TagIsCstP(ln, &bgbcc_rcst_int, "int") &&
+		BCCX_TagIsCstP(rn, &bgbcc_rcst_int, "int"))
+	{
+		li=BCCX_GetIntCst(ln, &bgbcc_rcst_value, "value");
+		lj=BCCX_GetIntCst(rn, &bgbcc_rcst_value, "value");
+		if(li==lj)
+			return(1);
+		return(0);
+	}
+
+	if(	BCCX_TagIsCstP(ln, &bgbcc_rcst_binary, "binary") &&
+		BCCX_TagIsCstP(rn, &bgbcc_rcst_binary, "binary"))
+	{
+		ln1=BCCX_FetchCst(ln, &bgbcc_rcst_left, "left");
+		rn1=BCCX_FetchCst(ln, &bgbcc_rcst_right, "right");
+
+		ln2=BCCX_FetchCst(rn, &bgbcc_rcst_left, "left");
+		rn2=BCCX_FetchCst(rn, &bgbcc_rcst_right, "right");
+
+		s0=BCCX_GetCst(ln, &bgbcc_rcst_op, "op");
+		s1=BCCX_GetCst(rn, &bgbcc_rcst_op, "op");
+
+		if(!strcmp(s0, s1))
+		{
+			if(	BGBCC_CCXL_InferExprIsEquivP(ctx, ln1, ln2) &&
+				BGBCC_CCXL_InferExprIsEquivP(ctx, rn1, rn2))
+			{
+				return(1);
+			}
+			return(0);
+		}
+
+		return(0);
+	}
+
+	return(0);
+}

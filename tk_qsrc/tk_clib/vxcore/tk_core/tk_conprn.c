@@ -822,6 +822,7 @@ u64 tk_gfxcon_hexblock[256];
 #define TK_CONWIDTH		80
 #define TK_CONHEIGHT	25
 #define TK_CONHEIGHTN1	24
+#define TK_CONHEIGHTN2	23
 
 u32 *TKGDI_BlitUpdate_GetConbuf();
 
@@ -951,6 +952,11 @@ void tk_con_init()
 void tk_con_disable()
 {
 	tk_con->ena=0;
+}
+
+void tk_con_enable()
+{
+	tk_con->ena=1;
 }
 
 void tk_con_bufferpokeall()

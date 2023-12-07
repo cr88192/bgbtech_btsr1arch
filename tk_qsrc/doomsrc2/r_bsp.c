@@ -270,7 +270,7 @@ void R_ClearClipSegs (void)
 	newend = solidsegs+2;
 }
 
-byte rw_wall_isclip;
+extern byte rw_wall_isclip;
 
 //
 // R_AddLine

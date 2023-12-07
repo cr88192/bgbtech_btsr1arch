@@ -129,6 +129,13 @@ void	SoundDev_Submit();
 void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp);
 void	SoundDev_WriteStereoSamples2(short *mixbuf, int nsamp, int nsamp2);
 
+#ifndef __BGBCC__
+int		__int_mulsw(int a, int b)
+{
+	return(a*b);
+}
+#endif
+
 //
 // This function loads the sound data from the WAD lump,
 //	for single sound.
@@ -898,7 +905,7 @@ void I_SubmitSound(void)
 	I_SubmitSound2(0);
 }
 
-TKGHSND hSndDev;
+extern TKGHSND hSndDev;
 TKGDI_WAVEFORMATEX i_snd_t_info;
 TKGDI_WAVEFORMATEX *i_snd_info = NULL;
 

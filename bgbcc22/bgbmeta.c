@@ -1164,10 +1164,15 @@ byte bgbcc_dfl_pal4t[16];
 byte bgbcc_dfl_pal2[8];
 byte bgbcc_dfl_pal2t[8];
 
+byte *bgbcc_img_bmppallookup;
+byte *bgbcc_img_bmppallookupb;
+
+
 int BGBCC_LoadConvResource_SetupPal()
 {
 	byte *tbuf;
 	byte *pal, *pal256;
+	byte *paldith;
 	int cr, cg, cb;
 	int ch, cm, cl;
 	int i, j, k;
@@ -1247,17 +1252,17 @@ int BGBCC_LoadConvResource_SetupPal()
 		pal256[(i*16+0)*4+3]=255;
 	}
 
-	pal256[(8*16+0)*4+0]=0;
+	pal256[(8*16+0)*4+0]=255;
 	pal256[(8*16+0)*4+1]=0;
-	pal256[(8*16+0)*4+2]=0;
+	pal256[(8*16+0)*4+2]=255;
 	pal256[(8*16+0)*4+3]=0;
 
 	for(i=0; i<64; i++)
 		bgbcc_dfl_pal16t[i]=bgbcc_dfl_pal16[i];
 
-	bgbcc_dfl_pal16t[13*4+0]=0;
+	bgbcc_dfl_pal16t[13*4+0]=255;
 	bgbcc_dfl_pal16t[13*4+1]=0;
-	bgbcc_dfl_pal16t[13*4+2]=0;
+	bgbcc_dfl_pal16t[13*4+2]=255;
 	bgbcc_dfl_pal16t[13*4+3]=0;
 
 	pal=bgbcc_dfl_pal4;
@@ -1288,9 +1293,9 @@ int BGBCC_LoadConvResource_SetupPal()
 	pal[0*4+0]=0x00; pal[0*4+1]=0x00; pal[0*4+2]=0x00; pal[0*4+3]=255;
 	pal[1*4+0]=0xFF; pal[1*4+1]=0xFF; pal[1*4+2]=0xFF; pal[1*4+3]=255;
 	pal[2*4+0]=0x7F; pal[2*4+1]=0x7F; pal[2*4+2]=0x7F; pal[2*4+3]=255;
-	pal[3*4+0]=0x00; pal[3*4+1]=0x00; pal[3*4+2]=0x00; pal[3*4+3]=0;
+	pal[3*4+0]=0xFF; pal[3*4+1]=0x00; pal[3*4+2]=0xFF; pal[3*4+3]=0;
 
-#if 1
+#if 0
 	tbuf=malloc(16*16*8);
 	k=BGBCC_Img_EncodeImageBMP8(
 		tbuf, bgbcc_dfl_pal256, 16, 16, bgbcc_dfl_pal256);
@@ -1311,6 +1316,57 @@ int BGBCC_LoadConvResource_SetupPal()
 	k=BGBCC_Img_EncodeImageBMP2(
 		tbuf, bgbcc_dfl_pal4, 4, 1, bgbcc_dfl_pal4);
 	BGBCC_StoreFile("dump/rsrc_pal4.bmp", tbuf, k);
+#endif
+
+#if 0
+	BGBCC_Img_EncodeImageBmpSetupPal(bgbcc_dfl_pal256, 256);
+
+	paldith=malloc(256*256*4);
+	for(i=0; i<32768; i++)
+	{
+		j=bgbcc_img_bmppallookup[i];
+		k=bgbcc_img_bmppallookupb[i];
+		paldith[i*4+0]=bgbcc_dfl_pal256[j*4+0];
+		paldith[i*4+1]=bgbcc_dfl_pal256[j*4+1];
+		paldith[i*4+2]=bgbcc_dfl_pal256[j*4+2];
+		paldith[i*4+3]=255;
+
+		j=i+32768;
+		paldith[j*4+0]=bgbcc_dfl_pal256[k*4+0];
+		paldith[j*4+1]=bgbcc_dfl_pal256[k*4+1];
+		paldith[j*4+2]=bgbcc_dfl_pal256[k*4+2];
+		paldith[j*4+3]=255;
+	}
+
+	tbuf=malloc(256*256*8);
+	k=BGBCC_Img_EncodeImageBMP8(
+		tbuf, paldith, 256, 256, bgbcc_dfl_pal256);
+	BGBCC_StoreFile("dump/rsrc_paldith8.bmp", tbuf, k);
+
+
+	for(i=0; i<32768; i++)
+	{
+		cr=(i>>10)&31;
+		cg=(i>> 5)&31;
+		cb=(i>> 0)&31;
+		cr=(cr<<3)|(cr>>2);
+		cg=(cg<<3)|(cg>>2);
+		cb=(cb<<3)|(cb>>2);
+		paldith[i*4+0]=cr;
+		paldith[i*4+1]=cg;
+		paldith[i*4+2]=cb;
+		paldith[i*4+3]=255;
+		
+		j=i+32768;
+		paldith[j*4+0]=cr;
+		paldith[j*4+1]=cg;
+		paldith[j*4+2]=cb;
+		paldith[j*4+3]=255;
+	}
+
+	k=BGBCC_Img_EncodeImageBMP16(
+		tbuf, paldith, 256, 256);
+	BGBCC_StoreFile("dump/rsrc_paldith16.bmp", tbuf, k);
 #endif
 
 	return(1);
@@ -1365,7 +1421,13 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		!bgbcc_stricmp(cnv, "bmp4ta") ||
 		!bgbcc_stricmp(cnv, "bmp4t") ||
 		!bgbcc_stricmp(cnv, "bmp16") ||
-		!bgbcc_stricmp(cnv, "bmp16a") )
+		!bgbcc_stricmp(cnv, "bmp16a") ||
+		!bgbcc_stricmp(cnv, "bmp32") ||
+		!bgbcc_stricmp(cnv, "bmp32a") ||
+		!bgbcc_stricmp(cnv, "bmp_cram8") ||
+		!bgbcc_stricmp(cnv, "bmp_cram8a") ||
+		!bgbcc_stricmp(cnv, "bmp_lz8") ||
+		!bgbcc_stricmp(cnv, "bmp_lz8a") )
 	{
 		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
 		if(!ibuf)
@@ -1421,6 +1483,27 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		if(!bgbcc_stricmp(cnv, "bmp16a"))
 			sz1=BGBCC_Img_EncodeImageBMP16A(
 				obuf, ibuf, xs, ys);
+
+		if(!bgbcc_stricmp(cnv, "bmp32"))
+			sz1=BGBCC_Img_EncodeImageBMP32(
+				obuf, ibuf, xs, ys);
+		if(!bgbcc_stricmp(cnv, "bmp32a"))
+			sz1=BGBCC_Img_EncodeImageBMP32A(
+				obuf, ibuf, xs, ys);
+
+		if(!bgbcc_stricmp(cnv, "bmp_cram8"))
+			sz1=BGBCC_Img_EncodeImageBMP_CRAM8(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
+		if(!bgbcc_stricmp(cnv, "bmp_cram8a"))
+			sz1=BGBCC_Img_EncodeImageBMP_CRAM8A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
+
+		if(!bgbcc_stricmp(cnv, "bmp_lz8"))
+			sz1=BGBCC_Img_EncodeImageBMP_LZ8(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
+		if(!bgbcc_stricmp(cnv, "bmp_lz8a"))
+			sz1=BGBCC_Img_EncodeImageBMP_LZ8A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
 
 		*rfcc=BGBCC_FMT_BMP;
 		*rsz=sz1;

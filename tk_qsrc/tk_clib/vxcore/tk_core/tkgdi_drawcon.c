@@ -1,4 +1,9 @@
-// TK_CONWIDTH
+// TKG_CONWIDTH
+
+#define TKG_CONWIDTH		80
+#define TKG_CONHEIGHT		25
+#define TKG_CONHEIGHTN1		24
+#define TKG_CONHEIGHTN2		23
 
 u16 tkgdi_fontcell_3x5[128]={
 000000, 005020, 072752, 005772, 002000, 000200, 002527, 002727,	//00-07
@@ -409,13 +414,13 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 	cxs=con->cell_xs;
 	cys=con->cell_ys;
 
-	i0=(y*TK_CONWIDTH+x)*2;
+	i0=(y*TKG_CONWIDTH+x)*2;
 	q0=con->conbuf[i0+0];
 	q1=con->conbuf[i0+1];
 
 	px=x*cxs;
 	py=y*cys;
-	pz=(py*(TK_CONWIDTH*8))+px;
+	pz=(py*(TKG_CONWIDTH*8))+px;
 
 	if(((q0>>30)&3)==0)
 	{
@@ -429,8 +434,11 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 		fgc=(q0>> 0)&0x7FFF;
 		bgc=(q0>>15)&0x7FFF;
 		pix=q1;
+		ch=' ';
 	}else
 	{
+		pix=0;
+		ch=' ';
 	}
 
 
@@ -443,7 +451,7 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 		if(cxs==8)
 		{
 			tkg_drawcellbuf_8x8(
-				pixb, TK_CONWIDTH*8, TK_CONHEIGHT*8,
+				pixb, TKG_CONWIDTH*8, TKG_CONHEIGHT*8,
 				px, py, 
 				pix, fgc, bgc);
 		}
@@ -455,7 +463,7 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 				j=0;
 			pz=tk_con_glyphs_5x6seg[j];
 			tkg_drawcellbuf_6x8(
-				pixb, TK_CONWIDTH*6, TK_CONHEIGHT*8,
+				pixb, TKG_CONWIDTH*6, TKG_CONHEIGHT*8,
 				px, py, 
 				pz, fgc, bgc);
 		}
@@ -469,7 +477,7 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 				j=0;
 			pz=tkgdi_fontcell_3x5[j];
 			tkg_drawcellbuf_4x6(
-				pixb, TK_CONWIDTH*4, TK_CONHEIGHT*6,
+				pixb, TKG_CONWIDTH*4, TKG_CONHEIGHT*6,
 				px, py, 
 				pz, fgc, bgc);
 		}
@@ -485,13 +493,14 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 				k=fgc;
 			pixb[pz+j]=k;
 		}
-		pz+=TK_CONWIDTH*8;
+		pz+=TKG_CONWIDTH*8;
 	}
 #endif
 }
 
 void tkgdi_con_redrawbuffer(_tkgdi_conparm *con)
 {
+	u64 *mskbuf;
 	u64 q, qrm;
 	int i, j, k;
 	
@@ -499,31 +508,48 @@ void tkgdi_con_redrawbuffer(_tkgdi_conparm *con)
 	if(!qrm)
 		return;
 	
-	for(i=0; i<TK_CONHEIGHT; i++)
+	mskbuf=con->conmask;
+	for(i=0; i<TKG_CONHEIGHT; i++)
 	{
 		if(!((qrm>>i)&1))
 			continue;
 
-		for(j=0; j<TK_CONWIDTH; j++)
+//		tk_printf("tkgdi_con_redrawbuffer: row %d\n", i);
+
+		for(j=0; j<TKG_CONWIDTH; j++)
 		{
-			k=i*TK_CONWIDTH+j;
-			q=con->conmask[k>>6];
-			if(!q)
+			k=i*TKG_CONWIDTH+j;
+			q=mskbuf[k>>6];
+			if(q==0)
 			{
-				j=((j+64)&(~63))-1;
-				continue;
+				if(((k+15)>>6)==(k>>6))
+					{ j+=15; continue; }
+				if(((k+7)>>6)==(k>>6))
+					{ j+=7; continue; }
+				if(((k+3)>>6)==(k>>6))
+					{ j+=3; continue; }
+//				j=((j+64)&(~63))-1;
+//				continue;
 			}
 			
-			if(!((q>>(k&63))&1))
+//			if(!((q>>(k&63))&1))
+//				continue;
+
+			if(!(q&(1ULL<<(k&63))))
 				continue;
 			
-			q&=~(1LL<<(k&63));
-			con->conmask[k>>6]=q;
+//			q&=~(1LL<<(k&63));
+//			con->conmask[k>>6]=q;
+
+//			tk_printf("tkgdi_con_redrawbuffer: at %d %d\n", j, i);
 			
 			tkgdi_con_drawcell(con, j, i);
 		}
 	}
-	
+
+	j=((80*25+63)>>6);
+	memset(con->conmask, 0x00, j*8);
+
 	con->conrowmask=0;
 }
 
@@ -534,7 +560,7 @@ void TKGDI_Con_UpdateHwCursor(_tkgdi_conparm *con)
 
 void tkgdi_con_clear(_tkgdi_conparm *con)
 {
-	volatile u32 *buf;
+	u64 *buf;
 	u64 q0, q1, tv;
 //	u32 p0, p1, p2, p3;
 	int i0, i1;
@@ -542,26 +568,30 @@ void tkgdi_con_clear(_tkgdi_conparm *con)
 
 	i1=con->text_attr;
 
-	buf=(volatile u32 *)(con->conbuf);
+	buf=con->conbuf;
 
 	q1=0;
 	q0=(2ULL<<30)|(con->bgclr_555<<15)|con->fgclr_555;
 
 	for(i=0; i<25; i++)
 	{
-		i0=(i*TK_CONWIDTH)*4;
-		for(j=0; j<TK_CONWIDTH; j++)
+		i0=(i*TKG_CONWIDTH)*2;
+		for(j=0; j<TKG_CONWIDTH; j++)
 		{
 			*(u64 *)(buf+i0+0)=q0;
-			*(u64 *)(buf+i0+2)=q1;
-			i0+=4;
+			*(u64 *)(buf+i0+1)=q1;
+			i0+=2;
 			
-			i1=i0>>2;
-			con->conmask[i1>>6]|=1<<(i1&63);
+//			i1=i0>>1;
+//			con->conmask[i1>>6]|=1ULL<<(i1&63);
 		}
 	}
-	
+
+	j=((80*25+63)>>6);
+	memset(con->conmask, 0xFF, j*8);
+
 	con->conrowmask=-1;
+	con->dirty|=3;
 
 	tkgdi_con_redrawbuffer(con);
 }
@@ -603,14 +633,16 @@ void tkgdi_con_init(_tkgdi_conparm *con)
 	TKGDI_Con_SetColorBg(con, 0);
 	TKGDI_Con_SetColorFg(con, tk_con_clr16to64[7]);
 	
-	con->conbuf=tk_malloc(80*25*(2*8));
+//	con->conbuf=tk_malloc(80*25*(2*8));
+	con->conbuf=tk_malloc(80*55*(2*8));
 //	con->pixbuf=tk_malloc((80*8)*(25*8)*2);
 	
 	j=((80*25+63)>>6);
-	con->conmask=tk_malloc(j*8);
+	con->conmask=tk_malloc(j*8+32);
 	memset(con->conmask, 0xFF, j*8);
 
 	con->conrowmask=-1;
+	con->dirty|=3;
 }
 
 void tkgdi_con_reset(_tkgdi_conparm *con)
@@ -639,51 +671,80 @@ void tkgdi_con_chkreset(_tkgdi_conparm *con)
 
 void tkgdi_con_scroll_up(_tkgdi_conparm *con)
 {
-	volatile u32 *buf;
-	volatile u64 *qb0, *qb1;
+	u64 *buf, *mskbuf;
+	u64 *qb0, *qb1;
 	u64 q0, q1, q2, q3;
-//	u32 p0, p1, p2, p3;
+	u64 p0, p1, p2, p3;
 	int i0, i1;
-	int i, j, k;
+	int i, j, k, df;
 
-	buf=(volatile u32 *)(con->conbuf);
+	buf=con->conbuf;
+	mskbuf=con->conmask;
 
-	for(i=0; i<TK_CONHEIGHTN1; i++)
+	for(i=0; i<TKG_CONHEIGHTN1; i++)
 	{
-		i0=((i+0)*TK_CONWIDTH)*4;
-		i1=((i+1)*TK_CONWIDTH)*4;
+		i0=((i+0)*TKG_CONWIDTH)*2;
+		i1=((i+1)*TKG_CONWIDTH)*2;
 
 		qb0=(u64 *)(buf+i0);
 		qb1=(u64 *)(buf+i1);
-		for(j=0; j<TK_CONWIDTH; j+=4)
+		for(j=0; j<TKG_CONWIDTH; j+=4)
 		{
+			df=0;
+
 			q0=qb1[0];		q1=qb1[1];
 			q2=qb1[2];		q3=qb1[3];
+			p0=qb0[0];		p1=qb0[1];
+			p2=qb0[2];		p3=qb0[3];
+
+			if((q0!=p0)||(q1!=p1)||(q2!=p2)||(q3!=p3))
+				df=1;
+
 			qb0[0]=q0;		qb0[1]=q1;
 			qb0[2]=q2;		qb0[3]=q3;
 
 			q0=qb1[4];		q1=qb1[5];
 			q2=qb1[6];		q3=qb1[7];
+			p0=qb0[4];		p1=qb0[5];
+			p2=qb0[6];		p3=qb0[7];
+
+			if((q0!=p0)||(q1!=p1)||(q2!=p2)||(q3!=p3))
+				df=1;
+
 			qb0[4]=q0;		qb0[5]=q1;
 			qb0[6]=q2;		qb0[7]=q3;
 
-			qb0+=8;		qb1+=8;
-			i0+=8;		i1+=8;
+//			k=(i1>>1)+j;
+//			if(mskbuf[k>>6]&(15ULL<<(k&63)))
 
-			k=(i1>>2)+j;
-			con->conmask[k>>6]|=15<<(k&63);
+//			__debugbreak();
+
+			qb0+=8;		qb1+=8;
+//			i0+=8;		i1+=8;
+
+			if(df)
+//			if(1)
+			{
+				k=(i0>>1)+j;
+				mskbuf[k>>6]|=15ULL<<(k&63);
+	//			k=(i1>>1)+j;
+	//			mskbuf[k>>6]|=15ULL<<(k&63);
+			}
 		}
 	}
 
-	q0=(2ULL<<30)|(con->bgclr_555<<15)|con->fgclr_555;
+//	q0=(2ULL<<30)|(con->bgclr_555<<15)|con->fgclr_555;
 	q1=0;
+	q0=(con->text_attr)|' ';
 
-	i0=(TK_CONHEIGHTN1*TK_CONWIDTH)*4;
+
+	i0=(TKG_CONHEIGHTN1*TKG_CONWIDTH)*2;
 	i1=con->text_attr;
-	for(j=0; j<TK_CONWIDTH; j++)
+	for(j=0; j<TKG_CONWIDTH; j++)
 	{
-		k=(i0>>1)+j;
-		con->conmask[k>>6]|=1<<(k&63);
+//		k=(i0>>1)+j;
+		k=(i0>>1);
+		mskbuf[k>>6]|=1ULL<<(k&63);
 
 		((u64 *)(buf+i0))[0]=q0;
 		((u64 *)(buf+i0))[1]=q1;
@@ -691,26 +752,27 @@ void tkgdi_con_scroll_up(_tkgdi_conparm *con)
 	}
 
 	con->conrowmask=-1;
+	con->dirty|=3;
 
-	tkgdi_con_redrawbuffer(con);
+//	tkgdi_con_redrawbuffer(con);
 }
 
 void tkgdi_con_scroll_down(_tkgdi_conparm *con)
 {
-	volatile u32 *buf;
+	u64 *buf;
 	u64 q0, q1;
 //	u32 p0, p1, p2, p3;
 	int i0, i1;
 	int i, j, k;
 
 //	buf=con->buf;
-	buf=(volatile u32 *)(con->conbuf);
+	buf=con->conbuf;
 
-	for(i=TK_CONHEIGHTN1; i>0; i--)
+	for(i=TKG_CONHEIGHTN1; i>0; i--)
 	{
-		i0=((i+0)*TK_CONWIDTH)*2;
-		i1=((i-1)*TK_CONWIDTH)*2;
-		for(j=0; j<TK_CONWIDTH; j++)
+		i0=((i+0)*TKG_CONWIDTH)*2;
+		i1=((i-1)*TKG_CONWIDTH)*2;
+		for(j=0; j<TKG_CONWIDTH; j++)
 		{
 			q0=((u64 *)(buf+i1))[0];
 			q1=((u64 *)(buf+i1))[1];
@@ -726,22 +788,25 @@ void tkgdi_con_scroll_down(_tkgdi_conparm *con)
 	}
 
 	q1=0;
-	q0=(2ULL<<30)|(con->bgclr_555<<15)|con->fgclr_555;
+//	q0=(2ULL<<30)|(con->bgclr_555<<15)|con->fgclr_555;
+	q0=(con->text_attr)|' ';
 
 	i0=0;
 	i1=con->text_attr;
-	for(j=0; j<TK_CONWIDTH; j++)
+	for(j=0; j<TKG_CONWIDTH; j++)
 	{
 		((u64 *)(buf+i0))[0]=q0;
 		((u64 *)(buf+i0))[1]=q1;
 
-		k=(i0>>1)+j;
-		con->conmask[k>>6]|=1<<(k&63);
+//		k=(i0>>1)+j;
+		k=(i0>>1);
+		con->conmask[k>>6]|=1ULL<<(k&63);
 
 		i0+=2;
 	}
 
 	con->conrowmask=-1;
+	con->dirty|=3;
 
 	tkgdi_con_redrawbuffer(con);
 }
@@ -939,6 +1004,7 @@ void TKGDI_Con_PutcEscape(_tkgdi_conparm *con, int ch)
 			case 2:
 			case 3:
 				tkgdi_con_clear(con);
+				TKGDI_Con_SetCursorPos(con, 0, 0);
 				break;
 			}
 			con->isesc=0;
@@ -976,7 +1042,7 @@ void TKGDI_Con_PutcEscape(_tkgdi_conparm *con, int ch)
 
 void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 {
-	volatile u32 *buf;
+	u64 *buf, *mskbuf;
 	int tx, ty, tz;
 	u64 q0, q1;
 	u32 px, py;
@@ -985,7 +1051,8 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 	if(!con->ena)
 		return;
 
-	buf=(volatile u32 *)(con->conbuf);
+	buf=con->conbuf;
+	mskbuf=con->conmask;
 
 	if(con->isesc)
 	{
@@ -1020,7 +1087,7 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 		if(ch=='\t')
 		{
 			con->x=(con->x+8)&(~7);
-			if(con->x>=TK_CONWIDTH)
+			if(con->x>=TKG_CONWIDTH)
 				{ tkgdi_con_newline(con); con->x=0; }
 			TKGDI_Con_UpdateHwCursor(con);
 			return;
@@ -1037,14 +1104,14 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 			px=0x003F8000|'_';
 			ty=con->y;
 			tx=con->x;
-			tz=(ty*TK_CONWIDTH+tx)*4;
+			tz=(ty*TKG_CONWIDTH+tx)*2;
 			buf[tz+0]=px;
 			tx++;
 			con->x=tx;
 
 			k=tz>>1;
-			con->conmask[k>>6]|=1<<(k&63);
-			con->conrowmask|=1LL<<ty;
+			mskbuf[k>>6]|=1ULL<<(k&63);
+			con->conrowmask|=1ULL<<ty;
 			return;
 		}
 
@@ -1056,15 +1123,18 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 	ty=con->y;
 	tx=con->x;
 
+//	tk_printf("tkgdi_con_putc: at %d %d\n", tx, ty);
+
 	con->conrowmask|=1LL<<ty;
 
 	if(ch<0x100)
 	{
-		tz=(ty*TK_CONWIDTH+tx)*2;
+		tz=(ty*TKG_CONWIDTH+tx)*2;
 		((u64 *)buf)[tz]=px;
 
 		k=tz>>1;
-		con->conmask[k>>6]|=1<<(k&63);
+		mskbuf[k>>6]|=1ULL<<(k&63);
+		con->conrowmask|=1ULL<<ty;
 	}else
 	{
 		if(ch>=0x100)
@@ -1098,20 +1168,24 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 
 		q0=(2ULL<<30)|(con->bgclr_555<<15)|con->fgclr_555;
 
-		tz=(ty*TK_CONWIDTH+tx)*2;
+		tz=(ty*TKG_CONWIDTH+tx)*2;
 		((u64 *)buf)[tz+0]=q0;
 		((u64 *)buf)[tz+1]=q1;
 
 		k=tz>>1;
-		con->conmask[k>>6]|=1<<(k&63);
+		mskbuf[k>>6]|=1ULL<<(k&63);
+		con->conrowmask|=1ULL<<ty;
 	}
+
+	con->conrowmask|=1LL<<ty;
 
 	tx++;
 	con->x=tx;
-	if(tx>=TK_CONWIDTH)
+	if(tx>=TKG_CONWIDTH)
 	{
 		tkgdi_con_newline(con);
 		con->x=0;
+		con->conrowmask|=1LL<<ty;
 	}
 
 	TKGDI_Con_UpdateHwCursor(con);

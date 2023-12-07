@@ -152,7 +152,7 @@ void *__alloca_initvla2(char *sig, int n1, int n2)
 	if(!arr)
 		return(NULL);
 	arr->vt=tkmm_lva_clsvt;
-	buf=arr->t_data;
+	buf=(byte *)(arr->t_data);
 //	a0=buf+(sz0*n1*n2);
 	a0=(byte **)(buf+(sz0*n1*n2));
 	arr->data=a0;

@@ -313,6 +313,8 @@ extern "C" {
 #define BGBCC_TYFL_LOCAL			(1LL<<48)
 #define BGBCC_TYFL_GLOBAL			(1LL<<49)
 
+#define BGBCC_TYFL_TBRSAVE			(1LL<<50)
+
 
 #define BGBCC_TYFL_DFL_MASK			\
 	(BGBCC_TYFL_PUBLIC|BGBCC_TYFL_PRIVATE|BGBCC_TYFL_PROTECTED)
@@ -524,6 +526,11 @@ extern "C" {
 
 #define BGBCC_FMT_QOIF		BGBCC_FOURCC('Q', 'O', 'I', 'F')
 #define BGBCC_FMT_LCIF		BGBCC_FOURCC('L', 'C', 'I', 'F')
+
+#define BGBCC_FMT_CRAM		BGBCC_FOURCC('C', 'R', 'A', 'M')
+
+#define BGBCC_FMT_RGL3		BGBCC_FOURCC('R', 'G', 'L', '3')
+#define BGBCC_FMT_RGL4		BGBCC_FOURCC('R', 'G', 'L', '4')
 
 #endif
 

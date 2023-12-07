@@ -697,8 +697,10 @@ int BJX2_MainAddKeyByte(BJX2_Context *ctx, int k)
 int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 {
 	static int lmb, msflg, msrt, l1msrt, l2msrt;
+	static int lvmx, lvmy, lvmd;
 	u16 *kb;
-	int mdx, mdy, mb;
+	int mdx, mdy, vmx, vmy, amx, amy, amsx, amsy, mb;
+	int t0;
 	int i, j, k;
 
 #ifdef _WIN32
@@ -757,6 +759,8 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 	while(*kb)
 	{
 		k=*kb++;
+		
+		lvmd=0;
 
 		if(FRGL_KeyDown(K_SHIFT))
 		{
@@ -893,10 +897,60 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 			break;
 		}
 	}
+	
+	t0=FRGL_TimeMS();
 
 	if(((msflg&3)==1) || (msflg&4))
 	{
-		GfxDrv_MouseGetRelPos(&mdx, &mdy, &mb);
+		i=bjx2_vmgetmousepos(ctx, &vmx, &vmy);
+		
+		if((lvmx!=vmx) || (lvmy!=vmy))
+			lvmd=0;
+		
+		if(lvmd && (t0>(lvmd+500)))
+			lvmd=0;
+
+		if(i>0)
+		{
+			GfxDrv_MouseGetPos(&amx, &amy, &mb);
+			amsx=(amx/2)+320;
+			amsy=(amy/2)+200;
+			
+			mdx=amsx-vmx;
+			mdy=amsy-vmy;
+			
+//			if((mdx>25) && (mdx<25))
+//				mdx=0;
+//			if((mdy>25) && (mdy<25))
+//				mdy=0;
+
+			if(lvmd)
+			{
+				mdx=0;
+				mdy=0;
+			}
+			
+#if 0
+			if(mdx || mdy)
+			{
+				printf("amx/amy=%d,%d vmx/vmy=%d,%d mdx/mdy=%d,%d\n",
+					amsx, amsy,
+					vmx, vmy,
+					mdx, mdy);
+			}
+#endif
+			
+			lvmx=vmx;
+			lvmy=vmy;
+			if(mdx || mdy)
+			{
+				lvmd=FRGL_TimeMS();
+			}
+		}else
+		{
+			GfxDrv_MouseGetRelPos(&mdx, &mdy, &mb);
+		}
+
 		if(mdx || mdy || (mb!=lmb))
 		{
 //			j=0x08|(mb&7);
@@ -1064,6 +1118,23 @@ int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
 			}
 		}
 	}
+
+	if(!strncmp(line, "TKPE!MS_X:", 10))
+	{
+		s=line+10;
+		sscanf(s, "%04X_%08X", &a_hi, &a_lo);
+		addr=(((u64)a_hi)<<32)|a_lo;
+		ctx->vm_mousex=addr;
+	}
+
+	if(!strncmp(line, "TKPE!MS_Y:", 10))
+	{
+		s=line+10;
+		sscanf(s, "%04X_%08X", &a_hi, &a_lo);
+		addr=(((u64)a_hi)<<32)|a_lo;
+		ctx->vm_mousey=addr;
+	}
+
 	return(0);
 }
 
@@ -1116,6 +1187,15 @@ int bjx2_vmputc(BJX2_Context *ctx, int val)
 #endif
 
 	return(0);
+}
+
+int bjx2_vmgetmousepos(BJX2_Context *ctx, int *rmx, int *rmy)
+{
+	if(!ctx->vm_mousex || !ctx->vm_mousey)
+		return(-1);
+	*rmx=BJX2_MemGetDWord(ctx, ctx->vm_mousex);
+	*rmy=BJX2_MemGetDWord(ctx, ctx->vm_mousey);
+	return(1);
 }
 
 int BJX2_VmMsgRxUpdate(BJX2_Context *ctx)

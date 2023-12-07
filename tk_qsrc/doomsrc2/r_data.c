@@ -1605,9 +1605,9 @@ void R_InitSpriteLumps (void)
 }
 
 
-unsigned short	d_8to16table[256];
+extern unsigned short	d_8to16table[256];
 
-int vid_flashblend;
+extern int vid_flashblend;
 
 //
 // R_InitColormaps

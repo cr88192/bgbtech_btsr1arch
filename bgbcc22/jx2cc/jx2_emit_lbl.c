@@ -184,6 +184,40 @@ int BGBCC_JX2_EmitDebugLine(BGBCC_JX2_Context *ctx,
 	return(BGBCC_JX2_EmitLabel(ctx, lbl));
 }
 
+int BGBCC_JX2_LabelIsDebugLineP(BGBCC_JX2_Context *ctx, int lbl)
+{
+	if(lbl<CCXL_LBL_GENLLNBASE)
+		return(0);
+	if(lbl>=(CCXL_LBL_GENLLNBASE+0x10000))
+		return(0);
+	return(1);
+}
+
+int BGBCC_JX2_GetDebugLineForLabel(BGBCC_JX2_Context *ctx,
+	int lblid, char **rlfn, int *rlln)
+{
+	int i, j, k;
+
+	for(i=0; i<ctx->lblllnrov; i++)
+	{
+		k=ctx->dbglln_srcpos[i];
+		if(k&0x8000)
+			continue;
+
+		j=(CCXL_LBL_GENLLNBASE+i);
+		if(j==lblid)
+		{
+			*rlfn=bgbcc_jx2_NameForSrcIdx(k>>16);
+			*rlln=k&65535;
+			return(1);
+		}
+	}
+
+	*rlfn="?";
+	*rlln=0;
+	return(0);
+}
+
 int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 {
 	int h, h2, sec, ofs;

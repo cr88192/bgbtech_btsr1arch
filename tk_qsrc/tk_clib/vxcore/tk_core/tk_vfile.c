@@ -1149,7 +1149,7 @@ int tk_hrename(TKPE_TaskInfo *task,
 int tk_hfopen(TKPE_TaskInfo *task, char *name, char *mode)
 {
 	TK_USERINFO tacc;
-	FILE *fd;
+	TK_FILE *fd;
 	int hdl;
 
 	TK_InitUserInfoForTask(task, &tacc);

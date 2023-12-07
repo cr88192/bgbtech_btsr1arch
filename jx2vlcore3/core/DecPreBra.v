@@ -638,7 +638,7 @@ begin
 //		if(tBraDisp20[32])
 		if(tBraDisp20[24])
 		begin
-			$display("PreBra: Reject Cc20");
+//			$display("PreBra: Reject Cc20");
 			tNonBra		= 1;
 			tPreBra		= 0;
 		end
@@ -651,7 +651,7 @@ begin
 		tPreBra		= 1;
 		if(tBraDisp8B[12])
 		begin
-			$display("PreBra: Reject Cc8B");
+//			$display("PreBra: Reject Cc8B");
 			tNonBra		= 1;
 			tPreBra		= 0;
 		end
@@ -663,7 +663,7 @@ begin
 		tPreBra		= 1;
 		if(tBraDisp11B[16])
 		begin
-			$display("PreBra: Reject Cc11B");
+//			$display("PreBra: Reject Cc11B");
 			tNonBra		= 1;
 			tPreBra		= 0;
 		end

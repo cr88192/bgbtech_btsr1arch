@@ -89,6 +89,8 @@ int __start_early();
 int __start_late();
 int __start_first();
 
+void __cytpe_init(void);
+
 short *__tolow;
 short *__toup;
 

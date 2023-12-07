@@ -15,6 +15,8 @@
 
 // #include <stdarg.h>
 
+#define __TESTKERN__
+
 #if 0
 #ifndef __SIZE_T_DEFINED
 #define __SIZE_T_DEFINED
@@ -42,7 +44,7 @@ typedef unsigned long size_t;
 #endif
 
 
-#if defined(__GNUC__) || defined(_BGBMETA)
+#if defined(__GNUC__) || defined(__gnuc__) || defined(_BGBMETA)
 
 //#ifndef __GNUC_VA_LIST
 //#define __GNUC_VA_LIST

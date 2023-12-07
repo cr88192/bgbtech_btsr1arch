@@ -29,9 +29,10 @@ int TKSH_TryLoad_n(char *img, char **args);
 
 extern volatile u64 __arch_gbr;
 
+#ifndef __TK_CLIB_ONLY__
 extern TKPE_TaskInfo *tk_task_syscall;
 extern u64	tk_vmem_pageglobal;
-
+#endif
 
 TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
@@ -272,6 +273,12 @@ void TKSH_ListDir(char *path, char **args)
 
 int TKSH_Cmds_Cls(char **args)
 {
+	if(tk_get_ttyid())
+	{
+		tk_puts("\x1B[3J");
+		return;
+	}
+
 	tk_con_reset();
 	return(0);
 }
@@ -1522,7 +1529,8 @@ int TKSH_Cmds_StartGui(char **args)
 	TKGDI_EVENT *imsg;
 	TKGHDC hdcScrn, hdcWin;
 	TKGDI_RECT tRect;
-	int i;
+	char tb[256];
+	int i, j, k;
 
 	info=&t_info;
 	info2=&t_info2;
@@ -1537,7 +1545,9 @@ int TKSH_Cmds_StartGui(char **args)
 //	info->biHeight=600;
 	info->biBitCount=16;
 
-	ctx=TKGDI_GetHalContext(TK_FCC_GDI, TK_FCC_GDI);
+//	ctx=TKGDI_GetHalContext(TK_FCC_GDI, TK_FCC_GDI);
+	ctx=TKGDI_GetCurrentGdiContext();
+
 	hdcScrn=ctx->vt->CreateDisplay(ctx, 0, TKGDI_FCC_crea, info);
 
 //	info2->biWidth=640;
@@ -1561,21 +1571,71 @@ int TKSH_Cmds_StartGui(char **args)
 	ctx->vt->ModifyDisplay(ctx, hdcWin, TKGDI_FCC_move, &tRect, NULL);
 
 	ctx->vt->DrawString(ctx, hdcWin, -1, -1,
-		"Console test string", 0, 0);
+		"Console test string\r\n", 0, 0);
+
+	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin);
 
 	while(1)
 	{
 		TKGDI_UpdateWindowStack();
+		TK_YieldCurrentThread();
 
+#if 0
+		while(1)
+		{
+			j=ctx->vt->QueryDisplay(ctx, hdcWin, TKGDI_FCC_poll, NULL, imsg);
+			if(j<1)
+				break;
+			if(imsg->fccMsg==0)
+				break;
+
+			if(imsg->fccMsg==TKGDI_FCC_keyb)
+			{
+				tk_printf("Win keyb %02X\n", imsg->wParm1);
+				tb[0]=imsg->wParm1;
+				tb[1]=0;
+				
+				if(imsg->wParm1=='\r')
+				{
+					tb[1]='\n';
+					tb[2]=0;
+				}
+				
+				ctx->vt->DrawString(ctx, hdcWin, -1, -1, tb, 0, 0);
+			}
+		}
+#endif
+
+#if 0
 		if(!tk_kbhit())
+		{
+			TK_YieldCurrentThread();
 			continue;
+		}
 
 		i=tk_getch();
 		if(i<=0)
+		{
+			TK_YieldCurrentThread();
 			continue;
+		}
 
-		if(i>=0x7F)
-			continue;
+		if(i==0x80)
+		{
+			j=tk_getch();
+			k=(j<<8)|tk_getch();
+		}else
+			if((i==0x7F) || (i==0xFF))
+		{
+			j=tk_getch();
+			k=((i&0x80)<<8)|j;
+		}else
+		{
+			k=((i&0x80)<<8)|(i&0x7F);
+		}
+
+//		if(i>=0x7F)
+//			continue;
 
 		if(i==TK_K_ESC)
 			break;
@@ -1584,13 +1644,16 @@ int TKSH_Cmds_StartGui(char **args)
 		imsg->dev=hdcScrn;
 		imsg->fccMsg=TKGDI_FCC_keyb;
 		imsg->ptMsec=0;
-		imsg->wParm1=i;
+		imsg->wParm1=k;
 		imsg->wParm2=0;
 		imsg->lParm1=0;
 		imsg->ptMsX=0;
 		imsg->ptMsY=0;
 		imsg->ptMsB=0;
 		ctx->vt->QueryDisplay(ctx, hdcScrn, TKGDI_FCC_poll, imsg, NULL);
+#endif
+
+//		tk_dbg_printf("Push keyb %02X\n", imsg->wParm1);
 	}
 
 	info->biWidth=640;
@@ -1917,7 +1980,218 @@ void tk_isr_syscall_rv();
 
 volatile int tksh_runstate;
 
-int TKSH_TryLoad(char *img, char **args0)
+int TKSH_TryLoadA0(char *img, char **args0)
+{
+	byte tb[1024];
+	byte cwd[256];
+	char *args[64];
+	u64 tlsix[8];
+	TK_FILE *fd;
+	char **a1;
+	char *cs, *ct, *cs1, *ct1;
+	char *buf, *ext;
+//	u64 bootgbr;
+	u64	pb_gbr;
+	u64	pb_boot;
+	u64	pb_sysc;
+	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
+	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
+	int sig_is_pe, sig_is_asc, sig_is_elf;
+	int rv, nl, sz, sza, ix;
+	int i, j, k;
+
+//	pimg=NULL;
+	fd=NULL;
+	sig_is_pe=0;
+	sig_is_elf=0;
+	ext=NULL;
+	
+	cs=img+strlen(img);
+	while((cs>img) && (*cs!='.'))
+		cs--;
+	if((cs>img) && (*cs=='.') && ((*(cs-1))!='/'))
+		ext=cs+1;
+
+	TK_Env_GetCwd(cwd, 256);
+	
+	if(args0)
+	{
+		for(i=0; args0[i]; i++)
+			args[i]=args0[i];
+		args[i]=NULL;
+		args[0]=img;
+	}else
+	{
+		args[0]=img;
+		args[1]=NULL;
+	}
+
+//	if(!pimg)
+	if(1)
+	{
+		fd=tk_fopen(img, "rb");
+		
+		if(!fd)
+		{
+			tk_dbg_printf("Failed to open %s\n", img);
+			return(-1);
+		}
+
+		while(fd)
+		{
+			tk_fseek(fd, 0, 0);
+			memset(tb, 0, 1024);
+			tk_fread(tb, 1, 1023, fd);
+
+			plf_lname1=tkfat_getWord(tb);
+			plf_lname2=tkfat_getDWord(tb+128);
+
+			if(plf_lname1!=TCC_HASHBANG)
+				break;
+			if(plf_lname2==FCC_PLFW)
+				break;
+
+			cs=tb+2; ct=tb;
+			while(*cs>=' ')
+				*ct++=*cs++;
+			*ct++=0;
+			
+			tk_fclose(fd);
+			fd=tk_fopen(tb, "rb");
+		}
+
+		plf_fdofs=0;
+		plf_fdsz=0;
+		plf_dnum=0;
+		plf_dofs=0;
+		
+		sig_is_pe=0;
+		if((tb[0]=='M') && (tb[1]=='Z'))
+			sig_is_pe=1;
+		if((tb[0]=='P') && (tb[1]=='E'))
+			sig_is_pe=1;
+
+		if((tb[0]==0x7F) && (tb[1]=='E') && (tb[2]=='L') && (tb[3]=='F'))
+			sig_is_elf=1;
+	}
+
+	if(sig_is_pe || sig_is_elf)
+		return(-2);
+
+	if(fd)
+	{
+		sig_is_asc=0; nl=0;
+		cs=tb;
+		while(*cs)
+		{
+			i=*cs;
+			if(i<' ')
+			{
+				if(i=='\r')
+				{
+					cs++;
+					i=*cs;
+					if(i=='\n')
+						cs++;
+					nl++;
+					continue;
+				}
+				if(i=='\n')
+				{
+					cs++;
+					nl++;
+					continue;
+				}
+				if(i=='\t')
+					{ cs++; continue; }
+	//			if((i=='\r') || (i=='\n') || (i=='\t'))
+	//				{ cs++; continue; }
+				break;
+			}
+			
+			if((i&255)>=127)
+				break;
+			cs++;
+		}
+		
+		if(!(*cs) && (nl>0))
+			sig_is_asc=1;
+		
+		if(sig_is_asc)
+		{
+	//		TKSH_ExecCmdFd(fd);
+			if(plf_fdofs!=0)
+			{
+				tk_fseek(fd, plf_fdofs, 0);
+				sz=plf_fdsz;
+			}else
+			{
+				tk_fseek(fd, 0, 2);
+				sz=tk_ftell(fd);
+				tk_fseek(fd, 0, 0);
+			}
+			buf=tk_malloc(sz+16);
+			memset(buf, 0, sz+8);
+			tk_fread(buf, 1, sz, fd);
+			tk_fclose(fd);
+			fd=NULL;
+
+			TKSH_ExecCmdBuf(buf, ext);
+			tk_free(buf);
+			return(1);
+		}
+	}
+
+	return(-1);
+}
+
+int TK_CreateProcess(
+	char *imgname,
+	char *cmdline,
+	char *envmod,
+	char *cwd,
+	u64 taskflags,
+	TKPE_CreateTaskInfo *info);
+
+int TKSH_TryLoadA(char *img, char **args0)
+{
+	char tbuf[512];
+	byte cwd[256];
+	TKPE_CreateTaskInfo t_tinf;
+	TKPE_CreateTaskInfo *tinf;
+	char *ct;
+	int i, rt;
+	
+	rt=TKSH_TryLoadA(img, args0);
+	if(rt>0)
+	{
+		return(rt);
+	}
+	
+	if(rt==-2)
+	{
+		tinf=&t_tinf;
+		tinf->szInfo=sizeof(TKPE_CreateTaskInfo);
+		tinf->idTty=tk_get_ttyid();
+		tinf->szStack=0;	//use default
+		tinf->flSched=1;
+
+		ct=tbuf;
+		for(i=0; args0[i]; i++)
+		{
+			strcpy(ct, args0[i]);
+			ct+=strlen(ct);
+			*ct++=' ';
+			*ct=0;
+		}
+	
+		TK_Env_GetCwd(cwd, 256);
+	
+		TK_CreateProcess(img, tbuf, NULL, cwd, 0, tinf);
+	}
+}
+
+int TKSH_TryLoadB(char *img, char **args0)
 {
 	byte tb[1024];
 	byte cwd[256];
@@ -2479,9 +2753,21 @@ int TKSH_TryLoad(char *img, char **args0)
 	return(-1);
 }
 
+int TKSH_TryLoad(char *img, char **args0)
+{
+	if(tk_iskernel() || tk_issyscall())
+	{
+		return(TKSH_TryLoadB(img, args0));
+	}else
+	{
+		return(TKSH_TryLoadA(img, args0));
+	}
+}
+
 int TKSH_TryLoad_ext(char *img, char **args)
 {
 	char **path;
+	char *s;
 	char tb[256];
 	int npath, ri;
 	int i;
@@ -2489,6 +2775,12 @@ int TKSH_TryLoad_ext(char *img, char **args)
 	ri=TKSH_TryLoad(img, args);
 	if(ri>0)
 		return(ri);
+	
+	s=img+strlen(img);
+	while((s>img) && (*s!='.') && (*s!='/'))
+		s--;
+	if(*s=='.')
+		return(-1);
 	
 	strcpy(tb, img);
 	strcat(tb, ".exe");
@@ -2538,6 +2830,14 @@ int TKSH_TryLoad_n(char *img, char **args)
 	int npath, ri;
 	int i;
 
+	if(*img=='/')
+	{
+		ri=TKSH_TryLoad_ext(tb, args);
+		if(ri>0)
+			return(ri);
+		return(-1);
+	}
+
 #if 1
 	TK_Env_GetCwd(tb_cwd, 256);
 //	strcpy(tb, a[0]);
@@ -2566,5 +2866,87 @@ int TKSH_TryLoad_n(char *img, char **args)
 	}
 
 	return(ri);
+}
+
+
+int TK_CreateProcessB(
+	TKPE_TaskInfo *task,
+	char *imgname,
+	char *cmdline,
+	char *envmod,
+	char *cwd,
+	u64 taskflags,
+	TKPE_CreateTaskInfo *info)
+{
+	char **path;
+	char **args;
+	char tb[256];
+	char tb_cwd[256];
+	int npath, ri;
+	int i;
+
+	args=tk_rsplit(cmdline);
+
+#if 1
+	if(cwd)
+	{
+		strcpy(tb, cwd);
+		strcat(tb, "/");
+		strcat(tb, imgname);
+		ri=TKSH_TryLoad_ext(tb, args);
+		if(ri>0)
+			return(ri);
+	}
+#endif
+
+	path=NULL;	npath=0;
+	TK_Env_GetPathList(&path, &npath);
+	for(i=0; i<npath; i++)
+	{
+		strcpy(tb, path[i]);
+		strcat(tb, "/");
+		strcat(tb, args[0]);
+//		strcat(tb, ".exe");
+//		ri=TKSH_TryLoad(tb, args);
+		ri=TKSH_TryLoad_ext(tb, args);
+		if(ri>0)
+			return(ri);
+	}
+
+	return(ri);
+}
+
+int TK_CreateProcess(
+	char *imgname,
+	char *cmdline,
+	char *envmod,
+	char *cwd,
+	u64 taskflags,
+	TKPE_CreateTaskInfo *info)
+{
+	TK_SysArg ar[8];
+	void *p;
+	int tid;
+	
+#ifndef __TK_CLIB_ONLY__
+//	if(tk_iskernel())
+	if(tk_iskerneltask())
+	{
+		tid=TK_CreateProcessB(TK_GET_TBR,
+			imgname, cmdline, envmod, cwd, taskflags, info);
+		return(tid);
+	}
+#endif
+
+	tid=0;
+//	p=NULL;
+	ar[0].p=imgname;
+	ar[1].p=cmdline;
+	ar[2].p=envmod;
+	ar[3].p=cwd;
+	ar[4].i=taskflags;
+	ar[5].p=info;
+	tk_syscall(NULL, TK_UMSG_CREATEPROCESS, &tid, ar);
+	return(tid);
 }
 

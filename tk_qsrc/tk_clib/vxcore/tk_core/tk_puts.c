@@ -2,6 +2,8 @@ void __halt(void);
 u64 tk_gettimeus_v(void);
 void tk_sprintf(char *dst, char *str, ...);
 
+_tkgdi_context_t *TKGDI_GetCurrentGdiContext();
+
 byte tk_dbg_iscopy;
 
 void tk_dbg_putc_i(int val)
@@ -71,19 +73,55 @@ int tk_dbg_getch(void)
 	return(P_MMIO_DEBUG_RX);
 }
 
+#ifdef __TK_CLIB_ONLY__
+void tk_con_disable()
+{
+}
+#endif
+
 
 #ifndef __TK_CLIB_ONLY__
+void tk_putc_tty(int val, int tty)
+{
+	char tb[16];
+	_tkgdi_context_t *ctx;
+	TKGHDC hdc;
+
+	if((tty&0xF0000000)==0x10000000)
+	{
+		ctx=TKGDI_GetCurrentGdiContext();
+		hdc=tty&0x00FFFFFF;
+		tb[0]=val;	tb[1]=0;
+		ctx->vt->DrawString(ctx, hdc, -1, -1, tb, 0, 0);
+		return(0);
+	}
+}
+
 void tk_putc_i(int val)
 {
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	ttyid=task->ttyid;
+
 	if(val=='\n')
 	{
 		if(!tk_dbg_iscopy)
 			tk_dbg_putc('\r');
-		tk_con_putc('\r');
+
+		if(ttyid && !tk_issyscall())
+			{ tk_putc_tty('\r', ttyid); }
+		else
+			{ tk_con_putc('\r'); }
 	}
 	if(!tk_dbg_iscopy)
 		tk_dbg_putc(val);
-	tk_con_putc(val);
+
+	if(ttyid && !tk_issyscall())
+		{ tk_putc_tty(val, ttyid); }
+	else
+		{ tk_con_putc(val); }
 }
 #endif
 
@@ -133,8 +171,140 @@ void tk_putc(int val)
 }
 
 #ifndef __TK_CLIB_ONLY__
+int tk_kbpump_tty(
+	TKPE_TaskInfo *task,
+	TKPE_TaskInfoUser *tusr,
+	int ttyid)
+{
+	char tb[16];
+	TKGDI_EVENT t_imsg;
+	_tkgdi_context_t *ctx;
+	TKGDI_EVENT *imsg;
+	TKGHDC hdc;
+	u32 fseq;
+	int i, j, k, dn, kbeg, kend;
+
+	imsg=&t_imsg;
+
+	if((ttyid&0xF0000000)==0x10000000)
+	{
+		ctx=TKGDI_GetCurrentGdiContext();
+		hdc=ttyid&0x00FFFFFF;
+		fseq=0;
+		dn=0;
+
+		while(1)
+		{
+			j=ctx->vt->QueryDisplay(ctx, hdc, TKGDI_FCC_poll, NULL, imsg);
+			if(j<1)
+				break;
+			if(imsg->fccMsg==0)
+				break;
+			if(imsg->fccMsg==TKGDI_FCC_keyb)
+			{
+				k=imsg->wParm1;
+				kbeg=tusr->kbfifo_beg;
+				kend=tusr->kbfifo_end;
+				
+				if(k<1)
+					continue;
+
+				if((k&0x7FFF)>0xFE)
+				{
+					tusr->kbfifo_dat[(kend+0)&255]=0x80;
+					tusr->kbfifo_dat[(kend+1)&255]=(k>>8)&0xFF;
+					tusr->kbfifo_dat[(kend+2)&255]=k&0xFF;
+					tusr->kbfifo_end=kend+3;
+				}else
+					if((k&0x7FFF)>0x7E)
+				{
+					tusr->kbfifo_dat[(kend+0)&255]=((k>>8)&0x80)|0x7F;
+					tusr->kbfifo_dat[(kend+1)&255]=k&0xFF;
+					tusr->kbfifo_end=kend+2;
+				}else
+				{
+					tusr->kbfifo_dat[kend&255]=((k>>8)&0x80)|(k&0x7F);
+					tusr->kbfifo_end=kend+1;
+				}
+				
+//				tk_dbg_printf("tk_kbpump_tty: Pump key: %d\n",
+//					imsg->wParm1);
+			}else
+				if(imsg->fccMsg==TKGDI_FCC_mous)
+			{
+			}else
+			{
+				if(fseq==imsg->evSeqNum)
+					dn=1;
+				if(!fseq)
+					fseq=imsg->evSeqNum;
+				j=ctx->vt->QueryDisplay(ctx, hdc, TKGDI_FCC_poll, imsg, NULL);
+				if(dn)
+					break;
+			}
+		}
+
+//		tb[0]=val;	tb[1]=0;
+//		ctx->vt->DrawString(ctx, hdc, -1, -1, tb, 0, 0);
+		return(0);
+	}
+}
+
+int tk_kbhit_tty(int ttyid)
+{
+	TKPE_TaskInfo *task;
+	TKPE_TaskInfoUser *tusr;
+	int kbeg, kend;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	tusr=(TKPE_TaskInfoUser *)(task->usrptr);
+	tk_kbpump_tty(task, tusr, ttyid);
+	kbeg=tusr->kbfifo_beg;
+	kend=tusr->kbfifo_end;
+
+	return(kbeg!=kend);
+}
+
+int tk_getch_tty(int ttyid)
+{
+	TKPE_TaskInfo *task;
+	TKPE_TaskInfoUser *tusr;
+	int kbeg, kend;
+	int k;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	tusr=(TKPE_TaskInfoUser *)(task->usrptr);
+	tk_kbpump_tty(task, tusr, ttyid);
+	kbeg=tusr->kbfifo_beg;
+	kend=tusr->kbfifo_end;
+	if(kbeg==kend)
+		return(-1);
+	k=tusr->kbfifo_dat[kbeg];
+	tusr->kbfifo_beg=kbeg+1;
+	return(k);
+}
+
+int tk_get_ttyid(void)
+{
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	ttyid=task->ttyid;
+	return(ttyid);
+}
+
 int tk_kbhit_i(void)
 {
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	ttyid=task->ttyid;
+
+	if(ttyid && !tk_issyscall())
+		{ return(tk_kbhit_tty(ttyid)); }
+
 #if 1
 	if(!tk_dbg_iscopy)
 	{
@@ -149,6 +319,15 @@ int tk_kbhit_i(void)
 
 int tk_getch_i(void)
 {
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	ttyid=task->ttyid;
+
+	if(ttyid && !tk_issyscall())
+		{ return(tk_getch_tty(ttyid)); }
+
 #if 1
 	if(!tk_dbg_iscopy)
 	{
@@ -160,7 +339,10 @@ int tk_getch_i(void)
 				return(TKUSB_KbTryGetch());
 			if(tk_ps2kb_kbhit())
 				return(tk_ps2getch());
-			__halt();
+			if(tk_issyscall())
+				break;
+//			__halt();
+			TK_YieldCurrentThread();
 		}
 	}
 #endif
@@ -170,6 +352,9 @@ int tk_getch_i(void)
 			return(tk_ps2trygetch());
 		if(TKUSB_KbHit())
 			return(TKUSB_KbTryGetch());
+		if(tk_issyscall())
+			break;
+		TK_YieldCurrentThread();
 	}
 
 	return(-1);
@@ -187,13 +372,31 @@ int tk_kbhit_v(void)
 	return(i);
 }
 
-int tk_getch_v(void)
+int tk_getch_v0(void)
 {
 	TK_SysArg ar[4];
 	int i;
 	i=0;
 	ar[0].i=0;
 	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
+	return(i);
+}
+
+int tk_getch_v(void)
+{
+	int i;
+	while(1)
+	{
+		if(!tk_kbhit_v())
+		{
+			TK_YieldCurrentThread();
+			continue;
+		}
+		i=tk_getch_v0();
+		if(i>=0)
+			break;
+		TK_YieldCurrentThread();
+	}
 	return(i);
 }
 
@@ -220,7 +423,7 @@ int tk_kbhit(void)
 	}
 	
 	tk_kbhit_fn=tk_kbhit_i;
-	if(!tk_iskernel())
+	if(!tk_iskernel() && !tk_issyscall())
 	{
 		tk_kbhit_fn=tk_kbhit_v;
 	}
@@ -240,7 +443,7 @@ int tk_getch(void)
 	}
 	
 	tk_getch_fn=tk_getch_i;
-	if(!tk_iskernel())
+	if(!tk_iskernel() && !tk_issyscall())
 	{
 		tk_getch_fn=tk_getch_v;
 	}
@@ -384,12 +587,43 @@ int tk_putsn_check_nonascii(char *msg, int cnt)
 	return(0);
 }
 
+void tk_puts_tty(char *msg, int tty)
+{
+	_tkgdi_context_t *ctx;
+	TKGHDC hdc;
+
+	if((tty&0xF0000000)==0x10000000)
+	{
+		ctx=TKGDI_GetCurrentGdiContext();
+		hdc=tty&0x00FFFFFF;
+		ctx->vt->DrawString(ctx, hdc, -1, -1, msg, 0, 0);
+		return;
+	}
+}
+
 void tk_puts_n(char *msg, int n)
 {
+	TKPE_TaskInfo *task;
+	int ttyid;
+
 	char *s;
-	int i;
+	int i, nonasc;
+
+	nonasc=tk_putsn_check_nonascii(msg, n);
+
+	if(tk_iskernel() && !nonasc)
+	{
+		task=(TKPE_TaskInfo *)TK_GET_TBR;
+		ttyid=task->ttyid;
+		
+		if(ttyid && !tk_issyscall())
+		{
+			tk_puts_tty(msg, ttyid);
+			return;
+		}
+	}
 	
-	if(tk_iskernel() || tk_putsn_check_nonascii(msg, n))
+	if(tk_iskernel() || nonasc)
 	{
 		s=msg;
 		while(n--)
@@ -421,7 +655,7 @@ void tk_dbg_puts_n(char *msg, int n)
 	char *s;
 	int i;
 	
-	if(tk_iskernel())
+	if(tk_iskernel() || tk_issyscall())
 	{
 		s=msg;
 		while(n--)
@@ -452,7 +686,10 @@ void tk_gets(char *buf)
 	{
 		i=tk_getch();
 		if(i<=0)
+		{
+			TK_YieldCurrentThread();
 			continue;
+		}
 		
 //		if(i>=0x80)
 //			continue;
@@ -743,6 +980,7 @@ void tk_print_float(double val)
 }
 #endif
 
+#if 1
 // void tk_printf(char *str, ...)
 void tk_vprintf(char *str, va_list lst)
 {
@@ -879,7 +1117,9 @@ void tk_printf(char *str, ...)
 	tk_vprintf(str, lst);
 	va_end(lst);
 }
+#endif
 
+#if 0
 // void tk_sprintf(char *buf, char *str, ...)
 void tk_vsprintf(char *buf, char *str, va_list lst)
 {
@@ -979,6 +1219,7 @@ void tk_vsprintf(char *buf, char *str, va_list lst)
 	*ct=0;
 //	va_end(lst);
 }
+#endif
 
 void tk_sprintf(char *buf, char *str, ...)
 {
@@ -1037,7 +1278,7 @@ char *tk_rstrdup(char *s)
 	return(t);
 }
 
-char *tk_rsplit_sep(char *str, int sep)
+char **tk_rsplit_sep(char *str, int sep)
 {
 	char tb[64];
 	char *ta[32];
@@ -1115,7 +1356,7 @@ char *tk_rsplit_sep(char *str, int sep)
 	return(ta2);
 }
 
-char *tk_rsplit(char *str)
+char **tk_rsplit(char *str)
 {
 	return(tk_rsplit_sep(str, ' '));
 }

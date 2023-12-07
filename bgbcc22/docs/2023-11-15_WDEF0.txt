@@ -36,13 +36,16 @@ Where, fmt may be one of:
 * bmp32: BMP with 32 bits/pixel (BGRA)
 * bmp32a: BMPA with 32 bits/pixel (BGRA)
 
+* bmp_cram8: BMP with 8-bit CRAM encoding.
+* bmp_cram8a: BMPA with 8-bit CRAM encoding.
+
 * qoi: QOI Format
 * qoli: QOLI (QOI with inline LZ compression)
 * lcif: LCIF Format
 
 BMPA is a modified BMP differing mostly in that the fields and image data will be aligned. The headers will have a native 32-bit alignment, whereas the image data will have a 64-bit alignment. The magic will be changed from 'BM' to ' BMP', but apart from the alignment change the format is basically the same.
 
-The 256 color palette will include a designated transparent color, where any pixels with an alpha less than 128 will be assumed transparent, and any with more than 128 will be opaque.
+The 256 color palette will include a designated transparent color (encoded in the palette with an alpha of 0). During encoding, any pixels with an alpha less than 128 will be assumed transparent, and any with more than 128 will be opaque.
 
 For 16 color and 4 color, the Transparent versions will be separate and sacrifice 1 color for transparency. For 4-color, this will only have a single shade of gray; for 16 color, the Hi-Magenta (Color 13) will be replaced with a transparent color.
 
@@ -56,3 +59,26 @@ For QOI and QOLI, a 'q' parameter will speficy a lossy quality level (0=lossless
 For LCIF, the 'q' parameter will speficy a lossy quality level (0=best, 7=worst). The default will be best.
 
 Both QOI and LCIF will include an full Alpha channel.
+
+
+=== BMP: 8-bit CRAM ===
+
+This will encode the image as a stream of bytes, using a variant of the CRAM (MS Video 1) encoding.
+
+The first two bytes from each encoded block may be interpreted as a 16-bit word:
+* 0000..7FFF aa bb: 2-color block.
+** Two color endpoints follow the 16-bit word.
+** The word represents a 4x4x1 color-cell, selecting each pixel.
+** If a bit is set, use color aa, else bb.
+** Bit ordering is LSB first.
+* 80cc..83cc: Flat color block (only contains 1 color).
+** Only 80cc will be used in this variant.
+* 84nn..87nn: Skip Blocks, Unused
+* 88zz..8Fzz: Flat/Reserved, Unused.
+* 9000..FFFF aa bb cc dd ee ff gg hh: 8-color block (Unused here).
+** Each 2x2x1 sub-block selects between colors in a color pair.
+*** ef gh
+*** ab cd
+
+Note that alpha masking may be encoded in this format by using a designated transparent color. In these blocks, the selection will be between transparent and another non-transparent color (the average of the other non-transparent colors in the block).
+

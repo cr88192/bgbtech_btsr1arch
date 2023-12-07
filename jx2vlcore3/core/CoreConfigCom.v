@@ -10,7 +10,7 @@
 
 `ifndef jx2_xc7s50
 
-// `define jx2_enable_riscv		//Enable RISC-V Decoder
+`define jx2_enable_riscv		//Enable RISC-V Decoder
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
@@ -85,7 +85,7 @@
 // `define jx2_use_imm_vec4h		//Enable SIMD Immediates
 // `define jx2_use_imm_shuffle		//Enable SIMD Shuffle+Op
 
-// `define	jx2_fpu_enable_fdiv		//enable FDIV
+`define	jx2_fpu_enable_fdiv		//enable FDIV
 
 // `define	jx2_alu_wx				//Enable Wide-ALU
 
@@ -133,7 +133,8 @@
 
 `ifndef jx2_xc7s50
 `define jx2_alu_slomuldiv			//Enable Slow MUL/DIV Unit
-// `define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
+`define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
+`define jx2_alu_slomuldiv_fdivs		//Enable FDIV.S via Slow MUL/DIV Unit
 `endif
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
@@ -149,6 +150,8 @@
 `define jx2_shlln_shadq			//Route SHLLn through SHAD.Q
 
 `define jx2_enable_gsv			//Enable GSV (Packed Integer) stuff.
+
+`define jx2_enable_minmax		//MIN / MAX instructions.
 
 `ifndef jx2_xc7s50
 // `define jx2_enable_aluptr		//Enable ALU Pointer Ops (ALUPTR)
@@ -315,6 +318,11 @@
 `ifndef jx2_alu_jcmp
 `define jx2_alu_jcmp		//Enable Jump-Compare is RISC-V is Enabled
 `endif
+
+`ifndef jx2_alu_jcmpz
+`define jx2_alu_jcmpz		//Enable Jump-Compare Zero
+`endif
+
 
 `endif
 

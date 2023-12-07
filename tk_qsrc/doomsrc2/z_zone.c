@@ -61,7 +61,8 @@ memzone_t*	mainzone;
 
 void __setmemtrap(void *ptr, int mode);
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#ifndef __TESTKERN__
 void __setmemtrap(void *ptr, int mode)
 {
 	/* NO-OP */

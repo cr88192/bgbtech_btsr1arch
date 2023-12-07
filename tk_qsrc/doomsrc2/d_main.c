@@ -366,7 +366,7 @@ double d_snd_acctime;
 
 int		gfxdrv_kill;
 
-int i_sound_init;
+extern int i_sound_init;
 
 void D_UpdateSound (void)
 {

@@ -43,6 +43,14 @@ int main(int argc, char *argv[])
 
 //	tk_printf("TKSH 4\n");
 
+	TK_SpawnShellTask(task, 0);
+
+	while(1)
+	{
+		TK_YieldCurrentThread();
+	}
+
+#if 0
 	while(1)
 	{
 		TK_Env_GetCwd(tb_cwd, 256);
@@ -61,4 +69,5 @@ int main(int argc, char *argv[])
 	}
 
 	puts("Loop Terminate\n");
+#endif
 }
