@@ -4700,14 +4700,14 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 		return(BGBCC_JX2_TryEmitOpRegImmReg(ctx, nmid, reg, imm, reg));
 	}
 
-	if(	(nmid==BGBCC_SH_NMID_SHAD) ||
+	if(	((nmid==BGBCC_SH_NMID_SHAD) ||
 		(nmid==BGBCC_SH_NMID_SHLD) ||
 		(nmid==BGBCC_SH_NMID_SHADQ) ||
 		(nmid==BGBCC_SH_NMID_SHLDQ) ||
 		(nmid==BGBCC_SH_NMID_SHAR) ||
 		(nmid==BGBCC_SH_NMID_SHLR) ||
 		(nmid==BGBCC_SH_NMID_SHARQ) ||
-		(nmid==BGBCC_SH_NMID_SHLRQ) &&
+		(nmid==BGBCC_SH_NMID_SHLRQ)) &&
 		ctx->is_fixed32)
 	{
 		return(BGBCC_JX2_TryEmitOpRegImmReg(ctx, nmid, reg, imm, reg));

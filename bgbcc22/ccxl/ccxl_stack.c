@@ -2642,21 +2642,26 @@ ccxl_status BGBCC_CCXL_StackCastBool(BGBCC_TransState *ctx)
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_CASTBOOL);
 
-	return(BGBCC_CCXL_StackCastSig(ctx, "b"));
+	return(BGBCC_CCXL_StackCastSigI(ctx, "b"));
 //	BGBCC_CCXL_StubError(ctx);
 }
 
 ccxl_status BGBCC_CCXL_StackCastSig(BGBCC_TransState *ctx, char *sig)
 {
-	ccxl_register sreg, sreg2, dreg;
-	ccxl_type sty, dty;
-	s64 li;
-	int i;
-
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "CastSig", __FILE__, __LINE__);
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_CASTSIG);
 	BGBCC_CCXLR3_EmitArgSigstr(ctx, sig);
+
+	return(BGBCC_CCXL_StackCastSigI(ctx, sig));
+}
+
+ccxl_status BGBCC_CCXL_StackCastSigI(BGBCC_TransState *ctx, char *sig)
+{
+	ccxl_register sreg, sreg2, dreg;
+	ccxl_type sty, dty;
+	s64 li;
+	int i;
 
 	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);

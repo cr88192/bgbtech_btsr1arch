@@ -1481,6 +1481,7 @@ ccxl_status BGBCC_CCXL_StackRetV(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_StackRet(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_StackCastBool(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_StackCastSig(BGBCC_TransState *ctx, char *sig);
+ccxl_status BGBCC_CCXL_StackCastSigI(BGBCC_TransState *ctx, char *sig);
 ccxl_status BGBCC_CCXL_StackLoadSlotStore(BGBCC_TransState *ctx, char *name, char *dname);
 ccxl_status BGBCC_CCXL_StackLoadSlotStoreI(BGBCC_TransState *ctx, char *name, char *dname);
 ccxl_status BGBCC_CCXL_StackLoadSlotAddrStore(BGBCC_TransState *ctx, char *name, char *dname);

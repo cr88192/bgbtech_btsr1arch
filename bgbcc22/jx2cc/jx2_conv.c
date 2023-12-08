@@ -672,6 +672,10 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			if(!sctx->is_addr_x32)
 				BGBCC_CCXL_TagWarn(ctx, CCXL_TERR_CONV_PTRRANGELOSS);
 
+			return(BGBCC_JX2C_EmitOpNmidVRegVReg(ctx, sctx, dtype,
+				BGBCC_SH_NMID_EXTSL, dreg, sreg));
+
+#if 0
 			nm1=BGBCC_SH_NMID_EXTSL;
 			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
 				BGBCC_SH_REGCLS_QGR);
@@ -683,6 +687,7 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tr0);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
 			return(1);
+#endif
 		}
 
 		if(BGBCC_CCXL_TypeBitIntP(ctx, stype))
@@ -821,6 +826,10 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			BGBCC_CCXL_TypeArrayP(ctx, stype)) &&
 			sctx->is_addr64)
 		{
+			return(BGBCC_JX2C_EmitOpNmidVRegVReg(ctx, sctx, dtype,
+				BGBCC_SH_NMID_EXTUL, dreg, sreg));
+
+#if 0
 			nm1=BGBCC_SH_NMID_EXTUL;
 			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 
 				BGBCC_SH_REGCLS_QGR);
@@ -831,6 +840,7 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tr0);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
 			return(1);
+#endif
 		}
 
 		if(BGBCC_CCXL_TypeBitIntP(ctx, stype))
