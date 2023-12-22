@@ -1042,8 +1042,8 @@ begin
 		(regInSr[29] && regInSr[30]) &&
 		(tRegInSrL[29] && tRegInSrL[30]))
 	begin
-		if(tTlbMissInh)
-			$display("L1D$ Clear TLB Inhibit");
+//		if(tTlbMissInh)
+//			$display("L1D$ Clear TLB Inhibit");
 		tNxtTlbMissInh	= 0;
 //		tNxtSkipTlb		= 1;
 	end
@@ -1058,6 +1058,8 @@ begin
 	if(!tRegInMmcr[0])
 		tNxtSkipTlb = 1;
 
+`ifdef jx2_debug_isr
+
 `ifdef jx2_enable_vaddr48
 	if(tNxtSkipTlb && (regInAddr[47:28]!=0) &&
 //		(regInAddr[47:44]!=4'hF) &&
@@ -1069,6 +1071,8 @@ begin
 		$display("L1 D$: Next Skip TLB and Addr is Virt, A=%X",
 			regInAddr);
 	end
+`endif
+
 `endif
 
 `ifndef def_true
@@ -1105,14 +1109,18 @@ begin
 
 	if(tDoFlush && !tDoFlushL)
 	begin
+`ifdef jx2_debug_isr
 		$display("L1 D$ DoFlush rov=%X", tFlushRov);
+`endif
 		tNxtFlushRov = tFlushRov + 1;
 		tNxtFlushRng = tRegRng1;
 	end
 
 	if(tDoFlushTlb && !tDoFlushTlbL)
 	begin
+`ifdef jx2_debug_isr
 		$display("L1 D$ DoFlushTlb rov=%X", tFlushRovTlb);
+`endif
 		tNxtFlushRovTlb = tFlushRovTlb + 1;
 	end
 
@@ -2444,7 +2452,9 @@ begin
 			begin
 				if(memOpmIn[2])
 				begin
+`ifdef jx2_debug_isr
 					$display("L1D$ Set TLB Inhibit A");
+`endif
 					tNxtTlbMissInh2 = 1;
 				end
 				else
@@ -2459,16 +2469,22 @@ begin
 		if(memAddrIn[4])
 			$display("L1D$: Load Even/Odd Mismatch A");
 		
+`ifdef jx2_debug_isr
 		if(tReqSeqIdx!=tReqMissIxA)
 			$display("L1D$: In!=Req IxA, %X %X",
 				tReqSeqIdx, tReqMissIxA);
+`endif
+`ifdef jx2_debug_isr
 		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
 				(tReqSeqVa[43:24]==0))
 			$display("L1D$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
+`endif
+`ifdef jx2_debug_isr
 		if(tReqSeqVa[43:1]!=tReqMissAxA[43:1])
 			$display("L1D$: In!=Req A, %X %X",
 				tReqMissAxA[43:1], tReqSeqVa[43:0]);
+`endif
 	end
 
 	if(memRingIsRespOkLdB && !tMemRingSkipResp && !tResetL)
@@ -2522,7 +2538,9 @@ begin
 			begin
 				if(memOpmIn[2])
 				begin
+`ifdef jx2_debug_isr
 					$display("L1D$ Set TLB Inhibit B");
+`endif
 					tNxtTlbMissInh2 = 1;
 				end
 				else
@@ -2537,16 +2555,22 @@ begin
 		if(!memAddrIn[4])
 			$display("L1D$: Load Even/Odd Mismatch B");
 
+`ifdef jx2_debug_isr
 		if(tReqSeqIdx!=tReqMissIxB)
 			$display("L1D$: In!=Req IxB, %X %X",
 				tReqSeqIdx, tReqMissIxB);
+`endif
+`ifdef jx2_debug_isr
 		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
 				(tReqSeqVa[43:24]==0))
 			$display("L1D$: Virt!=Phys B, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
+`endif
+`ifdef jx2_debug_isr
 		if(tReqSeqVa[43:1]!=tReqMissAxB[43:1])
 			$display("L1D$: In!=Req B, %X %X",
 				tReqMissAxB[43:1], tReqSeqVa[43:0]);
+`endif
 	end
 
 `ifdef def_true
@@ -2683,12 +2707,16 @@ begin
 `ifdef def_true
 	if(tMemReqStA && !tMemReqLdA && !tReqDoMissA)
 	begin
+`ifdef jx2_debug_isr
 		$display("L1D$: Store Without Load A");
+`endif
 		tReqDoMissA = 1;
 	end
 	if(tMemReqStB && !tMemReqLdB && !tReqDoMissB)
 	begin
+`ifdef jx2_debug_isr
 		$display("L1D$: Store Without Load B");
+`endif
 		tReqDoMissB = 1;
 	end
 
@@ -2726,12 +2754,14 @@ begin
 		begin
 //			$display("L1 D$ MMIO Req A=%X", tReqAddr);
 		
+`ifdef jx2_debug_isr
 //			if(tReqAddr[27:16]==12'h001)
 			if(tReqAddr[31:28]!=4'hF)
 			begin
 				$display("L1 D$ MMIO Req Dbg A=%X IsMMIO=%d IsCCMD=%d", 
 					tReqAddr, tReqIsMmio, tReqIsCcmd);
 			end
+`endif
 		
 			tNxtMemSeqRov	= tMemSeqRov + 1;
 			tMemSeqReq		= { unitNodeId, 4'b1000, tMemSeqRov };
@@ -2875,7 +2905,11 @@ begin
 
 //				if(tReqAxA[43:24]!=0)
 				if(tReqAddrIsVirt)
+				begin
+`ifdef jx2_debug_isr
 					$display("L1 D$: Send LDA Req Abs A=%X", tReqAxA);
+`endif
+				end
 //				else
 
 //				if(!tReqAddrIsVirt)
@@ -2942,8 +2976,13 @@ begin
 
 //				if(tReqAxB[43:24]!=0)
 				if(tReqAddrIsVirt)
+				begin
+`ifdef jx2_debug_isr
 					$display("L1 D$: Send LDB Req Abs A=%X", tReqAxB);
+`endif
+				end
 //				else
+
 
 //				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
@@ -2994,7 +3033,9 @@ begin
 	if((tReqDoMissA || tReqDoMissB) && !tRegOutHold &&
 		!(tReqIsMmio || tReqIsCcmd))
 	begin
+`ifdef jx2_debug_isr
 		$display("DoMiss but no Hold %d %d", tReqDoMissA, tReqDoMissB);
+`endif
 //		tRegOutHold = 1;
 	end
 

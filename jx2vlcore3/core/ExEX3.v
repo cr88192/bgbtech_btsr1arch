@@ -419,13 +419,14 @@ begin
 			$display("LOAD(3): R=%X V=%X", regIdRm, memDataIn);
 `endif
 
+`ifndef def_true
 			if(regIdRm[6])
 //				tDoOutDfl	= 0;
 				tDoOutHeld	= 0;
 
 //			if(regIdRm[6:5]==2'b11)
 //				tDoOutDfl	= 0;
-
+`endif
 		end
 `endif
 
@@ -547,8 +548,8 @@ begin
 //			tRegHeld		= 1;
 			tDoOutHeld		= 1;
 
-			if(regIdRm[6])
-				tDoOutHeld	= 0;
+//			if(regIdRm[6])
+//				tDoOutHeld	= 0;
 			
 //			$display("(A): Rs=%X Rt=%X Rn=%X Ixt=%X",
 //				regValRs, regValRt, regFpuV4GRn, opUIxt);

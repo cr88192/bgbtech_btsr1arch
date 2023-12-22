@@ -687,14 +687,18 @@ begin
 //		regNxtKrrRngDs	= tNxtRngN[11:4];
 //		regNxtKrrRngDs	= tNxtRngN[7:0];
 		regNxtKrrRngDs	= tNxtRngN[7:0] + tNxtRngN[15:8];
+`ifdef jx2_debug_isr
 		$display("KrrRngDs %X %X", regKrrRngDs, regNxtKrrRngDs);
+`endif
 	end
 	if(dcInOpm==UMEM_OPM_FLUSHIS)
 	begin
 //		regNxtKrrRngIs	= tNxtRngN[11:4];
 //		regNxtKrrRngIs	= tNxtRngN[7:0];
 		regNxtKrrRngIs	= tNxtRngN[7:0] + tNxtRngN[15:8];
+`ifdef jx2_debug_isr
 		$display("KrrRngIs %X %X", regKrrRngIs, regNxtKrrRngIs);
+`endif
 	end
 
 

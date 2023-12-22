@@ -4698,6 +4698,33 @@ int BGBCC_JX2C_EmitSyncRegisters(
 	return(0);
 }
 
+int BGBCC_JX2C_EmitSyncDirtyRegisters(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	int i;
+
+	BGBCC_JX2C_EmitSyncFpRegisters(ctx, sctx);
+
+	/* value in register? */
+//	for(i=0; i<5; i++)
+//	for(i=0; i<bgbcc_jx2_maxreg; i++)
+//	for(i=0; i<sctx->maxreg_gpr; i++)
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
+	{
+		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 1);
+
+#if 0
+		sctx->regalc_utcnt[i]=0;
+		sctx->regalc_live&=~(1ULL<<i);
+		sctx->regalc_noval&=~(1ULL<<i);
+		sctx->regalc_pair&=~(1ULL<<i);
+#endif
+	}
+
+	return(0);
+}
+
 int BGBCC_JX2C_EmitSyncLeafRegisters(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx)

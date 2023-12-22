@@ -1042,6 +1042,9 @@ begin
 //					tDoHoldCyc	= 5;
 					tDoHoldCyc	= 6;
 					tRegValGRn	= tRegAddVal;
+					tRegValGRnA	= tRegAddVal;
+					tRegValGRnB	= tRegAddVal;
+
 `ifdef jx2_fpu_longdbl
 					tExCmdVecW	= tRegIdIxtL[5];
 					tRegValGRnA	= tRegAddVal;
@@ -1053,6 +1056,9 @@ begin
 //					tDoHoldCyc	= 5;
 					tDoHoldCyc	= 6;
 					tRegValGRn	= tRegAddVal;
+					tRegValGRnA	= tRegAddVal;
+					tRegValGRnB	= tRegAddVal;
+
 `ifdef jx2_fpu_longdbl
 					tExCmdVecW	= tRegIdIxtL[5];
 					tRegValGRnA	= tRegAddVal;
@@ -1064,6 +1070,9 @@ begin
 //					tDoHoldCyc	= 5;
 					tDoHoldCyc	= 6;
 					tRegValGRn	= tRegMulVal;
+					tRegValGRnA	= tRegMulVal;
+					tRegValGRnB	= tRegMulVal;
+
 `ifdef jx2_fpu_longdbl
 					tExCmdVecW	= tRegIdIxtL[5];
 					tRegValGRnA	= tRegMulVal;
@@ -1157,6 +1166,9 @@ begin
 					end
 `endif
 
+					tRegValGRnA	= tRegValGRn;
+					tRegValGRnB	= tRegValGRn;
+
 				end
 // `endif
 `endif
@@ -1213,9 +1225,11 @@ begin
 					end
 					else
 					begin
+`ifndef def_true
 						if(!tExCmdVecW)
 //							tDoHoldCyc	= 8;
 							tDoHoldCyc	= 9;
+`endif
 					end
 				end
 				4'h6: begin
@@ -1261,9 +1275,11 @@ begin
 					end
 					else
 					begin
+`ifndef def_true
 						if(!tExCmdVecW)
 //							tDoHoldCyc	= 8;
 							tDoHoldCyc	= 9;
+`endif
 					end
 				end
 				4'h7: begin
@@ -1309,9 +1325,11 @@ begin
 					end
 					else
 					begin
+`ifndef def_true
 						if(!tExCmdVecW)
 //							tDoHoldCyc	= 8;
 							tDoHoldCyc	= 9;
+`endif
 					end
 				end
 
@@ -1380,6 +1398,9 @@ begin
 //					tRegValGRn	= tRegValRcpL2;
 					tRegValGRn	= { tRegValRsL[63], tRegValRcpL2[62:0] };
 //					tRegValGRn	= tRegValRcpL6;
+
+					tRegValGRnA	= tRegValGRn;
+					tRegValGRnB	= tRegValGRn;
 				end
 `endif
 	
@@ -1497,8 +1518,8 @@ begin
 		end
 	endcase
 
-// `ifndef def_true
-`ifdef def_true
+`ifndef def_true
+// `ifdef def_true
 	if(!tExCmdVecW)
 	begin
 		tRegValGRnB = tRegValGRn;

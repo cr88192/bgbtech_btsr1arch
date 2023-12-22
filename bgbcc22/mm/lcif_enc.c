@@ -1272,6 +1272,8 @@ int LCIF_EncodeQuantizeColorPlane(
 	l2bi1=0;
 	l1bi0=0;
 	l1bi1=0;
+	bi0=0;
+	bi1=0;
 	
 	for(y=0; y<ys; y++)
 	{

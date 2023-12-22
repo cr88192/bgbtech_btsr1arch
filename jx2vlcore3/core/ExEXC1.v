@@ -312,6 +312,7 @@ begin
 			tDoOutDfl		= 1;
 		end
 `endif
+
 		JX2_UCMD_MOV_IR: begin
 			tValOutDfl		= regValRt;
 			tDoOutDfl		= 1;

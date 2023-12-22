@@ -886,7 +886,7 @@ begin
 //		JX2_GR_DLR:	tValRvA=regInDlr;
 		JX2_GR_DHR:	tValRvA=gprRegDhr;
 //		JX2_GR_DHR:	tValRvA=regInDhr;
-//		JX2_GR_SP:	tValRvA=gprRegSp;		//Disabled from this lane
+		JX2_GR_SP:	tValRvA=gprRegSp;		//Disabled from this lane
 //		JX2_GR_SP:	tValRvA=regInSp;
 
 //		JX2_GR_SSP:	tValRvA=regValSsp;
@@ -935,9 +935,9 @@ begin
 		JX2_GR_GPR_Z:	tValRxA=tValRxA0;
 		JX2_GR_DLR:	tValRxA=gprRegDlr;
 //		JX2_GR_DLR:	tValRxA=regInDlr;
-//		JX2_GR_DHR:	tValRxA=gprRegDhr;		//Disabled from this lane
+		JX2_GR_DHR:	tValRxA=gprRegDhr;		//Disabled from this lane
 //		JX2_GR_DHR:	tValRxA=regInDhr;
-//		JX2_GR_SP:	tValRxA=gprRegSp;		//Disabled from this lane
+		JX2_GR_SP:	tValRxA=gprRegSp;		//Disabled from this lane
 //		JX2_GR_SP:	tValRxA=regInSp;
 
 //		JX2_GR_SSP:	tValRxA=regValSsp;
@@ -990,7 +990,7 @@ begin
 //		JX2_GR_DLR:	tValRyA=regInDlr;
 		JX2_GR_DHR:	tValRyA=gprRegDhr;
 //		JX2_GR_DHR:	tValRyA=regInDhr;
-//		JX2_GR_SP:	tValRyA=gprRegSp;		//Disabled from this lane
+		JX2_GR_SP:	tValRyA=gprRegSp;		//Disabled from this lane
 //		JX2_GR_SP:	tValRyA=regInSp;
 
 //		JX2_GR_SSP:	tValRyA=regValSsp;

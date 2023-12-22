@@ -2273,10 +2273,29 @@ int BGBCC_JX2_CheckOps32ValidWexSuffixFl(
 		{
 			if((opw1&0x000C)==0x0008)
 			{
-				/* Disallow in 3-wide bundles. */
+				/* Disallow in 3-wide bundles, or if 2-wide. */
 				if((sctx->use_wexmd==1) || (fl&1))
 					return(0);
 			}
+
+			if((opw1&0x000E)==0x0006)
+			{
+				return(0);
+			}
+		}
+
+		if((opw2&0xF000)==0xE000)
+		{
+			if((opw1&0x000C)>=0x0004)
+			{
+				/* Disallow BRxx */
+				return(0);
+			}
+			
+			if(opw1&0x0800)
+				return(0);
+			
+			return(1);
 		}
 
 
@@ -2331,9 +2350,27 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix3W(
 			return(0);
 		}
 
+		if((opw2&0xF00F)==0x5001)
+		{
+			/* Disallow PMULx.W in Lane 3 */
+			return(0);
+		}
+
 		if((opw2&0xF00E)==0x5004)
 		{
 			/* Disallow shift in Lane 3 */
+			return(0);
+		}
+
+		if((opw2&0xF00E)==0x5006)
+		{
+			/* Disallow PMULx.W in Lane 3 */
+			return(0);
+		}
+
+		if((opw2&0xF00E)==0x500E)
+		{
+			/* Disallow MULx.W in Lane 3 */
 			return(0);
 		}
 
@@ -2356,6 +2393,14 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix3W(
 		{
 			/* Disallow shift in Lane 3 */
 			return(0);
+		}
+
+		if((opw2&0xF000)==0xD000)
+		{
+			if((opw1&0x000E)==0x0002)
+			{
+				return(0);
+			}
 		}
 	}
 
@@ -2467,7 +2512,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix2B(
 int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	BGBCC_JX2_Context *sctx, int opw1, int opw2)
 {
-	int ret, rn;
+	int ret, rn, rm, ro;
 
 	if(BGBCC_JX2_CheckOps32Immovable(sctx, opw1, opw2)!=0)
 		return(0);
@@ -2478,6 +2523,14 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	rn=(opw1>>4)&15;
 	if(opw2&0x0400)
 		rn|=16;
+
+	rm=(opw1>>0)&15;
+	if(opw2&0x0200)
+		rm|=16;
+
+	ro=(opw2>>4)&15;
+	if(opw2&0x0100)
+		ro|=16;
 
 	if(sctx->is_fixed32&2)
 	{
@@ -2491,6 +2544,12 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 		/* Disallow Rn to be DLR, DHR, or SP, in WEX'ed ops */
 		return(0);
 	}
+	
+//	if(rm==15)
+//	{
+//		/* Disallow Rn to be SP as source, in WEX'ed ops */
+//		return(0);
+//	}
 
 	if(!(sctx->is_fixed32&2))
 	{
@@ -2525,10 +2584,13 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	{
 //		return(0);
 
+		if(rm==15)
+			return(0);
+
 		ret=0;
 		switch((opw2>>12)&15)
 		{
-		case 0x0:
+		case 0x0:	/* F0nm-0eoZ */
 			if(	((opw2&0xF80F)==0x0804) &&
 				((opw1&0x000E)!=0x0000) &&
 				((opw2&0x00E0)!=0x0000) &&
@@ -2536,11 +2598,13 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			{
 				/* Allow LEA.B */
 				ret=1;
+				if(ro==15)
+					ret=0;
 				break;
 			}
 			ret=0;
 			break;
-		case 0x1:
+		case 0x1:	/* F0nm-1eoZ */
 			switch(opw2&15)
 			{
 			case 0x0:	case 0x1:
@@ -2549,13 +2613,15 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 				if(opw2&0x0800)
 					{ ret=0; break; }
 				ret=1;
+				if(ro==15)
+					ret=0;
 				break;
 
-			case 0x8:
+			case 0x8:	/* F0nm-1eZ8 */
 				ret=0;
 				break;
 
-			case 0x9:
+			case 0x9:	/* F0nm-1eZ9 */
 				switch((opw2>>4)&15)
 				{
 				case 0x0:	case 0x1:
@@ -2574,7 +2640,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 					break;
 				}
 				break;
-			case 0xA:
+			case 0xA:	/* F0nm-1eZA */
 				switch((opw2>>4)&15)
 				{
 				case 0x8:	case 0xA:
@@ -2585,7 +2651,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 				}
 				break;
 			
-			case 0xC:
+			case 0xC:	/* F0nm-1eZC */
 				switch((opw2>>4)&15)
 				{
 				case 0x0:	case 0x1:
@@ -2603,20 +2669,34 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 				break;
 			}
 			break;
-		case 0x2:
+		case 0x2:	/* F0nm-2eoZ */
 			switch(opw2&15)
 			{
 			case 0x0:	case 0x1:
 			case 0x8:	case 0x9:
 				ret=1;
+				if(ro==15)
+					ret=0;
 				break;
 			default:
 				break;
 			}
 			break;
-		case 0x3:
+		case 0x3:	/* F0nm-3eoZ */
+			switch(opw2&15)
+			{
+			case 0x0:	case 0x1:
+			case 0x2:	case 0x3:
+			case 0x4:	case 0x5:
+			case 0x6:	case 0x7:
+				ret=0;
+				break;
+			default:
+				ret=0;
+				break;
+			}
 			break;
-		case 0x4:
+		case 0x4:	/* F0nm-4eoZ */
 			switch(opw2&15)
 			{
 			case 0x0:	case 0x4:
@@ -2627,7 +2707,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 				break;
 			}
 			break;
-		case 0x5:
+		case 0x5:	/* F0nm-5eoZ */
 			switch(opw2&15)
 			{
 			case 0x0:
@@ -2637,21 +2717,34 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			case 0xC:	case 0xD:
 			case 0xE:	case 0xF:
 				ret=1;
+				if(ro==15)
+					ret=0;
 				break;
 			default:
 				break;
 			}
 			break;
 
-		case 0x6:
-			ret=0;
+		case 0x6:	/* F0nm-6eoZ */
+			ret=0;	/* Nothing here valid prefix. */
 			break;
 
-		case 0x7:
-			ret=0;
+		case 0x7:	/* F0nm-7eoZ */
+			switch(opw2&15)
+			{
+			case 0x0:	case 0x1:
+			case 0x2:	case 0x3:
+			case 0x4:	case 0x5:
+			case 0x6:	case 0x7:
+				ret=0;
+				break;
+			default:
+				ret=0;
+				break;
+			}
 			break;
 
-		case 0x8:
+		case 0x8:	/* F0nm-8eoZ */
 			ret=0;
 			break;
 
@@ -2669,6 +2762,9 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 
 	if((opw1&0xFF00)==0xF100)
 	{
+		if(rm==15)
+			return(0);
+
 #if 1
 		if(((opw2&0xC800)==0x0800) && ((opw1&0x000E)!=0))
 		{
@@ -2721,6 +2817,9 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 		case 0x4:	case 0x5:
 		case 0x8:	case 0x9:
 			ret=1;
+			if(rm==15)
+				ret=0;
+
 			break;
 
 		case 0x6:	case 0x7:
@@ -2731,6 +2830,8 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 			}
 
 			ret=1;
+			if(rm==15)
+				ret=0;
 			break;
 			
 		case 0x2:

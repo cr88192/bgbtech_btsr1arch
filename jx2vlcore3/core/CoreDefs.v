@@ -816,31 +816,31 @@ parameter[3:0] JX2_BZIMM_IMM8N		= 4'h9;
 parameter[3:0] JX2_BZIMM_IMM12N		= 4'hA;
 
 
+parameter[4:0] JX2_FMIMM_NONE		= 5'h00;
+parameter[4:0] JX2_FMIMM_DISP9U		= 5'h01;
+parameter[4:0] JX2_FMIMM_DISP5U		= 5'h02;
+parameter[4:0] JX2_FMIMM_IMM8AU		= 5'h03;
+// parameter[4:0] JX2_FMIMM_IMM5U		= JX2_FMIMM_DISP5U;
 
-parameter[3:0] JX2_FMIMM_NONE		= 4'h0;
-parameter[3:0] JX2_FMIMM_DISP9U		= 4'h1;
-parameter[3:0] JX2_FMIMM_DISP5U		= 4'h2;
-parameter[3:0] JX2_FMIMM_IMM8AU		= 4'h3;
-parameter[3:0] JX2_FMIMM_IMM5U		= JX2_FMIMM_DISP5U;
+parameter[4:0] JX2_FMIMM_IMM6U		= 5'h04;
+parameter[4:0] JX2_FMIMM_IMM9U		= 5'h05;
+parameter[4:0] JX2_FMIMM_IMM10U		= 5'h06;
+parameter[4:0] JX2_FMIMM_IMM16U		= 5'h07;
 
-parameter[3:0] JX2_FMIMM_IMM6U		= 4'h4;
-parameter[3:0] JX2_FMIMM_IMM9U		= 4'h5;
-parameter[3:0] JX2_FMIMM_IMM10U		= 4'h6;
-parameter[3:0] JX2_FMIMM_IMM16U		= 4'h7;
+parameter[4:0] JX2_FMIMM_DISP20S	= 5'h08;
+parameter[4:0] JX2_FMIMM_IMM9N		= 5'h09;
+parameter[4:0] JX2_FMIMM_IMM10N		= 5'h0A;
+parameter[4:0] JX2_FMIMM_IMM16N		= 5'h0B;
 
-parameter[3:0] JX2_FMIMM_DISP20S	= 4'h8;
-// parameter[3:0] JX2_FMIMM_IMM5N		= 4'h8;
-parameter[3:0] JX2_FMIMM_IMM9N		= 4'h9;
-parameter[3:0] JX2_FMIMM_IMM10N		= 4'hA;
-parameter[3:0] JX2_FMIMM_IMM16N		= 4'hB;
+parameter[4:0] JX2_FMIMM_IMM24Z		= 5'h0C;
+parameter[4:0] JX2_FMIMM_IMM24N		= 5'h0D;
+parameter[4:0] JX2_FMIMM_IMM16S		= 5'h0E;
+parameter[4:0] JX2_FMIMM_DISP8S		= 5'h0F;
 
-parameter[3:0] JX2_FMIMM_IMM24Z		= 4'hC;
-parameter[3:0] JX2_FMIMM_IMM24N		= 4'hD;
+// parameter[3:0] JX2_FMIMM_DISP11S	= 5'h0C;
 
-// parameter[3:0] JX2_FMIMM_IMM9S		= 4'hC;
-// parameter[3:0] JX2_FMIMM_IMM10S		= 4'hD;
-parameter[3:0] JX2_FMIMM_IMM16S		= 4'hE;
-parameter[3:0] JX2_FMIMM_DISP8S		= 4'hF;
+parameter[4:0] JX2_FMIMM_DISP11S	= 5'h10;
+parameter[4:0] JX2_FMIMM_IMM5U		= 5'h12;
 
 
 

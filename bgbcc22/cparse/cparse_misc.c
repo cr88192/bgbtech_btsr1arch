@@ -477,6 +477,19 @@ fourcc BGBCP_LangForName(char *name)
 
 	lang=0;
 
+	if(!name)
+		return(0);
+	
+	if(*name=='$')
+	{
+		if(	!strcmp(name, "$stdin") ||
+			!strcmp(name, "$stdout"))
+		{
+			lang=BGBCC_LANG_C;
+			return(lang);
+		}
+	}
+
 	if(name)
 	{
 		if(!bgbcp_strcmp(name, "C"))lang=BGBCC_LANG_C;
@@ -1304,6 +1317,107 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	return(n);
 }
+
+
+char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
+{
+	static char *tbuf=NULL;
+	char b[256];
+	BGBCP_ParseState *ctx, *ppictx;
+	char *s;
+	BCCX_Node *n, *n1, *n2, *c;
+	int t0, t1, dt, lang, pprs;
+	int i, j, k;
+
+	BGBCC_CCXL_InitTargets();
+
+	lang=BGBCP_LangForName(name);
+	if(!lang)
+		return(NULL);
+
+	if(!tbuf)
+	{
+		tbuf=malloc(1<<24);
+	}
+
+	*tbuf=0;
+
+	ctx=bgbcc_malloc(sizeof(BGBCP_ParseState));
+	memset(ctx, 0, sizeof(BGBCP_ParseState));
+
+	ppictx=bgbcc_malloc(sizeof(BGBCP_ParseState));
+	memset(ppictx, 0, sizeof(BGBCP_ParseState));
+	ctx->ppi_ctx=ppictx;
+	ppictx->ppi_upctx=ctx;
+	
+#ifdef BGBCC_BCCX2
+	for(i=0; i<256; i++)
+		{ ctx->struct_hash_ix[i]=-1; }
+	for(i=0; i<1024; i++)
+		{ ctx->type_hash_ix[i]=-1; }
+
+	for(i=0; i<256; i++)
+		{ ppictx->struct_hash_ix[i]=-1; }
+	for(i=0; i<1024; i++)
+		{ ppictx->type_hash_ix[i]=-1; }
+#endif
+
+	if(lang==BGBCC_LANG_CPP)
+	{
+		k=-1;
+	}
+
+	ppictx->lang=BGBCC_LANG_BS;
+
+	ctx->lang=lang;
+	ctx->arch=BGBCC_GetArch();
+	ctx->subarch=BGBCC_GetSubArch();
+	
+	ctx->tuidx=BGBCC_GenSymInt();
+	
+	if(bgbcp_defaultlocale)
+	{
+		BGBCP_SetLocale(ctx, bgbcp_defaultlocale);
+	}
+	else
+	{
+		BGBCP_SetLocale(ctx, "C");
+	}
+	
+	BGBCC_CCXL_SetupParserForArch(ctx);
+
+	t0=clock();
+
+	BGBCP_PushLinenum();
+	BGBCP_SetLinenum(name, buf, 1);
+
+	ctx->n_enum_vars=0;
+	for(i=0; i<256; i++)
+		ctx->enum_hash[i]=-1;
+
+	pprs=BGBPP_Filter(ctx, buf, tbuf, 1<<24);
+
+	BGBCP_PopLinenum();
+
+	t1=clock();
+	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
+//	printf("PreProc took %dms\n", dt);
+
+	bgbcc_msec_pp+=dt;
+
+//	if(bgbcc_dumpast)
+//	{
+//		sprintf(b, "dump/%s_pp.txt", modname);
+//		BGBCC_StoreTextFile(b, tbuf);
+//	}
+
+//	fprintf(stderr, "PP: In:\n%s\n", buf);
+//	fprintf(stderr, "PP: Out:\n%s\n", tbuf);
+
+	return(tbuf);
+}
+
+
 
 int BGBCP_SetDefaultLocale(char *locale)
 {

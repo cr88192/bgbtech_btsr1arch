@@ -3,10 +3,10 @@
 
 // `define jx2_mc_enable_fpu
 
-// `define jx2_enable_mmu_acl		//Enable ACL Checks
+`define jx2_enable_mmu_acl		//Enable ACL Checks
 // `define jx2_enable_ldekey		//Enable ACL Checks
 
-// `define jx2_enable_mmu_vipt		//Enable ACL Checks
+// `define jx2_enable_mmu_vipt		//Enable VIPT
 
 `ifndef jx2_xc7s50
 
@@ -15,7 +15,7 @@
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
 // `define jx2_agu_ribound			//Enable AGU Bounds Checks
-// `define jx2_agu_ribound64		//Enable AGU Bounds Checks (64b pointers)
+`define jx2_agu_ribound64		//Enable AGU Bounds Checks (64b pointers)
 
 // `define jx2_agu_ldtex			//Texture Load
 
@@ -62,11 +62,11 @@
 
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
-`define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
+// `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
 
 `ifndef jx2_xc7s50
-`define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
-`define	jx2_ena_fpu_v2sd		//Enable Binary64 via V4SF Unit
+// `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
+// `define	jx2_ena_fpu_v2sd		//Enable Binary64 via V4SF Unit
 `endif
 
 // `define	jx2_use_fpu_v4sf_wx		//Allow 128-bit ops with scalar FPU
@@ -102,11 +102,11 @@
 
 // `define	jx2_mem_lane2			//Allow Loads from Lane 2
 
-`define	jx2_mem_misal_movx			//Allow MOV.X to be misaligned
+// `define	jx2_mem_misal_movx			//Allow MOV.X to be misaligned
 
 // `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
 
-`define	jx2_mulw_nolane3		//Disallow MULW from Lane 3
+// `define	jx2_mulw_nolane3		//Disallow MULW from Lane 3
 
 `ifdef jx2_xc7s50
 // `define	jx2_fpu_noround		//FPU: Disable Rounding
@@ -126,7 +126,7 @@
 
 // `define jx2_alu_dmac			//ALU Multiply-Accumulate
 
-// `define jx2_reg_rp			//Enable separate Rp port.
+`define jx2_reg_rp			//Enable separate Rp port.
 
 `endif
 
@@ -134,7 +134,7 @@
 `ifndef jx2_xc7s50
 `define jx2_alu_slomuldiv			//Enable Slow MUL/DIV Unit
 `define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
-`define jx2_alu_slomuldiv_fdivs		//Enable FDIV.S via Slow MUL/DIV Unit
+// `define jx2_alu_slomuldiv_fdivs		//Enable FDIV.S via Slow MUL/DIV Unit
 `endif
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?
@@ -159,9 +159,9 @@
 `endif
 
 // `ifndef jx2_xc7s50
-`define jx2_enable_prebra			//Enable PreBranch
-`define jx2_prebra_rts				//Enable PreBranch on RTS
-`define jx2_prebra_rtsu				//Enable PreBranch on RTSU
+//`define jx2_enable_prebra			//Enable PreBranch
+//`define jx2_prebra_rts				//Enable PreBranch on RTS
+//`define jx2_prebra_rtsu				//Enable PreBranch on RTSU
 // `define jx2_prebra_no16b			//Disable PreBranch on 16-bit ops
 // `endif
 
@@ -291,7 +291,7 @@
 
 // `define jx2_debug_hitmiss	//Debug Branch Predictor
 
-`define jx2_debug_isr		//Debug prints for ISR
+// `define jx2_debug_isr		//Debug prints for ISR
 
 
 // `define jx2_audio_leftonly		//Only left audio channel is used.
@@ -320,7 +320,7 @@
 `endif
 
 `ifndef jx2_alu_jcmpz
-`define jx2_alu_jcmpz		//Enable Jump-Compare Zero
+// `define jx2_alu_jcmpz		//Enable Jump-Compare Zero
 `endif
 
 
@@ -337,5 +337,17 @@
 `ifndef jx2_alu_jcmpz
 `define jx2_alu_jcmpz		//Enable Jump-Compare Zero
 `endif
+`endif
+`endif
+
+`ifdef jx2_alu_jcmp
+`ifndef jx2_alu_jcmpz2
+`define jx2_alu_jcmpz2		//Jump-Compare Ops Exist
+`endif
+`endif
+
+`ifdef jx2_alu_jcmp2
+`ifndef jx2_alu_jcmpz2
+`define jx2_alu_jcmpz2		//Jump-Compare Ops Exist
 `endif
 `endif

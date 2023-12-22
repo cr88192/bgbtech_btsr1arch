@@ -29,8 +29,8 @@ vluint64_t main_time = 0;
 #define JX2_UCIX_ALU_ADDSL		0x00		//ALU ADDSL
 #define JX2_UCIX_ALU_SUBSL		0x01		//ALU SUBSL
 
-#define JX2_UCIX_ALU_ADDUL		0x40		//ALU ADDUL
-#define JX2_UCIX_ALU_SUBUL		0x41		//ALU SUBUL
+#define JX2_UCIX_ALU_ADDUL		0x10		//ALU ADDUL
+#define JX2_UCIX_ALU_SUBUL		0x11		//ALU SUBUL
 
 #define JX2_UCIX_ALU_TST		0x04		//ALU Command
 #define JX2_UCIX_ALU_CMPNE		0x08		//ALU Command
@@ -64,19 +64,26 @@ vluint64_t z;
 {JX2_UCMD_ALU3, JX2_UCIX_ALU_OR,	0x12345678,	0x1234CDEF,	0x1234DFFF},
 {JX2_UCMD_ALU3, JX2_UCIX_ALU_XOR,	0x12345678,	0x1234CDEF,	0x00009B97},
 
+{JX2_UCMD_ALU3, JX2_UCIX_ALU_ADDSL,	0x12345678,	0x1234CDEF,	0x24692467},
+{JX2_UCMD_ALU3, JX2_UCIX_ALU_SUBSL,	0x12345678,	0x1234CDEF,
+	0xFFFFFFFFFFFF8889LL},
+
+{JX2_UCMD_ALU3, JX2_UCIX_ALU_ADDUL,	0x12345678,	0x1234CDEF,	0x24692467},
+{JX2_UCMD_ALU3, JX2_UCIX_ALU_SUBUL,	0x12345678,	0x1234CDEF,	0x0FFFF8889LL},
+
 {0x00, 0,  3.14,  2.73,  0.000000000},
 };
 
 int main(int argc, char **argv, char **env)
 {
 	vluint64_t tx, ty, tz, tw;
-	int tst, op, ixt;
+	int tst, op, ixt, tsr;
 	
 	printf("ALU Test\n");
 	
 	Verilated::commandArgs(argc, argv);
 
-	tst=0; op=0;
+	tst=0; op=0; tsr=0;
 
 	while (!Verilated::gotFinish())
 	{
@@ -102,12 +109,13 @@ int main(int argc, char **argv, char **env)
 		if(op)
 		{
 			tz=top->regOutVal;
+			tsr=top->regOutSrST;
 
 			printf(
-				"%02X-%02X Rn=%lX Rm=%lX\n"
-				"Ro=%lX Expect=%lX\n",
+				"%02X-%02X Rs=%lX Rt=%lX\n"
+				"Rn=%lX Expect=%lX SR=%02X\n",
 				op, top->idUIxt,
-				tx, ty, tz, tw);
+				tx, ty, tz, tw, tsr&63);
 			printf("\n");
 
 //			top->opCmd=0x00;
@@ -140,6 +148,8 @@ int main(int argc, char **argv, char **env)
 
 //			top->regIdRt=11;
 			top->regValRt=ty;
+
+			top->regInSrST=tsr;
 
 //			top->memDataLd=0;
 //			top->memDataOK=0;

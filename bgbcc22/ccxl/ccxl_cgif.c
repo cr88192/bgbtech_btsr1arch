@@ -1055,6 +1055,69 @@ ccxl_status BGBCC_CCXL_EmitStoreIndex(BGBCC_TransState *ctx,
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_EmitLoadIndexImmAddr(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst, ccxl_register src, int idx)
+{
+	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegZzP(ctx, src))
+		{ BGBCC_DBGBREAK }
+	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
+		{ BGBCC_DBGBREAK }
+
+	sty=BGBCC_CCXL_GetRegType(ctx, src);
+
+//	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+//		__debugbreak();
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_LDIXIMMA;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->stype=sty;
+	op->dst=dst;
+	op->srca=src;
+	op->imm.si=idx;
+	op->immty=CCXL_VOPITY_SI;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_EmitLoadIndexAddr(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst,
+	ccxl_register srca, ccxl_register srcb)
+{
+	BGBCC_CCXL_VirtOp *op;
+	ccxl_type sty;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegZzP(ctx, srca))
+		{ BGBCC_DBGBREAK }
+	if(BGBCC_CCXL_IsRegZzP(ctx, srcb))
+		{ BGBCC_DBGBREAK }
+	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
+		{ BGBCC_DBGBREAK }
+
+	sty=BGBCC_CCXL_GetRegType(ctx, srca);
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_LDIXA;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->stype=sty;
+	op->dst=dst;
+	op->srca=srca;
+	op->srcb=srcb;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
 ccxl_status BGBCC_CCXL_EmitLeaImm(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst, ccxl_register src, int idx)
 {

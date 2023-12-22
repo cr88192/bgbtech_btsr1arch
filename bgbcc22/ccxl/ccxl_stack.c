@@ -2270,6 +2270,22 @@ ccxl_status BGBCC_CCXL_StackLoadIndexAddrConst(
 	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
 	vty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, vty, &bty);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty, &dreg);
+
+		BGBCC_CCXL_EmitLoadIndexImmAddr(ctx, vty, dreg, sreg, idx);
+
+		BGBCC_CCXL_PushRegister(ctx, dreg);
+
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+		return(CCXL_STATUS_YES);
+	}
+
+
 	BGBCC_CCXL_RegisterAllocTemporary(ctx, bty, &dreg);
 
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
@@ -2425,7 +2441,7 @@ ccxl_status BGBCC_CCXL_StackStoreIndex(BGBCC_TransState *ctx)
 ccxl_status BGBCC_CCXL_StackLoadIndexAddr(BGBCC_TransState *ctx)
 {
 	ccxl_register dreg, sreg, treg;
-	ccxl_type bty, vty;
+	ccxl_type sty, bty, vty;
 	int i, j, k;
 	
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "LoadIndexA", __FILE__, __LINE__);
@@ -2435,6 +2451,23 @@ ccxl_status BGBCC_CCXL_StackLoadIndexAddr(BGBCC_TransState *ctx)
 	/* src idx -- src[idx] */
 	i=BGBCC_CCXL_PopRegister(ctx, &treg);
 	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	vty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
+	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
+	{
+		BGBCC_CCXL_TypePointerType(ctx, vty, &bty);
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty, &dreg);
+
+		BGBCC_CCXL_EmitLoadIndexAddr(ctx, vty, dreg, sreg, treg);
+
+		BGBCC_CCXL_PushRegister(ctx, dreg);
+
+		BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+		return(CCXL_STATUS_YES);
+	}
+
 	vty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	BGBCC_CCXL_RegisterAllocTemporary(ctx, bty, &dreg);

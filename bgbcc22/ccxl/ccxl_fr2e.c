@@ -1890,6 +1890,7 @@ void BGBCC_FR2E_UnpackVopRegister(
 
 	cs=*rcs;
 	uk=BGBCC_FR2E_BufReadUVli(&cs);
+	v=0;
 
 	if(!(uk&7))
 	{
@@ -2122,6 +2123,7 @@ void BGBCC_FR2E_UnpackRegFieldsArray(
 
 	cs0=idat;
 	cse=cs0+isz;
+	fcc=0; sz=0; cs1=NULL;
 
 	cs=cs0; n=0;
 	while(cs<cse)
@@ -2163,6 +2165,7 @@ void BGBCC_FR2E_UnpackGlobalObj(
 
 	cs=idat;
 	cse=cs+isz;
+	fcc=0; sz=0; cs1=NULL;
 
 	cs0=cs;
 	while(cs<cse)
@@ -2237,6 +2240,7 @@ void BGBCC_FR2E_UnpackGlobalData(
 
 	cs=img->gbldat;
 	cse=cs+img->sz_gbldat;
+	fcc=0; sz=0; cs1=NULL;
 
 	cs0=cs; n=1;
 	while(cs<cse)
@@ -2281,6 +2285,7 @@ void BGBCC_FR2E_UnpackLiteralData(
 
 	cs=img->litdat;
 	cse=cs+img->sz_litdat;
+	fcc=0; cs1=NULL; sz=0;
 
 	cs0=cs; n=1;
 	while(cs<cse)
@@ -2337,6 +2342,8 @@ void BGBCC_FR2E_LoadBufferFRB(
 	int sz;
 
 	
+	fcc=0; sz=0; cs=NULL; cs1=NULL;
+	
 	cs0=buf;
 	BGBCC_FR2E_ReadTag(&cs0, &fcc, &cs, &sz);
 	cse=cs+sz;
@@ -2359,6 +2366,7 @@ void BGBCC_FR2E_LoadBufferFRB(
 	stri=NULL;	stri_e=NULL;
 	vops=NULL;	vops_e=NULL;
 	vtrs=NULL;	vtrs_e=NULL;
+	vosi=NULL;	vosi_e=NULL;
 	litd=NULL;	litd_e=NULL;
 	gbld=NULL;	gbld_e=NULL;
 

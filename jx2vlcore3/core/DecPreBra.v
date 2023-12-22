@@ -351,22 +351,31 @@ begin
 		(istrWord[31:28]==4'b1100);
 //	tIsBraCcP20		= 0;
 
+	tIsBraCc8Br		=	0;
+	tIsBraCc8Bz		=	0;
+	tIsBraCc11Bz	=	0;
+
 	tIsBraCc8B = 0;
 	tIsBraCc11B = 0;
 
-`ifdef jx2_alu_jcmpz
-// `ifndef def_true
 	tIsBraFz		=	(istrWord[15: 12]==4'hF);
+
+
+// `ifdef jx2_alu_jcmpz
+`ifdef jx2_alu_jcmp
+// `ifndef def_true
 	tIsBraCc8Br		=
 		tIsBraFz				&&
 		(istrWord[11: 8]==4'h1) &&
 		(istrWord[31:30]==2'b11);
+`endif
+
+`ifdef jx2_alu_jcmpz2
 	tIsBraCc8Bz		=
 		tIsBraFz				&&
 		(istrWord[11: 8]==4'h2) &&
 		(istrWord[31:28]==4'hD) &&
 		(istrWord[ 3: 1]==3'b011);
-	tIsBraCc8B		= tIsBraCc8Br || tIsBraCc8Bz;
 
 	tIsBraCc11Bz	=
 		tIsBraFz				&&
@@ -375,6 +384,8 @@ begin
 		((istrWord[ 3: 2]==2'b01) || istrWord[3]);
 	tIsBraCc11B = tIsBraCc11Bz;
 `endif
+
+	tIsBraCc8B		= tIsBraCc8Br || tIsBraCc8Bz;
 
 //	tIsBraCc20		=
 //	tIsBraCcF20		=

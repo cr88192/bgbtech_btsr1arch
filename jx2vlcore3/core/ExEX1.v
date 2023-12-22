@@ -326,6 +326,15 @@ assign	tRegBoundX = {
 	tXmovIsWxa, tXmovIsBx,
 	regValRs[63:60], regValXs[63:48], regValRs[59:48] };
 
+wire	tAguBaseIsPC;
+wire	tAguIsLea;
+wire	tAguIsLeat;
+wire	tAguIsLeatPC;
+assign	tAguBaseIsPC	= (regIdRs == JX2_GR_PC);
+assign	tAguIsLea		= (opUCmd[5:0] == JX2_UCMD_LEA_MR);
+assign	tAguIsLeat		= tAguIsLea && opUIxt[2];
+assign	tAguIsLeatPC	= tAguIsLeat && tAguBaseIsPC;
+
 `ifdef jx2_enable_vaddr48
 wire[47:0]	tValAgu;
 wire		tValAguOob;
@@ -342,7 +351,14 @@ ExAGUC	exAgu(
 	tRegBoundX,			tValAguOob,
 	regOutXLea,			tAguXLeaTag);
 
-assign	regOutLea = { tAguXLeaTag, tValAgu };
+wire[63:0]	tRegOutLeatPc =
+	{ regValPc[63:48], tValAgu[47:1], 1'b1 };
+
+// assign	regOutLea = { tAguXLeaTag, tValAgu };
+assign	regOutLea = tAguIsLeatPC ? 
+	tRegOutLeatPc : 
+	{ tAguXLeaTag, tValAgu };
+
 `else
 wire[47:0]	tValAgu;
 wire		tValAguOob;
@@ -1002,7 +1018,7 @@ begin
 			tDoOutDfl		= 1;
 //			tRegIdRn1		= regIdRm;
 //			tRegValRn1		= tValCnv;
-			tRegOutSr[0]	= tCnvSrT;
+//			tRegOutSr[0]	= tCnvSrT;
 `endif
 		end
 `ifdef jx2_gprs_mergecm
@@ -1220,6 +1236,7 @@ begin
 			
 			if(tValAgu[0])
 			begin
+`ifdef jx2_debug_isr
 //				if(regInSr[26]!=regValRs[50])
 				if(	(regInSr[26]!=regValRs[50]) ||
 					(regInSr[23:22]!=regValRs[55:54]))
@@ -1228,6 +1245,8 @@ begin
 						regInSr[26], opUIxt,
 						regValRs, tValBra);
 				end
+`endif
+
 				tRegOutSr[26]	= !regInSr[26];
 //				tRegOutSr[27]	= tValAgu[1];
 				tRegOutSr[27]	= 0;
@@ -1298,6 +1317,7 @@ begin
 
 			if(tValAgu[0])
 			begin
+`ifdef jx2_debug_isr
 //				if(regInSr[26]!=regValRs[50])
 				if(	(regInSr[26]!=regValRs[50]) ||
 					(regInSr[23:22]!=regValRs[55:54]))
@@ -1307,6 +1327,7 @@ begin
 						regValRs[51:50], regValRs[55:54],
 						tValBra);
 				end
+`endif
 
 				tRegOutSr[26]	= !regInSr[26];
 //				tRegOutSr[27]	= tValAgu[1];
@@ -1483,7 +1504,9 @@ begin
 				end
 
 				JX2_UCIX_IXS_INVIC: begin
+`ifdef jx2_debug_isr
 					$display("EX1 JX2_UCIX_IXS_INVIC");
+`endif
 
 // `ifdef jx2_l1i_nohash
 `ifndef def_true
@@ -1530,7 +1553,9 @@ begin
 
 				end
 				JX2_UCIX_IXS_INVDC: begin
+`ifdef jx2_debug_isr
 					$display("EX1 JX2_UCIX_IXS_INVDC");
+`endif
 
 // `ifdef jx2_l1d_nohash
 `ifndef def_true
@@ -1718,7 +1743,9 @@ begin
 				end
 
 				JX2_UCIX_IXT_SYSE: begin
+`ifdef jx2_debug_isr
 					$display("EX1: Do SYSE");
+`endif
 //					tExTrapExc = { UV112_00, 4'hE, regInDlr[11:0] };
 					tExTrapExc = { UV112_00, 4'hE, regValRs[11:0] };
 

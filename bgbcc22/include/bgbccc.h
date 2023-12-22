@@ -503,6 +503,7 @@ extern "C" {
 #define BGBCC_IMGFMT_SYS	BGBCC_FOURCC('S', 'Y', 'S', ' ')
 
 #define BGBCC_IMGFMT_ASM	BGBCC_FOURCC('A', 'S', 'M', ' ')
+#define BGBCC_IMGFMT_PP		BGBCC_FOURCC('P', 'P', ' ', ' ')
 
 #define BGBCC_IMGFMT_RIL3	BGBCC_FOURCC('R', 'I', 'L', '3')
 #define BGBCC_IMGFMT_FR2E	BGBCC_FOURCC('F', 'R', '2', 'E')

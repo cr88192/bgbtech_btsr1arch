@@ -536,6 +536,9 @@ Base, Q1..Q3:
 
 #define CCXL_VOP_CSRV_RET			0x33
 
+#define CCXL_VOP_LDIXIMMA			0x34		//load index (immed)
+#define CCXL_VOP_LDIXA				0x35
+
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used
 #define CCXL_VOPITY_SI				0x01		//signed int

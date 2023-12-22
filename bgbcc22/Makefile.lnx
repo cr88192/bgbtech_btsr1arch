@@ -39,5 +39,8 @@ all: all2
 
 mk_link:
 	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-cc
+	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-gcc
 	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-as
 	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-ld
+	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-ar
+	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-nm

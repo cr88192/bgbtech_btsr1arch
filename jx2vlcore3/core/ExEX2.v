@@ -380,13 +380,14 @@ begin
 			tValOutDfl		= regValAluRes[63:0];
 			tDoOutDfl		= 1;
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 			if(tOpUCmd1==JX2_UCMD_ALU3)
 			begin
 				casez(opUIxt[3:0])
-					4:b000z:	tDoAluSrT		= 0;
-					4:b0101:	tDoAluSrT		= 0;
-					4:b011z:	tDoAluSrT		= 0;
+					4'b000z:	tDoAluSrT		= 0;
+					4'b0101:	tDoAluSrT		= 0;
+					4'b011z:	tDoAluSrT		= 0;
 					default:	begin end
 				endcase
 			end
@@ -405,6 +406,11 @@ begin
 			tDoAluSrT		= 1;
 			tValOutDfl		= regValAluRes[63:0];
 			tDoOutDfl		= 1;
+
+			casez(opUIxt[5:0])
+				6'b0101zz:	tDoAluSrT		= 1;
+				default:	tDoAluSrT		= 0;
+			endcase
 		end
 
 		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB: begin

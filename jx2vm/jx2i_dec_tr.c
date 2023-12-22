@@ -1803,6 +1803,9 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 	if(op3->fl&BJX2_OPFL_NOWEXSFX3W)
 		return(-1);
 
+	if(op1->fl&BJX2_OPFL_NOWEX3L)
+		return(-1);
+
 	if(op1->fl&BJX2_OPFL_NOWEX_FP2)
 		return(-1);
 	if(op1->fl&BJX2_OPFL_NOWEX_IO2)

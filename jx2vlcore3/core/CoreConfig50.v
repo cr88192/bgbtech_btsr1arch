@@ -33,8 +33,8 @@
 
 `define jx2_cpu_merge_rxy		//Merge Rx/Ry
 
-`define jx2_cpu_shad_ex2
-`define jx2_cpu_conv_ex2
+// `define jx2_cpu_shad_ex2		//Move SHAD/SHLD output to EX2
+// `define jx2_cpu_conv_ex2		//Move CONV output to EX2
 
 `define jx2_cpu_pred_id2		//Move predication handling to ID2
 `define jx2_cpu_lea_ex2			//Move LEA output to EX2

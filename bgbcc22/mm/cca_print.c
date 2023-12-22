@@ -79,7 +79,10 @@ int BCCX_SizeNodeAttr(BCCX_Node *node, int flag)
 		if((j>>12)==BCCX_IVTY_STRING)
 		{
 			sz+=strlen(s0)+2;
-			sz+=strlen(av->s)+2;
+			if(av->s)
+				sz+=strlen(av->s)+2;
+			else
+				sz+=2;
 		}
 		if((j>>12)==BCCX_IVTY_INT)
 		{
@@ -133,6 +136,8 @@ char *BCCX_PrintBufNodeAttr(BCCX_Node *node, char *buf, int flag)
 
 		if((j>>12)==BCCX_IVTY_STRING)
 		{
+			if(!av->s)
+				continue;
 			*t++=' ';
 			sprintf(t, "%s=\"", s0);
 			t+=strlen(t);

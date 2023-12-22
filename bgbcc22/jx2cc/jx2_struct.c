@@ -1404,6 +1404,15 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 	int step;
 	int i, j, k;
 
+	if(0)
+	{
+		sctx->is_leaf&=(~4);
+		sctx->is_leaftiny|=8;
+		ctx->cur_vtr->trfl&=~1;
+		ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
+	}
+
 //	if(!strcmp(ctx->cur_func->name, "Mod_LoadBrushModel"))
 //	{
 //		k=-1;

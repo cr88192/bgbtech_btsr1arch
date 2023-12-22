@@ -28,7 +28,7 @@ L1 Instruction Cache, WEX
  */
 
 `define jx2_memic_getoplen
-`define jx2_memic_blklenbits
+// `define jx2_memic_blklenbits
 
 `include "ringbus/RbiDefs.v"
 
@@ -1221,9 +1221,12 @@ begin
 //		(tRegInSrL[29] && tRegInSrL[30]))
 	begin
 		if(tTlbMissInh)
+`ifdef jx2_debug_isr
 			$display("L1I$ Clear TLB Inhibit");
 //			$display("L1I$ Clear TLB Inhibit, InPc=%X InAddr=%X",
 //				regInPc, tInAddr);
+`endif
+
 		tNxtTlbMissInh	= 0;
 		tClrTlbMissInh	= 1;
 //		tSkipTlb		= 1;
@@ -1245,7 +1248,8 @@ begin
 		tNxtSkipTlb = 1;
 
 // `ifndef def_true
-`ifdef def_true
+//`ifdef def_true
+`ifdef jx2_debug_isr
 //	if(tNxtSkipTlb && (regInPc[47:28]!=0) && !icInPcHold)
 //	if(tNxtSkipTlb && (regInPc[47:28]!=0))
 `ifdef jx2_enable_vaddr48
@@ -1298,10 +1302,10 @@ begin
 
 `ifdef jx2_enable_vaddr48
 	tRegInPcP0	= tRegInPc[47:4];
-//	tRegInPcP1[27: 0]	= tRegInPcP0[27: 0]+1;
-//	tRegInPcP1[43:28]	= tRegInPcP0[43:28];
+	tRegInPcP1[27: 0]	= tRegInPcP0[27: 0]+1;
+	tRegInPcP1[43:28]	= tRegInPcP0[43:28];
 
-	tRegInPcP1	= tRegInPcInc[47:4];
+//	tRegInPcP1	= tRegInPcInc[47:4];
 
 //	$display("%X %X", tRegInPcP0, tRegInPcP1);
 
@@ -1316,7 +1320,8 @@ begin
 		};
 `endif
 
-`ifdef def_true
+// `ifdef def_true
+`ifndef def_true
 	tRegInPcP1L = { 1'b0, tRegInPcP0[ 7: 0] } + 1;
 	tRegInPcP1M = { 1'b0, tRegInPcP0[15: 8] } + 1;
 	tRegInPcP1H = { 1'b0, tRegInPcP0[23:16] } + 1;
@@ -1486,7 +1491,9 @@ begin
 	begin
 		if(!tAdvFlushRov)
 		begin
+`ifdef jx2_debug_isr
 			$display("L1 I$ DoFlush rov=%X", tFlushRov);
+`endif
 			tNxtFlushRov	= tFlushRov+1;
 			tNxtAdvFlushRov	= 1;
 		end
@@ -1714,8 +1721,10 @@ begin
 	
 	if((tBlkFlag2A[3:2]==2'b11) || (tBlkFlag2B[3:2]==2'b11))
 	begin
+`ifdef jx2_debug_isr
 		if(!tMsgLatchTmiss)
 			$display("L1I$: Hold TMiss A=%X", tInAddr);
+`endif
 		tNxtMsgLatchTmiss = 1;
 
 		if(tTlbMissInh)
@@ -1725,7 +1734,9 @@ begin
 			tNxtMemTlbInhRtcnt	= tMemTlbInhRtcnt-1;
 			if(tMemTlbInhRtcnt==0)
 			begin
+`ifdef jx2_debug_isr
 				$display("L1I$ Timeout Clear TLB Inhibit");
+`endif
 				tNxtTlbMissInh = 0;
 				tClrTlbMissInh = 1;
 			end
@@ -2163,7 +2174,9 @@ begin
 			if(memOpmIn[3:2]==2'b11)
 	//		if((memOpmIn[3:2]==2'b11) && !(tRegInSr[29] && tRegInSr[30]))
 			begin
+`ifdef jx2_debug_isr
 				$display("L1I$ Set TLB Inhibit A");
+`endif
 				tNxtTlbMissInh = 1;
 			end
 		end
@@ -2186,10 +2199,12 @@ begin
 			$display("L1 I$, Mismatch Index A, %X!=%X",
 				tReqSeqVa[43:0], tReqAddrA[43:0]);
 		end
+`ifdef jx2_debug_isr
 		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
 				(tReqSeqVa[43:24]==0))
 			$display("L1I$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
+`endif
 `endif
 	end
 
@@ -2244,7 +2259,9 @@ begin
 			if(memOpmIn[3:2]==2'b11)
 	//		if((memOpmIn[3:2]==2'b11) && !(tRegInSr[29] && tRegInSr[30]))
 			begin
+`ifdef jx2_debug_isr
 				$display("L1I$ Set TLB Inhibit B");
+`endif
 				tNxtTlbMissInh = 1;
 			end
 		end
@@ -2267,10 +2284,12 @@ begin
 			$display("L1 I$, Mismatch Index B, %X!=%X",
 				tReqSeqVa[43:0], tReqAddrB[43:0]);
 		end
+`ifdef jx2_debug_isr
 		if((memAddrIn[31:5]!=tReqSeqVa[27:1]) && (tReqAxH!=UV16_FF) &&
 				(tReqSeqVa[43:24]==0))
 			$display("L1I$: Virt!=Phys A, PA=%X VA=%X O=%X",
 				memAddrIn[31:4], tReqSeqVa[43:0], memOpmIn);
+`endif
 `endif
 	end
 
@@ -2370,9 +2389,11 @@ begin
 
 			if(tSkipTlb)
 			begin
+`ifdef jx2_debug_isr
 //				if(tReqAddrA[43:24]!=0)
 				if(tReqAddrIsVirt)
 					$display("L1 I$: Send LDA Req Abs A=%X", tReqAddrA);
+`endif
 
 //				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
@@ -2422,9 +2443,11 @@ begin
 
 			if(tSkipTlb)
 			begin
+`ifdef jx2_debug_isr
 //				if(tReqAddrB[43:24]!=0)
 				if(tReqAddrIsVirt)
 					$display("L1 I$: Send LDB Req Abs A=%X", tReqAddrB);
+`endif
 
 //				if(!tReqAddrIsVirt)
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
@@ -2520,8 +2543,10 @@ begin
 
 	if(tDoStallNop)
 	begin
+`ifdef jx2_debug_isr
 		if(!tMsgLatchNop)
 			$display("RbiMemIcWxA: NOP Stall");
+`endif
 		tNxtMsgLatchNop = 1;
 
 		tRegOutPcVal = 96'h3000F000_3000F000_3000F000;
@@ -2568,17 +2593,21 @@ begin
 	begin
 		if(tClrTlbMissInhL)
 		begin
+`ifdef jx2_debug_isr
 			if(!tStuckTlbMissInhL)
 				$display("L1I$ TLB Inhibit Stuck");
+`endif
 			tStuckTlbMissInh = 1;
 		end
 
 //		if(!tStuckTlbMissInh)
 		if(1'b1)
 		begin
+`ifdef jx2_debug_isr
 			if(!tMsgLatchTinh)
 				$display("L1I$ TLB Inhibit, InPc=%X InAddr=%X Clear=%X",
 					regInPc, tInAddr, tClrTlbMissInh);
+`endif
 			tNxtMsgLatchTinh=1;
 		end
 	end

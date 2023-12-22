@@ -949,10 +949,12 @@ begin
 		
 		if(tlbMiss)
 		begin
+`ifdef jx2_debug_isr
 			if(tRegInSR[29] && tRegInSR[28])
 			begin
 				$display("TLB: Miss while in ISR, A=%X", tRegInAddr);
 			end
+`endif
 
 //			$display("Miss A=%X B=%X SR=%X_%X",
 //				tRegInAddr,	tRegInAddrB,
@@ -1121,19 +1123,23 @@ begin
 `ifdef jx2_tlb_xtlbe
 		if(tRegInLdtlb[1:0]==2'b10)
 		begin
+`ifdef jx2_debug_isr
 			$display("MemTile-LDTLB Hi %X %X-%X",
 				tRegInAddr,
 				tRegInLdtlb[127:64],
 				regInLdtlb[ 63: 0]);
+`endif
 
 			tNxtRegInLdtlbHi = tRegInLdtlb;
 		end
 		else if(tRegInLdtlbHi[1:0]==2'b10)
 		begin
+`ifdef jx2_debug_isr
 			$display("MemTile-LDTLB HiLo %X %X-%X",
 				tRegInAddr,
 				tRegInLdtlb[127:64],
 				regInLdtlb[ 63: 0]);
+`endif
 			tlbDoLdtlb	= icPageReady;
 			tNxtRegInLdtlbHi[1:0] = 0;
 
@@ -1144,10 +1150,12 @@ begin
 		end
 		else
 		begin
+`ifdef jx2_debug_isr
 			$display("MemTile-LDTLB Base %X %X-%X",
 				tRegInAddr,
 				tRegInLdtlb[127:64],
 				regInLdtlb[ 63: 0]);
+`endif
 			tlbDoLdtlb	= icPageReady;
 			tNxtRegInLdtlbHi[1:0] = 0;
 
@@ -1160,10 +1168,12 @@ begin
 				tlbLdHdatB[1:0]=0;
 		end
 `else
+`ifdef jx2_debug_isr
 		$display("MemTile-LDTLB %X %X-%X",
 			tRegInAddr,
 			tRegInLdtlb[127:64],
 			regInLdtlb[ 63: 0]);
+`endif
 		tlbDoLdtlb	= icPageReady;
 		tNxtRegInLdtlbHi[1:0] = 0;
 

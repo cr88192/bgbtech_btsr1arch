@@ -3140,6 +3140,7 @@ begin
 `endif
 
 
+`ifndef jx2_enable_wex3w
 `ifdef jx2_enable_wex2w
 	exHold1B1	=
 		((	(ex1RegIdRm == gprIdRs) ||
@@ -3187,6 +3188,7 @@ begin
 	if(ex1RegIdCn1 == JX2_CR_PC)
 		exHold1B	= 0;
 
+`endif
 `endif
 
 
@@ -4295,7 +4297,9 @@ begin
 		if(	(ex1RegOutSr[27:26]!=crOutSr[27:26]) ||
 			(ex1RegOutSr[23:20]!=crOutSr[23:20]) )
 		begin
+`ifdef jx2_debug_isr
 			$display("ExUnit: Do Slow Branch");
+`endif
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
 		end
 

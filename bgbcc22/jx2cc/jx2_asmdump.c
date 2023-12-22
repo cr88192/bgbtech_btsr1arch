@@ -1542,6 +1542,7 @@ char *BGBCC_JX2DA_NameForLabel(BGBCC_JX2_Context *ctx, int lblid)
 
 int BGBCC_JX2DA_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 {
+	char tb[256];
 	char *snm, *srm, *srn, *sro;
 	int lln;
 
@@ -1551,7 +1552,9 @@ int BGBCC_JX2DA_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 	if(BGBCC_JX2_LabelIsDebugLineP(ctx, lblid))
 	{
 		BGBCC_JX2_GetDebugLineForLabel(ctx, lblid, &sro, &lln);
-		BGBCC_JX2DA_EmitPrintf(ctx, "// %s:%d\n", sro, lln);
+		BGBPP_FetchSourceLine(sro, lln, tb);
+//		BGBCC_JX2DA_EmitPrintf(ctx, "// %s:%d\n", sro, lln);
+		BGBCC_JX2DA_EmitPrintf(ctx, "// %s:%d   %s\n", sro, lln, tb);
 		return(0);
 	}
 	
@@ -1579,6 +1582,24 @@ int BGBCC_JX2DA_EmitOpLblReg(BGBCC_JX2_Context *ctx,
 
 	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s%s",
 		snm, sro, srn,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	return(1);
+}
+
+int BGBCC_JX2DA_EmitOpRegLbl(BGBCC_JX2_Context *ctx,
+	int nmid, int lbl, int reg)
+{
+	char *snm, *srm, *srn, *sro;
+
+	if(ctx->is_simpass || !ctx->do_asm)
+		return(0);
+		
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
+	srn=BGBCC_JX2DA_RegToName(ctx, reg);
+	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
+
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s%s",
+		snm, srn, sro,
 		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }

@@ -114,6 +114,7 @@ fourcc BGBCP_ImageFormatForName(char *name);
 char *BGBCP_BaseNameForName(char *name);
 char *BGBCP_BaseNameForNameLC(char *name);
 BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf);
+char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf);
 int BGBCP_SetDefaultLocale(char *locale);
 int BGBCP_SetLocale(BGBCP_ParseState *ctx, char *locale);
 //AHSRC:cparse/cparse_type.c
@@ -286,6 +287,7 @@ void BGBPP_AddStaticDefine(BGBCP_ParseState *ctx,char *name, char *str);
 void BGBPP_AddStaticDefineArgs(BGBCP_ParseState *ctx,char *name, char **args, char *str);
 void BGBPP_SendDefines(BGBCP_ParseState *ctx);
 char *BGBPP_LoadInclude(BGBCP_ParseState *ctx, char *name, int *rsz);
+int BGBPP_FetchSourceLine(char *lfn, int lln, char *dstbuf);
 void BGBPP_Include(BGBCP_ParseState *ctx, char *str, int angle);
 void BGBPP_Directive2(BGBCP_ParseState *ctx, char *str);
 int BGBPP_ExpandBinary(char *larg, char *op, char *rarg, char *dst);
@@ -872,6 +874,8 @@ ccxl_status BGBCC_CCXL_EmitLoadIndexImm(BGBCC_TransState *ctx,ccxl_type type, cc
 ccxl_status BGBCC_CCXL_EmitStoreIndexImm(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int idx);
 ccxl_status BGBCC_CCXL_EmitLoadIndex(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
 ccxl_status BGBCC_CCXL_EmitStoreIndex(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
+ccxl_status BGBCC_CCXL_EmitLoadIndexImmAddr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int idx);
+ccxl_status BGBCC_CCXL_EmitLoadIndexAddr(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
 ccxl_status BGBCC_CCXL_EmitLeaImm(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src, int idx);
 ccxl_status BGBCC_CCXL_EmitLea(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb);
 ccxl_status BGBCC_CCXL_EmitLdaVar(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register src);
@@ -2733,6 +2737,7 @@ int BGBCC_JX2DA_EmitOpLdReg2DispReg(BGBCC_JX2_Context *ctx, int nmid, int rm, in
 char *BGBCC_JX2DA_NameForLabel(BGBCC_JX2_Context *ctx, int lblid);
 int BGBCC_JX2DA_EmitLabel(BGBCC_JX2_Context *ctx, int lblid);
 int BGBCC_JX2DA_EmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
+int BGBCC_JX2DA_EmitOpRegLbl(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2DA_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2DA_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s64 imm);
 int BGBCC_JX2DA_EmitLoadRegImm64(BGBCC_JX2_Context *ctx, int nmid, int reg, s64 imm);
@@ -3362,6 +3367,8 @@ int BGBCC_JX2C_EmitLeaSarRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, 
 int BGBCC_JX2C_EmitLeaShrRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
 int BGBCC_JX2C_EmitLeaShlRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int shl);
 int BGBCC_JX2C_EmitLeaBRegIRegScReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int dreg);
+int BGBCC_JX2C_EmitLdixAddrVRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_type stype, ccxl_register dreg, ccxl_register sreg, s32 imm);
+int BGBCC_JX2C_EmitLdixAddrVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type,		ccxl_type stype, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
 //AHSRC:jx2cc/jx2_lparith.c
 int BGBCC_JX2C_EmitBinaryLong_ShlImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
 int BGBCC_JX2C_EmitBinaryLong_ShrImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cdreg, int shl);
@@ -3524,6 +3531,7 @@ int BGBCC_JX2C_EmitReleaseRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sct
 int BGBCC_JX2C_EmitSyncRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix);
 int BGBCC_JX2C_EmitSyncRegisterIndex2(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int rgix, int sfl);
 int BGBCC_JX2C_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitSyncDirtyRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitSyncLeafRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
@@ -3789,6 +3797,7 @@ void *bgbcc_loadfile_txt(char *name, int *rsz);
 void *bgbcc_loadfile2(char *name, int *rsz);
 int BGBCC_LoadCMeta(char *name);
 BCCX_Node *BGBCC_LoadCSourceAST(char *name);
+char *BGBCC_LoadCSourcePPOnly(char *name);
 int BGBCC_LoadConvResource_SetupPal();
 byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,char *cnvstr, int *rsz, fourcc *rfcc);
 int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name);
