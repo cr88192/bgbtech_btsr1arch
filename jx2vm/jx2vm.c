@@ -1361,7 +1361,7 @@ int main(int argc, char *argv[])
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
 	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost, walltime;
-	int dousbhid;
+	int dousbhid, dorast;
 	int i;
 	
 	rd_n_add=0;
@@ -1382,6 +1382,7 @@ int main(int argc, char *argv[])
 	l2cfg=NULL;
 	walltime=0;
 	dousbhid=0;
+	dorast=1;
 	
 	for(i=1; i<argc; i++)
 	{
@@ -1443,6 +1444,9 @@ int main(int argc, char *argv[])
 
 			if(!strcmp(argv[i], "--usbhid"))
 				{ dousbhid=1; continue; }
+
+			if(!strcmp(argv[i], "--norast"))
+				{ dorast=0; continue; }
 
 			continue;
 		}
@@ -1548,6 +1552,8 @@ int main(int argc, char *argv[])
 	
 	ctx->use_walltime=walltime;
 	ctx->do_usb_hid=dousbhid;
+
+	ctx->do_edgewalk=dorast;
 	
 	BJX2_ContextSetupZero(ctx);
 	if(ifn)

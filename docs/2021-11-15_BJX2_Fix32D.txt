@@ -18,6 +18,10 @@ Registers (Baseline):
 ** Control Registers.
 ** Not all of these necessarily exist.
 
+Registers (XG2):
+* R32..R63
+* C32..C63
+
 Special Purpose Registers:
 * R0 / DLR: Displacement/Low Register.
 * R1 / DHR: Displacement/High Register.
@@ -93,7 +97,11 @@ SR Bits:
 ** Used by GSV for Vector Compare (Word/Half).
 * 8..15: U0..U7, Context Dependent
 ** May be used as a Predicate Stack.
-* 16..23: Reserved
+* 16..19: Reserved
+* 20: WM2, Reserved
+* 21: WM1, Reserved
+* 22: WX4, Mode 4
+* 23: WX3, Mode 3
 * 24: XMOV Copy / Add (N/A)
 * 25: XMOV User Enable (N/A)
 * 26: WX2, WEX Secondary (N/A)
@@ -297,10 +305,9 @@ When an immediate is split between multiple words, the preceding word will conta
 
 Instruction Space:
 * 0xxx .. Dxxx: 16-bit Instruction Forms (N/A)
+** May exist as 32-bit instruction forms in XG2 Mode.
 * E0xx .. EFxx: 32-bit Instruction Forms (Predicated)
 * F0xx .. FFxx: 32-bit Instruction Forms (Normal and WEX)
-
-Except where noted otherwise, the 16-bit instruction forms are limited to the first 16 registers.
 
 
 === 32-bit Instruction Forms ===
@@ -344,6 +351,13 @@ Additionally, Predicated Ranges will exist:
 
 The ranges FAzz and FBzz, may not be encoded in predicated forms.
 The encoding of predicated forms will be otherwise equivalent to their Fz counterparts.
+
+
+In XG2 Variants, a few changes will apply:
+* High 3 bits may encode additional register bits (NMO).
+** N will extend Rn, M extends Rm, and O extends Ro.
+** These are inverted, so Ezzz/Fzzz are the same as before.
+* The Disp20s forms will be implicitly extended to 23 bits.
 
 
 ==== F0zz Instruction Block ====
@@ -396,16 +410,16 @@ F0zz Instruction Block:
 *** F0nm_1GF8 CONVFLI	Rm, Rn				//(TTAG) Convert Binary64 -> Flonum
 
 ** F0nm_1ez9
-*** F0nm_1g09 ADD		Rm, Rn				//Rn=Rn+Rm
-*** F0nm_1g19 SUB		Rm, Rn				//Rn=Rn-Rm
-*** F0nm_1g29 ADC		Rm, Rn				//Add with Carry (64b)
-*** F0nm_1G29 ADC.L		Rm, Rn				//Add with Carry (32b)
-*** F0nm_1g39 SBB		Rm, Rn				//Subtract with Borrow (64b)
-*** F0nm_1G39 SBB.L		Rm, Rn				//Subtract with Borrow (32b)
+*** F0nm_1g09 /? ADD	Rm, Rn				//(Deprecated) Rn=Rn+Rm
+*** F0nm_1g19 /? SUB	Rm, Rn				//(Deprecated) Rn=Rn-Rm
+*** F0nm_1g29 ? ADC		Rm, Rn				//Add with Carry (64b)
+*** F0nm_1G29 ? ADC.L	Rm, Rn				//Add with Carry (32b)
+*** F0nm_1g39 ? SBB		Rm, Rn				//Subtract with Borrow (64b)
+*** F0nm_1G39 ? SBB.L	Rm, Rn				//Subtract with Borrow (32b)
 *** F0nm_1e49 TST{Q}	Rm, Rn				//SR.T=!(Rm&Rn)
-*** F0nm_1g59 AND		Rm, Rn
-*** F0nm_1g69 OR		Rm, Rn				//
-*** F0nm_1g79 XOR		Rm, Rn				//
+*** F0nm_1g59 /? AND	Rm, Rn				//(Deprecated) Use 3R Instead.
+*** F0nm_1g69 /? OR		Rm, Rn				//(Deprecated) Use 3R Instead.
+*** F0nm_1g79 /? XOR	Rm, Rn				//(Deprecated) Use 3R Instead.
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
 *** F0nm_1G89 (N/A)
 *** F0nm_1g99 (N/A)
@@ -527,8 +541,8 @@ F0zz Instruction Block:
 
 *** F010_3en0  BRA		(PC, Rn)
 *** F011_3en0  BSR		(PC, Rn)
-*** F012_3en0  BT		(PC, Rn)
-*** F013_3en0  BF		(PC, Rn)
+*** F012_3en0 / BT		(PC, Rn)
+*** F013_3en0 / BF		(PC, Rn)
 *** F014_3en0  NOP3		Rn			//(WEX2) NOP with Register
 
 *** F018_3en0  /
@@ -543,13 +557,13 @@ F0zz Instruction Block:
 
 *** F020_3gn0  JMP		Rn
 *** F021_3gn0  JSR		Rn
-*** F022_3gn0  JT		Rn
-*** F023_3gn0  JF		Rn
+*** F022_3gn0 / JT		Rn
+*** F023_3gn0 / JF		Rn
 
 *** F02C_3en0  BRA.L	(PC, Rn)	//Branch, DWord Scale
 *** F02D_3en0  BSR.L	(PC, Rn)	//Branch, DWord Scale
-*** F02E_3en0  BT.L		(PC, Rn)	//Branch, DWord Scale
-*** F02F_3en0  BF.L		(PC, Rn)	//Branch, DWord Scale
+*** F02E_3en0  / BT.L	(PC, Rn)	//Branch, DWord Scale
+*** F02F_3en0  / BF.L	(PC, Rn)	//Branch, DWord Scale
 
 *** F033_3en0  MOVNT	Rn
 *** F036_3en0  ROTCL	Rn
@@ -629,17 +643,19 @@ F0zz Instruction Block:
 
 * F0zz_8zzz (XMOV Block, N/A)
 
-* F0nm_9eoZ  (Reserve, Optional Dedicated FPU)
+* F0nm_9eoZ  (Reserved)
 
 * F0nm_AeoZ  (3R Space)
 * F0nm_BeoZ  (3R Space)
 
 * F0dd_Cddd  BRA	(PC, disp20s)		//Branch, +/- 1MB
 * F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
-* F0dd_Eddd  BT		(PC, disp20s)		//Branch True, +/- 1MB
-* F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
+* F0dd_Eddd / BT	(PC, disp20s)		//(Drop, 1) Branch True, +/- 1MB
+* F0dd_Fddd / BF	(PC, disp20s)		//(Drop, 1) Branch False, +/- 1MB
 
 Branch ops may only exist in lane 1.
+
+*1: These have been replaced with BRA?T / BRA?F.
 
 
 ==== F1zz Instruction Block ====
@@ -725,7 +741,28 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n5_Dfjj  (N/A)
 ** F2n6_Dfjj  -
 ** F2n7_Dfjj  -
+
 * F2nz_Efjj
+** F2n0_Efjj  (N/A)
+** F2n1_Efjj  (N/A)
+** F2n2_Efjj  (N/A)
+** F2n3_Efjj  (N/A)
+
+** F2n4_Efjj ? BREQ.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn EQ 0)
+** F2n5_Efjj ? BREQ.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn EQ 0)
+** F2n6_Efjj ? BRNE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn NE 0)
+** F2n7_Efjj ? BRNE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn NE 0)
+
+** F2n8_Efjj ? BRLT.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn LT 0)
+** F2n9_Efjj ? BRLT.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn LT 0)
+** F2nA_Efjj ? BRGE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn GE 0)
+** F2nB_Efjj ? BRGE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn GE 0)
+
+** F2nC_Efjj ? BRLE.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn LE 0)
+** F2nD_Efjj ? BRLE.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn LE 0)
+** F2nE_Efjj ? BRGT.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn GT 0)
+** F2nF_Efjj ? BRGT.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn GT 0)
+
 * F2nz_Ffjj
 
 

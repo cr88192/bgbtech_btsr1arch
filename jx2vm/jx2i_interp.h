@@ -1274,6 +1274,8 @@ u32 usbbuf_rxeposb;
 u32 usbbuf_txsposb;
 u32 usbbuf_txeposb;
 
+byte do_edgewalk;
+
 char puts_linebuf[256];
 byte puts_linepos;
 

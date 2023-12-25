@@ -1443,18 +1443,26 @@ char *tk_sprint_hex(char *ct, u32 v)
 	return(ct);
 }
 
-char *tk_sprint_hex_n(char *ct, u32 v, int n)
+char *tk_sprint_hex_n(char *ct, u64 v, int n)
 {
 	static char *chrs="0123456789ABCDEF";
 
-	if(n>7)*ct++=(chrs[(v>>28)&15]);
-	if(n>6)*ct++=(chrs[(v>>24)&15]);
-	if(n>5)*ct++=(chrs[(v>>20)&15]);
-	if(n>4)*ct++=(chrs[(v>>16)&15]);
-	if(n>3)*ct++=(chrs[(v>>12)&15]);
-	if(n>2)*ct++=(chrs[(v>> 8)&15]);
-	if(n>1)*ct++=(chrs[(v>> 4)&15]);
-	if(n>0)*ct++=(chrs[(v    )&15]);
+	if(n>15)*ct++=(chrs[(v>>60)&15]);
+	if(n>14)*ct++=(chrs[(v>>56)&15]);
+	if(n>13)*ct++=(chrs[(v>>52)&15]);
+	if(n>12)*ct++=(chrs[(v>>48)&15]);
+	if(n>11)*ct++=(chrs[(v>>44)&15]);
+	if(n>10)*ct++=(chrs[(v>>40)&15]);
+	if(n> 9)*ct++=(chrs[(v>>36)&15]);
+	if(n> 8)*ct++=(chrs[(v>>32)&15]);
+	if(n> 7)*ct++=(chrs[(v>>28)&15]);
+	if(n> 6)*ct++=(chrs[(v>>24)&15]);
+	if(n> 5)*ct++=(chrs[(v>>20)&15]);
+	if(n> 4)*ct++=(chrs[(v>>16)&15]);
+	if(n> 3)*ct++=(chrs[(v>>12)&15]);
+	if(n> 2)*ct++=(chrs[(v>> 8)&15]);
+	if(n> 1)*ct++=(chrs[(v>> 4)&15]);
+	if(n> 0)*ct++=(chrs[(v    )&15]);
 	return(ct);
 }
 
@@ -1594,7 +1602,8 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 
 		case 'p':
 			s1=va_arg(lst, char *);
-			ct=tk_sprint_hex(ct, (u32)s1);
+//			ct=tk_sprint_hex(ct, (u32)s1);
+			ct=tk_sprint_hex_n(ct, (u64)s1, 6);
 			break;
 
 // #ifdef ARCH_HAS_FPU

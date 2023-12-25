@@ -7,6 +7,12 @@ TKRA_Context *TKRA_GetCurrentContext(void)
 
 void TKRA_SetCurrentContext(TKRA_Context *ctx)
 {
+	if(	(ctx->magic1!=0x12345678) ||
+		(ctx->magic2!=0x12345678) )
+	{
+		__debugbreak();
+	}
+
 	tkra_current_context=ctx;
 }
 
@@ -14,7 +20,10 @@ int TKRA_SetupContextBasic(int xs, int ys)
 {
 	TKRA_Context *ractx;
 
-	ractx=TKRA_AllocContext();
+	ractx=TK_DlGetApiContextA(TK_FCC_TKRA, TK_FCC_TKRA);
+	if(!ractx)
+		ractx=TKRA_AllocContext();
+
 	TKRA_SetupScreen(ractx, xs, ys);
 	TKRA_SetCurrentContext(ractx);
 	
@@ -59,6 +68,7 @@ void tkra_glVertexPointer(int size, int type, int stride,
 	const void *pointer)
 {
 	TKRA_Context *ctx;
+	TKRA_DrawPrimArrays *vptr;
 
 	ctx=TKRA_GetCurrentContext();
 	
@@ -70,9 +80,11 @@ void tkra_glVertexPointer(int size, int type, int stride,
 //	ctx->tkgl_vptr_xyz_str=stride;
 //	ctx->tkgl_vptr_xyz_ptr=(void *)pointer;
 
-	ctx->vptr->vptr_xyz_fmt=TKRA_PrimitiveGetFmt(size, type);
-	ctx->vptr->vptr_xyz_str=stride;
-	ctx->vptr->vptr_xyz_ptr=(void *)pointer;
+	vptr=ctx->vptr;
+
+	vptr->vptr_xyz_fmt=TKRA_PrimitiveGetFmt(size, type);
+	vptr->vptr_xyz_str=stride;
+	vptr->vptr_xyz_ptr=(void *)pointer;
 
 	ctx->VaGetPtr_xyz=TKRA_PrimitiveGetGetPtrXYZ(size, type);
 
@@ -87,6 +99,7 @@ void tkra_glTexCoordPointer(int size, int type, int stride,
 	const void *pointer)
 {
 	TKRA_Context *ctx;
+	int fmt, unit;
 
 	ctx=TKRA_GetCurrentContext();
 
@@ -98,11 +111,26 @@ void tkra_glTexCoordPointer(int size, int type, int stride,
 //	ctx->tkgl_vptr_st_str=stride;
 //	ctx->tkgl_vptr_st_ptr=(void *)pointer;
 
-	ctx->vptr->vptr_st_fmt=TKRA_PrimitiveGetFmt(size, type);
-	ctx->vptr->vptr_st_str=stride;
-	ctx->vptr->vptr_st_ptr=(void *)pointer;
+	unit=ctx->tex2d_active;
+	if(unit==0)
+	{
+		fmt=TKRA_PrimitiveGetFmt(size, type);
+		ctx->vptr->vptr_st_fmt=fmt;
+		ctx->vptr->vptr_st_str=stride;
+		ctx->vptr->vptr_st_ptr=(void *)pointer;
 
-	ctx->VaGetPtr_st =TKRA_PrimitiveGetGetPtrST(size, type);
+		ctx->VaGetPtr_st =TKRA_PrimitiveGetGetPtrST(size, type);
+
+		ctx->vptr->vptr_sta_fmt[0]=fmt;
+		ctx->vptr->vptr_sta_str[0]=stride;
+		ctx->vptr->vptr_sta_ptr[0]=(void *)pointer;
+	}else
+	{
+		fmt=TKRA_PrimitiveGetFmt(size, type);
+		ctx->vptr->vptr_sta_fmt[unit]=fmt;
+		ctx->vptr->vptr_sta_str[unit]=stride;
+		ctx->vptr->vptr_sta_ptr[unit]=(void *)pointer;
+	}
 }
 
 void tkra_glColorPointer(int size, int type, int stride,

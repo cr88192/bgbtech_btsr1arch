@@ -678,7 +678,11 @@ void *TKMM_Malloc(int sz)
 	int pg, np, np1;
 	
 	if(!TKMM_PageAlloc_f)
-		__debugbreak();
+	{
+		TKMM_Init();
+		if(!TKMM_PageAlloc_f)
+			__debugbreak();
+	}
 
 //	tk_printf("TKMM_Malloc: sz=%d\n", sz);
 

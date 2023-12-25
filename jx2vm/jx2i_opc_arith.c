@@ -1653,6 +1653,30 @@ void BJX2_Op_LEAB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(bjx2_addr)(op->pc2)+(bjx2_addr)(ctx->regs[op->ro]);
 }
 
+void BJX2_Op_LEATB_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr;
+	
+	sr=ctx->regs[BJX2_REG_SR];
+	lr=(bjx2_addr)(op->pc2)+op->imm;
+	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
+	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
+	lr|=1;
+	ctx->regs[op->rn]=lr;
+}
+
+void BJX2_Op_LEATB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr;
+	
+	sr=ctx->regs[BJX2_REG_SR];
+	lr=(bjx2_addr)(op->pc2)+(bjx2_addr)(ctx->regs[op->ro]);
+	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
+	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
+	lr|=1;
+	ctx->regs[op->rn]=lr;
+}
+
 
 void BJX2_Op_XLEA_AdjustBounds(BJX2_Context *ctx, BJX2_Opcode *op)
 {

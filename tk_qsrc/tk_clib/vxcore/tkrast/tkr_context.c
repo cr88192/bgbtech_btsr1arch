@@ -19,6 +19,10 @@ TKRA_TexImage *TKRA_LookupTexImgI(TKRA_Context *ctx, int num);
 TKRA_TexImage *TKRA_GetTexImgI(TKRA_Context *ctx, int num);
 int TKRA_BindTexImgI(TKRA_Context *ctx, TKRA_TexImage *img);
 
+int TKRA_QueryContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr);
+int TKRA_ModifyContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr);
+int TKRA_SetupScreenI(TKRA_Context *ctx, int xs, int ys, u64 attrib);
+
 TKRA_ContextVt tkra_context_vt = {
 NULL,			//Reserved 0
 NULL,			//Reserved 1
@@ -29,16 +33,31 @@ TKRA_UpdateTexImgI,
 TKRA_UpdateTexImgUtx2I,
 TKRA_LookupTexImgI,
 TKRA_GetTexImgI,
-TKRA_BindTexImgI
+TKRA_BindTexImgI,
+TKRA_QueryContextI,
+TKRA_ModifyContextI,
+TKRA_SetupScreenI
 };
 
 TKRA_Context *TKRA_AllocContext()
 {
 	TKRA_Context *tmp;
+	TKRA_SvContext	*svt;
 	
-	tmp=tkra_malloc(sizeof(TKRA_Context));
+	tmp=tkra_malloc_gbl(sizeof(TKRA_Context));
+	svt=tkra_malloc_gbl(sizeof(TKRA_SvContext));
 	memset(tmp, 0, sizeof(TKRA_Context));
+	memset(svt, 0, sizeof(TKRA_SvContext));
 	tmp->vt=&tkra_context_vt;
+	tmp->vptr=&(tmp->t_vptr);
+
+	tmp->svctx=svt;
+	svt->clctx=tmp;
+	
+	tmp->magic1=0x12345678;
+	tmp->magic2=0x12345678;
+	tmp->size_context=sizeof(TKRA_Context);
+
 	return(tmp);
 }
 
@@ -62,13 +81,78 @@ int TKRA_RegisterHalGetContext()
 	return(0);
 }
 
-int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
+int TKRA_SyncScreenCacheMode(TKRA_Context *ctx, int md)
+{
+	u64 *ptr;
+
+	u64 i0, i1, i2, i3, ik;
+	int i, j, k;
+
+	if(md==ctx->cachemode)
+		return(0);
+
+	if((md&0xE)==(ctx->cachemode&0xE))
+	{
+		if(md&1)
+		{
+			ctx->cachemode=md;
+			return(1);
+		}
+		return(0);
+	}
+
+	if(!(ctx->cachemode&1))
+	{
+		ctx->cachemode=md;
+		return(1);
+	}
+	
+	ptr=(u64 *)(ctx->screen_sten);
+	ik=0; j=0;
+	for(i=0; i<512; i++)
+	{
+		i0=ptr[j+0];
+		i1=ptr[j+2];
+		i2=ptr[j+4];
+		i3=ptr[j+6];
+		j+=8;
+		ik+=i0+i1+i2+i3;
+	}
+	
+	ctx->cachemode=md;
+	return(1);
+}
+
+int TKRA_QueryContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
+{
+}
+
+int TKRA_ModifyContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
+{
+}
+
+int TKRA_QueryContext(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
+{
+	return(ctx->vt->QueryContext(ctx, param, iptr, optr));
+}
+
+int TKRA_ModifyContext(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
+{
+	return(ctx->vt->ModifyContext(ctx, param, iptr, optr));
+}
+
+int TKRA_SetupScreenI(TKRA_Context *ctx, int xs, int ys, u64 attrib)
 {
 	byte *ptr;
 	int scr_memsz;
 	int ofs_rgb, ofs_zbuf, ofs_zbuf2, ofs_sten;
 	int ofs_pad, ofs_pad_lo, frsz;
 	int i, j, k;
+	
+	if(!(((long)ctx)>>16))
+	{
+		__debugbreak();
+	}
 	
 	frsz=xs*ys;
 
@@ -110,7 +194,8 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 //	scr_memsz += (xs+2)*(ys+4)*sizeof(byte);
 	scr_memsz += (frsz+ofs_pad)*sizeof(byte);
 
-	ptr=tkra_malloc(scr_memsz+31);
+//	ptr=tkra_malloc(scr_memsz+31);
+	ptr=tkra_malloc_gbl(scr_memsz+31);
 	ctx->screen_mem=ptr;
 	
 	k=(nlint)ptr;
@@ -146,7 +231,8 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 	ctx->trans_zrange=1;
 
 	TKRA_InitSpanRcp();
-	
+	TKRA_FillEParm_InitRcpTab();
+
 	for(i=0; i<xs*ys; i++)
 	{
 //		((short *)(ctx->screen_rgb))[i]=0x7FFF;
@@ -155,6 +241,11 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 	}
 
 	return(0);
+}
+
+int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
+{
+	return(ctx->vt->SetupScreen(ctx, xs, ys, 0));
 }
 
 int TKRA_DebugPrintStats(TKRA_Context *ctx)

@@ -1362,36 +1362,36 @@ int TKRA_SetupDrawBlend(TKRA_Context *ctx)
 		break;
 	}
 	
-	ctx->bfn_flag=0;
+	ctx->svctx->bfn_flag=0;
 	if((isbase&4) && (ctx->stateflag1&TKRA_STFL1_BLEND))
 //	if(0)
 	{
-		ctx->bfn_flag|=TKRA_TRFL_DOLMAP;
+		ctx->svctx->bfn_flag|=TKRA_TRFL_DOLMAP;
 	}else
 		if((isbase&1) || !(ctx->stateflag1&TKRA_STFL1_BLEND))
 	{
 		if(!(ctx->stateflag1&TKRA_STFL1_BLEND))
-			ctx->bfn_flag|=TKRA_TRFL_NOALPHA;
+			ctx->svctx->bfn_flag|=TKRA_TRFL_NOALPHA;
 		if(isbase==1)
-			ctx->bfn_flag|=TKRA_TRFL_NOALPHA;
+			ctx->svctx->bfn_flag|=TKRA_TRFL_NOALPHA;
 
 		if(!isbase)
 			Blend=TKRA_Blend_SrcAlpha_OneMinusSrcAlpha;
 	}else
 	{
-		ctx->bfn_flag|=TKRA_TRFL_DOBLEND;
+		ctx->svctx->bfn_flag|=TKRA_TRFL_DOBLEND;
 	}
 	
 	if(ctx->stateflag1&TKRA_STFL1_NODEPTHWRITE)
-		ctx->bfn_flag|=TKRA_TRFL_NOZWRITE;
+		ctx->svctx->bfn_flag|=TKRA_TRFL_NOZWRITE;
 
 	if(ctx->stateflag1&TKRA_STFL1_TEX_REPLACE)
-		ctx->bfn_flag|=TKRA_TRFL_NOCMOD;
+		ctx->svctx->bfn_flag|=TKRA_TRFL_NOCMOD;
 	
-	ctx->Blend=Blend;
+	ctx->svctx->Blend=Blend;
 
-	ctx->span_trifl=-1;
-	ctx->span_tex_cur=NULL;
+	ctx->svctx->span_trifl=-1;
+	ctx->svctx->span_tex_cur=NULL;
 
 	TKRA_SetupDrawZaTest(ctx);
 	return(0);

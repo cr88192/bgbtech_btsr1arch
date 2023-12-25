@@ -239,6 +239,12 @@ u64		style;
 
 byte dirty1;
 byte dirty2;
+byte tabactive;
+
+byte cell_xs;
+byte cell_ys;
+
+int owner_pid;
 
 TKGDI_BITMAPINFOHEADER t_buf_info;
 TKGDI_BITMAPINFOHEADER *buf_info;
@@ -249,6 +255,7 @@ byte	*buf_dirty2;	//buffer (dirty, cells since last redraw)
 
 _tkgdi_conparm	*con;
 TKGDI_EVENTBUF	*msgqueue;
+_tkgdi_conparm	*contab[16];
 };
 
 struct _tkgdi_conparm_s {
@@ -261,7 +268,7 @@ u16 bgclr_555;
 byte x;
 byte y;
 byte ena;
-byte resv_1;
+byte tabactive;
 
 byte cell_xs;	//width of character cell
 byte cell_ys;	//height of character cell

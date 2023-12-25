@@ -77,6 +77,27 @@ void tkra_free(void *ptr)
 	tkra_freelist[ix]=ptr1;
 }
 
+void *tkra_malloc_gbl(int sz)
+{
+	void *ptr;
+#ifdef __BGBCC__
+	ptr=tk_malloc_cat(sz, TKMM_MCAT_GLOBAL);
+#else
+	ptr=malloc(sz);
+#endif
+	return(ptr);
+}
+
+void *tkra_malloc_phys(int sz)
+{
+	void *ptr;
+#ifdef __BGBCC__
+	ptr=tk_malloc_cat(sz, TKMM_MCAT_PHYSDFL);
+#else
+	ptr=malloc(sz);
+#endif
+	return(ptr);
+}
 
 int tkra_log2dn(int val)
 {
@@ -92,11 +113,12 @@ TKRA_TexImage *TKRA_AllocTexImg(TKRA_Context *ctx)
 {
 	TKRA_TexImage *tmp;
 	
-	tmp=tkra_malloc(sizeof(TKRA_TexImage));
+//	tmp=tkra_malloc(sizeof(TKRA_TexImage));
+	tmp=tkra_malloc_phys(sizeof(TKRA_TexImage));
 	memset(tmp, 0, sizeof(TKRA_TexImage));
 	
-	tmp->next=ctx->tex_list;
-	ctx->tex_list=tmp;
+	tmp->next=ctx->svctx->tex_list;
+	ctx->svctx->tex_list=tmp;
 	
 	return(tmp);
 }
@@ -394,7 +416,7 @@ void TKRA_UpdateTexImgI(
 			if(j<=24)
 				img->tex_img=(tkra_rastpixel *)(img->tex_mipofs+4);
 			else
-				img->tex_img=tkra_malloc(j*sizeof(tkra_rastpixel));
+				img->tex_img=tkra_malloc_phys(j*sizeof(tkra_rastpixel));
 			img->tex_xshl=xshl;
 			img->tex_yshl=yshl;
 			
@@ -431,7 +453,7 @@ void TKRA_UpdateTexImgI(
 				if((j<=6) && (i<4))
 					img->tex_img_bcn=(u32 *)(img->tex_mipofs_bcn+4);
 				else
-					img->tex_img_bcn=tkra_malloc(j*sizeof(u32));
+					img->tex_img_bcn=tkra_malloc_phys(j*sizeof(u32));
 			}
 #endif
 		}
@@ -589,7 +611,7 @@ void TKRA_UpdateTexImgUtx2I(
 			if((j<=6) && (i<4))
 				img->tex_img_bcn=(u32 *)(img->tex_mipofs_bcn+4);
 			else
-				img->tex_img_bcn=tkra_malloc(j*sizeof(u32));
+				img->tex_img_bcn=tkra_malloc_phys(j*sizeof(u32));
 		}
 
 		txfl=img->tex_flag;
@@ -686,6 +708,45 @@ u64 TKRA_ConvBlockDxt1ToUtx2A(u64 blk)
 		pxb|=j<<(z*2);
 	}
 #endif
+
+#if 0
+	y=0;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	y=1;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	y=2;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	y=3;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+#endif
 	
 	blk2=((u64)clrc) | (((u64)clrd)<<16) | (((u64)pxb)<<32);
 //	__debugbreak();
@@ -713,7 +774,7 @@ u64 TKRA_ConvBlockDxt1ToUtx2B(u64 blk)
 	
 	pxa=(blk>>32); pxb=0; ix=0;
 
-#if 1
+#if 0
 	for(y=0; y<4; y++)
 	{
 		z=tkra_morton8(0, y);
@@ -736,6 +797,45 @@ u64 TKRA_ConvBlockDxt1ToUtx2B(u64 blk)
 		j=(rek>>(i*4))&3;
 		pxb|=j<<(z*2);
 	}
+#endif
+
+#if 1
+	y=0;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	y=1;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	y=2;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	y=3;
+	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(1, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(2, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
+	z=tkra_morton8(3, y);	i=(pxa>>ix)&3;	ix+=2;
+	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
 #endif
 	
 	blk2=((u64)clrc) | (((u64)clrd)<<16) | (((u64)pxb)<<32);
@@ -819,13 +919,19 @@ void TKRA_UpdateTexImgDxt1(
 	if(xs>256)
 		return;
 	
+//	tk_printf("TKRA_UpdateTexImgDxt1: %s:%d\n", __FILE__, __LINE__);
+	
 	if(!tmpbuf)
 	{
-		tmpbuf=tkra_malloc(64*64*8);
+		tmpbuf=tkra_malloc(128*128*8);
 	}
 	
+//	tk_printf("TKRA_UpdateTexImgDxt1: %s:%d\n", __FILE__, __LINE__);
+
 	if(flag&TKRA_TRFL_ALPHA)
 	{
+//		tk_printf("TKRA_UpdateTexImgDxt1: %s:%d\n", __FILE__, __LINE__);
+
 		xs1=(xs+3)>>2;
 		ys1=(ys+3)>>2;
 		for(y=0; y<ys1; y++)
@@ -837,6 +943,8 @@ void TKRA_UpdateTexImgDxt1(
 		}
 	}else
 	{
+//		tk_printf("TKRA_UpdateTexImgDxt1: %s:%d\n", __FILE__, __LINE__);
+
 		xs1=(xs+3)>>2;
 		ys1=(ys+3)>>2;
 		for(y=0; y<ys1; y++)
@@ -848,7 +956,11 @@ void TKRA_UpdateTexImgDxt1(
 		}
 	}
 
+//	tk_printf("TKRA_UpdateTexImgDxt1: %s:%d\n", __FILE__, __LINE__);
+
 	TKRA_UpdateTexImgUtx2(ctx, img, tmpbuf, xs, ys, mip, flag);
+
+//	tk_printf("TKRA_UpdateTexImgDxt1: %s:%d\n", __FILE__, __LINE__);
 }
 
 void TKRA_UpdateTexImgDxt5(
@@ -869,7 +981,7 @@ void TKRA_UpdateTexImgDxt5(
 	
 	if(!tmpbuf)
 	{
-		tmpbuf=tkra_malloc(64*64*8);
+		tmpbuf=tkra_malloc(128*128*8);
 	}
 	
 	xs1=(xs+3)>>2;
@@ -893,7 +1005,7 @@ TKRA_TexImage *TKRA_LookupTexImgI(TKRA_Context *ctx, int num)
 	int h;
 	
 	h=(num+(num>>8)+(num>>16))&255;
-	cur=ctx->tex_hash[h];
+	cur=ctx->svctx->tex_hash[h];
 	while(cur)
 	{
 		if(cur->tex_id==num)
@@ -909,7 +1021,7 @@ TKRA_TexImage *TKRA_GetTexImgI(TKRA_Context *ctx, int num)
 	int h;
 	
 	h=(num+(num>>8)+(num>>16))&255;
-	cur=ctx->tex_hash[h];
+	cur=ctx->svctx->tex_hash[h];
 	while(cur)
 	{
 		if(cur->tex_id==num)
@@ -919,8 +1031,8 @@ TKRA_TexImage *TKRA_GetTexImgI(TKRA_Context *ctx, int num)
 	
 	cur=TKRA_AllocTexImg(ctx);
 	cur->tex_id=num;
-	cur->chain=ctx->tex_hash[h];
-	ctx->tex_hash[h]=cur;
+	cur->chain=ctx->svctx->tex_hash[h];
+	ctx->svctx->tex_hash[h]=cur;
 	
 	cur->tex_xshl=0;
 	cur->tex_yshl=0;
@@ -936,31 +1048,57 @@ int TKRA_AllocTexnum(TKRA_Context *ctx)
 {
 	int id;
 	
-	id=ctx->tex_rov;
-	ctx->tex_rov=(id+1);
+	id=ctx->svctx->tex_rov;
+	ctx->svctx->tex_rov=(id+1);
 	return(id);
 }
 
-int TKRA_BindTexImgI(TKRA_Context *ctx, TKRA_TexImage *img)
+int TKRA_BindTexImg2I(TKRA_Context *ctx, TKRA_TexImage *img, int unit)
 {
-	ctx->tex_cur=img;
-//	ctx->tex_img=img->tex_img;
-//	ctx->tex_img_bcn=img->tex_img_bcn;
-	ctx->tex_xshl=img->tex_xshl;
-	ctx->tex_yshl=img->tex_yshl;
-	ctx->tex_mmip=img->tex_mmip;
-	ctx->tex_nmip=img->tex_nmip;
-	ctx->tex_flag=img->tex_flag;
+	TKRA_SvContext *sctx;
+	
+	sctx=ctx->svctx;
 
-	ctx->tex_img=NULL;
-	ctx->tex_img_bcn=NULL;
+	if(unit==0)
+	{
+		sctx->tex_cur=img;
+		sctx->tex_xshl=img->tex_xshl;
+		sctx->tex_yshl=img->tex_yshl;
+		sctx->tex_mmip=img->tex_mmip;
+		sctx->tex_nmip=img->tex_nmip;
+		sctx->tex_flag=img->tex_flag;
 
-	ctx->span_trifl=-1;
-	ctx->span_tex_cur=NULL;
+		sctx->tex_img=NULL;
+		sctx->tex_img_bcn=NULL;
+
+		sctx->span_trifl=-1;
+		sctx->span_tex_cur=NULL;
+	}
+
+	if(unit==1)
+	{
+		sctx->tex_cur2=img;
+		sctx->tex_xshl2=img->tex_xshl;
+		sctx->tex_yshl2=img->tex_yshl;
+		sctx->tex_mmip2=img->tex_mmip;
+		sctx->tex_nmip2=img->tex_nmip;
+		sctx->tex_flag2=img->tex_flag;
+
+		sctx->tex_img2=NULL;
+		sctx->tex_img_bcn2=NULL;
+
+//		sctx->span_trifl=-1;
+//		sctx->span_tex_cur=NULL;
+	}
 
 	TKRA_SetupForState(ctx);
 	
 	return(0);
+}
+
+int TKRA_BindTexImgI(TKRA_Context *ctx, TKRA_TexImage *img)
+{
+	return(TKRA_BindTexImg2I(ctx, img, ctx->tex2d_active));
 }
 
 int TKRA_SetupForState(TKRA_Context *ctx)

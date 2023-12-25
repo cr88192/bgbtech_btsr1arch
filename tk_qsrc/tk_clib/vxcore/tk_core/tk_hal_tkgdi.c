@@ -40,10 +40,17 @@ int					tkgdi_n_windows;
 _tkgdi_window_t		*tkgdi_window_vis[256];
 int					tkgdi_n_window_vis;
 
+TKPE_TaskInfo *tkgdi_comglue_curtask;
+
 TKGSTATUS TKGDI_DevPushEvent(
 	_tkgdi_context_t *ctx,
 	TKGHDC dev,
 	TKGDI_EVENT *imsg);
+
+TKGSTATUS TKGDI_WindowMarkDirtyRect(
+	_tkgdi_context_t *ctx,
+	_tkgdi_window_t *wctx,
+	int xo_src, int yo_src, int xs_src, int ys_src);
 
 TKGDI_EVENTBUF *TKGDI_AllocEventBuf()
 {
@@ -677,6 +684,50 @@ int TKGDI_UpdateWindowStack_PumpMouse(void)
 	TKGDI_DevPushEvent(NULL, 1, imsg);
 }
 
+int TKGDI_WindowSetActiveTab(_tkgdi_window_t *wctx, int tab)
+{
+	_tkgdi_conparm *con;
+	int i, j, k;
+	
+	if((tab<0) || (tab>=10))
+		return(-1);
+
+	if(tab==wctx->tabactive)
+	{
+		return(0);
+	}
+
+	con=wctx->contab[tab];
+	if(!con)
+	{
+		con=tk_malloc(sizeof(_tkgdi_conparm));
+		memset(con, 0, sizeof(_tkgdi_conparm));
+		tkgdi_con_init(con);
+		wctx->contab[tab]=con;
+	}
+
+	con->pixbuf=wctx->buf_data;
+	con->cell_xs=wctx->cell_xs;
+	con->cell_ys=wctx->cell_ys;
+
+	wctx->tabactive=tab;	
+	wctx->con=con;
+	tkgdi_con_markdirty(con);
+	tkgdi_con_redrawbuffer(con);
+
+	TKGDI_WindowMarkDirtyRect(NULL, wctx,
+		0, 0, wctx->size_x, wctx->size_y);
+
+	TKGDI_UpdateWindowCells(wctx);
+
+	TKGDI_ScreenMarkDirtyRect(
+		wctx->base_x, wctx->base_y-10,
+		wctx->base_x+wctx->size_x,
+		wctx->base_y+wctx->size_y);
+
+	return(0);
+}
+
 int TKGDI_UpdateWindowStack(void)
 {
 	_tkgdi_window_t *wctx, *wctx2;
@@ -731,7 +782,8 @@ int TKGDI_UpdateWindowStack(void)
 		tkgdi_ps2ms_moved=1;
 		TKGDI_UpdateWindowStack_PumpMouse();
 
-		for(i=0; i<tkgdi_n_window_vis; i++)
+//		for(i=0; i<tkgdi_n_window_vis; i++)
+		for(i=tkgdi_n_window_vis-1; i>=0; i--)
 		{
 			wctx=tkgdi_window_vis[i];
 			
@@ -740,10 +792,15 @@ int TKGDI_UpdateWindowStack(void)
 //				tkgdi_con_redrawbuffer(wctx->con);
 //			}
 
+//			if(	(tkgdi_ps2ms_ly1>=(wctx->base_y-8))	&&
+//				(tkgdi_ps2ms_ly1<=(wctx->base_y-0))	&&
+//				(tkgdi_ps2ms_lx1>(wctx->base_x+8))	&&
+//				(tkgdi_ps2ms_lx1<(wctx->base_x+wctx->size_x-16))
+//				)
 			if(	(tkgdi_ps2ms_ly1>=(wctx->base_y-8))	&&
 				(tkgdi_ps2ms_ly1<=(wctx->base_y-0))	&&
-				(tkgdi_ps2ms_lx1>(wctx->base_x+8))	&&
-				(tkgdi_ps2ms_lx1<(wctx->base_x+wctx->size_x-16))
+				(tkgdi_ps2ms_lx1>=(wctx->base_x))	&&
+				(tkgdi_ps2ms_lx1<=(wctx->base_x+wctx->size_x))
 				)
 			{
 				if(tkgdi_ps2ms_lb&1)
@@ -765,7 +822,42 @@ int TKGDI_UpdateWindowStack(void)
 							wctx2->base_y+wctx2->size_y);
 						break;
 					}
-				
+
+					if(	(tkgdi_ps2ms_lx1>=(wctx->base_x+0))	&&
+						(tkgdi_ps2ms_lx1<(wctx->base_x+8))
+						)
+					{
+						tk_printf("TKGDI_UpdateWindowStack: Click Close\n");
+						break;
+					}
+
+					if(	(tkgdi_ps2ms_lx1>=(wctx->base_x+wctx->size_x-16)) &&
+						(tkgdi_ps2ms_lx1<(wctx->base_x+wctx->size_x-8))
+						)
+					{
+						tk_printf("TKGDI_UpdateWindowStack: Click Minimize\n");
+						break;
+					}
+
+					if(	(tkgdi_ps2ms_lx1>=(wctx->base_x+wctx->size_x-8)) &&
+						(tkgdi_ps2ms_lx1<(wctx->base_x+wctx->size_x-0))
+						)
+					{
+						tk_printf("TKGDI_UpdateWindowStack: Click Maximize\n");
+						break;
+					}
+
+					j=(tkgdi_ps2ms_lx1-(wctx->base_x+wctx->size_x-12*8))>>3;
+					if((j>=0) && (j<9) && wctx->con)
+					{
+						tk_printf("TKGDI_UpdateWindowStack: Click Tab %d\n",
+							j+1);
+
+						TKGDI_WindowSetActiveTab(wctx, j);
+//						tkgdi_con_settab(wctx->con, j);
+						break;
+					}
+
 					TKGDI_ScreenMarkDirtyRect(
 						wctx->base_x, wctx->base_y-10,
 						wctx->base_x+wctx->size_x,
@@ -789,6 +881,8 @@ int TKGDI_UpdateWindowStack(void)
 						wctx->base_x, wctx->base_y-10,
 						wctx->base_x+wctx->size_x,
 						wctx->base_y+wctx->size_y);
+					
+					break;
 				}
 			}
 			
@@ -967,40 +1061,49 @@ int TKGDI_UpdateWindowStack(void)
 				if(wctx->title)
 				{
 					cs=(byte *)wctx->title;
-					while(*cs)
+				}else
+				{
+					cs="  ";
+				}
+
+				while(*cs)
+				{
+					j=*cs++;
+					blkb=TK_Con_GlyphForCodepoint(j);
+
+					sy=by-2;
+					if(sy<0)
+						continue;
+					if(sy>=bys)
+						continue;
+
+					sx=bx+x*2;
+					x++;
+
+					if(sx<0)
+						continue;
+					if(sx>=bxs)
+						continue;
+
+					z0a=((sy+0)>>1)*bmxs2+((bx+x*2)>>1);
+					z1a=((sy+1)>>1)*bmxs2+((bx+x*2)>>1);
+					
+					if(	!(tkgdi_vid_screendirty[z0a>>3]&(3<<(z0a&7))) &&
+						!(tkgdi_vid_screendirty[z1a>>3]&(3<<(z1a&7))))
 					{
-						j=*cs++;
-						blkb=TK_Con_GlyphForCodepoint(j);
-
-						sy=by-2;
-						if(sy<0)
-							continue;
-						if(sy>=bys)
-							continue;
-
-						sx=bx+x*2;
-						x++;
-
-						if(sx<0)
-							continue;
-						if(sx>=bxs)
-							continue;
-
-						z0a=((sy+0)>>1)*bmxs2+((bx+x*2)>>1);
-						z1a=((sy+1)>>1)*bmxs2+((bx+x*2)>>1);
-						
-						if(	!(tkgdi_vid_screendirty[z0a>>3]&(3<<(z0a&7))) &&
-							!(tkgdi_vid_screendirty[z1a>>3]&(3<<(z1a&7))))
-						{
-							continue;
-						}
-
-						TKGDI_UpdateWindowStack_CopyFillTilePx(
-							sx, sy, bxs,
-							blkb, TKGDI_ICOPX_00,
-							0x7FFF,
-							issel?TKGDI_CLR_TITLEBLUSEL:TKGDI_CLR_TITLEBLU);
+						continue;
 					}
+
+					TKGDI_UpdateWindowStack_CopyFillTilePx(
+						sx, sy, bxs,
+						blkb, TKGDI_ICOPX_00,
+						0x7FFF,
+						issel?TKGDI_CLR_TITLEBLUSEL:TKGDI_CLR_TITLEBLU);
+
+					(*(u16 *)(tkgdi_vid_screendirty+(z0a>>3)))|=
+						(3<<(z0a&7));
+					(*(u16 *)(tkgdi_vid_screendirty+(z1a>>3)))|=
+						(3<<(z1a&7));
 				}
 
 #if 1
@@ -1055,6 +1158,51 @@ int TKGDI_UpdateWindowStack(void)
 					(*(u16 *)(tkgdi_vid_screendirty+(z1a>>3)))|=(3<<(z1a&7));
 				}
 #endif
+
+				if(wctx->con)
+				{
+					x-=11;
+					for(j=0; j<9; j++)
+					{
+						blkb=TK_Con_GlyphForCodepoint('1'+j);
+
+						sy=by-2;
+						if(sy<0)
+							continue;
+						if(sy>=bys)
+							continue;
+
+						sx=bx+x*2;
+						x++;
+
+						if(sx<0)
+							continue;
+						if(sx>=bxs)
+							continue;
+
+						z0a=((sy+0)>>1)*bmxs2+((bx+x*2)>>1);
+						z1a=((sy+1)>>1)*bmxs2+((bx+x*2)>>1);
+						
+						if(	!(tkgdi_vid_screendirty[z0a>>3]&(3<<(z0a&7))) &&
+							!(tkgdi_vid_screendirty[z1a>>3]&(3<<(z1a&7))))
+						{
+							continue;
+						}
+
+						TKGDI_UpdateWindowStack_CopyFillTilePx(
+							sx, sy, bxs,
+							blkb, TKGDI_ICOPX_00,
+							TKGDI_CLR_GRAY25,
+							(j==wctx->tabactive)?
+							TKGDI_CLR_GRAY50 :
+							TKGDI_CLR_GRAY75);
+
+						(*(u16 *)(tkgdi_vid_screendirty+(z0a>>3)))|=
+							(3<<(z0a&7));
+						(*(u16 *)(tkgdi_vid_screendirty+(z1a>>3)))|=
+							(3<<(z1a&7));
+					}
+				}
 
 				TKGDI_UpdateWindowStack_CopyFillTilePx(bx, by-2, bxs,
 					TKGDI_ICOPX_X, TKGDI_ICOPX_00,
@@ -1404,6 +1552,8 @@ _tkgdi_window_t *TKGDI_AllocNewConsoleWindow(
 	memset(con, 0, sizeof(_tkgdi_conparm));
 	tkgdi_con_init(con);
 	
+	wctx->tabactive=0;
+	wctx->contab[0]=con;
 	wctx->con=con;
 	
 //	wctx->size_x=80*8;
@@ -1418,6 +1568,9 @@ _tkgdi_window_t *TKGDI_AllocNewConsoleWindow(
 	wctx->size_y=25*6;
 	wctx->size_bxs=wctx->size_x>>2;
 	wctx->size_bys=wctx->size_y>>2;
+	wctx->cell_xs=4;
+	wctx->cell_ys=6;
+
 	return(wctx);
 }
 
@@ -2054,11 +2207,19 @@ TKGSTATUS TKGDI_DevPushEvent(
 {
 	TKGDI_EVENTBUF *tmsg, *tmcur;
 	_tkgdi_window_t *wctx;
+	int didx;
 	int i, j, k;
 
-	if(dev>1)
+	if(dev<=0)
+		return(0);
+
+	didx=dev&0xFFFFF;
+
+//	if(dev>1)
+	if(didx>1)
 	{
-		i=dev;
+//		i=dev;
+		i=didx;
 
 		wctx=tkgdi_window_vis[i];
 		if(!wctx)
@@ -2140,16 +2301,32 @@ TKGSTATUS TKGDI_DevPollEvent(
 	_tkgdi_window_t *wctx;
 	TKGDI_EVENTBUF *tmsg;
 	TKGDI_RECT *rect;
+	int didx, dtab;
 
 	if(dev<1)
 	{
 		return(-1);
 	}
 
-	wctx=tkgdi_windows[dev];
+	didx=dev&0xFFFFF;
+	if(didx<1)
+	{
+		return(-1);
+	}
+	
+//	wctx=tkgdi_windows[dev];
+	wctx=tkgdi_windows[didx];
 	if(!wctx)
 	{
 		return(-1);
+	}
+
+	dtab=(dev>>20)&15;
+	if(dtab!=wctx->tabactive)
+	{
+		imsg->dev=0;
+		imsg->fccMsg=0;
+		return(0);
 	}
 
 	tmsg=wctx->msgqueue;
@@ -2461,12 +2638,16 @@ TKGHDC TKGDI_CreateDisplay(
 				
 				wctx->con->cell_xs=cxs;
 				wctx->con->cell_ys=cys;
+				wctx->cell_xs=cxs;
+				wctx->cell_ys=cys;
 			}else
 			{
 				cxs=wctx->con->cell_xs;
 				cys=wctx->con->cell_ys;
 				xs=cxs*80;
 				ys=cys*25;
+				wctx->cell_xs=cxs;
+				wctx->cell_ys=cys;
 			}
 		}
 
@@ -2498,6 +2679,9 @@ TKGHDC TKGDI_CreateDisplay(
 		
 		wctx->dirty1=1;
 		wctx->dirty2=0;
+
+		if(tkgdi_comglue_curtask)
+			wctx->owner_pid=tkgdi_comglue_curtask->pid;
 
 		if(wctx->con)
 			wctx->con->pixbuf=wctx->buf_data;
@@ -2574,58 +2758,79 @@ TKGSTATUS TKGDI_DrawString(
 	char *text, TKGHFONT font, long long mode)
 {
 	_tkgdi_window_t *wctx;
+	_tkgdi_conparm	*con;
 	TKGDI_RECT *rect;
 
 	char *s;
 	int ocx, ocy, cxs, cys;
 	int cx, cy, sz, ch;
+	int didx, dtab;
+	
+	didx=dev&0xFFFF;
+	dtab=(dev>>20)&15;
 
-	if(dev>1)
+	if(didx>1)
 	{
-		wctx=tkgdi_windows[dev];
+		wctx=tkgdi_windows[didx];
 		if(!wctx)
 		{
 			return(-1);
 		}
 		
-		if(wctx->con)
+		con=wctx->contab[dtab];
+		if(!con)
 		{
-			ocx=wctx->con->x;
-			ocy=wctx->con->y;
+			con=tk_malloc(sizeof(_tkgdi_conparm));
+			memset(con, 0, sizeof(_tkgdi_conparm));
+			tkgdi_con_init(con);
+			wctx->contab[dtab]=con;
+			con->cell_xs=wctx->cell_xs;
+			con->cell_ys=wctx->cell_ys;
+		}
+		
+		if(con)
+		{
+			ocx=con->x;
+			ocy=con->y;
 
-			cxs=wctx->con->cell_xs;
-			cys=wctx->con->cell_ys;
+			cxs=con->cell_xs;
+			cys=con->cell_ys;
 
 			if((xo_dev>=0) && (yo_dev>=0))
 			{
-				wctx->con->x=xo_dev;
-				wctx->con->y=yo_dev;
+				con->x=xo_dev;
+				con->y=yo_dev;
 			}
 			
 			s=text;
 			while(*s)
 			{
 				ch=*s++;
-				cx=wctx->con->x;
-				cy=wctx->con->y;
-				tkgdi_con_putc(wctx->con, ch);
-				TKGDI_WindowMarkDirtyRect(ctx, wctx,
-					cx*cxs, cy*cys, cxs, cys);
-				
-				if(wctx->con->dirty&2)
+				cx=con->x;
+				cy=con->y;
+				tkgdi_con_putc(con, ch);
+
+				if(dtab==wctx->tabactive)
 				{
 					TKGDI_WindowMarkDirtyRect(ctx, wctx,
-						0, 0, wctx->size_x, wctx->size_y);
+						cx*cxs, cy*cys, cxs, cys);
+					
+					if(wctx->con->dirty&2)
+					{
+						TKGDI_WindowMarkDirtyRect(ctx, wctx,
+							0, 0, wctx->size_x, wctx->size_y);
+					}
 				}
 			}
 
 			if((xo_dev>=0) && (yo_dev>=0))
 			{
-				wctx->con->x=ocx;
-				wctx->con->y=ocy;
+				con->x=ocx;
+				con->y=ocy;
 			}
 
-			TKGDI_UpdateWindowCells(wctx);
+			if(dtab==wctx->tabactive)
+				TKGDI_UpdateWindowCells(wctx);
 			
 			return(0);
 		}
@@ -2663,6 +2868,42 @@ TKGSTATUS TKGDI_DestroyDisplay(
 	_tkgdi_context_t *ctx,
 	TKGHDC dev)
 {
+	_tkgdi_window_t *wctx;
+	TKGDI_RECT *rect;
+	int i, j, k;
+
+	if(dev<2)
+		return(0);
+
+	wctx=tkgdi_windows[dev];
+	if(!wctx)
+		return(0);
+
+	for(i=0; i<tkgdi_n_window_vis; i++)
+	{
+		if(tkgdi_window_vis[i]==wctx)
+		{
+			for(j=i; j<tkgdi_n_window_vis; j++)
+				{ tkgdi_window_vis[j]=tkgdi_window_vis[j+1]; }
+			tkgdi_n_window_vis--;
+			break;
+		}
+	}
+	
+	tkgdi_windows[dev]=NULL;
+
+	if(wctx->buf_data)
+		tk_free(wctx->buf_data);
+	if(wctx->buf_utx2)
+		tk_free(wctx->buf_utx2);
+	if(wctx->buf_dirty1)
+		tk_free(wctx->buf_dirty1);
+	if(wctx->buf_dirty2)
+		tk_free(wctx->buf_dirty2);
+	tk_free(wctx);
+
+	TKGDI_ScreenMarkDirty();
+
 	return(0);
 }
 
@@ -2835,6 +3076,35 @@ TKGSTATUS TKGDI_WriteAudioSamples(
 	return(0);
 }
 
+
+void TKGDI_HalCleanupForTask(TKPE_TaskInfo *task)
+{
+	_tkgdi_window_t *wctx;
+	int i, j, k;
+
+//	if(dev<2)
+//		return(0);
+
+//	wctx=tkgdi_windows[dev];
+//	if(!wctx)
+//		return(0);
+
+	for(i=2; i<tkgdi_n_windows; i++)
+	{
+		wctx=tkgdi_windows[i];
+		if(!wctx)
+			continue;
+		if(wctx->owner_pid==task->pid)
+		{
+			TKGDI_DestroyDisplay(NULL, i);
+		}
+	}
+	
+	TK_Midi_SilenceAll();
+	TKGDI_Snd_SilenceAll();
+
+}
+
 const _tkgdi_context_vtable_t tkgdi_context_vtable_vt = {
 NULL,
 NULL,
@@ -2972,6 +3242,7 @@ void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
 	if(fn==((void *)0x789ABCDE))
 	{
 		vt=(void *)(((u64)vt)^tkgdi_ptrmangle_key);
+		obj1=sObj;
 		fn=vt[idx];
 	}else if(fn==((void *)0x12345678))
 	{
@@ -2984,6 +3255,7 @@ void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
 		__debugbreak();
 	}
 
+	tkgdi_comglue_curtask=task;
 	tkgdi_comglue_dispatchfcn(obj1, fn, pret, args);
 }
 

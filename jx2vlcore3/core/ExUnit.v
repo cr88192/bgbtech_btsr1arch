@@ -759,7 +759,7 @@ reg[8:0]		idC2IdUIxt;
 `reg_gpr		gprIdRv;		//Source D, MemStore
 `reg_gpr		gprIdRm;		//Dest A
 `reg_gpr		gprIdRn;		//Dest B
-`reg_gpr		gprIdRo;		//Dest B
+`reg_gpr		gprIdRo;		//Dest C
 
 wire[63:0]		gprValRs;
 wire[63:0]		gprValRt;
@@ -3390,13 +3390,28 @@ begin
 			(ex3OpUCmd[5:0]==JX2_UCMD_JSR) ||
 			(ex3OpUCmd[5:0]==JX2_UCMD_BSR);
 
+`ifdef def_true		
 		id1BraPipelineR1 =
 			(gprIdRm    == JX2_GR_DHR) ||
 			(ex1RegIdRm == JX2_GR_DHR) ||
 			(ex2RegIdRm == JX2_GR_DHR) ||
 			(ex3RegIdRm == JX2_GR_DHR) ||
 			(ewbRegIdRm == JX2_GR_DHR) ;
-		
+`endif
+
+`ifndef def_true		
+		id1BraPipelineR1 =
+			(gprIdRm    == JX2_GR_DHR) ||
+			(gprIdRn    == JX2_GR_DHR) ||
+			(ex1RegIdRm == JX2_GR_DHR) ||
+			(ex2RegIdRm == JX2_GR_DHR) ||
+			(ex3RegIdRm == JX2_GR_DHR) ||
+			(ewbRegIdRm == JX2_GR_DHR) ||
+			(exB1RegIdRm == JX2_GR_DHR) ||
+			(exB2RegIdRm == JX2_GR_DHR) ||
+			(exB3RegIdRm == JX2_GR_DHR) ;
+`endif
+
 //		id1BraPipelineDbl =
 //			(id1PreBra!=0) ||
 //			(id2PreBra!=0) ||

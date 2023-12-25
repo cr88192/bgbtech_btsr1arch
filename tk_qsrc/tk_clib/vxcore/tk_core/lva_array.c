@@ -268,6 +268,12 @@ void *TKMM_LVA_GetArrayIndexPtr(tk_lva_object obj, int idx, int sc)
 		bti=(obits>>48)&4095;
 		bsi=0;
 		
+//		if(!bti && !idx)
+//		{
+//			//yeah...
+//			return((void *)obits);
+//		}
+		
 //		if(bti!=tkmm_lvatyi_tagarray)
 //		{
 //			__debugbreak();
@@ -479,6 +485,32 @@ void *__lvo_arraygetptr(tk_lva_object obj)
 {
 	return(TKMM_LVA_GetArrayIndexPtr(obj, 0, 0));
 }
+
+void *__lvo_loadindexaddr_b(tk_lva_object obj, int idx)
+{
+	return(TKMM_LVA_GetArrayIndexPtr(obj, idx, 0));
+}
+
+void *__lvo_loadindexaddr_s(tk_lva_object obj, int idx)
+{
+	return(TKMM_LVA_GetArrayIndexPtr(obj, idx, 1));
+}
+
+void *__lvo_loadindexaddr_i(tk_lva_object obj, int idx)
+{
+	return(TKMM_LVA_GetArrayIndexPtr(obj, idx, 2));
+}
+
+void *__lvo_loadindexaddr_l(tk_lva_object obj, int idx)
+{
+	return(TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+}
+
+void *__lvo_loadindexaddr_p(tk_lva_object obj, int idx)
+{
+	return(TKMM_LVA_GetArrayIndexPtr(obj, idx, 3));
+}
+
 
 s32 __lvo_loadindex_i(tk_lva_object obj, int idx)
 {

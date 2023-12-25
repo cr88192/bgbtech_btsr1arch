@@ -1759,6 +1759,8 @@ void GL_UploadCompressed (
 	int xshl, xshl1, isz, mip, txc;
 	int i, j, k;
 	
+//	printf("GL_UploadCompressed: A0 %s:%d\n", __FILE__, __LINE__);
+	
 	if(!memcmp(data, "TXC0", 4))
 	{
 		css=data+16;
@@ -1782,6 +1784,8 @@ void GL_UploadCompressed (
 			{ i>>=1; xshl++; }
 	}
 
+//	printf("GL_UploadCompressed: A1 %s:%d\n", __FILE__, __LINE__);
+
 	txc=GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
 	if(!alpha)
 		txc=GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
@@ -1796,6 +1800,9 @@ void GL_UploadCompressed (
 		if(xshl1<0)
 			xshl1=0;
 	
+//		printf("GL_UploadCompressed: A1-1 %s:%d  %d\n",
+//			__FILE__, __LINE__, xshl);
+
 		isz=1<<(xshl1+xshl1+3);
 		qglCompressedTexImage2D(
 			GL_TEXTURE_2D, mip, 
@@ -1805,6 +1812,8 @@ void GL_UploadCompressed (
 		cs+=isz;
 		xshl--; mip++;
 	}
+
+//	printf("GL_UploadCompressed: A2 %s:%d\n", __FILE__, __LINE__);
 
 	if (mipmap)
 	{
@@ -1820,6 +1829,8 @@ void GL_UploadCompressed (
 		qglTexParameterf(GL_TEXTURE_2D,
 			GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
+
+//	printf("GL_UploadCompressed: A3 %s:%d\n", __FILE__, __LINE__);
 }
 
 /*
@@ -1839,6 +1850,8 @@ int GL_LoadTexture (char *identifier,
 	int			i, p, s, imgbufsz;
 	gltexture_t	*glt;
 
+//	printf("GL_LoadTexture: A0 %s:%d\n", __FILE__, __LINE__);
+
 	// see if the texture is allready present
 	if (identifier[0])
 	{
@@ -1856,6 +1869,8 @@ int GL_LoadTexture (char *identifier,
 //		glt = &gltextures[numgltextures];
 //		numgltextures++;
 	}
+
+//	printf("GL_LoadTexture: A1 %s:%d\n", __FILE__, __LINE__);
 
 	gl_savetexname = NULL;
 	imgbuf = NULL;
@@ -1900,6 +1915,8 @@ int GL_LoadTexture (char *identifier,
 #endif
 	}
 
+//	printf("GL_LoadTexture: A2 %s:%d\n", __FILE__, __LINE__);
+
 //	if(identifier && !strncmp(identifier, "progs/", 6))
 //		{ alpha = 0; }
 
@@ -1917,7 +1934,11 @@ int GL_LoadTexture (char *identifier,
 	glt->height = height;
 	glt->mipmap = mipmap;
 
+//	printf("GL_LoadTexture: A3 %s:%d\n", __FILE__, __LINE__);
+
 	GL_Bind( texture_extension_number );
+
+//	printf("GL_LoadTexture: A4 %s:%d\n", __FILE__, __LINE__);
 
 	if(imgbuf)
 	{
@@ -1929,6 +1950,8 @@ int GL_LoadTexture (char *identifier,
 	{
 		GL_Upload8 (data, width, height, mipmap, alpha);
 	}
+
+//	printf("GL_LoadTexture: A5 %s:%d\n", __FILE__, __LINE__);
 
 	gl_savetexname = NULL;
 

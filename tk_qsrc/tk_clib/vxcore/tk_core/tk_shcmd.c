@@ -1573,7 +1573,10 @@ int TKSH_Cmds_StartGui(char **args)
 	ctx->vt->DrawString(ctx, hdcWin, -1, -1,
 		"Console test string\r\n", 0, 0);
 
-	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin);
+	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(0<<20));
+	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(1<<20));
+	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(2<<20));
+	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(3<<20));
 
 	while(1)
 	{
@@ -2160,9 +2163,9 @@ int TKSH_TryLoadA(char *img, char **args0)
 	TKPE_CreateTaskInfo t_tinf;
 	TKPE_CreateTaskInfo *tinf;
 	char *ct;
-	int i, rt;
+	int i, rt, pid;
 	
-	rt=TKSH_TryLoadA(img, args0);
+	rt=TKSH_TryLoadA0(img, args0);
 	if(rt>0)
 	{
 		return(rt);
@@ -2187,8 +2190,12 @@ int TKSH_TryLoadA(char *img, char **args0)
 	
 		TK_Env_GetCwd(cwd, 256);
 	
-		TK_CreateProcess(img, tbuf, NULL, cwd, 0, tinf);
+		pid=TK_CreateProcess(img, tbuf, NULL, cwd, 0, tinf);
+		rt=TK_Task_PidJoinOnReturn(pid);
+		return(rt);
 	}
+
+	return(-1);
 }
 
 int TKSH_TryLoadB(char *img, char **args0)
@@ -2221,7 +2228,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
 	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
 	int sig_is_pe, sig_is_asc, sig_is_elf;
-	int rv, nl, sz, sza, ix;
+	int rv, nl, sz, sza, ix, pid;
 	int i, j, k;
 
 	pimg=NULL;
@@ -2641,6 +2648,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 				tkern->task_join_ret=ctask;
 			}
 			
+			pid=task->pid;
+			
 			pb_boot=(u64)bootptr;
 
 			tkern->ctx_regsave[TKPE_REGSAVE_TTB]=tk_vmem_pageglobal;
@@ -2657,7 +2666,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 //			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
 			TK_Task_SyscallReturnToUser(task);
 
-#if 1
+#if 0
 			if(!ptask)
 			{
 				rv=TK_Task_JoinOnReturn(task);
@@ -2671,7 +2680,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 			}
 #endif
 
-			return(1);
+//			return(1);
+			return(task->pid);
 
 #endif
 

@@ -1036,6 +1036,9 @@ If given a pointer with an unhandled tag type, or if the pointer goes outside th
 These instructions will be part of the TTAG extension.
 
 
+As a special case, LEAT.x encoding PC as the base register will generate an address tagged in the same way as the Link Register (LR). This tagging will reflect the current operating mode.
+
+
 === LDIN / LDIZ ===
 
 Targeting R0/DLR:

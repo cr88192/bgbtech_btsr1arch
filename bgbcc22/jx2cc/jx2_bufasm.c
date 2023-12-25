@@ -640,11 +640,24 @@ int BGBCC_JX2A_ParseOperand_OffsetOf(BGBCC_JX2_Context *ctx,
 	st=BGBCC_CCXL_LookupStructure(ctx->tctx, objn);
 	if(!st)
 	{
-		BGBCC_DBGBREAK
+		fprintf(stderr, "BGBCC_JX2A_ParseOperand_OffsetOf: "
+			"No struct %s\n", objn);
+		BGBCC_CCXL_TagError(ctx->tctx,
+			CCXL_TERR_STATUS(CCXL_STATUS_ERR_LOOKUPFAIL));
+//		BGBCC_DBGBREAK
 		return(0);
 	}
 	
 	fn=BGBCC_CCXL_LookupStructFieldID(ctx->tctx, st, fldn);
+	if(fn<0)
+	{
+		fprintf(stderr, "BGBCC_JX2A_ParseOperand_OffsetOf: "
+			"Struct %s no member %s\n", objn, fldn);
+		BGBCC_CCXL_TagError(ctx->tctx,
+			CCXL_TERR_STATUS(CCXL_STATUS_ERR_LOOKUPFAIL));
+		return(0);
+	}
+
 	fi=st->decl->fields[fn];
 
 	if(fi->fxmoffs==fi->fxnoffs)

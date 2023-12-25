@@ -62,7 +62,7 @@
 
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
-// `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
+`define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
 
 `ifndef jx2_xc7s50
 // `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
@@ -159,10 +159,10 @@
 `endif
 
 // `ifndef jx2_xc7s50
-//`define jx2_enable_prebra			//Enable PreBranch
-//`define jx2_prebra_rts				//Enable PreBranch on RTS
+`define jx2_enable_prebra			//Enable PreBranch
+// `define jx2_prebra_rts				//Enable PreBranch on RTS
 //`define jx2_prebra_rtsu				//Enable PreBranch on RTSU
-// `define jx2_prebra_no16b			//Disable PreBranch on 16-bit ops
+`define jx2_prebra_no16b			//Disable PreBranch on 16-bit ops
 // `endif
 
 `define jx2_l1d_nohash			//Disable L1 address hashing.

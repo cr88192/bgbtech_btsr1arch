@@ -1780,8 +1780,8 @@ F0zz Instruction Block:
 *** F0nm_1G7A / PMUL.F		Rm, Rn			//(GSVF) Packed MUL Float
 *** F0nm_1g8A / MOVHD		Rm, Rn			//(GSV) Move High DWord
 *** F0nm_1G8A / MOVLD		Rm, Rn			//(GSV) Move Low DWord
-*** F0ni_1g9A  PDOTT.H		Imm5u, Rn		//(GSVF? Predict Dot Predicate)
-*** F0ni_1G9A  PDOTT.F		Imm5u, Rn		//(GSVF? Predict Dot Predicate)
+*** F0ni_1g9A ? PDOTT.H		Imm5u, Rn		//(GSVF? Predict Dot Predicate)
+*** F0ni_1G9A ? PDOTT.F		Imm5u, Rn		//(GSVF? Predict Dot Predicate)
 *** F0nm_1gAA  PCMPEQ.H		Rm, Rn			//Packed Compare Half, Equal
 *** F0nm_1GAA  PCMPEQ.F		Rm, Rn			//Packed Compare Single, Equal
 *** F0nm_1gBA  PCMPGT.H		Rm, Rn			//Packed Compare Half, Greater
@@ -2417,11 +2417,11 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n3_Dfjj  MUL{S/U}.W	Imm10n, Rn			//Rn=Rn*Imm10n
 ** F2n4_Dfjj ? LDIROZ{Q}	Imm10u, Rn			//Load + ROTL
 ** F2n5_Dfjj ? LDIRON{Q}	Imm10n, Rn			//Load + ROTL
-** F2n6_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMPZ) JCmp (Rn xx 0)
-** F2n7_Dfjj ? JCMPZ{Q}xx	Rn, Disp8s			//(JCMPZ) JCmp (Rn xx 0)
+** F2n6_Dfjj /? JCMPZ{Q}xx	Rn, Disp8s			//(JCMPZ) JCmp (Rn xx 0)
+** F2n7_Dfjj /? JCMPZ{Q}xx	Rn, Disp8s			//(JCMPZ) JCmp (Rn xx 0)
 
 ** F2n8_Dhjj ? MOV.L	Rn, (GBR, Disp10u*4)	// (E.q=0)
-** F2n8_DHjj ? -
+** F2n8_DHjj -
 ** F2n9_Dhjj ? MOV.Q	Rn, (GBR, Disp10u*8)	// (E.q=0)
 ** F2n9_DHjj ? MOV.X	Xn, (GBR, Disp10u*8)	// (E.q=1)
 ** F2nA_Dhjj ? MOV.L	(GBR, Disp10u*4), Rn	// (E.q=0)
@@ -2652,8 +2652,12 @@ The layout of the F8 block will thus be modified slighly with XGPR and two Imm24
 Alternative 2 (Hx, W0):
 * FFw0_0vzz_F0nm_ZeoZ  "OP Rm, Ro, Rn"
 * FFw0_0vii_F0nm_ZeoZ  "OP Rm, Ro, Rn, Imm8"
-* FFw0_0Vii_F0nm_ZeoZ  "OP Rm, Imm9s, Ro, Rn"
-* FFw0_0Vii_F0nm_ZGiZ  "OP Rm, Imm17s, Rn"		//Imm5u
+
+* FFw0_0Vii_F0nm_ZgoZ  "OP Rm, Imm9s, Ro, Rn"	//3R/3RI: 4R
+* FFw0_0Vii_F0nm_ZGiZ  "OP Rm, Imm17s, Rn"		//3R/3RI: Imm5u
+
+* FFw0_0Vii_F0nm_ZeiZ  "OP Rm, Imm17s, Rn"		//3R Ops
+* FFw0_0Vpp_F0nm_ZeoZ  "OP Rm, Ro, Rp, Rn"		//4R Ops (MAC/etc)
 
 * FFw0_00ii_F1nm_Zeii  "OP (Rm, Disp17s), Rn"
 * FFw0_00ii_F2nm_Zeii  "OP Rm, Imm17, Rn"
@@ -2697,6 +2701,16 @@ The V.w flag will apply to 3R/3RI (Imm5u) encodings (V.w, E.q):
 * { 0, 1 }: 3R ( Rm, Imm17s, Rn, Rn )
 * { 1, 1 }: 4R ( Rm, Imm11s, Ro, Rn )
 
+The V.w flag will apply to 3R (Basic) encodings (V.w):
+* 0: 3R ( Rm, Ro, Rn )
+* 1: 3R ( Rm, Imm17s, Rn )
+
+The V.w flag will apply to 3R/4R encodings (V.w):
+* 0: 3R ( Rm, Ro, Rn, Rn )
+* 1: 3R ( Rm, Ro, Rp, Rn )
+
+Where, 3R/4R will be limited to 3R instructions which could make use of a 4th register if available, such as MAC/FMAC.
+
 
 
 Immediate values may be extended by 8 bits:
@@ -2725,7 +2739,9 @@ For Imm5, W.i will function as a sign bit:
 
 
 The W.w bit may be used to select the use of SR.S as a Predicate.
+
 For CMPxx ops within F2zz, W.m will select SR.S as the output bit.
+Note that this use will be exclusive to Op64, and will not apply to the XGPR or XG2 encodings.
 
 
 ==== Jumbo Op64 Extended 3R ====
@@ -3001,13 +3017,15 @@ This mode will also lose Op40x2, which will become non-encodable.
 
 In XG2 Mode, Disp9u encodings will use W.i as a sign-extension bit.
 Imm9u and Imm9n encodings will use W.i as an additional immediate bit.
-Imm10u and Imm10n encodings will use W.i as an additional immediate bit.
+
+Imm10u and Imm10n encodings will use W.i and W.m as an additional immediate bits, effectively expanding the range of the immediate to 12 bits (using an inverted-xor scheme).
 
 Possible: W.nmi will expand Disp20 by 3 bits (inverted-xor against the original sign extension), expanding the reach of BRA/BSR to 8MB.
 
+
 Within XG2 Mode, the instruction stream will be required to have a 32-bit alignment, and the LSB for branch displacements Must Be Zero.
 
-Possibly, this mode may use (WX4,WX3,WX2,WXE) == 0100 or 0101.
+This mode will use (WX4,WX3,WX2,WXE) == 0100 or 0101.
 
 
 === XG2RV Mode (Optional) ===
@@ -3015,6 +3033,11 @@ Possibly, this mode may use (WX4,WX3,WX2,WXE) == 0100 or 0101.
 In this mode, the encoding scheme will be the same as XG2 Mode, but differing primarily in that it will use RISC-V Mode's register remapping scheme.
 
 Semantically, XG2RV Mode will be treated as if it were part of the RISC-V Context.
+
+XG2RV may only exist if both XG2 Mode and RVI Mode are available.
+
+
+This mode will use (WX4,WX3,WX2,WXE) == 0110 or 0111.
 
 
 === Wide Execution 2 (Optional) ===

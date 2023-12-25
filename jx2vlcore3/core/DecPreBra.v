@@ -451,10 +451,25 @@ begin
 
 `else
 `ifdef jx2_prebra_rtsu
+
+`ifndef jx2_prebra_no16b
 	tIsRtsu			=
 		isBase &&
 		(istrWord[15:0] == 16'h3012);
 	tIsRtsR1		= 0;
+`endif
+
+	tIsRtsuFz	=
+		tIsFz3x &&
+		(istrWord[27:24]==4'h0) &&
+		(istrWord[ 7: 4]==4'h0) &&
+		(	((istrWord[ 3: 0]==4'h0) && !pipeHasLr[0]) ||
+			(istrWord[ 3: 0]==4'h2)	) &&
+		(istrWord[23:20]==4'h1) ;
+
+	if(tIsRtsuFz)
+		tIsRtsu = 1;
+
 `else
 	tIsRtsu			= 0;
 	tIsRtsR1		= 0;

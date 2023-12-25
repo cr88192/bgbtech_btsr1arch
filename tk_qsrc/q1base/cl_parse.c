@@ -249,6 +249,8 @@ void CL_ParseServerInfo (void)
 // needlessly purge it
 //
 
+	printf("CL_ParseServerInfo: A0 %s:%d\n", __FILE__, __LINE__);
+
 // precache models
 	memset (cl.model_precache, 0, sizeof(cl.model_precache));
 	for (nummodels=1 ; ; nummodels++)
@@ -264,6 +266,8 @@ void CL_ParseServerInfo (void)
 		strcpy (model_precache[nummodels], str);
 		Mod_TouchModel (str);
 	}
+
+	printf("CL_ParseServerInfo: A1 %s:%d\n", __FILE__, __LINE__);
 
 // precache sounds
 	memset (cl.sound_precache, 0, sizeof(cl.sound_precache));
@@ -281,6 +285,8 @@ void CL_ParseServerInfo (void)
 		S_TouchSound (str);
 	}
 
+	printf("CL_ParseServerInfo: A2 %s:%d\n", __FILE__, __LINE__);
+
 //
 // now we try to load everything else until a cache allocation fails
 //
@@ -296,6 +302,8 @@ void CL_ParseServerInfo (void)
 		CL_KeepaliveMessage ();
 	}
 
+	printf("CL_ParseServerInfo: A3 %s:%d\n", __FILE__, __LINE__);
+
 	S_BeginPrecaching ();
 	for (i=1 ; i<numsounds ; i++)
 	{
@@ -304,16 +312,18 @@ void CL_ParseServerInfo (void)
 	}
 	S_EndPrecaching ();
 
+	printf("CL_ParseServerInfo: A4 %s:%d\n", __FILE__, __LINE__);
+
 
 // local state
 	cl.worldmodel = cl.model_precache[1];
 	cl_entities[0].model = cl.model_precache[1];
 	
-	tk_printf("A cl.worldmodel=%p\n", cl.worldmodel);
+	printf("A cl.worldmodel=%p\n", cl.worldmodel);
 	
 	R_NewMap ();
 
-	tk_printf("B cl.worldmodel=%p\n", cl.worldmodel);
+	printf("B cl.worldmodel=%p\n", cl.worldmodel);
 
 	Hunk_Check ();		// make sure nothing is hurt
 	

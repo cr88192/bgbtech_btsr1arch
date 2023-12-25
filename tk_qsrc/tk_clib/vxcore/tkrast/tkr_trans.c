@@ -920,7 +920,8 @@ TKRA_ProjectVertex:
 	PADDX.FA	R2, R16, R2
 	PMULX.FA	R20, R18, R16
 	PADDX.FA	R2, R16, R2
-	RTSU
+	RTS
+	NOP
 };
 
 #else
@@ -1005,6 +1006,36 @@ tkra_vec4f TKRA_ProjectVector(tkra_vec4f vec, tkra_mat4 mat)
 	return(v0z);
 }
 
+#ifdef __BJX2__
+// #if 0
+tkra_mat4 TKRA_MatrixTranspose(tkra_mat4 mata);
+
+__asm {
+TKRA_MatrixTranspose:
+	MOV.X (R4,  0), R16
+	MOV.X (R4, 16), R18
+	MOV.X (R4, 32), R20
+	MOV.X (R4, 48), R22
+	
+	MOVLLD	R18, R16, R6
+	MOVLLD	R22, R20, R7
+	MOV.X	R6, (R2, 0)
+	MOVHHD	R18, R16, R6
+	MOVHHD	R22, R20, R7
+	MOV.X	R6, (R2, 16)
+
+	MOVLLD	R19, R17, R6
+	MOVLLD	R23, R21, R7
+	MOV.X	R6, (R2, 32)
+	MOVHHD	R19, R17, R6
+	MOVHHD	R23, R21, R7
+	MOV.X	R6, (R2, 48)
+
+	RTS
+	NOP
+};
+
+#else
 tkra_mat4 TKRA_MatrixTranspose(tkra_mat4 mata)
 {
 	tkra_vec4f v0, v1, v2, v3;
@@ -1046,6 +1077,108 @@ tkra_mat4 TKRA_MatrixTranspose(tkra_mat4 mata)
 	return(matc);
 #endif
 }
+#endif
+
+
+#ifdef __BJX2__
+// #if 0
+tkra_mat4 TKRA_MatrixMultiply(tkra_mat4 mata, tkra_mat4 matb);
+
+__asm {
+TKRA_MatrixMultiply:
+	MOV.X	(R4,  0), R6
+	MOV.X	(R5,  0), R16
+	MOVLLD	R6, R6, R18	
+	MOVLLD	R6, R6, R19
+	PMULX.F	R16, R18, R20
+	MOV.X	(R5, 16), R16
+	MOVHHD	R6, R6, R18
+	MOVHHD	R6, R6, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 32), R16
+	MOVLLD	R7, R7, R18
+	MOVLLD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 48), R16
+	MOVHHD	R7, R7, R18
+	MOVHHD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	R20, (R2, 0)
+
+	MOV.X	(R4, 16), R6
+	MOV.X	(R5,  0), R16
+	MOVLLD	R6, R6, R18
+	MOVLLD	R6, R6, R19
+	PMULX.F	R16, R18, R20
+	MOV.X	(R5, 16), R16
+	MOVHHD	R6, R6, R18
+	MOVHHD	R6, R6, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 32), R16
+	MOVLLD	R7, R7, R18
+	MOVLLD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 48), R16
+	MOVHHD	R7, R7, R18
+	MOVHHD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	R20, (R2, 16)
+
+	MOV.X	(R4, 32), R6
+	MOV.X	(R5,  0), R16
+	MOVLLD	R6, R6, R18
+	MOVLLD	R6, R6, R19
+	PMULX.F	R16, R18, R20
+	MOV.X	(R5, 16), R16
+	MOVHHD	R6, R6, R18
+	MOVHHD	R6, R6, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 32), R16
+	MOVLLD	R7, R7, R18
+	MOVLLD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 48), R16
+	MOVHHD	R7, R7, R18
+	MOVHHD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	R20, (R2, 32)
+
+	MOV.X	(R4, 48), R6
+	MOV.X	(R5,  0), R16
+	MOVLLD	R6, R6, R18
+	MOVLLD	R6, R6, R19
+	PMULX.F	R16, R18, R20
+	MOV.X	(R5, 16), R16
+	MOVHHD	R6, R6, R18
+	MOVHHD	R6, R6, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 32), R16
+	MOVLLD	R7, R7, R18
+	MOVLLD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	(R5, 48), R16
+	MOVHHD	R7, R7, R18
+	MOVHHD	R7, R7, R19
+	PMULX.F	R16, R18, R22
+	PADDX.F	R20, R22, R20
+	MOV.X	R20, (R2, 48)
+
+	RTS
+	NOP
+};
+
+#else
 
 tkra_mat4 TKRA_MatrixMultiply(tkra_mat4 mata, tkra_mat4 matb)
 {
@@ -1142,6 +1275,38 @@ tkra_mat4 TKRA_MatrixMultiply(tkra_mat4 mata, tkra_mat4 matb)
 #endif
 }
 
+#endif
+
+#ifdef __BJX2__
+// #if 0
+tkra_mat4 TKRA_MatrixIdentify(void);
+
+__asm {
+TKRA_MatrixIdentify:
+	MOV		0x00000000, R6
+	MOV		0x3F800000, R7
+
+	MOVLD	R6, R7, R16
+	MOVLD	R6, R6, R17
+	MOV.X	R16, (R2, 0)
+
+	MOVLD	R7, R6, R16
+	MOVLD	R6, R6, R17
+	MOV.X	R16, (R2, 16)
+
+	MOVLD	R6, R6, R16
+	MOVLD	R6, R7, R17
+	MOV.X	R16, (R2, 32)
+
+	MOVLD	R6, R6, R16
+	MOVLD	R7, R6, R17
+	MOV.X	R16, (R2, 48)
+
+	RTS
+	NOP
+};
+
+#else
 tkra_mat4 TKRA_MatrixIdentify(void)
 {
 	tkra_mat4 matc;
@@ -1150,9 +1315,53 @@ tkra_mat4 TKRA_MatrixIdentify(void)
 	matc.row1=tkra_mkvec4f( 0, 1, 0, 0 );
 	matc.row2=tkra_mkvec4f( 0, 0, 1, 0 );
 	matc.row3=tkra_mkvec4f( 0, 0, 0, 1 );
+//	__debugbreak();
 	return(matc);
 }
+#endif
 
+#ifdef __BJX2__
+
+tkra_mat4 TKRA_Matrix16fv(float *fv);
+tkra_mat4 TKRA_Matrix16Tfv(float *fv);
+
+__asm {
+TKRA_Matrix16fv:
+	MOV.Q	(R4,  0), R16
+	MOV.Q	(R4,  8), R17
+	MOV.Q	(R4, 16), R18
+	MOV.Q	(R4, 24), R19
+	MOV.Q	(R4, 32), R20
+	MOV.Q	(R4, 40), R21
+	MOV.Q	(R4, 48), R22
+	MOV.Q	(R4, 56), R23
+	MOV.X	R16, (R2,  0)
+	MOV.X	R18, (R2, 16)
+	MOV.X	R20, (R2, 32)
+	MOV.X	R22, (R2, 48)
+	RTS
+
+TKRA_Matrix16Tfv:
+	MOV.Q	(R4,  0), R16
+	MOV.Q	(R4,  8), R17
+	MOV.Q	(R4, 16), R18
+	MOV.Q	(R4, 24), R19
+	MOV.Q	(R4, 32), R20
+	MOV.Q	(R4, 40), R21
+	MOV.Q	(R4, 48), R22
+	MOV.Q	(R4, 56), R23
+	MOVLD	R18, R16, R6 |	MOVLD	R22, R20, R7
+	MOV.X	R6, (R2,  0)
+	MOVHD	R18, R16, R6 |	MOVHD	R22, R20, R7
+	MOV.X	R6, (R2, 16)
+	MOVLD	R19, R17, R6 |	MOVLD	R23, R21, R7
+	MOV.X	R6, (R2, 32)
+	MOVHD	R19, R17, R6 |	MOVHD	R23, R21, R7
+	MOV.X	R6, (R2, 48)
+	RTS
+};
+
+#else
 tkra_mat4 TKRA_Matrix16fv(float *fv)
 {
 	tkra_mat4 matc;
@@ -1177,6 +1386,7 @@ tkra_mat4 TKRA_Matrix16Tfv(float *fv)
 	matc.row3=tkra_mkvec4f( fv[ 3], fv[ 7], fv[11], fv[15] );
 	return(matc);
 }
+#endif
 
 tkra_mat4 TKRA_Matrix16dv(double *fv)
 {
@@ -1343,20 +1553,26 @@ int TKRA_EmitProjectedTriangle(
 	u64	v3_parm[TKRA_VX_NPARM];
 	tkra_zbufpixel *zbuf;
 	TKRA_TexImage *img;
+	TKRA_SvContext *sctx;
 
 	u64 tl0, tl1;
 	int is0, is1, is2, it0, it1, it2, mip, mag;
 	int ds0, ds1, ds2, dt0, dt1, dt2, dst;
 	int dx0, dx1, dx2, dy0, dy1, dy2, dxy, mmip;
-	int tx0, ty0, tz0, shx, shy, flipst;
+	int tx0, ty0, tz0, shx, shy, flipst, flipst2;
+	int isb0, isb1, isb2, itb0, itb1, itb2, mip2, mag2;
 	int clip_mx, clip_nx, clip_my, clip_ny;
 
+	sctx=ctx->svctx;
 
 	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;
 	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;
 
-	if(TKRA_CheckZCullTriangle(ctx, pv0, pv1, pv2))
-		return(-1);
+	if((tkra_nommio&3)!=2)
+	{
+		if(TKRA_CheckZCullTriangle(ctx, pv0, pv1, pv2))
+			return(-1);
+	}
 
 #if 0
 	if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
@@ -1437,7 +1653,7 @@ int TKRA_EmitProjectedTriangle(
 	flipst=0;
 
 //	mmip=ctx->tex_mmip;
-	mmip=ctx->tex_nmip;
+	mmip=sctx->tex_nmip;
 //	if(mmip>0)
 //	if((mmip>0) && (ctx->tex_flag&TKRA_TRFL_HASMIP))
 //	if(0)
@@ -1481,57 +1697,57 @@ int TKRA_EmitProjectedTriangle(
 			{ dst>>=1;	mip++; }
 #endif
 
-		if(ctx->tex_flag&TKRA_TRFL_FLIPST)
+		if(sctx->tex_flag&TKRA_TRFL_FLIPST)
 			flipst=1;
 
 //		if(ctx->tex_flag&TKRA_TRFL_HASMIP)
-		if((mip>0) && (ctx->tex_flag&TKRA_TRFL_HASMIP))
+		if((mip>0) && (sctx->tex_flag&TKRA_TRFL_HASMIP))
 //		if(0)
 		{
 			is0>>=mip;	is1>>=mip;	is2>>=mip;
 			it0>>=mip;	it1>>=mip;	it2>>=mip;
 			mag=0;
 
-			img=ctx->tex_cur;
+			img=sctx->tex_cur;
 
 			shx=img->tex_xshl-mip;
 			shy=img->tex_yshl-mip;
 			if(shx<0)shx=0;
 			if(shy<0)shy=0;
 
-			ctx->tex_img=img->tex_img+img->tex_mipofs[mip];
-			ctx->tex_img_bcn=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
-			ctx->tex_xshl=shx;
-			ctx->tex_yshl=shy;
+			sctx->tex_img=img->tex_img+img->tex_mipofs[mip];
+			sctx->tex_img_bcn=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
+			sctx->tex_xshl=shx;
+			sctx->tex_yshl=shy;
 
 #ifdef __BJX2__
-			if(ctx->tex_img_bcn)
+			if(sctx->tex_img_bcn)
 			{
-				tl0=(u64)(ctx->tex_img_bcn);
+				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
-				ctx->tex_img_bcn=(void *)tl0;
+				sctx->tex_img_bcn=(void *)tl0;
 			}
 #endif
 		}else
 		{
-			img=ctx->tex_cur;
+			img=sctx->tex_cur;
 			shx=img->tex_xshl;
 			shy=img->tex_yshl;
-			ctx->tex_img=img->tex_img;
-			ctx->tex_img_bcn=img->tex_img_bcn;
-			ctx->tex_xshl=shx;
-			ctx->tex_yshl=shy;
+			sctx->tex_img=img->tex_img;
+			sctx->tex_img_bcn=img->tex_img_bcn;
+			sctx->tex_xshl=shx;
+			sctx->tex_yshl=shy;
 
 #ifdef __BJX2__
-			if(ctx->tex_img_bcn)
+			if(sctx->tex_img_bcn)
 			{
-				tl0=(u64)(ctx->tex_img_bcn);
+				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
-				ctx->tex_img_bcn=(void *)tl0;
+				sctx->tex_img_bcn=(void *)tl0;
 			}
 #endif
 		}
@@ -1539,25 +1755,110 @@ int TKRA_EmitProjectedTriangle(
 //		if(mip>0)
 		if(!mag)
 		{
-			ctx->DrawSpan=ctx->DrawSpan_Min;
-			ctx->DrawSpanHZt=ctx->DrawSpanHZt_Min;
-			ctx->DrawSpanZt=ctx->DrawSpanZt_Min;
+			sctx->DrawSpan=sctx->DrawSpan_Min;
+			sctx->DrawSpanHZt=sctx->DrawSpanHZt_Min;
+			sctx->DrawSpanZt=sctx->DrawSpanZt_Min;
 		}
 		else
 		{
-			ctx->DrawSpan=ctx->DrawSpan_Mag;
-			ctx->DrawSpanHZt=ctx->DrawSpanHZt_Mag;
-			ctx->DrawSpanZt=ctx->DrawSpanZt_Mag;
+			sctx->DrawSpan=sctx->DrawSpan_Mag;
+			sctx->DrawSpanHZt=sctx->DrawSpanHZt_Mag;
+			sctx->DrawSpanZt=sctx->DrawSpanZt_Mag;
 		}
 	}else
 	{
-		img=ctx->tex_cur;
-		ctx->tex_img=img->tex_img;
-		ctx->tex_img_bcn=img->tex_img_bcn;
-		ctx->DrawSpan=ctx->DrawSpan_Mag;
-		ctx->DrawSpanHZt=ctx->DrawSpanHZt_Mag;
-		ctx->DrawSpanZt=ctx->DrawSpanZt_Mag;
+		img=sctx->tex_cur;
+		sctx->tex_img=img->tex_img;
+		sctx->tex_img_bcn=img->tex_img_bcn;
+		sctx->DrawSpan=sctx->DrawSpan_Mag;
+		sctx->DrawSpanHZt=sctx->DrawSpanHZt_Mag;
+		sctx->DrawSpanZt=sctx->DrawSpanZt_Mag;
 	}
+
+#if 1
+//	mmip=ctx->tex_mmip;
+	mmip=sctx->tex_nmip2;
+//	if(mmip>0)
+//	if((mmip>0) && (ctx->tex_flag&TKRA_TRFL_HASMIP))
+//	if(0)
+	if(sctx->tex_cur2)
+	{
+#if 1
+		dx0=pv1.x-pv0.x;	dx1=pv2.x-pv1.x;
+		dy0=pv1.y-pv0.y;	dy1=pv2.y-pv1.y;
+		dx0=dx0^(dx0>>31);	dx1=dx1^(dx1>>31);
+		dy0=dy0^(dy0>>31);	dy1=dy1^(dy1>>31);
+		dxy=dx0+dx1+dy0+dy1;
+
+		ds0=isb1-isb0;		ds1=isb2-isb1;
+		dt0=itb1-itb0;		dt1=itb2-itb1;
+		ds0=ds0^(ds0>>31);	ds1=ds1^(ds1>>31);
+		dt0=dt0^(dt0>>31);	dt1=dt1^(dt1>>31);
+		dst=ds0+ds1+dt0+dt1;
+#endif
+		
+		mip2=0;
+		mag2=dst<=dxy;
+
+#if 1
+		while((dst>dxy) && (mip2<mmip))
+			{ dst>>=1;	mip2++; }
+#endif
+
+		if(sctx->tex_flag2&TKRA_TRFL_FLIPST)
+			flipst2=1;
+
+		if((mip2>0) && (sctx->tex_flag&TKRA_TRFL_HASMIP))
+		{
+			isb0>>=mip;	isb1>>=mip;	isb2>>=mip;
+			itb0>>=mip;	itb1>>=mip;	itb2>>=mip;
+			mag=0;
+
+			img=sctx->tex_cur2;
+
+			shx=img->tex_xshl-mip2;
+			shy=img->tex_yshl-mip2;
+			if(shx<0)shx=0;
+			if(shy<0)shy=0;
+
+			sctx->tex_img2=img->tex_img+img->tex_mipofs[mip];
+			sctx->tex_img_bcn2=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
+			sctx->tex_xshl2=shx;
+			sctx->tex_yshl2=shy;
+
+#ifdef __BJX2__
+			if(sctx->tex_img_bcn2)
+			{
+				tl0=(u64)(sctx->tex_img_bcn2);
+				tx0=((shx+shy)<<4)|0;
+				tl1=((u64)tx0)<<48;
+				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
+				sctx->tex_img_bcn2=(void *)tl0;
+			}
+#endif
+		}else
+		{
+			img=sctx->tex_cur2;
+			shx=img->tex_xshl;
+			shy=img->tex_yshl;
+			sctx->tex_img2=img->tex_img;
+			sctx->tex_img_bcn2=img->tex_img_bcn;
+			sctx->tex_xshl2=shx;
+			sctx->tex_yshl2=shy;
+
+#ifdef __BJX2__
+			if(sctx->tex_img_bcn2)
+			{
+				tl0=(u64)(sctx->tex_img_bcn2);
+				tx0=((shx+shy)<<4)|0;
+				tl1=((u64)tx0)<<48;
+				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
+				sctx->tex_img_bcn2=(void *)tl0;
+			}
+#endif
+		}
+	}
+#endif
 
 //	ctx->DrawSpanZb=TKRA_DrawSpan_Zbuf;
 
@@ -1632,6 +1933,18 @@ int TKRA_EmitProjectedTriangle(
 		v1_parm[TKRA_VX_TPOS]=((u64)(u32)is0) | (((u64)((u32)it0))<<32);
 		v2_parm[TKRA_VX_TPOS]=((u64)(u32)is1) | (((u64)((u32)it1))<<32);
 		v3_parm[TKRA_VX_TPOS]=((u64)(u32)is2) | (((u64)((u32)it2))<<32);
+	}
+	
+	if(flipst2)
+	{
+		v1_parm[TKRA_VX_T2POS]=((u64)(u32)itb0) | (((u64)((u32)isb0))<<32);
+		v2_parm[TKRA_VX_T2POS]=((u64)(u32)itb1) | (((u64)((u32)isb1))<<32);
+		v3_parm[TKRA_VX_T2POS]=((u64)(u32)itb2) | (((u64)((u32)isb2))<<32);
+	}else
+	{
+		v1_parm[TKRA_VX_T2POS]=((u64)(u32)isb0) | (((u64)((u32)itb0))<<32);
+		v2_parm[TKRA_VX_T2POS]=((u64)(u32)isb1) | (((u64)((u32)itb1))<<32);
+		v3_parm[TKRA_VX_T2POS]=((u64)(u32)isb2) | (((u64)((u32)itb2))<<32);
 	}
 	
 	v1_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv0.rgb);
@@ -1799,23 +2112,30 @@ int TKRA_EmitProjectedQuad(
 	u64	v3_parm[TKRA_VX_NPARM];
 	u64	v4_parm[TKRA_VX_NPARM];
 	TKRA_TexImage *img;
+	TKRA_SvContext *sctx;
 
 	u64 tl0, tl1;
 	int is0, is1, is2, is3, it0, it1, it2, it3, mip, mag;
+	int isb0, isb1, isb2, isb3, itb0, itb1, itb2, itb3, mip2, mag2;
 	int ds0, ds1, ds2, ds3, dt0, dt1, dt2, dt3, dst;
 	int dx0, dx1, dx2, dx3, dy0, dy1, dy2, dy3, dxy, mmip;
-	int tx0, ty0, tz0, shx, shy, flipst;
+	int tx0, ty0, tz0, shx, shy, flipst, flipst2;
 	int clip_mx, clip_nx, clip_my, clip_ny;
 
-	if(TKRA_CheckZCullQuad(ctx, pv0, pv1, pv2, pv3))
-		return(-1);
+	if((tkra_nommio&3)!=2)
+	{
+		if(TKRA_CheckZCullQuad(ctx, pv0, pv1, pv2, pv3))
+			return(-1);
+	}
+
+	sctx=ctx->svctx;
 
 	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;	is3=pv3.s;
 	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;	it3=pv3.t;
 
 	flipst=0;
 
-	mmip=ctx->tex_nmip;
+	mmip=sctx->tex_nmip;
 	if(1)
 	{
 #if 1
@@ -1840,55 +2160,55 @@ int TKRA_EmitProjectedQuad(
 			{ dst>>=1;	mip++; }
 #endif
 
-		if(ctx->tex_flag&TKRA_TRFL_FLIPST)
+		if(sctx->tex_flag&TKRA_TRFL_FLIPST)
 			flipst=1;
 
-		if((mip>0) && (ctx->tex_flag&TKRA_TRFL_HASMIP))
+		if((mip>0) && (sctx->tex_flag&TKRA_TRFL_HASMIP))
 		{
 			is0>>=mip;	is1>>=mip;	is2>>=mip;	is3>>=mip;
 			it0>>=mip;	it1>>=mip;	it2>>=mip;	it3>>=mip;
 			mag=0;
 
-			img=ctx->tex_cur;
+			img=sctx->tex_cur;
 
 			shx=img->tex_xshl-mip;
 			shy=img->tex_yshl-mip;
 			if(shx<0)shx=0;
 			if(shy<0)shy=0;
 
-			ctx->tex_img=img->tex_img+img->tex_mipofs[mip];
-			ctx->tex_img_bcn=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
-			ctx->tex_xshl=shx;
-			ctx->tex_yshl=shy;
+			sctx->tex_img=img->tex_img+img->tex_mipofs[mip];
+			sctx->tex_img_bcn=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
+			sctx->tex_xshl=shx;
+			sctx->tex_yshl=shy;
 
 #ifdef __BJX2__
-			if(ctx->tex_img_bcn)
+			if(sctx->tex_img_bcn)
 			{
-				tl0=(u64)(ctx->tex_img_bcn);
+				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
-				ctx->tex_img_bcn=(void *)tl0;
+				sctx->tex_img_bcn=(void *)tl0;
 			}
 #endif
 		}else
 		{
-			img=ctx->tex_cur;
+			img=sctx->tex_cur;
 			shx=img->tex_xshl;
 			shy=img->tex_yshl;
-			ctx->tex_img=img->tex_img;
-			ctx->tex_img_bcn=img->tex_img_bcn;
-			ctx->tex_xshl=shx;
-			ctx->tex_yshl=shy;
+			sctx->tex_img=img->tex_img;
+			sctx->tex_img_bcn=img->tex_img_bcn;
+			sctx->tex_xshl=shx;
+			sctx->tex_yshl=shy;
 
 #ifdef __BJX2__
-			if(ctx->tex_img_bcn)
+			if(sctx->tex_img_bcn)
 			{
-				tl0=(u64)(ctx->tex_img_bcn);
+				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
-				ctx->tex_img_bcn=(void *)tl0;
+				sctx->tex_img_bcn=(void *)tl0;
 			}
 #endif
 		}
@@ -1896,17 +2216,102 @@ int TKRA_EmitProjectedQuad(
 //		if(mip>0)
 		if(!mag)
 		{
-			ctx->DrawSpan=ctx->DrawSpan_Min;
-			ctx->DrawSpanHZt=ctx->DrawSpanHZt_Min;
-			ctx->DrawSpanZt=ctx->DrawSpanZt_Min;
+			sctx->DrawSpan=sctx->DrawSpan_Min;
+			sctx->DrawSpanHZt=sctx->DrawSpanHZt_Min;
+			sctx->DrawSpanZt=sctx->DrawSpanZt_Min;
 		}
 		else
 		{
-			ctx->DrawSpan=ctx->DrawSpan_Mag;
-			ctx->DrawSpanHZt=ctx->DrawSpanHZt_Mag;
-			ctx->DrawSpanZt=ctx->DrawSpanZt_Mag;
+			sctx->DrawSpan=sctx->DrawSpan_Mag;
+			sctx->DrawSpanHZt=sctx->DrawSpanHZt_Mag;
+			sctx->DrawSpanZt=sctx->DrawSpanZt_Mag;
 		}
 	}
+
+#if 1
+//	mmip=ctx->tex_mmip;
+	mmip=sctx->tex_nmip2;
+//	if(mmip>0)
+//	if((mmip>0) && (ctx->tex_flag&TKRA_TRFL_HASMIP))
+//	if(0)
+	if(sctx->tex_cur2)
+	{
+#if 1
+		dx0=pv1.x-pv0.x;	dx1=pv2.x-pv1.x;
+		dy0=pv1.y-pv0.y;	dy1=pv2.y-pv1.y;
+		dx0=dx0^(dx0>>31);	dx1=dx1^(dx1>>31);
+		dy0=dy0^(dy0>>31);	dy1=dy1^(dy1>>31);
+		dxy=dx0+dx1+dy0+dy1;
+
+		ds0=isb1-isb0;		ds1=isb2-isb1;
+		dt0=itb1-itb0;		dt1=itb2-itb1;
+		ds0=ds0^(ds0>>31);	ds1=ds1^(ds1>>31);
+		dt0=dt0^(dt0>>31);	dt1=dt1^(dt1>>31);
+		dst=ds0+ds1+dt0+dt1;
+#endif
+		
+		mip2=0;
+		mag2=dst<=dxy;
+
+#if 1
+		while((dst>dxy) && (mip2<mmip))
+			{ dst>>=1;	mip2++; }
+#endif
+
+		if(sctx->tex_flag2&TKRA_TRFL_FLIPST)
+			flipst2=1;
+
+		if((mip2>0) && (sctx->tex_flag&TKRA_TRFL_HASMIP))
+		{
+			isb0>>=mip;	isb1>>=mip;	isb2>>=mip;	isb3>>=mip;
+			itb0>>=mip;	itb1>>=mip;	itb2>>=mip;	itb3>>=mip;
+			mag=0;
+
+			img=sctx->tex_cur2;
+
+			shx=img->tex_xshl-mip2;
+			shy=img->tex_yshl-mip2;
+			if(shx<0)shx=0;
+			if(shy<0)shy=0;
+
+			sctx->tex_img2=img->tex_img+img->tex_mipofs[mip];
+			sctx->tex_img_bcn2=img->tex_img_bcn+img->tex_mipofs_bcn[mip];
+			sctx->tex_xshl2=shx;
+			sctx->tex_yshl2=shy;
+
+#ifdef __BJX2__
+			if(sctx->tex_img_bcn2)
+			{
+				tl0=(u64)(sctx->tex_img_bcn2);
+				tx0=((shx+shy)<<4)|0;
+				tl1=((u64)tx0)<<48;
+				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
+				sctx->tex_img_bcn2=(void *)tl0;
+			}
+#endif
+		}else
+		{
+			img=sctx->tex_cur2;
+			shx=img->tex_xshl;
+			shy=img->tex_yshl;
+			sctx->tex_img2=img->tex_img;
+			sctx->tex_img_bcn2=img->tex_img_bcn;
+			sctx->tex_xshl2=shx;
+			sctx->tex_yshl2=shy;
+
+#ifdef __BJX2__
+			if(sctx->tex_img_bcn2)
+			{
+				tl0=(u64)(sctx->tex_img_bcn2);
+				tx0=((shx+shy)<<4)|0;
+				tl1=((u64)tx0)<<48;
+				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
+				sctx->tex_img_bcn2=(void *)tl0;
+			}
+#endif
+		}
+	}
+#endif
 
 	tx0=pv0.x;		ty0=pv0.y;		tz0=pv0.z;
 	v1_parm[TKRA_VX_XPOS]=tx0;
@@ -1942,6 +2347,23 @@ int TKRA_EmitProjectedQuad(
 		v4_parm[TKRA_VX_TPOS]=((u64)(u32)is3) | (((u64)((u32)it3))<<32);
 	}
 	
+	if(sctx->tex_cur2)
+	{
+		if(flipst2)
+		{
+			v1_parm[TKRA_VX_T2POS]=((u64)(u32)itb0) | (((u64)((u32)isb0))<<32);
+			v2_parm[TKRA_VX_T2POS]=((u64)(u32)itb1) | (((u64)((u32)isb1))<<32);
+			v3_parm[TKRA_VX_T2POS]=((u64)(u32)itb2) | (((u64)((u32)isb2))<<32);
+			v4_parm[TKRA_VX_T2POS]=((u64)(u32)itb3) | (((u64)((u32)isb3))<<32);
+		}else
+		{
+			v1_parm[TKRA_VX_T2POS]=((u64)(u32)isb0) | (((u64)((u32)itb0))<<32);
+			v2_parm[TKRA_VX_T2POS]=((u64)(u32)isb1) | (((u64)((u32)itb1))<<32);
+			v3_parm[TKRA_VX_T2POS]=((u64)(u32)isb2) | (((u64)((u32)itb2))<<32);
+			v4_parm[TKRA_VX_T2POS]=((u64)(u32)isb3) | (((u64)((u32)itb3))<<32);
+		}
+	}
+
 	v1_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv0.rgb);
 	v2_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv1.rgb);
 	v3_parm[TKRA_VX_CPOS]=tkra_rgba_expand64(pv2.rgb);
@@ -1987,24 +2409,26 @@ int TKRA_EmitProjectedPoint(
 	tkra_projvertex pv0)
 {
 	u64	v1_parm[TKRA_VX_NPARM];
+	TKRA_SvContext *sctx;
 	TKRA_TexImage *img;
 
 	int is0, it0;
 	int tx0, ty0, tz0, shx, shy;
 
+	sctx=ctx->svctx;
 	if(1)
 	{		
-		img=ctx->tex_cur;
+		img=sctx->tex_cur;
 		shx=img->tex_xshl;
 		shy=img->tex_yshl;
-		ctx->tex_img=img->tex_img;
-		ctx->tex_img_bcn=img->tex_img_bcn;
-		ctx->tex_xshl=shx;
-		ctx->tex_yshl=shy;
+		sctx->tex_img=img->tex_img;
+		sctx->tex_img_bcn=img->tex_img_bcn;
+		sctx->tex_xshl=shx;
+		sctx->tex_yshl=shy;
 		
-		ctx->DrawSpan=ctx->DrawSpan_Min;
-		ctx->DrawSpanHZt=ctx->DrawSpanHZt_Min;
-		ctx->DrawSpanZt=ctx->DrawSpanZt_Min;
+		sctx->DrawSpan=sctx->DrawSpan_Min;
+		sctx->DrawSpanHZt=sctx->DrawSpanHZt_Min;
+		sctx->DrawSpanZt=sctx->DrawSpanZt_Min;
 	}
 
 	is0=pv0.s;		it0=pv0.t;

@@ -7,7 +7,9 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
 # TK_LDEXTFS = -fxgpr -fqmul -ffdiv -ffpu_fpvsf
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr_ena
-TK_LDEXTFS = -fqmul -ffpu_fpvsf2 -fxgpr_ena
+
+TK_LDEXTFS = -fqmul -ffpu_fpvsf2 -fxgpr_ena -fjcmpz
+
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -ffpu_fpimm -fxgpr_ena -fnowexify -fjcmp \
 #	-fdobounds -fvskglobal
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fnowexify
@@ -161,7 +163,9 @@ TKRA_SRCS = \
 	tkrast/tkr_glbegin.c		\
 	tkrast/tkr_glenable.c		\
 	tkrast/tkr_glgpa.c			\
+	tkrast/tkr_gllight.c		\
 	tkrast/tkr_glmatrix.c		\
+	tkrast/tkr_glstencil.c		\
 	tkrast/tkr_gltex.c			\
 	tkrast/tkr_matrix.c			\
 	tkrast/tkr_multi.c			\
@@ -174,6 +178,12 @@ TKRA_SRCS = \
 	tkrast/tkr_span_hzt.c		\
 	tkrast/tkr_teximg.c			\
 	tkrast/tkr_trans.c			\
+	tkrast/tkr_trans_arr.c		\
+	tkrast/tkr_trans_proj.c		\
+	tkrast/tkr_wcinterp.c		\
+	tkrast/tkr_zatest.c			\
+	\
+	tkrast/tkg_glwrap.c
 
 SRCS_TKGDI = \
 	$(TKRA_SRCS) \

@@ -428,6 +428,11 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 					args[4].i, args[5].p);
 				break;
 
+			case 0x41:
+				*((s64 *)vParm1)=TK_Task_TryJoinOnReturnPid(args[0].i);
+				ret=TK_URES_TRUE;
+				break;
+
 			default:
 				tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
 					sObj, uMsg, vParm1, vParm2);

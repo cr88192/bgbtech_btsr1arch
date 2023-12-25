@@ -942,6 +942,9 @@ s64 BJX2_MemEdgeWalk_GetQWord(BJX2_Context *ctx,
 	{
 		lo=-1;
 	}
+	
+	if(!(ctx->do_edgewalk))
+		return(0);
 
 	BJX2_MemEdgeWalk_ProbeUpdate(ctx);
 

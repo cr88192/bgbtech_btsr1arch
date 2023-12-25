@@ -36,6 +36,13 @@ int tk_iskerneltask()
 #endif
 }
 
+int tk_issupertask()
+{
+	if(tk_iskerneltask())
+		return(1);
+	return(0);
+}
+
 int irq_addTimerIrq(void *fcn)
 {
 #ifndef __TK_CLIB_ONLY__
@@ -318,7 +325,7 @@ __interrupt void __isr_syscall(void)
 	TKPE_TaskInfo *task, *task2;
 	TKPE_TaskInfoKern *taskern, *taskern2;
 	u64 *isrsave, *args, *pret;
-	u64 ttb, tea, exc, yres;
+	u64 ttb, tea, exc, yres, uobj;
 	u32 reg_sr, umsg;
 	u16 exsr;
 	
@@ -349,12 +356,14 @@ __interrupt void __isr_syscall(void)
 	{
 		if(reg_sr&(1<<26))
 		{
+			uobj=isrsave[TKPE_REGSAVE_R10];
 			umsg=isrsave[TKPE_REGSAVE_R11];
 			pret=(u64 *)(isrsave[TKPE_REGSAVE_R12]);
 			args=(u64 *)(isrsave[TKPE_REGSAVE_R13]);
 		}
 		else
 		{
+			uobj=isrsave[TKPE_REGSAVE_R4];
 			umsg=isrsave[TKPE_REGSAVE_R5];
 			pret=(u64 *)(isrsave[TKPE_REGSAVE_R6]);
 			args=(u64 *)(isrsave[TKPE_REGSAVE_R7]);
@@ -416,6 +425,12 @@ __interrupt void __isr_syscall(void)
 					*(u64 *)pret=TK_GetTimeUs();
 					task2=task;
 				}
+			}
+			
+			if(	(umsg>=TK_UMSG_COMGLUE_VMT4) &&
+				(umsg<=TK_UMSG_COMGLUE_VMT63)	&&
+				TK_VMem_CheckAddrIsPhysPage(uobj)	)
+			{
 			}
 		}
 
@@ -684,6 +699,10 @@ int TK_Task_SyscallLoop(void *uptr)
 				
 				rc=argsl[0];
 				task->ystatus=((u32)rc)|(1ULL<<56);
+
+				TKGDI_HalCleanupForTask(task);
+				TK_TaskFreeAllPageAlloc(task);
+//				TK_DestroyTaskInfo(task);
 				
 				if(task2)
 				{
@@ -705,6 +724,26 @@ int TK_Task_SyscallLoop(void *uptr)
 
 	/* control should never get here. */
 	__debugbreak();
+#endif
+}
+
+int TK_Task_TryJoinOnReturn(TKPE_TaskInfo *task)
+{
+#ifndef __TK_CLIB_ONLY__
+	TKPE_TaskInfo *ctask;
+	TKPE_TaskInfoKern *taskern;
+	u64 yres;
+	u32 reg_sr;
+	int rv;
+
+	yres=task->ystatus;
+	if(!(yres>>56))
+	{
+		return(-EAGAIN);
+	}
+
+	rv=yres;
+	return(rv);
 #endif
 }
 
@@ -749,7 +788,6 @@ int TK_Task_JoinOnReturn(TKPE_TaskInfo *task)
 	return(rv);
 #endif
 }
-
 
 #ifndef __TK_CLIB_ONLY__
 
@@ -843,7 +881,64 @@ void TK_SetCurrentTask(TKPE_TaskInfo *task)
 	TK_SET_TBR(task);
 }
 
+int TK_Task_TryJoinOnReturnPid(int pid)
+{
+	TKPE_TaskInfo *task;
+
+	if((pid<=0) || (pid>=4096))
+		return(-EINVAL);
+
+	task=tk_task_list[pid];
+	if(!task)
+		return(-ESRCH);
+
+	return(TK_Task_TryJoinOnReturn(pid));
+}
+
 #endif
+
+int TK_Task_PidTryJoinReturnV(int pid)
+{
+	TK_SysArg ar[4];
+	s64 p;
+	
+	p=0;
+	ar[0].i=pid;
+	tk_syscall(NULL, TK_UMSG_TRYJOINRESULT, &p, ar);
+
+	return(p);
+}
+
+
+/*
+ * Wait for the task associated with a PID to terminate.
+ * Returns the return value for the task.
+ */
+int TK_Task_PidJoinOnReturn(int pid)
+{
+	int rv;
+
+	if(tk_issyscall())
+		return(-1);
+
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskernel())
+	{
+		rv=TK_Task_JoinOnReturn(tk_task_list[pid]);
+		return(rv);
+	}
+#endif
+
+	rv=TK_Task_PidTryJoinReturnV(pid);
+	while(rv==EAGAIN)
+	{
+		TK_YieldCurrentThread();
+		rv=TK_Task_PidTryJoinReturnV(pid);
+	}
+	return(rv);
+}
+
+
 
 TKPE_TaskInfo *TK_GetCurrentTask()
 {

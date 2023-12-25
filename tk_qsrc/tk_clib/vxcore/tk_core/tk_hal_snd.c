@@ -349,3 +349,13 @@ void TKGDI_Snd_Submit(void)
 	wbufrov+=n;
 	dmarov+=n;
 }
+
+void TKGDI_Snd_SilenceAll(void)
+{
+	int i;
+	
+	for(i=0; i<2048; i++)
+	{
+		snd_dmabuf[i]=0;
+	}
+}

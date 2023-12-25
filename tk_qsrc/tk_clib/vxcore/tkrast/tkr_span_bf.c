@@ -246,7 +246,7 @@ void TKRA_DrawSpan_BlendModTexMortZt(u64 *parm,
 	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
 
 	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
-	trifl=ctx->span_trifl;
+	trifl=ctx->svctx->span_trifl;
 //	cref=0x8000000000000000ULL;
 	zref=0;
 	cref=tkra_rgba_expand64(ctx->zat_cref);
@@ -324,7 +324,7 @@ void TKRA_DrawSpan_BlendModBlTexMortZt(u64 *parm,
 	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
 
 	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
-	trifl=ctx->span_trifl;
+	trifl=ctx->svctx->span_trifl;
 //	cref=0x8000000000000000ULL;
 	zref=0;
 	cref=tkra_rgba_expand64(ctx->zat_cref);
@@ -408,7 +408,7 @@ void TKRA_DrawSpan_BlendModUtx2MortZt(u64 *parm,
 	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
 
 	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
-	trifl=ctx->span_trifl;
+	trifl=ctx->svctx->span_trifl;
 //	cref=0x8000000000000000ULL;
 	zref=0;
 	cref=tkra_rgba_expand64(ctx->zat_cref);
@@ -487,7 +487,7 @@ void TKRA_DrawSpan_BlendModBlUtx2MortZt(u64 *parm,
 	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
 
 	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
-	trifl=ctx->span_trifl;
+	trifl=ctx->svctx->span_trifl;
 //	cref=0x8000000000000000ULL;
 	zref=0;
 	cref=tkra_rgba_expand64(ctx->zat_cref);
@@ -610,7 +610,7 @@ void TKRA_DrawSpan_BlendClampI(u64 *parm,
 	memcpy(parm2, parm, TKRA_DS_NPARM*sizeof(u64));
 
 	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
-	trifl=ctx->span_trifl;
+	trifl=ctx->svctx->span_trifl;
 
 	tcpos=tpos;
 	tcstep=tstep;

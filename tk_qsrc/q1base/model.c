@@ -218,7 +218,7 @@ model_t *Mod_FindName (char *name)
 	if (!name[0])
 		Sys_Error ("Mod_ForName: NULL name");
 	
-//	tk_printf("Mod_FindName %s\n", name);
+//	printf("Mod_FindName %s\n", name);
 //
 // search the currently loaded models
 //
@@ -375,11 +375,11 @@ model_t *Mod_ForName (char *name, qboolean crash)
 
 	mod = Mod_FindName (name);
 
-//	tk_printf("Mod_ForName A name=%s mod=%p\n", name, mod);
+	printf("Mod_ForName A name=%s mod=%p\n", name, mod);
 
 	mod = Mod_LoadModel (mod, crash);
 
-//	tk_printf("Mod_ForName B name=%s mod=%p\n", name, mod);
+	printf("Mod_ForName B name=%s mod=%p\n", name, mod);
 
 	return mod;
 }
@@ -425,6 +425,8 @@ void Mod_LoadTextures (lump_t *l)
 	loadmodel->textures = Hunk_AllocName (
 		m->nummiptex * sizeof(texture_t *) , loadname);
 
+	printf("Mod_LoadTextures: A0 %s:%d\n", __FILE__, __LINE__);
+
 	for (i=0 ; i<m->nummiptex ; i++)
 	{
 		m->dataofs[i] = LittleLong(m->dataofs[i]);
@@ -449,6 +451,9 @@ void Mod_LoadTextures (lump_t *l)
 //		Q_memcpy (tx->name, mt->name, 16);
 		tx->width = mt->width;
 		tx->height = mt->height;
+
+//		printf("Mod_LoadTextures: A0 %s:%d  tex=%s\n",
+//			__FILE__, __LINE__, tx->name);
 
 //		memcpy ( tx+1, mt+1, pixels);
 
@@ -476,12 +481,20 @@ void Mod_LoadTextures (lump_t *l)
 //		tk_printf("Mod_LoadTextures: fixup=%d\n",
 //			(sizeof(texture_t) - sizeof(miptex_t)));
 		
-		if (!Q_strncmp(mt->name,"sky",3))	
+		if (!Q_strncmp(mt->name,"sky",3))
+		{
+//			printf("Mod_LoadTextures: A0 %s:%d\n", __FILE__, __LINE__);
+
 			R_InitSky (tx);
+
+//			printf("Mod_LoadTextures: A0 %s:%d\n", __FILE__, __LINE__);
+		}
 			
 //		tk_printf("Mod_LoadTextures: id=%d ptr=%p mt->name=%s tx->name%s\n",
 //			i, tx, mt->name, tx->name);
 	}
+
+	printf("Mod_LoadTextures: A0 %s:%d\n", __FILE__, __LINE__);
 
 //
 // sequence the animations
@@ -491,7 +504,10 @@ void Mod_LoadTextures (lump_t *l)
 		tx = loadmodel->textures[i];
 		if (!tx || (tx->name[0] != '+'))
 			continue;
-			
+
+//		printf("Mod_LoadTextures: A0 %s:%d  tex=%s\n",
+//			__FILE__, __LINE__, tx->name);
+
 // #ifdef _BGBCC
 //		continue;
 // #endif
@@ -1412,6 +1428,8 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	dheader_t	*header;
 	dmodel_t 	*bm;
 	hull_t		*hull0, *hull1;
+
+	printf("Mod_LoadBrushModel:\n");
 	
 	loadmodel->type = mod_brush;
 	
@@ -1432,36 +1450,64 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 
 // load into heap
 	
-//	tk_printf("Mod_LoadBrushModel: A nodes=%p\n", mod->nodes);
+	printf("Mod_LoadBrushModel: A nodes=%p\n", mod->nodes);
 	
 	Mod_LoadVertexes (&header->lumps[LUMP_VERTEXES]);
-	Mod_LoadEdges (&header->lumps[LUMP_EDGES]);
-	Mod_LoadSurfedges (&header->lumps[LUMP_SURFEDGES]);
-	Mod_LoadTextures (&header->lumps[LUMP_TEXTURES]);
-	Mod_LoadLighting (&header->lumps[LUMP_LIGHTING]);
-	Mod_LoadPlanes (&header->lumps[LUMP_PLANES]);
-	Mod_LoadTexinfo (&header->lumps[LUMP_TEXINFO]);
-	Mod_LoadFaces (&header->lumps[LUMP_FACES]);
-	Mod_LoadMarksurfaces (&header->lumps[LUMP_MARKSURFACES]);
-	Mod_LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
-	Mod_LoadLeafs (&header->lumps[LUMP_LEAFS]);
-	Mod_LoadNodes (&header->lumps[LUMP_NODES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
 
-//	tk_printf("Mod_LoadBrushModel: A1 nodes=%p\n", mod->nodes);
+	Mod_LoadEdges (&header->lumps[LUMP_EDGES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadSurfedges (&header->lumps[LUMP_SURFEDGES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadTextures (&header->lumps[LUMP_TEXTURES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadLighting (&header->lumps[LUMP_LIGHTING]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadPlanes (&header->lumps[LUMP_PLANES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadTexinfo (&header->lumps[LUMP_TEXINFO]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadFaces (&header->lumps[LUMP_FACES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadMarksurfaces (&header->lumps[LUMP_MARKSURFACES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadLeafs (&header->lumps[LUMP_LEAFS]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadNodes (&header->lumps[LUMP_NODES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	printf("Mod_LoadBrushModel: A1 nodes=%p\n", mod->nodes);
 
 	Mod_LoadClipnodes (&header->lumps[LUMP_CLIPNODES]);
-	Mod_LoadEntities (&header->lumps[LUMP_ENTITIES]);
-	Mod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
 
-//	tk_printf("Mod_LoadBrushModel: B nodes=%p surfs=%p\n",
-//		mod->nodes, mod->surfaces);
+	Mod_LoadEntities (&header->lumps[LUMP_ENTITIES]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	Mod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
+	printf("Mod_LoadBrushModel: A2 %s:%d\n", __FILE__, __LINE__);
+
+	printf("Mod_LoadBrushModel: B nodes=%p surfs=%p\n",
+		mod->nodes, mod->surfaces);
 
 	Mod_MakeHull0 ();
 	
 	mod->numframes = 2;		// regular and alternate animation
 	mod->flags = 0;
 	
-//	tk_printf("Mod_LoadBrushModel: C %p nodes=%p\n", mod, mod->nodes);
+	printf("Mod_LoadBrushModel: C %p nodes=%p\n", mod, mod->nodes);
 
 //
 // set up the submodels (FIXME: this is confusing)
@@ -1471,13 +1517,13 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 //		bm = &mod->submodels[i];
 		bm = mod->submodels+i;
 
-//		tk_printf("Mod_LoadBrushModel: C-1\n");
+		printf("Mod_LoadBrushModel: C-1\n");
 
 		hull0=mod->hulls+0;
 		hull0->firstclipnode = bm->headnode[0];
 //		mod->hulls[0].firstclipnode = bm->headnode[0];
 
-//		tk_printf("Mod_LoadBrushModel: C-2\n");
+		printf("Mod_LoadBrushModel: C-2\n");
 
 		for (j=1 ; j<MAX_MAP_HULLS ; j++)
 		{
@@ -1489,7 +1535,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 //			mod->hulls[j].lastclipnode = mod->numclipnodes-1;
 		}
 
-//		tk_printf("Mod_LoadBrushModel: C-3\n");
+		printf("Mod_LoadBrushModel: C-3\n");
 
 		mod->firstmodelsurface = bm->firstface;
 		mod->nummodelsurfaces = bm->numfaces;
@@ -1498,7 +1544,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 		VectorCopy (bm->mins, mod->mins);
 		mod->radius = RadiusFromBounds (mod->mins, mod->maxs);
 
-//		tk_printf("Mod_LoadBrushModel: C-4\n");
+		printf("Mod_LoadBrushModel: C-4\n");
 
 		mod->numleafs = bm->visleafs;
 
@@ -1529,10 +1575,10 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 			mod = loadmodel;
 		}
 
-//		tk_printf("Mod_LoadBrushModel: C-5\n");
+		printf("Mod_LoadBrushModel: C-5\n");
 	}
 
-//	tk_printf("Mod_LoadBrushModel: D %p nodes=%p\n", mod, mod->nodes);
+	printf("Mod_LoadBrushModel: D %p nodes=%p\n", mod, mod->nodes);
 }
 
 /*

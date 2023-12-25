@@ -895,7 +895,8 @@ void *tk_malloc(int sz)
 
 void *tk_malloc_cat(int sz, int cat)
 {
-#ifndef __TK_CLIB_ONLY__
+// #ifndef __TK_CLIB_ONLY__
+#if 1
 	if(cat)
 		return(TKMM_MallocCat(sz, cat));
 	else

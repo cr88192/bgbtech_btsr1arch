@@ -218,8 +218,11 @@ int TKRA_ZaTest_BasicZeqAgeNz(
 
 int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 {
+	TKRA_SvContext *sctx;
 	int zfn, afn;
 	int isbasic;
+	
+	sctx=ctx->svctx;
 	
 	zfn=ctx->zat_zfunc;
 	afn=ctx->zat_alfunc;
@@ -239,7 +242,7 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZalAal;
+			sctx->ZaTest=TKRA_ZaTest_BasicZalAal;
 			isbasic=1;
 			if(	(ctx->stateflag1&TKRA_STFL1_ALPHATEST) ||
 				(ctx->stateflag1&TKRA_STFL1_DEPTHTEST))
@@ -247,11 +250,11 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZalAle;
+			sctx->ZaTest=TKRA_ZaTest_BasicZalAle;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZalAge;
+			sctx->ZaTest=TKRA_ZaTest_BasicZalAge;
 			isbasic=1;
 			if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
 					isbasic=0;
@@ -267,18 +270,18 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZleAal;
+			sctx->ZaTest=TKRA_ZaTest_BasicZleAal;
 			isbasic=1;
 			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
 				isbasic=0;
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZleAle;
+			sctx->ZaTest=TKRA_ZaTest_BasicZleAle;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZleAge;
+			sctx->ZaTest=TKRA_ZaTest_BasicZleAge;
 			isbasic=1;
 			break;
 		default:
@@ -292,15 +295,15 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZgeAal;
+			sctx->ZaTest=TKRA_ZaTest_BasicZgeAal;
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZgeAle;
+			sctx->ZaTest=TKRA_ZaTest_BasicZgeAle;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZgeAge;
+			sctx->ZaTest=TKRA_ZaTest_BasicZgeAge;
 			break;
 		default:
 			__debugbreak();
@@ -313,7 +316,7 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZalAalNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZalAalNz;
 			isbasic=1;
 			if(	(ctx->stateflag1&TKRA_STFL1_ALPHATEST) ||
 				(ctx->stateflag1&TKRA_STFL1_DEPTHTEST))
@@ -321,11 +324,11 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZalAleNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZalAleNz;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZalAgeNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZalAgeNz;
 			isbasic=1;
 			if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
 				isbasic=0;
@@ -341,20 +344,20 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZleAalNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZleAalNz;
 			isbasic=1;
 			if(ctx->stateflag1&TKRA_STFL1_ALPHATEST)
 				isbasic=0;
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZleAleNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZleAleNz;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZleAgeNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZleAgeNz;
 			isbasic=1;
-			if(ctx->bfn_flag&(TKRA_TRFL_DOLMAP|TKRA_TRFL_DOBLEND))
+			if(sctx->bfn_flag&(TKRA_TRFL_DOLMAP|TKRA_TRFL_DOBLEND))
 				isbasic=0;
 			break;
 		default:
@@ -368,15 +371,15 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZgeAalNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZgeAalNz;
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZgeAleNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZgeAleNz;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZgeAgeNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZgeAgeNz;
 			break;
 		default:
 			__debugbreak();
@@ -388,15 +391,15 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZeqAal;
+			sctx->ZaTest=TKRA_ZaTest_BasicZeqAal;
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZeqAle;
+			sctx->ZaTest=TKRA_ZaTest_BasicZeqAle;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZeqAge;
+			sctx->ZaTest=TKRA_ZaTest_BasicZeqAge;
 			break;
 		default:
 			__debugbreak();
@@ -408,15 +411,15 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		switch(afn)
 		{
 		case TKRA_ZAT_AL:
-			ctx->ZaTest=TKRA_ZaTest_BasicZeqAalNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZeqAalNz;
 			break;
 		case TKRA_ZAT_LT:
 		case TKRA_ZAT_LE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZeqAleNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZeqAleNz;
 			break;
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
-			ctx->ZaTest=TKRA_ZaTest_BasicZeqAgeNz;
+			sctx->ZaTest=TKRA_ZaTest_BasicZeqAgeNz;
 			break;
 		default:
 			__debugbreak();
@@ -431,8 +434,8 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 
 	if(!isbasic)
 	{
-//		ctx->bfn_flag|=TKRA_TRFL_DOBLEND;
-		ctx->bfn_flag|=TKRA_TRFL_DOZABLEND;
+//		sctx->bfn_flag|=TKRA_TRFL_DOBLEND;
+		sctx->bfn_flag|=TKRA_TRFL_DOZABLEND;
 	}
 	return(0);
 }

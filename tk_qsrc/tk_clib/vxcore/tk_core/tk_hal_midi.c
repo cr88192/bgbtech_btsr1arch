@@ -188,6 +188,8 @@ int TK_Midi_SetMasterParam(int var, int val)
 {
 	if(var==1)
 	{
+		if(val<0)	val=0;
+		if(val>15)	val=15;
 		tk_midi_musicvolume=val;
 		return(0);
 	}
@@ -248,6 +250,8 @@ static const short tk_midi_notehz[128] = {
 };
 
 static const char *tk_midi_hexdig="0123456789ABCDEF";
+
+static byte tk_midi_msgmaskpgm[256];
 
 int TK_Midi_LookupGetPatchAuMem(
 	int pgm, int note,
@@ -323,6 +327,10 @@ int TK_Midi_LookupGetPatchAuMem(
 //	if(i>=indxsz)
 	if(bidx<0)
 	{
+		if(tk_midi_msgmaskpgm[pgm])
+			return(-1);
+	
+		tk_midi_msgmaskpgm[pgm]=1;
 		tk_printf("TK_Midi_LookupGetPatchAuMem: Fail Lookup pgm=%d note=%d\n", 
 			pgm, note);
 		return(-1);
@@ -357,7 +365,7 @@ int TK_Midi_LookupGetPatchAuMem(
 		lnam|=((u64)tk_midi_hexdig[(sidx>> 4)&15])<<48;
 		lnam|=((u64)tk_midi_hexdig[(sidx>> 0)&15])<<56;
 		
-		wlofs=0;
+		wlofs=0;	wlsz=0;
 
 		TK_Midi_WadLookupLump(tk_midi_patchwad, lnam, &wlofs, &wlsz);
 		
@@ -546,6 +554,7 @@ int TK_Midi_Init()
 
 	if(tk_midi_patchwad)
 	{
+		lofs=0;		lsz=0;
 		i=TK_Midi_WadLookupLump(tk_midi_patchwad,
 			TKGDI_ECC_PATCHIDX, &lofs, &lsz);
 		if(i>=0)
@@ -619,6 +628,8 @@ int TK_Midi_SilenceAll()
 		tk_midi_vnflg[i]=0;
 		tk_midi_vnchn[i]=0xFF;
 	}
+
+	memset(tk_midi_msgmaskpgm, 0, 256);
 
 	return(0);
 }

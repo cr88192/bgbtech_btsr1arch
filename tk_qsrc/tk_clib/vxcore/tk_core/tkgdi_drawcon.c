@@ -446,6 +446,8 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 	if(!pixb)
 		return;
 
+//	tk_dbg_printf("tkgdi_con_drawcell: at %d %d\n", x, y);
+
 	if(cys==8)
 	{
 		if(cxs==8)
@@ -514,7 +516,7 @@ void tkgdi_con_redrawbuffer(_tkgdi_conparm *con)
 		if(!((qrm>>i)&1))
 			continue;
 
-//		tk_printf("tkgdi_con_redrawbuffer: row %d\n", i);
+//		tk_dbg_printf("tkgdi_con_redrawbuffer: row %d\n", i);
 
 		for(j=0; j<TKG_CONWIDTH; j++)
 		{
@@ -541,7 +543,7 @@ void tkgdi_con_redrawbuffer(_tkgdi_conparm *con)
 //			q&=~(1LL<<(k&63));
 //			con->conmask[k>>6]=q;
 
-//			tk_printf("tkgdi_con_redrawbuffer: at %d %d\n", j, i);
+//			tk_dbg_printf("tkgdi_con_redrawbuffer: at %d %d\n", j, i);
 			
 			tkgdi_con_drawcell(con, j, i);
 		}
@@ -556,6 +558,17 @@ void tkgdi_con_redrawbuffer(_tkgdi_conparm *con)
 void TKGDI_Con_UpdateHwCursor(_tkgdi_conparm *con)
 {
 	tkgdi_con_redrawbuffer(con);
+}
+
+void tkgdi_con_markdirty(_tkgdi_conparm *con)
+{
+	int j;
+
+	j=((80*25+63)>>6);
+	memset(con->conmask, 0xFF, j*8);
+
+	con->conrowmask=-1;
+	con->dirty|=3;
 }
 
 void tkgdi_con_clear(_tkgdi_conparm *con)
@@ -1189,4 +1202,9 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 	}
 
 	TKGDI_Con_UpdateHwCursor(con);
+}
+
+void tkgdi_con_settab(_tkgdi_conparm *con, int tab)
+{
+	con->tabactive=tab;
 }

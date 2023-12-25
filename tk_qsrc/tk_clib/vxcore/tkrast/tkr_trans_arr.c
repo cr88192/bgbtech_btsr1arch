@@ -1495,8 +1495,8 @@ int TKRA_DrawPrimitiveIndexArrayObjI(
 
 	rt=TKRA_DrawPrimitiveIndexArrayBasicB(ctx,
 		parr->vptr_xyz_ptr, parr->vptr_xyz_fmt, parr->vptr_xyz_str,
-		parr->vptr_st_ptr,  parr->vptr_st_fmt,  parr->vptr_xyz_str,
-		parr->vptr_rgb_ptr, parr->vptr_xyz_fmt, parr->vptr_xyz_str,
+		parr->vptr_st_ptr,  parr->vptr_st_fmt,  parr->vptr_st_str,
+		parr->vptr_rgb_ptr, parr->vptr_rgb_fmt, parr->vptr_rgb_str,
 		parr->vptr_ix_ptr,  parr->vptr_ix_fmt,
 		mode, count);
 	return(rt);
@@ -1519,17 +1519,19 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 	void *xyz,		int xyz_n,		int xyz_ty,		int xyz_str,
 	void *st,		int st_n,		int st_ty,		int st_str,
 	void *rgb,		int rgb_n,		int rgb_ty,		int rgb_str,
+	void *nv,		int nv_n,		int nv_ty,		int nv_str,
 	void *idx,						int idx_ty,
 	int mode,		int count)
 {
 	TKRA_DrawPrimArrays	t_parr;
 	TKRA_DrawPrimArrays	*parr;
-	int xyz_fmt, st_fmt, rgb_fmt, idx_fmt;
+	int xyz_fmt, st_fmt, rgb_fmt, idx_fmt, nv_fmt;
 	int rt;
 	
 	xyz_fmt=TKRA_PrimitiveGetFmt(xyz_n, xyz_ty);
 	st_fmt=TKRA_PrimitiveGetFmt(st_n, st_ty);
 	rgb_fmt=TKRA_PrimitiveGetFmt(rgb_n, rgb_ty);
+	nv_fmt=TKRA_PrimitiveGetFmt(nv_n, nv_ty);
 	idx_fmt=TKRA_PrimitiveGetFmt(1, idx_ty);
 
 	parr=&t_parr;
@@ -1545,9 +1547,9 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 	parr->vptr_rgb_str=rgb_str;
 	parr->vptr_rgb_ptr=rgb;
 
-	parr->vptr_nv_fmt=0;
-	parr->vptr_nv_str=0;
-	parr->vptr_nv_ptr=NULL;
+	parr->vptr_nv_fmt=nv_fmt;
+	parr->vptr_nv_str=nv_str;
+	parr->vptr_nv_ptr=nv;
 
 	parr->vptr_ix_fmt=idx_fmt;
 	parr->vptr_ix_str=1;

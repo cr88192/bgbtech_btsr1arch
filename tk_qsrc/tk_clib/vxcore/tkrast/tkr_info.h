@@ -188,7 +188,12 @@ Edge Parameter Arrays
 #define		TKRA_ES_CSTEP	5			//color step
 #define		TKRA_ES_ZPOS	6			//Z position
 #define		TKRA_ES_ZSTEP	7			//Z step
-#define		TKRA_ES_NPARM	8			//number of edge params
+// #define		TKRA_ES_NPARM	8			//number of edge params
+
+#define		TKRA_ES_T2POS	8			//texture position
+#define		TKRA_ES_T2STEP	9			//texture step
+
+#define		TKRA_ES_NPARM	12			//number of edge params
 
 /*
 Vertex Parameter Arrays
@@ -198,7 +203,8 @@ Vertex Parameter Arrays
 #define		TKRA_VX_ZPOS	2			//screen Z position
 #define		TKRA_VX_TPOS	3			//texture position
 #define		TKRA_VX_CPOS	4			//color position
-#define		TKRA_VX_NPARM	5			//number of edge params
+#define		TKRA_VX_T2POS	5			//texture position
+#define		TKRA_VX_NPARM	8			//number of edge params
 
 #define		TKRA_TRFL_ALPHA			0x0001	//Activity seen in alpha channel.
 #define		TKRA_TRFL_HASMIP		0x0002	//Mipmaps Used
@@ -464,6 +470,8 @@ Vertex Parameter Arrays
 
 #define TKRA_STFL1_DOSHADER_MASK				0x001C0000
 
+#define TKRA_STFL1_STENCILTEST					0x00200000
+
 
 typedef unsigned short	tkra_rastpixel;
 // typedef unsigned short	tkra_zbufpixel;
@@ -479,6 +487,7 @@ typedef float		tkra_f32;
 typedef double		tkra_f64;
 
 typedef struct TKRA_Context_s		TKRA_Context;
+typedef struct TKRA_SvContext_s	TKRA_SvContext;
 typedef struct TKRA_ContextVt_s	TKRA_ContextVt;
 typedef struct TKRA_TexImage_s		TKRA_TexImage;
 
@@ -536,8 +545,10 @@ typedef struct {
 
 	int			fl;				//30
 	u32			mrgb;			//34, RGBA (Material)
-	int			pad1;			//38
-	int			pad2;			//3C
+//	int			pad1;			//38
+//	int			pad2;			//3C
+
+	tkra_vec2f	st2;			//38, Second Coords
 
 //	tkra_vec4f	norm;			//40
 	u64			attrib[8];		//40
@@ -552,7 +563,8 @@ typedef struct {
 	s32 t;		//10
 	u32 rgb;	//14
 	//18
-	u64 pad;
+	s32	s2;		//18
+	s32 t2;		//1C
 	u64 attrib[4];
 }tkra_projvertex;
 
@@ -600,6 +612,8 @@ struct TKRA_ShaderOp_s
 	u32	imm;
 };
 
+#define TKRA_MAX_MULTITEX		8
+
 struct TKRA_ContextVt_s
 {
 void *resv0;		//reserved 0
@@ -626,6 +640,10 @@ void (*UpdateTexImgUtx2)(
 TKRA_TexImage *(*LookupTexImg)(TKRA_Context *ctx, int num);
 TKRA_TexImage *(*GetTexImg)(TKRA_Context *ctx, int num);
 int (*BindTexImg)(TKRA_Context *ctx, TKRA_TexImage *img);
+int (*QueryContext)(TKRA_Context *ctx, u64 param, void *iptr, void *optr);
+int (*ModifyContext)(TKRA_Context *ctx, u64 param, void *iptr, void *optr);
+int (*SetupScreen)(TKRA_Context *ctx, int xs, int ys, u64 attrib);
+
 };
 
 
@@ -636,9 +654,9 @@ int		vptr_xyz_fmt;
 int		vptr_xyz_str;
 void 	*vptr_xyz_ptr;
 
-int		vptr_st_fmt;
-int		vptr_st_str;
-void 	*vptr_st_ptr;
+int		vptr_st_fmt;	//ST format, Texture 0
+int		vptr_st_str;	//ST stride, Texture 0
+void 	*vptr_st_ptr;	//ST pointer, Texture 0
 
 int		vptr_rgb_fmt;
 int		vptr_rgb_str;
@@ -651,12 +669,107 @@ void 	*vptr_nv_ptr;
 int		vptr_ix_fmt;
 int		vptr_ix_str;
 void 	*vptr_ix_ptr;
+
+int		vptr_sta_fmt[TKRA_MAX_MULTITEX];	//ST format, Multitexture
+int		vptr_sta_str[TKRA_MAX_MULTITEX];	//ST stride, Multitexture
+void 	*vptr_sta_ptr[TKRA_MAX_MULTITEX];	//ST pointer, Multitexture
 };
 
+
+struct TKRA_SvContext_s
+{
+TKRA_Context  *clctx;			//client/shared context
+
+
+void (*DrawSpan)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanHZt)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanZt)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+
+void (*DrawSpan_Min)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanHZt_Min)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanZt_Min)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+
+void (*DrawSpan_Mag)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanHZt_Mag)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+void (*DrawSpanZt_Mag)(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
+
+void (*DrawSpanZb)(tkra_zbufpixel *dstz, int cnt, u64 zpos, u64 zstep);
+void (*RasterWalkEdges)(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
+void (*RasterWalkEdgesNcp)(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
+
+
+tkra_blendfunc_t	Blend;
+tkra_zatest_t		ZaTest;
+
+tkra_rastpixel *tex_img;			//bound texture image
+tkra_rastpixel *tex_img2;			//bound texture image
+u32		*tex_img_bcn;				//texture images (block compressed)
+u32		*tex_img_bcn2;				//texture images (block compressed)
+byte	tex_xshl;
+byte	tex_yshl;
+byte	tex_mmip;
+byte	tex_nmip;
+int		triflag;
+int		tex_flag;			//texture state flags
+int		bfn_flag;			//blend state flags
+
+byte	tex_xshl2;
+byte	tex_yshl2;
+byte	tex_mmip2;
+byte	tex_nmip2;
+int		tex_flag2;			//texture state flags
+
+TKRA_TexImage *span_tex_cur;
+int		span_trifl;
+
+TKRA_TexImage *tex_cur;
+TKRA_TexImage *tex_cur2;
+TKRA_TexImage *tex_cur_mtx[TKRA_MAX_MULTITEX];
+
+
+tkra_trivertex v0stk[64];
+tkra_trivertex v1stk[64];
+tkra_trivertex v2stk[64];
+tkra_trivertex v3stk[64];
+
+
+
+int tex_rov;
+TKRA_TexImage *tex_list;
+TKRA_TexImage *tex_hash[256];
+
+TKRA_ShaderTrace *sdr_trcache[1024];
+u16 sdr_trchain[1024];
+u16 sdr_n_trace;
+u16 sdr_trhash[256];
+
+TKRA_ShaderProg		*sdr_progs;
+TKRA_ShaderTrace	*sdr_tr_free;
+TKRA_ShaderTrace	*sdr_tr_next;
+TKRA_ShaderOp		*sdr_op_free;
+
+TKRA_ShaderProg		*sdr_prog_cur;
+TKRA_ShaderTrace	*sdr_tr_e_vtx;
+};
 
 struct TKRA_Context_s
 {
 TKRA_ContextVt	*vt;			//vtable
+TKRA_SvContext  *svctx;			//server context
+
+u32				magic1;			//magic number (0x12345678, sanity check)
+u32				size_context;	//size of context struct
 
 byte			*screen_mem;	//combined screen memory
 tkra_rastpixel	*screen_rgb;	//display buffer (RGB)
@@ -688,71 +801,26 @@ int		clip_y1;	//Needs to be 64-bit aligned (SIMD, 3)
 float			scr_clip_l, scr_clip_r;
 float			scr_clip_t, scr_clip_b;
 
-
-TKRA_TexImage *tex_cur;
-tkra_rastpixel *tex_img;			//bound texture image
-u32		*tex_img_bcn;				//texture images (block compressed)
-byte	tex_xshl;
-byte	tex_yshl;
-byte	tex_mmip;
-byte	tex_nmip;
-int		triflag;
-int		tex_flag;			//texture state flags
-int		bfn_flag;			//blend state flags
-
-TKRA_TexImage *span_tex_cur;
-int		span_trifl;
-
 u64		stateflag1;
 
-tkra_rastpixel *dst_rgb;		//destination (RGB)
-tkra_zbufpixel *dst_zbuf;		//destination (Zbuf)
+// tkra_rastpixel *dst_rgb;		//destination (RGB)
+// tkra_zbufpixel *dst_zbuf;		//destination (Zbuf)
 
-void (*DrawSpan)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-void (*DrawSpanHZt)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-void (*DrawSpanZt)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-
-void (*DrawSpan_Min)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-void (*DrawSpanHZt_Min)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-void (*DrawSpanZt_Min)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-
-void (*DrawSpan_Mag)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-void (*DrawSpanHZt_Mag)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-void (*DrawSpanZt_Mag)(u64 *parm,
-	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt);
-
-void (*DrawSpanZb)(tkra_zbufpixel *dstz, int cnt, u64 zpos, u64 zstep);
-void (*RasterWalkEdges)(TKRA_Context *ctx,
-	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
-void (*RasterWalkEdgesNcp)(TKRA_Context *ctx,
-	int ytop, u64 *edge_l, u64 *edge_r, int cnt);
 
 tkra_vec4f	(*VaGetPtr_xyz)(void *ptr);
 tkra_vec2f	(*VaGetPtr_st )(void *ptr);
 u32			(*VaGetPtr_rgb)(void *ptr);
 int			(*VaGetPtr_idx)(void *ptr);
 
-int tex_rov;
-TKRA_TexImage *tex_list;
-TKRA_TexImage *tex_hash[256];
-
 
 float		trans_znear;
 float		trans_zfar;
 float		trans_zrange;
 
-tkra_mat4	mat_tproj;		//modelview*projection
+tkra_mat4	mat_tproj;			//modelview*projection
 
-tkra_mat4	mat_xform;		//modelview
-tkra_mat4	mat_xproj;		//projection
+tkra_mat4	mat_xform;			//modelview
+tkra_mat4	mat_xproj;			//projection
 
 tkra_mat4	stk_xform[64];		//modelview
 tkra_mat4	stk_xproj[8];		//projection
@@ -761,12 +829,27 @@ int			stkpos_xproj;
 byte		matmode;
 byte		blend_sfunc;
 byte		blend_dfunc;
+byte		blend_sfunc2;
+byte		blend_dfunc2;
+
+// byte		blend_sfunc_mtx[8];
+// byte		blend_dfunc_mtx[8];
 
 byte		zat_alfunc;
 byte		zat_zfunc;
 byte		blend_isready;
 
+byte		zat_stfunc;
+byte		zat_stref;
+byte		zat_stmask;
+byte		zat_stclear;
+byte		zat_sto_stfail;
+byte		zat_sto_zfail;
+byte		zat_sto_zpass;
+
 byte		light_mask;
+byte		cachemode;
+byte		tex2d_active;
 
 tkra_vec4f	light_model_ambient;
 tkra_vec4f	light_ambient[8];
@@ -780,9 +863,6 @@ float		light_attn_const[8];
 float		light_attn_linear[8];
 float		light_attn_quadratic[8];
 
-tkra_blendfunc_t	Blend;
-tkra_zatest_t		ZaTest;
-
 u32		zat_cref;
 
 int		tkgl_usepgm_vtx;		//vertex shader
@@ -790,48 +870,7 @@ u64		*tkgl_sdr_uniform;		//uniform parameters
 u64		*tkgl_sdr_local;		//local parameters
 u64		*tkgl_sdr_attrib;		//local parameters
 
-TKRA_ShaderTrace *sdr_trcache[1024];
-u16 sdr_trchain[1024];
-u16 sdr_n_trace;
-u16 sdr_trhash[256];
-
-TKRA_ShaderProg		*sdr_progs;
-TKRA_ShaderTrace	*sdr_tr_free;
-TKRA_ShaderTrace	*sdr_tr_next;
-TKRA_ShaderOp		*sdr_op_free;
-
-TKRA_ShaderProg		*sdr_prog_cur;
-TKRA_ShaderTrace	*sdr_tr_e_vtx;
-
-tkra_trivertex v0stk[64];
-tkra_trivertex v1stk[64];
-tkra_trivertex v2stk[64];
-tkra_trivertex v3stk[64];
-
-TKRA_DrawPrimArrays t_vptr;
-TKRA_DrawPrimArrays *vptr;
-
-#if 0
-int		tkgl_vptr_xyz_nsz;
-int		tkgl_vptr_xyz_ty;
-int		tkgl_vptr_xyz_str;
-void 	*tkgl_vptr_xyz_ptr;
-
-int		tkgl_vptr_st_nsz;
-int		tkgl_vptr_st_ty;
-int		tkgl_vptr_st_str;
-void 	*tkgl_vptr_st_ptr;
-
-int		tkgl_vptr_rgb_nsz;
-int		tkgl_vptr_rgb_ty;
-int		tkgl_vptr_rgb_str;
-void 	*tkgl_vptr_rgb_ptr;
-
-int		tkgl_vptr_nv_nsz;
-int		tkgl_vptr_nv_ty;
-int		tkgl_vptr_nv_str;
-void 	*tkgl_vptr_nv_ptr;
-#endif
+TKRA_DrawPrimArrays *vptr;		//draw arrays state
 
 int		tkgl_begin_mode;
 u32		tkgl_begin_rgba;
@@ -842,6 +881,8 @@ float	tkgl_begin_st[2];
 float	*tkgl_begin_vtxa;
 int		tkgl_begin_nvtx;
 int		tkgl_begin_mvtx;
+
+u64		tex2d_enamask;						//enabled textures
 
 int		stat_base_tris;
 int		stat_frag_tris;
@@ -857,21 +898,29 @@ int		stat_microfrag_tris;
 int		stat_backface_tris;
 int		stat_negw_tris;
 int		stat_zocc_tris;
+
+u32				magic2;			//magic number (0x12345678, sanity check)
+
+int		boundtexid[TKRA_MAX_MULTITEX];		//bound texture IDs
+
+TKRA_DrawPrimArrays t_vptr;
 };
 
 struct TKRA_TexImage_s
 {
-TKRA_TexImage *next;
-TKRA_TexImage *chain;
-
-tkra_rastpixel *tex_img;			//texture images
-u32		*tex_img_bcn;				//texture images (block compressed)
-int		tex_id;
-int		tex_mipofs[16];				//mip offs, pixels
-int		tex_mipofs_bcn[16];			//mip offs, block DWORDs
-byte	tex_xshl;					//texture X size (log-2)
-byte	tex_yshl;					//texture Y size (log-2)
-byte	tex_mmip;
-byte	tex_nmip;
-int		tex_flag;
+TKRA_TexImage *next;				//00
+TKRA_TexImage *chain;				//08
+tkra_rastpixel *tex_img;			//10 texture images
+u32		*tex_img_bcn;				//18 texture images (block compressed)
+int		tex_id;						//20
+byte	tex_xshl;					//24 texture X size (log-2)
+byte	tex_yshl;					//25 texture Y size (log-2)
+byte	tex_mmip;					//26
+byte	tex_nmip;					//27
+int		tex_flag;					//28
+int		pad0;						//2C
+u64		pad1;						//30
+u64		pad2;						//38
+int		tex_mipofs[16];				//40 mip offs, pixels
+int		tex_mipofs_bcn[16];			//80 mip offs, block DWORDs
 };

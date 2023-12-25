@@ -66,6 +66,8 @@
 #define ENOTEMPTY     41    /* Directory not empty (90 in Cyg?) */
 #define EILSEQ        42    /* Illegal byte sequence */
 
+#define EWOULDBLOCK		EAGAIN
+
 #endif
 
 #ifndef __ERRNO_T_DEFINED

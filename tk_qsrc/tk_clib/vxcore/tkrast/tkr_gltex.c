@@ -242,7 +242,8 @@ void tkra_glTexImage2D(
 	}
 
 	ctx=TKRA_GetCurrentContext();
-	img=ctx->tex_cur;
+//	img=ctx->tex_cur;
+	img=TKRA_GetTexImg(ctx, ctx->boundtexid[ctx->tex2d_active]);
 
 //	TKRA_UpdateTexImg(ctx, img, txbuf, width, height, level);
 	TKRA_UpdateTexImg(ctx, img, ixbuf, ixw, ixh, level, flag);
@@ -269,7 +270,8 @@ void tkra_glTexSubImage2D(
 //		return;
 
 	ctx=TKRA_GetCurrentContext();
-	img=ctx->tex_cur;
+//	img=ctx->tex_cur;
+	img=TKRA_GetTexImg(ctx, ctx->boundtexid[ctx->tex2d_active]);
 
 	if((xoffset==0) && (yoffset==0) &&
 		(width==(1<<img->tex_xshl)) &&
@@ -304,22 +306,40 @@ void tkra_glCompressedTexImage2D(int target,
 
 
 	ctx=TKRA_GetCurrentContext();
-	img=ctx->tex_cur;
+//	img=ctx->tex_cur;
+	img=TKRA_GetTexImg(ctx, ctx->boundtexid[ctx->tex2d_active]);
 
 	if(internalformat==TKRA_GL_CMPR_RGB_S3TC_DXT1)
 	{
+//		tk_printf("tkra_glCompressedTexImage2D: %s:%d\n",
+//			__FILE__, __LINE__);
+
 		TKRA_UpdateTexImgDxt1(ctx, img, data, width, height, level,
 			TKRA_TRFL_NOALPHA);
+
 	}else
 		if(internalformat==TKRA_GL_CMPR_RGBA_S3TC_DXT1)
 	{
+//		tk_printf("tkra_glCompressedTexImage2D: %s:%d\n",
+//			__FILE__, __LINE__);
+
 		TKRA_UpdateTexImgDxt1(ctx, img, data, width, height, level,
 			TKRA_TRFL_ALPHA);
+
 	}else
 		if(internalformat==TKRA_GL_CMPR_RGBA_S3TC_DXT5)
 	{
+//		tk_printf("tkra_glCompressedTexImage2D: %s:%d\n",
+//			__FILE__, __LINE__);
+
 		TKRA_UpdateTexImgDxt5(ctx, img, data, width, height, level,
 			TKRA_TRFL_ALPHA);
+
+	}else
+	{
+//		tk_printf("tkra_glCompressedTexImage2D: %s:%d\n",
+//			__FILE__, __LINE__);
+		return;
 	}
 
 	TKRA_BindTexImg(ctx, img);
@@ -336,8 +356,13 @@ void tkra_glBindTexture(int target, int texture)
 
 	ctx=TKRA_GetCurrentContext();
 
+	if(ctx->boundtexid[ctx->tex2d_active]==texture)
+		return;
+
 	img=TKRA_GetTexImg(ctx, texture);
 	TKRA_BindTexImg(ctx, img);
+	
+	ctx->boundtexid[ctx->tex2d_active]=texture;
 
 //	img=ctx->tex_cur;
 //	TKRA_UpdateTexImg(ctx, img, txbuf, width, height, level);
@@ -365,7 +390,8 @@ void tkra_glTexParameteri(int target, int pname, int param)
 	int		txfl;
 
 	ctx=TKRA_GetCurrentContext();
-	img=ctx->tex_cur;
+//	img=ctx->tex_cur;
+	img=TKRA_GetTexImg(ctx, ctx->boundtexid[ctx->tex2d_active]);
 	if(!img)
 		return;
 	
@@ -491,7 +517,7 @@ void tkra_glShadeModel(int mode)
 void tkra_glDeleteTextures(int cnt, int *list)
 {
 	TKRA_Context *ctx;
-	TKRA_TexImage *img;
+	TKRA_TexImage *img, *img1;
 	u16 px;
 	int i, ix;
 
@@ -510,7 +536,9 @@ void tkra_glDeleteTextures(int cnt, int *list)
 //		TKRA_UpdateTexImg(ctx, img, NULL, 0, 0, 0, 0);
 		TKRA_UpdateTexImg(ctx, img, &px, 1, 1, 0, 0);
 		
-		if(img==ctx->tex_cur)
+		img1=TKRA_GetTexImg(ctx, ix);
+//		if(img==ctx->tex_cur)
+		if(img==img1)
 		{
 			TKRA_BindTexImg(ctx, img);
 		}
@@ -531,3 +559,21 @@ void glTextureParameteriv(int texture, int pname, const int *params);
 void glTextureParameterIiv(int texture, int pname, const int *params);
 void glTextureParameterIuiv(int texture, int pname, const unsigned int *params);
 #endif
+
+void tkra_glActiveTexture(int texture)
+{
+	TKRA_Context *ctx;
+	int ix;
+
+	ctx=TKRA_GetCurrentContext();
+
+	ix=texture-GL_TEXTURE0;
+	if((ix<0) || (ix>=TKRA_MAX_MULTITEX))
+	{
+		ix=texture-0x835E;
+		if((ix<0) || (ix>=TKRA_MAX_MULTITEX))
+			return;
+	}
+	
+	ctx->tex2d_active=ix&(TKRA_MAX_MULTITEX-1);
+}

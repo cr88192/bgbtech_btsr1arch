@@ -1,0 +1,49 @@
+Low Complexity Video 1A
+* Goal is to make something that is a suitable alternative to CRAM.
+** Should not be significantly slower.
+** Should not be significantly more complicated.
+
+Ideas:
+* Split color and block planes (like LCIF)
+* Focus on 2x RGB555 and 4x4x2 as top-end.
+
+Color Plane:
+* rrrrrggg-ggbbbbbr-rrrrgggg-gbbbbb00  RGB555 Pair
+*                   rrgggbbr-rgggbb10  RGB555 Pair Delta
+*                            iiiii001  Endpoint Index
+*                            nnnn0101  Endpoint RLE Run
+*                            nnnn1101  Endpoint Skip Run
+*                   dddddddd-nnnn0011  Endpoint LZ (Short)
+*                   nnnnnnnn-nn001011  Endpoint RLE Run (Long)
+*                   nnnnnnnn-nn101011  Endpoint Skip (Long)
+
+Whenever a new color endpoint pair is encoded, it will be added to a rotating list, an index may be encoded into this list.
+
+The RLE Run case can be considered an LZ Run where the distance is fixed at 1.
+The Endpoint Index can be considered an LZ run where the length is fixed at 1.
+
+Color pairs will consist of colors A and B, which range between 0 and 3:
+* 00: Color B
+* 01: 5/8 Color B + 3/8 Color A
+* 10: 3/8 Color B + 5/8 Color A
+* 11: Color A
+
+Nominally, patterns will unpack into 4x4x2 blocks, but may be compacted further.
+
+Block Plane:
+*                           iiiiii00  Recent Block Index
+*                           pppppp10  Fixed Block Pattern
+*                           iiii0001  Flat Run (C=0)
+*                           iiii1001  Flat Run (C=3)
+*                           nnnn0101  Block RLE Run
+*                           nnnn1101  Block Skip Run
+*                  dddddddd-nnnn0011  Block LZ (Short)
+*                  nnnnnnnn-nn001011  Block RLE Run (Long)
+*                  nnnnnnnn-nn101011  Block Skip (Long)
+*                           nn011011  1x-4x 8x(1x1x1)
+*                           nn111011  1x-4x 4x(1x1x2)
+*                           nn000111  1x-4x 2x2x2
+*                           nn100111  1x-4x 4x4x1
+*                           nn010111  1x-4x 4x4x2
+*                           nn110111  1x-4x -
+
