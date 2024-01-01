@@ -4478,6 +4478,7 @@ begin
 			tValNextBraPcHi	= crOutSpcHi;
 //			nxtBraFlushMask = JX2_BRA_FLUSHMSK;
 			nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
+			tValNextBraPc[0]	= 0;
 
 `ifndef jx2_isr2stage
 			crInExsr		= crOutExsr;

@@ -80,8 +80,22 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
 	BGBCC_CCXL_LiteralInfo *obj1;
 	ccxl_type bty;
 	char *s0, *s1;
-	int i, j, k;
+	int i, j, k, h;
 	
+	h=BGBCC_CCXL_HashName(sig)&255;
+
+	i=ctx->hash_literals_sig[h];
+	while(i>0)
+	{
+		obj=ctx->literals[i];
+		i=obj->hnext_sig;
+		if(obj->littype!=CCXL_LITID_RAWSIG)
+			continue;
+		if(!strcmp(obj->sig, sig))
+			return(obj);
+	}
+
+#if 0
 	for(i=1; i<ctx->n_literals; i++)
 	{
 		obj=ctx->literals[i];
@@ -90,6 +104,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
 		if(!strcmp(obj->sig, sig))
 			return(obj);
 	}
+#endif
 
 #if 0
 	if(*sig=='(')
@@ -149,7 +164,11 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
 	obj=BGBCC_CCXL_AllocLiteral(ctx);
 	obj->littype=CCXL_LITID_RAWSIG;
 	obj->sig=bgbcc_strdup(sig);
-	BGBCC_CCXL_AddLiteral(ctx, obj);
+	i=BGBCC_CCXL_AddLiteral(ctx, obj);
+	
+	obj->hnext_sig=ctx->hash_literals_sig[h];
+	ctx->hash_literals_sig[h]=i;
+
 	return(obj);
 }
 

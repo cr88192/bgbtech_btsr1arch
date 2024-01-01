@@ -552,6 +552,13 @@ int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 				opw3=0x47000|((reg&15)<<4)|((reg&32)<<5);
 				opw4=0x50804|((reg&16)<<6);
 			}else
+				if(BGBCC_JX2_CheckLabelIsText(ctx, lbl) &&
+					(ctx->abi_spillpad&16))
+//				if(0)
+			{
+				opw3=0xF080|((reg&16)<<2);
+				opw4=0x4400|((reg&15)<<4);
+			}else
 			{
 				opw3=0xF080|((reg&16)<<2);
 				opw4=0x0400|((reg&15)<<4);
@@ -1738,14 +1745,20 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 	case BGBCC_SH_NMID_BT:
 //		if(ctx->is_fixed32)
 		if(ctx->is_fixed32 || ctx->op_is_wex2 || (ctx->emit_riscv&0x22))
+//		if(1)
 		{
 			rlty=BGBCC_SH_RLC_RELW24_BJX;
 			opw1=0xFBFF;
 			opw2=0xFFFE;
 //			opw3=0xF002;
 //			opw4=0x3002;
-			opw3=0xF000;
-			opw4=0x3012;
+//			opw3=0xF000;
+//			opw4=0x3012;
+//			opw3=0xE000;
+//			opw4=0x3010;
+
+			opw3=0x4E010;
+			opw4=0x53000;
 			break;
 		}
 #if 0
@@ -1766,14 +1779,19 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 	case BGBCC_SH_NMID_BF:
 //		if(ctx->is_fixed32)
 		if(ctx->is_fixed32 || ctx->op_is_wex2 || (ctx->emit_riscv&0x22))
+//		if(1)
 		{
 			rlty=BGBCC_SH_RLC_RELW24_BJX;
 			opw1=0xFBFF;
 			opw2=0xFFFE;
 //			opw3=0xF003;
 //			opw4=0x3002;
-			opw3=0xF000;
-			opw4=0x3013;
+//			opw3=0xF000;
+//			opw4=0x3013;
+//			opw3=0xE400;
+//			opw4=0x3010;
+			opw3=0x4E410;
+			opw4=0x53000;
 			break;
 		}
 #if 0
@@ -1802,7 +1820,8 @@ int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 			opw1=-1;
 		}
 
-		if((opw3>=0) && ((opw3&0xF000)!=0xF000))
+//		if((opw3>=0) && ((opw3&0xF000)!=0xF000))
+		if((opw3>=0) && ((opw3&0xE000)!=0xE000))
 		{
 			if((opw3&0xF000)==0x3000)
 			{

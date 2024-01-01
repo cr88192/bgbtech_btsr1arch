@@ -2459,6 +2459,14 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 				bgbcc_jx2a_lastlbl=bgbcc_strdup(tk0+1);
 				BGBCC_JX2_EmitNamedLabel(ctx, tk0+1);
 				BGBCC_JX2C_ResetModeDqUnknown(NULL, ctx);
+
+				if(	(ctx->sec==BGBCC_SH_CSEG_TEXT) ||
+					(ctx->sec==BGBCC_SH_CSEG_UTEXT))
+				{
+					k=BGBCC_JX2_GetNamedLabel(ctx, tk0+1);
+					BGBCC_JX2_MarkLabelIsText(ctx, k);
+				}
+
 			}
 			*rcs=cs1+1;
 			return(1);

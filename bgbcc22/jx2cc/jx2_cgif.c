@@ -178,6 +178,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->abi_spillpad|= 4;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "vskglobal"))
 		shctx->abi_spillpad|= 8;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "functag"))
+		shctx->abi_spillpad|=16;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "shuffle"))
 		shctx->do_shuffle=1;
@@ -550,6 +552,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->abi_spillpad&=~1;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "novskgen"))
 		shctx->abi_spillpad&=~2;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofunctag"))
+		shctx->abi_spillpad&=~16;
 
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
@@ -2542,6 +2546,7 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		{
 			l0=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
 			obj->fxoffs=l0;
+			BGBCC_JX2_MarkLabelIsText(sctx, l0);
 		}
 
 		l1=obj->fxnoffs;
@@ -2643,6 +2648,7 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 //		l0=BGBCC_JX2_GenLabel(sctx);
 		l0=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
 		obj->fxoffs=l0;
+		BGBCC_JX2_MarkLabelIsText(sctx, l0);
 	}
 	
 #if 1
@@ -5005,6 +5011,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 	s64 val, var;
 	s64 b, d, b1, d1;
 	int w0, w1, w2, w3;
+	int lbl_istext;
 	int i, j, k;
 
 	en=(sctx->is_le==0);
@@ -5060,10 +5067,15 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		{
 			ctl=NULL;
 			val=sctx->lbl_ofs[j];
+			lbl_istext=0;
 		}else
 		{
 			ctl=imgbase+sctx->sec_rva[sctx->lbl_sec[j]]+sctx->lbl_ofs[j];
 			val=sctx->sec_lva[sctx->lbl_sec[j]]+sctx->lbl_ofs[j];
+
+			lbl_istext=
+				(sctx->lbl_sec[j]==BGBCC_SH_CSEG_TEXT) ||
+				(sctx->lbl_sec[j]==BGBCC_SH_CSEG_UTEXT) ;
 
 			if((ctl<=imgbase) || (ctl>(imgbase+0x1000000)))
 				{ BGBCC_DBGBREAK }
@@ -5145,7 +5157,20 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 //			d1=0x0C000000+(ctl-imgbase);
 			d1=sctx->image_base+(ctl-imgbase);
 			b=bgbcc_gets64en(ctr, en);
-			bgbcc_sets64en(ctr, en, b+d1);
+			b1=b+d1;
+			if(lbl_istext && (sctx->abi_spillpad&16))
+			{
+				b1&=0x0000FFFFFFFFFFFFULL;
+				if(sctx->is_fixed32&2)
+				{
+					b1|=1ULL<<55;
+					b1|=1;
+				}else
+				{
+					b1|=1;
+				}
+			}
+			bgbcc_sets64en(ctr, en, b1);
 			break;
 
 		case BGBCC_SH_RLC_ABS96:
@@ -7110,9 +7135,21 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			continue;
 
 		if((obj->regtype==CCXL_LITID_FUNCTION) && (obj->vtr))
+//		if(obj->regtype==CCXL_LITID_FUNCTION)
 		{
 			BGBCC_JX2C_BuildFunction(ctx, obj);
 			continue;
+		}
+
+		if((obj->regtype==CCXL_LITID_FUNCTION) && (!obj->vtr))
+		{
+			l0=obj->fxoffs;
+			if(l0<=0)
+			{
+				l0=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
+				obj->fxoffs=l0;
+				BGBCC_JX2_MarkLabelIsText(sctx, l0);
+			}
 		}
 
 		if(obj->regtype==CCXL_LITID_GLOBALVAR)
@@ -7317,6 +7354,34 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			}
 		}
 
+#if 1
+		for(i=n; i<l; i++)
+		{
+			if(i<shufgbl)
+				j=shufarr[i];
+			else
+				j=i;
+			obj=ctx->reg_globals[j];
+
+			if(!obj)
+				continue;
+
+#if 1
+			if(obj->regtype==CCXL_LITID_ASMBLOB)
+			{
+				BGBCC_JX2C_BuildAsmBlob(ctx, obj);
+				continue;
+			}
+
+			if(obj->regtype==CCXL_LITID_OBJECTBLOB)
+			{
+				BGBCC_JX2C_BuildObjBlob(ctx, obj);
+				continue;
+			}
+#endif
+		}
+#endif
+
 		for(i=n; i<l; i++)
 		{
 			if(i<shufgbl)
@@ -7333,6 +7398,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				BGBCC_JX2C_BuildFunction(ctx, obj);
 				continue;
 			}
+
+#if 0
 			if(obj->regtype==CCXL_LITID_ASMBLOB)
 			{
 				BGBCC_JX2C_BuildAsmBlob(ctx, obj);
@@ -7344,6 +7411,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				BGBCC_JX2C_BuildObjBlob(ctx, obj);
 				continue;
 			}
+#endif
 		}
 		
 		n=l;

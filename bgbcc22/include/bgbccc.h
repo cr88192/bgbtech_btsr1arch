@@ -622,6 +622,10 @@ char *name;
 BCCX_Node *(*func)(BGBCP_ParseState *ctx, char **s);
 };
 
+// #define BGBCC_GBLHASH_SZ	16384
+#define BGBCC_GBLHASH_SZ	8192
+// #define BGBCC_GBLHASH_SZ	4096
+
 //#define BGBCC_PPDEF_SIZE	256
 //#define BGBCC_PPDEF_MASK	255
 //#define BGBCC_PPDEF_SIZE	512
@@ -939,7 +943,8 @@ BGBCC_CCXL_RegisterInfo **reg_globals;
 int n_reg_globals;
 int m_reg_globals;
 
-BGBCC_CCXL_RegisterInfo *hash_globals[4096];	//global lookup hash
+BGBCC_CCXL_RegisterInfo *hash_globals[BGBCC_GBLHASH_SZ];	//global lookup hash
+// BGBCC_CCXL_RegisterInfo *hash_globals[4096];	//global lookup hash
 // BGBCC_CCXL_RegisterInfo *hash_globals[1024];	//global lookup hash
 BGBCC_CCXL_RegisterInfo *usort_globals;			//unsorted globals
 
@@ -951,9 +956,13 @@ BGBCC_CCXL_LiteralInfo **literals;
 // int *idx_literals;
 int n_literals, m_literals;
 
-int hash_literals[4096];
+int hash_literals[BGBCC_GBLHASH_SZ];
+// int hash_literals[4096];
 int manif_literal;
-int usort_literal;
+int usort_literal;		//unsorted literals
+int uname_literal;		//literal types lacking a name
+
+int hash_literals_sig[256];
 
 // BGBCC_CCXL_TypeOverflow *tyovf[1024];
 // BGBCC_CCXL_TypeOverflow *tyovf[16384];

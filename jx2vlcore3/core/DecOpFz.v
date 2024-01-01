@@ -7016,6 +7016,8 @@ begin
 
 				if(tRegRmIsRz)
 				begin
+					opUIxt	= {opUCty, opBty[1:0], opIsJumboAu, opBty};
+
 //					if(opIty!=JX2_ITY_SL)
 					if((opIty!=JX2_ITY_SL) && (opIty!=JX2_ITY_NB))
 //					if(1'b1)

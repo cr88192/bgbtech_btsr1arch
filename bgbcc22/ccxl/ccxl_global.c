@@ -14,7 +14,8 @@ int BGBCC_CCXL_HashName(char *name)
 	
 	s=name; hi=0;
 	while(*s)hi=(hi*251)+(*s++);
-	hi=((hi*251)>>8)&4095;
+	hi=((hi*251)>>8)&(BGBCC_GBLHASH_SZ-1);
+//	hi=((hi*251)>>8)&4095;
 //	hi=((hi*251)>>8)&1023;
 	return(hi);
 }
@@ -32,7 +33,8 @@ int BGBCC_CCXL_HashNameCase(char *name)
 			c+='a'-'A';
 		hi=(hi*251)+c;
 	}
-	hi=((hi*251)>>8)&4095;
+	hi=((hi*251)>>8)&(BGBCC_GBLHASH_SZ-1);
+//	hi=((hi*251)>>8)&4095;
 //	hi=((hi*251)>>8)&1023;
 	return(hi);
 }
@@ -45,7 +47,8 @@ int BGBCC_CCXL_HashNameNoSig(char *name)
 	s=name; hi=0;
 	while(*s && (*s!='('))
 		hi=(hi*251)+(*s++);
-	hi=((hi*251)>>8)&4095;
+	hi=((hi*251)>>8)&(BGBCC_GBLHASH_SZ-1);
+//	hi=((hi*251)>>8)&4095;
 //	hi=((hi*251)>>8)&1023;
 	return(hi);
 }
@@ -902,7 +905,7 @@ void BGBCC_CCXL_CheckFreeLiteral(BGBCC_TransState *ctx,
 	bgbcc_ccxl_freelits=obj;
 }
 
-void BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,
+int BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *obj)
 {
 	int i, h, m;
@@ -951,6 +954,8 @@ void BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,
 //		obj->hnext_name=-1;
 //		BGBCC_DBGBREAK
 	}
+	
+	return(i);
 }
 
 char *BGBCC_CCXL_GetParentLiteralSig(

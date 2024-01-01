@@ -703,6 +703,7 @@ char *sig;
 int littype;		//literal type
 int litid;			//literal ID
 int hnext_name;		//next by hashed name
+int hnext_sig;		//next by hashed sig
 
 BGBCC_CCXL_LiteralInfo *parent;
 BGBCC_CCXL_RegisterInfo *decl;

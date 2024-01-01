@@ -3931,6 +3931,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			{
 				if(op->rm==BJX2_REG_DLR)
 				{
+					op->rq=BJX2_REG_PC_HI;
 					op->rm=BJX2_REG_PC;
 					op->nmid=BJX2_NMID_LEATB;
 					op->fmid=BJX2_FMID_LDREGDISPREG;
@@ -4018,7 +4019,15 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			if(eq)
 			{
 				if(op->rm==BJX2_REG_DLR)
+				{
+					op->rq=BJX2_REG_PC_HI;
+					op->rm=BJX2_REG_PC;
+					op->nmid=BJX2_NMID_LEATB;
+					op->fmid=BJX2_FMID_LDREG2REG;
+					op->Run=BJX2_Op_LEATB_LdPcIdxReg;
+					op->fl|=BJX2_OPFL_NOWEX_IO2;
 					break;
+				}
 				if(op->rm==BJX2_REG_DHR)
 					break;
 				op->fl|=BJX2_OPFL_NOWEX;

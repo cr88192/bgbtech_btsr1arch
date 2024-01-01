@@ -158,20 +158,42 @@ int BGBCP_GetLastLineNumber()
 
 int BGBCP_GetPredictLineNumber(char *tgt)
 {
+	u64 v0, v1, v2;
 	char *s;
-	int i;
+	int i, c;
 
 	if(!bgbcp_lcs || !tgt)
 		return(bgbcp_lln);
 
 	s=bgbcp_lcs;
 	i=bgbcp_lln;
-	while(*s && (s<tgt))
+	while(s<tgt)
 	{
-		if(*s=='\n')
+		c=*s;
+		if(!c)
+			break;
+		if(c=='\n')
 			{ s++; i++; continue; }
-		if((s[0]=='\r') && (s[1]!='\n'))
-			{ s++; i++; continue; }
+//		if((c=='\r') && (s[1]!='\n'))
+//			{ s++; i++; continue; }
+
+		if(c=='\r')
+		{
+			if(s[1]=='\n')
+				{ s+=2; i++; continue; }
+			else
+				{ s++; i++; continue; }
+		}
+
+#ifdef BGBCC_MISAL_YES
+		v0=bgbcc_getu64le(s);
+		v1=v0+0x2020202020202020ULL;
+		v2=v0|v1;
+		if((v2&0x4040404040404040ULL)==0x4040404040404040ULL)
+			{ s+=8; continue; }
+		if((v2&0x40404040ULL)==0x40404040ULL)
+			{ s+=4; continue; }
+#endif
 		s++;
 	}
 

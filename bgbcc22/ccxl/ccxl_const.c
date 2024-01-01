@@ -386,7 +386,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupExportList(
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 	BGBCC_TransState *ctx, char *str)
 {
-	BGBCC_CCXL_LiteralInfo *cur, *lcur;
+	BGBCC_CCXL_LiteralInfo *cur, *lcur, *hit;
 	int h, c, lc;
 	int i, j, k;
 
@@ -420,21 +420,37 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 #endif
 
 #if 1
+	hit=NULL;
 	c=ctx->usort_literal; cur=NULL; lcur=NULL;
 	while(c>0)
 	{
-		lcur=cur;
+//		lcur=cur;
 		cur=ctx->literals[c];
 		lc=c;
 		c=cur->hnext_name;
 
-		if((cur->littype!=CCXL_LITID_STRUCT) &&
-			(cur->littype!=CCXL_LITID_UNION) &&
-			(cur->littype!=CCXL_LITID_CLASS) &&
-			(cur->littype!=CCXL_LITID_FUNCTION))
-				continue;
+//		if((cur->littype!=CCXL_LITID_STRUCT) &&
+//			(cur->littype!=CCXL_LITID_UNION) &&
+//			(cur->littype!=CCXL_LITID_CLASS) &&
+//			(cur->littype!=CCXL_LITID_FUNCTION))
+//				continue;
 		if(!cur->name)
+		{
+			if((cur->littype==CCXL_LITID_RAWSIG) ||
+				(cur->littype==CCXL_LITID_LIST))
+			{
+				if(lcur)
+					{ lcur->hnext_name=c; }
+				else
+					{ ctx->usort_literal=c;	}
+				cur->hnext_name=ctx->uname_literal;
+				ctx->uname_literal=lc;
+//				cur=lcur;
+				continue;
+			}
+			lcur=cur;
 			continue;
+		}
 
 		h=BGBCC_CCXL_HashNameNoSig(cur->name);
 		if(lcur)
@@ -443,10 +459,21 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupStructure(
 			{ ctx->usort_literal=c;	}
 		cur->hnext_name=ctx->hash_literals[h];
 		ctx->hash_literals[h]=lc;
+//		cur=lcur;
 
+		if((cur->littype!=CCXL_LITID_STRUCT) &&
+			(cur->littype!=CCXL_LITID_UNION) &&
+			(cur->littype!=CCXL_LITID_CLASS) &&
+			(cur->littype!=CCXL_LITID_FUNCTION))
+				continue;
+
+//		if(!strcmp(cur->name, str))
+//			return(cur);
 		if(!strcmp(cur->name, str))
-			return(cur);
+			hit=cur;
 	}
+	if(hit)
+		return(hit);
 #endif
 
 #if 0

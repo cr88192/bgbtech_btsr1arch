@@ -335,6 +335,17 @@ assign	tAguIsLea		= (opUCmd[5:0] == JX2_UCMD_LEA_MR);
 assign	tAguIsLeat		= tAguIsLea && opUIxt[2];
 assign	tAguIsLeatPC	= tAguIsLeat && tAguBaseIsPC;
 
+// `ifdef def_true
+`ifndef def_true
+always @*
+begin
+	if(tAguIsLeat)
+	begin
+		$display("LEAT: Rs=%x, IsPc=%d ", regIdRs, tAguIsLeatPC);
+	end
+end
+`endif
+
 `ifdef jx2_enable_vaddr48
 wire[47:0]	tValAgu;
 wire		tValAguOob;
@@ -352,7 +363,9 @@ ExAGUC	exAgu(
 	regOutXLea,			tAguXLeaTag);
 
 wire[63:0]	tRegOutLeatPc =
-	{ regValPc[63:48], tValAgu[47:1], 1'b1 };
+//	{ regValPc[63:48], tValAgu[47:1], 1'b1 };
+	{ 8'h00, regValPc[55:52], 1'b0, regValPc[50], 2'b00,
+		tValAgu[47:1], 1'b1 };
 
 // assign	regOutLea = { tAguXLeaTag, tValAgu };
 assign	regOutLea = tAguIsLeatPC ? 

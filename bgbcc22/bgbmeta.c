@@ -3113,7 +3113,8 @@ int main(int argc, char *argv[], char **env)
 			}
 			if(!strncmp(argv[i]+1, "S", 1))
 			{
-				ccAddSource(argv[i]+2);
+				if(argv[i][2])
+					ccAddSource(argv[i]+2);
 				continue;
 			}
 

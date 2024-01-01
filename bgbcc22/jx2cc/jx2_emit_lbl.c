@@ -1054,3 +1054,80 @@ int BGBCC_JX2_CheckLabelIsGpRel(
 	j=sctx->lbl_sec[i];
 	return(BGBCC_JX2_IsSectionGpRel(sctx, j));
 }
+
+static int bgbcc_textlbl_id[1<<16];
+static int bgbcc_textlbl_chn[1<<16];
+static int bgbcc_textlbl_hash[256];
+static int bgbcc_n_textlbl=0;
+
+int BGBCC_JX2_MarkLabelIsText(
+	BGBCC_JX2_Context *sctx, int lblid)
+{
+	int i, j, k, h;
+
+	if(bgbcc_n_textlbl<=0)
+	{
+		bgbcc_n_textlbl=0;
+		for(i=0; i<256; i++)
+			bgbcc_textlbl_hash[i]=-1;
+	}
+
+	h=((lblid*65521)>>16)&255;
+
+	i=bgbcc_textlbl_hash[h];
+	while(i>=0)
+	{
+		if(bgbcc_textlbl_id[i]==lblid)
+			return(i);
+		i=bgbcc_textlbl_chn[i];
+	}
+
+	i=bgbcc_n_textlbl++;
+	bgbcc_textlbl_id[i]=lblid;
+	bgbcc_textlbl_chn[i]=bgbcc_textlbl_hash[h];
+	bgbcc_textlbl_hash[h]=i;
+	return(i);
+}
+
+int BGBCC_JX2_CheckLabelIsText(
+	BGBCC_JX2_Context *sctx, int lblid)
+{
+	char *lbln;
+	int i, j, k, h;
+
+//	if(!sctx->is_pbo)
+//		return(0);
+
+	h=((lblid*65521)>>16)&255;
+	i=bgbcc_textlbl_hash[h];
+	while(i>=0)
+	{
+		if(bgbcc_textlbl_id[i]==lblid)
+			return(1);
+		i=bgbcc_textlbl_chn[i];
+	}
+
+#if 1
+//	i=BGBCC_JX2_LookupLabelIndex(ctx, lblid);
+	i=BGBCC_JX2_LookupSimLabelIndex(sctx, lblid);
+	
+	if(i<0)
+	{
+		lbln=BGBCC_JX2_LookupNameForLabel(sctx, lblid);
+		if(!lbln)
+			return(0);
+		if((lbln[0]=='_') || (lbln[1]=='_'))
+		{
+			if(		!strcmp(lbln, "__text_start") ||
+					!strcmp(lbln, "__text_end") )
+			{
+				return(1);
+			}
+		}
+		return(0);
+	}
+	
+	j=sctx->lbl_sec[i];
+	return(BGBCC_JX2_IsSectionText(sctx, j));
+#endif
+}

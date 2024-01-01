@@ -1837,6 +1837,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 {
 	int opw1, opw2, opw3, opw4, ex, ex2, ex3r, exw;
 	int rm3, rn3;
+	int i, j, k;
 
 	if(ctx->emit_riscv&0x11)
 		return(BGBCC_JX2RV_TryEmitOpRegReg(ctx, nmid, rm, rn));
@@ -2087,6 +2088,10 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 					{
 						opw1=0x47000|((rn&15)<<4)|((rm&15)<<0)|exw;
 						opw2=0x51089|(ex<<4);
+					}else
+					{
+						if(ctx->op_is_wex2&12)
+							opw1=-1;
 					}
 				}else
 					if(ctx->is_fixed32 || ctx->op_is_wex2 || (exw&0x0600))
@@ -3446,6 +3451,11 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
 
 		BGBCC_JX2_EmitPadCheckAligned(ctx);
+
+		if((opw1&0xFF00)==0xFF00)
+		{
+			k=-1;
+		}
 
 		BGBCC_JX2_EmitWord(ctx, opw1);
 		if(opw2>=0)

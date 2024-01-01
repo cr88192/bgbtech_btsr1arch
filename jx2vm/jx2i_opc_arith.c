@@ -1659,8 +1659,9 @@ void BJX2_Op_LEATB_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=(bjx2_addr)(op->pc2)+op->imm;
-	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
-	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
+	lr=lr&0x0000FFFFFFFFFFFFULL;
+//	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
+	lr|=((u64)(((sr>>24)&0x0004))|((sr>>16)&0x00F0))<<48;
 	lr|=1;
 	ctx->regs[op->rn]=lr;
 }
@@ -1669,12 +1670,23 @@ void BJX2_Op_LEATB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr;
 	
+//	BJX2_Op_LEAB_LdPcIdxReg(ctx, op);
+//	return;
+	
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=(bjx2_addr)(op->pc2)+(bjx2_addr)(ctx->regs[op->ro]);
-	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
-	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
+
+#if 1
+	lr=lr&0x0000FFFFFFFFFFFFULL;
+//	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
+	lr|=((u64)(((sr>>24)&0x0004))|((sr>>16)&0x00F0))<<48;
 	lr|=1;
+#endif
+
 	ctx->regs[op->rn]=lr;
+	
+//	printf("BJX2_Op_LEATB_LdPcIdxReg: DstA=%016llX ro=%02X(%016llX)\n",
+//		lr, op->ro, ctx->regs[op->ro]);
 }
 
 

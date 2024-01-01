@@ -1107,7 +1107,7 @@ void BGBCC_CCXL_AddFrameReg(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame
 void BGBCC_CCXL_AddFrameStatic(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_AllocLiteral(BGBCC_TransState *ctx);
 void BGBCC_CCXL_CheckFreeLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
-void BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
+int BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
 char *BGBCC_CCXL_GetParentLiteralSig(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj);
 char *BGBCC_CCXL_GetParentLiteralSigDeref(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj);
 char *BGBCC_CCXL_GetObjQNameR_I(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj, char *vt);
@@ -3025,6 +3025,8 @@ int BGBCC_JX2_EmitRelocTyOffs(BGBCC_JX2_Context *ctx,int lblid, int ty, int offs
 int BGBCC_JX2_LookupLabelIndex(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_LookupSimLabelIndex(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_CheckLabelIsGpRel(BGBCC_JX2_Context *sctx, int lblid);
+int BGBCC_JX2_MarkLabelIsText(BGBCC_JX2_Context *sctx, int lblid);
+int BGBCC_JX2_CheckLabelIsText(BGBCC_JX2_Context *sctx, int lblid);
 //AHSRC:jx2cc/jx2_emit_mov.c
 int BGBCC_JX2_EmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2_ProbeEmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
@@ -3115,6 +3117,7 @@ int BGBCC_JX2_SetSectionName(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2_SetSection(BGBCC_JX2_Context *ctx, int sec);
 int BGBCC_JX2_IsSectionReadOnly(BGBCC_JX2_Context *ctx, int sec);
 int BGBCC_JX2_IsSectionGpRel(BGBCC_JX2_Context *ctx, int sec);
+int BGBCC_JX2_IsSectionText(BGBCC_JX2_Context *ctx, int sec);
 int BGBCC_JX2_EmitCheckExpand(BGBCC_JX2_Context *ctx, int pad);
 int BGBCC_JX2_EmitByteI(BGBCC_JX2_Context *ctx, int val);
 void BGBCC_JX2_UpdatePszxWord(BGBCC_JX2_Context *ctx, int val);
@@ -3631,7 +3634,7 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix3W(BGBCC_JX2_Context *sctx, int opw1, int 
 int BGBCC_JX2_CheckOps32ValidWexPrefix2B(BGBCC_JX2_Context *sctx, int opw1, int opw2, int opw3, int opw4);
 int BGBCC_JX2_CheckOps32ValidWexPrefix(BGBCC_JX2_Context *sctx, int opw1, int opw2);
 ccxl_status BGBCC_JX2_AdjustWexifyOp(BGBCC_JX2_Context *sctx, int *ropw1, int *ropw2);
-int BGBCC_JX2_InferInterlockCost(BGBCC_JX2_Context *sctx, int opwn1, int opwn2, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int opw7, int opw8, int opw9, int opw10, int opw11, int opw12);
+int BGBCC_JX2_InferInterlockCost(BGBCC_JX2_Context *sctx, int opwn7, int opwn8, int opwn5, int opwn6, int opwn3, int opwn4, int opwn1, int opwn2, int opw1, int opw2, int opw3, int opw4, int opw5, int opw6, int opw7, int opw8, int opw9, int opw10, int opw11, int opw12);
 ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(BGBCC_JX2_Context *sctx, int spos, int epos);
 ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(BGBCC_JX2_Context *sctx, int spos, int epos);
 ccxl_status BGBCC_JX2_CheckWexify_DoBundle(BGBCC_JX2_Context *sctx, int spos, int epos);

@@ -2897,14 +2897,14 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		if(bn2)
 		{
 			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X (%-20s+%04X) "
-				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%%\n",
+				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%% (tc=%d, ic=%d)\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), bn2,
 				(int)(trcur->addr-ba2),
 				cyc>>20, trcur->acc_pencyc>>20,
 				(100.0*trcur->acc_pencyc)/cyc,
 				(100.0*trcur->ip_cyc)/(trcur->n_cyc+0.001),
-				pcnt);
+				pcnt, trcur->n_cyc, trcur->ip_cyc);
 		}else
 		{
 			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
@@ -2928,14 +2928,15 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		if(bn2)
 		{
 			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X (%-20s+%04X) "
-				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%%\n",
+				"Cyc=%4lldM(p=%lldM %.2f%% i%.2f%%) %.2f%% (tc=%d, ic=%d)\n",
 				(u32)(trcur->addr>>32), 
 				(u32)(trcur->addr), bn2,
 				(int)(trcur->addr-ba2),
 				cyc>>20, trcur->acc_pencyc>>20,
 				(100.0*trcur->acc_pencyc)/cyc,
 				(100.0*trcur->ip_cyc)/(trcur->n_cyc+0.001),
-				pcnt);
+				pcnt,
+				trcur->n_cyc, trcur->ip_cyc);
 		}else
 		{
 			BJX2_DbgPrintf(ctx, "PC @ %04X_%08X Cyc=%5lldM %.2f%%\n",
