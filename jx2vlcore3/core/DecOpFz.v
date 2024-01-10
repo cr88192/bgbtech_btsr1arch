@@ -6078,6 +6078,14 @@ begin
 			end
 `endif
 
+`ifdef def_true
+			3'b101: begin
+				opNmid		= JX2_UCMD_LEA_MR;
+				opFmid		= JX2_FMID_IMM8REG;
+				opIty		= JX2_ITY_XL;
+				opBty		= JX2_BTY_SQ;
+			end
+`endif
 
 `ifndef def_true
 			3'b101: begin
@@ -7107,7 +7115,7 @@ begin
 
 			XB: /
 			XW: Fzeo_jjjj		ImmFp16, Ro, Ro
-			XL: /
+			XL: Fznz_zzjj		(GBR, Disp16u), Rn
 			XQ: /
 
 		 */
@@ -7180,6 +7188,21 @@ begin
 				JX2_ITY_NW: begin
 //					opImm	= opImm_imm16n;
 					opDoImm	= JX2_FMIMM_IMM16N;
+				end
+
+				JX2_ITY_XL: begin
+					if((opBty == JX2_BTY_UQ) && (opUCty == JX2_IUC_SC))
+						opUCty		= JX2_IUC_WX;
+
+//					opImm		= opImm_imm16u;
+					opDoImm		= JX2_FMIMM_IMM16U;
+					opRegM		= JX2_GR_GBR;
+					opRegO		= JX2_GR_IMM;
+//					opRegN		= opRegO_Df2;
+//					opRegP		= opRegO_Df2;
+
+					opUIxt		= {opUCty, opBty[1:0], opIsJumboAu, opBty};
+//					opIsImm9	= 1;
 				end
 
 				default: begin

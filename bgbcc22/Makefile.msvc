@@ -6,6 +6,9 @@ EXESUF=.exe
 BINSUF=.exe
 OBJSUF=.obj
 DLLPF=
+CWDPF=
+
+CP=cp
 
 CC_OUTEXE=cl /Fe
 CC_OUTDLL=cl /LD /Fe

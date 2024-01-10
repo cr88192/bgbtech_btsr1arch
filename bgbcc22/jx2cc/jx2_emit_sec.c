@@ -1079,6 +1079,14 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 //			ctx->opcnt_f0xx[(val>>8)&255]++;
 			ctx->opcnt_f0xx[((val>>8)&0xF0)|(val&0x000F)]++;
 
+			if((val&0xF008)==0x1008)
+			{
+		//		i=(((val>>8)&15)<<4)|(val&15);
+				i=((val&0x0007)<<4)|((val&0x00F0)>>4);
+				ctx->opcnt_f01xx[i]++;
+				ctx->n_opcnt_f01xx++;
+			}
+
 			if((val&0xF00F)==0x3000)
 			{
 		//		i=(((val>>8)&15)<<4)|(val&15);

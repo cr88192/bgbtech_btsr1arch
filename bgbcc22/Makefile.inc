@@ -167,7 +167,7 @@ apps: $(APPS)
 includes: $(DEP_HDRS)
 
 inst_bin:
-	cp *$(BINSUF) $(INST_BIN)
+	$(CP) *$(BINSUF) $(INST_BIN)
 
 install: all2 inst_bin mk_link
 
@@ -178,10 +178,10 @@ gen_ord$(BINSUF): gen_ord.c
 	$(CC_OUTTOOL)gen_ord$(BINSUF) gen_ord.c $(TOOL_CFLAGS)
 
 mm/cc_tokord.c: gen_ord$(BINSUF) bgbcc_token.txt
-	./gen_ord$(BINSUF)
+	$(CWDPF)gen_ord$(BINSUF)
 
 include/bgbcc_auto.h: autohead$(BINSUF) $(META_SRCS)
-	./autohead$(BINSUF) -api BGBCC_API $(META_SRCS) > include/bgbcc_auto.h
+	$(CWDPF)autohead$(BINSUF) -api BGBCC_API $(META_SRCS) > include/bgbcc_auto.h
 
 bgbcc$(BINSUF): $(DEP_HDRS) $(META_SRCS)
 	$(CC_OUTTOOL)bgbcc$(BINSUF) bgbcc_multi.c \

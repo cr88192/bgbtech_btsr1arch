@@ -1222,9 +1222,39 @@ ccxl_label BGBCC_CCXLR3_ReadLabel(BGBCC_TransState *ctx, byte **rcs)
 	return(lbl);
 }
 
+char *BGBCC_CCXLR3_ReadSymbolTag(BGBCC_TransState *ctx, byte **rcs)
+{
+	BGBCC_CCXL_RegisterInfo *func;
+	int i0, ix;
+	
+	func=ctx->cur_func;
+	
+	i0=BGBCC_CCXLR3_ReadUVLI(ctx, rcs);
+	
+	if(!(i0&1))
+	{
+		ix=i0>>3;
+		
+		if(((i0>>1)&3)==0)
+			{ return(func->regs[ix]->name); }
+		if(((i0>>1)&3)==1)
+			{ return(func->args[ix]->name); }
+		if(((i0>>1)&3)==2)
+			{ return(func->locals[ix]->name); }
+	}
+
+	return(NULL);
+}
+
 char *BGBCC_CCXLR3_ReadSymbol(BGBCC_TransState *ctx, byte **rcs)
 {
-	return(BGBCC_CCXLR3_ReadString(ctx, rcs));
+	char *sym;
+
+	sym=BGBCC_CCXLR3_ReadString(ctx, rcs);
+	if(sym)
+		return(sym);
+	sym=BGBCC_CCXLR3_ReadSymbolTag(ctx, rcs);
+	return(sym);
 }
 
 char *BGBCC_CCXLR3_ReadSigstr(BGBCC_TransState *ctx, byte **rcs)

@@ -498,6 +498,9 @@ const short *shufreg3;
 u64 regs_excl;
 u64 regs_excl_tiny;
 
+u64 memcpy64_mask;
+u64 memcpy_byte_mask[8];
+
 byte reg_pszx[64];		//register sign/zero extension
 
 int reg_heatstat[64];	//register heat map
@@ -634,6 +637,9 @@ int n_opcnt_3xx;
 
 int opcnt_f03xx[256];
 int n_opcnt_f03xx;
+
+int opcnt_f01xx[256];
+int n_opcnt_f01xx;
 
 // int opcnt_7xx[256];
 // int opcnt_9xx[256];

@@ -685,6 +685,11 @@ MMCR Bits:
 ** 1: Use 64K as the Basic Page Size.
 ** 2: Use 16K as the Basic Page Size.
 ** 3: Reserved
+* 0040: Reserved
+* 0080: Enable Hardware Page Walk
+** Enables use of hardware page walk if the hardware exists.
+** May still generate TLB Miss events if/when the page-walk fails.
+** May require the use of conventional nested page tables.
 
 
 ==== Page Tables ====
@@ -2503,8 +2508,8 @@ F8zz Instruction Block:
 * F87n_iiii  LDISH16	Imm16u, Rk		//R16..R31
 * F88n_iiii  FLDCH		Imm16u, Rn		//R0..R15, Load Half-Float
 * F89n_iiii  FLDCH		Imm16u, Rk		//R16..R31, Load Half-Float
-* F8An_Zddd / Bxx		Rn, Disp12s		//? Conditional Branch
-* F8Bn_Zddd / Bxx		Rk, Disp12s		//? Conditional Branch
+* F8An_dddd ? LEA.Q		(GBR, Disp16u), Rn
+* F8Bn_dddd ? LEA.Q		(GBR, Disp16u), Rk
 * F8Cn_iiii  -
 * F8Dn_iiii  -
 * F8En_iiii  -

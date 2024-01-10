@@ -666,3 +666,23 @@ Opcodes (Executable Code)
 ** SVLI opr;
 ** SYMBOL name;
 ** Trinary Operator, Store result to Name
+
+* 0x8E, LABELLVL ( -- )
+** LABEL lbl;
+** SVLI lvl;
+** Identifies a label with a loop-level depth.
+
+* 0x8F, LDCONSTVXI ( -- V )
+** SVLI li0;
+** SVLI li1;
+** SVLI vty;
+** Loads a 128-bit vector constant.
+
+* 0x90, LDCONSTBI ( -- V )
+** STRING val;
+** SVLI vty;
+** Loads a "big integer" constant.
+** The constant is encoded as a string in LSB-first order, in 64 bit chunks.
+** Each 'digit' is 6-bits and encoded as an ASCII value 0x30..0x6F.
+** There are 11 digits per 64-bit chunk.
+

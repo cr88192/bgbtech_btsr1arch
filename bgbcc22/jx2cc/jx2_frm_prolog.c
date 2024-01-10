@@ -1568,6 +1568,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		}
 
 #if 1
+#if 0
 		if(obj->regflags&BGBCC_REGFL_ALIASPTR)
 		{
 			if(sctx->use_wexmd)
@@ -1576,6 +1577,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 					BGBCC_SH_NMID_WEXMD, sctx->use_wexmd);
 			}
 		}
+#endif
 
 //		if(sctx->is_pbo)
 		if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
@@ -1595,6 +1597,14 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 				BGBCC_SH_NMID_MOVQ,
 				BGBCC_SH_REG_GBR, 0, BGBCC_SH_REG_R18);
 
+#if 1
+			if(sctx->use_wexmd)
+			{
+				BGBCC_JX2_EmitOpImm(sctx,
+					BGBCC_SH_NMID_WEXMD, sctx->use_wexmd);
+			}
+#endif
+
 			if(sctx->has_fmovc)
 			{
 				BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
@@ -1611,6 +1621,18 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 				BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
 					BGBCC_SH_REG_R18, BGBCC_SH_REG_GBR);
 			}
+		}else
+		{
+#if 1
+			if(obj->regflags&BGBCC_REGFL_ALIASPTR)
+			{
+				if(sctx->use_wexmd)
+				{
+					BGBCC_JX2_EmitOpImm(sctx,
+						BGBCC_SH_NMID_WEXMD, sctx->use_wexmd);
+				}
+			}
+#endif
 		}
 #endif
 
@@ -3050,7 +3072,10 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //					BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_ADD,
 //						BGBCC_SH_REG_SP, BGBCC_SH_REG_R1);
 
-					BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_ADD,
+//					BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_ADD,
+//						BGBCC_SH_REG_SP, sctx->frm_size+j, BGBCC_SH_REG_R1);
+
+					BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_LEAB,
 						BGBCC_SH_REG_SP, sctx->frm_size+j, BGBCC_SH_REG_R1);
 
 					BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,

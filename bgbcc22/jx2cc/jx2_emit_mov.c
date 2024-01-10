@@ -2773,6 +2773,14 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			disp<<=3;
 			break;
 		}
+	}else
+	{
+		if((nmid==BGBCC_SH_NMID_LEAB) && !(disp&1))
+			nmid=BGBCC_SH_NMID_LEAW;
+		if((nmid==BGBCC_SH_NMID_LEAW) && !(disp&3))
+			nmid=BGBCC_SH_NMID_LEAL;
+		if((nmid==BGBCC_SH_NMID_LEAL) && !(disp&7))
+			nmid=BGBCC_SH_NMID_LEAQ;
 	}
 
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1; odr=0; ex=0; ex2=0;

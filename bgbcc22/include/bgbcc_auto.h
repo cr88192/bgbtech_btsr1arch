@@ -1412,6 +1412,7 @@ int BGBCC_CCXLR3_ReadTag(BGBCC_TransState *ctx, byte **rcs);
 int BGBCC_CCXLR3_ReadTextBlob(BGBCC_TransState *ctx, byte **rcs,byte **rbuf, int *rsz);
 char *BGBCC_CCXLR3_ReadString(BGBCC_TransState *ctx, byte **rcs);
 ccxl_label BGBCC_CCXLR3_ReadLabel(BGBCC_TransState *ctx, byte **rcs);
+char *BGBCC_CCXLR3_ReadSymbolTag(BGBCC_TransState *ctx, byte **rcs);
 char *BGBCC_CCXLR3_ReadSymbol(BGBCC_TransState *ctx, byte **rcs);
 char *BGBCC_CCXLR3_ReadSigstr(BGBCC_TransState *ctx, byte **rcs);
 void BGBCC_CCXLR3_DecodeBufCmd(BGBCC_TransState *ctx, byte **rcs);
@@ -3564,6 +3565,7 @@ int BGBCC_JX2C_EmitLoadSlotAddrRegVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Conte
 int BGBCC_JX2C_EmitLoadThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int dreg);
 int BGBCC_JX2C_EmitStoreThisIdxVRegReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int vreg);
 int BGBCC_JX2C_EmitValueCopyRegRegSz(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int sreg, int sz, int al);
+int BGBCC_JX2C_EmitMemcpy64Autogen(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int sreg, int ofs, int dreg);
 int BGBCC_JX2C_EmitValueZeroRegSz(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int dreg, int sz, int al);
 //AHSRC:jx2cc/jx2_vreg.c

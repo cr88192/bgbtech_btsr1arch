@@ -177,6 +177,17 @@ Label:
 
 Symbol:
 * Encoded as a string, but identifies a variable.
+* Possible: If Symbol is NULL (00 byte), will be followed by another SVLI.
+** This will encode a symbol similar to the RIL-3C spec.
+
+Symbol-3C:
+* Encoded as a UVLI.
+* xxx000: Temporary
+* xxx010: Argument
+* xxx100: Local
+* xxx110: Global
+** The remaining bits will encode an index into the corresponding table.
+** In RIL3A, these will be interpreted as symbol names.
 
 Sigstr:
 * Encoded as a string, but encodes a type signature.
@@ -720,46 +731,61 @@ Opcodes (Executable Code)
 
 * 0x40, POP ( Val -- )
 ** Pop (and discard) top value off of stack.
+
 * 0x41, LDA ( -- Addr )
 ** SYMBOL name;
 ** Load address of a variable.
+
 * 0x42, SIZEOFSG ( -- Sz )
 ** SIGSTR sig;
 ** Get sizeof a type signature.
+
 * 0x43, SIZEOFVAL ( Val -- Sz )
 ** Get sizeof a value.
+
 * 0x44, OFFSETOF ( -- Offs )
 ** SIGSTR sig;
 ** SYMBOL name;
 ** Get offset of a field.
+
 * 0x45, LOADSLOT ( Obj -- Val )
 ** SYMBOL name;
 ** Load a structure field.
+
 * 0x46, STORESLOT ( Val Obj -- )
 ** SYMBOL name;
 ** Store to a structure field.
+
 * 0x47, LOADSLOTA ( Obj -- Addr )
 ** SYMBOL name;
 ** Load address of a structure field.
+
 * 0x48, BEGINU ( -- )
 ** SIGSTR sig;
 ** Begin a union-expression of a given destination type.
+
 * 0x49, ENDU ( -- Val )
 ** End a union-expression (pushes output value).
+
 * 0x4A, SETU ( Val -- )
 ** Store value into the current union-expression.
+
 * 0x4B, LABEL ( -- )
 ** LABEL lbl;
 ** Identifies a label.
+
 * 0x4C, INITVAR ( -- )
 ** SYMBOL name;
 ** Initialize a variable.
+
 * 0x4D, INITVARVAL ( Val -- )
 ** SYMBOL name;
 ** Initialize a variable with a value.
+
 * 0x4E, STKFN ( -- )
 ** STRING fname;
 ** Indicates the source filename.
+
 * 0x4F, STKLN ( -- )
 ** SVLI lnum;
 ** Indicates the source line-number.
@@ -767,13 +793,16 @@ Opcodes (Executable Code)
 * 0x50, JMP ( -- )
 ** LABEL lbl;
 ** Jump to a label.
+
 * 0x51, JCMP ( ValL ValR -- )
 ** SVLI opr;
 ** LABEL lbl;
 ** Compare two values and jump if the condition is true.
+
 * 0x52, JMPT ( Bool -- )
 ** LABEL lbl;
 ** Jump to a label if true.
+
 * 0x53, JMPF ( Bool -- )
 ** LABEL lbl;
 ** Jump to a label if false.
@@ -781,6 +810,7 @@ Opcodes (Executable Code)
 * 0x54, LITTYPESIG ( -- T )
 ** SIGSTR sig;
 ** Pushes an undefined value of a given type.
+
 * 0x55, VA_START ( Arg List -- )
 * 0x56, VA_END ( List -- )
 * 0x57, VA_ARG ( Type List -- Val )
@@ -788,6 +818,7 @@ Opcodes (Executable Code)
 * 0x58, CALLNV ( Mark * -- )
 ** SYMBOL name;
 ** Call a named function.
+
 * 0x59, CALLPV ( Mark * Ptr -- )
 ** Call a function given as a pointer on the stack.
 
@@ -795,6 +826,7 @@ Opcodes (Executable Code)
 ** Temporarily disable 3AC output.
 ** Operations following this will not generate executable code.
 ** However, they will still update stack-machine state as-if they were emitted.
+
 * 0x5B, EN_3AC
 ** Enable 3AC output.
 ** Note that these may nest, and output will remaine disabled until counts match.
@@ -813,6 +845,7 @@ Opcodes (Executable Code)
 ** SYMBOL name;
 ** SYMBOL dstname;
 ** Call a named function, storing return value in dstname.
+
 * 0x5F, STCALLP ( Mark * Ptr -- )
 ** SYMBOL dstname;
 ** Call a function given as a pointer on the stack.
@@ -870,9 +903,11 @@ Opcodes (Executable Code)
 * 0x70, DUPIX
 ** SVLI index;
 ** Dup with Index
+
 * 0x71, DUPMIX
 ** SVLI index;
 ** Dup with Index (relative to Mark)
+
 * 0x72, JMPTAB
 ** Jump Table
 ** SVLI nLbl;	//number of labels
@@ -882,54 +917,71 @@ Opcodes (Executable Code)
 ** For Each Label:
 *** SVLI val;	//case value
 *** LABEL lbl;	//target label
+
 * 0x73, MKTMPOBJ
 ** SIGSTR sig;
 ** Make a new temporary object of a given type.
 
 * 0x74, EXCH ( A B -- B A )
 ** Exchange stack items
+
 * 0x75, LDSLOTSIG
 ** Load Slot, Signature
+
 * 0x76, OBJCALLP
 ** Call Object, Return on stack
+
 * 0x77, OBJCALLPV
 ** Call Object, Return Void
+
 * 0x78, STOBJCALLP
 ** Call Object, Resturn Store
+
 * 0x79, OBJCALLN
 ** Call Obj, Non-Virt, Ret Stack
+
 * 0x7A, OBJCALLNV
 ** Call Obj, Non-Virt, Ret Void
+
 * 0x7B, STOBJCALLN
 ** Call Obj, Non-Virt, Ret Store
+
 * 0x7C, SETPRED
 ** SVLI mode;
 ** Set Predicate Mode
+
 * 0x7D, PRCMP ( A B --)
 ** SVLI cmpop;
 ** Predicate Compare (A op B)
+
 * 0x7E, PRCMPT ( A -- )
 ** Predicate Compare (A!=0)
+
 * 0x7F, PRCMPF ( A -- )
 ** Predicate Compare (A==0)
 
 * 0x80, CALLN_INT
+
 * 0x81, LDCONSTCPX ( -- V )
 ** FVLI f0;
 ** FVLI f1;
+
 * 0x82, LDCONSTV2F ( -- V )
 ** FVLI f0;
 ** FVLI f1;
 ** SVLI tag;
+
 * 0x83, LDCONSTV4F ( -- V )
 ** FVLI f0;
 ** FVLI f1;
 ** FVLI f2;
 ** FVLI f3;
 ** SVLI tag;
+
 * 0x84, LDCONSTU8S ( -- S )
 ** STRING str;
 ** UTF-8 String Literal
+
 * 0x85, LDCONSTW4S ( -- S )
 ** STRING str;
 ** UTF-32 String Literal
@@ -937,6 +989,7 @@ Opcodes (Executable Code)
 * 0x86, INLINEASM ( -- )
 ** STRING str;
 ** Inline ASM blob
+
 * 0x87, LDAVSIG
 ** SYMBOL name;
 ** SIGSTR sig;
@@ -945,21 +998,45 @@ Opcodes (Executable Code)
 ** SVLI val;
 ** SYMBOL name;
 ** Store constant integer to symbol.
+
 * 0x89, STCONSTL
 ** SVLI val;
 ** SYMBOL name;
 ** Store constant long to symbol.
+
 * 0x8A, STREFREF
 ** SYMBOL sname;
 ** SYMBOL dname;
 ** Move value from source to destination.
+
 * 0x8C, TRINOP ( S T U -- V )
 ** SVLI opr;
 ** Trinary Operator
+
 * 0x8D, STTRINOP ( S T U -- )
 ** SVLI opr;
 ** SYMBOL name;
 ** Trinary Operator, Store result to Name
+
+* 0x8E, LABELLVL ( -- )
+** LABEL lbl;
+** SVLI lvl;
+** Identifies a label with a loop-level depth.
+
+* 0x8F, LDCONSTVXI ( -- V )
+** SVLI li0;
+** SVLI li1;
+** SVLI vty;
+** Loads a 128-bit vector constant.
+
+* 0x90, LDCONSTBI ( -- V )
+** STRING val;
+** SVLI vty;
+** Loads a "big integer" constant.
+** The constant is encoded as a string in LSB-first order, in 64 bit chunks.
+** Each 'digit' is 6-bits and encoded as an ASCII value 0x30..0x6F.
+** There are 11 digits per 64-bit chunk.
+
 
 
 === Global Objects ===

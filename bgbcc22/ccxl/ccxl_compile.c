@@ -1125,7 +1125,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 	static int warn_rov;
 	char tb[256];
 	BCCX_Node *c, *ct, *cv, *t, *n, *u, *v, *n1;
-	BCCX_Node *ln, *rn, *ln2, *rn2;
+	BCCX_Node *ln, *rn, *ln2, *rn2, *ln3, *rn3, *ln4, *rn4;
 	BCCX_Node *ni, *nc, *ns, *nb;
 	ccxl_label l0, l1, l2, l3;
 	ccxl_type bty, dty, sty, tty, lty, rty, lty2, rty2;
@@ -1901,7 +1901,78 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			(ctx->optmode==BGBCC_OPT_SPEED2))
 		{
 			if(nc)
-				{ BGBCC_CCXL_CompileJCF(ctx, nc, l2); }
+			{
+				i=0;
+
+				if(
+					BCCX_TagIsCstP(ni, &bgbcc_rcst_assign, "assign") &&
+					!BCCX_GetCst(ni, &bgbcc_rcst_op, "op") &&
+					(	BGBCC_CCXL_IsBinaryP(ctx, nc, "<") ||
+						BGBCC_CCXL_IsBinaryP(ctx, nc, "<=") ||
+						BGBCC_CCXL_IsBinaryP(ctx, nc, ">") ||
+						BGBCC_CCXL_IsBinaryP(ctx, nc, ">=")	)
+				)
+				{
+					s0=NULL;
+					s1=NULL;
+				
+					ln2=BCCX_FetchCst(ni, &bgbcc_rcst_left, "left");
+					rn2=BCCX_FetchCst(ni, &bgbcc_rcst_right, "right");
+
+					ln3=BCCX_FetchCst(nc, &bgbcc_rcst_left, "left");
+					rn3=BCCX_FetchCst(nc, &bgbcc_rcst_right, "right");
+
+					if(ln2 && BCCX_TagIsCstP(ln2, &bgbcc_rcst_ref, "ref"))
+						s0=BCCX_GetCst(ln2, &bgbcc_rcst_name, "name");
+
+					if(ln3 && BCCX_TagIsCstP(ln3, &bgbcc_rcst_ref, "ref"))
+						s1=BCCX_GetCst(ln3, &bgbcc_rcst_name, "name");
+
+					rn2=BGBCC_CCXL_ReduceExpr(ctx, rn2);
+					rn3=BGBCC_CCXL_ReduceExpr(ctx, rn3);
+					
+					if(s0 && s1 && !strcmp(s0, s1) &&
+						BGBCC_CCXL_IsIntP(ctx, rn2) &&
+						BGBCC_CCXL_IsIntP(ctx, rn3))
+					{
+						li=BCCX_GetIntCst(rn2, &bgbcc_rcst_value, "value");
+						lj=BCCX_GetIntCst(rn3, &bgbcc_rcst_value, "value");
+						
+#if 0
+						if(	(li<lj) &&
+							(	BGBCC_CCXL_IsBinaryP(ctx, nc, "<") ||
+								BGBCC_CCXL_IsBinaryP(ctx, nc, "<="))
+						)
+						{
+							i=1;
+						}
+
+						if(	(li>lj) &&
+							(	BGBCC_CCXL_IsBinaryP(ctx, nc, ">") ||
+								BGBCC_CCXL_IsBinaryP(ctx, nc, ">="))
+						)
+						{
+							i=1;
+						}
+#endif
+						if((li<lj) && BGBCC_CCXL_IsBinaryP(ctx, nc, "<"))
+							i=1;
+						if((li<=lj) && BGBCC_CCXL_IsBinaryP(ctx, nc, "<="))
+							i=1;
+						if((li>lj) && BGBCC_CCXL_IsBinaryP(ctx, nc, ">"))
+							i=1;
+						if((li>=lj) && BGBCC_CCXL_IsBinaryP(ctx, nc, ">="))
+							i=1;
+
+					}
+
+				}
+
+				if(!i)
+				{
+					BGBCC_CCXL_CompileJCF(ctx, nc, l2);
+				}
+			}
 
 			BGBCC_CCXL_EmitLabelLvl(ctx, l0, ctx->contstackpos);
 

@@ -655,6 +655,12 @@ int BGBCC_JX2_CheckOps32GetRegs(
 			spfl|=BGBCC_WXSPFL_2STAGE;
 		}
 
+		if((opw1&0x00E0)==0x00A0)
+		{
+			spfl|=BGBCC_WXSPFL_2STAGE;
+			rs=BGBCC_SH_REG_GBR;
+		}
+
 		*rrs=rs;
 		*rrt=rt;
 		*rrn=rn;
@@ -2979,13 +2985,14 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 		ret=0;
 		switch((opw1>>4)&15)
 		{
-		case 0:		case 1:		ret=1;	break;
-		case 2:		case 3:		ret=1;	break;
-		case 4:		case 5:		ret=1;	break;
-		case 6:		case 7:		ret=1;	break;
-//		case 8:		case 9:		ret=0;	break;
-//		case 8:		case 9:		ret=1;	break;
-		case 8:		case 9:		ret=sctx->has_fpim&1;	break;
+		case 0x0:	case 0x1:	ret=1;	break;
+		case 0x2:	case 0x3:	ret=1;	break;
+		case 0x4:	case 0x5:	ret=1;	break;
+		case 0x6:	case 0x7:	ret=1;	break;
+//		case 0x8:	case 0x9:	ret=0;	break;
+//		case 0x8:	case 0x9:	ret=1;	break;
+		case 0x8:	case 0x9:	ret=sctx->has_fpim&1;	break;
+		case 0xA:	case 0xB:	ret=0;	break;
 		default:
 			break;
 		}

@@ -152,6 +152,16 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 
 		break;
 
+	case 0xA:	case 0xB:
+		op->imm=imm16u;
+		op->rm=BJX2_REG_GBR;
+		op->rn=rn_i16;
+		op->nmid=BJX2_NMID_LEAQ;
+		op->fmid=BJX2_FMID_LDREGDISPREG;
+		op->Run=BJX2_Op_LEAQ_LdRegDispReg;
+		op->fl|=BJX2_OPFL_NOWEX_IO2;
+		break;
+
 	default:
 		ret=-1;
 		break;

@@ -1004,6 +1004,9 @@ Encoded keys should not be placed in memory which is readable from user-mode, as
 * F1nm_2Gdd  LEA.L		(Rm, disp9u), Rn
 * F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
 
+* F8An_dddd ? LEA.Q		(GBR, Disp16u), Rn	//(?)
+* F8Bn_dddd ? LEA.Q		(GBR, Disp16u), Rk	//(?)
+
 
 Load the effective address of the Base register added to the displacement and store the result into the destination register.
 
@@ -1014,6 +1017,9 @@ Note that the effective precision of LEA will be relative to the size of the add
 
 The basic form of the LEA.x instruction will zero the tag bits.
 In a 32 bit address space, the high 32 bits of the result will be zeroed.
+
+
+The LEA.Q instruction will allow composing an address relative to GBR, adressing a region of up to 512K. This is intended mostly for global arrays.
 
 
 === LEAT.x ===
@@ -1037,6 +1043,9 @@ These instructions will be part of the TTAG extension.
 
 
 As a special case, LEAT.x encoding PC as the base register will generate an address tagged in the same way as the Link Register (LR). This tagging will reflect the current operating mode.
+
+This instruction will, however, Zero the U bits, S/T bits, and WXE bit.
+This will be done so that reloading the same function pointer in different contexts (albeit within the same operating mode) will give the same pointer value.
 
 
 === LDIN / LDIZ ===

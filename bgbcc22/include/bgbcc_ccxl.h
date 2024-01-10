@@ -647,6 +647,7 @@ int regtype;			//register type
 int regid;				//register ID
 int validx;				//value index
 int srctok;				//source tokens
+int gblrefcnt_org;		//global reference count (num refs to global)
 int gblrefcnt;			//global reference count (num refs to global)
 s64 flagsint;			//flags (integer)
 ccxl_register value;	//literal value

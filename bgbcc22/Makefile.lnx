@@ -6,9 +6,10 @@ EXESUF=.elf
 BINSUF=.bin
 OBJSUF=.o
 DLLPF=lib
+CWDPF=./
 
-CC=gcc
-# CC=clang
+# CC=gcc
+CC=clang
 
 CC_OUTEXE=$(CC) -g -o 
 CC_OUTDLL=$(CC) -shared -o 

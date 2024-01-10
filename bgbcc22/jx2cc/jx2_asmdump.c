@@ -772,9 +772,11 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 		sn=bgbcc_strdup(tb);
 	}
 	
-	if(wex2&4)
+//	if(wex2&4)
+	if(wex2&12)
 	{
 		if(wex2&1)
+//		if(wex2&2)
 			sprintf(tb, "%s?F", sn);
 		else
 			sprintf(tb, "%s?T", sn);
