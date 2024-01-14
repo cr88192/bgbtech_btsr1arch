@@ -218,6 +218,8 @@ wire	opIsWexB;
 wire	opIsWexaB;
 wire	opIsWex2x40B;
 
+reg	tMsgLatch;
+reg	tNextMsgLatch;
 
 
 `wire_gpr		decOpBz_idRegN;
@@ -1497,22 +1499,33 @@ begin
 //	if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
 	if(opUCmdA0[5:0] == JX2_UCMD_INVOP)
 	begin
-//		$display("DecOpWx3 Istr=%X Mod=%X", istrWord, srMod);
-		$display("DecOpWx3 Istr=%X-%X-%X-%X-%X-%X Mod=%X",
-			istrWord[15: 0], istrWord[31:16],
-			istrWord[47:32], istrWord[63:48],
-			istrWord[79:64], istrWord[95:80],
-			srMod);
-		$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
-			opUCmdA0, opUIxtA0,
-			opRegAM, opRegAO,
-			opRegBM, opRegBO,
-			opRegCM, opRegCO,
-			opRegAN, opRegBN, opRegCN,
-			opIsDualLaneRm, opIsDualLaneRo, opIsDualLaneRn);
-		$display("  %X-%X", opImmB, opImmA);
+
+		if(!tMsgLatch)
+		begin
+	//		$display("DecOpWx3 Istr=%X Mod=%X", istrWord, srMod);
+			$display("DecOpWx3 Istr=%X-%X-%X-%X-%X-%X Mod=%X",
+				istrWord[15: 0], istrWord[31:16],
+				istrWord[47:32], istrWord[63:48],
+				istrWord[79:64], istrWord[95:80],
+				srMod);
+			$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
+				opUCmdA0, opUIxtA0,
+				opRegAM, opRegAO,
+				opRegBM, opRegBO,
+				opRegCM, opRegCO,
+				opRegAN, opRegBN, opRegCN,
+				opIsDualLaneRm, opIsDualLaneRo, opIsDualLaneRn);
+			$display("  %X-%X", opImmB, opImmA);
+		end
+		tNextMsgLatch = 1;
 	end
 `endif
+end
+
+
+always @(posedge clock)
+begin
+	tMsgLatch	<= tNextMsgLatch;
 end
 
 endmodule

@@ -291,7 +291,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "bra48"))
-		{ shctx->has_bra48=1; }
+		{ shctx->has_bra48|=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "xgpr"))
 		{ shctx->has_xgpr=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "xgpr_abi"))
@@ -300,11 +300,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{ shctx->has_xgpr=5; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "dmacl"))
-		{ shctx->has_dmacl=1; }
+		{ shctx->has_dmacl|=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "qmul"))
-		{ shctx->has_qmul=1; }
+		{ shctx->has_qmul|=1; }
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "mulq"))
-		{ shctx->has_qmul=1; }
+		{ shctx->has_qmul|=1; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "fdiv"))
 		{ shctx->has_qmul|=2; }
@@ -2319,6 +2319,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		{
 			/* Skip doing a branch to the following instruction. */
 			BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
+			BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 			continue;
 		}
 		
@@ -6347,7 +6348,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((((s32)(d1<<21))>>21)!=d1)
 			{
 				k=((d1>>10)^(d1>>24))&3;
-				if((sctx->is_fixed32&2) && ((w0&0xEB00)==0xE200))
+//				if((sctx->is_fixed32&2) && ((w0&0xEB00)==0xE200))
+				if((sctx->is_fixed32&2) && ((w0&0x0B00)==0x0200))
 				{
 					w0^=k<<13;
 				}

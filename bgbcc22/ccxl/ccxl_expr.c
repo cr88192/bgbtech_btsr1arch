@@ -2170,7 +2170,82 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 //		if(BCCX_AttrIsCstP(l, &bgbcc_rcst_op, "op", "*"))
 		if(!strcmp(s0, "*"))
 		{
-			BGBCC_CCXL_CompileExpr(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"));
+
+			v=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+
+#if 1
+			if(BCCX_TagIsCstP(v, &bgbcc_rcst_postinc, "postinc"))
+			{
+				t=BGBCC_CCXL_ReduceExpr(ctx,
+					BCCX_FetchCst(v, &bgbcc_rcst_expr, "expr"));
+
+#if 1
+				if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
+				{
+					s0=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
+					s0=BGBCC_CCXL_CompileRemapName(ctx, s0);
+//					BGBCC_CCXL_StackUnaryOpNameB(ctx, "++", s0, 2);
+//					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+
+					BGBCC_CCXL_PushLoad(ctx, s0);
+					BGBCC_CCXL_StackDupB(ctx);
+					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+					BGBCC_CCXL_StackExch(ctx);
+					BGBCC_CCXL_StackUnaryOpStore(ctx, "++", s0);
+					return;
+				}
+#endif
+
+				if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+				{
+					BGBCC_CCXL_CompileExpr(ctx, t);
+					BGBCC_CCXL_StackDupB(ctx);
+					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+					BGBCC_CCXL_StackExch(ctx);
+					BGBCC_CCXL_StackUnaryOp(ctx, "++");
+					BGBCC_CCXL_CompileAssign(ctx, t);
+					return;
+				}
+			}
+#endif
+
+#if 1
+			if(BCCX_TagIsCstP(v, &bgbcc_rcst_postdec, "postdec"))
+			{
+				t=BGBCC_CCXL_ReduceExpr(ctx,
+					BCCX_FetchCst(v, &bgbcc_rcst_expr, "expr"));
+
+#if 1
+				if(BCCX_TagIsCstP(t, &bgbcc_rcst_ref, "ref"))
+				{
+					s0=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
+					s0=BGBCC_CCXL_CompileRemapName(ctx, s0);
+//					BGBCC_CCXL_StackUnaryOpNameB(ctx, "++", s0, 2);
+//					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+
+					BGBCC_CCXL_PushLoad(ctx, s0);
+					BGBCC_CCXL_StackDupB(ctx);
+					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+					BGBCC_CCXL_StackExch(ctx);
+					BGBCC_CCXL_StackUnaryOpStore(ctx, "--", s0);
+					return;
+				}
+#endif
+
+				if(BGBCC_CCXL_InferExprCleanP(ctx, t))
+				{
+					BGBCC_CCXL_CompileExpr(ctx, t);
+					BGBCC_CCXL_StackDupB(ctx);
+					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
+					BGBCC_CCXL_StackExch(ctx);
+					BGBCC_CCXL_StackUnaryOp(ctx, "--");
+					BGBCC_CCXL_CompileAssign(ctx, t);
+					return;
+				}
+			}
+#endif
+
+			BGBCC_CCXL_CompileExpr(ctx, v);
 //			BGBCC_CCXL_StackPushConstInt(ctx, 0);
 //			BGBCC_CCXL_StackLoadIndex(ctx);
 			BGBCC_CCXL_StackLoadIndexConst(ctx, 0);

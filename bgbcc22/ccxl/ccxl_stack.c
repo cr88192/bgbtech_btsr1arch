@@ -2964,8 +2964,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConstStore(
 ccxl_status BGBCC_CCXL_StackLoadIndexConstStoreI(
 	BGBCC_TransState *ctx, int idx, char *dname)
 {
-	ccxl_register treg, dreg, sreg, sreg2;
-	ccxl_type bty, bty2, sty, sty2;
+	ccxl_register treg, dreg, sreg, sreg2, dreg2;
+	ccxl_type bty, bty2, sty, sty2, dty;
 	int i, j, k;
 
 	j=BGBCC_CCXL_LookupAsRegisterStore(ctx, dname, &dreg);
@@ -2982,6 +2982,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConstStoreI(
 	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
 	BGBCC_CCXL_TypeAutoPromoteType(ctx, bty, &bty2);
 //	BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 	if(BGBCC_CCXL_TypeSquareArrayP(ctx, sty))
@@ -3009,7 +3011,17 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConstStoreI(
 
 	BGBCC_CCXL_LoadIndexConstCacheAdd(ctx, dreg, sreg, idx);
 
-	BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg, sreg, idx);
+	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty))
+	{
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty, &dreg2);
+		BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg2, sreg, idx);
+		BGBCC_CCXL_EmitConv(ctx, dty, bty, dreg, dreg2);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+	}else
+	{
+		BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg, sreg, idx);
+	}
+
 //	BGBCC_CCXL_PushRegister(ctx, dreg);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
@@ -3018,8 +3030,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndexConstStoreI(
 
 ccxl_status BGBCC_CCXL_StackLoadIndexStore(BGBCC_TransState *ctx, char *dname)
 {
-	ccxl_register dreg, sreg, treg, sreg2, treg2;
-	ccxl_type bty, bty2, sty, sty2;
+	ccxl_register dreg, sreg, treg, sreg2, treg2, dreg2;
+	ccxl_type bty, bty2, sty, sty2, dty;
 	int i, j, k;
 	
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StLoadIndex", __FILE__, __LINE__);
@@ -3035,6 +3047,8 @@ ccxl_status BGBCC_CCXL_StackLoadIndexStore(BGBCC_TransState *ctx, char *dname)
 		if(j<0)return(j);
 		return(CCXL_STATUS_ERR_GENERIC);
 	}
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 
 	/* src idx -- src[idx] */
 	i=BGBCC_CCXL_PopRegister(ctx, &treg);
@@ -3069,10 +3083,19 @@ ccxl_status BGBCC_CCXL_StackLoadIndexStore(BGBCC_TransState *ctx, char *dname)
 
 	BGBCC_CCXL_LoadIndexCacheAdd(ctx, dreg, sreg, treg);
 
-//	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
-//	bty=BGBCC_CCXL_GetRegType(ctx, sreg);
-	BGBCC_CCXL_EmitLoadIndex(ctx, bty, dreg, sreg, treg);
-//	BGBCC_CCXL_PushRegister(ctx, dreg);
+	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty))
+	{
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty, &dreg2);
+		BGBCC_CCXL_EmitLoadIndex(ctx, bty, dreg2, sreg, treg);
+		BGBCC_CCXL_EmitConv(ctx, dty, bty, dreg, dreg2);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+	}else
+	{
+//		bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
+//		bty=BGBCC_CCXL_GetRegType(ctx, sreg);
+		BGBCC_CCXL_EmitLoadIndex(ctx, bty, dreg, sreg, treg);
+//		BGBCC_CCXL_PushRegister(ctx, dreg);
+	}
 
 	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);

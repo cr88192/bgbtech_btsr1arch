@@ -2260,8 +2260,8 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 	}
 #endif
 
-#if 1
-	if((sz<=512) && (sz&7))
+#if 0
+	if((sz<=512) && (sz&7) && !sctx->sreg_live)
 	{
 		sprintf(tb, "__memcpy8_%u", sz);
 		s0=bgbcc_strdup(tb);
@@ -2442,29 +2442,32 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 	BGBCC_JX2_EmitOpNone(sctx,
 		BGBCC_SH_NMID_RTS);
 
-	for(i=64; i>0; i--)
+	if(sctx->has_pushx2&1)
 	{
-		if(i&3)
-			continue;
+		for(i=64; i>0; i--)
+		{
+			if(i&3)
+				continue;
 
-		sprintf(tb, "__memcpy64_%u_aa", i*8);
-		s0=bgbcc_strdup(tb);
+			sprintf(tb, "__memcpy64_%u_aa", i*8);
+			s0=bgbcc_strdup(tb);
 
-		BGBCC_JX2_EmitNamedLabel(sctx, s0);
+			BGBCC_JX2_EmitNamedLabel(sctx, s0);
 
-		k=i-4;
-		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
-			BGBCC_SH_NMID_MOVX2, tr5, k*8+ 0, BGBCC_SH_REG_R20);
-		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
-			BGBCC_SH_NMID_MOVX2, tr5, k*8+16, BGBCC_SH_REG_R22);
-		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
-			BGBCC_SH_NMID_MOVX2, BGBCC_SH_REG_R20, tr4, k*8+0);
-		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
-			BGBCC_SH_NMID_MOVX2, BGBCC_SH_REG_R22, tr4, k*8+16);
+			k=i-4;
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+				BGBCC_SH_NMID_MOVX2, tr5, k*8+ 0, BGBCC_SH_REG_R20);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+				BGBCC_SH_NMID_MOVX2, tr5, k*8+16, BGBCC_SH_REG_R22);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+				BGBCC_SH_NMID_MOVX2, BGBCC_SH_REG_R20, tr4, k*8+0);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+				BGBCC_SH_NMID_MOVX2, BGBCC_SH_REG_R22, tr4, k*8+16);
+		}
+
+		BGBCC_JX2_EmitOpNone(sctx,
+			BGBCC_SH_NMID_RTS);
 	}
-
-	BGBCC_JX2_EmitOpNone(sctx,
-		BGBCC_SH_NMID_RTS);
 
 
 	for(i=1; i<512; i++)
@@ -2541,7 +2544,8 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 		s2=bgbcc_strdup(tb);
 
 #if 1
-		if(i>=20)
+//		if(i>=20)
+		if((i>=20) && (sctx->has_pushx2&1))
 		{
 			BGBCC_JX2_EmitOpRegRegReg(sctx,
 				BGBCC_SH_NMID_OR, tr4, tr5, BGBCC_SH_REG_R6);
@@ -2559,7 +2563,7 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 		l1=BGBCC_JX2_GetNamedLabel(sctx, s1);
 		l2=BGBCC_JX2_GetNamedLabel(sctx, s2);
 
-		if(i>=20)
+		if((i>=20) && (sctx->has_pushx2&1))
 		{
 			BGBCC_JX2C_EmitOpImmReg(ctx, sctx, BGBCC_SH_NMID_TST, 7, 
 				BGBCC_SH_REG_R6);

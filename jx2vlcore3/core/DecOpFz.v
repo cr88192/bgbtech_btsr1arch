@@ -6473,8 +6473,12 @@ begin
 `ifdef def_true
 	if((opNmid==JX2_UCMD_INVOP) && !opIsNotFx && !isAltOp)
 	begin
-		$display("Jx2DecOpFx: InvOp, Istr %X-%X",
-			istrWord[15:0], istrWord[31:16]);
+		if(!tMsgLatch)
+		begin
+			$display("Jx2DecOpFx: InvOp, Istr %X-%X",
+				istrWord[15:0], istrWord[31:16]);
+		end
+		tNextMsgLatch = 1;
 	end
 `endif
 

@@ -31,10 +31,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	BGBCC_CCXL_VirtTr *vtr;
 	u32 localmap[16];
 	char *fname;
-	ccxl_register reg;
+	ccxl_register reg, reg1;
 	ccxl_type tty;
 	int trn;
-	int ni, nf, rcls;
+	int ni, nf, rcls, noarg;
 	int i, j, k, ka, kf;
 
 	sctx->vspan_num=0;
@@ -426,6 +426,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(vop->opn==CCXL_VOP_CALL)
 		{
 			fname=NULL;
+			noarg=0;
 			if((vop->srca.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
 			{
 				j=(int)(vop->srca.val&CCXL_REGID_REGMASK);
@@ -433,12 +434,29 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				
 				if(fname && !strcmp(fname, "__alloca"))
 					{ obj->regflags|=BGBCC_REGFL_ALLOCA; }
+					
+				noarg=BGBCC_JX2C_CheckCallPossibleBuiltin(ctx, sctx, fname);
+			}
+			
+			for(j=0; j<vop->imm.call.na; j++)
+			{
+				reg1=vop->imm.call.args[j];
+				tty=BGBCC_CCXL_GetRegType(ctx, reg1);
+				
+				if(	BGBCC_CCXL_TypeVecP(ctx, tty) ||
+					BGBCC_CCXL_TypeVec128P(ctx, tty) ||
+					BGBCC_CCXL_TypeQuadPointerP(ctx, tty) ||
+					BGBCC_CCXL_TypeValueObjectP(ctx, tty))
+					noarg=1;
 			}
 
 			for(j=0; j<vop->imm.call.na; j++)
 			{
+				k=2|(j<<16);
+				if(noarg)
+					k=0;
 				BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,
-					vop->imm.call.args[j], 0, vop->tgt_mult);
+					vop->imm.call.args[j], k, vop->tgt_mult);
 			}
 		}
 	}

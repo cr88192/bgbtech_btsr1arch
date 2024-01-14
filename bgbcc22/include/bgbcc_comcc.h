@@ -515,6 +515,8 @@ u64 regalc_noval;		//register lacks backing value
 u64 regalc_pair;		//register is paired
 u64 regalc_gbldirty;	//register is dirty (global)
 
+u64 regalc_isarg;		//register is holding a call argument
+
 ccxl_register fregalc_map[64];
 short fregalc_ltcnt[64];	//lifetime count (who to evict)
 short fregalc_utcnt[64];	//current use count (0=unused)

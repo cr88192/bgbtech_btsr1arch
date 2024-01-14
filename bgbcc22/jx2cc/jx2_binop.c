@@ -3791,6 +3791,41 @@ int BGBCC_JX2C_EmitCsrvVReg(
 	return(0);
 }
 
+int BGBCC_JX2C_CheckCallPossibleBuiltin(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	char *name)
+{
+	if((name[0]=='_') && (name[1]=='_'))
+		return(1);
+
+	if(name[0]=='m')
+	{
+		if(!strcmp(name, "memcpy"))
+			return(1);
+		if(!strcmp(name, "memset"))
+			return(1);
+		if(!strcmp(name, "memmove"))
+			return(1);
+
+		return(0);
+	}
+
+	if(name[0]=='s')
+	{
+		if(!strcmp(name, "strcpy"))
+			return(1);
+		if(!strcmp(name, "strncpy"))
+			return(1);
+		if(!strcmp(name, "strcmp"))
+			return(1);
+
+		return(0);
+	}
+
+	return(0);
+}
+
 int BGBCC_JX2C_EmitCallBuiltin(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -6727,6 +6762,8 @@ int BGBCC_JX2C_EmitCallVReg(
 				BGBCC_JX2CC_PSREG_RBRET);
 		}
 	}
+	
+	BGBCC_JX2C_EmitScratchFlushRegisters(ctx, sctx);
 
 	return(1);
 }

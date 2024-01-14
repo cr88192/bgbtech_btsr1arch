@@ -90,7 +90,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		imm10n&=~2048;
 	}
 	
-	disp11s=(opw1&1)?imm10n:imm10u;
+//	disp11s=(opw1&1)?imm10n:imm10u;
 //	if(jbits&0x20000000U)
 //		{ disp11s^=2048; }
 	
@@ -142,6 +142,8 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		imm10u|=((opw2&0x0300)<<8);
 		imm10n=imm10u|0xFFFFFFFFFFFC0000LL;
 	}
+
+	disp11s=(opw1&1)?imm10n:imm10u;
 
 	op->rn=rn_dfl;
 	op->rm=rm_dfl;

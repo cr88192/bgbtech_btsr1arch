@@ -2778,6 +2778,7 @@ int BGBCC_JX2C_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitNormalizeRegForType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int creg);
 int BGBCC_JX2C_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
 int BGBCC_JX2C_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
+int BGBCC_JX2C_CheckCallPossibleBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
 int BGBCC_JX2C_EmitCallFcnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register fcn);
@@ -3517,6 +3518,7 @@ int BGBCC_JX2C_EmitReloadSavedFrameReg(BGBCC_TransState *ctx, BGBCC_JX2_Context 
 int BGBCC_JX2C_EmitRotateRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx, int flag);
 int BGBCC_JX2C_EmitRotateLpRegisterIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx, int flag);
 int BGBCC_JX2C_CheckRegisterIndexScratchP(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx);
+int BGBCC_JX2C_CheckRegisterIndexArgIdxP(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx, int argid);
 int BGBCC_JX2C_CheckRegisterIndexExcludeP(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int idx);
 int BGBCC_JX2C_EmitTryGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
 int BGBCC_JX2C_EmitGetRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg, int fl);
@@ -3538,6 +3540,7 @@ int BGBCC_JX2C_EmitSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx)
 int BGBCC_JX2C_EmitSyncDirtyRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitSyncLeafRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitScratchFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int mask);
 int BGBCC_JX2C_EmitTempPhiRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);

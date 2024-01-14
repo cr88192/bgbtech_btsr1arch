@@ -4675,6 +4675,18 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 			if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) && (dstfl&1))
 				vsp->flag|=BGBCC_RSPFL_GBLSTORE;
 
+#if 0
+			if(dstfl&2)
+			{
+				if(!(vsp->flag&BGBCC_RSPFL_ISSOURCE))
+					vsp->flag|=BGBCC_RSPFL_ISCALLARG;
+			}else if(!(dstfl&3))
+			{
+				vsp->flag&=~BGBCC_RSPFL_ISCALLARG;
+				vsp->flag|=BGBCC_RSPFL_ISSOURCE;
+			}
+#endif
+
 			if(sctx->tr_opnum < vsp->bbeg)
 				vsp->bbeg=sctx->tr_opnum;
 			if(sctx->tr_opnum > vsp->bend)
@@ -4756,7 +4768,39 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 				if(!(dstfl&1))
 					{ vspb->flag|=BGBCC_RSPFL_CROSSTRACE; }
 			}
-			
+
+			if(vspb->tbeg!=vspb->tend)
+			{
+				vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+				vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+			}
+
+			if((dstfl&2) && BGBCC_CCXL_IsRegTempP(ctx, sreg))
+			{
+				if(vspb->flag&BGBCC_RSPFL_ISCALLARG)
+				{
+					if((vspb->flag&0x003F0000)!=(dstfl&0x003F0000))
+					{
+						/* Input to two different calls... */
+						vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+						vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+					}
+				}
+
+				if(!(vspb->flag&BGBCC_RSPFL_ISSOURCE))
+				{
+					/* Input to a CALL */
+					vspb->flag|=BGBCC_RSPFL_ISCALLARG;
+					vspb->flag&=~0x003F0000;
+					vspb->flag|=(dstfl&0x003F0000);
+				}
+			}else if(!(dstfl&3))
+			{
+				/* Input to expression, can't be call arg. */
+				vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+				vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+			}
+
 			return(1);
 		}
 	}

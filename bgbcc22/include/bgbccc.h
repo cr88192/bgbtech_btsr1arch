@@ -375,6 +375,9 @@ extern "C" {
 #define BGBCC_RSPFL_GBLSTORE		0x0020		//Modified Global
 #define BGBCC_RSPFL_ALIASPTR		0x0040		//Aliased by pointer
 
+#define BGBCC_RSPFL_ISSOURCE		0x0100		//Is used as an input
+#define BGBCC_RSPFL_ISCALLARG		0x0200		//Is a call argument (exclusive)
+
 #ifndef BTK_NAME
 #define BTK_NAME	1
 #define BTK_NUMBER	2

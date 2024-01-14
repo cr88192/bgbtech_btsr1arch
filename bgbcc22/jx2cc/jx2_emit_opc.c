@@ -2008,6 +2008,14 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			return(1);
 	}
 
+	if(((rm&63)==(rn&63)) &&
+		BGBCC_JX2_EmitCheckRegExtGPR(ctx, rm) &&
+		BGBCC_JX2_EmitCheckRegExtGPR(ctx, rn))
+	{
+		if(nmid==BGBCC_SH_NMID_MOV)
+			return(1);
+	}
+
 	if(!ctx->emit_isprobe && (
 		(nmid==BGBCC_SH_NMID_BSWAPW)	||
 		(nmid==BGBCC_SH_NMID_BSWAPUW)	||

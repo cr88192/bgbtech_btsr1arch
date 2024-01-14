@@ -1460,6 +1460,34 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 		}
 #endif
 
+#if 1
+		if(	BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref") &&
+			BCCX_TagIsCstP(rn, &bgbcc_rcst_unary, "unary") &&
+			BCCX_AttrIsCstP(rn, &bgbcc_rcst_op, "op", "*"))
+		{
+			s0=BCCX_GetCst(ln, &bgbcc_rcst_name, "name");
+//			s1=BCCX_GetCst(rn, &bgbcc_rcst_op, "op");
+			v=BCCX_FetchCst(rn, &bgbcc_rcst_value, "value");
+
+#if 0
+			if(BCCX_TagIsCstP(v, &bgbcc_rcst_ref, "ref"))
+			{
+				s2=BCCX_GetCst(v, &bgbcc_rcst_name, "name");
+				if(!strcmp(s2, s0))
+				{
+					BGBCC_CCXL_StackUnaryOpName(ctx, s1, s0);
+					return;
+				}
+			}
+#endif
+			
+			BGBCC_CCXL_CompileExpr(ctx, v);
+			BGBCC_CCXL_StackLoadIndexConstStore(ctx, 0, s0);
+//			BGBCC_CCXL_StackUnaryOpStore(ctx, s1, s0);
+			return;
+		}
+#endif
+
 //		if(BGBCC_CCXL_TypeCompatibleP(ctx, lty, rty) &&
 		if(BGBCC_CCXL_TypeCompatibleArchP(ctx, lty, rty) &&
 			!BGBCC_CCXL_TypeVariantP(ctx, lty) &&

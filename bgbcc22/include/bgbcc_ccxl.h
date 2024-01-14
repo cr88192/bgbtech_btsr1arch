@@ -582,6 +582,7 @@ Base, Q1..Q3:
 
 #define CCXL_TRFL_LEAF				0x00000001	//Trace Is Leaf
 #define CCXL_TRFL_WEXALIGN			0x00000002	//Need to align WEX
+#define CCXL_TRFL_USES_SCRATCH		0x00000004	//Trace uses scratch alloc
 
 
 typedef struct { u64 val; } ccxl_register;

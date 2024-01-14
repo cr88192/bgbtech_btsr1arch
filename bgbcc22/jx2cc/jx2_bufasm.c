@@ -1233,6 +1233,10 @@ int mfl;
 {"btrns",	BGBCC_SH_NMID_BTRNS},
 {"btrnsq",	BGBCC_SH_NMID_BTRNSQ},
 
+{"clz.q",	BGBCC_SH_NMID_CLZQ},
+{"ctz.q",	BGBCC_SH_NMID_CTZQ},
+{"btrns.q",	BGBCC_SH_NMID_BTRNSQ},
+
 {"pmortl",	BGBCC_SH_NMID_PMORTL},
 {"pmortq",	BGBCC_SH_NMID_PMORTQ},
 {"pmort.l",	BGBCC_SH_NMID_PMORTL},
