@@ -1364,7 +1364,13 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 			}
 			else
 //				if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, sty))
-				if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
+//				if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty))
+				if(	!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, sty) &&
+					!BGBCC_CCXL_TypeCompatibleBothPointerP(ctx, dty, sty))
+//					!(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty) &&
+//						BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
+//						!BGBCC_CCXL_TypeQuadPointerP(ctx, sty) &&
+//						!BGBCC_CCXL_TypeQuadPointerP(ctx, dty)))
 			{
 //				if(dty.val>0x3FFF)
 //					{ BGBCC_DBGBREAK }
@@ -1814,7 +1820,9 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 
 		dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 //		if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty) || (flag&2))
-		if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty) || (flag&2))
+		if((	!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty) &&
+				!BGBCC_CCXL_TypeCompatibleBothPointerP(ctx, dty, bty)) ||
+				(flag&2))
 		{
 			dreg2=dreg;
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, bty, &dreg);

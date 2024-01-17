@@ -5037,6 +5037,31 @@ ccxl_type BGBCC_CCXL_TypeWrapBasicType(int ty)
 	return(tty);
 }
 
+/* Returns true if both types are pointer types.
+ * Ignores types of pointers if that can be implicitly converted.
+ */
+int BGBCC_CCXL_TypeCompatibleBothPointerP(
+	BGBCC_TransState *ctx,
+	ccxl_type dty, ccxl_type sty)
+{
+//	if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
+	if(	BGBCC_CCXL_TypePointerP(ctx, dty) &&
+		BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+	{
+		if(	 BGBCC_CCXL_TypeQuadPointerP(ctx, dty) &&
+			!BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
+		if(	!BGBCC_CCXL_TypeQuadPointerP(ctx, dty) &&
+			 BGBCC_CCXL_TypeQuadPointerP(ctx, sty))
+				return(0);
+		return(1);
+	}
+
+	return(0);
+
+//	return(BGBCC_CCXL_TypeCompatibleFlP(ctx, dty, sty, 0));
+}
+
 /* Values are compatible as per the abstract model.
  * Allows implicit promotion to int.
  * Distinguishes conversions which may be equivalent on the target.

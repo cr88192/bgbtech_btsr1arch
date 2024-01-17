@@ -1984,7 +1984,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 //			rngb=248;
 //			rngb=224;
 //			rngb=208;
-			rngb=128;
+
+//			rngb=128;
 			rngw=4080-(szrng/2);
 
 //			if(j<k)
@@ -1992,6 +1993,7 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 //				rngb=0;
 //			}
 
+#if 0
 			if(!ctx->is_stable)
 			{
 				rngb=999999;
@@ -2004,6 +2006,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 				if(ctx->need_farjmp)
 					rngw16=16;
 			}
+#endif
+
 		}
 			
 		k=BGBCC_JX2_EmitGetOffs(ctx);

@@ -324,7 +324,20 @@ ccxl_type BGBCC_CCXL_GetRegType(
 			}
 			if(i>=ctx->n_reg_globals)
 				{ BGBCC_DBGBREAK }
-			tty=ctx->reg_globals[i]->type;
+
+			tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
+#if 0
+			if(!tty.val)
+			{
+				tty=ctx->reg_globals[i]->type;
+			}
+			else
+			{
+				if(tty.val==CCXL_TY_UNDEF_I)
+					tty.val=CCXL_TY_I;
+			}
+#endif
+
 			BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
 	//		BGBCC_CCXL_TypeFromSig(ctx, &tty,
 	//			ctx->reg_globals[reg.val&16777215]->sig);
@@ -618,6 +631,64 @@ int BGBCC_CCXL_GetRegAsType(
 		*rtreg=treg;
 		return(1);
 	}
+
+#if 0
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
+	{
+		*rtreg=reg;
+
+		i=reg.val&CCXL_REGID_REGMASK;
+		if(!i)
+			{ return(-1); }
+		if(i>=ctx->n_reg_globals)
+			{ return(-1); }
+
+		sty=ctx->reg_globals[i]->type;
+
+		if(	BGBCC_CCXL_TypeCompatibleP(ctx, tty, sty) ||
+			BGBCC_CCXL_TypeCompatibleBothPointerP(ctx, tty, sty))
+		{
+			sty.val=tty.val;
+			if(!tty.val)
+				sty.val=CCXL_TY_UNDEF_I;
+			treg.val=(reg.val&(~CCXL_REGID_TYPEMASK))|
+				(((u64)sty.val)<<CCXL_REGID_TYPESHIFT);
+			*rtreg=treg;
+			return(1);
+		}
+	}
+#endif
+
+#if 1
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
+	{
+		treg.val=(reg.val&(~CCXL_REGINT_STOXMASK));
+
+		if(tty.val==CCXL_TY_I)
+			{ treg.val|=CCXL_REGINT_ST_I; *rtreg=treg; return(1); }
+		if(tty.val==CCXL_TY_UI)
+			{ treg.val|=CCXL_REGINT_ST_UI; *rtreg=treg; return(1); }
+		if(tty.val==CCXL_TY_L)
+			{ treg.val|=CCXL_REGINT_ST_L; *rtreg=treg; return(1); }
+		if(tty.val==CCXL_TY_UL)
+			{ treg.val|=CCXL_REGINT_ST_UL; *rtreg=treg; return(1); }
+		if(tty.val==CCXL_TY_SB)
+			{ treg.val|=CCXL_REGINT_ST_SB; *rtreg=treg; return(1); }
+		if(tty.val==CCXL_TY_UB)
+			{ treg.val|=CCXL_REGINT_ST_UB; *rtreg=treg; return(1); }
+		if(tty.val==CCXL_TY_SS)
+			{ treg.val|=CCXL_REGINT_ST_SS; *rtreg=treg; return(1); }
+		if(tty.val==CCXL_TY_US)
+			{ treg.val|=CCXL_REGINT_ST_US; *rtreg=treg; return(1); }
+
+		if(tty.val<0xFFFF)
+		{
+			treg.val|=CCXL_REGINT_ST_OF1|(((u64)tty.val)<<32);
+			*rtreg=treg;
+			return(1);
+		}
+	}
+#endif
 
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_THISIDX)
 	{

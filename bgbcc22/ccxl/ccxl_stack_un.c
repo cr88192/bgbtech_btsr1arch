@@ -313,8 +313,8 @@ ccxl_status BGBCC_CCXL_StackUnaryOpStore(BGBCC_TransState *ctx,
 			k=(opr==CCXL_UNOP_INC)?(1):(-1);
 //			BGBCC_CCXL_RegisterAllocTemporary(ctx, sty, &dreg);
 			
-			if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
-				__debugbreak();
+//			if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
+//				__debugbreak();
 			
 			BGBCC_CCXL_EmitLeaImm(ctx, bty, dreg, sreg, k);
 //			BGBCC_CCXL_PushRegister(ctx, dreg);
@@ -352,8 +352,8 @@ ccxl_status BGBCC_CCXL_StackUnaryOpStore(BGBCC_TransState *ctx,
 //	BGBCC_CCXL_RegisterAllocTemporary(ctx, sty, &dreg);
 //	BGBCC_CCXL_EmitConv(ctx, dty, sty, dreg, sreg);
 
-	if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
-		{ BGBCC_DBGBREAK }
+//	if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
+//		{ BGBCC_DBGBREAK }
 
 	BGBCC_CCXL_EmitUnaryOp(ctx, sty, opr, dreg, sreg);
 

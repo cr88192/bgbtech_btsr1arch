@@ -874,6 +874,11 @@ char *BGBPP_LoadInclude(BGBCP_ParseState *ctx, char *name, int *rsz)
 		}
 	}
 	
+	if(!buf)
+	{
+		buf=bgbcc_loadfile_txt(name, &sz);
+	}
+	
 	if(buf)
 	{
 //		printf("Loaded Include: '%s' %d bytes\n", name, sz);
@@ -1359,6 +1364,7 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 
 	s=BGBCP_TokenCtx(ctx, s, b, &ty);
 	s1=BGBCP_TokenCtx(ctx, s, b2, &ty2);
+	s2=BGBCP_TokenCtx(ctx, s1, b3, &ty3);
 
 	if(b[0]=='a')
 	{
@@ -1714,9 +1720,18 @@ void BGBPP_Directive(BGBCP_ParseState *ctx, char *str)
 		}
 	}
 
+	if(b[0]=='l')
+	{
+		if(!bgbcp_strcmp4(b, "line"))
+		{
+			BGBCP_SetLinenum(b3, bgbpp_spos, atoi(b2));
+			return;
+		}
+	}
+
 	if(b[0]=='m')
 	{
-		if(!bgbcp_strcmp5(b, "macroed"))
+		if(!bgbcp_strcmp7(b, "macroed"))
 		{
 //			tn=bgbcc_strdup(b2);
 			tn="_MACROED_";

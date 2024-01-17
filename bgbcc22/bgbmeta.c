@@ -1827,8 +1827,10 @@ int BGBCC_LoadCSourcesCCXL(
 			if(buf)
 				{ BGBCC_CCXL_LoadBufferDLL(ctx, buf, sz); continue; }
 
+			ctx->n_error++;
 			printf("BGBCC_LoadCSourcesCCXL: Can't Find Library %s\n", names[i]);
-			continue;
+//			continue;
+			break;
 		}
 
 		lang=BGBCP_LangForName(names[i]);
@@ -2094,6 +2096,8 @@ char *bgbcc_share_base;
 char *bgbcc_share_inc;
 char *bgbcc_share_lib;
 
+fourcc bgbcc_tool_fcc;
+
 u32 BGBCC_GetArch()
 	{ return(bgbcc_arch); }
 
@@ -2246,6 +2250,12 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 	if(init)return(-1);
 	init=1;
 
+	for(i=0; i<argc; i++)
+	{
+		fprintf(stderr, "%s ", argv[i]);
+	}
+	fprintf(stderr, "\n");
+
 	mach_name=NULL; gcc_ver=NULL;
 	cfg=NULL;
 	
@@ -2279,6 +2289,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 //	bgbcc_verbose=1;
 	bgbcc_verbose=0;
 
+	bgbcc_tool_fcc=0;
 	bgbcc_istool=0;
 	if(!strcmp(argv[0]+strlen(argv[0])-3, "-cc"))
 		bgbcc_istool=1;
@@ -2293,6 +2304,14 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 		bgbcc_istool=4;
 	if(!strcmp(argv[0]+strlen(argv[0])-3, "-nm"))
 		bgbcc_istool=5;
+
+	if(!strncmp(argv[0], "bjx2-", 5))
+		bgbcc_tool_fcc=BGBCC_ARCH_BJX2;
+
+	if(!strncmp(argv[0], "bjx2xg2-", 8))
+		bgbcc_tool_fcc=BGBCC_ARCH_XG2A;
+	if(!strncmp(argv[0], "xg2a-", 5))
+		bgbcc_tool_fcc=BGBCC_ARCH_XG2A;
 
 	if(bgbcc_istool)
 	{
@@ -2718,6 +2737,14 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			BGBCC_LoadConfig(buf);
 		}
 
+#if 0
+		if(usrlib_home)
+		{
+			sprintf(buf, "%s/etc/bgbcc.cfg", usrlib_home);
+			BGBCC_LoadConfig(buf);
+		}
+#endif
+
 		if(home)
 		{
 //			sprintf(buf, "%s/frvmcfg.txt", home);
@@ -2740,6 +2767,9 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 //		mach_name="SH4";
 		mach_name="BJX2";
 //		mach_name="BJX1L";
+
+		if(bgbcc_tool_fcc==BGBCC_ARCH_XG2A)
+			mach_name="XG2A";
 	}
 
 	if(mach_name)
@@ -3169,6 +3199,16 @@ int main(int argc, char *argv[], char **env)
 				continue;
 			}
 
+			if(!strcmp(argv[i]+1, "g"))
+			{
+				continue;
+			}
+
+			if(!strcmp(argv[i]+1, "pg"))
+			{
+				continue;
+			}
+
 			if(!strcmp(argv[i], "-"))
 			{
 //				fprintf(stderr, "%s: adding $stdin\n", argv[0]);
@@ -3221,6 +3261,12 @@ int main(int argc, char *argv[], char **env)
 				!strcmp(argv[i], "-help") || !strcmp(argv[i], "--help"))
 			{
 				m|=32;
+				continue;
+			}
+			
+			if(!strcmp(argv[i], "--version"))
+			{
+				m|=512;
 				continue;
 			}
 			
@@ -3419,7 +3465,14 @@ int main(int argc, char *argv[], char **env)
 
 	if(m&256)
 	{
-		printf("bjx2-pel-bgbcc\n");
+//		printf("bjx2-pel-bgbcc\n");
+		printf("bjx2-tk-pel\n");
+		return(0);
+	}
+
+	if(m&512)
+	{
+		printf("0.25.0\n");
 		return(0);
 	}
 
@@ -3441,6 +3494,7 @@ int main(int argc, char *argv[], char **env)
 		if(!metafn && !wadfn && !frbcfn)
 //		if(!frbcfn)
 		{
+#if 0
 			s=BGBCP_BaseNameForName(uds[minuds]);
 			sprintf(tb, "%s.exe", s);
 			frbcfn=bgbcc_strdup(tb);
@@ -3450,10 +3504,45 @@ int main(int argc, char *argv[], char **env)
 				printf("%s: automatic output name = %s\n",
 					argv[0], frbcfn);
 			}
+#endif
 			
-//			frbcfn="a.exe";
+			frbcfn="a.exe";
+			if(is_compile_only)
+			{
+//				frbcfn="a.o";
+
+#if 1
+				s=BGBCP_BaseNameForName(uds[minuds]);
+				sprintf(tb, "%s.o", s);
+				frbcfn=bgbcc_strdup(tb);
+
+				if(bgbcc_verbose)
+				{
+					printf("%s: automatic output name = %s\n",
+						argv[0], frbcfn);
+				}
+#endif
+			}
 		}
-	}	
+	}else
+		if(bgbcc_istool==0)
+	{
+		if(!metafn && !wadfn && !frbcfn)
+//		if(!frbcfn)
+		{
+#if 1
+			s=BGBCP_BaseNameForName(uds[minuds]);
+			sprintf(tb, "%s.exe", s);
+			frbcfn=bgbcc_strdup(tb);
+
+			if(bgbcc_verbose)
+			{
+				printf("%s: automatic output name = %s\n",
+					argv[0], frbcfn);
+			}
+#endif
+		}
+	}
 
 	if(!metafn && !wadfn && !frbcfn)
 	{

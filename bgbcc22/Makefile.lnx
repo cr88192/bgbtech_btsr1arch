@@ -10,6 +10,7 @@ CWDPF=./
 
 # CC=gcc
 CC=clang
+CP=cp
 
 CC_OUTEXE=$(CC) -g -o 
 CC_OUTDLL=$(CC) -shared -o 
@@ -32,16 +33,37 @@ DLL_LDFLAGS=-g -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm -fPIC \
 	-Wl,-rpath,"$$ORIGIN"
 LDFLAGS_META=
 
-INST_BIN=$(PREFIX)/usr/bin
+# INST_BIN=$(PREFIX)/usr/bin
+INST_BIN=$(PREFIX)/usr/local/bin
 
 include Makefile.inc
 
 all: all2
 
 mk_link:
-	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-cc
-	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-gcc
-	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-as
-	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-ld
-	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-ar
-	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-nm
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-cc
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-gcc
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-as
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-ld
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-ar
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-nm
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-c++
+#	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-g++
+
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-cc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-gcc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-as
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-ld
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-ar
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-nm
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-c++
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-g++
+
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-cc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-gcc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-as
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-ld
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-ar
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-nm
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-c++
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-g++

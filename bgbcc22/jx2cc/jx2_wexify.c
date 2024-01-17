@@ -984,7 +984,7 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 	}
 #endif
 
-#if 1
+#if 0
 	/* Only check aliasing for F1 block for now. */
 //	if((opw1&0xEB00)!=0xE100)
 	if(!sc1)
