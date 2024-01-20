@@ -20,7 +20,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // vid_null.c -- null video driver to aid porting efforts
 
 #include "quakedef.h"
+
+#ifndef GLQUAKE
 #include "d_local.h"
+#endif
 
 viddef_t	vid;				// global video state
 
@@ -32,6 +35,31 @@ void GfxDrv_BeginDrawing();
 void GfxDrv_EndDrawing(void);
 int GfxDrv_PrepareFramebuf();
 
+#ifdef GLQUAKE
+int		texture_extension_number = 1;
+int		texture_mode = GL_LINEAR;
+qboolean isPermedia = false;
+qboolean		scr_skipupdate = false;
+
+cvar_t	gl_ztrick = {"gl_ztrick","1"};
+cvar_t	gl_driver = {"gl_driver","opengl32.dll"};
+
+const char *gl_vendor = "BGB";
+const char *gl_renderer = "TKRA";
+const char *gl_version = "1.1";
+const char *gl_extensions = "";
+
+qboolean gl_mtexable = false;
+
+float		gldepthmin, gldepthmax;
+
+//unsigned short	d_8to16table[256];
+//unsigned	d_8to24table[256];
+//unsigned	d2d_8to24table[256];
+
+unsigned char d_15to8table[65536];
+
+#endif
 
 
 void __hint_use_egpr()
@@ -399,7 +427,9 @@ void	VID_Init (unsigned char *palette)
 	vid.rowbytes = vid.conrowbytes = BASEWIDTH;
 
 	vid.rowbytes = vid.conrowbytes = 2*BASEWIDTH;
+#ifndef GLQUAKE
 	r_pixbytes=2;
+#endif
 
 	host_colormap16 = malloc (131072);
 	vid.colormap16 = host_colormap16;
@@ -418,8 +448,10 @@ void	VID_Init (unsigned char *palette)
 	}
 
 
+#ifndef GLQUAKE
 	d_pzbuffer = zbuffer;
 	D_InitCaches (surfcache, sizeof(surfcache));
+#endif
 }
 
 void	VID_Shutdown (void)
@@ -505,4 +537,93 @@ void D_EndDirectRect (int x, int y, int width, int height)
 {
 }
 
+
+#ifdef GLQUAKE
+void GL_Init (void)
+{
+//	QGL_Init("opengl32.dll");
+
+	gl_vendor = qglGetString (GL_VENDOR);
+	Con_Printf ("GL_VENDOR: %s\n", gl_vendor);
+	gl_renderer = qglGetString (GL_RENDERER);
+	Con_Printf ("GL_RENDERER: %s\n", gl_renderer);
+
+	gl_version = qglGetString (GL_VERSION);
+	Con_Printf ("GL_VERSION: %s\n", gl_version);
+	gl_extensions = qglGetString (GL_EXTENSIONS);
+//	Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
+
+//	Con_Printf ("%s %s\n", gl_renderer, gl_version);
+
+//    if (strnicmp(gl_renderer,"PowerVR",7)==0)
+//         fullsbardraw = true;
+
+//    if (strnicmp(gl_renderer,"Permedia",8)==0)
+//         isPermedia = true;
+
+//	CheckTextureExtensions ();
+//	CheckMultiTextureExtensions ();
+
+//	qglClearColor (1,0,0,0);
+	qglClearColor (0.5,0.5,0.5,0);
+
+	qglCullFace(GL_FRONT);
+	qglEnable(GL_TEXTURE_2D);
+
+	qglEnable(GL_ALPHA_TEST);
+	qglAlphaFunc(GL_GREATER, 0.667);
+
+	qglPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
+	qglShadeModel (GL_FLAT);
+
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+//	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+}
+
+void GL_BeginRendering (int *x, int *y, int *width, int *height)
+{
+	extern cvar_t gl_clear;
+
+	*x = *y = 0;
+//	*width = WindowRect.right - WindowRect.left;
+//	*height = WindowRect.bottom - WindowRect.top;
+	*width = vid.width;
+	*height = vid.height;
+
+//    if (!qwglMakeCurrent( maindc, baseRC ))
+//		Sys_Error ("wglMakeCurrent failed");
+
+//	qglViewport (*x, *y, *width, *height);
+}
+
+void GL_EndRendering (void)
+{
+	int y, yn;
+	void *sbuf;
+	vrect_t	rect;
+
+//	if (fullsbardraw)
+//		Sbar_Changed();
+		
+	qglFinish();
+
+	Sys_SendKeyEvents();
+
+	rect.x = 0;
+	rect.y = 0;
+	rect.width = vid.width;
+	rect.height = vid.height;
+	rect.pnext = 0;
+
+	VID_Update(&rect);
+}
+
+#endif
 

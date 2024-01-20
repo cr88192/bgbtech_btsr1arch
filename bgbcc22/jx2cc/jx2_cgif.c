@@ -1636,6 +1636,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 {
 	static int rec=0;
 	char *s0;
+	int i, j, k;
 
 //	BGBCC_JX2C_CompilePrintVirtOp(ctx, sctx, obj, op);
 
@@ -1688,8 +1689,14 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 //		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 
+		k=op->imm.si;
+		if(k==CCXL_LBL_RETURN)
+			k=sctx->lbl_ret;
+		if(k==CCXL_LBL_RETURN_ZERO)
+			k=sctx->lbl_ret_zero;
+
 		BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BRAN,
-			op->imm.si);
+			k);
 
 //		BGBCC_JX2_EmitFlushIndexImm16(sctx);
 //		BGBCC_JX2_EmitFlushIndexImm32(sctx);
@@ -1709,8 +1716,14 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 //		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 
+		k=op->imm.si;
+		if(k==CCXL_LBL_RETURN)
+			k=sctx->lbl_ret;
+		if(k==CCXL_LBL_RETURN_ZERO)
+			k=sctx->lbl_ret_zero;
+
 		BGBCC_JX2C_EmitJCmpVRegZero(ctx, sctx, op->type,
-			op->srca, op->opr, op->imm.si);
+			op->srca, op->opr, k);
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		break;
 	case CCXL_VOP_JCMP:
@@ -1722,8 +1735,14 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 //		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 
+		k=op->imm.si;
+		if(k==CCXL_LBL_RETURN)
+			k=sctx->lbl_ret;
+		if(k==CCXL_LBL_RETURN_ZERO)
+			k=sctx->lbl_ret_zero;
+
 		BGBCC_JX2C_EmitJCmpVRegVReg(ctx, sctx, op->type,
-			op->srca, op->srcb, op->opr, op->imm.si);
+			op->srca, op->srcb, op->opr, k);
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		break;
 	case CCXL_VOP_CALL:
@@ -2116,6 +2135,13 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 	}
 
 	sctx->is_fixed32&=(~16);
+
+	sctx->state_alias=0;
+	if(ctx->cur_func->regflags&BGBCC_REGFL_HASLCLALIAS)
+		sctx->state_alias|=1;
+	if(ctx->cur_func->regflags&BGBCC_REGFL_HASGBLALIAS)
+		sctx->state_alias|=2;
+		
 
 	if(usewex)
 	{

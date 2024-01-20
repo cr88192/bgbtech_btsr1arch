@@ -1308,7 +1308,7 @@ void *TK_DlOpenA(const char *path, int flags)
 #ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
-		p=TK_DlOpenB((TKPE_TaskInfo *)__arch_tbr, path, flags);
+		p=TK_DlOpenB((TKPE_TaskInfo *)TK_GET_TBR, path, flags);
 		return(p);
 	}
 #endif
@@ -1329,7 +1329,7 @@ void *TK_DlSymA(void *handle, const char *symbol, int flags)
 #ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
-		p=TK_DlSymB((TKPE_TaskInfo *)__arch_tbr, handle, symbol, flags);
+		p=TK_DlSymB((TKPE_TaskInfo *)TK_GET_TBR, handle, symbol, flags);
 		return(p);
 	}
 #endif

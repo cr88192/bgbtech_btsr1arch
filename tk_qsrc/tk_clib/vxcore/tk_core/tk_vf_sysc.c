@@ -74,15 +74,15 @@ int tk_mount_sysc()
 	mnt->vt=&tk_vfile_sysc_vt;
 //	mnt->udata0=img;
 
-	if(mnt->vt->fopen!=tk_sysc_fopen)
-		{ __debugbreak(); }
+//	if(mnt->vt->fopen!=tk_sysc_fopen)
+//		{ __debugbreak(); }
 	
 //	mnt->next=tk_vf_mount;
 //	tk_vf_mount=mnt;
 	tk_vf_addmount(mnt);
 	
-	if(mnt->vt->fopen!=tk_sysc_fopen)
-		{ __debugbreak(); }
+//	if(mnt->vt->fopen!=tk_sysc_fopen)
+//		{ __debugbreak(); }
 }
 
 TK_MOUNT *tk_sysc_mount(char *devfn, char *mntfn,

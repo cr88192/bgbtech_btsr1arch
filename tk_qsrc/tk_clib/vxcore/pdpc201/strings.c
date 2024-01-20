@@ -10,7 +10,7 @@ void bcopy(const void *s1, void *s2, size_t n)
 
 void bzero(void *s, size_t n)
 {
-	memset(s, n);
+	memset(s, 0, n);
 }
 
 int ffs(int i)

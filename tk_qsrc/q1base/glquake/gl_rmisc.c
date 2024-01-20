@@ -488,6 +488,8 @@ void R_ResetDelayPolyTris(void);
 int R_GetDelayPolyTrisSize(void);
 qgl_hfloat *R_GetDelayPolyTrisBase(void);
 
+qgl_hfloat *R_CheckExpandDelayPolyQuads(int nvtx);
+
 
 void R_DrawParticles (void)
 {

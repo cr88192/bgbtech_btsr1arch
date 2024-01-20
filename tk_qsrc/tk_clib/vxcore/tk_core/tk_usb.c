@@ -393,7 +393,7 @@ int TKUSB_SendSetupAndDataPacket(
 	u16 *bct;
 	s64 tt, tt1, te;
 	int rt, msgsz, tg;
-	int tg, crc;
+	int crc;
 	int i;
 	
 	tg=addr|(endp<<7);
@@ -753,8 +753,8 @@ static const byte tkusb_kbscan2key_sh1[256]={
 	0x00, 0x00, 0x00, 0x00,  0x00, 0x00, 0x00, 0x00,	/* 78..7F */
 };
 
-u32 tkusb_kbscanmask1[8];
-u32 tkusb_kbscanmask2[8];
+u32 tkusb_kbscanmask1[32];
+u32 tkusb_kbscanmask2[32];
 
 byte tkusb_kbkeybuf[256];
 byte tkusb_tkkeybufs;

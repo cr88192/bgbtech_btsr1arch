@@ -259,7 +259,7 @@ void *TK_DlGetApiContextA(u64 apiname, u64 subname)
 #ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
-		p=TK_DlGetApiContextB((TKPE_TaskInfo *)__arch_tbr, apiname, subname);
+		p=TK_DlGetApiContextB((TKPE_TaskInfo *)TK_GET_TBR, apiname, subname);
 		return(p);
 	}
 #endif

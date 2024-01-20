@@ -1828,6 +1828,59 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			return;
 		}
 
+		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_break, "break"))
+		{
+			if(ctx->breakstackpos>0)
+			{
+				ctx->loop_localstate|=BGBCC_LOOPFL_BREAK;
+				l0=ctx->breakstack[ctx->breakstackpos-1];
+				BGBCC_CCXL_CompileJCT(ctx, t, l0);
+				return;
+			}
+		}
+
+		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_continue, "continue"))
+		{
+			if(ctx->contstackpos>0)
+			{
+				ctx->loop_localstate|=BGBCC_LOOPFL_CONTINUE;
+				l0=ctx->contstack[ctx->contstackpos-1];
+				BGBCC_CCXL_CompileJCT(ctx, t, l0);
+				return;
+			}
+		}
+
+		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_return, "return"))
+		{
+#if 1
+			v=BCCX_FetchCst(ln, &bgbcc_rcst_value, "value");
+			if(!v)
+			{
+//				BGBCC_CCXL_StackRetV(ctx);
+				l0.id=CCXL_LBL_RETURN;
+				BGBCC_CCXL_CompileJCT(ctx, t, l0);
+				return;
+			}
+#endif
+
+#if 0
+			if(v && BGBCC_CCXL_IsIntP(ctx, v))
+			{
+				i=BCCX_GetIntCst(v, &bgbcc_rcst_value, "value");
+				if(i==0)
+				{
+					l0.id=CCXL_LBL_RETURN_ZERO;
+					BGBCC_CCXL_CompileJCT(ctx, t, l0);
+					return;
+				}
+			}
+#endif
+
+//			BGBCC_CCXL_CompileExpr(ctx, t);
+//			BGBCC_CCXL_StackRet(ctx);
+//			return;
+		}
+
 		if(ctx->arch_has_predops &&
 			!BGBCC_CCXL_CheckIsStaticLib(ctx))
 		{

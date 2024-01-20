@@ -2965,6 +2965,16 @@ void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	edge_l[TKRA_ES_ZPOS] = xzpos_l;
 	edge_r[TKRA_ES_ZPOS] = xzpos_r;
 }
+
+void TKRA_WalkEdges_ZbufNcp(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
+{
+	TKRA_WalkEdges_Zbuf(ctx, ytop, edge_l, edge_r, cnt);
+}
+
+void TKRA_UpdateVars_WalkEdgesMMIO(TKRA_Context *ctx)
+{
+}
 #endif
 
 static s32 tkra_zrcpbitab[256];
@@ -4172,6 +4182,7 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 	if(trifl&TKRA_TRFL_NOCMOD)
 		trifl&=~TKRA_TRFL_ALPHA;
 
+#if 0
 	if((((long)ctx->tex_cur)>>60)!=0)
 	{
 		__debugbreak();
@@ -4179,8 +4190,8 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 			(long)ctx->tex_cur);
 		ctx->tex_cur=NULL;
 	}
+#endif
 
-		
 	if(		(trifl==ctx->span_trifl) &&
 			(ctx->tex_cur==ctx->span_tex_cur))
 		return(0);

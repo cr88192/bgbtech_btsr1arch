@@ -91,8 +91,17 @@ void *tkra_malloc_gbl(int sz)
 void *tkra_malloc_phys(int sz)
 {
 	void *ptr;
+	long li;
 #ifdef __BGBCC__
 	ptr=tk_malloc_cat(sz, TKMM_MCAT_PHYSDFL);
+	li=(long)ptr;
+	if(li>>28)
+	{
+		tk_printf("tkra_malloc_phys: Ptr is virtual %p\n", ptr);
+	}else if(ptr&15)
+	{
+		tk_printf("tkra_malloc_phys: Ptr is misal %p\n", ptr);
+	}
 #else
 	ptr=malloc(sz);
 #endif
@@ -684,7 +693,7 @@ u64 TKRA_ConvBlockDxt1ToUtx2A(u64 blk)
 	}
 #endif
 
-#if 1
+#if 0
 	for(y=0; y<4; y++)
 	{
 		z=tkra_morton8(0, y);
@@ -709,7 +718,7 @@ u64 TKRA_ConvBlockDxt1ToUtx2A(u64 blk)
 	}
 #endif
 
-#if 0
+#if 1
 	y=0;
 	z=tkra_morton8(0, y);	i=(pxa>>ix)&3;	ix+=2;
 	j=(rek>>(i*4))&3;		pxb|=j<<(z*2);
@@ -1061,12 +1070,23 @@ int TKRA_BindTexImg2I(TKRA_Context *ctx, TKRA_TexImage *img, int unit)
 
 	if(unit==0)
 	{
-		sctx->tex_cur=img;
-		sctx->tex_xshl=img->tex_xshl;
-		sctx->tex_yshl=img->tex_yshl;
-		sctx->tex_mmip=img->tex_mmip;
-		sctx->tex_nmip=img->tex_nmip;
-		sctx->tex_flag=img->tex_flag;
+		if(img)
+		{
+			sctx->tex_cur=img;
+			sctx->tex_xshl=img->tex_xshl;
+			sctx->tex_yshl=img->tex_yshl;
+			sctx->tex_mmip=img->tex_mmip;
+			sctx->tex_nmip=img->tex_nmip;
+			sctx->tex_flag=img->tex_flag;
+		}else
+		{
+			sctx->tex_cur=NULL;
+			sctx->tex_xshl=0;
+			sctx->tex_yshl=0;
+			sctx->tex_mmip=1;
+			sctx->tex_nmip=1;
+			sctx->tex_flag=0;
+		}
 
 		sctx->tex_img=NULL;
 		sctx->tex_img_bcn=NULL;
@@ -1077,12 +1097,23 @@ int TKRA_BindTexImg2I(TKRA_Context *ctx, TKRA_TexImage *img, int unit)
 
 	if(unit==1)
 	{
-		sctx->tex_cur2=img;
-		sctx->tex_xshl2=img->tex_xshl;
-		sctx->tex_yshl2=img->tex_yshl;
-		sctx->tex_mmip2=img->tex_mmip;
-		sctx->tex_nmip2=img->tex_nmip;
-		sctx->tex_flag2=img->tex_flag;
+		if(img)
+		{
+			sctx->tex_cur2=img;
+			sctx->tex_xshl2=img->tex_xshl;
+			sctx->tex_yshl2=img->tex_yshl;
+			sctx->tex_mmip2=img->tex_mmip;
+			sctx->tex_nmip2=img->tex_nmip;
+			sctx->tex_flag2=img->tex_flag;
+		}else
+		{
+			sctx->tex_cur2=NULL;
+			sctx->tex_xshl2=0;
+			sctx->tex_yshl2=0;
+			sctx->tex_mmip2=1;
+			sctx->tex_nmip2=1;
+			sctx->tex_flag2=0;
+		}
 
 		sctx->tex_img2=NULL;
 		sctx->tex_img_bcn2=NULL;
@@ -1104,5 +1135,64 @@ int TKRA_BindTexImgI(TKRA_Context *ctx, TKRA_TexImage *img)
 int TKRA_SetupForState(TKRA_Context *ctx)
 {
 	TKRA_SetupDrawEdgeForState(ctx);
+	return(0);
+}
+
+int TKRA_CheckBoundTexImgIdx(TKRA_Context *ctx, int unit, int texid)
+{
+	TKRA_SvContext *sctx;
+	TKRA_TexImage *img;
+	
+	sctx=ctx->svctx;
+
+	if(unit==0)
+	{
+		img=sctx->tex_cur;
+		if(!img || (img->tex_id!=texid) || !(ctx->bindsticky))
+		{
+			img=TKRA_GetTexImgI(ctx, texid);
+			TKRA_BindTexImg2I(ctx, img, 0);
+		}
+	}
+
+	if(unit==1)
+	{
+		img=sctx->tex_cur2;
+		if(!img || (img->tex_id!=texid) || !(ctx->bindsticky))
+		{
+			if(texid>0)
+			{
+				img=TKRA_GetTexImgI(ctx, texid);
+				TKRA_BindTexImg2I(ctx, img, 1);
+			}else if(img)
+			{
+				TKRA_BindTexImg2I(ctx, NULL, 1);
+			}
+		}
+	}
+
+	return(0);
+}
+
+int TKRA_CheckBoundTexImg(TKRA_Context *ctx)
+{
+	if(ctx->tex2d_enamask&1)
+	{
+		TKRA_CheckBoundTexImgIdx(ctx, 0, ctx->boundtexid[0]);
+	}else
+	{
+		TKRA_CheckBoundTexImgIdx(ctx, 0, 0);
+	}
+
+	if(ctx->tex2d_enamask&2)
+	{
+		TKRA_CheckBoundTexImgIdx(ctx, 1, ctx->boundtexid[1]);
+	}else
+	{
+		TKRA_CheckBoundTexImgIdx(ctx, 1, 0);
+	}
+
+	ctx->bindsticky=1;
+
 	return(0);
 }

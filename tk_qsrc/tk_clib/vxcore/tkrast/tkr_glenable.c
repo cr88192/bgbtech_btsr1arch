@@ -512,7 +512,9 @@ void tkra_glEnable(int cap)
 		ctx->stateflag1|=TKRA_STFL1_CULLFACE;
 		break;
 	case GL_TEXTURE_2D:
-		ctx->stateflag1|=TKRA_STFL1_TEXTURE2D;
+		if(ctx->tex2d_active==0)
+			ctx->stateflag1|=TKRA_STFL1_TEXTURE2D;
+		ctx->tex2d_enamask|=1ULL<<ctx->tex2d_active;
 		break;
 	case GL_SCISSOR_TEST:
 		break;
@@ -568,7 +570,9 @@ void tkra_glDisable(int cap)
 		ctx->stateflag1&=~TKRA_STFL1_CULLFACE;
 		break;
 	case GL_TEXTURE_2D:
-		ctx->stateflag1&=~TKRA_STFL1_TEXTURE2D;
+		if(ctx->tex2d_active==0)
+			ctx->stateflag1&=~TKRA_STFL1_TEXTURE2D;
+		ctx->tex2d_enamask&=~(1ULL<<ctx->tex2d_active);
 		break;
 	case GL_SCISSOR_TEST:
 		break;

@@ -76,8 +76,8 @@ void TK_MemcpyHuge(tk_hugeptr dst, tk_hugeptr src, size_t len)
 tk_hugeptr TK_MakeHugePtr(u64 lo, u64 hi)
 {
 	tk_hugeptr t;
-	t.lo=lo;
-	t.hi=hi;
+//	t.lo=lo;
+//	t.hi=hi;
 	return(t);
 }
 

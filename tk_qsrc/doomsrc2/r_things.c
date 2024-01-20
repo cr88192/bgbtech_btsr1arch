@@ -371,7 +371,7 @@ vissprite_t	overflowsprite;
 vissprite_t* R_NewVisSprite (void)
 {
 	if (vissprite_p == &vissprites[MAXVISSPRITES])
-	return &overflowsprite;
+		return &overflowsprite;
 	
 	vissprite_p++;
 	return vissprite_p-1;
@@ -662,6 +662,8 @@ void R_ProjectSprite (mobj_t* thing)
 	angle_t		ang;
 	fixed_t		iscale;
 
+//	puts("R_ProjectSprite: A0\n");
+
 #if 0
 //	if((thing->spawnpoint.type>=0x9300) &&
 //		(thing->spawnpoint.type<=0x9303))
@@ -696,7 +698,9 @@ void R_ProjectSprite (mobj_t* thing)
 	// too far off the side?
 	if (abs(tx)>(tz<<2))
 		return;
-	
+
+//	puts("R_ProjectSprite: A1\n");
+
 	// decide which patch to use for sprite relative to player
 #ifdef RANGECHECK
 	if ((unsigned)thing->sprite >= numsprites)
@@ -711,6 +715,8 @@ void R_ProjectSprite (mobj_t* thing)
 
 	if(sprdef->numframes<=0)
 		return;
+
+//	puts("R_ProjectSprite: A2\n");
 
 #ifdef RANGECHECK
 	if ( (thing->frame&FF_FRAMEMASK) >= sprdef->numframes )
@@ -745,7 +751,9 @@ void R_ProjectSprite (mobj_t* thing)
 	// off the right side?
 	if (x1 > viewwidth)
 		return;
-	
+
+//	puts("R_ProjectSprite: A3\n");
+
 	tx +=  spritewidth[lump];
 	x2 = ((centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS) - 1;
 
@@ -753,6 +761,8 @@ void R_ProjectSprite (mobj_t* thing)
 	if (x2 < 0)
 		return;
 	
+//	puts("R_ProjectSprite: A4\n");
+
 	// store information in a vissprite
 	vis = R_NewVisSprite ();
 	vis->mobjflags = thing->flags;
@@ -1069,11 +1079,12 @@ vissprite_t	vsprsortedhead;
 
 void R_SortVisSprites (void)
 {
-	int			i;
+	int			i, j;
 	int			count;
 	vissprite_t*	ds;
 	vissprite_t*	best;
-	vissprite_t		unsorted;
+	vissprite_t*	spr;
+	static vissprite_t		unsorted;
 	fixed_t		bestscale;
 
 	best = NULL;
@@ -1082,14 +1093,59 @@ void R_SortVisSprites (void)
 	unsorted.next = unsorted.prev = &unsorted;
 
 	if (!count)
+	{
+//		puts("R_SortVisSprites: No Sprites\n");
 		return;
-		
+	}
+
+#ifdef __riscv
+//		__debugbreak();
+#endif
+
 	for (ds=vissprites ; ds<vissprite_p ; ds++)
 	{
 		ds->next = ds+1;
-		ds->prev = ds-1;
+		if(ds!=vissprites)
+			ds->prev = ds-1;
 	}
-	
+
+#if 0
+	vissprites[0].prev = &vsprsortedhead;
+	vsprsortedhead.next = &vissprites[0];
+	(vissprite_p-1)->next = &vsprsortedhead;
+	vsprsortedhead.prev = vissprite_p-1;
+
+	for (i=0 ; i<count ; i++)
+	{
+		for (spr = vsprsortedhead.next ;
+			 spr != &vsprsortedhead ;
+			 spr=spr->next)
+		{
+			ds=spr->next;
+			if(ds==&vsprsortedhead)
+				break;
+
+//			j=ds->scale-spr->scale;
+			if(ds->scale<spr->scale)
+//			if(j<0)
+			{
+				spr->prev->next=ds;
+				ds->next->prev=spr;
+				ds->prev=spr->prev;
+				spr->next=ds->next;
+				spr->prev=ds;
+				ds->next=spr;
+				
+				spr=ds;
+			}
+#ifdef __riscv
+			__debugbreak();
+#endif
+		}
+	}
+#endif
+
+#if 1
 	vissprites[0].prev = &unsorted;
 	unsorted.next = &vissprites[0];
 	(vissprite_p-1)->next = &unsorted;
@@ -1101,6 +1157,7 @@ void R_SortVisSprites (void)
 	for (i=0 ; i<count ; i++)
 	{
 		bestscale = MAXINT;
+//		bestscale = 1999999;
 		for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next)
 		{
 			if (ds->scale < bestscale)
@@ -1116,6 +1173,7 @@ void R_SortVisSprites (void)
 		vsprsortedhead.prev->next = best;
 		vsprsortedhead.prev = best;
 	}
+#endif
 }
 
 
@@ -1134,7 +1192,8 @@ void R_DrawSprite (vissprite_t* spr)
 	fixed_t		scale;
 	fixed_t		lowscale;
 	int			silhouette;
-		
+	
+//	printf("R_DrawSprite A0 %p\n", spr);
 	
 	x1=spr->x1;
 	x2=spr->x2;
@@ -1146,6 +1205,8 @@ void R_DrawSprite (vissprite_t* spr)
 		return;
 	if(x2>=SCREENWIDTH)
 		x2=SCREENWIDTH-1;
+	
+//	printf("R_DrawSprite A1 %p\n", spr);
 	
 //	for (x = spr->x1 ; x<=spr->x2 ; x++)
 	for (x = x1 ; x<=x2 ; x++)
@@ -1250,6 +1311,13 @@ void R_DrawSprite (vissprite_t* spr)
 		
 	mfloorclip = clipbot;
 	mceilingclip = cliptop;
+
+#if 0
+	// clip to screen bounds
+	mfloorclip = screenheightarray;
+	mceilingclip = negonearray;
+#endif
+
 //	R_DrawVisSprite (spr, spr->x1, spr->x2);
 	R_DrawVisSprite (spr, x1, x2);
 }
@@ -1269,6 +1337,14 @@ void R_DrawMasked (void)
 
 	if (vissprite_p > vissprites)
 	{
+#if 0
+		for (spr=vissprites ; spr<vissprite_p ; spr++)
+		{
+			R_DrawSprite (spr);
+		}
+#endif
+
+#if 1
 		// draw all vissprites back to front
 		for (spr = vsprsortedhead.next ;
 			 spr != &vsprsortedhead ;
@@ -1277,6 +1353,7 @@ void R_DrawMasked (void)
 			
 			R_DrawSprite (spr);
 		}
+#endif
 	}
 	
 	// render any remaining masked mid textures

@@ -159,6 +159,11 @@ RECT		window_rect;
 
 // direct draw software compatability stuff
 
+double __fpu_frcp_sf(double x)
+{
+	return(1.0/x);
+}
+
 void VID_HandlePause (qboolean pause)
 {
 }

@@ -327,9 +327,11 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 
 		if(rn_dfl==BJX2_REG_ZZR)
 		{
+			op->rn=rn_dfl;
 			op->imm=imm20j>>1;
 			op->nmid=BJX2_NMID_BRA;
-			op->fmid=BJX2_FMID_PCDISP;
+//			op->nmid=BJX2_NMID_JAL;
+			op->fmid=BJX2_FMID_REGPCDISP;
 			op->Run=BJX2_Op_BRA_Pc0Disp;
 			break;
 		}
@@ -337,6 +339,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 		op->rn=rn_dfl;
 		op->imm=imm20j>>1;
 		op->nmid=BJX2_NMID_BSR;
+//		op->nmid=BJX2_NMID_JAL;
 		op->fmid=BJX2_FMID_REGPCDISP;
 		op->Run=BJX2_Op_BSR_RegPc0Disp;
 		break;
@@ -358,6 +361,17 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_SHLDQ;
 			op->fmid=BJX2_FMID_REGIMMREG;
 			op->Run=BJX2_Op_SHLDQ_RegImmReg;
+			break;
+
+		case 2:
+			op->nmid=BJX2_NMID_SLT;
+			op->fmid=BJX2_FMID_REGIMMREG;
+			op->Run=BJX2_Op_SLTI_RegImmReg;
+			break;
+		case 3:
+			op->nmid=BJX2_NMID_SLTU;
+			op->fmid=BJX2_FMID_REGIMMREG;
+			op->Run=BJX2_Op_SLTIU_RegImmReg;
 			break;
 
 		case 4:
@@ -435,6 +449,39 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 					break;
 				}
 				break;
+
+			case 2:
+				switch((opw>>25)&127)
+				{
+				case 0:
+					op->nmid=BJX2_NMID_SLT;
+					op->fmid=BJX2_FMID_REGREGREG;
+					op->Run=BJX2_Op_SLT_RegRegReg;
+					break;
+				case 1:
+					op->nmid=BJX2_NMID_MULSHQ;
+					op->fmid=BJX2_FMID_REGREGREG;
+					op->Run=BJX2_Op_MULSHQ_RegRegReg;
+					break;
+				}
+				break;
+
+			case 3:
+				switch((opw>>25)&127)
+				{
+				case 0:
+					op->nmid=BJX2_NMID_SLTU;
+					op->fmid=BJX2_FMID_REGREGREG;
+					op->Run=BJX2_Op_SLTU_RegRegReg;
+					break;
+				case 1:
+					op->nmid=BJX2_NMID_MULUHQ;
+					op->fmid=BJX2_FMID_REGREGREG;
+					op->Run=BJX2_Op_MULUHQ_RegRegReg;
+					break;
+				}
+				break;
+
 
 			case 4:
 				switch((opw>>25)&127)
@@ -974,9 +1021,9 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			switch((opw>>12)&7)
 			{
 			case 0:
-				op->nmid=BJX2_NMID_MULSL;
+				op->nmid=BJX2_NMID_MULS;
 				op->fmid=BJX2_FMID_REGREGREG;
-				op->Run=BJX2_Op_MULSL_RegRegReg;
+				op->Run=BJX2_Op_MULS_RegRegReg;
 				break;
 
 			case 4:

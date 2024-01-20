@@ -2,6 +2,8 @@
 Simplistic BASIC variant.
  */
 
+#ifdef __BGBCC__
+
 typedef struct TKSH_BasicCtx_s TKSH_BasicCtx;
 
 struct TKSH_BasicCtx_s {
@@ -907,3 +909,6 @@ int TKSH_BasRunBasicBuffer(char *buf, int szbuf)
 	TKSH_BasDestroyContext(ctx);
 	return(i);
 }
+
+#endif
+

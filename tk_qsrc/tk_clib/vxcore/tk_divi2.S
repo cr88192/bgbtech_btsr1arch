@@ -18,6 +18,8 @@ __sdivsi3:
 .else
 #endif
 
+.ifnarch has_qmul
+
 .ifarch bjx2_wex
 #include "tk_divi2_wx.S"
 .else
@@ -29,3 +31,5 @@ __sdivsi3:
 #else
 #include "tk_divi2_sc.S"
 #endif
+
+.endif

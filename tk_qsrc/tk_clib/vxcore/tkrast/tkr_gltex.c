@@ -244,6 +244,7 @@ void tkra_glTexImage2D(
 	ctx=TKRA_GetCurrentContext();
 //	img=ctx->tex_cur;
 	img=TKRA_GetTexImg(ctx, ctx->boundtexid[ctx->tex2d_active]);
+	TKRA_BindTexImg(ctx, img);
 
 //	TKRA_UpdateTexImg(ctx, img, txbuf, width, height, level);
 	TKRA_UpdateTexImg(ctx, img, ixbuf, ixw, ixh, level, flag);
@@ -272,6 +273,7 @@ void tkra_glTexSubImage2D(
 	ctx=TKRA_GetCurrentContext();
 //	img=ctx->tex_cur;
 	img=TKRA_GetTexImg(ctx, ctx->boundtexid[ctx->tex2d_active]);
+//	TKRA_BindTexImg(ctx, img);
 
 	if((xoffset==0) && (yoffset==0) &&
 		(width==(1<<img->tex_xshl)) &&
@@ -308,6 +310,7 @@ void tkra_glCompressedTexImage2D(int target,
 	ctx=TKRA_GetCurrentContext();
 //	img=ctx->tex_cur;
 	img=TKRA_GetTexImg(ctx, ctx->boundtexid[ctx->tex2d_active]);
+	TKRA_BindTexImg(ctx, img);
 
 	if(internalformat==TKRA_GL_CMPR_RGB_S3TC_DXT1)
 	{
@@ -359,10 +362,11 @@ void tkra_glBindTexture(int target, int texture)
 	if(ctx->boundtexid[ctx->tex2d_active]==texture)
 		return;
 
-	img=TKRA_GetTexImg(ctx, texture);
-	TKRA_BindTexImg(ctx, img);
+//	img=TKRA_GetTexImg(ctx, texture);
+//	TKRA_BindTexImg(ctx, img);
 	
 	ctx->boundtexid[ctx->tex2d_active]=texture;
+//	ctx->bindsticky=0;
 
 //	img=ctx->tex_cur;
 //	TKRA_UpdateTexImg(ctx, img, txbuf, width, height, level);
@@ -535,13 +539,15 @@ void tkra_glDeleteTextures(int cnt, int *list)
 		px=0x7FFF;
 //		TKRA_UpdateTexImg(ctx, img, NULL, 0, 0, 0, 0);
 		TKRA_UpdateTexImg(ctx, img, &px, 1, 1, 0, 0);
-		
+
+#if 0
 		img1=TKRA_GetTexImg(ctx, ix);
 //		if(img==ctx->tex_cur)
 		if(img==img1)
 		{
 			TKRA_BindTexImg(ctx, img);
 		}
+#endif
 	}
 
 //	img=ctx->tex_cur;

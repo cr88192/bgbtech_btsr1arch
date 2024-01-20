@@ -14,8 +14,8 @@ AR=$(TOOLPATH)$(TARGETPFX)ar
 AS=$(TOOLPATH)$(TARGETPFX)as
 
 # COPTS= -g -c -O2 -Iinclude $(TK_CFL)
-COPTS= -c -Iinclude -Ipdpc201 -Itk_core $(TK_CFL) -O3 \
-	-fwrapv -fno-strict-aliasing
+COPTS= -c -Iinclude -Ipdpc201 -Itk_core $(TK_CFL) -Os \
+	-fwrapv -fno-strict-aliasing -fno-inline
 
 SRCS_CLIB = \
 	pdpc201/stdio.c \
@@ -144,7 +144,8 @@ libs2: FORCE
 #	cp pdpc201/crt0.o	$(BUILD)
 
 # libs: libs2 libvxcore_rv64.a libclib_rv64.a
-libs: libs2 libclib_rv64.a libcdll_rv64.a libtkgdi_rv64.a
+libs: libs2 libclib_rv64.a libcdll_rv64.a libtkgdi_rv64.a \
+	libvxcore_rv64.a
 #	libtkgl_rv64.a
 # libs: libs2 libcdll_rv64.a
 
@@ -157,7 +158,7 @@ crt0_rv64.o:  e_testkern_rv64.S
 
 libvxcore_rv64.a: $(SRCS_CLIB) crt0_rv64.o
 	$(CC) -o vxcore_rv64.o vxcore_multi.c $(COPTS)
-	$(AR) -rc libvxcore_rv64.a vxcore_rv64.o
+	$(AR) -rc libvxcore_rv64.a vxcore_rv64.o crt0_rv64.o
 
 libclib_rv64.a: $(SRCS_CLIB) crt0_rv64.o
 	$(CC) -o clib_rv64.o libc_multi.c $(COPTS)

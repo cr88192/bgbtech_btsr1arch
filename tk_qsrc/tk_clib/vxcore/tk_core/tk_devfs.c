@@ -27,7 +27,7 @@ int TK_DevFS_AddDevice(TK_DEVFSDEV *dev)
 
 TK_MOUNT *tk_devfs_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts);
-TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, char *name, char *mode);
+TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
 int tk_devfs_unlink(TK_MOUNT *mnt, char *name);
 int tk_devfs_rename(TK_MOUNT *mnt, char *oldfn, char *newfn);
 
@@ -108,7 +108,7 @@ TK_MOUNT *tk_devfs_mount(char *devfn, char *mntfn,
 {
 }
 
-TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, char *name, char *mode)
+TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 {
 	TK_DEVFSDEV *cur;
 	char *s1;
@@ -134,7 +134,7 @@ TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, char *name, char *mode)
 		}
 
 		if(cur->vt && cur->vt->fopen)
-			return(cur->vt->fopen(cur, name, mode));
+			return(cur->vt->fopen(cur, usri, name, mode));
 
 		cur=cur->next;
 	}

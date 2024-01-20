@@ -46,6 +46,9 @@ u128 __lvax_conv_fromi32(s32 val);
 u128 __lvax_conv_fromi64(s64 val);
 
 __asm {
+
+.ifarch seen_variant
+
 __lvax_fixnump:
 	SHLD.Q	R4, -60, R7
 	CMPEQ	4, R7
@@ -101,6 +104,9 @@ __lvax_conv_fromi64:
 	SHAD.Q	R4, -63, R2
 	MOVTT	R2, 8, R2
 	RTS
+
+.endif
+
 };
 
 #else

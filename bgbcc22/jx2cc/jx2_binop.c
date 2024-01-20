@@ -3111,7 +3111,8 @@ int BGBCC_JX2C_EmitReturnVoid(
 	BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 	
 //	if((sctx->tr_trnum+1)==ctx->cur_func->n_vtr)
-	if(BGBCC_JX2C_BuildFunctionLastTraceP(ctx, sctx))
+	if(BGBCC_JX2C_BuildFunctionLastTraceP(ctx, sctx) &&
+			!sctx->lbl_ret_zero)
 		return(1);
 	
 	i=BGBCC_JX2_EmitOpAutoLabel(sctx,
@@ -3290,8 +3291,11 @@ int BGBCC_JX2C_EmitReturnVReg(
 		BGBCC_DBGBREAK
 	}
 
-	if(BGBCC_JX2C_BuildFunctionLastTraceP(ctx, sctx))
+	if(BGBCC_JX2C_BuildFunctionLastTraceP(ctx, sctx) &&
+			!sctx->lbl_ret_zero)
+	{
 		return(1);
+	}
 
 	i=BGBCC_JX2_EmitOpAutoLabel(sctx,
 		BGBCC_SH_NMID_BRAN, sctx->lbl_ret);

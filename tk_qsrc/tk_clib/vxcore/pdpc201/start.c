@@ -94,6 +94,12 @@ void __cytpe_init(void);
 short *__tolow;
 short *__toup;
 
+#ifdef __riscv
+extern char __bss_start;
+// extern char __bss_end;
+extern char __BSS_END__;
+#endif
+
 __PDPCLIB_API__ int CTYP __start()
 {
 	FILE *t_stdin, *t_stdout, *t_stderr;
@@ -104,11 +110,25 @@ __PDPCLIB_API__ int CTYP __start()
 	char *p;
 	char **penv;
 
+#ifdef __riscv
+	memset(&__bss_start, 0, &__BSS_END__-&__bss_start);
+#endif
+
 	__start_first();
 
 //	__debugbreak();
 
-//	tk_puts("TK: Start A0\n");
+#ifdef __riscv
+	tk_putc('T');
+	tk_putc('e');
+	tk_putc('s');
+	tk_putc('t');
+	tk_putc('\n');
+	
+//	__debugbreak();
+
+	tk_puts("TK: Start A0\n");
+#endif
 
 	__start_early();
 

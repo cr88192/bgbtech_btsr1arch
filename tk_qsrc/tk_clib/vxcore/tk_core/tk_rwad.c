@@ -160,7 +160,7 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 //	int tg, lr, ll, ld;
 	int i;
 	
-	__hint_use_egpr();
+//	__hint_use_egpr();
 	
 	tg=0; lr=0; ll=0; ld=0;
 	

@@ -332,6 +332,64 @@ int VID_BlendFlash(int pix, int flash)
 	return(pix1);
 }
 
+#if 1
+u64 VID_BlendEven4x16(u64 pixa, u64 pixb)
+{
+	u64 pix;
+//	pix=((pixa&0xFBDEFBDEFBDEFBDEULL)>>1)+
+//		((pixb&0xFBDEFBDEFBDEFBDEULL)>>1);
+	pix=((pixa&0x7BDE7BDE7BDE7BDEULL)>>1)+
+		((pixb&0x7BDE7BDE7BDE7BDEULL)>>1);
+	return(pix);
+}
+
+u64 VID_BlendFlash4x(u64 pix, int flash)
+{
+	u64 pix1, fpix;
+	
+	fpix=(u16)flash;
+	fpix|=(fpix<<16);
+	fpix|=(fpix<<32);
+	
+	switch((flash>>16)&7)
+	{
+	case 0:
+		pix1=pix;
+		break;
+	case 1:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		break;
+	case 2:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		break;
+	case 3:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		pix1=VID_BlendEven4x16(pix, pix1);
+		break;
+	case 4:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		break;
+	case 5:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		break;
+	case 6:
+		pix1=VID_BlendEven4x16(pix, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		pix1=VID_BlendEven4x16(pix1, fpix);
+		break;
+	case 7:
+		pix1=fpix;
+		break;
+	}
+	return(pix1);
+}
+#endif
+
 void I_FinishUpdate (void)
 {
 	dt_scrpix *cs;

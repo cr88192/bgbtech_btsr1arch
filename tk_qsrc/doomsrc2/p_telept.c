@@ -40,6 +40,26 @@ rcsid[] = "$Id: p_telept.c,v 1.3 1997/01/28 22:08:29 b1 Exp $";
 // State.
 #include "r_state.h"
 
+int EV_CheckThinkerIsMObjP(thinker_t*	thinker)
+{
+	long lv0, lv1;
+	if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+	{
+		lv0=(long)(thinker->function.acp1);
+		lv1=(long)((actionf_p1)P_MobjThinker);
+		lv0&=0x0000FFFFFFFFFFFEULL;
+		lv1&=0x0000FFFFFFFFFFFEULL;
+		if(lv0==lv1)
+		{
+			__debugbreak();
+			return(1);
+		}
+
+		return(0);
+	}
+	return(1);
+}
+
 mobj_t	*EV_FindMObjForTid(int tid)
 {
 	thinker_t*	thinker;
@@ -50,7 +70,8 @@ mobj_t	*EV_FindMObjForTid(int tid)
 	 thinker != &thinkercap;
 	 thinker = thinker->next)
 	{
-		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+//		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+		if (!EV_CheckThinkerIsMObjP(thinker))
 			continue;	
 
 		m = (mobj_t *)thinker;
@@ -72,7 +93,8 @@ mobj_t	*EV_FindMObjForTid2(void **rptr, int tid)
 	 thinker != &thinkercap;
 	 thinker = thinker->next)
 	{
-		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+//		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+		if (!EV_CheckThinkerIsMObjP(thinker))
 			continue;	
 
 		m = (mobj_t *)thinker;
@@ -98,7 +120,8 @@ int EV_CountMObjForTid(int type, int tid)
 	 thinker != &thinkercap;
 	 thinker = thinker->next)
 	{
-		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+//		if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+		if (!EV_CheckThinkerIsMObjP(thinker))
 			continue;	
 
 		m = (mobj_t *)thinker;
@@ -154,7 +177,8 @@ EV_Teleport
 		 thinker = thinker->next)
 		{
 			// not a mobj
-			if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+//			if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+			if (!EV_CheckThinkerIsMObjP(thinker))
 				continue;	
 
 			m = (mobj_t *)thinker;
@@ -218,7 +242,8 @@ EV_Teleport
 			 thinker = thinker->next)
 			{
 			// not a mobj
-			if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+//			if (thinker->function.acp1 != (actionf_p1)P_MobjThinker)
+			if (!EV_CheckThinkerIsMObjP(thinker))
 				continue;	
 
 			m = (mobj_t *)thinker;

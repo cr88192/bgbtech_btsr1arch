@@ -573,6 +573,9 @@ Base, Q1..Q3:
 
 #define CCXL_LBL_ARCHBASE			0x7F0000	//arch-specific special symbols
 
+#define CCXL_LBL_RETURN_ZERO		0x7FFFFE	//Pseudo: Function Return
+#define CCXL_LBL_RETURN				0x7FFFFF	//Pseudo: Function Return
+
 #define CCXL_FID_BASEMASK			0x00FFFFFF	//FieldID, Base Index
 #define CCXL_FID_TAGMASK			0xFF000000	//FieldID, Tag
 

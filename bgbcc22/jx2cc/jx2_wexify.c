@@ -984,7 +984,7 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 	}
 #endif
 
-#if 0
+#if 1
 	/* Only check aliasing for F1 block for now. */
 //	if((opw1&0xEB00)!=0xE100)
 	if(!sc1)
@@ -993,9 +993,9 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 		if(sc2)
 		{
 			/* Assume SP or GBR can't alias with indexed access. */
-			if((rs2==15) && (rs1!=15))
+			if((rs2==15) && (rs1!=15) && !(sctx->state_alias&1))
 				return(1);
-			if((rs2==1) && (rs1!=1))
+			if((rs2== 1) && (rs1!= 1) && !(sctx->state_alias&2))
 				return(1);
 		}
 
@@ -1009,9 +1009,9 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 		if(sc1)
 		{
 			/* Assume SP or GBR can't alias with indexed access. */
-			if((rs1==15) && (rs2!=15))
+			if((rs1==15) && (rs2!=15) && !(sctx->state_alias&1))
 				return(1);
-			if((rs1==1) && (rs2!=1))
+			if((rs1== 1) && (rs2!= 1) && !(sctx->state_alias&2))
 				return(1);
 		}
 

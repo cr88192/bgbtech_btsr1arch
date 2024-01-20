@@ -230,6 +230,9 @@ int tk_shell_chksane_var()
 
 u64 TK_GetRandom();
 
+long rfib(long x)
+  { return((x<2)?1:(rfib(x-1)+rfib(x-2))); }
+
 int tk_shell_chksane_int128()
 {
 	__uint128 v0, v1, v2, v3;
@@ -294,6 +297,8 @@ int tk_shell_chksane_int128()
 	sv2=sv0*sv0;
 	if(sv2!=sv1)
 		__debugbreak();
+	
+	rfib(1);
 	
 //	bs2_chksane3();
 	

@@ -65,7 +65,7 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 	void *addr, size_t len, int prot, int flags,
 	int fd, off_t offs)
 {
-	TKPE_TaskInfo *task;
+//	TKPE_TaskInfo *task;
 	TKPE_TaskInfoKern *krnl;
 	byte *ptr;
 	int ix;
@@ -76,7 +76,7 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 	 */
 	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
 
-	task=TK_GetCurrentTask();
+//	task=TK_GetCurrentTask();
 	krnl=TK_GetCurrentTaskInfoKern();
 	
 	if(flags&TKMM_MAP_ANONYMOUS)
@@ -88,7 +88,7 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 	
 //		ptr=TKMM_PageAlloc(len);
 //		ptr=TKMM_PageAllocUsc(len);
-		ptr=TK_VMem_VaVirtualAlloc(addr, len, prot, flags);
+		ptr=(byte *)TK_VMem_VaVirtualAlloc((u64)addr, len, prot, flags);
 
 		TK_VMem_MProtectPages((u64)ptr, len, prot);
 	
@@ -101,7 +101,7 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 //		tkmm_mmap_prot[ix]=prot;
 //		tkmm_mmap_flag[ix]=flags;
 
-		krnl->mmap_ptr[ix]=ptr;
+		krnl->mmap_ptr[ix]=(tk_kptr)ptr;
 		krnl->mmap_len[ix]=len;
 		krnl->mmap_prot[ix]=prot;
 		krnl->mmap_flag[ix]=flags;
@@ -154,9 +154,9 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 //			tkmm_mmap_bufs[j]=ptre;
 //			tkmm_mmap_bufe[j]=bufe;
 
-			krnl->mmap_ptr[i]=bufs;
+			krnl->mmap_ptr[i]=(tk_kptr)bufs;
 			krnl->mmap_len[i]=ptrs-bufs;
-			krnl->mmap_ptr[j]=ptre;
+			krnl->mmap_ptr[j]=(tk_kptr)ptre;
 			krnl->mmap_len[j]=bufe-ptre;
 
 			return(1);
@@ -189,7 +189,7 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 			TK_MMap_VaPageFree(bufs, len1);
 //			tkmm_mmap_bufs[i]=ptre;
 //			tkmm_mmap_bufe[i]=bufe;
-			krnl->mmap_ptr[i]=ptre;
+			krnl->mmap_ptr[i]=(tk_kptr)ptre;
 			krnl->mmap_len[i]=bufe-ptre;
 		}
 
@@ -200,7 +200,7 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 			TK_MMap_VaPageFree(ptrs, len1);
 //			tkmm_mmap_bufs[i]=bufs;
 //			tkmm_mmap_bufe[i]=ptrs;
-			krnl->mmap_ptr[i]=bufs;
+			krnl->mmap_ptr[i]=(tk_kptr)bufs;
 			krnl->mmap_len[i]=ptrs-bufs;
 		}
 	}
@@ -303,20 +303,20 @@ void *TKMM_MmapL(
 void *TKMM_MunmapL(
 	void *addr, size_t len)
 {
-	return(tk_munmap2(NULL, addr, len));
+	return((void *)tk_munmap2(NULL, addr, len));
 }
 
 void *TKMM_MProtectL(
 	void *addr, size_t len, int prot)
 {
 //	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
-	return(tk_mprotect2(NULL, addr, len, prot));
+	return((void *)tk_mprotect2(NULL, addr, len, prot));
 }
 
 void *TKMM_MSyncL(
 	void *addr, size_t len, int flag)
 {
-	return(tk_msync2(NULL, addr, len, flag));
+	return((void *)tk_msync2(NULL, addr, len, flag));
 }
 #endif
 

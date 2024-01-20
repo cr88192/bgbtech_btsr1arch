@@ -217,6 +217,8 @@ byte emit_riscv;	//emit RISC-V instructions.
 byte test_lclalign;	//local alignment-sensitivity test
 byte use_padcross;	//use padding across cache lines
 
+byte state_alias;
+
 byte optmode;		//optimization mode
 byte pred_tfmd;
 byte verbose;		//verbosity level
@@ -549,6 +551,7 @@ int frm_offs_lcl;		//frame offset of local vars
 int frm_offs_tmp;		//frame offset of temporaries
 int frm_offs_fix;		//fixed-size automatic
 int lbl_ret;			//label ID for function exit
+int lbl_ret_zero;		//label ID for function exit (return zero)
 int lbl_got;			//label ID for got
 int frm_offs_retstr;	//offset of return struct
 int frm_offs_save;		//offset of register-save area

@@ -96,9 +96,14 @@ X(R_DrawColumn):
 
 #if 1
 .doubleloop:
+.ifarch bjx2_wex3
+	SHLD	R20, #-25, R5	|	MOV.W	R18, (R23)
+	ADD		R21, R20		|	MOV.W	R19, (R23, 640)
+.else
 	SHLD	R20, #-25, R5	| ADD		R21, R20
 								MOV.W	R18, (R23)
 								MOV.W	R19, (R23, 640)
+.endif
 	SHLD	R20, #-25, R6	| MOVU.B	(R22, R5), R18
 	ADD		R21, R20		| MOVU.B	(R22, R6), R19
 	ADD		#1280, R23		| MOVU.W	(R4, R18), R18
@@ -262,10 +267,15 @@ X(R_DrawSpan):
 	OR		R2, R5				|	OR		R0, R6
 	SHLD	R5, #6, R5			|	SHLD	R6, #6, R6
 	OR		R3, R5				|	OR		R1, R6
+.ifarch bjx2_wex3
+	MOV		#4095, R3			|	MOV.W	R18, (R23)
+	AND		R3, R5				|	MOV.W	R19, (R23, 2)	
+.else
 	MOV		#4095, R3
 	MOV.W	R18, (R23)
 	AND		R3, R5
 	MOV.W	R19, (R23, 2)	
+.endif
 	AND		R3, R6				|	MOVU.B	(R22, R5), R18	
 	ADD		R21, R20			|	MOVU.B	(R22, R6), R19	
 

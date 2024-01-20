@@ -34,6 +34,8 @@ extern TKPE_TaskInfo *tk_task_syscall;
 extern u64	tk_vmem_pageglobal;
 #endif
 
+TKPE_TaskInfo *TK_GetSyscallUserTask();
+
 TK_APIEXPORT
 int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
 
@@ -1171,7 +1173,7 @@ int TKSH_Cmds_TestGfx(char **args)
 	u16 mandril_pal16[256];
 	byte mandril_pal8[256];
 	u16 mandril_pal4[256];
-	byte mandril_pal8[256];
+//	byte mandril_pal8[256];
 	byte mandril_pal2[256];
 	byte mandril_pal1[256];
 	u16 *mandril_pal;
@@ -1896,11 +1898,13 @@ int TKSH_ExecCmdBuf(char *cmd, char *ext)
 	
 	if(ext)
 	{
+#ifdef __BGBCC__
 		if(!strcmp(ext, "bas"))
 		{
 			TKSH_BasRunBasicBuffer(cmd, strlen(cmd));
 			return(0);
 		}
+#endif
 	}
 	
 	cs=cmd;
@@ -2355,7 +2359,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 		}
 	#endif
 
-		
+#ifdef __BGBCC__
 		if(plf_dnum>0)
 		{
 			for(i=plf_dnum-1; i>=0; i--)
@@ -2388,6 +2392,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 				tk_fread(tb, 1, 1024, fd);
 			}
 		}
+#endif
 		
 		sig_is_pe=0;
 		if((tb[0]=='M') && (tb[1]=='Z'))
@@ -2504,21 +2509,44 @@ int TKSH_TryLoadB(char *img, char **args0)
 			task->envctx=(tk_kptr)env1;
 //			task->SysCall=tk_isr_syscall;
 
+#ifdef __BGBCC__
 //			sysc=tk_isr_syscall;
 			sysc=tk_syscall_utxt;
+#endif
 
 			pb_sysc=(tk_kptr)sysc;
-			pb_sysc&=0x0000FFFFFFFFFFFEULL;
-			pb_sysc|=0x0000000000000001ULL;
+//			pb_sysc&=0x0000FFFFFFFFFFFEULL;
+//			pb_sysc|=0x0000000000000001ULL;
 			sysc=(void *)pb_sysc;
+//			__debugbreak();
+
+#ifdef __BJX2__
+			if(!(pb_sysc&1))
+			{
+//				__debugbreak();
+
+				__ifarch(bjx2_xg2)
+				{
+					pb_sysc&=0x0000FFFFFFFFFFFEULL;
+					pb_sysc|=0x0080000000000001ULL;
+				}else
+				{
+					pb_sysc&=0x0000FFFFFFFFFFFEULL;
+					pb_sysc|=0x0000000000000001ULL;
+				}
+				sysc=(void *)pb_sysc;
+			}
+#endif
 
 			pb_boot=(u64)bootptr;
 
+#ifdef __BGBCC__
 //			if((bootptr>>50)&1)
 //				{ sysc=tk_syscall_rv_utxt; }
 
 			if((pb_boot>>50)&1)
 				{ sysc=tk_syscall_rv_utxt; }
+#endif
 
 			task->SysCall=(tk_kptr)sysc;
 

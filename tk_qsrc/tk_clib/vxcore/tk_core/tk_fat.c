@@ -3333,7 +3333,7 @@ u32 TKFAT_DosDateToEpoch(int cdate, int ctime)
 	/*
 	Seconds per day: 86400
 	Days in common year: 365, 31536000 seconds
-	Days in leap year: 366, 31622400‬ seconds
+	Days in leap year: 366, 31622400? seconds
 	Seconds in 4 year period: 126230400
 	
 	Length of Months (Seconds/Days):
@@ -3352,13 +3352,13 @@ u32 TKFAT_DosDateToEpoch(int cdate, int ctime)
 	*/
 	
 	static const u32 mstab_cy[12] = {
-		       0,	 2678400,	 5097600‬,	 7776000‬,‭  /* Jan/Feb/Mar/Apr */
-		10368000‬,	13046400‬,	15638400‬,	18316800‬,  /* May/Jun/Jul/Aug */
-		20995200‬,	23587200‬,	26265600‬,	28857600‬}; /* Sep/Oct/Nov/Dec */
+		       0,	 2678400,	 5097600,	 7776000,  /* Jan/Feb/Mar/Apr */
+		10368000,	13046400,	15638400,	18316800,  /* May/Jun/Jul/Aug */
+		20995200,	23587200,	26265600,	28857600}; /* Sep/Oct/Nov/Dec */
 	static const u32 mstab_ly[12] = {
-		       0,	 2678400,	 5184000,	 7862400‬,‭  /* Jan/Feb/Mar/Apr */
-		10454400‬,	13132800‬,	15724800‬,	18403200‬,  /* May/Jun/Jul/Aug */
-		21081600‬,	23673600‬,	26352000‬,	28944000‬}; /* Sep/Oct/Nov/Dec */
+		       0,	 2678400,	 5184000,	 7862400,  /* Jan/Feb/Mar/Apr */
+		10454400,	13132800,	15724800,	18403200,  /* May/Jun/Jul/Aug */
+		21081600,	23673600,	26352000,	28944000}; /* Sep/Oct/Nov/Dec */
 
 	u16 yr, y4, y1;
 	byte mo, dy, hr, mm, sc;

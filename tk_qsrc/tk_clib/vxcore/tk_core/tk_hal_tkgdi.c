@@ -21,9 +21,9 @@ byte *tkgdi_vid_screendirty;		//screen dirtry-mask buffer
 static u64 tkgdi_ptrmangle_key=0;
 
 byte tk_img_d9to8tab[512];
-byte tk_img_d15to8tab0[32768];
-byte tk_img_d15to8tab1[32768];
-u16 tk_img_d8to15tab[256];
+// byte tk_img_d15to8tab0[32768];
+// byte tk_img_d15to8tab1[32768];
+// u16 tk_img_d8to15tab[256];
 byte tk_img_d8to15ready;
 
 
@@ -3182,6 +3182,13 @@ void *TKGDI_GetHalContext(TKPE_TaskInfo *task,
 
 void tkgdi_comglue_dispatchfcn(void *obj, void *fcn, void *pret, void *args);
 
+#ifndef __BJX2__
+void tkgdi_comglue_dispatchfcn(void *obj, void *fcn, void *pret, void *args)
+{
+}
+#endif
+
+#ifdef __BJX2__
 __asm {
 tkgdi_comglue_dispatchfcn:
 	ADD		-256, SP
@@ -3216,6 +3223,7 @@ tkgdi_comglue_dispatchfcn:
 	ADD		256, SP
 	JMP 	R1
 };
+#endif
 
 /*
 
@@ -3322,6 +3330,70 @@ void tkgdi_comglue_rv_wrapcall31(void *obj);
 
 int tk_syscall_utxt(void *sobj, int umsg, void *pptr, void *args);
 int tk_syscall_rv_utxt(void *sobj, int umsg, void *pptr, void *args);
+
+#ifndef __BJX2__
+void tkgdi_comglue_wrapcall3(void *obj) { }
+void tkgdi_comglue_wrapcall4(void *obj) { }
+void tkgdi_comglue_wrapcall5(void *obj) { }
+void tkgdi_comglue_wrapcall6(void *obj) { }
+void tkgdi_comglue_wrapcall7(void *obj) { }
+void tkgdi_comglue_wrapcall8(void *obj) { }
+void tkgdi_comglue_wrapcall9(void *obj) { }
+void tkgdi_comglue_wrapcall10(void *obj) { }
+void tkgdi_comglue_wrapcall11(void *obj) { }
+void tkgdi_comglue_wrapcall12(void *obj) { }
+void tkgdi_comglue_wrapcall13(void *obj) { }
+void tkgdi_comglue_wrapcall14(void *obj) { }
+void tkgdi_comglue_wrapcall15(void *obj) { }
+void tkgdi_comglue_wrapcall16(void *obj) { }
+void tkgdi_comglue_wrapcall17(void *obj) { }
+void tkgdi_comglue_wrapcall18(void *obj) { }
+void tkgdi_comglue_wrapcall19(void *obj) { }
+void tkgdi_comglue_wrapcall20(void *obj) { }
+void tkgdi_comglue_wrapcall21(void *obj) { }
+void tkgdi_comglue_wrapcall22(void *obj) { }
+void tkgdi_comglue_wrapcall23(void *obj) { }
+void tkgdi_comglue_wrapcall24(void *obj) { }
+void tkgdi_comglue_wrapcall25(void *obj) { }
+void tkgdi_comglue_wrapcall26(void *obj) { }
+void tkgdi_comglue_wrapcall27(void *obj) { }
+void tkgdi_comglue_wrapcall28(void *obj) { }
+void tkgdi_comglue_wrapcall29(void *obj) { }
+void tkgdi_comglue_wrapcall30(void *obj) { }
+void tkgdi_comglue_wrapcall31(void *obj) { }
+
+void tkgdi_comglue_rv_wrapcall3(void *obj) { }
+void tkgdi_comglue_rv_wrapcall4(void *obj) { }
+void tkgdi_comglue_rv_wrapcall5(void *obj) { }
+void tkgdi_comglue_rv_wrapcall6(void *obj) { }
+void tkgdi_comglue_rv_wrapcall7(void *obj) { }
+void tkgdi_comglue_rv_wrapcall8(void *obj) { }
+void tkgdi_comglue_rv_wrapcall9(void *obj) { }
+void tkgdi_comglue_rv_wrapcall10(void *obj) { }
+void tkgdi_comglue_rv_wrapcall11(void *obj) { }
+void tkgdi_comglue_rv_wrapcall12(void *obj) { }
+void tkgdi_comglue_rv_wrapcall13(void *obj) { }
+void tkgdi_comglue_rv_wrapcall14(void *obj) { }
+void tkgdi_comglue_rv_wrapcall15(void *obj) { }
+void tkgdi_comglue_rv_wrapcall16(void *obj) { }
+void tkgdi_comglue_rv_wrapcall17(void *obj) { }
+void tkgdi_comglue_rv_wrapcall18(void *obj) { }
+void tkgdi_comglue_rv_wrapcall19(void *obj) { }
+void tkgdi_comglue_rv_wrapcall20(void *obj) { }
+void tkgdi_comglue_rv_wrapcall21(void *obj) { }
+void tkgdi_comglue_rv_wrapcall22(void *obj) { }
+void tkgdi_comglue_rv_wrapcall23(void *obj) { }
+void tkgdi_comglue_rv_wrapcall24(void *obj) { }
+void tkgdi_comglue_rv_wrapcall25(void *obj) { }
+void tkgdi_comglue_rv_wrapcall26(void *obj) { }
+void tkgdi_comglue_rv_wrapcall27(void *obj) { }
+void tkgdi_comglue_rv_wrapcall28(void *obj) { }
+void tkgdi_comglue_rv_wrapcall29(void *obj) { }
+void tkgdi_comglue_rv_wrapcall30(void *obj) { }
+void tkgdi_comglue_rv_wrapcall31(void *obj) { }
+#endif
+
+#ifdef __BJX2__
 
 __asm {
 .section .utext
@@ -3634,6 +3706,8 @@ tkgdi_comglue_rv_wrapcall29:
 .endriscv
 #endif
 };
+
+#endif
 
 
 const _tkgdi_context_vtable_t tkgdi_context_vtable_gvt = {

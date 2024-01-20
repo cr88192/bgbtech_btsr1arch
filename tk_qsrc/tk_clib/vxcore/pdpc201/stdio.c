@@ -277,6 +277,11 @@ __PDPCLIB_API__ FILE *fopen(const char *filename, const char *mode)
 
 static void fopen2(void)
 {
+	if(!myfile)
+	{
+		__debugbreak();
+	}
+
 	checkMode();
 	if (!err)
 	{
@@ -408,6 +413,20 @@ static void findSpareSpot(void)
 
 static void checkMode(void)
 {
+	long myfbits;
+	
+	myfbits=(long)myfile;
+	
+	if(!myfile)
+	{
+		__debugbreak();
+	}
+	
+	if((myfbits<0x1000000) || (myfbits>>48))
+	{
+		__debugbreak();
+	}
+
 	if (strncmp(modus, "r+b", 3) == 0)
 	{
 		modeType = 10;

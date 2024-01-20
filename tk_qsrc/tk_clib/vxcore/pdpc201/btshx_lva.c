@@ -71,6 +71,9 @@ float __lva_conv_tof32(u64 val);
 double __lva_conv_tof64(u64 val);
 
 __asm {
+
+.ifarch seen_variant
+
 __lva_fixnump:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
@@ -133,6 +136,8 @@ __lva_conv_tof64:
 	.LF:
 	SHLD.Q	R4, 2, R2
 	RTS
+
+.endif
 
 };
 
@@ -339,6 +344,9 @@ u64 __lva_conv_fromf64(double val);
 u64 __lva_conv_fromvec2f(u64 vec);
 
 __asm {
+
+.ifarch seen_variant
+
 __lva_conv_fromi32:
 	EXTS.L	R4, R2
 	CONVFXI	R2, R2
@@ -390,6 +398,9 @@ __lva_conv_fromvec2f:
 	OR		R6, R7, R2
 	OR		R18, R2
 	RTS
+
+.endif
+
 };
 
 #else
@@ -625,6 +636,9 @@ u64 __lva_dec(u64 arga);
 
 
 __asm {
+
+.ifarch seen_variant
+
 __lva_add:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -1141,6 +1155,8 @@ __lva_dec:
 	FSUB	R4, R5, R2
 	CONVFLI	R2, R2
 	RTS
+
+.endif
 
 };
 

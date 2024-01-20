@@ -1,13 +1,16 @@
 .globl	_start
 .globl	_arch_gettbr
+.globl	_arch_settbr
 .globl __longj
 .globl __debugbreak
+.globl tk_getsavedvbr
 
 _start:
 	.option push
 	.option norelax
-1:	auipc gp, %pcrel_hi(__global_pointer$)
-	addi  gp, gp, %pcrel_lo(1b)
+//1:	auipc gp, %pcrel_hi(__global_pointer$)
+//	addi  gp, gp, %pcrel_lo(1b)
+	la gp, __global_pointer$
 	.option pop
 
 	call	__basetests
@@ -22,6 +25,10 @@ _arch_gettbr:
 
 _arch_settbr:
 	mv		x4, a0
+	jr		ra
+
+tk_getsavedvbr:
+	li		a0, 0
 	jr		ra
 
 __longj:
@@ -63,3 +70,8 @@ __basetests:
 
 __baseimm0:	.dword	0x12345678
 __baseimm1:	.dword	0xC2345678
+
+
+.globl sleep_0
+sleep_0:
+	jr	ra

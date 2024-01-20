@@ -108,7 +108,8 @@ u32 btsh2_ptrGetUD(byte *ptr, byte en)
 #define btsh2_ptrGetUD(ptr, en)		(*(u32 *)(ptr))
 
 
-int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
+int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr,
+	char *imgname)
 {
 //	byte tbuf[1024];
 	byte tbuf[1024+32];
@@ -161,11 +162,22 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	phnum=btsh2_ptrGetUW(ehdr->e_phnum, en);
 
 	mach=btsh2_ptrGetUW(ehdr->e_machine, en);
-	if(mach==0x243)
+
+	if(mach==243)
 		isriscv=1;
+
 	if(mach==0xB264)
 		isbjx2=1;
+	if(mach==0xB265)
+		isbjx2=2;
 
+	if(!isbjx2 && !isriscv)
+	{
+		printf("Mach=%04X, Assume RISC-V\n", mach);
+		isriscv=1;
+	}
+
+	imgbase=0;
 	for(i=0; i<phnum; i++)
 	{
 		phdr=(struct btsh2_elf32_phdr_s *)(tbuf+(phoff+(i*phentsz)));
@@ -177,6 +189,9 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 		paddr=btsh2_ptrGetUD(phdr->p_paddr, en);
 		pmsz=btsh2_ptrGetUD(phdr->p_memsz, en);
 		poff=btsh2_ptrGetUD(phdr->p_offset, en);
+		
+		if(!imgbase)
+			imgbase=paddr;
 		
 		printf("%08X -> %08X %08X\n", poff, paddr, pmsz);
 
@@ -207,6 +222,11 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 //		entry|=0x0004000000000003ULL;
 		entry|=0x0004000000000001ULL;
 	}
+
+	printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
+		(u16)(imgbase>>32), (u32)imgbase);
+
+	printf("Entry %016llX\n", entry);
 
 	*rbootptr=(void *)entry;
 	*rbootgbr=NULL;

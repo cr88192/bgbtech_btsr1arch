@@ -322,6 +322,7 @@ u64 TK_VMem_GetPageTableEntry2(s64 vaddr, s64 vaddrh)
 	int vp0, vp1, vp2, vp3;
 	int vpt, ptpn;
 
+#ifdef __BJX2__
 	pde=__arch_ttb;
 //	if((pde&15)==0x4)
 	if((pde&0x13)==0x13)
@@ -433,6 +434,7 @@ u64 TK_VMem_GetPageTableEntry2(s64 vaddr, s64 vaddrh)
 		pte=ptp[vp3];
 		return(pte);
 	}
+#endif
 }
 
 u64 TK_VMem_GetPageTableEntry(s64 vaddr)
@@ -449,6 +451,7 @@ int TK_VMem_SetPageTableEntry2(s64 vaddr, s64 vaddrh, u64 ptval)
 	int vp0, vp1, vp2, vp3;
 	int vpt, ptpn;
 
+#ifdef __BJX2__
 	pde=__arch_ttb;
 //	if((pde&15)==0x4)
 	if((pde&0x13)==0x13)
@@ -635,6 +638,7 @@ int TK_VMem_SetPageTableEntry2(s64 vaddr, s64 vaddrh, u64 ptval)
 		ptp[vp3]=ptval;
 		return(0);
 	}
+#endif
 }
 
 int TK_VMem_SetPageTableEntry(s64 vaddr, u64 ptval)
@@ -1010,8 +1014,10 @@ void tk_vmem_loadpte2(u64 tva, u64 tvah, u64 pte)
 
 #endif
 
+#ifdef __BJX2__
 extern byte __utext_start;
 extern byte __utext_end;
+#endif
 
 int TK_VMem_Init()
 {
@@ -1311,11 +1317,13 @@ int TK_VMem_Init()
 
 #endif
 
+#ifdef __BJX2__
 	TK_VMem_MProtectPages(
 		&__utext_start,
 //		8192,
 		&__utext_end-&__utext_start,
 		TKMM_PROT_RWX);
+#endif
 
 	tk_dbg_printf("TK_VMem_Init: A-5\n");
 
@@ -2448,7 +2456,7 @@ int TK_VMem_VaDoRemapPages2(s64 vaddr, s64 vaddrh, s64 phaddr, int cnt)
 	{
 		vtaddr=vaddr+(((s64)i)<<TKMM_PAGEBITS);
 //		pte=TK_VMem_GetPageTableEntry(vtaddr);
-		pte=TK_VMem_GetPageTableEntry(vtaddr, vaddrh);
+		pte=TK_VMem_GetPageTableEntry2(vtaddr, vaddrh);
 		if(!pte)
 		{
 			pte=(((phaddr>>TKMM_PAGEBITS)+i)<<TK_VMEM_PTESHL)|
@@ -2755,7 +2763,7 @@ s64 TK_VMem_VaFindFreePages(int cnt, int flag)
 s64 TK_VMem_VaFindFreePages2(int cnt, int flag, s64 vaddrh)
 {
 //	return(TK_VMem_VaFindFreePagesBasic(cnt, flag));
-	return(TK_VMem_VaFindFreePagesAslr(cnt, flag, vaddrh));
+	return(TK_VMem_VaFindFreePagesAslr2(cnt, flag, vaddrh));
 }
 
 s64 TK_VMem_VaFindFreePagesLowBasic(int cnt, int flag)
@@ -3221,6 +3229,7 @@ void tk_vmem_aclmiss(u64 ttb, u64 tea, u64 teah)
 	}
 }
 
+#ifdef __BJX2__
 __interrupt void __isr_tlbfault(void)
 // __declspec(dllexport) void isr_tlbfault_i(void)
 {
@@ -3260,6 +3269,7 @@ __interrupt void __isr_tlbfault(void)
 	}
 #endif
 }
+#endif
 
 #if 0
 __asm {

@@ -147,8 +147,8 @@ TK_WadImage *TK_Wad4_AllocImage()
 	img=tk_malloc_krn(sizeof(TK_WadImage));
 	memset(img, 0, sizeof(TK_WadImage));
 
-	if(__offsetof(TK_WadImage, mntbase)>=sizeof(TK_WadImage))
-		__debugbreak();
+//	if(__offsetof(TK_WadImage, mntbase)>=sizeof(TK_WadImage))
+//		__debugbreak();
 
 //	tk_printf("TK_Wad4_AllocImage: p=%p, sz=%d\n", img, sizeof(TK_WadImage));
 
@@ -994,7 +994,8 @@ int TK_Wad4_AllocateNewFragLump(TK_WadImage *img)
 void *TK_Wad4_GetCacheExpandLumpNumOffs(TK_WadImage *img,
 	int lump, int ofs, int wsz, int *rrofs, int *rsz)
 {
-	int		fraga[64];
+//	int		fraga[64];
+	int		*fraga;
 	TK_Wad4Lump	*w4l;
 	TK_Wad2Lump	*w2l;
 	TK_FILE		*fd;

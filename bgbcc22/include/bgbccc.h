@@ -359,6 +359,9 @@ extern "C" {
 #define BGBCC_REGFL_IMMLOAD			0x00100000		//Immediate value Loaded
 #define BGBCC_REGFL_GBLSTORE		0x00200000		//Stores into Global
 
+#define BGBCC_REGFL_HASLCLALIAS		0x00400000		//Has aliased locals.
+#define BGBCC_REGFL_HASGBLALIAS		0x00800000		//Has aliased globals.
+
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
 #define	BGBCC_MAXSTACKFRAME			0x080000	//maximum allowed stack frame

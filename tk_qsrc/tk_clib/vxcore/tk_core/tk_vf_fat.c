@@ -3,7 +3,7 @@ TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
 TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
 TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 int tk_fat_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
-int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, int flag);
+int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, char *mode);
 
 int tk_fat_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
 int tk_fat_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
@@ -87,8 +87,8 @@ int tk_mount_sdfat(char *path)
 	
 	tk_vf_addmount(mnt);
 
-	if(mnt->vt->fopen!=tk_fat_fopen)
-		{ __debugbreak(); }
+//	if(mnt->vt->fopen!=tk_fat_fopen)
+//		{ __debugbreak(); }
 
 	dee=&tdee;
 	memset(dee, 0, sizeof(TKFAT_FAT_DirEntExt));

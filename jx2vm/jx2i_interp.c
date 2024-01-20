@@ -1845,12 +1845,48 @@ int BJX2_DbgPrintf(BJX2_Context *ctx, char *str, ...)
 	return(0);
 }
 
+
+char *BJX2_DumpPrintRVOpBinary(char *ct, int val, int n)
+{
+	int i, j, k;
+	
+	for(i=n-1; i>=0; i--)
+	{
+		*ct++='0'+((val>>i)&1);
+	}
+	return(ct);
+}
+
+char *BJX2_DumpPrintRVOpWord(u32 v)
+{
+	static char tb[80];
+	char *ct;
+	
+	ct=tb;
+	
+	ct=BJX2_DumpPrintRVOpBinary(ct, v>>25, 7);
+	*ct++='-';
+	ct=BJX2_DumpPrintRVOpBinary(ct, v>>20, 5);
+	*ct++='-';
+	ct=BJX2_DumpPrintRVOpBinary(ct, v>>15, 5);
+	*ct++='-';
+	ct=BJX2_DumpPrintRVOpBinary(ct, v>>12, 3);
+	*ct++='-';
+	ct=BJX2_DumpPrintRVOpBinary(ct, v>> 7, 5);
+	*ct++='-';
+	ct=BJX2_DumpPrintRVOpBinary(ct, v>> 5, 2);
+	*ct++='-';
+	ct=BJX2_DumpPrintRVOpBinary(ct, v>> 0, 5);
+	*ct++=0;
+	return(tb);
+}
+
 int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 {
 	char tb1[64];
 	BJX2_Opcode *op1;
 	s64 li;
-	int opw1, opw2, opsep;
+	int opw1, opw2, opw3, opsep;
 	int msc, psc, brpc, nonl, nosc;
 
 //	BJX2_DbgPrintf(ctx, "%05X  %04X %-8s ", op->pc, op->opn,
@@ -1943,19 +1979,37 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 #if 0
 			if(op->fl&BJX2_OPFL_RV64)
 			{
-				opw1=(opw1<<16)|opw2;
+				opw3=(opw1<<16)|opw2;
+				BJX2_DbgPrintf(ctx, "%04X_%08X       %s\n",
+					(u32)((op->pc+0)>>32),
+					(u32)op->pc,
+					BJX2_DumpPrintRVOpWord(opw3));
+				
+			}
+#endif
+
+#if 0
+			if(op->fl&BJX2_OPFL_RV64)
+			{
+				opw3=(opw1<<16)|opw2;
 			
 				BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) "
-					"%02X.%02X.%02X.%01X.%02X.%02X"
+//					"%02X.%02X.%02X.%01X.%02X.%02X"
+//					"%s"
+					"%04X.%04X"
 					" %c %-8s ",
 					(u32)((op->pc+0)>>32),
 					(u32)op->pc, op->cyc,
-					(opw1>>25)&127,
-					(opw1>>20)& 31,
-					(opw1>>15)& 31,
-					(opw1>>12)&  7,
-					(opw1>> 7)& 31,
-					(opw1>> 0)&127,
+
+//					(opw1>>25)&127,
+//					(opw1>>20)& 31,
+//					(opw1>>15)& 31,
+//					(opw1>>12)&  7,
+//					(opw1>> 7)& 31,
+//					(opw1>> 0)&127,
+					opw1, opw2,
+
+//					BJX2_DumpPrintRVOpWord(opw3),
 
 					((op->fl&BJX2_OPFL_WEX)?'|':' '),
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));

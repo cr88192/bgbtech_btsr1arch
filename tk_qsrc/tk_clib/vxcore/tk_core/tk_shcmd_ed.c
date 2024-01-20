@@ -1,4 +1,6 @@
+#ifdef __BGBCC__
 #include "tk_shbasic.c"
+#endif
 
 typedef struct TKSH_EditCtx_s TKSH_EditCtx;
 
@@ -27,7 +29,9 @@ int edit_sel_sy;
 int edit_sel_ex;
 int edit_sel_ey;
 
+#ifdef __BGBCC__
 TKSH_BasicCtx *basic;
+#endif
 };
 
 
@@ -748,6 +752,7 @@ int TKSH_EditUpdateLoop(TKSH_EditCtx *ctx)
 		
 		if(dorun)
 		{
+#ifdef __BGBCC__
 			if(!ctx->basic)
 				ctx->basic=TKSH_BasAllocContext();
 
@@ -797,6 +802,7 @@ int TKSH_EditUpdateLoop(TKSH_EditCtx *ctx)
 					ctx->basic, runseq,
 					ctx->editlines[runseq-1]);
 			}
+#endif
 
 			dorun=0;
 			ctx->edit_redraw=1;

@@ -27,6 +27,12 @@ u64		*tk_sysc_exit;
 int __setj_sys(u64 *buf);
 int __longj_sys(u64 *buf, int ret);
 
+TKPE_TaskInfo *TK_SpawnNewThread2B(
+	TKPE_TaskInfo *btask, void *func, void *uptr, TKPE_CreateTaskInfo *info);
+TKPE_TaskInfo *TK_SpawnNewThreadB(
+	TKPE_TaskInfo *btask, void *func, void *uptr);
+
+
 int tk_sysc_exitpt()
 {
 	volatile int chk;
@@ -85,6 +91,8 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 
 void tk_isr_syscall_rv();
 
+#ifdef __BJX2__
+
 __asm {
 //called from RISC-V mode into BJX2 mode
 tk_isr_syscall_rv:
@@ -113,6 +121,8 @@ tk_isr_syscall_rv:
 	
 	RTS
 };
+
+#endif
 
 
 int TK_HandleSyscall(TKPE_TaskInfo *task,
@@ -265,7 +275,7 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0D:
-				sz=TK_EnvCtx_SetEnvVar(env, args[0].p, args[1].p, args[2].i);
+				sz=TK_EnvCtx_SetEnvVar(env, args[0].p, args[1].p);
 				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
 				break;
@@ -375,7 +385,8 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				ret=tk_hfstat(task, args[0].p, args[1].p);
 				break;
 			case 0x25:
-				ret=tk_fmount(args[0].p, args[1].p, args[2].p, args[3].p);
+				ret=tk_fmount(args[0].p, args[1].p, args[2].p,
+					args[3].p, args[4].p);
 				break;
 			case 0x26:
 				ret=tk_hreaddir(task,

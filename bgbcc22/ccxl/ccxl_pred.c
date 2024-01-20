@@ -985,6 +985,26 @@ bool BGBCC_CCXL_IsRegVolatileP(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegAliasedP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	ccxl_type tty;
+	int i;
+	
+//	tty=BGBCC_CCXL_GetRegType(ctx, reg);
+//	if(BGBCC_CCXL_TypeVolatilePointerP(ctx, tty))
+//		return(true);
+
+	if(BGBCC_CCXL_IsRegGlobalP(ctx, reg))
+	{
+		i=BGBCC_CCXL_GetRegID(ctx, reg);
+		if(ctx->reg_globals[i]->regflags&BGBCC_REGFL_ALIASPTR)
+			return(true);
+	}
+
+	return(false);
+}
+
 bool BGBCC_CCXL_IsRegImmIntP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {

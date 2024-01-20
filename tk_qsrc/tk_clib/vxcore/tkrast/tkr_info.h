@@ -850,6 +850,8 @@ byte		zat_sto_zpass;
 byte		light_mask;
 byte		cachemode;
 byte		tex2d_active;
+byte		bindsticky;
+
 
 tkra_vec4f	light_model_ambient;
 tkra_vec4f	light_ambient[8];

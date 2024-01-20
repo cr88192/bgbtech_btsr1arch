@@ -168,7 +168,7 @@ char *async_gets(char *buf)
 	return(NULL);
 }
 
-void print_hex(u32 v)
+void print_hex(u64 v)
 {
 	static char *chrs="0123456789ABCDEF";
 //	int i;
@@ -195,14 +195,14 @@ void print_hex_u64(u64 v)
 	print_hex(v);
 }
 
-void print_hex_n(u32 v, int n)
+void print_hex_n(u64 v, int n)
 {
 	static char *chrs="0123456789ABCDEF";
 
 //	char *chrs;
 //	chrs="0123456789ABCDEF";
 
-	if(n>8)
+	if(n>16)
 	{
 //		__debugbreak();
 
@@ -216,6 +216,18 @@ void print_hex_n(u32 v, int n)
 		__debugbreak();
 	}
 
+	if(n>=8)
+	{
+		if(n>15)putc(chrs[(v>>60)&15]);
+		if(n>14)putc(chrs[(v>>56)&15]);
+		if(n>13)putc(chrs[(v>>52)&15]);
+		if(n>12)putc(chrs[(v>>48)&15]);
+		if(n>11)putc(chrs[(v>>44)&15]);
+		if(n>10)putc(chrs[(v>>40)&15]);
+		if(n> 9)putc(chrs[(v>>36)&15]);
+		if(n> 8)putc(chrs[(v>>32)&15]);
+	}
+
 	if(n>7)putc(chrs[(v>>28)&15]);
 	if(n>6)putc(chrs[(v>>24)&15]);
 	if(n>5)putc(chrs[(v>>20)&15]);
@@ -226,7 +238,7 @@ void print_hex_n(u32 v, int n)
 	if(n>0)putc(chrs[(v    )&15]);
 }
 
-int print_hex_genw(u32 v)
+int print_hex_genw(u64 v)
 {
 	u32 w;
 	int i;
@@ -387,7 +399,8 @@ void printf(char *str, ...)
 	va_list lst;
 	char pcfill;
 	char *s, *s1;
-	int v, w;
+	long long lv;
+	int v, w, isll;
 
 //	plst=(void **)(&str);
 //	plst++;
@@ -420,31 +433,44 @@ void printf(char *str, ...)
 				w=(w*10)+((*s++)-'0');
 		}
 		
+		if(*s=='L')
+			{ isll=2; s++; }
+		if(*s=='l')
+			{ isll=1; s++; }
+		if(*s=='l')
+			{ isll=2; s++; }
+		
 		switch(*s++)
 		{
 		case 'd':
 //			v=(int)(*plst++);
-			v=va_arg(lst, int);
+			if(isll)
+				lv=va_arg(lst, long long);
+			else
+				lv=va_arg(lst, int);
 			if(w)
 			{
-				print_decimal_n(v, w);
+				print_decimal_n(lv, w);
 			}else
 			{
-				print_decimal(v);
+				print_decimal(lv);
 			}
 			break;
 		case 'X':
 //			if(!w)w=8;
 //			v=(int)(*plst++);
-			v=va_arg(lst, int);
+			if(isll)
+				lv=va_arg(lst, long long);
+			else
+				lv=va_arg(lst, int);
 
 //			__debugbreak();
 
-			if(!w)w=print_hex_genw(v);
+			if(!w)w=print_hex_genw(lv);
 
 //			__debugbreak();
 //			print_hex(v);
-			print_hex_n(v, w);
+			print_hex_n(lv, w);
 //			__debugbreak();
 			break;
 		case 's':
@@ -455,7 +481,7 @@ void printf(char *str, ...)
 
 		case 'p':
 			s1=va_arg(lst, char *);
-			print_hex((u32)s1);
+			print_hex((u64)s1);
 			break;
 
 // #ifdef ARCH_HAS_FPU

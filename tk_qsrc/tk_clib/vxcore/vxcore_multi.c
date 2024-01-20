@@ -47,8 +47,8 @@
 #include "tk_core/tk_wad4.c"
 #include "tk_core/tk_vf_wad4.c"
 
-#include "tk_vf_fat.c"
-#include "tk_vf_sysc.c"
+// #include "tk_vf_fat.c"
+// #include "tk_vf_sysc.c"
 
 #include "tk_core/tk_vfile.c"
 #include "tk_core/tk_divi.c"
@@ -64,10 +64,17 @@
 
 #include "tk_core/tk_env.c"
 #include "tk_core/tk_envctx.c"
+
+// #ifdef __BGBCC__
 #include "tk_core/tk_shcmd.c"
+// #endif
+
 #include "tk_core/tk_irq.c"
 
 #include "tk_core/tku_bigint.c"
+
+// #include "tk_core/tk_fpusup_rv.c"
+#include "pdpc201/btrv_softfp.c"
 
 #include "tk_core/lva_array.c"
 #include "tk_core/lva_strdup.c"
@@ -77,29 +84,40 @@
 
 #include "tk_core/tk_rwad.c"
 
+// #ifdef __BGBCC__
+#if 1
 #include "tk_core/tkgdi_blitupdate.c"
 #include "tk_core/tkgdi_drawcon.c"
 #include "tk_core/tk_hal_tkgdi.c"
 
 #include "tk_core/tk_hal_snd.c"
 #include "tk_core/tk_hal_midi.c"
+#endif
 
 #include "pdpc201/btshx_supa.c"
+
+// #ifdef __BGBCC__
 #include "pdpc201/btshx_lva.c"
 #include "pdpc201/btshx_xli.c"
 #include "pdpc201/btshx_xlf.c"
+// #endif
+
 #include "pdpc201/btshx_softfpu.c"
 #include "pdpc201/btshx_fpusup.c"
-#include "pdpc201/btshx_fpusup.c"
+// #include "pdpc201/btshx_fpusup.c"
 
+#ifdef __BGBCC__
 #include "tk_core/tk_bcd.c"
+#endif
 
 #include "pdpc201/strings.c"
 
 #include "pdpc201/btshx_vnf.c"
 #include "pdpc201/btshx_alloca.c"
 
+#ifdef __BGBCC__
 #include "pdpc201/btshx_lvax.c"
+#endif
 
 #include "pdpc201/bt_mman.c"
 #include "pdpc201/bt_readdir.c"
@@ -109,4 +127,6 @@
 
 #include "pdpc201/bt_libcgpa.c"
 
+#ifdef __BGBCC__
 #include "tk_core/tk_neuron.c"
+#endif

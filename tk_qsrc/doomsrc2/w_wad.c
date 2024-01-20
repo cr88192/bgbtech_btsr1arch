@@ -1019,6 +1019,9 @@ int W_DecodeBufferRP2(
 			__debugbreak();
 		}
 
+		if(!d)
+			__debugbreak();
+
 		*(u64 *)ct=*(u64 *)cs;
 		cs+=rl;
 		ct+=rl;

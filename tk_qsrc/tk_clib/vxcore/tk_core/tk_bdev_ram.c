@@ -52,7 +52,7 @@ int TK_BDRAM_CreateRamDisk(int maxlba)
 	TK_BLKDEVINFO *bdi;
 	TK_DEVFSDEV *tmp;
 	char *s0;
-	s64 maxlba;
+//	s64 maxlba;
 	int lba, lbn, fsty, id;
 	int i;
 

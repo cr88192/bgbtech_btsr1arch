@@ -1946,6 +1946,9 @@ int BGBCC_JX2C_EmitJCmpVRegVReg(
 	ccxl_register sreg, ccxl_register treg,
 	int cmp, int lbl)
 {
+	if(lbl==CCXL_LBL_RETURN)
+		lbl=sctx->lbl_ret;
+
 //	if(BGBCC_CCXL_TypeSmallIntP(ctx, type) ||
 //		(BGBCC_CCXL_TypePointerP(ctx, type) && !sctx->is_addr64))
 //		(BGBCC_CCXL_TypeArrayOrPointerP(ctx, type) && !sctx->is_addr64))
@@ -2212,6 +2215,9 @@ int BGBCC_JX2C_EmitJCmpVRegZero(
 	int cmp, int lbl)
 {
 	ccxl_register treg;
+	
+	if(lbl==CCXL_LBL_RETURN)
+		lbl=sctx->lbl_ret;
 	
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, type))
 	{

@@ -6,14 +6,15 @@ TARGETPFX=riscv64-unknown-elf-
 CC=$(TOOLPATH)$(TARGETPFX)gcc
 AR=$(TOOLPATH)$(TARGETPFX)ar
 AS=$(TOOLPATH)$(TARGETPFX)as
+NM=$(TOOLPATH)$(TARGETPFX)nm
 
 TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__
 
 TK_LDFL= $(TK_CFL)
 
 BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib \
-	-nostdinc -nostdlib -nostartfiles -fno-builtin -O3 \
-	-fwrapv -fno-strict-aliasing
+	-nostdinc -nostdlib -nostartfiles -fno-builtin -Os \
+	-fwrapv -fno-strict-aliasing -fno-inline
 
 # -DNORMALUNIX
 
@@ -22,6 +23,9 @@ CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 LDFLAGS=$(TK_LDFL)
 LIBS = -lclib_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
 	-ffunction-sections -Wl,-gc-sections
+
+LIBS2 = -lvxcore_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
+	-ffunction-sections -Wl,-gc-sections -Wl,-T,elf64rv_dflmod.x
 
 SRCS=				\
 		i_btesh4.c		\
@@ -88,7 +92,7 @@ SRCS=				\
 		info.c				\
 		sounds.c
 
-all:	 doom_rv64.elf
+all:	 doom_rv64.elf doom_rv64b.elf
 # tstputc_rv64.elf tstshellcmd_rv64.elf
 
 clean:
@@ -96,6 +100,12 @@ clean:
 doom_rv64.elf:	$(SRCS) i_main.c
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c \
 	-o doom_rv64.elf $(LIBS)
+	$(NM) -n doom_rv64.elf > doom_rv64.elf.map
+
+doom_rv64b.elf:	$(SRCS) i_main.c
+	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c \
+	-o doom_rv64b.elf $(LIBS2)
+	$(NM) -n doom_rv64b.elf > doom_rv64b.elf.map
 
 tstputc_rv64.elf:	tests/tst_putcperf.c
 	$(CC) $(CFLAGS) $(LDFLAGS) tests/tst_putcperf.c \

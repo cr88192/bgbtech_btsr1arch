@@ -194,7 +194,7 @@ void TKMM_MMList_MProtectCat(byte *ptr, int sz, int cat)
 				TKMM_PROT_EXEC);
 		}else
 		{
-			tk_mprotect((u64)ptr, sz,
+			tk_mprotect((void *)ptr, sz,
 				TKMM_PROT_READ|TKMM_PROT_WRITE|TKMM_PROT_EXEC);
 		}
 		return;
@@ -235,9 +235,21 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 	{
 		if(cat==TKMM_MCAT_PHYSDFL)
 		{
+#ifndef __TK_CLIB_ONLY__
+			if(tk_iskernel())
+			{
+				ptr=TKMM_PageAlloc(sz+256);
+			}else
+			{
+				ptr=tk_mmap(NULL, sz+256, TKMM_PROT_RWX,
+					TKMM_MAP_PHYSICAL|TKMM_MAP_PRIVATE|TKMM_MAP_ANONYMOUS,
+					-1, 0);
+			}
+#else
 			ptr=tk_mmap(NULL, sz+256, TKMM_PROT_RWX,
 				TKMM_MAP_PHYSICAL|TKMM_MAP_PRIVATE|TKMM_MAP_ANONYMOUS,
 				-1, 0);
+#endif
 
 			if(ptr)
 			{
@@ -334,9 +346,21 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 		else
 			if(cat==TKMM_MCAT_PHYSDFL)
 		{
+#ifndef __TK_CLIB_ONLY__
+			if(tk_iskernel())
+			{
+				ptr=TKMM_PageAlloc((1<<TKMM_BRKBITS)+256);
+			}else
+			{
+				ptr=tk_mmap(NULL, (1<<TKMM_BRKBITS)+256, TKMM_PROT_RWX,
+					TKMM_MAP_PHYSICAL|TKMM_MAP_PRIVATE|TKMM_MAP_ANONYMOUS,
+					-1, 0);
+			}
+#else
 			ptr=tk_mmap(NULL, (1<<TKMM_BRKBITS)+256, TKMM_PROT_RWX,
 				TKMM_MAP_PHYSICAL|TKMM_MAP_PRIVATE|TKMM_MAP_ANONYMOUS,
 				-1, 0);
+#endif
 		}else
 			if(cat==TKMM_MCAT_GLOBAL)
 		{

@@ -9,7 +9,7 @@ TK_DIR *tk_wad4_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 int tk_wad4_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
 int tk_wad4_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 int tk_wad4_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
-int tk_wad4_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, int flag);
+int tk_wad4_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, char *mode);
 
 int tk_wad4_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_wad4_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
@@ -116,8 +116,8 @@ TK_MOUNT *tk_mount_wad4temp(char *path)
 
 	img=TK_Wad4_CreateTempRamImage(1024);
 
-	if(__offsetof(TK_WadImage, mntbase)>=sizeof(TK_WadImage))
-		__debugbreak();
+//	if(__offsetof(TK_WadImage, mntbase)>=sizeof(TK_WadImage))
+//		__debugbreak();
 
 	if(!path)
 	{

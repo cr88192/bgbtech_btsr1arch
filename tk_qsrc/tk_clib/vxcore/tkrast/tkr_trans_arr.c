@@ -1222,6 +1222,13 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 	if(!idx)
 		{ idx_fmt=0; idx_str=1; }
 
+	TKRA_CheckBoundTexImg(ctx);
+
+	if(!ctx->svctx->tex_cur)
+	{
+		__debugbreak();
+	}
+
 #if 1
 //	if(	(xyz_ty==TKRA_FLOAT) &&
 //		(st_ty==TKRA_FLOAT) &&

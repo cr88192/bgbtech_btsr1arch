@@ -10,7 +10,13 @@ void tk_dbg_putc_i(int val)
 {
 	while(P_MMIO_DEBUG_STS&8);
 	P_MMIO_DEBUG_TX=val;
+
+//	__debugbreak();
 }
+
+#ifdef __riscv
+u64 MMIO_BASE_E = 0xFFFFF000E000ULL;
+#endif
 
 static char *tk_hextab="0123456789ABCDEF";
 
@@ -103,11 +109,14 @@ void tk_putc_i(int val)
 	int ttyid;
 
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
-	ttyid=task->ttyid;
+	if(task)
+		ttyid=task->ttyid;
+	else
+		ttyid=0;
 
 	if(val=='\n')
 	{
-		if(!tk_dbg_iscopy)
+//		if(!tk_dbg_iscopy)
 			tk_dbg_putc('\r');
 
 		if(ttyid && !tk_issyscall())
@@ -115,7 +124,7 @@ void tk_putc_i(int val)
 		else
 			{ tk_con_putc('\r'); }
 	}
-	if(!tk_dbg_iscopy)
+//	if(!tk_dbg_iscopy)
 		tk_dbg_putc(val);
 
 	if(ttyid && !tk_issyscall())
@@ -290,7 +299,10 @@ int tk_get_ttyid(void)
 	int ttyid;
 
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
-	ttyid=task->ttyid;
+	if(task)
+		ttyid=task->ttyid;
+	else
+		ttyid=0;
 	return(ttyid);
 }
 
@@ -300,7 +312,10 @@ int tk_kbhit_i(void)
 	int ttyid;
 
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
-	ttyid=task->ttyid;
+	if(task)
+		ttyid=task->ttyid;
+	else
+		ttyid=0;
 
 	if(ttyid && !tk_issyscall())
 		{ return(tk_kbhit_tty(ttyid)); }
@@ -323,7 +338,10 @@ int tk_getch_i(void)
 	int ttyid;
 
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
-	ttyid=task->ttyid;
+	if(task)
+		ttyid=task->ttyid;
+	else
+		ttyid=0;
 
 	if(ttyid && !tk_issyscall())
 		{ return(tk_getch_tty(ttyid)); }
@@ -614,7 +632,10 @@ void tk_puts_n(char *msg, int n)
 	if(tk_iskernel() && !nonasc)
 	{
 		task=(TKPE_TaskInfo *)TK_GET_TBR;
-		ttyid=task->ttyid;
+		if(task)
+			ttyid=task->ttyid;
+		else
+			ttyid=0;
 		
 		if(ttyid && !tk_issyscall())
 		{

@@ -75,6 +75,13 @@ int			numgltextures;
 extern int		gl_nvadptris;
 extern int		gl_nvadpquads;
 
+qgl_hfloat *R_CheckExpandDelayPolyTris(int nvtx);
+qgl_hfloat *R_GetExpandDelayPolyTris(int nvtx);
+void R_ResetDelayPolyTris(void);
+int R_GetDelayPolyTrisSize(void);
+qgl_hfloat *R_GetDelayPolyTrisBase(void);
+
+qgl_hfloat *R_CheckExpandDelayPolyQuads(int nvtx);
 
 void GL_Bind (int texnum)
 {

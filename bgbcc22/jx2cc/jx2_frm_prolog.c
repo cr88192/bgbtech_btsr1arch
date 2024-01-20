@@ -576,6 +576,29 @@ ccxl_status BGBCC_JX2C_TinyLeafProlog_ReserveVopRegs(BGBCC_TransState *ctx,
 	return(0);
 }
 
+ccxl_status BGBCC_JX2C_Prolog_VopSetupReturnLabel(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
+{
+//	sctx->lbl_ret=BGBCC_JX2_GenLabelTemp(sctx);
+//	sctx->lbl_ret_zero=0;
+
+	if(
+		(op->opn==CCXL_VOP_JMP) ||
+		(op->opn==CCXL_VOP_JCMP_ZERO) ||
+		(op->opn==CCXL_VOP_JCMP) )
+	{
+		if(op->imm.si==CCXL_LBL_RETURN_ZERO)
+		{
+			if(!sctx->lbl_ret_zero)
+			{
+				sctx->lbl_ret_zero=BGBCC_JX2_GenLabelTemp(sctx);
+			}
+		}
+	}
+	return(0);
+}
+
 int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj, int fcnlbl)
@@ -624,7 +647,15 @@ int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,
 	sctx->vsp_rsv=0;
 
 	sctx->lbl_ret=BGBCC_JX2_GenLabelTemp(sctx);
-	
+	sctx->lbl_ret_zero=0;
+
+	for(i=0; i<obj->n_vop; i++)
+	{
+		vop=obj->vop[i];
+		BGBCC_JX2C_Prolog_VopSetupReturnLabel(
+			ctx, sctx, obj, vop);
+	}
+
 
 	ni=0; nf=0; vaix=-1;
 	for(i=0; i<obj->n_args; i++)
@@ -938,7 +969,7 @@ int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,
 			BGBCC_JX2C_TinyLeafProlog_ReserveVopRegs(
 				ctx, sctx, obj, vop);
 		}
-
+		
 		if(obj->regflags&BGBCC_REGFL_HYBLEAFTINY)
 		{
 //			sctx->is_leaftiny=0;
@@ -968,6 +999,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	char tb[256];
 	ccxl_register reg, treg;
 	ccxl_type tty;
+	BGBCC_CCXL_VirtOp *vop;
 	int bo, co, pr0;
 	int p0, vaix, cnt, maxrsv, ismaxrsv, maxvalidrsv;
 	int ni, nf, rcls, ob, ov;
@@ -1213,7 +1245,15 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	sctx->sfreg_live=sctx->sfreg_held;
 
 	sctx->lbl_ret=BGBCC_JX2_GenLabelTemp(sctx);
-	
+	sctx->lbl_ret_zero=0;
+
+	for(i=0; i<obj->n_vop; i++)
+	{
+		vop=obj->vop[i];
+		BGBCC_JX2C_Prolog_VopSetupReturnLabel(
+			ctx, sctx, obj, vop);
+	}
+
 	if(sctx->cnt_set_fp64>sctx->cnt_set_fp32)
 //	if(0)
 	{
@@ -3195,7 +3235,15 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	sctx->sfreg_live=sctx->sfreg_held;
 
 	sctx->lbl_ret=BGBCC_JX2_GenLabelTemp(sctx);
-	
+	sctx->lbl_ret_zero=0;
+
+	for(i=0; i<obj->n_vop; i++)
+	{
+		vop=obj->vop[i];
+		BGBCC_JX2C_Prolog_VopSetupReturnLabel(
+			ctx, sctx, obj, vop);
+	}
+
 	if(sctx->cnt_set_fp64>sctx->cnt_set_fp32)
 //	if(0)
 	{

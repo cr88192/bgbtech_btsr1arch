@@ -538,6 +538,7 @@ int TKRA_TransformProjectTriangle(
 	int				ecfl, lim;
 	byte			wasfrag, nosubdiv, nopersp;
 
+#if 0
 	if((((long)ctx->tex_cur)>>60)!=0)
 	{
 		__debugbreak();
@@ -545,6 +546,7 @@ int TKRA_TransformProjectTriangle(
 			(long)ctx->tex_cur);
 		return(-1);
 	}
+#endif
 
 	TKRA_SetupDrawBlend(ctx);
 	
@@ -1259,12 +1261,14 @@ int TKRA_TransformProjectQuad(
 	
 //	return(0);
 
+#if 0
 	if((((long)ctx->tex_cur)>>60)!=0)
 	{
 		printf("TKRA_TransformProjectQuad: Bad texture A %016llX\n",
 			(long)ctx->tex_cur);
 		return(-1);
 	}
+#endif
 
 	TKRA_SetupDrawBlend(ctx);
 

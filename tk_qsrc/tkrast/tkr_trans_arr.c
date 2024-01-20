@@ -775,6 +775,7 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 		{ idx_ty=0; idx_str=1; }
 
 	img=ctx->tex_cur;
+#if 0
 	if((((long)img)>>60)!=0)
 	{
 		__debugbreak();
@@ -782,6 +783,7 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 			(long)img);
 		return(-1);
 	}
+#endif
 
 #if 1
 	if(	(xyz_ty==TKRA_FLOAT) &&
@@ -1083,6 +1085,7 @@ int TKRA_DrawPrimitiveIndexArrayMTex2(
 		{ idx_ty=0; idx_str=1; }
 
 	img=ctx->tex_cur;
+#if 0
 	if((((long)img)>>60)!=0)
 	{
 		__debugbreak();
@@ -1090,6 +1093,7 @@ int TKRA_DrawPrimitiveIndexArrayMTex2(
 			(long)img);
 		return(-1);
 	}
+#endif
 
 #if 0
 	if(	(xyz_ty==TKRA_FLOAT) &&
@@ -1439,17 +1443,20 @@ int TKRA_DrawPrimitiveIndexArrayMultiTex(
 			continue;
 		}
 
+#if 0
 		if((((long)img)>>60)!=0)
 		{
 			printf("TKRA_DrawPrimitiveIndexArrayMultiTex: "
 				"Bad Texture %016llX Ix=%d\n", (long long)img, i);
 			continue;
 		}
+#endif
 
 		ctx->blend_sfunc=ctx->blend_sfunc_mtx[i];
 		ctx->blend_dfunc=ctx->blend_dfunc_mtx[i];
 		TKRA_BindTexImg(ctx, img);
 
+#if 0
 		if((((long)(ctx->tex_cur))>>60)!=0)
 		{
 			printf("TKRA_DrawPrimitiveIndexArrayMultiTex: "
@@ -1457,6 +1464,7 @@ int TKRA_DrawPrimitiveIndexArrayMultiTex(
 				(long long)ctx->tex_cur, i);
 			continue;
 		}
+#endif
 
 		TKRA_DrawPrimitiveIndexArrayBasic(
 			ctx,

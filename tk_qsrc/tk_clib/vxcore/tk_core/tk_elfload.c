@@ -144,7 +144,7 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	s64 reloc_disp;
 	btsh2_elf64_hdr *ehdr;
 	struct btsh2_elf64_phdr_s *phdr;
-	u32 entry, phoff, shoff;
+	u64 entry, phoff, shoff;
 	u32 paddr, pmsz, poff, mach;
 	byte en, isriscv, isbjx2, isxg2, isxg2rv;
 	int phentsz, phnum;
@@ -306,7 +306,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	{
 		printf("Not Exec %d\n",
 			btsh2_ptrGetUW(ehdr->e_type, en));
-		return(-1);
+		return(NULL);
 	}
 	
 	isriscv=0;
@@ -364,7 +364,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //	memset(imgptr, 0, imgsz1-32);
 //	memset(imgptr, 0, imgsz1);
 
-	TK_VMem_MProtectPages(imgptr, imgsz1,
+	TK_VMem_MProtectPages((u64)imgptr, imgsz1,
 		TKMM_PROT_READ|TKMM_PROT_WRITE|
 		TKMM_PROT_EXEC);
 
@@ -449,7 +449,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //	*rbootgbr=NULL;
 
 //	img->bootptr=imgptr+startrva;
-	img->bootptr=entry;
+	img->bootptr=(void *)entry;
 //	img->bootgbr=imgptr+gbr_rva;
 //	img->bootgbre=imgptr+imgsz;
 	

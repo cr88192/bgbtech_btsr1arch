@@ -75,6 +75,13 @@ int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 
+	if(sctx->lbl_ret_zero)
+	{
+		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret_zero);
+		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV,
+			0, BGBCC_SH_REG_R2);
+	}
+
 	if(sctx->lbl_ret)
 	{
 		if(sctx->is_align_wexj&2)
@@ -175,6 +182,13 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	}
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
+
+	if(sctx->lbl_ret_zero)
+	{
+		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret_zero);
+		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV,
+			0, BGBCC_SH_REG_R2);
+	}
 
 	if(sctx->lbl_ret)
 	{

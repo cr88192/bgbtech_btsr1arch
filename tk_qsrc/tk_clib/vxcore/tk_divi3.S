@@ -1,3 +1,5 @@
+.ifnarch has_qmul
+
 #if 1
 /*
 Count Leading Zeroes
@@ -215,3 +217,20 @@ __sdivdi3:
 	break
 
 #endif
+
+.endif
+
+.ifarch has_qmul
+__sdivdi3:
+	DIVS.Q	R4, R5, R2
+	RTS
+
+__udivdi3:
+	DIVU.Q	R4, R5, R2
+	RTS
+
+_fcn_clz64:
+	CLZ.Q	R2, R2
+	RTS
+
+.endif

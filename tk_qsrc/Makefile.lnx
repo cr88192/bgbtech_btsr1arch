@@ -33,9 +33,12 @@ BASE_CFLAGS = -g
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 LDFLAGS=$(TK_LDFL) -lm -lSDL
 
+GL_CFLAGS	= $(CFLAGS) -DGLQUAKE
+
+
 all: targets
 
-targets: quake_lnx.elf
+targets: quake_lnx.elf glquake_tkra.elf
 
 SQUAKE_SRCS = \
 	q1base/cl_demo.c \
@@ -145,9 +148,119 @@ SKIP_SRCS=\
 	q1base/snd_mixa.c \
 	q1base/sys_dosa.o
 
+GLQUAKE_CORESRCS = \
+	q1base/cl_demo.c	\
+	q1base/cl_input.c	\
+	q1base/cl_main.c	\
+	q1base/cl_parse.c	\
+	q1base/cl_tent.c	\
+	q1base/chase.c		\
+	q1base/cmd.c		\
+	q1base/common.c		\
+	q1base/console.c	\
+	q1base/crc.c		\
+	q1base/cvar.c		\
+	\
+	q1base/glquake/gl_draw.c	\
+	q1base/glquake/gl_mesh.c	\
+	q1base/glquake/gl_model.c	\
+	q1base/glquake/gl_refrag.c	\
+	q1base/glquake/gl_rlight.c	\
+	q1base/glquake/gl_rmain.c	\
+	q1base/glquake/gl_rmisc.c	\
+	q1base/glquake/gl_rsurf.c	\
+	q1base/glquake/gl_screen.c	\
+	q1base/glquake/gl_test.c	\
+	q1base/glquake/gl_warp.c	\
+	q1base/glquake/gl_qgl.c		\
+	\
+	q1base/host.c		\
+	q1base/host_cmd.c	\
+	q1base/keys.c		\
+	q1base/menu.c		\
+	q1base/mathlib.c	\
+	q1base/net_loop.c	\
+	q1base/net_main.c	\
+	q1base/net_vcr.c	\
+	q1base/net_none.c	\
+	q1base/pr_cmds.c	\
+	q1base/pr_edict.c	\
+	q1base/pr_exec.c	\
+	q1base/r_part.c		\
+	q1base/sbar.c		\
+	q1base/sv_main.c	\
+	q1base/sv_phys.c	\
+	q1base/sv_move.c	\
+	q1base/sv_user.c	\
+	q1base/zone.c		\
+	q1base/view.c		\
+	q1base/wad.c		\
+	q1base/world.c		\
+	\
+	q1base/cd_null.c \
+	\
+	q1base/in_null.c \
+	q1base/sys_linux.c \
+	q1base/vid_sdl.c \
+	q1base/snd_dma.c \
+	q1base/snd_mem.c \
+	q1base/snd_mix.c \
+	q1base/snd_linux.c	\
+	\
+	q1base/gfxdrv_input.c		\
+	q1base/gfxdrv_sdl.c
+
+
+
+#	q1base/in_btsh4.c \
+#	q1base/sys_btsh4.c \
+#	q1base/snd_dma.c \
+#	q1base/snd_mem.c \
+#	q1base/snd_mix.c \
+#	q1base/snd_tkgdi.c
+
+#	q1base/snd_btsh4.c
+
+GLQUAKE_SRCS = \
+	$(GLQUAKE_CORESRCS)			\
+	q1base/vid_btsh4_gl.c		\
+
+TKRA_SRCS = \
+	tkrast/tkr_blend.c			\
+	tkrast/tkr_blend_bjx2.c		\
+	tkrast/tkr_context.c		\
+	tkrast/tkr_edge.c			\
+	tkrast/tkr_glbegin.c		\
+	tkrast/tkr_glenable.c		\
+	tkrast/tkr_glgpa.c			\
+	tkrast/tkr_glmatrix.c		\
+	tkrast/tkr_gltex.c			\
+	tkrast/tkr_matrix.c			\
+	tkrast/tkr_multi.c			\
+	tkrast/tkr_span.c			\
+	tkrast/tkr_span_bjx2.c		\
+	tkrast/tkr_span_zt.c		\
+	tkrast/tkr_span_zt_bjx2.c	\
+	tkrast/tkr_span_bf.c		\
+	tkrast/tkr_span_bf_bjx2.c	\
+	tkrast/tkr_span_hzt.c		\
+	tkrast/tkr_teximg.c			\
+	tkrast/tkr_trans.c			\
+
+GLQUAKE_TKRA_SRCS = \
+	$(GLQUAKE_CORESRCS)			\
+	tkrast/tkr_multi.c			\
+
+#	q1base/vid_btsh4_tkra.c		\
+#	tkrast/tkr_multi.c			\
+
+
 quake_lnx.elf: $(SQUAKE_SRCS)
 	$(CC) $(CFLAGS) -o $@ $(SQUAKE_SRCS) $(LDFLAGS)
 	$(OBJDUMP) -t quake_lnx.elf > quake_lnx.map
+
+glquake_tkra.elf: $(GLQUAKE_TKRA_SRCS) $(TKRA_SRCS)
+	$(CC) $(GL_CFLAGS) -o $@ $(GLQUAKE_TKRA_SRCS) $(LDFLAGS) -DUSE_TKRA
 
 ####
 

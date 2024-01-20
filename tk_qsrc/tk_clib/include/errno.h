@@ -79,6 +79,6 @@ typedef int errno_t;
 
 #define errno (*(__get_errno()))
 
-int *__get_errno();
+errno_t *__get_errno();
 
 #endif

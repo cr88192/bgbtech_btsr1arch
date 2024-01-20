@@ -1282,8 +1282,8 @@ int TKRA_BindTexImg(TKRA_Context *ctx, TKRA_TexImage *img)
 {
 	if(!img)
 		return(-1);
-	if((((long)img)>>60)!=0)
-		return(-1);
+//	if((((long)img)>>60)!=0)
+//		return(-1);
 
 	ctx->tex_cur=img;
 //	ctx->tex_img=img->tex_img;

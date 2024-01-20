@@ -142,6 +142,8 @@ u64 __udivti3(u64 a, u64 b)
 
 __asm {
 
+.ifnarch has_qmul
+
 #if 0
 _tk_divtab:
 .int 0x00000000, 0x00000000, 0x80000000, 0x55555556
@@ -321,7 +323,7 @@ __udivsi3_tab:
 	BF			.L0
 
 #if 0
-	MOV			_tk_divtab, R3
+	LEA.B		_tk_divtab, R3
 	CLZ			R5, R1
 	SUB			24, R1
 	SHLD		R5, R1, R2
@@ -387,8 +389,8 @@ __udivsi3_tab:
 	CMPGE		0, R4
 	BF			.L3
 
-	MOV			_tk_divtab, R18
-	MOV			_tk_divtab_sh, R19
+	LEA.B		_tk_divtab, R18
+	LEA.B		_tk_divtab_sh, R19
 	MOVU.L		(R18, R5), R6
 	MOV.B		(R19, R5), R7
 	DMULU.L		R4, R6, R3
@@ -404,6 +406,9 @@ __udivsi3_tab:
 //	.L1:
 //	MOV		R4, R2
 //	RTS
+
+.endif
+
 };
 
 #endif

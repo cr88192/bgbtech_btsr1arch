@@ -753,10 +753,15 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVUTW		0x1A5		//
 #define BJX2_NMID_MOVHTW		0x1A6		//
 
+#define BJX2_NMID_JAL			0x1A7		//
+
 #define BJX2_NMID_FMIN			0x1A8		//
 #define BJX2_NMID_FMAX			0x1A9		//
 #define BJX2_NMID_FMINS			0x1AA		//
 #define BJX2_NMID_FMAXS			0x1AB		//
+
+#define BJX2_NMID_SLT			0x1AC		//
+#define BJX2_NMID_SLTU			0x1AD		//
 
 #define BJX2_NMID_FSGNJ			0x1B0		//
 #define BJX2_NMID_FSGNJN		0x1B1		//

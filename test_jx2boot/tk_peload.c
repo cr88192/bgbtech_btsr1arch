@@ -2,7 +2,8 @@
 
 #define TKPE_NO_RP2
 
-int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr);
+int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr,
+	char *imgname);
 
 byte tkpe_imgend;
 
@@ -1113,7 +1114,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 		{
 			tk_fseek(fd, 0, 0);
 			return(TKPE_LoadStaticELF(fd,
-				rbootptr, rbootgbr));
+				rbootptr, rbootgbr, imgname));
 		}
 	
 		if(sig_mz!=0x5A4D)

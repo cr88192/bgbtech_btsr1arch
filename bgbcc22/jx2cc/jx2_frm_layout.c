@@ -194,6 +194,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 #if 1
 
+	obj->regflags&=~BGBCC_REGFL_HASLCLALIAS;
+
 	for(i=0; i<obj->n_locals; i++)
 	{
 		if(obj->locals[i]->regflags&BGBCC_REGFL_CULL)
@@ -204,6 +206,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 			if(BGBCC_CCXL_TypeArrayP(ctx, tty))
 				{ obj->regflags|=BGBCC_REGFL_HASARRAY; }
+
+			obj->regflags|=BGBCC_REGFL_HASLCLALIAS;
 
 			continue;
 		}
@@ -247,7 +251,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(obj->regs[i]->regflags&BGBCC_REGFL_CULL)
 			continue;
 		if(obj->regs[i]->regflags&BGBCC_REGFL_ALIASPTR)
+		{
+			obj->regflags|=BGBCC_REGFL_HASLCLALIAS;
 			continue;
+		}
 			
 		tty=obj->regs[i]->type;
 
@@ -280,7 +287,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(obj->args[i]->regflags&BGBCC_REGFL_CULL)
 			continue;
 		if(obj->args[i]->regflags&BGBCC_REGFL_ALIASPTR)
+		{
+			obj->regflags|=BGBCC_REGFL_HASLCLALIAS;
 			continue;
+		}
 			
 		tty=obj->args[i]->type;
 
@@ -335,6 +345,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 #endif
 
+	obj->regflags&=~BGBCC_REGFL_HASGBLALIAS;
+
 	sctx->vsp_tcnt=0;
 	trn=0;
 	BGBCC_JX2C_BeginSetupFrameVRegSpan(ctx, sctx);
@@ -351,6 +363,21 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(BGBCC_CCXL_IsRegGlobalP(ctx, vop->dst))
 		{
 			ctx->cur_func->regflags|=BGBCC_REGFL_GBLSTORE;
+
+			if(BGBCC_CCXL_IsRegAliasedP(ctx, vop->dst))
+				obj->regflags|=BGBCC_REGFL_HASGBLALIAS;
+		}
+
+		if(BGBCC_CCXL_IsRegGlobalP(ctx, vop->srca))
+		{
+			if(BGBCC_CCXL_IsRegAliasedP(ctx, vop->srca))
+				obj->regflags|=BGBCC_REGFL_HASGBLALIAS;
+		}
+
+		if(BGBCC_CCXL_IsRegGlobalP(ctx, vop->srcb))
+		{
+			if(BGBCC_CCXL_IsRegAliasedP(ctx, vop->srcb))
+				obj->regflags|=BGBCC_REGFL_HASGBLALIAS;
 		}
 
 		if(vop->opn==CCXL_VOP_DBGFN)
