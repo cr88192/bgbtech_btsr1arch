@@ -607,7 +607,7 @@ assign		idC1IdUCmd = (id2PreBra == 2'b01) ?
 DecOpWx3	decOp(
 	clock,			exResetL,
 //	id1IstrWord,	ifInPcWxe,
-	id1IstrWord,
+	id1IstrWord,	id1ValBPc,
 //	crOutSr,
 	id1ValFetchSr,
 	id1IstrSxo,
@@ -1646,7 +1646,7 @@ ExEX1	ex1(
 	ex1OpUCmd,		ex1OpUIxt,
 	ex1Hold,		ex1TrapExc,
 	ex1Timers,		ex1OpUCmd2,
-	ex1ExfFl,
+	ex1ExfFl,		ex1IstrWord,
 
 	ex1RegIdRs,		ex1RegIdRt,		ex1RegIdRm,
 	ex1RegValRs,	ex1RegValRt,	ex1RegValRm,

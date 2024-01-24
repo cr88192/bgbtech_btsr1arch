@@ -126,10 +126,43 @@ __PDPCLIB_API__ void *memmove(void *s1, const void *s2, size_t n)
 #endif
 __PDPCLIB_API__ char *strcpy(char *s1, const char *s2)
 {
+#if defined(__BJX2__) || defined(__riscv)
+	char *cs, *ct;
+	u64 li, lj;
+	int i;
+
+	ct = s1;
+	cs = (char *)s2;
+
+	li=*(u64 *)cs;
+	lj=(li|(li+0x7F7F7F7F7F7F7F7FULL))&0x8080808080808080ULL;
+	while(lj==0x8080808080808080ULL)
+	{
+		*(u64 *)ct=li;
+		cs+=8; ct+=8;
+		li=*(u64 *)cs;
+		lj=(li|(li+0x7F7F7F7F7F7F7F7FULL))&0x8080808080808080ULL;
+	}
+
+	if(((u32)lj)==0x80808080ULL)
+	{
+		*(u32 *)ct=li;
+		cs+=4; ct+=4;
+	}
+	
+	i=*cs;
+	while(i)
+		{ cs++; *ct++=i; i=*cs; }
+	*ct++=0;
+
+	return (s1);
+
+#else
 	char *p = s1;
 
 	while ((*p++ = *s2++) != '\0') ;
 	return (s1);
+#endif
 }
 
 #ifdef strncpy
@@ -269,6 +302,45 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 {
 	const unsigned char *p1;
 	const unsigned char *p2;
+	u64 c0, c1;
+	u64 li0, lj0, li1, lj1;
+
+#if defined(__riscv)
+// #if 0
+	u64 li, lj;
+	int i;
+
+	p1 = s1;
+	p2 = s2;
+
+	c0=0x8080808080808080ULL;
+	c1=0x7F7F7F7F7F7F7F7FULL;
+
+	li0=*(u64 *)p1;
+	li1=*(u64 *)p2;
+	lj=(li0|(li0+c1))&c0;
+//	lj1=(li1|(li1+c1))&c0;
+	while((li0==li1) && (lj==c0))
+	{
+		p1+=8; p2+=8;
+		li0=*(u64 *)p1;
+		li1=*(u64 *)p2;
+		lj=(li0|(li0+c1))&c0;
+	}
+	
+//	if((((u32)li0)==((u32)li1)) && (((u32)lj)==0x80808080ULL))
+//		{ p1+=4; p2+=4; }
+	
+	while (*p1 != '\0')
+	{
+		if (*p1 < *p2) return (-1);
+		else if (*p1 > *p2) return (1);
+		p1++;
+		p2++;
+	}
+	if (*p2 == '\0') return (0);
+	else return (-1);
+#endif
 
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
@@ -1347,11 +1419,29 @@ _strcmp_util_cmppack8:
 __PDPCLIB_API__ size_t strlen(const char *s)
 {
 	const char *p;
+	u64 li, lj;
 //	char *p;
 	int n;
 
 	p = s;
 	n=0;
+
+#ifdef __riscv
+	li=*(u64 *)p;
+	lj=(li|(li+0x7F7F7F7F7F7F7F7FULL))&0x8080808080808080ULL;
+	while(lj==0x8080808080808080ULL)
+	{
+		p+=8; n+=8;
+		li=*(u64 *)p;
+		lj=(li|(li+0x7F7F7F7F7F7F7F7FULL))&0x8080808080808080ULL;
+	}
+	
+	if(((u32)lj)==0x80808080ULL)
+	{
+		p+=4; n+=4;
+	}
+#endif
+
 //	while (*p != '\0') p++;
 //	while(*p)p++;
 	while(*p) { p++; n++; }
@@ -1801,19 +1891,45 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 	register long long *p = (long long *)s1;
 	register long long *cs2 = (long long *)s2;
 	register long long *endi;
+	long long li0, li1, li2, li3;
+	size_t n1;
 
 //	n=(int)n;
 //	if(n!=((int)n))
 //		__debugbreak();
 
-	endi = (long long *)((char *)p + (n & (~0x07)));
+//	__debugbreak();
+
+	n1 = (n & (~0x07));
+
+	if(n1>n)
+		{ __debugbreak(); }
+
+//	endi = (long long *)((char *)p + (n & (~0x07)));
+	endi = (long long *)((char *)p + n1);
 
 #if 1
+	while((p+4)<=endi)
+	{
+		li0=cs2[0];	li1=cs2[1];
+		li2=cs2[2];	li3=cs2[3];
+		p[0]=li0;	p[1]=li1;
+		p[2]=li2;	p[3]=li3;
+		cs2+=4;
+		p+=4;
+	}
+
 	while (p < endi)
 	{
 		*p++ = *cs2++;
 	}
 #endif
+
+	if(p>endi)
+		{ __debugbreak(); }
+
+	if(!(n&7))
+		return (s1);
 
 	switch (n & 0x07)
 	{

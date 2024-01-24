@@ -593,6 +593,10 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 		case BJX2_NMID_BRGT:
 		case BJX2_NMID_BRLE:
 		case BJX2_NMID_BRGE:
+
+		case BJX2_NMID_BRBI:
+		case BJX2_NMID_BRHE:
+
 #ifdef BJX2_EM_BPRED
 			op->cyc=2;
 #else

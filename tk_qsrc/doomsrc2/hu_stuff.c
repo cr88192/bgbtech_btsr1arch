@@ -399,9 +399,9 @@ void HU_Init(void)
     char	buffer[9];
 
     if (french)
-	shiftxform = french_shiftxform;
+		shiftxform = french_shiftxform;
     else
-	shiftxform = english_shiftxform;
+		shiftxform = english_shiftxform;
 
     if ( W_CheckNumForName("STCFN033") >=0 )
     {

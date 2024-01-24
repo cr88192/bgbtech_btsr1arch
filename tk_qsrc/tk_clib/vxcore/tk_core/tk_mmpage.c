@@ -62,12 +62,22 @@ int TKMM_MMList_WalkHeapObjects(
 
 int TKMM_InitBootParm()
 {
+	struct BootParm_s *bootp;
 	u32 *css, *cse, *cs;
 	
 	css=(u32 *)0x0000C000UL;
 	cse=(u32 *)0x0000DFFCUL;
 	
-	bootparm=&t_bootparm;
+//	bootparm=&t_bootparm;
+//	bootp=bootparm;
+
+	bootp=&t_bootparm;
+	bootparm=bootp;
+
+	tk_iskernel();
+
+	if(bootparm!=bootp)
+		{ __debugbreak(); }
 	
 	cs=css;
 	while(cs<cse)
@@ -80,6 +90,9 @@ int TKMM_InitBootParm()
 		}
 		cs++;
 	}
+
+	if(bootparm!=bootp)
+		{ __debugbreak(); }
 	
 	if(bootparm->magic1==BOOTPARM_MAGIC1)
 	{
@@ -626,9 +639,15 @@ void TKMM_Init()
 		TKMM_PageAlloc_f=TKMM_PageAllocL;
 		TKMM_PageFree_f=TKMM_PageFreeL;
 
+		if(!TKMM_PageAlloc_f)
+			{ __debugbreak(); }
+
 //		tk_ird_init();
 
 		TKMM_InitBootParm();
+
+		if(!TKMM_PageAlloc_f)
+			{ __debugbreak(); }
 
 //		tkmm_pagebase=TKMM_PAGEBASE;
 //		tkmm_pageend=TKMM_PAGEEND;

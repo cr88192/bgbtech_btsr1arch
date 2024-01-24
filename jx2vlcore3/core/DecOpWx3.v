@@ -54,7 +54,8 @@ For scalar Ops, Lane 2/3 will hold:
 module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	istrWord,	regSr,		istrSxo,
+	istrWord,	istrBPc,
+	regSr,		istrSxo,
 	idRegS,		idRegT,		idRegM,
 	idImmA,		idUCmdA,	idUIxtA,
 	idRegU,		idRegV,		idRegN,
@@ -67,6 +68,7 @@ input			clock;		//clock
 input			reset;		//clock
 
 input[95:0]		istrWord;	//source instruction word
+input[47:0]		istrBPc;	//Instruction PC Address
 // input			srWxe;
 input[63:0]		regSr;
 input[3:0]		istrSxo;	//source instruction word
@@ -369,6 +371,14 @@ reg opIsWfC;		//WEX
 
 
 `ifdef jx2_enable_wexjumbo
+
+`ifdef jx2_enable_riscv
+wire	srNoJumbo =
+	(srRiscv && !srXG2RV);
+`else
+wire	srNoJumbo = 0;
+`endif
+
 //assign	opIsWexJumboA =
 //		(istrWord[15: 8] == 8'b1111_0100) &&
 //		(istrWord[31:30] == 2'b11       ) ;
@@ -382,12 +392,12 @@ reg opIsWfC;		//WEX
 //		(istrWord[47:40] == 8'b1111_1110) ;
 
 assign	opIsWexJumboA =
-		(istrWord[15: 9] == 7'b1111_111) ;
+		(istrWord[15: 9] == 7'b1111_111) && !srNoJumbo;
 //		(istrWord[12: 9] == 4'b1111) ;
 //		(istrWord[12: 9] == 4'b1111) &&
 //		((istrWord[15:13] == 3'b111) || srXG2) ;
 assign	opIsWexJumboB =
-		(istrWord[47:41] == 7'b1111_111) ;
+		(istrWord[47:41] == 7'b1111_111) && !srNoJumbo;
 //		(istrWord[44:41] == 4'b1111) ;
 //		(istrWord[44:41] == 4'b1111) &&
 //		((istrWord[47:45] == 3'b111) || srXG2) ;
@@ -1494,6 +1504,8 @@ begin
 `endif
 	end
 
+	tNextMsgLatch = 0;
+
 // `ifndef def_true
 `ifdef def_true
 //	if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
@@ -1503,11 +1515,11 @@ begin
 		if(!tMsgLatch)
 		begin
 	//		$display("DecOpWx3 Istr=%X Mod=%X", istrWord, srMod);
-			$display("DecOpWx3 Istr=%X-%X-%X-%X-%X-%X Mod=%X",
+			$display("DecOpWx3 Istr=%X-%X-%X-%X-%X-%X Mod=%X PC=%X",
 				istrWord[15: 0], istrWord[31:16],
 				istrWord[47:32], istrWord[63:48],
 				istrWord[79:64], istrWord[95:80],
-				srMod);
+				srMod, istrBPc);
 			$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
 				opUCmdA0, opUIxtA0,
 				opRegAM, opRegAO,

@@ -247,6 +247,10 @@ short *__tolow = NULL;
 short *__toup = NULL;
 #endif
 
+extern short locale_id;
+extern int locale_flags;
+
+
 int _tolower_gen(int c);
 int _toupper_gen(int c);
 
@@ -257,7 +261,7 @@ void __cytpe_init(void)
 	if(__isbuf)
 		return;
 
-	setlocale(1, "");
+//	setlocale(1, "");
 
 	__isbuf = &__isbufR[1];
 
@@ -266,6 +270,8 @@ void __cytpe_init(void)
 	__tolow = &__tolowR[1];
 	__toup = &__toupR[1];
 #endif
+
+	setlocale(1, "");
 
 #if 1
 	__tolow[-1]=-1;
@@ -421,7 +427,8 @@ int _tolower_gen(int c)
 		return(c+0x20);
 	}
 	
-	if(_locale_is_cp1252())
+//	if(_locale_is_cp1252())
+	if(locale_flags&TK_LOCALE_FLAG_CP1252)
 	{
 		if(c==0x8A)
 			return(0x9A);
@@ -464,7 +471,8 @@ int _toupper_gen(int c)
 		return(c+0x20);
 	}
 	
-	if(_locale_is_cp1252())
+//	if(_locale_is_cp1252())
+	if(locale_flags&TK_LOCALE_FLAG_CP1252)
 	{
 		if(c==0x9A)
 			return(0x8A);
@@ -523,14 +531,24 @@ toupper:
 
 __PDPCLIB_API__ int tolower(int c)
 {
-	__cytpe_init();
-    return (__tolow[c]);
+	return(_tolower_gen(c));
+
+#if 0
+	if(!__tolow)
+		__cytpe_init();
+	return (__tolow[c]);
+#endif
 }
 
 __PDPCLIB_API__ int toupper(int c)
 {
-	__cytpe_init();
-    return (__toup[c]);
+	return(_toupper_gen(c));
+
+#if 0
+	if(!__toup)
+		__cytpe_init();
+	return (__toup[c]);
+#endif
 }
 #endif
 

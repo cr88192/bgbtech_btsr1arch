@@ -1520,6 +1520,10 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BT;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BF;
 			}else
@@ -1571,6 +1575,10 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BF;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BT;
 			}else
@@ -1752,6 +1760,10 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BT;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BF;
 			}else
@@ -1803,6 +1815,10 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BF;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BT;
 			}else
@@ -2135,6 +2151,10 @@ int BGBCC_JX2C_EmitPredCmpVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BT;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BF;
 			}else
@@ -2183,6 +2203,10 @@ int BGBCC_JX2C_EmitPredCmpVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BF;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BT;
 			}else
@@ -2409,6 +2433,10 @@ int BGBCC_JX2C_EmitCSeltCompareVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BT;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BF;
 			}else
@@ -2457,6 +2485,10 @@ int BGBCC_JX2C_EmitCSeltCompareVRegVRegQLong(
 		{
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			{
+//				flip=1;
+//				nm1=BGBCC_SH_NMID_CMPQHI;
+//				nm2=BGBCC_SH_NMID_BF;
+
 				nm1=BGBCC_SH_NMID_CMPQHS;
 				nm2=BGBCC_SH_NMID_BT;
 			}else

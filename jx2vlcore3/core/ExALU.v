@@ -1158,8 +1158,12 @@ begin
 		5'h03: tRegOutJcmpT = !tSub1ZF && !(tSub1SF^tSub1VF);	/* GT */
 		5'h04: tRegOutJcmpT = (tSub1SF^tSub1VF);				/* LT */
 		5'h05: tRegOutJcmpT = !(tSub1SF^tSub1VF);				/* GE */
-		5'h06: tRegOutJcmpT = !tSub1CF;							/* B  */
-		5'h07: tRegOutJcmpT = tSub1CF;							/* HS */
+//		5'h06: tRegOutJcmpT = !tSub1CF;							/* B  */
+//		5'h07: tRegOutJcmpT = tSub1CF;							/* HS */
+
+		5'h06: tRegOutJcmpT = !tSub1CF && !tSub1ZF;				/* B  */
+		5'h07: tRegOutJcmpT = tSub1CF || tSub1ZF;				/* HS */
+
 		5'h08: tRegOutJcmpT = tTst1ZF;							/* TSTT */
 		5'h09: tRegOutJcmpT = !tTst1ZF;							/* TSTF */
 
@@ -1169,8 +1173,12 @@ begin
 		5'h13: tRegOutJcmpT = !tSub2ZF && !(tSub2SF^tSub2VF);	/* GT */
 		5'h14: tRegOutJcmpT = (tSub2SF^tSub2VF);				/* LT */
 		5'h15: tRegOutJcmpT = !(tSub2SF^tSub2VF);				/* GE */
-		5'h16: tRegOutJcmpT = !tSub2CF;							/* B  */
-		5'h17: tRegOutJcmpT = tSub2CF;							/* HS */
+//		5'h16: tRegOutJcmpT = !tSub2CF;							/* B  */
+//		5'h17: tRegOutJcmpT = tSub2CF;							/* HS */
+
+		5'h16: tRegOutJcmpT = !tSub2CF && !tSub2ZF;				/* B  */
+		5'h17: tRegOutJcmpT = tSub2CF || tSub2ZF;				/* HS */
+
 		5'h18: tRegOutJcmpT = tTst2ZF;							/* TSTT */
 		5'h19: tRegOutJcmpT = !tTst2ZF;							/* TSTF */
 
@@ -1438,9 +1446,15 @@ begin
 //			tResult1T=!tSub1CF;
 //			tResult2T=!tSub2CF;
 //			tResult1S=!tSub1BCF;
-			tResult1T=tSub1CF;
-			tResult2T=tSub2CF;
-			tResult1S=tSub1BCF;
+
+//			tResult1T=tSub1CF;
+//			tResult2T=tSub2CF;
+//			tResult1S=tSub1BCF;
+
+			tResult1T=tSub1CF || tSub1ZF;
+			tResult2T=tSub2CF || tSub2ZF;
+			tResult1S=tSub1BCF || tSub1BZF;
+
 			tResult1Tv=1;
 			tResult2Tv=1;
 			tResult1Sv=1;
@@ -1494,7 +1508,7 @@ begin
 //			tResult1T=tSub1CF && !tSub1ZF;
 
 			if(idUIxt[4])
-				tResult2T=!(tSub2CF && !tSub2ZF);
+				tResult2T=!tSub2CF && !tSub2ZF;
 			else
 				tResult2T=(tSub2SF^tSub2VF);
 

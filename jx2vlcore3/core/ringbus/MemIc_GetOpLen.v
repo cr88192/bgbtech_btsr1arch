@@ -72,8 +72,6 @@ begin
 	endcase
 `endif
 
-	opLenA0[1] = opLenA0[3] || (opLenA0[2] && isWXE);
-
 `ifdef jx2_enable_riscv
 	if(isRV)
 	begin
@@ -82,6 +80,8 @@ begin
 			opLenA0=4'b0001;
 	end
 `endif
+
+	opLenA0[1] = opLenA0[3] || (opLenA0[2] && isWXE);
 
 	tOpLen = opLenA0;
 end

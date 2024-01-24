@@ -427,7 +427,7 @@ begin
 
 	opIsXGpr	=
 		((istrWord[15:12]==4'b0111) ||
-		(istrWord[15:12]==4'b1001)) && !srXG2;
+		(istrWord[15:12]==4'b1001)) && !srXG2 && !srRV;
 
 //	tOpIsXGprX0	= (istrWord[15:12]==4'b0111);
 //	tOpIsXGprX1	= (istrWord[15:12]==4'b1001) &&  istrWord[ 8];
@@ -7662,8 +7662,8 @@ begin
 				if(!tMsgLatch && !isAltOp)
 				begin
 					$display("Jx2DecOpFx: Invalid FMID (32)");
-					$display("Jx2DecOpFx: Istr %X-%X",
-						istrWord[15:0], istrWord[31:16]);
+					$display("Jx2DecOpFx: Istr %X-%X  Mod=%X",
+						istrWord[15:0], istrWord[31:16], srMod);
 				end
 				tNextMsgLatch=1;
 			end

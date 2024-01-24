@@ -111,7 +111,7 @@ __PDPCLIB_API__ int CTYP __start()
 	char **penv;
 
 #ifdef __riscv
-	memset(&__bss_start, 0, &__BSS_END__-&__bss_start);
+//	memset(&__bss_start, 0, &__BSS_END__-&__bss_start);
 #endif
 
 	__start_first();

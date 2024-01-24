@@ -54,17 +54,32 @@ __basetests:
 	li		a0, 0
 	addi	a0, a0, 123
 	li		a1, 123
-	bne		a0, a1, __debugbreak
+//	bne		a0, a1, __debugbreak
+
+	beq		a0, a1, __basetests_L0
+	ebreak
+	__basetests_L0:
 	
 	lw		a2, __baseimm0
 	li		a3, 0x12345678
-	bne		a2, a3, __debugbreak
+//	bne		a2, a3, __debugbreak
 
-	beq		a0, a3, __debugbreak
+	beq		a2, a3, __basetests_L1
+	ebreak
+	__basetests_L1:
+
+//	beq		a0, a3, __debugbreak
+	bne		a0, a3, __basetests_L2
+	ebreak
+	__basetests_L2:
 
 	lw		a4, __baseimm1
 	li		a5, 0xFFFFFFFFC2345678
-	bne		a4, a5, __debugbreak
+//	bne		a4, a5, __debugbreak
+
+	beq		a4, a5, __basetests_L3
+	ebreak
+	__basetests_L3:
 	
 	jr	ra
 
@@ -74,4 +89,8 @@ __baseimm1:	.dword	0xC2345678
 
 .globl sleep_0
 sleep_0:
+	jr	ra
+
+.globl __hint_use_egpr
+__hint_use_egpr:
 	jr	ra

@@ -121,7 +121,7 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 	struct btsh2_elf64_phdr_s *phdr;
 	u64 entry;
 	u32 phoff, shoff;
-	u32 paddr, pmsz, poff, mach;
+	u32 paddr, pmsz, pfsz, poff, mach;
 	byte en, isriscv, isbjx2;
 	int phentsz, phnum;
 	int i, j, k;
@@ -187,6 +187,7 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 		}
 
 		paddr=btsh2_ptrGetUD(phdr->p_paddr, en);
+		pfsz=btsh2_ptrGetUD(phdr->p_filesz, en);
 		pmsz=btsh2_ptrGetUD(phdr->p_memsz, en);
 		poff=btsh2_ptrGetUD(phdr->p_offset, en);
 		
@@ -205,8 +206,12 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 		}
 #endif
 
+		if(pmsz>pfsz)
+			memset(((char *)paddr)+pfsz, 0, pmsz-pfsz);
+
 		tk_fseek(fd, poff, 0);
-		tk_fread((void *)paddr, 1, pmsz, fd);
+//		tk_fread((void *)paddr, 1, pmsz, fd);
+		tk_fread((void *)paddr, 1, pfsz, fd);
 
 //		j=BTESH2_MemCpyIn(cpu, paddr&0x1FFFFFFF, ibuf+poff, pmsz);
 //		j=BTESH2_MemCpyIn(cpu, paddr, ibuf+poff, pmsz);

@@ -25,8 +25,11 @@ TARGETPFX=riscv64-unknown-elf-
 CC=$(TOOLPATH)$(TARGETPFX)gcc
 AR=$(TOOLPATH)$(TARGETPFX)ar
 AS=$(TOOLPATH)$(TARGETPFX)as
+NM=$(TOOLPATH)$(TARGETPFX)nm
 
-TK_CFL= -nostdinc -nostdlib -nostartfiles -fPIC -fPIE -static-pie # -fno-builtin
+# TK_CFL= -nostdinc -nostdlib -nostartfiles -fPIC -fPIE -static-pie # -fno-builtin
+TK_CFL= -nostdinc -nostdlib -nostartfiles -fno-builtin -Os \
+	-fwrapv -fno-strict-aliasing -fno-inline
 TK_LDFL= $(TK_CFL) \
 	-Wl,-nostdlib -Wl,-e,_start
 
@@ -37,7 +40,9 @@ LDFLAGS=$(TK_LDFL) -lclib_rv64
 
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) 
 
-LDFLAGS64=$(TK_LDFL) -lclib_rv64
+# LDFLAGS64=$(TK_LDFL) -lclib_rv64
+LDFLAGS64=$(TK_LDFL) -lvxcore_rv64 -Wl,--emit-relocs \
+	-ffunction-sections -Wl,-gc-sections -Wl,-T,./doomsrc2/elf64rv_dflmod.x
 
 GL_CFLAGS64	= $(CFLAGS64) -DGLQUAKE
 
@@ -263,7 +268,7 @@ primecnt_sh4b.elf: primecnt.c
 
 dhry_rv64.elf: $(DHRY_SRCS)
 	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME -DREG=register
-	nm dhry_rv64.elf > dhry_rv64.elf.map
+	$(NM) dhry_rv64.elf > dhry_rv64.elf.map
 
 
 quake_rv64.elf: $(SQUAKE_SRCS)

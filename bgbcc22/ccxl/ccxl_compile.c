@@ -1850,7 +1850,8 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			}
 		}
 
-		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_return, "return"))
+		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_return, "return") &&
+			!BGBCC_CCXL_CheckIsStaticLib(ctx))
 		{
 #if 1
 			v=BCCX_FetchCst(ln, &bgbcc_rcst_value, "value");
@@ -1863,7 +1864,7 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			}
 #endif
 
-#if 0
+#if 1
 			if(v && BGBCC_CCXL_IsIntP(ctx, v))
 			{
 				i=BCCX_GetIntCst(v, &bgbcc_rcst_value, "value");

@@ -66,12 +66,24 @@ wire			isOpWxe;
 assign		isAltOp		= isAltOpB[0];
 assign		isOp24		= isAltOpB[1];
 assign		isOpWxe		= isAltOpB[2];
-assign		isOpRiscV	= isAltOpB[3];
+// assign		isOpRiscV	= isAltOpB[3];
 
 wire			srUser;				//Usermode
 wire			srSuperuser;		//Superuser mode
 assign		srUser = srMod[0];
 assign		srSuperuser = (srMod[0] && srMod[1]) || (srMod[0] && srMod[2]);
+
+wire			srXG2;		//XG2 Mode
+assign		srXG2 = srMod[3];
+
+wire			srXGRV;		//XGRV Mode
+assign		srXGRV = srMod[3] && srMod[4];
+
+wire			srRV;		//RV Mode
+assign		srRV = !srMod[3] && srMod[4];
+
+assign		isOpRiscV	= srRV;
+
 
 `reg_gpr		opRegN;
 `reg_gpr		opRegM;
@@ -118,9 +130,9 @@ assign	idUFl = { 6'h0, 5'h0, opULdOp, opUFl };
 `reg_gpr	opRegN_Sr;
 `reg_gpr	opRegO_Sr;
 
-reg[32:0]		opImm_imm9s;
-reg[32:0]		opImm_imm9u;
-reg[32:0]		opImm_imm9n;
+reg[32:0]		opImm_imm12s;
+reg[32:0]		opImm_imm12u;
+reg[32:0]		opImm_imm12n;
 
 reg[32:0]		opImm_imm10s;
 reg[32:0]		opImm_imm10u;
@@ -132,8 +144,8 @@ reg[32:0]		opImm_imm16n;
 
 reg[32:0]		opImm_disp20s;
 reg[32:0]		opImm_disp8s;
-reg[32:0]		opImm_disp9u;
-reg[32:0]		opImm_disp9s;
+reg[32:0]		opImm_disp12ld;
+reg[32:0]		opImm_disp12st;
 reg[32:0]		opImm_disp13s;
 
 reg[32:0]		opImm_disp5u;
@@ -355,21 +367,22 @@ begin
 		istrWord[20],
 		istrWord[30:21] };
 
-	opImm_imm9u	= {UV21_00, istrWord[31:20]};
-	opImm_imm9n	= {UV21_FF, istrWord[31:20]};
-	opImm_imm9s	= istrWord[31] ? opImm_imm9n : opImm_imm9u;
+	opImm_imm12u	= {UV21_00, istrWord[31:20]};
+	opImm_imm12n	= {UV21_FF, istrWord[31:20]};
+	opImm_imm12s	= istrWord[31] ? opImm_imm12n : opImm_imm12u;
 	
-	opImm_imm8au	= opImm_imm9u;
+	opImm_imm8au	= opImm_imm12u;
 
-	opImm_disp9u	= opImm_imm9u;
-//	opImm_disp9s	= {UV21_00, istrWord[31:25], istrWord[11:7]};
-	opImm_disp9s	= {
+//	opImm_disp12ld	= opImm_imm12u;
+	opImm_disp12ld	= opImm_imm12s;
+//	opImm_disp12st	= {UV21_00, istrWord[31:25], istrWord[11:7]};
+	opImm_disp12st	= {
 		istrWord[31] ? UV21_FF : UV21_00,
 		istrWord[31:25], istrWord[11:7]};
 
-	opImm_imm10u	= opImm_imm9u;
-	opImm_imm10n	= opImm_imm9n;
-	opImm_imm10s	= opImm_imm9s;
+	opImm_imm10u	= opImm_imm12u;
+	opImm_imm10n	= opImm_imm12n;
+	opImm_imm10s	= opImm_imm12s;
 
 	opImm_disp8s	= {
 		istrWord[31]?UV21_FF:UV21_00,
@@ -383,7 +396,8 @@ begin
 
 	opImm_imm16u	= { 1'b0, istrWord[31:12], 12'h000 };
 	opImm_imm16n	= { 1'b1, istrWord[31:12], 12'h000 };
-	opImm_imm16s	= opImm_imm16u;
+//	opImm_imm16s	= opImm_imm16u;
+	opImm_imm16s	= istrWord[31] ? opImm_imm16n : opImm_imm16u;
 
 	usrReject		= 0;
 	usrSuAllow		= 0;
@@ -811,7 +825,7 @@ begin
 		5'b01_101: begin /* LUI */
 			opNmid		= JX2_UCMD_MOV_IR;
 			opFmid		= JX2_FMID_IMM8REG;
-			opIty		= JX2_ITY_UB;
+			opIty		= JX2_ITY_SB;
 			opUCmdIx	= JX2_UCIX_LDI_LDIX;
 		end
 
@@ -915,7 +929,11 @@ begin
 		default: begin
 		end
 	endcase
-	
+
+
+	if(opNmid == JX2_UCMD_INVOP)
+		opFmid = JX2_FMID_INV;
+
 	if(opIsNotFx)
 	begin
 		opFmid	= JX2_FMID_Z;
@@ -1145,13 +1163,13 @@ begin
 				JX2_ITY_SB: begin
 				end
 				JX2_ITY_SW: begin
-					opImm	= opImm_imm9s;
+					opImm	= opImm_imm12s;
 				end
 				JX2_ITY_UW: begin
-					opImm	= opImm_imm9u;
+					opImm	= opImm_imm12u;
 				end
 				JX2_ITY_NW: begin
-					opImm	= opImm_imm9n;
+					opImm	= opImm_imm12n;
 				end
 				
 				default: begin
@@ -1182,7 +1200,7 @@ begin
 			opRegO	= JX2_GR_IMM;
 //			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
 			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty[2], 2'b00};
-			opImm	= opImm_disp9u;
+			opImm	= opImm_disp12ld;
 
 			opRegN	= opRegN_Dfl;
 			opRegP	= opRegN_Dfl;
@@ -1208,7 +1226,7 @@ begin
 			opRegO	= JX2_GR_IMM;
 //			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
 			opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty[2], 2'b00};
-			opImm	= opImm_disp9s;
+			opImm	= opImm_disp12st;
 	
 			opRegN	= opRegO_Dfl;
 			opRegP	= opRegO_Dfl;
@@ -1424,7 +1442,7 @@ begin
 			end
 
 			JX2_ITY_UW: begin
-				opImm	= opImm_disp9s;
+				opImm	= opImm_disp12st;
 			end
 
 			default: begin
@@ -1476,8 +1494,8 @@ begin
 				if(!tMsgLatch && isOpRiscV)
 				begin
 					$display("Jx2DecOpRvI: Invalid FMID (32)");
-					$display("Jx2DecOpRvI: Istr %X-%X",
-						istrWord[15:0], istrWord[31:16]);
+					$display("Jx2DecOpRvI: Istr %X-%X Mod=%X",
+						istrWord[15:0], istrWord[31:16], srMod);
 				end
 				tNextMsgLatch=1;
 			end
@@ -1511,6 +1529,14 @@ begin
 			istrWord[15:0], istrWord[31:16]);
 		opNmid	= JX2_UCMD_INVOP;
 		opFmid	= JX2_FMID_INV;
+	end
+	
+	if(isOpRiscV)
+	begin
+		if(opNmid == JX2_UCMD_INVOP)
+		begin
+			$display("DecOpRvI: Saw INVOP");
+		end
 	end
 end
 

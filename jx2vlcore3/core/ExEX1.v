@@ -88,7 +88,7 @@ module ExEX1(
 	opUCmd, opUIxt,
 	exHold,	exTrapExc,
 	timers,	opUCmdOut,
-	opUExtFl,
+	opUExtFl, opIstrWord,
 
 	regIdRs,		//Source A, ALU / Base
 	regIdRt,		//Source B, ALU / Index
@@ -154,6 +154,7 @@ input			reset;
 input[8:0]		opUCmd;
 input[8:0]		opUIxt;
 input[7:0]		opUExtFl;
+input[95:0]		opIstrWord;
 
 output[1:0]		exHold;
 output[127:0]	exTrapExc;
@@ -552,6 +553,8 @@ reg			tSrJcmpZT_ZQ;
 reg			tSrJcmpZT_SL;
 reg			tSrJcmpZT_SQ;
 
+reg[7:0]	tRegValBPcLo;
+
 always @*
 begin
 
@@ -878,6 +881,21 @@ begin
 	endcase
 `endif
 
+`ifndef def_true
+// `ifdef def_true
+	if(tBraIsRiscv && (tRegValBPcLo!=regValBPc[7:0]) && tOpEnable)
+	begin
+		$display(" %X %X %X/%X-%X s=%X:%X t=%X:%X",
+			regValBPc[31:0], opIstrWord[31:0], opUCmd, tOpUCmd1, opUIxt,
+			regIdRs, regValRs, regIdRt, regValRt);
+		$display("   n=%X:%X    %b-%b-%b-%b-%b-%b-%b",
+			regIdRm, regValRm,
+			opIstrWord[31:25], opIstrWord[24:20],
+			opIstrWord[19:15], opIstrWord[14:12],
+			opIstrWord[11: 7], opIstrWord[ 6: 5],
+			opIstrWord[ 4: 0]);
+	end
+`endif
 
 	case(tOpUCmd1)
 		JX2_UCMD_NOP: begin
@@ -885,7 +903,8 @@ begin
 		
 		JX2_UCMD_INVOP: begin
 			if(!tMsgLatch)
-				$display("EX1: Invalid Opcode %X", tOpUCmd1);
+				$display("EX1: Invalid Opcode %X-%X, IsRV=%d PC=%X",
+					tOpUCmd1, opUIxt, tBraIsRiscv, regValBPc);
 			tNextMsgLatch	= 1;
 
 //			tExTrapExc = {
@@ -1210,6 +1229,16 @@ begin
 
 //			$display("JMP: Reg=%X", regValRs);
 
+			if((regValPc[27:16]!=0) && (regValRs[27:16]==0))
+			begin
+				if(!tMsgLatch)
+				begin
+					$display("JMP: Reg=%X %X", regValRs, tValAgu);
+				end
+				tNextMsgLatch = 1;
+				tExHold		= 1;
+			end
+
 // `ifndef jx2_enable_riscv
 // `ifdef def_true
 `ifndef def_true
@@ -1242,10 +1271,10 @@ begin
 			end
 			tValBra[63:48] = UV16_00;
 
-			if(regInSr[26])
-			begin
-				$display("EX: JMP: RVI PC=%X", tValBra);
-			end
+//			if(regInSr[26])
+//			begin
+//				$display("EX: JMP: RVI PC=%X", tValBra);
+//			end
 			
 			if(tValAgu[0])
 			begin
@@ -1281,6 +1310,18 @@ begin
 //			tDoMemOp	= 1;
 
 //			$display("EX: JSR: LR=%X PC2=%X", regValRs, regValPc);
+
+`ifdef def_true
+			if((regValPc[27:16]!=0) && (regValRs[27:16]==0))
+			begin
+				if(!tMsgLatch)
+				begin
+					$display("JSR: Reg=%X %X", regValRs, tValAgu);
+				end
+				tNextMsgLatch = 1;
+				tExHold		= 1;
+			end
+`endif
 
 // `ifndef jx2_enable_riscv
 `ifndef def_true
@@ -1652,8 +1693,8 @@ begin
 				end
 				JX2_UCIX_IXT_BREAK: begin
 					if(!tMsgLatch)
-						$display("EX: BREAK, PC=%X Imm=%X",
-							regValPc, regValImm);
+						$display("EX: BREAK, PC=%X Imm=%X LR=%X",
+							regValPc, regValImm, regInLr);
 					tNextMsgLatch	= 1;
 					tExHold		= 1;
 					if(regInExc[15])
@@ -2147,6 +2188,9 @@ begin
 	tMsgLatch	<= tNextMsgLatch;
 //	tCanaryMagic	<= tNxtCanaryMagic;
 	tCanaryMagic	<= reset ? 0 : tNxtCanaryMagic;
+
+	if(tOpEnable)
+		tRegValBPcLo	<= regValBPc[7:0];
 
 end
 

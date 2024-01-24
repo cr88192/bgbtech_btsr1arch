@@ -71,6 +71,15 @@ __PDPCLIB_API__ char *setlocale(int category, const char *locale)
 {
 	int i;
 //    (void)category;
+
+	if(locale_id<0)
+		locale_id=0;
+	if(locale_id>=5)
+		locale_id=0;
+
+	if(locale && !(*locale) && strcmp(locale, ""))
+		__debugbreak();
+
     if (locale == NULL)
     {
 //		return ("C");

@@ -69,6 +69,8 @@ CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
 # LDFLAGS64=$(TK_LDFL) -lvxcore64 -ltkgdi
 LDFLAGS64=$(TK_LDFL) -lc -ltkgdi -ltkgl
 
+LDFLAGS64_DHRY=$(TK_LDFL) -lvxcore64 -ltkgdi
+
 GL_CFLAGS64	= $(CFLAGS64) /DGLQUAKE
 
 all: targets
@@ -298,7 +300,7 @@ primecnt_sh4b.elf: primecnt.c
 
 
 dhry_b64b.exe: $(DHRY_SRCS)
-	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME -DREG=register
+	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64_DHRY) -DTIME -DREG=register
 
 
 quake_b64b.exe: $(SQUAKE_SRCS)

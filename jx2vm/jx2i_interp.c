@@ -1592,6 +1592,19 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MOVUTW:		s0="MOVU.TW";	break;
 	case BJX2_NMID_MOVHTW:		s0="MOV.HTW";	break;
 
+	case BJX2_NMID_FMIN:		s0="FMIN";		break;
+	case BJX2_NMID_FMAX:		s0="FMAX";		break;
+	case BJX2_NMID_FMINS:		s0="FMINS";		break;
+	case BJX2_NMID_FMAXS:		s0="FMAXS";		break;
+	case BJX2_NMID_SLT:			s0="SLT";		break;
+	case BJX2_NMID_SLTU:		s0="SLTU";		break;
+	case BJX2_NMID_FSGNJ:		s0="FSGNJ";		break;
+	case BJX2_NMID_FSGNJN:		s0="FSGNJN";	break;
+	case BJX2_NMID_FSGNJX:		s0="FSGNJX";	break;
+	case BJX2_NMID_FSGNJS:		s0="FSGNJS";	break;
+	case BJX2_NMID_FSGNJNS:		s0="FSGNJNS";	break;
+	case BJX2_NMID_FSGNJXS:		s0="FSGNJXS";	break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;

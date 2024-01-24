@@ -2186,13 +2186,25 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageCreateRamdisk(512*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
-#if 1
+// #if 1
+#ifndef DOOM_RV
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
 #endif
 
-#if 1
+#ifdef DOOM_RV
+	JX2R_UseImageAddFile(
+		(char *)"BOOTLOAD.SYS",
+		(char *)"../../tk_qsrc/doomsrc2/doom_rv64b.elf");
+	JX2R_UseImageAddFile(
+		(char *)"DOOMU.WAD",
+		(char *)"../../tk_qsrc/doomsrc2/doom.wad");
+//		(char *)"../../tk_qsrc/doomsrc2/doomulz.wad");
+#endif
+
+// #if 1
+#ifndef DOOM_RV
 	JX2R_UseImageAddFile(
 //		(char *)"BOOTLOAD.SYS",
 		(char *)"DOOM.EXE",

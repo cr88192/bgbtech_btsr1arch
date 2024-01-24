@@ -478,6 +478,7 @@ begin
 
 `ifdef jx2_enable_riscv
 	if(pipeHasLr[4])
+//	if(isRV)
 	begin
 		/* RISC-V */
 		tIsBra8		= 0;
@@ -785,6 +786,15 @@ begin
 	end
 
 //	tPreBra		= 0;
+
+	if(pipeHasLr[4])
+	begin
+		if(tPreBra)
+		begin
+			$display("DecPreBra: Predict Branch in RV Mode");
+		end
+	end
+
 end
 
 always @*

@@ -2,6 +2,15 @@
 
 u64 __int32_dmulu(u32 x, u32 y);
 
+int __int_clamp(int x, int m, int n)
+{
+	if(x<m)
+		return(m);
+	if(x>n)
+		return(n);
+	return(x);
+}
+
 #if 0
 u16 sfp_rcp_adj[256]={
 0x0000, 0x03F9, 0x07E1, 0x0BB9, 0x0F82, 0x133C, 0x16E7, 0x1A83,

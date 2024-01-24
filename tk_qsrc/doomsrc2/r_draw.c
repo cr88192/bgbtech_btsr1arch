@@ -80,7 +80,8 @@ u16		*ylookup_zb[MAXHEIGHT];
 byte		translations[3][256];
 
 
-#ifndef __BGBCC__
+// #ifndef __BGBCC__
+#if !defined(__BGBCC__) && !defined(__riscv)
 
 int __int_clamp(int val, int min, int max)
 {
