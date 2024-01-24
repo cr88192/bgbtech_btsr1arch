@@ -214,12 +214,12 @@ wire		nMaskEnableRsCm =
 //	(regIdUCmd[5:0] == JX2_UCMD_JMP) ||
 //	(regIdUCmd[5:0] == JX2_UCMD_JSR);
 
-wire		nMaskEnableRyCm =
+//wire		nMaskEnableRyCm =
 //	(regIdUCmd[5:0] == JX2_UCMD_NOP) ||
-	(regIdUCmd[5:0] == JX2_UCMD_MOV_RM) ;
+//	(regIdUCmd[5:0] == JX2_UCMD_MOV_RM) ;
 
 // wire		nMaskEnableRsCm = 1;
-// wire		nMaskEnableRyCm = 1;
+wire		nMaskEnableRyCm = 1;
 
 
 (* max_fanout = 200 *)

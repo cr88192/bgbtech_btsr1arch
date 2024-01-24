@@ -291,7 +291,7 @@
 
 // `define jx2_debug_hitmiss	//Debug Branch Predictor
 
-`define jx2_debug_isr		//Debug prints for ISR
+// `define jx2_debug_isr		//Debug prints for ISR
 
 
 // `define jx2_audio_leftonly		//Only left audio channel is used.
