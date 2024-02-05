@@ -94,7 +94,7 @@
 `ifndef jx2_xc7s50
 
 // `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext (GFPX)
-// `define	jx2_fpu_fmac			//Enable FMAC Operation
+`define	jx2_fpu_fmac			//Enable FMAC Operation
 
 `endif
 
@@ -134,7 +134,9 @@
 `ifndef jx2_xc7s50
 `define jx2_alu_slomuldiv			//Enable Slow MUL/DIV Unit
 `define jx2_alu_slomuldiv_fdiv		//Enable FDIV via Slow MUL/DIV Unit
-// `define jx2_alu_slomuldiv_fdivs		//Enable FDIV.S via Slow MUL/DIV Unit
+`ifdef jx2_enable_riscv
+`define jx2_alu_slomuldiv_fdivs		//Enable FDIV.S via Slow MUL/DIV Unit
+`endif
 `endif
 
 // `define jx2_sprs_elrehr			//ELR/EHR/BP as special registers?

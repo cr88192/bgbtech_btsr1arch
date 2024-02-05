@@ -228,18 +228,23 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 
 	BGBCC_JX2_CheckExpandLabel(ctx);
 
-//	for(i=0; i<32; i++)
-	for(i=0; i<64; i++)
-		ctx->reg_pszx[i]=0;
+	if((lblid&CCXL_LBL_SPMASK)!=CCXL_LBL_GENLLNBASE)
+	{
+		/* Only flush state for actual labels. */
+	
+	//	for(i=0; i<32; i++)
+		for(i=0; i<64; i++)
+			ctx->reg_pszx[i]=0;
 
-	ctx->pos_pad_op7=-999;
-	ctx->pos_pad_op6=-999;
-	ctx->pos_pad_op5=-999;
-	ctx->pos_pad_op4=-999;
-	ctx->pos_pad_op3=-999;
-	ctx->pos_pad_op2=-999;
-	ctx->pos_pad_op1=-999;
-	ctx->pos_pad_op0=-999;
+		ctx->pos_pad_op7=-999;
+		ctx->pos_pad_op6=-999;
+		ctx->pos_pad_op5=-999;
+		ctx->pos_pad_op4=-999;
+		ctx->pos_pad_op3=-999;
+		ctx->pos_pad_op2=-999;
+		ctx->pos_pad_op1=-999;
+		ctx->pos_pad_op0=-999;
+	}
 
 	ofs=BGBCC_JX2_EmitGetOffs(ctx);
 	sec=ctx->sec;

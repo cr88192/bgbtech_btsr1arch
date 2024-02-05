@@ -1,0 +1,1 @@
+jx2vm ../tst_jx2boot.bin --rd_add bootload.sys=../tk_qsrc/glquake_tkra_rv64.elf id1/pak0lz.wad=../tk_qsrc/id1/pak0lz.wad id1/pak1lz.wad=../tk_qsrc/id1/pak1lz.wad id1/pak2lz.wad=../tk_qsrc/id1/pak2lz.wad --rd_map ../tk_qsrc/glquake_tkra_rv64.elf.map %1 %2 %3 %4 %5 %6 %7

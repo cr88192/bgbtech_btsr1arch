@@ -463,6 +463,7 @@ Base, Q1..Q3:
 #define CCXL_UNOP_LNOT			0x03
 #define CCXL_UNOP_INC			0x04
 #define CCXL_UNOP_DEC			0x05
+#define CCXL_UNOP_LNOT2			0x06
 
 #define CCXL_CMP_EQ				0x00
 #define CCXL_CMP_NE				0x01

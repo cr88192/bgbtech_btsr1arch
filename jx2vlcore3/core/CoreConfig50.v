@@ -78,7 +78,7 @@
 `define jx2_mem_l1d_fwstore			//Store Forwarding
 // `define jx2_mem_l1d_fwarray			//Block Array Forwarding
 
-// `define jx2_mem_l1d_utlb			//Micro TLB
+`define jx2_mem_l1d_utlb			//Micro TLB
 // `define jx2_mem_l1i_utlb			//Micro TLB
 
 `define jx2_mem_l1i_fastix		//Try to get block index quickly
@@ -179,7 +179,9 @@
 `define jx2_reg_spdecswap			//Swap SP and SSP in Decode
 
 `ifndef jx2_xc7s50
-// `define jx2_l1a_ena_tlbskip		//L1A: Allow requests to skip over TLB
+`define jx2_l1a_ena_tlbskip		//L1A: Allow requests to skip over TLB
+`define jx2_l1a_ena_loadfast		//L1A: Enable fast-case Loads
+`define jx2_ena_alufast				//Enable fast-case ALU
 `endif
 
 // `ifndef def_true

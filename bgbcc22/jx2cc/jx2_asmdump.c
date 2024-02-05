@@ -759,6 +759,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 
 	case BGBCC_SH_NMID_XMOV:		sn="XMOV";			break;	//0x01CC
 
+	case BGBCC_SH_NMID_CMPQNE:		sn="CMPQNE";		break;
+
 	default:
 		sprintf(tb, "UNK_%04X", nmid);
 		sn=bgbcc_strdup(tb);

@@ -1592,6 +1592,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MOVUTW:		s0="MOVU.TW";	break;
 	case BJX2_NMID_MOVHTW:		s0="MOV.HTW";	break;
 
+	case BJX2_NMID_CMPQNE:		s0="CMPQNE";	break;
+
 	case BJX2_NMID_FMIN:		s0="FMIN";		break;
 	case BJX2_NMID_FMAX:		s0="FMAX";		break;
 	case BJX2_NMID_FMINS:		s0="FMINS";		break;
@@ -1604,6 +1606,19 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_FSGNJS:		s0="FSGNJS";	break;
 	case BJX2_NMID_FSGNJNS:		s0="FSGNJNS";	break;
 	case BJX2_NMID_FSGNJXS:		s0="FSGNJXS";	break;
+
+	case  BJX2_NMID_FDIVS:		s0="FDIV.S";	break;
+	case  BJX2_NMID_FLDCIS:		s0="FLDCI.S";	break;
+	case  BJX2_NMID_FSTCIS:		s0="FSTCI.S";	break;
+
+	case  BJX2_NMID_FMADDS:		s0="FMADD.S";	break;
+	case  BJX2_NMID_FMADDD:		s0="FMADD.D";	break;
+	case  BJX2_NMID_FMSUBS:		s0="FMSUB.S";	break;
+	case  BJX2_NMID_FMSUBD:		s0="FMSUB.D";	break;
+	case  BJX2_NMID_FNMADDS:	s0="FNMADD.S";	break;
+	case  BJX2_NMID_FNMADDD:	s0="FNMADD.D";	break;
+	case  BJX2_NMID_FNMSUBS:	s0="FNMSUB.S";	break;
+	case  BJX2_NMID_FNMSUBD:	s0="FNMSUB.D";	break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);
@@ -1656,6 +1671,39 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx,
 			case BJX2_REG_R29:		s="X29";	break;
 			case BJX2_REG_R30:		s="X30";	break;
 			case BJX2_REG_R31:		s="X31";	break;
+
+			case BJX2_REG_R32:		s="F0";	break;
+			case BJX2_REG_R33:		s="F1";	break;
+			case BJX2_REG_R34:		s="F2";	break;
+			case BJX2_REG_R35:		s="F3";	break;
+			case BJX2_REG_R36:		s="F4";	break;
+			case BJX2_REG_R37:		s="F5";	break;
+			case BJX2_REG_R38:		s="F6";	break;
+			case BJX2_REG_R39:		s="F7";	break;
+			case BJX2_REG_R40:		s="F8";	break;
+			case BJX2_REG_R41:		s="F9";	break;
+			case BJX2_REG_R42:		s="F10";	break;
+			case BJX2_REG_R43:		s="F11";	break;
+			case BJX2_REG_R44:		s="F12";	break;
+			case BJX2_REG_R45:		s="F13";	break;
+			case BJX2_REG_R46:		s="F14";	break;
+			case BJX2_REG_R47:		s="F15";	break;
+			case BJX2_REG_R48:		s="F16";	break;
+			case BJX2_REG_R49:		s="F17";	break;
+			case BJX2_REG_R50:		s="F18";	break;
+			case BJX2_REG_R51:		s="F19";	break;
+			case BJX2_REG_R52:		s="F20";	break;
+			case BJX2_REG_R53:		s="F21";	break;
+			case BJX2_REG_R54:		s="F22";	break;
+			case BJX2_REG_R55:		s="F23";	break;
+			case BJX2_REG_R56:		s="F24";	break;
+			case BJX2_REG_R57:		s="F25";	break;
+			case BJX2_REG_R58:		s="F26";	break;
+			case BJX2_REG_R59:		s="F27";	break;
+			case BJX2_REG_R60:		s="F28";	break;
+			case BJX2_REG_R61:		s="F29";	break;
+			case BJX2_REG_R62:		s="F30";	break;
+			case BJX2_REG_R63:		s="F31";	break;
 		}
 		
 		if(s)
@@ -2044,7 +2092,9 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 						(u32)op->pc, op->cyc,
 //						op->opn, op->opn2,
 						opw1, opsep, opw2,
-						((op->fl&BJX2_OPFL_WEX)?'|':' '),
+//						((op->fl&BJX2_OPFL_WEX)?'|':' '),
+						((op->fl&BJX2_OPFL_OPSSC)?'$':
+							((op->fl&BJX2_OPFL_WEX)?'|':' ')),
 						tb1);
 				}else
 				{
@@ -2053,7 +2103,9 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 						(u32)op->pc, op->cyc,
 //						op->opn, op->opn2,
 						opw1, opsep, opw2,
-					((op->fl&BJX2_OPFL_WEX)?'|':' '),
+//						((op->fl&BJX2_OPFL_WEX)?'|':' '),
+						((op->fl&BJX2_OPFL_OPSSC)?'$':
+							((op->fl&BJX2_OPFL_WEX)?'|':' ')),
 						tb1);
 				}
 			}else
@@ -2065,7 +2117,9 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 						(u32)op->pc, op->cyc,
 //						op->opn, op->opn2,
 						opw1, opsep, opw2,
-						((op->fl&BJX2_OPFL_WEX)?'|':' '),
+//						((op->fl&BJX2_OPFL_WEX)?'|':' '),
+						((op->fl&BJX2_OPFL_OPSSC)?'$':
+							((op->fl&BJX2_OPFL_WEX)?'|':' ')),
 						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 				}else
 				{
@@ -2074,7 +2128,9 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 						(u32)op->pc, op->cyc,
 //						op->opn, op->opn2,
 						opw1, opsep, opw2,
-						((op->fl&BJX2_OPFL_WEX)?'|':' '),
+//						((op->fl&BJX2_OPFL_WEX)?'|':' '),
+						((op->fl&BJX2_OPFL_OPSSC)?'$':
+							((op->fl&BJX2_OPFL_WEX)?'|':' ')),
 						BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 				}
 			}
@@ -2088,8 +2144,10 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 					(u32)op->pc, op->cyc,
 					op->opn,
 //					((op->fl&BJX2_OPFL_WEX)?'|':' '),
-					((op->fl&BJX2_OPFL_WEX)?'|':
-						((op->fl&BJX2_OPFL_OPSSC)?'S':' ')),
+//					((op->fl&BJX2_OPFL_WEX)?'|':
+//						((op->fl&BJX2_OPFL_OPSSC)?'$':' ')),
+					((op->fl&BJX2_OPFL_OPSSC)?'$':
+						((op->fl&BJX2_OPFL_WEX)?'|':' ')),
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}else
 			{
@@ -2098,8 +2156,10 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 					(u32)op->pc, op->cyc,
 					op->opn,
 //					((op->fl&BJX2_OPFL_WEX)?'|':' '),
-					((op->fl&BJX2_OPFL_WEX)?'|':
-						((op->fl&BJX2_OPFL_OPSSC)?'S':' ')),
+//					((op->fl&BJX2_OPFL_WEX)?'|':
+//						((op->fl&BJX2_OPFL_OPSSC)?'$':' ')),
+					((op->fl&BJX2_OPFL_OPSSC)?'$':
+						((op->fl&BJX2_OPFL_WEX)?'|':' ')),
 					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}
 			brpc=op->pc+2;

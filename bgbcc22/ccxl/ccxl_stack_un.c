@@ -34,6 +34,8 @@ ccxl_status BGBCC_CCXL_StackUnaryOp(BGBCC_TransState *ctx, char *op)
 	if(!strcmp(op, "++"))opr=CCXL_UNOP_INC;
 	if(!strcmp(op, "--"))opr=CCXL_UNOP_DEC;
 
+	if(!strcmp(op, "!!"))opr=CCXL_UNOP_LNOT2;
+
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_UNOP);
 	BGBCC_CCXLR3_EmitArgInt(ctx, opr);
 
@@ -41,6 +43,14 @@ ccxl_status BGBCC_CCXL_StackUnaryOp(BGBCC_TransState *ctx, char *op)
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
 	BGBCC_CCXL_TypeAutoPromoteType(ctx, sty, &sty);
+
+	dty=sty;
+
+	if(	(opr==CCXL_UNOP_LNOT) ||
+		(opr==CCXL_UNOP_LNOT2))
+	{
+		dty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_I);
+	}
 
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
 	{
@@ -62,7 +72,7 @@ ccxl_status BGBCC_CCXL_StackUnaryOp(BGBCC_TransState *ctx, char *op)
 	}
 
 //	BGBCC_CCXL_TypeFromSig(ctx, &dty, sig);
-	BGBCC_CCXL_RegisterAllocTemporary(ctx, sty, &dreg);
+	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
 //	BGBCC_CCXL_EmitConv(ctx, dty, sty, dreg, sreg);
 
 	if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
@@ -100,6 +110,8 @@ ccxl_status BGBCC_CCXL_StackUnaryOpName(BGBCC_TransState *ctx,
 	if(!strcmp(op, "!"))opr=CCXL_UNOP_LNOT;
 	if(!strcmp(op, "++"))opr=CCXL_UNOP_INC;
 	if(!strcmp(op, "--"))opr=CCXL_UNOP_DEC;
+
+	if(!strcmp(op, "!!"))opr=CCXL_UNOP_LNOT2;
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDUNOP);
 	BGBCC_CCXLR3_EmitArgInt(ctx, opr);
@@ -171,6 +183,8 @@ ccxl_status BGBCC_CCXL_StackUnaryOpNameB(BGBCC_TransState *ctx,
 	if(!strcmp(op, "!"))opr=CCXL_UNOP_LNOT;
 	if(!strcmp(op, "++"))opr=CCXL_UNOP_INC;
 	if(!strcmp(op, "--"))opr=CCXL_UNOP_DEC;
+
+	if(!strcmp(op, "!!"))opr=CCXL_UNOP_LNOT2;
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDUNOP);
 	BGBCC_CCXLR3_EmitArgInt(ctx, opr+(mod*16));
@@ -276,6 +290,8 @@ ccxl_status BGBCC_CCXL_StackUnaryOpStore(BGBCC_TransState *ctx,
 	if(!strcmp(op, "++"))opr=CCXL_UNOP_INC;
 	if(!strcmp(op, "--"))opr=CCXL_UNOP_DEC;
 
+	if(!strcmp(op, "!!"))opr=CCXL_UNOP_LNOT2;
+
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_STUNOP);
 	BGBCC_CCXLR3_EmitArgInt(ctx, opr);
 	BGBCC_CCXLR3_EmitArgSymbol(ctx, dname);
@@ -330,7 +346,9 @@ ccxl_status BGBCC_CCXL_StackUnaryOpStore(BGBCC_TransState *ctx,
 			return(CCXL_STATUS_YES);
 		}
 		
-		if(opr==CCXL_UNOP_LNOT)
+//		if(opr==CCXL_UNOP_LNOT)
+		if(	(opr==CCXL_UNOP_LNOT) ||
+			(opr==CCXL_UNOP_LNOT2))
 		{
 			BGBCC_CCXL_EmitUnaryOp(ctx, sty, opr, dreg, sreg);
 

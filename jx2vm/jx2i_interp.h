@@ -740,7 +740,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_SWAPE2B		0x19B		//
 #define BJX2_NMID_SUBP			0x19C		//
 #define BJX2_NMID_SUBXP			0x19D		//
-
 #define BJX2_NMID_BSWAPUL		0x19E		//
 #define BJX2_NMID_BSWAPQ		0x19F		//
 
@@ -748,10 +747,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CMPPEQX		0x1A1		//
 #define BJX2_NMID_CMPPGT		0x1A2		//
 #define BJX2_NMID_CMPPGTX		0x1A3		//
-
 #define BJX2_NMID_MOVTW			0x1A4		//
 #define BJX2_NMID_MOVUTW		0x1A5		//
 #define BJX2_NMID_MOVHTW		0x1A6		//
+
+#define BJX2_NMID_CMPQNE		0x1A7		//
 
 // #define BJX2_NMID_JAL			0x1A7		//
 
@@ -763,12 +763,33 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_SLT			0x1AC		//
 #define BJX2_NMID_SLTU			0x1AD		//
 
+#define BJX2_NMID_FDIVS			0x1AE		//
+
+
 #define BJX2_NMID_FSGNJ			0x1B0		//
 #define BJX2_NMID_FSGNJN		0x1B1		//
 #define BJX2_NMID_FSGNJX		0x1B2		//
 #define BJX2_NMID_FSGNJS		0x1B3		//
 #define BJX2_NMID_FSGNJNS		0x1B4		//
 #define BJX2_NMID_FSGNJXS		0x1B5		//
+
+#define BJX2_NMID_FLDCIS		0x1B6		//
+#define BJX2_NMID_FSTCIS		0x1B7		//
+
+#define BJX2_NMID_FMADDS		0x1B8		//
+#define BJX2_NMID_FMADDD		0x1B9		//
+#define BJX2_NMID_FMSUBS		0x1BA		//
+#define BJX2_NMID_FMSUBD		0x1BB		//
+#define BJX2_NMID_FNMADDS		0x1BC		//
+#define BJX2_NMID_FNMADDD		0x1BD		//
+#define BJX2_NMID_FNMSUBS		0x1BE		//
+#define BJX2_NMID_FNMSUBD		0x1BF		//
+
+#define BJX2_NMID_FMAC			BJX2_NMID_FMADDD		//
+#define BJX2_NMID_FMAS			BJX2_NMID_FMSUBD		//
+
+#define BJX2_NMID_FMRS			BJX2_NMID_FNMADDD		//
+#define BJX2_NMID_FMRA			BJX2_NMID_FNMSUBD		//
 
 
 
@@ -1280,6 +1301,7 @@ u32 usbbuf_txsposb;
 u32 usbbuf_txeposb;
 
 byte do_edgewalk;
+byte do_opssc;		//superscalar
 
 char puts_linebuf[256];
 byte puts_linepos;
@@ -1289,6 +1311,7 @@ bjx2_addr	map_img_base[256];
 byte		n_map_img;
 
 u64			cfg_fflags;
+u64			cfg_fdflags;
 
 bjx2_addr	vm_mousex;
 bjx2_addr	vm_mousey;

@@ -100,7 +100,8 @@ module ExEX2(
 
 	memDataIn,
 	memDataInB,
-	memDataOK
+	memDataOK,
+	memDataInFast
 	);
 
 input			clock;
@@ -178,6 +179,8 @@ input[7:0]		regInSchm;
 input[63:0]		memDataIn;
 input[63:0]		memDataInB;
 input[ 1:0]		memDataOK;
+
+input[65:0]		memDataInFast;
 
 
 reg				tExHold;
@@ -358,6 +361,15 @@ begin
 		end
 		JX2_UCMD_MOV_MR: begin
 			tRegHeld	= 1;
+
+`ifdef jx2_l1a_ena_loadfast
+			if(memDataInFast[65:64]==2'b11)
+			begin
+				tValOutDfl		= memDataInFast[63:0];
+				tDoOutDfl		= 1;
+				tRegHeld		= 0;
+			end
+`endif
 		end
 
 		JX2_UCMD_FMOV_RM: begin
@@ -415,6 +427,11 @@ begin
 
 		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB: begin
 			tDoAluSrT		= 1;
+		end
+		
+		JX2_UCMD_ALUCMP3R: begin
+			tValOutDfl		= { 63'h00, regValAluRes[64] };
+			tDoOutDfl		= 1;
 		end
 
 		JX2_UCMD_BRA: begin

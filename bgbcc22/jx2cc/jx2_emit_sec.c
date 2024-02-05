@@ -1819,6 +1819,29 @@ int BGBCC_JX2_EmitPadCheckExpandLastOp24(
 	return(0);
 }
 
+int BGBCC_JX2_CheckPadLastOpWasBRA(
+	BGBCC_JX2_Context *ctx)
+{
+	int op0, op1, opw1, opw2, opw3, opw4;
+	int i, j, k;
+
+	i=BGBCC_JX2_EmitGetOffs(ctx);
+	j=ctx->pos_pad_op0;
+
+	if((i-j)==4)
+	{
+		op0=BGBCC_JX2_EmitGetOffsWord(ctx, j+0);
+		op1=BGBCC_JX2_EmitGetOffsWord(ctx, j+2);
+		opw1=-1;
+		opw2=-1;
+		
+		if(((op0&0xFF00)==0xF000) && ((op1&0xF000)==0xC000))
+			return(1);
+		return(0);
+	}
+	return(0);
+}
+
 int BGBCC_JX2_CheckPipelineMin(BGBCC_JX2_Context *ctx, int cnt)
 {
 	if((ctx->pos_pad_op7>=0) && (cnt<=8))

@@ -306,17 +306,22 @@ FpuConvD2H mem_cnv_d2h(tRegValRs[63:0], fstcx_D2H);
 
 reg[63:0]	tVecCnvRsOL;
 reg[63:0]	tVecCnvRtOL;
+reg[63:0]	tVecCnvRuOL;
 reg[63:0]	tVechCnvRsOL;
 reg[63:0]	tVechCnvRtOL;
+reg[63:0]	tVechCnvRuOL;
 reg[63:0]	tVecdCnvRsL;
 reg[63:0]	tVecdCnvRtL;
 
 reg[31:0]	tVecCnvRsI;
 reg[31:0]	tVecCnvRtI;
+reg[31:0]	tVecCnvRuI;
 wire[63:0]	tVecCnvRsO;
 wire[63:0]	tVecCnvRtO;
+wire[63:0]	tVecCnvRuO;
 FpuConvS2D vec_cnv_rs(tVecCnvRsI, tVecCnvRsO);
 FpuConvS2D vec_cnv_rt(tVecCnvRtI, tVecCnvRtO);
+FpuConvS2D vec_cnv_ru(tVecCnvRuI, tVecCnvRuO);
 
 reg[63:0]	tVecCnvRnI;
 wire[31:0]	tVecCnvRnO;
@@ -325,10 +330,13 @@ FpuConvD2S vec_cnv_rn(tVecCnvRnI, tVecCnvRnO);
 `ifdef def_true
 reg[15:0]	tVechCnvRsI;
 reg[15:0]	tVechCnvRtI;
+reg[15:0]	tVechCnvRuI;
 wire[63:0]	tVechCnvRsO;
 wire[63:0]	tVechCnvRtO;
+wire[63:0]	tVechCnvRuO;
 FpuConvH2D vech_cnv_rs(tVechCnvRsI, tVechCnvRsO);
 FpuConvH2D vech_cnv_rt(tVechCnvRtI, tVechCnvRtO);
+FpuConvH2D vech_cnv_ru(tVechCnvRuI, tVechCnvRuO);
 
 // reg[63:0]	tVechCnvRnI;
 wire[15:0]	tVechCnvRnO;
@@ -336,6 +344,7 @@ FpuConvD2H vech_cnv_rn(tVecCnvRnI, tVechCnvRnO);
 
 reg[63:0]	tVecdCnvRs;
 reg[63:0]	tVecdCnvRt;
+reg[63:0]	tVecdCnvRu;
 reg[63:0]	tVecdCnvRn;
 
 `endif
@@ -478,6 +487,14 @@ assign	tRegAddExOpA	=
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 3'h1 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 3'h2 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FMUL[3:0])) ? 3'h7 :
+
+`ifdef jx2_fpu_fmac
+	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FMAC[3:0])) ? 3'h1 :
+	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FMAS[3:0])) ? 3'h2 :
+	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FMRA[3:0])) ? 3'h1 :
+	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FMRS[3:0])) ? 3'h2 :
+`endif
+
 	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 3'h3 :
 	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h2)) ? 3'h4 :
 	3'h0 };
@@ -887,14 +904,17 @@ begin
 // `ifndef def_true
 	tVecCnvRsI	= tRegValRsAL[31:0];
 	tVecCnvRtI	= tRegValRtAL[31:0];
+	tVecCnvRuI	= tRegValRnAL[31:0];
 	tVecCnvRnI	= tRegAddVal;
 
 	tVechCnvRsI	= tRegValRsAL[15:0];
 	tVechCnvRtI	= tRegValRtAL[15:0];
+	tVechCnvRuI	= tRegValRnAL[15:0];
 //	tVechCnvRnI	= tRegAddVal;
 
 	tVecdCnvRs	= tRegValRsAL[63:0];
 	tVecdCnvRt	= tRegValRtAL[63:0];
+	tVecdCnvRu	= tRegValRnAL[63:0];
 //	tVecCnvRnI	= tRegAddVal;
 `endif
 
@@ -905,30 +925,38 @@ begin
 		1: begin
 				tVecCnvRsI	= tRegValRsL[31:0];
 				tVecCnvRtI	= tRegValRtL[31:0];
+				tVecCnvRuI	= tRegValRnL[31:0];
 				tVechCnvRsI = tRegValRsL[15:0];
 				tVechCnvRtI = tRegValRtL[15:0];
+				tVechCnvRuI = tRegValRnL[15:0];
 				tVecdCnvRs	= tRegValRsL[63:0];
 				tVecdCnvRt	= tRegValRtL[63:0];
 		end
 		2: begin
 				tVecCnvRsI = tRegValRsL[63:32];
 				tVecCnvRtI = tRegValRtL[63:32];
+				tVecCnvRuI = tRegValRnL[63:32];
 				tVechCnvRsI = tRegValRsL[31:16];
 				tVechCnvRtI = tRegValRtL[31:16];
+				tVechCnvRuI = tRegValRnL[31:16];
 				tVecdCnvRs	= tRegValRsBL[63:0];
 				tVecdCnvRt	= tRegValRtBL[63:0];
 		end
 		3: begin
 				tVecCnvRsI = tRegValRsBL[31:0];
 				tVecCnvRtI = tRegValRtBL[31:0];
+				tVecCnvRuI = tRegValRnBL[31:0];
 				tVechCnvRsI = tRegValRsL[47:32];
 				tVechCnvRtI = tRegValRtL[47:32];
+				tVechCnvRuI = tRegValRnL[47:32];
 		end
 		4: begin
 				tVecCnvRsI = tRegValRsBL[63:32];
 				tVecCnvRtI = tRegValRtBL[63:32];
+				tVecCnvRuI = tRegValRnBL[63:32];
 				tVechCnvRsI = tRegValRsL[63:48];
 				tVechCnvRtI = tRegValRtL[63:48];
+				tVechCnvRuI = tRegValRnL[63:48];
 		end
 		
 		5: begin
@@ -1334,9 +1362,9 @@ begin
 				end
 
 `ifdef jx2_fpu_fmac
-				4'h9: begin
-					tDoHoldCyc	= 10;
-//					tExCmdVecW	= tRegIdIxtL[5];
+				4'h8, 4'hA: begin
+//					tDoHoldCyc	= 10;
+					tDoHoldCyc	= 12;
 					tExCmdVecW	= tRegIdIxtL[5] || tExCmdLaneCoW;
 
 					tRegAddRs	= tRegValRnL;
@@ -1347,6 +1375,53 @@ begin
 					tRegValGRn	= tRegAddVal;
 					tRegValGRnA	= tRegAddVal;
 					tRegValGRnB	= tRegAddValHi;
+					
+					if(tRegIdIxtL[3:0]==4'hA)
+					begin
+						tRegValGRn[63]	= !tRegAddVal[63];
+						tRegValGRnA		= tRegValGRn;
+					end
+
+					if(tRegIdIxtL[4])
+					begin
+						tRegMulRs	= tVecCnvRsOL;
+						tRegMulRt	= tVecCnvRtOL;
+						tRegAddRs	= tVecCnvRuOL;
+
+						tVecCnvRnI	= tRegAddVal;
+						tRegValGRn	= { UV32_00, tVecCnvRnO };
+
+						if(tRegIdIxtL[3:0]==4'hA)
+							tRegValGRn[31]	= !tRegAddVal[63];
+
+						tRegValGRnA	= tRegValGRn;
+					end
+				end
+
+				4'h9, 4'hB: begin
+//					tDoHoldCyc	= 10;
+					tDoHoldCyc	= 12;
+					tExCmdVecW	= tRegIdIxtL[5] || tExCmdLaneCoW;
+
+					tRegAddRs	= tRegMulVal;
+					tRegAddRsHi	= tRegMulValHi;
+					tRegAddRt	= tRegValRnL;
+					tRegAddRtHi	= tRegValRnBL;
+
+					tRegValGRn	= tRegAddVal;
+					tRegValGRnA	= tRegAddVal;
+					tRegValGRnB	= tRegAddValHi;
+
+					if(tRegIdIxtL[4])
+					begin
+						tRegMulRs	= tVecCnvRsOL;
+						tRegMulRt	= tVecCnvRtOL;
+						tRegAddRt	= tVecCnvRuOL;
+
+						tVecCnvRnI	= tRegAddVal;
+						tRegValGRn	= { UV32_00, tVecCnvRnO };
+						tRegValGRnA	= tRegValGRn;
+					end
 				end
 `endif
 
@@ -1450,6 +1525,20 @@ begin
 					tRegValGRnA	= tRegValGRn;
 					tRegValGRnB	= tRegValGRn;
 				end
+
+				3'h6: begin
+//					tDoHoldCyc = 5;
+					tDoHoldCyc = 6;
+
+					tVecCnvRnI	= tRegAddVal;
+					tRegValGRn	= { UV32_00, tVecCnvRnO };
+					tRegValGRnA	= tRegValGRn;
+
+`ifdef jx2_fpu_longdbl
+					tExCmdVecW = tRegIdIxtL[5];
+					tRegValGRnB	= tRegAddValHi;
+`endif
+				end
 				
 				default: begin
 //					tRegOutVal	= UV64_XX;
@@ -1495,6 +1584,18 @@ begin
 
 				4'h3: begin
 					tRegValGRn	= { UV48_00, fstcx_D2H_L };
+					tRegValGRnA	= tRegValGRn;
+					tRegValGRnB	= tRegValGRn;
+				end
+
+				4'h6: begin
+//					tDoHoldCyc = 5;
+					tDoHoldCyc = 6;
+
+					tRegAddRs	= ctlInDlr_S2D_L;
+					tRegAddRt	= ctlInDlr_S2D_L;
+
+					tRegValGRn	= tRegAddVal;
 					tRegValGRnA	= tRegValGRn;
 					tRegValGRnB	= tRegValGRn;
 				end
@@ -1608,8 +1709,10 @@ begin
 
 	tVecCnvRsOL		<= tVecCnvRsO;
 	tVecCnvRtOL		<= tVecCnvRtO;
+	tVecCnvRuOL		<= tVecCnvRuO;
 	tVechCnvRsOL	<= tVechCnvRsO;
 	tVechCnvRtOL	<= tVechCnvRtO;
+	tVechCnvRuOL	<= tVechCnvRuO;
 	tVecdCnvRsL		<= tVecdCnvRs;
 	tVecdCnvRtL		<= tVecdCnvRt;
 

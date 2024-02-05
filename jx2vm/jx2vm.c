@@ -1361,7 +1361,7 @@ int main(int argc, char *argv[])
 	double tsec;
 	int t0, t1, tt, fbtt, tvus;
 	int ifmd, rdsz, mhz, usejit, swapsz, chkbss, nomemcost, walltime;
-	int dousbhid, dorast;
+	int dousbhid, dorast, nowex;
 	int i;
 	
 	rd_n_add=0;
@@ -1383,6 +1383,7 @@ int main(int argc, char *argv[])
 	walltime=0;
 	dousbhid=0;
 	dorast=1;
+	nowex=0;
 	
 	for(i=1; i<argc; i++)
 	{
@@ -1447,6 +1448,10 @@ int main(int argc, char *argv[])
 
 			if(!strcmp(argv[i], "--norast"))
 				{ dorast=0; continue; }
+			if(!strcmp(argv[i], "--nowex"))
+				{ nowex|=1; continue; }
+			if(!strcmp(argv[i], "--opssc"))
+				{ nowex|=2; continue; }
 
 			continue;
 		}
@@ -1533,6 +1538,18 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineEdgeWalk(ctx, "EDGE", 0xFFFFF000C000LL, 0xFFFFF000CFFFLL);
 
 	BJX2_SetCpuConfig(ctx, isacfg);
+	
+	if(nowex&1)
+	{
+//		ctx->cfg_fflags&=~BJX2_FFLAG_WEX;
+//		ctx->cfg_fflags&=~BJX2_FFLAG_WEX3W;
+		ctx->cfg_fdflags|=BJX2_FFLAG_WEX|BJX2_FFLAG_WEX3W;
+	}
+
+	if(nowex&2)
+	{
+		ctx->do_opssc=1;
+	}
 
 	if(!l1icfg)
 		l1icfg="16k1";
@@ -1660,6 +1677,10 @@ int main(int argc, char *argv[])
 		ctx_c2->rcp_mhz=ctx->rcp_mhz;
 		ctx_c2->ttick_rst=ctx->ttick_rst;
 		ctx_c2->ttick_hk=ctx->ttick_hk;
+
+		ctx_c2->do_opssc=ctx->do_opssc;
+		ctx_c2->cfg_fflags=ctx->cfg_fflags;
+		ctx_c2->cfg_fdflags=ctx->cfg_fdflags;
 
 		BJX2_ContextPowerOnState(ctx);
 	}

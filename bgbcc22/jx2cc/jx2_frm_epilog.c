@@ -77,6 +77,8 @@ int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
 
 	if(sctx->lbl_ret_zero)
 	{
+//		BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BRAN,
+//			sctx->lbl_ret);
 		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret_zero);
 		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV,
 			0, BGBCC_SH_REG_R2);

@@ -590,6 +590,7 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 
 	if(!strcmp(op, "&"))	{ opr=CCXL_CMP_TST; }
 	if(!strcmp(op, "!&"))	{ opr=CCXL_CMP_NTST; }
+	if(!strcmp(op, "!!&"))	{ opr=CCXL_CMP_TST; }
 
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_JCMP);
 	BGBCC_CCXLR3_EmitArgInt(ctx, opr);
@@ -767,7 +768,8 @@ void BGBCC_CCXL_CompileJCT(BGBCC_TransState *ctx,
 
 	l=BGBCC_CCXL_ReduceExpr(ctx, l);
 
-	if(BGBCC_CCXL_IsUnaryP(ctx, l, "!"))
+	if(	BGBCC_CCXL_IsUnaryP(ctx, l, "!") ||
+		BGBCC_CCXL_IsUnaryP(ctx, l, "!!"))
 	{
 		BGBCC_CCXL_CompileJCF(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_value, "value"), lbl);
@@ -823,7 +825,8 @@ void BGBCC_CCXL_CompileJCF(BGBCC_TransState *ctx, BCCX_Node *l, ccxl_label lbl)
 	l=BGBCC_CCXL_ReduceExpr(ctx, l);
 //	t=BGBCC_CCXL_InferExpr(ctx, l);
 
-	if(BGBCC_CCXL_IsUnaryP(ctx, l, "!"))
+	if(BGBCC_CCXL_IsUnaryP(ctx, l, "!") ||
+		BGBCC_CCXL_IsUnaryP(ctx, l, "!!"))
 	{
 		BGBCC_CCXL_CompileJCT(ctx,
 			BCCX_FetchCst(l, &bgbcc_rcst_value, "value"), lbl);
@@ -850,6 +853,8 @@ void BGBCC_CCXL_CompileJCF(BGBCC_TransState *ctx, BCCX_Node *l, ccxl_label lbl)
 	if(BGBCC_CCXL_IsBinaryP(ctx, l, ">="))op="<";
 
 	if(BGBCC_CCXL_IsBinaryP(ctx, l, "&"))op="!&";
+	if(BGBCC_CCXL_IsBinaryP(ctx, l, "!&"))op="!!&";
+	if(BGBCC_CCXL_IsBinaryP(ctx, l, "!!&"))op="!&";
 
 	if(!op)
 	{
@@ -1379,7 +1384,8 @@ void BGBCC_CCXL_CompileCSel(BGBCC_TransState *ctx, BCCX_Node *l)
 //	t=BGBCC_CCXL_InferExpr(ctx, l);
 
 #if 0
-	if(BGBCC_CCXL_IsUnaryP(ctx, l, "!"))
+	if(BGBCC_CCXL_IsUnaryP(ctx, l, "!") ||
+		BGBCC_CCXL_IsUnaryP(ctx, l, "!!"))
 	{
 		BGBCC_CCXL_CompileJCT(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"), lbl);
 		return;
@@ -1406,6 +1412,8 @@ void BGBCC_CCXL_CompileCSel(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BGBCC_CCXL_IsBinaryP(ctx, l, ">="))op="<";
 
 	if(BGBCC_CCXL_IsBinaryP(ctx, l, "&"))op="!&";
+	if(BGBCC_CCXL_IsBinaryP(ctx, l, "!&"))op="!!&";
+	if(BGBCC_CCXL_IsBinaryP(ctx, l, "!!&"))op="!&";
 
 	if(!op)
 	{
@@ -1474,6 +1482,7 @@ void BGBCC_CCXL_CompilePredCmp(BGBCC_TransState *ctx, char *op)
 
 	if(!strcmp(op, "&"))	{ opr=CCXL_CMP_TST; }
 	if(!strcmp(op, "!&"))	{ opr=CCXL_CMP_NTST; }
+	if(!strcmp(op, "!!&"))	{ opr=CCXL_CMP_TST; }
 #endif
 
 	opr=BGBCC_CCXL_CompareOpIdForName(ctx, op);
@@ -1600,7 +1609,8 @@ int BGBCC_CCXL_CompilePredExpr(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
 		
-		if(!strcmp(s0, "!"))
+		if(	!strcmp(s0, "!") ||
+			!strcmp(s0, "!!"))
 		{
 			BGBCC_CCXL_CompileExpr(ctx, ln);
 			BGBCC_CCXL_CompilePredCmpZero(ctx);

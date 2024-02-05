@@ -455,6 +455,8 @@ reg [47:0]		dcInAddrB;
 
 reg [63:0]		dcInTraPc;
 
+wire[65:0]		dcOutValFast;
+
 reg			tDeadlockLatch;
 reg			tNxtDeadlockLatch;
 
@@ -484,7 +486,7 @@ RbiMemL1A		memL1(
 	dcOutValB,		dcInValB,
 	dcOutOK,		dcInHold,
 	dcOutHold,		dcBusWait,
-	dcInLdOp,
+	dcInLdOp,		dcOutValFast,
 
 	gprOutDlr,		gprOutDhr,
 	crOutMmcr,		crOutKrr,
@@ -1357,6 +1359,9 @@ reg[63:0]		ex2MemDataIn;
 reg[63:0]		ex2MemDataInB;
 reg[1:0]		ex2MemDataOK;
 
+wire[65:0]		ex2MemDataInFast;
+assign		ex2MemDataInFast = dcOutValFast;
+
 
 // wire[47:0]		ex1RegPcHi;
 wire[47:0]		ex1RegLrHi;
@@ -2140,7 +2145,8 @@ ExEX2	ex2(
 
 	ex2MemDataIn,
 	ex2MemDataInB,
-	ex2MemDataOK
+	ex2MemDataOK,
+	ex2MemDataInFast
 	);
 
 assign		ex1RegInSr = ex2RegOutSr;

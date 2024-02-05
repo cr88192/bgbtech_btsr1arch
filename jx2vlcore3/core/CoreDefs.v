@@ -471,6 +471,9 @@ parameter[31:0] UV32_FF			= 32'hFFFFFFFF;	//
 parameter[32:0] UV33_00			= 33'h000000000;	//
 parameter[32:0] UV33_FF			= 33'h1FFFFFFFF;	//
 
+parameter[33:0] UV34_00			= 34'h000000000;	//
+parameter[33:0] UV34_FF			= 34'h3FFFFFFFF;	//
+
 parameter[35:0] UV36_00			= 36'h0_00000000;	//
 parameter[35:0] UV36_FF			= 36'hF_FFFFFFFF;	//
 
@@ -679,6 +682,24 @@ REGREG, Fz+Au (Rm, Ro, Rp, Rn)
 	XB: Rm, Ro, Rp, Rn
 	XW: Rm, Ro, Imm8, Rn
 
+REGREG, RVI:
+	SB: Rm, Ro, Rn
+
+	UB: Rm, Rn, Rn
+	UW: Ro, Rn, Rn
+	UL: Rm, Cn, Cn
+	UQ: Cm, Cm, Rn
+
+	NB: Rn, Rm, Rn
+	NW: Fm, Fo, Fp, Fn
+	NL: Fm, Fm, Rn
+	NQ: Rm, Rm, Fn
+	
+	XB: Fm, Fo, Fn
+	XW: Fm, Fn, Fn
+	XL: Fo, Fm, Fn
+	XQ: Fo, Fm, Rn
+
 REGIMMREG, Fz:
 	SB: Rm, 0, Rn
 	SW:	Rm, Imm9s, Rn
@@ -689,6 +710,9 @@ REGIMMREG, Fz:
 
 	NB:	Rm, Imm5f, Rn
 	NW:	Rm, Imm9n, Rn
+
+	NL:	Rm, Imm5u, Rn
+	NQ:	Imm5u, Rm, Rn
 
 	XW:	Rm, Imm9u, Rn (Decoded like REGDISPREG)
 
@@ -859,6 +883,7 @@ parameter[5:0] JX2_UCMD_MOV_MR		= 6'h05;		//Load
 parameter[5:0] JX2_UCMD_FMOV_RM		= 6'h08;		//FPU Store
 parameter[5:0] JX2_UCMD_FMOV_MR		= 6'h09;		//FPU Load
 // parameter[5:0] JX2_UCMD_ADDSP		= 6'h0A;		//ADD Imm, SP
+parameter[5:0] JX2_UCMD_ALUCMP3R	= 6'h0A;		//ALU Command (3R)
 parameter[5:0] JX2_UCMD_QMULDIV		= 6'h0B;		//Slow MUL/DIV
 
 parameter[5:0] JX2_UCMD_CONV2_RR	= 6'h0C;		//Convert (Via ALU)
@@ -1313,9 +1338,17 @@ parameter[5:0] JX2_UCIX_FPU_FDIVX	= 6'h23;		//FPU DIV (Long Double)
 parameter[5:0] JX2_UCIX_FPU_FDIVA	= 6'h13;		//FPU DIV (Approx)
 parameter[5:0] JX2_UCIX_FPU_FDIVXA	= 6'h33;		//FPU DIV (LngDbl, Approx)
 
+parameter[5:0] JX2_UCIX_FPU_FMRA	= 6'h08;		//FPU FMAC (-(a*b+c))
 parameter[5:0] JX2_UCIX_FPU_FMAC	= 6'h09;		//FPU FMAS (a*b+c)
+parameter[5:0] JX2_UCIX_FPU_FMRS	= 6'h0A;		//FPU FMAC (c-a*b)
 parameter[5:0] JX2_UCIX_FPU_FMAS	= 6'h0B;		//FPU FMAC (a*b-c)
-parameter[5:0] JX2_UCIX_FPU_FMRS	= 6'h0D;		//FPU FMAC (c-a*b)
+
+parameter[5:0] JX2_UCIX_FPU_PMRA	= 6'h18;		//FPU FMAC (-(a*b+c))
+parameter[5:0] JX2_UCIX_FPU_PMAC	= 6'h19;		//FPU FMAS (a*b+c)
+parameter[5:0] JX2_UCIX_FPU_PMRS	= 6'h1A;		//FPU FMAC (c-a*b)
+parameter[5:0] JX2_UCIX_FPU_PMAS	= 6'h1B;		//FPU FMAC (a*b-c)
+
+//parameter[5:0] JX2_UCIX_FPU_FMRS	= 6'h0D;		//FPU FMAC (c-a*b)
 // parameter[5:0] JX2_UCIX_FPU_FMAS	= 6'h0F;		//FPU FMAC (a*b-c)
 
 parameter[5:0] JX2_UCIX_FPU_PADD	= 6'h05;		//FPU ADD (2x F32)
@@ -1394,6 +1427,9 @@ parameter[5:0] JX2_UCIX_FPCX_SG		= 6'h10;		//FPU Single
 parameter[5:0] JX2_UCIX_FPCX_DG		= 6'h11;		//FPU Double
 parameter[5:0] JX2_UCIX_FPCX_IG		= 6'h12;		//FPU Int
 parameter[5:0] JX2_UCIX_FPCX_HG		= 6'h13;		//FPU Half
+
+parameter[5:0] JX2_UCIX_FPCX_SIG	= 6'h16;		//FPU Int
+
 parameter[5:0] JX2_UCIX_FPCX_S2G	= 6'h18;		//FPU Single (High)
 
 parameter[5:0] JX2_UCIX_FPCX_XE		= 6'h21;		//FPU LongDouble

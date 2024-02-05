@@ -468,6 +468,8 @@ begin
 		end
 		JX2_UCMD_ALUCMPB: begin
 		end
+		JX2_UCMD_ALUCMP3R: begin
+		end
 		
 		JX2_UCMD_MUL3: begin
 //			tRegIdRn2	= regIdRm;					//

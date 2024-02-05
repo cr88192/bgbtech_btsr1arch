@@ -36,7 +36,7 @@ module RbiMemDcA(
 	regInSr,		regOutWait,
 	regOutExc,		regInMmcr,
 	regKrrHash,		regRng,
-	regInLdOp,
+	regInLdOp,		regOutValFast,
 
 	memAddrIn,		memAddrOut,
 	memDataIn,		memDataOut,
@@ -59,6 +59,7 @@ input[ 7: 0]	regInLdOp;
 
 output[63: 0]	regOutValA;		//output data value (Low 128 / Lane A)
 output[63: 0]	regOutValB;		//output data value (High 128 / Lane B)
+output[65: 0]	regOutValFast;	//fast-path output data value
 
 input [63: 0]	regInValA;		//input data value (Low 128 / Lane A)
 input [63: 0]	regInValB;		//input data value (High 128 / Lane B)
@@ -102,6 +103,9 @@ reg[63: 0]	tRegOutValA;
 reg[63: 0]	tRegOutValB;
 assign	regOutValA = tRegOutValA;
 assign	regOutValB = tRegOutValB;
+
+reg[65: 0]	tRegOutValFast;
+assign	regOutValFast = tRegOutValFast;
 
 reg[127: 0]	tRegOutExc;
 reg[127: 0]	tRegOutExc2;
@@ -2085,6 +2089,28 @@ begin
 	tBlkExData2 = tReqBix[2] ? tBlkExData1[119:32] : tBlkExData1[ 87: 0];
 	tBlkExData3 = tReqBix[1] ? tBlkExData2[ 87:16] : tBlkExData2[ 71: 0];
 	tBlkExData4 = tReqBix[0] ? tBlkExData3[ 71: 8] : tBlkExData3[ 63: 0];
+`endif
+
+	tRegOutValFast = 0;
+
+`ifdef jx2_l1a_ena_loadfast
+	tRegOutValFast[63:0] = tBlkExData2[63:0];
+	if(tReqOpm[1:0] != 2'b11)
+	begin
+		tRegOutValFast[63:32] = (tBlkExData2[31] && !tReqOpm[2]) ?
+			UV32_FF : UV32_00;
+	end
+	tRegOutValFast[64] = tReqOpm[1] && (tReqOpm[2:0]!=3'b111) &&
+		(tReqBix[1:0]==2'b00);
+	tRegOutValFast[65] = (tReqIsNz && !tReqIsMmio);
+
+	if(	tReg2StoreFwA || tMemArrFwA ||
+		tReg2StoreFwB || tMemArrFwB )
+	begin
+		/* Disable fast-case if store-forwarding. */
+		tRegOutValFast[63:0] = UV64_XX;
+		tRegOutValFast[65:64] = 0;
+	end
 `endif
 
 `ifdef jx2_mem_lane2

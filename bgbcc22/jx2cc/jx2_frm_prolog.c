@@ -56,7 +56,7 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 {
 	u64 uli;
 	u64 epik, epix, epilbl;
-	int bc;
+	int bc, bcm;
 
 	*repik=0;
 	*repix=0;
@@ -144,9 +144,18 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 //	if((epik&0x60)!=0x60)
 //		{ epilbl=0; epik=0; epix=0; }
 
+	bcm=4;
+	if(	(ctx->optmode==BGBCC_OPT_SPEED) ||
+			(ctx->optmode==BGBCC_OPT_SPEED2) )
+				bcm=5;
+	if(ctx->optmode==BGBCC_OPT_SIZE)
+		bcm=4;
+
 	bc=BGBCC_JX2C_CalcBitCount(epik);
+//	if(bc<6)
 //	if(bc<5)
-	if(bc<4)
+//	if(bc<4)
+	if(bc<bcm)
 		{ epilbl=0; epik=0; epix=0; }
 
 	if(rqt&1)

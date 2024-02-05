@@ -45,6 +45,11 @@ char *BGBCC_CCXL_StackGetNameBinaryOverload(
 	if(!strcmp(op, "^"))
 		top="__operator_xor";
 
+	if(!strcmp(op, "&&&"))
+		top="__operator_and";
+	if(!strcmp(op, "|||"))
+		top="__operator_or";
+
 	if(!strcmp(op, "=="))
 		top="__operator_eq";
 	if(!strcmp(op, "!="))
@@ -103,6 +108,9 @@ int BGBCC_CCXL_BinaryOpIdForName(BGBCC_TransState *ctx, char *op)
 	if(!strcmp(op, ">>"))opr=CCXL_BINOP_SHR;
 	if(!strcmp(op, ">>>"))opr=CCXL_BINOP_SHRR;
 
+	if(!strcmp(op, "&&&"))opr=CCXL_BINOP_AND;
+	if(!strcmp(op, "|||"))opr=CCXL_BINOP_OR;
+
 	if(!strcmp(op, "CONS"))
 		opr=CCXL_BINOP_CONS;
 
@@ -152,6 +160,8 @@ int BGBCC_CCXL_CompareOpIdForName(BGBCC_TransState *ctx, char *op)
 	if(!strcmp(op, ">"))opr=CCXL_CMP_GT;
 	if(!strcmp(op, "<="))opr=CCXL_CMP_LE;
 	if(!strcmp(op, ">="))opr=CCXL_CMP_GE;
+	if(!strcmp(op, "!&"))opr=CCXL_CMP_NTST;
+	if(!strcmp(op, "!!&"))opr=CCXL_CMP_TST;
 
 	return(opr);
 }
@@ -188,6 +198,11 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		opr=CCXL_BINOP_SHR;
 	if(!strcmp(op, ">>>"))
 		opr=CCXL_BINOP_SHRR;
+
+	if(!strcmp(op, "&&&"))
+		opr=CCXL_BINOP_AND;
+	if(!strcmp(op, "|||"))
+		opr=CCXL_BINOP_OR;
 
 	if(!strcmp(op, "CONS"))
 		opr=CCXL_BINOP_CONS;
@@ -751,6 +766,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 	if(!strcmp(op, ">="))opr=CCXL_CMP_GE;
 	if(!strcmp(op, "==="))opr=CCXL_CMP_EQQ;
 	if(!strcmp(op, "!=="))opr=CCXL_CMP_NEQQ;
+	if(!strcmp(op, "!&"))opr=CCXL_CMP_NTST;
+	if(!strcmp(op, "!!&"))opr=CCXL_CMP_TST;
 
 	if(opr>=0)
 	{
@@ -825,7 +842,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 			if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, tty))
 			{
 				BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &treg2);
-				if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR))
+//				if((opr!=CCXL_BINOP_SHL) && (opr!=CCXL_BINOP_SHR))
+				if(1)
 					{ BGBCC_CCXL_EmitConv(ctx, dty, tty, treg2, treg); }
 				else
 					{ BGBCC_CCXL_EmitMov(ctx, tty, treg2, treg); }
@@ -886,6 +904,9 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 	if(!strcmp(op, "<<"))opr=CCXL_BINOP_SHL;
 	if(!strcmp(op, ">>"))opr=CCXL_BINOP_SHR;
 	if(!strcmp(op, ">>>"))opr=CCXL_BINOP_SHRR;
+
+	if(!strcmp(op, "&&&"))opr=CCXL_BINOP_AND;
+	if(!strcmp(op, "|||"))opr=CCXL_BINOP_OR;
 
 	if(!strcmp(op, "CONS"))
 		opr=CCXL_BINOP_CONS;
@@ -1503,6 +1524,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 	if(!strcmp(op, ">="))opr=CCXL_CMP_GE;
 	if(!strcmp(op, "==="))opr=CCXL_CMP_EQQ;
 	if(!strcmp(op, "!=="))opr=CCXL_CMP_NEQQ;
+	if(!strcmp(op, "!&"))opr=CCXL_CMP_NTST;
+	if(!strcmp(op, "!!&"))opr=CCXL_CMP_TST;
 
 	if(opr>=0)
 	{

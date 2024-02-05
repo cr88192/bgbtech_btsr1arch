@@ -25,6 +25,16 @@ int BGBCC_CCXLR3_LabelToIndex(BGBCC_TransState *ctx, ccxl_label lbl)
 	int v, h;
 	int i;
 
+	if(lbl.id==CCXL_LBL_RETURN)
+		return(-4);
+	if(lbl.id==CCXL_LBL_RETURN_ZERO)
+		return(-8);
+
+	if(lbl.id<CCXL_LBL_GENSYMBASE)
+	{
+		BGBCC_CCXL_StubError(ctx);
+	}
+
 	if(!ril3_nlbl)
 	{
 		for(i=0; i<1024; i++)
@@ -64,6 +74,29 @@ int BGBCC_CCXLR3_LabelToIndex(BGBCC_TransState *ctx, ccxl_label lbl)
 
 ccxl_label BGBCC_CCXLR3_IndexToLabel(BGBCC_TransState *ctx, int ix)
 {
+	ccxl_label l0;
+
+	if(ix<0)
+	{
+		if(ix==-4)
+		{
+			l0.id=CCXL_LBL_RETURN;
+			return(l0);
+		}
+
+		if(ix==-8)
+		{
+			l0.id=CCXL_LBL_RETURN_ZERO;
+			return(l0);
+		}
+		
+		BGBCC_CCXL_TagError(ctx,
+			CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS));
+
+		l0.id=CCXL_LBL_RETURN;
+		return(l0);
+	}
+
 	if(ril3_lbltab[ix].id)
 		return(ril3_lbltab[ix]);
 	
@@ -1525,7 +1558,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_CMP_GT: s0=">"; break;
 		case CCXL_CMP_LE: s0="<="; break;
 		case CCXL_CMP_GE: s0=">="; break;
-		case CCXL_CMP_TST:		s0="&"; break;
+		case CCXL_CMP_TST:		s0="!!&"; break;
 		case CCXL_CMP_NTST:		s0="!&"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
@@ -1542,6 +1575,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_UNOP_LNOT: s0="!"; break;
 		case CCXL_UNOP_INC: s0="++"; break;
 		case CCXL_UNOP_DEC: s0="--"; break;
+		case CCXL_UNOP_LNOT2: s0="!!"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
 		BGBCC_CCXL_StackUnaryOp(ctx, s0);
@@ -1595,7 +1629,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_CMP_GT: s0=">"; break;
 		case CCXL_CMP_LE: s0="<="; break;
 		case CCXL_CMP_GE: s0=">="; break;
-		case CCXL_CMP_TST:		s0="&"; break;
+		case CCXL_CMP_TST:		s0="!!&"; break;
 		case CCXL_CMP_NTST:		s0="!&"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
@@ -1612,6 +1646,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_UNOP_LNOT: s0="!"; break;
 		case CCXL_UNOP_INC: s0="++"; break;
 		case CCXL_UNOP_DEC: s0="--"; break;
+		case CCXL_UNOP_LNOT2: s0="!!"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
 //		BGBCC_CCXL_StackUnaryOpName(ctx, s0, s1);
@@ -1628,6 +1663,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_UNOP_LNOT: s0="!"; break;
 		case CCXL_UNOP_INC: s0="++"; break;
 		case CCXL_UNOP_DEC: s0="--"; break;
+		case CCXL_UNOP_LNOT2: s0="!!"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
 		BGBCC_CCXL_StackUnaryOpStore(ctx, s0, s1);
@@ -1807,7 +1843,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_CMP_GT: s0=">"; break;
 		case CCXL_CMP_LE: s0="<="; break;
 		case CCXL_CMP_GE: s0=">="; break;
-		case CCXL_CMP_TST:		s0="&"; break;
+		case CCXL_CMP_TST:		s0="!!&"; break;
 		case CCXL_CMP_NTST:		s0="!&"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}
@@ -1911,7 +1947,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_CMP_GT:		s0=">"; break;
 		case CCXL_CMP_LE:		s0="<="; break;
 		case CCXL_CMP_GE:		s0=">="; break;
-		case CCXL_CMP_TST:		s0="&"; break;
+		case CCXL_CMP_TST:		s0="!!&"; break;
 		case CCXL_CMP_NTST:		s0="!&"; break;
 		default:				s0=NULL; BGBCC_DBGBREAK; break;
 		}
@@ -1979,7 +2015,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_CMP_GT:		s0=">"; break;
 		case CCXL_CMP_LE:		s0="<="; break;
 		case CCXL_CMP_GE:		s0=">="; break;
-		case CCXL_CMP_TST:		s0="&"; break;
+		case CCXL_CMP_TST:		s0="!!&"; break;
 		case CCXL_CMP_NTST:		s0="!&"; break;
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}

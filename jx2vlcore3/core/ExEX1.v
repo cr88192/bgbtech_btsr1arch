@@ -81,6 +81,10 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "ExBoundFp8.v"
 `endif
 
+`ifdef jx2_ena_alufast
+`include "ExFastALU.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExEX1(
@@ -461,6 +465,17 @@ ExBtcUtx1	exUtx1(
 `endif
 `endif
 
+`ifdef jx2_ena_alufast
+wire[63:0]	tValFastAlu;
+wire		tFastAluOK;
+
+ExFastALU	fastalu(
+	clock, reset,
+	opUCmd,	opUIxt,
+	regValRs, regValRt,
+	tValFastAlu,
+	tFastAluOK);
+`endif
 
 wire[63:0]	tValCpuIdRng;
 wire[63:0]	tValCpuIdLo;
@@ -1036,9 +1051,20 @@ begin
 		JX2_UCMD_CONV2_RR, JX2_UCMD_ALUB3: begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
+
+`ifdef jx2_ena_alufast
+			if(tFastAluOK)
+			begin
+				tValOutDfl		= tValFastAlu;
+				tDoOutDfl		= 1;
+				tRegHeld		= 0;
+			end
+`endif
+
 		end
 
-		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB: begin
+		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB, 
+			JX2_UCMD_ALUCMP3R: begin
 		end
 	
 		JX2_UCMD_CONV_RR: begin

@@ -1772,7 +1772,8 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 		(	(ctx->optmode==BGBCC_OPT_SPEED) ||
 			(ctx->optmode==BGBCC_OPT_SPEED2) ) &&
 //			(sz<=128) && (al>=8))
-			(sz<=64) && (al>=8))
+			(sz<=96) && (al>=8))
+//			(sz<=64) && (al>=8))
 //			(sz<=48) && (al>=8))
 //	if((sz<=64) && (al>=8))
 	{

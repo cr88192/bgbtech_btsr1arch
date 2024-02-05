@@ -73,7 +73,7 @@ module RbiMemL1A(
 	dcOutValB,		dcInValB,
 	dcOutOK,		dcInHold,
 	dcOutHold,		dcBusWait,
-	dcInLdOp,
+	dcInLdOp,		dcOutValFast,
 
 	regInDlr,		regInDhr,
 	regInMmcr,		regInKrr,
@@ -123,6 +123,8 @@ input [ 4: 0]	dcInOpmB;		//input command B
 
 output[63: 0]	dcOutValB;		//output data value (alternate)
 input [63: 0]	dcInValB;		//input data value (alternate)
+
+output[65: 0]	dcOutValFast;		//output data value (alternate)
 
 input[63:0]		regInDlr;
 input[63:0]		regInDhr;
@@ -419,7 +421,7 @@ RbiMemDcA		memDc(
 	regInSr,		dfOutWait,
 	dfOutExc,		regInMmcr,
 	regKrrHashDsL,	tRngN2,
-	dfInLdOp,
+	dfInLdOp,		dcOutValFast,
 
 	dfMemAddrI2,	dfMemAddrO,
 	dfMemDataI2,	dfMemDataO,

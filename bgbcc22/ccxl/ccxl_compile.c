@@ -1850,8 +1850,9 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 			}
 		}
 
-		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_return, "return") &&
-			!BGBCC_CCXL_CheckIsStaticLib(ctx))
+		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_return, "return"))
+//		if(!rn && BCCX_TagIsCstP(ln, &bgbcc_rcst_return, "return") &&
+//			!BGBCC_CCXL_CheckIsStaticLib(ctx))
 		{
 #if 1
 			v=BCCX_FetchCst(ln, &bgbcc_rcst_value, "value");

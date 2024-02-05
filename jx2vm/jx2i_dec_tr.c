@@ -2239,6 +2239,31 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			}				
 		}
 
+		if(ctx->do_opssc && op1 && op2 &&
+			!(op->fl&BJX2_OPFL_WEX) &&
+			!(op1->fl&BJX2_OPFL_WEX) &&
+			!(op2->fl&BJX2_OPFL_WEX) &&
+
+			!(op1->fl&(BJX2_OPFL_JUMBO64|BJX2_OPFL_JUMBO96)) &&
+			!(op2->fl&(BJX2_OPFL_JUMBO64|BJX2_OPFL_JUMBO96)) &&
+
+			!(op1->fl&BJX2_OPFL_NOWEX) &&
+			!(op1->fl&BJX2_OPFL_NOWEX_FP2) &&
+			!(op1->fl&BJX2_OPFL_NOWEX_IO2) &&
+			!(op2->fl&BJX2_OPFL_NOWEXSFX) &&
+			!(op1->fl&BJX2_OPFL_REGX3R) && !(op2->fl&BJX2_OPFL_REGX3R))
+		{
+			if(	(op1->rn!=op2->rm) &&
+				(op1->rn!=op2->ro) &&
+				(op1->rn!=op2->rn) &&
+				(op2->rn!=op1->rm) &&
+				(op2->rn!=op1->ro))
+			{
+				op1->fl|=BJX2_OPFL_WEX;
+				op1->fl|=BJX2_OPFL_OPSSC;
+			}
+		}
+
 #if 0
 		if(op->nmid==BJX2_NMID_RTSU)
 		{
@@ -2721,6 +2746,50 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			}
 		}
 		
+
+		if(0)
+		{
+			if(
+				(op->nmid==BJX2_NMID_ADD)		||
+				(op->nmid==BJX2_NMID_SUB)		||
+				(op->nmid==BJX2_NMID_AND)		||
+				(op->nmid==BJX2_NMID_OR)		||
+				(op->nmid==BJX2_NMID_XOR)		||
+				(op->nmid==BJX2_NMID_ADDSL)		||
+				(op->nmid==BJX2_NMID_SUBSL)		||
+				(op->nmid==BJX2_NMID_ADDUL)		||
+				(op->nmid==BJX2_NMID_SUBUL)		||
+
+				(op->nmid==BJX2_NMID_LEAB)		||
+				(op->nmid==BJX2_NMID_LEAW)		||
+				(op->nmid==BJX2_NMID_LEAD)		||
+				(op->nmid==BJX2_NMID_LEAQ)		||
+
+				(op->nmid==BJX2_NMID_SHAD)		||
+				(op->nmid==BJX2_NMID_SHLD)		||
+				(op->nmid==BJX2_NMID_SHADQ)		||
+				(op->nmid==BJX2_NMID_SHLDQ)		||
+				(op->nmid==BJX2_NMID_SHAR)		||
+				(op->nmid==BJX2_NMID_SHLR)		||
+				(op->nmid==BJX2_NMID_SHARQ)		||
+				(op->nmid==BJX2_NMID_SHLRQ)		||
+
+				(op->nmid==BJX2_NMID_MOVB)		||
+				(op->nmid==BJX2_NMID_MOVUB)		||
+				(op->nmid==BJX2_NMID_MOVW)		||
+				(op->nmid==BJX2_NMID_MOVUW)		||
+				(op->nmid==BJX2_NMID_MOVL)		||
+				(op->nmid==BJX2_NMID_MOVUL)		||
+				(op->nmid==BJX2_NMID_MOVQ)		||
+				(op->nmid==BJX2_NMID_MOVX2)		)
+
+			{
+				j=op->cyc-1;
+				if(j<1)
+					j=1;
+				op->cyc=j;
+			}
+		}
 
 		if(lrseen>0)
 			lrseen--;

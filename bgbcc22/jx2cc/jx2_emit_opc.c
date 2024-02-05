@@ -4520,6 +4520,28 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x3100|((rn&15)<<4)|((rs&15)<<0);
 			break;
+
+		case BGBCC_SH_NMID_CMPEQ:
+		case BGBCC_SH_NMID_CMPQEQ:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x9400|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_CMPGT:
+		case BGBCC_SH_NMID_CMPQGT:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x9500|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
+//		case BGBCC_SH_NMID_CMPNE:
+		case BGBCC_SH_NMID_CMPQNE:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x9600|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_CMPGE:
+		case BGBCC_SH_NMID_CMPQGE:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x9700|((rn&15)<<4)|((rs&15)<<0);
+			break;
 		}
 	}
 
@@ -7611,6 +7633,29 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 				opw2=0x6F00|((rn&15)<<4)|((rm&15)<<0);
 				break;
 			}
+			break;
+
+
+		case BGBCC_SH_NMID_CMPEQ:
+		case BGBCC_SH_NMID_CMPQEQ:
+			opw1=0xF080|ex|(imm&0x1F);
+			opw2=0x9000|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_CMPGT:
+		case BGBCC_SH_NMID_CMPQGT:
+			opw1=0xF080|ex|(imm&0x1F);
+			opw2=0x9100|((rn&15)<<4)|((rm&15)<<0);
+			break;
+
+//		case BGBCC_SH_NMID_CMPNE:
+		case BGBCC_SH_NMID_CMPQNE:
+			opw1=0xF080|ex|(imm&0x1F);
+			opw2=0x9200|((rn&15)<<4)|((rm&15)<<0);
+			break;
+		case BGBCC_SH_NMID_CMPGE:
+		case BGBCC_SH_NMID_CMPQGE:
+			opw1=0xF080|ex|(imm&0x1F);
+			opw2=0x9300|((rn&15)<<4)|((rm&15)<<0);
 			break;
 		}
 	}

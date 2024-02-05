@@ -2308,8 +2308,8 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 				if((addr!=addr1) && (addr<0x02000000))
 				{
 					k=-1;
-					printf("BJX2_MemTranslateTlb A %llX -> %llX\n",
-						addr, addr1);
+//					printf("BJX2_MemTranslateTlb A %llX -> %llX\n",
+//						addr, addr1);
 //					JX2_DBGBREAK
 				}
 
