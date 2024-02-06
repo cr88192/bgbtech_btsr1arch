@@ -1175,7 +1175,9 @@ int BGBCC_CCXL_CompilePredExpr(BGBCC_TransState *ctx, BCCX_Node *l);
 //AHSRC:ccxl/ccxl_infer.c
 void BGBCC_CCXL_InferExpr_CapRef(BGBCC_TransState *ctx,int lvl, char *name);
 int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,BCCX_Node *l, ccxl_type *rdty);
+int BGBCC_CCXL_InferExprCleanI(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l);
+int BGBCC_CCXL_InferExprCleanNoDerefP(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferBlockCost(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferExprLogicFoldCostP(BGBCC_TransState *ctx, BCCX_Node *l);

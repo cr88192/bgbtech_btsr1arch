@@ -1240,9 +1240,9 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				break;
 
 			case 1:
-				op->nmid=BJX2_NMID_SHLDQ;
+				op->nmid=BJX2_NMID_SHLD;
 				op->fmid=BJX2_FMID_REGREGREG;
-				op->Run=BJX2_Op_SHLDQ_RegRegReg;
+				op->Run=BJX2_Op_SHLD_RegRegReg;
 				break;
 
 			case 4:
@@ -1255,14 +1255,14 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->imm=-(imm12l&63);
 				if((opw>>30)&1)
 				{
-					op->nmid=BJX2_NMID_SHARQ;
+					op->nmid=BJX2_NMID_SHAR;
 					op->fmid=BJX2_FMID_REGREGREG;
-					op->Run=BJX2_Op_SHARQ_RegRegReg;
+					op->Run=BJX2_Op_SHAR_RegRegReg;
 				}else
 				{
-					op->nmid=BJX2_NMID_SHLRQ;
+					op->nmid=BJX2_NMID_SHLR;
 					op->fmid=BJX2_FMID_REGREGREG;
-					op->Run=BJX2_Op_SHLRQ_RegRegReg;
+					op->Run=BJX2_Op_SHLR_RegRegReg;
 				}
 				break;
 

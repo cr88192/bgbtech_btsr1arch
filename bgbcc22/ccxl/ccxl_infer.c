@@ -665,8 +665,9 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 /*
  &1 = Expression does not have side effects.
  &2 = Expression will not modify conditional status.
+ &4 = Expression will not deref a pointer.
  */
-int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
+int BGBCC_CCXL_InferExprCleanI(BGBCC_TransState *ctx, BCCX_Node *l)
 {
 	ccxl_register sreg, treg;
 	BGBCC_CCXL_LiteralInfo *st;
@@ -679,19 +680,19 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 	int i;
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
-		{ return(3); }
+		{ return(7); }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_real, "real"))
-		{ return(1); }
+		{ return(7); }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_string, "string"))
-		{ return(3); }
+		{ return(7); }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_charstring, "charstring"))
-		{ return(3); }
+		{ return(7); }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_ref, "ref"))
-		{ return(3); }
+		{ return(7); }
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_binary, "binary"))
 	{
@@ -702,8 +703,8 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
 		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
 
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, ln);
-		i1=BGBCC_CCXL_InferExprCleanP(ctx, rn);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, ln);
+		i1=BGBCC_CCXL_InferExprCleanI(ctx, rn);
 
 		opr=-1;
 		if(!strcmp(op, "+"))
@@ -755,7 +756,7 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 			opr=CCXL_BINOP_MOD;
 
 		if(opr>=0)
-			{ return(i0&i1&1); }
+			{ return(i0&i1&(~2)); }
 
 		return(0);
 	}
@@ -767,12 +768,12 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 			return(0);
 
 		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, t);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, t);
 
 		if(	!strcmp(op, "!") ||
 			!strcmp(op, "!!"))
 		{
-			return(i0&1);
+			return(i0&(~2));
 		}
 
 		if(!strcmp(op, "+") ||
@@ -798,7 +799,7 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_cast, "cast"))
 	{
 		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, t);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, t);
 		return(i0);
 	}
 
@@ -825,9 +826,9 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 		c=BCCX_FetchCst(l, &bgbcc_rcst_cond, "cond");
 		ln=BCCX_FetchCst(l, &bgbcc_rcst_then, "then");
 		rn=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, ln);
-		i1=BGBCC_CCXL_InferExprCleanP(ctx, rn);
-		i2=BGBCC_CCXL_InferExprCleanP(ctx, c);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, ln);
+		i1=BGBCC_CCXL_InferExprCleanI(ctx, rn);
+		i2=BGBCC_CCXL_InferExprCleanI(ctx, c);
 		return(i0&i1&i2&(~2));
 	}
 
@@ -836,8 +837,8 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
 		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
 
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, ln);
-		i1=BGBCC_CCXL_InferExprCleanP(ctx, rn);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, ln);
+		i1=BGBCC_CCXL_InferExprCleanI(ctx, rn);
 
 		return(i0&i1);
 	}
@@ -848,9 +849,9 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 		t=BCCX_FetchCst(l, &bgbcc_rcst_array, "array");
 		v=BCCX_FetchCst(l, &bgbcc_rcst_index, "index");
 
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, t);
-		i1=BGBCC_CCXL_InferExprCleanP(ctx, v);
-		return(i0&i1);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, t);
+		i1=BGBCC_CCXL_InferExprCleanI(ctx, v);
+		return(i0&i1&(~4));
 	}
 #endif
 
@@ -858,8 +859,8 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_objref, "objref"))
 	{
 		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, t);
-		return(i0);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, t);
+		return(i0&(~4));
 	}
 #endif
 
@@ -868,20 +869,30 @@ int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
 	{
 		t=BCCX_FetchCst(l, &bgbcc_rcst_array, "array");
 		v=BCCX_FetchCst(l, &bgbcc_rcst_index, "index");
-		i0=BGBCC_CCXL_InferExprCleanP(ctx, t);
-		i1=BGBCC_CCXL_InferExprCleanP(ctx, v);
-		return(i0&i1);
+		i0=BGBCC_CCXL_InferExprCleanI(ctx, t);
+		i1=BGBCC_CCXL_InferExprCleanI(ctx, v);
+		return(i0&i1&(~4));
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof, "sizeof") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_sizeof_expr, "sizeof_expr") ||
 		BCCX_TagIsCstP(l, &bgbcc_rcst_offsetof, "offsetof"))
 	{
-		return(3);
+		return(7);
 	}
 #endif
 
 	return(0);
+}
+
+int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	return(BGBCC_CCXL_InferExprCleanI(ctx, l)&1);
+}
+
+int BGBCC_CCXL_InferExprCleanNoDerefP(BGBCC_TransState *ctx, BCCX_Node *l)
+{
+	return((BGBCC_CCXL_InferExprCleanI(ctx, l)&5)==5);
 }
 
 /*

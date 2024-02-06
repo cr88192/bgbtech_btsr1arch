@@ -56,8 +56,8 @@ int BGBCC_CCXL_IsBinaryLogicP(BGBCC_TransState *ctx, BCCX_Node *l)
 		ln=BCCX_FetchCst(l, &bgbcc_rcst_left, "left");
 		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
 
-		if(	!BGBCC_CCXL_InferExprCleanP(ctx, ln) ||
-			!BGBCC_CCXL_InferExprCleanP(ctx, rn))
+		if(	!BGBCC_CCXL_InferExprCleanNoDerefP(ctx, ln) ||
+			!BGBCC_CCXL_InferExprCleanNoDerefP(ctx, rn))
 		{
 			return(0);
 		}
@@ -103,7 +103,7 @@ int BGBCC_CCXL_IsBinaryLogicP(BGBCC_TransState *ctx, BCCX_Node *l)
 		{
 			ln=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
 			
-			if(!BGBCC_CCXL_InferExprCleanP(ctx, ln))
+			if(!BGBCC_CCXL_InferExprCleanNoDerefP(ctx, ln))
 				return(0);
 			return(1);
 		}
