@@ -34,6 +34,13 @@ L1 Instruction Cache, WEX
 
 `include "ringbus/MemIc_GetOpLen.v"
 
+`ifdef jx2_dec_ssc_riscv
+
+`include "DecRvSscFlag.v"
+`include "DecRvSscChkReg.v"
+
+`endif
+
 module RbiMemIcWxA(
 	/* verilator lint_off UNUSED */
 	clock,			reset,
@@ -754,6 +761,21 @@ reg				tReqUtlbHitAxB;
 
 `ifdef jx2_memic_blklenbits
 
+`ifdef jx2_dec_ssc_riscv
+
+wire[15:0]	memDataSsc;
+
+DecRvSscFlag	rvssc_p0(
+	memDataIn[ 31: 0], memDataSsc[ 3: 0]);
+DecRvSscFlag	rvssc_p1(
+	memDataIn[ 63:32], memDataSsc[ 7: 4]);
+DecRvSscFlag	rvssc_p2(
+	memDataIn[ 95:64], memDataSsc[11: 8]);
+DecRvSscFlag	rvssc_p3(
+	memDataIn[127:96], memDataSsc[15:12]);
+
+`endif
+
 wire[31:0]	memDataLens;
 MemIc_GetOpLen	get_oplen_p0(
 	memDataIn[ 15:  0], memDataLens[ 3: 0],
@@ -1159,6 +1181,7 @@ assign	tOpGetLen_A5 =
 
 `endif
 
+
 wire[3:0]	tOpGetLen_W0;
 wire[3:0]	tOpGetLen_W1;
 
@@ -1170,6 +1193,85 @@ assign	tOpGetLen_W1 =
 	tInAddr[2] ? 
 		(tInAddr[1] ? tOpGetLen_A5 : tOpGetLen_A4) :
 		(tInAddr[1] ? tOpGetLen_A3 : tOpGetLen_A2) ;
+
+`endif
+
+
+`ifdef jx2_dec_ssc_riscv
+
+wire[15:0]	blkDataSscA;
+wire[15:0]	blkDataSscB;
+
+DecRvSscFlag	rvssc_p0a(
+	tBlkDataA[ 31: 0], blkDataSscA[ 3: 0]);
+DecRvSscFlag	rvssc_p1a(
+	tBlkDataA[ 63:32], blkDataSscA[ 7: 4]);
+DecRvSscFlag	rvssc_p2a(
+	tBlkDataA[ 95:64], blkDataSscA[11: 8]);
+DecRvSscFlag	rvssc_p3a(
+	tBlkDataA[127:96], blkDataSscA[15:12]);
+
+DecRvSscFlag	rvssc_p0b(
+	tBlkDataB[ 31: 0], blkDataSscB[ 3: 0]);
+DecRvSscFlag	rvssc_p1b(
+	tBlkDataB[ 63:32], blkDataSscB[ 7: 4]);
+DecRvSscFlag	rvssc_p2b(
+	tBlkDataB[ 95:64], blkDataSscB[11: 8]);
+DecRvSscFlag	rvssc_p3b(
+	tBlkDataB[127:96], blkDataSscB[15:12]);
+
+wire[15:0]	blkDataSscRegA;
+wire[15:0]	blkDataSscRegB;
+
+DecRvSscChkReg	rvssc_q0a(
+	tBlkDataA[ 31: 0], tBlkDataA[ 63:32], blkDataSscRegA[ 3: 0]);
+DecRvSscChkReg	rvssc_q1a(
+	tBlkDataA[ 63:32], tBlkDataA[ 95:64], blkDataSscRegA[ 7: 4]);
+DecRvSscChkReg	rvssc_q2a(
+	tBlkDataA[ 95:64], tBlkDataA[127:96], blkDataSscRegA[11: 8]);
+DecRvSscChkReg	rvssc_q3a(
+	tBlkDataA[127:96], tBlkDataB[ 31: 0], blkDataSscRegA[15:12]);
+
+DecRvSscChkReg	rvssc_q0b(
+	tBlkDataB[ 31: 0], tBlkDataB[ 63:32], blkDataSscRegB[ 3: 0]);
+DecRvSscChkReg	rvssc_q1b(
+	tBlkDataB[ 63:32], tBlkDataB[ 95:64], blkDataSscRegB[ 7: 4]);
+DecRvSscChkReg	rvssc_q2b(
+	tBlkDataB[ 95:64], tBlkDataB[127:96], blkDataSscRegB[11: 8]);
+DecRvSscChkReg	rvssc_q3b(
+	tBlkDataB[127:96], tBlkDataA[ 31: 0], blkDataSscRegB[15:12]);
+
+wire[3:0]	selBlkDataSsc0 =
+	tInAddr[4] ? 
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscB[15:12] : blkDataSscB[11:8]) :
+			(tInAddr[2] ? blkDataSscB[ 7: 4] : blkDataSscB[ 3:0]) ) :
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscA[15:12] : blkDataSscA[11:8]) :
+			(tInAddr[2] ? blkDataSscA[ 7: 4] : blkDataSscA[ 3:0]) ) ;
+
+wire[3:0]	selBlkDataSsc1 =
+	tInAddr[4] ? 
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscA[ 3: 0] : blkDataSscB[15:12]) :
+			(tInAddr[2] ? blkDataSscB[11: 8] : blkDataSscB[ 7: 4]) ) :
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscB[ 3: 0] : blkDataSscA[15:12]) :
+			(tInAddr[2] ? blkDataSscA[11: 8] : blkDataSscA[ 7: 4]) ) ;
+
+wire[3:0]	selBlkDataSscReg =
+	tInAddr[4] ? 
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscRegB[15:12] : blkDataSscRegB[11:8]) :
+			(tInAddr[2] ? blkDataSscRegB[ 7: 4] : blkDataSscRegB[ 3:0]) ) :
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscRegA[15:12] : blkDataSscRegA[11:8]) :
+			(tInAddr[2] ? blkDataSscRegA[ 7: 4] : blkDataSscRegA[ 3:0]) ) ;
+
+wire blkDataRvSscEna =
+	selBlkDataSsc0[2] && selBlkDataSsc1[0] &&
+	(tInAddr[1:0] == 2'b00) &&
+	(selBlkDataSscReg[1:0]==2'b00);
 
 `endif
 
@@ -2017,6 +2119,11 @@ begin
 `ifdef def_true
 //	tCombJWA = tPcStepJA || (tInPcWxe && tPcStepWA);
 	tCombJWA = tPcStepJWA;
+
+`ifdef jx2_dec_ssc_riscv
+	if(blkDataRvSscEna && tInPcRiscv)
+		tCombJWA = 1;
+`endif
 
 	casez( { tDoStallNop,
 			tCombJWA, tPcStepWB,

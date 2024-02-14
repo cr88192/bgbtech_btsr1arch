@@ -501,7 +501,12 @@ void W_MatchCopy2(byte *dst, int sz, int d)
 			ct=dst; cte=dst+sz;
 			while(ct<cte)
 			{
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 				*(u64 *)ct=v;
+#else
+				memcpy(ct, &v, 8);
+#endif
 				ct+=8;
 			}
 		}else
@@ -514,7 +519,12 @@ void W_MatchCopy2(byte *dst, int sz, int d)
 			ct=dst; cte=dst+sz;
 			while(ct<cte)
 			{
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 				*(u64 *)ct=v;
+#else
+				memcpy(ct, &v, 8);
+#endif
 				ct+=8;
 			}
 		}else
@@ -526,7 +536,12 @@ void W_MatchCopy2(byte *dst, int sz, int d)
 			ct=dst; cte=dst+sz;
 			while(ct<cte)
 			{
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 				*(u64 *)ct=v;
+#else
+				memcpy(ct, &v, 8);
+#endif
 				ct+=8;
 			}
 		}else
@@ -535,7 +550,13 @@ void W_MatchCopy2(byte *dst, int sz, int d)
 			ct=dst; cte=dst+sz;
 			while(ct<cte)
 			{
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 				*(u64 *)ct=v;
+#else
+//				memcpy(ct, &v, sizeof(u64));
+				memcpy(ct, &v, 8);
+#endif
 				ct+=d;
 			}
 		}
@@ -543,16 +564,30 @@ void W_MatchCopy2(byte *dst, int sz, int d)
 		if(sz<=16)
 	{
 		cs=dst-d;
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 		((u64 *)dst)[0]=((u64 *)cs)[0];
 		((u64 *)dst)[1]=((u64 *)cs)[1];
+#else
+//		memcpy(dst, cs, 16);
+		memcpy(dst+0, cs+0, 8);
+		memcpy(dst+8, cs+8, 8);
+#endif
 	}else
 	{
 		cs=dst-d;
 		ct=dst; cte=dst+sz;
 		while(ct<cte)
 		{
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 			((u64 *)ct)[0]=((u64 *)cs)[0];
 			((u64 *)ct)[1]=((u64 *)cs)[1];
+#else
+//			memcpy(ct, cs, 16);
+			memcpy(ct+0, cs+0, 8);
+			memcpy(ct+8, cs+8, 8);
+#endif
 			ct+=16; cs+=16;
 		}
 	}
@@ -560,6 +595,8 @@ void W_MatchCopy2(byte *dst, int sz, int d)
 
 void W_RawCopy(byte *dst, byte *src, int sz)
 {
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 	byte *cs, *ct, *cte;
 
 	if(sz>8)
@@ -576,10 +613,15 @@ void W_RawCopy(byte *dst, byte *src, int sz)
 	{
 		*(u64 *)dst=*(u64 *)src;
 	}
+#else
+	memcpy(dst, src, sz);
+#endif
 }
 
 void W_RawCopyB(byte *dst, byte *src, int sz)
 {
+// #if defined(__BGBCC__) || defined(_MSC_VER)
+#if 1
 	byte *cs, *ct, *cte;
 
 	cs=src;
@@ -590,6 +632,9 @@ void W_RawCopyB(byte *dst, byte *src, int sz)
 		((u64 *)ct)[1]=((u64 *)cs)[1];
 		ct+=16; cs+=16;
 	}
+#else
+	memcpy(dst, src, sz);
+#endif
 }
 
 int W_DecodeBufferLZ4(byte *ibuf, byte *obuf, int isz, int osz)
@@ -652,24 +697,28 @@ int W_DecodeBufferLZ4(byte *ibuf, byte *obuf, int isz, int osz)
 	return(ct-obuf);
 }
 
-#if 0
+#ifndef __BJX2__
+// #if 0
+// #if 1
 int W_DecodeBufferRP2(
 	byte *ibuf, byte *obuf, int ibsz, int obsz)
 {
 	u32 tag;
 	byte *cs, *ct, *cse;
-	int pl, pd;
+//	int pl, pd;
 	int rl, l, d;
 	u64 t0;
-	int t1, t2;
+	u64 t1, t2;
 	
 	cs=ibuf; cse=ibuf+ibsz;
 	ct=obuf;
-	pl=0; pd=0;
+//	pl=0; pd=0;
 	
 	while(1)
+//	while(cs<cse)
 	{
 		t0=*(u64 *)cs;
+//		memcpy(&t0, cs, sizeof(u64));
 		if(!(t0&0x01))
 		{
 			cs+=2;
@@ -695,7 +744,8 @@ int W_DecodeBufferRP2(
 		{
 			cs++;
 			t1=(t0>>4)&15;
-			rl=(t1+1)*8;
+//			rl=(t1+1)*8;
+			rl=(t1+1)<<3;
 			W_RawCopyB(ct, cs, rl);
 			cs+=rl;
 			ct+=rl;
@@ -704,6 +754,8 @@ int W_DecodeBufferRP2(
 			if(!(t0&0x10))
 		{
 			/* Long Match */
+//			__debugbreak();
+
 			cs++;
 			rl=(t0>>5)&7;
 			t1=t0>>8;
@@ -722,6 +774,7 @@ int W_DecodeBufferRP2(
 			rl=(t0>>6)&3;
 			if(!rl)break;
 			*(u32 *)ct=*(u32 *)cs;
+//			memcpy(ct, cs, sizeof(u32));
 			cs+=rl;
 			ct+=rl;
 			continue;
@@ -731,17 +784,23 @@ int W_DecodeBufferRP2(
 			/* Long Raw */
 			cs+=2;
 			t1=(t0>>7)&511;
-			rl=(t1+1)*8;
+//			rl=(t1+1)*8;
+			rl=(t1+1)<<3;
 			W_RawCopyB(ct, cs, rl);
 			cs+=rl;
 			ct+=rl;
 			continue;
 		}else
 		{
+			rl=0; l=0; d=0;
 			__debugbreak();
 		}
+		
+		if(!d)
+			__debugbreak();
 
 		*(u64 *)ct=*(u64 *)cs;
+//		memcpy(ct, cs, sizeof(u64));
 		cs+=rl;
 		ct+=rl;
 		W_MatchCopy2(ct, l, d);
@@ -897,17 +956,18 @@ W_DecodeBufferRP2:
 };
 #endif
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
 //#if 1
+#if 0
 int W_DecodeBufferRP2(
 	byte *ibuf, byte *obuf, int ibsz, int obsz)
 {
-	u32 tag;
+//	u32 tag;
 	byte *cs, *ct, *cse, *cs1, *cs1e, *ct1e;
 	int pl, pd;
 	int rl, l, d;
 	u64 t0, v0, v1;
-	int t1, t2;
+	s64 t1, t2;
 	
 	cs=ibuf; cse=ibuf+ibsz;
 	ct=obuf;
@@ -916,9 +976,11 @@ int W_DecodeBufferRP2(
 	d = 0;
 	rl = 0;
 	
-	while(1)
+//	while(1)
+	while(cs<cse)
 	{
 		t0=*(u64 *)cs;
+//		memcpy(&t0, cs, 8);
 		if(!(t0&0x01))
 		{
 			cs+=2;
@@ -984,7 +1046,8 @@ int W_DecodeBufferRP2(
 		{
 			cs++;
 			rl=(t0>>6)&3;
-			if(!rl)break;
+			if(!rl)
+				break;
 			*(u32 *)ct=*(u32 *)cs;
 			cs+=rl;
 			ct+=rl;

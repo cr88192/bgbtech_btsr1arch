@@ -15,6 +15,10 @@
 
 #endif
 
+#ifdef __riscv
+#pragma STDC FP_CONTRACT OFF
+#endif
+
 typedef unsigned char byte;
 typedef signed char sbyte;
 typedef unsigned short u16;
@@ -594,6 +598,7 @@ u64 TK_GetRandom48ASLR();
 u64 TK_GetRandom();
 
 s64 TK_GetTimeUs(void);
+u32 TK_GetTimeMs(void);
 
 
 s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap);
@@ -811,8 +816,15 @@ int tk_munlock(void *addr, size_t len);
 int tk_mlockall(int flags);
 int tk_munlockall(void);
 
+void tk_con_disable();
+int tk_kbhit();
+int tk_getch();
 
 
+#ifndef __BGBCC__
+int __hint_use_egpr();
+int __int_clamp(int x, int m, int n);
+#endif
 
 // void printf(char *str, ...);
 

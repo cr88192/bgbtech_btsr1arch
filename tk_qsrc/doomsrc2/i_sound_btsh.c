@@ -48,6 +48,8 @@ rcsid[] = "$Id: i_unix.c,v 1.5 1997/02/03 22:45:10 b1 Exp $";
 #include <tkgdi/tkgdi.h>
 
 
+int SMus_UpdateVolume();
+
 static int flag = 0;
 
 // The number of internal mixing channels,

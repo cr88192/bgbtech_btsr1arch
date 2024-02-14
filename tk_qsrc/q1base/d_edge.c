@@ -25,7 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 static int	miplevel;
 
 float		scale_for_mip;
-int			screenwidth;
+extern int			screenwidth;
 int			ubasestep, errorterm, erroradjustup, erroradjustdown;
 int			vstartscan;
 
@@ -36,6 +36,15 @@ extern void			R_TransformFrustum (void);
 vec3_t		transformed_modelorg;
 extern	int		r_lowfps;
 
+#if !defined(_BGBCC) && !defined(__riscv)
+int __int_clamp(int v, int min, int max)
+{
+	if(v<min)return(min);
+	if(v>max)return(max);
+	return(v);
+}
+#endif
+
 #ifndef _BGBCC
 float __fpu_frcp_sf(float f)
 {
@@ -45,13 +54,6 @@ float __fpu_frcp_sf(float f)
 float __fpu_fdiv_sf(float f, float g)
 {
 	return(f/g);
-}
-
-int __int_clamp(int v, int min, int max)
-{
-	if(v<min)return(min);
-	if(v>max)return(max);
-	return(v);
 }
 
 int D_SoftDivB(int a, int b)
@@ -65,6 +67,7 @@ int D_SoftDivB(int a, int b)
 // }
 
 #endif
+
 
 /*
 ==============
@@ -241,8 +244,8 @@ void D_DrawSolidSurface16 (surf_t *surf, int color)
 }
 
 
-float __fpu_fdiv_sf(float x, float y);
-float __fpu_frcp_sf(float x);
+// float __fpu_fdiv_sf(float x, float y);
+// float __fpu_frcp_sf(float x);
 
 /*
 ==============
@@ -265,7 +268,8 @@ void D_CalcGradients (msurface_t *pface)
 //	i = 1 << miplevel;
 //	mipscale = 1.0 / ((float)i);
 //	mipscale = 1.0 / (float)(1 << miplevel);
-	mipscale = __fpu_frcp_sf((float)(1 << miplevel));
+//	mipscale = __fpu_frcp_sf((float)(1 << miplevel));
+	mipscale = d_frcp_sf((float)(1 << miplevel));
 
 //	tk_printf("mipscape = %f\n", mipscale);
 
@@ -318,6 +322,7 @@ void D_CalcGradients (msurface_t *pface)
 	sadjust = ((fixed16_t)f0) - j0 + ((fixed16_t)f1);
 #endif
 
+#if 0
 	sadjust = ((fixed16_t)(DotProduct (p_temp1, p_saxis) * 0x10000 + 0.5)) -
 			((pface->texturemins[0] << 16) >> miplevel)
 			+ pface->texinfo->vecs[0][3]*t;
@@ -325,6 +330,18 @@ void D_CalcGradients (msurface_t *pface)
 	tadjust = ((fixed16_t)(DotProduct (p_temp1, p_taxis) * 0x10000 + 0.5)) -
 			((pface->texturemins[1] << 16) >> miplevel)
 			+ pface->texinfo->vecs[1][3]*t;
+//	__debugbreak();
+#endif
+
+#if 1
+	sadjust = ((fixed16_t)(DotProduct (p_temp1, p_saxis) * 0x10000 + 0.5)) -
+			(pface->texturemins[0] << (16-miplevel))
+			+ pface->texinfo->vecs[0][3]*t;
+
+	tadjust = ((fixed16_t)(DotProduct (p_temp1, p_taxis) * 0x10000 + 0.5)) -
+			(pface->texturemins[1] << (16-miplevel))
+			+ pface->texinfo->vecs[1][3]*t;
+#endif
 
 //	f0 = ((fixed16_t)(DotProduct (p_temp1, p_saxis) * 0x10000 + 0.5)) -
 //			((pface->texturemins[0] << 16) >> miplevel)
@@ -347,8 +364,12 @@ void D_CalcGradients (msurface_t *pface)
 //
 // -1 (-epsilon) so we never wander off the edge of the texture
 //
-	bbextents = ((pface->extents[0] << 16) >> miplevel) - 1;
-	bbextentt = ((pface->extents[1] << 16) >> miplevel) - 1;
+
+//	bbextents = ((pface->extents[0] << 16) >> miplevel) - 1;
+//	bbextentt = ((pface->extents[1] << 16) >> miplevel) - 1;
+
+	bbextents = (pface->extents[0] << (16-miplevel)) - 1;
+	bbextentt = (pface->extents[1] << (16-miplevel)) - 1;
 	
 //	tk_printf("bbextents = %d\n", bbextents>>16);
 //	tk_printf("bbextentt = %d\n", bbextentt>>16);

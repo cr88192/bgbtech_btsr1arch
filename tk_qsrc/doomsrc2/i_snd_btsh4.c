@@ -17,6 +17,7 @@ short dma_buffer[BUFFER_SIZE];
 int dma_pos;
 
 void SNDDMA_Submit(void);
+void	SoundDev_WriteStereoSamples2(short *mixbuf, int nsamp, int nsamp2);
 
 void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp)
 {

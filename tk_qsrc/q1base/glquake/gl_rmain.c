@@ -344,8 +344,8 @@ float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 #include "anorms.h"
 };
 
-vec3_t	shadevector;
-float	shadelight, ambientlight;
+extern vec3_t	shadevector;
+extern float	shadelight, ambientlight;
 
 // precalculated dot products for quantized angles
 #define SHADEDOT_QUANT 16
@@ -1484,7 +1484,7 @@ void R_SetupGL (void)
 	qglEnable(GL_DEPTH_TEST);
 }
 
-int qgl_drawflat;
+extern int qgl_drawflat;
 
 /*
 ================

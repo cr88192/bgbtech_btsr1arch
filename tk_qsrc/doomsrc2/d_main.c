@@ -384,6 +384,17 @@ void D_UpdateSound (void)
 
 #if 1
 	d_snd_acctime+=dt;
+	
+	if(d_snd_acctime>2040.0)
+	{
+		printf("D_UpdateSound: d_snd_acctime=%f dt=%d\n",
+			d_snd_acctime, dt);
+		d_snd_acctime=0;
+
+//		__debugbreak();
+	}
+//	__debugbreak();
+	
 //	if(dt>72)
 	if(1)
 	{
@@ -670,11 +681,11 @@ void IdentifyVersion (void)
 	doomwaddir = ".";
 
 	// Commercial.
-	doom2wad = malloc(strlen(doomwaddir)+1+12+1);
+	doom2wad = malloc(strlen(doomwaddir)+1+13+1);
 	sprintf(doom2wad, "%s/doom2lz.wad", doomwaddir);
 	if ( w_chkaccess (doom2wad)<0)
 	{
-		doom2wad = malloc(strlen(doomwaddir)+1+12+1);
+		doom2wad = malloc(strlen(doomwaddir)+1+13+1);
 		sprintf(doom2wad, "%s/doom2.wad", doomwaddir);
 	}
 
@@ -683,25 +694,25 @@ void IdentifyVersion (void)
 	sprintf(doomuwad, "%s/doomulz.wad", doomwaddir);
 	if ( w_chkaccess (doomuwad)<0)
 	{
-		doomuwad = malloc(strlen(doomwaddir)+1+12+1);
+		doomuwad = malloc(strlen(doomwaddir)+1+13+1);
 		sprintf(doomuwad, "%s/doomu.wad", doomwaddir);
 	}
 	
 	// Registered.
-	doomwad = malloc(strlen(doomwaddir)+1+12+1);
+	doomwad = malloc(strlen(doomwaddir)+1+13+1);
 	sprintf(doomwad, "%s/doomlz.wad", doomwaddir);
 	if ( w_chkaccess (doomwad)<0)
 	{
-		doomwad = malloc(strlen(doomwaddir)+1+12+1);
+		doomwad = malloc(strlen(doomwaddir)+1+13+1);
 		sprintf(doomwad, "%s/doom.wad", doomwaddir);
 	}
 	
 	// Shareware.
-	doom1wad = malloc(strlen(doomwaddir)+1+12+1);
+	doom1wad = malloc(strlen(doomwaddir)+1+13+1);
 	sprintf(doom1wad, "%s/doom1lz.wad", doomwaddir);
 	if ( w_chkaccess (doom1wad)<0)
 	{
-		doom1wad = malloc(strlen(doomwaddir)+1+12+1);
+		doom1wad = malloc(strlen(doomwaddir)+1+13+1);
 		sprintf(doom1wad, "%s/doom1.wad", doomwaddir);
 	}
 
@@ -710,18 +721,18 @@ void IdentifyVersion (void)
 	plutoniawad = malloc(strlen(doomwaddir)+1+/*9*/12+1);
 	sprintf(plutoniawad, "%s/plutonia.wad", doomwaddir);
 
-	tntwad = malloc(strlen(doomwaddir)+1+9+1);
+	tntwad = malloc(strlen(doomwaddir)+1+13+1);
 	sprintf(tntwad, "%s/tnt.wad", doomwaddir);
 
 
 	// French stuff.
-	doom2fwad = malloc(strlen(doomwaddir)+1+10+1);
+	doom2fwad = malloc(strlen(doomwaddir)+1+13+1);
 	sprintf(doom2fwad, "%s/doom2f.wad", doomwaddir);
 
-	htic1wad = malloc(strlen(doomwaddir)+1+10+1);
+	htic1wad = malloc(strlen(doomwaddir)+1+13+1);
 	sprintf(htic1wad, "%s/heretic1.wad", doomwaddir);
 
-	hex1wad = malloc(strlen(doomwaddir)+1+10+1);
+	hex1wad = malloc(strlen(doomwaddir)+1+13+1);
 	sprintf(hex1wad, "%s/hexen.wad", doomwaddir);
 
 //	home = getenv("HOME");

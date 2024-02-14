@@ -117,7 +117,8 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 //			transformed[0], transformed[1], transformed[2]);
 	
 //		lzi0 = 1.0 / transformed[2];
-		lzi0 = __fpu_frcp_sf(transformed[2]);
+//		lzi0 = __fpu_frcp_sf(transformed[2]);
+		lzi0 = d_frcp_sf(transformed[2]);
 	
 	// FIXME: build x/yscale into transform?
 		scale = xscale * lzi0;
@@ -155,7 +156,10 @@ void R_EmitEdge (mvertex_t *pv0, mvertex_t *pv1)
 //		transformed[0], transformed[1], transformed[2]);
 
 //	r_lzi1 = 1.0 / transformed[2];
-	r_lzi1 = __fpu_frcp_sf(transformed[2]);
+//	r_lzi1 = __fpu_frcp_sf(transformed[2]);
+	r_lzi1 = d_frcp_sf(transformed[2]);
+
+//	__debugbreak();
 
 	scale = xscale * r_lzi1;
 	
@@ -291,11 +295,13 @@ void R_ClipEdge (mvertex_t *pv0, mvertex_t *pv1, clipplane_t *clip)
 	float		d0, d1, f;
 	mvertex_t	clipvert;
 
-//	if(1) //BGB Debug
-//	{
-//		R_EmitEdge (pv0, pv1);
-//		return;
-//	}
+#if 0
+	if(1) //BGB Debug
+	{
+		R_EmitEdge (pv0, pv1);
+		return;
+	}
+#endif
 
 	if (clip)
 	{
@@ -565,6 +571,7 @@ void R_RenderFace (msurface_t *fa, int clipflags)
 			lindex = -lindex;
 //			r_pedge = &pedges[lindex];
 			r_pedge = pedges+lindex;
+
 		// if the edge is cached, we can just reuse the edge
 			if (!insubmodel)
 //			if(0)
@@ -663,7 +670,8 @@ void R_RenderFace (msurface_t *fa, int clipflags)
 	f = DotProduct (modelorg, pplane->normal);
 	g = (pplane->dist - f);
 //	distinv = 1.0 / g;
-	distinv = __fpu_frcp_sf(g);
+//	distinv = __fpu_frcp_sf(g);
+	distinv = d_frcp_sf(g);
 
 	surface_p->d_zistepu = p_normal[0] * xscaleinv * distinv;
 	surface_p->d_zistepv = -p_normal[1] * yscaleinv * distinv;
@@ -779,7 +787,8 @@ void R_RenderBmodelFace (bedge_t *pedges, msurface_t *psurf)
 	TransformVector (pplane->normal, p_normal);
 // FIXME: cache this?
 //	distinv = 1.0 / (pplane->dist - DotProduct (modelorg, pplane->normal));
-	distinv = __fpu_frcp_sf(
+//	distinv = __fpu_frcp_sf(
+	distinv = d_frcp_sf(
 		pplane->dist - DotProduct (modelorg, pplane->normal));
 
 	surface_p->d_zistepu = p_normal[0] * xscaleinv * distinv;
@@ -967,7 +976,8 @@ void R_RenderPoly (msurface_t *fa, int clipflags)
 			transformed[2] = NEAR_CLIP;
 
 //		lzi = 1.0 / transformed[2];
-		lzi = __fpu_frcp_sf(transformed[2]);
+//		lzi = __fpu_frcp_sf(transformed[2]);
+		lzi = d_frcp_sf(transformed[2]);
 
 		if (lzi > r_nearzi)	// for mipmap finding
 			r_nearzi = lzi;

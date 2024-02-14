@@ -566,6 +566,10 @@ int frm_offs_datalo;	//Low mark for data area
 
 s64 frm_val_sectoken;	//value used for security token.
 
+s64 stat_tot_frm_size;		//total stack-frame space for all funcs
+int stat_cnt_frm_size;		//total stack-frame space for all funcs
+
+
 int lbl_rom_data_strt;
 int lbl_rom_data_end;
 

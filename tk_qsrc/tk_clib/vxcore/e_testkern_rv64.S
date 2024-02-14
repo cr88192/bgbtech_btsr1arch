@@ -2,6 +2,7 @@
 .globl	_arch_gettbr
 .globl	_arch_settbr
 .globl __longj
+.globl __setj
 .globl __debugbreak
 .globl tk_getsavedvbr
 
@@ -22,20 +23,70 @@ _start:
 _arch_gettbr:
 	mv		a0, x4
 	jr		ra
+	nop
 
 _arch_settbr:
 	mv		x4, a0
 	jr		ra
+	nop
 
 tk_getsavedvbr:
 	li		a0, 0
 	jr		ra
+	nop
+
+__setj:
+	sd	ra,  8(a0)
+	sd	sp, 16(a0)
+	sd	gp, 24(a0)
+	sd	x8, 64(a0)
+	sd	x9, 72(a0)
+
+	sd	x18, 144(a0)
+	sd	x19, 152(a0)
+	sd	x20, 160(a0)
+	sd	x21, 168(a0)
+	sd	x22, 176(a0)
+	sd	x23, 184(a0)
+	sd	x24, 192(a0)
+	sd	x25, 200(a0)
+	sd	x26, 208(a0)
+	sd	x27, 216(a0)
+	
+	li	a0, 0
+	jr	ra
+	nop
 
 __longj:
+	ld	ra,  8(a0)
+	ld	sp, 16(a0)
+	ld	gp, 24(a0)
+	ld	x8, 64(a0)
+	ld	x9, 72(a0)
+
+	ld	x18, 144(a0)
+	ld	x19, 152(a0)
+	ld	x20, 160(a0)
+	ld	x21, 168(a0)
+	ld	x22, 176(a0)
+	ld	x23, 184(a0)
+	ld	x24, 192(a0)
+	ld	x25, 200(a0)
+	ld	x26, 208(a0)
+	ld	x27, 216(a0)
+	
+	mv	a0, a1
+
+	jr	ra
+	nop
+	nop
 
 
 __debugbreak:
 	ebreak
+	ebreak
+	nop
+	nop
 
 .globl __halt
 __halt:
@@ -82,6 +133,8 @@ __basetests:
 	__basetests_L3:
 	
 	jr	ra
+	nop
+	nop
 
 __baseimm0:	.dword	0x12345678
 __baseimm1:	.dword	0xC2345678
@@ -90,7 +143,11 @@ __baseimm1:	.dword	0xC2345678
 .globl sleep_0
 sleep_0:
 	jr	ra
+	nop
+	nop
 
 .globl __hint_use_egpr
 __hint_use_egpr:
 	jr	ra
+	nop
+	nop

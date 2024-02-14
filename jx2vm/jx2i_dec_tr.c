@@ -2747,7 +2747,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		}
 		
 
-		if(0)
+		if(1)
 		{
 			if(
 				(op->nmid==BJX2_NMID_ADD)		||

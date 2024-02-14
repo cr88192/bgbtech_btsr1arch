@@ -21,7 +21,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-int			skytexturenum;
+extern int			skytexturenum;
 
 #ifndef GL_RGBA4
 #define	GL_RGBA4	0
@@ -1770,9 +1770,9 @@ void R_DrawBrushModel (entity_t *e)
 */
 
 int r_totalsurfs;
-float r_time0;
-float r_time1;
-int r_timecut;
+extern float r_time0;
+extern float r_time1;
+extern int r_timecut;
 
 /*
 ================

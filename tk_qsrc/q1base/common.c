@@ -536,7 +536,7 @@ short   ShortSwap (short l)
 
 short   ShortNoSwap (short l)
 {
-	return l;
+	return((short)l);
 }
 
 int    LongSwap (int l)
@@ -553,7 +553,7 @@ int    LongSwap (int l)
 
 int     LongNoSwap (int l)
 {
-	return l;
+	return((int)l);
 }
 
 float FloatSwap (float f)

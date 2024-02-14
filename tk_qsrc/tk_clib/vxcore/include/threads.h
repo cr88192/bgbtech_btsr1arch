@@ -1,6 +1,8 @@
 #ifndef __THREADS_H
 #define __THREADS_H
 
+#include <time.h>
+
 #define ONCE_FLAG_INIT			0
 #define TSS_DTOR_ITERATIONS		256
 

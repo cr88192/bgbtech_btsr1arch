@@ -1833,14 +1833,14 @@ F0zz Instruction Block:
 *** F0nm_1g0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
 *** F0nm_1G0D  FLDCDX		Rm, Xn		//Load Convert Double (GFPX, F128)
 *** F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
-*** F0nm_1g2D  FLDCI		Rm, Rn		//Load Convert Int
-*** F0nm_1G2D  FLDCXI		Rm, Rn		//Load Convert Int (GFPX, F128)
+*** F0nm_1g2D  FLDCI		Rm, Rn		//Load Convert Int64
+*** F0nm_1G2D  FLDCXI		Rm, Xn		//Load Convert Int64 (GFPX, F128)
 *** F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
 *** F0nm_1g4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
 *** F0nm_1G4D  FSTCDX		Xm, Rn		//Store Convert Double (GFPX, F128)
 *** F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
-*** F0nm_1g6D  FSTCI		Rm, Rn		//Store Convert Int
-*** F0nm_1G6D  FSTCXI		Rm, Rn		//Store Convert Int (GFPX, F128)
+*** F0nm_1g6D  FSTCI		Rm, Rn		//Store Convert Int64
+*** F0nm_1G6D  FSTCXI		Xm, Rn		//Store Convert Int64 (GFPX, F128)
 *** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
 *** F0nm_1g8D  FNEG			Rm, Rn		//(GFP ) Negate
 *** F0nm_1g9D  FABS			Rm, Rn		//(GFP ) Absolute
@@ -1853,7 +1853,8 @@ F0zz Instruction Block:
 *** F0nm_1gDD ? FSQRTA		Rm, Rn		//(FDIV) Square Root (Approx)
 *** F0nm_1GDD ? FSQRTXA		Xm, Xn		//(FDIV) Square Root (GFPX, Approx)
 *** F0nm_1eED  -
-*** F0nm_1eFD  -
+*** F0nm_1gFD  FLDCIU		Rm, Rn		//Load Convert UInt64
+*** F0nm_1GFD  FLDCXIU		Rm, Rn		//Load Convert UInt64 (GFPX, F128)
 
 ** F0nm_1ezE ? (RGB 2R Block)
 *** F0nm_1g0E  RGB5SHR1		Rm, Rn		//(RGB) RGB555 Shift Right
@@ -1920,10 +1921,10 @@ F0zz Instruction Block:
 *** F0nm_1GCF  -
 *** F0nm_1gDF ? PCVTAL2H	Rm, Rn		//(GSVF) Packed A-Law to FP16 (4x)
 *** F0nm_1GDF  -
-*** F0nm_1gEF  -
-*** F0nm_1GEF  -
-*** F0nm_1gFF  -
-*** F0nm_1GFF  -
+*** F0nm_1gEF ? FLDCIU.L	Rm, Rn		//Load Convert UInt32
+*** F0nm_1GEF ? FLDCXIU.L	Rm, Xn		//Load Convert UInt32 (GFPX, F128)
+*** F0nm_1gEF ? FLDCIS.L	Rm, Rn		//Load Convert Int32
+*** F0nm_1GEF ? FLDCXIS.L	Rm, Xn		//Load Convert Int32 (GFPX, F128)
 
 
 * F0zz_2zzz (More 3R Ops)
@@ -2264,21 +2265,25 @@ F0zz Instruction Block:
 
 * F0nm_9eoZ  (More Load/Store Space)
 ** F0nm_9go0 ? MOV.TW	Rn, (Rm, Disp5)		//(LDST48) Store TWORD
-** F0nm_9Go0 -
+** F0nm_9Go0 ? CMPQEQ	Rm, Imm5, Rn		//(CMP3R) Rn = Rm==Imm5
+*** (Jumbo+WI)|WQ: Becomes CMPQHI (Unsigned Greater-Than)
 ** F0nm_9go1 ? MOV.HTW	Rn, (Rm, Disp5)		//(LDST48) Store High TWORD
-** F0nm_9Go1 -
+** F0nm_9Go1 ? CMPQGT	Rm, Imm5, Rn		//(CMP3R) Rn = Rm>Imm5
+*** (Jumbo+WI)|WQ: Becomes CMPQLT
 ** F0nm_9go2 -
-** F0nm_9Go2 -
+** F0nm_9Go2 ? CMPQNE	Rm, Imm5, Rn		//(CMP3R) Rn = Rm!=Imm5
+*** (Jumbo+WI)|WQ: Becomes CMPQBI (Unsigned Less-Than)
 ** F0nm_9go3 -
-** F0nm_9Go3 -
+** F0nm_9Go3 ? CMPQGE	Rm, Imm5, Rn		//(CMP3R) Rn = Rm!=Imm5
+*** (Jumbo+WI)|WQ: Becomes CMPQLE
 ** F0nm_9go4 ? MOV.TW	Rn, (Rm, Ro)		//(LDST48) Store TWORD
-** F0nm_9Go4 -
+** F0nm_9Go4 ? CMPQEQ	Rm, Ro, Rn			//(CMP3R) Rn = Rm==Ro
 ** F0nm_9go5 ? MOV.HTW	Rn, (Rm, Ro)		//(LDST48) Store High TWORD
-** F0nm_9Go5 -
+** F0nm_9Go5 ? CMPQGT	Rm, Ro, Rn			//(CMP3R) Rn = Rm>Ro
 ** F0nm_9go6 -
-** F0nm_9Go6 -
+** F0nm_9Go6 ? CMPQNE	Rm, Ro, Rn			//(CMP3R) Rn = Rm!=Ro
 ** F0nm_9go7 -
-** F0nm_9Go7 -
+** F0nm_9Go7 ? CMPQGE	Rm, Ro, Rn			//(CMP3R) Rn = Rm>=Ro
 
 ** F0nm_9go8 ? MOV.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
 ** F0nm_9Go8 ? MOVU.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
@@ -2695,10 +2700,18 @@ Alternative 2 (Hx, W0):
 For instructions within the W0 encoding spaces, the 32-bits following the Jumbo Op64 prefix will represent the same encoding space as used by 32-bit ops. This is not necessarily true of operations in other encoding spaces.
 
 The w and v fields:
-* W: wnmi
+* W: wnmi (or qnmi)
 * V: wiii (3R / 3RI)
 * V: wssi (Ld / St)
 ** ss=Scale
+
+The W field, in Baseline mode, will encode the Wn, Wm, and Wi fields.
+* Nominally, these will extend the register field to 6 bits.
+* In XG2, these bits will nominally be encoded in the final instruction.
+** The Op64 prefix bits may be used if the instruction bits are 111.
+* The Wq field will effectively be an opcode bit.
+
+
 
 The V.w flag will apply to 3R/3RI (Imm5u) encodings (V.w, E.q):
 * { 0, 0 }: 3R ( Rm, Ro, Rn, Rn )

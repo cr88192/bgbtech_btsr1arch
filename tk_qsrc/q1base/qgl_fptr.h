@@ -517,6 +517,9 @@ GLEXTERN  void ( APIENTRY * qglVertex4sv )(const GLshort *v);
 GLEXTERN  void ( APIENTRY * qglVertexPointer )(GLint size, GLenum type, GLsizei stride, const GLvoid *pointer);
 GLEXTERN  void ( APIENTRY * qglViewport )(GLint x, GLint y, GLsizei width, GLsizei height);
 
+GLEXTERN  void ( APIENTRY * qglMultiTexCoord2f)(int target, GLfloat s, GLfloat t);
+GLEXTERN  void ( APIENTRY * qglActiveTexture)(GLenum texture);
+
 #if defined( _WIN32 )
 
 GLEXTERN  int   ( WINAPI * qwglChoosePixelFormat )(HDC, CONST PIXELFORMATDESCRIPTOR *);

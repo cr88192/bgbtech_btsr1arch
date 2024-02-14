@@ -21,6 +21,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 //#define	GLTEST			// experimental stuff
 
+#ifdef __riscv
+#pragma STDC FP_CONTRACT OFF
+#endif
+
 #define	QUAKE_GAME			// as opposed to utilities
 
 #define	VERSION				1.09
@@ -131,8 +135,11 @@ void	VID_UnlockBuffer (void);
 
 #define	MAX_STYLESTRING	64
 
+// #define	DBGBREAK \
+// 	do { printf("BRK %s:%d\n", __FILE__, __LINE__); __debugbreak(); }while(0);
+
 #define	DBGBREAK \
-	do { printf("BRK %s:%d\n", __FILE__, __LINE__); __debugbreak(); }while(0);
+	__debugbreak();
 
 //
 // stats are integers communicated to the client by the server
@@ -360,3 +367,18 @@ extern	cvar_t	chase_active;
 void Chase_Init (void);
 void Chase_Reset (void);
 void Chase_Update (void);
+
+int __int_clamp(int x, int m, int n);
+int __int_min(int x, int y);
+int __int_max(int x, int y);
+
+float __fpu_frcp_sf(float f);
+float __fpu_fdiv_sf(float f, float g);
+void __debugbreak();
+int __hint_use_egpr();
+
+int D_SoftDiv(int a, int b);
+int D_SoftDivB(int a, int b);
+
+int I_GetTimeMs();
+

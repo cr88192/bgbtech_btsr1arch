@@ -114,6 +114,9 @@ reg[12:0]	tBraDisp8;
 reg[12:0]	tBraDisp8B;
 reg[16:0]	tBraDisp11B;
 reg[24:0]	tBraDisp20;
+reg[24:0]	tBraDispRv20;
+
+reg[16:0]	tBraDispRv12;
 
 reg[12:0]	tBraDispInc;
 
@@ -121,6 +124,9 @@ reg[31:0]	tDisp8;
 reg[31:0]	tDisp8B;
 reg[31:0]	tDisp11B;
 reg[31:0]	tDisp20;
+
+reg[31:0]	tDispRv12;
+reg[31:0]	tDispRv20;
 
 reg[11:0]	tBraDisp8HiP0;
 reg[11:0]	tBraDisp8HiP1;
@@ -155,10 +161,15 @@ reg			tIsBraCc11Bz;	//Conditional Branch (11-bit Disp, JCMPZ)
 reg			tIsBraCcP20;	//Conditional Branch (20-bit Disp)
 reg			tIsBraCcF20;	//Conditional Branch (20-bit Disp)
 
+reg			tIsBraRv12;		//RV Conditional Branch (12-bit Disp)
+reg			tIsBraRv20;		//RV Conditional Branch (20-bit Disp)
+
 reg			tDoBraCc8;		//Take Conditional Branch (Cc8)
 reg			tDoBraCc8B;		//Take Conditional Branch (Cc8, JCMP)
 reg			tDoBraCc11B;	//Take Conditional Branch (Cc8, JCMP)
 reg			tDoBraCc20;		//Take Conditional Branch (Cc20)
+
+reg			tDoBraRv12;		//Take Conditional Branch (12-bit Disp)
 
 reg[2:0]	preCnts[63:0];
 // reg[2:0]	preCnts[4095:0];
@@ -280,6 +291,17 @@ begin
 		istrWord[7]?UV12_FF:UV12_00,
 		istrWord[7:0], istrWord[27:16] };
 	
+`ifdef jx2_enable_riscv
+	tDispRv12 = {
+		istrWord[31]?UV20_FF:UV20_00,
+		istrWord[7], istrWord[30:25], istrWord[11:8], 1'b0 };
+	tDispRv20 = {
+		istrWord[31]?UV12_FF:UV12_00,
+		istrWord[19:12],
+		istrWord[20],
+		istrWord[30:21], 1'b0 };
+`endif
+	
 //	tBraDisp8	= {1'b0, istrBraPc[31:0] } + { tDisp8[31:0], 1'b0 };
 //	tBraDisp20	= {1'b0, istrBraPc[31:0] } + { tDisp20[31:0], 1'b0 };
 //	tBraDisp8	= {1'b0, istrBraPc[23:0] } + { tDisp8[23:0], 1'b0 };
@@ -294,6 +316,11 @@ begin
 	tBraDisp20	= {1'b0, istrBasePc[23:0] } + { tDisp20[23:0], 1'b0 } + 4;
 	tBraDisp8B	= {1'b0, istrBasePc[11:0] } + { tDisp8B[11:0], 1'b0 } + 4;
 	tBraDisp11B	= {1'b0, istrBasePc[15:0] } + { tDisp11B[15:0], 1'b0 } + 4;
+`endif
+
+`ifdef jx2_enable_riscv
+	tBraDispRv12	= {1'b0, istrBasePc[15:0] } + tDispRv12[16:0];
+	tBraDispRv20	= {1'b0, istrBasePc[23:0] } + tDispRv20[24:0];
 `endif
 
 // `ifdef def_true
@@ -326,6 +353,8 @@ begin
 	tIsBra8		= 0;
 	tIsBraCc8	= 0;
 
+	tIsBraRv12	= 0;
+
 `ifndef jx2_prebra_no16b
 	tIsBra8		=
 		isBase &&
@@ -350,6 +379,13 @@ begin
 		((istrWord[11: 8]==4'h0) || (istrWord[11: 8]==4'h4)) &&
 		(istrWord[31:28]==4'b1100);
 //	tIsBraCcP20		= 0;
+
+
+	tIsBraRv12		=
+		(istrWord[6:0]==7'b1100011) && pipeHasLr[4];
+	tIsBraRv20		=
+		(istrWord[6:0]==7'b1101111) && pipeHasLr[4];
+
 
 	tIsBraCc8Br		=	0;
 	tIsBraCc8Bz		=	0;
@@ -528,6 +564,8 @@ begin
 	tDoBraCc8B	= 0;
 	tDoBraCc11B	= 0;
 
+	tDoBraRv12	= 0;
+
 // `ifndef def_true
 `ifdef def_true
 	if(tIsBraCc8 && (tPreIbIx==tPreIdIx))
@@ -567,6 +605,13 @@ begin
 	if(tIsBraCc11B && (tPreIbIx==tPreIdIx))
 	begin
 		tDoBraCc11B = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tNonBra		= 0;
+		tWasBra		= 1;
+	end
+
+	if(tIsBraRv12 && (tPreIbIx==tPreIdIx))
+	begin
+		tDoBraRv12	= tPreIfCnt[2] ^ tPreIfCnt[1];
 		tNonBra		= 0;
 		tWasBra		= 1;
 	end
@@ -628,6 +673,19 @@ begin
 `endif
 	end
 `endif
+
+`ifdef jx2_enable_riscv
+	if(tIsBraRv12)
+	begin
+		tPreBraPc	= { istrBasePc[47:16], tBraDispRv12[15:0] };
+	end
+
+	if(tIsBraRv20)
+	begin
+		tPreBraPc	= { istrBasePc[47:24], tBraDispRv20[23:0] };
+	end
+`endif
+
 
 //	if(tIsBra8)
 	if(tIsBra8 || tDoBraCc8)
@@ -691,6 +749,33 @@ begin
 		if(tBraDisp11B[16])
 		begin
 //			$display("PreBra: Reject Cc11B");
+			tNonBra		= 1;
+			tPreBra		= 0;
+		end
+	end
+`endif
+
+`ifdef jx2_enable_riscv
+	if(tDoBraRv12)
+	begin
+		tNonBra		= 0;
+		tPreBra		= 1;
+		if(tBraDispRv12[16])
+		begin
+//			$display("PreBra: Reject Rv12");
+			tNonBra		= 1;
+			tPreBra		= 0;
+		end
+	end
+
+	if(tIsBraRv20)
+	begin
+		tNonBra		= 0;
+		tPreBra		= 1;
+
+		if(tBraDispRv20[24])
+		begin
+//			$display("PreBra: Reject Rv20");
 			tNonBra		= 1;
 			tPreBra		= 0;
 		end
@@ -787,6 +872,7 @@ begin
 
 //	tPreBra		= 0;
 
+`ifndef def_true
 	if(pipeHasLr[4])
 	begin
 		if(tPreBra)
@@ -794,6 +880,7 @@ begin
 			$display("DecPreBra: Predict Branch in RV Mode");
 		end
 	end
+`endif
 
 end
 

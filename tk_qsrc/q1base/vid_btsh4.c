@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <tkgdi/tkgdi.h>
 
-viddef_t	vid;				// global video state
+extern viddef_t	vid;				// global video state
 
 // #define	BASEWIDTH	320
 // #define	BASEHEIGHT	200
@@ -1362,8 +1362,8 @@ u64 VID_BlendFlash4x(u64 pix, int flash)
 	return(pix1);
 }
 
-void tk_putc(int val);
-int tk_puts(char *msg);
+// void tk_putc(int val);
+// int tk_puts(char *msg);
 void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
 
 static int i_lastframems;

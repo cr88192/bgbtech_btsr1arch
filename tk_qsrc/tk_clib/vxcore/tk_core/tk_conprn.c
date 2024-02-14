@@ -1286,11 +1286,11 @@ void tk_con_newline()
 	}
 }
 
-static tk_con_isesc=0;
-static tk_con_escval0;
-static tk_con_escval1;
-static tk_con_escval2;
-static tk_con_escval3;
+static int tk_con_isesc=0;
+static int tk_con_escval0;
+static int tk_con_escval1;
+static int tk_con_escval2;
+static int tk_con_escval3;
 
 void TK_Con_PutcEscapeSgr(int mode)
 {

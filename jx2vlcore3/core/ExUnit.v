@@ -551,6 +551,8 @@ wire[63:0]		gprValCm;
 (* max_fanout = 200 *)
 	reg[47:0]		id1ValPc;
 
+reg[3:0]		id1PcStep;
+
 // reg[63:0]	id1IstrWord;	//source instruction word
 
 (* max_fanout = 200 *)
@@ -612,7 +614,7 @@ DecOpWx3	decOp(
 	id1IstrWord,	id1ValBPc,
 //	crOutSr,
 	id1ValFetchSr,
-	id1IstrSxo,
+	id1IstrSxo,		id1PcStep,
 
 	idA1IdRegM,		idA1IdRegO,
 	idA1IdRegN,		idA1IdImm,
@@ -5628,6 +5630,7 @@ begin
 		id1IstrSxo		<= ifOutPcSxo;
 //		id1ValFetchSr	<= crOutSr;
 		id1ValFetchSr	<= ifValFetchSr;
+		id1PcStep		<= ifOutPcStep;
 
 `ifdef jx2_enable_prebra
 //		id1BraPipelineLrL	<= id1BraPipelineLr;

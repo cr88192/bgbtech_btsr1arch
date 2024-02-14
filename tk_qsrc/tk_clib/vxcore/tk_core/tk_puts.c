@@ -1,6 +1,7 @@
 void __halt(void);
 u64 tk_gettimeus_v(void);
 void tk_sprintf(char *dst, char *str, ...);
+void tk_con_putc(int ch);
 
 _tkgdi_context_t *TKGDI_GetCurrentGdiContext();
 

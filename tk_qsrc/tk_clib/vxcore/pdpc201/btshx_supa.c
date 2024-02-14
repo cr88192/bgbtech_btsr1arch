@@ -762,7 +762,8 @@ s64 TK_GetTimeUs(void)
 
 	if(tk_iskernel())
 	{
-#ifdef __ADDR_X48__
+// #ifdef __ADDR_X48__
+#if 1
 		sreg=(u64 *)0xFFFFF000E000ULL;
 #else
 		sreg=(u64 *)0xF000E000UL;
@@ -782,7 +783,8 @@ s64 TK_GetTimeUs(void)
 	u64 us;
 	int ms;
 
-#ifdef __ADDR_X48__
+// #ifdef __ADDR_X48__
+#if 1
 	sreg=(u64 *)0xFFFFF000E000ULL;
 #else
 //	sreg=(int *)0xA000E000;

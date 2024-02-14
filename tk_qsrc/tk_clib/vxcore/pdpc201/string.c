@@ -328,8 +328,8 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 		lj=(li0|(li0+c1))&c0;
 	}
 	
-//	if((((u32)li0)==((u32)li1)) && (((u32)lj)==0x80808080ULL))
-//		{ p1+=4; p2+=4; }
+	if((((u32)li0)==((u32)li1)) && (((u32)lj)==0x80808080ULL))
+		{ p1+=4; p2+=4; }
 	
 	while (*p1 != '\0')
 	{
@@ -1900,6 +1900,59 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 
 //	__debugbreak();
 
+#if 1
+	li0=((char *)s1)-((char *)s2);
+	if(li0<0)
+		li0=-li0;
+	if(li0<n)
+		__debugbreak();
+#endif
+
+#if 1
+	if(n<=16)
+	{
+		if(!(n&7))
+		{
+			if(n==8)
+			{
+				li0=cs2[0];
+				p[0]=li0;
+				return(s1);
+			}
+
+			if(n==16)
+			{
+				li0=cs2[0];
+				li1=cs2[1];
+				p[0]=li0;
+				p[1]=li1;
+				return(s1);
+			}
+		}else
+			if(!(n&3))
+		{
+			if(n==4)
+			{
+				li0=((u32 *)cs2)[0];
+				((u32 *)p)[0]=li0;
+				return(s1);
+			}
+
+			if(n==12)
+			{
+				li0=cs2[0];
+				li1=((u32 *)cs2)[2];
+				p[0]=li0;
+				((u32 *)p)[2]=li1;
+				return(s1);
+			}
+		}
+		
+		if(!n)
+			return(s1);
+	}
+#endif
+
 	n1 = (n & (~0x07));
 
 	if(n1>n)
@@ -1959,7 +2012,7 @@ __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 		case 7:
 			((int *)p)[0] = ((int *)cs2)[0];
 			((short *)p)[2] = ((short *)cs2)[2];
-			((char *)p)[7] = ((char *)cs2)[7];
+			((char *)p)[6] = ((char *)cs2)[6];
 			break;
 		default:
 			break;

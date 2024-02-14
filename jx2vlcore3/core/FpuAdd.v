@@ -36,6 +36,7 @@ ExOp:
 	2: Ro=Rn-Rm
 	3: Ro=I2F(Rn)
 	4: Ro=F2I(Rn)
+	5: Ro=UI2F(Rn)
 */
 
 `ifndef HAS_FPUADD
@@ -232,7 +233,11 @@ begin
 	/* Stage 1 */
 
 	tFraDti1	= (tRegExOp1[2:0] == 4);
-	tFraItf1	= (tRegExOp1[2:0] == 3);
+//	tFraItf1	= (tRegExOp1[2:0] == 3);
+	tFraItf1	= (tRegExOp1[2:0] == 3) ||
+		(tRegExOp1[2:0] == 5) ||
+		(tRegExOp1[2:0] == 6) ||
+		(tRegExOp1[2:0] == 7);
 
 	tSgnA1	= tRegValRn[63];
 	tSgnB1	= tRegValRm[63] ^ regExOp[1];
@@ -272,6 +277,24 @@ begin
 		tSgnA1	= 0;
 		tExpA1	= 1084;
 		tFraA1	= tRegValRn;
+
+`ifdef def_true
+		if((tRegExOp1[2:0] == 5) && tRegValRn[63])
+		begin
+			tExpA1	= 1085;
+			tFraA1	= { 1'b0, tRegValRn[63:1] };
+		end
+		
+		if((tRegExOp1[2:0] == 6) || (tRegExOp1[2:0] == 7))
+		begin
+//			tExpA1	= 1053;
+//			tFraA1	= {
+//				tRegValRn[31] && !tRegExOp1[0],
+//				tRegValRn[31:0], 31'h0 };
+			tFraA1[63:32] = (tRegValRn[31] && !tRegExOp1[0]) ?
+				32'hFFFFFFFF : 32'h00000000;
+		end
+`endif
 	end
 
 	tExpA1D	= {1'b0, tExpA1} - {1'b0, tExpB1};

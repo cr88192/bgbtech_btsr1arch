@@ -24,7 +24,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <tkgdi/tkgdi.h>
 
-viddef_t	vid;				// global video state
+void *TKRA_GetCurrentScreenBuffer_RGB(void);
+
+extern viddef_t	vid;				// global video state
 
 // #define	BASEWIDTH	320
 // #define	BASEHEIGHT	200
@@ -761,6 +763,8 @@ void GL_BeginRendering (int *x, int *y, int *width, int *height)
 //	qglViewport (*x, *y, *width, *height);
 }
 
+#ifdef __BJX2__
+
 __asm {
 I_FinishUpdate_ScanCopy:
 
@@ -819,10 +823,11 @@ SND_PaintChannelFrom8_Inner:
 	RTSU
 };
 
+#endif
+
+
 extern qboolean	mouseactive;  // from in_win.c
 qboolean fullsbardraw = false;
-
-void *TKRA_GetCurrentScreenBuffer_RGB(void);
 
 void GL_EndRendering (void)
 {
@@ -1631,8 +1636,8 @@ u64 VID_BlendFlash4x(u64 pix, int flash)
 	return(pix1);
 }
 
-void tk_putc(int val);
-int tk_puts(char *msg);
+// void tk_putc(int val);
+// int tk_puts(char *msg);
 void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
 void I_FinishUpdate_ScanCopy_Flip(u16 *ics, u32 *ict, int blkn);
 

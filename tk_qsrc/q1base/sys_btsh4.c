@@ -167,6 +167,7 @@ void Sys_MakeCodeWriteable (nlint startaddr, nlint length)
 void Sys_Error (char *error, ...)
 {
 //	char tb[1024];
+	char tb[256];
 	va_list         argptr;
 
 //	{ DBGBREAK }
@@ -174,10 +175,10 @@ void Sys_Error (char *error, ...)
 	tk_printf("Sys_Error: ");   
 	va_start(argptr, error);
 //	vfprintf(stdout, error, argptr);
-//	vsprintf(tb, error, argptr);
-	tk_vprintf(error, argptr);
+	vsprintf(tb, error, argptr);
+//	tk_vprintf(error, argptr);
 	va_end(argptr);
-//	printf("%s\n", tb);
+	printf("%s\n", tb);
 
 	{ DBGBREAK }
 
@@ -313,10 +314,10 @@ void sleep_0()
 #endif
 
 #ifndef _BGBCC
-void __debugbreak()
-{
+// void __debugbreak()
+// {
 //	*(int *)-1=-1;
-}
+// }
 #endif
 
 void Sys_CheckSanity(void)
@@ -327,7 +328,7 @@ void Sys_CheckSanity(void)
 		};
 	static int rec=0;
 	char tb[256];
-	int *pj, *pk;
+	int *pi, *pj, *pk;
 	long long li, lj;
 	double		time, oldtime, newtime;
 	double f, g, h;
@@ -336,6 +337,7 @@ void Sys_CheckSanity(void)
 
 	if(!rec)
 	{
+#if 0
 		tk_puts("Q Flt 0: ");
 		tk_print_float(3.14159);
 		tk_puts("\n");
@@ -343,6 +345,9 @@ void Sys_CheckSanity(void)
 		tk_puts("Q Flt 1: ");
 		tk_print_float(time);
 		tk_puts("\n");
+#endif
+
+		tk_printf("Q Flt 0: %f\n", 3.14159);
 
 		tk_printf("Q Flt 2: %f\n", time);
 		printf("Q Flt 3: %f\n", time);
@@ -400,38 +405,68 @@ void Sys_CheckSanity(void)
 			if(i>=j)	tk_printf("%d>=%d -> T\n", i, j);
 			else		tk_printf("%d>=%d -> F\n", i, j);
 
-			tk_printf("%f==%f -> %d\n", f, g, f==g);
-			tk_printf("%f!=%f -> %d\n", f, g, f!=g);
-			tk_printf("%f< %f -> %d\n", f, g, f< g);
-			tk_printf("%f> %f -> %d\n", f, g, f> g);
-			tk_printf("%f<=%f -> %d\n", f, g, f<=g);
-			tk_printf("%f>=%f -> %d\n", f, g, f>=g);
+			printf("%f==%f -> %d\n", f, g, f==g);
+			printf("%f!=%f -> %d\n", f, g, f!=g);
+			printf("%f< %f -> %d\n", f, g, f< g);
+			printf("%f> %f -> %d\n", f, g, f> g);
+			printf("%f<=%f -> %d\n", f, g, f<=g);
+			printf("%f>=%f -> %d\n", f, g, f>=g);
 			
-			if(f==g)	tk_printf("%f==%f -> T\n", f, g);
-			else		tk_printf("%f==%f -> F\n", f, g);
-			if(f!=g)	tk_printf("%f!=%f -> T\n", f, g);
-			else		tk_printf("%f!=%f -> F\n", f, g);
-			if(f<g)		tk_printf("%f<%f -> T\n", f, g);
-			else		tk_printf("%f<%f -> F\n", f, g);
-			if(f>g)		tk_printf("%f>%f -> T\n", f, g);
-			else		tk_printf("%f>%f -> F\n", f, g);
-			if(f<=g)	tk_printf("%f<=%f -> T\n", f, g);
-			else		tk_printf("%f<=%f -> F\n", f, g);
-			if(f>=g)	tk_printf("%f>=%f -> T\n", f, g);
-			else		tk_printf("%f>=%f -> F\n", f, g);
+			if(f==g)	printf("%f==%f -> T\n", f, g);
+			else		printf("%f==%f -> F\n", f, g);
+			if(f!=g)	printf("%f!=%f -> T\n", f, g);
+			else		printf("%f!=%f -> F\n", f, g);
+			if(f<g)		printf("%f<%f -> T\n", f, g);
+			else		printf("%f<%f -> F\n", f, g);
+			if(f>g)		printf("%f>%f -> T\n", f, g);
+			else		printf("%f>%f -> F\n", f, g);
+			if(f<=g)	printf("%f<=%f -> T\n", f, g);
+			else		printf("%f<=%f -> F\n", f, g);
+			if(f>=g)	printf("%f>=%f -> T\n", f, g);
+			else		printf("%f>=%f -> F\n", f, g);
 		}
+
+		pi=&i;
+		pj=&j;
+
+//		*pj=1;
+
+//		j=i-j;
+		j=!tk_iskernel();
+		hf=0;
 
 		for(i=0; i<32; i++)
 		{
 			f=((M_PI*2.0)/16.0)*((double)i);
 			g=sqrt(i);
 			h=g*g;
-			tk_printf("i=%d: ", i);
+#if 1
+			printf("i=%d: ", i);
 	//		tk_printf("a=%f sin=%f cos=%f sqrt(i)=%f(^2=%f)\n",
 	//			f, sin(f), cos(f), g, h);
-			tk_printf("a=%f sin=%f cos=%f ", f, sin(f), cos(f));
-			tk_printf("sqrt(i)=%f(^2=%f)\n", g, h);
+			printf("a=%f sin=%f cos=%f ", f, sin(f), cos(f));
+			printf("sqrt(i)=%f(^2=%f)\n", g, h);
+#endif
+
+			hf+=_sin_fast(f);
 		}
+
+//		printf("%f\n", h);
+
+		if(fabs(hf)>0.01)
+			{ __debugbreak(); }
+
+		printf("%f\n", hf);
+
+#if 0
+		f=0;
+		g=_sin_fast(f);
+		if(fabs(g-0.0)>0.0001)
+			{ DBGBREAK }
+		g=_cos_fast(f);
+		if(fabs(g-1.0)>0.0001)
+			{ DBGBREAK }
+#endif
 	}
 
 #if 1
@@ -1022,11 +1057,14 @@ int main (int argc, char **argv)
 
 	tk_puts("Q Main\n");
 
-//	Sys_CheckSanityB();
+	Sys_CheckSanityB();
 
 	COM_InitEndianSwap();
 
-//	Sys_CheckSanity();
+	Sys_CheckSanity();
+
+//	fgetc(stdin);
+//	while(1);
 
 	tk_puts("Q A0-0\n");
 

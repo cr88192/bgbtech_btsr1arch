@@ -66,10 +66,10 @@ X(R_DrawColumn):
 
 	MOVU.B	(R22, R5), R18		// get first pixel
 	MOVU.B	(R22, R6), R19		// get second pixel
+	TEST	0xFFFFFFFE, R16
 	MOVU.W	(R4, R18), R18		// color translate first pixel
 	MOVU.W	(R4, R19), R19		// color translate second pixel
 	
-	TEST	0xFFFFFFFE, R16
 	BT		.checklast
 	
 #if 0
@@ -87,9 +87,9 @@ X(R_DrawColumn):
 	MOVU.B	(R22, R5), R18		// get third pixel
 	ADD		#1280, R23			// advance to third pixel destination
 	MOVU.B	(R22, R6), R19		// get fourth pixel
+	ADD		#-1, R17
 	MOVU.W	(R4, R18), R18		// color translate first pixel
 	MOVU.W	(R4, R19), R19		// color translate second pixel
-	ADD		#-1, R17
 	TEST	R17, R17
 	BF		.doubleloop
 #endif
@@ -106,8 +106,8 @@ X(R_DrawColumn):
 .endif
 	SHLD	R20, #-25, R6	| MOVU.B	(R22, R5), R18
 	ADD		R21, R20		| MOVU.B	(R22, R6), R19
-	ADD		#1280, R23		| MOVU.W	(R4, R18), R18
-	ADD		#-1, R17		| MOVU.W	(R4, R19), R19
+	ADD		#-1, R17		| MOVU.W	(R4, R18), R18
+	ADD		#1280, R23		| MOVU.W	(R4, R19), R19
 
 .ifarch has_jcmpz
 	BRNE.L	R17, .doubleloop
@@ -213,10 +213,10 @@ X(R_DrawSpan):
 
 	MOVU.B	(R22, R5), R18			// get first pixel
 	MOVU.B	(R22, R6), R19			// get second pixel
+	TEST	0xFFFFFFFE, R16
 	MOVU.W	(R4, R18), R18			// color translate first pixel
 	MOVU.W	(R7, R19), R19			// color translate second pixel
 
-	TEST	0xFFFFFFFE, R16
 	BT		.hchecklast
 
 #if 0
@@ -503,9 +503,9 @@ X(R_DrawSpanLow):
 	MOV.W	R19, (R23, 6)	
 	AND		R3, R6				|	MOVU.B	(R22, R5), R18	
 	ADD		R21, R20			|	MOVU.B	(R22, R6), R19	
+	TEST	R17, R17
 	ADD		#-1, R17			|	MOVU.W	(R4, R18), R18
 	ADD		#8, R23				|	MOVU.W	(R7, R19), R19
-	TEST	R17, R17
 	BF		.hdoubleloop
 #endif
 
@@ -833,8 +833,9 @@ X(V_DrawPatchCmap_Col):
 	MOVU.W		(R6, R3), R3
 	ADD			#-2, R7
 	MOV.W		R2, (R5, 0)
+	CMP/GE		#2, R7
 	MOV.W		R3, (R5, 640)
-	ADD			#1280, R5		| CMP/GE	#2, R7
+	ADD			#1280, R5	
 	BT		.loop1
 	.done1:
 #endif

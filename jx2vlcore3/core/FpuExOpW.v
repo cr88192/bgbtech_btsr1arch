@@ -497,6 +497,16 @@ assign	tRegAddExOpA	=
 
 	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h2)) ? 3'h3 :
 	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h2)) ? 3'h4 :
+
+	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h4)) ? 3'h6 :
+	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h4)) ? 3'h4 :
+	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h5)) ? 3'h7 :
+	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h5)) ? 3'h4 :
+	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h6)) ? 3'h3 :
+	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h6)) ? 3'h4 :
+	(tFpuIsFldcx && (tRegIdIxt[3:0]==4'h7)) ? 3'h5 :
+	(tFpuIsFstcx && (tRegIdIxt[3:0]==4'h7)) ? 3'h4 :
+
 	3'h0 };
 
 assign	tRegMulExOpA	=
@@ -1526,17 +1536,27 @@ begin
 					tRegValGRnB	= tRegValGRn;
 				end
 
-				3'h6: begin
+				3'h4, 3'h5, 3'h6, 3'h7: begin
 //					tDoHoldCyc = 5;
 					tDoHoldCyc = 6;
 
-					tVecCnvRnI	= tRegAddVal;
-					tRegValGRn	= { UV32_00, tVecCnvRnO };
-					tRegValGRnA	= tRegValGRn;
+					if(tRegIdIxtL[4])
+					begin
+						tVecCnvRnI	= tRegAddVal;
+						tRegValGRn	= { UV32_00, tVecCnvRnO };
+						tRegValGRnA	= tRegValGRn;
+					end
+					else
+					begin
+						tRegValGRn	= tRegAddVal;
+						tRegValGRnA	= tRegAddVal;
+					end
+
+					tRegValGRnB	= tRegValGRn;
 
 `ifdef jx2_fpu_longdbl
-					tExCmdVecW = tRegIdIxtL[5];
-					tRegValGRnB	= tRegAddValHi;
+//					tExCmdVecW = tRegIdIxtL[5];
+//					tRegValGRnB	= tRegAddValHi;
 `endif
 				end
 				

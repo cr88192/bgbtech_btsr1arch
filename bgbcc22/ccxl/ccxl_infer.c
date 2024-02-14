@@ -785,7 +785,7 @@ int BGBCC_CCXL_InferExprCleanI(BGBCC_TransState *ctx, BCCX_Node *l)
 
 		if(!strcmp(op, "*"))
 		{
-			return(i0);
+			return(i0&(~4));
 		}
 
 		return(0);

@@ -12,12 +12,21 @@
 
 #include <tkgdi/tkgdi.h>
 
+#ifndef __BGBCC__
+int __hint_use_egpr();
+int __int_clamp(int x, int m, int n);
+#endif
+
 TKGHSND hSndDev;
 
 byte *i_smus_css;		//start position (active song)
 byte *i_smus_cse;		//end position (active song)
 byte *i_smus_cs;		//current position (active song)
 int i_smus_tt;			//remaining tics until next event
+
+int I_SMus_Tick();
+int SMus_SpecialParm(int parm, int val);
+int SMus_SilenceAll();
 
 
 #if 0
@@ -40,8 +49,6 @@ byte smus_vnflg[32];		//voice flag
 
 u32 smus_fmregdata[256*16];
 
-
-int I_SMus_Tick();
 
 int smus_irq_tt;
 
@@ -982,7 +989,7 @@ void I_InitMusic(void)
 	{
 		for(i=0; i<175; i++)
 		{
-			rec=(u32 *)(genmidi+8+(i*36));
+			rec=(byte *)(genmidi+8+(i*36));
 //			BGBMID_SetFmRegisterData(bmid_ctx, i, 0, ((u32 *)rec)[0]);
 //			BGBMID_SetFmRegisterData(bmid_ctx, i, 1, ((u32 *)rec)[1]);
 //			BGBMID_SetFmRegisterData(bmid_ctx, i, 2, ((u32 *)rec)[2]);

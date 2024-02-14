@@ -407,18 +407,21 @@ tkra_vec4f tkra_mkvec3sfv1(void *ptr)
 	return(c);
 }
 
+#ifndef __riscv
 double _sin_fast(double x)
 	{ return(sin(x)); }
 double _cos_fast(double x)
 	{ return(cos(x)); }
 double _sqrt_fast(double x)
 	{ return(sqrt(x)); }
+#endif
 
 double __fpu_frcp_sf(double x)
 {
 	return(1.0/x);
 }
 
+#ifndef __riscv
 int __int_clamp(int x, int m, int n)
 {
 	if(x<m)
@@ -427,6 +430,7 @@ int __int_clamp(int x, int m, int n)
 		return(n);
 	return(x);
 }
+#endif
 
 
 #if 0

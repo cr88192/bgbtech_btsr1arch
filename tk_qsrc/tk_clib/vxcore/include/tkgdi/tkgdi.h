@@ -415,6 +415,45 @@ TKGSTATUS tkgDestroyDisplay(TKGHDC dev);
 TKGSTATUS tkgResizeDisplay(TKGHDC dev, TKGDI_BITMAPINFOHEADER *info);
 
 /*
+ * Set titlebar text for window.
+ */
+TKGHDC tkgSetWindowTitle(
+	TKGHDC hDev,
+	char *title);
+
+/*
+ * Set style flags for window.
+ */
+TKGHDC tkgSetWindowStyle(
+	TKGHDC hDev,
+	u64 style);
+
+/*
+ * Move window origin.
+ */
+TKGHDC tkgMoveWindow(
+	TKGHDC hDev,
+	int xorg, int yorg);
+
+/*
+ * Poll for new event from window or device.
+ */
+TKGSTATUS tkgPollEvent(TKGHDC dev, TKGDI_EVENT *imsg);
+
+/*
+ * Push event to window or device.
+ */
+TKGSTATUS tkgPushEvent(TKGHDC dev, TKGDI_EVENT *imsg);
+
+void *tkgTryMapFrameBuffer(TKGHDC dev,
+	TKGDI_BITMAPINFOHEADER *info);
+
+TKGSTATUS tkgMapReleaseFrameBuffer(TKGHDC dev,
+	TKGDI_BITMAPINFOHEADER *info, void *ptr);
+
+TKGSTATUS tkgMapFlipFrame(TKGHDC dev);
+
+/*
  * Draw a text string to the Display.
  * Font encodes a handle for what font to use.
  * Mode describes basic text-drawing parameters.
@@ -496,5 +535,10 @@ TKGSTATUS tkgGetImageInfoFromBuffer(
 TKGSTATUS tkgGetImageDataFromBuffer(
 	void *cmpbuf, int sz_cmpbuf, TKGFOURCC cmpfmt,
 	void *destimage, TKGDI_BITMAPINFOHEADER *info);
+
+#ifndef __BGBCC__
+int __hint_use_egpr();
+int __int_clamp(int x, int m, int n);
+#endif
 
 #endif

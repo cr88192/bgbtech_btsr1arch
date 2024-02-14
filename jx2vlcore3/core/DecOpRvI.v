@@ -777,6 +777,14 @@ begin
 					opNmid		= JX2_UCMD_FLDCX;
 					opUCmdIx	= JX2_UCIX_FPCX_SIG;
 					opIty		= JX2_ITY_NQ;
+
+					case(istrWord[22:20])
+						3'b000:		opUCmdIx=JX2_UCIX_FPCX_SISL;
+						3'b001:		opUCmdIx=JX2_UCIX_FPCX_SIUL;
+						3'b010:		opUCmdIx=JX2_UCIX_FPCX_SIG;
+						3'b011:		opUCmdIx=JX2_UCIX_FPCX_SIU;
+						default:	opUCmdIx=JX2_UCIX_FPCX_SIG;
+					endcase
 				end
 
 //				7'b1100001: begin
@@ -784,6 +792,14 @@ begin
 					opNmid		= JX2_UCMD_FLDCX;
 					opUCmdIx	= JX2_UCIX_FPCX_IG;
 					opIty		= JX2_ITY_NQ;
+
+					case(istrWord[22:20])
+						3'b000:		opUCmdIx=JX2_UCIX_FPCX_ISL;
+						3'b001:		opUCmdIx=JX2_UCIX_FPCX_IUL;
+						3'b010:		opUCmdIx=JX2_UCIX_FPCX_I;
+						3'b011:		opUCmdIx=JX2_UCIX_FPCX_IU;
+						default:	opUCmdIx=JX2_UCIX_FPCX_IG;
+					endcase
 				end
 
 //				7'b1101000: begin

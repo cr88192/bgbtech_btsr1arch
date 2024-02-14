@@ -912,7 +912,8 @@ void D_DrawSpans16 (espan_t *pspan)
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
 //				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
 //				z = d_fdiv_sf(65536.0, zi);
-				z = __fpu_frcp_sf(zi) * 65536.0;
+//				z = __fpu_frcp_sf(zi) * 65536.0;
+				z = d_frcp_sf(zi) * 65536.0;
 
 				snext = (int)(sdivz * z) + sadjust;
 //				snext = (sdivz * z) + sadjust;
@@ -945,7 +946,8 @@ void D_DrawSpans16 (espan_t *pspan)
 //				z = (float)0x10000 / zi;	// prescale to 16.16 fixed-point
 //				z = 65536.0 / zi;	// prescale to 16.16 fixed-point
 //				z = d_fdiv_sf(65536.0, zi);
-				z = __fpu_frcp_sf(zi) * 65536.0;
+//				z = __fpu_frcp_sf(zi) * 65536.0;
+				z = d_frcp_sf(zi) * 65536.0;
 
 				snext = (int)(sdivz * z) + sadjust;
 //				snext = (sdivz * z) + sadjust;
@@ -1211,7 +1213,8 @@ void D_DrawSpans16 (espan_t *pspan)
 		sdivz = d_sdivzorigin + dv*d_sdivzstepv + du*d_sdivzstepu;
 		tdivz = d_tdivzorigin + dv*d_tdivzstepv + du*d_tdivzstepu;
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
-		z = __fpu_frcp_sf(zi) * 65536.0;
+//		z = __fpu_frcp_sf(zi) * 65536.0;
+		z = d_frcp_sf(zi) * 65536.0;
 
 		s = (int)(sdivz * z) + sadjust;
 		if (s > bbextents)
@@ -1239,7 +1242,8 @@ void D_DrawSpans16 (espan_t *pspan)
 				sdivz += sdivz8stepu;
 				tdivz += tdivz8stepu;
 				zi += zi8stepu;
-				z = __fpu_frcp_sf(zi) * 65536.0;
+//				z = __fpu_frcp_sf(zi) * 65536.0;
+				z = d_frcp_sf(zi) * 65536.0;
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)
@@ -1262,7 +1266,8 @@ void D_DrawSpans16 (espan_t *pspan)
 				sdivz += d_sdivzstepu * spancountminus1;
 				tdivz += d_tdivzstepu * spancountminus1;
 				zi += d_zistepu * spancountminus1;
-				z = __fpu_frcp_sf(zi) * 65536.0;
+//				z = __fpu_frcp_sf(zi) * 65536.0;
+				z = d_frcp_sf(zi) * 65536.0;
 
 				snext = (int)(sdivz * z) + sadjust;
 				if (snext > bbextents)

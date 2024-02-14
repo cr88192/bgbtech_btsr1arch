@@ -358,6 +358,16 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(vop->opn==CCXL_VOP_CALL)
 		{
 			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAF;
+			
+			if(vop->imm.call.na>8)
+			{
+				ctx->cur_func->regflags|=BGBCC_REGFL_CALLVARARG;
+			}
+			
+			if(BGBCC_CCXL_IsRegGlobalFunctionVarArgP(ctx, vop->srca))
+			{
+				ctx->cur_func->regflags|=BGBCC_REGFL_CALLVARARG;
+			}
 		}
 		
 		if(BGBCC_CCXL_IsRegGlobalP(ctx, vop->dst))
@@ -1455,9 +1465,17 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	
 	if(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF)
 	{
-		i=(i+3)&(~3);
+//		i=(i+3)&(~3);
+		i=(i+1)&(~1);
 		if(i<8)
 			i=8;
+
+		if((sctx->has_xgpr&2) &&
+			(ctx->cur_func->regflags&BGBCC_REGFL_CALLVARARG))
+		{
+			if(i<16)
+				i=16;
+		}
 	}
 
 //	k&=~7;
@@ -1506,6 +1524,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK }
 	
 	sctx->frm_size=-k;
-	
+
+	if(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF)
+	{
+		sctx->stat_tot_frm_size+=sctx->frm_size;
+		sctx->stat_cnt_frm_size++;
+	}
+
 	return(0);
 }

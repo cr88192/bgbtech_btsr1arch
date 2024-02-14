@@ -36,7 +36,7 @@ input[31:0]		istrWord;
 output[3:0]		istrFlag;
 
 reg[3:0]		tIstrFlag;
-assign		istrFlag = 0;
+assign		istrFlag = tIstrFlag;
 
 always @*
 begin
@@ -46,19 +46,57 @@ begin
 
 		5'b00_000: begin /* LOAD, (Rm, Disp) */
 			tIstrFlag	= 4'b0011;
+			if(istrWord[14:12]==3'b111)
+				tIstrFlag	= 4'b0000;
 		end
 
 		5'b01_000: begin /* STORE, (Rm, Disp) */
 			tIstrFlag	= 4'b0001;
+			if(istrWord[14:12]==3'b111)
+				tIstrFlag	= 4'b0000;
+		end
+
+		5'b10_000: begin /* FMADD */
+			tIstrFlag	= 4'b0001;
+//			if(istrWord[14:12]==3'b111)
+//				tIstrFlag	= 4'b0000;
 		end
 
 		5'b11_000: begin /* BRANCH */
 			tIstrFlag	= 4'b0000;
+//			if(istrWord[14:12]==3'b111)
+//				tIstrFlag	= 4'b0000;
 		end
 
+		5'b00_001: begin /* FP-LOAD, (Rm, Disp) */
+			tIstrFlag	= 4'b0011;
+		end
+
+		5'b01_001: begin /* FP-STORE, (Rm, Disp) */
+			tIstrFlag	= 4'b0001;
+		end
+
+		5'b10_001: begin /* FMSUB */
+			tIstrFlag	= 4'b0001;
+		end
 
 		5'b11_001: begin /* JALR */
 			tIstrFlag	= 4'b0000;
+		end
+
+		5'b10_010: begin /* FNMSUB */
+			tIstrFlag	= 4'b0001;
+		end
+
+		5'b00_011: begin /* FENCE */
+			tIstrFlag	= 4'b0000;
+		end
+		5'b01_011: begin /* ATOMIC */
+			tIstrFlag	= 4'b0000;
+		end
+
+		5'b10_011: begin /* FNMADD */
+			tIstrFlag	= 4'b0001;
 		end
 
 		5'b11_011: begin /* JAL */
@@ -68,12 +106,26 @@ begin
 
 		5'b00_100: begin /* ALU OP, 3RI */
 			tIstrFlag	= 4'b1111;
+			if(istrWord[14:13]==2'b01)
+				tIstrFlag	= 4'b0011;
 		end
 
 		5'b01_100: begin /* ALU OP, 3R */
 			tIstrFlag	= 4'b0000;
-			if(istrWord[29:25]==6'h00)
+			if(istrWord[29:25]==5'h00)
+			begin
 				tIstrFlag	= 4'b1111;
+				if(istrWord[14:13]==2'b01)
+					tIstrFlag	= 4'b0011;
+			end
+		end
+
+		5'b10_100: begin /* FPU OP, 3R */
+			tIstrFlag	= 4'b0011;
+		end
+
+		5'b11_100: begin /* SYSTEM */
+			tIstrFlag	= 4'b0000;
 		end
 
 		5'b00_101: begin /* AUIPC */
@@ -81,18 +133,25 @@ begin
 		end
 
 		5'b01_101: begin /* LUI */
-			tIstrFlag	= 4'b1111;
+//			tIstrFlag	= 4'b1111;
+			tIstrFlag	= 4'b0011;
 		end
 
 
 		5'b00_110: begin /* ALU OP, 3RI */
 			tIstrFlag	= 4'b1111;
+			if(istrWord[14:13]==2'b01)
+				tIstrFlag	= 4'b0011;
 		end
 
 		5'b01_110: begin /* ALU OP, 3R */
 			tIstrFlag	= 4'b0000;
-			if(istrWord[29:25]==6'h00)
+			if(istrWord[29:25]==5'h00)
+			begin
 				tIstrFlag	= 4'b1111;
+				if(istrWord[14:13]==2'b01)
+					tIstrFlag	= 4'b0011;
+			end
 		end
 
 		default: begin

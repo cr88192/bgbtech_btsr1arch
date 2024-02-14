@@ -122,7 +122,11 @@ double _sin_fast(double ang)
 #if 1
 double _sin_fast(double ang)
 {
+#ifdef __riscv
+	double t, x, th, th2;
+#else
 	float t, x, th, th2;
+#endif
 	int i;
 
     i=ang*M_TAU_R;

@@ -28,8 +28,16 @@ AS=$(TOOLPATH)$(TARGETPFX)as
 NM=$(TOOLPATH)$(TARGETPFX)nm
 
 # TK_CFL= -nostdinc -nostdlib -nostartfiles -fPIC -fPIE -static-pie # -fno-builtin
-TK_CFL= -nostdinc -nostdlib -nostartfiles -fno-builtin -Os \
-	-fwrapv -fno-strict-aliasing -fno-inline
+TK_CFL= -nostdinc -nostdlib -nostartfiles -fno-builtin -O3 \
+	-fwrapv -fno-strict-aliasing -fno-inline \
+	-march=rv64g -mabi=lp64 -mno-fdiv \
+	-mno-strict-align -ffast-math -std=c17 -ffp-contract=off
+
+# -mtune=sifive-s76
+
+#	-mno-fdiv
+#	-mno-madd4
+
 TK_LDFL= $(TK_CFL) \
 	-Wl,-nostdlib -Wl,-e,_start
 
@@ -41,7 +49,7 @@ LDFLAGS=$(TK_LDFL) -lclib_rv64
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) 
 
 # LDFLAGS64=$(TK_LDFL) -lclib_rv64
-LDFLAGS64=$(TK_LDFL) -lvxcore_rv64 -Wl,--emit-relocs \
+LDFLAGS64=$(TK_LDFL) -lvxcore_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
 	-ffunction-sections -Wl,-gc-sections -Wl,-T,./doomsrc2/elf64rv_dflmod.x
 
 GL_CFLAGS64	= $(CFLAGS64) -DGLQUAKE
@@ -49,8 +57,10 @@ GL_CFLAGS64	= $(CFLAGS64) -DGLQUAKE
 all: targets
 
 # targets: quake_rv64.elf dhry_rv64.elf
-targets: dhry_rv64.elf
-#	glquake_tkra_rv64.elf
+targets: dhry_rv64.elf \
+	quake_rv64.elf  \
+	glquake_tkra_rv64.elf
+
 
 SQUAKE_SRCS = \
 	q1base/cl_demo.c \
@@ -121,9 +131,7 @@ SQUAKE_SRCS = \
 	q1base/snd_dma.c \
 	q1base/snd_mem.c \
 	q1base/snd_mix.c \
-	q1base/snd_btsh4.c \
-	\
-	q1base/r_surf_bjx2.S \
+	q1base/snd_btsh4.c
 
 
 SKIP_SRCS=\
@@ -273,12 +281,15 @@ dhry_rv64.elf: $(DHRY_SRCS)
 
 quake_rv64.elf: $(SQUAKE_SRCS)
 	$(CC) $(CFLAGS64) -o $@ $(SQUAKE_SRCS) $(LDFLAGS64)
+	$(NM) -n $@ > $@.map
 
 glquake_rv64.elf: $(GLQUAKE_SRCS)
 	$(CC) $(GL_CFLAGS64) -o $@ $(GLQUAKE_SRCS) $(LDFLAGS64)
+	$(NM) -n $@ > $@.map
 
 glquake_tkra_rv64.elf: $(GLQUAKE_TKRA_SRCS) $(TKRA_SRCS)
 	$(CC) $(GL_CFLAGS64) -o $@ $(GLQUAKE_TKRA_SRCS) $(LDFLAGS64) -DUSE_TKRA
+	$(NM) -n $@ > $@.map
 
 primecnt_rv64.elf: primecnt.c
 	$(CC) $(CFLAGS64) -o $@ primecnt.c $(LDFLAGS64)

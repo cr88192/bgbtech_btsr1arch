@@ -742,6 +742,12 @@ void S_UpdateAmbientSounds (void)
 	if (!cl.worldmodel)
 		return;
 
+	if(host_frametime<0)
+		{ DBGBREAK }
+		
+	if(ambient_fade.value<0)
+		{ DBGBREAK }
+
 //	return;
 
 	l = Mod_PointInLeaf (listener_origin, cl.worldmodel);

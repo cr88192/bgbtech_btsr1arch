@@ -157,7 +157,8 @@ Listing:
 * iiiiiii-ttttt-mmmmm-110-iiiii-01-00011  SWU	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt
 
-* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-00011  (MADD, Unsupported)
+* uuuuu00-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.S	Rn, Rs, Rt, Ru
+* uuuuu01-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.D	Rn, Rs, Rt, Ru
 
 * ddddddd-ttttt-sssss-000-ddddd-11-00011  BEQ	Rs, Rt, Disp12_B
 * ddddddd-ttttt-sssss-001-ddddd-11-00011  BNE	Rs, Rt, Disp12_B
@@ -169,20 +170,24 @@ Listing:
 * ddddddd-ttttt-sssss-111-ddddd-11-00011  BGEU	Rs, Rt, Disp12_B
 
 * iiiiiii-iiiii-mmmmm-zzz-nnnnn-00-00111 (FP LOAD)
-* iiiiiii-iiiii-mmmmm-000-nnnnn-00-00111  FLW	Fn, Rm, Disp12_I
-* iiiiiii-iiiii-mmmmm-001-nnnnn-00-00111  FLD	Fn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-010-nnnnn-00-00111  FLW	Fn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-011-nnnnn-00-00111  FLD	Fn, Rm, Disp12_I
 
 * iiiiiii-iiiii-mmmmm-zzz-nnnnn-01-00111 (FP STORE)
-* iiiiiii-ttttt-mmmmm-000-iiiii-01-00011  FSW	Rm, Disp12_S, Ft
-* iiiiiii-ttttt-mmmmm-001-iiiii-01-00011  FSD	Rm, Disp12_S, Ft
+* iiiiiii-ttttt-mmmmm-010-iiiii-01-00111  FSW	Rm, Disp12_S, Ft
+* iiiiiii-ttttt-mmmmm-011-iiiii-01-00111  FSD	Rm, Disp12_S, Ft
 
-* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-00111  (MSUB, Unsupported)
+* uuuuu00-ttttt-sssss-zzz-nnnnn-10-00111  FMSUB.S	Rn, Rs, Rt, Ru (F)
+* uuuuu01-ttttt-sssss-zzz-nnnnn-10-00111  FMSUB.D	Rn, Rs, Rt, Ru (D)
 
 * ddddddd-ddddd-mmmmm-000-nnnnn-11-00111  JALR		Rn, Rm, Disp12_I
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User)
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01011  (User)
-* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-01011  (NMSUB, Unsupported)
+
+* uuuuu00-ttttt-sssss-zzz-nnnnn-10-01011  FNMSUB.S	Rn, Rs, Rt, Ru (F)
+* uuuuu01-ttttt-sssss-zzz-nnnnn-10-01011  FNMSUB.D	Rn, Rs, Rt, Ru (D)
+
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-01011  (Reserved)
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01111  (Fence)
@@ -232,19 +237,22 @@ Listing:
 ** 00110ss-ttttt-mmmmm-110-nnnnn-01-01111  SWU	(Rm, Rt*Sc), Rn
 ** 00110ss-ttttt-mmmmm-111-nnnnn-01-01111  SX	(Rm, Rt*Sc), Rn
 
-
-* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-01111  (NMADD, Unsupported)
+* uuuuu00-ttttt-sssss-zzz-nnnnn-10-01111  FNMADD.S	Rn, Rs, Rt, Ru (F)
+* uuuuu01-ttttt-sssss-zzz-nnnnn-10-01111  FNMADD.D	Rn, Rs, Rt, Ru (D)
 
 * ddddddd-ddddd-ddddd-ddd-nnnnn-11-01111  JAL		Rn, Disp20_J
 
 
 * iiiiiii-iiiii-mmmmm-000-nnnnn-00-10011  ADDI		Rn, Rm, Imm12_I
 * 000000i-iiiii-mmmmm-001-nnnnn-00-10011  SLLI		Rn, Rm, Imm12
+* 000010i-iiiii-mmmmm-001-nnnnn-00-10011  SLLI.UW	Rn, Rm, Imm12 (ZBA)
+* 010010i-iiiii-mmmmm-001-nnnnn-00-10011  BCLRI		Rn, Rm, Imm12 (ZBB)
 * iiiiiii-iiiii-mmmmm-010-nnnnn-00-10011  SLTI		Rn, Rm, Imm12_I
 * iiiiiii-iiiii-mmmmm-011-nnnnn-00-10011  SLTIU		Rn, Rm, Imm12_I
 * iiiiiii-iiiii-mmmmm-100-nnnnn-00-10011  XORI		Rn, Rm, Imm12_I
 * 000000i-iiiii-mmmmm-101-nnnnn-00-10011  SRLI		Rn, Rm, Imm12
 * 010000i-iiiii-mmmmm-101-nnnnn-00-10011  SRAI		Rn, Rm, Imm12
+* 010010i-iiiii-mmmmm-101-nnnnn-00-10011  BEXTI		Rn, Rm, Imm12 (ZBB)
 * iiiiiii-iiiii-mmmmm-110-nnnnn-00-10011  ORI		Rn, Rm, Imm12_I
 * iiiiiii-iiiii-mmmmm-111-nnnnn-00-10011  ANDI		Rn, Rm, Imm12_I
 
@@ -253,19 +261,26 @@ Listing:
 * 0000001-ttttt-mmmmm-000-nnnnn-01-10011  MUL		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-001-nnnnn-01-10011  SLL		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-001-nnnnn-01-10011  MULH		Rn, Rm, Rt (M)
+* 0110100-ttttt-mmmmm-001-nnnnn-01-10011  BINV		Rn, Rm, Rt (ZBB)
+* 0100100-ttttt-mmmmm-111-nnnnn-01-10011  BCLR		Rn, Rm, Rt (ZBB)
 * 0000000-ttttt-mmmmm-010-nnnnn-01-10011  SLT		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-010-nnnnn-01-10011  MULHSU	Rn, Rm, Rt (M)
+* 0010000-ttttt-mmmmm-010-nnnnn-01-10011  SH1ADD	Rn, Rm, Rt (ZBA)
 * 0000000-ttttt-mmmmm-011-nnnnn-01-10011  SLTU		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-011-nnnnn-01-10011  MULHU		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-100-nnnnn-01-10011  XOR		Rn, Rm, Rt
+* 0010000-ttttt-mmmmm-100-nnnnn-01-10011  SH2ADD	Rn, Rm, Rt (ZBA)
 * 0000001-ttttt-mmmmm-100-nnnnn-01-10011  DIV		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-101-nnnnn-01-10011  SRL		Rn, Rm, Rt
 * 0100000-ttttt-mmmmm-101-nnnnn-01-10011  SRA		Rn, Rm, Rt
-* 0000001-ttttt-mmmmm-101-nnnnn-01-10011  DUVU		Rn, Rm, Rt (M)
+* 0000001-ttttt-mmmmm-101-nnnnn-01-10011  DIVU		Rn, Rm, Rt (M)
+* 0100100-ttttt-mmmmm-101-nnnnn-01-10011  BEXT		Rn, Rm, Rt (ZBB)
 * 0000000-ttttt-mmmmm-110-nnnnn-01-10011  OR		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-110-nnnnn-01-10011  REM		Rn, Rm, Rt (M)
+* 0010000-ttttt-mmmmm-110-nnnnn-01-10011  SH3ADD	Rn, Rm, Rt (ZBA)
 * 0000000-ttttt-mmmmm-111-nnnnn-01-10011  AND		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-111-nnnnn-01-10011  REMU		Rn, Rm, Rt (M)
+* 0100000-ttttt-mmmmm-111-nnnnn-01-10011  ANDN		Rn, Rm, Rt (ZBB)
 
 * 0000000-ttttt-mmmmm-rrr-nnnnn-10-10011  FADD.S	Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-rrr-nnnnn-10-10011  FADD.D	Rn, Rm, Rt
@@ -279,6 +294,7 @@ Listing:
 * 0010000-ttttt-mmmmm-000-nnnnn-10-10011  FSGNJ.S	Rn, Rm
 * 0010000-ttttt-mmmmm-001-nnnnn-10-10011  FSGNJN.S	Rn, Rm
 * 0010000-ttttt-mmmmm-010-nnnnn-10-10011  FSGNJX.S	Rn, Rm
+
 * 0010001-ttttt-mmmmm-000-nnnnn-10-10011  FSGNJ.D	Rn, Rm
 * 0010001-ttttt-mmmmm-001-nnnnn-10-10011  FSGNJN.D	Rn, Rm
 * 0010001-ttttt-mmmmm-010-nnnnn-10-10011  FSGNJX.D	Rn, Rm
@@ -303,13 +319,29 @@ Listing:
 
 * 1100000-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.WS	Rn, Rm
 * 1100000-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.WSU	Rn, Rm
+* 1100000-00010-mmmmm-rrr-nnnnn-10-10011  FCVT.L.S	Rn, Rm
+* 1100000-00011-mmmmm-rrr-nnnnn-10-10011  FCVT.LU.S	Rn, Rm
+
 * 1100001-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.WD	Rn, Rm
 * 1100001-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.WDU	Rn, Rm
+* 1100001-00010-mmmmm-rrr-nnnnn-10-10011  FCVT.L.D	Rn, Rm
+* 1100001-00011-mmmmm-rrr-nnnnn-10-10011  FCVT.LU.D	Rn, Rm
 
 * 1101000-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.SW	Rn, Rm
 * 1101000-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.SWU	Rn, Rm
+* 1101000-00010-mmmmm-rrr-nnnnn-10-10011  FCVT.S.L	Rn, Rm
+* 1101000-00011-mmmmm-rrr-nnnnn-10-10011  FCVT.S.LU	Rn, Rm
+
 * 1101001-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.DW	Rn, Rm
 * 1101001-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.DWU	Rn, Rm
+* 1101001-00010-mmmmm-rrr-nnnnn-10-10011  FCVT.D.L	Rn, Rm
+* 1101001-00011-mmmmm-rrr-nnnnn-10-10011  FCVT.D.LU	Rn, Rm
+
+* 1110000-00000-mmmmm-rrr-nnnnn-10-10011  FMV.X.W	Rn, Rm
+* 1110001-00000-mmmmm-rrr-nnnnn-10-10011  FMV.X.D	Rn, Rm
+
+* 1111000-00000-mmmmm-rrr-nnnnn-10-10011  FMV.W.X	Rn, Rm
+* 1111001-00000-mmmmm-rrr-nnnnn-10-10011  FMV.D.X	Rn, Rm
 
 * ddddddd-ddddd-ddddd-ddd-nnnnn-11-10011  (SYSTEM)
 
@@ -345,19 +377,26 @@ Listing:
 * iiiiiii-iiiii-mmmmm-110-nnnnn-00-11011  -
 * iiiiiii-iiiii-mmmmm-111-nnnnn-00-11011  -
 
+* iiiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? SHORI Rn, Imm17s (BGB)
+* iiiiiii-iiiii-iiiii-111-nnnnn-00-11011  ? LI Rn, Imm17s (BGB)
+
 * 0000000-ttttt-mmmmm-000-nnnnn-01-11011  ADDW		Rn, Rm, Rt
+* 0000100-ttttt-mmmmm-000-nnnnn-01-11011  ADDUW		Rn, Rm, Rt
 * 0100000-ttttt-mmmmm-000-nnnnn-01-11011  SUBW		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-000-nnnnn-01-11011  MULW		Rn, Rm, Rt (M, M lite)
 * 0000000-ttttt-mmmmm-001-nnnnn-01-11011  SLLW		Rn, Rm, Rt
 * 0000000-ttttt-mmmmm-010-nnnnn-01-11011  -
+* 0010000-ttttt-mmmmm-010-nnnnn-01-11011  SH1ADD.UW	Rn, Rm, Rt (ZBA)
 * 0000000-ttttt-mmmmm-011-nnnnn-01-11011  -
 * 0000000-ttttt-mmmmm-100-nnnnn-01-11011  -
 * 0000001-ttttt-mmmmm-100-nnnnn-01-11011  DIVW		Rn, Rm, Rt (M)
+* 0010000-ttttt-mmmmm-100-nnnnn-01-11011  SH2ADD.UW	Rn, Rm, Rt (ZBA)
 * 0000000-ttttt-mmmmm-101-nnnnn-01-11011  SRLW		Rn, Rm, Rt
 * 0100000-ttttt-mmmmm-101-nnnnn-01-11011  SRAW		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-101-nnnnn-01-11011  DIVUW		Rn, Rm, Rt (M)
 * 0000000-ttttt-mmmmm-110-nnnnn-01-11011  -
 * 0000001-ttttt-mmmmm-110-nnnnn-01-11011  REMW		Rn, Rm, Rt (M)
+* 0010000-ttttt-mmmmm-110-nnnnn-01-11011  SH3ADD.UW	Rn, Rm, Rt (ZBA)
 * 0000000-ttttt-mmmmm-111-nnnnn-01-11011  -
 * 0000001-ttttt-mmmmm-111-nnnnn-01-11011  REMUW		Rn, Rm, Rt (M)
 

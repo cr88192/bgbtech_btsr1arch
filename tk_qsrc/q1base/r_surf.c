@@ -322,11 +322,11 @@ void R_DrawSurface (void)
 	mt = r_drawsurf.texture;
 	
 	mip = r_drawsurf.surfmip;
-//	if(mip<0)mip=0;
-//	if(mip>3)mip=3;
+	if(mip<0)mip=0;
+	if(mip>3)mip=3;
 
-	r_source = ((byte *)mt) + mt->offsets[r_drawsurf.surfmip];
-//	r_source = ((byte *)mt) + mt->offsets[mip];
+//	r_source = ((byte *)mt) + mt->offsets[r_drawsurf.surfmip];
+	r_source = ((byte *)mt) + mt->offsets[mip];
 
 //	r_source = ((byte *)mt);
 //	r_source = ((byte *)mt)+sizeof(texture_t);
@@ -334,14 +334,14 @@ void R_DrawSurface (void)
 // the fractional light values should range from 0 to (VID_GRADES - 1) << 16
 // from a source range of 0 - 255
 	
-	texwidth = mt->width >> r_drawsurf.surfmip;
-//	texwidth = mt->width >> mip;
+//	texwidth = mt->width >> r_drawsurf.surfmip;
+	texwidth = mt->width >> mip;
 
-	blocksize = 16 >> r_drawsurf.surfmip;
-//	blocksize = 16 >> mip;
+//	blocksize = 16 >> r_drawsurf.surfmip;
+	blocksize = 16 >> mip;
 
-	blockdivshift = 4 - r_drawsurf.surfmip;
-//	blockdivshift = 4 - mip;
+//	blockdivshift = 4 - r_drawsurf.surfmip;
+	blockdivshift = 4 - mip;
 
 	blockdivmask = (1 << blockdivshift) - 1;
 	
@@ -366,11 +366,11 @@ void R_DrawSurface (void)
 		horzblockstep = blocksize << 1;
 	}
 
-	smax = mt->width >> r_drawsurf.surfmip;
-//	smax = mt->width >> mip;
+//	smax = mt->width >> r_drawsurf.surfmip;
+	smax = mt->width >> mip;
 	twidth = texwidth;
-	tmax = mt->height >> r_drawsurf.surfmip;
-//	tmax = mt->height >> mip;
+//	tmax = mt->height >> r_drawsurf.surfmip;
+	tmax = mt->height >> mip;
 	sourcetstep = texwidth;
 	r_stepback = tmax * twidth;
 //	r_stepback = tmax * smax;
@@ -397,7 +397,8 @@ void R_DrawSurface (void)
 //	basetptr = &r_source[((((basetoffset >> r_drawsurf.surfmip) 
 //		+ (tmax << 16)) % tmax) * twidth)];
 
-	u = ((basetoffset >> r_drawsurf.surfmip) 
+//	u = ((basetoffset >> r_drawsurf.surfmip) 
+	u = ((basetoffset >> mip) 
 		+ (tmax << 16));
 	if(!(tmax&(tmax-1)))
 		u = u & (tmax-1);

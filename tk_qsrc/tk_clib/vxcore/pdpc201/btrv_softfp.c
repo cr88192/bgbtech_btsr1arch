@@ -239,9 +239,95 @@ u32 __sfp_frcp_f32(u32 f0)
 }
 #endif
 
+float __sfp_frcp_fpu_f32(float x)
+{
+	float y, z;
+	u32 t0, t1, t2;
+	int i, j, k, sgn;
+
+	sgn=0;
+	if(x<0)
+		{ x=-x; sgn=1; }
+	
+	t0=*(u32 *)(&x);
+	t1=0x7F000000-t0;
+	y=*(float *)(&t1);
+	
+//	z=x*y;
+//	t1+=(0x3F800000-(*(u32 *)(&z)))>>1;
+//	y=*(float *)(&t1);
+
+//	z=(2.0f-x*y);
+//	z=(z-1.0f)*0.15f+1.0f;
+//	y=y*z;
+
+//	z=(2.0f-x*y);
+//	z=(z-1.0f)*0.375f+1.0f;
+	z=(2.0f-x*y)*0.375f+0.625f;
+	y=y*z;
+
+//	z=(2-x*y);
+//	z=(z-1.0)*0.25+1.0;
+//	y=y*z
+	
+	y=y*(2.0f-x*y);
+	y=y*(2.0f-x*y);
+	y=y*(2.0f-x*y);
+	y=y*(2.0f-x*y);
+//	y=y*(2.0f-x*y);
+//	y=y*(2.0f-x*y);
+	if(sgn)
+		y=-y;
+	return(y);
+}
+
+double __sfp_frcp_fpu_f64(double x)
+{
+	double y, z;
+	u64 t0, t1, t2;
+	int i, j, k, sgn;
+
+	sgn=0;
+	if(x<0)
+		{ x=-x; sgn=1; }
+	
+	t0=*(u64 *)(&x);
+	t1=0x7FE0000000000000ULL-t0;
+	y=*(double *)(&t1);
+
+//	z=(2.0-x*y);
+//	z=(z-1.0)*0.375+1.0;
+	z=(2.0-x*y)*0.375+0.625;
+	y=y*z;
+
+//	z=(2-x*y);
+//	z=(z-1.0)*0.25+1.0;
+//	y=y*z
+	
+	y=y*(2.0-x*y);
+	y=y*(2.0-x*y);
+	y=y*(2.0-x*y);
+	y=y*(2.0-x*y);
+	y=y*(2.0-x*y);
+	y=y*(2.0-x*y);
+	if(sgn)
+		y=-y;
+	return(y);
+}
+
 u32 __divsf3(u32 f0, u32 f1)
 {
+#ifdef __riscv_f
+	u32 f2;
+	float x, y, z;
+	*(u32 *)(&x)=f0;
+	*(u32 *)(&y)=f1;
+	z=x*__sfp_frcp_fpu_f32(y);
+	f2=*(u32 *)(&z);
+	return(f2);
+#else
 	return(__mulsf3(f0, __sfp_frcp_f32(f1)));
+#endif
 }
 
 
@@ -444,7 +530,17 @@ u64 __sfp_frcp_f64(u64 f0)
 
 u64 __divdf3(u64 f0, u64 f1)
 {
+#ifdef __riscv_f
+	u64 f2;
+	double x, y, z;
+	*(u64 *)(&x)=f0;
+	*(u64 *)(&y)=f1;
+	z=x*__sfp_frcp_fpu_f64(y);
+	f2=*(u64 *)(&z);
+	return(f2);
+#else
 	return(__muldf3(f0, __sfp_frcp_f64(f1)));
+#endif
 }
 
 u32 __truncdfsf2(u64 f0)

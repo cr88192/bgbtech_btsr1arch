@@ -150,8 +150,8 @@ void SubdividePolygon (int numverts, float *verts)
 	}
 }
 
-mvertex_t	*r_pcurrentvertbase;
-model_t		*currentmodel;
+extern mvertex_t	*r_pcurrentvertbase;
+extern model_t		*currentmodel;
 
 /*
 ================
@@ -1150,7 +1150,7 @@ void R_InitSky (texture_t *mt)
 	unsigned	transpix;
 	int			r, g, b;
 	unsigned	*rgba;
-	extern	int			skytexturenum;
+//	extern	int			skytexturenum;
 
 	src = (byte *)mt + mt->offsets[0];
 

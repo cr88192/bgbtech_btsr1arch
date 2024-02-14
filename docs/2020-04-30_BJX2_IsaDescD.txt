@@ -3411,10 +3411,14 @@ This operation will be Lane 1 only.
 === FLDCx (GFP) ===
 
 * 63nm       FLDCF		Rm, Rn		//(GFP) Single->Double
-* F0nm_1e0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
-* F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
-* F0nm_1e2D  FLDCI		Rm, Rn		//Load Convert Int
-* F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+* F0nm_1g0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
+* F0nm_1g1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+* F0nm_1g2D  FLDCI		Rm, Rn		//Load Convert Int64
+* F0nm_1g3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+
+* F0nm_1gFD ? FLDCIU	Rm, Rn		//Load Convert UInt64
+* F0nm_1gEF ? FLDCIS.L	Rm, Rn		//Load Convert Int32
+* F0nm_1gFF ? FLDCIU.L	Rm, Rn		//Load Convert UInt32
 
 Load and convert the value from Rm and store the resulting double precision value in Rn.
 
@@ -3433,6 +3437,11 @@ When converting a narrower floating point type to a wider one:
 * An Inf or NaN exponent will be copied as its equivalent.
 ** Mantissa bits still copied directly.
 
+For FLDCI variants:
+* FLDCIU will interpret Rm as Unsigned.
+* FLDCIU.L will interpret Rm as an unsigned 32-bit integer.
+* FLDCIS.L will interpret Rm as a signed 32-bit integer.
+
 
 === FLDCx Imm (GFP) ===
 
@@ -3450,8 +3459,15 @@ Conversion will be the same as that for the register instruction.
 
 * F0nm_5goB            FMAC		Rm, Ro, Rn			//(GFPX) FMAC, Rn+=Rm*Ro
 * F0nm_5GoB            FMACX	Xm, Xo, Xn			//(GFPX) FMAC, LongDbl
+
 * FFw0_00pp_F0nm_5goB  FMAC		Rm, Ro, Rp, Rn		//(GFPX) FMAC, Rn=Rm*Ro+Rp
-* FFw0_00pp_F0nm_5GoB  FMACX	Xm, Xo, Rp, Xn		//(GFPX) FMAC, LongDbl
+* FFw0_00pp_F0nm_5GoB  FMACX	Xm, Xo, Xp, Xn		//(GFPX) FMAC, LongDbl
+* FFw0_01pp_F0nm_5goB  FMAS		Rm, Ro, Rp, Rn		//(GFPX) FMAS, Rn=Rm*Ro-Rp
+* FFw0_01pp_F0nm_5GoB  FMASX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
+* FFw0_02pp_F0nm_5goB  FMRS		Rm, Ro, Rp, Rn		//(GFPX) FMAS, Rn=Rp-Rm*Ro
+* FFw0_02pp_F0nm_5GoB  FMRSX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
+* FFw0_03pp_F0nm_5goB  FMRA		Rm, Ro, Rp, Rn		//(GFPX) FMAS, Rn=-Rm*Ro-Rp
+* FFw0_03pp_F0nm_5GoB  FMRAX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
 
 Multiply the double precision value in Ro with the value from Rm and add this to the value in Rn, storing the result in Rn.
 

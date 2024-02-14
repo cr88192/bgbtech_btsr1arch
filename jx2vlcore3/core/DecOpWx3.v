@@ -55,7 +55,7 @@ module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
 	istrWord,	istrBPc,
-	regSr,		istrSxo,
+	regSr,		istrSxo,	idPcStep,
 	idRegS,		idRegT,		idRegM,
 	idImmA,		idUCmdA,	idUIxtA,
 	idRegU,		idRegV,		idRegN,
@@ -72,6 +72,7 @@ input[47:0]		istrBPc;	//Instruction PC Address
 // input			srWxe;
 input[63:0]		regSr;
 input[3:0]		istrSxo;	//source instruction word
+input[3:0]		idPcStep;	//PC Step
 
 wire			srWxe;
 wire			srXG2;
@@ -91,6 +92,9 @@ assign		srXG2	= 0;
 `endif
 
 assign		srXG2RV	= srRiscv && srXG2;
+
+wire			srRiscvSsc;
+assign		srRiscvSsc = srRiscv && idPcStep[3];
 
 // wire[2:0]		srMod;
 wire[7:0]		srMod;
@@ -332,6 +336,30 @@ DecOpRvI	decOpRvA(
 	decOpRvA_idUCmd,		decOpRvA_idUIxt,
 	decOpRvA_idUFl
 	);
+
+`ifdef jx2_dec_ssc_riscv
+
+`wire_gpr		decOpRvB_idRegN;
+`wire_gpr		decOpRvB_idRegM;
+`wire_gpr		decOpRvB_idRegO;
+`wire_gpr		decOpRvB_idRegP;
+wire[32:0]		decOpRvB_idImm;
+wire[8:0]		decOpRvB_idUCmd;
+wire[8:0]		decOpRvB_idUIxt;
+wire[18:0]		decOpRvB_idUFl;
+
+DecOpRvI	decOpRvB(
+	clock,		reset,	srMod,
+	{ UV32_00, istrWord[63:32] },
+	{srRiscv && !srXG2RV, srWxe, 2'b00},		UV28_00,
+	decOpRvB_idRegN,		decOpRvB_idRegM,
+	decOpRvB_idRegO,		decOpRvB_idRegP,
+	decOpRvB_idImm,
+	decOpRvB_idUCmd,		decOpRvB_idUIxt,
+	decOpRvB_idUFl
+	);
+
+`endif
 
 `endif
 
@@ -1127,6 +1155,45 @@ begin
 				end
 			end
 		end
+`ifdef jx2_enable_riscv
+`ifdef jx2_dec_ssc_riscv
+		else	if((srRiscv && !noNoRiscV && !srXG2RV) && srRiscvSsc)
+		begin
+			opRegAM	= decOpRvB_idRegM;
+			opRegAO	= decOpRvB_idRegO;
+			opRegAN	= decOpRvB_idRegN;
+			opImmA	= decOpRvB_idImm;
+			opUCmdA	= decOpRvB_idUCmd;
+			opUIxtA	= decOpRvB_idUIxt;
+
+			opRegAM0	= decOpRvB_idRegM;
+			opRegAO0	= decOpRvB_idRegO;
+			opRegAN0	= decOpRvB_idRegN;
+			opRegAP0	= decOpRvB_idRegP;
+			opUCmdA0	= decOpRvB_idUCmd;
+			opUIxtA0	= decOpRvB_idUIxt;
+			opUFlA0		= decOpRvB_idUFl;
+
+			opRegBM	= decOpRvA_idRegM;
+			opRegBO	= decOpRvA_idRegO;
+			opRegBN	= decOpRvA_idRegN;
+			opImmB	= decOpRvA_idImm;
+			opUCmdB	= decOpRvA_idUCmd;
+			opUIxtB	= decOpRvA_idUIxt;
+
+			opRegCM	= decOpRvA_idRegP;
+			opRegCO	= decOpRvB_idRegP;
+			opRegCN	= JX2_GR_ZZR;
+			opImmC	= UV33_00;
+			opUCmdC	= UV9_00;
+			opUIxtC	= decOpRvB_idUFl[12:4];
+
+			opUCmdC		= { 3'b001, decOpRvB_idUFl[18:13] };
+
+			opIsScalar	= 0;
+		end
+`endif
+`endif
 		else
 		begin
 `ifdef jx2_enable_riscv

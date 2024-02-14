@@ -427,6 +427,11 @@ void *Hunk_AllocName (int size, char *name)
 	hunk_t	*h;
 	void *ptr;
 	
+	if((size<0) || (size>(1<<22)))
+	{
+		__debugbreak();	
+	}
+	
 #ifdef PARANOID
 	Hunk_Check ();
 #endif

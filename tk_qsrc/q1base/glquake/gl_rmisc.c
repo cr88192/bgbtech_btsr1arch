@@ -475,10 +475,10 @@ extern int		ramp1[8];
 extern int		ramp2[8];
 extern int		ramp3[8];
 
-particle_t	*active_particles, *free_particles;
+extern particle_t	*active_particles, *free_particles;
 
-particle_t	*particles;
-int			r_numparticles;
+extern particle_t	*particles;
+extern int			r_numparticles;
 
 extern	cvar_t	sv_gravity;
 

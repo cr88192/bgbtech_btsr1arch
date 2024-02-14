@@ -173,10 +173,14 @@ void S_Init
 
 	// Whatever these did with DMX, these are rather dummies now.
 	I_SetChannels();
+
+	fprintf( stderr, "S_Init: A0\n");
 	
 	S_SetSfxVolume(sfxVolume);
 	// No music with Linux - another dummy.
 	S_SetMusicVolume(musicVolume);
+
+	fprintf( stderr, "S_Init: A1\n");
 
 	// Allocating the internal channels for mixing
 	// (the maximum numer of sounds rendered
@@ -196,6 +200,8 @@ void S_Init
 	// Note that sounds have not been cached (yet).
 	for (i=1 ; i<NUMSFX ; i++)
 		S_sfx[i].lumpnum = S_sfx[i].usefulness = -1;
+
+	fprintf( stderr, "S_Init: OK\n");
 }
 
 

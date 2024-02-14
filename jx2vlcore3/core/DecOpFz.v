@@ -2365,6 +2365,19 @@ begin
 					end
 `endif
 
+					4'hF: begin
+						opNmid		= JX2_UCMD_FLDCX;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_FPCX_IU;
+
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+							opUCmdIx	= JX2_UCIX_FPCX_XIU;
+						end
+					end
+
 					default: begin
 					end
 				endcase
@@ -2675,6 +2688,31 @@ begin
 							opUCmdIx	= JX2_UCIX_CONV2_FP16UPCKAL;
 					end
 `endif
+
+					4'hE: begin
+						opNmid		= JX2_UCMD_FLDCX;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_FPCX_ISL;
+
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+							opUCmdIx	= JX2_UCIX_FPCX_XI;
+						end
+					end
+					4'hF: begin
+						opNmid		= JX2_UCMD_FLDCX;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						opUCmdIx	= JX2_UCIX_FPCX_IUL;
+
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+							opUCmdIx	= JX2_UCIX_FPCX_XI;
+						end
+					end
 
 					default: begin
 					end

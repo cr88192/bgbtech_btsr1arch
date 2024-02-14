@@ -762,8 +762,8 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_SLT			0x1AC		//
 #define BJX2_NMID_SLTU			0x1AD		//
-
 #define BJX2_NMID_FDIVS			0x1AE		//
+#define BJX2_NMID_FLDCIU		0x1AF		//
 
 
 #define BJX2_NMID_FSGNJ			0x1B0		//
@@ -772,7 +772,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FSGNJS		0x1B3		//
 #define BJX2_NMID_FSGNJNS		0x1B4		//
 #define BJX2_NMID_FSGNJXS		0x1B5		//
-
 #define BJX2_NMID_FLDCIS		0x1B6		//
 #define BJX2_NMID_FSTCIS		0x1B7		//
 

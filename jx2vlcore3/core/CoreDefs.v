@@ -1419,8 +1419,13 @@ parameter[5:0] JX2_UCIX_FPIX_FABS_G	= 6'h11;		//FPU Absolute
 
 parameter[5:0] JX2_UCIX_FPCX_S		= 6'h00;		//FPU Single
 parameter[5:0] JX2_UCIX_FPCX_D		= 6'h01;		//FPU Double
-parameter[5:0] JX2_UCIX_FPCX_I		= 6'h02;		//FPU Int
+parameter[5:0] JX2_UCIX_FPCX_I		= 6'h02;		//FPU Int64
 parameter[5:0] JX2_UCIX_FPCX_H		= 6'h03;		//FPU Half
+parameter[5:0] JX2_UCIX_FPCX_ISL	= 6'h04;		//FPU Int32
+parameter[5:0] JX2_UCIX_FPCX_IUL	= 6'h05;		//FPU UInt32
+// parameter[5:0] JX2_UCIX_FPCX_SI		= 6'h06;		//FPU Int64 (Single)
+parameter[5:0] JX2_UCIX_FPCX_IU		= 6'h07;		//FPU UInt64
+
 parameter[5:0] JX2_UCIX_FPCX_S2		= 6'h08;		//FPU Single (High)
 
 parameter[5:0] JX2_UCIX_FPCX_SG		= 6'h10;		//FPU Single
@@ -1428,12 +1433,18 @@ parameter[5:0] JX2_UCIX_FPCX_DG		= 6'h11;		//FPU Double
 parameter[5:0] JX2_UCIX_FPCX_IG		= 6'h12;		//FPU Int
 parameter[5:0] JX2_UCIX_FPCX_HG		= 6'h13;		//FPU Half
 
-parameter[5:0] JX2_UCIX_FPCX_SIG	= 6'h16;		//FPU Int
+parameter[5:0] JX2_UCIX_FPCX_SISL	= 6'h14;		//FPU Int32
+parameter[5:0] JX2_UCIX_FPCX_SIUL	= 6'h15;		//FPU UInt32
+
+parameter[5:0] JX2_UCIX_FPCX_SIG	= 6'h16;		//FPU Int64 (Single)
+parameter[5:0] JX2_UCIX_FPCX_SIU	= 6'h17;		//FPU UInt64
 
 parameter[5:0] JX2_UCIX_FPCX_S2G	= 6'h18;		//FPU Single (High)
 
 parameter[5:0] JX2_UCIX_FPCX_XE		= 6'h21;		//FPU LongDouble
 parameter[5:0] JX2_UCIX_FPCX_XI		= 6'h22;		//FPU Int (Binary128)
+
+parameter[5:0] JX2_UCIX_FPCX_XIU	= 6'h27;		//FPU Int (Binary128)
 
 parameter[5:0] JX2_UCIX_IXT_NOP		= 6'h00;		//No-Op
 parameter[5:0] JX2_UCIX_IXT_SLEEP	= 6'h01;		//Sleep until Interrupt

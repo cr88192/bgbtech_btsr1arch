@@ -1964,6 +1964,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 		rngw16=65280;
 		if(i>=ctx->nlbl)
 		{
+			return(0);
+		
 			if(j<k)
 			{
 				j=j-szrng;

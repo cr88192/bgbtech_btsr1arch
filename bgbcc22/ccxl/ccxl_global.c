@@ -3602,12 +3602,16 @@ void BGBCC_CCXL_AttribLong(BGBCC_TransState *ctx, int attr, s64 val)
 
 void BGBCC_CCXL_Marker(BGBCC_TransState *ctx, int tag)
 {
+	BGBCC_CCXL_LiteralInfo *obj;
+
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_MARKER);
 	BGBCC_CCXLR3_EmitArgTag(ctx, tag);
 
+	obj=ctx->cur_obj;
 	switch(tag)
 	{
 	case CCXL_CMD_VARARGS:
+		obj->parent->decl->regflags|=BGBCC_REGFL_ISVARARG;
 		break;
 	default:
 		BGBCC_CCXL_StubError(ctx);

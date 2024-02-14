@@ -9,10 +9,11 @@ CC=gcc
 # CC=clang
 
 # CFLAGS=-I. -g -O3
-CFLAGS=-I. -g -Os
+CFLAGS=-I. -g -Os -Wextra
+# CFLAGS=-I. -g
 # CFLAGS=/I. /Os
 LDFLAGS=
-LIBS=-ldl -lm -lSDL -Wuninitialized
+LIBS=-ldl -lm -lSDL -Wuninitialized -fwrapv -fno-strict-aliasing
 
 # -Wmaybe-uninitialized
 

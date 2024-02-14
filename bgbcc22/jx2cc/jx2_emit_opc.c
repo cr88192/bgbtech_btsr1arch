@@ -3267,6 +3267,10 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			opw1=0xF00B|ex;
 			opw2=0x1D00|((rn&15)<<4)|(rm&15); break;
 
+		case BGBCC_SH_NMID_FLDCIU:
+			opw1=0xF00F|ex;
+			opw2=0x1D00|((rn&15)<<4)|(rm&15); break;
+
 		case BGBCC_SH_NMID_FCMPXEQ:
 			opw1=0xF08A|ex;
 			opw2=0x1D00|((rn&15)<<4)|(rm&15); break;
@@ -3408,6 +3412,13 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			opw2=0x1F00|((rn&15)<<4)|(rm&15); break;
 		case BGBCC_SH_NMID_PRELUF:
 			opw1=0xF08B|ex;
+			opw2=0x1F00|((rn&15)<<4)|(rm&15); break;
+
+		case BGBCC_SH_NMID_FLDCISL:
+			opw1=0xF00E|ex;
+			opw2=0x1F00|((rn&15)<<4)|(rm&15); break;
+		case BGBCC_SH_NMID_FLDCIUL:
+			opw1=0xF00F|ex;
 			opw2=0x1F00|((rn&15)<<4)|(rm&15); break;
 		}
 	}

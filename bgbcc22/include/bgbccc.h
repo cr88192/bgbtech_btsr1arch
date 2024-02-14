@@ -362,6 +362,9 @@ extern "C" {
 #define BGBCC_REGFL_HASLCLALIAS		0x00400000		//Has aliased locals.
 #define BGBCC_REGFL_HASGBLALIAS		0x00800000		//Has aliased globals.
 
+#define BGBCC_REGFL_CALLVARARG		0x01000000		//Calls a vararg func
+#define BGBCC_REGFL_ISVARARG		0x02000000		//Is varargs
+
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
 #define	BGBCC_MAXSTACKFRAME			0x080000	//maximum allowed stack frame

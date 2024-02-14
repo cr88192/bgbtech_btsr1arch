@@ -8224,6 +8224,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				1)
 
 			);
+		if(sctx->stat_cnt_frm_size>0)
+		{
+			printf("Average Stack Frame Size: %d\n",
+				(int)(sctx->stat_tot_frm_size/sctx->stat_cnt_frm_size));
+		}
 	}
 
 

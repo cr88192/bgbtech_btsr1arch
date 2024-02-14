@@ -96,6 +96,12 @@ typedef unsigned short dt_scrpix;
 
 void __debugbreak(void);
 
+#ifndef __BGBCC__
+int __hint_use_egpr();
+int __int_clamp(int x, int m, int n);
+#endif
+
+
 #endif
 //-----------------------------------------------------------------------------
 //

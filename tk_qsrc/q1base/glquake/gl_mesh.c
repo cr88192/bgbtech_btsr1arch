@@ -361,8 +361,8 @@ void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 
 extern float	shadelight, ambientlight;
 
-byte		alias_mins[4];
-byte		alias_maxs[4];
+extern byte		alias_mins[4];
+extern byte		alias_maxs[4];
 
 void GL_MakeAliasModelSpriteSheets (model_t *mod, aliashdr_t *phdr)
 {

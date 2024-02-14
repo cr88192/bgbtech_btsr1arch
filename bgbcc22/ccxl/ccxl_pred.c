@@ -569,6 +569,31 @@ ccxl_type BGBCC_CCXL_GetRegType(
 	return(tty);
 }
 
+u64 BGBCC_CCXL_GetRegFlags(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	BGBCC_CCXL_LiteralInfo *linf;
+	char *str;
+	u64 regty;
+	int i, j;
+	
+	regty=reg.val&CCXL_REGTY_REGMASK;
+	if(regty==CCXL_REGTY_GLOBAL)
+	{
+		i=reg.val&CCXL_REGID_REGMASK;
+		if(!i)
+		{
+			return(0);
+		}
+		if(i>=ctx->n_reg_globals)
+			{ BGBCC_DBGBREAK }
+
+		return(ctx->reg_globals[i]->regflags);
+	}
+
+	return(0);
+}
+
 ccxl_type BGBCC_CCXL_GetRegStorageType(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
@@ -824,6 +849,26 @@ int BGBCC_CCXL_IsRegGlobalFunctionP(
 		return(0);
 
 	return(1);
+}
+
+int BGBCC_CCXL_IsRegGlobalFunctionVarArgP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	ccxl_type bty;
+	u64 regfl;
+	int i, j, k;
+
+	if(!BGBCC_CCXL_IsRegGlobalP(ctx, reg))
+		return(0);
+	bty=BGBCC_CCXL_GetRegType(ctx, reg);
+	if(!BGBCC_CCXL_TypeFunctionP(ctx, bty))
+		return(0);
+
+	regfl=BGBCC_CCXL_GetRegFlags(ctx, reg);
+	if(regfl&BGBCC_REGFL_ISVARARG)
+		return(1);
+
+	return(0);
 }
 
 ccxl_type BGBCC_CCXL_GetRegPointerToType(

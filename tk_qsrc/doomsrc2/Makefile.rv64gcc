@@ -13,8 +13,13 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__
 TK_LDFL= $(TK_CFL)
 
 BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib \
-	-nostdinc -nostdlib -nostartfiles -fno-builtin -Os \
-	-fwrapv -fno-strict-aliasing -fno-inline
+	-nostdinc -nostdlib -nostartfiles -fno-builtin -g -O3 \
+	-fwrapv -fno-strict-aliasing -fno-inline \
+	-march=rv64g -mabi=lp64 -mtune=sifive-s76 \
+	-mno-strict-align
+
+#	-mno-fdiv
+#	-mno-madd4
 
 # -DNORMALUNIX
 

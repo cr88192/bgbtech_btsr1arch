@@ -553,6 +553,7 @@ __PDPCLIB_API__ double exp (double x)
 	term=x;
 	answer=x;
 
+#if 0
 //	n=256;
 //   while ((n--)>0)
 	for(n=0; n<12; n++)
@@ -563,6 +564,36 @@ __PDPCLIB_API__ double exp (double x)
 		answer = answer + (term);
 		i++;
 	}
+#endif
+
+#if 1
+	term =  (term * x)*(1.0/2.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/3.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/4.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/5.0);
+	answer = answer + (term);
+
+	term =  (term * x)*(1.0/6.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/7.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/8.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/9.0);
+	answer = answer + (term);
+
+	term =  (term * x)*(1.0/10.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/11.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/12.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/13.0);
+	answer = answer + (term);
+#endif
 
 	answer=answer+1.0;
 	return(answer);
@@ -593,7 +624,7 @@ __PDPCLIB_API__ double log (double x0)
 	if(x0 == 1.0)
 		return(0.0);
 
-#if 1
+#if 0
 /*
   Scale arguments to be in range 1 < x <= 10
 */
@@ -645,6 +676,49 @@ __PDPCLIB_API__ double log (double x0)
 	work = (double)scale;
 	answer = answer + (work * M_LN2);
 //	answer = answer + (double)scale * M_LN2;
+	return(answer);
+#endif
+
+
+#if 1
+/*
+  Scale arguments to be in range 1 < x <= 10
+*/
+
+	scale = 0; xs = x0;
+
+	xs = frexp(x0,&scale);
+	xs = xs - 1.0;
+
+	scale = scale - 0;
+
+	i=2;
+	term=xs;
+	answer=xs;
+
+	term = - (term * xs);
+	answer = answer + (term*(1.0/2.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/3.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/4.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/5.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/6.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/7.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/8.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/9.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/10.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/11.0));
+
+	work = (double)scale;
+	answer = answer + (work * M_LN2);
 	return(answer);
 #endif
 }
@@ -884,18 +958,33 @@ __PDPCLIB_API__ double sqrt(double x)
 
 __PDPCLIB_API__ double frexp(double x, int *rexp)
 {
-#if 1
+#if 0
 	double v;
 	int ex;
 	
 	v=x; ex=0;
-	while(fabs(v)>1.0)
+	while((ex<( 1022)) && (fabs(v)>1.0))
 		{ v=v*0.5; ex++; }
-	while(fabs(v)<0.5)
+	while((ex>(-1022)) && (fabs(v)<0.5))
 		{ v=v*2.0; ex--; }
 	*rexp=ex;
 	return(v);
 #endif
+
+#if 1
+	unsigned long long xb;
+	double v;
+	int ex;
+	
+	memcpy(&xb, &x, 8);
+//	ex=((xb>>52)&2047)-1022;
+	ex=((xb>>52)&2047)-1023;
+	xb-=((long long)ex)<<52;
+	*rexp=ex;
+	memcpy(&v, &xb, 8);
+	return(v);
+#endif
+
 
 #if 0
 	unsigned long long xb;

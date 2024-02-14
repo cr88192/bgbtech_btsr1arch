@@ -4242,6 +4242,35 @@ int BGBCC_JX2C_EmitBindVRegReg(
 	return(-1);
 }
 
+int BGBCC_JX2C_GetRegisterIndexForReg(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int dreg)
+{
+	int i, bi, creg, maxreg;
+
+	maxreg=sctx->maxreg_gpr_lf;
+
+	bi=-1;
+	for(i=0; i<maxreg; i++)
+	{
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+			continue;
+
+		creg=sctx->qcachereg[i];
+//		if((creg&31)==(dreg&31))
+		if((creg&63)==(dreg&63))
+			{ bi=i; break; }
+	}
+
+	if(bi>=0)
+	{
+		return(bi);
+	}
+	
+	return(-1);
+}
+
 int BGBCC_JX2C_GetVRegPriority(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,

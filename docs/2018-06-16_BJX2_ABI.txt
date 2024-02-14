@@ -55,6 +55,7 @@ Basic C ABI (32/64 bit):
 ** TBR will be a System register, and should not be modified by normal code.
 ** The use of TBR is outside the scope of the basic C ABI.
 * This ABI may or may not use register spill space.
+** If spill space is used, the first non-register argument will be after the spill space.
 
 Note that R16..R19 may be stomped during prolog and epilog sequences.
 
@@ -66,9 +67,10 @@ Specifics for the 32-bit sub-ABI:
 ** This will include both integer and pointer types.
 
 
-Specifics for the 64-bit sub-ABI:
+Specifics for the 64-bit sub-ABI (Baseline):
 * The 64-bit ABI will reserve spill space;
 * The 64-bit ABI will use 64-bit storage on-stack for 32-bit types.
+* This ABI will have spill space for 8 arguments.
 
 
 Basic C ABI (128 bit):
@@ -86,7 +88,7 @@ Basic C ABI (128 bit):
 * GBR_HI, GBR: Callee Preserve
 ** PBO Sub-ABI: GBR will be the base address for ".data" and ".bss".
 * TBR: System
-* This ABI will have spill space for 16 arguments.
+* This ABI will have spill space for 16 arguments (128 bytes).
 
 Extended Rn / Xn Registers:
 * R32..R39 | X32..X38: Scratch
@@ -95,9 +97,9 @@ Extended Rn / Xn Registers:
 * R56..R63 | X56..X62: Callee Preserve
 
 
-Extended C ABI (64 bit, XGPR):
-* R2..R7, R16..R23: Scratch
-* R8..R14: Callee Preserved
+Extended C ABI (64 bit, XGPR / XG2):
+* R2..R7, R16..R23, R32..R39, R48..R55: Scratch
+* R8..R14, R24..R31, R40..R47, R56..R63: Callee Preserved
 * R15: Stack Pointer
 * R3:R2: Return Value, Struct Return Address
 * R18: Owning 'this' Object
@@ -110,7 +112,9 @@ Extended C ABI (64 bit, XGPR):
 * R1/DHR: Volatile/Scratch
 * GBR: Callee Preserve
 * TBR: System
-* This ABI will have spill space for 16 arguments.
+* This ABI will have spill space for 16 arguments (128 bytes).
+** For fixed argument functions with 8 or less argument registers:
+*** The spill space will be reduced to 8 registers (64 bytes).
 
 
 If insufficient free registers exist to pass an argument, it and any following arguments of the same class will be passed on the stack.
@@ -152,6 +156,44 @@ BS2 Style Vararg:
 * The remaining arguments will be folded off into an array.
 * All of the variable arguments will be converted to Variant.
 * This array will be passed to the called function as a Tag Array.
+
+=== Example Stack Frame ===
+
+Example stack frame layout:
+* ...
+* SP+0240: Caller's Spill Argument 1
+* --- Top of stack frame ---
+* SP+0238: Saved LR
+* SP+0230: Saved GBR
+* SP+0220: Saved R12,R13
+* SP+0210: Saved R10,R11
+* SP+0200: Saved R8,R9
+* ...
+* SP+0100: Local Data
+* ...
+* SP+00A8: Local Variable 2
+* SP+00A0: Local Variable 1
+* SP+0098: Stack, Argument 20
+* SP+0090: Stack, Argument 19
+* SP+0088: Stack, Argument 18
+* SP+0080: Stack, Argument 17
+* SP+0078: Spill for Argument 16
+* SP+0070: Spill for Argument 15
+* SP+0068: Spill for Argument 14
+* SP+0060: Spill for Argument 13
+* SP+0058: Spill for Argument 12
+* SP+0050: Spill for Argument 11
+* SP+0048: Spill for Argument 10
+* SP+0040: Spill for Argument 9
+* SP+0038: Spill for Argument 8
+* SP+0030: Spill for Argument 7
+* SP+0028: Spill for Argument 6
+* SP+0020: Spill for Argument 5
+* SP+0018: Spill for Argument 4
+* SP+0010: Spill for Argument 3
+* SP+0008: Spill for Argument 2
+* SP+0000: Spill for Argument 1
+* --- Bottom of stack frame ---
 
 
 === SoftFP and HardFP ===

@@ -325,6 +325,8 @@
 // `define jx2_alu_jcmpz		//Enable Jump-Compare Zero
 `endif
 
+`define jx2_dec_ssc_riscv		//Enable RISC-V Superscalar
+
 
 `endif
 
