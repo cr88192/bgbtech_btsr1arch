@@ -373,6 +373,8 @@ int stat_ldst_disp12s;
 int stat_ldst_disp10s;
 int stat_ldst_disp9u;
 int stat_ldst_disp5u;
+int stat_ldst_disp10u;
+int stat_ldst_disp6u;
 
 int stat_ldst_disp5ub;
 int stat_ldst_disp9ub;
@@ -406,7 +408,23 @@ int stat_imm3ri_imm9n;
 int stat_imm3ri_imm5u;
 int stat_imm3ri_imm5n;
 int stat_imm3ri_imm9un;
+
+int stat_imm3ri_imm10u;
+int stat_imm3ri_imm10n;
+int stat_imm3ri_imm10un;
+
 int stat_imm3ri_immtot;
+
+int stat_imm3ri_imm5u_aox[16];
+int stat_imm3ri_imm5n_aox[16];
+int stat_imm3ri_imm5un_aox[16];
+int stat_imm3ri_imm9u_aox[16];
+int stat_imm3ri_imm9n_aox[16];
+int stat_imm3ri_imm9un_aox[16];
+int stat_imm3ri_imm10u_aox[16];
+int stat_imm3ri_imm10n_aox[16];
+int stat_imm3ri_imm10un_aox[16];
+int stat_imm3ri_immtot_aox[16];
 
 int stat_imm2ri_imm6u;
 int stat_imm2ri_imm6n;

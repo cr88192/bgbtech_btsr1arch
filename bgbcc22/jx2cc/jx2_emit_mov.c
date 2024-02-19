@@ -1208,6 +1208,12 @@ int BGBCC_JX2_EmitOpStatDisp(BGBCC_JX2_Context *ctx, int nmid, int disp)
 	if((disp1>=0) && (disp1<512))
 		ctx->stat_ldst_disp9u++;
 
+	if((disp1>=0) && (disp1<64))
+		ctx->stat_ldst_disp6u++;
+
+	if((disp1>=0) && (disp1<1024))
+		ctx->stat_ldst_disp10u++;
+
 //	if((disp1>=-512) && (disp1<512))
 	if((disp1>=-32) && (disp1<512))
 		ctx->stat_ldst_disp10s++;
@@ -1234,6 +1240,7 @@ int BGBCC_JX2_EmitOpStatDisp(BGBCC_JX2_Context *ctx, int nmid, int disp)
 int BGBCC_JX2_EmitOpStatImmed3RI(BGBCC_JX2_Context *ctx, int nmid, int disp)
 {
 	int disp1u, disp1n;
+	int aox;
 
 	if(ctx->is_simpass)
 		return(0);
@@ -1257,7 +1264,66 @@ int BGBCC_JX2_EmitOpStatImmed3RI(BGBCC_JX2_Context *ctx, int nmid, int disp)
 
 	if((disp1u>=-512) && (disp1u<512))
 		ctx->stat_imm3ri_imm9un++;
+
+
+	if((disp1u>=0) && (disp1u<1024))
+		ctx->stat_imm3ri_imm10u++;
+
+	if((disp1n>=0) && (disp1n<1024))
+		ctx->stat_imm3ri_imm10n++;
+
+	if((disp1u>=-1024) && (disp1u<1024))
+		ctx->stat_imm3ri_imm10un++;
+
+	aox=-1;
+
+	if(	(nmid==BGBCC_SH_NMID_ADD) ||
+		(nmid==BGBCC_SH_NMID_SUB) ||
+		(nmid==BGBCC_SH_NMID_ADDSL) ||
+		(nmid==BGBCC_SH_NMID_SUBSL) ||
+		(nmid==BGBCC_SH_NMID_ADDUL) ||
+		(nmid==BGBCC_SH_NMID_SUBUL) )
+			aox=0;
 	
+	if(nmid==BGBCC_SH_NMID_AND)
+		aox=5;
+	if(nmid==BGBCC_SH_NMID_OR)
+		aox=6;
+	if(nmid==BGBCC_SH_NMID_XOR)
+		aox=7;
+	
+	if(aox>=0)
+	{
+		ctx->stat_imm3ri_immtot_aox[aox]++;
+
+		if((disp1u>=0) && (disp1u<32))
+			ctx->stat_imm3ri_imm5u_aox[aox]++;
+
+		if((disp1n>=0) && (disp1n<32))
+			ctx->stat_imm3ri_imm5n_aox[aox]++;
+
+		if((disp1u>=-32) && (disp1u<32))
+			ctx->stat_imm3ri_imm5un_aox[aox]++;
+
+		if((disp1u>=0) && (disp1u<512))
+			ctx->stat_imm3ri_imm9u_aox[aox]++;
+
+		if((disp1n>=0) && (disp1n<512))
+			ctx->stat_imm3ri_imm9n_aox[aox]++;
+
+		if((disp1u>=-512) && (disp1u<512))
+			ctx->stat_imm3ri_imm9un_aox[aox]++;
+
+		if((disp1u>=0) && (disp1u<1024))
+			ctx->stat_imm3ri_imm10u_aox[aox]++;
+
+		if((disp1n>=0) && (disp1n<1024))
+			ctx->stat_imm3ri_imm10n_aox[aox]++;
+
+		if((disp1u>=-1024) && (disp1u<1024))
+			ctx->stat_imm3ri_imm10un_aox[aox]++;
+	}
+
 	return(0);
 }
 

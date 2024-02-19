@@ -1267,6 +1267,14 @@ Immediate Notation
 * Imm9u, Immediate with 9 bits, zero extended.
 * Imm9s, Immediate with 9 bits, sign extended.
 * Imm9n, Immediate with 9 bits, one extended.
+* Imm9us, Immediate with 9 bits, zero extended, XGPR/XG2 sign-extend.
+
+* Imm10, Immediate with 10 bits, unspecified extension.
+* Imm10u, Immediate with 10 bits, zero extended.
+* Imm10s, Immediate with 10 bits, sign extended.
+* Imm10n, Immediate with 10 bits, one extended.
+* Imm10us, Immediate with 10 bits, zero extended, XGPR/XG2 sign-extend.
+
 * Disp17u, Displacement with 17 bits, zero extended.
 * Disp17s, Displacement with 17 bits, sign extended.
 * Etc.
@@ -2266,16 +2274,15 @@ F0zz Instruction Block:
 * F0nm_9eoZ  (More Load/Store Space)
 ** F0nm_9go0 ? MOV.TW	Rn, (Rm, Disp5)		//(LDST48) Store TWORD
 ** F0nm_9Go0 ? CMPQEQ	Rm, Imm5, Rn		//(CMP3R) Rn = Rm==Imm5
-*** (Jumbo+WI)|WQ: Becomes CMPQHI (Unsigned Greater-Than)
 ** F0nm_9go1 ? MOV.HTW	Rn, (Rm, Disp5)		//(LDST48) Store High TWORD
 ** F0nm_9Go1 ? CMPQGT	Rm, Imm5, Rn		//(CMP3R) Rn = Rm>Imm5
-*** (Jumbo+WI)|WQ: Becomes CMPQLT
+*** (Jumbo+WI)|WQ: Becomes CMPQHI (Unsigned Greater-Than)
 ** F0nm_9go2 -
 ** F0nm_9Go2 ? CMPQNE	Rm, Imm5, Rn		//(CMP3R) Rn = Rm!=Imm5
-*** (Jumbo+WI)|WQ: Becomes CMPQBI (Unsigned Less-Than)
 ** F0nm_9go3 -
-** F0nm_9Go3 ? CMPQGE	Rm, Imm5, Rn		//(CMP3R) Rn = Rm!=Imm5
-*** (Jumbo+WI)|WQ: Becomes CMPQLE
+** F0nm_9Go3 ? CMPQLT	Rm, Imm5, Rn		//(CMP3R) Rn = Rm<Imm5
+*** (Jumbo+WI)|WQ: Becomes CMPQBI (Unsigned Less-Than)
+
 ** F0nm_9go4 ? MOV.TW	Rn, (Rm, Ro)		//(LDST48) Store TWORD
 ** F0nm_9Go4 ? CMPQEQ	Rm, Ro, Rn			//(CMP3R) Rn = Rm==Ro
 ** F0nm_9go5 ? MOV.HTW	Rn, (Rm, Ro)		//(LDST48) Store High TWORD
@@ -2375,25 +2382,25 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_0Gjj  -
 * F2nm_1gjj  ADD		Rm, Imm9n, Rn		// Rn=Rm+Imm9n
 * F2nm_1Gjj  -
-* F2nm_2gjj  MULS		Rm, Imm9u, Rn		//32*32=>32, Signed result
-* F2nm_2Gjj  MULU		Rm, Imm9u, Rn		//32*32=>32, Unsigned result
+* F2nm_2gjj  MULS{.L}	Rm, Imm9u, Rn		//32*32=>32, Signed result
+* F2nm_2Gjj  MULU{.L}	Rm, Imm9u, Rn		//32*32=>32, Unsigned result
 * F2nm_3gjj  ADDS.L		Rm, Imm9u, Rn		//ADD 32 SX, Zero-Ext Imm
 * F2nm_3Gjj  ADDU.L		Rm, Imm9u, Rn		//ADD 32 ZX, Zero-Ext Imm
 * F2nm_4gjj  ADDS.L		Rm, Imm9n, Rn		//ADD 32 SX, One-Ext Imm
 * F2nm_4Gjj  ADDU.L		Rm, Imm9n, Rn		//ADD 32 ZX, One-Ext Imm
-* F2nm_5gjj  AND		Rm, Imm9u, Rn		//
-* F2nm_5Gjj ? RSUB		Rm, Imm9u, Rn		// Rn=Imm9u-Rm
+* F2nm_5gjj  AND		Rm, Imm9us, Rn		//
+* F2nm_5Gjj ? RSUB		Rm, Imm9us, Rn		// Rn=Imm9u-Rm
 * F2nm_6gjj  OR			Rm, Imm9u, Rn		//
 * F2nm_6Pjj  SHADX		Xm, Imm8s, Xn		//(ALUX)
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
 * F2nm_7Pjj  SHLDX		Xm, Imm8s, Xn		//(ALUX)
 
-* F2nm_8pjj  SHAD		Rm, Imm8s, Rn		//E.i=0
+* F2nm_8pjj  SHAD{.L}	Rm, Imm8s, Rn		//E.i=0
 * F2nm_8Pjj  SHAD.Q		Rm, Imm8s, Rn		//E.i=0
 * F2nm_8qjj  PSHUF.B	Rm, Imm8u, Rn		//(GSV) E.i=1
 * F2nm_8Qjj  PSHUF.W	Rm, Imm8u, Rn		//(GSV) E.i=1
 
-* F2nm_9pjj  SHLD		Rm, Imm8s, Rn		//E.i=0
+* F2nm_9pjj  SHLD{.L}	Rm, Imm8s, Rn		//E.i=0
 * F2nm_9Pjj  SHLD.Q		Rm, Imm8s, Rn		//E.i=0
 * F2nm_9qjj  PCONV		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
 * F2nm_9Qjj  PCONVX		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
@@ -3035,6 +3042,7 @@ This mode will also lose Op40x2, which will become non-encodable.
 
 In XG2 Mode, Disp9u encodings will use W.i as a sign-extension bit.
 Imm9u and Imm9n encodings will use W.i as an additional immediate bit.
+Imm9us will use W.i as a sign-extension bit.
 
 Imm10u and Imm10n encodings will use W.i and W.m as an additional immediate bits, effectively expanding the range of the immediate to 12 bits (using an inverted-xor scheme).
 

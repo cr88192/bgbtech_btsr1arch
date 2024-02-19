@@ -1395,12 +1395,19 @@ int BGBCC_JX2C_EmitUnaryVRegVRegQLong(
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
 		{
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
-				BGBCC_SH_NMID_TSTQ, cdreg, cdreg);
-//			ctreg=cdreg&31;
-			ctreg=cdreg&63;
-//			BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
-			BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
+			if(sctx->has_qmul&32)
+			{
+				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+					BGBCC_SH_NMID_CMPQEQ, cdreg, 0, cdreg);
+			}else
+			{
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+					BGBCC_SH_NMID_TSTQ, cdreg, cdreg);
+	//			ctreg=cdreg&31;
+				ctreg=cdreg&63;
+	//			BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
+				BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
+			}
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			return(1);
 		}
@@ -1410,11 +1417,19 @@ int BGBCC_JX2C_EmitUnaryVRegVRegQLong(
 
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 
-		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_TSTQ, csreg, csreg);
-//		ctreg=cdreg&31;
-		ctreg=cdreg&63;
-//		BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
-		BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
+		if(sctx->has_qmul&32)
+		{
+			BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+				BGBCC_SH_NMID_CMPQEQ, csreg, 0, cdreg);
+		}else
+		{
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+				BGBCC_SH_NMID_TSTQ, csreg, csreg);
+	//		ctreg=cdreg&31;
+			ctreg=cdreg&63;
+	//		BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
+			BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, ctreg);
+		}
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
 		return(1);

@@ -1796,6 +1796,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 
 				nm3=BGBCC_SH_NMID_BRLTL;
 				jcflip=0;
+//				nm3=-1;
 			}
 		}else
 		{
@@ -1810,6 +1811,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 
 				nm3=BGBCC_SH_NMID_BRLTL;
 				jcflip=0;
+//				nm3=-1;
 			}
 		}
 		break;
@@ -1825,6 +1827,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 
 			nm3=BGBCC_SH_NMID_BRGTL;
 			jcflip=0;
+//			nm3=-1;
 		}
 		break;
 	case CCXL_CMP_LE:
@@ -1842,6 +1845,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 
 			nm3=BGBCC_SH_NMID_BRLEL;
 			jcflip=0;
+//			nm3=-1;
 		}
 		break;
 	case CCXL_CMP_GE:
@@ -1857,8 +1861,9 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 				nm1=BGBCC_SH_NMID_CMPGT;
 				nm2=BGBCC_SH_NMID_BF;
 
-				nm3=BGBCC_SH_NMID_BRGEL;
-				jcflip=0;
+				nm3=BGBCC_SH_NMID_BRLEL;
+				jcflip=1;
+//				nm3=-1;
 			}
 		}else
 		{
@@ -1871,8 +1876,9 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 				nm1=BGBCC_SH_NMID_CMPGE;
 				nm2=BGBCC_SH_NMID_BT;
 
-				nm3=BGBCC_SH_NMID_BRGEL;
-				jcflip=0;
+				nm3=BGBCC_SH_NMID_BRLEL;
+				jcflip=1;
+//				nm3=-1;
 			}
 		}
 		break;
@@ -1941,7 +1947,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 		}
 #endif
 
-#if 0
+#if 1
 //		if(nm3>=0)
 		if((nm3>=0) && (sctx->has_jcmp&2) &&
 			BGBCC_JX2_EmitCheckRegExtGPR(sctx, csreg) &&

@@ -1,0 +1,212 @@
+GPRs:
+* R0: ZR / PC         (Src/Dst: Zero         ; LD/ST Base: PC)
+* R1: LR / TP         (Src/Dst: Link Register; LD/ST Base: TP/TBR)
+* R2: SP              (Stack Pointer)
+* R3: GBR             (Global Pointer)
+* R4: Scratch / Arg0
+* R5: Scratch / Arg1
+* R6: Scratch / Arg2
+* R7: Scratch / Arg3
+* R8..R15: Preserved / Callee Save
+* R16: Scratch / Temp  (Scratch, Magic Temporary)
+* R17: Scratch / LR2   (Scratch, Alternate Link Register)
+* R18: Scratch / Ret1
+* R19: Scratch / Ret2
+* R20: Scratch / Arg4
+* R21: Scratch / Arg5
+* R22: Scratch / Arg6
+* R23: Scratch / Arg7
+* R24..R31: Preserved / Callee Save
+* R32..R35: Scratch
+* R36: Scratch / Arg8
+* R37: Scratch / Arg9
+* R38: Scratch / Arg10
+* R39: Scratch / Arg11
+* R40..R47: Preserved / Callee Save
+* R48..R51: Scratch
+* R52: Scratch / Arg12
+* R53: Scratch / Arg13
+* R54: Scratch / Arg14
+* R55: Scratch / Arg15
+* R56..R63: Preserved / Callee Save
+
+The Xn registers will exist as even register pairs, representing a virtual 128-bit register.
+
+
+Instruction Formats:
+* ZZZZ-ZZZZ-PPnn-nnnn-mmmm-mmoo-oooo-ZZZZ  (3R)
+* ZZZZ-ZZZZ-PPnn-nnnn-mmmm-mmYY-ZZZZ-ZZZZ  (2R)
+* ZZZZ-ZZZZ-PPnn-nnnn-mmmm-mmii-iiii-iiii  (3RI, Imm10)
+* ZZZZ-ZZZZ-PPnn-nnnn-ZZZZ-YYii-iiii-iiii  (2RI, Imm10)
+* ZZZZ-ZZZZ-PPnn-nnnn-iiii-iiii-iiii-iiii  (2RI, Imm16)
+* ZZZZ-ZZZZ-PPZZ-iiii-iiii-iiii-iiii-iiii  (Imm20)
+* ZZZZ-ZZZZ-PPii-iiii-iiii-iiii-iiii-iiii  (Imm20)
+* ZZZZ-ZZZZ-iiii-iiii-iiii-iiii-iiii-iiii  (Imm24)
+
+PP:
+* 00: OP?T  (Conditional True)
+* 01: OP?F  (Conditional False)
+* 10: OP    (Scalar)
+* 11: OP|   (Wide Execute)
+
+
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0000  ST.B		Rn, (Rm, Ro)
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0001  ST.W		Rn, (Rm, Ro)
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0010  ST.L		Rn, (Rm, Ro)
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0011  ST.Q		Rn, (Rm, Ro)
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0100  LEA.B	(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0101  LEA.W	(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0110  LEA.L	(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-0111  LEA.Q	(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1000  LD.B		(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1001  LD.W		(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1010  LD.L		(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1011  LD.Q		(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1100  LDU.B	(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1101  LDU.W	(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1110  LDU.L	(Rm, Ro), Rn
+* 0000-0000-PPnn-nnnn-mmmm-mmoo-oooo-1111  -
+
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-0000  ST.H		Rn, (Rm, Ro)
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-0001  ST.S		Rn, (Rm, Ro)
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-0010  -
+* 0000-0001-PPnn-nnn0-mmmm-mmoo-oooo-0011  ST.X		Rn, (Rm, Ro)
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-0100  -
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-0101  -
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-0110  -
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-0111  -
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-1000  LD.H		(Rm, Ro), Rn
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-1001  LD.S		(Rm, Ro), Rn
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-1010  -
+* 0000-0001-PPnn-nnn0-mmmm-mmoo-oooo-1011  LD.X		(Rm, Ro), Rn
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-1100  -
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-1101  -
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-1110  -
+* 0000-0001-PPnn-nnnn-mmmm-mmoo-oooo-1111  -
+
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0000  ADD
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0001  SUB
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0010  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0011  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0100  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0101  AND
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0110  OR
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-0111  XOR
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1000  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1001  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1010  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1011  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1100  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1101  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1110  -
+* 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1111  -
+
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0000  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0001  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0010  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0011  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0100  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0101  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0110  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0111  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1000  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1001  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1010  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1011  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1100  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1101  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1110  -
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1111  -
+
+
+
+
+* 0100-0000-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.B		Rn, (Rm, Disp10s)
+* 0100-0001-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.W		Rn, (Rm, Disp10s)
+* 0100-0010-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.L		Rn, (Rm, Disp10s)
+* 0100-0011-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.Q		Rn, (Rm, Disp10s)
+* 0100-0100-PPnn-nnnn-mmmm-mmii-iiii-iiii  LEA.B	(Rm, Disp10s), Rn
+* 0100-0101-PPnn-nnnn-mmmm-mmii-iiii-iiii  LEA.W	(Rm, Disp10s), Rn
+* 0100-0110-PPnn-nnnn-mmmm-mmii-iiii-iiii  LEA.L	(Rm, Disp10s), Rn
+* 0100-0111-PPnn-nnnn-mmmm-mmii-iiii-iiii  LEA.Q	(Rm, Disp10s), Rn
+* 0100-1000-PPnn-nnnn-mmmm-mmii-iiii-iiii  LD.B		(Rm, Disp10s), Rn
+* 0100-1001-PPnn-nnnn-mmmm-mmii-iiii-iiii  LD.W		(Rm, Disp10s), Rn
+* 0100-1010-PPnn-nnnn-mmmm-mmii-iiii-iiii  LD.L		(Rm, Disp10s), Rn
+* 0100-1011-PPnn-nnnn-mmmm-mmii-iiii-iiii  LD.Q		(Rm, Disp10s), Rn
+* 0100-1100-PPnn-nnnn-mmmm-mmii-iiii-iiii  LDU.B	(Rm, Disp10s), Rn
+* 0100-1101-PPnn-nnnn-mmmm-mmii-iiii-iiii  LDU.W	(Rm, Disp10s), Rn
+* 0100-1110-PPnn-nnnn-mmmm-mmii-iiii-iiii  LDU.L	(Rm, Disp10s), Rn
+* 0100-1111-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+
+* 0101-0000-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.H		Rn, (Rm, Disp10s)
+* 0101-0001-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.S		Rn, (Rm, Disp10s)
+* 0101-0010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-0011-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.X		Xn, (Rm, Disp10s)
+* 0101-0100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-0101-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-0110-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-0111-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-1000-PPnn-nnnn-mmmm-mmii-iiii-iiii  LD.H		(Rm, Disp10s), Rn
+* 0101-1001-PPnn-nnnn-mmmm-mmii-iiii-iiii  LD.S		(Rm, Disp10s), Rn
+* 0101-1010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-1011-PPnn-nnnn-mmmm-mmii-iiii-iiii  LD.X		(Rm, Disp10s), Xn
+* 0101-1100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-1101-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-1110-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0101-1111-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+
+
+* 0110-0000-PPnn-nnnn-mmmm-mmii-iiii-iiii  ADD		Rm, Imm10s, Rn
+* 0110-0001-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-0010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-0011-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-0100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-0101-PPnn-nnnn-mmmm-mmii-iiii-iiii  AND		Rm, Imm10s, Rn
+* 0110-0110-PPnn-nnnn-mmmm-mmii-iiii-iiii  OR		Rm, Imm10s, Rn
+* 0110-0111-PPnn-nnnn-mmmm-mmii-iiii-iiii  XOR		Rm, Imm10s, Rn
+* 0110-1000-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1001-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1011-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1101-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1110-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1111-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+
+* 0111-0000-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-0001-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-0010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-0011-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-0100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-0101-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-0110-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-0111-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1000-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1001-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1011-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1101-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1110-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0111-1111-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+
+
+* 1000-0000-PPnn-nnnn-iiii-iiii-iiii-iiii  MOV		Imm16u, Rn
+* 1000-0001-PPnn-nnnn-iiii-iiii-iiii-iiii  MOV		Imm16n, Rn
+* 1000-0010-PPnn-nnnn-iiii-iiii-iiii-iiii  ADD		Imm16u, Rn
+* 1000-0011-PPnn-nnnn-iiii-iiii-iiii-iiii  ADD		Imm16n, Rn
+* 1000-0100-PPnn-nnnn-iiii-iiii-iiii-iiii  SHORI	Imm16u, Rn
+* 1000-0101-PPnn-nnnn-iiii-iiii-iiii-iiii  FLDCH	Imm16u, Rn
+* 1000-0110-PPnn-nnnn-iiii-iiii-iiii-iiii  -
+* 1000-0111-PPnn-nnnn-iiii-iiii-iiii-iiii  -
+* 1000-1000-10nn-nnnn-mmmm-mmii-iiii-iiii  BREQ		Rm, Rn, Disp10s
+* 1000-1001-10nn-nnnn-mmmm-mmii-iiii-iiii  BRNE		Rm, Rn, Disp10s
+* 1000-1010-10nn-nnnn-mmmm-mmii-iiii-iiii  BRGT		Rm, Rn, Disp10s
+* 1000-1011-10nn-nnnn-mmmm-mmii-iiii-iiii  BRGE		Rm, Rn, Disp10s
+* 1000-1100-10nn-nnnn-mmmm-mmii-iiii-iiii  BRGTU	Rm, Rn, Disp10s
+* 1000-1101-10nn-nnnn-mmmm-mmii-iiii-iiii  BRGEU	Rm, Rn, Disp10s
+* 1000-1110-PPii-iiii-iiii-iiii-iiii-iiii  BRA	Disp22
+* 1000-1111-10ii-iiii-iiii-iiii-iiii-iiii  BSR	Disp22
+
+
+* 1111-ZZZZ-iiii-iiii-iiii-iiii-iiii-iiii  (Jumbo Prefix Space)

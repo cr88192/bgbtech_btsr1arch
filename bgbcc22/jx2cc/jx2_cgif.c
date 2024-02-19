@@ -479,7 +479,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->has_bra48=1;
 		shctx->has_xgpr=3;
-		shctx->has_alux=1;
+		shctx->has_alux|=1;
+
+		shctx->has_qmul|=8;
 
 #if 1
 //		if(shctx->use_wexmd==0)
@@ -8034,10 +8036,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			sctx->stat_const_jumbo96ph
 			);
 		
-		printf("Disp-Hit(Scale): 5u=%.2f%% 9u=%.2f%% "
+		printf("Disp-Hit(Sc): 5u=%.2f%% 5u=%.2f%% 9u=%.2f%% 10u=%.2f%% "
 				"10s=%.2f%% 12s=%.2f%%\n",
 			(100.0*sctx->stat_ldst_disp5u)/(sctx->stat_ldst_disptot+1),
+			(100.0*sctx->stat_ldst_disp6u)/(sctx->stat_ldst_disptot+1),
 			(100.0*sctx->stat_ldst_disp9u)/(sctx->stat_ldst_disptot+1),
+			(100.0*sctx->stat_ldst_disp10u)/(sctx->stat_ldst_disptot+1),
 			(100.0*sctx->stat_ldst_disp10s)/(sctx->stat_ldst_disptot+1),
 			(100.0*sctx->stat_ldst_disp12s)/(sctx->stat_ldst_disptot+1)
 			);
@@ -8058,6 +8062,43 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			(100.0*sctx->stat_imm3ri_imm9n)/(sctx->stat_imm3ri_immtot+1),
 			(100.0*sctx->stat_imm3ri_imm9un)/(sctx->stat_imm3ri_immtot+1)
 			);
+
+		printf("Imm-Hit(3RI): 10u=%.2f%%, 10n=%.2f%%, 10un=%.2f%%\n",
+			(100.0*sctx->stat_imm3ri_imm10u)/(sctx->stat_imm3ri_immtot+1),
+			(100.0*sctx->stat_imm3ri_imm10n)/(sctx->stat_imm3ri_immtot+1),
+			(100.0*sctx->stat_imm3ri_imm10un)/(sctx->stat_imm3ri_immtot+1)
+			);
+
+#if 0
+		for(i=0; i<16; i++)
+		{
+			if(sctx->stat_imm3ri_immtot_aox[i]<=0)
+				continue;
+
+			j=sctx->stat_imm3ri_immtot_aox[i];
+
+			printf("Imm-Hit(3RI, AO=%u): 5u=%.2f%%, 5n=%.2f%%, 5un=%.2f%%\n",
+				i,
+				(100.0*sctx->stat_imm3ri_imm5u_aox[i])/j,
+				(100.0*sctx->stat_imm3ri_imm5n_aox[i])/j,
+				(100.0*sctx->stat_imm3ri_imm5un_aox[i])/j
+				);
+
+			printf("Imm-Hit(3RI, AO=%u): 9u=%.2f%%, 9n=%.2f%%, 9un=%.2f%%\n",
+				i,
+				(100.0*sctx->stat_imm3ri_imm9u_aox[i])/j,
+				(100.0*sctx->stat_imm3ri_imm9n_aox[i])/j,
+				(100.0*sctx->stat_imm3ri_imm9un_aox[i])/j
+				);
+
+			printf("Imm-Hit(3RI, AO=%u): 10u=%.2f%%, 10n=%.2f%%, 10un=%.2f%%\n",
+				i,
+				(100.0*sctx->stat_imm3ri_imm10u_aox[i])/j,
+				(100.0*sctx->stat_imm3ri_imm10n_aox[i])/j,
+				(100.0*sctx->stat_imm3ri_imm10un_aox[i])/j
+				);
+		}
+#endif
 
 		printf("Imm-Hit(2RI): 6u=%.2f%% 10u=%.2f%% "
 				"6n=%.2f%%, 10n=%.2f%%, 10un=%.2f%%\n",

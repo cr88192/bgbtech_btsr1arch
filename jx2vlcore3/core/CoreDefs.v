@@ -702,7 +702,9 @@ REGREG, RVI:
 
 REGIMMREG, Fz:
 	SB: Rm, 0, Rn
-	SW:	Rm, Imm9s, Rn
+	SW:	/ Rm, Imm9s, Rn
+	SW:	Rm, Imm9us, Rn
+	SL: Imm9us, Rm, Rn
 
 	UB:	Rm, Imm9f/Imm16f, Rn
 	UW:	Rm, Imm9u, Rn

@@ -340,6 +340,41 @@ These will count the number of zeroes until the first non-zero bit is encountere
 These instructions are only allowed in Lane 1.
 
 
+=== CMPQxx (CMP3R) ===
+
+* F0nm_9Go0 ? CMPQEQ	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm==Imm5u
+* F0nm_9Go1 ? CMPQGT	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm> Imm5u
+* F0nm_9Go2 ? CMPQNE	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm!=Imm5u
+* F0nm_9Go3 ? CMPQLT	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm< Imm5u
+
+* F0nm_9Go4 ? CMPQEQ	Rm, Ro, Rn			//(CMP3R) Rn = Rm==Ro
+* F0nm_9Go5 ? CMPQGT	Rm, Ro, Rn			//(CMP3R) Rn = Rm> Ro
+* F0nm_9Go6 ? CMPQNE	Rm, Ro, Rn			//(CMP3R) Rn = Rm!=Ro
+* F0nm_9Go7 ? CMPQGE	Rm, Ro, Rn			//(CMP3R) Rn = Rm>=Ro
+
+* FFw0_0vii_F0nm_9Gi0 ? CMPQEQ	Rm, Imm17s, Rn		//(CMP3R) Rn = Rm==Imm17s
+* FFW0_0vii_F0nm_9Gi0 -
+* FFw0_0vii_F0nm_9Go1 ? CMPQGT	Rm, Imm17s, Rn		//(CMP3R) Rn = Rm> Imm17s
+* FFW0_0vii_F0nm_9Go1 ? CMPQHI	Rm, Imm17s, Rn		//(CMP3R) Rn = Rm> Imm17s
+* FFw0_0vii_F0nm_9Go2 ? CMPQNE	Rm, Imm17s, Rn		//(CMP3R) Rn = Rm!=Imm17s
+* FFW0_0vii_F0nm_9Go2 -
+* FFw0_0vii_F0nm_9Go3 ? CMPQLT	Rm, Imm17s, Rn		//(CMP3R) Rn = Rm!=Imm17s
+* FFW0_0vii_F0nm_9Go3 ? CMPQBI	Rm, Imm17s, Rn		//(CMP3R) Rn = Rm< Imm17s
+
+* FEii_iiii_F0nm_9Gi0 ? CMPQEQ	Rm, Imm29s, Rn		//(CMP3R) Rn = Rm==Imm29s
+* FEii_iiii_B0nm_9Gi0 ? CMPQHI	Rm, Imm29s, Rn		//(CMP3R, XG2)
+* FEii_iiii_F0nm_9Go1 ? CMPQGT	Rm, Imm29s, Rn		//(CMP3R) Rn = Rm> Imm29s
+* FEii_iiii_B0nm_9Go1 -
+* FEii_iiii_F0nm_9Go2 ? CMPQNE	Rm, Imm29s, Rn		//(CMP3R) Rn = Rm!=Imm29s
+* FEii_iiii_B0nm_9Go2 ? CMPQBI	Rm, Imm29s, Rn		//(CMP3R, XG2)
+* FEii_iiii_F0nm_9Go3 ? CMPQLT	Rm, Imm29s, Rn		//(CMP3R) Rn = Rm>=Imm29s
+* FEii_iiii_B0nm_9Go3 -
+
+These instructions will compare two values with the result being directed to a register. The destination register will be set to 1 if the comparison is true, or set to 0 if the comparison is false.
+
+With an Op64 prefix, the immediate forms will encode an alternate encoding if W.q is set. In XG2 Mode with a Jumbo-Imm prefix, the Wi bit will encode the alternate form.
+
+
 === CMPEQ ===
 
 * 1Cnm       CMPEQ		Rm, Rn
@@ -2527,12 +2562,12 @@ Special subsets will be defined:
 * GSVFX: Present if both GSV and GFPX exist; Supports 128-bit Vectors.
 
 
-=== MOVxD (GSV) ===
+=== MOVxD (GSV) (Dropped) ===
 
-* F0nm_1g8A  MOVHD		Rm, Rn			//(GSV) Move High DWord
-* F0nm_1G8A  MOVLD		Rm, Rn			//(GSV) Move Low DWord
-* F0nm_1gAA  MOVHLD		Rm, Rn			//(GSV) Rn=Rm (MOV High to Low)
-* F0nm_1GAA  MOVLHD		Rm, Rn			//(GSV) Rn=Rm (MOV Low to High)
+* / F0nm_1g8A  MOVHD		Rm, Rn			//(GSV) Move High DWord
+* / F0nm_1G8A  MOVLD		Rm, Rn			//(GSV) Move Low DWord
+* / F0nm_1gAA  MOVHLD		Rm, Rn			//(GSV) Rn=Rm (MOV High to Low)
+* / F0nm_1GAA  MOVLHD		Rm, Rn			//(GSV) Rn=Rm (MOV Low to High)
 
 Partial Register Move. These MOV part of the bits from Rm into Rn, while leaving the other bits in Rn as their original value.
 
@@ -2780,6 +2815,43 @@ The basic 3R PMULx.W will accept vectors with two 16 bit inputs, and produce a v
 The LW and HW variants will consume 4-wide input vectors and produce a 4-wide output. The LW variant will keep the low order bits from the result, whereas the HW variant will keep the high-order bits.
 
 See [PADD.x 3R (GSV)] for Lane usage rules.
+
+
+=== PRCPA.x 2R (GSV) ===
+
+* F0nm_1gAF  PRCPA.H		Rm, Rn		//(GSVF) RCPA (4x FP16)
+* F0nm_1gBF  PRCPA.F		Rm, Rn		//(GSVF) RCPA (2x FP32)
+
+Calculate an approximate reciprocal of an FP-SIMD vector.
+
+For each element, this can be seen as:
+* (~elem) + 0x7800 (Binary16)
+* (~elem) + 0x7F000000 (Binary32)
+
+
+
+=== PRELU.x 2R (GSV) ===
+
+* F0nm_1GAF  PRELU.H		Rm, Rn		//(GSVF) RELU (4x FP16)
+* F0nm_1GBF  PRELU.F		Rm, Rn		//(GSVF) RELU (2x FP32)
+
+Perform a RELU operator.
+In this case, positive values are passed through as-is, whereas negative values are zeroed.
+
+
+=== PSQRTA.x 2R (GSV) ===
+
+* F0nm_1g8F  PSQRTA.H		Rm, Rn		//(GSVF) SQRTA (4x FP16)
+* F0nm_1G8F  PSQRTUA.H		Rm, Rn		//(GSVF) SQRTA (4x FP16)
+* F0nm_1g9F  PSQRTA.F		Rm, Rn		//(GSVF) SQRTA (2x FP32)
+* F0nm_1G9F  PSQRTUA.F		Rm, Rn		//(GSVF) SQRTA (2x FP32)
+
+Perform an approximate Square-Root.
+
+For Binary16, the operation is effectively:
+* (Val&0x8000)|(((Val&0x7FFF)>>1)+0x1E00)
+
+The PSQRTUA variants differ in that they will set negative values to zero.
 
 
 === PSUB.x 3R (GSV) ===

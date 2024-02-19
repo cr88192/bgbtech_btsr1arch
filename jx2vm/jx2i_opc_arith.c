@@ -2876,6 +2876,16 @@ void BJX2_Op_SGTI_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=rn;
 }
 
+void BJX2_Op_SGTIU_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm, rn;
+	int shl;
+	
+	rm=ctx->regs[op->rm];
+	rn=(((u64)rm)>((u64)op->imm));
+	ctx->regs[op->rn]=rn;
+}
+
 void BJX2_Op_SLTI_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	s64 rm, rn;

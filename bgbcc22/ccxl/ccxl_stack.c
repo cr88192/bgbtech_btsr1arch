@@ -2661,6 +2661,13 @@ ccxl_status BGBCC_CCXL_StackRet(BGBCC_TransState *ctx)
 		return(CCXL_STATUS_YES);
 	}
 
+	if(BGBCC_CCXL_IsRegImmILFDP(ctx, treg) &&
+		!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty))
+	{
+		BGBCC_CCXL_ConvImm(ctx, dty, bty, treg, &treg);
+		bty=BGBCC_CCXL_GetRegType(ctx, treg);
+	}
+
 //	if(!BGBCC_CCXL_TypeCompatibleP(ctx, dty, bty))
 	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty))
 	{

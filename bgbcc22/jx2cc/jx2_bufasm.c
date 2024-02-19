@@ -1199,6 +1199,8 @@ int mfl;
 {"rotcr",	BGBCC_SH_NMID_ROTCR},
 {"rotr",	BGBCC_SH_NMID_ROTR},
 
+{"nop4b",	BGBCC_SH_NMID_NOP4B},
+
 {"rotcl.l",	BGBCC_SH_NMID_ROTCL},
 {"rotcr.l",	BGBCC_SH_NMID_ROTCR},
 {"rotcl.q",	BGBCC_SH_NMID_ROTCLQ},

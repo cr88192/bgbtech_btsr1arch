@@ -32,7 +32,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 //	int imm10u, imm10n;
 //	int imm9u, imm9n;
 	s64 imm10u, imm10n;
-	s64 imm9u, imm9n;
+	s64 imm9u, imm9n, imm9us;
 
 	int ret;
 
@@ -71,6 +71,11 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 //	imm9n=(opw2&511)|((-1)<<9);
 //	imm9n=(opw2&511)|(~((1<<9)-1));
 	imm9n=(opw2&511)|(~511);
+
+	imm9us=imm9u;
+
+	if(jbits&0x10000000U)
+		{ imm9us=imm9n; }
 
 	imm10u=(opw2&1023);
 //	imm10n=(opw2&1023)|((-1)<<10);
@@ -112,6 +117,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		imm9u=(u32)((opw2&255)|((jbits&0x00FFFFFF)<<8));
 		if(eo)imm9u|=0xFFFFFFFF00000000LL;
 		imm9n=imm9u;
+		imm9us=imm9u;
 
 		imm10u=imm9u;
 		imm10n=imm9u;
@@ -137,6 +143,8 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		
 		if(jbits&0x10000000U)
 			imm9u=imm9n;
+
+		imm9us=imm9u;
 
 		imm10u=(u32)((opw2&255)|((jbits&255)<<8));
 		imm10u|=((opw2&0x0300)<<8);
@@ -211,7 +219,8 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 #endif
 
 	case 0x5:	/* F2nm_5ejj */
-		op->imm=imm9u;
+//		op->imm=imm9u;
+		op->imm=imm9us;
 		op->nmid=BJX2_NMID_AND;
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_AND_RegImmReg;
@@ -224,6 +233,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 
 	case 0x6:	/* F2nm_6ejj */
 		op->imm=imm9u;
+//		op->imm=imm9us;
 		op->nmid=BJX2_NMID_OR;
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_OR_RegImmReg;
@@ -239,6 +249,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		break;
 	case 0x7:	/* F2nm_7ejj */
 		op->imm=imm9u;
+//		op->imm=imm9us;
 		op->nmid=BJX2_NMID_XOR;
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_XOR_RegImmReg;

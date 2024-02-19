@@ -1063,8 +1063,11 @@ begin
 
 		end
 
-		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB, 
-			JX2_UCMD_ALUCMP3R: begin
+		JX2_UCMD_ALUCMP, JX2_UCMD_ALUCMPW, JX2_UCMD_ALUCMPB: begin
+		end
+		
+		JX2_UCMD_ALUCMP3R: begin
+			tRegHeld		= 1;
 		end
 	
 		JX2_UCMD_CONV_RR: begin

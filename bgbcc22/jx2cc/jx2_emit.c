@@ -7903,7 +7903,11 @@ int BGBCC_JX2_ComposeJumboImmRegF2(BGBCC_JX2_Context *ctx,
 	s64 imm1;
 	int opw1, opw2, opw3, opw4;
 
-	if(BGBCC_JX2_EmitCheckRegExt5(ctx, reg))
+//	if(BGBCC_JX2_EmitCheckRegExt5(ctx, reg))
+
+	if(	 BGBCC_JX2_EmitCheckRegExt5(ctx, reg) &&
+		 (!(ctx->is_fixed32&2) || (ctx->op_is_wex2&12)))
+
 	{
 		if(!(ctx->op_is_wex2&12) && !(ctx->is_fixed32&2) &&
 			!(ctx->emit_riscv&0x22))
@@ -8033,6 +8037,9 @@ int BGBCC_JX2_ComposeJumboImmRegF2(BGBCC_JX2_Context *ctx,
 	opw3=topw1|((reg&15)<<4);
 	opw4=topw2|((reg&16)<<6)|(imm&0x00FF)|((imm>>63)&0x0100);
 
+	if(BGBCC_JX2_EmitCheckRegExt5(ctx, reg))
+		opw3&=~0x8000;
+
 	*ropw1=opw1;
 	*ropw2=opw2;
 	*ropw3=opw3;
@@ -8083,8 +8090,13 @@ int BGBCC_JX2_ComposeJumboRegImmRegF2(BGBCC_JX2_Context *ctx,
 	if(BGBCC_JX2_ComposeJumboCheckOpwIsStore(ctx, topw1, topw2))
 		{ opw1=sreg; sreg=dreg; dreg=opw1; }
 
-	if(	BGBCC_JX2_EmitCheckRegExt5(ctx, dreg) ||
-		BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
+//	if(	BGBCC_JX2_EmitCheckRegExt5(ctx, dreg) ||
+//		BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
+
+	if(	(BGBCC_JX2_EmitCheckRegExt5(ctx, dreg) ||
+		 BGBCC_JX2_EmitCheckRegExt5(ctx, sreg)) &&
+		 (!(ctx->is_fixed32&2) || (ctx->op_is_wex2&12)))
+
 	{
 		if(!(ctx->op_is_wex2&12) && !(ctx->is_fixed32&2) &&
 			!(ctx->emit_riscv&0x22))
@@ -8228,6 +8240,11 @@ int BGBCC_JX2_ComposeJumboRegImmRegF2(BGBCC_JX2_Context *ctx,
 	opw3=0x40000|topw1|((dreg&15)<<4)|((sreg&15)<<0);
 	opw4=0x50000|topw2|((dreg&16)<<6)|((sreg&16)<<5)|(imm&0x00FF);
 
+	if(BGBCC_JX2_EmitCheckRegExt5(ctx, dreg))
+		opw3&=~0x8000;
+	if(BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
+		opw3&=~0x4000;
+
 	imm1=(((u32)(opw1&0x00FF))<<24)|((opw2&0xFFFF)<<8)|(opw4&0x00FF);
 	if(opw4&0x0100)
 		imm1|=0xFFFFFFFF00000000LL;
@@ -8366,8 +8383,12 @@ int BGBCC_JX2_ComposeJumboRegImmRegF0(BGBCC_JX2_Context *ctx,
 	if(BGBCC_JX2_ComposeJumboCheckOpwIsStore(ctx, topw1, topw2))
 		{ opw1=sreg; sreg=dreg; dreg=opw1; }
 
-	if(	BGBCC_JX2_EmitCheckRegExt5(ctx, dreg) ||
-		BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
+//	if(	BGBCC_JX2_EmitCheckRegExt5(ctx, dreg) ||
+//		BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
+
+	if(	(BGBCC_JX2_EmitCheckRegExt5(ctx, dreg) ||
+		 BGBCC_JX2_EmitCheckRegExt5(ctx, sreg)) &&
+		 (!(ctx->is_fixed32&2) || (ctx->op_is_wex2&12)))
 	{
 #if 1
 		if(!(ctx->op_is_wex2&12) && (topw1==0xF000) &&
@@ -8452,6 +8473,11 @@ int BGBCC_JX2_ComposeJumboRegImmRegF0(BGBCC_JX2_Context *ctx,
 	opw3=0x40000|topw1|((dreg&15)<<4)|((sreg&15)<<0);
 	opw4=0x50000|topw2|((dreg&16)<<6)|((sreg&16)<<5)|
 		((imm<<4)&0x00F0)|((imm>>28)&0x0100);
+
+	if(BGBCC_JX2_EmitCheckRegExt5(ctx, dreg))
+		opw3&=~0x8000;
+	if(BGBCC_JX2_EmitCheckRegExt5(ctx, sreg))
+		opw3&=~0x4000;
 
 	imm1=(((u32)(opw1&0x00FF))<<20)|
 		((opw2&0xFFFF)<<4)|
