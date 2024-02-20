@@ -2777,6 +2777,9 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 	nsz=0;
 	msz=999999999;
 
+	sctx->simfnmsz=msz;
+	sctx->simfnnsz=nsz;
+
 	sctx->need_farjmp=1;
 	sctx->need_f16jmp=1;
 	sctx->need_n12jmp=1;
@@ -4554,6 +4557,14 @@ ccxl_status BGBCC_JX2C_BuildAsmBlob(BGBCC_TransState *ctx,
 	int i, j, k;
 
 	sctx=ctx->uctx;
+
+	sctx->simfnsz=99999999;
+	sctx->simfnmsz=99999999;
+	sctx->simfnnsz=99999999;
+
+	sctx->need_farjmp=1;
+	sctx->need_f16jmp=1;
+	sctx->need_n12jmp=1;
 	
 	BGBCC_JX2C_AssembleBuffer(ctx, sctx, (char *)(obj->text));
 	return(1);

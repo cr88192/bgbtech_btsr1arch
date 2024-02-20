@@ -6958,8 +6958,7 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 #endif
 
 #if 1
-			if((imm>=-512) && (imm<0) &&
-				((ctx->has_xgpr&1) || (ctx->is_fixed32&2)))
+			if((imm>=-512) && (imm<0) && (ctx->is_fixed32&2))
 			{
 				exw|=0x0100;
 				opw1=0xF200|((rn&15)<<4)|((rm&15)<<0);
@@ -7295,7 +7294,7 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 
 #if 1
 				if((imm>=-512) && (imm<0) &&
-					((ctx->has_xgpr&1) || (ctx->is_fixed32&2)))
+					(ctx->is_fixed32&2))
 				{
 					exw|=0x0100;
 					opw1=0xF200|((rn&15)<<4)|((rm&15)<<0);

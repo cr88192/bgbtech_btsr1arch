@@ -183,11 +183,11 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_SUB:		sn="SUB";		break;	//0x08	//SUB
 	case BGBCC_SH_NMID_SUBC:	sn="SUBC";		break;	//0x09	//SUBC
 	case BGBCC_SH_NMID_SUBV:	sn="SUBV";		break;	//0x0A	//SUBV
-	case BGBCC_SH_NMID_CMPHS:	sn="CMPHS";	break;	//0x0B	//CMPHS
-	case BGBCC_SH_NMID_CMPHI:	sn="CMPHI";	break;	//0x0C	//CMPHI
-	case BGBCC_SH_NMID_CMPEQ:	sn="CMPEQ";	break;	//0x0D	//CMPEQ
-	case BGBCC_SH_NMID_CMPGE:	sn="CMPGE";	break;	//0x0E	//CMPGE
-	case BGBCC_SH_NMID_CMPGT:	sn="CMPGT";	break;	//0x0F	//CMPGT
+	case BGBCC_SH_NMID_CMPHS:	sn="CMPHS.L";	break;	//0x0B	//CMPHS
+	case BGBCC_SH_NMID_CMPHI:	sn="CMPHI.L";	break;	//0x0C	//CMPHI
+	case BGBCC_SH_NMID_CMPEQ:	sn="CMPEQ.L";	break;	//0x0D	//CMPEQ
+	case BGBCC_SH_NMID_CMPGE:	sn="CMPGE.L";	break;	//0x0E	//CMPGE
+	case BGBCC_SH_NMID_CMPGT:	sn="CMPGT.L";	break;	//0x0F	//CMPGT
 	case BGBCC_SH_NMID_JMP:		sn="JMP";		break;	//0x10	//JMP
 	case BGBCC_SH_NMID_JSR:		sn="JSR";		break;	//0x11	//JSR
 	case BGBCC_SH_NMID_BRA:		sn="BRA";		break;	//0x12	//BRA
@@ -199,7 +199,7 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_DIV1:	sn="DIV1";		break;	//0x18	//DIV1
 	case BGBCC_SH_NMID_DMULU:	sn="MULU.L";	break;	//0x19	//DMULU
 	case BGBCC_SH_NMID_DMULS:	sn="MULS.L";	break;	//0x1A	//DMULS
-	case BGBCC_SH_NMID_TST:		sn="TST";		break;	//0x1B	//TST
+	case BGBCC_SH_NMID_TST:		sn="TST.L";		break;	//0x1B	//TST
 	case BGBCC_SH_NMID_AND:		sn="AND";		break;	//0x1C	//AND
 	case BGBCC_SH_NMID_XOR:		sn="XOR";		break;	//0x1D	//XOR
 	case BGBCC_SH_NMID_OR:		sn="OR";		break;	//0x1E	//OR
@@ -265,8 +265,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_ANDB:	sn="AND.B";		break;	//0x5B
 	case BGBCC_SH_NMID_XORB:	sn="XOR.B";		break;	//0x5C
 	case BGBCC_SH_NMID_ORB:		sn="OR.B";		break;	//0x5D
-	case BGBCC_SH_NMID_SHAD:	sn="SHAD";		break;	//0x5E
-	case BGBCC_SH_NMID_SHLD:	sn="SHLD";		break;	//0x5F
+	case BGBCC_SH_NMID_SHAD:	sn="SHAD.L";	break;	//0x5E
+	case BGBCC_SH_NMID_SHLD:	sn="SHLD.L";	break;	//0x5F
 	case BGBCC_SH_NMID_CLRS:	sn="CLRS";		break;	//0x61
 	case BGBCC_SH_NMID_SETS:	sn="SETS";		break;	//0x62
 	case BGBCC_SH_NMID_MOVUB:	sn="MOVU.B";	break;	//0x65	//MOVU.B
@@ -381,20 +381,20 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_SHLDQ:		sn="SHLD.Q";		break;	//0xD5
 	case BGBCC_SH_NMID_SHLL4:		sn="SHLL4";			break;	//0xD6
 	case BGBCC_SH_NMID_SHLR4:		sn="SHLR4";			break;	//0xD7
-	case BGBCC_SH_NMID_BREQ:		sn="BREQ";			break;	//0xD8
-	case BGBCC_SH_NMID_BRNE:		sn="BRNE";			break;	//0xD9
-	case BGBCC_SH_NMID_BRGT:		sn="BRGT";			break;	//0xDA
-	case BGBCC_SH_NMID_BRLE:		sn="BRLE";			break;	//0xDB
-	case BGBCC_SH_NMID_BRGE:		sn="BRGE";			break;	//0xDC
-	case BGBCC_SH_NMID_BRLT:		sn="BRLT";			break;	//0xDD
+	case BGBCC_SH_NMID_BREQ:		sn="BREQ.Q";		break;	//0xD8
+	case BGBCC_SH_NMID_BRNE:		sn="BRNE.Q";		break;	//0xD9
+	case BGBCC_SH_NMID_BRGT:		sn="BRGT.Q";		break;	//0xDA
+	case BGBCC_SH_NMID_BRLE:		sn="BRLE.Q";		break;	//0xDB
+	case BGBCC_SH_NMID_BRGE:		sn="BRGE.Q";		break;	//0xDC
+	case BGBCC_SH_NMID_BRLT:		sn="BRLT.Q";		break;	//0xDD
 	
-	case BGBCC_SH_NMID_CMPQHS:		sn="CMPQHS";		break;	//0xE0
-	case BGBCC_SH_NMID_CMPQHI:		sn="CMPQHI";		break;	//0xE1
-	case BGBCC_SH_NMID_CMPQEQ:		sn="CMPQEQ";		break;	//0xE2
-	case BGBCC_SH_NMID_CMPQGE:		sn="CMPQGE";		break;	//0xE3
-	case BGBCC_SH_NMID_CMPQGT:		sn="CMPQGT";		break;	//0xE4
-	case BGBCC_SH_NMID_CMPQPZ:		sn="CMPQPZ";		break;	//0xE5
-	case BGBCC_SH_NMID_CMPQPL:		sn="CMPQPL";		break;	//0xE6
+	case BGBCC_SH_NMID_CMPQHS:		sn="CMPHS.Q";		break;	//0xE0
+	case BGBCC_SH_NMID_CMPQHI:		sn="CMPHI.Q";		break;	//0xE1
+	case BGBCC_SH_NMID_CMPQEQ:		sn="CMPEQ.Q";		break;	//0xE2
+	case BGBCC_SH_NMID_CMPQGE:		sn="CMPGE.Q";		break;	//0xE3
+	case BGBCC_SH_NMID_CMPQGT:		sn="CMPGT.Q";		break;	//0xE4
+	case BGBCC_SH_NMID_CMPQPZ:		sn="CMPPZ.Q";		break;	//0xE5
+	case BGBCC_SH_NMID_CMPQPL:		sn="CMPPL.Q";		break;	//0xE6
 	case BGBCC_SH_NMID_NOTS:		sn="NOTS";			break;	//0xE7
 	case BGBCC_SH_NMID_SHLL32:		sn="SHLL32";		break;	//0xE8
 	case BGBCC_SH_NMID_SHLR32:		sn="SHLR32";		break;	//0xE9
@@ -410,8 +410,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_BRA8B:		sn="BRA8B";			break;	//0xF2
 
 	case BGBCC_SH_NMID_MOVNT:		sn="MOVNT";			break;	//0xF4
-	case BGBCC_SH_NMID_CLZ:			sn="CLZ";			break;	//0xF5
-	case BGBCC_SH_NMID_CLZQ:		sn="CLZQ";			break;	//0xF6
+	case BGBCC_SH_NMID_CLZ:			sn="CLZ.L";			break;	//0xF5
+	case BGBCC_SH_NMID_CLZQ:		sn="CLZ.Q";			break;	//0xF6
 
 	case BGBCC_SH_NMID_SWAP8B:		sn="SWAP8B";		break;	//0x00F7
 	case BGBCC_SH_NMID_SWCPLB:		sn="SWCPLB";		break;	//0x00F8
@@ -441,9 +441,9 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_SUBUL:		sn="SUBU.L";		break;	//0x010F
 
 	case BGBCC_SH_NMID_MOVX2:		sn="MOV.X";			break;	//0x0120
-	case BGBCC_SH_NMID_PADDH:		sn="PADDH";			break;	//0x0121
-	case BGBCC_SH_NMID_PSUBH:		sn="PSUBH";			break;	//0x0122
-	case BGBCC_SH_NMID_PMULH:		sn="PMULH";			break;	//0x0123
+	case BGBCC_SH_NMID_PADDH:		sn="PADD.H";		break;	//0x0121
+	case BGBCC_SH_NMID_PSUBH:		sn="PSUB.H";		break;	//0x0122
+	case BGBCC_SH_NMID_PMULH:		sn="PMUL.H";		break;	//0x0123
 	case BGBCC_SH_NMID_WEXMD:		sn="WEXMD";			break;	//0x0124
 	case BGBCC_SH_NMID_CPUID:		sn="CPUID";			break;	//0x0125
 	case BGBCC_SH_NMID_RTSU:		sn="RTSU";			break;	//0x0126
@@ -482,10 +482,10 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_PMULFX:		sn="PMULX.F";		break;	//0x0145
 	case BGBCC_SH_NMID_PSHUFL:		sn="PSHUF.L";		break;	//0x0146
 	case BGBCC_SH_NMID_PSHUFXL:		sn="PSHUFX.L";		break;	//0x0147
-	case BGBCC_SH_NMID_CTZ:			sn="CTZ";			break;	//0x0148
-	case BGBCC_SH_NMID_CTZQ:		sn="CTZQ";			break;	//0x0149
-	case BGBCC_SH_NMID_BTRNS:		sn="BTRNS";			break;	//0x014A
-	case BGBCC_SH_NMID_BTRNSQ:		sn="BTRNSQ";		break;	//0x014B
+	case BGBCC_SH_NMID_CTZ:			sn="CTZ.L";			break;	//0x0148
+	case BGBCC_SH_NMID_CTZQ:		sn="CTZ.Q";			break;	//0x0149
+	case BGBCC_SH_NMID_BTRNS:		sn="BTRNS.L";		break;	//0x014A
+	case BGBCC_SH_NMID_BTRNSQ:		sn="BTRNS.Q";		break;	//0x014B
 	case BGBCC_SH_NMID_PMORTL:		sn="PMORT.L";		break;	//0x014C
 	case BGBCC_SH_NMID_PMORTQ:		sn="PMORT.Q";		break;	//0x014D
 	case BGBCC_SH_NMID_MOVP:		sn="MOV.P";			break;	//0x014E
@@ -510,32 +510,32 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 
 	case BGBCC_SH_NMID_SHLL64:		sn="SHLL64";		break;	//0x0160
 	case BGBCC_SH_NMID_SHLR64:		sn="SHLR64";		break;	//0x0161
-	case BGBCC_SH_NMID_FADDX:		sn="FADDX";			break;	//0x0162
-	case BGBCC_SH_NMID_FSUBX:		sn="FSUBX";			break;	//0x0163
-	case BGBCC_SH_NMID_FMULX:		sn="FMULX";			break;	//0x0164
-	case BGBCC_SH_NMID_FMACX:		sn="FMACX";			break;	//0x0165
-	case BGBCC_SH_NMID_FCMPXEQ:		sn="FCMPXEQ";		break;	//0x0166
-	case BGBCC_SH_NMID_FCMPXGT:		sn="FCMPXGT";		break;	//0x0167
-	case BGBCC_SH_NMID_FLDCDX:		sn="FLDCDX";		break;	//0x0168
-	case BGBCC_SH_NMID_FSTCDX:		sn="FSTCDX";		break;	//0x0169
-	case BGBCC_SH_NMID_FLDCIX:		sn="FLDCIX";		break;	//0x016A
-	case BGBCC_SH_NMID_FSTCIX:		sn="FSTCIX";		break;	//0x016B
-	case BGBCC_SH_NMID_SHADX:		sn="SHADX";			break;	//0x016C
-	case BGBCC_SH_NMID_SHLDX:		sn="SHLDX";			break;	//0x016D
-	case BGBCC_SH_NMID_SHARX:		sn="SHARX";			break;	//0x016E
-	case BGBCC_SH_NMID_SHLRX:		sn="SHLRX";			break;	//0x016F
+	case BGBCC_SH_NMID_FADDX:		sn="FADD.X";		break;	//0x0162
+	case BGBCC_SH_NMID_FSUBX:		sn="FSUB.X";		break;	//0x0163
+	case BGBCC_SH_NMID_FMULX:		sn="FMUL.X";		break;	//0x0164
+	case BGBCC_SH_NMID_FMACX:		sn="FMAC.X";		break;	//0x0165
+	case BGBCC_SH_NMID_FCMPXEQ:		sn="FCMPEQ.X";		break;	//0x0166
+	case BGBCC_SH_NMID_FCMPXGT:		sn="FCMPGT.X";		break;	//0x0167
+	case BGBCC_SH_NMID_FLDCDX:		sn="FLDCD.X";		break;	//0x0168
+	case BGBCC_SH_NMID_FSTCDX:		sn="FSTCD.X";		break;	//0x0169
+	case BGBCC_SH_NMID_FLDCIX:		sn="FLDCI.X";		break;	//0x016A
+	case BGBCC_SH_NMID_FSTCIX:		sn="FSTCI.X";		break;	//0x016B
+	case BGBCC_SH_NMID_SHADX:		sn="SHAD.X";		break;	//0x016C
+	case BGBCC_SH_NMID_SHLDX:		sn="SHLD.X";		break;	//0x016D
+	case BGBCC_SH_NMID_SHARX:		sn="SHAR.X";		break;	//0x016E
+	case BGBCC_SH_NMID_SHLRX:		sn="SHLR.X";		break;	//0x016F
 
-	case BGBCC_SH_NMID_ADDX:		sn="ADDX";			break;	//0x0170
-	case BGBCC_SH_NMID_SUBX:		sn="SUBX";			break;	//0x0171
-	case BGBCC_SH_NMID_ADCX:		sn="ADCX";			break;	//0x0172
-	case BGBCC_SH_NMID_SBBX:		sn="SBBX";			break;	//0x0173
-	case BGBCC_SH_NMID_ROTLX:		sn="ROTLX";			break;	//0x0174
-	case BGBCC_SH_NMID_ANDX:		sn="ANDX";			break;	//0x0175
-	case BGBCC_SH_NMID_ORX:			sn="ORX";			break;	//0x0176
-	case BGBCC_SH_NMID_XORX:		sn="XORX";			break;	//0x0177
-	case BGBCC_SH_NMID_CMPXEQ:		sn="CMPXEQ";		break;	//0x0178
-	case BGBCC_SH_NMID_CMPXHI:		sn="CMPXHI";		break;	//0x0179
-	case BGBCC_SH_NMID_CMPXGT:		sn="CMPXGT";		break;	//0x017A
+	case BGBCC_SH_NMID_ADDX:		sn="ADD.X";			break;	//0x0170
+	case BGBCC_SH_NMID_SUBX:		sn="SUB.X";			break;	//0x0171
+	case BGBCC_SH_NMID_ADCX:		sn="ADC.X";			break;	//0x0172
+	case BGBCC_SH_NMID_SBBX:		sn="SBB.X";			break;	//0x0173
+	case BGBCC_SH_NMID_ROTLX:		sn="ROTL.X";		break;	//0x0174
+	case BGBCC_SH_NMID_ANDX:		sn="AND.X";			break;	//0x0175
+	case BGBCC_SH_NMID_ORX:			sn="OR.X";			break;	//0x0176
+	case BGBCC_SH_NMID_XORX:		sn="XOR.X";			break;	//0x0177
+	case BGBCC_SH_NMID_CMPXEQ:		sn="CMPEQ.X";		break;	//0x0178
+	case BGBCC_SH_NMID_CMPXHI:		sn="CMPHI.X";		break;	//0x0179
+	case BGBCC_SH_NMID_CMPXGT:		sn="CMPGT.X";		break;	//0x017A
 	case BGBCC_SH_NMID_MOVQ_DISP24:	sn="MOV.Q";			break;	//0x017B
 	case BGBCC_SH_NMID_BLKUTX1:		sn="BLKUTX1";		break;	//0x017C
 	case BGBCC_SH_NMID_BLKUTX2:		sn="BLKUTX2";		break;	//0x017D
@@ -554,10 +554,10 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_PLDCM8UH:	sn="PLDCM8UL";		break;	//0x0189
 	case BGBCC_SH_NMID_PSTCM8SH:	sn="PSTCM8SH";		break;	//0x018A
 	case BGBCC_SH_NMID_PSTCM8UH:	sn="PSTCM8UH";		break;	//0x018B
-	case BGBCC_SH_NMID_BRAB:		sn="BRAB";			break;	//0x018C
-	case BGBCC_SH_NMID_BSRB:		sn="BSRB";			break;	//0x018D
-	case BGBCC_SH_NMID_BTB:			sn="BTB";			break;	//0x018E
-	case BGBCC_SH_NMID_BFB:			sn="BFB";			break;	//0x018F
+	case BGBCC_SH_NMID_BRAB:		sn="BRA.B";			break;	//0x018C
+	case BGBCC_SH_NMID_BSRB:		sn="BSR.B";			break;	//0x018D
+	case BGBCC_SH_NMID_BTB:			sn="BT.B";			break;	//0x018E
+	case BGBCC_SH_NMID_BFB:			sn="BF.B";			break;	//0x018F
 
 	case BGBCC_SH_NMID_BRAL:		sn="BRA.L";			break;	//0x0190
 	case BGBCC_SH_NMID_BSRL:		sn="BSR.L";			break;	//0x0191
@@ -584,10 +584,10 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_PLDCEHH:		sn="PLDCEHH";		break;	//0x01A5
 	case BGBCC_SH_NMID_FMOVH:		sn="FMOV.H";		break;	//0x01A6
 	case BGBCC_SH_NMID_MOVC:		sn="MOV.C";			break;	//0x01A7
-	case BGBCC_SH_NMID_BRGTU:		sn="BRGTU";			break;	//0x01A8
-	case BGBCC_SH_NMID_BRLEU:		sn="BRLEU";			break;	//0x01A9
-	case BGBCC_SH_NMID_BRGEU:		sn="BRGEU";			break;	//0x01AA
-	case BGBCC_SH_NMID_BRLTU:		sn="BRLTU";			break;	//0x01AB
+	case BGBCC_SH_NMID_BRGTU:		sn="BRGTU.Q";		break;	//0x01A8
+	case BGBCC_SH_NMID_BRLEU:		sn="BRLEU.Q";		break;	//0x01A9
+	case BGBCC_SH_NMID_BRGEU:		sn="BRGEU.Q";		break;	//0x01AA
+	case BGBCC_SH_NMID_BRLTU:		sn="BRLTU.Q";		break;	//0x01AB
 	case BGBCC_SH_NMID_CMPTAEQ:		sn="CMPTAEQ";		break;	//0x01AC
 	case BGBCC_SH_NMID_CMPTAHI:		sn="CMPTAHI";		break;	//0x01AD
 	case BGBCC_SH_NMID_CMPTAHS:		sn="CMPTAHS";		break;	//0x01AE
@@ -618,10 +618,10 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_BRLTL:		sn="BRLT.L";		break;	//0x01C5
 	case BGBCC_SH_NMID_MOVTT:		sn="MOVTT";			break;	//0x01C6
 	case BGBCC_SH_NMID_XMOVTT:		sn="XMOVTT";		break;	//0x01C7
-	case BGBCC_SH_NMID_BRGTUL:		sn="BRGTUL";		break;	//0x01C8
-	case BGBCC_SH_NMID_BRLEUL:		sn="BRLEUL";		break;	//0x01C9
-	case BGBCC_SH_NMID_BRGEUL:		sn="BRGEUL";		break;	//0x01CA
-	case BGBCC_SH_NMID_BRLTUL:		sn="BRLTUL";		break;	//0x01CB
+	case BGBCC_SH_NMID_BRGTUL:		sn="BRGTU.L";		break;	//0x01C8
+	case BGBCC_SH_NMID_BRLEUL:		sn="BRLEU.L";		break;	//0x01C9
+	case BGBCC_SH_NMID_BRGEUL:		sn="BRGEU.L";		break;	//0x01CA
+	case BGBCC_SH_NMID_BRLTUL:		sn="BRLTU.L";		break;	//0x01CB
 	case BGBCC_SH_NMID_XLEAB:		sn="XLEA.B";		break;	//0x01CC
 	case BGBCC_SH_NMID_XLEAW:		sn="XLEA.W";		break;	//0x01CD
 	case BGBCC_SH_NMID_XLEAL:		sn="XLEA.L";		break;	//0x01CE
@@ -639,15 +639,15 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_DIVUL:		sn="DIVU.L";		break;	//0x01D9
 	case BGBCC_SH_NMID_MODSL:		sn="MODS.L";		break;	//0x01DA
 	case BGBCC_SH_NMID_MODUL:		sn="MODU.L";		break;	//0x01DB
-	case BGBCC_SH_NMID_ROTCLQ:		sn="ROTCLQ";		break;	//0x01DC
-	case BGBCC_SH_NMID_ROTCRQ:		sn="ROTCRQ";		break;	//0x01DD
+	case BGBCC_SH_NMID_ROTCLQ:		sn="ROTCL.Q";		break;	//0x01DC
+	case BGBCC_SH_NMID_ROTCRQ:		sn="ROTCR.Q";		break;	//0x01DD
 	case BGBCC_SH_NMID_BCDADC:		sn="BCDADC";		break;	//0x01DE
 	case BGBCC_SH_NMID_BCDSBB:		sn="BCDSBB";		break;	//0x01DF
 
 	case BGBCC_SH_NMID_BCDADD:		sn="BCDADD";		break;	//0x01E0
 	case BGBCC_SH_NMID_BCDSUB:		sn="BCDSUB";		break;	//0x01E1
-	case BGBCC_SH_NMID_BCDADDX:		sn="BCDADDX";		break;	//0x01E2
-	case BGBCC_SH_NMID_BCDSUBX:		sn="BCDSUBX";		break;	//0x01E3
+	case BGBCC_SH_NMID_BCDADDX:		sn="BCDADD.X";		break;	//0x01E2
+	case BGBCC_SH_NMID_BCDSUBX:		sn="BCDSUB.X";		break;	//0x01E3
 	case BGBCC_SH_NMID_PADDFA:		sn="PADD.FA";		break;	//0x01E4
 	case BGBCC_SH_NMID_PSUBFA:		sn="PSUB.FA";		break;	//0x01E5
 	case BGBCC_SH_NMID_PMULFA:		sn="PMUL.FA";		break;	//0x01E6
@@ -663,12 +663,12 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 
 	case BGBCC_SH_NMID_JIMM:		sn="J_IMM";			break;	//0x01F0
 	case BGBCC_SH_NMID_JOP64:		sn="J_OP64";		break;	//0x01F1
-	case BGBCC_SH_NMID_LDIHI:		sn="LDIHI";			break;
-	case BGBCC_SH_NMID_LDIHIQ:		sn="LDIHIQ";		break;
+	case BGBCC_SH_NMID_LDIHI:		sn="LDIHI.L";		break;
+	case BGBCC_SH_NMID_LDIHIQ:		sn="LDIHI.Q";		break;
 	case BGBCC_SH_NMID_CMPNANTTEQ:	sn="CMPNANTTEQ";	break;
 	case BGBCC_SH_NMID_SETTRAP:		sn="SETTRAP";		break;
-	case BGBCC_SH_NMID_MULHSQ:		sn="MULHSQ";		break;
-	case BGBCC_SH_NMID_MULHUQ:		sn="MULHUQ";		break;
+	case BGBCC_SH_NMID_MULHSQ:		sn="MULHS.Q";		break;
+	case BGBCC_SH_NMID_MULHUQ:		sn="MULHU.Q";		break;
 	case BGBCC_SH_NMID_BNDCHKB:		sn="BNDCHK.B";		break;
 	case BGBCC_SH_NMID_BNDCHKW:		sn="BNDCHK.W";		break;
 	case BGBCC_SH_NMID_BNDCHKL:		sn="BNDCHK.L";		break;
@@ -676,7 +676,7 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_EXTUTT:		sn="EXTUTT";		break;
 	case BGBCC_SH_NMID_FCMPGE:		sn="FCMPGE";		break;
 	case BGBCC_SH_NMID_BITSEL:		sn="BITSEL";		break;
-	case BGBCC_SH_NMID_BITSELX:		sn="BITSELX";		break;
+	case BGBCC_SH_NMID_BITSELX:		sn="BITSEL.X";		break;
 
 	case BGBCC_SH_NMID_FADDA:		sn="FADDA";			break;
 	case BGBCC_SH_NMID_FSUBA:		sn="FSUBA";			break;
@@ -691,26 +691,26 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_RSUBSL:		sn="RSUBS.L";		break;
 	case BGBCC_SH_NMID_RSUBUL:		sn="RSUBU.L";		break;
 	case BGBCC_SH_NMID_RSUB:		sn="RSUB";			break;
-	case BGBCC_SH_NMID_ANDL:		sn="ANDL";			break;
-	case BGBCC_SH_NMID_ORL:			sn="ORL";			break;
-	case BGBCC_SH_NMID_XORL:		sn="XORL";			break;
+	case BGBCC_SH_NMID_ANDL:		sn="AND.L";			break;
+	case BGBCC_SH_NMID_ORL:			sn="OR.L";			break;
+	case BGBCC_SH_NMID_XORL:		sn="XOR.L";			break;
 
-	case BGBCC_SH_NMID_ANDW:		sn="ANDW";			break;
-	case BGBCC_SH_NMID_ORW:			sn="ORW";			break;
-	case BGBCC_SH_NMID_XORW:		sn="XORW";			break;
-	case BGBCC_SH_NMID_SWAPQ:		sn="SWAPQ";			break;
-	case BGBCC_SH_NMID_ADDSB:		sn="ADDSB";			break;
-	case BGBCC_SH_NMID_ADDUB:		sn="ADDUB";			break;
-	case BGBCC_SH_NMID_SUBSB:		sn="SUBSB";			break;
-	case BGBCC_SH_NMID_SUBUB:		sn="SUBUB";			break;
-	case BGBCC_SH_NMID_ADDSW:		sn="ADDSW";			break;
-	case BGBCC_SH_NMID_ADDUW:		sn="ADDUW";			break;
-	case BGBCC_SH_NMID_SUBSW:		sn="SUBSW";			break;
-	case BGBCC_SH_NMID_SUBUW:		sn="SUBUW";			break;
-	case BGBCC_SH_NMID_RSUBSB:		sn="RSUBSB";		break;
-	case BGBCC_SH_NMID_RSUBUB:		sn="RSUBUB";		break;
-	case BGBCC_SH_NMID_RSUBSW:		sn="RSUBSW";		break;
-	case BGBCC_SH_NMID_RSUBUW:		sn="RSUBUW";		break;
+	case BGBCC_SH_NMID_ANDW:		sn="AND.W";			break;
+	case BGBCC_SH_NMID_ORW:			sn="OR.W";			break;
+	case BGBCC_SH_NMID_XORW:		sn="XOR.W";			break;
+	case BGBCC_SH_NMID_SWAPQ:		sn="SWAP.Q";		break;
+	case BGBCC_SH_NMID_ADDSB:		sn="ADDS.B";		break;
+	case BGBCC_SH_NMID_ADDUB:		sn="ADDU.B";		break;
+	case BGBCC_SH_NMID_SUBSB:		sn="SUBS.B";		break;
+	case BGBCC_SH_NMID_SUBUB:		sn="SUBU.B";		break;
+	case BGBCC_SH_NMID_ADDSW:		sn="ADDS.W";		break;
+	case BGBCC_SH_NMID_ADDUW:		sn="ADDU.W";		break;
+	case BGBCC_SH_NMID_SUBSW:		sn="SUBS.W";		break;
+	case BGBCC_SH_NMID_SUBUW:		sn="SUBU.W";		break;
+	case BGBCC_SH_NMID_RSUBSB:		sn="RSUBS.B";		break;
+	case BGBCC_SH_NMID_RSUBUB:		sn="RSUBU.B";		break;
+	case BGBCC_SH_NMID_RSUBSW:		sn="RSUBS.W";		break;
+	case BGBCC_SH_NMID_RSUBUW:		sn="RSUBU.W";		break;
 
 	case BGBCC_SH_NMID_PCVTSB2HL:	sn="PCVTSB2HL";		break;
 	case BGBCC_SH_NMID_PCVTUB2HL:	sn="PCVTUB2HL";		break;
@@ -759,9 +759,9 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 
 	case BGBCC_SH_NMID_XMOV:		sn="XMOV";			break;	//0x01CC
 
-	case BGBCC_SH_NMID_CMPQNE:		sn="CMPQNE";		break;
-	case BGBCC_SH_NMID_CMPQLT:		sn="CMPQLT";		break;
-	case BGBCC_SH_NMID_CMPQLE:		sn="CMPQLE";		break;
+	case BGBCC_SH_NMID_CMPQNE:		sn="CMPNE.Q";		break;
+	case BGBCC_SH_NMID_CMPQLT:		sn="CMPLT.Q";		break;
+	case BGBCC_SH_NMID_CMPQLE:		sn="CMPLE.Q";		break;
 
 	default:
 		sprintf(tb, "UNK_%04X", nmid);

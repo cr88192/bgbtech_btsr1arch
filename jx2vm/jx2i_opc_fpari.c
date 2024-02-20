@@ -1459,12 +1459,20 @@ void BJX2_Op_SUBX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	valo=ctx->regs[op->rm+0];	vahi=ctx->regs[op->rm+1];
 	vblo=ctx->regs[op->ro+0];	vbhi=ctx->regs[op->ro+1];
 	
-	vblo=~vblo; vacf=((vblo+1)<=vblo);
-	vbhi=(~vbhi)+vacf;
-	vblo++;
+//	vblo=~vblo; vacf=((vblo+1)<=vblo);
+//	vbhi=(~vbhi)+vacf;
+//	vblo++;
 	
-	vclo=valo+vblo; vacf=(vclo<=valo);
+//	vclo=valo+vblo; vacf=(vclo<=valo);
+//	vchi=vahi+vbhi+vacf;
+
+
+	vblo=~vblo; vbhi=~vbhi;
+	
+	vclo=valo+vblo+1;
+	vacf=(vclo<=valo);
 	vchi=vahi+vbhi+vacf;
+
 	ctx->regs[op->rn+0]=vclo;
 	ctx->regs[op->rn+1]=vchi;
 }

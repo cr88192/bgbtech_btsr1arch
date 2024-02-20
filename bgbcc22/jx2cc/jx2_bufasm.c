@@ -2640,6 +2640,16 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 			cs2=BGBCC_JX2A_EatWhiteNoLinebreak(cs2);
 
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			if(*tk0=='I')
 			{
 				if(*cs2=='@')
@@ -2737,6 +2747,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			!strcmp(tk0, "I.hword"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 //			BGBCC_JX2_EmitWord(ctx, bgbcc_atoi(tk0+1));
 			if(*tk0=='|')
@@ -2766,6 +2787,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		if(!strcmp(tk0, "I.byte"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
 			if(*tk0=='|')
 				i=bgbcc_atoi(tk0+1);
@@ -2792,6 +2824,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			!strcmp(tk0, "I.qword"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 			BGBCC_JX2_EmitQWord(ctx, bgbcc_atoi(tk0+1));
 			while(*cs2 && *cs2==',')
@@ -2809,6 +2852,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		if(!strcmp(tk0, "I.tword"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 			BGBCC_JX2_EmitTWord(ctx, bgbcc_atoi(tk0+1));
 			while(*cs2 && *cs2==',')
@@ -2826,6 +2880,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		if(!strcmp(tk0, "I.float") || !strcmp(tk0, "I.single"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 			ff=bgbcc_atof(tk0+1);
 			BGBCC_JX2_EmitDWord(ctx, *(u32 *)(&ff));
@@ -2845,6 +2910,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		if(!strcmp(tk0, "I.double"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk0);
 			fd=bgbcc_atof(tk0+1);
 			BGBCC_JX2_EmitQWord(ctx, *(u64 *)(&fd));
@@ -2865,6 +2941,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			!strcmp(tk0, "I.asciz"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
 			BGBCC_JX2_EmitString(ctx, tk0+1);
 			while(*cs2 && *cs2==',')
@@ -2882,6 +2969,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		if(!strcmp(tk0, "I.ascii"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
 			BGBCC_JX2_EmitAscii(ctx, tk0+1);
 			while(*cs2 && *cs2==',')
@@ -2899,6 +2997,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		if(!strcmp(tk0, "I.ucstr"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
 			BGBCC_JX2_EmitAsciiUTF2UCS2(ctx, tk0+1);
 			while(*cs2 && *cs2==',')
@@ -2916,6 +3025,17 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 		if(!strcmp(tk0, "I.ucstrz"))
 		{
 			cs2=cs1;
+
+#if 1
+			if(ctx->iflvl_f>0)
+			{
+				while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+					cs2++;
+				*rcs=cs2;
+				return(1);
+			}
+#endif
+
 			cs2=BGBCC_JX2A_ParseToken(cs2, &tk0);
 			BGBCC_JX2_EmitStringUTF2UCS2(ctx, tk0+1);
 			while(*cs2 && *cs2==',')
