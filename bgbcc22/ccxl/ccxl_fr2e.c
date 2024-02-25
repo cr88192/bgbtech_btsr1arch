@@ -2103,7 +2103,7 @@ char *BGBCC_FR2E_UnpackStringDataObj(
 	
 	if(k==-1)
 	{
-		return(bgbcc_strdup(cs));
+		return(bgbcc_strdup((char *)cs));
 	}
 	
 	return(NULL);
@@ -2424,7 +2424,7 @@ void BGBCC_FR2E_LoadBufferFRB(
 		}
 	}
 
-	img->strtab=strs;
+	img->strtab=(char *)strs;
 	img->sz_strtab=strs_e-strs;
 
 	img->stridxd=stri;

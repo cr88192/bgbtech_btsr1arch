@@ -76,7 +76,8 @@ BGBCC_COFF_Info *BGBCC_JX2_LoadElfObj(BGBCC_JX2_Context *ctx,
 	bgbcc_elf64_shdr	*shdr, *shdr_str, *shdr_sym;
 	bgbcc_elf64_sym		*sym;
 	bgbcc_elf64_rela	*rela;
-	byte				*strtab, *symstrtab, *s0, *s1;
+	byte				*strtab, *symstrtab;
+	char				*s0, *s1;
 	byte				*symtab;
 	byte				*reldat;
 	int					shoff, shnum, shentsize, shstrndx;
@@ -112,7 +113,7 @@ BGBCC_COFF_Info *BGBCC_JX2_LoadElfObj(BGBCC_JX2_Context *ctx,
 		shdr=(bgbcc_elf64_shdr *)(data+shoff+(i*shentsize));
 		
 		j=bgbcc_getu32le(shdr->sh_name);
-		s0=strtab+j;
+		s0=(char *)(strtab+j);
 		
 		printf("%02X %s\n", i, s0);
 		
@@ -179,11 +180,11 @@ BGBCC_COFF_Info *BGBCC_JX2_LoadElfObj(BGBCC_JX2_Context *ctx,
 			continue;
 		
 //		s0=strtab+j;
-		s0=symstrtab+j;
+		s0=(char *)(symstrtab+j);
 		
 		printf("%s\n", s0);
 		
-		obj->sym_name[i]=bgbcc_strdup(s0);
+		obj->sym_name[i]=bgbcc_strdup((char *)s0);
 		obj->sym_offs[i]=bgbcc_getu32le(sym->st_addr);
 		obj->sym_sec[i]=bgbcc_getu16le(sym->st_shndx);
 	}

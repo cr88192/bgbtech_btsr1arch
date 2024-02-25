@@ -657,6 +657,8 @@ ccxl_status BGBCC_CCXL_GetSigFixedSize(
 	char *s;
 	int sz, na;
 	int i, j, k;
+	
+	sz=0;
 
 	switch(*sig)
 	{

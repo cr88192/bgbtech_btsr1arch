@@ -640,6 +640,11 @@ begin
 				7'b0000000: begin
 					opNmid		= JX2_UCMD_FPU3;
 					opUCmdIx	= JX2_UCIX_FPU_PADD;
+`ifdef jx2_use_fpu_v4sf
+`ifdef jx2_fpu_v4sf_fullsp
+					opNmid		= JX2_UCMD_FPUV4SF;
+`endif
+`endif
 				end
 				7'b0000001: begin
 					opNmid		= JX2_UCMD_FPU3;
@@ -649,6 +654,11 @@ begin
 				7'b0000100: begin
 					opNmid		= JX2_UCMD_FPU3;
 					opUCmdIx	= JX2_UCIX_FPU_PSUB;
+`ifdef jx2_use_fpu_v4sf
+`ifdef jx2_fpu_v4sf_fullsp
+					opNmid		= JX2_UCMD_FPUV4SF;
+`endif
+`endif
 				end
 				7'b0000101: begin
 					opNmid		= JX2_UCMD_FPU3;
@@ -658,6 +668,11 @@ begin
 				7'b0001000: begin
 					opNmid		= JX2_UCMD_FPU3;
 					opUCmdIx	= JX2_UCIX_FPU_PMUL;
+`ifdef jx2_use_fpu_v4sf
+`ifdef jx2_fpu_v4sf_fullsp
+					opNmid		= JX2_UCMD_FPUV4SF;
+`endif
+`endif
 				end
 				7'b0001001: begin
 					opNmid		= JX2_UCMD_FPU3;
@@ -938,14 +953,14 @@ begin
 `ifndef def_true
 				opNmid		= JX2_UCMD_QMULDIV;
 				case(istrWord[14:12])
-					3'b000: opUCmdIx = JX2_UCIX_QMUL_MULS;
-					3'b001: opUCmdIx = JX2_UCIX_QMUL_MULHS;
-					3'b010: opUCmdIx = JX2_UCIX_QMUL_MULU;
-					3'b011: opUCmdIx = JX2_UCIX_QMUL_MULHU;
-					3'b100: opUCmdIx = JX2_UCIX_QMUL_DUVS;
-					3'b101: opUCmdIx = JX2_UCIX_QMUL_DIVU;
-					3'b110: opUCmdIx = JX2_UCIX_QMUL_MODS;
-					3'b111: opUCmdIx = JX2_UCIX_QMUL_MODU;
+					3'b000: opUCmdIx = JX2_UCIX_QMUL_MULSL;
+					3'b001: opUCmdIx = JX2_UCIX_QMUL_MULHSL;
+					3'b010: opUCmdIx = JX2_UCIX_QMUL_MULUL;
+					3'b011: opUCmdIx = JX2_UCIX_QMUL_MULHUL;
+					3'b100: opUCmdIx = JX2_UCIX_QMUL_DUVSL;
+					3'b101: opUCmdIx = JX2_UCIX_QMUL_DIVUL;
+					3'b110: opUCmdIx = JX2_UCIX_QMUL_MODSL;
+					3'b111: opUCmdIx = JX2_UCIX_QMUL_MODUL;
 				endcase
 `endif
 			end

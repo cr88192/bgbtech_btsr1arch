@@ -580,6 +580,12 @@ begin
 				tValOutDfl		= { 63'h0, regValAluRes[64] };
 				tDoOutDfl		= 1;
 				tDoAluSrT		= 0;
+				
+//				$display("EX2: FCMP-R Rs=%X Rt=%X Res=%X Ixt=%X",
+//					regValRs, regValRt, tValOutDfl, opUIxt);
+//				if(!regValAluRes[70])
+//					$display("FCMP-R, Not Valid");
+				
 			end
 
 `ifndef def_true

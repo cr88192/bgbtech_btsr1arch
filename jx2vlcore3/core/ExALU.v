@@ -470,6 +470,13 @@ reg			tResultu2T;
 reg			tResultuT;
 reg			tResultuS;
 
+reg			tResultFcmp1S;
+reg			tResultFcmp1T;
+reg			tResultFcmp1P;
+reg			tResultFcmp1Q;
+reg			tResultFcmp1R;
+reg			tResultFcmp1O;
+
 reg			tAdd1SF;
 reg			tAdd2SF;
 reg			tAdd1BSF;
@@ -566,6 +573,9 @@ reg			tFCmpGtP_HD;
 reg[32:0]	tResultu1A;
 reg[32:0]	tResultu1B;
 reg[64:0]	tResultu2A;
+reg			tResultuDo64;
+
+reg			tResultDo64;
 
 reg[64:0]	tResult_Add64;
 reg[64:0]	tResult_Sub64;
@@ -909,6 +919,7 @@ begin
 		4'b001z: tFCmpGtP_FA=0;	/* (s-t)<0 */
 		4'b01zz: tFCmpGtP_FA=1;	/* (s>0) && (t<0) */
 		4'b10zz: tFCmpGtP_FA=0;	/* (s<0) && (t>0) */
+
 		4'b110z: tFCmpGtP_FA=0;	/* (s-t)>0 */
 		4'b1110: tFCmpGtP_FA=1;	/* (s-t)<0 */
 		4'b1111: tFCmpGtP_FA=0;	/* s==t */
@@ -1207,6 +1218,8 @@ begin
 	tResultb1Tv=0;
 	tResult1Sv=0;
 
+	tResultDo64=0;
+
 	tResult1B=UV33_00;
 	tResult1S=regInSrS;
 
@@ -1226,6 +1239,14 @@ begin
 	tResultb1R=regInSrR;
 	tResultb1O=regInSrO;
 	
+
+	tResultFcmp1T=regInSrT;
+	tResultFcmp1S=regInSrS;
+	tResultFcmp1P=regInSrP;
+	tResultFcmp1Q=regInSrQ;
+	tResultFcmp1R=regInSrR;
+	tResultFcmp1O=regInSrO;
+
 //	tOpIsWx = (idUIxt[7:6] == 2'b11) && !noAlux;
 
 	case(idUIxt[3:0])
@@ -1640,6 +1661,7 @@ begin
 		4'hD: begin		/* CMPHI */
 //			tResult1A=UV33_00;
 //			tResult2A=UV65_00;
+
 //			tResult1T=!tSub1CF && !tSub1ZF;
 //			tResult2T=!tSub2CF && !tSub2ZF;
 //			tResult1S=!tSub1BCF && !tSub1BZF;
@@ -1649,7 +1671,7 @@ begin
 			tResult1S=tSub1BCF && !tSub1BZF;
 
 			tResult1Tv=1;
-			tResult1Tv=1;
+			tResult2Tv=1;
 			tResult1Sv=1;
 
 `ifdef jx2_alu_wx
@@ -1744,6 +1766,7 @@ begin
 	tResultu1A=0;
 	tResultu1B=0;
 	tResultu2A=0;
+	tResultuDo64=0;
 
 	casez(idUIxt[3:0])
 `ifdef jx2_enable_clz
@@ -1807,6 +1830,16 @@ begin
 			tResultu2A = { 1'b0,
 				tResultuS ? regValRt[63:32] : regValRs[63:32],
 				tResultuT ? regValRt[31: 0] : regValRs[31: 0] };
+				
+			if(idUCmd[5:0]==JX2_UCMD_UNARY)
+			begin
+//				$display("ALU: MINMAX: Rs=%X Rt=%X Rn=%X Ixt=%X",
+//					regValRs,		regValRt,
+//					tResultu2A,		idUIxt);
+			end
+			
+			tResultu1A = { tResultu2A[31], tResultu2A[31:0] };
+			tResultuDo64=1;
 		end
 
 		4'b0110: begin
@@ -1816,6 +1849,8 @@ begin
 				(!idUIxt[5] ? regValRs[31] : (regValRt[31] ^ idUIxt[4])),
 				regValRs[30: 0]
 				};
+			tResultu1A = { tResultu2A[31], tResultu2A[31:0] };
+			tResultuDo64=1;
 		end
 		4'b0111: begin
 			tResultu2A = { 1'b0,
@@ -1825,6 +1860,9 @@ begin
 					(regValRs[31] ^ regValRt[31] ^ idUIxt[4])),
 				regValRs[30: 0]
 				};
+			tResultu1A = { tResultu2A[31], tResultu2A[31:0] };
+			tResultuDo64=1;
+
 		end
 `endif
 
@@ -1837,6 +1875,7 @@ begin
 		tResult1A = tResultu1A;
 		tResult1B = tResultu1B;
 		tResult2A = tResultu2A;
+		tResultDo64 = tResultuDo64;
 	end
 `endif
 
@@ -1913,6 +1952,11 @@ begin
 				tResult1Q	= tSub1WZF_B;
 				tResult1R	= tSub1WZF_C;
 				tResult1O	= tSub1WZF_D;
+
+				tResult2T	= tResult1T;
+
+//				$display("FCMP.S: EQ %X %X %X",
+//					regValRs[31:0], regValRt[31:0], tResult1T);
 			end
 		end
 		else
@@ -1930,7 +1974,8 @@ begin
 				(idUIxt[3:0]==JX2_UCIX_FCMP_CMPGE_R[3:0])	)
 			begin
 				tResult1T = tFCmpGtP || tFCmpEqP;
-				tResult2T = tFCmpGtP || tFCmpEqP;
+//				tResult2T = tFCmpGtP || tFCmpEqP;
+				tResult2T	= tResult1T;
 			end
 // `endif
 
@@ -1951,6 +1996,8 @@ begin
 				tResult1R	= tFCmpGtP_HC;
 				tResult1O	= tFCmpGtP_HD;
 
+				tResult2T	= tResult1T;
+
 				if(	(idUIxt[3:0]==JX2_UCIX_FPU_CMPGE[3:0])	||
 					(idUIxt[3:0]==JX2_UCIX_FCMP_CMPGE_R[3:0])	)
 				begin
@@ -1960,9 +2007,30 @@ begin
 					tResult1Q	= tFCmpGtP_HB || tSub1WZF_B;
 					tResult1R	= tFCmpGtP_HC || tSub1WZF_C;
 					tResult1O	= tFCmpGtP_HD || tSub1WZF_D;
+
+					tResult2T	= tResult1T;
+					
+//					$display("FCMP.S: GE %X %X %X",
+//						regValRs[31:0], regValRt[31:0], tResult1T);
+				end
+				else
+				begin
+//					$display("FCMP.S: GT %X %X %X",
+//						regValRs[31:0], regValRt[31:0], tResult1T);
 				end
 			end
 		end
+
+//		tResult2T = tResult1T;
+
+		tResultFcmp1T=tResult1T;
+		tResultFcmp1S=tResult1S;
+		tResultFcmp1P=tResult1P;
+		tResultFcmp1Q=tResult1Q;
+		tResultFcmp1R=tResult1R;
+		tResultFcmp1O=tResult1O;
+
+
 	end
 `endif
 
@@ -2171,11 +2239,14 @@ begin
 	end
 `endif
 
-	if(idUIxt[5])
+	if(idUIxt[5] || tResultDo64)
 	begin
 `ifdef jx2_enable_gsv
 //		if(idUIxt[4])
-		if(idUIxt[4] && (idUCmd[5:0]==JX2_UCMD_ALU3))
+		if(idUIxt[4] && (idUCmd[5:0]==JX2_UCMD_ALU3) && !tResultDo64)
+//		if(idUIxt[4] &&
+//			((idUCmd[5:0]==JX2_UCMD_ALU3) || (idUCmd[5:0]==JX2_UCMD_ALUCMP)) && 
+//			!tResultDo64)
 		begin
 			tRegOutVal = { tResult1B[31:0], tResult1A[31:0] };
 			tRegOutSrT = tResult1T;
@@ -2189,7 +2260,8 @@ begin
 			tRegOutSrT = tResult2T;
 			tRegOutSrS = regInSrS;
 
-			tRegOutDoSrT = tResult1Tv;
+//			tRegOutDoSrT = tResult1Tv;
+			tRegOutDoSrT = tResult2Tv;
 			
 `ifdef jx2_enable_pred_s
 			if(idUIxt[4] &&	(
@@ -2254,6 +2326,19 @@ begin
 		tRegOutSrS = tRegConvSrS;
 		tRegOutDoSrT = tRegConvSrTv;
 		tRegOutDoSrS = tRegConvSrSv;
+	end
+`endif
+
+// `ifdef jx2_fcmp_alu
+`ifndef def_true
+	if(idUCmd[5:0]==JX2_UCMD_FCMP)
+	begin
+		tRegOutSrT = tResultFcmp1T;
+		tRegOutSrS = tResultFcmp1S;
+		tRegOutSrP = tResultFcmp1P;
+		tRegOutSrQ = tResultFcmp1Q;
+		tRegOutSrR = tResultFcmp1R;
+		tRegOutSrO = tResultFcmp1O;
 	end
 `endif
 

@@ -741,7 +741,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg_Vec128F(
 			}
 		}
 
-		if(	(type.val==CCXL_TY_VEC2D) )
+		if(type.val==CCXL_TY_VEC2D)
 		{
 			switch(opr)
 			{

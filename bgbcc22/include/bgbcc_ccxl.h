@@ -559,9 +559,13 @@ Base, Q1..Q3:
 //#define CCXL_LBL_GENSYM2BASE		0xC00000	//gensyms (backend, stable)
 //#define CCXL_LBL_GENSYM2BASE2		0xE00000	//gensyms (backend, temp)
 
+//#define CCXL_LBL_GENSYM2BASE		0xC00000	//gensyms (backend, stable)
+//#define CCXL_LBL_GENSYM2BASE2		0xC10000	//gensyms (backend, temp)
+//#define CCXL_LBL_GENLLNBASE			0xC20000	//debug file/line
+
 #define CCXL_LBL_GENSYM2BASE		0xC00000	//gensyms (backend, stable)
-#define CCXL_LBL_GENSYM2BASE2		0xC10000	//gensyms (backend, temp)
-#define CCXL_LBL_GENLLNBASE			0xC20000	//debug file/line
+#define CCXL_LBL_GENSYM2BASE2		0xC80000	//gensyms (backend, temp)
+#define CCXL_LBL_GENLLNBASE			0xD00000	//debug file/line
 
 
 #define CCXL_LBL_SPMASK				0xFF0000	//mask
@@ -703,6 +707,7 @@ int fxoffs;				//fixed-format offset (frame var offset)
 int fxmoffs, fxnoffs;	//fixed min/max size
 int fxmsize, fxnsize;	//fixed min/max size
 int fxmalgn, fxnalgn;	//fixed min/max size
+int t_lbl_ret, t_lbl_ret_z;
 };
 
 struct BGBCC_CCXL_LiteralInfo_s {

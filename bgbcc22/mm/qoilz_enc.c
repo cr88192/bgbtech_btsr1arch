@@ -33,6 +33,8 @@ Well, nowhere near JPEG, but could be useful for something.
 
  */
 
+#ifndef PDLIB_INT_BITS_T
+
 #ifndef BTIC2F_BYTE
 #define BTIC2F_BYTE
 typedef unsigned char			byte;
@@ -44,6 +46,8 @@ typedef signed char			sbyte;
 typedef signed short			s16;
 typedef signed int			s32;
 typedef signed long long		s64;
+#endif
+
 #endif
 
 // #define QOILI_HASHSZ	4096

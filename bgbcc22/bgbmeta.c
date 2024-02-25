@@ -1897,11 +1897,11 @@ int BGBCC_LoadCSourcesCCXL(
 				continue;
 			}
 		
-			tb1=BGBCC_LoadCSourcePPOnly(names[i]);
+			tb1=(void *)BGBCC_LoadCSourcePPOnly(names[i]);
 			if(!tb1)
 				break;
-			strcpy(obct, tb1);
-			obct+=strlen(obct);
+			strcpy((char *)obct, (char *)tb1);
+			obct+=strlen((char *)obct);
 //			*obct++='\n';
 //			*obct=0;
 			continue;

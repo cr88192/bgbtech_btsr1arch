@@ -1530,6 +1530,13 @@ begin
 		end
 		
 		JX2_UCMD_FCMP: begin
+			if(	(opUIxt[3:0]==JX2_UCIX_FCMP_CMPEQ_R[3:0]) ||
+				(opUIxt[3:0]==JX2_UCIX_FCMP_CMPGT_R[3:0]) ||
+				(opUIxt[3:0]==JX2_UCIX_FCMP_CMPGE_R[3:0]) )
+//			if(1'b1)
+			begin
+				tRegHeld		= 1;
+			end
 		end
 
 		JX2_UCMD_FPU3: begin

@@ -581,8 +581,8 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 		if(lbl>=0)
 		{
 			s0=BGBCC_JX2DA_NameForLabel(sctx, lbl);
-			sprintf(ct, "\n%s: //@%06X\n", s0, (int)(cs-css));
-			ct+=strlen(ct);
+			sprintf((char *)ct, "\n%s: //@%06X\n", s0, (int)(cs-css));
+			ct+=strlen((char *)ct);
 		}
 		
 		rlc=BGBCC_JX2_LookupRelocAtOffs(sctx, BGBCC_SH_CSEG_TEXT, cs-css);
@@ -590,10 +590,10 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 		{
 			lbl1=sctx->rlc_id[rlc];
 			s0=BGBCC_JX2DA_NameForLabel(sctx, lbl1);
-			sprintf(ct, ".reloc %s %02X/%s\n",
+			sprintf((char *)ct, ".reloc %s %02X/%s\n",
 				s0, sctx->rlc_ty[rlc],
 				BGBCC_JX2DA_RelocToName(sctx, sctx->rlc_ty[rlc]));
-			ct+=strlen(ct);
+			ct+=strlen((char *)ct);
 		}
 
 		opw1=((u16 *)cs)[0];

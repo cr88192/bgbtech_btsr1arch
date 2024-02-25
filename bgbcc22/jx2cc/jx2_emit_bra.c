@@ -1948,9 +1948,9 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 
 	i=BGBCC_JX2_LookupSimLabelIndex(ctx, lbl);
 //	i=BGBCC_JX2_LookupLabelIndex(ctx, lbl);
-//	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec))
-	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec) &&
-		(ctx->is_stable || ctx->is_rawasm))
+	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec))
+//	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec) &&
+//		(ctx->is_stable || ctx->is_rawasm))
 	{
 		j=ctx->lbl_ofs[i];
 
@@ -1964,7 +1964,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 		rngw16=65280;
 		if(i>=ctx->nlbl)
 		{
-			if((ctx->simfnsz>0) && (ctx->simfnsz<224))
+			if((ctx->simfnsz>0) && (ctx->simfnsz<224) &&
+					!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
 				return(1);
 
 			if(!ctx->need_n12jmp)
@@ -2031,8 +2032,9 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 		return(0);
 	}
 
-//	if((ctx->simfnsz>0) && (ctx->simfnsz<224))
-//		return(1);
+	if((ctx->simfnsz>0) && (ctx->simfnsz<224) &&
+			!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
+		return(1);
 
 //	if(!ctx->need_n12jmp)
 //		return(1);
@@ -2075,7 +2077,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 
 		if(i>=ctx->nlbl)
 		{
-			if((ctx->simfnsz>0) && (ctx->simfnsz<rngb))
+			if((ctx->simfnsz>0) && (ctx->simfnsz<rngb) &&
+					!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
 				return(1);
 
 			if(j<k)
@@ -2136,8 +2139,9 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 		return(0);
 	}
 	
-//	if((ctx->simfnsz>0) && (ctx->simfnsz<2032))
-//		return(1);
+	if((ctx->simfnsz>0) && (ctx->simfnsz<2032) &&
+			!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
+		return(1);
 
 	return(0);
 }

@@ -824,19 +824,19 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			switch((opw>>12)&7)
 			{
 			case 0:
-				op->nmid=BJX2_NMID_FCMPGE;
+				op->nmid=BJX2_NMID_PCMPGEF;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_FCMPSGE_GRegRegReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 				break;
 			case 1:
-				op->nmid=BJX2_NMID_FCMPGT;
+				op->nmid=BJX2_NMID_PCMPGTF;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_FCMPSGT_GRegRegReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 				break;
 			case 2:
-				op->nmid=BJX2_NMID_FCMPEQ;
+				op->nmid=BJX2_NMID_PCMPEQF;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_FCMPSEQ_GRegRegReg;
 				op->fl|=BJX2_OPFL_NOWEX;

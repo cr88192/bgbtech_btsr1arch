@@ -311,10 +311,11 @@ Listing:
 * 0101101-00000-mmmmm-rrr-nnnnn-10-10011  FSQRT.D	Rn, Rm
 
 * 1010000-ttttt-mmmmm-000-nnnnn-10-10011  FLE.S		Rn, Rm, Rt
-* 1010001-ttttt-mmmmm-000-nnnnn-10-10011  FLE.D		Rn, Rm, Rt
 * 1010000-ttttt-mmmmm-001-nnnnn-10-10011  FLT.S		Rn, Rm, Rt
-* 1010001-ttttt-mmmmm-001-nnnnn-10-10011  FLT.D		Rn, Rm, Rt
 * 1010000-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.S		Rn, Rm, Rt
+
+* 1010001-ttttt-mmmmm-000-nnnnn-10-10011  FLE.D		Rn, Rm, Rt
+* 1010001-ttttt-mmmmm-001-nnnnn-10-10011  FLT.D		Rn, Rm, Rt
 * 1010001-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.D		Rn, Rm, Rt
 
 * 1100000-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.WS	Rn, Rm

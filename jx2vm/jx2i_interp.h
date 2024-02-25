@@ -706,9 +706,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PCVTH2AL		0x17E		//
 #define BJX2_NMID_PCVTAL2H		0x17F		//
 
-// #define BJX2_NMID_PLDCXH		0x17A		//
-// #define BJX2_NMID_PSTCXH		0x17B		//
-
 #define BJX2_NMID_BNDCHKB		0x180	//
 #define BJX2_NMID_BNDCHKW		0x181	//
 #define BJX2_NMID_BNDCHKL		0x182	//
@@ -750,21 +747,15 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVTW			0x1A4		//
 #define BJX2_NMID_MOVUTW		0x1A5		//
 #define BJX2_NMID_MOVHTW		0x1A6		//
-
 #define BJX2_NMID_CMPQNE		0x1A7		//
-
-// #define BJX2_NMID_JAL			0x1A7		//
-
 #define BJX2_NMID_FMIN			0x1A8		//
 #define BJX2_NMID_FMAX			0x1A9		//
 #define BJX2_NMID_FMINS			0x1AA		//
 #define BJX2_NMID_FMAXS			0x1AB		//
-
 #define BJX2_NMID_SLT			0x1AC		//
 #define BJX2_NMID_SLTU			0x1AD		//
 #define BJX2_NMID_FDIVS			0x1AE		//
 #define BJX2_NMID_FLDCIU		0x1AF		//
-
 
 #define BJX2_NMID_FSGNJ			0x1B0		//
 #define BJX2_NMID_FSGNJN		0x1B1		//
@@ -774,7 +765,6 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FSGNJXS		0x1B5		//
 #define BJX2_NMID_FLDCIS		0x1B6		//
 #define BJX2_NMID_FSTCIS		0x1B7		//
-
 #define BJX2_NMID_FMADDS		0x1B8		//
 #define BJX2_NMID_FMADDD		0x1B9		//
 #define BJX2_NMID_FMSUBS		0x1BA		//
@@ -783,6 +773,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FNMADDD		0x1BD		//
 #define BJX2_NMID_FNMSUBS		0x1BE		//
 #define BJX2_NMID_FNMSUBD		0x1BF		//
+
+#define BJX2_NMID_PCMPGEF		0x1C0		//
 
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
@@ -1140,6 +1132,9 @@ int mem_cnt_l2i;			//cache miss cycles
 int mem_cnt_dram;			//cache miss cycles
 int mem_cnt_vihit;			//victim hit
 
+int mem_cnt_l1dvhit;		//L1D victim hit
+int mem_cnt_l1ivhit;		//L1I victim hit
+
 int miss_cnt_l1;			//cache miss cycles (L1 miss D$)
 int miss_cnt_l1i;			//cache miss cycles (L1 miss I$)
 int miss_cnt_l2;			//cache miss cycles (L2 miss)
@@ -1186,15 +1181,18 @@ byte bpr_ga_rov;
 int bpr_ga_cnt;
 int bpr_ga_gencnt;
 
-bjx2_addr mem_l1addr1;		//L1 addr
-bjx2_addr mem_l1addr2;		//L1 addr
-bjx2_addr mem_l1addr3;		//L1 addr
-bjx2_addr mem_l1addr4;		//L1 addr
+bjx2_addr mem_l1addr1;		//L1 addr (victim cache)
+bjx2_addr mem_l1addr2;		//L1 addr (victim cache)
+bjx2_addr mem_l1addr3;		//L1 addr (victim cache)
+bjx2_addr mem_l1addr4;		//L1 addr (victim cache)
 
-bjx2_addr mem_l2addr1;		//L2 addr
-bjx2_addr mem_l2addr2;		//L2 addr
-bjx2_addr mem_l2addr3;		//L2 addr
-bjx2_addr mem_l2addr4;		//L2 addr
+bjx2_addr mem_l2addr1;		//L2 addr (victim cache)
+bjx2_addr mem_l2addr2;		//L2 addr (victim cache)
+bjx2_addr mem_l2addr3;		//L2 addr (victim cache)
+bjx2_addr mem_l2addr4;		//L2 addr (victim cache)
+
+bjx2_addr mem_l1dva[32*4];	//L1D addr (victim cache array)
+bjx2_addr mem_l1iva[32*4];	//L1I addr (victim cache array)
 
 u64		hw_rng[4];
 
@@ -1221,6 +1219,8 @@ short	l1i_hmask;
 short	l1d_hmask;
 byte	l1i_wmask;
 byte	l1d_wmask;
+byte	l1d_vict;		//L1D enable victim buffer
+byte	l1i_vict;		//L1I enable victim buffer
 
 short	l2_hmask;
 byte	l2_wmask;

@@ -3337,7 +3337,7 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 			return;
 		}
 
-		if((*sig=='s'))
+		if(*sig=='s')
 		{
 			li=(signed short)li;
 			BGBCC_CCXL_StackPushConstSmallInt(ctx, li, 6);

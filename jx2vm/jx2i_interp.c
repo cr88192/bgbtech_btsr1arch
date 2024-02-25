@@ -1620,6 +1620,10 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case  BJX2_NMID_FNMSUBS:	s0="FNMSUB.S";	break;
 	case  BJX2_NMID_FNMSUBD:	s0="FNMSUB.D";	break;
 
+	case BJX2_NMID_PCMPEQF:		s0="PCMPEQ.F";	break;
+	case BJX2_NMID_PCMPGTF:		s0="PCMPGT.F";	break;
+	case BJX2_NMID_PCMPGEF:		s0="PCMPGE.F";	break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;
@@ -3185,15 +3189,28 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		BJX2_DbgPrintf(ctx, "Cycles Spent, Branch Miss: %.2f%%\n", pcnt);
 #endif
 
-		pcnt=(100.0*(ctx->tot_cnt_mem_l1i-ctx->tot_cnt_miss_l1i))/
+		pcnt=(100.0*(
+				ctx->tot_cnt_mem_l1i-
+				ctx->tot_cnt_miss_l1i-
+				ctx->mem_cnt_l1ivhit))/
 			(ctx->tot_cnt_mem_l1i);
-		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit  L1 I$: %.2f%%\n", pcnt);
+		pcnt2=(100.0*ctx->mem_cnt_l1ivhit)/(ctx->tot_cnt_mem_l1i);
+
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit  L1 I$: "
+			"%.2f%% Vhit=%.2f%%\n",
+			pcnt, pcnt2);
 		pcnt=(100.0*ctx->tot_cnt_miss_l1i)/(ctx->tot_cnt_mem_l1i);
 		BJX2_DbgPrintf(ctx, "Total Count, Cache Miss L1 I$: %.2f%%\n", pcnt);
 
-		pcnt=(100.0*(ctx->tot_cnt_mem_l1-ctx->tot_cnt_miss_l1))/
+		pcnt=(100.0*(
+				ctx->tot_cnt_mem_l1-ctx->tot_cnt_miss_l1-
+				ctx->mem_cnt_l1dvhit))/
 			(ctx->tot_cnt_mem_l1);
-		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit  L1 D$: %.2f%%\n", pcnt);
+		pcnt2=(100.0*ctx->mem_cnt_l1dvhit)/(ctx->tot_cnt_mem_l1);
+
+		BJX2_DbgPrintf(ctx, "Total Count, Cache Hit  L1 D$: "
+			"%.2f%% Vhit=%.2f%%\n",
+			pcnt, pcnt2);
 		pcnt=(100.0*ctx->tot_cnt_miss_l1)/(ctx->tot_cnt_mem_l1);
 		BJX2_DbgPrintf(ctx, "Total Count, Cache Miss L1 D$: %.2f%%\n", pcnt);
 

@@ -2186,8 +2186,7 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageCreateRamdisk(512*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
-// #if 1
-#ifndef DOOM_RV
+#if !defined(DOOM_RV) && !defined(QUAKE_RV)
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
@@ -2203,8 +2202,35 @@ int main(int argc, char **argv, char **env)
 //		(char *)"../../tk_qsrc/doomsrc2/doomulz.wad");
 #endif
 
-// #if 1
-#ifndef DOOM_RV
+#ifdef QUAKE_RV
+	JX2R_UseImageAddFile(
+		(char *)"BOOTLOAD.SYS",
+		(char *)"../../tk_qsrc/quake_rv64.elf");
+
+//	JX2R_UseImageAddFile(
+//		(char *)"ID1/PAK0.PAK",
+//		(char *)"../../tk_qsrc/id1/pak0.pak");
+
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK0LZ.WAD",
+		(char *)"../../tk_qsrc/id1/pak0lz.wad");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK1LZ.WAD",
+		(char *)"../../tk_qsrc/id1/pak1lz.wad");
+	JX2R_UseImageAddFile(
+		(char *)"ID1/PAK2LZ.WAD",
+		(char *)"../../tk_qsrc/id1/pak2lz.wad");
+
+//	JX2R_UseImageAddFile(
+//		(char *)"ID1/AUTOEXEC.CFG",
+//		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
+#endif
+
+
+#if !defined(DOOM_RV) && !defined(QUAKE_RV)
+
+#if 1
+// #if !defined(DOOM_RV) && !defined(QUAKE_RV)
 	JX2R_UseImageAddFile(
 //		(char *)"BOOTLOAD.SYS",
 		(char *)"DOOM.EXE",
@@ -2293,6 +2319,8 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageAddFile(
 		(char *)"BTMINI2/RESOURCE/WAD3.WD4",
 		(char *)"../../tk_ports/BtMini2/resource/wad3.wd4");
+#endif
+
 #endif
 
 #ifndef NOSWAP
