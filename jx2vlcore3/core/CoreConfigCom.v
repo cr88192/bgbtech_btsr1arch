@@ -87,7 +87,7 @@
 
 `define	jx2_fpu_enable_fdiv		//enable FDIV
 
-// `define	jx2_alu_wx				//Enable Wide-ALU
+`define	jx2_alu_wx				//Enable Wide-ALU
 
 `endif
 

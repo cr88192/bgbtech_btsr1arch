@@ -360,6 +360,7 @@ parameter[ 27:0] UV28_XX		= 28'hXXXXXXX;	//
 parameter[ 31:0] UV32_XX		= 32'hXXXXXXXX;	//
 parameter[ 32:0] UV33_XX		= 33'hXXXXXXXXX;	//
 parameter[ 35:0] UV36_XX		= 36'hXXXXXXXXX;	//
+parameter[ 39:0] UV40_XX		= 40'hXXXXXX_XXXX;	//
 parameter[ 43:0] UV44_XX		= 44'hXXXXXXX_XXXX;	//
 parameter[ 47:0] UV48_XX		= 48'hXXXXXXXX_XXXX;	//
 

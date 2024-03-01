@@ -1236,6 +1236,7 @@ bool BGBCC_CCXL_IsRegImmULongP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmUIntP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmUnsignedP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmSmallLongP(BGBCC_TransState *ctx, ccxl_register reg);
+bool BGBCC_CCXL_IsRegImmSmallSIntP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmFloatP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmDoubleP(BGBCC_TransState *ctx, ccxl_register reg);
 bool BGBCC_CCXL_IsRegImmX64P(BGBCC_TransState *ctx, ccxl_register reg);

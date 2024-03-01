@@ -1263,14 +1263,14 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 
 		if(ctx->l1i_vict&2)
 		{
-			if(ax0==ctx->mem_l1iva[(ix2<<2)+3])
-				ax4=ctx->mem_l1iva[(ix2<<2)+3];
-			if(ax0==ctx->mem_l1iva[(ix2<<2)+2])
-				ax4=ctx->mem_l1iva[(ix2<<2)+2];
-			if(ax0==ctx->mem_l1iva[(ix2<<2)+1])
-				ax4=ctx->mem_l1iva[(ix2<<2)+1];
-			if(ax0==ctx->mem_l1iva[(ix2<<2)+0])
-				ax4=ctx->mem_l1iva[(ix2<<2)+0];
+			if(ax0==ctx->mem_l1iva[(ix2<<3)+3])
+				ax4=ctx->mem_l1iva[(ix2<<3)+3];
+			if(ax0==ctx->mem_l1iva[(ix2<<3)+2])
+				ax4=ctx->mem_l1iva[(ix2<<3)+2];
+			if(ax0==ctx->mem_l1iva[(ix2<<3)+1])
+				ax4=ctx->mem_l1iva[(ix2<<3)+1];
+			if(ax0==ctx->mem_l1iva[(ix2<<3)+0])
+				ax4=ctx->mem_l1iva[(ix2<<3)+0];
 		}
 
 		if(miss0 && ax4 && !(ax2&1))
@@ -1283,10 +1283,10 @@ int BJX2_MemSimAddrL1I(BJX2_Context *ctx, bjx2_addr addr)
 
 		if(miss0)
 		{
-			ctx->mem_l1iva[(ix2<<2)+3]=ctx->mem_l1iva[(ix2<<2)+2];
-			ctx->mem_l1iva[(ix2<<2)+2]=ctx->mem_l1iva[(ix2<<2)+1];
-			ctx->mem_l1iva[(ix2<<2)+1]=ctx->mem_l1iva[(ix2<<2)+0];
-			ctx->mem_l1iva[(ix2<<2)+0]=ax2&(~15);
+			ctx->mem_l1iva[(ix2<<3)+3]=ctx->mem_l1iva[(ix2<<3)+2];
+			ctx->mem_l1iva[(ix2<<3)+2]=ctx->mem_l1iva[(ix2<<3)+1];
+			ctx->mem_l1iva[(ix2<<3)+1]=ctx->mem_l1iva[(ix2<<3)+0];
+			ctx->mem_l1iva[(ix2<<3)+0]=ax2&(~15);
 		}
 	}
 #endif
@@ -1834,6 +1834,7 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 	int ix0, ix1, ix2, ix3, miss0, miss1, miss2, miss3, miss;
 	int skip0, skip1;
 	int h, p, p1, p2;
+	int i, j, k;
 	
 	if(ctx->use_jit || ctx->no_memcost)
 		return(0);
@@ -1946,7 +1947,8 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 
 
 #if 1
-	if(ctx->l1d_vict)
+//	if(ctx->l1d_vict)
+	if(ctx->l1d_vict && (miss0 || miss1))
 	{
 		/* What if, victim buffer? */
 
@@ -1956,8 +1958,14 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 //		ix2=ix0&31;
 //		ix3=ix1&31;
 
-		ix2=(ax0>>4)&31;
-		ix3=(ax1>>4)&31;
+//		ix2=(ax0>>4)&31;
+//		ix3=(ax1>>4)&31;
+
+		ix2=(ax0>>4)&63;
+		ix3=(ax1>>4)&63;
+
+//		ix2=(ax0>>4)&255;
+//		ix3=(ax1>>4)&255;
 
 	#if 1
 		if(ax0==ctx->mem_l1addr1)	ax4=ctx->mem_l1addr1;
@@ -1973,23 +1981,77 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 
 		if(ctx->l1d_vict&2)
 		{
-			if(ax0==ctx->mem_l1dva[(ix2<<2)+3])
-				ax4=ctx->mem_l1dva[(ix2<<2)+3];
-			if(ax0==ctx->mem_l1dva[(ix2<<2)+2])
-				ax4=ctx->mem_l1dva[(ix2<<2)+2];
-			if(ax0==ctx->mem_l1dva[(ix2<<2)+1])
-				ax4=ctx->mem_l1dva[(ix2<<2)+1];
-			if(ax0==ctx->mem_l1dva[(ix2<<2)+0])
-				ax4=ctx->mem_l1dva[(ix2<<2)+0];
+			if(miss0)
+			{
+				ctx->mem_l1dvtot++;			
+				k=-1;
 
-			if(ax1==ctx->mem_l1dva[(ix3<<2)+3])
-				ax5=ctx->mem_l1dva[(ix3<<2)+3];
-			if(ax1==ctx->mem_l1dva[(ix3<<2)+2])
-				ax5=ctx->mem_l1dva[(ix3<<2)+2];
-			if(ax1==ctx->mem_l1dva[(ix3<<2)+1])
-				ax5=ctx->mem_l1dva[(ix3<<2)+1];
-			if(ax1==ctx->mem_l1dva[(ix3<<2)+0])
-				ax5=ctx->mem_l1dva[(ix3<<2)+0];
+	#if 0
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+7])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+7]; k=7; }
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+6])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+6]; k=6; }
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+5])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+5]; k=5; }
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+4])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+4]; k=4; }
+	#endif
+
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+3])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+3]; k=3; }
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+2])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+2]; k=2; }
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+1])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+1]; k=1; }
+				if(ax0==ctx->mem_l1dva[(ix2<<3)+0])
+					{ ax4=ctx->mem_l1dva[(ix2<<3)+0]; k=0; }
+
+				if(k>=0)
+					ctx->mem_l1dvhit[k]++;
+
+				if(k>1)
+				{
+					for(j=k; j>0; j--)
+						ctx->mem_l1dva[(ix2<<3)+j]=ctx->mem_l1dva[(ix2<<3)+(j-1)];
+					ctx->mem_l1dva[(ix2<<3)+0]=ax4;
+				}
+			}
+
+			if(miss1)
+			{
+				ctx->mem_l1dvtot++;			
+				k=-1;
+
+	#if 0
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+7])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+7]; k=7; }
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+6])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+6]; k=6; }
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+5])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+5]; k=5; }
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+4])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+4]; k=4; }
+	#endif
+
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+3])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+3]; k=3; }
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+2])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+2]; k=2; }
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+1])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+1]; k=1; }
+				if(ax1==ctx->mem_l1dva[(ix3<<3)+0])
+					{ ax5=ctx->mem_l1dva[(ix3<<3)+0]; k=0; }
+
+				if(k>=0)
+					ctx->mem_l1dvhit[k]++;
+
+				if(k>1)
+				{
+					for(j=k; j>0; j--)
+						ctx->mem_l1dva[(ix3<<3)+j]=ctx->mem_l1dva[(ix3<<3)+(j-1)];
+					ctx->mem_l1dva[(ix3<<3)+0]=ax5;
+				}
+			}
 		}
 
 		if(miss0 && ax4 && !(ax2&1))
@@ -2014,10 +2076,14 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 			ctx->mem_l1addr2=ctx->mem_l1addr1;
 			ctx->mem_l1addr1=ax2&(~15);
 			
-			ctx->mem_l1dva[(ix2<<2)+3]=ctx->mem_l1dva[(ix2<<2)+2];
-			ctx->mem_l1dva[(ix2<<2)+2]=ctx->mem_l1dva[(ix2<<2)+1];
-			ctx->mem_l1dva[(ix2<<2)+1]=ctx->mem_l1dva[(ix2<<2)+0];
-			ctx->mem_l1dva[(ix2<<2)+0]=ax2&(~15);
+			ctx->mem_l1dva[(ix2<<3)+7]=ctx->mem_l1dva[(ix2<<3)+6];
+			ctx->mem_l1dva[(ix2<<3)+6]=ctx->mem_l1dva[(ix2<<3)+5];
+			ctx->mem_l1dva[(ix2<<3)+5]=ctx->mem_l1dva[(ix2<<3)+4];
+			ctx->mem_l1dva[(ix2<<3)+4]=ctx->mem_l1dva[(ix2<<3)+3];
+			ctx->mem_l1dva[(ix2<<3)+3]=ctx->mem_l1dva[(ix2<<3)+2];
+			ctx->mem_l1dva[(ix2<<3)+2]=ctx->mem_l1dva[(ix2<<3)+1];
+			ctx->mem_l1dva[(ix2<<3)+1]=ctx->mem_l1dva[(ix2<<3)+0];
+			ctx->mem_l1dva[(ix2<<3)+0]=ax2&(~15);
 		}
 
 		if(miss1)
@@ -2027,10 +2093,14 @@ int BJX2_MemSimAddrL1(BJX2_Context *ctx, bjx2_addr addr, int opm)
 			ctx->mem_l1addr2=ctx->mem_l1addr1;
 			ctx->mem_l1addr1=ax3&(~15);
 			
-			ctx->mem_l1dva[(ix3<<2)+3]=ctx->mem_l1dva[(ix3<<2)+2];
-			ctx->mem_l1dva[(ix3<<2)+2]=ctx->mem_l1dva[(ix3<<2)+1];
-			ctx->mem_l1dva[(ix3<<2)+1]=ctx->mem_l1dva[(ix3<<2)+0];
-			ctx->mem_l1dva[(ix3<<2)+0]=ax3&(~15);
+			ctx->mem_l1dva[(ix3<<3)+7]=ctx->mem_l1dva[(ix3<<3)+6];
+			ctx->mem_l1dva[(ix3<<3)+6]=ctx->mem_l1dva[(ix3<<3)+5];
+			ctx->mem_l1dva[(ix3<<3)+5]=ctx->mem_l1dva[(ix3<<3)+4];
+			ctx->mem_l1dva[(ix3<<3)+4]=ctx->mem_l1dva[(ix3<<3)+3];
+			ctx->mem_l1dva[(ix3<<3)+3]=ctx->mem_l1dva[(ix3<<3)+2];
+			ctx->mem_l1dva[(ix3<<3)+2]=ctx->mem_l1dva[(ix3<<3)+1];
+			ctx->mem_l1dva[(ix3<<3)+1]=ctx->mem_l1dva[(ix3<<3)+0];
+			ctx->mem_l1dva[(ix3<<3)+0]=ax3&(~15);
 		}
 	}
 #endif

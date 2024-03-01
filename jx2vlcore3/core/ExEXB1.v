@@ -375,6 +375,9 @@ begin
 
 		JX2_UCMD_ALUCMP: begin
 			tSlotUSup		= 1;
+			if(opUIxt[8:6]==JX2_IUC_WX)
+				tSlotUSup	= 0;
+			tRegHeld		= 1;
 		end
 	
 		JX2_UCMD_CONV_RR: begin

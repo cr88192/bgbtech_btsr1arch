@@ -1191,8 +1191,11 @@ bjx2_addr mem_l2addr2;		//L2 addr (victim cache)
 bjx2_addr mem_l2addr3;		//L2 addr (victim cache)
 bjx2_addr mem_l2addr4;		//L2 addr (victim cache)
 
-bjx2_addr mem_l1dva[32*4];	//L1D addr (victim cache array)
-bjx2_addr mem_l1iva[32*4];	//L1I addr (victim cache array)
+bjx2_addr mem_l1dva[256*8];	//L1D addr (victim cache array)
+bjx2_addr mem_l1iva[256*8];	//L1I addr (victim cache array)
+
+s64		mem_l1dvhit[8];
+s64		mem_l1dvtot;
 
 u64		hw_rng[4];
 

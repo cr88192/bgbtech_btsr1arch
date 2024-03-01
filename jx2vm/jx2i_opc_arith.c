@@ -3105,6 +3105,13 @@ u64 BJX2_OpI_LeaAdjustBoundPtr(BJX2_Context *ctx, u64 base, s64 disp)
 		return(v1b);
 	}
 
+	if((base>>60)==15)
+	{
+		/* F tag pointers, copied as-is. */
+		v1b|=base&0xFFFF000000000000ULL;
+		return(v1b);
+	}
+
 
 	bnd=(base>>48)&255;
 	if(bnd<0x10)

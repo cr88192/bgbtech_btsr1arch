@@ -1846,7 +1846,7 @@ begin
 			tResultu2A = { 1'b0,
 				regValRt[63] ^ idUIxt[4],
 				regValRs[62:32],
-				(!idUIxt[5] ? regValRs[31] : (regValRt[31] ^ idUIxt[4])),
+				(idUIxt[5] ? regValRs[31] : (regValRt[31] ^ idUIxt[4])),
 				regValRs[30: 0]
 				};
 			tResultu1A = { tResultu2A[31], tResultu2A[31:0] };
@@ -1856,7 +1856,7 @@ begin
 			tResultu2A = { 1'b0,
 				regValRs[63] ^ regValRt[63] ^ idUIxt[4],
 				regValRs[62:32],
-				(!idUIxt[5] ? regValRs[31] :
+				(idUIxt[5] ? regValRs[31] :
 					(regValRs[31] ^ regValRt[31] ^ idUIxt[4])),
 				regValRs[30: 0]
 				};

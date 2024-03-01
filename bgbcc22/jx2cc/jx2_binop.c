@@ -131,7 +131,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
 
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, treg))
 //	if(0)
 	{
 		j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
@@ -248,6 +249,24 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 		if(nm1>=0)
 		{
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
+			
+			if(nm1==BGBCC_SH_NMID_DMULU)
+			{
+				if((j==3) || (j==5) || (j==9))
+				{
+					if(j==3)
+						nm2=BGBCC_SH_NMID_LEAW;
+					if(j==5)
+						nm2=BGBCC_SH_NMID_LEAL;
+					if(j==9)
+						nm2=BGBCC_SH_NMID_LEAQ;
+					BGBCC_JX2_TryEmitOpLdReg2Reg(sctx,
+						nm2, cdreg, cdreg, cdreg);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+					return(1);
+				}
+			}
+			
 			BGBCC_JX2_EmitOpRegImmReg(sctx, nm1, cdreg, j, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			return(1);
@@ -1165,7 +1184,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 			nm4=BGBCC_SH_NMID_EXTUW;
 	}
 	
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, treg))
 	{
 		j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
 
@@ -1567,7 +1587,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 		return(i);
 	}
 
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, sreg))
 	{
 		if((opr==CCXL_BINOP_ADD) ||
 			(opr==CCXL_BINOP_MUL) ||
@@ -2187,7 +2208,8 @@ int BGBCC_JX2C_EmitTrinaryVRegVRegVRegVRegInt(
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &ureg);
 	
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, treg))
 //	if(0)
 	{
 		j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
@@ -2223,8 +2245,30 @@ int BGBCC_JX2C_EmitTrinaryVRegVRegVRegVRegInt(
 				{
 					tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx,
 						BGBCC_SH_REGCLS_GR);
-					BGBCC_JX2_EmitOpRegImmReg(sctx,
-						nm1, csreg, j, tr0);
+					if(j==2)
+					{
+						BGBCC_JX2_EmitOpRegRegReg(sctx,
+							nm2, csreg, csreg, tr0);
+					}else
+						if(j==3)
+					{
+						BGBCC_JX2_TryEmitOpLdReg2Reg(sctx,
+							BGBCC_SH_NMID_LEAW, csreg, csreg, tr0);
+					}else
+						if(j==5)
+					{
+						BGBCC_JX2_TryEmitOpLdReg2Reg(sctx,
+							BGBCC_SH_NMID_LEAL, csreg, csreg, tr0);
+					}else
+						if(j==9)
+					{
+						BGBCC_JX2_TryEmitOpLdReg2Reg(sctx,
+							BGBCC_SH_NMID_LEAQ, csreg, csreg, tr0);
+					}else
+					{
+						BGBCC_JX2_EmitOpRegImmReg(sctx,
+							nm1, csreg, j, tr0);
+					}
 					BGBCC_JX2_EmitOpRegRegReg(sctx,
 						nm2, cdreg, tr0, cdreg);
 					BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
@@ -2525,7 +2569,8 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt(
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, sreg))
 	{
 		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, sreg);
 		nm1=-1; // k=0;
@@ -2870,8 +2915,10 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegInt(
 //		nm1=-1; // k=0;
 //	}
 
-	if(	 BGBCC_CCXL_IsRegImmIntP(ctx, sreg) &&
-		!BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//	if(	 BGBCC_CCXL_IsRegImmIntP(ctx, sreg) &&
+//		!BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+	if(	 BGBCC_CCXL_IsRegImmSmallSIntP(ctx, sreg) &&
+		!BGBCC_CCXL_IsRegImmSmallSIntP(ctx, treg))
 	{
 //		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, sreg);
 //		nm1=-1; // k=0;
@@ -2896,7 +2943,8 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegInt(
 	shl=-1;
 	imm=0;
 
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, treg))
 	{
 		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
 		shl=imm;
@@ -7048,7 +7096,8 @@ int BGBCC_JX2C_EmitCSeltCompareVRegVRegInt(
 	shl=-1;
 	imm=0;
 
-	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+//	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, treg))
 	{
 		imm=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
 		shl=imm;

@@ -2553,10 +2553,19 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 //		break;
 
 	case BJX2_FMID_REGIMMREG:
-		BJX2_DbgPrintf(ctx, "%s, #%lld, %s",
-			BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
-			op->imm,
-			BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		if(((s16)op->imm)!=op->imm)
+		{
+			BJX2_DbgPrintf(ctx, "%s, #0x%llX, %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
+				op->imm,
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		}else
+		{
+			BJX2_DbgPrintf(ctx, "%s, #%lld, %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
+				op->imm,
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		}
 		break;
 	case BJX2_FMID_REGIMMREGREG:
 		BJX2_DbgPrintf(ctx, "%s, #%lld, %s, %s",
@@ -3249,6 +3258,22 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			(1.0*ctx->tot_cnt_mem_l2i)/(ctx->tot_cnt_miss_l1i+1.0),
 			(1.0*ctx->tot_cnt_mem_dram)/
 				(ctx->tot_cnt_miss_l2+ctx->tot_cnt_miss_l2i+1.0));
+		
+		if(ctx->mem_l1dvtot>0)
+		{
+			s1=tb;
+//			BJX2_DbgPrintf(ctx, "  VcLvl: ");
+			for(i=0; i<8; i++)
+			{
+				pcnt=(100.0*ctx->mem_l1dvhit[i])/(ctx->mem_l1dvtot+0.0);
+//				BJX2_DbgPrintf(ctx, "  Vclvl %d, %.2f\n", i, pcnt);
+//				BJX2_DbgPrintf(ctx, " %.2f", pcnt);
+				sprintf(s1, " %.2f", pcnt);
+				s1+=strlen(s1);
+			}
+//			BJX2_DbgPrintf(ctx, "\n");
+			BJX2_DbgPrintf(ctx, "  VcLvl: %s\n", tb);
+		}
 	}
 #endif
 

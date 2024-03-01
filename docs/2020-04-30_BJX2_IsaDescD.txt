@@ -1074,6 +1074,9 @@ The primary difference, howerver, will be that LEAT will also adjust the tag bit
 
 If given a pointer with an unhandled tag type, or if the pointer goes outside the representable range for the bounds, then the tag bits will be zeroed.
 
+If the high 4 bits hold 0xF, the tag will be passed through as-is.
+
+
 These instructions will be part of the TTAG extension.
 
 

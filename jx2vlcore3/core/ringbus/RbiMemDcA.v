@@ -2870,6 +2870,9 @@ begin
 				tBlkMemAddr2A[11: 5],
 				5'h00 };
 			tNxtMemReqStA	= 1;
+			
+			if(tReqFlushAddrA)
+				tMemAddrReq[47:44] = 4'hD;
 		end
 		else if(tReqDoMissB && tBlkIsDirtyB && !tMemReqStB)
 		begin
@@ -2892,6 +2895,9 @@ begin
 				tBlkMemAddr2B[11: 5],
 				5'h10 };
 			tNxtMemReqStB	= 1;
+
+			if(tReqFlushAddrB)
+				tMemAddrReq[47:44] = 4'hD;
 		end
 		else
 //			if(tReqDoMissA && !tMemReqLdA)

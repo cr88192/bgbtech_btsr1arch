@@ -345,6 +345,11 @@ begin
 				tRegOutXLeaTag		= 0;
 			end
 		end
+
+		if(regValRm[63:60]==4'hF)
+		begin
+			tRegOutXLeaTag			= regValRm[63:48];
+		end
 	end
 `endif
 

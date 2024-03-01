@@ -3345,6 +3345,7 @@ int BGBCC_JX2C_EmitLdixAddrVRegVRegVReg(
 {
 	ccxl_type tty;
 	char *s0;
+	s64 li;
 	int csreg, ctreg, cdreg, ctreg2;
 	int nm1, nm2, nm3, nm4, nm5, ty, sz, asz, bsz;
 	int rcls;
@@ -3353,9 +3354,24 @@ int BGBCC_JX2C_EmitLdixAddrVRegVRegVReg(
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
 	{
 		j=BGBCC_CCXL_GetRegImmIntValue(ctx, treg);
-		i=BGBCC_JX2C_EmitLdixAddrVRegVRegImm(ctx, sctx,
-			type, stype, dreg, sreg, j);
-		return(i);
+		if((j>=0) && (j<512))
+		{
+			i=BGBCC_JX2C_EmitLdixAddrVRegVRegImm(ctx, sctx,
+				type, stype, dreg, sreg, j);
+			return(i);
+		}
+	}
+
+	if(BGBCC_CCXL_IsRegImmSmallLongP(ctx, treg))
+	{
+		li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+		j=li;
+		if((j==li) && (j>=0) && (j<512))
+		{
+			i=BGBCC_JX2C_EmitLdixAddrVRegVRegImm(ctx, sctx,
+				type, stype, dreg, sreg, j);
+			return(i);
+		}
 	}
 
 	ty=type.val;

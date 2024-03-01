@@ -55,7 +55,11 @@ In the case of Full-Duplex / Swap operations, a FAULT with a zero exception will
 `include "ringbus/RbiMmuTlb.v"
 `endif
 
+`ifdef jx2_rbi_bridge_vca
+`include "ringbus/RbiMemL1BridgeVcA.v"
+`else
 `include "ringbus/RbiMemL1Bridge.v"
+`endif
 
 module RbiMemL1A(
 	/* verilator lint_off UNUSED */
@@ -198,7 +202,14 @@ wire[15:0]		tBridgeOpmO;
 wire[15:0]		tBridgeSeqO;
 wire[ 7:0]		tBridgeNodeId;
 
+reg [7:0]		regKrrRngBr;
+
+
+`ifdef jx2_rbi_bridge_vca
+RbiMemL1BridgeVcA	l1bridge(
+`else
 RbiMemL1Bridge	l1bridge(
+`endif
 	clock,			tResetL,
 	regInMmcr,		regInKrr,		regInSr,
 
@@ -212,7 +223,7 @@ RbiMemL1Bridge	l1bridge(
 	l2mOpmIn,		l2mOpmOut,
 	l2mSeqIn,		l2mSeqOut,
 
-	tBridgeNodeId
+	tBridgeNodeId,	regKrrRngBr
 	);
 
 
@@ -706,6 +717,8 @@ begin
 
 //		(dcInOpm==UMEM_OPM_FLUSHIS))
 //			regNxtKrrRng	= tNxtRngN[11:4];
+	
+	regKrrRngBr = regKrrRngIs ^ regKrrRngDs;
 	
 //	if(tExcLatch)
 	if(tExcLatch && !(tRegInSr[29] && tRegInSr[28]))

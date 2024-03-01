@@ -44,7 +44,7 @@ module RbiMemL1Bridge(
 	l2mOpmIn,		l2mOpmOut,
 	l2mSeqIn,		l2mSeqOut,
 
-	unitNodeId
+	unitNodeId,		regRngBridge
 	);
 
 input			clock;
@@ -72,6 +72,7 @@ output[ 15:0]	l2mOpmOut;		//memory operation mode
 `output_tile	l2mDataOut;		//memory output data
 
 input [  7:0]	unitNodeId;		//Who Are We?
+input [  7:0]	regRngBridge;	//Random Sequence
 
 
 

@@ -1230,6 +1230,20 @@ bool BGBCC_CCXL_IsRegImmSmallLongP(
 	return(false);
 }
 
+bool BGBCC_CCXL_IsRegImmSmallSIntP(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	s64 li;
+	s32 wi;
+
+	if(!BGBCC_CCXL_IsRegImmSmallLongP(ctx, reg))
+		return(false);
+
+	li=BGBCC_CCXL_GetRegImmLongValue(ctx, reg);
+	wi=(s32)li;
+	return(li==wi);
+}
+
 
 bool BGBCC_CCXL_IsRegImmFloatP(
 	BGBCC_TransState *ctx, ccxl_register reg)
