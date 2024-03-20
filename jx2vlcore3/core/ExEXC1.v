@@ -98,17 +98,17 @@ input [1:0]		idLane;
 `input_gpr		regIdRs;		//Source A, ALU / Base
 `input_gpr		regIdRt;		//Source B, ALU / Index
 `input_gpr		regIdRm;		//Source C, MemStore
-input[63:0]		regValRs;		//Source A Value
-input[63:0]		regValRt;		//Source B Value
-input[63:0]		regValRm;		//Source C Value
+`input_gprval	regValRs;		//Source A Value
+`input_gprval	regValRt;		//Source B Value
+`input_gprval	regValRm;		//Source C Value
 
-input[63:0]		regValXs;		//Source C Value
+`input_gprval	regValXs;		//Source C Value
 
 `output_gpr		regIdRn1;		//Destination ID (EX1)
-output[63:0]	regValRn1;		//Destination Value (EX1)
+`output_gprval	regValRn1;		//Destination Value (EX1)
 `output_gpr		heldIdRn1;		//Held Destination ID (EX1)
 
-output[63:0]	exDelayOut;
+`output_gprval	exDelayOut;
 
 input[32:0]		regValImm;		//Immediate (Decode)
 input[47:0]		regValPc;
@@ -119,14 +119,14 @@ input[63:0]		regInSr;
 
 
 `reg_gpr		tRegIdRn1;		//Destination ID (EX1)
-reg[63:0]		tRegValRn1;		//Destination Value (EX1)
+`reg_gprval		tRegValRn1;		//Destination Value (EX1)
 `reg_gpr		tHeldIdRn1;		//Destination ID (EX1)
 
 assign	regIdRn1	= tRegIdRn1;		//Destination ID (EX1)
 assign	regValRn1	= tRegValRn1;		//Destination Value (EX1)
 assign	heldIdRn1	= tHeldIdRn1;		//Held Destination ID (EX1)
 
-reg[63:0]	tExDelayOut;
+`reg_gprval	tExDelayOut;
 assign	exDelayOut = tExDelayOut;
 
 reg				tExHold;
@@ -136,7 +136,7 @@ assign	exHold		= { tRegHeld, tExHold };
 
 wire[63:0]	tValCnv;
 wire		tCnvSrT;
-ExConv2R	exConv2R(regValRs, opUIxt, regInSr[0], tValCnv, tCnvSrT);
+ExConv2R	exConv2R(regValRs[63:0], opUIxt, regInSr[0], tValCnv, tCnvSrT);
 
 `ifndef jx2_shadq_nolane3
 
@@ -197,7 +197,7 @@ reg[8:0]	tOpUCmd2;
 
 assign		opUCmdOut = tOpUCmd2;
 
-reg[63:0]	tValOutDfl;
+`reg_gprval	tValOutDfl;
 reg			tDoOutDfl;
 
 reg tMsgLatch;
@@ -208,7 +208,7 @@ always @*
 begin
 
 	tRegIdRn1		= JX2_GR_ZZR;		//Destination ID (EX1)
-	tRegValRn1		= UV64_00;			//Destination Value (EX1)
+	tRegValRn1		= UVGPRV_00;		//Destination Value (EX1)
 	tHeldIdRn1		= JX2_GR_ZZR;
 
 	tExHold			= 0;
@@ -216,7 +216,7 @@ begin
 	tNextMsgLatch	= 0;
 	tSlotUSup		= 0;
 
-	tValOutDfl		= UV64_00;
+	tValOutDfl		= UVGPRV_00;
 	tDoOutDfl		= 0;
 	tExDelayOut		= 0;
 
@@ -298,7 +298,7 @@ begin
 //			tRegIdRn1		= regIdRm;
 //			tRegValRn1		= tValCnv;
 
-			tValOutDfl		= tValCnv;
+			tValOutDfl[63:0]		= tValCnv;
 			tDoOutDfl		= 1;
 `endif
 		end
@@ -321,18 +321,18 @@ begin
 				4'b0000: begin /* LDIx */
 				end
 				4'b0001: begin /* LDISH8 */
-					tValOutDfl	= { regValRs[55:0], regValRt[7:0] };
+					tValOutDfl[63:0]	= { regValRs[55:0], regValRt[7:0] };
 				end
 				4'b0010: begin /* LDISH16 */
-					tValOutDfl	= { regValRs[47:0], regValRt[15:0] };
+					tValOutDfl[63:0]	= { regValRs[47:0], regValRt[15:0] };
 				end
 				4'b0011: begin /* LDISH32 */
-					tValOutDfl	= { regValRs[31:0], regValRt[31:0] };
+					tValOutDfl[63:0]	= { regValRs[31:0], regValRt[31:0] };
 
 				end
 
 				4'b0101: begin /* FLDCH */
-					tValOutDfl	= {
+					tValOutDfl[63:0]	= {
 						regValRt[15:14],
 						(regValRt[14] || (regValRt[14:10]==0)) &&
 								(regValRt[14:10]!=5'h1F) ?
@@ -352,7 +352,7 @@ begin
 			tExDelayOut		= tValOutDfl;
 			tRegHeld		= 1;
 
-			tValOutDfl		= UV64_00;
+			tValOutDfl		= UVGPRV_00;
 			tDoOutDfl		= 0;
 `endif
 		end
@@ -372,11 +372,11 @@ begin
 `ifndef jx2_shadq_nolane3
 
 `ifdef jx2_cpu_shad_ex2
-			tExDelayOut		= tValShad64;
-			tRegHeld		= 1;
+			tExDelayOut[63:0]	= tValShad64;
+			tRegHeld			= 1;
 `else
-			tValOutDfl		= tValShad64;
-			tDoOutDfl		= 1;
+			tValOutDfl[63:0]	= tValShad64;
+			tDoOutDfl			= 1;
 `endif
 
 `endif
@@ -421,12 +421,12 @@ begin
 				JX2_UCIX_IXS_NOP: begin
 				end
 				JX2_UCIX_IXS_MOVT: begin
-					tValOutDfl		= {UV63_00, regInSr[0]};
-					tDoOutDfl		= 1;
+					tValOutDfl[63:0]	= {UV63_00, regInSr[0]};
+					tDoOutDfl			= 1;
 				end
 				JX2_UCIX_IXS_MOVNT: begin
-					tValOutDfl		= {UV63_00, !regInSr[0]};
-					tDoOutDfl		= 1;
+					tValOutDfl[63:0]	= {UV63_00, !regInSr[0]};
+					tDoOutDfl			= 1;
 				end
 				default: begin
 					if(!tMsgLatch)

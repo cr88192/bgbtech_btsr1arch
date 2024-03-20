@@ -113,27 +113,27 @@ output[1:0]		exHold;
 `input_gpr		regIdRs;		//Source A, ALU / Base
 `input_gpr		regIdRt;		//Source B, ALU / Index
 `input_gpr		regIdRm;		//Source C, MemStore
-input[63:0]		regValRs;		//Source A Value
-input[63:0]		regValRt;		//Source B Value
-input[63:0]		regValRm;		//Source C Value
+`input_gprval		regValRs;		//Source A Value
+`input_gprval		regValRt;		//Source B Value
+`input_gprval		regValRm;		//Source C Value
 
-input[63:0]		regValLea;		//LEA Value
+`input_gprval		regValLea;		//LEA Value
 
-// input[63:0]		regValFRs;		//Source A Value (FPR)
-// input[63:0]		regValFRt;		//Source B Value (FPR)
-input[63:0]		regValCRm;		//Source C Value (CR)
+// `input_gprval		regValFRs;		//Source A Value (FPR)
+// `input_gprval		regValFRt;		//Source B Value (FPR)
+`input_gprval		regValCRm;		//Source C Value (CR)
 
 `input_gpr		regIdRn1;		//Destination ID (EX1)
-input[63:0]		regValRn1;		//Destination Value (EX1)
+`input_gprval		regValRn1;		//Destination Value (EX1)
 //input[4:0]		regIdCn1;		//Destination ID (CR, EX1)
 `input_gpr		regIdCn1;		//Destination ID (CR, EX1)
-input[63:0]		regValCn1;		//Destination Value (CR, EX1)
+`input_gprval		regValCn1;		//Destination Value (CR, EX1)
 	
 `output_gpr		regIdRn2;		//Destination ID (EX1)
-output[63:0]	regValRn2;		//Destination Value (EX1)
+`output_gprval	regValRn2;		//Destination Value (EX1)
 //output[4:0]		regIdCn2;		//Destination ID (CR, EX1)
 `output_gpr		regIdCn2;		//Destination ID (CR, EX1)
-output[63:0]	regValCn2;		//Destination Value (CR, EX1)
+`output_gprval	regValCn2;		//Destination Value (CR, EX1)
 	
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
@@ -150,7 +150,7 @@ input[65:0]		regValAluResB;	//ALU Result (ALUB)
 input[63:0]		regBlintRes;	//BLINT Result
 input[63:0]		regQMulRes;		//QMUL / QDIV Result
 
-input[63:0]		exDelayIn;
+`input_gprval		exDelayIn;
 
 
 input[63:0]		regFpuGRn;		//FPU GPR Result
@@ -176,8 +176,8 @@ input[63:0]		regInSr;
 output[7:0]		regOutSchm;
 input[7:0]		regInSchm;
 
-input[63:0]		memDataIn;
-input[63:0]		memDataInB;
+input[65:0]		memDataIn;
+input[65:0]		memDataInB;
 input[ 1:0]		memDataOK;
 
 input[65:0]		memDataInFast;
@@ -188,10 +188,10 @@ reg				tRegHeld;
 assign	exHold		= { tRegHeld, tExHold };
 
 `reg_gpr		tRegIdRn2;
-reg[63:0]		tRegValRn2;
+`reg_gprval		tRegValRn2;
 //reg[ 4:0]		tRegIdCn2;
 `reg_gpr		tRegIdCn2;
-reg[63:0]		tRegValCn2;
+`reg_gprval		tRegValCn2;
 reg[63:0]		tRegOutDlr;
 reg[63:0]		tRegOutDhr;
 reg[63:0]		tRegOutSp;
@@ -211,7 +211,7 @@ assign	regOutSr	= tRegOutSr;
 assign	regOutSchm	= tRegOutSchm;
 
 
-reg[63:0]	tValOutDfl;
+`reg_gprval	tValOutDfl;
 reg			tDoOutDfl;
 
 
@@ -251,7 +251,7 @@ begin
 	tDoAluSrT		= 0;
 	tAluSrbOp		= 0;
 
-	tValOutDfl		= UV64_00;
+	tValOutDfl		= UVGPRV_00;
 	tDoOutDfl		= 0;
 
 `ifndef def_true
@@ -351,8 +351,8 @@ begin
 	
 		JX2_UCMD_LEA_MR: begin
 `ifdef jx2_cpu_lea_ex2
-			tValOutDfl		= regValLea;
-			tDoOutDfl		= 1;
+			tValOutDfl			= regValLea;
+			tDoOutDfl			= 1;
 `endif
 		end
 
@@ -386,11 +386,11 @@ begin
 		JX2_UCMD_ALUW3,
 //		JX2_UCMD_CONV2_RR,
 		JX2_UCMD_ALUB3: begin
-//			tRegIdRn2		= regIdRm;			//
-//			tRegValRn2		= regValAluRes[63:0];		//
-			tDoAluSrT		= 1;
-			tValOutDfl		= regValAluRes[63:0];
-			tDoOutDfl		= 1;
+//			tRegIdRn2			= regIdRm;			//
+//			tRegValRn2[63:0]	= regValAluRes[63:0];		//
+			tDoAluSrT			= 1;
+			tValOutDfl[63:0]	= regValAluRes[63:0];
+			tDoOutDfl			= 1;
 
 // `ifndef def_true
 `ifdef def_true
@@ -415,9 +415,9 @@ begin
 		end
 
 		JX2_UCMD_CONV2_RR: begin
-			tDoAluSrT		= 1;
-			tValOutDfl		= regValAluRes[63:0];
-			tDoOutDfl		= 1;
+			tDoAluSrT			= 1;
+			tValOutDfl[63:0]	= regValAluRes[63:0];
+			tDoOutDfl			= 1;
 
 			casez(opUIxt[5:0])
 				6'b0101zz:	tDoAluSrT		= 1;
@@ -430,8 +430,8 @@ begin
 		end
 		
 		JX2_UCMD_ALUCMP3R: begin
-			tValOutDfl		= { 63'h00, regValAluRes[64] };
-			tDoOutDfl		= 1;
+			tValOutDfl[63:0]	= { 63'h00, regValAluRes[64] };
+			tDoOutDfl			= 1;
 		end
 
 		JX2_UCMD_BRA: begin
@@ -487,10 +487,10 @@ begin
 `endif
 		
 		JX2_UCMD_MULW3: begin
-//			tRegIdRn2	= regIdRm;			//
-//			tRegValRn2	= regValMulwRes;		//
-			tValOutDfl		= regValMulwRes;
-			tDoOutDfl		= 1;
+//			tRegIdRn2			= regIdRm;			//
+//			tRegValRn2[63:0]	= regValMulwRes;		//
+			tValOutDfl[63:0]	= regValMulwRes;
+			tDoOutDfl			= 1;
 		end
 		
 		JX2_UCMD_SHAD3: begin
@@ -521,9 +521,9 @@ begin
 `ifdef jx2_alu_slomuldiv
 		JX2_UCMD_QMULDIV: begin
 //			$display("QMUL: Out %X", regQMulRes);
-			tValOutDfl		= regQMulRes;
-			tDoOutDfl		= 1;
-			tRegHeld	= 1;
+			tValOutDfl[63:0]	= regQMulRes;
+			tDoOutDfl			= 1;
+			tRegHeld			= 1;
 		end
 `endif
 
@@ -540,28 +540,28 @@ begin
 		end
 		
 		JX2_UCMD_FPU3: begin
-//			tRegIdRn2		= regIdRm;
-//			tRegValRn2		= regFpuGRn;
-			tValOutDfl		= regFpuGRn;
-			tDoOutDfl		= 1;
+//			tRegIdRn2			= regIdRm;
+//			tRegValRn2[63:0]	= regFpuGRn;
+			tValOutDfl[63:0]	= regFpuGRn;
+			tDoOutDfl			= 1;
 		end
 		JX2_UCMD_FLDCX: begin
-//			tRegIdRn2		= regIdRm;
-//			tRegValRn2		= regFpuGRn;
-			tValOutDfl		= regFpuGRn;
-			tDoOutDfl		= 1;
+//			tRegIdRn2			= regIdRm;
+//			tRegValRn2[63:0]	= regFpuGRn;
+			tValOutDfl[63:0]	= regFpuGRn;
+			tDoOutDfl			= 1;
 		end
 		JX2_UCMD_FSTCX: begin
-//			tRegIdRn2		= regIdRm;
-//			tRegValRn2		= regFpuGRn;
-			tValOutDfl		= regFpuGRn;
-			tDoOutDfl		= 1;
+//			tRegIdRn2			= regIdRm;
+//			tRegValRn2[63:0]	= regFpuGRn;
+			tValOutDfl[63:0]	= regFpuGRn;
+			tDoOutDfl			= 1;
 		end
 		JX2_UCMD_FIXS: begin
-//			tRegIdRn2		= regIdRm;
-//			tRegValRn2		= regFpuGRn;
-			tValOutDfl		= regFpuGRn;
-			tDoOutDfl		= 1;
+//			tRegIdRn2			= regIdRm;
+//			tRegValRn2[63:0]	= regFpuGRn;
+			tValOutDfl[63:0]	= regFpuGRn;
+			tDoOutDfl			= 1;
 		end
 
 		JX2_UCMD_FPUV4SF: begin
@@ -577,9 +577,9 @@ begin
 				(opUIxt[3:0]==JX2_UCIX_FCMP_CMPGT_R[3:0]) ||
 				(opUIxt[3:0]==JX2_UCIX_FCMP_CMPGE_R[3:0]) )
 			begin
-				tValOutDfl		= { 63'h0, regValAluRes[64] };
-				tDoOutDfl		= 1;
-				tDoAluSrT		= 0;
+				tValOutDfl[63:0]	= { 63'h0, regValAluRes[64] };
+				tDoOutDfl			= 1;
+				tDoAluSrT			= 0;
 				
 //				$display("EX2: FCMP-R Rs=%X Rt=%X Res=%X Ixt=%X",
 //					regValRs, regValRt, tValOutDfl, opUIxt);

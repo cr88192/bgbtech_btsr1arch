@@ -103,24 +103,24 @@ input			exIsHold;
 `input_gpr		regIdRs;		//Source A, ALU / Base
 `input_gpr		regIdRt;		//Source B, ALU / Index
 `input_gpr		regIdRm;		//Source C, MemStore
-input[63:0]		regValRs;		//Source A Value
-input[63:0]		regValRt;		//Source B Value
-input[63:0]		regValRm;		//Source C Value
+`input_gprval		regValRs;		//Source A Value
+`input_gprval		regValRt;		//Source B Value
+`input_gprval		regValRm;		//Source C Value
 
 `input_gpr		regIdRn1;		//Destination ID (EX1)
-input[63:0]		regValRn1;		//Destination Value (EX1)
+`input_gprval		regValRn1;		//Destination Value (EX1)
 //input[4:0]		regIdCn1;		//Destination ID (CR, EX1)
 `input_gpr		regIdCn1;		//Destination ID (CR, EX1)
-input[63:0]		regValCn1;		//Destination Value (CR, EX1)
+`input_gprval		regValCn1;		//Destination Value (CR, EX1)
 
 `output_gpr		regIdRn2;		//Destination ID (EX1)
-output[63:0]	regValRn2;		//Destination Value (EX1)
+`output_gprval	regValRn2;		//Destination Value (EX1)
 //output[4:0]		regIdCn2;		//Destination ID (CR, EX1)
 `output_gpr		regIdCn2;		//Destination ID (CR, EX1)
-output[63:0]	regValCn2;		//Destination Value (CR, EX1)
+`output_gprval	regValCn2;		//Destination Value (CR, EX1)
 
 `output_gpr		regIdRn4;		//Destination ID (EX1)
-output[63:0]	regValRn4;		//Destination Value (EX1)
+`output_gprval	regValRn4;		//Destination Value (EX1)
 
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
@@ -139,8 +139,8 @@ input			opBraFlush;
 input[ 7:0]		regInLastSr;
 input			ex3MulFaz;
 
-input[63:0]		memDataIn;
-input[63:0]		memDataInB;
+input[65:0]		memDataIn;
+input[65:0]		memDataInB;
 input[1:0]		memDataOK;
 
 reg				tExHold;
@@ -148,13 +148,13 @@ reg				tRegHeld;
 assign	exHold		= { tRegHeld, tExHold };
 
 `reg_gpr		tRegIdRn2;
-reg[63:0]		tRegValRn2;
+`reg_gprval		tRegValRn2;
 //reg[ 4:0]		tRegIdCn2;
 `reg_gpr		tRegIdCn2;
-reg[63:0]		tRegValCn2;
+`reg_gprval		tRegValCn2;
 
 `reg_gpr		tRegIdRn4;
-reg[63:0]		tRegValRn4;
+`reg_gprval		tRegValRn4;
 
 assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
@@ -165,8 +165,8 @@ assign	regIdRn4	= tRegIdRn4;
 assign	regValRn4	= tRegValRn4;
 
 
-reg[63:0]	tValOutDfl;
-reg[63:0]	tValOutHeld;
+`reg_gprval	tValOutDfl;
+`reg_gprval	tValOutHeld;
 reg			tDoOutDfl;
 reg			tDoOutHeld;
 
@@ -269,8 +269,8 @@ begin
 	tNextMsgLatch	= 0;
 	tDoHoldCyc		= 0;
 
-	tValOutDfl		= UV64_00;
-	tValOutHeld		= UV64_00;
+	tValOutDfl		= UVGPRV_00;
+	tValOutHeld		= UVGPRV_00;
 	tDoOutDfl		= 0;
 	tDoOutHeld		= 0;
 
@@ -348,9 +348,9 @@ begin
 			tDoMemOp	= 1;
 //			tRegIdRn2	= regIdRm;
 //			tRegValRn2	= memDataIn;
-			tValOutDfl		= memDataIn;
-			tDoOutDfl		= 1;
-//			tDoOutHeld		= 1;
+			tValOutDfl[63:0]	= memDataIn[63:0];
+			tDoOutDfl			= 1;
+//			tDoOutHeld			= 1;
 
 //			tRegHeld		= 1;
 
@@ -371,9 +371,9 @@ begin
 			tDoMemOp	= 1;
 		end
 		JX2_UCMD_FMOV_MR: begin
-			tDoMemOp		= 1;
-//			tValOutDfl		= memDataIn_S2D;
-			tValOutHeld		= memDataIn_S2D;
+			tDoMemOp			= 1;
+//			tValOutDfl			= memDataIn_S2D;
+			tValOutHeld[63:0]	= memDataIn_S2D;
 
 			tDoOutHeld		= 1;
 			tRegHeld		= 1;
@@ -381,15 +381,15 @@ begin
 `ifdef jx2_enable_fmovh
 //			if(opUIxt[4])
 			if(opUIxt[5:4]==2'b01)
-//				tValOutDfl	= memDataIn_H2D;
-				tValOutHeld	= memDataIn_H2D;
+//				tValOutDfl[63:0]	= memDataIn_H2D;
+				tValOutHeld[63:0]	= memDataIn_H2D;
 `endif
 
 `ifdef jx2_agu_ldtex
 			if(opUIxt[5:4]==2'b11)
 			begin
-//				tValOutDfl	= tValUtx1;
-				tValOutHeld	= tValUtx1;
+//				tValOutDfl[63:0]	= tValUtx1;
+				tValOutHeld[63:0]	= tValUtx1;
 			end
 `endif
 
@@ -398,13 +398,13 @@ begin
 			begin
 				if(opUIxt[5])
 				begin
-//					tValOutDfl		= { memDataIn[47:0], 16'h0000 };
-					tValOutHeld		= { memDataIn[47:0], 16'h0000 };
+//					tValOutDfl[63:0]	= { memDataIn[47:0], 16'h0000 };
+					tValOutHeld[63:0]	= { memDataIn[47:0], 16'h0000 };
 				end
 				else
 				begin
-//					tValOutDfl		= {
-					tValOutHeld		= {
+//					tValOutDfl[63:0]	= {
+					tValOutHeld[63:0]	= {
 						(memDataIn[47] && !opUIxt[4]) ? 16'hFFFF : 16'h0000,
 						memDataIn[47:0] };
 				end
@@ -412,7 +412,7 @@ begin
 `endif
 
 //			if(regIdRm[6])
-//				tValOutDfl	= UV64_XX;
+//				tValOutDfl	= UVGPRV_XX;
 
 //			tDoOutDfl		= 1;
 `ifdef jx2_debug_ldst
@@ -472,12 +472,12 @@ begin
 		end
 		
 		JX2_UCMD_MUL3: begin
-//			tRegIdRn2	= regIdRm;					//
-//			tRegValRn2	= regValMulRes[63:0];		//
-//			tValOutDfl		= regValMulRes[63:0];
-			tValOutHeld		= regValMulRes[63:0];
-//			tDoOutDfl		= 1;
-			tDoOutHeld		= 1;
+//			tRegIdRn2			= regIdRm;					//
+//			tRegValRn2			= regValMulRes[63:0];		//
+//			tValOutDfl			= regValMulRes[63:0];
+			tValOutHeld[63:0]	= regValMulRes[63:0];
+//			tDoOutDfl			= 1;
+			tDoOutHeld			= 1;
 		end
 
 `ifdef jx2_alu_slomuldiv
@@ -485,11 +485,11 @@ begin
 			if(ex3MulFaz)
 			begin
 				/* Multiplier has handled this divide. */
-//				tValOutDfl		= regValMulRes[63:0];
-//				tDoOutDfl		= 1;
+//				tValOutDfl[63:0]	= regValMulRes[63:0];
+//				tDoOutDfl			= 1;
 
-				tValOutHeld		= regValMulRes[63:0];
-				tDoOutHeld		= 1;
+				tValOutHeld[63:0]	= regValMulRes[63:0];
+				tDoOutHeld			= 1;
 			end
 		end
 `endif
@@ -542,13 +542,13 @@ begin
 		end
 
 		JX2_UCMD_FPUV4SF: begin
-//			tRegIdRn2		= regIdRm;
-//			tRegValRn2		= regFpuV4GRn;
-//			tValOutDfl		= regFpuV4GRn;
-			tValOutHeld		= regFpuV4GRn;
-//			tDoOutDfl		= 1;
-//			tRegHeld		= 1;
-			tDoOutHeld		= 1;
+//			tRegIdRn2				= regIdRm;
+//			tRegValRn2[63:0]		= regFpuV4GRn;
+//			tValOutDfl[63:0]		= regFpuV4GRn;
+			tValOutHeld[63:0]		= regFpuV4GRn;
+//			tDoOutDfl				= 1;
+//			tRegHeld				= 1;
+			tDoOutHeld				= 1;
 
 //			if(regIdRm[6])
 //				tDoOutHeld	= 0;
@@ -569,7 +569,7 @@ begin
 	if(tDoOutHeld)
 	begin
 		tRegIdRn2		= regIdRm;
-		tRegValRn2		= UV64_00;
+		tRegValRn2		= UVGPRV_00;
 		tRegIdRn4		= regIdRm;
 //		tRegValRn4		= tValOutDfl;
 		tRegValRn4		= tValOutHeld;

@@ -75,8 +75,12 @@ WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the stat
 * F0nm_1e09  ADD		Rm, Rn				//Rn=Rn+Rm
 * F2nm_0gjj  ADD		Rm, Imm9u, Rn		//
 * F2nm_1gjj  ADD		Rm, Imm9n, Rn		//
+* F2n0_Dhjj  ADD		Imm10u, Rn			//Rn=Rn+Imm10u
+* F2n1_Dhjj  ADD		Imm10n, Rn			//Rn=Rn+Imm10n
 * F84n_iiii  ADD		Imm16s, Rn
 * F85n_iiii  ADD		Imm16s, Rk
+
+* FE F2n0_Dhjj  ADD		Imm33s, Rn		//Rn=Rn+Imm33s
 
 * FE-FE F84n_iiii  ADD	Imm64, Rn		//R0 ..R15
 * FE-FE F85n_iiii  ADD	Imm64, Rk		//R16..R31
@@ -106,9 +110,13 @@ This form sign or zero extends the 32-bit result to 64 bits.
 * 5Anm       AND		Rm, DLR, Rn
 * F0nm_1go5  AND		Rm, Ro, Rn
 * F0nm_1e59  AND		Rm, Rn
-* F2nm_5gjj  AND		Rm, Imm9u, Rn
+* F2nm_5gjj  AND		Rm, Imm9us, Rn
 
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
+
+In Baseline mode, the Imm9 immediate is always zero extended.
+
+In XG2, using the WI flag will encode a one-extended immediate (similar to Load/Store displacements).
 
 
 === BCDADC / BCDSBB (BCD) ===
@@ -132,13 +140,13 @@ This instruction is only allowed in Lane 1.
 
 === BF / JF ===
 
-* 23dd       BF		(PC, disp8s)
+* 23dd       BF		(PC, Disp8s)
 * 31n3       BF		(PC, Rn)
-* F013_3en0  BF		(PC, Rn)			//Fix32
-* F0dd_Fddd  BF		(PC, disp20s)		//Branch False, +/- 1MB
+* / F013_3en0  BF		(PC, Rn)			//Fix32
+* / F0dd_Fddd  BF		(PC, Disp20s)		//Branch False, +/- 1MB
 
-* 32n3       JF		Rn
-* F023_3en0  JF		Rn					//Fix32
+* / 32n3       JF		Rn
+* / F023_3en0  JF		Rn					//Fix32
 
 * FFw0_0ddd_F0dd_Fddd  BF	(PC, Disp33s)
 
@@ -146,6 +154,9 @@ Branch if False (SR.T is 0).
 The target address is computed and PC is updated to the new address if the condition is met.
 
 This instruction is only allowed in Lane 1.
+
+The BF Disp20s has been replaced with BRA?F Disp20s.
+
 
 
 === BNDCHK / BNDCMP (TTAG) ===
@@ -208,15 +219,15 @@ These instructions will be part of the TTAG extension.
 
 === BRA / JMP ===
 
-* 20dd       BRA		(PC, disp8s)
+* 20dd       BRA		(PC, Disp8s)
 * 31n0       BRA		(PC, Rn)
 * F010_3en0  BRA		(PC, Rn)			//Fix32
-* F0dd_Cddd  BRA		(PC, disp20s)		//Fix32
+* F0dd_Cddd  BRA		(PC, Disp20s)		//Fix32
 
 * 32n0       JMP		Rn
 * F020_3en0  JMP		Rn					//Fix32
 
-* FEjj_jjjj_F202_C4jj /	BRA		(PC, disp33s)
+* FEjj_jjjj_F202_C4jj /	BRA		(PC, Disp33s)
 * FFw0_0ddd_F0dd_Cddd	BRA		(PC, Disp33s)
 * FFjj_jjjj_FAjj_jjjj	JMP		Abs48		//Abs48 Branch
 
@@ -228,6 +239,12 @@ For JMP, this performs an absolute jump to the address given.
 As a special case, if JMP is used with DHR, the high order bits of DHR will be interpreted as if this were an RTS instruction (copying these bits into the SR user flags). Otherwise, the contents of the SR user flags will be unmodified.
 
 This instruction is only allowed in Lane 1.
+
+In XG2 Mode, the WN, WM, and WI flags will extend Disp20s to Disp23s.
+
+The displacement will be defined in terms of 16-bit words relative to the start of the next instruction following the branch.
+
+In Fix32 and XG2 Mode, only even word displacements will be valid (trying to branch to an address that doesn't have a 32-bit alignment will be invalid).
 
 
 === BREAK ===
@@ -252,15 +269,15 @@ Byte swap a DWORD or QWORD.
 
 === BSR / JSR ===
 
-* 21dd       BSR		(PC, disp8s)
+* 21dd       BSR		(PC, Disp8s)
 * 31n1       BSR		(PC, Rn)
 * F011_3en0  BSR		(PC, Rn)			//Fix32
-* F0dd_Dddd  BSR		(PC, disp20s)		//Fix32
+* F0dd_Dddd  BSR		(PC, Disp20s)		//Fix32
 
 * 32n1       JSR		Rn
 * F021_3en0  JSR		Rn					//Fix32
 
-* FEjj_jjjj_F202_CCjj /	BSR		(PC, disp33s)
+* FEjj_jjjj_F202_CCjj /	BSR		(PC, Disp33s)
 * FFw0_0ddd_F0dd_Dddd	BSR		(PC, Disp33s)
 
 * FFjj_jjjj_FBjj_jjjj	JSR		Abs48			//Abs48 Call
@@ -276,16 +293,18 @@ The high order 16 bits of LR will contain saved user flag states:
 
 This instruction is only allowed in Lane 1.
 
+See BRA for general information about branches.
+
 
 === BT / JT ===
 
-* 22dd       BT		(PC, disp8s)		//Branch True
+* 22dd       BT		(PC, Disp8s)		//Branch True
 * 31n2       BT		(PC, Rn)			//Branch True to PC+(Rn*2)
-* F012_3en0  BT		(PC, Rn)			//Fix32
-* F0dd_Eddd  BT		(PC, disp20s)		//Branch True, +/- 1MB
+* / F012_3en0  BT		(PC, Rn)			//Fix32
+* / F0dd_Eddd  BT		(PC, Disp20s)		//Branch True, +/- 1MB
 
-* 32n2       JT		Rn
-* F022_3en0  JT		Rn					//Fix32
+* / 32n2       JT		Rn
+* / F022_3en0  JT		Rn					//Fix32
 
 * FFw0_0ddd_F0dd_Eddd  BT	(PC, Disp33s)
 
@@ -293,6 +312,8 @@ Branch if True (SR.T is 1).
 The target address is computed and PC is updated to the new address if the condition is met.
 
 This instruction is only allowed in Lane 1.
+
+The BT Disp20s has been replaced with BRA?T Disp20s.
 
 
 === BTRNS ===
@@ -857,25 +878,25 @@ The INVTLB instruction will flush the TLB. This would be done as part of changin
 === JCMPxx ===
 
 * F1zz_Czzz
-** F1nm_Cpdd ? JTSTT	Rm, Rn, disp8s	//(JCMP)
-** F1nm_CPdd ? JTSTQT	Rm, Rn, disp8s	//(JCMP)
-** F1nm_Cqdd ? JTSTF	Rm, Rn, disp8s	//(JCMP)
-** F1nm_CQdd ? JTSTQF	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Cpdd ? JTSTT	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_CPdd ? JTSTQT	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_Cqdd ? JTSTF	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_CQdd ? JTSTQF	Rm, Rn, Disp8s	//(JCMP)
 * F1zz_Dzzz
-** F1nm_Dpdd ? JCMPGT	Rm, Rn, disp8s	//(JCMP)
-** F1nm_DPdd ? JCMPQGT	Rm, Rn, disp8s	//(JCMP)
-** F1nm_Dqdd ? JCMPLE	Rm, Rn, disp8s	//(JCMP)
-** F1nm_DQdd ? JCMPQLE	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Dpdd ? JCMPGT	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_DPdd ? JCMPQGT	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_Dqdd ? JCMPLE	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_DQdd ? JCMPQLE	Rm, Rn, Disp8s	//(JCMP)
 * F1zz_Ezzz
-** F1nm_Epdd ? JCMPHI	Rm, Rn, disp8s	//(JCMP)
-** F1nm_EPdd ? JCMPQHI	Rm, Rn, disp8s	//(JCMP)
-** F1nm_Eqdd ? JCMPLS	Rm, Rn, disp8s	//(JCMP)
-** F1nm_EQdd ? JCMPQLS	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Epdd ? JCMPHI	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_EPdd ? JCMPQHI	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_Eqdd ? JCMPLS	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_EQdd ? JCMPQLS	Rm, Rn, Disp8s	//(JCMP)
 * F1zz_Fzzz
-** F1nm_Fpdd ? JCMPEQ	Rm, Rn, disp8s	//(JCMP)
-** F1nm_FPdd ? JCMPQEQ	Rm, Rn, disp8s	//(JCMP)
-** F1nm_Fqdd ? JCMPNE	Rm, Rn, disp8s	//(JCMP)
-** F1nm_FQdd ? JCMPQNE	Rm, Rn, disp8s	//(JCMP)
+** F1nm_Fpdd ? JCMPEQ	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_FPdd ? JCMPQEQ	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_Fqdd ? JCMPNE	Rm, Rn, Disp8s	//(JCMP)
+** F1nm_FQdd ? JCMPQNE	Rm, Rn, Disp8s	//(JCMP)
 
 Compare (Rn op Rm) and branch based on the result.
 This operation will only be present if JCMP is present.
@@ -1034,24 +1055,31 @@ Encoded keys should not be placed in memory which is readable from user-mode, as
 * F0nm_0Go6  LEA.L		(Rm, Ro), Rn
 * F0nm_0Go7  LEA.Q		(Rm, Ro), Rn
 
-* F1nm_0Gdd  LEA.B		(Rm, disp9u), Rn
-* F1nm_1Gdd  LEA.W		(Rm, disp9u), Rn
-* F1nm_2Gdd  LEA.L		(Rm, disp9u), Rn
-* F1nm_3Gdd  LEA.Q		(Rm, disp9u), Rn
+* F1nm_0Gdd  LEA.B		(Rm, Disp9u), Rn
+* F1nm_1Gdd  LEA.W		(Rm, Disp9u), Rn
+* F1nm_2Gdd  LEA.L		(Rm, Disp9u), Rn
+* F1nm_3Gdd  LEA.Q		(Rm, Disp9u), Rn
 
 * F8An_dddd ? LEA.Q		(GBR, Disp16u), Rn	//(?)
 * F8Bn_dddd ? LEA.Q		(GBR, Disp16u), Rk	//(?)
+
+* FE F1nm_0Gdd  LEA.B	(Rm, Disp33s), Rn
+* FE F1nm_1Gdd  LEA.W	(Rm, Disp33s), Rn
+* FE F1nm_2Gdd  LEA.L	(Rm, Disp33s), Rn
+* FE F1nm_3Gdd  LEA.Q	(Rm, Disp33s), Rn
 
 
 Load the effective address of the Base register added to the displacement and store the result into the destination register.
 
 This will use a scale factor equivalent to the size element type.
 
+In XG2 Mode, the WI flag will cause Disp9u to be one-extended (and thus negative).
+
 
 Note that the effective precision of LEA will be relative to the size of the address space. In a 32-bit address space, it will only update the low 32 bits, and in a 48-bit address space will adjust the low 48 bits.
 
 The basic form of the LEA.x instruction will zero the tag bits.
-In a 32 bit address space, the high 32 bits of the result will be zeroed.
+In a 32 bit address mode, the high 32 bits of the result will be zeroed.
 
 
 The LEA.Q instruction will allow composing an address relative to GBR, adressing a region of up to 512K. This is intended mostly for global arrays.
@@ -1059,14 +1087,19 @@ The LEA.Q instruction will allow composing an address relative to GBR, adressing
 
 === LEAT.x ===
 
-** F0nm_4Go0  LEAT.B		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4Go1  LEAT.W		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4Go2  LEAT.L		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4Go3  LEAT.Q		(Rm, Disp5), Rn		//(TTAG)
-** F0nm_4Go4  LEAT.B		(Rm, Ro), Rn		//(TTAG)
-** F0nm_4Go5  LEAT.W		(Rm, Ro), Rn		//(TTAG)
-** F0nm_4Go6  LEAT.L		(Rm, Ro), Rn		//(TTAG)
-** F0nm_4Go7  LEAT.Q		(Rm, Ro), Rn		//(TTAG)
+* F0nm_4Go0  LEAT.B		(Rm, Disp5), Rn		//(TTAG)
+* F0nm_4Go1  LEAT.W		(Rm, Disp5), Rn		//(TTAG)
+* F0nm_4Go2  LEAT.L		(Rm, Disp5), Rn		//(TTAG)
+* F0nm_4Go3  LEAT.Q		(Rm, Disp5), Rn		//(TTAG)
+* F0nm_4Go4  LEAT.B		(Rm, Ro), Rn		//(TTAG)
+* F0nm_4Go5  LEAT.W		(Rm, Ro), Rn		//(TTAG)
+* F0nm_4Go6  LEAT.L		(Rm, Ro), Rn		//(TTAG)
+* F0nm_4Go7  LEAT.Q		(Rm, Ro), Rn		//(TTAG)
+
+* FE F0nm_4Go0  LEAT.B	(Rm, Disp29s), Rn	//(TTAG)
+* FE F0nm_4Go1  LEAT.W	(Rm, Disp29s), Rn	//(TTAG)
+* FE F0nm_4Go2  LEAT.L	(Rm, Disp29s), Rn	//(TTAG)
+* FE F0nm_4Go3  LEAT.Q	(Rm, Disp29s), Rn	//(TTAG)
 
 The LEAT.x instruction will have similar behavior to a normal LEA.
 
@@ -1097,9 +1130,7 @@ Targeting R0/DLR:
 Targeting GPRs:
 * Dnii       LDI		Imm8s, Rn		//Rn=Imm8s
 * F2n0_Chjj  LDIZ		Imm10u, Rn		//(WEX2), Rn=Imm10u
-* F2n0_CHjj  LDIZD		Imm10u, Rn		//(WEX2), Rn=Imm10u (Hi=Undef)
 * F2n1_Chjj  LDIN		Imm10n, Rn		//(WEX2), Rn=Imm10n
-* F2n1_CHjj  LDIND		Imm10n, Rn		//(WEX2), Rn=Imm10n (Hi=Undef)
 * F80n_iiii  LDIZ		Imm16u, Rn
 * F81n_iiii  LDIZ		Imm16u, Rk
 * F82n_iiii  LDIN		Imm16n, Rn
@@ -1116,6 +1147,17 @@ Load an 8, 10, 16, or 32 bit value into a GPR.
 LDIZ will zero extend the value up to the size of the register.
 
 LDIN will extend the value with ones up to the size of the register.
+
+
+=== LDIMIZ/LDIMIN ===
+
+* F2n0_CHjj  LDIMIZ	Imm10u, Rn
+* F2n1_CHjj  LDIMIN	Imm10n, Rn
+
+These will load an immediate into a register, but with the value shifted left by 16 bits.
+
+LDIMIZ will load a shifted zero-extended immediate.
+LDIMIN will load a shifted one-extended immediate.
 
 
 === LDISH ===
@@ -1386,14 +1428,14 @@ The MOVD instruction is now an alias for the EXTU.L instruction.
 * 0Cnm       MOV.B		(Rm, DLR), Rn		//(Rm==0): PC-Rel
 * F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0	//(Rn==0): PC-Rel
 * F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
-* F1nm_0gdd  MOV.B		Rn, (Rm, disp9u)
-* F1nm_8gdd  MOV.B		(Rm, disp9u), Rn
+* F1nm_0gdd  MOV.B		Rn, (Rm, Disp9u)
+* F1nm_8gdd  MOV.B		(Rm, Disp9u), Rn
 
 * F0nm_0go4  MOV.B		Rn, (Rm, Ro)		//Q=0	//(Rn==0): PC-Rel
 * F0nm_0goC  MOV.B		(Rm, Ro), Rn		//Q=0	//(Rm==0): PC-Rel
 
-* FEdd_dddd-F1nm_0gdd  MOV.B	Rn, (Rm, disp33s)			//(Jumbo)
-* FEdd_dddd-F1nm_8gdd  MOV.B	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_0gdd  MOV.B	Rn, (Rm, Disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_8gdd  MOV.B	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0gi0  MOV.B	Rn, (Rm, Disp17s)			//(RiMOV)
 * FFw0_0vii-F0nm_0go4  MOV.B	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
@@ -1405,6 +1447,8 @@ The MOVD instruction is now an alias for the EXTU.L instruction.
 Load or store a Byte to/from memory.
 The byte is sign extended to the size of the register.
 
+In Baseline Mode, Disp9u will always be zero extended.
+In XG2 Mode, using the WI flag will encode a one-extended (negative) displacement.
 
 The behavior of the address for MOV.x will depend on the address space size.
 In a 32 bit address mode, the high 32 bits of the address will be ignored (treated as if they were always zero).
@@ -1437,11 +1481,11 @@ For other Indexed forms:
 
 * F0nm_4go5  MOV.C		Cn, (Rm, Ro)
 * F0nm_4goD  MOV.C		(Rm, Ro), Cn
-* F1nm_5gdd  MOV.C		Cn, (Rm, disp9u)
-* F1nm_7gdd  MOV.C		(Rm, disp9u), Cn
+* F1nm_5gdd  MOV.C		Cn, (Rm, Disp9u)
+* F1nm_7gdd  MOV.C		(Rm, Disp9u), Cn
 
-* FEdd_dddd-F1nm_5gdd  MOV.C	Rn, (Rm, disp33s)			//(Jumbo)
-* FEdd_dddd-F1nm_7gdd  MOV.C	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_5gdd  MOV.C	Rn, (Rm, Disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_7gdd  MOV.C	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_4go3  MOV.C	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
 * FFw0_0Vii-F0nm_4go3  MOV.C	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
@@ -1460,20 +1504,20 @@ See MOV.B for general Load/Store semantics.
 * 06nm       MOV.L		Rn, (Rm, DLR)		//(Rn==0): PC-Rel
 * 0Anm       MOV.L		(Rm), Rn
 * 0Enm       MOV.L		(Rm, DLR), Rn		//(Rm==0): PC-Rel
-* 40nd       MOV.L		Rn, (SP, disp4u)	//Stack-Relative Store
-* 42nd       MOV.L		Rk, (SP, disp4u)	//Stack-Relative Store
-* 44nd       MOV.L		(SP, disp4u), Rn	//Stack-Relative Load
-* 46nd       MOV.L		(SP, disp4u), Rk	//Stack-Relative Load
+* 40nd       MOV.L		Rn, (SP, Disp4u)	//Stack-Relative Store
+* 42nd       MOV.L		Rk, (SP, Disp4u)	//Stack-Relative Store
+* 44nd       MOV.L		(SP, Disp4u), Rn	//Stack-Relative Load
+* 46nd       MOV.L		(SP, Disp4u), Rk	//Stack-Relative Load
 * F0nm_0go6  MOV.L		Rn, (Rm, Ro)		//(Rn==0): PC-Rel
 * F0nm_0goE  MOV.L		(Rm, Ro), Rn		//(Rm==0): PC-Rel
-* F1nm_2gdd  MOV.L		Rn, (Rm, disp9u)
-* F1nm_Agdd  MOV.L		(Rm, disp9u), Rn
+* F1nm_2gdd  MOV.L		Rn, (Rm, Disp9u)
+* F1nm_Agdd  MOV.L		(Rm, Disp9u), Rn
 
 * F2n8_Dhjj  MOV.L		Rn, (GBR, Disp10u*4)
 * F2nA_Dhjj  MOV.L		(GBR, Disp10u*4), Rn
 
-* FEdd_dddd-F1nm_2gdd  MOV.L	Rn, (Rm, disp33s)			//(Jumbo)
-* FEdd_dddd-F1nm_Agdd  MOV.L	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_2gdd  MOV.L	Rn, (Rm, Disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_Agdd  MOV.L	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0gi2  MOV.L	Rn, (Rm, Disp17s)			//(RiMOV)
 * FFw0_0Vii-F0nm_0gi2  MOV.L	Rn, (Rm, Disp17s*1)			//(RiMOV)
@@ -1495,20 +1539,20 @@ See MOV.B for general Load/Store semantics.
 * 07nm       MOV.Q		Rn, (Rm, DLR)
 * 0Bnm       MOV.Q		(Rm), Rn
 * 0Fnm       MOV.Q		(Rm, DLR), Rn
-* 41nd       MOV.Q		Rn, (SP, disp4u)
-* 43nd       MOV.Q		Rk, (SP, disp4u)
-* 45nd       MOV.Q		(SP, disp4u), Rn
-* 47nd       MOV.Q		(SP, disp4u), Rk
+* 41nd       MOV.Q		Rn, (SP, Disp4u)
+* 43nd       MOV.Q		Rk, (SP, Disp4u)
+* 45nd       MOV.Q		(SP, Disp4u), Rn
+* 47nd       MOV.Q		(SP, Disp4u), Rk
 * F0nm_0go7  MOV.Q		Rn, (Rm, Ro)
 * F0nm_0goF  MOV.Q		(Rm, Ro), Rn
-* F1nm_3gdd  MOV.Q		Rn, (Rm, disp9u)
-* F1nm_Bgdd  MOV.Q		(Rm, disp9u), Rn
+* F1nm_3gdd  MOV.Q		Rn, (Rm, Disp9u)
+* F1nm_Bgdd  MOV.Q		(Rm, Disp9u), Rn
 
 * F2n9_Dhjj  MOV.Q		Rn, (GBR, Disp10u*8)
 * F2nB_Dhjj  MOV.Q		(GBR, Disp10u*8), Rn
 
-* FEdd_dddd-F1nm_3gdd  MOV.Q	Rn, (Rm, disp33s)			//(Jumbo)
-* FEdd_dddd-F1nm_Bgdd  MOV.Q	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_3gdd  MOV.Q	Rn, (Rm, Disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_Bgdd  MOV.Q	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0gi3  MOV.Q	Rn, (Rm, Disp17s)			//(RiMOV)
 * FFw0_0Vii-F0nm_0gi3  MOV.Q	Rn, (Rm, Disp17s*1)			//(RiMOV)
@@ -1532,11 +1576,11 @@ See MOV.B for general Load/Store semantics.
 * 0Dnm       MOV.W		(Rm, DLR), Rn
 * F0nm_0go5  MOV.W		Rn, (Rm, Ro)
 * F0nm_0goD  MOV.W		(Rm, Ro), Rn
-* F1nm_1gdd  MOV.W		Rn, (Rm, disp9u)
-* F1nm_9gdd  MOV.W		(Rm, disp9u), Rn
+* F1nm_1gdd  MOV.W		Rn, (Rm, Disp9u)
+* F1nm_9gdd  MOV.W		(Rm, Disp9u), Rn
 
-* FEdd_dddd-F1nm_1gdd  MOV.W	Rn, (Rm, disp33s)			//(Jumbo)
-* FEdd_dddd-F1nm_9gdd  MOV.W	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_1gdd  MOV.W	Rn, (Rm, Disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_9gdd  MOV.W	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0gi1  MOV.W	Rn, (Rm, Disp17s)			//(RiMOV)
 * FFw0_0Vii-F0nm_0gi1  MOV.W	Rn, (Rm, Disp17s*1)			//(RiMOV)
@@ -1558,9 +1602,9 @@ See MOV.B for general Load/Store semantics.
 * 50nm       MOVU.B	(Rm), Rn
 * 52nm       MOVU.B	(Rm, DLR), Rn
 * F0nm_0GoC  MOVU.B	(Rm, Ro), Rn
-* F1nm_8Gdd  MOVU.B	(Rm, disp9u), Rn
+* F1nm_8Gdd  MOVU.B	(Rm, Disp9u), Rn
 
-* FEdd_dddd-F1nm_8Gdd  MOVU.B	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_8Gdd  MOVU.B	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0Gi8  MOVU.B	(Rm, Disp17s), Rn			//(RiMOV)
 * FFw0_0vii-F0nm_0GoC  MOVU.B	(Rm, Ro, Disp11u), Rn		//(RiMOV)
@@ -1574,16 +1618,16 @@ See MOV.B for general Load/Store semantics.
 
 === MOVU.L ===
 
-* 28nd       MOVU.L	(SP, disp4u), Rn
-* 2And       MOVU.L	(SP, disp4u), Rk
+* 28nd       MOVU.L	(SP, Disp4u), Rn
+* 2And       MOVU.L	(SP, Disp4u), Rk
 * 80nm       MOVU.L	(Rm), Rn
 * 88nm       MOVU.L	(Rm, DLR), Rn
 * F0nm_0GoE  MOVU.L	(Rm, Ro), Rn
-* F1nm_AGdd  MOVU.L	(Rm, disp9u), Rn
+* F1nm_AGdd  MOVU.L	(Rm, Disp9u), Rn
 
 * F2nA_DHjj  MOVU.L	(GBR, Disp10u*4), Rn
 
-* FEdd_dddd-F1nm_AGdd  MOVU.L	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_AGdd  MOVU.L	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0GiA  MOVU.L	(Rm, Disp17s), Rn			//(RiMOV)
 * FFw0_0Vii-F0nm_0GiA  MOVU.L	(Rm, Disp17s*1), Rn			//(RiMOV)
@@ -1601,9 +1645,9 @@ See MOV.B for general Load/Store semantics.
 * 51nm       MOVU.W	(Rm), Rn
 * 53nm       MOVU.W	(Rm, DLR), Rn
 * F0nm_0GoD  MOVU.W	(Rm, Ro), Rn
-* F1nm_9Gdd  MOVU.W	(Rm, disp9u), Rn
+* F1nm_9Gdd  MOVU.W	(Rm, Disp9u), Rn
 
-* FEdd_dddd-F1nm_9Gdd  MOVU.W	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_9Gdd  MOVU.W	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_0Gi9  MOVU.W	(Rm, Disp17s), Rn			//(RiMOV)
 * FFw0_0Vii-F0nm_0Gi9  MOVU.W	(Rm, Disp17s*1), Rn			//(RiMOV)
@@ -1618,20 +1662,20 @@ See MOV.B for general Load/Store semantics.
 
 === MOV.X (MOVX2) ===
 
-* 29nd       MOV.X		(SP, disp4u), Rx
-* 2Bnd       MOV.X		Rx, (SP, disp4u)
+* 29nd       MOV.X		(SP, Disp4u), Rx
+* 2Bnd       MOV.X		Rx, (SP, Disp4u)
 * F0nm_4eo0 ? MOV.X		Rn, (Rm, Disp5)
 * F0nm_4eo4  MOV.X		Rn, (Rm, Ro)
 * F0nm_4eo8 ? MOV.X		(Rm, Disp5), Rn
 * F0nm_4eoC  MOV.X		(Rm, Ro), Rn
-* F1nm_5Gdd  MOV.X		Rn, (Rm, disp9u)
-* F1nm_7Gdd  MOV.X		(Rm, disp9u), Rn
+* F1nm_5Gdd  MOV.X		Rn, (Rm, Disp9u)
+* F1nm_7Gdd  MOV.X		(Rm, Disp9u), Rn
 
 * F2n9_DHjj  MOV.X		Xn, (GBR, Disp10u*8)
 * F2nB_DHjj  MOV.X		(GBR, Disp10u*8), Xn
 
-* FEdd_dddd-F1nm_5gdd  MOV.X	Rn, (Rm, disp33s)			//(Jumbo)
-* FEdd_dddd-F1nm_7gdd  MOV.X	(Rm, disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_5gdd  MOV.X	Rn, (Rm, Disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_7gdd  MOV.X	(Rm, Disp33s), Rn			//(Jumbo)
 
 * FFw0_0vii-F0nm_4gi0  MOV.X	Rn, (Rm, Disp17s)			//(RiMOV)
 * FFw0_0vii-F0nm_4go4  MOV.X	Rn, (Rm, Ro, Disp11u)		//(RiMOV)

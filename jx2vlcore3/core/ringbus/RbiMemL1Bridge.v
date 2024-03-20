@@ -53,19 +53,19 @@ input[63:0]		regInMmcr;
 input[63:0]		regInKrr;
 input[63:0]		regInSr;
 
-input [ 15:0]	l1mSeqIn;		//operation sequence
-output[ 15:0]	l1mSeqOut;		//operation sequence
-input [ 15:0]	l1mOpmIn;		//memory operation mode
-output[ 15:0]	l1mOpmOut;		//memory operation mode
+`input_rbseq	l1mSeqIn;		//operation sequence
+`output_rbseq	l1mSeqOut;		//operation sequence
+`input_rbopm	l1mOpmIn;		//memory operation mode
+`output_rbopm	l1mOpmOut;		//memory operation mode
 `input_l1addr	l1mAddrIn;		//memory input address
 `output_l1addr	l1mAddrOut;		//memory output address
 `input_tile		l1mDataIn;		//memory input data
 `output_tile	l1mDataOut;		//memory output data
 
-input [ 15:0]	l2mSeqIn;		//operation sequence
-output[ 15:0]	l2mSeqOut;		//operation sequence
-input [ 15:0]	l2mOpmIn;		//memory operation mode
-output[ 15:0]	l2mOpmOut;		//memory operation mode
+`input_rbseq	l2mSeqIn;		//operation sequence
+`output_rbseq	l2mSeqOut;		//operation sequence
+`input_rbopm	l2mOpmIn;		//memory operation mode
+`output_rbopm	l2mOpmOut;		//memory operation mode
 `input_l2addr	l2mAddrIn;		//memory input address
 `output_l2addr	l2mAddrOut;		//memory output address
 `input_tile		l2mDataIn;		//memory input data
@@ -76,20 +76,20 @@ input [  7:0]	regRngBridge;	//Random Sequence
 
 
 
-reg[ 15:0]		tL1mSeqOut;			//operation sequence
-reg[ 15:0]		tL1mOpmOut;			//memory operation mode
+`reg_rbseq		tL1mSeqOut;			//operation sequence
+`reg_rbopm		tL1mOpmOut;			//memory operation mode
 `reg_l1addr		tL1mAddrOut;		//memory output address
 `reg_tile		tL1mDataOut;		//memory output data
 
-reg[ 15:0]		tL2mSeqOut;			//operation sequence
-reg[ 15:0]		tL2mOpmOut;			//memory operation mode
+`reg_rbseq		tL2mSeqOut;			//operation sequence
+`reg_rbopm		tL2mOpmOut;			//memory operation mode
 `reg_l2addr		tL2mAddrOut;		//memory output address
 `reg_tile		tL2mDataOut;		//memory output data
 
 `ifdef jx2_rbi_bridge_ecyc_l1
 
-reg[ 15:0]		tL1mSeqOut2;			//operation sequence
-reg[ 15:0]		tL1mOpmOut2;			//memory operation mode
+`reg_rbseq		tL1mSeqOut2;			//operation sequence
+`reg_rbopm		tL1mOpmOut2;			//memory operation mode
 `reg_l1addr		tL1mAddrOut2;		//memory output address
 `reg_tile		tL1mDataOut2;		//memory output data
 
@@ -109,8 +109,8 @@ assign		l1mDataOut	= tL1mDataOut;
 
 `ifdef jx2_rbi_bridge_ecyc_l2
 
-reg[ 15:0]		tL2mSeqOut2;			//operation sequence
-reg[ 15:0]		tL2mOpmOut2;			//memory operation mode
+`reg_rbseq		tL2mSeqOut2;			//operation sequence
+`reg_rbopm		tL2mOpmOut2;			//memory operation mode
 `reg_l2addr		tL2mAddrOut2;		//memory output address
 `reg_tile		tL2mDataOut2;		//memory output data
 
@@ -168,25 +168,25 @@ assign		l2mRingIsIrq =
 	 (l2mDataIn[11:8] == 4'hF));
 assign		l2mRingIsIrqBc = l2mRingIsIrq && (l2mDataIn[11:8] == 4'hF);
 
-reg[ 15:0]		tL1mSeqReq;			//operation sequence
-reg[ 15:0]		tL1mOpmReq;			//memory operation mode
+`reg_rbseq		tL1mSeqReq;			//operation sequence
+`reg_rbopm		tL1mOpmReq;			//memory operation mode
 `reg_l1addr		tL1mAddrReq;		//memory output address
 reg[127:0]		tL1mDataReq;		//memory output data
 
-reg[ 15:0]		tL2mSeqReq;			//operation sequence
-reg[ 15:0]		tL2mOpmReq;			//memory operation mode
+`reg_rbseq		tL2mSeqReq;			//operation sequence
+`reg_rbopm		tL2mOpmReq;			//memory operation mode
 `reg_l2addr		tL2mAddrReq;		//memory output address
 reg[127:0]		tL2mDataReq;		//memory output data
 
 `ifndef def_true
 
-reg[ 15:0]		tTlbSeqReqIn;			//operation sequence
-reg[ 15:0]		tTlbOpmReqIn;			//memory operation mode
+`reg_rbseq		tTlbSeqReqIn;			//operation sequence
+`reg_rbopm		tTlbOpmReqIn;			//memory operation mode
 `reg_l1addr		tTlbAddrReqIn;		//memory output address
 reg[127:0]		tTlbDataReqIn;		//memory output data
 
-reg[ 15:0]		tTlbSeqReqOut;		//operation sequence
-reg[ 15:0]		tTlbOpmReqOut;		//memory operation mode
+`reg_rbseq		tTlbSeqReqOut;		//operation sequence
+`reg_rbopm		tTlbOpmReqOut;		//memory operation mode
 `reg_l1addr		tTlbAddrReqOut;		//memory output address
 reg[127:0]		tTlbDataReqOut;		//memory output data
 
@@ -204,6 +204,8 @@ wire			l2mOpmIn_IsReq =
 	(l2mOpmIn[7:0]==JX2_RBI_OPM_LDSL)	||
 	(l2mOpmIn[7:0]==JX2_RBI_OPM_LDUL)	||
 	(l2mOpmIn[7:0]==JX2_RBI_OPM_STX)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_LDXC)	||
+	(l2mOpmIn[7:0]==JX2_RBI_OPM_STXC)	||
 	(l2mOpmIn[7:0]==JX2_RBI_OPM_STSQ)	||
 	(l2mOpmIn[7:0]==JX2_RBI_OPM_STSL)	;
 

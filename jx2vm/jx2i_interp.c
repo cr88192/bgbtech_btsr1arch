@@ -1952,7 +1952,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	BJX2_Opcode *op1;
 	s64 li;
 	int opw1, opw2, opw3, opsep;
-	int msc, psc, brpc, nonl, nosc;
+	int msc, psc, brpc, nonl, nosc, islea;
 
 //	BJX2_DbgPrintf(ctx, "%05X  %04X %-8s ", op->pc, op->opn,
 //		BJX2_DbgPrintNameForNmid(ctx, op->nmid));
@@ -2170,6 +2170,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		}
 	}
 
+	islea=0;
 	msc=1;
 	psc=1;
 	switch(op->nmid)
@@ -2211,13 +2212,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	case BJX2_NMID_MOVX2:
 		msc=8;	break;
 	case BJX2_NMID_LEAB:
-		msc=1;	psc=1;	break;
+		islea=1; msc=1;	psc=1;	break;
 	case BJX2_NMID_LEAW:
-		msc=2;	psc=2;	break;
+		islea=1; msc=2;	psc=2;	break;
 	case BJX2_NMID_LEAD:
-		msc=4;	psc=4;	break;
+		islea=1; msc=4;	psc=4;	break;
 	case BJX2_NMID_LEAQ:
-		msc=8;	psc=8;	break;
+		islea=1; msc=8;	psc=8;	break;
 
 	case BJX2_NMID_FMOVS:
 		msc=4;	break;
@@ -2314,7 +2315,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 	case BJX2_FMID_LDREGDISPREG:
 	case BJX2_FMID_LDREGDISP1REG:
-		if((op->rm==BJX2_REG_PC) || (op->rm==BJX2_REG_GBR))
+		if(((op->rm==BJX2_REG_PC) || (op->rm==BJX2_REG_GBR)) && !islea)
 			msc=1;
 
 		if(		(op->rq!=BJX2_REG_GBR_HI)	&&
@@ -2343,7 +2344,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 	case BJX2_FMID_REGSTREGDISP:
 	case BJX2_FMID_REGSTREGDISP1:
-		if((op->rn==BJX2_REG_PC) || (op->rn==BJX2_REG_GBR))
+		if(((op->rn==BJX2_REG_PC) || (op->rn==BJX2_REG_GBR)) && !islea)
 			msc=1;
 
 		if(		(op->rq!=BJX2_REG_GBR_HI)	&&

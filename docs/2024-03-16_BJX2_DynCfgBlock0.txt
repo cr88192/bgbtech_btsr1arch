@@ -1,0 +1,19 @@
+Possible/Idea:
+* Part of the F3 block will be left as Dynamic Config Blocks.
+** Say, F3-8..F3-F
+* These blocks may be configured with a REQDCB instruction.
+** This instruction will specify an immediate for the requested block.
+** Along with encoding which block to configure.
+
+Which instructions exist within each DCB may be updated at runtime, likely within function prologs.
+
+Say:
+* REQDCB 0x12345678, R8
+Would request that F3-8 be configured with whatever extension corresponds to this magic number. This instruction may take a certain number of cycles to take effect.
+
+After this instruction takes effect, instructions of the form:
+* F3nm-8eoZ
+Will be decoded according to the active configuration for that block.
+
+The idea is that any magic number may be loaded into any of the DCBs, though some extensions may require multiple DCBs.
+

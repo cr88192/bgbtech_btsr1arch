@@ -1856,6 +1856,40 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 //			return(-1);
 	}
 
+
+	if((op1->rn==BJX2_REG_SP) ||
+		(op1->rn==BJX2_REG_DLR) ||
+		(op1->rn==BJX2_REG_DHR))
+	{
+		printf("BJX2_CheckWexSanity3W: Bad Target Register\n");
+		return(-1);
+	}
+
+#if 0
+	if((op1->rm==BJX2_REG_SP) || (op1->ro==BJX2_REG_SP))
+//	if(op1->ro==BJX2_REG_SP)
+	{
+		printf("BJX2_CheckWexSanity3W: Bad Source Register\n");
+		return(-1);
+	}
+#endif
+
+	if((op2->rn==BJX2_REG_SP) ||
+		(op2->rn==BJX2_REG_DHR))
+	{
+		printf("BJX2_CheckWexSanity3W: Bad Target Register\n");
+		return(-1);
+	}
+
+#if 0
+//	if((op1->rm==BJX2_REG_SP) || (op1->ro==BJX2_REG_SP))
+	if(op2->ro==BJX2_REG_SP)
+	{
+		printf("BJX2_CheckWexSanity3W: Bad Source Register\n");
+		return(-1);
+	}
+#endif
+
 	return(1);
 }
 
@@ -1930,6 +1964,21 @@ int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 //		if((op2->rn==op1->rm) || (op2->rn==op1->ro))
 //			return(-1);
 	}
+
+	if((op1->rn==BJX2_REG_SP) || (op1->rn==BJX2_REG_DHR))
+	{
+		printf("BJX2_CheckWexSanity2W: Bad Target Register\n");
+		return(-1);
+	}
+
+#if 0
+//	if((op1->rm==BJX2_REG_SP) || (op1->ro==BJX2_REG_SP))
+	if(op1->ro==BJX2_REG_SP)
+	{
+		printf("BJX2_CheckWexSanity2W: Bad Source Register\n");
+		return(-1);
+	}
+#endif
 
 	return(1);
 }

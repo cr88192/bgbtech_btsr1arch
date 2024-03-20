@@ -30,6 +30,8 @@ Implement a 32K ROM and 8K of SRAM.
 
  0000.. 7FFF: ROM
  8000.. BFFF: ROM-1
+   BF00.. BFFF: SRAM C-TAG
+     If capability tagging exists, ROM otherwise.
  C000.. DFFF: SRAM
  E000.. FFFF: SRAM-1
 10000..1FFFF: Zero Page
@@ -101,12 +103,29 @@ reg[127:0]	ramTileData[1023:0];
 reg[9:0]	tRamBlkIx;
 reg[9:0]	tRamBlkIxL;
 reg[9:0]	tRamStBlkIx;
+
+reg[127:0]	ramTileCTag[7:0];
+reg[2:0]	tRamCTagIx;
+reg[2:0]	tRamCTagIxL;
+reg[2:0]	tRamStCTagIx;
+
 `else
 reg[127:0]	ramTileData[ 511:0];
 reg[8:0]	tRamBlkIx;
 reg[8:0]	tRamBlkIxL;
 reg[8:0]	tRamStBlkIx;
+
+reg[127:0]	ramTileCTag[3:0];
+reg[1:0]	tRamCTagIx;
+reg[1:0]	tRamCTagIxL;
+reg[1:0]	tRamStCTagIx;
 `endif
+
+reg[127:0]	tRamCTag;
+reg[127:0]	tRamStCTag;
+
+reg			tRamCBit;
+reg			tRamStCBit;
 
 
 reg[127:0]	tRomBlkData;
@@ -115,6 +134,8 @@ reg[127:0]	tRamStBlkData;
 
 reg			tRamDoSt;
 reg			tRamDoStL;
+
+reg			tRamDoStCTag;
 
 reg			tAddrIsRom;
 reg			tAddrIsRam;
@@ -128,8 +149,12 @@ wire		memRingIsStx;
 wire		memRingIsPfx;
 wire		memRingIsCcmd;
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
-assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
-assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+assign	memRingIsLdx	=
+	(memOpmIn[7:0] == JX2_RBI_OPM_LDX) ||
+	(memOpmIn[7:0] == JX2_RBI_OPM_LDXC);
+assign	memRingIsStx	=
+	(memOpmIn[7:0] == JX2_RBI_OPM_STX) ||
+	(memOpmIn[7:0] == JX2_RBI_OPM_STXC);
 assign	memRingIsPfx	=
 	(memOpmIn[7:0] == JX2_RBI_OPM_PFX) ||
 	(memOpmIn[7:0] == JX2_RBI_OPM_SPX);
@@ -146,6 +171,7 @@ wire		memAddrIsNop;
 wire		memAddrIsRts;
 wire		memAddrIsBad1;
 wire		memAddrIsBad2;
+wire		memAddrIsCTag;
 
 `ifndef def_true
 assign	memAddrIsLo128k		= (memAddrIn[31:17] == UV15_00);
@@ -183,9 +209,16 @@ assign	memAddrIsZero		= memAddrIsLo128k && (memAddrIn[17:16]==2'b01);
 assign	memAddrIsNop		= memAddrIsLo128k && (memAddrIn[17:16]==2'b10);
 assign	memAddrIsRts		= memAddrIsLo128k && (memAddrIn[17:16]==2'b11);
 assign	memAddrIsBad1		= (memAddrIn[31:24] == UV8_00) && !memAddrIsLo128k;
-assign	memAddrIsBad2		= (memAddrIn[31:30] != UV2_00);
+// assign	memAddrIsBad2		= (memAddrIn[31:30] != UV2_00);
+assign	memAddrIsBad2		=
+		(memAddrIn[31:30] != UV2_00) ||
+		(memAddrIn[43:32] != UV12_00);
 `endif
 
+// `ifdef jx2_enable_memcap
+assign	memAddrIsCTag		= memAddrIsLo128k &&
+	(memAddrIn[17:8]==10'b0010_111111);
+// `endif
 
 reg		mem2RingIsIdle;
 reg		mem2RingIsResp;
@@ -200,6 +233,7 @@ reg		mem2AddrIsRam;
 reg		mem2AddrIsZero;
 reg		mem2AddrIsNop;
 reg		mem2AddrIsRts;
+reg		mem2AddrIsCTag;
 
 reg		mem2AddrIsBad1;
 reg		mem2AddrIsBad2;
@@ -231,8 +265,10 @@ begin
 
 `ifdef jx2_enable_sram16k
 	tRamBlkIx		= memAddrIn[13:4];
+	tRamCTagIx		= tRamBlkIx[9:7];
 `else
 	tRamBlkIx		= memAddrIn[12:4];
+	tRamCTagIx		= tRamBlkIx[8:7];
 `endif
 	
 //	tMemOK			= UMEM_OK_READY;
@@ -242,6 +278,29 @@ begin
 	tRamStBlkData	= UV128_XX;
 	tRamStBlkIx		= UV9_00;
 	tRamDoSt		= 0;
+	
+`ifdef jx2_enable_memcap
+	if(memAddrIsCTag)
+	begin
+`ifdef jx2_enable_sram16k
+		tRamCTagIx		= memAddrIn[6:4];
+`else
+		tRamCTagIx		= memAddrIn[5:4];
+`endif
+	end
+`endif
+	
+	tRamStCTagIx	= tRamCTagIx;
+	tRamDoStCTag	= 0;
+
+`ifdef jx2_enable_memcap
+	tRamStCTag		= tRamCTag;
+	tRamCBit		= tRamCTag[tRamBlkIxL[6:0]];
+`else
+	tRamStCTag		= 0;
+	tRamCBit		= 0;
+`endif
+
 
 	if(memAddrIsRam && memRingIsStx)
 	begin
@@ -249,6 +308,15 @@ begin
 		tRamStBlkIx		= tRamBlkIx;
 		tRamDoSt		= 1;
 	end
+
+`ifdef jx2_enable_memcap
+	if(memAddrIsCTag && memRingIsStx)
+	begin
+		tRamStCTag		= memDataIn;
+		tRamStCTagIx	= tRamCTagIx;
+		tRamDoStCTag	= 1;
+	end
+`endif
 
 	tMemSeqReq		= mem2SeqIn;
 	tMemOpmReq		= mem2OpmIn;
@@ -268,13 +336,37 @@ begin
 	if(mem2RingIsStx)
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKST;
 
-	tMemOpmReq[3:0] = mem2OpmIn[11:8];
+`ifdef jx2_enable_memcap
+	if(mem2AddrIsRam && mem2RingIsLdx && tRamCBit)
+	begin
+		tMemOpmReq[3:0] = 4'h8;
+	end
+`endif
+
+`ifdef jx2_enable_memcap
+	if(mem2AddrIsRam && mem2RingIsStx)
+	begin
+		tRamStCTagIx	= tRamCTagIxL;
+		tRamStCTag[tRamBlkIxL[6:0]]=(mem2OpmIn[3:0]==4'hF);
+		tRamDoStCTag	= 1;
+	end
+`endif
+
+//	tMemOpmReq[3:0] = mem2OpmIn[11:8];
+	tMemOpmReq[11:8] = mem2OpmIn[11:8];
 
 	tMemDataReq		= UV128_00;
 	if(mem2AddrIsRom)
 		tMemDataReq		= tRomBlkData;
 	if(mem2AddrIsRam)
 		tMemDataReq		= tRamBlkData;
+`ifdef jx2_enable_memcap
+	if(mem2AddrIsCTag)
+		tMemDataReq		= tRamCTag;
+`else
+	if(mem2AddrIsCTag)
+		tMemDataReq		= UV128_00;
+`endif
 	if(mem2AddrIsNop)
 		tMemDataReq		= 128'h3000_3000_3000_3000_3000_3000_3000_3000;
 	if(mem2AddrIsRts)
@@ -283,7 +375,8 @@ begin
 	if(mem2RingIsCcmd)
 	begin
 		tMemOpmReq[7:0]	= JX2_RBI_OPM_OKLD;
-		tMemOpmReq[3:0] = mem2OpmIn[11:8];
+//		tMemOpmReq[3:0] = mem2OpmIn[11:8];
+		tMemOpmReq[11:8] = mem2OpmIn[11:8];
 		tMemCcmdReq		= 1;
 	end
 
@@ -292,7 +385,8 @@ begin
 	begin
 		$display("L2Rom: Skip Invalid Address S=%X O=%X A=%X D=%X",
 			mem2SeqIn, mem2OpmIn, mem2AddrIn, mem2DataIn);
-		tMemOpmReq[3:0] = 4'b1011;
+//		tMemOpmReq[3:0] = 4'b1011;
+		tMemOpmReq[11:8] = 4'b1011;
 		tMemCcmdReq		= 1;
 	end
 
@@ -319,21 +413,36 @@ begin
 	mem2AddrIsZero		<= memAddrIsZero;
 	mem2AddrIsNop		<= memAddrIsNop;
 	mem2AddrIsRts		<= memAddrIsRts;
+	mem2AddrIsCTag		<= memAddrIsCTag;
 
 	mem2AddrIsBad1		<= memAddrIsBad1;
 	mem2AddrIsBad2		<= memAddrIsBad2;
 
 	tRomBlkIxL			<= tRomBlkIx;
 	tRamBlkIxL			<= tRamBlkIx;
+	tRamCTagIxL			<= tRamCTagIx;
 	
 	tRomBlkData		<= romTileData[tRomBlkIx];
 	tRamBlkData		<= ramTileData[tRamBlkIx];
 
+`ifdef jx2_enable_memcap
+	tRamCTag		<= ramTileCTag[tRamCTagIx];
+`else
+	tRamCTag		<= 0;
+`endif
+
 	tRamDoStL		<= tRamDoSt;	
 	if(tRamDoSt)
 	begin
-		ramTileData[tRamStBlkIx]	<= tRamStBlkData;
+		ramTileData[tRamStBlkIx]		<= tRamStBlkData;
 	end
+
+`ifdef jx2_enable_memcap
+	if(tRamDoStCTag)
+	begin
+		ramTileCTag[tRamStCTagIx]		<= tRamStCTag;
+	end
+`endif
 
 	if((mem2AddrIsLo128k &&
 			( mem2RingIsLdx || mem2RingIsStx || mem2RingIsPfx )	) ||

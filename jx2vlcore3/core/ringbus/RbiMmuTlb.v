@@ -57,12 +57,12 @@ input			reset;			//reset
 
 `input_l1addr	regInAddr;		//input Address
 `output_l1addr	regOutAddr;		//output Address
-input[127:0]	regInData;		//input cache line
-output[127:0]	regOutData;		//output cache line
-input[15:0]		regInOpm;		//Operation Size/Type
-output[15:0]	regOutOpm;		//Operation Size/Type
-input[15:0]		regInSeq;		//Operation Size/Type
-output[15:0]	regOutSeq;		//Operation Size/Type
+`input_tile		regInData;		//input cache line
+`output_tile	regOutData;		//output cache line
+`input_rbopm	regInOpm;		//Operation Size/Type
+`output_rbopm	regOutOpm;		//Operation Size/Type
+`input_rbseq	regInSeq;		//Operation Size/Type
+`output_rbseq	regOutSeq;		//Operation Size/Type
 input[7:0]		unitNodeId;		//Node ID
 
 output[127:0]	regOutExc;		//Exception EXC+TEA
@@ -87,15 +87,15 @@ reg[63:0]		tRegInMMCR;		//MMU Control Register
 `reg_l1addr		tRegOutAddr;
 `reg_l1addr		tRegOutAddr2;
 `reg_l1addr		tRegOutAddr3;
-reg[127:0]		tRegOutData;		//output cache line
-reg[127:0]		tRegOutData2;		//output cache line
-reg[127:0]		tRegOutData3;		//output cache line
-reg[15:0]		tRegOutOpm;
-reg[15:0]		tRegOutOpm2;
-reg[15:0]		tRegOutOpm3;
-reg[15:0]		tRegOutSeq;
-reg[15:0]		tRegOutSeq2;
-reg[15:0]		tRegOutSeq3;
+`reg_tile		tRegOutData;		//output cache line
+`reg_tile		tRegOutData2;		//output cache line
+`reg_tile		tRegOutData3;		//output cache line
+`reg_rbopm		tRegOutOpm;
+`reg_rbopm		tRegOutOpm2;
+`reg_rbopm		tRegOutOpm3;
+`reg_rbseq		tRegOutSeq;
+`reg_rbseq		tRegOutSeq2;
+`reg_rbseq		tRegOutSeq3;
 
 // assign		regOutAddr = tRegOutAddr3;
 // assign		regOutData = tRegOutData3;
@@ -124,9 +124,10 @@ assign		regOutExc = { tRegOutTeaHi3[63:0], tRegOutTea3[47:0], tRegOutExc3 };
 `reg_l1addr		regInAddrA;		//input Address
 
 `reg_l1addr		tRegInAddr;	//input Address
-reg[15:0]		tRegInOpm;		//Operation Size/Type
-reg[15:0]		tRegInSeq;		//
-reg[127:0]		tRegInData;		//output cache line
+`reg_rbopm		tRegInOpm;		//Operation Size/Type
+`reg_rbseq		tRegInSeq;		//
+`reg_tile		tRegInData;		//output cache line
+
 reg[127:0]		tRegInLdtlb;	//input LDTLB
 
 `ifdef jx2_tlbsz_1024
@@ -365,8 +366,12 @@ wire		tRegInIsSTX;
 wire		tRegInIsPFX;
 wire		tRegInIsSPX;
 
-assign		tRegInIsLDX = (tRegInOpm[7:0]==JX2_RBI_OPM_LDX);
-assign		tRegInIsSTX = (tRegInOpm[7:0]==JX2_RBI_OPM_STX);
+assign		tRegInIsLDX =
+	(tRegInOpm[7:0]==JX2_RBI_OPM_LDX) ||
+	(tRegInOpm[7:0]==JX2_RBI_OPM_LDXC);
+assign		tRegInIsSTX =
+	(tRegInOpm[7:0]==JX2_RBI_OPM_STX) ||
+	(tRegInOpm[7:0]==JX2_RBI_OPM_STXC);
 assign		tRegInIsPFX = (tRegInOpm[7:0]==JX2_RBI_OPM_PFX);
 assign		tRegInIsSPX = (tRegInOpm[7:0]==JX2_RBI_OPM_SPX);
 
@@ -385,8 +390,12 @@ wire		regInIsLDX;
 wire		regInIsSTX;
 wire		regInIsPFX;
 wire		regInIsNzX;
-assign		regInIsLDX = (regInOpm[7:0]==JX2_RBI_OPM_LDX);
-assign		regInIsSTX = (regInOpm[7:0]==JX2_RBI_OPM_STX);
+assign		regInIsLDX =
+	(regInOpm[7:0]==JX2_RBI_OPM_LDX) ||
+	(regInOpm[7:0]==JX2_RBI_OPM_LDXC);
+assign		regInIsSTX =
+	(regInOpm[7:0]==JX2_RBI_OPM_STX) ||
+	(regInOpm[7:0]==JX2_RBI_OPM_STXC);
 assign		regInIsPFX =
 	(regInOpm[7:0]==JX2_RBI_OPM_PFX) ||
 	(regInOpm[7:0]==JX2_RBI_OPM_SPX);
@@ -686,7 +695,8 @@ begin
 	tAddrIsMMIO		= ((tRegInAddr[31:28] == 4'hF) &&
 		((tAddrIsLo4G && tlbIs32b) || tAddrIsHi4G || tlbIs32b)) ||
 		tAddrIsHiMMIO;
-	tAddrIsPhys		= (tAddrIsHi4G && !tRegInAddr[31]) ||
+	tAddrIsPhys		=
+//		(tAddrIsHi4G && !tRegInAddr[31]) ||
 		(tRegInAddr[47:44] == 4'hC) ||
 		(tRegInAddr[47:44] == 4'hD);
 	tAddrIsPhysV	= 
@@ -962,9 +972,9 @@ begin
 
 //			tlbAddr		= 48'h010000;
 `ifdef jx2_enable_l1addr96
-			tlbAddr		= { 48'h00, 36'h010, tRegInAddr[11:0] };
+			tlbAddr		= { 48'h00, 4'hC, 32'h010, tRegInAddr[11:0] };
 `else
-			tlbAddr		= { 36'h010, tRegInAddr[11:0] };
+			tlbAddr		= { 4'hC, 32'h010, tRegInAddr[11:0] };
 `endif
 			tRegOutOpm[11:8] = 4'hF;
 		end
@@ -973,7 +983,8 @@ begin
 	begin
 //		tlbAddr		= tRegInAddr[47:0];
 		tlbAddr		= tRegInAddr;
-		if(tAddrIsPhys)
+//		if(tAddrIsPhys)
+		if(tAddrIsPhys || ((tRegInAddr[47:44]==4'h0) && !tlbMmuSkip))
 			tlbAddr[47:44]	= 4'hC;
 		if(tAddrIsPhys && tAddrIsHi4G)
 			tlbAddr[43:32]	= 0;
@@ -1188,10 +1199,12 @@ begin
 
 //		$display("TLB Opm=%X Ok=%X", regInOpm, tRegOutOK);
 
-`ifdef def_true
+//`ifdef def_true
+`ifndef def_true
 		if(tlbMmuEnable && icPageReady &&
 			!tlbMiss && !tlbMmuSkip &&
-			(tRegInOpm[4:3]!=0))
+//			(tRegInOpm[4:3]!=0))
+			(tRegInOpm[5:4]!=0))
 		begin
 			/* Special: Shuffle TLBE's based on TLB Hits.
 			 * This should slightly improve hit rate.

@@ -118,6 +118,9 @@
 `define jx2_enable_fmov			//FPU Load/Store
 `define jx2_enable_fmovh			//FPU Load/Store
 `define jx2_enable_movc			//MOV.C
+
+// `define jx2_enable_memcap			//Enable Memory Capabilities
+
 // `define jx2_enable_movclite		//MOV.C (Lite)
 // `define jx2_enable_bitsel		//Bit Select
 

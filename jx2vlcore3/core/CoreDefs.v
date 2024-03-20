@@ -719,6 +719,20 @@ REGIMMREG, Fz:
 
 	XW:	Rm, Imm9u, Rn (Decoded like REGDISPREG)
 
+REGPC, Fz:
+	SB: (PC, Ro), ZZR
+	SW: (PC, Ro), LR
+	SL: Rn, ZZR, Disp11s
+
+	UB: Rn, Rm, disp8s
+	UW: Rn, ZZR, Disp8s
+
+	UL: Rn, ZZR, Disp10u
+
+	NB: Rm, Rn, disp8s
+	NW: ZZR, Rn, Disp8s
+
+	NL: Rn, ZZR, Disp10n
 
 LDREGDISPREG, Fz:
 	SW: (Rm, Disp9u/17s), Rn
@@ -769,12 +783,12 @@ IMM10REG, Fz
 	SL: 
 	SQ: 
 
-	UB: 
+	UB: Fznz_zejj		Imm10u, ZZR, Rn
 	UW: 
 	UL: Fznz_zejj		Imm10u, Rn, Rn
 	UQ: Fznz_zejj		Rn, Imm10u, Rn
 
-	NB: 
+	NB: Fznz_zejj		Imm10n, ZZR, Rn
 	NW: 
 	NL: Fznz_zejj		Imm10n, Rn, Rn
 	NQ: Fznz_zejj		Rn, Imm10n, Rn
@@ -1516,11 +1530,14 @@ parameter[5:0] JX2_UCIX_BLINT_LERP		= 6'h01;
 
 parameter[5:0] JX2_UCIX_JCMP_QEQ		= 6'h10;
 parameter[5:0] JX2_UCIX_JCMP_QNE		= 6'h11;
-
+parameter[5:0] JX2_UCIX_JCMP_QLE		= 6'h12;
+parameter[5:0] JX2_UCIX_JCMP_QGT		= 6'h13;
 parameter[5:0] JX2_UCIX_JCMP_QLT		= 6'h14;
 parameter[5:0] JX2_UCIX_JCMP_QGE		= 6'h15;
 parameter[5:0] JX2_UCIX_JCMP_QBL		= 6'h16;
 parameter[5:0] JX2_UCIX_JCMP_QHS		= 6'h17;
+parameter[5:0] JX2_UCIX_JCMP_TSTT		= 6'h18;
+parameter[5:0] JX2_UCIX_JCMP_TSTF		= 6'h19;
 
 parameter[5:0] JX2_UCIX_INVOP_PRIVFAULT	= 6'h10;		//Flush TLB
 parameter[5:0] JX2_UCIX_INVOP_FPUFAULT	= 6'h11;		//Flush TLB
@@ -1677,6 +1694,47 @@ parameter[95:0] UVB2AT_FF		= UV96_FF;	//
 parameter[47:0] UVB2AT_XX		= UV48_XX;	//
 parameter[47:0] UVB2AT_00		= UV48_00;	//
 parameter[47:0] UVB2AT_FF		= UV48_FF;	//
+
+`endif
+
+`define reg_rbopm			reg[15:0]
+`define wire_rbopm			wire[15:0]
+`define input_rbopm			input[15:0]
+`define output_rbopm		output[15:0]
+
+parameter[15:0] UVRBOPM_XX		= UV16_XX;	//
+parameter[15:0] UVRBOPM_00		= UV16_00;	//
+parameter[15:0] UVRBOPM_FF		= UV16_FF;	//
+
+
+`define reg_rbseq			reg[15:0]
+`define wire_rbseq			wire[15:0]
+`define input_rbseq			input[15:0]
+`define output_rbseq		output[15:0]
+
+parameter[15:0] UVRBSEQ_XX		= UV16_XX;	//
+parameter[15:0] UVRBSEQ_00		= UV16_00;	//
+parameter[15:0] UVRBSEQ_FF		= UV16_FF;	//
+
+`ifdef jx2_enable_memcap
+
+`define reg_gprval			reg[65:0]
+`define wire_gprval			wire[65:0]
+`define input_gprval		input[65:0]
+`define output_gprval		output[65:0]
+parameter[65:0] UVGPRV_XX		= UV66_XX;	//
+parameter[65:0] UVGPRV_00		= UV66_00;	//
+parameter[65:0] UVGPRV_FF		= UV66_FF;	//
+
+`else
+
+`define reg_gprval			reg[63:0]
+`define wire_gprval			wire[63:0]
+`define input_gprval		input[63:0]
+`define output_gprval		output[63:0]
+parameter[63:0] UVGPRV_XX		= UV64_XX;	//
+parameter[63:0] UVGPRV_00		= UV64_00;	//
+parameter[63:0] UVGPRV_FF		= UV64_FF;	//
 
 `endif
 

@@ -1,0 +1,21 @@
+Bounds Check Enforcing Mode (BCE):
+* Sub-Mode that enforces bounds-checking.
+* Only XMOV.x instructions will be allowed in this mode.
+** Albeit likely using a 48-bit address space, with 128-bit pointers.
+* Memory locations and registers will remember whether they contain valid pointers.
+** Modifying the bits in a register will lose its status as a pointer.
+** Modifying memory will lose the validity status of a pointer.
+** Trying to access memory through a pointer without it being valid, will fault.
+
+Rules:
+* Loads with GBR or PC as a base will be allowed.
+* Most other non-XMOV memory accesses will not.
+* GBR will be Read-Only.
+
+Internal:
+* Registers will be tagged to whether or not they contain capabilities;
+* Memory locations will be tagged as to whether or not they contain capabilities.
+
+System Visible:
+* 0x0000BF80..0x0000BFFF: Will contain Tag Bits for the SRAM area.
+** This area will always contain zeroes is BCE mode is not supported.

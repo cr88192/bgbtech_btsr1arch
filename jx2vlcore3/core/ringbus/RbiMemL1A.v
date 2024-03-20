@@ -114,8 +114,8 @@ output[11:0]	icOutPcLow;
 
 `input_vaddr	dcInAddr;		//input address A
 input [ 4: 0]	dcInOpm;		//input command A
-output[63: 0]	dcOutVal;		//output data value
-input [63: 0]	dcInVal;		//input data value
+output[65: 0]	dcOutVal;		//output data value
+input [65: 0]	dcInVal;		//input data value
 output[ 1: 0]	dcOutOK;		//set if we have a valid value.
 input			dcInHold;
 output			dcOutHold;		//we need to stall the pipeline
@@ -125,8 +125,8 @@ input [ 4: 0]	dcInLdOp;		//Load/Store Operation
 input[47:0]		dcInAddrB;		//input address B
 input [ 4: 0]	dcInOpmB;		//input command B
 
-output[63: 0]	dcOutValB;		//output data value (alternate)
-input [63: 0]	dcInValB;		//input data value (alternate)
+output[65: 0]	dcOutValB;		//output data value (alternate)
+input [65: 0]	dcInValB;		//input data value (alternate)
 
 output[65: 0]	dcOutValFast;		//output data value (alternate)
 
@@ -532,6 +532,8 @@ begin
 		end
 		else if(	(dfMemOpmO[7:0]==JX2_RBI_OPM_LDX) ||
 					(dfMemOpmO[7:0]==JX2_RBI_OPM_STX) ||
+					(dfMemOpmO[7:0]==JX2_RBI_OPM_LDXC) ||
+					(dfMemOpmO[7:0]==JX2_RBI_OPM_STXC) ||
 					(dfMemOpmO[7:0]==JX2_RBI_OPM_PFX) ||
 					(dfMemOpmO[7:0]==JX2_RBI_OPM_SPX) )
 		begin

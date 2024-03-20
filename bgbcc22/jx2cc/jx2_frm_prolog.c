@@ -2013,10 +2013,18 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
 				-(k-j)*4, BGBCC_SH_REG_SP);
 
-			BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_R0+3, BGBCC_SH_REG_SP, 3*8);
-			BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_R0+2, BGBCC_SH_REG_SP, 2*8);
+			if(sctx->has_pushx2)
+			{
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVX2,
+					BGBCC_SH_REG_LR2, BGBCC_SH_REG_SP, 2*8);
+			}else
+			{
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R0+3, BGBCC_SH_REG_SP, 3*8);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R0+2, BGBCC_SH_REG_SP, 2*8);
+			}
+
 			BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
 				BGBCC_SH_REG_R0+1, BGBCC_SH_REG_SP, 1*8);
 			BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,

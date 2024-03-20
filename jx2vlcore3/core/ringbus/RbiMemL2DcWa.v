@@ -344,6 +344,34 @@ reg[9:0]	tNxtReqMissIx;
 `endif
 
 
+`ifdef jx2_enable_memcap
+reg[511:0]		memTagData[255:0];
+reg[15:0]		memTagAddr[255:0];
+reg[7:0]		tReqTagIx;
+reg[7:0]		tReqStTagIx;
+reg				tDoStTag;
+
+reg[511:0]		tBlkTagData;
+reg[15:0]		tBlkTagAddr;
+reg[7:0]		tBlkTagIx;
+
+reg[511:0]		tBlkStTagData;
+reg[15:0]		tBlkStTagAddr;
+
+reg[511:0]		tBlkTagDataC3;
+reg[15:0]		tBlkTagAddrC3;
+reg[7:0]		tBlkTagIxC3;
+
+reg		tMissTag;
+reg		tDoAccTag;
+
+reg[7:0]		tNxtReqTagIx;
+reg[7:0]		tNx2ReqTagIx;
+reg				tNxtDoAccTag;
+
+`endif
+
+
 reg[25:0]	nxtReqAddr;
 reg[5:0]	nxtReqAddrLo;
 
@@ -392,6 +420,9 @@ reg			tBlkDirtyA;
 reg			tBlkFlushA;
 reg			tBlkDirtyAL;
 reg			tBlkFlushAL;
+
+reg			tDoBlkFlush;
+reg			tBlkFlushSticky;
 
 reg[127:0]	tBlkData0AL;
 reg[127:0]	tBlkData1AL;
@@ -544,6 +575,9 @@ reg		tNxtAccBlkDirty;
 reg		tAccBlkAddrIsRam;
 reg		tNxtAccBlkAddrIsRam;
 
+reg		tAccDoIsTag;
+reg		tNxtAccDoIsTag;
+
 reg		tAccDoLdB;
 reg		tAccDoLdAzB;
 reg		tAccDoLdAtB;
@@ -590,8 +624,12 @@ wire		memRingIsStx;
 wire		memRingIsPfx;
 wire		memRingIsSpx;
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
-assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
-assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+assign	memRingIsLdx	=
+	(memOpmIn[7:0] == JX2_RBI_OPM_LDX) ||
+	(memOpmIn[7:0] == JX2_RBI_OPM_LDXC);
+assign	memRingIsStx	=
+	(memOpmIn[7:0] == JX2_RBI_OPM_STX) ||
+	(memOpmIn[7:0] == JX2_RBI_OPM_STXC);
 assign	memRingIsPfx	= (memOpmIn[7:0] == JX2_RBI_OPM_PFX);
 assign	memRingIsSpx	= (memOpmIn[7:0] == JX2_RBI_OPM_SPX);
 assign	memRingIsResp	=
@@ -706,6 +744,21 @@ begin
 
 	nxtReqIx2	= nxtReqIx;
 
+`ifdef jx2_enable_memcap
+//	tNxtReqTagIx	= nxtReqAddr[14:7];
+	tNxtReqTagIx	= nxtReqAddr[14:7];
+	tNxtDoAccTag	= 0;
+	
+	if((memAddrIn[27:24]==4'h0) && (memAddrIn[23:22]==2'b01))
+	begin
+		tNxtReqTagIx	= nxtReqAddr[7:0];
+		tNxtDoAccTag	= 1;
+	end
+
+	tNx2ReqTagIx	= tNxtReqTagIx;
+
+`endif
+
 `ifdef def_true
 // `ifndef def_true
 	nxtRovIx = tRovIx;
@@ -751,6 +804,7 @@ begin
 	tNxtDoAcc		= 0;
 	tNxtAccBlkDirty	= 0;
 	tDoSwAcc		= 0;
+	tNxtAccDoIsTag	= 0;
 
 	tNxtAccDoLdB	= 0;
 	tNxtAccDoLdAzB	= 0;
@@ -764,16 +818,105 @@ begin
 
 	tBlkFlushA	= 0;
 	tBlkDirtyA	= 0;
+	tDoBlkFlush	= 0;
 	
 	tAccReady	= 1;
 
+`ifdef jx2_enable_memcap
+	tBlkStTagData	= tBlkTagData;
+	tBlkStTagAddr	= tBlkTagAddr;
+	tReqStTagIx		= tReqTagIx;
+	tDoStTag		= 0;
+`endif
+
 	tOpmIsLoad	=
 		(tReqOpm[7:0]==JX2_RBI_OPM_LDX) || 
+		(tReqOpm[7:0]==JX2_RBI_OPM_LDXC) || 
 		(tReqOpm[7:0]==JX2_RBI_OPM_PFX);
 	tOpmIsStore	=
 		(tReqOpm[7:0]==JX2_RBI_OPM_STX) ||
+		(tReqOpm[7:0]==JX2_RBI_OPM_STXC) ||
 		(tReqOpm[7:0]==JX2_RBI_OPM_SPX);
 	tOpmIsNz	= tOpmIsLoad || tOpmIsStore ;
+
+`ifdef jx2_enable_memcap
+	if(tOpmIsNz)
+	begin
+		/* Memory Capability Tagging */
+
+		tMissTag	= tBlkTagAddr[14:0] != tReqAddr[21:7];
+
+		if(tDoAccTag)
+		begin
+			if(tBlkFlushSticky && !tBlkTagAddr[15] && !tMissTag)
+			begin
+				/* Need to sync with RAM cache, Nuke tags. */
+				tBlkStTagAddr	= 16'h7FFF;
+				tDoStTag		= 1;
+			end
+
+			/* If accessing tag memory, flush if dirty. */
+			tMissTag = tBlkTagAddr[15];
+		end
+
+//		if(tBlkTagAddr[14:0] == tReqAddr[14:0])
+
+//		if(!tOpmIsNz)
+//			tMissTag	= 0;
+
+		if(tOpmIsStore && !tMissTag && !tDoAccTag)
+//		if(tOpmIsStore && !tMissTag)
+		begin
+			tBlkStTagData[{tReqAddr[6:0], tReqAddrLo[5:4]}] =
+				(tReqOpm[7:0]==JX2_RBI_OPM_STXC);
+			tBlkStTagAddr = { 1'b1, tBlkTagAddr[14:0] };
+			tDoStTag		= !tMissTag;
+		end
+		
+		if(tMissTag)
+		begin
+//			$display("Miss Tag Ix=%X", tReqTagIx);
+		end
+
+`ifdef def_true
+		if(tMissTag && !tAccSticky && !tAccBusyLatch)
+		begin
+			tNxtAccBlkData	= tBlkTagData;
+			tNxtAccBlkAddr	= { 8'h00, 3'b010, tBlkTagAddr[14:0] };
+
+			tNxtAccAddr		= { 8'h00, 3'b010, tReqAddr[21:7] };
+			tNxtDoAcc		= 1;
+
+			tNxtAccBlkDirty	= tBlkTagAddr[15];
+			tDoSwAcc		= tNxtAccBlkDirty;
+
+			tNxtAccDoIsTag	= 1;
+
+//			$display("Do Store Tag RAM Ix=%X BA=%X RA=%X", tReqTagIx,
+//				tBlkTagAddr[14:0], tReqAddr[21:7]);
+		end
+`endif
+	end
+
+	if(1'b1)
+	begin
+	//	tBlkLdData
+
+		if(tAccSticky && tAccDoIsTag)
+		begin
+			tBlkStTagData	= tBlkLdData;
+//			tBlkStTagAddr	= { 1'b0, tReqAddr[21:7] };
+			tBlkStTagAddr	= { 1'b0, tAccAddr[14:0] };
+//			tReqStTagIx		= tReqTagIx;
+			tReqStTagIx		= tAccAddr[7:0];
+			tDoStTag		= 1;
+
+//			$display("Store Tag Array Ix=%X/%X A=%X",
+//				tReqStTagIx, tReqTagIx, tBlkStTagAddr);
+		end
+
+	end
+`endif
 
 //	tNxtAccStoreOnly	= tOpmIsStore;
 	tNxtAccStoreOnly	= 0;
@@ -834,6 +977,18 @@ begin
 	tBlkDirtyA			= tBlkFlagA[0];
 	tNxtAccBlkAddrIsRam	= tBlkAddrIsRam;
 
+`ifdef jx2_enable_memcap
+	if(tOpmIsNz && tDoAccTag)
+	begin
+		/* Memory Capability Tagging */
+		if(tBlkDirtyA || tBlkTagAddr[15])
+			tDoBlkFlush	= 1;
+	end
+	
+	if(tBlkFlushSticky)
+		tBlkFlushA = 1;
+`endif
+
 	tMiss		=
 		 (tMissAddr || tBlkFlushA) &&
 		(tOpmIsNz && tAddrIsRam);
@@ -855,6 +1010,11 @@ begin
 			tOpmIsStore || tBlkFlushA) &&
 //			(tOpmIsStore && tBlkDirtyA) || tBlkFlushA) &&
 		(tOpmIsNz && tAddrIsRam);
+`endif
+
+`ifdef jx2_enable_memcap
+	if(tMissTag && (tOpmIsNz && tAddrIsRam))
+		tMiss		= 1;
 `endif
 
 // `ifdef def_true
@@ -954,6 +1114,13 @@ begin
 `endif
 	tBlkDoStB		= 0;
 
+`ifdef jx2_enable_memcap
+//	tBlkStTagData		= tBlkTagData;
+//	tBlkStTagAddr		= tBlkTagAddr;
+//	tBlkDoStTag			= 0;
+`endif
+
+
 
 `ifdef jx2_mem_l2d2way
 
@@ -991,7 +1158,8 @@ begin
 `endif
 
 
-	if(tAccSticky)
+//	if(tAccSticky)
+	if(tAccSticky && !tAccDoIsTag)
 	begin
 `ifdef jx2_mem_l2d2way
 		tBlkStIx		= tBlkLdIx;
@@ -1108,7 +1276,10 @@ begin
 		begin
 			tAccess		= 1;
 		end
-		else if(tReqOpm[7:0]==JX2_RBI_OPM_LDX)
+//		else if(tReqOpm[7:0]==JX2_RBI_OPM_LDX)
+		else if(
+			(tReqOpm[7:0]==JX2_RBI_OPM_LDX) ||
+			(tReqOpm[7:0]==JX2_RBI_OPM_LDXC) )
 `else
 		if(	(tReqOpm[7:0]==JX2_RBI_OPM_LDX) ||
 			(tReqOpm[7:0]==JX2_RBI_OPM_PFX) ||
@@ -1120,7 +1291,10 @@ begin
 			tAccess		= 1;
 //			tNxtStLatch	= 0;
 		end
-		else if(tReqOpm[7:0]==JX2_RBI_OPM_STX)
+//		else if(tReqOpm[7:0]==JX2_RBI_OPM_STX)
+		else if(
+			(tReqOpm[7:0]==JX2_RBI_OPM_STX) ||
+			(tReqOpm[7:0]==JX2_RBI_OPM_STXC) )
 		begin
 //			$display("L2: STX");
 
@@ -1183,9 +1357,12 @@ begin
 	if(tAccess && tMiss && tAccBusyLatch)
 		tSkipC2 = 1;
 
-	tNxtDoAcc	= (tAccess && tMiss && !tSkipC2) &&
-		tAccReady && !tAccDone && !(tBlkDoStAL || tBlkDoStBL) && !reset;
-	tNxtAccBlkDirty	= tBlkDirtyA;
+	if(!tNxtAccDoIsTag && !tAccDoIsTag)
+	begin
+		tNxtDoAcc	= (tAccess && tMiss && !tSkipC2) &&
+			tAccReady && !tAccDone && !(tBlkDoStAL || tBlkDoStBL) && !reset;
+		tNxtAccBlkDirty	= tBlkDirtyA;
+	end
 	
 //	if(tAccDone || reset)
 //		tNxtDoAcc = 0;
@@ -1205,6 +1382,7 @@ begin
 		tNxtAccDoLdB		= tAccDoLdB;
 		tNxtAccDoLdAzB		= tAccDoLdAzB;
 		tNxtAccDoLdAtB		= tAccDoLdAtB;
+		tNxtAccDoIsTag		= tAccDoIsTag;
 	end
 
 	if(tAccess && tMiss && !tSkipC2)
@@ -1242,7 +1420,10 @@ begin
 			tAccReady, tAccDone, tBlkDoStAL, tCurEpochCyc);
 `endif
 
-		nxtReqIx2	= tReqIx;
+		nxtReqIx2		= tReqIx;
+`ifdef jx2_enable_memcap
+		tNx2ReqTagIx	= tReqTagIx;
+`endif
 	end
 	
 	/* Cycle 3 */
@@ -1295,7 +1476,16 @@ begin
 		tMemSkipReq = 0;
 	end
 
-	tMemOpmReq[3:0] = mem3OpmIn[11:8];
+`ifdef jx2_enable_memcap
+	if(mem3RingIsLdx)
+	begin
+		if(tBlkTagDataC3[mem3AddrIn[12:4]])
+			tMemOpmReq[3:0]	= 4'h8;
+	end
+`endif
+
+//	tMemOpmReq[3:0] = mem3OpmIn[11:8];
+	tMemOpmReq[11:8] = mem3OpmIn[11:8];
 
 	if((tReqSeqC3!=mem3SeqIn) && !tMemSkipReq && !tHold)
 	begin
@@ -1354,6 +1544,11 @@ begin
 		tReqDataIn	<= memDataIn;
 		tReqSeq		<= memSeqIn;
 
+`ifdef jx2_enable_memcap
+		tReqTagIx	<= tNxtReqTagIx;
+		tDoAccTag	<= tNxtDoAccTag;
+`endif
+
 		/* Cycle 2->3 */
 		tSkipC3			<= tSkipC2;
 		tBlkData0AC3	<= tBlkData0A;
@@ -1369,6 +1564,12 @@ begin
 		tBlkData2BC3	<= tBlkData2B;
 		tBlkData3BC3	<= tBlkData3B;
 		tBlkDoStBC3		<= tBlkDoStB;
+`endif
+
+`ifdef jx2_enable_memcap
+		tBlkTagDataC3	<= tBlkTagData;
+		tBlkTagAddrC3	<= tBlkTagAddr;
+		tBlkTagIxC3		<= tBlkTagIx;
 `endif
 
 		/* Cycle 3->4 */
@@ -1434,6 +1635,7 @@ begin
 	tAccBlkAddr			<= tNxtAccBlkAddr;
 	tAccStoreOnly		<= tNxtAccStoreOnly;
 	tAccBlkAddrIsRam	<= tNxtAccBlkAddrIsRam;
+	tAccDoIsTag			<= tNxtAccDoIsTag;
 
 	tDdrMemDataOutB	<= tDdrMemDataOut;
 	tDdrMemAddrB	<= tDdrMemAddr;
@@ -1507,6 +1709,23 @@ begin
 
 //	tBlkDataC4		<= tBlkDataC3;
 
+	tBlkFlushSticky <= (tBlkFlushSticky || tDoBlkFlush) &&
+		!(tBlkDoStA || tBlkDoStB);
+
+`ifdef jx2_enable_memcap
+	tBlkTagData		<= memTagData[tNx2ReqTagIx];
+	tBlkTagAddr		<= memTagAddr[tNx2ReqTagIx];
+	tBlkTagIx		<= tNx2ReqTagIx;
+
+	if(tDoStTag)
+	begin
+		memTagData[tReqStTagIx]	<= tBlkStTagData;
+		memTagAddr[tReqStTagIx]	<= tBlkStTagAddr;
+		if(tAccDoIsTag)
+			tAccSticky	<= 0;
+	end
+`endif
+
 	if(tBlkDoStA)
 	begin
 //		$display("L2: Store Line A Ix=%X A=%X D=%X-%X-%X-%X, Cyc=%d",
@@ -1520,7 +1739,8 @@ begin
 		memTileData3A[tBlkStIx]	<= tBlkStData3A;
 		memTileAddrA[tBlkStIx]	<=
 			{ tCurEpoch, tBlkStFrovA, 3'b100, tBlkStDirtyA, tBlkStAddrA};
-		tAccSticky	<= 0;
+//		if(!tAccDoIsTag)
+			tAccSticky	<= 0;
 	end
 
 `ifdef jx2_mem_l2d2way
@@ -1537,7 +1757,8 @@ begin
 		memTileData3B[tBlkStIx]	<= tBlkStData3B;
 		memTileAddrB[tBlkStIx]	<=
 			{ tCurEpoch, tBlkStFrovB, 3'b100, tBlkStDirtyB, tBlkStAddrB};
-		tAccSticky	<= 0;
+//		if(!tAccDoIsTag)
+			tAccSticky	<= 0;
 	end
 `endif
 
@@ -1663,9 +1884,11 @@ begin
 		begin
 			tAccStDone	<= tNxtStDone;
 
-			if(tAccBlkDirty && !tAccBlkAddrIsRam)
+			if(tAccBlkDirty && !tAccBlkAddrIsRam && !tAccDoIsTag)
 			begin
-				$display("L2: Store Non-RAM Block Addr=%X", tBlkAddrA);
+//				$display("L2: Store Non-RAM Block Addr=%X", tBlkAddrA);
+				$display("L2: Store Non-RAM Block Addr=%X",
+					{ tAccBlkAddr, 6'h0 });
 			end
 
 			tDdrMemDataOut	<= tAccBlkData;

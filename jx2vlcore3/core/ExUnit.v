@@ -440,15 +440,15 @@ assign	dbgOutIstr	= ifIstrWord;
 `reg_vaddr		dcInAddr;
 reg [4:0]		dcInOpm;
 reg [4:0]		dcInLdOp;
-wire[63:0]		dcOutVal;
-reg [63:0]		dcInVal;
+wire[65:0]		dcOutVal;
+reg [65:0]		dcInVal;
 wire[ 1:0]		dcOutOK;
 reg				dcInHold;
 wire			dcOutHold;
 wire			dcBusWait;
 
-wire[63:0]		dcOutValB;
-reg [63:0]		dcInValB;
+wire[65:0]		dcOutValB;
+reg [65:0]		dcInValB;
 
 reg [4:0]		dcInOpmB;
 reg [47:0]		dcInAddrB;
@@ -462,8 +462,8 @@ reg			tNxtDeadlockLatch;
 
 assign	dbgDcInAddr	= dcInAddr;
 assign	dbgDcInOpm	= dcInOpm;
-assign	dbgDcOutVal	= dcOutVal;
-assign	dbgDcInVal	= dcInVal;
+assign	dbgDcOutVal	= dcOutVal[63:0];
+assign	dbgDcInVal	= dcInVal[63:0];
 assign	dbgDcOutOK	= dcOutOK;
 
 wire[127:0]		memRegExc;
@@ -540,7 +540,7 @@ wire[47:0]		gprValGbr;
 wire[47:0]		gprValTbr;
 wire[63:0]		gprValLr;
 wire[63:0]		gprValSsp;
-wire[63:0]		gprValCm;
+`wire_gprval		gprValCm;
 
 //reg[31:0]		id2IstrWord;	//source instruction word
 //reg[31:0]		id2IstrWordL;	//source instruction word
@@ -765,10 +765,10 @@ reg[8:0]		idC2IdUIxt;
 `reg_gpr		gprIdRn;		//Dest B
 `reg_gpr		gprIdRo;		//Dest C
 
-wire[63:0]		gprValRs;
-wire[63:0]		gprValRt;
-wire[63:0]		gprValRu;
-wire[63:0]		gprValRv;
+`wire_gprval		gprValRs;
+`wire_gprval		gprValRt;
+`wire_gprval		gprValRu;
+`wire_gprval		gprValRv;
 
 (* max_fanout = 200 *)
 	reg				gprEx1Flush;
@@ -785,12 +785,12 @@ reg				gprEx3DualLane;
 
 `reg_gpr		gprIdRx;		//Source C
 `reg_gpr		gprIdRy;		//Source D, MemStore
-wire[63:0]		gprValRx;
-wire[63:0]		gprValRy;
+`wire_gprval		gprValRx;
+`wire_gprval		gprValRy;
 
-wire[63:0]		gprValRm;
-wire[63:0]		gprValRn;
-wire[63:0]		gprValRo;
+`wire_gprval		gprValRm;
+`wire_gprval		gprValRn;
+`wire_gprval		gprValRo;
 assign		gprValRm	= gprValRy;
 assign		gprValRn	= gprValRx;
 assign		gprValRo	= gprValRy;
@@ -798,40 +798,40 @@ assign		gprValRo	= gprValRy;
 
 `else
 
-wire[63:0]		gprValRm;
-wire[63:0]		gprValRn;
+`wire_gprval		gprValRm;
+`wire_gprval		gprValRn;
 assign		gprValRm	= gprValRv;
 assign		gprValRn	= gprValRu;
 
 `endif
 
 `reg_gpr		gprIdRn1;
-reg[63:0]		gprValRn1;
+`reg_gprval		gprValRn1;
 `reg_gpr		gprIdRn2;
-reg[63:0]		gprValRn2;
+`reg_gprval		gprValRn2;
 `reg_gpr		gprIdRn3;
-reg[63:0]		gprValRn3;
+`reg_gprval		gprValRn3;
 `reg_gpr		gprIdRn4;
-reg[63:0]		gprValRn4;
+`reg_gprval		gprValRn4;
 
 `reg_gpr		gprIdRnB1;
-reg[63:0]		gprValRnB1;
+`reg_gprval		gprValRnB1;
 `reg_gpr		gprIdRnB2;
-reg[63:0]		gprValRnB2;
+`reg_gprval		gprValRnB2;
 `reg_gpr		gprIdRnB3;
-reg[63:0]		gprValRnB3;
+`reg_gprval		gprValRnB3;
 `reg_gpr		gprIdRnB4;
-reg[63:0]		gprValRnB4;
+`reg_gprval		gprValRnB4;
 
 `ifdef jx2_enable_wex3w
 `reg_gpr		gprIdRnC1;
-reg[63:0]		gprValRnC1;
+`reg_gprval		gprValRnC1;
 `reg_gpr		gprIdRnC2;
-reg[63:0]		gprValRnC2;
+`reg_gprval		gprValRnC2;
 `reg_gpr		gprIdRnC3;
-reg[63:0]		gprValRnC3;
+`reg_gprval		gprValRnC3;
 `reg_gpr		gprIdRnC4;
-reg[63:0]		gprValRnC4;
+`reg_gprval		gprValRnC4;
 `endif
 
 wire[1:0]		ex1Hold;
@@ -1064,16 +1064,16 @@ reg[8:0]		id2IdUIxt;
 `reg_gpr		gprIdRt;		//Source B, ALU / Index
 `reg_gpr		gprIdRm;		//Source C, MemStore
 
-wire[63:0]		gprValRs;
-wire[63:0]		gprValRt;
-wire[63:0]		gprValRm;
+`wire_gprval		gprValRs;
+`wire_gprval		gprValRt;
+`wire_gprval		gprValRm;
 
 `reg_gpr		gprIdRn1;
-reg[63:0]		gprValRn1;
+`reg_gprval		gprValRn1;
 `reg_gpr		gprIdRn2;
-reg[63:0]		gprValRn2;
+`reg_gprval		gprValRn2;
 `reg_gpr		gprIdRn3;
-reg[63:0]		gprValRn3;
+`reg_gprval		gprValRn3;
 
 reg [47:0]		gprValPc;
 reg [32:0]		gprValImm;
@@ -1153,8 +1153,8 @@ RegGPR regGpr(
 
 `ifdef jx2_enable_fpu
 
-// wire[63:0]		gprValFRs;
-// wire[63:0]		gprValFRt;
+// `wire_gprval		gprValFRs;
+// `wire_gprval		gprValFRt;
 
 // assign			gprValFRs = gprValRs;
 // assign			gprValFRt = gprValRt;
@@ -1165,16 +1165,16 @@ RegGPR regGpr(
 
 //reg [ 4:0]	crIdCm;		//Source ID
 `reg_gpr	crIdCm;		//Source ID
-wire[63:0]	crValCm;		//Source Value
+`wire_gprval	crValCm;		//Source Value
 //reg [ 4:0]	crIdCn1;		//Destination ID (EX1)
 `reg_gpr	crIdCn1;		//Destination ID (EX1)
-reg [63:0]	crValCn1;		//Destination Value (EX1)
+`reg_gprval	crValCn1;		//Destination Value (EX1)
 //reg [ 4:0]	crIdCn2;		//Destination ID (EX2)
 `reg_gpr	crIdCn2;		//Destination ID (EX2)
-reg [63:0]	crValCn2;		//Destination Value (EX2)
+`reg_gprval	crValCn2;		//Destination Value (EX2)
 //reg [ 4:0]	crIdCn3;		//Destination ID (EX3)
 `reg_gpr	crIdCn3;		//Destination ID (EX3)
-reg [63:0]	crValCn3;		//Destination Value (EX3)
+`reg_gprval	crValCn3;		//Destination Value (EX3)
 wire[47:0]	crOutPc;
 reg [47:0]	crInPc;
 wire[63:0]	crOutLr;
@@ -1357,8 +1357,8 @@ assign	exB1FpuValGRn	= UV64_XX;
 
 assign	exC1FpuValGRn	= UV64_XX;
 
-reg[63:0]		ex2MemDataIn;
-reg[63:0]		ex2MemDataInB;
+reg[65:0]		ex2MemDataIn;
+reg[65:0]		ex2MemDataInB;
 reg[1:0]		ex2MemDataOK;
 
 wire[65:0]		ex2MemDataInFast;
@@ -1400,22 +1400,22 @@ reg				exC1PredNoExec;
 `reg_gpr		ex1RegIdRm;		//Source C, MemStore
 
 (* max_fanout = 200 *)
-	reg[63:0]		ex1RegValRs;		//Source A Value
+	`reg_gprval		ex1RegValRs;		//Source A Value
 (* max_fanout = 200 *)
-	reg[63:0]		ex1RegValRt;		//Source B Value
+	`reg_gprval		ex1RegValRt;		//Source B Value
 
 
 `ifndef jx2_cpu_merge_rxy
 
-reg[63:0]		ex1RegValRm;		//Source C Value
-reg[63:0]		ex2RegValRm;		//Source C Value
-reg[63:0]		ex3RegValRm;		//Source C Value
+`reg_gprval		ex1RegValRm;		//Source C Value
+`reg_gprval		ex2RegValRm;		//Source C Value
+`reg_gprval		ex3RegValRm;		//Source C Value
 
 `else
 
-wire[63:0]		ex1RegValRm;		//Source C Value
-wire[63:0]		ex2RegValRm;		//Source C Value
-wire[63:0]		ex3RegValRm;		//Source C Value
+`wire_gprval		ex1RegValRm;		//Source C Value
+`wire_gprval		ex2RegValRm;		//Source C Value
+`wire_gprval		ex3RegValRm;		//Source C Value
 
 `ifdef jx2_enable_wex3w
 assign		ex1RegValRm = exC1RegValRt;
@@ -1431,15 +1431,15 @@ assign		ex3RegValRm = exB3RegValRt;
 
 `ifndef jx2_cpu_merge_rxy
 
-reg[63:0]		exB1RegValRm;		//Source C Value
-reg[63:0]		exB2RegValRm;		//Source C Value
-reg[63:0]		exB3RegValRm;		//Source C Value
+`reg_gprval		exB1RegValRm;		//Source C Value
+`reg_gprval		exB2RegValRm;		//Source C Value
+`reg_gprval		exB3RegValRm;		//Source C Value
 
 `else
 
-wire[63:0]		exB1RegValRm;		//Source C Value
-wire[63:0]		exB2RegValRm;		//Source C Value
-wire[63:0]		exB3RegValRm;		//Source C Value
+`wire_gprval		exB1RegValRm;		//Source C Value
+`wire_gprval		exB2RegValRm;		//Source C Value
+`wire_gprval		exB3RegValRm;		//Source C Value
 
 `ifdef jx2_enable_wex3w
 assign		exB1RegValRm = exC1RegValRs;
@@ -1544,37 +1544,37 @@ ExPredCheck		pred1a(id2IdUCmd, id2IdUIxt, ex1RegInSr[7:0], idA2PredNoExec);
 
 /* GPR Only: Timing Hack. */
 (* max_fanout = 200 *)
-	wire[63:0]		ex1RegValRsGpo;		//Source A Value (GPR Only)
+	`wire_gprval		ex1RegValRsGpo;		//Source A Value (GPR Only)
 (* max_fanout = 200 *)
-	wire[63:0]		ex1RegValRtGpo;		//Source B Value (GPR Only)
+	`wire_gprval		ex1RegValRtGpo;		//Source B Value (GPR Only)
 
 `ifdef jx2_enable_xgpr
-assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UV64_XX : ex1RegValRs;
-// assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UV64_00 : ex1RegValRs;
+assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UVGPRV_XX : ex1RegValRs;
+// assign	ex1RegValRsGpo = ex1RegIdRs[6] ? UVGPRV_00 : ex1RegValRs;
 // assign	ex1RegValRsGpo = ex1RegValRs;
-// assign	ex1RegValRtGpo = ex1RegIdRt[6] ? UV64_XX : ex1RegValRt;
+// assign	ex1RegValRtGpo = ex1RegIdRt[6] ? UVGPRV_XX : ex1RegValRt;
 assign	ex1RegValRtGpo = ex1RegValRt;
 `else
-// assign	ex1RegValRsGpo = ex1RegIdRs[5] ? UV64_00 : ex1RegValRs;
-assign	ex1RegValRsGpo = ex1RegIdRs[5] ? UV64_XX : ex1RegValRs;
+// assign	ex1RegValRsGpo = ex1RegIdRs[5] ? UVGPRV_00 : ex1RegValRs;
+assign	ex1RegValRsGpo = ex1RegIdRs[5] ? UVGPRV_XX : ex1RegValRs;
 assign	ex1RegValRtGpo = ex1RegValRt;
 `endif
 
 (* max_fanout = 200 *)
-	reg[63:0]		exB1RegValRs;		//Source A Value
+	`reg_gprval		exB1RegValRs;		//Source A Value
 
 // `ifdef jx2_enable_fpu
-// reg[63:0]		ex1RegValFRs;		//Source A Value (FPR)
-// reg[63:0]		ex1RegValFRt;		//Source B Value (FPR)
+// `reg_gprval		ex1RegValFRs;		//Source A Value (FPR)
+// `reg_gprval		ex1RegValFRt;		//Source B Value (FPR)
 // `endif
 
-reg[63:0]		ex1RegValCRm;		//Source C Value (CR)
+`reg_gprval		ex1RegValCRm;		//Source C Value (CR)
 
 `wire_gpr		ex1RegIdRn1;		//Destination ID (EX1)
-wire[63:0]		ex1RegValRn1;		//Destination Value (EX1)
+`wire_gprval		ex1RegValRn1;		//Destination Value (EX1)
 //wire[4:0]		ex1RegIdCn1;		//Destination ID (CR, EX1)
 `wire_gpr		ex1RegIdCn1;		//Destination ID (CR, EX1)
-wire[63:0]		ex1RegValCn1;		//Destination Value (CR, EX1)
+`wire_gprval		ex1RegValCn1;		//Destination Value (CR, EX1)
 
 `wire_gpr		ex1HldIdRn1;		//Held Dest ID (EX1)
 // wire[4:0]		ex1HldIdCn1;		//Held Dest ID (CR, EX1)
@@ -1608,8 +1608,8 @@ assign	ex1OutLrHi = 0;
 // wire[47:0]		ex1MemAddr;
 `wire_vaddr		ex1MemAddr;
 // wire[ 4:0]		ex1MemOpm;
-wire[63:0]		ex1MemDataOut;
-wire[63:0]		ex1MemDataOutB;
+wire[65:0]		ex1MemDataOut;
+wire[65:0]		ex1MemDataOutB;
 
 wire[ 7:0]		ex1RegOutSchm;
 reg [ 7:0]		ex1RegInSchm;
@@ -1620,14 +1620,14 @@ wire[8:0]		ex1OpUCmd2;
 
 wire			ex1AluSrJcmpT;
 
-wire[63:0]		ex1AguOutLea;		//LEA Output
-wire[63:0]		ex1AguOutXLea;		//XLEA Output
+`wire_gprval		ex1AguOutLea;		//LEA Output
+`wire_gprval		ex1AguOutXLea;		//XLEA Output
 wire[7:0]		ex1ExfFl;
 
-wire[63:0]		ex1Delay1Out;		//
-reg[63:0]		ex2Delay1In;		//
-reg[63:0]		exB2Delay1In;		//
-reg[63:0]		exC2Delay1In;		//
+`wire_gprval		ex1Delay1Out;		//
+`reg_gprval		ex2Delay1In;		//
+`reg_gprval		exB2Delay1In;		//
+`reg_gprval		exC2Delay1In;		//
 
 wire[7:0]		ex2RegOutSchm;
 reg[7:0]		ex2RegInSchm;
@@ -1734,8 +1734,8 @@ wire[72:0]	ex1ValAlu;
 
 ExALU	exAlu(
 	clock,				exResetL,
-	ex1RegValRs,		ex1RegValRt,	
-	exB1RegValRs,		ex1RegValRm,
+	ex1RegValRs[63:0],	ex1RegValRt[63:0],
+	exB1RegValRs[63:0],	ex1RegValRm[63:0],
 	ex1OpUCmd,			ex1OpUIxt,
 //	exHold2,			ex1RegInSr[1:0],
 	exHold2,			{ ex1AluInSr[7:4], ex1AluInSr[1:0] },
@@ -1754,7 +1754,9 @@ ExALU	exAlu(
 // ExMulB	ex1Mul(
 ExMulC	ex1Mul(
 	clock,				exResetL,
-	ex1RegValRsGpo,		ex1RegValRtGpo,		ex1RegValRm,
+	ex1RegValRsGpo[63:0],
+	ex1RegValRtGpo[63:0],
+	ex1RegValRm[63:0],
 	ex1OpUCmd,			ex1OpUIxt,
 	exHold2,			ex1MulVal,
 	ex1MulFaz,			ex3MulFaz
@@ -1763,7 +1765,7 @@ ExMulC	ex1Mul(
 ExMulW	ex1MulW(
 	clock,				exResetL,
 //	ex1RegValRs,		ex1RegValRt,
-	ex1RegValRsGpo,		ex1RegValRtGpo,
+	ex1RegValRsGpo[63:0],		ex1RegValRtGpo[63:0],
 	ex1OpUCmd,			ex1OpUIxt,
 	exHold2,			ex1MulWVal,
 	0
@@ -1805,12 +1807,12 @@ reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 `reg_gpr		exB1RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exB1RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exB1RegIdRm;		//Source C, MemStore
-// reg[63:0]		exB1RegValRs;		//Source A Value
+// `reg_gprval		exB1RegValRs;		//Source A Value
 
 (* max_fanout = 200 *)
-	reg[63:0]		exB1RegValRt;		//Source B Value
+	`reg_gprval		exB1RegValRt;		//Source B Value
 
-//reg[63:0]		exB1RegValRm;		//Source C Value
+//`reg_gprval		exB1RegValRm;		//Source C Value
 
 
 
@@ -1852,13 +1854,13 @@ FpuExOpW	ex1Fpu(
 	fpuExB1OpUCmd,		fpuExB1OpUIxt,
 	fpuExA1RegValImm,	fpuExB1RegValImm,
 
-	ex1RegIdRs,		ex1RegValRs,
-	ex1RegIdRt,		ex1RegValRt,
-	ex1RegIdRm,		ex1RegValRm,
+	ex1RegIdRs,		ex1RegValRs[63:0],
+	ex1RegIdRt,		ex1RegValRt[63:0],
+	ex1RegIdRm,		ex1RegValRm[63:0],
 
-	exB1RegIdRs,	exB1RegValRs,
-	exB1RegIdRt,	exB1RegValRt,
-	exB1RegIdRm,	exB1RegValRm,
+	exB1RegIdRs,	exB1RegValRs[63:0],
+	exB1RegIdRt,	exB1RegValRt[63:0],
+	exB1RegIdRm,	exB1RegValRm[63:0],
 
 	ex1FpuOKB,		ex1FpuSrT,
 	crOutFpsr,		crInFpsr,
@@ -1888,12 +1890,12 @@ FpuVec4SF	ex1FpuV4(
 
 	ex1RegValImm,	exB1RegValImm,
 
-	ex1RegIdRs,		ex1RegValRs,
-	exB1RegIdRs,	exB1RegValRs,
-	ex1RegIdRt,		ex1RegValRt,
-	exB1RegIdRt,	exB1RegValRt,
+	ex1RegIdRs,		ex1RegValRs[63:0],
+	exB1RegIdRs,	exB1RegValRs[63:0],
+	ex1RegIdRt,		ex1RegValRt[63:0],
+	exB1RegIdRt,	exB1RegValRt[63:0],
 
-	ex1RegValRm,	exB1RegValRm,
+	ex1RegValRm[63:0],	exB1RegValRm[63:0],
 
 	exA1FpuV4SfRn,	exB1FpuV4SfRn);
 `else
@@ -2017,7 +2019,7 @@ wire[8:0]	smulEx1OpUIxt	= isGpu ? 0 : ex1OpUIxt;
 ExOpSloMulDiv	ex1SloMul(
 	clock,			exResetL,
 	smulEx1OpUCmd,	smulEx1OpUIxt,
-	ex1RegValRsGpo,	ex1RegValRtGpo,
+	ex1RegValRsGpo[63:0],	ex1RegValRtGpo[63:0],
 	ex1SloMulVal,	ex1SloMulValHi,
 	exHold2,		ex1SloMulDoHold,
 	ex1MulFaz
@@ -2047,26 +2049,26 @@ reg[95:0]		ex2IstrWord;	//source instruction word
 `reg_gpr		ex2RegIdRs;		//Source A, ALU / Base
 `reg_gpr		ex2RegIdRt;		//Source B, ALU / Index
 `reg_gpr		ex2RegIdRm;		//Source C, MemStore
-reg[63:0]		ex2RegValRs;		//Source A Value
-reg[63:0]		ex2RegValRt;		//Source B Value
+`reg_gprval		ex2RegValRs;		//Source A Value
+`reg_gprval		ex2RegValRt;		//Source B Value
 
-// reg[63:0]		ex2RegValRm;		//Source C Value
+// `reg_gprval		ex2RegValRm;		//Source C Value
 
-//reg[63:0]		ex2RegValFRs;		//Source A Value (FPR)
-//reg[63:0]		ex2RegValFRt;		//Source B Value (FPR)
-reg[63:0]		ex2RegValCRm;		//Source C Value (CR)
+//`reg_gprval		ex2RegValFRs;		//Source A Value (FPR)
+//`reg_gprval		ex2RegValFRt;		//Source B Value (FPR)
+`reg_gprval		ex2RegValCRm;		//Source C Value (CR)
 
 `reg_gpr		ex2RegIdRn1;		//Destination ID (EX1)
-reg[63:0]		ex2RegValRn1;		//Destination Value (EX1)
+`reg_gprval		ex2RegValRn1;		//Destination Value (EX1)
 // reg[4:0]		ex2RegIdCn1;		//Destination ID (CR, EX1)
 `reg_gpr		ex2RegIdCn1;		//Destination ID (CR, EX1)
-reg[63:0]		ex2RegValCn1;		//Destination Value (CR, EX1)
+`reg_gprval		ex2RegValCn1;		//Destination Value (CR, EX1)
 	
 `wire_gpr		ex2RegIdRn2;		//Destination ID (EX1)
-wire[63:0]		ex2RegValRn2;		//Destination Value (EX1)
+`wire_gprval		ex2RegValRn2;		//Destination Value (EX1)
 //wire[4:0]		ex2RegIdCn2;		//Destination ID (CR, EX1)
 `wire_gpr		ex2RegIdCn2;		//Destination ID (CR, EX1)
-wire[63:0]		ex2RegValCn2;		//Destination Value (CR, EX1)
+`wire_gprval		ex2RegValCn2;		//Destination Value (CR, EX1)
 	
 reg[47:0]		ex2RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex2RegValImm;		//Immediate (Decode)
@@ -2101,8 +2103,8 @@ wire[63:0]		ex2RegOutSr;
 // reg[63:0]		ex2MemDataIn;
 // reg[1:0]		ex2MemDataOK;
 
-reg[63:0]		ex2AguOutLea;		//LEA Output
-reg[63:0]		ex2AguOutXLea;		//XLEA Output
+`reg_gprval		ex2AguOutLea;		//LEA Output
+`reg_gprval		ex2AguOutXLea;		//XLEA Output
 
 ExEX2	ex2(
 	clock,			exResetL,
@@ -2173,26 +2175,26 @@ reg[95:0]		ex3IstrWord;	//source instruction word
 `reg_gpr		ex3RegIdRs;		//Source A, ALU / Base
 `reg_gpr		ex3RegIdRt;		//Source B, ALU / Index
 `reg_gpr		ex3RegIdRm;		//Source C, MemStore
-reg[63:0]		ex3RegValRs;		//Source A Value
-reg[63:0]		ex3RegValRt;		//Source B Value
+`reg_gprval		ex3RegValRs;		//Source A Value
+`reg_gprval		ex3RegValRt;		//Source B Value
 
-// reg[63:0]		ex3RegValRm;		//Source C Value
+// `reg_gprval		ex3RegValRm;		//Source C Value
 
 
 `reg_gpr		ex3RegIdRn2;		//Destination ID (EX2)
-reg[63:0]		ex3RegValRn2;		//Destination Value (EX2)
+`reg_gprval		ex3RegValRn2;		//Destination Value (EX2)
 //reg[4:0]		ex3RegIdCn2;		//Destination ID (CR, EX2)
 `reg_gpr		ex3RegIdCn2;		//Destination ID (CR, EX2)
-reg[63:0]		ex3RegValCn2;		//Destination Value (CR, EX2)
+`reg_gprval		ex3RegValCn2;		//Destination Value (CR, EX2)
 	
 `wire_gpr		ex3RegIdRn3;		//Destination ID (EX3)
-wire[63:0]		ex3RegValRn3;		//Destination Value (EX3)
+`wire_gprval		ex3RegValRn3;		//Destination Value (EX3)
 `wire_gpr		ex3RegIdRn4;		//Destination ID (EX3)
-wire[63:0]		ex3RegValRn4;		//Destination Value (EX3)
+`wire_gprval		ex3RegValRn4;		//Destination Value (EX3)
 
 //wire[4:0]		ex3RegIdCn3;		//Destination ID (CR, EX3)
 `wire_gpr		ex3RegIdCn3;		//Destination ID (CR, EX3)
-wire[63:0]		ex3RegValCn3;		//Destination Value (CR, EX3)
+`wire_gprval		ex3RegValCn3;		//Destination Value (CR, EX3)
 	
 reg[47:0]		ex3RegValPc;		//PC Value (Synthesized)
 reg[32:0]		ex3RegValImm;		//Immediate (Decode)
@@ -2260,27 +2262,27 @@ reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 `reg_gpr		exB1RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exB1RegIdRm;		//Source C, MemStore
 // reg[63:0]		exB1RegValRs;		//Source A Value
-reg[63:0]		exB1RegValRt;		//Source B Value
-// reg[63:0]		exB1RegValRm;		//Source C Value
+`reg_gprval		exB1RegValRt;		//Source B Value
+// `reg_gprval		exB1RegValRm;		//Source C Value
 `endif
 
 // wire[1:0]		exB1Hold;
 
 `wire_gpr		exB1RegIdRn1;		//Destination ID (EX1)
-wire[63:0]		exB1RegValRn1;		//Destination Value (EX1)
+`wire_gprval		exB1RegValRn1;		//Destination Value (EX1)
 `wire_gpr		exB1HldIdRn1;		//Held Dest ID (EX1)
 
 //reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 
 wire[8:0]		exB1OpUCmd2;
 
-wire[63:0]		exB1AguXLea;		//XLEA Output
+`wire_gprval		exB1AguXLea;		//XLEA Output
 assign		exB1AguXLea = ex1AguOutXLea;
 
 wire[47:0]			exB1MemAddr;
 
-wire[63:0]		exB1Delay1Out;		//
-wire[63:0]		exC1Delay1Out;		//
+`wire_gprval		exB1Delay1Out;		//
+`wire_gprval		exC1Delay1Out;		//
 
 
 ExEXB1	exb1(
@@ -2318,7 +2320,7 @@ wire[65:0]	exB1ValAlu;
 // ExALU	exAluB(
 ExALUB	exAluB(
 	clock,				exResetL,
-	exB1RegValRs,		exB1RegValRt,
+	exB1RegValRs[63:0],	exB1RegValRt[63:0],
 	exB1OpUCmd,			exB1OpUIxt,
 	exHold2,			ex1AluInSr[1:0],
 //	exHold2,			ex1RegInSr[1:0],
@@ -2327,7 +2329,7 @@ ExALUB	exAluB(
 
 ExMulW	exB1MulW(
 	clock,				exResetL,
-	exB1RegValRs,		exB1RegValRt,
+	exB1RegValRs[63:0],	exB1RegValRt[63:0],
 	exB1OpUCmd,			exB1OpUIxt,
 	exHold2,			exB1MulWVal,
 	1
@@ -2350,16 +2352,16 @@ reg[8:0]		exB2OpUIxt;
 `reg_gpr		exB2RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exB2RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exB2RegIdRm;		//Source C, MemStore
-reg[63:0]		exB2RegValRs;		//Source A Value
-reg[63:0]		exB2RegValRt;		//Source B Value
+`reg_gprval		exB2RegValRs;		//Source A Value
+`reg_gprval		exB2RegValRt;		//Source B Value
 
-// reg[63:0]		exB2RegValRm;		//Source C Value
+// `reg_gprval		exB2RegValRm;		//Source C Value
 
 
 `reg_gpr		exB2RegIdRn1;		//Destination ID (EX1)
-reg[63:0]		exB2RegValRn1;		//Destination Value (EX1)
+`reg_gprval		exB2RegValRn1;		//Destination Value (EX1)
 `wire_gpr		exB2RegIdRn2;		//Destination ID (EX1)
-wire[63:0]		exB2RegValRn2;		//Destination Value (EX1)
+`wire_gprval		exB2RegValRn2;		//Destination Value (EX1)
 	
 reg[32:0]		exB2RegValImm;		//Immediate (Decode)
 reg[65:0]		exB2RegAluRes;		//Arithmetic Result
@@ -2400,17 +2402,17 @@ reg[8:0]		exB3OpUIxt;
 `reg_gpr		exB3RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exB3RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exB3RegIdRm;		//Source C, MemStore
-reg[63:0]		exB3RegValRs;		//Source A Value
-reg[63:0]		exB3RegValRt;		//Source B Value
-// reg[63:0]		exB3RegValRm;		//Source C Value
+`reg_gprval		exB3RegValRs;		//Source A Value
+`reg_gprval		exB3RegValRt;		//Source B Value
+// `reg_gprval		exB3RegValRm;		//Source C Value
 
 
 `reg_gpr		exB3RegIdRn2;		//Destination ID (EX1)
-reg[63:0]		exB3RegValRn2;		//Destination Value (EX1)
+`reg_gprval		exB3RegValRn2;		//Destination Value (EX1)
 `wire_gpr		exB3RegIdRn3;		//Destination ID (EX1)
-wire[63:0]		exB3RegValRn3;		//Destination Value (EX1)
+`wire_gprval		exB3RegValRn3;		//Destination Value (EX1)
 `wire_gpr		exB3RegIdRn4;		//Destination ID (EX1)
-wire[63:0]		exB3RegValRn4;		//Destination Value (EX1)
+`wire_gprval		exB3RegValRn4;		//Destination Value (EX1)
 	
 reg[32:0]		exB3RegValImm;		//Immediate (Decode)
 reg[65:0]		exB3RegAluRes;		//Arithmetic Result
@@ -2457,14 +2459,14 @@ reg[8:0]		exC1OpUIxt;
 `reg_gpr		exC1RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exC1RegIdRm;		//Source C, MemStore
 (* max_fanout = 200 *)
-	reg[63:0]		exC1RegValRs;		//Source A Value
+	`reg_gprval		exC1RegValRs;		//Source A Value
 (* max_fanout = 200 *)
-	reg[63:0]		exC1RegValRt;		//Source B Value
+	`reg_gprval		exC1RegValRt;		//Source B Value
 
-reg[63:0]		exC1RegValRm;		//Source C Value
+`reg_gprval		exC1RegValRm;		//Source C Value
 
 `wire_gpr		exC1RegIdRn1;		//Destination ID (EX1)
-wire[63:0]		exC1RegValRn1;		//Destination Value (EX1)
+`wire_gprval		exC1RegValRn1;		//Destination Value (EX1)
 `wire_gpr		exC1HldIdRn1;		//Held Dest ID (EX1)
 
 reg[32:0]		exC1RegValImm;		//Immediate (Decode)
@@ -2478,7 +2480,7 @@ ExEXC1	exc1(
 	exC1RegIdRs,	exC1RegIdRt,
 	exC1RegIdRm,	exC1RegValRs,
 	exC1RegValRt,	exC1RegValRm,
-	UV64_00,
+	UVGPRV_00,
 
 	exC1RegIdRn1,	exC1RegValRn1,
 	exC1HldIdRn1,
@@ -2505,7 +2507,7 @@ wire[ 7:0]	exC1ValCarryD;
 // ExALU	exAluC(
 ExALUB	exAluC(
 	clock,				exResetL,
-	exC1RegValRs,		exC1RegValRt,
+	exC1RegValRs[63:0],	exC1RegValRt[63:0],
 	exC1OpUCmd,			exC1OpUIxt,
 	exHold2,			ex1AluInSr[1:0],
 //	exHold2,			ex1RegInSr[1:0],
@@ -2517,7 +2519,7 @@ assign exC1MulWVal = 0;
 `else
 ExMulW	exC1MulW(
 	clock,				exResetL,
-	exC1RegValRs,		exC1RegValRt,
+	exC1RegValRs[63:0],	exC1RegValRt[63:0],
 	exC1OpUCmd,			exC1OpUIxt,
 	exHold2,			exC1MulWVal,
 	2
@@ -2537,14 +2539,14 @@ reg[8:0]		exC2OpUIxt;
 `reg_gpr		exC2RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exC2RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exC2RegIdRm;		//Source C, MemStore
-reg[63:0]		exC2RegValRs;		//Source A Value
-reg[63:0]		exC2RegValRt;		//Source B Value
-reg[63:0]		exC2RegValRm;		//Source C Value
+`reg_gprval		exC2RegValRs;		//Source A Value
+`reg_gprval		exC2RegValRt;		//Source B Value
+`reg_gprval		exC2RegValRm;		//Source C Value
 
 `reg_gpr		exC2RegIdRn1;		//Destination ID (EX1)
-reg[63:0]		exC2RegValRn1;		//Destination Value (EX1)
+`reg_gprval		exC2RegValRn1;		//Destination Value (EX1)
 `wire_gpr		exC2RegIdRn2;		//Destination ID (EX1)
-wire[63:0]		exC2RegValRn2;		//Destination Value (EX1)
+`wire_gprval		exC2RegValRn2;		//Destination Value (EX1)
 	
 reg[32:0]		exC2RegValImm;		//Immediate (Decode)
 reg[65:0]		exC2RegAluRes;		//Arithmetic Result
@@ -2582,16 +2584,16 @@ reg[8:0]		exC3OpUIxt;
 `reg_gpr		exC3RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exC3RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exC3RegIdRm;		//Source C, MemStore
-reg[63:0]		exC3RegValRs;		//Source A Value
-reg[63:0]		exC3RegValRt;		//Source B Value
-reg[63:0]		exC3RegValRm;		//Source C Value
+`reg_gprval		exC3RegValRs;		//Source A Value
+`reg_gprval		exC3RegValRt;		//Source B Value
+`reg_gprval		exC3RegValRm;		//Source C Value
 
 `reg_gpr		exC3RegIdRn2;		//Destination ID (EX1)
-reg[63:0]		exC3RegValRn2;		//Destination Value (EX1)
+`reg_gprval		exC3RegValRn2;		//Destination Value (EX1)
 `wire_gpr		exC3RegIdRn3;		//Destination ID (EX1)
-wire[63:0]		exC3RegValRn3;		//Destination Value (EX1)
+`wire_gprval		exC3RegValRn3;		//Destination Value (EX1)
 `wire_gpr		exC3RegIdRn4;		//Destination ID (EX1)
-wire[63:0]		exC3RegValRn4;		//Destination Value (EX1)
+`wire_gprval		exC3RegValRn4;		//Destination Value (EX1)
 	
 reg[32:0]		exC3RegValImm;		//Immediate (Decode)
 reg[65:0]		exC3RegAluRes;		//Arithmetic Result
@@ -2635,22 +2637,18 @@ reg[95:0]		exL4IstrWord;	//source instruction word
 `reg_gpr		exL4RegIdRs;		//Source A, ALU / Base
 `reg_gpr		exL4RegIdRt;		//Source B, ALU / Index
 `reg_gpr		exL4RegIdRm;		//Source C, MemStore
-reg[63:0]		exL4RegValRs;		//Source A Value
-reg[63:0]		exL4RegValRt;		//Source B Value
-reg[63:0]		exL4RegValRm;		//Source C Value
+`reg_gprval		exL4RegValRs;		//Source A Value
+`reg_gprval		exL4RegValRt;		//Source B Value
+`reg_gprval		exL4RegValRm;		//Source C Value
 
 `reg_gpr		exL4RegIdRn2;		//Destination ID (EX2)
-reg[63:0]		exL4RegValRn2;		//Destination Value (EX2)
+`reg_gprval		exL4RegValRn2;		//Destination Value (EX2)
 `reg_gpr		exL4RegIdCn2;		//Destination ID (CR, EX2)
-reg[63:0]		exL4RegValCn2;		//Destination Value (CR, EX2)
+`reg_gprval		exL4RegValCn2;		//Destination Value (CR, EX2)
 		
 reg[47:0]		exL4RegValPc;		//PC Value (Synthesized)
 reg[32:0]		exL4RegValImm;		//Immediate (Decode)
-// reg[69:0]		exL4RegAluRes;		//Arithmetic Result
-// reg[63:0]		exL4RegMulRes;		//Multiplier Result
-// reg[63:0]		exL4RegMulWRes;		//Multiplier Result (Word)
-(* max_fanout = 200 *)
-	reg				exL4BraFlush;		//Flush EX2
+reg				exL4BraFlush;		//Flush EX2
 reg				exL4TrapFlush;		//Flush EX2
 
 `ifndef def_true
@@ -2662,6 +2660,62 @@ reg[63:0]		exL4RegInDhr;
 reg[63:0]		exL4RegInLr;
 reg[63:0]		exL4RegInSp;
 `endif
+
+
+
+reg[47:0]		exL5ValBPc;
+
+reg[8:0]		exL5OpUCmd;
+reg[8:0]		exL5OpUIxt;
+wire[1:0]		exL5Hold;
+reg[1:0]		exL5PreBra;
+reg[95:0]		exL5IstrWord;	//source instruction word
+
+`reg_gpr		exL5RegIdRs;		//Source A, ALU / Base
+`reg_gpr		exL5RegIdRt;		//Source B, ALU / Index
+`reg_gpr		exL5RegIdRm;		//Source C, MemStore
+`reg_gprval		exL5RegValRs;		//Source A Value
+`reg_gprval		exL5RegValRt;		//Source B Value
+`reg_gprval		exL5RegValRm;		//Source C Value
+
+`reg_gpr		exL5RegIdRn2;		//Destination ID (EX2)
+`reg_gprval		exL5RegValRn2;		//Destination Value (EX2)
+`reg_gpr		exL5RegIdCn2;		//Destination ID (CR, EX2)
+`reg_gprval		exL5RegValCn2;		//Destination Value (CR, EX2)
+		
+reg[47:0]		exL5RegValPc;		//PC Value (Synthesized)
+reg[32:0]		exL5RegValImm;		//Immediate (Decode)
+reg				exL5BraFlush;		//Flush EX2
+reg				exL5TrapFlush;		//Flush EX2
+
+
+
+reg[47:0]		exL6ValBPc;
+
+reg[8:0]		exL6OpUCmd;
+reg[8:0]		exL6OpUIxt;
+wire[1:0]		exL6Hold;
+reg[1:0]		exL6PreBra;
+reg[95:0]		exL6IstrWord;	//source instruction word
+
+`reg_gpr		exL6RegIdRs;		//Source A, ALU / Base
+`reg_gpr		exL6RegIdRt;		//Source B, ALU / Index
+`reg_gpr		exL6RegIdRm;		//Source C, MemStore
+`reg_gprval		exL6RegValRs;		//Source A Value
+`reg_gprval		exL6RegValRt;		//Source B Value
+`reg_gprval		exL6RegValRm;		//Source C Value
+
+`reg_gpr		exL6RegIdRn2;		//Destination ID (EX2)
+`reg_gprval		exL6RegValRn2;		//Destination Value (EX2)
+`reg_gpr		exL6RegIdCn2;		//Destination ID (CR, EX2)
+`reg_gprval		exL6RegValCn2;		//Destination Value (CR, EX2)
+		
+reg[47:0]		exL6RegValPc;		//PC Value (Synthesized)
+reg[32:0]		exL6RegValImm;		//Immediate (Decode)
+reg				exL6BraFlush;		//Flush EX2
+reg				exL6TrapFlush;		//Flush EX2
+
+
 
 reg[31:0]	tValStepPc;
 
@@ -2839,69 +2893,69 @@ assign		id2RegValLr		=
 
 assign		id2RegValDlr		=
 			(ex1RegIdRn1==JX2_GR_DLR) ?
-				ex1RegValRn1 :
+				ex1RegValRn1[63:0] :
 `ifdef jx2_enable_wex
 			(exB1RegIdRn1==JX2_GR_DLR) ?
-				exB1RegValRn1 :
+				exB1RegValRn1[63:0] :
 `endif
 `ifdef jx2_enable_wex3w
 			(exC1RegIdRn1==JX2_GR_DLR) ?
-				exC1RegValRn1 :
+				exC1RegValRn1[63:0] :
 `endif
 			(ex2RegIdRn2==JX2_GR_DLR) ?
-				ex2RegValRn2 :
+				ex2RegValRn2[63:0] :
 `ifdef jx2_enable_wex
 			(exB2RegIdRn2==JX2_GR_DLR) ?
-				exB2RegValRn2 :
+				exB2RegValRn2[63:0] :
 `endif
 `ifdef jx2_enable_wex3w
 			(exC2RegIdRn2==JX2_GR_DLR) ?
-				exC2RegValRn2 :
+				exC2RegValRn2[63:0] :
 `endif
 			(ex3RegIdRn2==JX2_GR_DLR) ?
-				ex3RegValRn2 :
+				ex3RegValRn2[63:0] :
 `ifdef jx2_enable_wex
 			(exB3RegIdRn2==JX2_GR_DLR) ?
-				exB3RegValRn2 :
+				exB3RegValRn2[63:0] :
 `endif
 `ifdef jx2_enable_wex3w
 			(exC3RegIdRn2==JX2_GR_DLR) ?
-				exC3RegValRn2 :
+				exC3RegValRn2[63:0] :
 `endif
-			gprOutDlr;
+			gprOutDlr[63:0];
 
 assign		id2RegValDhr		=
 			(ex1RegIdRn1==JX2_GR_DHR) ?
-				ex1RegValRn1 :
+				ex1RegValRn1[63:0] :
 `ifdef jx2_enable_wex
 			(exB1RegIdRn1==JX2_GR_DHR) ?
-				exB1RegValRn1 :
+				exB1RegValRn1[63:0] :
 `endif
 `ifdef jx2_enable_wex3w
 			(exC1RegIdRn1==JX2_GR_DHR) ?
-				exC1RegValRn1 :
+				exC1RegValRn1[63:0] :
 `endif
 			(ex2RegIdRn2==JX2_GR_DHR) ?
-				ex2RegValRn2 :
+				ex2RegValRn2[63:0] :
 `ifdef jx2_enable_wex
 			(exB2RegIdRn2==JX2_GR_DHR) ?
-				exB2RegValRn2 :
+				exB2RegValRn2[63:0] :
 `endif
 `ifdef jx2_enable_wex3w
 			(exC2RegIdRn2==JX2_GR_DHR) ?
-				exC2RegValRn2 :
+				exC2RegValRn2[63:0] :
 `endif
 			(ex3RegIdRn2==JX2_GR_DHR) ?
-				ex3RegValRn2 :
+				ex3RegValRn2[63:0] :
 `ifdef jx2_enable_wex
 			(exB3RegIdRn2==JX2_GR_DHR) ?
-				exB3RegValRn2 :
+				exB3RegValRn2[63:0] :
 `endif
 `ifdef jx2_enable_wex3w
 			(exC3RegIdRn2==JX2_GR_DHR) ?
-				exC3RegValRn2 :
+				exC3RegValRn2[63:0] :
 `endif
-			gprOutDhr;
+			gprOutDhr[63:0];
 
 `ifdef def_true
 wire	exHold2a;
@@ -3737,6 +3791,50 @@ begin
 			end
 `endif
 `endif
+
+			$display("EXL4: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X Op=%X-%X F=%d",
+				exL4ValBPc,	exL4RegValPc,
+				exL4IstrWord[15: 0], exL4IstrWord[31:16],
+				exL4IstrWord[47:32], exL4IstrWord[63:48],
+				exL4IstrWord[79:64], exL4IstrWord[95:80],
+				exL4OpUCmd, exL4OpUIxt, exL4BraFlush);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exL4RegIdRs, exL4RegValRs,
+				exL4RegIdRt, exL4RegValRt,
+				exL4RegIdRm, exL4RegValRm);
+//			$display("     Rn1=%X(%X) Cn1=%X(%X)",
+//				exL4RegIdRn3, exL4RegValRn3,
+//				exL4RegIdCn3, exL4RegValCn3);
+
+
+			$display("EXL5: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X Op=%X-%X F=%d",
+				exL5ValBPc,	exL5RegValPc,
+				exL5IstrWord[15: 0], exL5IstrWord[31:16],
+				exL5IstrWord[47:32], exL5IstrWord[63:48],
+				exL5IstrWord[79:64], exL5IstrWord[95:80],
+				exL5OpUCmd, exL5OpUIxt, exL5BraFlush);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exL5RegIdRs, exL5RegValRs,
+				exL5RegIdRt, exL5RegValRt,
+				exL5RegIdRm, exL5RegValRm);
+			$display("     Rn1=%X(%X) Cn1=%X(%X)",
+				exL5RegIdRn2, exL5RegValRn2,
+				exL5RegIdCn2, exL5RegValCn2);
+
+			$display("EXL6: PC0=%X PC2=%X D=%X-%X-%X-%X-%X-%X Op=%X-%X F=%d",
+				exL6ValBPc,	exL6RegValPc,
+				exL6IstrWord[15: 0], exL6IstrWord[31:16],
+				exL6IstrWord[47:32], exL6IstrWord[63:48],
+				exL6IstrWord[79:64], exL6IstrWord[95:80],
+				exL6OpUCmd, exL5OpUIxt, exL5BraFlush);
+			$display("     Rs=%X(%X) Rt=%X(%X) Rn=%X(%X)",
+				exL6RegIdRs, exL6RegValRs,
+				exL6RegIdRt, exL6RegValRt,
+				exL6RegIdRm, exL6RegValRm);
+			$display("     Rn1=%X(%X) Cn1=%X(%X)",
+				exL6RegIdRn2, exL6RegValRn2,
+				exL6RegIdCn2, exL6RegValCn2);
+
 
 			$display("");
 
@@ -5309,7 +5407,12 @@ begin
 	dcInVal			= ex1MemDataOut;
 //	dcInValB		= ex1MemDataOutB;
 `ifdef jx2_enable_wex
+`ifdef jx2_enable_memcap
 	dcInValB		= exB1RegValRn1;
+`else
+	dcInValB[63:0]	= exB1RegValRn1[63:0];
+	dcInValB[65:64]	= 0;
+`endif
 `else
 	dcInValB		= 0;
 `endif
@@ -5977,20 +6080,20 @@ begin
 		ex1RegIdRs		<= JX2_GR_ZZR;
 		ex1RegIdRt		<= JX2_GR_ZZR;
 		ex1RegIdRm		<= JX2_GR_ZZR;
-//		ex1RegValRs		<= UV64_XX;
-//		ex1RegValRt		<= UV64_XX;
-		ex1RegValRs		<= UV64_00;
-		ex1RegValRt		<= UV64_00;
+//		ex1RegValRs		<= UVGPRV_XX;
+//		ex1RegValRt		<= UVGPRV_XX;
+		ex1RegValRs		<= UVGPRV_00;
+		ex1RegValRt		<= UVGPRV_00;
 
 `ifndef jx2_cpu_merge_rxy
-		ex1RegValRm		<= UV64_XX;
+		ex1RegValRm		<= UVGPRV_XX;
 `endif
 
-		ex1RegValCRm	<= UV64_XX;
+		ex1RegValCRm	<= UVGPRV_XX;
 
 `ifdef jx2_enable_fpu
-//		ex1RegValFRs	<= UV64_XX;
-//		ex1RegValFRt	<= UV64_XX;
+//		ex1RegValFRs	<= UVGPRV_XX;
+//		ex1RegValFRt	<= UVGPRV_XX;
 `endif
 
 `ifdef jx2_enable_wex
@@ -5999,11 +6102,11 @@ begin
 		exB1RegIdRs		<= JX2_GR_ZZR;
 		exB1RegIdRt		<= JX2_GR_ZZR;
 		exB1RegIdRm		<= JX2_GR_ZZR;
-		exB1RegValRs	<= UV64_XX;
-		exB1RegValRt	<= UV64_XX;
+		exB1RegValRs	<= UVGPRV_XX;
+		exB1RegValRt	<= UVGPRV_XX;
 
 `ifndef jx2_cpu_merge_rxy
-		exB1RegValRm	<= UV64_XX;
+		exB1RegValRm	<= UVGPRV_XX;
 `endif
 
 `endif
@@ -6014,9 +6117,9 @@ begin
 		exC1RegIdRs		<= JX2_GR_ZZR;
 		exC1RegIdRt		<= JX2_GR_ZZR;
 		exC1RegIdRm		<= JX2_GR_ZZR;
-		exC1RegValRs	<= UV64_XX;
-		exC1RegValRt	<= UV64_XX;
-		exC1RegValRm	<= UV64_XX;
+		exC1RegValRs	<= UVGPRV_XX;
+		exC1RegValRt	<= UVGPRV_XX;
+		exC1RegValRm	<= UVGPRV_XX;
 `endif
 
 `endif
@@ -6405,22 +6508,23 @@ begin
 		ewb3RegIdRm		<= exC3RegIdRm;
 `endif
 
-`ifndef def_true
+`ifdef def_true
 		/* EXL4 */
 //		if(!(ex3BraFlush || ex3TrapFlush || crOutSr[28]))
-		if(!(ex3BraFlush || ex3TrapFlush || crOutSr[28] || tRegExc[15]))
+//		if(!(ex3BraFlush || ex3TrapFlush || crOutSr[28] || tRegExc[15]))
+		if(!(ex3BraFlush || ex3TrapFlush))
 		begin
 			/*
 			 * Try to keep track of the last non-flushed state.
 			 */
 		
 			exL4ValBPc		<= ex3ValBPc;
+			exL4IstrWord	<= ex3IstrWord;
+
 			exL4OpUCmd		<= ex3OpUCmd;
 			exL4OpUIxt		<= ex3OpUIxt;
 			exL4PreBra		<= ex3PreBra;
 			exL4BraFlush	<= ex3BraFlush || ex3TrapFlush;
-//			exL4RegInLastSr	<= ex3RegInLastSr;
-			exL4RegInSr		<= crOutSr[31:0];
 
 			exL4RegIdRs		<= ex3RegIdRs;
 			exL4RegIdRt		<= ex3RegIdRt;
@@ -6435,28 +6539,49 @@ begin
 			exL4RegValPc	<= ex3RegValPc;
 			exL4RegValImm	<= ex3RegValImm;
 
-//			exL4RegInLr		<= ex3RegOutLr;
-//			exL4RegInDlr	<= ex3RegOutDlr;
-//			exL4RegInDhr	<= ex3RegOutDhr;
-//			exL4RegInSp		<= gprOutSp;
-//			exL4RegInSp		<= ex3RegValSp;
-			exL4RegInSp		<= { gprOutSp[63:48], ex3RegValSp };
-//			exL4RegValSp	<= ex3RegValSp;
 
-//			exL4RegInLr		<= ex3RegValLr;
-//			exL4RegInDlr	<= ex3RegValDlr;
+			exL5ValBPc		<= exL4ValBPc;
+			exL5IstrWord	<= exL4IstrWord;
 
-			exL4RegInLr		<= ex3RegInLr;
+			exL5OpUCmd		<= exL4OpUCmd;
+			exL5OpUIxt		<= exL4OpUIxt;
+			exL5PreBra		<= exL4PreBra;
+			exL5BraFlush	<= exL4BraFlush;
 
-			exL4RegInDlr	<= ex3RegInDlr;
-			exL4RegInDhr	<= ex3RegInDhr;
+			exL5RegIdRs		<= exL4RegIdRs;
+			exL5RegIdRt		<= exL4RegIdRt;
+			exL5RegIdRm		<= exL4RegIdRm;
+			exL5RegValRs	<= exL4RegValRs;
+			exL5RegValRt	<= exL4RegValRt;
+			exL5RegValRm	<= exL4RegValRm;
+			exL5RegIdRn2	<= exL4RegIdRn2;
+			exL5RegValRn2	<= exL4RegValRn2;
+			exL5RegIdCn2	<= exL4RegIdCn2;
+			exL5RegValCn2	<= exL4RegValCn2;
+			exL5RegValPc	<= exL4RegValPc;
+			exL5RegValImm	<= exL4RegValImm;
 
-//			exL4RegInDlr	<= ex3RegValDlr;
 
-//			exL4RegInLr		<= crOutLr;
-//			exL4RegInDlr	<= gprOutDlr;
-//			exL4RegInDhr	<= gprOutDhr;
-//			exL4RegInSp		<= gprOutSp;
+			exL6ValBPc		<= exL5ValBPc;
+			exL6IstrWord	<= exL5IstrWord;
+
+			exL6OpUCmd		<= exL5OpUCmd;
+			exL6OpUIxt		<= exL5OpUIxt;
+			exL6PreBra		<= exL5PreBra;
+			exL6BraFlush	<= exL5BraFlush;
+
+			exL6RegIdRs		<= exL5RegIdRs;
+			exL6RegIdRt		<= exL5RegIdRt;
+			exL6RegIdRm		<= exL5RegIdRm;
+			exL6RegValRs	<= exL5RegValRs;
+			exL6RegValRt	<= exL5RegValRt;
+			exL6RegValRm	<= exL5RegValRm;
+			exL6RegIdRn2	<= exL5RegIdRn2;
+			exL6RegValRn2	<= exL5RegValRn2;
+			exL6RegIdCn2	<= exL5RegIdCn2;
+			exL6RegValCn2	<= exL5RegValCn2;
+			exL6RegValPc	<= exL5RegValPc;
+			exL6RegValImm	<= exL5RegValImm;
 		end
 `endif
 

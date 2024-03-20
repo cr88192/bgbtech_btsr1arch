@@ -552,8 +552,8 @@ int JX2I_GfxCon_Startup()
 //	jx2i_gfxcon_conbuf=(u32 *)malloc(32768*sizeof(u32));
 //	jx2i_gfxcon_lconbuf=(u32 *)malloc(32768*sizeof(u32));
 
-	jx2i_gfxcon_conbuf=(u32 *)malloc(131072*sizeof(u32));
-	jx2i_gfxcon_lconbuf=(u32 *)malloc(131072*sizeof(u32));
+	jx2i_gfxcon_conbuf=(u32 *)malloc((131072+1024)*sizeof(u32));
+	jx2i_gfxcon_lconbuf=(u32 *)malloc((131072+1024)*sizeof(u32));
 	
 //	for(i=0; i<40*25*4; i++)
 //	for(i=0; i<40*25*8; i++)

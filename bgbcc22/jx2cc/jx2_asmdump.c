@@ -144,6 +144,8 @@ char *BGBCC_JX2DA_RelocToName(BGBCC_JX2_Context *ctx, int rlc)
 	case BGBCC_SH_RLC_RELW11_BJCMP:		sn="RELW11_BJX";	break;
 	case BGBCC_SH_RLC_RELW33_BJCMP:		sn="RELW33_BJX";	break;
 
+	case BGBCC_SH_RLC_PBOQ16_BJX:		sn="PBOQ16_BJX";	break;
+
 	default:
 		sprintf(tb, "RLC_%02X", rlc);
 		sn=bgbcc_strdup(tb);
@@ -665,6 +667,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_JOP64:		sn="J_OP64";		break;	//0x01F1
 	case BGBCC_SH_NMID_LDIHI:		sn="LDIHI.L";		break;
 	case BGBCC_SH_NMID_LDIHIQ:		sn="LDIHI.Q";		break;
+	case BGBCC_SH_NMID_LDIMI:		sn="LDIMI.L";		break;
+
 	case BGBCC_SH_NMID_CMPNANTTEQ:	sn="CMPNANTTEQ";	break;
 	case BGBCC_SH_NMID_SETTRAP:		sn="SETTRAP";		break;
 	case BGBCC_SH_NMID_MULHSQ:		sn="MULHS.Q";		break;
@@ -1141,10 +1145,10 @@ char *BGBCC_JX2DA_GetIstrSuffix(BGBCC_JX2_Context *ctx, int wex2)
 	if(wex2&2)
 	{
 		if((wex2&3)==3)
-			return("\t|\n  ");
+			return("  |\n  ");
 
 		if(wex2&4)
-			return("\t|\n  ");
+			return("  |\n  ");
 
 		return("\n");
 	}
@@ -1606,6 +1610,25 @@ int BGBCC_JX2DA_EmitOpRegLbl(BGBCC_JX2_Context *ctx,
 
 	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s%s",
 		snm, srn, sro,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	return(1);
+}
+
+int BGBCC_JX2DA_EmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
+	int nmid, int rm, int rn, int lbl)
+{
+	char *snm, *srm, *srn, *sro;
+
+	if(ctx->is_simpass || !ctx->do_asm)
+		return(0);
+		
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
+	srm=BGBCC_JX2DA_RegToName(ctx, rm);
+	srn=BGBCC_JX2DA_RegToName(ctx, rn);
+	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
+
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s, %s%s",
+		snm, srm, srn, sro,
 		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	return(1);
 }

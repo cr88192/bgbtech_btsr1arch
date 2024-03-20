@@ -76,14 +76,14 @@ output[1:0]		exHold;
 `input_gpr		regIdRs;		//Source A, ALU / Base
 `input_gpr		regIdRt;		//Source B, ALU / Index
 `input_gpr		regIdRm;		//Source C, MemStore
-input[63:0]		regValRs;		//Source A Value
-input[63:0]		regValRt;		//Source B Value
-input[63:0]		regValRm;		//Source C Value
+`input_gprval		regValRs;		//Source A Value
+`input_gprval		regValRt;		//Source B Value
+`input_gprval		regValRm;		//Source C Value
 
 `input_gpr		regIdRn1;		//Destination ID (EX1)
-input[63:0]		regValRn1;		//Destination Value (EX1)
+`input_gprval		regValRn1;		//Destination Value (EX1)
 `output_gpr		regIdRn2;		//Destination ID (EX1)
-output[63:0]	regValRn2;		//Destination Value (EX1)
+`output_gprval	regValRn2;		//Destination Value (EX1)
 	
 input[47:0]		regValPc;		//PC Value (Synthesized)
 input[32:0]		regValImm;		//Immediate (Decode)
@@ -92,7 +92,7 @@ input[65:0]		regValAluRes;	//ALU Result
 input[63:0]		regValMulwRes;	//MUL.W Result
 input[65:0]		regValKrreRes;	//Keyring Result
 
-input[63:0]		exDelayIn;
+`input_gprval		exDelayIn;
 
 input[63:0]		regFpuGRn;		//FPU GPR Result
 
@@ -101,20 +101,20 @@ input			opBraFlush;
 input[63:0]		regInSr;
 input[ 7:0]		regInLastSr;
 
-input[63:0]		memDataIn;
-input[63:0]		memDataInB;
+input[65:0]		memDataIn;
+input[65:0]		memDataInB;
 
 reg				tExHold;
 reg				tRegHeld;
 assign	exHold		= { tRegHeld, tExHold };
 
 `reg_gpr		tRegIdRn2;
-reg[63:0]		tRegValRn2;
+`reg_gprval		tRegValRn2;
 
 assign	regIdRn2	= tRegIdRn2;
 assign	regValRn2	= tRegValRn2;
 
-reg[63:0]	tValOutDfl;
+`reg_gprval	tValOutDfl;
 reg			tDoOutDfl;
 
 
@@ -137,7 +137,7 @@ begin
 	tRegHeld		= 0;
 	tNextMsgLatch	= 0;
 
-	tValOutDfl		= UV64_00;
+	tValOutDfl		= UVGPRV_00;
 	tDoOutDfl		= 0;
 
 	tOpEnable	= !opBraFlush;
@@ -190,8 +190,8 @@ begin
 		end
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
-			tRegIdRn2		= regIdRm;			//
-			tRegValRn2		= regValAluRes[63:0];		//
+			tRegIdRn2			= regIdRm;			//
+			tRegValRn2[63:0]	= regValAluRes[63:0];		//
 		end
 
 		JX2_UCMD_ALUCMP: begin
@@ -201,8 +201,8 @@ begin
 		end
 
 		JX2_UCMD_MULW3: begin
-			tRegIdRn2	= regIdRm;			//
-			tRegValRn2	= regValMulwRes;		//
+			tRegIdRn2			= regIdRm;			//
+			tRegValRn2[63:0]	= regValMulwRes;		//
 		end
 
 		JX2_UCMD_SHAD3: begin

@@ -52,7 +52,7 @@ typedef signed char sbyte;
 #define FKEY_KEYLF	0x92
 #define FKEY_KEYRT	0x93
 
-byte kbbuf[256+8];
+byte kbbuf[256+64];
 byte kbrov;
 byte kbirov;
 // byte gfxdrv_kill;
@@ -476,8 +476,8 @@ int BTSR1_MainDeinitKeyboard(void)
 #endif
 }
 
-static char tbuf[256];
-static byte tbpos;
+static char getstr_tbuf[256+64];
+static byte getstr_tbpos;
 
 char *BTSR1_CheckGetString()
 {
@@ -488,10 +488,10 @@ char *BTSR1_CheckGetString()
 	{
 		if((i=='\b') || (i==127))
 		{
-			if(tbpos>0)
+			if(getstr_tbpos>0)
 			{
 				fputs("\b \b", stdout);
-				tbpos--;
+				getstr_tbpos--;
 			}
 			i=BTSR1_MainGetKey();
 			continue;
@@ -502,18 +502,18 @@ char *BTSR1_CheckGetString()
 		if(i=='\n')
 			break;
 
-		tbuf[tbpos++]=i;
+		getstr_tbuf[getstr_tbpos++]=i;
 		fputc(i, stdout);
 		
 		i=BTSR1_MainGetKey();
 	}
 	
-	tbuf[tbpos]=0;
+	getstr_tbuf[getstr_tbpos]=0;
 	if(i>0)
 	{
 		fputc('\n', stdout);
-		tbpos=0;
-		return(tbuf);
+		getstr_tbpos=0;
+		return(getstr_tbuf);
 	}
 
 	return(NULL);
@@ -841,7 +841,7 @@ static byte		l2dc_hash_dirty[65536];
 static byte		l2dc_hash_dirty2[65536];
 static byte		l2dc_hash_epoch[65536];
 static int			l2dc_miss_cyc;
-static int			l2dc_miss_ix;
+static u16			l2dc_miss_ix;
 static int			l2dc_miss_addr;
 static int			l2dc_miss_seq;
 static int			l2dc_miss_ldb;
@@ -860,13 +860,14 @@ static int			l2m_hash_tst[8][8192];
 static int			l2m_hash_hit[8];
 static int			l2m_hash_miss[8];
 
+static int			top_isstall;
 
 void MemUpdateForBusRing()
 {
 	static uint64_t	rng;
 	static uint64_t	l2addr1, l2addr2;
 	static uint32_t	l2seq1, l2seq2;
-	static uint32_t	l2opm1, l2opm2;
+	static uint32_t	l2opm1, l2opm2, l2opm1a;
 	static uint32_t	l2data1a, l2data2a;
 	static uint32_t	l2data1b, l2data2b;
 	static uint32_t	l2data1c, l2data2c;
@@ -880,6 +881,8 @@ void MemUpdateForBusRing()
 	static uint32_t	l2data3c, l2data4c;
 	static uint32_t	l2data3d, l2data4d;
 
+	static uint64_t	li;
+
 	static	int			lclock;
 	int		ix, sx;
 	int		i, j, k;
@@ -890,7 +893,7 @@ void MemUpdateForBusRing()
 		(((l2addr2>>4)+l2data2a)&65535);
 	l2opm2^=((rng>>48)&0x8000);
 
-#if 1
+#if 0
 	top->memSeqIn=l2seq2;
 	top->memOpmIn=l2opm2;
 	top->memAddrInA[0]=l2addr2;
@@ -902,7 +905,7 @@ void MemUpdateForBusRing()
 	top->memDataIn[3]=l2data2d;
 #endif
 
-#if 0
+#if 1
 	top->memSeqIn=l2seq4;
 	top->memOpmIn=l2opm4;
 	top->memAddrInA[0]=l2addr4;
@@ -953,27 +956,61 @@ void MemUpdateForBusRing()
 		l2data1d=top->memDataOut[3];
 
 #if 0
-		if(l2opm1)
+		if(	!(top->reset) &&
+			!(l2seq1&0xFF) && (
+			((l2opm2&0xFF)==0x97) ||
+			((l2opm2&0xFF)==0xA7) ||
+			((l2opm2&0xFF)==0x9F) ||
+			((l2opm2&0xFF)==0xAF) ||
+			((l2opm2&0xFF)==0x94) ||
+			((l2opm2&0xFF)==0xA4) )	)
 		{
-			printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
-				l2opm1, l2seq1, l2addr1,
-				l2data1d, l2data1c, l2data1b, l2data1a);
-		}
+			li=l2seq1; l2seq1=l2seq4; l2seq4=li;
+			li=l2opm1; l2opm1=l2opm4; l2opm4=li;
+			li=l2addr1; l2addr1=l2addr4; l2addr4=li;
 
-		if(l2opm2)
+			li=l2data1a; l2data1a=l2data4a; l2data4a=li;
+			li=l2data1b; l2data1b=l2data4b; l2data4b=li;
+			li=l2data1c; l2data1c=l2data4c; l2data4c=li;
+			li=l2data1d; l2data1d=l2data4d; l2data4d=li;
+		
+			top->memSeqIn=l2seq4;
+			top->memOpmIn=l2opm4;
+			top->memAddrInA[0]=l2addr4;
+			top->memAddrInA[1]=l2addr4>>32;
+			top->memAddrInA[2]=0;
+			top->memDataIn[0]=l2data4a;
+			top->memDataIn[1]=l2data4b;
+			top->memDataIn[2]=l2data4c;
+			top->memDataIn[3]=l2data4d;
+		}
+#endif
+
+#if 1
+		if(top_isstall)
 		{
-			printf("L2-2 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
-				l2opm2, l2seq2, l2addr2,
-				l2data2d, l2data2c, l2data2b, l2data2a);
+			if(l2opm1&255)
+			{
+				printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
+					l2opm1, l2seq1, l2addr1,
+					l2data1d, l2data1c, l2data1b, l2data1a);
+			}
+
+			if(l2opm2&255)
+			{
+				printf("L2-2 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
+					l2opm2, l2seq2, l2addr2,
+					l2data2d, l2data2c, l2data2b, l2data2a);
+			}
 		}
 #endif
 	}
 	
-
-	int addr, isRom, isSRam, isDRam,
+	static unsigned int addr;
+	static int isRom, isSRam, isDRam,
 		isZero, isNopPg, isRtsPg,
-		isMmio, isCcmd, isSkip;
-	int isL2mRepeat, l2Epoch;
+		isMmio, isCcmd, isResp, isSkip, isSkipCnt;
+	static int isL2mRepeat, l2Epoch;
 	
 	const char *src_unit;
 	
@@ -1002,7 +1039,7 @@ void MemUpdateForBusRing()
 	}
 	
 	
-	addr	= l2addr1;
+	addr	= (unsigned int)l2addr1;
 	isRom	= (addr>=0x00000000) && (addr<=0x00007FFF);
 	isSRam	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
 //	isDRam	= (addr>=0x01000000) && (addr<=0x0FFFFFFF);
@@ -1013,18 +1050,52 @@ void MemUpdateForBusRing()
 	isRtsPg	= (addr>=0x00030000) && (addr<=0x0003FFFF);
 	
 	isMmio = 0;
+#if 0
 	if(((l2opm1&0xF0)==0x90) &&
 			((l2opm1&0x0F)!=0x07) &&
+			((l2opm1&0x0F)!=0x0F) &&
 			((l2opm1&0x0F)!=0x04) )
 		isMmio = 1;
 	if(((l2opm1&0xF0)==0xA0) &&
 			((l2opm1&0x0F)!=0x07) &&
+			((l2opm1&0x0F)!=0x0F) &&
 			((l2opm1&0x0F)!=0x04))
 		isMmio = 2;
-	
+#endif
+
+	if(		((l2opm1&0xFF)==0x92) ||
+			((l2opm1&0xFF)==0x93) ||
+			((l2opm1&0xFF)==0x96))
+		isMmio = 1;
+	if(		((l2opm1&0xFF)==0xA2) ||
+			((l2opm1&0xFF)==0xA3) ||
+			((l2opm1&0xFF)==0xA6))
+		isMmio = 2;
+
 	isCcmd = 0;
 	if((l2opm1&0xF0)==0x80)
 		isCcmd = 1;
+
+	isResp = 0;
+	if((l2opm1&0xE0)==0x60)
+		isResp = 1;
+	
+	if(	(l2opm1&0xFF) && !isMmio && !isCcmd && !isResp &&
+		(((l2addr1>>32)&0xEFFF)!=0xC000))
+	{
+		printf("L2: Out of Range O=%04X A=%012llX\n", l2opm1, l2addr1);
+
+#if 1
+		isRom	= 0;
+		isSRam	= 0;
+		isDRam	= 0;
+		isZero	= 0;
+		isNopPg	= 0;
+		isRtsPg	= 0;
+#endif
+
+		isZero	= 1;
+	}
 	
 	isSkip = 0;
 	isL2mRepeat = 1;
@@ -1032,7 +1103,10 @@ void MemUpdateForBusRing()
 //	l2Epoch = (main_time>>13)&15;
 	l2Epoch = (main_time>>15)&15;
 
+	l2opm1a=l2opm1;
+
 #ifndef JX2_SKIP_L2_MODEL
+// #if 0
 //	sx=((l2seq1*65521)>>16)&4095;
 	sx=((l2seq1*65521)>>16)&7;
 	if((l2opm1&255) && (l2m_seqhash[sx]!=l2seq1))
@@ -1093,7 +1167,10 @@ void MemUpdateForBusRing()
 	if(isDRam && (
 		((l2opm1&0xFF)==0x97) ||
 		((l2opm1&0xFF)==0xA7) ||
-		((l2opm1&0xFF)==0x94) )	)
+		((l2opm1&0xFF)==0x9F) ||
+		((l2opm1&0xFF)==0xAF) ||
+		((l2opm1&0xFF)==0x94) ||
+		((l2opm1&0xFF)==0xA4) )	)
 	{
 		if(l2dc_miss_cyc>0)
 		{
@@ -1142,19 +1219,22 @@ void MemUpdateForBusRing()
 			if(l2dc_hash_addr[ix]==addr)
 				l2dc_stat_hit++;
 			if((l2dc_hash_addr2[ix]==addr) &&
-					((l2opm1&0xFF)!=0xA7) && ((l2opm1&0xFF)!=0xA4))
+						((l2opm1&0xFF)!=0xA7) &&
+						((l2opm1&0xFF)!=0xAF) &&
+						((l2opm1&0xFF)!=0xA4))
 				l2dc_stat_hit2++;
 		}
 		
 		if((l2dc_hash_addr2[ix]==addr) &&
 			(	((l2opm1&0xFF)==0xA7) ||
-				((l2opm1&0xFF)==0xA4)	))
+				((l2opm1&0xFF)==0xAF) ||
+				((l2opm1&0xFF)==0xA4) )	)
 		{
 //			l2dc_hash_dirty2[ix]=1;
 		}else
 		{
 			i=l2dc_hash_dirty[ix];
-			if(!i && ((l2opm1&0xFF)==0xA7))
+			if(!i && (((l2opm1&0xFF)==0xA7) || ((l2opm1&0xFF)==0xAF)))
 			{
 //				l2dc_hash_addr2[ix]=l2dc_hash_addr[ix];
 				l2dc_hash_addr[ix]=addr;
@@ -1163,11 +1243,12 @@ void MemUpdateForBusRing()
 			}
 		}
 		
-//		if(l2dc_hash_addr[ix]!=addr)
-		if((l2dc_hash_addr[ix]!=addr) &&
-			((l2dc_hash_addr2[ix]!=addr) ||
-				((l2opm1&0xFF)==0xA7) ||
-				((l2opm1&0xFF)==0xA4)))
+		if(l2dc_hash_addr[ix]!=addr)
+//		if((l2dc_hash_addr[ix]!=addr) &&
+//			((l2dc_hash_addr2[ix]!=addr) ||
+//				((l2opm1&0xFF)==0xA7) ||
+//				((l2opm1&0xFF)==0xAF) ||
+//				((l2opm1&0xFF)==0xA4)))
 //		if(0)
 		{
 //			i=l2dc_hash_dirty[ix];
@@ -1198,21 +1279,31 @@ void MemUpdateForBusRing()
 					l2dc_miss_seq=l2seq1;
 
 					l2dc_miss_ldb=0;
-					if((l2opm1&0xFF)!=0xA7)
+
+#if 0
+					if(	((l2opm1&0xFF)!=0xA7) &&
+						((l2opm1&0xFF)!=0xAF) )
 					{
 //						if(l2dc_hash_dirty[ix])
 						if(l2dc_hash_dirty[ix] || (addr&16))
 							l2dc_miss_ldb=1;
 					}
-					
-					if(l2dc_hash_dirty[ix] && ((l2Epoch-l2dc_hash_epoch[ix])&8))
+
+					if(l2dc_hash_dirty[ix] &&
+							((l2Epoch-l2dc_hash_epoch[ix])&8))
 						l2dc_miss_ldb=0;
-					
+#endif					
 				}else
 				{
-					if((l2dc_miss_cyc<=0) && (l2dc_miss_seq>0))
+					if((l2dc_miss_cyc<=0) && (l2dc_miss_seq>0) &&
+						(l2seq1!=l2dc_miss_seq) &&
+						(((u32)addr)!=((u32)l2dc_miss_addr)))
+//					if((l2dc_miss_cyc<=0) && (l2dc_miss_seq>0))
 					{
-						printf("L2: POGO\n");
+						printf("L2: POGO %04X %04X %08X %08X %04X\n",
+							l2seq1, l2dc_miss_seq,
+							addr, l2dc_miss_addr,
+							l2opm1);
 						l2dc_miss_pogocnt++;
 						if(l2dc_miss_pogocnt>4096)
 						{
@@ -1220,12 +1311,16 @@ void MemUpdateForBusRing()
 							l2dc_miss_pogocnt=0;
 							l2dc_miss_seq=0;
 						}
+					}else
+					{
+//						if(l2seq1==l2dc_miss_seq)
+//							l2dc_miss_seq=0;
 					}
 				}
 			}
 		}else
 		{
-			if((l2opm1&0xFF)==0xA7)
+			if(((l2opm1&0xFF)==0xA7) || ((l2opm1&0xFF)==0xAF))
 			{
 				l2dc_hash_dirty[ix]=1;
 				l2dc_hash_epoch[ix]=l2Epoch;
@@ -1235,7 +1330,27 @@ void MemUpdateForBusRing()
 		if(!isSkip)
 		{
 			if(l2seq1==l2dc_miss_seq)
+			{
 				l2dc_miss_seq=0;
+				l2dc_miss_pogocnt=0;
+			}
+		}
+
+		if(isSkip)
+		{
+			if(isSkipCnt<1024)
+			{
+				isSkipCnt++;
+			}else
+			{
+				l2dc_miss_seq=0;
+				l2dc_miss_pogocnt=0;
+				l2dc_miss_cyc=0;
+				isSkip=0;
+			}
+		}else
+		{
+			isSkipCnt=0;
 		}
 	}
 
@@ -1260,6 +1375,7 @@ void MemUpdateForBusRing()
 		l2data1c=0;
 		l2data1d=0;
 		l2opm1=0x70;
+//		l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
 	}
 	
 	if(isMmio==2)
@@ -1280,6 +1396,8 @@ void MemUpdateForBusRing()
 		l2data1c=0;
 		l2data1d=0;
 		l2opm1=0x70;
+//		l2opm1=0x60;
+//		l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
 	}
 
 	if(isCcmd)
@@ -1287,9 +1405,12 @@ void MemUpdateForBusRing()
 		l2data1c=0;
 		l2data1d=0;
 		l2opm1=0x70;
+//		l2opm1=0x70 | (l2opm1&0xFF00);
 	}
 	
-	if((((l2opm1&0xFF)==0x97) || ((l2opm1&0xFF)==0x94)) && !isSkip)
+	if((	((l2opm1&0xFF)==0x97) ||
+			((l2opm1&0xFF)==0x9F) ||
+			((l2opm1&0xFF)==0x94) ) && !isSkip)
 //	if((((l2opm1&0xFF)==0x97) ||
 //		((l2opm1&0xFF)==0x94) ||
 //		((l2opm1&0xFF)==0xA4)) && !isSkip)
@@ -1299,6 +1420,8 @@ void MemUpdateForBusRing()
 			printf("Bad Line Address\n");
 		}
 	
+		l2opm1a&=0x0FFF;
+
 //		main_buslines++;
 		if(isRom)
 		{
@@ -1307,7 +1430,12 @@ void MemUpdateForBusRing()
 			l2data1c=rombuf[((addr>>2)+2)&0x1FFF];
 			l2data1d=rombuf[((addr>>2)+3)&0x1FFF];
 //			l2opm1=0x70;
-			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
+			l2opm1=0x70 | (l2opm1a&0x3F00);
+			
+			if((l2opm1a&0xFF)==0x94)
+				l2opm1|=0x4000;
 		}else
 			if(isSRam)
 		{
@@ -1316,34 +1444,12 @@ void MemUpdateForBusRing()
 			l2data1c=srambuf[((addr>>2)+2)&0x7FF];
 			l2data1d=srambuf[((addr>>2)+3)&0x7FF];
 //			l2opm1=0x70;
-			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
-		}else
-			if(isZero)
-		{
-			l2data1a=0;
-			l2data1b=0;
-			l2data1c=0;
-			l2data1d=0;
-//			l2opm1=0x70;
-			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
-		}else
-			if(isNopPg)
-		{
-			l2data1a=0x30003000;
-			l2data1b=0x30003000;
-			l2data1c=0x30003000;
-			l2data1d=0x30003000;
-//			l2opm1=0x70;
-			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
-		}else
-			if(isRtsPg)
-		{
-			l2data1a=0x30103010;
-			l2data1b=0x30103010;
-			l2data1c=0x30103010;
-			l2data1d=0x30103010;
-//			l2opm1=0x70;
-			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
+			l2opm1=0x70 | (l2opm1a&0x3F00);
+
+			if((l2opm1a&0xFF)==0x94)
+				l2opm1|=0x4000;
 		}else
 			if(isDRam)
 		{
@@ -1352,7 +1458,54 @@ void MemUpdateForBusRing()
 			l2data1c=drambuf[((addr>>2)+2)&0x1FFFFFF];
 			l2data1d=drambuf[((addr>>2)+3)&0x1FFFFFF];
 //			l2opm1=0x70;
-			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
+			l2opm1=0x70 | (l2opm1a&0x3F00);
+
+			if((l2opm1a&0xFF)==0x94)
+				l2opm1|=0x4000;
+		}else
+			if(isZero)
+		{
+			l2data1a=0;
+			l2data1b=0;
+			l2data1c=0;
+			l2data1d=0;
+//			l2opm1=0x70;
+//			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
+			l2opm1=0x70 | (l2opm1a&0x3F00);
+
+			if((l2opm1a&0xFF)==0x94)
+				l2opm1|=0x4000;
+		}else
+			if(isNopPg)
+		{
+			l2data1a=0x30003000;
+			l2data1b=0x30003000;
+			l2data1c=0x30003000;
+			l2data1d=0x30003000;
+//			l2opm1=0x70;
+//			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
+			l2opm1=0x70 | (l2opm1a&0x3F00);
+
+			if((l2opm1a&0xFF)==0x94)
+				l2opm1|=0x4000;
+		}else
+			if(isRtsPg)
+		{
+			l2data1a=0x30103010;
+			l2data1b=0x30103010;
+			l2data1c=0x30103010;
+			l2data1d=0x30103010;
+//			l2opm1=0x70;
+//			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
+			l2opm1=0x70 | (l2opm1a&0x3F00);
+
+			if((l2opm1a&0xFF)==0x94)
+				l2opm1|=0x4000;
 		}else
 		{
 			printf("Bad Address %08X %s\n", addr, src_unit);
@@ -1364,20 +1517,29 @@ void MemUpdateForBusRing()
 			l2data1c=0;
 			l2data1d=0;
 //			l2opm1=0x70;
-			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//			l2opm1=0x70 | (l2opm1&0xFF00) | ((l2opm1>>8)&0x0F);
+			l2opm1=0x70 | (l2opm1a&0x3F00);
+
+			if((l2opm1a&0xFF)==0x94)
+				l2opm1|=0x4000;
 		}
 	}
 
 	if(((l2opm1&0xFF)==0xA4) && !isSkip)
 	{
-		l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+//		l2opm1=0x70 | ((l2opm1>>8)&0x0F);
+		l2opm1=0x70 | (l2opm1a&0xFF00);
+		l2opm1|=0x4000;
+
 		l2data1a=0x9FA49FA4;
 		l2data1b=0x9FA49FA4;
 		l2data1c=0x9FA49FA4;
 		l2data1d=0x9FA49FA4;
 	}
 
-	if(((l2opm1&0xFF)==0xA7) && !isSkip)
+//	if(((l2opm1&0xFF)==0xA7) && !isSkip)
+	if((((l2opm1&0xFF)==0xA7) || ((l2opm1&0xFF)==0xAF)) && !isSkip)
 	{
 		if(addr&15)
 		{
@@ -1388,7 +1550,8 @@ void MemUpdateForBusRing()
 
 		if(isRom || isZero || isNopPg || isRtsPg || ((l2opm1&0xFF)==0xA4))
 		{
-			l2opm1=0x60;
+//			l2opm1=0x60;
+			l2opm1=0x60 | (l2opm1a&0xFF00);
 		}else
 			if(isSRam)
 		{
@@ -1396,7 +1559,8 @@ void MemUpdateForBusRing()
 			srambuf[((addr>>2)+1)&0x7FF]=l2data1b;
 			srambuf[((addr>>2)+2)&0x7FF]=l2data1c;
 			srambuf[((addr>>2)+3)&0x7FF]=l2data1d;
-			l2opm1=0x60;
+//			l2opm1=0x60;
+			l2opm1=0x60 | (l2opm1a&0xFF00);
 		}
 		else if(isDRam)
 		{
@@ -1404,14 +1568,16 @@ void MemUpdateForBusRing()
 			drambuf[((addr>>2)+1)&0x1FFFFFF]=l2data1b;
 			drambuf[((addr>>2)+2)&0x1FFFFFF]=l2data1c;
 			drambuf[((addr>>2)+3)&0x1FFFFFF]=l2data1d;
-			l2opm1=0x60;
+//			l2opm1=0x60;
+			l2opm1=0x60 | (l2opm1a&0xFF00);
 		}else
 		{
 			printf("Bad Address %08X %s\n", addr, src_unit);
 			printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
 				l2opm1, l2seq1, l2addr1,
 				l2data1d, l2data1c, l2data1b, l2data1a);
-			l2opm1=0x60;
+//			l2opm1=0x60;
+			l2opm1=0x60 | (l2opm1a&0xFF00);
 		}
 	}
 }
@@ -1426,7 +1592,8 @@ void MemUpdateForBus()
 	uint32_t addr;
 	uint32_t addrb;
 
-	if(top->memSeqOut!=0xFF00)
+//	if(top->memSeqOut!=0xFF00)
+	if(1)
 	{
 		MemUpdateForBusRing();
 		return;
@@ -2169,6 +2336,7 @@ int main(int argc, char **argv, char **env)
 	int lclk, mhz;
 	int tt_start;
 	int ctick, ctick_rst;
+	int stall_cyc;
 	int x0, x1, x2, x3;
 	int t0, t1, t2;
 	int tt_frame;
@@ -2183,7 +2351,8 @@ int main(int argc, char **argv, char **env)
 	mhz=50;
 
 //	JX2R_UseImageCreateRamdisk(128*1024);
-	JX2R_UseImageCreateRamdisk(512*1024);
+//	JX2R_UseImageCreateRamdisk(512*1024);
+	JX2R_UseImageCreateRamdisk(768*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
 
 #if !defined(DOOM_RV) && !defined(QUAKE_RV)
@@ -2329,13 +2498,13 @@ int main(int argc, char **argv, char **env)
 
 	Verilated::commandArgs(argc, argv);
 
-	rombuf=(uint32_t *)malloc(32768);
-	srambuf=(uint32_t *)malloc(8192);
+	rombuf=(uint32_t *)malloc(32768+1024);
+	srambuf=(uint32_t *)malloc(8192+1024);
 
-	drambuf=(uint32_t *)malloc(1<<27);
+	drambuf=(uint32_t *)malloc((1<<27)+(1<<24));
 
-	srambuf2=(uint32_t *)malloc(8192);
-	drambuf2=(uint32_t *)malloc(1<<27);
+	srambuf2=(uint32_t *)malloc(8192+1024);
+	drambuf2=(uint32_t *)malloc((1<<27)+(1<<24));
 	
 	memset(srambuf, 0, 8192);
 	memset(drambuf, 0, 1<<27);
@@ -2350,7 +2519,7 @@ int main(int argc, char **argv, char **env)
 		fclose(fd);
 	}
 
-	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context));
+	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context)+1024);
 	memset(ctx, 0, sizeof(BJX2_Context));
 	jx2_ctx=ctx;
 
@@ -2394,6 +2563,18 @@ int main(int argc, char **argv, char **env)
 		cnt_d6+=(top->dbgOutStatus6!=0);
 		cnt_d7+=(top->dbgOutStatus7!=0);
 		cnt_d8+=(top->dbgOutStatus8!=0);
+
+		if(top->dbgExHold1!=0)
+		{
+			if(stall_cyc<(1<<20))
+				stall_cyc++;
+			else
+				top_isstall=1;
+		}else
+		{
+			stall_cyc=0;
+			top_isstall=0;
+		}
 
 //		if(t2>16)
 //		if((t2>16) && (cnt_dled>8))

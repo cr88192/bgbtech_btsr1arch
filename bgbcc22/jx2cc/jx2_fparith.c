@@ -958,8 +958,12 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(
 	ccxl_type type, ccxl_register dreg, int cmp,
 	ccxl_register sreg, ccxl_register treg)
 {
+	ccxl_register treg2;
+	double f;
+
 	int csreg, ctreg, cdreg;
-	int nm1, nm2, swst, lfp;
+	int nm1, nm2, swst, lfp, cmp1;
+	int i, j;
 	
 	if(sctx->no_fpu || sctx->fpu_soft)
 	{
@@ -969,6 +973,45 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
+
+#if 1
+	if(	 (	BGBCC_CCXL_IsRegImmFloatP(ctx, sreg) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, sreg) ) &&
+		!(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+			BGBCC_CCXL_IsRegImmDoubleP(ctx, treg)) )
+	{
+		switch(cmp)
+		{
+		case CCXL_CMP_EQ:	cmp1=CCXL_CMP_EQ;	break;
+		case CCXL_CMP_NE:	cmp1=CCXL_CMP_NE;	break;
+		case CCXL_CMP_LT:	cmp1=CCXL_CMP_GT;	break;
+		case CCXL_CMP_GT:	cmp1=CCXL_CMP_LT;	break;
+		case CCXL_CMP_LE:	cmp1=CCXL_CMP_GE;	break;
+		case CCXL_CMP_GE:	cmp1=CCXL_CMP_LE;	break;
+		default:			cmp1=-1;			break;
+		}
+
+		i=BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(ctx, sctx,
+			type, dreg, cmp1, treg, sreg);
+		return(i);
+	}
+#endif
+
+	if(	BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
+		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
+	{
+		f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
+		
+#if 0
+		if(sctx->fpu_gfp && (f==0))
+		{
+			BGBCC_CCXL_GetRegForLongValue(ctx, &treg2, 0);
+			i=BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(ctx, sctx,
+				type, dreg, cmp, sreg, treg2);
+			return(i);
+		}
+#endif
+	}
 
 	lfp=0;
 	switch(cmp)
@@ -1210,7 +1253,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 		f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
 		
 #if 0
-		if(f==0)
+		if(sctx->fpu_gfp && (f==0))
 		{
 			i=BGBCC_JX2C_EmitJCmpVRegZeroQLong(ctx, sctx,
 				type, sreg, cmp, lbl);

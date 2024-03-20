@@ -153,6 +153,13 @@ int BGBCC_JX2C_ScratchSafeStompReg(
 
 			sctx->is_leaf&=(~4);
 			sctx->is_leaftiny|=8;
+
+			if(ctx->cur_vtr)
+			{
+//				ctx->cur_vtr->trfl&=~CCXL_TRFL_LEAF;
+//				ctx->cur_vtr->trfl|=CCXL_TRFL_USES_SCRATCH;
+			}
+
 			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 			ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 		}
@@ -174,6 +181,13 @@ int BGBCC_JX2C_ScratchSafeStompReg(
 
 	sctx->is_leaf&=(~4);
 	sctx->is_leaftiny|=8;
+
+	if(ctx->cur_vtr)
+	{
+//		ctx->cur_vtr->trfl&=~CCXL_TRFL_LEAF;
+//		ctx->cur_vtr->trfl|=CCXL_TRFL_USES_SCRATCH;
+	}
+
 	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 	ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 
@@ -251,6 +265,13 @@ int BGBCC_JX2C_ScratchStompReg(
 
 			sctx->is_leaf&=(~4);
 			sctx->is_leaftiny|=8;
+
+			if(ctx->cur_vtr)
+			{
+//				ctx->cur_vtr->trfl&=~CCXL_TRFL_LEAF;
+//				ctx->cur_vtr->trfl|=CCXL_TRFL_USES_SCRATCH;
+			}
+
 			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 			ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 		}
@@ -736,7 +757,8 @@ int BGBCC_JX2C_ScratchAllocReg(
 
 	sctx->is_leaf&=(~4);
 	sctx->is_leaftiny|=8;
-	ctx->cur_vtr->trfl&=~1;
+//	ctx->cur_vtr->trfl&=~1;
+	ctx->cur_vtr->trfl&=~CCXL_TRFL_LEAF;
 
 	ctx->cur_vtr->trfl|=CCXL_TRFL_USES_SCRATCH;
 
@@ -4242,6 +4264,53 @@ int BGBCC_JX2C_EmitBindVRegReg(
 	return(-1);
 }
 
+int BGBCC_JX2C_EmitBindVRegRegDirty(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg, int dreg)
+{
+	int i, bi, creg, maxreg;
+
+	maxreg=sctx->maxreg_gpr_lf;
+
+	bi=-1;
+	for(i=0; i<maxreg; i++)
+	{
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+			continue;
+
+		creg=sctx->qcachereg[i];
+		if((creg&63)==(dreg&63))
+			{ bi=i; break; }
+	}
+
+	if(bi>=0)
+	{
+		i=bi;
+
+		if(BGBCC_CCXL_IsRegZzP(ctx, reg))
+			{ BGBCC_DBGBREAK }
+
+		sctx->regalc_save|=1ULL<<i;
+		sctx->regalc_ltcnt[i]=0;
+		sctx->regalc_map[i]=reg;
+		sctx->regalc_utcnt[i]=1;
+		sctx->regalc_live|=1ULL<<i;
+
+		sctx->regalc_dirty|=1ULL<<i;
+		sctx->regalc_gbldirty|=1ULL<<i;
+		if(i>=sctx->vsp_rsv)
+			sctx->regalc_noval|=1ULL<<i;
+
+		creg=sctx->qcachereg[i];
+
+//		sctx->rov_rshuf++;
+		return(creg);
+	}
+	
+	return(-1);
+}
+
 int BGBCC_JX2C_GetRegisterIndexForReg(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -4463,10 +4532,10 @@ int BGBCC_JX2C_CheckVRegLiveRange(
 #endif
 }
 
-int BGBCC_JX2C_CheckVRegMoreUsesInTraceP(
+int BGBCC_JX2C_CheckVRegMoreUsesInTraceStepP(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
-	ccxl_register reg)
+	ccxl_register reg, int step)
 {
 	BGBCC_CCXL_RegisterInfo *obj;
 	BGBCC_CCXL_VirtTr *tr;
@@ -4490,7 +4559,8 @@ int BGBCC_JX2C_CheckVRegMoreUsesInTraceP(
 	cvs=tr->b_ops;
 	cve=cvs+tr->n_ops;
 	
-	for(i=cvi+1; i<cve; i++)
+//	for(i=cvi+1; i<cve; i++)
+	for(i=cvi+step; i<cve; i++)
 	{
 		vop=obj->vop[i];
 		
@@ -4506,6 +4576,178 @@ int BGBCC_JX2C_CheckVRegMoreUsesInTraceP(
 	}
 	
 	return(0);
+}
+
+int BGBCC_JX2C_CheckVRegMoreUsesInTraceP(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	return(BGBCC_JX2C_CheckVRegMoreUsesInTraceStepP(ctx, sctx, reg, 1));
+}
+
+int BGBCC_JX2C_CheckVRegConsumeNextOpP(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	if(	BGBCC_JX2C_CheckVRegMoreUsesInTraceStepP(ctx, sctx, reg, 1) &&
+		!BGBCC_JX2C_CheckVRegMoreUsesInTraceStepP(ctx, sctx, reg, 2))
+	{
+		return(1);
+	}
+	return(0);
+}
+
+int BGBCC_JX2C_ProbeVRegInRegisterP(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	ccxl_register reg1;
+	int pr0;
+	int i;
+
+#if 1
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
+	{
+		reg1=sctx->regalc_map[i];
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, reg, reg1))
+			return(1);
+	}
+#endif
+
+	pr0=BGBCC_JX2C_GetVRegPriority(ctx, sctx, reg);
+	if(pr0<sctx->vsp_rsv)
+		return(1);
+
+	return(0);
+}
+
+int BGBCC_JX2C_ProbeVRegInRegisterActiveP(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	ccxl_register reg1;
+	int pr0, maxreg;
+	int i;
+
+	maxreg=sctx->maxreg_gpr;
+	if(sctx->is_tr_leaf&1)
+		maxreg=sctx->maxreg_gpr_lf;
+
+#if 1
+	for(i=0; i<maxreg; i++)
+	{
+		reg1=sctx->regalc_map[i];
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, reg, reg1))
+			return(1);
+	}
+#endif
+
+	pr0=BGBCC_JX2C_GetVRegPriority(ctx, sctx, reg);
+	if(pr0<sctx->vsp_rsv)
+		return(1);
+
+	return(0);
+}
+
+int BGBCC_JX2C_ProbeVRegIsCallArgP(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	u64 vspfl;
+
+	vspfl=BGBCC_JX2C_GetFrameVRegVspanFlags(ctx, sctx, reg);
+	if(vspfl&BGBCC_RSPFL_ISCALLARG)
+		return(1);
+	return(0);
+}
+
+/** Try to figure out if it would be better to skip using an immediate,
+  * and instead load the constant into a register.
+  */
+int BGBCC_JX2C_ProbeVRegRejectImm3P(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int nm)
+{
+	s64 li;
+	s32 k;
+	int nm1;
+
+	if(!BGBCC_CCXL_IsRegImmSmallSIntP(ctx, treg))
+		return(1);
+	li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+	k=li;
+	
+	if(k!=li)
+		return(1);
+
+	nm1=nm;
+
+#if 1
+	if(	BGBCC_JX2C_CheckVRegMoreUsesInTraceP(ctx, sctx, treg) ||
+		BGBCC_JX2C_ProbeVRegInRegisterActiveP(ctx, sctx, treg))
+	{
+		switch(nm1)
+		{
+		case BGBCC_SH_NMID_ADD:
+		case BGBCC_SH_NMID_SUB:
+#if 1
+			if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, sreg))
+			{
+				if(((k&65535)!=k) && ((k|(~65535))!=k))
+					{ nm1=-1; }
+				break;
+			}
+#endif
+
+			if(((k&511)!=k) && ((k|(~511))!=k))
+				{ nm1=-1; }
+			break;
+
+		case BGBCC_SH_NMID_ADDSL:
+		case BGBCC_SH_NMID_SUBSL:
+		case BGBCC_SH_NMID_ADDUL:
+		case BGBCC_SH_NMID_SUBUL:
+			if(((k&511)!=k) && ((k|(~511))!=k))
+				{ nm1=-1; }
+			break;
+		case BGBCC_SH_NMID_AND:
+		case BGBCC_SH_NMID_OR:
+		case BGBCC_SH_NMID_XOR:
+		case BGBCC_SH_NMID_DMULS:
+		case BGBCC_SH_NMID_DMULU:
+			if((k&511)!=k)
+				{ nm1=-1; }
+			break;
+
+		case BGBCC_SH_NMID_DIVSL:
+		case BGBCC_SH_NMID_DIVUL:
+		case BGBCC_SH_NMID_MODSL:
+		case BGBCC_SH_NMID_MODUL:
+			nm1=-1;
+			break;
+
+		case BGBCC_SH_NMID_MULSQ:
+		case BGBCC_SH_NMID_MULUQ:
+		case BGBCC_SH_NMID_DIVSQ:
+		case BGBCC_SH_NMID_DIVUQ:
+		case BGBCC_SH_NMID_MODSQ:
+		case BGBCC_SH_NMID_MODUQ:
+			nm1=-1;
+			break;
+
+		default:
+			break;
+		}
+	}
+#endif
+
+	return(nm1!=nm);
 }
 
 int BGBCC_JX2C_EmitReleaseRegister(
@@ -4599,8 +4841,8 @@ int BGBCC_JX2C_EmitReleaseRegister(
 //	for(i=0; i<sctx->maxreg_gpr; i++)
 	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
-		if(!((sctx->regalc_save)&(1ULL<<i)))
-			continue;
+//		if(!((sctx->regalc_save)&(1ULL<<i)))
+//			continue;
 			
 		reg1=sctx->regalc_map[i];
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, reg, reg1))
@@ -5335,8 +5577,26 @@ int BGBCC_JX2C_EmitScratchSyncRegisters(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx)
 {
+	ccxl_register reg;
+	ccxl_type tty;
+	int i;
+
 	if(sctx->sreg_live)
 		{ BGBCC_DBGBREAK }
+
+	if((sctx->is_leaftiny&3)==1)
+	{
+		return(0);
+	}
+
+//	BGBCC_JX2C_EmitLabelFlushFpRegisters(ctx, sctx);
+
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
+	{
+		if(BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i)<=0)
+			continue;
+		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 3);
+	}
 
 	return(0);
 }

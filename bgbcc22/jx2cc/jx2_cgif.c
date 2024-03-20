@@ -180,6 +180,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->abi_spillpad|= 8;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "functag"))
 		shctx->abi_spillpad|=16;
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "ldimi"))
+		shctx->abi_spillpad|=32;
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "shuffle"))
 		shctx->do_shuffle=1;
@@ -604,6 +606,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->abi_spillpad&=~2;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nofunctag"))
 		shctx->abi_spillpad&=~16;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "noldimi"))
+		shctx->abi_spillpad&=~32;
 
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nomovx"))
@@ -4225,9 +4230,13 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 //		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<512) && (sz<=16))
 //		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<4096) &&
 //		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<8192) &&
-//		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<32768) &&
-//			(sz<=16))
 
+#if 1
+		if((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<32768) &&
+			(sz<=16))
+#endif
+
+#if 0
 		if(((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<32768) &&
 			(sz<=16)) ||
 			((BGBCC_JX2_EmitGetSecOffs(sctx, BGBCC_SH_CSEG_DATA)<524288) &&
@@ -4235,6 +4244,7 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 //			(obj->gblrefcnt>=8) && (sctx->has_fmovs&64)))
 			(obj->gblrefcnt>=12) && (sctx->has_fmovs&64)))
 //			(obj->gblrefcnt_org>=16) && (sctx->has_fmovs&64)))
+#endif
 		{
 			BGBCC_JX2_SetSectionName(sctx, ".data");
 			BGBCC_JX2_EmitBAlign(sctx, al);
@@ -5741,6 +5751,27 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			}
 
 			w1=(w1&0xFE00)|(d1&0x01FF);
+			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_PBOQ16_BJX:
+			w0=bgbcc_getu16en(ctr+0, en);
+			w1=bgbcc_getu16en(ctr+2, en);
+
+			b=(w1&0xFFFF);
+			b1=b<<3;
+
+			d1=b1+(ctl-gbr_base);
+
+			if((d1<0) || (d1>=524288) || (d1&7))
+			{
+				BGBCC_JX2C_RelocRangeError(ctx, sctx,
+					i, j, sctx->rlc_ty[i], d1);
+//				BGBCC_DBGBREAK
+			}
+
+			w1=(d1>>3)&0xFFFF;
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
 			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
 			break;
@@ -8080,6 +8111,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			(100.0*sctx->stat_imm3ri_imm10un)/(sctx->stat_imm3ri_immtot+1)
 			);
 
+		printf("Imm-Hit(3RI): 10u_sh12=%.2f%%, 10u_sh16=%.2f%%\n",
+			(100.0*sctx->stat_imm3ri_imm10u_sh12)/(sctx->stat_imm3ri_immtot+1),
+			(100.0*sctx->stat_imm3ri_imm10u_sh16)/(sctx->stat_imm3ri_immtot+1)
+			);
+
 #if 0
 		for(i=0; i<16; i++)
 		{
@@ -8120,6 +8156,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			(100.0*sctx->stat_imm2ri_imm10un)/(sctx->stat_imm2ri_immtot+1)
 			);
 
+		printf("Imm-Hit(2RI): 10u_sh12=%.2f%%, 10u_sh16=%.2f%%\n",
+			(100.0*sctx->stat_imm2ri_imm10u_sh12)/(sctx->stat_imm2ri_immtot+1),
+			(100.0*sctx->stat_imm2ri_imm10u_sh16)/(sctx->stat_imm2ri_immtot+1)
+			);
+
 		printf("Imm-Hit: Miss2RI=%.2f%% Miss3RI=%.2f%% "
 				"Jumbo2RI=%.2f%% Jumbo3RI=%.2f%%\n",
 			(100.0*sctx->stat_imm2ri_hmiss)/(sctx->stat_imm2ri_hmtot+1),
@@ -8133,6 +8174,11 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			(100.0*sctx->stat_fp16_tot)/(sctx->stat_const_masktot+1),
 			(100.0*sctx->stat_fp16_hit5)/(sctx->stat_const_masktot+1),
 			(100.0*sctx->stat_fp16_hit5b)/(sctx->stat_const_masktot+1));
+
+		printf("Imm-Hit(Mask): 10u_sh12=%.2f%%, 10u_sh16=%.2f%%\n",
+			(100.0*sctx->stat_mask_imm10u_sh12)/(sctx->stat_const_masktot+1),
+			(100.0*sctx->stat_mask_imm10u_sh16)/(sctx->stat_const_masktot+1)
+			);
 
 		if(sctx->stat_fpimm_totchk5>0)
 		{

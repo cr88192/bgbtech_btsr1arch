@@ -1414,6 +1414,8 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 		ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 	}
 
+	ctx->cur_vtr->trfl|=CCXL_TRFL_MEMCOPY;
+
 //	if(!strcmp(ctx->cur_func->name, "Mod_LoadBrushModel"))
 //	{
 //		k=-1;
@@ -2840,6 +2842,8 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 	int nm1, nm2;
 	int step;
 	int i, j, k;
+
+	ctx->cur_vtr->trfl|=CCXL_TRFL_MEMCOPY;
 
 	al0=al;
 	if(sctx->has_misalgn)

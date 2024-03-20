@@ -1349,6 +1349,11 @@ begin
 	if(!tRegInMmcr[0])
 		tNxtSkipTlb = 1;
 
+	if(tInAddr[47:44]==4'hC)
+		tNxtSkipTlb = 1;
+	if(tInAddr[47:44]==4'hD)
+		tNxtSkipTlb = 1;
+
 // `ifndef def_true
 //`ifdef def_true
 `ifdef jx2_debug_isr
@@ -2255,7 +2260,8 @@ begin
 	//		tStBlkPFlA		= { 8'h00, tInPmode, ~(tFlushRov[3:0]) };
 			tStBlkPRovA		= tFlushRov;
 			tStBlkDataA		= memDataIn;
-			tStBlkFlagA		= memOpmIn[3:0];
+//			tStBlkFlagA		= memOpmIn[3:0];
+			tStBlkFlagA		= memOpmIn[11:8];
 
 `ifdef jx2_memic_blklenbits
 			tStBlkPLenA		= memDataLens;
@@ -2274,11 +2280,14 @@ begin
 				memAddrIn[47:12],
 				tReqSeqVa[43: 8],
 				tFlushRovTlb,
-				memOpmIn[3:0] };
+//				memOpmIn[3:0] };
+				memOpmIn[11:8] };
 			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
-			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
+//			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
+			tUtlbDoSt		= (memOpmIn[11:10] != 2'b11);
 
-			if(memOpmIn[3:2]==2'b11)
+//			if(memOpmIn[3:2]==2'b11)
+			if(memOpmIn[11:10]==2'b11)
 	//		if((memOpmIn[3:2]==2'b11) && !(tRegInSr[29] && tRegInSr[30]))
 			begin
 `ifdef jx2_debug_isr
@@ -2339,7 +2348,8 @@ begin
 	//		tStBlkPFlB		= { 8'h00, tInPmode, ~(tFlushRov[3:0]) };
 			tStBlkPRovB		= tFlushRov;
 			tStBlkDataB		= memDataIn;
-			tStBlkFlagB		= memOpmIn[3:0];
+//			tStBlkFlagB		= memOpmIn[3:0];
+			tStBlkFlagB		= memOpmIn[11:8];
 
 `ifdef jx2_memic_blklenbits
 			tStBlkPLenB		= memDataLens;
@@ -2354,16 +2364,19 @@ begin
 				memAddrIn[47:12],
 				tReqSeqVa[43: 8],
 				tFlushRovTlb,
-				memOpmIn[3:0] };
+//				memOpmIn[3:0] };
+				memOpmIn[11:8] };
 			tUtlbStIx		= tReqSeqVa[11:8] ^ tReqSeqVa[15:12];
-			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
+//			tUtlbDoSt		= (memOpmIn[3:2] != 2'b11);
+			tUtlbDoSt		= (memOpmIn[11:10] != 2'b11);
 
 			if(tStickyTlbExc[15:12]==4'h7)
 	//			tStBlkPFlB[15:8]=tStickyTlbExc[119:112];
 				tStBlkPFlB[15:0]=tStickyTlbExc[127:112];
 
 	//		if(memOpmIn[3])
-			if(memOpmIn[3:2]==2'b11)
+//			if(memOpmIn[3:2]==2'b11)
+			if(memOpmIn[11:10]==2'b11)
 	//		if((memOpmIn[3:2]==2'b11) && !(tRegInSr[29] && tRegInSr[30]))
 			begin
 `ifdef jx2_debug_isr

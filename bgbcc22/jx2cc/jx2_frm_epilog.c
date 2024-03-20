@@ -884,6 +884,11 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
 				BGBCC_SH_REG_R2, 1*8, BGBCC_SH_REG_R1);
 
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_R2, 3*8, BGBCC_SH_REG_R3);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_R2, 2*8, BGBCC_SH_REG_R2);
+
 			k+=4*8;
 		}
 #endif

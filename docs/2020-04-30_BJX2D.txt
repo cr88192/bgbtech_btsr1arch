@@ -239,7 +239,10 @@ SR Bits:
 ** Used by GSV for Vector Compare (Word/Half).
 * 8..15: U0..U7, Context Dependent
 ** May be used as a Predicate Stack.
-* 16..19: Reserved
+* 16: XMOV: Bounds Enforce Mode
+* 17: Reserved
+* 18: Reserved
+* 19: Reserved
 * 20: WM2, Reserved
 * 21: WM1, Reserved
 * 22: WX4, Mode 4
@@ -2314,8 +2317,8 @@ F0zz Instruction Block:
 
 * F0dd_Cddd  BRA	(PC, disp20s)		//Branch, +/- 1MB
 * F0dd_Dddd  BSR	(PC, disp20s)		//Call, +/- 1MB
-* F0dd_Eddd / BT	(PC, disp20s)		//(Deprecated), Branch True, 1
-* F0dd_Fddd / BF	(PC, disp20s)		//(Deprecated), Branch False, 1
+* F0dd_Eddd / BT	(PC, disp20s)		//(Dropped), Branch True, 1
+* F0dd_Fddd / BF	(PC, disp20s)		//(Dropped), Branch False, 1
 
 Branch ops may only exist in lane 1.
 
@@ -2409,10 +2412,12 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nz_Bejj  (Imm10 Space)
 
 * F2nz_Cfjj
-** F2n0_Cfjj  LDIZ{D}	Imm10u, Rn				//(PrWEX) Alt
-** F2n1_Cfjj  LDIN{D}	Imm10n, Rn				//(PrWEX) Alt
-** F2n2_Cfjj  LDISH		Imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
-*** Jumbo: LDISH32	Imm32, Rn
+** F2n0_Chjj  LDIZ		Imm10u, Rn				//(PrWEX) Alt
+** F2n0_CHjj  LDIMIZ	Imm10u, Rn				//(PrWEX) Rn=(Imm10u<<16)
+** F2n1_Chjj  LDIN		Imm10n, Rn				//(PrWEX) Alt
+** F2n1_CHjj  LDIMIN	Imm10n, Rn				//(PrWEX) Rn=(Imm10n<<16)
+** F2n2_Cpjj  LDISH		Imm8u, Rn				//(PrWEX) Rn=(Rn<<8)|Imm8
+*** Jumbo: LDISH32	Imm32, Rn					//Q=0
 ** F2n3_Cfjj  LDIHI{Q}	Imm10u, Rn				//Load immed into High bits (31:22) or (63:54)
 ** F2n4_Cfjj  TST{Q}	Imm10u, Rn				//SR.T=!(Imm AND Rn)
 ** F2n5_Cfjj  TST{Q}	Imm10n, Rn				//SR.T=!(Imm AND Rn)
@@ -2428,8 +2433,8 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2nF_Cfjj  CMP{Q}GT	Imm10n, Rn				//Signed Rn GT Imm
 
 * F2nz_Dfjj
-** F2n0_Dfjj  ADD{D}	Imm10u, Rn				//Rn=Rn+Imm10u
-** F2n1_Dfjj  ADD{D}	Imm10n, Rn				//Rn=Rn+Imm10n
+** F2n0_Dhjj  ADD			Imm10u, Rn			//Rn=Rn+Imm10u
+** F2n1_Dhjj  ADD			Imm10n, Rn			//Rn=Rn+Imm10n
 ** F2n2_Dfjj  MUL{S/U}.W	Imm10u, Rn			//Rn=Rn*Imm10u
 ** F2n3_Dfjj  MUL{S/U}.W	Imm10n, Rn			//Rn=Rn*Imm10n
 ** F2n4_Dfjj ? LDIROZ{Q}	Imm10u, Rn			//Load + ROTL
@@ -2691,7 +2696,7 @@ Alternative 2 (Hx, W0):
 * FFw0_iiii_F85n_iiii  ADD	Imm33s, Rk		//(Op64)
 ** Wnmi=zz00: ADD
 ** Wnmi=zz01: MOVLD		//Load Imm32 into high 32-bits of dest.
-** Wnmi=zz10: ?
+** Wnmi=zz10: ? REQDCB	//Request Dynamic Config Block
 ** Wnmi=zz11: XMOVTT	//Split Imm32 into high 16-bits of target 
 
 * FFw0_iiii_F88n_iiii  FLDCF	Imm32u, Rn		//(Op64)

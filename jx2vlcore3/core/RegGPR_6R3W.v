@@ -119,39 +119,39 @@ input[8:0]		regIdUIxt;
 `input_gpr		regIdRx;		//Source E
 `input_gpr		regIdRy;		//Source F
 
-output[63:0]	regValRs;
-output[63:0]	regValRt;
-output[63:0]	regValRu;
-output[63:0]	regValRv;
-output[63:0]	regValRx;
-output[63:0]	regValRy;
+`output_gprval	regValRs;
+`output_gprval	regValRt;
+`output_gprval	regValRu;
+`output_gprval	regValRv;
+`output_gprval	regValRx;
+`output_gprval	regValRy;
 
 `input_gpr		regIdRnA1;		//Destination ID
-input[63:0]		regValRnA1;		//Destination Value
+`input_gprval	regValRnA1;		//Destination Value
 `input_gpr		regIdRnA2;		//Destination ID
-input[63:0]		regValRnA2;		//Destination Value
+`input_gprval	regValRnA2;		//Destination Value
 `input_gpr		regIdRnA3;		//Destination ID
-input[63:0]		regValRnA3;		//Destination Value
+`input_gprval	regValRnA3;		//Destination Value
 `input_gpr		regIdRnA4;		//Destination ID
-input[63:0]		regValRnA4;		//Destination Value
+`input_gprval	regValRnA4;		//Destination Value
 
 `input_gpr		regIdRnB1;		//Destination ID
-input[63:0]		regValRnB1;		//Destination Value
+`input_gprval	regValRnB1;		//Destination Value
 `input_gpr		regIdRnB2;		//Destination ID
-input[63:0]		regValRnB2;		//Destination Value
+`input_gprval	regValRnB2;		//Destination Value
 `input_gpr		regIdRnB3;		//Destination ID
-input[63:0]		regValRnB3;		//Destination Value
+`input_gprval	regValRnB3;		//Destination Value
 `input_gpr		regIdRnB4;		//Destination ID
-input[63:0]		regValRnB4;		//Destination Value
+`input_gprval	regValRnB4;		//Destination Value
 
 `input_gpr		regIdRnC1;		//Destination ID
-input[63:0]		regValRnC1;		//Destination Value
+`input_gprval	regValRnC1;		//Destination Value
 `input_gpr		regIdRnC2;		//Destination ID
-input[63:0]		regValRnC2;		//Destination Value
+`input_gprval	regValRnC2;		//Destination Value
 `input_gpr		regIdRnC3;		//Destination ID
-input[63:0]		regValRnC3;		//Destination Value
+`input_gprval	regValRnC3;		//Destination Value
 `input_gpr		regIdRnC4;		//Destination ID
-input[63:0]		regValRnC4;		//Destination Value
+`input_gprval	regValRnC4;		//Destination Value
 
 input [47:0]	regValPc;		//PC Value (Synthesized)
 input [47:0]	regValBPc;		//Base PC Value
@@ -162,7 +162,7 @@ input [32:0]	regValImmB;		//Immediate (Decode)
 input [32:0]	regValImmC;		//Immediate (Decode)
 input [63:0]	regValLr;		//LR Value (CR)
 input [63:0]	regValSsp;		//SSP Value (CR)
-input [63:0]	regValCm;		//Cm Value (CR)
+`input_gprval	regValCm;		//Cm Value (CR)
 
 input			gprEx1Flush;
 input			gprEx2Flush;
@@ -191,12 +191,12 @@ input [63:0]	regInDhr;
 output[63:0]	regOutSp;
 input [63:0]	regInSp;
 
-reg[63:0]	tRegValRs;
-reg[63:0]	tRegValRt;
-reg[63:0]	tRegValRu;
-reg[63:0]	tRegValRv;
-reg[63:0]	tRegValRx;
-reg[63:0]	tRegValRy;
+`reg_gprval	tRegValRs;
+`reg_gprval	tRegValRt;
+`reg_gprval	tRegValRu;
+`reg_gprval	tRegValRv;
+`reg_gprval	tRegValRx;
+`reg_gprval	tRegValRy;
 
 assign	regValRs = tRegValRs;
 assign	regValRt = tRegValRt;
@@ -247,15 +247,15 @@ wire		nMaskEnableRyCm = 1;
 (* max_fanout = 200 *)
 	`wire_gpr		regIdRnAW;		//Destination ID
 (* max_fanout = 200 *)
-	wire[63:0]		regValRnAW;		//Destination Value
+	`wire_gprval		regValRnAW;		//Destination Value
 (* max_fanout = 200 *)
 	`wire_gpr		regIdRnBW;		//Destination ID
 (* max_fanout = 200 *)
-	wire[63:0]		regValRnBW;		//Destination Value
+	`wire_gprval		regValRnBW;		//Destination Value
 (* max_fanout = 200 *)
 	`wire_gpr		regIdRnCW;		//Destination ID
 (* max_fanout = 200 *)
-	wire[63:0]		regValRnCW;		//Destination Value
+	`wire_gprval		regValRnCW;		//Destination Value
 (* max_fanout = 200 *)
 	wire			regFlushRnW;	//Flush Stage
 
@@ -316,33 +316,33 @@ assign		regIdRnC3B = noLane3 ? JX2_GR_ZZR : regIdRnC3;
 
 // `ifdef jx2_enable_gpr48
 `ifdef jx2_enable_xgpr
-reg[63:0]	gprArrA[63:0];
-reg[63:0]	gprArrB[63:0];
-reg[63:0]	gprArrC[63:0];
+`reg_gprval	gprArrA[63:0];
+`reg_gprval	gprArrB[63:0];
+`reg_gprval	gprArrC[63:0];
 reg[63:0]	gprArrMA;
 reg[63:0]	gprArrMB;
 `else
-reg[63:0]	gprArrA[31:0];
-reg[63:0]	gprArrB[31:0];
-reg[63:0]	gprArrC[31:0];
+`reg_gprval	gprArrA[31:0];
+`reg_gprval	gprArrB[31:0];
+`reg_gprval	gprArrC[31:0];
 reg[31:0]	gprArrMA;
 reg[31:0]	gprArrMB;
 `endif
 
-// reg[63:0]	gprRegDlr;
-// reg[63:0]	gprRegDhr;
-// reg[63:0]	gprRegElr;
-// reg[63:0]	gprRegEhr;
-// reg[63:0]	gprRegSp;
-// reg[63:0]	gprRegBp;
+// `reg_gprval	gprRegDlr;
+// `reg_gprval	gprRegDhr;
+// `reg_gprval	gprRegElr;
+// `reg_gprval	gprRegEhr;
+// `reg_gprval	gprRegSp;
+// `reg_gprval	gprRegBp;
 
 `ifdef def_true
 (* max_fanout = 200 *)
-	wire[63:0]	gprRegDlr;
+	`wire_gprval	gprRegDlr;
 (* max_fanout = 200 *)
-	wire[63:0]	gprRegDhr;
+	`wire_gprval	gprRegDhr;
 (* max_fanout = 200 *)
-	wire[63:0]	gprRegSp;
+	`wire_gprval	gprRegSp;
 
 RegSpr_3W	gprModDlr(
 	clock,		// reset,
@@ -360,10 +360,18 @@ RegSpr_3W	gprModDhr(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 //	regIdRnCW,	regValRnCW,
-	JX2_GR_ZZR, UV64_XX,
+	JX2_GR_ZZR, UVGPRV_XX,
 //	regInDhr,	hold,
 	gprRegDhr,	hold,
 	regFlushRnW);
+
+`wire_gprval regInSpB;
+
+`ifdef jx2_enable_memcap
+assign	regInSpB = { 2'b00, regInSp };
+`else
+assign	regInSpB = regInSp;
+`endif
 
 RegSpr_3W	gprModSp(
 	clock,		// reset,
@@ -371,44 +379,44 @@ RegSpr_3W	gprModSp(
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 //	regIdRnCW,	regValRnCW,
-	JX2_GR_ZZR, UV64_XX,
-	regInSp,	hold,
+	JX2_GR_ZZR, UVGPRV_XX,
+	regInSpB,	hold,
 	regFlushRnW);
 
 `endif	
 
 
-assign	regOutDlr = gprRegDlr;
-assign	regOutDhr = gprRegDhr;
-assign	regOutSp  = gprRegSp;
+assign	regOutDlr = gprRegDlr[63:0];
+assign	regOutDhr = gprRegDhr[63:0];
+assign	regOutSp  = gprRegSp[63:0];
 
 
-reg[63:0]	tValRsA0;
-reg[63:0]	tValRtA0;
-reg[63:0]	tValRuA0;
-reg[63:0]	tValRvA0;
-reg[63:0]	tValRxA0;
-reg[63:0]	tValRyA0;
+`reg_gprval	tValRsA0;
+`reg_gprval	tValRtA0;
+`reg_gprval	tValRuA0;
+`reg_gprval	tValRvA0;
+`reg_gprval	tValRxA0;
+`reg_gprval	tValRyA0;
 
-reg[63:0]	tValRsA;
-reg[63:0]	tValRtA;
-reg[63:0]	tValRuA;
-reg[63:0]	tValRvA;
-reg[63:0]	tValRxA;
-reg[63:0]	tValRyA;
+`reg_gprval	tValRsA;
+`reg_gprval	tValRtA;
+`reg_gprval	tValRuA;
+`reg_gprval	tValRvA;
+`reg_gprval	tValRxA;
+`reg_gprval	tValRyA;
 
-reg[63:0]	tValJimm;
-reg[63:0]	tValJimm56;
-reg[63:0]	tValJimm56Vf;
+`reg_gprval	tValJimm;
+`reg_gprval	tValJimm56;
+`reg_gprval	tValJimm56Vf;
 
-reg[63:0]	tValFpImm16A;
-reg[63:0]	tValFpImm10A;
+`reg_gprval	tValFpImm16A;
+`reg_gprval	tValFpImm10A;
 
-reg[63:0]	tValFpImm16B;
-reg[63:0]	tValFpImm10B;
+`reg_gprval	tValFpImm16B;
+`reg_gprval	tValFpImm10B;
 
-reg[63:0]	tValImmRpA;
-reg[63:0]	tValImmRpB;
+`reg_gprval	tValImmRpA;
+`reg_gprval	tValImmRpB;
 
 reg		tValRsZz;
 reg		tValRtZz;
@@ -498,13 +506,19 @@ begin
 
 
 `ifdef jx2_enable_wexjumbo
-	tValJimm={
+	tValJimm = 0;
+	tValJimm[63:0]={
 		regValImmB[31:0],
 		regValImmA[31:0] };
 `endif
 
 `ifdef jx2_use_fpu_fpimm
-	tValFpImm16A	= {
+	tValFpImm16A = 0;
+	tValFpImm10A = 0;
+	tValFpImm16B = 0;
+	tValJimm56Vf = 0;
+
+	tValFpImm16A[63:0]	= {
 		regValImmA[15:14],
 		(regValImmA[14] || (regValImmA[14:10]==0)) &&
 				(regValImmA[14:10]!=5'h1F) ?
@@ -513,7 +527,7 @@ begin
 		10'h0,
 		32'h0
 		};
-//	tValFpImm10A	= {
+//	tValFpImm10A[63:0]	= {
 //		regValImmA[9:8],
 //		(regValImmA[8] || (regValImmA[8:4]==0)) ?
 //			6'h00 : 6'h3F,
@@ -524,7 +538,7 @@ begin
 
 	tValFpImm10A = 0;
 
-	tValFpImm16B	= {
+	tValFpImm16B[63:0]	= {
 		regValImmB[15:14],
 		(regValImmB[14] || (regValImmB[14:10]==0)) &&
 				(regValImmB[14:10]!=5'h1F) ?
@@ -534,7 +548,7 @@ begin
 		32'h0
 		};
 	
-	tValJimm56Vf = {
+	tValJimm56Vf[63:0] = {
 		tValJimm[55:42], 2'b0,
 		tValJimm[41:28], 2'b0,
 		tValJimm[27:14], 2'b0,
@@ -543,8 +557,10 @@ begin
 `endif
 	
 `ifdef jx2_alu_jcmp_rpimm
-	tValImmRpA = { regIdRy[5] ? UV59_FF, UV59_00, regIdRy[4:0] };
-	tValImmRpB = { regIdRx[5] ? UV59_FF, UV59_00, regIdRx[4:0] };
+	tValImmRpA = 0;
+	tValImmRpB = 0;
+	tValImmRpA[63:0] = { regIdRy[5] ? UV59_FF, UV59_00, regIdRy[4:0] };
+	tValImmRpB[63:0] = { regIdRx[5] ? UV59_FF, UV59_00, regIdRx[4:0] };
 `endif
 
 `ifdef jx2_enable_xgpr
@@ -621,19 +637,45 @@ begin
 		JX2_GR_SP:	tValRsA=gprRegSp;
 //		JX2_GR_SP:	tValRsA=regInSp;
 
-		JX2_GR_SSP:	tValRsA=regValSsp;
+		JX2_GR_SSP:
+		begin
+			tValRsA=0;
+			tValRsA[63:0]=regValSsp;
+		end
 
 `ifdef jx2_enable_vaddr48
 //		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
-		JX2_GR_PC:	tValRsA={ UV16_00, regValPc[47:1],
-			regValPc[0] &tEnablePcLsb };
-		JX2_GR_GBR:	tValRsA={ UV16_00, regValGbr };
-		JX2_GR_TBR:	tValRsA={ UV16_00, regValTbr };
-//		JX2_GR_LR:	tValRsA={ UV16_00, regValLr };
-		JX2_GR_LR:	tValRsA= regValLr;
+		JX2_GR_PC:
+		begin
+			tValRsA=0;
+			tValRsA[63:0] = { UV16_00, regValPc[47:1],
+				regValPc[0] &tEnablePcLsb };
+		end
+		JX2_GR_GBR:
+		begin
+			tValRsA=0;
+			tValRsA[63:0] = { UV16_00, regValGbr };
+		end
+
+		JX2_GR_TBR:
+		begin
+			tValRsA=0;
+			tValRsA[63:0] = { UV16_00, regValTbr };
+		end
+
+//		JX2_GR_LR:	tValRsA = { UV16_00, regValLr };
+		JX2_GR_LR:
+		begin
+			tValRsA=0;
+			tValRsA[63:0] = regValLr;
+		end
 
 `ifdef jx2_enable_riscv
-		JX2_GR_BPC:	tValRsA={ UV16_00, regValBPc };
+		JX2_GR_BPC:
+		begin
+			tValRsA=0;
+			tValRsA[63:0] = { UV16_00, regValBPc };
+		end
 `endif
 
 `else
@@ -656,7 +698,8 @@ begin
 		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
 		begin
 //			tValRsA = regValCm;
-			tValRsA = nMaskEnableRsCm ? regValCm : UV64_XX;
+//			tValRsA = 0;
+			tValRsA = nMaskEnableRsCm ? regValCm : UVGPRV_XX;
 			if(!nMaskEnableRsCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Masked CRn=%X %X-%X",
 					regIdRs, regIdUCmd, regIdUIxt);
@@ -666,7 +709,9 @@ begin
 		JX2_GR_TEAH, JX2_GR_VIPT: 
 		begin
 //			tValRsA = regValCm;
-			tValRsA = nMaskEnableRsCm ? regValCm : UV64_XX;
+
+//			tValRsA = 0;
+			tValRsA = nMaskEnableRsCm ? regValCm : UVGPRV_XX;
 			if(!nMaskEnableRsCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Masked CRn=%X %X-%X",
 					regIdRs, regIdUCmd, regIdUIxt);
@@ -676,18 +721,20 @@ begin
 
 
 		JX2_GR_IMM: begin
-			tValRsA={
+			tValRsA = 0;
+			tValRsA[63:0] = {
 				regValImmA[32]?UV32_FF:UV32_00,
 				regValImmA[31:0] };
 			tValRsZz=1;
 		end
 		JX2_GR_ZZR:	begin
-			tValRsA=UV64_00;
+			tValRsA=UVGPRV_00;
 			tValRsZz=1;
 		end
 
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
+//			tValRsA = 0;
 			tValRsA=tValJimm;
 			tValRsZz=1;
 		end
@@ -725,7 +772,8 @@ begin
 // `ifdef jx2_enable_ldirot
 `ifndef def_true
 		JX2_GR_R4IMM1, JX2_GR_R4IMM2: begin
-			tValRsA={
+			tValRsA = 0;
+			tValRsA[63:0] = {
 				regValImmA[32]?UV36_FF:UV36_00,
 				regValImmA[31:4]
 				};
@@ -736,7 +784,8 @@ begin
 `ifdef jx2_enable_ldirot
 // `ifndef def_true
 		JX2_GR_R8IMMH: begin
-			tValRsA={
+			tValRsA = 0;
+			tValRsA[63:0] = {
 				regValImmA[32]?UV40_FF:UV40_00,
 				regValImmA[31:8]
 				};
@@ -744,7 +793,7 @@ begin
 		end
 `endif
 
-		default: 	tValRsA=UV64_00;
+		default: 	tValRsA=UVGPRV_00;
 	endcase
 	
 	casez(regIdRt)
@@ -759,13 +808,14 @@ begin
 //		JX2_GR_SSP:	tValRtA=regValSsp;
 
 		JX2_GR_IMM:	begin
-			tValRtA={
+			tValRtA = UVGPRV_00;
+			tValRtA[63:0] = {
 				regValImmA[32]?UV32_FF:UV32_00,
 				regValImmA[31:0] };
 			tValRtZz=1;
 		end
 		JX2_GR_ZZR:	begin
-			tValRtA=UV64_00;
+			tValRtA=UVGPRV_00;
 			tValRtZz=1;
 		end
 		
@@ -825,7 +875,7 @@ begin
 `endif
 
 
-		default: 	tValRtA=UV64_00;
+		default: 	tValRtA=UVGPRV_00;
 	endcase
 
 	casez(regIdRu)
@@ -837,9 +887,17 @@ begin
 		JX2_GR_SP:	tValRuA=gprRegSp;
 //		JX2_GR_SP:	tValRuA=regInSp;
 
-		JX2_GR_SSP:	tValRuA=regValSsp;
+		JX2_GR_SSP:
+		begin
+			tValRuA = UVGPRV_00;
+			tValRuA[63:0] = regValSsp;
+		end
 
-		JX2_GR_LR:	tValRuA= regValLr;
+		JX2_GR_LR:
+		begin
+			tValRuA = UVGPRV_00;
+			tValRuA[63:0] = regValLr;
+		end
 
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
@@ -848,14 +906,16 @@ begin
 		end
 `endif
 
-		JX2_GR_IMM:begin
-			tValRuA={
+		JX2_GR_IMM:
+		begin
+			tValRuA = UVGPRV_00;
+			tValRuA[63:0] = {
 				regValImmB[32]?UV32_FF:UV32_00,
 				regValImmB[31:0] };
 			tValRuZz=1;
 		end
 		JX2_GR_ZZR:	begin
-			tValRuA=UV64_00;
+			tValRuA=UVGPRV_00;
 			tValRuZz=1;
 		end
 
@@ -877,7 +937,7 @@ begin
 		end
 `endif
 
-		default: 	tValRuA=UV64_00;
+		default: 	tValRuA=UVGPRV_00;
 	endcase
 
 	casez(regIdRv)
@@ -898,14 +958,16 @@ begin
 		end
 `endif
 
-		JX2_GR_IMM:begin
-			tValRvA={
+		JX2_GR_IMM:
+		begin
+			tValRvA = UVGPRV_00;
+			tValRvA[63:0] = {
 				regValImmB[32]?UV32_FF:UV32_00,
 				regValImmB[31:0] };
 			tValRvZz=1;
 		end
 		JX2_GR_ZZR:	begin
-			tValRvA=UV64_00;
+			tValRvA=UVGPRV_00;
 			tValRvZz=1;
 		end
 
@@ -928,7 +990,7 @@ begin
 		end
 `endif
 
-		default: 	tValRvA=UV64_00;
+		default: 	tValRvA=UVGPRV_00;
 	endcase
 
 	casez(regIdRx)
@@ -960,14 +1022,16 @@ begin
 
 `endif
 
-		JX2_GR_IMM:begin
-			tValRxA={
+		JX2_GR_IMM:
+		begin
+			tValRxA = UVGPRV_00;
+			tValRxA[63:0] = {
 				regValImmC[32]?UV32_FF:UV32_00,
 				regValImmC[31:0] };
 			tValRxZz=1;
 		end
 		JX2_GR_ZZR:	begin
-			tValRxA=UV64_00;
+			tValRxA=UVGPRV_00;
 			tValRxZz=1;
 		end
 
@@ -981,7 +1045,7 @@ begin
 			tValRxZz=1;
 		end
 `endif
-		default: 	tValRxA=UV64_00;
+		default: 	tValRxA=UVGPRV_00;
 	endcase
 
 	casez(regIdRy)
@@ -1018,11 +1082,28 @@ begin
 `else
 
 `ifdef jx2_enable_vaddr48
-		JX2_GR_PC:	tValRyA={ UV16_00, regValPc[47:1],
-			regValPc[0] & tEnablePcLsb };
-		JX2_GR_GBR:	tValRyA={ UV16_00, regValGbr };
-		JX2_GR_TBR:	tValRyA={ UV16_00, regValTbr };
-		JX2_GR_LR:	tValRyA= regValLr;
+		JX2_GR_PC:
+		begin
+			tValRyA = UVGPRV_00;
+			tValRyA[63:0] = {
+				UV16_00, regValPc[47:1],
+				regValPc[0] & tEnablePcLsb };
+		end
+		JX2_GR_GBR:
+		begin
+			tValRyA = UVGPRV_00;
+			tValRyA[63:0] = { UV16_00, regValGbr };
+		end
+		JX2_GR_TBR:
+		begin
+			tValRyA = UVGPRV_00;
+			tValRyA[63:0] = { UV16_00, regValTbr };
+		end
+		JX2_GR_LR:
+		begin
+			tValRyA = UVGPRV_00;
+			tValRyA[63:0] = regValLr;
+		end
 `else
 		JX2_GR_PC:	tValRyA={ UV32_00, regValPc[31:1],
 			regValPc[0] & tEnablePcLsb };
@@ -1037,7 +1118,8 @@ begin
 		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
 		begin
 //			tValRyA = regValCm;
-			tValRyA = nMaskEnableRyCm ? regValCm : UV64_XX;
+//			tValRyA = UVGPRV_00;
+			tValRyA = nMaskEnableRyCm ? regValCm : UVGPRV_XX;
 			if(!nMaskEnableRyCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Ry Masked CRn=%X %X-%X",
 					regIdRy, regIdUCmd, regIdUIxt);
@@ -1046,7 +1128,8 @@ begin
 		JX2_GR_TEAH, JX2_GR_VIPT:
 		begin
 //			tValRsA = regValCm;
-			tValRyA = nMaskEnableRyCm ? regValCm : UV64_XX;
+//			tValRyA = UVGPRV_00;
+			tValRyA = nMaskEnableRyCm ? regValCm : UVGPRV_XX;
 			if(!nMaskEnableRyCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
 				$display("GPR: Access Ry Masked CRn=%X %X-%X",
 					regIdRy, regIdUCmd, regIdUIxt);
@@ -1058,14 +1141,16 @@ begin
 
 `endif
 
-		JX2_GR_IMM:begin
-			tValRyA={
+		JX2_GR_IMM:
+		begin
+			tValRyA = UVGPRV_00;
+			tValRyA[63:0] = {
 				regValImmC[32]?UV32_FF:UV32_00,
 				regValImmC[31:0] };
 			tValRyZz=1;
 		end
 		JX2_GR_ZZR:	begin
-			tValRyA=UV64_00;
+			tValRyA=UVGPRV_00;
 			tValRyZz=1;
 		end
 
@@ -1081,7 +1166,7 @@ begin
 		end
 `endif
 
-		default: 	tValRyA=UV64_00;
+		default: 	tValRyA=UVGPRV_00;
 	endcase
 
 // `ifdef def_true

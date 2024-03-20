@@ -56,19 +56,19 @@ input[63:0]		regInMmcr;
 input[63:0]		regInKrr;
 input[63:0]		regInSr;
 
-input [ 15:0]	l1mSeqIn;		//operation sequence
-output[ 15:0]	l1mSeqOut;		//operation sequence
-input [ 15:0]	l1mOpmIn;		//memory operation mode
-output[ 15:0]	l1mOpmOut;		//memory operation mode
+`input_rbseq	l1mSeqIn;		//operation sequence
+`output_rbseq	l1mSeqOut;		//operation sequence
+`input_rbopm	l1mOpmIn;		//memory operation mode
+`output_rbopm	l1mOpmOut;		//memory operation mode
 `input_l1addr	l1mAddrIn;		//memory input address
 `output_l1addr	l1mAddrOut;		//memory output address
 `input_tile		l1mDataIn;		//memory input data
 `output_tile	l1mDataOut;		//memory output data
 
-input [ 15:0]	l2mSeqIn;		//operation sequence
-output[ 15:0]	l2mSeqOut;		//operation sequence
-input [ 15:0]	l2mOpmIn;		//memory operation mode
-output[ 15:0]	l2mOpmOut;		//memory operation mode
+`input_rbseq	l2mSeqIn;		//operation sequence
+`output_rbseq	l2mSeqOut;		//operation sequence
+`input_rbopm	l2mOpmIn;		//memory operation mode
+`output_rbopm	l2mOpmOut;		//memory operation mode
 `input_l2addr	l2mAddrIn;		//memory input address
 `output_l2addr	l2mAddrOut;		//memory output address
 `input_tile		l2mDataIn;		//memory input data
@@ -78,30 +78,30 @@ input [  7:0]	unitNodeId;		//Who Are We?
 input [  7:0]	regRngBridge;	//Random Sequence (Updates on L1 Flush)
 
 
-reg[ 15:0]		tL1mSeqIn;		//operation sequence
-reg[ 15:0]		tL1mOpmIn;		//memory operation mode
+`reg_rbseq		tL1mSeqIn;		//operation sequence
+`reg_rbopm		tL1mOpmIn;		//memory operation mode
 `reg_l1addr		tL1mAddrIn;		//memory input address
 `reg_tile		tL1mDataIn;		//memory input data
 
-reg[ 15:0]		tL2mSeqIn;		//operation sequence
-reg[ 15:0]		tL2mOpmIn;		//memory operation mode
+`reg_rbseq		tL2mSeqIn;		//operation sequence
+`reg_rbopm		tL2mOpmIn;		//memory operation mode
 `reg_l2addr		tL2mAddrIn;		//memory input address
 `reg_tile		tL2mDataIn;		//memory input data
 
 
-reg[ 15:0]		tL1mSeqOut;			//operation sequence
-reg[ 15:0]		tL1mOpmOut;			//memory operation mode
+`reg_rbseq		tL1mSeqOut;			//operation sequence
+`reg_rbopm		tL1mOpmOut;			//memory operation mode
 `reg_l1addr		tL1mAddrOut;		//memory output address
 `reg_tile		tL1mDataOut;		//memory output data
 
-reg[ 15:0]		tL2mSeqOut;			//operation sequence
-reg[ 15:0]		tL2mOpmOut;			//memory operation mode
+`reg_rbseq		tL2mSeqOut;			//operation sequence
+`reg_rbopm		tL2mOpmOut;			//memory operation mode
 `reg_l2addr		tL2mAddrOut;		//memory output address
 `reg_tile		tL2mDataOut;		//memory output data
 
 
-reg[ 15:0]		tL1mSeqOut2;			//operation sequence
-reg[ 15:0]		tL1mOpmOut2;			//memory operation mode
+`reg_rbseq		tL1mSeqOut2;			//operation sequence
+`reg_rbopm		tL1mOpmOut2;			//memory operation mode
 `reg_l1addr		tL1mAddrOut2;		//memory output address
 `reg_tile		tL1mDataOut2;		//memory output data
 
@@ -111,8 +111,8 @@ assign		l1mAddrOut	= tL1mAddrOut2;
 assign		l1mDataOut	= tL1mDataOut2;
 
 
-reg[ 15:0]		tL2mSeqOut2;			//operation sequence
-reg[ 15:0]		tL2mOpmOut2;			//memory operation mode
+`reg_rbseq		tL2mSeqOut2;			//operation sequence
+`reg_rbopm		tL2mOpmOut2;			//memory operation mode
 `reg_l2addr		tL2mAddrOut2;		//memory output address
 `reg_tile		tL2mDataOut2;		//memory output data
 
@@ -167,18 +167,19 @@ assign		l2mRingIsIrq =
 	 (tL2mDataIn[11:8] == 4'hF));
 assign		l2mRingIsIrqBc = l2mRingIsIrq && (tL2mDataIn[11:8] == 4'hF);
 
-reg[ 15:0]		tL1mSeqReq;			//operation sequence
-reg[ 15:0]		tL1mOpmReq;			//memory operation mode
+`reg_rbseq		tL1mSeqReq;			//operation sequence
+`reg_rbopm		tL1mOpmReq;			//memory operation mode
 `reg_l1addr		tL1mAddrReq;		//memory output address
 reg[127:0]		tL1mDataReq;		//memory output data
 
-reg[ 15:0]		tL2mSeqReq;			//operation sequence
-reg[ 15:0]		tL2mOpmReq;			//memory operation mode
+`reg_rbseq		tL2mSeqReq;			//operation sequence
+`reg_rbopm		tL2mOpmReq;			//memory operation mode
 `reg_l2addr		tL2mAddrReq;		//memory output address
 reg[127:0]		tL2mDataReq;		//memory output data
 
 wire			l1mOpmIn_IsMemStReq =
-	(tL1mOpmIn[7:0]==JX2_RBI_OPM_STX);
+	(tL1mOpmIn[7:0]==JX2_RBI_OPM_STX) ||
+	(tL1mOpmIn[7:0]==JX2_RBI_OPM_STXC);
 
 wire			l1mOpmIn_AddrRejectROM =
 	(tL1mAddrIn[31:24] == 8'h00);
@@ -189,7 +190,8 @@ wire			l1mOpmIn_AddrRejectROM =
 wire			l1mOpmIn_IsMemLdReq =
 	(tL1mOpmIn[7:0]==JX2_RBI_OPM_PFX)	||
 	(tL1mOpmIn[7:0]==JX2_RBI_OPM_SPX)	||
-	(tL1mOpmIn[7:0]==JX2_RBI_OPM_LDX)	;
+	(tL1mOpmIn[7:0]==JX2_RBI_OPM_LDX)	||
+	(tL1mOpmIn[7:0]==JX2_RBI_OPM_LDXC)	;
 
 wire			l2mOpmIn_IsReq =
 	(tL2mOpmIn[7:0]==JX2_RBI_OPM_PFX)	||
@@ -199,6 +201,8 @@ wire			l2mOpmIn_IsReq =
 	(tL2mOpmIn[7:0]==JX2_RBI_OPM_LDSL)	||
 	(tL2mOpmIn[7:0]==JX2_RBI_OPM_LDUL)	||
 	(tL2mOpmIn[7:0]==JX2_RBI_OPM_STX)	||
+	(tL2mOpmIn[7:0]==JX2_RBI_OPM_LDXC)	||
+	(tL2mOpmIn[7:0]==JX2_RBI_OPM_STXC)	||
 	(tL2mOpmIn[7:0]==JX2_RBI_OPM_STSQ)	||
 	(tL2mOpmIn[7:0]==JX2_RBI_OPM_STSL)	;
 
@@ -576,8 +580,9 @@ begin
 		(tL2mAddrIn[47:44]==4'hC) &&
 		(tL2mAddrIn[43:32]==0) &&
 		(tArrIx[5:0] == tL2mAddrIn[9:4]) &&
-		!tL2mOpmIn[11] &&
-		!tL2mOpmIn[3])
+		!tL2mOpmIn[11] )
+//		!tL2mOpmIn[11] &&
+//		!tL2mOpmIn[3])
 	begin
 		tStBlkDataA	= tL2mDataIn;
 		tStBlkAddrA	= tL2mAddrIn;
@@ -818,6 +823,25 @@ begin
 	tL2mAddrOut = tL1mAddrIn;
 `endif
 
+`ifdef def_true
+	if((l1mOpmIn_IsMemLdReq || l1mOpmIn_IsMemStReq) &&
+		!tL1mAddrIn[47])
+	begin
+		$display("L1 Bridge: Leaked Virtual Request O=%X S=%X A=%X",
+			tL1mOpmIn, tL1mSeqIn, tL1mAddrIn);
+
+		tL1mSeqOut  = tL1mSeqIn;
+		tL1mOpmOut  = tL1mOpmIn;
+		tL1mAddrOut = tL1mAddrIn;
+		tL1mDataOut = tL1mDataIn;
+
+		tL2mSeqOut  = tL2mSeqIn;
+		tL2mOpmOut  = tL2mOpmIn;
+		tL2mAddrOut = tL2mAddrIn;
+		tL2mDataOut = tL2mDataIn;
+	end
+`endif
+
 // `ifndef def_true
 `ifdef def_true
 	if(l2mOpmIn_IsReq || l2mRingIsRespOther)
@@ -847,6 +871,7 @@ begin
 		tL1mSeqOut  = tL1mSeqIn;
 		tL1mOpmOut  = {
 			tL1mOpmIn[15:8],
+//			JX2_RBI_OPM_OKLD[7:0] };
 			JX2_RBI_OPM_OKLD[7:4],
 			tL1mOpmIn[11:8]};
 		tL1mAddrOut = tL1mAddrIn;

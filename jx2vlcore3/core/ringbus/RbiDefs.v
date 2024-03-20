@@ -70,13 +70,14 @@ Operation Category:
 Access Status Bits(Request/Response):
   (7): Noise Bit (Random)
   (6): Prefetch Hit/Miss (L2 Response)
+     ? Capability Flag (LDX/STX Only)
   (5): Write Through
   (4): No User (Supervisor Only)
   (3): No Cache
   (2): No Execute
   (1): No Write
   (0): No Read
-    All 4 bits will be set on a TLB Miss.
+    All low 4 bits will be set on a TLB Miss.
     No Cache will indicate that the cache line should be evicted early.
 
 Special cases may be encoded when No-Cache is set:
@@ -109,7 +110,15 @@ Operation Element (Load/Store):
   0100: Unsigned Byte / Prefetch
   0101: Unsigned Word / Tile256 (If 256-bit Ringbus)
   0110: Unsigned DWord (MMIO)
-  0111: Tile128 (RAM)
+  0111: Tile128 (RAM, Data)
+  1000: Reserved
+  1001: Reserved
+  1010: Reserved
+  1011: Reserved
+  1100: Reserved
+  1101: Reserved
+  1110: Reserved
+  1111: Tile128 (RAM, Capability)
 
 Core Sequence (15:0)
   (15:10): Core ID
@@ -165,7 +174,10 @@ parameter[7:0] JX2_RBI_OPM_LDUW		= 8'h95;	//
 parameter[7:0] JX2_RBI_OPM_LDUL		= 8'h96;	//
 parameter[7:0] JX2_RBI_OPM_LDX		= 8'h97;	//
 
-parameter[7:0] JX2_RBI_OPM_PFX		= 8'h94;	//Load Prefetch
+parameter[7:0] JX2_RBI_OPM_LDXCAP	= 8'h9F;	//
+parameter[7:0] JX2_RBI_OPM_LDXC		= 8'h9F;	//
+
+parameter[7:0] JX2_RBI_OPM_PFX		= 8'h94;	//Load Prefetch (Data)
 
 parameter[7:0] JX2_RBI_OPM_STSB		= 8'hA0;	//
 parameter[7:0] JX2_RBI_OPM_STSW		= 8'hA1;	//
@@ -175,6 +187,9 @@ parameter[7:0] JX2_RBI_OPM_STUB		= 8'hA4;	//
 parameter[7:0] JX2_RBI_OPM_STUW		= 8'hA5;	//
 parameter[7:0] JX2_RBI_OPM_STUL		= 8'hA6;	//
 parameter[7:0] JX2_RBI_OPM_STX		= 8'hA7;	//
+
+parameter[7:0] JX2_RBI_OPM_STXCAP	= 8'hAF;	//
+parameter[7:0] JX2_RBI_OPM_STXC		= 8'hAF;	//
 
 parameter[7:0] JX2_RBI_OPM_SPX		= 8'hA4;	//Store Prefetch
 

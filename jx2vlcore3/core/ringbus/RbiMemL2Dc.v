@@ -516,8 +516,15 @@ wire		memRingIsStx;
 wire		memRingIsPfx;
 wire		memRingIsSpx;
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
-assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
-assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+// assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
+// assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+assign	memRingIsLdx	=
+		(memOpmIn[7:0] == JX2_RBI_OPM_LDX) ||
+		(memOpmIn[7:0] == JX2_RBI_OPM_LDXC);
+assign	memRingIsStx	=
+		(memOpmIn[7:0] == JX2_RBI_OPM_STX) ||
+		(memOpmIn[7:0] == JX2_RBI_OPM_STXC);
+
 assign	memRingIsPfx	= (memOpmIn[7:0] == JX2_RBI_OPM_PFX);
 assign	memRingIsSpx	= (memOpmIn[7:0] == JX2_RBI_OPM_SPX);
 assign	memRingIsResp	=
@@ -718,9 +725,11 @@ begin
 
 	tOpmIsLoad	=
 		(tReqOpm[7:0]==JX2_RBI_OPM_LDX) || 
+		(tReqOpm[7:0]==JX2_RBI_OPM_LDXC) || 
 		(tReqOpm[7:0]==JX2_RBI_OPM_PFX);
 	tOpmIsStore	=
 		(tReqOpm[7:0]==JX2_RBI_OPM_STX) ||
+		(tReqOpm[7:0]==JX2_RBI_OPM_STXC) ||
 		(tReqOpm[7:0]==JX2_RBI_OPM_SPX);
 	tOpmIsPrefetch = 
 		(tReqOpm[7:0]==JX2_RBI_OPM_PFX)	||
@@ -1085,7 +1094,9 @@ begin
 		begin
 			tAccess		= 1;
 		end
-		else if(tReqOpm[7:0]==JX2_RBI_OPM_LDX)
+//		else if(tReqOpm[7:0]==JX2_RBI_OPM_LDX)
+		else if((tReqOpm[7:0]==JX2_RBI_OPM_LDX) || 
+				(tReqOpm[7:0]==JX2_RBI_OPM_LDXC))
 		begin
 //			$display("L2: LDX");
 	
@@ -1106,7 +1117,9 @@ begin
 			tAccess		= 1;
 //			tNxtStLatch	= 0;
 		end
-		else if(tReqOpm[7:0]==JX2_RBI_OPM_STX)
+//		else if(tReqOpm[7:0]==JX2_RBI_OPM_STX)
+		else if((tReqOpm[7:0]==JX2_RBI_OPM_STX) || 
+				(tReqOpm[7:0]==JX2_RBI_OPM_STXC))
 		begin
 //			$display("L2: STX");
 
@@ -1340,7 +1353,8 @@ begin
 	if(mem3RingIsPfx || mem3RingIsSpx)
 		tMemSkipReq = 0;
 
-	tMemOpmReq[3:0] = mem3OpmIn[11:8];
+//	tMemOpmReq[3:0] = mem3OpmIn[11:8];
+	tMemOpmReq[11:8] = mem3OpmIn[11:8];
 
 	if((tReqSeqC3!=mem3SeqIn) && !tMemSkipReq && !tHold)
 	begin

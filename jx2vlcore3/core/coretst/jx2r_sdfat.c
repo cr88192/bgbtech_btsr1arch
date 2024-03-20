@@ -225,7 +225,7 @@ int JX2R_TKFAT_ReadSectors(JX2R_TKFAT_ImageInfo *img,
 		printf("JX2R_TKFAT_ReadSectors: Bad LBA %llX\n", lba);
 		return(-1);
 	}
-	if((lba+num)>img->nImgBlks)
+	if((lba+num)>=img->nImgBlks)
 	{
 		printf("JX2R_TKFAT_ReadSectors: Bad LBA+Count %llX\n",
 			(lba+num));
@@ -298,7 +298,7 @@ int JX2R_TKFAT_WriteSectors(JX2R_TKFAT_ImageInfo *img,
 
 	if(lba<0)
 		return(-1);
-	if((lba+num)>img->nImgBlks)
+	if((lba+num)>=img->nImgBlks)
 		return(-1);
 
 	if(img->pImgData)
@@ -366,7 +366,12 @@ byte *JX2R_TKFAT_GetSectorTempBuffer(JX2R_TKFAT_ImageInfo *img,
 	int i, j, k;
 
 	if(img->pImgData)
+	{
+		if((lba+num)>=img->nImgBlks)
+			return(NULL);
+
 		return(img->pImgData+(lba<<9));
+	}
 
 	n=num&255;
 	for(i=0; i<img->tbc_num; i++)
@@ -435,7 +440,12 @@ byte *JX2R_TKFAT_GetSectorStaticBuffer(JX2R_TKFAT_ImageInfo *img,
 	int i;
 
 	if(img->pImgData)
+	{
+		if((lba+num)>=img->nImgBlks)
+			return(NULL);
+
 		return(img->pImgData+(lba<<9));
+	}
 
 	for(i=0; i<img->sbc_num; i++)
 		if(img->sbc_lba[i]==lba)
@@ -2430,7 +2440,7 @@ byte *JX2R_LoadFile(char *path, int *rsz)
 	bjx2_fseek(fd, 0, 2);
 	sz=bjx2_ftell(fd);
 	bjx2_fseek(fd, 0, 0);
-	buf=(byte *)malloc(sz);
+	buf=(byte *)malloc(sz+256);
 	i=bjx2_fread(buf, 1, sz, fd);
 	bjx2_fclose(fd);
 	

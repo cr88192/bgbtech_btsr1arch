@@ -11,14 +11,14 @@ module RegSpr_3W(
 input			clock;
 // input			reset;
 `input_gpr		regId;
-output[63:0]	regVal;
+`output_gprval	regVal;
 `input_gpr		wrIdA;
-input[63:0]		wrValA;
+`input_gprval	wrValA;
 `input_gpr		wrIdB;
-input[63:0]		wrValB;
+`input_gprval	wrValB;
 `input_gpr		wrIdC;
-input[63:0]		wrValC;
-input[63:0]		regInVal;
+`input_gprval	wrValC;
+`input_gprval	regInVal;
 
 (* max_fanout = 200 *)
 	input			regHold;
@@ -26,9 +26,9 @@ input[63:0]		regInVal;
 	input			regFlush;
 
 (* max_fanout = 200 *)
-	reg[63:0]		tRegVal;
+	`reg_gprval		tRegVal;
 (* max_fanout = 200 *)
-	reg[63:0]		tNxtRegVal;
+	`reg_gprval		tNxtRegVal;
 
 (* max_fanout = 200 *)
 	wire		regHoldN = !regHold;

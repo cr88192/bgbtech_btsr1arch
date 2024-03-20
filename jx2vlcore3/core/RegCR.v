@@ -82,18 +82,18 @@ input			reset;
 input			hold;
 
 `input_gpr		regIdCm;		//Source C, MemStore
-output[63:0]	regValCm;
+`output_gprval	regValCm;
 
 `input_gpr		regIdCn1;		//Destination ID
-input[63:0]		regValCn1;		//Destination Value
+`input_gprval	regValCn1;		//Destination Value
 `input_gpr		regIdCn2;		//Destination ID
-input[63:0]		regValCn2;		//Destination Value
+`input_gprval	regValCn2;		//Destination Value
 
 input			regEx1Flush;
 input			regEx2Flush;
 
 `input_gpr		regIdCn3;		//Destination ID
-input[63:0]		regValCn3;		//Destination Value
+`input_gprval	regValCn3;		//Destination Value
 input			regEx3Flush;
 
 input [47:0]	gprValPc;		//PC Value (Synthesized)
@@ -189,7 +189,12 @@ reg[47:0]	crRegGbrHi;
 `endif
 
 reg[63:0]	tRegValCm;
+
+`ifdef jx2_enable_memcap
+assign	regValCm = { 2'b00, tRegValCm };
+`else
 assign	regValCm = tRegValCm;
+`endif
 
 (* max_fanout = 200 *)
 	reg[63:0]	crRegLr2;
@@ -300,7 +305,7 @@ begin
 
 //	regIdCn2B	= { 1'b1, regIdCn3 };
 	regIdCn2B	= regIdCn3;
-	regValCn2B	= regValCn3;
+	regValCn2B	= regValCn3[63:0];
 
 	if(regEx3Flush)
 	begin

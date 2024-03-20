@@ -146,8 +146,12 @@ reg				tRingDoExc;
 reg				tNxtRingDoExc;
 
 assign	memRingIsIdle	= (memOpmIn[7:0] == JX2_RBI_OPM_IDLE);
-assign	memRingIsLdx	= (memOpmIn[7:0] == JX2_RBI_OPM_LDX);
-assign	memRingIsStx	= (memOpmIn[7:0] == JX2_RBI_OPM_STX);
+assign	memRingIsLdx	=
+	(memOpmIn[7:0] == JX2_RBI_OPM_LDX) ||
+	(memOpmIn[7:0] == JX2_RBI_OPM_LDXC) ;
+assign	memRingIsStx	=
+	(memOpmIn[7:0] == JX2_RBI_OPM_STX) ||
+	(memOpmIn[7:0] == JX2_RBI_OPM_STXC) ;
 assign	memRingIsPfx	= (memOpmIn[7:0] == JX2_RBI_OPM_PFX);
 
 assign	memRingIsLdQ	= (memOpmIn[7:0] == JX2_RBI_OPM_LDSQ);

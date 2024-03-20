@@ -723,7 +723,7 @@ begin
 			case(tBusAddr[7:2])
 				6'h00:
 				begin
-					$display("ModAudPcm: Ctrl0=%X", tRegCtrl0);
+//					$display("ModAudPcm: Ctrl0=%X", tRegCtrl0);
 					tRegCtrl0	<= tBusInData;
 				end
 
