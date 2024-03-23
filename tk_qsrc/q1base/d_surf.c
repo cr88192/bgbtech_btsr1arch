@@ -356,6 +356,24 @@ surfcache_t *D_CacheSurface (msurface_t *surface, int miplevel)
 //
 	if (!cache)     // if a texture just animated, don't reallocate it
 	{
+		t=	r_drawsurf.surfwidth *
+			r_drawsurf.surfheight *
+			r_pixbytes ;
+
+#if 0	
+		printf("D_CacheSurface width=%d height=%d pixbytes=%d\n",
+			r_drawsurf.surfwidth,
+			r_drawsurf.surfheight,
+			r_pixbytes);
+		if(t<=0)
+		{
+			printf("  %d %d %d\n",
+				surface->extents[0],
+				surface->extents[1],
+				miplevel);
+		}
+#endif
+	
 		cache = D_SCAlloc (r_drawsurf.surfwidth,
 						   r_drawsurf.surfwidth *
 						   r_drawsurf.surfheight *

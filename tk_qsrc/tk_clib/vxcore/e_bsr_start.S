@@ -247,6 +247,10 @@ isr_table:
 	bra8b isr_syscall
 //	bra8b X(__isr_syscall)
 
+	nop4b
+	nop4b
+	nop4b
+	nop4b
 
 .global X(tk_getsavedvbr)
 X(tk_getsavedvbr):

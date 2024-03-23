@@ -857,6 +857,9 @@ int I_SMus_ParseEvent()
 int I_SMus_Tick()
 {
 	int i;
+
+	SMus_UpdateVolume();
+
 	if(i_smus_tt>0)
 	{
 		i_smus_tt--;

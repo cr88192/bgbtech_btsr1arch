@@ -130,16 +130,16 @@ TK_MOUNT *tk_mount_wad4temp(char *path)
 		TK_Wad4_CreateDirPath(img, "tmp/shm");
 	}
 
+	mnt=tk_alloc_mount();
+	mnt->vt=&tk_vfile_wad4_vt;
+	mnt->udata0=img;
+
 	if(path)
 	{
 		mnt->src=tk_strdup_in(path);
 		mnt->szSrc=strlen(mnt->src);
 	}
 	
-	mnt=tk_alloc_mount();
-	mnt->vt=&tk_vfile_wad4_vt;
-	mnt->udata0=img;
-
 	img->mntbase=mnt->src;
 	
 	tk_vf_addmount(mnt);

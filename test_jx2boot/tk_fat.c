@@ -59,9 +59,10 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 {
 	u32 *tbc_lba, *tbca;
 	s16 *tbc_lbn;
-	u32 tba;
-	void *tbd;
-	int n, tbn, tbcn;
+	void **tbc_buf;
+	u32 tba, tba1;
+	void *tbd, *tbd1;
+	int n, h, h1, tbn, tbn1, tbcn;
 	int i, j, k;
 
 //	printf("TKFAT_GetSectorTempBuffer: %08X %08X\n", lba, num);
@@ -69,10 +70,58 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 	tbcn=img->tbc_num;
 	tbc_lba=img->tbc_lba;
 	tbc_lbn=img->tbc_lbn;
+	tbc_buf=img->tbc_buf;
 
 	n=num&255;
+	
+	h=((lba*65521)>>16)&255;
 
 #if 1
+	i=img->tbc_hash[h];
+	if((tbc_lba[i]==lba) &&
+		((tbc_lbn[i]&255)==n))
+	{
+		tbd=tbc_buf[i];
+		return(tbd);
+	}
+#endif
+
+#if 1
+	for(i=0; i<img->tbc_num; i++)
+	{
+		if((tbc_lba[i]==lba) &&
+			((tbc_lbn[i]&255)==n))
+		{
+#ifndef TKFAT_READONLY
+			if(num&TKFAT_SFL_DIRTY)
+				tbc_lbn[i]|=TKFAT_SFL_DIRTY;
+#endif
+
+			if(!i)
+			{
+				tbd=tbc_buf[i];
+				img->tbc_hash[h]=i;
+				return(tbd);
+			}
+
+//			j=(i*7)>>3;
+			j=(i*3)>>2;
+			tbd =tbc_buf[i]; tba =tbc_lba[i]; tbn =tbc_lbn[i];
+			tbd1=tbc_buf[j]; tba1=tbc_lba[j]; tbn1=tbc_lbn[j];
+
+			tbc_buf[j]=tbd;  tbc_lba[j]=tba;  tbc_lbn[j]=tbn;
+			tbc_buf[i]=tbd1; tbc_lba[i]=tba1; tbc_lbn[i]=tbn1;
+
+			h1=((tba1*65521)>>16)&255;
+			img->tbc_hash[h]=j;
+			img->tbc_hash[h1]=i;
+			
+			return(tbd);
+		}
+	}
+#endif
+
+#if 0
 	for(i=0; i<img->tbc_num; i++)
 	{
 		if((img->tbc_lba[i]==lba) &&
@@ -81,16 +130,41 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 			if(num&TKFAT_SFL_DIRTY)
 				img->tbc_lbn[i]|=TKFAT_SFL_DIRTY;
 
-			j=(i*7)>>3;
+//			j=(i*7)>>3;
+			j=(i*3)>>2;
 			tbd=img->tbc_buf[i];
 			tba=img->tbc_lba[i];
 			tbn=img->tbc_lbn[i];
-			img->tbc_buf[i]=img->tbc_buf[j];
-			img->tbc_lba[i]=img->tbc_lba[j];
-			img->tbc_lbn[i]=img->tbc_lbn[j];
+
+			if(!i)
+			{
+				img->tbc_hash[h]=i;
+				return(tbd);
+			}
+
+//			img->tbc_buf[i]=img->tbc_buf[j];
+//			img->tbc_lba[i]=img->tbc_lba[j];
+//			img->tbc_lbn[i]=img->tbc_lbn[j];
+
+#if 1
+			tbd1=img->tbc_buf[j];
+			tba1=img->tbc_lba[j];
+			tbn1=img->tbc_lbn[j];
+
+			img->tbc_buf[i]=tbd1;
+			img->tbc_lba[i]=tba1;
+			img->tbc_lbn[i]=tbn1;
+
+			h1=((tba1*65521)>>16)&255;
+			img->tbc_hash[h1]=i;
+#endif
+
 			img->tbc_buf[j]=tbd;
 			img->tbc_lba[j]=tba;
 			img->tbc_lbn[j]=tbn;
+			
+			img->tbc_hash[h]=j;
+			
 			return(tbd);
 		}
 	}
@@ -182,6 +256,8 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		img->tbc_lba[i]=lba;
 		img->tbc_lbn[i]=num;
 
+		img->tbc_hash[h]=i;
+
 		img->tbc_pred3=img->tbc_pred2;
 		img->tbc_pred2=img->tbc_pred1;
 		img->tbc_pred1=img->tbc_pred0;
@@ -214,6 +290,8 @@ byte *TKFAT_GetSectorTempBuffer(TKFAT_ImageInfo *img,
 		img->tbc_lba[i]=lba;
 		img->tbc_lbn[i]=num;
 		tbd=img->tbc_buf[i];
+
+		img->tbc_hash[h]=i;
 
 		img->tbc_pred3=img->tbc_pred2;
 		img->tbc_pred2=img->tbc_pred1;

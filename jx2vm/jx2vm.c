@@ -1452,6 +1452,8 @@ int main(int argc, char *argv[])
 				{ nowex|=1; continue; }
 			if(!strcmp(argv[i], "--opssc"))
 				{ nowex|=2; continue; }
+			if(!strcmp(argv[i], "--breakperf"))
+				{ nowex|=2; continue; }
 
 			continue;
 		}
@@ -1549,6 +1551,11 @@ int main(int argc, char *argv[])
 	if(nowex&2)
 	{
 		ctx->do_opssc=1;
+	}
+
+	if(nowex&4)
+	{
+		ctx->do_breakperf=1;
 	}
 
 	if(!l1icfg)

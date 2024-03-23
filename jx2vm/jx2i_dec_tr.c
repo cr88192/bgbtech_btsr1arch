@@ -1858,7 +1858,7 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 
 
 	if((op1->rn==BJX2_REG_SP) ||
-		(op1->rn==BJX2_REG_DLR) ||
+//		(op1->rn==BJX2_REG_DLR) ||
 		(op1->rn==BJX2_REG_DHR))
 	{
 		printf("BJX2_CheckWexSanity3W: Bad Target Register\n");

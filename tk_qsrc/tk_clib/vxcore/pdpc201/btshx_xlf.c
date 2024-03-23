@@ -403,7 +403,8 @@ __xlf_toint:
 	JMP		R1
 __xlf_fromint:
 	FLDCI	R4, R4
-	JMP		__xlf_fromdbl
+//	JMP		__xlf_fromdbl
+	BRA		__xlf_fromdbl
 
 };
 

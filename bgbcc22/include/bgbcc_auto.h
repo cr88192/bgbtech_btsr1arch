@@ -2981,7 +2981,7 @@ int BGBCC_JX2_EmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int lbl);
 int BGBCC_JX2_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
-int BGBCC_JX2_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
+int BGBCC_JX2_TryEmitOpNear8Label(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2_TryEmitOpNear12Label(BGBCC_JX2_Context *ctx,int nmid, int lbl);
 int BGBCC_JX2_EmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2_TryEmitOpFar16Label(BGBCC_JX2_Context *ctx, int nmid, int lbl);

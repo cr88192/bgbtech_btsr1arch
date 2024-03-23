@@ -814,7 +814,8 @@ __PDPCLIB_API__ double sqrt(double x)
 		return (0.0);
 
 	xs=fsqrt_approx(x);
-	xsr=0.5f/((float)xs);		//faster approximate
+//	xsr=0.5f/((float)xs);		//faster approximate
+	xsr=0.5/xs;		//faster approximate
 
 	yn=xs*xs;
 	xs-=(yn-x)*xsr;

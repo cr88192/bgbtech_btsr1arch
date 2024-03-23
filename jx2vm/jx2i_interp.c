@@ -3314,7 +3314,10 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	
 //		if(ctx->use_jit)
 
-	if(!ctx->status && !ctx->use_jit)
+	if(	(!ctx->status || ctx->do_breakperf &&
+			((ctx->status&0xFFFF)==BJX2_FLT_BREAK)) &&
+		!ctx->use_jit)
+//	if(1)
 	{
 		BJX2_DbgTopTraces(ctx);
 	}

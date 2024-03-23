@@ -5119,11 +5119,11 @@ ccxl_status BGBCC_JX2C_RelocRangeError(
 	ctx->n_error++;
 
 	printf("BGBCC_JX2C_RelocRangeError: Symbol Out of Range\n");
-	printf("  rlc_sec=%d(%s) lbl_sec=%d(%s) rlcty=%02X "
+	printf("  rlc_sec=%d(%s) lbl_sec=%d(%s) rlcty=%02X(%s) "
 			"disp=%08X name=%s(%08X)\n",
 		sctx->rlc_sec[rlcix], sctx->sec_name[sctx->rlc_sec[rlcix]],
 		sctx->lbl_sec[lblix], sctx->sec_name[sctx->lbl_sec[lblix]],
-		rlcty,
+		rlcty, BGBCC_JX2DA_RelocToName(sctx, rlcty),
 		disp,
 		lbln,
 		sctx->lbl_id[lblix]);

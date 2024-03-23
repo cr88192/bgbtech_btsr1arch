@@ -15,8 +15,9 @@ CC=bgbcc
 #	/fjcmp /fxg2mode /faluptr
 
 TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj \
-	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /frsub /fldgbr \
-	/fjcmpz /fxg2mode -ffunctag -fleagbr -fcmp3r
+	/Zz /fshuffle /fqmul /fptropts /fxgpr_abi /fnoexcept /fldgbr \
+	/fjcmp /fxg2mode -ffunctag -fleagbr -fcmp3r -frsub -fldimi
+	# -fnovskgen -falux
 
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /Os \
 #	/Zz /fshuffle /fqmul /fptropts /fnoexcept /frsub /fldgbr \

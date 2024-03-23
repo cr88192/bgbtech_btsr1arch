@@ -285,7 +285,7 @@ void W_AddFile (char *filename)
 	filelump_t*		fileinfo;
 	filelump_t		singleinfo;
 	wad2lump_t		*wad2info;
-	int			storehandle;
+	int			storehandle, lumps0;
 	
 	// open the file and add to directory
 
@@ -361,23 +361,41 @@ void W_AddFile (char *filename)
 		if (!strncmp(header.identification, "IWAD", 4) ||
 			!strncmp(header.identification, "PWAD", 4))
 		{
+			lumps0 = header.numlumps;
+//			printf("    IW0 wlumps=%d\n", lumps0);
+
 			header.numlumps = LONG(header.numlumps);
 			header.infotableofs = LONG(header.infotableofs);
+			
+			if(header.numlumps!=lumps0)
+				__debugbreak();
+			
+			printf("    IW1 wlumps=%d\n",
+				header.numlumps);
+			
 			length = header.numlumps*sizeof(filelump_t);
 			fileinfo = malloc (length);
 			w_lseek (handle, header.infotableofs, SEEK_SET);
 			w_read (handle, fileinfo, length);
 			numlumps += header.numlumps;
+			
+			printf("    IW wlumps=%d numlumps=%d\n",
+				header.numlumps, numlumps);
 		}else
 			if(!strncmp(header.identification, "WAD2", 4))
 		{
 			header.numlumps = LONG(header.numlumps);
 			header.infotableofs = LONG(header.infotableofs);
+
+//			__debugbreak();
+
 			length = header.numlumps*sizeof(wad2lump_t);
 			wad2info = malloc (length);
 			w_lseek (handle, header.infotableofs, SEEK_SET);
 			w_read (handle, wad2info, length);
 			numlumps += header.numlumps;
+			printf("    W2 wlumps=%d numlumps=%d\n",
+				header.numlumps, numlumps);
 		}else
 		{
 			I_Error ("Wad file %s doesn't have "
@@ -426,6 +444,9 @@ void W_AddFile (char *filename)
 			fileinfo++;
 		}
 	}
+
+	printf("    numlumps=%d\n",
+		numlumps);
 	
 	if (reloadname)
 		w_close (handle);

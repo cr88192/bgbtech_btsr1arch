@@ -1306,6 +1306,7 @@ u32 usbbuf_txeposb;
 
 byte do_edgewalk;
 byte do_opssc;		//superscalar
+byte do_breakperf;		//performance stats on BREAK
 
 char puts_linebuf[256];
 byte puts_linepos;

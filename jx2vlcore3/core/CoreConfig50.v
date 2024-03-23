@@ -186,8 +186,8 @@
 
 `ifndef jx2_xc7s50
 // `define jx2_l1a_ena_tlbskip		//L1A: Allow requests to skip over TLB
-// `define jx2_l1a_ena_loadfast		//L1A: Enable fast-case Loads
-// `define jx2_ena_alufast				//Enable fast-case ALU
+`define jx2_l1a_ena_loadfast		//L1A: Enable fast-case Loads
+`define jx2_ena_alufast				//Enable fast-case ALU
 `endif
 
 // `ifndef def_true

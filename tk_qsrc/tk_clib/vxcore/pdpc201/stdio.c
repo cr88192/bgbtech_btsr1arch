@@ -2498,7 +2498,12 @@ __PDPCLIB_API__ int fseek(FILE *stream, long int offset, int whence)
 
 __PDPCLIB_API__ long int ftell(FILE *stream)
 {
-	return (stream->bufStartR + (stream->upto - stream->fbuf));
+	long x;
+	
+	x = stream->bufStartR + (stream->upto - stream->fbuf);
+	x = (int) x;
+
+	return (x);
 }
 
 __PDPCLIB_API__ int fsetpos(FILE *stream, const fpos_t *pos)
@@ -3377,6 +3382,9 @@ static void dblcvt(double num, char cnvtype, size_t nwidth,
 			b=b*10.0;
 		}
 	}
+	
+//	__debugbreak();
+	
 	if ((exp <= -35) || (exp >= 35))
 	{
 		exp = 0;

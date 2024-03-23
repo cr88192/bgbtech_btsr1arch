@@ -17,7 +17,8 @@ AS=$(TOOLPATH)$(TARGETPFX)as
 COPTS= -c -Iinclude -Ipdpc201 -Itk_core $(TK_CFL) -O3 \
 	-fwrapv -fno-strict-aliasing -fno-inline \
 	-march=rv64g -mabi=lp64 \
-	-mno-strict-align -std=c17 -ffp-contract=off
+	-mno-strict-align -std=c17 -ffp-contract=off \
+	-mno-fdiv -mno-strict-align -ffast-math
 
 # -mtune=sifive-s76
 #	-mno-madd4

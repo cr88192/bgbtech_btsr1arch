@@ -1508,6 +1508,8 @@ int tk_shell_chksane_memset()
 	int *pi;
 	int			i, j, k, l;
 
+	tk_printf("CS Memset 0\n");
+
 #if 1
 	tb=(char *)tba;
 	ts=(char *)tbb;
@@ -1517,14 +1519,32 @@ int tk_shell_chksane_memset()
 		__debugbreak();
 	if(((int)ts)&7)
 		__debugbreak();
-		
+
+	*pi=0x1234567;
+	l&=~3;
+	if(l!=0x1234564)
+		__debugbreak();
+
+	j=-251-l;
+	if(j!=-19088991)
+		__debugbreak();
+
+	tk_printf("CS Memset 1\n");
+
 	strcpy(tb, "0123456789ABCDEFGHIJKLMNOPQRSTUV");
 	memcpy(ts, tb+16, 16);
 
+	tk_printf("CS Memset 2\n");
+
 	if(memcmp(tb, tb, 16))
 		__debugbreak();
+
+	tk_printf("CS Memset 2B\n");
+
 	if(!memcmp(tb, ts, 16))
 		__debugbreak();
+
+	tk_printf("CS Memset 3\n");
 
 	*pi=1;
 	memcpy(tb, ts, *pi);
@@ -1555,6 +1575,8 @@ int tk_shell_chksane_memset()
 	if(memcmp(tb, "GHIJKLM7", 8))
 		__debugbreak();
 
+	tk_printf("CS Memset 4\n");
+
 	*pi=8;
 	memcpy(tb, ts, *pi);
 	if(memcmp(tb, "GHIJKLMN89ABCDEF", 16))
@@ -1578,8 +1600,12 @@ int tk_shell_chksane_memset()
 	if(memcmp(tb, "       7", 8))
 		__debugbreak();
 
+	tk_printf("CS Memset 5\n");
+
 	for(i=0; i<192; i++)
 		ts[i]=i;
+
+	tk_printf("CS Memset 6\n");
 
 	for(j=0; j<16; j++)
 	{
@@ -1594,6 +1620,8 @@ int tk_shell_chksane_memset()
 				__debugbreak();
 		}
 	}
+
+	tk_printf("CS Memset 7\n");
 
 	for(j=0; j<16; j++)
 	{
@@ -1611,6 +1639,8 @@ int tk_shell_chksane_memset()
 				__debugbreak();
 		}
 	}
+
+	tk_printf("CS Memset 8\n");
 #endif
 }
 
@@ -1769,9 +1799,19 @@ int tk_shell_chksane()
 
 	tk_shell_chksane_memset();
 
+	tk_printf("CS B1-1\n");
+
 	tk_shell_chksane_fmovs();
+
+	tk_printf("CS B1-2\n");
+
 	tk_shell_chksane_movtt();
+
+	tk_printf("CS B1-3\n");
+
 	tk_shell_chksane_srtmsk();
+
+	tk_printf("CS B1-4\n");
 
 	Sys_CheckSanityB();
 

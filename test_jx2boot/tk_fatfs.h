@@ -189,6 +189,8 @@ s16 tbc_lbn[256];
 void *tbc_buf[256];
 int tbc_num;
 
+byte tbc_hash[256];
+
 // int tbc_num;
 int tbc_pred0;
 int tbc_pred1;

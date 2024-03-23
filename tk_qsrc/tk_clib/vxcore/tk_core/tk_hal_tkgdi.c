@@ -2966,6 +2966,8 @@ void	TKGDI_Snd_SetupOutputMode(int chan, int rate, int bits);
 void	TKGDI_Snd_WriteModeSamples2(void *mixbuf, int nsamp, int nsamp2);
 void	TKGDI_Snd_Submit(void);
 
+int TK_Midi_ProbeDelayOff(void);
+
 TKGHSND TKGDI_CreateAudioDevice(
 	_tkgdi_context_t *ctx,
 	TKGHDC dev, TKGFOURCC clz, TKGDI_WAVEFORMATEX *info)
@@ -3069,6 +3071,8 @@ TKGSTATUS TKGDI_WriteAudioSamples(
 {
 	if(dev==1)
 	{
+		TK_Midi_ProbeDelayOff();
+	
 		if(ovcnt>0)
 			TKGDI_Snd_WriteModeSamples2(buffer, cnt, ovcnt);
 		TKGDI_Snd_Submit();

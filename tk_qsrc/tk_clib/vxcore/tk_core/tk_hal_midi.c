@@ -23,8 +23,29 @@ byte tk_midi_chanprg[16];		//program
 byte tk_midi_chanpan[16];		//pan
 byte tk_midi_chanmod[16];		//modulation wheel
 
-byte tk_midi_chanvn[16];
-byte tk_midi_channt[16];
+byte tk_midi_chanvn[16];		//channel voice number
+byte tk_midi_channt[16];		//channel note
+byte tk_midi_channi[16];		//channel note intensity
+
+int tk_midi_chandos[16];		//channel note delay-off start
+int tk_midi_chandoe[16];		//channel note delay-off end
+
+int tk_midi_chandis[16];		//channel note delay-on start
+int tk_midi_chandip[16];		//channel note delay-on peak (attack)
+int tk_midi_chandie[16];		//channel note delay-on end (sustain)
+
+int tk_midi_chanmdis[16];		//channel note delay-on start
+int tk_midi_chanmdip[16];		//channel note delay-on peak (attack)
+int tk_midi_chanmdie[16];		//channel note delay-on end (sustain)
+
+byte tk_midi_chan_csus[16];		//carrier volume
+byte tk_midi_chan_msus[16];		//carrier volume
+byte tk_midi_chan_vsus[16];		//carrier volume
+
+byte tk_midi_chan_cvol[16];		//carrier volume
+byte tk_midi_chan_mvol[16];		//modulator volume
+u32 tk_midi_chan_c0[16];		//channel control 0
+u32 tk_midi_chan_c4[16];		//channel control 4
 
 //byte tk_midi_vnflg[16];		//voice flag
 byte tk_midi_vnflg[32];		//voice flag
@@ -35,6 +56,7 @@ u32 tk_midi_fmregdata[256*16];
 byte tk_midi_musicvolume = 15;
 
 int TK_Midi_Tick();
+int TK_Midi_ProbeDelayOff(void);
 
 int tk_midi_irq_tt;
 
@@ -188,6 +210,8 @@ int TK_Midi_SetMasterParam(int var, int val)
 {
 	if(var==1)
 	{
+		TK_Midi_ProbeDelayOff();
+
 		if(val<0)	val=0;
 		if(val>15)	val=15;
 		tk_midi_musicvolume=val;
@@ -634,20 +658,224 @@ int TK_Midi_SilenceAll()
 	return(0);
 }
 
-int TK_Midi_NoteOff(int ch, int d0, int d1)
+int TK_Midi_NoteRelVolAdj(int ch, int vol)
 {
 	u32 v1, v2;
+	int tt, cvol, att;
 	int vn1, vn2, cvn;
-
-	if(!tk_midi_regs)
-		return(0);
 
 	cvn=tk_midi_chanvn[ch];
 	if(cvn==0xFF)
 		return(0);
 
-	if(tk_midi_channt[ch]!=d0)
+	cvol=tk_midi_chan_cvol[ch];
+	cvol=(cvol*vol)>>7;
+
+	att=tk_midi_noteatt[cvol];
+
+	vn1=(cvn&15)*2+0;
+	vn2=(cvn&15)*2+1;
+
+	v1=tk_midi_chan_c0[ch];
+	
+	v1=v1&(~(63<<22));
+	v1|=att<<22;
+
+	tk_midi_regs[vn1*4+0]=v1;
+
+	return(0);
+}
+
+int TK_Midi_NoteRelModAdj(int ch, int vol)
+{
+	u32 v1, v2;
+	int tt, cvol, att;
+	int vn1, vn2, cvn;
+
+	cvn=tk_midi_chanvn[ch];
+	if(cvn==0xFF)
 		return(0);
+
+	cvol=tk_midi_chan_mvol[ch];
+	cvol=(cvol*vol)>>7;
+
+	att=tk_midi_noteatt[cvol];
+
+	vn1=(cvn&15)*2+0;
+	vn2=(cvn&15)*2+1;
+
+	v1=tk_midi_chan_c4[ch];
+	
+	v1=v1&(~(63<<22));
+	v1|=att<<22;
+
+	tk_midi_regs[vn2*4+0]=v1;
+
+	return(0);
+}
+
+int TK_Midi_ProbeDelayOff(void)
+{
+	static int rec;
+	int tt, tdos, tdoe, tdop, rt, tds, csus;
+	int i;
+	
+	if(rec)
+		return(0);
+	rec=1;
+	
+	tt=TK_GetTimeMs();
+	
+	for(i=0; i<16; i++)
+	{
+		tdos=tk_midi_chandos[i];
+		tdoe=tk_midi_chandoe[i];
+		if(tdoe!=0)
+		{
+			csus=tk_midi_chan_vsus[i];
+
+			if((tt>=tdoe) || (csus==0))
+			{
+				TK_Midi_NoteOff(i, tk_midi_channt[i], 127);
+			}else
+			{
+				tds=tdoe-tdos;
+				if(tds>0)
+					rt=csus-((csus*(tt-tdos))/tds);
+				else
+					rt=csus;
+				TK_Midi_NoteRelVolAdj(i, rt);
+			}
+		}
+
+#if 1
+		tdos=tk_midi_chandis[i];
+		tdop=tk_midi_chandis[i];
+		tdoe=tk_midi_chandie[i];
+		if(tdoe!=0)
+		{
+			csus=tk_midi_chan_csus[i];
+
+			if(tt>=tdoe)
+			{
+//				TK_Midi_NoteRelVolAdj(i, 127);
+				TK_Midi_NoteRelVolAdj(i, csus);
+				tk_midi_chandie[i]=0;
+				tk_midi_chan_vsus[i]=csus;
+			}else
+			{
+				if(tt<tdop)
+				{
+					tds=tdop-tdos;
+					if(tds>0)
+						rt=(127*(tt-tdos))/tds;
+					else
+						rt=127;
+				}else
+				{
+					tds=tdoe-tdop;
+					if(tds>0)
+						rt=127-(((127-csus)*(tt-tdop))/tds);
+					else
+						rt=csus;
+				}
+
+#if 0
+				tds=tdoe-tdos;
+				if(tds>0)
+					rt=(127*(tt-tdos))/tds;
+				else
+					rt=127;
+#endif
+
+				TK_Midi_NoteRelVolAdj(i, rt);
+				tk_midi_chan_vsus[i]=rt;
+			}
+		}
+#endif
+
+#if 1
+		tdos=tk_midi_chanmdis[i];
+		tdop=tk_midi_chanmdis[i];
+		tdoe=tk_midi_chanmdie[i];
+		if(tdoe!=0)
+		{
+			csus=tk_midi_chan_msus[i];
+
+			if(tt>=tdoe)
+			{
+//				TK_Midi_NoteRelVolAdj(i, 127);
+				TK_Midi_NoteRelModAdj(i, csus);
+				tk_midi_chanmdie[i]=0;
+			}else
+			{
+				if(tt<tdop)
+				{
+					tds=tdop-tdos;
+					if(tds>0)
+						rt=(127*(tt-tdos))/tds;
+					else
+						rt=127;
+				}else
+				{
+					tds=tdoe-tdop;
+					if(tds>0)
+						rt=127-(((127-csus)*(tt-tdop))/tds);
+					else
+						rt=csus;
+				}
+				TK_Midi_NoteRelModAdj(i, rt);
+			}
+		}
+#endif
+	}
+
+	rec=0;
+	return(0);
+}
+
+int TK_Midi_NoteOff(int ch, int d0, int d1)
+{
+	u32 v1, v2;
+	int tt;
+	int vn1, vn2, cvn;
+
+	if(!tk_midi_regs)
+		return(0);
+
+	TK_Midi_ProbeDelayOff();
+
+	cvn=tk_midi_chanvn[ch];
+	if(cvn==0xFF)
+		return(0);
+
+//	if(tk_midi_channt[ch]!=d0)
+//	if((d1<100) && !(tk_midi_vnflg[vn1]&8))
+	if(d1<100)
+	{
+//		tk_dbg_printf("TK_Midi_NoteOff: Note Mismatch %02X %02X\n",
+//			tk_midi_channt[ch], d0);
+
+//		TK_Midi_NoteOff(ch, tk_midi_channt[ch], tk_midi_channi[ch]);
+//		TK_Midi_NoteOn(ch, d0, d1);
+
+		tt=TK_GetTimeMs();
+		tk_midi_chandos[ch]=tt;
+		tk_midi_chandoe[ch]=tt+((127-d1)>>0);
+
+		tk_midi_chandis[ch]=0;
+		tk_midi_chanmdis[ch]=0;
+
+		return(0);
+	}
+
+	tk_midi_channt[ch]=0;
+	tk_midi_channi[ch]=0;
+	tk_midi_chandos[ch]=0;
+	tk_midi_chandoe[ch]=0;
+
+	tk_midi_chandis[ch]=0;
+	tk_midi_chanmdis[ch]=0;
 
 //	tk_midi_chanvn[ch]=0xFF;
 
@@ -855,10 +1083,12 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	int		fvn, vn1, vn2, prg, fn, note, note1, note2;
 	int 	dv, dv1, dv2, att1, att2, vol, pbl;
 	int 	basenote, fl, loghz, note0b;
+	int		tt, atsc;
 
-	byte modfcn, carfcn, modksc;
-	byte modlvl, carlvl, carksc;
+	byte modfcn, carfcn, modksc, modksr;
+	byte modlvl, carlvl, carksc, carksr;
 	byte modvol, carvol;
+	byte modatk, modsus, caratk, carsus;
 	byte fbconn, fineadj, fixnote, fixflag;
 	int lbase, llen, lbeg, lend, lstep, lflg;
 
@@ -868,6 +1098,19 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 
 	if(!tk_midi_regs)
 		return(0);
+
+	TK_Midi_ProbeDelayOff();
+
+	if(!d1)
+	{
+		TK_Midi_NoteOff(ch, tk_midi_channt[ch], 127);
+		return(0);
+	}
+
+	if(tk_midi_channt[ch]!=0)
+	{
+		TK_Midi_NoteOff(ch, tk_midi_channt[ch], 127);
+	}
 
 	prg=tk_midi_chanprg[ch];
 //	if(ch==8)
@@ -883,13 +1126,21 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 
 	basenote=(short)(rec[4]>>16);
 
+	modksr=(brec[4+ 0])&255;
+	modatk=(brec[4+ 1])&255;
+	modsus=(brec[4+ 2])&255;
 	modfcn=(brec[4+ 3])&255;
 	modksc=(brec[4+ 4])&255;
 	modlvl=(brec[4+ 5])&255;
 	fbconn=(brec[4+ 6])&255;
+
+	carksr=(brec[4+ 0])&255;
+	caratk=(brec[4+ 8])&255;
+	carsus=(brec[4+ 9])&255;
 	carfcn=(brec[4+10])&255;
 	carksc=(brec[4+11])&255;
 	carlvl=(brec[4+12])&255;
+
 
 	lbase=0;	llen=0;
 	lbeg=0;		lend=0;
@@ -916,12 +1167,69 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 	}
 
 	tk_midi_channt[ch]=note;
+	tk_midi_channi[ch]=d1;
+	tk_midi_chandos[ch]=0;
+	tk_midi_chandoe[ch]=0;
 
 	vn1=(fvn&15)*2+0;
 	vn2=(fvn&15)*2+1;
 
 	tk_midi_vnchn[vn1]=ch;
 	tk_midi_vnchn[vn2]=ch;
+
+	tk_midi_chan_csus[ch]=127-((carsus>>4)*8);
+	tk_midi_chan_msus[ch]=127-((modsus>>4)*8);
+
+//	atsc=16;
+//	atsc=16+((64-d1)>>3);
+	atsc=32+((64-d1)>>2);
+
+	tt=TK_GetTimeMs();
+	tk_midi_chandis[ch]=tt;
+	tk_midi_chandip[ch]=tt+atsc*(15-((caratk>>4)&15));
+	tk_midi_chandie[ch]=tt+atsc*((15-(caratk&15))+(15-((caratk>>4)&15)));
+
+	tk_midi_chanmdis[ch]=tt;
+	tk_midi_chanmdip[ch]=tt+atsc*(15-((modatk>>4)&15));
+	tk_midi_chanmdie[ch]=tt+atsc*((15-(modatk&15))+(15-((modatk>>4)&15)));
+	
+	if(!(caratk&15))
+		tk_midi_chan_csus[ch]=127;
+	if(!(modatk&15))
+		tk_midi_chan_msus[ch]=127;
+
+	tk_midi_chan_vsus[ch]=tk_midi_chan_csus[ch];
+
+//	tk_midi_chan_csus[ch]=127;
+//	tk_midi_chan_msus[ch]=127;
+
+//	if(!(carksr&32))
+//		tk_midi_chan_csus[ch]=0;
+//	if(!(modksr&32))
+//		tk_midi_chan_msus[ch]=0;
+
+
+#if 0
+	if(d1<100)
+	{
+		tt=TK_GetTimeMs();
+		tk_midi_chandis[ch]=tt;
+//		tk_midi_chandie[ch]=tt+((127-d1)>>3);
+		tk_midi_chandip[ch]=tt+((127-d1)>>3);
+		tk_midi_chandie[ch]=tt+((127-d1)>>2);
+
+		tk_midi_chanmdis[ch]=tt;
+		tk_midi_chanmdip[ch]=tt+((127-d1)>>3);
+		tk_midi_chanmdie[ch]=tt+((127-d1)>>2);
+	}else
+	{
+		tk_midi_chandis[ch]=0;
+		tk_midi_chandie[ch]=0;
+	}
+
+	tk_midi_chan_csus[ch]=127;
+	tk_midi_chan_msus[ch]=127;
+#endif
 
 	if(fvn&16)
 	{
@@ -947,7 +1255,8 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 //	note1=__int_clamp(note1, 0, 127);
 //	note2=__int_clamp(note2, 0, 127);
 
-	vol=(tk_midi_chanvol[ch]*d1)>>7;
+//	vol=(tk_midi_chanvol[ch]*d1)>>7;
+	vol=tk_midi_chanvol[ch];
 	vol=(vol*tk_midi_musicvolume)>>4;
 
 	vol=__int_clamp(vol, 0, 127);
@@ -1056,8 +1365,13 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 		}
 #endif
 
+		tk_midi_chan_cvol[ch]=vol;
+		tk_midi_chan_mvol[ch]=vol;
+
 		tk_midi_regs[vn1*4+0]=rv1;
 		tk_midi_regs[vn2*4+0]=rv2;
+		tk_midi_chan_c0[ch]=rv1;
+		tk_midi_chan_c4[ch]=rv2;
 
 		tk_midi_regs[vn1*4+2]=lbase	| (llen<<16);
 		tk_midi_regs[vn2*4+2]=lbeg	| (lend<<16);
@@ -1078,7 +1392,55 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 		dv2=tk_midi_notediv[note2];
 		att1=tk_midi_noteatt[carvol];
 		att2=tk_midi_noteatt[modvol];
-		
+
+#if 0
+		if((carksr&15)!=1)
+		{
+			switch(carksr&15)
+			{
+			case  0:	dv1=(dv1<<1);	break;
+			case  1:	break;
+			case  2:	dv1=dv1>>1;		break;
+			case  3:	dv1=(dv1*5)>>4; break;
+			case  4:	dv1=dv1>>2;		break;
+			case  5:	dv1=(dv1*3)>>4; break;
+			case  6:	dv1=(dv1*5)>>5; break;
+			case  7:	dv1=(dv1*9)>>6;	break;
+			case  8:	dv1=dv1>>3;		break;
+			case  9:	dv1=(dv1*7)>>6;	break;
+			case 10:	dv1=(dv1*6)>>6;	break;
+			case 11:	dv1=(dv1*6)>>6;	break;
+			case 12:	dv1=(dv1*5)>>6;	break;
+			case 13:	dv1=(dv1*5)>>6;	break;
+			case 14:	dv1=(dv1*4)>>6;	break;
+			case 15:	dv1=(dv1*4)>>6;	break;
+			}
+		}
+
+		if((modksr&15)!=1)
+		{
+			switch(modksr&15)
+			{
+			case  0:	dv2=(dv2<<1);	break;
+			case  1:	break;
+			case  2:	dv2=dv2>>1;		break;
+			case  3:	dv2=(dv2*5)>>4; break;
+			case  4:	dv2=dv2>>2;		break;
+			case  5:	dv2=(dv2*3)>>4; break;
+			case  6:	dv2=(dv2*5)>>5; break;
+			case  7:	dv2=(dv2*9)>>6;	break;
+			case  8:	dv2=dv2>>3;		break;
+			case  9:	dv2=(dv2*7)>>6;	break;
+			case 10:	dv2=(dv2*6)>>6;	break;
+			case 11:	dv2=(dv2*6)>>6;	break;
+			case 12:	dv2=(dv2*5)>>6;	break;
+			case 13:	dv2=(dv2*5)>>6;	break;
+			case 14:	dv2=(dv2*4)>>6;	break;
+			case 15:	dv2=(dv2*4)>>6;	break;
+			}
+		}
+#endif
+
 		rv1=dv1|(att1<<22)|((carfcn&7)<<28);
 		rv2=dv2|(att2<<22)|((modfcn&7)<<28);
 
@@ -1094,6 +1456,12 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 
 		tk_midi_regs[vn1*4+0]=rv1;
 		tk_midi_regs[vn2*4+0]=rv2;
+
+		tk_midi_chan_cvol[ch]=carvol;
+		tk_midi_chan_mvol[ch]=carvol;
+
+		tk_midi_chan_c0[ch]=rv1;
+		tk_midi_chan_c4[ch]=rv2;
 	}else
 	{
 //		dv=tk_midi_notediv[d0];
@@ -1105,18 +1473,38 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 		tk_midi_vnflg[vn1]|=2;
 //		tk_midi_regs[vn1]=rv1;
 		tk_midi_regs[vn1*4+0]=rv1;
+
+		tk_midi_chan_cvol[ch]=vol;
+		tk_midi_chan_mvol[ch]=0;
+
+		tk_midi_chan_c0[ch]=rv1;
+		tk_midi_chan_c4[ch]=0;
 	}
 	return(0);
 }
 
 int TK_Midi_PitchBlend(int ch, int d0)
 {
+	int nt, ni;
+
+	TK_Midi_ProbeDelayOff();
+
 	tk_midi_chanpbl[ch]=d0>>6;
+
+	nt=tk_midi_channt[ch];
+	ni=tk_midi_channi[ch];
+	if(nt)
+	{
+		TK_Midi_NoteOff(ch, nt, ni);
+		TK_Midi_NoteOn(ch, nt, ni);
+	}
+
 	return(0);
 }
 
 int TK_Midi_Controller(int ch, int d0, int d1)
 {
+	TK_Midi_ProbeDelayOff();
 
 	if(d0==7)
 	{
@@ -1143,6 +1531,7 @@ int TK_Midi_Controller(int ch, int d0, int d1)
 int TK_Midi_ProgramChange(int ch, int d0)
 {
 	tk_dbg_printf("TK_Midi_ProgramChange: %d %d\n", ch, d0);
+	TK_Midi_ProbeDelayOff();
 	tk_midi_chanprg[ch]=d0;
 	return(0);
 }

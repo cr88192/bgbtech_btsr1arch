@@ -944,6 +944,10 @@ void CalcSurfaceExtents (msurface_t *s)
 			Sys_Error ("Bad surface extents");
 		}
 	}
+	
+//	e=s->extents[0]
+
+//	__debugbreak();
 }
 
 
@@ -1685,6 +1689,8 @@ void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv,
 		*poutintervals = LittleFloat (pin_intervals->interval);
 		if (*poutintervals <= 0.0)
 			Sys_Error ("Mod_LoadAliasGroup: interval<=0");
+
+//		__debugbreak();
 
 		poutintervals++;
 		pin_intervals++;

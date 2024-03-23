@@ -1885,7 +1885,8 @@ int VID_BlendFlash(int pix, int flash)
 	return(pix1);
 }
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if 1
 u64 VID_BlendFlash4x(u64 pix, int flash)
 {
 	u64 pix1, fpix;
@@ -1933,7 +1934,8 @@ u64 VID_BlendFlash4x(u64 pix, int flash)
 }
 #endif
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if 0
 u64 VID_BlendFlash4x(u64 pix, int flash);
 
 __asm {
@@ -2093,6 +2095,7 @@ void I_FinishUpdate (void)
 //	if(vid_flashblend)
 	if(0)
 	{
+#if 0
 //		screen_tmp
 
 		for(i=0; i<((BASEWIDTH*BASEHEIGHT)>>2); i++)
@@ -2102,6 +2105,7 @@ void I_FinishUpdate (void)
 		}
 
 		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_tmp);
+#endif
 	}else
 	{
 		if(screen_fbuf)

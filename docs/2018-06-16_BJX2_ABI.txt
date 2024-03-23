@@ -921,6 +921,24 @@ The CPU may be allowed to fault if storing to an address with this flag set.
 Bounded Arrays will have an implicit No-Execute Status.
 
 
+Double Bounded Array (128-bit Modified2)
+* (127:122)=Exponent
+* (123:112)=Bias
+* (111: 64)=Address(95:48)
+* ( 63: 60)=Tag (0011)
+* ( 59: 57)=Mode
+* ( 56: 48)=Size
+* ( 47:  0)=Address(47:0)
+
+Mode:
+* 000: Read/Write
+* 001: Read-Only 
+* 010: Read/Write, Data Only
+* 011: Read-Only, Data Only
+
+Exponent in Modified2 will be given as a Log2 scale.
+
+
 
 === Bounded Array F8 ===
 

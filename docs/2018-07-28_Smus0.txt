@@ -58,6 +58,8 @@ Control Register D:
 * 19.. 0: Clocked Accumulator Step (FM)
 * 20: Reserved (FM), Reversed (PCM)
 * 21: Reserved (FM), Bidirectional (PCM)
+* 27..22: Volume (FM)
+* 31..28: Waveform (FM)
 
 
 Control Register F:

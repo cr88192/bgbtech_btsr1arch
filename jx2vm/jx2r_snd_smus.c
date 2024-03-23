@@ -219,23 +219,22 @@ int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 	switch(fn)
 	{
 	case 0:
-//		v=ph1^x19;
-		v=jx2i_smus_sintab[ph0>>8];
+		v=ph1^x19;
+//		v=jx2i_smus_sintab[ph0>>8];
 		break;
 	case 1:
-//		v=ph1^x19;
-		v=jx2i_smus_sintab[ph0>>8];
+		v=ph1^x19;
+//		v=jx2i_smus_sintab[ph0>>8];
 		if(v<0x8000)v=0x8000;
 		break;
 	case 2:
-//		v=ph1^x19;
-		v=jx2i_smus_sintab[ph0>>8];
+		v=ph1^x19;
+//		v=jx2i_smus_sintab[ph0>>8];
 		if(v<0x8000)v^=0xFFFF;
 		break;
 	case 3:
-//		v=ph1;
-//		v=jx2i_smus_sintab[ph0>>8]^x19;
-		v=jx2i_smus_sintab[ph0>>8]^x19^x18;
+		v=ph1;
+//		v=jx2i_smus_sintab[ph0>>8]^x19^x18;
 		if(v<0x8000)v=0x8000;
 		break;
 
@@ -361,7 +360,7 @@ int SMus_GetVoiceWaveRsVal_Pcm(int vnfl)
 	return(v);
 }
 
-
+#if 0
 /** Get raw sample value for a voice waveform */
 int SMus_GetVoiceWaveRsVal_Car0(int vnfl)
 {
@@ -435,6 +434,7 @@ int SMus_GetVoiceWaveRsVal_Mod0(int vnfl)
 
 	return(v);
 }
+#endif
 
 int SMus_GetStepSample(int step)
 {

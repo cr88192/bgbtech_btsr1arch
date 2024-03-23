@@ -310,10 +310,15 @@ byte *TKFAT_GetSectorStaticBuffer(TKFAT_ImageInfo *img,
 	{
 		if(img->sbc_lba[i]!=lba)
 			continue;
-		if(img->sbc_lbn[i]!=(num&255))
+		if((img->sbc_lbn[i]&255)!=(num&255))
 			continue;
 		if(!img->sbc_buf[i])
 			continue;
+
+		if(num&TKFAT_SFL_DIRTY)
+		{
+			img->sbc_lbn[i]|=TKFAT_SFL_DIRTY;
+		}
 
 		return(img->sbc_buf[i]);
 	}
@@ -971,11 +976,11 @@ int TKFAT_SetFatEntry(TKFAT_ImageInfo *img,
 	lba1=img->lba_fat1+((clid>>shc1)<<(shc1-7));
 	lba2=img->lba_fat2+((clid>>shc1)<<(shc1-7));
 
-	ofs1=TKFAT_GetSectorTempFatBuffer(img, lba1, szc);
+	ofs1=TKFAT_GetSectorTempFatBuffer(img, lba1, szc|TKFAT_SFL_DIRTY);
 	ofs1+=(clid&((1<<shc1)-1))*4;
 	ofs1[0]=val; ofs1[1]=val>>8; ofs1[2]=val>>16; ofs1[3]=val>>24;
 
-	ofs2=TKFAT_GetSectorTempFatBuffer(img, lba2, szc);
+	ofs2=TKFAT_GetSectorTempFatBuffer(img, lba2, szc|TKFAT_SFL_DIRTY);
 	ofs2+=(clid&((1<<shc1)-1))*4;
 	ofs2[0]=val; ofs2[1]=val>>8; ofs2[2]=val>>16; ofs2[3]=val>>24;
 #endif

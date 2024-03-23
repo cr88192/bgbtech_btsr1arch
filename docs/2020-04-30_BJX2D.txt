@@ -1896,9 +1896,9 @@ F0zz Instruction Block:
 *** F0nm_1gDE  PLDCEHL		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Lo)
 *** F0nm_1GDE  PLDCEHH		Rm, Rn		//(GSVF) Packed Ext-Half to Single (Hi)
 *** F0nm_1gEE  PSTCH		Rm, Rn		//(GSVF) Packed Single to Half (2x)
-*** F0nm_1GEE  -
+*** F0nm_1GEE ? XBLESS		Xm, Xn		//(BCE) Bless a Capability.
 *** F0nm_1gFE ? MOVST		Rm, Rn		//(TTAG) Move Sign-Extend Low 48 bits
-*** F0nm_1GFE ? XMOVST		Rm, Rn		//(TTAG) Move Sign-Extend Low 48 bits
+*** F0nm_1GFE ? XMOVST		Xm, Xn		//(TTAG) Move Sign-Extend Low 48 bits
 
 ** F0nm_1ezF  -
 *** F0nm_1g0F  PCVTSB2HL	Rm, Rn		//(GSVF) Packed SB to FP16 (Low32)
@@ -2253,7 +2253,7 @@ F0zz Instruction Block:
 ** F0nm_8go5  XMOV.W	Rn, (Xm, Ro)		//
 ** F0nm_8Go5  -
 ** F0nm_8go6  XMOV.L	Rn, (Xm, Ro)		//
-** F0nm_8Go6  -
+** F0nm_8Go6 ? XMOVTT	Xm, Ro, Xn			//Set Type Tag (BCE)
 ** F0nm_8go7  XMOV.Q	Rn, (Xm, Ro)		//
 ** F0nm_8Go7  XMOV.X	Xn, (Xm, Ro)		//
 ** F0nm_8gd8  XMOV.B	(Xm, Disp5), Rn		//

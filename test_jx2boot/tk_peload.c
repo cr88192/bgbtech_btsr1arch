@@ -28,6 +28,39 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	{
 		tg=*cs++;
 		lr=(tg>>4)&15;
+		ll=(tg&15)+4;
+
+#if 0
+//		i=((tg&15)+1)|(((tg>>4)&15)+1);
+//		if(!(i&16))
+		if((lr!=15) && (ll!=19) && ((cs+20)<cse))
+		{
+			v0=((u64 *)cs)[0];
+			v1=((u64 *)cs)[1];
+			((u64 *)ct)[0]=v0;
+			((u64 *)ct)[1]=v1;
+			ct+=lr; cs+=lr;
+
+			ld=*(u16 *)cs;
+			cs+=2;
+			if(ld<20)
+				goto SLO;
+
+			cs1=ct-ld;
+			cs1q=(u64 *)cs1;
+			ct1q=(u64 *)ct;
+			v0=cs1q[0];
+			v1=cs1q[1];
+			v2=cs1q[2];
+			ct1q[0]=v0;
+			ct1q[1]=v1;
+			ct1q[2]=v2;
+			ct+=ll;
+			continue;
+		}
+#endif
+
+#if 0
 		if(lr==15)
 		{
 			i=*cs++;
@@ -57,18 +90,48 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 			}
 		}
 		ct+=lr; cs+=lr;
-		
+#endif
+
+#if 1
+		if(lr==15)
+		{
+			i=*cs++;
+			while(i==255)
+				{ lr+=255; i=*cs++; }
+			lr+=i;
+
+			ct1=ct; cs1=cs; cs1e=cs+lr;
+			while(cs1<cs1e)
+			{
+				v0=((u64 *)cs1)[0];
+				v1=((u64 *)cs1)[1];
+				((u64 *)ct1)[0]=v0;
+				((u64 *)ct1)[1]=v1;
+				ct1+=16; cs1+=16;
+			}
+			ct+=lr; cs+=lr;
+		}else
+		{
+			v0=((u64 *)cs)[0];
+			v1=((u64 *)cs)[1];
+			((u64 *)ct)[0]=v0;
+			((u64 *)ct)[1]=v1;
+			ct+=lr; cs+=lr;
+		}
+#endif
+
 		if((cs+1)>=cse)
 		{
 //			printf("TKPE_UnpackL4: Hit CSE\n");
 			break;
 		}
 
-		ll=(tg&15)+4;
-		
 //		ld=tkfat_getWord(cs);
 		ld=*(u16 *)cs;
 		cs+=2;
+		
+		SLO:
+		
 		if(!ld)
 		{
 			if(ll==5)
@@ -85,6 +148,22 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 				{ ll+=255; i=*cs++; }
 			ll+=i;
 		}
+#if 1
+		else if(ld>=20)
+		{
+			cs1=ct-ld;
+			cs1q=(u64 *)cs1;
+			ct1q=(u64 *)ct;
+			v0=cs1q[0];
+			v1=cs1q[1];
+			v2=cs1q[2];
+			ct1q[0]=v0;
+			ct1q[1]=v1;
+			ct1q[2]=v2;
+			ct+=ll;
+			continue;
+		}
+#endif
 		
 		cs1=ct-ld; cs1e=cs1+ll;
 		if(ld>=24)
@@ -1321,7 +1400,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 			}
 		}
 	}
-	
+
 	if(bss_ptr && (bss_sz>0))
 	{
 		memset(bss_ptr, 0, bss_sz);
@@ -1334,6 +1413,10 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 		TKPE_ApplyStaticRelocs(imgptr, imgptr+reloc_rva, reloc_sz,
 			reloc_disp, 0, imgbase, gbr_rva, gbr_sz, mach);
 	}
+
+//	__debugbreak();
+
+	printf("t: %d ms\n", TK_GetTimeMs());
 
 	entry=((u64)imgptr)+startrva;
 

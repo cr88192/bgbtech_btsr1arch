@@ -2526,6 +2526,22 @@ If the mode is 31 (Supervisor Mode Only), WEX will be disabled and the Canary Se
 Note that any Canary values generated before executing this instruction will become invalid.
 
 
+=== XBLESS (BCE) ===
+
+* F0nm_1GEE  XBLESS		Xm, Xn
+
+
+Bless a Capability.
+
+This instruction has behavior similar to a MOVX instruction, except that while moving the value in the registers, it will also set the tag bits to mark the register contents as a capability.
+
+This is a priveleged instruction within the Bounds Check Enforcing extension.
+
+If not Bounds Check Enforce is not set, or the processor is in Supervisor Mode, the BLESS operation will always succeed.
+
+If in User Mode and BCE is enabled, this will fault if Xm is not already blessed as a capability (otherwise, behavior will be equivalent to MOVX).
+
+
 === XMOV.x (XMOV, Possible) ===
 
 * F0nm_4Go0  XMOV.B		Rn, (Xm, Disp5)		//(XMOV)
@@ -2582,6 +2598,30 @@ Double Bounded Array (Extended)
 The Tag 0001 will be defined here as a non-pointer, and trying to access memory through it will raise a fault if bounds checks are supported and enabled.
 
 Other tags here will be reserved for future extension.
+
+
+
+=== XMOVTT (BCE) ===
+
+* F0nm_8Go6            XMOVTT	Xm, Ro, Xn		//(TTAG+XGPR)
+* FFw0_iiii_F84n_iiii  XMOVTT	Imm32u, Xn		//(TTAG+XGPR) WMI==11
+
+
+Set Type Tag.
+
+In the 3R form, the Capability in Rn will be set to the bounds given in Ro, if valid.
+
+On success, the behavior will be to copy the low 16 bits of Ro to bits (63:48) of Xn, and (31:16) of Ro to (127:112) of Xn, with other bits being copied from Rm unchanged.
+
+The Imm32 form is similar, except using Imm32 in place of Ro, and Xn as the Xm input.
+
+
+If given an unbounded bare value, it will set any bounds. If the bounds are valid, it may also BLESS the capability. This may trap if XBLESS would trap.
+
+If given a bounded capability, the bounds may only be set if they fall within the prior bounds, otherwise it will trap.
+
+This instruction will have special behavior as part of the Bounds Check Enforcing extension. If this extension is not present, only the basic behavior will be performed, and no traps will occur. If this extension is present, but the CPU is not in Bounds Enforcing mode, it will auto bless the capability, and will not trap.
+
 
 
 

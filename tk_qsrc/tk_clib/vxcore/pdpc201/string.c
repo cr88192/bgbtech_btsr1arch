@@ -252,15 +252,16 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 }
 #endif
 
-#if 1
+#if 0
 __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 {
 	const unsigned char *p1;
 	const unsigned char *p2;
 	unsigned long long v1, v2;
-	int u1, u2, x;
+	int u1, u2, x, n1;
 //	size_t x = 0;
 
+	n1 = n;
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
 	x = 0;
@@ -279,6 +280,7 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 #endif
 
 	while (x < n)
+//	while (x < n1)
 	{
 		u1=p1[x];	u2=p2[x];
 		if(u1 != u2)
@@ -286,6 +288,74 @@ __PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
 //		if (u1<u2) return (-1);
 //		else if (u1 > u2) return (1);
 		x++;
+	}
+	return (0);
+}
+#endif
+
+#if 1
+__PDPCLIB_API__ int memcmp(const void *s1, const void *s2, size_t n)
+{
+	unsigned char *p1, *p2, *p1e0, *p1e1;
+	unsigned long long v1, v2, v3, v4;
+	int u1, u2;
+//	size_t x = 0;
+
+//	n1 = n;
+	p1 = (unsigned char *)s1;
+	p2 = (unsigned char *)s2;
+//	x = 0;
+
+	p1e0 = p1 + (n&(~15));
+	p1e1 = p1 + n;
+
+#if 1
+	while (p1<=p1e0)
+	{
+		v1=((unsigned long long *)p1)[0];
+		v2=((unsigned long long *)p2)[0];
+		v3=((unsigned long long *)p1)[1];
+		v4=((unsigned long long *)p2)[1];
+		if(v1!=v2)
+			break;
+		if(v3!=v4)
+			{ p1+=8; p2+=8; break; }
+		p1+=16; p2+=16;
+	}
+#endif
+
+	if(p1>=p1e1)
+		return(0);
+
+	if((p1+8)<=p1e1)
+	{
+		v1=*(unsigned long long *)p1;
+		v2=*(unsigned long long *)p2;
+		if(v1==v2)
+		{
+			p1+=8; p2+=8;
+			if(p1>=p1e1)
+				return(0);
+		}
+	}
+
+	if((p1+4)<=p1e1)
+	{
+		v1=*(unsigned int *)p1;
+		v2=*(unsigned int *)p2;
+		if(v1==v2)
+		{
+			p1+=4; p2+=4;
+			if(p1>=p1e1)
+				return(0);
+		}
+	}
+
+	while (p1 < p1e1)
+	{
+		u1=*p1++;	u2=*p2++;
+		if(u1 != u2)
+			return(((u1-u2)>>31)*2+1);
 	}
 	return (0);
 }
@@ -308,7 +378,7 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 #if defined(__riscv)
 // #if 0
 	u64 li, lj;
-	int i;
+	int i, i0, i1;
 
 	p1 = s1;
 	p2 = s2;
@@ -330,7 +400,18 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 	
 	if((((u32)li0)==((u32)li1)) && (((u32)lj)==0x80808080ULL))
 		{ p1+=4; p2+=4; }
-	
+
+#if 1
+	i0=*p1++; i1=*p2++;
+	while(i0 && (i0==i1))
+		{ i0=*p1++; i1=*p2++; }
+	i=0;
+	if(i0<i1)i=-1;
+	if(i0>i1)i= 1;
+	return(i);
+#endif
+
+#if 0
 	while (*p1 != '\0')
 	{
 		if (*p1 < *p2) return (-1);
@@ -342,6 +423,9 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 	else return (-1);
 #endif
 
+#endif
+
+#if 0
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
 	while (*p1 != '\0')
@@ -353,6 +437,7 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 	}
 	if (*p2 == '\0') return (0);
 	else return (-1);
+#endif
 }
 #endif
 
@@ -1148,7 +1233,8 @@ strlen:
 	BRA			.L0
 	.L1:
 	SUB			R4, R6, R2
-	ADD			R1, R2
+//	ADD			R1, R2
+	ADDS.L		R2, R1, R2
 	RTS
 	
 strcmp:

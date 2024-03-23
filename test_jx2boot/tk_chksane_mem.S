@@ -46,6 +46,8 @@ X(tk_checksane_mem_asm):
 	mov	0xFFD0F5A4E87AD208, r10
 	mov	0xFFFFFFFFFFD0F5A4, r11
 	mov	0xE87AD208E87AD208, r14
+	
+	mov	0x01000018, r20
 
 	add		-128, sp
 
@@ -53,10 +55,28 @@ X(tk_checksane_mem_asm):
 	mov.q	r11,  (sp, 40)
 	mov.q	r10,  (sp, 32)
 
+	mov.l	r9,  (r20, 4)
+	mov.l	r20,  (r20, 8)
+
 	mov.q	r8,  (sp, 16)
 	mov.q	r8,  (sp,  8)
 	mov.q	r10, (sp,  0)
 
+
+	mov.l	(r20, 4), r18
+	mov.l	r18, (r20, 4)
+	mov.l	(r20, 8), r18
+	mov.l	r18, (r20, 8)
+	nop
+	nop
+	nop
+	mov.l	(r20, 4), r19
+	cmpqeq	r19, r9
+	break?f
+	mov.l	(r20, 8), r19
+	cmpqeq	r19, r20
+	break?f
+	
 #ifndef JX2UC
 // #if 0
  

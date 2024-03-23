@@ -563,7 +563,8 @@ void R_DrawFuzzColumn (void)
 
 
 	fuzzmask = fuzzseed >> 16;
-	fuzzseed = (fuzzseed + 1) * 65521;
+//	fuzzseed = (fuzzseed + 1) * 65521;
+	fuzzseed = (fuzzseed << 1) + (fuzzseed>>7) + (fuzzseed>>17) + 1;
 	fuzzmask += fuzzseed;
 
 #ifdef RANGECHECK
@@ -680,7 +681,8 @@ void R_DrawFuzzColumnLow (void)
 
 
 	fuzzmask = fuzzseed >> 16;
-	fuzzseed = (fuzzseed + 1) * 65521;
+//	fuzzseed = (fuzzseed + 1) * 65521;
+	fuzzseed = (fuzzseed << 1) + (fuzzseed>>7) + (fuzzseed>>17) + 1;
 	fuzzmask += fuzzseed;
 
 	// Does not work with blocky mode.
@@ -1148,7 +1150,8 @@ void R_DrawSpan_ZB (void)
 }
 #endif
 
-#ifdef __BGBCC__
+// #ifdef __BGBCC__
+#if 0
 
 void R_DrawSpanUtx (void);
 void R_DrawSpanLowUtx (void);
