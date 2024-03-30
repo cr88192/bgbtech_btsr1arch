@@ -74,6 +74,7 @@ int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
 	}
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
+//	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 	if(sctx->lbl_ret_zero)
 	{
@@ -98,6 +99,7 @@ int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
 	BGBCC_JX2C_EmitSyncEpilog(ctx, sctx);
 
 	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+	BGBCC_JX2C_EmitEpilogFlushRegisters(ctx, sctx);
 
 	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTS);
 //	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
@@ -184,6 +186,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	}
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
+//	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 	if(sctx->lbl_ret_zero)
 	{
@@ -219,6 +222,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	}
 
 	BGBCC_JX2C_EmitSyncEpilog(ctx, sctx);
+	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 	sctx->sreg_held=0x0003;
 	sctx->sfreg_held=0x0003;
@@ -1249,6 +1253,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 //	BGBCC_JX2_EmitFlushIndexImm16(sctx);
 //	BGBCC_JX2_EmitFlushIndexImm32(sctx);
 	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+
+	BGBCC_JX2C_EmitEpilogFlushRegisters(ctx, sctx);
 
 	if(sctx->is_leaf==2)
 		sctx->is_leaf=1;

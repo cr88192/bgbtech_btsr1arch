@@ -1275,7 +1275,7 @@ int BGBCC_JX2_EmitOpCheckRepack4Exw(
 	int *ropw3, int *ropw4)
 {
 	int opw1, opw2, opw3, opw4;
-	int i0, i1, imm, rn, iex;
+	int i0, i1, imm, rn, iex, is_imm10;
 
 	if(!exw)
 		return(0);
@@ -1474,6 +1474,11 @@ int BGBCC_JX2_EmitOpCheckRepack4Exw(
 				if(exw&0x1000)
 					opw1|=0x0080;
 
+				if(opw4&0x0100)
+				{
+					opw4&=~0x0100;
+					opw2|= 0x0001;
+				}
 
 				*ropw1=opw1;
 				*ropw2=opw2;
@@ -1485,12 +1490,16 @@ int BGBCC_JX2_EmitOpCheckRepack4Exw(
 			if((opw1&0xFF00)==0xF200)
 			{
 				iex=0;
+				is_imm10=0;
 				switch((opw2>>12)&15)
 				{
 					case 0x1: iex=1; break;
 					case 0x4: iex=1; break;
 					case 0xC:
 					case 0xD:
+					case 0xE:
+					case 0xF:
+						is_imm10=1;
 						iex=(opw1&1);
 						break;
 				}
@@ -1519,6 +1528,35 @@ int BGBCC_JX2_EmitOpCheckRepack4Exw(
 
 				if(iex)
 					opw1|=0x0010;
+				
+				if(!iex)
+				{
+					if(opw4&0x0100)
+						opw2|= 0x0001;
+					opw4&=~0x0100;
+				}else
+				{
+					opw2&=~0x0001;
+					if(opw4&0x0100)
+						opw2|= 0x0001;
+					opw4|= 0x0100;
+				}
+				
+				if(is_imm10)
+				{
+					if(!iex)
+					{
+						if(opw4&0x0200)
+							opw2|= 0x0002;
+						opw4&=~0x0200;
+					}else
+					{
+						opw2&=~0x0002;
+						if(opw4&0x0200)
+							opw2|= 0x0002;
+						opw4|= 0x0200;
+					}
+				}
 
 				*ropw1=opw1;
 				*ropw2=opw2;
@@ -1680,6 +1718,46 @@ int BGBCC_JX2_EmitLoadDrImm(
 	if(!BGBCC_JX2_CheckPadCross32(ctx) || ctx->is_fixed32)
 	{
 #if 1
+		opw1=-1;
+		if((imm&1023)==imm)
+		{
+			opw1=0xF200;
+			opw2=0xC000|(imm&1023);
+		}
+	
+		if((imm|(~1023))==imm)
+		{
+			opw1=0xF201;
+			opw2=0xC000|(imm&1023);
+		}
+		
+		if((opw1<0) && (ctx->abi_spillpad&32))
+		{
+			if((imm&0x03FF0000)==imm)
+			{
+				opw1=0xF200;
+				opw2=0xC800|((imm>>16)&1023);
+			}
+		
+			if(((imm&0x03FF0000LL)|0x0FC000000LL)==imm)
+			{
+				opw1=0xF201;
+				opw2=0xC800|((imm>>16)&1023);
+			}
+		}
+
+		if(opw1>=0)
+		{
+			BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2, 0);
+			BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
+			BGBCC_JX2_EmitWord(ctx, opw1);
+			BGBCC_JX2_EmitWord(ctx, opw2);
+			BGBCC_JX2_EmitPadCheckAligned(ctx);
+			return(1);
+		}
+#endif
+
+#if 1
 		if((imm&65535)==imm)
 		{
 			opw1=0xF800;
@@ -1707,30 +1785,33 @@ int BGBCC_JX2_EmitLoadDrImm(
 		}
 #endif
 		
-		if((imm&16777215)==imm)
+		if(!(ctx->op_is_wex2&12))
 		{
-			opw1=0xFA00|((imm>>16)&255);
-			opw2=(u16)imm;
+			if((imm&16777215)==imm)
+			{
+				opw1=0xFA00|((imm>>16)&255);
+				opw2=(u16)imm;
 
-			BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2, 0);
-			BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
-			BGBCC_JX2_EmitWord(ctx, opw1);
-			BGBCC_JX2_EmitWord(ctx, opw2);
-			BGBCC_JX2_EmitPadCheckAligned(ctx);
-			return(1);
-		}
+				BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2, 0);
+				BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
+				BGBCC_JX2_EmitWord(ctx, opw1);
+				BGBCC_JX2_EmitWord(ctx, opw2);
+				BGBCC_JX2_EmitPadCheckAligned(ctx);
+				return(1);
+			}
 
-		if((imm|(~16777215))==imm)
-		{
-			opw1=0xFB00|((imm>>16)&255);
-			opw2=(u16)imm;
+			if((imm|(~16777215))==imm)
+			{
+				opw1=0xFB00|((imm>>16)&255);
+				opw2=(u16)imm;
 
-			BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2, 0);
-			BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
-			BGBCC_JX2_EmitWord(ctx, opw1);
-			BGBCC_JX2_EmitWord(ctx, opw2);
-			BGBCC_JX2_EmitPadCheckAligned(ctx);
-			return(1);
+				BGBCC_JX2_EmitOpCheckRepack(ctx, &opw1, &opw2, 0);
+				BGBCC_JX2_EmitPadForOpWord(ctx, opw1);
+				BGBCC_JX2_EmitWord(ctx, opw1);
+				BGBCC_JX2_EmitWord(ctx, opw2);
+				BGBCC_JX2_EmitPadCheckAligned(ctx);
+				return(1);
+			}
 		}
 
 #if 1
@@ -3133,6 +3214,11 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 			}
 		}
 #endif
+	}
+
+	if(!ctx->is_simpass && ctx->tctx->cur_vop && ctx->tctx->cur_vop->prd)
+	{
+		k=-1;
 	}
 
 //	BGBCC_JX2DA_EmitLoadRegImm64(ctx, BGBCC_SH_NMID_MOVQ, reg, imm);
@@ -5063,7 +5149,8 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarPbo24(
 			ctx->stat_ldst_pbotot_33b++;
 	}
 	
-	if(reg&32)
+//	if(reg&32)
+	if((reg&32) && (opwf>=0))
 	{
 		BGBCC_JX2_EmitOpCheckRepack4Exw(ctx, 0x0400,
 			&opwf, &opwf1, &opwf2, &opwf3);
@@ -5519,7 +5606,8 @@ int BGBCC_JX2_TryEmitStoreRegLabelVarPbo24(
 			ctx->stat_ldst_pbotot_33b++;
 	}
 
-	if(reg&32)
+//	if(reg&32)
+	if((reg&32) && (opwf>=0))
 	{
 		BGBCC_JX2_EmitOpCheckRepack4Exw(ctx, 0x0200,
 			&opwf, &opwf1, &opwf2, &opwf3);

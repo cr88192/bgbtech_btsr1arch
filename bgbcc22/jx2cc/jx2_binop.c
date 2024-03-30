@@ -1623,6 +1623,10 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 				{ nm1=BGBCC_SH_NMID_RSUBSL; k=j; }
 		}
 
+		if((nm1>0) &&
+				BGBCC_JX2C_ProbeVRegRejectImm3P(ctx, sctx,
+					dreg, treg, sreg, nm1))
+			nm1=-1;
 
 		if(nm1>=0)
 		{
@@ -2630,13 +2634,21 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt(
 			nm4=BGBCC_SH_NMID_EXTSW;
 		if(type.val==CCXL_TY_US)
 			nm4=BGBCC_SH_NMID_EXTUW;
+		if(type.val==CCXL_TY_UI)
+			nm4=BGBCC_SH_NMID_EXTUL;
 	}
 
 	switch(opr)
 	{
 	case CCXL_UNOP_MOV:	nm1=BGBCC_SH_NMID_MOV; nm2=-1; break;
-	case CCXL_UNOP_NEG:	nm1=BGBCC_SH_NMID_NEG; nm2=-1; break;
-	case CCXL_UNOP_NOT:	nm1=BGBCC_SH_NMID_NOT; nm2=-1; break;
+	case CCXL_UNOP_NEG:
+		nm1=BGBCC_SH_NMID_NEG; nm2=-1;
+//		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+//			{ nm2=nm4; }
+		break;
+	case CCXL_UNOP_NOT:
+		nm1=BGBCC_SH_NMID_NOT; nm2=-1;
+		break;
 	default:		nm1=-1; nm2=-1; break;
 	}
 
@@ -2648,7 +2660,8 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt(
 
 			if(nm2>=0)
 			{
-				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
+				ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 
+					BGBCC_SH_REGCLS_GR);
 				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm2, cdreg, ctreg);
 				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg, cdreg);
 				BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg);
@@ -5052,6 +5065,167 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
 		}
+		
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if(	!strcmp(name, "__mem_gets16be") ||
+		!strcmp(name, "__mem_getu16be") ||
+		!strcmp(name, "__mem_gets32be") ||
+		!strcmp(name, "__mem_getu32be") ||
+		!strcmp(name, "__mem_gets64be") ||
+		!strcmp(name, "__mem_getu64be"))
+	{
+		nm1=-1; nm2=-1;
+		if(!strcmp(name, "__mem_getu16be") || !strcmp(name, "__mem_gets16be"))
+			nm1=BGBCC_SH_NMID_MOVW;
+		if(!strcmp(name, "__mem_getu32be") || !strcmp(name, "__mem_gets32be"))
+			nm1=BGBCC_SH_NMID_MOVL;
+		if(!strcmp(name, "__mem_getu64be") || !strcmp(name, "__mem_gets64be"))
+			nm1=BGBCC_SH_NMID_MOVQ;
+
+		if(!strcmp(name, "__mem_getu16be"))
+			nm2=BGBCC_SH_NMID_BSWAPUW;
+		if(!strcmp(name, "__mem_gets16be"))
+			nm2=BGBCC_SH_NMID_BSWAPW;
+		if(!strcmp(name, "__mem_getu32be"))
+			nm2=BGBCC_SH_NMID_BSWAPUL;
+		if(!strcmp(name, "__mem_gets32be"))
+			nm2=BGBCC_SH_NMID_BSWAPL;
+		if(!strcmp(name, "__mem_getu64be"))
+			nm2=BGBCC_SH_NMID_BSWAPQ;
+		if(!strcmp(name, "__mem_gets64be"))
+			nm2=BGBCC_SH_NMID_BSWAPQ;
+	
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+		{
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, cdreg, 0, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx, nm2, cdreg, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		}else
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, csreg, 0, cdreg);
+			BGBCC_JX2_EmitOpRegReg(sctx, nm2, cdreg, cdreg);
+
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		}
+		
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if(	!strcmp(name, "__mem_sets16be") ||
+		!strcmp(name, "__mem_setu16be") ||
+		!strcmp(name, "__mem_sets32be") ||
+		!strcmp(name, "__mem_setu32be") ||
+		!strcmp(name, "__mem_sets64be") ||
+		!strcmp(name, "__mem_setu64be"))
+	{
+		nm1=-1; nm2=-1;
+		if(!strcmp(name, "__mem_setu16be") || !strcmp(name, "__mem_sets16be"))
+			nm1=BGBCC_SH_NMID_MOVW;
+		if(!strcmp(name, "__mem_setu32be") || !strcmp(name, "__mem_sets32be"))
+			nm1=BGBCC_SH_NMID_MOVL;
+		if(!strcmp(name, "__mem_setu64be") || !strcmp(name, "__mem_sets64be"))
+			nm1=BGBCC_SH_NMID_MOVQ;
+
+		if(!strcmp(name, "__mem_setu16be"))
+			nm2=BGBCC_SH_NMID_BSWAPUW;
+		if(!strcmp(name, "__mem_sets16be"))
+			nm2=BGBCC_SH_NMID_BSWAPW;
+		if(!strcmp(name, "__mem_setu32be"))
+			nm2=BGBCC_SH_NMID_BSWAPUL;
+		if(!strcmp(name, "__mem_sets32be"))
+			nm2=BGBCC_SH_NMID_BSWAPUL;
+		if(!strcmp(name, "__mem_setu64be"))
+			nm2=BGBCC_SH_NMID_BSWAPQ;
+		if(!strcmp(name, "__mem_sets64be"))
+			nm2=BGBCC_SH_NMID_BSWAPQ;
+	
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		tr0=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx,
+			BGBCC_SH_REGCLS_QGR);
+
+		BGBCC_JX2_EmitOpRegReg(sctx, nm2, ctreg, tr0);
+		BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, csreg, 0);
+
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+
+	if(	!strcmp(name, "__mem_gets16le") ||
+		!strcmp(name, "__mem_getu16le") ||
+		!strcmp(name, "__mem_gets32le") ||
+		!strcmp(name, "__mem_getu32le") ||
+		!strcmp(name, "__mem_gets64le") ||
+		!strcmp(name, "__mem_getu64le"))
+	{
+		nm1=-1; nm2=-1;
+		if(!strcmp(name, "__mem_getu16le"))
+			nm1=BGBCC_SH_NMID_MOVUW;
+		if(!strcmp(name, "__mem_gets16le"))
+			nm1=BGBCC_SH_NMID_MOVW;
+		if(!strcmp(name, "__mem_getu32le"))
+			nm1=BGBCC_SH_NMID_MOVUL;
+		if(!strcmp(name, "__mem_gets32le"))
+			nm1=BGBCC_SH_NMID_MOVL;
+		if(!strcmp(name, "__mem_getu64le"))
+			nm1=BGBCC_SH_NMID_MOVQ;
+		if(!strcmp(name, "__mem_gets64le"))
+			nm1=BGBCC_SH_NMID_MOVQ;
+	
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+		{
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, cdreg, 0, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		}else
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, csreg, 0, cdreg);
+
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		}
+		
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if(	!strcmp(name, "__mem_sets16le") ||
+		!strcmp(name, "__mem_setu16le") ||
+		!strcmp(name, "__mem_sets32le") ||
+		!strcmp(name, "__mem_setu32le") ||
+		!strcmp(name, "__mem_sets64le") ||
+		!strcmp(name, "__mem_setu64le"))
+	{
+		nm1=-1; nm2=-1;
+		if(!strcmp(name, "__mem_setu16le") || !strcmp(name, "__mem_sets16le"))
+			nm1=BGBCC_SH_NMID_MOVW;
+		if(!strcmp(name, "__mem_setu32le") || !strcmp(name, "__mem_sets32le"))
+			nm1=BGBCC_SH_NMID_MOVL;
+		if(!strcmp(name, "__mem_setu64le") || !strcmp(name, "__mem_sets64le"))
+			nm1=BGBCC_SH_NMID_MOVQ;
+	
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+		BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, ctreg, csreg, 0);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
 		
 		sctx->csrv_skip=1;
 		return(1);

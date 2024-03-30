@@ -1458,7 +1458,7 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 		tk_midi_regs[vn2*4+0]=rv2;
 
 		tk_midi_chan_cvol[ch]=carvol;
-		tk_midi_chan_mvol[ch]=carvol;
+		tk_midi_chan_mvol[ch]=modvol;
 
 		tk_midi_chan_c0[ch]=rv1;
 		tk_midi_chan_c4[ch]=rv2;

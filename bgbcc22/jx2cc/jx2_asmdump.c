@@ -789,8 +789,19 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 		else
 			sprintf(tb, "%s?T", sn);
 		sn=bgbcc_strdup(tb);
+	}else if(wex2)
+	{
+		tb[0]=1;
 	}
-	
+
+	if(!ctx->is_simpass && ctx->tctx->cur_vop && ctx->tctx->cur_vop->prd)
+	{
+		if(!(wex2&12))
+		{
+			BGBCC_DBGBREAK
+		}
+	}
+
 	return(sn);
 }
 
@@ -1659,7 +1670,8 @@ int BGBCC_JX2DA_EmitLoadRegImm(
 		
 //	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 //	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
-	snm="MOV";
+	snm=BGBCC_JX2DA_NmidToName(ctx, BGBCC_SH_NMID_MOV, ctx->op_is_wex2);
+//	snm="MOV";
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
 	if(((s16)imm)==imm)
@@ -1691,8 +1703,9 @@ int BGBCC_JX2DA_EmitLoadRegImm64(
 		return(0);
 		
 //	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
+	snm=BGBCC_JX2DA_NmidToName(ctx, BGBCC_SH_NMID_MOV, ctx->op_is_wex2);
 //	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
-	snm="MOV";
+//	snm="MOV";
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
 	if(((s16)imm)==imm)

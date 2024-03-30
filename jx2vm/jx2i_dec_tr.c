@@ -1874,8 +1874,9 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 	}
 #endif
 
-	if((op2->rn==BJX2_REG_SP) ||
-		(op2->rn==BJX2_REG_DHR))
+//	if((op2->rn==BJX2_REG_SP) ||
+//		(op2->rn==BJX2_REG_DHR))
+	if(op2->rn==BJX2_REG_SP)
 	{
 		printf("BJX2_CheckWexSanity3W: Bad Target Register\n");
 		return(-1);
@@ -1965,7 +1966,8 @@ int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 //			return(-1);
 	}
 
-	if((op1->rn==BJX2_REG_SP) || (op1->rn==BJX2_REG_DHR))
+//	if((op1->rn==BJX2_REG_SP) || (op1->rn==BJX2_REG_DHR))
+	if(op1->rn==BJX2_REG_SP)
 	{
 		printf("BJX2_CheckWexSanity2W: Bad Target Register\n");
 		return(-1);

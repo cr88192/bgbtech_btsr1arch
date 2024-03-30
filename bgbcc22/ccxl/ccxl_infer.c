@@ -895,6 +895,43 @@ int BGBCC_CCXL_InferExprCleanNoDerefP(BGBCC_TransState *ctx, BCCX_Node *l)
 	return((BGBCC_CCXL_InferExprCleanI(ctx, l)&5)==5);
 }
 
+bool BGBCC_CCXL_TypePredSafeP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int sz;
+
+//	return(0);
+
+	if(BGBCC_CCXL_TypeSmallLongP(ctx, ty))
+		return(1);
+//	if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty) &&
+//		!BGBCC_CCXL_TypeQuadPointerP(ctx, ty))
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
+		return(1);
+
+#if 1
+	if(BGBCC_CCXL_TypeSmallDoubleP(ctx, ty))
+		return(1);
+
+	if(BGBCC_CCXL_TypeValueObjectP(ctx, ty))
+	{
+		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, ty);
+		if(sz>64)
+			return(0);
+		if(sz&(sz-1))
+			return(0);
+		return(1);
+	}
+	
+	if(BGBCC_CCXL_TypeVecP(ctx, ty))
+		return(1);
+	if(BGBCC_CCXL_TypeFunctionP(ctx, ty))
+		return(1);
+#endif
+
+	return(0);
+}
+
 /*
 Determine if block-statement is safe to be compiled as predicated instructions.
 
@@ -952,6 +989,12 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
 		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
 
+		if(	!BGBCC_CCXL_TypePredSafeP(ctx, lty) ||
+			!BGBCC_CCXL_TypePredSafeP(ctx, rty))
+		{
+			return(0);
+		}
+
 		if(ctx->infer_var_loopconst)
 		{
 			if(BCCX_TagIsCstP(ln, &bgbcc_rcst_ref, "ref"))
@@ -973,8 +1016,30 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(s0)
 		{
 			i=0;
-			if(!strcmp(s0, "+"))	i=1;
-			if(!strcmp(s0, "-"))	i=1;
+//			if(!strcmp(s0, "+"))	i=1;
+//			if(!strcmp(s0, "-"))	i=1;
+
+			if(	!strcmp(s0, "+") ||
+				!strcmp(s0, "-"))
+			{
+				if(	BGBCC_CCXL_TypeSmallLongP(ctx, lty) &&
+					BGBCC_CCXL_TypeSmallLongP(ctx, rty) )
+						i=1;
+				if(	BGBCC_CCXL_TypeSmallDoubleP(ctx, lty) &&
+					BGBCC_CCXL_TypeSmallDoubleP(ctx, rty) )
+						i=1;
+
+				if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, lty) &&
+					BGBCC_CCXL_TypeSmallIntP(ctx, rty) )
+				{
+					BGBCC_CCXL_TypeDerefType(ctx, lty, &bty);
+					if(	BGBCC_CCXL_TypeSmallLongP(ctx, bty) ||
+						BGBCC_CCXL_TypeSmallDoubleP(ctx, bty) ||
+						BGBCC_CCXL_TypePointerP(ctx, bty))
+							i=1;
+				}
+			}
+
 			if(!strcmp(s0, "&"))	i=1;
 			if(!strcmp(s0, "|"))	i=1;
 			if(!strcmp(s0, "^"))	i=1;
@@ -992,8 +1057,14 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		rn=BCCX_FetchCst(l, &bgbcc_rcst_right, "right");
 		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
 		rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
-//		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
-//		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
+		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
+		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
+
+		if(	!BGBCC_CCXL_TypePredSafeP(ctx, lty) ||
+			!BGBCC_CCXL_TypePredSafeP(ctx, rty))
+		{
+			return(0);
+		}
 
 		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
 
@@ -1007,11 +1078,47 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 			return(0);
 
 		i=0;
-		if(!strcmp(s0, "+"))	i=1;
-		if(!strcmp(s0, "-"))	i=1;
+		if(	!strcmp(s0, "+") ||
+			!strcmp(s0, "-"))
+		{
+			if(	BGBCC_CCXL_TypeSmallLongP(ctx, lty) &&
+				BGBCC_CCXL_TypeSmallLongP(ctx, rty) )
+					i=1;
+			if(	BGBCC_CCXL_TypeSmallDoubleP(ctx, lty) &&
+				BGBCC_CCXL_TypeSmallDoubleP(ctx, rty) )
+					i=1;
+
+			if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, lty) &&
+				BGBCC_CCXL_TypeSmallIntP(ctx, rty) )
+			{
+				BGBCC_CCXL_TypeDerefType(ctx, lty, &bty);
+				if(	BGBCC_CCXL_TypeSmallLongP(ctx, bty) ||
+					BGBCC_CCXL_TypeSmallDoubleP(ctx, bty) ||
+					BGBCC_CCXL_TypePointerP(ctx, bty))
+						i=1;
+			}
+			if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, lty) &&
+				(lty.val==rty.val) &&
+				!strcmp(s0, "-"))
+			{
+				BGBCC_CCXL_TypeDerefType(ctx, lty, &bty);
+				if(	BGBCC_CCXL_TypeSmallLongP(ctx, bty) ||
+					BGBCC_CCXL_TypeSmallDoubleP(ctx, bty) ||
+					BGBCC_CCXL_TypePointerP(ctx, bty))
+						i=1;
+			}
+		}
+
 		if(!strcmp(s0, "&"))	i=1;
 		if(!strcmp(s0, "|"))	i=1;
 		if(!strcmp(s0, "^"))	i=1;
+
+		if(!strcmp(s0, "*"))
+		{
+			if(BGBCC_CCXL_TypeSmallIntP(ctx, rty))
+				i=1;
+		}
+
 		if(!i)
 			return(0);
 		
@@ -1023,6 +1130,13 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 	{
 		s0=BCCX_GetCst(l, &bgbcc_rcst_op, "op");
 		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+
+		i=BGBCC_CCXL_InferExpr(ctx, l, &dty);
+		if(i<=0)
+			return(0);
+
+		if(!BGBCC_CCXL_TypePredSafeP(ctx, dty))
+			return(0);
 
 		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, t);
 //		if(!i)
@@ -1073,6 +1187,77 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		return(i);
 	}
 
+#if 1
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_getindex, "getindex") ||
+		BCCX_TagIsCstP(l, &bgbcc_rcst_vector_ref, "vector-ref"))
+	{
+		ln=BCCX_FetchCst(l, &bgbcc_rcst_array, "array");
+		rn=BCCX_FetchCst(l, &bgbcc_rcst_index, "index");
+
+		ln=BGBCC_CCXL_ReduceExpr(ctx, ln);
+		rn=BGBCC_CCXL_ReduceExpr(ctx, rn);
+		BGBCC_CCXL_InferExpr(ctx, ln, &lty);
+		BGBCC_CCXL_InferExpr(ctx, rn, &rty);
+
+		if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, lty))
+			return(0);
+		if(!BGBCC_CCXL_TypeSmallIntP(ctx, rty))
+			return(0);
+
+		BGBCC_CCXL_TypeDerefType(ctx, lty, &bty);
+//		if(!BGBCC_CCXL_TypePredSafeP(ctx, bty))
+//			return(0);
+
+		if(	!BGBCC_CCXL_TypeSmallLongP(ctx, bty) &&
+			!BGBCC_CCXL_TypeArrayOrPointerP(ctx, bty))
+				return(0);
+
+//		if(	!BGBCC_CCXL_TypePredSafeP(ctx, lty) ||
+//			!BGBCC_CCXL_TypePredSafeP(ctx, rty))
+//		{
+//			return(0);
+//		}
+
+		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, ln);
+		i1=BGBCC_CCXL_InferBlockPredSafeP(ctx, rn);
+		if((i0<=0) || (i1<=0))
+			return(0);
+		
+		return(i0+i1+1);
+	}
+#endif
+
+#if 1
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_objref, "objref"))
+	{
+		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+
+		i=BGBCC_CCXL_InferExpr(ctx, t, &bty);
+		if(i<=0)
+			return(0);
+
+		i=BGBCC_CCXL_InferExpr(ctx, l, &dty);
+		if(i<=0)
+			return(0);
+
+//		if(!BGBCC_CCXL_TypePredSafeP(ctx, bty))
+		if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, bty))
+			return(0);
+
+//		if(!BGBCC_CCXL_TypePredSafeP(ctx, dty))
+//			return(0);
+		if(	!BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
+			!BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty))
+			return(0);
+
+		i0=BGBCC_CCXL_InferBlockPredSafeP(ctx, t);
+		if(i0<=0)
+			return(0);
+
+		return(i0+1);
+	}
+#endif
+
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_return, "return"))
 		{ return(0); }
 
@@ -1088,11 +1273,17 @@ int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(i<=0)
 			return(0);
 
-		if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
+		if(BGBCC_CCXL_TypePredSafeP(ctx, dty))
+			return(1);
+
+#if 0
+//		if(BGBCC_CCXL_TypeSmallIntP(ctx, dty))
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, dty))
 			return(1);
 		if(	BGBCC_CCXL_TypeArrayOrPointerP(ctx, dty) &&
 			!BGBCC_CCXL_TypeQuadPointerP(ctx, dty))
 				return(1);
+#endif
 		return(0);
 	}
 	

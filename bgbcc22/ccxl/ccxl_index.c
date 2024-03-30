@@ -223,7 +223,7 @@ void BGBCC_CCXL_CompileBreakFalse(BGBCC_TransState *ctx)
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_EQ, reg, l);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
-	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
 
 void BGBCC_CCXL_CompileBreakTrue(BGBCC_TransState *ctx)
@@ -244,7 +244,7 @@ void BGBCC_CCXL_CompileBreakTrue(BGBCC_TransState *ctx)
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_NE, reg, l);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
-	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
 
 void BGBCC_CCXL_CompileContinueFalse(BGBCC_TransState *ctx)
@@ -265,7 +265,7 @@ void BGBCC_CCXL_CompileContinueFalse(BGBCC_TransState *ctx)
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_EQ, reg, l);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
-	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
 
 void BGBCC_CCXL_CompileContinueTrue(BGBCC_TransState *ctx)
@@ -286,7 +286,7 @@ void BGBCC_CCXL_CompileContinueTrue(BGBCC_TransState *ctx)
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_NE, reg, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
-	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
 
 
@@ -319,7 +319,7 @@ void BGBCC_CCXL_CompileJmpFalse(BGBCC_TransState *ctx, ccxl_label lbl)
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_EQ, reg, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
-	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
 
 void BGBCC_CCXL_CompileJmpTrue(BGBCC_TransState *ctx, ccxl_label lbl)
@@ -337,7 +337,7 @@ void BGBCC_CCXL_CompileJmpTrue(BGBCC_TransState *ctx, ccxl_label lbl)
 	ty=BGBCC_CCXL_GetRegType(ctx, reg);
 	BGBCC_CCXL_EmitJumpRegZero(ctx, ty, CCXL_CMP_NE, reg, lbl);
 	BGBCC_CCXL_RegisterCheckRelease(ctx, reg);
-	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	BGBCC_CCXL_EmitMarkEndTrace(ctx);
 }
 
 void BGBCC_CCXL_ConvImm(BGBCC_TransState *ctx,
@@ -662,7 +662,7 @@ void BGBCC_CCXL_CompileJmpCond(BGBCC_TransState *ctx,
 		BGBCC_CCXL_EmitJumpRegCmp(ctx, dty, opr, rega, regb, lbl);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, rega);
 		BGBCC_CCXL_RegisterCheckRelease(ctx, regb);
-		BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//		BGBCC_CCXL_EmitMarkEndTrace(ctx);
 		return;
 	}
 

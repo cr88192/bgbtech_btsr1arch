@@ -1467,6 +1467,7 @@ int mfl;
 {"xmovzt",		BGBCC_SH_NMID_XMOVZT},
 {"movst",		BGBCC_SH_NMID_MOVST},
 {"xmovst",		BGBCC_SH_NMID_XMOVST},
+{"xbless",		BGBCC_SH_NMID_XBLESS},
 
 
 {"pscheq.w",	BGBCC_SH_NMID_PSCHEQW},

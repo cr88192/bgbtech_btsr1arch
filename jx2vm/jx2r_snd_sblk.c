@@ -695,6 +695,7 @@ int BJX2_SndSblk_Update(BJX2_Context *ctx, int dt)
 	static short tsblk2[65536];
 	static int llv, lrv;
 	static s64 lus;
+	double f, g;
 	short *ct, *cte;
 	int i, j, k, n, pdt;
 	int lv, rv;
@@ -830,14 +831,29 @@ int BJX2_SndSblk_Update(BJX2_Context *ctx, int dt)
 		for(i=0; i<353; i++)
 		{		
 //			k=(i*0.3628);
-			k=(i*0.725623583);
+//			k=(i*0.725623583);
 //			k=i;
 
-			lv=ct[i*2+0]; lv+=tsblk1b[k*2+0];
-			rv=ct[i*2+1]; rv+=tsblk1b[k*2+1];
+			f=(i*0.725623583);
+			k=f;
+			g=f-k;
+			if(k>=255)
+				{ k=255; g=0; }
 
-			lv+=tsblk1c[k*2+0];
-			rv+=tsblk1c[k*2+1];
+			lv=ct[i*2+0];
+			rv=ct[i*2+1];
+
+//			lv+=tsblk1b[k*2+0];
+//			rv+=tsblk1b[k*2+1];
+
+//			lv+=tsblk1c[k*2+0];
+//			rv+=tsblk1c[k*2+1];
+
+			lv+=(tsblk1b[(k+0)*2+0]*(1.0-g))+(tsblk1b[(k+1)*2+0]*g);
+			rv+=(tsblk1b[(k+0)*2+1]*(1.0-g))+(tsblk1b[(k+1)*2+1]*g);
+
+			lv+=(tsblk1c[(k+0)*2+0]*(1.0-g))+(tsblk1c[(k+1)*2+0]*g);
+			rv+=(tsblk1c[(k+0)*2+1]*(1.0-g))+(tsblk1c[(k+1)*2+1]*g);
 
 			ct[i*2+0]=smus_clamp16s(lv);
 			ct[i*2+1]=smus_clamp16s(rv);

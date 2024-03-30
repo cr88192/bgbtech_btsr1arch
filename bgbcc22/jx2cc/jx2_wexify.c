@@ -2741,6 +2741,12 @@ int BGBCC_JX2_CheckOps32ValidWexPrefix(
 	int opw1v;
 	int ret, rn, rm, ro, h;
 
+	rn=(opw1>>4)&15;
+	if((rn==1) || (rn==15))
+	{
+		h=-1;
+	}
+
 	opw=((opw1&0xFFFF)<<16)|(opw2&0xFFFF);
 	h=((opw*0xFEDAA9)>>24)&255;
 	
@@ -3246,6 +3252,7 @@ ccxl_status BGBCC_JX2_AdjustWexifyOp(
 	int *ropw1, int *ropw2)
 {
 	int opw1, opw2, opw1v;
+	int rn_dfl;
 
 	if(sctx->is_simpass)
 		return(0);
@@ -3253,11 +3260,17 @@ ccxl_status BGBCC_JX2_AdjustWexifyOp(
 	opw1=*ropw1;
 	opw2=*ropw2;
 	opw1v=opw1;
-
+	
 	if(sctx->is_fixed32&2)
 	{
 		opw1v=opw1|0xE000;
 	}
+
+	rn_dfl=(opw1>>4)&15;
+	if(opw2&0x0400)
+		rn_dfl|=16;
+	if(!(opw1&0x8000))
+		rn_dfl|=32;
 
 	if((opw1v&0xFF00)==0xF000)
 	{
@@ -3358,6 +3371,11 @@ ccxl_status BGBCC_JX2_AdjustWexifyOp(
 	/* F0, F1, F2, F3 */
 	if((opw1v&0xFC00)==0xF000)
 	{
+//		if((rn_dfl==1) || (rn_dfl==15))
+//		{
+//			BGBCC_DBGBREAK
+//		}
+	
 		sctx->opcnt_hi8[(opw1>>8)&0xFF]--;
 		opw1|=0x0400;
 		sctx->opcnt_hi8[(opw1>>8)&0xFF]++;

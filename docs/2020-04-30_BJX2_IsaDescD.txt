@@ -240,7 +240,7 @@ As a special case, if JMP is used with DHR, the high order bits of DHR will be i
 
 This instruction is only allowed in Lane 1.
 
-In XG2 Mode, the WN, WM, and WI flags will extend Disp20s to Disp23s.
+In XG2 Mode, the WN, WM, and WI flags will extend Disp20s to Disp23s. In this case, the WN/WM/WI bits will be XOR'ed with the 20 bit sign-extension to give the additional bits.
 
 The displacement will be defined in terms of 16-bit words relative to the start of the next instruction following the branch.
 
@@ -363,10 +363,10 @@ These instructions are only allowed in Lane 1.
 
 === CMPQxx (CMP3R) ===
 
-* F0nm_9Go0 ? CMPQEQ	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm==Imm5u
-* F0nm_9Go1 ? CMPQGT	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm> Imm5u
-* F0nm_9Go2 ? CMPQNE	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm!=Imm5u
-* F0nm_9Go3 ? CMPQLT	Rm, Imm5u, Rn		//(CMP3R) Rn = Rm< Imm5u
+* F0nm_9Go0 ? CMPQEQ	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm==Imm5us
+* F0nm_9Go1 ? CMPQGT	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm> Imm5us
+* F0nm_9Go2 ? CMPQNE	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm!=Imm5us
+* F0nm_9Go3 ? CMPQLT	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm< Imm5us
 
 * F0nm_9Go4 ? CMPQEQ	Rm, Ro, Rn			//(CMP3R) Rn = Rm==Ro
 * F0nm_9Go5 ? CMPQGT	Rm, Ro, Rn			//(CMP3R) Rn = Rm> Ro

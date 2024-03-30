@@ -1104,7 +1104,7 @@ R63		rgb_buf
 //	MOVU.B	(R4, offsetof TKRA_Context_s tex_yshl), R3
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_xshl), R2
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_yshl), R3
-	MOV		1, R1		|	ADD		R2, R3, R9
+	ADD		R2, R3, R9	|	MOV		1, R1
 	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
 	ADD		R8, -1, R8	|	ADD		R9, -1, R9
 	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
@@ -1132,11 +1132,13 @@ R63		rgb_buf
 
 	SUB		R57, R56, R58		//		xcnt=x1-x0;
 	
-	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SHAD.Q	R22, -32, R0
+	SHAD.Q	R23, -32, R1	
 	SUBS.L	R20, R23, R2	|	SUBS.L	R57, R22, R3	
-	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R56, R0
+	SUBS.L	R1, R20, R1
+	SUBS.L	R0, R56, R0
 	ADDS.L	R58, -1, R19	|	OR		R2, R3, R3
-	OR		R0, R1, R1		|	OR		R3, R19, R2
+	OR		R3, R19, R2		|	OR		R0, R1, R1
 	OR		R2, R1, R2
 	
 	CMPGE	0, R2
@@ -1419,7 +1421,7 @@ R63		rgb_buf
 
 	MOVU.B	(R4, offsetof TKRA_Context_s tex_xshl), R2
 	MOVU.B	(R4, offsetof TKRA_Context_s tex_yshl), R3
-	MOV		1, R1		|	ADD		R2, R3, R9
+	ADD		R2, R3, R9	|	MOV		1, R1		
 	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
 	ADD		R8, -1, R8	|	ADD		R9, -1, R9
 	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
@@ -1447,11 +1449,13 @@ R63		rgb_buf
 
 	SUB		R57, R56, R58		//		xcnt=x1-x0;
 	
-	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SHAD.Q	R22, -32, R0
+	SHAD.Q	R23, -32, R1	
 	SUBS.L	R20, R23, R2	|	SUBS.L	R57, R22, R3	
-	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R56, R0
+	SUBS.L	R1, R20, R1
+	SUBS.L	R0, R56, R0
 	ADDS.L	R58, -1, R19	|	OR		R2, R3, R3
-	OR		R0, R1, R1		|	OR		R3, R19, R2
+	OR		R3, R19, R2		|	OR		R0, R1, R1	
 	OR		R2, R1, R2
 	
 	CMPGE	0, R2
@@ -1710,7 +1714,7 @@ R31		tstep_r
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_xshl), R2
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_yshl), R3
 
-	MOV		1, R1		|	ADD		R2, R3, R9
+	ADD		R2, R3, R9	|	MOV		1, R1
 	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
 	ADD		R8, -1, R8	|	ADD		R9, -1, R9
 	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
@@ -1739,11 +1743,13 @@ R31		tstep_r
 
 	SUB		R17, R16, R18		//		xcnt=x1-x0;
 	
-	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SHAD.Q	R22, -32, R0
+	SHAD.Q	R23, -32, R1	
 	SUBS.L	R20, R23, R2	|	SUBS.L	R17, R22, R3	
-	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R16, R0
+	SUBS.L	R1, R20, R1
+	SUBS.L	R0, R16, R0
 	ADDS.L	R18, -1, R19	|	OR		R2, R3, R3
-	OR		R0, R1, R1		|	OR		R3, R19, R2
+	OR		R3, R19, R2		|	OR		R0, R1, R1
 	OR		R2, R1, R2
 	
 	CMPGE	0, R2
@@ -1989,7 +1995,7 @@ R31		tstep_r
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_xshl), R2
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_yshl), R3
 
-	MOV		1, R1		|	ADD		R2, R3, R9
+	ADD		R2, R3, R9	|	MOV		1, R1
 	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
 	ADD		R8, -1, R8	|	ADD		R9, -1, R9
 	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
@@ -2018,11 +2024,13 @@ R31		tstep_r
 
 	SUB		R17, R16, R18		//		xcnt=x1-x0;
 	
-	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SHAD.Q	R22, -32, R0
+	SHAD.Q	R23, -32, R1	
 	SUBS.L	R20, R23, R2	|	SUBS.L	R17, R22, R3	
-	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R16, R0
-	ADDS.L	R18, -1, R19	|	OR		R2, R3, R3
-	OR		R0, R1, R1		|	OR		R3, R19, R2
+	SUBS.L	R1, R20, R1
+	SUBS.L	R0, R16, R0
+	OR		R2, R3, R3		|	ADDS.L	R18, -1, R19
+	OR		R3, R19, R2		|	OR		R0, R1, R1	
 	OR		R2, R1, R2
 
 #if 0
@@ -2270,7 +2278,7 @@ R31		tstep_r
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_xshl), R2
 	MOVU.B	(R3, offsetof TKRA_SvContext_s tex_yshl), R3
 
-	MOV		1, R1		|	ADD		R2, R3, R9
+	ADD		R2, R3, R9	|	MOV		1, R1
 	SHAD	R1, R2, R8	|	SHAD	R1, R9, R9
 	ADD		R8, -1, R8	|	ADD		R9, -1, R9
 	MOV.Q	R8, (R14, TKRA_DS_XMASK*8)
@@ -2298,11 +2306,13 @@ R31		tstep_r
 
 	SUB		R17, R16, R18		//		xcnt=x1-x0;
 	
-	SHAD.Q	R22, -32, R0	|	SHAD.Q	R23, -32, R1	
+	SHAD.Q	R22, -32, R0
+	SHAD.Q	R23, -32, R1	
 	SUBS.L	R20, R23, R2	|	SUBS.L	R17, R22, R3	
-	SUBS.L	R1, R20, R1		|	SUBS.L	R0, R16, R0
+	SUBS.L	R1, R20, R1
+	SUBS.L	R0, R16, R0
 	ADDS.L	R18, -1, R19	|	OR		R2, R3, R3
-	OR		R0, R1, R1		|	OR		R3, R19, R2
+	OR		R3, R19, R2		|	OR		R0, R1, R1
 	OR		R2, R1, R2
 	
 	CMPGE	0, R2

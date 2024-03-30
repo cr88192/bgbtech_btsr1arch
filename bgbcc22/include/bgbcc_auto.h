@@ -1178,6 +1178,7 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,BCCX_Node *l, ccxl_type *rdty);
 int BGBCC_CCXL_InferExprCleanI(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferExprCleanP(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferExprCleanNoDerefP(BGBCC_TransState *ctx, BCCX_Node *l);
+bool BGBCC_CCXL_TypePredSafeP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_CCXL_InferBlockPredSafeP(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferBlockCost(BGBCC_TransState *ctx, BCCX_Node *l);
 int BGBCC_CCXL_InferExprLogicFoldCostP(BGBCC_TransState *ctx, BCCX_Node *l);
@@ -3564,6 +3565,7 @@ int BGBCC_JX2C_EmitSyncDirtyRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *
 int BGBCC_JX2C_EmitSyncLeafRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitLabelFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitScratchFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_EmitEpilogFlushRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitScratchSyncRegisters(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitScratchSyncRegistersSafeMask(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int mask);
 int BGBCC_JX2C_EmitTempPhiRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);

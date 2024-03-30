@@ -529,6 +529,9 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStorePtr(
 	int sr, er;
 	int i;
 
+//	if(ctx->curprd)
+//		return(CCXL_STATUS_NO);
+
 	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 	
 //	if(ctx->opt_ptrcache<2)
@@ -588,6 +591,9 @@ ccxl_status BGBCC_CCXL_LoadslotCacheFlushStoreSlot(
 	ccxl_type dty, bty, ssty;
 	int sr, er;
 	int i;
+
+//	if(ctx->curprd)
+//		return(CCXL_STATUS_NO);
 
 	sr=ctx->loadslot_cache_srov;
 	er=ctx->loadslot_cache_erov;
@@ -765,6 +771,13 @@ ccxl_status BGBCC_CCXL_LoadslotCacheAdd(
 	ccxl_register ireg;
 	byte erov;
 
+	if(ctx->curprd)
+	{
+//		BGBCC_CCXL_LoadslotCacheFlushReg(ctx, dreg);
+//		BGBCC_CCXL_LoadslotCacheFlushReg(ctx, sreg);
+		return(CCXL_STATUS_NO);
+	}
+
 	if(ctx->opt_ptrcache==0)
 		return(CCXL_STATUS_NO);
 	
@@ -795,6 +808,9 @@ ccxl_status BGBCC_CCXL_LoadslotCacheCheck(
 	int i;
 
 //	return(CCXL_STATUS_NO);
+
+//	if(ctx->curprd)
+//		return(CCXL_STATUS_NO);
 
 	sr=ctx->loadslot_cache_srov;
 	er=ctx->loadslot_cache_erov;
@@ -829,6 +845,9 @@ ccxl_status BGBCC_CCXL_LoadIndexCacheAdd(
 {
 	byte erov;
 
+	if(ctx->curprd)
+		return(CCXL_STATUS_NO);
+
 	if(ctx->opt_ptrcache==0)
 		return(CCXL_STATUS_NO);
 
@@ -858,6 +877,9 @@ ccxl_status BGBCC_CCXL_LoadIndexCacheCheck(
 	int i;
 
 //	return(CCXL_STATUS_NO);
+
+//	if(ctx->curprd)
+//		return(CCXL_STATUS_NO);
 
 	sr=ctx->loadslot_cache_srov;
 	er=ctx->loadslot_cache_erov;

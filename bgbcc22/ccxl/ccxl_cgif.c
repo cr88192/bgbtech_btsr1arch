@@ -198,7 +198,10 @@ ccxl_status BGBCC_CCXL_EmitJumpRegZero(BGBCC_TransState *ctx,
 	op->imm.ui=lbl.id;
 	op->immty=CCXL_VOPITY_LBL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
+//	BGBCC_CCXL_LoadslotCacheFlush(ctx);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
+//	if((lbl.id==CCXL_LBL_RETURN) || (lbl.id==CCXL_LBL_RETURN_ZERO))
+//		BGBCC_CCXL_EmitMarkEndTrace(ctx);
 	return(0);
 }
 
@@ -741,6 +744,7 @@ ccxl_status BGBCC_CCXL_EmitUnaryOp(BGBCC_TransState *ctx,
 	ccxl_register dst, ccxl_register src)
 {
 	BGBCC_CCXL_VirtOp *op;
+	ccxl_register tmp;
 
 	if(ctx->cgif_no3ac)
 		return(0);
@@ -757,6 +761,23 @@ ccxl_status BGBCC_CCXL_EmitUnaryOp(BGBCC_TransState *ctx,
 	op->type=type;
 	op->dst=dst;
 	op->srca=src;
+	
+	if(opr==CCXL_UNOP_NEG)
+	{
+		if(	(type.val==CCXL_TY_UI) ||
+			(type.val==CCXL_TY_I))
+		{
+			BGBCC_CCXL_GetRegForIntValue(ctx, &tmp, 0);
+			op->opn=CCXL_VOP_BINARY;
+			op->prd=ctx->curprd;
+			op->opr=CCXL_BINOP_SUB;
+			op->type=type;
+			op->dst=dst;
+			op->srca=tmp;
+			op->srcb=src;
+		}
+	}
+	
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	return(0);
 }

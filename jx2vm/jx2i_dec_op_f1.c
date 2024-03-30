@@ -799,16 +799,32 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		op->fl|=BJX2_OPFL_NOWEX;
 		op->fl|=BJX2_OPFL_NOWEXSFX;
 
-		if(eo)
+		if(eq)
 		{
-			op->nmid=BJX2_NMID_BRHE;
-			op->fmid=BJX2_FMID_REGREGPCDISP;
-			op->Run=BJX2_Op_BRHE_RegRegPcDisp;
+			if(eo)
+			{
+				op->nmid=BJX2_NMID_BRHE;
+				op->fmid=BJX2_FMID_REGREGPCDISP;
+				op->Run=BJX2_Op_BRHEQ_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BRBI;
+				op->fmid=BJX2_FMID_REGREGPCDISP;
+				op->Run=BJX2_Op_BRBIQ_RegRegPcDisp;
+			}
 		}else
 		{
-			op->nmid=BJX2_NMID_BRBI;
-			op->fmid=BJX2_FMID_REGREGPCDISP;
-			op->Run=BJX2_Op_BRBI_RegRegPcDisp;
+			if(eo)
+			{
+				op->nmid=BJX2_NMID_BRHE;
+				op->fmid=BJX2_FMID_REGREGPCDISP;
+				op->Run=BJX2_Op_BRHEL_RegRegPcDisp;
+			}else
+			{
+				op->nmid=BJX2_NMID_BRBI;
+				op->fmid=BJX2_FMID_REGREGPCDISP;
+				op->Run=BJX2_Op_BRBIL_RegRegPcDisp;
+			}
 		}
 		break;
 

@@ -355,6 +355,9 @@ void TKGDI_Snd_SilenceAll(void)
 {
 	int i;
 	
+	if(!snd_dmabuf)
+		return;
+	
 	for(i=0; i<2048; i++)
 	{
 		snd_dmabuf[i]=0;

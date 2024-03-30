@@ -4657,7 +4657,17 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 				else
 					if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
 				{
-					mult=-1;
+#if 0
+//					mult=-1;
+					if(mult0>0)
+						mult=mult0-1;
+					else
+						mult=0;
+#endif
+//					mult=mult0+1;
+					mult=mult0;
+
+//					mult=-1;
 				}else
 				{
 					mult=0;

@@ -2166,6 +2166,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		break;
 	}
 	
+//	nm3=-1;
+	
 	if(BGBCC_CCXL_TypePointerP(ctx, type))
 	{
 		if(nm1==BGBCC_SH_NMID_CMPQEQ)

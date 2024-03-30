@@ -2038,14 +2038,23 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 #endif
 
 #if 1
-		if(nmid==BGBCC_SH_NMID_BSWAPW)
-			{ opw1=48; opw2=BGBCC_SH_NMID_SHADQ; }
-		if(nmid==BGBCC_SH_NMID_BSWAPUW)
-			{ opw1=48; opw2=BGBCC_SH_NMID_SHLDQ; }
 		if(nmid==BGBCC_SH_NMID_BSWAPL)
-			{ opw1=32; opw2=BGBCC_SH_NMID_SHADQ; }
+		{
+			BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_BSWAPUL, rm, rn);
+			BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_EXTSL, rn, rn);
+			return(1);
+		}
+#endif
+
+#if 1
+		if(nmid==BGBCC_SH_NMID_BSWAPW)
+			{ opw1=-48; opw2=BGBCC_SH_NMID_SHADQ; }
+		if(nmid==BGBCC_SH_NMID_BSWAPUW)
+			{ opw1=-48; opw2=BGBCC_SH_NMID_SHLDQ; }
+		if(nmid==BGBCC_SH_NMID_BSWAPL)
+			{ opw1=-32; opw2=BGBCC_SH_NMID_SHADQ; }
 		if(nmid==BGBCC_SH_NMID_BSWAPUL)
-			{ opw1=32; opw2=BGBCC_SH_NMID_SHLDQ; }
+			{ opw1=-32; opw2=BGBCC_SH_NMID_SHLDQ; }
 		BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_BSWAPQ, rm, rn);
 		BGBCC_JX2_EmitOpRegImmReg(ctx, opw2, rn, opw1, rn);
 #endif
@@ -2810,6 +2819,10 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		case BGBCC_SH_NMID_XMOV:
 			opw1=0xF088|ex;
 			opw2=0x1900|((rn&15)<<4)|((rm&15)<<0);			break;
+
+		case BGBCC_SH_NMID_XBLESS:
+			opw1=0xF08E|ex;
+			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
 
 		case BGBCC_SH_NMID_EXTUTT:
 		case BGBCC_SH_NMID_MOVZT:
@@ -4530,6 +4543,10 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 		case BGBCC_SH_NMID_MOVTT:
 			opw1=0xF000|ex|(rt&15);
 			opw2=0x3100|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_XMOVTT:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x8600|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
 		case BGBCC_SH_NMID_CMPEQ:
@@ -6581,8 +6598,9 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 				BGBCC_SH_NMID_EXTUL, rm, rn));
 #endif
 
-		if(	(nmid==BGBCC_SH_NMID_RSUB)		||
-			(nmid==BGBCC_SH_NMID_RSUBSL)	)
+//		if(	(nmid==BGBCC_SH_NMID_RSUB)		||
+//			(nmid==BGBCC_SH_NMID_RSUBSL)	)
+		if(nmid==BGBCC_SH_NMID_RSUB)
 		{
 			return(BGBCC_JX2_TryEmitOpRegReg(ctx,
 				BGBCC_SH_NMID_NEG, rm, rn));
@@ -7657,6 +7675,11 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 		
 			opw1=0xF080|ex|(imm&31);
 			opw2=0x3100|((rn&15)<<4)|((rm&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_XMOVTT:
+ 			opw1=0xF080|ex; odr=1;
+			opw2=0x8600|((rn&15)<<4)|((rm&15)<<0);
 			break;
 
 		case BGBCC_SH_NMID_FADD:

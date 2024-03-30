@@ -4741,6 +4741,11 @@ int BGBCC_JX2C_ProbeVRegRejectImm3P(
 			nm1=-1;
 			break;
 
+		case BGBCC_SH_NMID_RSUBSL:
+		case BGBCC_SH_NMID_RSUBUL:
+			nm1=-1;
+			break;
+
 		default:
 			break;
 		}
@@ -5573,6 +5578,29 @@ int BGBCC_JX2C_EmitScratchFlushRegisters(
 	return(0);
 }
 
+int BGBCC_JX2C_EmitEpilogFlushRegisters(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	ccxl_register reg;
+	ccxl_type tty;
+
+	int i;
+
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
+	{
+		sctx->regalc_map[i].val=-1;
+		sctx->regalc_utcnt[i]=0;
+		sctx->regalc_ltcnt[i]=0;
+		sctx->regalc_dirty&=~(1ULL<<i);
+		sctx->regalc_live&=~(1ULL<<i);
+		sctx->regalc_noval&=~(1ULL<<i);
+		sctx->regalc_pair&=~(1ULL<<i);
+	}
+	
+	return(0);
+}
+
 int BGBCC_JX2C_EmitScratchSyncRegisters(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx)
@@ -5706,9 +5734,11 @@ int BGBCC_JX2C_EmitSyncProlog(
 	ccxl_register reg1;
 	ccxl_type tty;
 	int creg, regfl, rcls;
+	u64 cregmask;
 	int i;
 
 	sctx->regalc_gbldirty=0;
+	cregmask=0;
 
 	if(sctx->is_leaftiny&1)
 	{
@@ -5725,6 +5755,11 @@ int BGBCC_JX2C_EmitSyncProlog(
 				BGBCC_CCXL_IsRegImmP(ctx, reg1))
 			{
 				BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg1, creg);
+
+				if(BGBCC_JX2_EmitCheckRegExtGPR(sctx, creg))
+				{
+					cregmask|=1ULL<<(creg&63);
+				}
 			}
 		}
 	}
@@ -5734,6 +5769,14 @@ int BGBCC_JX2C_EmitSyncProlog(
 		reg1=sctx->vspan[i]->reg;
 //		creg=sctx->qcachereg[i];
 		creg=BGBCC_JX2C_GetVRegRegForIndex(ctx, sctx, reg1, i);
+
+#if 1
+		if(BGBCC_JX2_EmitCheckRegExtGPR(sctx, creg))
+		{
+			if(cregmask&(1ULL<<(creg&63)))
+				continue;
+		}
+#endif
 
 		if(	BGBCC_CCXL_IsRegGlobalP(ctx, reg1) ||
 			BGBCC_CCXL_IsRegImmP(ctx, reg1))

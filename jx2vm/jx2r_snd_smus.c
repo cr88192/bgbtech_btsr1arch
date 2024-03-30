@@ -532,6 +532,7 @@ int SMus_Init(BJX2_Context *ctx)
 
 int SMus_GetStepSamples(short *pcm, int nsamp, int step)
 {
+	static int lm, lb, la0, la1;
 	int i, j, k;
 	
 //	SMus_Init();
@@ -545,6 +546,42 @@ int SMus_GetStepSamples(short *pcm, int nsamp, int step)
 		pcm[i*2+0]=j;
 		pcm[i*2+1]=j;
 	}
+
+#if 0
+	j=pcm[0*2+0];
+	j=(j+lb)>>1;
+	pcm[0*2+0]=j;
+	pcm[0*2+1]=j;
+	lb=pcm[(nsamp-1)*2+0];
+#endif
+
+#if 1
+	for(i=0; i<4; i++)
+	{
+		k=lb+(i+1)*lm;
+//		k=lb;
+		k=smus_clamp16s(k);
+
+		j=pcm[i*2+0];
+//		j=((j*(i+1))+(k*(15-i)))>>4;
+		j=((j*(i+1))+(k*(3-i)))>>2;
+		pcm[i*2+0]=j;
+		pcm[i*2+1]=j;
+	}
+
+
+	lb=0; la0=0; la1=0;
+	for(i=0; i<16; i++)
+		{ lb+=pcm[(nsamp-16+i)*2+0]; }
+	for(i=0; i<8; i++)
+		{ la0+=pcm[((nsamp-16)+i+0)*2+0]; la1+=pcm[((nsamp-16)+i+8)*2+0]; }
+	lb>>=4;
+	la0>>=3;
+	la1>>=3;
+	lm=(la1-la0)>>3;
+
+	lb=pcm[(nsamp-1)*2+0];
+#endif
 
 	return(0);
 }

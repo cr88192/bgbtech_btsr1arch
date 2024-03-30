@@ -1266,17 +1266,24 @@ Register Notation:
 
 
 Immediate Notation
+* Imm5, Immediate with 5 bits, unspecified extension.
+* Imm5u, Immediate with 5 bits, zero extended (WI=Undef).
+* Imm5n, Immediate with 5 bits, one extended (WI=Undef).
+* Imm5us, Immediate with 5 bits, zero extended, XGPR/XG2 sign-extend 6-bit.
+
 * Imm9, Immediate with 9 bits, unspecified extension.
 * Imm9u, Immediate with 9 bits, zero extended.
 * Imm9s, Immediate with 9 bits, sign extended.
 * Imm9n, Immediate with 9 bits, one extended.
-* Imm9us, Immediate with 9 bits, zero extended, XGPR/XG2 sign-extend.
+* Imm9us, Immediate with 9 bits, zero extended, XGPR/XG2 sign-extend 10-bit.
 
 * Imm10, Immediate with 10 bits, unspecified extension.
 * Imm10u, Immediate with 10 bits, zero extended.
 * Imm10s, Immediate with 10 bits, sign extended.
 * Imm10n, Immediate with 10 bits, one extended.
-* Imm10us, Immediate with 10 bits, zero extended, XGPR/XG2 sign-extend.
+* Imm10us, Immediate with 10 bits, zero extended, XGPR/XG2 sign-extend 11-bit.
+
+* Disp5 / Disp5u: Displacement with 5 bits, zero extended, XGPR/XG2 Disp6s.
 
 * Disp17u, Displacement with 17 bits, zero extended.
 * Disp17s, Displacement with 17 bits, sign extended.
@@ -2276,14 +2283,14 @@ F0zz Instruction Block:
 
 * F0nm_9eoZ  (More Load/Store Space)
 ** F0nm_9go0 ? MOV.TW	Rn, (Rm, Disp5)		//(LDST48) Store TWORD
-** F0nm_9Go0 ? CMPQEQ	Rm, Imm5, Rn		//(CMP3R) Rn = Rm==Imm5
+** F0nm_9Go0 ? CMPQEQ	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm==Imm5
 ** F0nm_9go1 ? MOV.HTW	Rn, (Rm, Disp5)		//(LDST48) Store High TWORD
-** F0nm_9Go1 ? CMPQGT	Rm, Imm5, Rn		//(CMP3R) Rn = Rm>Imm5
+** F0nm_9Go1 ? CMPQGT	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm>Imm5
 *** (Jumbo+WI)|WQ: Becomes CMPQHI (Unsigned Greater-Than)
 ** F0nm_9go2 -
-** F0nm_9Go2 ? CMPQNE	Rm, Imm5, Rn		//(CMP3R) Rn = Rm!=Imm5
+** F0nm_9Go2 ? CMPQNE	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm!=Imm5
 ** F0nm_9go3 -
-** F0nm_9Go3 ? CMPQLT	Rm, Imm5, Rn		//(CMP3R) Rn = Rm<Imm5
+** F0nm_9Go3 ? CMPQLT	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm<Imm5
 *** (Jumbo+WI)|WQ: Becomes CMPQBI (Unsigned Less-Than)
 
 ** F0nm_9go4 ? MOV.TW	Rn, (Rm, Ro)		//(LDST48) Store TWORD
@@ -3048,6 +3055,9 @@ This mode will also lose Op40x2, which will become non-encodable.
 In XG2 Mode, Disp9u encodings will use W.i as a sign-extension bit.
 Imm9u and Imm9n encodings will use W.i as an additional immediate bit.
 Imm9us will use W.i as a sign-extension bit.
+
+Imm5us will also use W.i as a sign-extension bit.
+
 
 Imm10u and Imm10n encodings will use W.i and W.m as an additional immediate bits, effectively expanding the range of the immediate to 12 bits (using an inverted-xor scheme).
 

@@ -1920,7 +1920,7 @@ void BJX2_Op_BRLE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
-void BJX2_Op_BRBI_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+void BJX2_Op_BRBIQ_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 #ifdef BJX2_EM_BPRED
 	BJX2_Op_BpredUpdateBranch(ctx, op,
@@ -1937,7 +1937,30 @@ void BJX2_Op_BRBI_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
-void BJX2_Op_BRHE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+void BJX2_Op_BRBIL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((u32)ctx->regs[op->rn])<((u32)ctx->regs[op->rm])));
+#endif
+
+	if(	(((u32)ctx->regs[op->rn])<((u32)ctx->regs[op->rm])) !=
+		(((u64)ctx->regs[op->rn])<((u64)ctx->regs[op->rm])) )
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+	}
+
+	if(((u32)ctx->regs[op->rn])<((u32)ctx->regs[op->rm]))
+	{
+		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
+		ctx->tr_rnxt=ctx->tr_rjmp;
+
+		if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+	}
+}
+
+void BJX2_Op_BRHEQ_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 #ifdef BJX2_EM_BPRED
 	BJX2_Op_BpredUpdateBranch(ctx, op,
@@ -1945,6 +1968,29 @@ void BJX2_Op_BRHE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 #endif
 
 	if(((u64)ctx->regs[op->rn])>=((u64)ctx->regs[op->rm]))
+	{
+		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
+		ctx->tr_rnxt=ctx->tr_rjmp;
+
+		if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+	}
+}
+
+void BJX2_Op_BRHEL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+#ifdef BJX2_EM_BPRED
+	BJX2_Op_BpredUpdateBranch(ctx, op,
+		(((u32)ctx->regs[op->rn])>=((u32)ctx->regs[op->rm])));
+#endif
+
+	if(	(((u32)ctx->regs[op->rn])>=((u32)ctx->regs[op->rm])) !=
+		(((u64)ctx->regs[op->rn])>=((u64)ctx->regs[op->rm])) )
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+	}
+
+	if(((u32)ctx->regs[op->rn])>=((u32)ctx->regs[op->rm]))
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
 		ctx->tr_rnxt=ctx->tr_rjmp;

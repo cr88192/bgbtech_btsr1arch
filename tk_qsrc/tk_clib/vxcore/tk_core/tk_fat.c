@@ -1304,19 +1304,19 @@ void TKFAT_ReadImageFAT(TKFAT_ImageInfo *img)
 	if(img->tot_clust!=((int)cln))
 		{ __debugbreak(); }
 
-#if 0
-	printf("TKFAT_ReadImageFAT: Read FAT%d\n", i);
-	printf("  LBA FAT1=%08X (Offs=%08X)\n",
+#if 1
+	tk_dbg_printf("TKFAT_ReadImageFAT: Read FAT%d\n", i);
+	tk_dbg_printf("  LBA FAT1=%08X (Offs=%08X)\n",
 		img->lba_fat1, img->lba_fat1<<9);
-	printf("  LBA FAT2=%08X (Offs=%08X)\n",
+	tk_dbg_printf("  LBA FAT2=%08X (Offs=%08X)\n",
 		img->lba_fat2, img->lba_fat2<<9);
-	printf("  LBA Root=%08X (Offs=%08X)\n",
+	tk_dbg_printf("  LBA Root=%08X (Offs=%08X)\n",
 		img->lba_root, img->lba_root<<9);
-	printf("  LBA Data=%08X (Offs=%08X)\n",
+	tk_dbg_printf("  LBA Data=%08X (Offs=%08X)\n",
 		img->lba_data, img->lba_data<<9);
-	printf("  %d Sectors/Cluster, %d bytes\n", clsz, 512*clsz);
-	printf("  %d total clusters\n", img->tot_clust);
-	printf("  Root Cluster=%08X\n", img->clid_root);
+	tk_dbg_printf("  %d Sectors/Cluster, %d bytes\n", clsz, 512*clsz);
+	tk_dbg_printf("  %d total clusters\n", img->tot_clust);
+	tk_dbg_printf("  Root Cluster=%08X\n", img->clid_root);
 #endif
 
 	TKFAT_ValidateImageMagic(img);

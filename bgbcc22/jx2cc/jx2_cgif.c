@@ -1535,6 +1535,13 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 				op->opn);
 		}
 
+		if(op->prd)
+		{
+			fprintf(sctx->cgen_log,
+				" prd=%d",
+				op->prd);
+		}
+
 		if(op->type.val<256)
 		{
 			fprintf(sctx->cgen_log,
@@ -1727,6 +1734,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 
 		k=op->imm.si;
+		j=k;
 		if(k==CCXL_LBL_RETURN)
 			k=sctx->lbl_ret;
 		if(k==CCXL_LBL_RETURN_ZERO)
@@ -1734,7 +1742,8 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 		BGBCC_JX2C_EmitJCmpVRegZero(ctx, sctx, op->type,
 			op->srca, op->opr, k);
-		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+		if(j!=k)
+			BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		break;
 	case CCXL_VOP_JCMP:
 //		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
@@ -1746,6 +1755,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //		BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 
 		k=op->imm.si;
+		j=k;
 		if(k==CCXL_LBL_RETURN)
 			k=sctx->lbl_ret;
 		if(k==CCXL_LBL_RETURN_ZERO)
@@ -1753,7 +1763,8 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 		BGBCC_JX2C_EmitJCmpVRegVReg(ctx, sctx, op->type,
 			op->srca, op->srcb, op->opr, k);
-		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+		if(j!=k)
+			BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		break;
 	case CCXL_VOP_CALL:
 	case CCXL_VOP_OBJCALL:
@@ -2064,7 +2075,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 {
 	BGBCC_CCXL_VirtOp *vop, *vop1, *vop2, *vop3;
 	BGBCC_CCXL_VirtOp *vop1b, *vop2b, *vop3b;
-	int ps0, ps1, tr1, tr2, usewex;
+	int ps0, ps1, tr1, tr2, usewex, lzyflush;
 	int i, j, k;
 
 #if 0
@@ -2173,6 +2184,7 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 #endif
 
 	sctx->op_is_wex2=0;
+	lzyflush=0;
 
 	for(i=0; i<tr->n_ops; i++)
 	{
@@ -2203,6 +2215,11 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		if(sctx->is_align_wexj && j)
 		{
 			BGBCC_JX2_EmitPad32AlignLastOp(sctx);
+		}
+		
+		if(vop->prd && !sctx->is_simpass)
+		{
+			k=-1;
 		}
 		
 		sctx->op_is_wex2=j;
@@ -2401,12 +2418,26 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 			BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 			continue;
 		}
+
+		if(	(vop->opn==CCXL_VOP_JCMP) ||
+			(vop->opn==CCXL_VOP_JCMP_ZERO) )
+		{
+			lzyflush=1;
+		}
 		
 		BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, vop);
 	}
 
+	if(lzyflush)
+	{
+		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
+		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
+	}
+
 //	BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
 	BGBCC_JX2C_EmitSyncLeafRegisters(ctx, sctx);
+
+//	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
 	ps1=BGBCC_JX2_EmitGetOffs(sctx);
 	if(ps1&1)
