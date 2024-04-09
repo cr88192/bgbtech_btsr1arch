@@ -3861,9 +3861,9 @@ int BGBCC_JX2C_EmitCsrvVReg(
 //		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ0);
 
 #if 1
-		if(BGBCC_CCXL_TypePointerP(ctx, type))
+//		if(BGBCC_CCXL_TypePointerP(ctx, type))
 //		if(BGBCC_CCXL_TypeSmallLongP(ctx, type))
-//		if(1)
+		if(1)
 		{
 			ctreg=BGBCC_JX2CC_PSREG_RQRET;
 			if(safetobind)
@@ -3878,7 +3878,7 @@ int BGBCC_JX2C_EmitCsrvVReg(
 
 		if(BGBCC_CCXL_TypeSmallLongP(ctx, type))
 		{
-			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
+//			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 		}
 #endif
 	

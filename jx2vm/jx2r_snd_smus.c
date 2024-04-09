@@ -158,7 +158,7 @@ int SMus_GetVoiceWaveRsVal_Mute(int vn)
 int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 {
 	int fn, acc, v, vn, vm, am;
-	int an;
+	int an, usesin;
 	int ph0, ph1, ph2, ph3;
 	int x19, x18;
 	
@@ -215,26 +215,35 @@ int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 	
 	x19=(((int)(acc<<12))>>31)&0xFFFF;	//mask for acc[19]
 	x18=(((int)(acc<<13))>>31)&0xFFFF;	//mask for acc[18]
+	usesin=0;
 	
 	switch(fn)
 	{
 	case 0:
-		v=ph1^x19;
-//		v=jx2i_smus_sintab[ph0>>8];
+		if(!usesin)
+			v=ph1^x19;
+		else
+			v=jx2i_smus_sintab[ph0>>8];
 		break;
 	case 1:
-		v=ph1^x19;
-//		v=jx2i_smus_sintab[ph0>>8];
+		if(!usesin)
+			v=ph1^x19;
+		else
+			v=jx2i_smus_sintab[ph0>>8];
 		if(v<0x8000)v=0x8000;
 		break;
 	case 2:
-		v=ph1^x19;
-//		v=jx2i_smus_sintab[ph0>>8];
+		if(!usesin)
+			v=ph1^x19;
+		else
+			v=jx2i_smus_sintab[ph0>>8];
 		if(v<0x8000)v^=0xFFFF;
 		break;
 	case 3:
-		v=ph1;
-//		v=jx2i_smus_sintab[ph0>>8]^x19^x18;
+		if(!usesin)
+			v=ph1;
+		else
+			v=jx2i_smus_sintab[ph0>>8]^x19^x18;
 		if(v<0x8000)v=0x8000;
 		break;
 

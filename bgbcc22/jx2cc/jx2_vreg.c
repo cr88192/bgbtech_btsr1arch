@@ -1952,6 +1952,28 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 	}
 #endif
 	
+	if((	BGBCC_CCXL_IsRegImmIntP(ctx, sreg) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, sreg)) &&
+		!(	BGBCC_CCXL_IsRegImmIntP(ctx, treg) ||
+			BGBCC_CCXL_IsRegImmLongP(ctx, treg)))
+	{
+		nm1=cmp;
+		switch(cmp)
+		{
+			case CCXL_CMP_EQ:		nm1=CCXL_CMP_EQ; break;
+			case CCXL_CMP_NE:		nm1=CCXL_CMP_NE; break;
+			case CCXL_CMP_LT:		nm1=CCXL_CMP_GT; break;
+			case CCXL_CMP_GT:		nm1=CCXL_CMP_LT; break;
+			case CCXL_CMP_LE:		nm1=CCXL_CMP_GE; break;
+			case CCXL_CMP_GE:		nm1=CCXL_CMP_LE; break;
+			case CCXL_CMP_TST:		nm1=CCXL_CMP_TST; break;
+			case CCXL_CMP_NTST:		nm1=CCXL_CMP_NTST; break;
+		}
+		
+		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(
+			ctx, sctx, type, treg, sreg, nm1, lbl));
+	}
+
 	if((type.val==CCXL_TY_UB) || (type.val==CCXL_TY_US))
 		type.val=CCXL_TY_I;
 
@@ -1980,6 +2002,12 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 //			noflip=0;
 	}
 #endif
+
+	if((imm==immj) && (imm==0))
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegZeroInt(
+			ctx, sctx, type, sreg, cmp, lbl));
+	}
 	
 	nm3=-1; flip=0;
 	jcflip=0;

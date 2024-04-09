@@ -807,6 +807,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_AR_REF2:
 			kf=(kf+15)&(~15);
 
+//			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
 //			obj->locals[i]->fxmoffs=kf;
 			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->locals[i]->type);
 

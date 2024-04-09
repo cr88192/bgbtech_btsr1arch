@@ -213,6 +213,8 @@ int BGBCC_JX2C_EmitLdaFrameOfsReg(
 		!(sctx->is_prolog) && !(sctx->is_simpass))
 		{ BGBCC_DBGBREAK }
 
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+
 	ofs1=ofs+(sctx->frm_size);
 
 	if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))

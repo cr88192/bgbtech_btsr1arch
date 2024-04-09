@@ -1883,8 +1883,9 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 //			return;
 		}
 
-		if(ctx->arch_has_predops &&
-			!BGBCC_CCXL_CheckIsStaticLib(ctx))
+//		if(ctx->arch_has_predops &&
+//			!BGBCC_CCXL_CheckIsStaticLib(ctx))
+		if(ctx->arch_has_predops)
 		{
 			if(ctx->curprd)
 				{ BGBCC_DBGBREAK }
