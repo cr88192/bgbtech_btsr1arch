@@ -1030,16 +1030,20 @@ ccxl_status BGBCC_CCXL_MarkTypeAccessed(
 	BGBCC_CCXL_LiteralInfo *obj;
 	int i, j, k, n;
 
+//	return(0);
+
 	i=BGBCC_CCXL_TypeObjectLiteralIndex(ctx, type);
 	if(i<0)return(0);
 	obj=ctx->literals[i];
 	if(!obj || !obj->decl)
 		return(0);
 
-	if(obj->decl->regflags&BGBCC_REGFL_ACCESSED)
+//	if(obj->decl->regflags&BGBCC_REGFL_ACCESSED)
+	if(obj->decl->regflags&BGBCC_REGFL_TYPEACCESSED)
 		return(0);
 
-	obj->decl->regflags|=BGBCC_REGFL_ACCESSED;
+//	obj->decl->regflags|=BGBCC_REGFL_ACCESSED;
+	obj->decl->regflags|=BGBCC_REGFL_TYPEACCESSED;
 
 	for(i=0; i<obj->decl->n_args; i++)
 		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->args[i]->type); }

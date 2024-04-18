@@ -2248,6 +2248,8 @@ TKGDI_BlitUpdate_EncodeCell4xUTX2:
 
 .else
 
+// .extern TKGDI_BlitUpdate_EncodeCellUTX2
+
 TKGDI_BlitUpdate_EncodeCell4xUTX2:
 ADD		-64, SP
 

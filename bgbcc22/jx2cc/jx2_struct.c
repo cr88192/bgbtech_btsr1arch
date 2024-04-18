@@ -915,6 +915,89 @@ int BGBCC_JX2C_EmitLoadSlotAddrVRegVRegImm(
 	return(0);
 }
 
+/*
+Try to do a combined LoadSlotAddr and LoadIndex.
+Returns 0 if the operations were not combined.
+ */
+int BGBCC_JX2C_EmitLoadSlotAndIndexVRegVRegImm2(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type, ccxl_register dreg,
+	ccxl_register sreg, int gblid, int fid, int idx)
+{
+	BGBCC_CCXL_RegisterInfo *obj, *fi;
+	ccxl_type bty;
+	int csreg, ctreg, cdreg, ctreg2;
+	int nm1, nm2, nm3, nm4, ty, sz, al;
+	int i, j, k;
+
+//	obj=ctx->reg_globals[gblid];
+	obj=ctx->literals[gblid]->decl;
+//	fi=obj->fields[fid];
+
+	fi=NULL;
+	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
+		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
+		fi=obj->args[fid&CCXL_FID_BASEMASK];
+	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
+		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+
+	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
+		BGBCC_CCXL_TypeArrayP(ctx, type))
+	{
+		return(0);
+	}
+	
+	if(!BGBCC_CCXL_TypeArrayP(ctx, fi->type))
+	{
+		return(0);
+	}
+	
+	BGBCC_CCXL_TypeDerefType(ctx, fi->type, &bty);
+	if(bty.val!=type.val)
+	{
+//		return(0);
+	}
+
+	ty=type.val;
+
+	nm1=-1; nm2=-1; nm3=-1; nm4=-1;
+	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
+		&sz, &nm1, &nm2, &nm3, &nm4);
+
+	if(nm1>=0)
+	{
+		k=fi->fxoffs+idx*sz;
+		if(k>=(512*sz))
+			return(0);
+		if(k&(sz-1))
+			return(0);
+	
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+		
+		ctreg2=cdreg;
+
+//		BGBCC_JX2C_EmitLeaBRegOfsReg(ctx, sctx,
+//			nm1, csreg, fi->fxoffs, cdreg);
+
+		BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
+			nm1, csreg, fi->fxoffs+idx*sz, ctreg2);
+		if(nm2>=0)
+			{ BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx, nm2, ctreg2, cdreg); }
+
+		if(ctreg2!=cdreg)
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ctreg2);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+		return(1);
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}
+
 
 #if 1
 int BGBCC_JX2C_EmitLoadSlotRegVRegImm(
@@ -1774,8 +1857,8 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 		(	(ctx->optmode==BGBCC_OPT_SPEED) ||
 			(ctx->optmode==BGBCC_OPT_SPEED2) ) &&
 //			(sz<=128) && (al>=8))
-			(sz<=96) && (al>=8))
-//			(sz<=64) && (al>=8))
+//			(sz<=96) && (al>=8))
+			(sz<=64) && (al>=8))
 //			(sz<=48) && (al>=8))
 //	if((sz<=64) && (al>=8))
 	{
@@ -2068,9 +2151,12 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 	}
 #endif
 
+#if 1
 	if(	(	(ctx->optmode==BGBCC_OPT_SPEED) ||
 			(ctx->optmode==BGBCC_OPT_SPEED2) ) &&
-			(sz<=512) &&
+//			(sz<=512) &&
+//			(sz<=504) &&
+			(sz<=384) &&
 //			(sz<=256) &&
 //			(sz<=192) &&
 			(al>=8) && !sctx->sreg_live)
@@ -2101,6 +2187,7 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 			return(1);
 		}
 	}
+#endif
 
 #if 1
 	if((al>=8) && !(sz&15) && !sctx->sreg_live)
@@ -2418,6 +2505,9 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 		if(i&3)
 			continue;
 
+		if((i>0) && !(sctx->memcpy64_mask>>(i-1)))
+			continue;
+
 		sprintf(tb, "__memcpy64_%u_ua", i*8);
 		s0=bgbcc_strdup(tb);
 
@@ -2445,11 +2535,15 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 	BGBCC_JX2_EmitOpNone(sctx,
 		BGBCC_SH_NMID_RTS);
 
+#if 0
 	if(sctx->has_pushx2&1)
 	{
 		for(i=64; i>0; i--)
 		{
 			if(i&3)
+				continue;
+
+			if((i>0) && !(sctx->memcpy64_mask>>(i-1)))
 				continue;
 
 			sprintf(tb, "__memcpy64_%u_aa", i*8);
@@ -2471,6 +2565,7 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 		BGBCC_JX2_EmitOpNone(sctx,
 			BGBCC_SH_NMID_RTS);
 	}
+#endif
 
 
 	for(i=1; i<512; i++)
@@ -2547,12 +2642,15 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 		s2=bgbcc_strdup(tb);
 
 #if 1
+
+#if 0
 //		if(i>=20)
 		if((i>=20) && (sctx->has_pushx2&1))
 		{
 			BGBCC_JX2_EmitOpRegRegReg(sctx,
 				BGBCC_SH_NMID_OR, tr4, tr5, BGBCC_SH_REG_R6);
 		}
+#endif
 
 		while(k<i)
 		{
@@ -2566,12 +2664,14 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 		l1=BGBCC_JX2_GetNamedLabel(sctx, s1);
 		l2=BGBCC_JX2_GetNamedLabel(sctx, s2);
 
+#if 0
 		if((i>=20) && (sctx->has_pushx2&1))
 		{
 			BGBCC_JX2C_EmitOpImmReg(ctx, sctx, BGBCC_SH_NMID_TST, 7, 
 				BGBCC_SH_REG_R6);
 			BGBCC_JX2_EmitOpLabel(sctx, BGBCC_SH_NMID_BT, l2);
 		}
+#endif
 
 		BGBCC_JX2_EmitOpLabel(sctx,
 			BGBCC_SH_NMID_BRA, l1);

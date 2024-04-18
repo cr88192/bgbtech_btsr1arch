@@ -1,3 +1,5 @@
+This is a working / idea spec for a possible ISA design.
+
 GPRs:
 * R0: ZR / PC         (Src/Dst: Zero         ; LD/ST Base: PC)
 * R1: LR / TP         (Src/Dst: Link Register; LD/ST Base: TP/TBR)
@@ -32,6 +34,20 @@ GPRs:
 
 The Xn registers will exist as even register pairs, representing a virtual 128-bit register.
 
+An SPR/CR Space may exist:
+* C0..C63
+* These registers will mostly be intended for OS / Supervisor use.
+
+
+Notation:
+* ZZ: Opcode
+* YY: Provisional Opcode
+* XX: Provisional Opcode
+* PP: Predicate
+* nn: Destination Register
+* mm: First Source Register
+* oo: Second Source Register
+* ii: Immediate / Displacement
 
 Instruction Formats:
 * ZZZZ-ZZZZ-PPnn-nnnn-mmmm-mmoo-oooo-ZZZZ  (3R)
@@ -42,6 +58,7 @@ Instruction Formats:
 * ZZZZ-ZZZZ-PPZZ-iiii-iiii-iiii-iiii-iiii  (Imm20)
 * ZZZZ-ZZZZ-PPii-iiii-iiii-iiii-iiii-iiii  (Imm20)
 * ZZZZ-ZZZZ-iiii-iiii-iiii-iiii-iiii-iiii  (Imm24)
+* ZZZZ-Ziii-iiii-iiii-iiii-iiii-iiii-iiii  (Imm27)
 
 PP:
 * 00: OP?T  (Conditional True)
@@ -101,24 +118,22 @@ PP:
 * 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1110  -
 * 0000-0010-PPnn-nnnn-mmmm-mmoo-oooo-1111  -
 
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0000  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0001  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0010  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0011  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0100  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0101  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0110  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0111  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1000  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1001  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1010  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1011  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1100  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1101  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1110  -
-* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1111  -
-
-
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0000  CMPEQ	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0001  CMPGT	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0010  MULS.Q	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0011  SHAD.Q	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0100  CMPNE	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0101  CMPGE	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0110  MULU.Q	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-0111  SHLD.Q	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1000  ADDS.L	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1001  SUBS.L	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1010  MULS.L	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1011  SHAD.L	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1100  ADDU.L	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1101  SUBU.L	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1110  MULU.L	Rm, Ro, Rn
+* 0000-0011-PPnn-nnnn-mmmm-mmoo-oooo-1111  SHLD.L	Rm, Ro, Rn
 
 
 * 0100-0000-PPnn-nnnn-mmmm-mmii-iiii-iiii  ST.B		Rn, (Rm, Disp10s)
@@ -157,20 +172,23 @@ PP:
 
 
 * 0110-0000-PPnn-nnnn-mmmm-mmii-iiii-iiii  ADD		Rm, Imm10s, Rn
-* 0110-0001-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-0001-PPnn-nnnn-mmmm-mm00-iiii-iiii  SHAD.Q	Rm, Imm8s, Rn
+* 0110-0001-PPnn-nnnn-mmmm-mm01-iiii-iiii  SHLD.Q	Rm, Imm8s, Rn
+* 0110-0001-PPnn-nnnn-mmmm-mm10-iiii-iiii  SHAD.L	Rm, Imm8s, Rn
+* 0110-0001-PPnn-nnnn-mmmm-mm11-iiii-iiii  SHLD.L	Rm, Imm8s, Rn
 * 0110-0010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
 * 0110-0011-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
 * 0110-0100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
 * 0110-0101-PPnn-nnnn-mmmm-mmii-iiii-iiii  AND		Rm, Imm10s, Rn
 * 0110-0110-PPnn-nnnn-mmmm-mmii-iiii-iiii  OR		Rm, Imm10s, Rn
 * 0110-0111-PPnn-nnnn-mmmm-mmii-iiii-iiii  XOR		Rm, Imm10s, Rn
-* 0110-1000-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1000-PPnn-nnnn-mmmm-mmii-iiii-iiii  ADDS.L	Rm, Imm10s, Rn
 * 0110-1001-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
-* 0110-1010-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1010-PPnn-nnnn-mmmm-mmii-iiii-iiii  MULS.L	Rm, Imm10s, Rn
 * 0110-1011-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
-* 0110-1100-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1100-PPnn-nnnn-mmmm-mmii-iiii-iiii  ADDU.L	Rm, Imm10s, Rn
 * 0110-1101-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
-* 0110-1110-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
+* 0110-1110-PPnn-nnnn-mmmm-mmii-iiii-iiii  MULU.L	Rm, Imm10s, Rn
 * 0110-1111-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
 
 * 0111-0000-PPnn-nnnn-mmmm-mmii-iiii-iiii  -
@@ -209,4 +227,22 @@ PP:
 * 1000-1111-10ii-iiii-iiii-iiii-iiii-iiii  BSR	Disp22
 
 
-* 1111-ZZZZ-iiii-iiii-iiii-iiii-iiii-iiii  (Jumbo Prefix Space)
+* 1111-0xxx-iiii-iiii-iiii-iiii-iiii-iiii  JumboImm
+* 1111-1xxx-iiii-iiii-iiii-iiii-iiii-iiii  JumboOp
+
+
+Jumbo Prefixes:
+* JumboImm+Op3R: Gives a 33-bit immediate.
+** 1111-0iii-iiii-iiii-iiii-iiii-iiii-iiii  (33:6)
+** ZZZZ-ZZZZ-PPnn-nnnn-mmmm-mmii-iiii-ZZZZ  OP	Rm, Imm33s, Rn
+** The immediate will take the place of the Ro field.
+
+* JumboImm+Imm10: Also gives a 33-bit immediate.
+** Left over bits will be reserved for opcode.
+** 1111-0YYY-Yiii-iiii-iiii-iiii-iiii-iiii  (33:10)
+** ZZZZ-ZZZZ-PPnn-nnnn-mmmm-mmii-iiii-iiii  OP	Rm, Imm33s, Rn
+*
+* JumboImm+Jumbo+Imm10: Gives a 64-bit immediate.
+** 1111-0iii-iiii-iiii-iiii-iiii-iiii-iiii  (63:37)
+** 1111-0iii-iiii-iiii-iiii-iiii-iiii-iiii  (36:10)
+** ZZZZ-ZZZZ-PPnn-nnnn-mmmm-mmii-iiii-iiii  OP	Rm, Imm64, Rn

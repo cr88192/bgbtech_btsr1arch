@@ -1823,11 +1823,32 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //			k+=sctx->is_addr64?2:1;
 
 			j=BGBCC_JX2_GetNamedLabel(sctx, "__global_ptr");
-			BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
-				BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_R1, j);
-			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
-				BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+			if(sctx->has_fmovc&1)
+			{
+				BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+					BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_GBR, 0, BGBCC_SH_REG_R18);
+				BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
+				BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+					BGBCC_SH_NMID_MOVC_DISP24,
+					BGBCC_SH_REG_R18, 0, BGBCC_SH_REG_GBR);
+
+//				BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+//					BGBCC_SH_NMID_MOVQ,
+//					BGBCC_SH_REG_GBR, j);
+			}else
+			{
+//				BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
+//				BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+//					BGBCC_SH_NMID_MOVC_DISP24,
+//					BGBCC_SH_REG_R18, 0, BGBCC_SH_REG_R1);
+
+				BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+					BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R1, j);
+				BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+					BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+			}
 		}
 
 	}
@@ -2331,11 +2352,24 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
 		{
 			j=BGBCC_JX2_GetNamedLabel(sctx, "__global_ptr");
-			BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
-				BGBCC_SH_NMID_MOVQ,
-				BGBCC_SH_REG_R1, j);
-			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
-				BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+			if(sctx->has_fmovc&1)
+			{
+				BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+					BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_GBR, 0, BGBCC_SH_REG_R18);
+				BGBCC_JX2_EmitRelocTy(sctx, j, BGBCC_SH_RLC_TBR12_BJX);
+				BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+					BGBCC_SH_NMID_MOVC_DISP24,
+					BGBCC_SH_REG_R18, 0, BGBCC_SH_REG_GBR);
+
+			}else
+			{
+				BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
+					BGBCC_SH_NMID_MOVQ,
+					BGBCC_SH_REG_R1, j);
+				BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+					BGBCC_SH_REG_R1, BGBCC_SH_REG_GBR);
+			}
 		}
 	}
 

@@ -1,3 +1,4 @@
 mainicon=tk_rsrc/tklogo.bmp bmp4
 mandril=tk_rsrc/mandril0.bmp bmp8
 paldith8=tk_rsrc/paldith8.bmp bmp_lz8
+genmidi=tk_rsrc/genmidi.lmp

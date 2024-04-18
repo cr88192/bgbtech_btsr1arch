@@ -521,7 +521,7 @@ X(R_DrawSpanLow):
 #endif
 
 
-#if 1
+#if 0
 .global X(I_FinishUpdate_ScanCopyClear)
 
 X(I_FinishUpdate_ScanCopyClear):
@@ -594,7 +594,7 @@ X(I_FinishUpdate_ScanCopyClear):
 #endif
 
 
-#if 1
+#if 0
 .global X(I_FinishUpdate_ScanCopy)
 
 X(I_FinishUpdate_ScanCopy):
@@ -646,7 +646,7 @@ X(I_FinishUpdate_ScanCopy):
 
 #endif
 
-#if 1
+#if 0
 // (src, dst, cnt, vbl)
 .global X(I_FinishUpdate_ScanCopyVbl)
 X(I_FinishUpdate_ScanCopyVbl):

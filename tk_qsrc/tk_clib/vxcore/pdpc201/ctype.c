@@ -18,7 +18,7 @@
 
 #if !defined(__MVS__) && !defined(__CMS__)
 // #if 0
-static unsigned short __isbufR[257] = {
+static unsigned short _ctype_isbufR[257] = {
     0x0000U, /* EOF */
     0x0004U, 0x0004U, 0x0004U, 0x0004U, 0x0004U, 0x0004U, 0x0004U, 0x0004U,
     0x0004U, 0x0104U, 0x0104U, 0x0104U, 0x0104U, 0x0104U, 0x0004U, 0x0004U,
@@ -54,7 +54,7 @@ static unsigned short __isbufR[257] = {
     0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U
 };
 
-static short __tolowR[257] = {
+static short _ctype_tolowR[257] = {
     -1,
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -89,7 +89,7 @@ static short __tolowR[257] = {
     0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
     0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF };
 
-static short __toupR[257] = {
+static short _ctype_toupR[257] = {
     -1,
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -126,7 +126,7 @@ static short __toupR[257] = {
 
 #else
 
-static unsigned short __isbufR[257] = {
+static unsigned short _ctype_isbufR[257] = {
     0x0000U, /* EOF */
     0x0004U, 0x0004U, 0x0004U, 0x0004U, 0x0004U, 0x0104U, 0x0004U, 0x0004U,
     0x0004U, 0x0004U, 0x0004U, 0x0104U, 0x0104U, 0x0104U, 0x0004U, 0x0004U,
@@ -162,7 +162,7 @@ static unsigned short __isbufR[257] = {
     0x0459U, 0x0459U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U, 0x0000U
 };
 
-static short __tolowR[257] = {
+static short _ctype_tolowR[257] = {
     -1,
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -197,7 +197,7 @@ static short __tolowR[257] = {
     0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
     0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF };
 
-static short __toupR[257] = {
+static short _ctype_toupR[257] = {
     -1,
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -234,17 +234,17 @@ static short __toupR[257] = {
 
 #endif
 
-// unsigned short *__isbuf = &__isbufR[1];
-// short *__tolow = &__tolowR[1];
-// short *__toup = &__toupR[1];
+// unsigned short *_ctype_isbuf = &_ctype_isbufR[1];
+// short *_ctype_tolow = &_ctype_tolowR[1];
+// short *_ctype_toup = &_ctype_toupR[1];
 
-// unsigned short *__isbuf;
-unsigned short *__isbuf = NULL;
+// unsigned short *_ctype_isbuf;
+unsigned short *_ctype_isbuf = NULL;
 
 // #ifndef __BJX2__
 #if 1
-short *__tolow = NULL;
-short *__toup = NULL;
+short *_ctype_tolow = NULL;
+short *_ctype_toup = NULL;
 #endif
 
 extern short locale_id;
@@ -254,32 +254,32 @@ extern int locale_flags;
 int _tolower_gen(int c);
 int _toupper_gen(int c);
 
-void __cytpe_init(void)
+void _ctype_init(void)
 {
 	int i;
 
-	if(__isbuf)
+	if(_ctype_isbuf)
 		return;
 
 //	setlocale(1, "");
 
-	__isbuf = &__isbufR[1];
+	_ctype_isbuf = &_ctype_isbufR[1];
 
 // #ifndef __BJX2__
 #if 1
-	__tolow = &__tolowR[1];
-	__toup = &__toupR[1];
+	_ctype_tolow = &_ctype_tolowR[1];
+	_ctype_toup = &_ctype_toupR[1];
 #endif
 
 	setlocale(1, "");
 
 #if 1
-	__tolow[-1]=-1;
-	__toup[-1]=-1;
+	_ctype_tolow[-1]=-1;
+	_ctype_toup[-1]=-1;
 	for(i=0; i<256; i++)
 	{
-		__tolow[i]=_tolower_gen(i);
-		__toup[i]=_toupper_gen(i);
+		_ctype_tolow[i]=_tolower_gen(i);
+		_ctype_toup[i]=_toupper_gen(i);
 	}
 #endif
 }
@@ -297,81 +297,81 @@ __PDPCLIB_API__ int isascii(int c)
 
 __PDPCLIB_API__ int isalnum(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0001U);
+		return (_ctype_isbuf[c] & 0x0001U);
 	return(isalpha(c)||isdigit(c));
 }
 
 __PDPCLIB_API__ int isalpha(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0002U);
+		return (_ctype_isbuf[c] & 0x0002U);
 	return(0);
 }
 
 __PDPCLIB_API__ int iscntrl(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0004U);
+		return (_ctype_isbuf[c] & 0x0004U);
 	return(0);
 }
 
 __PDPCLIB_API__ int isdigit(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0008U);
+		return (_ctype_isbuf[c] & 0x0008U);
 	return(0);
 }
 
 __PDPCLIB_API__ int isgraph(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0010U);
+		return (_ctype_isbuf[c] & 0x0010U);
 	return(0);
 }
 
 __PDPCLIB_API__ int islower(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0020U);
+		return (_ctype_isbuf[c] & 0x0020U);
 	return(0);
 }
 
 __PDPCLIB_API__ int isprint(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0040U);
+		return (_ctype_isbuf[c] & 0x0040U);
 	return(0);
 }
 
 __PDPCLIB_API__ int ispunct(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0080U);
+		return (_ctype_isbuf[c] & 0x0080U);
 
 	return(!isspace(c) && !isalnum(c));
 //	return(0);
@@ -379,31 +379,31 @@ __PDPCLIB_API__ int ispunct(int c)
 
 __PDPCLIB_API__ int isspace(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0100U);
+		return (_ctype_isbuf[c] & 0x0100U);
 	return(0);
 }
 
 __PDPCLIB_API__ int isupper(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0200U);
+		return (_ctype_isbuf[c] & 0x0200U);
 	return(0);
 }
 
 __PDPCLIB_API__ int isxdigit(int c)
 {
-	__cytpe_init();
+	_ctype_init();
 	if(c<0)
 		c=-1;
 	if(c<=0xFF)
-		return (__isbuf[c] & 0x0400U);
+		return (_ctype_isbuf[c] & 0x0400U);
 	return(0);
 }
 
@@ -534,9 +534,9 @@ __PDPCLIB_API__ int tolower(int c)
 	return(_tolower_gen(c));
 
 #if 0
-	if(!__tolow)
-		__cytpe_init();
-	return (__tolow[c]);
+	if(!_ctype_tolow)
+		_ctype_init();
+	return (_ctype_tolow[c]);
 #endif
 }
 
@@ -545,9 +545,9 @@ __PDPCLIB_API__ int toupper(int c)
 	return(_toupper_gen(c));
 
 #if 0
-	if(!__toup)
-		__cytpe_init();
-	return (__toup[c]);
+	if(!_ctype_toup)
+		_ctype_init();
+	return (_ctype_toup[c]);
 #endif
 }
 #endif
@@ -679,7 +679,7 @@ _toupper_8x:
 
 _tolower_8x:
 // _toupper_8x_tab:
-	MOV.P		__tolow, R5
+	MOV.P		_ctype_tolow, R5
 
 	SHLD.Q	R4, -8, R17		|	EXTU.B	R4, R16
 	SHLD.Q	R4, -16, R18	|	EXTU.B	R17, R17
@@ -707,7 +707,7 @@ _toupper_8x:
 
 #if 1
 // _toupper_8x_tab:
-	MOV.P		__toup, R5
+	MOV.P		_ctype_toup, R5
 
 	SHLD.Q	R4, -8, R17		|	EXTU.B	R4, R16
 	SHLD.Q	R4, -16, R18	|	EXTU.B	R17, R17

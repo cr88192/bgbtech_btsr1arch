@@ -512,6 +512,18 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 					return(1);
 				}
+
+#if 1
+				if(nm3>=0)
+				{
+					csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+					cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+					BGBCC_JX2_EmitOpRegImmReg(sctx, nm3, csreg, li, cdreg);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+					BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+					return(1);
+				}
+#endif
 			}
 		}
 

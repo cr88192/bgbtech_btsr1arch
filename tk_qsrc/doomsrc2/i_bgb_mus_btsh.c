@@ -591,6 +591,10 @@ int SMus_SetFmRegisterData(int prg, int idx, u32 val)
 	TKGDI_MIDI_COMMAND t_mcmd;
 	TKGDI_MIDI_COMMAND *mcmd;
 
+//	return(0);
+
+//	tk_printf("SMus_SetFmRegisterData: %02X %02X %08X\n", prg, idx, val);
+
 	mcmd=&t_mcmd;
 	mcmd->op=16;
 //	mcmd->ch=ch;

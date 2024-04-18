@@ -137,6 +137,7 @@ parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
 // parameter[6:0] JX2_GR_PC2_HI	= 7'h58;
 // parameter[6:0] JX2_GR_LR2_HI	= 7'h59;
 
+parameter[6:0] JX2_GR_FPIMM56F	= 7'h5A;		//FP Immed, Imm56f
 parameter[6:0] JX2_GR_FPIMM56VF	= 7'h5B;		//FP Immed, 4x S.E5.F8
 
 parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
@@ -717,6 +718,7 @@ REGIMMREG, Fz:
 	NL:	Rm, Imm5u, Rn
 	NQ:	Imm5u, Rm, Rn
 
+	XB: Rm, Imm9f/Imm32f/Imm57f, Rn
 	XW:	Rm, Imm9u, Rn (Decoded like REGDISPREG)
 
 REGPC, Fz:

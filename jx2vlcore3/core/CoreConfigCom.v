@@ -76,7 +76,7 @@
 `endif
 
 `ifndef jx2_xc7s50
-// `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
+`define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
 // `define	jx2_use_mem_ldop		//Load/Store Operations
 `endif
 

@@ -259,8 +259,8 @@ void Z_CheckIntact (void *ptr)
 	dat1 = (void *) (((byte *)block) + sizeof(memblock_t));
 	dat2 = ((byte *)block) + (block->size-16);
 
-	if( (*(int *)dat2) != 0x12345678 )
-		{ DT_BREAKPOINT }
+//	if( (*(int *)dat2) != 0x12345678 )
+//		{ DT_BREAKPOINT }
 
 	return ;
 }

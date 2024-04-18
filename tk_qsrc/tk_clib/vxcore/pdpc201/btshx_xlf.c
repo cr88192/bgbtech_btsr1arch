@@ -18,6 +18,11 @@ __xlf_neg:
 	MOV		R4, R2
 	XOR		R5, R1, R3
 	RTS
+};
+
+__asm {
+.extern	__xli_umul_hi
+.extern	__xli_shl
 
 __xlf_mul:
 	ADD		-96, SP
@@ -90,7 +95,10 @@ __xlf_mul:
 	MOV.X	(SP,  0), R8
 	ADD		96, SP
 	JMP		R1
+};
 
+__asm {
+.extern	__xli_shar
 __xlf_sub:
 	MOV		0x8000000000000000, R1
 	XOR		R1, R7
@@ -236,8 +244,9 @@ __xlf_add:
 	MOV		0, R2
 	MOV		0, R3
 	BRA		.Ret
+};
 
-
+__asm {
 __xlf_cmp_eq:
 	CMPQEQ	R5, R7
 	BF		.False
@@ -267,7 +276,9 @@ __xlf_cmp_eq:
 	.False:
 	MOV		0, R2
 	RTS
+};
 
+__asm {
 __xlf_cmp_ne:
 	CMPQEQ	R5, R7
 	BF		.True
@@ -278,7 +289,9 @@ __xlf_cmp_ne:
 	.True:
 	MOV		1, R2
 	RTS
+};
 
+__asm {
 __xlf_cmp_gt:
 	MOV		0x8000000000000000, R3
 	TSTQ	R5, R3
@@ -310,7 +323,9 @@ __xlf_cmp_gt:
 	.True:
 	MOV		1, R2
 	RTS
+};
 
+__asm {
 __xlf_cmp_ge:
 	MOV		0x8000000000000000, R3
 	TSTQ	R5, R3
@@ -378,7 +393,9 @@ __xlf_todbl:
 	MOV		0x7FF0000000000000, R2
 	OR		R23, R2
 	RTS
+};
 
+__asm {
 __xlf_fromdbl:
 	MOV		60, R16
 	MOV		0x3C00000000000000, R17
@@ -395,17 +412,21 @@ __xlf_fromdbl:
 	ADD?F	R17, R3
 	OR		R23, R3
 	RTS
-	
+};
+
+__asm {
 __xlf_toint:
 	MOV		LR, R1
 	BSR		__xlf_todbl
 	FSTCI	R2, R2
 	JMP		R1
+};
+
+__asm {
 __xlf_fromint:
 	FLDCI	R4, R4
 //	JMP		__xlf_fromdbl
 	BRA		__xlf_fromdbl
-
 };
 
 

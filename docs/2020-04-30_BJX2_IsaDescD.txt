@@ -80,7 +80,10 @@ WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the stat
 * F84n_iiii  ADD		Imm16s, Rn
 * F85n_iiii  ADD		Imm16s, Rk
 
-* FE F2n0_Dhjj  ADD		Imm33s, Rn		//Rn=Rn+Imm33s
+*    FE F2nm_0gjj  ADD	Rm, Imm33s, Rn
+* FE-FE F2nm_0gjj  ADD	Rm, Imm57s, Rn	//FPIMM
+
+*    FE F2n0_Dhjj  ADD	Imm33s, Rn		//Rn=Rn+Imm33s
 
 * FE-FE F84n_iiii  ADD	Imm64, Rn		//R0 ..R15
 * FE-FE F85n_iiii  ADD	Imm64, Rk		//R16..R31
@@ -111,6 +114,10 @@ This form sign or zero extends the 32-bit result to 64 bits.
 * F0nm_1go5  AND		Rm, Ro, Rn
 * F0nm_1e59  AND		Rm, Rn
 * F2nm_5gjj  AND		Rm, Imm9us, Rn
+
+* FE F2nm_5gjj  AND		Rm, Imm33s, Rn	//FPIMM
+
+* FE-FE F2nm_5gjj  AND		Rm, Imm57s, Rn	//FPIMM
 
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
 
@@ -1886,11 +1893,14 @@ This operation is only valid in Lane 1.
 
 === OR ===
 
-* 16nm       OR	Rm, Rn
-* 5Bnm       OR	Rm, DLR, Rn
-* F0nm_1go6  OR	Rm, Ro, Rn
-* F0nm_1e69  OR	Rm, Rn
-* F2nm_6gjj  OR	Rm, Imm9u, Rn
+* 16nm       OR		Rm, Rn
+* 5Bnm       OR		Rm, DLR, Rn
+* F0nm_1go6  OR		Rm, Ro, Rn
+* F0nm_1e69  OR		Rm, Rn
+* F2nm_6gjj  OR		Rm, Imm9u, Rn
+
+*    FE F2nm_6gjj  OR		Rm, Imm33s, Rn
+* FE-FE F2nm_6gjj  OR		Rm, Imm57s, Rn		//FPIMM
 
 Perform a bitwise OR of the source and destination, storing the result in the destination.
 
@@ -2632,6 +2642,10 @@ This instruction will have special behavior as part of the Bounds Check Enforcin
 * F0nm_1go7  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro, Q=0
 * F0nm_1e79  XOR		Rm, Rn
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
+
+
+*    FE F2nm_7gjj  XOR		Rm, Imm33s, Rn
+* FE-FE F2nm_7gjj  XOR		Rm, Imm57s, Rn	//FPIMM
 
 Perform a bitwise XOR of the source and destination registers, storing the result in the destination.
 
@@ -3380,6 +3394,8 @@ Get the absolute value of the double precision value in Rm and store the result 
 * FFw0_08ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8
 * FFw0_08ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8
 
+* FE-FE F2nm_3Gjj      FADD		Rm, Imm56f, Rn		//(FPIMM)
+
 Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
 
 FADDX will operate instead on a LongDouble value.
@@ -3647,6 +3663,8 @@ FMACX will operate instead on a LongDouble value (partial precision).
 * FEjj_jjjj_F2nm_8qjj? FMUL		Rm, Imm32f, Rn		//(NNX)
 * FFw0_08ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8
 * FFw0_08ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8
+
+* FE-FE F2nm_2Gjj      FMUL		Rm, Imm56f, Rn		//(FPIMM)
 
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
 

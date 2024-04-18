@@ -38,6 +38,8 @@
 #define TKGDI_FCC_keyb		RIFF_MAKETAG('k','e','y','b')
 #define TKGDI_FCC_mous		RIFF_MAKETAG('m','o','u','s')
 
+#define TKGDI_FCC_fcmd		RIFF_MAKETAG('f','c','m','d')
+
 #define TKGDI_FCC_auds		RIFF_MAKETAG('a','u','d','s')
 
 #define TKGDI_FCC_mcmd		RIFF_MAKETAG('m','c','m','d')
@@ -286,6 +288,19 @@ int escval2;
 int escval3;
 };
 
+
+typedef struct TKGDI_FONT_COMMAND_s TKGDI_FONT_COMMAND;
+struct TKGDI_FONT_COMMAND_s {
+int fcSize;			//size of structure
+int fcCmd;			//font command type
+int sName;			//name (as relevant)
+int sPath;			//path (as relevant)
+int fcFont;			//font handle
+int fcChar;			//codepoint
+short fcSizeX;		//cell width
+short fcSizeY;		//cell height
+int fcStyle;		//cell style
+};
 
 
 typedef struct TKGDI_MIDI_COMMAND_s TKGDI_MIDI_COMMAND;

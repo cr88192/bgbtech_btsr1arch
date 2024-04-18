@@ -770,6 +770,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		k-=16; k&=~15;
 	}
 
+	if(sctx->abi_spillpad&64)
+	{
+		sctx->frm_offs_sectoken=0;
+		sctx->frm_val_sectoken=0;
+	}
+
 	if((obj->regflags&BGBCC_REGFL_ALLOCA))
 	{
 //		if(sctx->has_xgpr&2)

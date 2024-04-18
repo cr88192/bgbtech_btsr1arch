@@ -408,6 +408,7 @@ assign	regOutSp  = gprRegSp[63:0];
 `reg_gprval	tValJimm;
 `reg_gprval	tValJimm56;
 `reg_gprval	tValJimm56Vf;
+`reg_gprval	tValJimm56F;
 
 `reg_gprval	tValFpImm16A;
 `reg_gprval	tValFpImm10A;
@@ -513,10 +514,11 @@ begin
 `endif
 
 `ifdef jx2_use_fpu_fpimm
-	tValFpImm16A = 0;
-	tValFpImm10A = 0;
-	tValFpImm16B = 0;
-	tValJimm56Vf = 0;
+	tValFpImm16A	= 0;
+	tValFpImm10A	= 0;
+	tValFpImm16B	= 0;
+	tValJimm56Vf	= 0;
+	tValJimm56F		= 0;
 
 	tValFpImm16A[63:0]	= {
 		regValImmA[15:14],
@@ -553,6 +555,14 @@ begin
 		tValJimm[41:28], 2'b0,
 		tValJimm[27:14], 2'b0,
 		tValJimm[13: 0], 2'b0
+	};
+
+	tValJimm56F[63:0] = {
+		tValJimm[55: 0],
+		tValJimm[62:56],
+//		tValJimm[62:56] ^ (tValJimm[63] ? 7'h7F : 7'h00),
+//		1'b0
+		tValJimm[63]
 	};
 `endif
 	
@@ -843,6 +853,11 @@ begin
 
 		JX2_GR_FPIMM56VF: begin
 			tValRtA=tValJimm56Vf;
+			tValRtZz=1;
+		end
+		
+		JX2_GR_FPIMM56F: begin
+			tValRtA=tValJimm56F;
 			tValRtZz=1;
 		end
 `endif

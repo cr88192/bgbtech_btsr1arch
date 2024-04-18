@@ -402,6 +402,45 @@ void tkg_drawcellbuf_8x8(u16 *buf, int xs, int ys,
 	ct+=xs;
 }
 
+u32 tkgdi_con_fetchcell5x6(int ch)
+{
+	static u32 pxab[64];
+	static u16 pxac[64];
+	u64 px;
+	u32 px1;
+	int h;
+
+#if 1
+	if((ch>=' ') && (ch<='~'))
+		return(tk_con_glyphs_5x6seg[ch-' ']);
+#endif
+	
+//	TKGDI_FetchUnifontSdfBits(celbits, 5, 6, 1, ch);
+
+	h=((ch*251)>>8)&63;
+	if(pxac[h]==ch)
+		{ return(pxab[h]); }
+
+	px=TK_Con_GlyphForCodepoint(ch);
+	
+	if((px&0x0202020202020202ULL) && !(px&0xC0C0C0C0C0C0C0C0ULL))
+		px<<=1;
+	if((px&0x00000000000000FFULL) && !(px&0xFFFF000000000000ULL))
+		px<<=8;
+	
+	px1=
+		(((px>>(48+2))&31)<<25)	|
+		(((px>>(40+2))&31)<<20)	|
+		(((px>>(32+2))&31)<<15)	|
+		(((px>>(24+2))&31)<<10)	|
+		(((px>>(16+2))&31)<< 5)	|
+		(((px>>( 8+2))&31)<< 0)	;
+
+	pxab[h]=px1;
+	pxac[h]=ch;
+	return(px1);
+}
+
 void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 {
 	u16 *pixb;
@@ -460,10 +499,13 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 
 		if(cxs==6)
 		{
-			j=ch-0x20;
-			if((j<0) || (j>95))
-				j=0;
-			pz=tk_con_glyphs_5x6seg[j];
+//			j=ch-0x20;
+//			if((j<0) || (j>95))
+//				j=0;
+//			pz=tk_con_glyphs_5x6seg[j];
+
+			pz=tkgdi_con_fetchcell5x6(ch);
+
 			tkg_drawcellbuf_6x8(
 				pixb, TKG_CONWIDTH*6, TKG_CONHEIGHT*8,
 				px, py, 

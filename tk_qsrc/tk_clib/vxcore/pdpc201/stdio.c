@@ -1973,6 +1973,7 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 			}
 		}
 	}
+#if 1
 	else if ((specifier == 'v') || (specifier == 'V'))
 	{
 		if (precision < 0)
@@ -2030,6 +2031,8 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 			}
 		}
 	}
+#endif
+
 	*formt = format;
 	return (extraCh);
 }

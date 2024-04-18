@@ -1498,6 +1498,8 @@ int tk_shell_chksane_arith()
 		__debugbreak();
 	if(ll!=0x0000AACBE20355C2LL)
 		__debugbreak();
+
+//	__debugbreak();
 }
 
 int tk_shell_chksane_memset()

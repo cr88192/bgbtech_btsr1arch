@@ -17,3 +17,11 @@ Will be decoded according to the active configuration for that block.
 
 The idea is that any magic number may be loaded into any of the DCBs, though some extensions may require multiple DCBs.
 
+
+The processor may store its DCB state in the DCB0 and DCB1 registers.
+* Using F3-8 .. F8-B will require preserving DCB0.
+* Using F3-C .. F8-F will require preserving DCB1.
+* These registers will be treated as callee-save in the ABI.
+* The contents of these registers will be implementation defined.
+
+Note that following an update to the DCB regisrers, there may be an indeterminite delay before the new blocks take effect.

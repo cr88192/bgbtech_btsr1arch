@@ -175,8 +175,8 @@ Control Registers:
 * C23 / TBR2: Thread Base Register (SMT)
 * C24: Reserved
 * C25: Reserved
-* C26: Reserved
-* C27: Reserved
+* C26 / DCB0: Possible DCB State Register (DCB)
+* C27 / DCB1: Possible DCB State Register (DCB)
 * C28 / VIPT: Virtual Inverted Page-Table (VIPT)
 * C29 / KRR2: MMU Keyring Register (SMT).
 * C30 / R0U: R0 Unmapped
@@ -2009,6 +2009,8 @@ F0zz Instruction Block:
 
 *** F002_3040  LDACL
 
+*** F002_3070 ? SYNDCB	//Synchronize pipeline following DCB Update
+
 *** F002_3080  SXENTR	//Enter Superuser Mode
 *** F002_3090  SUENTR	//Enter User Mode
 *** F002_30A0  SVEKRR	//Save Encoded Keyring
@@ -2491,15 +2493,36 @@ F2zz Instruction Block  (Imm9 Block):
 
 
 Neural Net Extension (possible):
+* FE-FE F2nm_0gjj  ADD			Rm, Imm57s, Rn
+
+* FE-FE F2nm_2gjj  -
+* FE-FE F2nm_2Gjj  FMUL			Rm, Imm56f, Rn			//(FPIMM)
+
+* FE-FE F2nm_3gjj  -
+* FE-FE F2nm_3Gjj  FADD			Rm, Imm56f, Rn			//(FPIMM)
+
+* FE-FE F2nm_4gjj  -
+* FE-FE F2nm_4Gjj  -
+
+* FE-FE F2nm_5gjj  AND			Rm, Imm57s, Rn
+* FE-FE F2nm_6gjj  OR			Rm, Imm57s, Rn
+* FE-FE F2nm_7gjj  XOR			Rm, Imm57s, Rn
+
 * FE F2nm_8pjj  FADD		Rm, Imm32f, Rn			//(NNX)
 * FE F2nm_8Pjj  PADD.F		Rm, Imm32fv, Rn			//(NNX)
 * FE F2nm_8qjj  FMUL		Rm, Imm32f, Rn			//(NNX)
 * FE F2nm_8Qjj  PMUL.F		Rm, Imm32fv, Rn			//(NNX)
+
 * FE F2nm_9pjj  -
 * FE F2nm_9Pjj  -
 * FE F2nm_9qjj  -
 * FE F2nm_9Qjj  -
 
+* FE-FE F2nm_6gjj  OR			Rm, Imm57s, Rn
+* FE-FE F2nm_6Pjj / FADD			Rm, Imm56f, Rn			//(FPIMM)
+* FE-FE F2nm_6Qjj / FMUL			Rm, Imm56f, Rn			//(FPIMM)
+
+* FE-FE F2nm_7gjj  XOR			Rm, Imm57s, Rn
 * FE-FE F2nm_7Pjj  PMACSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
 * FE-FE F2nm_7Qjj  PMACSH.F		Xm, Imm48fv8sh, Xn		//(NNX)
 
@@ -2516,6 +2539,8 @@ Neural Net Extension (possible):
 ==== F3zz Instruction Block ====
 
 The F3zz Block is currently intended for user-defined or implementation dependent instructions. It will be assumed that it followes the same basic instruction format as the F0, F1, or F2 blocks.
+
+Potentially this block will consist of multiple dynamically configurable blocks.
 
 
 ==== F8zz Instruction Block ====
@@ -2635,13 +2660,31 @@ F1 block immediates will be expanded to being 33-bit sign-extended.
 * The disp9 instructions will become disp33s.
 ** EI will serve as a sign-extension bit.
 
-/ F2 block immediates will be expanded, but retain the zero or one extension from the base instruction.
 
 F2 block immediates will be expanded to being 33-bit sign-extended.
 * The Imm9 and Imm10 instructions will become Imm33s.
 ** EI will serve as a sign-extension bit.
 * Ops with Zero/One extension are to match the EI bit.
 * For Imm10 forms, EM is reserved and set to zero.
+
+Two Jumbo_Imm prefixes on a F2 Block instruction will result in an Imm57s.
+* In Baseline Mode, this will have a 57-bit sign-extended value.
+** First jumbo prefix will give (55:32);
+** Section Jumbo prefix will give (31:8);
+** Base instruction will give (7:0);
+** Ei will give the sign extension.
+* In XG2 Mode, the Wnmi bits will modify the high bits.
+** First prefix will modify (62:60);
+** Second prefix will modify (59:57);
+** The Wi from the base instruction will modify (56).
+** These will XOR against the sign extension from Ei.
+** This will effectively encode an Imm64.
+
+With the FpImm extension, there will also be an Imm56f.
+* This will encode a Binary64 as a modified Imm57s.
+* Imm57s(55:0) will map to Double(63:8)
+* Imm57s(62:56) will map to Double(7:1)
+* Imm57s(63) will map to Double(0)
 
 
 Use with the F0 block will depend on the instruction:

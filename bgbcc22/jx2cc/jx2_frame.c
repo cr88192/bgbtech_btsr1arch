@@ -1597,10 +1597,68 @@ int BGBCC_JX2C_EmitLoadFrameNmidForVReg(
 	BGBCC_JX2_Context *sctx,
 	ccxl_register sreg)
 {
-	ccxl_type sty;
+	ccxl_type sty, tty, bty;
 	int nmid;
 	
-	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	tty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	bty=BGBCC_CCXL_GetRegDeclType(ctx, sreg);
+
+	sty=tty;
+	if(tty.val!=bty.val)
+	{
+		if(BGBCC_CCXL_TypeCheckConvTransparentP(ctx, tty, bty))
+		{
+			sty=bty;
+		}else
+			if(
+				BGBCC_CCXL_TypeSgIntP(ctx, tty) &&
+				BGBCC_CCXL_TypeSgIntP(ctx, bty))
+		{
+			sty=tty;
+		}else
+			if(
+				BGBCC_CCXL_TypeSgLongP(ctx, tty) &&
+				BGBCC_CCXL_TypeSgLongP(ctx, bty))
+		{
+			sty=tty;
+		}
+		else
+			if(
+				BGBCC_CCXL_TypeUnsignedLongP(ctx, tty) &&
+				BGBCC_CCXL_TypeUnsignedIntP(ctx, bty))
+		{
+			sty=bty;
+		}
+		else
+			if(
+				(BGBCC_CCXL_TypeSgNLongP(ctx, tty) ||
+					BGBCC_CCXL_TypeSgLongP(ctx, tty)) &&
+				BGBCC_CCXL_TypePointerP(ctx, bty) &&
+				(ctx->arch_sizeof_ptr==8))
+		{
+			sty=tty;
+		}
+		else
+			if(
+				(BGBCC_CCXL_TypeSgNLongP(ctx, bty) ||
+					BGBCC_CCXL_TypeSgLongP(ctx, bty)) &&
+				BGBCC_CCXL_TypePointerP(ctx, tty) &&
+				(ctx->arch_sizeof_ptr==8))
+		{
+			sty=tty;
+		}else
+			if(
+				BGBCC_CCXL_TypeRealP(ctx, tty) &&
+				BGBCC_CCXL_TypeRealP(ctx, bty))
+		{
+			sty=bty;
+		}
+		else
+		{
+//			BGBCC_DBGBREAK
+			sty=bty;
+		}
+	}
 
 #if 1
 	if(BGBCC_CCXL_TypeSmallIntP(ctx, sty))
@@ -1619,6 +1677,22 @@ int BGBCC_JX2C_EmitLoadFrameNmidForVReg(
 		nmid=BGBCC_SH_NMID_MOVQ;
 //		if(BGBCC_CCXL_TypeUnsignedP(ctx, sty))
 //			nmid=BGBCC_SH_NMID_MOVUL;
+		return(nmid);
+	}
+#endif
+
+#if 1
+	if(BGBCC_CCXL_TypeSgLongP(ctx, sty))
+	{
+		nmid=BGBCC_SH_NMID_MOVQ;
+		return(nmid);
+	}
+#endif
+
+#if 1
+	if(BGBCC_CCXL_TypePointerP(ctx, sty) && (ctx->arch_sizeof_ptr==8))
+	{
+		nmid=BGBCC_SH_NMID_MOVQ;
 		return(nmid);
 	}
 #endif

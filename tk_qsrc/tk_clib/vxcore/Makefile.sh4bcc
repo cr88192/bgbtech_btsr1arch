@@ -193,6 +193,10 @@ SRCS_TKGDI = \
 	tk_gdi/tk_qoilz_dec.c \
 	tk_gdi/tkg_display.c
 
+SRCS_TKWUI = \
+	tk_wui/tkwui_multi.c \
+	tk_wui/tkwui_form.c
+
 all: includes libs apps
 
 includes: FORCE
@@ -207,7 +211,8 @@ libs2: FORCE
 libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libvxcore_bjx2.ril \
 	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril \
-	libtkgdi.bjx2.ril libtkgl.bjx2.ril
+	libtkgdi.bjx2.ril libtkgl.bjx2.ril \
+	libtkwui.bjx2.ril
 
 bins: tkshell.sys tkshdll.dll # tkshell96.sys tkshell_rbd.sys
 
@@ -248,6 +253,9 @@ libtkgdi.bjx2.ril: $(SRCS_TKGDI) $(TKRA_SRCS)
 
 libtkgl.bjx2.ril: $(TKRA_SRCS)
 	$(CC) -o libtkgl.bjx2.ril tkgl_multi.c $(COPTS64)
+
+libtkwui.bjx2.ril: $(SRCS_TKWUI) $(TKRA_SRCS)
+	$(CC) -o libtkwui.bjx2.ril tk_wui/tkwui_multi.c $(COPTS64)
 
 tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshell.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \

@@ -1544,7 +1544,8 @@ int _string_is_nonascii(const char *s)
 	uint64_t v;
 	int c;
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if 0
 	p = (const unsigned char *)s;
 	v=*(uint64_t *)p;
 	while(!_strcmp_util_pack8zp(v))
@@ -1650,6 +1651,7 @@ __PDPCLIB_API__ int _stricmp_u8(const char *s1, const char *s2)
 	c2=*p2;
 	while(c1)
 	{
+#if 0
 		if(c1&0x80)
 			{ p1=_string_readchar_u8(p1, &c1); }
 		else
@@ -1658,6 +1660,10 @@ __PDPCLIB_API__ int _stricmp_u8(const char *s1, const char *s2)
 			{ p2=_string_readchar_u8(p2, &c2); }
 		else
 			{ p2++; }
+#else
+		p1=_string_readchar_u8(p1, &c1);
+		p2=_string_readchar_u8(p2, &c2);
+#endif
 	
 		c1=tolower(c1);
 		c2=tolower(c2);
@@ -1688,6 +1694,7 @@ __PDPCLIB_API__ int _strnicmp_u8(const char *s1, const char *s2, size_t n)
 	x=0;
 	while(c1 && (x<n))
 	{
+#if 0
 		if(c1&0x80)
 			{ p1=_string_readchar_u8(p1, &c1); }
 		else
@@ -1696,7 +1703,11 @@ __PDPCLIB_API__ int _strnicmp_u8(const char *s1, const char *s2, size_t n)
 			{ p2=_string_readchar_u8(p2, &c2); }
 		else
 			{ p2++; }
-	
+#else
+		p1=_string_readchar_u8(p1, &c1);
+		p2=_string_readchar_u8(p2, &c2);
+#endif
+
 		c1=tolower(c1);
 		c2=tolower(c2);
 		if (c1 < c2)
@@ -1720,6 +1731,7 @@ __PDPCLIB_API__ int _stricmp(const char *s1, const char *s2)
 	uint64_t	v1, v2;
 	int c1, c2, rl;
 
+#if 1
 	if(_locale_is_utf8())
 	{
 		if(_string_is_nonascii(s1) || _string_is_nonascii(s2))
@@ -1727,13 +1739,14 @@ __PDPCLIB_API__ int _stricmp(const char *s1, const char *s2)
 			return(_stricmp_u8(s1, s2));
 		}
 	}
+#endif
 
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
 
-#ifdef __BJX2__
-// #if 0
-//	__cytpe_init();
+// #ifdef __BJX2__
+#if 0
+//	_ctype_init();
 
 	v1=*(uint64_t *)p1;
 	v2=*(uint64_t *)p2;
@@ -1798,6 +1811,7 @@ __PDPCLIB_API__ int _strnicmp(const char *s1, const char *s2, size_t n)
 	int c1, c2, rl;
 	size_t x;
 
+#if 1
 	if(_locale_is_utf8())
 	{
 		if(_string_is_nonascii(s1) || _string_is_nonascii(s2))
@@ -1805,17 +1819,18 @@ __PDPCLIB_API__ int _strnicmp(const char *s1, const char *s2, size_t n)
 			return(_strnicmp_u8(s1, s2, n));
 		}
 	}
+#endif
 
 	p1 = (const unsigned char *)s1;
 	p2 = (const unsigned char *)s2;
 	x = 0;
 
-#ifdef __BJX2__
-//#if 0
+// #ifdef __BJX2__
+#if 0
 //	if(n>=16)
 	if(1)
 	{
-//		__cytpe_init();
+//		_ctype_init();
 
 		v1=*(uint64_t *)p1;
 		v2=*(uint64_t *)p2;

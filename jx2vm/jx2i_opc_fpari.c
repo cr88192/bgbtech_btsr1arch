@@ -2128,6 +2128,25 @@ int BJX2_OpI_ImmFp5ToFp16(BJX2_Context *ctx, int v)
 }
 
 
+void BJX2_Op_FADD_RegImm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vb;
+//	vb=BJX2_CvtHalfToFloat(op->imm);
+//	vb=BJX2_CvtFloatToDouble(vb);
+	vb=op->imm;
+	ctx->regs[op->rn]=BJX2_FAddSoft(ctx->regs[op->rm], vb);
+}
+
+void BJX2_Op_FMUL_RegImm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vb;
+//	vb=BJX2_CvtHalfToFloat(op->imm);
+//	vb=BJX2_CvtFloatToDouble(vb);
+	vb=op->imm;
+	ctx->regs[op->rn]=BJX2_FMulSoft(ctx->regs[op->rm], vb);
+}
+
+
 
 void BJX2_Op_FCMPEQ_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

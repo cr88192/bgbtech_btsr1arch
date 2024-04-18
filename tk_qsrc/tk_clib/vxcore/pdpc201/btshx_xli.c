@@ -41,6 +41,10 @@ __xli_add:
 	RTS
 .endif
 
+};
+
+__asm {
+
 __xli_sub:
 .ifarch has_alux
 	SUBX	R4, R6, R2
@@ -60,21 +64,30 @@ __xli_sub:
 	RTS
 .endif
 
+};
+
+__asm {
 __xli_and:
 	AND		R4, R6, R2
 	AND		R5, R7, R3
 	RTS
+};
 
+__asm {
 __xli_or:
 	OR		R4, R6, R2
 	OR		R5, R7, R3
 	RTS
+};
 
+__asm {
 __xli_xor:
 	XOR		R4, R6, R2
 	XOR		R5, R7, R3
 	RTS
+};
 
+__asm {
 __xli_neg:
 	CLRT
 	MOV		0, R2
@@ -82,12 +95,16 @@ __xli_neg:
 	SUBC	R4, R2
 	SUBC	R5, R3
 	RTSU
+};
 
+__asm {
 __xli_not:
 	NOT		R4, R2
 	NOT		R5, R3
 	RTS
+};
 
+__asm {
 __xli_shl:
 	CMPGE		64, R6
 	BT			.L0
@@ -108,7 +125,9 @@ __xli_shl:
 	MOV			R4, R2
 	MOV			R5, R3
 	RTS
+};
 
+__asm {
 __xli_shlr:
 	CMPGE		64, R6
 	BT			.L0
@@ -132,7 +151,9 @@ __xli_shlr:
 	MOV			R4, R2
 	MOV			R5, R3
 	RTS
+};
 
+__asm {
 __xli_shar:
 	CMPGE		64, R6
 	BT			.L0
@@ -156,8 +177,9 @@ __xli_shar:
 	MOV			R4, R2
 	MOV			R5, R3
 	RTS
+};
 
-
+__asm {
 __xli_umuldq:
 	SHLD.Q	R4, -32, R6
 	SHLD.Q	R5, -32, R7
@@ -188,8 +210,11 @@ __xli_umuldq:
 //	BREAK
 	
 	RTSU
+};
 
+__asm {
 #if 1
+.extern	__xli_umuldq
 __xli_umul:
 __xli_smul:
 	ADD		-96, SP
@@ -240,8 +265,11 @@ __xli_smul:
 	ADD		96, SP
 	JMP		R1
 #endif
+};
 
+__asm {
 #if 1
+.extern	__xli_umuldq
 __xli_umul_hi:
 	ADD		-96, SP
 	MOV		LR, R1
@@ -308,9 +336,11 @@ __xli_umul_hi:
 	JMP		R1
 //	RTSU
 #endif
+};
 
-
+__asm {
 #if 0
+.extern	__xli_umuldq
 __xli_umul:
 __xli_smul:
 	ADD		-96, SP
@@ -386,9 +416,9 @@ __xli_smul:
 //	RTSU
 #endif
 
-// __xli_sdiv:
+};
 
-
+__asm {
 __xli_cmp_eq:
 	CMPQEQ	R5, R7
 	BF		.False
@@ -399,7 +429,9 @@ __xli_cmp_eq:
 	.False:
 	MOV		0, R2
 	RTS
+};
 
+__asm {
 __xli_cmp_ne:
 	CMPQEQ	R5, R7
 	BF		.True
@@ -410,7 +442,9 @@ __xli_cmp_ne:
 	.True:
 	MOV		1, R2
 	RTS
+};
 
+__asm {
 __xli_cmp_gt:
 	CMPQGT	R7, R5
 	BT		.True
@@ -424,7 +458,9 @@ __xli_cmp_gt:
 	.False:
 	MOV		0, R2
 	RTS
+};
 
+__asm {
 __xli_cmp_ge:
 	CMPQGT	R7, R5
 	BT		.True
@@ -438,7 +474,9 @@ __xli_cmp_ge:
 	.False:
 	MOV		0, R2
 	RTS
+};
 
+__asm {
 __xli_cmp_hi:
 	CMPQHI	R7, R5
 	BT		.True
@@ -452,6 +490,9 @@ __xli_cmp_hi:
 	.False:
 	MOV		0, R2
 	RTS
+};
+
+__asm {
 __xli_cmp_he:
 	CMPQHI	R7, R5
 	BT		.True
@@ -465,7 +506,9 @@ __xli_cmp_he:
 	.False:
 	MOV		0, R2
 	RTS
+};
 
+__asm {
 __xli_cmp_tst:
 	TSTQ	R5, R7
 	BF		.True
@@ -476,7 +519,9 @@ __xli_cmp_tst:
 	.True:
 	MOV		1, R2
 	RTS
+};
 
+__asm {
 __xli_cmp_ntst:
 	TSTQ	R5, R7
 	BF		.False
@@ -487,7 +532,6 @@ __xli_cmp_ntst:
 	.False:
 	MOV		0, R2
 	RTS
-
 };
 
 

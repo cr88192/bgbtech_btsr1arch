@@ -88,7 +88,6 @@ __vec3fx	__vnf_v3fx_from_v3f(__vec3f a);
 __vec3f		__vnf_v3f_from_v3fx(__vec3fx a);
 
 __asm {
-
 __v2f_float2:
 __c2f_float2:
 __m64_float2:
@@ -98,7 +97,9 @@ __m64_float2:
 	FSTCF	R5, R17
 	MOVLD	R17, R16, R2
 	RTS
+};
 
+__asm {
 __v3f_float3:
 __m128_float3:
 //	FSTCF	R4, R2
@@ -108,7 +109,9 @@ __m128_float3:
 	MOVLD	R17, R16, R2
 	FSTCF	R6, R3
 	RTS
+};
 
+__asm {
 __v4f_float4:
 __vqf_float4:
 __m128_float4:
@@ -125,14 +128,18 @@ __m128_float4:
 	FSTCF	R7, R19
 	MOVLD	R19, R18, R3
 	RTS
+};
 
+__asm {
 __v2d_double2:
 __c2d_double2:
 __m128_double2:
 	MOV		R4, R2
 	MOV		R5, R3
 	RTS
+};
 
+__asm {
 __vnf_v2f_add:
 __vnf_c2f_add:
 	PADD.F	R4, R5, R2
@@ -144,14 +151,18 @@ __vnf_c2f_sub:
 __vnf_v2f_mul:
 	PMUL.F	R4, R5, R2
 	RTS
+};
 
+__asm {
 __vnf_v2f_dot:
 	PMUL.F	R4, R5, R6
 	FLDCF	R6, R7
 	FLDCFH	R6, R3
 	FADD	R3, R7, R2
 	RTS
+};
 
+__asm {
 __vnf_v2f_cross:
 	MOVLHD	R5, R5, R7
 	PMUL.F	R4, R7, R6
@@ -159,7 +170,9 @@ __vnf_v2f_cross:
 	FLDCFH	R6, R3
 	FSUB	R7, R3, R2
 	RTS
+};
 
+__asm {
 __vnf_c2f_mul:
 	MOVLHD	R5, R5, R6		//{    Bi,     Br}
 	PMUL.F	R4, R5, R16		//{ Ar*Br,  Ai*Bi}
@@ -169,7 +182,9 @@ __vnf_c2f_mul:
 	MOVHD	R17, R16, R19	//{-Ai*Bi,  Ai*Br}
 	PADD.F	R18, R19, R2	//{Ar*Br-Ai*Bi, Ar*Bi+Ai*Br}
 	RTSU
+};
 
+__asm {
 __vnf_v2d_add:
 __vnf_c2d_add:
 	FADD	R4, R6, R2
@@ -184,7 +199,9 @@ __vnf_v2d_mul:
 	FMUL	R4, R6, R2
 	FMUL	R5, R7, R3
 	RTS
+};
 
+__asm {
 __vnf_v2d_dot:
 	FMUL	R4, R6, R18
 	FMUL	R5, R7, R19
@@ -195,7 +212,9 @@ __vnf_v2d_cross:
 	FMUL	R5, R6, R19
 	FSUB	R18, R19, R2
 	RTS
+};
 
+__asm {
 __vnf_v3f_add:
 __vnf_v4f_add:
 __vnf_vqf_add:
@@ -210,6 +229,9 @@ __vnf_v3f_mul:
 __vnf_v4f_mul:
 	PMULX.F	R4, R6, R2
 	RTS
+};
+
+__asm {
 
 #if 0
 __vnf_v3f_div:
@@ -260,7 +282,9 @@ __vnf_vqf_div:
 	BRA			__vnf_vqf_mul
 //	RTSU
 #endif
+};
 
+__asm {
 __vnf_v3f_cross:
 __vnf_v4f_cross:
 	PSHUFX.L	R4, 0x49, R16
@@ -273,7 +297,9 @@ __vnf_v4f_cross:
 	PSUBX.F		R20, R22, R2
 	EXTU.L		R3
 	RTSU
+};
 
+__asm {
 __vnf_v3f_dot:
 	PMULX.F		R4, R6, R16
 	EXTU.L		R17
@@ -282,7 +308,9 @@ __vnf_v3f_dot:
 	FLDCFH		R3, R19
 	FADD		R18, R19, R2
 	RTSU
+};
 
+__asm {
 __vnf_v4f_dot:
 	PMULX.F		R4, R6, R16
 	PADD.F		R16, R17, R3
@@ -290,8 +318,9 @@ __vnf_v4f_dot:
 	FLDCFH		R3, R19
 	FADD		R18, R19, R2
 	RTSU
+};
 
-
+__asm {
 __v3fq_float3:
 	FSTCF	R4, R16
 	FSTCF	R5, R17
@@ -320,7 +349,9 @@ __v3fq_float3:
 //	OR		R16, R17, R19
 //	OR		R18, R19, R2
 //	RTSU
+};
 
+__asm {
 __v3fq_unpackx2:
 	PLDCEHL	R4, R20
 	PLDCEHH	R4, R21
@@ -344,7 +375,9 @@ __v3fq_unpackx2:
 	MOV		R22, R7
 	RTSU
 #endif
+};
 
+__asm {
 __v3fq_packx:
 	PSTCH	R2, R18
 	PSTCH	R3, R19
@@ -367,7 +400,9 @@ __v3fq_packx:
 	MOV		R18, R2
 
 	RTS
+};
 
+__asm {
 __vnf_v3fq_add:
 	MOV			LR, R1
 	BSR			__v3fq_unpackx2
@@ -380,7 +415,9 @@ __vnf_v3fq_add:
 	PADDX.F		R4, R6, R2
 	BSR			__v3fq_packx
 	JMP			R1
+};
 
+__asm {
 __vnf_v3fq_sub:
 	MOV			LR, R1
 	BSR			__v3fq_unpackx2
@@ -393,7 +430,9 @@ __vnf_v3fq_sub:
 	PSUBX.F		R4, R6, R2
 	BSR			__v3fq_packx
 	JMP			R1
+};
 
+__asm {
 __vnf_v3fq_mul:
 	MOV			LR, R1
 	BSR			__v3fq_unpackx2
@@ -407,7 +446,9 @@ __vnf_v3fq_mul:
 //	FLDCF		R3, R6
 //	BSR			__v3fq_float3
 //	JMP			R23
+};
 
+__asm {
 __vnf_v3fq_dot:
 	MOV			LR, R1
 	BSR			__v3fq_unpackx2
@@ -423,8 +464,9 @@ __vnf_v3fq_cross:
 //	FLDCF		R3, R6
 //	BSR			__v3fq_float3
 	JMP			R1
+};
 
-
+__asm {
 __vnf_v3fq_from_v3f:
 	PSTCH	R4, R18
 	PSTCH	R5, R19
@@ -447,12 +489,16 @@ __vnf_v3fq_from_v3f:
 	MOV		R18, R2
 
 	RTS
+};
 
+__asm {
 __vnf_v3f_from_v3fq:
 	PLDCEHL	R4, R2
 	PLDCEHH	R4, R3
 	RTS
+};
 
+__asm {
 __vnf_v4h_from_v4f:
 	PSTCH	R4, R2
 	PSTCH	R5, R3
@@ -488,7 +534,9 @@ __v3fx_float3:
 	OR		R16, R20, R2
 	OR		R18, R21, R3
 	RTSU
+};
 
+__asm {
 __v3fx_unpackx2:
 	SHLD.Q	R4, 21, R16
 	MOV	R5, R18
@@ -501,7 +549,9 @@ __v3fx_unpackx2:
 	SHLD.Q	R7, 22, R21
 	OR		R19, R21
 	RTSU
+};
 
+__asm {
 __vnf_v3fx_add:
 	MOV			LR, R23
 	BSR			__v3fx_unpackx2
@@ -526,7 +576,9 @@ __vnf_v3fx_mul:
 	FMUL		R18, R22, R6
 	MOV			R23, LR
 	BRA			__v3fx_float3
+};
 
+__asm {
 __vnf_v3fx_dot:
 	MOV			LR, R23
 	BSR			__v3fx_unpackx2
@@ -536,8 +588,6 @@ __vnf_v3fx_dot:
 	FADD		R4, R5, R3
 	FADD		R3, R6, R2
 	JMP			R23
-
-
 };
 
 __vec2f __vnf_v2f_div(__vec2f A, __vec2f B)

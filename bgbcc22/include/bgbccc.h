@@ -365,6 +365,8 @@ extern "C" {
 #define BGBCC_REGFL_CALLVARARG		0x01000000		//Calls a vararg func
 #define BGBCC_REGFL_ISVARARG		0x02000000		//Is varargs
 
+#define BGBCC_REGFL_TYPEACCESSED	0x04000000		//type was accessed
+
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame
 #define	BGBCC_MAXSTACKFRAME			0x080000	//maximum allowed stack frame

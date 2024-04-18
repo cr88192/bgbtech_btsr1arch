@@ -110,8 +110,11 @@ _checksane_fail_alu4:
 	break
 	break
 
+.global tk_checksane_asm
+
 .global X(tk_checksane_asm)
 X(tk_checksane_asm):
+tk_checksane_asm:
 
 //	rts
 

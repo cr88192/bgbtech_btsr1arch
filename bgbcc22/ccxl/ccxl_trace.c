@@ -208,12 +208,545 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,
 	return(0);
 }
 
+ccxl_status BGBCC_CCXL_GlobalMarkReachable_BinaryOp(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
+{
+	char *s0, *s1;
+	int i, j, k;
+	int opr;
+
+	s0=NULL;
+	s1=NULL;
+	if(BGBCC_CCXL_TypeVariantP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_ADD:	s0="__lva_add"; break;
+		case CCXL_BINOP_SUB:	s0="__lva_sub"; break;
+
+		case CCXL_BINOP_AND:	s0="__lva_and"; break;
+		case CCXL_BINOP_OR:		s0="__lva_or"; break;
+		case CCXL_BINOP_XOR:	s0="__lva_xor"; break;
+
+		case CCXL_BINOP_MUL:	s0="__lva_mul"; break;
+		case CCXL_BINOP_DIV:	s0="__lva_div"; break;
+		case CCXL_BINOP_MOD:	s0="__lva_mod"; break;
+
+		case CCXL_BINOP_SHL:	s0="__lva_shl"; break;
+		case CCXL_BINOP_SHR:	s0="__lva_shr"; break;
+		}
+	}
+	
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_ADD:	s0="__xli_add"; break;
+		case CCXL_BINOP_SUB:	s0="__xli_sub"; break;
+
+		case CCXL_BINOP_AND:	s0="__xli_and"; break;
+		case CCXL_BINOP_OR:		s0="__xli_or"; break;
+		case CCXL_BINOP_XOR:	s0="__xli_xor"; break;
+
+		case CCXL_BINOP_MUL:
+			s0="__xli_umul";
+			s1="__xli_smul";
+			break;
+		case CCXL_BINOP_DIV:
+			s0="__xli_udiv";
+			s1="__xli_sdiv";
+			break;
+		case CCXL_BINOP_MOD:
+			s0="__xli_umod";
+			s1="__xli_smod";
+			break;
+
+		case CCXL_BINOP_SHL:	s0="__xli_shl"; break;
+		case CCXL_BINOP_SHR:
+			s0="__xli_shlr";
+			s1="__xli_shar";
+			break;
+		}
+	}
+
+	if(BGBCC_CCXL_TypeFloat128P(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_ADD:	s0="__xlf_add"; break;
+		case CCXL_BINOP_SUB:	s0="__xlf_sub"; break;
+		case CCXL_BINOP_MUL:	s0="__xlf_mul"; break;
+		case CCXL_BINOP_DIV:	s0="__xlf_div"; break;
+		}
+	}
+
+	if(BGBCC_CCXL_TypeBitIntP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_ADD:	s0="__xbi_add"; break;
+		case CCXL_BINOP_SUB:	s0="__xbi_sub"; break;
+
+		case CCXL_BINOP_AND:	s0="__xbi_and"; break;
+		case CCXL_BINOP_OR:		s0="__xbi_or"; break;
+		case CCXL_BINOP_XOR:	s0="__xbi_xor"; break;
+
+		case CCXL_BINOP_MUL:
+			s0="__xbi_umul";
+			s1="__xbi_smul";
+			break;
+		case CCXL_BINOP_DIV:
+			s0="__xbi_udiv";
+			s1="__xbi_sdiv";
+			break;
+		case CCXL_BINOP_MOD:
+			s0="__xbi_umod";
+			s1="__xbi_smod";
+			break;
+
+		case CCXL_BINOP_SHL:	s0="__xbi_shl"; break;
+		case CCXL_BINOP_SHR:
+			s0="__xbi_shlr";
+			s1="__xbi_shar";
+			break;
+		}
+	}
+
+	
+	if(BGBCC_CCXL_TypeVecP(ctx, op->type))
+	{
+		i=BGBCC_CCXL_GetTypeBaseType(ctx, op->type);
+		opr=op->opr;
+		
+		if(op->opn==CCXL_VOP_UNARY)
+		{
+			if(op->opr==CCXL_UNOP_MOV)
+				opr=CCXL_BINOP_ADD;
+			if(op->opr==CCXL_UNOP_NEG)
+				opr=CCXL_BINOP_SUB;
+		}
+		
+		switch(i)
+		{
+		case CCXL_TY_VEC2F:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_v2f_add";		break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v2f_sub";		break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v2f_mul";		break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v2f_div";		break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v2f_dot";		break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v2f_cross";	break;
+			}
+			break;
+		case CCXL_TY_VEC3F:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_v3f_add";		break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v3f_sub";		break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v3f_mul";		break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v3f_div";		break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v3f_dot";		break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v3f_cross";	break;
+			}
+			break;
+		case CCXL_TY_VEC4F:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_v4f_add";		break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v4f_sub";		break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v4f_mul";		break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v4f_div";		break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v4f_dot";		break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v4f_cross";	break;
+			}
+			break;
+		case CCXL_TY_VEC4H:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_v4h_add";		break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v4h_sub";		break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v4h_mul";		break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v4h_div";		break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v4h_dot";		break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v4h_cross";	break;
+			}
+			break;
+
+		case CCXL_TY_VEC2D:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_v2d_add";		break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v2d_sub";		break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v2d_mul";		break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v2d_div";		break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v2d_dot";		break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v2d_cross";	break;
+			}
+			break;
+
+		case CCXL_TY_VEC3FQ:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_v3fq_add";	break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v3fq_sub";	break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v3fq_mul";	break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v3fq_div";	break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v3fq_dot";	break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v3fq_cross";	break;
+			}
+			break;
+		case CCXL_TY_VEC3FX:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_v3fx_add";	break;
+			case CCXL_BINOP_SUB:	s0="__vnf_v3fx_sub";	break;
+			case CCXL_BINOP_MUL:	s0="__vnf_v3fx_mul";	break;
+			case CCXL_BINOP_DIV:	s0="__vnf_v3fx_div";	break;
+			case CCXL_BINOP_XOR:	s0="__vnf_v3fx_dot";	break;
+			case CCXL_BINOP_MOD:	s0="__vnf_v3fx_cross";	break;
+			}
+			break;
+
+		case CCXL_TY_FCOMPLEX:
+		case CCXL_TY_FIMAG:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_c2f_add";	break;
+			case CCXL_BINOP_SUB:	s0="__vnf_c2f_sub";	break;
+			case CCXL_BINOP_MUL:	s0="__vnf_c2f_mul";	break;
+			case CCXL_BINOP_DIV:	s0="__vnf_c2f_div";	break;
+			}
+			break;
+		case CCXL_TY_DCOMPLEX:
+		case CCXL_TY_DIMAG:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_c2d_add";	break;
+			case CCXL_BINOP_SUB:	s0="__vnf_c2d_sub";	break;
+			case CCXL_BINOP_MUL:	s0="__vnf_c2d_mul";	break;
+			case CCXL_BINOP_DIV:	s0="__vnf_c2d_div";	break;
+			}
+			break;
+
+		case CCXL_TY_QUATF:
+			switch(opr)
+			{
+			case CCXL_BINOP_ADD:	s0="__vnf_vqf_add"; break;
+			case CCXL_BINOP_SUB:	s0="__vnf_vqf_sub"; break;
+			case CCXL_BINOP_MUL:	s0="__vnf_vqf_mul"; break;
+			case CCXL_BINOP_DIV:	s0="__vnf_vqf_div"; break;
+			case CCXL_BINOP_XOR:	s0="__vnf_vqf_dot"; break;
+			case CCXL_BINOP_MOD:	s0="__vnf_vqf_cross"; break;
+			}
+			break;
+		}
+	
+	}
+	
+	if(s0)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s0);
+	}
+
+	if(s1)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s1);
+	}
+
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_GlobalMarkReachable_UnaryOp(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
+{
+	char *s0, *s1;
+
+	if(BGBCC_CCXL_TypeVecP(ctx, op->type))
+	{
+		BGBCC_CCXL_GlobalMarkReachable_BinaryOp(ctx, obj, op);
+		return(0);
+	}
+
+	s0=NULL;
+	s1=NULL;
+	if(BGBCC_CCXL_TypeVariantP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_UNOP_NEG:		s0="__lva_neg"; break;
+		case CCXL_UNOP_NOT:		s0="__lva_not"; break;
+		case CCXL_UNOP_LNOT:	s0="__lva_lnot"; break;
+		case CCXL_UNOP_INC:		s0="__lva_inc"; break;
+		case CCXL_UNOP_DEC:		s0="__lva_dec"; break;
+		}
+	}
+	
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_UNOP_NEG:		s0="__xli_neg"; break;
+		case CCXL_UNOP_NOT:		s0="__xli_not"; break;
+		case CCXL_UNOP_LNOT:	s0="__xli_lnot"; break;
+		case CCXL_UNOP_INC:		s0="__xli_inc"; break;
+		case CCXL_UNOP_DEC:		s0="__xli_dec"; break;
+		}
+	}
+
+	if(BGBCC_CCXL_TypeFloat128P(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_UNOP_NEG:		s0="__xlf_neg"; break;
+		}
+	}
+
+	if(BGBCC_CCXL_TypeBitIntP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_UNOP_NEG:		s0="__xbi_neg"; break;
+		case CCXL_UNOP_NOT:		s0="__xbi_not"; break;
+		case CCXL_UNOP_LNOT:	s0="__xbi_lnot"; break;
+		case CCXL_UNOP_INC:		s0="__xbi_inc"; break;
+		case CCXL_UNOP_DEC:		s0="__xbi_dec"; break;
+		}
+	}
+	
+	if(s0)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s0);
+	}
+
+	if(s1)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s1);
+	}
+
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_GlobalMarkReachable_CompareOp(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
+{
+	char *s0, *s1;
+
+	s0=NULL;
+	s1=NULL;
+	if(BGBCC_CCXL_TypeVariantP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_CMP_EQ:		s0="__lva_cmp_eq"; break;
+		case CCXL_CMP_NE:		s0="__lva_cmp_eq"; break;
+		case CCXL_CMP_LT:		s0="__lva_cmp_gt"; break;
+		case CCXL_CMP_GT:		s0="__lva_cmp_gt"; break;
+		case CCXL_CMP_LE:		s0="__lva_cmp_gt"; break;
+		case CCXL_CMP_GE:		s0="__lva_cmp_gt"; break;
+		case CCXL_CMP_TST:		s0="__lva_cmp_tst"; break;
+		case CCXL_CMP_NTST:		s0="__lva_cmp_tst"; break;
+		}
+	}
+	
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_CMP_EQ:		s0="__xli_cmp_eq"; break;
+		case CCXL_CMP_NE:		s0="__xli_cmp_ne"; break;
+
+		case CCXL_CMP_LT:		case CCXL_CMP_GT:
+				s0="__xli_cmp_gt";
+				s1="__xli_cmp_hi";
+				break;
+
+		case CCXL_CMP_LE:		case CCXL_CMP_GE:
+				s0="__xli_cmp_ge";
+				s1="__xli_cmp_he";
+				break;
+		}
+	}
+	
+	if(BGBCC_CCXL_TypeFloat128P(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_CMP_EQ:		s0="__xlf_cmp_eq"; break;
+		case CCXL_CMP_NE:		s0="__xlf_cmp_ne"; break;
+		case CCXL_CMP_LT:		s0="__xlf_cmp_gt"; break;
+		case CCXL_CMP_GT:		s0="__xlf_cmp_gt"; break;
+		case CCXL_CMP_LE:		s0="__xlf_cmp_ge"; break;
+		case CCXL_CMP_GE:		s0="__xlf_cmp_ge"; break;
+		}
+	}
+
+	if(BGBCC_CCXL_TypeBitIntP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_CMP_EQ:		s0="__xbi_cmp_eq"; break;
+		case CCXL_CMP_NE:		s0="__xbi_cmp_ne"; break;
+
+		case CCXL_CMP_LT:		case CCXL_CMP_GT:
+				s0="__xbi_cmp_gt";
+				s1="__xbi_cmp_hi";
+				break;
+
+		case CCXL_CMP_LE:		case CCXL_CMP_GE:
+				s0="__xbi_cmp_ge";
+				s1="__xbi_cmp_he";
+				break;
+		}
+	}
+	
+	if(s0)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s0);
+	}
+
+	if(s1)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s1);
+	}
+
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_GlobalMarkReachable_ConvOp(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
+{
+	char *s0, *s1;
+
+	s0=NULL;
+	s1=NULL;
+
+	if(BGBCC_CCXL_TypeVariantP(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, op->stype))
+		{
+			s0="__lva_fromi32";
+			s1="__lva_fromi64";
+		}
+
+		if(BGBCC_CCXL_TypeSgInt128P(ctx, op->stype))
+		{
+			s0="__lva_fromi128";
+		}
+
+		if(BGBCC_CCXL_TypeRealP(ctx, op->stype))
+		{
+			s0="__lva_fromf32";
+			s1="__lva_fromf64";
+		}
+
+		if(BGBCC_CCXL_TypeFloat128P(ctx, op->stype))
+		{
+			s0="__lva_fromf128";
+		}
+
+		if(BGBCC_CCXL_TypePointerP(ctx, op->stype))
+		{
+			s0="__lva_conv_fromptr";
+
+			if(BGBCC_CCXL_TypeCStringP(ctx, op->stype))
+				{ s1="__lva_conv_fromstr"; }
+			if(BGBCC_CCXL_TypeCWStringP(ctx, op->stype))
+				{ s1="__lva_conv_fromwstr"; }
+		}
+	}
+
+	if(BGBCC_CCXL_TypePointerP(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeVariantP(ctx, op->stype))
+		{
+			if(BGBCC_CCXL_TypeCWStringP(ctx, op->type))
+				{ s0="__lva_conv_towstr"; }
+			else if(BGBCC_CCXL_TypeCStringP(ctx, op->type))
+				{ s0="__lva_conv_tostr"; }
+			else
+				{ s0="__lva_conv_toptr"; }
+		}
+		if(BGBCC_CCXL_TypeRefArrayP(ctx, op->stype))
+		{
+			s0="__lvo_arraygetptr";
+		}
+	}
+
+	if(BGBCC_CCXL_TypeSmallLongP(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeBcd64P(ctx, op->stype))
+			{ s0="__bcd64_toint"; }
+		if(BGBCC_CCXL_TypeBcd128P(ctx, op->stype))
+			{ s0="__bcd128_toint"; }
+
+		if(BGBCC_CCXL_TypeVariantP(ctx, op->stype))
+		{
+			s0="__lva_conv_toi32";
+			s1="__lva_conv_toi64";
+		}
+	}
+
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeVariantP(ctx, op->stype))
+			{ s0="__lva_conv_toi128"; }
+		if(BGBCC_CCXL_TypeBcd128P(ctx, op->stype))
+			{ s0="__bcd128_toint128"; }
+	}
+
+	if(BGBCC_CCXL_TypeRealP(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeVariantP(ctx, op->stype))
+		{
+			s0="__lva_conv_tof32";
+			s1="__lva_conv_tof64";
+		}
+	}
+
+	if(BGBCC_CCXL_TypeFloat128P(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeVariantP(ctx, op->stype))
+		{
+			s0="__lva_tof128";
+		}
+	}
+
+	if(BGBCC_CCXL_TypeBcd64P(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, op->stype))
+		{
+			s0="__bcd64_fromint";
+		}
+	}
+	if(BGBCC_CCXL_TypeBcd128P(ctx, op->type))
+	{
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, op->stype))
+		{
+			s0="__bcd128_fromint";
+		}
+	}
+
+	if(s0)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s0);
+	}
+
+	if(s1)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s1);
+	}
+
+	return(0);
+}
+
 ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj)
 {
 	BGBCC_CCXL_VirtOp *op;
 	ccxl_register *args;
 	ccxl_register treg;
+	char *s0, *s1;
 	int n, lvl, oldmult;
 	int i, j;
 
@@ -227,10 +760,14 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 		}
 	}
 
+
 //	if(!strcmp(obj->name, "tk_fat_init"))
 //		j=-1;
 //	if(!strcmp(obj->name, "tk_vfile_init"))
 //		j=-1;
+
+	if(!strcmp(obj->name, "vfw_begin_decompress"))
+		j=-1;
 
 	lvl=0;
 	for(i=0; i<obj->n_vop; i++)
@@ -274,10 +811,165 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcc, 1);
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcd, 1);
 		}
+
+		if(op->opn==CCXL_VOP_BINARY)
+		{
+			BGBCC_CCXL_GlobalMarkReachable_BinaryOp(ctx, obj, op);
+		}
+
+		if(op->opn==CCXL_VOP_UNARY)
+		{
+			BGBCC_CCXL_GlobalMarkReachable_UnaryOp(ctx, obj, op);
+		}
+
+		if(	(op->opn==CCXL_VOP_COMPARE)	||
+			(op->opn==CCXL_VOP_JCMP) ||
+			(op->opn==CCXL_VOP_JCMP_ZERO))
+		{
+			BGBCC_CCXL_GlobalMarkReachable_CompareOp(ctx, obj, op);
+		}
+
+		if(op->opn==CCXL_VOP_CONV)
+		{
+			BGBCC_CCXL_GlobalMarkReachable_ConvOp(ctx, obj, op);
+		}
 	}
 
 	ctx->trace_mult=oldmult;
 	return(1);
+}
+
+ccxl_status BGBCC_CCXL_GlobalMarkReachableAsmBlob(BGBCC_TransState *ctx,
+	BGBCC_CCXL_RegisterInfo *obj, char *name)
+{
+	char *cs, *tk0, *tk1, *tk2;
+	int i, j, k;
+	
+	if(obj->regflags&BGBCC_REGFL_RECTRACE)
+	{
+		i=ctx->trace_mult;
+		obj->gblrefcnt+=1+4*(i*i);
+		return(0);
+	}
+	
+	cs=(char *)(obj->text);
+	while(cs && *cs)
+	{
+		cs=BGBCC_JX2A_ParseTokenAlt(cs, &tk0);
+		if(!cs || !(*cs))
+			break;
+		
+		if(!strcmp(tk0, "I.global") ||
+			!strcmp(tk0, "I.globl") )
+		{
+			cs=BGBCC_JX2A_ParseTokenAlt(cs, &tk1);
+			if((tk1[0]=='I') && !strcmp(tk1+1, name))
+				break;
+		}
+		
+		if((tk0[0]=='I') && (cs[0]==':'))
+		{
+			if(!strcmp(tk0+1, name))
+				break;
+		}
+	}
+
+	if(!cs || !*cs)
+		return(0);
+
+	obj->regflags|=BGBCC_REGFL_RECTRACE;
+	obj->regflags|=BGBCC_REGFL_ACCESSED;
+	obj->regflags&=~BGBCC_REGFL_CULL;
+
+	cs=(char *)(obj->text);
+	while(cs && *cs)
+	{
+		cs=BGBCC_JX2A_ParseTokenAlt(cs, &tk0);
+		if(!cs || !(*cs))
+			break;
+
+		if(!strcmp(tk0, "I.extern") ||
+			!strcmp(tk0, "I.weak") )
+		{
+			cs=BGBCC_JX2A_ParseTokenAlt(cs, &tk1);
+			if(tk1[0]=='I')
+			{
+				tk2=bgbcc_strdup(tk1+1);
+				BGBCC_CCXL_GlobalMarkReachableName(ctx, tk2);
+			}
+		}
+	}
+
+	return(1);
+}
+
+static char *bgbcc_ccxl_reachhash[4096];
+
+ccxl_status BGBCC_CCXL_GlobalMarkReachableName(BGBCC_TransState *ctx,
+	char *name)
+{
+//	char tb[256];
+	BGBCC_CCXL_RegisterInfo *obj;
+	char *cs, *ct;
+	int i, j, k, h;
+
+	if(!name || !(*name))
+		return(0);
+
+	/* If name has already been marked, avoid trying to do so again. */
+	h=BGBCC_CCXL_HashName(name)&4095;
+	if(bgbcc_ccxl_reachhash[h] && !strcmp(bgbcc_ccxl_reachhash[h], name))
+		return(0);
+	bgbcc_ccxl_reachhash[h]=bgbcc_strdup(name);
+
+#if 0
+	cs=name;
+	while(*cs && (*cs!=' '))
+		cs++;
+	if(*cs)
+	{
+		cs=name;
+		ct=tb;
+		while(*cs)
+		{
+			while(*cs==' ')
+				cs++;
+			while(*cs && (*cs!=' '))
+				*ct++=*cs++;
+			*ct++=0;
+			if(tb[0])
+			{
+				BGBCC_CCXL_GlobalMarkReachableName(ctx, bgbcc_strdup(tb));
+			}
+			ct=tb;
+		}
+		return(0);
+	}
+#endif
+
+	if(!strncmp(name, "__lva_", 6))
+	{
+		k=-1;
+	}
+
+	for(i=0; i<ctx->n_reg_globals; i++)
+	{
+		obj=ctx->reg_globals[i];
+		if(!obj)
+			continue;
+
+		if(obj->qname && !strcmp(obj->qname, name))
+		{
+			BGBCC_CCXL_GlobalMarkReachable(ctx, obj);
+		}
+
+		if(obj->regtype==CCXL_LITID_ASMBLOB)
+		{
+			BGBCC_CCXL_GlobalMarkReachableAsmBlob(ctx, obj, name);
+		}
+	}
+
+	return(0);
 }
 
 ccxl_status BGBCC_CCXL_GlobalMarkReachable(BGBCC_TransState *ctx,
@@ -338,7 +1030,17 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 //	if((obj->regtype==CCXL_LITID_FUNCTION) && (obj->vtr))
 	if(obj->regtype==CCXL_LITID_FUNCTION)
 	{
+		if(!(obj->n_vop))
+			BGBCC_CCXL_GlobalMarkReachableName(ctx, obj->qname);
 		BGBCC_CCXL_GlobalMarkReachable_Func(ctx, obj);
+//		obj->regflags&=~BGBCC_REGFL_RECTRACE;
+		return(1);
+	}
+
+	if(obj->regtype==CCXL_LITID_PROTOTYPE)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, obj->qname);
+//		BGBCC_CCXL_GlobalMarkReachable_Func(ctx, obj);
 //		obj->regflags&=~BGBCC_REGFL_RECTRACE;
 		return(1);
 	}

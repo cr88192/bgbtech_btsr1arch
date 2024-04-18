@@ -4631,7 +4631,7 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		BGBCC_JX2_EmitNamedLabel(sctx, tb);
 		
 		BGBCC_JX2C_EmitOpImm(ctx, sctx, BGBCC_SH_NMID_BRK, k);
-		BGBCC_JX2C_EmitOpNone(ctx, sctx, BGBCC_SH_NMID_BRK);
+//		BGBCC_JX2C_EmitOpNone(ctx, sctx, BGBCC_SH_NMID_BRK);
 		return(1);
 	}
 

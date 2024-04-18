@@ -37,7 +37,9 @@ tkmm_bigint_add:
 	MOV.X	R16, (R6, 32)
 
 	RTS
+};
 
+__asm {
 tkmm_bigint_sub:
 	MOV.X	(R4,  0), R16
 	MOV.X	(R4, 16), R18
@@ -65,7 +67,9 @@ tkmm_bigint_sub:
 	MOV.X	R16, (R6, 32)
 
 	RTS
+};
 
+__asm {
 tkmm_bigint_and:
 	MOV.X	(R4,  0), R16
 	MOV.X	(R5,  0), R20
@@ -89,7 +93,9 @@ tkmm_bigint_and:
 	MOV.X	R16, (R6, 32)
 	
 	RTS
+};
 
+__asm {
 tkmm_bigint_or:
 	MOV.X	(R4,  0), R16
 	MOV.X	(R5,  0), R20
@@ -113,7 +119,9 @@ tkmm_bigint_or:
 	MOV.X	R16, (R6, 32)
 	
 	RTS
+};
 
+__asm {
 tkmm_bigint_xor:
 	MOV.X	(R4,  0), R16
 	MOV.X	(R5,  0), R20
@@ -137,7 +145,6 @@ tkmm_bigint_xor:
 	MOV.X	R16, (R6, 32)
 	
 	RTS
-
 };
 
 #endif
@@ -230,7 +237,9 @@ __xbi_add:
 	CMPEQ	0, R7
 	BF		.L0
 	RTS
+};
 
+__asm {
 __xbi_sub:
 	MOV		0, R2
 	.L0:
@@ -248,7 +257,9 @@ __xbi_sub:
 	CMPEQ	0, R7
 	BF		.L0
 	RTS
+};
 
+__asm {
 __xbi_and:
 	.L0:
 	MOV.X	(R4, 0), R16
@@ -263,7 +274,9 @@ __xbi_and:
 	CMPEQ	0, R7
 	BF		.L0
 	RTS
+};
 
+__asm {
 __xbi_or:
 	.L0:
 	MOV.X	(R4, 0), R16
@@ -278,7 +291,9 @@ __xbi_or:
 	CMPEQ	0, R7
 	BF		.L0
 	RTS
+};
 
+__asm {
 __xbi_xor:
 	.L0:
 	MOV.X	(R4, 0), R16
@@ -334,7 +349,9 @@ __xbi_shll:
 
 	.Lend:
 	RTS
+};
 
+__asm {
 __xbi_shlr:
 	MOVU.W	(R5), R3
 	ADD		R7, R7
@@ -366,8 +383,9 @@ __xbi_shlr:
 
 	.Lend:
 	RTS
+};
 
-
+__asm {
 __xbi_shar:
 	MOVU.W	(R5), R3
 	ADD		R7, R7
@@ -426,7 +444,9 @@ __xbi_neg:
 	BF		.L0
 	
 	RTS
+};
 
+__asm {
 __xbi_not:
 	.L0:
 	MOV.X	(R4), R16
@@ -439,7 +459,9 @@ __xbi_not:
 	CMPEQ	0, R6
 	BF		.L0
 	RTS
+};
 
+__asm {
 __xbi_isneg:
 	ADD		R5, R5, R7
 	ADD		-1, R7
@@ -478,7 +500,9 @@ __xbi_cmp_eq:
 	.Lfalse:
 	MOV		0, R2
 	RTS
+};
 
+__asm {
 __xbi_cmp_ne:
 	MOV		R6, R7
 	.L0:
@@ -499,7 +523,9 @@ __xbi_cmp_ne:
 	.Ltrue:
 	MOV		1, R2
 	RTS
+};
 
+__asm {
 __xbi_cmp_gt:
 	SHLD	R6, 1, R3
 	ADD		-2, R3
@@ -528,7 +554,9 @@ __xbi_cmp_gt:
 	CMPQGT	R19, R17
 	MOVT	R2
 	RTS
+};
 
+__asm {
 __xbi_cmp_ge:
 	SHLD	R6, 1, R3
 	ADD		-2, R3
@@ -557,7 +585,9 @@ __xbi_cmp_ge:
 	CMPQGT	R19, R17
 	MOVT	R2
 	RTS
+};
 
+__asm {
 __xbi_cmp_hi:
 	SHLD	R6, 1, R3
 	ADD		-2, R3
@@ -586,7 +616,9 @@ __xbi_cmp_hi:
 	CMPQHI	R19, R17
 	MOVT	R2
 	RTS
+};
 
+__asm {
 __xbi_cmp_he:
 	SHLD	R6, 1, R3
 	ADD		-2, R3
@@ -615,7 +647,9 @@ __xbi_cmp_he:
 	CMPQHI	R17, R19
 	MOVNT	R2
 	RTS
+};
 
+__asm {
 __xbi_iszero:
 	.L0:
 	MOV.X	(R4), R16

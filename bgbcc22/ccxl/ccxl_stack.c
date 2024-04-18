@@ -2786,7 +2786,7 @@ ccxl_status BGBCC_CCXL_StackCastSigI(BGBCC_TransState *ctx, char *sig)
 	}
 #endif
 
-#if 0
+#if 1
 	if(	BGBCC_CCXL_TypeCheckConvTransparentP(ctx, dty, sty) &&
 		(BGBCC_CCXL_GetRegAsType(ctx, sreg, dty, &dreg)>0))
 	{

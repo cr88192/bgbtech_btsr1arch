@@ -4599,6 +4599,18 @@ int BGBCC_JX2C_CheckVRegConsumeNextOpP(
 	return(0);
 }
 
+int BGBCC_JX2C_CheckVRegCrossTraceP(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_register reg)
+{
+	int vspfl;
+	vspfl=BGBCC_JX2C_GetFrameVRegVspanFlags(ctx, sctx, reg);
+	if(vspfl&BGBCC_RSPFL_CROSSTRACE)
+		return(1);
+	return(0);
+}
+
 int BGBCC_JX2C_ProbeVRegInRegisterP(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -4880,7 +4892,8 @@ int BGBCC_JX2C_EmitReleaseRegister(
 //				BGBCC_JX2C_EmitSyncRegisterIndex(ctx, sctx, i);
 
 //				if((regfl&BGBCC_REGFL_ALIASPTR))
-				if((regfl&BGBCC_REGFL_ALIASPTR) ||
+//				if((regfl&BGBCC_REGFL_ALIASPTR) ||
+				if(
 //					BGBCC_CCXL_IsRegVolatileP(ctx, reg) ||
 					(BGBCC_CCXL_IsRegVolatileP(ctx, reg) &&
 						!BGBCC_CCXL_IsRegLocalP(ctx, reg)) ||
@@ -4888,9 +4901,25 @@ int BGBCC_JX2C_EmitReleaseRegister(
 				{
 					BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
 				}
+#if 1
+				else if(regfl&BGBCC_REGFL_ALIASPTR)
+				{
+					if(	BGBCC_CCXL_IsRegArgP(ctx, reg) ||
+						BGBCC_CCXL_IsRegLocalP(ctx, reg))
+					{
+//						BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 3);
+						BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 1);
+					}else
+					{
+						BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 7);
+					}
+				}
+#endif
 
+#if 1
 				sctx->regalc_live&=~(1ULL<<i);
 				sctx->regalc_noval&=~(1ULL<<i);
+#endif
 
 //				if((sctx->regalc_dirty)&(1ULL<<i))
 //					if((reg1.val&0xFFF)==0xFFF)
@@ -5099,6 +5128,7 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 			(	BGBCC_CCXL_IsRegTempP(ctx, reg)		||
 				BGBCC_CCXL_IsRegArgP(ctx, reg)		||
 				BGBCC_CCXL_IsRegLocalP(ctx, reg)	)	&&
+			!(regfl&BGBCC_REGFL_ALIASPTR) &&
 			(sctx->is_leaftiny&1))
 		{
 			sctx->regalc_dirty&=~(1ULL<<i);
@@ -5300,6 +5330,54 @@ int BGBCC_JX2C_EmitSyncLeafRegisters(
 			sctx->regalc_pair&=~(1ULL<<i);
 		}
 #endif
+	}
+
+	return(0);
+}
+
+
+int BGBCC_JX2C_EmitSyncAliasRegisters(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	ccxl_register reg;
+	int i, isv, regfl;
+
+//	BGBCC_JX2C_EmitSyncFpRegisters(ctx, sctx);
+
+	/* value in register? */
+	for(i=0; i<sctx->maxreg_gpr_lf; i++)
+	{
+		isv=0;
+		reg=sctx->regalc_map[i];
+		regfl=BGBCC_JX2C_GetFrameVRegFlags(ctx, sctx, reg);
+
+		if(
+//			BGBCC_CCXL_IsRegGlobalP(ctx, reg) ||
+//			BGBCC_CCXL_IsRegThisIdxP(ctx, reg) ||
+			BGBCC_CCXL_IsRegVolatileP(ctx, reg) ||
+			(regfl&BGBCC_REGFL_ALIASPTR))
+		{
+			isv=1;
+		}
+		
+		if(	!BGBCC_CCXL_IsRegArgP(ctx, reg) &&
+			!BGBCC_CCXL_IsRegLocalP(ctx, reg))
+				continue;
+		
+		if(i<sctx->vsp_rsv)
+			isv=0;
+
+		if(!isv)
+			continue;
+
+		if(!(sctx->is_leaftiny&1))
+		{
+			if((sctx->regalc_live&(1ULL<<i)) && !sctx->is_simpass)
+				{ BGBCC_DBGBREAK }
+		}
+
+		BGBCC_JX2C_EmitSyncRegisterIndex2(ctx, sctx, i, 3);
 	}
 
 	return(0);

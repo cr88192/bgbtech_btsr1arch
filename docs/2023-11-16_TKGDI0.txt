@@ -23,15 +23,19 @@ For full-screen programs, there would be calls for setting up the screen and get
 ** Possibly consider a PollSleep command?...
 ** Would cause the calling program to sleep until an event arrives.
 
+
+=== Bitmap Images ===
+
 TKBMP
 * Basic case will be a normal DIB Bitmap
 ** BMP, TGA, etc, can be differentiated via magic numbers.
-* Mat also support UTX2 (with optional LZ compression)
+* May also support UTX2 (with optional LZ compression)
 * biCompression:
 ** 0 / '    ' | 'RGBA': Uncompressed RGBA
 *** biBitcount=16, biPlanes=1: RGB555A
 *** biBitcount=24, biPlanes=1: RGB24
 *** biBitcount=32, biPlanes=1: RGBA32
+*** biBitcount=8, biPlanes=1: Indexed 256 Color
 *** biBitcount=4, biPlanes=1: Packed RGBI
 *** biBitcount=2, biPlanes=1: 4-color
 *** biBitcount=1, biPlanes=1: Monochrome
@@ -40,6 +44,52 @@ TKBMP
 ** 'UTX2': Raw UTX2
 ** 'U2L3': RP2 Compressed UTX2
 ** 'U2L4': LZ4 Compressed UTX2
+** 'CRAM': MS-CRAM (Fixed Size Subset)
+*** biBitCount=8: Indexed 256 Color
+*** biBitCount=16: RGB555
+
+
+==== BI_RGB ====
+
+This case will be encoded with biCompression set to 0.
+
+In this mode, each scanline will be padded to a multiple of 32 bits, where the number of pixels this represents will depend on the image bit-depth.
+
+For 16-bit images, this will represent RGB555 or RGB555A.
+* 0.rrrrr.ggggg.bbbbb (Opaque)
+* 1.rrrra.gggga.bbbba (3-bit Alpha)
+
+For 24-bit images:
+* 8-bits: Blue
+* 8-bits: Green
+* 8-bits: Red
+
+For 32-bit images:
+* 8-bits: Blue
+* 8-bits: Green
+* 8-bits: Red
+* 8-bits: Alpha
+
+The interpretation of Alpha will depend on context, but for most uses opaque pixels should be set to 255 (or opaque).
+
+For images of 8 bits or less, a color palette will be appended onto the end of the BMP / DIB header. This palette will store pixel colors in 32-bit form.
+
+For pixel formats less than 8 bits, the pixels will be stored in MSB first order.
+
+
+==== CRAM ====
+
+For static bitmap images, CRAM will use a fixed-size subset. This subset will omit support for skipped blocks and 8-color blocks. For the 8-bit version, this will store each block of 16 pixels in 4 bytes, and 16 pixels in 6 bytes for the 16-bit version.
+
+Say, for the 8-bit version of CRAM:
+*  16 bits: pixel data, 4x4 pixels in LSB first order.
+** If the bit is set, use ColorA else ColorB.
+* 8 bits: ColorA
+* 8 bits: ColorB
+
+For the 8-bit version, the colors will come from the color palette in the BMP header.
+
+The 16-bit version will use 16-bit values for ColorA and ColorB, these will resemble normal RGB555, but with red and blue swapped (0.bbbbb.ggggg.rrrrr).
 
 
 === tkgGlobalAlloc ===

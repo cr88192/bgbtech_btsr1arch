@@ -214,9 +214,10 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 
 	if(wadver==2)
 	{
-//		tk_printf("TK_Wad4_OpenImage: WAD2\n");
+		tk_dbg_printf("TK_Wad4_OpenImage: WAD2\n");
 
 		img->w2dir=tk_malloc_krn(inf->numlumps*sizeof(TK_Wad2Lump));
+		img->w4dir=NULL;
 		tk_fseek(fd, inf->diroffs, 0);
 		tk_fread(img->w2dir, 1, inf->numlumps*sizeof(TK_Wad2Lump), fd);
 
@@ -225,6 +226,9 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 		
 		img->hash2=tk_malloc_krn(hsz*2);
 		tk_fread(img->hash2, 1, hsz*2, fd);
+
+		if(img->w4dir)
+			__debugbreak();
 	}
 
 	if(wadver==4)
@@ -237,6 +241,7 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 //		img->w4dir=tk_malloc_krn(inf->numlumps*sizeof(TK_Wad4Lump));
 		img->w4dir=tk_malloc_krn(nl1*sizeof(TK_Wad4Lump));
 		memset(img->w4dir, 0, nl1*sizeof(TK_Wad4Lump));
+		img->w2dir=NULL;
 		
 		tk_fseek(fd, inf->diroffs*64, 0);
 //		tk_fread(img->w4dir, 1, inf->numlumps*sizeof(TK_Wad4Lump), fd);
@@ -267,6 +272,9 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 		}
 		
 		inf->numlumps=nl1;
+
+		if(img->w2dir)
+			__debugbreak();
 	}
 	
 	img->lca_data=tk_malloc_krn(inf->numlumps*sizeof(void *));
@@ -1222,24 +1230,43 @@ int TK_Wad4_LookupLumpNameW2(TK_WadImage *img, char *name, int pfx)
 	u64 *pli;
 	u64 v0, v1, v2, v3;
 	u64 u0, u1, u2, u3;
-	int h, i, di;
+	int h, i, di, nl;
 
 	memset(tn, 0, 17);
 	TK_Wad4_Wad2BuildPfxName(tn, name, pfx);
 	
+//	tk_dbg_printf("TK_Wad4_LookupLumpNameW2: tn=%s\n", tn);
+	
 	h=TK_Wad4_HashIndexForName16(tn);
 	u0=((u64 *)tn)[0];	u1=((u64 *)tn)[1];
 	
-	i=img->hash2[h];
-	while(i>0)
+	nl=img->w2inf->numlumps;
+	
+	i=(s16)(img->hash2[h]);
+	while(i>=0)
 	{
 		lmp=img->w2dir+i;
 		pli=(u64 *)(lmp->name);
 		v0=pli[0];	v1=pli[1];
 		if((u0==v0) && (u1==v1))
 			return(i);
-		i=lmp->chn;
+		i=(s16)(lmp->chn);
 	}
+	
+	tk_dbg_printf("TK_Wad4_LookupLumpNameW2: tn=%s h=%02X, h2i=%04X\n",
+		tn, h, img->hash2[h]);
+	
+	for(i=0; i<nl; i++)
+	{
+		lmp=img->w2dir+i;
+		pli=(u64 *)(lmp->name);
+		v0=pli[0];	v1=pli[1];
+		if((u0==v0) && (u1==v1))
+			return(i);
+	}
+
+	tk_dbg_printf("TK_Wad4_LookupLumpNameW2: Not Found, tn=%s\n", tn);
+
 	return(-1);
 }
 
@@ -1255,7 +1282,7 @@ int TK_Wad4_LookupLumpName(TK_WadImage *img, char *name, int pfx)
 
 	if(img->w2dir)
 	{
-		id=TK_Wad4_LookupLumpNameW4(img, name, pfx);
+		id=TK_Wad4_LookupLumpNameW2(img, name, pfx);
 		return(id);
 	}
 

@@ -402,6 +402,72 @@ TKGSTATUS tkgResizeDisplay(TKGHDC dev, TKGDI_BITMAPINFOHEADER *info)
 		tkgdi_smallbuf_ifmt, NULL));
 }
 
+TKGHFONT tkgResolveFont(TKGHDC dev, char *name,
+	int c_xs, int c_ys, int style)
+{
+	TKGDI_FONT_COMMAND *fcmd;
+	TKGDI_FONT_COMMAND *frsp;
+	char *nambuf;
+	
+	fcmd=(TKGDI_FONT_COMMAND *)tkgdi_smallbuf_ifmt;
+	nambuf=(char *)(fcmd+1);
+	strcpy(nambuf, name);
+
+	frsp=(TKGDI_FONT_COMMAND *)tkgdi_smallbuf_ofmt;
+
+	fcmd->fcSize=sizeof(TKGDI_FONT_COMMAND);
+	fcmd->fcCmd=1;
+	fcmd->fcSizeX=c_xs;
+	fcmd->fcSizeY=c_ys;
+	fcmd->fcStyle=style;
+	fcmd->sName=nambuf-((char *)fcmd);
+	fcmd->sPath=0;
+	
+	tkgModifyDisplay(dev, TKGDI_FCC_fcmd,
+		tkgdi_smallbuf_ifmt, tkgdi_smallbuf_ofmt);
+	return(frsp->fcFont);
+}
+
+
+TKGSTATUS tkgFontGetCelBits(TKGHDC dev, TKGHFONT font,
+	int codepoint, void *bits,
+	int c_xs, int c_ys, int style)
+{
+	TKGDI_FONT_COMMAND *fcmd;
+	TKGDI_FONT_COMMAND *frsp;
+	char *nambuf, *bitsbuf;
+	int celsz;
+	
+	celsz=(c_xs*c_ys+7)>>3;
+	
+	fcmd=(TKGDI_FONT_COMMAND *)tkgdi_smallbuf_ifmt;
+	nambuf=(char *)(fcmd+1);
+//	strcpy(nambuf, name);
+
+	frsp=(TKGDI_FONT_COMMAND *)tkgdi_smallbuf_ofmt;
+	bitsbuf=(char *)(frsp+1);
+
+	fcmd->fcSize=sizeof(TKGDI_FONT_COMMAND);
+	fcmd->fcCmd=2;
+	fcmd->fcFont=font;
+	fcmd->fcChar=codepoint;
+	fcmd->fcSizeX=c_xs;
+	fcmd->fcSizeY=c_ys;
+	fcmd->fcStyle=style;
+	fcmd->sName=nambuf-((char *)fcmd);
+	fcmd->sPath=bitsbuf-((char *)frsp);
+
+	frsp->sName=bitsbuf-((char *)frsp);
+	
+	tkgModifyDisplay(dev, TKGDI_FCC_fcmd,
+		tkgdi_smallbuf_ifmt, tkgdi_smallbuf_ofmt);
+	
+	memcpy(bits, bitsbuf, celsz);
+	
+//	return(frsp->fcFont);
+	return(1);
+}
+
 TKGSTATUS tkgDrawString(TKGHDC dev, int xo_dev, int yo_dev,
 	char *text, TKGHFONT font, long long mode)
 {

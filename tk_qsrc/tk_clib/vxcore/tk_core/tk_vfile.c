@@ -921,7 +921,7 @@ TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode)
 		mnt=mnt->next;
 	}
 
-//	tk_dbg_printf("tk_fopen: Fail %s\n", name);
+	tk_dbg_printf("tk_fopen: Fail %s\n", name);
 
 	tk_open_reclim--;
 	return(NULL);

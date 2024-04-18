@@ -1810,16 +1810,51 @@ void tk_con_putc(int ch)
 	TK_Con_UpdateHwCursor();
 }
 
+u64 TK_Con_GlyphSwapByte(byte bits)
+{
+	static byte swaptab[16]={
+		0x0, 0x8, 0x4, 0xC,
+		0x2, 0xA, 0x6, 0xE,
+		0x1, 0x9, 0x5, 0xD,
+		0x3, 0xB, 0x7, 0xF};
+	int v;
+	v=(swaptab[bits&15]<<4)|swaptab[bits>>4];
+	return(v);
+}
+
+u64 TK_Con_GlyphFromCelBits(byte *celbits)
+{
+	u64 v;
+	v=	(TK_Con_GlyphSwapByte(celbits[7])<<56) |
+		(TK_Con_GlyphSwapByte(celbits[6])<<48) |
+		(TK_Con_GlyphSwapByte(celbits[5])<<40) |
+		(TK_Con_GlyphSwapByte(celbits[4])<<32) |
+		(TK_Con_GlyphSwapByte(celbits[3])<<24) |
+		(TK_Con_GlyphSwapByte(celbits[2])<<16) |
+		(TK_Con_GlyphSwapByte(celbits[1])<< 8) |
+		(TK_Con_GlyphSwapByte(celbits[0])<< 0) ;
+	return(v);
+}
+
+void TKGDI_FetchUnifontSdfBits(
+	byte *dstbits, int dxs, int dys,
+	int fontid, int codepoint);
 
 u64 TK_Con_GlyphForCodepoint(int ch)
 {
+	static u64 pxab[64];
+	static u16 pxac[64];
+	byte celbits[64];
+	int ch0, h;
 	u64 q1;
 
+	ch0=ch;
 	if(ch>=0x100)
 	{
 		ch=tk_con_doremap(ch);
 	}
 
+#if 1
 	if((ch>=0x00) && (ch<=0x7F))
 	{
 		q1=tk_gfxcon_glyphs[ch];
@@ -1842,8 +1877,23 @@ u64 TK_Con_GlyphForCodepoint(int ch)
 		q1=tk_gfxcon_hexblock[ch&0xFF];
 //		q1=tk_gfxcon_glyphs[0xBF];
 	}else
+#else
+	if(1)
+#endif
 	{
-		q1=tk_gfxcon_glyphs[0xBF];
+//		q1=tk_gfxcon_glyphs[0xBF];
+
+		h=(((ch0^0x0055)*251)>>8)&63;
+		if(pxac[h]==ch0)
+			{ return(pxab[h]); }
+
+		TKGDI_FetchUnifontSdfBits(celbits, 8, 8, 1, ch0);
+		q1=TK_Con_GlyphFromCelBits(celbits);
+
+//		tk_dbg_printf("TK_Con_GlyphForCodepoint: ch=%04X pxb=%X\n", ch0, q1);
+
+		pxab[h]=q1;
+		pxac[h]=ch0;
 	}
 	
 	return(q1);

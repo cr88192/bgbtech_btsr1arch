@@ -612,7 +612,7 @@ u64 TKMM_LVA_VarObjFetchKeyR(LVA_VarObject *obj, int key,
 	return(1);
 }
 
-TK_NOCULL
+//TK_NOCULL
 u64 TKMM_LVA_VarObjFetchKey(LVA_VarObject *obj, int key)
 {
 	LVA_VarObject *dsarr[256];
@@ -702,7 +702,7 @@ int TKMM_LVA_VarObjTrySetKeyR(LVA_VarObject *obj, int key, u64 val,
 	return(0);
 }
 
-TK_NOCULL
+//TK_NOCULL
 int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 {
 	LVA_VarObject *dsarr[256];
@@ -804,9 +804,11 @@ int TKMM_LVA_VarObjSetKey(LVA_VarObject *obj, int key, u64 val)
 #if defined(__BJX2__) && !defined(__ADDR_X96__)
 #define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
 #define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
-TK_NOCULL __variant
+//TK_NOCULL
+__variant
 	__lvo_getslot_cstgen(__object obj, char *name, u16 *rfid);
-TK_NOCULL void
+//TK_NOCULL
+void
 	__lvo_setslot_cstgen(__object obj, char *name, u16 *rfid, __variant val);
 #endif
 
@@ -849,15 +851,18 @@ __object __lvo_emptyobject(void)
 // #define LVO_GETSLOT_CST_GEN	__lvo_getslot_cstgen
 // #define LVO_SETSLOT_CST_GEN	__lvo_setslot_cstgen
 
-TK_NOCULL __variant
+//TK_NOCULL
+__variant
 	__lvo_getslot_cst(__object obj, char *name, u16 *rfid);
-TK_NOCULL void
+//TK_NOCULL
+void
 	__lvo_setslot_cst(__object obj, char *name, u16 *rfid, __variant val);
 
 // __variant  __lvo_getslot_cstgen(__object obj, char *name, u16 *rfid);
 // void __lvo_setslot_cstgen(__object obj, char *name, u16 *rfid, __variant val);
 
 __asm {
+.extern TKMM_LVA_VarObjFetchKeyA
 __lvo_getslot_cst:
 	SHLD.Q	R4, -48, R17
 	MOVU.W	(R6), R16
@@ -871,7 +876,10 @@ __lvo_getslot_cst:
 	
 	.Generic:
 	BRA		__lvo_getslot_cstgen
+};
 
+__asm {
+.extern TKMM_LVA_VarObjSetKeyA
 __lvo_setslot_cst:
 	SHLD.Q	R4, -48, R17
 	MOVU.W	(R6), R16
@@ -896,7 +904,8 @@ __lvo_setslot_cst:
 #endif
 
 //__variant  __lvo_getslot_cst(__object obj, char *name, u16 *rfid)
-TK_NOCULL __variant
+//TK_NOCULL
+__variant
 	LVO_GETSLOT_CST_GEN(__object obj, char *name, u16 *rfid)
 {
 	LVA_ObjectBasic *ob;
@@ -958,7 +967,8 @@ TK_NOCULL __variant
 }
 
 //void __lvo_setslot_cst(__object obj, char *name, u16 *rfid, __variant val)
-TK_NOCULL void
+//TK_NOCULL
+void
 	LVO_SETSLOT_CST_GEN(__object obj, char *name, u16 *rfid, __variant val)
 {
 	LVA_ObjectBasic *ob;

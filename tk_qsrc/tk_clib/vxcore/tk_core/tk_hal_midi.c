@@ -1,3 +1,9 @@
+#ifdef __BGBCC__
+void __rsrc__genmidi;
+#else
+char __rsrc__genmidi[16];
+#endif
+
 volatile u32 *tk_midi_regs;
 
 volatile u32 *tk_midi_patchmem;
@@ -206,9 +212,9 @@ int TK_Midi_PatchMemAllocSamples(int size)
 }
 
 
-int TK_Midi_SetMasterParam(int var, int val)
+int TK_Midi_SetMasterParam(int pvar, int val)
 {
-	if(var==1)
+	if(pvar==1)
 	{
 		TK_Midi_ProbeDelayOff();
 
@@ -486,6 +492,8 @@ int tk_midi_vol2att(int vol)
 int TK_Midi_Init()
 {
 	TK_FILE *fd;
+	byte *genmidi;
+	u32 *rec;
 //	float freq, ph;
 	double freq, ph;
 	double *rph;
@@ -498,6 +506,23 @@ int TK_Midi_Init()
 	if(tk_midi_isinit)
 		return(0);
 	tk_midi_isinit=1;
+
+#ifdef __BGBCC__
+//	memcpy(
+//		tk_midi_fmregdata,
+//		((byte *)(&__rsrc__genmidi))+8,
+//		192*16*4);
+
+	genmidi=(byte *)(&__rsrc__genmidi);
+	for(i=0; i<175; i++)
+	{
+		rec=(u32 *)(genmidi+8+(i*36));
+		for(j=0; j<8; j++)
+			tk_midi_fmregdata[(i*16)+j]=rec[j];
+	}
+
+#endif
+
 
 	tk_midi_regs=(u32 *)0xFFFFF008C000ULL;
 	tk_midi_patchmem=(u32 *)0xC00020800000ULL;
@@ -596,6 +621,8 @@ int TK_Midi_Init()
 
 int TK_Midi_SetFmRegisterData(int prg, int idx, u32 val)
 {
+//	tk_dbg_printf("TK_Midi_SetFmRegisterData: %02X %02X %08X\n", prg, idx, val);
+
 	tk_midi_fmregdata[(prg*16)+idx]=val;
 	return(0);
 }
@@ -736,7 +763,7 @@ int TK_Midi_ProbeDelayOff(void)
 
 			if((tt>=tdoe) || (csus==0))
 			{
-				TK_Midi_NoteOff(i, tk_midi_channt[i], 127);
+				TK_Midi_NoteOff(i, tk_midi_channt[i], 128);
 			}else
 			{
 				tds=tdoe-tdos;
@@ -851,7 +878,8 @@ int TK_Midi_NoteOff(int ch, int d0, int d1)
 
 //	if(tk_midi_channt[ch]!=d0)
 //	if((d1<100) && !(tk_midi_vnflg[vn1]&8))
-	if(d1<100)
+//	if(d1<100)
+	if(d1<128)
 	{
 //		tk_dbg_printf("TK_Midi_NoteOff: Note Mismatch %02X %02X\n",
 //			tk_midi_channt[ch], d0);
@@ -1103,7 +1131,7 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 
 	if(!d1)
 	{
-		TK_Midi_NoteOff(ch, tk_midi_channt[ch], 127);
+		TK_Midi_NoteOff(ch, tk_midi_channt[ch], 64);
 		return(0);
 	}
 

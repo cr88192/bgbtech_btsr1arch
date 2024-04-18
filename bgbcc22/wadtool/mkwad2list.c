@@ -673,6 +673,11 @@ int main(int argc, char *argv[])
 
 		ibuf=LoadFile(tn, &isz);
 
+		if(dir && !ibuf)
+		{
+			ibuf=LoadFile(s, &isz);
+		}
+
 //		ibuf=LoadFile(a[1], &isz);
 		
 		if(!ibuf)

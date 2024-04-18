@@ -1339,12 +1339,13 @@ int TKGDI_UpdateWindowStack(void)
 		}
 #endif
 
-		for(i=2; i<tkgdi_n_window_vis; i++)
+		for(i=0; i<tkgdi_n_window_vis; i++)
 		{
 			wctx=tkgdi_window_vis[i];
 			issel=(i==(tkgdi_n_window_vis-1));
 			
-			x=i-1;
+//			x=i-1;
+			x=i;
 
 			sy=bys-2;
 			sx=x;
@@ -1583,13 +1584,15 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 	TKGDI_RRECT *rect)
 //	int xo_src, int yo_src, int xs_src, int ys_src)
 {
+	u16 pal_16b[256];
 	_tkgdi_window_t *wctx;
-	byte *bmct;
-	u16 *cs, *ct;
+	byte *bmct, *csb;
+	u16 *cs, *ct, *imgtmp;
 	u32 *pal;
-	int xo_dev, yo_dev;
+	int xo_dev, yo_dev, xs_bmp, ys_bmp;
 	int xo_src, yo_src, xs_src, ys_src;
 	int xs, ys, mxs, mys, bxs, bys, nx, ny, flip;
+	int xstr_src;
 	int i, j, k;
 
 	if(dev<=0)
@@ -1609,6 +1612,12 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 		ys_src=-ys_src;
 	
 	flip=(info->biHeight>0);
+	xs_bmp=info->biWidth;
+	ys_bmp=info->biHeight;
+	if(xs_bmp<0)
+		xs_bmp=-xs_bmp;
+	if(ys_bmp<0)
+		ys_bmp=-ys_bmp;
 	
 //	return(-1);
 		
@@ -1802,26 +1811,249 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 			
 		cs=data;
 		ct=wctx->buf_data;
-		
-		if(flip)
+		csb=data;
+
+		if(info->biCompression==TKGDI_BI_RGB)
 		{
-			cs+=(ys-1)*xs_src;
-			ct+=yo_dev*bxs+xo_dev;
-			for(i=0; i<ys; i++)
+			if(info->biBitCount==16)
 			{
-				memcpy(ct, cs, xs*2);
-				cs-=xs_src;
-				ct+=bxs;
+				xstr_src=(xs_bmp+1)&(~1);
+
+				if(flip)
+				{
+	//				cs+=(ys-1)*xs_src;
+	//				cs+=(ys-1)*xs_bmp;
+					cs+=(ys-1)*xstr_src;
+					cs-=yo_src*xstr_src;
+					cs+=xo_src;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						memcpy(ct, cs, xs*2);
+	//					cs-=xs_src;
+//						cs-=xs_bmp;
+						cs-=xstr_src;
+						ct+=bxs;
+					}
+				}else
+				{
+					cs+=yo_src*xstr_src;
+					cs+=xo_src;
+			
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						memcpy(ct, cs, xs*2);
+	//					cs+=xs_src;
+//						cs+=xs_bmp;
+						cs+=xstr_src;
+						ct+=bxs;
+					}
+				}
+			}
+
+			if(info->biBitCount==8)
+			{
+				pal=(u32 *)(((byte *)info)+info->biSize);
+				TKGDI_CopyPixelSpan_SetupPalArrayF(pal_16b, pal, 256);
+
+	//			xstr_src=(xs_src+3)&(~3);
+				xstr_src=(xs_bmp+3)&(~3);
+
+				if(flip)
+				{
+					csb+=(ys-1)*xstr_src;
+					csb-=yo_src*xstr_src;
+					csb+=xo_src;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+	//					memcpy(ct, cs, xs*2);
+	//					for(j=0; j<xs; j++)
+	//						ct[j]=pal_16b[csb[j]];
+						TKGDI_CopyPixelSpan_CnvI8to15(ct, csb, xs, pal_16b);
+						csb-=xstr_src;
+						ct+=bxs;
+					}
+				}else
+				{
+					csb+=yo_src*xstr_src;
+					csb+=xo_src;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+	//					memcpy(ct, cs, xs*2);
+	//					for(j=0; j<xs; j++)
+	//						ct[j]=pal_16b[csb[j]];
+						TKGDI_CopyPixelSpan_CnvI8to15(ct, csb, xs, pal_16b);
+						csb+=xstr_src;
+						ct+=bxs;
+					}
+				}
+			}
+
+			if(info->biBitCount==4)
+			{
+				pal=(u32 *)(((byte *)info)+info->biSize);
+				TKGDI_CopyPixelSpan_SetupPalArrayF(pal_16b, pal, 16);
+
+	//			xstr_src=((xs_src+7)&(~7))>>1;
+				xstr_src=((xs_bmp+7)&(~7))>>1;
+
+				if(flip)
+				{
+	//				csb+=((ys-1)*xs_src)>>1;
+	//				csb+=(ys-1)*((xs_src+1)>>1);
+					csb+=(ys-1)*xstr_src;
+					csb-=yo_src*xstr_src;
+					csb+=xo_src>>1;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_CnvI4to15(ct, csb, xs, pal_16b);
+	//					csb-=((xs_src+1)>>1);
+						csb-=xstr_src;
+						ct+=bxs;
+					}
+				}else
+				{
+					csb+=yo_src*xstr_src;
+					csb+=xo_src>>1;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_CnvI4to15(ct, csb, xs, pal_16b);
+	//					csb+=((xs_src+1)>>1);
+						csb+=xstr_src;
+						ct+=bxs;
+					}
+				}
+			}
+
+			if(info->biBitCount==24)
+			{
+				xstr_src=xs_bmp*3;
+				xstr_src=(xstr_src+3)&(~3);
+
+				if(flip)
+				{
+					csb+=(ys-1)*xstr_src;
+					csb-=yo_src*xstr_src;
+					csb+=xo_src*3;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv24to15(ct, csb, xs);
+						csb-=xstr_src;
+						ct+=bxs;
+					}
+				}else
+				{
+					csb+=yo_src*xstr_src;
+					csb+=xo_src*3;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv24to15(ct, csb, xs);
+						csb+=xstr_src;
+						ct+=bxs;
+					}
+				}
+			}
+
+			if(info->biBitCount==32)
+			{
+				xstr_src=xs_bmp<<2;
+
+				if(flip)
+				{
+					csb+=(ys-1)*xstr_src;
+					csb-=yo_src*xstr_src;
+					csb+=xo_src<<2;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv32to15(ct, csb, xs);
+						csb-=xstr_src;
+						ct+=bxs;
+					}
+				}else
+				{
+					csb+=yo_src*xstr_src;
+					csb+=xo_src<<2;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv32to15(ct, csb, xs);
+						csb+=xstr_src;
+						ct+=bxs;
+					}
+				}
 			}
 		}else
+			if(	(info->biCompression==TKGDI_FCC_CRAM) ||
+				(info->biCompression==TKGDI_FCC_UTX2))
 		{
-			ct+=yo_dev*bxs+xo_dev;
-			for(i=0; i<ys; i++)
+			xstr_src=(xs_bmp+1)&(~1);
+
+			imgtmp=tk_malloc(xstr_src*ys_bmp*2);
+			cs=imgtmp;
+
+			if(info->biCompression==TKGDI_FCC_UTX2)
 			{
-				memcpy(ct, cs, xs*2);
-				cs+=xs_src;
-				ct+=bxs;
+				TKGDI_CopyPixelSpan_ImageCnvUTX2to15(
+					imgtmp, data, xs_bmp, ys_bmp);
+			}else
+				if(info->biBitCount==8)
+			{
+				pal=(u32 *)(((byte *)info)+info->biSize);
+				TKGDI_CopyPixelSpan_SetupPalArrayF(pal_16b, pal, 256);
+				
+				TKGDI_CopyPixelSpan_ImageCnvCRAM8to15(imgtmp, data,
+					xs_bmp, ys_bmp, pal_16b);
+			}else
+				if(info->biBitCount==16)
+			{
+				TKGDI_CopyPixelSpan_ImageCnvCRAM16to15(
+					imgtmp, data, xs_bmp, ys_bmp);
 			}
+
+			if(flip)
+			{
+				cs+=(ys-1)*xstr_src;
+				cs-=yo_src*xstr_src;
+				cs+=xo_src;
+
+				ct+=yo_dev*bxs+xo_dev;
+				for(i=0; i<ys; i++)
+				{
+					memcpy(ct, cs, xs*2);
+					cs-=xstr_src;
+					ct+=bxs;
+				}
+			}else
+			{
+				cs+=yo_src*xstr_src;
+				cs+=xo_src;
+		
+				ct+=yo_dev*bxs+xo_dev;
+				for(i=0; i<ys; i++)
+				{
+					memcpy(ct, cs, xs*2);
+					cs+=xstr_src;
+					ct+=bxs;
+				}
+			}
+			tk_free(imgtmp);
 		}
 		
 		nx=(xo_dev+xs+3)>>2;
@@ -2915,6 +3147,8 @@ TKGSTATUS TKGDI_ModifyDisplay(
 	void *ofmt)
 {
 	_tkgdi_window_t *wctx;
+	TKGDI_FONT_COMMAND *fcmd;
+	TKGDI_FONT_COMMAND *frsp;
 	TKGDI_RECT *rect;
 
 	wctx=tkgdi_windows[dev];
@@ -2958,6 +3192,29 @@ TKGSTATUS TKGDI_ModifyDisplay(
 		return(1);
 	}
 
+	if(parm==TKGDI_FCC_fcmd)
+	{
+		fcmd=ifmt;
+		frsp=ofmt;
+
+		if(fcmd->fcCmd==1)
+		{
+			frsp->fcFont=1;
+			return(1);
+		}
+		
+		if(fcmd->fcCmd==2)
+		{
+			TKGDI_FetchUnifontSdfBits(
+				((byte *)ofmt)+fcmd->sPath,
+				fcmd->fcSizeX, fcmd->fcSizeY,
+				fcmd->fcFont, fcmd->fcChar);
+			return(1);
+		}
+		
+		return(0);
+	}
+
 	return(0);
 }
 
@@ -2985,6 +3242,8 @@ TKGSTATUS TKGDI_DestroyAudioDevice(
 {
 	return(0);
 }
+
+int TK_Midi_SetFmRegisterData(int prg, int idx, u32 val);
 
 TKGSTATUS TKGDI_ModifyAudioDevice(
 	_tkgdi_context_t *ctx,

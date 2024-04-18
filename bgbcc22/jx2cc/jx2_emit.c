@@ -8546,6 +8546,63 @@ int BGBCC_JX2_ComposeJumboRegImmRegF2A(BGBCC_JX2_Context *ctx,
 	return(0);
 }
 
+int BGBCC_JX2_ComposeJumboRegImm57sRegF2(BGBCC_JX2_Context *ctx,
+	int *ropw1, int *ropw2, int *ropw3, int *ropw4, int *ropw5, int *ropw6,
+	int topw1, int topw2,
+	int sreg, s64 imm, int dreg)
+{
+	int opw1, opw2, opw3, opw4, opw5, opw6;
+	int is57s;
+	
+	is57s=1;
+	if(!(ctx->is_fixed32&2))
+	{
+		if(((imm>>56)!=0) && ((imm>>56)!=(-1)))
+			is57s=0;
+		if((sreg&32) || (dreg&32))
+			is57s=0;
+	}
+
+	if(ctx->op_is_wex2&12)
+		is57s=0;
+
+	if(is57s)
+	{
+		opw1=0x4FE00|((imm>>48)&0x00FF);
+		opw2=0x50000|((imm>>32)&0xFFFF);
+		opw3=0x4FE00|((imm>>24)&0x00FF);
+		opw4=0x50000|((imm>> 8)&0xFFFF);
+		opw5=0x40000|topw1|((dreg&15)<<4)|(sreg&15);
+		opw6=0x50000|topw2|(imm&0x00FF)|((imm>>63)&0x0100);
+
+		if(dreg&0x10)
+			opw6^=0x0400;
+		if(sreg&0x10)
+			opw6^=0x0200;
+
+		if(ctx->is_fixed32&2)
+		{
+			if(dreg&0x20)
+				opw5^=0x8000;
+			if(sreg&0x20)
+				opw5^=0x4000;
+			opw1^=(((imm>>60)^(imm>>63))&7)<<13;
+			opw3^=(((imm>>57)^(imm>>63))&7)<<13;
+			opw5^=(((imm>>56)^(imm>>63))&1)<<13;
+		}
+
+		*ropw1=opw1;
+		*ropw2=opw2;
+		*ropw3=opw3;
+		*ropw4=opw4;
+		*ropw5=opw5;
+		*ropw6=opw6;
+		return(1);
+	}
+
+	return(0);
+}
+
 int BGBCC_JX2_ComposeJumboCheckOpwIsStore(BGBCC_JX2_Context *ctx,
 	int opw1, int opw2)
 {

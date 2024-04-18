@@ -1,0 +1,4 @@
+TestKern Widget Toolkit
+* Will use a model of drawing UI widgets to bitmap backed windows.
+* Will assume use of TKGDI as a base.
+* Will be assumed N/A for programs which don't use a widget based GUI.

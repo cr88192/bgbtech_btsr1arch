@@ -89,10 +89,10 @@ int __start_early();
 int __start_late();
 int __start_first();
 
-void __cytpe_init(void);
+void _ctype_init(void);
 
-short *__tolow;
-short *__toup;
+short *_ctype_tolow;
+short *_ctype_toup;
 
 #ifdef __riscv
 extern char __bss_start;
@@ -142,11 +142,11 @@ __PDPCLIB_API__ int CTYP __start()
 
 //	tk_puts("A1\n");
 
-	__tolow=NULL;
-	__toup=NULL;
+	_ctype_tolow=NULL;
+	_ctype_toup=NULL;
 
 	__init_stdin();
-	__cytpe_init();
+	_ctype_init();
 
 	t_stdin=stdin;
 	t_stdout=stdout;

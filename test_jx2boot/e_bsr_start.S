@@ -19,6 +19,8 @@
 .extern X(__bss_start)
 .extern X(_end)
 
+.extern X(tk_checksane_asm)
+
 .fix32_on
 
 // start:

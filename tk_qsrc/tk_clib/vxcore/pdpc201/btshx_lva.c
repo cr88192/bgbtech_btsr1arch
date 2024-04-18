@@ -639,6 +639,7 @@ __asm {
 
 .ifarch seen_variant
 
+.extern __lva_add_gen
 __lva_add:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -690,7 +691,13 @@ __lva_add:
 //	SHLD.Q	R2, -2, R2
 //	OR		R3, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_sub_gen
 __lva_sub:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -742,7 +749,13 @@ __lva_sub:
 //	OR		R3, R2
 	CONVFLI	R2, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_and_gen
 __lva_and:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -786,7 +799,13 @@ __lva_and:
 	AND		R4, R5, R2
 	CONVFXI	R2, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_or_gen
 __lva_or:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -830,7 +849,13 @@ __lva_or:
 	OR		R4, R5, R2
 	CONVFXI	R2, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_xor_gen
 __lva_xor:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -877,7 +902,13 @@ __lva_xor:
 	XOR		R4, R5, R2
 	CONVFXI	R2, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_shl_gen
 __lva_shl:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -926,7 +957,13 @@ __lva_shl:
 	SHAD.Q	R4, R5, R2
 	CONVFXI	R2, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_shr_gen
 __lva_shr:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -978,7 +1015,13 @@ __lva_shr:
 	SHAD.Q	R4, R5, R2
 	CONVFXI	R2, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_neg_gen
 __lva_neg:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
@@ -1002,7 +1045,13 @@ __lva_neg:
 	MOV		0x2000_0000_0000_0000, R3
 	XOR		R4, R3, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_not_gen
 __lva_not:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
@@ -1022,7 +1071,13 @@ __lva_not:
 //	MOV		0x2000_0000_0000_0000, R3
 //	XOR		R4, R3, R2
 //	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_cmpeq_gen
 __lva_cmp_eq:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -1066,7 +1121,13 @@ __lva_cmp_eq:
 	FCMPEQ	R4, R5
 	MOVT	R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_cmpgt_gen
 __lva_cmp_gt:
 	MOVHHD		R4, R5, R6
 	PMORT.Q		R6, R6
@@ -1112,8 +1173,13 @@ __lva_cmp_gt:
 	FCMPGT	R5, R4
 	MOVT	R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
 
+.extern __lva_inc_gen
 __lva_inc:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
@@ -1134,7 +1200,13 @@ __lva_inc:
 	FADD	R4, R5, R2
 	CONVFLI	R2, R2
 	RTS
+.endif
+};
 
+__asm {
+.ifarch seen_variant
+
+.extern __lva_dec_gen
 __lva_dec:
 	SHLD.Q	R4, -62, R5
 	CMPEQ	1, R5
