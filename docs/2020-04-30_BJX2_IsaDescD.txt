@@ -72,7 +72,7 @@ WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the stat
 * 58nm       ADD		Rm, DLR, Rn			//Rn=Rm+DLR
 * Cnii       ADD		Imm8s, Rn
 * F0nm_1go0  ADD		Rm, Ro, Rn			//Rn=Rm+Ro
-* F0nm_1e09  ADD		Rm, Rn				//Rn=Rn+Rm
+* F0nm_1e09 /? ADD		Rm, Rn				//Rn=Rn+Rm (Deprecated)
 * F2nm_0gjj  ADD		Rm, Imm9u, Rn		//
 * F2nm_1gjj  ADD		Rm, Imm9n, Rn		//
 * F2n0_Dhjj  ADD		Imm10u, Rn			//Rn=Rn+Imm10u
@@ -80,8 +80,8 @@ WEX: ADC will only update SR.T in Lane 1. If an ADC is in another lane, the stat
 * F84n_iiii  ADD		Imm16s, Rn
 * F85n_iiii  ADD		Imm16s, Rk
 
-*    FE F2nm_0gjj  ADD	Rm, Imm33s, Rn
-* FE-FE F2nm_0gjj  ADD	Rm, Imm57s, Rn	//FPIMM
+*    FE F2nm_0gjj  ADD	Rm, Imm33s, Rn	//(Jumbo)
+* FE-FE F2nm_0gjj  ADD	Rm, Imm57s, Rn	//(FPIMM)
 
 *    FE F2n0_Dhjj  ADD	Imm33s, Rn		//Rn=Rn+Imm33s
 
@@ -95,12 +95,14 @@ Add the source and destination values and store the result in the destination re
 
 === ADDx.L ===
 
-* F0nm_5goC  ADDS.L	Rm, Ro, Rn
-* F0nm_5GoC  ADDU.L	Rm, Ro, Rn
-* F2gj_3gjj  ADDS.L	Rm, Imm9u, Rn
-* F2nm_3Gjj  ADDU.L	Rm, Imm9u, Rn
-* F2nm_4gjj  ADDS.L	Rm, Imm9n, Rn
-* F2nm_4Gjj  ADDU.L	Rm, Imm9n, Rn
+* F0nm_5goC     ADDS.L		Rm, Ro, Rn
+* F0nm_5GoC     ADDU.L		Rm, Ro, Rn
+* F2gj_3gjj     ADDS.L		Rm, Imm9u, Rn
+* F2nm_3Gjj     ADDU.L		Rm, Imm9u, Rn
+* F2nm_4gjj     ADDS.L		Rm, Imm9n, Rn
+* F2nm_4Gjj     ADDU.L		Rm, Imm9n, Rn
+* FE F2nm_3gjj  ADDS.L		Rm, Imm33s, Rn		//(Jumbo)
+* FE F2nm_3Gjj  ADDU.L		Rm, Imm33s, Rn		//(Jumbo)
 
 Add the source and destination values and store the result in the destination register.
 
@@ -109,15 +111,15 @@ This form sign or zero extends the 32-bit result to 64 bits.
 
 === AND ===
 
-* 15nm       AND		Rm, Rn
-* 5Anm       AND		Rm, DLR, Rn
-* F0nm_1go5  AND		Rm, Ro, Rn
-* F0nm_1e59  AND		Rm, Rn
-* F2nm_5gjj  AND		Rm, Imm9us, Rn
+* 15nm             AND		Rm, Rn
+* 5Anm             AND		Rm, DLR, Rn
+* F0nm_1go5        AND		Rm, Ro, Rn
+* F0nm_1e59     /? AND		Rm, Rn			//Deprecated
+* F2nm_5gjj        AND		Rm, Imm9us, Rn
 
-* FE F2nm_5gjj  AND		Rm, Imm33s, Rn	//FPIMM
+* FE F2nm_5gjj     AND		Rm, Imm33s, Rn	//(Jumbo)
 
-* FE-FE F2nm_5gjj  AND		Rm, Imm57s, Rn	//FPIMM
+* FE-FE F2nm_5gjj  AND		Rm, Imm57s, Rn	//(FPIMM)
 
 Perform a bitwise AND of the source and destination values and store the result in the destination register.
 
@@ -155,7 +157,7 @@ This instruction is only allowed in Lane 1.
 * / 32n3       JF		Rn
 * / F023_3en0  JF		Rn					//Fix32
 
-* FFw0_0ddd_F0dd_Fddd  BF	(PC, Disp33s)
+* FFw0_0ddd_F0dd_Fddd /?  BF	(PC, Disp33s)
 
 Branch if False (SR.T is 0).
 The target address is computed and PC is updated to the new address if the condition is met.
@@ -313,7 +315,7 @@ See BRA for general information about branches.
 * / 32n2       JT		Rn
 * / F022_3en0  JT		Rn					//Fix32
 
-* FFw0_0ddd_F0dd_Eddd  BT	(PC, Disp33s)
+* /? FFw0_0ddd_F0dd_Eddd  BT	(PC, Disp33s)
 
 Branch if True (SR.T is 1).
 The target address is computed and PC is updated to the new address if the condition is met.
@@ -415,6 +417,8 @@ With an Op64 prefix, the immediate forms will encode an alternate encoding if W.
 * F2nC_Cgjj  CMPEQ		Imm9u, Rn
 * F2nD_Cgjj  CMPEQ		Imm9n, Rn
 
+* FE F2nC_Cgjj  CMPEQ	Imm33s, Rn		//(Jumbo)
+
 Compare if source and destination are Equal.
 
 This provides both zero and one extended immediates, allowing a direct immediate to express values ranging between -16 and 15.
@@ -438,6 +442,8 @@ This instruction is only allowed in Lane 1.
 * F2nA_Cgjj  CMPGE		Imm9u, Rn
 * F2nB_Cgjj  CMPGE		Imm9n, Rn
 
+* FE F2nA_Cgjj  CMPGE	Imm33s, Rn		//(Jumbo)
+
 Compare if Rn is Greater or Equal to the immediate.
 
 Only exists for immediates because this can be easily emulated for the two-register forms via swapping the registers and inverting the branch condition.
@@ -460,6 +466,8 @@ This instruction is only allowed in Lane 1.
 * F2nE_Cgjj  CMPGT		Imm9u, Rn
 * F2nF_Cgjj  CMPGT		Imm9n, Rn
 
+* FE F2nE_Cgjj  CMPGT	Imm33s, Rn		//(Jumbo)
+
 Signed Rn GT Rm.
 
 Compare if destination is greater than the source using a signed comparison.
@@ -476,9 +484,11 @@ This instruction is only allowed in Lane 1.
 
 * 1Dnm       CMPHI		Rm, Rn
 * F0nm_1gD9  CMPHI		Rm, Rn			//E.i=0
-* F0nm_1gD9  CMPHIS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F0nm_1gD9  CMPHIS		Rm, Rn			//(PRED_S) E.i=1, Update SR.S
 * F2n8_Cgjj  CMPHI		Imm9u, Rn
 * F2n8_Cgjj  CMPHI		Imm9n, Rn
+
+* FE F2n8_Cgjj  CMPHI	Imm33s, Rn		//(Jumbo)
 
 Unsigned Rn GT Rm.
 
@@ -496,9 +506,11 @@ This instruction is only allowed in Lane 1.
 
 * 36nD       CMPHS		DLR, Rn
 * F0nm_1gFC  CMPHS		Rm, Rn			//E.i=0, Unsigned Rn GE Rm
-* F0nm_1gFC  CMPHSS		Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F0nm_1gFC  CMPHSS		Rm, Rn			//(PRED_S) E.i=1, Update SR.S
 * F2n6_Cgjj  CMPHS		Imm9u, Rn
 * F2n7_Cgjj  CMPHS		Imm9n, Rn
+
+* FE F2n6_Cgjj  CMPHS	Imm33s, Rn		//(Jumbo)
 
 Unsigned (Rn GE DLR)
 
@@ -515,7 +527,7 @@ This instruction is only allowed in Lane 1.
 === CMPPEQ ===
 
 * F0nm_3g68  CMPPEQ		Rm, Rn				//(ALUPTR) Compare Pointer
-* F0nm_3G68  CMPPEQX	Xm, Xn				//(ALUPTR) Compare 128b Pointer
+* F0nm_3G68  CMPPEQX	Xm, Xn				//(ALUXPTR) Compare 128b Pointer
 
 Compare if source and destination pointers are Equal.
 This instruction compares the low 48 bits for equality.
@@ -529,9 +541,11 @@ This instruction is only allowed in Lane 1.
 
 * 5Fnm       CMPQEQ		Rm, Rn
 * F0nm_1GC9  CMPQEQ		Rm, Rn			//E.i=0
-* F0nm_1GC9  CMPQEQS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F0nm_1GC9  CMPQEQS	Rm, Rn			//(PRED_S) E.i=1, Update SR.S
 * F2nC_CGjj  CMPQEQ		Imm9u, Rn
 * F2nD_CGjj  CMPQEQ		Imm9n, Rn
+
+* FE F2nC_CGjj  CMPQEQ	Imm33s, Rn		//(Jumbo)
 
 Compare if source and destination are Equal.
 
@@ -549,9 +563,11 @@ This instruction is only allowed in Lane 1.
 === CMPQGE ===
 
 * F0nm_1GEC  CMPQGE		Rm, Rn			//E.i=0
-* F0nm_1GEC  CMPQGES	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F0nm_1GEC  CMPQGES	Rm, Rn			//(PRED_S) E.i=1, Update SR.S
 * F2nA_CGjj  CMPQGE		Imm9u, Rn
 * F2nB_CGjj  CMPQGE		Imm9n, Rn
+
+* FE F2nA_CGjj  CMPQGE	Imm33s, Rn		//(Jumbo)
 
 Compare if Rn is Greater or Equal to the immediate.
 
@@ -568,7 +584,7 @@ This instruction is only allowed in Lane 1.
 === CMPPGT ===
 
 * F0nm_3g78  CMPPGT		Rm, Rn				//(ALUPTR) Compare Pointer
-* F0nm_3G78  CMPPGTX	Xm, Xn				//(ALUPTR) Compare 128b Pointer
+* F0nm_3G78  CMPPGTX	Xm, Xn				//(ALUXPTR) Compare 128b Pointer
 
 Compare if source and destination pointers are Greater Than.
 This instruction compares the low 48 bits, behaving as-if the result had been zero-extended.
@@ -582,9 +598,11 @@ This instruction is only allowed in Lane 1.
 
 * 5Enm       CMPQGT		Rm, Rn
 * F0nm_1GE9  CMPQGT		Rm, Rn			//E.i=0
-* F0nm_1GE9  CMPQGTS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
-* F2nE_Cejj  CMPQGT		Imm9u, Rn
-* F2nF_Cejj  CMPQGT		Imm9n, Rn
+* F0nm_1GE9  CMPQGTS	Rm, Rn			//(PRED_S) E.i=1, Update SR.S
+* F2nE_CGjj  CMPQGT		Imm9u, Rn
+* F2nF_CGjj  CMPQGT		Imm9n, Rn
+
+* FE F2nE_CGjj  CMPQGT	Imm33s, Rn		//(Jumbo)
 
 Signed Rn GT Rm.
 
@@ -602,9 +620,11 @@ This instruction is only allowed in Lane 1.
 
 * 5Dnm       CMPQHI		Rm, Rn
 * F0nm_1GD9  CMPQHI		Rm, Rn			//E.i=0
-* F0nm_1GD9  CMPQHIS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F0nm_1GD9  CMPQHIS	Rm, Rn			//(PRED_S) E.i=1, Update SR.S
 * F2n8_CGjj  CMPQHI		Imm9u, Rn
 * F2n8_CGjj  CMPQHI		Imm9n, Rn
+
+* FE F2n8_CGjj  CMPQHI	Imm33s, Rn		//(Jumbo)
 
 Unsigned Rn GT Rm.
 
@@ -621,9 +641,11 @@ This instruction is only allowed in Lane 1.
 === CMPQHS ===
 
 * F0nm_1GFC  CMPQHS		Rm, Rn			//E.i=0
-* F0nm_1GFC  CMPQHSS	Rm, Rn			//E.i=1, Update SR.S (PRED_S)
+* F0nm_1GFC  CMPQHSS	Rm, Rn			//(PRED_S) E.i=1, Update SR.S
 * F2n6_CGjj  CMPQHS		Imm9u, Rn
 * F2n7_CGjj  CMPQHS		Imm9n, Rn
+
+* FE F2n6_CGjj  CMPQHS	Imm33s, Rn		//(Jumbo)
 
 Unsigned (Rn GE DLR)
 
@@ -925,11 +947,11 @@ These will also be exposed under alternate names:
 
 === JCMPZxx ===
 
-* F2n6_Dfjj  JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
-* F2n7_Dfjj  JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
+* F2n6_Dfjj /? JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
+* F2n7_Dfjj /? JCMPZ{Q}xx		Rn, Disp8s	//(JCMP)
 
-* F2n6_Dfjj  BRxx.{L/Q}		Rn, Disp8s	//(JCMP)
-* F2n7_Dfjj  BRxx.{L/Q}		Rn, Disp8s	//(JCMP)
+* F2n6_Dfjj /? BRxx.{L/Q}		Rn, Disp8s	//(JCMP)
+* F2n7_Dfjj /? BRxx.{L/Q}		Rn, Disp8s	//(JCMP)
 
 
 Compare (Rn op 0) and branch based on the result.
@@ -1896,11 +1918,11 @@ This operation is only valid in Lane 1.
 * 16nm       OR		Rm, Rn
 * 5Bnm       OR		Rm, DLR, Rn
 * F0nm_1go6  OR		Rm, Ro, Rn
-* F0nm_1e69  OR		Rm, Rn
+* F0nm_1e69 /? OR		Rm, Rn		//Deprecated
 * F2nm_6gjj  OR		Rm, Imm9u, Rn
 
-*    FE F2nm_6gjj  OR		Rm, Imm33s, Rn
-* FE-FE F2nm_6gjj  OR		Rm, Imm57s, Rn		//FPIMM
+*    FE F2nm_6gjj  OR		Rm, Imm33s, Rn		//(Jumbo)
+* FE-FE F2nm_6gjj  OR		Rm, Imm57s, Rn		//(FPIMM)
 
 Perform a bitwise OR of the source and destination, storing the result in the destination.
 
@@ -2387,13 +2409,15 @@ Following these ops, SR.T will be set to indicate which block is to be executed:
 * 11nm       SUB		Rm, Rn
 * 59nm       SUB		Rm, DLR, Rn
 * F0nm_1go1  SUB		Rm, Ro, Rn			//Rn=Rm-Ro, Q=0
-* F0nm_1e19  SUB		Rm, Rn				//Rn=Rn-Rm
+* F0nm_1e19 /? SUB		Rm, Rn				//Rn=Rn-Rm (Deprecated)
 
 Rn=Rn-Rm
 Rn=Rm-Ro
 Rn=Rm-Imm
 
 Subtract the source from the destination, storing the result in the destination register.
+
+There will not be immediate forms of SUB as this will be handled by ADD.
 
 
 === SUBx.L ===
@@ -2404,6 +2428,8 @@ Subtract the source from the destination, storing the result in the destination 
 Subtract the source from the destination, storing the result in the destination register.
 
 This variant sign or zero extends the 32 bit result to 64 bits.
+
+There will not be immediate forms of SUBx.L as this will be handled by ADDx.L.
 
 
 === SUBx.P ===
@@ -2640,12 +2666,12 @@ This instruction will have special behavior as part of the Bounds Check Enforcin
 * 17nm       XOR		Rm, Rn
 * 5Cnm       XOR		Rm, DLR, Rn
 * F0nm_1go7  XOR		Rm, Ro, Rn				//Rn=Rm XOR Ro, Q=0
-* F0nm_1e79  XOR		Rm, Rn
+* F0nm_1e79 /? XOR		Rm, Rn				//Deprecated
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
 
 
-*    FE F2nm_7gjj  XOR		Rm, Imm33s, Rn
-* FE-FE F2nm_7gjj  XOR		Rm, Imm57s, Rn	//FPIMM
+*    FE F2nm_7gjj  XOR		Rm, Imm33s, Rn	//(Jumbo)
+* FE-FE F2nm_7gjj  XOR		Rm, Imm57s, Rn	//(FPIMM)
 
 Perform a bitwise XOR of the source and destination registers, storing the result in the destination.
 
@@ -2904,12 +2930,12 @@ See [PADD.x 3R (GSV)] for Lane usage rules.
 
 === PMULx.W 3R (GSV) ===
 
-* F0nm_5go1  PMULS.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
-* F0nm_5Go1  PMULU.W	Rm, Ro, Rn			//(GSV) Packed Multiply (2x16->2x32)
-* F0nm_5go6  PMULS.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
-* F0nm_5Go6  PMULU.LW	Rm, Ro, Rn			//(GSV) Packed Mul (Low Word)
-* F0nm_5go7  PMULS.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
-* F0nm_5Go7  PMULU.HW	Rm, Ro, Rn			//(GSV) Packed Mul (High Word)
+* F0nm_5go1  PMULS.W	Rm, Ro, Rn		//(GSV) Packed Multiply (2x16->2x32)
+* F0nm_5Go1  PMULU.W	Rm, Ro, Rn		//(GSV) Packed Multiply (2x16->2x32)
+* F0nm_5go6  PMULS.LW	Rm, Ro, Rn		//(GSV) Packed Mul (Low Word)
+* F0nm_5Go6  PMULU.LW	Rm, Ro, Rn		//(GSV) Packed Mul (Low Word)
+* F0nm_5go7  PMULS.HW	Rm, Ro, Rn		//(GSV) Packed Mul (High Word)
+* F0nm_5Go7  PMULU.HW	Rm, Ro, Rn		//(GSV) Packed Mul (High Word)
 
 The basic 3R PMULx.W will accept vectors with two 16 bit inputs, and produce a vactor with two 32-bit products.
 
@@ -2938,6 +2964,20 @@ For each element, this can be seen as:
 
 Perform a RELU operator.
 In this case, positive values are passed through as-is, whereas negative values are zeroed.
+
+
+=== PSHxx.W 2R (GSV) ===
+
+* F0nm_1g6E  PSHAL.W		Rm, Rn	//(GSV) Arithmetic Left
+* F0nm_1G6E  PSHLL.W		Rm, Rn	//(GSV) Logical Left
+* F0nm_1g7E  PSHAR.W		Rm, Rn	//(GSV) Arithmetic Right
+* F0nm_1G7E  PSHLR.W		Rm, Rn	//(GSV) Logical Right
+
+Packed Shift by 1 bit.
+These shifts will shift each element by 1 bit to the left or right.
+
+Unlike with normal integer shift, the packed shift left will be saturating.
+If the shift would have overflowed, signed will clamp the result to 0x8000 or 0x7FFF, whereas unsigned will clamp to 0xFFFF.
 
 
 === PSQRTA.x 2R (GSV) ===
@@ -2987,8 +3027,8 @@ PSELT will select the Word from Rm if the corresponding bit is Set, selecting th
 
 === PSHUF.x ===
 
-* F2nm_8qjj  PSHUF.B	Rm, Imm8, Rn
-* F2nm_8Qjj  PSHUF.W	Rm, Imm8, Rn
+* F2nm_8qjj  PSHUF.B	Rm, Imm8, Rn		//(GSV)
+* F2nm_8Qjj  PSHUF.W	Rm, Imm8, Rn		//(GSV)
 
 Packed Shuffle of Byte or Word elements.
 
@@ -3000,18 +3040,20 @@ Each element will be given as a 2-bit value, with 00 mapping to the low-order bi
 
 === PSHUFX.L ===
 
-*  PSHUFX.L	Rm, Imm8, Rn
+*  PSHUFX.L	Rm, Imm8, Rn		//Synthetic
 
 This instruction is synthetic.
 Packed Shuffle of DWord element, operating on a logical 128-bit register.
 
+This instruction will be built using MOVxxD ops.
+
 
 === PSCHxx.W ===
 
-* F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn
-* F0nm_2GoA  PSCHEQ.B	Rm, Ro, Rn
-* F0nm_2goB  PSCHNE.W	Rm, Ro, Rn
-* F0nm_2GoB  PSCHNE.B	Rm, Ro, Rn
+* F0nm_2goA  PSCHEQ.W	Rm, Ro, Rn		//(GSV)
+* F0nm_2GoA  PSCHEQ.B	Rm, Ro, Rn		//(GSV)
+* F0nm_2goB  PSCHNE.W	Rm, Ro, Rn		//(GSV)
+* F0nm_2GoB  PSCHNE.B	Rm, Ro, Rn		//(GSV)
 
 Checks if the elements in Rm match those in Ro, storing the index of the first match into Rn.
 
@@ -3104,7 +3146,7 @@ The low order 32 bits of Rn will be shifted left by 8 bits, with the new endpoin
 This operation will be Lane 1 only.
 
 
-=== SWxP.x (GSV) ===
+=== SWxP.x (GSV, Deprecated) ===
 
 * F0nm_3g07  SWAP.B		Rm, Rn		//(1032) Swap E/O Bytes (Low Four Bytes)
 * F0nm_3g17  SWAP.W		Rm, Rn		//(1032) Swap E/O Words (All words)
@@ -3128,6 +3170,8 @@ Swap or Copy elements within a register.
 SWAP.x will exchange a the low element with another element, whereas SWCP.x will copy the low element into another element.
 
 Other than the first element, the others will be labeled as Low, Middle, and High. Low will correspond to the lower-order bits of the register, and High will correspond with the higher order bits.
+
+These will be deprecated in favor of PSHUF.B / PSHUF.W.
 
 
 === BLERP (RGBX) ===
@@ -3229,7 +3273,7 @@ An encoder should ensure that decoded values will not go out of range.
 
 === BLKUTX1 (RGB) ===
 
-* F0nm_2goC  BLKUTX1	Rm, Ro, Rn
+* F0nm_2goC  BLKUTX1	Rm, Ro, Rn		//(RGB)
 
 Extract pixels from blocks encoded in UTX1.
 
@@ -3255,7 +3299,7 @@ Within the pixel bits, 0 will select the minimum color, and 1 will select the ma
 
 === BLKUTX2 (RGB) ===
 
-* F0nm_2GoC  BLKUTX2	Rm, Ro, Rn
+* F0nm_2GoC  BLKUTX2	Rm, Ro, Rn		//(RGB)
 
 Extract pixels from blocks encoded in UTX2.
 
@@ -3383,18 +3427,20 @@ Get the absolute value of the double precision value in Rm and store the result 
 
 === FADD (GFP) ===
 
-* 60nm                 FADD		Rm, Rn
-* F0nm_5go8            FADD		Rm, Ro, Rn
-* F0nm_5Go8            FADDX	Xm, Xo, Xn		//(GFPX)
-* F0nm_6goD            FADDG	Rm, Ro, Rn
-* F0nm_7go0          ? FADDA	Rm, Ro, Rn
+* 60nm                 FADD		Rm, Rn				//(GFP)
+* F0nm_5go8            FADD		Rm, Ro, Rn			//(GFP)
+* F0nm_5Go8            FADDX	Xm, Xo, Xn			//(GFPX)
+* F0nm_6goD            FADDG	Rm, Ro, Rn			//(GFP)
+* F0nm_7go0          ? FADDA	Rm, Ro, Rn			//(GFP)
 * F0nm_6GoD          ? FADD		Rm, Imm5fp, Rn		//(FpImm)
 * F2nE_DHjj          ? FADD		Imm10fp, Rn			//(FpImm) (E.q=1) FADD
-* FEjj_jjjj_F2nm_8pjj? FADD		Rm, Imm32f, Rn		//(NNX)
-* FFw0_08ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8
-* FFw0_08ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8
+* FEjj_jjjj_F2nm_1Pjj  FADD		Rm, Imm32f, Rn		//(FPIMM)
+* FEjj_jjjj_F2nm_1Qjj  FADDA	Rm, Imm32f, Rn		//(FPIMM)
+* FFw0_08ii_F0nm_5go8  FADD		Rm, Ro, Rn, Imm8	//(GFP)
+* FFw0_08ii_F0nm_5Go8  FADDX	Xm, Xo, Xn, Imm8	//(GFPX)
 
-* FE-FE F2nm_3Gjj      FADD		Rm, Imm56f, Rn		//(FPIMM)
+* FE-FE F2nm_1Gjj      FADD		Rm, Imm56f, Rn		//(FPIMM)
+* FE-FE F2nm_3Gjj   /? FADD		Rm, Imm56f, Rn		//(FPIMM) Deprecated
 
 Add the double precision value in Ro to the value from Rm and store the resulting value in Rn.
 
@@ -3461,6 +3507,7 @@ This is effectively a truncated form of Binary16, and may be converted to the Bi
 
 In both the Imm5fp and Imm10fp cases, the value will be decoded as-if it were first converted to Binary16 and then converted to Binary64 using similar behavior as the FLDCH instruction.
 
+Some encodings may encode an Imm32f. This encoding will basically represent the value as a Binary64 with the low 32 bits cut off (S.E11.F20).
 
 In WEX profiles without FP2, FADD/FSUB/FMUL will be Lane 1 only.
 * In profiles with FP2, they may be issued from Lane 2.
@@ -3469,30 +3516,47 @@ In WEX profiles without FP2, FADD/FSUB/FMUL will be Lane 1 only.
 
 === FCMPEQ (GFP) ===
 
-* 64nm       FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
-* F0nm_1gAD  FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
-* F0nm_1GAD  FCMPXEQ	Rm, Rn			//SR.T=(Rn EQ Rm)
-* F2nC_Dhjj ? FCMPEQ	Imm10fp, Rn		//(FpImm) (E.q=0) Rn==Imm
+* 64nm                 FCMPEQ		Rm, Rn			//(GFP) FCMPEQ
+* F0nm_1gAD            FCMPEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
+* F0nm_1GAD            FCMPXEQ		Rm, Rn			//SR.T=(Rn EQ Rm)
+* F2nC_Dhjj            FCMPEQ		Imm10fp, Rn		//(FpImm) (E.q=0) Rn==Imm
+* FEjj_jjjj_F2nC_Dhjj  FCMPEQ		Imm32f, Rn		//(FpImm)
+* FE   FE   F2nC_Dhjj  FCMPEQ		Imm56f, Rn		//(FpImm)
 
 Compare the double precision values in Rm and Rn for equality, setting SR.T if both values are equal, otherwise clearing SR.T.
 
 If either value encodes a NaN, SR.T will be cleared.
 
-For Imm10fp, see FADD.
+For Imm10fp and Imm32f, see FADD.
+
+=== FCMPGE (GFP) ===
+
+* F2nF_Dhjj            FCMPGE		Imm10fp, Rn		//(FpImm) (E.q=0) FCMPGE
+* FEjj_jjjj_F2nF_Dhjj  FCMPGE		Imm32f, Rn		//(FpImm) (E.q=0) FCMPGE
+* FE   FE   F2nF_Dhjj  FCMPGE		Imm56f, Rn		//(FpImm)
+
+Compare if the double precision value in Rn is greater than or equal to the value in Rm, setting SR.T if this is the case, and clearing otherwise.
+
+If either value is NaN, the resulting state of SR.T is undefined.
+
+For Imm10fp and Imm32f, see FADD.
+
 
 
 === FCMPGT (GFP) ===
 
-* 65nm       FCMPGT		Rm, Rn			//(GFP) FCMPGT
-* F0nm_1gBD  FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
-* F0nm_1GBD  FCMPXGT	Rm, Rn			//SR.T=(Rn GT Rm)
-* F2nE_Dhjj ? FCMPGT	Imm10fp, Rn		//(FpImm) (E.q=0) FCMPGT
+* 65nm                 FCMPGT		Rm, Rn			//(GFP) FCMPGT
+* F0nm_1gBD            FCMPGT		Rm, Rn			//SR.T=(Rn GT Rm)
+* F0nm_1GBD            FCMPXGT		Rm, Rn			//SR.T=(Rn GT Rm)
+* F2nE_Dhjj          ? FCMPGT		Imm10fp, Rn		//(FpImm) (E.q=0) FCMPGT
+* FEjj_jjjj_F2nE_Dhjj  FCMPGT		Imm32f, Rn		//(FpImm)
+* FE   FE   F2nE_Dhjj  FCMPGT		Imm56f, Rn		//(FpImm)
 
-Compare if the double precision value in Rn is greated than the value in Rm, setting SR.T if this is the case, and clearing otherwise.
+Compare if the double precision value in Rn is greater than the value in Rm, setting SR.T if this is the case, and clearing otherwise.
 
 If either value is NaN, the resulting state of SR.T is undefined.
 
-For Imm10fp, see FADD.
+For Imm10fp and Imm32f, see FADD.
 
 
 === FCONV (GFPX) ===
@@ -3630,18 +3694,18 @@ Load a floating point immediate and convert to Double.
 Conversion will be the same as that for the register instruction.
 
 
-=== FMAC (GFPX) ===
+=== FMAC (FMAC/GFPX) ===
 
-* F0nm_5goB            FMAC		Rm, Ro, Rn			//(GFPX) FMAC, Rn+=Rm*Ro
+* F0nm_5goB            FMAC		Rm, Ro, Rn			//(FMAC) FMAC, Rn+=Rm*Ro
 * F0nm_5GoB            FMACX	Xm, Xo, Xn			//(GFPX) FMAC, LongDbl
 
-* FFw0_00pp_F0nm_5goB  FMAC		Rm, Ro, Rp, Rn		//(GFPX) FMAC, Rn=Rm*Ro+Rp
+* FFw0_00pp_F0nm_5goB  FMAC		Rm, Ro, Rp, Rn		//(FMAC) FMAC, Rn=Rm*Ro+Rp
 * FFw0_00pp_F0nm_5GoB  FMACX	Xm, Xo, Xp, Xn		//(GFPX) FMAC, LongDbl
-* FFw0_01pp_F0nm_5goB  FMAS		Rm, Ro, Rp, Rn		//(GFPX) FMAS, Rn=Rm*Ro-Rp
+* FFw0_01pp_F0nm_5goB  FMAS		Rm, Ro, Rp, Rn		//(FMAC) FMAS, Rn=Rm*Ro-Rp
 * FFw0_01pp_F0nm_5GoB  FMASX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
-* FFw0_02pp_F0nm_5goB  FMRS		Rm, Ro, Rp, Rn		//(GFPX) FMAS, Rn=Rp-Rm*Ro
+* FFw0_02pp_F0nm_5goB  FMRS		Rm, Ro, Rp, Rn		//(FMAC) FMAS, Rn=Rp-Rm*Ro
 * FFw0_02pp_F0nm_5GoB  FMRSX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
-* FFw0_03pp_F0nm_5goB  FMRA		Rm, Ro, Rp, Rn		//(GFPX) FMAS, Rn=-Rm*Ro-Rp
+* FFw0_03pp_F0nm_5goB  FMRA		Rm, Ro, Rp, Rn		//(FMAC) FMAS, Rn=-Rm*Ro-Rp
 * FFw0_03pp_F0nm_5GoB  FMRAX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
 
 Multiply the double precision value in Ro with the value from Rm and add this to the value in Rn, storing the result in Rn.
@@ -3657,14 +3721,17 @@ FMACX will operate instead on a LongDouble value (partial precision).
 * F0nm_5goA            FMUL		Rm, Ro, Rn		//(GFP) FMUL
 * F0nm_5GoA            FMULX	Xm, Xo, Xn		//(GFPX) FMUL
 * F0nm_6goF            FMULG	Rm, Ro, Rn		//(GFP) FMUL
-* F0nm_7go2          ? FMULA	Rm, Ro, Rn
+* F0nm_7go2          ? FMULA	Rm, Ro, Rn		//(GFP)
 * F0nm_6GoF          ? FMUL		Rm, Imm5fp, Rn	//(FpImm)
 * F2nF_DHjj          ? FMUL		Imm10fp, Rn		//(FpImm) (E.q=1) FMUL
-* FEjj_jjjj_F2nm_8qjj? FMUL		Rm, Imm32f, Rn		//(NNX)
-* FFw0_08ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8
-* FFw0_08ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8
+* FEjj_jjjj_F2nm_9pjj / FMUL	Rm, Imm32f, Rn		//(NNX)
+* FEjj_jjjj_F2nm_4Pjj ? FMUL	Rm, Imm32f, Rn		//(FPIMM)
+* FEjj_jjjj_F2nm_4Qjj ? FMULA	Rm, Imm32f, Rn		//(FPIMM)
+* FFw0_08ii_F0nm_5goA  FMUL		Rm, Ro, Rn, Imm8	//(GFP)
+* FFw0_08ii_F0nm_5GoA  FMULX	Xm, Xo, Xn, Imm8	//(GFPX)
 
-* FE-FE F2nm_2Gjj      FMUL		Rm, Imm56f, Rn		//(FPIMM)
+* FE-FE F2nm_2Gjj     / FMUL		Rm, Imm56f, Rn		//(FPIMM)
+* FE-FE F2nm_4Gjj      FMUL		Rm, Imm56f, Rn		//(FPIMM)
 
 Multiply the double precision value in Ro with the value from Rm and store the resulting value in Rn.
 
@@ -3730,10 +3797,10 @@ Conversion to integer will truncate towards zero. Its output will be a 64-bit in
 * F0nm_5go9            FSUB		Rm, Ro, Rn		//(GFP) FSUB
 * F0nm_5Go9            FSUBX	Rm, Ro, Rn		//(GFPX) FSUB
 * F0nm_6goE            FSUBG	Rm, Ro, Rn		//(GFPX) FSUB
-* F0nm_7go1          ? FSUBA	Rm, Ro, Rn
+* F0nm_7go1          ? FSUBA	Rm, Ro, Rn		//(GFP)
 * F0nm_6GoE          ? FSUB		Rm, Imm5fp, Rn		//(FpImm)
-* FFw0_08ii_F0nm_5go9  FSUB		Rm, Ro, Rn, Imm8
-* FFw0_08ii_F0nm_5Go9  FSUBX	Xm, Xo, Xn, Imm8
+* FFw0_08ii_F0nm_5go9  FSUB		Rm, Ro, Rn, Imm8	//(GFP)
+* FFw0_08ii_F0nm_5Go9  FSUBX	Xm, Xo, Xn, Imm8	//(GFPX)
 
 Subtract the double precision value in Ro from the value from Rm and store the resulting value in Rn.
 

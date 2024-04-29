@@ -141,7 +141,8 @@ parameter[6:0] JX2_GR_FPIMM56F	= 7'h5A;		//FP Immed, Imm56f
 parameter[6:0] JX2_GR_FPIMM56VF	= 7'h5B;		//FP Immed, 4x S.E5.F8
 
 parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
-parameter[6:0] JX2_GR_FPIMM10	= 7'h5D;		//FP Immed, 10-bit
+// parameter[6:0] JX2_GR_FPIMM10	= 7'h5D;		//FP Immed, 10-bit
+parameter[6:0] JX2_GR_IMM_HI	= 7'h5D;		//Immed in high 32 bits.
 parameter[6:0] JX2_GR_IMM_RP	= 7'h5E;		//Immed via Rp
 parameter[6:0] JX2_GR_SP2		= 7'h5F;
 
@@ -1139,6 +1140,11 @@ parameter[5:0] JX2_UCIX_CONV_RGB5PCK64		= 6'h1C;	//RGB64->RGB555
 parameter[5:0] JX2_UCIX_CONV_RGB5UPCK64		= 6'h1D;	//RGB555->RGB64
 parameter[5:0] JX2_UCIX_CONV_RGB32PCK64		= 6'h1E;	//RGB64->RGB32
 parameter[5:0] JX2_UCIX_CONV_RGB32UPCK64	= 6'h1F;	//RGB32->RGB64
+
+parameter[5:0] JX2_UCIX_CONV_PAHALW	= 6'h20;	//
+parameter[5:0] JX2_UCIX_CONV_PAHLLW	= 6'h21;	//
+parameter[5:0] JX2_UCIX_CONV_PAHARW	= 6'h22;	//
+parameter[5:0] JX2_UCIX_CONV_PAHLRW	= 6'h23;	//
 
 //parameter[5:0] JX2_UCIX_CONV_RGB32PCK64FU	= 6'h20;	//RGB64F->RGB32F (U)
 //parameter[5:0] JX2_UCIX_CONV_RGB32PCK64FS	= 6'h21;	//RGB64F->RGB32F (S)

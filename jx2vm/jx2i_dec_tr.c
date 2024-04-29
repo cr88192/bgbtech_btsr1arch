@@ -2308,7 +2308,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 				(op1->rn!=op2->ro) &&
 				(op1->rn!=op2->rn) &&
 				(op2->rn!=op1->rm) &&
-				(op2->rn!=op1->ro))
+				(op2->rn!=op1->ro) &&
+				(op1->rn!=BJX2_REG_SP))
 			{
 				op1->fl|=BJX2_OPFL_WEX;
 				op1->fl|=BJX2_OPFL_OPSSC;
@@ -2610,10 +2611,22 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			(op->nmid==BJX2_NMID_PSUBXF)	||
 			(op->nmid==BJX2_NMID_PMULXF)	)
 		{
-			if(op->imm&8)
+			if(op->fmid==BJX2_FMID_REGREGREG)
 			{
-				op->fl|=BJX2_OPFL_OPPIPE;
-				op->cyc=ilo;
+				if(op->imm&8)
+				{
+					op->fl|=BJX2_OPFL_OPPIPE;
+					op->cyc=ilo;
+				}
+			}
+
+			if(op->fmid==BJX2_FMID_REGIMMREG)
+			{
+				if(op->opn2&0x0100)
+				{
+					op->fl|=BJX2_OPFL_OPPIPE;
+					op->cyc=ilo;
+				}
 			}
 		}
 

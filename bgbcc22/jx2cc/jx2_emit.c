@@ -8470,14 +8470,18 @@ int BGBCC_JX2_ComposeJumboRegImmRegF2U(BGBCC_JX2_Context *ctx,
 	int topw1, int topw2,
 	int sreg, s64 imm, int dreg)
 {
+	s64 imm1;
 	int i;
 //	return(0);
 
 	if(((u32)imm)==imm)
 	{
+		imm1=imm;
+		if(topw2&0x0100)
+			imm1|=0xFFFFFFFF00000000ULL;
 		i=BGBCC_JX2_ComposeJumboRegImmRegF2(ctx,
 			ropw1, ropw2, ropw3, ropw4,
-			topw1, topw2, sreg, imm, dreg);
+			topw1, topw2, sreg, imm1, dreg);
 		return(i);
 	}
 	return(0);

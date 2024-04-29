@@ -1273,8 +1273,20 @@ int BGBCC_JX2DA_EmitOpImmReg(BGBCC_JX2_Context *ctx,
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %lld, %s%s", snm, imm, srn,
-		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	if(((s32)imm)!=imm)
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s 0x%016llX, %s%s", snm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}else
+	if(((s16)imm)!=imm)
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s 0x%08llX, %s%s", snm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}else
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %lld, %s%s", snm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}
 	return(1);
 }
 
@@ -1290,9 +1302,23 @@ int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %lld, %s%s",
-		snm, srm, imm, srn,
-		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	if(((s32)imm)!=imm)
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, 0x%016llX, %s%s",
+			snm, srm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}else
+	if(((s16)imm)!=imm)
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, 0x%08llX, %s%s",
+			snm, srm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}else
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %lld, %s%s",
+			snm, srm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}
 	return(1);
 }
 
@@ -1398,9 +1424,17 @@ int BGBCC_JX2DA_EmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 
-	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s, %d), %s%s",
-		snm, srm, disp, srn,
-		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	if((disp&4095)!=disp)
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s, 0x%X), %s%s",
+			snm, srm, disp, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}else
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s (%s, %d), %s%s",
+			snm, srm, disp, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}
 	return(1);
 }
 

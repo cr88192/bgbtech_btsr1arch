@@ -472,7 +472,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 				}
 			}
 
-			if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+			if(sctx->is_pbo && !(sctx->is_pbo&2) &&
+					(obj->regflags&BGBCC_REGFL_ALIASPTR))
 				k+=8;
 
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
@@ -544,7 +545,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 #if 1
 			if(sctx->is_leaf&1)
 			{
-				if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+				if(sctx->is_pbo && !(sctx->is_pbo&2) &&
+					(obj->regflags&BGBCC_REGFL_ALIASPTR))
 				{
 					if(((k+8)!=sctx->frm_size) && !sctx->is_simpass)
 						{ BGBCC_DBGBREAK; }
@@ -583,7 +585,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 			}
 			else
 #endif
-				if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
+				if(sctx->is_pbo && !(sctx->is_pbo&2) &&
+					(obj->regflags&BGBCC_REGFL_ALIASPTR))
 			{
 				if(((k+16)!=sctx->frm_size) && !sctx->is_simpass)
 					{ BGBCC_DBGBREAK; }
@@ -1098,7 +1101,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 //	if(sctx->is_pbo)
 //	if(sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR))
-	if((sctx->is_pbo && (obj->regflags&BGBCC_REGFL_ALIASPTR)) ||
+	if((sctx->is_pbo && !(sctx->is_pbo&2) &&
+		(obj->regflags&BGBCC_REGFL_ALIASPTR)) ||
 		(obj->flagsint&BGBCC_TYFL_INTERRUPT))
 	{
 		if(sctx->has_fmovc)

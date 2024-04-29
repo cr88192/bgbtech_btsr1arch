@@ -464,6 +464,12 @@ The relocations are given as 16 bit numbers:
 ** 14: Extended Reloc Operator A
 ** 15: Reserved / Escape
 
+Possible Modification:
+* Relocation 0 will adjust the page-base offset by 0..4095 pages.
+* 0000 will be NOP.
+* This could be used to support denser reloc tables.
+** Blocks could be per-section rather than per-page.
+
 TLS Index:
 * This is a pointer-sized scaled index indicating a given TLS Variable.
 * The index 0 will be special and correspond to the PBO Base Offset Index.

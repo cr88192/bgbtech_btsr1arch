@@ -430,6 +430,53 @@ begin
 			};
 		end
 
+`ifdef def_true
+		JX2_UCIX_CONV_PAHALW: begin
+			tRegOutVal = {
+				regValRs[63]^regValRs[62] ?
+					(regValRs[63] ? 16'h8000 : 16'h7FFF) :
+					{ regValRs[62:48], 1'b0 },
+				regValRs[47]^regValRs[46] ?
+					(regValRs[47] ? 16'h8000 : 16'h7FFF) :
+					{ regValRs[46:32], 1'b0 },
+				regValRs[31]^regValRs[30] ?
+					(regValRs[31] ? 16'h8000 : 16'h7FFF) :
+					{ regValRs[30:16], 1'b0 },
+				regValRs[15]^regValRs[14] ?
+					(regValRs[15] ? 16'h8000 : 16'h7FFF) :
+					{ regValRs[14: 0], 1'b0 }
+			};
+		end
+		JX2_UCIX_CONV_PAHLLW: begin
+			tRegOutVal = {
+				regValRs[63] ? 16'hFFFF :
+					{ regValRs[62:48], 1'b0 },
+				regValRs[47] ? 16'hFFFF :
+					{ regValRs[46:32], 1'b0 },
+				regValRs[31] ? 16'hFFFF :
+					{ regValRs[30:16], 1'b0 },
+				regValRs[15] ? 16'hFFFF :
+					{ regValRs[14: 0], 1'b0 }
+			};
+		end
+		JX2_UCIX_CONV_PAHARW: begin
+			tRegOutVal = {
+				regValRs[63], regValRs[63:49],
+				regValRs[47], regValRs[47:33],
+				regValRs[31], regValRs[31:17],
+				regValRs[15], regValRs[15: 1]
+			};
+		end
+		JX2_UCIX_CONV_PAHLRW: begin
+			tRegOutVal = {
+				1'b0, regValRs[63:49],
+				1'b0, regValRs[47:33],
+				1'b0, regValRs[31:17],
+				1'b0, regValRs[15: 1]
+			};
+		end
+`endif
+
 `ifndef jx2_do_convfp16_alu
 
 `ifdef jx2_enable_convrgb32f

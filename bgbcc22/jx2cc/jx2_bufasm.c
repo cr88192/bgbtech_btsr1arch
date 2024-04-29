@@ -1648,6 +1648,11 @@ int mfl;
 {"prcpa.f",		BGBCC_SH_NMID_PRCPAF},
 {"prelu.f",		BGBCC_SH_NMID_PRELUF},
 
+{"pshal.w",		BGBCC_SH_NMID_PSHALW},
+{"pshll.w",		BGBCC_SH_NMID_PSHLLW},
+{"pshar.w",		BGBCC_SH_NMID_PSHARW},
+{"pshlr.w",		BGBCC_SH_NMID_PSHLRW},
+
 {"mov.tw",		BGBCC_SH_NMID_MOVTW},
 {"movu.tw",		BGBCC_SH_NMID_MOVUTW},
 {"mov.htw",		BGBCC_SH_NMID_MOVHTW},

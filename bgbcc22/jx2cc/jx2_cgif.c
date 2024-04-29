@@ -663,6 +663,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "noshuffle"))
 		shctx->do_shuffle=0;
 
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "pbostatic"))
+		shctx->is_pbo=3;
+
 	ctx->arch_has_imac=shctx->has_dmacl;
 	ctx->arch_has_fmac=0;
 
@@ -3166,6 +3169,14 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		fprintf(sctx->cgen_log, "BGBCC_JX2C_BuildFunction: End %s\n",
 			obj->qname);
 		fflush(sctx->cgen_log);
+	}
+
+	if(!sctx->is_simpass && (obj->n_vtr>1) && !(sctx->is_leaftiny&1))
+	{
+		sctx->stat_size_prolog+=sctx->fnsz_pro;
+		sctx->stat_size_epilog+=sctx->fnsz_epi;
+		sctx->stat_size_body+=sctx->fnsz_bod;
+		sctx->stat_size_cnt++;
 	}
 
 	return(0);
@@ -6958,6 +6969,13 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 	}
 
+	sctx->is_dll=0;
+	sctx->is_exe=0;
+	if(imgfmt==BGBCC_IMGFMT_DLL)
+		{ sctx->is_dll=1; }
+	if(imgfmt==BGBCC_IMGFMT_EXE)
+		{ sctx->is_exe=1; }
+
 	BGBCC_JX2_SetSectionName(sctx, ".text");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__text_start");
 
@@ -8470,6 +8488,19 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 					(1.0*sctx->stat_func_acc_vspan  )/(sctx->stat_func_partrsv),
 					(1.0*sctx->stat_func_acc_vspmax )/(sctx->stat_func_partrsv));
 			}
+
+			printf("  Avg Pro=%d Epi=%d Bod=%d\n",
+				sctx->stat_size_prolog/sctx->stat_size_cnt,
+				sctx->stat_size_epilog/sctx->stat_size_cnt,
+				sctx->stat_size_body/sctx->stat_size_cnt);
+
+			f=	sctx->stat_size_prolog+
+				sctx->stat_size_epilog+
+				sctx->stat_size_body;
+			printf("  Avg Pro=%.2f%% Epi=%.2f%% Bod=%.2f%%\n",
+				(100.0*sctx->stat_size_prolog)/f,
+				(100.0*sctx->stat_size_epilog)/f,
+				(100.0*sctx->stat_size_body)/f);
 		}
 
 		printf("WEXed: F0=%.2f%% F1=%.2f%% F2=%.2f%% F8=%.2f%% Tot=%.2f%%\n",

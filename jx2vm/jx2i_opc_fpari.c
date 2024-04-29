@@ -2093,6 +2093,101 @@ void BJX2_Op_FCMPGE_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]&=~1;
 }
 
+void BJX2_Op_FCMPEQ_Imm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+//	double a, b, c;
+
+	va=ctx->regs[op->rn];
+//	vb=ctx->regs[op->rm];
+
+	vb=op->imm;
+
+	isnan=(((va>>52)&2047)==2047) && (((va>>48)&15)!=0);
+	
+	if((((va>>52)&2047)==0) && (((vb>>52)&2047)==0))
+		{ va=0; vb=0; }
+
+//	if(a==b)
+	if((va==vb) && !isnan)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_FCMPGT_Imm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isgt;
+
+//	double a, b, c;
+	
+//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rn);
+//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+
+	va=ctx->regs[op->rn];
+//	vb=ctx->regs[op->rm];
+
+	vb=op->imm;
+
+	if(va>>63)
+	{
+		if(vb>>63)
+			{ isgt=vb>va; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vb>>63)
+			{ isgt=1; }
+		else
+			{ isgt=va>vb; }
+	}
+
+//	if(a>b)
+	if(isgt)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_FCMPGE_Imm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isgt;
+
+//	double a, b, c;
+	
+//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rn);
+//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+
+	va=ctx->regs[op->rn];
+//	vb=ctx->regs[op->rm];
+
+	vb=op->imm;
+
+	if(va>>63)
+	{
+		if(vb>>63)
+			{ isgt=vb>=va; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vb>>63)
+			{ isgt=1; }
+		else
+			{ isgt=va>=vb; }
+	}
+
+//	if(a>b)
+	if(isgt)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
 void BJX2_Op_FADD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 vb;
@@ -2144,6 +2239,24 @@ void BJX2_Op_FMUL_RegImm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	vb=BJX2_CvtFloatToDouble(vb);
 	vb=op->imm;
 	ctx->regs[op->rn]=BJX2_FMulSoft(ctx->regs[op->rm], vb);
+}
+
+void BJX2_Op_FADDA_RegImm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb;
+	va=ctx->regs[op->rm];
+	va=(va>>30)<<30;
+	vb=op->imm;
+	ctx->regs[op->rn]=BJX2_FAddSoft(va, vb);
+}
+
+void BJX2_Op_FMULA_RegImm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb;
+	va=ctx->regs[op->rm];
+	va=(va>>30)<<30;
+	vb=op->imm;
+	ctx->regs[op->rn]=BJX2_FMulSoft(va, vb);
 }
 
 

@@ -2418,6 +2418,27 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				}
 				break;
 
+			case 0x6:	/* F0e6_1Enm */
+				op->nmid=BJX2_NMID_PSHALW;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PSHALW_RegReg;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PSHLLW;
+					op->Run=BJX2_Op_PSHLLW_RegReg;
+				}
+				break;
+			case 0x7:	/* F0e7_1Enm */
+				op->nmid=BJX2_NMID_PSHARW;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_PSHARW_RegReg;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_PSHLRW;
+					op->Run=BJX2_Op_PSHLRW_RegReg;
+				}
+				break;
+
 			case 0x8:	/* F0e8_1Enm */
 				op->nmid=BJX2_NMID_PLDCM8SH;
 				op->fmid=BJX2_FMID_REGREG;
@@ -5094,7 +5115,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		case 0x8:	/* F0ez_68zz */
 			op->nmid=BJX2_NMID_BLKUTX2;
 			op->fmid=BJX2_FMID_REGREGREG;
-			op->Run=BJX2_Op_BLKUTX2_RegRegReg;
+//			op->Run=BJX2_Op_BLKUTX2_RegRegReg;
 			op->fl|=BJX2_OPFL_NOWEX;
 			if(eq)
 			{
@@ -6725,26 +6746,13 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 			switch((opw6>>12)&15)
 			{
 			case 0x0:	/* F2ed_0dzz */
-			case 0x1:	/* F2ed_1dzz */
 				op->imm=imm57s;
 				op->nmid=BJX2_NMID_ADD;
 				op->fmid=BJX2_FMID_REGIMMREG;
 				op->Run=BJX2_Op_ADD_RegImmReg;
-
-			case 0x2:	/* F2ed_2dzz */
-				if(eq)
-				{
-					op->imm=(imm57s<<8)|
-						((imm57s>>55)&0xFE)|
-						((imm57s>>63)&0x01);
-					op->nmid=BJX2_NMID_FMUL;
-					op->fmid=BJX2_FMID_REGIMMREG;
-					op->Run=BJX2_Op_FMUL_RegImm56Reg;
-					break;
-				}
 				break;
 
-			case 0x3:	/* F2ed_3dzz */
+			case 0x1:	/* F2ed_1dzz */
 				if(eq)
 				{
 					op->imm=(imm57s<<8)|
@@ -6757,7 +6765,49 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 				}
 				break;
 
+			case 0x2:	/* F2ed_2dzz */
+#if 1
+				if(eq)
+				{
+					/* Deprecated */
+					op->imm=(imm57s<<8)|
+						((imm57s>>55)&0xFE)|
+						((imm57s>>63)&0x01);
+					op->nmid=BJX2_NMID_FMUL;
+					op->fmid=BJX2_FMID_REGIMMREG;
+					op->Run=BJX2_Op_FMUL_RegImm56Reg;
+					break;
+				}
+#endif
+				break;
+
+			case 0x3:	/* F2ed_3dzz */
+#if 1
+				if(eq)
+				{
+					/* Deprecated */
+					op->imm=(imm57s<<8)|
+						((imm57s>>55)&0xFE)|
+						((imm57s>>63)&0x01);
+					op->nmid=BJX2_NMID_FADD;
+					op->fmid=BJX2_FMID_REGIMMREG;
+					op->Run=BJX2_Op_FADD_RegImm56Reg;
+					break;
+				}
+#endif
+				break;
+
 			case 0x4:	/* F2ed_4dzz */
+				if(eq)
+				{
+					op->imm=(imm57s<<8)|
+						((imm57s>>55)&0xFE)|
+						((imm57s>>63)&0x01);
+					op->nmid=BJX2_NMID_FMUL;
+					op->fmid=BJX2_FMID_REGIMMREG;
+					op->Run=BJX2_Op_FMUL_RegImm56Reg;
+					break;
+				}
 				break;
 
 			case 0x5:	/* F2nm_5ejj */

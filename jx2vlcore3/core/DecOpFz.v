@@ -2458,6 +2458,26 @@ begin
 					end
 
 
+					4'h6: begin
+						opNmid		= JX2_UCMD_CONV_RR;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						if(opExQ)
+							opUCmdIx	= JX2_UCIX_CONV_PAHLLW;
+						else
+							opUCmdIx	= JX2_UCIX_CONV_PAHALW;
+					end
+					4'h7: begin
+						opNmid		= JX2_UCMD_CONV_RR;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+						if(opExQ)
+							opUCmdIx	= JX2_UCIX_CONV_PAHLRW;
+						else
+							opUCmdIx	= JX2_UCIX_CONV_PAHARW;
+					end
+
+
 					4'h8: begin
 						opNmid		= JX2_UCMD_CONV2_RR;
 						opFmid		= JX2_FMID_REGREG;
@@ -5340,6 +5360,31 @@ begin
 				opFmid		= JX2_FMID_REGIMMREG;
 				opIty		= JX2_ITY_NW;
 				opUCmdIx	= JX2_UCIX_ALU_ADD;
+
+`ifdef jx2_use_fpu_fpimm
+				if(opIsJumbo && opExQ)
+				begin
+					opNmid		= JX2_UCMD_FPU3;
+					opUCmdIx	= JX2_UCIX_FPU_FADD;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_XB;
+					
+`ifdef jx2_ena_fpu_v2sd
+`ifdef jx2_use_fpu_v4sf
+					if(opExI)
+						opNmid		= JX2_UCMD_FPUV4SF;
+`endif
+`endif
+				end
+
+				if(opIsJumbo96 && opExQ)
+				begin
+					opNmid		= JX2_UCMD_FPU3;
+					opUCmdIx	= JX2_UCIX_FPU_FADD;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_XB;
+				end
+`endif
 			end
 			4'h2: begin		/* F2nm_2ejj */
 				opNmid		= JX2_UCMD_MUL3;
@@ -5348,6 +5393,7 @@ begin
 				opUCmdIx	= JX2_UCIX_MUL3_MUL3S;
 
 `ifdef jx2_use_fpu_fpimm
+// `ifndef def_true
 				if(opIsJumbo96 && opExQ)
 				begin
 					opNmid		= JX2_UCMD_FPU3;
@@ -5370,6 +5416,7 @@ begin
 					JX2_UCIX_ALU_ADDSL;
 
 `ifdef jx2_use_fpu_fpimm
+// `ifndef def_true
 				if(opIsJumbo96 && opExQ)
 				begin
 					opNmid		= JX2_UCMD_FPU3;
@@ -5386,6 +5433,31 @@ begin
 				opUCmdIx	= opExQ ?
 					JX2_UCIX_ALU_ADDUL :
 					JX2_UCIX_ALU_ADDSL;
+
+`ifdef jx2_use_fpu_fpimm
+				if(opIsJumbo && opExQ)
+				begin
+					opNmid		= JX2_UCMD_FPU3;
+					opUCmdIx	= JX2_UCIX_FPU_FMUL;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_XB;
+
+`ifdef jx2_ena_fpu_v2sd
+`ifdef jx2_use_fpu_v4sf
+					if(opExI)
+						opNmid		= JX2_UCMD_FPUV4SF;
+`endif
+`endif
+				end
+
+				if(opIsJumbo96 && opExQ)
+				begin
+					opNmid		= JX2_UCMD_FPU3;
+					opUCmdIx	= JX2_UCIX_FPU_FMUL;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_XB;
+				end
+`endif
 			end
 `endif
 
@@ -5421,10 +5493,10 @@ begin
 `ifdef jx2_use_fpu_fpimm
 				if(opIsJumbo96 && opExQ)
 				begin
-					opNmid		= JX2_UCMD_FPU3;
-					opUCmdIx	= opExI ? JX2_UCIX_FPU_FMUL : JX2_UCIX_FPU_FADD;
-					opFmid		= JX2_FMID_REGIMMREG;
-					opIty		= JX2_ITY_XB;
+//					opNmid		= JX2_UCMD_FPU3;
+//					opUCmdIx	= opExI ? JX2_UCIX_FPU_FMUL : JX2_UCIX_FPU_FADD;
+//					opFmid		= JX2_FMID_REGIMMREG;
+//					opIty		= JX2_ITY_XB;
 				end
 `endif
 			end
@@ -7105,7 +7177,13 @@ begin
 						opRegO	= JX2_GR_FPIMM56F;
 					end
 					else
-					if(opIsJumboAu)
+						if(opIsJumbo)
+					begin
+						opDoImm	= JX2_FMIMM_IMM9U;
+						opRegO	= JX2_GR_IMM_HI;
+					end
+					else
+						if(opIsJumboAu)
 					begin
 						opDoImm	= JX2_FMIMM_IMM9U;
 						opRegO	= JX2_GR_FPIMM16;
@@ -7615,6 +7693,18 @@ begin
 					opRegN		= opRegN_Dfl;
 					opRegP		= opRegN_Dfl;
 					opIsImm9	= 1;
+
+					if(opIsJumbo96)
+					begin
+						opDoImm	= JX2_FMIMM_IMM9U;
+						opRegO	= JX2_GR_FPIMM56F;
+					end
+					else
+					if(opIsJumbo)
+					begin
+						opDoImm	= JX2_FMIMM_IMM9U;
+						opRegO	= JX2_GR_IMM_HI;
+					end
 				end
 
 				JX2_ITY_XW: begin
@@ -7635,6 +7725,18 @@ begin
 					opRegN		= opRegN_Dfl;
 					opRegP		= opRegN_Dfl;
 					opIsImm9	= 1;
+
+					if(opIsJumbo96)
+					begin
+						opDoImm	= JX2_FMIMM_IMM9U;
+						opRegO	= JX2_GR_FPIMM56F;
+					end
+					else
+					if(opIsJumbo)
+					begin
+						opDoImm	= JX2_FMIMM_IMM9U;
+						opRegO	= JX2_GR_IMM_HI;
+					end
 				end
 `endif
 

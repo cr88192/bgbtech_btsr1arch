@@ -132,6 +132,8 @@ byte is_rawasm;		//is raw assembler
 byte is_leaf;		//function is a leaf function
 byte is_leaftiny;	//function is a tiny leaf function
 byte is_rom;		//building a ROM image
+byte is_exe;		//building a ROM image
+byte is_dll;		//building a ROM image
 byte is_betav;		//uses BetaVe tweaks.
 byte is_mergece;	//merge CC0e/CC3e into CExx
 byte is_tr_leaf;	//given trace is a leaf
@@ -478,6 +480,11 @@ int stat_rlbl_disp16;
 int stat_rlbl_disp20;
 int stat_rlbl_disp24;
 int stat_rlbl_disp33;
+
+int stat_size_prolog;
+int stat_size_epilog;
+int stat_size_body;
+int stat_size_cnt;
 
 int ofs_curbdl;
 

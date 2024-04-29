@@ -776,6 +776,11 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_PCMPGEF		0x1C0		//
 
+#define BJX2_NMID_PSHALW		0x1C4		//
+#define BJX2_NMID_PSHLLW		0x1C5		//
+#define BJX2_NMID_PSHARW		0x1C6		//
+#define BJX2_NMID_PSHLRW		0x1C7		//
+
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
 #define BJX2_NMID_FMAC			BJX2_NMID_FMADDD		//

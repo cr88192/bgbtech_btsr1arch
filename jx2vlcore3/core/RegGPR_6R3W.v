@@ -829,6 +829,13 @@ begin
 			tValRtZz=1;
 		end
 		
+		JX2_GR_IMM_HI: begin
+			tValRtA[63:0] = {
+				regValImmA[31:0],
+				regValImmA[32]?UV32_FF:UV32_00 };
+			tValRtZz=1;
+		end
+		
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
 			tValRtA=tValJimm;

@@ -1756,18 +1756,18 @@ F0zz Instruction Block:
 *** F0nm_1GF8 CONVFLI	Rm, Rn				//Convert Binary64 -> Flonum
 
 ** F0nm_1ez9
-*** F0nm_1g09 ADD		Rm, Rn				//Rn=Rn+Rm
-*** F0nm_1G09 ADD.L		Rm, Rn				//Rn=Rn+Rm (Low 32)
-*** F0nm_1g19 SUB		Rm, Rn				//Rn=Rn-Rm
-*** F0nm_1G19 SUB.L		Rm, Rn				//Rn=Rn-Rm (Low 32)
+*** F0nm_1g09 /? ADD	Rm, Rn				//Rn=Rn+Rm
+*** F0nm_1G09 /? ADD.L	Rm, Rn				//Rn=Rn+Rm (Low 32)
+*** F0nm_1g19 /? SUB	Rm, Rn				//Rn=Rn-Rm
+*** F0nm_1G19 /? SUB.L	Rm, Rn				//Rn=Rn-Rm (Low 32)
 *** F0nm_1g29 ADC		Rm, Rn				//Add with Carry (64b)
 *** F0nm_1G29 ADC.L		Rm, Rn				//Add with Carry (32b)
 *** F0nm_1g39 SBB		Rm, Rn				//Subtract with Borrow (64b)
 *** F0nm_1G39 SBB.L		Rm, Rn				//Subtract with Borrow (32b)
 *** F0nm_1e49 TST{Q}	Rm, Rn				//SR.T=!(Rm&Rn)
-*** F0nm_1g59 AND		Rm, Rn
-*** F0nm_1g69 OR		Rm, Rn				//
-*** F0nm_1g79 XOR		Rm, Rn				//
+*** F0nm_1g59 /? AND	Rm, Rn
+*** F0nm_1g69 /? OR		Rm, Rn				//
+*** F0nm_1g79 /? XOR	Rm, Rn				//
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
 *** F0nm_1G89 MOVX		Rm, Rn				//MOV, 128-bit
 *** F0nm_1g99 MOV		Sm, Sn
@@ -1776,11 +1776,11 @@ F0zz Instruction Block:
 *** F0nm_1GA9 SETTRAP	Rn, (Rm)			//(Opt/Dbg) Set Trap Mode
 *** F0nm_1gB9 MOV		Cm, Rn				//Rn=Cm
 *** F0nm_1GB9 CMPTTEQ	RmImm6u, Rn			//(TTAG) Compare Type-Tag
-*** F0nm_1gC9 CMPEQ	Rm, Rn					//Rn==Rm
+*** F0nm_1gC9 CMPEQ		Rm, Rn				//Rn==Rm
 *** F0nm_1GC9 CMPQEQ	Rm, Rn				//Rn==Rm
-*** F0nm_1gD9 CMPHI	Rm, Rn					//Unsigned Rn GT Rm
+*** F0nm_1gD9 CMPHI		Rm, Rn				//Unsigned Rn GT Rm
 *** F0nm_1GD9 CMPQHI	Rm, Rn				//Unsigned Rn GT Rm
-*** F0nm_1gE9 CMPGT	Rm, Rn					//Signed Rn GT Rm
+*** F0nm_1gE9 CMPGT		Rm, Rn				//Signed Rn GT Rm
 *** F0nm_1GE9 CMPQGT	Rm, Rn				//Signed Rn GT Rm
 *** F0nm_1gF9 /
 *** F0nm_1GF9 /
@@ -1885,10 +1885,10 @@ F0zz Instruction Block:
 *** F0nm_1G3E  RGB5UPCK64	Rm, Rn		//(RGB) RGB555 Unpack to RGB64
 *** F0nm_1G4E  RGB32PCK64	Rm, Rn		//(RGB) RGB32 Pack from RGB64
 *** F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
-*** F0nm_1g6E  -
-*** F0nm_1G6E  -
-*** F0nm_1g7E  -
-*** F0nm_1G7E  -
+*** F0nm_1g6E ? PSHAL.W		Rm, Rn		//Packed Shift Left 1-bit
+*** F0nm_1G6E ? PSHLL.W		Rm, Rn
+*** F0nm_1g7E ? PSHAR.W		Rm, Rn		//Packed Shift Right 1-bit
+*** F0nm_1G7E ? PSHLR.W		Rm, Rn
 
 *** F0nm_1g8E  PLDCM8SH		Rm, Rn		//(GSVF) RGB32SF Unpack to RGB64F
 *** F0nm_1G8E  PLDCM8UH		Rm, Rn		//(GSVF) RGB32UF Unpack to RGB64F
@@ -2204,7 +2204,7 @@ F0zz Instruction Block:
 ** F0nm_6Go6  FDIVX		Rm, Ro, Rn			//(FDIV+GFPX)
 ** F0nm_6go7  FDIVA		Rm, Ro, Rn			//(FDIV) FDIV Approx
 ** F0nm_6Go7  FDIVXA	Rm, Ro, Rn			//(FDIV+GFPX) FDIVX Approx
-** F0nm_6go8  BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
+** F0nm_6go8 /? BLKUTX2	Rm, Ro, Rn			//(RGB) Extract Pixel, UTX2 (Alt)
 ** F0nm_6Go8  BLKUTX3H	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 HDR
 ** F0nm_6go9  BLERP		Rm, Ro, Rn			//(RGBX) Linear Interpolate
 ** F0nm_6Go9  BLKUTX3L	Xm, Ro, Rn			//(RGBX) Extract Pixel, UTX3 LDR
@@ -2223,11 +2223,11 @@ F0zz Instruction Block:
 
 
 * F0zz_7zzz
-** F0nm_7go0 ? FADDA	Rm, Ro, Rn
+** F0nm_7go0 ? FADDA	Rm, Ro, Rn			//(GFP)
 ** F0nm_7Go0 ? FMIN		Rm, Ro, Rn			//(MINMAX) Binary64 Min Value
-** F0nm_7go1 ? FSUBA	Rm, Ro, Rn
+** F0nm_7go1 ? FSUBA	Rm, Ro, Rn			//(GFP)
 ** F0nm_7Go1 ? FMAX		Rm, Ro, Rn			//(MINMAX) Binary64 Max Value
-** F0nm_7go2 ? FMULA	Rm, Ro, Rn
+** F0nm_7go2 ? FMULA	Rm, Ro, Rn			//(GFP)
 ** F0nm_7Go2  -
 ** F0nm_7go3  -
 ** F0nm_7Go3  -
@@ -2414,8 +2414,8 @@ F2zz Instruction Block  (Imm9 Block):
 
 * F2nm_9pjj  SHLD{.L}	Rm, Imm8s, Rn		//E.i=0
 * F2nm_9Pjj  SHLD.Q		Rm, Imm8s, Rn		//E.i=0
-* F2nm_9qjj  PCONV		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
-* F2nm_9Qjj  PCONVX		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9qjj ? PCONV		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9Qjj ? PCONVX	Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
 
 * F2nz_Aejj  (Imm10 Space)
 * F2nz_Bejj  (Imm10 Space)
@@ -2492,31 +2492,63 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nz_Ffjj
 
 
-Neural Net Extension (possible):
-* FE-FE F2nm_0gjj  ADD			Rm, Imm57s, Rn
+Jumbo Prefixed Forms:
+* FE F2nm_0gjj  ADD			Rm, Imm33s, Rn
+* FE F2nm_0Gjj  -
+* FE F2nm_1gjj  /? ADD		Rm, Imm33s, Rn			//(To Drop)
+* FE F2nm_1Pjj  FADD		Rm, Imm32f, Rn			//(FPIMM)
+* FE F2nm_1Qjj  FADDA		Rm, Imm32f, Rn			//(FPIMM)
+* FE F2nm_2gjj  MULS.L		Rm, Imm33s, Rn
+* FE F2nm_2Gjj  MULU.L		Rm, Imm33s, Rn
+* FE F2nm_3gjj  ADDS.L		Rm, Imm33s, Rn
+* FE F2nm_3Gjj  ADDU.L		Rm, Imm33s, Rn
+* FE F2nm_4gjj  -
+* FE F2nm_4Pjj  FMUL		Rm, Imm32f, Rn			//(FPIMM)
+* FE F2nm_4Qjj  FMULA		Rm, Imm32f, Rn			//(FPIMM)
+* FE F2nm_5gjj  AND			Rm, Imm33s, Rn
+* FE F2nm_5Gjj  RSUB		Rm, Imm33s, Rn
+* FE F2nm_6gjj  OR			Rm, Imm33s, Rn
+* FE F2nm_6Gjj  -
+* FE F2nm_7gjj  XOR			Rm, Imm33s, Rn
+* FE F2nm_7Gjj  -
 
-* FE-FE F2nm_2gjj  -
-* FE-FE F2nm_2Gjj  FMUL			Rm, Imm56f, Rn			//(FPIMM)
-
-* FE-FE F2nm_3gjj  -
-* FE-FE F2nm_3Gjj  FADD			Rm, Imm56f, Rn			//(FPIMM)
-
-* FE-FE F2nm_4gjj  -
-* FE-FE F2nm_4Gjj  -
-
-* FE-FE F2nm_5gjj  AND			Rm, Imm57s, Rn
-* FE-FE F2nm_6gjj  OR			Rm, Imm57s, Rn
-* FE-FE F2nm_7gjj  XOR			Rm, Imm57s, Rn
-
-* FE F2nm_8pjj  FADD		Rm, Imm32f, Rn			//(NNX)
+* FE F2nm_8pjj / FADD		Rm, Imm32f, Rn			//(FPIMM)
 * FE F2nm_8Pjj  PADD.F		Rm, Imm32fv, Rn			//(NNX)
-* FE F2nm_8qjj  FMUL		Rm, Imm32f, Rn			//(NNX)
-* FE F2nm_8Qjj  PMUL.F		Rm, Imm32fv, Rn			//(NNX)
+* FE F2nm_8qjj  -
+* FE F2nm_8Qjj  -
 
-* FE F2nm_9pjj  -
-* FE F2nm_9Pjj  -
+* FE F2nm_9pjj / FMUL		Rm, Imm32f, Rn			//(FPIMM)
+* FE F2nm_9Pjj  PMUL.F		Rm, Imm32fv, Rn			//(NNX)
 * FE F2nm_9qjj  -
 * FE F2nm_9Qjj  -
+
+* FE F2nC_Dhjj  FCMPEQ		Imm32f, Rn				//(FpImm) (E.q=0) Rn==Imm
+* FE F2nE_Dhjj  FCMPGT		Imm32f, Rn				//(FpImm) (E.q=0) FCMPGT
+* FE F2nF_Dhjj  FCMPGE		Imm32f, Rn				//(FpImm) (E.q=0) FCMPGE
+
+
+* FE-FE F2nm_0gjj  ADD			Rm, Imm57s, Rn
+* FE-FE F2nm_0Gjj  -
+
+* FE-FE F2nm_1gjj  -
+* FE-FE F2nm_1Gjj  FADD			Rm, Imm56f, Rn			//(FPIMM)
+
+* FE-FE F2nm_2gjj  -
+* FE-FE F2nm_2Gjj  / FMUL		Rm, Imm56f, Rn			//(FPIMM)
+
+* FE-FE F2nm_3gjj  -
+* FE-FE F2nm_3Gjj  / FADD		Rm, Imm56f, Rn			//(FPIMM)
+
+* FE-FE F2nm_4gjj  -
+* FE-FE F2nm_4Gjj  FMUL			Rm, Imm56f, Rn			//(FPIMM)
+
+* FE-FE F2nm_5gjj  AND			Rm, Imm57s, Rn
+* FE-FE F2nm_5Gjj  -
+* FE-FE F2nm_6gjj  OR			Rm, Imm57s, Rn
+* FE-FE F2nm_6Gjj  -
+* FE-FE F2nm_7gjj  XOR			Rm, Imm57s, Rn
+* FE-FE F2nm_7Gjj  -
+
 
 * FE-FE F2nm_6gjj  OR			Rm, Imm57s, Rn
 * FE-FE F2nm_6Pjj / FADD			Rm, Imm56f, Rn			//(FPIMM)
@@ -2666,6 +2698,9 @@ F2 block immediates will be expanded to being 33-bit sign-extended.
 ** EI will serve as a sign-extension bit.
 * Ops with Zero/One extension are to match the EI bit.
 * For Imm10 forms, EM is reserved and set to zero.
+
+With the FpImm extension, some instructions will encode an Imm32f. This will be encoded as the high 32 bits of a Binary64 value. The sign extension is to be set to 0.
+
 
 Two Jumbo_Imm prefixes on a F2 Block instruction will result in an Imm57s.
 * In Baseline Mode, this will have a 57-bit sign-extended value.

@@ -1952,6 +1952,23 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 
 	if((sz<=12) && (al>=4))
 	{
+		if(BGBCC_JX2C_ScratchQueryReg(ctx, sctx, BGBCC_SH_REGCLS_QGR)>=3)
+		{
+			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			tr2=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, sreg, 0, tr0);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, sreg, 4, tr1);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm2, sreg, 8, tr2);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, 0);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr1, dreg, 4);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm2, tr2, dreg, 8);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr2);
+			return(1);
+		}
+	
 		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 		tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 		BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, sreg, 0, tr0);

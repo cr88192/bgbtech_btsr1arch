@@ -2197,10 +2197,10 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	int lb_strt, va_strt, lbl_gptr;
 	int img_base, img_base_hi;
 	int nm, fl, lva, rva, lsz, sn_strs, imty;
-	int lpg, szrlc, ofsrlc, nrlce, mach, lbl;
+	int lpg, lsec, szrlc, ofsrlc, nrlce, mach, lbl;
 	int ofsimp, szimp, ofsexp, szexp;
 	int ofsexc, szexc, ofsrsrc, szrsrc, ofstlsd, sztlsd;
-	int szstack;
+	int szstack, denserlc;
 	int i, j, k;
 
 	sctx=ctx->uctx;
@@ -2213,6 +2213,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	if(is_pel)
 		no_mz=1;
 	
+	denserlc=0;
+//	if(no_mz)
+//		denserlc=1;
 
 	BGBCC_JX2C_CoffBuildExports(ctx, sctx);
 	BGBCC_JX2C_CoffBuildImports(ctx, sctx);
@@ -2280,6 +2283,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 	lbl_gptr=BGBCC_JX2_LookupNamedLabel(sctx, "__global_ptr");
 
+	lsec=-1;
 	lpg=-1; szrlc=0; nrlce=0;
 	for(i=0; i<sctx->nrlc; i++)
 	{
@@ -2379,16 +2383,25 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 //	bgbcc_jx2c_qrsort(rlctab, nrlce, 0, 0x0FFFFFFF);
 
 #if 1
-	lpg=-1; szrlc=0;
+	lpg=-1; szrlc=0; lsec=-1;
 	for(i=0; i<nrlce; i++)
 	{
 		lva=rlctab[i];
 		rva=lva&0x0FFFFFFF;
+		j=(lva>>24)&15;
 
-		if((rva>>12)!=lpg)
+//		if((rva>>12)!=lpg)
+		if((j!=lsec) || (((rva>>12)!=lpg) && !denserlc))
+//		if(j!=lsec)
 		{
 			szrlc=(szrlc+3)&(~3);
 			szrlc+=8;
+			lpg=rva>>12;
+			lsec=j;
+		}else
+			if((rva>>12)!=lpg)
+		{
+			szrlc+=2;
 			lpg=rva>>12;
 		}
 		szrlc+=2;
@@ -2523,9 +2536,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		if(sctx->verbose)
 		{
 			s0=sctx->sec_name[i];
-			printf("%d: %s %08X..%08X %d\n", i, s0,
+			printf("%2d: %-010s %08X..%08X %08X(%8d)\n", i, s0,
 				sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
-				sctx->sec_lsz[i]);
+				sctx->sec_lsz[i], sctx->sec_lsz[i]);
 		}
 	}
 
@@ -2565,9 +2578,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			if(sctx->verbose)
 			{
 				s0=sctx->sec_name[i];
-				printf("%d: %s %08X..%08X %d\n", i, s0,
+				printf("%2d: %-010s %08X..%08X %08X(%8d)\n", i, s0,
 					sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
-					sctx->sec_lsz[i]);
+					sctx->sec_lsz[i], sctx->sec_lsz[i]);
 			}
 
 		}
@@ -2588,9 +2601,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	if(sctx->verbose)
 	{
 		s0=sctx->sec_name[i];
-		printf("%d: %s %08X..%08X %d\n", i, s0,
+		printf("%2d: %-010s %08X..%08X %08X(%8d)\n", i, s0,
 			sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
-			sctx->sec_lsz[i]);
+			sctx->sec_lsz[i], sctx->sec_lsz[i]);
 	}
 
 
@@ -2657,7 +2670,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 	ofsrlc=sctx->sec_rva[BGBCC_SH_CSEG_RELOC]+ofsrlc;
 	ctb=obuf+ofsrlc;
-	szrlc=0; ct=ctb; ct0=ctb; lpg=-1;
+	szrlc=0; ct=ctb; ct0=ctb; lpg=-1; lsec=-1;
 //	for(i=0; i<sctx->nrlc; i++)
 	for(i=0; i<nrlce; i++)
 	{
@@ -2676,7 +2689,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		j=(k>>24)&15;
 		rva=sctx->sec_rva[j]+(k&0x00FFFFFF);
 
-		if((rva>>12)!=lpg)
+//		if((rva>>12)!=lpg)
+		if((j!=lsec) || (((rva>>12)!=lpg) && !denserlc))
+//		if(j!=lsec)
 		{
 			j=ct-ctb;
 			j=(j+3)&(~3);
@@ -2689,6 +2704,13 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			lpg=rva>>12;
 			bgbcc_setu32en(ct0+0, en, (lpg<<12));
 			bgbcc_setu32en(ct0+4, en, 0);
+			lsec=j;
+		}else if((rva>>12)!=lpg)
+		{
+			j=((rva>>12)-lpg)&0xFFF;
+			bgbcc_setu16en(ct, en, j);
+			ct+=2;
+			lpg=rva>>12;
 		}
 
 #if 1

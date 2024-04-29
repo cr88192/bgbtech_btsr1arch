@@ -1,0 +1,189 @@
+Idea:
+* Basic 2D/3D Model Format
+** Will aim to avoid excessive complexity.
+** Compatibility with existing software not a high priority.
+
+
+=== ASCII Format ===
+
+Structure:
+* Will be based on Begin and End keywords.
+* Within polygons, each line will represent a vertex.
+* File will consist of 0 or more "Objects"
+* Each Object will contain polygons.
+* Lines starting with '/' will be ignored.
+* Lines starting with '%' will be special commands.
+
+Vertex structure will consist of parameter names and numbers.
+* Parameter names will typically be 1 letter.
+** But, multi-leter parameter names may exist.
+* Each number following the parameter name will give the value.
+* Values may be either a real-value or an integer.
+** In most contexts, an integer will be interpreted as a scaled value.
+** Default scale will be 0.0001 units.
+** By default, the base unit will be assumed to be an inch.
+** Alternatively, the real values may be mapped to integers.
+* String parameters will be quoted.
+* If a parameter is absent, its prior or default value will be used.
+* By default, normal vectors will be implicit and calculated from the polygon.
+* Nominally, vertex-order will be counter-clockwise.
+** Similarly, polygons will be assumed planar and convex.
+
+Parameters:
+* A: Color, Alpha (Vertex or Poly)
+* B: Color, Blue (Vertex or Poly)
+* C: Color, Green (Vertex or Poly)
+* D: Color, Red (Vertex or Poly)
+* E/F: Reserved
+* G: Mode/Command
+* H: Reserved
+* I: X Reference Coordinate (Possible)
+* J: Y Reference Coordinate (Possible)
+* K: Z Reference Coordinate (Possible)
+* L: Reserved
+* M: Texture/Material (String, Poly)
+* N: Name (String, Object)
+* O/P/Q, Reserved
+* R: R Reference Coordinate (Reserved)
+* S: Texture S Coordinate (Vertex)
+* T: Texture T Coordinate (Vertex)
+* U: Texture U Coordinate (Vertex) (Reserved / 2nd Material)
+* V: Texture V Coordinate (Vertex) (Reserved / 2nd Material)
+* W: W coordinate (Reserved)
+* X: X coordinate (Vertex)
+* Y: Y coordinate (Vertex)
+* Z: Z coordinate (Vertex)
+
+* G: Edge Interpolation Command (Possible)
+** G0/G1: Linear Edges (Default)
+** G2/G3: Curved Edges (Possible)
+
+Modifying parameters will not immediately cause an action, except that a line with an X/Y/Z coordinate will imply a vertex if no other command keyword is present. The parameters on a line will be applied before the command is applied.
+
+For sake of parsing simplicity, we may assume whitespace between adjacent tags, but not between the tag name and tag value. Whitespace may not appear in a tag with the partial exception of within a quoted tag value. The assumption here is that the parser should not require a full tokenizer.
+
+
+Polygons:
+* Will begin with POLY and end with ENDPOLY.
+* Will contain at least 3 vertex lines.
+
+Objects:
+* Will begin with OBJECT and end with ENDOBJECT.
+* Will contain polygons.
+
+Small Example:
+  OBJECT N"SomeObj"
+    POLY M"generic/stone" D1.0 C1.0 B1.0 A1.0
+      X-5000 Y-5000 Z5000 S0.0 T0.0
+      X5000 Y-5000 Z5000 S1.0 T0.0
+      X5000 Y5000 Z5000 S1.0 T1.0
+      X-5000 Y5000 Z5000 S0.0 T1.0
+    ENDPOLY
+    POLY
+      X-5000 Y-5000 Z-5000 S0.0 T0.0
+      X-5000 Y5000 Z-5000 S0.0 T1.0
+      X5000 Y5000 Z-5000 S1.0 T1.0
+      X5000 Y-5000 Z-5000 S1.0 T0.0
+    ENDPOLY
+    POLY
+      X-5000 Y-5000 Z-5000 S0.0 T0.0
+      X5000 Y-5000 Z-5000 S1.0 T0.0
+      X5000 Y-5000 Z5000 S1.0 T1.0
+      X-5000 Y-5000 Z5000 S0.0 T1.0
+    ENDPOLY
+    POLY
+      X-5000 Y5000 Z-5000 S0.0 T0.0
+      X-5000 Y5000 Z5000 S0.0 T1.0
+      X5000 Y5000 Z5000 S1.0 T1.0
+      X5000 Y5000 Z-5000 S1.0 T0.0
+    ENDPOLY
+    POLY
+      X5000 Y-5000 Z-5000 S0.0 T0.0
+      X5000 Y5000 Z-5000 S1.0 T0.0
+      X5000 Y5000 Z5000 S1.0 T1.0
+      X5000 Y-5000 Z5000 S0.0 T1.0
+    ENDPOLY
+    POLY
+      X-5000 Y-5000 Z-5000 S0.0 T0.0
+      X-5000 Y-5000 Z5000 S0.0 T1.0
+      X-5000 Y5000 Z5000 S1.0 T1.0
+      X-5000 Y5000 Z-5000 S1.0 T0.0
+    ENDPOLY
+  ENDOBJECT
+
+
+The 2D variant will be similar, except that Z will not be used.
+
+The material name will depend on the context in which the model is used. It may give a path to a texture, with the loader being assumed to know how to locate this texture.
+
+Colors set at a vertex will revert to their POLY scope values once the POLY ends.
+
+
+Current thinking is that for now this format will not do Bezier splines or surfaces. These are possible, but are a more complex feature.
+
+Though, if curved surfaces were supported, it could be possible to express them in a similar way to G-Code. In this case, this would be via GO2 (CW) or GO3 (CCW) with an I/J/K reference point. This point will specify the origin of a virtual sphere, with the vertex points assumed to be points on the surface of this sphere. One can calculate an intermediate point between two points on a curve by first taking the average and then adjusting it so that it has the same distance from the sphere as the average of the distance from the two edge points. The curve would then be subdivided a set number of times. The GO2 and GO3 would be used to disambiguate between possible paths along the surface of the sphere. Note that if the I/J/K coordinates differ between vertices, they too will be interpolated.
+
+So, for example:
+ POLY
+ G3 X-5000 Y-5000 Z5000 I0 J0 K0
+ G3 X5000 Y-5000 Z5000 I0 J0 K0
+ G3 X5000 Y5000 Z5000 I0 J0 K0
+ G3 X-5000 Y5000 Z5000 I0 J0 K0
+ ENDPOLY
+
+Defines a curved surface on a sphere located at the origin. This surface will effectively bulge away from the origin in the X, Y, and Z directions. If GO2 were used, the interpolation would assume a clockwise winding, which would pull the vertices inward in X and Y, while still causing an outward bulge in Z.
+
+
+=== Binary Variant ===
+
+Binary Variant:
+* Will be a linear tag-based format.
+* Will aim to be moderately more compact than the ASCII form.
+* Will follow a similar structure to the ASCII format.
+
+Magic:
+* 0x40, 0x40
+
+Tags:
+* 0x00: End of Data
+* 0x40: Vertex
+* 0x41..0x5A: Map to the corresponding letter tags in the ASCII format.
+** Numeric parameters will be followed by a number.
+** String parameters will be encoded as a NUL-terminated string.
+* 0x5B: POLY
+* 0x5D: ENDPOLY
+* 0x7B: OBJECT
+* 0x7D: ENDOBJECT
+
+In the binary format, parameter tags will precede the command tag for which they apply, and Vertex tags will be explicit.
+
+Variable Length Number (VLN):
+* 00..7F (1B): 0..127
+* 80..BF (2B): 128..16383
+* C0..DF (3B): 16384..2M
+* E0..EF (4B): 2M..256M
+* F0..F7 (5B): 256M..32G
+* F8..FB (6B): 32G..4T
+* FC..FD (7B): 4T..512T
+* FE (8B): 512T..64P
+* FF (9B): 64P..16E
+
+Variable-Length Numbers will be encoded in MSB first order.
+
+Though, for sake of coordinates:
+* X/Y/Z will be limited to 32-bit range.
+* D/C/B/A: Will be limited to 16-bit range.
+
+Sign Folding:
+* Signed numbers may be encoded in VLNs by folding the sign into the LSB.
+* 0, -1, 1, -2, 2, ...
+
+
+Coordinate Numbers:
+* Will be encoded as a VLN representing the value in scaled integer form.
+* The low 2 bits will give the scale:
+** 00: Scale=0.0001 (1/10000)
+** 01: Scale=0.0010 (1/ 1000, or 10)
+** 10: Scale=0.0100 (1/  100, or 100)
+** 11: Scale=0.1000 (1/   10, or 1000)
+

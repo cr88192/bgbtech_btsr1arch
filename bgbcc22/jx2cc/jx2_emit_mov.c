@@ -3250,12 +3250,23 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 
 			if(nmid==BGBCC_SH_NMID_MOVC_DISP24)
 			{
-				opw1=0xFA00|((disp>>19)&0x01FF);
-				opw2=0x0000|((disp>> 3)&0xFFFF);
-//				opw3=0xF080|ex;
-//				opw4=0x4C00|((rn3&15)<<4)|((rm&15)<<0);
-				opw3=0xF000|ex;
-				opw4=0x4D00|((rn3&15)<<4)|((rm&15)<<0);
+				if(ctx->has_jumbo && !(ctx->op_is_wex2&12))
+				{
+					opw1=0xFE00|((disp>>27)&0x00FF);
+					opw2=0x0000|((disp>>11)&0xFFFF);
+					opw3=0xF100|((rn&15)<<4)|((rm&15)<<0);
+					opw4=0x7000|ex2|
+						((disp>>3)&0x00FF)|
+						((disp>>23)&0x0100);
+				}else
+				{
+					opw1=0xFA00|((disp>>19)&0x01FF);
+					opw2=0x0000|((disp>> 3)&0xFFFF);
+	//				opw3=0xF080|ex;
+	//				opw4=0x4C00|((rn3&15)<<4)|((rm&15)<<0);
+					opw3=0xF000|ex;
+					opw4=0x4D00|((rn3&15)<<4)|((rm&15)<<0);
+				}
 			}else
 				if((disp&0xFF8)==disp)
 			{
@@ -3544,10 +3555,21 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 			break;
 
 		case BGBCC_SH_NMID_MOVQ_DISP24:
-			opw1=0xFA00|((disp>>19)&0x01FF);
-			opw2=0x0000|((disp>> 3)&0xFFFF);
-			opw3=0xF000|ex;
-			opw4=0x0F00|((rn&15)<<4)|((rm&15)<<0);
+			if(ctx->has_jumbo && !(ctx->op_is_wex2&12))
+			{
+				opw1=0xFE00|((disp>>27)&0x00FF);
+				opw2=0x0000|((disp>>11)&0xFFFF);
+				opw3=0xF100|((rn&15)<<4)|((rm&15)<<0);
+				opw4=0xB000|ex2|
+					((disp>>3)&0x00FF)|
+					((disp>>23)&0x0100);
+			}else
+			{
+				opw1=0xFA00|((disp>>19)&0x01FF);
+				opw2=0x0000|((disp>> 3)&0xFFFF);
+				opw3=0xF000|ex;
+				opw4=0x0F00|((rn&15)<<4)|((rm&15)<<0);
+			}
 			break;
 
 		case BGBCC_SH_NMID_MOVUB:
