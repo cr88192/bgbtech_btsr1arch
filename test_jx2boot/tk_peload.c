@@ -1024,7 +1024,8 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 			{
 			case 0:
 #if 1
-				rva_page+=(tg&4095)<<12;
+//				rva_page+=(tg&4095)<<12;
+				rva_page+=((s32)(tg<<20))>>8;
 #endif
 				break;
 

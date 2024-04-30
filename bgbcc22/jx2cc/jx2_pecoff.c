@@ -2391,7 +2391,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		j=(lva>>24)&15;
 
 //		if((rva>>12)!=lpg)
-		if((j!=lsec) || (((rva>>12)!=lpg) && !denserlc))
+//		if((j!=lsec) || (((rva>>12)!=lpg) && !denserlc))
+		if(((j!=lsec) && denserlc) || (((rva>>12)!=lpg) && !denserlc))
 //		if(j!=lsec)
 		{
 			szrlc=(szrlc+3)&(~3);
@@ -2691,6 +2692,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 //		if((rva>>12)!=lpg)
 		if((j!=lsec) || (((rva>>12)!=lpg) && !denserlc))
+		if(((j!=lsec) && denserlc) || (((rva>>12)!=lpg) && !denserlc))
 //		if(j!=lsec)
 		{
 			j=ct-ctb;
