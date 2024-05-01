@@ -437,6 +437,8 @@ struct PeRelocBlock
 
 The szBlock field is expressed in bytes. It includes the size of the RelocBlock header in addition to the associated reloc entries.
 
+Structures within the relocation table will have a minimum alignment of 16 bits, though a 32-bit alignment may be optionally used for relocation block headers.
+
 The relocations are given as 16 bit numbers:
 * Low 12 bits: Offset within page.
 * High 4 bits: Relocation Type
