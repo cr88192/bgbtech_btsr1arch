@@ -75,12 +75,18 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 			if((tgt_rva>=gbr_rva) && (tgt_rva<gbr_end_rva))
 			{
 				/* Pointer is within data area. */
+				if(((tg>>12)&15)==0)
+					{ rva_page+=((s32)(tg<<20))>>8; }
 				continue;
 			}
 			
 			switch((tg>>12)&15)
 			{
 			case 0:
+#if 1
+//				rva_page+=(tg&4095)<<12;
+				rva_page+=((s32)(tg<<20))>>8;
+#endif
 				break;
 			case 1:
 				*((u16 *)pdst)=(*((u16 *)pdst))+(disp>>16);
@@ -233,6 +239,7 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				if(isbjx2 || isbjx2xg2)
 				{
 					pv=*((u32 *)pdst);
+
 	//				if((pv==0xFA000000UL) && pboix)
 					if((pv==0x0000FA00UL) && pboix)
 					{
@@ -245,6 +252,26 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 						*((u32 *)pdst)=pv;
 						break;
 					}
+
+					pv0=pv;
+					pv1=((u32 *)pdst)[1];
+
+					if(	(pv0==0x0000FE00UL) &&
+						!(pv1&0x00FF0000) &&
+						pboix)
+					{
+						v0=(((-pboix)*8)&0x00FFFFFF);
+
+						pv0=(pv0&0x0000FF00U)|
+							((v0>>24)&0x000000FFU)|
+							((v0<< 8)&0xFFFF0000U);
+
+						pv1=(pv1&0xFF00FFFF)|((v0<<16)&0x00FF0000);
+						((u32 *)pdst)[0]=pv0;
+						((u32 *)pdst)[1]=pv1;
+						break;
+					}
+
 					break;
 				}
 				__debugbreak();
@@ -315,6 +342,9 @@ int TKPE_ApplyDataRelocs(
 			rva_dest=rva_page+(tg&4095);
 			if((rva_dest<gbr_rva) || (rva_dest>=gbr_end_rva))
 			{
+				/* Pointer is not within data area. */
+				if(((tg>>12)&15)==0)
+					{ rva_page+=((s32)(tg<<20))>>8; }
 				continue;
 			}
 
@@ -326,6 +356,10 @@ int TKPE_ApplyDataRelocs(
 			switch((tg>>12)&15)
 			{
 			case 0:
+#if 1
+//				rva_page+=(tg&4095)<<12;
+				rva_page+=((s32)(tg<<20))>>8;
+#endif
 				break;
 			case 3:
 				tgt_rva=(*((u32 *)pdst))-imgbase;				

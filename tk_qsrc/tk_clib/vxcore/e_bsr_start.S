@@ -1173,6 +1173,21 @@ X(__setj):
 	nop
 
 
+.global X(__va64_saveargs)
+X(__va64_saveargs):
+	mov.x r4, (r3, 0)
+	mov.x r6, (r3, 16)
+	mov.x r20, (r3, 32)
+	mov.x r22, (r3, 48)
+.ifarch abi_is_xgpr
+	mov.x r36, (r3, 64)
+	mov.x r38, (r3, 80)
+	mov.x r52, (r3, 96)
+	mov.x r54, (r3, 112)
+.endif
+	rts
+
+
 // .global X(__va64_arg_l)
 // X(__va64_arg_l):
 

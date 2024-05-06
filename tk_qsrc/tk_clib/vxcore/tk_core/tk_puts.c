@@ -192,7 +192,7 @@ int tk_kbpump_tty(
 	TKGDI_EVENT *imsg;
 	TKGHDC hdc;
 	u32 fseq;
-	int i, j, k, dn, kbeg, kend;
+	int i, j, k, dn, kbeg, kend, lim;
 
 	imsg=&t_imsg;
 
@@ -202,9 +202,14 @@ int tk_kbpump_tty(
 		hdc=ttyid&0x00FFFFFF;
 		fseq=0;
 		dn=0;
+		lim=64;
 
 		while(1)
 		{
+			if(lim<=0)
+				break;
+			lim--;
+		
 			j=ctx->vt->QueryDisplay(ctx, hdc, TKGDI_FCC_poll, NULL, imsg);
 			if(j<1)
 				break;
@@ -701,11 +706,24 @@ void tk_gets(char *buf)
 	char *t;
 	int i;
 
+	if(tk_issyscall())
+		return;
+
 //	tk_puts("\x1f\b");
 
 	t=buf;
 	while(1)
 	{
+#if 0
+		if(tk_iskernel() &&
+			tk_con_isdisabled() &&
+			!tk_get_ttyid())
+		{
+			TK_YieldCurrentThread();
+			continue;
+		}
+#endif
+	
 		i=tk_getch();
 		if(i<=0)
 		{
@@ -1381,6 +1399,21 @@ char **tk_rsplit_sep(char *str, int sep)
 char **tk_rsplit(char *str)
 {
 	return(tk_rsplit_sep(str, ' '));
+}
+
+char *tk_getstrline(char *buf, int sz, char *str)
+{
+	char *cs, *ct;
+	cs=str;
+	ct=buf;
+	while(*cs && (*cs!='\r') && (*cs!='\n'))
+		*ct++=*cs++;
+	*ct=0;
+	if(*cs=='\r')
+		cs++;
+	if(*cs=='\n')
+		cs++;
+	return(cs);
 }
 
 TK_FILE *tk_dbg_recvfile;

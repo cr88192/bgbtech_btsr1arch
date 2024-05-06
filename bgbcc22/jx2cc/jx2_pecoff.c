@@ -2477,7 +2477,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	BGBCC_JX2_SetSectionName(sctx, ".reloc");
 	BGBCC_JX2_EmitBAlign(sctx, 4);
 	ofsrlc=BGBCC_JX2_EmitGetOffs(sctx);
-	BGBCC_JX2_EmitRawBytes(sctx, NULL, szrlc+256);
+//	BGBCC_JX2_EmitRawBytes(sctx, NULL, szrlc+256);
+	BGBCC_JX2_EmitRawBytes(sctx, NULL, szrlc);
 
 	BGBCC_JX2_EmitGetStrtabLabel(sctx, "");
 

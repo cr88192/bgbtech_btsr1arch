@@ -8,8 +8,8 @@
 CC=gcc
 # CC=clang
 
-# CFLAGS=-I. -g -O3
-CFLAGS=-I. -g -Os -Wextra
+CFLAGS=-I. -O3 -fPIC
+# CFLAGS=-I. -g -Os -Wextra
 # CFLAGS=-I. -g
 # CFLAGS=/I. /Os
 LDFLAGS=

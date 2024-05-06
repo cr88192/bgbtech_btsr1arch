@@ -1637,6 +1637,10 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 	{
 //		lng = 1;
 		xlng = 1;
+		if(format[1]=='L')
+		{
+			format++;
+		}
 	}
 	else if (*format == 'j')
 	{

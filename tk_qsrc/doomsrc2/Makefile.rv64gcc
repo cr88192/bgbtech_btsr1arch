@@ -1,7 +1,8 @@
 TOOLPATH=/opt/cross/bin/
 
 TOOLPATH=/usr/local/bin/
-TARGETPFX=riscv64-unknown-elf-
+# TARGETPFX=riscv64-unknown-elf-
+TARGETPFX=riscv64-unknown-linux-gnu-
 
 CC=$(TOOLPATH)$(TARGETPFX)gcc
 AR=$(TOOLPATH)$(TARGETPFX)ar
@@ -13,7 +14,7 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__
 TK_LDFL= $(TK_CFL)
 
 BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib \
-	-nostdinc -nostdlib -nostartfiles -fno-builtin -g -O3 \
+	-nostdinc -nostdlib -nostartfiles -fno-builtin -O3 \
 	-fwrapv -fno-strict-aliasing -fno-inline \
 	-march=rv64g -mabi=lp64 -mtune=sifive-s76 \
 	-mno-strict-align
@@ -26,11 +27,15 @@ BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib \
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 # LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
 LDFLAGS=$(TK_LDFL)
-LIBS = -lclib_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
-	-ffunction-sections -Wl,-gc-sections
+LIBS = -lclib_rv64 -ltkgdi_rv64 -fPIC \
+	-ffunction-sections -fdata-sections -Wl,-gc-sections
 
-LIBS2 = -lvxcore_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
-	-ffunction-sections -Wl,-gc-sections -Wl,-T,elf64rv_dflmod.x
+# -Wl,--emit-relocs
+
+LIBS2 = -lvxcore_rv64 -ltkgdi_rv64 -fPIC \
+	-ffunction-sections -fdata-sections -Wl,-gc-sections -Wl,-T,elf64rv_dflmod.x
+
+# -Wl,--emit-relocs
 
 SRCS=				\
 		i_btesh4.c		\

@@ -828,6 +828,8 @@ u32 *TKGDI_BlitUpdate_GetConbuf();
 
 u32 *tk_con_conbuf2;
 
+extern int tkgdi_vid_scrmode;
+
 void *TK_ConGetCtxV(void)
 {
 	TK_SysArg ar[4];
@@ -959,6 +961,16 @@ void tk_con_enable()
 	tk_con->ena=1;
 }
 
+int tk_con_isdisabled()
+{
+	if(!tk_con)
+		return(0);
+	if(!tk_iskernel())
+		return(0);
+
+	return(tk_con->ena==0);
+}
+
 void tk_con_bufferpokeall()
 {
 	volatile u32 *buf;
@@ -1082,6 +1094,7 @@ void tk_con_reset()
 	tk_con->text_attr=tk_con->text_attr_dfl;
 	TK_Con_SetColorBg(0);
 	TK_Con_SetColorFg(tk_con_clr16to64[7]);
+	tkgdi_vid_scrmode=0;
 }
 
 void tk_con_chkreset()
@@ -1095,6 +1108,8 @@ void tk_con_chkreset()
 //		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0001;		//
 		((u32 *)(MMIO_BASE+0x000BFF00UL))[0]=0x0081;		//
 		TK_Con_SetCursorPos(0, 0);
+
+		tkgdi_vid_scrmode=0;
 
 		tk_con->text_attr=tk_con->text_attr_dfl;
 		TK_Con_SetColorBg(0);

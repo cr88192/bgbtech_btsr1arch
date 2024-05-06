@@ -934,7 +934,8 @@ int TKSH_Cmds_Edit(char **args)
 		tksh_editctx=TKSH_EdAllocContext();
 	TKSH_EditUpdateLoop(tksh_editctx);
 
-	tk_con_reset();
+	TKSH_Cmds_Cls(NULL);
+//	tk_con_reset();
 
 	return(0);
 }
@@ -965,7 +966,8 @@ int TKSH_Cmds_HexEdit(char **args)
 	
 	TKSH_HexUpdateLoop();
 
-	tk_con_reset();
+//	tk_con_reset();
+	TKSH_Cmds_Cls(NULL);
 
 	return(0);
 }
@@ -2007,6 +2009,8 @@ int TKSH_TryLoadA0(char *img, char **args0)
 	int rv, nl, sz, sza, ix;
 	int i, j, k;
 
+	tk_dbg_printf("TKSH_TryLoadA0: %s\n", img);
+
 //	pimg=NULL;
 	fd=NULL;
 	sig_is_pe=0;
@@ -2167,16 +2171,19 @@ int TKSH_TryLoadA(char *img, char **args0)
 	TKPE_CreateTaskInfo t_tinf;
 	TKPE_CreateTaskInfo *tinf;
 	char *ct;
-	int i, rt, pid;
+	int i, rt, tid;
 	
 	rt=TKSH_TryLoadA0(img, args0);
 	if(rt>0)
 	{
+		tk_dbg_printf("TKSH_TryLoadA: A0-OK %s\n", img);
 		return(rt);
 	}
 	
 	if(rt==-2)
 	{
+		tk_dbg_printf("TKSH_TryLoadA(-2): %s\n", img);
+
 		tinf=&t_tinf;
 		tinf->szInfo=sizeof(TKPE_CreateTaskInfo);
 		tinf->idTty=tk_get_ttyid();
@@ -2194,13 +2201,19 @@ int TKSH_TryLoadA(char *img, char **args0)
 	
 		TK_Env_GetCwd(cwd, 256);
 	
-		pid=TK_CreateProcess(img, tbuf, NULL, cwd, 0, tinf);
-		rt=TK_Task_PidJoinOnReturn(pid);
+		tid=TK_CreateProcess(img, tbuf, NULL, cwd, 0, tinf);
+		tk_printf("TKSH_TryLoadA(-2): pid=%d\n", tid);
+		rt=TK_Task_PidJoinOnReturn(tid);
+
+//		__debugbreak();
 		return(rt);
+//		return(tid);
 	}
 
 	return(-1);
 }
+
+TKPE_TaskInfo *tksh_createproc_ptask=NULL;
 
 int TKSH_TryLoadB(char *img, char **args0)
 {
@@ -2473,9 +2486,6 @@ int TKSH_TryLoadB(char *img, char **args0)
 			boot_newspbk=NULL;
 			boot_newspk=NULL;
 
-			env0=TK_GetCurrentEnvContext();
-			env1=TK_EnvCtx_CloneContext(env0);
-
 			ctask=TK_GetCurrentTask();
 			ptask=NULL;
 
@@ -2486,9 +2496,24 @@ int TKSH_TryLoadB(char *img, char **args0)
 					ptask=NULL;
 			}
 
+			if(ptask)
+			{
+				env0=TK_GetTaskEnvContext(ptask);
+			}else
+			{
+				env0=TK_GetCurrentEnvContext();
+			}
+
+			env1=TK_EnvCtx_CloneContext(env0);
+
 			boottbr=TK_AllocNewTask();
 			task=boottbr;
 			tkern=(TKPE_TaskInfoKern *)(task->krnlptr);
+
+			if(ptask)
+			{
+				task->ttyid=ptask->ttyid;
+			}
 
 #if 1
 //			task->baseptr=(tk_kptr)tlsix[6];
@@ -2692,7 +2717,11 @@ int TKSH_TryLoadB(char *img, char **args0)
 				(((pb_boot>>48)&0x000C)<<56)|
 				(((pb_boot>>48)&0x00F0)<<48);
 //			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
-			TK_Task_SyscallReturnToUser(task);
+
+			if(ctask!=tk_task_syscall)
+			{
+				TK_Task_SyscallReturnToUser(task);
+			}
 
 #if 0
 			if(!ptask)
@@ -2793,7 +2822,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 
 int TKSH_TryLoad(char *img, char **args0)
 {
-	if(tk_iskernel() || tk_issyscall())
+//	if(tk_iskernel() || tk_issyscall())
+	if(tk_issyscall())
 	{
 		return(TKSH_TryLoadB(img, args0));
 	}else
@@ -2811,7 +2841,7 @@ int TKSH_TryLoad_ext(char *img, char **args)
 	int i;
 
 	ri=TKSH_TryLoad(img, args);
-	if(ri>0)
+	if(ri>=0)
 		return(ri);
 	
 	s=img+strlen(img);
@@ -2823,37 +2853,37 @@ int TKSH_TryLoad_ext(char *img, char **args)
 	strcpy(tb, img);
 	strcat(tb, ".exe");
 	ri=TKSH_TryLoad(tb, args);
-	if(ri>0)
+	if(ri>=0)
 		return(ri);
 	
 	strcpy(tb, img);
 	strcat(tb, ".elf");
 	ri=TKSH_TryLoad(tb, args);
-	if(ri>0)
+	if(ri>=0)
 		return(ri);
 	
 	strcpy(tb, img);
 	strcat(tb, ".sh");
 	ri=TKSH_TryLoad(tb, args);
-	if(ri>0)
+	if(ri>=0)
 		return(ri);
 
 	strcpy(tb, img);
 	strcat(tb, ".com");
 	ri=TKSH_TryLoad(tb, args);
-	if(ri>0)
+	if(ri>=0)
 		return(ri);
 
 	strcpy(tb, img);
 	strcat(tb, ".pf");
 	ri=TKSH_TryLoad(tb, args);
-	if(ri>0)
+	if(ri>=0)
 		return(ri);
 
 	strcpy(tb, img);
 	strcat(tb, ".bxw");
 	ri=TKSH_TryLoad(tb, args);
-	if(ri>0)
+	if(ri>=0)
 		return(ri);
 
 	return(-1);
@@ -2923,17 +2953,38 @@ int TK_CreateProcessB(
 	int npath, ri;
 	int i;
 
+	tk_dbg_printf("TK_CreateProcessB: img=%s cmd=%s env=%s cwd=%s\n",
+		imgname, cmdline, envmod, cwd);
+
+	tksh_createproc_ptask=task;
+
 	args=tk_rsplit(cmdline);
 
+	if((*imgname)=='/')
+	{
+		ri=TKSH_TryLoad_ext(imgname, args);
+		if(ri>0)
+		{
+			tksh_createproc_ptask=NULL;
+			tk_dbg_printf("TK_CreateProcessB: pid=%d\n", ri);
+			return(ri);
+		}
+	}
+
 #if 1
-	if(cwd)
+//	if(cwd)
+	if(cwd && ((*imgname)!='/'))
 	{
 		strcpy(tb, cwd);
 		strcat(tb, "/");
 		strcat(tb, imgname);
 		ri=TKSH_TryLoad_ext(tb, args);
 		if(ri>0)
+		{
+			tksh_createproc_ptask=NULL;
+			tk_dbg_printf("TK_CreateProcessB: pid=%d\n", ri);
 			return(ri);
+		}
 	}
 #endif
 
@@ -2948,9 +2999,16 @@ int TK_CreateProcessB(
 //		ri=TKSH_TryLoad(tb, args);
 		ri=TKSH_TryLoad_ext(tb, args);
 		if(ri>0)
+		{
+			tksh_createproc_ptask=NULL;
+			tk_dbg_printf("TK_CreateProcessB: pid=%d\n", ri);
 			return(ri);
+		}
 	}
 
+	ri=0;
+	tksh_createproc_ptask=NULL;
+	tk_dbg_printf("TK_CreateProcessB: Fail, pid=0\n", ri);
 	return(ri);
 }
 

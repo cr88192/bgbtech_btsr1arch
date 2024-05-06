@@ -554,6 +554,11 @@ int TKSH_EditUpdateLoop(TKSH_EditCtx *ctx)
 	int i, j, k, l, brk, dorun;
 	int runseq, nxtseq;
 
+	if(tk_issyscall())
+	{
+		return(-1);
+	}
+
 	TKSH_EdCheckExpandLines(ctx, 1024);
 	TKSH_EdCheckExpandEditbuf(ctx, 1024);
 	ctx->edit_redraw=1;
@@ -567,9 +572,21 @@ int TKSH_EditUpdateLoop(TKSH_EditCtx *ctx)
 	brk=0; dorun=0;
 	while(!brk)
 	{
+		if(!tk_kbhit())
+		{
+			TK_YieldCurrentThread();
+			continue;
+		}
+	
 		while(tk_kbhit())
 		{
 			kk=tk_getch();
+			if(kk<=0)
+			{
+				TK_YieldCurrentThread();
+				continue;
+			}
+			
 			if(kk==0x7F)
 				{ key=tk_getch(); dn=1; }
 			else if(kk==0xFF)

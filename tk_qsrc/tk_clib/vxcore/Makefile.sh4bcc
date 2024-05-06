@@ -113,6 +113,8 @@ SRCS_CLIB = \
 	\
 	tk_core/tkgdi_blitupdate.c \
 	tk_core/tkgdi_drawcon.c \
+	tk_core/tkgdi_pixspan.c \
+	tk_core/tkgdi_winman.c \
 	\
 	tk_core/tku_bigint.c \
 	\
@@ -191,6 +193,8 @@ SRCS_TKGDI = \
 	tk_gdi/tk_codec_cram.c \
 	tk_gdi/tk_ramavi.c \
 	tk_gdi/tk_qoilz_dec.c \
+	tk_gdi/tkg_imgload.c \
+	tk_gdi/tkg_load3d.c \
 	tk_gdi/tkg_display.c
 
 SRCS_TKWUI = \

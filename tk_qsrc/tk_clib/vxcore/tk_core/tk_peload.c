@@ -322,6 +322,10 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 			switch((tg>>12)&15)
 			{
 			case 0:
+#if 1
+//				rva_page+=(tg&4095)<<12;
+				rva_page+=((s32)(tg<<20))>>8;
+#endif
 				break;
 			case 1:
 				*((u16 *)pdst)=(*((u16 *)pdst))+(disp>>16);
@@ -397,6 +401,11 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 			case 11:
 				__setmemtrap(pdst, 3);
+				break;
+			default:
+				tk_printf("TKPE_ApplyStaticRelocs: Unhandled Reloc %d\n",
+					(tg>>12)&15);
+				__debugbreak();
 				break;
 			}
 		}

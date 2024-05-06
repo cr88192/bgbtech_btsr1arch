@@ -692,6 +692,10 @@ void tk_puts_n(char *msg, int n);
 bool tk_iskernel();
 int tk_issyscall();
 
+char **tk_rsplit(char *str);
+char *tk_getstrline(char *buf, int sz, char *str);
+s64 tk_atoi(char *str);
+
 void tk_sprintf(char *dst, char *str, ...);
 
 int tk_vf_register(TK_FILE_VT *fsty);

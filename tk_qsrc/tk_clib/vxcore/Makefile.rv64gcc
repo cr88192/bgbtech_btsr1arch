@@ -3,11 +3,12 @@ PATH := $(BUILD):$(PATH)
 
 TK_CFL=-nostdinc -nostdlib -nostartfiles -fno-builtin \
 	 -ffunction-sections
-TK_LDFL= $TK_CFL \
+TK_LDFL= $TK_CFL -fPIC \
 	-Wl,-nostdlib -Wl,-e,_start -Wl,-T,sh4elf.x
 
 TOOLPATH=/usr/local/bin/
-TARGETPFX=riscv64-unknown-elf-
+# TARGETPFX=riscv64-unknown-elf-
+TARGETPFX=riscv64-unknown-linux-gnu-
 
 CC=$(TOOLPATH)$(TARGETPFX)gcc
 AR=$(TOOLPATH)$(TARGETPFX)ar

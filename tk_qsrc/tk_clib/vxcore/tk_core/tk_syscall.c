@@ -437,6 +437,7 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 					args[0].p, args[1].p,
 					args[2].p, args[3].p,
 					args[4].i, args[5].p);
+				*((s32 *)vParm1)=ret;
 				break;
 
 			case 0x41:

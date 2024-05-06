@@ -1844,7 +1844,7 @@ void D_DrawZSpans (espan_t *pspan)
 
 // FIXME: check for clamping/range problems
 // we count on FP exceptions being turned off to avoid range problems
-	izistep = (int)(d_zistepu * 0x8000 * 0x10000);
+	izistep = (int)(d_zistepu * (0x8000 * 1.0 * 0x10000));
 
 	do
 	{
@@ -1858,7 +1858,7 @@ void D_DrawZSpans (espan_t *pspan)
 
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 	// we count on FP exceptions being turned off to avoid range problems
-		izi = (int)(zi * 0x8000 * 0x10000);
+		izi = (int)(zi * (0x8000 * 1.0 * 0x10000));
 
 		D_DrawZSpans_Inner(pdest, izi, izistep, count);
 	} while ((pspan = pspan->pnext) != NULL);
@@ -1882,7 +1882,7 @@ void D_DrawZSpans_Low (espan_t *pspan)
 
 // FIXME: check for clamping/range problems
 // we count on FP exceptions being turned off to avoid range problems
-	izistep = (int)(d_zistepu * 0x8000 * 0x10000);
+	izistep = (int)(d_zistepu * (0x8000 * 1.0 * 0x10000));
 
 	do
 	{
@@ -1896,7 +1896,7 @@ void D_DrawZSpans_Low (espan_t *pspan)
 
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 	// we count on FP exceptions being turned off to avoid range problems
-		izi = (int)(zi * 0x8000 * 0x10000);
+		izi = (int)(zi * (0x8000 * 1.0 * 0x10000));
 
 		D_DrawZSpans_InnerLo(pdest, izi, izistep, count);
 	} while ((pspan = pspan->pnext) != NULL);
@@ -1915,7 +1915,7 @@ void D_DrawZSpans (espan_t *pspan)
 
 // FIXME: check for clamping/range problems
 // we count on FP exceptions being turned off to avoid range problems
-	izistep = (int)(d_zistepu * 0x8000 * 0x10000);
+	izistep = (int)(d_zistepu * (0x8000 * 1.0 * 0x10000));
 
 	do
 	{
@@ -1929,7 +1929,7 @@ void D_DrawZSpans (espan_t *pspan)
 
 		zi = d_ziorigin + dv*d_zistepv + du*d_zistepu;
 	// we count on FP exceptions being turned off to avoid range problems
-		izi = (int)(zi * 0x8000 * 0x10000);
+		izi = (int)(zi * (0x8000 * 1.0 * 0x10000));
 
 		D_DrawZSpans_Inner(pdest, izi, izistep, count);
 

@@ -178,6 +178,11 @@ int TKSH_HexUpdateLoop()
 	int key, dn, kk;
 	int i, j, k, l, brk;
 
+	if(tk_issyscall())
+	{
+		return(-1);
+	}
+
 	tksh_hex_base_y=0;
 
 	tksh_hex_cur_x=0;
@@ -187,6 +192,12 @@ int TKSH_HexUpdateLoop()
 	brk=0;
 	while(!brk)
 	{
+		if(!tk_kbhit())
+		{
+			TK_YieldCurrentThread();
+			continue;
+		}
+	
 		while(tk_kbhit())
 		{
 			kk=tk_getch();

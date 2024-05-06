@@ -353,6 +353,29 @@ TKGDI_EVENT ev;
 };
 
 
+typedef struct TKGDI_Object3D_s TKGDI_Object3D;
+
+struct TKGDI_Object3D_s {
+TKGDI_Object3D *next;
+char *name;
+
+float *vtxa_xyz;
+float *vtxa_ijk;
+float *vtxa_st;
+float *vtxa_rgba;
+byte *vtxa_tag;
+int n_vtxa;
+
+int *poly_vidx;
+short *poly_vcnt;
+byte *poly_mat;
+int n_poly;
+
+char **mata;
+int n_mat;
+};
+
+
 void *tkgGlobalAlloc(size_t size);
 TKGSTATUS tkgGlobalFree(void *obj);
 

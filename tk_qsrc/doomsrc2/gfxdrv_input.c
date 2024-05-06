@@ -2,6 +2,10 @@
 #include <sys/time.h>
 #endif
 
+#ifndef CLOCKS_PER_SEC
+#define CLOCKS_PER_SEC 1000
+#endif
+
 // #include "doomtype.h"
 #include "doomdata.h"
 

@@ -101,25 +101,28 @@ TKPE_TaskInfo *TK_CheckSchedNewTask(TKPE_TaskInfo *oldtask, int flag)
 {
 	TKPE_TaskInfo *newtask;
 	u64 yres, tt;
-	int i, j, k, pid;
+	int i, j, k, tid;
 	
 	newtask=NULL;
-	pid=oldtask->sch_id;
+	tid=oldtask->sch_id;
 
-	if((pid<=0) && !(flag&1))
+	if((tid<=0) && !(flag&1))
 	{
 		/* Non-Scheduled tasks are not preemptible. */
 		return(NULL);
 	}
 	
-	i=pid;
+	i=tid;
 	while(1)
 	{
 		i=i+1;
 		if(i>=tk_sched_ntask)
 			i=1;
-		if(i==pid)
+		if(i==tid)
+		{
+			newtask=NULL;
 			break;
+		}
 		newtask=tk_sched_taskarray[i];
 
 		if(newtask==tk_task_syscall)
@@ -135,6 +138,7 @@ TKPE_TaskInfo *TK_CheckSchedNewTask(TKPE_TaskInfo *oldtask, int flag)
 					/* Remove from scheduler. */
 					tk_sched_taskarray[i]=NULL;
 					newtask->sch_id=0;
+					newtask=NULL;
 					continue;
 				}else
 				{
@@ -142,6 +146,7 @@ TKPE_TaskInfo *TK_CheckSchedNewTask(TKPE_TaskInfo *oldtask, int flag)
 					if(yres>tt)
 					{
 						/* Still sleeping. */
+						newtask=NULL;
 						continue;
 					}
 				}
@@ -158,8 +163,17 @@ int TK_SchedAddTask(TKPE_TaskInfo *newtask)
 {
 	int i, j, k;
 	
+	if(newtask->sch_id>0)
+	{
+		i=newtask->sch_id;
+		if(tk_sched_taskarray[i]==newtask)
+			return(i);
+		__debugbreak();
+	}
+	
 	if(!tk_sched_ntask)
 	{
+		i=1;
 		tk_sched_taskarray[0]=NULL;
 		tk_sched_taskarray[1]=newtask;
 		tk_sched_ntask=2;
@@ -224,6 +238,15 @@ void __isr_interrupt(void)
 		{
 //			task2=TK_CheckSchedNewTask(task, 0);
 			task2=NULL;
+
+#if 1
+//			if((task->pid>2) && ((task->us_lastsleep+200000)<TK_GetTimeUs()))
+			if((task->pid>2) && ((task->us_lastsleep+150000)<TK_GetTimeUs()))
+			{
+				task2=TK_CheckSchedNewTask(task, 0);
+			}
+#endif
+
 			if(task2 && (task2!=task))
 			{
 				taskern=(TKPE_TaskInfoKern *)task->krnlptr;
@@ -329,7 +352,7 @@ __interrupt_tbrsave void __isr_syscall(void)
 __interrupt void __isr_syscall(void)
 #endif
 {
-	TKPE_TaskInfo *task, *task2;
+	TKPE_TaskInfo *task, *task2, *task3;
 	TKPE_TaskInfoKern *taskern, *taskern2;
 	u64 *isrsave, *args, *pret;
 	u64 ttb, tea, exc, yres, uobj;
@@ -387,6 +410,7 @@ __interrupt void __isr_syscall(void)
 			{
 				yres=args[0];
 				task->ystatus=yres;
+				task->us_lastsleep=TK_GetTimeUs();
 				
 	//			if(umsg==TK_UMSG_PGMEXIT)
 	//			{
@@ -403,7 +427,14 @@ __interrupt void __isr_syscall(void)
 				}
 
 				if(!task2)
+				{
 					task2=TK_CheckSchedNewTask(task, 1);
+					if(task2 && (task2!=task))
+					{
+						task->us_lastsleep=TK_GetTimeUs();
+						task2->us_lastsleep=TK_GetTimeUs();
+					}
+				}
 
 				if(!task2)
 				{
@@ -460,6 +491,22 @@ __interrupt void __isr_syscall(void)
 			__debugbreak();
 		if(task2==tk_task_syscall)
 			__debugbreak();
+
+//		if((task2->us_lastsleep+100000)<TK_GetTimeUs())
+		if(task2->krnlptr &&
+			(task2->pid>2) &&
+//			((task2->us_lastsleep+100000)<TK_GetTimeUs()))
+			((task2->us_lastsleep+50000)<TK_GetTimeUs()))
+		{
+//			task3=TK_CheckSchedNewTask(task2, 1);
+			task3=TK_CheckSchedNewTask(task2, 0);
+			if(task3 && (task3!=task2))
+			{
+				task2->us_lastsleep=TK_GetTimeUs();
+				task3->us_lastsleep=TK_GetTimeUs();
+				task2=task3;
+			}
+		}
 	}else
 	{
 		__debugbreak();
@@ -719,7 +766,12 @@ int TK_Task_SyscallLoop(void *uptr)
 				TK_TaskFreeAllPageAlloc(task);
 //				TK_DestroyTaskInfo(task);
 				
-				if(task2)
+				if(!task2)
+				{
+					task2=TK_CheckSchedNewTask(task, 1);
+				}
+				
+				if(task2 && (task2!=task))
 				{
 					if(task2->magic0!=TKPE_TASK_MAGIC)
 						__debugbreak();
@@ -901,11 +953,17 @@ int TK_Task_TryJoinOnReturnPid(int pid)
 	TKPE_TaskInfo *task;
 
 	if((pid<=0) || (pid>=4096))
+	{
+		tk_dbg_printf("TK_Task_TryJoinOnReturnPid: Invalid pid=%d\n", pid);
 		return(-EINVAL);
+	}
 
 	task=tk_task_list[pid];
 	if(!task)
+	{
+		tk_dbg_printf("TK_Task_TryJoinOnReturnPid: No task for pid=%d\n", pid);
 		return(-ESRCH);
+	}
 
 	return(TK_Task_TryJoinOnReturn(task));
 }
@@ -936,7 +994,8 @@ int TK_Task_PidJoinOnReturn(int pid)
 	if(tk_issyscall())
 		return(-1);
 
-#ifndef __TK_CLIB_ONLY__
+// #ifndef __TK_CLIB_ONLY__
+#if 0
 	if(tk_iskernel())
 	{
 		rv=TK_Task_JoinOnReturn(tk_task_list[pid]);
@@ -945,7 +1004,7 @@ int TK_Task_PidJoinOnReturn(int pid)
 #endif
 
 	rv=TK_Task_PidTryJoinReturnV(pid);
-	while(rv==EAGAIN)
+	while(rv==(-EAGAIN))
 	{
 		TK_YieldCurrentThread();
 		rv=TK_Task_PidTryJoinReturnV(pid);
@@ -1063,6 +1122,32 @@ TKPE_TaskInfoKern *TK_GetCurrentTaskInfoKern()
 	return(NULL);
 }
 #endif
+
+
+TK_EnvContext *TK_GetTaskEnvContext(TKPE_TaskInfo *task)
+{
+#ifndef __TK_CLIB_ONLY__
+	TK_EnvContext *env;
+
+	if(!task)
+		{ return(NULL); }
+	env=(void *)(task->envctx);
+	if(env)
+		return(env);
+
+	tk_dbg_printf("TK_GetCurrentEnvContext: New %p:%p\n", task, env);
+
+	env=TK_EnvCtx_AllocContext();
+	task->envctx=(tk_kptr)env;
+	return(env);
+#endif
+
+#ifdef __TK_CLIB_ONLY__
+	TK_EnvContext *env;
+	env=(void *)(task->envctx);
+	return(env);
+#endif
+}
 
 static void *tk_dummyallocaptr;
 
@@ -2101,6 +2186,13 @@ int TK_Task_ShellLoop(void *uptr)
 
 	while(1)
 	{
+		if(tk_iskernel() &&
+			tk_con_isdisabled() &&
+			!tk_get_ttyid())
+		{
+			tk_con_chkreset();
+		}
+
 		TK_Env_GetCwd(tb_cwd, 256);
 //		tk_con_chkreset();
 		tk_puts(tb_cwd);

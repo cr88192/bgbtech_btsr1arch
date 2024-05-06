@@ -1135,6 +1135,7 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 		}
 		if(ch=='\n')
 		{
+			con->x=0;
 			tkgdi_con_newline(con);
 			TKGDI_Con_UpdateHwCursor(con);
 			return;
@@ -1246,7 +1247,7 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 	TKGDI_Con_UpdateHwCursor(con);
 }
 
-void tkgdi_con_settab(_tkgdi_conparm *con, int tab)
-{
-	con->tabactive=tab;
-}
+// void tkgdi_con_settab(_tkgdi_conparm *con, int tab)
+// {
+// 	con->tabactive=tab;
+// }

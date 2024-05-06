@@ -246,6 +246,8 @@ byte		qtick;			//Schedule Tick
 
 int			ttyid;			//terminal for console printing
 
+u64			us_lastsleep;	//last sleep time for task
+
 tk_kptr		img_baseptrs[256];
 tk_kptr		img_gbrptrs[256];
 u32			img_tlsrvas[256];
