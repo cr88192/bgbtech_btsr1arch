@@ -1818,7 +1818,23 @@ F0zz Instruction Block:
 *** F0nm_1gFA  ? BSWAPU.L	Rm, Rn			//(TTAG) Byte Swap DWORD
 *** F0nm_1GFA  ? BSWAP.Q	Rm, Rn			//(TTAG) Byte Swap QWORD
 
-** F0nm_1ezB  / (GSV Block)
+** F0nm_1ezB 
+*** F0nm_1e0B  -
+*** F0nm_1e1B  -
+*** F0nm_1e2B  -
+*** F0nm_1e3B  -
+*** F0nm_1e4B  -
+*** F0nm_1e5B  -
+*** F0nm_1e6B  -
+*** F0nm_1e7B  -
+*** F0nm_1e8B  -
+*** F0nm_1e9B  -
+*** F0nm_1eAB  -
+*** F0nm_1eBB  -
+*** F0nm_1eCB  -
+*** F0nm_1eDB  -
+*** F0nm_1eEB  -
+*** F0nm_1eFB  -
 
 ** F0nm_1ezC
 *** F0nm_1g0C  NOT		Rm, Rn				//Rn=~Rn
@@ -1936,9 +1952,9 @@ F0zz Instruction Block:
 *** F0nm_1GBF  PRELU.F		Rm, Rn		//(GSVF) RELU (2x FP32)
 
 *** F0nm_1gCF ? PCVTH2AL	Rm, Rn		//(GSVF) Packed FP16 to A-Law (4x)
-*** F0nm_1GCF  -
+*** F0nm_1GCF ? RGB5PCKI8   Rm, Rn		//(RGB?) Pack RGB555 to 8-bit
 *** F0nm_1gDF ? PCVTAL2H	Rm, Rn		//(GSVF) Packed A-Law to FP16 (4x)
-*** F0nm_1GDF  -
+*** F0nm_1GDF ? RGB5UPCKI8  Rm, Rn		//(RGB?) Unpack RGB555 from 8-bit
 *** F0nm_1gEF ? FLDCIU.L	Rm, Rn		//Load Convert UInt32
 *** F0nm_1GEF ? FLDCXIU.L	Rm, Xn		//Load Convert UInt32 (GFPX, F128)
 *** F0nm_1gEF ? FLDCIS.L	Rm, Rn		//Load Convert Int32

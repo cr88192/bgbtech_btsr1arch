@@ -683,6 +683,30 @@ int TKGDI_UpdateWindowStack_PumpMouse(void)
 	TKGDI_DevPushEvent(NULL, 1, imsg);
 }
 
+int TKGDI_UpdateWindowStack_PushWinVirtKey(int dev, int key)
+{
+	TKGDI_EVENT t_imsg;
+	TKGDI_EVENT *imsg;
+	int i, j, k;
+
+	imsg=&t_imsg;
+
+	imsg->evSize=sizeof(TKGDI_EVENT);
+	imsg->dev=1;
+	imsg->fccMsg=TKGDI_FCC_keyb;
+	imsg->ptMsec=TK_GetTimeMs();
+	imsg->wParm1=key;
+	imsg->wParm2=0;
+	imsg->lParm1=0;
+	imsg->ptMsX=tkgdi_ps2ms_lx;
+	imsg->ptMsY=tkgdi_ps2ms_ly;
+	imsg->ptMsB=tkgdi_ps2ms_lb;
+
+	TKGDI_DevPushEvent(NULL, dev, imsg);
+	
+	return(0);
+}
+
 int TKGDI_WindowSetActiveTab(_tkgdi_window_t *wctx, int tab)
 {
 	_tkgdi_conparm *con;
@@ -827,6 +851,8 @@ int TKGDI_UpdateWindowStack(void)
 						)
 					{
 						tk_printf("TKGDI_UpdateWindowStack: Click Close\n");
+						TKGDI_UpdateWindowStack_PushWinVirtKey(
+							wctx->idx, TK_K_GUI_CLOSE);
 						break;
 					}
 
@@ -835,6 +861,8 @@ int TKGDI_UpdateWindowStack(void)
 						)
 					{
 						tk_printf("TKGDI_UpdateWindowStack: Click Minimize\n");
+						TKGDI_UpdateWindowStack_PushWinVirtKey(
+							wctx->idx, TK_K_GUI_MINIMIZE);
 						break;
 					}
 
@@ -843,6 +871,8 @@ int TKGDI_UpdateWindowStack(void)
 						)
 					{
 						tk_printf("TKGDI_UpdateWindowStack: Click Maximize\n");
+						TKGDI_UpdateWindowStack_PushWinVirtKey(
+							wctx->idx, TK_K_GUI_MAXIMIZE);
 						break;
 					}
 

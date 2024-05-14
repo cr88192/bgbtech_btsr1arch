@@ -5,6 +5,9 @@ void tk_con_putc(int ch);
 
 _tkgdi_context_t *TKGDI_GetCurrentGdiContext();
 
+char *tk_puts_gbltemp;
+TK_SysArg *tk_puts_tempargs;
+
 byte tk_dbg_iscopy;
 
 void tk_dbg_putc_i(int val)
@@ -100,7 +103,7 @@ void tk_putc_tty(int val, int tty)
 		hdc=tty&0x00FFFFFF;
 		tb[0]=val;	tb[1]=0;
 		ctx->vt->DrawString(ctx, hdc, -1, -1, tb, 0, 0);
-		return(0);
+		return;
 	}
 }
 
@@ -135,10 +138,41 @@ void tk_putc_i(int val)
 }
 #endif
 
+void *tk_puts_gettempargs()
+{
+	static TK_SysArg t_arr[16];
+	TK_SysArg *ar;
+	static int rec=0;
+
+//	if(rec)
+	if(1)
+	{
+		ar=t_arr;
+		return(ar);
+	}
+
+#if 0
+	rec=1;
+
+	ar=tk_puts_tempargs;
+	if(!ar)
+	{
+		tk_puts_tempargs=tk_malloc_cat(16*sizeof(TK_SysArg), TKMM_MCAT_GLOBAL);
+		ar=tk_puts_tempargs;
+	}
+
+	rec=0;
+	return(ar);
+#endif
+}
+
 void tk_putc_v(int val)
 {
 	TK_SysArg ar[4];
+//	TK_SysArg *ar;
 	void *p;
+	
+//	ar=tk_puts_gettempargs();
 	
 	p=NULL;
 	ar[0].i=val;
@@ -148,12 +182,58 @@ void tk_putc_v(int val)
 void tk_putsn_v(char *str, int n)
 {
 	TK_SysArg ar[4];
+//	TK_SysArg *ar;
+	char *cs;
 	void *p;
+	int k;
+
+//	ar=tk_puts_gettempargs();
 	
+	if(!tk_puts_gbltemp)
+	{
+		tk_puts_gbltemp=tk_malloc_cat(256, TKMM_MCAT_GLOBAL);
+	}
+
+	if(n<256)
+	{
+		memcpy(tk_puts_gbltemp, str, n);
+		tk_puts_gbltemp[n]=0;
+
+		p=NULL;
+		ar[0].p=tk_puts_gbltemp;
+		ar[1].i=n;
+		tk_syscall(NULL, TK_UMSG_CONPUTSN, &p, ar);
+		return;
+	}
+
+	cs=str; k=n;
+	while(k>=252)
+	{
+		memcpy(tk_puts_gbltemp, cs, 252);
+		tk_puts_gbltemp[252]=0;
+
+		p=NULL;
+		ar[0].p=tk_puts_gbltemp;
+		ar[1].i=252;
+		tk_syscall(NULL, TK_UMSG_CONPUTSN, &p, ar);
+		
+		cs+=252;
+		k-=252;
+	}
+
+	memcpy(tk_puts_gbltemp, cs, k);
+	tk_puts_gbltemp[k]=0;
+
 	p=NULL;
-	ar[0].p=str;
-	ar[1].i=n;
+	ar[0].p=tk_puts_gbltemp;
+	ar[1].i=k;
 	tk_syscall(NULL, TK_UMSG_CONPUTSN, &p, ar);
+	return;
+
+//	p=NULL;
+//	ar[0].p=str;
+//	ar[1].i=n;
+//	tk_syscall(NULL, TK_UMSG_CONPUTSN, &p, ar);
 }
 
 void (*tk_putc_fn)(int val);
@@ -389,7 +469,11 @@ int tk_getch_i(void)
 int tk_kbhit_v(void)
 {
 	TK_SysArg ar[4];
+//	TK_SysArg *ar;
 	int i;
+
+//	ar=tk_puts_gettempargs();
+	
 	i=0;
 	ar[0].i=0;
 	tk_syscall(NULL, TK_UMSG_CONKBHIT, &i, ar);
@@ -399,7 +483,11 @@ int tk_kbhit_v(void)
 int tk_getch_v0(void)
 {
 	TK_SysArg ar[4];
+//	TK_SysArg *ar;
 	int i;
+
+//	ar=tk_puts_gettempargs();
+	
 	i=0;
 	ar[0].i=0;
 	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
@@ -427,7 +515,11 @@ int tk_getch_v(void)
 u64 tk_gettimeus_v(void)
 {
 	TK_SysArg ar[4];
+//	TK_SysArg *ar;
 	u64 li;
+
+//	ar=tk_puts_gettempargs();
+	
 	li=0;
 	ar[0].i=1;
 //	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);
@@ -611,22 +703,50 @@ int tk_putsn_check_nonascii(char *msg, int cnt)
 	return(0);
 }
 
-void tk_puts_tty(char *msg, int tty)
+void tk_puts_n_tty(char *msg, int len, int tty)
 {
 	_tkgdi_context_t *ctx;
 	TKGHDC hdc;
+	char *s;
+	int n;
 
 	if((tty&0xF0000000)==0x10000000)
 	{
+		if(!tk_puts_gbltemp)
+		{
+			tk_puts_gbltemp=tk_malloc_cat(256, TKMM_MCAT_GLOBAL);
+		}
+
 		ctx=TKGDI_GetCurrentGdiContext();
 		hdc=tty&0x00FFFFFF;
-		ctx->vt->DrawString(ctx, hdc, -1, -1, msg, 0, 0);
+		
+		s=msg; n=len;
+		while(n>=252)
+		{
+			memcpy(tk_puts_gbltemp, s, 252);
+			tk_puts_gbltemp[252]=0;
+			ctx->vt->DrawString(ctx, hdc, -1, -1, tk_puts_gbltemp, 0, 0);
+			s+=252;
+			n-=252;
+		}
+		
+		memcpy(tk_puts_gbltemp, s, n);
+		tk_puts_gbltemp[n]=0;
+	
+//		ctx->vt->DrawString(ctx, hdc, -1, -1, msg, 0, 0);
+		ctx->vt->DrawString(ctx, hdc, -1, -1, tk_puts_gbltemp, 0, 0);
 		return;
 	}
 }
 
+void tk_puts_tty(char *msg, int tty)
+{
+	tk_puts_n_tty(msg, strlen(msg), tty);
+}
+
 void tk_puts_n(char *msg, int n)
 {
+	char tb[128];
 	TKPE_TaskInfo *task;
 	int ttyid;
 
@@ -644,8 +764,9 @@ void tk_puts_n(char *msg, int n)
 			ttyid=0;
 		
 		if(ttyid && !tk_issyscall())
-		{
-			tk_puts_tty(msg, ttyid);
+		{		
+//			tk_puts_tty(msg, ttyid);
+			tk_puts_n_tty(msg, n, ttyid);
 			return;
 		}
 	}

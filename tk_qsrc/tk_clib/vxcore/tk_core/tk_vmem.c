@@ -37,6 +37,24 @@ u64		pad6;		//38
 //40
 };
 
+#ifdef __BJX2__
+
+extern volatile u64 __arch_ttb;
+extern volatile u64 __arch_tea;
+extern volatile u64 __arch_exsr;
+extern volatile u64 __arch_mmcr;
+extern volatile u64 __arch_sttb;
+extern volatile u64 __arch_krr;
+extern volatile u64 __arch_tbr;
+
+extern volatile u64 __arch_pch;
+extern volatile u64 __arch_gbh;
+
+extern volatile void *__arch_isrsave;		/* Pseudo */
+
+#endif
+
+
 byte *tk_vmem_pagecache=NULL;	//page cache memory
 TK_VMem_PageInfo *tk_vmem_pageinf;
 int tk_vmem_pagehash[256];		//page hash
@@ -92,6 +110,7 @@ extern volatile u64 __arch_pch;
 void TK_VMem_VaEvictPageIndex(int pidx);
 void TK_VMem_VaFlushVaddr(s64 vaddr);
 void TK_VMem_VaFlushVaddr2(s64 vaddr, s64 vaddrh);
+int TK_VMem_CheckAddrIsVirtual2(s64 addr, s64 addrh);
 
 void *tk_ptrsetbound1(void *ptr, int size);
 void *tk_ptrsetbound2(void *ptr, int lobnd, int hibnd);
@@ -670,6 +689,7 @@ int TK_VMem_AddSdSwap(s64 lba, u32 sz)
 #ifdef __BJX2__
 void tk_vmem_do_ldtlb(u64 ptel, u64 pteh);
 void tk_vmem_loadpte(u64 tva, u64 pte);
+void tk_vmem_loadpte8x(u64 tva, u64 pte);
 void tk_vmem_loadptehi(u64 tva, u64 pte);
 void tk_vmem_loadacl(u64 acle);
 void tk_vmem_loadptehi(u64 tva, u64 pte);
@@ -807,6 +827,78 @@ tk_vmem_loadpte:
 	RTS
 	NOP
 	NOP
+
+
+tk_vmem_loadpte8x:
+	MOV		0x0000000000000FFF, R16
+	MOV		0x0000FFFFFFFFC000, R17
+#if (TK_VMEM_PTESHL!=TK_VMEM_PAGESHL)
+	MOV		0x0000000FFFFFF000, R18
+#else
+	MOV		0x0000000FFFFFC000, R18
+#endif
+	MOV		0xFFFF000000000000, R19
+	AND		R5, R16, R2
+	AND		R4, R17, R3
+	AND		R5, R18, R6
+	AND		R5, R19, R7
+#if (TK_VMEM_PTESHL!=TK_VMEM_PAGESHL)
+	SHLD.Q	R6, 2, R6
+#endif
+	SHLD.Q	R5, -36, R20
+	OR		R6, R2
+	OR		R7, R3
+	AND		R20, R16, R20
+	OR		R20, R3
+
+	MOV		TTB, R6
+	AND		R6, R19, R6
+	OR		R6, R2
+
+	MOV		R2, R0
+	MOV		R3, R1
+
+	NOP
+	NOP
+	NOP
+	NOP
+
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+
+//	BREAK
+	NOP
+	NOP
+
+//	XOR		R2, R2
+	MOV		-1, R2
+	INVDC	R2
+	INVIC	R2
+
+//	INVDC	R4
+//	INVIC	R4
+	
+	NOP
+	NOP
+	NOP
+
+	RTS
+	NOP
+	NOP
 #else
 
 #if (TK_VMEM_PAGESHL==16)
@@ -857,6 +949,71 @@ tk_vmem_loadpte:
 	RTS
 	NOP
 	NOP
+
+
+tk_vmem_loadpte8x:
+	MOV		0x0000000000000FFF, R16
+	MOV		0x0000FFFFFFFF0000, R17
+	MOV		0x0000000FFFFFF000, R18
+	MOV		0xFFFF000000000000, R19
+	AND		R5, R16, R2
+	AND		R4, R17, R3
+	AND		R5, R18, R6
+	AND		R5, R19, R7
+	SHLD.Q	R6, 4, R6
+	SHLD.Q	R5, -36, R20
+	OR		R6, R2
+	OR		R7, R3
+	AND		R20, R16, R20
+	OR		R20, R3
+
+	MOV		TTB, R6
+	AND		R6, R19, R6
+	OR		R6, R2
+
+	MOV		R2, R0
+	MOV		R3, R1
+
+	NOP
+	NOP
+	NOP
+	NOP
+
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+
+//	BREAK
+	NOP
+	NOP
+
+//	XOR		R2, R2
+	MOV		-1, R2
+//	INVDC	R2
+	INVIC	R2
+//	INVDC	R4
+//	INVIC	R4
+	
+	NOP
+	NOP
+	NOP
+
+	RTS
+	NOP
+	NOP
+
 #else
 tk_vmem_loadpte:
 	MOV		0x0000000000000FFF, R16
@@ -888,6 +1045,69 @@ tk_vmem_loadpte:
 	LDTLB
 //	BREAK
 	NOP
+	NOP
+
+//	XOR		R2, R2
+	MOV		-1, R2
+//	INVDC	R2
+	INVIC	R2
+
+//	INVDC	R4
+//	INVIC	R4
+	
+	NOP
+	NOP
+	NOP
+
+	RTS
+	NOP
+	NOP
+
+tk_vmem_loadpte8x:
+	MOV		0x0000000000000FFF, R16
+	MOV		0x0000FFFFFFFFF000, R17
+	MOV		0x0000000FFFFFF000, R18
+	MOV		0xFFFF000000000000, R19
+	AND		R5, R16, R2
+	AND		R4, R17, R3
+	AND		R5, R18, R6
+	AND		R5, R19, R7
+	SHLD.Q	R5, -36, R20
+	OR		R6, R2
+	OR		R7, R3
+	AND		R20, R16, R20
+	OR		R20, R3
+
+	MOV		TTB, R6
+	AND		R6, R19, R6
+	OR		R6, R2
+
+	MOV		R2, R0
+	MOV		R3, R1
+
+	NOP
+	NOP
+	NOP
+	NOP
+
+	LDTLB
+//	BREAK
+	NOP
+	NOP
+
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
+	NOP
+	LDTLB
 	NOP
 
 //	XOR		R2, R2
@@ -1161,10 +1381,10 @@ int TK_VMem_Init()
 
 	if(TK_VMEM_PAGESHL==14)
 	{
-//		tpte|=0x0042;	//Three-Level, 16K pages
+		tpte|=0x0042;	//Three-Level, 16K pages
 //		tpte|=0x0153;	//B-Tree
 //		tpte|=0x0253;	//B-Tree (Hybrid)
-		tpte|=0x0353;	//B-Tree (Hybrid-2)
+//		tpte|=0x0353;	//B-Tree (Hybrid-2)
 //		tmmcr=0x002D;
 	}
 	else
@@ -1285,7 +1505,9 @@ int TK_VMem_Init()
 	if(!tk_vmem_swap_disable)
 	{
 	//	np=8192;
-		np=(32768<<10)>>TK_VMEM_PAGESHL;
+//		np=(32768<<10)>>TK_VMEM_PAGESHL;
+//		np=(tkmm_maxpage<<(TKMM_PAGEBITS-2))>>TK_VMEM_PAGESHL;
+		np=(tkmm_maxpage<<(TKMM_PAGEBITS-1))>>TK_VMEM_PAGESHL;
 		tk_vmem_pagecache=TKMM_PageAllocL(np<<TK_VMEM_PAGESHL);
 		tk_vmem_npage=np;
 		
@@ -2559,6 +2781,10 @@ void TK_VMem_VaFlushVaddr(s64 vaddr)
 
 	/* Attempt to flush page from TLB */
 	pte=(0<<8)|(1<<10);
+
+	tk_vmem_loadpte8x(vaddr, pte);
+
+#if 0
 	tk_vmem_loadpte(vaddr, pte);
 	tk_vmem_loadpte(vaddr, pte);
 	tk_vmem_loadpte(vaddr, pte);
@@ -2568,6 +2794,7 @@ void TK_VMem_VaFlushVaddr(s64 vaddr)
 	tk_vmem_loadpte(vaddr, pte);
 	tk_vmem_loadpte(vaddr, pte);
 	tk_vmem_loadpte(vaddr, pte);
+#endif
 }
 
 void TK_VMem_VaFlushVaddr2(s64 vaddr, s64 vaddrh)
@@ -3231,8 +3458,12 @@ void tk_vmem_aclmiss(u64 ttb, u64 tea, u64 teah)
 
 #ifdef __BJX2__
 __interrupt void __isr_tlbfault(void)
+// __interrupt_tbrsave void __isr_tlbfault(void)
 // __declspec(dllexport) void isr_tlbfault_i(void)
 {
+	TKPE_TaskInfo *task, *task2, *task3;
+	TKPE_TaskInfoKern *taskern, *taskern2;
+
 	u64 ttb, tea, teah, exc;
 	u16 exsr;
 	
@@ -3243,31 +3474,71 @@ __interrupt void __isr_tlbfault(void)
 	exsr=(u16)(exc);
 //	tea=exc>>16;
 
+	task=(TKPE_TaskInfo *)__arch_tbr;
+	if(!task)
+		__debugbreak();
+	if(task->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
+
+	taskern=(TKPE_TaskInfoKern *)task->krnlptr;
+	if(taskern->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
+
+	task2=task;
+
 	if(exsr==0xA001)
 	{
 		tk_vmem_tlbmiss(ttb, tea, teah);
-		return;
-	}
-
-	if(exsr==0xA002)
+	}else
+		if(exsr==0xA002)
 	{
 		tk_vmem_aclmiss(ttb, tea, teah);
 		return;
+	}else
+	{
+		__debugbreak();
 	}
-
-	__debugbreak();
 
 #if 0
-	switch(exsr)
+	if(task2!=task)
 	{
-	case 0xA001:
-		tk_vmem_tlbmiss(ttb, tea);
-		break;
-	default:
-		__debugbreak();
-		break;
+		if(task2->magic0!=TKPE_TASK_MAGIC)
+			__debugbreak();
+
+		taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
+		if(taskern2->magic0!=TKPE_TASK_MAGIC)
+			__debugbreak();
+
+		if(!taskern2->ctx_regsave[TKPE_REGSAVE_SPC])
+			__debugbreak();
+
+		taskern->ctx_regsave[TKPE_REGSAVE_KRR]=__arch_krr;
+		taskern->ctx_regsave[TKPE_REGSAVE_TTB]=__arch_ttb;
+
+		__ifarch(has_xmov)
+		{
+			taskern->ctx_regsave[TKPE_REGSAVE_PCH]=__arch_pch;
+			taskern->ctx_regsave[TKPE_REGSAVE_GBH]=__arch_gbh;
+		}
+
+		ttb=taskern2->ctx_regsave[TKPE_REGSAVE_TTB];
+		if(!ttb)
+			{ ttb=tk_vmem_pageglobal; }
+
+		__arch_krr=taskern2->ctx_regsave[TKPE_REGSAVE_KRR];
+		__arch_ttb=ttb;
+
+//		if(__arch_ifarch__has_xmov)
+		__ifarch(has_xmov)
+		{
+			__arch_pch=taskern2->ctx_regsave[TKPE_REGSAVE_PCH];
+			__arch_gbh=taskern2->ctx_regsave[TKPE_REGSAVE_GBH];
+		}
+
+		__arch_tbr=(u64 *)task2;
 	}
 #endif
+
 }
 #endif
 

@@ -313,6 +313,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	isbjx2=0;
 	isxg2=0;
 	isxg2rv=0;
+	imgbase=0;
 	
 	entry=btsh2_ptrGetUD(ehdr->e_entry, en);
 	phoff=btsh2_ptrGetUD(ehdr->e_phoff, en);
@@ -369,6 +370,8 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		TKMM_PROT_EXEC);
 
 //	imgptr+=i;
+
+	imgbase=imgptr;
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);

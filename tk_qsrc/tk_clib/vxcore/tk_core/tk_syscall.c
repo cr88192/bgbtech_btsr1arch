@@ -32,6 +32,9 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 TKPE_TaskInfo *TK_SpawnNewThreadB(
 	TKPE_TaskInfo *btask, void *func, void *uptr);
 
+void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
+	void *sObj, int idx, void *pret, void *args);
+
 
 int tk_sysc_exitpt()
 {
@@ -203,6 +206,7 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 			case 0x08:
 				if(task->ttyid)
 				{
+					tk_dbg_putc(args[0].i);
 					tk_putc_tty(args[0].i, task->ttyid);
 					ret=TK_URES_TRUE;
 					break;
@@ -282,7 +286,9 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 			case 0x0E:
 				if(task->ttyid)
 				{
-					tk_puts_tty(args[0].p, task->ttyid);
+					tk_dbg_puts_n(args[0].p, args[1].i);
+//					tk_puts_tty(args[0].p, task->ttyid);
+					tk_puts_n_tty(args[0].p, args[1].i, task->ttyid);
 					ret=TK_URES_TRUE;
 					break;
 				}

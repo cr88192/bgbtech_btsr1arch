@@ -1849,7 +1849,7 @@ int TKSH_ExecCmd(char *cmd)
 
 	ri=TKSH_TryLoad_n(tb, a);
 
-	if(ri>0)
+	if(ri>=0)
 	{
 		if(ri&65535)
 			{ tk_dbg_printf("Return Status=%d\n", (ri&65535)); }
@@ -2202,7 +2202,7 @@ int TKSH_TryLoadA(char *img, char **args0)
 		TK_Env_GetCwd(cwd, 256);
 	
 		tid=TK_CreateProcess(img, tbuf, NULL, cwd, 0, tinf);
-		tk_printf("TKSH_TryLoadA(-2): pid=%d\n", tid);
+		tk_dbg_printf("TKSH_TryLoadA(-2): pid=%d\n", tid);
 		rt=TK_Task_PidJoinOnReturn(tid);
 
 //		__debugbreak();

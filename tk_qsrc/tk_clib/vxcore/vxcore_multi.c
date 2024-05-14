@@ -84,6 +84,8 @@
 
 #include "tk_core/tk_rwad.c"
 
+#include "tk_core/tk_sockmsg.c"
+
 // #ifdef __BGBCC__
 #if 1
 #include "tk_core/tkgdi_blitupdate.c"

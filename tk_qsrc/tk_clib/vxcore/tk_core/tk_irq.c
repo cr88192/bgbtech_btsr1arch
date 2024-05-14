@@ -239,9 +239,10 @@ void __isr_interrupt(void)
 //			task2=TK_CheckSchedNewTask(task, 0);
 			task2=NULL;
 
-#if 1
+#if 0
+			if((task->pid>2) && ((task->us_lastsleep+500000)<TK_GetTimeUs()))
 //			if((task->pid>2) && ((task->us_lastsleep+200000)<TK_GetTimeUs()))
-			if((task->pid>2) && ((task->us_lastsleep+150000)<TK_GetTimeUs()))
+//			if((task->pid>2) && ((task->us_lastsleep+150000)<TK_GetTimeUs()))
 			{
 				task2=TK_CheckSchedNewTask(task, 0);
 			}
@@ -492,11 +493,13 @@ __interrupt void __isr_syscall(void)
 		if(task2==tk_task_syscall)
 			__debugbreak();
 
+#if 1
 //		if((task2->us_lastsleep+100000)<TK_GetTimeUs())
 		if(task2->krnlptr &&
 			(task2->pid>2) &&
+			((task2->us_lastsleep+150000)<TK_GetTimeUs()))
 //			((task2->us_lastsleep+100000)<TK_GetTimeUs()))
-			((task2->us_lastsleep+50000)<TK_GetTimeUs()))
+//			((task2->us_lastsleep+50000)<TK_GetTimeUs()))
 		{
 //			task3=TK_CheckSchedNewTask(task2, 1);
 			task3=TK_CheckSchedNewTask(task2, 0);
@@ -507,6 +510,7 @@ __interrupt void __isr_syscall(void)
 				task2=task3;
 			}
 		}
+#endif
 	}else
 	{
 		__debugbreak();
@@ -1970,6 +1974,20 @@ void tk_thread_entry(void)
 	TK_ExitCurrentThread(res);
 }
 
+int tk_getpid(void)
+{
+	TKPE_TaskInfo *task, *task2;
+	void *uptr;
+	int res;
+
+//	task=(TKPE_TaskInfo *)__arch_tbr;
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	task2=(TKPE_TaskInfo *)task->boottbr;
+	if(!task2)
+		task2=task;
+	return(task2->pid);
+}
+
 #ifndef __TK_CLIB_ONLY__
 #ifdef __BJX2__
 
@@ -2113,7 +2131,11 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	tk1->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
 	tk1->ctx_regsave[TKPE_REGSAVE_GBR]=bootgbr;
 	tk1->ctx_regsave[TKPE_REGSAVE_SSP]=boot_newsp;
-	TK_Task_SyscallReturnToUser(task);
+
+	if(ctask!=tk_task_syscall)
+	{
+		TK_Task_SyscallReturnToUser(task);
+	}
 #endif
 
 	return(task);

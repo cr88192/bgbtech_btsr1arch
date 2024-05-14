@@ -991,6 +991,21 @@ int tk_img_SetupPal8()
 	return(1);
 }
 
+// #ifdef __BJX2__
+#if 0
+
+
+u32 tk_img_Repack4xRGB555toPal8a(u64 v);
+u32 tk_img_Repack4xRGB555toPal8b(u64 v);
+
+__asm {
+tk_img_Repack4xRGB555toPal8a:
+tk_img_Repack4xRGB555toPal8b:
+	rgb5pcki8	r4, r2
+	rts
+};
+
+#else
 u32 tk_img_Repack4xRGB555toPal8a(u64 v)
 {
 	u32 p0, p1, p2, p3;
@@ -1000,14 +1015,14 @@ u32 tk_img_Repack4xRGB555toPal8a(u64 v)
 //	u32 d0, d1, d2, d3;
 	u32 v1;
 
-#if 0
+#if 1
 	p0=tk_img_d15to8tab0[(v>> 0)&0x7FFF];
 	p1=tk_img_d15to8tab1[(v>>16)&0x7FFF];
 	p2=tk_img_d15to8tab0[(v>>32)&0x7FFF];
 	p3=tk_img_d15to8tab1[(v>>48)&0x7FFF];
 #endif
 
-#if 1
+#if 0
 	p0=(v>> 0);	p1=(v>>16);
 	p2=(v>>32);	p3=(v>>48);
 //	p0=((p0&0x03FC)<<1)|((p0>>12)&7);
@@ -1046,14 +1061,14 @@ u32 tk_img_Repack4xRGB555toPal8b(u64 v)
 //	u32 d0, d1, d2, d3;
 	u32 v1;
 
-#if 0	
+#if 1	
 	p0=tk_img_d15to8tab1[(v>> 0)&0x7FFF];
 	p1=tk_img_d15to8tab0[(v>>16)&0x7FFF];
 	p2=tk_img_d15to8tab1[(v>>32)&0x7FFF];
 	p3=tk_img_d15to8tab0[(v>>48)&0x7FFF];
 #endif
 
-#if 1	
+#if 0
 	p0=(v>> 0);	p1=(v>>16);
 	p2=(v>>32);	p3=(v>>48);
 
@@ -1084,7 +1099,35 @@ u32 tk_img_Repack4xRGB555toPal8b(u64 v)
 	return(v1);
 }
 
-u64 tk_img_Repack8xRGB555toPal8ab(u64 va, u64 vb)
+#endif
+
+#ifdef __BJX2__
+// #if 0
+
+u64 tk_img_Repack8xRGB555toPal8abI(u64 va, u64 vb);
+
+__asm {
+.global tk_img_Repack8xRGB555toPal8abI
+tk_img_Repack8xRGB555toPal8abI:
+	mov			0x0000800000008000, r16
+//	shld.q		r16, 16, r17
+
+//	xor			r4, r16, r18
+//	xor			r5, r17, r19
+
+	xor			r4, r16, r18	|	xor			r5, r16, r19
+
+	rgb5pcki8	r18, r6
+	rgb5pcki8	r19, r7
+	movlld		r7, r6, r2
+	rts
+};
+
+#endif
+
+#if 1
+
+u64 tk_img_Repack8xRGB555toPal8abG(u64 va, u64 vb)
 {
 	byte *tab0, *tab1;
 	u32 p0, p1, p2, p3;
@@ -1189,6 +1232,41 @@ u64 tk_img_Repack8xRGB555toPal8ab(u64 va, u64 vb)
 	vc=v0|(((u64)v1)<<32);
 	return(vc);
 }
+
+#endif
+
+#ifdef __BJX2__
+static u64 (*tk_img_Repack8xRGB555toPal8ab_f)(u64 va, u64 vb);
+
+u64 tk_img_Repack8xRGB555toPal8ab(u64 va, u64 vb)
+{
+	u32 pa, pb;
+	
+	if(tk_img_Repack8xRGB555toPal8ab_f)
+		return(tk_img_Repack8xRGB555toPal8ab_f(va, vb));
+	
+	pa=tk_img_Repack8xRGB555toPal8abI(
+		0x7FFF00007FFF0000LL, 0x00007FFF00007FFFLL);
+	pb=tk_img_Repack8xRGB555toPal8abG(
+		0x7FFF00007FFF0000LL, 0x00007FFF00007FFFLL);
+	
+	if(pa==pb)
+//	if(1)
+	{
+		tk_img_Repack8xRGB555toPal8ab_f=tk_img_Repack8xRGB555toPal8abI;
+		return(tk_img_Repack8xRGB555toPal8ab_f(va, vb));
+	}
+	
+	tk_img_Repack8xRGB555toPal8ab_f=tk_img_Repack8xRGB555toPal8abG;
+	return(tk_img_Repack8xRGB555toPal8ab_f(va, vb));
+}
+#else
+u64 tk_img_Repack8xRGB555toPal8ab(u64 va, u64 vb)
+{
+	return(tk_img_Repack8xRGB555toPal8abG(va, vb));
+}
+#endif
+
 
 void TKGDI_BlitUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
 void TKGDI_BlitUpdate_ScanCopy_Flip(u16 *ics, u32 *ict, int blkn);
@@ -1393,12 +1471,15 @@ void TKGDI_BlitUpdate_ScanCopyGen4p8b(u16 *ics,
 		v0=cs0[0];	v1=cs1[0];
 		v2=cs2[0];	v3=cs3[0];
 
-		v0=tk_img_Repack4xRGB555toPal8a(v0);
-		v1=tk_img_Repack4xRGB555toPal8b(v1);
-		v2=tk_img_Repack4xRGB555toPal8a(v2);
-		v3=tk_img_Repack4xRGB555toPal8b(v3);		
-		v0=v0|(v1<<32);
-		v1=v2|(v3<<32);
+//		v0=tk_img_Repack4xRGB555toPal8a(v0);
+//		v1=tk_img_Repack4xRGB555toPal8b(v1);
+//		v2=tk_img_Repack4xRGB555toPal8a(v2);
+//		v3=tk_img_Repack4xRGB555toPal8b(v3);		
+//		v0=v0|(v1<<32);
+//		v1=v2|(v3<<32);
+
+		v0=tk_img_Repack8xRGB555toPal8ab(v0, v1);
+		v1=tk_img_Repack8xRGB555toPal8ab(v2, v3);
 
 		if(i&1)
 		{

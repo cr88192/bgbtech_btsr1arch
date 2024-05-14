@@ -1544,9 +1544,10 @@ int _string_is_nonascii(const char *s)
 	uint64_t v;
 	int c;
 
+	p = (const unsigned char *)s;
+
 // #ifdef __BJX2__
 #if 0
-	p = (const unsigned char *)s;
 	v=*(uint64_t *)p;
 	while(!_strcmp_util_pack8zp(v))
 	{

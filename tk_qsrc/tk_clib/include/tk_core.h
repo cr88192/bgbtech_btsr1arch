@@ -567,6 +567,7 @@ u64 val[6];
 #include <tk_romfcn.h>
 #include <tk_pgmimg.h>
 #include <tk_wadimg.h>
+#include <tk_sockmsg.h>
 
 
 #ifdef __BJX2__

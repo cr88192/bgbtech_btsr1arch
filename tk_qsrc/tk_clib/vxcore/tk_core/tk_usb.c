@@ -428,6 +428,7 @@ int TKUSB_SendSetupAndDataPacket(
 	te=tt+100000;
 	while(tt<te)
 	{
+		msgsz=0;
 		rt=TKUSB_GetPacket(port, msgbuf, &msgsz);
 		if(rt>0)
 		{
@@ -597,6 +598,7 @@ int TKUSB_GetInPacket(int port, int addr, int endp,
 	te=tt+100000;
 	while(tt<te)
 	{
+		msgsz=0;
 		rt=TKUSB_GetPacket(port, msgbuf, &msgsz);
 		if(rt>0)
 		{
@@ -686,6 +688,7 @@ int TKUSB_PumpDelay(int port, int usec)
 	te=tt+usec;
 	while(tt<te)
 	{
+		msgsz=0;
 		rt=TKUSB_GetPacket(port, msgbuf, &msgsz);
 		if(rt>0)
 		{
@@ -1036,6 +1039,7 @@ int TKUSB_DoPoll(void)
 	
 	while(1)
 	{
+		msgsz=0;
 		rt=TKUSB_GetPacket(0, msgbuf, &msgsz);
 		if(rt>0)
 		{
@@ -1043,6 +1047,7 @@ int TKUSB_DoPoll(void)
 			continue;
 		}
 
+		msgsz=0;
 		rt=TKUSB_GetPacket(1, msgbuf, &msgsz);
 		if(rt>0)
 		{

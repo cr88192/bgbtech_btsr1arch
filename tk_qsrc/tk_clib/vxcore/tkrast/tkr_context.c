@@ -251,27 +251,27 @@ int TKRA_SetupScreen(TKRA_Context *ctx, int xs, int ys)
 
 int TKRA_DebugPrintStats(TKRA_Context *ctx)
 {
-#if 1
+#if 0
 	if(ctx->stat_base_tris)
 	{
 //		TKRA_DumpVec4(ctx->prj_xyzsc, "Clip: XyzSc:");
 //		TKRA_DumpVec4(ctx->prj_xyzbi, "Clip: XyzBi:");
 
-		printf("clip: L=%f R=%f T=%f B=%f\n",
+		tk_dbg_printf("clip: L=%f R=%f T=%f B=%f\n",
 			ctx->scr_clip_l, ctx->scr_clip_r,
 			ctx->scr_clip_t, ctx->scr_clip_b);
 
 	//	tkra_prj_xyzsc=prj_xyzsc;
 	//	tkra_prj_xyzbi=prj_xyzbi;
 
-		printf("Stat: Base=%d Frag=%d Draw=%d Reject=%d Blown=%d\n",
+		tk_dbg_printf("Stat: Base=%d Frag=%d Draw=%d Reject=%d Blown=%d\n",
 			ctx->stat_base_tris,
 			ctx->stat_frag_tris,
 			ctx->stat_draw_tris,
 			ctx->stat_reject_tris,
 			ctx->stat_blown_tris);
 
-		printf("Stat: Rejects: Frustum=%d MicroBase=%d "
+		tk_dbg_printf("Stat: Rejects: Frustum=%d MicroBase=%d "
 				"MicroFrag=%d Backface=%d NegW=%d Zocc=%d\n",
 			ctx->stat_frustum_tris,
 			ctx->stat_microbase_tris,

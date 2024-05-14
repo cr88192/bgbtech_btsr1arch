@@ -3,7 +3,7 @@ void TKRA_UpdateTexImg(
 	TKRA_TexImage *img,
 	tkra_rastpixel *buf, int xs, int ys, int mip, int flag)
 {
-	return(ctx->vt->UpdateTexImg(ctx, img, buf, xs, ys, mip, flag));
+	ctx->vt->UpdateTexImg(ctx, img, buf, xs, ys, mip, flag);
 }
 
 void TKRA_UpdateTexImgUtx2(
@@ -11,7 +11,7 @@ void TKRA_UpdateTexImgUtx2(
 	TKRA_TexImage *img,
 	u64 *buf, int xs, int ys, int mip, int flag)
 {
-	return(ctx->vt->UpdateTexImgUtx2(ctx, img, buf, xs, ys, mip, flag));
+	ctx->vt->UpdateTexImgUtx2(ctx, img, buf, xs, ys, mip, flag);
 }
 
 TKRA_TexImage *TKRA_LookupTexImg(TKRA_Context *ctx, int img)

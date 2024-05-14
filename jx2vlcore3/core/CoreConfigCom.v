@@ -233,6 +233,8 @@
 // `define jx2_enable_rgb5minmax_mul			//RGB5 Min/Max Op (CCENC)
 // `define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
 
+`define jx2_enable_rgb5pcki8				//RGB5 Pack Indexed
+
 `endif
 
 `endif

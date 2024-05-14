@@ -100,6 +100,10 @@
 #define	TK_K_NPENTR			0xDA
 #define	TK_K_NPDEL			0xDB
 
+#define	TK_K_GUI_MINIMIZE	0xE0
+#define	TK_K_GUI_MAXIMIZE	0xE1
+#define	TK_K_GUI_CLOSE		0xE2
+
 
 #define	TK_K_SKM_F1		0x0100
 #define	TK_K_SKM_F2		0x0200

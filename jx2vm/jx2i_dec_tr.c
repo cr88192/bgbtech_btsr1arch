@@ -2009,6 +2009,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	
 	if(!(ctx->status))
 	{
+		ctx->trapc=ctx->regs[BJX2_REG_PC];
+
 //		ctx->trapc=addr;
 		BJX2_MemTranslateTlb(ctx, addr+ 0, 4);
 //		BJX2_MemTranslateTlb(ctx, addr+12);

@@ -375,12 +375,30 @@ void W_AddFile (char *filename)
 			
 			length = header.numlumps*sizeof(filelump_t);
 			fileinfo = malloc (length);
+
+			if(header.numlumps!=lumps0)
+				__debugbreak();
+
 			w_lseek (handle, header.infotableofs, SEEK_SET);
+
+			if(header.numlumps!=lumps0)
+				__debugbreak();
+
 			w_read (handle, fileinfo, length);
+
+			if(header.numlumps!=lumps0)
+				__debugbreak();
+
 			numlumps += header.numlumps;
-			
+
+			if(header.numlumps!=lumps0)
+				__debugbreak();
+
 			printf("    IW wlumps=%d numlumps=%d\n",
 				header.numlumps, numlumps);
+
+			if(header.numlumps!=lumps0)
+				__debugbreak();
 		}else
 			if(!strncmp(header.identification, "WAD2", 4))
 		{

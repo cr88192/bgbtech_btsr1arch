@@ -18,6 +18,8 @@
 #define AF_UNIX			1
 #define AF_UNSPEC		0
 
+#define AF_LOCAL		AF_UNIX
+
 
 #if 0
 SO_ACCEPTCONN
@@ -54,7 +56,10 @@ typedef short		sa_family_t;
 typedef size_t		socklen_t;
 
 struct sockaddr_storage {
-	sa_family_t		sa_family;
+	sa_family_t		ss_family;
+	char			ss_pad1[6];
+	int64_t			ss_align;
+	char			ss_pad2[112];
 };
 
 struct sockaddr {

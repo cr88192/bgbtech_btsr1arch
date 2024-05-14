@@ -36,6 +36,10 @@
 `include "ExBtcEncCc.v"
 `endif
 
+`ifdef jx2_enable_rgb5pcki8
+`include "ExBtcPckI8.v"
+`endif
+
 module ExMulC(
 	clock,		reset,
 	valRs,		valRt,		valRm,
@@ -80,6 +84,11 @@ reg[8:0]		tIdUIxt2;
 reg[8:0]		tIdUCmd3;
 reg[8:0]		tIdUIxt3;
 
+reg[63:0]		tValRs1;
+reg[63:0]		tValRs2;
+reg[63:0]		tValRt1;
+reg[63:0]		tValRt2;
+
 (* max_fanout = 200 *)
 	reg[31:0]		tValRs;
 (* max_fanout = 200 *)
@@ -106,6 +115,16 @@ ExBtcEncCc		encCc1(
 	idUIxt,
 	exHold,
 	tValEncCc1);
+`endif
+
+`ifdef jx2_enable_rgb5pcki8
+wire[31:0]		tValPckI8;
+ExBtcPckI8	pcki8(
+	clock, reset,
+	valRs,
+	idUIxt,
+	exHold,
+	tValPckI8);
 `endif
 
 // reg[31:0]		tValRsSx;
@@ -386,6 +405,19 @@ begin
 			end
 `endif
 
+`ifdef jx2_enable_rgb5pcki8
+			JX2_UCIX_MUL3_RGB5PCKI8:
+			begin
+				tMul3C = { UV32_00, tValPckI8 };
+
+				if(tIdUCmd2[5:0]==JX2_UCMD_MUL3)
+//				if(1'b1)
+				begin
+//					$display("RGB5PCKI8: %X -> %X", tValRs2, tValPckI8);
+				end
+			end
+`endif
+
 			default:
 			begin
 				tMul3C = UV64_XX;
@@ -405,6 +437,9 @@ begin
 		tIdUIxt1	<= tIdUIxt;
 		tMul1AA <= { UV16_00, tValRs[15: 0] } * { UV16_00, tValRt[15: 0] };
 		tMac1		<= tValRm;
+
+		tValRs1		<= valRs;
+		tValRt1		<= valRt;
 
 `ifdef def_true
 		tMul1AB <=
@@ -426,6 +461,9 @@ begin
 		tMac2		<= tMac1;
 //		tMac2		<= tIdUIxt1[4] ? tMac1 : UV64_00;
 		tEx2MulFaz	<= tEx1MulFaz;
+
+		tValRs2		<= tValRs1;
+		tValRt2		<= tValRt1;
 
 `ifndef def_true
 		tMul2A	<= tMul1AA[15:0];

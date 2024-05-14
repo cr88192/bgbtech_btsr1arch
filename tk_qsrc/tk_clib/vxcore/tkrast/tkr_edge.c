@@ -4213,7 +4213,7 @@ void TKRA_WalkLine(TKRA_Context *ctx, u64 *vec0, u64 *vec1)
 		zc+=zs;
 	}
 
-	return(0);
+//	return(0);
 }
 #endif
 

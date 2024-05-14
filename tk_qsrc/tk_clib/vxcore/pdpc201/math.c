@@ -976,11 +976,13 @@ __PDPCLIB_API__ double frexp(double x, int *rexp)
 	unsigned long long xb;
 	double v;
 	int ex;
-	
+
+	xb=0;
 	memcpy(&xb, &x, 8);
 //	ex=((xb>>52)&2047)-1022;
 	ex=((xb>>52)&2047)-1023;
 	xb-=((long long)ex)<<52;
+	v=0;
 	*rexp=ex;
 	memcpy(&v, &xb, 8);
 	return(v);

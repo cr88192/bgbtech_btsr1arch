@@ -211,12 +211,60 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,
 ccxl_status BGBCC_CCXL_GlobalMarkReachable_BinaryOp(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
 {
-	char *s0, *s1;
+	char *s0, *s1, *s2, *s3;
 	int i, j, k;
 	int opr;
 
 	s0=NULL;
 	s1=NULL;
+	s2=NULL;
+	s3=NULL;
+
+	if(BGBCC_CCXL_TypeSmallIntP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_MUL:
+//			s0="__lva_mul";
+			break;
+
+		case CCXL_BINOP_DIV:
+			s0="__sdivsi3";
+			s1="__udivsi3";
+			s2="__udivsi3_tab";
+			break;
+		case CCXL_BINOP_MOD:
+			s0="__smodsi3";
+			s1="__umodsi3";
+			break;
+
+//		case CCXL_BINOP_SHL:	s0="__lva_shl"; break;
+//		case CCXL_BINOP_SHR:	s0="__lva_shr"; break;
+		}
+	}else
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_MUL:
+			s0="__smuldq";
+			s1="__umuldq";
+			break;
+
+		case CCXL_BINOP_DIV:
+			s0="__sdivdi3";
+			s1="__udivdi3";
+			break;
+		case CCXL_BINOP_MOD:
+			s0="__smoddi3";
+			s1="__umoddi3";
+			break;
+
+//		case CCXL_BINOP_SHL:	s0="__lva_shl"; break;
+//		case CCXL_BINOP_SHR:	s0="__lva_shr"; break;
+		}
+	}
+
 	if(BGBCC_CCXL_TypeVariantP(ctx, op->type))
 	{
 		switch(op->opr)
@@ -452,6 +500,16 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_BinaryOp(BGBCC_TransState *ctx,
 	if(s1)
 	{
 		BGBCC_CCXL_GlobalMarkReachableName(ctx, s1);
+	}
+
+	if(s2)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s2);
+	}
+
+	if(s3)
+	{
+		BGBCC_CCXL_GlobalMarkReachableName(ctx, s3);
 	}
 
 	return(0);

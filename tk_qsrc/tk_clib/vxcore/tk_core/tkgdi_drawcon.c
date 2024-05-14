@@ -599,7 +599,7 @@ void tkgdi_con_redrawbuffer(_tkgdi_conparm *con)
 
 void TKGDI_Con_UpdateHwCursor(_tkgdi_conparm *con)
 {
-	tkgdi_con_redrawbuffer(con);
+//	tkgdi_con_redrawbuffer(con);
 }
 
 void tkgdi_con_markdirty(_tkgdi_conparm *con)
@@ -1108,6 +1108,9 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 
 	buf=con->conbuf;
 	mskbuf=con->conmask;
+	
+	buf[80*25*2]=0x12345678;
+	mskbuf[32]=0x12345678;
 
 	if(con->isesc)
 	{
@@ -1138,6 +1141,11 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 			con->x=0;
 			tkgdi_con_newline(con);
 			TKGDI_Con_UpdateHwCursor(con);
+
+			if(buf[80*25*2]!=0x12345678)
+				{ __debugbreak(); }
+			if(mskbuf[32]!=0x12345678)
+				{ __debugbreak(); }
 			return;
 		}
 		if(ch=='\t')
@@ -1243,6 +1251,11 @@ void tkgdi_con_putc(_tkgdi_conparm *con, int ch)
 		con->x=0;
 		con->conrowmask|=1LL<<ty;
 	}
+
+	if(buf[80*25*2]!=0x12345678)
+		{ __debugbreak(); }
+	if(mskbuf[32]!=0x12345678)
+		{ __debugbreak(); }
 
 	TKGDI_Con_UpdateHwCursor(con);
 }

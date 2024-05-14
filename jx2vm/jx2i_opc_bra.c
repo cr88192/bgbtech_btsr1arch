@@ -872,7 +872,16 @@ void BJX2_Op_BF_PcDr4(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_RTS_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr;
-	
+
+	lr=ctx->regs[BJX2_REG_LR];
+
+	if(!(ctx->status))
+	{
+		BJX2_MemTranslateTlb(ctx, lr, 4);
+		if(ctx->status)
+			return;
+	}
+
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=ctx->regs[BJX2_REG_LR];
 //	sr&=0xFFFFFFFFF3FF000CULL;
@@ -881,6 +890,7 @@ void BJX2_Op_RTS_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	sr|=(lr>>48)&0xFF03;
 	sr|=((lr>>48)&0x000C)<<24;
 	sr|=((lr>>48)&0x00F0)<<16;
+	ctx->regs[BJX2_REG_SR]=sr;
 
 	ctx->regs[BJX2_REG_PC]=
 //		ctx->regs[BJX2_REG_LR];
@@ -1011,6 +1021,8 @@ void BJX2_Op_RTE_None(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ctx->regs[BJX2_REG_PC]=
 //		ctx->regs[BJX2_REG_LR];
 	ctx->tr_rnxt=NULL;
+
+	ctx->trapc=ctx->regs[BJX2_REG_PC];
 
 	if(!(ctx->regs[BJX2_REG_PC]))
 	{

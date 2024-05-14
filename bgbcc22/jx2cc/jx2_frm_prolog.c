@@ -1049,7 +1049,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	int ni, nf, rcls, ob, ov;
 	u64 epik;
 	int epix, epilbl, epij;
-	int tr0, tr1, ref0, ref1;
+	int tr0, tr1, ref0, ref1, l0, l1;
 	int i, j, k, l, fl, fl2;
 
 	ctx->cur_func=obj;
@@ -2128,6 +2128,42 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 				BGBCC_SH_REG_R0+1, BGBCC_SH_REG_SP, 1*8);
 			BGBCC_JX2_EmitOpRegStRegDisp(sctx, BGBCC_SH_NMID_MOVQ,
 				BGBCC_SH_REG_R0+0, BGBCC_SH_REG_SP, 0*8);
+
+#if 0
+			l0=BGBCC_JX2_GenLabelTemp(sctx);
+			l1=BGBCC_JX2_GenLabelTemp(sctx);
+
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+				BGBCC_SH_REG_TBR, BGBCC_SH_REG_R2);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_TSTQ,
+				BGBCC_SH_REG_R2, BGBCC_SH_REG_R2);
+			BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, l0);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_R2, 0x20, BGBCC_SH_REG_R2);
+			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_TSTQ,
+				BGBCC_SH_REG_R2, BGBCC_SH_REG_R2);
+			BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BF, l1);
+
+			BGBCC_JX2_EmitLabel(sctx, l0);
+
+			/* Interrupt with TBR being NULL... Try to duck out. */
+
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_SP, 3*8, BGBCC_SH_REG_R0+3);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_SP, 2*8, BGBCC_SH_REG_R0+2);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_SP, 1*8, BGBCC_SH_REG_R0+1);
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
+				BGBCC_SH_REG_SP, 0*8, BGBCC_SH_REG_R0+0);
+
+			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_ADD,
+//				(k-j)*4, BGBCC_SH_REG_SP);
+				k*4, BGBCC_SH_REG_SP);
+			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_RTE);
+
+			BGBCC_JX2_EmitLabel(sctx, l1);
+#endif
 
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx, BGBCC_SH_NMID_MOVQ,
 				BGBCC_SH_REG_TBR, 0x20, BGBCC_SH_REG_R2);

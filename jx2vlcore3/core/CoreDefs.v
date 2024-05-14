@@ -1286,6 +1286,8 @@ parameter[5:0] JX2_UCIX_MUL3_MACU	= 6'h13;		//
 parameter[5:0] JX2_UCIX_MUL3_DMAC3S	= 6'h14;		//
 parameter[5:0] JX2_UCIX_MUL3_DMAC3U	= 6'h15;		//
 
+parameter[5:0] JX2_UCIX_MUL3_RGB5PCKI8	= 6'h28;	//Pack Palette
+parameter[5:0] JX2_UCIX_MUL3_RGB5UPCKI8	= 6'h29;	//Pack Palette
 
 parameter[5:0] JX2_UCIX_MUL3_ENCCC1		= 6'h2A;	//Encode Color-Cell
 parameter[5:0] JX2_UCIX_MUL3_ENCCC2		= 6'h2B;	//Encode Color-Cell

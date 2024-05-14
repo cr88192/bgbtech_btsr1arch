@@ -3,6 +3,9 @@
 
 // #include <vxcore.h>
 
+#include <sys/socket.h>
+#include <netinet/in.h>
+
 TK_FILE *btshx_tk_handles[256];
 int btshx_tk_nhandles=3;
 
@@ -576,11 +579,104 @@ void __close(int handle)
 //	close(handle);
 }
 
-void __ioctl(int handle, int req, void *ptr)
+int __ioctl(int handle, int req, void *ptr)
 {
 	TK_FILE *fd;
+	int rt;
 	fd=btshx_tk_handles[handle];
-	tk_fioctl(fd, req, ptr);
+	rt=tk_fioctl(fd, req, ptr);
+	return(rt);
+}
+
+long __sendto(int handle, const void *buf, size_t len, int flags,
+	void *dest_addr, int addrlen)
+{
+	TK_FILE *fd;
+	int rt;
+
+	fd=btshx_tk_handles[handle];
+	rt=tk_fsend(fd, TK_IOC_SENDTO, buf, len, flags, dest_addr, addrlen);
+	return(rt);
+}
+
+void __sock_setupaddrlenrecv(void *dest_addr, int *addrlen)
+{
+	if(dest_addr)
+	{
+		*(int *)dest_addr=0;
+	}
+}
+
+void __sock_adjustaddrlenproto(void *dest_addr, int *addrlen)
+{
+	if(!dest_addr)
+		return(0);
+	if(!addrlen)
+		return(0);
+#if 0
+	switch(((struct sockaddr *)dest_addr)->sa_family)
+	{
+	case AF_INET:
+		*addrlen=sizeof(struct sockaddr_in);
+		break;
+	case AF_INET6:
+		*addrlen=sizeof(struct sockaddr_in6);
+		break;
+	default:
+		break;
+	}
+#endif
+}
+
+long __recvfrom(int handle, const void *buf, size_t len, int flags,
+	void *dest_addr, int *addrlen)
+{
+	TK_FILE *fd;
+	int rt;
+
+	fd=btshx_tk_handles[handle];
+	__sock_setupaddrlenrecv(dest_addr, addrlen);
+	rt=tk_frecv(fd, TK_IOC_RECVFROM, buf, len, flags, dest_addr, *addrlen);
+	__sock_adjustaddrlenproto(dest_addr, addrlen);
+	return(rt);
+}
+
+long __bind(int handle, void *dest_addr, int addrlen)
+{
+	TK_FILE *fd;
+	int rt;
+
+	fd=btshx_tk_handles[handle];
+	rt=tk_fsend(fd, TK_IOC_BIND, NULL, 0, 0, dest_addr, addrlen);
+	return(rt);
+}
+
+int __connect(int handle, void *addr, int addrlen, int flags)
+{
+	TK_FILE *fd;
+	int rt, hdl;
+
+	fd=btshx_tk_handles[handle];
+	hdl=-1;
+	rt=tk_frecv(fd, TK_IOC_CONNECT, &hdl, 4, 0, addr, addrlen);
+	if(rt<0)
+		return(-1);
+	return(hdl);
+}
+
+int __accept(int handle, void *dest_addr, int *addrlen, int flags)
+{
+	TK_FILE *fd;
+	int rt, hdl;
+
+	fd=btshx_tk_handles[handle];
+	hdl=-1;
+	__sock_setupaddrlenrecv(dest_addr, addrlen);
+	rt=tk_frecv(fd, TK_IOC_ACCEPT, &hdl, 4, 0, dest_addr, *addrlen);
+	if(rt<0)
+		return(-1);
+	__sock_adjustaddrlenproto(dest_addr, addrlen);
+	return(hdl);
 }
 
 int __unlink(const char *a, int b)
@@ -724,9 +820,89 @@ int close(int handle)
 
 int ioctl(int handle, int req, void *ptr)
 {
-	__ioctl(handle, req, ptr);
-	return(0);
+	int rt;
+	rt=__ioctl(handle, req, ptr);
+	return(rt);
 }
+
+long sendto(int handle, const void *buf, size_t len, int flags,
+	void *dest_addr, int addrlen)
+{
+	int rt;
+	rt=__sendto(handle, buf, len, flags, dest_addr, addrlen);
+	return(rt);
+}
+
+long send(int handle, const void *buf, size_t len, int flags)
+{
+	return(sendto(handle, buf, len, flags, NULL, 0));
+}
+
+long recvfrom(int handle, const void *buf, size_t len, int flags,
+	void *dest_addr, int *addrlen)
+{
+	int rt;
+	rt=__recvfrom(handle, buf, len, flags, dest_addr, addrlen);
+	return(rt);
+}
+
+long recv(int handle, const void *buf, size_t len, int flags)
+{
+	int asz;
+	asz=0;
+	return(recvfrom(handle, buf, len, flags, NULL, &asz));
+}
+
+int bind(int handle, void *dest_addr, int addrlen)
+{
+	int rt;
+	rt=__bind(handle, dest_addr, addrlen);
+	return(rt);
+}
+
+int connect(int handle, void *dest_addr, int addrlen)
+{
+	int rt;
+	rt=__connect(handle, dest_addr, addrlen, 0);
+	return(rt);
+}
+
+int accept(int handle, void *dest_addr, int *addrlen)
+{
+	int rt;
+	rt=__accept(handle, dest_addr, addrlen, 0);
+	return(rt);
+}
+
+int accept4(int handle, void *dest_addr, int *addrlen, int flags)
+{
+	int rt;
+	rt=__accept(handle, dest_addr, addrlen, flags);
+	return(rt);
+}
+
+int socket(int domain, int type, int protocol)
+{
+	char *str;
+
+	str=NULL;
+	if((domain==AF_INET) && (type==SOCK_STREAM))
+		str="/dev/socket_tcp4";
+	if((domain==AF_INET) && (type==SOCK_DGRAM))
+		str="/dev/socket_udp4";
+	if((domain==AF_INET6) && (type==SOCK_STREAM))
+		str="/dev/socket_tcp6";
+	if((domain==AF_INET6) && (type==SOCK_DGRAM))
+		str="/dev/socket_udp6";
+
+	if(str)
+	{
+		return(open(str, 0xA000, 0));
+	}
+
+	return(-1);
+}
+
 #endif
 
 void __exita(int status)

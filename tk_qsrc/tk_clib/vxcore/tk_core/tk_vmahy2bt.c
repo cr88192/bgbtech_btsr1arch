@@ -188,7 +188,7 @@ int TK_VMem_SetBt2PageTableEntry(s64 ttb, u64 tea, u64 pteval)
 			if(!head->level)
 			{
 				head->pte_val[i]=pteval;
-				return(pte);
+				return(1);
 			}
 
 			break;

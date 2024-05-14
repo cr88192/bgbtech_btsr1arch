@@ -481,6 +481,12 @@ tk_shell_chksane_rgb5_asm:
 	BREAK?F
 #endif
 
+#if 1
+	RGB5PCKI8	R3, R6
+	CMPEQ		0, R6
+	BREAK?T
+#endif
+
 	RTSU
 
 tk_shell_chksane_fmovs_i:
@@ -1511,6 +1517,8 @@ int tk_shell_chksane_memset()
 	int			i, j, k, l;
 
 	tk_printf("CS Memset 0\n");
+
+	l=0;
 
 #if 1
 	tb=(char *)tba;

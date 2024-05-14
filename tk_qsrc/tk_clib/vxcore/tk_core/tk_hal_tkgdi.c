@@ -220,7 +220,7 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 		
 		if(!wctx || !wctx->buf_info)
 		{
-			tk_printf("TKGDI_BlitSubImage: Bad wctx=%p\n",
+			tk_dbg_printf("TKGDI_BlitSubImage: Bad wctx=%p\n",
 				wctx);
 			return(-1);
 		}
@@ -512,7 +512,7 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 		return(0);
 	}
 	
-	tk_printf("TKGDI_BlitSubImage: Bad hDc=%d max=%d\n",
+	tk_dbg_printf("TKGDI_BlitSubImage: Bad hDc=%d max=%d\n",
 		dev, tkgdi_n_windows);
 
 	return(-1);
@@ -617,13 +617,13 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 
 	if(!ifmt)
 	{
-		tk_printf("TKGDI_ModeForInputFormat: Got NULL\n");
+		tk_dbg_printf("TKGDI_ModeForInputFormat: Got NULL\n");
 		return(-1);
 	}
 
 	ofmt_mode=-1;
 
-	tk_printf("TKGDI_ModeForInputFormat: W=%d H=%d bpp=%d\n",
+	tk_dbg_printf("TKGDI_ModeForInputFormat: W=%d H=%d bpp=%d\n",
 		ifmt->biWidth, ifmt->biHeight, ifmt->biBitCount);
 
 	if((ifmt->biBitCount == 16) || (ifmt->biBitCount == 15))
@@ -795,14 +795,15 @@ TKGSTATUS TKGDI_TryMapDisplayBuffer(
 
 		if((info->biWidth!=320) || (info->biHeight!=(-200)))
 		{
-			tk_printf("TKGDI_TryMapDisplayBuffer: Fail, Resolution, %d x %d\n",
+			tk_dbg_printf("TKGDI_TryMapDisplayBuffer: "
+				"Fail, Resolution, %d x %d\n",
 				info->biWidth, info->biHeight);
 			return(TKGDI_STATUS_FAIL);
 		}
 
 		if((info->biBitCount!=15) && (info->biBitCount!=16))
 		{
-			tk_printf("TKGDI_TryMapDisplayBuffer: Fail, Bit Count\n");
+			tk_dbg_printf("TKGDI_TryMapDisplayBuffer: Fail, Bit Count\n");
 			return(TKGDI_STATUS_FAIL);
 		}
 		
@@ -819,7 +820,7 @@ TKGSTATUS TKGDI_TryMapDisplayBuffer(
 		
 //		if(((((long)ptr)>>44)&15)==15)
 //		{
-//			tk_printf("TKGDI_TryMapDisplayBuffer: Fail, MMIO\n");
+//			tk_dbg_printf("TKGDI_TryMapDisplayBuffer: Fail, MMIO\n");
 //			return(TKGDI_STATUS_FAIL);
 //		}
 
@@ -1054,7 +1055,7 @@ TKGSTATUS TKGDI_QueryDisplay(
 		return(0);
 	}
 	
-	tk_printf("TKGDI_QueryDisplay: Fail, Bad Request\n");
+	tk_dbg_printf("TKGDI_QueryDisplay: Fail, Bad Request\n");
 	return(-1);
 }
 
@@ -1069,7 +1070,7 @@ TKGHDC TKGDI_CreateDisplay(
 	int xs, ys, bxs, bys, cxs, cys;
 	int i, j, k;
 
-	tk_printf("TKGDI_CreateDisplay: A\n");
+	tk_dbg_printf("TKGDI_CreateDisplay: A\n");
 
 	if((tkgdi_vid_scrmode<0) || (tkgdi_vid_scrmode>16))
 		tkgdi_vid_scrmode=0;
@@ -1248,7 +1249,7 @@ TKGHDC TKGDI_CreateDisplay(
 			return(1);
 		}
 
-		tk_printf("TKGDI_CreateDisplay: Invalid Mode\n");
+		tk_dbg_printf("TKGDI_CreateDisplay: Invalid Mode\n");
 		return(TKGHDC_NULL);
 	}
 
@@ -1323,8 +1324,8 @@ TKGHDC TKGDI_CreateDisplay(
 		wctx->size_x=bxs<<2;
 		wctx->size_y=bys<<2;
 		
-		tk_printf("  xs=%d ys=%d\n", xs, ys);
-		tk_printf("  bxs=%d bys=%d\n", bxs, bys);
+		tk_dbg_printf("  xs=%d ys=%d\n", xs, ys);
+		tk_dbg_printf("  bxs=%d bys=%d\n", bxs, bys);
 		
 		wctx->size_bmxs=(bxs+7)>>3;
 		wctx->size_bmsz=wctx->size_bmxs*bys;
@@ -1464,6 +1465,8 @@ TKGSTATUS TKGDI_DrawString(
 			}
 			
 			dcy=-1;
+			dcxm=0;
+			dcxn=0;
 
 			s=text;
 			while(*s)
@@ -1532,6 +1535,7 @@ TKGSTATUS TKGDI_DrawString(
 
 			if(dtab==wctx->tabactive)
 			{
+				tkgdi_con_redrawbuffer(con);
 				TKGDI_UpdateWindowCells(wctx);
 			}
 			
@@ -1893,7 +1897,7 @@ void *TKGDI_GetHalContext(TKPE_TaskInfo *task,
 	_tkgdi_context_t *ctx;
 	int i, j, k;
 	
-	tk_printf("TKGDI_GetHalContext:\n");
+	tk_dbg_printf("TKGDI_GetHalContext:\n");
 	
 	for(i=0; i<tkgdi_n_contexts; i++)
 	{
@@ -2138,6 +2142,11 @@ tk_syscall_utxt:
 	nop
 	nop
 	keybrk_xg2
+	mov sp, r1
+	mov.q r1, (sp)
+	mov lr, r1
+	mov.q r1, (sp, 8)
+
 	nop
 	nop
 	syscall	0
@@ -2151,6 +2160,23 @@ tk_syscall_utxt:
 	keybrk_xg2
 	nop
 	nop
+	mov.q (sp), r1
+	cmpqeq r1, sp
+	break?f
+	mov lr, r16
+	mov.q (sp, 8), r1
+	cmpqeq r1, r16
+	break?f
+	
+	nop
+	nop
+	nop
+	nop
+	mov lr, r18
+	mov.q (r18), r19
+	nop
+	nop
+	
 	rts
 	nop
 	nop
@@ -2689,7 +2715,7 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 	if(((u32)apiname)!=TK_FCC_GDI)
 		return(NULL);
 
-	tk_printf("TKGDI_GetHalContext:\n");
+	tk_dbg_printf("TKGDI_GetHalContext:\n");
 	
 	for(i=0; i<tkgdi_n_gcontexts; i++)
 	{

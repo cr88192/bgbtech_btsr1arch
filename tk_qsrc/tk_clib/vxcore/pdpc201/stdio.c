@@ -335,7 +335,8 @@ static void fopen3(void)
 		}
 		myfile->isopen = 1;
 
-		if (!myfile->textMode)
+//		if (!myfile->textMode)
+		if(1)
 		{
 			myfile->quickBin = 1;
 		}
@@ -614,7 +615,9 @@ __PDPCLIB_API__ size_t fread(void *ptr,
 	}
 
 //	if(!stream->textMode)
-		stream->quickBin = 1;
+//		stream->quickBin = 1;
+
+	stream->quickBin = 1;
 
 	if (stream->ungetCh != -1)
 	{
@@ -623,7 +626,8 @@ __PDPCLIB_API__ size_t fread(void *ptr,
 	}
 	if (!stream->quickBin)
 	{
-		if (stream->textMode)
+//		if (stream->textMode)
+		if(0)
 		{
 			freadSlowT(ptr, stream, toread, &actualRead);
 		}
@@ -920,11 +924,15 @@ __PDPCLIB_API__ size_t fwrite(const void *ptr,
 	if (towrite < stream->szfbuf)
 	{
 		stream->quickBin = 0;
-		if ((stream->bufTech == _IONBF) && !stream->textMode)
+//		if ((stream->bufTech == _IONBF) && !stream->textMode)
+		if (stream->bufTech == _IONBF)
 		{
 			stream->quickBin = 1;
 		}
 	}
+
+	stream->quickBin = 1;
+
 	if (!stream->quickBin)
 	{
 		fwriteSlow(ptr, size, nmemb, stream, towrite, &elemWritten);
@@ -992,7 +1000,9 @@ static void fwriteSlow(const void *ptr,
 		stream->upto = stream->fbuf;
 		stream->mode = __WRITE_MODE;
 	}
-	if ((stream->textMode) || (stream->bufTech == _IOLBF))
+
+//	if ((stream->textMode) || (stream->bufTech == _IOLBF))
+	if(0)
 	{
 		fwriteSlowT(ptr, stream, towrite, &actualWritten);
 	}
@@ -1000,6 +1010,7 @@ static void fwriteSlow(const void *ptr,
 	{
 		fwriteSlowB(ptr, stream, towrite, &actualWritten);
 	}
+
 	if (nmemb == 1)
 	{
 		if (actualWritten == size)
@@ -2050,7 +2061,8 @@ __PDPCLIB_API__ int fputc(int c, FILE *stream)
 	if ((stream->upto < (stream->endbuf - 2))
 		&& (stream->bufTech != _IONBF))
 	{
-		if (stream->textMode)
+//		if (stream->textMode)
+		if(0)
 		{
 			if (c == '\n')
 			{
@@ -2611,7 +2623,8 @@ __PDPCLIB_API__ int setvbuf(FILE *stream, char *buf, int mode, size_t size)
 		stream->upto = stream->endbuf;
 	}
 	stream->bufTech = mode;
-	if (!stream->textMode && (stream->bufTech == _IOLBF))
+//	if (!stream->textMode && (stream->bufTech == _IOLBF))
+	if (stream->bufTech == _IOLBF)
 	{
 		stream->quickBin = 0;
 	}

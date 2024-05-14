@@ -1637,6 +1637,9 @@ int mfl;
 {"pcvth2al",	BGBCC_SH_NMID_PCVTH2AL},
 {"pcvtal2h",	BGBCC_SH_NMID_PCVTAL2H},
 
+{"rgb5pcki8",	BGBCC_SH_NMID_RGB5PCKI8},
+{"rgb5upcki8",	BGBCC_SH_NMID_RGB5UPCKI8},
+
 
 {"psqrta.h",	BGBCC_SH_NMID_PSQRTAH},
 {"psqrtua.h",	BGBCC_SH_NMID_PSQRTUAH},

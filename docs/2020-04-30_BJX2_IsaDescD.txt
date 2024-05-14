@@ -3146,6 +3146,31 @@ The low order 32 bits of Rn will be shifted left by 8 bits, with the new endpoin
 This operation will be Lane 1 only.
 
 
+=== RGB5PCKI8 (RGB?) ===
+
+* F0nm_1GCF ? RGB5PCKI8   Rm, Rn		//(RGB?) Pack RGB555 to 8-bit
+
+Optional RGB. Pack four RGB555 endpoints into an indexed color in a fixed color palette.
+
+The color palette will roughly follow the form:
+* irgbyyyy (if yyyy>=0100)
+* yyyy00cc
+
+Where yyyy gives a luma, and irgb/cc gives chroma.
+* irgb: Gives 16 colors, where i gives the saturation.
+** 0rgb: High saturation (Hi=Y, Lo=1/4 Y)
+** 1rgb: Low saturation (Hi=Y, Lo=5/8 Y)
+** 0000: Grayscale
+** 0111: Off-White Magenta (Hi=Y, Lo=7/8 Y)
+** 1000: Off-White Yellow (Hi=Y, Lo=7/8 Y)
+** 1111: Off-White Cyan (Hi=Y, Lo=7/8 Y)
+* cc: Gives medium saturation colors:
+** 00: RGBI (yyyy interpreted as a traditional 16-color palette)
+** 01: Orange	(1/1, 5/8, 3/8)
+** 10: Olive	(5/8, 1/1, 3/8)
+** 11: Azure	(3/8, 5/8, 1/1)
+
+
 === SWxP.x (GSV, Deprecated) ===
 
 * F0nm_3g07  SWAP.B		Rm, Rn		//(1032) Swap E/O Bytes (Low Four Bytes)

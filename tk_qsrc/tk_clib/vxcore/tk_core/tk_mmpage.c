@@ -540,7 +540,8 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	if(vParm1)
 	{
 		msgp1=((char *)msgbuf)+0;
-		memcpy(msgp1, vParm1, 32);
+//		memcpy(msgp1, vParm1, 32);
+		memcpy(msgp1, vParm1, 8);
 	}
 
 	if(vParm2)
@@ -554,10 +555,13 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 		__debugbreak();
 //	return(SysCall(sObj, uMsg, vParm1, vParm2));
 
+	ret=*(int *)SysCall;	//BGB: debug, make sure paged in...
+
 	ret=SysCall(sObj, uMsg, msgp1, msgp2);
 	if(vParm1)
 	{
-		memcpy(vParm1, msgp1, 32);
+//		memcpy(vParm1, msgp1, 32);
+		memcpy(vParm1, msgp1, 8);
 	}
 	
 	return(ret);

@@ -493,6 +493,7 @@ void	VID_Init (unsigned char *palette)
 //	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*6);
 	D_InitCaches (surfcache, BASEWIDTH*BASEHEIGHT*3*8);
 
+#if 0
 #ifdef I_SCR_BMP128K
 //	((u32 *)0xF00BFF00)[0]=0x0015;		//320x200x16bpp
 	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0095;		//320x200x16bpp
@@ -501,6 +502,7 @@ void	VID_Init (unsigned char *palette)
 //	((u32 *)0xF00BFF00)[0]=0x0010;		//320x200x16bpp
 #else
 	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0000;		//320x200
+#endif
 #endif
 
 // #ifndef CONGFX
