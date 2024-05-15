@@ -2190,13 +2190,19 @@ int TKSH_TryLoadA(char *img, char **args0)
 		tinf->szStack=0;	//use default
 		tinf->flSched=1;
 
-		ct=tbuf;
-		for(i=0; args0[i]; i++)
+		if(args0)
 		{
-			strcpy(ct, args0[i]);
-			ct+=strlen(ct);
-			*ct++=' ';
-			*ct=0;
+			ct=tbuf;
+			for(i=0; args0[i]; i++)
+			{
+				strcpy(ct, args0[i]);
+				ct+=strlen(ct);
+				*ct++=' ';
+				*ct=0;
+			}
+		}else
+		{
+			strcpy(tbuf, img);
 		}
 	
 		TK_Env_GetCwd(cwd, 256);

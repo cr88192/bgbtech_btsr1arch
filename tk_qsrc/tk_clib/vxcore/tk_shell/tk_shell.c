@@ -38,8 +38,10 @@ int main(int argc, char *argv[])
 	ars[0]="autoexec";
 	ars[1]=NULL;
 //	TKSH_TryLoad_ext("autoexec", NULL);
-	TKSH_TryLoad_ext("boot/autoexec", NULL);
+//	TKSH_TryLoad_ext("/boot/autoexec", NULL);
 //	TKSH_TryLoad_ext("autoexec", ars);
+
+	tk_vfile_init();
 
 //	tk_printf("TKSH 4\n");
 

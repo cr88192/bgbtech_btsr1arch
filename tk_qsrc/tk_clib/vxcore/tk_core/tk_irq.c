@@ -35,7 +35,10 @@ int tk_iskerneltask()
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	if(task==tk_task_syscall)
 		return(1);
-	if(task->pid==0)
+//	if(task->pid==0)
+	if(task->pid==1)
+		return(1);
+	if(!(task->SysCall))
 		return(1);
 	return(0);
 #else
@@ -978,7 +981,7 @@ int TK_Task_PidTryJoinReturnV(int pid)
 {
 	TK_SysArg ar[4];
 	s64 p;
-	
+		
 	p=0;
 	ar[0].i=pid;
 	tk_syscall(NULL, TK_UMSG_TRYJOINRESULT, &p, ar);
@@ -1000,10 +1003,22 @@ int TK_Task_PidJoinOnReturn(int pid)
 
 // #ifndef __TK_CLIB_ONLY__
 #if 0
-	if(tk_iskernel())
+//	if(tk_iskernel())
+	if(tk_iskerneltask())
 	{
 		rv=TK_Task_JoinOnReturn(tk_task_list[pid]);
 		return(rv);
+	}
+#endif
+
+// #ifndef __TK_CLIB_ONLY__
+#if 0
+	if(tk_iskerneltask())
+	{
+		while(1)
+		{
+//			TK_YieldCurrentThread();
+		}
 	}
 #endif
 
@@ -2205,6 +2220,12 @@ int TK_Task_ShellLoop(void *uptr)
 
 	tk_dbg_printf("TK_Task_ShellLoop: Start task=%p tty=%08X pid=%04X\n",
 		task, task->ttyid, task->pid);
+
+	if(task->pid==3)
+	{
+		TKSH_TryLoad_ext("/boot/autoexec", NULL);
+//		TKSH_TryLoad_ext("autoexec", NULL);
+	}
 
 	while(1)
 	{

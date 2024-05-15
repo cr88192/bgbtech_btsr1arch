@@ -508,6 +508,7 @@ void *tk_getsavedvbr(void);
 // int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
 
 void *tk_ptrstriptag(void *ptr);
+int tk_syscall_utxt(void *sobj, int umsg, void *pptr, void *args);
 
 int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
@@ -552,7 +553,15 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 
 	SysCall=(void *)(task->SysCall);
 	if(!SysCall)
-		__debugbreak();
+	{
+		if(tk_iskerneltask())
+		{
+			SysCall=tk_syscall_utxt;
+		}else
+		{
+			__debugbreak();
+		}
+	}
 //	return(SysCall(sObj, uMsg, vParm1, vParm2));
 
 	ret=*(int *)SysCall;	//BGB: debug, make sure paged in...
