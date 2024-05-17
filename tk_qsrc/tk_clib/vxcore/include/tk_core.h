@@ -107,6 +107,11 @@ extern u64 MMIO_BASE_E;
 #define SPI_DATA	(SPI_BASE+0x04ULL)
 #define SPI_QDATA	(SPI_BASE+0x08ULL)
 
+#define SPI_QDATA0	(SPI_BASE+0x08ULL)
+#define SPI_QDATA1	(SPI_BASE+0x09ULL)
+#define SPI_QDATA2	(SPI_BASE+0x0AULL)
+#define SPI_QDATA3	(SPI_BASE+0x0BULL)
+
 #define PS2KB_RX	(PS2_BASE+0x00ULL)
 #define PS2KB_TX	(PS2_BASE+0x04ULL)
 #define PS2KB_STAT	(PS2_BASE+0x08ULL)
@@ -140,6 +145,11 @@ extern u64 MMIO_BASE_E;
 #define P_SPI_CTRL	(*(vol_u32 *)SPI_CTRL)
 #define P_SPI_DATA	(*(vol_u32 *)SPI_DATA)
 #define P_SPI_QDATA	(*(vol_u64 *)SPI_QDATA)
+
+#define P_SPI_QDATA0	(*(vol_u64 *)SPI_QDATA0)
+#define P_SPI_QDATA1	(*(vol_u64 *)SPI_QDATA1)
+#define P_SPI_QDATA2	(*(vol_u64 *)SPI_QDATA2)
+#define P_SPI_QDATA3	(*(vol_u64 *)SPI_QDATA3)
 
 #define P_AIC_RTC_SEC_HI	(*(vol_u32 *)AIC_RTC_SEC_HI)
 #define P_AIC_RTC_SEC_LO	(*(vol_u32 *)AIC_RTC_SEC_LO)

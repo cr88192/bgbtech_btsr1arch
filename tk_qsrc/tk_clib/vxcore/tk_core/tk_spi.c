@@ -7,6 +7,13 @@
 #define SPICTRL_BUSY	0x02
 #define SPICTRL_LOOP	0x08
 #define SPICTRL_XMIT8X	0x20
+#define SPICTRL_XMIT32X	0x40
+
+#define SPICTRL_RESP_RD		0x0100	//Read SPI Response via CMD
+#define SPICTRL_QSPI		0x0200
+#define SPICTRL_QSPI_RD		0x0300	//Read in 4-bit / QSPI Mode
+#define SPICTRL_QSPI_WR		0x0200	//Write in 4-bit / QSPI Mode
+#define SPICTRL_DDR			0x0400	//DDR Mode
 
 #define SPI_RES			0xAB
 #define SPI_RDID		0x9F
