@@ -1,0 +1,50 @@
+SPI Module MMIO:
+* Base Address:
+** FFFF_F000E020: General / Flash
+** FFFF_F000E030: SDCard
+** FFFF_F000E140: General 2
+** FFFF_F000E150: General 3
+** FFFF_F000E160: General 4
+** FFFF_F000E170: General 5
+
+Registers:
+* Base+0x00: Status / Control
+* Base+0x04: Data (Byte Transfer)
+* Base+0x08: DataQ / DataQ0 (64 / 256 bit transfer)
+* Base+0x09: DataQ1 (256 bit transfer)
+* Base+0x0A: DataQ2 (256 bit transfer)
+* Base+0x0B: DataQ3 (256 bit transfer)
+
+Status / Control:
+* ( 0): ACS (Chip Select)
+* ( 1): XMIT / BUSY
+* ( 2): CCS (Unused)
+* ( 3): LOOP (Unused)
+* ( 4): DCS (Unused)
+* ( 5): XMIX8X (8-byte transfer)
+* ( 6): XMIT32X (32-byte transfer)
+* ( 7): Unused
+* ( 8): READ
+* ( 9): QSPI / QPI (Use 4 data pins)
+* (10): DDR (Transfer data on both clock edges).
+* (11): Unused
+* (12): CPHA
+* (13): CPOL
+* (21:14): Unsused
+* (23:22): Clock Divider Scale (0, 4, 16, 64)
+* (31:24): Clock Divider
+
+The clock divider will be defined relative to a 50 MHz clock.
+* Setting the divider to 0 will select a predefined "fast" speed.
+
+The clock divider scale define a scale value to be multiplied with the divider.
+* Div=1, Sc=0: 25MHz
+* Div=2, Sc=0: 16.7MHz
+* Div=3, Sc=0: 12.5MHz
+* Div=4, Sc=0: 10.0MHz
+* Div=5, Sc=0: 8.3MHz
+* ...
+* Div=255, Sc=0: 195kHz
+* Div=255, Sc=1: 49.0kHz
+* Div=255, Sc=2: 12.3kHz
+* Div=255, Sc=3: 3.0kHz

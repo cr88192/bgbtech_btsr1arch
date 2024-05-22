@@ -1886,7 +1886,8 @@ F0zz Instruction Block:
 *** F0nm_1GCD ? FSQRTX		Xm, Xn		//(FDIV) Square Root (GFPX)
 *** F0nm_1gDD ? FSQRTA		Rm, Rn		//(FDIV) Square Root (Approx)
 *** F0nm_1GDD ? FSQRTXA		Xm, Xn		//(FDIV) Square Root (GFPX, Approx)
-*** F0nm_1eED  -
+*** F0nm_1gED ? FCMPGE		Rm, Rn		//(GFP ) SR.T=(FRn GE FRm)
+*** F0nm_1GED ? FCMPXGE		Xm, Xn		//(GFPX) SR.T=(FRn GE FRm)
 *** F0nm_1gFD  FLDCIU		Rm, Rn		//Load Convert UInt64
 *** F0nm_1GFD  FLDCXIU		Rm, Rn		//Load Convert UInt64 (GFPX, F128)
 

@@ -650,6 +650,7 @@ void D_AddFile (char *file)
 	strcpy (newfile, file);
 	
 	wadfiles[numwadfiles] = newfile;
+	wadfiles[numwadfiles+1] = NULL;
 }
 
 //
@@ -954,6 +955,8 @@ void D_DoomMain (void)
 {
 	int			 p;
 	char					file[256];
+
+	wadfiles[0]=NULL;
 
 	FindResponseFile ();
 	

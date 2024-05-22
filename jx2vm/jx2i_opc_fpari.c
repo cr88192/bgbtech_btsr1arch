@@ -824,7 +824,7 @@ void BJX2_Op_FCMPEQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_FCMPGT_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;
-	int isgt;
+	int isgt, isnan;
 
 //	double a, b, c;
 	
@@ -833,6 +833,9 @@ void BJX2_Op_FCMPGT_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	va=ctx->regs[op->rn];
 	vb=ctx->regs[op->rm];
+
+	isnan=	((((va>>52)&2047)==2047) && (((va>>48)&15)!=0)) ||
+			((((vb>>52)&2047)==2047) && (((vb>>48)&15)!=0));
 
 	if(va>>63)
 	{
@@ -847,6 +850,49 @@ void BJX2_Op_FCMPGT_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		else
 			{ isgt=va>vb; }
 	}
+
+	if(isnan)
+		isgt=0;
+
+//	if(a>b)
+	if(isgt)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_FCMPGE_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isgt, isnan;
+
+//	double a, b, c;
+	
+//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rn);
+//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+
+	va=ctx->regs[op->rn];
+	vb=ctx->regs[op->rm];
+
+	isnan=	((((va>>52)&2047)==2047) && (((va>>48)&15)!=0)) ||
+			((((vb>>52)&2047)==2047) && (((vb>>48)&15)!=0));
+
+	if(va>>63)
+	{
+		if(vb>>63)
+			{ isgt=(vb>=va); }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vb>>63)
+			{ isgt=1; }
+		else
+			{ isgt=(va>=vb); }
+	}
+	
+	if(isnan)
+		isgt=0;
 
 //	if(a>b)
 	if(isgt)

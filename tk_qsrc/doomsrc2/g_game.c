@@ -126,8 +126,8 @@ int				levelstarttic;			// gametic at level start
 int				totalkills, totalitems, totalsecret;	// for intermission
 
 char			demoname[32];
-boolean			demorecording;
-boolean			demoplayback;
+boolean			demorecording = 0;
+boolean			demoplayback = 0;
 boolean		netdemo;
 byte*		demobuffer;
 byte*		demo_p;

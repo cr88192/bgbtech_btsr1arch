@@ -42,6 +42,8 @@ int tk_isr_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2);
 TKSH_CommandInfo *TKSH_LookupCommand(char *name);
 TKSH_CommandInfo *TKSH_CreateCommand(char *name);
 
+TK_EnvContext *TK_GetTaskEnvContext(TKPE_TaskInfo *task);
+
 
 TKSH_CommandInfo *tksh_commands=NULL;
 TKSH_CommandInfo *tksh_command_hash[64];
@@ -2576,7 +2578,14 @@ int TKSH_TryLoadB(char *img, char **args0)
 //				{ sysc=tk_syscall_rv_utxt; }
 
 			if((pb_boot>>50)&1)
-				{ sysc=tk_syscall_rv_utxt; }
+			{
+				sysc=tk_syscall_rv_utxt;
+
+				pb_sysc=(tk_kptr)sysc;
+				pb_sysc&=0x0000FFFFFFFFFFFEULL;
+				pb_sysc|=0x0004000000000001ULL;
+				sysc=(void *)pb_sysc;				
+			}
 #endif
 
 			task->SysCall=(tk_kptr)sysc;

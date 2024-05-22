@@ -131,10 +131,11 @@ MMIO Space:
 ** Bit 1: Clear Recieve
 ** Bit 4: Enable Interrupt
 
-* 0000E020(W): SPI Control
+* 0000E020(W): SPI Control (General / Flash)
 * 0000E024(R/W): SPI Data
+* 0000E028(R/W): SPI Data 8x
 
-* 0000E030(W): SPI Control
+* 0000E030(W): SPI Control (SDCard)
 * 0000E034(R/W): SPI Data
 * 0000E038(R/W): SPI Data 8x
 
@@ -157,6 +158,23 @@ MMIO Space:
 * 0000E108(R/W): GPIO Direction
 * 0000E110(W): GPIO Set (Out=Out|Val)
 * 0000E114(W): GPIO Clear (Out=Out&(~Val))
+
+* 0000E140(W): SPI Control (General 2)
+* 0000E144(R/W): SPI Data
+* 0000E148(R/W): SPI Data 8x
+
+* 0000E150(W): SPI Control (General 3)
+* 0000E154(R/W): SPI Data
+* 0000E158(R/W): SPI Data 8x
+
+* 0000E160(W): SPI Control (General 4)
+* 0000E164(R/W): SPI Data
+* 0000E168(R/W): SPI Data 8x
+
+* 0000E170(W): SPI Control (General 5)
+* 0000E174(R/W): SPI Data
+* 0000E178(R/W): SPI Data 8x
+
 
 * 0000E180: H-Bridge 0 Control
 * 0000E188: H-Bridge 0 Data

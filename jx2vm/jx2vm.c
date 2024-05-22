@@ -1082,8 +1082,8 @@ int bjx2_fflush(BJX2_FILE *fd)
 
 int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
 {
-	char tb[256];
-	char *s, *t;
+	char tb[256], tb1[256];
+	char *s, *t, *s1, *t1;
 	u32 a_lo, a_hi;
 	u64 addr;
 	int i, j, k;
@@ -1095,6 +1095,21 @@ int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
 		while(*s && (*s!='='))
 			*t++=*s++;
 		*t++=0;
+		
+		s1=tb+strlen(tb);
+		t1=tb1;
+		while((s1>tb) && (*s1!='/'))
+			s1--;
+//		if(*s1=='/')
+		if(1)
+		{
+			s1++;
+			while(*s1 && *s1!='.')
+				*t1++=*s1++;
+			*t1++=0;
+			strncpy(tb, tb1, 255);
+		}
+		
 		if(*s=='=')
 		{
 			s++;

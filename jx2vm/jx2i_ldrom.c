@@ -325,6 +325,24 @@ s32 BJX2_MemMmgpCb_GetDWord(BJX2_Context *ctx,
 	case 0x003C:
 		rv=mmio[0x13];
 		break;
+	case 0x0039:
+		rv=mmio[0x14];
+		break;
+	case 0x003D:
+		rv=mmio[0x15];
+		break;
+	case 0x003A:
+		rv=mmio[0x16];
+		break;
+	case 0x003E:
+		rv=mmio[0x17];
+		break;
+	case 0x003B:
+		rv=mmio[0x18];
+		break;
+	case 0x003F:
+		rv=mmio[0x19];
+		break;
 
 	case 0x0040:
 		rv=0;
@@ -497,7 +515,7 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 	BJX2_MemSpan *sp, bjx2_addr addr, s32 val)
 {
 	u32 *mmio;
-	u64 lv0, lv1;
+	u64 lv0, lv1, lv2, lv3, lv4, lv5, lv6, lv7;
 	s64 dcyc;
 	int v;
 	int ra;
@@ -569,6 +587,50 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 		}
 	
+		if(val&0x40)
+		{
+			lv0=mmio[0x12]|(((u64)mmio[0x13])<<32);
+			lv1=mmio[0x14]|(((u64)mmio[0x15])<<32);
+			lv2=mmio[0x16]|(((u64)mmio[0x17])<<32);
+			lv3=mmio[0x18]|(((u64)mmio[0x19])<<32);
+
+			lv4=0;	lv5=0;	lv6=0;	lv7=0;
+			for(i=0; i<32; i++)
+			{
+				if(!(ctx->no_memcost))
+				{
+//					mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/5;
+					mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
+				}
+//				v=btesh2_spimmc_XrByte(ctx, (lv0>>(i*8))&255);
+				v=btesh2_spimmc_XrByte(ctx, lv0&255);
+				lv0=(lv0>>8)|(lv1<<56);
+				lv1=(lv1>>8)|(lv2<<56);
+				lv2=(lv2>>8)|(lv3<<56);
+				lv3=(lv3>>8);
+
+				lv4=(lv4>>8)|(lv5<<56);
+				lv5=(lv5>>8)|(lv6<<56);
+				lv6=(lv6>>8)|(lv7<<56);
+				lv7=(lv7>>8)|(((u64)(v&255))<<56);
+				
+
+//				lv1|=((u64)(v&255))<<(i*8);
+			}
+			mmio[0x12]=lv4;
+			mmio[0x13]=lv4>>32;
+			mmio[0x14]=lv5;
+			mmio[0x15]=lv5>>32;
+			mmio[0x16]=lv6;
+			mmio[0x17]=lv6>>32;
+			mmio[0x18]=lv7;
+			mmio[0x19]=lv7>>32;
+
+//			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+//			ctx->regs[BJX2_REG_TEA]=addr;
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+		}
+	
 		v=btesh2_spimmc_XrCtl(ctx, val);
 		mmio[0x10]=v&255;
 		if(v&0x10000)
@@ -603,6 +665,25 @@ int BJX2_MemMmgpCb_SetDWord(BJX2_Context *ctx,
 		break;
 	case 0x003C:
 		mmio[0x13]=val;
+		break;
+
+	case 0x0039:
+		mmio[0x14]=val;
+		break;
+	case 0x003D:
+		mmio[0x15]=val;
+		break;
+	case 0x003A:
+		mmio[0x16]=val;
+		break;
+	case 0x003E:
+		mmio[0x17]=val;
+		break;
+	case 0x003B:
+		mmio[0x18]=val;
+		break;
+	case 0x003F:
+		mmio[0x19]=val;
 		break;
 
 	case 0x0044:
@@ -934,7 +1015,8 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 	BJX2_FILE *fd;
 	char **a;
 	char *s, *t, *pbase;
-	int tmn, ta, mn, tmnb;
+	s64 ta;
+	int tmn, mn, tmnb;
 	int sz, sz1, sw;
 	int i, j, k;
 
@@ -999,8 +1081,17 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 		if(!a[0])
 			continue;
 		
+		if(!strcmp(a[0], "U"))
+		{
+			tmap_addr[tmn]=0;
+			tmap_name[tmn]=strdup(a[1]);
+			tmap_mode[tmn]=a[0][0];
+			tmn++;
+			continue;
+		}
+		
 //		sscanf(a[0], "%08X", &ta);
-		sscanf(a[0], "%X", &ta);
+		sscanf(a[0], "%llX", &ta);
 		
 		tmap_addr[tmn]=ta;
 		tmap_name[tmn]=strdup(a[2]);

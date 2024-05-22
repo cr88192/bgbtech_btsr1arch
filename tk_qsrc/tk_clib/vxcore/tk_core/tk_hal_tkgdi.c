@@ -2331,6 +2331,8 @@ tkgdi_comglue_wrapcall39:
 
 #if 1
 .riscv
+	nop
+	nop
 
 tk_syscall_rv_utxt:
 	nop
@@ -2369,7 +2371,7 @@ tkgdi_comglue_rv_wrapcall_gen:
 	MOV		R5, R11
 	ADD		SP, 112, R12
 	ADD		SP, 136, R13
-	BSR		tk_syscall_utxt
+	BSR		tk_syscall_rv_utxt
 
 	MOV.Q	(SP, 248), R1
 	MOV.Q	(SP, 112), R10
@@ -2758,6 +2760,21 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 
 			lv&=0x0000FFFFFFFFFFFEULL;
 			lv|=0x0000000000000001ULL;
+			ppv[i]=(void *)lv;
+		}
+
+		ppv=(void **)tkgdi_context_vtable_grvvtc;
+		for(i=0; i<n; i++)
+		{
+			pv=ppv[i];
+			lv=(u64)pv;
+			if(!lv)
+				continue;
+			if(lv==0x12345678)
+				continue;
+
+			lv&=0x0000FFFFFFFFFFFEULL;
+			lv|=0x0004000000000001ULL;
 			ppv[i]=(void *)lv;
 		}
 	}

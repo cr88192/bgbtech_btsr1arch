@@ -531,7 +531,12 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 	int isz, sz1, sz2;
 
 	if(!TKMM_PageAlloc_f)
-		__debugbreak();
+	{
+		TKMM_Init();
+
+		if(!TKMM_PageAlloc_f)
+			__debugbreak();
+	}
 
 	isz=sz;
 

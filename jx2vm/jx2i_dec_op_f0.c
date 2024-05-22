@@ -2339,6 +2339,18 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				}
 				break;
 
+			case 0xE:	/* F0eE_1Dnm */
+				op->nmid=BJX2_NMID_FCMPGE;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_FCMPGE_GRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				if(eq)
+				{
+//					op->nmid=BJX2_NMID_FCMPXGE;
+//					op->Run=BJX2_Op_FCMPXGE_GRegReg;
+				}
+				break;
+
 			case 0xF:	/* F0eF_1Dnm */
 				op->nmid=BJX2_NMID_FLDCIU;
 				op->fmid=BJX2_FMID_REGREG;

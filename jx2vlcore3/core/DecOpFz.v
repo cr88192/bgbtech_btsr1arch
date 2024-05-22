@@ -2365,6 +2365,14 @@ begin
 					end
 `endif
 
+					4'hE: begin
+						opNmid		= JX2_UCMD_FCMP;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NB;
+//						opUCmdIx	= JX2_UCIX_FPU_CMPGT_G;
+						opUCmdIx	= JX2_UCIX_FPU_CMPGE;
+					end
+
 					4'hF: begin
 						opNmid		= JX2_UCMD_FLDCX;
 						opFmid		= JX2_FMID_REGREG;

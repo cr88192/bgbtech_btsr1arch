@@ -15,7 +15,7 @@ AR=$(TOOLPATH)$(TARGETPFX)ar
 AS=$(TOOLPATH)$(TARGETPFX)as
 
 # COPTS= -g -c -O2 -Iinclude $(TK_CFL)
-COPTS= -c -Iinclude -Ipdpc201 -Itk_core $(TK_CFL) -O3 \
+COPTS= -c -Iinclude -Ipdpc201 -Itk_core $(TK_CFL) -O3 -fPIC \
 	-fwrapv -fno-strict-aliasing -fno-inline \
 	-march=rv64g -mabi=lp64 \
 	-mno-strict-align -std=c17 -ffp-contract=off \

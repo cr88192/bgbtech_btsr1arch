@@ -886,8 +886,8 @@ tk_vmem_loadpte8x:
 
 //	XOR		R2, R2
 	MOV		-1, R2
-	INVDC	R2
-	INVIC	R2
+//	INVDC	R2
+//	INVIC	R2
 
 //	INVDC	R4
 //	INVIC	R4
@@ -1205,11 +1205,153 @@ void tk_vmem_loadpte(u64 tva, u64 pte)
 }
 #endif
 
+/* Model TLB so we can check if a page is likely already evicted.
+ * The need for this is not an ideal turn of events.
+ * This is needed to avoid unneeded TLB VADDR flushes, which
+ * carry a risk of getting stuck in infinite TLB miss loops.
+ */
+u32 tk_vmem_faketlb_vpn[256*4];
+u32 tk_vmem_faketlb_ppn[256*4];
+
+byte tk_vmem_faketlb_pix[256*8];
+
+u64 tk_vmem_tlbmisshist[256];
+byte tk_vmem_tlbmisshrov;
+byte tk_vmem_tlbflushinhibit;
+
+
+void tk_vmem_loadpte_faketlb(u64 tva, u64 pte)
+{
+	u32 pva, ppa;
+	u32 i0, i1, i2, i3, i4, i5, i6, i7;
+	int tlbix, psix, ttix;
+
+	pva=tva>>14;
+	ppa=pte>>14;
+	tlbix=pva&255;
+
+	ttix=tlbix<<2;
+	
+	if(!(pte&3))
+	{
+		tk_vmem_faketlb_vpn[ttix+3]=0;
+		tk_vmem_faketlb_vpn[ttix+2]=0;
+		tk_vmem_faketlb_vpn[ttix+1]=0;
+		tk_vmem_faketlb_vpn[ttix+0]=0;
+		tk_vmem_faketlb_ppn[tlbix+3]=0;
+		tk_vmem_faketlb_ppn[tlbix+2]=0;
+		tk_vmem_faketlb_ppn[tlbix+1]=0;
+		tk_vmem_faketlb_ppn[tlbix+0]=0;
+		return;
+	}
+	
+	i3=tk_vmem_faketlb_vpn[ttix+3];
+	i2=tk_vmem_faketlb_vpn[ttix+2];
+	i1=tk_vmem_faketlb_vpn[ttix+1];
+	i0=tk_vmem_faketlb_vpn[ttix+0];
+	tk_vmem_faketlb_vpn[ttix+3]=i2;
+	tk_vmem_faketlb_vpn[ttix+2]=i1;
+	tk_vmem_faketlb_vpn[ttix+1]=i0;
+	tk_vmem_faketlb_vpn[ttix+0]=pva;
+
+	i3=tk_vmem_faketlb_ppn[tlbix+3];
+	i2=tk_vmem_faketlb_ppn[tlbix+2];
+	i1=tk_vmem_faketlb_ppn[tlbix+1];
+	i0=tk_vmem_faketlb_ppn[tlbix+0];
+	tk_vmem_faketlb_ppn[tlbix+3]=i2;
+	tk_vmem_faketlb_ppn[tlbix+2]=i1;
+	tk_vmem_faketlb_ppn[tlbix+1]=i0;
+	tk_vmem_faketlb_ppn[tlbix+0]=ppa;
+		
+	psix=(ppa&255);
+	ttix=psix<<3;
+	i7=tk_vmem_faketlb_pix[ttix+7];
+	i6=tk_vmem_faketlb_pix[ttix+6];
+	i5=tk_vmem_faketlb_pix[ttix+5];
+	i4=tk_vmem_faketlb_pix[ttix+4];
+	tk_vmem_faketlb_pix[ttix+7]=i6;
+	i3=tk_vmem_faketlb_pix[ttix+3];
+	tk_vmem_faketlb_pix[ttix+6]=i5;
+	i2=tk_vmem_faketlb_pix[ttix+2];
+	tk_vmem_faketlb_pix[ttix+5]=i4;
+	i1=tk_vmem_faketlb_pix[ttix+1];
+	tk_vmem_faketlb_pix[ttix+4]=i3;
+	i0=tk_vmem_faketlb_pix[ttix+0];
+	tk_vmem_faketlb_pix[ttix+3]=i2;
+	tk_vmem_faketlb_pix[ttix+2]=i1;
+	tk_vmem_faketlb_pix[ttix+1]=i0;
+	tk_vmem_faketlb_pix[ttix+0]=tlbix;
+}
+
+/* Query if a physical page is still in the model of the TLB.
+ * If found, return the virtual address associated with the page.
+ */
+u64 TK_VMem_QueryTlbVaForPhysPage(u64 pte)
+{
+	u64 va;
+	int ppa, pva, psix, ttix, tlbix;
+	int i, j, k;
+
+	ppa=pte>>14;
+	psix=(ppa&255);
+	ttix=psix<<3;
+	
+	for(i=0; i<8; i++)
+	{
+		tlbix=tk_vmem_faketlb_pix[ttix+i];
+		k=tlbix<<2;
+		for(j=0; j<4; j++)
+		{
+			if(tk_vmem_faketlb_ppn[k+j]==ppa)
+			{
+				pva=tk_vmem_faketlb_vpn[k+j];
+				va=((u64)pva)<<14;
+				return(va);
+			}
+		}
+	}
+
+	return(0);
+}
+
+/* Query if virtual address is in the model of the TLB.
+ * Return the virtual address if true, NULL otherwise.
+ */
+u64 TK_VMem_QueryTlbVaForVirtPage(u64 vaddr)
+{
+	u32 pva, ppa;
+	u32 i0, i1, i2, i3, i4, i5, i6, i7;
+	int tlbix, psix, ttix;
+
+	pva=vaddr>>14;
+//	ppa=pte>>14;
+	tlbix=pva&255;
+
+	ttix=tlbix<<2;
+	i3=tk_vmem_faketlb_vpn[ttix+3];
+	i2=tk_vmem_faketlb_vpn[ttix+2];
+	i1=tk_vmem_faketlb_vpn[ttix+1];
+	i0=tk_vmem_faketlb_vpn[ttix+0];
+
+	if(i0==pva)
+		return(vaddr);
+	if(i1==pva)
+		return(vaddr);
+	if(i2==pva)
+		return(vaddr);
+	if(i3==pva)
+		return(vaddr);
+	return(0);
+}
+
+
 void tk_vmem_loadpte2(u64 tval, u64 tvah, u64 pte)
 {
 	u64 pteh;
+	
 	if(!tvah)
 	{
+		tk_vmem_loadpte_faketlb(tval, pte);
 		tk_vmem_loadpte(tval, pte);
 		return;
 	}
@@ -1230,6 +1372,15 @@ void tk_vmem_loadpte(u64 tva, u64 pte)
 
 void tk_vmem_loadpte2(u64 tva, u64 tvah, u64 pte)
 {
+}
+
+void tk_vmem_loadpte8x(u64 tva, u64 pte)
+{
+}
+
+u64 TK_VMem_QueryTlbVaForPhysPage(u64 pte)
+{
+	return(0);
 }
 
 #endif
@@ -1506,8 +1657,8 @@ int TK_VMem_Init()
 	{
 	//	np=8192;
 //		np=(32768<<10)>>TK_VMEM_PAGESHL;
-//		np=(tkmm_maxpage<<(TKMM_PAGEBITS-2))>>TK_VMEM_PAGESHL;
-		np=(tkmm_maxpage<<(TKMM_PAGEBITS-1))>>TK_VMEM_PAGESHL;
+		np=(tkmm_maxpage<<(TKMM_PAGEBITS-2))>>TK_VMEM_PAGESHL;
+//		np=(tkmm_maxpage<<(TKMM_PAGEBITS-1))>>TK_VMEM_PAGESHL;
 		tk_vmem_pagecache=TKMM_PageAllocL(np<<TK_VMEM_PAGESHL);
 		tk_vmem_npage=np;
 		
@@ -2616,7 +2767,8 @@ int TK_VMem_VaFreePages2(s64 vaddr, s64 vaddrh, int cnt)
 			pidx=TK_VMem_MapAddrToCacheIdx((void *)paddr);
 			if(pidx>=0)
 			{
-				TK_VMem_VaEvictPageIndex(pidx);
+//				TK_VMem_VaEvictPageIndex(pidx);
+				TK_VMem_VaDiscardPageIndex(pidx);
 
 //				pte=TK_VMem_GetPageTableEntry(vtaddr);
 				pte=TK_VMem_GetPageTableEntry2(vtaddr, vaddrh);
@@ -2775,6 +2927,19 @@ int TK_VMem_VaDoAllocRemapedPages(s64 vaddr, int cnt)
 	return(TK_VMem_VaDoAllocRemapedPages2(vaddr, 0, cnt));
 }
 
+void TK_VMem_CacheKnock()
+{
+	u64 *dummy;
+	int i, j;
+	
+	dummy=tk_vmem_page_tcbuf;
+	if(!dummy)
+		dummy=&TK_VMem_CacheKnock;
+	j=0;
+	for(i=0; i<8192; i++)
+		j+=dummy[i];
+}
+
 void TK_VMem_VaFlushVaddr(s64 vaddr)
 {
 	u64 pte;
@@ -2782,7 +2947,9 @@ void TK_VMem_VaFlushVaddr(s64 vaddr)
 	/* Attempt to flush page from TLB */
 	pte=(0<<8)|(1<<10);
 
+	tk_vmem_loadpte_faketlb(vaddr, pte);
 	tk_vmem_loadpte8x(vaddr, pte);
+//	TK_VMem_CacheKnock();
 
 #if 0
 	tk_vmem_loadpte(vaddr, pte);
@@ -2797,16 +2964,31 @@ void TK_VMem_VaFlushVaddr(s64 vaddr)
 #endif
 }
 
-void TK_VMem_VaFlushVaddr2(s64 vaddr, s64 vaddrh)
+void TK_VMem_VaFlushVaddr2I(s64 vaddr, s64 vaddrh)
 {
 	TK_VMem_VaFlushVaddr(vaddr);
+}
+
+void TK_VMem_VaFlushVaddr2(s64 vaddr, s64 vaddrh)
+{
+	u64 ava;
+	
+	if(tk_vmem_tlbflushinhibit)
+		return;
+	
+	ava=TK_VMem_QueryTlbVaForVirtPage(vaddr);
+	if(ava)
+	{
+		TK_VMem_VaFlushVaddr(vaddr);
+	}
 }
 
 void TK_VMem_VaEvictPageIndex(int cidx)
 {
 	s64 vaddr, vaddrh;
+	s64 ava;
 	u64 pte;
-	int ptpn;
+	int ptpn, needknock;
 
 	vaddr=TK_VMem_GetPageVAddr(cidx);
 	vaddrh=TK_VMem_GetPageVAddrHi(cidx);
@@ -2827,8 +3009,52 @@ void TK_VMem_VaEvictPageIndex(int cidx)
 //	tk_vmem_loadpte(vaddr, pte);
 //	tk_vmem_loadpte(vaddr, pte);
 
-//	TK_VMem_VaFlushVaddr(vaddr);
-	TK_VMem_VaFlushVaddr2(vaddr, vaddrh);
+	needknock=0;
+	ava=TK_VMem_QueryTlbVaForVirtPage(vaddr);
+	if(ava)
+	{
+		TK_VMem_VaFlushVaddr2(vaddr, vaddrh);
+		needknock=1;
+	}
+
+	ava=TK_VMem_QueryTlbVaForPhysPage(pte);
+	if(ava)
+	{
+//		TK_VMem_VaFlushVaddr(vaddr);
+//		TK_VMem_VaFlushVaddr2(vaddr, vaddrh);
+		TK_VMem_VaFlushVaddr2(ava, vaddrh);
+//		TK_VMem_CacheKnock();
+		needknock=1;
+	}
+	
+	if(tk_vmem_tlbflushinhibit)
+		needknock=0;
+	
+	if(needknock)
+	{
+		TK_VMem_CacheKnock();
+	}
+}
+
+void TK_VMem_VaDiscardPageIndex(int cidx)
+{
+	s64 vaddr, vaddrh;
+	s64 ava;
+	u64 pte;
+	int ptpn, needknock;
+
+	vaddr=TK_VMem_GetPageVAddr(cidx);
+	vaddrh=TK_VMem_GetPageVAddrHi(cidx);
+	ptpn=TK_VMem_GetPagePidx(cidx);
+
+//	pte=(0<<8)|(1<<10);
+//	pte|=((u64)ptpn)<<TK_VMEM_PTESHL;
+	pte=0;
+	TK_VMem_SetPageTableEntry2(vaddr, vaddrh, pte);
+
+	TK_VMem_FreeSwapPages(ptpn, 1);
+
+//	TK_VMem_VaFlushVaddr2(vaddr, vaddrh);
 }
 
 void TK_VMem_VaPageInAddr2(s64 vaddr, s64 vaddrh)
@@ -2889,6 +3115,8 @@ void TK_VMem_VaPageInAddr2(s64 vaddr, s64 vaddrh)
 
 //	TK_VMem_VaFlushVaddr(vaddr1);
 	TK_VMem_VaFlushVaddr2(vaddr1, vaddrh);
+
+//	TK_VMem_CacheKnock();
 
 //	tk_vmem_loadpte(vaddr1, pte);
 	tk_vmem_loadpte2(vaddr1, vaddrh, pte);
@@ -3270,6 +3498,7 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea, u64 teah)
 {
 	u64 pte, paddr;
 	int cidx;
+	int i, j, k;
 
 #if 0
 //	if(!pte)
@@ -3281,7 +3510,14 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea, u64 teah)
 		return;
 	}
 #endif
-	
+
+	cidx=tk_vmem_tlbmisshrov;
+	tk_vmem_tlbmisshrov=(cidx+1)&255;
+	tk_vmem_tlbmisshist[cidx]=tea;
+
+	if(tk_vmem_tlbflushinhibit>0)
+		tk_vmem_tlbflushinhibit--;
+
 //	__debugbreak();
 	
 //	pte=TK_VMem_GetPageTableEntry(tea);
@@ -3332,6 +3568,28 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea, u64 teah)
 		tk_vmem_loadpte2(tea, teah, pte);
 //		__debugbreak();
 		return;
+	}
+	
+#if 0
+	if((tk_vmem_tlbmisshist[(cidx-1)&255]>>TKMM_PAGEBITS)==
+		(tea>>TKMM_PAGEBITS))
+			{ tk_vmem_tlbflushinhibit=8; }
+	if((tk_vmem_tlbmisshist[(cidx-2)&255]>>TKMM_PAGEBITS)==
+		(tea>>TKMM_PAGEBITS))
+			{ tk_vmem_tlbflushinhibit=8; }
+	if((tk_vmem_tlbmisshist[(cidx-3)&255]>>TKMM_PAGEBITS)==
+		(tea>>TKMM_PAGEBITS))
+			{ tk_vmem_tlbflushinhibit=8; }
+	if((tk_vmem_tlbmisshist[(cidx-4)&255]>>TKMM_PAGEBITS)==
+		(tea>>TKMM_PAGEBITS))
+			{ tk_vmem_tlbflushinhibit=8; }
+#endif
+
+	for(i=1; i<12; i++)
+	{
+		if((tk_vmem_tlbmisshist[(cidx-i)&255]>>TKMM_PAGEBITS)==
+			(tea>>TKMM_PAGEBITS))
+				{ tk_vmem_tlbflushinhibit=16; }
 	}
 	
 #if 0

@@ -455,7 +455,7 @@ __interrupt void __isr_syscall(void)
 			if(umsg==TK_UMSG_CONKBHIT)
 			{
 				yres=args[0];
-				if(yres==0)
+				if((yres==0) && !task->ttyid)
 				{
 					/* Bounce back to caller. */
 					*(int *)pret=tk_kbhit();

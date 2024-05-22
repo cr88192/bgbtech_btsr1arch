@@ -6443,7 +6443,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 //			b1=((s32)(b<<12))>>12;
 
 //			d1=b1+((d-4)>>1);
-			d1=b1+(d-4);
+//			d1=b1+(d-4);
+			d1=b1+d;
 			if((((s32)(d1<<12))>>12)!=d1)
 				{ BGBCC_DBGBREAK }
 

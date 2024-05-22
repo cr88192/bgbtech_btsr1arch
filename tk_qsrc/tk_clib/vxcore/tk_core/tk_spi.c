@@ -658,10 +658,18 @@ int TKSPI_InitDevice(void)
 	tkspi_is_init=1;
 
 	TKSPI_SetSpeed(0);
+	TKSPI_Deselect();
 
 	for (n=0; n<16384; n++)
 //	for (n=0; n<1024; n++)
 //	for (n=0; n<256; n++)
+		TKSPI_XchByte(0xFF);
+
+	TKSPI_Select();
+	n=TKSPI_SendCmd(MMC_CMD0, 0);
+
+	TKSPI_Deselect();
+	for (n=0; n<16; n++)
 		TKSPI_XchByte(0xFF);
 
 	TKSPI_SetSpeed(0);

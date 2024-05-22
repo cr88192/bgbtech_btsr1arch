@@ -1243,6 +1243,9 @@ int BGBCC_JX2_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 
 int BGBCC_JX2_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 {
+	if(ctx->emit_riscv&0x11)
+		return(BGBCC_JX2RV_TryEmitOpLabel(ctx, nmid, lbl));
+
 //	if(!BGBCC_JX2_TryEmitOpNear8Label(ctx, nmid, lbl))
 //		{ BGBCC_DBGBREAK }
 	if(!BGBCC_JX2_TryEmitOpAutoLabel(ctx, nmid, lbl))
@@ -2616,6 +2619,9 @@ int BGBCC_JX2_EmitOpAutoLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 int BGBCC_JX2_TryEmitOpAutoLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 {
 	int ndfl, flcl, fn16, flc20, nbra;
+
+	if(ctx->emit_riscv&0x11)
+		return(BGBCC_JX2RV_TryEmitOpLabel(ctx, nmid, lbl));
 	
 	ndfl=	(nmid!=BGBCC_SH_NMID_BRA) &&
 			(nmid!=BGBCC_SH_NMID_BRAN) &&

@@ -738,6 +738,10 @@ uint32_t *drambuf2;
 
 int sdc_spipos;
 
+int sdc_lclk, sdc_lbit, sdc_cbit;
+int sdc_isspi;
+
+
 int sdc_spibit(int bit, int cs)
 {
 	static int init=0;
@@ -2391,6 +2395,73 @@ int BTM_DrawDecimalFBuf(uint32_t *fbuf, int ystr, int x, int y,
 	return(0);
 }
 
+int sdc_cmdval=0xFF;
+int sdc_cmdrsp=0xFF;
+int sdc_cmdbit=0;
+
+int sdc_update()
+{
+#if 1
+	if(top->sdc_clk!=sdc_lclk)
+	{
+		if(top->sdc_clk)
+//		if(!top->sdc_clk)
+		{
+			if(sdc_isspi)
+			{
+	//			top->sdc_dat_i=
+				sdc_lbit=
+					sdc_spibit(top->sdc_cmd_o, top->sdc_dat_o&8);
+	//			top->sdc_dat_i=sdc_lbit;
+	//			sdc_cbit=sdc_lbit;
+			}else
+			{
+				if(sdc_cmdbit==0)
+				{
+					if(((sdc_cmdval&0xFF)==0x00) && !(top->sdc_dat_o&8))
+					{
+						printf("SD: Set SPI\n");
+						sdc_isspi=1;
+					}
+					
+					printf("SD: CMD=%02X\n", sdc_cmdval&0xFF);
+					sdc_cmdrsp=btesh2_spimmc_XrByte(NULL, (sdc_cmdval&0xFF));
+
+					sdc_cmdbit=8;
+					sdc_cmdval=0xFF;
+				}
+
+				sdc_cmdval=(sdc_cmdval<<1)|(top->sdc_cmd_o&1);
+				sdc_cmdrsp=(sdc_cmdrsp<<1)|1;
+				sdc_cmdbit--;
+			}
+		}else
+		{
+			if(sdc_isspi)
+			{
+				top->sdc_dat_i=sdc_lbit;
+				sdc_cbit=sdc_lbit;
+			}else
+			{
+//				top->sdc_cmd_i=(sdc_cmdrsp>>7)&1;
+				top->sdc_cmd_i=(sdc_cmdrsp>>8)&1;
+				top->sdc_dat_i=0xF;
+			}
+		}
+
+#if 0
+		printf("sd-spi: clk=%d mosi=%d miso=%d cs=%d pos=%d\n",
+			top->sdc_clk,
+			(top->sdc_cmd)&1, (top->sdc_dat_i)&1,
+			(top->sdc_dat_o&8)!=0,
+			sdc_spipos);
+#endif
+	
+		sdc_lclk=top->sdc_clk;
+	}
+#endif
+}
+
 int main(int argc, char **argv, char **env)
 {
 	char tb[256];
@@ -2398,7 +2469,6 @@ int main(int argc, char **argv, char **env)
 	cdec_imgbuf *vgactx;
 	FILE *fd;
 	int lclk, mhz;
-	int sdc_lclk, sdc_lbit, sdc_cbit;
 	int tt_start, tt_frame, tt_reset;
 	int cnt_dled, cnt_h1, cnt_h2,
 		cnt_d1, cnt_d2, cnt_d3, cnt_d4,
@@ -3074,7 +3144,7 @@ int main(int argc, char **argv, char **env)
 		dbg_cpu_lclk = dbg_cpu_clk;
 
 		main_time++;
-		top->sdc_dat_i=sdc_cbit;
+//		top->sdc_dat_i=sdc_cbit;
 		
 		if(top->clock_100 && (lclk!=top->clock_100))
 		{
@@ -3106,7 +3176,10 @@ int main(int argc, char **argv, char **env)
 			}
 
 //			top->sdc_dat_i=sdc_lbit;
-			
+
+			sdc_update();
+
+#if 0
 			if(top->sdc_clk!=sdc_lclk)
 			{
 				if(top->sdc_clk)
@@ -3114,7 +3187,7 @@ int main(int argc, char **argv, char **env)
 				{
 //					top->sdc_dat_i=
 					sdc_lbit=
-						sdc_spibit(top->sdc_cmd, top->sdc_dat_o&8);
+						sdc_spibit(top->sdc_cmd_o, top->sdc_dat_o&8);
 //					top->sdc_dat_i=sdc_lbit;
 //					sdc_cbit=sdc_lbit;
 				}else
@@ -3133,6 +3206,7 @@ int main(int argc, char **argv, char **env)
 			
 				sdc_lclk=top->sdc_clk;
 			}
+#endif
 			
 		}
 

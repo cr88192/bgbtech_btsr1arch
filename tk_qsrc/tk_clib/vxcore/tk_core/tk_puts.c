@@ -470,7 +470,16 @@ int tk_kbhit_v(void)
 {
 	TK_SysArg ar[4];
 //	TK_SysArg *ar;
+	int ttyid;
 	int i;
+
+#if 0
+	ttyid=tk_get_ttyid();
+	if(ttyid>0)
+	{
+		return(tk_kbhit_tty(ttyid));
+	}
+#endif
 
 //	ar=tk_puts_gettempargs();
 	
@@ -484,10 +493,18 @@ int tk_getch_v0(void)
 {
 	TK_SysArg ar[4];
 //	TK_SysArg *ar;
+	int ttyid;
 	int i;
 
+#if 0
+	ttyid=tk_get_ttyid();
+
 //	ar=tk_puts_gettempargs();
-	
+
+	if(ttyid && !tk_issyscall())
+		{ return(tk_getch_tty(ttyid)); }
+#endif
+
 	i=0;
 	ar[0].i=0;
 	tk_syscall(NULL, TK_UMSG_CONGETCH, &i, ar);

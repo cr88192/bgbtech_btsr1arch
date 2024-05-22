@@ -555,6 +555,7 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	if(!SysCall)
 	{
 #ifndef __TK_CLIB_ONLY__
+#ifdef __BGBCC__
 		if(tk_iskerneltask())
 		{
 			SysCall=tk_syscall_utxt;
@@ -562,6 +563,9 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 		{
 			__debugbreak();
 		}
+#else
+		__debugbreak();
+#endif
 #else
 		__debugbreak();
 #endif

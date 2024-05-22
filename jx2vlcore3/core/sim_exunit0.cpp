@@ -654,6 +654,26 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 		mmio_spideb=0;
 		break;
 
+	case 0xE039:
+		val=mmio[0x14];
+		break;
+	case 0xE03D:
+		val=mmio[0x15];
+		break;
+
+	case 0xE03A:
+		val=mmio[0x16];
+		break;
+	case 0xE03E:
+		val=mmio[0x17];
+		break;
+
+	case 0xE03B:
+		val=mmio[0x18];
+		break;
+	case 0xE03F:
+		val=mmio[0x19];
+		break;
 
 	case 0xE040:
 		val=0;
@@ -679,6 +699,11 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 			val|=1;
 		break;
 
+	case 0xE050:
+	case 0xE054:
+	case 0xE058:
+		val=0; break;
+
 	case 0xE800:	case 0xE804:
 	case 0xE808:	case 0xE80C:
 	case 0xE810:	case 0xE814:
@@ -691,8 +716,10 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 		break;
 
 	default:
+		printf("mmio_ReadDWord: Bad Addr %08X\n", addr);
 //		val=0;
-		val=0x55AA55AA;
+//		val=0x55AA55AA;
+		val=0x5A5A5A5A;
 		break;
 	}
 	return(val);
@@ -701,7 +728,7 @@ uint32_t mmio_ReadDWord(BJX2_Context *ctx, uint32_t addr)
 uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 {
 	u32 *mmio;
-	u64 lv0, lv1;
+	u64 lv0, lv1, lv2, lv3, lv4, lv5, lv6, lv7;
 	int v;
 	int i, j, k;
 
@@ -768,6 +795,49 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 //			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
 		}
 
+		if(val&0x40)
+		{
+			lv0=mmio[0x12]|(((u64)mmio[0x13])<<32);
+			lv1=mmio[0x14]|(((u64)mmio[0x15])<<32);
+			lv2=mmio[0x16]|(((u64)mmio[0x17])<<32);
+			lv3=mmio[0x18]|(((u64)mmio[0x19])<<32);
+
+			lv4=0;	lv5=0;	lv6=0;	lv7=0;
+			for(i=0; i<32; i++)
+			{
+//				if(!(ctx->no_memcost))
+//				{
+//					mmgp_spi_delcyc+=(ctx->tgt_mhz*8)/10;
+//				}
+//				v=btesh2_spimmc_XrByte(ctx, (lv0>>(i*8))&255);
+				v=btesh2_spimmc_XrByte(ctx, lv0&255);
+				lv0=(lv0>>8)|(lv1<<56);
+				lv1=(lv1>>8)|(lv2<<56);
+				lv2=(lv2>>8)|(lv3<<56);
+				lv3=(lv3>>8);
+
+				lv4=(lv4>>8)|(lv5<<56);
+				lv5=(lv5>>8)|(lv6<<56);
+				lv6=(lv6>>8)|(lv7<<56);
+				lv7=(lv7>>8)|(((u64)(v&255))<<56);
+				
+
+//				lv1|=((u64)(v&255))<<(i*8);
+			}
+			mmio[0x12]=lv4;
+			mmio[0x13]=lv4>>32;
+			mmio[0x14]=lv5;
+			mmio[0x15]=lv5>>32;
+			mmio[0x16]=lv6;
+			mmio[0x17]=lv6>>32;
+			mmio[0x18]=lv7;
+			mmio[0x19]=lv7>>32;
+
+//			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+//			ctx->regs[BJX2_REG_TEA]=addr;
+//			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+		}
+
 		if(val&0x02)
 		{
 			if(mmio_spideb)
@@ -811,6 +881,25 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 		break;
 	case 0xE03C:
 		mmio[0x13]=val;
+		break;
+
+	case 0xE039:
+		mmio[0x14]=val;
+		break;
+	case 0xE03D:
+		mmio[0x15]=val;
+		break;
+	case 0xE03A:
+		mmio[0x16]=val;
+		break;
+	case 0xE03E:
+		mmio[0x17]=val;
+		break;
+	case 0xE03B:
+		mmio[0x18]=val;
+		break;
+	case 0xE03F:
+		mmio[0x19]=val;
 		break;
 
 	default:
@@ -1365,11 +1454,14 @@ void MemUpdateForBusRing()
 	{
 		if((l2opm1&0x07)==0x03)
 		{
-			l2data1a=mmio_ReadDWord(jx2_ctx, (addr+0)&0xFFFFFC);
-			l2data1b=mmio_ReadDWord(jx2_ctx, (addr+4)&0xFFFFFC);
+//			l2data1a=mmio_ReadDWord(jx2_ctx, (addr+0)&0xFFFFFC);
+//			l2data1b=mmio_ReadDWord(jx2_ctx, (addr+4)&0xFFFFFC);
+			l2data1a=mmio_ReadDWord(jx2_ctx, (addr+0)&0xFFFFFF);
+			l2data1b=mmio_ReadDWord(jx2_ctx, (addr+4)&0xFFFFFF);
 		}else
 		{
-			l2data1a=mmio_ReadDWord(jx2_ctx, addr&0xFFFFFC);
+//			l2data1a=mmio_ReadDWord(jx2_ctx, addr&0xFFFFFC);
+			l2data1a=mmio_ReadDWord(jx2_ctx, addr&0xFFFFFF);
 			l2data1b=0;
 		}
 		l2data1c=0;

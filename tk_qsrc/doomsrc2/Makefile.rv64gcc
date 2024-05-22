@@ -27,12 +27,12 @@ BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib \
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 # LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
 LDFLAGS=$(TK_LDFL)
-LIBS = -lclib_rv64 -ltkgdi_rv64 -fPIC \
+LIBS = -lclib_rv64 -ltkgdi_rv64 -fPIC -shared \
 	-ffunction-sections -fdata-sections -Wl,-gc-sections
 
 # -Wl,--emit-relocs
 
-LIBS2 = -lvxcore_rv64 -ltkgdi_rv64 -fPIC \
+LIBS2 = -lvxcore_rv64 -ltkgdi_rv64 \
 	-ffunction-sections -fdata-sections -Wl,-gc-sections -Wl,-T,elf64rv_dflmod.x
 
 # -Wl,--emit-relocs

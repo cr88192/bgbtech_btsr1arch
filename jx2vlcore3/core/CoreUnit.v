@@ -57,7 +57,7 @@ MMIO Space:
 * 0000E020(W): SPI Control
 * 0000E024(R/W): SPI Data
 
-* 0000E030(W): SPI Control
+* 0000E030(W): SPI Control (SDcard)
 * 0000E034(R/W): SPI Data
 * 0000E038(R/W): SPI Data 8x
 
@@ -200,7 +200,9 @@ module CoreUnit(
 	ps2kb_clk_d,	ps2kb_data_d,
 
 	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
-	sdc_clk,	sdc_cmd,	sdc_ena,
+//	sdc_clk,	sdc_cmd,	sdc_ena,
+	sdc_clk,	sdc_ena,
+	sdc_cmd_i,	sdc_cmd_o,	sdc_cmd_d,
 
 	aud_mono_out,
 	aud_mono_ena,
@@ -316,7 +318,12 @@ input[3:0]		sdc_dat_i;
 output[3:0]		sdc_dat_o;
 output[3:0]		sdc_dat_d;
 output			sdc_clk;
-output			sdc_cmd;
+
+// output			sdc_cmd;
+input			sdc_cmd_i;
+output			sdc_cmd_o;
+output			sdc_cmd_d;
+
 output			sdc_ena;
 
 output[1:0]		aud_mono_out;
@@ -452,19 +459,27 @@ assign tDbgLeds = {
 // assign			aud_mono_out	= 1'bz;
 
 wire			sdc_sclk;		//clock to SDcard
-wire			sdc_do;			//data from SDcard
-wire			sdc_di;			//data to SDcard
+wire[3:0]		sdc_do;			//data from SDcard
+wire[3:0]		sdc_di;			//data to SDcard
 wire			sdc_cs;			//chip-select for SDcard
+wire[1:0]		sdc_mode;		//I/O Mode
 
 assign		sdc_clk	= sdc_sclk;
-assign		sdc_do	= sdc_dat_i[0];
-assign		sdc_dat_o[0]	= 1'bz;
-assign		sdc_dat_o[1]	= 1'bz;
-assign		sdc_dat_o[2]	= 1'bz;
-// assign		sdc_dat_o[3]	= sdc_cs;
-assign		sdc_dat_o[3]	= !sdc_cs;
-assign		sdc_cmd		= sdc_di;
-assign		sdc_dat_d	= 4'b1000;
+// assign		sdc_do	= {3'bz, sdc_dat_i[0]};
+// assign		sdc_do	= sdc_dat_i;
+assign		sdc_do	= { sdc_dat_i[3:1],
+	(sdc_mode[1:0]==1) ? sdc_cmd_i : sdc_dat_i[0] };
+assign		sdc_dat_o[0]	= sdc_mode[1] ? sdc_di[0] : 1'bz;
+assign		sdc_dat_o[1]	= sdc_mode[1] ? sdc_di[1] : 1'bz;
+assign		sdc_dat_o[2]	= sdc_mode[1] ? sdc_di[2] : 1'bz;
+assign		sdc_dat_o[3]	= sdc_mode[1] ? sdc_di[3] : !sdc_cs;
+
+// assign		sdc_cmd		= sdc_di[0];
+assign		sdc_cmd_o		= sdc_di[0];
+assign		sdc_cmd_d		= (sdc_mode[1:0]==0);
+
+assign		sdc_dat_d	= sdc_mode[1] ?
+	( sdc_mode[0] ? 4'b0000 : 4'b1111 ) : 4'b1000;
 // assign		sdc_ena		= sdc_cs;
 // assign		sdc_ena		= 1'b1;
 assign		sdc_ena		= 1'b0;
@@ -1608,7 +1623,7 @@ wire		timerNoise_NS4;
 reg			timerNoise_S4;
 
 assign		timerNoise_NS0 = (scrnPwmOut[8] ^ scrnPwmOut[4] ^ scrnPwmOut[0]);
-assign		timerNoise_NS1 = (sdc_di ^ sdc_do) ^ timerNoise_S4;
+assign		timerNoise_NS1 = (sdc_di[0] ^ sdc_do[0]) ^ timerNoise_S4;
 // assign		timerNoise_NS2 = dbg_exHold1 ^ audPwmOut2;
 assign		timerNoise_NS2 =
 	dbg_exHold1 ^ audPwmOut2[0] ^ clock_halfMhz ^
@@ -1695,7 +1710,7 @@ ModSdSpi	sdspi(
 //	clock_100,		reset2_100,
 	clock_mmio,		reset2_mmio,
 	sdc_sclk,		sdc_di,
-	sdc_do,			sdc_cs,
+	sdc_do,			sdc_cs,			sdc_mode,
 	mmioOutDataQ,	sdMmioOutData,	mmioAddr,
 	mmioOpm,		sdMmioOK,		12'hE03);
 

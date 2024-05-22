@@ -905,6 +905,12 @@ begin
 		4'b1111: tFCmpGtP=0;	/* s==t */
 	endcase
 	
+	if(tFCmpxRsIsNaN || tFCmpxRtIsNaN)
+	begin
+		// Set to false on NaN
+		tFCmpGtP=0;
+	end
+	
 `ifdef jx2_fpu_longdbl
 	tFCmpxGtP = tFCmpGtP && (tSub2ZF && (regInCarryD[3] && !regInCarryD[4]));
 `else

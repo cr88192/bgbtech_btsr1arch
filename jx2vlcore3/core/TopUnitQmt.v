@@ -210,7 +210,8 @@ inout			ps2_data;
 
 inout[3:0]		sdc_dat;
 output			sdc_clk;
-output			sdc_cmd;
+// output			sdc_cmd;
+inout			sdc_cmd;
 // output			sdc_ena;
 
 output			dbg_exHold1;
@@ -247,6 +248,14 @@ assign	sdc_dat_i[0]	= sdc_dat[0];
 assign	sdc_dat_i[1]	= sdc_dat[1];
 assign	sdc_dat_i[2]	= sdc_dat[2];
 assign	sdc_dat_i[3]	= sdc_dat[3];
+
+wire		sdc_cmd_i;
+wire		sdc_cmd_o;
+wire		sdc_cmd_d;
+
+assign		cmd = sdc_cmd_d ? sdc_cmd_o : 1'bZ;
+assign		sdc_cmd_i = cmd;
+
 
 wire[1:0]		aud_mono_out1;
 wire			aud_mono_ena1;
@@ -352,7 +361,9 @@ CoreUnit core(
 	ps2_clk_o,	ps2_data_o,
 	ps2_clk_d,	ps2_data_d,
 	sdc_dat_i,	sdc_dat_o,	sdc_dat_d,
-	sdc_clk,	sdc_cmd,	sdc_ena,
+//	sdc_clk,	sdc_cmd,	sdc_ena,
+	sdc_clk,	sdc_ena,
+	sdc_cmd_i,	sdc_cmd_o,	sdc_cmd_d,
 
 	aud_mono_out1,	aud_mono_ena1,
 	seg_outCharBit,

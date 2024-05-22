@@ -3,10 +3,18 @@
 #define SPICTRL_DCS		0x10
 #define SPICTRL_DIVN(x)		((x)<<27)
 #define SPICTRL_DIVN2(x)	((x)<<24)
+#define SPICTRL_DIVN3(x)	(((x)<<24)|(2<<22))
 #define SPICTRL_XMIT	0x02
 #define SPICTRL_BUSY	0x02
 #define SPICTRL_LOOP	0x08
 #define SPICTRL_XMIT8X	0x20
+#define SPICTRL_XMIT32X	0x40
+
+#define SPICTRL_RESP_RD		0x0100	//Read SPI Response via CMD
+#define SPICTRL_QSPI		0x0200
+#define SPICTRL_QSPI_RD		0x0300	//Read in 4-bit / QSPI Mode
+#define SPICTRL_QSPI_WR		0x0200	//Write in 4-bit / QSPI Mode
+#define SPICTRL_DDR			0x0400	//DDR Mode
 
 #define SPI_RES			0xAB
 #define SPI_RDID		0x9F
@@ -100,10 +108,15 @@ void TKSPI_SetSpeed(int speed)
 {
 	if(!speed)
 //		{ tkspi_ctl_speed=SPICTRL_DIVN(31); }
-		{ tkspi_ctl_speed=SPICTRL_DIVN2(255); }
+	{
+//		tkspi_ctl_speed=SPICTRL_DIVN2(255);
+		tkspi_ctl_speed=SPICTRL_DIVN3(255);
+	}
 	else
 //		{ tkspi_ctl_speed=SPICTRL_DIVN(0); }
-		{ tkspi_ctl_speed=SPICTRL_DIVN2(0); }
+	{
+		tkspi_ctl_speed=SPICTRL_DIVN2(5);
+	}
 }
 
 byte TKSPI_XchByte(byte c)
@@ -158,8 +171,10 @@ int TKSPI_DelayUSec(int us)
 
 #ifdef __BJX2__
 int TKSPI_ReadDataQA(byte *sbuf, byte *ebuf);
+int TKSPI_ReadDataQB(byte *sbuf, byte *ebuf);
 
 __asm {
+#if 1
 TKSPI_ReadDataQA:
 	CMPGT	 R4, R5
 	BF		.L1
@@ -198,6 +213,61 @@ TKSPI_ReadDataQA:
 
 .L1:
 	RTS
+#endif
+
+#if 1
+TKSPI_ReadDataQB:
+	CMPGT	 R4, R5
+	BF		.L1
+
+	MOV		-1, R16
+	MOV.L	tkspi_ctl_status, R17
+	MOV		0xFFFFF000E030, R18		//CTRL
+	MOV		0xFFFFF000E038, R20		//QDATA0
+	MOV		0xFFFFF000E039, R21		//QDATA1
+	MOV		0xFFFFF000E03A, R22		//QDATA2
+	MOV		0xFFFFF000E03B, R23		//QDATA3
+
+	OR		0x40, R17
+
+.L0:
+//	P_SPI_QDATA=0xFFFFFFFFFFFFFFFFULL;
+//	P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT8X;
+//	v=P_SPI_CTRL;
+//	while(v&SPICTRL_BUSY) 
+//		v=P_SPI_CTRL;
+//	*(u64 *)ct=P_SPI_QDATA;
+//	ct+=8;
+
+	MOV.Q	R16, (R20)
+	MOV.Q	R16, (R21)
+	MOV.Q	R16, (R22)
+	MOV.Q	R16, (R23)
+	MOV.L	R17, (R18)
+
+	.L3:
+	MOVU.L	(R18), R2
+	TEST	2, R2
+	BF		.L3
+			
+	MOV.Q	(R20), R2
+	MOV.Q	(R21), R3
+	MOV.Q	R2, (R4, 0)
+	MOV.Q	R3, (R4, 8)
+	MOV.Q	(R22), R2
+	MOV.Q	(R23), R3
+	MOV.Q	R2, (R4, 16)
+	MOV.Q	R3, (R4, 24)
+
+	ADD		32, R4
+
+	CMPGT	 R4, R5
+	BT		.L0
+
+.L1:
+	RTS
+#endif
+
 };
 #endif
 
@@ -248,7 +318,14 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	if(!(len&7))
 	{
 #ifdef __BJX2__
-		TKSPI_ReadDataQA(ct, cte);
+		if(!(len&31))
+		{
+			TKSPI_ReadDataQB(ct, cte);
+		}
+		else
+		{
+			TKSPI_ReadDataQA(ct, cte);
+		}
 #else
 //		while(n>0)
 		while(ct<cte)
@@ -560,6 +637,14 @@ int TKSPI_InitDevice(void)
 	//	for (n=0; n<1024; n++)
 	//	for (n=0; n<256; n++)
 			TKSPI_XchByte(0xFF);
+
+		TKSPI_Select();
+		n=TKSPI_SendCmd(MMC_CMD0, 0);
+
+		TKSPI_Deselect();
+		for (n=0; n<16; n++)
+			TKSPI_XchByte(0xFF);
+
 
 		TKSPI_SetSpeed(0);
 		TKSPI_SendCmd(MMC_CMD52, 1);

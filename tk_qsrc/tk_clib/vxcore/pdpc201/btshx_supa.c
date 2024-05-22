@@ -825,6 +825,7 @@ int ioctl(int handle, int req, void *ptr)
 	return(rt);
 }
 
+#ifdef __BGBCC__
 long sendto(int handle, const void *buf, size_t len, int flags,
 	void *dest_addr, int addrlen)
 {
@@ -867,7 +868,10 @@ int connect(int handle, void *dest_addr, int addrlen)
 	return(rt);
 }
 
-int accept(int handle, void *dest_addr, int *addrlen)
+// int accept(int handle, void *dest_addr, int *addrlen)
+int	accept(int handle,
+	struct sockaddr *restrict dest_addr,
+	socklen_t *restrict addrlen)
 {
 	int rt;
 	rt=__accept(handle, dest_addr, addrlen, 0);
@@ -902,6 +906,8 @@ int socket(int domain, int type, int protocol)
 
 	return(-1);
 }
+
+#endif
 
 #endif
 
