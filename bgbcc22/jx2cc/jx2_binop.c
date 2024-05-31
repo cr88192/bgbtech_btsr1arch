@@ -3607,12 +3607,25 @@ int BGBCC_JX2C_EmitReturnVReg(
 int BGBCC_JX2C_EmitCsrvVReg(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
-	ccxl_type type, ccxl_register dreg)
+	ccxl_type type, ccxl_register dreg, ccxl_register fcn)
 {
+	char *fname;
 	int ctreg;
 	int rcls, regfl, vspfl, safetobind, p_eatnextop, pr0;
 	int i, j, k;
 
+	fname=NULL;
+	if((fcn.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
+	{
+		i=(int)(fcn.val&CCXL_REGID_REGMASK);
+		fname=ctx->reg_globals[i]->name;
+	}
+	
+	if(fname && !strcmp(fname, "TK_EnvCtx_CloneContext"))
+	{
+		k=-1;
+	}
+	
 	if(sctx->csrv_skip==1)
 	{
 		sctx->csrv_skip=0;
@@ -6694,6 +6707,11 @@ int BGBCC_JX2C_EmitCallIntrinVReg(
 		fname=ctx->reg_globals[i]->name;
 	}
 	
+	if(fname && !strcmp(fname, "TK_EnvCtx_CloneContext"))
+	{
+		k=-1;
+	}
+
 	if(fname && BGBCC_JX2C_EmitCallBuiltinArgs(
 		ctx, sctx, type, dst, fname, narg, args))
 	{
@@ -6730,11 +6748,18 @@ int BGBCC_JX2C_EmitCallVReg(
 
 //	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 
+	sctx->csrv_skip=0;
+
 	fname=NULL;
 	if((fcn.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
 	{
 		i=(int)(fcn.val&CCXL_REGID_REGMASK);
 		fname=ctx->reg_globals[i]->name;
+	}
+
+	if(fname && !strcmp(fname, "TK_EnvCtx_CloneContext"))
+	{
+		k=-1;
 	}
 
 	if(fname && !strcmp(fname, "__m128_float4"))

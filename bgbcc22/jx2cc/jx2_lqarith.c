@@ -2012,12 +2012,6 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		imml=imm;
 	}
 	
-	if((imm==imml) && (imm==0))
-	{
-		return(BGBCC_JX2C_EmitJCmpVRegZeroQLong(
-			ctx, sctx, type, sreg, cmp, lbl));
-	}
-	
 	doptrshl=0;
 	if(sctx->abi_spillpad&4)
 	{
@@ -2025,6 +2019,12 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		{
 			doptrshl=1;
 		}
+	}
+	
+	if((imm==imml) && (imm==0) && !doptrshl)
+	{
+		return(BGBCC_JX2C_EmitJCmpVRegZeroQLong(
+			ctx, sctx, type, sreg, cmp, lbl));
 	}
 	
 	nm3=-1; flip=0;

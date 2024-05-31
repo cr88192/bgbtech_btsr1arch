@@ -693,6 +693,11 @@ int BGBCC_JX2C_EmitFrameProlog_TinyLeaf(BGBCC_TransState *ctx,
 		{
 			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 		}
+		
+		if(BGBCC_CCXL_TypeArrayP(ctx, obj->locals[i]->type))
+		{
+			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		}
 	}
 
 	ni=0; nf=0; vaix=-1;
@@ -3175,6 +3180,11 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->locals[i]->type);
 
 		if(obj->locals[i]->regflags&BGBCC_REGFL_ALIASPTR)
+		{
+			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+		}
+		
+		if(BGBCC_CCXL_TypeArrayP(ctx, obj->locals[i]->type))
 		{
 			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 		}

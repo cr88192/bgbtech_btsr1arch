@@ -2798,7 +2798,7 @@ int BGBCC_JX2C_EmitCompareVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context 
 int BGBCC_JX2C_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitNormalizeRegForType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int creg);
 int BGBCC_JX2C_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
-int BGBCC_JX2C_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
+int BGBCC_JX2C_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register fcn);
 int BGBCC_JX2C_CheckCallPossibleBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);

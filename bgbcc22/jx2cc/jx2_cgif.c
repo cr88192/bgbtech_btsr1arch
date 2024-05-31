@@ -1814,7 +1814,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 //		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
 //		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		BGBCC_JX2C_EmitCsrvVReg(ctx, sctx,
-			op->type, op->dst);
+			op->type, op->dst, op->srca);
 		break;
 
 	case CCXL_VOP_CSRV_RET:
