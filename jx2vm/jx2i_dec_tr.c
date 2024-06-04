@@ -2010,6 +2010,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	if(!(ctx->status))
 	{
 		ctx->trapc=ctx->regs[BJX2_REG_PC];
+		if(!rec && !(tfl&2))
+			ctx->trapc=addr;
 
 //		ctx->trapc=addr;
 		BJX2_MemTranslateTlb(ctx, addr+ 0, 4);
@@ -2030,7 +2032,13 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		tr->jit_inh=-1;
 //		if(ctx->status==BJX2_FLT_TLBMISS)
 		if((ctx->status&0xF000)==0xA000)
+		{
 			tr->Run=BJX2_DecTraceCb_RunUnpack;
+			if(rec)
+			{
+				ctx->status=0;
+			}
+		}
 		else
 			tr->Run=BJX2_DecTraceCb_Bad;
 		return(-1);

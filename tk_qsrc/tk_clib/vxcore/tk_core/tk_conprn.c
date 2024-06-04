@@ -26,6 +26,11 @@ struct conparm_s tk_con_bss;
 struct conparm_s *tk_con=NULL;
 
 
+void TK_Con_SetColorFg(int x);
+void TK_Con_SetColorBg(int x);
+void tk_con_clear();
+
+
 u64 tk_gfxcon_glyphs[128]=
 {
 0x0000000000000000,	//0x00

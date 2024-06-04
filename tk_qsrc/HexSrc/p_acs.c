@@ -1394,6 +1394,8 @@ static void ThingCount(int type, int tid)
 	{ // Nothing to count
 		return;
 	}
+
+	mobj = NULL;
 	moType = TranslateThingType[type];
 	count = 0;
 	searcher = -1;
@@ -1825,6 +1827,7 @@ static int CmdSetLineTexture(void)
 	int texture;
 	int searcher;
 
+	line = NULL;
 	texture = R_TextureNumForName(ACStrings[Pop()]);
 	position = Pop();
 	side = Pop();
@@ -1855,6 +1858,7 @@ static int CmdSetLineBlocking(void)
 	dt_bool blocking;
 	int searcher;
 
+	line = NULL;
 	blocking = Pop() ? ML_BLOCKING : 0;
 	lineTag = Pop();
 	searcher = -1;

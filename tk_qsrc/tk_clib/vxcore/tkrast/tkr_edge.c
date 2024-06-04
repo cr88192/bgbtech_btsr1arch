@@ -2665,8 +2665,8 @@ void TKRA_WalkEdgesB_MMIO(TKRA_Context *ctx,
 
 	mmio=(volatile u64 *)0xFFFFF000C000ULL;
 	
-	yspan=((u16)ytop) | (((u64)(ymax-1))<<16) |
-		(((u64)xsize)<<32);
+//	yspan=((u16)ytop) | (((u64)(ymax-1))<<16) |
+//		(((u64)xsize)<<32);
 
 	sts=mmio[0];
 	while(sts&1)
@@ -2693,7 +2693,7 @@ void TKRA_WalkEdgesB_MMIO(TKRA_Context *ctx,
 		mdfl|=1<<20;
 	mmio[0]=mdfl;
 	
-	return(0);
+//	return(0);
 }
 
 void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
@@ -3287,14 +3287,16 @@ void TKRA_WalkTriangle(TKRA_Context *ctx,
 	if(y1>y2)
 		{ __debugbreak(); }
 	
-#if 0
+#if 1
 	z0=tve0[TKRA_VX_ZPOS];
 	z1=tve1[TKRA_VX_ZPOS];
 	z2=tve2[TKRA_VX_ZPOS];
 	z0=z0>>16;
 	z1=z1>>16;
 	z2=z2>>16;
+#endif
 	
+#if 0
 	z3m=z0;	z3n=z0;
 	if(z1<z3m)z3m=z1;
 	if(z1>z3n)z3n=z1;

@@ -1628,20 +1628,28 @@ begin
 
 	tReqMissAddrA	=
 		((tBlkMemAddr2A[47:32] != tReqAxA[43:28]) && tSrJQ) ||
+//		((tBlkMemAddr2A[47:44] != tReqAxA[43:40]) && tSrJQ && !tSkipTlb) ||
+//		((tBlkMemAddr2A[43:32] != tReqAxA[39:28]) && tSrJQ) ||
 //		 (tBlkMemAddr2A[31: 5] != tReqAxA[27: 1]);
 		 (tBlkMemAddr2A[31:20] != tReqAxA[27:16]) ||
 		 (tBlkMemAddr2A[19: 5] != tReqAxA[15: 1]);
 	tReqMissAddrB	=
 		((tBlkMemAddr2B[47:32] != tReqAxB[43:28]) && tSrJQ) ||
+//		((tBlkMemAddr2B[47:44] != tReqAxB[43:40]) && tSrJQ && !tSkipTlb) ||
+//		((tBlkMemAddr2B[43:32] != tReqAxB[39:28]) && tSrJQ) ||
 //		 (tBlkMemAddr2B[31: 5] != tReqAxB[27: 1]);
 		 (tBlkMemAddr2B[31:20] != tReqAxB[27:16]) ||
 		 (tBlkMemAddr2B[19: 5] != tReqAxB[15: 1]);
 
 `ifdef jx2_mem_lane2
 	tReqMissAddrE	=
+//		((tBlkMemAddr2E[47:44] != tReqAxE[43:40]) && tSrJQ && !tSkipTlb) ||
+//		((tBlkMemAddr2E[43:32] != tReqAxE[39:28]) && tSrJQ) ||
 		((tBlkMemAddr2E[47:32] != tReqAxE[43:28]) && tSrJQ) ||
 		 (tBlkMemAddr2E[31: 5] != tReqAxE[27: 1]);
 	tReqMissAddrF	=
+//		((tBlkMemAddr2F[47:44] != tReqAxF[43:40]) && tSrJQ && !tSkipTlb) ||
+//		((tBlkMemAddr2F[43:32] != tReqAxF[39:28]) && tSrJQ) ||
 		((tBlkMemAddr2F[47:32] != tReqAxF[43:28]) && tSrJQ) ||
 		 (tBlkMemAddr2F[31: 5] != tReqAxF[27: 1]);
 `else

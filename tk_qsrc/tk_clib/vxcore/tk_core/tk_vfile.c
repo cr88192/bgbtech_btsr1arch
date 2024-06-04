@@ -106,7 +106,7 @@ int TK_FindFreeObjHandle(TKPE_TaskInfo *task)
 {
 	int i;
 	
-	for(i=1; i<256; i++)
+	for(i=4; i<256; i++)
 	{
 		if(!tk_handle_arr[i])
 			return(i);
@@ -116,6 +116,16 @@ int TK_FindFreeObjHandle(TKPE_TaskInfo *task)
 
 int TK_FreeObjHandle(TKPE_TaskInfo *task, int ix)
 {
+	if(ix<=0)
+	{
+		__debugbreak();
+		return(0);
+	}
+	if(ix>=256)
+	{
+		__debugbreak();
+		return(0);
+	}
 	tk_handle_arr[ix]=NULL;
 	return(0);
 }
@@ -127,7 +137,7 @@ int TK_LookupHandleForPtr(TKPE_TaskInfo *task, void *ptr)
 	if(!ptr)
 		return(0);
 	
-	for(i=1; i<256; i++)
+	for(i=4; i<256; i++)
 	{
 		if(tk_handle_arr[i]==ptr)
 			return(i);
@@ -138,6 +148,12 @@ int TK_LookupHandleForPtr(TKPE_TaskInfo *task, void *ptr)
 int TK_GetHandleForPtr(TKPE_TaskInfo *task, void *ptr)
 {
 	int i;
+	
+	if(ptr && (((void *)((u16)((long)ptr)))==ptr))
+	{
+		__debugbreak();
+	}
+	
 	i=TK_LookupHandleForPtr(task, ptr);
 	if(i>=0)
 		return(i);
@@ -152,6 +168,18 @@ int TK_GetHandleForPtr(TKPE_TaskInfo *task, void *ptr)
 
 void *TK_GetPtrForHandle(TKPE_TaskInfo *task, int ix)
 {
+	if(ix<=0)
+	{
+		if(ix==0)
+			return(NULL);
+		__debugbreak();
+		return(NULL);
+	}
+	if(ix>=256)
+	{
+		__debugbreak();
+		return(NULL);
+	}
 	return(tk_handle_arr[ix]);
 }
 
@@ -1030,8 +1058,11 @@ int tk_fgets(char *str, int lim, TK_FILE *fd)
 	{
 		s=str; se=str+lim;
 		while(s<se)
+//		while((s<se) && !tk_feof(fd))
 		{
 			c=fd->vt->fgetc(fd);
+			if((c<=0) || (c==255))
+				break;
 			if(c=='\n')
 				break;
 			*s++=c;
@@ -1203,8 +1234,32 @@ int tk_hwrite(TKPE_TaskInfo *task, int iHdl, void *pBuf, int szBuf)
 	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
+	if(((TK_FILE *)((u16)((long)fd)))==fd)
+	{
+		__debugbreak();
+	}
 
 	return(tk_fwrite(pBuf, 1, szBuf, fd));
+}
+
+int tk_hgetc(TKPE_TaskInfo *task, int iHdl)
+{
+	byte tb[16];
+	int sz;
+
+	tb[0]=0xFF;
+	sz=tk_hread(task, iHdl, tb, 1);
+	if(sz!=1)
+		return(-1);
+	return(tb[0]);
+}
+
+int tk_hputc(TKPE_TaskInfo *task, int iHdl, int val)
+{
+	byte tb[16];
+	tb[0]=val;
+	tk_hwrite(task, iHdl, tb, 1);
+	return(tb[0]);
 }
 
 s64 tk_hseek(TKPE_TaskInfo *task, int iHdl, s64 lOffs, int iMod)

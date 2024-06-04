@@ -255,6 +255,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_INVKRR		0x800D		//Invalid KRR
 #define BJX2_FLT_INVOP		0x800E		//Invalid Opcode
 #define BJX2_FLT_BOUNDCHK	0x800F		//Bounds Check Fail
+#define BJX2_FLT_VSKGEN		0x8010		//Stack Canary Fail
 
 #define BJX2_FLT_PCMISH		0x8801		//PC doesn't match trace addr
 #define BJX2_FLT_CCFLUSH	0x8802		//Cache Flush
@@ -1501,3 +1502,12 @@ int BJX2_MemRamCb_SetFaultXW(BJX2_Context *ctx,
 
 BJX2_MemSpan *BJX2_MemSpanForName(BJX2_Context *ctx, char *name);
 BJX2_MemSpan *BJX2_MemSpanForAddr(BJX2_Context *ctx, bjx2_addr addr);
+
+int BJX2_MemGetByte_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);
+int BJX2_MemGetWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);
+s32 BJX2_MemGetDWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);
+s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addrh);

@@ -52,7 +52,8 @@ int			viewangletox[FINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel to the lowest viewangle
 // that maps back to x ranges from clipangle to -clipangle
-angle_t		xtoviewangle[SCREENWIDTH+1];
+// angle_t		xtoviewangle[SCREENWIDTH+1];
+angle_t		xtoviewangle[PADSCREENWIDTH];
 
 // the finetangentgent[angle+FINEANGLES/4] table holds the fixed_t tangent
 // values for view angles, ranging from MININT to 0 to MAXINT.
@@ -297,7 +298,8 @@ fixed_t	R_PointToDist (fixed_t x, fixed_t y)
 	angle = (tantoangle[ FixedDivSoft(dy,dx)>>DBITS ]+ANG90) >> ANGLETOFINESHIFT;
 
 //	dist = FixedDiv (dx, finesine[angle] );	// use as cosine
-	dist = FixedDivSoft (dx, finesine[angle] );	// use as cosine
+//	dist = FixedDivSoft (dx, finesine[angle] );	// use as cosine
+	dist = FixedDivSoft (dx, finesine[angle&FINEMASK] );	// use as cosine
 
 	return dist;
 }
@@ -367,8 +369,12 @@ fixed_t R_ScaleFromGlobalAngle (angle_t visangle)
 	anglea = ANG90 + (visangle-viewangle);
 	angleb = ANG90 + (visangle-rw_normalangle);
 // bothe sines are allways positive
-	sinea = finesine[anglea>>ANGLETOFINESHIFT];
-	sineb = finesine[angleb>>ANGLETOFINESHIFT];
+//	sinea = finesine[anglea>>ANGLETOFINESHIFT];
+//	sineb = finesine[angleb>>ANGLETOFINESHIFT];
+
+	sinea = finesine[(anglea>>ANGLETOFINESHIFT)&FINEMASK];
+	sineb = finesine[(angleb>>ANGLETOFINESHIFT)&FINEMASK];
+
 	num = FixedMul(projection,sineb)<<detailshift;
 	den = FixedMul(rw_distance,sinea);
 	if (den > num>>16)
@@ -471,6 +477,9 @@ void R_InitTextureMapping (void)
 		}
 		viewangletox[i] = t;
 	}
+
+//	for(x=0; x<PADSCREENWIDTH; x++)
+//		xtoviewangle[x] = 0;
 
 //
 // scan viewangletox[] to generate xtoviewangleangle[]

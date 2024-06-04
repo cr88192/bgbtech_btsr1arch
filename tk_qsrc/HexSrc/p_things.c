@@ -177,6 +177,8 @@ dt_bool EV_ThingProjectile(byte *args, dt_bool gravity)
 	{ // Don't spawn monsters if -nomonsters
 		return false;
 	}
+	
+	mobj = NULL;
 	angle = (int)args[2]<<24;
 	fineAngle = angle>>ANGLETOFINESHIFT;
 	speed = (int)args[3]<<13;
@@ -233,6 +235,7 @@ dt_bool EV_ThingSpawn(byte *args, dt_bool fog)
 	{ // Don't spawn monsters if -nomonsters
 		return false;
 	}
+	mobj = NULL;
 	angle = (int)args[2]<<24;
 	while((mobj = P_FindMobjFromTID(tid, &searcher)) != NULL)
 	{
@@ -329,6 +332,7 @@ dt_bool EV_ThingRemove(int tid)
 	int searcher;
 	dt_bool success;
 
+	mobj = NULL;
 	success = false;
 	searcher = -1;
 	while((mobj = P_FindMobjFromTID(tid, &searcher)) != NULL)
@@ -356,6 +360,7 @@ dt_bool EV_ThingDestroy(int tid)
 	int searcher;
 	dt_bool success;
 
+	mobj = NULL;
 	success = false;
 	searcher = -1;
 	while((mobj = P_FindMobjFromTID(tid, &searcher)) != NULL)

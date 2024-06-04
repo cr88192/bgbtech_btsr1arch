@@ -1688,6 +1688,14 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	if((sctx->is_fixed32&1) && !BGBCC_JX2_CheckPadAlign32(sctx))
 		{ BGBCC_DBGBREAK }
 
+	if(sctx->csrv_skip)
+	{
+		if(op->opn!=CCXL_VOP_CSRV)
+		{
+			k=-1;
+		}
+	}
+
 	switch(op->opn)
 	{
 	case CCXL_VOP_NONE:
@@ -1820,7 +1828,15 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	case CCXL_VOP_CSRV_RET:
 //		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
 		BGBCC_JX2C_EmitSyncDirtyRegisters(ctx, sctx);
-		BGBCC_JX2C_EmitReturnVoid(ctx, sctx);
+		if(	sctx->csrv_skip)
+		{
+			BGBCC_JX2C_EmitReturnVReg(ctx, sctx,
+				op->type, op->dst);
+			sctx->csrv_skip=0;
+		}else
+		{
+			BGBCC_JX2C_EmitReturnVoid(ctx, sctx);
+		}
 		BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 		BGBCC_JX2_EmitFlushIndexImmBasic(sctx);
 		break;

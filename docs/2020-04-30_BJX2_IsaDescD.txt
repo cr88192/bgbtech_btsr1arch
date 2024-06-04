@@ -747,6 +747,13 @@ Index 1:
 * ( 30): MULQ (64-bit MUL and DIV/MOD instructions)
 * ( 31): FDIV (Adds FDIV and FSQRT)
 
+* (60:56): TLB Row Count, Log2
+** 6=64
+** 8=256
+** 10=1024
+* (63:61): TLB Set Associativity, Log2
+** 0..7=1/2/4/8/16/32/64/128
+
 Index 28:
 * 1MHz Clock Counter
 * Clock count that increments at 1MHz.
@@ -760,6 +767,21 @@ Index 31:
 * Gives a random number generated internally by the CPU.
 ** Note that this RNG is fully dynamic rather than sequential.
 ** This RNG is meant to approximate a non-deterministic entropy source.
+
+
+
+The TLB Size and Associativity will be valid if using a software managed TLB with a model that can be deterministically modeled.
+* TLB rows will be modulo addressed.
+* Entries within a set will leave in the same order they were added.
+** Adding a new entry will evict the oldest entry from the set.
+* The TLB size will be relative to the active base page size.
+
+So, for example, a 256 row, 4-way TLB, with a 16-page size:
+* Will have 1024 entries in total.
+* Row will be: Index=(Addr>>14)&255;
+* Which will map to a set of 4 entries.
+
+If the TLB Row Count is given as 0, the TLB size or algorithm will be unknown.
 
 
 === CSELT ===
@@ -1693,25 +1715,25 @@ See MOV.B for general Load/Store semantics.
 
 * 29nd       MOV.X		(SP, Disp4u), Rx
 * 2Bnd       MOV.X		Rx, (SP, Disp4u)
-* F0nm_4eo0 ? MOV.X		Rn, (Rm, Disp5)
-* F0nm_4eo4  MOV.X		Rn, (Rm, Ro)
-* F0nm_4eo8 ? MOV.X		(Rm, Disp5), Rn
-* F0nm_4eoC  MOV.X		(Rm, Ro), Rn
-* F1nm_5Gdd  MOV.X		Rn, (Rm, Disp9u)
-* F1nm_7Gdd  MOV.X		(Rm, Disp9u), Rn
+* F0nm_4eo0 ? MOV.X		Xn, (Rm, Disp5)
+* F0nm_4eo4  MOV.X		Xn, (Rm, Ro)
+* F0nm_4eo8 ? MOV.X		(Rm, Disp5), Xn
+* F0nm_4eoC  MOV.X		(Rm, Ro), Xn
+* F1nm_5Gdd  MOV.X		Xn, (Rm, Disp9u)
+* F1nm_7Gdd  MOV.X		(Rm, Disp9u), Xn
 
 * F2n9_DHjj  MOV.X		Xn, (GBR, Disp10u*8)
 * F2nB_DHjj  MOV.X		(GBR, Disp10u*8), Xn
 
-* FEdd_dddd-F1nm_5gdd  MOV.X	Rn, (Rm, Disp33s)			//(Jumbo)
-* FEdd_dddd-F1nm_7gdd  MOV.X	(Rm, Disp33s), Rn			//(Jumbo)
+* FEdd_dddd-F1nm_5gdd  MOV.X	Xn, (Rm, Disp33s)			//(Jumbo)
+* FEdd_dddd-F1nm_7gdd  MOV.X	(Rm, Disp33s), Xn			//(Jumbo)
 
-* FFw0_0vii-F0nm_4gi0  MOV.X	Rn, (Rm, Disp17s)			//(RiMOV)
-* FFw0_0vii-F0nm_4go4  MOV.X	Rn, (Rm, Ro, Disp11u)		//(RiMOV)
-* FFw0_0Vii-F0nm_4go4  MOV.X	Rn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
-* FFw0_0vii-F0nm_4gi8  MOV.X	(Rm, Disp17s), Rn			//(RiMOV)
-* FFw0_0vii-F0nm_4goC  MOV.X	(Rm, Ro, Disp11u), Rn		//(RiMOV)
-* FFw0_0Vii-F0nm_4goC  MOV.X	(Rm, Ro*Sc, Disp9u), Rn		//(RiMOV)
+* FFw0_0vii-F0nm_4gi0  MOV.X	Xn, (Rm, Disp17s)			//(RiMOV)
+* FFw0_0vii-F0nm_4go4  MOV.X	Xn, (Rm, Ro, Disp11u)		//(RiMOV)
+* FFw0_0Vii-F0nm_4go4  MOV.X	Xn, (Rm, Ro*Sc, Disp9u)		//(RiMOV)
+* FFw0_0vii-F0nm_4gi8  MOV.X	(Rm, Disp17s), Xn			//(RiMOV)
+* FFw0_0vii-F0nm_4goC  MOV.X	(Rm, Ro, Disp11u), Xn		//(RiMOV)
+* FFw0_0Vii-F0nm_4goC  MOV.X	(Rm, Ro*Sc, Disp9u), Xn		//(RiMOV)
 
 Load or Store a 128-bit Register Pair.
 Register pair is Even/Odd, and the target memory address is required to have an 8 byte alignment.
@@ -1723,6 +1745,8 @@ As with other MOV.x ops, encodings using PC or GBR as a base will use a byte sca
 The results of trying to load or store using a misaligned address are undefined.
 
 See MOV.B for general Load/Store semantics.
+
+Some register pairs will be disallowed with MOV.X, and with 128-bit operations in general: X0, X14, X32, X46.
 
 
 === MOV.TW (LDST48) ===

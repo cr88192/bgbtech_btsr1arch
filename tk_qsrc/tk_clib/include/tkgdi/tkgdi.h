@@ -127,6 +127,7 @@
 #define TKGDI_CLR_TITLEBLU			0x01AA	//
 #define TKGDI_CLR_TITLEBLUSEL		0x01BF	//
 
+#define TKGDI_CTX_MAGIC				0x12389CD
 
 typedef int TKGHDC;		//TKGDI Handle Display Context
 typedef int TKGHSND;		//TKGDI Handle Sound Device
@@ -229,9 +230,10 @@ typedef struct _tkgdi_window_s		_tkgdi_window_t;
 typedef struct _tkgdi_conparm_s 	_tkgdi_conparm;
 
 struct _tkgdi_window_s {
-int base_x, base_y;
-int size_x, size_y;
-char *title;
+int		base_x, base_y;
+int		size_x, size_y;
+u32		magic0;
+char	*title;
 int		idx;
 int		size_bxs;		//size, X cells
 int		size_bys;		//size, Y cells
@@ -258,6 +260,7 @@ byte	*buf_dirty2;	//buffer (dirty, cells since last redraw)
 _tkgdi_conparm	*con;
 TKGDI_EVENTBUF	*msgqueue;
 _tkgdi_conparm	*contab[16];
+u32		magic1;
 };
 
 struct _tkgdi_conparm_s {
@@ -350,6 +353,7 @@ struct TKGDI_EVENT_s {
 struct TKGDI_EVENTBUF_s {
 TKGDI_EVENTBUF *next;
 TKGDI_EVENT ev;
+u32 magic0;
 };
 
 

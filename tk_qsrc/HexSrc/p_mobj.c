@@ -323,6 +323,7 @@ dt_bool P_SeekerMissile(mobj_t *actor, angle_t thresh, angle_t turnMax)
 		actor->special1 = 0;
 		return(false);
 	}
+	delta = 0;
 	dir = P_FaceMobj(actor, target, &delta);
 	if(delta > thresh)
 	{

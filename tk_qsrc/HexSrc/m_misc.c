@@ -401,6 +401,7 @@ void M_ForceUppercase(char *text)
 {
 	char c;
 
+	c = 0;
 	while((c = *text) != 0)
 	{
 		if(c >= 'a' && c <= 'z')
@@ -708,6 +709,7 @@ void M_LoadDefaults(char *fileName)
 		strcpy(defaultfile, fileName);
 	}
 
+	parm = 0;
 	// Scan the config file
 	f = fopen(defaultfile, "r");
 	if(f)

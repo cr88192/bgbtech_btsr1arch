@@ -885,7 +885,13 @@ TKGSTATUS TKGDI_DevPushEvent(
 		wctx=tkgdi_window_vis[i];
 		if(!wctx)
 			return(0);
-		
+
+		if(	(wctx->magic0!=TKGDI_CTX_MAGIC) ||
+			(wctx->magic1!=TKGDI_CTX_MAGIC) )
+		{
+			__debugbreak();
+		}
+
 		tmsg=TKGDI_AllocEventBuf();
 		tmsg->ev=*imsg;
 		
@@ -912,6 +918,12 @@ TKGSTATUS TKGDI_DevPushEvent(
 	{
 		wctx=tkgdi_window_vis[i];
 
+		if(	(wctx->magic0!=TKGDI_CTX_MAGIC) ||
+			(wctx->magic1!=TKGDI_CTX_MAGIC) )
+		{
+			__debugbreak();
+		}
+
 		if(imsg->fccMsg==TKGDI_FCC_keyb)
 		{
 			/* Keyboard events only go to the window with input focus. */
@@ -920,11 +932,25 @@ TKGSTATUS TKGDI_DevPushEvent(
 		}
 
 		tmsg=TKGDI_AllocEventBuf();
-		tmsg->ev=*imsg;
+
+		if(	(wctx->magic0!=TKGDI_CTX_MAGIC) ||
+			(wctx->magic1!=TKGDI_CTX_MAGIC) )
+		{
+			__debugbreak();
+		}
+
+//		tmsg->ev=*imsg;
+		memcpy((void *)(&(tmsg->ev)), (void *)imsg, sizeof(TKGDI_EVENT));
 		tmsg->next=NULL;
 		
 //		tmsg->next=wctx->msgqueue;
 //		wctx->msgqueue=tmsg;
+
+		if(	(wctx->magic0!=TKGDI_CTX_MAGIC) ||
+			(wctx->magic1!=TKGDI_CTX_MAGIC) )
+		{
+			__debugbreak();
+		}
 
 		tmcur=wctx->msgqueue;
 		if(tmcur)
@@ -998,7 +1024,8 @@ TKGSTATUS TKGDI_DevPollEvent(
 		return(0);
 	}
 	
-	*imsg=tmsg->ev;
+//	*imsg=tmsg->ev;
+	memcpy((void *)imsg, (void *)(&(tmsg->ev)), sizeof(TKGDI_EVENT));
 
 //	tk_dbg_printf("TKGDI_DevPollEvent: Saw EV %08X %02X\n",
 //		imsg->fccMsg, imsg->wParm1);
@@ -1112,6 +1139,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=0;
 			tkgdi_vid_noutx2=0;
 			tkgdi_vid_is8bit=0;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_con_enable();
 			return(1);
 		}
@@ -1127,6 +1156,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=0;
 			tkgdi_vid_noutx2=0;
 			tkgdi_vid_is8bit=0;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_con_disable();
 			return(1);
 		}
@@ -1148,6 +1179,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=0;
 			tkgdi_vid_noutx2=0;
 			tkgdi_vid_is8bit=0;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_con_disable();
 			return(1);
 		}
@@ -1163,6 +1196,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=0;
 			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=0;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_con_disable();
 			return(1);
 		}
@@ -1178,6 +1213,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=1;
 			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=0;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_con_disable();
 			return(1);
 		}
@@ -1194,6 +1231,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=1;
 			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=1;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_img_SetupPal8();
 			tk_con_disable();
 			return(1);
@@ -1211,6 +1250,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=1;
 			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=1;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_img_SetupPal8();
 			tk_con_disable();
 			return(1);
@@ -1229,6 +1270,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=1;
 			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=1;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_img_SetupPal8();
 			tk_con_disable();
 			return(1);
@@ -1245,6 +1288,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_planar=0;
 			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=0;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_con_disable();
 			return(1);
 		}
@@ -1332,8 +1377,14 @@ TKGHDC TKGDI_CreateDisplay(
 		
 		wctx->buf_data=tk_malloc(xs*(ys+8)*2);
 		wctx->buf_utx2=tk_malloc(bxs*(bys+2)*8);
-		wctx->buf_dirty1=tk_malloc(wctx->size_bmsz+512);
-		wctx->buf_dirty2=tk_malloc(wctx->size_bmsz+512);
+//		wctx->buf_dirty1=tk_malloc(wctx->size_bmsz+512);
+//		wctx->buf_dirty2=tk_malloc(wctx->size_bmsz+512);
+
+		wctx->buf_dirty1=tk_malloc(wctx->size_bmsz+1024);
+		wctx->buf_dirty2=tk_malloc(wctx->size_bmsz+1024);
+		wctx->buf_dirty1+=512;
+		wctx->buf_dirty2+=512;
+
 		memset(wctx->buf_data, 0x55, xs*ys*2);
 		memset(wctx->buf_dirty1, 0xFF, wctx->size_bmsz);
 		memset(wctx->buf_dirty2, 0xFF, wctx->size_bmsz);
@@ -2147,6 +2198,10 @@ tk_syscall_utxt:
 	mov lr, r1
 	mov.q r1, (sp, 8)
 
+//	bsr		tk_sysc_xorhashregs
+//	mov.q	r2, (sp, 16)
+//	mov		r1, lr
+
 	nop
 	nop
 	syscall	0
@@ -2167,7 +2222,19 @@ tk_syscall_utxt:
 	mov.q (sp, 8), r1
 	cmpqeq r1, r16
 	break?f
-	
+
+#if 0
+	mov		r2, r18
+	bsr		tk_sysc_xorhashregs
+	mov.q	(sp, 16), r3
+
+	cmpqeq	r2, r3
+	break?f
+
+	mov		r1, lr
+	mov		r18, r2
+#endif
+
 	nop
 	nop
 	nop

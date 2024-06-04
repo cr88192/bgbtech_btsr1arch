@@ -329,7 +329,7 @@ S_StartSoundAtVolume
 
 	pitch = NORM_PITCH;
 	priority = NORM_PRIORITY;
-
+	sep = 0;
 
 	// Check to see if it is audible,
 	//	and if not, modify the params

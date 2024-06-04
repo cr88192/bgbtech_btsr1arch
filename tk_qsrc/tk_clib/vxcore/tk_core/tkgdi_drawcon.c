@@ -688,12 +688,12 @@ void tkgdi_con_init(_tkgdi_conparm *con)
 	TKGDI_Con_SetColorBg(con, 0);
 	TKGDI_Con_SetColorFg(con, tk_con_clr16to64[7]);
 	
-//	con->conbuf=tk_malloc(80*25*(2*8));
-	con->conbuf=tk_malloc(80*55*(2*8));
-//	con->pixbuf=tk_malloc((80*8)*(25*8)*2);
+//	con->conbuf=tk_malloc_krn(80*25*(2*8));
+	con->conbuf=tk_malloc_krn(80*55*(2*8));
+//	con->pixbuf=tk_malloc_krn((80*8)*(25*8)*2);
 	
 	j=((80*25+63)>>6);
-	con->conmask=tk_malloc(j*8+32);
+	con->conmask=tk_malloc_krn(j*8+32);
 	memset(con->conmask, 0xFF, j*8);
 
 	con->conrowmask=-1;

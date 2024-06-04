@@ -242,8 +242,12 @@
 `define mod_ddrb_dllenable		//Enable DLL for DDRB
 
 
-// `define jx2_edgewalk_utxarr_256
-`define jx2_edgewalk_utxarr_1024
+`ifdef jx2_xc7a200
+// `define jx2_edgewalk_utxarr_1024
+`define jx2_edgewalk_utxarr_256
+`else
+`define jx2_edgewalk_utxarr_64
+`endif
 
 
 

@@ -141,6 +141,7 @@ Registers (Extended):
 ** Will exist as 128-bit registers within the XGPR space.
 ** Encoded as an Xn register with the LSB Set.
 ** Will logically exist as pairs.
+** Currently, the results of accessing X32 or X46 are undefined.
 
 
 Special Purpose Registers:

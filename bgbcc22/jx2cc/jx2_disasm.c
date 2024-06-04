@@ -994,6 +994,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		{
 			ex=(opw>>24)&15;
 			exw=(opw>>8)&15;
+			exw&=~1;
 		
 			if(opw&0x0800)
 				wex2|=3;

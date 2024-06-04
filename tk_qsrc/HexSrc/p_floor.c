@@ -629,6 +629,8 @@ int EV_BuildStairs(line_t *line, byte *args, int direction,
 	}
 
 	secnum = -1;
+	type = 0;
+	height = 0;
 
 	validcount++; 
 //	while ((secnum = P_FindSectorFromTag(args[0], secnum)) >= 0)

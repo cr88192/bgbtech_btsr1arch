@@ -204,7 +204,7 @@ extern u64 MMIO_BASE_E;
 
 #define TKMM_EXOSTART	0x18000000ULL	//Execute Only Start
 
-#define TKMM_VALOSTART	0x20000000ULL	//Virtual Address Low Start
+#define TKMM_VALOSTART	0x40000000ULL	//Virtual Address Low Start
 #define TKMM_VALOEND	0x80000000ULL	//Virtual Address Low End
 
 #define TKMM_VAS_START_LO		TKMM_VALOSTART
@@ -620,8 +620,32 @@ int TK_VMem_CheckAddrIsPhysPage(s64 addr);
 int TK_VMem_CheckPtrIsVirtual(void *ptr);
 int TK_VMem_MProtectPages(u64 addr, size_t len, int prot);
 int TK_VMem_VaFreePages(s64 vaddr, int cnt);
+void *TK_VMem_PointerAsPhysical(void *ptr);
 
 int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size);
+int TK_Task_PidJoinOnReturn(int pid);
+void TK_Task_SyscallReturnToUser(TKPE_TaskInfo *utask);
+
+void sleep_0();
+int irq_addTimerIrq(void *fcn);
+int tk_irq_setUserIrq(int irq, void *fcn);
+int TK_SetUserIrqV(int irq, void *ptr);
+
+int TK_SpawnShellTask(TKPE_TaskInfo *btask, int ttyid);
+u64 TK_GetSlowRandom();
+int TK_GenerateUuid(void *ruid);
+int TK_GenerateTimeUuid(void *ruid);
+
+int TK_FormatUuidAsString(char *str, void *ruid);
+int TK_FormatGuidAsString(char *str, void *ruid);
+int TK_ParseHexByteFromString(char *cs);
+int TK_ParseUuidFromString(char *str, void *ruid);
+int TK_ParseGuidFromString(char *str, void *ruid);
+int TK_CheckDWordIsFourcc(u32 val);
+int TK_CheckQWordIsFourcc(u64 val);
+int TK_CheckQWordIsEightcc(u64 val);
+int TK_UidCheckCategory(void *ruid);
+int TK_FormatCatIdAsString(char *str, void *ruid);
 
 int TKMM_MMList_Init(void);
 void *TKMM_MMList_AllocBrk(int sz);
@@ -677,6 +701,7 @@ tk_kptr TK_PboImgBaseSetB(TKPE_TaskInfo *task, int key, tk_kptr val);
 int TK_Env_SetCwd(char *cwd);
 char *TK_Env_GetCwd(char *buf, int sz);
 int TK_Env_GetPathList(char ***rlst, int *rnlst);
+int TK_Env_FreePathList(char **rlst);
 int TK_Env_SetPath(char *cwd);
 int TK_Env_GetEnvVar(char *varn, char *buf, int sz);
 int TK_Env_SetEnvVar(char *varn, char *varv);
@@ -724,6 +749,17 @@ int TK_CheckUserAccess(TK_USERINFO *usr, TK_USERINFO *tgt);
 byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz);
 int TKPE_DecodeBufferRP2(
 	byte *ibuf, byte *obuf, int ibsz, int obsz);
+
+int TK_CreateProcessB(
+	TKPE_TaskInfo *task,
+	char *imgname,
+	char *cmdline,
+	char *envmod,
+	char *cwd,
+	u64 taskflags,
+	TKPE_CreateTaskInfo *info);
+
+int TK_Task_TryJoinOnReturnPid(int pid);
 
 
 int tk_vfile_init();
@@ -834,6 +870,9 @@ int tk_munlockall(void);
 void tk_con_disable();
 int tk_kbhit();
 int tk_getch();
+
+int TKGDI_UpdateWindowStack(void);
+void TKGDI_HalCleanupForTask(TKPE_TaskInfo *task);
 
 
 #ifndef __BGBCC__

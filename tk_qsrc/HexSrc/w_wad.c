@@ -322,6 +322,7 @@ void W_AddFile(char *filename)
 
 	wad2info=NULL;
 	fileinfo=NULL;
+	freeFileInfo=NULL;
 
 	startlump = numlumps;
 	if(strcmpi(filename+strlen(filename)-3, "wad"))
@@ -370,6 +371,10 @@ void W_AddFile(char *filename)
 			header.infotableofs = LONG(header.infotableofs);
 			length = header.numlumps*sizeof(filelump_t);
 			fileinfo = malloc (length);
+			if(!fileinfo)
+			{
+				I_Error("W_AddFile:  fileinfo malloc failed\n");
+			}
 			freeFileInfo = fileinfo;
 			w_lseek (handle, header.infotableofs, SEEK_SET);
 			w_read (handle, fileinfo, length);
@@ -381,6 +386,10 @@ void W_AddFile(char *filename)
 			header.infotableofs = LONG(header.infotableofs);
 			length = header.numlumps*sizeof(wad2lump_t);
 			wad2info = malloc (length);
+			if(!wad2info)
+			{
+				I_Error("W_AddFile:  wad2info malloc failed\n");
+			}
 			freeFileInfo = (filelump_t *)wad2info;
 			w_lseek (handle, header.infotableofs, SEEK_SET);
 			w_read (handle, wad2info, length);
@@ -392,6 +401,8 @@ void W_AddFile(char *filename)
 		}
 #endif
 	}
+
+	printf("W_AddFile: A1 '%s'\n", filename);
 
 	// Fill in lumpinfo
 	lumpinfo = realloc(lumpinfo, numlumps*sizeof(lumpinfo_t));
@@ -429,8 +440,12 @@ void W_AddFile(char *filename)
 
 	if(freeFileInfo)
 	{
+		printf("W_AddFile: Free %p %lld\n",
+			freeFileInfo, _msize(freeFileInfo));
 		free(freeFileInfo);
 	}
+
+	printf("W_AddFile: OK '%s'\n", filename);
 }
 
 //==========================================================================

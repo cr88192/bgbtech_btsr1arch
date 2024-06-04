@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
 //	TKSH_TryLoad_ext("autoexec", ars);
 
 	tk_vfile_init();
+	TK_Env_SetCwd("/boot");
 
 //	tk_printf("TKSH 4\n");
 

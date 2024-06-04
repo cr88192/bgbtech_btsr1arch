@@ -11,6 +11,8 @@ byte tkgdi_vid_is8bit;
 
 int tkgdi_vid_xsize;
 int tkgdi_vid_ysize;
+int tkgdi_vid_bxs;
+int tkgdi_vid_bys;
 
 int tkgdi_vid_bmxsize;
 
@@ -58,13 +60,21 @@ TKGDI_EVENTBUF *TKGDI_AllocEventBuf()
 	tmp=tkgdi_freemsg;
 	if(tmp)
 	{
+		if(tmp->magic0!=TKGDI_CTX_MAGIC)
+			__debugbreak();
 		tkgdi_freemsg=tmp->next;
 		tmp->next=NULL;
 		return(tmp);
 	}
 	
-	tmp=tk_malloc(sizeof(TKGDI_EVENTBUF));
+	tmp=tk_malloc_krn(sizeof(TKGDI_EVENTBUF));
+	if(!tmp)
+	{
+		__debugbreak();
+		return(NULL);
+	}
 	memset(tmp, 0, sizeof(TKGDI_EVENTBUF));
+	tmp->magic0=TKGDI_CTX_MAGIC;
 	return(tmp);
 }
 
@@ -174,6 +184,12 @@ int TKGDI_ScreenMarkDirtyRect(int mx, int my, int nx, int ny)
 
 	xs=tkgdi_vid_xsize;
 	ys=tkgdi_vid_ysize;
+	
+	if((xs<=0) || (ys<=0))
+	{
+		__debugbreak();
+	}
+	
 	bxs2=(xs+7)>>3;
 	bys2=(ys+7)>>3;
 	bmsz=(bxs2*bys2+7)>>3;
@@ -217,6 +233,13 @@ int TKGDI_UpdateWindowStack_CopyFillPattern(
 //	yxp10=(y2p1+x2p0)*4;
 //	yxp11=(y2p1+x2p1)*4;
 	
+	if((x|y)<0)
+		return(-1);
+	if(x>=tkgdi_vid_bxs)
+		return(-1);
+	if(y>=tkgdi_vid_bys)
+		return(-1);
+	
 	scr=tkgdi_vid_screenrgb;
 	
 	ix=((y<<3)+0)*bxs+(x<<1);
@@ -253,6 +276,13 @@ int TKGDI_UpdateWindowStack_CopyFillPattern4x(
 {
 	u64 *scr;
 	int ix;
+	
+	if((x|y)<0)
+		return(-1);
+	if(x>=(tkgdi_vid_bxs<<1))
+		return(-1);
+	if(y>=(tkgdi_vid_bys<<1))
+		return(-1);
 	
 	scr=tkgdi_vid_screenrgb;
 	
@@ -304,6 +334,13 @@ int TKGDI_UpdateWindowStack_CopyFillTile(
 	u64 *scr;
 	u64 p0, p1, am;
 	int ix;
+	
+	if((x|y)<0)
+		return(-1);
+	if(x>=(tkgdi_vid_bxs<<1))
+		return(-1);
+	if(y>=(tkgdi_vid_bys<<1))
+		return(-1);
 	
 	scr=tkgdi_vid_screenrgb;
 	am=0x8000800080008000ULL;
@@ -431,6 +468,15 @@ int TKGDI_UpdateWindowStack_CopyFillSource(
 	u64 *scr;
 	u64 v0, v1, v2, v3;
 	int ix, sy4, sx2;
+
+#if 1
+	if((x|y)<0)
+		return(-1);
+	if(x>=(tkgdi_vid_bxs<<1))
+		return(-1);
+	if(y>=(tkgdi_vid_bys<<1))
+		return(-1);
+#endif
 	
 	scr=tkgdi_vid_screenrgb;
 	
@@ -476,7 +522,16 @@ int TKGDI_UpdateWindowStack_CopyFillSource4x(
 	u64 *scr, *cs, *ct;
 	u64 v0, v1, v2, v3;
 	int ixs, ixt, sy4, sx2;
-	
+
+#if 1
+	if((x|y)<0)
+		return(-1);
+	if(x>=(tkgdi_vid_bxs<<1))
+		return(-1);
+	if(y>=(tkgdi_vid_bys<<1))
+		return(-1);
+#endif
+
 	scr=tkgdi_vid_screenrgb;
 	
 	sy4=sy<<2;
@@ -521,6 +576,15 @@ int TKGDI_UpdateWindowStack_CopyFillSource8x(
 	u64 v0, v1, v2, v3;
 	int ixs, ixt, sy4, sx2;
 	
+#if 1
+	if((x|y)<0)
+		return(-1);
+	if(x>=(tkgdi_vid_bxs<<1))
+		return(-1);
+	if(y>=(tkgdi_vid_bys<<1))
+		return(-1);
+#endif
+
 	scr=tkgdi_vid_screenrgb;
 	
 	sy4=sy<<2;
@@ -723,7 +787,7 @@ int TKGDI_WindowSetActiveTab(_tkgdi_window_t *wctx, int tab)
 	con=wctx->contab[tab];
 	if(!con)
 	{
-		con=tk_malloc(sizeof(_tkgdi_conparm));
+		con=tk_malloc_krn(sizeof(_tkgdi_conparm));
 		memset(con, 0, sizeof(_tkgdi_conparm));
 		tkgdi_con_init(con);
 		wctx->contab[tab]=con;
@@ -959,8 +1023,14 @@ int TKGDI_UpdateWindowStack(void)
 	bys=bys2<<1;
 	
 	if(!tkgdi_vid_screendirty)
-	{	tkgdi_vid_screendirty=tk_malloc(bmsz+(4*tkgdi_vid_bmxsize));
-		memset(tkgdi_vid_screendirty, 0xFF, bmsz);	}
+	{
+//		tkgdi_vid_screendirty=tk_malloc(bmsz+(4*tkgdi_vid_bmxsize));
+
+//		tkgdi_vid_screendirty=tk_malloc(bmsz+(16*tkgdi_vid_bmxsize));
+		tkgdi_vid_screendirty=tk_malloc_krn(bmsz+(16*tkgdi_vid_bmxsize));
+		tkgdi_vid_screendirty+=8*tkgdi_vid_bmxsize;
+		memset(tkgdi_vid_screendirty, 0xFF, bmsz);
+	}
 	
 	
 	if(tkgdi_ps2ms_moved)
@@ -1001,7 +1071,7 @@ int TKGDI_UpdateWindowStack(void)
 	{
 		if(!tkgdi_vid_screenrgb)
 		{
-			tkgdi_vid_screenrgb=tk_malloc(bxs*bys*(4*8));
+			tkgdi_vid_screenrgb=tk_malloc_krn(bxs*bys*(4*8));
 			memset(tkgdi_vid_screenrgb, 0x55, bxs*bys*(4*8));
 		}
 
@@ -1438,7 +1508,7 @@ int TKGDI_UpdateWindowStack(void)
 		(tkgdi_vid_scrmode==TKGDI_SCRMODE_800x600_CC))
 	{
 		if(!tkgdi_vid_screenutx)
-			{ tkgdi_vid_screenutx=tk_malloc(bxs2*bys2*(4*8)); }
+			{ tkgdi_vid_screenutx=tk_malloc_krn(bxs2*bys2*(4*8)); }
 
 	//	blkb=0;
 		blkb=0x55AA55AA5555AAAAULL;
@@ -1558,8 +1628,11 @@ _tkgdi_window_t *TKGDI_AllocNewWindow(
 		tkgdi_windows[i]=NULL;
 	}
 	
-	wctx=tk_malloc(sizeof(_tkgdi_window_t));
+	wctx=tk_malloc_krn(sizeof(_tkgdi_window_t));
 	memset(wctx, 0, sizeof(_tkgdi_window_t));
+	
+	wctx->magic0=TKGDI_CTX_MAGIC;
+	wctx->magic1=TKGDI_CTX_MAGIC;
 	
 	wctx->idx=i;
 	tkgdi_windows[i]=wctx;
@@ -1578,7 +1651,7 @@ _tkgdi_window_t *TKGDI_AllocNewConsoleWindow(
 
 	wctx=TKGDI_AllocNewWindow(ctx);
 	
-	con=tk_malloc(sizeof(_tkgdi_conparm));
+	con=tk_malloc_krn(sizeof(_tkgdi_conparm));
 	memset(con, 0, sizeof(_tkgdi_conparm));
 	tkgdi_con_init(con);
 	

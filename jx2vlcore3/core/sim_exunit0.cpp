@@ -2503,6 +2503,10 @@ int main(int argc, char **argv, char **env)
 		(char *)"DOOMU.WAD",
 		(char *)"../../tk_qsrc/doomsrc2/doom.wad");
 //		(char *)"../../tk_qsrc/doomsrc2/doomulz.wad");
+
+	JX2R_UseImageAddFile(
+		(char *)"DOOM_RV.ELF",
+		(char *)"../../tk_qsrc/doomsrc2/doom_rv64.elf");
 #endif
 
 #if 1

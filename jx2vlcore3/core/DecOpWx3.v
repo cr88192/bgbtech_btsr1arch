@@ -1436,6 +1436,7 @@ begin
 	opRegXPv = { opRegXP[6:1], !opRegXP[0] };
 
 `ifdef jx2_enable_vaddr96
+// `ifdef def_true
 
 	if(opRegAM0[6])
 	begin
@@ -1486,6 +1487,35 @@ begin
 		end
 	end
 `endif
+
+`else
+
+	if(opRegAM0[6])
+	begin
+		if((opRegAM0==JX2_GR_SP) || (opRegAM0==JX2_GR_SSP))
+		begin
+			opRegXM	= { 1'b0, 5'b10111, opDualLaneSw };
+			opRegXMv = { opRegXM[6:1], !opRegXM[0] };
+		end
+	end
+
+	if(opRegAN0[6])
+	begin
+		if((opRegAN0==JX2_GR_SP) || (opRegAN0==JX2_GR_SSP))
+		begin
+			opRegXN	= { 1'b0, 5'b10111, opDualLaneSw };
+			opRegXNv = { opRegXN[6:1], !opRegXN[0] };
+		end
+	end
+
+	if(opRegAO0[6])
+	begin
+		if((opRegAO0==JX2_GR_SP) || (opRegAO0==JX2_GR_SSP))
+		begin
+			opRegXO	= { 1'b0, 5'b10111, opDualLaneSw };
+			opRegXOv = { opRegXO[6:1], !opRegXO[0] };
+		end
+	end
 
 `endif
 

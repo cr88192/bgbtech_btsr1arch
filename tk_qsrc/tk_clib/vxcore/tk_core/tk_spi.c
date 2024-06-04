@@ -527,6 +527,8 @@ int TKSPI_SendCmd(int cmd, u32 arg)
 	return(res);
 }
 
+int tkspi_recchk=0;
+
 int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 {
 	byte *ct;
@@ -545,6 +547,12 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 		tk_printf("TKSPI_ReadSectors: Bad Count %d\n", cnt);
 		__debugbreak();
 	}
+	
+	if(tkspi_recchk!=0)
+	{
+		tk_dbg_printf("TKSPI_ReadSectors: Reentrance Detected\n");
+	}
+	tkspi_recchk++;
 	
 
 //	tk_printf("TKSPI_ReadSectors: %016llX %d %d\n", buf, lba, cnt);
@@ -590,6 +598,8 @@ int TKSPI_ReadSectors(byte *buf, s64 lba, int cnt)
 		ct+=512; la++; n--;
 	}
 #endif
+
+	tkspi_recchk--;
 	return(0);
 }
 
@@ -606,6 +616,12 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 	if(cnt!=(cnt&255))
 		__debugbreak();
 
+	if(tkspi_recchk!=0)
+	{
+		tk_dbg_printf("TKSPI_WriteSectors: Reentrance Detected\n");
+	}
+	tkspi_recchk++;
+
 	xt=buf[0]+buf[(cnt<<9)-1];	//Make sure it is paged in.
 
 	ct=buf; la=lba; n=cnt;
@@ -619,6 +635,8 @@ int TKSPI_WriteSectors(byte *buf, s64 lba, int cnt)
 		TKSPI_WriteData(ct, 512);
 		ct+=512; la++; n--;
 	}
+
+	tkspi_recchk--;
 
 	return(0);
 }

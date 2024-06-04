@@ -595,7 +595,7 @@ void TKFAT_SyncSectorTempBuffer(TKFAT_ImageInfo *img)
 			continue;
 		if(img->tbc_lbn[i]&TKFAT_SFL_DIRTY)
 		{
-			tk_printf("TKFAT_SyncSectorTempBuffer: Write Sectors, %d %d\n",
+			tk_dbg_printf("TKFAT_SyncSectorTempBuffer: Write Sectors, %d %d\n",
 				(int)(img->tbc_lba[i]), (img->tbc_lbn[i]&255));
 //			TKSPI_WriteSectors(
 			TKBDEV_WriteSectors(img->bdev,
@@ -655,7 +655,7 @@ void TKFAT_SyncSectorTempFatBuffer(TKFAT_ImageInfo *img)
 
 void TKFAT_SyncSectorBuffers(TKFAT_ImageInfo *img)
 {
-	tk_printf("TKFAT_SyncSectorBuffers\n");
+	tk_dbg_printf("TKFAT_SyncSectorBuffers\n");
 	TKFAT_SyncSectorTempBuffer(img);
 	TKFAT_SyncSectorStaticBuffer(img);
 	TKFAT_SyncSectorTempFatBuffer(img);
@@ -739,17 +739,22 @@ void TKFAT_ValidateImageMagic(TKFAT_ImageInfo *img)
 {
 	if(img->magic1!=TKFAT_MAGIC1)
 		{ __debugbreak(); }
+
 	if(img->magic2!=TKFAT_MAGIC1)
 		{ __debugbreak(); }
+
 	if(img->magic3!=TKFAT_MAGIC1)
 		{ __debugbreak(); }
+
 	if(img->magic4!=TKFAT_MAGIC1)
 		{ __debugbreak(); }
+
 	if(img->magic5!=TKFAT_MAGIC1)
 		{ __debugbreak(); }
 
 	if(img->magic8!=TKFAT_MAGIC1)
 		{ __debugbreak(); }
+
 	if(img->magic9!=TKFAT_MAGIC1)
 		{ __debugbreak(); }
 }
@@ -896,7 +901,7 @@ int TKFAT_SetFatEntry(TKFAT_ImageInfo *img,
 		return(-1);
 	}
 
-	tk_printf("TKFAT_SetFatEntry: cl=%d val=%d\n", clid, val);
+	tk_dbg_printf("TKFAT_SetFatEntry: cl=%d val=%d\n", clid, val);
 
 	if(img->isfat16)
 	{
@@ -1331,7 +1336,7 @@ int TKFAT_AllocFreeCluster(TKFAT_ImageInfo *img)
 //	n=(img->lba_count-img->lba_data)/img->szclust;
 	n=img->tot_clust;
 	
-	tk_printf("TKFAT_AllocFreeCluster: tot=%d\n", n);
+	tk_dbg_printf("TKFAT_AllocFreeCluster: tot=%d\n", n);
 	
 	i=img->cl_rov;
 	if((i<2) || (i>=n))
@@ -3214,6 +3219,8 @@ int TKFAT_LookupDirEntPath(
 int TKFAT_UpdateDirEnt(
 	TKFAT_FAT_DirEntExt *dee)
 {
+	TKFAT_FAT_DirEntExt *deeci;
+	int clid, sidx, hi;
 	int i;
 
 	if(!dee)
@@ -3223,6 +3230,19 @@ int TKFAT_UpdateDirEnt(
 
 	i=TKFAT_ReadWriteDirEntOffset(
 		dee->img, dee->clid, dee->idx, 1, &(dee->deb));
+
+	if(dee->img->dee_cache)
+	{
+		clid=dee->clid;
+//		sidx=(dee->idx>=0)?(dee->idx+1):0;
+		sidx=dee->idx;
+		hi=(((clid*65521+sidx)*65521)>>16)&63;
+		deeci=dee->img->dee_cache+hi;
+
+		memset(deeci, 0, sizeof(TKFAT_FAT_DirEntExt));
+//		memset(dee->img->dee_cache, 0, 64*sizeof(TKFAT_FAT_DirEntExt));
+	}
+
 	return(i);
 }
 
@@ -3720,7 +3740,7 @@ TKFAT_ImageInfo *TKFAT_CreateSdFatContext()
 {
 	TKFAT_ImageInfo *img;
 
-	tk_printf("TKFAT_CreateSdFatContext:\n");
+	tk_dbg_printf("TKFAT_CreateSdFatContext:\n");
 
 //	img=tk_malloc_krn(sizeof(TKFAT_ImageInfo));
 	img=tk_malloc_krn(sizeof(TKFAT_ImageInfo)+256);
@@ -3733,7 +3753,7 @@ TKFAT_ImageInfo *TKFAT_CreateSdFatContext()
 	TKFAT_ReadImageMBR(img);
 	TKFAT_ReadImageFAT(img);
 	
-	tk_printf("TKFAT_CreateSdFatContext: OK\n");
+	tk_dbg_printf("TKFAT_CreateSdFatContext: OK\n");
 	
 	return(img);
 }

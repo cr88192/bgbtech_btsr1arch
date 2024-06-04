@@ -175,24 +175,42 @@ reg[63:0]		tRegCtrl17;
 reg[63:0]		tNxtRegCtrl17;
 
 
-reg[63:0]		tFifoCtrl0[31:0];
-reg[63:0]		tFifoCtrl1[31:0];
-reg[63:0]		tFifoCtrl2[31:0];
-reg[63:0]		tFifoCtrl3[31:0];
-reg[63:0]		tFifoCtrl4[31:0];
-reg[63:0]		tFifoCtrl5[31:0];
-reg[63:0]		tFifoCtrl6[31:0];
-reg[63:0]		tFifoCtrl7[31:0];
-reg[63:0]		tFifoCtrl8[31:0];
-reg[63:0]		tFifoCtrl9[31:0];
-reg[63:0]		tFifoCtrl10[31:0];
-reg[63:0]		tFifoCtrl11[31:0];
-reg[63:0]		tFifoCtrl12[31:0];
-reg[63:0]		tFifoCtrl13[31:0];
-reg[63:0]		tFifoCtrl14[31:0];
-reg[63:0]		tFifoCtrl15[31:0];
-reg[63:0]		tFifoCtrl16[31:0];
-reg[63:0]		tFifoCtrl17[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl0[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl1[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl2[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl3[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl4[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl5[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl6[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl7[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl8[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl9[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl10[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl11[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl12[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl13[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl14[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl15[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl16[31:0];
+(* ram_style = "distributed" *)
+	reg[63:0]		tFifoCtrl17[31:0];
 
 reg[63:0]		tStFifoCtrl0L;
 
@@ -381,6 +399,14 @@ reg[31:0]		tNxtMemBlockFbRgbAddr;
 reg[127:0]		tNxtMemBlockFbZ;
 reg[15:0]		tNxtMemBlockFbZIx;
 reg[31:0]		tNxtMemBlockFbZAddr;
+
+`ifdef jx2_edgewalk_utxarr_64
+reg[127:0]		tArrUtxData[63:0];
+reg[31:0]		tArrUtxAddr[63:0];
+reg[5:0]		tLdBlkUtxIx;
+reg[5:0]		tNxtLdBlkUtxIx;
+reg[5:0]		tStBlkUtxIx;
+`endif
 
 `ifdef jx2_edgewalk_utxarr_256
 reg[127:0]		tArrUtxData[255:0];
@@ -2268,6 +2294,11 @@ begin
 	end
 
 	tReqBlockUtxReady = (tNxtReqBlockUtxIx == tReqBlockUtxIx);
+
+`ifdef jx2_edgewalk_utxarr_64
+//	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[5:0];
+	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[5:0] ^ tReqBlkUtxAx[5:0];
+`endif
 
 `ifdef jx2_edgewalk_utxarr_256
 //	tNxtLdBlkUtxIx		= tNxtReqBlockUtxIx[7:0];

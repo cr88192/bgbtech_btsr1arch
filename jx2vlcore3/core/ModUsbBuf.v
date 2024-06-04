@@ -87,8 +87,12 @@ assign		usb_clkdat_d	= tUsbClkdatDir2;
 assign		usb_clkref		= tUsbClkRef2;
 
 
-reg[35:0]	arrUsbRxA[255:0];
-reg[35:0]	arrUsbTxA[255:0];
+// reg[35:0]	arrUsbRxA[255:0];
+// reg[35:0]	arrUsbTxA[255:0];
+(* ram_style = "distributed" *)
+	reg[35:0]	arrUsbRxA[63:0];
+(* ram_style = "distributed" *)
+	reg[35:0]	arrUsbTxA[63:0];
 reg[9:0]	idxUsbRxsA;
 reg[9:0]	idxUsbRxeA;
 reg[9:0]	idxUsbTxsA;
@@ -106,21 +110,34 @@ reg[35:0]	valUsbStTxA;
 reg[35:0]	valUsbLdSel;
 reg[35:0]	valUsbStSel;
 
-reg[7:0]	idxUsbLdRxA;
-reg[7:0]	idxUsbStRxA;
-reg[7:0]	idxUsbLdTxA;
-reg[7:0]	idxUsbStTxA;
+//reg[7:0]	idxUsbLdRxA;
+//reg[7:0]	idxUsbStRxA;
+//reg[7:0]	idxUsbLdTxA;
+//reg[7:0]	idxUsbStTxA;
+reg[5:0]	idxUsbLdRxA;
+reg[5:0]	idxUsbStRxA;
+reg[5:0]	idxUsbLdTxA;
+reg[5:0]	idxUsbStTxA;
+
 reg			doUsbStRxA;
 reg			doUsbStTxA;
 
-reg[7:0]	idxUsbLdRxAL;
-reg[7:0]	idxUsbStRxAL;
+//reg[7:0]	idxUsbLdRxAL;
+//reg[7:0]	idxUsbStRxAL;
+//reg[7:0]	idxUsbLdRxM;
+//reg[7:0]	idxUsbStRxM;
 
-reg[7:0]	idxUsbLdRxM;
-reg[7:0]	idxUsbStRxM;
+reg[5:0]	idxUsbLdRxAL;
+reg[5:0]	idxUsbStRxAL;
+reg[5:0]	idxUsbLdRxM;
+reg[5:0]	idxUsbStRxM;
 
-reg[35:0]	arrUsbRxB[255:0];
-reg[35:0]	arrUsbTxB[255:0];
+//reg[35:0]	arrUsbRxB[255:0];
+//reg[35:0]	arrUsbTxB[255:0];
+(* ram_style = "distributed" *)
+	reg[35:0]	arrUsbRxB[63:0];
+(* ram_style = "distributed" *)
+	reg[35:0]	arrUsbTxB[63:0];
 reg[9:0]	idxUsbRxsB;
 reg[9:0]	idxUsbRxeB;
 reg[9:0]	idxUsbTxsB;
@@ -135,10 +152,14 @@ reg[35:0]	valUsbStRxB;
 reg[35:0]	valUsbLdTxB;
 reg[35:0]	valUsbStTxB;
 
-reg[7:0]	idxUsbLdRxB;
-reg[7:0]	idxUsbStRxB;
-reg[7:0]	idxUsbLdTxB;
-reg[7:0]	idxUsbStTxB;
+//reg[7:0]	idxUsbLdRxB;
+//reg[7:0]	idxUsbStRxB;
+//reg[7:0]	idxUsbLdTxB;
+//reg[7:0]	idxUsbStTxB;
+reg[5:0]	idxUsbLdRxB;
+reg[5:0]	idxUsbStRxB;
+reg[5:0]	idxUsbLdTxB;
+reg[5:0]	idxUsbStTxB;
 reg			doUsbStRxB;
 reg			doUsbStTxB;
 
@@ -280,14 +301,18 @@ begin
 	nxtIdxUsbTxsB		= idxUsbTxsB;
 	nxtIdxUsbTxeB		= idxUsbTxeB;
 
-	idxUsbLdRxA			= idxUsbRxeA[9:2];
+//	idxUsbLdRxA			= idxUsbRxeA[9:2];
+	idxUsbLdRxA			= idxUsbRxeA[7:2];
 	idxUsbStRxA			= idxUsbLdRxA;
-	idxUsbLdTxA			= idxUsbTxsA[9:2];
+//	idxUsbLdTxA			= idxUsbTxsA[9:2];
+	idxUsbLdTxA			= idxUsbTxsA[7:2];
 	idxUsbStTxA			= idxUsbLdTxA;
 
-	idxUsbLdRxB			= idxUsbRxeB[9:2];
+//	idxUsbLdRxB			= idxUsbRxeB[9:2];
+	idxUsbLdRxB			= idxUsbRxeB[7:2];
 	idxUsbStRxB			= idxUsbLdRxB;
-	idxUsbLdTxB			= idxUsbTxsB[9:2];
+//	idxUsbLdTxB			= idxUsbTxsB[9:2];
+	idxUsbLdTxB			= idxUsbTxsB[7:2];
 	idxUsbStTxB			= idxUsbLdTxB;
 
 	valUsbStRxA			= valUsbLdRxA;
@@ -950,7 +975,8 @@ begin
 		end
 		else
 		begin
-			idxUsbLdRxM = tMmioAddr[10:3];
+//			idxUsbLdRxM = tMmioAddr[10:3];
+			idxUsbLdRxM = tMmioAddr[8:3];
 		
 			if(!tClkStrobeInhA && !tClkStrobeInhB)
 			begin
@@ -989,7 +1015,8 @@ begin
 		end
 		else
 		begin
-			idxUsbStRxM = tMmioAddr[10:3];
+//			idxUsbStRxM = tMmioAddr[10:3];
+			idxUsbStRxM = tMmioAddr[8:3];
 
 			if(!tClkStrobeInhA && !tClkStrobeInhB)
 			begin

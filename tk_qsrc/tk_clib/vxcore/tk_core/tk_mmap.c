@@ -39,6 +39,11 @@ int TK_MMap_AllocIndex(void)
 			return(i);
 	i=krnl->mmap_n_map++;
 
+	if(i>=512)
+	{
+		__debugbreak();
+	}
+
 	return(i);
 }
 
@@ -70,16 +75,28 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 	byte *ptr;
 	int ix;
 
+	if(!task)
+	{
+		if(!TK_GetCurrentTask())
+			return(TKMM_PageAlloc(len));
+		__debugbreak();
+	}
+	
+	len=(len+((1<<TKMM_PAGEBITS)-1))&(~((1<<TKMM_PAGEBITS)-1));
+
 	/*
 	 * The mmap/mporotect interface will disallow NOCACHE and NOUSER.
 	 * These flags will be considered as supervisor-only features.
 	 */
 	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
 
-//	task=TK_GetCurrentTask();
-	krnl=TK_GetCurrentTaskInfoKern();
+//	if(!task)
+//		task=TK_GetCurrentTask();
+	krnl=TK_GetTaskInfoKern(task);
+//	krnl=TK_GetCurrentTaskInfoKern();
 	
-	if(flags&TKMM_MAP_ANONYMOUS)
+//	if(flags&TKMM_MAP_ANONYMOUS)
+	if((flags&TKMM_MAP_ANONYMOUS) || (fd<0))
 	{
 		if(addr)
 		{
@@ -89,6 +106,11 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 //		ptr=TKMM_PageAlloc(len);
 //		ptr=TKMM_PageAllocUsc(len);
 		ptr=(byte *)TK_VMem_VaVirtualAlloc((u64)addr, len, prot, flags);
+
+		if(!ptr)
+		{
+			ptr=TKMM_PageAlloc(len);
+		}
 
 		TK_VMem_MProtectPages((u64)ptr, len, prot);
 	
@@ -119,7 +141,17 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 	size_t len1;
 	int i, j, k;
 	
-	krnl=TK_GetCurrentTaskInfoKern();
+	addr=(void *)(((long)addr)&0x0000FFFFFFFFFFFFULL);
+	len=(int)len;
+
+	len=(len+((1<<TKMM_PAGEBITS)-1))&(~((1<<TKMM_PAGEBITS)-1));
+
+	tk_dbg_printf("tk_munmap2: %p %p\n", addr, len);
+	
+//	if(!task)
+//		task=TK_GetCurrentTask();
+	krnl=TK_GetTaskInfoKern(task);
+//	krnl=TK_GetCurrentTaskInfoKern();
 	
 	ptrs=addr; ptre=ptrs+len;
 //	for(i=0; i<tkmm_mmap_n_map; i++)
@@ -172,6 +204,10 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 //		bufe=tkmm_mmap_bufe[i];
 		len1=bufe-bufs;
 
+		tk_dbg_printf("tk_munmap2: A:(%p %p) %p R:(%p %p)\n",
+			ptrs, ptre, len1,
+			bufs, bufe);
+
 		if((ptrs<=bufs) && (ptre>=bufe))
 		{
 			/* Removes whole mapping */
@@ -182,7 +218,7 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 //			tkmm_mmap_bufe[i]=NULL;
 		}
 
-		if((ptrs<=bufs) && (ptre<=bufe))
+		if((ptrs<=bufs) && (ptre<=bufe) && (ptre>bufs))
 		{
 			/* Removes start of mapping. */
 			len1=ptre-bufs;
@@ -193,7 +229,7 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 			krnl->mmap_len[i]=bufe-ptre;
 		}
 
-		if((ptrs>bufs) && (ptre>=bufe))
+		if((ptrs>bufs) && (ptre>=bufe) && (ptrs<bufe))
 		{
 			/* Removes end of mapping. */
 			len1=bufe-ptrs;
@@ -297,26 +333,26 @@ void *TKMM_MmapL(
 	int fd, off_t offs)
 {
 //	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
-	return(tk_mmap2(NULL, addr, len, prot, flags, fd, offs));
+	return(tk_mmap2(TK_GetCurrentTask(), addr, len, prot, flags, fd, offs));
 }
 
 void *TKMM_MunmapL(
 	void *addr, size_t len)
 {
-	return((void *)tk_munmap2(NULL, addr, len));
+	return((void *)tk_munmap2(TK_GetCurrentTask(), addr, len));
 }
 
 void *TKMM_MProtectL(
 	void *addr, size_t len, int prot)
 {
 //	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
-	return((void *)tk_mprotect2(NULL, addr, len, prot));
+	return((void *)tk_mprotect2(TK_GetCurrentTask(), addr, len, prot));
 }
 
 void *TKMM_MSyncL(
 	void *addr, size_t len, int flag)
 {
-	return((void *)tk_msync2(NULL, addr, len, flag));
+	return((void *)tk_msync2(TK_GetCurrentTask(), addr, len, flag));
 }
 #endif
 
@@ -362,26 +398,58 @@ void *tk_mmap(void *addr, size_t len, int prot, int flags,
 	int fd, off_t offs)
 {
 	TKMM_InitMMap();
-	return(TKMM_MmapF(addr, len, prot, flags, fd, offs));
+//	return(TKMM_MmapF(addr, len, prot, flags, fd, offs));
+
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskerneltask() || tk_issyscall())
+		{ return(TKMM_MmapL(addr, len, prot, flags, fd, offs)); }
+	return(TKMM_MmapV(addr, len, prot, flags, fd, offs));
+#else
+	return(TKMM_MmapV(addr, len, prot, flags, fd, offs));
+#endif
 }
 
 
 int tk_munmap(void *addr, size_t len)
 {
 	TKMM_InitMMap();
-	return(TKMM_MunmapF(addr, len));
+//	return(TKMM_MunmapF(addr, len));
+
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskerneltask() || tk_issyscall())
+		{ return(TKMM_MunmapL(addr, len)); }
+	return(TKMM_MunmapV(addr, len));
+#else
+	return(TKMM_MunmapV(addr, len));
+#endif
 }
 
 int tk_mprotect(void *addr, size_t len, int prot)
 {
 	TKMM_InitMMap();
-	return(TKMM_MProtectF(addr, len, prot));
+//	return(TKMM_MProtectF(addr, len, prot));
+
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskerneltask() || tk_issyscall())
+		{ return(TKMM_MProtectL(addr, len, prot)); }
+	return(TKMM_MProtectV(addr, len, prot));
+#else
+	return(TKMM_MProtectV(addr, len, prot));
+#endif
 }
 
 int tk_msync(void *addr, size_t len, int flags)
 {
 	TKMM_InitMMap();
-	return(TKMM_MSyncF(addr, len, flags));
+//	return(TKMM_MSyncF(addr, len, flags));
+
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskerneltask() || tk_issyscall())
+		{ return(TKMM_MSyncL(addr, len, flags)); }
+	return(TKMM_MSyncV(addr, len, flags));
+#else
+	return(TKMM_MSyncV(addr, len, flags));
+#endif
 }
 
 

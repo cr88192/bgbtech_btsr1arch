@@ -359,6 +359,7 @@ void MN_DrTextA(char *text, int x, int y)
 	char c;
 	patch_t *p;
 
+	c = 0;
 	while((c = *text++) != 0)
 	{
 		if(c < 33)
@@ -385,6 +386,7 @@ void MN_DrTextAYellow(char *text, int x, int y)
 	char c;
 	patch_t *p;
 
+	c = 0;
 	while((c = *text++) != 0)
 	{
 		if(c < 33)
@@ -414,6 +416,7 @@ int MN_TextAWidth(char *text)
 	int width;
 	patch_t *p;
 
+	c = 0;
 	width = 0;
 	while((c = *text++) != 0)
 	{
@@ -443,6 +446,7 @@ void MN_DrTextB(char *text, int x, int y)
 	char c;
 	patch_t *p;
 
+	c = 0;
 	while((c = *text++) != 0)
 	{
 		if(c < 33)
@@ -472,6 +476,7 @@ int MN_TextBWidth(char *text)
 	int width;
 	patch_t *p;
 
+	c = 0;
 	width = 0;
 	while((c = *text++) != 0)
 	{

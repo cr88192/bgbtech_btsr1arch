@@ -1126,10 +1126,14 @@ void TryRunTics (void);
 #if 1
 #define	SCREENWIDTH		320
 #define	SCREENHEIGHT	200
+#define	PADSCREENWIDTH	512
 #else
 #define	SCREENWIDTH		560
 #define	SCREENHEIGHT	375
+#define	PADSCREENWIDTH	1024
 #endif
+
+#define	PADSCREENWIDTHMASK	(PADSCREENWIDTH-1)
 
 byte *I_ZoneBase (int *size);
 // called by startup code to get the ammount of memory to malloc

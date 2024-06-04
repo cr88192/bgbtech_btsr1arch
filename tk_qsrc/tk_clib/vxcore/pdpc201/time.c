@@ -78,6 +78,7 @@ static void scalar_to_ymd(long scalar,
 }
 
 unsigned int TK_GetTimeMs(void);
+u64 TK_GetTimeUs(void);
 
 __PDPCLIB_API__ time_t time(time_t *timer)
 {
@@ -94,7 +95,9 @@ __PDPCLIB_API__ time_t time(time_t *timer)
 
 //    __datetime(&dt);
 
-	tt=TK_GetTimeMs()>>10;
+//	tt=TK_GetTimeMs()>>10;
+//	tt=TK_GetTimeUs()>>20;
+	tt=TK_GetTimeUs()/1000000;
 
     if (timer != NULL)
     {
@@ -197,6 +200,7 @@ __PDPCLIB_API__ struct tm *localtime(const time_t *timer)
 
     days = *timer / (60L*60*24);
     secs = *timer % (60L*60*24);
+    yr=0;	mo=0;	da=0;
     scalar_to_ymd(days + ymd_to_scalar(1970, 1, 1), &yr, &mo, &da);
     tms.tm_year = yr - 1900;
     tms.tm_mon = mo - 1;
@@ -244,6 +248,22 @@ static char *month[] = {
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
 };
+
+int tk_month_string_to_index(char *amo)
+{
+	int i;
+	for(i=0; i<12; i++)
+	{
+		if(!stricmp(amonth[i], amo))
+			return(i+1);
+	}
+	for(i=0; i<12; i++)
+	{
+		if(!stricmp(month[i], amo))
+			return(i+1);
+	}
+	return(0);
+}
 
 static char *__tzname[2] = { "" "" };
 static char buf[26];

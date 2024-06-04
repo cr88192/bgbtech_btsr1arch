@@ -31,13 +31,38 @@
     Byte 2+: Compressed Data
  */
 
+int TK_VMem_PackLz64CalcCsum(byte *ppi)
+{
+	u64 *pv;
+	u64 v0, v1, s0, s1, v;
+	int i, j, k, l;
+	
+	pv=(u64 *)ppi;
+	s0=1; s1=1;
+	l=(1<<(TKMM_PAGEBITS-4));
+	for(i=0; i<l; i++)
+	{
+		v0=pv[0];
+		v1=pv[1];
+		pv+=2;
+		s0+=v0;
+		s0+=v1;
+		s1+=s0;
+	}
+	
+	v=s0^s1;
+	v=((u32)v)^(v>>32);
+	v=((u16)v)^(v>>16);
+	return(v);
+}
+
 void TK_VMem_UnpackLz64Page(byte *cpi, byte *ppi)
 {
 	u64 *ctq, *csq, *ctqe;
 	byte *cs;
-	int tg, rl, ll, ld;
+	int tg, rl, ll, ld, sum;
 	
-	cs=cpi+2;
+	cs=cpi+4;
 	ctq=(u64 *)ppi;
 	ctqe=ctq+(1<<(TKMM_PAGEBITS-3));
 	while(1)
@@ -81,6 +106,12 @@ void TK_VMem_UnpackLz64Page(byte *cpi, byte *ppi)
 		__debugbreak();
 	}
 
+	sum=TK_VMem_PackLz64CalcCsum(ppi);
+	if(*(u16 *)(cpi+2)!=sum)
+	{
+		__debugbreak();
+	}
+
 //	if(ctq!=ctqe)
 //	{
 //		printf("Size Error %d\n", ctqe-ctq);
@@ -89,12 +120,14 @@ void TK_VMem_UnpackLz64Page(byte *cpi, byte *ppi)
 
 void TK_VMem_PackLz64Page(byte *cpi, byte *ppi)
 {
-	u16 hash[256];
+	static u16 t_hash[256];
 	u64 *ctq, *csqb, *csq, *csqe, *csqr, *csqs;
 	byte *cs, *ct;
+	u16 *hash;
 	u64 x, x0;
-	int i, j, k, ll, rl, h, d, n;
+	int i, j, k, ll, rl, h, d, n, sum;
 	
+	hash=t_hash;
 	for(i=0; i<256; i++)
 		hash[i]=0xFFFF;
 	
@@ -102,7 +135,10 @@ void TK_VMem_PackLz64Page(byte *cpi, byte *ppi)
 	csqe=csqb+(1<<(TKMM_PAGEBITS-3));
 	csq=csqb;
 	
-	ct=cpi+2;
+	sum=TK_VMem_PackLz64CalcCsum(ppi);
+	*(u16 *)(cpi+2)=sum;
+	
+	ct=cpi+4;
 	csqr=csq;
 	
 	while(csq<csqe)

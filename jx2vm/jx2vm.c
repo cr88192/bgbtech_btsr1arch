@@ -1103,7 +1103,8 @@ int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
 //		if(*s1=='/')
 		if(1)
 		{
-			s1++;
+			if(*s1=='/')
+				s1++;
 			while(*s1 && *s1!='.')
 				*t1++=*s1++;
 			*t1++=0;

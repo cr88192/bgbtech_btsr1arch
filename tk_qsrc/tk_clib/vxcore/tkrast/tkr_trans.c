@@ -1565,8 +1565,10 @@ int TKRA_EmitProjectedTriangle(
 
 	sctx=ctx->svctx;
 
-	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;
-	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;
+	is0=pv0.s;		is1=pv1.s;		is2=pv2.s;
+	it0=pv0.t;		it1=pv1.t;		it2=pv2.t;
+	isb0=pv0.s2;	isb1=pv1.s2;	isb2=pv2.s2;
+	itb0=pv0.t2;	itb1=pv1.t2;	itb2=pv2.t2;
 
 	if((tkra_nommio&3)!=2)
 	{
@@ -2130,8 +2132,10 @@ int TKRA_EmitProjectedQuad(
 
 	sctx=ctx->svctx;
 
-	is0=pv0.s;	is1=pv1.s;	is2=pv2.s;	is3=pv3.s;
-	it0=pv0.t;	it1=pv1.t;	it2=pv2.t;	it3=pv3.t;
+	is0=pv0.s;		is1=pv1.s;		is2=pv2.s;		is3=pv3.s;
+	it0=pv0.t;		it1=pv1.t;		it2=pv2.t;		it3=pv3.t;
+	isb0=pv0.s2;	isb1=pv1.s2;	isb2=pv2.s2;	isb3=pv3.s2;
+	itb0=pv0.t2;	itb1=pv1.t2;	itb2=pv2.t2;	itb3=pv3.t2;
 
 	flipst=0;
 

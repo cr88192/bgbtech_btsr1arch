@@ -108,6 +108,7 @@ TKSH_CommandInfo *TKSH_CreateCommand(char *name)
 	h=TKSH_HashFast(name);
 
 	cur=tk_malloc(sizeof(TKSH_CommandInfo));
+	memset(cur, 0, sizeof(TKSH_CommandInfo));
 	cur->name=tk_strdup_in(name);
 	
 	cur->next=tksh_commands;
@@ -125,6 +126,16 @@ TKSH_CommandInfo *TKSH_RegisterCommand(char *name, void *fcn)
 
 	cmdi=TKSH_CreateCommand(name);
 	cmdi->Cmd=fcn;
+	return(cmdi);
+}
+
+TKSH_CommandInfo *TKSH_RegisterCommandDesc(char *name, void *fcn, char *desc)
+{
+	TKSH_CommandInfo *cmdi;
+
+	cmdi=TKSH_CreateCommand(name);
+	cmdi->Cmd=fcn;
+	cmdi->desc=tk_strdup_in(desc);
 	return(cmdi);
 }
 
@@ -277,6 +288,12 @@ void TKSH_ListDir(char *path, char **args)
 
 int TKSH_Cmds_Cls(char **args)
 {
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
+
 	if(tk_get_ttyid())
 	{
 		tk_puts("\x1B[3J");
@@ -293,18 +310,28 @@ int TKSH_Cmds_Chdir(char **args)
 	char tb[256];
 	TK_DIR *dir;
 	char *darg;
+	int dohelp;
 	int i;
 
 	TK_Env_GetCwd(tb_cwd, 256);
 	
-	darg=NULL;
+	darg=NULL;	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] [dir]\n", args[0]);
+		return(0);
 	}
 
 	if(darg)
@@ -344,6 +371,12 @@ int TKSH_Cmds_Echo(char **args)
 	char *s0, *s1;
 	int i;
 
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
+
 	for(i=1; args[i]; i++)
 	{
 		s0=args[i];
@@ -352,11 +385,15 @@ int TKSH_Cmds_Echo(char **args)
 		{
 			s1=TK_Env_GetEnvVarI(s0+1, tb1, 256);
 			if(s1)
-				{ tk_puts(tb1); }
+			{
+				tk_puts(tb1);
+				tk_putc(' ');
+			}
 			continue;
 		}
 		
 		tk_puts(s0);
+		tk_putc(' ');
 	}
 	tk_putc('\n');
 	return(0);
@@ -653,18 +690,28 @@ int TKSH_Cmds_RecvXm(char **args)
 	char tb_cwd[256];
 	char tb[256];
 	char *darg;
+	int dohelp;
 	int i;
 
 	TK_Env_GetCwd(tb_cwd, 256);
 	
-	darg=NULL;
+	darg=NULL;	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
 	}
 
 	if(darg)
@@ -682,16 +729,26 @@ int TKSH_Cmds_Rm(char **args)
 {
 	char tb[256];
 	char *darg;
+	int dohelp;
 	int i;
 
-	darg=NULL;
+	darg=NULL;	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
 	}
 
 	if(darg)
@@ -708,16 +765,26 @@ int TKSH_Cmds_Rmdir(char **args)
 {
 	char tb[256];
 	char *darg;
+	int dohelp;
 	int i;
 
-	darg=NULL;
+	darg=NULL;	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
 	}
 
 	if(darg)
@@ -734,16 +801,27 @@ int TKSH_Cmds_Mkdir(char **args)
 {
 	char tb[256];
 	char *darg;
+	int dohelp;
 	int i;
 
 	darg=NULL;
+	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
 	}
 
 	if(darg)
@@ -761,6 +839,12 @@ int TKSH_Cmds_Set(char **args)
 	char tb1[256];
 	char tb2[256];
 	int i, j;
+
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
 
 	if(args[1])
 	{
@@ -785,6 +869,12 @@ int TKSH_Cmds_Mount(char **args)
 	char **opta;
 	int i;
 	
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
+
 	devfn=NULL;
 	mntfn=NULL;
 	fsty=NULL;
@@ -881,16 +971,26 @@ int TKSH_Cmds_Ed(char **args)
 {
 	char tb[256];
 	char *darg;
+	int dohelp;
 	int i;
 
-	darg=NULL;
+	darg=NULL; dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
 	}
 
 	tksh_cmdentry=1;
@@ -910,16 +1010,26 @@ int TKSH_Cmds_Edit(char **args)
 {
 	char tb[256];
 	char *darg;
+	int dohelp;
 	int i;
 
-	darg=NULL;
+	darg=NULL;	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
 	}
 
 //	tksh_cmdentry=1;
@@ -946,16 +1056,26 @@ int TKSH_Cmds_HexEdit(char **args)
 {
 	char tb[256];
 	char *darg;
+	int dohelp;
 	int i;
 
-	darg=NULL;
+	darg=NULL;	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
 		if(args[i][0]=='-')
 		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
 			continue;
 		}
 		darg=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
 	}
 
 //	tksh_cmdentry=1;
@@ -970,6 +1090,59 @@ int TKSH_Cmds_HexEdit(char **args)
 
 //	tk_con_reset();
 	TKSH_Cmds_Cls(NULL);
+
+	return(0);
+}
+
+int TKSH_Cmds_Cat(char **args)
+{
+	char tb[256];
+	char *fname[64];
+	char *darg;
+	TK_FILE *fd;
+	int dohelp;
+	int i, j, k, nfn;
+
+	nfn=NULL;
+	dohelp=0;
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			if(!strcmp(args[i], "--help"))
+				{ dohelp=1; continue; }
+
+			continue;
+		}
+		fname[nfn++]=args[i];
+	}
+
+	if(dohelp)
+	{
+		tk_printf("Usage: %s [options] file\n", args[0]);
+		return(0);
+	}
+
+	for(i=0; i<nfn; i++)
+	{
+		darg=fname[i];
+		THSH_QualifyPathArg(tb, darg);
+		fd=tk_fopen(tb, "rb");
+		if(!fd)
+			continue;
+		j=0;
+//		while(!tk_feof(fd))
+		while(1)
+		{
+			tk_fgets(tb, 255, fd);
+			tk_printf("%s\n", tb);
+			k=tk_ftell(fd);
+			if(k==j)
+				break;
+			j=k;
+		}
+		tk_fclose(fd);
+	}
 
 	return(0);
 }
@@ -1189,6 +1362,12 @@ int TKSH_Cmds_TestGfx(char **args)
 	u64 v0, v1, v2, v3;
 	int cr, cg, cb, cy, cr1, cg1, cb1;
 	int i, j, k, k0, k1, xstr;
+
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
 
 	conbufa=(u64 *)0xFFFFF00A0000ULL;
 //	((u32 *)0xFFFFF00BFF00UL)[0]=0x0095;	//320x200x16bpp, RGB555
@@ -1538,6 +1717,12 @@ int TKSH_Cmds_StartGui(char **args)
 	char tb[256];
 	int i, j, k;
 
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
+
 	info=&t_info;
 	info2=&t_info2;
 	imsg=&t_imsg;
@@ -1670,6 +1855,147 @@ int TKSH_Cmds_StartGui(char **args)
 	hdcScrn=ctx->vt->CreateDisplay(ctx, 0, TKGDI_FCC_crea, info);
 	
 	tk_con_reset();
+	return(0);
+}
+
+int TKSH_Cmds_Help(char **args)
+{
+	char *t_args[16];
+	char tb[256];
+	TKSH_CommandInfo *cmdi;
+	int i, n;
+	
+	if(args[1])
+	{
+		cmdi=TKSH_LookupCommand(args[1]);
+	}else
+	{
+		cmdi=NULL;
+	}
+	
+//	if(!args[1])
+	if(!cmdi)
+	{
+		while(tk_kbhit())
+			tk_getch();
+		tk_printf("Builtin Commands:\n", cmdi->name);
+		cmdi=tksh_commands;
+		while(cmdi)
+		{
+			n=22;
+			while(cmdi && ((n--)>0))
+			{
+				if(cmdi->desc)
+				{
+					tk_printf("  %-12s %s\n", cmdi->name, cmdi->desc);
+				}else
+				{
+					tk_printf("  %12s\n", cmdi->name);
+				}
+				cmdi=cmdi->next;
+			}
+			if(cmdi)
+			{
+				tk_printf("... ? ");
+				tk_gets(tb);
+//				tk_getch();
+			}
+		}
+		return(0);
+	}
+
+	t_args[0]=args[1];
+	t_args[1]="--help";
+	for(i=2; args[i]; i++)
+	{
+		t_args[i]=args[i];
+	}
+	t_args[i]=NULL;
+	
+	cmdi->Cmd(t_args);
+	
+//	if(cmdi->desc)
+//	{
+//		tk_printf("  %-12s %s\n", cmdi->name, cmdi->desc);
+//	}else
+//	{
+//		tk_printf("  %12s\n", cmdi->name);
+//	}
+	return(0);
+}
+
+int TKSH_Cmds_Uuidgen(char **args)
+{
+	u64 val[2];
+	char tb[128];
+	int ver;
+	int i;
+
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
+	
+	ver=0;
+	for(i=1; args[i]; i++)
+	{
+		if(args[i][0]=='-')
+		{
+			if(!strcmp(args[i], "-r"))
+				ver=1;
+			if(!strcmp(args[i], "-t"))
+				ver=2;
+		}
+	}
+
+	if(!ver)
+		ver=1;
+
+	if(ver==2)
+		TK_GenerateTimeUuid(val);
+	else
+		TK_GenerateUuid(val);
+
+#if 0
+	tk_printf(
+		"%02x%02x%02x%02x-%02x%02x-%02x%02x-"
+		"%02x%02x-%02x%02x%02x%02x%02x%02x\n",
+		((val[0]>> 0)&255),	((val[0]>> 8)&255),
+		((val[0]>>16)&255),	((val[0]>>24)&255),
+		((val[0]>>32)&255),	((val[0]>>40)&255),
+		((val[0]>>48)&255),	((val[0]>>56)&255),
+		((val[1]>> 0)&255),	((val[1]>> 8)&255),
+		((val[1]>>16)&255),	((val[1]>>24)&255),
+		((val[1]>>32)&255),	((val[1]>>40)&255),
+		((val[1]>>48)&255),	((val[1]>>56)&255)
+		);
+#endif
+
+	TK_FormatUuidAsString(tb, val);
+	tk_printf("%s\n", tb);
+//	TK_FormatGuidAsString(tb, val);
+//	tk_printf("%s\n", tb);
+	return(0);
+}
+
+int TKSH_Cmds_Date(char **args)
+{
+	time_t tv;
+	char *ts;
+	int i;
+
+	if(args[1] && !strcmp(args[1], "--help"))
+	{
+		tk_printf("Usage: %s [options]\n", args[0]);
+		return(0);
+	}
+
+	tv=time(NULL);
+	tk_printf("%llX\n", tv);
+	ts=ctime(&tv);
+	tk_printf("%s\n", ts);
+	return(0);
 }
 
 int TKSH_InitCmds(void)
@@ -1686,36 +2012,45 @@ int TKSH_InitCmds(void)
 //	cmdi=TKSH_CreateCommand("set");
 //	cmdi->Cmd=TKSH_Cmds_Set;
 
-	TKSH_RegisterCommand("cd",		TKSH_Cmds_Chdir);
-	TKSH_RegisterCommand("chdir",	TKSH_Cmds_Chdir);
-	TKSH_RegisterCommand("cls",		TKSH_Cmds_Cls);
-	TKSH_RegisterCommand("cp",		TKSH_Cmds_Cp);
+	TKSH_RegisterCommandDesc("cd",		TKSH_Cmds_Chdir,	"Change Directory");
+	TKSH_RegisterCommandDesc("chdir",	TKSH_Cmds_Chdir,	"Change Directory");
+	TKSH_RegisterCommandDesc("cls",		TKSH_Cmds_Cls,		"Clear Screen");
+	TKSH_RegisterCommandDesc("cp",		TKSH_Cmds_Cp,		"Copy file");
 
-	TKSH_RegisterCommand("dir",		TKSH_Cmds_Ls);
+	TKSH_RegisterCommandDesc("dir",		TKSH_Cmds_Ls,		"List Directory");
 
-	TKSH_RegisterCommand("echo",	TKSH_Cmds_Echo);
-	TKSH_RegisterCommand("ed",		TKSH_Cmds_Ed);
-	TKSH_RegisterCommand("edit",	TKSH_Cmds_Edit);
+	TKSH_RegisterCommandDesc("echo",	TKSH_Cmds_Echo,		"Print Message");
+	TKSH_RegisterCommandDesc("ed",		TKSH_Cmds_Ed,		"Line Editor");
+	TKSH_RegisterCommandDesc("edit",	TKSH_Cmds_Edit,		"Text Editor");
 
-	TKSH_RegisterCommand("hexedit",	TKSH_Cmds_HexEdit);
+	TKSH_RegisterCommandDesc("hexedit",	TKSH_Cmds_HexEdit,	"Hex Editor");
+	TKSH_RegisterCommandDesc("cat",		TKSH_Cmds_Cat,	
+		"Dump file to terminal");
 
-	TKSH_RegisterCommand("ln",		TKSH_Cmds_Ln);
-	TKSH_RegisterCommand("ls",		TKSH_Cmds_Ls);
+	TKSH_RegisterCommandDesc("ln",		TKSH_Cmds_Ln,		"Create Symlink");
+	TKSH_RegisterCommandDesc("ls",		TKSH_Cmds_Ls,		"List Directory");
 
-	TKSH_RegisterCommand("md",		TKSH_Cmds_Mkdir);
-	TKSH_RegisterCommand("mkdir",	TKSH_Cmds_Mkdir);
-	TKSH_RegisterCommand("mount",	TKSH_Cmds_Mount);
-	TKSH_RegisterCommand("mv",		TKSH_Cmds_Mv);
+	TKSH_RegisterCommandDesc("md",		TKSH_Cmds_Mkdir,	"Make Directory");
+	TKSH_RegisterCommandDesc("mkdir",	TKSH_Cmds_Mkdir,	"Make Directory");
+	TKSH_RegisterCommandDesc("mount",	TKSH_Cmds_Mount,	"Mount Volume");
+	TKSH_RegisterCommandDesc("mv",		TKSH_Cmds_Mv,		"Move File");
 
-	TKSH_RegisterCommand("recvxm",	TKSH_Cmds_RecvXm);
-	TKSH_RegisterCommand("rm",		TKSH_Cmds_Rm);
-	TKSH_RegisterCommand("rmdir",	TKSH_Cmds_Rmdir);
+	TKSH_RegisterCommandDesc("recvxm",	TKSH_Cmds_RecvXm,
+		"Recieve file over serial/terminal link");
+	TKSH_RegisterCommandDesc("rm",		TKSH_Cmds_Rm,		"Remove File");
+	TKSH_RegisterCommandDesc("rmdir",	TKSH_Cmds_Rmdir,	"Remove Directory");
 
-	TKSH_RegisterCommand("set",		TKSH_Cmds_Set);
+	TKSH_RegisterCommandDesc("set",		TKSH_Cmds_Set,		"Set Env Variable");
+	TKSH_RegisterCommandDesc("uuidgen",	TKSH_Cmds_Uuidgen,	"Generate UUID");
+	TKSH_RegisterCommandDesc("date",	TKSH_Cmds_Date,	"Print date");
 
-	TKSH_RegisterCommand("testgfx",	TKSH_Cmds_TestGfx);
+	TKSH_RegisterCommandDesc("testgfx",	TKSH_Cmds_TestGfx,
+		"Test Graphics Modes");
 
-	TKSH_RegisterCommand("startgui",	TKSH_Cmds_StartGui);
+	TKSH_RegisterCommandDesc("startgui",	TKSH_Cmds_StartGui,
+		"Start GUI");
+	TKSH_RegisterCommandDesc("help",		TKSH_Cmds_Help,
+		"Info about commands (help [command])");
 
 	return(1);
 }
@@ -1830,6 +2165,8 @@ int TKSH_ExecCmd(char *cmd)
 	TKSH_CommandInfo *cmdi;
 	char **a;
 	char *s0, *s1;
+	char *rdin, *rdout;
+	int fdin, fdout, ofdin, ofdout, rdappend;
 	int ci, ri;
 	int i, j, k;
 
@@ -1839,17 +2176,143 @@ int TKSH_ExecCmd(char *cmd)
 //	ci=tk_cmd2idx(a[0]);
 //	TK_Env_GetCwd(tb_cwd, 256);
 
+	rdin=NULL;
+	rdout=NULL; j=0;
+	rdappend=0;
+	for(i=0; a[i]; i++)
+	{
+		k=a[i][0];
+		if(k=='$')
+		{
+			TK_Env_GetEnvVar(a[i]+1, tb1, 255);
+			a[j++]=tk_rstrdup(tb1);
+			continue;
+		}else
+			if(k=='<')
+		{
+			if(a[i][1])
+			{
+				rdin=a[i]+1;
+			}else
+			{
+				rdin=a[i+1];
+				i++;
+			}
+			continue;
+		}else
+			if(k=='>')
+		{
+			if(a[i][1]=='>')
+			{
+				rdappend=1;
+				if(a[i][2])
+				{
+					rdout=a[i]+2;
+				}else
+				{
+					rdout=a[i+1];
+					i++;
+				}
+			}else
+			{
+				rdappend=0;
+				if(a[i][1])
+				{
+					rdout=a[i]+1;
+				}else
+				{
+					rdout=a[i+1];
+					i++;
+				}
+			}
+			continue;
+		}else
+		{
+			tk_dbg_printf("TKSH_ExecCmd: A=%d Ch=%02X\n", i, k);
+			a[j++]=a[i];
+		}
+	}
+	
+	a[j]=NULL;
+
+	if(rdin)
+	{
+		THSH_QualifyPathArg(tb1, rdin);
+		rdin=tk_rstrdup(tb1);
+	}
+
+	if(rdout)
+	{
+		THSH_QualifyPathArg(tb1, rdout);
+		rdout=tk_rstrdup(tb1);
+	}
+
 #if 1
 	cmdi=TKSH_LookupCommand(a[0]);
 	if(cmdi && (cmdi->Cmd))
 	{
-		i=cmdi->Cmd(a);
+		fdin=-1; fdout=-1;
+		if(rdin || rdout)
+		{
+			ofdin=tk_get_redir_stdin();
+			ofdout=tk_get_redir_stdout();
+			if(rdin)
+			{
+				fdin=tk_hfopen(TK_GetCurrentTask(), rdin, "rb");
+				if(fdin>0)
+					tk_set_redir_stdin(fdin);
+			}
+			if(rdout)
+			{
+				if(rdappend)
+					fdout=tk_hfopen(TK_GetCurrentTask(), rdout, "ab");
+				else
+					fdout=tk_hfopen(TK_GetCurrentTask(), rdout, "wb");
+				if(fdout>0)
+					tk_set_redir_stdout(fdout);
+			}
+			i=cmdi->Cmd(a);
+			if(fdin>0)
+			{
+				tk_set_redir_stdin(ofdin);
+				tk_hclose(TK_GetCurrentTask(), fdin);
+			}
+			if(fdout>0)
+			{
+				tk_set_redir_stdout(ofdout);
+				tk_hclose(TK_GetCurrentTask(), fdout);
+			}
+		}else
+		{
+			i=cmdi->Cmd(a);
+		}
 		return(i);
 	}
 
 	cmd[0]=0;
 
+	if(rdin)
+	{
+		fdin=tk_hfopen(TK_GetCurrentTask(), rdin, "rb");
+		if(fdin>0)
+			tk_set_next_redir_stdin(fdin);
+	}
+	if(rdout)
+	{
+		if(rdappend)
+			fdout=tk_hfopen(TK_GetCurrentTask(), rdout, "ab");
+		else
+			fdout=tk_hfopen(TK_GetCurrentTask(), rdout, "wb");
+		if(fdout>0)
+			tk_set_next_redir_stdout(fdout);
+	}
+	
+	strcpy(tb, a[0]);
+	
 	ri=TKSH_TryLoad_n(tb, a);
+
+	tk_set_next_redir_stdin(0);
+	tk_set_next_redir_stdout(0);
 
 	if(ri>=0)
 	{
@@ -2173,6 +2636,7 @@ int TKSH_TryLoadA(char *img, char **args0)
 	TKPE_CreateTaskInfo t_tinf;
 	TKPE_CreateTaskInfo *tinf;
 	char *ct;
+	int rdfdi, rdfdo;
 	int i, rt, tid;
 	
 	rt=TKSH_TryLoadA0(img, args0);
@@ -2186,9 +2650,18 @@ int TKSH_TryLoadA(char *img, char **args0)
 	{
 		tk_dbg_printf("TKSH_TryLoadA(-2): %s\n", img);
 
+		rdfdi=tk_get_next_redir_stdin();
+		rdfdo=tk_get_next_redir_stdout();
+		if(rdfdi<=0)
+			rdfdi=tk_get_redir_stdin();
+		if(rdfdo<=0)
+			rdfdo=tk_get_redir_stdout();
+
 		tinf=&t_tinf;
 		tinf->szInfo=sizeof(TKPE_CreateTaskInfo);
 		tinf->idTty=tk_get_ttyid();
+		tinf->rdStdin=rdfdi;
+		tinf->rdStdout=rdfdo;
 		tinf->szStack=0;	//use default
 		tinf->flSched=1;
 
@@ -2222,11 +2695,13 @@ int TKSH_TryLoadA(char *img, char **args0)
 }
 
 TKPE_TaskInfo *tksh_createproc_ptask=NULL;
+TKPE_CreateTaskInfo *tksh_createproc_info=NULL;
 
 int TKSH_TryLoadB(char *img, char **args0)
 {
 	byte tb[1024];
 	byte cwd[256];
+	byte atb[512];
 	char *args[64];
 	u64 tlsix[8];
 	TK_FILE *fd;
@@ -2240,6 +2715,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 	TKPE_TaskInfo *task;
 	TKPE_TaskInfo *ctask, *ptask;
 	TKPE_TaskInfoKern *tkern;
+	TKPE_CreateTaskInfo *ctinfo;
 	TK_EnvContext *env0, *env1;
 	TKPE_ImageInfo *pimg;
 	void *bootgbr;
@@ -2262,6 +2738,25 @@ int TKSH_TryLoadB(char *img, char **args0)
 	sig_is_elf=0;
 	ext=NULL;
 	
+	if(args0)
+	{
+		ct=atb;
+		for(i=0; args0[i]; i++)
+		{
+//			args[i]=args0[i];
+			j=strlen(args0[i]);
+			memcpy(ct, args0[i], j+1);
+			args[i]=ct;
+			ct+=j+1;
+		}
+		args[i]=NULL;
+		args[0]=img;
+	}else
+	{
+		args[0]=img;
+		args[1]=NULL;
+	}
+
 	cs=img+strlen(img);
 	while((cs>img) && (*cs!='.'))
 		cs--;
@@ -2278,18 +2773,6 @@ int TKSH_TryLoadB(char *img, char **args0)
 	}else
 	{
 //		tk_dbg_printf("TKSH_TryLoad: Not Yet Loaded\n");
-	}
-
-	if(args0)
-	{
-		for(i=0; args0[i]; i++)
-			args[i]=args0[i];
-		args[i]=NULL;
-		args[0]=img;
-	}else
-	{
-		args[0]=img;
-		args[1]=NULL;
 	}
 
 	if(!pimg)
@@ -2429,6 +2912,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 	rchk=&chk;
 	*rchk=0x1234567;
 
+	j=strlen(args[0]);	//BGB: Debug
+
 //	if(fd)
 	if(pimg || (fd && sig_is_pe) || (fd && sig_is_elf))
 	{
@@ -2466,6 +2951,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 		}
 #endif
 		
+		j=strlen(args[0]);	//BGB: Debug
+
 		if(bootptr)
 		{
 		
@@ -2494,10 +2981,19 @@ int TKSH_TryLoadB(char *img, char **args0)
 			boot_newspbk=NULL;
 			boot_newspk=NULL;
 
+			ctinfo=tksh_createproc_info;
+
 			ctask=TK_GetCurrentTask();
 			ptask=NULL;
 
-			if(ctask==tk_task_syscall)
+			if(tksh_createproc_ptask)
+			{
+				ptask=tksh_createproc_ptask;
+				if(ptask==tk_task_syscall)
+					ptask=NULL;
+			}
+
+			if((ctask==tk_task_syscall) && !ptask)
 			{
 				ptask=TK_GetSyscallUserTask();
 				if(ptask==tk_task_syscall)
@@ -2521,6 +3017,12 @@ int TKSH_TryLoadB(char *img, char **args0)
 			if(ptask)
 			{
 				task->ttyid=ptask->ttyid;
+			}
+			
+			if(ctinfo)
+			{
+				task->redir_stdin=ctinfo->rdStdin;
+				task->redir_stdout=ctinfo->rdStdout;
 			}
 
 #if 1
@@ -2610,10 +3112,17 @@ int TKSH_TryLoadB(char *img, char **args0)
 			*(tk_kptr *)bootgbr=task->img_gbrptrs;
 #endif
 
+			j=strlen(args[0]);	//BGB: Debug
+
 			TKPE_SetupTaskForImage(task, pimg);
 			bootgbr=task->basegbr;
+
+//			j=strlen(args[0]);	//BGB: Debug
 			
 			TK_SchedAddTask(task);
+
+//			__debugbreak();
+			j=strlen(args[0]);	//BGB: Debug
 
 			tk_dbg_printf("TKSH_TryLoad: task=%p, env=%p\n", task, env1);
 
@@ -2947,6 +3456,7 @@ int TKSH_TryLoad_n(char *img, char **args)
 		if(ri>0)
 			return(ri);
 	}
+	TK_Env_FreePathList(path);
 
 	return(ri);
 }
@@ -2972,6 +3482,7 @@ int TK_CreateProcessB(
 		imgname, cmdline, envmod, cwd);
 
 	tksh_createproc_ptask=task;
+	tksh_createproc_info=info;
 
 	args=tk_rsplit(cmdline);
 
@@ -2981,6 +3492,7 @@ int TK_CreateProcessB(
 		if(ri>0)
 		{
 			tksh_createproc_ptask=NULL;
+			tksh_createproc_info=NULL;
 			tk_dbg_printf("TK_CreateProcessB: pid=%d\n", ri);
 			return(ri);
 		}
@@ -2997,6 +3509,7 @@ int TK_CreateProcessB(
 		if(ri>0)
 		{
 			tksh_createproc_ptask=NULL;
+			tksh_createproc_info=NULL;
 			tk_dbg_printf("TK_CreateProcessB: pid=%d\n", ri);
 			return(ri);
 		}
@@ -3016,13 +3529,16 @@ int TK_CreateProcessB(
 		if(ri>0)
 		{
 			tksh_createproc_ptask=NULL;
+			tksh_createproc_info=NULL;
 			tk_dbg_printf("TK_CreateProcessB: pid=%d\n", ri);
 			return(ri);
 		}
 	}
+	TK_Env_FreePathList(path);
 
 	ri=0;
 	tksh_createproc_ptask=NULL;
+	tksh_createproc_info=NULL;
 	tk_dbg_printf("TK_CreateProcessB: Fail, pid=0\n", ri);
 	return(ri);
 }

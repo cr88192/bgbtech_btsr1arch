@@ -642,7 +642,10 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 
 	obj->fl&=~1;
 
-//	__setmemtrap(obj, 3);
+	if(cat==4)
+	{
+//		__setmemtrap(obj, 3);
+	}
 
 //	tk_dbg_printf("TKMM_MMList_AllocObjCat: Data=%p..%p, isz=%d, sz1=%d\n",
 //		(byte *)obj->data, ((byte *)obj->data)+isz, isz, sz1);
@@ -926,8 +929,13 @@ void *tk_malloc_cat(int sz, int cat)
 {
 // #ifndef __TK_CLIB_ONLY__
 #if 1
+	void *ptr;
 	if(cat)
-		return(TKMM_MallocCat(sz, cat));
+	{
+		ptr=TKMM_MallocCat(sz, cat);
+//		ptr=tk_ptrsetbound1(ptr, sz);
+		return(ptr);
+	}
 	else
 		return(TKMM_Malloc(sz));
 #else
@@ -939,8 +947,15 @@ void *tk_malloc_cat(int sz, int cat)
 void *tk_malloc_krn(int sz)
 {
 	void *ptr;
+
 	ptr=TKMM_MallocCat(sz, TKMM_MCAT_KRN_RW);
-	ptr=tk_ptrsetbound1(ptr, sz);
+	
+	if(TK_VMem_CheckAddrIsPhysPage((long)ptr))
+	{
+		ptr=TK_VMem_PointerAsPhysical(ptr);
+	}
+	
+//	ptr=tk_ptrsetbound1(ptr, sz);
 	return(ptr);
 }
 

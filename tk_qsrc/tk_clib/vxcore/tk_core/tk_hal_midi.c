@@ -527,7 +527,7 @@ int TK_Midi_Init()
 	tk_midi_regs=(u32 *)0xFFFFF008C000ULL;
 	tk_midi_patchmem=(u32 *)0xC00020800000ULL;
 
-	tk_midi_patchbm=tk_malloc(8192);
+	tk_midi_patchbm=tk_malloc_krn(8192);
 	memset(tk_midi_patchbm, 0, 8192);
 	
 	for(i=0; i<128; i++)
@@ -575,7 +575,7 @@ int TK_Midi_Init()
 	
 		tk_fseek(fd, 0, 2);
 		fsz=tk_ftell(fd);
-		tk_midi_patchwad=tk_malloc(fsz);
+		tk_midi_patchwad=tk_malloc_krn(fsz);
 		tk_fseek(fd, 0, 0);
 		tk_fread(tk_midi_patchwad, 1, fsz, fd);
 		tk_fclose(fd);
@@ -691,6 +691,9 @@ int TK_Midi_NoteRelVolAdj(int ch, int vol)
 	int tt, cvol, att;
 	int vn1, vn2, cvn;
 
+	if(ch&(~15))
+		__debugbreak();
+
 	cvn=tk_midi_chanvn[ch];
 	if(cvn==0xFF)
 		return(0);
@@ -718,6 +721,9 @@ int TK_Midi_NoteRelModAdj(int ch, int vol)
 	u32 v1, v2;
 	int tt, cvol, att;
 	int vn1, vn2, cvn;
+
+	if(ch&(~15))
+		__debugbreak();
 
 	cvn=tk_midi_chanvn[ch];
 	if(cvn==0xFF)
@@ -869,6 +875,9 @@ int TK_Midi_NoteOff(int ch, int d0, int d1)
 
 	if(!tk_midi_regs)
 		return(0);
+
+	if(ch&(~15))
+		__debugbreak();
 
 	TK_Midi_ProbeDelayOff();
 
@@ -1126,6 +1135,9 @@ int TK_Midi_NoteOn(int ch, int d0, int d1)
 
 	if(!tk_midi_regs)
 		return(0);
+
+	if(ch&(~15))
+		__debugbreak();
 
 	TK_Midi_ProbeDelayOff();
 
@@ -1515,6 +1527,9 @@ int TK_Midi_PitchBlend(int ch, int d0)
 {
 	int nt, ni;
 
+	if(ch&(~15))
+		__debugbreak();
+
 	TK_Midi_ProbeDelayOff();
 
 	tk_midi_chanpbl[ch]=d0>>6;
@@ -1532,6 +1547,9 @@ int TK_Midi_PitchBlend(int ch, int d0)
 
 int TK_Midi_Controller(int ch, int d0, int d1)
 {
+	if(ch&(~15))
+		__debugbreak();
+
 	TK_Midi_ProbeDelayOff();
 
 	if(d0==7)
@@ -1559,6 +1577,10 @@ int TK_Midi_Controller(int ch, int d0, int d1)
 int TK_Midi_ProgramChange(int ch, int d0)
 {
 	tk_dbg_printf("TK_Midi_ProgramChange: %d %d\n", ch, d0);
+
+	if(ch&(~15))
+		__debugbreak();
+
 	TK_Midi_ProbeDelayOff();
 	tk_midi_chanprg[ch]=d0;
 	return(0);

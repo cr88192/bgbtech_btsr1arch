@@ -54,6 +54,8 @@ void *TKMM_MMList_MallocCat(int sz, int cat);
 void *TKMM_MMList_MallocURo(int sz);
 void *TKMM_MMList_Malloc(int sz);
 
+int tk_iskerneltask();
+
 s64 TK_VMem_VaVirtualAlloc(s64 addr, s64 size, int flProt, int flMap);
 
 int TKMM_MMList_WalkHeapObjects(
@@ -144,13 +146,28 @@ int TKMM_FindFreePage(void)
 
 int TKMM_AllocPage(void)
 {
+	static int rcd=0;
+	static int rng=1;
 	byte *bm;
 	int i0, i1;
-	int i, j, m;
+	int i, j, k, m;
 	
+	k=0;
 	bm=tkmm_pagebmp;
 	i=tkmm_pagerov;
 	m=tkmm_maxpage;
+	k+=bm[i>>3];	//poke
+
+	j=rcd++;
+	if(j)
+	{
+		rng=rng*251+1;
+		rng=rng*251+1;
+		i+=(rng>>8)&1023;
+		while(i>m)
+			i-=m;
+	}
+
 	while(i<m)
 	{
 		j=bm[i>>3];
@@ -162,19 +179,28 @@ int TKMM_AllocPage(void)
 //		bm[i>>3]=j;
 		break;
 	}
-	
+
+	k+=bm[i>>3];	//poke
+	rcd--;
+
 	if(i<m)
 	{
 		j=bm[i>>3];
-		j|=1<<(i&7);
-		bm[i>>3]=j;
+		/* Pedantic check, in case it changed... */
+		if(!(j&(1<<(i&7))))
+		{
+			j|=1<<(i&7);
+			bm[i>>3]=j;
 
-		tkmm_pagerov=i+1;
-		if((i+1)>=m)
-			tkmm_pagerov=0;
-//		__debugbreak();
-		return(i);
+			tkmm_pagerov=i+1;
+			if((i+1)>=m)
+				tkmm_pagerov=0;
+	//		__debugbreak();
+			return(i);
+		}
 	}
+
+	k+=bm[i>>3];	//poke
 	
 	if(tkmm_pagerov!=0)
 	{
@@ -182,6 +208,8 @@ int TKMM_AllocPage(void)
 		i=TKMM_AllocPage();
 		return(i);
 	}
+
+	tkmm_pagerov=k;	//debug
 
 	__debugbreak();
 //	tk_printf("TKMM_AllocPage: Failed to alloc %d/%d\n", i, m);
@@ -300,7 +328,8 @@ int TKMM_AllocPagesZeroed(int n)
 	if(i0<0)
 		return(i0);
 
-	ptr=((byte *)TKMM_PAGEBASE)+(i0<<TKMM_PAGEBITS);
+//	ptr=((byte *)TKMM_PAGEBASE)+(i0<<TKMM_PAGEBITS);
+	ptr=((byte *)(0xC00000000000ULL+TKMM_PAGEBASE))+(i0<<TKMM_PAGEBITS);
 	memset(ptr, 0, n<<TKMM_PAGEBITS);
 
 	return(i0);
@@ -331,7 +360,8 @@ int TKMM_AllocPagesZeroedApn(int n)
 		return(i0);
 	}
 
-	ptr=((byte *)TKMM_PAGEBASE)+(i0<<TKMM_PAGEBITS);
+//	ptr=((byte *)TKMM_PAGEBASE)+(i0<<TKMM_PAGEBITS);
+	ptr=((byte *)(0xC00000000000ULL+TKMM_PAGEBASE))+(i0<<TKMM_PAGEBITS);
 	memset(ptr, 0, n<<TKMM_PAGEBITS);
 
 	return(i0+(TKMM_PAGEBASE>>TKMM_PAGEBITS));
@@ -364,6 +394,23 @@ int TKMM_FreePages(int b, int n)
 //		tkmm_pagerov=b;
 	
 	return(0);
+}
+
+int TKMM_FreePagesApn(int b, int n)
+{
+	int b1;
+	b1=b-(TKMM_PAGEBASE>>TKMM_PAGEBITS);
+	if(b1<0)
+	{
+		__debugbreak();
+		return(-1);
+	}
+	if((b1+n)>tkmm_maxpage)
+	{
+		__debugbreak();
+		return(-1);
+	}
+	return(TKMM_FreePages(b1, n));
 }
 
 void *TKMM_PageToPointer(int n)
@@ -439,7 +486,10 @@ int (*TKMM_PageFree_f)(void *ptr, int sz);
 void *TKMM_PageAlloc(int sz)
 	{ return(TKMM_PageAlloc_f(sz)); }
 int TKMM_PageFree(void *ptr, int sz)
-	{ return(TKMM_PageFree_f(ptr, sz)); }
+{
+//	tk_dbg_printf("TKMM_PageFree: %p %d\n", ptr, sz);
+	return(TKMM_PageFree_f(ptr, sz));
+}
 #endif
 
 void *TKMM_PageAllocVaMap(int sz, int flProt, int flMap)
@@ -454,7 +504,8 @@ void *TKMM_PageAllocVaMap(int sz, int flProt, int flMap)
 	if(!tk_iskernel())
 		return(TKMM_PageAlloc_f(sz));
 
-	va=TK_VMem_VaVirtualAlloc(0, sz, flProt, flMap);
+//	va=TK_VMem_VaVirtualAlloc(0, sz, flProt, flMap);
+	va=tk_mmap(0, sz, flProt, flMap, -1, 0);
 	if(va)
 		return((void *)va);
 
@@ -474,7 +525,8 @@ void *TKMM_PageAllocUsc(int sz)
 	if(!tk_iskernel())
 		return(TKMM_PageAlloc_f(sz));
 
-	va=TK_VMem_VaVirtualAlloc(0, sz, TKMM_PROT_RWX, TKMM_MAP_PRIVATE);
+//	va=TK_VMem_VaVirtualAlloc(0, sz, TKMM_PROT_RWX, TKMM_MAP_PRIVATE);
+	va=tk_mmap(0, sz, TKMM_PROT_RWX, TKMM_MAP_PRIVATE, -1, 0);
 	if(va)
 		return((void *)va);
 
@@ -497,7 +549,8 @@ int TKMM_PageFreeUsc(void *ptr, int sz)
 //	if(TK_VMem_CheckPtrIsVirtual(ptr))
 	if(tea>=TKMM_VALOSTART)
 	{
-		return(TK_VMem_VaVirtualFree((s64)ptr, sz));
+//		return(TK_VMem_VaVirtualFree((s64)ptr, sz));
+		return(tk_munmap((s64)ptr, sz));
 	}
 
 	return(TKMM_PageFree_f(ptr, sz));

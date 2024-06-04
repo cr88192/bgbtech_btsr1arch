@@ -6770,6 +6770,10 @@ int BGBCC_JX2C_EmitCallVReg(
 	if(fname && BGBCC_JX2C_EmitCallBuiltinArgs(
 		ctx, sctx, type, dst, fname, narg, args))
 	{
+		if(BGBCC_CCXL_IsRegZzP(ctx, dst))
+		{
+			sctx->csrv_skip=0;
+		}
 		return(1);
 	}
 

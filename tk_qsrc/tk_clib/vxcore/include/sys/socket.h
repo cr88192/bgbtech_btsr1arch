@@ -53,7 +53,8 @@ SHUT_WR
 #endif
 
 typedef short		sa_family_t;
-typedef size_t		socklen_t;
+// typedef size_t		socklen_t;
+typedef int		socklen_t;
 
 struct sockaddr_storage {
 	sa_family_t		ss_family;

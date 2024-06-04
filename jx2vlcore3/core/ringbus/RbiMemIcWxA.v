@@ -2042,11 +2042,15 @@ begin
 	begin
 		if(tPcStepBA || tPcStepBB)
 		begin
-			$display("L1 I$: XG2 Bad Step");
+			if(!tMsgLatch)
+				$display("L1 I$: XG2 Bad Step");
+			tNxtMsgLatch=1;
 		end
 		if(tInWordIx[0])
 		begin
-			$display("L1 I$: XG2 Misaligned Fetch, A=%X", tInAddr);
+			if(!tMsgLatch)
+				$display("L1 I$: XG2 Misaligned Fetch, A=%X", tInAddr);
+			tNxtMsgLatch=1;
 		end
 
 // `ifdef def_true

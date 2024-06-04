@@ -387,7 +387,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	}
 
 //	memset(imgptr, 0, imgsz1-32);
-	memset(imgptr, 0, imgsz1);
+//	memset(imgptr, 0, imgsz1);
 
 	TK_VMem_MProtectPages((u64)imgptr, imgsz1,
 		TKMM_PROT_READ|TKMM_PROT_WRITE|
@@ -401,7 +401,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	img->imgname=TKMM_LVA_Strdup(imgname);
 
 	imgbase1=(u64)imgptr;
-	printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
+	tk_dbg_printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
 		(u16)(imgbase1>>32), (u32)imgbase1);
 
 //	entry+=(u64)imgptr;
@@ -424,8 +424,8 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 				continue;
 			}
 			
-			printf("SKIP: %08X -> %08X %08X  TY=%08X\n", poff, paddr, pmsz,
-				phty);
+//			printf("SKIP: %08X -> %08X %08X  TY=%08X\n", poff, paddr, pmsz,
+//				phty);
 
 			continue;
 		}
@@ -435,7 +435,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		pmsz=btsh2_ptrGetUD(phdr->p_memsz, en);
 		poff=btsh2_ptrGetUD(phdr->p_offset, en);
 		
-		printf("%08X -> %08X %08X\n", poff, paddr, pmsz);
+//		printf("%08X -> %08X %08X\n", poff, paddr, pmsz);
 
 #if 0
 		if((poff+pmsz)>szibuf)
@@ -477,7 +477,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 			paddr=btsh2_ptrGetUQ(dyn_ptr+i*16+8, en);
 			if(!phty)
 				break;
-			printf("BTESH2_BootLoadElf: Tag=%08X = %08X\n", phty, paddr);
+//			printf("BTESH2_BootLoadElf: Tag=%08X = %08X\n", phty, paddr);
 
 			if(phty==2)
 				{ pltrel_sz=paddr; }
@@ -627,7 +627,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	
 				if((paddr>imgsz) || (paddr&7))
 				{
-					tk_printf("BTESH2_BootLoadElf: Reloc: "
+					tk_dbg_printf("BTESH2_BootLoadElf: Reloc: "
 						"Address image, VA=%016llX\n",
 						paddr);
 				}
@@ -639,7 +639,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 				if(sym_value>imgsz)
 				{
-					tk_printf("BTESH2_BootLoadElf: Reloc: "
+					tk_dbg_printf("BTESH2_BootLoadElf: Reloc: "
 						"Symbol outside image, VA=%016llX\n",
 						sym_value);
 				}
@@ -729,11 +729,11 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 	if(!(entry&1))
 	{
-		tk_printf("TKPE_LoadDynELF: ISA Mode Not Set, Mach=%04X\n", mach);
+		tk_dbg_printf("TKPE_LoadDynELF: ISA Mode Not Set, Mach=%04X\n", mach);
 		return(NULL);
 	}
 
-	tk_printf("TKPE_LoadDynELF: Entry=%016llX\n", entry);
+	tk_dbg_printf("TKPE_LoadDynELF: Entry=%016llX\n", entry);
 
 //	*rbootptr=(void *)entry;
 //	*rbootgbr=NULL;

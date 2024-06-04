@@ -1222,9 +1222,23 @@ __PDPCLIB_API__ char *strcat(char *s1, const char *s2);
 
 __asm {
 strlen:
-	MOV		R4, R6
-	MOV		0, R5
-	
+	MOV			R4, R6
+	MOV			0, R5
+
+#if 1
+	SHLD.Q		R4, -45, R3
+	AND			7, R3
+	CMPEQ		0, R3
+	BT			.L0_POK
+	CMPEQ		6, R3
+	BT			.L0_POK
+	BREAK
+
+//	TEST		7, R3
+//	BREAK?F
+	.L0_POK:
+#endif
+
 	.L0:
 	MOV.Q		(R4), R7
 	PSCHEQ.B	R7, R5, R1

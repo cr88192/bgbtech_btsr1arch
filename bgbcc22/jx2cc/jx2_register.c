@@ -945,7 +945,7 @@ int BGBCC_JX2C_ScratchAllocReg(
 
 		if(sctx->has_xgpr)
 		{
-			for(i=38; i>=32; i-=2)
+			for(i=38; i>=34; i-=2)
 			{
 				if(!(sctx->sreg_live&(3ULL<<i)))
 				{
@@ -993,7 +993,7 @@ int BGBCC_JX2C_ScratchAllocReg(
 
 		if(sctx->has_xgpr)
 		{
-			for(i=38; i>=32; i-=2)
+			for(i=38; i>=34; i-=2)
 			{
 				if(!(sctx->sreg_live&(3ULL<<i)))
 				{
@@ -1116,7 +1116,7 @@ int BGBCC_JX2C_ScratchQueryReg(
 
 		if(sctx->has_xgpr)
 		{
-			for(i=38; i>=32; i-=2)
+			for(i=38; i>=34; i-=2)
 			{
 				if(!(sctx->sreg_live&(3ULL<<i)))
 					{ n++; }

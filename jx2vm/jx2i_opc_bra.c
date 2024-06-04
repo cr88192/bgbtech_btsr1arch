@@ -25,6 +25,24 @@
 
 void BJX2_Op_BRA_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	bjx2_addr pc1;
+
+#if 1
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+	{
+		ctx->tr_rnxt=NULL;
+		return;
+	}
+	pc1=(op->pc2)+(op->imm*2);
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, pc1, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+	{
+		ctx->tr_rnxt=NULL;
+		return;
+	}
+#endif
+
 	ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
 	ctx->tr_rnxt=ctx->tr_rjmp;
 
@@ -35,6 +53,18 @@ void BJX2_Op_BRA_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRA_Pc0Disp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	bjx2_addr pc1;
+
+#if 0
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+	pc1=(op->pc2)+(op->imm*2);
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, pc1, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+#endif
+
 	ctx->regs[BJX2_REG_PC]=(op->pc)+(op->imm*2);
 	ctx->tr_rnxt=ctx->tr_rjmp;
 
@@ -46,6 +76,17 @@ void BJX2_Op_BRA_Pc0Disp(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_BSR_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr;
+	bjx2_addr pc1;
+
+#if 0
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+	pc1=(op->pc2)+(op->imm*2);
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, pc1, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+#endif
 	
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
@@ -70,6 +111,17 @@ void BJX2_Op_BSR_PcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_BSR_RegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr;
+	bjx2_addr pc1;
+
+#if 0
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+	pc1=(op->pc2)+(op->imm*2);
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, pc1, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+#endif
 	
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
@@ -94,7 +146,18 @@ void BJX2_Op_BSR_RegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_BSR_RegPc0Disp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr;
-	
+	bjx2_addr pc1;
+
+#if 0
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+	pc1=(op->pc2)+(op->imm*2);
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, pc1, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+#endif
+
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=op->pc2&0x0000FFFFFFFFFFFFULL;
 //	lr|=((u64)((sr&0xFFF3)|((sr>>24)&0x000C)))<<48;
@@ -873,14 +936,15 @@ void BJX2_Op_RTS_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr;
 
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+
 	lr=ctx->regs[BJX2_REG_LR];
 
-	if(!(ctx->status))
-	{
-		BJX2_MemTranslateTlb(ctx, lr, 4);
-		if(ctx->status)
-			return;
-	}
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, lr, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
 
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=ctx->regs[BJX2_REG_LR];
@@ -931,6 +995,7 @@ void BJX2_Op_RET_None(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BREAK_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	ctx->trapc=op->pc;
 	ctx->regs[BJX2_REG_PC]=op->pc;
 	BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BREAK);
 	ctx->tr_rnxt=NULL;
@@ -981,6 +1046,9 @@ void BJX2_Op_VSKC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	int va, vb, vc;
 	
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+	
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->rn];
 	vc=((va^ctx->vsk_rng)^(va>>16))&0xFFFF;
@@ -989,7 +1057,7 @@ void BJX2_Op_VSKC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	{
 		ctx->trapc=op->pc;
 		ctx->regs[BJX2_REG_PC]=op->pc;
-		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INVOP);
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_VSKGEN);
 		ctx->tr_rnxt=NULL;
 	}
 }
@@ -1061,8 +1129,18 @@ void BJX2_Op_BRA_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr, rn, pc1;
 	
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+
 	rn=ctx->regs[op->rn];
 	pc1=rn&0x0000FFFFFFFFFFFFULL;
+
+#if 1
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, pc1, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+#endif
 
 #if 0
 	if(op->rn==BJX2_REG_DHR)
@@ -1112,6 +1190,15 @@ void BJX2_Op_BSR_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	rn=ctx->regs[op->rn];
 	pc1=rn&0x0000FFFFFFFFFFFFULL;
+
+#if 1
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+	ctx->trapc=op->pc;
+	BJX2_MemTranslateTlb(ctx, pc1, 4);
+	if(ctx->status && ((ctx->status&0xF000)!=0xC000))
+		return;
+#endif
 
 	if(pc1&1)
 	{
@@ -1415,6 +1502,8 @@ void BJX2_Op_TRAP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_SYSCALL_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	if(ctx->status)
+		return;
 	ctx->trapc=op->pc2;
 	BJX2_ThrowFaultStatus(ctx, 0xE000|(ctx->regs[BJX2_REG_DLR]&0xFFF));
 }
@@ -1498,6 +1587,9 @@ u64 BJX2_GetCpuidVal(BJX2_Context *ctx, int ix)
 	fflags=ctx->cfg_fflags;
 	fflags&=~0xFF;
 
+	fflags|=8ULL<<56;
+	fflags|=2ULL<<61;
+
 	switch(ix)
 	{
 	case 0:
@@ -1563,9 +1655,11 @@ void BJX2_Op_CPUID_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	s64 addr;
+	s64 addr, tea;
 	u64	r0, r1, r2, r3;
 	int i, j, h;
+
+	ctx->trapc=op->pc;
 
 	BJX2_MemFlushPPA(ctx);
 
@@ -1575,6 +1669,9 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->mem_tlb_pr1_hi=0;
 	ctx->mem_tlb_pr1_hx=0;
 	ctx->mem_tlb_pr1_lo=0;
+
+	tea=ctx->regs[BJX2_REG_TEA];
+	tea=tea&0x0000FFFFFFFFFFFFULL;
 
 	r0=ctx->regs[BJX2_REG_DLR];
 	r1=ctx->regs[BJX2_REG_DHR];
@@ -1652,7 +1749,7 @@ void BJX2_Op_LDTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->mem_tlb_lo[h*4+0]=r0;
 	ctx->mem_tlb_hi[h*4+0]=r1;
 	
-//	printf("LDTLB H=%016llX L=%016llX\n", r1, r0);
+//	printf("LDTLB H=%016llX L=%016llX TEA=%012llX\n", r1, r0, tea);
 }
 
 void BJX2_Op_LDACL_None(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -2451,6 +2548,9 @@ void BJX2_Op_BNDCHKB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 v0, v1, v2;
 	int i;
 
+	if(ctx->status)
+		return;
+	
 	v0=ctx->regs[op->rn];
 	v1=ctx->regs[op->rm];
 	
@@ -2468,6 +2568,9 @@ void BJX2_Op_BNDCHKW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 v0, v1, v2;
 	int i;
 
+	if(ctx->status)
+		return;
+	
 	v0=ctx->regs[op->rn];
 	v1=ctx->regs[op->rm];
 	
@@ -2485,6 +2588,9 @@ void BJX2_Op_BNDCHKL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 v0, v1, v2;
 	int i;
 
+	if(ctx->status)
+		return;
+	
 	v0=ctx->regs[op->rn];
 	v1=ctx->regs[op->rm];
 	
@@ -2502,6 +2608,9 @@ void BJX2_Op_BNDCHKQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 v0, v1, v2;
 	int i;
 
+	if(ctx->status)
+		return;
+	
 	v0=ctx->regs[op->rn];
 	v1=ctx->regs[op->rm];
 	

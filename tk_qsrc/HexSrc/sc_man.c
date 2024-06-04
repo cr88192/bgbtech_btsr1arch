@@ -316,6 +316,7 @@ dt_bool SC_GetNumber(void)
 {
 	char *stopper;
 
+	stopper = NULL;
 	CheckOpen();
 	if(SC_GetString())
 	{

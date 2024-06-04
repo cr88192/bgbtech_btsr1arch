@@ -3589,6 +3589,34 @@ int BGBCC_JX2_TryNormalizeXReg(
 	return(rs);
 }
 
+int BGBCC_JX2_TryNormalizeXRegToReg(
+	BGBCC_JX2_Context *ctx, int nmid, int rs)
+{
+	int rn;
+
+	if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)
+	{
+		if(rs&1)
+		{
+			rn=0x20|(rs&0x1E);
+			return(rn);
+		}
+		rn=(rs&0x1E);
+		return(rn);
+	}
+
+	if(rs&1)
+	{
+		if(rs&32)
+			{ BGBCC_DBGBREAK }
+		rn=0x20|(rs&0x1E);
+		return(rn);
+	}
+//	rn=(rs&0x1E);
+	rn=(rs&0x3E);
+	return(rn);
+}
+
 int BGBCC_JX2_TryEmitOpRegRegReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rn)
 {

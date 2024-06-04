@@ -548,6 +548,7 @@ void I_WaitVBL(int vbls)
 
 void I_Quit(void)
 {
+	exit(0);
 }
 
 #if 0
@@ -661,4 +662,8 @@ int I_RegisterSong(void* data)
 
 //	data = NULL;
 //	return 1;
+}
+
+void I_MusicFineTick()
+{
 }

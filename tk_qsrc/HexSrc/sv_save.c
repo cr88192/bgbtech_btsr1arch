@@ -1233,6 +1233,7 @@ static void UnarchiveThinkers(void)
 	thinker_t *thinker;
 	thinkInfo_t *info;
 
+	tClass = 0;
 	AssertSegment(ASEG_THINKERS);
 	while((tClass = GET_BYTE) != TC_NULL)
 	{
@@ -1681,6 +1682,7 @@ static void CopyFile(char *sourceName, char *destName)
 	int length;
 	byte *buffer;
 
+	buffer = NULL;
 	length = M_ReadFile(sourceName, &buffer);
 	M_WriteFile(destName, buffer, length);
 	Z_Free(buffer);
@@ -1786,6 +1788,7 @@ static int UnarchiveByte()
 static int UnarchiveWord()
 {
 	short v;
+	v=0;
 	memcpy(&v, SavePtr.b, 2);
 	SavePtr.b+=2;
 	return(v);
@@ -1794,6 +1797,7 @@ static int UnarchiveWord()
 static int UnarchiveLong()
 {
 	int v;
+	v=0;
 	memcpy(&v, SavePtr.b, 4);
 	SavePtr.b+=4;
 	return(v);

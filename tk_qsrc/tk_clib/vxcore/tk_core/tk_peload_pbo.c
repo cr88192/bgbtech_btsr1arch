@@ -549,11 +549,13 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	i=(TK_GetRandom16ASLR()*64)&16383;
 
 //	imgptr=TKMM_PageAlloc(imgsz1);
-	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
-		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+//	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
+//		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+	imgptr=tk_mmap(0, imgsz1, TKMM_PROT_RWX,
+		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT, -1, 0);
 
 //	memset(imgptr, 0, imgsz1-32);
-//	memset(imgptr, 0, imgsz1);
+	memset(imgptr, 0, imgsz1);
 
 	TK_VMem_MProtectPages(imgptr, imgsz1,
 		TKMM_PROT_READ|TKMM_PROT_WRITE|
@@ -895,6 +897,7 @@ TK_FILE *TKPE_TryOpenImage(
 			return(fd);
 		}
 	}
+	TK_Env_FreePathList(path);
 	return(NULL);
 }
 
@@ -1054,6 +1057,7 @@ int TKPE_LookupPboImageRelPath(char *imgname, char *cwd, int isdll)
 				return(j);
 		}
 	}
+	TK_Env_FreePathList(path);
 	return(0);
 }
 

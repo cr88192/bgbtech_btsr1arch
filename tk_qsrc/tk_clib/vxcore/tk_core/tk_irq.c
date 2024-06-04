@@ -166,9 +166,14 @@ int TK_SchedAddTask(TKPE_TaskInfo *newtask)
 {
 	int i, j, k;
 	
+	if(newtask->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
+
 	if(newtask->sch_id>0)
 	{
 		i=newtask->sch_id;
+		if(i&(~1023))
+			__debugbreak();
 		if(tk_sched_taskarray[i]==newtask)
 			return(i);
 		__debugbreak();
@@ -192,6 +197,9 @@ int TK_SchedAddTask(TKPE_TaskInfo *newtask)
 	
 	if(i>=tk_sched_ntask)
 		i=tk_sched_ntask++;
+
+	if(i&(~1023))
+		__debugbreak();
 
 	tk_sched_taskarray[i]=newtask;
 	newtask->sch_id=i;
@@ -455,7 +463,7 @@ __interrupt void __isr_syscall(void)
 			if(umsg==TK_UMSG_CONKBHIT)
 			{
 				yres=args[0];
-				if((yres==0) && !task->ttyid)
+				if((yres==0) && !task->ttyid && !task->redir_stdin)
 				{
 					/* Bounce back to caller. */
 					*(int *)pret=tk_kbhit();
@@ -500,9 +508,9 @@ __interrupt void __isr_syscall(void)
 //		if((task2->us_lastsleep+100000)<TK_GetTimeUs())
 		if(task2->krnlptr &&
 			(task2->pid>2) &&
-			((task2->us_lastsleep+150000)<TK_GetTimeUs()))
+//			((task2->us_lastsleep+150000)<TK_GetTimeUs()))
 //			((task2->us_lastsleep+100000)<TK_GetTimeUs()))
-//			((task2->us_lastsleep+50000)<TK_GetTimeUs()))
+			((task2->us_lastsleep+50000)<TK_GetTimeUs()))
 		{
 //			task3=TK_CheckSchedNewTask(task2, 1);
 			task3=TK_CheckSchedNewTask(task2, 0);
@@ -674,6 +682,7 @@ void tk_syscall2_rtuser()
 #endif
 
 #ifndef __TK_CLIB_ONLY__
+
 void TK_Task_SyscallReturnToUser(TKPE_TaskInfo *utask)
 {
 	void *aptr[2];
@@ -685,14 +694,15 @@ void TK_Task_SyscallReturnToUser(TKPE_TaskInfo *utask)
 	taskern=(TKPE_TaskInfoKern *)task->krnlptr;
 
 	aptr[0]=utask;
+	aptr[1]=task;
 
 	taskern->task_sysc_user=(tk_kptr)utask;
 	tk_syscall2_rtuser();
 
 	if(aptr[0]!=utask)
-	{
-		__debugbreak();
-	}
+		{ __debugbreak(); }
+	if(aptr[1]!=task)
+		{ __debugbreak(); }
 }
 
 void TK_Task_SyscallSetReturn(TKPE_TaskInfo *task, u64 val)
@@ -741,7 +751,13 @@ int TK_Task_SyscallLoop(void *uptr)
 	umsg=0;		rptr=NULL;
 	args=NULL;
 
+	TK_GetCurrentEnvContext();
+
 	tk_dbg_printf("TK_Task_SyscallLoop: Start 0\n");
+
+	TK_GetCurrentEnvContext();
+
+//	tk_vfile_init();
 
 	/* Not handling syscalls yet, return to spawner. */
 	TK_Task_SyscallReturnToUser(uptr);
@@ -1094,7 +1110,14 @@ TK_EnvContext *TK_GetCurrentEnvContext()
 	}
 	env=(void *)(task->envctx);
 	if(env)
+	{
+		if(env->magic1!=TKFAT_MAGIC1)
+			__debugbreak();
+		if(env->magic2!=TKFAT_MAGIC1)
+			__debugbreak();
+
 		return(env);
+	}
 
 	tk_dbg_printf("TK_GetCurrentEnvContext: New %p:%p\n", task, env);
 
@@ -1138,6 +1161,23 @@ TKPE_TaskInfoKern *TK_GetCurrentTaskInfoKern()
 //	tk_printf("TK_GetCurrentEnvContext: New %p:%p\n", task, env);
 //	env=TK_EnvCtx_AllocContext();
 //	task->envctx=(tk_kptr)env;
+	return(NULL);
+}
+
+TKPE_TaskInfoKern *TK_GetTaskInfoKern(TKPE_TaskInfo *task)
+{
+	TKPE_TaskInfoKern *krnl;
+
+	if(!task)
+	{
+		__debugbreak();
+	}
+
+	krnl=(TKPE_TaskInfoKern *)(task->krnlptr);
+	if(krnl)
+		return(krnl);
+
+	__debugbreak();
 	return(NULL);
 }
 #endif
@@ -1233,7 +1273,8 @@ int TK_TaskGetCwd(TKPE_TaskInfo *task, char *buf, int sz)
 	if(task->envctx)
 	{
 //		strncpy(buf, task->envctx->cwd, sz);
-		TK_EnvCtx_GetCwd((void *)(task->envctx), buf, sz);
+//		TK_EnvCtx_GetCwd((void *)(task->envctx), buf, sz);
+		TK_EnvCtx_GetEnvVar((void *)(task->envctx), "PWD", buf, sz);
 		return(1);
 	}
 	
@@ -1439,6 +1480,98 @@ int TK_SeedRandomASLR()
 	while(i--)
 		TK_GetRandom();
 	tk_seed2_aslr=TK_GetRandom();
+}
+
+u64 TK_GetSlowRandom()
+{
+	u64 pv, v0, v1, v2, v3;
+	int i, j, k;
+	
+	pv=TK_GetRandom();
+	k=16+(pv&15); pv=pv>>4;
+	for(i=0; i<k; i++)
+		pv+=TK_GetRandom();
+	v0=TK_GetRandom();
+	k=16+(pv&15); pv=pv>>4;
+	for(i=0; i<k; i++)
+		pv+=TK_GetRandom();
+	v1=TK_GetRandom();
+	k=16+(pv&15); pv=pv>>4;
+	for(i=0; i<k; i++)
+		pv+=TK_GetRandom();
+	v2=TK_GetRandom();
+	k=16+(pv&15); pv=pv>>4;
+	for(i=0; i<k; i++)
+		pv+=TK_GetRandom();
+	v3=TK_GetRandom();
+	k=16+(pv&15); pv=pv>>4;
+	for(i=0; i<k; i++)
+		pv+=TK_GetRandom();
+
+	k=16+(pv&15);
+	for(i=0; i<k; i++)
+	{
+		j=v0&255;
+		v0=(v0>>8)|((v1^j)<<56);
+		v1=(v1>>8)|((v2^j)<<56);
+		v2=(v1>>8)|((v3^j)<<56);
+		v3=(v1>>8)|(((u64)j)<<56);
+		v0^=TK_GetRandom();
+		v1^=TK_GetRandom();
+		v2^=TK_GetRandom();
+		v3^=TK_GetRandom();
+	}
+	v0=v0^v1;
+	v1=v2^v3;
+	return(v0^v1);
+}
+
+int TK_GenerateUuid(void *ruid)
+{
+	u64 *rval;
+	u64 v0, v1;
+	
+	rval=ruid;
+	v0=TK_GetSlowRandom();
+	v1=TK_GetSlowRandom();
+	v0&=~(15ULL<<52);
+	v0|=4ULL<<52;
+	v1&=~0xC0;
+	v1|=0x80;
+	rval[0]=v0;
+	rval[1]=v1;
+	return(0);
+}
+
+int TK_GenerateTimeUuid(void *ruid)
+{
+	u64 *rval;
+	u64 v0, v1, t0;
+	
+	rval=ruid;
+	t0=TK_GetTimeUs();
+	t0=t0>>10;
+	v0=(t0>>0)&255;
+	v0=(v0<<8)|((t0>>8)&255);
+	v0=(v0<<8)|((t0>>16)&255);
+	v0=(v0<<8)|((t0>>24)&255);
+	v0=(v0<<8)|((t0>>32)&255);
+	v0=(v0<<8)|((t0>>40)&255);
+	t0=v0;
+
+	v0=TK_GetSlowRandom();
+	v1=TK_GetSlowRandom();
+
+	v0&=~((1ULL<<48)-1);
+	v0|=t0;
+	
+	v0&=~(15ULL<<52);
+	v0|=7ULL<<52;
+	v1&=~0xC0;
+	v1|=0x80;
+	rval[0]=v0;
+	rval[1]=v1;
+	return(0);
 }
 
 #ifndef __BJX2__
@@ -1977,6 +2110,7 @@ void TK_SleepCurrentThread(int usec)
 void tk_thread_entry(void)
 {
 	TKPE_TaskInfo *task;
+	TK_EnvContext *env;
 	int (*run)(void *ptr);
 	void *uptr;
 	int res;
@@ -1985,6 +2119,26 @@ void tk_thread_entry(void)
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	uptr=(void *)(task->argv);
 	run=(void *)(task->bootptr);
+
+	if(task->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
+
+	env=(void *)(task->envctx);
+	if(env)
+	{
+		if(env->magic1!=TKFAT_MAGIC1)
+			__debugbreak();
+		if(env->magic2!=TKFAT_MAGIC1)
+			__debugbreak();
+	}
+
+	if(!run)
+	{
+		tk_dbg_printf("tk_thread_entry: NULL run function, task=%p\n", task);
+		TK_ExitCurrentThread(res);
+		return;
+	}
+	
 	res=run(uptr);
 	TK_ExitCurrentThread(res);
 }
@@ -2017,7 +2171,13 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	TK_EnvContext *env0, *env1;
 	void *bootgbr, *boottbr, *bootptr, *sysc;
 	long bootptrbits;
-	int st, spusz, spksz, rqspusz;
+	int st, spusz, spksz, rqspusz, ptaskiskern;
+
+	if(!func)
+	{
+		tk_dbg_printf("TK_SpawnNewThread2B: Called with NULL func\n");
+		return(NULL);
+	}
 
 //	ctask=(TKPE_TaskInfo *)__arch_tbr;
 	ctask=(TKPE_TaskInfo *)TK_GET_TBR;
@@ -2027,6 +2187,13 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	ptask=TK_GetTaskProcessTask(btask);
 	if(!ptask)
 		return(NULL);
+
+	ptaskiskern=0;
+	if(ptask && (ptask->pid==1))
+	{
+		ptaskiskern=1;
+	}
+
 
 	tkp=(TKPE_TaskInfoKern *)(ptask->krnlptr);
 	tup=(TKPE_TaskInfoUser *)(ptask->usrptr);
@@ -2067,6 +2234,18 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	boot_newspb=TKMM_PageAlloc(spusz);
 	boot_newsp=boot_newspb+(spusz-1024);
 
+	if(ptaskiskern)
+	{
+		if(TK_VMem_CheckAddrIsPhysPage((long)boot_newspb))
+		{
+			boot_newspb=TK_VMem_PointerAsPhysical(boot_newspb);
+			boot_newsp=boot_newspb+(spusz-1024);
+		}
+	}
+
+	__setmemtrap(boot_newspb, 3);
+	__setmemtrap(boot_newspb+spusz-32, 3);
+
 	tk_dbg_printf("TK_SpawnNewThreadB: task=%p stack=%p..%p pid=%d\n",
 		task, boot_newspb, boot_newsp);
 
@@ -2077,6 +2256,9 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	env0=ptask->envctx;
 	env1=TK_EnvCtx_CloneContext(env0);
 
+	if(env1->magic1!=TKFAT_MAGIC1)
+		__debugbreak();
+
 	if(info)
 	{
 		task->ttyid=info->idTty;
@@ -2085,7 +2267,8 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	task->baseptr=ptask->baseptr;
 	task->bootptr=(tk_kptr)func;
 	task->basegbr=(tk_kptr)bootgbr;
-	task->boottbr=(tk_kptr)boottbr;
+//	task->boottbr=(tk_kptr)boottbr;
+	task->boottbr=(tk_kptr)ptask;
 	task->argv=(tk_kptr)uptr;
 
 	task->boot_sps=(tk_kptr)boot_newspb;
@@ -2107,6 +2290,9 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	tk1->usr_boot_spe=(tk_kptr)boot_newsp;
 //	tk1->krn_boot_sps=(tk_kptr)boot_newspbk;
 //	tk1->krn_boot_spe=(tk_kptr)boot_newspk;
+
+	if(task->envctx!=(tk_kptr)env1)
+		__debugbreak();
 
 	if(info && (info->flSched&1))
 	{
@@ -2146,6 +2332,12 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	tk1->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
 	tk1->ctx_regsave[TKPE_REGSAVE_GBR]=bootgbr;
 	tk1->ctx_regsave[TKPE_REGSAVE_SSP]=boot_newsp;
+
+	if(task->envctx!=(tk_kptr)env1)
+		__debugbreak();
+
+	if(env1->magic1!=TKFAT_MAGIC1)
+		__debugbreak();
 
 	if(ctask!=tk_task_syscall)
 	{

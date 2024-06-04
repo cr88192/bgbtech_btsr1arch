@@ -2,27 +2,48 @@
 Environment Variables via Context.
  */
 
-TK_EnvContext *tk_envctx_free;
+TK_EnvContext *tk_envctx_free=NULL;
 
 TK_EnvContext *TK_EnvCtx_AllocContext(void)
 {
 	TK_EnvContext *tmp;
+	int i;
 	
 	tmp=tk_envctx_free;
-	if(tmp)
+	
+	if(tmp && (tmp->magic1!=TKFAT_MAGIC1))
 	{
+		tk_dbg_printf("TK_EnvCtx_AllocContext: Free list bad magic\n");
+		tmp=NULL;
+		tk_envctx_free=NULL;
+	}
+
+	if(tmp)
+	{	
 		tk_envctx_free=tmp->next;
 		memset(tmp, 0, sizeof(TK_EnvContext));
+//		for(i=0; i<256; i++)
+//			tmp->envlst_hash[i]=-1;
+		tmp->magic1=TKFAT_MAGIC1;
+		tmp->magic2=TKFAT_MAGIC1;
 		return(tmp);
 	}
 	
-	tmp=tk_malloc(sizeof(TK_EnvContext));
+	tmp=tk_malloc_krn(sizeof(TK_EnvContext));
 	memset(tmp, 0, sizeof(TK_EnvContext));
+//	for(i=0; i<256; i++)
+//		tmp->envlst_hash[i]=-1;
+	tmp->magic1=TKFAT_MAGIC1;
+	tmp->magic2=TKFAT_MAGIC1;
 	return(tmp);
 }
 
 void TK_EnvCtx_FreeContext(TK_EnvContext *ctx)
 {
+	if(ctx->magic1!=TKFAT_MAGIC1)
+		__debugbreak();
+	if(ctx->magic2!=TKFAT_MAGIC1)
+		__debugbreak();
 	ctx->next=tk_envctx_free;
 	tk_envctx_free=ctx;
 }
@@ -35,9 +56,15 @@ TK_EnvContext *TK_EnvCtx_CloneContext(TK_EnvContext *ctx)
 	tmp=TK_EnvCtx_AllocContext();	
 	if(!ctx)
 	{
-		tk_dbg_printf("TK_EnvCtx_CloneContext: Clone Null Context\n");
+		tk_dbg_printf("TK_EnvCtx_CloneContext: Clone Null Context, new=%p\n", 
+			tmp);
 		return(tmp);
 	}
+
+	if(ctx->magic1!=TKFAT_MAGIC1)
+		__debugbreak();
+	if(ctx->magic2!=TKFAT_MAGIC1)
+		__debugbreak();
 
 	for(i=0; i<ctx->nenvlst; i++)
 	{
@@ -46,25 +73,39 @@ TK_EnvContext *TK_EnvCtx_CloneContext(TK_EnvContext *ctx)
 			ctx->envlst_val[i]);
 	}
 
-	tk_dbg_printf("TK_EnvCtx_CloneContext: Cwd=%s\n", ctx->cwd);
-
-	TK_EnvCtx_SetCwd(tmp, ctx->cwd);
+//	tk_dbg_printf("TK_EnvCtx_CloneContext: Cwd=%s\n", ctx->cwd);
+//	TK_EnvCtx_SetCwd(tmp, ctx->cwd);
 	
 	return(tmp);
+}
+
+void TK_EnvCtx_CheckInitContext(TK_EnvContext *ctx)
+{
+	int i;
+
+	if(!(ctx->envbufs))
+	{
+		ctx->envbufs=tk_malloc_krn(4096);
+		ctx->envbufe=ctx->envbufs+4096;
+		ctx->envbufc=ctx->envbufs;
+
+		ctx->envlst_var=tk_malloc(256*sizeof(char *));
+		ctx->envlst_val=tk_malloc(256*sizeof(char *));
+		ctx->envlst_chn=tk_malloc(256*sizeof(short));
+		ctx->nenvlst=0;
+		ctx->menvlst=256;
+
+		for(i=0; i<256; i++)
+			ctx->envlst_hash[i]=-1;
+	}	
 }
 
 char *TK_EnvCtx_SetEnvVarI_StrDup(TK_EnvContext *ctx, char *val)
 {
 	char *ct;
-	int l;
+	int i, l;
 	
-	if(!(ctx->envbufs))
-	{
-		ctx->envbufs=tk_malloc(4096);
-		ctx->envbufe=ctx->envbufs+4096;
-		ctx->envbufc=ctx->envbufs;
-	}
-	
+	TK_EnvCtx_CheckInitContext(ctx);
 	l=strlen(val);
 	if((ctx->envbufc+l)>=ctx->envbufe)
 		return(NULL);
@@ -75,17 +116,27 @@ char *TK_EnvCtx_SetEnvVarI_StrDup(TK_EnvContext *ctx, char *val)
 	return(ct);
 }
 
-int TK_EnvCtx_RepackEnvbuf(TK_EnvContext *ctx)
+int TK_EnvCtx_RepackEnvbuf(TK_EnvContext *ctx, int need)
 {
 	char *oldenv;
 	char *cn0, *cv0, *cn1, *cv1;
-	int i, j, k;
+	int i, j, k, l;
 
 	oldenv=ctx->envbufs;
 	
+	l=1024+need;
+	for(i=0; i<ctx->nenvlst; i++)
+	{
+		cn0=ctx->envlst_var[i];
+		cv0=ctx->envlst_val[i];
+		l+=strlen(cn0)+3;
+		l+=strlen(cv0)+3;
+	}
+	
 	k=ctx->envbufe-ctx->envbufs;
-	k=k+(k>>1);
-	ctx->envbufs=tk_malloc(k);
+	while(l>=k)
+		k=k+(k>>1);
+	ctx->envbufs=tk_malloc_krn(k);
 	ctx->envbufe=ctx->envbufs+k;
 	ctx->envbufc=ctx->envbufs;
 	
@@ -131,10 +182,55 @@ int TK_EnvCtx_GetEnvVarIdx(TK_EnvContext *ctx, int idx,
 	return(-1);
 }
 
+int TK_EnvCtx_HashName(TK_EnvContext *ctx, char *varn)
+{
+	char *cs;
+	int h;
+
+	cs=varn; h=0;
+	while(*cs)
+		{ h=h*251+(*cs++); }
+	h=h*251+1;
+	return((h>>8)&255);
+}
+
 int TK_EnvCtx_GetEnvVarI(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
 {
-	int i, j, k;
+	int i, j, k, l, h;
 
+	if(ctx->magic1!=TKFAT_MAGIC1)
+		__debugbreak();
+	if(ctx->magic2!=TKFAT_MAGIC1)
+		__debugbreak();
+
+	if(!ctx->nenvlst)
+		return(-1);
+
+	h=TK_EnvCtx_HashName(ctx, varn);
+	
+#if 0
+	l=1024;
+	i=ctx->envlst_hash[h];
+	while((i>=0) && ((l--)>0))
+	{
+		if(!strcmp(ctx->envlst_var[i], varn))
+		{
+			strncpy(bufv, ctx->envlst_val[i], sz);
+			return(1);
+		}
+		j=ctx->envlst_chn[i];
+		if(j==i)
+			break;
+		i=j;
+	}
+	if(l<=0)
+	{
+		tk_printf("TK_EnvCtx_GetEnvVarI: Broken Hash Chain\n");
+		ctx->envlst_hash[h]=-1;
+	}
+#endif
+
+#if 1
 	for(i=0; i<ctx->nenvlst; i++)
 	{
 		if(!strcmp(ctx->envlst_var[i], varn))
@@ -143,28 +239,29 @@ int TK_EnvCtx_GetEnvVarI(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
 			return(1);
 		}
 	}
+#endif
+
+	bufv[0]=0;
 	return(-1);
 }
 
 int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 {
 	char *cn1, *cv1;
-	int i, j, k;
+	int i, j, k, l, h;
+
+	if(ctx->magic1!=TKFAT_MAGIC1)
+		__debugbreak();
+	if(ctx->magic2!=TKFAT_MAGIC1)
+		__debugbreak();
 
 	tk_dbg_printf("TK_EnvCtx_SetEnvVarI: %s=%s\n", varn, varv);
 	
-	if(!ctx->envbufs)
-	{
-		ctx->envbufs=tk_malloc(65536);
-		ctx->envbufe=ctx->envbufs+65536;
-		ctx->envbufc=ctx->envbufs;
-
-		ctx->envlst_var=tk_malloc(256*sizeof(char *));
-		ctx->envlst_val=tk_malloc(256*sizeof(char *));
-		ctx->nenvlst=0;
-		ctx->menvlst=256;
-	}
+	h=TK_EnvCtx_HashName(ctx, varn);
 	
+	TK_EnvCtx_CheckInitContext(ctx);
+
+#if 1
 	for(i=0; i<ctx->nenvlst; i++)
 	{
 		if(!strcmp(ctx->envlst_var[i], varn))
@@ -179,8 +276,34 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 			break;
 		}
 	}
+#endif
+
+#if 0
+	i=ctx->envlst_hash[h]; l=1024;
+	while((i>=0) && ((l--)>0))
+	{
+		if(!strcmp(ctx->envlst_var[i], varn))
+		{
+			cv1=TK_EnvCtx_SetEnvVarI_StrDup(ctx, varv);
+			
+			if(cv1)
+			{
+				ctx->envlst_val[i]=cv1;
+				return(1);
+			}
+			break;
+		}
+		i=ctx->envlst_chn[i];
+	}
+	if(l<=0)
+	{
+		tk_printf("TK_EnvCtx_SetEnvVarI: Broken Hash Chain\n");
+		ctx->envlst_hash[h]=-1;
+	}
+#endif
 	
-	if(i>=ctx->nenvlst)
+//	if(i>=ctx->nenvlst)
+	if((i>=ctx->nenvlst) || (i<0))
 	{
 		if((ctx->nenvlst+1)>=ctx->menvlst)
 		{
@@ -189,6 +312,8 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 				ctx->envlst_var, k*sizeof(char *));
 			ctx->envlst_val=tk_realloc(
 				ctx->envlst_val, k*sizeof(char *));
+			ctx->envlst_chn=tk_realloc(
+				ctx->envlst_chn, k*sizeof(short));
 			ctx->menvlst=k;
 		}
 
@@ -200,15 +325,19 @@ int TK_EnvCtx_SetEnvVarI(TK_EnvContext *ctx, char *varn, char *varv)
 			i=ctx->nenvlst++;
 			ctx->envlst_var[i]=cn1;
 			ctx->envlst_val[i]=cv1;
+			ctx->envlst_chn[i]=ctx->envlst_hash[h];
+			ctx->envlst_hash[h]=i;
 			return(1);
 		}
 	}
 
-	TK_EnvCtx_RepackEnvbuf(ctx);
+//	TK_EnvCtx_RepackEnvbuf(ctx);
+	TK_EnvCtx_RepackEnvbuf(ctx, strlen(varn)+strlen(varv));
 	TK_EnvCtx_SetEnvVarI(ctx, varn, varv);
 	return(1);
 }
 
+#if 0
 int TK_EnvCtx_SetCwd(TK_EnvContext *ctx, char *cwd)
 {
 	if(cwd)
@@ -255,7 +384,9 @@ char *TK_EnvCtx_GetCwd(TK_EnvContext *ctx, char *buf, int sz)
 	
 	return(buf);
 }
+#endif
 
+#if 0
 int TK_EnvCtx_GetPathList(TK_EnvContext *ctx, char ***rlst, int *rnlst)
 {
 	*rlst=ctx->pathlst;
@@ -307,6 +438,7 @@ int TK_EnvCtx_SetPath(TK_EnvContext *ctx, char *path)
 	ctx->npathlst=ntb;
 	return(0);
 }
+#endif
 
 int TK_EnvCtx_SplitVar(char *str, char *bvar, char **rval)
 {
@@ -327,7 +459,8 @@ int TK_EnvCtx_SplitVar(char *str, char *bvar, char **rval)
 
 int TK_EnvCtx_GetEnvVar(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
 {
-	if(!strcmp(varn, "CWD"))
+#if 0
+	if(!strcmp(varn, "PWD"))
 	{
 		TK_EnvCtx_GetCwd(ctx, bufv, sz);
 		return(1);
@@ -338,6 +471,13 @@ int TK_EnvCtx_GetEnvVar(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
 		TK_EnvCtx_GetEnvVarI(ctx, varn, bufv, sz);
 		return(1);
 	}
+#endif
+
+	if(!strcmp(varn, "CWD"))
+	{
+		TK_EnvCtx_GetEnvVarI(ctx, "PWD", bufv, sz);
+		return(1);
+	}
 
 	TK_EnvCtx_GetEnvVarI(ctx, varn, bufv, sz);
 	return(1);
@@ -345,6 +485,7 @@ int TK_EnvCtx_GetEnvVar(TK_EnvContext *ctx, char *varn, char *bufv, int sz)
 
 int TK_EnvCtx_SetEnvVar(TK_EnvContext *ctx, char *varn, char *varv)
 {
+#if 0
 	if(!strcmp(varn, "CWD"))
 	{
 		TK_EnvCtx_SetCwd(ctx, varv);
@@ -355,6 +496,13 @@ int TK_EnvCtx_SetEnvVar(TK_EnvContext *ctx, char *varn, char *varv)
 	{
 		TK_EnvCtx_SetPath(ctx, varv);
 		TK_EnvCtx_SetEnvVarI(ctx, varn, varv);
+		return(1);
+	}
+#endif
+
+	if(!strcmp(varn, "CWD"))
+	{
+		TK_EnvCtx_SetEnvVarI(ctx, "PWD", varv);
 		return(1);
 	}
 	

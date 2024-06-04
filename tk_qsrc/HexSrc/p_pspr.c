@@ -1999,6 +1999,7 @@ static void CHolySeekerMissile(mobj_t *actor, angle_t thresh, angle_t turnMax)
 		CHolyFindTarget(actor);
 		return;
 	}
+	delta = 0;
 	dir = P_FaceMobj(actor, target, &delta);
 	if(delta > thresh)
 	{

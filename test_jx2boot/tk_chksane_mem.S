@@ -290,6 +290,35 @@ X(tk_checksane_mem_asm):
 	break?t
 .endif
 
+	/* check cache flush doesn't corrupt memory */
+	mov.q	r8, (sp, 8)
+	mov.q	r9, (sp, 24)
+	mov.q	r10, (sp, 40)
+	mov.q	r11, (sp, 56)
+
+	mov		-1, r2
+	invdc	r2
+	invic	r2
+
+	mov.q	(sp, 8), r2
+	mov.q	(sp, 24), r2
+	mov.q	(sp, 40), r2
+	mov.q	(sp, 56), r2
+
+	mov.q	(sp, 8), r4
+	mov.q	(sp, 24), r5
+	mov.q	(sp, 40), r6
+	mov.q	(sp, 56), r7
+	
+	cmpqeq	r4, r8
+	break?f
+	cmpqeq	r5, r9
+	break?f
+	cmpqeq	r6, r10
+	break?f
+	cmpqeq	r7, r11
+	break?f
+	
 
 	add	128, sp
 

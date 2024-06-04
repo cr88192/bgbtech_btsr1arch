@@ -372,6 +372,7 @@ void P_DeathThink(player_t *player)
 		}
 	}
 	P_CalcHeight(player);
+	delta = 0;
 
 	if(player->attacker && player->attacker != player->mo)
 	{ // Watch killer

@@ -99,6 +99,8 @@ int BGBCC_JX2C_EmitCheckValidLpRegisterIndex(
 	BGBCC_JX2_Context *sctx,
 	int idx, int algn)
 {
+	int rn;
+
 	if(!algn)
 		return(1);
 //	if(bgbcc_jx2_lcachereg[idx+1]&1)
@@ -107,6 +109,11 @@ int BGBCC_JX2C_EmitCheckValidLpRegisterIndex(
 //	if((bgbcc_jx2_lcachereg[idx+1]+1) != bgbcc_jx2_lcachereg[idx+0])
 	if((sctx->qcachereg[idx+1]+1) != sctx->qcachereg[idx+0])
 		return(0);
+		
+	rn=sctx->qcachereg[idx+1];
+//	if(((rn&31)==0) || ((rn&31)==14))
+//		return(0);
+	
 	return(1);
 }
 

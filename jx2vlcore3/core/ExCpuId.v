@@ -311,6 +311,30 @@ begin
 	valCpuIdLo1[31] = 1;
 `endif
 
+	valCpuIdLo1[63:61] = 3'h2;
+
+`ifdef jx2_tlbsz_16
+	valCpuIdLo1[60:56] = 5'h4;
+`endif
+`ifdef jx2_tlbsz_32
+	valCpuIdLo1[60:56] = 5'h5;
+`endif
+`ifdef jx2_tlbsz_64
+	valCpuIdLo1[60:56] = 5'h6;
+`endif
+`ifdef jx2_tlbsz_128
+	valCpuIdLo1[60:56] = 5'h7;
+`endif
+`ifdef jx2_tlbsz_256
+	valCpuIdLo1[60:56] = 5'h8;
+`endif
+`ifdef jx2_tlbsz_512
+	valCpuIdLo1[60:56] = 5'h9;
+`endif
+`ifdef jx2_tlbsz_1024
+	valCpuIdLo1[60:56] = 5'hA;
+`endif
+
 	tResLoA = arrCpuIdLo[index[2:0]];
 	tResHiA = UV64_00;
 //	tResHiA = arrCpuIdHi[index[2:0]];

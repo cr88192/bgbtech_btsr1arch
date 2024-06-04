@@ -3,6 +3,15 @@ u64 tk_gettimeus_v(void);
 void tk_sprintf(char *dst, char *str, ...);
 void tk_con_putc(int ch);
 
+int TKUSB_KbHit(void);
+int TKUSB_KbTryGetch(void);
+
+int tk_ps2kb_kbhit(void);
+int tk_ps2trygetch(void);
+int tk_ps2getch(void);
+
+void tk_vsprintf(char *buf, char *str, va_list lst);
+
 _tkgdi_context_t *TKGDI_GetCurrentGdiContext();
 
 char *tk_puts_gbltemp;
@@ -23,6 +32,7 @@ u64 MMIO_BASE_E = 0xFFFFF000E000ULL;
 #endif
 
 static char *tk_hextab="0123456789ABCDEF";
+static char *tk_hextab_lc="0123456789abcdef";
 
 void tk_dbg_putc(int val)
 {
@@ -110,13 +120,25 @@ void tk_putc_tty(int val, int tty)
 void tk_putc_i(int val)
 {
 	TKPE_TaskInfo *task;
-	int ttyid;
+	int ttyid, hstdo;
 
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	if(task)
+	{
 		ttyid=task->ttyid;
+		hstdo=task->redir_stdout;
+	}
 	else
+	{
 		ttyid=0;
+		hstdo=0;
+	}
+
+	if(hstdo)
+	{
+		tk_hputc(task, hstdo, val);
+		return;
+	}
 
 	if(val=='\n')
 	{
@@ -392,6 +414,95 @@ int tk_get_ttyid(void)
 	return(ttyid);
 }
 
+int tk_get_redir_stdin(void)
+{
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		ttyid=task->redir_stdin;
+	else
+		ttyid=0;
+	return(ttyid);
+}
+
+int tk_get_redir_stdout(void)
+{
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		ttyid=task->redir_stdout;
+	else
+		ttyid=0;
+	return(ttyid);
+}
+
+int tk_set_redir_stdin(int hdl)
+{
+	TKPE_TaskInfo *task;
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		task->redir_stdin=hdl;
+	return(hdl);
+}
+
+int tk_set_redir_stdout(int hdl)
+{
+	TKPE_TaskInfo *task;
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		task->redir_stdout=hdl;
+	return(hdl);
+}
+
+
+int tk_get_next_redir_stdin(void)
+{
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		ttyid=task->next_redir_stdin;
+	else
+		ttyid=0;
+	return(ttyid);
+}
+
+int tk_get_next_redir_stdout(void)
+{
+	TKPE_TaskInfo *task;
+	int ttyid;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		ttyid=task->next_redir_stdout;
+	else
+		ttyid=0;
+	return(ttyid);
+}
+
+int tk_set_next_redir_stdin(int hdl)
+{
+	TKPE_TaskInfo *task;
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		task->next_redir_stdin=hdl;
+	return(hdl);
+}
+
+int tk_set_next_redir_stdout(int hdl)
+{
+	TKPE_TaskInfo *task;
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(task)
+		task->next_redir_stdout=hdl;
+	return(hdl);
+}
+
 int tk_kbhit_i(void)
 {
 	TKPE_TaskInfo *task;
@@ -421,13 +532,27 @@ int tk_kbhit_i(void)
 int tk_getch_i(void)
 {
 	TKPE_TaskInfo *task;
-	int ttyid;
+	int ttyid, hstdi, sz;
 
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	if(task)
+	{
 		ttyid=task->ttyid;
+		hstdi=task->redir_stdin;
+	}
 	else
+	{
 		ttyid=0;
+		hstdi=0;
+	}
+
+	if(hstdi)
+	{
+		sz=tk_hgetc(task, hstdi);
+		if(sz<0)
+			task->stdin_eof=1;
+		return(sz);
+	}
 
 	if(ttyid && !tk_issyscall())
 		{ return(tk_getch_tty(ttyid)); }
@@ -765,7 +890,7 @@ void tk_puts_n(char *msg, int n)
 {
 	char tb[128];
 	TKPE_TaskInfo *task;
-	int ttyid;
+	int ttyid, hstdo;
 
 	char *s;
 	int i, nonasc;
@@ -776,10 +901,23 @@ void tk_puts_n(char *msg, int n)
 	{
 		task=(TKPE_TaskInfo *)TK_GET_TBR;
 		if(task)
+		{
 			ttyid=task->ttyid;
+			hstdo=task->redir_stdout;
+		}
 		else
+		{
 			ttyid=0;
+			hstdo=0;
+		}
 		
+
+		if(hstdo)
+		{
+			tk_hwrite(task, hstdo, msg, n);
+			return;
+		}
+
 		if(ttyid && !tk_issyscall())
 		{		
 //			tk_puts_tty(msg, ttyid);
@@ -820,6 +958,7 @@ void tk_dbg_puts_n(char *msg, int n)
 	char *s;
 	int i;
 	
+#ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel() || tk_issyscall())
 	{
 		s=msg;
@@ -830,6 +969,7 @@ void tk_dbg_puts_n(char *msg, int n)
 		}
 		return;
 	}
+#endif
 }
 
 void tk_dbg_puts(char *msg)
@@ -865,6 +1005,8 @@ void tk_gets(char *buf)
 		i=tk_getch();
 		if(i<=0)
 		{
+			if(tk_get_redir_stdin())
+				break;
 			TK_YieldCurrentThread();
 			continue;
 		}
@@ -1049,10 +1191,12 @@ int tk_print_hex_genw(u64 v)
 	u64 w;
 	int i;
 
-	i=1;
-	while(v>=16)
-//	while(v>>4)
-		{ v=v>>4; i++; }
+	w=v;	i=1;
+	while(w>=16)
+		{ w=w>>4; i++; }
+
+	if((v>>(i*4))!=0)
+		__debugbreak();
 
 //	__debugbreak();
 
@@ -1167,7 +1311,7 @@ void tk_vprintf(char *str, va_list lst)
 	char pcfill;
 	char *s, *s1;
 	long long v;
-	int i, w, ll;
+	int i, w, ll, ljust;
 
 //	plst=(void **)(&str);
 //	plst++;
@@ -1189,6 +1333,15 @@ void tk_vprintf(char *str, va_list lst)
 		if(s[1]=='%')
 			{ s+=2; tk_putc('%'); continue; }
 		s++;
+		
+		if(*s=='-')
+		{
+			ljust=1;
+			s++;
+		}else
+		{
+			ljust=0;
+		}
 		
 		if(*s=='0')
 		{
@@ -1240,6 +1393,7 @@ void tk_vprintf(char *str, va_list lst)
 			break;
 
 		case 'X':
+		case 'x':
 			if(ll)
 			{
 				v=va_arg(lst, long long);
@@ -1265,7 +1419,30 @@ void tk_vprintf(char *str, va_list lst)
 			s1=va_arg(lst, char *);
 			if(!s1)
 				s1="(null)";
-			tk_puts(s1);
+			if(w)
+			{
+				i=w-strlen(s1);
+				if(ljust)
+				{
+					tk_puts(s1);
+					while(i>0)
+					{
+						tk_putc(' ');
+						i--;
+					}
+				}else
+				{
+					while(i>0)
+					{
+						tk_putc(' ');
+						i--;
+					}
+					tk_puts(s1);
+				}
+			}else
+			{
+				tk_puts(s1);
+			}
 			break;
 
 		case 'p':
@@ -1410,10 +1587,15 @@ void tk_sprintf(char *buf, char *str, ...)
 
 void tk_dbg_printf(char *str, ...)
 {
-	char tbuf[512];
+//	static char tbuf[512];
+//	char tbuf[512];
+	char tbuf[256];
 	va_list lst;
 
 	va_start(lst, str);
+	
+//	__debugbreak();
+	
 	tk_vsprintf(tbuf, str, lst);
 	tk_dbg_puts(tbuf);
 	va_end(lst);
@@ -1499,7 +1681,7 @@ char **tk_rsplit_sep(char *str, int sep)
 			ta[nta++]=tk_rstrdup(tb);
 			continue;
 		}
-			
+
 		if(sep<=' ')
 		{
 			if(*s>' ')
@@ -1729,4 +1911,266 @@ s64 tk_atoi(char *str)
 	li=tk_strtol(s, 10);
 	if(sg)li=-li;
 	return(li);
+}
+
+int TK_FormatUuidAsString(char *str, void *ruid)
+{
+	byte *vuid;
+	int i0, i1, i2, i3;
+
+	vuid=ruid;
+	i0=vuid[0];	i1=vuid[1];
+	i2=vuid[2];	i3=vuid[3];
+	str[0]=tk_hextab_lc[(i0>>4)&15];
+	str[1]=tk_hextab_lc[(i0>>0)&15];
+	str[2]=tk_hextab_lc[(i1>>4)&15];
+	str[3]=tk_hextab_lc[(i1>>0)&15];
+	str[4]=tk_hextab_lc[(i2>>4)&15];
+	str[5]=tk_hextab_lc[(i2>>0)&15];
+	str[6]=tk_hextab_lc[(i3>>4)&15];
+	str[7]=tk_hextab_lc[(i3>>0)&15];
+	str[8]='-';
+	i0=vuid[4];	i1=vuid[5];
+	i2=vuid[6];	i3=vuid[7];
+	str[ 9]=tk_hextab_lc[(i0>>4)&15];
+	str[10]=tk_hextab_lc[(i0>>0)&15];
+	str[11]=tk_hextab_lc[(i1>>4)&15];
+	str[12]=tk_hextab_lc[(i1>>0)&15];
+	str[13]='-';
+	str[14]=tk_hextab_lc[(i2>>4)&15];
+	str[15]=tk_hextab_lc[(i2>>0)&15];
+	str[16]=tk_hextab_lc[(i3>>4)&15];
+	str[17]=tk_hextab_lc[(i3>>0)&15];
+	str[18]='-';
+	i0=vuid[ 8];	i1=vuid[ 9];
+	i2=vuid[10];	i3=vuid[11];
+	str[19]=tk_hextab_lc[(i0>>4)&15];
+	str[20]=tk_hextab_lc[(i0>>0)&15];
+	str[21]=tk_hextab_lc[(i1>>4)&15];
+	str[22]=tk_hextab_lc[(i1>>0)&15];
+	str[23]='-';
+	str[24]=tk_hextab_lc[(i2>>4)&15];
+	str[25]=tk_hextab_lc[(i2>>0)&15];
+	str[26]=tk_hextab_lc[(i3>>4)&15];
+	str[27]=tk_hextab_lc[(i3>>0)&15];
+	i0=vuid[12];	i1=vuid[13];
+	i2=vuid[14];	i3=vuid[15];
+	str[28]=tk_hextab_lc[(i0>>4)&15];
+	str[29]=tk_hextab_lc[(i0>>0)&15];
+	str[30]=tk_hextab_lc[(i1>>4)&15];
+	str[31]=tk_hextab_lc[(i1>>0)&15];
+	str[32]=tk_hextab_lc[(i2>>4)&15];
+	str[33]=tk_hextab_lc[(i2>>0)&15];
+	str[34]=tk_hextab_lc[(i3>>4)&15];
+	str[35]=tk_hextab_lc[(i3>>0)&15];
+	str[36]=0;
+	return(0);
+}
+
+int TK_FormatGuidAsString(char *str, void *ruid)
+{
+	TK_FormatUuidAsString(str+1, ruid);
+	str[ 0]='{';
+	str[37]='}';
+	str[38]=0;
+	return(0);
+}
+
+int TK_ParseHexByteFromString(char *cs)
+{
+	int c0, c1, i0, i1;
+	int i;
+
+	c0=cs[0];	c1=cs[1];
+	i0=-1;		i1=-1;
+	if((c0>='0') && (c0<='9'))
+		i0=c0-'0';
+	if((c0>='A') && (c0<='F'))
+		i0=c0-('A'-10);
+	if((c0>='a') && (c0<='f'))
+		i0=c0-('a'-10);
+
+	if((c1>='0') && (c1<='9'))
+		i1=c1-'0';
+	if((c0>='A') && (c1<='F'))
+		i1=c1-('A'-10);
+	if((c0>='a') && (c1<='f'))
+		i1=c1-('a'-10);
+	i=(i0<<4)|i1;
+	return(i);
+}
+
+int TK_ParseUuidFromString(char *str, void *ruid)
+{
+	byte *vuid;
+	int i0, i1, i2, i3;
+
+	vuid=ruid;
+	
+	i0=str[ 8];	i1=str[13];
+	i2=str[18];	i3=str[23];
+	if((i0|i1|i2|i3)!='-')
+		return(0);
+	if((i0&i1&i2&i3)!='-')
+		return(0);
+	
+	i0=TK_ParseHexByteFromString(str+ 0);
+	i1=TK_ParseHexByteFromString(str+ 2);
+	i2=TK_ParseHexByteFromString(str+ 4);
+	i3=TK_ParseHexByteFromString(str+ 6);
+	vuid[ 0]=i0;	vuid[ 1]=i1;
+	vuid[ 2]=i2;	vuid[ 3]=i3;
+	if((i0|i1|i2|i3)<0)
+		return(0);
+
+	i0=TK_ParseHexByteFromString(str+ 9);
+	i1=TK_ParseHexByteFromString(str+11);
+	i2=TK_ParseHexByteFromString(str+14);
+	i3=TK_ParseHexByteFromString(str+16);
+	vuid[ 4]=i0;	vuid[ 5]=i1;
+	vuid[ 6]=i2;	vuid[ 7]=i3;
+	if((i0|i1|i2|i3)<0)
+		return(0);
+
+	i0=TK_ParseHexByteFromString(str+19);
+	i1=TK_ParseHexByteFromString(str+21);
+	i2=TK_ParseHexByteFromString(str+24);
+	i3=TK_ParseHexByteFromString(str+26);
+	vuid[ 8]=i0;	vuid[ 9]=i1;
+	vuid[10]=i2;	vuid[11]=i3;
+	if((i0|i1|i2|i3)<0)
+		return(0);
+
+	i0=TK_ParseHexByteFromString(str+28);
+	i1=TK_ParseHexByteFromString(str+30);
+	i2=TK_ParseHexByteFromString(str+32);
+	i3=TK_ParseHexByteFromString(str+34);
+	vuid[12]=i0;	vuid[13]=i1;
+	vuid[14]=i2;	vuid[15]=i3;
+	if((i0|i1|i2|i3)<0)
+		return(0);
+
+	return(1);
+}
+
+int TK_ParseGuidFromString(char *str, void *ruid)
+{
+	if((str[0]!='{') || (str[37]!='}'))
+		return(0);
+	return(TK_ParseUuidFromString(str, ruid));
+}
+
+int TK_CheckDWordIsFourcc(u32 val)
+{
+	u32 mv;
+	
+	mv=(val|(val+0x01010101U))&0x80808080U;
+	if(mv)
+		return(0);
+	if(!((val+0x60606060U)&0x80808080U))
+		return(0);
+	return(1);
+
+#if 0	
+	if(val<0x20202020U)
+		return(0);
+	if(val>0x7E7E7E7EU)
+		return(0);
+	if(val&0x80808080U)
+		return(0);
+	if((val+0x01010101U)&0x80808080U)
+		return(0);
+	if(!((val+0x60606060U)&0x80808080U))
+		return(0);
+	return(1);
+#endif
+}
+
+int TK_CheckQWordIsFourcc(u64 val)
+{
+	return((((u32)val)==val) && TK_CheckDWordIsFourcc(val));
+}
+
+int TK_CheckQWordIsEightcc(u64 val)
+{
+	return(TK_CheckDWordIsFourcc(val) && TK_CheckDWordIsFourcc(val>>32));
+}
+
+/*
+ * 1: UUID/GUID
+ * 2: Dual FOURCC
+ * 3: Dual EIGHTCC or SIXTEENCC
+ */
+int TK_UidCheckCategory(void *ruid)
+{
+	u64 v0, v1;
+	v0=((u64 *)ruid)[0];
+	v1=((u64 *)ruid)[1];
+
+	if(TK_CheckQWordIsEightcc(v0) && TK_CheckQWordIsEightcc(v1))
+	{
+		return(3);
+	}
+
+	if(TK_CheckQWordIsFourcc(v0) && TK_CheckQWordIsFourcc(v1))
+	{
+		return(2);
+	}
+	return(1);
+}
+
+int TK_FormatCatIdAsString(char *str, void *ruid)
+{
+	int cat;
+	cat=TK_UidCheckCategory(ruid);
+	
+	if(cat==1)
+	{
+		return(TK_FormatGuidAsString(str, ruid));
+	}
+
+	if(cat==2)
+	{
+		str[ 0]='\'';
+		str[ 1]=((byte *)ruid)[ 0];
+		str[ 2]=((byte *)ruid)[ 1];
+		str[ 3]=((byte *)ruid)[ 2];
+		str[ 4]=((byte *)ruid)[ 3];
+		str[ 5]='\'';
+		str[ 6]='/';
+		str[ 7]='\'';
+		str[ 8]=((byte *)ruid)[ 8];
+		str[ 9]=((byte *)ruid)[ 9];
+		str[10]=((byte *)ruid)[10];
+		str[11]=((byte *)ruid)[11];
+		str[12]='\'';
+		str[13]=0;
+		return(0);
+	}
+
+	if(cat==3)
+	{
+		str[ 0]='\'';
+		str[ 1]=((byte *)ruid)[ 0];
+		str[ 2]=((byte *)ruid)[ 1];
+		str[ 3]=((byte *)ruid)[ 2];
+		str[ 4]=((byte *)ruid)[ 3];
+		str[ 5]=((byte *)ruid)[ 4];
+		str[ 6]=((byte *)ruid)[ 5];
+		str[ 7]=((byte *)ruid)[ 6];
+		str[ 8]=((byte *)ruid)[ 7];
+		str[ 9]=((byte *)ruid)[ 8];
+		str[10]=((byte *)ruid)[ 9];
+		str[11]=((byte *)ruid)[10];
+		str[12]=((byte *)ruid)[11];
+		str[13]=((byte *)ruid)[12];
+		str[14]=((byte *)ruid)[13];
+		str[15]=((byte *)ruid)[14];
+		str[16]=((byte *)ruid)[15];
+		str[17]='\'';
+		str[18]=0;
+		return(0);
+	}
+	
+	return(-1);
 }

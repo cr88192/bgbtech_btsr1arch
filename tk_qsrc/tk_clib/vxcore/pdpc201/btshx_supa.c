@@ -448,13 +448,29 @@ int __sthf16(float ivf)
 
 int __read(int handle, void *buf, size_t len, int *errind)
 {
-	int i;
+	TK_FILE *fd;
+	int i, j, n;
 
 	if(handle<3)
 	{
+		for(i=0; i<len; i++)
+		{
+			j=tk_getch();
+			((char *)buf)[i]=j;
+			if(j<0)
+				break;
+		}
+		return(i);
+
 //		tk_gets_n(buf, len);
-		return(0);
+//		return(0);
 	}
+
+	if(handle>=256)
+		{ __debugbreak(); }
+	fd=btshx_tk_handles[handle];
+	if(!fd)
+		{ __debugbreak(); }
 
 	if(errind)*errind=0;
 	i=tk_fread(buf, 1, len, btshx_tk_handles[handle]);
@@ -466,6 +482,7 @@ int __read(int handle, void *buf, size_t len, int *errind)
 
 int __write(int handle, const void *buf, size_t len, int *errind)
 {
+	TK_FILE *fd;
 	void *ptr1;
 	int i;
 
@@ -475,6 +492,12 @@ int __write(int handle, const void *buf, size_t len, int *errind)
 		tk_puts_n(ptr1, len);
 		return(0);
 	}
+
+	if(handle>=256)
+		{ __debugbreak(); }
+	fd=btshx_tk_handles[handle];
+	if(!fd)
+		{ __debugbreak(); }
 
 	if(errind)*errind=0;
 	ptr1=(void *)buf;
@@ -487,13 +510,29 @@ int __write(int handle, const void *buf, size_t len, int *errind)
 
 void __seek(int handle, long offset, int whence)
 {
-	tk_fseek(btshx_tk_handles[handle], offset, whence);
+	TK_FILE *fd;
+	if(handle<3)
+		{ __debugbreak(); }
+	if(handle>=256)
+		{ __debugbreak(); }
+	fd=btshx_tk_handles[handle];
+	if(!fd)
+		{ __debugbreak(); }
+	tk_fseek(fd, offset, whence);
 //	lseek(handle, offset, whence);
 }
 
 long __tell(int handle)
 {
-	return(tk_ftell(btshx_tk_handles[handle]));
+	TK_FILE *fd;
+	if(handle<3)
+		{ __debugbreak(); }
+	if(handle>=256)
+		{ __debugbreak(); }
+	fd=btshx_tk_handles[handle];
+	if(!fd)
+		{ __debugbreak(); }
+	return(tk_ftell(fd));
 }
 
 int __open(const char *a, int b, int *rc)
@@ -571,9 +610,14 @@ void __close(int handle)
 	TK_FILE *fd;
 
 	if(handle<3)
-		return;
-
+		{ __debugbreak(); }
+	if(handle>=256)
+		{ __debugbreak(); }
 	fd=btshx_tk_handles[handle];
+	if(!fd)
+		{ __debugbreak(); }
+
+//	fd=btshx_tk_handles[handle];
 	btshx_tk_handles[handle]=NULL;
 	tk_fclose(fd);
 //	close(handle);
@@ -690,7 +734,7 @@ int __unlink(const char *a, int b)
 	TK_Env_GetCwdQualifyName(tfn, 512, s);
 	TKSH_NormalizePath(tfn, tfn);
 	
-	tk_printf("__unlink: %s\n", tfn);
+//	tk_printf("__unlink: %s\n", tfn);
 
 	tk_unlink(tfn);
 	return(0);
@@ -707,7 +751,7 @@ int __fsctl(const char *a, int b, void *c)
 	TK_Env_GetCwdQualifyName(tfn, 512, s);
 	TKSH_NormalizePath(tfn, tfn);
 	
-	tk_printf("__fsctl: %s\n", tfn);
+//	tk_printf("__fsctl: %s\n", tfn);
 
 	tk_fsctl(tfn, b, c);
 	return(0);
@@ -738,7 +782,7 @@ int __rename2(const char *oldfn, const char *newfn, const char *mode)
 	TK_Env_GetCwdQualifyName(tfnn, 512, (char *)newfn);
 	TKSH_NormalizePath(tfnn, tfnn);
 	
-	tk_printf("__rename2: %s %s %s\n", tfno, tfnn, mode);
+//	tk_printf("__rename2: %s %s %s\n", tfno, tfnn, mode);
 
 	tk_rename((char *)tfno, (char *)tfnn, (char *)mode);
 	return(0);
@@ -921,17 +965,70 @@ void __exita(int status)
 }
 
 u64 tk_gettimeus_v(void);
+u64 tk_epoch_refbias=0;
+
+#ifndef __TK_CLIB_ONLY__
+u64 TK_GetRefEpochBias()
+{
+//	static char *builddate=__DATE__;
+	char bmos[8];
+	int bdy, byr, bmo;
+
+	if(tk_epoch_refbias)
+		return(tk_epoch_refbias);
+
+	bdy=0;	byr=0;
+	sscanf(__DATE__, "%s %d %d", bmos, &bdy, &byr);
+	bmo=tk_month_string_to_index(bmos);
+	tk_epoch_refbias=((byr-1970)*31557600ULL)+(bdy*86400ULL)+((bmo-1)*2629800);
+	tk_epoch_refbias=tk_epoch_refbias*1000000ULL;
+	return(tk_epoch_refbias);
+}
+#endif
 
 #ifdef __BJX2__
-u64 TK_GetTimeUs(void);
+u64 TK_GetTimeUsI(void);
 
 __asm {
-TK_GetTimeUs:
+TK_GetTimeUsI:
 	CPUID	28
 	MOV		R0, R2
 //	BREAK
 	RTS
 };
+
+u64 TK_GetTimeUs(void)
+{
+	static u64 epochbias=0;
+	u64 t0, t1;
+	
+	if(!epochbias)
+	{
+#ifndef __TK_CLIB_ONLY__
+		if(tk_iskernel())
+		{
+			epochbias=TK_GetRefEpochBias();
+		}
+		else
+		{
+			t1=tk_gettimeus_v();
+			t0=TK_GetTimeUsI();
+			epochbias=t1-t0;
+			if(!epochbias)
+				epochbias=1;
+		}
+#else
+		t1=tk_gettimeus_v();
+		t0=TK_GetTimeUsI();
+		epochbias=t1-t0;
+		if(!epochbias)
+			epochbias=1;
+#endif
+	}
+
+	t0=TK_GetTimeUsI();
+	return(t0+epochbias);
+}
 #endif
 
 #ifndef __BJX2__
@@ -989,11 +1086,15 @@ s64 TK_GetTimeUs(void)
 u32 TK_GetTimeMs(void)
 {
 #if 1
+	static u64 usecbase=0;
 	u64 *sreg;
 	u64 us;
 	int ms;
 
 	us=TK_GetTimeUs();
+	if(!usecbase)
+		usecbase=us;
+	us-=usecbase;
 	us=(us*2097)>>11;	//correct for (us>>10) vs us/1000.
 	ms=us>>10;
 	return(ms);
@@ -1267,14 +1368,14 @@ void tk_print_hex_n(u32 v, int n)
 	if(n>0)tk_putc(chrs[(v    )&15]);
 }
 
-int tk_print_hex_genw(u32 v)
+int tk_print_hex_genw(u64 v)
 {
-	u32 w;
+	u64 w;
 	int i;
 
-	i=1;
-	while(v>=16)
-		{ v=v>>4; i++; }
+	w=v;	i=1;
+	while(w>=16)
+		{ w=w>>4; i++; }
 
 #if 0
 	w=v; i=1;
@@ -1478,6 +1579,7 @@ void tk_printf(char *str, ...)
 				{ tk_print_decimal(v); }
 			break;
 		case 'X':
+		case 'x':
 			v=va_arg(lst, int);
 
 			if(!w)w=tk_print_hex_genw(v);
@@ -1578,6 +1680,7 @@ void tk_vprintf(char *str, va_list lst)
 				{ tk_print_decimal(v); }
 			break;
 		case 'X':
+		case 'x':
 			v=va_arg(lst, int);
 
 			if(!w)w=tk_print_hex_genw(v);
@@ -1630,7 +1733,9 @@ char *tk_sprint_hex(char *ct, u32 v)
 char *tk_sprint_hex_n(char *ct, u64 v, int n)
 {
 	static char *chrs="0123456789ABCDEF";
+	char *ct0;
 
+	ct0=ct;
 	if(n>15)*ct++=(chrs[(v>>60)&15]);
 	if(n>14)*ct++=(chrs[(v>>56)&15]);
 	if(n>13)*ct++=(chrs[(v>>52)&15]);
@@ -1647,6 +1752,12 @@ char *tk_sprint_hex_n(char *ct, u64 v, int n)
 	if(n> 2)*ct++=(chrs[(v>> 8)&15]);
 	if(n> 1)*ct++=(chrs[(v>> 4)&15]);
 	if(n> 0)*ct++=(chrs[(v    )&15]);
+	
+	if((ct-ct0)!=n)
+	{
+		__debugbreak();
+	}
+	
 	return(ct);
 }
 
@@ -1714,7 +1825,8 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 	char pcfill;
 	char *s, *s1;
 	char *ct;
-	int v, w, wf;
+	s64 v;
+	int w, wf, isll;
 
 	ct=dst;
 	s=str;
@@ -1726,6 +1838,8 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 		if(s[1]=='%')
 			{ s+=2; *ct++='%'; continue; }
 		s++;
+
+		isll=0;
 
 #if 1
 		if(*s=='0')
@@ -1754,6 +1868,19 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 					wf=(wf*10)+((*s++)-'0');
 			}
 		}
+		
+		if(*s=='l')
+		{
+			s++;
+			if(s[1]=='l')
+				s++;
+			isll=1;
+		}else
+			if(*s=='L')
+		{
+			s++;
+			isll=1;
+		}
 #endif
 
 #if 1
@@ -1766,16 +1893,27 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 
 		case 'd':
 		case 'i':
-			v=va_arg(lst, int);
+			if(isll)
+				v=va_arg(lst, long long);
+			else
+				v=va_arg(lst, int);
 			if(w)
 				{ ct=tk_sprint_decimal_n(ct, v, w); }
 			else
 				{ ct=tk_sprint_decimal(ct, v); }
 			break;
 		case 'X':
-			v=va_arg(lst, int);
+		case 'x':
+			if(isll)
+				v=va_arg(lst, long long);
+			else
+				v=va_arg(lst, int);
 
 			if(!w)w=tk_print_hex_genw(v);
+			
+//			if((v>>(w*4))!=0)
+//				{ __debugbreak(); }
+			
 			ct=tk_sprint_hex_n(ct, v, w);
 			break;
 		case 's':
@@ -1787,7 +1925,7 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 		case 'p':
 			s1=va_arg(lst, char *);
 //			ct=tk_sprint_hex(ct, (u32)s1);
-			ct=tk_sprint_hex_n(ct, (u64)s1, 6);
+			ct=tk_sprint_hex_n(ct, (u64)s1, 12);
 			break;
 
 // #ifdef ARCH_HAS_FPU

@@ -2801,6 +2801,7 @@ static void DragonSeek(mobj_t *actor, angle_t thresh, angle_t turnMax)
 	{
 		return;
 	}
+	delta = 0;
 	dir = P_FaceMobj(actor, target, &delta);
 	if(delta > thresh)
 	{
@@ -5241,6 +5242,7 @@ void A_KSpiritSeeker(mobj_t *actor, angle_t thresh, angle_t turnMax)
 	{
 		return;
 	}
+	delta = 0;
 	dir = P_FaceMobj(actor, target, &delta);
 	if(delta > thresh)
 	{

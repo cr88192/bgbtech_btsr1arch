@@ -18,6 +18,11 @@ int TK_Env_GetEnvVarIdx(int idx, char *bufn, char *bufv, int szn, int szv)
 			return(-1);
 		}
 
+		if(env->magic1!=TKFAT_MAGIC1)
+			__debugbreak();
+		if(env->magic2!=TKFAT_MAGIC1)
+			__debugbreak();
+
 		return(TK_EnvCtx_GetEnvVarIdx(env, idx, bufn, bufv, szn, szv));
 	}else
 	{
@@ -50,6 +55,11 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 			return(-1);
 		}
 
+		if(env->magic1!=TKFAT_MAGIC1)
+			__debugbreak();
+		if(env->magic2!=TKFAT_MAGIC1)
+			__debugbreak();
+
 		return(TK_EnvCtx_GetEnvVar(env, varn, buf, sz));
 	}else
 	{
@@ -72,6 +82,12 @@ int TK_Env_SetEnvVarI(char *varn, char *varv)
 	if(tk_iskernel())
 	{
 		env=TK_GetCurrentEnvContext();
+
+		if(env->magic1!=TKFAT_MAGIC1)
+			__debugbreak();
+		if(env->magic2!=TKFAT_MAGIC1)
+			__debugbreak();
+
 		return(TK_EnvCtx_SetEnvVar(env, varn, varv));
 	}else
 	{
@@ -126,6 +142,31 @@ int TK_Env_GetCwdQualifyName(char *buf, int sz, char *fn)
 
 int TK_Env_GetPathList(char ***rlst, int *rnlst)
 {
+	char *pathbuf, *cs;
+	char **lst;
+	int n;
+	
+	pathbuf=tk_malloc(32768);
+	TK_Env_GetEnvVarI("PATH", pathbuf+2048, 32768);
+
+	lst=(char **)pathbuf;
+	cs=pathbuf+2048;
+	n=0;
+	while(*cs)
+	{
+		lst[n++]=cs;
+		while(*cs && *cs!=':')
+			cs++;
+		if(*cs==':')
+		{
+			*cs++=0;
+		}
+	}
+	*rlst=lst;
+	*rnlst=n;
+	return(n);
+
+#if 0
 	TK_EnvContext *env;
 
 	if(tk_iskernel())
@@ -137,7 +178,14 @@ int TK_Env_GetPathList(char ***rlst, int *rnlst)
 	{
 		return(-1);
 	}
+#endif
 }
+
+int TK_Env_FreePathList(char **rlst)
+{
+	tk_free(rlst);
+}
+
 
 int TK_Env_SetPath(char *cwd)
 {

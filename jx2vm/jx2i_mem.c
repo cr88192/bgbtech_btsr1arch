@@ -2340,6 +2340,85 @@ int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
 	return(0);
 }
 
+bjx2_addr BJX2_MemTranslatePageWalkW(BJX2_Context *ctx,
+	bjx2_addr addr, bjx2_addr addrh, int acc)
+{
+	u64 ttb, ptb, pta, ptd0, ptd1, pte;
+	int ix0, ix1, ix2, h;
+
+	if(!(ctx->regs[BJX2_REG_MMCR]&1))
+		return(addr);
+
+	if(ctx->regs[BJX2_REG_SR]&(1<<31))
+		addr=(addr&0x0000FFFFFFFFFFFFULL);
+	else
+		addr=(addr&0x00000000FFFFFFFFULL);
+
+	addrh=(addrh&0x0000FFFFFFFFFFFFULL);
+
+	if(((addr>>44)>=0xC) && !addrh)
+		return(addr);
+
+	ttb=ctx->regs[BJX2_REG_TTB];
+
+	if((ttb&0x13)==0x13)
+	{
+		return(0);
+	}
+	
+//	if(!(ttb&1))
+	if(!ttb)
+		return(0);
+
+	if(ctx->regs[BJX2_REG_MMCR]&32)
+	{
+		h=(addr>>14)&0xFF;
+
+		pta=addr>>14;
+		ix0=(pta>>22)&2047;
+		ix1=(pta>>11)&2047;
+		ix2=(pta>> 0)&2047;
+
+		ptb=ttb&(~16383);
+		ptd0=BJX2_MemGetQWord_NoAT(ctx, ptb+ix0*8, 0);
+		if(!(ptd0&1))
+			return(0);
+
+		ptb=ptd0&(~16383);
+		ptd1=BJX2_MemGetQWord_NoAT(ctx, ptb+ix1*8, 0);
+		if(!(ptd1&1))
+			return(0);
+
+		ptb=ptd1&(~16383);
+		pte=BJX2_MemGetQWord_NoAT(ctx, ptb+ix2*8, 0);
+		if(!(pte&1))
+			return(0);
+
+		ptb=pte&(0x0000FFFFFFFFC000ULL)|(addr&16383);
+		return(ptb);
+	}else
+	{
+		return(0);
+	}
+
+	return(0);
+}
+
+int BJX2_ValidateMemTranslateTlbW(BJX2_Context *ctx,
+	bjx2_addr addr, bjx2_addr addrh, int acc, u64 dstaddr)
+{
+#if 0
+	u64 addr1;
+	addr1=BJX2_MemTranslatePageWalkW(ctx, addr, addrh, acc);
+	if(addr1 && (addr1!=dstaddr))
+	{
+		printf("BJX2_ValidateMemTranslateTlbW: Mismatch %012llX"
+			"  %012llX!=%012llX\n", addr, addr1, dstaddr);
+	}
+#endif
+	return(0);
+}
+
 bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	bjx2_addr addr, bjx2_addr addrh, int acc)
 {
@@ -2373,15 +2452,38 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 	if(	(ctx->regs[BJX2_REG_SR]&(1<<29)) &&
 		(ctx->regs[BJX2_REG_SR]&(1<<28)))
 	{
-		if((((addr>>28)&15)!=15) && !((addr>>63)&1) && ((addr>>28)!=0))
+//		if((((addr>>28)&15)!=15) && !((addr>>63)&1) && ((addr>>28)!=0))
+		if((((addr>>28)&15)!=15) && !((addr>>47)&1) && ((addr>>28)!=0))
 		{
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_INV_MRD);
 		}
 	
+		if(((addr>>44)&0xE)==0xC)
+			return(addr&0x0FFFFFFFFFFFULL);
+
 		return(addr);
+	}
+	
+	if(((addr>>47)&1) && !addrh)
+	{
+		if(((addr>>44)&15)>=0xC)
+		{
+			if(((addr>>44)&0xE)==0xC)
+				return(addr&0x0FFFFFFFFFFFULL);
+			return(addr);
+		}
 	}
 
 	asid=(ctx->regs[BJX2_REG_TTB]>>48)&0xFFFF;
+
+#if 0
+	if(1)
+	{
+		addr1=BJX2_MemTranslatePageWalkW(ctx, addr, addrh, acc);
+		if(addr1)
+			return(addr1);
+	}
+#endif
 
 #if 1
 	tlbhx0=ctx->mem_tlb_pr0_hx;
@@ -2413,6 +2515,14 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 		addr1=(tlblo1&0x0000FFFFFFFFC000ULL)|(addr&0x00003FFFULL);
 		return(addr1);
 	}
+#else
+	tlbhx0=0;
+	tlbhi0=0;
+	tlblo0=0;
+
+	tlbhx1=0;
+	tlbhi1=0;
+	tlblo1=0;
 #endif
 
 	krr=ctx->regs[BJX2_REG_KRR];
@@ -2548,6 +2658,7 @@ bjx2_addr BJX2_MemTranslateTlbW(BJX2_Context *ctx,
 					ctx->mem_tlb_pr1_lo=tlblo0;
 				}
 
+				BJX2_ValidateMemTranslateTlbW(ctx, addr, addrh, acc, addr1);
 				return(addr1);
 			}
 		}
@@ -3163,8 +3274,18 @@ int BJX2_MemGetXWord_Dfl(BJX2_Context *ctx,
 
 	if(ctx->regs[BJX2_REG_MMCR]&1)
 	{
+		*rvlo=0x5A5A5A5A5A5A5A5AULL;
+		*rvhi=0x5A5A5A5A5A5A5A5AULL;
+
 		if((addr0&4095)>4080)
 		{
+			BJX2_MemTranslateTlbW(ctx, addr0+0, addrh, 1);
+			if(ctx->status)
+				return(0);
+			BJX2_MemTranslateTlbW(ctx, addr0+15, addrh, 1);
+			if(ctx->status)
+				return(0);
+
 			*rvlo=BJX2_MemGetQWord_Dfl(ctx, addr0+0, addrh);
 			*rvhi=BJX2_MemGetQWord_Dfl(ctx, addr0+8, addrh);
 			return(0);
@@ -3886,6 +4007,13 @@ int BJX2_MemSetXWord_Dfl(BJX2_Context *ctx,
 	{
 		if((addr0&4095)>4080)
 		{
+			BJX2_MemTranslateTlbW(ctx, addr0+ 0, addrh, 2);
+			if(ctx->status)
+				return(0);
+			BJX2_MemTranslateTlbW(ctx, addr0+15, addrh, 2);
+			if(ctx->status)
+				return(0);
+
 			BJX2_MemSetQWord_Dfl(ctx, addr0+0, addrh, vlo);
 			BJX2_MemSetQWord_Dfl(ctx, addr0+8, addrh, vhi);
 			return(0);
@@ -4341,7 +4469,11 @@ int BJX2_MemSetXWord(BJX2_Context *ctx, bjx2_addr addr0,
 
 int BJX2_MemSetTrip(BJX2_Context *ctx, bjx2_addr addr0, int val)
 {
-//	return(ctx->MemSetTripwire(ctx, addr0, ctx->regs[BJX2_REG_GBR_HI], val));
+	if((addr0>=0x01000000) && (addr0<0x3F000000))
+	{
+		return(ctx->MemSetTripwire(ctx, addr0,
+			ctx->regs[BJX2_REG_GBR_HI], val));
+	}
 	return(0);
 }
 
@@ -4350,6 +4482,13 @@ int BJX2_MemQueryTransit(BJX2_Context *ctx,
 {
 	return(ctx->MemQueryTransit(ctx, addr0, addr1,
 		ctx->regs[BJX2_REG_GBR_HI], val));
+}
+
+int BJX2_MemTrapTransit(BJX2_Context *ctx,
+	bjx2_addr addr0, bjx2_addr addr1)
+{
+	BJX2_DbgAddrAccessTrap(ctx, addr0, addr1, 1);
+	return(0);
 }
 
 int BJX2_MemFlushPPA(BJX2_Context *ctx)

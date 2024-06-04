@@ -309,12 +309,80 @@ X(tk_syscall2):
 //	pop lr
 	rts
 
+tk_sysc_xorhashregs:
+	xor		r8, r9, r16
+	xor		r10, r11, r17
+	xor		r12, r13, r18
+	xor		r14, r15, r19
+
+	xor		r16, r17, r16
+	xor		r18, r19, r17
+	xor		r16, r17, r4
+
+	xor		r24, r25, r16
+	xor		r26, r27, r17
+	xor		r28, r29, r18
+	xor		r30, r31, r19
+
+	xor		r16, r17, r16
+	xor		r18, r19, r17
+	xor		r16, r17, r5
+
+.ifarch has_xgpr
+	xor		r40, r41, r16
+	xor		r42, r43, r17
+	xor		r44, r45, r18
+	xor		r46, r47, r19
+
+//	mov		0, r19
+
+	xor		r16, r17, r16
+	xor		r18, r19, r17
+	xor		r16, r17, r6
+
+	xor		r56, r57, r16
+	xor		r58, r59, r17
+	xor		r60, r61, r18
+	xor		r62, r63, r19
+
+	xor		r16, r17, r16
+	xor		r18, r19, r17
+	xor		r16, r17, r7
+.endif
+
+.ifarch has_xgpr
+//	mov		0, r6
+
+	xor		r4, r5, r16
+	xor		r6, r7, r17
+	xor		r16, r17, r2
+
+//	xor		r4, r5, r2
+
+.else
+	xor		r4, r5, r2
+.endif
+	rts
+
 .global X(tk_syscall2_rtuser)
 X(tk_syscall2_rtuser):
-	
+	add		-64, sp
+
+	mov		lr, r1
+	mov.q	r1, (sp, 0)
+
+	bsr		tk_sysc_xorhashregs
+	mov.q	r2, (sp, 24)
+
 	mov		0x12345678, R2
 	mov		0x89ABCDEF, R7
 	mov		0x1234CDEF, R16
+	mov		sp, r17
+	mov.q	r7, (sp, 8)
+	mov.q	r16, (sp, 16)
+
+	nop
+	nop
 
 	syscall	#1
 	nop
@@ -325,10 +393,35 @@ X(tk_syscall2_rtuser):
 	nop
 	nop
 	nop
+
+	nop
+	nop
+	nop
+	nop
 	
 //	break
 	
-	rts
+	cmpqeq	r17, sp
+	break?f
+
+	mov.q	(sp, 8), r18
+	mov.q	(sp, 16), r19
+	cmpqeq	r7, r18
+	break?f
+//	cmpqeq	r16, r19
+//	break?f
+
+	bsr		tk_sysc_xorhashregs
+	mov.q	(sp, 24), r16
+
+	cmpqeq	r16, r2
+	break?f
+
+	mov.q	(sp, 0), r1
+	
+	add 64, sp
+//	rts
+	jmp		r1
 #endif
 
 /*

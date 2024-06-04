@@ -50,19 +50,26 @@ typedef struct TKSH_CommandInfo_s		TKSH_CommandInfo;
 struct TK_EnvContext_s {
 TK_EnvContext *next;
 
-char *cwd;
+// char *cwd;
 
-char *pathbuf;
-char **pathlst;
-int npathlst;
+//char *pathbuf;
+//char **pathlst;
+//int npathlst;
+
+u32 magic1;
 
 char *envbufs;
 char *envbufe;
 char *envbufc;
 char **envlst_var;
 char **envlst_val;
+short *envlst_chn;
 int nenvlst;
 int menvlst;
+
+short envlst_hash[256];
+
+u32 magic2;
 };
 
 struct TKPE_ImageInfo_s {
@@ -244,7 +251,15 @@ byte		status;			//Status, 0=Running
 byte		prio;			//Priority Level
 byte		qtick;			//Schedule Tick
 
+byte		stdin_eof;		//EOF (for stdin redirect)
+
 int			ttyid;			//terminal for console printing
+
+int			redir_stdin;	//stdin redirect
+int			redir_stdout;	//stdout redirect
+
+int			next_redir_stdin;	//next stdin redirect (createproces)
+int			next_redir_stdout;	//next stdout redirect
 
 u64			us_lastsleep;	//last sleep time for task
 
@@ -258,7 +273,10 @@ struct TKPE_CreateTaskInfo_s {
 int szInfo;		//size of this structure.
 int idTty;		//console ID, 0 for default.
 int szStack;	//requested stack size (bytes), 0 for default
-u64	flSched;
+int pad0;		//
+u64	flSched;	//scheduler flags
+int rdStdin;	//redirect stdin (0 for console/terminal)
+int rdStdout;	//redirect stdout (0 for console/terminal)
 // char *strDoCmdLine;		//command-line (CreateProcess)
 // char *strDoEnv;			//environment (CreateProcess)
 };
@@ -267,6 +285,7 @@ struct TKSH_CommandInfo_s {
 TKSH_CommandInfo *next;
 TKSH_CommandInfo *hnext;
 char *name;
+char *desc;
 int (*Cmd)(char **args);
 };
 

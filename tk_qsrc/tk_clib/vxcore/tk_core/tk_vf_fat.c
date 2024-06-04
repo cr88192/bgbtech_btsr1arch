@@ -140,6 +140,8 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	}else
 	{
 		i=TKFAT_LookupDirEntPath(img, dee, name);
+		if(mode[0]=='a')
+			dee->is_write=1;
 	}
 	if(i<0)
 	{
@@ -210,6 +212,11 @@ TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	fd->udata1=dee2;
 	fd->ofs=0;
 	fd->size=TKFAT_GetDirEntSize(dee2);
+
+	if(mode[0]=='a')
+	{
+		fd->ofs=fd->size;
+	}
 
 	return(fd);
 }
@@ -455,7 +462,8 @@ int tk_fat_fclose(TK_FILE *fd)
 	dee=fd->udata1;
 	if(dee->is_dirty)
 	{
-//		tk_dbg_printf("tk_fat_sync: %p\n", fd);
+		tk_dbg_printf("tk_fat_fclose: update and sync %p\n", fd);
+		TKFAT_UpdateDirEnt(dee);
 		TKFAT_SyncDirEntFile(dee);
 	}
 	free(fd->udata1);
@@ -477,7 +485,7 @@ int tk_fat_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 {
 	TKFAT_FAT_DirEntExt *dee;
-	int sz;
+	int sz, szb;
 
 	dee=fd->udata1;
 
@@ -496,14 +504,23 @@ int tk_fat_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 //	}
 
 	sz=sz1*sz2;
-	sz=TKFAT_ReadWriteDirEntFile(
+	szb=TKFAT_ReadWriteDirEntFile(
 		dee, fd->ofs, true, buf, sz);
 	dee->is_dirty=1;
+	
+	if(szb!=sz)
+	{
+		tk_dbg_printf("tk_fat_fwrite: write size %d -> %d bytes\n", sz, sz1);
+	}
+	
 	if(sz>0)fd->ofs+=sz;
 	if(fd->ofs>fd->size)
 	{
 		fd->size=fd->ofs;
+		dee->is_dirty=1;
 		TKFAT_SetDirEntSize(dee, fd->size);
+//		TKFAT_UpdateDirEnt(dee);
+//		tk_dbg_printf("tk_fat_fwrite: expand file to %d bytes\n", fd->size);
 	}
 	return(sz);
 }

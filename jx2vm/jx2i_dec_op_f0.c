@@ -3330,41 +3330,49 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 					op->nmid=BJX2_NMID_SXENTR;
 					op->Run=BJX2_Op_SXENTR_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 				case 0x9:
 					op->nmid=BJX2_NMID_SUENTR;
 					op->Run=BJX2_Op_SUENTR_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 				case 0xA:
 					op->nmid=BJX2_NMID_SVEKRR;
 					op->Run=BJX2_Op_SVEKRR_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 				case 0xB:
 					op->nmid=BJX2_NMID_SVENTR;
 					op->Run=BJX2_Op_SVENTR_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 				case 0xC:
 					op->nmid=BJX2_NMID_LDEKRR;
 					op->Run=BJX2_Op_LDEKRR_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 				case 0xD:
 					op->nmid=BJX2_NMID_LDEKEY;
 					op->Run=BJX2_Op_SVENTR_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 				case 0xE:
 					op->nmid=BJX2_NMID_LDEENC;
 					op->Run=BJX2_Op_LDEENC_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 				case 0xF:
 					op->nmid=BJX2_NMID_INVTLB;
 					op->Run=BJX2_Op_INVTLB_None;
 					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_CTRLF;
 					break;
 
 #if 0
