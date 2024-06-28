@@ -2873,6 +2873,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "vec4fp8u"))
 			{ *t++='D'; *t++='w'; }
 
+		if(!strcmp(s, "_Float16"))*t++='k';
+		if(!strcmp(s, "_Float32"))*t++='f';
+		if(!strcmp(s, "_Float64"))*t++='d';
+		if(!strcmp(s, "_Float128"))*t++='g';
+
 		if(!strcmp(s, "auto"))*t++='r';
 		if(!strcmp(s, "var"))*t++='r';
 		if(!strcmp(s, "variant"))*t++='r';

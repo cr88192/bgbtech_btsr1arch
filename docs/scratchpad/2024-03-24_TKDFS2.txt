@@ -13,11 +13,13 @@ General Image Structure
 
 The data region covers the entire volume, just marks the superblock and similar "in-use", with everything else allocated as normal blocks.
 
+Note that multibyte values within filesystem metadata will be assumed to be little endian.
+
  BootBlock {
 	byte pad_jmp[3];			//0x00, Boot JMP, Eg, EB-5E-90
 	byte oem_name[8];			//0x03, "TKDFS2  "
 	byte bytes_sector[2];		//0x0B, 512
-	byte sectors_cluster;		//0x0D, 2/4/8/16/32
+	byte sectors_cluster;		//0x0D, 1/2/4/8/16/32
 	byte reserved_sectors[2];	//0x0E, 0
 	byte num_fats;				//0x10, 0
 	byte root_dirents[2];		//0x11, 0
@@ -47,24 +49,34 @@ The data region covers the entire volume, just marks the superblock and similar 
 
 BootBlock will have the similar structure to the NTFS Boot Block.
 
+The bytes_sector and sectors_cluster members will be used to encode the effective size of the disk block. Most other structures will be addressed in terms of this disk block size.
+
 
 Inodes:
-* 256 or 512 Bytes
+* Likely 256 or 512 Bytes
+** Less than or equal to size of disk block.
 * Will have a multi-purpose data area:
 ** Small files / Symlinks, inlined directly into inode.
-* Will follow a basic TLV structure.
-
- Inode_TLV_TCC {
+* Will follow a basic TLO structure.
+ Inode_TLO_TCC {
    TWOCC tag;       //0x00, Tag
-   u16 len;         //0x02, Length, Bitwise Inverse
-   byte data[~len]; //0x04, Data
+   byte len;        //0x02, Length, Bitwise Inverse (x8)
+   byte offs;       //0x03, Offset (x8)
  }
- Inode_TLV_FCC {
+ Inode_TLO_FCC {
    FOURCC tag;      //0x00, Tag
    u16 len;         //0x04, Length, Bitwise Inverse
-   u16 resv;        //0x06, reserved
-   byte data[~len]; //0x08, Data
+   u16 offs;        //0x06, Offset
  }
+
+With TLO, the tag will give the size and offset of the data structure within the Inode.
+
+The TWOCC cases may only be used if the Inode size is less than 2K, and will have a structure size limit of 1016 bytes.
+
+Both TWOCC and FOURCC tags may be used, and storing the length inverted will allow sorting this out (a valid TOWCC or FOURCC will have bit 7 of all bytes Clear, whereas a length will have the MSB Set).
+
+A tag value of 0 will signal the end of the list of tags. Structures may begin immediately after this zero tag marker (at the next multiple of 8 bytes).
+
 
 
 "FH" / "FHDR": Holds an INode_File structure.
@@ -139,6 +151,11 @@ File Data:
    u64 block_5l;      //indirect blocks (5-level)
  }
 
+Fir indirect blocks, the index will point to a block full of block pointers.
+* For Index4, each pointer will be 32 bits.
+* For Index8, each will be 8 bytes.
+
+
 * "IS" / "IDXS"
   FileBlockIndexSpan {
   u128 span[8];		//span bits
@@ -170,7 +187,7 @@ The inode table would have its own inode, superblock holding the first span of t
 
 
 
-Directories will be represented similar to files, but will hold directory entries rather than file data. Each directory will be organized into an AVL tree. The first entry in the directory will be special in that it will serve as a directory root rather than a file entry. This entry will point to the root node of the tree.
+Directories will be represented similar to files, but will hold directory entries rather than file data. Each directory will be organized into an AVL tree. The first entry in the directory will be special in that it will serve as a directory root rather than a file entry. This entry will point to the root node of the tree as its left subnode.
 
 Directory Entry:
 * Directories are organized as an AVL Tree
@@ -204,3 +221,9 @@ Entry Type:
 The number of multipart name fragments will be variable, but will be enough to encode the name up to a certain maximum number of bytes. Names will be encoded in a variant of UTF-8.
 
 Names will be case-sensitive and sorted in codepoint order (as defined by the UTF-8 encoding with each byte understood as unsigned).
+
+Free entries will be organized in a linked list, with the 'ino' member used to point to the next free entry.
+
+The 'rsn' member of Entry 0 will point to the first member of the free entry list, and in other entries a value of 0 will signal the end of the list.
+
+The hash will help validate the integrity of multipart names.

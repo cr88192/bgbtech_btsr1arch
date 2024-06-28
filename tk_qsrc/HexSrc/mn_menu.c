@@ -1100,6 +1100,8 @@ static void SCSfxVolume(int option)
 	{
 		snd_MaxVolume--;
 	}
+
+	I_SetSfxVolume(snd_MaxVolume);
 	soundchanged = true; // we'll set it when we leave the menu
 }
 

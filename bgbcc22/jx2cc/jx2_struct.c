@@ -313,6 +313,9 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 //	if(!strcmp(ctx->cur_func->name, "RecursiveLightPoint") && !sctx->is_simpass)
 //		k=-1;
 
+	if(!strcmp(fi->name, "tagName") && !sctx->is_simpass)
+		k=-1;
+
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
 	{
@@ -636,6 +639,9 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 		fi=obj->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
 		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+
+	if(!strcmp(fi->name, "tagName") && !sctx->is_simpass)
+		k=-1;
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type))
 	{

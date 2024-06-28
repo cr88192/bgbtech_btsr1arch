@@ -4791,6 +4791,37 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
+	if(!strcmp(name, "__bitnn"))
+	{
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+		{
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
+			cureg=cdreg;
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+			ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[2]);
+		}else
+		{
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+			cureg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);
+			ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[2]);
+		}
+
+		if(cureg!=cdreg)
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+				BGBCC_SH_NMID_MOV, cureg, cdreg);
+		BGBCC_JX2C_EmitOpRegRegReg(ctx, sctx,
+			BGBCC_SH_NMID_BITNN, csreg, ctreg, cdreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		if(cureg!=cdreg)
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[1]);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[2]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+
 	if(!strcmp(name, "__snipe_dc") && (narg==1))
 	{
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);

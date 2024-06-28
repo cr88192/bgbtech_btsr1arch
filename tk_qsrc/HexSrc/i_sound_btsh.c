@@ -280,7 +280,8 @@ addsfx
 
 	// Assign current handle number.
 	// Preserved so sounds could be stopped (unused).
-	channelhandles[slot] = rc = handlenums++;
+	rc = handlenums++;
+	channelhandles[slot] = rc;
 
 	// Set stepping???
 	// Kinda getting the impression this is never used.
@@ -387,6 +388,8 @@ void I_SetMusicVolume(int volume)
 	snd_MusicVolume = volume;
 	// Now set volume on output device.
 	// Whatever( snd_MusciVolume );
+	
+	SMus_UpdateVolume();
 }
 
 
@@ -449,8 +452,27 @@ void I_StopSound (int handle)
 
 int I_SoundIsPlaying(int handle)
 {
+	int i, j, k;
+	
+	for(i=0; i<NUM_CHANNELS; i++)
+	{
+		if(channelhandles[i]==handle)
+		{
+			if(!channels[i])
+			{
+				channelhandles[i]=0;
+				return(0);
+			}
+//			if((channelstart[i]+(5*32))<gametic)
+//				return(1);
+			return(1);
+		}
+	}
+
+	return(0);
+
 	// Ouch.
-	return gametic < handle;
+//	return gametic < handle;
 }
 
 int __int_mulsw(int x, int y);

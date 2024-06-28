@@ -1,0 +1,14 @@
+Two Bit Dot Product:
+* Multiply a series 16x of 2-bit values with 3 bit weights and accumulate.
+
+The 2-bit values:
+* 00:  0
+* 01:  1
+* 10:  0
+* 11: -1
+
+The 3-bit values:
+* 000..011: 0/ 1/ 2/ 3
+* 100..111: 0/-1/-2/-3
+
+The accumulated value will be added against an 8-bit bias, with the output being given as 1 or -1 depending on the result.

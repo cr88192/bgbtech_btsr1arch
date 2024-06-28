@@ -167,6 +167,66 @@ This instruction is only allowed in Lane 1.
 The BF Disp20s has been replaced with BRA?F Disp20s.
 
 
+=== BITNN (BITNN) ==
+
+* F0nm_7Go2  BITNN	Rm, Ro, Rn			//(BITNN) Bit Neural Net Eval
+
+Binary Neural Net Evaluator.
+
+This instruction may only be used in Lane 1, and will not be allowed in 3-wide bundles.
+
+Rm:
+* Will be 16x 1-bit inputs in 1-bit mode,
+* or 16x 2b in 2-bit mode.
+
+Ro:
+* (47: 0), Weights, 3 bits each
+* (55:48), Bias, 8 bit sign-extended.
+* (57:56), Mode
+* (63:58), Reserved (MBZ)
+
+Rn:
+* Will hold the output bits, and will be both a 3rd source and destination.
+
+Mode:
+* 00: 1-bit in, 1-bit out
+* 01: 2-bit in, 1 bit out
+* 10: 1-bit in, 2 bit out
+* 11: 2-bit in, 2-bit out
+
+In 1-bit input mode, each input will be 1 bit:
+* 0 => -1, 1 => 1
+
+In 2 bit input mode, each input will be 2 bits:
+* 00 => 0
+* 01 => 1
+* 10 => 0
+* 11 => -1
+
+Weights will be 3 bits and defined as:
+* 000 => 0
+* 001 => 1
+* 010 => 2
+* 011 => 3
+* 100 => 0
+* 101 => -1
+* 110 => -2
+* 111 => -3
+
+Note that while 0/1/3/7 would be stronger, this doesn't allow handling pairs as 4-bit values, and would instead require a 4 bit output for every element.
+
+Each input will be multiplied by each weight, then the bias will be added, and the final result will be compared against 0.
+
+Output will shift the 3rd input to the left and add the new output into the low-order bit(s).
+
+Output in 1 bit mode will be based on whether the result is greater than or equal to zero.
+* 0: Result (after adding bias) was negative.
+* 1: Result (after adding bias) was positive or zero.
+
+In 2 bit output mode, the output will be +1 or -1.
+* 01: Result is positive.
+* 11: Result is negative.
+
 
 === BNDCHK / BNDCMP (TTAG) ===
 

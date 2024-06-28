@@ -4639,25 +4639,39 @@ begin
 			end
 
 			16'h7zz2: begin		/* F0nm_7eo2 */
-				opNmid		= JX2_UCMD_FPU3;
+				if(opExQ)
+				begin
+`ifdef jx2_enable_bitnn
+					opNmid		= JX2_UCMD_MUL3;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_XB;
+					opUCmdIx	= JX2_UCIX_MUL3_BITNN;
+`endif
+				end
+				else
+				begin
+
+					opNmid		= JX2_UCMD_FPU3;
 
 `ifdef jx2_use_fpu_v4sf
 `ifdef jx2_ena_fpu_v2sd
 // `ifdef jx2_use_fpu_v4sf
 `ifdef jx2_fpu_v4sf_fullsp
-				opNmid		= JX2_UCMD_FPUV4SF;
+					opNmid		= JX2_UCMD_FPUV4SF;
 `else
-				opNmid		= JX2_UCMD_FPU3;
+					opNmid		= JX2_UCMD_FPU3;
 `endif
 `else
-				opNmid		= JX2_UCMD_FPU3;
+					opNmid		= JX2_UCMD_FPU3;
 `endif
 `endif
 
-				opFmid		= JX2_FMID_REGREG;
-//				opIty		= JX2_ITY_SB;
-				opIty		= JX2_ITY_XQ;
-				opUCmdIx	= JX2_UCIX_FPU_FMUL;
+					opFmid		= JX2_FMID_REGREG;
+	//				opIty		= JX2_ITY_SB;
+					opIty		= JX2_ITY_XQ;
+					opUCmdIx	= JX2_UCIX_FPU_FMUL;
+
+				end
 			end
 
 `ifdef jx2_alu_slomuldiv

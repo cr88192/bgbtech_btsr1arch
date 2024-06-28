@@ -5311,6 +5311,17 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			break;
 
 		case 0x2:	/* F0ez_72zz */
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_BITNN;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_BITNN_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+//				op->fl|=BJX2_OPFL_NOWEX_FP2;
+//				op->imm=8;
+				break;
+			}
+
 			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,
 				BJX2_EXTID_GFP))
 			{

@@ -102,8 +102,7 @@ SRCS=				\
 		info.c				\
 		sounds.c
 
-all:	 doom_rv64.elf doom_rv64b.elf
-# tstputc_rv64.elf tstshellcmd_rv64.elf
+all:	 doom_rv64.elf doom_rv64b.elf tstputc_rv64.elf tstshellcmd_rv64.elf
 
 clean:
 

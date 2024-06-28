@@ -1640,6 +1640,8 @@ int mfl;
 {"rgb5pcki8",	BGBCC_SH_NMID_RGB5PCKI8},
 {"rgb5upcki8",	BGBCC_SH_NMID_RGB5UPCKI8},
 
+{"bitnn",		BGBCC_SH_NMID_BITNN},
+
 
 {"psqrta.h",	BGBCC_SH_NMID_PSQRTAH},
 {"psqrtua.h",	BGBCC_SH_NMID_PSQRTUAH},

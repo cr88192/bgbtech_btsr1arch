@@ -296,9 +296,10 @@ S_StartSoundAtVolume
 	
 	
 	// Debug.
-	/*fprintf( stderr,
-			 "S_StartSoundAtVolume: playing sound %d (%s)\n",
-			 sfx_id, S_sfx[sfx_id].name );*/
+//	fprintf( stderr,
+//	printf(
+//			 "S_StartSoundAtVolume: playing sound %d (%s) V=%d\n",
+//			 sfx_id, S_sfx[sfx_id].tagName, volume );
 	
 	// check for bogus sound #
 	if (sfx_id < 1 || sfx_id > NUMSFX)
@@ -333,26 +334,28 @@ S_StartSoundAtVolume
 
 	// Check to see if it is audible,
 	//	and if not, modify the params
-	if (origin && origin != players[consoleplayer].mo)
+//	if (origin && origin != players[consoleplayer].mo)
+	if (origin && (origin != players[consoleplayer].mo) && (volume<16))
 	{
-	rc = S_AdjustSoundParams(players[consoleplayer].mo,
-				 origin,
-				 &volume,
-				 &sep,
-				 &pitch);
-	
-	if ( origin->x == players[consoleplayer].mo->x
-	 && origin->y == players[consoleplayer].mo->y)
-	{	
-		sep 	= NORM_SEP;
-	}
-	
-	if (!rc)
-		return;
+		rc = S_AdjustSoundParams(players[consoleplayer].mo,
+					 origin,
+					 &volume,
+					 &sep,
+					 &pitch);
+		
+		if ( origin->x == players[consoleplayer].mo->x
+		 && origin->y == players[consoleplayer].mo->y)
+		{	
+			sep 	= NORM_SEP;
+		}
+		
+		if (!rc)
+			return;
 	}	
 	else
 	{
-	sep = NORM_SEP;
+		volume = 16;
+		sep = NORM_SEP;
 	}
 
 #if 0
@@ -386,7 +389,10 @@ S_StartSoundAtVolume
 	cnum = S_getChannel(origin, sfx);
 	
 	if (cnum<0)
+	{
+		printf("S_StartSoundAtVolume: No Free Channels\n");
 		return;
+	}
 
 	//
 	// This is supposed to handle the loading/caching.
@@ -399,7 +405,10 @@ S_StartSoundAtVolume
 	{
 		sfx->lumpnum = I_GetSfxLumpNum(sfx);
 		if(sfx->lumpnum<0)
+		{
+			printf("S_StartSoundAtVolume: GetSfxLumpNum failed\n");
 			return;
+		}
 	}
 
 #ifndef SNDSRV
@@ -424,6 +433,8 @@ S_StartSoundAtVolume
 	if (sfx->usefulness++ < 0)
 		sfx->usefulness = 1;
 	
+	s_channels[cnum].sfxinfo = sfx;
+	
 	// Assigns the handle to one of the channels in the
 	//	mix/output buffer.
 	s_channels[cnum].handle = I_StartSound(sfx_id,
@@ -432,6 +443,9 @@ S_StartSoundAtVolume
 						 sep,
 						 pitch,
 						 priority);
+
+//	printf("S_StartSoundAtVolume: OK %d/%d\n",
+//		cnum, s_channels[cnum].handle);
 }	
 
 void
@@ -451,7 +465,7 @@ void S_StopSound(mobj_t *origin)
 	for (cnum=0 ; cnum<numChannels ; cnum++)
 	{
 //		if (s_channels[cnum].sfxinfo && s_channels[cnum].origin == origin)
-		if (s_channels[cnum].sfxinfo && s_channels[cnum].mo == origin)
+		if (s_channels[cnum].sfxinfo && (s_channels[cnum].mo == origin))
 		{
 			S_StopChannel(cnum);
 			break;
@@ -542,6 +556,7 @@ void S_UpdateSounds(mobj_t* listener_p)
 				
 				if (!audible)
 				{
+//					printf("S_UpdateSounds: Inaudible\n");
 					S_StopChannel(cnum);
 				}
 				else
@@ -550,9 +565,10 @@ void S_UpdateSounds(mobj_t* listener_p)
 		}
 		else
 		{
-		// if channel is allocated but sound has stopped,
-		//	free it
-		S_StopChannel(cnum);
+//			printf("S_UpdateSounds: Done Playing\n");
+			// if channel is allocated but sound has stopped,
+			//	free it
+			S_StopChannel(cnum);
 		}
 	}
 	}
@@ -670,6 +686,7 @@ void S_StopMusic(void)
 
 void S_SetMusicVolume(void)
 {
+	I_SetMusicVolume(snd_MusicVolume);
 }
 
 
@@ -705,6 +722,7 @@ void S_StopChannel(int cnum)
 		// degrade usefulness of sound data
 		c->sfxinfo->usefulness--;
 
+		c->mo = NULL;
 		c->sfxinfo = 0;
 	}
 }
@@ -791,9 +809,9 @@ S_AdjustSoundParams
 //	 If none available, return -1.	Otherwise channel #.
 //
 int
-S_getChannel
-( void*		origin,
-	sfxinfo_t*	sfxinfo )
+S_getChannel(
+	void		*origin,
+	sfxinfo_t	*sfxinfo )
 {
 	// channel number to use
 	int		cnum;
@@ -926,4 +944,40 @@ dt_bool S_GetSoundPlayingInfo(mobj_t *mobj, int sound_id)
 
 void S_GetChannelInfo(SoundInfo_t *s)
 {
+	sfxinfo_t	*sfx;
+	channel_t	*c;
+	ChanInfo_t	*ci;
+	int i, j, k;
+
+	s->channelCount=numChannels;
+
+	for(i=0; i<numChannels; i++)
+	{
+//		c = &s_channels[i];
+		c = s_channels+i;
+		sfx = c->sfxinfo;
+		ci = (s->chan)+i;
+
+		if(ci->mo && !sfx)
+		{
+//			__debugbreak();
+
+			ci->mo = NULL;
+			continue;
+		}
+
+		ci->id = c->sound_id;
+		ci->mo = c->mo;
+		ci->priority = c->priority;
+//		ci->name = sfx->lumpname;
+		ci->name = sfx->tagName;
+		ci->distance = 0;
+//		__debugbreak();
+
+		if(ci->mo && !ci->name)
+		{
+			__debugbreak();
+		}
+
+	}
 }

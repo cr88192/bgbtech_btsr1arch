@@ -1295,6 +1295,8 @@ parameter[5:0] JX2_UCIX_MUL3_BLKUAB1	= 6'h2C;	//Get Sample, UAB1
 parameter[5:0] JX2_UCIX_MUL3_BLKUAB2	= 6'h2D;	//Get Sample, UAB2
 parameter[5:0] JX2_UCIX_MUL3_RGB5MINMAX	= 6'h2F;	//Encode Color-Cell
 
+parameter[5:0] JX2_UCIX_MUL3_BITNN		= 6'h30;	//Bit Neural Net
+
 
 parameter[5:0] JX2_UCIX_QMUL_MULS	= 6'h00;		//
 parameter[5:0] JX2_UCIX_QMUL_MULU	= 6'h01;		//

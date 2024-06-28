@@ -4350,6 +4350,19 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 			opw2=0x5B00|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
+		case BGBCC_SH_NMID_FMIN:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x7000|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_FMAX:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x7100|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_BITNN:
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x7200|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
 		case BGBCC_SH_NMID_FADDA:
 #if 1
 			if(ctx->has_fpvsf&2)

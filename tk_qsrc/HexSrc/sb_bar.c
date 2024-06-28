@@ -889,20 +889,25 @@ static void ShadeChain(void)
 
 static void DrawSoundInfo(void)
 {
+	static int xPos[7] = {1, 75, 112, 156, 200, 230, 260};
 	int i;
-	SoundInfo_t s;
+	static SoundInfo_t t_s;
+	SoundInfo_t *s;
 	ChanInfo_t *c;
 	char text[32];
 	int x;
 	int y;
-	int xPos[7] = {1, 75, 112, 156, 200, 230, 260};
 
 	if(leveltime&16)
 	{
 		MN_DrTextA("*** SOUND DEBUG INFO ***", xPos[0], 20);
 	}
-	S_GetChannelInfo(&s);
-	if(s.channelCount == 0)
+	
+	s=&t_s;
+//	S_GetChannelInfo(&s);
+	S_GetChannelInfo(s);
+//	if(s.channelCount == 0)
+	if(s->channelCount == 0)
 	{
 		return;
 	}
@@ -914,9 +919,10 @@ static void DrawSoundInfo(void)
 	MN_DrTextA("ID", xPos[x++], 30);
 	MN_DrTextA("PRI", xPos[x++], 30);
 	MN_DrTextA("DIST", xPos[x++], 30);
-	for(i = 0; i < s.channelCount; i++)
+	for(i = 0; i < s->channelCount; i++)
 	{
-		c = &s.chan[i];
+//		c = &s.chan[i];
+		c = (s->chan)+i;
 		x = 0;
 		y = 40+i*10;
 		if(c->mo == NULL)
@@ -924,7 +930,11 @@ static void DrawSoundInfo(void)
 			MN_DrTextA("------", xPos[0], y);
 			continue;
 		}
-		sprintf(text, "%s", c->name);
+//		sprintf(text, "%s", c->name);
+		if(c->name)
+			{ strcpy(text, c->name); }
+		else
+			{ strcpy(text, "*"); }
 		M_ForceUppercase(text);
 		MN_DrTextA(text, xPos[x++], y);
 		sprintf(text, "%d", c->mo->type);

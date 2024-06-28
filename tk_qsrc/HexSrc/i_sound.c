@@ -540,8 +540,22 @@ void I_StopSound (int handle)
 
 int I_SoundIsPlaying(int handle)
 {
+	int i, j, k;
+	
+	for(i=0; i<NUM_CHANNELS; i++)
+	{
+		if(channelhandles[i]==handle)
+		{
+//			if((channelstart[i]+(5*32))<gametic)
+//				return(1);
+			return(1);
+		}
+	}
+
+	return(0);
+
 		// Ouch.
-		return gametic < handle;
+//		return gametic < handle;
 }
 
 

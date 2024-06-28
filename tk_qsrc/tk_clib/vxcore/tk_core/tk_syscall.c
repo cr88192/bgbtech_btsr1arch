@@ -135,6 +135,7 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 	TK_EnvContext *env;
 	TK_SysArg *args;
 	s64 li;
+	char *s0;
 	void *p;
 	int ret, sz;
 
@@ -300,11 +301,29 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0C:
+				s0=args[0].p;
+				if(*s0=='/')
+				{
+					sz=TK_RegGbl_GetKeyPath_Str(s0, args[1].p, args[2].i);
+					*((int *)vParm1)=sz;
+					ret=TK_URES_TRUE;
+					break;
+				}
+				
 				sz=TK_EnvCtx_GetEnvVar(env, args[0].p, args[1].p, args[2].i);
 				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;
 				break;
 			case 0x0D:
+				s0=args[0].p;
+				if(*s0=='/')
+				{
+					sz=TK_RegGbl_SetKeyPath_Str(s0, args[1].p);
+					*((int *)vParm1)=sz;
+					ret=TK_URES_TRUE;
+					break;
+				}
+				
 				sz=TK_EnvCtx_SetEnvVar(env, args[0].p, args[1].p);
 				*((int *)vParm1)=sz;
 				ret=TK_URES_TRUE;

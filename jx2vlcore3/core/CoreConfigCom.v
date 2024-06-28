@@ -234,6 +234,7 @@
 // `define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
 
 `define jx2_enable_rgb5pcki8				//RGB5 Pack Indexed
+`define jx2_enable_bitnn					//Bit Neural Net
 
 `endif
 

@@ -1579,6 +1579,27 @@ int bjx2_opi_rgb5toi8(int clr)
 #if 1
 int bjx2_opi_rgb5toi8(int clr)
 {
+	static byte clut6a[64]={
+		0x00,0x01,0x01,0x01,0x02,0x03,0x13,0x01,
+		0x02,0x02,0x03,0x13,0x02,0x02,0x03,0x03,
+		0x04,0x05,0x01,0x01,0x06,0x1F,0x09,0x01,
+		0x12,0x0A,0x0B,0x13,0x02,0x02,0x03,0x03,
+		0x04,0x04,0x05,0x05,0x11,0x0C,0x05,0x05,
+		0x06,0x0E,0x1F,0x09,0x12,0x12,0x0A,0x0B,
+		0x04,0x04,0x05,0x05,0x04,0x04,0x05,0x05,
+		0x11,0x11,0x0C,0x0D,0x06,0x06,0x0E,0x1F,
+	};
+	static byte clut6c[64]={
+		0x00,0x00,0x07,0x07,0x00,0x00,0x0F,0x0F,
+		0x08,0x0F,0x0F,0x0F,0x08,0x0F,0x0F,0x0F,
+		0x00,0x00,0x07,0x07,0x00,0x00,0x00,0x07,
+		0x08,0x00,0x00,0x0F,0x08,0x08,0x0F,0x0F,
+		0x07,0x07,0x07,0x07,0x08,0x00,0x00,0x07,
+		0x08,0x00,0x00,0x00,0x08,0x08,0x00,0x00,
+		0x07,0x07,0x07,0x07,0x08,0x07,0x07,0x07,
+		0x08,0x08,0x00,0x00,0x08,0x08,0x00,0x00
+		};
+
 	static byte clut6_r[64]={
 		0x04,0x04,0x04,0x04,0x05,0x05,0x05,0x05,
 		0x04,0x04,0x04,0x04,0x05,0x05,0x05,0x05,
@@ -1734,27 +1755,49 @@ int bjx2_opi_rgb5toi8(int clr)
 	{
 		ci=((cgn>>2)<<3)|((cbn>>2)<<0);
 		cc=clut6_r[ci];
+//		if((crn>>3)!=3)
+//			cyi=3;
 	}
 	
 	if(cyi==1)
 	{
 		ci=((crn>>2)<<3)|((cbn>>2)<<0);
 		cc=clut6_g[ci];
+//		if((cgn>>3)!=3)
+//			cyi=3;
 	}
 
 	if(cyi==2)
 	{
 		ci=((crn>>2)<<3)|((cgn>>2)<<0);
 		cc=clut6_b[ci];
+//		if((cbn>>3)!=3)
+//			cyi=3;
+	}
+
+#if 0
+	if(cyi==3)
+	{
+		ci=((crn>>3)<<4)|((cgn>>3)<<2)|((cbn>>3)<<0);
+		cc=clut6a[ci];
 	}
 	
+	if(cc==0x1F)
+	{
+		ci=(((crn>>2)&3)<<4) | (((cgn>>2)&3)<<2) | (((cbn>>2)&3)<<0);
+		cc=clut6c[ci];
+	}
+#endif
+
 	if(cy<8)
 	{
-		if((cy>1) && (cc!=0) && !(cc&8))
+//		if((cy>1) && (cc!=0) && (cc!=7) && !(cc&8))
+		if((cy>1) && (cc!=0) && (cc!=7) && !(cc&0x18))
 		{
 			if(cyi==0)cc=17;
 			if(cyi==1)cc=18;
 			if(cyi==2)cc=19;
+			if(cyi==3)cc=0;
 //			cc=clut5_li[cc];
 //			if(cc)cc+=16;
 		}else
@@ -3777,6 +3820,105 @@ void BJX2_Op_PCVTAL2H_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		(((u64)bjx2_opi_cvtal2h((vs>> 8)&0xFF))<<16) |
 		(((u64)bjx2_opi_cvtal2h((vs>>16)&0xFF))<<32) |
 		(((u64)bjx2_opi_cvtal2h((vs>>24)&0xFF))<<48) ;
+
+	ctx->regs[op->rn]=vn;
+}
+
+
+int BJX2_BitNN_DoMult2x3A(int x, int w)
+{
+	static signed char xt[4]={0,1,0,-1};
+	static signed char wt[8]={0,1,2,3,0,-1,-2,-3};
+	return(xt[x]*wt[w]);
+}
+
+byte *bjx2_bitnn_multtab1;
+
+int BJX2_BitNN_Init()
+{
+	int i, j, k;
+	
+	if(bjx2_bitnn_multtab1)
+		return(0);
+	
+	bjx2_bitnn_multtab1=malloc(16*64);
+	for(i=0; i<16; i++)
+	{
+		for(j=0; j<64; j++)
+		{
+			k=	BJX2_BitNN_DoMult2x3A((i>>0)&3, (j>>0)&7) +
+				BJX2_BitNN_DoMult2x3A((i>>2)&3, (j>>3)&7) ;
+			bjx2_bitnn_multtab1[i*64+j]=k;
+		}
+	}
+
+	return(0);
+}
+
+int BJX2_BitNN_DoMult(u32 x, u64 wb)
+{
+	int i0, i1, i2, i3, i4, i5, i6, i7;
+	int a, b, c;
+	
+	if(!bjx2_bitnn_multtab1)
+	{
+		BJX2_BitNN_Init();
+	}
+	
+	i0=(((x>> 0)&15)<<6)+((wb>> 0)&63);
+	i1=(((x>> 4)&15)<<6)+((wb>> 6)&63);
+	i2=(((x>> 8)&15)<<6)+((wb>>12)&63);
+	i3=(((x>>12)&15)<<6)+((wb>>18)&63);
+	i4=(((x>>16)&15)<<6)+((wb>>24)&63);
+	i5=(((x>>20)&15)<<6)+((wb>>30)&63);
+	i6=(((x>>24)&15)<<6)+((wb>>36)&63);
+	i7=(((x>>28)&15)<<6)+((wb>>42)&63);
+	i0=bjx2_bitnn_multtab1[i0];
+	i1=bjx2_bitnn_multtab1[i1];
+	i2=bjx2_bitnn_multtab1[i2];
+	i3=bjx2_bitnn_multtab1[i3];
+	i4=bjx2_bitnn_multtab1[i4];
+	i5=bjx2_bitnn_multtab1[i5];
+	i6=bjx2_bitnn_multtab1[i6];
+	i7=bjx2_bitnn_multtab1[i7];
+
+	a=i0+i1+i2+i3+i4+i5+i6+i7;
+	b=(signed char)(wb>>48);
+	c=a+b;
+	c=(signed char)c;
+	return(c>=0);
+}
+
+void BJX2_Op_BITNN_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vp, vn, vs1;
+	int bias, mode;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+	vt=ctx->regs[op->ro];
+	vp=ctx->regs[op->rn];
+
+	mode=(vt>>56)&3;
+
+	vs1=	(BJX2_PMORT_U16((~vs)&0xFFFF)<<1)|
+			(BJX2_PMORT_U16(      0xFFFF)   );
+	if(mode==0)
+	{
+		vn=(vp<<1)|BJX2_BitNN_DoMult(vs1, vt);
+	}else
+		if(mode==3)
+	{
+		vn=(vp<<2)|((!BJX2_BitNN_DoMult(vs, vt))<<1)|1;
+	}else
+		if(mode==1)
+	{
+		vn=(vp<<1)|BJX2_BitNN_DoMult(vs, vt);
+	}else
+		if(mode==2)
+	{
+		vn=(vp<<2)|((!BJX2_BitNN_DoMult(vs1, vt))<<1)|1;
+	}
 
 	ctx->regs[op->rn]=vn;
 }

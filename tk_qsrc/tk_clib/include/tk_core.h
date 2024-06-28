@@ -70,6 +70,10 @@ typedef u64 tk_kptr;
 #define RIFF_MAKETAG(a, b, c, d)	((a)+((b)<<8)+((c)<<16)+((d)<<24))
 #endif
 
+#ifndef RIFF_MAKETWOCC
+#define RIFF_MAKETWOCC(a, b)		((a)+((b)<<8))
+#endif
+
 #define TK_FCC_GDI	RIFF_MAKETAG('G','D','I',' ')
 #define TK_FCC_TKRA	RIFF_MAKETAG('T','K','R','A')
 
@@ -578,6 +582,9 @@ u64 val[6];
 #include <tk_pgmimg.h>
 #include <tk_wadimg.h>
 #include <tk_sockmsg.h>
+
+#include <tk_regcache.h>
+#include <tk_tkdfs.h>
 
 
 #ifdef __BJX2__

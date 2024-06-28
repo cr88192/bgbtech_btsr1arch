@@ -40,6 +40,10 @@
 `include "ExBtcPckI8.v"
 `endif
 
+`ifdef jx2_enable_bitnn
+`include "ExBnn_BitNeur.v"
+`endif
+
 module ExMulC(
 	clock,		reset,
 	valRs,		valRt,		valRm,
@@ -125,6 +129,15 @@ ExBtcPckI8	pcki8(
 	idUIxt,
 	exHold,
 	tValPckI8);
+`endif
+
+`ifdef jx2_enable_bitnn
+wire[63:0]		tValBitNn;
+ExBnn_BitNeur	bitnn(
+	clock,	reset,
+	exHold,	idUIxt,
+	valRs,	valRt,
+	valRm,	tValBitNn);
 `endif
 
 // reg[31:0]		tValRsSx;
@@ -414,6 +427,19 @@ begin
 //				if(1'b1)
 				begin
 //					$display("RGB5PCKI8: %X -> %X", tValRs2, tValPckI8);
+				end
+			end
+`endif
+
+`ifdef jx2_enable_bitnn
+			JX2_UCIX_MUL3_BITNN:
+			begin
+				tMul3C = tValBitNn;
+
+				if(tIdUCmd2[5:0]==JX2_UCMD_MUL3)
+//				if(1'b1)
+				begin
+//					$display("BITNN: %X -> %X", tValRs2, tValBitNn);
 				end
 			end
 `endif

@@ -86,6 +86,9 @@
 
 #include "tk_core/tk_sockmsg.c"
 
+#include "tk_core/tk_regcache.c"
+#include "tk_core/tk_tkdfs.c"
+
 // #ifdef __BGBCC__
 #if 1
 #include "tk_core/tkgdi_blitupdate.c"

@@ -1248,6 +1248,8 @@ void sanity_glColor4f(float red, float green, float blue, float alpha)
 #include "tk_shell_chksvar.c"
 #include "tk_shell_chksbcd.c"
 
+#include "tk_shell_chkocr.c"
+
 int tk_shell_chksane_arith()
 {
 	int				*pi, *pj;
@@ -1860,4 +1862,8 @@ int tk_shell_chksane()
 	tk_shell_chksane_bcd();
 
 	tk_printf("CS B8\n");
+	
+	tk_chksane_chkocr();
+
+	tk_printf("CS B9\n");
 }
