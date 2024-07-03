@@ -2431,8 +2431,8 @@ void TK_VMem_WritePageToDisk(int cidx)
 
 		tk_vmem_pagevnz[pidx>>3]|=1<<(pidx&7);
 
-		tk_dbg_printf("TK_VMem_WritePageToDisk: Page Nzm=%08X_%08X\n",
-			(u32)(nzm>>32), (u32)(nzm>>0));
+//		tk_dbg_printf("TK_VMem_WritePageToDisk: Page Nzm=%08X_%08X\n",
+//			(u32)(nzm>>32), (u32)(nzm>>0));
 
 //		k=0;
 //		for(i=0; i<64; i++)
@@ -2505,8 +2505,8 @@ void TK_VMem_WritePageToDisk(int cidx)
 
 			if(cm!=0)
 			{
-				tk_dbg_printf("TK_VMem_WritePageToDisk: Page LZ(%d), %dK\n",
-					tcbuf[0], (j+2)>>1);
+//				tk_dbg_printf("TK_VMem_WritePageToDisk: Page LZ(%d), %dK\n",
+//					tcbuf[0], (j+2)>>1);
 			}
 
 			cm=0;
@@ -2581,8 +2581,8 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 //		if(tk_vmem_pagecmz[cidx>>3]&(1<<(cidx&7)))
 		if((tk_vmem_pagecmz[pidx>>3]>>(pidx&7))&1)
 		{
-			tk_dbg_printf("TK_VMem_LoadPageFromDisk: Page Was Compressed %d\n", 
-				pidx);
+//			tk_dbg_printf("TK_VMem_LoadPageFromDisk: Page Was Compressed %d\n", 
+//				pidx);
 
 			TKSPI_ReadSectors(tcb, lba, 1);
 			l=tcb[1];
@@ -2592,7 +2592,7 @@ void TK_VMem_LoadPageFromDisk(int cidx)
 			TK_VMem_UnpackCompactedPage(tcb, ppi);
 		}else
 		{
-			tk_dbg_printf("TK_VMem_LoadPageFromDisk: Page Was Raw %d\n", pidx);
+//			tk_dbg_printf("TK_VMem_LoadPageFromDisk: Page Was Raw %d\n", pidx);
 			TKSPI_ReadSectors(ppi, lba, 1<<TK_VMEM_PGBLKSHL);
 		}
 
@@ -2680,8 +2680,8 @@ int TK_VMem_MapVirtToCacheIdx(int pidx)
 		i=tk_vmem_lru_last;
 		cpi=tk_vmem_pageinf+i;
 
-		tk_dbg_printf("TK_VMem_MapVirtToCacheIdx: Evict %d / %d\n",
-			i, cpi->pidx);
+//		tk_dbg_printf("TK_VMem_MapVirtToCacheIdx: Evict %d / %d\n",
+//			i, cpi->pidx);
 
 		if(cpi->flags&1)
 		{
@@ -3307,7 +3307,7 @@ void TK_VMem_VaEvictPageIndex(int cidx)
 	vaddrh=TK_VMem_GetPageVAddrHi(cidx);
 	ptpn=TK_VMem_GetPagePidx(cidx);
 
-	tk_dbg_printf("TK_VMem_VaEvictPageIndex: cidx=%d pidx=%d\n", cidx, ptpn);
+//	tk_dbg_printf("TK_VMem_VaEvictPageIndex: cidx=%d pidx=%d\n", cidx, ptpn);
 
 //	if(TKMM_PAGEBITS==16)
 //		{ pte=(2<<8)|(1<<10); }
@@ -3366,8 +3366,8 @@ void TK_VMem_VaDiscardPageIndex(int cidx)
 	vaddrh=TK_VMem_GetPageVAddrHi(cidx);
 	ptpn=TK_VMem_GetPagePidx(cidx);
 
-	tk_dbg_printf("TK_VMem_VaDiscardPageIndex: cidx=%d pidx=%d A=%p\n",
-		cidx, ptpn, vaddr);
+//	tk_dbg_printf("TK_VMem_VaDiscardPageIndex: cidx=%d pidx=%d A=%p\n",
+//		cidx, ptpn, vaddr);
 
 //	pte=(0<<8)|(1<<10);
 //	pte|=((u64)ptpn)<<TK_VMEM_PTESHL;

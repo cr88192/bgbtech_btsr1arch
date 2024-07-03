@@ -429,6 +429,7 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 			case 0x1F:
 				p=TK_DlSymB(task, args[0].p, args[1].p, args[2].i);
 				*((void **)vParm1)=p;
+				tk_printf("Syscall: DlSym %p\n", p);
 				ret=TK_URES_TRUE;
 				break;
 

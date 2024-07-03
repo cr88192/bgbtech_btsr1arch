@@ -150,7 +150,8 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 					pv=*((u16 *)pdst);
 					if((pv==0xA000) && pboix)
 					{
-						pv=pv|(((-pboix)*8)&0x1FFF);
+//						pv=pv|(((-pboix)*8)&0x1FFF);
+						pv=pv|((pboix*8)&0x1FFF);
 						*((u16 *)pdst)=pv;
 						break;
 					}
@@ -164,6 +165,32 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 							((v0<<16)&0xFFFF0000U);
 						*((u32 *)pdst)=pv;
 						break;
+					}
+
+					pv0=pv;
+					pv1=((u32 *)pdst)[1];
+
+					if(	(pv0==0x0000FE00UL) &&
+						!(pv1&0x00FF0000) &&
+						pboix)
+					{
+//						v0=(((-pboix)*8)&0x00FFFFFF);
+//						v0=((pboix*8)&0x00FFFFFF);
+						v0=(pboix&0x00FFFFFF);
+
+						pv0=(pv0&0x0000FF00U)|
+							((v0>>24)&0x000000FFU)|
+							((v0<< 8)&0xFFFF0000U);
+
+						pv1=(pv1&0xFF00FFFF)|((v0<<16)&0x00FF0000);
+						((u32 *)pdst)[0]=pv0;
+						((u32 *)pdst)[1]=pv1;
+						break;
+					}
+
+					if(pboix)
+					{
+						__debugbreak();
 					}
 
 					break;
@@ -260,7 +287,9 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 						!(pv1&0x00FF0000) &&
 						pboix)
 					{
-						v0=(((-pboix)*8)&0x00FFFFFF);
+//						v0=(((-pboix)*8)&0x00FFFFFF);
+//						v0=((pboix*8)&0x00FFFFFF);
+						v0=(pboix&0x00FFFFFF);
 
 						pv0=(pv0&0x0000FF00U)|
 							((v0>>24)&0x000000FFU)|
@@ -741,6 +770,16 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	img->sz_imp=sz_imp;
 	img->sz_exp=sz_exp;
 
+	if(img->rva_imp)
+	{
+		tk_printf("TKPE: Import: RVA=%08X Sz=%08X\n", rva_imp, sz_imp);
+	}
+
+	if(img->rva_exp)
+	{
+		tk_printf("TKPE: Export: RVA=%08X Sz=%08X\n", rva_exp, sz_exp);
+	}
+
 	if(rva_imp)
 	{
 		n=sz_imp/20;
@@ -774,15 +813,23 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 
 void *TKPE_LookupImageDllExport(TKPE_ImageInfo *img, char *name)
 {
-	byte *imgptr;
+	byte *imgptr, *fcn;
 	char *s0, *s1;
 	int rva_exp, sz_exp;
-	int rva_eat, rva_ent, rva_eot, n_ent, n_eob;
+	int rva_eat, rva_ent, rva_eot, n_ent, n_eob, n_exps;
+	int is32;
 	int i, j, k;
 	
 	imgptr=img->imgbase;
 	rva_exp=img->rva_exp;
 	sz_exp=img->sz_exp;
+	
+	if(rva_exp<0x40)
+	{
+		tk_printf("TKPE_LookupImageDllExport: Bad Exports, RVA=%08X Sz=%X\n",
+			rva_exp, sz_exp);
+		return(NULL);
+	}
 	
 	rva_eat=*(u32 *)(imgptr+rva_exp+0x1C);
 
@@ -790,16 +837,57 @@ void *TKPE_LookupImageDllExport(TKPE_ImageInfo *img, char *name)
 	rva_eot=*(u32 *)(imgptr+rva_exp+0x24);
 	n_ent=*(u32 *)(imgptr+rva_exp+0x18);
 	n_eob=*(u32 *)(imgptr+rva_exp+0x10);
+	n_exps=*(u32 *)(imgptr+rva_exp+0x14);
+
+	is32=0;
+	if(n_exps<0)
+	{
+		n_exps=-n_exps;
+		is32=1;
+	}else
+		if((n_eob+n_exps)>65536)
+	{
+		is32=1;
+	}
+
+	if(n_ent<0)
+	{
+		n_ent=-n_ent;
+		is32=1;
+	}else
+		if(n_ent>=65536)
+	{
+		is32=1;
+	}
+
+	tk_printf("TKPE_LookupImageDllExport: "
+		"ENT=%08X EOT=%08X N_Ent=%d N_EOB=%02X\n",
+		rva_exp, sz_exp, n_ent, n_eob);
 	
 	for(i=0; i<n_ent; i++)
 	{
 		j=*(u32 *)(imgptr+rva_ent+i*4);
 		s0=(char *)(imgptr+j);
+
+		tk_printf("TKPE_LookupImageDllExport: Exp, Name RVA=%08X\n", j);
+		tk_printf("TKPE_LookupImageDllExport: Exp, Name=%s\n", s0);
+
 		if(!strcmp(s0, name))
 		{
-			j=(*(u32 *)(imgptr+rva_eot+i*2))-n_eob;
+			if(is32)
+				{ j=(*(u32 *)(imgptr+rva_eot+i*4))-n_eob; }
+			else
+				{ j=(*(u16 *)(imgptr+rva_eot+i*2))-n_eob; }
 			k=*(u32 *)(imgptr+rva_eat+j*4);
-			return(imgptr+k);
+
+			tk_printf("TKPE_LookupImageDllExport: Found Ord=%d RVA=%08X\n",
+				j, k);
+
+			fcn=imgptr+k;
+			tk_printf("TKPE_LookupImageDllExport: Found Name=%s Ptr=%p\n",
+				s0, fcn);
+
+			return(fcn);
 		}
 	}
 
@@ -1337,48 +1425,6 @@ void *TK_DlSymB(TKPE_TaskInfo *task,
 	return(NULL);
 }
 
-void *TK_DlOpenA(const char *path, int flags)
-{
-	TK_SysArg ar[4];
-	void *p;
-	int tid;
-	
-#ifndef __TK_CLIB_ONLY__
-	if(tk_iskernel())
-	{
-		p=TK_DlOpenB((TKPE_TaskInfo *)TK_GET_TBR, path, flags);
-		return(p);
-	}
-#endif
-
-	p=0;
-	ar[0].p=path;
-	ar[1].i=flags;
-	tk_syscall(NULL, TK_UMSG_DLOPEN, &p, ar);
-	return(p);
-}
-
-void *TK_DlSymA(void *handle, const char *symbol, int flags)
-{
-	TK_SysArg ar[4];
-	void *p;
-	int tid;
-	
-#ifndef __TK_CLIB_ONLY__
-	if(tk_iskernel())
-	{
-		p=TK_DlSymB((TKPE_TaskInfo *)TK_GET_TBR, handle, symbol, flags);
-		return(p);
-	}
-#endif
-
-	p=0;
-	ar[0].p=handle;
-	ar[1].p=symbol;
-	ar[2].i=flags;
-	tk_syscall(NULL, TK_UMSG_DLSYM, &p, ar);
-	return(p);
-}
 
 void	*tk_GetApiContext_fcn[256];
 u32		tk_GetApiContext_fcc[256];

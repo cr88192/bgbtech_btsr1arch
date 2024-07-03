@@ -165,7 +165,7 @@ int BGBCC_JX2C_CoffBuildExports(
 	int lbl_expaddrtab;
 	int lbl_nametab;
 	int lbl_ordtab;
-	int nexps, mexps;
+	int nexps, mexps, nexps2;
 	
 	int i, j, k;
 
@@ -205,6 +205,10 @@ int BGBCC_JX2C_CoffBuildExports(
 			{ obj=exptab[j]; exptab[j]=exptab[i]; exptab[i]=obj; }
 	}
 
+	nexps2=nexps;
+	if(nexps>=65520)
+		{ nexps2=-nexps; }
+
 	lbl_dllname=BGBCC_JX2_GenLabel(sctx);
 	lbl_expaddrtab=BGBCC_JX2_GenLabel(sctx);
 	lbl_nametab=BGBCC_JX2_GenLabel(sctx);
@@ -225,7 +229,7 @@ int BGBCC_JX2C_CoffBuildExports(
 
 	BGBCC_JX2_EmitDWord(sctx, 1);		//0x10, ordinal base
 	BGBCC_JX2_EmitDWord(sctx, nexps);	//0x14, address table entries
-	BGBCC_JX2_EmitDWord(sctx, nexps);	//0x18, number of name pointers
+	BGBCC_JX2_EmitDWord(sctx, nexps2);	//0x18, number of name pointers
 
 	BGBCC_JX2_EmitRelocTy(sctx, lbl_expaddrtab, BGBCC_SH_RLC_RVA32);
 	BGBCC_JX2_EmitDWord(sctx, 0);		//0x1C, export address table RVA
@@ -271,7 +275,13 @@ int BGBCC_JX2C_CoffBuildExports(
 	BGBCC_JX2_EmitLabel(sctx, lbl_ordtab);
 	for(i=0; i<nexps; i++)
 	{
-		BGBCC_JX2_EmitDWord(sctx, i+1);	//ordinal
+		if(nexps2<0)
+		{
+			BGBCC_JX2_EmitDWord(sctx, i+1);	//ordinal
+		}else
+		{
+			BGBCC_JX2_EmitWord(sctx, i+1);	//ordinal
+		}
 	}
 	
 	return(0);

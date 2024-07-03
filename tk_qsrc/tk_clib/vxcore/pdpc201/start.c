@@ -147,6 +147,7 @@ __PDPCLIB_API__ int CTYP __start()
 
 	__init_stdin();
 	_ctype_init();
+	__init_getprocstub();
 
 	t_stdin=stdin;
 	t_stdout=stdout;

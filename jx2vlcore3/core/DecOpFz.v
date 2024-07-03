@@ -750,11 +750,18 @@ begin
 //	opImm_disp20s = { istrWord[7] ? UV13_FF : UV13_00,
 //		istrWord[7:0], istrWord[27:16] };
 
-	opImm_disp20s = { istrWord[7] ? UV10_FF : UV10_00,
+//	opImm_disp20s = { istrWord[7] ? UV10_FF : UV10_00,
+//		istrWord[7] ^ opExWN,
+//		istrWord[7] ^ opExWM,
+//		istrWord[7] ^ opExWI,
+//		istrWord[7:0], istrWord[27:16] };
+
+	opImm_disp20s = { istrWord[7] ? UV11_FF : UV11_00,
 		istrWord[7] ^ opExWN,
 		istrWord[7] ^ opExWM,
 		istrWord[7] ^ opExWI,
-		istrWord[7:0], istrWord[27:16] };
+		istrWord[6:0], istrWord[27:16] };
+
 	opImm_dispAltLr	= 0;
 
 	if(opIsJumboAu)

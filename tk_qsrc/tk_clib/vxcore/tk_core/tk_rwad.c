@@ -655,3 +655,50 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 	return(csum);
 }
 #endif
+
+
+void *TK_DlOpenA(const char *path, int flags)
+{
+	TK_SysArg ar[4];
+	void *p;
+	int tid;
+	
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskernel())
+	{
+		p=TK_DlOpenB((TKPE_TaskInfo *)TK_GET_TBR, path, flags);
+		return(p);
+	}
+#endif
+
+	p=0;
+	ar[0].p=path;
+	ar[1].i=flags;
+	tk_syscall(NULL, TK_UMSG_DLOPEN, &p, ar);
+	return(p);
+}
+
+void *TK_DlSymA(void *handle, const char *symbol, int flags)
+{
+	TK_SysArg ar[4];
+	void *p;
+	int tid;
+	
+#ifndef __TK_CLIB_ONLY__
+	if(tk_iskernel())
+	{
+		p=TK_DlSymB((TKPE_TaskInfo *)TK_GET_TBR, handle, symbol, flags);
+		return(p);
+	}
+#endif
+
+	p=0;
+	ar[0].p=handle;
+	ar[1].p=symbol;
+	ar[2].i=flags;
+	tk_syscall(NULL, TK_UMSG_DLSYM, &p, ar);
+
+	tk_printf("TK_DlSymA: DlSym name=%s ptr=%p flags=%d\n", symbol, p, flags);
+
+	return(p);
+}

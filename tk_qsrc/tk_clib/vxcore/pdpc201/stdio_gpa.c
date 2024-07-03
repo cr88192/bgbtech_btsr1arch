@@ -21,6 +21,14 @@ void (*_free_fptr)(void *ptr);
 void *(*_realloc_fptr)(void *ptr, size_t size);
 size_t (*_msize_fptr)(void *ptr);
 
+void *(*_mgetbase_fptr)(void *ptr);
+
+int (*_mgettag_fptr)(void *ptr);
+int (*_msettag_fptr)(void *ptr, int tag);
+int (*_mgetzone_fptr)(void *ptr);
+int (*_msetzone_fptr)(void *ptr, int ztag);
+int (*_mfreezone_fptr)(int ztag, int zmask);
+
 FILE *__stdin_p;
 FILE *__stdout_p;
 FILE *__stderr_p;
@@ -41,12 +49,41 @@ __PDPCLIB_API__ FILE **__get_stderr()
 	return(&__stderr_p);
 }
 
+int *(*__get_errno_fp)();
+__PDPCLIB_API__ int *__get_errno()
+{
+	stdio_doinit();
+	return(__get_errno_fp());
+}
+
+long __multicall(int callnum, void *retptr, void **args)
+{
+	long (*multicall_fp)(int callnum, void *retptr, void **args);
+	long ret;
+	stdio_doinit();
+	
+	multicall_fp=tk_stdio_vtp->multicall_fp;
+	ret=multicall_fp(callnum, retptr, args);
+	return(ret);
+}
+
 void __init_stdin(void)
 {
 	if(tk_stdio_vtp)
 		return;
 
 	TkClGetProcAddressCn((void **)(&tk_stdio_vtp), "stdio_vt");
+	if(!tk_stdio_vtp)
+	{
+		__debugbreak();
+		return;
+	}
+
+	if(tk_stdio_vtp->key1a!=_TK_STDIO_KEY1A)
+	{
+		__debugbreak();
+	}
+
 	__stdin_p=fopen("$STDIN", NULL);
 	__stdout_p=fopen("$STDOUT", NULL);
 	__stderr_p=fopen("$STDERR", NULL);
@@ -55,6 +92,16 @@ void __init_stdin(void)
 	_free_fptr=tk_stdio_vtp->free_fp;
 	_realloc_fptr=tk_stdio_vtp->realloc_fp;
 	_msize_fptr=tk_stdio_vtp->msize_fp;
+
+	_mgetbase_fptr=tk_stdio_vtp->mgetbase_fp;
+	_mfreezone_fptr=tk_stdio_vtp->mfreezone_fp;
+
+	_mgettag_fptr=tk_stdio_vtp->mgettag_fp;
+	_msettag_fptr=tk_stdio_vtp->msettag_fp;
+	_mgetzone_fptr=tk_stdio_vtp->mgetzone_fp;
+	_msetzone_fptr=tk_stdio_vtp->msetzone_fp;
+	
+	__get_errno_fp=tk_stdio_vtp->geterrno_fp;
 }
 
 FILE *fopen(const char *filename, const char *mode)
@@ -225,10 +272,35 @@ int remove(const char *filename)
 
 int rename(const char *oldname, const char *newname)
 {
-	int (*rename_fp)(const char *oldname, const char *newname);
+	int (*rename_fp)(
+		const char *oldname,
+		const char *newname,
+		const char *mode);
 	stdio_doinit();
 	rename_fp=tk_stdio_vtp->rename_fp;
-	return(rename_fp(oldname, newname));
+	return(rename_fp(oldname, newname, "r"));
+}
+
+int link(const char *oldname, const char *newname)
+{
+	int (*rename_fp)(
+		const char *oldname,
+		const char *newname,
+		const char *mode);
+	stdio_doinit();
+	rename_fp=tk_stdio_vtp->rename_fp;
+	return(rename_fp(oldname, newname, "l"));
+}
+
+int symlink(const char *oldname, const char *newname)
+{
+	int (*rename_fp)(
+		const char *oldname,
+		const char *newname,
+		const char *mode);
+	stdio_doinit();
+	rename_fp=tk_stdio_vtp->rename_fp;
+	return(rename_fp(oldname, newname, "S"));
 }
 
 int fsetpos(FILE *stream, const fpos_t *pos)

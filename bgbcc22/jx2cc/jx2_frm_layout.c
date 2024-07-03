@@ -408,8 +408,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				j=vop->srca.val&4095;
 				if(!(localmap[j>>5]&(1U<<(j&31))))
 				{
-					printf("%s:%d uninitialized local %s\n",
-						ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+					if(!BGBCC_CCXL_TypeArrayP(ctx,
+						ctx->cur_func->locals[j]->type))
+					{
+						printf("%s:%d uninitialized local %s\n",
+							ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+					}
 					localmap[j>>5]|=1U<<(j&31);
 				}
 			}
@@ -419,8 +423,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				j=vop->srcb.val&4095;
 				if(!(localmap[j>>5]&(1U<<(j&31))))
 				{
-					printf("%s:%d uninitialized local %s\n",
-						ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+					if(!BGBCC_CCXL_TypeArrayP(ctx,
+						ctx->cur_func->locals[j]->type))
+					{
+						printf("%s:%d uninitialized local %s\n",
+							ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+					}
 					localmap[j>>5]|=1U<<(j&31);
 				}
 			}

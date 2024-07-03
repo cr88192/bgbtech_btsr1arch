@@ -199,9 +199,13 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	imm20s=((opw1&255)<<12)|(opw2&4095);
 	imm20s=((s32)(imm20s<<12))>>12;
 
-	if(jbits&0x40000000U)imm20s^=(1<<22);
-	if(jbits&0x20000000U)imm20s^=(1<<21);
-	if(jbits&0x10000000U)imm20s^=(1<<20);
+//	if(jbits&0x40000000U)imm20s^=(1<<22);
+//	if(jbits&0x20000000U)imm20s^=(1<<21);
+//	if(jbits&0x10000000U)imm20s^=(1<<20);
+	
+	if(jbits&0x40000000U)imm20s^=(1<<21);
+	if(jbits&0x20000000U)imm20s^=(1<<20);
+	if(jbits&0x10000000U)imm20s^=(1<<19);
 	
 	if(jbits&0x80000000U)
 		wq=1;

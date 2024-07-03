@@ -3828,7 +3828,8 @@ void BJX2_Op_PCVTAL2H_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 int BJX2_BitNN_DoMult2x3A(int x, int w)
 {
 	static signed char xt[4]={0,1,0,-1};
-	static signed char wt[8]={0,1,2,3,0,-1,-2,-3};
+//	static signed char wt[8]={0,1,2,3,0,-1,-2,-3};
+	static signed char wt[8]={0,1,3,7,0,-1,-3,-7};
 	return(xt[x]*wt[w]);
 }
 
@@ -3858,7 +3859,7 @@ int BJX2_BitNN_Init()
 int BJX2_BitNN_DoMult(u32 x, u64 wb)
 {
 	int i0, i1, i2, i3, i4, i5, i6, i7;
-	int a, b, c;
+	int a, b, c, isrf;
 	
 	if(!bjx2_bitnn_multtab1)
 	{
@@ -3882,10 +3883,14 @@ int BJX2_BitNN_DoMult(u32 x, u64 wb)
 	i6=bjx2_bitnn_multtab1[i6];
 	i7=bjx2_bitnn_multtab1[i7];
 
+	isrf=(wb>>58)&1;
 	a=i0+i1+i2+i3+i4+i5+i6+i7;
+	a=(signed char)a;
 	b=(signed char)(wb>>48);
 	c=a+b;
-	c=(signed char)c;
+//	c=(signed char)c;
+	if(!isrf)
+		c=(signed char)c;
 	return(c>=0);
 }
 

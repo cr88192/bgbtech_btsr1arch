@@ -1495,6 +1495,21 @@ int BGBCC_JX2C_GetGblIndexLabel(
 	return(i);
 }
 
+int BGBCC_JX2C_GetGblIndexLabelAlias(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int gblidx)
+{
+	BGBCC_CCXL_RegisterInfo *gbl;
+	int i, j;
+
+	gbl=ctx->reg_globals[gblidx];
+	gbl->regflags|=BGBCC_REGFL_ALIASPTR;
+
+	return(BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, gblidx));
+
+}
+
 int BGBCC_JX2C_GetVRegGotIndex(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -4475,7 +4490,8 @@ int BGBCC_JX2C_EmitLdaFrameVRegReg(
 					BGBCC_SH_REG_GBH, tr1);
 
 				j=BGBCC_CCXL_GetRegID(ctx, sreg);
-				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
+//				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
+				k=BGBCC_JX2C_GetGblIndexLabelAlias(ctx, sctx, j);
 				if(sctx->is_rom)
 					BGBCC_JX2_EmitLoadRegLabelAbs(sctx, tr0, k);
 				else
@@ -4491,7 +4507,8 @@ int BGBCC_JX2C_EmitLdaFrameVRegReg(
 			else
 			{
 				j=BGBCC_CCXL_GetRegID(ctx, sreg);
-				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
+//				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
+				k=BGBCC_JX2C_GetGblIndexLabelAlias(ctx, sctx, j);
 				if(sctx->is_rom)
 					BGBCC_JX2_EmitLoadRegLabelAbs(sctx, dreg, k);
 				else

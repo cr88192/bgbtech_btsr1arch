@@ -2572,6 +2572,8 @@ Jumbo Prefixed Forms:
 * FE-FE F2nm_6Pjj / FADD			Rm, Imm56f, Rn			//(FPIMM)
 * FE-FE F2nm_6Qjj / FMUL			Rm, Imm56f, Rn			//(FPIMM)
 
+* FE-FE F2nm_6Gjj ? BITNN		Rm, Imm57s, Rn			//(BITNN)
+
 * FE-FE F2nm_7gjj  XOR			Rm, Imm57s, Rn
 * FE-FE F2nm_7Pjj  PMACSH.H		Rm, Imm48fv8sh, Rn		//(NNX)
 * FE-FE F2nm_7Qjj  PMACSH.F		Xm, Imm48fv8sh, Xn		//(NNX)

@@ -8,6 +8,7 @@ TKDFS_ImageContext *TKDFS_AllocContext()
 	TKDFS_ImageContext *tmp;
 	
 	tmp=tk_malloc(sizeof(TKDFS_ImageContext));
+	return(tmp);
 }
 
 
@@ -743,7 +744,7 @@ int TKDFS_CopyDirentInfo(TKDFS_ImageContext *img,
 	TKDFS_DirentInfo *dinfo,
 	TKDFS_DirentInfo *sinfo)
 {
-	dinfo->deb=&dinf->t_deb;
+	dinfo->deb=&dinfo->t_deb;
 	dinfo->deh=(TKDFS_DirEnt_Header *)(dinfo->deb);
 	memcpy(dinfo->deb, sinfo->deb, sizeof(TKDFS_DirEnt_Basic));
 	
@@ -786,10 +787,10 @@ int TKDFS_ImageAllocInodeDirentName(TKDFS_ImageContext *img,
 		return(piv0);
 	}
 	
-	piv0=inf0->deb->lastent;
+	piv0=inf0->deh->lastent;
 	if(piv0)
 	{
-		inf0->deb->lastent=piv0+1;
+		inf0->deh->lastent=piv0+1;
 
 		TKDFS_ReadImageDirent(img, inf1, d_ino, piv0);
 
@@ -804,7 +805,7 @@ int TKDFS_ImageAllocInodeDirentName(TKDFS_ImageContext *img,
 		return(piv0);
 	}
 
-	inf0->deb->lastent=16;
+	inf0->deh->lastent=16;
 	
 	piv1=0;
 	for(piv0=1; piv0<16; piv0++)

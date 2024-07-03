@@ -886,8 +886,8 @@ int BGBCC_JX2C_EmitLoadSlotAddrVRegVRegImm(
 		if(fi->fxoffs&3)al=2;
 		if(fi->fxoffs&1)al=1;
 		
-		if(BGBCC_CCXL_TypeValueObjectP(ctx, type) && (al!=4))
-			{ BGBCC_DBGBREAK }
+//		if(BGBCC_CCXL_TypeValueObjectP(ctx, type) && (al!=4))
+//			{ BGBCC_DBGBREAK }
 
 		BGBCC_JX2C_EmitLeaBRegOfsReg(ctx, sctx,
 			BGBCC_SH_NMID_MOVL, csreg, fi->fxoffs, cdreg);
@@ -1902,7 +1902,7 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 			i+=32;
 		}
 
-		if((i+24)<=sz)
+		if(((i+24)<=sz) && (tr2>0))
 		{
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, sreg, i+ 0, tr0);
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, sreg, i+ 8, tr1);

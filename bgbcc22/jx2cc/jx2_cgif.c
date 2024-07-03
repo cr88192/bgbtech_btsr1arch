@@ -3478,7 +3478,9 @@ ccxl_status BGBCC_JX2C_BuildGlobal_EmitLitAsType(
 			j=(value.val>>32)&0xFFFFF;
 			j=((s32)(j<<12))>>12;
 //			gblobj=ctx->reg_globals[i];
-			k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, i);
+//			k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, i);
+			k=BGBCC_JX2C_GetGblIndexLabelAlias(ctx, sctx, i);
+
 			if(ctx->arch_sizeof_ptr==16)
 			{
 				BGBCC_JX2_EmitQWordAbs64Disp(sctx, k, j);
@@ -4584,7 +4586,8 @@ ccxl_status BGBCC_JX2C_BuildGlobal(BGBCC_TransState *ctx,
 			j=(obj->value.val>>32)&0xFFFFF;
 			j=((s32)(j<<12))>>12;
 
-			k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, i);
+//			k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, i);
+			k=BGBCC_JX2C_GetGblIndexLabelAlias(ctx, sctx, i);
 
 			if(ctx->arch_sizeof_ptr==16)
 			{
@@ -5560,7 +5563,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			if((((s32)(d1<<24))>>24)==d1)
 				sctx->stat_ovlbl8++;
 			
-			if((d1&1) && (sctx->is_fixed32&1))
+//			if((d1&1) && (sctx->is_fixed32&1))
+			if((d1&1) && (sctx->is_fixed32&3))
 				{ BGBCC_DBGBREAK }
 
 			w0=(w0&0xFF00)|((d1>>12)&0x00FF);
@@ -5568,17 +5572,24 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			if((((s32)(d1<<12))>>12)!=d1)
 			{
-				k=((d1>>20)^(d1>>24))&7;
+//				k=((d1>>20)^(d1>>24))&7;
+//				k=((d1>>19)^(d1>>24))&7;
+				k=((d1>>19)^(((s32)(d1<<12))>>31))&7;
 				if((sctx->is_fixed32&2) && ((w0&0xEB00)==0xE000))
 				{
 					w0^=k<<13;
+					if((d1>>24)!=(((s32)(d1<<12))>>31))
+						{ w0^=0xE080; }
 				}
 				else if((sctx->has_xgpr&1) && ((w0&0xFF00)==0xF000))
 				{
 					w0&=0x00FF;
 					w0|=0x7000;
 					w0|=k<<8;
-				}
+					if((d1>>24)!=(((s32)(d1<<12))>>31))
+						{ w0^=0x0780; }
+				}else
+					{ BGBCC_DBGBREAK }
 			}
 
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);

@@ -2140,6 +2140,149 @@ __PDPCLIB_API__ void *_memcpyf(void *s1, void *s2, size_t n)
 {
 	return(memcpy(s1, s2, n));
 }
+
+__PDPCLIB_API__ void *__memcpy32(void *s1, const void *s2, size_t n)
+{
+	return(memcpy(s1, s2, n));
+}
+
+__PDPCLIB_API__ void *__memcpy64(void *s1, const void *s2, size_t n)
+{
+	return(memcpy(s1, s2, n));
+}
+
+__PDPCLIB_API__ void *__memcpy128(void *s1, const void *s2, size_t n)
+{
+	return(memcpy(s1, s2, n));
+}
+
+int __smodsq(int x, int y)
+{
+	int q, r;
+	q=x/y;
+	r=x-(q*y);
+	return(r);
+}
+
+__asm {
+
+.global __va64_saveargs
+__va64_saveargs:
+	mov.x	r4, (r3, 0)
+	mov.x	r6, (r3, 16)
+	mov.x	r20, (r3, 32)
+	mov.x	r22, (r3, 48)
+.ifarch abi_is_xgpr
+	mov.x	r36, (r3, 64)
+	mov.x	r38, (r3, 80)
+	mov.x	r52, (r3, 96)
+	mov.x	r54, (r3, 112)
+.endif
+	rts
+	nop
+
+.global __va64_arg_i
+__va64_arg_i:
+	mov.l	(r4, 128), r2
+.ifarch abi_is_xgpr
+	mov		128, r3
+.else
+	mov		64, r3
+.endif
+	cmp/gt	r2, r3
+	bf		__va64_arg_i.L0
+	
+	mov		r2, r3
+	add		r4, r3
+	mov.q	(r3), r6
+	add		8, r2
+	mov.l	r2, (r4, 128)
+	mov		r6, r2
+	rts
+	nop
+
+__va64_arg_i.L0:
+	mov.q	(r4, 144), r3
+	mov.l	(r3), r6
+	add		4, r3
+	mov.q	r3, (r4, 144)
+	mov		r6, r2
+	rts
+	nop
+
+#if 1
+.global __va64_arg_l
+__va64_arg_l:
+	mov.l	(r4, 128), r2
+.ifarch abi_is_xgpr
+	mov		128, r3
+.else
+	mov		64, r3
+.endif
+	cmp/gt	r2, r3
+	bf		__va64_arg_l.L0	
+
+	mov		r2, r3
+	add		r4, r3
+	mov.q	(r3), r6
+	add		8, r2
+	mov.l	r2, (r4, 128)
+	mov		r6, r2
+	rts
+	nop
+__va64_arg_l.L0:
+	mov.q	(r4, 144), r3
+	add		7, r3
+	and		-8, r3
+	mov.q	(r3), r6
+	add		8, r3
+	mov.q	r3, (r4, 144)
+	mov		r6, r2
+	rts
+	nop
+#endif
+
+
+.global __va64_arg_x
+__va64_arg_x:
+	mov.l	(r4, 128), r2
+.ifarch abi_evenonly
+	test	8, r2
+	add?f	8, r2
+.endif
+.ifarch abi_is_xgpr
+	mov		120, r3
+.else
+	mov		56, r3
+.endif
+	cmp/gt	r2, r3
+	bf		__va64_arg_x.L0
+	mov		r2, r3
+	add		r4, r3
+	mov.q	(r3, 0), r6
+	mov.q	(r3, 8), r7
+	add		16, r2
+	mov.l	r2, (r4, 128)
+	mov		r6, r2
+	mov		r7, r3
+	rts
+	nop
+__va64_arg_x.L0:
+	mov.q	(r4, 144), r3
+	add		7, r3
+	and		-8, r3
+	mov.q	(r3), r6
+	add		8, r3
+	mov.q	(r3), r7
+	add		8, r3
+	mov.q	r3, (r4, 144)
+	mov		r6, r2
+	mov		r7, r3
+	rts
+	nop
+
+};
+
 #endif
 
 

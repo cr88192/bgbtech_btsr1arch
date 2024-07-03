@@ -816,6 +816,13 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 		{
 			obj->regflags|=BGBCC_REGFL_GOFAST;
 		}
+		
+		if(BGBCC_CCXL_TypeVaListP(ctx, obj->locals[i]->type))
+		{
+			BGBCC_CCXL_GlobalMarkReachableName(ctx, "__va64_saveargs");
+			BGBCC_CCXL_GlobalMarkReachableName(ctx, "__va64_arg_l");
+			BGBCC_CCXL_GlobalMarkReachableName(ctx, "__va64_arg_x");
+		}
 	}
 
 

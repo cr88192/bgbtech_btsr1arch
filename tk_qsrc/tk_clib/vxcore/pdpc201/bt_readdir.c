@@ -21,7 +21,18 @@ struct dirent *readdir(DIR *dir)
 	tde=tk_readdir(dir1);
 	if(!tde)
 		return(NULL);
-	de=(struct dirent *)tde;
+
+//	de=(struct dirent *)tde;
+
+#if 1
+	de=tk_ralloc(sizeof(struct dirent));
+	de->d_ino=tde->d_ino;
+	de->d_off=tde->d_off;
+	de->d_reclen=tde->d_reclen;
+	de->d_type=tde->d_type;
+	strncpy(de->d_name, tde->d_name, 256);
+#endif
+
 	return(de);
 }
 

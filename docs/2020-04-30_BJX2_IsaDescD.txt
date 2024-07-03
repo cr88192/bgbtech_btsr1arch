@@ -183,7 +183,8 @@ Ro:
 * (47: 0), Weights, 3 bits each
 * (55:48), Bias, 8 bit sign-extended.
 * (57:56), Mode
-* (63:58), Reserved (MBZ)
+* (   58), Range Flag
+* (63:59), Reserved (MBZ)
 
 Rn:
 * Will hold the output bits, and will be both a 3rd source and destination.
@@ -206,14 +207,12 @@ In 2 bit input mode, each input will be 2 bits:
 Weights will be 3 bits and defined as:
 * 000 => 0
 * 001 => 1
-* 010 => 2
-* 011 => 3
+* 010 => 3
+* 011 => 7
 * 100 => 0
 * 101 => -1
-* 110 => -2
-* 111 => -3
-
-Note that while 0/1/3/7 would be stronger, this doesn't allow handling pairs as 4-bit values, and would instead require a 4 bit output for every element.
+* 110 => -3
+* 111 => -7
 
 Each input will be multiplied by each weight, then the bias will be added, and the final result will be compared against 0.
 
@@ -226,6 +225,12 @@ Output in 1 bit mode will be based on whether the result is greater than or equa
 In 2 bit output mode, the output will be +1 or -1.
 * 01: Result is positive.
 * 11: Result is negative.
+
+The Range Flag will modify the behavior of bias handling:
+* 0: The intermediate result and bias will be added with an 8 bit range.
+* 1: The intermediate result and bias will be added with a 9 bit range.
+
+The Range Flag will modify the behavior in the operation in the case where adding the bias would lead to an overflow outside of the 8-bit range. If this flag is set, the range will be expanded such that the overflow will not happen.
 
 
 === BNDCHK / BNDCMP (TTAG) ===

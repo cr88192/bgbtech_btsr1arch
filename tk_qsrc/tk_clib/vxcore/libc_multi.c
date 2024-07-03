@@ -85,5 +85,7 @@ Everything else will assume the use of system calls.
 
 #include "pdpc201/bt_mman.c"
 #include "pdpc201/bt_readdir.c"
+#include "pdpc201/bt_dlfcn.c"
 
 #include "pdpc201/bt_htonl.c"
+#include "pdpc201/bt_libcgpa.c"

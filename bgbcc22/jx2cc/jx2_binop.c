@@ -4408,8 +4408,8 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 			if(BGBCC_CCXL_TypePointerP(ctx, bty))
 				al=ctx->arch_sizeof_ptr;
 
-			if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
-				al=8;
+//			if(BGBCC_CCXL_TypeValueObjectP(ctx, bty))
+//				al=8;
 		}else
 		{
 			al=1;

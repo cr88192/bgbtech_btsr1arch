@@ -150,9 +150,9 @@ __PDPCLIB_API__ void **_getmsetzoneptr(void)
 
 // #ifdef __BJX2__
 // #if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__)
-#if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__) && \
-	!defined(__ADDR_X96__)
-// #if 0
+// #if defined(__BJX2__) && !defined(__TK_CLIB_DLLSTUB__) && \
+//	!defined(__ADDR_X96__)
+#if 0
 
 __PDPCLIB_API__ void *malloc(size_t size);
 __PDPCLIB_API__ void *_malloc_cat(size_t size, int cat);
@@ -375,40 +375,102 @@ __PDPCLIB_API__ void exit(int status)
  * Sparing the function calling overhead does improve performance, too.
  */
 
+void _memswap(void *ptra, void *ptrb, int sz)
+{
+	u64 v0, v1, v2, v3;
+	byte *csa, *csb;
+	int n;
+	
+	csa=ptra;
+	csb=ptrb;
+	n=sz;
+	
+	while(n>=16)
+	{
+		v0=((u64 *)csa)[0];
+		v2=((u64 *)csb)[0];
+		v1=((u64 *)csa)[1];
+		v3=((u64 *)csb)[1];
+		((u64 *)csb)[0]=v0;
+		((u64 *)csa)[0]=v2;
+		((u64 *)csb)[1]=v1;
+		((u64 *)csa)[1]=v3;
+		csa+=16;	csb+=16;
+		n-=16;
+	}
+
+	if(n>=8)
+	{
+		v0=((u64 *)csa)[0];
+		v2=((u64 *)csb)[0];
+		((u64 *)csb)[0]=v0;
+		((u64 *)csa)[0]=v2;
+		csa+=8;	csb+=8;
+		n-=8;
+	}
+	
+	if(n)
+	{
+		while(n>0)
+		{
+			v0=csa[0]; v1=csb[0];
+			csb[0]=v0;	csa[0]=v1;
+			csa++;		csb++;
+			n--;
+		}
+	}
+}
+
 __PDPCLIB_API__ void qsort(void *base,
 			size_t nmemb,
 			size_t size,
 			int (*compar)(const void *, const void *))
 {
 	char *base2 = (char *)base;
-	size_t i,a,b,c;
+	char *pa, *pb, *pc;
+	size_t i, j, k, a, b, c;
   
 	while (nmemb > 1)
 	{
 		a = 0;
 		b = nmemb-1;
 		c = (a+b)/2; /* Middle element */
-		for (;;)
+		while(1)
 		{
-			while ((*compar)(&base2[size*c],&base2[size*a]) > 0) 
+			pa=base2+(size*a);
+			pb=base2+(size*b);
+			pc=base2+(size*c);
+
+//			while ((*compar)(&base2[size*c],&base2[size*a]) > 0) 
+			while ((*compar)(pc, pa) > 0) 
 			{
 				a++; /* Look for one >= middle */
+				pa+=size;
 			}
-			while ((*compar)(&base2[size*c],&base2[size*b]) < 0)
+//			while ((*compar)(&base2[size*c],&base2[size*b]) < 0)
+			while ((*compar)(pc, pb) < 0)
 			{
 				b--; /* Look for one <= middle */
+				pb-=size;
 			}
 			if (a >= b)
 			{
 				break; /* We found no pair */
 			}
+
+			_memswap(pa, pb, size);
+
+#if 0
 			for (i=0; i<size; i++) /* swap them */
 			{
-				char tmp=base2[size*a+i];
-
-				base2[size*a+i]=base2[size*b+i];
-				base2[size*b+i]=tmp;
+				j=pa[i];	k=pb[i];
+				pa[i]=k;	pb[i]=j;
+//				char tmp=base2[size*a+i];
+//				base2[size*a+i]=base2[size*b+i];
+//				base2[size*b+i]=tmp;
 			}
+#endif
+
 			if (c == a) /* Keep track of middle element */
 			{
 				c = b;
@@ -426,12 +488,14 @@ __PDPCLIB_API__ void qsort(void *base,
 							iteration on larger one */
 		{
 			qsort(base2,b,size,compar);
-			base2=&base2[size*b];
+//			base2=&base2[size*b];
+			base2=base2+(size*b);
 			nmemb=nmemb-b;
 		}
 		else
 		{
-			qsort(&base2[size*b],nmemb-b,size,compar);
+//			qsort(&base2[size*b],nmemb-b,size,compar);
+			qsort(base2+(size*b),nmemb-b,size,compar);
 			nmemb=b;
 		}
 	}

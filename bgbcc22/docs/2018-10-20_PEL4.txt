@@ -540,6 +540,8 @@ ExportNamePointerTable and ExportOrdinalTable
 ** Each entry in the Export Name Table is a 32-bit RVA.
 * ExportOrdinalTable maps these names to ordinal indices.
 ** Each entry in the ordinal table is a 16-bit Word.
+** Add: May use 32-bit entries for an expanded exports.
+** If nNumberNameEntries is negative or greater than 65535.
 
 Export names may be (optionally) followed by a signature hash:
 * XH#xxxx

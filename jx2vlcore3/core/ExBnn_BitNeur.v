@@ -56,10 +56,10 @@ wire[1:0]		tModeI;
 assign		tModeI = valRt[57:56];
 
 wire[7:0]		tBias;
-wire[1:0]		tMode;
+wire[3:0]		tMode;
 
 assign		tBias = tValRt[55:48];
-assign		tMode = tValRt[57:56];
+assign		tMode = tValRt[59:56];
 
 wire[31:0]		tValRs1b;
 assign 		tValRs1b = {
@@ -76,15 +76,15 @@ assign 		tValRs1b = {
 wire[31:0]		tNxtValRs;
 assign	tNxtValRs = tModeI[0] ? valRs[31:0] : tValRs1b;
 
-wire[3:0]	tMul0a;
-wire[3:0]	tMul0b;
-wire[3:0]	tMul0c;
-wire[3:0]	tMul0d;
+wire[4:0]	tMul0a;
+wire[4:0]	tMul0b;
+wire[4:0]	tMul0c;
+wire[4:0]	tMul0d;
 
-wire[3:0]	tMul0e;
-wire[3:0]	tMul0f;
-wire[3:0]	tMul0g;
-wire[3:0]	tMul0h;
+wire[4:0]	tMul0e;
+wire[4:0]	tMul0f;
+wire[4:0]	tMul0g;
+wire[4:0]	tMul0h;
 ExBnn_BitNeur_Mul2x	mul0a(tValRs[ 3: 0], tValRt[ 5: 0], tMul0a);
 ExBnn_BitNeur_Mul2x	mul0b(tValRs[ 7: 4], tValRt[11: 6], tMul0b);
 ExBnn_BitNeur_Mul2x	mul0c(tValRs[11: 8], tValRt[17:12], tMul0c);
@@ -101,32 +101,39 @@ reg[7:0]	tMul1d;
 
 reg[7:0]	tMul2a;
 reg[7:0]	tMul2b;
+reg[7:0]	tMul2c;
 
-reg[7:0]	tMul3a;
+// reg[7:0]	tMul3a;
+reg[8:0]	tMul3a;
 
 reg			tBitOut;
 
 always @*
 begin
 	tMul1a =
-		{ tMul0a[3] ? 4'hF : 4'h0, tMul0a } +
-		{ tMul0b[3] ? 4'hF : 4'h0, tMul0b } ;
+		{ tMul0a[4] ? 3'h7 : 3'h0, tMul0a } +
+		{ tMul0b[4] ? 3'h7 : 3'h0, tMul0b } ;
 	tMul1b =
-		{ tMul0c[3] ? 4'hF : 4'h0, tMul0c } +
-		{ tMul0d[3] ? 4'hF : 4'h0, tMul0d } ;
+		{ tMul0c[4] ? 3'h7 : 3'h0, tMul0c } +
+		{ tMul0d[4] ? 3'h7 : 3'h0, tMul0d } ;
 	tMul1c =
-		{ tMul0e[3] ? 4'hF : 4'h0, tMul0e } +
-		{ tMul0f[3] ? 4'hF : 4'h0, tMul0f } ;
+		{ tMul0e[4] ? 3'h7 : 3'h0, tMul0e } +
+		{ tMul0f[4] ? 3'h7 : 3'h0, tMul0f } ;
 	tMul1d =
-		{ tMul0g[3] ? 4'hF : 4'h0, tMul0g } +
-		{ tMul0h[3] ? 4'hF : 4'h0, tMul0h } ;
+		{ tMul0g[4] ? 3'h7 : 3'h0, tMul0g } +
+		{ tMul0h[4] ? 3'h7 : 3'h0, tMul0h } ;
 	
 	tMul2a = tMul1a + tMul1b;
 	tMul2b = tMul1c + tMul1d;
+	tMul2c = tMul2a + tMul2b;
 
-	tMul3a = tMul2a + tMul2b + tBias;
+//	tMul3a = tMul2a + tMul2b + tBias;
+	tMul3a = { tMul2c[7], tMul2c } + { tBias[7], tBias };
 	
 	tBitOut = !tMul3a[7];
+
+	if(tMode[2])
+		tBitOut = !tMul3a[8];
 	
 	if(tMode[1])
 	begin
@@ -140,11 +147,14 @@ end
 
 always @(posedge clock)
 begin
-	tValRs		<= tNxtValRs;
-	tValRt		<= valRt;
-	tValRnI		<= valRnI;
+	if(!exHold)
+	begin
+		tValRs		<= tNxtValRs;
+		tValRt		<= valRt;
+		tValRnI		<= valRnI;
 
-	tValRnO2	<= tValRnO;
+		tValRnO2	<= tValRnO;
+	end
 end
 
 endmodule

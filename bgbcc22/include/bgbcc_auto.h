@@ -3339,6 +3339,7 @@ int BGBCC_JX2C_EmitLoadBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Contex
 int BGBCC_JX2C_EmitStoreBRegIRegScDispReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int nmid, int breg, int ireg, int sc, int disp, int dreg);
 int BGBCC_JX2C_GetGblIndexGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int gblidx);
 int BGBCC_JX2C_GetGblIndexLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int gblidx);
+int BGBCC_JX2C_GetGblIndexLabelAlias(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int gblidx);
 int BGBCC_JX2C_GetVRegGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
 int BGBCC_JX2C_GetGblNameGotIndex(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_GetGblNameLabel(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);

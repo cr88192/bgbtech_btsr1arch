@@ -69,22 +69,27 @@ char *TK_Env_GetCwd(char *buf, int sz)
 
 struct tk_stdio_vt tk_stdio_vti =
 {
-fopen,		fclose,
-fread,		fwrite,
-fgetc,		fputc,
-fgets,		fputs,
-ungetc,		fseek,
-ftell,		fflush,
-feof,		freopen,
-remove,		rename,
-vfprintf,	vsnprintf,
-vfscanf,	vsscanf,
-clearerr,	perror,
-setvbuf,	tmpnam,
-ferror,
+NULL,			NULL,				NULL,			NULL,			//00
+fopen,			fclose,				fread,			fwrite,			//04
+fgetc,			fputc,				fgets,			fputs,			//08
+ungetc,			fseek,				ftell,			fflush,			//0C
+feof,			freopen,			remove,			__rename2,		//10
+vfprintf,		vsnprintf,			vfscanf,		vsscanf,		//14
+clearerr,		perror,				setvbuf,		tmpnam,			//18
+ferror,			_TK_STDIO_KEY1A,	_mgetbase,		_mfreezone,		//1C
+_malloc_cat,	free,				realloc,		_msize,			//20
+_mgettag,		_msettag,			_mgetzone,		_msetzone,		//24
+opendir,		closedir,			readdir,		__get_errno,	//28
+mmap,			munmap,				msync,			mprotect,		//2C
 
-malloc,		free,
-realloc,	_msize
+setlocale,		localeconv,			signal,			raise,			//30
+dlopen,			dlclose,			dlsym,			dlerror,		//34
+__open,			__close,			__read,			__write,		//38
+__seek,			__ioctl,			__sendto,		__recvfrom,		//3C
+__bind,			__accept,			__connect,		__multicall,	//40
+__exita,		TK_GetTimeUs,
+
+NULL
 };
 
 struct tkclgpa_symbol_s {
@@ -110,6 +115,22 @@ void *TkClGetProcAddressSv(char *name)
 			return(sym->ptr);
 	}
 	return(NULL);
+}
+
+void __init_getprocstub()
+{
+	void *(*GpaFn)(char *name);
+	TKPE_TaskInfo *task;
+	TKPE_TaskInfoUser *tusr;
+	
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	tusr=(TKPE_TaskInfoUser *)task->usrptr;
+	
+	GpaFn=(void *)(tusr->clib_gpa);
+	if(GpaFn)
+		return;
+	GpaFn=TkClGetProcAddressSv;
+	tusr->clib_gpa=GpaFn;
 }
 
 #endif

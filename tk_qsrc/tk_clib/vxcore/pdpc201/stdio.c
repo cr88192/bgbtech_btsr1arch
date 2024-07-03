@@ -123,6 +123,15 @@ void __init_stdin(void)
 	__stdin = &permFiles[0];
 	__stdout = &permFiles[1];
 	__stderr = &permFiles[2];
+	
+	__stdin->magic1=_FILE_MAGIC;
+	__stdin->magic2=_FILE_MAGIC;
+	
+	__stdout->magic1=_FILE_MAGIC;
+	__stdout->magic2=_FILE_MAGIC;
+	
+	__stderr->magic1=_FILE_MAGIC;
+	__stderr->magic2=_FILE_MAGIC;
 }
 
 __PDPCLIB_API__ FILE **__get_stdin()
@@ -131,6 +140,14 @@ __PDPCLIB_API__ FILE **__get_stdout()
 	{ return(&__stdout); }
 __PDPCLIB_API__ FILE **__get_stderr()
 	{ return(&__stderr); }
+
+void __stdio_chkmagic(FILE *fd)
+{
+	if(fd->magic1!=_FILE_MAGIC)
+		__debugbreak();
+	if(fd->magic2!=_FILE_MAGIC)
+		__debugbreak();
+}
 
 static void dblcvt(double num, char cnvtype, size_t nwidth,
 				   int nprecision, char *result);
@@ -208,6 +225,8 @@ __PDPCLIB_API__ int fprintf(FILE *stream, const char *format, ...)
 	va_list arg;
 	int ret;
 
+	__stdio_chkmagic(stream);
+
 	va_start(arg, format);
 	
 	if(stream==stdout)
@@ -221,6 +240,8 @@ __PDPCLIB_API__ int fprintf(FILE *stream, const char *format, ...)
 __PDPCLIB_API__ int vfprintf(FILE *stream, const char *format, va_list arg)
 {
 	int ret;
+
+	__stdio_chkmagic(stream);
 
 	if(stream==stdout)
 	{
@@ -254,6 +275,10 @@ __PDPCLIB_API__ FILE *fopen(const char *filename, const char *mode)
 	if (!err)
 	{
 		myfile = malloc(sizeof(FILE));
+		memset(myfile, 0, sizeof(FILE));
+		myfile->magic1 = _FILE_MAGIC;
+		myfile->magic2 = _FILE_MAGIC;
+		
 		if (myfile == NULL)
 		{
 			tk_puts("fopen: malloc fail\n");
@@ -571,6 +596,8 @@ __PDPCLIB_API__ int fclose(FILE *stream)
 	if(!stream)
 		return(-1);
 
+	__stdio_chkmagic(stream);
+
 	if (!stream->isopen)
 	{
 		return (EOF);
@@ -596,6 +623,8 @@ __PDPCLIB_API__ size_t fread(void *ptr,
 
 	if(!stream)
 		return(-1);
+
+	__stdio_chkmagic(stream);
 
 	if (nmemb == 1)
 	{
@@ -908,6 +937,8 @@ __PDPCLIB_API__ size_t fwrite(const void *ptr,
 
 	if(!stream)
 		return(-1);
+
+	__stdio_chkmagic(stream);
 
 	if (nmemb == 1)
 	{
@@ -1281,6 +1312,8 @@ static int vvprintf(const char *format, va_list arg,
 	int j, k;
 
 	dste=s+nmax;
+
+//	__stdio_chkmagic(fq);
 
 	fin = 0;
 	chcount = 0;
@@ -2056,6 +2089,8 @@ __PDPCLIB_API__ int fputc(int c, FILE *stream)
 {
 	char buf[1];
 
+	__stdio_chkmagic(stream);
+
 #if !defined(__MVS__) && !defined(__CMS__)
 	stream->quickBin = 0;
 	if ((stream->upto < (stream->endbuf - 2))
@@ -2200,6 +2235,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 	int errind;
 
 	errind=-1;
+
+	__stdio_chkmagic(stream);
 
 //	if (stream->quickText)
 	if(0)
@@ -2432,6 +2469,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 
 __PDPCLIB_API__ int ungetc(int c, FILE *stream)
 {
+	__stdio_chkmagic(stream);
+
 	if ((stream->ungetCh != -1) || (c == EOF))
 	{
 		return (EOF);
@@ -2459,6 +2498,8 @@ __PDPCLIB_API__ int fseek(FILE *stream, long int offset, int whence)
 {
 	long oldpos;
 	long newpos;
+
+	__stdio_chkmagic(stream);
 
 	oldpos = stream->bufStartR + (stream->upto - stream->fbuf);
 	if (stream->mode == __WRITE_MODE)
@@ -2519,6 +2560,8 @@ __PDPCLIB_API__ long int ftell(FILE *stream)
 {
 	long x;
 	
+	__stdio_chkmagic(stream);
+
 	x = stream->bufStartR + (stream->upto - stream->fbuf);
 	x = (int) x;
 
@@ -2545,6 +2588,8 @@ __PDPCLIB_API__ void rewind(FILE *stream)
 
 __PDPCLIB_API__ void clearerr(FILE *stream)
 {
+	__stdio_chkmagic(stream);
+
 	stream->errorInd = 0;
 	stream->eofInd = 0;
 	return;
@@ -2575,6 +2620,8 @@ buf  + N = ignore, return success
 __PDPCLIB_API__ int setvbuf(FILE *stream, char *buf, int mode, size_t size)
 {
 	char *mybuf;
+
+	__stdio_chkmagic(stream);
 
 	if (mode == _IONBF)
 	{
@@ -2652,6 +2699,8 @@ __PDPCLIB_API__ FILE *freopen(
 	inreopen = 1;
 	fclose(stream);
 
+	__stdio_chkmagic(stream);
+
 	myfile = stream;
 	fnm = filename;
 	modus = mode;
@@ -2676,6 +2725,8 @@ __PDPCLIB_API__ int fflush(FILE *stream)
 {
 	int errind;
 	size_t actualWritten;
+
+	__stdio_chkmagic(stream);
 
 	errind = 0;
 
@@ -2789,12 +2840,25 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 	float *fptr;
 	long startpos;
 	const char *startp;
+	long dummy;
 	int skipvar; /* nonzero if we are skipping this variable */
 	int modlong;   /* nonzero if "l" modifier found */
 	int modshort;   /* nonzero if "h" modifier found */
 	int informatitem;  /* nonzero if % format item started */
 		   /* informatitem is 1 if we have processed "%l" but not the
 			  type letter (s,d,e,f,g,...) yet. */
+
+	lptr = &dummy;
+	iptr = (long *)lptr;
+	lptr = (long *)iptr;
+	hptr = (short *)iptr;
+
+	luptr = (unsigned long *)lptr;
+	huptr = (unsigned short *)hptr;
+	uptr = (unsigned int *)iptr;
+	fptr = (float *)iptr;
+	dptr = (double *)lptr;
+
 
 	if (fp != NULL)
 	{
@@ -2827,6 +2891,18 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 					skipvar = 1;
 					format++;
 				}
+
+				lptr = &dummy;
+				iptr = (long *)lptr;
+				lptr = (long *)iptr;
+				hptr = (short *)iptr;
+
+				luptr = (unsigned long *)lptr;
+				huptr = (unsigned short *)hptr;
+				uptr = (unsigned int *)iptr;
+				fptr = (float *)iptr;
+				dptr = (double *)lptr;
+
 			}
 			if (*format == '%')   /* %% */
 			{
@@ -2998,6 +3074,17 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 					else if (*format == 'i') base = 0;
 					if (!skipvar)
 					{
+						lptr = va_arg(arg, long *);
+						if(!lptr)
+							lptr=&dummy;
+						hptr = (short *)lptr;
+						iptr = (long *)lptr;
+
+						luptr = (unsigned long *)lptr;
+						huptr = (unsigned short *)hptr;
+						uptr = (unsigned int *)iptr;
+
+#if 0
 						if ((*format == 'd') || (*format == 'i'))
 						{
 							if (modlong) lptr = va_arg(arg, long *);
@@ -3011,6 +3098,7 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 									 va_arg(arg, unsigned short *);
 							else uptr = va_arg(arg, unsigned int *);
 						}
+#endif
 					}
 					/* Skip leading whitespace: */
 					while (ch>=0 && isspace(ch)) inch();

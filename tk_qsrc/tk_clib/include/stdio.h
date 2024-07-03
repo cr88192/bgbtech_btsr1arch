@@ -86,6 +86,10 @@ typedef char *__va_list;
     x'50006' = x'C3'
 */
 
+#ifndef _FILE_MAGIC
+#define _FILE_MAGIC	0x1414237
+#endif
+
 #ifndef _FILE_DEFINED /* Also in stdio.h */
 #define	_FILE_DEFINED
 typedef struct _iobuf FILE;
@@ -105,6 +109,8 @@ struct _iobuf
     int hfile;
 #endif
 
+	int magic1;
+
 #if (defined(__MVS__) || defined(__CMS__))
     void *hfile;
     void *asmbuf;
@@ -118,9 +124,10 @@ struct _iobuf
     int reallyt;    /* 1 = this is really a text file */
     int dynal;      /* 1 = this file was dynamically allocated */
 #endif
-    int quickBin;  /* 1 = do DosRead NOW!!!! */
-    int quickText; /* 1 = quick text mode */
-    int textMode; /* 1 = text mode, 0 = binary mode */
+
+    char quickBin;  /* 1 = do DosRead NOW!!!! */
+    char quickText; /* 1 = quick text mode */
+	char textMode; /* 1 = text mode, 0 = binary mode */
     int intFno;   /* internal file number */
     unsigned long bufStartR; /* buffer start represents, e.g. if we
         have read in 3 buffers, each of 512 bytes, and we are
@@ -147,6 +154,8 @@ struct _iobuf
     int permfile;   /* Is this stdin/stdout/stderr? */
     int isopen;     /* Is this file open? */
     char modeStr[4]; /* 2nd parameter to fopen */
+
+	int magic2;
 };
 
 typedef unsigned long fpos_t;

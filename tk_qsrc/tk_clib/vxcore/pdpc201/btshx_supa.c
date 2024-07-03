@@ -955,6 +955,12 @@ int socket(int domain, int type, int protocol)
 
 #endif
 
+#ifndef __TK_CLIB_DLLSTUB__
+void __multicall(int magicid, void *retptr, void **args)
+{
+}
+#endif
+
 void __exita(int status)
 {
 	if(!tk_iskernel())
