@@ -408,6 +408,9 @@ parameter[8:0] UV9_FF			= 9'h1FF;	//
 parameter[9:0] UV10_00			= 10'h000;	//
 parameter[9:0] UV10_FF			= 10'h3FF;	//
 
+parameter[10:0] UV11_00			= 11'h000;	//
+parameter[10:0] UV11_FF			= 11'h7FF;	//
+
 parameter[11:0] UV12_00			= 12'h000;	//
 parameter[11:0] UV12_FF			= 12'hFFF;	//
 
