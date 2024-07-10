@@ -8,6 +8,7 @@
 #include "fx_man.h"
 #include "music.h"
 
+
 #define		FX_POS_SHL	12
 
 typedef struct {
@@ -31,6 +32,16 @@ int		SoundDev_Init(void);
 void	SoundDev_WriteStereoSamples(short *mixbuf, int nsamp);
 void	SoundDev_Submit();
 void	SoundDev_Silence(void);
+
+#ifdef __BJX2__
+
+#include <tkgdi/tkgdi.h>
+
+extern TKGHSND hSndDev;
+TKGDI_WAVEFORMATEX i_snd_t_info;
+TKGDI_WAVEFORMATEX *i_snd_info = NULL;
+
+#endif
 
 
 char *FX_ErrorString( int ErrorNumber )
@@ -195,6 +206,25 @@ int FX_Update()
 	register int lv, rv;
 	int i, j, k, l;
 
+#ifdef __BJX2__
+	if(!i_snd_info)
+	{
+		i_snd_info = &i_snd_t_info;
+		memset(i_snd_info, 0, sizeof(TKGDI_WAVEFORMATEX));
+		
+		i_snd_info->wFormatTag=TKGDI_WAVE_FORMAT_PCM;
+		i_snd_info->nChannels=2;
+		i_snd_info->nSamplesPerSec=16000;
+		i_snd_info->nAvgBytesPerSec=16000*4;
+		i_snd_info->nBlockAlign=4;
+		i_snd_info->wBitsPerSample=16;
+		i_snd_info->cbSize=sizeof(TKGDI_WAVEFORMATEX);
+
+		hSndDev = tkgCreateAudioDevice(0, TKGDI_FCC_auds, i_snd_info);
+//		mixbuf2 = tkgGlobalAlloc(SAMPLECOUNT*2*2*sizeof(short));
+	}
+#endif
+
 	ms=I_TimeMS();
 	dt=ms-fx_mixtime;
 	fx_mixtime=ms;
@@ -236,12 +266,16 @@ int FX_Update()
 //			mixb[i*2+1]=rv;
 		}
 
+#ifdef __BJX2__
+		tkgWriteSamples(hSndDev, fx_mixbuf, ns2, ns2*2);
+#else
 // #ifdef _WIN32
 		SoundDev_WriteStereoSamples(fx_mixbuf, ns2);
-// #endif
+//		tkgWriteSamples(hSndDev, fx_mixbuf, ns2, ns2*2);
+#endif
 	}
 
-	SoundDev_Submit();
+//	SoundDev_Submit();
 
 	return(0);
 }

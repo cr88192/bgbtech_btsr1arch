@@ -745,14 +745,17 @@ char *tkra_glGetString(int name)
 void tkra_glFinish(void)
 {
 	TKRA_Context *ctx;
-
 	ctx=TKRA_GetCurrentContext();
+	TKRA_ModifyContext(ctx, TKRA_CTXPARM_FINISH, NULL, NULL);
 	
-	TKRA_DebugPrintStats(ctx);
+//	TKRA_DebugPrintStats(ctx);
 }
 
 void tkra_glFlush(void)
 {
+	TKRA_Context *ctx;
+	ctx=TKRA_GetCurrentContext();
+	TKRA_ModifyContext(ctx, TKRA_CTXPARM_FLUSH, NULL, NULL);
 }
 
 void tkra_glHint(int target, int mode)

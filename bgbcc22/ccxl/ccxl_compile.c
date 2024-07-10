@@ -118,6 +118,8 @@ char *BGBCC_CCXL_TagGetMessage(int tag)
 	case CCXL_TERR_MISSINGPROTO:
 //		str="Missing prototype for function";	break;
 		str="Undeclared function";	break;
+	case CCXL_TERR_AUTOALLOCA:
+		str="Local storage converted to alloca";	break;
 		
 	case CCXL_TERR_STATUS(CCXL_STATUS_ERR_UNHANDLEDTYPE):
 		str="Unhandled Type";	break;
@@ -3762,14 +3764,15 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 			}
 		}
 		
-		if((atsz*vsc)>8192)
+//		if((atsz*vsc)>8192)
+		if((atsz*vsc)>=16384)
 		{
 			if(li&BGBCC_TYFL_LOCAL)
 			{
 				BGBCC_CCXL_Warn(ctx, "Large Local Array, szest=%d\n",
 					atsz*vsc);
-				if((nasz==1) && (vsc<32))
-					isvla=1;
+//				if((nasz==1) && (vsc<32))
+//					isvla=1;
 			}
 		}
 

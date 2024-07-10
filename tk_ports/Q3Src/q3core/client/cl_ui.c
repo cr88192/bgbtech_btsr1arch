@@ -34,12 +34,12 @@ GetClientState
 ====================
 */
 static void GetClientState( uiClientState_t *state ) {
-	state->connectPacketCount = clc.connectPacketCount;
-	state->connState = cls.state;
-	Q_strncpyz( state->servername, cls.servername, sizeof( state->servername ) );
-	Q_strncpyz( state->updateInfoString, cls.updateInfoString, sizeof( state->updateInfoString ) );
-	Q_strncpyz( state->messageString, clc.serverMessage, sizeof( state->messageString ) );
-	state->clientNum = cl.snap.ps.clientNum;
+	state->connectPacketCount = clc->connectPacketCount;
+	state->connState = cls->state;
+	Q_strncpyz( state->servername, cls->servername, sizeof( state->servername ) );
+	Q_strncpyz( state->updateInfoString, cls->updateInfoString, sizeof( state->updateInfoString ) );
+	Q_strncpyz( state->messageString, clc->serverMessage, sizeof( state->messageString ) );
+	state->clientNum = cl->snap.ps.clientNum;
 }
 
 /*
@@ -50,20 +50,20 @@ LAN_LoadCachedServers
 void LAN_LoadCachedServers( ) {
 	int size;
 	fileHandle_t fileIn;
-	cls.numglobalservers = cls.nummplayerservers = cls.numfavoriteservers = 0;
-	cls.numGlobalServerAddresses = 0;
+	cls->numglobalservers = cls->nummplayerservers = cls->numfavoriteservers = 0;
+	cls->numGlobalServerAddresses = 0;
 	if (FS_SV_FOpenFileRead("servercache.dat", &fileIn)) {
-		FS_Read(&cls.numglobalservers, sizeof(int), fileIn);
-		FS_Read(&cls.nummplayerservers, sizeof(int), fileIn);
-		FS_Read(&cls.numfavoriteservers, sizeof(int), fileIn);
+		FS_Read(&cls->numglobalservers, sizeof(int), fileIn);
+		FS_Read(&cls->nummplayerservers, sizeof(int), fileIn);
+		FS_Read(&cls->numfavoriteservers, sizeof(int), fileIn);
 		FS_Read(&size, sizeof(int), fileIn);
-		if (size == sizeof(cls.globalServers) + sizeof(cls.favoriteServers) + sizeof(cls.mplayerServers)) {
-			FS_Read(&cls.globalServers, sizeof(cls.globalServers), fileIn);
-			FS_Read(&cls.mplayerServers, sizeof(cls.mplayerServers), fileIn);
-			FS_Read(&cls.favoriteServers, sizeof(cls.favoriteServers), fileIn);
+		if (size == sizeof(cls->globalServers) + sizeof(cls->favoriteServers) + sizeof(cls->mplayerServers)) {
+			FS_Read(&cls->globalServers, sizeof(cls->globalServers), fileIn);
+			FS_Read(&cls->mplayerServers, sizeof(cls->mplayerServers), fileIn);
+			FS_Read(&cls->favoriteServers, sizeof(cls->favoriteServers), fileIn);
 		} else {
-			cls.numglobalservers = cls.nummplayerservers = cls.numfavoriteservers = 0;
-			cls.numGlobalServerAddresses = 0;
+			cls->numglobalservers = cls->nummplayerservers = cls->numfavoriteservers = 0;
+			cls->numGlobalServerAddresses = 0;
 		}
 		FS_FCloseFile(fileIn);
 	}
@@ -77,14 +77,14 @@ LAN_SaveServersToCache
 void LAN_SaveServersToCache( ) {
 	int size;
 	fileHandle_t fileOut = FS_SV_FOpenFileWrite("servercache.dat");
-	FS_Write(&cls.numglobalservers, sizeof(int), fileOut);
-	FS_Write(&cls.nummplayerservers, sizeof(int), fileOut);
-	FS_Write(&cls.numfavoriteservers, sizeof(int), fileOut);
-	size = sizeof(cls.globalServers) + sizeof(cls.favoriteServers) + sizeof(cls.mplayerServers);
+	FS_Write(&cls->numglobalservers, sizeof(int), fileOut);
+	FS_Write(&cls->nummplayerservers, sizeof(int), fileOut);
+	FS_Write(&cls->numfavoriteservers, sizeof(int), fileOut);
+	size = sizeof(cls->globalServers) + sizeof(cls->favoriteServers) + sizeof(cls->mplayerServers);
 	FS_Write(&size, sizeof(int), fileOut);
-	FS_Write(&cls.globalServers, sizeof(cls.globalServers), fileOut);
-	FS_Write(&cls.mplayerServers, sizeof(cls.mplayerServers), fileOut);
-	FS_Write(&cls.favoriteServers, sizeof(cls.favoriteServers), fileOut);
+	FS_Write(&cls->globalServers, sizeof(cls->globalServers), fileOut);
+	FS_Write(&cls->mplayerServers, sizeof(cls->mplayerServers), fileOut);
+	FS_Write(&cls->favoriteServers, sizeof(cls->favoriteServers), fileOut);
 	FS_FCloseFile(fileOut);
 }
 
@@ -101,19 +101,19 @@ static void LAN_ResetPings(int source) {
 
 	switch (source) {
 		case AS_LOCAL :
-			servers = &cls.localServers[0];
+			servers = &cls->localServers[0];
 			count = MAX_OTHER_SERVERS;
 			break;
 		case AS_MPLAYER :
-			servers = &cls.mplayerServers[0];
+			servers = &cls->mplayerServers[0];
 			count = MAX_OTHER_SERVERS;
 			break;
 		case AS_GLOBAL :
-			servers = &cls.globalServers[0];
+			servers = &cls->globalServers[0];
 			count = MAX_GLOBAL_SERVERS;
 			break;
 		case AS_FAVORITES :
-			servers = &cls.favoriteServers[0];
+			servers = &cls->favoriteServers[0];
 			count = MAX_OTHER_SERVERS;
 			break;
 	}
@@ -138,21 +138,21 @@ static int LAN_AddServer(int source, const char *name, const char *address) {
 
 	switch (source) {
 		case AS_LOCAL :
-			count = &cls.numlocalservers;
-			servers = &cls.localServers[0];
+			count = &cls->numlocalservers;
+			servers = &cls->localServers[0];
 			break;
 		case AS_MPLAYER :
-			count = &cls.nummplayerservers;
-			servers = &cls.mplayerServers[0];
+			count = &cls->nummplayerservers;
+			servers = &cls->mplayerServers[0];
 			break;
 		case AS_GLOBAL :
 			max = MAX_GLOBAL_SERVERS;
-			count = &cls.numglobalservers;
-			servers = &cls.globalServers[0];
+			count = &cls->numglobalservers;
+			servers = &cls->globalServers[0];
 			break;
 		case AS_FAVORITES :
-			count = &cls.numfavoriteservers;
-			servers = &cls.favoriteServers[0];
+			count = &cls->numfavoriteservers;
+			servers = &cls->favoriteServers[0];
 			break;
 	}
 	if (servers && *count < max) {
@@ -185,20 +185,20 @@ static void LAN_RemoveServer(int source, const char *addr) {
 	count = 0;
 	switch (source) {
 		case AS_LOCAL :
-			count = &cls.numlocalservers;
-			servers = &cls.localServers[0];
+			count = &cls->numlocalservers;
+			servers = &cls->localServers[0];
 			break;
 		case AS_MPLAYER :
-			count = &cls.nummplayerservers;
-			servers = &cls.mplayerServers[0];
+			count = &cls->nummplayerservers;
+			servers = &cls->mplayerServers[0];
 			break;
 		case AS_GLOBAL :
-			count = &cls.numglobalservers;
-			servers = &cls.globalServers[0];
+			count = &cls->numglobalservers;
+			servers = &cls->globalServers[0];
 			break;
 		case AS_FAVORITES :
-			count = &cls.numfavoriteservers;
-			servers = &cls.favoriteServers[0];
+			count = &cls->numfavoriteservers;
+			servers = &cls->favoriteServers[0];
 			break;
 	}
 	if (servers) {
@@ -227,16 +227,16 @@ LAN_GetServerCount
 static int LAN_GetServerCount( int source ) {
 	switch (source) {
 		case AS_LOCAL :
-			return cls.numlocalservers;
+			return cls->numlocalservers;
 			break;
 		case AS_MPLAYER :
-			return cls.nummplayerservers;
+			return cls->nummplayerservers;
 			break;
 		case AS_GLOBAL :
-			return cls.numglobalservers;
+			return cls->numglobalservers;
 			break;
 		case AS_FAVORITES :
-			return cls.numfavoriteservers;
+			return cls->numfavoriteservers;
 			break;
 	}
 	return 0;
@@ -251,25 +251,25 @@ static void LAN_GetServerAddressString( int source, int n, char *buf, int buflen
 	switch (source) {
 		case AS_LOCAL :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				Q_strncpyz(buf, NET_AdrToString( cls.localServers[n].adr) , buflen );
+				Q_strncpyz(buf, NET_AdrToString( cls->localServers[n].adr) , buflen );
 				return;
 			}
 			break;
 		case AS_MPLAYER :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				Q_strncpyz(buf, NET_AdrToString( cls.mplayerServers[n].adr) , buflen );
+				Q_strncpyz(buf, NET_AdrToString( cls->mplayerServers[n].adr) , buflen );
 				return;
 			}
 			break;
 		case AS_GLOBAL :
 			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
-				Q_strncpyz(buf, NET_AdrToString( cls.globalServers[n].adr) , buflen );
+				Q_strncpyz(buf, NET_AdrToString( cls->globalServers[n].adr) , buflen );
 				return;
 			}
 			break;
 		case AS_FAVORITES :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				Q_strncpyz(buf, NET_AdrToString( cls.favoriteServers[n].adr) , buflen );
+				Q_strncpyz(buf, NET_AdrToString( cls->favoriteServers[n].adr) , buflen );
 				return;
 			}
 			break;
@@ -289,22 +289,22 @@ static void LAN_GetServerInfo( int source, int n, char *buf, int buflen ) {
 	switch (source) {
 		case AS_LOCAL :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				server = &cls.localServers[n];
+				server = &cls->localServers[n];
 			}
 			break;
 		case AS_MPLAYER :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				server = &cls.mplayerServers[n];
+				server = &cls->mplayerServers[n];
 			}
 			break;
 		case AS_GLOBAL :
 			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
-				server = &cls.globalServers[n];
+				server = &cls->globalServers[n];
 			}
 			break;
 		case AS_FAVORITES :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				server = &cls.favoriteServers[n];
+				server = &cls->favoriteServers[n];
 			}
 			break;
 	}
@@ -340,22 +340,22 @@ static int LAN_GetServerPing( int source, int n ) {
 	switch (source) {
 		case AS_LOCAL :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				server = &cls.localServers[n];
+				server = &cls->localServers[n];
 			}
 			break;
 		case AS_MPLAYER :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				server = &cls.mplayerServers[n];
+				server = &cls->mplayerServers[n];
 			}
 			break;
 		case AS_GLOBAL :
 			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
-				server = &cls.globalServers[n];
+				server = &cls->globalServers[n];
 			}
 			break;
 		case AS_FAVORITES :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				server = &cls.favoriteServers[n];
+				server = &cls->favoriteServers[n];
 			}
 			break;
 	}
@@ -374,22 +374,22 @@ static serverInfo_t *LAN_GetServerPtr( int source, int n ) {
 	switch (source) {
 		case AS_LOCAL :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				return &cls.localServers[n];
+				return &cls->localServers[n];
 			}
 			break;
 		case AS_MPLAYER :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				return &cls.mplayerServers[n];
+				return &cls->mplayerServers[n];
 			}
 			break;
 		case AS_GLOBAL :
 			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
-				return &cls.globalServers[n];
+				return &cls->globalServers[n];
 			}
 			break;
 		case AS_FAVORITES :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				return &cls.favoriteServers[n];
+				return &cls->favoriteServers[n];
 			}
 			break;
 	}
@@ -512,17 +512,17 @@ static void LAN_MarkServerVisible(int source, int n, qboolean visible ) {
 		serverInfo_t *server = NULL;
 		switch (source) {
 			case AS_LOCAL :
-				server = &cls.localServers[0];
+				server = &cls->localServers[0];
 				break;
 			case AS_MPLAYER :
-				server = &cls.mplayerServers[0];
+				server = &cls->mplayerServers[0];
 				break;
 			case AS_GLOBAL :
-				server = &cls.globalServers[0];
+				server = &cls->globalServers[0];
 				count = MAX_GLOBAL_SERVERS;
 				break;
 			case AS_FAVORITES :
-				server = &cls.favoriteServers[0];
+				server = &cls->favoriteServers[0];
 				break;
 		}
 		if (server) {
@@ -535,22 +535,22 @@ static void LAN_MarkServerVisible(int source, int n, qboolean visible ) {
 		switch (source) {
 			case AS_LOCAL :
 				if (n >= 0 && n < MAX_OTHER_SERVERS) {
-					cls.localServers[n].visible = visible;
+					cls->localServers[n].visible = visible;
 				}
 				break;
 			case AS_MPLAYER :
 				if (n >= 0 && n < MAX_OTHER_SERVERS) {
-					cls.mplayerServers[n].visible = visible;
+					cls->mplayerServers[n].visible = visible;
 				}
 				break;
 			case AS_GLOBAL :
 				if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
-					cls.globalServers[n].visible = visible;
+					cls->globalServers[n].visible = visible;
 				}
 				break;
 			case AS_FAVORITES :
 				if (n >= 0 && n < MAX_OTHER_SERVERS) {
-					cls.favoriteServers[n].visible = visible;
+					cls->favoriteServers[n].visible = visible;
 				}
 				break;
 		}
@@ -567,22 +567,22 @@ static int LAN_ServerIsVisible(int source, int n ) {
 	switch (source) {
 		case AS_LOCAL :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				return cls.localServers[n].visible;
+				return cls->localServers[n].visible;
 			}
 			break;
 		case AS_MPLAYER :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				return cls.mplayerServers[n].visible;
+				return cls->mplayerServers[n].visible;
 			}
 			break;
 		case AS_GLOBAL :
 			if (n >= 0 && n < MAX_GLOBAL_SERVERS) {
-				return cls.globalServers[n].visible;
+				return cls->globalServers[n].visible;
 			}
 			break;
 		case AS_FAVORITES :
 			if (n >= 0 && n < MAX_OTHER_SERVERS) {
-				return cls.favoriteServers[n].visible;
+				return cls->favoriteServers[n].visible;
 			}
 			break;
 	}
@@ -613,7 +613,7 @@ CL_GetGlConfig
 ====================
 */
 static void CL_GetGlconfig( glconfig_t *config ) {
-	*config = cls.glconfig;
+	*config = cls->glconfig;
 }
 
 /*
@@ -668,7 +668,7 @@ Key_GetCatcher
 ====================
 */
 int Key_GetCatcher( void ) {
-	return cls.keyCatchers;
+	return cls->keyCatchers;
 }
 
 /*
@@ -677,7 +677,7 @@ Ket_SetCatcher
 ====================
 */
 void Key_SetCatcher( int catcher ) {
-	cls.keyCatchers = catcher;
+	cls->keyCatchers = catcher;
 }
 
 
@@ -731,7 +731,7 @@ static int GetConfigString(int index, char *buf, int size)
 	if (index < 0 || index >= MAX_CONFIGSTRINGS)
 		return qfalse;
 
-	offset = cl.gameState.stringOffsets[index];
+	offset = cl->gameState.stringOffsets[index];
 	if (!offset) {
 		if( size ) {
 			buf[0] = 0;
@@ -739,7 +739,7 @@ static int GetConfigString(int index, char *buf, int size)
 		return qfalse;
 	}
 
-	Q_strncpyz( buf, cl.gameState.stringData+offset, size);
+	Q_strncpyz( buf, cl->gameState.stringData+offset, size);
  
 	return qtrue;
 }
@@ -1128,8 +1128,8 @@ CL_ShutdownUI
 ====================
 */
 void CL_ShutdownUI( void ) {
-	cls.keyCatchers &= ~KEYCATCH_UI;
-	cls.uiStarted = qfalse;
+	cls->keyCatchers &= ~KEYCATCH_UI;
+	cls->uiStarted = qfalse;
 	if ( !uivm ) {
 		return;
 	}
@@ -1168,15 +1168,15 @@ void CL_InitUI( void ) {
 	if (v <= UI_OLD_API_VERSION) {
 //		Com_Printf(S_COLOR_YELLOW "WARNING: loading old Quake III Arena User Interface version %d\n", v );
 		// init for this gamestate
-		VM_Call_1( uivm, UI_INIT, (cls.state >= CA_AUTHORIZING && cls.state < CA_ACTIVE));
+		VM_Call_1( uivm, UI_INIT, (cls->state >= CA_AUTHORIZING && cls->state < CA_ACTIVE));
 	}
 	else if (v != UI_API_VERSION) {
 		Com_Error( ERR_DROP, "User Interface is version %d, expected %d", v, UI_API_VERSION );
-		cls.uiStarted = qfalse;
+		cls->uiStarted = qfalse;
 	}
 	else {
 		// init for this gamestate
-		VM_Call_1( uivm, UI_INIT, (cls.state >= CA_AUTHORIZING && cls.state < CA_ACTIVE) );
+		VM_Call_1( uivm, UI_INIT, (cls->state >= CA_AUTHORIZING && cls->state < CA_ACTIVE) );
 	}
 }
 
@@ -1200,5 +1200,5 @@ qboolean UI_GameCommand( void ) {
 		return qfalse;
 	}
 
-	return VM_Call_1( uivm, UI_CONSOLE_COMMAND, cls.realtime );
+	return VM_Call_1( uivm, UI_CONSOLE_COMMAND, cls->realtime );
 }

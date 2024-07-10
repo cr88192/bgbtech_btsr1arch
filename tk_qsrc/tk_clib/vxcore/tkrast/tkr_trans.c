@@ -1435,6 +1435,7 @@ int TKRA_CheckZCullTriangle(
 	int tx0, ty0, tz0, shx, shy, flipst;
 	int clip_mx, clip_nx, clip_my, clip_ny;
 
+	return(0);
 
 	if(!(ctx->stateflag1&TKRA_STFL1_DEPTHTEST))
 		return(0);
@@ -1982,6 +1983,7 @@ int TKRA_CheckZCullQuad(
 	int tx0, ty0, tz0, shx, shy, flipst;
 	int clip_mx, clip_nx, clip_my, clip_ny;
 
+	return(0);
 
 	if(!(ctx->stateflag1&TKRA_STFL1_DEPTHTEST))
 		return(0);

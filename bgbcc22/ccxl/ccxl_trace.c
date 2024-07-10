@@ -317,6 +317,30 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_BinaryOp(BGBCC_TransState *ctx,
 		}
 	}
 
+	if(BGBCC_CCXL_TypeFloatP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_DIV:
+			s0="__fpu_fdiv_s";
+			s1="__fpu_fdiv_sf";
+			s2="__fpu_frcp_s";
+			s3="__fpu_frcp_sf";
+			break;
+		}
+	}
+
+	if(BGBCC_CCXL_TypeDoubleP(ctx, op->type))
+	{
+		switch(op->opr)
+		{
+		case CCXL_BINOP_DIV:
+			s0="__fpu_fdiv";
+			s1="__fpu_frcp";
+			break;
+		}
+	}
+
 	if(BGBCC_CCXL_TypeFloat128P(ctx, op->type))
 	{
 		switch(op->opr)

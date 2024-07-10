@@ -323,7 +323,8 @@ void Huff_offsetTransmit (huff_t *huff, int ch, byte *fout, int *offset) {
 
 void Huff_Decompress(msg_t *mbuf, int offset) {
 	int			ch, cch, i, j, size;
-	byte		seq[65536];
+//	byte		seq[65536];
+	byte		*seq;
 	byte*		buffer;
 	huff_t		huff;
 
@@ -333,6 +334,8 @@ void Huff_Decompress(msg_t *mbuf, int offset) {
 	if ( size <= 0 ) {
 		return;
 	}
+
+	seq = malloc(65536);
 
 	Com_Memset(&huff, 0, sizeof(huff_t));
 	// Initialize the tree & list with the NYT node 
@@ -357,8 +360,9 @@ void Huff_Decompress(msg_t *mbuf, int offset) {
 			seq[j] = 0;
 			break;
 		}
-		Huff_Receive(huff.tree, &ch, buffer);				/* Get a character */
-		if ( ch == NYT ) {								/* We got a NYT, get the symbol associated with it */
+		Huff_Receive(huff.tree, &ch, buffer);			/* Get a character */
+		if ( ch == NYT ) {
+			/* We got a NYT, get the symbol associated with it */
 			ch = 0;
 			for ( i = 0; i < 8; i++ ) {
 				ch = (ch<<1) + get_bit(buffer);
@@ -367,17 +371,20 @@ void Huff_Decompress(msg_t *mbuf, int offset) {
     
 		seq[j] = ch;									/* Write symbol */
 
-		Huff_addRef(&huff, (byte)ch);								/* Increment node */
+		Huff_addRef(&huff, (byte)ch);					/* Increment node */
 	}
 	mbuf->cursize = cch + offset;
 	Com_Memcpy(mbuf->data + offset, seq, cch);
+
+	free(seq);
 }
 
 extern 	int oldsize;
 
 void Huff_Compress(msg_t *mbuf, int offset) {
 	int			i, ch, size;
-	byte		seq[65536];
+//	byte		seq[65536];
+	byte		*seq;
 	byte*		buffer;
 	huff_t		huff;
 
@@ -387,6 +394,8 @@ void Huff_Compress(msg_t *mbuf, int offset) {
 	if (size<=0) {
 		return;
 	}
+
+	seq = malloc(65536);
 
 	Com_Memset(&huff, 0, sizeof(huff_t));
 	// Add the NYT (not yet transmitted) node into the tree/list */
@@ -412,10 +421,12 @@ void Huff_Compress(msg_t *mbuf, int offset) {
 
 	mbuf->cursize = (bloc>>3) + offset;
 	Com_Memcpy(mbuf->data+offset, seq, (bloc>>3));
+	
+	free(seq);
 }
 
-void Huff_Init(huffman_t *huff) {
-
+void Huff_Init(huffman_t *huff)
+{
 	Com_Memset(&huff->compressor, 0, sizeof(huff_t));
 	Com_Memset(&huff->decompressor, 0, sizeof(huff_t));
 

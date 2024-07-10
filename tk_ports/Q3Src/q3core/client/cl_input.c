@@ -19,7 +19,7 @@ along with Foobar; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 ===========================================================================
 */
-// cl.input.c  -- builds an intended movement command to send to the server
+// cl->input.c  -- builds an intended movement command to send to the server
 
 #include "client.h"
 
@@ -255,7 +255,7 @@ void IN_ButtonUp (void) {
 	IN_KeyUp(&in_buttons[1]);}
 
 void IN_CenterView (void) {
-	cl.viewangles[PITCH] = -SHORT2ANGLE(cl.snap.ps.delta_angles[PITCH]);
+	cl->viewangles[PITCH] = -SHORT2ANGLE(cl->snap.ps.delta_angles[PITCH]);
 }
 
 
@@ -284,18 +284,20 @@ void CL_AdjustAngles( void ) {
 	float	speed;
 	
 	if ( in_speed.active ) {
-		speed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		speed = 0.001 * cls->frametime * cl_anglespeedkey->value;
 	} else {
-		speed = 0.001 * cls.frametime;
+		speed = 0.001 * cls->frametime;
 	}
 
+#if 1
 	if ( !in_strafe.active ) {
-		cl.viewangles[YAW] -= speed*cl_yawspeed->value*CL_KeyState (&in_right);
-		cl.viewangles[YAW] += speed*cl_yawspeed->value*CL_KeyState (&in_left);
+		cl->viewangles[YAW] -= speed*cl_yawspeed->value*CL_KeyState (&in_right);
+		cl->viewangles[YAW] += speed*cl_yawspeed->value*CL_KeyState (&in_left);
 	}
+#endif
 
-	cl.viewangles[PITCH] -= speed*cl_pitchspeed->value * CL_KeyState (&in_lookup);
-	cl.viewangles[PITCH] += speed*cl_pitchspeed->value * CL_KeyState (&in_lookdown);
+	cl->viewangles[PITCH] -= speed*cl_pitchspeed->value * CL_KeyState (&in_lookup);
+	cl->viewangles[PITCH] += speed*cl_pitchspeed->value * CL_KeyState (&in_lookdown);
 }
 
 /*
@@ -351,13 +353,13 @@ CL_MouseEvent
 =================
 */
 void CL_MouseEvent( int dx, int dy, int time ) {
-	if ( cls.keyCatchers & KEYCATCH_UI ) {
+	if ( cls->keyCatchers & KEYCATCH_UI ) {
 		VM_Call_2( uivm, UI_MOUSE_EVENT, dx, dy );
-	} else if (cls.keyCatchers & KEYCATCH_CGAME) {
+	} else if (cls->keyCatchers & KEYCATCH_CGAME) {
 		VM_Call_2 (cgvm, CG_MOUSE_EVENT, dx, dy);
 	} else {
-		cl.mouseDx[cl.mouseIndex] += dx;
-		cl.mouseDy[cl.mouseIndex] += dy;
+		cl->mouseDx[cl->mouseIndex] += dx;
+		cl->mouseDy[cl->mouseIndex] += dy;
 	}
 }
 
@@ -372,7 +374,7 @@ void CL_JoystickEvent( int axis, int value, int time ) {
 	if ( axis < 0 || axis >= MAX_JOYSTICK_AXIS ) {
 		Com_Error( ERR_DROP, "CL_JoystickEvent: bad axis %i", axis );
 	}
-	cl.joystickAxis[axis] = value;
+	cl->joystickAxis[axis] = value;
 }
 
 /*
@@ -392,24 +394,24 @@ void CL_JoystickMove( usercmd_t *cmd ) {
 	}
 
 	if ( in_speed.active ) {
-		anglespeed = 0.001 * cls.frametime * cl_anglespeedkey->value;
+		anglespeed = 0.001 * cls->frametime * cl_anglespeedkey->value;
 	} else {
-		anglespeed = 0.001 * cls.frametime;
+		anglespeed = 0.001 * cls->frametime;
 	}
 
 	if ( !in_strafe.active ) {
-		cl.viewangles[YAW] += anglespeed * cl_yawspeed->value * cl.joystickAxis[AXIS_SIDE];
+		cl->viewangles[YAW] += anglespeed * cl_yawspeed->value * cl->joystickAxis[AXIS_SIDE];
 	} else {
-		cmd->rightmove = ClampChar( cmd->rightmove + cl.joystickAxis[AXIS_SIDE] );
+		cmd->rightmove = ClampChar( cmd->rightmove + cl->joystickAxis[AXIS_SIDE] );
 	}
 
 	if ( in_mlooking ) {
-		cl.viewangles[PITCH] += anglespeed * cl_pitchspeed->value * cl.joystickAxis[AXIS_FORWARD];
+		cl->viewangles[PITCH] += anglespeed * cl_pitchspeed->value * cl->joystickAxis[AXIS_FORWARD];
 	} else {
-		cmd->forwardmove = ClampChar( cmd->forwardmove + cl.joystickAxis[AXIS_FORWARD] );
+		cmd->forwardmove = ClampChar( cmd->forwardmove + cl->joystickAxis[AXIS_FORWARD] );
 	}
 
-	cmd->upmove = ClampChar( cmd->upmove + cl.joystickAxis[AXIS_UP] );
+	cmd->upmove = ClampChar( cmd->upmove + cl->joystickAxis[AXIS_UP] );
 }
 
 /*
@@ -424,21 +426,21 @@ void CL_MouseMove( usercmd_t *cmd ) {
 
 	// allow mouse smoothing
 	if ( m_filter->integer ) {
-		mx = ( cl.mouseDx[0] + cl.mouseDx[1] ) * 0.5;
-		my = ( cl.mouseDy[0] + cl.mouseDy[1] ) * 0.5;
+		mx = ( cl->mouseDx[0] + cl->mouseDx[1] ) * 0.5;
+		my = ( cl->mouseDy[0] + cl->mouseDy[1] ) * 0.5;
 	} else {
-		mx = cl.mouseDx[cl.mouseIndex];
-		my = cl.mouseDy[cl.mouseIndex];
+		mx = cl->mouseDx[cl->mouseIndex];
+		my = cl->mouseDy[cl->mouseIndex];
 	}
-	cl.mouseIndex ^= 1;
-	cl.mouseDx[cl.mouseIndex] = 0;
-	cl.mouseDy[cl.mouseIndex] = 0;
+	cl->mouseIndex ^= 1;
+	cl->mouseDx[cl->mouseIndex] = 0;
+	cl->mouseDy[cl->mouseIndex] = 0;
 
 	rate = sqrt( mx * mx + my * my ) / (float)frame_msec;
 	accelSensitivity = cl_sensitivity->value + rate * cl_mouseAccel->value;
 
 	// scale by FOV
-	accelSensitivity *= cl.cgameSensitivity;
+	accelSensitivity *= cl->cgameSensitivity;
 
 	if ( rate && cl_showMouseRate->integer ) {
 		Com_Printf( "%f : %f\n", rate, accelSensitivity );
@@ -451,18 +453,20 @@ void CL_MouseMove( usercmd_t *cmd ) {
 		return;
 	}
 
+#if 1
 	// add mouse X/Y movement to cmd
 	if ( in_strafe.active ) {
 		cmd->rightmove = ClampChar( cmd->rightmove + m_side->value * mx );
 	} else {
-		cl.viewangles[YAW] -= m_yaw->value * mx;
+		cl->viewangles[YAW] -= m_yaw->value * mx;
 	}
 
 	if ( (in_mlooking || cl_freelook->integer) && !in_strafe.active ) {
-		cl.viewangles[PITCH] += m_pitch->value * my;
+		cl->viewangles[PITCH] += m_pitch->value * my;
 	} else {
 		cmd->forwardmove = ClampChar( cmd->forwardmove - m_forward->value * my );
 	}
+#endif
 }
 
 
@@ -486,13 +490,13 @@ void CL_CmdButtons( usercmd_t *cmd ) {
 		in_buttons[i].wasPressed = qfalse;
 	}
 
-	if ( cls.keyCatchers ) {
+	if ( cls->keyCatchers ) {
 		cmd->buttons |= BUTTON_TALK;
 	}
 
 	// allow the game to know if any key at all is
 	// currently pressed, even if it isn't bound to anything
-	if ( anykeydown && !cls.keyCatchers ) {
+	if ( anykeydown && !cls->keyCatchers ) {
 		cmd->buttons |= BUTTON_ANY;
 	}
 }
@@ -507,14 +511,14 @@ void CL_FinishMove( usercmd_t *cmd ) {
 	int		i;
 
 	// copy the state that the cgame is currently sending
-	cmd->weapon = cl.cgameUserCmdValue;
+	cmd->weapon = cl->cgameUserCmdValue;
 
 	// send the current server time so the amount of movement
 	// can be determined without allowing cheating
-	cmd->serverTime = cl.serverTime;
+	cmd->serverTime = cl->serverTime;
 
 	for (i=0 ; i<3 ; i++) {
-		cmd->angles[i] = ANGLE2SHORT(cl.viewangles[i]);
+		cmd->angles[i] = ANGLE2SHORT(cl->viewangles[i]);
 	}
 }
 
@@ -528,7 +532,7 @@ usercmd_t CL_CreateCmd( void ) {
 	usercmd_t	cmd;
 	vec3_t		oldAngles;
 
-	VectorCopy( cl.viewangles, oldAngles );
+	VectorCopy( cl->viewangles, oldAngles );
 
 	// keyboard angle adjustment
 	CL_AdjustAngles ();
@@ -547,10 +551,10 @@ usercmd_t CL_CreateCmd( void ) {
 	CL_JoystickMove( &cmd );
 
 	// check to make sure the angles haven't wrapped
-	if ( cl.viewangles[PITCH] - oldAngles[PITCH] > 90 ) {
-		cl.viewangles[PITCH] = oldAngles[PITCH] + 90;
-	} else if ( oldAngles[PITCH] - cl.viewangles[PITCH] > 90 ) {
-		cl.viewangles[PITCH] = oldAngles[PITCH] - 90;
+	if ( cl->viewangles[PITCH] - oldAngles[PITCH] > 90 ) {
+		cl->viewangles[PITCH] = oldAngles[PITCH] + 90;
+	} else if ( oldAngles[PITCH] - cl->viewangles[PITCH] > 90 ) {
+		cl->viewangles[PITCH] = oldAngles[PITCH] - 90;
 	} 
 
 	// store out the final values
@@ -559,10 +563,10 @@ usercmd_t CL_CreateCmd( void ) {
 	// draw debug graphs of turning for mouse testing
 	if ( cl_debugMove->integer ) {
 		if ( cl_debugMove->integer == 1 ) {
-			SCR_DebugGraph( abs(cl.viewangles[YAW] - oldAngles[YAW]), 0 );
+			SCR_DebugGraph( abs(cl->viewangles[YAW] - oldAngles[YAW]), 0 );
 		}
 		if ( cl_debugMove->integer == 2 ) {
-			SCR_DebugGraph( abs(cl.viewangles[PITCH] - oldAngles[PITCH]), 0 );
+			SCR_DebugGraph( abs(cl->viewangles[PITCH] - oldAngles[PITCH]), 0 );
 		}
 	}
 
@@ -582,7 +586,7 @@ void CL_CreateNewCommands( void ) {
 	int			cmdNum;
 
 	// no need to create usercmds until we have a gamestate
-	if ( cls.state < CA_PRIMED ) {
+	if ( cls->state < CA_PRIMED ) {
 		return;
 	}
 
@@ -597,10 +601,10 @@ void CL_CreateNewCommands( void ) {
 
 
 	// generate a command for this frame
-	cl.cmdNumber++;
-	cmdNum = cl.cmdNumber & CMD_MASK;
-	cl.cmds[cmdNum] = CL_CreateCmd ();
-	cmd = &cl.cmds[cmdNum];
+	cl->cmdNumber++;
+	cmdNum = cl->cmdNumber & CMD_MASK;
+	cl->cmds[cmdNum] = CL_CreateCmd ();
+	cmd = &cl->cmds[cmdNum];
 }
 
 /*
@@ -619,32 +623,32 @@ qboolean CL_ReadyToSendPacket( void ) {
 	int		delta;
 
 	// don't send anything if playing back a demo
-	if ( clc.demoplaying || cls.state == CA_CINEMATIC ) {
+	if ( clc->demoplaying || cls->state == CA_CINEMATIC ) {
 		return qfalse;
 	}
 
 	// If we are downloading, we send no less than 50ms between packets
-	if ( *clc.downloadTempName &&
-		cls.realtime - clc.lastPacketSentTime < 50 ) {
+	if ( *clc->downloadTempName &&
+		cls->realtime - clc->lastPacketSentTime < 50 ) {
 		return qfalse;
 	}
 
 	// if we don't have a valid gamestate yet, only send
 	// one packet a second
-	if ( cls.state != CA_ACTIVE && 
-		cls.state != CA_PRIMED && 
-		!*clc.downloadTempName &&
-		cls.realtime - clc.lastPacketSentTime < 1000 ) {
+	if ( cls->state != CA_ACTIVE && 
+		cls->state != CA_PRIMED && 
+		!*clc->downloadTempName &&
+		cls->realtime - clc->lastPacketSentTime < 1000 ) {
 		return qfalse;
 	}
 
 	// send every frame for loopbacks
-	if ( clc.netchan.remoteAddress.type == NA_LOOPBACK ) {
+	if ( clc->netchan.remoteAddress.type == NA_LOOPBACK ) {
 		return qtrue;
 	}
 
 	// send every frame for LAN
-	if ( Sys_IsLANAddress( clc.netchan.remoteAddress ) ) {
+	if ( Sys_IsLANAddress( clc->netchan.remoteAddress ) ) {
 		return qtrue;
 	}
 
@@ -654,8 +658,8 @@ qboolean CL_ReadyToSendPacket( void ) {
 	} else if ( cl_maxpackets->integer > 125 ) {
 		Cvar_Set( "cl_maxpackets", "125" );
 	}
-	oldPacketNum = (clc.netchan.outgoingSequence - 1) & PACKET_MASK;
-	delta = cls.realtime -  cl.outPackets[ oldPacketNum ].p_realtime;
+	oldPacketNum = (clc->netchan.outgoingSequence - 1) & PACKET_MASK;
+	delta = cls->realtime -  cl->outPackets[ oldPacketNum ].p_realtime;
 	if ( delta < 1000 / cl_maxpackets->integer ) {
 		// the accumulated commands will go out in the next packet
 		return qfalse;
@@ -677,7 +681,7 @@ During normal gameplay, a client packet will contain something like:
 2	qport
 4	serverid
 4	acknowledged sequence number
-4	clc.serverCommandSequence
+4	clc->serverCommandSequence
 <optional reliable commands>
 1	clc_move or clc_moveNoDelta
 1	command count
@@ -687,7 +691,8 @@ During normal gameplay, a client packet will contain something like:
 */
 void CL_WritePacket( void ) {
 	msg_t		buf;
-	byte		data[MAX_MSGLEN];
+//	byte		data[MAX_MSGLEN];
+	byte		*data;
 	int			i, j;
 	usercmd_t	*cmd, *oldcmd;
 	usercmd_t	nullcmd;
@@ -696,33 +701,36 @@ void CL_WritePacket( void ) {
 	int			count, key;
 
 	// don't send anything if playing back a demo
-	if ( clc.demoplaying || cls.state == CA_CINEMATIC ) {
+	if ( clc->demoplaying || cls->state == CA_CINEMATIC ) {
 		return;
 	}
+
+	data = malloc(MAX_MSGLEN);
 
 	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
 	oldcmd = &nullcmd;
 
-	MSG_Init( &buf, data, sizeof(data) );
+//	MSG_Init( &buf, data, sizeof(data) );
+	MSG_Init( &buf, data, MAX_MSGLEN );
 
 	MSG_Bitstream( &buf );
 	// write the current serverId so the server
 	// can tell if this is from the current gameState
-	MSG_WriteLong( &buf, cl.serverId );
+	MSG_WriteLong( &buf, cl->serverId );
 
 	// write the last message we received, which can
 	// be used for delta compression, and is also used
 	// to tell if we dropped a gamestate
-	MSG_WriteLong( &buf, clc.serverMessageSequence );
+	MSG_WriteLong( &buf, clc->serverMessageSequence );
 
 	// write the last reliable message we received
-	MSG_WriteLong( &buf, clc.serverCommandSequence );
+	MSG_WriteLong( &buf, clc->serverCommandSequence );
 
 	// write any unacknowledged clientCommands
-	for ( i = clc.reliableAcknowledge + 1 ; i <= clc.reliableSequence ; i++ ) {
+	for ( i = clc->reliableAcknowledge + 1 ; i <= clc->reliableSequence ; i++ ) {
 		MSG_WriteByte( &buf, clc_clientCommand );
 		MSG_WriteLong( &buf, i );
-		MSG_WriteString( &buf, clc.reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
+		MSG_WriteString( &buf, clc->reliableCommands[ i & (MAX_RELIABLE_COMMANDS-1) ] );
 	}
 
 	// we want to send all the usercmds that were generated in the last
@@ -733,8 +741,8 @@ void CL_WritePacket( void ) {
 	} else if ( cl_packetdup->integer > 5 ) {
 		Cvar_Set( "cl_packetdup", "5" );
 	}
-	oldPacketNum = (clc.netchan.outgoingSequence - 1 - cl_packetdup->integer) & PACKET_MASK;
-	count = cl.cmdNumber - cl.outPackets[ oldPacketNum ].p_cmdNumber;
+	oldPacketNum = (clc->netchan.outgoingSequence - 1 - cl_packetdup->integer) & PACKET_MASK;
+	count = cl->cmdNumber - cl->outPackets[ oldPacketNum ].p_cmdNumber;
 	if ( count > MAX_PACKET_USERCMDS ) {
 		count = MAX_PACKET_USERCMDS;
 		Com_Printf("MAX_PACKET_USERCMDS\n");
@@ -745,8 +753,8 @@ void CL_WritePacket( void ) {
 		}
 
 		// begin a client move command
-		if ( cl_nodelta->integer || !cl.snap.valid || clc.demowaiting
-			|| clc.serverMessageSequence != cl.snap.messageNum ) {
+		if ( cl_nodelta->integer || !cl->snap.valid || clc->demowaiting
+			|| clc->serverMessageSequence != cl->snap.messageNum ) {
 			MSG_WriteByte (&buf, clc_moveNoDelta);
 		} else {
 			MSG_WriteByte (&buf, clc_move);
@@ -756,16 +764,16 @@ void CL_WritePacket( void ) {
 		MSG_WriteByte( &buf, count );
 
 		// use the checksum feed in the key
-		key = clc.checksumFeed;
+		key = clc->checksumFeed;
 		// also use the message acknowledge
-		key ^= clc.serverMessageSequence;
+		key ^= clc->serverMessageSequence;
 		// also use the last acknowledged server command in the key
-		key ^= Com_HashKey(clc.serverCommands[ clc.serverCommandSequence & (MAX_RELIABLE_COMMANDS-1) ], 32);
+		key ^= Com_HashKey(clc->serverCommands[ clc->serverCommandSequence & (MAX_RELIABLE_COMMANDS-1) ], 32);
 
 		// write all the commands, including the predicted command
 		for ( i = 0 ; i < count ; i++ ) {
-			j = (cl.cmdNumber - count + i + 1) & CMD_MASK;
-			cmd = &cl.cmds[j];
+			j = (cl->cmdNumber - count + i + 1) & CMD_MASK;
+			cmd = &cl->cmds[j];
 			MSG_WriteDeltaUsercmdKey (&buf, key, oldcmd, cmd);
 			oldcmd = cmd;
 		}
@@ -774,27 +782,29 @@ void CL_WritePacket( void ) {
 	//
 	// deliver the message
 	//
-	packetNum = clc.netchan.outgoingSequence & PACKET_MASK;
-	cl.outPackets[ packetNum ].p_realtime = cls.realtime;
-	cl.outPackets[ packetNum ].p_serverTime = oldcmd->serverTime;
-	cl.outPackets[ packetNum ].p_cmdNumber = cl.cmdNumber;
-	clc.lastPacketSentTime = cls.realtime;
+	packetNum = clc->netchan.outgoingSequence & PACKET_MASK;
+	cl->outPackets[ packetNum ].p_realtime = cls->realtime;
+	cl->outPackets[ packetNum ].p_serverTime = oldcmd->serverTime;
+	cl->outPackets[ packetNum ].p_cmdNumber = cl->cmdNumber;
+	clc->lastPacketSentTime = cls->realtime;
 
 	if ( cl_showSend->integer ) {
 		Com_Printf( "%i ", buf.cursize );
 	}
 
-	CL_Netchan_Transmit (&clc.netchan, &buf);	
+	CL_Netchan_Transmit (&clc->netchan, &buf);	
 
 	// clients never really should have messages large enough
 	// to fragment, but in case they do, fire them all off
 	// at once
 	// TTimo: this causes a packet burst, which is bad karma for winsock
 	// added a WARNING message, we'll see if there are legit situations where this happens
-	while ( clc.netchan.unsentFragments ) {
+	while ( clc->netchan.unsentFragments ) {
 		Com_DPrintf( "WARNING: #462 unsent fragments (not supposed to happen!)\n" );
-		CL_Netchan_TransmitNextFragment( &clc.netchan );
+		CL_Netchan_TransmitNextFragment( &clc->netchan );
 	}
+	
+	free(data);
 }
 
 /*
@@ -806,7 +816,7 @@ Called every frame to builds and sends a command packet to the server.
 */
 void CL_SendCmd( void ) {
 	// don't send any message if not connected
-	if ( cls.state < CA_CONNECTED ) {
+	if ( cls->state < CA_CONNECTED ) {
 		return;
 	}
 

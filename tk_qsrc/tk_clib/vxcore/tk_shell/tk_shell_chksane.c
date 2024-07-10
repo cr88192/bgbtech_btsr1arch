@@ -1866,4 +1866,8 @@ int tk_shell_chksane()
 	tk_chksane_chkocr();
 
 	tk_printf("CS B9\n");
+
+	tk_shell_chksane_qsort();
+
+	tk_printf("CS B10\n");
 }

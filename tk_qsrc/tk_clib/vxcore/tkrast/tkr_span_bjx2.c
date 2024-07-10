@@ -27,6 +27,18 @@ u64 TKRA_InterpBilinear3Pt_64(
 	u16 xfrac, u16 yfrac);
 
 __asm {
+.global tkra_morton8
+.global tkra_morton16
+.global tkra_paddhw
+.global tkra_pmuluhw
+.global tkra_rgbupck64
+.global tkra_rgbpck64
+.global tkra_padduhw_sat
+.global TKRA_CachedBlkUtx2
+.global TKRA_InterpBilinear
+.global TKRA_InterpBilinear64
+.global TKRA_InterpBilinear3Pt_64
+
 tkra_morton8:
 tkra_morton16:
 	MOVLD	R5, R4, R6

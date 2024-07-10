@@ -232,6 +232,7 @@ void SP_misc_portal_camera(gentity_t *ent) {
 	VectorClear( ent->r.maxs );
 	trap_LinkEntity (ent);
 
+	roll = 0;
 	G_SpawnFloat( "roll", "0", &roll );
 
 	ent->s.clientNum = roll/360.0 * 256;

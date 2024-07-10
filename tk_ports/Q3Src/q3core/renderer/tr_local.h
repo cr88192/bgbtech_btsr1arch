@@ -960,7 +960,8 @@ typedef struct {
 } trGlobals_t;
 
 extern backEndState_t	backEnd;
-extern trGlobals_t	tr;
+// extern trGlobals_t	tr;
+extern trGlobals_t	*tr;
 extern glconfig_t	glConfig;		// outside of TR since it shouldn't be cleared during ref re-init
 extern glstate_t	glState;		// outside of TR since it shouldn't be cleared during ref re-init
 
@@ -1291,12 +1292,12 @@ typedef struct shaderCommands_s
 	shaderStage_t	**xstages;
 } shaderCommands_t;
 
-extern	shaderCommands_t	tess;
+extern	shaderCommands_t	*tess;
 
 void RB_BeginSurface(shader_t *shader, int fogNum );
 void RB_EndSurface(void);
 void RB_CheckOverflow( int verts, int indexes );
-#define RB_CHECKOVERFLOW(v,i) if (tess.numVertexes + (v) >= SHADER_MAX_VERTEXES || tess.numIndexes + (i) >= SHADER_MAX_INDEXES ) {RB_CheckOverflow(v,i);}
+#define RB_CHECKOVERFLOW(v,i) if (tess->numVertexes + (v) >= SHADER_MAX_VERTEXES || tess->numIndexes + (i) >= SHADER_MAX_INDEXES ) {RB_CheckOverflow(v,i);}
 
 void RB_StageIteratorGeneric( void );
 void RB_StageIteratorSky( void );

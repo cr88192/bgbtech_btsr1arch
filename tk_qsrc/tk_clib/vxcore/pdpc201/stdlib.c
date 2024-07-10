@@ -362,19 +362,9 @@ __PDPCLIB_API__ void exit(int status)
 #endif
 }
 
-/* This qsort routine was obtained from libnix (also public domain),
- * and then reformatted.
- *
- * This qsort function does a little trick:
- * To reduce stackspace it iterates the larger interval instead of doing
- * the recursion on both intervals. 
- * So stackspace is limited to 32*stack_for_1_iteration = 
- * 32*4*(4 arguments+1 returnaddress+11 stored registers) = 2048 Bytes,
- * which is small enough for everybodys use.
- * (And this is the worst case if you own 4GB and sort an array of chars.)
- * Sparing the function calling overhead does improve performance, too.
+/*
+Swap two items in memory.
  */
-
 void _memswap(void *ptra, void *ptrb, int sz)
 {
 	u64 v0, v1, v2, v3;
@@ -408,6 +398,19 @@ void _memswap(void *ptra, void *ptrb, int sz)
 		csa+=8;	csb+=8;
 		n-=8;
 	}
+
+	if(!n)
+		return;
+
+	if(n>=4)
+	{
+		v0=((u32 *)csa)[0];
+		v2=((u32 *)csb)[0];
+		((u32 *)csb)[0]=v0;
+		((u32 *)csa)[0]=v2;
+		csa+=4;	csb+=4;
+		n-=4;
+	}
 	
 	if(n)
 	{
@@ -421,44 +424,144 @@ void _memswap(void *ptra, void *ptrb, int sz)
 	}
 }
 
+/* This qsort routine was obtained from libnix (also public domain),
+ * and then reformatted.
+ *
+ * This qsort function does a little trick:
+ * To reduce stackspace it iterates the larger interval instead of doing
+ * the recursion on both intervals. 
+ * So stackspace is limited to 32*stack_for_1_iteration = 
+ * 32*4*(4 arguments+1 returnaddress+11 stored registers) = 2048 Bytes,
+ * which is small enough for everybodys use.
+ * (And this is the worst case if you own 4GB and sort an array of chars.)
+ * Sparing the function calling overhead does improve performance, too.
+ */
+
 __PDPCLIB_API__ void qsort(void *base,
 			size_t nmemb,
 			size_t size,
 			int (*compar)(const void *, const void *))
 {
-	char *base2 = (char *)base;
+//	char *base2 = (char *)base;
+	char *base2;
 	char *pa, *pb, *pc;
-	size_t i, j, k, a, b, c;
-  
+	size_t i, j, k, a, b, c, size2;
+//	unsigned int i, j, k, a, b, c, size2;
+
+	base2 = (char *)base;
+	size2 = size;
+
+	if(nmemb < 10)
+//	if(nmemb < 100)
+	{
+		if(nmemb < 2)
+			return;
+
+		pa=base2;
+		for(a=0; a<nmemb; a++)
+		{
+//			pa=base2+(size2*a);
+			pb=pa+size2;
+			for(b=a+1; b<nmemb; b++)
+			{
+//				pb=base2+(size2*b);
+				if((*compar)(pa, pb) > 0)
+				{
+					_memswap(pa, pb, size2);
+				}
+				pb=pb+size;
+			}
+			pa=pa+size;
+		}
+		return;
+	}
+
 	while (nmemb > 1)
 	{
 		a = 0;
 		b = nmemb-1;
 		c = (a+b)/2; /* Middle element */
-		while(1)
+
+#if 0
+		pa=base2+(size2*a);
+		pb=base2+(size2*b);
+		pc=base2+(size2*c);
+		while(pb>pa)
 		{
-			pa=base2+(size*a);
-			pb=base2+(size*b);
-			pc=base2+(size*c);
+			if(pa!=pc)
+			{
+				if((*compar)(pc, pa) > 0)
+				{
+					a++; pa+=size2;
+					continue;
+				}
+			}
+			if(pb!=pc)
+			{
+				if((*compar)(pc, pb) < 0)
+				{
+					b--; pb-=size2;
+					continue;
+				}
+			}
+
+#if 0
+			if(pa==pc)
+			{
+				_memswap(pa, pb, size2);
+				pc=pb; c=b;
+				continue;
+			}
+			if(pb==pc)
+			{
+				_memswap(pa, pb, size2);
+				pc=pa; c=a;
+				continue;
+			}
+#endif
+
+			_memswap(pa, pb, size2);
+#if 1
+			if(pa==pc)
+				{ pc=pb; c=b; }
+			else if(pb==pc)
+				{ pc=pa; c=a; }
+#endif
+			a++; pa+=size2;
+			b--; pb-=size2;
+		}
+//		b++;
+		b=c+1;
+#endif
+
+#if 1
+		while(1)
+//		while(b>a)
+		{
+			pa=base2+(size2*a);
+			pb=base2+(size2*b);
+			pc=base2+(size2*c);
 
 //			while ((*compar)(&base2[size*c],&base2[size*a]) > 0) 
-			while ((*compar)(pc, pa) > 0) 
+//			while ((*compar)(pc, pa) > 0) 
+			while ((pc!=pa) && ((*compar)(pc, pa) > 0))
 			{
 				a++; /* Look for one >= middle */
-				pa+=size;
+				pa+=size2;
 			}
 //			while ((*compar)(&base2[size*c],&base2[size*b]) < 0)
-			while ((*compar)(pc, pb) < 0)
+//			while ((*compar)(pc, pb) < 0)
+			while ((pc!=pb) && ((*compar)(pc, pb) < 0))
 			{
 				b--; /* Look for one <= middle */
-				pb-=size;
+				pb-=size2;
 			}
 			if (a >= b)
 			{
 				break; /* We found no pair */
 			}
 
-			_memswap(pa, pb, size);
+			_memswap(pa, pb, size2);
 
 #if 0
 			for (i=0; i<size; i++) /* swap them */
@@ -474,16 +577,27 @@ __PDPCLIB_API__ void qsort(void *base,
 			if (c == a) /* Keep track of middle element */
 			{
 				c = b;
+				pc = pb;
 			}
 			else if (c == b)				
 			{
 				c = a;
+				pc = pa;
 			}
 			a++; /* These two are already sorted */
 			b--;
 		} /* a points to first element of right interval now 
 			 (b to last of left) */
 		b++;
+#endif
+
+#if 1
+		qsort(base2,b,size,compar);
+		qsort(base2+(size2*b),nmemb-b,size,compar);
+		break;
+#endif
+
+#if 0
 		if (b < nmemb-b) /* do recursion on smaller interval and 
 							iteration on larger one */
 		{
@@ -498,6 +612,7 @@ __PDPCLIB_API__ void qsort(void *base,
 			qsort(base2+(size*b),nmemb-b,size,compar);
 			nmemb=b;
 		}
+#endif
 	}
 	return;
 }

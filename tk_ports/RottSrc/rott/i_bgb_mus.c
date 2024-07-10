@@ -106,6 +106,10 @@ void I_MusicSubmit(void)
 {
 }
 
+void I_MusicFineTick(void)
+{
+}
+
 static int	looping=0;
 static int	musicdies=-1;
 

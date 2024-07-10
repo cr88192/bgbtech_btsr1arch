@@ -304,3 +304,67 @@ int tk_shell_chksane_int128()
 	
 //	__debugbreak();
 }
+
+typedef struct tk_shell_qsorttst_s tk_shell_qsorttst_t;
+struct tk_shell_qsorttst_s {
+int val;
+short pad[8];
+};
+
+int tk_shell_qsorttst_cmp(tk_shell_qsorttst_t *ta, tk_shell_qsorttst_t *tb)
+{
+	return(ta->val-tb->val);
+}
+
+void _memswap(void *ptra, void *ptrb, int sz);
+
+
+int tk_shell_chksane_qsort()
+{
+	tk_shell_qsorttst_t qsortarr[256];
+	int i, j, k;
+	
+	for(i=0; i<256; i++)
+	{
+		qsortarr[i].val=i;
+
+		qsortarr[i].pad[0]=rand();
+		qsortarr[i].pad[1]=rand();
+		qsortarr[i].pad[2]=rand();
+		qsortarr[i].pad[3]=rand();
+		qsortarr[i].pad[4]=rand();
+		qsortarr[i].pad[5]=rand();
+		j=qsortarr[i].pad[0]^qsortarr[i].pad[2];
+		k=qsortarr[i].pad[3]^qsortarr[i].pad[5];
+		qsortarr[i].pad[7]=j^k;
+	}
+
+	for(k=0; k<10; k++)
+	{
+		for(i=0; i<256; i++)
+		{
+			j=rand()&255;
+			_memswap(qsortarr+i, qsortarr+j, sizeof(tk_shell_qsorttst_t));
+		}
+		
+		qsort(qsortarr, 256, sizeof(tk_shell_qsorttst_t),
+			tk_shell_qsorttst_cmp);
+		
+		for(i=0; i<256; i++)
+		{
+			if(qsortarr[i].val!=i)
+				__debugbreak();
+		}
+	}
+
+	for(i=0; i<256; i++)
+	{
+		if(qsortarr[i].val!=i)
+			__debugbreak();
+
+		j=qsortarr[i].pad[0]^qsortarr[i].pad[2];
+		k=qsortarr[i].pad[3]^qsortarr[i].pad[5];
+		if(qsortarr[i].pad[7]!=(j^k))
+			__debugbreak();
+	}
+}

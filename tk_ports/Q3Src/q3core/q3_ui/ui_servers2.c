@@ -861,6 +861,8 @@ static void ArenaServers_DoRefresh( void )
 		return;
 	}
 
+	time = 0;
+
 	// trigger at 10Hz intervals
 	g_arenaservers.nextpingtime = uis.realtime + 10;
 

@@ -101,7 +101,7 @@ static	void R_ColorShiftLightingBytes( byte in[4], byte out[4] ) {
 	int		shift, r, g, b;
 
 	// shift the color data based on overbright range
-	shift = r_mapOverBrightBits->integer - tr.overbrightBits;
+	shift = r_mapOverBrightBits->integer - tr->overbrightBits;
 
 	// shift the data based on overbright range
 	r = in[0] << shift;
@@ -151,11 +151,11 @@ static	void R_LoadLightmaps( lump_t *l ) {
 	R_SyncRenderThread();
 
 	// create all the lightmaps
-	tr.numLightmaps = len / (LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3);
-	if ( tr.numLightmaps == 1 ) {
+	tr->numLightmaps = len / (LIGHTMAP_SIZE * LIGHTMAP_SIZE * 3);
+	if ( tr->numLightmaps == 1 ) {
 		//FIXME: HACK: maps with only one lightmap turn up fullbright for some reason.
 		//this avoids this, but isn't the correct solution.
-		tr.numLightmaps++;
+		tr->numLightmaps++;
 	}
 
 	// if we are in r_vertexLight mode, we don't need the lightmaps at all
@@ -163,7 +163,7 @@ static	void R_LoadLightmaps( lump_t *l ) {
 		return;
 	}
 
-	for ( i = 0 ; i < tr.numLightmaps ; i++ ) {
+	for ( i = 0 ; i < tr->numLightmaps ; i++ ) {
 		// expand the 24 bit on-disk to 32 bit
 		buf_p = buf + i * LIGHTMAP_SIZE*LIGHTMAP_SIZE * 3;
 
@@ -202,7 +202,7 @@ static	void R_LoadLightmaps( lump_t *l ) {
 				image[j*4+3] = 255;
 			}
 		}
-		tr.lightmaps[i] = R_CreateImage( va("*lightmap%d",i), image, 
+		tr->lightmaps[i] = R_CreateImage( va("*lightmap%d",i), image, 
 			LIGHTMAP_SIZE, LIGHTMAP_SIZE, qfalse, qfalse, GL_CLAMP );
 	}
 
@@ -221,7 +221,7 @@ space in big maps...
 =================
 */
 void		RE_SetWorldVisData( const byte *vis ) {
-	tr.externalVisData = vis;
+	tr->externalVisData = vis;
 }
 
 
@@ -249,8 +249,8 @@ static	void R_LoadVisibility( lump_t *l ) {
 
 	// CM_Load should have given us the vis data to share, so
 	// we don't need to allocate another copy
-	if ( tr.externalVisData ) {
-		s_worldData.vis = tr.externalVisData;
+	if ( tr->externalVisData ) {
+		s_worldData.vis = tr->externalVisData;
 	} else {
 		byte	*dest;
 
@@ -290,7 +290,7 @@ static shader_t *ShaderForShaderNum( int shaderNum, int lightmapNum ) {
 
 	// if the shader had errors, just use default shader
 	if ( shader->defaultShader ) {
-		return tr.defaultShader;
+		return tr->defaultShader;
 	}
 
 	return shader;
@@ -316,14 +316,14 @@ static void ParseFace( dsurface_t *ds, drawVert_t *verts, msurface_t *surf, int 
 	// get shader value
 	surf->shader = ShaderForShaderNum( ds->shaderNum, lightmapNum );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
-		surf->shader = tr.defaultShader;
+		surf->shader = tr->defaultShader;
 	}
 
 	numPoints = LittleLong( ds->numVerts );
 	if (numPoints > MAX_FACE_POINTS) {
 		ri.Printf( PRINT_WARNING, "WARNING: MAX_FACE_POINTS exceeded: %i\n", numPoints);
     numPoints = MAX_FACE_POINTS;
-    surf->shader = tr.defaultShader;
+    surf->shader = tr->defaultShader;
 	}
 
 	numIndexes = LittleLong( ds->numIndexes );
@@ -392,7 +392,7 @@ static void ParseMesh ( dsurface_t *ds, drawVert_t *verts, msurface_t *surf ) {
 	// get shader value
 	surf->shader = ShaderForShaderNum( ds->shaderNum, lightmapNum );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
-		surf->shader = tr.defaultShader;
+		surf->shader = tr->defaultShader;
 	}
 
 	// we may have a nodraw surface, because they might still need to
@@ -452,7 +452,7 @@ static void ParseTriSurf( dsurface_t *ds, drawVert_t *verts, msurface_t *surf, i
 	// get shader
 	surf->shader = ShaderForShaderNum( ds->shaderNum, LIGHTMAP_BY_VERTEX );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
-		surf->shader = tr.defaultShader;
+		surf->shader = tr->defaultShader;
 	}
 
 	numVerts = LittleLong( ds->numVerts );
@@ -510,7 +510,7 @@ static void ParseFlare( dsurface_t *ds, drawVert_t *verts, msurface_t *surf, int
 	// get shader
 	surf->shader = ShaderForShaderNum( ds->shaderNum, LIGHTMAP_BY_VERTEX );
 	if ( r_singleShader->integer && !surf->shader->isSky ) {
-		surf->shader = tr.defaultShader;
+		surf->shader = tr->defaultShader;
 	}
 
 	flare = ri.Hunk_Alloc( sizeof( *flare ), h_low );
@@ -1161,7 +1161,8 @@ int R_TryStitchingPatch( int grid1num ) {
 R_StitchAllPatches
 ===============
 */
-void R_StitchAllPatches( void ) {
+void R_StitchAllPatches( void )
+{
 	int i, stitched, numstitches;
 	srfGridMesh_t *grid1;
 
@@ -1194,7 +1195,8 @@ void R_StitchAllPatches( void ) {
 R_MovePatchSurfacesToHunk
 ===============
 */
-void R_MovePatchSurfacesToHunk(void) {
+void R_MovePatchSurfacesToHunk(void)
+{
 	int i, size;
 	srfGridMesh_t *grid, *hunkgrid;
 
@@ -1226,7 +1228,8 @@ void R_MovePatchSurfacesToHunk(void) {
 R_LoadSurfaces
 ===============
 */
-static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump ) {
+static	void R_LoadSurfaces( lump_t *surfs, lump_t *verts, lump_t *indexLump )
+{
 	dsurface_t	*in;
 	msurface_t	*out;
 	drawVert_t	*dv;
@@ -1491,7 +1494,8 @@ static	void R_LoadMarksurfaces (lump_t *l)
 R_LoadPlanes
 =================
 */
-static	void R_LoadPlanes( lump_t *l ) {
+static	void R_LoadPlanes( lump_t *l )
+{
 	int			i, j;
 	cplane_t	*out;
 	dplane_t 	*in;
@@ -1528,7 +1532,8 @@ R_LoadFogs
 
 =================
 */
-static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
+static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump )
+{
 	int			i;
 	fog_t		*out;
 	dfog_t		*fogs;
@@ -1612,9 +1617,9 @@ static	void R_LoadFogs( lump_t *l, lump_t *brushesLump, lump_t *sidesLump ) {
 
 		out->parms = shader->fogParms;
 
-		out->colorInt = ColorBytes4 ( shader->fogParms.color[0] * tr.identityLight, 
-			                          shader->fogParms.color[1] * tr.identityLight, 
-			                          shader->fogParms.color[2] * tr.identityLight, 1.0 );
+		out->colorInt = ColorBytes4 ( shader->fogParms.color[0] * tr->identityLight, 
+			                          shader->fogParms.color[1] * tr->identityLight, 
+			                          shader->fogParms.color[2] * tr->identityLight, 1.0 );
 
 		d = shader->fogParms.depthForOpaque < 1 ? 1 : shader->fogParms.depthForOpaque;
 		out->tcScale = 1.0f / ( d * 8 );
@@ -1643,7 +1648,8 @@ R_LoadLightGrid
 
 ================
 */
-void R_LoadLightGrid( lump_t *l ) {
+void R_LoadLightGrid( lump_t *l )
+{
 	int		i;
 	vec3_t	maxs;
 	int		numGridPoints;
@@ -1688,7 +1694,8 @@ void R_LoadLightGrid( lump_t *l ) {
 R_LoadEntities
 ================
 */
-void R_LoadEntities( lump_t *l ) {
+void R_LoadEntities( lump_t *l )
+{
 	char *p, *token, *s;
 	char keyname[MAX_TOKEN_CHARS];
 	char value[MAX_TOKEN_CHARS];
@@ -1794,19 +1801,19 @@ void RE_LoadWorldMap( const char *name ) {
 	byte		*buffer;
 	byte		*startMarker;
 
-	if ( tr.worldMapLoaded ) {
+	if ( tr->worldMapLoaded ) {
 		ri.Error( ERR_DROP, "ERROR: attempted to redundantly load world map\n" );
 	}
 
 	// set default sun direction to be used if it isn't
 	// overridden by a shader
-	tr.sunDirection[0] = 0.45f;
-	tr.sunDirection[1] = 0.3f;
-	tr.sunDirection[2] = 0.9f;
+	tr->sunDirection[0] = 0.45f;
+	tr->sunDirection[1] = 0.3f;
+	tr->sunDirection[2] = 0.9f;
 
-	VectorNormalize( tr.sunDirection );
+	VectorNormalize( tr->sunDirection );
 
-	tr.worldMapLoaded = qtrue;
+	tr->worldMapLoaded = qtrue;
 
 	// load it
     ri.FS_ReadFile( name, (void **)&buffer );
@@ -1814,9 +1821,9 @@ void RE_LoadWorldMap( const char *name ) {
 		ri.Error (ERR_DROP, "RE_LoadWorldMap: %s not found", name);
 	}
 
-	// clear tr.world so if the level fails to load, the next
+	// clear tr->world so if the level fails to load, the next
 	// try will not look at the partially loaded version
-	tr.world = NULL;
+	tr->world = NULL;
 
 	Com_Memset( &s_worldData, 0, sizeof( s_worldData ) );
 	Q_strncpyz( s_worldData.name, name, sizeof( s_worldData.name ) );
@@ -1856,8 +1863,8 @@ void RE_LoadWorldMap( const char *name ) {
 
 	s_worldData.dataSize = (byte *)ri.Hunk_Alloc(0, h_low) - startMarker;
 
-	// only set tr.world now that we know the entire level has loaded properly
-	tr.world = &s_worldData;
+	// only set tr->world now that we know the entire level has loaded properly
+	tr->world = &s_worldData;
 
     ri.FS_FreeFile( buffer );
 }

@@ -65,7 +65,7 @@ void R_RenderShadowEdges( void ) {
 	int		numTris;
 
 	// dumb way -- render every triangle's edges
-	numTris = tess.numIndexes / 3;
+	numTris = tess->numIndexes / 3;
 
 	for ( i = 0 ; i < numTris ; i++ ) {
 		int		i1, i2, i3;
@@ -74,19 +74,19 @@ void R_RenderShadowEdges( void ) {
 			continue;
 		}
 
-		i1 = tess.indexes[ i*3 + 0 ];
-		i2 = tess.indexes[ i*3 + 1 ];
-		i3 = tess.indexes[ i*3 + 2 ];
+		i1 = tess->indexes[ i*3 + 0 ];
+		i2 = tess->indexes[ i*3 + 1 ];
+		i3 = tess->indexes[ i*3 + 2 ];
 
 		qglBegin( GL_TRIANGLE_STRIP );
-		qglVertex3fv( tess.xyz[ i1 ] );
-		qglVertex3fv( tess.xyz[ i1 + tess.numVertexes ] );
-		qglVertex3fv( tess.xyz[ i2 ] );
-		qglVertex3fv( tess.xyz[ i2 + tess.numVertexes ] );
-		qglVertex3fv( tess.xyz[ i3 ] );
-		qglVertex3fv( tess.xyz[ i3 + tess.numVertexes ] );
-		qglVertex3fv( tess.xyz[ i1 ] );
-		qglVertex3fv( tess.xyz[ i1 + tess.numVertexes ] );
+		qglVertex3fv( tess->xyz[ i1 ] );
+		qglVertex3fv( tess->xyz[ i1 + tess->numVertexes ] );
+		qglVertex3fv( tess->xyz[ i2 ] );
+		qglVertex3fv( tess->xyz[ i2 + tess->numVertexes ] );
+		qglVertex3fv( tess->xyz[ i3 ] );
+		qglVertex3fv( tess->xyz[ i3 + tess->numVertexes ] );
+		qglVertex3fv( tess->xyz[ i1 ] );
+		qglVertex3fv( tess->xyz[ i1 + tess->numVertexes ] );
 		qglEnd();
 	}
 #else
@@ -103,7 +103,7 @@ void R_RenderShadowEdges( void ) {
 	c_edges = 0;
 	c_rejected = 0;
 
-	for ( i = 0 ; i < tess.numVertexes ; i++ ) {
+	for ( i = 0 ; i < tess->numVertexes ; i++ ) {
 		c = numEdgeDefs[ i ];
 		for ( j = 0 ; j < c ; j++ ) {
 			if ( !edgeDefs[ i ][ j ].facing ) {
@@ -125,10 +125,10 @@ void R_RenderShadowEdges( void ) {
 			// triangle, it is a sil edge
 			if ( hit[ 1 ] == 0 ) {
 				qglBegin( GL_TRIANGLE_STRIP );
-				qglVertex3fv( tess.xyz[ i ] );
-				qglVertex3fv( tess.xyz[ i + tess.numVertexes ] );
-				qglVertex3fv( tess.xyz[ i2 ] );
-				qglVertex3fv( tess.xyz[ i2 + tess.numVertexes ] );
+				qglVertex3fv( tess->xyz[ i ] );
+				qglVertex3fv( tess->xyz[ i + tess->numVertexes ] );
+				qglVertex3fv( tess->xyz[ i2 ] );
+				qglVertex3fv( tess->xyz[ i2 + tess->numVertexes ] );
 				qglEnd();
 				c_edges++;
 			} else {
@@ -157,7 +157,7 @@ void RB_ShadowTessEnd( void ) {
 	vec3_t	lightDir;
 
 	// we can only do this if we have enough space in the vertex buffers
-	if ( tess.numVertexes >= SHADER_MAX_VERTEXES / 2 ) {
+	if ( tess->numVertexes >= SHADER_MAX_VERTEXES / 2 ) {
 		return;
 	}
 
@@ -168,27 +168,27 @@ void RB_ShadowTessEnd( void ) {
 	VectorCopy( backEnd.currentEntity->lightDir, lightDir );
 
 	// project vertexes away from light direction
-	for ( i = 0 ; i < tess.numVertexes ; i++ ) {
-		VectorMA( tess.xyz[i], -512, lightDir, tess.xyz[i+tess.numVertexes] );
+	for ( i = 0 ; i < tess->numVertexes ; i++ ) {
+		VectorMA( tess->xyz[i], -512, lightDir, tess->xyz[i+tess->numVertexes] );
 	}
 
 	// decide which triangles face the light
-	Com_Memset( numEdgeDefs, 0, 4 * tess.numVertexes );
+	Com_Memset( numEdgeDefs, 0, 4 * tess->numVertexes );
 
-	numTris = tess.numIndexes / 3;
+	numTris = tess->numIndexes / 3;
 	for ( i = 0 ; i < numTris ; i++ ) {
 		int		i1, i2, i3;
 		vec3_t	d1, d2, normal;
 		float	*v1, *v2, *v3;
 		float	d;
 
-		i1 = tess.indexes[ i*3 + 0 ];
-		i2 = tess.indexes[ i*3 + 1 ];
-		i3 = tess.indexes[ i*3 + 2 ];
+		i1 = tess->indexes[ i*3 + 0 ];
+		i2 = tess->indexes[ i*3 + 1 ];
+		i3 = tess->indexes[ i*3 + 2 ];
 
-		v1 = tess.xyz[ i1 ];
-		v2 = tess.xyz[ i2 ];
-		v3 = tess.xyz[ i3 ];
+		v1 = tess->xyz[ i1 ];
+		v2 = tess->xyz[ i2 ];
+		v3 = tess->xyz[ i3 ];
 
 		VectorSubtract( v2, v1, d1 );
 		VectorSubtract( v3, v1, d2 );
@@ -209,7 +209,7 @@ void RB_ShadowTessEnd( void ) {
 
 	// draw the silhouette edges
 
-	GL_Bind( tr.whiteImage );
+	GL_Bind( tr->whiteImage );
 	qglEnable( GL_CULL_FACE );
 	GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ZERO );
 	qglColor3f( 0.2f, 0.2f, 0.2f );
@@ -272,7 +272,7 @@ void RB_ShadowFinish( void ) {
 	qglDisable (GL_CLIP_PLANE0);
 	qglDisable (GL_CULL_FACE);
 
-	GL_Bind( tr.whiteImage );
+	GL_Bind( tr->whiteImage );
 
     qglLoadIdentity ();
 
@@ -310,7 +310,7 @@ void RB_ProjectionShadowDeform( void ) {
 	float	d;
 	vec3_t	lightDir;
 
-	xyz = ( float * ) tess.xyz;
+	xyz = ( float * ) tess->xyz;
 
 	ground[0] = backEnd.or.axis[0][2];
 	ground[1] = backEnd.or.axis[1][2];
@@ -331,7 +331,7 @@ void RB_ProjectionShadowDeform( void ) {
 	light[1] = lightDir[1] * d;
 	light[2] = lightDir[2] * d;
 
-	for ( i = 0; i < tess.numVertexes; i++, xyz += 4 ) {
+	for ( i = 0; i < tess->numVertexes; i++, xyz += 4 ) {
 		h = DotProduct( xyz, ground ) + groundDist;
 
 		xyz[0] -= light[0] * h;

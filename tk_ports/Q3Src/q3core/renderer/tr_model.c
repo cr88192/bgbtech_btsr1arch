@@ -37,11 +37,11 @@ model_t	*R_GetModelByHandle( qhandle_t index ) {
 	model_t		*mod;
 
 	// out of range gets the defualt model
-	if ( index < 1 || index >= tr.numModels ) {
-		return tr.models[0];
+	if ( index < 1 || index >= tr->numModels ) {
+		return tr->models[0];
 	}
 
-	mod = tr.models[index];
+	mod = tr->models[index];
 
 	return mod;
 }
@@ -54,14 +54,14 @@ model_t	*R_GetModelByHandle( qhandle_t index ) {
 model_t *R_AllocModel( void ) {
 	model_t		*mod;
 
-	if ( tr.numModels == MAX_MOD_KNOWN ) {
+	if ( tr->numModels == MAX_MOD_KNOWN ) {
 		return NULL;
 	}
 
-	mod = ri.Hunk_Alloc( sizeof( *tr.models[tr.numModels] ), h_low );
-	mod->index = tr.numModels;
-	tr.models[tr.numModels] = mod;
-	tr.numModels++;
+	mod = ri.Hunk_Alloc( sizeof( *tr->models[tr->numModels] ), h_low );
+	mod->index = tr->numModels;
+	tr->models[tr->numModels] = mod;
+	tr->numModels++;
 
 	return mod;
 }
@@ -100,8 +100,8 @@ qhandle_t RE_RegisterModel( const char *name ) {
 	//
 	// search the currently loaded models
 	//
-	for ( hModel = 1 ; hModel < tr.numModels; hModel++ ) {
-		mod = tr.models[hModel];
+	for ( hModel = 1 ; hModel < tr->numModels; hModel++ ) {
+		mod = tr->models[hModel];
 		if ( !strcmp( mod->name, name ) ) {
 			if( mod->type == MOD_BAD ) {
 				return 0;
@@ -534,11 +534,11 @@ void RE_BeginRegistration( glconfig_t *glconfigOut ) {
 
 	R_SyncRenderThread();
 
-	tr.viewCluster = -1;		// force markleafs to regenerate
+	tr->viewCluster = -1;		// force markleafs to regenerate
 	R_ClearFlares();
 	RE_ClearScene();
 
-	tr.registered = qtrue;
+	tr->registered = qtrue;
 
 	// NOTE: this sucks, for some reason the first stretch pic is never drawn
 	// without this we'd see a white flash on a level load because the very
@@ -557,7 +557,7 @@ void R_ModelInit( void ) {
 	model_t		*mod;
 
 	// leave a space for NULL model
-	tr.numModels = 0;
+	tr->numModels = 0;
 
 	mod = R_AllocModel();
 	mod->type = MOD_BAD;
@@ -576,8 +576,8 @@ void R_Modellist_f( void ) {
 	int		lods;
 
 	total = 0;
-	for ( i = 1 ; i < tr.numModels; i++ ) {
-		mod = tr.models[i];
+	for ( i = 1 ; i < tr->numModels; i++ ) {
+		mod = tr->models[i];
 		lods = 1;
 		for ( j = 1 ; j < MD3_MAX_LODS ; j++ ) {
 			if ( mod->md3[j] && mod->md3[j] != mod->md3[j-1] ) {
@@ -590,8 +590,8 @@ void R_Modellist_f( void ) {
 	ri.Printf( PRINT_ALL, "%8i : Total models\n", total );
 
 #if	0		// not working right with new hunk
-	if ( tr.world ) {
-		ri.Printf( PRINT_ALL, "\n%8i : %s\n", tr.world->dataSize, tr.world->name );
+	if ( tr->world ) {
+		ri.Printf( PRINT_ALL, "\n%8i : %s\n", tr->world->dataSize, tr->world->name );
 	}
 #endif
 }

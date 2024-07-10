@@ -142,8 +142,13 @@ static nlint syscall_12( nlint a0, nlint a1, nlint a2, nlint a3,
 }
 
 //void dllEntry( int (QDECL *syscallptr)( int arg,... ) ) {
-void dllEntry( nlint (QDECL *syscallptr)( nlint *arg ) ) {
+VM_EXPORT void dllEntry( nlint (QDECL *syscallptr)( nlint *arg ) )
+{
+	if(!syscallptr)
+		__debugbreak();
 	syscall_i = syscallptr;
+	if(!syscall_i)
+		__debugbreak();
 }
 
 int PASSFLOAT( float x ) {

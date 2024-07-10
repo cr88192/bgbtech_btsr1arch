@@ -45,7 +45,7 @@ void R_AddAnimSurfaces( trRefEntity_t *ent ) {
 	shader_t		*shader;
 	int				i;
 
-	header = tr.currentModel->md4;
+	header = tr->currentModel->md4;
 	lod = (md4LOD_t *)( (byte *)header + header->ofsLODs );
 
 	surface = (md4Surface_t *)( (byte *)lod + lod->ofsSurfaces );
@@ -98,12 +98,12 @@ void RB_SurfaceAnim( md4Surface_t *surface ) {
 
 	triangles = (int *) ((byte *)surface + surface->ofsTriangles);
 	indexes = surface->numTriangles * 3;
-	baseIndex = tess.numIndexes;
-	baseVertex = tess.numVertexes;
+	baseIndex = tess->numIndexes;
+	baseVertex = tess->numVertexes;
 	for (j = 0 ; j < indexes ; j++) {
-		tess.indexes[baseIndex + j] = baseIndex + triangles[j];
+		tess->indexes[baseIndex + j] = baseIndex + triangles[j];
 	}
-	tess.numIndexes += indexes;
+	tess->numIndexes += indexes;
 
 	//
 	// lerp all the needed bones
@@ -147,16 +147,16 @@ void RB_SurfaceAnim( md4Surface_t *surface ) {
 			tempNormal[2] += w->boneWeight * DotProduct( bone->matrix[2], v->normal );
 		}
 
-		tess.xyz[baseVertex + j][0] = tempVert[0];
-		tess.xyz[baseVertex + j][1] = tempVert[1];
-		tess.xyz[baseVertex + j][2] = tempVert[2];
+		tess->xyz[baseVertex + j][0] = tempVert[0];
+		tess->xyz[baseVertex + j][1] = tempVert[1];
+		tess->xyz[baseVertex + j][2] = tempVert[2];
 
-		tess.normal[baseVertex + j][0] = tempNormal[0];
-		tess.normal[baseVertex + j][1] = tempNormal[1];
-		tess.normal[baseVertex + j][2] = tempNormal[2];
+		tess->normal[baseVertex + j][0] = tempNormal[0];
+		tess->normal[baseVertex + j][1] = tempNormal[1];
+		tess->normal[baseVertex + j][2] = tempNormal[2];
 
-		tess.texCoords[baseVertex + j][0][0] = v->texCoords[0];
-		tess.texCoords[baseVertex + j][0][1] = v->texCoords[1];
+		tess->texCoords[baseVertex + j][0][0] = v->texCoords[0];
+		tess->texCoords[baseVertex + j][0][1] = v->texCoords[1];
 
 		// FIXME
 		// This makes TFC's skeletons work.  Shouldn't be necessary anymore, but left
@@ -165,7 +165,7 @@ void RB_SurfaceAnim( md4Surface_t *surface ) {
 		v = (md4Vertex_t *)&v->weights[v->numWeights];
 	}
 
-	tess.numVertexes += surface->numVerts;
+	tess->numVertexes += surface->numVerts;
 }
 
 

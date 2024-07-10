@@ -515,7 +515,7 @@ CG_ParseVoiceChats
 int CG_ParseVoiceChats( const char *filename, voiceChatList_t *voiceChatList, int maxVoiceChats ) {
 	int	len, i;
 	fileHandle_t f;
-	char buf[MAX_VOICEFILESIZE];
+	static char buf[MAX_VOICEFILESIZE];
 	char **p, *ptr;
 	char *token;
 	voiceChat_t *voiceChats;
@@ -636,7 +636,7 @@ CG_HeadModelVoiceChats
 int CG_HeadModelVoiceChats( char *filename ) {
 	int	len, i;
 	fileHandle_t f;
-	char buf[MAX_VOICEFILESIZE];
+	static char buf[MAX_VOICEFILESIZE];
 	char **p, *ptr;
 	char *token;
 

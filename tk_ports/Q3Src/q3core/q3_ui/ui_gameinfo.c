@@ -142,6 +142,7 @@ static void UI_LoadArenasFromFile( char *filename ) {
 	fileHandle_t	f;
 	char			buf[MAX_ARENAS_TEXT];
 
+	f = 0;
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( !f ) {
 		trap_Print( va( S_COLOR_RED "file not found: %s\n", filename ) );
@@ -572,6 +573,8 @@ int UI_TierCompleted( int levelWon ) {
 
 	tier = levelWon / ARENAS_PER_TIER;
 	level = tier * ARENAS_PER_TIER;
+	score = 0;
+	skill = 0;
 
 	if( tier == UI_GetNumSPTiers() ) {
 		info = UI_GetSpecialArenaInfo( "training" );
@@ -662,6 +665,9 @@ int UI_GetCurrentGame( void ) {
 	int		rank;
 	int		skill;
 	const char *info;
+
+	rank = 0;
+	skill = 0;
 
 	info = UI_GetSpecialArenaInfo( "training" );
 	if( info ) {

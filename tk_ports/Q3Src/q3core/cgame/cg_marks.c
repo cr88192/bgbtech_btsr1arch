@@ -137,7 +137,8 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 	int				i, j;
 	int				numFragments;
 	markFragment_t	markFragments[MAX_MARK_FRAGMENTS], *mf;
-	vec3_t			markPoints[MAX_MARK_POINTS];
+//	vec3_t			markPoints[MAX_MARK_POINTS];
+	float			*markPoints;
 	vec3_t			projection;
 
 	if ( !cg_addMarks.integer ) {
@@ -147,6 +148,8 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 	if ( radius <= 0 ) {
 		CG_Error( "CG_ImpactMark called with <= 0 radius" );
 	}
+
+	markPoints = Q_AllocTemp(MAX_MARK_POINTS*3*sizeof(float));
 
 	//if ( markTotal >= MAX_MARK_POLYS ) {
 	//	return;
@@ -171,7 +174,8 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 	// get the fragments
 	VectorScale( dir, -20, projection );
 	numFragments = trap_CM_MarkFragments( 4, (void *)originalPoints,
-					projection, MAX_MARK_POINTS, markPoints[0],
+//					projection, MAX_MARK_POINTS, markPoints[0],
+					projection, MAX_MARK_POINTS, markPoints,
 					MAX_MARK_FRAGMENTS, markFragments );
 
 	colors[0] = red * 255;
@@ -192,7 +196,8 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 		for ( j = 0, v = verts ; j < mf->numPoints ; j++, v++ ) {
 			vec3_t		delta;
 
-			VectorCopy( markPoints[mf->firstPoint + j], v->xyz );
+//			VectorCopy( markPoints[mf->firstPoint + j], v->xyz );
+			VectorCopy( markPoints+(mf->firstPoint + j)*3, v->xyz );
 
 			VectorSubtract( v->xyz, origin, delta );
 			v->st[0] = 0.5 + DotProduct( delta, axis[1] ) * texCoordScale;
@@ -219,6 +224,8 @@ void CG_ImpactMark( qhandle_t markShader, const vec3_t origin, const vec3_t dir,
 		memcpy( mark->verts, verts, mf->numPoints * sizeof( verts[0] ) );
 		markTotal++;
 	}
+	
+	Q_FreeTemp(markPoints);
 }
 
 

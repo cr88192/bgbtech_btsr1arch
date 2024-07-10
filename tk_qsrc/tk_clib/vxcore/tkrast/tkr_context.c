@@ -129,6 +129,10 @@ int TKRA_QueryContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
 
 int TKRA_ModifyContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
 {
+	if(param==TKRA_CTXPARM_FINISH)
+	{
+		TKRA_DebugPrintStats(ctx);
+	}
 }
 
 int TKRA_QueryContext(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
@@ -257,9 +261,9 @@ int TKRA_DebugPrintStats(TKRA_Context *ctx)
 //		TKRA_DumpVec4(ctx->prj_xyzsc, "Clip: XyzSc:");
 //		TKRA_DumpVec4(ctx->prj_xyzbi, "Clip: XyzBi:");
 
-		tk_dbg_printf("clip: L=%f R=%f T=%f B=%f\n",
-			ctx->scr_clip_l, ctx->scr_clip_r,
-			ctx->scr_clip_t, ctx->scr_clip_b);
+		tk_dbg_printf("clip: L=%d R=%d T=%d B=%d\n",
+			(int)(ctx->scr_clip_l), (int)(ctx->scr_clip_r),
+			(int)(ctx->scr_clip_t), (int)(ctx->scr_clip_b));
 
 	//	tkra_prj_xyzsc=prj_xyzsc;
 	//	tkra_prj_xyzbi=prj_xyzbi;

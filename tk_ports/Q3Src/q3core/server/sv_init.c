@@ -348,8 +348,11 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	int			i;
 	int			checksum;
 	qboolean	isBot;
-	char		systemInfo[16384];
+//	char		systemInfo[16384];
+	char		*systemInfo;
 	const char	*p;
+
+	systemInfo = NULL;
 
 	// shut down the existing game if it is running
 	SV_ShutdownGameProgs();
@@ -527,10 +530,15 @@ void SV_SpawnServer( char *server, qboolean killBots ) {
 	p = FS_ReferencedPakNames();
 	Cvar_Set( "sv_referencedPakNames", p );
 
+	systemInfo = Q_AllocTemp(MAX_MSGLEN);
+
 	// save systeminfo and serverinfo strings
-	Q_strncpyz( systemInfo, Cvar_InfoString_Big( CVAR_SYSTEMINFO ), sizeof( systemInfo ) );
+//	Q_strncpyz( systemInfo, Cvar_InfoString_Big( CVAR_SYSTEMINFO ), sizeof( systemInfo ) );
+	Q_strncpyz( systemInfo, Cvar_InfoString_Big( CVAR_SYSTEMINFO ), MAX_MSGLEN );
 	cvar_modifiedFlags &= ~CVAR_SYSTEMINFO;
 	SV_SetConfigstring( CS_SYSTEMINFO, systemInfo );
+
+	Q_FreeTemp(systemInfo);
 
 	SV_SetConfigstring( CS_SERVERINFO, Cvar_InfoString( CVAR_SERVERINFO ) );
 	cvar_modifiedFlags &= ~CVAR_SERVERINFO;

@@ -102,6 +102,7 @@
 #endif
 
 #include "pdpc201/btshx_supa.c"
+#include "pdpc201/btshx_supdll.c"
 
 // #ifdef __BGBCC__
 #include "pdpc201/btshx_lva.c"

@@ -45,6 +45,8 @@ Everything else will assume the use of system calls.
 
 #include "pdpc201/btshx_alloca.c"
 
+#include "pdpc201/btshx_supdll.c"
+
 #if 0
 
 #include "tk_core/lva_array.c"
@@ -57,6 +59,7 @@ Everything else will assume the use of system calls.
 
 // #include "pdpc201/btshx_supa.c"
 // #include "pdpc201/btshx_lva.c"
+// #include "pdpc201/btshx_supdll.c"
 #include "pdpc201/btshx_xli.c"
 #include "pdpc201/btshx_xlf.c"
 #include "pdpc201/btshx_softfpu.c"

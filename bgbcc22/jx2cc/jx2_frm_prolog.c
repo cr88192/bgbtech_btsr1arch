@@ -1054,7 +1054,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	int ni, nf, rcls, ob, ov;
 	u64 epik;
 	int epix, epilbl, epij;
-	int tr0, tr1, ref0, ref1, l0, l1;
+	int tr0, tr1, ref0, ref1, l0, l1, sz;
 	int i, j, k, l, fl, fl2;
 
 	ctx->cur_func=obj;
@@ -3228,8 +3228,22 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			if(ctx->arch_sizeof_ptr==16)
 			{
 				BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_LR16);
-				BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx,
-					j, BGBCC_SH_REG_LR16);
+				if(obj->locals[i]->fxmoffs<0)
+				{
+					/* Dynamically allocate with alloca... */
+					sz=BGBCC_CCXL_TypeGetLogicalSize(ctx,
+						obj->locals[i]->type);
+					BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+						BGBCC_SH_NMID_MOV, sz, BGBCC_SH_REG_RQ4);
+					BGBCC_JX2C_EmitCallName(ctx, sctx, "__alloca");
+					BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+						BGBCC_SH_NMID_XMOV,
+						BGBCC_SH_REG_LR2, BGBCC_SH_REG_LR16);
+				}else
+				{
+					BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx,
+						j, BGBCC_SH_REG_LR16);
+				}
 				BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx,
 					k, BGBCC_SH_REG_LR16);
 				BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_LR16);
@@ -3245,10 +3259,25 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 			}else
 			{
 				BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_R3);
-				if(sctx->is_addr64)
+//				if(sctx->is_addr64)
+				if(1)
 				{
-					BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx,
-						j, BGBCC_SH_REG_RQ3);
+					if(obj->locals[i]->fxmoffs<0)
+					{
+						/* Dynamically allocate with alloca... */
+						sz=BGBCC_CCXL_TypeGetLogicalSize(ctx,
+							obj->locals[i]->type);
+						BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+							BGBCC_SH_NMID_MOV, sz, BGBCC_SH_REG_RQ4);
+						BGBCC_JX2C_EmitCallName(ctx, sctx, "__alloca");
+						BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+							BGBCC_SH_NMID_MOV,
+							BGBCC_SH_REG_RQ2, BGBCC_SH_REG_RQ3);
+					}else
+					{
+						BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx,
+							j, BGBCC_SH_REG_RQ3);
+					}
 					BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx,
 						k, BGBCC_SH_REG_RQ3);
 				}else

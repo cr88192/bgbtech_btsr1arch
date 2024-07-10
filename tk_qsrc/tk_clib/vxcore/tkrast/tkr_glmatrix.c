@@ -88,11 +88,25 @@ void tkra_glLoadMatrixI(tkra_mat4 mat)
 	ctx=TKRA_GetCurrentContext();
 	
 	if(ctx->matmode==0)
-		{ ctx->mat_xform=mat; }
+	{
+//		TKRA_DumpMatrix(mat, "tkra_glLoadMatrixI: Modelview:");
+		ctx->mat_xform=mat;
+	}
 	if(ctx->matmode==1)
-		{ ctx->mat_xproj=mat; }
+	{
+//		TKRA_DumpMatrix(mat, "tkra_glLoadMatrixI: Projection:");
+		ctx->mat_xproj=mat;
+	}
 	ctx->mat_tproj=TKRA_MatrixMultiply(
 		ctx->mat_xform, ctx->mat_xproj);
+
+#if 0
+	printf("\n");
+	TKRA_DumpMatrix(ctx->mat_xform, "tkra_glLoadMatrixI: Modelview:");
+	TKRA_DumpMatrix(ctx->mat_xproj, "tkra_glLoadMatrixI: Projection:");
+	TKRA_DumpMatrix(ctx->mat_tproj, "tkra_glLoadMatrixI: Tproj:");
+	printf("\n");
+#endif
 }
 
 void tkra_glMultMatrixI(tkra_mat4 mat)
@@ -127,6 +141,7 @@ void tkra_glLoadMatrixd(const double *m)
 void tkra_glLoadMatrixf(const float *m)
 {
 	tkra_glLoadMatrixI(TKRA_Matrix16fv((float *)m));
+//	tkra_glLoadMatrixI(TKRA_Matrix16Tfv((float *)m));
 }
 
 void tkra_glMultMatrixd(const double *m)

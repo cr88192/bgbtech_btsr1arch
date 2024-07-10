@@ -437,6 +437,8 @@ Base, Q1..Q3:
 #define CCXL_TERR_RETVOID				0xA006
 #define CCXL_TERR_MISSINGPROTO			0xA007
 
+#define CCXL_TERR_AUTOALLOCA			0xA008
+
 #define CCXL_TERR_STATUS(st)			(0xA800+(st))
 
 #define CCXL_BINOP_ADD			0x00

@@ -845,11 +845,13 @@ void FS_FCloseFile( fileHandle_t f ) {
 		Sys_EndStreamedFile(f);
 	}
 	if (fsh[f].zipFile == qtrue) {
+#ifndef __BJX2__
 		unzCloseCurrentFile( fsh[f].handleFiles.file.z );
 		if ( fsh[f].handleFiles.unique ) {
 			unzClose( fsh[f].handleFiles.file.z );
 		}
 		Com_Memset( &fsh[f], 0, sizeof( fsh[f] ) );
+#endif
 		return;
 	}
 
@@ -1164,6 +1166,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 
 					if(fsh[*file].zipFile)
 					{
+#ifndef __BJX2__
 						if ( uniqueFILE )
 						{
 							// open a new file on the pakfile
@@ -1198,6 +1201,7 @@ int FS_FOpenFileRead( const char *filename, fileHandle_t *file, qboolean uniqueF
 								filename, pak->pakFilename );
 						}
 						return zfi->cur_file_info.uncompressed_size;
+#endif
 					}
 
 					if(fsh[*file].wad4File)
@@ -1384,7 +1388,11 @@ int FS_Read( void *buffer, int len, fileHandle_t f )
 		}
 		return len;
 	} else {
+#ifndef __BJX2__
 		return unzReadCurrentFile(fsh[f].handleFiles.file.z, buffer, len);
+#else
+		Com_Error (ERR_FATAL, "FS_Read: ZIP Not supported on target");
+#endif
 	}
 }
 
@@ -1470,11 +1478,16 @@ FS_Seek
 */
 int FS_Seek( fileHandle_t f, long offset, int origin ) {
 	int		_origin;
-	char	foo[65536];
+//	char	foo[65536];
+	char	*foo;
 	int		toffs, tsz;
+
+	q_alloca_start
+	foo=q_alloca(65536);
 
 	if ( !fs_searchpaths ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
+		q_alloca_end
 		return -1;
 	}
 
@@ -1510,10 +1523,12 @@ int FS_Seek( fileHandle_t f, long offset, int origin ) {
 			toffs = tsz;
 		fsh[f].handleFiles.file.w.offs = toffs;
 
+		q_alloca_end
 		return(toffs);
 	}
 
 	if (fsh[f].zipFile == qtrue) {
+#ifndef __BJX2__
 		if (offset == 0 && origin == FS_SEEK_SET) {
 			// set the file position in the zip file (also sets the current file info)
 			unzSetCurrentFileInfoPosition(fsh[f].handleFiles.file.z, fsh[f].zipFilePos);
@@ -1525,8 +1540,14 @@ int FS_Seek( fileHandle_t f, long offset, int origin ) {
 			return FS_Read(foo, offset, f);
 		} else {
 			Com_Error( ERR_FATAL, "ZIP FILE FSEEK NOT YET IMPLEMENTED\n" );
+		q_alloca_end
 			return -1;
 		}
+#else
+		Com_Error( ERR_FATAL, "ZIP Not supported on target\n" );
+		q_alloca_end
+		return -1;
+#endif
 	} else {
 		FILE *file;
 		file = FS_FileForHandle(f);
@@ -1546,6 +1567,7 @@ int FS_Seek( fileHandle_t f, long offset, int origin ) {
 			break;
 		}
 
+		q_alloca_end
 		return fseek( file, offset, _origin );
 	}
 }
@@ -1807,6 +1829,11 @@ of a zip file.
 */
 static pack_t *FS_LoadZipFile( char *zipfile, const char *basename )
 {
+#ifdef __BJX2__
+	return NULL;
+#endif
+
+#ifndef __BJX2__
 	fileInPack_t	*buildBuffer;
 	pack_t			*pack;
 	unzFile			uf;
@@ -1904,6 +1931,7 @@ static pack_t *FS_LoadZipFile( char *zipfile, const char *basename )
 
 	pack->buildBuffer = buildBuffer;
 	return pack;
+#endif
 }
 
 #include "fs_wad4.c"
@@ -1974,7 +2002,8 @@ from all search paths
 char **FS_ListFilteredFiles( const char *path, const char *extension, char *filter, int *numfiles ) {
 	int				nfiles;
 	char			**listCopy;
-	char			*list[MAX_FOUND_FILES];
+//	char			*list[MAX_FOUND_FILES];
+	char			**list;
 	searchpath_t	*search;
 	int				i;
 	int				pathLength;
@@ -1983,6 +2012,9 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 	pack_t			*pak;
 	fileInPack_t	*buildBuffer;
 	char			zpath[MAX_ZPATH];
+
+	q_alloca_start
+	list=q_alloca(MAX_FOUND_FILES*sizeof(char *));
 
 	if ( !fs_searchpaths ) {
 		Com_Error( ERR_FATAL, "Filesystem call made without initialization\n" );
@@ -2087,7 +2119,9 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 	// return a copy of the list
 	*numfiles = nfiles;
 
-	if ( !nfiles ) {
+	if ( !nfiles )
+	{
+		q_alloca_end
 		return NULL;
 	}
 
@@ -2097,6 +2131,7 @@ char **FS_ListFilteredFiles( const char *path, const char *extension, char *filt
 	}
 	listCopy[i] = NULL;
 
+	q_alloca_end
 	return listCopy;
 }
 
@@ -2611,6 +2646,12 @@ static void FS_AddGameDirectory( const char *path, const char *dir ) {
 		}
 	}
 	
+	if(path && ((path[0]<' ') || (path[0]>'~')))
+	{
+		printf("FS_AddGameDirectory: Reject non-ASCII\n");
+		return;
+	}
+	
 	Q_strncpyz( fs_gamedir, dir, sizeof( fs_gamedir ) );
 
 	//
@@ -2829,7 +2870,9 @@ void FS_Shutdown( qboolean closemfp ) {
 				p->pack = NULL;
 			}else
 			{
+#ifndef __BJX2__
 				unzClose(p->pack->handle);
+#endif
 				Z_Free( p->pack->buildBuffer );
 				Z_Free( p->pack );
 				p->pack = NULL;
@@ -2913,10 +2956,12 @@ static void FS_Startup( const char *gameName ) {
 	fs_debug = Cvar_Get( "fs_debug", "0", 0 );
 	fs_copyfiles = Cvar_Get( "fs_copyfiles", "0", CVAR_INIT );
 	fs_cdpath = Cvar_Get ("fs_cdpath", Sys_DefaultCDPath(), CVAR_INIT );
-	fs_basepath = Cvar_Get ("fs_basepath", Sys_DefaultInstallPath(), CVAR_INIT );
+	fs_basepath = Cvar_Get ("fs_basepath",
+		Sys_DefaultInstallPath(), CVAR_INIT );
 	fs_basegame = Cvar_Get ("fs_basegame", "", CVAR_INIT );
-  homePath = Sys_DefaultHomePath();
-  if (!homePath || !homePath[0]) {
+	homePath = Sys_DefaultHomePath();
+	if (!homePath || !homePath[0])
+	{
 		homePath = fs_basepath->string;
 	}
 	fs_homepath = Cvar_Get ("fs_homepath", homePath, CVAR_INIT );
@@ -3556,11 +3601,20 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
 	if ( *f )
 	{
 		if (fsh[*f].wad4File)
-			{ fsh[*f].baseOffset = fsh[*f].handleFiles.file.w.offs; }
+		{
+			fsh[*f].baseOffset = fsh[*f].handleFiles.file.w.offs;
+		}
 		else if (fsh[*f].zipFile == qtrue)
-			{ fsh[*f].baseOffset = unztell(fsh[*f].handleFiles.file.z); }
+		{
+#ifndef __BJX2__
+			fsh[*f].baseOffset = unztell(fsh[*f].handleFiles.file.z);
+#endif
+		}
 		else
-			{ fsh[*f].baseOffset = ftell(fsh[*f].handleFiles.file.o); }
+		{
+			fsh[*f].baseOffset = ftell(fsh[*f].handleFiles.file.o);
+		}
+
 		fsh[*f].fileSize = r;
 		fsh[*f].streamed = qfalse;
 
@@ -3574,12 +3628,21 @@ int		FS_FOpenFileByMode( const char *qpath, fileHandle_t *f, fsMode_t mode ) {
 	return r;
 }
 
-int		FS_FTell( fileHandle_t f ) {
+int		FS_FTell( fileHandle_t f )
+{
 	int pos;
 	if (fsh[f].wad4File)
-		{ pos = fsh[f].handleFiles.file.w.offs; }
-	if (fsh[f].zipFile == qtrue)
-		{ pos = unztell(fsh[f].handleFiles.file.z); }
+	{
+		pos = fsh[f].handleFiles.file.w.offs;
+	}
+	else if (fsh[f].zipFile == qtrue)
+	{
+#ifndef __BJX2__
+		pos = unztell(fsh[f].handleFiles.file.z);
+#else
+		pos = 0;
+#endif
+	}
 	else
 		{ pos = ftell(fsh[f].handleFiles.file.o); }
 	return pos;

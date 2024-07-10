@@ -143,7 +143,8 @@ SRCS_ASM_2 = \
 	tk_divi3.S			\
 
 SRCS_ASM_DLL = \
-	tk_divi2.S			\
+	tk_divi2_wx.S		\
+	tk_divi2_sc.S		\
 	tk_divi3.S			\
 	tk_softfp.S			\
 
@@ -261,17 +262,20 @@ libtkgl.bjx2.ril: $(TKRA_SRCS)
 libtkwui.bjx2.ril: $(SRCS_TKWUI) $(TKRA_SRCS)
 	$(CC) -o libtkwui.bjx2.ril tk_wui/tkwui_multi.c $(COPTS64)
 
-tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
+tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2) \
+		$(SRCS_CLIB) $(SRCS_TKGDI) $(TKRA_SRCS)
 	$(CC) -o tkshell.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
 		tkshell.wdef \
 		$(COPTS64) $(TK_LDFL64)
 
-tkshell96.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
+tkshell96.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2) \
+		$(SRCS_CLIB) $(SRCS_TKGDI) $(TKRA_SRCS)
 	$(CC) -o tkshell96.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
 		tkshell.wdef \
 		$(COPTS96) $(TK_LDFL96)
 
-tkshdll.dll: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
+tkshdll.dll: $(SRCS_TKSH) $(SRCS_TKSH_BS2) \
+		$(SRCS_CLIB) $(SRCS_TKGDI) $(TKRA_SRCS)
 	$(CC) -o tkshdll.dll tkshdll_multi.c $(SRCS_TKSH_BS2) \
 		tkshell.wdef \
 		$(COPTS64) $(TK_LDFL64_DLL)

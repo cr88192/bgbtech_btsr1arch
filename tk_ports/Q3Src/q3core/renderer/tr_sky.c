@@ -457,7 +457,7 @@ static void DrawSkyBox( shader_t *shader )
 static void FillCloudySkySide( const int mins[2], const int maxs[2], qboolean addIndexes )
 {
 	int s, t;
-	int vertexStart = tess.numVertexes;
+	int vertexStart = tess->numVertexes;
 	int tHeight, sWidth;
 
 	tHeight = maxs[1] - mins[1] + 1;
@@ -467,13 +467,13 @@ static void FillCloudySkySide( const int mins[2], const int maxs[2], qboolean ad
 	{
 		for ( s = mins[0]+HALF_SKY_SUBDIVISIONS; s <= maxs[0]+HALF_SKY_SUBDIVISIONS; s++ )
 		{
-			VectorAdd( s_skyPoints[t][s], backEnd.viewParms.or.origin, tess.xyz[tess.numVertexes] );
-			tess.texCoords[tess.numVertexes][0][0] = s_skyTexCoords[t][s][0];
-			tess.texCoords[tess.numVertexes][0][1] = s_skyTexCoords[t][s][1];
+			VectorAdd( s_skyPoints[t][s], backEnd.viewParms.or.origin, tess->xyz[tess->numVertexes] );
+			tess->texCoords[tess->numVertexes][0][0] = s_skyTexCoords[t][s][0];
+			tess->texCoords[tess->numVertexes][0][1] = s_skyTexCoords[t][s][1];
 
-			tess.numVertexes++;
+			tess->numVertexes++;
 
-			if ( tess.numVertexes >= SHADER_MAX_VERTEXES )
+			if ( tess->numVertexes >= SHADER_MAX_VERTEXES )
 			{
 				ri.Error( ERR_DROP, "SHADER_MAX_VERTEXES hit in FillCloudySkySide()\n" );
 			}
@@ -486,19 +486,19 @@ static void FillCloudySkySide( const int mins[2], const int maxs[2], qboolean ad
 		{	
 			for ( s = 0; s < sWidth-1; s++ )
 			{
-				tess.indexes[tess.numIndexes] = vertexStart + s + t * ( sWidth );
-				tess.numIndexes++;
-				tess.indexes[tess.numIndexes] = vertexStart + s + ( t + 1 ) * ( sWidth );
-				tess.numIndexes++;
-				tess.indexes[tess.numIndexes] = vertexStart + s + 1 + t * ( sWidth );
-				tess.numIndexes++;
+				tess->indexes[tess->numIndexes] = vertexStart + s + t * ( sWidth );
+				tess->numIndexes++;
+				tess->indexes[tess->numIndexes] = vertexStart + s + ( t + 1 ) * ( sWidth );
+				tess->numIndexes++;
+				tess->indexes[tess->numIndexes] = vertexStart + s + 1 + t * ( sWidth );
+				tess->numIndexes++;
 
-				tess.indexes[tess.numIndexes] = vertexStart + s + ( t + 1 ) * ( sWidth );
-				tess.numIndexes++;
-				tess.indexes[tess.numIndexes] = vertexStart + s + 1 + ( t + 1 ) * ( sWidth );
-				tess.numIndexes++;
-				tess.indexes[tess.numIndexes] = vertexStart + s + 1 + t * ( sWidth );
-				tess.numIndexes++;
+				tess->indexes[tess->numIndexes] = vertexStart + s + ( t + 1 ) * ( sWidth );
+				tess->numIndexes++;
+				tess->indexes[tess->numIndexes] = vertexStart + s + 1 + ( t + 1 ) * ( sWidth );
+				tess->numIndexes++;
+				tess->indexes[tess->numIndexes] = vertexStart + s + 1 + t * ( sWidth );
+				tess->numIndexes++;
 			}
 		}
 	}
@@ -615,14 +615,14 @@ void R_BuildCloudData( shaderCommands_t *input )
 	sky_max = 255.0 / 256.0f;
 
 	// set up for drawing
-	tess.numIndexes = 0;
-	tess.numVertexes = 0;
+	tess->numIndexes = 0;
+	tess->numVertexes = 0;
 
 	if ( input->shader->sky.cloudHeight )
 	{
 		for ( i = 0; i < MAX_SHADER_STAGES; i++ )
 		{
-			if ( !tess.xstages[i] ) {
+			if ( !tess->xstages[i] ) {
 				break;
 			}
 			FillCloudBox( input->shader, i );
@@ -714,9 +714,9 @@ void RB_DrawSun( void ) {
 	dist = 	backEnd.viewParms.zFar / 1.75;		// div sqrt(3)
 	size = dist * 0.4;
 
-	VectorScale( tr.sunDirection, dist, origin );
-	PerpendicularVector( vec1, tr.sunDirection );
-	CrossProduct( tr.sunDirection, vec1, vec2 );
+	VectorScale( tr->sunDirection, dist, origin );
+	PerpendicularVector( vec1, tr->sunDirection );
+	CrossProduct( tr->sunDirection, vec1, vec2 );
 
 	VectorScale( vec1, size, vec1 );
 	VectorScale( vec2, size, vec2 );
@@ -725,57 +725,57 @@ void RB_DrawSun( void ) {
 	qglDepthRange( 1.0, 1.0 );
 
 	// FIXME: use quad stamp
-	RB_BeginSurface( tr.sunShader, tess.fogNum );
+	RB_BeginSurface( tr->sunShader, tess->fogNum );
 		VectorCopy( origin, temp );
 		VectorSubtract( temp, vec1, temp );
 		VectorSubtract( temp, vec2, temp );
-		VectorCopy( temp, tess.xyz[tess.numVertexes] );
-		tess.texCoords[tess.numVertexes][0][0] = 0;
-		tess.texCoords[tess.numVertexes][0][1] = 0;
-		tess.vertexColors[tess.numVertexes][0] = 255;
-		tess.vertexColors[tess.numVertexes][1] = 255;
-		tess.vertexColors[tess.numVertexes][2] = 255;
-		tess.numVertexes++;
+		VectorCopy( temp, tess->xyz[tess->numVertexes] );
+		tess->texCoords[tess->numVertexes][0][0] = 0;
+		tess->texCoords[tess->numVertexes][0][1] = 0;
+		tess->vertexColors[tess->numVertexes][0] = 255;
+		tess->vertexColors[tess->numVertexes][1] = 255;
+		tess->vertexColors[tess->numVertexes][2] = 255;
+		tess->numVertexes++;
 
 		VectorCopy( origin, temp );
 		VectorAdd( temp, vec1, temp );
 		VectorSubtract( temp, vec2, temp );
-		VectorCopy( temp, tess.xyz[tess.numVertexes] );
-		tess.texCoords[tess.numVertexes][0][0] = 0;
-		tess.texCoords[tess.numVertexes][0][1] = 1;
-		tess.vertexColors[tess.numVertexes][0] = 255;
-		tess.vertexColors[tess.numVertexes][1] = 255;
-		tess.vertexColors[tess.numVertexes][2] = 255;
-		tess.numVertexes++;
+		VectorCopy( temp, tess->xyz[tess->numVertexes] );
+		tess->texCoords[tess->numVertexes][0][0] = 0;
+		tess->texCoords[tess->numVertexes][0][1] = 1;
+		tess->vertexColors[tess->numVertexes][0] = 255;
+		tess->vertexColors[tess->numVertexes][1] = 255;
+		tess->vertexColors[tess->numVertexes][2] = 255;
+		tess->numVertexes++;
 
 		VectorCopy( origin, temp );
 		VectorAdd( temp, vec1, temp );
 		VectorAdd( temp, vec2, temp );
-		VectorCopy( temp, tess.xyz[tess.numVertexes] );
-		tess.texCoords[tess.numVertexes][0][0] = 1;
-		tess.texCoords[tess.numVertexes][0][1] = 1;
-		tess.vertexColors[tess.numVertexes][0] = 255;
-		tess.vertexColors[tess.numVertexes][1] = 255;
-		tess.vertexColors[tess.numVertexes][2] = 255;
-		tess.numVertexes++;
+		VectorCopy( temp, tess->xyz[tess->numVertexes] );
+		tess->texCoords[tess->numVertexes][0][0] = 1;
+		tess->texCoords[tess->numVertexes][0][1] = 1;
+		tess->vertexColors[tess->numVertexes][0] = 255;
+		tess->vertexColors[tess->numVertexes][1] = 255;
+		tess->vertexColors[tess->numVertexes][2] = 255;
+		tess->numVertexes++;
 
 		VectorCopy( origin, temp );
 		VectorSubtract( temp, vec1, temp );
 		VectorAdd( temp, vec2, temp );
-		VectorCopy( temp, tess.xyz[tess.numVertexes] );
-		tess.texCoords[tess.numVertexes][0][0] = 1;
-		tess.texCoords[tess.numVertexes][0][1] = 0;
-		tess.vertexColors[tess.numVertexes][0] = 255;
-		tess.vertexColors[tess.numVertexes][1] = 255;
-		tess.vertexColors[tess.numVertexes][2] = 255;
-		tess.numVertexes++;
+		VectorCopy( temp, tess->xyz[tess->numVertexes] );
+		tess->texCoords[tess->numVertexes][0][0] = 1;
+		tess->texCoords[tess->numVertexes][0][1] = 0;
+		tess->vertexColors[tess->numVertexes][0] = 255;
+		tess->vertexColors[tess->numVertexes][1] = 255;
+		tess->vertexColors[tess->numVertexes][2] = 255;
+		tess->numVertexes++;
 
-		tess.indexes[tess.numIndexes++] = 0;
-		tess.indexes[tess.numIndexes++] = 1;
-		tess.indexes[tess.numIndexes++] = 2;
-		tess.indexes[tess.numIndexes++] = 0;
-		tess.indexes[tess.numIndexes++] = 2;
-		tess.indexes[tess.numIndexes++] = 3;
+		tess->indexes[tess->numIndexes++] = 0;
+		tess->indexes[tess->numIndexes++] = 1;
+		tess->indexes[tess->numIndexes++] = 2;
+		tess->indexes[tess->numIndexes++] = 0;
+		tess->indexes[tess->numIndexes++] = 2;
+		tess->indexes[tess->numIndexes++] = 3;
 
 	RB_EndSurface();
 
@@ -803,7 +803,7 @@ void RB_StageIteratorSky( void ) {
 	// go through all the polygons and project them onto
 	// the sky box to see which blocks on each side need
 	// to be drawn
-	RB_ClipSkyPolygons( &tess );
+	RB_ClipSkyPolygons( tess );
 
 	// r_showsky will let all the sky blocks be drawn in
 	// front of everything to allow developers to see how
@@ -815,21 +815,21 @@ void RB_StageIteratorSky( void ) {
 	}
 
 	// draw the outer skybox
-	if ( tess.shader->sky.outerbox[0] && tess.shader->sky.outerbox[0] != tr.defaultImage ) {
-		qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
+	if ( tess->shader->sky.outerbox[0] && tess->shader->sky.outerbox[0] != tr->defaultImage ) {
+		qglColor3f( tr->identityLight, tr->identityLight, tr->identityLight );
 		
 		qglPushMatrix ();
 		GL_State( 0 );
 		qglTranslatef (backEnd.viewParms.or.origin[0], backEnd.viewParms.or.origin[1], backEnd.viewParms.or.origin[2]);
 
-		DrawSkyBox( tess.shader );
+		DrawSkyBox( tess->shader );
 
 		qglPopMatrix();
 	}
 
 	// generate the vertexes for all the clouds, which will be drawn
 	// by the generic shader routine
-	R_BuildCloudData( &tess );
+	R_BuildCloudData( tess );
 
 	RB_StageIteratorGeneric();
 

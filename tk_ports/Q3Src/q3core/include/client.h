@@ -132,7 +132,8 @@ typedef struct {
 	entityState_t	parseEntities[MAX_PARSE_ENTITIES];
 } clientActive_t;
 
-extern	clientActive_t		cl;
+// extern	clientActive_t		cl;
+extern	clientActive_t		*cl;
 
 /*
 =============================================================================
@@ -207,7 +208,8 @@ typedef struct {
 	netchan_t	netchan;
 } clientConnection_t;
 
-extern	clientConnection_t clc;
+// extern	clientConnection_t clc;
+extern	clientConnection_t *clc;
 
 /*
 ==================================================================
@@ -300,7 +302,8 @@ typedef struct {
 	qhandle_t	consoleShader;
 } clientStatic_t;
 
-extern	clientStatic_t		cls;
+// extern	clientStatic_t		cls;
+extern	clientStatic_t		*cls;
 
 //=============================================================================
 
@@ -354,6 +357,8 @@ extern	cvar_t	*cl_inGameVideo;
 //
 // cl_main
 //
+
+void CL_DoAllocs( void );
 
 void CL_Init (void);
 void CL_FlushMemory(void);

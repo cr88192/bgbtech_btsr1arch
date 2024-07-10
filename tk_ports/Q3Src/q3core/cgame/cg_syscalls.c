@@ -193,7 +193,7 @@ static nlint syscall_16( nlint a0, nlint a1, nlint a2, nlint a3,
 }
 
 //void dllEntry( int (QDECL *syscallptr)( int arg,... ) ) {
-void dllEntry( nlint (QDECL *syscallptr)( nlint *arg ) ) {
+VM_EXPORT void dllEntry( nlint (QDECL *syscallptr)( nlint *arg ) ) {
 	syscall_i = syscallptr;
 }
 

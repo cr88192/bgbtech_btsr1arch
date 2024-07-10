@@ -115,39 +115,6 @@ void tk_gets_n(char *msg, int n)
 }
 #endif
 
-u32 __moddi3(u32 a, u32 b)
-{
-	u32 q, r;
-	
-	q=a/b;
-	r=a-(q*b);
-	return(r);
-}
-
-u32 __umodsi3(u32 a, u32 b)
-{
-	u32 q, r;
-	
-	q=a/b;
-	r=a-(q*b);
-
-//	if(((s32)r)<0)
-//		{ *(int *)-1=-1; }
-//	if(r>=b)
-//		{ *(int *)-1=-1; }
-
-	return(r);
-}
-
-s32 __smodsi3(s32 a, s32 b)
-{
-	s32 q, r;
-	
-	q=a/b;
-	r=a-(q*b);
-	return(r);
-}
-
 #if 0
 typedef struct u64_obj_s u64_obj_t;
 struct u64_obj_s {
@@ -293,128 +260,6 @@ s64 __sdivlli(s64 a, s64 b)
 }
 #endif
 
-#if 1
-u64 __udivdi3(u64 n, u64 d);
-s64 __sdivdi3(s64 a, s64 b);
-
-
-u64 __udivsq(u64 a, u64 b)
-{
-
-	return(__udivdi3(a, b));
-
-#if 0
-	u64_obj_t c, d, e;
-	u64 v, t;
-
-#if 1
-	if((((u32)a)==a) && (((u32)b)==b))
-	{
-		return(((u32)a)/((u32)b));
-	}
-#endif
-
-	if((b&(b-1))==0)
-	{
-		v=a;	t=b;
-		while(t>1)
-			{ v=v>>1; t=t>>1; }
-		return(v);
-	}
-	
-	*(u64 *)(&c)=a;
-	*(u64 *)(&d)=b;
-	e=__udivlli(c, d);
-//	*(u64_obj_t *)(&v)=__udivlli(c, d);
-	v=*(u64 *)(&e);
-	return(v);
-#endif
-}
-
-s64 __sdivsq(s64 a, s64 b)
-{
-	return(__sdivdi3(a, b));
-
-#if 0
-#if 1
-	if((((s32)a)==a) && (((s32)b)==b))
-	{
-		return(((s32)a)/((s32)b));
-	}
-#endif
-	
-	return(__sdivlli(a, b));
-#endif
-}
-
-u64 __umodsq(u64 a, u64 b)
-{
-	u64 c, d;
-
-#if 1
-	if((((u32)a)==a) && (((u32)b)==b))
-	{
-		if(((u32)(b&(b-1)))==0)
-			return(((u32)a)&((u32)(b-1)));
-	
-		return(((u32)a)%((u32)b));
-	}
-#endif
-
-	if((b&(b-1))==0)
-	{
-//		__debugbreak();
-		return(a&((u32)(b-1)));
-	}
-
-	c=a/b;
-	d=a-(c*b);
-
-	if(((s64)d)<0)
-		d+=b;
-
-	if(d>=b)
-	{
-		d-=b;
-		if(d>=b)
-		{
-			tk_printf("a/b = %X_%X / %X_%X\n",
-				(u32)(a>>32), (u32)a, (u32)(b>>32), (u32)b);
-			tk_printf("c,d = %X_%X , %X_%X\n",
-				(u32)(c>>32), (u32)c, (u32)(d>>32), (u32)d);
-		
-			__debugbreak();
-			return(0);
-		}
-//		while(d>=b)
-//			d-=b;
-	}
-	return(d);
-}
-
-s64 __smodsq(s64 a, s64 b)
-{
-	s64 c, d;
-
-	c=__sdivsq(a, b);
-	d=c*b;
-	return(a-d);
-
-#if 0
-	if(b<0)
-	{
-//		c=__sdivsq(a, -b)
-//		return(-__smodsq(a, -b));
-	}
-
-	if(a<0)
-		{ return(-__umodsq(-a, b)); }
-	else
-		{ return(__umodsq(a, b)); }
-#endif
-
-}
-#endif
 
 #if 0
 float __ldhf16(unsigned short iv)
@@ -956,7 +801,7 @@ int socket(int domain, int type, int protocol)
 #endif
 
 #ifndef __TK_CLIB_DLLSTUB__
-void __multicall(int magicid, void *retptr, void **args)
+long __multicall(int callnum, void *retptr, void **args)
 {
 }
 #endif

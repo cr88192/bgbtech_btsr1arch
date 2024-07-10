@@ -47,7 +47,8 @@ int demo_protocols[] =
 // #define MIN_COMHUNKMEGS 32
 
 #define MIN_COMHUNKMEGS 24
-#define MIN_COMZONEMEGS 6
+// #define MIN_COMZONEMEGS 6
+#define MIN_COMZONEMEGS 10
 
 #ifdef MACOS_X
 #define DEF_COMHUNKMEGS "64"
@@ -59,9 +60,10 @@ int demo_protocols[] =
 // #define DEF_COMHUNKMEGS "32"
 #define DEF_COMHUNKMEGS "40"
 
-// #define DEF_COMZONEMEGS "16"
+#define DEF_COMZONEMEGS "16"
 // #define DEF_COMZONEMEGS "6"
-#define DEF_COMZONEMEGS "10"
+// #define DEF_COMZONEMEGS "10"
+// #define DEF_COMZONEMEGS "12"
 
 #endif
 
@@ -874,7 +876,8 @@ void Z_Free( void *ptr )
 		Com_Error( ERR_FATAL, "Z_Free: freed a freed pointer" );
 	}
 	// if static memory
-	if (block->tag == TAG_STATIC) {
+	if (block->tag == TAG_STATIC)
+	{
 		return;
 	}
 
@@ -884,7 +887,8 @@ void Z_Free( void *ptr )
 		Com_Error( ERR_FATAL, "Z_Free: memory block wrote past end" );
 	}
 
-	if (block->tag == TAG_SMALL) {
+	if (block->tag == TAG_SMALL)
+	{
 		zone = smallzone;
 	}
 	else {
@@ -936,8 +940,11 @@ void Z_FreeTags( int tag )
 	int			count;
 	memzone_t	*zone;
 
+	if ( tag == TAG_STATIC )
+		return;
+
 	if ( tag == TAG_SMALL )
-{
+	{
 		zone = smallzone;
 	}
 	else {
@@ -979,8 +986,9 @@ void *Z_TagMalloc( int size, int tag )
 		Com_Error( ERR_FATAL, "Z_TagMalloc: tried to use a 0 tag" );
 	}
 
-	if ( tag == TAG_SMALL )
-{
+//	if ( tag == TAG_SMALL )
+	if ( (tag == TAG_SMALL) || ((tag == TAG_STATIC) && (size<128)) )
+	{
 		zone = smallzone;
 	}
 	else {
@@ -1093,6 +1101,11 @@ void *S_Malloc( int size )
 }
 #endif
 
+void *S_MallocStatic( int size )
+{
+	return Z_TagMalloc( size, TAG_STATIC );
+}
+
 /*
 ========================
 Z_CheckHeap
@@ -1190,6 +1203,8 @@ typedef struct memstatic_s {
 } memstatic_t;
 
 // bk001204 - initializer brackets
+
+#if 0
 memstatic_t emptystring =
 	{ {(sizeof(memblock_t)+2 + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'\0', '\0'} };
 memstatic_t numberstring[] = {
@@ -1204,6 +1219,15 @@ memstatic_t numberstring[] = {
 	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'8', '\0'} }, 
 	{ {(sizeof(memstatic_t) + 3) & ~3, TAG_STATIC, NULL, NULL, ZONEID}, {'9', '\0'} }
 };
+#endif
+
+//static char *b_emptystring="";
+//static char *b_numberstring[10]={
+//	"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
+
+static char *z_emptystring=NULL;
+static char *z_numberstring[10];
+
 
 /*
 ========================
@@ -1216,15 +1240,41 @@ CopyString
 char *CopyString( const char *in )
 {
 	char	*out;
+	int i;
 
 	if (!in[0]) {
-		return ((char *)&emptystring) + sizeof(memblock_t);
+
+		if(!z_emptystring)
+		{
+			out = S_MallocStatic (strlen(in)+1);
+			z_emptystring = out;
+			strcpy (out, in);
+			return out;
+		}
+		return z_emptystring;
+
+//		return ((char *)&emptystring) + sizeof(memblock_t);
+//		return b_emptystring;
 	}
 	else if (!in[1]) {
-		if (in[0] >= '0' && in[0] <= '9') {
-			return ((char *)&numberstring[in[0]-'0']) + sizeof(memblock_t);
+		if (in[0] >= '0' && in[0] <= '9')
+		{
+			i=in[0]-'0';
+
+			if(!z_numberstring[i])
+			{
+				out = S_MallocStatic (strlen(in)+1);
+				z_numberstring[i] = out;
+				strcpy (out, in);
+				return out;
+			}
+			return z_numberstring[i];
+
+//			return ((char *)&numberstring[in[0]-'0']) + sizeof(memblock_t);
+//			return(b_numberstring[in[0]-'0']);
 		}
 	}
+
 	out = S_Malloc (strlen(in)+1);
 	strcpy (out, in);
 	return out;
@@ -1497,6 +1547,8 @@ Com_InitZoneMemory
 */
 void Com_InitSmallZoneMemory( void )
 {
+	Com_Printf("Com_InitSmallZoneMemory");
+
 //	s_smallZoneTotal = 512 * 1024;
 	s_smallZoneTotal = 256 * 1024;
 	// bk001205 - was malloc
@@ -1525,6 +1577,9 @@ void Com_InitSmallZoneMemory( void )
 void Com_InitZoneMemory( void )
 {
 	cvar_t	*cv;
+
+	Com_Printf("Com_InitZoneMemory");
+
 	// allocate the random block zone
 	cv = Cvar_Get( "com_zoneMegs", DEF_COMZONEMEGS, CVAR_LATCH | CVAR_ARCHIVE );
 
@@ -2296,10 +2351,15 @@ int Com_EventLoop( void )
 {
 	sysEvent_t	ev;
 	netadr_t	evFrom;
-	byte		bufData[MAX_MSGLEN];
+//	byte		bufData[MAX_MSGLEN];
+	byte		*bufData;
 	msg_t		buf;
 
-	MSG_Init( &buf, bufData, sizeof( bufData ) );
+	q_alloca_start
+	bufData = q_alloca(MAX_MSGLEN);
+
+//	MSG_Init( &buf, bufData, sizeof( bufData ) );
+	MSG_Init( &buf, bufData, MAX_MSGLEN );
 
 	while ( 1 )
 {
@@ -2323,6 +2383,7 @@ int Com_EventLoop( void )
 				}
 			}
 
+			q_alloca_end
 			return ev.evTime;
 		}
 
@@ -2394,6 +2455,7 @@ int Com_EventLoop( void )
 		}
 	}
 
+	q_alloca_end
 	return 0;	// never reached
 }
 
@@ -2619,6 +2681,10 @@ void Com_Init( char *commandLine )
 
 	Com_InitSmallZoneMemory();
 	Cvar_Init ();
+
+#ifdef __BJX2__
+	Cvar_Set("developer", "1");
+#endif
 
 	// prepare enough of the subsystems to handle
 	// cvar and command buffer management

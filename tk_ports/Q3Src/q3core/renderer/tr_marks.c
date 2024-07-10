@@ -160,24 +160,24 @@ void R_BoxSurfaces_r(mnode_t *node, vec3_t mins, vec3_t maxs, surfaceType_t **li
 		// check if the surface has NOIMPACT or NOMARKS set
 		if ( ( surf->shader->surfaceFlags & ( SURF_NOIMPACT | SURF_NOMARKS ) )
 			|| ( surf->shader->contentFlags & CONTENTS_FOG ) ) {
-			surf->viewCount = tr.viewCount;
+			surf->viewCount = tr->viewCount;
 		}
 		// extra check for surfaces to avoid list overflows
 		else if (*(surf->data) == SF_FACE) {
 			// the face plane should go through the box
 			s = BoxOnPlaneSide( mins, maxs, &(( srfSurfaceFace_t * ) surf->data)->plane );
 			if (s == 1 || s == 2) {
-				surf->viewCount = tr.viewCount;
+				surf->viewCount = tr->viewCount;
 			} else if (DotProduct((( srfSurfaceFace_t * ) surf->data)->plane.normal, dir) > -0.5) {
 			// don't add faces that make sharp angles with the projection direction
-				surf->viewCount = tr.viewCount;
+				surf->viewCount = tr->viewCount;
 			}
 		}
-		else if (*(surfaceType_t *) (surf->data) != SF_GRID) surf->viewCount = tr.viewCount;
+		else if (*(surfaceType_t *) (surf->data) != SF_GRID) surf->viewCount = tr->viewCount;
 		// check the viewCount because the surface may have
 		// already been added if it spans multiple leafs
-		if (surf->viewCount != tr.viewCount) {
-			surf->viewCount = tr.viewCount;
+		if (surf->viewCount != tr->viewCount) {
+			surf->viewCount = tr->viewCount;
 			list[*listlength] = (surfaceType_t *) surf->data;
 			(*listlength)++;
 		}
@@ -272,7 +272,7 @@ int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projectio
 	int				*indexes;
 
 	//increment view count for double check prevention
-	tr.viewCount++;
+	tr->viewCount++;
 
 	//
 	VectorNormalize2( projection, projectionDir );
@@ -311,7 +311,7 @@ int R_MarkFragments( int numPoints, const vec3_t *points, const vec3_t projectio
 	numPlanes = numPoints + 2;
 
 	numsurfaces = 0;
-	R_BoxSurfaces_r(tr.world->nodes, mins, maxs, surfaces, 64, &numsurfaces, projectionDir);
+	R_BoxSurfaces_r(tr->world->nodes, mins, maxs, surfaces, 64, &numsurfaces, projectionDir);
 	//assert(numsurfaces <= 64);
 	//assert(numsurfaces != 64);
 

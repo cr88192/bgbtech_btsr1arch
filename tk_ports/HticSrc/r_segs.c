@@ -221,13 +221,19 @@ void R_RenderSegLoop (void)
 			index = rw_scale>>LIGHTSCALESHIFT;
 			if (index >=  MAXLIGHTSCALE )
 				index = MAXLIGHTSCALE-1;
+
+//			index=0;
 			dc_colormap = walllights[index];
+//			dc_colormap = colormaps;
+
 			dc_x = rw_x;
 //			dc_iscale = 0xffffffffu / (unsigned)rw_scale;
 //			dc_iscale = M_SoftDivU(0xffffffffu, rw_scale);
 //			dc_iscale = M_SoftDivU(0x7fffffffu, rw_scale)<<1;
 			dc_iscale = M_SoftDivRcp(rw_scale);
 		}
+
+//		dc_colormap = colormaps;
 
 //
 // draw the wall tiers
@@ -564,12 +570,16 @@ void R_StoreWallRange (int start, int stop)
 				lightnum--;
 			else if (curline->v1->x == curline->v2->x)
 				lightnum++;
+
+//			walllights = scalelight[lightnum];
+
 			if (lightnum < 0)
 				walllights = scalelight[0];
 			else if (lightnum >= LIGHTLEVELS)
 				walllights = scalelight[LIGHTLEVELS-1];
 			else
 				walllights = scalelight[lightnum];
+//			__debugbreak();
 		}
 	}
 

@@ -634,12 +634,14 @@ int TKRA_TransformProjectTriangle(
 //		if(tkra_v4f_z(v1ww)>( 32767))
 //			continue;
 
+#if 1
 		if(tkra_v4f_w(v1ww)<=0.0)
 		{
 			ctx->stat_reject_tris++;
 			ctx->stat_negw_tris++;
 			continue;
 		}
+#endif
 
 		if(tkra_v4f_x(v0ww)>scr_clip_r)
 		{
@@ -855,7 +857,8 @@ int TKRA_TransformProjectTriangle(
 //		if(0)
 		{
 //			if((vstkpos+5)>=32)
-			if((vstkpos+5)>=48)
+//			if((vstkpos+5)>=48)
+			if((vstkpos+5)>=TKRA_LIM_PROJSTACK)
 //			if((vstkpos+5)>=64)
 //			if((vstkpos+5)>=16)
 //			if((vstkpos+5)>=24)
@@ -1000,7 +1003,7 @@ int TKRA_TransformProjectTriangle(
 			continue;
 		}
 
-#if 0
+#if 1
 		if(ctx->stateflag1&TKRA_STFL1_CULLFACE)
 		{
 			f3=tkra_v2fcross(v0dxy, v1dxy);
@@ -1247,12 +1250,14 @@ int TKRA_TransformProjectQuad(
 		
 		ecfl=0;
 
+#if 1
 		if(tkra_v4f_w(v1ww)<=0.0)
 		{
 			ctx->stat_reject_tris++;
 			ctx->stat_negw_tris++;
 			continue;
 		}
+#endif
 
 		if(tkra_v4f_x(v0ww)>scr_clip_r)
 		{
@@ -1328,7 +1333,7 @@ int TKRA_TransformProjectQuad(
 		f3=tkra_v2fdot(v3dxy, v3dxy);
 #endif
 
-#if 1
+#if 0
 //		if(ctx->stateflag1&TKRA_STFL1_CULLFACE)
 		if((ctx->stateflag1&TKRA_STFL1_CULLFACE) && !(ecfl&1))
 		{
@@ -1399,7 +1404,8 @@ int TKRA_TransformProjectQuad(
 
 		if(!nosubdiv && (f5>f4))
 		{
-			if((vstkpos+5)>=48)
+//			if((vstkpos+5)>=48)
+			if((vstkpos+5)>=TKRA_LIM_PROJSTACK)
 			{
 				printf("blown: Wn: %f %f %f\n", w0, w1, w2);
 				printf("blown: Fn: %f %f %f\n", f0, f1, f2);
@@ -1537,12 +1543,14 @@ int TKRA_TransformProjectQuad(
 #endif
 		}
 
+#if 1
 		if(tkra_v4f_w(v0ww)<0)
 		{
 			ctx->stat_reject_tris++;
 			ctx->stat_negw_tris++;
 			continue;
 		}
+#endif
 
 		TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
 		TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);

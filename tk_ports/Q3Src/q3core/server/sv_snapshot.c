@@ -236,14 +236,18 @@ typedef struct {
 SV_QsortEntityNumbers
 =======================
 */
-static int QDECL SV_QsortEntityNumbers( const void *a, const void *b ) {
+static int QDECL SV_QsortEntityNumbers( const void *a, const void *b )
+{
 	int	*ea, *eb;
 
 	ea = (int *)a;
 	eb = (int *)b;
 
+	if(ea == eb)
+		return(0);
+
 	if ( *ea == *eb ) {
-		Com_Error( ERR_DROP, "SV_QsortEntityStates: duplicated entity" );
+//		Com_Error( ERR_DROP, "SV_QsortEntityStates: duplicated entity" );
 	}
 
 	if ( *ea < *eb ) {
@@ -259,7 +263,10 @@ static int QDECL SV_QsortEntityNumbers( const void *a, const void *b ) {
 SV_AddEntToSnapshot
 ===============
 */
-static void SV_AddEntToSnapshot( svEntity_t *svEnt, sharedEntity_t *gEnt, snapshotEntityNumbers_t *eNums ) {
+static void SV_AddEntToSnapshot(
+	svEntity_t *svEnt, sharedEntity_t *gEnt,
+	snapshotEntityNumbers_t *eNums )
+{
 	// if we have already added this entity to this snapshot, don't add again
 	if ( svEnt->snapshotCounter == sv.snapshotCounter ) {
 		return;
@@ -280,8 +287,10 @@ static void SV_AddEntToSnapshot( svEntity_t *svEnt, sharedEntity_t *gEnt, snapsh
 SV_AddEntitiesVisibleFromPoint
 ===============
 */
-static void SV_AddEntitiesVisibleFromPoint( vec3_t origin, clientSnapshot_t *frame, 
-									snapshotEntityNumbers_t *eNums, qboolean portal ) {
+static void SV_AddEntitiesVisibleFromPoint( vec3_t origin,
+	clientSnapshot_t *frame, 
+	snapshotEntityNumbers_t *eNums, qboolean portal )
+{
 	int		e, i;
 	sharedEntity_t *ent;
 	svEntity_t	*svEnt;
@@ -607,8 +616,10 @@ Also called by SV_FinalMessage
 
 =======================
 */
-void SV_SendClientSnapshot( client_t *client ) {
-	byte		msg_buf[MAX_MSGLEN];
+void SV_SendClientSnapshot( client_t *client )
+{
+//	byte		msg_buf[MAX_MSGLEN];
+	byte		*msg_buf;
 	msg_t		msg;
 
 	// build the snapshot
@@ -620,7 +631,10 @@ void SV_SendClientSnapshot( client_t *client ) {
 		return;
 	}
 
-	MSG_Init (&msg, msg_buf, sizeof(msg_buf));
+	msg_buf = Q_AllocTemp(MAX_MSGLEN);
+
+//	MSG_Init (&msg, msg_buf, sizeof(msg_buf));
+	MSG_Init (&msg, msg_buf, MAX_MSGLEN);
 	msg.allowoverflow = qtrue;
 
 	// NOTE, MRE: all server->client messages now acknowledge
@@ -644,6 +658,8 @@ void SV_SendClientSnapshot( client_t *client ) {
 	}
 
 	SV_SendMessageToClient( &msg, client );
+	
+	Q_FreeTemp(msg_buf);
 }
 
 
@@ -652,12 +668,14 @@ void SV_SendClientSnapshot( client_t *client ) {
 SV_SendClientMessages
 =======================
 */
-void SV_SendClientMessages( void ) {
+void SV_SendClientMessages( void )
+{
 	int			i;
 	client_t	*c;
 
 	// send a message to each connected client
-	for (i=0, c = svs.clients ; i < sv_maxclients->integer ; i++, c++) {
+	for (i=0, c = svs.clients ; i < sv_maxclients->integer ; i++, c++)
+	{
 		if (!c->state) {
 			continue;		// not connected
 		}

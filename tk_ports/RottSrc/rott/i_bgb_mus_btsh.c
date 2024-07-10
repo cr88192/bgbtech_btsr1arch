@@ -423,7 +423,8 @@ int SMus_NoteOn(int ch, int d0, int d1)
 	loghz=((note-96)<<8)/12;
 
 	vol=(smus_chanvol[ch]*d1)>>7;
-	vol=(vol*snd_MusicVolume)>>4;
+//	vol=(vol*snd_MusicVolume)>>4;
+	vol=(vol*snd_MusicVolume)>>7;
 
 	vol=__int_clamp(vol, 0, 127);
 
@@ -605,14 +606,16 @@ int SMus_SilenceAll()
 {
 	SMus_SpecialParm(0, 0);
 //	SMus_SpecialParm(1, snd_MusicVolume);
-	SMus_SpecialParm(1, snd_MusicVolume>>2);
+//	SMus_SpecialParm(1, snd_MusicVolume>>2);
+	SMus_SpecialParm(1, snd_MusicVolume>>5);
 }
 
 int SMus_UpdateVolume()
 {
 //	SMus_SpecialParm(0, 0);
 //	SMus_SpecialParm(1, snd_MusicVolume);
-	SMus_SpecialParm(1, snd_MusicVolume>>2);
+//	SMus_SpecialParm(1, snd_MusicVolume>>2);
+	SMus_SpecialParm(1, snd_MusicVolume>>5);
 }
 
 int SMus_SpecialParm(int parm, int val)
@@ -631,11 +634,25 @@ int SMus_SpecialParm(int parm, int val)
 	return(0);
 }
 
+int SMus_NoteOff(int ch, int d0, int d1);
+
 int SMus_NoteOn(int ch, int d0, int d1)
 {
 	TKGDI_MIDI_COMMAND t_mcmd;
 	TKGDI_MIDI_COMMAND *mcmd;
 
+	if(d1<0)
+		d1=0;
+	if(d1>127)
+		d1=127;
+
+	if(!d1)
+	{
+//		SMus_NoteOff(ch, d0, d1);
+		SMus_NoteOff(ch, d0, 64);
+		return(0);
+	}
+	
 	mcmd=&t_mcmd;
 	mcmd->op=1;
 	mcmd->ch=ch;
@@ -929,6 +946,7 @@ void I_InitMusic(void)
 
 	SMus_Init();
 
+#if 0
 //	genmidi = W_CacheLumpName("GENMIDI", PU_STATIC);
 	genmidi = (byte *)i_genmidi0;
 
@@ -958,6 +976,7 @@ void I_InitMusic(void)
 			SMus_SetFmRegisterData(i, 8, ((u32 *)rec)[8]);
 		}
 	}
+#endif
 }
 
 void I_ShutdownMusic(void)
@@ -976,6 +995,7 @@ void I_PlaySong(int handle, int looping)
 	int i, j, k;
 	
 	I_InitMusic();
+	SMus_UpdateVolume();
 	
 	ofs=i_mus_song_ofs[handle];
 	sz=i_mus_song_len[handle];
@@ -1026,6 +1046,7 @@ void I_StopSong(int handle)
 
 	i_mus_curhandle=0;
 	i_mus_curpos=0;
+	SMus_SilenceAll();
 }
 
 void I_UnRegisterSong(int handle)

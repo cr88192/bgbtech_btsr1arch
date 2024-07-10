@@ -127,6 +127,7 @@ static void G_LoadArenasFromFile( char *filename ) {
 	fileHandle_t	f;
 	char			buf[MAX_ARENAS_TEXT];
 
+	f = 0;
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( !f ) {
 		trap_Printf( va( S_COLOR_RED "file not found: %s\n", filename ) );
@@ -860,6 +861,8 @@ static void G_LoadBotsFromFile( char *filename ) {
 	int				len;
 	fileHandle_t	f;
 	char			buf[MAX_BOTS_TEXT];
+
+	f = 0;
 
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( !f ) {

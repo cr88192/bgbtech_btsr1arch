@@ -96,6 +96,8 @@ static int UI_CDKeyMenu_PreValidateKey( const char *key ) {
 		return 1;
 	}
 
+	ch = 0;
+
 	while( ( ch = *key++ ) ) {
 		switch( ch ) {
 		case '2':

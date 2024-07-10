@@ -395,7 +395,7 @@ void RB_TakeScreenshot( int x, int y, int width, int height, char *fileName ) {
 	}
 
 	// gamma correct
-	if ( ( tr.overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
+	if ( ( tr->overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
 		R_GammaCorrect( buffer + 18, glConfig.vidWidth * glConfig.vidHeight * 3 );
 	}
 
@@ -417,7 +417,7 @@ void RB_TakeScreenshotJPEG( int x, int y, int width, int height, char *fileName 
 	qglReadPixels( x, y, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer ); 
 
 	// gamma correct
-	if ( ( tr.overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
+	if ( ( tr->overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
 		R_GammaCorrect( buffer, glConfig.vidWidth * glConfig.vidHeight * 4 );
 	}
 
@@ -537,7 +537,7 @@ void R_LevelShot( void ) {
 	float		xScale, yScale;
 	int			xx, yy;
 
-	sprintf( checkname, "levelshots/%s.tga", tr.world->baseName );
+	sprintf( checkname, "levelshots/%s.tga", tr->world->baseName );
 
 	source = ri.Hunk_AllocateTempMemory( glConfig.vidWidth * glConfig.vidHeight * 3 );
 
@@ -572,7 +572,7 @@ void R_LevelShot( void ) {
 	}
 
 	// gamma correct
-	if ( ( tr.overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
+	if ( ( tr->overbrightBits > 0 ) && glConfig.deviceSupportsGamma ) {
 		R_GammaCorrect( buffer + 18, 128 * 128 * 3 );
 	}
 
@@ -787,11 +787,11 @@ void GfxInfo_f( void )
 	}
 	if ( glConfig.deviceSupportsGamma )
 	{
-		ri.Printf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr.overbrightBits );
+		ri.Printf( PRINT_ALL, "GAMMA: hardware w/ %d overbright bits\n", tr->overbrightBits );
 	}
 	else
 	{
-		ri.Printf( PRINT_ALL, "GAMMA: software w/ %d overbright bits\n", tr.overbrightBits );
+		ri.Printf( PRINT_ALL, "GAMMA: software w/ %d overbright bits\n", tr->overbrightBits );
 	}
 	ri.Printf( PRINT_ALL, "CPU: %s\n", sys_cpustring->string );
 
@@ -891,7 +891,8 @@ void R_Register( void )
 	r_customheight = ri.Cvar_Get( "r_customheight", "1024", CVAR_ARCHIVE | CVAR_LATCH );
 	r_customaspect = ri.Cvar_Get( "r_customaspect", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_simpleMipMaps = ri.Cvar_Get( "r_simpleMipMaps", "1", CVAR_ARCHIVE | CVAR_LATCH );
-	r_vertexLight = ri.Cvar_Get( "r_vertexLight", "0", CVAR_ARCHIVE | CVAR_LATCH );
+//	r_vertexLight = ri.Cvar_Get( "r_vertexLight", "0", CVAR_ARCHIVE | CVAR_LATCH );
+	r_vertexLight = ri.Cvar_Get( "r_vertexLight", "1", CVAR_ARCHIVE | CVAR_LATCH );
 	r_uiFullScreen = ri.Cvar_Get( "r_uifullscreen", "0", 0);
 	r_subdivisions = ri.Cvar_Get ("r_subdivisions", "4", CVAR_ARCHIVE | CVAR_LATCH);
 #if (defined(MACOS_X) || defined(__linux__)) && defined(SMP)
@@ -1015,44 +1016,54 @@ void R_Init( void ) {
 	int i;
 	byte *ptr;
 
+//	if(tr)
+//		return;
+
 	ri.Printf( PRINT_ALL, "----- R_Init -----\n" );
 
+	if(!tr)
+		tr = malloc(sizeof(trGlobals_t));
+	if(!tess)
+		tess = malloc(sizeof(shaderCommands_t));
+
 	// clear all our internal state
-	Com_Memset( &tr, 0, sizeof( tr ) );
+//	Com_Memset( &tr, 0, sizeof( tr ) );
+	Com_Memset( tr, 0, sizeof( trGlobals_t ) );
 	Com_Memset( &backEnd, 0, sizeof( backEnd ) );
-	Com_Memset( &tess, 0, sizeof( tess ) );
+//	Com_Memset( &tess, 0, sizeof( tess ) );
+	Com_Memset( tess, 0, sizeof( shaderCommands_t ) );
 
 //	Swap_Init();
 
-	if ( (nlint)tess.xyz & 15 ) {
-		Com_Printf( "WARNING: tess.xyz not 16 byte aligned\n" );
+	if ( (nlint)tess->xyz & 15 ) {
+		Com_Printf( "WARNING: tess->xyz not 16 byte aligned\n" );
 	}
-	Com_Memset( tess.constantColor255, 255, sizeof( tess.constantColor255 ) );
+	Com_Memset( tess->constantColor255, 255, sizeof( tess->constantColor255 ) );
 
 	//
 	// init function tables
 	//
 	for ( i = 0; i < FUNCTABLE_SIZE; i++ )
 	{
-		tr.sinTable[i]		= sin( DEG2RAD( i * 360.0f / ( ( float ) ( FUNCTABLE_SIZE - 1 ) ) ) );
-		tr.squareTable[i]	= ( i < FUNCTABLE_SIZE/2 ) ? 1.0f : -1.0f;
-		tr.sawToothTable[i] = (float)i / FUNCTABLE_SIZE;
-		tr.inverseSawToothTable[i] = 1.0f - tr.sawToothTable[i];
+		tr->sinTable[i]		= sin( DEG2RAD( i * 360.0f / ( ( float ) ( FUNCTABLE_SIZE - 1 ) ) ) );
+		tr->squareTable[i]	= ( i < FUNCTABLE_SIZE/2 ) ? 1.0f : -1.0f;
+		tr->sawToothTable[i] = (float)i / FUNCTABLE_SIZE;
+		tr->inverseSawToothTable[i] = 1.0f - tr->sawToothTable[i];
 
 		if ( i < FUNCTABLE_SIZE / 2 )
 		{
 			if ( i < FUNCTABLE_SIZE / 4 )
 			{
-				tr.triangleTable[i] = ( float ) i / ( FUNCTABLE_SIZE / 4 );
+				tr->triangleTable[i] = ( float ) i / ( FUNCTABLE_SIZE / 4 );
 			}
 			else
 			{
-				tr.triangleTable[i] = 1.0f - tr.triangleTable[i-FUNCTABLE_SIZE / 4];
+				tr->triangleTable[i] = 1.0f - tr->triangleTable[i-FUNCTABLE_SIZE / 4];
 			}
 		}
 		else
 		{
-			tr.triangleTable[i] = -tr.triangleTable[i-FUNCTABLE_SIZE/2];
+			tr->triangleTable[i] = -tr->triangleTable[i-FUNCTABLE_SIZE/2];
 		}
 	}
 
@@ -1124,7 +1135,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 	ri.Cmd_RemoveCommand( "shaderstate" );
 
 
-	if ( tr.registered ) {
+	if ( tr->registered ) {
 		R_SyncRenderThread();
 		R_ShutdownCommandBuffers();
 		R_DeleteTextures();
@@ -1137,7 +1148,7 @@ void RE_Shutdown( qboolean destroyWindow ) {
 		GLimp_Shutdown();
 	}
 
-	tr.registered = qfalse;
+	tr->registered = qfalse;
 }
 
 

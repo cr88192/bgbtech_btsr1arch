@@ -72,6 +72,8 @@ Everything else will assume the use of system calls.
 #include "tk_core/tk_rwad.c"
 
 #include "pdpc201/btshx_supa.c"
+#include "pdpc201/btshx_supdll.c"
+
 #include "pdpc201/btshx_lva.c"
 #include "pdpc201/btshx_xli.c"
 #include "pdpc201/btshx_xlf.c"

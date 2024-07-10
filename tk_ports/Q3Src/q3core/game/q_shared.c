@@ -299,8 +299,11 @@ string will be returned if the next token is
 a newline.
 ==============
 */
-static char *SkipWhitespace( char *data, qboolean *hasNewLines ) {
+static char *SkipWhitespace( char *data, qboolean *hasNewLines )
+{
 	int c;
+
+	c=0;
 
 	while( (c = *data) <= ' ') {
 		if( !c ) {
@@ -321,6 +324,7 @@ int COM_Compress( char *data_p ) {
 	int c;
 	qboolean newline = qfalse, whitespace = qfalse;
 
+	c = 0;
 	in = out = data_p;
 	if (in) {
 		while ((c = *in) != 0) {
@@ -389,6 +393,7 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 	int c = 0, len;
 	qboolean hasNewLines = qfalse;
 	char *data;
+	u64		v0, v1, v2;
 
 	data = *data_p;
 	len = 0;
@@ -469,6 +474,33 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 	// parse a regular word
 	do
 	{
+#ifdef __BJX2__
+		v0 = *(u64 *)data;
+		v1 = v0 + 0x5F5F5F5F5F5F5F5FULL;
+		if((v1&0x8080808080808080ULL)==0x8080808080808080ULL)
+		{
+			if ((len+8) < MAX_TOKEN_CHARS)
+			{
+				*(u64 *)(com_token+len) = v0;
+				len+=8;
+				data+=8;
+				c = *data;
+				continue;
+			}
+		}
+		if((v1&0x80808080ULL)==0x80808080ULL)
+		{
+			if ((len+4) < MAX_TOKEN_CHARS)
+			{
+				*(u32 *)(com_token+len) = v0;
+				len+=4;
+				data+=4;
+				c = *data;
+				continue;
+			}
+		}
+#endif
+	
 		if (len < MAX_TOKEN_CHARS)
 		{
 			com_token[len] = c;
@@ -476,9 +508,11 @@ char *COM_ParseExt( char **data_p, qboolean allowLineBreaks )
 		}
 		data++;
 		c = *data;
-		if ( c == '\n' )
-			com_lines++;
+//		if ( c == '\n' )
+//			com_lines++;
 	} while (c>32);
+	if ( c == '\n' )
+		com_lines++;
 
 	if (len == MAX_TOKEN_CHARS)
 	{
@@ -571,7 +605,8 @@ Skips until a matching close brace is found.
 Internal brace depths are properly skipped.
 =================
 */
-void SkipBracedSection (char **program) {
+void SkipBracedSection (char **program)
+{
 	char			*token;
 	int				depth;
 
@@ -854,6 +889,7 @@ char *Q_CleanStr( char *string ) {
 	char*	s;
 	int		c;
 
+	c = 0;
 	s = string;
 	d = string;
 	while ((c = *s) != 0 ) {
@@ -874,23 +910,28 @@ char *Q_CleanStr( char *string ) {
 void QDECL Com_sprintf( char *dest, int size, const char *fmt, ...) {
 	int		len;
 	va_list		argptr;
-	char	bigbuffer[32000];	// big, but small enough to fit in PPC stack
+//	char	bigbuffer[32000];	// big, but small enough to fit in PPC stack
+//	static char	bigbuffer[32000];	// big, but small enough to fit in PPC stack
+	char *bigbuffer;
+
+	bigbuffer = Q_AllocTemp(32000);
 
 	va_start (argptr,fmt);
 	len = vsprintf (bigbuffer,fmt,argptr);
 	va_end (argptr);
-	if ( len >= sizeof( bigbuffer ) ) {
+//	if ( len >= sizeof( bigbuffer ) ) {
+	if ( len >= 32000 ) {
 		Com_Error( ERR_FATAL, "Com_sprintf: overflowed bigbuffer" );
 	}
-	if (len >= size) {
-		Com_Printf ("Com_sprintf: overflow of %i in %i\n", len, size);
-#ifdef	_DEBUG
-		__asm {
-			int 3;
-		}
-#endif
+
+	if (len >= size)
+	{
+			Com_Printf ("Com_sprintf: overflow of %i in %i\n", len, size);
 	}
+
 	Q_strncpyz (dest, bigbuffer, size );
+	
+	Q_FreeTemp(bigbuffer);
 }
 
 
@@ -1348,6 +1389,53 @@ void Q_FreeLLn(void *ptr, char *lfn, int lln)
 	free(ptr);
 }
 
+void *Q_AllocTemp(int sz)
+{
+	return(malloc(sz));
+}
+
+void Q_FreeTemp(void *ptr)
+{
+	free(ptr);
+}
+
+void Q_AllocaStart(void **mark)
+{
+	*mark=NULL;
+}
+
+void Q_AllocaEnd(void **mark)
+{
+	void *ptr, *nxt;
+	
+	ptr=*mark;
+	while(ptr)
+	{
+		nxt=*(void **)ptr;
+		Q_FreeTemp(ptr);
+		ptr=nxt;
+	}
+}
+
+void *Q_Alloca(void **mark, int sz)
+{
+	void *ptr;
+	
+	ptr=Q_AllocTemp(sizeof(void *)+sz);
+	*(void **)ptr=*mark;
+	*mark=ptr;
+	return((void *)((void **)ptr+1));
+}
+
+void Q_MemcpySafe(void *dst, void *src, int sz)
+{
+	byte *cs, *ct;
+	int i;
+	
+	cs=src; ct=dst;
+	for(i=0; i<sz; i++)
+		ct[i]=cs[i];
+}
 
 //====================================================================
 

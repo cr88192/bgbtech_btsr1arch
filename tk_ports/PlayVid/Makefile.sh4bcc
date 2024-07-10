@@ -4,15 +4,21 @@ CC=bgbcc
 
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /Os
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -mBJX2E /O2 /fwex3w
-TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj /Zz
+# TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w /fwexj /Zz
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2 /fwex3w
 # TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2F /O2
+
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mBJX2 /O2 /fwex3w /fwexj /Zz \
+	/fxgpr_abi /fnoexcept /fldgbr \
+	/fjcmp /fxg2mode -ffunctag -fleagbr -fcmp3r -frsub -fldimi
+
 TK_LDFL= $(TK_CFL)
 
 BASE_CFLAGS=-I. -I../tk_clib/include -L../tk_clib 
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
-LDFLAGS=$(TK_LDFL) -lvxcore64
+# LDFLAGS=$(TK_LDFL) -lvxcore64
+LDFLAGS=$(TK_LDFL) -lc -ltkgdi
 
 SRCS=						\
 	bt4b_multi.c

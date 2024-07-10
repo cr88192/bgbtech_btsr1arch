@@ -75,6 +75,10 @@
 #define	K_NUMPAD_ENTR	218
 #define	K_NUMPAD_DEL	219
 
+#define	K_GUI_MINIMIZE	0xE0
+#define	K_GUI_MAXIMIZE	0xE1
+#define	K_GUI_CLOSE		0xE2
+
 #define	K_SKM_F1		0x0100
 #define	K_SKM_F2		0x0200
 #define	K_SKM_F3		0x0300

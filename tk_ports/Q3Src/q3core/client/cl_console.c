@@ -48,7 +48,7 @@ typedef struct {
 
 	int		vislines;		// in scanlines
 
-	int		times[NUM_CON_TIMES];	// cls.realtime time the line was generated
+	int		times[NUM_CON_TIMES];	// cls->realtime time the line was generated
 								// for transparent notify lines
 	vec4_t	color;
 } console_t;
@@ -72,7 +72,7 @@ Con_ToggleConsole_f
 */
 void Con_ToggleConsole_f (void) {
 	// closing a full screen console restarts the demo loop
-	if ( cls.state == CA_DISCONNECTED && cls.keyCatchers == KEYCATCH_CONSOLE ) {
+	if ( cls->state == CA_DISCONNECTED && cls->keyCatchers == KEYCATCH_CONSOLE ) {
 		CL_StartDemoLoop();
 		return;
 	}
@@ -81,7 +81,7 @@ void Con_ToggleConsole_f (void) {
 	g_consoleField.widthInChars = g_console_field_width;
 
 	Con_ClearNotify ();
-	cls.keyCatchers ^= KEYCATCH_CONSOLE;
+	cls->keyCatchers ^= KEYCATCH_CONSOLE;
 }
 
 /*
@@ -95,7 +95,7 @@ void Con_MessageMode_f (void) {
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
 
-	cls.keyCatchers ^= KEYCATCH_MESSAGE;
+	cls->keyCatchers ^= KEYCATCH_MESSAGE;
 }
 
 /*
@@ -108,7 +108,7 @@ void Con_MessageMode2_f (void) {
 	chat_team = qtrue;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 25;
-	cls.keyCatchers ^= KEYCATCH_MESSAGE;
+	cls->keyCatchers ^= KEYCATCH_MESSAGE;
 }
 
 /*
@@ -125,7 +125,7 @@ void Con_MessageMode3_f (void) {
 	chat_team = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
-	cls.keyCatchers ^= KEYCATCH_MESSAGE;
+	cls->keyCatchers ^= KEYCATCH_MESSAGE;
 }
 
 /*
@@ -142,7 +142,7 @@ void Con_MessageMode4_f (void) {
 	chat_team = qfalse;
 	Field_Clear( &chatField );
 	chatField.widthInChars = 30;
-	cls.keyCatchers ^= KEYCATCH_MESSAGE;
+	cls->keyCatchers ^= KEYCATCH_MESSAGE;
 }
 
 /*
@@ -348,7 +348,7 @@ void Con_Linefeed (qboolean skipnotify)
     if (skipnotify)
 		  con.times[con.current % NUM_CON_TIMES] = 0;
     else
-		  con.times[con.current % NUM_CON_TIMES] = cls.realtime;
+		  con.times[con.current % NUM_CON_TIMES] = cls->realtime;
 	}
 
 	con.x = 0;
@@ -454,7 +454,7 @@ void CL_ConsolePrint( char *txt ) {
 		}
 		else
 		// -NERVE - SMF
-			con.times[con.current % NUM_CON_TIMES] = cls.realtime;
+			con.times[con.current % NUM_CON_TIMES] = cls->realtime;
 	}
 }
 
@@ -478,7 +478,7 @@ Draw the editline after a ] prompt
 void Con_DrawInput (void) {
 	int		y;
 
-	if ( cls.state != CA_DISCONNECTED && !(cls.keyCatchers & KEYCATCH_CONSOLE ) ) {
+	if ( cls->state != CA_DISCONNECTED && !(cls->keyCatchers & KEYCATCH_CONSOLE ) ) {
 		return;
 	}
 
@@ -520,12 +520,12 @@ void Con_DrawNotify (void)
 		time = con.times[i % NUM_CON_TIMES];
 		if (time == 0)
 			continue;
-		time = cls.realtime - time;
+		time = cls->realtime - time;
 		if (time > con_notifytime->value*1000)
 			continue;
 		text = con.text + (i % con.totallines)*con.linewidth;
 
-		if (cl.snap.ps.pm_type != PM_INTERMISSION && cls.keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
+		if (cl->snap.ps.pm_type != PM_INTERMISSION && cls->keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
 			continue;
 		}
 
@@ -545,12 +545,12 @@ void Con_DrawNotify (void)
 
 	re.SetColor( NULL );
 
-	if (cls.keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
+	if (cls->keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME) ) {
 		return;
 	}
 
 	// draw the chat line
-	if ( cls.keyCatchers & KEYCATCH_MESSAGE )
+	if ( cls->keyCatchers & KEYCATCH_MESSAGE )
 	{
 		if (chat_team)
 		{
@@ -588,12 +588,12 @@ void Con_DrawSolidConsole( float frac ) {
 	int				currentColor;
 	vec4_t			color;
 
-	lines = cls.glconfig.vidHeight * frac;
+	lines = cls->glconfig.vidHeight * frac;
 	if (lines <= 0)
 		return;
 
-	if (lines > cls.glconfig.vidHeight )
-		lines = cls.glconfig.vidHeight;
+	if (lines > cls->glconfig.vidHeight )
+		lines = cls->glconfig.vidHeight;
 
 	// on wide screens, we will center the text
 	con.xadjust = 0;
@@ -605,7 +605,7 @@ void Con_DrawSolidConsole( float frac ) {
 		y = 0;
 	}
 	else {
-		SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls.consoleShader );
+		SCR_DrawPic( 0, 0, SCREEN_WIDTH, y, cls->consoleShader );
 	}
 
 	color[0] = 1;
@@ -623,7 +623,7 @@ void Con_DrawSolidConsole( float frac ) {
 
 	for (x=0 ; x<i ; x++) {
 
-		SCR_DrawSmallChar( cls.glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH, 
+		SCR_DrawSmallChar( cls->glconfig.vidWidth - ( i - x ) * SMALLCHAR_WIDTH, 
 
 			(lines-(SMALLCHAR_HEIGHT+SMALLCHAR_HEIGHT/2)), Q3_VERSION[x] );
 
@@ -698,8 +698,8 @@ void Con_DrawConsole( void ) {
 	Con_CheckResize ();
 
 	// if disconnected, render console full screen
-	if ( cls.state == CA_DISCONNECTED ) {
-		if ( !( cls.keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME)) ) {
+	if ( cls->state == CA_DISCONNECTED ) {
+		if ( !( cls->keyCatchers & (KEYCATCH_UI | KEYCATCH_CGAME)) ) {
 			Con_DrawSolidConsole( 1.0 );
 			return;
 		}
@@ -709,7 +709,7 @@ void Con_DrawConsole( void ) {
 		Con_DrawSolidConsole( con.displayFrac );
 	} else {
 		// draw notify lines
-		if ( cls.state == CA_ACTIVE ) {
+		if ( cls->state == CA_ACTIVE ) {
 			Con_DrawNotify ();
 		}
 	}
@@ -726,7 +726,7 @@ Scroll it up or down
 */
 void Con_RunConsole (void) {
 	// decide on the destination height of the console
-	if ( cls.keyCatchers & KEYCATCH_CONSOLE )
+	if ( cls->keyCatchers & KEYCATCH_CONSOLE )
 		con.finalFrac = 0.5;		// half screen
 	else
 		con.finalFrac = 0;				// none visible
@@ -734,14 +734,14 @@ void Con_RunConsole (void) {
 	// scroll towards the destination height
 	if (con.finalFrac < con.displayFrac)
 	{
-		con.displayFrac -= con_conspeed->value*cls.realFrametime*0.001;
+		con.displayFrac -= con_conspeed->value*cls->realFrametime*0.001;
 		if (con.finalFrac > con.displayFrac)
 			con.displayFrac = con.finalFrac;
 
 	}
 	else if (con.finalFrac > con.displayFrac)
 	{
-		con.displayFrac += con_conspeed->value*cls.realFrametime*0.001;
+		con.displayFrac += con_conspeed->value*cls->realFrametime*0.001;
 		if (con.finalFrac < con.displayFrac)
 			con.displayFrac = con.finalFrac;
 	}
@@ -781,7 +781,7 @@ void Con_Close( void ) {
 	}
 	Field_Clear( &g_consoleField );
 	Con_ClearNotify ();
-	cls.keyCatchers &= ~KEYCATCH_CONSOLE;
+	cls->keyCatchers &= ~KEYCATCH_CONSOLE;
 	con.finalFrac = 0;				// none visible
 	con.displayFrac = 0;
 }

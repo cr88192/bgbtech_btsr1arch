@@ -89,6 +89,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include <ctype.h>
 #include <limits.h>
 
+#ifdef __BJX2__
+#include <alloca.h>
+#endif
+
 #endif
 
 #ifdef _WIN32
@@ -130,11 +134,42 @@ typedef unsigned nlint;
 #endif
 #endif
 
+#ifdef __BJX2__
+#define VM_EXPORT	__declspec(dllexport)
+#endif
+
+#ifdef _WIN32
+#define VM_EXPORT	__declspec(dllexport)
+#endif
+
+#ifndef VM_EXPORT
+#define VM_EXPORT
+#endif
+
 #define		Q_Malloc(sz)		Q_MallocLLn(sz, __FILE__, __LINE__)
 #define		Q_MallocBulk(sz)	Q_MallocBulkLLn(sz, __FILE__, __LINE__)
 
 void *Q_MallocLLn(int sz, char *lfn, int lln);
 void *Q_MallocBulkLLn(int sz, char *lfn, int lln);
+
+void *Q_AllocTemp(int sz);
+void Q_FreeTemp(void *ptr);
+
+void Q_MemcpySafe(void *dst, void *src, int sz);
+
+// #ifdef __BJX2__
+#if 0
+#define q_alloca_start
+#define q_alloca_end
+#define q_alloca(sz)		alloca(sz)
+#else
+void	Q_AllocaStart(void **mark);
+void	Q_AllocaEnd(void **mark);
+void	*Q_Alloca(void **mark, int sz);
+#define q_alloca_start		void *q_alloca_mark=NULL; Q_AllocaStart(&q_alloca_mark);
+#define q_alloca_end		Q_AllocaEnd(&q_alloca_mark);
+#define q_alloca(sz)		Q_Alloca(&q_alloca_mark, sz)
+#endif
 
 // for windows fastcall option
 
@@ -967,6 +1002,18 @@ void	Swap_Init (void);
 char	* QDECL va(char *format, ...);
 
 //=============================================
+
+#ifdef __BJX2__
+short BigShort(short l);
+short LittleShort(short l);
+int	BigLong (int l);
+int	LittleLong (int l);
+qint64  BigLong64 (qint64 l);
+qint64  LittleLong64 (qint64 l);
+float	BigFloat (float l);
+float	LittleFloat (float l);
+#endif
+
 
 //
 // key / value info strings

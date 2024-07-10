@@ -1,9 +1,14 @@
 #if 1
 
+#ifndef __BJX2__
 u64 TKRA_Blend_Zero_Zero(u64 sclr, u64 dclr)
 	{ return(0); }
 u64 TKRA_Blend_Zero_One(u64 sclr, u64 dclr)
 	{ return(dclr); }
+#else
+u64 TKRA_Blend_Zero_Zero(u64 sclr, u64 dclr);
+u64 TKRA_Blend_Zero_One(u64 sclr, u64 dclr);
+#endif
 
 u64 TKRA_Blend_Zero_SrcColor(u64 sval, u64 dval)
 {
@@ -127,6 +132,7 @@ u64 TKRA_Blend_Zero_OneMinusDstAlpha(u64 sval, u64 dval)
 }
 
 
+#ifndef __BJX2__
 u64 TKRA_Blend_One_Zero(u64 sclr, u64 dclr)
 	{ return(sclr); }
 u64 TKRA_Blend_One_One(u64 sclr, u64 dclr)
@@ -134,6 +140,10 @@ u64 TKRA_Blend_One_One(u64 sclr, u64 dclr)
 	return(tkra_padduhw_sat(sclr, dclr));
 //	return(sclr+dclr);
 }
+#else
+u64 TKRA_Blend_One_Zero(u64 sclr, u64 dclr);
+u64 TKRA_Blend_One_One(u64 sclr, u64 dclr);
+#endif
 
 u64 TKRA_Blend_One_SrcColor(u64 sval, u64 dval)
 {
@@ -518,6 +528,7 @@ u64 TKRA_Blend_SrcAlpha_OneMinusSrcColor(u64 sval, u64 dval)
 	return(cval);
 }
 
+#ifndef __BJX2__
 u64 TKRA_Blend_SrcAlpha_OneMinusSrcAlpha(u64 sval, u64 dval)
 {
 	u64 amod, dmod, cval;
@@ -532,6 +543,9 @@ u64 TKRA_Blend_SrcAlpha_OneMinusSrcAlpha(u64 sval, u64 dval)
 	cval=tkra_padduhw_sat(cval, dval);
 	return(cval);
 }
+#else
+u64 TKRA_Blend_SrcAlpha_OneMinusSrcAlpha(u64 sval, u64 dval);
+#endif
 
 u64 TKRA_Blend_SrcAlpha_OneMinusDstColor(u64 sval, u64 dval)
 {

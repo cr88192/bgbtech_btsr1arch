@@ -43,17 +43,17 @@ void GL_Bind( image_t *image ) {
 
 	if ( !image ) {
 		ri.Printf( PRINT_WARNING, "GL_Bind: NULL image\n" );
-		texnum = tr.defaultImage->texnum;
+		texnum = tr->defaultImage->texnum;
 	} else {
 		texnum = image->texnum;
 	}
 
-	if ( r_nobind->integer && tr.dlightImage ) {		// performance evaluation option
-		texnum = tr.dlightImage->texnum;
+	if ( r_nobind->integer && tr->dlightImage ) {		// performance evaluation option
+		texnum = tr->dlightImage->texnum;
 	}
 
 	if ( glState.currenttextures[glState.currenttmu] != texnum ) {
-		image->frameUsed = tr.frameCount;
+		image->frameUsed = tr->frameCount;
 		glState.currenttextures[glState.currenttmu] = texnum;
 		qglBindTexture (GL_TEXTURE_2D, texnum);
 	}
@@ -99,19 +99,19 @@ void GL_BindMultitexture( image_t *image0, GLuint env0, image_t *image1, GLuint 
 	texnum0 = image0->texnum;
 	texnum1 = image1->texnum;
 
-	if ( r_nobind->integer && tr.dlightImage ) {		// performance evaluation option
-		texnum0 = texnum1 = tr.dlightImage->texnum;
+	if ( r_nobind->integer && tr->dlightImage ) {		// performance evaluation option
+		texnum0 = texnum1 = tr->dlightImage->texnum;
 	}
 
 	if ( glState.currenttextures[1] != texnum1 ) {
 		GL_SelectTexture( 1 );
-		image1->frameUsed = tr.frameCount;
+		image1->frameUsed = tr->frameCount;
 		glState.currenttextures[1] = texnum1;
 		qglBindTexture( GL_TEXTURE_2D, texnum1 );
 	}
 	if ( glState.currenttextures[0] != texnum0 ) {
 		GL_SelectTexture( 0 );
-		image0->frameUsed = tr.frameCount;
+		image0->frameUsed = tr->frameCount;
 		glState.currenttextures[0] = texnum0;
 		qglBindTexture( GL_TEXTURE_2D, texnum0 );
 	}
@@ -522,7 +522,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	int				entityNum, oldEntityNum;
 	int				dlighted, oldDlighted;
 	qboolean		depthRange, oldDepthRange;
-	int				i;
+	int				i, j;
 	drawSurf_t		*drawSurf;
 	int				oldSort;
 	float			originalTime;
@@ -544,7 +544,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 
 	// draw everything
 	oldEntityNum = -1;
-	backEnd.currentEntity = &tr.worldEntity;
+	backEnd.currentEntity = &tr->worldEntity;
 	oldShader = NULL;
 	oldFogNum = -1;
 	oldDepthRange = qfalse;
@@ -555,9 +555,15 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	backEnd.pc.c_surfaces += numDrawSurfs;
 
 	for (i = 0, drawSurf = drawSurfs ; i < numDrawSurfs ; i++, drawSurf++) {
-		if ( drawSurf->sort == oldSort ) {
+		if ( drawSurf->sort == oldSort )
+		{
+			j = *drawSurf->surface;
+			if((j<0) || (j>=SF_NUM_SURFACE_TYPES))
+				continue;
+
 			// fast path, same as previous sort
-			rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
+//			rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
+			rb_surfaceTable[ j ]( drawSurf->surface );
 			continue;
 		}
 		oldSort = drawSurf->sort;
@@ -598,7 +604,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 				backEnd.refdef.floatTime = originalTime - backEnd.currentEntity->e.shaderTime;
 				// we have to reset the shaderTime as well otherwise image animations start
 				// from the wrong frame
-				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
+				tess->shaderTime = backEnd.refdef.floatTime - tess->shader->timeOffset;
 
 				// set up the transformation matrix
 				R_RotateForEntity( backEnd.currentEntity, &backEnd.viewParms, &backEnd.or );
@@ -613,12 +619,12 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 					depthRange = qtrue;
 				}
 			} else {
-				backEnd.currentEntity = &tr.worldEntity;
+				backEnd.currentEntity = &tr->worldEntity;
 				backEnd.refdef.floatTime = originalTime;
 				backEnd.or = backEnd.viewParms.world;
 				// we have to reset the shaderTime as well otherwise image animations on
 				// the world (like water) continue with the wrong frame
-				tess.shaderTime = backEnd.refdef.floatTime - tess.shader->timeOffset;
+				tess->shaderTime = backEnd.refdef.floatTime - tess->shader->timeOffset;
 				R_TransformDlights( backEnd.refdef.num_dlights, backEnd.refdef.dlights, &backEnd.or );
 			}
 
@@ -640,7 +646,11 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 		}
 
 		// add the triangles for this surface
-		rb_surfaceTable[ *drawSurf->surface ]( drawSurf->surface );
+		j = *drawSurf->surface;
+		if((j<0) || (j>=SF_NUM_SURFACE_TYPES))
+			continue;
+		
+		rb_surfaceTable[ j ]( drawSurf->surface );
 	}
 
 	backEnd.refdef.floatTime = originalTime;
@@ -653,7 +663,7 @@ void RB_RenderDrawSurfList( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	// go back to the world modelview matrix
 	qglLoadMatrixf( backEnd.viewParms.world.modelMatrix );
 	if ( depthRange ) {
-		qglDepthRange (0, 1);
+		qglDepthRange (0.0, 1.0);
 	}
 
 #if 0
@@ -723,7 +733,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	int			i, j;
 	int			start, end;
 
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
 	R_SyncRenderThread();
@@ -745,12 +755,12 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 		ri.Error (ERR_DROP, "Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
 	}
 
-	GL_Bind( tr.scratchImage[client] );
+	GL_Bind( tr->scratchImage[client] );
 
 	// if the scratchImage isn't in the format we want, specify it as a new texture
-	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
-		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
-		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
+	if ( cols != tr->scratchImage[client]->width || rows != tr->scratchImage[client]->height ) {
+		tr->scratchImage[client]->width = tr->scratchImage[client]->uploadWidth = cols;
+		tr->scratchImage[client]->height = tr->scratchImage[client]->uploadHeight = rows;
 		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
@@ -771,7 +781,7 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 	RB_SetGL2D();
 
-	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
+	qglColor3f( tr->identityLight, tr->identityLight, tr->identityLight );
 
 	qglBegin (GL_QUADS);
 	qglTexCoord2f ( 0.5f / cols,  0.5f / rows );
@@ -787,13 +797,14 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty) {
 
-	GL_Bind( tr.scratchImage[client] );
+	GL_Bind( tr->scratchImage[client] );
 
 	// if the scratchImage isn't in the format we want, specify it as a new texture
-	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
-		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
-		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+	if ( cols != tr->scratchImage[client]->width || rows != tr->scratchImage[client]->height ) {
+		tr->scratchImage[client]->width = tr->scratchImage[client]->uploadWidth = cols;
+		tr->scratchImage[client]->height = tr->scratchImage[client]->uploadHeight = rows;
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows,
+			0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
@@ -802,7 +813,8 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int
 		if (dirty) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
 			// it and don't try and do a texture compression
-			qglTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, cols, rows, GL_RGBA, GL_UNSIGNED_BYTE, data );
+			qglTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, cols, rows,
+				GL_RGBA, GL_UNSIGNED_BYTE, data );
 		}
 	}
 }
@@ -814,7 +826,8 @@ RB_SetColor
 
 =============
 */
-const void	*RB_SetColor( const void *data ) {
+const void	*RB_SetColor( const void *data )
+{
 	const setColorCommand_t	*cmd;
 
 	cmd = (const setColorCommand_t *)data;
@@ -832,7 +845,8 @@ const void	*RB_SetColor( const void *data ) {
 RB_StretchPic
 =============
 */
-const void *RB_StretchPic ( const void *data ) {
+const void *RB_StretchPic ( const void *data )
+{
 	const stretchPicCommand_t	*cmd;
 	shader_t *shader;
 	int		numVerts, numIndexes;
@@ -844,8 +858,8 @@ const void *RB_StretchPic ( const void *data ) {
 	}
 
 	shader = cmd->shader;
-	if ( shader != tess.shader ) {
-		if ( tess.numIndexes ) {
+	if ( shader != tess->shader ) {
+		if ( tess->numIndexes ) {
 			RB_EndSurface();
 		}
 		backEnd.currentEntity = &backEnd.entity2D;
@@ -853,51 +867,51 @@ const void *RB_StretchPic ( const void *data ) {
 	}
 
 	RB_CHECKOVERFLOW( 4, 6 );
-	numVerts = tess.numVertexes;
-	numIndexes = tess.numIndexes;
+	numVerts = tess->numVertexes;
+	numIndexes = tess->numIndexes;
 
-	tess.numVertexes += 4;
-	tess.numIndexes += 6;
+	tess->numVertexes += 4;
+	tess->numIndexes += 6;
 
-	tess.indexes[ numIndexes ] = numVerts + 3;
-	tess.indexes[ numIndexes + 1 ] = numVerts + 0;
-	tess.indexes[ numIndexes + 2 ] = numVerts + 2;
-	tess.indexes[ numIndexes + 3 ] = numVerts + 2;
-	tess.indexes[ numIndexes + 4 ] = numVerts + 0;
-	tess.indexes[ numIndexes + 5 ] = numVerts + 1;
+	tess->indexes[ numIndexes ] = numVerts + 3;
+	tess->indexes[ numIndexes + 1 ] = numVerts + 0;
+	tess->indexes[ numIndexes + 2 ] = numVerts + 2;
+	tess->indexes[ numIndexes + 3 ] = numVerts + 2;
+	tess->indexes[ numIndexes + 4 ] = numVerts + 0;
+	tess->indexes[ numIndexes + 5 ] = numVerts + 1;
 
-	*(int *)tess.vertexColors[ numVerts ] =
-		*(int *)tess.vertexColors[ numVerts + 1 ] =
-		*(int *)tess.vertexColors[ numVerts + 2 ] =
-		*(int *)tess.vertexColors[ numVerts + 3 ] = *(int *)backEnd.color2D;
+	*(int *)tess->vertexColors[ numVerts ] =
+		*(int *)tess->vertexColors[ numVerts + 1 ] =
+		*(int *)tess->vertexColors[ numVerts + 2 ] =
+		*(int *)tess->vertexColors[ numVerts + 3 ] = *(int *)backEnd.color2D;
 
-	tess.xyz[ numVerts ][0] = cmd->x;
-	tess.xyz[ numVerts ][1] = cmd->y;
-	tess.xyz[ numVerts ][2] = 0;
+	tess->xyz[ numVerts ][0] = cmd->x;
+	tess->xyz[ numVerts ][1] = cmd->y;
+	tess->xyz[ numVerts ][2] = 0;
 
-	tess.texCoords[ numVerts ][0][0] = cmd->s1;
-	tess.texCoords[ numVerts ][0][1] = cmd->t1;
+	tess->texCoords[ numVerts ][0][0] = cmd->s1;
+	tess->texCoords[ numVerts ][0][1] = cmd->t1;
 
-	tess.xyz[ numVerts + 1 ][0] = cmd->x + cmd->w;
-	tess.xyz[ numVerts + 1 ][1] = cmd->y;
-	tess.xyz[ numVerts + 1 ][2] = 0;
+	tess->xyz[ numVerts + 1 ][0] = cmd->x + cmd->w;
+	tess->xyz[ numVerts + 1 ][1] = cmd->y;
+	tess->xyz[ numVerts + 1 ][2] = 0;
 
-	tess.texCoords[ numVerts + 1 ][0][0] = cmd->s2;
-	tess.texCoords[ numVerts + 1 ][0][1] = cmd->t1;
+	tess->texCoords[ numVerts + 1 ][0][0] = cmd->s2;
+	tess->texCoords[ numVerts + 1 ][0][1] = cmd->t1;
 
-	tess.xyz[ numVerts + 2 ][0] = cmd->x + cmd->w;
-	tess.xyz[ numVerts + 2 ][1] = cmd->y + cmd->h;
-	tess.xyz[ numVerts + 2 ][2] = 0;
+	tess->xyz[ numVerts + 2 ][0] = cmd->x + cmd->w;
+	tess->xyz[ numVerts + 2 ][1] = cmd->y + cmd->h;
+	tess->xyz[ numVerts + 2 ][2] = 0;
 
-	tess.texCoords[ numVerts + 2 ][0][0] = cmd->s2;
-	tess.texCoords[ numVerts + 2 ][0][1] = cmd->t2;
+	tess->texCoords[ numVerts + 2 ][0][0] = cmd->s2;
+	tess->texCoords[ numVerts + 2 ][0][1] = cmd->t2;
 
-	tess.xyz[ numVerts + 3 ][0] = cmd->x;
-	tess.xyz[ numVerts + 3 ][1] = cmd->y + cmd->h;
-	tess.xyz[ numVerts + 3 ][2] = 0;
+	tess->xyz[ numVerts + 3 ][0] = cmd->x;
+	tess->xyz[ numVerts + 3 ][1] = cmd->y + cmd->h;
+	tess->xyz[ numVerts + 3 ][2] = 0;
 
-	tess.texCoords[ numVerts + 3 ][0][0] = cmd->s1;
-	tess.texCoords[ numVerts + 3 ][0][1] = cmd->t2;
+	tess->texCoords[ numVerts + 3 ][0][0] = cmd->s1;
+	tess->texCoords[ numVerts + 3 ][0][1] = cmd->t2;
 
 	return (const void *)(cmd + 1);
 }
@@ -913,7 +927,7 @@ const void	*RB_DrawSurfs( const void *data ) {
 	const drawSurfsCommand_t	*cmd;
 
 	// finish any 2D drawing if needed
-	if ( tess.numIndexes ) {
+	if ( tess->numIndexes ) {
 		RB_EndSurface();
 	}
 
@@ -976,8 +990,8 @@ void RB_ShowImages( void ) {
 
 	start = ri.Milliseconds();
 
-	for ( i=0 ; i<tr.numImages ; i++ ) {
-		image = tr.images[i];
+	for ( i=0 ; i<tr->numImages ; i++ ) {
+		image = tr->images[i];
 
 		w = glConfig.vidWidth / 20;
 		h = glConfig.vidHeight / 15;
@@ -1021,7 +1035,7 @@ const void	*RB_SwapBuffers( const void *data ) {
 	const swapBuffersCommand_t	*cmd;
 
 	// finish any 2D drawing if needed
-	if ( tess.numIndexes ) {
+	if ( tess->numIndexes ) {
 		RB_EndSurface();
 	}
 

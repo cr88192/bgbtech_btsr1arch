@@ -32,10 +32,12 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 CG_ResetEntity
 ==================
 */
-static void CG_ResetEntity( centity_t *cent ) {
+static void CG_ResetEntity( centity_t *cent )
+{
 	// if the previous snapshot this entity was updated in is at least
 	// an event window back in time then we can reset the previous event
-	if ( cent->snapShotTime < cg.time - EVENT_VALID_MSEC ) {
+	if ( cent->snapShotTime < cg.time - EVENT_VALID_MSEC )
+	{
 		cent->previousEvent = 0;
 	}
 
@@ -83,14 +85,18 @@ CG_TransitionSnapshot instead.
 FIXME: Also called by map_restart?
 ==================
 */
-void CG_SetInitialSnapshot( snapshot_t *snap ) {
-	int				i;
+void CG_SetInitialSnapshot( snapshot_t *snap )
+{
+	int				i, j;
 	centity_t		*cent;
 	entityState_t	*state;
 
 	cg.snap = snap;
 
-	BG_PlayerStateToEntityState( &snap->ps, &cg_entities[ snap->ps.clientNum ].currentState, qfalse );
+	CG_Printf( "CG_SetInitialSnapshot: snap=%p", snap );
+
+	BG_PlayerStateToEntityState( &snap->ps,
+		&cg_entities[ snap->ps.clientNum ].currentState, qfalse );
 
 	// sort out solid entities
 	CG_BuildSolidList();
@@ -101,11 +107,24 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 	// what the server has indicated the current weapon is
 	CG_Respawn();
 
-	for ( i = 0 ; i < cg.snap->numEntities ; i++ ) {
+	for ( i = 0 ; i < cg.snap->numEntities ; i++ )
+	{
 		state = &cg.snap->entities[ i ];
-		cent = &cg_entities[ state->number ];
+		j = state->number;
+		
+		if((j<0) || (j>=MAX_GENTITIES))
+			{ __debugbreak(); }
+
+//		cent = &cg_entities[ state->number ];
+//		cent = &cg_entities[ j ];
+		cent = cg_entities + j;
 
 		memcpy(&cent->currentState, state, sizeof(entityState_t));
+
+//		memcpy((void *)(&cent->currentState), (void *)state,
+//			sizeof(entityState_t));
+//		Q_MemcpySafe(&cent->currentState, state, sizeof(entityState_t));
+
 		//cent->currentState = *state;
 		cent->interpolate = qfalse;
 		cent->currentValid = qtrue;
@@ -114,6 +133,17 @@ void CG_SetInitialSnapshot( snapshot_t *snap ) {
 
 		// check for events
 		CG_CheckEvents( cent );
+	}
+
+	if(!cg.snap)
+	{
+		CG_Printf( "CG_SetInitialSnapshot: NULL cg.snap" );
+		cg.snap = snap;
+		
+		if(!snap)
+		{
+			CG_Printf( "CG_SetInitialSnapshot: NULL snap" );
+		}
 	}
 }
 
@@ -136,6 +166,8 @@ static void CG_TransitionSnapshot( void ) {
 	if ( !cg.nextSnap ) {
 		CG_Error( "CG_TransitionSnapshot: NULL cg.nextSnap" );
 	}
+
+//	CG_Printf( "CG_TransitionSnapshot: snap=%p", cg.nextSnap );
 
 	// execute any server string commands before transitioning entities
 	CG_ExecuteNewServerCommands( cg.nextSnap->serverCommandSequence );
@@ -197,7 +229,7 @@ A new snapshot has just been read in from the client system.
 ===================
 */
 static void CG_SetNextSnap( snapshot_t *snap ) {
-	int					num;
+	int					num, j;
 	entityState_t		*es;
 	centity_t			*cent;
 
@@ -209,9 +241,21 @@ static void CG_SetNextSnap( snapshot_t *snap ) {
 	// check for extrapolation errors
 	for ( num = 0 ; num < snap->numEntities ; num++ ) {
 		es = &snap->entities[num];
-		cent = &cg_entities[ es->number ];
+		j = es->number;
+		
+		if((j<0) || (j>=MAX_GENTITIES))
+			{ __debugbreak(); }
+
+//		cent = &cg_entities[ es->number ];
+//		cent = &cg_entities[ j ];
+		cent = cg_entities + j ;
 
 		memcpy(&cent->nextState, es, sizeof(entityState_t));
+
+//		memcpy((void *)(&cent->nextState), (void *)(es),
+//			sizeof(entityState_t));
+//		Q_MemcpySafe(&cent->nextState, es, sizeof(entityState_t));
+
 		//cent->nextState = *es;
 
 		// if this frame is a teleport, or the entity wasn't in the

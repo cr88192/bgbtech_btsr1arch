@@ -931,18 +931,24 @@ static qboolean UI_ParseAnimationFile( const char *filename, animation_t *animat
 	char		*token;
 	float		fps;
 	int			skip;
-	char		text[20000];
+//	char		text[20000];
+	char		*text;
 	fileHandle_t	f;
+
+	q_alloca_start
+	text = q_alloca(20000);
 
 	memset( animations, 0, sizeof( animation_t ) * MAX_ANIMATIONS );
 
 	// load the file
 	len = trap_FS_FOpenFile( filename, &f, FS_READ );
 	if ( len <= 0 ) {
+		q_alloca_end
 		return qfalse;
 	}
 	if ( len >= ( sizeof( text ) - 1 ) ) {
 		Com_Printf( "File %s too long\n", filename );
+		q_alloca_end
 		return qfalse;
 	}
 	trap_FS_Read( text, len, f );
@@ -1033,9 +1039,11 @@ static qboolean UI_ParseAnimationFile( const char *filename, animation_t *animat
 
 	if ( i != MAX_ANIMATIONS ) {
 		Com_Printf( "Error parsing animation file: %s", filename );
+		q_alloca_end
 		return qfalse;
 	}
 
+	q_alloca_end
 	return qtrue;
 }
 

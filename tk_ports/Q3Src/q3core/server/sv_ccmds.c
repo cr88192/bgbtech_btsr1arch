@@ -195,7 +195,7 @@ static void SV_Map_f( void ) {
 	if ( cheat ) {
 		Cvar_Set( "sv_cheats", "1" );
 	} else {
-		Cvar_Set( "sv_cheats", "0" );
+//		Cvar_Set( "sv_cheats", "0" );
 	}
 }
 

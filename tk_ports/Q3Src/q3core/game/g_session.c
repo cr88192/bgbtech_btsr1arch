@@ -75,6 +75,11 @@ void G_ReadSessionData( gclient_t *client ) {
 	int spectatorState;
 	int sessionTeam;
 
+	var = NULL;
+	teamLeader = 0;
+	spectatorState = 0;
+	sessionTeam = 0;
+
 	var = va( "session%i", client - level.clients );
 	trap_Cvar_VariableStringBuffer( var, s, sizeof(s) );
 

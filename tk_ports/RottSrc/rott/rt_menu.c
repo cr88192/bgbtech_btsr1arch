@@ -1196,6 +1196,10 @@ static char SaveName[ 13 ] = "ROTTGAM?.ROT\0";
 static byte *savedscreen;
 static mapfileinfo_t * mapinfo;
 
+int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items,
+	void (*routine)(int w));
+void DrawColorMenu( void );
+int ColorMenu( void );
 
 //******************************************************************************
 //
@@ -1898,6 +1902,7 @@ menuitems CP_MainMenu
 				break;
 
 			default:
+//				__debugbreak();
 				if ( !StartGame )
 					{
 					DoMainMenu();
@@ -1956,7 +1961,8 @@ void DrawMainMenu(void)
 //
 //******************************************************************************
 
-int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int w))
+int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items,
+	void (*routine)(int w))
 {
 
 	char		  key;
@@ -2022,6 +2028,8 @@ int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int w))
 	if (routine)
 		routine (handlewhich);
 
+	CalcTics();
+
 	count	 = 2;
 	exit	  = 0;
 	timer	 = ticcount;
@@ -2031,9 +2039,13 @@ int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int w))
 
 	do
 	{
+		I_MusicFineTick();
+		CalcTics();
+	
 		ReadAnyControl (&ci);
 		RefreshMenuBuf (0);
 	  // Change Cursor Shape
+
 		if ((ticcount > (timer+count)) && (MenuNum != 5))
 		{
 			timer = ticcount;
@@ -2284,12 +2296,14 @@ int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int w))
 		// Page Up/Down
 		if ( MenuNum == 11 )
 			{
+//			__debugbreak();
 			if ( ( Keyboard[ sc_PgUp ] ) &&
 				( ( items + 1 )->active != CP_Inactive ) )
 				{
 				item_i->curpos = handlewhich;
 				handlewhich = PAGEUP;
 				exit = 3;
+//				__debugbreak();
 				MN_PlayMenuSnd( SD_SELECTSND );
 				}
 			else if ( ( Keyboard[ sc_PgDn ] ) &&
@@ -2298,8 +2312,10 @@ int HandleMenu (CP_iteminfo *item_i, CP_itemtype *items, void (*routine)(int w))
 				item_i->curpos = handlewhich;
 				handlewhich = PAGEDOWN;
 				exit = 3;
+//				__debugbreak();
 				MN_PlayMenuSnd( SD_SELECTSND );
 				}
+//			__debugbreak();
 			}
 
 		// Delete save games

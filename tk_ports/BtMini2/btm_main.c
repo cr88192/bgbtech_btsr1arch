@@ -29,6 +29,10 @@ int		SoundDev_WriteStereoSamples2(short *mixbuf, int nsamp, int nsamp2);
 void	SoundDev_Submit();
 int		SoundDev_Init();
 
+#ifndef _WIN32
+#define USE_TKGDI
+#include <tkgdi/tkgdi.h>
+#endif
 
 #ifdef _WIN32
 
@@ -169,15 +173,46 @@ void I_UpdateKeys (void)
 
 #ifdef __BJX2__
 
+// TKGDI_BITMAPINFOHEADER i_t_dibinfo;
+TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
+TKGHDC i_hDc;
+
+void I_InitTkGdi()
+{
+	if(i_dibinfo)
+		return;
+		
+//	i_dibinfo = &i_t_dibinfo;
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+	i_dibinfo->biBitCount=16;
+
+//	tk_printf("  1\n", hDc);
+
+	i_hDc=tkgCreateDisplay(i_dibinfo);
+	tkgSetWindowTitle(i_hDc, "BtMini");
+
+//	i_dibinfo->biHeight=-200;
+	
+//	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+}
+
+
 int gfxdrv_kill=0;
 
 int I_SystemInit()
 {
 //	SoundDev_Init();
 
-	conbufa=(u32 *)0xFFFFF00A0000ULL;
-	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0095;		//320x200x16bpp, RGB555
-	tk_con_disable();
+//	conbufa=(u32 *)0xFFFFF00A0000ULL;
+//	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0095;		//320x200x16bpp, RGB555
+//	tk_con_disable();
+
+	I_InitTkGdi();
 }
 
 void I_FinishUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn);
@@ -238,6 +273,9 @@ int I_SystemFrame(u16 *fbuf, int xs, int ys)
 //	SoundDev_WriteStereoSamples(tsampbuf, tsamplen);
 //	SoundDev_Submit();
 
+	tkgBlitImage(i_hDc, 0, 0, i_dibinfo, fbuf);
+
+#if 0
 	ct=(u64 *)conbufa;
 	
 	for(y=0; y<ys; y+=4)
@@ -283,6 +321,7 @@ int I_SystemFrame(u16 *fbuf, int xs, int ys)
 
 	((u32 *)0xFFFFF00BFF00ULL)[8]=vid_frnum;
 	vid_frnum++;
+#endif
 }
 
 unsigned int TK_GetTimeMs(void);
@@ -311,9 +350,51 @@ void I_KeyEvent(int key, int dn)
 
 void I_UpdateKeys (void)
 {
-	int c, dn;
-	
+	TKGDI_EVENT t_imsg;
+	TKGDI_EVENT *imsg;
+	int i, j, c, dn;
+
 	memcpy(i_lkeymask, i_keymask, 8*4);
+
+	if(i_hDc>1)
+	{
+		thrd_yield();
+		imsg=&t_imsg;
+
+		while(1)
+		{
+			j=tkgPollEvent(i_hDc, imsg);
+			if(j<1)
+				break;
+			if(imsg->fccMsg==0)
+				break;
+			if(imsg->fccMsg==TKGDI_FCC_keyb)
+			{
+				c=imsg->wParm1;
+				dn=!(c&0x8000);
+				c=c&0x7FFF;
+			
+				switch(c)
+				{
+				case   8: c=K_BACKSPACE; break;
+				case 153: c=K_PAUSE; break;
+				case 154: c=K_MWHEELUP; break;
+				case 155: c=K_MWHEELDOWN; break;
+				case 157: c=K_MOUSE1; break;
+				case 158: c=K_MOUSE2; break;
+				case 159: c=K_MOUSE3; break;
+				default: break;
+				}
+				
+				if(c>=256)
+					continue;
+				
+				I_KeyEvent (c, dn);
+			}
+		}
+		
+		return;
+	}
 
 	while(tk_kbhit())
 	{

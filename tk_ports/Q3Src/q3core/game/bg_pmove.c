@@ -1822,6 +1822,21 @@ void PM_UpdateViewAngles( playerState_t *ps, const usercmd_t *cmd ) {
 		ps->viewangles[i] = SHORT2ANGLE(temp);
 	}
 
+#if 0
+	printf("\n");
+	printf("PM_UpdateViewAngles: angles %d %d %d   delta_angles %d %d %d\n",
+		cmd->angles[0],
+		cmd->angles[1],
+		cmd->angles[2],
+		ps->delta_angles[0],
+		ps->delta_angles[1],
+		ps->delta_angles[2]);
+	printf("PM_UpdateViewAngles: viewangles %f %f %f\n",
+		ps->viewangles[0],
+		ps->viewangles[1],
+		ps->viewangles[2]);
+	printf("\n");
+#endif
 }
 
 

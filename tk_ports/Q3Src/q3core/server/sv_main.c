@@ -164,16 +164,22 @@ A NULL client will broadcast to all clients
 */
 void QDECL SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 	va_list		argptr;
-	byte		message[MAX_MSGLEN];
+//	byte		message[MAX_MSGLEN];
+	byte		*message;
 	client_t	*client;
 	int			j;
 	
+	message = Q_AllocTemp(MAX_MSGLEN);
+
 	va_start (argptr,fmt);
-	Q_vsnprintf ((char *)message, sizeof(message), fmt,argptr);
+//	Q_vsnprintf ((char *)message, sizeof(message), fmt,argptr);
+	Q_vsnprintf ((char *)message, MAX_MSGLEN, fmt,argptr);
 	va_end (argptr);
 
 	if ( cl != NULL ) {
 		SV_AddServerCommand( cl, (char *)message );
+		
+		Q_FreeTemp(message);
 		return;
 	}
 
@@ -189,6 +195,8 @@ void QDECL SV_SendServerCommand(client_t *cl, const char *fmt, ...) {
 		}
 		SV_AddServerCommand( client, (char *)message );
 	}
+
+	Q_FreeTemp(message);
 }
 
 
@@ -306,18 +314,23 @@ the simple info query.
 */
 void SVC_Status( netadr_t from ) {
 	char	player[1024];
-	char	status[MAX_MSGLEN];
+//	char	status[MAX_MSGLEN];
+	char	*status;
 	int		i;
 	client_t	*cl;
 	playerState_t	*ps;
 	int		statusLength;
 	int		playerLength;
-	char	infostring[MAX_INFO_STRING];
+//	char	infostring[MAX_INFO_STRING];
+	char	*infostring;
 
 	// ignore if we are in single player
 	if ( Cvar_VariableValue( "g_gametype" ) == GT_SINGLE_PLAYER ) {
 		return;
 	}
+
+	status = Q_AllocTemp(MAX_MSGLEN);
+	infostring = Q_AllocTemp(MAX_INFO_STRING);
 
 	strcpy( infostring, Cvar_InfoString( CVAR_SERVERINFO ) );
 
@@ -344,7 +357,8 @@ void SVC_Status( netadr_t from ) {
 			Com_sprintf (player, sizeof(player), "%i %i \"%s\"\n", 
 				ps->persistant[PERS_SCORE], cl->ping, cl->name);
 			playerLength = strlen(player);
-			if (statusLength + playerLength >= sizeof(status) ) {
+//			if (statusLength + playerLength >= sizeof(status) ) {
+			if (statusLength + playerLength >= MAX_MSGLEN ) {
 				break;		// can't hold any more
 			}
 			strcpy (status + statusLength, player);
@@ -353,6 +367,9 @@ void SVC_Status( netadr_t from ) {
 	}
 
 	NET_OutOfBandPrint( NS_SERVER, from, "statusResponse\n%s\n%s", infostring, status );
+	
+	Q_FreeTemp(infostring);
+	Q_FreeTemp(status);
 }
 
 /*

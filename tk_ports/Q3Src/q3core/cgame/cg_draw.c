@@ -2643,6 +2643,9 @@ void CG_DrawActive( stereoFrame_t stereoView ) {
 		VectorMA( cg.refdef.vieworg, -separation, cg.refdef.viewaxis[1], cg.refdef.vieworg );
 	}
 
+//	printf("CG_DrawActive: Origin %f %f %f\n",
+//		baseOrg[0], baseOrg[1], baseOrg[2]);
+
 	// draw 3D view
 	trap_R_RenderScene( &cg.refdef );
 

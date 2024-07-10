@@ -118,7 +118,7 @@ typedef struct {
 return a hash value for the filename
 ================
 */
-static long generateHashValue( const char *fname ) {
+static long GL_GenerateHashValue( const char *fname ) {
 	int		i;
 	long	hash;
 	char	letter;
@@ -170,8 +170,8 @@ void GL_TextureMode( const char *string ) {
 	gl_filter_max = modes[i].maximize;
 
 	// change all the existing mipmap texture objects
-	for ( i = 0 ; i < tr.numImages ; i++ ) {
-		glt = tr.images[ i ];
+	for ( i = 0 ; i < tr->numImages ; i++ ) {
+		glt = tr->images[ i ];
 		if ( glt->mipmap ) {
 			GL_Bind (glt);
 			qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
@@ -190,9 +190,9 @@ int R_SumOfUsedImages( void ) {
 	int i;
 
 	total = 0;
-	for ( i = 0; i < tr.numImages; i++ ) {
-		if ( tr.images[i]->frameUsed == tr.frameCount ) {
-			total += tr.images[i]->uploadWidth * tr.images[i]->uploadHeight;
+	for ( i = 0; i < tr->numImages; i++ ) {
+		if ( tr->images[i]->frameUsed == tr->frameCount ) {
+			total += tr->images[i]->uploadWidth * tr->images[i]->uploadHeight;
 		}
 	}
 
@@ -215,8 +215,8 @@ void R_ImageList_f( void ) {
 	ri.Printf (PRINT_ALL, "\n      -w-- -h-- -mm- -TMU- -if-- wrap --name-------\n");
 	texels = 0;
 
-	for ( i = 0 ; i < tr.numImages ; i++ ) {
-		image = tr.images[ i ];
+	for ( i = 0 ; i < tr->numImages ; i++ ) {
+		image = tr->images[ i ];
 
 		texels += image->uploadWidth*image->uploadHeight;
 		ri.Printf (PRINT_ALL,  "%4i: %4i %4i  %s   %d   ",
@@ -269,7 +269,7 @@ void R_ImageList_f( void ) {
 	}
 	ri.Printf (PRINT_ALL, " ---------\n");
 	ri.Printf (PRINT_ALL, " %i total texels (not including mipmaps)\n", texels);
-	ri.Printf (PRINT_ALL, " %i total images\n\n", tr.numImages );
+	ri.Printf (PRINT_ALL, " %i total images\n\n", tr->numImages );
 }
 
 //=======================================================================
@@ -1438,13 +1438,13 @@ image_t *R_CreateImage2( const char *name,
 		isLightmap = qtrue;
 	}
 
-	if ( tr.numImages == MAX_DRAWIMAGES ) {
+	if ( tr->numImages == MAX_DRAWIMAGES ) {
 		ri.Error( ERR_DROP, "R_CreateImage: MAX_DRAWIMAGES hit\n");
 	}
 
-	image = tr.images[tr.numImages] = ri.Hunk_Alloc( sizeof( image_t ), h_low );
-	image->texnum = 1024 + tr.numImages;
-	tr.numImages++;
+	image = tr->images[tr->numImages] = ri.Hunk_Alloc( sizeof( image_t ), h_low );
+	image->texnum = 1024 + tr->numImages;
+	tr->numImages++;
 
 	image->mipmap = mipmap;
 	image->allowPicmip = allowPicmip;
@@ -1501,7 +1501,7 @@ image_t *R_CreateImage2( const char *name,
 		GL_SelectTexture( 0 );
 	}
 
-	hash = generateHashValue(name);
+	hash = GL_GenerateHashValue(name);
 	image->next = hashTable[hash];
 	hashTable[hash] = image;
 
@@ -2687,7 +2687,7 @@ image_t	*R_FindImageFile( const char *name,
 		return NULL;
 	}
 
-	hash = generateHashValue(name);
+	hash = GL_GenerateHashValue(name);
 
 	//
 	// see if the image is already loaded
@@ -2861,7 +2861,7 @@ static void R_CreateDlightImage( void ) {
 			data[y][x][3] = 255;			
 		}
 	}
-	tr.dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, qfalse, qfalse, GL_CLAMP );
+	tr->dlightImage = R_CreateImage("*dlight", (byte *)data, DLIGHT_SIZE, DLIGHT_SIZE, qfalse, qfalse, GL_CLAMP );
 }
 
 
@@ -2880,7 +2880,7 @@ void R_InitFogTable( void ) {
 	for ( i = 0 ; i < FOG_TABLE_SIZE ; i++ ) {
 		d = pow ( (float)i/(FOG_TABLE_SIZE-1), exp );
 
-		tr.fogTable[i] = d;
+		tr->fogTable[i] = d;
 	}
 }
 
@@ -2914,7 +2914,7 @@ float	R_FogFactor( float s, float t ) {
 		s = 1.0;
 	}
 
-	d = tr.fogTable[ (int)(s * (FOG_TABLE_SIZE-1)) ];
+	d = tr->fogTable[ (int)(s * (FOG_TABLE_SIZE-1)) ];
 
 	return d;
 }
@@ -2951,7 +2951,7 @@ static void R_CreateFogImage( void ) {
 	// standard openGL clamping doesn't really do what we want -- it includes
 	// the border color at the edges.  OpenGL 1.2 has clamp-to-edge, which does
 	// what we want.
-	tr.fogImage = R_CreateImage("*fog", (byte *)data, FOG_S, FOG_T, qfalse, qfalse, GL_CLAMP );
+	tr->fogImage = R_CreateImage("*fog", (byte *)data, FOG_S, FOG_T, qfalse, qfalse, GL_CLAMP );
 	ri.Hunk_FreeTempMemory( data );
 
 	borderColor[0] = 1.0;
@@ -2995,7 +2995,7 @@ static void R_CreateDefaultImage( void ) {
 		data[x][DEFAULT_SIZE-1][2] =
 		data[x][DEFAULT_SIZE-1][3] = 255;
 	}
-	tr.defaultImage = R_CreateImage("*default", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, qtrue, qfalse, GL_REPEAT );
+	tr->defaultImage = R_CreateImage("*default", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, qtrue, qfalse, GL_REPEAT );
 }
 
 /*
@@ -3011,7 +3011,7 @@ void R_CreateBuiltinImages( void ) {
 
 	// we use a solid white image instead of disabling texturing
 	Com_Memset( data, 255, sizeof( data ) );
-	tr.whiteImage = R_CreateImage("*white", (byte *)data, 8, 8, qfalse, qfalse, GL_REPEAT );
+	tr->whiteImage = R_CreateImage("*white", (byte *)data, 8, 8, qfalse, qfalse, GL_REPEAT );
 
 	// with overbright bits active, we need an image which is some fraction of full color,
 	// for default lightmaps, etc
@@ -3019,17 +3019,17 @@ void R_CreateBuiltinImages( void ) {
 		for (y=0 ; y<DEFAULT_SIZE ; y++) {
 			data[y][x][0] = 
 			data[y][x][1] = 
-			data[y][x][2] = tr.identityLightByte;
+			data[y][x][2] = tr->identityLightByte;
 			data[y][x][3] = 255;			
 		}
 	}
 
-	tr.identityLightImage = R_CreateImage("*identityLight", (byte *)data, 8, 8, qfalse, qfalse, GL_REPEAT );
+	tr->identityLightImage = R_CreateImage("*identityLight", (byte *)data, 8, 8, qfalse, qfalse, GL_REPEAT );
 
 
 	for(x=0;x<32;x++) {
 		// scratchimage is usually used for cinematic drawing
-		tr.scratchImage[x] = R_CreateImage("*scratch", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, qfalse, qtrue, GL_CLAMP );
+		tr->scratchImage[x] = R_CreateImage("*scratch", (byte *)data, DEFAULT_SIZE, DEFAULT_SIZE, qfalse, qtrue, GL_CLAMP );
 	}
 
 	R_CreateDlightImage();
@@ -3049,33 +3049,33 @@ void R_SetColorMappings( void ) {
 	int		shift;
 
 	// setup the overbright lighting
-	tr.overbrightBits = r_overBrightBits->integer;
+	tr->overbrightBits = r_overBrightBits->integer;
 	if ( !glConfig.deviceSupportsGamma ) {
-		tr.overbrightBits = 0;		// need hardware gamma for overbright
+		tr->overbrightBits = 0;		// need hardware gamma for overbright
 	}
 
 	// never overbright in windowed mode
 	if ( !glConfig.isFullscreen ) 
 	{
-		tr.overbrightBits = 0;
+		tr->overbrightBits = 0;
 	}
 
 	// allow 2 overbright bits in 24 bit, but only 1 in 16 bit
 	if ( glConfig.colorBits > 16 ) {
-		if ( tr.overbrightBits > 2 ) {
-			tr.overbrightBits = 2;
+		if ( tr->overbrightBits > 2 ) {
+			tr->overbrightBits = 2;
 		}
 	} else {
-		if ( tr.overbrightBits > 1 ) {
-			tr.overbrightBits = 1;
+		if ( tr->overbrightBits > 1 ) {
+			tr->overbrightBits = 1;
 		}
 	}
-	if ( tr.overbrightBits < 0 ) {
-		tr.overbrightBits = 0;
+	if ( tr->overbrightBits < 0 ) {
+		tr->overbrightBits = 0;
 	}
 
-	tr.identityLight = 1.0f / ( 1 << tr.overbrightBits );
-	tr.identityLightByte = 255 * tr.identityLight;
+	tr->identityLight = 1.0f / ( 1 << tr->overbrightBits );
+	tr->identityLightByte = 255 * tr->identityLight;
 
 
 	if ( r_intensity->value <= 1 ) {
@@ -3090,7 +3090,7 @@ void R_SetColorMappings( void ) {
 
 	g = r_gamma->value;
 
-	shift = tr.overbrightBits;
+	shift = tr->overbrightBits;
 
 	for ( i = 0; i < 256; i++ ) {
 		if ( g == 1 ) {
@@ -3144,12 +3144,12 @@ R_DeleteTextures
 void R_DeleteTextures( void ) {
 	int		i;
 
-	for ( i=0; i<tr.numImages ; i++ ) {
-		qglDeleteTextures( 1, &tr.images[i]->texnum );
+	for ( i=0; i<tr->numImages ; i++ ) {
+		qglDeleteTextures( 1, &tr->images[i]->texnum );
 	}
-	Com_Memset( tr.images, 0, sizeof( tr.images ) );
+	Com_Memset( tr->images, 0, sizeof( tr->images ) );
 
-	tr.numImages = 0;
+	tr->numImages = 0;
 
 	Com_Memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
 	if ( qglBindTexture ) {
@@ -3306,8 +3306,8 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 
 
 	// see if the skin is already loaded
-	for ( hSkin = 1; hSkin < tr.numSkins ; hSkin++ ) {
-		skin = tr.skins[hSkin];
+	for ( hSkin = 1; hSkin < tr->numSkins ; hSkin++ ) {
+		skin = tr->skins[hSkin];
 		if ( !Q_stricmp( skin->name, name ) ) {
 			if( skin->numSurfaces == 0 ) {
 				return 0;		// default skin
@@ -3317,13 +3317,13 @@ qhandle_t RE_RegisterSkin( const char *name ) {
 	}
 
 	// allocate a new skin
-	if ( tr.numSkins == MAX_SKINS ) {
+	if ( tr->numSkins == MAX_SKINS ) {
 		ri.Printf( PRINT_WARNING, "WARNING: RE_RegisterSkin( '%s' ) MAX_SKINS hit\n", name );
 		return 0;
 	}
-	tr.numSkins++;
+	tr->numSkins++;
 	skin = ri.Hunk_Alloc( sizeof( skin_t ), h_low );
-	tr.skins[hSkin] = skin;
+	tr->skins[hSkin] = skin;
 	Q_strncpyz( skin->name, name, sizeof( skin->name ) );
 	skin->numSurfaces = 0;
 
@@ -3393,14 +3393,14 @@ R_InitSkins
 void	R_InitSkins( void ) {
 	skin_t		*skin;
 
-	tr.numSkins = 1;
+	tr->numSkins = 1;
 
 	// make the default skin have all default shaders
-	skin = tr.skins[0] = ri.Hunk_Alloc( sizeof( skin_t ), h_low );
+	skin = tr->skins[0] = ri.Hunk_Alloc( sizeof( skin_t ), h_low );
 	Q_strncpyz( skin->name, "<default skin>", sizeof( skin->name )  );
 	skin->numSurfaces = 1;
 	skin->surfaces[0] = ri.Hunk_Alloc( sizeof( *skin->surfaces ), h_low );
-	skin->surfaces[0]->shader = tr.defaultShader;
+	skin->surfaces[0]->shader = tr->defaultShader;
 }
 
 /*
@@ -3409,10 +3409,10 @@ R_GetSkinByHandle
 ===============
 */
 skin_t	*R_GetSkinByHandle( qhandle_t hSkin ) {
-	if ( hSkin < 1 || hSkin >= tr.numSkins ) {
-		return tr.skins[0];
+	if ( hSkin < 1 || hSkin >= tr->numSkins ) {
+		return tr->skins[0];
 	}
-	return tr.skins[ hSkin ];
+	return tr->skins[ hSkin ];
 }
 
 /*
@@ -3426,8 +3426,8 @@ void	R_SkinList_f( void ) {
 
 	ri.Printf (PRINT_ALL, "------------------\n");
 
-	for ( i = 0 ; i < tr.numSkins ; i++ ) {
-		skin = tr.skins[i];
+	for ( i = 0 ; i < tr->numSkins ; i++ ) {
+		skin = tr->skins[i];
 
 		ri.Printf( PRINT_ALL, "%3i:%s\n", i, skin->name );
 		for ( j = 0 ; j < skin->numSurfaces ; j++ ) {

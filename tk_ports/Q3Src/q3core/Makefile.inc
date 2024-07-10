@@ -13,6 +13,7 @@ includes: FORCE
 libs: qagame$(ARCH)$(DLLSUF) cgame$(ARCH)$(DLLSUF) ui$(ARCH)$(DLLSUF) 
 
 apps: quake3$(ARCH)$(EXESUF) quake3$(ARCH)_tkra$(EXESUF) FORCE
+# apps: quake3$(ARCH)$(EXESUF) FORCE
 
 meta: FORCE
 
@@ -221,7 +222,14 @@ QUAKE3_SRCS = \
 	$(QUAKE3_OS_SRCS)
 
 QUAKE3_BTSH_SRCS = \
+	bjx2tk/tksh_glimp.c \
+	bjx2tk/tksh_input.c \
+	bjx2tk/tksh_main.c \
+	bjx2tk/tksh_net.c \
+	bjx2tk/tksh_qgl.c \
+	bjx2tk/tksh_snddma.c \
 
+#	bjx2tk/tksh_client.c \
 
 TKRA_SRCS = \
 	tkrast/tkr_blend.c			\

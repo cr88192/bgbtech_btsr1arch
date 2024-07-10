@@ -46,6 +46,7 @@ qboolean	G_SpawnFloat( const char *key, const char *defaultString, float *out ) 
 	char		*s;
 	qboolean	present;
 
+	s = NULL;
 	present = G_SpawnString( key, defaultString, &s );
 	*out = atof( s );
 	return present;
@@ -55,6 +56,7 @@ qboolean	G_SpawnInt( const char *key, const char *defaultString, int *out ) {
 	char		*s;
 	qboolean	present;
 
+	s = NULL;
 	present = G_SpawnString( key, defaultString, &s );
 	*out = atoi( s );
 	return present;
@@ -64,6 +66,7 @@ qboolean	G_SpawnVector( const char *key, const char *defaultString, float *out )
 	char		*s;
 	qboolean	present;
 
+	s = NULL;
 	present = G_SpawnString( key, defaultString, &s );
 	sscanf( s, "%f %f %f", &out[0], &out[1], &out[2] );
 	return present;
@@ -411,6 +414,8 @@ void G_SpawnGEntityFromSpawnVars( void ) {
 	char		*s, *value, *gametypeName;
 	static char *gametypeNames[] = {"ffa", "tournament", "single", "team", "ctf", "oneflag", "obelisk", "harvester", "teamtournament"};
 
+	value = NULL;
+
 	// get the next free entity
 	ent = G_Spawn();
 
@@ -569,6 +574,7 @@ Every map should have exactly one worldspawn.
 void SP_worldspawn( void ) {
 	char	*s;
 
+	s = NULL;
 	G_SpawnString( "classname", "", &s );
 	if ( Q_stricmp( s, "worldspawn" ) ) {
 		G_Error( "SP_worldspawn: The first entity isn't 'worldspawn'" );
@@ -588,6 +594,7 @@ void SP_worldspawn( void ) {
 	trap_SetConfigstring( CS_MOTD, g_motd.string );		// message of the day
 
 	G_SpawnString( "gravity", "800", &s );
+//	s="0";
 	trap_Cvar_Set( "g_gravity", s );
 
 	G_SpawnString( "enableDust", "0", &s );

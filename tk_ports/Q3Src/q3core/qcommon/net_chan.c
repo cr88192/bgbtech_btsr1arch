@@ -644,10 +644,15 @@ NET_OutOfBandPrint
 Sends a text message in an out-of-band datagram
 ================
 */
-void QDECL NET_OutOfBandPrint( netsrc_t sock, netadr_t adr, const char *format, ... ) {
+void QDECL NET_OutOfBandPrint(
+	netsrc_t sock, netadr_t adr, const char *format, ... )
+{
 	va_list		argptr;
-	char		string[MAX_MSGLEN];
+//	char		string[MAX_MSGLEN];
+	char		*string;
 
+
+	string = malloc(MAX_MSGLEN);
 
 	// set the header
 	string[0] = -1;
@@ -661,6 +666,8 @@ void QDECL NET_OutOfBandPrint( netsrc_t sock, netadr_t adr, const char *format, 
 
 	// send the datagram
 	NET_SendPacket( sock, strlen( string ), string, adr );
+	
+	free(string);
 }
 
 /*
@@ -670,10 +677,15 @@ NET_OutOfBandPrint
 Sends a data message in an out-of-band datagram (only used for "connect")
 ================
 */
-void QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len ) {
-	byte		string[MAX_MSGLEN*2];
+void QDECL NET_OutOfBandData(
+	netsrc_t sock, netadr_t adr, byte *format, int len )
+{
+//	byte		string[MAX_MSGLEN*2];
+	byte		*string;
 	int			i;
 	msg_t		mbuf;
+
+	string = malloc(MAX_MSGLEN*2);
 
 	// set the header
 	string[0] = 0xff;
@@ -690,6 +702,8 @@ void QDECL NET_OutOfBandData( netsrc_t sock, netadr_t adr, byte *format, int len
 	Huff_Compress( &mbuf, 12);
 	// send the datagram
 	NET_SendPacket( sock, mbuf.cursize, mbuf.data, adr );
+	
+	free(string);
 }
 
 /*
@@ -699,7 +713,8 @@ NET_StringToAdr
 Traps "localhost" for loopback, passes everything else to system
 =============
 */
-qboolean	NET_StringToAdr( const char *s, netadr_t *a ) {
+qboolean	NET_StringToAdr( const char *s, netadr_t *a )
+{
 	qboolean	r;
 	char	base[MAX_STRING_CHARS];
 	char	*port;

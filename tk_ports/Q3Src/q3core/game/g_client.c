@@ -37,6 +37,8 @@ Targets will be fired when someone spawns in on them.
 void SP_info_player_deathmatch( gentity_t *ent ) {
 	int		i;
 
+	i = 0;
+
 	G_SpawnInt( "nobots", "0", &i);
 	if ( i ) {
 		ent->flags |= FL_NO_BOTS;
@@ -485,7 +487,7 @@ void SetClientViewAngle( gentity_t *ent, vec3_t angle ) {
 		int		cmdAngle;
 
 		cmdAngle = ANGLE2SHORT(angle[i]);
-		ent->client->ps.delta_angles[i] = cmdAngle - ent->client->pers.cmd.angles[i];
+//		ent->client->ps.delta_angles[i] = cmdAngle - ent->client->pers.cmd.angles[i];
 	}
 	VectorCopy( angle, ent->s.angles );
 	VectorCopy (ent->s.angles, ent->client->ps.viewangles);

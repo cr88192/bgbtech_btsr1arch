@@ -488,9 +488,13 @@ void CMod_LoadPatches( lump_t *surfs, lump_t *verts ) {
 	int			i, j;
 	int			c;
 	cPatch_t	*patch;
-	vec3_t		points[MAX_PATCH_VERTS];
+//	vec3_t		points[MAX_PATCH_VERTS];
+	float		*points;
 	int			width, height;
 	int			shaderNum;
+
+	q_alloca_start
+	points = q_alloca(MAX_PATCH_VERTS*3*4);
 
 	in = (void *)(cmod_base + surfs->fileofs);
 	if (surfs->filelen % sizeof(*in))
@@ -522,9 +526,13 @@ void CMod_LoadPatches( lump_t *surfs, lump_t *verts ) {
 
 		dv_p = dv + LittleLong( in->firstVert );
 		for ( j = 0 ; j < c ; j++, dv_p++ ) {
-			points[j][0] = LittleFloat( dv_p->xyz[0] );
-			points[j][1] = LittleFloat( dv_p->xyz[1] );
-			points[j][2] = LittleFloat( dv_p->xyz[2] );
+//			points[j][0] = LittleFloat( dv_p->xyz[0] );
+//			points[j][1] = LittleFloat( dv_p->xyz[1] );
+//			points[j][2] = LittleFloat( dv_p->xyz[2] );
+
+			points[j*3+0] = LittleFloat( dv_p->xyz[0] );
+			points[j*3+1] = LittleFloat( dv_p->xyz[1] );
+			points[j*3+2] = LittleFloat( dv_p->xyz[2] );
 		}
 
 		shaderNum = LittleLong( in->shaderNum );
@@ -534,6 +542,8 @@ void CMod_LoadPatches( lump_t *surfs, lump_t *verts ) {
 		// create the internal facet structure
 		patch->pc = CM_GeneratePatchCollide( width, height, points );
 	}
+
+	q_alloca_end
 }
 
 //==================================================================

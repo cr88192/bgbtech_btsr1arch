@@ -551,11 +551,13 @@ It will be resent if the client acknowledges a later message but has
 the wrong gamestate.
 ================
 */
-void SV_SendClientGameState( client_t *client ) {
+void SV_SendClientGameState( client_t *client )
+{
 	int			start;
 	entityState_t	*base, nullstate;
 	msg_t		msg;
-	byte		msgBuffer[MAX_MSGLEN];
+//	byte		msgBuffer[MAX_MSGLEN];
+	byte		*msgBuffer;
 
  	Com_DPrintf ("SV_SendClientGameState() for %s\n", client->name);
 	Com_DPrintf( "Going from CS_CONNECTED to CS_PRIMED for %s\n", client->name );
@@ -568,7 +570,9 @@ void SV_SendClientGameState( client_t *client ) {
 	// gamestate message was not just sent, forcing a retransmit
 	client->gamestateMessageNum = client->netchan.outgoingSequence;
 
-	MSG_Init( &msg, msgBuffer, sizeof( msgBuffer ) );
+	msgBuffer = Q_AllocTemp(MAX_MSGLEN);
+//	MSG_Init( &msg, msgBuffer, sizeof( msgBuffer ) );
+	MSG_Init( &msg, msgBuffer, MAX_MSGLEN );
 
 	// NOTE, MRE: all server->client messages now acknowledge
 	// let the client know which reliable clientCommands we have received
@@ -613,6 +617,8 @@ void SV_SendClientGameState( client_t *client ) {
 
 	// deliver this to the client
 	SV_SendMessageToClient( &msg, client );
+	
+	Q_FreeTemp(msgBuffer);
 }
 
 
@@ -1367,7 +1373,8 @@ static void SV_UserMove( client_t *cl, msg_t *msg, qboolean delta ) {
 	// also use the message acknowledge
 	key ^= cl->messageAcknowledge;
 	// also use the last acknowledged server command in the key
-	key ^= Com_HashKey(cl->reliableCommands[ cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ], 32);
+	key ^= Com_HashKey(cl->reliableCommands[
+		cl->reliableAcknowledge & (MAX_RELIABLE_COMMANDS-1) ], 32);
 
 	Com_Memset( &nullcmd, 0, sizeof(nullcmd) );
 	oldcmd = &nullcmd;

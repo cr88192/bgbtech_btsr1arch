@@ -12,6 +12,9 @@
 #include "f_scale.h"
 #include "isr.h"
 
+#ifdef __BJX2__
+#include <tkgdi/tkgdi.h>
+#endif
 
 #define MAXSCREENHEIGHT			200
 #define MAXSCREENWIDTH			 320
@@ -53,6 +56,76 @@ byte *btesh2_gfxcon_framebuf;
 int btesh2_gfxcon_fb_dirty;
 int btesh2_gfxcon_fbxs;
 int btesh2_gfxcon_fbys;
+
+
+#ifdef __BJX2__
+
+// TKGDI_BITMAPINFOHEADER i_t_dibinfo;
+TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
+TKGDI_BITMAPINFOHEADER *i_dibinfo_ix = NULL;
+TKGHDC i_hDc;
+
+u16 *screen_fbrgb;
+
+byte *screen_fbix;
+u32 *screen_palix;
+
+void I_InitTkGdi()
+{
+	if(i_dibinfo)
+		return;
+	
+	printf("I_InitTkGdi\n");
+	
+//	i_dibinfo = &i_t_dibinfo;
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo_ix = malloc(sizeof(TKGDI_BITMAPINFOHEADER)+1024);
+	memset(i_dibinfo_ix, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+
+//	i_dibinfo->biWidth=640;
+//	i_dibinfo->biHeight=400;
+
+//	i_dibinfo->biWidth=800;
+//	i_dibinfo->biHeight=600;
+
+	i_dibinfo->biBitCount=16;
+
+//	tk_printf("  1\n", hDc);
+
+	i_hDc=tkgCreateDisplay(i_dibinfo);
+	tkgSetWindowTitle(i_hDc, "ROTT");
+
+	i_dibinfo->biHeight=-200;
+	
+//	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+
+	screen_fbrgb=malloc(320*200*2);
+
+#if 1
+	i_dibinfo_ix->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
+	i_dibinfo_ix->biWidth=SCREENAWIDTH;
+	i_dibinfo_ix->biHeight=-200;
+	i_dibinfo_ix->biPlanes=1;
+	i_dibinfo_ix->biBitCount=8;
+	i_dibinfo_ix->biSizeImage=SCREENAWIDTH*200;
+//	i_dibinfo_ix->biClrUsed=255;
+	
+	screen_palix=(u32 *)(((byte *)i_dibinfo_ix)+
+		sizeof(TKGDI_BITMAPINFOHEADER));
+//	screen_fbix=malloc(320*200);
+#endif
+
+	printf("I_InitTkGdi: OK\n");
+}
+
+#endif
+
 
 u32	d_16to24table[65536];
 
@@ -143,6 +216,9 @@ void GraphicsMode ( void )
 
 	if(!screenbuf)
 	{
+
+		printf("Debug A1 %s:%d\n", __FILE__, __LINE__);
+
 #ifdef _WIN32
 		GfxDrv_Start();
 
@@ -164,6 +240,8 @@ void GraphicsMode ( void )
 		GfxDrv_PrepareFramebuf();
 #endif
 
+		printf("Debug A2 %s:%d\n", __FILE__, __LINE__);
+
 //		screen_buffersz = (96*4*200)+(96*4*200);
 		screen_buffersz = (1<<18);
 		screen_buffermsk = (screen_buffersz-1)&(~3);
@@ -178,9 +256,16 @@ void GraphicsMode ( void )
 		page1start = 0;
 		page2start = 0;
 		page3start = 0;
-		
+
+		printf("Debug A3 %s:%d\n", __FILE__, __LINE__);
+
 		I_StartFrame();
+
+		printf("Debug A4 %s:%d\n", __FILE__, __LINE__);
+
 		I_SetupScreenTables();
+
+		printf("Debug A5 %s:%d\n", __FILE__, __LINE__);
 	}
 
 	for (i=0;i<MAXSCANLINES;i++)
@@ -188,6 +273,8 @@ void GraphicsMode ( void )
 //		ylookup[i]=i*320;
 		ylookup[i]=i*96;
 	}
+
+	printf("Debug A6 %s:%d\n", __FILE__, __LINE__);
 }
 
 void TextMode ( void )
@@ -566,13 +653,73 @@ void I_HandleInput (void)
 #ifdef _BGBCC
 void I_HandleInput (void)
 {
-	int c, dn;
+//	int c, dn;
 
-//	while(*kb)
-	while(tk_kbhit()>0)
+	TKGDI_EVENT t_imsg;
+	TKGDI_EVENT *imsg;
+	int i, j, c, n, dn;
+
+//	printf("Debug B1 %s:%d\n", __FILE__, __LINE__);
+
+	if(i_hDc>1)
 	{
+//		printf("Debug B2 %s:%d\n", __FILE__, __LINE__);
+
+		thrd_yield();
+		imsg=&t_imsg;
+
+		n=64;
+		while((n--)>0)
+		{
+			j=tkgPollEvent(i_hDc, imsg);
+			if(j<1)
+				break;
+			if(imsg->fccMsg==0)
+				break;
+			if(imsg->fccMsg==TKGDI_FCC_keyb)
+			{
+				c=imsg->wParm1;
+				dn=!(c&0x8000);
+				c=c&0x7FFF;
+			
+#if 0
+				switch(c)
+				{
+				case   8: c=K_BACKSPACE; break;
+				case 153: c=K_PAUSE; break;
+				case 154: c=K_MWHEELUP; break;
+				case 155: c=K_MWHEELDOWN; break;
+				case 157: c=K_MOUSE1; break;
+				case 158: c=K_MOUSE2; break;
+				case 159: c=K_MOUSE3; break;
+				default: break;
+				}
+#endif
+				
+				if(c>=256)
+					continue;
+				
+				Key_Event (c, dn);
+			}
+		}
+		
+		return;
+	}
+
+//	printf("Debug B3 %s:%d\n", __FILE__, __LINE__);
+
+	n=64;
+//	while(*kb)
+	while((tk_kbhit()>0) && ((n--)>0))
+	{
+//		printf("Debug B3-1 %s:%d\n", __FILE__, __LINE__);
+
 		c=tk_getch();
+		if(c<0)
+			break;
 	
+//		printf("Debug B3-2 %s:%d\n", __FILE__, __LINE__);
+
 		switch(c)
 		{
 		case 0x7F:
@@ -611,6 +758,8 @@ void I_HandleInput (void)
 
 		Key_Event (c, dn);
 	}
+
+//	printf("Debug B4 %s:%d\n", __FILE__, __LINE__);
 }
 #endif
 
@@ -740,7 +889,9 @@ void I_FinishUpdate (void)
 	u16 *pal;
 	byte *ics, *icsb;
 	u32 *ict;
+	u64 *ictq;
 	int bx, by, by2;
+	int i, j, k;
 
 //	u64 pxa, pxb, pxc, pxd;
 	u32 ixa, ixb, ixc, ixd;
@@ -748,8 +899,11 @@ void I_FinishUpdate (void)
 
 	__hint_use_egpr();
 
+	I_InitTkGdi();
+
 	I_DrawFramerate();
 
+#if 0
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xFFFFF00A0000ULL;
 
@@ -758,14 +912,59 @@ void I_FinishUpdate (void)
 
 	((u32 *)0xFFFFF00BFF00ULL)[0]=0x0095;		//320x200x16bpp, RGB555
 //	((u32 *)0xF00BFF00)[0]=0x0000;		//320x200, Color Cell
+#endif
 
 	ics=screenbuf;
-	ict=conbufa;
+//	ict=conbufa;
 	pal=screen_pal;
 
 	if(!ics)
 		return;
 
+#if 0
+	ictq=(u64 *)screen_fbrgb;
+	for(by=0; by<200; by++)
+	{
+		icsb=ics;
+		for(bx=0; bx<80; bx++)
+		{
+			ixa=*((u32 *)icsb);
+			pxa=I_FinishUpdate_Repack8to16(ixa);
+			*ictq++=pxa;
+			icsb+=4;
+		}
+		ics+=SCREENAWIDTH;
+	}
+	tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_fbrgb);
+#endif
+
+#if 1
+	for(i=0; i<256; i++)
+	{
+		j=screen_pal[i];
+		k=	0xFF000000U |
+			((j&0x7C00)<<9) |
+			((j&0x03F0)<<6) |
+			((j&0x001F)<<3) ;
+		screen_palix[i]=k;
+	}
+
+#if 0
+	ict=(u32 *)screen_fbix;
+	for(by=0; by<200; by++)
+	{
+		memcpy(ict, ics, 320);
+		ics+=SCREENAWIDTH;
+		ict+=80;
+	}
+	tkgBlitImage(i_hDc, 0, 0, i_dibinfo_ix, screen_fbix);
+#endif
+
+	tkgBlitImage(i_hDc, 0, 0, i_dibinfo_ix, screenbuf);
+
+#endif
+
+#if 0
 	for(by=0; by<50; by++)
 	{
 		icsb=ics;
@@ -796,6 +995,7 @@ void I_FinishUpdate (void)
 
 		ics+=4*SCREENAWIDTH;
 	}
+#endif
 }
 #endif
 

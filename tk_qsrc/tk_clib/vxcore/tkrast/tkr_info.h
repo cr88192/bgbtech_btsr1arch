@@ -473,6 +473,10 @@ Vertex Parameter Arrays
 #define TKRA_STFL1_STENCILTEST					0x00200000
 
 
+#define TKRA_CTXPARM_FINISH						0x00010000
+#define TKRA_CTXPARM_FLUSH						0x00010001
+
+
 typedef unsigned short	tkra_rastpixel;
 // typedef unsigned short	tkra_zbufpixel;
 typedef signed short		tkra_zbufpixel;
@@ -675,6 +679,9 @@ int		vptr_sta_str[TKRA_MAX_MULTITEX];	//ST stride, Multitexture
 void 	*vptr_sta_ptr[TKRA_MAX_MULTITEX];	//ST pointer, Multitexture
 };
 
+#define TKRA_MAX_PROJSTACK		64
+// #define TKRA_LIM_PROJSTACK		48
+#define TKRA_LIM_PROJSTACK		(TKRA_MAX_PROJSTACK-8)
 
 struct TKRA_SvContext_s
 {
@@ -738,10 +745,10 @@ TKRA_TexImage *tex_cur2;
 TKRA_TexImage *tex_cur_mtx[TKRA_MAX_MULTITEX];
 
 
-tkra_trivertex v0stk[64];
-tkra_trivertex v1stk[64];
-tkra_trivertex v2stk[64];
-tkra_trivertex v3stk[64];
+tkra_trivertex v0stk[TKRA_MAX_PROJSTACK];
+tkra_trivertex v1stk[TKRA_MAX_PROJSTACK];
+tkra_trivertex v2stk[TKRA_MAX_PROJSTACK];
+tkra_trivertex v3stk[TKRA_MAX_PROJSTACK];
 
 
 

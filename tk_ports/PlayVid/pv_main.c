@@ -87,16 +87,66 @@ int I_TimeMS()
 
 #ifdef __BJX2__
 
+#include <tkgdi/tkgdi.h>
+
+TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
+TKGHDC i_hDc;
+
+TKGHSND hSndDev;
+TKGDI_WAVEFORMATEX i_snd_t_info;
+TKGDI_WAVEFORMATEX *i_snd_info = NULL;
+
+void I_InitTkGdi()
+{
+	if(i_dibinfo)
+		return;
+		
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+
+	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
+	i_dibinfo->biWidth=320;
+	i_dibinfo->biHeight=200;
+	i_dibinfo->biBitCount=16;
+
+	i_hDc=tkgCreateDisplay(i_dibinfo);
+	tkgSetWindowTitle(i_hDc, "PlayVid");
+
+//	i_dibinfo->biHeight=-200;
+	
+//	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+}
+
 int gfxdrv_kill=0;
 
 int I_SystemInit()
 {
-	SoundDev_Init();
+//	SoundDev_Init();
 
-	conbufa=(u32 *)0xF00A0000;
-	((u32 *)0xF00BFF00)[0]=0x0095;		//320x200x16bpp, RGB555
+	I_InitTkGdi();
+
+//	conbufa=(u32 *)0xF00A0000;
+//	((u32 *)0xF00BFF00)[0]=0x0095;		//320x200x16bpp, RGB555
+
+	if(!i_snd_info)
+	{
+		i_snd_info = &i_snd_t_info;
+		memset(i_snd_info, 0, sizeof(TKGDI_WAVEFORMATEX));
+		
+		i_snd_info->wFormatTag=TKGDI_WAVE_FORMAT_PCM;
+		i_snd_info->nChannels=2;
+		i_snd_info->nSamplesPerSec=16000;
+		i_snd_info->nAvgBytesPerSec=16000*4;
+		i_snd_info->nBlockAlign=4;
+		i_snd_info->wBitsPerSample=16;
+		i_snd_info->cbSize=sizeof(TKGDI_WAVEFORMATEX);
+
+		hSndDev = tkgCreateAudioDevice(0, TKGDI_FCC_auds, i_snd_info);
+//		mixbuf2 = tkgGlobalAlloc(SAMPLECOUNT*2*2*sizeof(short));
+	}
 }
 
+#if 0
 void I_FinishUpdate_ScanCopyVf(u16 *ics, u32 *ict, int blkn);
 
 __asm {
@@ -120,6 +170,103 @@ I_FinishUpdate_ScanCopyVf:
 	.done:
 	RTSU
 };
+#endif
+
+int Key_Event(int key, int dn)
+{
+	if((key==K_ESC) || (key==K_GUI_CLOSE))
+	{
+		gfxdrv_kill=1;
+	}
+}
+
+void I_HandleInput(void)
+{
+	TKGDI_EVENT t_imsg;
+	TKGDI_EVENT *imsg;
+	int i, j, c, dn;
+
+	if(i_hDc>1)
+	{
+		thrd_yield();
+		imsg=&t_imsg;
+
+		while(1)
+		{
+			j=tkgPollEvent(i_hDc, imsg);
+			if(j<1)
+				break;
+			if(imsg->fccMsg==0)
+				break;
+			if(imsg->fccMsg==TKGDI_FCC_keyb)
+			{
+				c=imsg->wParm1;
+				dn=!(c&0x8000);
+				c=c&0x7FFF;
+			
+				switch(c)
+				{
+				case   8: c=K_BACKSPACE; break;
+				case 153: c=K_PAUSE; break;
+				case 154: c=K_MWHEELUP; break;
+				case 155: c=K_MWHEELDOWN; break;
+				case 157: c=K_MOUSE1; break;
+				case 158: c=K_MOUSE2; break;
+				case 159: c=K_MOUSE3; break;
+				default: break;
+				}
+				
+				if(c>=256)
+					continue;
+				
+				Key_Event (c, dn);
+			}
+		}
+		
+		return;
+	}
+
+	while(tk_kbhit())
+	{
+		c=tk_getch();
+
+		switch(c)
+		{
+		case 0x7F:
+			c=tk_getch(); dn=1;
+			break;
+		case 0xFF:
+			c=tk_getch(); dn=0;
+			break;
+		case 0x80:
+			c=tk_getch();
+			c=(c<<8)|tk_getch();
+			dn=(c&0x8000)?0:1;
+			break;
+		default:
+			dn=(c&0x80)?0:1;
+			c=c&0x7F;
+			break;
+		}
+		
+		switch(c)
+		{
+		case   8: c=K_BACKSPACE; break;
+		case 153: c=K_PAUSE; break;
+		case 154: c=K_MWHEELUP; break;
+		case 155: c=K_MWHEELDOWN; break;
+		case 157: c=K_MOUSE1; break;
+		case 158: c=K_MOUSE2; break;
+		case 159: c=K_MOUSE3; break;
+		default: break;
+		}
+		
+		if(c>=256)
+			continue;
+		
+		Key_Event (c, dn);
+	}
+}
 
 int I_SystemFrame(u16 *fbuf, int xs, int ys)
 {
@@ -129,6 +276,12 @@ int I_SystemFrame(u16 *fbuf, int xs, int ys)
 //	SoundDev_WriteStereoSamples(tsampbuf, tsamplen);
 //	SoundDev_Submit();
 
+	I_InitTkGdi();
+	tkgBlitImage(i_hDc, 0, 0, i_dibinfo, fbuf);
+	
+	I_HandleInput();
+
+#if 0
 	ct=(u64 *)conbufa;
 	
 	for(y=0; y<ys; y+=4)
@@ -165,6 +318,7 @@ int I_SystemFrame(u16 *fbuf, int xs, int ys)
 
 	((u32 *)0xF00BFF00)[8]=vid_frnum;
 	vid_frnum++;
+#endif
 }
 
 unsigned int TK_GetTimeMs(void);
@@ -342,9 +496,11 @@ int main(int argc, char *argv[])
 				tsamprove=(tsamprove+4*l)&16383;
 			}
 			
-			SoundDev_WriteStereoSamples2(tsampbuf+(j*2), l, l*2);
+			tkgWriteSamples(hSndDev, tsampbuf+(j*2), l, l*2);
+
+//			SoundDev_WriteStereoSamples2(tsampbuf+(j*2), l, l*2);
 //			SoundDev_WriteStereoSamples(tsampbuf+(j*2), l);
-			SoundDev_Submit();
+//			SoundDev_Submit();
 			tsamprovs=(j+l)&16383;
 		}
 #endif

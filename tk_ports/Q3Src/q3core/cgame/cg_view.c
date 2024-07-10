@@ -326,6 +326,8 @@ static void CG_OffsetFirstPersonView( void ) {
 	origin = cg.refdef.vieworg;
 	angles = cg.refdefViewAngles;
 
+//	return;
+
 	// if dead, fix the angle and don't add any kick
 	if ( cg.snap->ps.stats[STAT_HEALTH] <= 0 ) {
 		angles[ROLL] = 40;
@@ -637,6 +639,20 @@ static int CG_CalcViewValues( void ) {
 		}
 	}
 */
+
+#if 0
+//	printf("CG_CalcViewValues: Origin %f %f %f\n",
+//		ps->origin[0], ps->origin[1], ps->origin[2]);
+
+//	printf("CG_CalcViewValues: Angles %f %f %f\n",
+//		ps->angles[0], ps->angles[1], ps->angles[2]);
+	printf("CG_CalcViewValues: viewangles %f %f %f\n",
+		ps->viewangles[0], ps->viewangles[1], ps->viewangles[2]);
+
+	printf("CG_CalcViewValues: delta_angles %d %d %d\n",
+		ps->delta_angles[0], ps->delta_angles[1], ps->delta_angles[2]);
+#endif
+
 	// intermission view
 	if ( ps->pm_type == PM_INTERMISSION ) {
 		VectorCopy( ps->origin, cg.refdef.vieworg );

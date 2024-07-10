@@ -13,25 +13,27 @@ CC_OUTOBJ=bgbcc /c /Fo
 BASE_CFLAGS=-I. -Iinclude -I../tk_clib/include -L../tk_clib 
 
 CFLAGS=/I. /Iinclude /I../include /DGLQUAKE /DQUAKE /DBOTLIB \
-	/mBJX2F /O2 /fwex3w /fwexj /Zz
+	/mBJX2 /O2 /fwex3w /fwexj /fxgpr_abi /fxg2mode /fptropt0 /Zz
 DLL_CFLAGS=$(CFLAGS)
 
-LDFLAGS= -L../tk_clib -lvxcore64
+NOGL_LDFLAGS= -L../tk_clib -lc -ltkgdi
+LDFLAGS= -L../tk_clib -lc -ltkgdi -ltkgl
+DLL_LDFLAGS= -L../tk_clib -lcdll
 
 ARCH=bjx2
 
-DLL_LDFLAGS=$(LDFLAGS)
+# DLL_LDFLAGS=$(LDFLAGS)
 
-UI_DLL_LDFLAGS=$(LDFLAGS) \
+UI_DLL_LDFLAGS=$(DLL_LDFLAGS) \
 	/D_MBCS /D_USRDLL /DUI_EXPORTS
 
-GAME_DLL_LDFLAGS=$(LDFLAGS) \
+GAME_DLL_LDFLAGS=$(DLL_LDFLAGS) \
 	/DBUILDING_REF_GL /DDEBUG /DGLOBALRANK /DQAGAME
 
-CGAME_DLL_LDFLAGS=$(LDFLAGS) \
+CGAME_DLL_LDFLAGS=$(DLL_LDFLAGS) \
 	/DBUILDING_REF_GL /DDEBUG /DGLOBALRANK /DCGAME
 
-TKRA_LDFLAGS=$(LDFLAGS) \
+TKRA_LDFLAGS=$(NOGL_LDFLAGS) \
 	/DUSE_TKRA
 
 include Makefile.inc

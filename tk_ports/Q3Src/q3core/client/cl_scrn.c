@@ -62,14 +62,14 @@ void SCR_AdjustFrom640( float *x, float *y, float *w, float *h ) {
 
 #if 0
 		// adjust for wide screens
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
-			*x += 0.5 * ( cls.glconfig.vidWidth - ( cls.glconfig.vidHeight * 640 / 480 ) );
+		if ( cls->glconfig.vidWidth * 480 > cls->glconfig.vidHeight * 640 ) {
+			*x += 0.5 * ( cls->glconfig.vidWidth - ( cls->glconfig.vidHeight * 640 / 480 ) );
 		}
 #endif
 
 	// scale for screen sizes
-	xscale = cls.glconfig.vidWidth / 640.0;
-	yscale = cls.glconfig.vidHeight / 480.0;
+	xscale = cls->glconfig.vidWidth / 640.0;
+	yscale = cls->glconfig.vidHeight / 480.0;
 	if ( x ) {
 		*x *= xscale;
 	}
@@ -95,7 +95,7 @@ void SCR_FillRect( float x, float y, float width, float height, const float *col
 	re.SetColor( color );
 
 	SCR_AdjustFrom640( &x, &y, &width, &height );
-	re.DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cls.whiteShader );
+	re.DrawStretchPic( x, y, width, height, 0, 0, 0, 0, cls->whiteShader );
 
 	re.SetColor( NULL );
 }
@@ -150,7 +150,7 @@ static void SCR_DrawChar( int x, int y, float size, int ch ) {
 	re.DrawStretchPic( ax, ay, aw, ah,
 					   fcol, frow, 
 					   fcol + size, frow + size, 
-					   cls.charSetShader );
+					   cls->charSetShader );
 }
 
 /*
@@ -182,7 +182,7 @@ void SCR_DrawSmallChar( int x, int y, int ch ) {
 	re.DrawStretchPic( x, y, SMALLCHAR_WIDTH, SMALLCHAR_HEIGHT,
 					   fcol, frow, 
 					   fcol + size, frow + size, 
-					   cls.charSetShader );
+					   cls->charSetShader );
 }
 
 
@@ -329,15 +329,15 @@ void SCR_DrawDemoRecording( void ) {
 	char	string[1024];
 	int		pos;
 
-	if ( !clc.demorecording ) {
+	if ( !clc->demorecording ) {
 		return;
 	}
-	if ( clc.spDemoRecording ) {
+	if ( clc->spDemoRecording ) {
 		return;
 	}
 
-	pos = FS_FTell( clc.demofile );
-	sprintf( string, "RECORDING %s: %ik", clc.demoName, pos / 1024 );
+	pos = FS_FTell( clc->demofile );
+	sprintf( string, "RECORDING %s: %ik", clc->demoName, pos / 1024 );
 
 	SCR_DrawStringExt( 320 - strlen( string ) * 4, 20, 8, string, g_color_table[7], qtrue );
 }
@@ -386,12 +386,12 @@ void SCR_DrawDebugGraph (void)
 	//
 	// draw the graph
 	//
-	w = cls.glconfig.vidWidth;
+	w = cls->glconfig.vidWidth;
 	x = 0;
-	y = cls.glconfig.vidHeight;
+	y = cls->glconfig.vidHeight;
 	re.SetColor( g_color_table[0] );
 	re.DrawStretchPic(x, y - cl_graphheight->integer, 
-		w, cl_graphheight->integer, 0, 0, 0, 0, cls.whiteShader );
+		w, cl_graphheight->integer, 0, 0, 0, 0, cls->whiteShader );
 	re.SetColor( NULL );
 
 	for (a=0 ; a<w ; a++)
@@ -404,7 +404,7 @@ void SCR_DrawDebugGraph (void)
 		if (v < 0)
 			v += cl_graphheight->integer * (1+(int)(-v / cl_graphheight->integer));
 		h = (int)v % cl_graphheight->integer;
-		re.DrawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, cls.whiteShader );
+		re.DrawStretchPic( x+w-1-a, y - h, 1, h, 0, 0, 0, 0, cls->whiteShader );
 	}
 }
 
@@ -440,10 +440,10 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 
 	// wide aspect ratio screens need to have the sides cleared
 	// unless they are displaying game renderings
-	if ( cls.state != CA_ACTIVE ) {
-		if ( cls.glconfig.vidWidth * 480 > cls.glconfig.vidHeight * 640 ) {
+	if ( cls->state != CA_ACTIVE ) {
+		if ( cls->glconfig.vidWidth * 480 > cls->glconfig.vidHeight * 640 ) {
 			re.SetColor( g_color_table[0] );
-			re.DrawStretchPic( 0, 0, cls.glconfig.vidWidth, cls.glconfig.vidHeight, 0, 0, 0, 0, cls.whiteShader );
+			re.DrawStretchPic( 0, 0, cls->glconfig.vidWidth, cls->glconfig.vidHeight, 0, 0, 0, 0, cls->whiteShader );
 			re.SetColor( NULL );
 		}
 	}
@@ -456,9 +456,9 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	// if the menu is going to cover the entire screen, we
 	// don't need to render anything under it
 	if ( !VM_Call_0( uivm, UI_IS_FULLSCREEN )) {
-		switch( cls.state ) {
+		switch( cls->state ) {
 		default:
-			Com_Error( ERR_FATAL, "SCR_DrawScreenField: bad cls.state" );
+			Com_Error( ERR_FATAL, "SCR_DrawScreenField: bad cls->state" );
 			break;
 		case CA_CINEMATIC:
 			SCR_DrawCinematic();
@@ -473,7 +473,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 		case CA_CONNECTED:
 			// connecting clients will only show the connection dialog
 			// refresh to update the time
-			VM_Call_1( uivm, UI_REFRESH, cls.realtime );
+			VM_Call_1( uivm, UI_REFRESH, cls->realtime );
 			VM_Call_1( uivm, UI_DRAW_CONNECT_SCREEN, qfalse );
 			break;
 		case CA_LOADING:
@@ -484,7 +484,7 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 			// also draw the connection information, so it doesn't
 			// flash away too briefly on local or lan games
 			// refresh to update the time
-			VM_Call_1( uivm, UI_REFRESH, cls.realtime );
+			VM_Call_1( uivm, UI_REFRESH, cls->realtime );
 			VM_Call_1( uivm, UI_DRAW_CONNECT_SCREEN, qtrue );
 			break;
 		case CA_ACTIVE:
@@ -495,8 +495,8 @@ void SCR_DrawScreenField( stereoFrame_t stereoFrame ) {
 	}
 
 	// the menu draws next
-	if ( cls.keyCatchers & KEYCATCH_UI && uivm ) {
-		VM_Call_1( uivm, UI_REFRESH, cls.realtime );
+	if ( cls->keyCatchers & KEYCATCH_UI && uivm ) {
+		VM_Call_1( uivm, UI_REFRESH, cls->realtime );
 	}
 
 	// console draws next
@@ -529,7 +529,7 @@ void SCR_UpdateScreen( void ) {
 	recursive = 1;
 
 	// if running in stereo, we need to draw the frame twice
-	if ( cls.glconfig.stereoEnabled ) {
+	if ( cls->glconfig.stereoEnabled ) {
 		SCR_DrawScreenField( STEREO_LEFT );
 		SCR_DrawScreenField( STEREO_RIGHT );
 	} else {

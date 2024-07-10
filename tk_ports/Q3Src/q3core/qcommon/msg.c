@@ -189,6 +189,7 @@ int MSG_ReadBits( msg_t *msg, int bits ) {
 //	FILE*	fp;
 
 	value = 0;
+	get = 0;
 
 	if ( bits < 0 ) {
 		bits = -bits;
@@ -1238,7 +1239,11 @@ MSG_WriteDeltaPlayerstate
 
 =============
 */
-void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct playerState_s *to ) {
+void MSG_WriteDeltaPlayerstate(
+	msg_t *msg,
+	struct playerState_s *from,
+	struct playerState_s *to )
+{
 	int				i;
 	playerState_t	dummy;
 	int				statsbits;
@@ -1258,6 +1263,9 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 	}
 
 	c = msg->cursize;
+
+//	printf("MSG_WriteDeltaPlayerstate: Origin %f %f %f\n",
+//			to->origin[0], to->origin[1], to->origin[2]);
 
 	numFields = sizeof( playerStateFields ) / sizeof( playerStateFields[0] );
 
@@ -1394,7 +1402,11 @@ void MSG_WriteDeltaPlayerstate( msg_t *msg, struct playerState_s *from, struct p
 MSG_ReadDeltaPlayerstate
 ===================
 */
-void MSG_ReadDeltaPlayerstate (msg_t *msg, playerState_t *from, playerState_t *to ) {
+void MSG_ReadDeltaPlayerstate (
+	msg_t *msg,
+	playerState_t *from,
+	playerState_t *to )
+{
 	int			i, lc;
 	int			bits;
 	netField_t	*field;

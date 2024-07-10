@@ -34,35 +34,35 @@ R_PerformanceCounters
 void R_PerformanceCounters( void ) {
 	if ( !r_speeds->integer ) {
 		// clear the counters even if we aren't printing
-		Com_Memset( &tr.pc, 0, sizeof( tr.pc ) );
+		Com_Memset( &tr->pc, 0, sizeof( tr->pc ) );
 		Com_Memset( &backEnd.pc, 0, sizeof( backEnd.pc ) );
 		return;
 	}
 
 	if (r_speeds->integer == 1) {
 		ri.Printf (PRINT_ALL, "%i/%i shaders/surfs %i leafs %i verts %i/%i tris %.2f mtex %.2f dc\n",
-			backEnd.pc.c_shaders, backEnd.pc.c_surfaces, tr.pc.c_leafs, backEnd.pc.c_vertexes, 
+			backEnd.pc.c_shaders, backEnd.pc.c_surfaces, tr->pc.c_leafs, backEnd.pc.c_vertexes, 
 			backEnd.pc.c_indexes/3, backEnd.pc.c_totalIndexes/3, 
 			R_SumOfUsedImages()/(1000000.0f), backEnd.pc.c_overDraw / (float)(glConfig.vidWidth * glConfig.vidHeight) ); 
 	} else if (r_speeds->integer == 2) {
 		ri.Printf (PRINT_ALL, "(patch) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
-			tr.pc.c_sphere_cull_patch_in, tr.pc.c_sphere_cull_patch_clip, tr.pc.c_sphere_cull_patch_out, 
-			tr.pc.c_box_cull_patch_in, tr.pc.c_box_cull_patch_clip, tr.pc.c_box_cull_patch_out );
+			tr->pc.c_sphere_cull_patch_in, tr->pc.c_sphere_cull_patch_clip, tr->pc.c_sphere_cull_patch_out, 
+			tr->pc.c_box_cull_patch_in, tr->pc.c_box_cull_patch_clip, tr->pc.c_box_cull_patch_out );
 		ri.Printf (PRINT_ALL, "(md3) %i sin %i sclip  %i sout %i bin %i bclip %i bout\n",
-			tr.pc.c_sphere_cull_md3_in, tr.pc.c_sphere_cull_md3_clip, tr.pc.c_sphere_cull_md3_out, 
-			tr.pc.c_box_cull_md3_in, tr.pc.c_box_cull_md3_clip, tr.pc.c_box_cull_md3_out );
+			tr->pc.c_sphere_cull_md3_in, tr->pc.c_sphere_cull_md3_clip, tr->pc.c_sphere_cull_md3_out, 
+			tr->pc.c_box_cull_md3_in, tr->pc.c_box_cull_md3_clip, tr->pc.c_box_cull_md3_out );
 	} else if (r_speeds->integer == 3) {
-		ri.Printf (PRINT_ALL, "viewcluster: %i\n", tr.viewCluster );
+		ri.Printf (PRINT_ALL, "viewcluster: %i\n", tr->viewCluster );
 	} else if (r_speeds->integer == 4) {
 		if ( backEnd.pc.c_dlightVertexes ) {
 			ri.Printf (PRINT_ALL, "dlight srf:%i  culled:%i  verts:%i  tris:%i\n", 
-				tr.pc.c_dlightSurfaces, tr.pc.c_dlightSurfacesCulled,
+				tr->pc.c_dlightSurfaces, tr->pc.c_dlightSurfacesCulled,
 				backEnd.pc.c_dlightVertexes, backEnd.pc.c_dlightIndexes / 3 );
 		}
 	} 
 	else if (r_speeds->integer == 5 )
 	{
-		ri.Printf( PRINT_ALL, "zFar: %.0f\n", tr.viewParms.zFar );
+		ri.Printf( PRINT_ALL, "zFar: %.0f\n", tr->viewParms.zFar );
 	}
 	else if (r_speeds->integer == 6 )
 	{
@@ -70,7 +70,7 @@ void R_PerformanceCounters( void ) {
 			backEnd.pc.c_flareAdds, backEnd.pc.c_flareTests, backEnd.pc.c_flareRenders );
 	}
 
-	Com_Memset( &tr.pc, 0, sizeof( tr.pc ) );
+	Com_Memset( &tr->pc, 0, sizeof( tr->pc ) );
 	Com_Memset( &backEnd.pc, 0, sizeof( backEnd.pc ) );
 }
 
@@ -117,7 +117,7 @@ int	c_blockedOnMain;
 void R_IssueRenderCommands( qboolean runPerformanceCounters ) {
 	renderCommandList_t	*cmdList;
 
-	cmdList = &backEndData[tr.smpFrame]->commands;
+	cmdList = &backEndData[tr->smpFrame]->commands;
 	assert(cmdList); // bk001205
 	// add an end-of-list command
 	*(int *)(cmdList->cmds + cmdList->used) = RC_END_OF_LIST;
@@ -172,7 +172,7 @@ OpenGL calls until R_IssueRenderCommands is called.
 ====================
 */
 void R_SyncRenderThread( void ) {
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
 	R_IssueRenderCommands( qfalse );
@@ -194,7 +194,7 @@ render thread if needed.
 void *R_GetCommandBuffer( int bytes ) {
 	renderCommandList_t	*cmdList;
 
-	cmdList = &backEndData[tr.smpFrame]->commands;
+	cmdList = &backEndData[tr->smpFrame]->commands;
 
 	// always leave room for the end of list command
 	if ( cmdList->used + bytes + 4 > MAX_RENDER_COMMANDS ) {
@@ -229,8 +229,8 @@ void	R_AddDrawSurfCmd( drawSurf_t *drawSurfs, int numDrawSurfs ) {
 	cmd->drawSurfs = drawSurfs;
 	cmd->numDrawSurfs = numDrawSurfs;
 
-	cmd->refdef = tr.refdef;
-	cmd->viewParms = tr.viewParms;
+	cmd->refdef = tr->refdef;
+	cmd->viewParms = tr->viewParms;
 }
 
 
@@ -244,7 +244,7 @@ Passing NULL will set the color to white
 void	RE_SetColor( const float *rgba ) {
 	setColorCommand_t	*cmd;
 
-  if ( !tr.registered ) {
+  if ( !tr->registered ) {
     return;
   }
 	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
@@ -274,7 +274,7 @@ void RE_StretchPic ( float x, float y, float w, float h,
 					  float s1, float t1, float s2, float t2, qhandle_t hShader ) {
 	stretchPicCommand_t	*cmd;
 
-  if (!tr.registered) {
+  if (!tr->registered) {
     return;
   }
 	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
@@ -305,13 +305,13 @@ for each RE_EndFrame
 void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	drawBufferCommand_t	*cmd;
 
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
 	glState.finishCalled = qfalse;
 
-	tr.frameCount++;
-	tr.frameSceneNum = 0;
+	tr->frameCount++;
+	tr->frameSceneNum = 0;
 
 	//
 	// do overdraw measurement
@@ -420,7 +420,7 @@ Returns the number of msec spent in the back end
 void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	swapBuffersCommand_t	*cmd;
 
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
 	cmd = R_GetCommandBuffer( sizeof( *cmd ) );
@@ -436,9 +436,9 @@ void RE_EndFrame( int *frontEndMsec, int *backEndMsec ) {
 	R_ToggleSmpFrame();
 
 	if ( frontEndMsec ) {
-		*frontEndMsec = tr.frontEndMsec;
+		*frontEndMsec = tr->frontEndMsec;
 	}
-	tr.frontEndMsec = 0;
+	tr->frontEndMsec = 0;
 	if ( backEndMsec ) {
 		*backEndMsec = backEnd.pc.msec;
 	}

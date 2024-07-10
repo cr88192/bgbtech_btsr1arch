@@ -2310,6 +2310,13 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 		return((ctx->has_xgpr&2)!=0);
 	}
 
+	if(!bgbcc_stricmp(sym, "abi_is_xgarg"))
+	{
+//		if(tctx->arch_sizeof_ptr==8)
+//			return(0);
+		return((ctx->has_xgpr&2)!=0);
+	}
+
 	if(!bgbcc_stricmp(sym, "has_dmacl"))
 		return((ctx->has_dmacl&1)!=0);
 	if(!bgbcc_stricmp(sym, "has_qmul"))

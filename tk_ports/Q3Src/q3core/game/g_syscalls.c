@@ -193,7 +193,7 @@ static nlint syscall_16( nlint a0, nlint a1, nlint a2, nlint a3,
 }
 
 //void dllEntry( int (QDECL *syscallptr)( int arg,... ) ) {
-void dllEntry( nlint (QDECL *syscallptr)( nlint *arg ) ) {
+VM_EXPORT void dllEntry( nlint (QDECL *syscallptr)( nlint *arg ) ) {
 	syscall_i = syscallptr;
 }
 
@@ -530,22 +530,28 @@ int trap_AAS_AreaTravelTimeToGoalArea(int areanum, vec3_t origin, int goalareanu
 		areanum, (nlint)origin, goalareanum, travelflags );
 }
 
-int trap_AAS_EnableRoutingArea( int areanum, int enable ) {
+int trap_AAS_EnableRoutingArea( int areanum, int enable )
+{
 	return syscall_3( BOTLIB_AAS_ENABLE_ROUTING_AREA, areanum, enable );
 }
 
-int trap_AAS_PredictRoute(void /*struct aas_predictroute_s*/ *route, int areanum, vec3_t origin,
-							int goalareanum, int travelflags, int maxareas, int maxtime,
-							int stopevent, int stopcontents, int stoptfl, int stopareanum) {
+int trap_AAS_PredictRoute(void /*struct aas_predictroute_s*/ *route,
+	int areanum, vec3_t origin,
+	int goalareanum, int travelflags, int maxareas, int maxtime,
+	int stopevent, int stopcontents, int stoptfl, int stopareanum)
+{
 	return syscall_12( BOTLIB_AAS_PREDICT_ROUTE,
 		(nlint)route, areanum, (nlint)origin, goalareanum,
 		travelflags, maxareas, maxtime, stopevent,
 		stopcontents, stoptfl, stopareanum );
 }
 
-int trap_AAS_AlternativeRouteGoals(vec3_t start, int startareanum, vec3_t goal, int goalareanum, int travelflags,
-										void /*struct aas_altroutegoal_s*/ *altroutegoals, int maxaltroutegoals,
-										int type) {
+int trap_AAS_AlternativeRouteGoals(vec3_t start, int startareanum,
+	vec3_t goal, int goalareanum, int travelflags,
+	void /*struct aas_altroutegoal_s*/ *altroutegoals,
+	int maxaltroutegoals,
+	int type)
+{
 	return syscall_9( BOTLIB_AAS_ALTERNATIVE_ROUTE_GOAL,
 		(nlint)start, startareanum, (nlint)goal,
 		goalareanum, travelflags, (nlint)altroutegoals,
@@ -556,7 +562,14 @@ int trap_AAS_Swimming(vec3_t origin) {
 	return syscall_2( BOTLIB_AAS_SWIMMING, (nlint)origin );
 }
 
-int trap_AAS_PredictClientMovement(void /* struct aas_clientmove_s */ *move, int entnum, vec3_t origin, int presencetype, int onground, vec3_t velocity, vec3_t cmdmove, int cmdframes, int maxframes, float frametime, int stopevent, int stopareanum, int visualize) {
+int trap_AAS_PredictClientMovement(
+	void /* struct aas_clientmove_s */ *move, int entnum,
+	vec3_t origin, int presencetype, int onground,
+	vec3_t velocity, vec3_t cmdmove,
+	int cmdframes, int maxframes,
+	float frametime, int stopevent,
+	int stopareanum, int visualize)
+{
 	return syscall_14( BOTLIB_AAS_PREDICT_CLIENT_MOVEMENT,
 		(nlint)move, entnum, (nlint)origin, presencetype,
 		onground, (nlint)velocity, (nlint)cmdmove, cmdframes,

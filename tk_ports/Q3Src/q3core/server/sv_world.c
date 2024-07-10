@@ -597,7 +597,10 @@ Moves the given mins/maxs volume through the world from start to end.
 passEntityNum and entities owned by passEntityNum are explicitly not checked.
 ==================
 */
-void SV_Trace( trace_t *results, const vec3_t start, vec3_t mins, vec3_t maxs, const vec3_t end, int passEntityNum, int contentmask, int capsule ) {
+void SV_Trace( trace_t *results, const vec3_t start,
+//	vec3_t mins, vec3_t maxs,
+	float *mins, float *maxs,
+	const vec3_t end, int passEntityNum, int contentmask, int capsule ) {
 	moveclip_t	clip;
 	int			i;
 

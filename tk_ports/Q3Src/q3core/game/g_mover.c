@@ -720,6 +720,9 @@ void InitMover( gentity_t *ent ) {
 	qboolean	lightSet, colorSet;
 	char		*sound;
 
+	light = 0;
+	sound = NULL;
+
 	// if the "model2" key is set, use a seperate model
 	// for drawing, but clip against the brushes
 	if ( ent->model2 ) {
@@ -949,6 +952,8 @@ void SP_func_door (gentity_t *ent) {
 	vec3_t	size;
 	float	lip;
 
+	lip = 0;
+
 	ent->sound1to2 = ent->sound2to1 = G_SoundIndex("sound/movers/doors/dr1_strt.wav");
 	ent->soundPos1 = ent->soundPos2 = G_SoundIndex("sound/movers/doors/dr1_end.wav");
 
@@ -997,6 +1002,7 @@ void SP_func_door (gentity_t *ent) {
 
 	if ( ! (ent->flags & FL_TEAMSLAVE ) ) {
 		int health;
+		health = 0;
 
 		G_SpawnInt( "health", "0", &health );
 		if ( health ) {
@@ -1116,6 +1122,9 @@ Plats are always drawn in the extended position so they will light correctly.
 void SP_func_plat (gentity_t *ent) {
 	float		lip, height;
 
+	lip = 0;
+	height = 0;
+
 	ent->sound1to2 = ent->sound2to1 = G_SoundIndex("sound/movers/plats/pt1_strt.wav");
 	ent->soundPos1 = ent->soundPos2 = G_SoundIndex("sound/movers/plats/pt1_end.wav");
 
@@ -1202,6 +1211,8 @@ void SP_func_button( gentity_t *ent ) {
 	float		lip;
 
 	ent->sound1to2 = G_SoundIndex("sound/movers/switches/butn2.wav");
+	
+	lip = 0;
 	
 	if ( !ent->speed ) {
 		ent->speed = 40;
@@ -1531,6 +1542,9 @@ void SP_func_bobbing (gentity_t *ent) {
 	float		height;
 	float		phase;
 
+	height = 0;
+	phase = 0;
+
 	G_SpawnFloat( "speed", "4", &ent->speed );
 	G_SpawnFloat( "height", "32", &height );
 	G_SpawnInt( "dmg", "2", &ent->damage );
@@ -1581,6 +1595,9 @@ void SP_func_pendulum(gentity_t *ent) {
 	float		length;
 	float		phase;
 	float		speed;
+
+	speed = 0;
+	phase = 0;
 
 	G_SpawnFloat( "speed", "30", &speed );
 	G_SpawnInt( "dmg", "2", &ent->damage );

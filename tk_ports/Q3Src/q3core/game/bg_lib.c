@@ -39,6 +39,8 @@
  */
 
 #if defined(LIBC_SCCS) && !defined(lint)
+// #if 0
+
 #if 0
 static char sccsid[] = "@(#)qsort.c	8.1 (Berkeley) 6/4/93";
 #endif
@@ -56,6 +58,9 @@ static void	 swapfunc(char *, char *, int, int);
 #ifndef min
 #define min(a, b)	(a) < (b) ? a : b
 #endif
+
+#if 0
+//BGB: WTF?
 
 /*
  * Qsort routine from Bentley & McIlroy's "Engineering a Sort Function".
@@ -186,6 +191,8 @@ loop:	SWAPINIT(a, es);
 	}
 /*		qsort(pn - r, r / es, es, cmp);*/
 }
+
+#endif
 
 //==================================================================================
 

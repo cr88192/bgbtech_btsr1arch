@@ -46,12 +46,12 @@ void R_ToggleSmpFrame( void ) {
 	if ( r_smp->integer ) {
 		// use the other buffers next frame, because another CPU
 		// may still be rendering into the current ones
-		tr.smpFrame ^= 1;
+		tr->smpFrame ^= 1;
 	} else {
-		tr.smpFrame = 0;
+		tr->smpFrame = 0;
 	}
 
-	backEndData[tr.smpFrame]->commands.used = 0;
+	backEndData[tr->smpFrame]->commands.used = 0;
 
 	r_firstSceneDrawSurf = 0;
 
@@ -100,10 +100,10 @@ void R_AddPolygonSurfaces( void ) {
 	shader_t	*sh;
 	srfPoly_t	*poly;
 
-	tr.currentEntityNum = ENTITYNUM_WORLD;
-	tr.shiftedEntityNum = tr.currentEntityNum << QSORT_ENTITYNUM_SHIFT;
+	tr->currentEntityNum = ENTITYNUM_WORLD;
+	tr->shiftedEntityNum = tr->currentEntityNum << QSORT_ENTITYNUM_SHIFT;
 
-	for ( i = 0, poly = tr.refdef.polys; i < tr.refdef.numPolys ; i++, poly++ ) {
+	for ( i = 0, poly = tr->refdef.polys; i < tr->refdef.numPolys ; i++, poly++ ) {
 		sh = R_GetShaderByHandle( poly->hShader );
 		R_AddDrawSurf( ( void * )poly, sh, poly->fogIndex, qfalse );
 	}
@@ -122,7 +122,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 	fog_t		*fog;
 	vec3_t		bounds[2];
 
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
 
@@ -143,11 +143,11 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 			return;
 		}
 
-		poly = &backEndData[tr.smpFrame]->polys[r_numpolys];
+		poly = &backEndData[tr->smpFrame]->polys[r_numpolys];
 		poly->surfaceType = SF_POLY;
 		poly->hShader = hShader;
 		poly->numVerts = numVerts;
-		poly->verts = &backEndData[tr.smpFrame]->polyVerts[r_numpolyverts];
+		poly->verts = &backEndData[tr->smpFrame]->polyVerts[r_numpolyverts];
 		
 		Com_Memcpy( poly->verts, &verts[numVerts*j], numVerts * sizeof( *verts ) );
 
@@ -162,11 +162,11 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 		r_numpolyverts += numVerts;
 
 		// if no world is loaded
-		if ( tr.world == NULL ) {
+		if ( tr->world == NULL ) {
 			fogIndex = 0;
 		}
 		// see if it is in a fog volume
-		else if ( tr.world->numfogs == 1 ) {
+		else if ( tr->world->numfogs == 1 ) {
 			fogIndex = 0;
 		} else {
 			// find which fog volume the poly is in
@@ -175,8 +175,8 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 			for ( i = 1 ; i < poly->numVerts ; i++ ) {
 				AddPointToBounds( poly->verts[i].xyz, bounds[0], bounds[1] );
 			}
-			for ( fogIndex = 1 ; fogIndex < tr.world->numfogs ; fogIndex++ ) {
-				fog = &tr.world->fogs[fogIndex]; 
+			for ( fogIndex = 1 ; fogIndex < tr->world->numfogs ; fogIndex++ ) {
+				fog = &tr->world->fogs[fogIndex]; 
 				if ( bounds[1][0] >= fog->bounds[0][0]
 					&& bounds[1][1] >= fog->bounds[0][1]
 					&& bounds[1][2] >= fog->bounds[0][2]
@@ -186,7 +186,7 @@ void RE_AddPolyToScene( qhandle_t hShader, int numVerts, const polyVert_t *verts
 					break;
 				}
 			}
-			if ( fogIndex == tr.world->numfogs ) {
+			if ( fogIndex == tr->world->numfogs ) {
 				fogIndex = 0;
 			}
 		}
@@ -205,7 +205,7 @@ RE_AddRefEntityToScene
 =====================
 */
 void RE_AddRefEntityToScene( const refEntity_t *ent ) {
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
   // https://zerowing.idsoftware.com/bugzilla/show_bug.cgi?id=402
@@ -216,8 +216,8 @@ void RE_AddRefEntityToScene( const refEntity_t *ent ) {
 		ri.Error( ERR_DROP, "RE_AddRefEntityToScene: bad reType %i", ent->reType );
 	}
 
-	backEndData[tr.smpFrame]->entities[r_numentities].e = *ent;
-	backEndData[tr.smpFrame]->entities[r_numentities].lightingCalculated = qfalse;
+	backEndData[tr->smpFrame]->entities[r_numentities].e = *ent;
+	backEndData[tr->smpFrame]->entities[r_numentities].lightingCalculated = qfalse;
 
 	r_numentities++;
 }
@@ -232,7 +232,7 @@ RE_AddDynamicLightToScene
 void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, float g, float b, int additive ) {
 	dlight_t	*dl;
 
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
 	if ( r_numdlights >= MAX_DLIGHTS ) {
@@ -245,7 +245,7 @@ void RE_AddDynamicLightToScene( const vec3_t org, float intensity, float r, floa
 	if ( glConfig.hardwareType == GLHW_RIVA128 || glConfig.hardwareType == GLHW_PERMEDIA2 ) {
 		return;
 	}
-	dl = &backEndData[tr.smpFrame]->dlights[r_numdlights++];
+	dl = &backEndData[tr->smpFrame]->dlights[r_numdlights++];
 	VectorCopy (org, dl->origin);
 	dl->radius = intensity;
 	dl->color[0] = r;
@@ -285,11 +285,12 @@ Rendering a scene may require multiple views to be rendered
 to handle mirrors,
 @@@@@@@@@@@@@@@@@@@@@
 */
-void RE_RenderScene( const refdef_t *fd ) {
+void RE_RenderScene( const refdef_t *fd )
+{
 	viewParms_t		parms;
 	int				startTime;
 
-	if ( !tr.registered ) {
+	if ( !tr->registered ) {
 		return;
 	}
 	GLimp_LogComment( "====== RE_RenderScene =====\n" );
@@ -298,72 +299,75 @@ void RE_RenderScene( const refdef_t *fd ) {
 		return;
 	}
 
+//	printf("RE_RenderScene: Origin %f %f %f\n",
+//		fd->vieworg[0], fd->vieworg[1], fd->vieworg[2]);
+
 	startTime = ri.Milliseconds();
 
-	if (!tr.world && !( fd->rdflags & RDF_NOWORLDMODEL ) ) {
+	if (!tr->world && !( fd->rdflags & RDF_NOWORLDMODEL ) ) {
 		ri.Error (ERR_DROP, "R_RenderScene: NULL worldmodel");
 	}
 
-	Com_Memcpy( tr.refdef.text, fd->text, sizeof( tr.refdef.text ) );
+	Com_Memcpy( tr->refdef.text, fd->text, sizeof( tr->refdef.text ) );
 
-	tr.refdef.x = fd->x;
-	tr.refdef.y = fd->y;
-	tr.refdef.width = fd->width;
-	tr.refdef.height = fd->height;
-	tr.refdef.fov_x = fd->fov_x;
-	tr.refdef.fov_y = fd->fov_y;
+	tr->refdef.x = fd->x;
+	tr->refdef.y = fd->y;
+	tr->refdef.width = fd->width;
+	tr->refdef.height = fd->height;
+	tr->refdef.fov_x = fd->fov_x;
+	tr->refdef.fov_y = fd->fov_y;
 
-	VectorCopy( fd->vieworg, tr.refdef.vieworg );
-	VectorCopy( fd->viewaxis[0], tr.refdef.viewaxis[0] );
-	VectorCopy( fd->viewaxis[1], tr.refdef.viewaxis[1] );
-	VectorCopy( fd->viewaxis[2], tr.refdef.viewaxis[2] );
+	VectorCopy( fd->vieworg, tr->refdef.vieworg );
+	VectorCopy( fd->viewaxis[0], tr->refdef.viewaxis[0] );
+	VectorCopy( fd->viewaxis[1], tr->refdef.viewaxis[1] );
+	VectorCopy( fd->viewaxis[2], tr->refdef.viewaxis[2] );
 
-	tr.refdef.time = fd->time;
-	tr.refdef.rdflags = fd->rdflags;
+	tr->refdef.time = fd->time;
+	tr->refdef.rdflags = fd->rdflags;
 
 	// copy the areamask data over and note if it has changed, which
 	// will force a reset of the visible leafs even if the view hasn't moved
-	tr.refdef.areamaskModified = qfalse;
-	if ( ! (tr.refdef.rdflags & RDF_NOWORLDMODEL) ) {
+	tr->refdef.areamaskModified = qfalse;
+	if ( ! (tr->refdef.rdflags & RDF_NOWORLDMODEL) ) {
 		int		areaDiff;
 		int		i;
 
 		// compare the area bits
 		areaDiff = 0;
 		for (i = 0 ; i < MAX_MAP_AREA_BYTES/4 ; i++) {
-			areaDiff |= ((int *)tr.refdef.areamask)[i] ^ ((int *)fd->areamask)[i];
-			((int *)tr.refdef.areamask)[i] = ((int *)fd->areamask)[i];
+			areaDiff |= ((int *)tr->refdef.areamask)[i] ^ ((int *)fd->areamask)[i];
+			((int *)tr->refdef.areamask)[i] = ((int *)fd->areamask)[i];
 		}
 
 		if ( areaDiff ) {
 			// a door just opened or something
-			tr.refdef.areamaskModified = qtrue;
+			tr->refdef.areamaskModified = qtrue;
 		}
 	}
 
 
 	// derived info
 
-	tr.refdef.floatTime = tr.refdef.time * 0.001f;
+	tr->refdef.floatTime = tr->refdef.time * 0.001f;
 
-	tr.refdef.numDrawSurfs = r_firstSceneDrawSurf;
-	tr.refdef.drawSurfs = backEndData[tr.smpFrame]->drawSurfs;
+	tr->refdef.numDrawSurfs = r_firstSceneDrawSurf;
+	tr->refdef.drawSurfs = backEndData[tr->smpFrame]->drawSurfs;
 
-	tr.refdef.num_entities = r_numentities - r_firstSceneEntity;
-	tr.refdef.entities = &backEndData[tr.smpFrame]->entities[r_firstSceneEntity];
+	tr->refdef.num_entities = r_numentities - r_firstSceneEntity;
+	tr->refdef.entities = &backEndData[tr->smpFrame]->entities[r_firstSceneEntity];
 
-	tr.refdef.num_dlights = r_numdlights - r_firstSceneDlight;
-	tr.refdef.dlights = &backEndData[tr.smpFrame]->dlights[r_firstSceneDlight];
+	tr->refdef.num_dlights = r_numdlights - r_firstSceneDlight;
+	tr->refdef.dlights = &backEndData[tr->smpFrame]->dlights[r_firstSceneDlight];
 
-	tr.refdef.numPolys = r_numpolys - r_firstScenePoly;
-	tr.refdef.polys = &backEndData[tr.smpFrame]->polys[r_firstScenePoly];
+	tr->refdef.numPolys = r_numpolys - r_firstScenePoly;
+	tr->refdef.polys = &backEndData[tr->smpFrame]->polys[r_firstScenePoly];
 
 	// turn off dynamic lighting globally by clearing all the
 	// dlights if it needs to be disabled or if vertex lighting is enabled
 	if ( r_dynamiclight->integer == 0 ||
 		 r_vertexLight->integer == 1 ||
 		 glConfig.hardwareType == GLHW_PERMEDIA2 ) {
-		tr.refdef.num_dlights = 0;
+		tr->refdef.num_dlights = 0;
 	}
 
 	// a single frame may have multiple scenes draw inside it --
@@ -371,8 +375,8 @@ void RE_RenderScene( const refdef_t *fd ) {
 	// They need to be distinguished by the light flare code, because
 	// the visibility state for a given surface may be different in
 	// each scene / view.
-	tr.frameSceneNum++;
-	tr.sceneCount++;
+	tr->frameSceneNum++;
+	tr->sceneCount++;
 
 	// setup view parms for the initial view
 	//
@@ -381,14 +385,14 @@ void RE_RenderScene( const refdef_t *fd ) {
 	// convert to GL's 0-at-the-bottom space
 	//
 	Com_Memset( &parms, 0, sizeof( parms ) );
-	parms.viewportX = tr.refdef.x;
-	parms.viewportY = glConfig.vidHeight - ( tr.refdef.y + tr.refdef.height );
-	parms.viewportWidth = tr.refdef.width;
-	parms.viewportHeight = tr.refdef.height;
+	parms.viewportX = tr->refdef.x;
+	parms.viewportY = glConfig.vidHeight - ( tr->refdef.y + tr->refdef.height );
+	parms.viewportWidth = tr->refdef.width;
+	parms.viewportHeight = tr->refdef.height;
 	parms.isPortal = qfalse;
 
-	parms.fovX = tr.refdef.fov_x;
-	parms.fovY = tr.refdef.fov_y;
+	parms.fovX = tr->refdef.fov_x;
+	parms.fovY = tr->refdef.fov_y;
 
 	VectorCopy( fd->vieworg, parms.or.origin );
 	VectorCopy( fd->viewaxis[0], parms.or.axis[0] );
@@ -400,10 +404,10 @@ void RE_RenderScene( const refdef_t *fd ) {
 	R_RenderView( &parms );
 
 	// the next scene rendered in this frame will tack on after this one
-	r_firstSceneDrawSurf = tr.refdef.numDrawSurfs;
+	r_firstSceneDrawSurf = tr->refdef.numDrawSurfs;
 	r_firstSceneEntity = r_numentities;
 	r_firstSceneDlight = r_numdlights;
 	r_firstScenePoly = r_numpolys;
 
-	tr.frontEndMsec += ri.Milliseconds() - startTime;
+	tr->frontEndMsec += ri.Milliseconds() - startTime;
 }

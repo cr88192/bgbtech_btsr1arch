@@ -119,7 +119,7 @@ typedef u32 nlint;
 #define BTRA_TWOCC(a, b)			((a)|((b)<<8))
 #define BTRA_FOURCC(a, b, c, d)		((a)|((b)<<8)|((c)<<16)|((d)<<24))
 
-#define		TKRA_CHEAP_BILIN
+// #define		TKRA_CHEAP_BILIN
 
 
 /*

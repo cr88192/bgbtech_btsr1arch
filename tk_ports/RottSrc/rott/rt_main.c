@@ -249,7 +249,7 @@ void main ( int argc, char *argv[] )
 			}
 
 		if ( status1 || status2 || status3 )
-			{
+		{
 			printf( "\n\nROTT was unable to initialize your " );
 			if ( status1 )
 				{
@@ -280,14 +280,15 @@ void main ( int argc, char *argv[] )
 		InitializeRNG ();
 		InitializeMessages();
 		LoadColorMap();
-		}
+	}
 	if (infopause==true)
-		{
+	{
 		printf("\n< Press any key to continue >\n");
 		getchar();
-		}
+	}
 	I_StartupTimer();
 	I_StartupKeyboard();
+
 #if 0
 #if (SHAREWARE == 1)
 	if ((!SOUNDSETUP) && (standalone==false))
@@ -303,13 +304,24 @@ void main ( int argc, char *argv[] )
 		}
 #endif
 #endif
+
 	locplayerstate = &PLAYERSTATE[consoleplayer];
 
 	if (standalone==true)
+	{
+		printf("Server Loop\n");
 		ServerLoop();
+	}
+
+	printf("Debug 1 %s:%d\n", __FILE__, __LINE__);
 
 	VL_SetVGAPlaneMode();
+
+	printf("Debug 2 %s:%d\n", __FILE__, __LINE__);
+
 	VL_SetPalette(origpal);
+
+	printf("Debug 3 %s:%d\n", __FILE__, __LINE__);
 
 //	TextMode();
 //	GraphicsMode();
@@ -320,10 +332,10 @@ void main ( int argc, char *argv[] )
 	SetViewSize(8);
 
 	if ( SOUNDSETUP )
-		{
+	{
 		SwitchPalette( origpal, 35 );
 		CP_SoundSetup();
-		}
+	}
 
 	playstate = ex_titles;
 

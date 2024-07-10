@@ -42,7 +42,7 @@ This must be the very first function compiled into the .qvm file
 */
 //int vmMain( int command, int arg0, int arg1, int arg2, int arg3, int arg4, int arg5, int arg6, int arg7, int arg8, int arg9, int arg10, int arg11  ) {
 
-nlint vmMain( int command, nlint *args )
+VM_EXPORT nlint vmMain( int command, nlint *args )
 {
 	switch ( command ) {
 	case UI_GETAPIVERSION:

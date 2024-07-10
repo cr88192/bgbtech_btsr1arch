@@ -2192,6 +2192,14 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		{
 //			if(!strcmp(ctx->cur_func->name, "Mod_LoadTextures"))
 //				{ k=-1; }
+			if(ctx->cur_func->locals[j]->fxmoffs<0)
+			{
+				/* Not stored locally. */
+				nm1=BGBCC_JX2C_EmitLoadFrameNmidForVReg(ctx, sctx, sreg);
+				k=ctx->cur_func->locals[j]->fxoffs;
+				i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, nm1, k, dreg);
+				return(i);
+			}
 		
 			k=(ctx->cur_func->locals[j]->fxmoffs)+(sctx->frm_offs_fix);
 			i=BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, k, dreg);
@@ -2219,6 +2227,15 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		if(	(ctx->cur_func->locals[j]->regcls==BGBCC_SH_REGCLS_VO_REF) ||
 			(ctx->cur_func->locals[j]->regcls==BGBCC_SH_REGCLS_VO_REF2))
 		{
+			if(ctx->cur_func->locals[j]->fxmoffs<0)
+			{
+				/* Not stored locally. */
+				nm1=BGBCC_JX2C_EmitLoadFrameNmidForVReg(ctx, sctx, sreg);
+				k=ctx->cur_func->locals[j]->fxoffs;
+				i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, nm1, k, dreg);
+				return(i);
+			}
+		
 			k=(ctx->cur_func->locals[j]->fxmoffs)+(sctx->frm_offs_fix);
 			i=BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, k, dreg);
 			return(i);
@@ -3535,12 +3552,25 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 			tsz=BGBCC_CCXL_TypeGetLogicalSize(ctx,
 				ctx->cur_func->locals[j]->type);
 
-			k=(ctx->cur_func->locals[j]->fxmoffs)+(sctx->frm_offs_fix);
 			if((ctx->cur_func->locals[j]->regcls!=BGBCC_SH_REGCLS_VO_REF) &&
 				(ctx->cur_func->locals[j]->regcls!=BGBCC_SH_REGCLS_VO_REF2))
+			{
+				k=ctx->cur_func->locals[j]->fxoffs;
+				i=BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, k, treg);
+			}else
+			{
+				if(ctx->cur_func->locals[j]->fxmoffs<0)
+				{
+					nm1=BGBCC_SH_NMID_MOVQ;
 					k=ctx->cur_func->locals[j]->fxoffs;
+					i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, nm1, k, treg);
+				}else
+				{
+					k=(ctx->cur_func->locals[j]->fxmoffs)+(sctx->frm_offs_fix);
+					i=BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, k, treg);
+				}
+			}
 
-			i=BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, k, treg);
 
 			BGBCC_JX2C_EmitValueCopyRegRegSz(ctx, sctx, treg, sreg, tsz, 4);
 
@@ -4401,7 +4431,7 @@ int BGBCC_JX2C_EmitLdaFrameVRegReg(
 	BGBCC_JX2_Context *sctx,
 	ccxl_register sreg, int dreg)
 {
-	int tr0, tr1;
+	int tr0, tr1, nm1;
 	int p0, p1;
 	int i, j, k;
 
@@ -4414,7 +4444,17 @@ int BGBCC_JX2C_EmitLdaFrameVRegReg(
 
 		if(	(ctx->cur_func->locals[j]->regcls==BGBCC_SH_REGCLS_VO_REF) ||
 			(ctx->cur_func->locals[j]->regcls==BGBCC_SH_REGCLS_VO_REF2))
-				k=(ctx->cur_func->locals[j]->fxmoffs)+(sctx->frm_offs_fix);
+		{
+			if(ctx->cur_func->locals[j]->fxmoffs<0)
+			{
+				nm1=BGBCC_SH_NMID_MOVQ;
+				k=ctx->cur_func->locals[j]->fxoffs;
+				i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, nm1, k, dreg);
+				return(i);
+			}
+
+			k=(ctx->cur_func->locals[j]->fxmoffs)+(sctx->frm_offs_fix);
+		}
 
 		i=BGBCC_JX2C_EmitLdaFrameOfsReg(ctx, sctx, k, dreg);
 		return(i);

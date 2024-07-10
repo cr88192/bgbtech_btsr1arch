@@ -199,6 +199,8 @@ void SP_target_speaker( gentity_t *ent ) {
 	char	buffer[MAX_QPATH];
 	char	*s;
 
+	s = NULL;
+
 	G_SpawnFloat( "wait", "0", &ent->wait );
 	G_SpawnFloat( "random", "0", &ent->random );
 

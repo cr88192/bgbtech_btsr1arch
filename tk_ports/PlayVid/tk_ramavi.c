@@ -844,7 +844,8 @@ BGBBTJ_AVI_Context *BGBBTJ_AVI_LoadAVI(char *name)
 		return(NULL);
 	}
 
-	if(sz<(1<<25))
+//	if(sz<(1<<25))
+	if(0)
 	{
 		printf("AVI: Begin Bulk Load\n");
 	

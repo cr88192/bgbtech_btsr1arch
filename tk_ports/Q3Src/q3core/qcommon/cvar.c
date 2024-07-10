@@ -33,7 +33,7 @@ cvar_t		cvar_indexes[MAX_CVARS];
 int			cvar_numIndexes;
 
 #define FILE_HASH_SIZE		256
-static	cvar_t*		hashTable[FILE_HASH_SIZE];
+static	cvar_t*		cvar_hashTable[FILE_HASH_SIZE];
 
 cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force);
 
@@ -42,7 +42,8 @@ cvar_t *Cvar_Set2( const char *var_name, const char *value, qboolean force);
 return a hash value for the filename
 ================
 */
-static long generateHashValue( const char *fname ) {
+static long Cvar_GenerateHashValue( const char *fname )
+{
 	int		i;
 	long	hash;
 	char	letter;
@@ -88,9 +89,9 @@ static cvar_t *Cvar_FindVar( const char *var_name ) {
 	cvar_t	*var;
 	long hash;
 
-	hash = generateHashValue(var_name);
+	hash = Cvar_GenerateHashValue(var_name);
 	
-	for (var=hashTable[hash] ; var ; var=var->hashNext) {
+	for (var=cvar_hashTable[hash] ; var ; var=var->hashNext) {
 		if (!Q_stricmp(var_name, var->name)) {
 			return var;
 		}
@@ -184,7 +185,8 @@ If the variable already exists, the value will not be set unless CVAR_ROM
 The flags will be or'ed in if the variable exists.
 ============
 */
-cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
+cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags )
+{
 	cvar_t	*var;
 	long	hash;
 
@@ -205,11 +207,14 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 #endif
 
 	var = Cvar_FindVar (var_name);
-	if ( var ) {
+	if ( var )
+	{
 		// if the C code is now specifying a variable that the user already
 		// set a value for, take the new value as the reset value
-		if ( ( var->flags & CVAR_USER_CREATED ) && !( flags & CVAR_USER_CREATED )
-			&& var_value[0] ) {
+		if ( ( var->flags & CVAR_USER_CREATED ) &&
+			!( flags & CVAR_USER_CREATED )
+			&& var_value[0] )
+		{
 			var->flags &= ~CVAR_USER_CREATED;
 			Z_Free( var->resetString );
 			var->resetString = CopyString( var_value );
@@ -252,9 +257,13 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 	//
 	// allocate a new cvar
 	//
-	if ( cvar_numIndexes >= MAX_CVARS ) {
+	if ( cvar_numIndexes >= MAX_CVARS )
+	{
 		Com_Error( ERR_FATAL, "MAX_CVARS" );
 	}
+
+	Com_Printf( "Cvar_Get: Create %s %s", var_name, var_value );
+
 	var = &cvar_indexes[cvar_numIndexes];
 	cvar_numIndexes++;
 	var->name = CopyString (var_name);
@@ -271,9 +280,9 @@ cvar_t *Cvar_Get( const char *var_name, const char *var_value, int flags ) {
 
 	var->flags = flags;
 
-	hash = generateHashValue(var_name);
-	var->hashNext = hashTable[hash];
-	hashTable[hash] = var;
+	hash = Cvar_GenerateHashValue(var_name);
+	var->hashNext = cvar_hashTable[hash];
+	cvar_hashTable[hash] = var;
 
 	return var;
 }

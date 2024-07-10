@@ -10,7 +10,8 @@ LNKOPT =
 
 # LIBS=-lm -lvxcore_bjx2
 # LIBS = -lvxcore_bjx2
-LIBS = -lvxcore64 -ltkgdi
+# LIBS = -lvxcore64 -ltkgdi
+LIBS = -lc -ltkgdi
 
 # CFLAGS = -I. -mBJX2 -Os -Zz
 # CFLAGS = -I. -mBJX2 -O2 -fwex3w -fwexj -Zz

@@ -162,6 +162,8 @@ static qboolean	CM_NeedsSubdivision( vec3_t a, vec3_t b, vec3_t c ) {
 	float		dist;
 	int			i;
 
+//	return		qfalse;		//BGB: Debug, Cheese it...
+
 	// calculate the linear midpoint
 	for ( i = 0 ; i < 3 ; i++ ) {
 		lmid[i] = 0.5*(a[i] + c[i]);
@@ -187,7 +189,9 @@ a, b, and c are control points.
 the subdivided sequence will be: a, out1, out2, out3, c
 ===============
 */
-static void CM_Subdivide( vec3_t a, vec3_t b, vec3_t c, vec3_t out1, vec3_t out2, vec3_t out3 ) {
+static void CM_Subdivide(
+	vec3_t a, vec3_t b, vec3_t c, vec3_t out1, vec3_t out2, vec3_t out3 )
+{
 	int		i;
 
 	for ( i = 0 ; i < 3 ; i++ ) {
@@ -286,7 +290,8 @@ all the aproximating points are within SUBDIVIDE_DISTANCE
 from the true curve
 =================
 */
-static void CM_SubdivideGridColumns( cGrid_t *grid ) {
+static void CM_SubdivideGridColumns( cGrid_t *grid )
+{
 	int		i, j, k;
 
 	for ( i = 0 ; i < grid->width - 2 ;  ) {
@@ -302,7 +307,8 @@ static void CM_SubdivideGridColumns( cGrid_t *grid ) {
 				break;
 			}
 		}
-		if ( j == grid->height ) {
+		if ( j == grid->height )
+		{
 			// all of the points were close enough to the linear midpoints
 			// that we can collapse the entire column away
 			for ( j = 0 ; j < grid->height ; j++ ) {
@@ -616,7 +622,10 @@ static int	CM_GridPlane( int gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2], int i,
 CM_EdgePlaneNum
 ==================
 */
-static int CM_EdgePlaneNum( cGrid_t *grid, int gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2], int i, int j, int k ) {
+static int CM_EdgePlaneNum( cGrid_t *grid,
+	int gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2],
+	int i, int j, int k )
+{
 	float	*p1, *p2;
 	vec3_t		up;
 	int			p;
@@ -675,8 +684,11 @@ static int CM_EdgePlaneNum( cGrid_t *grid, int gridPlanes[MAX_GRID_SIZE][MAX_GRI
 CM_SetBorderInward
 ===================
 */
-static void CM_SetBorderInward( facet_t *facet, cGrid_t *grid, int gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2],
-						  int i, int j, int which ) {
+static void CM_SetBorderInward(
+	facet_t *facet, cGrid_t *grid,
+	int gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2],
+	int i, int j, int which )
+{
 	int		k, l;
 	float	*points[4];
 	int		numPoints;
@@ -753,7 +765,8 @@ CM_ValidateFacet
 If the facet isn't bounded by its borders, we screwed up.
 ==================
 */
-static qboolean CM_ValidateFacet( facet_t *facet ) {
+static qboolean CM_ValidateFacet( facet_t *facet )
+{
 	float		plane[4];
 	int			j;
 	winding_t	*w;
@@ -977,7 +990,8 @@ typedef enum {
 CM_PatchCollideFromGrid
 ==================
 */
-static void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf ) {
+static void CM_PatchCollideFromGrid( cGrid_t *grid, patchCollide_t *pf )
+{
 	int				i, j;
 	float			*p1, *p2, *p3;
 //	MAC_STATIC int				gridPlanes[MAX_GRID_SIZE][MAX_GRID_SIZE][2];
@@ -1146,7 +1160,9 @@ collision detection with a patch mesh.
 Points is packed as concatenated rows.
 ===================
 */
-struct patchCollide_s	*CM_GeneratePatchCollide( int width, int height, vec3_t *points ) {
+struct patchCollide_s	*CM_GeneratePatchCollide(
+	int width, int height, vec3_t *points )
+{
 	patchCollide_t	*pf;
 //	MAC_STATIC cGrid_t			grid;
 	static		cGrid_t			grid;
@@ -1232,9 +1248,14 @@ CM_TracePointThroughPatchCollide
   special case for point traces because the patch collide "brushes" have no volume
 ====================
 */
-void CM_TracePointThroughPatchCollide( traceWork_t *tw, const struct patchCollide_s *pc ) {
-	qboolean	frontFacing[MAX_PATCH_PLANES];
-	float		intersection[MAX_PATCH_PLANES];
+void CM_TracePointThroughPatchCollide(
+	traceWork_t *tw, const struct patchCollide_s *pc )
+{
+//	qboolean	frontFacing[MAX_PATCH_PLANES];
+//	float		intersection[MAX_PATCH_PLANES];
+
+	qboolean	*frontFacing;
+	float		*intersection;
 	float		intersect;
 	const patchPlane_t	*planes;
 	const facet_t	*facet;
@@ -1245,11 +1266,16 @@ void CM_TracePointThroughPatchCollide( traceWork_t *tw, const struct patchCollid
 	static cvar_t *cv;
 #endif //BSPC
 
+	q_alloca_start
+
 #ifndef BSPC
 	if ( !cm_playerCurveClip->integer || !tw->isPoint ) {
 		return;
 	}
 #endif
+
+	frontFacing = q_alloca(MAX_PATCH_PLANES*sizeof(qboolean));
+	intersection = q_alloca(MAX_PATCH_PLANES*sizeof(float));
 
 	// determine the trace's relationship to all planes
 	planes = pc->planes;
@@ -1325,6 +1351,8 @@ void CM_TracePointThroughPatchCollide( traceWork_t *tw, const struct patchCollid
 			tw->trace.plane.dist = planes->plane[3];
 		}
 	}
+
+	q_alloca_end
 }
 
 /*
@@ -1332,7 +1360,10 @@ void CM_TracePointThroughPatchCollide( traceWork_t *tw, const struct patchCollid
 CM_CheckFacetPlane
 ====================
 */
-int CM_CheckFacetPlane(float *plane, vec3_t start, vec3_t end, float *enterFrac, float *leaveFrac, int *hit) {
+int CM_CheckFacetPlane(
+	float *plane, vec3_t start, vec3_t end,
+	float *enterFrac, float *leaveFrac, int *hit)
+{
 	float d1, d2, f;
 
 	*hit = qfalse;
@@ -1378,7 +1409,9 @@ int CM_CheckFacetPlane(float *plane, vec3_t start, vec3_t end, float *enterFrac,
 CM_TraceThroughPatchCollide
 ====================
 */
-void CM_TraceThroughPatchCollide( traceWork_t *tw, const struct patchCollide_s *pc ) {
+void CM_TraceThroughPatchCollide(
+	traceWork_t *tw, const struct patchCollide_s *pc )
+{
 	int i, j, hit, hitnum;
 	float offset, enterFrac, leaveFrac, t;
 	patchPlane_t *planes;
@@ -1514,7 +1547,9 @@ POSITION TEST
 CM_PositionTestInPatchCollide
 ====================
 */
-qboolean CM_PositionTestInPatchCollide( traceWork_t *tw, const struct patchCollide_s *pc ) {
+qboolean CM_PositionTestInPatchCollide(
+	traceWork_t *tw, const struct patchCollide_s *pc )
+{
 	int i, j;
 	float offset, t;
 	patchPlane_t *planes;

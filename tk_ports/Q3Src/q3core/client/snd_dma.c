@@ -96,7 +96,8 @@ static loopSound_t		loopSounds[MAX_GENTITIES];
 static	channel_t		*freelist = NULL;
 
 int						s_rawend;
-portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
+// portable_samplepair_t	s_rawsamples[MAX_RAW_SAMPLES];
+portable_samplepair_t	*s_rawsamples;
 
 
 // ====================================================================
@@ -165,6 +166,8 @@ void S_Init( void ) {
 	Cmd_AddCommand("s_list", S_SoundList_f);
 	Cmd_AddCommand("s_info", S_SoundInfo_f);
 	Cmd_AddCommand("s_stop", S_StopAllSounds);
+
+	s_rawsamples = malloc(sizeof(portable_samplepair_t)*MAX_RAW_SAMPLES);
 
 	r = SNDDMA_Init();
 	Com_Printf("------------------------------------\n");
@@ -780,7 +783,7 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 		lena = DistanceSquared(loopSounds[listener_number].origin, loopSounds[entityNum].origin);
 		VectorAdd(loopSounds[entityNum].origin, loopSounds[entityNum].velocity, out);
 		lenb = DistanceSquared(loopSounds[listener_number].origin, out);
-		if ((loopSounds[entityNum].framenum+1) != cls.framecount) {
+		if ((loopSounds[entityNum].framenum+1) != cls->framecount) {
 			loopSounds[entityNum].oldDopplerScale = 1.0;
 		} else {
 			loopSounds[entityNum].oldDopplerScale = loopSounds[entityNum].dopplerScale;
@@ -791,7 +794,7 @@ void S_AddLoopingSound( int entityNum, const vec3_t origin, const vec3_t velocit
 		}
 	}
 
-	loopSounds[entityNum].framenum = cls.framecount;
+	loopSounds[entityNum].framenum = cls->framecount;
 }
 
 /*
@@ -1163,7 +1166,7 @@ void S_Update( void ) {
 	channel_t	*ch;
 
 	if ( !s_soundStarted || s_soundMuted ) {
-		Com_DPrintf ("not started or muted\n");
+//		Com_DPrintf ("not started or muted\n");
 		return;
 	}
 
@@ -1533,10 +1536,13 @@ S_UpdateBackgroundTrack
 void S_UpdateBackgroundTrack( void ) {
 	int		bufferSamples;
 	int		fileSamples;
-	byte	raw[30000];		// just enough to fit in a mac stack frame
+//	byte	raw[30000];		// just enough to fit in a mac stack frame
+	byte	*raw;
 	int		fileBytes;
 	int		r;
 	static	float	musicVolume = 0.5f;
+
+	raw=NULL;
 
 	if ( !s_backgroundFile ) {
 		return;
@@ -1566,26 +1572,36 @@ void S_UpdateBackgroundTrack( void ) {
 			fileSamples = s_backgroundSamples;
 		}
 
+		raw=malloc(32768);
+
 		// our max buffer size
 		fileBytes = fileSamples * (s_backgroundInfo.width * s_backgroundInfo.channels);
-		if ( fileBytes > sizeof(raw) ) {
-			fileBytes = sizeof(raw);
-			fileSamples = fileBytes / (s_backgroundInfo.width * s_backgroundInfo.channels);
+		if ( fileBytes > 32768 )
+		{
+			fileBytes = 32768;
+			fileSamples = fileBytes /
+				(s_backgroundInfo.width * s_backgroundInfo.channels);
 		}
 
 		r = Sys_StreamedRead( raw, 1, fileBytes, s_backgroundFile );
 		if ( r != fileBytes ) {
 			Com_Printf("StreamedRead failure on music track\n");
 			S_StopBackgroundTrack();
+			free(raw);
 			return;
 		}
 
 		// byte swap if needed
-		S_ByteSwapRawSamples( fileSamples, s_backgroundInfo.width, s_backgroundInfo.channels, raw );
+		S_ByteSwapRawSamples( fileSamples, s_backgroundInfo.width, 
+			s_backgroundInfo.channels, raw );
 
 		// add to raw buffer
 		S_RawSamples( fileSamples, s_backgroundInfo.rate, 
-			s_backgroundInfo.width, s_backgroundInfo.channels, raw, musicVolume );
+			s_backgroundInfo.width, s_backgroundInfo.channels,
+			raw, musicVolume );
+
+		free(raw);
+		raw=NULL;
 
 		s_backgroundSamples -= fileSamples;
 		if ( !s_backgroundSamples ) {
@@ -1595,7 +1611,8 @@ void S_UpdateBackgroundTrack( void ) {
 				FS_FCloseFile( s_backgroundFile );
 				s_backgroundFile = 0;
 				S_StartBackgroundTrack( s_backgroundLoop, s_backgroundLoop );
-				if ( !s_backgroundFile ) {
+				if ( !s_backgroundFile )
+				{
 					return;		// loop failed to restart
 				}
 			} else {
