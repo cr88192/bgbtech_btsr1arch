@@ -3303,7 +3303,7 @@ int BGBCC_JX2_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 				{
 					opw1=0xFE00|((disp>>27)&0x00FF);
 					opw2=0x0000|((disp>>11)&0xFFFF);
-					opw3=0xF100|((rn&15)<<4)|((rm&15)<<0);
+					opw3=0xF100|((rn3&15)<<4)|((rm&15)<<0);
 					opw4=0x7000|ex2|
 						((disp>>3)&0x00FF)|
 						((disp>>23)&0x0100);

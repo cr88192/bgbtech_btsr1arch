@@ -115,8 +115,12 @@ int TKRA_SyncScreenCacheMode(TKRA_Context *ctx, int md)
 		i1=ptr[j+2];
 		i2=ptr[j+4];
 		i3=ptr[j+6];
+		i0=i0+i1;
+		i2=i2+i3;
+		i1=i0+i2;
 		j+=8;
-		ik+=i0+i1+i2+i3;
+		ik=ik+i1;
+//		ik+=i0+i1+i2+i3;
 	}
 	
 	ctx->cachemode=md;

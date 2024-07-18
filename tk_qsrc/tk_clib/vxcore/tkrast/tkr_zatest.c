@@ -219,7 +219,7 @@ int TKRA_ZaTest_BasicZeqAgeNz(
 int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 {
 	TKRA_SvContext *sctx;
-	int zfn, afn;
+	int zfn, afn, aref;
 	int isbasic;
 	
 	sctx=ctx->svctx;
@@ -234,6 +234,8 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 
 	if(ctx->stateflag1&TKRA_STFL1_NODEPTHWRITE)
 		zfn|=TKRA_ZAT_NZ;
+
+	aref=(ctx->zat_cref>>24)&255;
 
 	isbasic=0;
 	switch(zfn)
@@ -282,7 +284,10 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
 			sctx->ZaTest=TKRA_ZaTest_BasicZleAge;
-			isbasic=1;
+			if((aref>0x60) && (aref<0xA0))
+				{ isbasic=1; }
+			else
+				{ isbasic=0; }
 			break;
 		default:
 			__debugbreak();
@@ -329,7 +334,10 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
 			sctx->ZaTest=TKRA_ZaTest_BasicZalAgeNz;
-			isbasic=1;
+			if((aref>0x60) && (aref<0xA0))
+				{ isbasic=1; }
+			else
+				{ isbasic=0; }
 			if(ctx->stateflag1&TKRA_STFL1_DEPTHTEST)
 				isbasic=0;
 			break;
@@ -356,7 +364,10 @@ int TKRA_SetupDrawZaTest(TKRA_Context *ctx)
 		case TKRA_ZAT_GT:
 		case TKRA_ZAT_GE:
 			sctx->ZaTest=TKRA_ZaTest_BasicZleAgeNz;
-			isbasic=1;
+			if((aref>0x60) && (aref<0xA0))
+				{ isbasic=1; }
+			else
+				{ isbasic=0; }
 			if(sctx->bfn_flag&(TKRA_TRFL_DOLMAP|TKRA_TRFL_DOBLEND))
 				isbasic=0;
 			break;

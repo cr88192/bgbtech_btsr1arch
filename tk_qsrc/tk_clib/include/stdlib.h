@@ -82,7 +82,8 @@ void abort(void);
 void exit(int status);
 #endif
 void qsort(void *, size_t, size_t,
-                           int (*)(const void *, const void *));
+	int (*)(const void *, const void *));
+
 void srand(unsigned int seed);
 int rand(void);
 double atof(const char *nptr);
@@ -106,6 +107,12 @@ int system(const char *string);
 void *bsearch(const void *key, const void *base,
               size_t nmemb, size_t size,
               int (*compar)(const void *, const void *));
+
+void _memswap(void *ptra, void *ptrb, int sz);
+void _qsort_selsort(void *base,
+			size_t nmemb,
+			size_t size,
+			int (*compar)(const void *, const void *));
 
 // #define		min(a, b)	(((a)<(b))?(a):(b))
 // #define		max(a, b)	(((a)>(b))?(a):(b))

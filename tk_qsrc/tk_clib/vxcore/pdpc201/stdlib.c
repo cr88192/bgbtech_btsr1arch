@@ -424,6 +424,38 @@ void _memswap(void *ptra, void *ptrb, int sz)
 	}
 }
 
+__PDPCLIB_API__ void _qsort_selsort(void *base,
+			size_t nmemb,
+			size_t size,
+			int (*compar)(const void *, const void *))
+{
+	char *base2;
+	char *pa, *pb, *pc;
+	size_t i, j, k, a, b, c, size2;
+//	unsigned int i, j, k, a, b, c, size2;
+
+	base2 = (char *)base;
+	size2 = size;
+
+	if(nmemb < 2)
+		return;
+
+	pa=base2;
+	for(a=0; a<nmemb; a++)
+	{
+		pb=pa+size2;
+		for(b=a+1; b<nmemb; b++)
+		{
+			if((*compar)(pa, pb) > 0)
+			{
+				_memswap(pa, pb, size2);
+			}
+			pb=pb+size2;
+		}
+		pa=pa+size2;
+	}
+}
+
 /* This qsort routine was obtained from libnix (also public domain),
  * and then reformatted.
  *
@@ -437,6 +469,8 @@ void _memswap(void *ptra, void *ptrb, int sz)
  * Sparing the function calling overhead does improve performance, too.
  */
 
+#define QSORT_UINT_DEBUG
+
 __PDPCLIB_API__ void qsort(void *base,
 			size_t nmemb,
 			size_t size,
@@ -445,11 +479,21 @@ __PDPCLIB_API__ void qsort(void *base,
 //	char *base2 = (char *)base;
 	char *base2;
 	char *pa, *pb, *pc;
-	size_t i, j, k, a, b, c, size2;
+//	size_t i, j, k, a, b, c, size2;
 //	unsigned int i, j, k, a, b, c, size2;
+	int i, j, k, a, b, c, size2;
+
+#ifdef QSORT_UINT_DEBUG
+	unsigned int ua, ub, uc, usize2;
+	char *upa, *upb, *upc;
+#endif
 
 	base2 = (char *)base;
 	size2 = size;
+
+#ifdef QSORT_UINT_DEBUG
+	usize2 = size;
+#endif
 
 	if(nmemb < 10)
 //	if(nmemb < 100)
@@ -469,9 +513,9 @@ __PDPCLIB_API__ void qsort(void *base,
 				{
 					_memswap(pa, pb, size2);
 				}
-				pb=pb+size;
+				pb=pb+size2;
 			}
-			pa=pa+size;
+			pa=pa+size2;
 		}
 		return;
 	}
@@ -481,6 +525,12 @@ __PDPCLIB_API__ void qsort(void *base,
 		a = 0;
 		b = nmemb-1;
 		c = (a+b)/2; /* Middle element */
+
+#ifdef QSORT_UINT_DEBUG
+		ua = a;
+		ub = b;
+		uc = c;
+#endif
 
 #if 0
 		pa=base2+(size2*a);
@@ -542,12 +592,38 @@ __PDPCLIB_API__ void qsort(void *base,
 			pb=base2+(size2*b);
 			pc=base2+(size2*c);
 
+#ifdef QSORT_UINT_DEBUG
+//			pa=base2+(size2*a);
+//			pb=base2+(size2*b);
+//			pc=base2+(size2*c);
+
+			upa=base2+(usize2*ua);
+			upb=base2+(usize2*ub);
+			upc=base2+(usize2*uc);
+			
+			if(upa!=pa)
+				__debugbreak();
+			if(upb!=pb)
+				__debugbreak();
+			if(upc!=pc)
+				__debugbreak();
+#endif
+
+
+//			__debugbreak();
+
 //			while ((*compar)(&base2[size*c],&base2[size*a]) > 0) 
 //			while ((*compar)(pc, pa) > 0) 
 			while ((pc!=pa) && ((*compar)(pc, pa) > 0))
 			{
 				a++; /* Look for one >= middle */
 				pa+=size2;
+#ifdef QSORT_UINT_DEBUG
+				ua++;
+				upa+=usize2;
+				if(upa!=pa)
+					__debugbreak();
+#endif
 			}
 //			while ((*compar)(&base2[size*c],&base2[size*b]) < 0)
 //			while ((*compar)(pc, pb) < 0)
@@ -555,6 +631,12 @@ __PDPCLIB_API__ void qsort(void *base,
 			{
 				b--; /* Look for one <= middle */
 				pb-=size2;
+#ifdef QSORT_UINT_DEBUG
+				ub--;
+				upb-=usize2;
+				if(upb!=pb)
+					__debugbreak();
+#endif
 			}
 			if (a >= b)
 			{
@@ -578,14 +660,23 @@ __PDPCLIB_API__ void qsort(void *base,
 			{
 				c = b;
 				pc = pb;
+#ifdef QSORT_UINT_DEBUG
+				uc = ub;
+#endif
 			}
 			else if (c == b)				
 			{
 				c = a;
 				pc = pa;
+#ifdef QSORT_UINT_DEBUG
+				uc = ua;
+#endif
 			}
 			a++; /* These two are already sorted */
 			b--;
+#ifdef QSORT_UINT_DEBUG
+			ua++; ub--;
+#endif
 		} /* a points to first element of right interval now 
 			 (b to last of left) */
 		b++;

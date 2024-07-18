@@ -4985,9 +4985,9 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
-	if(!strcmp(name, "__int16_bswap_s") ||
+	if((!strcmp(name, "__int16_bswap_s") ||
 		!strcmp(name, "__int16_bswap_u") ||
-		!strcmp(name, "__int16_bswap"))
+		!strcmp(name, "__int16_bswap")) && (narg==1))
 	{
 		nm1=-1;
 		if(!strcmp(name, "__int16_bswap_u"))
@@ -5020,9 +5020,9 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
-	if(!strcmp(name, "__int32_bswap_s") ||
+	if((!strcmp(name, "__int32_bswap_s") ||
 		!strcmp(name, "__int32_bswap_u") ||
-		!strcmp(name, "__int32_bswap"))
+		!strcmp(name, "__int32_bswap")) && (narg==1))
 	{
 		nm1=-1; nm2=-1;
 		if(!strcmp(name, "__int32_bswap_u"))
@@ -5076,7 +5076,7 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
-	if(!strcmp(name, "__int64_bswap"))
+	if(!strcmp(name, "__int64_bswap") && (narg==1))
 	{
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
 		{
@@ -5106,6 +5106,32 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_BSWAPQ, csreg, cdreg);
 
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		}
+		
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if((!strcmp(name, "__int64_rgb5pck64") ||
+		!strcmp(name, "__int64_rgb5upck64")) && (narg==1))
+	{
+		if(!strcmp(name, "__int64_rgb5pck64"))
+			nm1=BGBCC_SH_NMID_RGB5PCK64;
+		if(!strcmp(name, "__int64_rgb5upck64"))
+			nm1=BGBCC_SH_NMID_RGB5UPCK64;
+
+		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
+		{
+			cdreg=BGBCC_JX2C_EmitTryGetRegisterDirty(ctx, sctx, dst);
+			BGBCC_JX2_EmitOpRegReg(sctx, nm1, cdreg, cdreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		}else
+		{
+			csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+			cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+			BGBCC_JX2_EmitOpRegReg(sctx, nm1, csreg, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
 		}
@@ -5563,8 +5589,10 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 #if 1
 	if((!strcmp(name, "__int64_pmulw") ||
 		!strcmp(name, "__int64_pmulhw") ||
+		!strcmp(name, "__int64_blkutx2") ||
 		!strcmp(name, "__m64_pmulw") ||
-		!strcmp(name, "__m64_pmulhw")) && (narg==2))
+		!strcmp(name, "__m64_pmulhw") ||
+		!strcmp(name, "__m64_blkutx2")) && (narg==2))
 	{
 		nm1=-1;
 
@@ -5574,6 +5602,9 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		if(!strcmp(name, "__int64_pmulhw") ||
 			!strcmp(name, "__m64_pmulhw"))
 			nm1=BGBCC_SH_NMID_PMULUHW;
+		if(!strcmp(name, "__int64_blkutx2") ||
+			!strcmp(name, "__m64_blkutx2"))
+			nm1=BGBCC_SH_NMID_BLKUTX2;
 	
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
 		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[1]);

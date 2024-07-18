@@ -449,6 +449,7 @@ void TKRA_TransformCalcMidpointVertex(
 //	return(v3);
 }
 
+#if 1
 int TKRA_TransformProjectTriangle(
 	TKRA_Context *ctx,
 	tkra_trivertex iv0,	tkra_trivertex iv1,
@@ -490,12 +491,13 @@ int TKRA_TransformProjectTriangle(
 	float			g0, g1, g2, g3, g4, g5;
 	float			w0, w1, w2, skew;
 	int				i0, i1, i2, tfl;
-	int				ecfl, lim;
+	int				ecfl, lim, triflip;
 	byte			wasfrag, nosubdiv, nopersp;
 	
 	TKRA_SetupDrawBlend(ctx);
 
 	sctx=ctx->svctx;
+
 	v0stk=sctx->v0stk;
 	v1stk=sctx->v1stk;
 	v2stk=sctx->v2stk;
@@ -707,10 +709,14 @@ int TKRA_TransformProjectTriangle(
 //		if(f3>0)
 //			continue;
 
+		f3=tkra_v2fcross(v0dxy, v1dxy);
+		triflip=(f3<0);
+//		triflip=(f3>0);
+
 #if 1
 		if((ctx->stateflag1&TKRA_STFL1_CULLFACE) && !(ecfl&1))
 		{
-			f3=tkra_v2fcross(v0dxy, v1dxy);
+//			f3=tkra_v2fcross(v0dxy, v1dxy);
 			if(ctx->stateflag1&TKRA_STFL1_CULL_CW)
 				f3=-f3;
 //			if(f3<=0)
@@ -771,7 +777,8 @@ int TKRA_TransformProjectTriangle(
 
 //			if(1)
 //			if(f3 < (2*3))
-			if(f3 < (3*3))
+//			if(f3 < (3*3))
+			if((f3 < (3*3)) && (tkra_nommio&1))
 //			if(f3 < (2*2*3))
 			{
 				TKRA_TransformCalcMidpointVertex(ctx, &v3, &v0, &v1, prjmat);
@@ -792,6 +799,19 @@ int TKRA_TransformProjectTriangle(
 			TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
 			TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
 			TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
+
+			if(!(tkra_nommio&1))
+			{
+				ctx->stat_draw_tris++;
+				if(triflip)
+				{
+					TKRA_EmitProjectedTriangle(ctx, pv2, pv1, pv0);
+				}else
+				{
+					TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
+				}
+				continue;
+			}
 
 			ctx->stat_drawpts3_tris++;
 			TKRA_EmitProjectedTrianglePts(ctx, pv0, pv1, pv2);
@@ -1003,7 +1023,7 @@ int TKRA_TransformProjectTriangle(
 			continue;
 		}
 
-#if 1
+#if 0
 		if(ctx->stateflag1&TKRA_STFL1_CULLFACE)
 		{
 			f3=tkra_v2fcross(v0dxy, v1dxy);
@@ -1040,11 +1060,605 @@ int TKRA_TransformProjectTriangle(
 		TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
 		TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
 
+		if(triflip)
+		{
+			TKRA_EmitProjectedTriangle(ctx, pv2, pv1, pv0);
+		}else
+		{
+			TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
+		}
+	}
+	
+	return(0);
+}
+#endif
+
+#if 0
+int TKRA_TransformProjectTriangle(
+	TKRA_Context *ctx,
+	tkra_trivertex iv0,	tkra_trivertex iv1,
+	tkra_trivertex iv2,
+//	tkra_mat4 xform,
+//	tkra_mat4 xproj)
+	tkra_mat4 prjmat)
+{
+	tkra_trivertex *v0stk;
+	tkra_trivertex *v1stk;
+	tkra_trivertex *v2stk;
+	tkra_trivertex *v3stk;
+	int vstkpos;
+
+	tkra_projvertex pv0;
+	tkra_projvertex pv1;
+	tkra_projvertex pv2;
+	tkra_trivertex	v0, v1, v2;
+	tkra_trivertex	v3, v4, v5;
+	tkra_vec4f		v0xyzw, v0ww, v0p;
+	tkra_vec4f		v1xyzw, v1ww, v1p;
+	tkra_vec4f		v2xyzw, v2ww, v2p;
+	tkra_vec4f		v0d, v1d, v2d;
+	tkra_vec2f		v0dxy, v1dxy, v2dxy;
+	tkra_vec4f		prj_xyzsc, prj_xyzbi;
+
+	TKRA_TexImage *img;
+	TKRA_SvContext *sctx;
+
+	float			scr_xsc, scr_ysc;
+	float			scr_xc, scr_yc;
+	float			scr_clip_l, scr_clip_r;
+	float			scr_clip_t, scr_clip_b;
+	float			scr_clip_la, scr_clip_ra;
+	float			scr_clip_ta, scr_clip_ba;
+	float			txs, tys, txsn1, tysn1, xbi, ybi;
+	float			f0, f1, f2, f3, f4, f5, fdx, fdy;
+	float			g0, g1, g2, g3, g4, g5;
+	float			w0, w1, w2, skew;
+	int				i0, i1, i2, tfl;
+	int				ecfl, lim;
+	byte			wasfrag, nosubdiv, nopersp;
+
+	TKRA_SetupDrawBlend(ctx);
+
+	sctx=ctx->svctx;
+
+	tfl=0;
+
+	if((iv0.rgb&iv1.rgb&iv2.rgb&0xF0000000)!=0xF0000000)
+		tfl|=1;
+
+	TKRA_SetupDrawEdgeForTriFlag(ctx, tfl);
+	tfl=sctx->triflag;
+
+	if(!sctx->tex_cur)
+		return(-1);
+
+
+	v0=iv0;	v1=iv1;	v2=iv2;
+	v0p=TKRA_ProjectVertexB(v0.xyz, prjmat);
+	v1p=TKRA_ProjectVertexB(v1.xyz, prjmat);
+	v2p=TKRA_ProjectVertexB(v2.xyz, prjmat);
+
+	if(tfl&TKRA_TRFL_NOCMOD)
+	{
+		v0.rgb=0xFFFFFFFFU;
+		v1.rgb=0xFFFFFFFFU;
+		v2.rgb=0xFFFFFFFFU;
+	}
+	
+	prj_xyzsc=ctx->prj_xyzsc;
+	prj_xyzbi=ctx->prj_xyzbi;
+	
+	tkra_prj_xyzsc=prj_xyzsc;
+	tkra_prj_xyzbi=prj_xyzbi;
+
+	scr_clip_l=ctx->scr_clip_l;
+	scr_clip_r=ctx->scr_clip_r;
+	scr_clip_t=ctx->scr_clip_t;
+	scr_clip_b=ctx->scr_clip_b;
+
+	scr_clip_la=scr_clip_l-((scr_clip_r-scr_clip_l)*0.1875);
+	scr_clip_ra=scr_clip_r+((scr_clip_r-scr_clip_l)*0.1875);
+	scr_clip_ta=scr_clip_t+((scr_clip_t-scr_clip_b)*0.1875);
+	scr_clip_ba=scr_clip_b-((scr_clip_t-scr_clip_b)*0.1875);
+
+
+	ctx->stat_base_tris++;
+
+	v0ww=tkra_v4f_bboxmins3(v0p, v1p, v2p);
+	v1ww=tkra_v4f_bboxmaxs3(v0p, v1p, v2p);
+	
+	if(tkra_v4f_w(v1ww)<=0.0)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_negw_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_x(v0ww)>scr_clip_r)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_x(v1ww)<scr_clip_l)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_y(v0ww)>scr_clip_t)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_y(v1ww)<scr_clip_b)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	nopersp=1;
+//	nopersp=TKRA_WalkCheckNoPersp(ctx);
+
+	f4=TKRA_PARAM_TRISUBDIV_DFL;
+
+	if(!nopersp)
+	{
+		f4=f4*4;
+	}
+
+#if 1
+	if(	(tkra_v4f_w(v0ww)>0.0) &&
+		(tkra_v4f_x(v0ww)>=scr_clip_l) &&
+		(tkra_v4f_x(v1ww)<=scr_clip_r) &&
+		(tkra_v4f_y(v0ww)>=scr_clip_b) &&
+		(tkra_v4f_y(v1ww)<=scr_clip_t) )
+	{
+#if 0
+		v0d=tkra_v4fsub(v1p, v0p);
+		v1d=tkra_v4fsub(v2p, v1p);
+		v2d=tkra_v4fsub(v0p, v2p);
+
+		v0dxy=tkra_v4f_xy(v0d);
+		v1dxy=tkra_v4f_xy(v1d);
+		v2dxy=tkra_v4f_xy(v2d);
+		f0=tkra_v2fdot(v0dxy, v0dxy);
+		f1=tkra_v2fdot(v1dxy, v1dxy);
+		f2=tkra_v2fdot(v2dxy, v2dxy);		
+
+		f3=f0+f1+f2;
+#endif
+
+		f0=tkra_v4f_x(v1ww)-tkra_v4f_x(v0ww);
+		f1=tkra_v4f_y(v1ww)-tkra_v4f_y(v0ww);
+		f3=(f0+f1)*1.5;
+
+//		if((f0+f1)<(32*32))
+//		if(!nopersp || ((f0+f1)<(32*32)))
+//		if(!nopersp || ((f0+f1)<f4))
+		if(!nopersp || (f3<f4))
+		{
+			ctx->stat_draw_tris++;
+
+			TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
+			TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
+			TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
+
+			TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
+
+			return(1);
+		}
+	}
+#endif
+
+
+	v0.pv=v0p;	v1.pv=v1p;	v2.pv=v2p;
+	v0.fl=1;	v1.fl=1;	v2.fl=1;
+
+//	v0.fl=0;	v1.fl=0;	v2.fl=0;
+
+	v0stk=sctx->v0stk;
+	v1stk=sctx->v1stk;
+	v2stk=sctx->v2stk;
+
+	vstkpos=1;
+	v0stk[0]=v0;
+	v1stk[0]=v1;
+	v2stk[0]=v2;
+
+	img=sctx->tex_cur;
+	txs=1<<img->tex_xshl;
+	tys=1<<img->tex_yshl;
+	txsn1=txs-1;
+	tysn1=tys-1;
+	xbi=0.5;
+	ybi=-1.0;
+	wasfrag=0;
+
+	lim=4096;
+
+	w0=0;
+	w1=0;
+	w2=0;
+
+	nosubdiv=0;
+	if((sctx->tex_xshl==0) && (sctx->tex_yshl==0))
+		nosubdiv=1;
+			
+	if(ctx->stateflag1&TKRA_STFL1_NOSUBDIV)
+		nosubdiv=1;
+		
+//	nopersp=TKRA_WalkCheckNoPersp(ctx);
+
+	while((vstkpos>0) && (lim>0))
+	{
+		lim--;
+		vstkpos--;
+		v0=v0stk[vstkpos];
+		v1=v1stk[vstkpos];
+		v2=v2stk[vstkpos];
+
+// #if 0
+#if 1
+		if(ctx->stateflag1&TKRA_STFL1_DOSHADER_MASK)
+		{
+			if(!(v0.fl&1))
+				{ TKRA_TransformProjectVertexShader(ctx, &v0, &v0, prjmat); }
+			if(!(v1.fl&1))
+				{ TKRA_TransformProjectVertexShader(ctx, &v1, &v1, prjmat); }
+			if(!(v2.fl&1))
+				{ TKRA_TransformProjectVertexShader(ctx, &v2, &v2, prjmat); }
+			v0p=v0.pv;
+			v1p=v1.pv;
+			v2p=v2.pv;
+		}else
+		{
+			if(v0.fl&1)
+				v0p=v0.pv;
+			else
+				v0p=TKRA_ProjectVertexB(v0.xyz, prjmat);
+
+			if(v1.fl&1)
+				v1p=v1.pv;
+			else
+				v1p=TKRA_ProjectVertexB(v1.xyz, prjmat);
+
+			if(v2.fl&1)
+				v2p=v2.pv;
+			else
+				v2p=TKRA_ProjectVertexB(v2.xyz, prjmat);
+		}
+#endif
+
+		v0ww=tkra_v4f_bboxmins3(v0p, v1p, v2p);
+		v1ww=tkra_v4f_bboxmaxs3(v0p, v1p, v2p);
+		
+		ecfl=0;
+
+		if(tkra_v4f_w(v1ww)<=0.0)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_negw_tris++;
+			continue;
+		}
+
+		if(tkra_v4f_x(v0ww)>scr_clip_r)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
+			continue;
+		}
+
+		if(tkra_v4f_x(v1ww)<scr_clip_l)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
+			continue;
+		}
+
+		if(tkra_v4f_y(v0ww)>scr_clip_t)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
+			continue;
+		}
+
+		if(tkra_v4f_y(v1ww)<scr_clip_b)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_frustum_tris++;
+			continue;
+		}
+
+#if 1
+		if((tkra_v4f_w(v0ww)<0.0) && (tkra_v4f_w(v1ww)>0.0))
+			{ ecfl|=1; }
+
+		if(	(tkra_v4f_x(v1ww)>scr_clip_ra) ||
+			(tkra_v4f_x(v0ww)<scr_clip_la) )
+				{ ecfl|=2; }
+		if(	(tkra_v4f_y(v1ww)>scr_clip_ta) ||
+			(tkra_v4f_y(v0ww)<scr_clip_ba) )
+				{ ecfl|=4; }
+#endif
+
+#if 1
+		/* Check if triangle is below size limit. */
+		v0d=tkra_v4fsub(v1p, v0p);
+		v1d=tkra_v4fsub(v2p, v1p);
+		v2d=tkra_v4fsub(v0p, v2p);
+
+		v0dxy=tkra_v4f_xy(v0d);
+		v1dxy=tkra_v4f_xy(v1d);
+		v2dxy=tkra_v4f_xy(v2d);
+		f0=tkra_v2fdot(v0dxy, v0dxy);
+		f1=tkra_v2fdot(v1dxy, v1dxy);
+		f2=tkra_v2fdot(v2dxy, v2dxy);		
+#endif
+
+#if 1
+		if((ctx->stateflag1&TKRA_STFL1_CULLFACE) && !(ecfl&1))
+		{
+			f3=tkra_v2fcross(v0dxy, v1dxy);
+			if(ctx->stateflag1&TKRA_STFL1_CULL_CW)
+				f3=-f3;
+			if((ctx->stateflag1&TKRA_STFL1_CULL_BK) && (f3<0))
+			{
+				ctx->stat_reject_tris++;
+				ctx->stat_backface_tris++;
+				continue;
+			}
+			if((ctx->stateflag1&TKRA_STFL1_CULL_FT) && (f3>=0))
+			{
+				ctx->stat_reject_tris++;
+				ctx->stat_backface_tris++;
+				continue;
+			}
+		}
+#endif
+
+		f3=f0+f1+f2;
+
+		if(f3 < (3*3*3))
+		{
+#if 1
+			if(	(f0<0.75) | (f1<0.75) | (f2<0.75)	)
+			{
+				ctx->stat_reject_tris++;
+				if(wasfrag&1)
+					ctx->stat_microfrag_tris++;
+				else
+					ctx->stat_microbase_tris++;
+
+				continue;
+			}
+#endif
+
+			if(f3 < (1*3))
+			{
+				ctx->stat_microbase_tris++;
+				continue;				
+			}
+
+#if 1
+			if(1)
+			{
+				TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
+				TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
+				TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
+
+				ctx->stat_drawpts3_tris++;
+				if(nopersp)
+					TKRA_EmitProjectedTrianglePts(ctx, pv0, pv1, pv2);
+				else
+					TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
+				continue;
+			}
+#endif
+		}
+
+#if 1
+		if((f0<1) | (f1<1) | (f2<1))
+		{
+			ctx->stat_reject_tris++;
+			if(wasfrag&1)
+				ctx->stat_microfrag_tris++;
+			else
+				ctx->stat_microbase_tris++;
+			continue;
+		}
+#endif
+
+#if 1
+		f4=TKRA_PARAM_TRISUBDIV_DFL;
+
+		if(!nopersp)
+		{
+			f4=f4*4;
+		}
+
+		if(ecfl&6)
+		{
+			f4=TKRA_PARAM_TRISUBDIV_EDGE;
+		}
+
+		if(ecfl&1)
+		{
+			f4=TKRA_PARAM_TRISUBDIV_NEAR;
+		}
+#endif
+
+		if(ecfl&1)
+			nosubdiv=0;
+	
+		if(!nosubdiv && (f3>f4))
+		{
+			if((vstkpos+5)>=48)
+			{
+				printf("blown: Wn: %f %f %f\n", w0, w1, w2);
+				printf("blown: Fn: %f %f %f\n", f0, f1, f2);
+			
+				TKRA_DumpMatrix(prjmat, "PrjMat");
+				TKRA_DumpVec4(iv0.xyz, "Iv0");
+				TKRA_DumpVec4(iv1.xyz, "Iv1");
+				TKRA_DumpVec4(iv2.xyz, "Iv2");
+			
+				ctx->stat_blown_tris++;
+				return(-1);
+			}
+			
+			v0xyzw=v0.xyz;
+			v1xyzw=v1.xyz;
+			v2xyzw=v2.xyz;
+			v0d=tkra_v4fsub(v1xyzw, v0xyzw);
+			v1d=tkra_v4fsub(v2xyzw, v1xyzw);
+			v2d=tkra_v4fsub(v0xyzw, v2xyzw);
+			g0=tkra_v3fdot(v0d, v0d);
+			g1=tkra_v3fdot(v1d, v1d);
+			g2=tkra_v3fdot(v2d, v2d);
+			g3=g0+g1+g2;
+			
+//			if(ctx->tkgl_usepgm_vtx<=0)
+//			if((ctx->tkgl_usepgm_vtx<=0) &&
+//				!(ctx->stateflag1&TKRA_STFL1_LIGHTING))
+			if(!(ctx->stateflag1&TKRA_STFL1_DOSHADER_MASK))
+			{
+				v0.pv=v0p;
+				v1.pv=v1p;
+				v2.pv=v2p;
+				v0.fl=1;
+				v1.fl=1;
+				v2.fl=1;
+			}
+
+			/* Subdivide Triangle */
+			TKRA_TransformCalcMidpointVertex(ctx, &v3, &v0, &v1, prjmat);
+			TKRA_TransformCalcMidpointVertex(ctx, &v4, &v1, &v2, prjmat);
+			TKRA_TransformCalcMidpointVertex(ctx, &v5, &v2, &v0, prjmat);
+
+//			f5=f3*0.1;
+//			f5=f3*0.05;
+//			f5=f3*0.066;
+//			g5=g3*0.066;
+			g5=g3*0.15;
+
+//			if(f5>f0)
+			if(g5>g0)
+			{
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v4;
+				v2stk[vstkpos]=v5;
+				vstkpos++;
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v1;
+				v2stk[vstkpos]=v4;
+				vstkpos++;
+				v0stk[vstkpos]=v5;
+				v1stk[vstkpos]=v4;
+				v2stk[vstkpos]=v2;
+				vstkpos++;
+
+				ctx->stat_frag_tris+=3;
+				wasfrag|=1;
+
+				continue;
+			}
+
+#if 1
+//			if(f5>f1)
+			if(g5>g1)
+			{
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v3;
+				v2stk[vstkpos]=v5;
+				vstkpos++;
+				v0stk[vstkpos]=v3;
+				v1stk[vstkpos]=v1;
+				v2stk[vstkpos]=v2;
+				vstkpos++;
+				v0stk[vstkpos]=v3;
+				v1stk[vstkpos]=v2;
+				v2stk[vstkpos]=v5;
+				vstkpos++;
+
+				ctx->stat_frag_tris+=3;
+				wasfrag|=1;
+
+				continue;
+			}
+#endif
+
+#if 1
+//			if(f5>f2)
+			if(g5>g2)
+			{
+				v0stk[vstkpos]=v0;
+				v1stk[vstkpos]=v3;
+				v2stk[vstkpos]=v2;
+				vstkpos++;
+				v0stk[vstkpos]=v2;
+				v1stk[vstkpos]=v3;
+				v2stk[vstkpos]=v4;
+				vstkpos++;
+				v0stk[vstkpos]=v3;
+				v1stk[vstkpos]=v1;
+				v2stk[vstkpos]=v4;
+				vstkpos++;
+
+				ctx->stat_frag_tris+=3;
+				wasfrag|=1;
+
+				continue;
+			}
+#endif
+
+			v0stk[vstkpos]=v0;
+			v1stk[vstkpos]=v3;
+			v2stk[vstkpos]=v5;
+			vstkpos++;
+			v0stk[vstkpos]=v1;
+			v1stk[vstkpos]=v4;
+			v2stk[vstkpos]=v3;
+			vstkpos++;
+			v0stk[vstkpos]=v2;
+			v1stk[vstkpos]=v5;
+			v2stk[vstkpos]=v4;
+			vstkpos++;
+			v0stk[vstkpos]=v3;
+			v1stk[vstkpos]=v4;
+			v2stk[vstkpos]=v5;
+			vstkpos++;
+
+			ctx->stat_frag_tris+=4;
+			wasfrag|=1;
+
+			continue;
+		}
+
+		if(tkra_v4f_w(v0ww)<0)
+		{
+			ctx->stat_reject_tris++;
+			ctx->stat_negw_tris++;
+			continue;
+		}
+
+		ctx->stat_draw_tris++;
+
+		TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
+		TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
+		TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
+
 		TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
 	}
 	
 	return(0);
 }
+#endif
 
 int TKRA_TransformProjectQuad(
 	TKRA_Context *ctx,

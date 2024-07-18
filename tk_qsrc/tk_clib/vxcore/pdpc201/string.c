@@ -170,11 +170,42 @@ __PDPCLIB_API__ char *strcpy(char *s1, const char *s2)
 #endif
 __PDPCLIB_API__ char *strncpy(char *s1, const char *s2, size_t n)
 {
-	char *p = s1;
-	size_t x;
+	u64 v0, v1, v2;
+	char *p;
+	size_t x, xd;
+
+	p = s1;
 
 	for (x=0; x < n; x++)
 	{
+#if defined(__BJX2__) || defined(__riscv)
+		v0 = *(u64 *)s2;
+		xd = n - x;
+		v1 = v0 + 0x7F7F7F7F7F7F7F7FULL;
+		v2 = v0 | v1;
+		if((v2&0x8080808080808080ULL)==0x8080808080808080ULL)
+		{
+			if(xd>=8)
+			{
+				*(u64 *)p=v0;
+				p+=8;	s2+=8;
+				x+=7;
+				continue;
+			}
+		}
+		
+		if((v2&0x80808080ULL)==0x80808080ULL)
+		{
+			if(xd>=4)
+			{
+				*(u32 *)p=v0;
+				p+=4;	s2+=4;
+				x+=3;
+				continue;
+			}
+		}
+#endif
+		
 		*p = *s2;
 		if (*s2 == '\0') break;
 		p++;
@@ -182,6 +213,29 @@ __PDPCLIB_API__ char *strncpy(char *s1, const char *s2, size_t n)
 	}
 	for (; x < n; x++)
 	{
+#if defined(__BJX2__) || defined(__riscv)
+		xd = n - x;
+
+		if(xd>=16)
+		{
+			((u64 *)p)[0]=0;
+			((u64 *)p)[1]=0;
+			p+=16; x+=15;
+			continue;
+		}
+		if(xd>=8)
+		{
+			*(u64 *)p=0;
+			p+=8; x+=7;
+			continue;
+		}
+		if(xd>=4)
+		{
+			*(u32 *)p=0;
+			p+=4; x+=3;
+			continue;
+		}
+#endif
 		*p++ = '\0';
 	}
 	return (s1);

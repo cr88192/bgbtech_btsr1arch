@@ -145,6 +145,8 @@ __udivsi3_i:
 //	mov		r23, lr
 //	rts
 
+.extern __udivsi3_tab
+
 .global	__udivsi3
 __udivsi3:
 #if 0
@@ -155,8 +157,8 @@ __udivsi3:
 	extu.l	r5
 	bra		__udivdi3
 #else
-//	bra		__udivsi3_i
-	bra		__udivsi3_tab
+	bra		__udivsi3_i
+//	bra		__udivsi3_tab
 #endif
 
 #endif
@@ -177,8 +179,8 @@ __sdivsi3:
 	sub r2, r6, r4		| sub r3, r7, r5
 	xor r7, r6, r21
 
-//	bsr __udivsi3_i
-	bsr __udivsi3_tab
+	bsr __udivsi3_i
+//	bsr __udivsi3_tab
 
 	xor r2, r21, r3
 	sub r3, r21, r2

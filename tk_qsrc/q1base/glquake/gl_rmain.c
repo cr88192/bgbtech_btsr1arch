@@ -707,8 +707,10 @@ void GL_DrawAliasAsSprite (aliashdr_t *phdr, int posenum)
 	ty=posenum/tc;
 	tx=posenum-(ty*tc);
 	
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	qglDisable(GL_CULL_FACE);
-	qglDisable(GL_BLEND);
+//	qglDisable(GL_BLEND);
+	qglEnable(GL_BLEND);
 	qglEnable(GL_ALPHA_TEST);
 	
 	x0=phdr->spr_bound[0];
@@ -1604,6 +1606,8 @@ void R_Clear (void)
 	}
 
 	qglDepthRange (gldepthmin, gldepthmax);
+	
+	qglAlphaFunc(GL_GEQUAL, 0.5f);
 }
 
 /*

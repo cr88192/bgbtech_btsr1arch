@@ -1195,8 +1195,11 @@ int tk_print_hex_genw(u64 v)
 	while(w>=16)
 		{ w=w>>4; i++; }
 
-	if((v>>(i*4))!=0)
-		__debugbreak();
+	if(i<16)
+	{
+		if((v>>(i*4))!=0)
+			__debugbreak();
+	}
 
 //	__debugbreak();
 

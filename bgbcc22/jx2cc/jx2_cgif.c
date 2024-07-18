@@ -1194,6 +1194,19 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 	return(BGBCC_SH_REGCLS_NONE);
 }
 
+int BGBCC_JX2C_TypeValueObjectRefP(
+	BGBCC_TransState *ctx,
+	ccxl_type type)
+{
+	int j;
+	j=BGBCC_JX2C_TypeGetRegClassP(ctx, type);
+	if(j==BGBCC_SH_REGCLS_VO_REF)
+		return(1);
+	if(j==BGBCC_SH_REGCLS_VO_REF2)
+		return(1);
+	return(0);
+}
+
 
 int BGBCC_JX2C_EmitVaArg(
 	BGBCC_TransState *ctx,

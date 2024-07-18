@@ -1313,6 +1313,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_PLDCH:		s0="PLDCH";		break;
 	case BJX2_NMID_PSTCH:		s0="PSTCH";		break;
 
+	case BJX2_NMID_PLDCXH:		s0="PLDCXH";	break;
+	case BJX2_NMID_PSTCXH:		s0="PSTCXH";	break;
+
 	case BJX2_NMID_PLDCM8SH:	s0="PLDCM8SH";	break;
 	case BJX2_NMID_PSTCM8SH:	s0="PSTCM8SH";	break;
 	case BJX2_NMID_PLDCM8UH:	s0="PLDCM8UH";	break;

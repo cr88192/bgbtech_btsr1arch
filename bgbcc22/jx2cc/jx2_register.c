@@ -3599,7 +3599,10 @@ int BGBCC_JX2C_EmitTryGetRegister(
 					continue;
 			}
 
-			if(!(sctx->is_tr_leaf&1) &&
+//			if(!(sctx->is_tr_leaf&1) &&
+			if((!(sctx->is_tr_leaf&1) ||
+				(ctx->cur_vtr->trfl&CCXL_TRFL_USES_SCRATCH) ||
+				(ctx->cur_vtr->trfl&CCXL_TRFL_MEMCOPY)) &&
 				BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i1))
 					continue;
 
@@ -3906,7 +3909,10 @@ int BGBCC_JX2C_EmitGetRegister(
 				continue;
 		}
 
-		if(!(sctx->is_tr_leaf&1) &&
+//		if(!(sctx->is_tr_leaf&1) &&
+		if((!(sctx->is_tr_leaf&1) ||
+			(ctx->cur_vtr->trfl&CCXL_TRFL_USES_SCRATCH) ||
+			(ctx->cur_vtr->trfl&CCXL_TRFL_MEMCOPY)) &&
 			BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i1))
 				continue;
 
@@ -3980,7 +3986,10 @@ int BGBCC_JX2C_EmitGetRegister(
 					continue;
 			}
 
-			if(!(sctx->is_tr_leaf&1) &&
+//			if(!(sctx->is_tr_leaf&1) &&
+			if((!(sctx->is_tr_leaf&1) ||
+				(ctx->cur_vtr->trfl&CCXL_TRFL_USES_SCRATCH) ||
+				(ctx->cur_vtr->trfl&CCXL_TRFL_MEMCOPY)) &&
 				BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i1))
 					continue;
 
@@ -4101,7 +4110,10 @@ int BGBCC_JX2C_EmitGetRegister(
 				continue;
 		}
 
-		if(!(sctx->is_tr_leaf&1) &&
+//		if(!(sctx->is_tr_leaf&1) &&
+		if((!(sctx->is_tr_leaf&1) ||
+			(ctx->cur_vtr->trfl&CCXL_TRFL_USES_SCRATCH) ||
+			(ctx->cur_vtr->trfl&CCXL_TRFL_MEMCOPY)) &&
 			BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i1))
 				continue;
 

@@ -141,6 +141,27 @@ u32 bjx2_rgb64pck32(u64 vs)
 	return(tv);
 }
 
+u64 bjx2_padduw_sat(u64 vs, u64 vt)
+{
+	u64 vs1, vt1, vd1;
+	
+	vs1=(vs>>1)&0x7FFF7FFF7FFF7FFFULL;
+	vt1=(vt>>1)&0x7FFF7FFF7FFF7FFFULL;
+	vd1=vs1+vt1;
+	if(vd1&0x8000800080008000ULL)
+	{
+		if(vd1&0x0000000000008000ULL)
+			vd1|=0x000000000000FFFFULL;
+		if(vd1&0x0000000080000000ULL)
+			vd1|=0x00000000FFFF0000ULL;
+		if(vd1&0x0000800000000000ULL)
+			vd1|=0x0000FFFF00000000ULL;
+		if(vd1&0x8000000000000000ULL)
+			vd1|=0xFFFF000000000000ULL;
+	}
+	return(vd1<<1);
+}
+
 // #define JX2_EDGEWALK_XSUB	0
 // #define JX2_EDGEWALK_ZSUB	0
 #define JX2_EDGEWALK_STSUB	4
@@ -190,16 +211,16 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 {
 	u64 blk_u, rgb_u, rgb_m, rgb_c, rgb_bl;
 	u64 rgb_ms, rgb_md, rgb_bs, rgb_bd;
-	u32 blk_c, blk_z;
+	u32 blk_c;
 	u64 addr_o, addr_c, addr_z, addr_u;
 	int x0, x1, z0, z1, s0, s1, t0, t1, rcp;
-	int r0, r1, g0, g1, b0, b1, a0, a1;
+	int r0, r1, g0, g1, b0, b1, a0, a1, blk_z;
 	int x, z, s, t, zs, ss, ts, z2, s_p, t_p, z_p;
 	int r, g, b, a, rs, gs, bs, as, ix, ax;
 	int txs, txt, txi, ztest, atest, zmask, cmask, islin;
 	int bfs, bfd, txm, zfn, zpn, ispersp, isrcpz, isdword, issten;
 	int blk_st, ref_st, upd_st, stfn, st_op, zupd;
-	int stpn;
+	int stpn, flip;
 	int i, j, k;
 
 //	x0=((s16)bjx2_edgewalk_var_scanlfx)>>6;
@@ -229,9 +250,29 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 
 	ax=(bjx2_edgewalk_addr_ubuf^(bjx2_edgewalk_addr_ubuf>>16))&0xFFFF;
 
+	flip=0;
 	x=x1-x0;
 	if(x<0)
+	{
+//		flip=1;
+	
+#if 0
+		if(x<(-5))
+		{
+			printf("BJX2_MemEdgeWalk_ProbeUpdateXspan: "
+				"Negative Span, %d\n", x);
+		}
+#endif
+
 		return(0);
+	}
+
+	if(flip)
+	{
+		x1=bjx2_edgewalk_var_scanlfx>>(6+JX2_EDGEWALK_XSUB);
+		x0=bjx2_edgewalk_var_scanrtx>>(6+JX2_EDGEWALK_XSUB);
+		x=x1-x0;
+	}
 	
 	if(!ctx->no_memcost)
 	{
@@ -241,21 +282,41 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 //	rcp=0x10000/(x+1);
 	rcp=jx2_edgewalk_rcptab[x+1];
 
-	z0=bjx2_edgewalk_var_scanlfz;
-	z1=bjx2_edgewalk_var_scanrtz;
-	s0=bjx2_edgewalk_var_scanlfs;
-	s1=bjx2_edgewalk_var_scanrts;
-	t0=bjx2_edgewalk_var_scanlft;
-	t1=bjx2_edgewalk_var_scanrtt;
+	if(flip)
+	{
+		z1=bjx2_edgewalk_var_scanlfz;
+		z0=bjx2_edgewalk_var_scanrtz;
+		s1=bjx2_edgewalk_var_scanlfs;
+		s0=bjx2_edgewalk_var_scanrts;
+		t1=bjx2_edgewalk_var_scanlft;
+		t0=bjx2_edgewalk_var_scanrtt;
 
-	r0=bjx2_edgewalk_var_scanlfr;
-	r1=bjx2_edgewalk_var_scanrtr;
-	g0=bjx2_edgewalk_var_scanlfg;
-	g1=bjx2_edgewalk_var_scanrtg;
-	b0=bjx2_edgewalk_var_scanlfb;
-	b1=bjx2_edgewalk_var_scanrtb;
-	a0=bjx2_edgewalk_var_scanlfa;
-	a1=bjx2_edgewalk_var_scanrta;
+		r1=bjx2_edgewalk_var_scanlfr;
+		r0=bjx2_edgewalk_var_scanrtr;
+		g1=bjx2_edgewalk_var_scanlfg;
+		g0=bjx2_edgewalk_var_scanrtg;
+		b1=bjx2_edgewalk_var_scanlfb;
+		b0=bjx2_edgewalk_var_scanrtb;
+		a1=bjx2_edgewalk_var_scanlfa;
+		a0=bjx2_edgewalk_var_scanrta;
+	}else
+	{
+		z0=bjx2_edgewalk_var_scanlfz;
+		z1=bjx2_edgewalk_var_scanrtz;
+		s0=bjx2_edgewalk_var_scanlfs;
+		s1=bjx2_edgewalk_var_scanrts;
+		t0=bjx2_edgewalk_var_scanlft;
+		t1=bjx2_edgewalk_var_scanrtt;
+
+		r0=bjx2_edgewalk_var_scanlfr;
+		r1=bjx2_edgewalk_var_scanrtr;
+		g0=bjx2_edgewalk_var_scanlfg;
+		g1=bjx2_edgewalk_var_scanrtg;
+		b0=bjx2_edgewalk_var_scanlfb;
+		b1=bjx2_edgewalk_var_scanrtb;
+		a0=bjx2_edgewalk_var_scanlfa;
+		a1=bjx2_edgewalk_var_scanrta;
+	}
 
 	zs=(((s64)(z1-z0))*rcp)>>16;
 	ss=(((s64)(s1-s0))*rcp)>>16;
@@ -396,7 +457,10 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 				(s_p>>(2+JX2_EDGEWALK_STSUB))&15);
 			rgb_bd=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_u, rgb_bd,
 				(t_p>>(2+JX2_EDGEWALK_STSUB))&15);
-			rgb_u=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_bs, rgb_bd, 8);
+//			rgb_u=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_bs, rgb_bd, 8);
+			rgb_u=
+				((rgb_bs>>1)&0x7FFF7FFF7FFF7FFFULL) +
+				((rgb_bd>>1)&0x7FFF7FFF7FFF7FFFULL) ;
 
 //			if(((rgb_u>>61)&7)==7)
 //			{
@@ -482,7 +546,8 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 
 		rgb_bs=tkra_pmuluhw(rgb_m, rgb_ms);
 		rgb_bd=tkra_pmuluhw(rgb_c, rgb_md);
-		rgb_bl=rgb_bs+rgb_bd;
+//		rgb_bl=rgb_bs+rgb_bd;
+		rgb_bl=bjx2_padduw_sat(rgb_bs, rgb_bd);
 
 //		rgb_bl=0xFFFF7FFF7FFF7FFFULL;
 
@@ -515,6 +580,9 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			z2&=0xFFF0;
 			blk_z&=0xFFF0;
 		}
+		
+		z2=(short)z2;
+		blk_z=(short)blk_z;
 
 		switch(zfn)
 		{

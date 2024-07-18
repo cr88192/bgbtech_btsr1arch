@@ -2851,6 +2851,7 @@ bool BGBCC_JX2C_TypeFloat2RegP(BGBCC_TransState *ctx, ccxl_type ty);
 bool BGBCC_JX2C_TypeDoubleRegP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_JX2C_TypeGetRegClassP(BGBCC_TransState *ctx, ccxl_type ty);
 int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty);
+int BGBCC_JX2C_TypeValueObjectRefP(BGBCC_TransState *ctx, ccxl_type type);
 int BGBCC_JX2C_EmitVaArg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg);
 int BGBCC_JX2C_EmitVaEnd(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg);
 int BGBCC_JX2C_EmitVaStart(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, ccxl_register treg);

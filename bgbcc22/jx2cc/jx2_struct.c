@@ -288,7 +288,7 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 	ccxl_type type2;
 	int csreg, ctreg, cdreg;
 	int tr0, tr1;
-	int nm1, nm2, nm3, nm4, ty, sz;
+	int nm1, nm2, nm3, nm4, ty, sz, al;
 	int vtix, vtoffs;
 	int i, j, k;
 
@@ -315,6 +315,34 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 
 	if(!strcmp(fi->name, "tagName") && !sctx->is_simpass)
 		k=-1;
+
+	sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
+	al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, type);
+
+	if(BGBCC_CCXL_IsRegLocalP(ctx, dreg) &&
+		BGBCC_JX2C_TypeValueObjectRefP(ctx, type))
+//		BGBCC_CCXL_TypeValueObjectP(ctx, type) &&
+//		(sz>16))
+	{
+		cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+		sz=BGBCC_CCXL_TypeGetLogicalSize(ctx, type);
+
+		al=4;
+		if(fi->fxoffs&3)al=2;
+		if(fi->fxoffs&1)al=1;
+		
+		BGBCC_JX2C_EmitLeaBRegOfsReg(ctx, sctx,
+			BGBCC_SH_NMID_MOVL, csreg, fi->fxoffs, tr0);
+
+		BGBCC_JX2C_EmitValueCopyRegRegSz(ctx, sctx, cdreg, tr0, sz, al);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+		return(1);
+	}
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
@@ -2016,6 +2044,19 @@ int BGBCC_JX2C_EmitValueCopyRegRegSz(
 		tr1=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 
 		i=0;
+
+		if(sctx->has_misalgn)
+		{
+			while((i+16)<sz)
+			{
+				BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm_movq, sreg, i+ 0, tr0);
+				BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm_movq, sreg, i+ 8, tr1);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm_movq, tr0, dreg, i+ 0);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm_movq, tr1, dreg, i+ 8);
+				i+=16;
+			}
+		}
+
 		while((i+8)<sz)
 		{
 			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nm1, sreg, i+ 0, tr0);
