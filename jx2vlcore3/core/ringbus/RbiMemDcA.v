@@ -1657,13 +1657,18 @@ begin
 	tReqMissAddrF	= 0;
 `endif
 
-	tReqMissAddrLoA	= tReqMissAddrA;
-	tReqMissAddrLoB	= tReqMissAddrB;
+//	tReqMissAddrLoA	= tReqMissAddrA;
+	tReqMissAddrLoA	= (tBlkMemAddr2A[19: 5] != tReqAxA[15: 1]);
+//	tReqMissAddrLoB	= tReqMissAddrB;
+	tReqMissAddrLoB	= (tBlkMemAddr2B[19: 5] != tReqAxB[15: 1]);
+
 	tReqMissAddrLoE	= tReqMissAddrE;
 	tReqMissAddrLoF	= tReqMissAddrF;
 
 	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov);
+//	tReqFlushAddrA	= (tBlkMemAddr2A[71:68] != tFlushRov) && tReqIsNz;
 	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov);
+//	tReqFlushAddrB	= (tBlkMemAddr2B[71:68] != tFlushRov) && tReqIsNz;
 	tReqWeakFlushAddrA	= 0;
 	tReqWeakFlushAddrB	= 0;
 
@@ -1861,6 +1866,15 @@ begin
 			end
 		end
 	end
+
+`ifdef def_true
+//	if(!tReqReady)
+	if(!tReqReady || tReqIsMmio || tReqIsCcmd)
+	begin
+		tReqFlushAddrA	= 0;
+		tReqFlushAddrB	= 0;
+	end
+`endif
 
 //	tReqMissA	= (tReqMissAddrA && !tReqMissSkipA) || tReqFlushAddrA;
 //	tReqMissB	= (tReqMissAddrB && !tReqMissSkipB) || tReqFlushAddrB;
@@ -2554,8 +2568,10 @@ begin
 		else
 		begin
 `ifdef def_true
-				$display("L1D$: Load Response A, A=%X, Ix1/Ix2=%X/%X", 
-						memAddrIn, tReqSeqIdx, tReqIxA);
+				$display(
+					"L1D$: Load Response A, A=%X O=%X S=%X, Ix1/Ix2=%X/%X", 
+						memAddrIn, memOpmIn, memSeqIn,
+						tReqSeqIdx, tReqIxA);
 			if(tReqSeqIdx!=tReqMissIxA)
 				$display("L1D$: In!=Req IxA, %X %X",
 					tReqSeqIdx, tReqMissIxA);
@@ -2673,8 +2689,10 @@ begin
 		else
 		begin
 `ifdef def_true
-				$display("L1D$: Load Response A, A=%X, Ix1/Ix2=%X/%X", 
-						memAddrIn, tReqSeqIdx, tReqIxA);
+				$display(
+					"L1D$: Load Response B, A=%X O=%X S=%X, Ix1/Ix2=%X/%X", 
+						memAddrIn, memOpmIn, memSeqIn,
+						tReqSeqIdx, tReqIxA);
 			if(tReqSeqIdx!=tReqMissIxB)
 				$display("L1D$: In!=Req IxB, %X %X",
 					tReqSeqIdx, tReqMissIxB);
@@ -2878,6 +2896,14 @@ begin
 	if(!tMemReqStB && tMemReqLdB && tBlkIsDirtyB)
 		$display("L1D$: Gain DirtyB");
 `endif
+
+`ifdef jx2_mem_l1d_utlb
+//	if(!tReqUtlbHitAxA)
+//		tReqMissAddrLoA = 0;
+//	if(!tReqUtlbHitAxB)
+//		tReqMissAddrLoB = 0;
+`endif
+	
 
 	tMemSeqReq		= UV16_00;
 	tMemOpmReq		= UV16_00;
@@ -3205,6 +3231,19 @@ begin
 `endif
 //		tRegOutHold = 1;
 	end
+
+`ifdef def_true
+//	if(	tNxtMemReqStA || tNxtMemReqStB ||
+//		tNxtMemReqLdA || tNxtMemReqLdB)
+
+	if(	(tNxtMemReqStA && !tMemReqStA) ||
+		(tNxtMemReqStB && !tMemReqStB) ||
+		(tNxtMemReqLdA && !tMemReqLdA) ||
+		(tNxtMemReqLdB && !tMemReqLdB) )
+	begin
+		tRegOutHold = 1;
+	end
+`endif
 
 	if(tResetL)
 	begin

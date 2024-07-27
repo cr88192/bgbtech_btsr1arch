@@ -2523,7 +2523,10 @@ begin
 					tMemAddrReq[47:32]=JX2_RBI_ADDRHI_PHYS;
 
 				if(tReqAddrIsVirt)
+				begin
 					tMemOpmReq[11:8] = 4'hF;
+					tMemAddrReq[31:16]=16'h0001;
+				end
 			end
 
 `ifdef jx2_mem_l1i_utlb
@@ -2578,7 +2581,10 @@ begin
 //				tMemAddrReq[47:44]=4'hC;
 
 				if(tReqAddrIsVirt)
+				begin
 					tMemOpmReq[11:8] = 4'hF;
+					tMemAddrReq[31:16]=16'h0001;
+				end
 			end
 
 `ifdef jx2_mem_l1i_utlb
@@ -2630,6 +2636,15 @@ begin
 
 //	if(tDoStBlkA || tDoStBlkB || tDidStBlkA || tDidStBlkB)
 //		tRegOutHold = 1;
+
+`ifdef def_true
+//	if(tNxtMemReqLdA || tNxtMemReqLdB)
+	if(	(tNxtMemReqLdA && !tMemReqLdA) ||
+		(tNxtMemReqLdB && !tMemReqLdB) )
+	begin
+		tRegOutHold = 1;
+	end
+`endif
 
 `ifndef def_true
 	if((tRegOutPcVal[15:0]==16'h0000) && !tRegOutHold && !tDoStallNop)

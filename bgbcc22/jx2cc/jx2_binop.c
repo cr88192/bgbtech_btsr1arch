@@ -4846,6 +4846,26 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
+	if(!strcmp(name, "__mem_invdc") && (narg==1))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitOpReg(ctx, sctx,
+			BGBCC_SH_NMID_INVDC, csreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if(!strcmp(name, "__mem_invic") && (narg==1))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		BGBCC_JX2C_EmitOpReg(ctx, sctx,
+			BGBCC_SH_NMID_INVIC, csreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
 	if((!strcmp(name, "__int_min") ||
 		!strcmp(name, "__int32_min") ||
 		!strcmp(name, "__uint32_min") ||

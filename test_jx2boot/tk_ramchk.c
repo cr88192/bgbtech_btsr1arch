@@ -46,7 +46,8 @@ int TK_RamChk()
 	TK_FlushCacheL1D_INVDCA();
 	TK_FlushCacheL1D_INVL2();
 
-	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
+//	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
+	TK_FlushCacheL1D_ReadBuf(0x02700000, 524288);
 
 //	putc('\n');
 
@@ -126,7 +127,8 @@ int TK_RamChk()
 	TK_FlushCacheL1D_INVDCA();
 	TK_FlushCacheL1D_INVL2();
 
-	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
+//	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
+	TK_FlushCacheL1D_ReadBuf(0x02700000, 524288);
 
 	ct[0]=0x55AA55AAU;
 	ct[1]=0x55AA55AAU;
@@ -136,7 +138,8 @@ int TK_RamChk()
 	TK_FlushCacheL1D_INVDCA();
 	TK_FlushCacheL1D_INVL2();
 
-	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
+//	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
+	TK_FlushCacheL1D_ReadBuf(0x02700000, 524288);
 
 //	k=ct[0];
 

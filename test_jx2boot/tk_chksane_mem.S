@@ -311,13 +311,13 @@ X(tk_checksane_mem_asm):
 	mov.q	(sp, 56), r7
 	
 	cmpqeq	r4, r8
-	break?f
+	.L8_1: break?f
 	cmpqeq	r5, r9
-	break?f
+	.L8_2: break?f
 	cmpqeq	r6, r10
-	break?f
+	.L8_3: break?f
 	cmpqeq	r7, r11
-	break?f
+	.L8_4: break?f
 	
 
 	add	128, sp

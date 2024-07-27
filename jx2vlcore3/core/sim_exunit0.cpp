@@ -1095,7 +1095,7 @@ void MemUpdateForBusRing()
 #endif
 	}
 	
-	static unsigned int addr;
+	static unsigned long addr;
 	static int isRom, isSRam, isDRam,
 		isZero, isNopPg, isRtsPg,
 		isMmio, isCcmd, isResp, isSkip, isSkipCnt;
@@ -1128,7 +1128,9 @@ void MemUpdateForBusRing()
 	}
 	
 	
-	addr	= (unsigned int)l2addr1;
+//	addr	= (unsigned int)l2addr1;
+	addr	= l2addr1 & 0x00000FFFFFFFFFFFULL;
+
 	isRom	= (addr>=0x00000000) && (addr<=0x00007FFF);
 	isSRam	= (addr>=0x0000C000) && (addr<=0x0000DFFF);
 //	isDRam	= (addr>=0x01000000) && (addr<=0x0FFFFFFF);
@@ -1600,8 +1602,8 @@ void MemUpdateForBusRing()
 				l2opm1|=0x4000;
 		}else
 		{
-			printf("Bad Address %08X %s\n", addr, src_unit);
-			printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
+			printf("Bad Address %012llX %s\n", addr, src_unit);
+			printf("L2-1 O=%04X S=%04X A=%012llX D=%08X_%08X_%08X_%08X\n",
 				l2opm1, l2seq1, l2addr1,
 				l2data1d, l2data1c, l2data1b, l2data1a);
 			l2data1a=0;
@@ -1664,8 +1666,8 @@ void MemUpdateForBusRing()
 			l2opm1=0x60 | (l2opm1a&0xFF00);
 		}else
 		{
-			printf("Bad Address %08X %s\n", addr, src_unit);
-			printf("L2-1 O=%04X S=%04X A=%08X D=%08X_%08X_%08X_%08X\n",
+			printf("Bad Address %012llX %s\n", addr, src_unit);
+			printf("L2-1 O=%04X S=%04X A=%012llX D=%08X_%08X_%08X_%08X\n",
 				l2opm1, l2seq1, l2addr1,
 				l2data1d, l2data1c, l2data1b, l2data1a);
 //			l2opm1=0x60;

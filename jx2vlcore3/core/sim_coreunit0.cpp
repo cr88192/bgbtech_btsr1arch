@@ -8,6 +8,11 @@ vluint64_t main_time3p = 0;
 
 int do_qmt;
 
+#ifdef DOQMT
+#define	DRAMSZ	(1<<28)
+#else
+#define	DRAMSZ	(1<<27)
+#endif
 
 #define CLOCK_400MHZ			//Enable 300MHz and 400MHz Clock
 
@@ -1075,7 +1080,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //			data=ddr_ram[pos>>1];
 //			nxtbcol=ddr_bcol+2;
 
-			pos&=(1<<27)-1;
+//			pos&=(1<<27)-1;
+			pos&=(DRAMSZ>>1)-1;
 			data=ddr_ram[pos];
 			nxtbcol=ddr_bcol+1;
 
@@ -1107,7 +1113,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //			ddr_ram[pos>>1]=data;
 //			nxtbcol=ddr_bcol+2;
 
-			pos&=(1<<27)-1;
+//			pos&=(1<<27)-1;
+			pos&=(DRAMSZ>>1)-1;
 			ddr_ram[pos]=data;
 			nxtbcol=ddr_bcol+1;
 			
@@ -2497,6 +2504,10 @@ int main(int argc, char **argv, char **env)
 	mhz=100;
 	do_qmt=0;
 
+#ifdef DOQMT
+	do_qmt=1;
+#endif
+
 	for(i=1; i<argc; i++)
 	{
 		if(!strcmp(argv[i], "--qmt"))
@@ -2606,8 +2617,10 @@ int main(int argc, char **argv, char **env)
 
 	BTSR1_MainAddUsbKey(0);
 
-	ddr_ram=(uint16_t *)malloc(1<<28);
-	memset(ddr_ram, 0, 1<<28);
+//	ddr_ram=(uint16_t *)malloc(1<<28);
+	ddr_ram=(uint16_t *)malloc(DRAMSZ);
+//	memset(ddr_ram, 0, 1<<28);
+	memset(ddr_ram, 0, DRAMSZ);
 	
 //	for(i=0; i<(1<<26); i++)
 //		ddr_ram[i]=rand();

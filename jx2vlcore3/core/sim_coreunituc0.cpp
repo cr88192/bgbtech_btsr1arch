@@ -13,7 +13,8 @@ vluint64_t main_time3p = 0;
 // #define CLOCK_200_AS_133		//Scale 200MHz clock to 133MHz
 #define CLOCK_200_AS_150		//Scale 200MHz clock to 150MHz
 
-
+// #define	DRAMSZ	(1<<28)
+#define	DRAMSZ	(1<<27)
 
 #ifdef __linux
 #include <unistd.h>
@@ -698,7 +699,9 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 			ddr_burst--;
 
 			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_col;
-			pos&=(1<<27)-1;
+//			pos&=(1<<27)-1;
+			pos&=DRAMSZ-1;
+//			pos&=(DRAMSZ>>1)-1;
 			data=ddr_ram[pos>>1];
 			ddr_col+=2;
 
@@ -718,7 +721,9 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 
 			data=*rdata;
 			pos=(ddr_row<<13)+(ddr_bank<<10)+ddr_col;
-			pos&=(1<<27)-1;
+//			pos&=(1<<27)-1;
+			pos&=DRAMSZ-1;
+//			pos&=(DRAMSZ>>1)-1;
 			ddr_ram[pos>>1]=data;
 			ddr_col+=2;
 		}
@@ -733,7 +738,11 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 //	addr=(cmd&0x3FFF);
 	addr=(cmd&0x1FFF);
 	bank=(cmd>>13)&7;
-	addr|=((cmd>>SIMDDR_SHL_A13)&7)<<13;
+	
+	if(DRAMSZ>=(1<<28))
+	{
+		addr|=((cmd>>SIMDDR_SHL_A13)&7)<<13;
+	}
 	
 	if(cmd&SIMDDR_MSK_CS)
 	{
@@ -756,7 +765,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 		{
 			if(cmd&SIMDDR_MSK_WE)
 			{
-//				printf("Read Active Row\n");
+				printf("Read Active Row %04X %01X\n", addr, bank);
 				ddr_col=addr;
 				ddr_bank=bank;
 				ddr_state=1;
@@ -769,7 +778,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 				ddr_burst=ddr_burstlen;
 			}else
 			{
-//				printf("Write Active Row\n");
+				printf("Write Active Row %04X %01X\n", addr, bank);
 				ddr_col=addr;
 				ddr_bank=bank;
 				ddr_state=2;
@@ -786,7 +795,7 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 		{
 			if(cmd&SIMDDR_MSK_WE)
 			{
-//				printf("Activate Row\n");
+				printf("Activate Row %04X\n", addr);
 				ddr_row=addr;
 			}else
 			{
@@ -1369,8 +1378,8 @@ int main(int argc, char **argv, char **env)
 	SoundDev_Init();
 	BTSR1_MainInitKeyboard();
 
-	ddr_ram=(uint16_t *)malloc(1<<28);
-	memset(ddr_ram, 0, 1<<28);
+	ddr_ram=(uint16_t *)malloc(DRAMSZ);
+	memset(ddr_ram, 0, DRAMSZ);
 	
 //	for(i=0; i<(1<<26); i++)
 //		ddr_ram[i]=rand();
