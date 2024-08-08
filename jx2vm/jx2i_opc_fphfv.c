@@ -2517,7 +2517,7 @@ u64 TKRA_CachedBlkUtx3L(u64 blka, u64 blkb, int ix)
 	ix1=ix>>4;
 //	hxi=((ix1*251)>>8)&255;
 //	hxi=(ix1^(ix1>>6))&63;
-	hxi=((((blka^blkb^(blka>>32))*65521)*251)>>8)&63;
+	hxi=((((blka^blkb^(blka>>32))*65521)*251)>>24)&63;
 	
 	if(	(tkra_utx3_cachedblka[hxi]==blka) &&
 		(tkra_utx3_cachedblkb[hxi]==blkb))
@@ -2556,18 +2556,23 @@ u64 TKRA_CachedBlkUtx3L(u64 blka, u64 blkb, int ix)
 	{
 		clrp=tca[(pxvc>>(i*2))&3];
 		clrq=tca[(pxva>>(i*2))&3];
+
+//		clrq=-1;
 		
 		clrp=
 			(clrp&0x0000FFFFFFFFFFFFULL) |
-			(clra&0xFFFF000000000000ULL) ;
+			(clrq&0xFFFF000000000000ULL) ;
 		tkra_utx3_cachedpelsl[hxi][i]=clrp;
+
 
 		clrp=tcah[(pxvc>>(i*2))&3];
 		clrq=tcah[(pxva>>(i*2))&3];
 		
+//		clrq=-1;
+		
 		clrp=
 			(clrp&0x0000FFFFFFFFFFFFULL) |
-			(clra&0xFFFF000000000000ULL) ;
+			(clrq&0xFFFF000000000000ULL) ;
 		tkra_utx3_cachedpelsh[hxi][i]=clrp;
 	}
 
@@ -2615,6 +2620,8 @@ void BJX2_Op_BLKUTX2_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vb=ctx->regs[op->ro];
 
 	vc=TKRA_CachedBlkUtx2(va, vb);
+
+//	__debugbreak();
 
 #if 0
 //	printf("BLKUTX2 %016llX\n", va);
@@ -3825,6 +3832,67 @@ void BJX2_Op_PCVTAL2H_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 
 
+int bjx2_opi_cvthtof8(int vi)
+{
+	int v2, ex;
+	
+	ex=(vi>>10)&31;
+	ex-=8;
+
+	if(ex<0)
+		return(0);
+	if(ex>15)
+		return(0x7F|((vi>>8)&0x80));
+
+	v2=((vi>>8)&0x80)|(ex<<3)|((vi>>7)&7);
+	return(v2);
+}
+
+int bjx2_opi_cvtf8toh(int vi)
+{
+	int v2, ex;
+	
+	if(!(vi&0x7F))
+		return(0);
+	ex=((vi>>3)&15)+8;
+	v2=((vi&0x80)<<8)|(ex<<10)|((vi&7)<<7);
+	
+	return(v2);
+}
+
+void BJX2_Op_PCVTHTOF8_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+//	vs=ctx->regs[op->rn];
+	vs=ctx->regs[op->rm];
+	
+	vn=	(bjx2_opi_cvthtof8((vs>> 0)&0xFFFF)<< 0) |
+		(bjx2_opi_cvthtof8((vs>>16)&0xFFFF)<< 8) |
+		(bjx2_opi_cvthtof8((vs>>32)&0xFFFF)<<16) |
+		(bjx2_opi_cvthtof8((vs>>48)&0xFFFF)<<24) ;
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PCVTF8TOH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+//	vs=ctx->regs[op->rn];
+	vs=ctx->regs[op->rm];
+	
+	vn=	(((u64)bjx2_opi_cvtf8toh((vs>> 0)&0xFF))<< 0) |
+		(((u64)bjx2_opi_cvtf8toh((vs>> 8)&0xFF))<<16) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>16)&0xFF))<<32) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>24)&0xFF))<<48) ;
+
+	ctx->regs[op->rn]=vn;
+}
+
+
 int BJX2_BitNN_DoMult2x3A(int x, int w)
 {
 	static signed char xt[4]={0,1,0,-1};
@@ -3924,6 +3992,58 @@ void BJX2_Op_BITNN_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	{
 		vn=(vp<<2)|((!BJX2_BitNN_DoMult(vs1, vt))<<1)|1;
 	}
+
+	ctx->regs[op->rn]=vn;
+}
+
+u16 bjx2_mul_p8toh(byte va, byte vb)
+{
+	byte exa, exb, exc, frc, sgc;
+	u16 vc;
+	
+	if(!(va&0x7F) || !(vb&0x7F))
+		return(0);
+
+	exa=((va>>3)&15)+8;
+	exb=((vb>>3)&15)+8;
+	sgc=(va>>7)^(vb>>7);
+	
+	exc=exa+exb-15;
+	frc=(8|(va&7))*(8|(vb&7));
+	
+	if(frc&0x80)
+	{
+//		frc>>=1;
+		exc++;
+	}else
+	{
+		frc<<=1;
+	}
+	
+	if(exc>=31)
+	{
+		if(exc&0x80)
+			return(0);
+		return(0x7C00|(sgc<<15));
+	}
+	vc=(sgc<<15)|(exc<<10)|((frc&0x7F)<<3);
+	
+	return(vc);
+}
+
+void BJX2_Op_PMULF8H_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vp, vn, vs1;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+	vt=ctx->regs[op->ro];
+	
+	vn=0;
+	vn=(vn<<16) | bjx2_mul_p8toh((vs>>24)&255, (vt>>24)&255);
+	vn=(vn<<16) | bjx2_mul_p8toh((vs>>16)&255, (vt>>16)&255);
+	vn=(vn<<16) | bjx2_mul_p8toh((vs>> 8)&255, (vt>> 8)&255);
+	vn=(vn<<16) | bjx2_mul_p8toh((vs>> 0)&255, (vt>> 0)&255);
 
 	ctx->regs[op->rn]=vn;
 }

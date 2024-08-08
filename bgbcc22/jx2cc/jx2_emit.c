@@ -3901,6 +3901,22 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 				rt1=BGBCC_JX2_ConstConvV4HToV4FP8S(imm, &imm1_f32);
 				rt2=BGBCC_JX2_ConstConvV4HToV4FP8U(imm, &imm2_f32);
 
+				if((opw1<0) && ctx->has_simdx2 && (rt2>0))
+				{
+					if(msk_hi>=0)
+						{ ctx->stat_const_maskjumbo++; }
+					if(!ctx->is_simpass)
+					{
+						ctx->stat_const_jumbo64++;
+						ctx->stat_const_jumbo64_4xf8++;
+					}
+
+					opw1=0xFF30;
+					opw2=0x0000|((imm2_f32>>16)&0xFFFF);
+					opw3=0xF880|(reg&31);
+					opw4=0x0000|((imm2_f32>> 0)&0xFFFF);
+				}
+
 				if((opw1<0) && ctx->has_simdx2 && (rt1>0))
 				{
 					if(msk_hi>=0)
@@ -3916,22 +3932,6 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 					opw2=0x0000|((imm1_f32>>16)&0xFFFF);
 					opw3=0xF880|(reg&31);
 					opw4=0x0000|((imm1_f32>> 0)&0xFFFF);
-				}
-
-				if((opw1<0) && ctx->has_simdx2 && (rt2>0))
-				{
-					if(msk_hi>=0)
-						{ ctx->stat_const_maskjumbo++; }
-					if(!ctx->is_simpass)
-					{
-						ctx->stat_const_jumbo64++;
-						ctx->stat_const_jumbo64_4xf8++;
-					}
-
-					opw1=0xFF30;
-					opw2=0x0000|((imm2_f32>>16)&0xFFFF);
-					opw3=0xF880|(reg&31);
-					opw4=0x0000|((imm2_f32>> 0)&0xFFFF);
 				}
 #endif
 

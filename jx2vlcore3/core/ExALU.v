@@ -123,6 +123,9 @@ S1, S2, S3 -> V
 `include "ExBcdAdd64.v"
 `endif
 
+`ifdef jx2_enable_fmulfp8
+`include "ExMisc_MulVecFp8.v"
+`endif
 
 module ExALU(
 	/* verilator lint_off UNUSED */
@@ -260,6 +263,14 @@ ExConv_Fp12Pck8		conv_pck32c(
 ExConv_Fp12Pck8		conv_pck32d(
 	regValRs[63:52], tRegRgb32Pck64F[31:24], tFp8ExpIsSign);
 
+wire[31:0]		tRegFp16PckFp8;
+assign		tRegFp16PckFp8 = {
+	tRegRgb32Pck64F[24], tRegRgb32Pck64F[31:25],
+	tRegRgb32Pck64F[16], tRegRgb32Pck64F[23:17],
+	tRegRgb32Pck64F[ 8], tRegRgb32Pck64F[15: 9],
+	tRegRgb32Pck64F[ 0], tRegRgb32Pck64F[ 7: 1]
+	};
+
 `endif
 
 `ifdef jx2_enable_convrgb30a
@@ -313,21 +324,37 @@ wire[31:0]	tRegFp16PckAL;
 wire[63:0]	tRegFp16UPckAL;
 
 `ifdef jx2_enable_convfp16al
-ExConv_Fp16PckAl	conv_fp16pckAl0(regValRs[15: 0], tRegFp16PckAL[ 7: 0]);
-ExConv_Fp16PckAl	conv_fp16pckAl1(regValRs[31:16], tRegFp16PckAL[15: 8]);
-ExConv_Fp16PckAl	conv_fp16pckAl2(regValRs[47:32], tRegFp16PckAL[23:16]);
-ExConv_Fp16PckAl	conv_fp16pckAl3(regValRs[63:48], tRegFp16PckAL[31:24]);
+ExConv_Fp16PckAl	conv_fp16pckAl0(
+	regValRs[15: 0], tRegFp16PckAL[ 7: 0], idUIxt[1]);
+ExConv_Fp16PckAl	conv_fp16pckAl1(
+	regValRs[31:16], tRegFp16PckAL[15: 8], idUIxt[1]);
+ExConv_Fp16PckAl	conv_fp16pckAl2(
+	regValRs[47:32], tRegFp16PckAL[23:16], idUIxt[1]);
+ExConv_Fp16PckAl	conv_fp16pckAl3(
+	regValRs[63:48], tRegFp16PckAL[31:24], idUIxt[1]);
 
-ExConv_Fp16UPckAl	conv_fp16upckAl0(regValRs[ 7: 0], tRegFp16UPckAL[15: 0]);
-ExConv_Fp16UPckAl	conv_fp16upckAl1(regValRs[15: 8], tRegFp16UPckAL[31:16]);
-ExConv_Fp16UPckAl	conv_fp16upckAl2(regValRs[23:16], tRegFp16UPckAL[47:32]);
-ExConv_Fp16UPckAl	conv_fp16upckAl3(regValRs[31:24], tRegFp16UPckAL[63:48]);
+ExConv_Fp16UPckAl	conv_fp16upckAl0(
+	regValRs[ 7: 0], tRegFp16UPckAL[15: 0], idUIxt[1]);
+ExConv_Fp16UPckAl	conv_fp16upckAl1(
+	regValRs[15: 8], tRegFp16UPckAL[31:16], idUIxt[1]);
+ExConv_Fp16UPckAl	conv_fp16upckAl2(
+	regValRs[23:16], tRegFp16UPckAL[47:32], idUIxt[1]);
+ExConv_Fp16UPckAl	conv_fp16upckAl3(
+	regValRs[31:24], tRegFp16UPckAL[63:48], idUIxt[1]);
 `else
 assign	tRegFp16PckAL = UV32_00;
 assign	tRegFp16UPckAL = UV64_00;
 `endif
 
+
 `endif
+
+`ifdef jx2_enable_fmulfp8
+wire[63:0]	tRegFp16MulFp8;
+ExMisc_MulVecFp8	mulfp8(regValRs[31:0], regValRt[31:0], tRegFp16MulFp8);
+`endif
+
+
 
 `ifdef jx2_enable_rgb5minmax_alu
 wire[31:0]	tRegRgb5MinMax;
@@ -603,6 +630,12 @@ reg			tRegConvSrT;
 reg			tRegConvSrS;
 reg			tRegConvSrTv;
 reg			tRegConvSrSv;
+
+reg[63:0]	tRegConv3Val;
+reg			tRegConv3SrT;
+reg			tRegConv3SrS;
+reg			tRegConv3SrTv;
+reg			tRegConv3SrSv;
 
 // reg			tOpIsWx;
 
@@ -1217,6 +1250,11 @@ begin
 	tRegConvSrS=regInSrS;
 	tRegConvSrTv=0;
 	tRegConvSrSv=0;
+
+	tRegConv3SrT=regInSrT;
+	tRegConv3SrS=regInSrS;
+	tRegConv3SrTv=0;
+	tRegConv3SrSv=0;
 
 	tResult1Tv=0;
 	tResult2Tv=0;
@@ -2042,6 +2080,8 @@ begin
 
 `ifdef jx2_enable_conv2_alu
 	tRegConvVal = UV64_00;
+	tRegConv3Val = UV64_00;
+
 	case(idUIxt[5:0])
 
 `ifdef jx2_do_convfp16_alu
@@ -2100,6 +2140,14 @@ begin
 			tRegConvVal = { UV32_00, tRegFp16PckAL };
 		end
 		JX2_UCIX_CONV2_FP16UPCKAL: begin
+			tRegConvVal = tRegFp16UPckAL;
+		end
+
+		JX2_UCIX_CONV2_FP16PCKFP8: begin
+//			tRegConvVal = { UV32_00, tRegFp16PckAL };
+			tRegConvVal = { UV32_00, tRegFp16PckFp8 };
+		end
+		JX2_UCIX_CONV2_FP16UPCKFP8: begin
 			tRegConvVal = tRegFp16UPckAL;
 		end
 `endif
@@ -2324,6 +2372,17 @@ begin
 
 	end
 
+	case(idUIxt[5:0])
+		JX2_UCIX_CONV3_FMULFP8: begin
+`ifdef jx2_enable_fmulfp8
+			tRegConv3Val = tRegFp16MulFp8;
+`endif
+		end
+		
+		default: begin
+		end
+	endcase
+
 `ifdef jx2_enable_conv2_alu
 	if(idUCmd[5:0]==JX2_UCMD_CONV2_RR)
 	begin
@@ -2332,6 +2391,17 @@ begin
 		tRegOutSrS = tRegConvSrS;
 		tRegOutDoSrT = tRegConvSrTv;
 		tRegOutDoSrS = tRegConvSrSv;
+	end
+`endif
+
+`ifdef jx2_enable_conv3_alu
+	if(idUCmd[5:0]==JX2_UCMD_CONV3_RR)
+	begin
+		tRegOutVal = tRegConv3Val;
+		tRegOutSrT = tRegConv3SrT;
+		tRegOutSrS = tRegConv3SrS;
+		tRegOutDoSrT = tRegConv3SrTv;
+		tRegOutDoSrS = tRegConv3SrSv;
 	end
 `endif
 

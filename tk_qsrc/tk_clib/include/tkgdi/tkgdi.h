@@ -62,12 +62,18 @@
 #define TKGDI_TCC_li		RIFF_MAKETCC('l', 'i')
 #define TKGDI_TCC_l4		RIFF_MAKETCC('l', '4')
 
+#define TKGDI_FCC_hdr		RIFF_MAKETAG('h','d','r',' ')
+#define TKGDI_FCC_hdru		RIFF_MAKETAG('h','d','r','u')
+
+
 #define TKGDI_BI_RGB		0
 #define TKGDI_BI_RLE8		1
 #define TKGDI_BI_RLE4		2
 #define TKGDI_BI_BITFIELDS	3
 #define TKGDI_BI_JPEG		4
 #define TKGDI_BI_PNG		5
+
+#define TKGDI_BI_HDRU		TKGDI_FCC_hdru
 
 #define TKGDI_DSTR_PX			0x000000FF	//Font size in pixels
 #define TKGDI_DSTR_8PX			0x00000008	//8px

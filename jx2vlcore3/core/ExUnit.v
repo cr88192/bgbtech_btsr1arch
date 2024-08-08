@@ -851,6 +851,10 @@ reg [32:0]		gprValImm;
 reg [32:0]		gprValImmB;
 reg [32:0]		gprValImmC;
 
+reg [32:0]		gprValImmA4;
+reg [32:0]		gprValImmB4;
+reg [32:0]		gprValImmC4;
+
 wire[47:0]	crOutSsp;
 
 assign		gprValGbr = crOutGbr;
@@ -888,6 +892,8 @@ reg [63:0]		gprInEhr;
 wire[63:0]		gprOutBp;
 reg [63:0]		gprInBp;
 `endif
+
+wire			gprDoHold;
 
 (* max_fanout = 200 *)
 	wire exHold2NotIsrEdge = exHold2 && !crIsIsrEdge;
@@ -960,6 +966,10 @@ RegGPR_6R3W regGpr(
 	gprValCm,		//Cm Port (CR)
 	id2ValBPc,		//BPC
 
+	gprValImmA4,	//Immediate (WB, A)
+	gprValImmB4,	//Immediate (WB, B)
+	gprValImmC4,	//Immediate (WB, C)
+
 	gprEx1Flush,	//Flush EX1
 	gprEx2Flush,	//Flush EX2
 	gprEx3Flush,	//Flush EX3
@@ -971,6 +981,9 @@ RegGPR_6R3W regGpr(
 	{	exC3Hold[1], exB3Hold[1], ex3Hold[1],
 		exC2Hold[1], exB2Hold[1], ex2Hold[1],
 		exC1Hold[1], exB1Hold[1], ex1Hold[1]	},
+
+	crOutSr[31:0],
+	gprDoHold,
 
 	gprOutDlr,	gprInDlrB,
 	gprOutDhr,	gprInDhrB,
@@ -2964,7 +2977,7 @@ assign	exHold2a	=
 		(ex1Hold[0])	||	(ex2Hold[0])	||
 		(ex3Hold[0])	||	dcOutHold		||
 		(ifOutPcOK[1])	||	(ex1FpuOK[1])	||
-		ex1SloMulDoHold;
+		ex1SloMulDoHold	||	gprDoHold;
 
 assign	tDbgMisc = {
 		ex1Hold[0],			ex2Hold[0],
@@ -3070,7 +3083,7 @@ begin
 		(ex1Hold[0])	||	(ex2Hold[0])	||
 		(ex3Hold[0])	||	dcOutHold		||
 		(ifOutPcOK[1])	||	(ex1FpuOK[1])	||
-		ex1SloMulDoHold;
+		ex1SloMulDoHold	||	gprDoHold;
 `endif
 
 	exHold1A	= exHold2;
@@ -4730,6 +4743,8 @@ begin
 				crInSr[27:26]	= crOutVbrCm[ 3: 2];
 				crInSr[23:20]	= crOutVbrCm[15:12];
 
+				crInSr[19:18]	= crOutVbrCm[ 1: 0];
+
 				crInLr			= crOutLr;
 //					gprInDlr		= gprOutDlr;
 //					gprInDhr		= gprOutDhr;
@@ -5307,7 +5322,11 @@ begin
 	gprIdRnC4		= exC3RegIdRn4;
 	gprValRnC4		= exC3RegValRn4;
 	exC3RegAluRes	= 0;
-	
+
+	gprValImmA4		= ex1RegValImm;
+	gprValImmB4		= exB1RegValImm;
+	gprValImmC4		= exC1RegValImm;
+
 	exC2RegAluRes	= exC1ValAlu;
 
 	if(idC2IdUCmd[5:0]!=0)

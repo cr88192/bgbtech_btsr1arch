@@ -462,6 +462,9 @@ reg				tNxtReqIsNz;
 reg				tNxtReqIsMmio;
 reg				tNxtReqIsCcmd;
 
+reg				tReqIsVolatile;
+reg				tNxtReqIsVolatile;
+
 reg				tReqDoPfxA;
 reg				tReqDoPfxB;
 reg				tReqDoSpxA;
@@ -1006,6 +1009,8 @@ begin
 		(tNxtReqAddr[31:28] != 0) &&
 		!tNxtReqAddr[47] &&
 		!tNxtReqIsMmio && !tNxtReqIsCcmd;
+
+	tNxtReqIsVolatile = (tNxtReqAddr[47:44] == 4'hD) || tReqLdOp[3];
 
 	if(tNxtReqAddrHiIsNz)
 	begin
@@ -1787,7 +1792,30 @@ begin
 			tBlkIsDirtyB		= 0;
 		end
 
+`ifdef def_true
+		if(tBlkIsNoCacheA && (tVolatileInhCnt==0) &&
+			(!tReqIsNz || !tReqIsVolatile))
+		begin
+			tReqFlushAddrA		= 1;
+		end
+		if(tBlkIsNoCacheB && (tVolatileInhCnt==0) &&
+			(!tReqIsNz || !tReqIsVolatile))
+		begin
+			tReqFlushAddrB		= 1;
+		end
+		
+//		if((tReqAxA[43:40]==4'hD) && tReqIsNz)
+		if(tReqIsVolatile && tReqIsNz)
+		begin
+			if(!tBlkIsNoCacheA && !tReqMissSkipA)
+				tReqFlushAddrA		= 1;
+			if(!tBlkIsNoCacheB && !tReqMissSkipB)
+				tReqFlushAddrB		= 1;
+		end
+`endif
+
 `ifndef def_true
+// `ifdef def_true
 		/* write through */
 //		if(tVolatileInhCnt == 0)
 		if((tVolatileInhCnt == 0) && !tReqIsNz)
@@ -3086,6 +3114,9 @@ begin
 			if((tReqMissAxA[43:40]==4'hD) && !tReqAddrHiIsNz)
 				tMemOpmReq[11]=1;
 
+			if(tReqLdOp[3])
+				tMemOpmReq[11]=1;
+
 			if(tSkipTlb)
 			begin
 				/* FIXME: This is ugly hacks. */
@@ -3161,6 +3192,9 @@ begin
 
 //			if(tReqMissAxB[43:40]==4'hD)
 			if((tReqMissAxB[43:40]==4'hD) && !tReqAddrHiIsNz)
+				tMemOpmReq[11]=1;
+
+			if(tReqLdOp[3])
 				tMemOpmReq[11]=1;
 
 			if(tSkipTlb)
@@ -3314,6 +3348,7 @@ begin
 		tReqIsMmio		<= tNxtReqIsMmio;
 		tReqIsCcmd		<= tNxtReqIsCcmd;
 		tReqAddrIsVirt	<= tNxtReqAddrIsVirt;
+		tReqIsVolatile	<= tNxtReqIsVolatile;
 `endif
 
 `ifdef jx2_mem_lane2

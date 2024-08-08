@@ -98,7 +98,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_R63	63
 
 
-#define BJX2_REG_REMAP
+// #define BJX2_REG_REMAP
 
 #ifndef BJX2_REG_REMAP
 #define BJX2_REG_DLR	0
@@ -777,7 +777,6 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_PCMPGEF		0x1C0		//
 #define BJX2_NMID_BITNN			0x1C1		//
-
 #define BJX2_NMID_RGB5PCKI8		0x1C2		//
 #define BJX2_NMID_RGB5UPCKI8	0x1C3		//
 
@@ -785,6 +784,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_PSHLLW		0x1C5		//
 #define BJX2_NMID_PSHARW		0x1C6		//
 #define BJX2_NMID_PSHLRW		0x1C7		//
+
+#define BJX2_NMID_PCVTHTOF8		0x1C8		//
+#define BJX2_NMID_PCVTF8TOH		0x1C9		//
+#define BJX2_NMID_PMULF8H		0x1CA		//
+#define BJX2_NMID_PMOVF8		0x1CB		//
 
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
@@ -1035,6 +1039,8 @@ u64 regs[128];				//GPRs and CRs
 u64 ex_regs[128];				//GPRs and CRs
 // u64 ex_fpreg[32];				//FPRs
 
+u64 rbs_regs[256];				//RBS Banked Registers
+
 BJX2_Trace *rttr[64];		//return traces (mini hash)
 BJX2_Trace *prttr;			//return traces (pred)
 
@@ -1076,6 +1082,7 @@ byte wexmd;
 byte v_wexmd;
 byte cc_flush;
 byte core_id;
+byte rbsid;
 
 int status;
 bjx2_addr trapc;

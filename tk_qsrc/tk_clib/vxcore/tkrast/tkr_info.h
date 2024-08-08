@@ -223,6 +223,25 @@ Vertex Parameter Arrays
 
 #define		TKRA_TRFL_DOCMP			0x1000	//Do Compression
 #define		TKRA_TRFL_FLIPST		0x2000	//Flip S/T Coords
+#define		TKRA_TRFL_MORT			0x4000	//Morton Order
+
+#define		TKRA_TRFL_PIXFMT_W		0x00000	//16-bit pixels
+#define		TKRA_TRFL_PIXFMT_DW		0x10000	//32-bit pixels
+#define		TKRA_TRFL_PIXFMT_QW		0x20000	//64-bit pixels
+#define		TKRA_TRFL_PIXFMT_HDR	0x40000	//HDR / FP Pixels
+#define		TKRA_TRFL_PIXFMT_UTX3	0x80000	//UTX3
+
+#define		TKRA_PIXFMT_W			0x00	//16-bit pixels
+#define		TKRA_PIXFMT_DW			0x01	//32-bit pixels
+#define		TKRA_PIXFMT_QW			0x02	//64-bit pixels
+#define		TKRA_PIXFMT_HDR			0x04	//HDR / FP Pixels
+#define		TKRA_PIXFMT_UTX3		0x08	//UTX3
+
+#define		TKRA_PIXFMT_RGBA5		0x00	//
+#define		TKRA_PIXFMT_RGBA32		0x01	//
+#define		TKRA_PIXFMT_RGBA_F8		0x05	//
+#define		TKRA_PIXFMT_UTX3L		0x08	//UTX3
+#define		TKRA_PIXFMT_UTX3H		0x0C	//UTX3
 
 #define		TKRA_FMT_1SB			0x00
 #define		TKRA_FMT_2SB			0x01
@@ -475,11 +494,17 @@ Vertex Parameter Arrays
 
 #define TKRA_CTXPARM_FINISH						0x00010000
 #define TKRA_CTXPARM_FLUSH						0x00010001
+#define TKRA_CTXPARM_CLEAR						0x00010002
+
+#define TKRA_CTXPARM_MASK						0x00FFFFFF
 
 
 typedef unsigned short	tkra_rastpixel;
 // typedef unsigned short	tkra_zbufpixel;
 typedef signed short		tkra_zbufpixel;
+
+typedef unsigned int		tkra_rast2pixel;
+typedef signed int		tkra_zbuf2pixel;
 
 typedef sbyte		tkra_s8;
 typedef byte		tkra_u8;
@@ -492,6 +517,7 @@ typedef double		tkra_f64;
 
 typedef struct TKRA_Context_s		TKRA_Context;
 typedef struct TKRA_SvContext_s	TKRA_SvContext;
+typedef struct TKRA_ClContext_s	TKRA_ClContext;
 typedef struct TKRA_ContextVt_s	TKRA_ContextVt;
 typedef struct TKRA_TexImage_s		TKRA_TexImage;
 
@@ -683,6 +709,7 @@ void 	*vptr_sta_ptr[TKRA_MAX_MULTITEX];	//ST pointer, Multitexture
 // #define TKRA_LIM_PROJSTACK		48
 #define TKRA_LIM_PROJSTACK		(TKRA_MAX_PROJSTACK-8)
 
+/* Server-side Local Context */
 struct TKRA_SvContext_s
 {
 TKRA_Context  *clctx;			//client/shared context
@@ -719,8 +746,12 @@ void (*RasterWalkEdgesNcp)(TKRA_Context *ctx,
 tkra_blendfunc_t	Blend;
 tkra_zatest_t		ZaTest;
 
-tkra_rastpixel *tex_img;			//bound texture image
-tkra_rastpixel *tex_img2;			//bound texture image
+tkra_rastpixel *tex_img;			//bound texture image (RGB5A)
+tkra_rastpixel *tex_img2;			//bound texture image (RGB5A)
+
+tkra_rastpixel *texb_img;			//bound texture image (RGBA32)
+tkra_rastpixel *texb_img2;			//bound texture image (RGBA32)
+
 u32		*tex_img_bcn;				//texture images (block compressed)
 u32		*tex_img_bcn2;				//texture images (block compressed)
 byte	tex_xshl;
@@ -770,78 +801,83 @@ TKRA_ShaderProg		*sdr_prog_cur;
 TKRA_ShaderTrace	*sdr_tr_e_vtx;
 };
 
+/* Client-side Local Context */
+struct TKRA_ClContext_s
+{
+u32 magic1;
+u32 size;
+};
+
 struct TKRA_Context_s
 {
-TKRA_ContextVt	*vt;			//vtable
-TKRA_SvContext  *svctx;			//server context
+TKRA_ContextVt	*vt;			//00, vtable
+TKRA_SvContext  *svctx;			//08, server context
 
-u32				magic1;			//magic number (0x12345678, sanity check)
-u32				size_context;	//size of context struct
+u32				magic1;			//10, magic number (0x12345678, sanity check)
+u32				size_context;	//14, size of context struct
 
-byte			*screen_mem;	//combined screen memory
-tkra_rastpixel	*screen_rgb;	//display buffer (RGB)
-tkra_zbufpixel	*screen_zbuf;	//display buffer (Z buffer)
-tkra_zbufpixel	*screen_zbuf2;	//display buffer (Z buffer)
-byte			*screen_sten;	//stencil buffer
-int		screen_xsize;
-int		screen_ysize;
+byte			*screen_mem;	//18, combined screen memory
+tkra_rastpixel	*screen_rgb;	//20, display buffer (RGB)
+tkra_zbufpixel	*screen_zbuf;	//28, display buffer (Z buffer)
+tkra_zbufpixel	*screen_zbuf2;	//30, display buffer (Z buffer)
+byte			*screen_sten;	//38, stencil buffer
 
-
-int		scr_xscale;
-int		scr_yscale;
-int		scr_xcenter;
-int		scr_ycenter;
-
-tkra_vec4f		prj_xyzsc;
-tkra_vec4f		prj_xyzbi;
-
-tkra_rastpixel	clear_rgb5;
-tkra_zbufpixel	clear_zbuf;
-u32				clear_rgba;
-
-void	*ptr_align;
-int		clip_x0;	//Needs to be 64-bit aligned (SIMD, 0)
-int		clip_x1;	//Needs to be 64-bit aligned
-int		clip_y0;	//Needs to be 64-bit aligned
-int		clip_y1;	//Needs to be 64-bit aligned (SIMD, 3)
-
-float			scr_clip_l, scr_clip_r;
-float			scr_clip_t, scr_clip_b;
-
-u64		stateflag1;
-
-// tkra_rastpixel *dst_rgb;		//destination (RGB)
-// tkra_zbufpixel *dst_zbuf;		//destination (Zbuf)
+int		screen_xsize;			//40
+int		screen_ysize;			//44
 
 
-tkra_vec4f	(*VaGetPtr_xyz)(void *ptr);
-tkra_vec2f	(*VaGetPtr_st )(void *ptr);
-u32			(*VaGetPtr_rgb)(void *ptr);
-int			(*VaGetPtr_idx)(void *ptr);
+int		scr_xscale;				//48
+int		scr_yscale;				//4C
+int		scr_xcenter;			//50
+int		scr_ycenter;			//5C
+
+tkra_vec4f		prj_xyzsc;		//60
+tkra_vec4f		prj_xyzbi;		//70
+
+tkra_rastpixel	clear_rgb5;		//80
+tkra_zbufpixel	clear_zbuf;		//82
+u32				clear_rgba;		//84
+
+void	*ptr_align;				//88
+int		clip_x0;				//90, Needs to be 64-bit aligned (SIMD, 0)
+int		clip_x1;				//94, Needs to be 64-bit aligned
+int		clip_y0;				//98, Needs to be 64-bit aligned
+int		clip_y1;				//9C, Needs to be 64-bit aligned (SIMD, 3)
+
+float			scr_clip_l;		//A0
+float			scr_clip_r;		//A4
+float			scr_clip_t;		//A8
+float			scr_clip_b;		//AC
+
+u64				stateflag1;		//B0
+
+tkra_vec4f	(*VaGetPtr_xyz)(void *ptr);		//B8
+tkra_vec2f	(*VaGetPtr_st )(void *ptr);		//C0
+u32			(*VaGetPtr_rgb)(void *ptr);		//C8
+int			(*VaGetPtr_idx)(void *ptr);		//D0
 
 
-float		trans_znear;
-float		trans_zfar;
-float		trans_zrange;
+float		trans_znear;		//D8
+float		trans_zfar;			//DC
+float		trans_zrange;		//C0
+u32			pad0;				//C4
 
-tkra_mat4	mat_tproj;			//modelview*projection
+tkra_mat4	mat_tproj;			//C8, modelview*projection
 
-tkra_mat4	mat_xform;			//modelview
-tkra_mat4	mat_xproj;			//projection
+tkra_mat4	mat_xform;			//108, modelview
+tkra_mat4	mat_xproj;			//148, projection
 
-tkra_mat4	stk_xform[64];		//modelview
+tkra_mat4	stk_xform[64];		//188, modelview
 tkra_mat4	stk_xproj[8];		//projection
 int			stkpos_xform;
 int			stkpos_xproj;
+
 byte		matmode;
 byte		blend_sfunc;
 byte		blend_dfunc;
 byte		blend_sfunc2;
+
 byte		blend_dfunc2;
-
-// byte		blend_sfunc_mtx[8];
-// byte		blend_dfunc_mtx[8];
-
 byte		zat_alfunc;
 byte		zat_zfunc;
 byte		blend_isready;
@@ -850,15 +886,21 @@ byte		zat_stfunc;
 byte		zat_stref;
 byte		zat_stmask;
 byte		zat_stclear;
+
 byte		zat_sto_stfail;
 byte		zat_sto_zfail;
 byte		zat_sto_zpass;
-
 byte		light_mask;
+
 byte		cachemode;
 byte		tex2d_active;
 byte		bindsticky;
+byte		pixelfmt;			//native pixel format
 
+byte		resv_byte0;
+byte		resv_byte1;
+byte		resv_byte2;
+byte		resv_byte3;
 
 tkra_vec4f	light_model_ambient;
 tkra_vec4f	light_ambient[8];
@@ -912,16 +954,31 @@ u32				magic2;			//magic number (0x12345678, sanity check)
 
 int		boundtexid[TKRA_MAX_MULTITEX];		//bound texture IDs
 
+TKRA_ClContext	*clctx;
+
+tkra_rast2pixel	*screenb_rgb;	//display buffer (RGB, DWORD)
+tkra_zbuf2pixel	*screenb_zbuf;	//display buffer (Z buffer)
+tkra_zbuf2pixel	*screenb_zbuf2;	//display buffer (Z buffer)
+byte			*screenb_sten;	//stencil buffer
+
+tkra_rast2pixel	clear_rgba32;
+tkra_zbuf2pixel	clear_zbuf32;
+
+
+// unsorted past here
+
 TKRA_DrawPrimArrays t_vptr;
+
+
 };
 
 struct TKRA_TexImage_s
 {
 TKRA_TexImage *next;				//00
 TKRA_TexImage *chain;				//08
-tkra_rastpixel *tex_img;			//10 texture images
+tkra_rastpixel *tex_img;			//10 texture images (RGB5A / RBGA32)
 u32		*tex_img_bcn;				//18 texture images (block compressed)
-int		tex_id;						//20
+int		tex_id;						//20 ID number
 byte	tex_xshl;					//24 texture X size (log-2)
 byte	tex_yshl;					//25 texture Y size (log-2)
 byte	tex_mmip;					//26
@@ -929,7 +986,7 @@ byte	tex_nmip;					//27
 int		tex_flag;					//28
 int		pad0;						//2C
 u64		pad1;						//30
-u64		pad2;						//38
+void	*svptr;						//38, server-side pointer
 int		tex_mipofs[16];				//40 mip offs, pixels
 int		tex_mipofs_bcn[16];			//80 mip offs, block DWORDs
 };

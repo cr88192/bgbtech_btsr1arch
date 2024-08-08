@@ -85,6 +85,10 @@ Holding/Completing a memory access will be the responsibility of EX2.
 `include "ExFastALU.v"
 `endif
 
+`ifdef jx2_enable_pmov
+`include "ExConv_Fp16PckAl.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExEX1(
@@ -573,6 +577,18 @@ FpuConvD2S	mem_cnv_d2s(regValRm[63:0], regValRm_D2S);
 FpuConvD2H	mem_cnv_d2h(regValRm[63:0], regValRm_D2H);
 `endif
 
+`ifdef jx2_enable_pmov
+wire[31:0]	regValRm_S2H;		//memory data (Single to Half)
+wire[31:0]	regValRm_H2M8;		//memory data (Half to FP8)
+
+ExConv_Fp16PckAl	mem_cnv_h2m8a(regValRm[15: 0], regValRm_H2M8[ 7: 0], 1);
+ExConv_Fp16PckAl	mem_cnv_h2m8b(regValRm[31:16], regValRm_H2M8[15: 8], 1);
+ExConv_Fp16PckAl	mem_cnv_h2m8c(regValRm[47:32], regValRm_H2M8[23:16], 1);
+ExConv_Fp16PckAl	mem_cnv_h2m8d(regValRm[63:48], regValRm_H2M8[31:24], 1);
+
+assign	regValRm_S2H = 0;
+`endif
+
 reg			tSrJcmpZT;
 reg			tSrJcmpZT_ZL;
 reg			tSrJcmpZT_ZQ;
@@ -685,10 +701,10 @@ begin
 
 `ifdef jx2_use_mem_ldop
 	tMemLdOp		= { 1'b0, opUExtFl[3:0] };
-	if(opUExtFl[3])
-	begin
-		tMemDataOut		= { 58'h00, regIdRm[5:0] };
-	end
+//	if(opUExtFl[3])
+//	begin
+//		tMemDataOut		= { 58'h00, regIdRm[5:0] };
+//	end
 `endif
 	
 	tDoMemOpm		= UMEM_OPM_READY;
@@ -1091,10 +1107,25 @@ begin
 				tMemAddr, regIdRm);
 `endif
 		end
+
+		JX2_UCMD_PMOV_RM: begin
+//			tDoMemOpm	= { 2'b10, opUIxt[2], opUIxt[5:4] };
+			tDoMemOpm	= { 2'b10, 3'b010 };	//Store DWORD
+			tDoMemOp	= 1;
+			
+			tMemDataOut[31:0] = regValRm_H2M8;
+			if(opUIxt[5:4]==2'b01)
+				tMemDataOut[15:0] = regValRm_S2H;
+
+`ifdef jx2_debug_ldst
+			$display("FSTORE(1): A=%X R=%X V=%X",
+				tMemAddr, regIdRm, tMemDataOut);
+`endif
+		end
 `endif
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3,
-		JX2_UCMD_CONV2_RR, JX2_UCMD_ALUB3: begin
+		JX2_UCMD_CONV2_RR, JX2_UCMD_CONV3_RR, JX2_UCMD_ALUB3: begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
 

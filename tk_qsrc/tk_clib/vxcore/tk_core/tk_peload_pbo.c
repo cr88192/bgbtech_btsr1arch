@@ -770,6 +770,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	img->sz_imp=sz_imp;
 	img->sz_exp=sz_exp;
 
+#if 0
 	if(img->rva_imp)
 	{
 		tk_printf("TKPE: Import: RVA=%08X Sz=%08X\n", rva_imp, sz_imp);
@@ -779,6 +780,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	{
 		tk_printf("TKPE: Export: RVA=%08X Sz=%08X\n", rva_exp, sz_exp);
 	}
+#endif
 
 	if(rva_imp)
 	{

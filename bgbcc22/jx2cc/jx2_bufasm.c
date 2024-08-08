@@ -1337,6 +1337,19 @@ int mfl;
 {"shad.q",	BGBCC_SH_NMID_SHADQ},
 {"shld.q",	BGBCC_SH_NMID_SHLDQ},
 
+{"swap.l",	BGBCC_SH_NMID_SWAPL},
+{"swap.q",	BGBCC_SH_NMID_SWAPQ},
+{"xchg.l",	BGBCC_SH_NMID_SWAPL},
+{"xchg.q",	BGBCC_SH_NMID_SWAPQ},
+
+{"swap.vl",	BGBCC_SH_NMID_SWAPVL},
+{"swap.vq",	BGBCC_SH_NMID_SWAPVQ},
+{"xchg.vl",	BGBCC_SH_NMID_SWAPVL},
+{"xchg.vq",	BGBCC_SH_NMID_SWAPVQ},
+
+{"mov.vl",	BGBCC_SH_NMID_MOVVL},
+{"mov.vq",	BGBCC_SH_NMID_MOVVQ},
+
 {"push",	BGBCC_SH_NMID_PUSH},
 {"pop",		BGBCC_SH_NMID_POP},
 {"bra2b",	BGBCC_SH_NMID_BRA2B},
@@ -1447,6 +1460,8 @@ int mfl;
 {"blkutx2",		BGBCC_SH_NMID_BLKUTX2},
 {"blkutx3h",	BGBCC_SH_NMID_BLKUTX3H},
 {"blkutx3l",	BGBCC_SH_NMID_BLKUTX3L},
+{"blkutx3",		BGBCC_SH_NMID_BLKUTX3L},
+
 {"blint.w",		BGBCC_SH_NMID_BLINTW},
 {"blerp.w",		BGBCC_SH_NMID_BLERPW},
 {"blinta.w",	BGBCC_SH_NMID_BLINTAW},
@@ -1603,6 +1618,8 @@ int mfl;
 {"rgb5ccenc1",	BGBCC_SH_NMID_RGB5CCENC1},
 {"rgb5ccenc2",	BGBCC_SH_NMID_RGB5CCENC2},
 
+{"pmul.f8h",	BGBCC_SH_NMID_PMULF8H},
+
 {"rgb5pck32",	BGBCC_SH_NMID_RGB5PCK32},
 {"rgb5pck64",	BGBCC_SH_NMID_RGB5PCK64},
 {"rgb5upck32",	BGBCC_SH_NMID_RGB5UPCK32},
@@ -1639,6 +1656,18 @@ int mfl;
 
 {"rgb5pcki8",	BGBCC_SH_NMID_RGB5PCKI8},
 {"rgb5upcki8",	BGBCC_SH_NMID_RGB5UPCKI8},
+
+// {"pcvthtof8",	BGBCC_SH_NMID_PCVTHTOF8},
+// {"pcvtf8toh",	BGBCC_SH_NMID_PCVTF8TOH},
+
+{"pstcf8h",		BGBCC_SH_NMID_PCVTHTOF8},
+{"pldcf8h",		BGBCC_SH_NMID_PCVTF8TOH},
+
+{"pldcm8sh",	BGBCC_SH_NMID_PLDCM8SH},
+{"pldcm8uh",	BGBCC_SH_NMID_PLDCM8UH},
+
+{"pstcm8sh",	BGBCC_SH_NMID_PSTCM8SH},
+{"pstcm8uh",	BGBCC_SH_NMID_PSTCM8UH},
 
 {"bitnn",		BGBCC_SH_NMID_BITNN},
 

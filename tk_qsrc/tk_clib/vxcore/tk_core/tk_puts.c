@@ -1553,6 +1553,9 @@ void tk_vsprintf(char *buf, char *str, va_list lst)
 		case 's':
 //			s1=*plst++;
 			s1=va_arg(lst, char *);
+			if(!s1)
+				s1="(null)";
+
 //			tk_puts(s1);
 			while(*s1)
 				*ct++=*s1++;

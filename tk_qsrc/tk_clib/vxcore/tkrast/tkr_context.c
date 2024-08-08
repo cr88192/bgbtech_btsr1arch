@@ -22,6 +22,7 @@ int TKRA_BindTexImgI(TKRA_Context *ctx, TKRA_TexImage *img);
 int TKRA_QueryContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr);
 int TKRA_ModifyContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr);
 int TKRA_SetupScreenI(TKRA_Context *ctx, int xs, int ys, u64 attrib);
+void TKRA_ClearI(TKRA_Context *ctx, unsigned int mask);
 
 TKRA_ContextVt tkra_context_vt = {
 NULL,			//Reserved 0
@@ -137,6 +138,11 @@ int TKRA_ModifyContextI(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
 	{
 		TKRA_DebugPrintStats(ctx);
 	}
+
+	if((param&TKRA_CTXPARM_MASK)==TKRA_CTXPARM_CLEAR)
+	{
+		TKRA_ClearI(ctx, param>>32);
+	}
 }
 
 int TKRA_QueryContext(TKRA_Context *ctx, u64 param, void *iptr, void *optr)
@@ -163,6 +169,9 @@ int TKRA_SetupScreenI(TKRA_Context *ctx, int xs, int ys, u64 attrib)
 	}
 	
 	frsz=xs*ys;
+
+	if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+		frsz*=2;
 
 //	ofs_pad=4096-(frsz&8191);
 //	if(ofs_pad<0)
@@ -215,6 +224,14 @@ int TKRA_SetupScreenI(TKRA_Context *ctx, int xs, int ys, u64 attrib)
 	ctx->screen_zbuf=(void *)(ptr+ofs_zbuf);
 	ctx->screen_zbuf2=(void *)(ptr+ofs_zbuf2);
 	ctx->screen_sten=(void *)(ptr+ofs_sten);
+
+	if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+	{
+		ctx->screenb_rgb=(void *)(ptr+ofs_rgb);
+		ctx->screenb_zbuf=(void *)(ptr+ofs_zbuf);
+		ctx->screenb_zbuf2=(void *)(ptr+ofs_zbuf2);
+		ctx->screenb_sten=(void *)(ptr+ofs_sten);
+	}
 
 //	ctx->screen_rgb=tkra_malloc((xs+4)*(ys+16)*sizeof(tkra_rastpixel));
 //	ctx->screen_zbuf=tkra_malloc((xs+4)*(ys+16)*sizeof(tkra_zbufpixel));
@@ -381,3 +398,222 @@ int TKRA_SetViewport(TKRA_Context *ctx, int x, int y, int xs, int ys)
 	return(0);
 }
 
+#ifdef __BJX2__
+void tkra_memset_word(void *buf, u16 val, int cnt);
+void tkra_memset_dword(void *buf, u32 val, int cnt);
+
+__asm {
+tkra_memset_word:
+	PSHUF.W	R5, 0x00, R18
+	MOV		R18, R19
+	
+	LEA.W	(R4, R6), R7
+
+	ADD		R4, 64, R2
+	CMPQGT	R2, R7
+	BF		.L1
+	.L0:
+	MOV.X	R18, (R4, 0)
+	MOV.X	R18, (R4, 16)
+	MOV.X	R18, (R4, 32)
+	MOV.X	R18, (R4, 48)
+	MOV		R2, R4
+	ADD		R4, 64, R2
+	CMPQGT	R2, R7
+	BT		.L0
+	.L1:
+
+	ADD		R4, 8, R2
+	CMPQGT	R2, R7
+	BF		.L3
+	.L2:
+	MOV.Q	R18, (R4)
+	MOV		R2, R4
+	ADD		R4, 8, R2
+	CMPQGT	R2, R7
+	BT		.L2
+	.L3:
+
+	CMPQGT	R4, R7
+	BF		.L5
+	.L4:
+	MOV.W	R18, (R4)
+	ADD		2, R4
+	CMPQGT	R4, R7
+	BT		.L4
+	.L5:
+
+	RTS
+
+tkra_memset_dword:
+	MOVLLD	R5, R5, R18
+	MOV		R18, R19
+	
+	LEA.L	(R4, R6), R7
+
+	ADD		R4, 64, R2
+	CMPQGT	R2, R7
+	BF		.L1
+	.L0:
+	MOV.X	R18, (R4, 0)
+	MOV.X	R18, (R4, 16)
+	MOV.X	R18, (R4, 32)
+	MOV.X	R18, (R4, 48)
+	MOV		R2, R4
+	ADD		R4, 64, R2
+	CMPQGT	R2, R7
+	BT		.L0
+	.L1:
+
+	ADD		R4, 8, R2
+	CMPQGT	R2, R7
+	BF		.L3
+	.L2:
+	MOV.Q	R18, (R4)
+	MOV		R2, R4
+	ADD		R4, 8, R2
+	CMPQGT	R2, R7
+	BT		.L2
+	.L3:
+
+	CMPQGT	R4, R7
+	BF		.L5
+	.L4:
+	MOV.W	R18, (R4)
+	ADD		2, R4
+	CMPQGT	R4, R7
+	BT		.L4
+	.L5:
+
+	RTS
+};
+
+#else
+void tkra_memset_word(void *buf, u16 px, int cnt)
+{
+	u64 px4;
+	u16 *ct, *cte;
+	
+	ct=buf; cte=ct+cnt;
+	px4=px|(px<<16); px4=px4|(px4<<32);
+	while((ct+32)<=cte)
+	{
+		((u64 *)ct)[0]=px4;	((u64 *)ct)[1]=px4;
+		((u64 *)ct)[2]=px4;	((u64 *)ct)[3]=px4;
+		((u64 *)ct)[4]=px4;	((u64 *)ct)[5]=px4;
+		((u64 *)ct)[6]=px4;	((u64 *)ct)[7]=px4;
+		ct+=32;
+	}
+	while((ct+8)<=cte)
+	{
+		((u64 *)ct)[0]=px4;
+		((u64 *)ct)[1]=px4;
+		ct+=8;
+	}
+	while(ct<cte)
+		{ *ct++=px; }
+}
+
+void tkra_memset_dword(void *buf, u32 px, int cnt)
+{
+	u64 px4;
+	u32 *ct, *cte;
+	
+	ct=buf; cte=ct+cnt;
+	px4=px; px4=px4|(px4<<32);
+	while((ct+16)<=cte)
+	{
+		((u64 *)ct)[0]=px4;	((u64 *)ct)[1]=px4;
+		((u64 *)ct)[2]=px4;	((u64 *)ct)[3]=px4;
+		((u64 *)ct)[4]=px4;	((u64 *)ct)[5]=px4;
+		((u64 *)ct)[6]=px4;	((u64 *)ct)[7]=px4;
+		ct+=16;
+	}
+	while((ct+4)<=cte)
+	{
+		((u64 *)ct)[0]=px4;
+		((u64 *)ct)[1]=px4;
+		ct+=4;
+	}
+	while(ct<cte)
+		{ *ct++=px; }
+}
+
+#endif
+
+void TKRA_ClearI(TKRA_Context *ctx, unsigned int mask)
+{
+	tkra_rastpixel *rgb, *cct, *ccte;
+	tkra_zbufpixel *zbuf, *zct, *zcte;
+
+	tkra_rast2pixel *c2rgb, *c2ct;
+	tkra_zbuf2pixel *z2buf, *z2ct;
+	byte *sten;
+	u64 px4;
+	u32 px;
+	int xs, ys;
+	int i, j, k, n;
+	
+//	ctx=TKRA_GetCurrentContext();
+
+	xs=ctx->screen_xsize;
+	ys=ctx->screen_ysize;
+	rgb=ctx->screen_rgb;
+	zbuf=ctx->screen_zbuf;
+	sten=ctx->screen_sten;
+
+	if(mask&TKRA_GL_DEPTH_BUFFER_BIT)
+	{
+		/* Swap Z Buffers */
+		zbuf=ctx->screen_zbuf2;
+		zct=ctx->screen_zbuf;
+		ctx->screen_zbuf=zbuf;
+		ctx->screen_zbuf2=zct;
+
+		z2buf=ctx->screenb_zbuf2;
+		z2ct=ctx->screenb_zbuf;
+		ctx->screenb_zbuf=z2buf;
+		ctx->screenb_zbuf2=z2ct;
+	}
+
+
+	if(mask&TKRA_GL_COLOR_BUFFER_BIT)
+	{
+		if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+		{
+			px=ctx->clear_rgba32;
+			n=xs*ys;
+			tkra_memset_dword(rgb, px, n);
+		}else
+		{
+			px=ctx->clear_rgb5;
+			n=xs*ys;
+			tkra_memset_word(rgb, px, n);
+		}
+	}
+
+	if(mask&TKRA_GL_DEPTH_BUFFER_BIT)
+	{
+		if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+		{
+			px=ctx->clear_zbuf32;
+			n=xs*ys;
+			tkra_memset_dword(z2buf, px, n);
+		}else
+		{
+			px=ctx->clear_zbuf;
+			n=xs*ys;
+			tkra_memset_word(zbuf, px, n);
+		}
+	}
+
+#if 0
+	if(mask&TKRA_GL_STENCIL_BUFFER_BIT)
+	{
+		px=0;
+		n=(xs>>1)*(ys>>1);
+		for(i=0; i<n; i++)
+			{ sten[i]=px; }
+	}
+#endif
+}

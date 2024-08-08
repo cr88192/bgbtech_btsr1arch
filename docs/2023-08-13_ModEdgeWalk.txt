@@ -59,8 +59,9 @@ Control Regs:
 
 Control Reg 00:
 *	(63:32): Reserved
-*	(31:24): Reserved
-*	(   23): Use 32-bit RGBA/ZBuffer (Reserved)
+*	(31:25): Reserved
+*   (   24): Use HDR (FP8U)
+*	(   23): Use 32-bit RGBA/ZBuffer
 *	(   22): Enable Stencil Buffer
 *	(   21): Reciprocal Z
 *	(   20): Perspective Correct S/T
@@ -145,7 +146,7 @@ If Stencil Test is set, then stencil tests may be performed as defined in the St
 
 Screen/ZBuffer:
 * Screen buffer will be in RGB555A format
-* (Reserved) Screen buffer in 32-bit mode will be RGBA32
+* (Optional) Screen buffer in 32-bit mode will be RGBA32
 * ZBuffer will be in S.0.15 (No Stencil) or S.0.12.T4 (Stencil)
 * (Reserved) ZBuffer in 32-bit mode will be S.0.23.T8
 * Screen and ZBuffer will require a 64-byte alignment.
@@ -163,6 +164,9 @@ Reciprocal Z
 * Z will be expressed as S.8.23 fixed point.
 ** Value will be expressed as 1/Z rather than Z.
 * Z will be interpolated as a reciprocal and then inverted per-pixel.
+
+
+The HDR/FP8U Mode will be a special case of DWORD Mode. This mode will be functionally similar to RGBA32 Mode, but will modify the blending to assume HDR.
 
 
 === Texture ===

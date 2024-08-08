@@ -97,6 +97,8 @@ reg[8:0]		opUIxt;
 reg[3:0]		opUFl;
 reg[3:0]		opULdOp;
 
+reg[3:0]		amoLdOp;
+
 assign	idRegN = opRegN;
 assign	idRegM = opRegM;
 assign	idRegO = opRegO;
@@ -434,6 +436,7 @@ begin
 	opRegM_Fix	= JX2_GR_ZZR;
 	opRegO_Fix	= JX2_GR_ZZR;
 	opRegN_Fix	= JX2_GR_ZZR;
+	amoLdOp		= 0;
 
 	casez(istrWord[6:2])
 
@@ -531,6 +534,32 @@ begin
 				opUCmdIx	= JX2_UCIX_FPU_PMRS;
 		end
 `endif
+
+		5'b01_011: begin /* AMOxx, (Rm), Rn */
+			opNmid		= JX2_UCMD_MOV_RM;
+			opFmid		= JX2_FMID_REGIMMREG;
+			opBty		= istrWord[14:12];
+			opUCmdIx	= { opBty[1:0], 1'b0, opBty[2], 2'b00 };
+			opIty		= JX2_ITY_NB;
+			
+			case(istrWord[31:27])
+				5'b00000:	amoLdOp = 2;
+				5'b00001:	amoLdOp = 1;
+				5'b00010: begin
+					opNmid		= JX2_UCMD_MOV_MR;
+					amoLdOp = 0;
+				end
+				5'b00011:	amoLdOp = 0;
+
+				5'b00100:	amoLdOp = 7;
+				5'b01100:	amoLdOp = 5;
+				5'b01000:	amoLdOp = 6;
+				default:	amoLdOp = 0;
+			endcase
+			
+			if(istrWord[26])
+				amoLdOp[3] = 1;
+		end
 
 `ifdef jx2_fpu_fmac
 		5'b10_011: begin /* FNMADD */
@@ -1292,6 +1321,16 @@ begin
 				JX2_ITY_UW: begin
 					opImm	= opImm_imm12u;
 				end
+
+				JX2_ITY_NB: begin
+					opRegM	= opRegM_Dfl;
+					opRegO	= JX2_GR_ZZR;
+					opRegP	= opRegO_Dfl;
+					opRegN	= opRegN_Dfl;
+
+					opULdOp	= amoLdOp;
+				end
+
 				JX2_ITY_NW: begin
 					opImm	= opImm_imm12n;
 				end

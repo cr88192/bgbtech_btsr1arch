@@ -47,6 +47,9 @@ TKBMP
 ** 'CRAM': MS-CRAM (Fixed Size Subset)
 *** biBitCount=8: Indexed 256 Color
 *** biBitCount=16: RGB555
+** 'hdru': HDR Image
+*** biBitcount=24, 3x FP8U RGB
+*** biBitcount=32, 4x FP8U RGBA
 
 
 ==== BI_RGB ====
@@ -75,6 +78,45 @@ The interpretation of Alpha will depend on context, but for most uses opaque pix
 For images of 8 bits or less, a color palette will be appended onto the end of the BMP / DIB header. This palette will store pixel colors in 32-bit form.
 
 For pixel formats less than 8 bits, the pixels will be stored in MSB first order.
+
+
+==== HDRU ====
+
+Will be similar to BI_RGB with 24 or 32 bits.
+* Each pixel will be composed of E4.F4 elements, Bias=7.
+* Only positive values will be represented.
+
+Value Ranges:
+* Fx: 256.000, 272.000, 288.000, ...
+* Ex: 128.000, 136.000, 144.000, ...
+* Dx:  64.000,  68.000,  72.000, ...
+* Cx:  32.000,  34.000,  36.000, ...
+* Bx:  16.000,  17.000,  18.000, ...
+* Ax:   8.000,   8.500, ...
+* 9x:   4.000,   4.250, ...
+* 8x:   2.000,   2.125, ...
+* 7x:   1.000,   1.063,   1.125, 1.188, ...
+* 6x:   0.500,   0.531, ...
+* 5x:   0.250,   0.266, ...
+* 4x:   0.125,   0.133, ...
+* 3x:   0.063,   0.066, ...
+* 2x:   0.031,   0.033, ...
+* 1x:   0.015,   0.017, ...
+* 0x:   0.000,   0.008, ...
+
+The value of 00 will be special in that it will represent a logical value of 0. 
+Likewide FF is also special, in that it will serve as both an overflow value (serving the role of Inf or NaN) and the largest represented value (depending on context).
+
+In this format, biClrUsed may be used to give a Scale and Bias:
+* (31:16): Bias, Binary16
+* (15: 0): Scale, Binary16
+* If this field is zero, defaults of Scale=1.0, Bias=0.0, will be assumed.
+** This will map values in the range of 0.0 to 1.0 into LDR range.
+
+Where:
+* DisplayRGB=ImageRGB*Scale+Bias
+
+The biClrImportant field will be reserved and set to 0.
 
 
 ==== CRAM ====

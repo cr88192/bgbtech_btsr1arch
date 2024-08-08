@@ -140,6 +140,9 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_PLDCM8SH;
 				op->fmid=BJX2_FMID_IMMREG;
 				op->Run=BJX2_Op_PLDCM8SH_ImmReg;
+
+//				op->nmid=BJX2_NMID_BREAK;
+//				op->Run=BJX2_Op_BREAK_None;
 				break;
 			case 3:
 				op->nmid=BJX2_NMID_PLDCM8UH;

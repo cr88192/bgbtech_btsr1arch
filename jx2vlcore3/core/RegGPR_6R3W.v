@@ -88,6 +88,10 @@ module RegGPR_6R3W(
 	regValSsp,		//SSP Value (CR)
 	regValCm,		//Cm Value (CR)
 	regValBPc,		//Base PC Value
+
+	gprValImmA4,	//Immediate (WB, A)
+	gprValImmB4,	//Immediate (WB, B)
+	gprValImmC4,	//Immediate (WB, C)
 	
 	gprEx1Flush,
 	gprEx2Flush,
@@ -98,6 +102,8 @@ module RegGPR_6R3W(
 	gprEx3DualLane,
 	
 	gprExHeldRegs,
+	regInSr,
+	regOutDoHold,
 
 	regOutDlr,	regInDlr,
 	regOutDhr,	regInDhr,
@@ -164,6 +170,10 @@ input [63:0]	regValLr;		//LR Value (CR)
 input [63:0]	regValSsp;		//SSP Value (CR)
 `input_gprval	regValCm;		//Cm Value (CR)
 
+input [32:0]	gprValImmA4;	//Immediate (WB, A)
+input [32:0]	gprValImmB4;	//Immediate (WB, B)
+input [32:0]	gprValImmC4;	//Immediate (WB, C)
+
 input			gprEx1Flush;
 input			gprEx2Flush;
 input			gprEx3Flush;
@@ -174,6 +184,8 @@ input			gprEx3DualLane;
 
 input[8:0]		gprExHeldRegs;
 
+input[31:0]		regInSr;
+output			regOutDoHold;
 
 (* max_fanout = 200 *)
 	wire		holdN = !hold;
@@ -190,6 +202,9 @@ output[63:0]	regOutDhr;
 input [63:0]	regInDhr;
 output[63:0]	regOutSp;
 input [63:0]	regInSp;
+
+reg				tOutDoHold;
+assign		regOutDoHold = tOutDoHold;
 
 `reg_gprval	tRegValRs;
 `reg_gprval	tRegValRt;
@@ -316,11 +331,29 @@ assign		regIdRnC3B = noLane3 ? JX2_GR_ZZR : regIdRnC3;
 
 // `ifdef jx2_enable_gpr48
 `ifdef jx2_enable_xgpr
+
+// `ifdef jx2_enable_gpr_rbsel
+`ifndef def_true
+`reg_gprval	gprArrA[255:0];
+`reg_gprval	gprArrB[255:0];
+`reg_gprval	gprArrC[255:0];
+reg[255:0]	gprArrMA;
+reg[255:0]	gprArrMB;
+`else
 `reg_gprval	gprArrA[63:0];
 `reg_gprval	gprArrB[63:0];
 `reg_gprval	gprArrC[63:0];
 reg[63:0]	gprArrMA;
 reg[63:0]	gprArrMB;
+`endif
+
+`ifdef jx2_enable_gpr_rbsel
+reg[63:0]	gprArrMC;
+reg[63:0]	gprArrMD;
+
+`reg_gprval	gprArrRbsBank[255:0];
+`endif
+
 `else
 `reg_gprval	gprArrA[31:0];
 `reg_gprval	gprArrB[31:0];
@@ -442,6 +475,27 @@ assign	tEnablePcLsb = (regIdUIxt[2:0] == JX2_BTY_SB);
 assign	tEnablePcLsb = 0;
 `endif
 
+wire[1:0]	regIdRbSel;
+assign		regIdRbSel = regInSr[19:18];
+
+reg[3:0]	tRegTagRs;
+reg[3:0]	tRegTagRt;
+reg[3:0]	tRegTagRu;
+reg[3:0]	tRegTagRv;
+reg[3:0]	tRegTagRx;
+reg[3:0]	tRegTagRy;
+
+`reg_gprval	tRsbValReg;
+`reg_gpr	tRsbIdReg;
+reg[1:0]	tRsbSelReg;
+reg[1:0]	tRsbSelRegLd;
+
+`reg_gprval	tValRbs;
+`reg_gpr	tIdRbs;
+reg			tRbsDoSwap;
+reg			tRbsDidSwap;
+reg			tRbsDoStore;
+
 always @*
 begin
 	tValRsZz=0;
@@ -459,6 +513,11 @@ begin
 	tRegEx1NoForward = 0;
 	tRegEx2NoForward = 0;
 	tRegEx3NoForward = 0;
+
+	tOutDoHold		= 0;
+	tRbsDoSwap		= 0;
+	tRbsDoStore		= 0;
+	tRsbSelRegLd	= regIdRbSel;
 
 // `ifdef jx2_enable_gpr48
 `ifndef def_true
@@ -574,6 +633,39 @@ begin
 `endif
 
 `ifdef jx2_enable_xgpr
+// `ifdef jx2_enable_gpr_rbsel
+`ifndef def_true
+	tValRsA0=gprArrMB[{regIdRbSel, regIdRs[5:0]}] ?
+		gprArrC[{regIdRbSel, regIdRs[5:0]}] :
+		(	gprArrMA[{regIdRbSel, regIdRs[5:0]}] ?
+			gprArrB[{regIdRbSel, regIdRs[5:0]}] :
+			gprArrA[{regIdRbSel, regIdRs[5:0]}]);
+	tValRtA0=gprArrMB[{regIdRbSel, regIdRt[5:0]}] ?
+		gprArrC[{regIdRbSel, regIdRt[5:0]}] :
+		(	gprArrMA[{regIdRbSel, regIdRt[5:0]}] ?
+			gprArrB[{regIdRbSel, regIdRt[5:0]}] :
+			gprArrA[{regIdRbSel, regIdRt[5:0]}]);
+	tValRuA0=gprArrMB[{regIdRbSel, regIdRu[5:0]}] ?
+		gprArrC[{regIdRbSel, regIdRu[5:0]}] :
+		(	gprArrMA[{regIdRbSel, regIdRu[5:0]}] ?
+			gprArrB[{regIdRbSel, regIdRu[5:0]}] :
+			gprArrA[{regIdRbSel, regIdRu[5:0]}]);
+	tValRvA0=gprArrMB[{regIdRbSel, regIdRv[5:0]}] ?
+		gprArrC[{regIdRbSel, regIdRv[5:0]}] :
+		(	gprArrMA[{regIdRbSel, regIdRv[5:0]}] ?
+			gprArrB[{regIdRbSel, regIdRv[5:0]}] :
+			gprArrA[{regIdRbSel, regIdRv[5:0]}]);
+	tValRxA0=gprArrMB[{regIdRbSel, regIdRx[5:0]}] ?
+		gprArrC[{regIdRbSel, regIdRx[5:0]}] :
+		(	gprArrMA[{regIdRbSel, regIdRx[5:0]}] ?
+			gprArrB[{regIdRbSel, regIdRx[5:0]}] :
+			gprArrA[{regIdRbSel, regIdRx[5:0]}]);
+	tValRyA0=gprArrMB[{regIdRbSel, regIdRy[5:0]}] ?
+		gprArrC[{regIdRbSel, regIdRy[5:0]}] :
+		(	gprArrMA[{regIdRbSel, regIdRy[5:0]}] ?
+			gprArrB[{regIdRbSel, regIdRy[5:0]}] :
+			gprArrA[{regIdRbSel, regIdRy[5:0]}]);
+`else
 	tValRsA0=gprArrMB[regIdRs[5:0]] ?
 		gprArrC[regIdRs[5:0]] :
 		(	gprArrMA[regIdRs[5:0]] ?
@@ -604,6 +696,7 @@ begin
 		(	gprArrMA[regIdRy[5:0]] ?
 			gprArrB[regIdRy[5:0]] :
 			gprArrA[regIdRy[5:0]]);
+`endif
 `else
 	tValRsA0=gprArrMB[regIdRs[4:0]] ?
 		gprArrC[regIdRs[4:0]] :
@@ -637,6 +730,128 @@ begin
 			gprArrA[regIdRy[4:0]]);
 `endif
 
+`ifdef jx2_enable_gpr_rbsel
+	tRegTagRs = {
+		gprArrMD[regIdRs[5:0]],
+		gprArrMC[regIdRs[5:0]],
+		gprArrMB[regIdRs[5:0]],
+		gprArrMA[regIdRs[5:0]] };
+	tRegTagRt = {
+		gprArrMD[regIdRt[5:0]],
+		gprArrMC[regIdRt[5:0]],
+		gprArrMB[regIdRt[5:0]],
+		gprArrMA[regIdRt[5:0]] };
+	tRegTagRu = {
+		gprArrMD[regIdRu[5:0]],
+		gprArrMC[regIdRu[5:0]],
+		gprArrMB[regIdRu[5:0]],
+		gprArrMA[regIdRu[5:0]] };
+	tRegTagRv = {
+		gprArrMD[regIdRv[5:0]],
+		gprArrMC[regIdRv[5:0]],
+		gprArrMB[regIdRv[5:0]],
+		gprArrMA[regIdRv[5:0]] };
+	tRegTagRx = {
+		gprArrMD[regIdRx[5:0]],
+		gprArrMC[regIdRx[5:0]],
+		gprArrMB[regIdRx[5:0]],
+		gprArrMA[regIdRx[5:0]] };
+	tRegTagRy = {
+		gprArrMD[regIdRy[5:0]],
+		gprArrMC[regIdRy[5:0]],
+		gprArrMB[regIdRy[5:0]],
+		gprArrMA[regIdRy[5:0]] };
+	
+	tRsbValReg	= UVGPRV_00;
+	tRsbIdReg	= JX2_GR_ZZR;
+
+//	if(regIdRbSel != tRegTagRs[3:2])
+	if((regIdRbSel != tRegTagRs[3:2]) && !regIdRs[6])
+	begin
+		tRsbValReg	= tValRsA0;
+		tRsbIdReg	= regIdRs;
+		tRsbSelReg	= tRegTagRs[3:2];
+		tOutDoHold	= 1;
+		tRbsDoSwap	= 1;
+	end
+
+//	if(regIdRbSel != tRegTagRt[3:2])
+	if((regIdRbSel != tRegTagRt[3:2]) && !regIdRt[6])
+	begin
+		tRsbValReg	= tValRtA0;
+		tRsbIdReg	= regIdRt;
+		tRsbSelReg	= tRegTagRt[3:2];
+		tOutDoHold	= 1;
+		tRbsDoSwap	= 1;
+	end
+
+//	if(regIdRbSel != tRegTagRu[3:2])
+	if((regIdRbSel != tRegTagRu[3:2]) && !regIdRu[6])
+	begin
+		tRsbValReg	= tValRuA0;
+		tRsbIdReg	= regIdRu;
+		tRsbSelReg	= tRegTagRu[3:2];
+		tOutDoHold	= 1;
+		tRbsDoSwap	= 1;
+	end
+//	if(regIdRbSel != tRegTagRv[3:2])
+	if((regIdRbSel != tRegTagRv[3:2]) && !regIdRv[6])
+	begin
+		tRsbValReg	= tValRvA0;
+		tRsbIdReg	= regIdRv;
+		tRsbSelReg	= tRegTagRv[3:2];
+		tOutDoHold	= 1;
+		tRbsDoSwap	= 1;
+	end
+
+//	if(regIdRbSel != tRegTagRx[3:2])
+	if((regIdRbSel != tRegTagRx[3:2]) && !regIdRx[6])
+	begin
+		tRsbValReg	= tValRxA0;
+		tRsbIdReg	= regIdRx;
+		tRsbSelReg	= tRegTagRx[3:2];
+		tOutDoHold	= 1;
+		tRbsDoSwap	= 1;
+	end
+
+//	if(regIdRbSel != tRegTagRy[3:2])
+	if((regIdRbSel != tRegTagRy[3:2]) && !regIdRy[6])
+	begin
+		tRsbValReg	= tValRyA0;
+		tRsbIdReg	= regIdRy;
+		tRsbSelReg	= tRegTagRy[3:2];
+		tOutDoHold	= 1;
+		tRbsDoSwap	= 1;
+	end
+	
+	if(regIdRs == JX2_GR_RBSEL)
+	begin
+		tRsbIdReg		= { 1'b0, regValImmA[5:0] };
+		tRsbSelRegLd	=  regValImmA[7:6];
+//		tRsbSelReg	= tRegTagRy[3:2];
+
+		if(tIdRbs[5:0] != regValImmA[5:0])
+			tOutDoHold	= 1;
+	end
+	
+	if(regIdRnAW == JX2_GR_RBSEL)
+	begin
+		tRsbValReg	= regValRnAW;
+		tRsbIdReg	= { 1'b0, gprValImmA4[5:0] };
+		tRsbSelReg	=  gprValImmA4[7:6];
+		tRbsDoStore	= 1;
+
+		if(tIdRbs[5:0] != gprValImmA4[5:0])
+			tOutDoHold	= 1;
+	end
+	
+//	if(tRsbIdReg != JX2_GR_ZZR)
+//	begin
+//		tOutDoHold		= 1;
+//	end
+`endif
+
+
 	casez(regIdRs)
 //		JX2_GR_GPR_Z:	tValRsA=gprArr[regIdRs[4:0]];
 		JX2_GR_GPR_Z:	tValRsA=tValRsA0;
@@ -652,6 +867,11 @@ begin
 			tValRsA=0;
 			tValRsA[63:0]=regValSsp;
 		end
+
+`ifdef jx2_enable_gpr_rbsel
+		JX2_GR_RBSEL:
+			tValRsA = tValRbs;
+`endif
 
 `ifdef jx2_enable_vaddr48
 //		JX2_GR_PC:	tValRsA={ UV16_00, regValPc };
@@ -1579,10 +1799,65 @@ begin
 `endif
 	end
 
+`ifdef jx2_enable_gpr_rbsel
+//	if(tRsbIdReg!=JX2_GR_ZZR)
+	if(tRbsDoSwap || tRbsDoStore)
+	begin
+//		tRsbValReg	= tValRyA0;
+//		tRsbIdReg	= regIdRy;
+//		tRsbSelReg	= tRegTagRy[3:2];
+
+		gprArrRbsBank[{tRsbSelReg, tRsbIdReg[5:0]}]	<= tRsbValReg;
+	end
+	tValRbs		<= gprArrRbsBank[{tRsbSelRegLd, tRsbIdReg[5:0]}];
+	tIdRbs		<= tRsbIdReg;
+	tRbsDidSwap	<= tRbsDoSwap;
+`endif
+
 	if(1'b1)
 	begin
 // `ifdef jx2_enable_gpr48
 `ifdef jx2_enable_xgpr
+
+// `ifdef jx2_enable_gpr_rbsel
+`ifndef def_true
+
+		if(maskEnaA)
+		begin
+			gprArrA[{regIdRbSel, regIdRnAW[5:0]}]	<= regValRnAW;
+			gprArrMA[{regIdRbSel, regIdRnAW[5:0]}]	<= 1'b0;
+			gprArrMB[{regIdRbSel, regIdRnAW[5:0]}]	<= 1'b0;
+		end
+
+		if(maskEnaB)
+		begin
+			gprArrB[{regIdRbSel, regIdRnBW[5:0]}]		<= regValRnBW;
+			gprArrMA[{regIdRbSel, regIdRnBW[5:0]}]	<= 1'b1;
+			gprArrMB[{regIdRbSel, regIdRnBW[5:0]}]	<= 1'b0;
+		end
+
+		if(maskEnaC)
+		begin
+			gprArrC[{regIdRbSel, regIdRnCW[5:0]}]		<= regValRnCW;
+			gprArrMA[{regIdRbSel, regIdRnCW[5:0]}]	<= 1'b0;
+			gprArrMB[{regIdRbSel, regIdRnCW[5:0]}]	<= 1'b1;
+		end
+
+`else
+
+`ifdef jx2_enable_gpr_rbsel
+//		if((tRsbIdReg!=JX2_GR_ZZR) && (tIdRbs == tRsbIdReg))
+//		if(tIdRbs != JX2_GR_ZZR)
+		if(tRbsDidSwap)
+		begin
+			gprArrA[tIdRbs[5:0]]	<= tValRbs;
+			gprArrMA[tIdRbs[5:0]]	<= 1'b0;
+			gprArrMB[tIdRbs[5:0]]	<= 1'b0;
+			gprArrMC[tIdRbs[5:0]]	<= regIdRbSel[0];
+			gprArrMD[tIdRbs[5:0]]	<= regIdRbSel[1];
+		end
+		else
+`endif
 
 //		if((regIdRnAW[5:4]!=2'b11) || tValRn3Pair)
 //		if(!regIdRnAW[5] || tValRn3Pair)
@@ -1592,6 +1867,10 @@ begin
 			gprArrA[regIdRnAW[5:0]]		<= regValRnAW;
 			gprArrMA[regIdRnAW[5:0]]	<= 1'b0;
 			gprArrMB[regIdRnAW[5:0]]	<= 1'b0;
+`ifdef jx2_enable_gpr_rbsel
+			gprArrMC[regIdRnAW[5:0]]	<= regIdRbSel[0];
+			gprArrMD[regIdRnAW[5:0]]	<= regIdRbSel[1];
+`endif
 		end
 
 //		if((regIdRnBW[5:4]!=2'b11) || tValRn3Pair)
@@ -1602,6 +1881,10 @@ begin
 			gprArrB[regIdRnBW[5:0]]		<= regValRnBW;
 			gprArrMA[regIdRnBW[5:0]]	<= 1'b1;
 			gprArrMB[regIdRnBW[5:0]]	<= 1'b0;
+`ifdef jx2_enable_gpr_rbsel
+			gprArrMC[regIdRnBW[5:0]]	<= regIdRbSel[0];
+			gprArrMD[regIdRnBW[5:0]]	<= regIdRbSel[1];
+`endif
 		end
 
 //		if(regIdRnCW[5:4]!=2'b11)
@@ -1612,7 +1895,19 @@ begin
 			gprArrC[regIdRnCW[5:0]]		<= regValRnCW;
 			gprArrMA[regIdRnCW[5:0]]	<= 1'b0;
 			gprArrMB[regIdRnCW[5:0]]	<= 1'b1;
+`ifdef jx2_enable_gpr_rbsel
+			gprArrMC[regIdRnCW[5:0]]	<= regIdRbSel[0];
+			gprArrMD[regIdRnCW[5:0]]	<= regIdRbSel[1];
+`endif
 		end
+
+// `ifdef jx2_enable_gpr_rbsel
+//	reg[63:0]	gprArrMC;
+//	reg[63:0]	gprArrMD;
+// `endif
+
+`endif
+
 `else
 //		if(!regIdRnAW[5])
 		if(maskEnaA)

@@ -126,6 +126,7 @@ parameter[6:0] JX2_GR_DLR2		= 7'h50;
 parameter[6:0] JX2_GR_DHR2		= 7'h51;
 
 parameter[6:0] JX2_GR_PC2_HI	= 7'h52;
+parameter[6:0] JX2_GR_RBSEL		= 7'h53;
 // parameter[6:0] JX2_GR_VBR2_HI	= 7'h53;
 parameter[6:0] JX2_GR_SPC2_HI	= 7'h54;
 // parameter[6:0] JX2_GR_SSP2_HI	= 7'h55;
@@ -725,6 +726,16 @@ REGIMMREG, Fz:
 	XB: Rm, Imm9f/Imm32f/Imm57f, Rn
 	XW:	Rm, Imm9u, Rn (Decoded like REGDISPREG)
 
+REGIMMREG, RVI:
+	SB: Rm, 0, Rn
+	SW: Rm, Imm12s, Rn
+
+	UW: Rm, Imm12u, Rn
+
+	NB: Rm, 0, Rt, Rn
+	NW: Rm, Imm12n, Rn
+
+
 REGPC, Fz:
 	SB: (PC, Ro), ZZR
 	SW: (PC, Ro), LR
@@ -790,12 +801,12 @@ IMM10REG, Fz
 	SQ: 
 
 	UB: Fznz_zejj		Imm10u, ZZR, Rn
-	UW: 
+	UW: Fznz_zejj		Rbs10b, Rbs6p, Rn
 	UL: Fznz_zejj		Imm10u, Rn, Rn
 	UQ: Fznz_zejj		Rn, Imm10u, Rn
 
 	NB: Fznz_zejj		Imm10n, ZZR, Rn
-	NW: 
+	NW: Fznz_zejj		Rn, Rbs6p, Rbs10b
 	NL: Fznz_zejj		Imm10n, Rn, Rn
 	NQ: Fznz_zejj		Rn, Imm10n, Rn
 
@@ -901,19 +912,22 @@ parameter[5:0] JX2_UCMD_OP_IXT		= 6'h02;		//0R
 parameter[5:0] JX2_UCMD_LEA_MR		= 6'h03;		//Load
 parameter[5:0] JX2_UCMD_MOV_RM		= 6'h04;		//Store
 parameter[5:0] JX2_UCMD_MOV_MR		= 6'h05;		//Load
+
+parameter[5:0] JX2_UCMD_CONV3_RR	= 6'h06;		//Convert (Via ALU)
+parameter[5:0] JX2_UCMD_PMOV_RM		= 6'h07;		//SIMD Conv+Store
+
 // parameter[5:0] JX2_UCMD_PUSHX	= 6'h06;		//
 // parameter[5:0] JX2_UCMD_POPX		= 6'h07;		//
 parameter[5:0] JX2_UCMD_FMOV_RM		= 6'h08;		//FPU Store
 parameter[5:0] JX2_UCMD_FMOV_MR		= 6'h09;		//FPU Load
-// parameter[5:0] JX2_UCMD_ADDSP		= 6'h0A;		//ADD Imm, SP
 parameter[5:0] JX2_UCMD_ALUCMP3R	= 6'h0A;		//ALU Command (3R)
 parameter[5:0] JX2_UCMD_QMULDIV		= 6'h0B;		//Slow MUL/DIV
 
 parameter[5:0] JX2_UCMD_CONV2_RR	= 6'h0C;		//Convert (Via ALU)
 parameter[5:0] JX2_UCMD_FPUV4SF		= 6'h0D;		//FPU Vec4SF Unit
 parameter[5:0] JX2_UCMD_PMOV_MR		= 6'h0E;		//SIMD Load+Conv
-
 parameter[5:0] JX2_UCMD_INVOP		= 6'h0F;		//
+
 parameter[5:0] JX2_UCMD_ALU3		= 6'h10;		//ALU Command (3R)
 parameter[5:0] JX2_UCMD_ALUCMP		= 6'h11;		//ALU Compare
 parameter[5:0] JX2_UCMD_UNARY		= 6'h12;		//ALU Unary Operator
@@ -956,7 +970,6 @@ parameter[5:0] JX2_UCMD_BLINT		= 6'h29;		//Interpolator
 parameter[5:0] JX2_UCMD_ALUB3		= 6'h2A;		//ALU, Packed Byte (3R)
 parameter[5:0] JX2_UCMD_JCMP		= 6'h2B;		//Jump+Compare
 parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
-
 parameter[5:0] JX2_UCMD_ALUCMPW		= 6'h2D;		//ALU Cmp, Packed Word (3R)
 parameter[5:0] JX2_UCMD_ALUCMPB		= 6'h2E;		//ALU Cmp, Packed Byte (3R)
 parameter[5:0] JX2_UCMD_JCMPZ		= 6'h2F;		//Jump+Compare (Zero)
@@ -1192,39 +1205,33 @@ parameter[5:0] JX2_UCIX_CONV2_BLKUTX1		= 6'h08;	//Get pixel, UTX1
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX2		= 6'h09;	//Get pixel, UTX2
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX3H		= 6'h0A;	//Get pixel, UTX3H
 parameter[5:0] JX2_UCIX_CONV2_BLKUTX3L		= 6'h0B;	//Get pixel, UTX3L
-// parameter[5:0] JX2_UCIX_CONV2_BLKUAB1		= 6'h0C;	//Get Sample, UAB1
-// parameter[5:0] JX2_UCIX_CONV2_BLKUAB2		= 6'h0D;	//Get Sample, UAB2
-
 parameter[5:0] JX2_UCIX_CONV2_BLKRGB15F		= 6'h0C;	//Get pixel
 parameter[5:0] JX2_UCIX_CONV2_BLKRGB15A		= 6'h0D;	//Get pixel, RGB555A
 parameter[5:0] JX2_UCIX_CONV2_BLKRGBA32		= 6'h0E;	//Get pixel, RGBA32
 parameter[5:0] JX2_UCIX_CONV2_BLKRGB30A		= 6'h0F;	//Get pixel, RGB30A
 
-parameter[5:0] JX2_UCIX_CONV2_BCDADD	= 6'h10;	//
-parameter[5:0] JX2_UCIX_CONV2_BCDSUB	= 6'h11;	//
-parameter[5:0] JX2_UCIX_CONV2_DAAQ		= 6'h12;	//
-parameter[5:0] JX2_UCIX_CONV2_DASQ		= 6'h13;	//
+parameter[5:0] JX2_UCIX_CONV2_BCDADD		= 6'h10;	//
+parameter[5:0] JX2_UCIX_CONV2_BCDSUB		= 6'h11;	//
+parameter[5:0] JX2_UCIX_CONV2_DAAQ			= 6'h12;	//
+parameter[5:0] JX2_UCIX_CONV2_DASQ			= 6'h13;	//
+parameter[5:0] JX2_UCIX_CONV2_ROTCL			= 6'h14;	//
+parameter[5:0] JX2_UCIX_CONV2_ROTCR			= 6'h15;	//
+parameter[5:0] JX2_UCIX_CONV2_ROTCLQ		= 6'h16;	//
+parameter[5:0] JX2_UCIX_CONV2_ROTCRQ		= 6'h17;	//
 
-parameter[5:0] JX2_UCIX_CONV2_ROTCL		= 6'h14;	//
-parameter[5:0] JX2_UCIX_CONV2_ROTCR		= 6'h15;	//
-parameter[5:0] JX2_UCIX_CONV2_ROTCLQ	= 6'h16;	//
-parameter[5:0] JX2_UCIX_CONV2_ROTCRQ	= 6'h17;	//
-
-parameter[5:0] JX2_UCIX_CONV2_PSQRTSAH	= 6'h18;	//
-parameter[5:0] JX2_UCIX_CONV2_PSQRTUAH	= 6'h19;	//
-parameter[5:0] JX2_UCIX_CONV2_PSQRTSAF	= 6'h1A;	//
-parameter[5:0] JX2_UCIX_CONV2_PSQRTUAF	= 6'h1B;	//
-
-parameter[5:0] JX2_UCIX_CONV2_PRCPAH	= 6'h1C;	//
-parameter[5:0] JX2_UCIX_CONV2_PRELUH	= 6'h1D;	//
-parameter[5:0] JX2_UCIX_CONV2_PRCPAF	= 6'h1E;	//
-parameter[5:0] JX2_UCIX_CONV2_PRELUF	= 6'h1F;	//
+parameter[5:0] JX2_UCIX_CONV2_PSQRTSAH		= 6'h18;	//
+parameter[5:0] JX2_UCIX_CONV2_PSQRTUAH		= 6'h19;	//
+parameter[5:0] JX2_UCIX_CONV2_PSQRTSAF		= 6'h1A;	//
+parameter[5:0] JX2_UCIX_CONV2_PSQRTUAF		= 6'h1B;	//
+parameter[5:0] JX2_UCIX_CONV2_PRCPAH		= 6'h1C;	//
+parameter[5:0] JX2_UCIX_CONV2_PRELUH		= 6'h1D;	//
+parameter[5:0] JX2_UCIX_CONV2_PRCPAF		= 6'h1E;	//
+parameter[5:0] JX2_UCIX_CONV2_PRELUF		= 6'h1F;	//
 
 parameter[5:0] JX2_UCIX_CONV2_RGB32PCK64FU	= 6'h20;	//RGB64F->RGB32F (U)
 parameter[5:0] JX2_UCIX_CONV2_RGB32PCK64FS	= 6'h21;	//RGB64F->RGB32F (S)
 parameter[5:0] JX2_UCIX_CONV2_RGB32UPCK64FU	= 6'h22;	//RGB32F->RGB64F (U)
 parameter[5:0] JX2_UCIX_CONV2_RGB32UPCK64FS	= 6'h23;	//RGB32F->RGB64F (S)
-
 parameter[5:0] JX2_UCIX_CONV2_RGB30APCK64F	= 6'h24;	//RGB64F->RGB30A
 parameter[5:0] JX2_UCIX_CONV2_RGB30AUPCK64F	= 6'h25;	//RGB30A->RGB64F
 parameter[5:0] JX2_UCIX_CONV2_FP16PCK32		= 6'h26;	//2x FP32->FP16
@@ -1234,33 +1241,30 @@ parameter[5:0] JX2_UCIX_CONV2_FP16UPCK32L	= 6'h28;	//2x FP16->FP32 (Lo)
 parameter[5:0] JX2_UCIX_CONV2_FP16UPCK32H	= 6'h29;	//2x FP16->FP32 (Hi)
 parameter[5:0] JX2_UCIX_CONV2_FP16EUPCK32L	= 6'h2A;	//2x FP16E->FP32 (Lo)
 parameter[5:0] JX2_UCIX_CONV2_FP16EUPCK32H	= 6'h2B;	//2x FP16E->FP32 (Hi)
-
 parameter[5:0] JX2_UCIX_CONV2_FP16PCKAL		= 6'h2C;	//4x FP16 -> A-Law
 parameter[5:0] JX2_UCIX_CONV2_FP16UPCKAL	= 6'h2D;	//4x A-Law -> FP16
+parameter[5:0] JX2_UCIX_CONV2_FP16UPCKFP8	= 6'h2E;	//4x FP8 -> FP16
+parameter[5:0] JX2_UCIX_CONV2_FP16PCKFP8	= 6'h2F;	//4x FP16 -> FP8
 
-parameter[5:0] JX2_UCIX_CONV2_SWAPE2B		= 6'h2E;	//Swap Every 2 Bits
-parameter[5:0] JX2_UCIX_CONV2_SWAPE4B		= 6'h2F;	//Swap Every 4 Bits
+parameter[5:0] JX2_UCIX_CONV2_VUBTOF16L		= 6'h30;	//
+parameter[5:0] JX2_UCIX_CONV2_VUBTOF16H		= 6'h31;	//
+parameter[5:0] JX2_UCIX_CONV2_VSBTOF16L		= 6'h32;	//
+parameter[5:0] JX2_UCIX_CONV2_VSBTOF16H		= 6'h33;	//
+parameter[5:0] JX2_UCIX_CONV2_VUWTOF32L		= 6'h34;	//
+parameter[5:0] JX2_UCIX_CONV2_VUWTOF32H		= 6'h35;	//
+parameter[5:0] JX2_UCIX_CONV2_VSWTOF32L		= 6'h36;	//
+parameter[5:0] JX2_UCIX_CONV2_VSWTOF32H		= 6'h37;	//
 
+parameter[5:0] JX2_UCIX_CONV2_VF16TOUB		= 6'h38;	//
+parameter[5:0] JX2_UCIX_CONV2_VUWTOF16		= 6'h39;	//
+parameter[5:0] JX2_UCIX_CONV2_VF16TOSB		= 6'h3A;	//
+parameter[5:0] JX2_UCIX_CONV2_VSWTOF16		= 6'h3B;	//
+parameter[5:0] JX2_UCIX_CONV2_VF32TOUW		= 6'h3C;	//
+parameter[5:0] JX2_UCIX_CONV2_VF16TOUW		= 6'h3D;	//
+parameter[5:0] JX2_UCIX_CONV2_VF32TOSW		= 6'h3E;	//
+parameter[5:0] JX2_UCIX_CONV2_VF16TOSW		= 6'h3F;	//
 
-parameter[5:0] JX2_UCIX_CONV2_VUBTOF16L	= 6'h30;	//
-parameter[5:0] JX2_UCIX_CONV2_VUBTOF16H	= 6'h31;	//
-parameter[5:0] JX2_UCIX_CONV2_VSBTOF16L	= 6'h32;	//
-parameter[5:0] JX2_UCIX_CONV2_VSBTOF16H	= 6'h33;	//
-parameter[5:0] JX2_UCIX_CONV2_VUWTOF32L	= 6'h34;	//
-parameter[5:0] JX2_UCIX_CONV2_VUWTOF32H	= 6'h35;	//
-parameter[5:0] JX2_UCIX_CONV2_VSWTOF32L	= 6'h36;	//
-parameter[5:0] JX2_UCIX_CONV2_VSWTOF32H	= 6'h37;	//
-
-parameter[5:0] JX2_UCIX_CONV2_VF16TOUB	= 6'h38;	//
-parameter[5:0] JX2_UCIX_CONV2_VUWTOF16	= 6'h39;	//
-parameter[5:0] JX2_UCIX_CONV2_VF16TOSB	= 6'h3A;	//
-parameter[5:0] JX2_UCIX_CONV2_VSWTOF16	= 6'h3B;	//
-parameter[5:0] JX2_UCIX_CONV2_VF32TOUW	= 6'h3C;	//
-parameter[5:0] JX2_UCIX_CONV2_VF16TOUW	= 6'h3D;	//
-parameter[5:0] JX2_UCIX_CONV2_VF32TOSW	= 6'h3E;	//
-parameter[5:0] JX2_UCIX_CONV2_VF16TOSW	= 6'h3F;	//
-
-// parameter[5:0] JX2_UCIX_CONV_MOVX		= 6'h23;		//MOVX
+parameter[5:0] JX2_UCIX_CONV3_FMULFP8		= 6'h00;	//
 
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//

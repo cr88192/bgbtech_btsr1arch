@@ -503,6 +503,7 @@ void I_InitTkGdi()
 //	i_dibinfo->biHeight=600;
 
 	i_dibinfo->biBitCount=16;
+//	i_dibinfo->biBitCount=32;
 
 //	tk_printf("  1\n", hDc);
 
@@ -521,13 +522,16 @@ void I_InitTkGdi()
 //		i_dibinfo->biHeight=-200;
 	
 //	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+
+//	i_dibinfo->biCompression=TKGDI_BI_HDRU;
+
 }
 #endif
 
 void	VID_Init (unsigned char *palette)
 {
 	u32 *ict;
-	int i, j, k;
+	int i, j, k, fl;
 
 //	vid_buffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 	vid_backbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
@@ -677,7 +681,16 @@ void	VID_Init (unsigned char *palette)
 	if(!host_colormap16)
 		{ __debugbreak(); }
 
-	TKRA_SetupContextBasic(BASEWIDTH, BASEHEIGHT);
+	fl=0;
+
+	if(i_dibinfo->biBitCount==32)
+	{
+		fl|=0x01;
+		fl|=0x04;	//HDR
+	}
+
+//	TKRA_SetupContextBasic(BASEWIDTH, BASEHEIGHT);
+	TKRA_SetupContextBasicFl(BASEWIDTH, BASEHEIGHT, fl);
 
 	vid_buffer = TKRA_GetCurrentScreenBuffer_RGB();
 	vid.buffer = vid.conbuffer = vid_buffer;

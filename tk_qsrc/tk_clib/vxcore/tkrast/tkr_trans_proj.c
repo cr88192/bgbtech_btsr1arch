@@ -220,6 +220,10 @@ u64 TKRA_FinalProjectVertex_Vec4F2H(u64 va, u64 vb)
 
 #endif
 
+u32 tkra_teximg_repackrgba_ldr2hdr(u32 cv);
+u32 tkra_teximg_repackrgba_cmod2hdr(u32 cv);
+
+
 void TKRA_FinalProjectVertex(
 	TKRA_Context *ctx,
 	tkra_projvertex *pv0,
@@ -229,6 +233,7 @@ void TKRA_FinalProjectVertex(
 	TKRA_SvContext *sctx;
 	TKRA_TexImage *img, *img2;
 	float xbi, ybi, s, t;
+	u32 trgb;
 	int txs, tys;
 	int i0, i1, i2;
 
@@ -278,6 +283,23 @@ void TKRA_FinalProjectVertex(
 	pv0->rgb=iv->rgb;
 	if(iv->fl&2)
 		pv0->rgb=iv->mrgb;
+
+	if(ctx->pixelfmt&TKRA_PIXFMT_HDR)
+	{
+		tkra_teximg_inithdr();
+	
+		pv0->rgb=tkra_teximg_repackrgba_cmod2hdr(pv0->rgb);
+
+#if 0
+//		trgb=tkra_teximg_repackrgba_ldr2hdr(pv0->rgb);
+		trgb=pv0->rgb;
+//		trgb=(trgb&0xFF000000) | ((trgb>>1)&0x007F7F7F);
+		trgb=(trgb&0xFF000000) | ((trgb>>2)&0x003F3F3F);
+//		trgb|=0x00808080;
+		trgb|=0x00C0C0C0;
+		pv0->rgb=trgb;
+#endif
+	}
 
 	if(ctx->stateflag1&TKRA_STFL1_DOSHADER_MASK)
 	{

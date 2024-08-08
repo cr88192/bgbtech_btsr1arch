@@ -59,6 +59,97 @@ u32 tkra_teximg_packrgba(int cr, int cg, int cb, int ca)
 	return(v);
 }
 
+byte tkra_lookup_ldr2hdr[256];
+byte tkra_lookup_cmod2hdr[256];
+
+int tkra_teximg_inithdr()
+{
+	int v, e;
+	int i, j, k;
+	
+	if(tkra_lookup_ldr2hdr[255])
+		return(0);
+
+	tkra_lookup_ldr2hdr[0]=0;
+	for(i=1; i<256; i++)
+	{
+		e=6; v=i;
+		while(!(v&0x80))
+			{ e--; v=v<<1; }
+		j=(e<<4)|((v>>3)&15);
+		if(j<0)
+			j=0;
+		tkra_lookup_ldr2hdr[i]=j;
+	}
+
+	for(i=0; i<256; i++)
+	{
+//		e=7; v=i;
+//		while(!(v&0x80))
+//			{ e--; v=v<<1; }
+//		j=(e<<4)|((v>>3)&15);
+
+//		j=0xA0+(i>>2)+(i>>3);
+		j=(tkra_lookup_ldr2hdr[i]+0x10)<<1;
+		if(j>0xFF)
+			j=0xFF;
+//		if(j<0x40)
+//			j=0x40;
+
+		tkra_lookup_cmod2hdr[i]=j;
+	}
+
+	return(1);
+}
+
+u32 tkra_teximg_packrgba_hdr(int cr, int cg, int cb, int ca)
+{
+	int v;
+
+//	ca=tkra_lookup_ldr2hdr[ca];
+	cr=tkra_lookup_ldr2hdr[cr];
+	cg=tkra_lookup_ldr2hdr[cg];
+	cb=tkra_lookup_ldr2hdr[cb];
+	
+	v=(ca<<24)|(cr<<16)|(cg<<8)|cb;
+	return(v);
+}
+
+u32 tkra_teximg_repackrgba_ldr2hdr(u32 cv)
+{
+	int v, c0, c1, c2, c3;
+
+	c0=tkra_lookup_ldr2hdr[(cv>> 0)&255];
+	c1=tkra_lookup_ldr2hdr[(cv>> 8)&255];
+	c2=tkra_lookup_ldr2hdr[(cv>>16)&255];
+//	c3=tkra_lookup_ldr2hdr[(cv>>24)&255];
+	c3=(cv>>24)&255;
+	
+	v=(c3<<24)|(c2<<16)|(c1<<8)|c0;
+	return(v);
+}
+
+u32 tkra_teximg_repackrgba_cmod2hdr(u32 cv)
+{
+	int v, cr, cg, cb, ca;
+
+	cb=(cv>> 0)&255;
+	cg=(cv>> 8)&255;
+	cr=(cv>>16)&255;
+	ca=(cv>>24)&255;
+	
+	cr=tkra_lookup_cmod2hdr[cr];
+	cg=tkra_lookup_cmod2hdr[cg];
+	cb=tkra_lookup_cmod2hdr[cb];
+	
+//	cr=0xA0+(cr>>3)+(cr>>2);
+//	cg=0xA0+(cg>>3)+(cg>>2);
+//	cb=0xA0+(cb>>3)+(cb>>2);
+	
+	v=(ca<<24)|(cr<<16)|(cg<<8)|cb;
+	return(v);
+}
+
 void tkra_glTexImage2D(
 	int target,
  	int level,
@@ -76,6 +167,9 @@ void tkra_glTexImage2D(
 	static int sz_txbuf2;
 
 	static tkra_rastpixel *ixbuf;
+
+	tkra_rast2pixel *ix2buf;
+	tkra_rast2pixel *tx2buf;
 
 	TKRA_Context *ctx;
 	TKRA_TexImage *img;
@@ -110,85 +204,253 @@ void tkra_glTexImage2D(
 		flag|=TKRA_TRFL_NOALPHA;
 	}
 
+	ctx=TKRA_GetCurrentContext();
+
+	if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+		flag|=TKRA_TRFL_PIXFMT_DW;
+
 	if(!txbuf)
 	{
 		k=256*256*2;
-		txbuf=tkra_malloc(k*2);
+		if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+			k*=2;
+		txbuf=tk_malloc(k*2);
 		sz_txbuf=k;
 	}
 
 	k=width*height*2;
+//	if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+	if(flag&TKRA_TRFL_PIXFMT_DW)
+		k=k+k;
 	if(k>sz_txbuf)
 	{
 		if(txbuf)
-			tkra_free(txbuf);
-		txbuf=tkra_malloc(k*2);
+			tk_free(txbuf);
+		txbuf=tk_malloc(k*2);
 		sz_txbuf=k;
 	}
+	
+	tx2buf=txbuf;
 	
 	if((type==TKRA_UBYTE) || (type==TKRA_BYTE))
 	{
 		cs=(byte *)data;
-		if(format==TKRA_RGB)
+		if(ctx->pixelfmt&TKRA_PIXFMT_HDR)
 		{
-			k=width*height;
-			for(i=0; i<k; i++)
-			{
-				txbuf[i]=tkra_teximg_packrgb555(cs[0], cs[1], cs[2], 255);
-				cs+=3;
-			}
-		}else
-			if(format==TKRA_RGBA)
-		{
-			if(flag&TKRA_TRFL_NOALPHA)
+			tkra_teximg_inithdr();
+		
+			flag|=TKRA_TRFL_PIXFMT_DW;
+			flag|=TKRA_TRFL_PIXFMT_HDR;
+		
+			if(format==TKRA_RGB)
 			{
 				k=width*height;
 				for(i=0; i<k; i++)
 				{
-					txbuf[i]=tkra_teximg_packrgb555(cs[0], cs[1], cs[2], 255);
-					cs+=4;
+					tx2buf[i]=tkra_teximg_packrgba_hdr(
+						cs[0], cs[1], cs[2], 255);
+					cs+=3;
+				}
+			}else
+				if(format==TKRA_RGBA)
+			{
+				if(flag&TKRA_TRFL_NOALPHA)
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba_hdr(
+							cs[0], cs[1], cs[2], 255);
+						cs+=4;
+					}
+				}else
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba_hdr(
+							cs[0], cs[1], cs[2], cs[3]);
+						cs+=4;
+					}
+				}
+			}else
+				if(format==TKRA_BGR)
+			{
+				k=width*height;
+				for(i=0; i<k; i++)
+				{
+					tx2buf[i]=tkra_teximg_packrgba_hdr(
+						cs[2], cs[1], cs[0], 255);
+					cs+=3;
+				}
+			}else
+				if(format==TKRA_BGRA)
+			{
+				if(flag&TKRA_TRFL_NOALPHA)
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba_hdr(
+							cs[2], cs[1], cs[0], 255);
+						cs+=4;
+					}
+				}else
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba_hdr(
+							cs[2], cs[1], cs[0], cs[3]);
+						cs+=4;
+					}
 				}
 			}else
 			{
+				__debugbreak();
+			}
+		}else
+			if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+		{
+			flag|=TKRA_TRFL_PIXFMT_DW;
+		
+			if(format==TKRA_RGB)
+			{
 				k=width*height;
 				for(i=0; i<k; i++)
 				{
-					txbuf[i]=tkra_teximg_packrgb555(cs[0], cs[1], cs[2], cs[3]);
-					cs+=4;
+					tx2buf[i]=tkra_teximg_packrgba(
+						cs[0], cs[1], cs[2], 255);
+					cs+=3;
 				}
-			}
-		}else
-			if(format==TKRA_BGR)
-		{
-			k=width*height;
-			for(i=0; i<k; i++)
+			}else
+				if(format==TKRA_RGBA)
 			{
-				txbuf[i]=tkra_teximg_packrgb555(cs[2], cs[1], cs[0], 255);
-				cs+=3;
-			}
-		}else
-			if(format==TKRA_BGRA)
-		{
-			if(flag&TKRA_TRFL_NOALPHA)
+				if(flag&TKRA_TRFL_NOALPHA)
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba(
+							cs[0], cs[1], cs[2], 255);
+						cs+=4;
+					}
+				}else
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba(
+							cs[0], cs[1], cs[2], cs[3]);
+						cs+=4;
+					}
+				}
+			}else
+				if(format==TKRA_BGR)
 			{
 				k=width*height;
 				for(i=0; i<k; i++)
 				{
-					txbuf[i]=tkra_teximg_packrgb555(cs[2], cs[1], cs[0], 255);
-					cs+=4;
+					tx2buf[i]=tkra_teximg_packrgba(
+						cs[2], cs[1], cs[0], 255);
+					cs+=3;
+				}
+			}else
+				if(format==TKRA_BGRA)
+			{
+				if(flag&TKRA_TRFL_NOALPHA)
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba(
+							cs[2], cs[1], cs[0], 255);
+						cs+=4;
+					}
+				}else
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						tx2buf[i]=tkra_teximg_packrgba(
+							cs[2], cs[1], cs[0], cs[3]);
+						cs+=4;
+					}
 				}
 			}else
 			{
-				k=width*height;
-				for(i=0; i<k; i++)
-				{
-					txbuf[i]=tkra_teximg_packrgb555(cs[2], cs[1], cs[0], cs[3]);
-					cs+=4;
-				}
+				__debugbreak();
 			}
 		}else
 		{
-			__debugbreak();
+
+			if(format==TKRA_RGB)
+			{
+				k=width*height;
+				for(i=0; i<k; i++)
+				{
+					txbuf[i]=tkra_teximg_packrgb555(
+						cs[0], cs[1], cs[2], 255);
+					cs+=3;
+				}
+			}else
+				if(format==TKRA_RGBA)
+			{
+				if(flag&TKRA_TRFL_NOALPHA)
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						txbuf[i]=tkra_teximg_packrgb555(
+							cs[0], cs[1], cs[2], 255);
+						cs+=4;
+					}
+				}else
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						txbuf[i]=tkra_teximg_packrgb555(
+							cs[0], cs[1], cs[2], cs[3]);
+						cs+=4;
+					}
+				}
+			}else
+				if(format==TKRA_BGR)
+			{
+				k=width*height;
+				for(i=0; i<k; i++)
+				{
+					txbuf[i]=tkra_teximg_packrgb555(
+						cs[2], cs[1], cs[0], 255);
+					cs+=3;
+				}
+			}else
+				if(format==TKRA_BGRA)
+			{
+				if(flag&TKRA_TRFL_NOALPHA)
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						txbuf[i]=tkra_teximg_packrgb555(
+							cs[2], cs[1], cs[0], 255);
+						cs+=4;
+					}
+				}else
+				{
+					k=width*height;
+					for(i=0; i<k; i++)
+					{
+						txbuf[i]=tkra_teximg_packrgb555(
+							cs[2], cs[1], cs[0], cs[3]);
+						cs+=4;
+					}
+				}
+			}else
+			{
+				__debugbreak();
+			}
 		}
 	}else
 	{
@@ -201,7 +463,8 @@ void tkra_glTexImage2D(
 
 	if(	(width&(width-1))	||
 		(height&(height-1))	||
-		(width!=height)		)
+//		(width!=height)		)
+		((width!=height) && ((width>>1)!=height) && (width!=(height>>1)))		)
 	{
 		width2=1;
 		height2=1;
@@ -210,24 +473,33 @@ void tkra_glTexImage2D(
 		while(height2<height)
 			height2<<=1;
 		
-		if(width2<height2)
-			width2=height2;
-		if(height2<width2)
-			height2=width2;
+//		if(width2<height2)
+//			width2=height2;
+//		if(height2<width2)
+//			height2=width2;
+
+		if(width2<(height2>>1))
+			width2=height2>>1;
+		if(height2<(width2>>1))
+			height2=width2>>1;
 
 		if(!txbuf2)
 		{
 			k=256*256*2;
-			txbuf2=tkra_malloc(k*2);
+			if(flag&TKRA_TRFL_PIXFMT_DW)
+				k=k+k;
+			txbuf2=tk_malloc(k*2);
 			sz_txbuf2=k;
 		}
 
 		k=width2*height2*2;
+		if(flag&TKRA_TRFL_PIXFMT_DW)
+			k=k+k;
 		if(k>sz_txbuf2)
 		{
 			if(txbuf2)
-				tkra_free(txbuf2);
-			txbuf2=tkra_malloc(k*2);
+				tk_free(txbuf2);
+			txbuf2=tk_malloc(k*2);
 			sz_txbuf2=k;
 		}
 
@@ -235,10 +507,17 @@ void tkra_glTexImage2D(
 		ixw=width2;
 		ixh=height2;
 
-		TKRA_ResampleImage555(
-			txbuf, width, height,
-			txbuf2, width2, height2);
-
+		if(flag&TKRA_TRFL_PIXFMT_DW)
+		{
+			TKRA_ResampleImage32(
+				(tkra_rast2pixel *)txbuf, width, height,
+				(tkra_rast2pixel *)txbuf2, width2, height2);
+		}else
+		{
+			TKRA_ResampleImage555(
+				txbuf, width, height,
+				txbuf2, width2, height2);
+		}
 	}
 
 	ctx=TKRA_GetCurrentContext();

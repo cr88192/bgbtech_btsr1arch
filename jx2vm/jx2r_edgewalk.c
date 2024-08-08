@@ -7,6 +7,7 @@ u64 bjx2_edgewalk_regs0l;
 u32 bjx2_edgewalk_addr_cbuf;
 u32 bjx2_edgewalk_addr_zbuf;
 u32 bjx2_edgewalk_addr_ubuf;
+u16 bjx2_edgewalk_addr_ubhi;
 
 s16 bjx2_edgewalk_var_scany;
 s16 bjx2_edgewalk_var_scanymax;
@@ -62,6 +63,7 @@ u64 tkra_rgbupck64(u16 a);
 u64 tkra_rgb32upck64(u32 a);
 u32 BJX2_PMORT_U16(u16 x);
 u64 TKRA_CachedBlkUtx2(u64 blk, int ix);
+u64 TKRA_CachedBlkUtx3L(u64 blka, u64 blkb, int ix);
 
 u32 bjx2_edgewalk_var_pixtot;
 u32 bjx2_edgewalk_var_pixzpass;
@@ -202,6 +204,7 @@ u64 BJX2_MemEdgeWalk_LerpRgbFrac16(u64 v0, u64 v1, int fr)
 }
 
 u64 jx2_edgewalk_utxcache_dt[1024];
+u64 jx2_edgewalk_utxcache_d2[1024];
 u16 jx2_edgewalk_utxcache_ix[1024];
 u16 jx2_edgewalk_utxcache_ax[1024];
 
@@ -209,7 +212,7 @@ s64 jx2_edgewalk_busycyc;
 
 int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 {
-	u64 blk_u, rgb_u, rgb_m, rgb_c, rgb_bl;
+	u64 blk_u, blk_v, rgb_u, rgb_m, rgb_c, rgb_bl;
 	u64 rgb_ms, rgb_md, rgb_bs, rgb_bd;
 	u32 blk_c;
 	u64 addr_o, addr_c, addr_z, addr_u;
@@ -218,7 +221,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 	int x, z, s, t, zs, ss, ts, z2, s_p, t_p, z_p;
 	int r, g, b, a, rs, gs, bs, as, ix, ax;
 	int txs, txt, txi, ztest, atest, zmask, cmask, islin;
-	int bfs, bfd, txm, zfn, zpn, ispersp, isrcpz, isdword, issten;
+	int bfs, bfd, txm, txty, zfn, zpn, ispersp, isrcpz, isdword, issten;
 	int blk_st, ref_st, upd_st, stfn, st_op, zupd;
 	int stpn, flip;
 	int i, j, k;
@@ -342,6 +345,8 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 	txm=(bjx2_edgewalk_regs[3]>>52)&31;
 	txm=(1<<txm)-1;
 	
+	txty=(bjx2_edgewalk_regs[3]>>57)&7;
+	
 //	blkx=-1;
 	
 	x=x0; z=z0; s=s0; t=t0;
@@ -412,11 +417,24 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			(jx2_edgewalk_utxcache_ax[j]==ax))
 		{
 			blk_u=jx2_edgewalk_utxcache_dt[j];
+			blk_v=jx2_edgewalk_utxcache_d2[j];
 		}else
 		{
-			addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
-			blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+			if((txty==2) || (txty==3))
+			{
+				addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<4);
+				blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u+0, 0);
+				blk_v=BJX2_MemGetQWord_NoAT(ctx, addr_u+8, 0);
+			}else
+				if((txty==0) || (txty==1))
+			{
+				addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
+				blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+//				blk_v=BJX2_MemGetQWord_NoAT(ctx, addr_u+8, 0);
+				blk_v=0;
+			}
 			jx2_edgewalk_utxcache_dt[j]=blk_u;
+			jx2_edgewalk_utxcache_d2[j]=blk_v;
 			jx2_edgewalk_utxcache_ix[j]=ix;
 			jx2_edgewalk_utxcache_ax[j]=ax;
 		}
@@ -428,7 +446,14 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 		{
 			rgb_c=tkra_rgbupck64b(blk_c);
 		}
-		rgb_u=TKRA_CachedBlkUtx2(blk_u, txi);
+
+		if((txty==0) || (txty==1))
+		{
+			rgb_u=TKRA_CachedBlkUtx2(blk_u, txi);
+		}else if((txty==2) || (txty==3))
+		{
+			rgb_u=TKRA_CachedBlkUtx3L(blk_u, blk_v, txi);
+		}
 		
 //		if(((rgb_u>>61)&7)==7)
 //		{
@@ -440,19 +465,37 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 			txi=	(BJX2_PMORT_U16(txt+0)<<1)|
 					(BJX2_PMORT_U16(txs+1)   );
 			txi&=txm;
-			addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
-			blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+			if((txty==2) || (txty==3))
+			{
+				addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<4);
+				blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u+0, 0);
+				blk_v=BJX2_MemGetQWord_NoAT(ctx, addr_u+8, 0);
+				rgb_bs=TKRA_CachedBlkUtx3L(blk_u, blk_v, txi);
+			}else
+			{
+				addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
+				blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+				rgb_bs=TKRA_CachedBlkUtx2(blk_u, txi);
+			}
 
-			rgb_bs=TKRA_CachedBlkUtx2(blk_u, txi);
 
 			txi=	(BJX2_PMORT_U16(txt+1)<<1)|
 					(BJX2_PMORT_U16(txs+0)   );
 			txi&=txm;
-			addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
-			blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
 
-			rgb_bd=TKRA_CachedBlkUtx2(blk_u, txi);
-			
+			if((txty==2) || (txty==3))
+			{
+				addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<4);
+				blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u+0, 0);
+				blk_v=BJX2_MemGetQWord_NoAT(ctx, addr_u+8, 0);
+				rgb_bd=TKRA_CachedBlkUtx3L(blk_u, blk_v, txi);
+			}else
+			{
+				addr_u=bjx2_edgewalk_addr_ubuf+((txi>>4)<<3);
+				blk_u=BJX2_MemGetQWord_NoAT(ctx, addr_u, 0);
+				rgb_bd=TKRA_CachedBlkUtx2(blk_u, txi);
+			}
+
 			rgb_bs=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_u, rgb_bs,
 				(s_p>>(2+JX2_EDGEWALK_STSUB))&15);
 			rgb_bd=BJX2_MemEdgeWalk_LerpRgbFrac16(rgb_u, rgb_bd,
@@ -669,7 +712,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 					zupd=1;
 					if(isdword)
 					{
-						BJX2_MemSetWord_NoAT(ctx, addr_z, 0, (z2<<16)|upd_st);
+						BJX2_MemSetDWord_NoAT(ctx, addr_z, 0, (z2<<16)|upd_st);
 					}else
 					{
 						if(issten)
@@ -690,7 +733,7 @@ int BJX2_MemEdgeWalk_ProbeUpdateXspan(BJX2_Context *ctx)
 		{
 			if(isdword)
 			{
-				BJX2_MemSetWord_NoAT(ctx,
+				BJX2_MemSetDWord_NoAT(ctx,
 					addr_z, 0, (blk_z<<16)|upd_st);
 			}else
 			{
@@ -832,6 +875,7 @@ int BJX2_MemEdgeWalk_ProbeUpdate(BJX2_Context *ctx)
 		bjx2_edgewalk_addr_cbuf=(u32)(bjx2_edgewalk_regs[2]>> 0);
 		bjx2_edgewalk_addr_zbuf=(u32)(bjx2_edgewalk_regs[2]>>32);
 		bjx2_edgewalk_addr_ubuf=(u32)(bjx2_edgewalk_regs[3]>> 0);
+		bjx2_edgewalk_addr_ubhi=bjx2_edgewalk_regs[3]>>48;
 
 #if 1
 		bjx2_edgewalk_var_scanlfx=

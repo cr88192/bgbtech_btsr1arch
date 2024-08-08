@@ -1552,12 +1552,15 @@ s64 BJX2_OpI_LDOP_DoStOp(
 	s64 v1, sv;
 
 	sv=ctx->regs[op->rm];
+
+#if 0
 	if(op->ldop&8)
 	{
 		sv=op->rm&63;
 		if(op->rm==BJX2_REG_DLR)	sv=0;
 		if(op->rm==BJX2_REG_DHR)	sv=1;
 	}
+#endif
 
 	switch((op->ldop)&7)
 	{
@@ -2050,4 +2053,38 @@ void BJX2_Op_LDOPUL_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 		
 	ctx->regs[op->rn]=BJX2_OpI_LDOP_DoLdOp(ctx, op, lv);
+}
+
+int bjx2_opi_cvtf8toh(int vi);
+
+void BJX2_Op_PMOVF8_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vs, vn;
+	ctx->trapc=op->pc;
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), 4);
+	vs=BJX2_MemGetDWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq]);
+	vn=	(((u64)bjx2_opi_cvtf8toh((vs>> 0)&0xFF))<< 0) |
+		(((u64)bjx2_opi_cvtf8toh((vs>> 8)&0xFF))<<16) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>16)&0xFF))<<32) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>24)&0xFF))<<48) ;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PMOVF8_LdReg2Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vs, vn;
+	ctx->trapc=op->pc;
+	BJX2_DbgAddrAccessTrap(ctx,
+		(bjx2_addr)(ctx->regs[op->rm]),
+		(bjx2_addr)(ctx->regs[op->rm])+((ctx->regs[op->ro])*4), 4);
+	vs=BJX2_MemGetDWord(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+((bjx2_addr)(ctx->regs[op->ro])*4));
+	vn=	(((u64)bjx2_opi_cvtf8toh((vs>> 0)&0xFF))<< 0) |
+		(((u64)bjx2_opi_cvtf8toh((vs>> 8)&0xFF))<<16) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>16)&0xFF))<<32) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>24)&0xFF))<<48) ;
+	ctx->regs[op->rn]=vn;
 }

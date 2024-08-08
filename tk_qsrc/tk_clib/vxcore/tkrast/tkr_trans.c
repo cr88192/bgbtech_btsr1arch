@@ -427,6 +427,8 @@ u64 tkra_rgba_expand64(u32 a)
 // #if 0
 u32 tkra_rgba_midpoint(u32 a, u32 b);
 u64 tkra_rgba_expand64(u32 a);
+u64 tkra_rgba32upck64(u32 a);
+u32 tkra_rgba32pck64(u64 a);
 u32 tkra_norm_midpoint(u32 a, u32 b);
 
 __asm {
@@ -443,6 +445,13 @@ tkra_rgba_expand64:
 	RGB32UPCK64		R4, R2
 	AND				R6, R2
 	OR				R7, R2
+	RTS
+
+tkra_rgba32upck64:
+	RGB32UPCK64		R4, R2
+	RTS
+tkra_rgba32pck64:
+	RGB32PCK64		R4, R2
 	RTS
 
 tkra_norm_midpoint:
@@ -482,6 +491,26 @@ u64 tkra_rgba_expand64(u32 a)
 //		((a&0x00FF0000ULL)<<24)|
 //		((a&0x0000FF00ULL)<<16)|
 //		((a&0x000000FFULL)<< 8);
+	return(c);
+}
+
+u64 tkra_rgba32upck64(u32 a)
+{
+	u64 c;
+	c=	((a&0xFF000000ULL)<<32)|((a&0xFF000000ULL)<<24)|
+		((a&0x00FF0000ULL)<<24)|((a&0x00FF0000ULL)<<16)|
+		((a&0x0000FF00ULL)<<16)|((a&0x0000FF00ULL)<< 8)|
+		((a&0x000000FFULL)<< 8)|((a&0x000000FFULL)<< 0);
+	return(c);
+}
+
+u32 tkra_rgba32pck64(u64 a)
+{
+	u32 c;
+	c=	((a>>32)&0xFF000000ULL) |
+		((a>>24)&0x00FF0000ULL) |
+		((a>>16)&0x0000FF00ULL) |
+		((a>> 8)&0x000000FFULL) ;
 	return(c);
 }
 #endif
@@ -1728,6 +1757,8 @@ int TKRA_EmitProjectedTriangle(
 			{
 				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
+				if(img->tex_flag&TKRA_TRFL_PIXFMT_UTX3)
+					tx0|=2<<9;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
 				sctx->tex_img_bcn=(void *)tl0;
@@ -1748,6 +1779,8 @@ int TKRA_EmitProjectedTriangle(
 			{
 				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
+				if(img->tex_flag&TKRA_TRFL_PIXFMT_UTX3)
+					tx0|=2<<9;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
 				sctx->tex_img_bcn=(void *)tl0;
@@ -2192,6 +2225,8 @@ int TKRA_EmitProjectedQuad(
 			{
 				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
+				if(img->tex_flag&TKRA_TRFL_PIXFMT_UTX3)
+					tx0|=2<<9;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
 				sctx->tex_img_bcn=(void *)tl0;
@@ -2212,6 +2247,8 @@ int TKRA_EmitProjectedQuad(
 			{
 				tl0=(u64)(sctx->tex_img_bcn);
 				tx0=((shx+shy)<<4)|0;
+				if(img->tex_flag&TKRA_TRFL_PIXFMT_UTX3)
+					tx0|=2<<9;
 				tl1=((u64)tx0)<<48;
 				tl0=(tl0&0x0000FFFFFFFFFFFFULL)|tl1;
 				sctx->tex_img_bcn=(void *)tl0;

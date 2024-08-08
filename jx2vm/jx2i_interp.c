@@ -661,6 +661,31 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 	return(0);
 }
 
+int BJX2_FaultUpdateRegsRbs(BJX2_Context *ctx)
+{
+	u64 va, vb, vc, sr0;
+	int rbs0, rbs1;
+	int i;
+
+	sr0=ctx->regs[BJX2_REG_SR];
+	rbs0=(sr0>>18)&3;
+	rbs1=ctx->rbsid;
+	
+	if(rbs0==rbs1)
+		return(0);
+
+	for(i=0; i<64; i++)
+	{
+		va=ctx->regs[BJX2_REG_R0+i];
+		vb=ctx->rbs_regs[rbs0*64+i];
+		ctx->regs[BJX2_REG_R0+i]=vb;
+		ctx->rbs_regs[rbs1*64+i]=va;
+	}
+	ctx->rbsid=rbs0;
+
+	return(0);
+}
+
 
 int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 {
@@ -746,6 +771,9 @@ int BJX2_FaultEnterInterrupt(BJX2_Context *ctx)
 	ctx->regs[BJX2_REG_SR]&=~0x0CF00000ULL;	//Clear CPU Mode
 	ctx->regs[BJX2_REG_SR]|=((vbr>>48)&0x000C)<<24;
 	ctx->regs[BJX2_REG_SR]|=((vbr>>48)&0x00F0)<<16;
+	ctx->regs[BJX2_REG_SR]|=((vbr>>48)&0x0003)<<18;
+
+	BJX2_FaultUpdateRegsRbs(ctx);
 
 	if((exsr&0xF000)==0xE000)
 	{
@@ -784,6 +812,8 @@ int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx)
 //		BJX2_FaultSwapRegs(ctx);
 		BJX2_FaultExitRegs(ctx, ctx->regs[BJX2_REG_EXSR]);
 //		ctx->regs[BJX2_REG_SR]&=~(1<<29);	//Clear RB
+
+		BJX2_FaultUpdateRegsRbs(ctx);
 
 		ctx->trcur=NULL;
 		ctx->tr_rnxt=NULL;
@@ -1583,6 +1613,12 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_RGB5CCENC:	s0="RGB5CCENC";		break;
 	case BJX2_NMID_RGB5CCENC2:	s0="RGB5CCENC2";	break;
 
+//	case BJX2_NMID_PCVTHTOF8:	s0="PCVTHTOF8";		break;
+//	case BJX2_NMID_PCVTF8TOH:	s0="PCVTF8TOH";		break;
+
+	case BJX2_NMID_PCVTHTOF8:	s0="PSTCF8H";		break;
+	case BJX2_NMID_PCVTF8TOH:	s0="PLDCF8H";		break;
+
 	case BJX2_NMID_SUBP:		s0="SUB.P";		break;
 	case BJX2_NMID_SUBXP:		s0="SUBX.P";	break;
 
@@ -1802,7 +1838,10 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx,
 	case BJX2_REG_DLR:		s="DLR";	break;
 	case BJX2_REG_DHR:		s="DHR";	break;
 	case BJX2_REG_SP:		s="SP";		break;
+
+#ifdef BJX2_REG_R15A
 	case BJX2_REG_R15A:		s="R15A";	break;
+#endif
 
 	case BJX2_REG_ZZR:		s="ZZR";	break;
 

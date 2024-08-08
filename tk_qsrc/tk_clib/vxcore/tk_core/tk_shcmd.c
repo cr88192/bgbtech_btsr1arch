@@ -3539,7 +3539,7 @@ int TK_CreateProcessB(
 	ri=0;
 	tksh_createproc_ptask=NULL;
 	tksh_createproc_info=NULL;
-	tk_dbg_printf("TK_CreateProcessB: Fail, pid=0\n", ri);
+	tk_dbg_printf("TK_CreateProcessB: Fail, pid=%d\n", ri);
 	return(ri);
 }
 

@@ -1,7 +1,7 @@
 void tkra_glClearDepth(double depth)
 {
 	TKRA_Context *ctx;
-	int dr;
+	int dr, dr2;
 	ctx=TKRA_GetCurrentContext();
 	
 	dr=depth*32767;
@@ -16,6 +16,13 @@ void tkra_glClearDepth(double depth)
 //	if(dr> 16383)dr= 16383;
 	
 	ctx->clear_zbuf=dr;
+
+	dr2=depth*8388607;
+
+	if(dr2<-8388607)dr2=-8388607;
+	if(dr2> 8388607)dr2= 8388607;
+
+	ctx->clear_zbuf32=dr2<<8;
 }
 
 void tkra_glDepthFunc(int func)
@@ -86,89 +93,31 @@ void tkra_glClearColor(float red, float green, float blue, float alpha)
 		red*255, green*255, blue*255, alpha*255);
 	ctx->clear_rgba=tkra_teximg_packrgba(
 		red*255, green*255, blue*255, alpha*255);
+	ctx->clear_rgba32=ctx->clear_rgba;
 }
 
-#ifdef __BJX2__
-void tkra_memset_word(void *buf, u16 val, int cnt);
-
-__asm {
-tkra_memset_word:
-	PSHUF.W	R5, 0x00, R18
-	MOV		R18, R19
-	
-	LEA.W	(R4, R6), R7
-
-	ADD		R4, 64, R2
-	CMPQGT	R2, R7
-	BF		.L1
-	.L0:
-	MOV.X	R18, (R4, 0)
-	MOV.X	R18, (R4, 16)
-	MOV.X	R18, (R4, 32)
-	MOV.X	R18, (R4, 48)
-	MOV		R2, R4
-	ADD		R4, 64, R2
-	CMPQGT	R2, R7
-	BT		.L0
-	.L1:
-
-	ADD		R4, 8, R2
-	CMPQGT	R2, R7
-	BF		.L3
-	.L2:
-	MOV.Q	R18, (R4)
-	MOV		R2, R4
-	ADD		R4, 8, R2
-	CMPQGT	R2, R7
-	BT		.L2
-	.L3:
-
-	CMPQGT	R4, R7
-	BF		.L5
-	.L4:
-	MOV.W	R18, (R4)
-	ADD		2, R4
-	CMPQGT	R4, R7
-	BT		.L4
-	.L5:
-
-	RTS
-}
-
-#else
-void tkra_memset_word(void *buf, u16 px, int cnt)
+void tkra_glClear(unsigned int mask)
 {
-	u64 px4;
-	u16 *ct, *cte;
-	
-	ct=buf; cte=ct+cnt;
-	px4=px|(px<<16); px4=px4|(px4<<32);
-	while((ct+32)<=cte)
-	{
-		((u64 *)ct)[0]=px4;	((u64 *)ct)[1]=px4;
-		((u64 *)ct)[2]=px4;	((u64 *)ct)[3]=px4;
-		((u64 *)ct)[4]=px4;	((u64 *)ct)[5]=px4;
-		((u64 *)ct)[6]=px4;	((u64 *)ct)[7]=px4;
-		ct+=32;
-	}
-	while((ct+8)<=cte)
-	{
-		((u64 *)ct)[0]=px4;
-		((u64 *)ct)[1]=px4;
-		ct+=8;
-	}
-	while(ct<cte)
-		{ *ct++=px; }
+	TKRA_Context *ctx;
+	u64 pv;
+
+	ctx=TKRA_GetCurrentContext();
+	pv=mask;
+	pv=TKRA_CTXPARM_CLEAR|(pv<<32);
+	TKRA_ModifyContext(ctx, pv);
+
+//	TKRA_ClearI(ctx, mask);
 }
 
-#endif
-
-
+#if 0
 void tkra_glClear(unsigned int mask)
 {
 	TKRA_Context *ctx;
 	tkra_rastpixel *rgb, *cct, *ccte;
 	tkra_zbufpixel *zbuf, *zct, *zcte;
+
+	tkra_rast2pixel *c2rgb, *c2ct;
+	tkra_zbuf2pixel *z2buf, *z2ct;
 	byte *sten;
 	u64 px4;
 	u32 px;
@@ -190,72 +139,45 @@ void tkra_glClear(unsigned int mask)
 		zct=ctx->screen_zbuf;
 		ctx->screen_zbuf=zbuf;
 		ctx->screen_zbuf2=zct;
+
+		z2buf=ctx->screenb_zbuf2;
+		z2ct=ctx->screenb_zbuf;
+		ctx->screenb_zbuf=z2buf;
+		ctx->screenb_zbuf2=z2ct;
 	}
 
 
 	if(mask&TKRA_GL_COLOR_BUFFER_BIT)
 	{
-		px=ctx->clear_rgb5;
-		n=xs*ys;
-//		for(i=0; i<n; i++)
-//			{ rgb[i]=px; }
-
-		tkra_memset_word(rgb, px, n);
-
-#if 0
-		px4=px|(px<<16); px4=px4|(px4<<32);
-		cct=rgb;	ccte=rgb+n;
-		while((cct+32)<=ccte)
+		if(ctx->pixelfmt&TKRA_PIXFMT_DW)
 		{
-			((u64 *)cct)[0]=px4;	((u64 *)cct)[1]=px4;
-			((u64 *)cct)[2]=px4;	((u64 *)cct)[3]=px4;
-			((u64 *)cct)[4]=px4;	((u64 *)cct)[5]=px4;
-			((u64 *)cct)[6]=px4;	((u64 *)cct)[7]=px4;
-			cct+=32;
-		}
-		while((cct+8)<=ccte)
+			px=ctx->clear_rgba32;
+			n=xs*ys;
+			tkra_memset_dword(rgb, px, n);
+		}else
 		{
-			((u64 *)cct)[0]=px4;
-			((u64 *)cct)[1]=px4;
-			cct+=8;
+			px=ctx->clear_rgb5;
+			n=xs*ys;
+			tkra_memset_word(rgb, px, n);
 		}
-		while(cct<ccte)
-			{ *cct++=px; }
-#endif
 	}
 
 	if(mask&TKRA_GL_DEPTH_BUFFER_BIT)
 	{
-		px=ctx->clear_zbuf;
-//		n=(xs>>1)*(ys>>1);
-		n=xs*ys;
-
-		tkra_memset_word(zbuf, px, n);
-
-#if 0
-//		for(i=0; i<n; i++)
-//			{ zbuf[i]=px; }
-		px4=px|(px<<16); px4=px4|(px4<<32);
-		zct=zbuf;	zcte=zbuf+n;
-		while((zct+32)<=zcte)
+		if(ctx->pixelfmt&TKRA_PIXFMT_DW)
 		{
-			((u64 *)zct)[0]=px4;	((u64 *)zct)[1]=px4;
-			((u64 *)zct)[2]=px4;	((u64 *)zct)[3]=px4;
-			((u64 *)zct)[4]=px4;	((u64 *)zct)[5]=px4;
-			((u64 *)zct)[6]=px4;	((u64 *)zct)[7]=px4;
-			zct+=32;
-		}
-		while((zct+8)<=zcte)
+			px=ctx->clear_zbuf32;
+			n=xs*ys;
+			tkra_memset_dword(z2buf, px, n);
+		}else
 		{
-			((u64 *)zct)[0]=px4;
-			((u64 *)zct)[1]=px4;
-			zct+=8;
+			px=ctx->clear_zbuf;
+			n=xs*ys;
+			tkra_memset_word(zbuf, px, n);
 		}
-		while(zct<zcte)
-			{ *zct++=px; }
-#endif
 	}
 
+#if 0
 	if(mask&TKRA_GL_STENCIL_BUFFER_BIT)
 	{
 		px=0;
@@ -263,7 +185,9 @@ void tkra_glClear(unsigned int mask)
 		for(i=0; i<n; i++)
 			{ sten[i]=px; }
 	}
+#endif
 }
+#endif
 
 void tkra_glIndexMask(unsigned int mask)
 {

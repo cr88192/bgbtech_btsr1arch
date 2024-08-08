@@ -344,6 +344,7 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 
 #endif
 
+#if 0
 /* Half-Resolution Z-Buffer */
 void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
@@ -553,6 +554,7 @@ void TKRA_WalkEdges_HZbuf(TKRA_Context *ctx,
 	edge_l[TKRA_ES_ZPOS] = zpos_l;
 	edge_r[TKRA_ES_ZPOS] = zpos_r;
 }
+#endif
 
 // #if 0
 #ifdef __BJX2__
@@ -2472,6 +2474,12 @@ void TKRA_Probe_WalkEdgesMMIO(TKRA_Context *ctx)
 
 	sctx = ctx->svctx;
 
+	if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+	{
+//		tkra_nommio=1;
+//		return;
+	}
+
 //	if(tkra_nommio==3)
 //		tkra_nommio=2;
 
@@ -2647,6 +2655,16 @@ void TKRA_UpdateVars_WalkEdgesMMIO(TKRA_Context *ctx)
 
 	mdfl|=1<<22;
 
+	if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+	{
+		mdfl|=1<<23;
+	}
+
+	if(ctx->pixelfmt&TKRA_PIXFMT_HDR)
+	{
+		mdfl|=1<<24;
+	}
+
 	mdfl2=mdfl;
 
 //	if(trifl&TKRA_TRFL_DOBLEND)
@@ -2792,7 +2810,8 @@ void TKRA_WalkEdges_MMIO(TKRA_Context *ctx,
 //	zbuf=(u64)(ctx->screen_zbuf);
 
 	mmioreject=(tkra_nommio&1);
-	if(!tex || (tex&0xFFFFF0000000ULL) || (((tex>>57)&7)!=0))
+//	if(!tex || (tex&0xFFFFF0000000ULL) || (((tex>>57)&7)!=0))
+	if(!tex || (tex&0xFFFFF0000000ULL))
 		mmioreject=1;
 	if(tex&15)
 		mmioreject=1;
@@ -4443,7 +4462,111 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 
 	sctx->triflag=trifl;
 
-	if(trifl&TKRA_TRFL_DOZABLEND)
+	if(ctx->pixelfmt&TKRA_PIXFMT_DW)
+	{
+		sctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
+
+		if(trifl&TKRA_TRFL_MINBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModBlTexMortClampZt;
+				sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModBlTexMortClampZt;
+			}else
+			{
+				sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModBlTexMortZt;
+				sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModTexMortClampZt;
+				sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModTexMortClampZt;
+			}else
+			{
+				sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModTexMortZt;
+				sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModTexMortZt;
+			}
+		}
+
+		if(trifl&TKRA_TRFL_MAGBL)
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModBlTexMortClampZt;
+				sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModBlTexMortClampZt;
+			}else
+			{
+				sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModBlTexMortZt;
+				sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModBlTexMortZt;
+			}
+		}else
+		{
+			if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+			{
+				sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModTexMortClampZt;
+				sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModTexMortClampZt;
+			}else
+			{
+				sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModTexMortZt;
+				sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModTexMortZt;
+			}
+		}
+
+		if(sctx->tex_cur->tex_img_bcn)
+		{
+			if(trifl&TKRA_TRFL_MINBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModBlUtx3MortClampZt;
+					sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModBlUtx3MortClampZt;
+				}else
+				{
+					sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModBlUtx3MortZt;
+					sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModBlUtx3MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModUtx3MortClampZt;
+					sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModUtx3MortClampZt;
+				}else
+				{
+					sctx->DrawSpan_Min=TKRA_DrawSpanB_ZatModUtx3MortZt;
+					sctx->DrawSpanZt_Min=TKRA_DrawSpanB_ZatModUtx3MortZt;
+				}
+			}
+
+			if(trifl&TKRA_TRFL_MAGBL)
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModBlUtx3MortClampZt;
+					sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModBlUtx3MortClampZt;
+				}else
+				{
+					sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModBlUtx3MortZt;
+					sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModBlUtx3MortZt;
+				}
+			}else
+			{
+				if((trifl&TKRA_TRFL_CLAMPS) || (trifl&TKRA_TRFL_CLAMPT))
+				{
+					sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModUtx3MortClampZt;
+					sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModUtx3MortClampZt;
+				}else
+				{
+					sctx->DrawSpan_Mag=TKRA_DrawSpanB_ZatModUtx3MortZt;
+					sctx->DrawSpanZt_Mag=TKRA_DrawSpanB_ZatModUtx3MortZt;
+				}
+			}
+		}
+	}
+	else
+		if(trifl&TKRA_TRFL_DOZABLEND)
 	{
 		sctx->DrawSpanZb = TKRA_DrawSpan_ZbNul;
 

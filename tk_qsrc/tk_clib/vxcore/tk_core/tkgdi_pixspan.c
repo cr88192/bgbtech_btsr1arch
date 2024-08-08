@@ -132,6 +132,8 @@ u16 TKGDI_CopyPixelSpan_GetRGB24(byte *src);
 u64 TKGDI_CopyPixelSpan_GetRGB24x4(byte *src);
 u64 TKGDI_CopyPixelSpan_GetRGB32x4(byte *src);
 
+u16 TKGDI_CopyPixelSpan_GetRGB24H(byte *src, u32 scbi);
+
 __asm {
 TKGDI_CopyPixelSpan_GetRGB24:
 	MOVU.L		(R4), R6
@@ -169,6 +171,55 @@ TKGDI_CopyPixelSpan_GetRGB32x4:
 	OR			R18, R19, R21
 	OR			R20, R21, R2
 	RTS
+
+TKGDI_CopyPixelSpan_GetRGB24H:
+	MOVU.L		(R4), R6
+	PSHUF.W		R5, 0x00, R20
+	PSHUF.W		R5, 0x55, R21
+
+	PLDCM8UH	R6, R16
+	MOV			0x3C003C003C003C00, R17
+	PMUL.H		R16, R20, R16
+	MOV			0x3FFF3FFF3FFF3FFF, R22
+	PADD.H		R16, R21, R16
+
+	PADD.H		R16, R17, R18
+	
+	PCMPGT.H	R22, R18
+	PCSELT.W	R22, R18, R18
+
+	PCMPGT.H	R18, R17
+	PCSELT.W	R17, R18, R18
+
+
+//	TSTQ		0x0000C000C000C000, R18
+//	BF			.L1
+//	.L0:
+
+	MOV			0xFFFF000000000000, R7
+	PCVTH2UW	R18, R19
+	OR			R19, R7, R5
+	RGB5PCK64	R5, R2
+
+	RTS
+
+#if 0
+	.L1:
+
+	TSTQ		0x00000000C000, R18
+	AND?F		0xFFFFFFFF0000, R18
+	OR?F		0x000000003BFF, R18
+
+	TSTQ		0x0000C0000000, R18
+	AND?F		0xFFFF0000FFFF, R18
+	OR?F		0x00003BFF0000, R18
+
+	TSTQ		0xC00000000000, R18
+	AND?F		0x0000FFFFFFFF, R18
+	OR?F		0x3BFF00000000, R18
+
+	BRA			.L0
+#endif
 };
 
 #else
@@ -186,6 +237,10 @@ u16 TKGDI_CopyPixelSpan_GetRGB24(byte *src)
 	v=cr|cb;
 	v=cg|v;
 	return(v);
+}
+
+u16 TKGDI_CopyPixelSpan_GetRGB24H(byte *src, u32 scbi)
+{
 }
 #endif
 
@@ -257,6 +312,89 @@ void TKGDI_CopyPixelSpan_Cnv32to15(
 		for(; x<xs; x+=4)
 		{
 			v0=TKGDI_CopyPixelSpan_GetRGB24(cs);
+			ct[0]=v0;
+			cs+=4; ct++;
+		}
+	}
+}
+
+
+void TKGDI_CopyPixelSpan_Cnv24Hto15(
+	u16 *dst, byte *src, int xs, u32 scbi)
+{
+	byte *cs;
+	u16 *ct;
+	u32 v0, v1, v2, v3;
+	int xsa;
+	int x;
+
+	if(!scbi)
+		scbi=0x3C00;
+
+	xsa=xs&(~3);
+	cs=src;
+	ct=dst;
+	for(x=0; x<xsa; x+=4)
+	{
+// #ifdef __BJX2__
+#if 0
+		*(u64 *)ct=TKGDI_CopyPixelSpan_GetRGB24x4(cs);
+#else
+		v0=TKGDI_CopyPixelSpan_GetRGB24H(cs+0, scbi);
+		v1=TKGDI_CopyPixelSpan_GetRGB24H(cs+3, scbi);
+		v2=TKGDI_CopyPixelSpan_GetRGB24H(cs+6, scbi);
+		v3=TKGDI_CopyPixelSpan_GetRGB24H(cs+9, scbi);
+		ct[0]=v0;		ct[1]=v1;
+		ct[2]=v2;		ct[3]=v3;
+#endif
+		cs+=12; ct+=4;
+	}
+	if(x<xs)
+	{
+		for(; x<xs; x+=4)
+		{
+			v0=TKGDI_CopyPixelSpan_GetRGB24H(cs, scbi);
+			ct[0]=v0;
+			cs+=3; ct++;
+		}
+	}
+}
+
+void TKGDI_CopyPixelSpan_Cnv32Hto15(
+	u16 *dst, byte *src, int xs, u32 scbi)
+{
+	byte *cs;
+	u16 *ct;
+	u32 v0, v1, v2, v3;
+	int xsa;
+	int x;
+
+	if(!scbi)
+		scbi=0x3C00;
+
+	xsa=xs&(~3);
+	cs=src;
+	ct=dst;
+	for(x=0; x<xsa; x+=4)
+	{
+// #ifdef __BJX2__
+#if 0
+		*(u64 *)ct=TKGDI_CopyPixelSpan_GetRGB32x4(cs);
+#else
+		v0=TKGDI_CopyPixelSpan_GetRGB24H(cs+ 0, scbi);
+		v1=TKGDI_CopyPixelSpan_GetRGB24H(cs+ 4, scbi);
+		v2=TKGDI_CopyPixelSpan_GetRGB24H(cs+ 8, scbi);
+		v3=TKGDI_CopyPixelSpan_GetRGB24H(cs+12, scbi);
+		ct[0]=v0;		ct[1]=v1;
+		ct[2]=v2;		ct[3]=v3;
+#endif
+		cs+=16; ct+=4;
+	}
+	if(x<xs)
+	{
+		for(; x<xs; x+=4)
+		{
+			v0=TKGDI_CopyPixelSpan_GetRGB24H(cs, scbi);
 			ct[0]=v0;
 			cs+=4; ct++;
 		}

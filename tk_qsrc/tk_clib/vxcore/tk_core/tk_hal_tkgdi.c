@@ -129,7 +129,18 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 						data, 4, xo_src, yo_src,
 						info->biWidth, info->biHeight);
 				}
+			}else
+				if(info->biCompression == TKGDI_BI_HDRU)
+			{
+				if(info->biBitCount == 32)
+				{
+					pal=(u32 *)(((byte *)info)+info->biSize);
+					TKGDI_BlitUpdate_BlkRgb888H(xo_dev, yo_dev, xs, ys,
+						data, 4, xo_src, yo_src,
+						info->biWidth, info->biHeight);
+				}
 			}
+
 		}
 
 //		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_640x400_CC)
@@ -428,6 +439,78 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 				}
 			}
 		}else
+			if(	(info->biCompression==TKGDI_FCC_hdr) ||
+				(info->biCompression==TKGDI_FCC_hdru))
+		{
+			if(info->biBitCount==24)
+			{
+				xstr_src=xs_bmp*3;
+				xstr_src=(xstr_src+3)&(~3);
+
+				if(flip)
+				{
+					csb+=(ys-1)*xstr_src;
+					csb-=yo_src*xstr_src;
+					csb+=xo_src*3;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv24Hto15(ct, csb, xs,
+							info->biClrUsed);
+						csb-=xstr_src;
+						ct+=bxs;
+					}
+				}else
+				{
+					csb+=yo_src*xstr_src;
+					csb+=xo_src*3;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv24Hto15(ct, csb, xs,
+							info->biClrUsed);
+						csb+=xstr_src;
+						ct+=bxs;
+					}
+				}
+			}
+
+			if(info->biBitCount==32)
+			{
+				xstr_src=xs_bmp<<2;
+
+				if(flip)
+				{
+					csb+=(ys-1)*xstr_src;
+					csb-=yo_src*xstr_src;
+					csb+=xo_src<<2;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv32Hto15(ct, csb, xs,
+							info->biClrUsed);
+						csb-=xstr_src;
+						ct+=bxs;
+					}
+				}else
+				{
+					csb+=yo_src*xstr_src;
+					csb+=xo_src<<2;
+
+					ct+=yo_dev*bxs+xo_dev;
+					for(i=0; i<ys; i++)
+					{
+						TKGDI_CopyPixelSpan_Cnv32Hto15(ct, csb, xs,
+							info->biClrUsed);
+						csb+=xstr_src;
+						ct+=bxs;
+					}
+				}
+			}
+		}else
 			if(	(info->biCompression==TKGDI_FCC_CRAM) ||
 				(info->biCompression==TKGDI_FCC_UTX2))
 		{
@@ -626,7 +709,8 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 	tk_dbg_printf("TKGDI_ModeForInputFormat: W=%d H=%d bpp=%d\n",
 		ifmt->biWidth, ifmt->biHeight, ifmt->biBitCount);
 
-	if((ifmt->biBitCount == 16) || (ifmt->biBitCount == 15))
+	if((ifmt->biBitCount == 16) || (ifmt->biBitCount == 15) ||
+		(ifmt->biBitCount == 24) || (ifmt->biBitCount == 32))
 	{
 
 #if 0

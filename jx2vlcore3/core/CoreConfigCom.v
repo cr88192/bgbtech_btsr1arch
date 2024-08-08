@@ -77,7 +77,7 @@
 
 `ifndef jx2_xc7s50
 `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
-// `define	jx2_use_mem_ldop		//Load/Store Operations
+`define	jx2_use_mem_ldop		//Load/Store Operations
 `endif
 
 `ifndef jx2_xc7s50
@@ -88,6 +88,8 @@
 `define	jx2_fpu_enable_fdiv		//enable FDIV
 
 `define	jx2_alu_wx				//Enable Wide-ALU
+
+// `define jx2_enable_gpr_rbsel	//Enable Register Bank Select
 
 `endif
 
@@ -228,6 +230,7 @@
 `ifndef jx2_xc7s50
 
 `define jx2_enable_convfp16al			//FP16 <-> A-Law Conversion Ops
+`define jx2_enable_convfp16fp8			//FP16 <-> FP8 Conversion Ops
 
 // `define jx2_enable_rgb5minmax_alu			//RGB5 Min/Max Op (ALU/CONV2)
 // `define jx2_enable_rgb5minmax_mul			//RGB5 Min/Max Op (CCENC)
@@ -236,12 +239,15 @@
 `define jx2_enable_rgb5pcki8				//RGB5 Pack Indexed
 `define jx2_enable_bitnn					//Bit Neural Net
 
+`define jx2_enable_fmulfp8					//FMUL FP8
+
 `endif
 
 `endif
 
 `define jx2_do_convfp16_alu
-`define jx2_enable_conv2_alu
+`define jx2_enable_conv2_alu			//Enable CONV2 (ALU)
+`define jx2_enable_conv3_alu			//Enable CONV3 (ALU)
 
 // `define jx2_enable_ldirot			//Enable LDIROz
 // `define jx2_enable_srtwid			//Enable SR.T Twiddle

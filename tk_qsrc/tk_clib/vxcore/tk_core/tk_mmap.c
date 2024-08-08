@@ -1,5 +1,8 @@
 #ifndef __TK_CLIB_ONLY__
 
+TKPE_TaskInfoKern *TK_GetCurrentTaskInfoKern();
+TKPE_TaskInfoKern *TK_GetTaskInfoKern(TKPE_TaskInfo *task);
+
 // byte *tkmm_mmap_bufs[512];
 // byte *tkmm_mmap_bufe[512];
 // int tkmm_mmap_prot[512];
@@ -336,23 +339,23 @@ void *TKMM_MmapL(
 	return(tk_mmap2(TK_GetCurrentTask(), addr, len, prot, flags, fd, offs));
 }
 
-void *TKMM_MunmapL(
+int TKMM_MunmapL(
 	void *addr, size_t len)
 {
-	return((void *)tk_munmap2(TK_GetCurrentTask(), addr, len));
+	return(tk_munmap2(TK_GetCurrentTask(), addr, len));
 }
 
-void *TKMM_MProtectL(
+int TKMM_MProtectL(
 	void *addr, size_t len, int prot)
 {
 //	prot&=~(TKMM_PROT_NOCACHE|TKMM_PROT_NOUSER);
-	return((void *)tk_mprotect2(TK_GetCurrentTask(), addr, len, prot));
+	return(tk_mprotect2(TK_GetCurrentTask(), addr, len, prot));
 }
 
-void *TKMM_MSyncL(
+int TKMM_MSyncL(
 	void *addr, size_t len, int flag)
 {
-	return((void *)tk_msync2(TK_GetCurrentTask(), addr, len, flag));
+	return(tk_msync2(TK_GetCurrentTask(), addr, len, flag));
 }
 #endif
 

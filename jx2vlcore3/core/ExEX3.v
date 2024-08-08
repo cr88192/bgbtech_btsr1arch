@@ -40,7 +40,8 @@ Continues on the work from the first 2 stages.
 
 `ifdef jx2_enable_pmov
 `include "ExConv_Fp16Exp32.v"
-`include "ExConv_Fp8Exp12.v"
+// `include "ExConv_Fp8Exp12.v"
+`include "ExConv_Fp16UPckAl.v"
 `endif
 
 `ifdef jx2_agu_ldtex
@@ -200,6 +201,7 @@ wire[1:0]	mem_4xm2h_mode;
 // assign		mem_4xm2h_mode = { 1'b0, opUIxt[4] };
 assign		mem_4xm2h_mode = 2'b01;
 
+`ifndef def_true
 ExConv_Fp8Exp12 mem_4xm2h_a(
 	memDataIn[ 7: 0], memDataIn_4xM8toH[15: 4], mem_4xm2h_mode);
 ExConv_Fp8Exp12 mem_4xm2h_b(
@@ -213,6 +215,18 @@ assign	memDataIn_4xM8toH[ 3: 0]=0;
 assign	memDataIn_4xM8toH[19:16]=0;
 assign	memDataIn_4xM8toH[35:32]=0;
 assign	memDataIn_4xM8toH[51:48]=0;
+`endif
+
+`ifdef def_true
+ExConv_Fp16UPckAl mem_4xm2h_a(
+	memDataIn[ 7: 0], memDataIn_4xM8toH[15: 0], 1);
+ExConv_Fp16UPckAl mem_4xm2h_b(
+	memDataIn[15: 8], memDataIn_4xM8toH[31:16], 1);
+ExConv_Fp16UPckAl mem_4xm2h_c(
+	memDataIn[23:16], memDataIn_4xM8toH[47:32], 1);
+ExConv_Fp16UPckAl mem_4xm2h_d(
+	memDataIn[31:24], memDataIn_4xM8toH[63:48], 1);
+`endif
 
 `endif
 
@@ -441,6 +455,9 @@ begin
 //			tDoOutDfl		= 1;
 			tDoOutHeld		= 1;
 		end
+		JX2_UCMD_PMOV_RM: begin
+			tDoMemOp	= 1;
+		end
 `endif
 
 //		JX2_UCMD_ADDSP: begin
@@ -528,6 +545,8 @@ begin
 		JX2_UCMD_CONV_RR: begin
 		end
 		JX2_UCMD_CONV2_RR: begin
+		end
+		JX2_UCMD_CONV3_RR: begin
 		end
 		
 		JX2_UCMD_MOV_RC: begin

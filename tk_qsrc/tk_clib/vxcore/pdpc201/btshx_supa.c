@@ -1769,6 +1769,8 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 			break;
 		case 's':
 			s1=va_arg(lst, char *);
+			if(!s1)
+				s1="(null)";
 			while(*s1)
 				{ *ct++=*s1++; }
 			break;

@@ -508,3 +508,400 @@ void TKRA_DrawSpan_ZatModBlUtx2MortClampZt(u64 *parm,
 	TKRA_DrawSpan_BlendClampI(parm, dstc, dstz, cnt, 
 		TKRA_DrawSpan_ZatModBlUtx2MortZt);
 }
+
+
+
+void TKRA_DrawSpanB_ZatModTexMortZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	TKRA_Context *ctx;
+	tkra_blendfunc_t	Blend;
+	tkra_zatest_t		ZaTest;
+	tkra_rast2pixel		*ct, *cte, *src;
+	tkra_zbuf2pixel		*ctz;
+	u64	tpos, tstep;
+	u64	cpos, cstep;
+	u64 zpos, zstep;
+	u64 cval, dval, cref;
+	u32 xmask, ymask;
+	s32 z, zref;
+//	int txs, txt;
+	int ix0, ix1;
+	int idx0, trifl;
+	int pix, dpix, clr, idx;
+
+	tpos=parm[TKRA_DS_TPOS];
+	tstep=parm[TKRA_DS_TSTEP];
+
+	cpos=parm[TKRA_DS_CPOS];
+	cstep=parm[TKRA_DS_CSTEP];
+
+	zpos=parm[TKRA_DS_ZPOS];
+	zstep=parm[TKRA_DS_ZSTEP];
+
+	src=(tkra_rast2pixel *)(parm[TKRA_DS_TEXIMG]);
+	xmask=parm[TKRA_DS_XMASK];
+	ymask=parm[TKRA_DS_YMASK];
+	Blend=(tkra_blendfunc_t)(parm[TKRA_DS_BLEND]);
+	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
+
+	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
+	trifl=ctx->svctx->span_trifl;
+	zref=0;
+	cref=tkra_rgba_expand64(ctx->zat_cref);
+
+	ix0=dstc-ctx->screen_rgb;
+	ix1=dstz-ctx->screen_zbuf;
+	ct=ctx->screenb_rgb+ix0;
+	ctz=ctx->screenb_zbuf+ix0;
+	cte=ct+cnt;
+
+//	ct=dstc; cte=ct+cnt;
+//	ctz=dstz;
+	while(ct<cte)
+	{
+		idx0=tkra_morton16(tpos>>16, tpos>>48);
+		idx=idx0&ymask;
+
+		pix=src[idx];
+		dpix=*ct;
+
+		cval=tkra_rgba32upck64(pix);
+		dval=tkra_rgba32upck64(dpix);
+		cval=tkra_pmuluhw(cval, cpos);
+
+//		cval&=~(0xFFULL<<48);
+//		cval|=(0xFFULL<<56);
+
+		cval=Blend(cval, dval);	
+
+//		z=zpos>>16;
+		z=zpos;
+		if(ZaTest(z, *ctz, zref, &z, cval, dval, cref, &cval))
+		{
+			pix=tkra_rgba32pck64(cval);
+			*ct=pix;
+			*ctz=z;
+		}
+
+		ctz++;
+		ct++;
+		tpos+=tstep;
+		cpos+=cstep;
+		zpos+=zstep;
+	}
+}
+
+void TKRA_DrawSpanB_ZatModBlTexMortZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	TKRA_Context *ctx;
+	tkra_blendfunc_t	Blend;
+	tkra_zatest_t		ZaTest;
+	tkra_rast2pixel *ct, *cte, *src;
+	tkra_zbuf2pixel *ctz;
+	u64	tpos, tstep;
+	u64	cpos, cstep;
+	u64 zpos, zstep;
+	u64 cval, dval, cref;
+	u32 xmask, ymask;
+	s32 z, zref;
+	int txs, txt;
+	int idx0, trifl;
+	int ix0, ix1, ix2, ix3;
+	u64 pix0, pix1, pix2, pix3;
+	int pix, dpix, clr, idx;
+
+//	TKRA_DrawSpanB_ZatModTexMortZt(parm, dstc, dstz, cnt);
+//	return;
+
+	tpos=parm[TKRA_DS_TPOS];
+	tstep=parm[TKRA_DS_TSTEP];
+
+	cpos=parm[TKRA_DS_CPOS];
+	cstep=parm[TKRA_DS_CSTEP];
+
+	zpos=parm[TKRA_DS_ZPOS];
+	zstep=parm[TKRA_DS_ZSTEP];
+
+	src=(tkra_rast2pixel *)(parm[TKRA_DS_TEXIMG]);
+	xmask=parm[TKRA_DS_XMASK];
+	ymask=parm[TKRA_DS_YMASK];
+	Blend=(tkra_blendfunc_t)(parm[TKRA_DS_BLEND]);
+	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
+
+	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
+	trifl=ctx->svctx->span_trifl;
+	zref=0;
+	cref=tkra_rgba_expand64(ctx->zat_cref);
+
+	ix0=dstc-ctx->screen_rgb;
+	ix1=dstz-ctx->screen_zbuf;
+	ct=ctx->screenb_rgb+ix0;
+	ctz=ctx->screenb_zbuf+ix0;
+	cte=ct+cnt;
+
+//	ct=dstc; cte=ct+cnt;
+//	ctz=dstz;
+	while(ct<cte)
+	{
+//		txs=(s16)(tpos>>16);
+//		txt=(s16)(tpos>>48);
+		txs=tpos>>16;
+		txt=tpos>>48;
+		
+		ix0=tkra_morton16(txs+0, txt+0);
+		ix1=tkra_morton16(txs+1, txt+0);
+		ix2=tkra_morton16(txs+0, txt+1);
+		ix3=tkra_morton16(txs+1, txt+1);
+		ix0&=ymask;
+		ix1&=ymask;
+		ix2&=ymask;
+		ix3&=ymask;
+		
+		pix0=src[ix0];
+		pix1=src[ix1];
+		pix2=src[ix2];
+		pix3=src[ix3];
+
+		pix0=tkra_rgba32upck64(pix0);
+		pix1=tkra_rgba32upck64(pix1);
+		pix2=tkra_rgba32upck64(pix2);
+		pix3=tkra_rgba32upck64(pix3);
+
+//		pix0&=~(0xFFULL<<48);
+//		pix1&=~(0xFFULL<<48);
+//		pix2&=~(0xFFULL<<48);
+//		pix3&=~(0xFFULL<<48);
+//		pix0|=(0xFFULL<<56);
+//		pix1|=(0xFFULL<<56);
+//		pix2|=(0xFFULL<<56);
+//		pix3|=(0xFFULL<<56);
+
+		cval=TKRA_InterpBilinear64(pix0, pix1, pix2, pix3,
+			(u16)tpos, (u16)(tpos>>32));
+
+		dpix=*ct;
+
+		dval=tkra_rgba32upck64(dpix);
+		cval=tkra_pmuluhw(cval, cpos);
+		
+		cval=Blend(cval, dval);	
+
+//		z=zpos>>16;
+		z=zpos;
+		if(ZaTest(z, *ctz, zref, &z, cval, dval, cref, &cval))
+		{
+			pix=tkra_rgba32pck64(cval);
+			*ct=pix;
+			*ctz=z;
+		}
+
+		ctz++;	ct++;
+		tpos+=tstep;
+		cpos+=cstep;
+		zpos+=zstep;
+	}
+}
+
+void TKRA_DrawSpanB_ZatModUtx3MortZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	TKRA_Context *ctx;
+	tkra_blendfunc_t	Blend;
+	tkra_zatest_t		ZaTest;
+	u64 *src;
+	tkra_rast2pixel *ct, *cte;
+	tkra_zbuf2pixel *ctz;
+	u64	tpos, tstep;
+	u64	cpos, cstep;
+	u64 zpos, zstep;
+	u64 cval, dval, cref;
+	u64 blk;
+	u32 xmask, ymask;
+	s32 z, zref;
+	int ix0, ix1;
+//	int txs, txt;
+	int pix, dpix, clr, idx, idx0, trifl;
+
+	tpos=parm[TKRA_DS_TPOS];
+	tstep=parm[TKRA_DS_TSTEP];
+
+	cpos=parm[TKRA_DS_CPOS];
+	cstep=parm[TKRA_DS_CSTEP];
+
+	zpos=parm[TKRA_DS_ZPOS];
+	zstep=parm[TKRA_DS_ZSTEP];
+
+	src=(u64 *)(parm[TKRA_DS_TEXBCN]);
+	xmask=parm[TKRA_DS_XMASK];
+	ymask=parm[TKRA_DS_YMASK];
+	Blend=(tkra_blendfunc_t)(parm[TKRA_DS_BLEND]);
+	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
+
+	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
+	trifl=ctx->svctx->span_trifl;
+//	cref=0x8000000000000000ULL;
+	zref=0;
+	cref=tkra_rgba_expand64(ctx->zat_cref);
+
+	ix0=dstc-ctx->screen_rgb;
+//	ix1=dstz-ctx->screen_zbuf;
+	ct=ctx->screenb_rgb+ix0;
+	ctz=ctx->screenb_zbuf+ix0;
+	cte=ct+cnt;
+
+//	ct=dstc; cte=ct+cnt;
+//	ctz=dstz;
+	while(ct<cte)
+	{
+		idx0=tkra_morton16(tpos>>16, tpos>>48);
+		idx=idx0&ymask;
+
+		dpix=*ct;
+
+		cval=TKRA_CachedBlkUtx3(src, idx);
+		dval=tkra_rgba32upck64(dpix);
+		cval=tkra_pmuluhw(cval, cpos);
+	
+		cval=Blend(cval, dval);	
+
+//		z=zpos>>16;
+		z=zpos;
+
+		if(ZaTest(z, *ctz, zref, &z, cval, dval, cref, &cval))
+//		if(1)
+		{
+			pix=tkra_rgba32pck64(cval);
+			*ct=pix;
+			*ctz=z;
+		}
+
+		ctz++;
+		ct++;
+		tpos+=tstep;
+		cpos+=cstep;
+		zpos+=zstep;
+	}
+}
+
+void TKRA_DrawSpanB_ZatModBlUtx3MortZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	TKRA_Context *ctx;
+	tkra_blendfunc_t	Blend;
+	tkra_zatest_t		ZaTest;
+	tkra_rast2pixel *ct, *cte;
+	u64 *src;
+	tkra_zbuf2pixel *ctz;
+	u64	tpos, tstep;
+	u64	cpos, cstep;
+	u64 zpos, zstep;
+	u64 cval, dval, cref;
+	u32 xmask, ymask;
+	s32 z, zref, txs, txt;
+	int idx0, trifl;
+	int ix0, ix1, ix2, ix3;
+	u64 pix0, pix1, pix2, pix3;
+	int pix, dpix, clr, idx;
+
+	tpos=parm[TKRA_DS_TPOS];
+	tstep=parm[TKRA_DS_TSTEP];
+
+	cpos=parm[TKRA_DS_CPOS];
+	cstep=parm[TKRA_DS_CSTEP];
+
+	zpos=parm[TKRA_DS_ZPOS];
+	zstep=parm[TKRA_DS_ZSTEP];
+
+	src=(u64 *)(parm[TKRA_DS_TEXBCN]);
+	xmask=parm[TKRA_DS_XMASK];
+	ymask=parm[TKRA_DS_YMASK];
+	Blend=(tkra_blendfunc_t)(parm[TKRA_DS_BLEND]);
+	ZaTest=(tkra_zatest_t)(parm[TKRA_DS_ZATEST]);
+
+	ctx=(TKRA_Context *)(parm[TKRA_DS_CTX]);
+	trifl=ctx->svctx->span_trifl;
+	zref=0;
+	cref=tkra_rgba_expand64(ctx->zat_cref);
+
+	ix0=dstc-ctx->screen_rgb;
+//	ix1=dstz-ctx->screen_zbuf;
+	ct=ctx->screenb_rgb+ix0;
+	ctz=ctx->screenb_zbuf+ix0;
+	cte=ct+cnt;
+
+//	ct=dstc; cte=ct+cnt;
+//	ctz=dstz;
+	while(ct<cte)
+	{
+		txs=(s16)(tpos>>16);
+		txt=(s16)(tpos>>48);
+		ix0=tkra_morton16(txs+0, txt+0)&ymask;
+		ix1=tkra_morton16(txs+1, txt+0)&ymask;
+		ix2=tkra_morton16(txs+0, txt+1)&ymask;
+		ix3=tkra_morton16(txs+1, txt+1)&ymask;
+
+		pix0=TKRA_CachedBlkUtx3(src, ix0);
+		pix1=TKRA_CachedBlkUtx3(src, ix1);
+		pix2=TKRA_CachedBlkUtx3(src, ix2);
+		pix3=TKRA_CachedBlkUtx3(src, ix3);
+		cval=TKRA_InterpBilinear64(pix0, pix1, pix2, pix3,
+			(u16)tpos, (u16)(tpos>>32));
+
+		dpix=*ct;
+
+		dval=tkra_rgba32upck64(dpix);
+		cval=tkra_pmuluhw(cval, cpos);
+		
+		cval=Blend(cval, dval);	
+
+//		z=zpos>>16;
+		z=zpos;
+		if(ZaTest(z, *ctz, zref, &z, cval, dval, cref, &cval))
+		{
+			pix=tkra_rgba32pck64(cval);
+			*ct=pix;
+			*ctz=z;
+		}
+
+		ctz++;	ct++;
+		tpos+=tstep;
+		cpos+=cstep;
+		zpos+=zstep;
+	}
+}
+
+
+void TKRA_DrawSpanB_ZatModTexMortClampZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+//	TKRA_DrawSpanB_ZatModTexMortZt(parm, dstc, dstz, cnt);
+	TKRA_DrawSpan_BlendClampI(parm, dstc, dstz, cnt, 
+		TKRA_DrawSpanB_ZatModTexMortZt);
+}
+
+void TKRA_DrawSpanB_ZatModBlTexMortClampZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+//	TKRA_DrawSpanB_ZatModBlTexMortZt(parm, dstc, dstz, cnt);
+//	TKRA_DrawSpanB_ZatModTexMortZt(parm, dstc, dstz, cnt);
+	TKRA_DrawSpan_BlendClampI(parm, dstc, dstz, cnt, 
+		TKRA_DrawSpanB_ZatModBlTexMortZt);
+}
+
+
+void TKRA_DrawSpanB_ZatModUtx3MortClampZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	TKRA_DrawSpan_BlendClampI(parm, dstc, dstz, cnt, 
+		TKRA_DrawSpanB_ZatModUtx3MortZt);
+}
+
+void TKRA_DrawSpanB_ZatModBlUtx3MortClampZt(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	TKRA_DrawSpan_BlendClampI(parm, dstc, dstz, cnt, 
+		TKRA_DrawSpanB_ZatModBlUtx3MortZt);
+}
+

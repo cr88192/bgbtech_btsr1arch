@@ -1971,6 +1971,35 @@ begin
 			16'h1zzA: begin	/* F0nm_1ezA */
 				case(istrWord[23:20])
 
+					4'h0: begin
+						if(opExQ)
+						begin
+						end
+						else
+						begin
+`ifdef jx2_enable_convfp16al
+							opNmid		= JX2_UCMD_CONV2_RR;
+							opFmid		= JX2_FMID_REGREG;
+							opIty		= JX2_ITY_UB;
+							opUCmdIx	= JX2_UCIX_CONV2_FP16PCKFP8;
+`endif
+						end
+					end
+					4'h1: begin
+						if(opExQ)
+						begin
+						end
+						else
+						begin
+`ifdef jx2_enable_convfp16al
+							opNmid		= JX2_UCMD_CONV2_RR;
+							opFmid		= JX2_FMID_REGREG;
+							opIty		= JX2_ITY_UB;
+							opUCmdIx	= JX2_UCIX_CONV2_FP16UPCKFP8;
+`endif
+						end
+					end
+
 					4'hA: begin
 						opNmid		= JX2_UCMD_FCMP;
 						opFmid		= JX2_FMID_REGREG;
@@ -4714,7 +4743,14 @@ begin
 				
 				if(opExQ)
 				begin
-					opUCmdIx	= JX2_UCIX_MUL3_ENCCC2;
+//					opUCmdIx	= JX2_UCIX_MUL3_ENCCC2;
+
+`ifdef def_true
+					opNmid		= JX2_UCMD_CONV3_RR;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_XB;
+					opUCmdIx	= JX2_UCIX_CONV3_FMULFP8;
+`endif
 				end
 			end
 `endif
@@ -6045,6 +6081,28 @@ begin
 						end
 					end
 
+`ifdef jx2_enable_gpr_rbsel
+					4'b0010: begin
+						opNmid		= JX2_UCMD_CONV_RR;
+						opFmid		= JX2_FMID_IMM10REG;
+						opIty		= JX2_ITY_UW;
+						opUCmdIx	= JX2_UCIX_CONV_MOV;
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+						end
+					end
+					4'b0011: begin
+						opNmid		= JX2_UCMD_CONV_RR;
+						opFmid		= JX2_FMID_IMM10REG;
+						opIty		= JX2_ITY_NW;
+						opUCmdIx	= JX2_UCIX_CONV_MOV;
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+						end
+					end
+`endif
 
 // `ifdef jx2_alu_jcmpz
 `ifndef def_true
@@ -7624,13 +7682,13 @@ begin
 			SQ:
 			SQ:
 
-			UB:Fznz_zejj		Imm10u, ZZR, Rn
-			UW:
+			UB: Fznz_zejj		Imm10u, ZZR, Rn
+			UW: Fznz_zejj		Reg10bn, Preg10, Rn
 			UL: Fznz_zejj		Imm10u, Rn, Rn
 			UQ: Fznz_zejj		Rn, Imm10u, Rn
 
 			NB: Fznz_zejj		Imm10n, ZZR, Rn
-			NW:
+			NW: Fznz_zejj		Rn, Preg10, Reg10bn
 			NL: Fznz_zejj		Imm10n, Rn, Rn
 			NQ: Fznz_zejj		Rn, Imm10n, Rn
 
@@ -7671,6 +7729,26 @@ begin
 					opRegM		= opRegImm10;
 					opRegO		= JX2_GR_ZZR;
 					opRegN		= opRegN_Dfl;
+					opRegP		= JX2_GR_ZZR;
+					opIsImm9	= 1;
+				end
+`endif
+
+`ifdef jx2_enable_gpr_rbsel
+				JX2_ITY_UW: begin
+					opDoImm		= JX2_FMIMM_IMM10U;
+					opRegM		= JX2_GR_RBSEL;
+					opRegO		= { 1'b0, opImm_imm10u[5:0] };
+					opRegN		= opRegN_Dfl;
+					opRegP		= JX2_GR_ZZR;
+					opIsImm9	= 1;
+				end
+
+				JX2_ITY_NW: begin
+					opDoImm		= JX2_FMIMM_IMM10U;
+					opRegM		= opRegN_Dfl;
+					opRegO		= { 1'b0, opImm_imm10u[5:0] };
+					opRegN		= JX2_GR_RBSEL;
 					opRegP		= JX2_GR_ZZR;
 					opIsImm9	= 1;
 				end

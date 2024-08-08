@@ -16,7 +16,7 @@ void TKRA_SetCurrentContext(TKRA_Context *ctx)
 	tkra_current_context=ctx;
 }
 
-int TKRA_SetupContextBasic(int xs, int ys)
+int TKRA_SetupContextBasicFl(int xs, int ys, int fl)
 {
 	TKRA_Context *ractx;
 
@@ -24,14 +24,25 @@ int TKRA_SetupContextBasic(int xs, int ys)
 	if(!ractx)
 		ractx=TKRA_AllocContext();
 
+//	ctx->pixelfmt|=TKRA_PIXFMT_DW;
+
+	ractx->pixelfmt=fl&15;
+
 	TKRA_SetupScreen(ractx, xs, ys);
 	TKRA_SetCurrentContext(ractx);
 	
 	ractx->clear_zbuf=0x7FFF;
 	ractx->clear_rgb5=0x0000;
 	ractx->clear_rgba=0x00000000;
+	ractx->clear_rgba32=0x00000000;
+	ractx->clear_zbuf32=0x7FFFFF00;
 	ractx->zat_alfunc=TKRA_ZAT_AL;
 	ractx->zat_zfunc=TKRA_ZAT_LE;
+}
+
+int TKRA_SetupContextBasic(int xs, int ys)
+{
+	TKRA_SetupContextBasicFl(xs, ys, 0);
 }
 
 void *TKRA_GetCurrentScreenBuffer_RGB(void)

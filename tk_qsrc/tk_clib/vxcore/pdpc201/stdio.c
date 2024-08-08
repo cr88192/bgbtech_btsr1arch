@@ -2848,6 +2848,7 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 		   /* informatitem is 1 if we have processed "%l" but not the
 			  type letter (s,d,e,f,g,...) yet. */
 
+	dummy = 0;
 	lptr = &dummy;
 	iptr = (long *)lptr;
 	lptr = (long *)iptr;

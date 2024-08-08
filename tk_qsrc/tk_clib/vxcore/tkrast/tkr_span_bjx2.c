@@ -14,6 +14,7 @@ u64 tkra_rgbupck64(u16 a);
 u16 tkra_rgbpck64(u64 a);
 
 u64 TKRA_CachedBlkUtx2(void *src, int ix);
+u64 TKRA_CachedBlkUtx3(void *src, int ix);
 
 u64 TKRA_InterpBilinear(
 	u16 px0, u16 px1, u16 px2, u16 px3,
@@ -35,6 +36,7 @@ __asm {
 .global tkra_rgbpck64
 .global tkra_padduhw_sat
 .global TKRA_CachedBlkUtx2
+.global TKRA_CachedBlkUtx3
 .global TKRA_InterpBilinear
 .global TKRA_InterpBilinear64
 .global TKRA_InterpBilinear3Pt_64
@@ -83,6 +85,14 @@ TKRA_CachedBlkUtx2:
 	SHAD		R5, -4, R6
 	MOV.Q		(R4, R6), R7
 	BLKUTX2		R7, R5, R2
+	RTS
+
+TKRA_CachedBlkUtx3:
+	SHAD		R5, -4, R6
+	ADD			R6, R6, R7
+	MOV			R5, R18
+	MOV.X		(R4, R7), R16
+	BLKUTX3		R16, R18, R2
 	RTS
 
 TKRA_InterpBilinear:

@@ -242,8 +242,8 @@ SR Bits:
 ** May be used as a Predicate Stack.
 * 16: XMOV: Bounds Enforce Mode
 * 17: Reserved
-* 18: Reserved
-* 19: Reserved
+* 18: RBS1 (RBS) / Reserved
+* 19: RBS2 (RBS) / Reserved
 * 20: WM2, Reserved
 * 21: WM1, Reserved
 * 22: WX4, Mode 4
@@ -306,7 +306,7 @@ The Vector Base Register (VBR) will have the layout:
 * (63:56), Reserved (MBZ)
 * (55:52), WX3/WX4/WM1/WM2 on ISR Entry
 * (51:50), WXE and WX2 on ISR Entry
-* (49:48), Reserved (MBZ)
+* (49:48), RBS1/RBS2 (RBS) or Reserved (MBZ)
 * (47: 0), VBR Base Address
 
 (WX4,WX3,WX2,WXE) will Enocde a 4-bit CPU Mode:
@@ -319,6 +319,15 @@ The Vector Base Register (VBR) will have the layout:
 * 0110: XG2RV Mode (No WEX)
 * 0111: XG2RV Mode (WEX)
 * 1zzz: Reserved
+
+
+(RBS2, RBS1) may potentially encode a Register Bank Select.
+* 00: Register Bank 0
+* 01: Register Bank 1
+* 10: Register Bank 2
+* 11: Register Bank 3
+
+RBS would increase the total number of internal GPRs to 256, but would allow assigning interrupts and system-call handling to different register banks and avoiding the need to save and restore all of the registers to handle interrupts or perform system calls.
 
 
 === Special Restrictions ===
@@ -504,6 +513,11 @@ Change:
 * The 44-bit Expanded MMIO range will only be enabled if JQ is Set.
 
 If XMOV is supported, the quadrant bits will be used regardless of the JQ setting, however, operation in 32-bit mode will behave as-if Bits (47:32) were set to zero.
+
+
+If an access is Volatile, the cache is to avoid caching the results of the access.
+If the line was previously in the cache, it is to be flushed before the operation may begin.
+Once the operation completes, the cache will immediately flush the cache line.
 
 
 === MMU ===
@@ -1787,10 +1801,10 @@ F0zz Instruction Block:
 *** F0nm_1GF9 /
 
 ** F0nm_1ezA  (GSV Block)
-*** F0nm_1g0A /
-*** F0nm_1G0A /
-*** F0nm_1g1A /
-*** F0nm_1G1A /
+*** F0nm_1g0A  PSTCF8H		Rm, Rn			//(GSVF) Packed FP16 to FP8 (4x)
+*** F0nm_1G0A  -
+*** F0nm_1g1A  PLDCF8H		Rm, Rn			//(GSVF) Packed FP8 to FP16 (4x)
+*** F0nm_1G1A  -
 *** F0nm_1g2A /
 *** F0nm_1G2A /
 *** F0nm_1g3A /
@@ -1953,14 +1967,14 @@ F0zz Instruction Block:
 *** F0nm_1gBF  PRCPA.F		Rm, Rn		//(GSVF) RCPA (2x FP32)
 *** F0nm_1GBF  PRELU.F		Rm, Rn		//(GSVF) RELU (2x FP32)
 
-*** F0nm_1gCF ? PCVTH2AL	Rm, Rn		//(GSVF) Packed FP16 to A-Law (4x)
-*** F0nm_1GCF ? RGB5PCKI8   Rm, Rn		//(RGB?) Pack RGB555 to 8-bit
-*** F0nm_1gDF ? PCVTAL2H	Rm, Rn		//(GSVF) Packed A-Law to FP16 (4x)
-*** F0nm_1GDF ? RGB5UPCKI8  Rm, Rn		//(RGB?) Unpack RGB555 from 8-bit
-*** F0nm_1gEF ? FLDCIU.L	Rm, Rn		//Load Convert UInt32
-*** F0nm_1GEF ? FLDCXIU.L	Rm, Xn		//Load Convert UInt32 (GFPX, F128)
-*** F0nm_1gEF ? FLDCIS.L	Rm, Rn		//Load Convert Int32
-*** F0nm_1GEF ? FLDCXIS.L	Rm, Xn		//Load Convert Int32 (GFPX, F128)
+*** F0nm_1gCF  PCVTH2AL		Rm, Rn		//(GSVF) Packed FP16 to A-Law (4x)
+*** F0nm_1GCF  RGB5PCKI8	Rm, Rn		//(RGB?) Pack RGB555 to 8-bit
+*** F0nm_1gDF  PCVTAL2H		Rm, Rn		//(GSVF) Packed A-Law to FP16 (4x)
+*** F0nm_1GDF  RGB5UPCKI8	Rm, Rn		//(RGB?) Unpack RGB555 from 8-bit
+*** F0nm_1gEF  FLDCIU.L		Rm, Rn		//Load Convert UInt32
+*** F0nm_1GEF  FLDCXIU.L	Rm, Xn		//Load Convert UInt32 (GFPX, F128)
+*** F0nm_1gEF  FLDCIS.L		Rm, Rn		//Load Convert Int32
+*** F0nm_1GEF  FLDCXIS.L	Rm, Xn		//Load Convert Int32 (GFPX, F128)
 
 
 * F0zz_2zzz (More 3R Ops)
@@ -2161,7 +2175,7 @@ F0zz Instruction Block:
 ** F0nm_4go9  MOV.C		(Rm, Disp5), Cn		//(MOVC)
 ** F0nm_4Go9  -
 ** F0nm_4goA  FMOV.S	(Rm, Disp5), Rn		//(FMOV)
-** F0nm_4GoA ? PMOV.4M	(Rm, Disp5), Rn		//(PMOV) 4x FP8S to Binary16
+** F0nm_4GoA ? PMOV.F8	(Rm, Disp5), Rn		//(PMOV) 4x FP8 to Binary16
 ** F0nm_4goB  FMOV.H	(Rm, Disp5), Rn		//(FMOV)
 ** F0nm_4GoB ? PMOV.2H	(Rm, Disp5), Rn		//(PMOV) 2x Binary16 to Binary32
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
@@ -2169,7 +2183,7 @@ F0zz Instruction Block:
 ** F0nm_4goD  MOV.C		(Rm, Ro), Cn		//(MOVC)
 ** F0nm_4GoD  -
 ** F0nm_4goE  FMOV.S	(Rm, Ro), Rn		//(FMOV)
-** F0nm_4GoE ? PMOV.4M	(Rm, Ro), Rn		//(PMOV) 4x FP8S to Binary16
+** F0nm_4GoE ? PMOV.F8	(Rm, Ro), Rn		//(PMOV) 4x FP8 to Binary16
 ** F0nm_4goF  FMOV.H	(Rm, Ro), Rn		//(FMOV)
 ** F0nm_4GoF ? PMOV.2H	(Rm, Ro), Rn		//(PMOV) 2x Binary16 to Binary32
 
@@ -2254,7 +2268,7 @@ F0zz Instruction Block:
 ** F0nm_7go5  MODS.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)
 ** F0nm_7Go5  MODU.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Unsigned)
 ** F0nm_7go6 ? RGB5CCENC	Rm, Ro, Rn		//(RGB-CCE)	Color-Cell Enc Helper
-** F0nm_7Go6  -
+** F0nm_7Go6 ? PMUL.F8H	Rm, Ro, Rn			//(?  ) PMUL FP8 to FP16
 ** F0nm_7go7 ? SUB.P	Rm, Ro, Rn			//(ALUPTR) Pointer Subtract
 ** F0nm_7Go7 ? SUBX.P	Xm, Xo, Xn			//(ALUPTR) 128b Pointer Subtract
 ** F0nm_7ez8  (Reserved 2R Block Space)
@@ -2491,6 +2505,11 @@ F2zz Instruction Block  (Imm9 Block):
 ** F2n0_EHjj  XLEA.B	Imm10u, Rn				//(TTAG) XLEA.B (Xn, Imm10u), Xn
 ** F2n1_Ehjj  LEAT.B	Imm10n, Rn				//(TTAG) LEAT.B (Rn, Imm10n), Rn
 ** F2n1_EHjj  XLEA.B	Imm10n, Rn				//(TTAG) XLEA.B (Xn, Imm10n), Xn
+
+** F2n2_Ehjj  RBSLD.Q	Imm10u, Rn				//(RBS) RBS Load
+** F2n2_EHjj  RBSLD.X	Imm10u, Xn				//(RBS) RBS Load X
+** F2n3_Ehjj  RBSST.Q	Imm10u, Rn				//(RBS) RBS Store
+** F2n3_EHjj  RBSST.X	Imm10u, Xn				//(RBS) RBS Store X
 
 ** F2n4_Efjj ? BREQ.{L/Q}	Rn, Disp10u			//(JCMPZ) JCmp (Rn EQ 0)
 ** F2n5_Efjj ? BREQ.{L/Q}	Rn, Disp10n			//(JCMPZ) JCmp (Rn EQ 0)
@@ -2959,8 +2978,9 @@ The U field will encode an ALU operation to be executed directly within memory:
 * 6: OR.x
 * 7: XOR.x
 * 8..F: Repeat
-** For Load: Reserved
-** For Store: Interpret Rn as Imm6u.
+** / For Load: Reserved
+** / For Store: Interpret Rn as Imm6u.
+** Repeat, but operation is NoCache / Volatile.
 
 If Load, this will perform a Load-Operate Instruction.
 
