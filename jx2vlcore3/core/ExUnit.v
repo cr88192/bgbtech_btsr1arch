@@ -1644,7 +1644,8 @@ wire[7:0]		ex1ExfFl;
 
 wire[7:0]		ex2RegOutSchm;
 reg[7:0]		ex2RegInSchm;
-reg[7:0]		ex2RegInLastSr;
+// reg[7:0]		ex2RegInLastSr;
+reg[31:0]		ex2RegInLastSr;
 
 wire[63:0]		ex1AluInSr;
 `ifdef jx2_cpu_pred_id2
@@ -1713,7 +1714,7 @@ ExEX1	ex1(
 //	ex1BraFlush || exResetL,
 	ex1PreBraPc,	ex1PreBra,
 	ex1AluSrJcmpT,
-	ex2RegInLastSr,
+	ex2RegInLastSr[7:0],
 	
 //	ifValPcHi,		ex1RegGbrHi,
 	
@@ -2150,7 +2151,7 @@ ExEX2	ex2(
 	
 	ex2BraFlush,
 //	ex2BraFlush || exResetL,
-	ex2RegInLastSr,
+	ex2RegInLastSr[7:0],
 	
 	ex2RegOutDlr,	ex2RegInDlr,
 	ex2RegOutDhr,	ex2RegInDhr,
@@ -2219,7 +2220,8 @@ reg[63:0]		ex3RegMulWRes;		//Multiplier Result (Word)
 	reg				ex3BraFlush;		//Flush EX3
 reg				ex3TrapFlush;		//Flush EX3
 
-reg[7:0]		ex3RegInLastSr;
+// reg[7:0]		ex3RegInLastSr;
+reg[31:0]		ex3RegInLastSr;
 
 wire[63:0]		ex3RegOutDlr;
 reg[63:0]		ex3RegInDlr;
@@ -2253,7 +2255,7 @@ ExEX3	ex3(
 //	ex3BraFlush || exResetL,
 	ex3BraFlush,
 
-	ex3RegInLastSr,
+	ex3RegInLastSr[7:0],
 	ex3MulFaz,
 
 	ex2MemDataIn,
@@ -2404,8 +2406,8 @@ ExEXB2		exb2(
 	ex2BraFlush,
 //	ex2BraFlush || exResetL,
 
-	ex2RegInLastSr,	ex2RegInSr,
-	ex2MemDataIn,	ex2MemDataInB
+	ex2RegInLastSr[7:0],	ex2RegInSr,
+	ex2MemDataIn,			ex2MemDataInB
 	);
 
 reg[8:0]		exB3OpUCmd;
@@ -2452,7 +2454,7 @@ ExEXB3		exb3(
 //	ex3BraFlush || exResetL,
 	ex3BraFlush,
 
-	ex3RegInLastSr,
+	ex3RegInLastSr[7:0],
 	ex2MemDataIn,	ex2MemDataInB
 	);
 
@@ -2586,8 +2588,8 @@ ExEXC2		exc2(
 	ex2BraFlush,
 //	ex2BraFlush || exResetL,
 
-	ex2RegInLastSr,	ex2RegInSr,
-	ex2MemDataIn,	ex2MemDataInB
+	ex2RegInLastSr[7:0],	ex2RegInSr,
+	ex2MemDataIn,			ex2MemDataInB
 	);
 
 reg[8:0]		exC3OpUCmd;
@@ -2631,7 +2633,7 @@ ExEXC3		exc3(
 //	ex3BraFlush || exResetL,
 	ex3BraFlush,
 
-	ex3RegInLastSr,
+	ex3RegInLastSr[7:0],
 	ex2MemDataIn,	ex2MemDataInB
 	);
 
@@ -4733,8 +4735,16 @@ begin
 			begin
 
 `ifndef jx2_isr2stage
-				crInExsr		= { crOutSr[31:8], ex2RegOutSr[7:0],
+//				crInExsr		= { crOutSr[31:8], ex2RegOutSr[7:0],
+//					UV16_00, tRegExc[15:0] };
+
+				crInExsr		= {
+					crOutSr[31:28],
+					ex2RegOutSr[27:20],
+					crOutSr[19:16],
+					ex2RegOutSr[15:0],
 					UV16_00, tRegExc[15:0] };
+
 				crInTea			= { UV16_00, tRegExc[63:16] };
 				crInTeaHi		= { tRegExc[127:64] };
 				crInSr			= ex1RegOutSr;
@@ -4751,9 +4761,13 @@ begin
 `endif
 
 `ifdef jx2_isr2stage
+
 				braNxtInExsr		= {
-					crOutSr[31:8], ex2RegOutSr[7:0],
+//					crOutSr[31:8], ex2RegOutSr[7:0],
+					crOutSr[31:28], ex2RegOutSr[27:20],
+					crOutSr[19:16], ex2RegOutSr[15:0],
 					UV16_00, tRegExc[15:0] };
+
 				braNxtInTea			=  { UV16_00, tRegExc[63:16] };
 				braNxtInTeaHi		=  { tRegExc[127:64] };
 				braNxtInSr			= ex1RegOutSr;
@@ -4856,8 +4870,12 @@ begin
 
 `ifndef jx2_isr2stage
 					crInSpc			= ex3ValBPc;
-					crInExsr[39:32]	= ex3RegInLastSr;
-//					crInExsr[39:32]	= ex2RegInLastSr;
+					crInExsr[39:32]	= ex3RegInLastSr[7:0];
+//					crInExsr[39:32]	= ex2RegInLastSr[7:0];
+
+					crInExsr[55:52]	= ex3RegInLastSr[23:20];
+					crInExsr[59:58]	= ex3RegInLastSr[27:26];
+
 					crInLr			= ex3RegInLr;
 //					crInLr			= ex3RegValLr;
 					gprInDlr		= gprOutDlr;
@@ -4870,7 +4888,7 @@ begin
 
 `ifdef jx2_isr2stage
 					braNxtInSpc			= ex3ValBPc;
-					braNxtInExsr[39:32]	= ex3RegInLastSr;
+					braNxtInExsr[39:32]	= ex3RegInLastSr[7:0];
 					braNxtInLr			= ex3RegInLr;
 					braNxtInDlr			= gprOutDlr;
 //					braNxtInDlr			= ex3RegValDlr;
@@ -4896,7 +4914,12 @@ begin
 
 `ifndef jx2_isr2stage
 					crInSpc			= ex2ValBPc;
-					crInExsr[39:32]	= ex2RegInLastSr;
+
+					crInExsr[39:32]	= ex2RegInLastSr[7:0];
+
+					crInExsr[55:52]	= ex2RegInLastSr[23:20];
+					crInExsr[59:58]	= ex2RegInLastSr[27:26];
+
 					crInLr			= ex2RegInLr;
 //					crInLr			= ex2RegValLr;
 					gprInDlr		= gprOutDlr;
@@ -4909,7 +4932,7 @@ begin
 
 `ifdef jx2_isr2stage
 					braNxtInSpc			= ex2ValBPc;
-					braNxtInExsr[39:32]	= ex2RegInLastSr;
+					braNxtInExsr[39:32]	= ex2RegInLastSr[7:0];
 					braNxtInLr			= ex2RegInLr;
 //					braNxtInDlr			= gprOutDlr;
 					braNxtInDlr			= ex2RegValDlr;
@@ -4934,6 +4957,9 @@ begin
 `ifndef jx2_isr2stage
 					crInSpc			= ex1ValBPc;
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
+//					crInExsr[55:52]	= ex2RegInLastSr[23:20];
+//					crInExsr[59:58]	= ex2RegInLastSr[27:26];
+
 //					crInLr			= ex1RegInLr;
 //					crInLr			= crOutLr;
 //					gprInDlr		= gprOutDlr;
@@ -4973,7 +4999,11 @@ begin
 `ifndef jx2_isr2stage
 					crInSpc			= id2ValBPc;
 //					crInExsr[39:32]	= crOutSr[7:0];
+
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
+//					crInExsr[55:52]	= ex2RegOutSr[23:20];
+//					crInExsr[59:58]	= ex2RegOutSr[27:26];
+
 //					crInLr			= crOutLr;
 //					crInLr			= ex1RegOutLr;
 //					gprInDlr		= gprOutDlr;
@@ -5018,6 +5048,9 @@ begin
 					crInSpc			= id1ValBPc;
 //					crInExsr[39:32]	= crOutSr[7:0];
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
+//					crInExsr[55:52]	= ex2RegOutSr[23:20];
+//					crInExsr[59:58]	= ex2RegOutSr[27:26];
+
 //					crInLr			= crOutLr;
 //					crInLr			= ex1RegOutLr;
 //					gprInDlr		= gprOutDlr;
@@ -5059,8 +5092,12 @@ begin
 
 `ifndef jx2_isr2stage
 					crInSpc			= ifLastPc;
+
 //					crInExsr[39:32]	= crOutSr[7:0];
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
+//					crInExsr[55:52]	= ex2RegOutSr[23:20];
+//					crInExsr[59:58]	= ex2RegOutSr[27:26];
+
 //					crInLr			= crOutLr;
 //					crInLr			= ex1RegOutLr;
 //					gprInDlr		= gprOutDlr;
@@ -6353,7 +6390,8 @@ begin
 		ex2PreBra		<= ex1PreBra;
 //		ex2BraFlush		<= ex1BraFlush;
 		ex2BraFlush		<= ex1BraFlush || ex1TrapFlush;
-		ex2RegInLastSr	<= ex1RegInSr[7:0];
+//		ex2RegInLastSr	<= ex1RegInSr[7:0];
+		ex2RegInLastSr	<= ex1RegInSr[31:0];
 
 		ex2RegIdRs		<= ex1RegIdRs;
 		ex2RegIdRt		<= ex1RegIdRt;

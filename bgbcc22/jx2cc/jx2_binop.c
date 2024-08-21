@@ -5135,16 +5135,22 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 	}
 
 	if((!strcmp(name, "__int64_rgb5pck64") ||
-		!strcmp(name, "__int64_rgb5upck64")) && (narg==1))
+		!strcmp(name, "__int64_rgb5upck64") ||
+		!strcmp(name, "__int64_rgb32pck64") ||
+		!strcmp(name, "__int64_rgb32upck64")) && (narg==1))
 	{
 		if(!strcmp(name, "__int64_rgb5pck64"))
 			nm1=BGBCC_SH_NMID_RGB5PCK64;
 		if(!strcmp(name, "__int64_rgb5upck64"))
 			nm1=BGBCC_SH_NMID_RGB5UPCK64;
+		if(!strcmp(name, "__int64_rgb32pck64"))
+			nm1=BGBCC_SH_NMID_RGB32PCK64;
+		if(!strcmp(name, "__int64_rgb32upck64"))
+			nm1=BGBCC_SH_NMID_RGB32UPCK64;
 
 		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, dst, args[0]))
 		{
-			cdreg=BGBCC_JX2C_EmitTryGetRegisterDirty(ctx, sctx, dst);
+			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dst);
 			BGBCC_JX2_EmitOpRegReg(sctx, nm1, cdreg, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
 		}else

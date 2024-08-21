@@ -4710,6 +4710,16 @@ begin
 				end
 			end
 
+			16'h7zz3: begin		/* F0nm_7eo3 */
+				opNmid		= JX2_UCMD_ALUW3;
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+				if(opExQ)
+					opUCmdIx	= JX2_UCIX_ALUW_MOVLW;
+				else
+					opUCmdIx	= JX2_UCIX_ALUW_MOVHW;
+			end
+
 `ifdef jx2_alu_slomuldiv
 			16'h7zz4: begin		/* F0nm_7eo4 */
 				opNmid		= JX2_UCMD_QMULDIV;

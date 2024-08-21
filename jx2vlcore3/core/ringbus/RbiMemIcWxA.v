@@ -1710,8 +1710,8 @@ begin
 			tFlushB = 1;
 		end
 
-`ifndef def_true
-// `ifdef def_true
+// `ifndef def_true
+`ifdef def_true
 		if(tBlkPFlA[7:4]!=tInPmode)
 		begin
 			if(tMemReqRtcnt == 0)
@@ -1870,12 +1870,14 @@ begin
 		(tBlkAddr2A[27:24] != tReqAddrA[27:24]) ||
 		(tBlkAddr2A[24:12] != tReqAddrA[24:12]) ||
 		(tBlkAddr2A[11: 0] != tReqAddrA[11: 0]) ||
-		(tBlkDext2A != tReqAxH) ;
+		(tBlkDext2A != tReqAxH) ||
+		(tBlkPFxA != tReqPFx) ;
 	tMissAddrB =
 		(tBlkAddr2B[27:24] != tReqAddrB[27:24]) ||
 		(tBlkAddr2B[23:12] != tReqAddrB[23:12]) ||
 		(tBlkAddr2B[11: 0] != tReqAddrB[11: 0]) ||
-		(tBlkDext2B != tReqAxH) ;
+		(tBlkDext2B != tReqAxH) ||
+		(tBlkPFxB != tReqPFx) ;
 `endif
 
 //	if((tBlkDext2A != tReqAxH) && !tTlbMissInh)
@@ -2210,7 +2212,8 @@ begin
 //	if(tMiss)
 //		tRegOutExc[15] = 0;
 
-`ifndef def_true
+// `ifndef def_true
+`ifdef def_true
 //	if(tMiss)
 //	if(tMiss || !tReqReady)
 	if(tMiss || tReqReadyN)
@@ -2638,6 +2641,7 @@ begin
 //		tRegOutHold = 1;
 
 `ifdef def_true
+// `ifndef def_true
 //	if(tNxtMemReqLdA || tNxtMemReqLdB)
 	if(	(tNxtMemReqLdA && !tMemReqLdA) ||
 		(tNxtMemReqLdB && !tMemReqLdB) )
@@ -2666,6 +2670,11 @@ begin
 		
 	if(tResetL)
 		tRegOutHold = 0;
+
+
+	if(!tRegOutHold)		//BGB: Debug
+		tNxtTlbMissInh = 0;
+
 
 //	if(!tRegOutHold)
 //		tNxtStickyTlbExc[15:12]=0;
@@ -2961,6 +2970,7 @@ begin
 //		icCaAddrB[tStBlkIxB]	<= { tStBlkFlagB, tStBlkAddrB };
 
 		icCaMemB[tStBlkIxB]		<= { tStBlkDextB, tStBlkDataB };
+
 `ifdef jx2_memic_blklenbits
 		icCaAddrB[tStBlkIxB]	<= {
 			tStBlkPFxB, tStBlkPLenB,
@@ -3022,21 +3032,21 @@ begin
 		tMemReqSent	<= 1;
 
 `ifdef def_true
-		tMemReqLdA	<= tAdvHold ? tNxtMemReqLdA : 0;
-		tMemReqLdB	<= tAdvHold ? tNxtMemReqLdB : 0;
-		tMemRespLdA	<= tAdvHold ? tNxtMemRespLdA : 0;
-		tMemRespLdB	<= tAdvHold ? tNxtMemRespLdB : 0;
+		tMemReqLdA		<= tAdvHold ? tNxtMemReqLdA : 0;
+		tMemReqLdB		<= tAdvHold ? tNxtMemReqLdB : 0;
+		tMemRespLdA		<= tAdvHold ? tNxtMemRespLdA : 0;
+		tMemRespLdB		<= tAdvHold ? tNxtMemRespLdB : 0;
 		tMemRespLdAN	<= tAdvHold ? !tNxtMemRespLdA : 1;
 		tMemRespLdBN	<= tAdvHold ? !tNxtMemRespLdB : 1;
 `endif
 
 `ifndef def_true
-//		tMemReqStA	<= tRegOutHold ? tNxtMemReqStA : 0;
-//		tMemReqStB	<= tRegOutHold ? tNxtMemReqStB : 0;
-		tMemReqLdA	<= tRegOutHold ? tNxtMemReqLdA : 0;
-		tMemReqLdB	<= tRegOutHold ? tNxtMemReqLdB : 0;
-		tMemRespLdA	<= tRegOutHold ? tNxtMemRespLdA : 0;
-		tMemRespLdB	<= tRegOutHold ? tNxtMemRespLdB : 0;
+//		tMemReqStA		<= tRegOutHold ? tNxtMemReqStA : 0;
+//		tMemReqStB		<= tRegOutHold ? tNxtMemReqStB : 0;
+		tMemReqLdA		<= tRegOutHold ? tNxtMemReqLdA : 0;
+		tMemReqLdB		<= tRegOutHold ? tNxtMemReqLdB : 0;
+		tMemRespLdA		<= tRegOutHold ? tNxtMemRespLdA : 0;
+		tMemRespLdB		<= tRegOutHold ? tNxtMemRespLdB : 0;
 		tMemRespLdAN	<= tRegOutHold ? !tNxtMemRespLdA : 1;
 		tMemRespLdBN	<= tRegOutHold ? !tNxtMemRespLdB : 1;
 `endif
@@ -3063,19 +3073,19 @@ begin
 		tMemReqSent	<= 0;
 
 `ifdef def_true
-		tMemReqLdA	<= tAdvHold ? tMemReqLdA : 0;
-		tMemReqLdB	<= tAdvHold ? tMemReqLdB : 0;
-		tMemRespLdA	<= tAdvHold ? tMemRespLdA : 0;
-		tMemRespLdB	<= tAdvHold ? tMemRespLdB : 0;
+		tMemReqLdA		<= tAdvHold ? tMemReqLdA : 0;
+		tMemReqLdB		<= tAdvHold ? tMemReqLdB : 0;
+		tMemRespLdA		<= tAdvHold ? tMemRespLdA : 0;
+		tMemRespLdB		<= tAdvHold ? tMemRespLdB : 0;
 		tMemRespLdAN	<= tAdvHold ? !tMemRespLdA : 1;
 		tMemRespLdBN	<= tAdvHold ? !tMemRespLdB : 1;
 `endif
 
 `ifndef def_true
-		tMemReqLdA	<= tRegOutHold ? tMemReqLdA : 0;
-		tMemReqLdB	<= tRegOutHold ? tMemReqLdB : 0;
-		tMemRespLdA	<= tRegOutHold ? tNxtMemRespLdA : 0;
-		tMemRespLdB	<= tRegOutHold ? tNxtMemRespLdB : 0;
+		tMemReqLdA		<= tRegOutHold ? tMemReqLdA : 0;
+		tMemReqLdB		<= tRegOutHold ? tMemReqLdB : 0;
+		tMemRespLdA		<= tRegOutHold ? tNxtMemRespLdA : 0;
+		tMemRespLdB		<= tRegOutHold ? tNxtMemRespLdB : 0;
 		tMemRespLdAN	<= tRegOutHold ? !tNxtMemRespLdA : 1;
 		tMemRespLdBN	<= tRegOutHold ? !tNxtMemRespLdB : 1;
 `endif

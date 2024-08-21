@@ -55,6 +55,22 @@ extern volatile void *__arch_isrsave;		/* Pseudo */
 #endif
 
 
+/* Model TLB so we can check if a page is likely already evicted.
+ * The need for this is not an ideal turn of events.
+ * This is needed to avoid unneeded TLB VADDR flushes, which
+ * carry a risk of getting stuck in infinite TLB miss loops.
+ */
+u32 tk_vmem_faketlb_vpn[256*4];
+u32 tk_vmem_faketlb_ppn[256*4];
+
+byte tk_vmem_faketlb_pix[256*8];
+
+u64 tk_vmem_tlbmisshist[256];
+byte tk_vmem_tlbmisshrov;
+byte tk_vmem_tlbflushinhibit;
+
+
+
 byte *tk_vmem_pagecache=NULL;	//page cache memory
 byte *tk_vmem_pagecacheub=NULL;	//page cache memory
 TK_VMem_PageInfo *tk_vmem_pageinf;
@@ -1274,20 +1290,6 @@ void tk_vmem_loadpte(u64 tva, u64 pte)
 	tk_vmem_do_ldtlb(ptel, pteh);
 }
 #endif
-
-/* Model TLB so we can check if a page is likely already evicted.
- * The need for this is not an ideal turn of events.
- * This is needed to avoid unneeded TLB VADDR flushes, which
- * carry a risk of getting stuck in infinite TLB miss loops.
- */
-u32 tk_vmem_faketlb_vpn[256*4];
-u32 tk_vmem_faketlb_ppn[256*4];
-
-byte tk_vmem_faketlb_pix[256*8];
-
-u64 tk_vmem_tlbmisshist[256];
-byte tk_vmem_tlbmisshrov;
-byte tk_vmem_tlbflushinhibit;
 
 void tk_vmem_flush_faketlb(void)
 {

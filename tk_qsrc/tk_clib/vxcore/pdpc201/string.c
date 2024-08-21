@@ -2210,14 +2210,17 @@ __PDPCLIB_API__ void *__memcpy128(void *s1, const void *s2, size_t n)
 	return(memcpy(s1, s2, n));
 }
 
-int __smodsq(int x, int y)
+#if 0
+s64 __smodsq(s64 x, s64 y)
 {
-	int q, r;
+	s64 q, r;
 	q=x/y;
 	r=x-(q*y);
 	return(r);
 }
+#endif
 
+#if 0
 __asm {
 
 .global __va64_saveargs
@@ -2336,6 +2339,7 @@ __va64_arg_x.L0:
 	nop
 
 };
+#endif
 
 #endif
 

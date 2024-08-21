@@ -1927,7 +1927,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 
 	if(	BGBCC_JX2_EmitCheckRegExt5(ctx, rn) ||
 		BGBCC_JX2_EmitCheckRegExt5(ctx, rm) ||
-		ctx->is_fixed32)
+		ctx->is_fixed32 || ctx->op_is_wex2)
 	{
 		if(
 			(nmid==BGBCC_SH_NMID_FADD)	||
@@ -3759,7 +3759,7 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 	if(BGBCC_JX2_EmitCheckRegExt5(ctx, rt))
 		exw|=0x0100;
 
-	if((rs==rn) && !exw && !ctx->is_fixed32)
+	if((rs==rn) && !exw && !ctx->is_fixed32 && !ctx->op_is_wex2)
 	{
 		if(
 			(nmid==BGBCC_SH_NMID_ADD) ||
@@ -3774,7 +3774,7 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 		}
 	}
 
-	if((rt==rn) && !exw && !ctx->is_fixed32)
+	if((rt==rn) && !exw && !ctx->is_fixed32 && !ctx->op_is_wex2)
 	{
 		if(
 			(nmid==BGBCC_SH_NMID_ADD) ||
@@ -4539,6 +4539,19 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 				{ BGBCC_DBGBREAK }
 			opw1=0xF080|ex|(rt&15);
 			opw2=0x2900|((rn&15)<<4)|((rs&15)<<0);
+			break;
+
+		case BGBCC_SH_NMID_MOVHW:
+			if((rn&63)==15)
+				{ BGBCC_DBGBREAK }
+			opw1=0xF000|ex|(rt&15);
+			opw2=0x7300|((rn&15)<<4)|((rs&15)<<0);
+			break;
+		case BGBCC_SH_NMID_MOVLW:
+			if((rn&63)==15)
+				{ BGBCC_DBGBREAK }
+			opw1=0xF080|ex|(rt&15);
+			opw2=0x7300|((rn&15)<<4)|((rs&15)<<0);
 			break;
 
 		case BGBCC_SH_NMID_NOP:

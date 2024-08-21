@@ -877,11 +877,11 @@ int TKDFS_ImageLookupInodePath(TKDFS_ImageContext *img,
 {
 	char tbn[128];
 	TKDFS_DirentInfo t_info;
-	TKDFS_DirentInfo *info;
+//	TKDFS_DirentInfo *info;
 	char *cs, *ct;
 	int ino, rv;
 	
-	info=&t_info;
+//	info=&t_info;
 
 	cs=path;
 	while(*cs=='/')

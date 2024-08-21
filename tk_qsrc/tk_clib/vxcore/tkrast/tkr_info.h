@@ -224,6 +224,7 @@ Vertex Parameter Arrays
 #define		TKRA_TRFL_DOCMP			0x1000	//Do Compression
 #define		TKRA_TRFL_FLIPST		0x2000	//Flip S/T Coords
 #define		TKRA_TRFL_MORT			0x4000	//Morton Order
+#define		TKRA_TRFL_ATEST			0x8000	//1-bit Alpha / Alpha Test
 
 #define		TKRA_TRFL_PIXFMT_W		0x00000	//16-bit pixels
 #define		TKRA_TRFL_PIXFMT_DW		0x10000	//32-bit pixels

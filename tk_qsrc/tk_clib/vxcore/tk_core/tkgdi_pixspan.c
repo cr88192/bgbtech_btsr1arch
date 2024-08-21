@@ -133,6 +133,8 @@ u64 TKGDI_CopyPixelSpan_GetRGB24x4(byte *src);
 u64 TKGDI_CopyPixelSpan_GetRGB32x4(byte *src);
 
 u16 TKGDI_CopyPixelSpan_GetRGB24H(byte *src, u32 scbi);
+u64 TKGDI_CopyPixelSpan_GetRGB32x4H(byte *src, u32 scbi);
+u64 TKGDI_CopyPixelSpan_GetRGB24x4H(byte *src, u32 scbi);
 
 __asm {
 TKGDI_CopyPixelSpan_GetRGB24:
@@ -173,6 +175,9 @@ TKGDI_CopyPixelSpan_GetRGB32x4:
 	RTS
 
 TKGDI_CopyPixelSpan_GetRGB24H:
+	TST			R5, R5
+	BT			.NoScale
+
 	MOVU.L		(R4), R6
 	PSHUF.W		R5, 0x00, R20
 	PSHUF.W		R5, 0x55, R21
@@ -203,6 +208,29 @@ TKGDI_CopyPixelSpan_GetRGB24H:
 
 	RTS
 
+.NoScale:
+	MOVU.L		(R4), R6
+	MOV			0x3C003C003C003C00, R17
+	MOV			0x3FFF3FFF3FFF3FFF, R22
+
+	PLDCM8UH	R6, R16
+
+	PADD.H		R16, R17, R18
+	
+	PCMPGT.H	R22, R18
+	PCSELT.W	R22, R18, R18
+
+	PCMPGT.H	R18, R17
+	PCSELT.W	R17, R18, R18
+
+	MOV			0xFFFF000000000000, R7
+	PCVTH2UW	R18, R19
+	OR			R19, R7, R5
+	RGB5PCK64	R5, R2
+
+	RTS
+
+
 #if 0
 	.L1:
 
@@ -220,6 +248,147 @@ TKGDI_CopyPixelSpan_GetRGB24H:
 
 	BRA			.L0
 #endif
+
+
+TKGDI_CopyPixelSpan_GetRGB32x4H:
+	TST			R5, R5
+	BT			TKGDI_CopyPixelSpan_GetRGB32x4H_NoScale
+
+	MOVU.L		(R4,  0), R16
+	MOVU.L		(R4,  4), R17
+	MOVU.L		(R4,  8), R18
+	MOVU.L		(R4, 12), R19
+
+TKGDI_CopyPixelSpan_GetRGB32x4H_P1:
+
+	PLDCM8UH	R16, R16
+	PLDCM8UH	R17, R17
+	PLDCM8UH	R18, R18
+	PLDCM8UH	R19, R19
+
+	PSHUF.W		R5, 0x00, R21
+	PSHUF.W		R5, 0x55, R23
+
+	MOV			0x3C003C003C003C00, R20
+	MOV			0x3FFF3FFF3FFF3FFF, R22
+
+	PMUL.H		R16, R21, R16
+	PMUL.H		R17, R21, R17
+	PMUL.H		R18, R21, R18
+	PMUL.H		R19, R21, R19
+
+	PADD.H		R16, R23, R16
+	PADD.H		R17, R23, R17
+	PADD.H		R18, R23, R18
+	PADD.H		R19, R23, R19
+
+	PADD.H		R16, R20, R16
+	PADD.H		R17, R20, R17
+	PADD.H		R18, R20, R18
+	PADD.H		R19, R20, R19
+	
+	PCMPGT.H	R22, R16
+	PCSELT.W	R22, R16, R16
+	PCMPGT.H	R22, R17
+	PCSELT.W	R22, R17, R17
+	PCMPGT.H	R22, R18
+	PCSELT.W	R22, R18, R18
+	PCMPGT.H	R22, R19
+	PCSELT.W	R22, R19, R19
+
+	PCMPGT.H	R16, R20
+	PCSELT.W	R20, R16, R16
+	PCMPGT.H	R17, R20
+	PCSELT.W	R20, R17, R17
+	PCMPGT.H	R18, R20
+	PCSELT.W	R20, R18, R18
+	PCMPGT.H	R19, R20
+	PCSELT.W	R20, R19, R19
+
+	MOV			0xFFFF000000000000, R3
+									PCVTH2UW	R16, R4
+									PCVTH2UW	R17, R5
+	OR			R4, R3, R4		|	PCVTH2UW	R18, R6
+	OR			R5, R3, R5		|	PCVTH2UW	R19, R7
+	OR			R6, R3, R6		|	RGB5PCK64	R4, R4
+	OR			R7, R3, R7		|	RGB5PCK64	R5, R5
+									RGB5PCK64	R6, R6
+									RGB5PCK64	R7, R7
+//	SHLD		R5, 16, R5
+//	SHLD		R7, 16, R7
+//	OR			R4, R5, R4
+//	OR			R6, R7, R6
+	MOVLLW		R5, R4, R4
+	MOVLLW		R7, R6, R6
+
+	MOVLLD		R6, R4, R2
+
+	RTS
+
+.balign		4
+TKGDI_CopyPixelSpan_GetRGB32x4H_NoScale:
+	MOVU.L		(R4,  0), R16
+	MOVU.L		(R4,  4), R17
+	MOVU.L		(R4,  8), R18
+	MOVU.L		(R4, 12), R19
+
+TKGDI_CopyPixelSpan_GetRGB32x4H_P1NS:
+	MOV			0x3C003C003C003C00, R20
+	MOV			0x3FFF3FFF3FFF3FFF, R22
+	MOV			0xFFFF000000000000, R3
+
+	PLDCM8UH	R16, R16
+	PLDCM8UH	R17, R17
+	PLDCM8UH	R18, R18
+	PLDCM8UH	R19, R19
+
+	PADD.H		R16, R20, R16
+	PADD.H		R17, R20, R17
+	PADD.H		R18, R20, R18
+	PADD.H		R19, R20, R19
+	
+	PCMPGT.H	R22, R16
+	PCSELT.W	R22, R16, R16
+	PCMPGT.H	R22, R17
+	PCSELT.W	R22, R17, R17
+	PCMPGT.H	R22, R18
+	PCSELT.W	R22, R18, R18
+	PCMPGT.H	R22, R19
+	PCSELT.W	R22, R19, R19
+
+								PCVTH2UW	R16, R4
+								PCVTH2UW	R17, R5
+	OR			R4, R3, R4	|	PCVTH2UW	R18, R6
+	OR			R5, R3, R5	|	PCVTH2UW	R19, R7
+	OR			R6, R3, R6	|	RGB5PCK64	R4, R4
+	OR			R7, R3, R7	|	RGB5PCK64	R5, R5
+								RGB5PCK64	R6, R6
+								RGB5PCK64	R7, R7
+
+//	SHLD		R5, 16, R5
+//	SHLD		R7, 16, R7
+//	OR			R4, R5, R4
+//	OR			R6, R7, R6
+
+	MOVLLW		R5, R4, R4
+	MOVLLW		R7, R6, R6
+
+	MOVLLD		R6, R4, R2
+
+	RTS
+
+TKGDI_CopyPixelSpan_GetRGB24x4H:
+	ADD			R4, 3, R21
+	ADD			R4, 6, R22
+	ADD			R4, 9, R23
+	MOVU.L		(R4 ), R16
+	MOVU.L		(R21), R17
+	MOVU.L		(R22), R18
+	MOVU.L		(R23), R19
+
+	TST			R5, R5
+	BT			TKGDI_CopyPixelSpan_GetRGB32x4H_P1NS
+	BRA			TKGDI_CopyPixelSpan_GetRGB32x4H_P1
 };
 
 #else
@@ -328,8 +497,8 @@ void TKGDI_CopyPixelSpan_Cnv24Hto15(
 	int xsa;
 	int x;
 
-	if(!scbi)
-		scbi=0x3C00;
+//	if(!scbi)
+//		scbi=0x3C00;
 
 	xsa=xs&(~3);
 	cs=src;
@@ -369,17 +538,17 @@ void TKGDI_CopyPixelSpan_Cnv32Hto15(
 	int xsa;
 	int x;
 
-	if(!scbi)
-		scbi=0x3C00;
+//	if(!scbi)
+//		scbi=0x3C00;
 
 	xsa=xs&(~3);
 	cs=src;
 	ct=dst;
 	for(x=0; x<xsa; x+=4)
 	{
-// #ifdef __BJX2__
-#if 0
-		*(u64 *)ct=TKGDI_CopyPixelSpan_GetRGB32x4(cs);
+#ifdef __BJX2__
+// #if 0
+		*(u64 *)ct=TKGDI_CopyPixelSpan_GetRGB32x4H(cs, scbi);
 #else
 		v0=TKGDI_CopyPixelSpan_GetRGB24H(cs+ 0, scbi);
 		v1=TKGDI_CopyPixelSpan_GetRGB24H(cs+ 4, scbi);

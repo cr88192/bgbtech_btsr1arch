@@ -596,6 +596,7 @@ s64 __smodsq(s64 a, s64 b)
 
 
 
+#ifdef __BJX2__
 __asm {
 
 .global __va64_saveargs
@@ -714,3 +715,5 @@ __va64_arg_x.L0:
 	nop
 
 };
+
+#endif

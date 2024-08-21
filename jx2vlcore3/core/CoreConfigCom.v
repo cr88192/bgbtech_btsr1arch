@@ -178,7 +178,7 @@
 
 `define jx2_enable_edgewalk		//Hardware rasterizer / edge-walker
 // `define jx2_edgewalk_rcpz	//Enable Z Reciprocal
-// `define jx2_edgewalk_fbdword	//Enable DWORD framebuffer
+`define jx2_edgewalk_fbdword	//Enable DWORD framebuffer
 // `define jx2_edgewalk_stencil	//Enable Stencil Testing
 
 `ifdef jx2_xc7a200
@@ -212,7 +212,7 @@
 `define jx2_enable_btcutx			//UTXn Block Conversion Ops
 // `define jx2_enable_btcutx1			//UTX1 Block Conversion Op
 `define jx2_enable_btcutx2			//UTX2 Block Conversion Op
-// `define jx2_enable_btcutx3			//UTX3 Block Conversion Op
+`define jx2_enable_btcutx3			//UTX3 Block Conversion Op
 
 // `define jx2_enable_btcuab1			//UAB1/2 Block Conversion Op
 

@@ -1087,6 +1087,27 @@ void BJX2_Op_MOVLHD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 
 
+void BJX2_Op_MOVHW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	vn=	((vs    )&0xFFFF0000ULL) |
+		((vt>>16)&0x0000FFFFULL) ;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_MOVLW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=ctx->regs[op->ro];
+	vn=	((vs<<16)&0xFFFF0000ULL) |
+		((vt    )&0x0000FFFFULL) ;
+	ctx->regs[op->rn]=vn;
+}
+
+
 void BJX2_Op_RGBSHR1_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64	vs, vt, vn, msk;

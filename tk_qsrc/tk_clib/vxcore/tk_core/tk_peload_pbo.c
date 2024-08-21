@@ -705,6 +705,10 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	TKPE_ApplyBaseRelocs(imgptr, imgptr+rva_rlc, sz_rlc, rlc_disp, pboix,
 		imgbase, gbr_rva, gbr_sz, mach);
 
+
+	TK_FlushCacheL1D();
+	TK_FlushCacheL1D_INVIC(NULL);
+
 	entry=((u64)imgptr)+startrva;
 
 	if(mach==0xB264)

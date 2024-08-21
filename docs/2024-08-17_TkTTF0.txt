@@ -1,0 +1,80 @@
+TestKern True Type Font
+* Aim to be a simpler font format.
+* Change: BGTF (Geometric Type Font)
+* May use a ".GTF" file extension.
+
+General structure:
+* Organize space into "pages" of 256 glyphs;
+* Top-level structure gives offset to each page;
+* Each page contains an offset to the start of each glyph;
+* Each glyph exists as a series of 32-bit words.
+
+For each glyph word, the high 4 bits will give a tag:
+* 0: Command (Data)
+* 1: Inerior Vertex (Not Start or End)
+* 2: Start of Shape/Contour (Vertex)
+* 3: End of Shape/Contour (Vertex)
+
+Vertex:
+* (11: 0): X Position
+* (23:12): Y Position
+* (   24): Curve
+* (   25): Smoothing Hint
+* (   26): Offcurve
+* (   27): MBZ
+* (31:28): Tag
+
+The Vertex X and Y coords will be between -2048 and 2047.
+
+If a point is Curve:
+* It will be a control point for a Quadratic B-Spline.
+* The previous and next points will be the reference vertices;
+* Will wrap if the first or last vertex in the contour.
+
+Commands:
+* (23: 0): Command Data
+* (27:24): Command ID
+* (31:28): Tag
+
+Command 0:
+* If Data is 000000, End of Glyph
+* Else: Reserved
+
+Command 1: Component Key Point / NOP
+* Interpret as NOP
+
+Command 4/5/6/7:
+* 4: Logical Size (Data: X and Y)
+* 5: Logical Origin (Data: X and Y)
+* 6: Bound Mins
+* 7: Bound Maxs
+
+Commands 4/5/6/7 will come before the first contour.
+
+Command 0 will come following the last contour.
+
+
+Page:
+* Each page will consist of 256 32-bit words;
+* These will give the offset of the start of each glyph;
+* Entries holding 0 will be absent;
+* Offsets are given in 32-bit words.
+
+Page Directory:
+* Same general structure as a Page;
+* Holds the offset of the start of each page;
+* If an offset is 0, this page does not exist.
+
+File Header:
+* Word 0: Magic at start of file 'BGTF'
+* Word 1: Offset of Page Directory;
+* Word 2: Offset of Global Words.
+
+Global Words:
+* Similar structure to Commands.
+* Give some general parameters for the font as a whole.
+* Terminated by a 0 word.
+
+Global Command 1:
+* Gives logical size of "Em Glyph"
+

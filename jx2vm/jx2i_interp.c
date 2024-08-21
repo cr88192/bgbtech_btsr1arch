@@ -1401,6 +1401,20 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_PSUBW:		s0="PSUB.W";	break;
 	case BJX2_NMID_PSUBL:		s0="PSUB.L";	break;
 
+	case BJX2_NMID_PCSELTW:		s0="PCSELT.W";	break;
+	case BJX2_NMID_PCSELTL:		s0="PCSELT.L";	break;
+	case BJX2_NMID_PCMPEQH:		s0="PCMPEQ.H";	break;
+	case BJX2_NMID_PCMPGTH:		s0="PCMPGT.H";	break;
+//	case BJX2_NMID_PCMPEQF:		s0="PCMPEQ.F";	break;
+//	case BJX2_NMID_PCMPGTF:		s0="PCMPGT.F";	break;
+	case BJX2_NMID_PCMPEQW:		s0="PCMPEQ.W";	break;
+	case BJX2_NMID_PCMPEQL:		s0="PCMPEQ.L";	break;
+
+	case BJX2_NMID_PCMPHIW:		s0="PCMPHI.W";	break;
+	case BJX2_NMID_PCMPGTW:		s0="PCMPGT.W";	break;
+	case BJX2_NMID_PCMPHIL:		s0="PCMPHI.L";	break;
+	case BJX2_NMID_PCMPGTL:		s0="PCMPGT.L";	break;
+
 	case BJX2_NMID_PMULUW:		s0="PMULU.W";	break;
 //	case BJX2_NMID_PMULSW:		s0="PMULS.W";	break;
 
@@ -1418,6 +1432,11 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MOVLD:		s0="MOVLD";		break;
 	case BJX2_NMID_MOVHLD:		s0="MOVHLD";	break;
 	case BJX2_NMID_MOVLHD:		s0="MOVLHD";	break;
+
+	case BJX2_NMID_MOVHW:		s0="MOVHW";		break;
+	case BJX2_NMID_MOVLW:		s0="MOVLW";		break;
+//	case BJX2_NMID_MOVHLW:		s0="MOVHLW";	break;
+//	case BJX2_NMID_MOVLHW:		s0="MOVLHW";	break;
 
 	case BJX2_NMID_PSHUFB:		s0="PSHUF.B";	break;
 	case BJX2_NMID_RGBSHR1:		s0="RGB5SHR1";	break;

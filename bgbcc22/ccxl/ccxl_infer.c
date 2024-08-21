@@ -119,6 +119,12 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 		return(1);
 	}
 
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_complex, "complex"))
+	{
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_DCOMPLEX);
+		return(1);
+	}
+
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_string, "string"))
 	{
 		tty.val=CCXL_VTY_PCHAR;

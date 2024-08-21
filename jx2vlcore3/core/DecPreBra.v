@@ -354,6 +354,7 @@ begin
 	tIsBraCc8	= 0;
 
 	tIsBraRv12	= 0;
+	tIsBraRv20	= 0;
 
 `ifndef jx2_prebra_no16b
 	tIsBra8		=
@@ -385,6 +386,9 @@ begin
 		(istrWord[6:0]==7'b1100011) && pipeHasLr[4];
 	tIsBraRv20		=
 		(istrWord[6:0]==7'b1101111) && pipeHasLr[4];
+
+//	tIsBraRv12		=	0;	//BGB: debug
+//	tIsBraRv20		=	0;	//BGB: debug
 
 
 	tIsBraCc8Br		=	0;

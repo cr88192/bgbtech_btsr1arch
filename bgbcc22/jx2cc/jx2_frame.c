@@ -4762,10 +4762,23 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 
 	if(!sctx->vspan)
 	{
-		sctx->vspan=bgbcc_malloc(1024*sizeof(BGBCC_JX2_VarSpan *));
-		sctx->vspan_chn=bgbcc_malloc(1024*sizeof(short));
+//		k=1024;
+		k=4096;
+		sctx->vspan=bgbcc_malloc(k*sizeof(BGBCC_JX2_VarSpan *));
+		sctx->vspan_chn=bgbcc_malloc(k*sizeof(short));
 		sctx->vspan_num=0;
-		sctx->vspan_max=1024;
+		sctx->vspan_max=k;
+	}
+	
+	if((sctx->vspan_num+16)>=sctx->vspan_max)
+	{
+		k=sctx->vspan_max;
+		k=k+(k>>1);
+		sctx->vspan=bgbcc_realloc(
+			sctx->vspan, k*sizeof(BGBCC_JX2_VarSpan *));
+		sctx->vspan_chn=bgbcc_realloc(
+			sctx->vspan_chn, k*sizeof(short));
+		sctx->vspan_max=k;
 	}
 	
 	mult=mult0;

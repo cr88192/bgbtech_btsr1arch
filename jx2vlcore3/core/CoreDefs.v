@@ -1083,6 +1083,9 @@ parameter[5:0] JX2_UCIX_ALUW_MOVHLD	= 6'h22;		//ALU (High, Low)
 parameter[5:0] JX2_UCIX_ALUW_MOVLHD	= 6'h23;		//ALU (Low, High)
 
 parameter[5:0] JX2_UCIX_ALUW_PSHUFB	= 6'h15;		//ALU PSHUF.B
+parameter[5:0] JX2_UCIX_ALUW_MOVLW	= 6'h16;		//ALU (Low Words)
+parameter[5:0] JX2_UCIX_ALUW_MOVHW	= 6'h17;		//ALU (High Words)
+
 parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
 parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
 parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)

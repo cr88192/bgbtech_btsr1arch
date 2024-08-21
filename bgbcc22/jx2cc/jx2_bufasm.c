@@ -1536,6 +1536,27 @@ int mfl;
 {"movhld",	BGBCC_SH_NMID_MOVHLD},
 {"movlhd",	BGBCC_SH_NMID_MOVLHD},
 
+{"movhw",	BGBCC_SH_NMID_MOVHW},
+{"movlw",	BGBCC_SH_NMID_MOVLW},
+{"movhhw",	BGBCC_SH_NMID_MOVHW},
+{"movllw",	BGBCC_SH_NMID_MOVLW},
+{"movhlw",	BGBCC_SH_NMID_MOVHLW},
+{"movlhw",	BGBCC_SH_NMID_MOVLHW},
+
+{"movh.l",	BGBCC_SH_NMID_MOVHD},
+{"movl.l",	BGBCC_SH_NMID_MOVLD},
+{"movhh.l",	BGBCC_SH_NMID_MOVHD},
+{"movll.l",	BGBCC_SH_NMID_MOVLD},
+{"movhl.l",	BGBCC_SH_NMID_MOVHLD},
+{"movlh.l",	BGBCC_SH_NMID_MOVLHD},
+
+{"movh.w",	BGBCC_SH_NMID_MOVHW},
+{"movl.w",	BGBCC_SH_NMID_MOVLW},
+{"movhh.w",	BGBCC_SH_NMID_MOVHW},
+{"movll.w",	BGBCC_SH_NMID_MOVLW},
+{"movhl.w",	BGBCC_SH_NMID_MOVHLW},
+{"movlh.w",	BGBCC_SH_NMID_MOVLHW},
+
 {"cmovt.b",		BGBCC_SH_NMID_CMOVTB},
 {"cmovt.w",		BGBCC_SH_NMID_CMOVTW},
 {"cmovt.l",		BGBCC_SH_NMID_CMOVTL},

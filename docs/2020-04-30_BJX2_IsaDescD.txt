@@ -2828,6 +2828,20 @@ MOVHLD will select the high bits from Rm, and the low bits from Ro.
 MOVLHD will select the low bits from Rm, and the high bits from Ro.
 
 
+=== MOVxW 3R (GSV) ===
+
+* F0nm_7go3  MOVHW		Rm, Ro, Rn		//(GSV) MOV, High Words
+* F0nm_7Go3  MOVLW		Rm, Ro, Rn		//(GSV) MOV, Low Words
+
+The 3R forms will merge the values from two source registers into a destination register.
+
+This will compose a 32-bit DWORD result from Rm and Ro.
+The high 16 bits will come from Rm, and the low 16 bits will come from Ro.
+The high 32 bits of the destination register will be zeroed.
+
+MOVHW will select the (31:16) from both registers, and MOVLW will select (15:0) from both registers.
+
+
 === PADD.x 3R (GSV) ===
 
 * F0nm_2go0  PADD.W		Rm, Ro, Rn		//(GSV) Packed ADD Word
@@ -3857,6 +3871,15 @@ Conversion will be the same as that for the register instruction.
 * FFw0_02pp_F0nm_5GoB  FMRSX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
 * FFw0_03pp_F0nm_5goB  FMRA		Rm, Ro, Rp, Rn		//(FMAC) FMAS, Rn=-Rm*Ro-Rp
 * FFw0_03pp_F0nm_5GoB  FMRAX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
+
+* FFw0_04pp_F0nm_5goB  PMAC.H	Rm, Ro, Rp, Rn		//(NNX) FMAC, Rn=Rm*Ro+Rp
+* FFw0_04pp_F0nm_5GoB  PMAC.F	Xm, Xo, Xp, Xn		//(NNX) FMAC, LongDbl
+* FFw0_05pp_F0nm_5goB  PMAS.H	Rm, Ro, Rp, Rn		//(NNX) FMAS, Rn=Rm*Ro-Rp
+* FFw0_05pp_F0nm_5GoB  PMAS.F	Xm, Xo, Xp, Xn		//(NNX) FMAS, LongDbl
+* FFw0_06pp_F0nm_5goB  PMRS.H	Rm, Ro, Rp, Rn		//(NNX) FMAS, Rn=Rp-Rm*Ro
+* FFw0_06pp_F0nm_5GoB  PMRS.F	Xm, Xo, Xp, Xn		//(NNX) FMAS, LongDbl
+* FFw0_07pp_F0nm_5goB  PMRA.H	Rm, Ro, Rp, Rn		//(NNX) FMAS, Rn=-Rm*Ro-Rp
+* FFw0_07pp_F0nm_5GoB  PMRA.F	Xm, Xo, Xp, Xn		//(NNX) FMAS, LongDbl
 
 Multiply the double precision value in Ro with the value from Rm and add this to the value in Rn, storing the result in Rn.
 

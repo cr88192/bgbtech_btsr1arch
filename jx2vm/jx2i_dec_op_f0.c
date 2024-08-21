@@ -5390,6 +5390,16 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->imm=8;
 			break;
 
+		case 0x3:	/* F0ez_73zz */
+			op->nmid=BJX2_NMID_MOVHW;
+			op->fmid=BJX2_FMID_REGREGREG;
+			op->Run=BJX2_Op_MOVHW_RegRegReg;
+			if(eq)
+			{
+				op->nmid=BJX2_NMID_MOVLW;
+				op->Run=BJX2_Op_MOVLW_RegRegReg;
+			}
+			break;
 
 		case 0x4:	/* F0ez_74zz */
 			if(!BJX2_DecodeOpcode_CheckExtEnabled(ctx,

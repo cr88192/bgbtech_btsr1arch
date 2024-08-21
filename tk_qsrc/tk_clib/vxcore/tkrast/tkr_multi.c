@@ -16,6 +16,9 @@
 #include "tkr_span_zat.c"
 #include "tkr_span_lm.c"
 
+#include "tkr_spanb_bas.c"
+
+
 #include "tkr_blend.c"
 #include "tkr_blend_bjx2.c"
 

@@ -704,7 +704,10 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 			}
 		}
 	}
-	
+
+	TK_FlushCacheL1D();
+	TK_FlushCacheL1D_INVIC(NULL);
+
 	if(isbjx2)
 	{
 //		entry|=1;

@@ -78,7 +78,7 @@ static void scalar_to_ymd(long scalar,
 }
 
 unsigned int TK_GetTimeMs(void);
-u64 TK_GetTimeUs(void);
+s64 TK_GetTimeUs(void);
 
 __PDPCLIB_API__ time_t time(time_t *timer)
 {

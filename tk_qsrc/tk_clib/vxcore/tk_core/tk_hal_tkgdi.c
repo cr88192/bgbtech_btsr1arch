@@ -137,7 +137,8 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 					pal=(u32 *)(((byte *)info)+info->biSize);
 					TKGDI_BlitUpdate_BlkRgb888H(xo_dev, yo_dev, xs, ys,
 						data, 4, xo_src, yo_src,
-						info->biWidth, info->biHeight);
+						info->biWidth, info->biHeight,
+						info->biClrUsed);
 				}
 			}
 
@@ -2336,6 +2337,10 @@ tk_syscall_utxt:
 	brk
 	brk
 
+.balign 4
+
+.fix32
+
 tkgdi_comglue_wrapcall_gen:
 	ADD		-256, SP
 	MOV		LR, R1
@@ -2359,9 +2364,17 @@ tkgdi_comglue_wrapcall_gen:
 	MOV.Q	(SP, 248), R1
 	MOV.Q	(SP, 112), R2
 	MOV.Q	(SP, 120), R3
+	
+	MOV		R1, R4
+	MOV.Q	(R4, 0), R5		//Probe Load
 
 	ADD		256, SP
 	JMP 	R1
+
+	NOP
+	NOP
+	NOP
+	NOP
 
 tkgdi_comglue_wrapcall3:
 	MOV		TK_UMSG_COMGLUE_VMT3, R3
@@ -2479,6 +2492,18 @@ tkgdi_comglue_wrapcall39:
 	MOV		TK_UMSG_COMGLUE_VMT39, R3
 	BRA		tkgdi_comglue_wrapcall_gen
 
+	NOP
+	NOP
+	NOP
+	NOP
+
+.endfix32
+
+};
+
+__asm {
+
+.balign 4
 
 #if 1
 .riscv
@@ -2528,8 +2553,16 @@ tkgdi_comglue_rv_wrapcall_gen:
 	MOV.Q	(SP, 112), R10
 	MOV.Q	(SP, 120), R11
 
+	MOV		R1, R12
+	MOV.Q	(R12, 0), R13		//Probe Load
+
 	ADD		256, SP
 	JMP 	R1
+
+	NOP
+	NOP
+	NOP
+	NOP
 
 tkgdi_comglue_rv_wrapcall3:
 	MOV		TK_UMSG_COMGLUE_VMT3, R5
@@ -2615,6 +2648,12 @@ tkgdi_comglue_rv_wrapcall28:
 tkgdi_comglue_rv_wrapcall29:
 	MOV		TK_UMSG_COMGLUE_VMT29, R5
 	BRA		tkgdi_comglue_rv_wrapcall_gen
+
+
+	NOP
+	NOP
+	NOP
+	NOP
 
 .endriscv
 #endif

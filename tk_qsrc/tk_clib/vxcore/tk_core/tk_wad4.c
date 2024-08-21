@@ -179,8 +179,8 @@ TK_WadImage *TK_Wad4_OpenImage(TK_FILE *fd)
 	img->img_fd=fd;
 	
 	inf=tk_malloc_krn(sizeof(TK_Wad4Info));
-	img->w2inf=(TK_Wad2Lump *)inf;
-	img->w4inf=(TK_Wad4Lump *)inf;
+	img->w2inf=(TK_Wad2Info *)inf;
+	img->w4inf=(TK_Wad4Info *)inf;
 	
 	tk_fseek(fd, 0, 0);
 	tk_fread(img->w4inf, 1, sizeof(TK_Wad4Info), fd);
@@ -296,7 +296,7 @@ TK_WadImage *TK_Wad4_CreateTempRamImage(int dirsz)
 //	img->img_fd=fd;
 	
 	inf=tk_malloc_krn(sizeof(TK_Wad4Info));
-	img->w4inf=(TK_Wad4Lump *)inf;
+	img->w4inf=(TK_Wad4Info *)inf;
 	img->wadver=4;
 	img->readwrite=1;
 	
@@ -983,7 +983,7 @@ int TK_Wad4_AllocateNewLump(TK_WadImage *img)
 	if(i<nl)
 	{
 		lmp=img->w4dir+i;
-		lmp->offs=NULL;
+		lmp->offs=0;
 		lmp->csize=0;
 		lmp->dsize=0;
 		lmp->ety=TK_W4ETY_NORMAL;

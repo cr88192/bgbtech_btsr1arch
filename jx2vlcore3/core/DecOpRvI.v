@@ -1698,7 +1698,8 @@ begin
 	begin
 		if(opNmid == JX2_UCMD_INVOP)
 		begin
-			$display("DecOpRvI: Saw INVOP");
+			$display("DecOpRvI: Saw INVOP %X-%X",
+				istrWord[15:0], istrWord[31:16]);
 		end
 	end
 end

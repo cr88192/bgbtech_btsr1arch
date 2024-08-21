@@ -2261,8 +2261,9 @@ F0zz Instruction Block:
 ** F0nm_7Go1 ? FMAX		Rm, Ro, Rn			//(MINMAX) Binary64 Max Value
 ** F0nm_7go2 ? FMULA	Rm, Ro, Rn			//(GFP)
 ** F0nm_7Go2 ? BITNN	Rm, Ro, Rn			//(BITNN) Bit Neural Net Eval
-** F0nm_7go3  -
-** F0nm_7Go3  -
+** F0nm_7go3 ? MOVHW	Rm, Ro, Rn			//(GSV) MOV, High Words
+** F0nm_7Go3 ? MOVLW	Rm, Ro, Rn			//(GSV) MOV, Low Words
+
 ** F0nm_7go4  DIVS.L	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Signed)
 ** F0nm_7Go4  DIVU.L	Rm, Ro, Rn			//(MULQ) Rn=Rm/Ro (Unsigned)
 ** F0nm_7go5  MODS.L	Rm, Ro, Rn			//(MULQ) Rn=Rm%Ro (Signed)

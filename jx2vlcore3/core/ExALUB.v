@@ -611,6 +611,7 @@ begin
 			tResult2A={1'b0, regValRs[63:32] | regValRt[63:32], tResult1A[31:0]};
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
+			tResult1W = { 1'b0, regValRs[15:0], regValRt[15:0] };
 			tResult2W = { 1'b0, regValRs[31:0], regValRt[31:0] };
 		end
 		4'h7: begin		/* XOR */
@@ -618,6 +619,7 @@ begin
 			tResult2A={1'b0, regValRs[63:32] ^ regValRt[63:32], tResult1A[31:0]};
 			tResult1T=regInSrT;
 			tResult2T=regInSrT;
+			tResult1W = { 1'b0, regValRs[31:16], regValRt[31:16] };
 			tResult2W = { 1'b0, regValRs[63:32], regValRt[63:32] };
 		end
 
