@@ -249,6 +249,23 @@ end
 
 always @*
 begin
+	tPcmDoStep		= 0;
+	chTabIxB		= 0;
+	chTabIxD		= 0;
+	tCellIdx		= 0;
+	chTabPcmBiB1	= 0;
+	chTabPcmB1		= 0;
+	chTabPcmB3A		= 0;
+	chTabIxA		= 0;
+	chTabIxC		= 0;
+	chTabPcmA1		= 0;
+	chTabPcmA3A		= 0;
+	chPcmA			= 0;
+	tChAccumOvfLa	= 0;
+	tChAccumOvfLb	= 0;
+	tChAccumOvfRa	= 0;
+	tChAccumOvfRb	= 0;
+
 //	tOutData	= UV32_XX;
 	tOutData	= UV32_00;
 	tOutOK		= UMEM_OK_READY;

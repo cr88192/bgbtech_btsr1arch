@@ -184,12 +184,15 @@ isr_syscall:
 //	break
 
 #ifndef __USRONLY__
+
+#if 0
 	mov		0x123456789ABCDEF, r16	//96-bit pad
 
 	//adjust return point to be somewhere after syscall op
 	mov		spc, r16
 	add		8, r16
 	mov		r16, spc
+#endif
 
 	bra __isr_syscall
 #endif

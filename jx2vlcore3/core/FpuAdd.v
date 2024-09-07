@@ -445,7 +445,8 @@ begin
 	if(regRMode[3:0]==3)
 		tFraRbit4B=tSgnC4;
 //	if(regRMode[3:0]!=4)
-		tFraRbit4B2=0;
+//		tFraRbit4B2=0;
+	tFraRbit4B2=0;
 
 	tValRoundC4 = { 1'b0, tValC4[7:0] } + {
 		5'b0, tFraRbit4B2,

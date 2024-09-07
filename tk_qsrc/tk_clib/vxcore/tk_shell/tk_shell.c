@@ -30,6 +30,8 @@ int main(int argc, char *argv[])
 	strcpy(tb_cwd, "/");
 	TK_Env_SetCwd(tb_cwd);
 
+//	TK_Env_SetLibPath("/usr/lib:/usr/lib/rv64");
+
 	tk_printf("TKSH 2\n");
 //	TKSH_TryLoad("autoexec.pf", NULL);
 
@@ -43,6 +45,7 @@ int main(int argc, char *argv[])
 
 	tk_vfile_init();
 	TK_Env_SetCwd("/boot");
+	TK_Env_SetLibPath("/usr/lib:/usr/lib/rv64");
 
 //	tk_printf("TKSH 4\n");
 

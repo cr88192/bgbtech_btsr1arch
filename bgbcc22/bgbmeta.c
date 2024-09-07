@@ -1598,6 +1598,24 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		*rsz=sz1;
 		return(obuf);
 	}
+
+	if(	!bgbcc_stricmp(cnv, "upic") )
+	{
+		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
+		if(!ibuf)
+			return(NULL);
+		
+		fl=1<<8;
+		
+		fl|=100-((qlvl&7)*12);
+		
+		obuf=malloc(xs*ys*2);
+		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
+		
+		*rfcc=BGBCC_FMT_UPIC;
+		*rsz=sz1;
+		return(obuf);
+	}
 	
 	return(NULL);
 }

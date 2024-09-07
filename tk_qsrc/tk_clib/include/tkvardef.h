@@ -20,6 +20,9 @@
 
 #define	class		__class
 #define	interface	__interface
+#define	extends		__extends
+#define	implements	__implements
+#define	delegate	__delegate
 
 #define	package		__namespace
 #define	namespace	__namespace

@@ -4465,7 +4465,8 @@ ccxl_status BGBCC_CCXL_StackLoadSlotAddr(BGBCC_TransState *ctx, char *name)
 	BGBCC_CCXL_Error(ctx, "Undefined Member %s -> %s\n",
 		st->decl->qname, name);
 
-	BGBCC_CCXL_PushRegister(ctx, dreg);
+//	BGBCC_CCXL_PushRegister(ctx, dreg);
+	BGBCC_CCXL_StackPushConstInt(ctx, 0);
 
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS));

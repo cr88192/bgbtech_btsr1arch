@@ -28,6 +28,9 @@ SRCS=\
 	mm/qoilz_enc.c \
 	mm/lcif_dec.c \
 	mm/lcif_enc.c \
+	mm/tkupic_dec.c \
+	mm/tkupic_enc.c \
+	mm/bufpng.c \
 	\
 	ccxl/ccxl_cgif.c \
 	ccxl/ccxl_compile.c \

@@ -845,6 +845,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->rp=BJX2_REG_ZZR;
 	op->rq=BJX2_REG_GBR_HI;
 	op->imm=0;
+	op->pc=addr+2;
 
 //	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE)
 	if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&
@@ -853,6 +854,9 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		if((ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) || ((opw&3)==3))
 		{
 			ret=BJX2_DecodeOpcode_DecRVI(ctx, op, addr, opw, opw2, 0);
+		}else
+		{
+			ret=BJX2_DecodeOpcode_DecRVC(ctx, op, addr, opw);
 		}
 
 		BJX2_DecodeOpcodePostFixup(ctx, op);

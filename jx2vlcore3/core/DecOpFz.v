@@ -3335,6 +3335,13 @@ begin
 					end
 `endif
 
+					8'h13: begin
+						opNmid		= JX2_UCMD_NOP;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+					end
+
+
 					8'h14: begin
 						opNmid		= JX2_UCMD_NOP;
 						opFmid		= JX2_FMID_REG;

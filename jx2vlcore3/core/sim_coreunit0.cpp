@@ -97,6 +97,7 @@ int BTSR1_MainAddKey(int key)
 {
 	kbbuf[kbrov]=key;
 	kbrov=(kbrov+1)&255;
+	return(0);
 }
 
 int BTSR1_MainCheckKey(void)
@@ -620,6 +621,7 @@ int BTSR1_MainPollKeyboard(void)
 	}
 #endif
 
+	return(0);
 }
 
 int BTSR1_MainInitKeyboard(void)
@@ -631,6 +633,8 @@ int BTSR1_MainInitKeyboard(void)
 	fcntl(0, F_SETFL, i | O_NONBLOCK);
 	btesh2_ttynoncanon();
 #endif
+
+	return(0);
 }
 
 int BTSR1_MainDeinitKeyboard(void)
@@ -638,6 +642,8 @@ int BTSR1_MainDeinitKeyboard(void)
 #ifdef __linux
 	btesh2_resettermios();
 #endif
+
+	return(0);
 }
 
 static char tbuf[256];

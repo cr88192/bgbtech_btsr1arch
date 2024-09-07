@@ -583,6 +583,8 @@ u64 val[6];
 #include <tk_wadimg.h>
 #include <tk_sockmsg.h>
 
+#include <tk_sysc_lnx.h>
+
 #include <tk_regcache.h>
 #include <tk_tkdfs.h>
 

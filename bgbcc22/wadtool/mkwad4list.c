@@ -148,6 +148,9 @@ int 	wad_cmp[16];
 
 u64		wad_curugm;
 
+int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx);
+int FccTagForName(char *src);
+
 void w_strupr_n (char *t, char *s, int n)
 {
 	int i;
@@ -559,6 +562,7 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	byte *obuf;
 	byte *obuf1;
 	byte *obuf2;
+	u32 csum, xcsum;
 	int osz, osz1, osz2, n, cmp;
 
 	if(!isz)
@@ -593,6 +597,19 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	osz2=TgvLz_DoEncodeSafe(ctx2, ibuf, obuf2, isz);
 	TgvLz_DestroyContext(ctx1);
 	TgvLz_DestroyContext(ctx2);
+
+//	csum=TgvLz_CalculateImagePel4BChecksum(ibuf, isz);
+	csum=TgvLz_CalculateImagePel4BChecksumAc(ibuf, isz);
+	xcsum=~csum;
+	obuf1[osz1+0]=(csum>> 0)&255;
+	obuf1[osz1+1]=(csum>> 8)&255;
+	obuf1[osz1+2]=(csum>>16)&255;
+	obuf1[osz1+3]=(csum>>24)&255;
+	obuf1[osz1+4]=(xcsum>> 0)&255;
+	obuf1[osz1+5]=(xcsum>> 8)&255;
+	obuf1[osz1+6]=(xcsum>>16)&255;
+	obuf1[osz1+7]=(xcsum>>24)&255;
+	osz1+=8;
 	
 	if((osz1<=osz2) && (osz1>0))
 	{
@@ -645,7 +662,7 @@ int GetLumpNumForName(char *name)
 	for(i=0; i<wad_n_lumps; i++)
 	{
 //		if(!strncmp(wad_dir[i].name, name, 16))
-		if(!strncmp(wad_dir[i].name, name, 32))
+		if(!strncmp((char *)(wad_dir[i].name), name, 32))
 			return(i);
 	}
 	return(-1);
@@ -663,7 +680,7 @@ int GetDirLumpNumForName(char *name, int pfx)
 		if(wad_dir[i].dirid!=pfx)
 			continue;
 //		if(!strncmp(wad_dir[i].name, name, 16))
-		if(!strncmp(wad_dir[i].name, name, 32))
+		if(!strncmp((char *)(wad_dir[i].name), name, 32))
 			return(i);
 	}
 	return(-1);
@@ -865,13 +882,21 @@ void *LoadFile(char *name, int *rsz)
 	void *buf;
 	int sz;
 
-#ifdef linux
+// #ifdef linux
+#if 0
 	if(!W_IsRegFile(name))
+	{
+		printf("LoadFile: Not File %s\n", name);
 		return(NULL);
+	}
 #endif
 	
 	fd=fopen(name, "rb");
-	if(!fd)return(NULL);
+	if(!fd)
+	{
+		printf("LoadFile: Fail Open %s\n", name);
+		return(NULL);
+	}
 	fseek(fd, 0, 2);
 	sz=ftell(fd);
 	fseek(fd, 0, 0);
@@ -1119,9 +1144,9 @@ int main(int argc, char *argv[])
 //	wad_n_lumps=2;
 
 //	AddWadLump("$ROOT", tn, 0, 0, 0);
-	AddWadLump("$ROOT", tn, 0, FCC_DIRS, 0);
+	AddWadLump("$ROOT", (byte *)tn, 0, FCC_DIRS, 0);
 //	AddWadLump("$BITMAP", tn, 0, 0, 0);
-	AddWadLump("$BITMAP", tn, 0, 0, 1);
+	AddWadLump("$BITMAP", (byte *)tn, 0, 0, 1);
 
 	wad_mincsz=99999999;
 	wad_maxcsz=0;
@@ -1203,7 +1228,7 @@ int main(int argc, char *argv[])
 //		strncpy(tn, s, 256);
 		strncpy(tn, s1, 256);
 //		AddWadLumpPath(tn, ibuf, isz);
-		AddWadLumpPathTag(tn, ibuf, isz, tag);
+		AddWadLumpPathTag(tn, (byte *)ibuf, isz, tag);
 
 		rov2=wad_rover;
 		drov=rov2-rov1;
@@ -1270,7 +1295,7 @@ int main(int argc, char *argv[])
 	for(i=(wad_n_lumps-1); i>=0; i--)
 	{
 //		h=HashIndexForName16(wad_dir[i].name);
-		h=HashIndexForName32(wad_dir[i].name, wad_dir[i].dirid);
+		h=HashIndexForName32((char *)(wad_dir[i].name), wad_dir[i].dirid);
 		h&=(hashsz-1);
 
 		printf("TK_Wad4_LookupLumpNameW4: %s pfx=%d h=%X\n",

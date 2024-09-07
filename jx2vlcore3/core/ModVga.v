@@ -407,6 +407,14 @@ assign dithRndUpB = 0;
 
 always @*
 begin
+	tPwmNextValR2	= 0;
+	tPwmNextValG2	= 0;
+	tPwmNextValB2	= 0;
+
+	tPwmNextValR3	= 0;
+	tPwmNextValG3	= 0;
+	tPwmNextValB3	= 0;
+
 	tNextPwmEn = 0;
 
 	tPwmOutAR = tPwmValR0[7:4];

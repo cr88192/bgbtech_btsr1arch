@@ -3227,6 +3227,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 			
 			pid=task->pid;
 			
+			i+=*(u64 *)bootptr;
+			
 			pb_boot=(u64)bootptr;
 
 			tkern->ctx_regsave[TKPE_REGSAVE_TTB]=tk_vmem_pageglobal;

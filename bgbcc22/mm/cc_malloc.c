@@ -1496,4 +1496,11 @@ int bgbcc_strtoxs(char *str, char *rxb)
 	return(n);
 }
 
+s64 bgbcc_abs(s64 v)
+{
+	if(v<0)
+		return(-v);
+	return(v);
+}
+
 #endif

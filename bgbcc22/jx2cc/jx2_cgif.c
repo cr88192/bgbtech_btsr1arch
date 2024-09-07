@@ -5401,15 +5401,15 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		}
 
 		sctx->stat_rlbl_tot++;
-		if(abs(d)<256)
+		if(bgbcc_abs(d)<256)
 			{ sctx->stat_rlbl_disp8++; }
-		else if(abs(d)<4096)
+		else if(bgbcc_abs(d)<4096)
 			{ sctx->stat_rlbl_disp12++; }
-		else if(abs(d)<65536)
+		else if(bgbcc_abs(d)<65536)
 			{ sctx->stat_rlbl_disp16++; }
-		else if(abs(d)<(1<<20))
+		else if(bgbcc_abs(d)<(1<<20))
 			{ sctx->stat_rlbl_disp20++; }
-		else if(abs(d)<(1<<24))
+		else if(bgbcc_abs(d)<(1<<24))
 			{ sctx->stat_rlbl_disp24++; }
 		else
 			{ sctx->stat_rlbl_disp33++; }

@@ -96,6 +96,7 @@
 #include "tk_core/tkgdi_drawcon.c"
 #include "tk_core/tkgdi_winman.c"
 #include "tk_core/tkgdi_load_gtf.c"
+#include "tk_core/tkgdi_load_upic.c"
 #include "tk_core/tk_hal_tkgdi.c"
 
 #include "tk_core/tk_hal_snd.c"

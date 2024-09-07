@@ -414,7 +414,8 @@ int tk_wad4_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	return(id);
 }
 
-int tk_wad4_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, char *mode)
+int tk_wad4_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *oldfn, char *newfn, char *mode)
 {
 	TK_WadImage *img;
 	int id, md;
@@ -486,7 +487,8 @@ int tk_wad4_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 		ptr=TK_Wad4_GetCacheLumpNumOffs(img, fd->ifd, fofs, &rofs, &rsz);
 		if(!ptr)
 			break;
-		cs=((byte *)ptr)+(fofs-rofs);
+//		cs=((byte *)ptr)+(fofs-rofs);
+		cs=((byte *)ptr)+rofs;
 		sz1=cte-ct;
 		rsz1=rsz-rofs;
 		if(rsz1<sz1)
@@ -528,7 +530,8 @@ int tk_wad4_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 			fofs, cte-ct, &rofs, &rsz);
 		if(!ptr)
 			break;
-		cs=((byte *)ptr)+(fofs-rofs);
+//		cs=((byte *)ptr)+(fofs-rofs);
+		cs=((byte *)ptr)+rofs;
 		sz1=cte-ct;
 		rsz1=rsz-rofs;
 		if(rsz1<sz1)

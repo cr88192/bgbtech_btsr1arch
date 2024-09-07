@@ -124,6 +124,8 @@
 #define TK_UMSG_COMGLUE_VMT62		0x123E
 #define TK_UMSG_COMGLUE_VMT63		0x123F
 
+#define TK_UMSG_LNXSC				0x1800
+
 // #define TK_UMSG_VFTELL			0x102B
 // #define TK_UMSG_VFGETC			0x102D
 // #define TK_UMSG_VFPUTC			0x102E

@@ -40,6 +40,7 @@ int TK_Env_GetEnvVarIdx(int idx, char *bufn, char *bufv, int szn, int szv)
 
 int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 {
+	TKPE_TaskInfo *task;
 	TK_EnvContext *env;
 	TK_SysArg ar[8];
 	void *p;
@@ -47,7 +48,17 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 
 	if(tk_iskernel())
 	{
-		env=TK_GetCurrentEnvContext();
+		task=NULL;
+		if(tk_issyscall())
+			task=TK_GetSyscallUserTask();
+		if(task)
+		{
+			env=TK_GetTaskEnvContext(task);
+		}else
+		{
+			env=TK_GetCurrentEnvContext();
+		}
+
 		if(!env)
 		{
 			tk_printf("TK_Env_GetEnvVarI: No Env\n");
@@ -74,6 +85,7 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 
 int TK_Env_SetEnvVarI(char *varn, char *varv)
 {
+	TKPE_TaskInfo *task;
 	TK_EnvContext *env;
 	TK_SysArg ar[8];
 	void *p;
@@ -81,7 +93,16 @@ int TK_Env_SetEnvVarI(char *varn, char *varv)
 
 	if(tk_iskernel())
 	{
-		env=TK_GetCurrentEnvContext();
+		task=NULL;
+		if(tk_issyscall())
+			task=TK_GetSyscallUserTask();
+		if(task)
+		{
+			env=TK_GetTaskEnvContext(task);
+		}else
+		{
+			env=TK_GetCurrentEnvContext();
+		}
 
 		if(env->magic1!=TKFAT_MAGIC1)
 			__debugbreak();
@@ -181,6 +202,33 @@ int TK_Env_GetPathList(char ***rlst, int *rnlst)
 #endif
 }
 
+int TK_Env_GetLibPathList(char ***rlst, int *rnlst)
+{
+	char *pathbuf, *cs;
+	char **lst;
+	int n;
+	
+	pathbuf=tk_malloc(32768);
+	TK_Env_GetEnvVarI("LIBPATH", pathbuf+2048, 32768);
+
+	lst=(char **)pathbuf;
+	cs=pathbuf+2048;
+	n=0;
+	while(*cs)
+	{
+		lst[n++]=cs;
+		while(*cs && *cs!=':')
+			cs++;
+		if(*cs==':')
+		{
+			*cs++=0;
+		}
+	}
+	*rlst=lst;
+	*rnlst=n;
+	return(n);
+}
+
 int TK_Env_FreePathList(char **rlst)
 {
 	tk_free(rlst);
@@ -193,6 +241,14 @@ int TK_Env_SetPath(char *cwd)
 //	env=TK_GetCurrentEnvContext();
 //	return(TK_EnvCtx_SetPath(env, cwd));
 	TK_Env_SetEnvVarI("PATH", cwd);
+}
+
+int TK_Env_SetLibPath(char *cwd)
+{
+//	TK_EnvContext *env;
+//	env=TK_GetCurrentEnvContext();
+//	return(TK_EnvCtx_SetPath(env, cwd));
+	TK_Env_SetEnvVarI("LIBPATH", cwd);
 }
 
 int TK_Env_GetEnvVar(char *varn, char *buf, int sz)

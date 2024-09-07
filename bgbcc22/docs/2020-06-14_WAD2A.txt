@@ -3,11 +3,15 @@ WAD2(A) is a container format holding a series of 'lumps'.
 * It is closely related to the Quake WAD2 format.
 
  Header {
- 	FOURCC	magic;		//'WAD2'
- 	U32		numlumps;	//Number of lumps in the directory.
- 	U32		diroffs;	//Offset of directory, in bytes
- 	U32		typeoffs;	//Offset of types table
- }
+ 	FOURCC	magic;		//00: 'WAD2'
+ 	U32		numlumps;	//04: Number of lumps in the directory.
+ 	U32		diroffs;	//08: Offset of directory, in bytes
+ 	U32		typeoffs;	//0C: Offset of types table
+  	U32		resv1;		//10: Reserved
+ 	U32		resv2;		//14: Reserved
+ 	FOURCC	intent1;	//18: Intention 1
+ 	FOURCC	intent2;	//1C: Intention 2
+}
 
 The header appears at the start of a file, and encodes the location of the directory.
 

@@ -2697,10 +2697,16 @@ begin
 `endif
 		tNxtMsgLatchNop = 1;
 
+		tRegOutPcVal = 96'h3000F013_3000F013_3000F013;
+
+`ifndef def_true
+
 		tRegOutPcVal = 96'h3000F000_3000F000_3000F000;
 `ifdef jx2_enable_riscv
 		if(tInPcRiscv)
 			tRegOutPcVal = 96'h00000013_00000013_00000013;
+`endif
+
 `endif
 //		tRegOutPcStep = 0;
 	end
@@ -2723,6 +2729,7 @@ end
 always @*
 begin
 	tStuckTlbMissInh	= 0;
+	tNxtMsgLatchTinh	= 0;
 
 	if(tRegOutHold && !icInPcHold)
 	begin

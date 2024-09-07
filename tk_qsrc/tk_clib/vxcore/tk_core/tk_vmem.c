@@ -3572,7 +3572,7 @@ s64 TK_VMem_VaFindFreePages2(int cnt, int flag, s64 vaddrh)
 s64 TK_VMem_VaFindFreePagesLowBasic(int cnt, int flag)
 {
 	u64 pte;
-	s64 vta;
+	s64 vta, vta0;
 	int vpn, vps, vpe;
 	int i, j, k;
 
@@ -3607,6 +3607,7 @@ s64 TK_VMem_VaFindFreePagesLowBasic(int cnt, int flag)
 		if((vpn<tk_vmem_varov_lo) && ((vpn+cnt)>tk_vmem_varov_lo))
 			return(0);
 
+		vta0=((s64)vpn)<<TKMM_PAGEBITS;
 		for(i=0; i<cnt; i++)
 		{
 			vta=((s64)(vpn+i))<<TKMM_PAGEBITS;
@@ -3614,6 +3615,9 @@ s64 TK_VMem_VaFindFreePagesLowBasic(int cnt, int flag)
 			TK_VMem_ValidatePageTableEntry(pte);
 
 			if(pte)
+				break;
+				
+			if(((vta>>24)!=(vta0>>24)) && (cnt<256))
 				break;
 		}
 
@@ -3629,7 +3633,7 @@ s64 TK_VMem_VaFindFreePagesLowBasic(int cnt, int flag)
 s64 TK_VMem_VaFindFreePagesLowAslr2(int cnt, int flag, s64 vaddrh)
 {
 	s64 addr;
-	u32 vps, vpe, vpn;
+	u32 vps, vpe, vpn, vpne;
 	int n, qfl;
 
 	if(!tk_vmem_pagecache)
@@ -3655,8 +3659,22 @@ s64 TK_VMem_VaFindFreePagesLowAslr2(int cnt, int flag, s64 vaddrh)
 		if(vpn>vpe)
 			vpn-=vps;
 
-		if((vpn<vps) || ((vpn+cnt)>=vpe))
+		vpne=vpn+cnt;
+
+//		if((vpn<vps) || ((vpn+cnt)>=vpe))
+		if((vpn<vps) || (vpne>=vpe))
 			continue;
+
+		if(cnt<(1<<(22-TKMM_PAGEBITS)))
+		{
+			if((vpn>>(24-TKMM_PAGEBITS))!=(vpne>>(24-TKMM_PAGEBITS)))
+				continue;
+		}else
+			if(cnt<(1<<(30-TKMM_PAGEBITS)))
+		{
+			if((vpn>>(32-TKMM_PAGEBITS))!=(vpne>>(32-TKMM_PAGEBITS)))
+				continue;
+		}
 
 		addr=((s64)vpn)<<TKMM_PAGEBITS;
 
@@ -3691,6 +3709,9 @@ s64 TK_VMem_VaVirtualAlloc2(s64 addr, s64 addrh, s64 size,
 
 //	__debugbreak();
 //	return(0);
+
+//	tk_dbg_printf("TK_VMem_VaVirtualAlloc2: "
+//		"addr=%lXX size=%d flProt=%X flMap=%X\n", addr, size, flProt, flMap);
 
 #if 1
 	vpb=addr>>TKMM_PAGEBITS;

@@ -2283,6 +2283,11 @@ tk_syscall_utxt:
 	mov lr, r1
 	mov.q r1, (sp, 8)
 
+	mov		0, r20
+	mov		0, r21
+	mov		0, r22
+	mov		0, r23
+
 //	bsr		tk_sysc_xorhashregs
 //	mov.q	r2, (sp, 16)
 //	mov		r1, lr
@@ -2511,6 +2516,13 @@ __asm {
 	nop
 
 tk_syscall_rv_utxt:
+	nop
+	nop
+	nop
+	nop
+
+	mov		-1, r17
+
 	nop
 	nop
 	nop

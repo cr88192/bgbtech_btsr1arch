@@ -248,6 +248,7 @@ int tk_vfile_init()
 		tk_mount_devfs();
 		
 		tk_wad4_mount("boot/tkusrimg.wd4", "usr", "wad4", NULL, NULL);
+		tk_wad4_mount("boot/rvlibs.wd4", "usr", "wad4", NULL, NULL);
 
 		TK_Env_SetCwd("/boot");
 	}else

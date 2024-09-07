@@ -694,9 +694,25 @@ begin
 	opRegCO	= JX2_GR_ZZR;
 	opRegCN	= JX2_GR_ZZR;
 
-	opRegXM	= JX2_GR_ZZR;
-	opRegXO	= JX2_GR_ZZR;
-	opRegXN	= JX2_GR_ZZR;
+	opRegXM		= JX2_GR_ZZR;
+	opRegXO		= JX2_GR_ZZR;
+	opRegXN		= JX2_GR_ZZR;
+	opRegXP		= JX2_GR_ZZR;
+
+	opRegXPv	= JX2_GR_ZZR;
+	opRegXNv	= JX2_GR_ZZR;
+	opRegXMv	= JX2_GR_ZZR;
+	opRegXOv	= JX2_GR_ZZR;
+
+	opUFlA		= 0;
+	opImmA0		= 0;
+
+	tNextMsgLatch	= 0;
+
+//	opRegXP			= 0;
+//	opRegXN			= 0;
+//	opRegXM			= 0;
+//	opRegXO			= 0;
 
 
 	opIsDwA = 0;

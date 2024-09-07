@@ -656,6 +656,44 @@ u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 }
 #endif
 
+u16 TKPE_CalculateSmallByteCsum(byte *buf, int sz)
+{
+	byte *cs, *cse;
+	u32 ac0, ac1, csum;
+	
+	if(!sz)
+		return(0);
+	
+	cs=buf; cse=buf+sz;
+	ac0=1; ac1=0;
+	while(cs<cse)
+	{
+		ac0+=*cs;
+		ac1+=ac0;
+		cs++;
+	}
+	ac0=((u16)ac0)+(ac0>>16);
+	ac1=((u16)ac1)+(ac1>>16);
+	ac0=((u16)ac0)+(ac0>>16);
+	ac1=((u16)ac1)+(ac1>>16);
+	csum=(u16)(ac0^ac1);
+	return(csum);
+}
+
+u32 TKPE_CalculateImagePel4BChecksumAc(byte *buf, int sz)
+{
+	u32 csum0, csum1;
+
+	if(!(sz&15))
+	{
+		csum0=TKPE_CalculateImagePel4BChecksum(buf, sz);
+		return(csum0);
+	}
+
+	csum0=TKPE_CalculateImagePel4BChecksum(buf, sz&(~15));
+	csum1=TKPE_CalculateSmallByteCsum(buf+(sz&(~15)), sz&15);
+	return(csum0^csum1);
+}
 
 void *TK_DlOpenA(const char *path, int flags)
 {

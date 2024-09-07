@@ -369,6 +369,7 @@ __interrupt void __isr_syscall(void)
 	u64 *isrsave, *args, *pret;
 	u64 ttb, tea, exc, yres, uobj;
 	u32 reg_sr, umsg;
+	s32 lnxsc;
 	u16 exsr;
 	
 	ttb=__arch_ttb;
@@ -394,6 +395,14 @@ __interrupt void __isr_syscall(void)
 	isrsave=__arch_isrsave;
 #endif
 
+	__ifarch(!has_xgpr)
+	{
+		isrsave[TKPE_REGSAVE_SPC_LO]+=4;
+	}else
+	{
+		isrsave[TKPE_REGSAVE_SPC]+=4;
+	}
+
 	if((exsr&15)==0)
 	{
 		if(reg_sr&(1<<26))
@@ -402,6 +411,13 @@ __interrupt void __isr_syscall(void)
 			umsg=isrsave[TKPE_REGSAVE_R11];
 			pret=(u64 *)(isrsave[TKPE_REGSAVE_R12]);
 			args=(u64 *)(isrsave[TKPE_REGSAVE_R13]);
+			
+			lnxsc=isrsave[TKPE_REGSAVE_R17];
+			if(lnxsc>0)
+			{
+				uobj=NULL;
+				umsg=TK_UMSG_LNXSC+lnxsc;
+			}
 		}
 		else
 		{
@@ -616,6 +632,9 @@ __interrupt void __isr_syscall(void)
 #endif
 
 #ifndef __TK_CLIB_ONLY__
+
+u64 tk_syscall_lnxtemp[8];
+
 void TK_Task_SyscallGetArgs(
 	TKPE_TaskInfo **rtask,
 	void **rsobj, int *rumsg, void **rrptr, void **rargs)
@@ -623,6 +642,7 @@ void TK_Task_SyscallGetArgs(
 	TKPE_TaskInfo *task, *task2;
 	TKPE_TaskInfoKern *taskern, *taskern2;
 	u32 umsg, reg_sr;
+	s64 lnxsc;
 	u64 *regs;
 	void *sobj;
 	void *rptr;
@@ -654,6 +674,25 @@ void TK_Task_SyscallGetArgs(
 		umsg=regs[TKPE_REGSAVE_R11];
 		rptr=regs[TKPE_REGSAVE_R12];
 		args=(void *)(regs[TKPE_REGSAVE_R13]);
+
+		lnxsc=regs[TKPE_REGSAVE_R17];
+		if(lnxsc>0)
+//		if(0)
+		{
+			sobj=NULL;
+			umsg=TK_UMSG_LNXSC+lnxsc;
+			
+			args=tk_syscall_lnxtemp;
+			rptr=tk_syscall_lnxtemp+6;
+			
+			tk_syscall_lnxtemp[0]=regs[TKPE_REGSAVE_R10];
+			tk_syscall_lnxtemp[1]=regs[TKPE_REGSAVE_R11];
+			tk_syscall_lnxtemp[2]=regs[TKPE_REGSAVE_R12];
+			tk_syscall_lnxtemp[3]=regs[TKPE_REGSAVE_R13];
+			tk_syscall_lnxtemp[4]=regs[TKPE_REGSAVE_R2];
+			tk_syscall_lnxtemp[5]=regs[TKPE_REGSAVE_R3];
+		}
+
 	}else
 	{
 		/* BJX2 Mode */
@@ -745,7 +784,7 @@ int TK_Task_SyscallLoop(void *uptr)
 	int umsg;
 	u64 *argsl;
 	void *sobj, *rptr, *args;
-	int		rc;
+	s64		rc;
 
 	task=NULL;	sobj=NULL;
 	umsg=0;		rptr=NULL;
@@ -770,7 +809,9 @@ int TK_Task_SyscallLoop(void *uptr)
 		TK_Task_SyscallGetArgs(&task, &sobj, &umsg, &rptr, &args);
 		if(task && umsg)
 		{
-			if(umsg==TK_UMSG_PGMEXIT)
+//			if(umsg==TK_UMSG_PGMEXIT)
+			if((umsg==TK_UMSG_PGMEXIT) ||
+				(umsg==(TK_UMSG_LNXSC+TK_SCLNX_EXIT)))
 			{
 				if(task->magic0!=TKPE_TASK_MAGIC)
 					__debugbreak();

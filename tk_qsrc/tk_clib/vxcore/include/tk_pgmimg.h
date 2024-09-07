@@ -15,6 +15,23 @@
 #define TKPE_REGSAVE_R14	0x0E
 #define TKPE_REGSAVE_R15	0x0F
 
+#define TKPE_REGSAVE_R16	0x10
+#define TKPE_REGSAVE_R17	0x11
+#define TKPE_REGSAVE_R18	0x12
+#define TKPE_REGSAVE_R19	0x13
+#define TKPE_REGSAVE_R20	0x14
+#define TKPE_REGSAVE_R21	0x15
+#define TKPE_REGSAVE_R22	0x16
+#define TKPE_REGSAVE_R23	0x17
+#define TKPE_REGSAVE_R24	0x18
+#define TKPE_REGSAVE_R25	0x19
+#define TKPE_REGSAVE_R26	0x1A
+#define TKPE_REGSAVE_R27	0x1B
+#define TKPE_REGSAVE_R28	0x1C
+#define TKPE_REGSAVE_R29	0x1D
+#define TKPE_REGSAVE_R30	0x1E
+#define TKPE_REGSAVE_R31	0x1F
+
 #define TKPE_REGSAVE_SSP	0x0F
 
 
@@ -75,7 +92,8 @@ u32 magic2;
 struct TKPE_ImageInfo_s {
 int pboix;
 int imgix;
-int isdll;
+byte isdll;
+byte iself;
 
 char *imgname;		//image name, no path or extension
 char *imgpath;		//full image path
@@ -93,6 +111,10 @@ int rva_imp;
 int sz_imp;
 int rva_exp;
 int sz_exp;
+
+int rva_symtab;
+int rva_strtab;
+int sz_syment;
 
 int  gbr_rva;
 int  gbr_szcpy;
@@ -191,6 +213,8 @@ int			mmap_n_map;			//span	(mmap / VirtualAlloc)
 tk_kptr		task_sysc_user;		//task that initiated syscall.
 tk_kptr		task_join_ret;		//task join-on-return
 
+int			lclfd[512];
+
 // s64			result;			//return value (non-zero if terminated)
 };
 
@@ -266,6 +290,8 @@ u64			us_lastsleep;	//last sleep time for task
 tk_kptr		img_baseptrs[256];
 tk_kptr		img_gbrptrs[256];
 u32			img_tlsrvas[256];
+
+u64 		img_elftls[256];
 
 };
 

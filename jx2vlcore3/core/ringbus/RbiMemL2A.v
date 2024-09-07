@@ -262,8 +262,8 @@ begin
 
 //	if(memOpmOut[11])
 //	if(memOpmOut[11] && memOpmOut[8])
-	if(memOpmOut[11] && memOpmOut[8] && (memAddrOut[47:46]!=2'b11))
-		$display("L2A: TLB Missed B O=%X A=%X", memOpmOut, memAddrOut);
+//	if(memOpmOut[11] && memOpmOut[8] && (memAddrOut[47:46]!=2'b11))
+//		$display("L2A: TLB Missed B O=%X A=%X", memOpmOut, memAddrOut);
 
 	tL2mSeqOut		= l2mSeqOut;
 	tL2mOpmOut		= l2mOpmOut;

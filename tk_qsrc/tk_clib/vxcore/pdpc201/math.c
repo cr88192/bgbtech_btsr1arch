@@ -76,9 +76,9 @@
 
 __PDPCLIB_API__ double ceil(double x)
 {
-	int y;
+	long y;
 
-	y = (int)x;
+	y = (long)x;
 	if ((double)y < x)
 	{
 		y++;
@@ -98,11 +98,11 @@ __PDPCLIB_API__ double fabs(double x)
 
 __PDPCLIB_API__ double floor(double x)
 {
-	int y;
+	long y;
 
 	if (x < 0.0)
 	{
-		y = (int)x;
+		y = (long)x;
 		if ((double)y != x)
 		{
 			y--;
@@ -110,14 +110,14 @@ __PDPCLIB_API__ double floor(double x)
 	}
 	else
 	{
-		y = (int)x;
+		y = (long)x;
 	}
 	return ((double)y);
 }
 
 __PDPCLIB_API__ double fmod(double x, double y)
 {
-	int imod;
+	long imod;
 	if(y == 0.0) return (0.0);
 	imod = x / y;
 	return ((double)x-((double)imod*y));

@@ -42,6 +42,7 @@ Where, fmt may be one of:
 * qoi: QOI Format
 * qoli: QOLI (QOI with inline LZ compression)
 * lcif: LCIF Format
+* upic: UPIC Format
 
 BMPA is a modified BMP differing mostly in that the fields and image data will be aligned. The headers will have a native 32-bit alignment, whereas the image data will have a 64-bit alignment. The magic will be changed from 'BM' to ' BMP', but apart from the alignment change the format is basically the same.
 
@@ -56,7 +57,7 @@ For BMP16 and BMP16A, the MSB of each pixel will encode Alpha:
 
 For QOI and QOLI, a 'q' parameter will speficy a lossy quality level (0=lossless, 1=best, 7=worst). The default will be lossless.
 
-For LCIF, the 'q' parameter will speficy a lossy quality level (0=best, 7=worst). The default will be best.
+For LCIF and UPIC, the 'q' parameter will speficy a lossy quality level (0=best, 7=worst). The default will be best.
 
 Both QOI and LCIF will include an full Alpha channel.
 

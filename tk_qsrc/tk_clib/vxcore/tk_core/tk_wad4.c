@@ -672,10 +672,11 @@ void TK_Wad4_ReadLumpBuffer(TK_WadImage *img, int lump, void *buf)
 	TK_Wad4Lump	*w4l;
 	TK_Wad2Lump	*w2l;
 	TK_FILE		*fd;
-	byte		*tptr;
+	byte		*tptr, *ct1;
 	s64 offs;
+	u32 csum, xcsum, csum1;
 	int csz, lmp1, offs0, ofs1, csz1;
-	int dsz;
+	int dsz, dsz1;
 	int cmp;
 
 	csz1=0;
@@ -753,7 +754,31 @@ void TK_Wad4_ReadLumpBuffer(TK_WadImage *img, int lump, void *buf)
 		tk_fseek(fd, offs, 0);
 		tk_fread(tk_wad4_tcbuf, 1, csz, fd);
 
-		TKPE_UnpackBuffer(buf, tk_wad4_tcbuf, csz, cmp);
+		ct1=TKPE_UnpackBuffer(buf, tk_wad4_tcbuf, csz, cmp);
+		dsz1=ct1-buf;
+		if(dsz1!=dsz)
+		{
+			tk_printf("TK_Wad4_ReadLumpBuffer: "
+				"Unpack Size Error %d!=%d cm=%d\n",
+				dsz1, dsz, cmp);
+			return;
+		}
+		if(cmp==TK_W4CMP_RP2)
+		{
+			csum=*(u32 *)(tk_wad4_tcbuf+(csz-8)+0);
+			xcsum=*(u32 *)(tk_wad4_tcbuf+(csz-8)+4);
+			if(csum==(~xcsum))
+			{
+//				csum1=TKPE_CalculateImagePel4BChecksum(buf, dsz);
+				csum1=TKPE_CalculateImagePel4BChecksumAc(buf, dsz);
+				if(csum1!=csum)
+				{
+					tk_printf("TK_Wad4_ReadLumpBuffer: "
+						"RP2 Checksum Error %X!=%X\n",
+						csum1, csum);
+				}
+			}
+		}
 		return;
 	}
 	
@@ -846,7 +871,7 @@ void *TK_Wad4_GetCacheLumpNumOffs(TK_WadImage *img,
 	
 	if(cmp!=TK_W4CMP_FRAG)
 	{
-		*rrofs=0;
+		*rrofs=ofs;
 		ptr=TK_Wad4_GetCacheLumpNum(img, lump, rsz);
 		return(ptr);
 	}

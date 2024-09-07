@@ -826,6 +826,11 @@ void *TKPE_LookupImageDllExport(TKPE_ImageInfo *img, char *name)
 	int is32;
 	int i, j, k;
 	
+	if(img->iself)
+	{
+		return(TKPE_LookupImageElfExport(img, name));
+	}
+	
 	imgptr=img->imgbase;
 	rva_exp=img->rva_exp;
 	sz_exp=img->sz_exp;
@@ -970,18 +975,18 @@ TK_FILE *TKPE_TryOpenImage(
 	for(i=0; i<npath; i++)
 	{
 		tk_sprintf(tbuf, "%s/%s", path[i], imgname);
-//		tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+		tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 		fd=tk_fopen(tbuf, "rb");
 		if(!fd && !isext && (isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.dll", path[i], imgname);
-//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(!fd && !isext && !(isdll&1))
 		{
 			tk_sprintf(tbuf, "%s/%s.exe", path[i], imgname);
-//			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
 			fd=tk_fopen(tbuf, "rb");
 		}
 		if(fd)
@@ -992,6 +997,37 @@ TK_FILE *TKPE_TryOpenImage(
 		}
 	}
 	TK_Env_FreePathList(path);
+
+#if 1
+	path=NULL; npath=0;
+	TK_Env_GetLibPathList(&path, &npath);
+	for(i=0; i<npath; i++)
+	{
+		tk_sprintf(tbuf, "%s/%s", path[i], imgname);
+		tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+		fd=tk_fopen(tbuf, "rb");
+		if(!fd && !isext && (isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.dll", path[i], imgname);
+			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+			fd=tk_fopen(tbuf, "rb");
+		}
+		if(!fd && !isext && !(isdll&1))
+		{
+			tk_sprintf(tbuf, "%s/%s.exe", path[i], imgname);
+			tk_dbg_printf("TKPE_TryOpenImage: try %s\n", tbuf);
+			fd=tk_fopen(tbuf, "rb");
+		}
+		if(fd)
+		{
+			if(rpath)
+				*rpath=TKMM_LVA_Strdup(tbuf);
+			return(fd);
+		}
+	}
+	TK_Env_FreePathList(path);
+#endif
+
 	return(NULL);
 }
 
@@ -1004,14 +1040,14 @@ int TKPE_LookupPboImageName(char *imgname, int isdll)
 	{
 		img=tkpe_pbo_image[i];
 
-		tk_dbg_printf("TKPE_TryLoadProgramImage: Check %s\n", img->imgname);
+		tk_dbg_printf("TKPE_LookupPboImageName: Check %s\n", img->imgname);
 
 		if((isdll&1) && !(img->pboix))
 			continue;
 		if(!strcmp(img->imgname, imgname))
 			return(i);
 	}
-	tk_dbg_printf("TKPE_TryLoadProgramImage: Not Found %s\n", imgname);
+	tk_dbg_printf("TKPE_LookupPboImageName: Not Found %s\n", imgname);
 	return(0);
 }
 
@@ -1169,8 +1205,10 @@ int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll)
 	
 	if(ext)
 	{
-		ext_exe = !stricmp(ext, ".exe");
-		ext_dll = !stricmp(ext, ".dll");
+		ext_exe = !stricmp(ext, ".exe") || !stricmp(ext, ".elf");
+		ext_dll = !stricmp(ext, ".dll") ||
+			!stricmp(ext, ".so") ||
+			!strncmp(ext, ".so.", 4);
 
 		if(ext_exe && (isdll&1))
 			return(0);
@@ -1221,6 +1259,15 @@ int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll)
 			basename=imgname;
 		}
 
+		if(imgname!=basename)
+		{
+			i=TKPE_LookupPboImageName(imgname, isdll);
+			if(i>0)
+			{
+				return(i);
+			}
+		}
+
 		i=TKPE_LookupPboImageName(basename, isdll);
 		if(i>0)
 		{
@@ -1231,10 +1278,15 @@ int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll)
 	path=NULL;
 	fd=TKPE_TryOpenImage(imgname, cwd, &path, isdll);
 	if(!fd)
+	{
+		tk_dbg_printf("TKPE_TryLoadProgramImage: Not Found %s\n", imgname);
 		return(0);
+	}
+
 	img=TKPE_LoadDynPE(fd, 0, basename, cwd, isdll);
 	if(!img)
 	{
+		tk_dbg_printf("TKPE_TryLoadProgramImage: Failed to Load %s\n", imgname);
 		tk_fclose(fd);
 		return(0);
 	}
@@ -1278,7 +1330,8 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 		TK_TaskAddPageAlloc(task, gbrdat, gbrsz);
 	}
 	
-	tk_dbg_printf("TK_InstanceImageInTask: GBR RVA=%X sz_cpy=%d sz=%d pboix=%d\n",
+	tk_dbg_printf("TK_InstanceImageInTask: "
+		"GBR RVA=%X sz_cpy=%d sz=%d pboix=%d\n",
 		img->gbr_rva, img->gbr_szcpy, gbrsz, img->pboix);
 	
 	if(gbrdat)

@@ -128,13 +128,18 @@ reg[6:0]		tLstOpCnt;
 
 always @*
 begin
+	tValSg1s		= 0;
+	tValSg1t		= 0;
+	tDoHold			= 0;
+	tValFdivRndb	= 0;
+	tValFdivRnd		= 0;
+	
 	tNxtValAddD		= tValAddD;
 	tNxtValAddDc	= tValAddDc;
 	tNxtValOp		= tValOp;
 	tNxtValSg		= tValSg;
 	tNxtValSgFdiv	= tValSgFdiv;
 	tNxtValExpFdiv	= tValExpFdiv;
-	tDoHold			= 0;
 	tNxtOpCnt		= tOpCnt;
 	
 	tValC1		=	tValC;

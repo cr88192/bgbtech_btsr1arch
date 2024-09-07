@@ -542,6 +542,7 @@ extern "C" {
 
 #define BGBCC_FMT_QOIF		BGBCC_FOURCC('Q', 'O', 'I', 'F')
 #define BGBCC_FMT_LCIF		BGBCC_FOURCC('L', 'C', 'I', 'F')
+#define BGBCC_FMT_UPIC		BGBCC_FOURCC('U', 'P', 'I', 'C')
 
 #define BGBCC_FMT_CRAM		BGBCC_FOURCC('C', 'R', 'A', 'M')
 
@@ -629,6 +630,11 @@ typedef struct BGBPP_PpiFrame_s BGBPP_PpiFrame;
 
 typedef struct BGBCP_ParseState_s BGBJP_ParseState;
 typedef struct BGBCC_TransState_s BGBCC_TransState;
+
+
+typedef struct TKuPI_DecState_s TKuPI_DecState;
+typedef struct TKuPI_EncState_s TKuPI_EncState;
+
 
 struct BGBCP_ParseItem_s {
 BGBCP_ParseItem *next;

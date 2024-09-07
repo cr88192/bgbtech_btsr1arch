@@ -1,0 +1,43 @@
+lib/rv64/libanl.so.1			/usr/local/sysroot/lib64/lp64/libanl.so.1
+lib/rv64/libatomic.so			/usr/local/sysroot/lib64/lp64/libatomic.so
+lib/rv64/libatomic.so.1			$lib/rv64/libatomic.so
+lib/rv64/libatomic.so.1.2.0		$lib/rv64/libatomic.so
+
+lib/rv64/libBrokenLocale.so.1	/usr/local/sysroot/lib64/lp64/libBrokenLocale.so.1
+lib/rv64/libc.so.6				/usr/local/sysroot/lib64/lp64/libc.so.6
+lib/rv64/libcrypt.so.1			/usr/local/sysroot/lib64/lp64/libcrypt.so.1
+lib/rv64/libc_malloc_debug.so.0	/usr/local/sysroot/lib64/lp64/libc_malloc_debug.so.0
+lib/rv64/libdl.so.2				/usr/local/sysroot/lib64/lp64/libdl.so.2
+
+lib/rv64/libgcc_s.so			/usr/local/sysroot/lib64/lp64/libgcc_s.so
+lib/rv64/libgcc_s.so.1			$lib/rv64/libgcc_s.so
+
+lib/rv64/libgfortran.so			/usr/local/sysroot/lib64/lp64/libgfortran.so
+lib/rv64/libgfortran.so.5		$lib/rv64/libgfortran.so
+lib/rv64/libgfortran.so.5.0.0	$lib/rv64/libgfortran.so
+
+lib/rv64/libgomp.so				/usr/local/sysroot/lib64/lp64/libgomp.so
+lib/rv64/libgomp.so.1			$lib/rv64/libgomp.so
+lib/rv64/libgomp.so.1.0.0		$lib/rv64/libgomp.so
+
+lib/rv64/libm.so.6				/usr/local/sysroot/lib64/lp64/libm.so.6
+lib/rv64/libmemusage.so			/usr/local/sysroot/lib64/lp64/libmemusage.so
+lib/rv64/libnsl.so.1			/usr/local/sysroot/lib64/lp64/libnsl.so.1
+lib/rv64/libnss_compat.so.2		/usr/local/sysroot/lib64/lp64/libnss_compat.so.2
+lib/rv64/libnss_db.so.2			/usr/local/sysroot/lib64/lp64/libnss_db.so.2
+lib/rv64/libnss_dns.so.2		/usr/local/sysroot/lib64/lp64/libnss_dns.so.2
+lib/rv64/libnss_files.so.2		/usr/local/sysroot/lib64/lp64/libnss_hesiod.so.2
+lib/rv64/libnss_hesiod.so.2		/usr/local/sysroot/lib64/lp64/libnss_hesiod.so.2
+lib/rv64/libpcprofile.so		/usr/local/sysroot/lib64/lp64/libpcprofile.so
+lib/rv64/libpthread.so.0		/usr/local/sysroot/lib64/lp64/libpthread.so.0
+lib/rv64/libresolv.so.2			/usr/local/sysroot/lib64/lp64/libresolv.so.2
+lib/rv64/librt.so.1				/usr/local/sysroot/lib64/lp64/librt.so.1
+
+lib/rv64/libstdc++.so			/usr/local/sysroot/lib64/lp64/libstdc++.so
+lib/rv64/libstdc++.so.6			$lib/rv64/libstdc++.so
+lib/rv64/libstdc++.so.6.0.30	$lib/rv64/libstdc++.so
+
+lib/rv64/libthread_db.so.1		/usr/local/sysroot/lib64/lp64/libthread_db.so.1
+lib/rv64/libutil.so.1			/usr/local/sysroot/lib64/lp64/libutil.so.1
+
+lib/rv64/ld-linux-riscv64-lp64.so.1		/usr/local/sysroot/lib/ld-linux-riscv64-lp64.so.1

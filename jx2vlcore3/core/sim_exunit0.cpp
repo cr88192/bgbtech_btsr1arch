@@ -94,6 +94,7 @@ int BTSR1_MainAddKey(int key)
 {
 	kbbuf[kbrov]=key;
 	kbrov=(kbrov+1)&255;
+	return(0);
 }
 
 int BTSR1_MainCheckKey(void)
@@ -257,6 +258,11 @@ int BJX2_MainAddTranslateKey(BJX2_Context *ctx, int key)
 	
 	int sc;
 	
+	key=(u16)key;
+	
+	if(!key)
+		return(0);
+	
 	sc=ps2_key2scan[key&0xFF];
 	if(!sc)
 	{
@@ -365,7 +371,8 @@ int BTSR1_MainPollKeyboard(void)
 	}
 #endif
 
-#ifdef __linux
+// #ifdef __linux
+#if 0
 	j=fgetc(stdin);
 	while(j>0)
 	{
@@ -426,6 +433,8 @@ int BTSR1_MainPollKeyboard(void)
 	while(*kb)
 	{
 		k=*kb++;
+		if(!k)
+			break;
 		BJX2_MainAddTranslateKey(jx2_ctx, k);
 //		BTSR1_MainAddKey(k);
 
@@ -456,6 +465,8 @@ int BTSR1_MainPollKeyboard(void)
 #endif
 	}
 #endif
+
+	return(0);
 }
 
 int BTSR1_MainInitKeyboard(void)
@@ -463,17 +474,22 @@ int BTSR1_MainInitKeyboard(void)
 	int i;
 
 #ifdef __linux
+// #if 0
 	i = fcntl(0, F_GETFL, 0);
 	fcntl(0, F_SETFL, i | O_NONBLOCK);
 	btesh2_ttynoncanon();
 #endif
+
+	return(0);
 }
 
 int BTSR1_MainDeinitKeyboard(void)
 {
 #ifdef __linux
+// #if 0
 	btesh2_resettermios();
 #endif
+	return(0);
 }
 
 static char getstr_tbuf[256+64];
@@ -2426,6 +2442,7 @@ int main(int argc, char **argv, char **env)
 {
 	BJX2_Context *ctx;
 	FILE *fd;
+	void *ptr0, *ptr1;
 	uint64_t tot_bdl, lpc, cpc;
 	int lclk, mhz;
 	int tt_start;
@@ -2447,7 +2464,12 @@ int main(int argc, char **argv, char **env)
 //	JX2R_UseImageCreateRamdisk(128*1024);
 //	JX2R_UseImageCreateRamdisk(512*1024);
 	JX2R_UseImageCreateRamdisk(768*1024);
+//	JX2R_UseImageCreateRamdisk(960*1024);
 //	JX2R_UseImageCreateRamdisk(32*1024);
+
+	fflush(stdout);
+
+	ptr0=malloc(1<<20);
 
 #if !defined(DOOM_RV) && !defined(QUAKE_RV)
 	JX2R_UseImageAddFile(
@@ -2489,6 +2511,10 @@ int main(int argc, char **argv, char **env)
 //		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
+	fflush(stdout);
+
+	free(ptr0);
+	ptr0=malloc(1<<20);
 
 #if !defined(DOOM_RV) && !defined(QUAKE_RV)
 
@@ -2540,6 +2566,9 @@ int main(int argc, char **argv, char **env)
 //		(char *)"../../tk_qsrc/id1/autoexec1.cfg");
 #endif
 
+	free(ptr0);
+	ptr0=malloc(1<<20);
+
 #if 1
 	JX2R_UseImageAddFile(
 		(char *)"HTIC/HTIC.EXE",
@@ -2548,6 +2577,9 @@ int main(int argc, char **argv, char **env)
 		(char *)"HTIC/HTICULZ.WAD",
 		(char *)"../../tk_ports/HticSrc/hticulz.wad");
 #endif
+
+	free(ptr0);
+	ptr0=malloc(1<<20);
 
 #if 1
 	JX2R_UseImageAddFile(
@@ -2570,6 +2602,9 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_ports/RottSrc/demo2_3.dmo");
 #endif
 
+	free(ptr0);
+	ptr0=malloc(1<<20);
+
 #if 1
 	JX2R_UseImageAddFile(
 		(char *)"BTMINI2/BTM.EXE",
@@ -2588,11 +2623,22 @@ int main(int argc, char **argv, char **env)
 		(char *)"../../tk_ports/BtMini2/resource/wad3.wd4");
 #endif
 
+//	free(ptr0);
+//	ptr0=malloc(1<<20);
+
 #endif
 
+	free(ptr0);
+	ptr0=malloc(1<<20);
+
 #ifndef NOSWAP
-	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
+	JX2R_UseImageAddFileBuffer(
+		(char *)"swapfile.sys", (byte *)NULL, 384*(1<<20));
 #endif
+
+	fflush(stdout);
+	free(ptr0);
+	ptr0=malloc(1<<20);
 
 	Verilated::commandArgs(argc, argv);
 
@@ -2604,6 +2650,7 @@ int main(int argc, char **argv, char **env)
 	srambuf2=(uint32_t *)malloc(8192+1024);
 	drambuf2=(uint32_t *)malloc((1<<27)+(1<<24));
 	
+	memset(rombuf, 0, 32768);
 	memset(srambuf, 0, 8192);
 	memset(drambuf, 0, 1<<27);
 
@@ -2617,6 +2664,10 @@ int main(int argc, char **argv, char **env)
 		fclose(fd);
 	}
 
+	fflush(stdout);
+	free(ptr0);
+	ptr0=malloc(1<<20);
+
 	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context)+1024);
 	memset(ctx, 0, sizeof(BJX2_Context));
 	jx2_ctx=ctx;
@@ -2629,13 +2680,27 @@ int main(int argc, char **argv, char **env)
 	lpc=0;
 	tot_bdl=0;
 
+	free(ptr0);
+	ptr0=malloc(1<<20);
+
+	printf("Init Graphics\n");
+	fflush(stdout);
+
 	GfxDrv_Start();
-	SoundDev_Init();
+//	SoundDev_Init();
 	JX2I_GfxCon_Startup();
 
-	printf("Start ExUnit\n");
+	fflush(stdout);
+	free(ptr0);
+	ptr0=malloc(1<<20);
+
+	printf("Init Keyboard\n");
+	fflush(stdout);
 
 	BTSR1_MainInitKeyboard();
+
+	printf("Start ExUnit 1\n");
+	fflush(stdout);
 
 	tt_start=FRGL_TimeMS();
 	tt_frame=tt_start;
@@ -2644,6 +2709,9 @@ int main(int argc, char **argv, char **env)
 	
 //	ctick_rst=48828;
 //	ctick=ctick_rst;
+
+	printf("Start ExUnit 2\n");
+	fflush(stdout);
 
 	while (!Verilated::gotFinish())
 	{
@@ -2706,6 +2774,7 @@ int main(int argc, char **argv, char **env)
 			cnt_d7=0xFF00007F+(cnt_d7<<16)+(cnt_d7<<8)-(cnt_d7>>1);
 			cnt_d8=0xFF00007F+(cnt_d8<<16)+(cnt_d8<<8)-(cnt_d8>>1);
 
+#if 1
 			sim_fb_drawled(
 				(uint32_t *)btesh2_gfxcon_framebuf,
 				btesh2_gfxcon_fbxs, btesh2_gfxcon_fbys,
@@ -2777,6 +2846,8 @@ int main(int argc, char **argv, char **env)
 				btesh2_gfxcon_fbxs-6, btesh2_gfxcon_fbys-12*8, 3,
 //				top->dbgOutStatus8?0xFFFFFF00:0xFF00007F);
 				cnt_d8);
+
+#endif
 
 			cnt_dled=0;
 			cnt_h1=0;	cnt_h2=0;

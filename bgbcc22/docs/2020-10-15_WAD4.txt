@@ -23,8 +23,8 @@ A WAD4 Image will begin with a WAD4 File Header:
  	U32		hashoffs;	//0C: Offset of Directory Hash.
  	U32		bmpoffs;	//10: Offset of Allocation Bitmap.
  	U32		bmpsize;	//14: Bitmap Size
- 	U32		resv4;		//18: Reserved
- 	U32		resv5;		//1C: Reserved
+ 	FOURCC	intent1;	//18: Intention 1
+ 	FOURCC	intent2;	//1C: Intention 2
  	//...
  }
 
@@ -42,6 +42,10 @@ Header Fields:
 * bmpsize:
 ** Gives the size of the bitmap in bytes.
 ** The number of cells in the image may be determined by the bitmap size.
+* intent1/intent2:
+** Gives an 'intention' for the file.
+** These may be used in the creation of derived formats.
+** If zero, image is seen as a collection of files.
 
 
 === Directory ===

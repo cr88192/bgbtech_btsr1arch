@@ -23,7 +23,7 @@ use cases. It is not intended to be a general purpose processor arch or for the 
 more acceptable for there to be variations or breaks in binary compatibility between implementations (granted, it is
 preferable if breaks in compatibility can be avoided if possible).
 
-My personal use-case is currently mostly in the context of using BSR1 for real-time motor control (Update, 2021-07: BJX2 has mostly taken over this role, as single-wide cores can be fit onto an XC7S25).
+My personal use-case is currently mostly in the context of using BSR1 for real-time motor control (Update, 2021-07: BJX2 has mostly taken over this role, as single-wide cores can be fit onto an XC7S25). ( Update, 2024-09: I have mostly dropped these use-cases in favor of using RISC-V instead. I am currently focusing on BJX2 for more computationally oriented tasks, rather than microcontroller tasks. )
 
 As of 2018-05-20, This is still at a fairly early stage of development and is not yet ready for general use, however some
 initial results look promising, and I am making better progress than I was with BJX1 (if anything, because BSR1 is a bit simpler
@@ -57,6 +57,10 @@ Update 2021-07: The core ISA of BJX2 has mostly stabilized, and significant desi
 
 bgbcc22 (BGBCC): C compiler, partly reused from my BJX1 project, but modified to add support for BSR1 and BJX2.
 * TODO: Make it more obvious how to use said compiler.
+
+I will add an optional exception to the MIT license for BGBCC:
+* One may, at their discretion, choose to disregard the middle clause of the MIT license, allowing derived copies to be understood as-if they were CC0 or Public Domain.
+
 
 vmbase: Holds an emulator for the BSR1 ISA.
 

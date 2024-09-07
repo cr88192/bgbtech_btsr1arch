@@ -4677,7 +4677,8 @@ int BJX2_MemSetWordW(BJX2_Context *ctx,
 //			if(ctx->ppa_addr[ix]==ppga1)
 			if((ctx->ppa_addr[ix]==ppga1) && (ctx->ppa_addrh[ix]==addrh))
 			{
-				return(BJX2_PtrSetWordOfsLe(ctx->ppa_data[ix], ra, val));
+				BJX2_PtrSetWordOfsLe(ctx->ppa_data[ix], ra, val);
+				return(0);
 			}
 		}
 	}
@@ -4704,7 +4705,8 @@ int BJX2_MemSetDWordW(BJX2_Context *ctx,
 //			if(ctx->ppa_addr[ix]==ppga1)
 			if((ctx->ppa_addr[ix]==ppga1) && (ctx->ppa_addrh[ix]==addrh))
 			{
-				return(BJX2_PtrSetDWordOfsLe(ctx->ppa_data[ix], ra, val));
+				BJX2_PtrSetDWordOfsLe(ctx->ppa_data[ix], ra, val);
+				return(0);
 			}
 		}
 	}
@@ -4731,7 +4733,8 @@ int BJX2_MemSetQWordW(BJX2_Context *ctx,
 //			if(ctx->ppa_addr[ix]==ppga1)
 			if((ctx->ppa_addr[ix]==ppga1) && (ctx->ppa_addrh[ix]==addrh))
 			{
-				return(BJX2_PtrSetQWordOfsLe(ctx->ppa_data[ix], ra, val));
+				BJX2_PtrSetQWordOfsLe(ctx->ppa_data[ix], ra, val);
+				return(0);
 			}
 		}
 	}

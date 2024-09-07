@@ -20,7 +20,8 @@ BUILD_DEBUG_DIR=debug$(ARCH)$(GLIBC)
 BUILD_RELEASE_DIR=release$(ARCH)$(GLIBC)
 
 TOOLPATH=/usr/local/bin/
-TARGETPFX=riscv64-unknown-elf-
+# TARGETPFX=riscv64-unknown-elf-
+TARGETPFX=riscv64-unknown-linux-gnu-
 
 CC=$(TOOLPATH)$(TARGETPFX)gcc
 AR=$(TOOLPATH)$(TARGETPFX)ar
@@ -33,6 +34,13 @@ TK_CFL= -nostdinc -nostdlib -nostartfiles -fno-builtin -O3 \
 	-march=rv64g -mabi=lp64 -mno-fdiv \
 	-mno-strict-align -ffast-math -std=c17 -ffp-contract=off
 
+TK_CFL_GLIB= -O3 \
+	-fwrapv -fno-strict-aliasing -fno-inline \
+	-march=rv64g -mabi=lp64 -mno-fdiv \
+	-mno-strict-align -ffast-math -std=c17 -ffp-contract=off
+#	-specs=/usr/local/rv64/lib/musl-gcc.specs
+	# -nostdinc -nostdlib -nostartfiles
+
 # -mtune=sifive-s76
 
 #	-mno-fdiv
@@ -41,16 +49,28 @@ TK_CFL= -nostdinc -nostdlib -nostartfiles -fno-builtin -O3 \
 TK_LDFL= $(TK_CFL) \
 	-Wl,-nostdlib -Wl,-e,_start
 
+TK_LDFL_GLIB= $(TK_CFL_GLIB)
+
 BASE_CFLAGS=-Itk_clib/include -Ltk_clib
+BASE_CFLAGS_GLIB= # -I/usr/local/rv64/include -L/usr/local/rv64/lib
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 LDFLAGS=$(TK_LDFL) -lclib_rv64
 
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) 
 
+CFLAGS64_GLIB=$(TK_CFL_GLIB) $(BASE_CFLAGS_GLIB) 
+
 # LDFLAGS64=$(TK_LDFL) -lclib_rv64
-LDFLAGS64=$(TK_LDFL) -lvxcore_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
-	-ffunction-sections -Wl,-gc-sections -Wl,-T,./doomsrc2/elf64rv_dflmod.x
+#LDFLAGS64=$(TK_LDFL) -lvxcore_rv64 -ltkgdi_rv64 -Wl,--emit-relocs \
+#	-ffunction-sections -fdata-sections -Wl,-gc-sections \
+#	-Wl,-T,./doomsrc2/elf64rv_dflmod.x
+
+LDFLAGS64=$(TK_LDFL) -lclib_rv64 -ltkgdi_rv64  -fPIC -shared \
+	-ffunction-sections -fdata-sections -Wl,-gc-sections
+
+LDFLAGS64_GLIB=$(TK_LDFL_GLIB) -fPIC -fPIE \
+	-ffunction-sections -fdata-sections -Wl,-gc-sections
 
 GL_CFLAGS64	= $(CFLAGS64) -DGLQUAKE
 
@@ -275,7 +295,9 @@ primecnt_sh4b.elf: primecnt.c
 
 
 dhry_rv64.elf: $(DHRY_SRCS)
-	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME -DREG=register
+#	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME -DREG=register
+	$(CC) $(CFLAGS64_GLIB) -o $@ $(DHRY_SRCS) $(LDFLAGS64_GLIB) \
+		-DTIME -DREG=register
 	$(NM) dhry_rv64.elf > dhry_rv64.elf.map
 
 

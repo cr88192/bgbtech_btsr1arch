@@ -127,8 +127,72 @@ tk_isr_syscall_rv:
 
 #endif
 
+s64 TK_HandleSyscallLnx(TKPE_TaskInfo *task,
+	int uMsg, TK_SysArg *args)
+{
+	TKPE_TaskInfoKern *taskern;
+	TK_EnvContext *env;
+	s64 ret;
+	char *s0, *s1;
+	int sz, dfd, fd, fl, md;
 
-int TK_HandleSyscall(TKPE_TaskInfo *task,
+	taskern=(TKPE_TaskInfoKern *)(task->krnlptr);
+	env=(void *)task->envctx;
+
+	ret=-1;
+
+	switch(uMsg)
+	{
+	case TK_SCLNX_GETCWD:
+		sz=TK_EnvCtx_GetEnvVar(env, "PWD", args[0].p, args[1].i);
+		ret=sz;
+		break;
+	case TK_SCLNX_CHDIR:
+		break;
+	
+	case TK_SCLNX_OPENAT:
+		dfd=args[0].i;
+		s0=args[1].p;
+		fl=args[2].i;
+		md=args[3].i;
+		s1="r+b";
+		fd=tk_hfopen(task, s0, s1);
+//		taskern->lclfd[dfd]=fd;
+		ret=fd;
+		break;
+
+	case TK_SCLNX_CLOSE:
+		tk_hclose(task, args[0].i);
+		break;
+
+	case TK_SCLNX_LSEEK:
+		ret=tk_hseek(task,
+			args[0].i, args[2].l, args[4].i);
+		*(s64 *)(args[3].p)=ret;
+		break;
+
+	case TK_SCLNX_READ:
+		ret=tk_hread(task, args[0].i, args[1].p, args[2].i);
+		break;
+	case TK_SCLNX_WRITE:
+		if(args[0].i<3)
+		{
+			tk_puts_n(args[1].p, args[2].i);
+			ret=args[2].i;
+			break;
+		}
+		ret=tk_hwrite(task, args[0].i, args[1].p, args[2].i);
+		break;
+	
+	default:
+		tk_dbg_printf("TK_HandleSyscallLnx: Unhandled %04X\n", uMsg);
+		break;
+	}
+	
+	return(ret);
+}
+
+s64 TK_HandleSyscall(TKPE_TaskInfo *task,
 	void *sObj, int uMsg, void *vParm1, void *vParm2)
 {
 	TKPE_TaskInfo *newtask;
@@ -137,7 +201,8 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 	s64 li;
 	char *s0;
 	void *p;
-	int ret, sz;
+	s64 ret;
+	int sz;
 
 //	__debugbreak();
 
@@ -517,10 +582,16 @@ int TK_HandleSyscall(TKPE_TaskInfo *task,
 			break;
 
 		case 2:
+		case 3:
 			/* COMGLUE */
 			TKGDI_ComGlueDispatch(task,
 				sObj, uMsg-TK_UMSG_COMGLUE_VMT0,
 				vParm1, vParm2);
+			break;
+
+		case 8:		case 9:
+		case 10:	case 11:
+			ret=TK_HandleSyscallLnx(task, uMsg-TK_UMSG_LNXSC, vParm2);
 			break;
 
 		default:

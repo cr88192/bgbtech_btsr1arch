@@ -1410,7 +1410,8 @@ void BJX2_Op_BSR_RegRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
 //	if(!ctx->regs[BJX2_REG_LR])
 //		{ JX2_DBGBREAK }
-	if(!(ctx->regs[BJX2_REG_LR]&0x0000FFFFFFFFFFFEULL))
+//	if(!(ctx->regs[BJX2_REG_LR]&0x0000FFFFFFFFFFFEULL))
+	if(!(ctx->regs[op->rn]&0x0000FFFFFFFFFFFEULL))
 		{ JX2_DBGBREAK }
 }
 

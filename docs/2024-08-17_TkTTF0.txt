@@ -16,13 +16,13 @@ For each glyph word, the high 4 bits will give a tag:
 * 3: End of Shape/Contour (Vertex)
 
 Vertex:
-* (11: 0): X Position
-* (23:12): Y Position
-* (   24): Curve
-* (   25): Smoothing Hint
-* (   26): Offcurve
-* (   27): MBZ
 * (31:28): Tag
+* (   27): MBZ
+* (   26): Offcurve
+* (   25): Smoothing Hint
+* (   24): Curve
+* (23:12): Y Position
+* (11: 0): X Position
 
 The Vertex X and Y coords will be between -2048 and 2047.
 
@@ -32,9 +32,9 @@ If a point is Curve:
 * Will wrap if the first or last vertex in the contour.
 
 Commands:
-* (23: 0): Command Data
-* (27:24): Command ID
 * (31:28): Tag
+* (27:24): Command ID
+* (23: 0): Command Data
 
 Command 0:
 * If Data is 000000, End of Glyph
@@ -54,7 +54,7 @@ Commands 4/5/6/7 will come before the first contour.
 Command 0 will come following the last contour.
 
 
-Page:
+Page (Raw):
 * Each page will consist of 256 32-bit words;
 * These will give the offset of the start of each glyph;
 * Entries holding 0 will be absent;
@@ -64,6 +64,28 @@ Page Directory:
 * Same general structure as a Page;
 * Holds the offset of the start of each page;
 * If an offset is 0, this page does not exist.
+
+The Page and Page Directory may be either Raw or Compacted.
+
+If the table is Raw:
+* It will contain 256 words, holding offsets.
+* The high 8 bits of each entry are to be zeroed.
+
+If the tables are Compacted:
+* (31:24): Logical Table Index
+* (23: 0): Offset
+* Entries are to be be in ascending order by index.
+* A NULL entry will be present at the end of the table.
+* A NULL entry will appear before the start of the table.
+
+The NULL entry for compacted tables will have all Offset bits set to 0.
+* The high 8 bits will be non-zero.
+* For the entry preceding the table, it will give the number of entries-1.
+* For the entry at the end of the table, the high 8 bits are undefined.
+* Dense tables may be packed end-to-end, with shared NULL entries.
+
+A Compacted table may not begin with two Zero Index entries. If there is a single entry and it is 0, then the NULL entry may not also be 0.
+
 
 File Header:
 * Word 0: Magic at start of file 'BGTF'
@@ -75,6 +97,8 @@ Global Words:
 * Give some general parameters for the font as a whole.
 * Terminated by a 0 word.
 
-Global Command 1:
-* Gives logical size of "Em Glyph"
+Global Commands
+* 1: Gives logical size of "Em Glyph"
+* 6: Bound Mins (All Glyphs)
+* 7: Bound Maxs (All Glyphs)
 

@@ -25,6 +25,18 @@
 #endif
 
 
+#ifndef __linux
+void btesh2_ttynoncanon(void)
+{
+	return;
+}
+
+void btesh2_resettermios(void)
+{
+	return;
+}
+#endif
+
 #ifdef __linux
 static struct termios old_termios;
 

@@ -2314,7 +2314,9 @@ int JX2R_TKFAT_SetupDirEntNewDirectory(
 	deb=&tdeb;
 	memset(deb, 0, sizeof(JX2R_TKFAT_FAT_DirEnt));
 
-	strcpy((char *)(deb->name), ".          ");
+//	strcpy((char *)(deb->name), ".          ");
+	strncpy((char *)(deb->name), ".       ", 8);
+	strncpy((char *)(deb->ext), "   ", 3);
 	deb->attrib|=0x10;
 	btesh2_tkfat_setWord(deb->cluster_lo, dcli);
 	btesh2_tkfat_setWord(deb->cluster_hi, dcli>>16);
@@ -2324,7 +2326,9 @@ int JX2R_TKFAT_SetupDirEntNewDirectory(
 
 	pcli=dee->clid;
 	if(pcli<2)pcli=0;
-	strcpy((char *)(deb->name), "..         ");
+//	strcpy((char *)(deb->name), "..         ");
+	strncpy((char *)(deb->name), "..      ", 8);
+	strncpy((char *)(deb->ext), "   ", 3);
 	deb->attrib|=0x10;
 	btesh2_tkfat_setWord(deb->cluster_lo, pcli);
 	btesh2_tkfat_setWord(deb->cluster_hi, pcli>>16);

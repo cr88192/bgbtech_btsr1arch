@@ -2613,7 +2613,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		if(sctx->verbose)
 		{
 			s0=sctx->sec_name[i];
-			printf("%2d: %-010s %08X..%08X %08X(%8d)\n", i, s0,
+			printf("%2d: %-10s %08X..%08X %08X(%8d)\n", i, s0,
 				sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
 				sctx->sec_lsz[i], sctx->sec_lsz[i]);
 		}
@@ -2655,7 +2655,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			if(sctx->verbose)
 			{
 				s0=sctx->sec_name[i];
-				printf("%2d: %-010s %08X..%08X %08X(%8d)\n", i, s0,
+				printf("%2d: %-10s %08X..%08X %08X(%8d)\n", i, s0,
 					sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
 					sctx->sec_lsz[i], sctx->sec_lsz[i]);
 			}
@@ -2678,7 +2678,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	if(sctx->verbose)
 	{
 		s0=sctx->sec_name[i];
-		printf("%2d: %-010s %08X..%08X %08X(%8d)\n", i, s0,
+		printf("%2d: %-10s %08X..%08X %08X(%8d)\n", i, s0,
 			sctx->sec_lva[i], sctx->sec_lva[i]+sctx->sec_lsz[i],
 			sctx->sec_lsz[i], sctx->sec_lsz[i]);
 	}

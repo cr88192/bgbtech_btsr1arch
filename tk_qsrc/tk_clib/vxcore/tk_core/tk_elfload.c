@@ -260,15 +260,86 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	return(0);
 }
 
+void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name)
+{
+	byte *imgbase;
+	byte *symtab_ptr;
+	byte *strtab_ptr;
+	byte *sym, *ptr;
+	char *sn;
+	int sym_ent, rva_symtab, rva_strtab;
+	int sym_name, sym_value, sym_shndx;
+	int i, j, k;
+	
+	imgbase=img->imgbase;
+	rva_symtab=img->rva_symtab;
+	rva_strtab=img->rva_strtab;
+	sym_ent=img->sz_syment;
+	symtab_ptr=imgbase+rva_symtab;
+	strtab_ptr=imgbase+rva_strtab;
+
+	tk_dbg_printf("TKPE_LookupImageElfExport: "
+		"RVA_Sym=%X RVA_Str=%X EntSz=%d\n",
+		rva_symtab, rva_strtab, sym_ent);
+
+	if(!rva_symtab || !rva_strtab)
+	{
+		return(NULL);
+	}
+
+//	k=rel_info>>32;
+
+	for(i=1;; i++)
+	{
+		sym=symtab_ptr+i*sym_ent;
+		sym_name=btsh2_ptrGetUD(sym+0, 1);
+		sym_value=btsh2_ptrGetUQ(sym+8, 1);
+		sym_shndx=btsh2_ptrGetUW(sym+6, 1);
+		
+		if(!sym_name && !sym_shndx && !sym_value)
+		{
+			tk_dbg_printf("TKPE_LookupImageElfExport: End of syms %d\n", i);
+			break;
+		}
+
+		if(!sym_shndx)
+			continue;
+		
+		if((sym_name<0) || (sym_name>0x10000))
+		{
+			continue;
+		}
+
+		sn=strtab_ptr+sym_name;
+
+//		tk_dbg_printf("TKPE_LookupImageElfExport: Check %s\n", sn);
+
+		if(!strcmp(sn, name))
+		{
+			ptr=img->imgbase+sym_value;
+			tk_dbg_printf("TKPE_LookupImageElfExport: Found %s %p\n", sn, ptr);
+			return(ptr);
+		}
+	}
+	
+	tk_dbg_printf("TKPE_LookupImageElfExport: %s not found in %s\n",
+		name, img->imgname);
+	return(NULL);
+}
+
 TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	char *imgname, char *cwd, int is_dll)
 {
 //	byte tbuf[1024];
 	byte tbuf[1024+32];
+	char *a_needed[64];
+	TKPE_ImageInfo *img_needed[64];
 	TKPE_ImageInfo *img, *idll;
 	byte *imgptr, *ct, *cte, *bss_ptr;
 	byte *dyn_ptr, *rela_ptr, *strtab_ptr, *symtab_ptr;
 	u64 *rel_where;
+	byte *ptr;
+	int n_needed;
 
 	u64 imgbase, imgbase1;
 	s64 reloc_disp;
@@ -276,17 +347,21 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	struct btsh2_elf64_phdr_s *phdr;
 	u64 entry, phoff, shoff;
 	u64 paddr, pmsz, pfsz, poff, mach;
-	u64 rel_info, rel_addend, rel_org;
+	s64 rel_info, rel_addend, rel_org;
 	byte en, isriscv, isbjx2, isxg2, isxg2rv, isdyn;
 	int phentsz, phnum, phty, imgsz, imgsz1;
 	int rela_offs, rela_sz, rela_ent;
 	int pltrel_offs, pltrel_sz, pltrel_ent;
 	int sym_offs, sym_sz, sym_ent, strs_ofs;
-	int sym_name, sym_value;
+	int sym_name, sym_shndx;
+	s64 sym_value;
+	int pboix;
 	int i, j, k, l;
 
-	if(is_dll&3)
-		return(NULL);
+//	if(is_dll&3)
+//		return(NULL);
+
+	tk_dbg_printf("TKPE_LoadDynELF: Begin Load %s\n", imgname);
 
 	tk_fseek(fd, fdoffs, 0);
 	tk_fread(tbuf, 1, 1024, fd);
@@ -378,8 +453,12 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	imgsz1=(imgsz+16384+16383)&(~16383);
 
 //	imgptr=TKMM_PageAlloc(imgsz1);
-	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
-		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+
+//	imgptr=TKMM_PageAllocVaMap(imgsz1, TKMM_PROT_RWX,
+//		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT);
+	imgptr=tk_mmap(0, imgsz1, TKMM_PROT_RWX,
+		TKMM_MAP_SHARED|TKMM_MAP_32BIT|TKMM_MAP_DIRECT, -1, 0);
+//	imgptr=NULL;
 
 	if(!imgptr)
 	{
@@ -387,11 +466,19 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	}
 
 //	memset(imgptr, 0, imgsz1-32);
-//	memset(imgptr, 0, imgsz1);
+	memset(imgptr, 0, imgsz1);
 
-	TK_VMem_MProtectPages((u64)imgptr, imgsz1,
-		TKMM_PROT_READ|TKMM_PROT_WRITE|
-		TKMM_PROT_EXEC);
+	if(imgptr)
+	{
+		TK_VMem_MProtectPages((u64)imgptr, imgsz1,
+			TKMM_PROT_READ|TKMM_PROT_WRITE|
+			TKMM_PROT_EXEC);
+	}
+
+	if(!imgptr)
+	{
+		imgptr=TKMM_PageAlloc(imgsz1);
+	}
 
 //	imgptr+=i;
 
@@ -399,6 +486,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);
+	img->iself=1;
 
 	imgbase1=(u64)imgptr;
 	tk_dbg_printf("TKPE!LDA:%s=%04X_%08X\n", imgname,
@@ -407,6 +495,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //	entry+=(u64)imgptr;
 	entry+=imgbase;
 
+	dyn_ptr=NULL;
 
 	for(i=0; i<phnum; i++)
 	{
@@ -420,6 +509,9 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 			
 			if(phty==2)
 			{
+				printf("DYN: %08X -> %08X %08X\n",
+					poff, paddr, pmsz, phty);
+
 				dyn_ptr=imgptr+paddr;
 				continue;
 			}
@@ -435,7 +527,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		pmsz=btsh2_ptrGetUD(phdr->p_memsz, en);
 		poff=btsh2_ptrGetUD(phdr->p_offset, en);
 		
-//		printf("%08X -> %08X %08X\n", poff, paddr, pmsz);
+		printf("%08X -> %08X %08X\n", poff, paddr, pmsz);
 
 #if 0
 		if((poff+pmsz)>szibuf)
@@ -462,6 +554,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //		}
 	}
 	
+	n_needed=0;
 	if(dyn_ptr)
 	{
 		rela_offs=0;
@@ -470,6 +563,9 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 		pltrel_offs=0;
 		pltrel_ent=0;
+		sym_offs=0;
+		strs_ofs=0;
+		sym_ent=0;
 
 		for(i=0;; i++)
 		{
@@ -478,6 +574,11 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 			if(!phty)
 				break;
 //			printf("BTESH2_BootLoadElf: Tag=%08X = %08X\n", phty, paddr);
+
+			if(phty==1)
+			{	
+//				pltrel_sz=paddr;
+			}
 
 			if(phty==2)
 				{ pltrel_sz=paddr; }
@@ -505,6 +606,43 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		strtab_ptr=imgptr+strs_ofs;
 		symtab_ptr=imgptr+sym_offs;
 
+		tk_dbg_printf("TKPE_LoadDynELF: RVA_Sym=%X RVA_str=%x SymEnt=%d\n",
+			sym_offs, strs_ofs, sym_ent);
+
+		img->rva_symtab=sym_offs;
+		img->rva_strtab=strs_ofs;
+		img->sz_syment=sym_ent;
+
+		tk_dbg_printf("TKPE_LoadDynELF: RVA_Sym=%X RVA_str=%x SymEnt=%d\n",
+			img->rva_symtab, img->rva_strtab, img->sz_syment);
+
+		for(i=0;; i++)
+		{
+			phty=btsh2_ptrGetUQ(dyn_ptr+i*16+0, en);
+			paddr=btsh2_ptrGetUQ(dyn_ptr+i*16+8, en);
+			if(!phty)
+				break;
+//			printf("BTESH2_BootLoadElf: Tag=%08X = %08X\n", phty, paddr);
+
+			if(phty==1)
+			{
+				j=n_needed++;
+				a_needed[j]=strtab_ptr+paddr;
+				k=TKPE_TryLoadProgramImage(a_needed[j], cwd, 1);
+				if(k>0)
+				{
+					img_needed[j]=TK_GetImageForIndex(k);
+					tk_printf("BTESH2_BootLoadElf: Got %s ix=%d p=%p\n",
+						a_needed[j], k, img_needed[j]);
+				}else
+				{
+					tk_printf("BTESH2_BootLoadElf: Failed SO %s\n",
+						a_needed[j]);
+					img_needed[j]=NULL;
+				}
+			}
+		}
+
 //		if(pltrel_ent==7)
 			pltrel_ent=rela_ent;
 
@@ -531,12 +669,45 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 				sym_name=btsh2_ptrGetUD(symtab_ptr+k*sym_ent+0, en);
 				sym_value=btsh2_ptrGetUQ(symtab_ptr+k*sym_ent+8, en);
+				sym_shndx=btsh2_ptrGetUW(symtab_ptr+k*sym_ent+6, en);
 
-				if(sym_value>imgsz)
+//				if(sym_shndx==0)
+				if((sym_shndx==0) && sym_name)
 				{
-					tk_printf("BTESH2_BootLoadElf: Reloc: "
-						"Symbol outside image, VA=%016llX\n",
-						sym_value);
+					ptr=NULL;
+					for(j=0; j<n_needed; j++)
+					{
+						if(!img_needed[j])
+							continue;
+						ptr=TKPE_LookupImageDllExport(img_needed[j],
+							strtab_ptr+sym_name);
+						if(ptr)
+							break;
+					}
+					
+					if(ptr)
+					{
+						sym_value=((s64)ptr)-imgbase;
+
+//						__debugbreak();
+
+						tk_printf("BTESH2_BootLoadElf: "
+							"Got Sym n=%s a=%p imb=%p rel=%p\n",
+							strtab_ptr+sym_name, ptr,
+							imgbase, sym_value);
+					}else
+					{
+						tk_printf("BTESH2_BootLoadElf: Fail Sym %s\n",
+							strtab_ptr+sym_name);
+					}
+				}else
+				{
+					if(sym_value>imgsz)
+					{
+						tk_printf("BTESH2_BootLoadElf: Reloc: "
+							"Symbol outside image, VA=%016llX\n",
+							sym_value);
+					}
 				}
 
 //				tk_printf("BTESH2_BootLoadElf: Reloc: "
@@ -604,6 +775,36 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 					}
 					break;
 
+				case 10:		//R_RISCV_TPREL32
+					rel_org=*(u32 *)rel_where;
+
+					*(u32 *)rel_where=offsetof(TKPE_TaskInfo, img_elftls)+
+						sym_value+rel_addend;
+//					*rel_where=imgbase+sym_value;
+
+					if((*rel_where<imgbase) || (*rel_where>(imgbase+imgsz)))
+					{
+						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_64: "
+							"%012llX -> %012llX\n",
+							rel_org, *rel_where);
+					}
+					break;
+
+				case 11:		//R_RISCV_TPREL64
+					rel_org=*rel_where;
+
+					*rel_where=offsetof(TKPE_TaskInfo, img_elftls)+
+						sym_value+rel_addend;
+//					*rel_where=imgbase+sym_value;
+
+					if((*rel_where<imgbase) || (*rel_where>(imgbase+imgsz)))
+					{
+						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_64: "
+							"%012llX -> %012llX\n",
+							rel_org, *rel_where);
+					}
+					break;
+
 				default:
 					tk_printf("BTESH2_BootLoadElf: Reloc %02X: Miss\n",
 						rel_info&255);
@@ -636,6 +837,46 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 				sym_name=btsh2_ptrGetUD(symtab_ptr+k*sym_ent+0, en);
 				sym_value=btsh2_ptrGetUQ(symtab_ptr+k*sym_ent+8, en);
+				sym_shndx=btsh2_ptrGetUW(symtab_ptr+k*sym_ent+6, en);
+
+//				if(sym_shndx==0)
+				if((sym_shndx==0) && sym_name)
+				{
+					ptr=NULL;
+					for(j=0; j<n_needed; j++)
+					{
+						if(!img_needed[j])
+							continue;
+						ptr=TKPE_LookupImageDllExport(img_needed[j],
+							strtab_ptr+sym_name);
+						if(ptr)
+							break;
+					}
+					
+					if(ptr)
+					{
+						sym_value=((s64)ptr)-imgbase;
+
+//						__debugbreak();
+
+						tk_printf("BTESH2_BootLoadElf: "
+							"Got Sym n=%s a=%p imb=%p rel=%p\n",
+							strtab_ptr+sym_name, ptr,
+							imgbase, sym_value);
+					}else
+					{
+						tk_printf("BTESH2_BootLoadElf: Fail Sym %s\n",
+							strtab_ptr+sym_name);
+					}
+				}else
+				{
+					if(sym_value>imgsz)
+					{
+						tk_printf("BTESH2_BootLoadElf: Reloc: "
+							"Symbol outside image, VA=%016llX\n",
+							sym_value);
+					}
+				}
 
 				if(sym_value>imgsz)
 				{
@@ -736,7 +977,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		return(NULL);
 	}
 
-	tk_dbg_printf("TKPE_LoadDynELF: Entry=%016llX\n", entry);
+	tk_dbg_printf("TKPE_LoadDynELF: Entry=%016X\n", entry);
 
 //	*rbootptr=(void *)entry;
 //	*rbootgbr=NULL;
@@ -758,6 +999,30 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //		szcpy=gbr_sz;
 //	img->gbr_szcpy=szcpy;
 //	img->gbr_sz=gbr_sz;
+
+#if 1
+	if(1)
+	{
+		img->isdll=is_dll;
+
+		i=tkpe_nimgix++;
+		if(!i)
+			i=tkpe_nimgix++;
+		tkpe_pbo_image[i]=img;
+		img->imgix=i;
+
+		*(u32 *)(imgptr+0x0C)=i;
+
+		if(is_dll&1)
+		{
+			pboix=tkpe_npboix++;
+			tkpe_pbo_dllimg[pboix]=img;
+			img->pboix=pboix;
+		}
+	}
+#endif
+
+	tk_dbg_printf("TKPE_LoadDynELF: Done Load %s\n", imgname);
 
 	return(img);
 }

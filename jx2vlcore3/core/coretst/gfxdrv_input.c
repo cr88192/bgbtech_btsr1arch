@@ -4,17 +4,20 @@
 
 static byte frgl_keymap[32];
 static byte frgl_lkeymap[32];
-static unsigned short frgl_keybuf2[64];
-static int frgl_keybuf2_pos;
+// static unsigned short frgl_keybuf2[256];
+static u16 frgl_keybuf2[256];
+// static int frgl_keybuf2_pos;
+static byte frgl_keybuf2_pos;
 byte gfxdrv_lastkeys[2048];
 
 static int keyb_num_shift[10]={
 ')', '!', '@', '#', '$', '%', '^', '&', '*', '('
 };
 
+static u16 frgl_keybuf3[256];
+
 u16 *FRGL_GetKeybuf()
 {
-	static u16 frgl_keybuf3[64];
 	u16 *buf;
 
 	buf=frgl_keybuf3;

@@ -3034,6 +3034,95 @@ begin
 
 	ifNxtValBraOk	= 0;
 
+`ifdef def_true
+	ex1RegInSchm	= 0;
+	ex2RegInSchm	= 0;
+	ex1RegInLr		= 0;
+	ex2RegInSr		= 0;
+	ex1RegInSp		= 0;
+	ex1RegInDhr		= 0;
+	ex1RegInDlr		= 0;
+	ex2RegInSp		= 0;
+	ex2MemDataOK	= 0;
+	ex2MemDataInB	= 0;
+	ex2MemDataIn	= 0;
+	exC3RegMulWRes	= 0;
+	exC2RegMulWRes	= 0;
+	exB2RegMulWRes	= 0;
+	exB3RegMulWRes	= 0;
+	dcInTraPc		= 0;
+	dcInValB		= 0;
+	dcInVal			= 0;
+	dcInOpmB		= 0;
+	dcInAddrB		= 0;
+	dcInLdOp		= 0;
+	dcInOpm			= 0;
+	dcInAddr		= 0;
+	ex3RegMulWRes	= 0;
+	ex3RegAluRes	= 0;
+//	ex3RegAluResB	= 0;
+	ex3RegMulRes	= 0;
+	ex2RegMulWRes	= 0;
+	ex2RegMulRes	= 0;
+	ex2RegAluRes	= 0;
+
+	exB2RegAluRes	= 0;
+	exB3RegAluRes	= 0;
+
+	exC2RegAluRes	= 0;
+	exC3RegAluRes	= 0;
+
+	gprEx1Flush		= 0;
+	gprEx2Flush		= 0;
+	gprEx3Flush		= 0;
+	crIdCn3			= 0;
+	crValCn3		= 0;
+	crIdCn2			= 0;
+	crValCn2		= 0;
+	crIdCn1			= 0;
+	crValCn1		= 0;
+
+	gprIdRnB1		= 0;
+	gprValRnB1		= 0;
+	gprIdRnB2		= 0;
+	gprValRnB2		= 0;
+	gprIdRnB3		= 0;
+	gprValRnB3		= 0;
+	gprIdRnB4		= 0;
+	gprValRnB4		= 0;
+
+	gprIdRnC1		= 0;
+	gprValRnC1		= 0;
+	gprIdRnC2		= 0;
+	gprValRnC2		= 0;
+	gprIdRnC3		= 0;
+	gprValRnC3		= 0;
+	gprIdRnC4		= 0;
+	gprValRnC4		= 0;
+
+	gprIdRn1		= 0;
+	gprValRn1		= 0;
+	gprIdRn2		= 0;
+	gprValRn2		= 0;
+	gprIdRn3		= 0;
+	gprValRn3		= 0;
+	gprIdRn4		= 0;
+	gprValRn4		= 0;
+
+	gprValImmC4		= 0;
+	gprValImmB4		= 0;
+	gprValImmA4		= 0;
+	
+	tDbgExWidth		= 0;
+	crInPc			= 0;
+	ifValPcInc		= 0;
+	ifValPcHi		= 0;
+	ifValPc			= 0;
+	tNxtIsrBranchMsgLatch	= 0;
+	braIsrSp		= 0;
+	
+`endif
+
 	crInExsr		= crOutExsr;
 	crInSpc			= crOutSpc;
 	crInSsp			= crOutSsp;

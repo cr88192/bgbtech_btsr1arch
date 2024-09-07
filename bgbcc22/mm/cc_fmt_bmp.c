@@ -91,6 +91,9 @@ struct BGBCC_BITMAPV5HEADER_s {
 	u32 biReserved;
 };
 
+byte *BGBBTJ_BufPNG_Decode(
+	byte *csbuf, int cssz, int *w, int *h);
+
 
 byte *BGBCC_Img_DecodeBMP(byte *imgbuf, int *rw, int *rh)
 {
@@ -316,6 +319,18 @@ byte *BGBCC_Img_DecodeImage(byte *imgbuf, int *rw, int *rh)
 		(imgbuf[2]=='i') && (imgbuf[3]=='f'))
 	{
 		return(LCIF_DecImageTempBuffer(imgbuf, rw, rh));
+	}
+	
+	if(	(imgbuf[0]=='u') && (imgbuf[1]=='p') &&
+		(imgbuf[2]=='h') && (imgbuf[3]=='d'))
+	{
+		return(TKuPI_DecodeImageTempBuffer(imgbuf, rw, rh));
+	}
+	
+	if(	(imgbuf[0]==0x89) && (imgbuf[1]=='P') &&
+		(imgbuf[2]=='N') && (imgbuf[3]=='G'))
+	{
+		return(BGBBTJ_BufPNG_Decode(imgbuf, 1<<20, rw, rh));
 	}
 	
 	return(NULL);

@@ -101,6 +101,10 @@
 #include "mm/lcif_dec.c"
 #include "mm/lcif_enc.c"
 
+#include "mm/tkupic_dec.c"
+#include "mm/tkupic_enc.c"
+#include "mm/bufpng.c"
+
 
 #include "ccxl/ccxl_cgif.c"
 #include "ccxl/ccxl_compile.c"

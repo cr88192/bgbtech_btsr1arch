@@ -275,6 +275,20 @@ reg[15:0]	tNxtIdleTimerCntB;
 
 always @*
 begin
+//	chPcmA		= 0;
+//	tChAccumOvfLa		= 0;
+//	tChAccumOvfLb		= 0;
+//	tChAccumOvfRa		= 0;
+//	tChAccumOvfRb		= 0;
+//	tNxtBitTimeout		= 0;
+
+	tGetByteNsA		= 0;
+	tGetByteNsB		= 0;
+	valUsbLdSel		= 0;
+	valUsbStSel		= 0;
+	idxUsbLdRxM		= 0;
+	idxUsbStRxM		= 0;
+
 	tMmioOutData	= UV64_00;
 	tMmioOutAddr	= UV32_00;
 	tMmioOK			= UMEM_OK_READY;

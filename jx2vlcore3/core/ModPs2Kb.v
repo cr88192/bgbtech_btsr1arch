@@ -143,6 +143,8 @@ reg[13:0]		tNxtScanOutClk;
 
 always @*
 begin
+	tNxtBitTimeout	= 0;
+
 	tMmioOutData	= UV32_XX;
 	tMmioOK			= UMEM_OK_READY;
 

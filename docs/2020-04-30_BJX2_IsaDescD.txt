@@ -3867,19 +3867,19 @@ Conversion will be the same as that for the register instruction.
 * FFw0_00pp_F0nm_5GoB  FMACX	Xm, Xo, Xp, Xn		//(GFPX) FMAC, LongDbl
 * FFw0_01pp_F0nm_5goB  FMAS		Rm, Ro, Rp, Rn		//(FMAC) FMAS, Rn=Rm*Ro-Rp
 * FFw0_01pp_F0nm_5GoB  FMASX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
-* FFw0_02pp_F0nm_5goB  FMRS		Rm, Ro, Rp, Rn		//(FMAC) FMAS, Rn=Rp-Rm*Ro
-* FFw0_02pp_F0nm_5GoB  FMRSX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
-* FFw0_03pp_F0nm_5goB  FMRA		Rm, Ro, Rp, Rn		//(FMAC) FMAS, Rn=-Rm*Ro-Rp
-* FFw0_03pp_F0nm_5GoB  FMRAX	Xm, Xo, Xp, Xn		//(GFPX) FMAS, LongDbl
+* FFw0_02pp_F0nm_5goB  FMRS		Rm, Ro, Rp, Rn		//(FMAC) FMRS, Rn=Rp-Rm*Ro
+* FFw0_02pp_F0nm_5GoB  FMRSX	Xm, Xo, Xp, Xn		//(GFPX) FMRS, LongDbl
+* FFw0_03pp_F0nm_5goB  FMRA		Rm, Ro, Rp, Rn		//(FMAC) FMRA, Rn=-Rm*Ro-Rp
+* FFw0_03pp_F0nm_5GoB  FMRAX	Xm, Xo, Xp, Xn		//(GFPX) FMRA, LongDbl
 
-* FFw0_04pp_F0nm_5goB  PMAC.H	Rm, Ro, Rp, Rn		//(NNX) FMAC, Rn=Rm*Ro+Rp
-* FFw0_04pp_F0nm_5GoB  PMAC.F	Xm, Xo, Xp, Xn		//(NNX) FMAC, LongDbl
-* FFw0_05pp_F0nm_5goB  PMAS.H	Rm, Ro, Rp, Rn		//(NNX) FMAS, Rn=Rm*Ro-Rp
-* FFw0_05pp_F0nm_5GoB  PMAS.F	Xm, Xo, Xp, Xn		//(NNX) FMAS, LongDbl
-* FFw0_06pp_F0nm_5goB  PMRS.H	Rm, Ro, Rp, Rn		//(NNX) FMAS, Rn=Rp-Rm*Ro
-* FFw0_06pp_F0nm_5GoB  PMRS.F	Xm, Xo, Xp, Xn		//(NNX) FMAS, LongDbl
-* FFw0_07pp_F0nm_5goB  PMRA.H	Rm, Ro, Rp, Rn		//(NNX) FMAS, Rn=-Rm*Ro-Rp
-* FFw0_07pp_F0nm_5GoB  PMRA.F	Xm, Xo, Xp, Xn		//(NNX) FMAS, LongDbl
+* FFw0_04pp_F0nm_5goB  PMAC.H	Rm, Ro, Rp, Rn		//(NNX) PMAC, 4x Fp16
+* FFw0_04pp_F0nm_5GoB  PMAC.F	Xm, Xo, Xp, Xn		//(NNX) PMAC, 4x Fp32
+* FFw0_05pp_F0nm_5goB  PMAS.H	Rm, Ro, Rp, Rn		//(NNX) PMAS, 4x Fp16
+* FFw0_05pp_F0nm_5GoB  PMAS.F	Xm, Xo, Xp, Xn		//(NNX) PMAS, 4x Fp32
+* FFw0_06pp_F0nm_5goB  PMRS.H	Rm, Ro, Rp, Rn		//(NNX) PMRS, 4x Fp16
+* FFw0_06pp_F0nm_5GoB  PMRS.F	Xm, Xo, Xp, Xn		//(NNX) PMRS, 4x Fp32
+* FFw0_07pp_F0nm_5goB  PMRA.H	Rm, Ro, Rp, Rn		//(NNX) PMRA, 4x Fp16
+* FFw0_07pp_F0nm_5GoB  PMRA.F	Xm, Xo, Xp, Xn		//(NNX) PMRA, 4x Fp32
 
 Multiply the double precision value in Ro with the value from Rm and add this to the value in Rn, storing the result in Rn.
 

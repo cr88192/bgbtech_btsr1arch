@@ -83,6 +83,7 @@ void BJX2_Op_MOVW_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op);
 #include "jx2i_dec_op_f8.c"
 #include "jx2i_dec_op_fc.c"
 #include "jx2i_dec_op_rvi.c"
+#include "jx2i_dec_op_rvc.c"
 
 #include "jx2i_dec_tr.c"
 #include "jx2i_interp.c"

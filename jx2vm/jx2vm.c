@@ -318,6 +318,18 @@ void GfxDrv_UpdateEvents()
 	}
 }
 
+int GfxDrv_MouseGetWheelDelta(void)
+{
+}
+
+int GfxDrv_MouseGetRelPos(int *dx, int *dy, int *mb)
+{
+}
+
+int GfxDrv_MouseGetPos(int *mx, int *my, int *mb)
+{
+}
+
 int gfxdrv_locksurf=0;
 
 int GfxDrv_PrepareFramebuf()

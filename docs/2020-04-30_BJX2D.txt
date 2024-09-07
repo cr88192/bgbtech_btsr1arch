@@ -300,6 +300,7 @@ FPSCR Will be defined as:
 ** ( 9): Sticky, Underflow
 ** ( 8): Sticky, Inexact
 * (7:4), Control Bits
+** ( 4): Trap as needed to emulate full IEEE semantics.
 * (3:0), Rounding Mode
 
 The Vector Base Register (VBR) will have the layout:
@@ -2293,7 +2294,7 @@ F0zz Instruction Block:
 ** F0nm_8go4  XMOV.B	Rn, (Xm, Ro)		//
 ** F0nm_8Go4  ? XLEA.B	(Xm, Ro), Xn		//
 ** F0nm_8go5  XMOV.W	Rn, (Xm, Ro)		//
-** F0nm_8Go5  -
+** F0nm_8Go5 ? CAS.Q	Rn, Ro, (Rm)		//Compare and Swap.
 ** F0nm_8go6  XMOV.L	Rn, (Xm, Ro)		//
 ** F0nm_8Go6 ? XMOVTT	Xm, Ro, Xn			//Set Type Tag (BCE)
 ** F0nm_8go7  XMOV.Q	Rn, (Xm, Ro)		//

@@ -164,7 +164,11 @@ reg			tExpIsZero;
 
 always @*
 begin
-	tFmtHalf = 0;
+	tFmtHalf	= 0;
+	tRegValRo	= 0;
+	tValU2H		= 0;
+	tValU2S		= 0;
+	tExpU2Adj	= 0;
 	
 	tSgnS	= regValRs[31];
 	tSgnT	= regValRt[31];

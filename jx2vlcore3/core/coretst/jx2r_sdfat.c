@@ -2040,6 +2040,8 @@ int JX2R_TKFAT_CreateDirEntPathR(JX2R_TKFAT_ImageInfo *img,
 	int dcli;
 	int i;
 	
+//	printf("JX2R_TKFAT_CreateDirEntPathR: A0\n");
+	
 	mkd=false;
 	s=name;
 	while(*s=='/')s++;
@@ -2052,10 +2054,14 @@ int JX2R_TKFAT_CreateDirEntPathR(JX2R_TKFAT_ImageInfo *img,
 		{ s++; mkd=true; }
 
 	memset(&tdee, 0, sizeof(JX2R_TKFAT_FAT_DirEntExt));
-	
+
+//	printf("JX2R_TKFAT_CreateDirEntPathR: A1\n");
+
 //	if(*s)
 	if(mkd)
 	{
+//		printf("JX2R_TKFAT_CreateDirEntPathR: A2\n");
+
 		i=JX2R_TKFAT_CreateDirEntName(img, clid, create, &tdee, tb);
 		if(i<0)
 		{
@@ -2063,24 +2069,42 @@ int JX2R_TKFAT_CreateDirEntPathR(JX2R_TKFAT_ImageInfo *img,
 				"Failed Recurse %s\n", tb);
 			return(i);
 		}
+
+//		printf("JX2R_TKFAT_CreateDirEntPathR: A3\n");
+
 		JX2R_TKFAT_SetupDirEntNewDirectory(&tdee);
+
+//		printf("JX2R_TKFAT_CreateDirEntPathR: A3-1\n");
 		
 		dcli=JX2R_TKFAT_GetDirEntCluster(&tdee);
 
+//		printf("JX2R_TKFAT_CreateDirEntPathR: A4\n");
+
 //		i=JX2R_TKFAT_CreateDirEntPathR(img, tdee.clid, create, dee, s);
 		i=JX2R_TKFAT_CreateDirEntPathR(img, dcli, create, dee, s);
+
+//		printf("JX2R_TKFAT_CreateDirEntPathR: A5\n");
 		return(i);
 	}
 
+//	printf("JX2R_TKFAT_CreateDirEntPathR: A6\n");
+
 	if(!tb[0])
 	{
+//		printf("JX2R_TKFAT_CreateDirEntPathR: A7\n");
+
 		dee->clid=clid;
 		JX2R_TKFAT_SetDirEntCluster(
 			dee, clid);
+
+//		printf("JX2R_TKFAT_CreateDirEntPathR: A8\n");
 		return(1);
 	}
 
+//	printf("JX2R_TKFAT_CreateDirEntPathR: A9\n");
 	i=JX2R_TKFAT_CreateDirEntName(img, clid, create, dee, tb);
+
+//	printf("JX2R_TKFAT_CreateDirEntPathR: A10\n");
 	return(i);
 }
 
@@ -2266,6 +2290,8 @@ int JX2R_TKFAT_SetupDirEntNewDirectory(
 	JX2R_TKFAT_FAT_DirEnt *deb;
 	u32 dcli, pcli;
 
+//	printf("JX2R_TKFAT_SetupDirEntNewDirectory: A0\n");
+
 	dcli=JX2R_TKFAT_GetDirEntCluster(dee);
 	if(dcli)
 	{
@@ -2281,28 +2307,40 @@ int JX2R_TKFAT_SetupDirEntNewDirectory(
 		JX2R_TKFAT_SetDirEntCluster(dee, dcli);
 	}
 
+//	printf("JX2R_TKFAT_SetupDirEntNewDirectory: A1\n");
+
 	JX2R_TKFAT_UpdateDirEnt(dee);
-	
+
+//	printf("JX2R_TKFAT_SetupDirEntNewDirectory: A2\n");
+
 	deb=&tdeb;
 	memset(deb, 0, sizeof(JX2R_TKFAT_FAT_DirEnt));
 
-	strcpy((char *)(deb->name), ".          ");
+	strncpy((char *)(deb->name), ".       ", 8);
+	strncpy((char *)(deb->ext), "   ", 3);
 	deb->attrib|=0x10;
 	btesh2_tkfat_setWord(deb->cluster_lo, dcli);
 	btesh2_tkfat_setWord(deb->cluster_hi, dcli>>16);
 
+//	printf("JX2R_TKFAT_SetupDirEntNewDirectory: A3\n");
+
 	JX2R_TKFAT_ReadWriteDirEntOffset(
 		dee->img, dcli, 0, 1, deb);
 
+//	printf("JX2R_TKFAT_SetupDirEntNewDirectory: A4\n");
+
 	pcli=dee->clid;
 	if(pcli<2)pcli=0;
-	strcpy((char *)(deb->name), "..         ");
+	strncpy((char *)(deb->name), "..      ", 8);
+	strncpy((char *)(deb->ext), "   ", 3);
 	deb->attrib|=0x10;
 	btesh2_tkfat_setWord(deb->cluster_lo, pcli);
 	btesh2_tkfat_setWord(deb->cluster_hi, pcli>>16);
 
 	JX2R_TKFAT_ReadWriteDirEntOffset(
 		dee->img, dcli, 1, 1, deb);
+
+//	printf("JX2R_TKFAT_SetupDirEntNewDirectory: A5\n");
 	return(1);
 }
 
@@ -2666,6 +2704,8 @@ int JX2R_ImageAddFile(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 	int n;
 	int i;
 
+//	printf("JX2R_ImageAddFile: A0\n");
+
 	tbuf=JX2R_LoadFile(fn2, &fsz);
 	if(!tbuf)
 	{
@@ -2673,13 +2713,17 @@ int JX2R_ImageAddFile(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 		return(-1);
 	}
 	
+//	printf("JX2R_ImageAddFile: A1\n");
+
 	i=JX2R_TKFAT_CreateDirEntPath(img, &tdee, fn1);
 	if(i<0)
 	{
 		printf("Create %s fail\n", fn1);
 		return(-1);
 	}
-	
+
+//	printf("JX2R_ImageAddFile: A2\n");
+
 	JX2R_TKFAT_ReadWriteDirEntFile(&tdee, 0, true, tbuf, fsz);
 	printf("Add %s OK %d bytes\n", fn1, fsz);
 	return(1);
@@ -2756,6 +2800,8 @@ int JX2R_UseImageAddFile(char *fn1, char *fn2)
 		fn1=tb1;
 		fn2=tb2;
 	}
+
+//	printf("JX2R_UseImageAddFile: A1\n");
 
 	return(JX2R_ImageAddFile(spimmc_img, fn1, fn2));
 }
