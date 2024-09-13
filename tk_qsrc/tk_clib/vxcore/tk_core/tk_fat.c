@@ -3484,7 +3484,7 @@ int TKFAT_GetDirEntUid(
 		return(dee->me_uid);
 	}
 
-	ct=&(dee->deb.ugid);
+	ct=(byte *)(&(dee->deb.ugid));
 	i=ct[0];
 	return(i);
 }

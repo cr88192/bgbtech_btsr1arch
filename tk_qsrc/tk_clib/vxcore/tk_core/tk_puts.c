@@ -11,6 +11,8 @@ int tk_ps2trygetch(void);
 int tk_ps2getch(void);
 
 void tk_vsprintf(char *buf, char *str, va_list lst);
+void tk_putc(int val);
+int tk_get_redir_stdin(void);
 
 _tkgdi_context_t *TKGDI_GetCurrentGdiContext();
 
@@ -974,8 +976,22 @@ void tk_dbg_puts_n(char *msg, int n)
 
 void tk_dbg_puts(char *msg)
 {
+	char *s;
+	int i;
+
 #ifndef __TK_CLIB_ONLY__
-	tk_dbg_puts_n(msg, strlen(msg));
+//	tk_dbg_puts_n(msg, strlen(msg));
+	if(tk_iskernel() || tk_issyscall())
+	{
+		s=msg;
+		while(*s)
+		{
+//			i=TK_ReadCharUtf8((byte **)(&s));
+			i=*s++;
+			tk_dbg_putc(i);
+		}
+		return;
+	}
 #endif
 }
 
@@ -1005,10 +1021,14 @@ void tk_gets(char *buf)
 		i=tk_getch();
 		if(i<=0)
 		{
+#ifndef __TK_CLIB_ONLY__
 			if(tk_get_redir_stdin())
 				break;
 			TK_YieldCurrentThread();
 			continue;
+#else
+			break;
+#endif
 		}
 		
 //		if(i>=0x80)

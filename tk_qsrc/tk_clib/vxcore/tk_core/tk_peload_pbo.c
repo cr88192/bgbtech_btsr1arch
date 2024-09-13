@@ -26,6 +26,14 @@ TKPE_ImageInfo	*tkpe_pbo_dllimg[256];
 
 int TKPE_TryLoadProgramImage(char *imgname, char *cwd, int isdll);
 void *TKPE_LookupImageDllExport(TKPE_ImageInfo *img, char *name);
+void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name);
+
+void TK_FlushCacheL1D_INVDC(void *ptr);
+void TK_FlushCacheL1D_INVIC(void *ptr);
+void TK_FlushCacheL1D();
+
+int TK_Env_GetLibPathList(char ***rlst, int *rnlst);
+TKPE_ImageInfo *TK_GetImageForIndex(int ix);
 
 
 /*
@@ -521,7 +529,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	}else
 	{
 		tk_dbg_printf("TKPE: Unexpected mMagic %04X\n", mach);
-		return(-1);
+		return(NULL);
 	}
 
 	if(is64)
@@ -586,7 +594,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 //	memset(imgptr, 0, imgsz1-32);
 	memset(imgptr, 0, imgsz1);
 
-	TK_VMem_MProtectPages(imgptr, imgsz1,
+	TK_VMem_MProtectPages((u64)imgptr, imgsz1,
 		TKMM_PROT_READ|TKMM_PROT_WRITE|
 		TKMM_PROT_EXEC);
 
@@ -735,7 +743,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	}
 
 //	img->bootptr=imgptr+startrva;
-	img->bootptr=entry;
+	img->bootptr=(void *)entry;
 	img->bootgbr=imgptr+gbr_rva;
 	img->bootgbre=imgptr+imgsz;
 	
@@ -796,7 +804,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 			if(!k)
 				break;
 			s0=(char *)(imgptr+k);
-			idll=TKPE_TryLoadProgramImage(s0, cwd, 1);
+			l=TKPE_TryLoadProgramImage(s0, cwd, 1);
+			idll=TK_GetImageForIndex(l);
 			img->dll[img->n_dll++]=idll;
 			
 			rva_ilt=*(u32 *)(imgptr+j+0x00);
@@ -1374,7 +1383,7 @@ void TK_InstanceImageInTask(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 		{
 			memcpy(tlsdat, img->imgbase+img->tls_rvaraw, img->tls_szraw);
 		}
-		TK_TlsSetB(task, img->tls_key, tlsdat);
+		TK_TlsSetB(task, img->tls_key, (s64)tlsdat);
 	}
 	
 	for(i=0; i<img->n_dll; i++)
@@ -1389,9 +1398,9 @@ int TKPE_SetupTaskForImage(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 	int gbrsz, szpbix;
 	int i, j, k;
 
-	task->imgbaseptrs=task->img_baseptrs;
-	task->imggbrptrs=task->img_gbrptrs;
-	task->imgtlsrvas=task->img_tlsrvas;
+	task->imgbaseptrs=(tk_kptr)(task->img_baseptrs);
+	task->imggbrptrs=(tk_kptr)(task->img_gbrptrs);
+	task->imgtlsrvas=(tk_kptr)(task->img_tlsrvas);
 
 	TK_InstanceImageInTask(task, img);
 
@@ -1421,11 +1430,11 @@ int TKPE_SetupTaskForImage(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 		img->rlc_imgbase, img->gbr_rva, img->gbr_sz);
 #endif
 
-	task->baseptr=img->imgbase;
-	task->bootptr=img->bootptr;
+	task->baseptr=(tk_kptr)(img->imgbase);
+	task->bootptr=(tk_kptr)(img->bootptr);
 //	task->basegbr=gbrdat+szpbix;
-	task->basegbr=gbrdat;
-	task->boottbr=task;
+	task->basegbr=(tk_kptr)gbrdat;
+	task->boottbr=(tk_kptr)task;
 
 	return(1);
 }
@@ -1440,7 +1449,7 @@ void *TK_DlOpenB(TKPE_TaskInfo *task, const char *path, int flags)
 	
 	TK_TaskGetCwd(task, tbuf, 256);
 
-	ix=TKPE_TryLoadProgramImage(path, tbuf, 1);
+	ix=TKPE_TryLoadProgramImage((char *)path, tbuf, 1);
 	if(ix<=0)
 		return(NULL);
 
@@ -1464,7 +1473,7 @@ void *TK_DlSymB(TKPE_TaskInfo *task,
 		img=tkpe_pbo_image[ix];
 
 //		img=handle;
-		p=TKPE_LookupImageDllExport(img, sym);
+		p=TKPE_LookupImageDllExport(img, (char *)sym);
 		return(p);
 	}
 

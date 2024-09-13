@@ -90,6 +90,8 @@ int __start_late();
 int __start_first();
 
 void _ctype_init(void);
+void __init_getprocstub();
+void tk_putc(int val);
 
 short *_ctype_tolow;
 short *_ctype_toup;

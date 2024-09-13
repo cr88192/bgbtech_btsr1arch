@@ -16,8 +16,10 @@ Register Mapping:
 * X1 -> LR
 * X2 -> SP (R15 in BJX2)
 * X3 -> GBR
-* X4 -> TBR
-* X5 -> DHR (R1 in BJX2)
+* / X4 -> TBR
+* / X5 -> DHR (R1 in BJX2)
+* X4 -> R4
+* X5 -> R5
 * X6 -> R6
 * X7 -> R7
 * X8..X13 -> R8..R13

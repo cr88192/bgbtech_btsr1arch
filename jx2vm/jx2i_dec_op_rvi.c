@@ -72,8 +72,8 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			case 1:		rn_dfl=BJX2_REG_LR;		break;
 			case 2:		rn_dfl=BJX2_REG_SP;		break;
 			case 3:		rn_dfl=BJX2_REG_GBR;	break;
-			case 4:		rn_dfl=BJX2_REG_TBR;	break;
-			case 5:		rn_dfl=BJX2_REG_DHR;	break;
+//			case 4:		rn_dfl=BJX2_REG_TBR;	break;
+//			case 5:		rn_dfl=BJX2_REG_DHR;	break;
 			case 14:	rn_dfl=BJX2_REG_R2;		break;
 			case 15:	rn_dfl=BJX2_REG_R3;		break;
 		}
@@ -87,8 +87,8 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			case 1:		rm_dfl=BJX2_REG_LR;		break;
 			case 2:		rm_dfl=BJX2_REG_SP;		break;
 			case 3:		rm_dfl=BJX2_REG_GBR;	break;
-			case 4:		rm_dfl=BJX2_REG_TBR;	break;
-			case 5:		rm_dfl=BJX2_REG_DHR;	break;
+//			case 4:		rm_dfl=BJX2_REG_TBR;	break;
+//			case 5:		rm_dfl=BJX2_REG_DHR;	break;
 			case 14:	rm_dfl=BJX2_REG_R2;		break;
 			case 15:	rm_dfl=BJX2_REG_R3;		break;
 		}
@@ -102,8 +102,8 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			case 1:		ro_dfl=BJX2_REG_LR;		break;
 			case 2:		ro_dfl=BJX2_REG_SP;		break;
 			case 3:		ro_dfl=BJX2_REG_GBR;	break;
-			case 4:		ro_dfl=BJX2_REG_TBR;	break;
-			case 5:		ro_dfl=BJX2_REG_DHR;	break;
+//			case 4:		ro_dfl=BJX2_REG_TBR;	break;
+//			case 5:		ro_dfl=BJX2_REG_DHR;	break;
 			case 14:	ro_dfl=BJX2_REG_R2;		break;
 			case 15:	ro_dfl=BJX2_REG_R3;		break;
 		}

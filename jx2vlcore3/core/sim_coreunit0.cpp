@@ -534,7 +534,8 @@ int BTSR1_MainPollKeyboard(void)
 	}
 #endif
 
-#ifdef __linux
+// #ifdef __linux
+#if 0
 	j=fgetc(stdin);
 	while(j>0)
 	{
@@ -628,7 +629,8 @@ int BTSR1_MainInitKeyboard(void)
 {
 	int i;
 
-#ifdef __linux
+//#ifdef __linux
+#if 0
 	i = fcntl(0, F_GETFL, 0);
 	fcntl(0, F_SETFL, i | O_NONBLOCK);
 	btesh2_ttynoncanon();
@@ -639,7 +641,8 @@ int BTSR1_MainInitKeyboard(void)
 
 int BTSR1_MainDeinitKeyboard(void)
 {
-#ifdef __linux
+// #ifdef __linux
+#if 0
 	btesh2_resettermios();
 #endif
 
@@ -732,6 +735,8 @@ int FRGL_TimeMS()
 	return(((tp.tv_sec-secbase)*1000)+tp.tv_usec/1000);
 #endif
 #endif
+
+	return(0);
 }
 #endif
 
@@ -1040,6 +1045,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 			}
 		}
 	}
+
+	return(0);
 }
 #endif
 
@@ -1294,6 +1301,8 @@ int SimDdr(int clk, int cmd, int *rdqs, int *rdata)
 			}
 		}
 	}
+
+	return(0);
 }
 #endif
 
@@ -1344,6 +1353,8 @@ int update_ddr()
 		}
 #endif
 	}
+
+	return(0);
 }
 
 int update_uart();
@@ -1386,6 +1397,8 @@ int usb_hidkbreport()
 	usb_txpose=(usb_txpose+1)&255;
 	
 	usb_kbsticky=0;
+
+	return(0);
 }
 
 int usb_hidctrlreport()
@@ -1408,6 +1421,8 @@ int usb_hidctrlreport()
 
 	usb_txbuf[usb_txpose]=0x100;
 	usb_txpose=(usb_txpose+1)&255;
+
+	return(0);
 }
 
 int usb_gethiddesc(int len)
@@ -1437,6 +1452,8 @@ int usb_gethiddesc(int len)
 	usb_hidmsg[len+2]=k>>8;
 	
 	usb_hidmsgsz=l;
+
+	return(0);
 }
 
 int usb_issetup;
@@ -1659,6 +1676,8 @@ int usb_parserxeop()
 	}
 	
 	usb_rxposs=usb_rxpose;
+
+	return(0);
 }
 
 int update_usb()
@@ -1983,6 +2002,8 @@ int update_usb()
 	{
 		lclk=tclk;
 	}
+
+	return(0);
 }
 
 int update_ps2kb()
@@ -2101,6 +2122,8 @@ int update_ps2kb()
 //			tclk, tdat);
 		lclk=tclk;
 	}
+
+	return(0);
 }
 
 int update_uart()
@@ -2263,6 +2286,8 @@ int sim_fb_draw7seg(uint32_t *fbuf, int xs, int ys,
 		fbuf, xs, ys,
 		led_x+lw, led_y-led_r, led_x+led_r, led_y-led_r-lw,
 		(mask&0x40)?led_chi:led_clo);
+
+	return(0);
 }
 
 int sim_fb_draw7seg_8x(uint32_t *fbuf, int xs, int ys,
@@ -2278,6 +2303,8 @@ int sim_fb_draw7seg_8x(uint32_t *fbuf, int xs, int ys,
 			led_x+i*led_r*2, led_y, led_r, led_clo, led_chi,
 			!(mask2&(1<<i))?(~mask1):0);
 	}
+
+	return(0);
 }
 
 int BTM_DrawGlyphFBuf(uint32_t *fbuf, int ystr, int cx, int cy,
@@ -2473,6 +2500,8 @@ int sdc_update()
 		sdc_lclk=top->sdc_clk;
 	}
 #endif
+
+	return(0);
 }
 
 int main(int argc, char **argv, char **env)
@@ -2589,7 +2618,7 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageAddFileBuffer("swapfile.sys", (byte *)NULL, 384*(1<<20));
 #endif
 
-	rombuf=(uint32_t *)malloc(32768);
+	rombuf=(uint32_t *)malloc(32768+256);
 //	srambuf=(uint32_t *)malloc(8192);
 //	drambuf=(uint32_t *)malloc(1<<27);
 //	srambuf2=(uint32_t *)malloc(8192);
@@ -2617,11 +2646,17 @@ int main(int argc, char **argv, char **env)
 	btesh2_gfxcon_fbxs = 800;
 	btesh2_gfxcon_fbys = 600;
 
+	printf("Init Graphics\n");
 	GfxDrv_Start();
-	SoundDev_Init();
+//	SoundDev_Init();
+
+	printf("Init Keyboard\n");
 	BTSR1_MainInitKeyboard();
 
+	printf("Init USB Keyboard\n");
 	BTSR1_MainAddUsbKey(0);
+
+	printf("Alloc DDR\n");
 
 //	ddr_ram=(uint16_t *)malloc(1<<28);
 	ddr_ram=(uint16_t *)malloc(DRAMSZ);
@@ -2631,6 +2666,8 @@ int main(int argc, char **argv, char **env)
 //	for(i=0; i<(1<<26); i++)
 //		ddr_ram[i]=rand();
 
+	printf("Context\n");
+
 	ctx=(BJX2_Context *)malloc(sizeof(BJX2_Context)+256);
 	memset(ctx, 0, sizeof(BJX2_Context));
 //	jx2_ctx=ctx;
@@ -2638,7 +2675,13 @@ int main(int argc, char **argv, char **env)
 	vgactx=(cdec_imgbuf *)malloc(sizeof(cdec_imgbuf)+256);
 	memset(vgactx, 0, sizeof(cdec_imgbuf));
 
+	printf("Setup Virtual VGA\n");
+	fflush(stdout);
+
 	CDEC_SetupForStream(vgactx);
+
+	printf("Set Parms\n");
+	fflush(stdout);
 
 	ctx->tgt_mhz=mhz;
 	ctx->rcp_mhz=((1048576/ctx->tgt_mhz)+7)>>4;
@@ -2648,6 +2691,7 @@ int main(int argc, char **argv, char **env)
 	rcp_mhz_24=(((1<<28)/ctx->tgt_mhz)+7)>>4;
 
 	printf("Start CoreUnit\n");
+	fflush(stdout);
 
 //	btesh2_gfxcon_fbxs = 800;
 //	btesh2_gfxcon_fbys = 600;

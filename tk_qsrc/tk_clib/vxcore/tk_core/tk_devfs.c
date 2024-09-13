@@ -43,7 +43,7 @@ int tk_devfs_fgetc(TK_FILE *fd);
 int tk_devfs_fputc(int ch, TK_FILE *fd);
 int tk_devfs_fioctl(TK_FILE *fd, int cmd, void *ptr);
 
-TK_DIR *tk_devfs_opendir(TK_MOUNT *mnt, char *name);
+TK_DIR *tk_devfs_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 TK_DIRENT *tk_devfs_readdir(TK_DIR *fd);
 int tk_devfs_closedir(TK_DIR *fd);
 
@@ -141,7 +141,7 @@ TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode
 	return(NULL);
 }
 
-TK_DIR *tk_devfs_opendir(TK_MOUNT *mnt, char *name)
+TK_DIR *tk_devfs_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 {
 //	TKFAT_FAT_DirEntExt tdee, tdee1;
 //	TKFAT_FAT_DirEntExt *dee, *dee1, *dee2;

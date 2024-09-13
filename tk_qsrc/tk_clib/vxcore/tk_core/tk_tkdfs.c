@@ -57,7 +57,7 @@ byte *TKDFS_GetImageCachedBlock(TKDFS_ImageContext *img, int d_blk, int d_flg)
 	
 	sh=img->ln2_blksz-9;
 	h=(((d_blk*251)>>8)&127)>>sh;
-	ptr=img->img_blkcache_data+(h<<(9+sh));
+	ptr=(byte *)(img->img_blkcache_data)+(h<<(9+sh));
 	
 	cblkid=img->img_blkcache_blkid[h];
 	if(cblkid==d_blk)
@@ -93,7 +93,7 @@ int TKDFS_SyncImageCachedBlocks(TKDFS_ImageContext *img)
 
 	for(h=0; h<n; h++)
 	{
-		ptr=img->img_blkcache_data+(h<<(9+sh));
+		ptr=(byte *)(img->img_blkcache_data)+(h<<(9+sh));
 		
 		cblkid=img->img_blkcache_blkid[h];
 		
@@ -706,7 +706,7 @@ int TKDFS_WriteImageDirent(TKDFS_ImageContext *img,
 			deptr[12]=feh;
 			deptr[15]=3;
 			nl1=strlen(cs);
-			if(cs>60)
+			if(nl1>60)
 			{
 				memcpy(deptr+ 0, cs+ 0, 12);
 				memcpy(deptr+16, cs+12, 48);

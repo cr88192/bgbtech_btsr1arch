@@ -145,7 +145,8 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 	btsh2_elf64_hdr *ehdr;
 	struct btsh2_elf64_phdr_s *phdr;
 	u64 entry, phoff, shoff;
-	u32 paddr, pmsz, poff, mach;
+	u32 pmsz, poff, mach;
+	u64 paddr;
 	byte en, isriscv, isbjx2, isxg2, isxg2rv;
 	int phentsz, phnum;
 	int i, j, k;
@@ -268,7 +269,8 @@ void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name)
 	byte *sym, *ptr;
 	char *sn;
 	int sym_ent, rva_symtab, rva_strtab;
-	int sym_name, sym_value, sym_shndx;
+	u64 sym_name, sym_value, sym_shndx;
+	byte sym_info, sym_other;
 	int i, j, k;
 	
 	imgbase=img->imgbase;
@@ -278,9 +280,11 @@ void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name)
 	symtab_ptr=imgbase+rva_symtab;
 	strtab_ptr=imgbase+rva_strtab;
 
+#if 0
 	tk_dbg_printf("TKPE_LookupImageElfExport: "
 		"RVA_Sym=%X RVA_Str=%X EntSz=%d\n",
 		rva_symtab, rva_strtab, sym_ent);
+#endif
 
 	if(!rva_symtab || !rva_strtab)
 	{
@@ -295,6 +299,8 @@ void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name)
 		sym_name=btsh2_ptrGetUD(sym+0, 1);
 		sym_value=btsh2_ptrGetUQ(sym+8, 1);
 		sym_shndx=btsh2_ptrGetUW(sym+6, 1);
+		sym_info=sym[4];
+		sym_other=sym[5];
 		
 		if(!sym_name && !sym_shndx && !sym_value)
 		{
@@ -303,6 +309,11 @@ void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name)
 		}
 
 		if(!sym_shndx)
+			continue;
+			
+		if((sym_info>>4)==0)
+			continue;
+		if((sym_info&15)==6)
 			continue;
 		
 		if((sym_name<0) || (sym_name>0x10000))
@@ -317,7 +328,11 @@ void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name)
 		if(!strcmp(sn, name))
 		{
 			ptr=img->imgbase+sym_value;
-			tk_dbg_printf("TKPE_LookupImageElfExport: Found %s %p\n", sn, ptr);
+			
+			if(sym_shndx==0xFFF1)
+				ptr=(byte *)sym_value;
+			
+//			tk_dbg_printf("TKPE_LookupImageElfExport: Found %s %p\n", sn, ptr);
 			return(ptr);
 		}
 	}
@@ -482,7 +497,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 //	imgptr+=i;
 
-	imgbase=imgptr;
+	imgbase=(u64)imgptr;
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);
@@ -691,10 +706,12 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 //						__debugbreak();
 
+#if 0
 						tk_printf("BTESH2_BootLoadElf: "
 							"Got Sym n=%s a=%p imb=%p rel=%p\n",
 							strtab_ptr+sym_name, ptr,
 							imgbase, sym_value);
+#endif
 					}else
 					{
 						tk_printf("BTESH2_BootLoadElf: Fail Sym %s\n",
@@ -758,6 +775,14 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_64: "
 							"%012llX -> %012llX\n",
 							rel_org, *rel_where);
+
+#if 1
+						tk_printf("BTESH2_BootLoadElf: "
+							"Sym n=%X(%s) v=%p shn=%d\n",
+							sym_name,
+							strtab_ptr+sym_name,
+							sym_value, sym_shndx);
+#endif
 					}
 					break;
 
@@ -767,9 +792,13 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 					*rel_where=imgbase+sym_value;
 //					*rel_where=imgbase+sym_value+rel_addend;
 
+					if(!sym_shndx)
+						break;
+
 					if((*rel_where<imgbase) || (*rel_where>(imgbase+imgsz)))
 					{
-						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_JUMP_SLOT: "
+						tk_printf("BTESH2_BootLoadElf: "
+							"Reloc R_RISCV_JUMP_SLOT: "
 							"%012llX -> %012llX\n",
 							rel_org, *rel_where);
 					}
@@ -784,7 +813,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 					if((*rel_where<imgbase) || (*rel_where>(imgbase+imgsz)))
 					{
-						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_64: "
+						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_TPREL32: "
 							"%012llX -> %012llX\n",
 							rel_org, *rel_where);
 					}
@@ -799,7 +828,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 					if((*rel_where<imgbase) || (*rel_where>(imgbase+imgsz)))
 					{
-						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_64: "
+						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_TPREL64: "
 							"%012llX -> %012llX\n",
 							rel_org, *rel_where);
 					}
@@ -859,10 +888,12 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 //						__debugbreak();
 
+#if 0
 						tk_printf("BTESH2_BootLoadElf: "
 							"Got Sym n=%s a=%p imb=%p rel=%p\n",
 							strtab_ptr+sym_name, ptr,
 							imgbase, sym_value);
+#endif
 					}else
 					{
 						tk_printf("BTESH2_BootLoadElf: Fail Sym %s\n",
@@ -878,7 +909,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 					}
 				}
 
-				if(sym_value>imgsz)
+				if((sym_value>imgsz) && sym_shndx)
 				{
 					tk_dbg_printf("BTESH2_BootLoadElf: Reloc: "
 						"Symbol outside image, VA=%016llX\n",
@@ -929,9 +960,13 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 					*rel_where=imgbase+sym_value;
 //					*rel_where=imgbase+sym_value+rel_addend;
 
+					if(!sym_shndx)
+						break;
+
 					if((*rel_where<imgbase) || (*rel_where>(imgbase+imgsz)))
 					{
-						tk_printf("BTESH2_BootLoadElf: Reloc R_RISCV_JUMP_SLOT: "
+						tk_printf("BTESH2_BootLoadElf: "
+							"Reloc R_RISCV_JUMP_SLOT: "
 							"%012llX -> %012llX\n",
 							rel_org, *rel_where);
 					}

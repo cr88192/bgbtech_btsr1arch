@@ -473,8 +473,8 @@ int BTSR1_MainInitKeyboard(void)
 {
 	int i;
 
-#ifdef __linux
-// #if 0
+// #ifdef __linux
+#if 0
 	i = fcntl(0, F_GETFL, 0);
 	fcntl(0, F_SETFL, i | O_NONBLOCK);
 	btesh2_ttynoncanon();
@@ -485,8 +485,8 @@ int BTSR1_MainInitKeyboard(void)
 
 int BTSR1_MainDeinitKeyboard(void)
 {
-#ifdef __linux
-// #if 0
+// #ifdef __linux
+#if 0
 	btesh2_resettermios();
 #endif
 	return(0);
@@ -2706,6 +2706,7 @@ int main(int argc, char **argv, char **env)
 	tt_frame=tt_start;
 	membus_256bit=0;
 	seed=1;
+	cnt_dled=0;
 	
 //	ctick_rst=48828;
 //	ctick=ctick_rst;

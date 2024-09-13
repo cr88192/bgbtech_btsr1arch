@@ -652,7 +652,7 @@ void TK_Task_SyscallGetArgs(
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	taskern=(TKPE_TaskInfoKern *)task->krnlptr;
 
-	task2=taskern->task_sysc_user;
+	task2=(void *)(taskern->task_sysc_user);
 	if(!task)
 	{
 		*rtask=NULL;
@@ -670,9 +670,9 @@ void TK_Task_SyscallGetArgs(
 	if(reg_sr&(1<<26))
 	{
 		/* RISC-V Mode */
-		sobj=regs[TKPE_REGSAVE_R10];
-		umsg=regs[TKPE_REGSAVE_R11];
-		rptr=regs[TKPE_REGSAVE_R12];
+		sobj=(void *)(regs[TKPE_REGSAVE_R10]);
+		umsg=(u32)(regs[TKPE_REGSAVE_R11]);
+		rptr=(void *)(regs[TKPE_REGSAVE_R12]);
 		args=(void *)(regs[TKPE_REGSAVE_R13]);
 
 		lnxsc=regs[TKPE_REGSAVE_R17];
@@ -696,9 +696,9 @@ void TK_Task_SyscallGetArgs(
 	}else
 	{
 		/* BJX2 Mode */
-		sobj=regs[TKPE_REGSAVE_R4];
-		umsg=regs[TKPE_REGSAVE_R5];
-		rptr=regs[TKPE_REGSAVE_R6];
+		sobj=(void *)(regs[TKPE_REGSAVE_R4]);
+		umsg=(u32)(regs[TKPE_REGSAVE_R5]);
+		rptr=(void *)(regs[TKPE_REGSAVE_R6]);
 		args=(void *)(regs[TKPE_REGSAVE_R7]);
 	}
 	
@@ -2444,7 +2444,7 @@ int TK_Task_ShellLoop(void *uptr)
 	int		rc;
 
 	task=NULL;	sobj=NULL;
-	umsg=NULL;	rptr=NULL;
+	umsg=0;		rptr=NULL;
 	args=NULL;
 
 	task=(TKPE_TaskInfo *)TK_GET_TBR;

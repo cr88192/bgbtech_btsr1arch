@@ -213,12 +213,19 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 
 	if(!(ctx->status) && !(fl&2))
 	{
+//		ctx->trapc=ctx->regs[BJX2_REG_PC];
+//		if(!(fl&2))
+//			ctx->trapc=addr;
+
 		BJX2_MemTranslateTlb(ctx, addr+ 0, 4);
 		BJX2_MemTranslateTlb(ctx, addr+(32*8), 4);
 	}
 
 	if(ctx->status && !(fl&2))
+	{
+//		printf("BJX2_GetTraceForAddr: Miss/Fault %016llX\n", addr);
 		return(NULL);
+	}
 
 
 	cur=BJX2_ContextAllocTrace(ctx);
@@ -226,6 +233,7 @@ BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int fl)
 	cur->addr_hsr=hsr;
 	ctx->rttr[h&63]=cur;
 //	ctx->rttr[h&63]=NULL;
+	cur->addr_nxt=0;
 
 	cur->hnext=ctx->trhash[h];
 	ctx->trhash[h]=cur;
@@ -299,6 +307,8 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 {
 	u64 exc, sr0;
 	int i;
+
+	BJX2_DbgPsBRA(ctx, ctx->trapc, "TRAP");
 
 	/* Clear predicted TLBE's */
 	ctx->mem_tlb_pr0_hi=0;
@@ -392,6 +402,12 @@ int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
 //			ctx->tr_rnxt=NULL;
 //			ctx->tr_rjmp=NULL;
 			return(0);
+		}
+		
+		if(!(ctx->status))
+		{
+			for(i=0; i<128; i++)
+				ctx->ex_regs[i]=ctx->regs[i];
 		}
 
 //		return(0);
@@ -567,6 +583,9 @@ int BJX2_FaultEnterRegs(BJX2_Context *ctx, int exsr)
 	ctx->regs[BJX2_REG_SPC]=va;
 	ctx->regs[BJX2_REG_SPC_HI]=vb;
 
+	ctx->ex_regs[BJX2_REG_SPC]=va;
+	ctx->ex_regs[BJX2_REG_SPC_HI]=vb;
+
 //	if((exsr&0xF000)!=0xE000)
 	if(1)
 	{
@@ -607,6 +626,7 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 	vb=ctx->regs[BJX2_REG_EXSR];
 	va=(va&0xFFFFFFFF00000000ULL)|((u32)(vb>>32));
 	ctx->regs[BJX2_REG_SR]=va;
+//	exsr=vb;
 
 	if(va>>32)
 	{
@@ -657,6 +677,32 @@ int BJX2_FaultExitRegs(BJX2_Context *ctx, int exsr)
 //	vb=ctx->regs[BJX2_REG_SDH];
 //	ctx->regs[BJX2_REG_DLR]=va;
 //	ctx->regs[BJX2_REG_DHR]=vb;
+
+//	if((exsr&0xFFFF)==0xA001)
+	if((exsr&0x8000) && ((exsr&0xF000)!=0xE000))
+	{
+		va=ctx->regs[BJX2_REG_LR];
+		vb=ctx->ex_regs[BJX2_REG_LR];
+		if(va!=vb)
+		{
+			printf("BJX2_FaultExitRegs: LR Mismatch %016llX %016llX\n",
+				va, vb);
+		}
+		
+		for(i=0; i<128; i++)
+		{
+			va=ctx->regs[i];
+			vb=ctx->ex_regs[i];
+			if(va!=vb)
+			{
+				if((i==BJX2_REG_EXSR) && ((exsr&0xF000)==0xC000))
+					continue;
+			
+				printf("BJX2_FaultExitRegs: Reg Mismatch %d %016llX %016llX\n",
+					i, va, vb);
+			}
+		}
+	}
 
 	return(0);
 }
@@ -937,6 +983,7 @@ char *BJX2_DbgNameForAddrSzIx(BJX2_Context *ctx,
 char *BJX2_DbgNameForAddr(BJX2_Context *ctx,
 	bjx2_addr addr, bjx2_addr *raddr2)
 {
+	addr&=0x0000FFFFFFFFFFFEULL;
 	return(BJX2_DbgNameForAddrSz(ctx, addr, raddr2, NULL));
 }
 

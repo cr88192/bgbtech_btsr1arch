@@ -900,6 +900,20 @@ parameter[4:0] JX2_FMIMM_DISP8S		= 5'h0F;
 parameter[4:0] JX2_FMIMM_DISP11S	= 5'h10;
 parameter[4:0] JX2_FMIMM_IMM5U		= 5'h12;
 
+parameter[3:0] JX2_RVCIMM_NONE		= 4'h0;
+parameter[3:0] JX2_RVCIMM_IMM6ALU	= 4'h1;
+parameter[3:0] JX2_RVCIMM_IMM4LW	= 4'h2;
+parameter[3:0] JX2_RVCIMM_IMM4QW	= 4'h3;
+parameter[3:0] JX2_RVCIMM_IMM6LWLD	= 4'h4;
+parameter[3:0] JX2_RVCIMM_IMM6QWLD	= 4'h5;
+parameter[3:0] JX2_RVCIMM_IMM6LWST	= 4'h6;
+parameter[3:0] JX2_RVCIMM_IMM6QWST	= 4'h7;
+
+parameter[3:0] JX2_RVCIMM_IMM6A16SP	= 4'h8;
+parameter[3:0] JX2_RVCIMM_IMM6LUI	= 4'h9;
+parameter[3:0] JX2_RVCIMM_IMM11J	= 4'hA;
+parameter[3:0] JX2_RVCIMM_IMM8JCC	= 4'hB;
+
 
 
 

@@ -11,6 +11,7 @@
 `ifndef jx2_xc7s50
 
 `define jx2_enable_riscv		//Enable RISC-V Decoder
+`define jx2_enable_riscv_rvc	//Enable RISC-V Decoder ('C' Extension)
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
@@ -29,7 +30,7 @@
 
 `ifdef jx2_enable_riscv
 `ifdef jx2_enable_xg2mode
-`define jx2_enable_xg2rvmode	//Enable XG2RV Mode
+// `define jx2_enable_xg2rvmode	//Enable XG2RV Mode
 `endif
 `endif
 

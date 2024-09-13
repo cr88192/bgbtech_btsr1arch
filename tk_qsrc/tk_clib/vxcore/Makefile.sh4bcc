@@ -8,7 +8,7 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr_ena
 
-TK_LDEXTFS = -fqmul -ffpu_fpvsf2 -fxgpr_ena -fjcmpz -ffunctag # -fvskglobal -fdobounds
+TK_LDEXTFS = -fqmul -ffpu_fpvsf2 -fxgpr_ena -fjcmpz -ffunctag -fvskglobal # -fdobounds
 
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -ffpu_fpimm -fxgpr_ena -fnowexify -fjcmp \
 #	-fdobounds -fvskglobal

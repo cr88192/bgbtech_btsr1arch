@@ -2850,7 +2850,7 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 
 	dummy = 0;
 	lptr = &dummy;
-	iptr = (long *)lptr;
+	iptr = (int *)lptr;
 	lptr = (long *)iptr;
 	hptr = (short *)iptr;
 
@@ -2894,7 +2894,7 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 				}
 
 				lptr = &dummy;
-				iptr = (long *)lptr;
+				iptr = (int *)lptr;
 				lptr = (long *)iptr;
 				hptr = (short *)iptr;
 
@@ -3079,7 +3079,7 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 						if(!lptr)
 							lptr=&dummy;
 						hptr = (short *)lptr;
-						iptr = (long *)lptr;
+						iptr = (int *)lptr;
 
 						luptr = (unsigned long *)lptr;
 						huptr = (unsigned short *)hptr;

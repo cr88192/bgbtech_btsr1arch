@@ -4706,8 +4706,9 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
-	if((!strcmp(name, "__float32_getbits") ||
-		!strcmp(name, "__float32_frombits") ||
+	if((
+//		!strcmp(name, "__float32_getbits") ||
+//		!strcmp(name, "__float32_frombits") ||
 		!strcmp(name, "__float64_getbits") ||
 		!strcmp(name, "__float64_frombits") ||
 		!strcmp(name, "__object_getbits") ||
@@ -4718,6 +4719,27 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
 		BGBCC_JX2C_EmitMovRegReg(ctx, sctx, csreg, cdreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+
+	if(!strcmp(name, "__float32_getbits") && (narg==1))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_FSTCF, csreg, cdreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
+		sctx->csrv_skip=1;
+		return(1);
+	}
+	if(!strcmp(name, "__float32_frombits") && (narg==1))
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dst);
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_FLDCF, csreg, cdreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dst);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
 		sctx->csrv_skip=1;

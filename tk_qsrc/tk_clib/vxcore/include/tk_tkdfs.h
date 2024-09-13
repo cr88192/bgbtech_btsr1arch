@@ -166,7 +166,7 @@ byte ln2_inosz;
 TKDFS_InodeInfo img_inocache[64];
 
 int img_blkcache_blkid[128];
-int img_blkcache_data[128*512];
+byte img_blkcache_data[128*512];
 int img_blkcache_flag[128];
 
 u64 pad0;	//alignment pad

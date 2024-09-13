@@ -62,8 +62,8 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 			case 1:		rs1r=BJX2_REG_LR;		break;
 			case 2:		rs1r=BJX2_REG_SP;		break;
 			case 3:		rs1r=BJX2_REG_GBR;		break;
-			case 4:		rs1r=BJX2_REG_TBR;		break;
-			case 5:		rs1r=BJX2_REG_DHR;		break;
+//			case 4:		rs1r=BJX2_REG_TBR;		break;
+//			case 5:		rs1r=BJX2_REG_DHR;		break;
 			case 14:	rs1r=BJX2_REG_R2;		break;
 			case 15:	rs1r=BJX2_REG_R3;		break;
 		}
@@ -77,8 +77,8 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 			case 1:		rs2r=BJX2_REG_LR;		break;
 			case 2:		rs2r=BJX2_REG_SP;		break;
 			case 3:		rs2r=BJX2_REG_GBR;		break;
-			case 4:		rs2r=BJX2_REG_TBR;		break;
-			case 5:		rs2r=BJX2_REG_DHR;		break;
+//			case 4:		rs2r=BJX2_REG_TBR;		break;
+//			case 5:		rs2r=BJX2_REG_DHR;		break;
 			case 14:	rs2r=BJX2_REG_R2;		break;
 			case 15:	rs2r=BJX2_REG_R3;		break;
 		}
@@ -97,11 +97,11 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 	}
 
 	imm_ofs4_lwld=
-		((opw1<<2)&0x040)|
+		((opw1<<1)&0x040)|
 		((opw1>>4)&0x004)|
 		((opw1>>7)&0x038);
 	imm_ofs4_qwld=
-		((opw1<<2)&0x0C0)|
+		((opw1<<1)&0x0C0)|
 		((opw1>>7)&0x038);
 	imm_ofs4_lwst=imm_ofs4_lwld;
 	imm_ofs4_qwst=imm_ofs4_qwld;

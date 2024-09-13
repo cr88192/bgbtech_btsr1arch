@@ -58,8 +58,11 @@ typedef int errno_t;
 #endif
 
 #define NULL ((void *)0)
-// #define offsetof(x, y) (size_t)&(((x *)0)->y)
+#ifdef __BGBCC
 #define offsetof(x, y) __offsetof(x, y)
+#else
+#define offsetof(x, y) ((size_t)&(((x *)0)->y))
+#endif
 
 #ifdef __PDPCLIB_DLL
 #define __PDPCLIB_API__ __declspec(dllexport)

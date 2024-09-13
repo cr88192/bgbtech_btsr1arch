@@ -1083,6 +1083,11 @@ void TKGDI_FetchUnifontSdfBits(
 	int kidx, kh, ksz;
 	int bmpsz, pgn, ofs, px, py;
 	
+	if(((u16)codepoint)>=0x8000)
+	{
+		__debugbreak();
+	}
+	
 	TKGDI_UnifontInit();
 
 	ksz=(dxs*dys+7)>>3;

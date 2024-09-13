@@ -130,7 +130,7 @@ void __init_getprocstub()
 	if(GpaFn)
 		return;
 	GpaFn=TkClGetProcAddressSv;
-	tusr->clib_gpa=GpaFn;
+	tusr->clib_gpa=(tk_kptr)GpaFn;
 }
 
 #endif

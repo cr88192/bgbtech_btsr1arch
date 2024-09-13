@@ -265,9 +265,12 @@ begin
 		4'b0001: opRegO_Sr = JX2_GR_LR;
 		4'b0010: opRegO_Sr = JX2_GR_SP;
 		4'b0011: opRegO_Sr = JX2_GR_GBR;
-		4'b0100: opRegO_Sr = JX2_GR_TBR;
-		4'b0101: opRegO_Sr = JX2_GR_DHR;
-//		4'b0110: opRegO_Sr = JX2_GR_DLR;
+
+//		4'b0100: opRegO_Sr = JX2_GR_TBR;
+//		4'b0101: opRegO_Sr = JX2_GR_DHR;
+		4'b0100: opRegO_Sr = JX2_GR_R4;
+		4'b0101: opRegO_Sr = JX2_GR_R5;
+
 		4'b0110: opRegO_Sr = JX2_GR_R6;
 		4'b0111: opRegO_Sr = JX2_GR_R7;
 		4'b1000: opRegO_Sr = JX2_GR_R8;
@@ -285,9 +288,12 @@ begin
 		4'b0001: opRegM_Sr = JX2_GR_LR;
 		4'b0010: opRegM_Sr = JX2_GR_SP;
 		4'b0011: opRegM_Sr = JX2_GR_GBR;
-		4'b0100: opRegM_Sr = JX2_GR_TBR;
-		4'b0101: opRegM_Sr = JX2_GR_DHR;
-//		4'b0110: opRegM_Sr = JX2_GR_DLR;
+
+//		4'b0100: opRegM_Sr = JX2_GR_TBR;
+//		4'b0101: opRegM_Sr = JX2_GR_DHR;
+		4'b0100: opRegM_Sr = JX2_GR_R4;
+		4'b0101: opRegM_Sr = JX2_GR_R5;
+
 		4'b0110: opRegM_Sr = JX2_GR_R6;
 		4'b0111: opRegM_Sr = JX2_GR_R7;
 		4'b1000: opRegM_Sr = JX2_GR_R8;
@@ -305,9 +311,12 @@ begin
 		4'b0001: opRegN_Sr = JX2_GR_LR;
 		4'b0010: opRegN_Sr = JX2_GR_SP;
 		4'b0011: opRegN_Sr = JX2_GR_GBR;
-		4'b0100: opRegN_Sr = JX2_GR_TBR;
-		4'b0101: opRegN_Sr = JX2_GR_DHR;
-//		4'b0110: opRegN_Sr = JX2_GR_DLR;
+
+//		4'b0100: opRegN_Sr = JX2_GR_TBR;
+//		4'b0101: opRegN_Sr = JX2_GR_DHR;
+		4'b0100: opRegN_Sr = JX2_GR_R4;
+		4'b0101: opRegN_Sr = JX2_GR_R5;
+
 		4'b0110: opRegN_Sr = JX2_GR_R6;
 		4'b0111: opRegN_Sr = JX2_GR_R7;
 		4'b1000: opRegN_Sr = JX2_GR_R8;

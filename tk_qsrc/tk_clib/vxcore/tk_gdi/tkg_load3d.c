@@ -111,7 +111,7 @@ s64 TKGDI_TKO3D_ReadSVLI(byte **rcs)
 
 s32 TKGDI_TKO3D_ReadSCoord(byte **rcs)
 {
-	u32 v0, v1;
+	u64 v0, v1;
 	int i;
 	
 	v0=TKGDI_TKO3D_ReadVLN(rcs);

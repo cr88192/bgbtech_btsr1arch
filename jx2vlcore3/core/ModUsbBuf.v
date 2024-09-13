@@ -275,13 +275,6 @@ reg[15:0]	tNxtIdleTimerCntB;
 
 always @*
 begin
-//	chPcmA		= 0;
-//	tChAccumOvfLa		= 0;
-//	tChAccumOvfLb		= 0;
-//	tChAccumOvfRa		= 0;
-//	tChAccumOvfRb		= 0;
-//	tNxtBitTimeout		= 0;
-
 	tGetByteNsA		= 0;
 	tGetByteNsB		= 0;
 	valUsbLdSel		= 0;

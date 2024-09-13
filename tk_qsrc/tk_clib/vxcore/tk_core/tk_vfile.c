@@ -149,10 +149,10 @@ int TK_GetHandleForPtr(TKPE_TaskInfo *task, void *ptr)
 {
 	int i;
 	
-	if(ptr && (((void *)((u16)((long)ptr)))==ptr))
-	{
-		__debugbreak();
-	}
+//	if(ptr && (((void *)((u16)((long)ptr)))==ptr))
+//	{
+//		__debugbreak();
+//	}
 	
 	i=TK_LookupHandleForPtr(task, ptr);
 	if(i>=0)
@@ -1235,10 +1235,10 @@ int tk_hwrite(TKPE_TaskInfo *task, int iHdl, void *pBuf, int szBuf)
 	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
-	if(((TK_FILE *)((u16)((long)fd)))==fd)
-	{
-		__debugbreak();
-	}
+//	if(((TK_FILE *)((u16)((long)fd)))==fd)
+//	{
+//		__debugbreak();
+//	}
 
 	return(tk_fwrite(pBuf, 1, szBuf, fd));
 }

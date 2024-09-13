@@ -3,6 +3,22 @@
 
 static u64 tkgdi_ptrmangle_key=0;
 
+void TKGDI_Snd_SilenceAll(void);
+int TK_Midi_SilenceAll();
+void	TKGDI_Snd_WriteStereoSamples(short *mixbuf, int nsamp);
+void	TKGDI_Snd_WriteStereoSamples2(short *mixbuf, int nsamp, int nsamp2);
+
+int TK_Midi_UploadPatch(TKGDI_MIDI_PATCHINFO *mpat, void *data);
+int TK_Midi_SetMasterParam(int pvar, int val);
+int TK_Midi_ProgramChange(int ch, int d0);
+int TK_Midi_Controller(int ch, int d0, int d1);
+int TK_Midi_PitchBlend(int ch, int d0);
+int TK_Midi_NoteOn(int ch, int d0, int d1);
+int TK_Midi_FindFreeVoice(int fl);
+int TK_Midi_NoteOff(int ch, int d0, int d1);
+int TK_Midi_ProbeDelayOff(void);
+int TK_Midi_Init();
+
 TKGSTATUS TKGDI_BlitSubImageNew(
 	_tkgdi_context_t *ctx,
 	TKGHDC dev,
@@ -2045,7 +2061,7 @@ void *TKGDI_GetHalContext(TKPE_TaskInfo *task,
 	
 	ctx=tk_malloc(sizeof(_tkgdi_context_t));
 	memset(ctx, 0, sizeof(_tkgdi_context_t));
-	ctx->vt=&tkgdi_context_vtable_vt;
+	ctx->vt=(void *)(&tkgdi_context_vtable_vt);
 	
 	i=tkgdi_n_contexts++;
 	tkgdi_context_task[i]=task;
@@ -2678,20 +2694,20 @@ const _tkgdi_context_vtable_t tkgdi_context_vtable_gvt = {
 NULL,						//0
 NULL,						//1
 (void *)0x12345678,			//2
-tkgdi_comglue_wrapcall3,	//3
-tkgdi_comglue_wrapcall4,
-tkgdi_comglue_wrapcall5,
-tkgdi_comglue_wrapcall6,
-tkgdi_comglue_wrapcall7,
-tkgdi_comglue_wrapcall8,
+(void *)tkgdi_comglue_wrapcall3,	//3
+(void *)tkgdi_comglue_wrapcall4,
+(void *)tkgdi_comglue_wrapcall5,
+(void *)tkgdi_comglue_wrapcall6,
+(void *)tkgdi_comglue_wrapcall7,
+(void *)tkgdi_comglue_wrapcall8,
 (void *)0x12345678,			//9
-tkgdi_comglue_wrapcall10,	//10
-tkgdi_comglue_wrapcall11,
-tkgdi_comglue_wrapcall12,
-tkgdi_comglue_wrapcall13,
-tkgdi_comglue_wrapcall14,	//14
+(void *)tkgdi_comglue_wrapcall10,	//10
+(void *)tkgdi_comglue_wrapcall11,
+(void *)tkgdi_comglue_wrapcall12,
+(void *)tkgdi_comglue_wrapcall13,
+(void *)tkgdi_comglue_wrapcall14,	//14
 (void *)0x12345678,			//15
-tkgdi_comglue_wrapcall16,	//16
+(void *)tkgdi_comglue_wrapcall16,	//16
 NULL,	//1
 NULL,	//2
 NULL,	//3
@@ -2709,20 +2725,20 @@ const _tkgdi_context_vtable_t tkgdi_context_vtable_grvvt = {
 NULL,						//0
 NULL,						//1
 (void *)0x12345678,			//2
-tkgdi_comglue_rv_wrapcall3,	//3
-tkgdi_comglue_rv_wrapcall4,
-tkgdi_comglue_rv_wrapcall5,
-tkgdi_comglue_rv_wrapcall6,
-tkgdi_comglue_rv_wrapcall7,
-tkgdi_comglue_rv_wrapcall8,
+(void *)tkgdi_comglue_rv_wrapcall3,	//3
+(void *)tkgdi_comglue_rv_wrapcall4,
+(void *)tkgdi_comglue_rv_wrapcall5,
+(void *)tkgdi_comglue_rv_wrapcall6,
+(void *)tkgdi_comglue_rv_wrapcall7,
+(void *)tkgdi_comglue_rv_wrapcall8,
 (void *)0x12345678,			//9
-tkgdi_comglue_rv_wrapcall10,	//10
-tkgdi_comglue_rv_wrapcall11,
-tkgdi_comglue_rv_wrapcall12,
-tkgdi_comglue_rv_wrapcall13,
-tkgdi_comglue_rv_wrapcall14,	//14
+(void *)tkgdi_comglue_rv_wrapcall10,	//10
+(void *)tkgdi_comglue_rv_wrapcall11,
+(void *)tkgdi_comglue_rv_wrapcall12,
+(void *)tkgdi_comglue_rv_wrapcall13,
+(void *)tkgdi_comglue_rv_wrapcall14,	//14
 (void *)0x12345678,			//15
-tkgdi_comglue_rv_wrapcall16,	//16
+(void *)tkgdi_comglue_rv_wrapcall16,	//16
 NULL,	//1
 NULL,	//2
 NULL,	//3

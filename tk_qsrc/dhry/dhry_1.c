@@ -4,7 +4,7 @@
  *                   "DHRYSTONE" Benchmark Program
  *                   -----------------------------
  *                                                                            
- *  Version:    C, Version 2.1
+ *  Version:    C, Version 2.1-
  *                                                                            
  *  File:       dhry_1.c (part 2 of 3)
  *

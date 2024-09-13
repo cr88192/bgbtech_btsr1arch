@@ -51,6 +51,13 @@ For scalar Ops, Lane 2/3 will hold:
 `include "DecOpRvI.v"
 `endif
 
+`ifdef jx2_enable_riscv_rvc
+`include "DecOpRvC.v"
+`endif
+
+/* verilator lint_off DEFPARAM */
+// /* verilator lint_off UNUSEDSIGNAL */
+
 module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
@@ -359,6 +366,23 @@ DecOpRvI	decOpRvB(
 	decOpRvB_idUFl
 	);
 
+`endif
+
+`ifdef jx2_enable_riscv_rvc
+`wire_gpr		decOpRc_idRegN;
+`wire_gpr		decOpRc_idRegM;
+`wire_gpr		decOpRc_idRegO;
+wire[32:0]		decOpRc_idImm;
+wire[8:0]		decOpRc_idUCmd;
+wire[8:0]		decOpRc_idUIxt;
+
+DecOpRvC	decOpRc(
+	clock,		reset,
+	istrWord[63:0],		srMod,
+	decOpRc_idRegN,		decOpRc_idRegM,
+	decOpRc_idRegO,		decOpRc_idImm,
+	decOpRc_idUCmd,		decOpRc_idUIxt
+	);
 `endif
 
 `endif
@@ -1326,6 +1350,20 @@ begin
 
 		opUCmdA	= decOpBz_idUCmd;
 		opUIxtA	= decOpBz_idUIxt;
+
+`ifdef jx2_enable_riscv
+`ifdef jx2_enable_riscv_rvc
+		if(srRiscv && !noNoRiscV)
+		begin
+			opRegAM	= decOpRc_idRegM;
+			opRegAO	= decOpRc_idRegO;
+			opRegAN	= decOpRc_idRegN;
+			opImmA	= decOpRc_idImm;
+			opUCmdA	= decOpRc_idUCmd;
+			opUIxtA	= decOpRc_idUIxt;
+		end
+`endif
+`endif
 
 		opRegAM0	= opRegAM;
 		opRegAO0	= opRegAO;

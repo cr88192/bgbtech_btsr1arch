@@ -881,6 +881,9 @@ byte arch_sizeof_long;
 byte arch_sizeof_ptr;
 byte arch_sizeof_valist;
 
+byte arch_endian;		//0=unknown, 1=little, 2=big
+byte arch_unaligned;	//0=unknown, 1=unaligned safe, 2=aligned only
+
 int arch_sizeof_regsave;
 
 byte arch_demote_d2f;	//for arch, demote double to float

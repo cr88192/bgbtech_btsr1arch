@@ -35,6 +35,12 @@ TKPE_TaskInfo *TK_SpawnNewThreadB(
 void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
 	void *sObj, int idx, void *pret, void *args);
 
+int TK_RegCache_GetKeyPath_Str(TK_RegContext *ctx, char *path,
+	char *buf, int bsz);
+int TK_RegCache_SetKeyPath_Str(TK_RegContext *ctx, char *path, char *buf);
+int TK_RegGbl_SetKeyPath_Str(char *path, char *buf);
+int TK_RegGbl_GetKeyPath_Str(char *path, char *buf, int bufsz);
+
 
 int tk_sysc_exitpt()
 {

@@ -1,4 +1,5 @@
-TK_FILE *tk_bdspi_fopen(TK_MOUNT *mnt, char *name, char *mode);
+TK_FILE *tk_bdspi_fopen(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, char *mode);
 int tk_bdspi_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_bdspi_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
 s64 tk_bdspi_fseek(TK_FILE *fd, s64 ofs, int rel);
@@ -122,7 +123,8 @@ int tk_bdspi_init()
 	return(1);
 }
 
-TK_FILE *tk_bdspi_fopen(TK_MOUNT *mnt, char *name, char *mode)
+TK_FILE *tk_bdspi_fopen(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, char *mode)
 {
 	TK_BLKDEVINFO *bdi;
 	TK_FILE *fd;

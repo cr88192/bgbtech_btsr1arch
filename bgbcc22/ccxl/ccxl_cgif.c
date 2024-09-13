@@ -19,6 +19,258 @@ ccxl_status BGBCC_CCXL_RegisterBackend(BGBCC_CCXL_BackendFuncs_vt *ivt)
 	return(0);
 }
 
+/** Setup various global defines related to the target's configuration. */
+ccxl_status BGBCC_CCXL_SetupContextTargetDefines(BGBCC_TransState *ctx)
+{
+	if((ctx->arch_sizeof_long==8) && (ctx->arch_sizeof_ptr==8) &&
+		(ctx->arch_sizeof_int==4))
+	{
+		BGBPP_AddStaticDefine(NULL, "__LP64__", "1");
+		BGBPP_AddStaticDefine(NULL, "_LP64", "1");
+	}
+
+	BGBPP_AddStaticDefine(NULL, "__CHAR_BIT__", "8");
+
+
+	BGBPP_AddStaticDefine(NULL, "__SIZE_TYPE__", "long");
+	BGBPP_AddStaticDefine(NULL, "__WCHAR_TYPE__", "__uint16");
+	BGBPP_AddStaticDefine(NULL, "__WINT_TYPE__", "__int32");
+	BGBPP_AddStaticDefine(NULL, "__SIG_ATOMIC_TYPE__", "__int64");
+
+	BGBPP_AddStaticDefine(NULL, "__INTMAX_TYPE__", "__int128");
+	BGBPP_AddStaticDefine(NULL, "__UINTMAX_TYPE__", "__uint128");
+
+	BGBPP_AddStaticDefine(NULL, "__INT8_TYPE__", "__int8");
+	BGBPP_AddStaticDefine(NULL, "__INT16_TYPE__", "__int16");
+	BGBPP_AddStaticDefine(NULL, "__INT32_TYPE__", "__int32");
+	BGBPP_AddStaticDefine(NULL, "__INT64_TYPE__", "__int64");
+	BGBPP_AddStaticDefine(NULL, "__UINT8_TYPE__", "__uint8");
+	BGBPP_AddStaticDefine(NULL, "__UINT16_TYPE__", "__uint16");
+	BGBPP_AddStaticDefine(NULL, "__UINT32_TYPE__", "__uint32");
+	BGBPP_AddStaticDefine(NULL, "__UINT64_TYPE__", "__uint64");
+
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST8_TYPE__", "__int8");
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST16_TYPE__", "__int16");
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST32_TYPE__", "__int32");
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST64_TYPE__", "__int64");
+	BGBPP_AddStaticDefine(NULL, "__UINT_LEAST8_TYPE__", "__uint8");
+	BGBPP_AddStaticDefine(NULL, "__UINT_LEAST16_TYPE__", "__uint16");
+	BGBPP_AddStaticDefine(NULL, "__UINT_LEAST32_TYPE__", "__uint32");
+	BGBPP_AddStaticDefine(NULL, "__UINT_LEAST64_TYPE__", "__uint64");
+
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST8_TYPE__", "__int8");
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST16_TYPE__", "__int16");
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST32_TYPE__", "__int32");
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST64_TYPE__", "__int64");
+	BGBPP_AddStaticDefine(NULL, "__UINT_FAST8_TYPE__", "__uint8");
+	BGBPP_AddStaticDefine(NULL, "__UINT_FAST16_TYPE__", "__uint16");
+	BGBPP_AddStaticDefine(NULL, "__UINT_FAST32_TYPE__", "__uint32");
+	BGBPP_AddStaticDefine(NULL, "__UINT_FAST64_TYPE__", "__uint64");
+
+	if(ctx->arch_sizeof_long==ctx->arch_sizeof_ptr)
+	{
+		BGBPP_AddStaticDefine(NULL, "__INTPTR_TYPE__", "long");
+		BGBPP_AddStaticDefine(NULL, "__UINTPTR_TYPE__", "unsigned long");
+		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_TYPE__", "long");
+	}else if(ctx->arch_sizeof_ptr==4)
+	{
+		BGBPP_AddStaticDefine(NULL, "__INTPTR_TYPE__", "int");
+		BGBPP_AddStaticDefine(NULL, "__UINTPTR_TYPE__", "unsigned int");
+		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_TYPE__", "int");
+	}else if(ctx->arch_sizeof_ptr==8)
+	{
+		BGBPP_AddStaticDefine(NULL, "__INTPTR_TYPE__", "__int64");
+		BGBPP_AddStaticDefine(NULL, "__UINTPTR_TYPE__", "__uint64");
+		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_TYPE__", "__int64");
+	}else if(ctx->arch_sizeof_ptr==16)
+	{
+		BGBPP_AddStaticDefine(NULL, "__INTPTR_TYPE__", "__int128");
+		BGBPP_AddStaticDefine(NULL, "__UINTPTR_TYPE__", "__uint128");
+		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_TYPE__", "__int128");
+	}
+
+	BGBPP_AddStaticDefine(NULL, "__INT8_C", "__int8");
+	BGBPP_AddStaticDefine(NULL, "__INT16_C", "__int16");
+	BGBPP_AddStaticDefine(NULL, "__INT32_C", "__int32");
+	BGBPP_AddStaticDefine(NULL, "__INT64_C", "__int64");
+	BGBPP_AddStaticDefine(NULL, "__INTMAX_C", "__int128");
+
+	BGBPP_AddStaticDefine(NULL, "__UINT8_C", "__uint8");
+	BGBPP_AddStaticDefine(NULL, "__UINT16_C", "__uint16");
+	BGBPP_AddStaticDefine(NULL, "__UINT32_C", "__uint32");
+	BGBPP_AddStaticDefine(NULL, "__UINT64_C", "__uint64");
+	BGBPP_AddStaticDefine(NULL, "__UINTMAX_C", "__uint128");
+
+	BGBPP_AddStaticDefine(NULL, "__SCHAR_WIDTH__", "8");
+	BGBPP_AddStaticDefine(NULL, "__SHRT_WIDTH__", "16");
+	BGBPP_AddStaticDefine(NULL, "__INT_WIDTH__", "32");
+	
+	if(ctx->arch_sizeof_ptr==4)
+	{
+		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_WIDTH__", "32");
+		BGBPP_AddStaticDefine(NULL, "__INTPTR_WIDTH__", "32");
+	}
+
+	if(ctx->arch_sizeof_ptr==8)
+	{
+		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_WIDTH__", "64");
+		BGBPP_AddStaticDefine(NULL, "__INTPTR_WIDTH__", "64");
+	}
+
+	if(ctx->arch_sizeof_ptr==16)
+	{
+		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_WIDTH__", "128");
+		BGBPP_AddStaticDefine(NULL, "__INTPTR_WIDTH__", "128");
+	}
+
+	if(ctx->arch_sizeof_long==4)
+	{
+		BGBPP_AddStaticDefine(NULL, "__LONG_WIDTH__", "32");
+//		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_WIDTH__", "32");
+		BGBPP_AddStaticDefine(NULL, "__SIZE_WIDTH__", "32");
+//		BGBPP_AddStaticDefine(NULL, "__INTPTR_WIDTH__", "32");
+	}
+
+	if(ctx->arch_sizeof_long==8)
+	{
+		BGBPP_AddStaticDefine(NULL, "__LONG_WIDTH__", "64");
+//		BGBPP_AddStaticDefine(NULL, "__PTRDIFF_WIDTH__", "64");
+		BGBPP_AddStaticDefine(NULL, "__SIZE_WIDTH__", "64");
+//		BGBPP_AddStaticDefine(NULL, "__INTPTR_WIDTH__", "64");
+	}
+	
+	BGBPP_AddStaticDefine(NULL, "__LONG_LONG_WIDTH__", "64");
+	BGBPP_AddStaticDefine(NULL, "__SIG_ATOMIC_WIDTH__", "64");
+	BGBPP_AddStaticDefine(NULL, "__WCHAR_WIDTH__", "16");
+	BGBPP_AddStaticDefine(NULL, "__WINT_WIDTH__", "32");
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST8_WIDTH__", "8");
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST16_WIDTH__", "16");
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST32_WIDTH__", "32");
+	BGBPP_AddStaticDefine(NULL, "__INT_LEAST64_WIDTH__", "64");
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST8_WIDTH__", "8");
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST16_WIDTH__", "16");
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST32_WIDTH__", "32");
+	BGBPP_AddStaticDefine(NULL, "__INT_FAST64_WIDTH__", "64");
+	BGBPP_AddStaticDefine(NULL, "__INTMAX_WIDTH__", "128");
+
+	if(ctx->arch_sizeof_int==2)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_INT__", "2"); }
+	else
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_INT__", "4"); }
+
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_LONG_LONG__", "8");
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_SHORT__", "2");
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_FLOAT__", "4");
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_DOUBLE__", "8");
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_LONG_DOUBLE__", "16");
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_SIZE_T__", "8");
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_WCHAR_T__", "2");
+	BGBPP_AddStaticDefine(NULL, "__SIZEOF_WINT_T__", "4");
+
+	if(ctx->arch_sizeof_ptr==4)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_PTRDIFF_T__", "4"); }
+	if(ctx->arch_sizeof_ptr==8)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_PTRDIFF_T__", "8"); }
+	if(ctx->arch_sizeof_ptr==16)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_PTRDIFF_T__", "16"); }
+
+	if(ctx->arch_unaligned&1)
+	{
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_LONG__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_LONG_LONG__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_SHORT__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_FLOAT__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_DOUBLE__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_LONG_DOUBLE__", "8");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_SIZE_T__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_WCHAR_T__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_WINT_T__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_POINTER__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_PTRDIFF_T__", "1");
+
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT16__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT32__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT64__", "1");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT128__", "8");
+	}else
+	{
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT__", "4");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_LONG_LONG__", "8");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_SHORT__", "2");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_FLOAT__", "4");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_DOUBLE__", "8");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_LONG_DOUBLE__", "16");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_WCHAR_T__", "2");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_WINT_T__", "4");
+
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT16__", "2");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT32__", "4");
+		BGBPP_AddStaticDefine(NULL, "__MINALIGN_INT64__", "8");
+
+		if(ctx->arch_sizeof_ptr==4)
+		{
+			BGBPP_AddStaticDefine(NULL, "__MINALIGN_PTRDIFF_T__", "4");
+		}
+
+		if(ctx->arch_sizeof_ptr==8)
+		{
+			BGBPP_AddStaticDefine(NULL, "__MINALIGN_PTRDIFF_T__", "8");
+		}
+
+		if(ctx->arch_sizeof_long==4)
+		{
+			BGBPP_AddStaticDefine(NULL, "__MINALIGN_LONG__", "4");
+			BGBPP_AddStaticDefine(NULL, "__MINALIGN_SIZE_T__", "4");
+		}
+		if(ctx->arch_sizeof_long==8)
+		{
+			BGBPP_AddStaticDefine(NULL, "__MINALIGN_LONG__", "8");
+			BGBPP_AddStaticDefine(NULL, "__MINALIGN_SIZE_T__", "8");
+		}
+
+		if(ctx->arch_sizeof_ptr==4)
+			{ BGBPP_AddStaticDefine(NULL, "__MINALIGN_POINTER__", "4"); }
+		if(ctx->arch_sizeof_ptr==8)
+			{ BGBPP_AddStaticDefine(NULL, "__MINALIGN_POINTER__", "8"); }
+		if(ctx->arch_sizeof_ptr==16)
+			{ BGBPP_AddStaticDefine(NULL, "__MINALIGN_POINTER__", "16"); }
+	}
+
+	if(ctx->arch_sizeof_long==4)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_LONG__", "4"); }
+	if(ctx->arch_sizeof_long==8)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_LONG__", "8"); }
+
+	if(ctx->arch_sizeof_ptr==4)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_POINTER__", "4"); }
+	if(ctx->arch_sizeof_ptr==8)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_POINTER__", "8"); }
+	if(ctx->arch_sizeof_ptr==16)
+		{ BGBPP_AddStaticDefine(NULL, "__SIZEOF_POINTER__", "16"); }
+
+
+	if(ctx->arch_endian==1)
+	{
+		BGBPP_AddStaticDefine(NULL, "__LITTLE_ENDIAN__", "");
+		BGBPP_AddStaticDefine(NULL, "__BYTE_ORDER__", "0x12345678");
+		BGBPP_AddStaticDefine(NULL, "__FLOAT_WORD_ORDER__", "0x12345678");
+	}
+
+	if(ctx->arch_endian==2)
+	{
+		BGBPP_AddStaticDefine(NULL, "__BIG_ENDIAN__", "");
+		BGBPP_AddStaticDefine(NULL, "__BYTE_ORDER__", "0x78563412");
+		BGBPP_AddStaticDefine(NULL, "__FLOAT_WORD_ORDER__", "0x78563412");
+	}
+
+	BGBPP_AddStaticDefine(NULL, "__ORDER_LITTLE_ENDIAN__", "0x12345678");
+	BGBPP_AddStaticDefine(NULL, "__ORDER_BIG_ENDIAN__", "0x78563412");
+	BGBPP_AddStaticDefine(NULL, "__ORDER_PDP_ENDIAN__", "0x34127856");
+	
+	return(0);
+}
+
 #if 1
 ccxl_status BGBCC_CCXL_StackFn(BGBCC_TransState *ctx, char *name)
 {

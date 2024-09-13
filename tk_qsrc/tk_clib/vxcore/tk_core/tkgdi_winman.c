@@ -1470,7 +1470,7 @@ int TKGDI_UpdateWindowStack(void)
 				issel?TKGDI_CLR_TITLEBLUSEL:TKGDI_CLR_TITLEBLU);
 		}
 
-		wutx=(u16 *)tkgdi_vid_screenrgb;
+		wutx=(u64 *)tkgdi_vid_screenrgb;
 		bx=tkgdi_ps2ms_x>>2;
 		by=tkgdi_ps2ms_y>>2;
 //		wutx[(by*4+0)*bxs+bx]=0x0;

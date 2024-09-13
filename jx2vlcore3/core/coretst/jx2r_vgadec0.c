@@ -226,6 +226,7 @@ int CDEC_SetupForStream(cdec_imgbuf *ctx)
 	ctx->bits=(u16 *)malloc(4096*2);
 	ctx->bpos=0;
 	ctx->epos=0;
+	return(0);
 }
 
 int CDEC_UpdateForStreamCycle(cdec_imgbuf *ctx, int bits)

@@ -710,7 +710,7 @@ void *TK_DlOpenA(const char *path, int flags)
 #endif
 
 	p=0;
-	ar[0].p=path;
+	ar[0].p=(void *)path;
 	ar[1].i=flags;
 	tk_syscall(NULL, TK_UMSG_DLOPEN, &p, ar);
 	return(p);
@@ -732,7 +732,7 @@ void *TK_DlSymA(void *handle, const char *symbol, int flags)
 
 	p=0;
 	ar[0].p=handle;
-	ar[1].p=symbol;
+	ar[1].p=(void *)symbol;
 	ar[2].i=flags;
 	tk_syscall(NULL, TK_UMSG_DLSYM, &p, ar);
 

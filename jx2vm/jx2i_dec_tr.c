@@ -53,6 +53,9 @@ force_inline void BJX2_DecTraceCb_SetupForTrace(
 	ctx->tr_rjmp=tr->jmpnext;
 //	ctx->regs[BJX2_REG_PC]=tr->addr_nxt;
 
+	ctx->trapc=tr->addr;
+
+
 //	ctx->tr_rnxt=NULL;
 //	ctx->tr_rjmp=NULL;
 
@@ -86,6 +89,9 @@ force_inline void BJX2_DecTraceCb_SetupForTrace(
 			BJX2_CheckJitTrace(ctx, tr);
 		}
 	}
+
+	BJX2_DbgPsBRA(ctx, tr->addr, "TR_Cur");
+	BJX2_DbgPsBSR(ctx, tr->addr_nxt, "TR_Nxt");
 
 //	cur->jit_inh=1024;
 //	BJX2_CheckJitTrace(ctx, cur);
@@ -2017,6 +2023,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		BJX2_MemTranslateTlb(ctx, addr+ 0, 4);
 //		BJX2_MemTranslateTlb(ctx, addr+12);
 //		BJX2_MemTranslateTlb(ctx, addr+4096);
+
 		if(!ctx->status)
 			{ BJX2_MemTranslateTlb(ctx, addr+(32*8), 4); }
 	}
@@ -2024,6 +2031,8 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 //	if(ctx->status)
 	if((ctx->status) && !(tfl&2))
 	{
+		printf("BJX2_DecodeTraceForAddr: Miss/Fault %016llX\n", addr);
+	
 //		__debugbreak();
 
 		tr->n_ops=0;
@@ -2952,7 +2961,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	tr->addr_nxt=npc;
 	tr->addr_jmp=jpc;
 
-#if 1
+#if 0
 	if(rec<64)
 	{
 		if(npc && !brk)

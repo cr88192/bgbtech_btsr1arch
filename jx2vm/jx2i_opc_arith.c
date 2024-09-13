@@ -207,6 +207,7 @@ void BJX2_Op_MOV_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MOVC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	int i, j, k;
 	if(!(ctx->regs[BJX2_REG_SR]&(1<<30)))
 	{
 		if(	(op->rn==BJX2_REG_PC) ||
@@ -244,6 +245,26 @@ void BJX2_Op_MOVC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 
 	ctx->regs[op->rn]=ctx->regs[op->rm];
+
+	if(	(op->rn==BJX2_REG_PC) ||
+		(op->rn==BJX2_REG_SR) ||
+		(op->rn==BJX2_REG_VBR) ||
+		(op->rn==BJX2_REG_SPC) ||
+		(op->rn==BJX2_REG_SSP) ||
+		(op->rn==BJX2_REG_TBR) ||
+		(op->rn==BJX2_REG_TTB) ||
+		(op->rn==BJX2_REG_TEA) ||
+		(op->rn==BJX2_REG_MMCR) ||
+		(op->rn==BJX2_REG_EXSR) ||
+		(op->rn==BJX2_REG_STTB) ||
+		(op->rn==BJX2_REG_KRR))
+	{
+		if(op->rn==BJX2_REG_MMCR)
+			i=-1;
+	
+		ctx->trapc=op->pc;
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_IOPOKE);
+	}
 }
 
 void BJX2_Op_MOVD_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)

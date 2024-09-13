@@ -1,6 +1,9 @@
 #include <tk_core.h>
 #include <tkgdi/tkgdi.h>
 
+TKPE_TaskInfo *TK_GetSyscallUserTask();
+TK_EnvContext *TK_GetTaskEnvContext(TKPE_TaskInfo *task);
+
 int TK_Env_GetEnvVarIdx(int idx, char *bufn, char *bufv, int szn, int szv)
 {
 	TK_EnvContext *env;

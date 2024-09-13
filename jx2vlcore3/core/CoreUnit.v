@@ -99,6 +99,10 @@ MMIO Space:
 */
 
 
+/* verilator lint_off DEFPARAM */
+/* verilator lint_off UNUSEDSIGNAL */
+/* verilator lint_off UNUSEDPARAM */
+
 `include "ExUnit.v"
 
 `ifdef jx2_enable_minicore

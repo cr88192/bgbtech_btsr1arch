@@ -484,7 +484,8 @@ long __sendto(int handle, const void *buf, size_t len, int flags,
 	int rt;
 
 	fd=btshx_tk_handles[handle];
-	rt=tk_fsend(fd, TK_IOC_SENDTO, buf, len, flags, dest_addr, addrlen);
+	rt=tk_fsend(fd, TK_IOC_SENDTO,
+		(void *)buf, len, flags, dest_addr, addrlen);
 	return(rt);
 }
 
@@ -499,9 +500,9 @@ void __sock_setupaddrlenrecv(void *dest_addr, int *addrlen)
 void __sock_adjustaddrlenproto(void *dest_addr, int *addrlen)
 {
 	if(!dest_addr)
-		return(0);
+		return;
 	if(!addrlen)
-		return(0);
+		return;
 #if 0
 	switch(((struct sockaddr *)dest_addr)->sa_family)
 	{
@@ -517,7 +518,7 @@ void __sock_adjustaddrlenproto(void *dest_addr, int *addrlen)
 #endif
 }
 
-long __recvfrom(int handle, const void *buf, size_t len, int flags,
+long __recvfrom(int handle, void *buf, size_t len, int flags,
 	void *dest_addr, int *addrlen)
 {
 	TK_FILE *fd;
@@ -1723,7 +1724,7 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 		if(*s=='l')
 		{
 			s++;
-			if(s[1]=='l')
+			if(*s=='l')
 				s++;
 			isll=1;
 		}else

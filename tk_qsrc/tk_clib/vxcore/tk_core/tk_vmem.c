@@ -136,6 +136,12 @@ int TK_VMem_CheckAddrIsVirtual2(s64 addr, s64 addrh);
 void *tk_ptrsetbound1(void *ptr, int size);
 void *tk_ptrsetbound2(void *ptr, int lobnd, int hibnd);
 
+void tk_vmem_flush_faketlb(void);
+void tk_vmem_loadpte_faketlb(u64 tva, u64 pte);
+u64 TK_VMem_QueryTlbVaForVirtPage(u64 vaddr);
+
+void tk_vmem_loadacl(u64 acle);
+
 
 u64 *TK_VMem_PtrForPto(u64 pto)
 {
@@ -1487,7 +1493,7 @@ int TK_VMem_Init()
 	TK_VMem_PageInfo *cpi, *lpi, *npi;
 	u32 *conbuft;
 	s64 tva;
-	u64 tpte, tmmcr;
+	u64 tpte, tpte1, tmmcr;
 	int np, b, lba, pg;
 	int i, j, k, l, n;
 
@@ -1607,10 +1613,10 @@ int TK_VMem_Init()
 	tk_dbg_printf("TK_VMem_Init: A-1\n");
 
 	pg=TKMM_AllocPagesZeroedApn(1);
-	tk_vmem_aclroot=((u64)pg)<<TK_VMEM_PAGESHL;
+	tk_vmem_aclroot=(u64 *)(((u64)pg)<<TK_VMEM_PAGESHL);
 
 	pg=TKMM_AllocPagesZeroedApn(1);
-	tk_vmem_pageroot=((u64)pg)<<TK_VMEM_PAGESHL;
+	tk_vmem_pageroot=(u64 *)(((u64)pg)<<TK_VMEM_PAGESHL);
 
 //	tk_vmem_pageroot=TKMM_PageAllocL(1<<TK_VMEM_PAGESHL);
 //	memset(tk_vmem_pageroot, 0, 1<<TK_VMEM_PAGESHL);
@@ -1684,7 +1690,7 @@ int TK_VMem_Init()
 
 	tk_dbg_printf("TK_VMem_Init: A-2\n");
 
-#if 0
+#if 1
 	/* Identity Map RAM/etc */
 //	n=(TKMM_PAGEEND>>TK_VMEM_PAGESHL);
 	n=(TKMM_VAS_START_LO>>TK_VMEM_PAGESHL);
@@ -1695,8 +1701,29 @@ int TK_VMem_Init()
 		tpte=(0<<8)|(1<<10)|1;
 		tpte|=i<<TK_VMEM_PTESHL;
 
+		tpte=TK_VMem_EncCheckPageTableEntry(tpte);
+
 		TK_VMem_SetPageTableEntry(tva, tpte);
 //		tk_vmem_loadpte(tva, tpte);
+	}
+#endif
+
+#if 1
+	/* Validate Identity Map RAM/etc */
+//	n=(TKMM_PAGEEND>>TK_VMEM_PAGESHL);
+	n=(TKMM_VAS_START_LO>>TK_VMEM_PAGESHL);
+	for(i=0; i<n; i++)
+	{
+		tva=((u64)i)<<TK_VMEM_PAGESHL;
+//		tpte=(2<<8)|(1<<10)|1;
+		tpte=(0<<8)|(1<<10)|1;
+		tpte|=i<<TK_VMEM_PTESHL;
+
+		tpte=TK_VMem_EncCheckPageTableEntry(tpte);
+
+		tpte1=TK_VMem_GetPageTableEntry(tva);
+		if(tpte!=tpte1)
+			__debugbreak();
 	}
 #endif
 
@@ -1858,8 +1885,15 @@ int TK_VMem_Init()
 
 	__arch_mmcr=tmmcr;
 
+//	for(i=0; i<256; i++)
+//		j++;
+
+	i=tblk1[0]+tblk2[0];
+
 //	__debugbreak();
 #endif
+
+//	tk_dbg_puts("TK_VMem_Init: A-6\n");
 
 	tk_dbg_printf("TK_VMem_Init: OK\n");
 
@@ -3243,9 +3277,9 @@ void TK_VMem_CacheKnock()
 	u64 *dummy;
 	int i, j;
 
-	dummy=tk_vmem_page_tcbuf;
+	dummy=(u64 *)tk_vmem_page_tcbuf;
 	if(!dummy)
-		dummy=&TK_VMem_CacheKnock;
+		dummy=(u64 *)(&TK_VMem_CacheKnock);
 	j=0;
 	for(i=0; i<8192; i++)
 		j+=dummy[i];
@@ -4173,6 +4207,11 @@ __interrupt void __isr_tlbfault(void)
 	exc=__arch_exsr;
 	exsr=(u16)(exc);
 //	tea=exc>>16;
+
+	if(((tea>>40)&255)==0x7F)
+	{
+		__debugbreak();
+	}
 
 	task=(TKPE_TaskInfo *)__arch_tbr;
 	if(!task)

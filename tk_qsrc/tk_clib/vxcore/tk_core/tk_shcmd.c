@@ -297,7 +297,7 @@ int TKSH_Cmds_Cls(char **args)
 	if(tk_get_ttyid())
 	{
 		tk_puts("\x1B[3J");
-		return;
+		return(0);
 	}
 
 	tk_con_reset();
@@ -369,7 +369,7 @@ int TKSH_Cmds_Echo(char **args)
 {
 	char tb1[256];
 	char *s0, *s1;
-	int i;
+	int i, j;
 
 	if(args[1] && !strcmp(args[1], "--help"))
 	{
@@ -383,8 +383,8 @@ int TKSH_Cmds_Echo(char **args)
 		
 		if(*s0=='$')
 		{
-			s1=TK_Env_GetEnvVarI(s0+1, tb1, 256);
-			if(s1)
+			j=TK_Env_GetEnvVarI(s0+1, tb1, 256);
+			if(j>0)
 			{
 				tk_puts(tb1);
 				tk_putc(' ');
@@ -408,7 +408,7 @@ int THSH_CheckIsURI(char *src)
 	s1=src;
 	while(*s1 && (((*s1>='a') && (*s1<='z')) || ((*s1>='A') && (*s1<='Z'))))
 		s1++;
-	if(s1==':')
+	if(*s1==':')
 		isuri=1;
 	return(isuri);
 }
@@ -1103,7 +1103,7 @@ int TKSH_Cmds_Cat(char **args)
 	int dohelp;
 	int i, j, k, nfn;
 
-	nfn=NULL;
+	nfn=0;
 	dohelp=0;
 	for(i=1; args[i]; i++)
 	{
@@ -1337,7 +1337,8 @@ static const u32 tst_mandrill0_bmp[] = {
 };
 #endif
 
-extern void __rsrc__mandril;
+// extern void __rsrc__mandril;
+extern byte __rsrc__mandril[];
 
 int TKSH_Cmds_TestGfx(char **args)
 {
@@ -1764,10 +1765,10 @@ int TKSH_Cmds_StartGui(char **args)
 	ctx->vt->DrawString(ctx, hdcWin, -1, -1,
 		"Console test string\r\n", 0, 0);
 
-	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(0<<20));
-	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(1<<20));
-	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(2<<20));
-	TK_SpawnShellTask(TK_GET_TBR, 0x10000000+hdcWin+(3<<20));
+	TK_SpawnShellTask((void *)TK_GET_TBR, 0x10000000+hdcWin+(0<<20));
+	TK_SpawnShellTask((void *)TK_GET_TBR, 0x10000000+hdcWin+(1<<20));
+	TK_SpawnShellTask((void *)TK_GET_TBR, 0x10000000+hdcWin+(2<<20));
+	TK_SpawnShellTask((void *)TK_GET_TBR, 0x10000000+hdcWin+(3<<20));
 
 	while(1)
 	{
@@ -2730,6 +2731,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
 	int sig_is_pe, sig_is_asc, sig_is_elf;
 	int rv, nl, sz, sza, ix, pid;
+	int argc;
 	int i, j, k;
 
 	pimg=NULL;
@@ -2741,7 +2743,14 @@ int TKSH_TryLoadB(char *img, char **args0)
 	if(args0)
 	{
 		ct=atb;
-		for(i=0; args0[i]; i++)
+
+		j=strlen(img);
+		memcpy(ct, img, j+1);
+		args[0]=ct;
+		ct+=j+1;
+
+//		for(i=0; args0[i]; i++)
+		for(i=1; args0[i]; i++)
 		{
 //			args[i]=args0[i];
 			j=strlen(args0[i]);
@@ -2750,11 +2759,20 @@ int TKSH_TryLoadB(char *img, char **args0)
 			ct+=j+1;
 		}
 		args[i]=NULL;
-		args[0]=img;
+//		args[0]=img;
+		argc=i;
 	}else
 	{
-		args[0]=img;
+		ct=atb;
+
+		j=strlen(img);
+		memcpy(ct, img, j+1);
+		args[0]=ct;
+		ct+=j+1;
+
+//		args[0]=img;
 		args[1]=NULL;
+		argc=1;
 	}
 
 	cs=img+strlen(img);
@@ -2936,7 +2954,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 			return(-1);
 		}
 
-		bootptr=pimg->bootptr;
+		bootptr=(void *)(pimg->bootptr);
 
 #if 0
 		if(bootgbr)
@@ -2971,6 +2989,25 @@ int TKSH_TryLoadB(char *img, char **args0)
 			boot_newsp=boot_newspb+(((1<<18)-1024)-i);
 //			boot_newsp=boot_newspb+(((1<<19)-1024)-i);
 //			boot_newsp=boot_newspb+(((1<<20)-1024)-i);
+
+//			*(byte **)boot_newsp=((byte *)boot_newsp)+8;
+//			strncpy(((byte *)boot_newsp)+8, atb, 512);
+
+			a1=(char **)(((byte *)boot_newsp)+16);
+			ct=((byte *)boot_newsp)+256;
+			*(long *)(boot_newsp+0)=argc;
+			*(byte **)(boot_newsp+8)=((byte *)a1);
+			strncpy(ct, atb, 512);
+			
+			for(j=0; j<argc; j++)
+			{
+				k=((char *)(args[j]))-((char *)atb);
+				a1[j]=ct+k;
+			}
+			a1[j+0]=NULL;
+			a1[j+1]=NULL;
+			a1[j+2]=NULL;
+			a1[j+3]=NULL;
 
 //			i=TK_GetRandom16ASLR()&0x00F0;
 //			boot_newspbk=TKMM_PageAlloc(1<<16);
@@ -3115,7 +3152,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 			j=strlen(args[0]);	//BGB: Debug
 
 			TKPE_SetupTaskForImage(task, pimg);
-			bootgbr=task->basegbr;
+			bootgbr=(void *)(task->basegbr);
 
 //			j=strlen(args[0]);	//BGB: Debug
 			
@@ -3159,7 +3196,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 				sza=j+(j>>2)+4;
 
 				ct=boot_newspb;
-				cs1=tk_rovalloc(sza, &ct);
+				cs1=tk_rovalloc(sza, (void **)(&ct));
 				ct1=tksh_cifyemit(ct1, img);
 				*ct1++=0;
 				task->argv=(tk_kptr)cs1;
@@ -3217,12 +3254,12 @@ int TKSH_TryLoadB(char *img, char **args0)
 			TK_FlushCacheL1D();
 			TK_FlushCacheL1D_INVIC(NULL);
 
-			tkern->task_join_ret=ptask;
+			tkern->task_join_ret=(tk_kptr)ptask;
 			if(!ptask)
 			{
 				if(ctask==tk_task_syscall)
 					__debugbreak();
-				tkern->task_join_ret=ctask;
+				tkern->task_join_ret=(tk_kptr)ctask;
 			}
 			
 			pid=task->pid;
@@ -3231,12 +3268,14 @@ int TKSH_TryLoadB(char *img, char **args0)
 			
 			pb_boot=(u64)bootptr;
 
+			tkern->ctx_regsave[TKPE_REGSAVE_R4]=(tk_kptr)boottbr;
+
 			tkern->ctx_regsave[TKPE_REGSAVE_TTB]=tk_vmem_pageglobal;
 //			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;
 			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=
 				pb_boot&0x0000FFFFFFFFFFFEULL;
-			tkern->ctx_regsave[TKPE_REGSAVE_GBR]=bootgbr;
-			tkern->ctx_regsave[TKPE_REGSAVE_SSP]=boot_newsp;
+			tkern->ctx_regsave[TKPE_REGSAVE_GBR]=(tk_kptr)bootgbr;
+			tkern->ctx_regsave[TKPE_REGSAVE_SSP]=(tk_kptr)boot_newsp;
 //			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
 			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=
 				0xC000000000000000ULL|
@@ -3561,7 +3600,7 @@ int TK_CreateProcess(
 //	if(tk_iskernel())
 	if(tk_iskerneltask())
 	{
-		tid=TK_CreateProcessB(TK_GET_TBR,
+		tid=TK_CreateProcessB((void *)TK_GET_TBR,
 			imgname, cmdline, envmod, cwd, taskflags, info);
 		return(tid);
 	}

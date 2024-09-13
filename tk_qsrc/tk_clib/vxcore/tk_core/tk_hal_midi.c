@@ -644,7 +644,7 @@ int TK_Midi_UploadPatch(TKGDI_MIDI_PATCHINFO *mpat, void *data)
 	tk_midi_patch_lend[idx]=mpat->ptLoopEnd;
 	tk_midi_patch_rate[idx]=mpat->nSamplesPerSec;
 	
-	memcpy(tk_midi_patchmem+base*4, data, len);
+	memcpy((void *)(tk_midi_patchmem+base*4), data, len);
 	return(0);
 }
 

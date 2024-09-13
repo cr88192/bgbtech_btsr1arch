@@ -3200,6 +3200,13 @@ XG2RV may only exist if both XG2 Mode and RVI Mode are available.
 
 This mode will use (WX4,WX3,WX2,WXE) == 0110 or 0111.
 
+Change:
+* R0: ZR / PC
+* R1: LR
+* R2..R13, Same
+* R14: GBR
+* R15: SP
+
 
 === Wide Execution 2 (Optional) ===
 

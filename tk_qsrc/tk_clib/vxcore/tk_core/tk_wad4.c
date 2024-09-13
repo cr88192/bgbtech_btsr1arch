@@ -9,6 +9,7 @@ int				tk_wad4_zmemlim = 4*(1<<20);
 
 void *TK_Wad4_GetCacheLumpNum(TK_WadImage *img, int lump, int *rsz);
 byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp);
+u32 TKPE_CalculateImagePel4BChecksumAc(byte *buf, int sz);
 
 TK_WadZBlock *TK_Wad4_ZAllocBlock()
 {
@@ -755,7 +756,7 @@ void TK_Wad4_ReadLumpBuffer(TK_WadImage *img, int lump, void *buf)
 		tk_fread(tk_wad4_tcbuf, 1, csz, fd);
 
 		ct1=TKPE_UnpackBuffer(buf, tk_wad4_tcbuf, csz, cmp);
-		dsz1=ct1-buf;
+		dsz1=((byte *)ct1)-((byte *)buf);
 		if(dsz1!=dsz)
 		{
 			tk_printf("TK_Wad4_ReadLumpBuffer: "

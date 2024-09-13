@@ -52,7 +52,14 @@ TK_LDFL= $(TK_CFL) \
 TK_LDFL_GLIB= $(TK_CFL_GLIB)
 
 BASE_CFLAGS=-Itk_clib/include -Ltk_clib
-BASE_CFLAGS_GLIB= # -I/usr/local/rv64/include -L/usr/local/rv64/lib
+
+BASE_CFLAGS_GLIB = \
+	-I/usr/local/musl/rv64/include -L/usr/local/musl/rv64/lib
+
+#	/usr/local/sysroot/lib/libc.so.6 \
+#	/usr/local/sysroot/lib/ld-linux-riscv64-lp64.so.1
+
+	# --static-pie
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 LDFLAGS=$(TK_LDFL) -lclib_rv64

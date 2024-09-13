@@ -845,7 +845,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	op->rp=BJX2_REG_ZZR;
 	op->rq=BJX2_REG_GBR_HI;
 	op->imm=0;
-	op->pc=addr+2;
+	op->pc2=addr+2;
 
 //	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE)
 	if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&

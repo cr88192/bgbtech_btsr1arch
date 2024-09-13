@@ -685,21 +685,30 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	BGBPP_AddStaticDefine(NULL, "__STDC__", "");
 	BGBPP_AddStaticDefine(NULL, "__BJX2__", "");
 
+
+	ctx->arch_endian=1;
+	ctx->arch_unaligned=1;
+
+	BGBCC_CCXL_SetupContextTargetDefines(ctx);
+
 	if(ctx->arch_sizeof_ptr==4)
 	{
 		BGBPP_AddStaticDefine(NULL, "__ADDR_32__", "");
+//		BGBPP_AddStaticDefine(NULL, "__SIZEOF_POINTER__", "4");
 	}
 
 	if(ctx->arch_sizeof_ptr==8)
 	{
 		BGBPP_AddStaticDefine(NULL, "__ADDR_64__", "");
 		BGBPP_AddStaticDefine(NULL, "__ADDR_X48__", "");
+//		BGBPP_AddStaticDefine(NULL, "__SIZEOF_POINTER__", "8");
 	}
 
 	if(ctx->arch_sizeof_ptr==16)
 	{
 		BGBPP_AddStaticDefine(NULL, "__ADDR_128__", "");
 		BGBPP_AddStaticDefine(NULL, "__ADDR_X96__", "");
+//		BGBPP_AddStaticDefine(NULL, "__SIZEOF_POINTER__", "16");
 	}
 
 	if(shctx->is_addr_x32)

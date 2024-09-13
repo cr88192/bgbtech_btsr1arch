@@ -505,7 +505,7 @@ void *TKMM_PageAllocVaMap(int sz, int flProt, int flMap)
 		return(TKMM_PageAlloc_f(sz));
 
 //	va=TK_VMem_VaVirtualAlloc(0, sz, flProt, flMap);
-	va=tk_mmap(0, sz, flProt, flMap, -1, 0);
+	va=(s64)(tk_mmap(0, sz, flProt, flMap, -1, 0));
 	if(va)
 		return((void *)va);
 
@@ -526,7 +526,7 @@ void *TKMM_PageAllocUsc(int sz)
 		return(TKMM_PageAlloc_f(sz));
 
 //	va=TK_VMem_VaVirtualAlloc(0, sz, TKMM_PROT_RWX, TKMM_MAP_PRIVATE);
-	va=tk_mmap(0, sz, TKMM_PROT_RWX, TKMM_MAP_PRIVATE, -1, 0);
+	va=(s64)(tk_mmap(0, sz, TKMM_PROT_RWX, TKMM_MAP_PRIVATE, -1, 0));
 	if(va)
 		return((void *)va);
 
@@ -550,7 +550,7 @@ int TKMM_PageFreeUsc(void *ptr, int sz)
 	if(tea>=TKMM_VALOSTART)
 	{
 //		return(TK_VMem_VaVirtualFree((s64)ptr, sz));
-		return(tk_munmap((s64)ptr, sz));
+		return(tk_munmap(ptr, sz));
 	}
 
 	return(TKMM_PageFree_f(ptr, sz));
