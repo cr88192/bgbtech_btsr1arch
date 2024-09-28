@@ -2134,6 +2134,16 @@ __PDPCLIB_API__ int fputc(int c, FILE *stream)
 			return (EOF);
 		}
 	}
+	
+	if((c=='\n') || (c=='\r'))
+	{
+		/* BGB: Force output on newline. */
+		if((stream==stdout) || (stream==stderr))
+		{
+			fflush(stream);
+		}
+	}
+	
 	return (c);
 }
 

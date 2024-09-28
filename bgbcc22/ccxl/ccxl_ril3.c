@@ -2069,6 +2069,13 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackLoadAddrVSig(ctx, s0, s1);
 		break;
 
+	case BGBCC_RIL3OP_TOPLFN:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		ctx->lfn=bgbcc_strdup(s0);
+		ctx->lln=i0;
+		break;
+
 	default:
 		__debugbreak();
 		break;

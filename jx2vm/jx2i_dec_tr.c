@@ -2961,7 +2961,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	tr->addr_nxt=npc;
 	tr->addr_jmp=jpc;
 
-#if 0
+#if 1
 	if(rec<64)
 	{
 		if(npc && !brk)

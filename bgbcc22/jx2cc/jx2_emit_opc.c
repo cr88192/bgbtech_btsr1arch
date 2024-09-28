@@ -23,6 +23,50 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
+int BGBCC_JX2_NormalizeReg(BGBCC_JX2_Context *ctx, int reg)
+{
+	int ix, jx;
+
+	if(ctx->emit_riscv&0x22)
+	{
+		if(reg==BGBCC_SH_REG_ZZR)
+			return(BGBCC_SH_REG_R0);
+		if(reg==BGBCC_SH_REG_LR)
+			return(BGBCC_SH_REG_R1);
+		if(reg==BGBCC_SH_REG_SP)
+			return(BGBCC_SH_REG_R15);
+		if(reg==BGBCC_SH_REG_GBR)
+			return(BGBCC_SH_REG_R14);
+
+		if(reg==BGBCC_SH_REG_RQ14)
+			return(BGBCC_SH_REG_R2);
+		if(reg==BGBCC_SH_REG_RQ15)
+			return(BGBCC_SH_REG_R3);
+		if(reg==BGBCC_SH_REG_RD14)
+			return(BGBCC_SH_REG_R2);
+		if(reg==BGBCC_SH_REG_RD15)
+			return(BGBCC_SH_REG_R3);
+	}
+
+	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_ARQ0) ||
+		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_ARD0) )
+	{
+		ix=reg&15;
+		
+		if((ix>=0) && (ix<=3))
+			jx= 4+(ix-0);
+		if((ix>=4) && (ix<=7))
+			jx=20+(ix-4);
+		if((ix>=8) && (ix<=11))
+			jx=36+(ix-8);
+		if((ix>=12) && (ix<=15))
+			jx=52+(ix-8);
+		return(BGBCC_SH_REG_R0+jx);
+	}
+
+	return(reg);
+}
+
 int BGBCC_JX2_EmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 {
 	if(!BGBCC_JX2_TryEmitOpNone(ctx, nmid))
@@ -194,6 +238,7 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		return(BGBCC_JX2RV_TryEmitOpReg(ctx, nmid, reg));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	reg=BGBCC_JX2_NormalizeReg(ctx, reg);
 
 #if 0
 	if(!(ctx->has_pushx2))
@@ -1620,6 +1665,7 @@ int BGBCC_JX2_TryEmitOpMReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 		return(BGBCC_JX2RV_TryEmitOpReg(ctx, nmid, reg));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	reg=BGBCC_JX2_NormalizeReg(ctx, reg);
 
 	opw1=-1; opw2=-1;
 	opw3=-1; opw4=-1;
@@ -1843,6 +1889,8 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		return(BGBCC_JX2RV_TryEmitOpRegReg(ctx, nmid, rm, rn));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	rm=BGBCC_JX2_NormalizeReg(ctx, rm);
+	rn=BGBCC_JX2_NormalizeReg(ctx, rn);
 
 	if(
 		(nmid==BGBCC_SH_NMID_ADDSL)	||
@@ -3551,8 +3599,11 @@ int BGBCC_JX2_ProbeEmitOpRegRegReg(BGBCC_JX2_Context *ctx,
 }
 
 int BGBCC_JX2_TryNormalizeXReg(
-	BGBCC_JX2_Context *ctx, int nmid, int rs)
+	BGBCC_JX2_Context *ctx, int nmid, int rs0)
 {
+	int rs;
+	
+	rs=rs0;
 	if((rs&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)
 	{
 		rs&=31;
@@ -3590,8 +3641,15 @@ int BGBCC_JX2_TryNormalizeXReg(
 	
 	if(rs==0)
 		return(-1);
-	if(rs==14)
-		return(-1);
+
+	if(!(ctx->emit_riscv&0x33))
+	{
+		if(rs==14)
+			return(-1);
+	}
+	
+	if((rs&BGBCC_SH_REG_RTMASK6)!=BGBCC_SH_REG_R0)
+		rs+=BGBCC_SH_REG_RQ0;
 	
 	return(rs);
 }
@@ -3634,6 +3692,9 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 		return(BGBCC_JX2RV_TryEmitOpRegRegReg(ctx, nmid, rs, rt, rn));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	rs=BGBCC_JX2_NormalizeReg(ctx, rs);
+	rt=BGBCC_JX2_NormalizeReg(ctx, rt);
+	rn=BGBCC_JX2_NormalizeReg(ctx, rn);
 
 #if 0
 	if(ctx->has_fpvsf&2)
@@ -4847,6 +4908,7 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 		return(BGBCC_JX2RV_TryEmitOpImmReg(ctx, nmid, imm, reg));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	reg=BGBCC_JX2_NormalizeReg(ctx, reg);
 
 	if(	(nmid==BGBCC_SH_NMID_ADDSL) ||
 		(nmid==BGBCC_SH_NMID_ADDUL) ||
@@ -6599,6 +6661,8 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 		return(BGBCC_JX2RV_TryEmitOpRegImmReg(ctx, nmid, rm, imm, rn));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	rm=BGBCC_JX2_NormalizeReg(ctx, rm);
+	rn=BGBCC_JX2_NormalizeReg(ctx, rn);
 
 	if(nmid==BGBCC_SH_NMID_AND)
 	{
@@ -8272,6 +8336,10 @@ int BGBCC_JX2_TryEmitOpRegRegRegReg(
 		return(BGBCC_JX2RV_TryEmitOpRegRegRegReg(ctx, nmid, rs, rt, rp, rn));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	rs=BGBCC_JX2_NormalizeReg(ctx, rs);
+	rt=BGBCC_JX2_NormalizeReg(ctx, rt);
+	rp=BGBCC_JX2_NormalizeReg(ctx, rp);
+	rn=BGBCC_JX2_NormalizeReg(ctx, rn);
 
 	if(rp==rn)
 		{ return(BGBCC_JX2_TryEmitOpRegRegReg(ctx, nmid, rs, rt, rn)); }
@@ -8430,6 +8498,9 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 		return(BGBCC_JX2RV_TryEmitOpRegRegImmReg(ctx, nmid, rs, rt, imm, rn));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	rs=BGBCC_JX2_NormalizeReg(ctx, rs);
+	rt=BGBCC_JX2_NormalizeReg(ctx, rt);
+	rn=BGBCC_JX2_NormalizeReg(ctx, rn);
 
 	if(	(nmid==BGBCC_SH_NMID_FADD) ||
 		(nmid==BGBCC_SH_NMID_FSUB) ||
@@ -8663,6 +8734,9 @@ int BGBCC_JX2_TryEmitOpRegImmRegReg(
 //		return(BGBCC_JX2RV_TryEmitOpRegImmRegReg(ctx, nmid, rs, rt, imm, rn));
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	rs=BGBCC_JX2_NormalizeReg(ctx, rs);
+	rp=BGBCC_JX2_NormalizeReg(ctx, rp);
+	rn=BGBCC_JX2_NormalizeReg(ctx, rn);
 
 	switch(nmid)
 	{

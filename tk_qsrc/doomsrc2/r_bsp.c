@@ -113,6 +113,7 @@ R_ClipSolidWallSegment
 //	if(r_usezbuff)
 	if(r_ispolyobj)
 	{
+		__debugbreak();
 		R_StoreWallRange (first, last);
 		return;
 	}
@@ -210,10 +211,16 @@ R_ClipPassWallSegment
 {
 	cliprange_t*	start;
 
+	if(first>last)
+	{
+		__debugbreak();
+	}
+
 #if 1
 //	if(r_usezbuff)
 	if(r_ispolyobj)
 	{
+		__debugbreak();
 		R_StoreWallRange (first, last);
 		return;
 	}
@@ -223,7 +230,7 @@ R_ClipPassWallSegment
 	//  (adjacent pixels are touching).
 	start = solidsegs;
 	while (start->last < first-1)
-	start++;
+		start++;
 
 	if (first < start->first)
 	{
@@ -304,7 +311,17 @@ void R_AddLine (seg_t*	line)
 	
 	// Back side? I.e. backface culling?
 	if (span >= ANG180)
-		return;		
+	{
+//		tk_printf("R_AddLine: Skip ANG180\n");
+		return;
+	}
+
+//	tk_printf("R_AddLine: Pass ANG180\n");
+
+//	if(angle1 < angle2)
+//	{
+//		__debugbreak();
+//	}
 
 	rw_wall_isclip = 0;
 
@@ -338,7 +355,12 @@ void R_AddLine (seg_t*	line)
 
 		rw_wall_isclip = 1;
 	}
-	
+
+//	if(angle1 < angle2)
+//	{
+//		__debugbreak();
+//	}
+
 	// The seg is in the view range,
 	// but not necessarily visible.
 	angle1 = (angle1+ANG90)>>ANGLETOFINESHIFT;
@@ -350,10 +372,21 @@ void R_AddLine (seg_t*	line)
 	if (x1 == x2)
 		return;				
 	
+	if(x1 >= x2)
+	{
+//		return;
+		__debugbreak();
+	}
+
+//	tk_printf("R_AddLine: Clip Pass\n");
+	
 	backsector = line->backsector;
 
 	if(r_ispolyobj)
+	{
+		__debugbreak();
 		goto clippass;	
+	}
 
 	// Single sided line?
 	if (!backsector)

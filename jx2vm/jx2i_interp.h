@@ -793,6 +793,19 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MOVHW			0x1CC		//
 #define BJX2_NMID_MOVLW			0x1CD		//
 
+#define BJX2_NMID_AMOADDL		0x1D0		//
+#define BJX2_NMID_AMOSWAPL		0x1D1		//
+#define BJX2_NMID_AMOLRL		0x1D2		//
+#define BJX2_NMID_AMOSCL		0x1D3		//
+#define BJX2_NMID_AMOANDL		0x1D4		//
+#define BJX2_NMID_AMOORL		0x1D5		//
+#define BJX2_NMID_AMOXORL		0x1D6		//
+
+#define BJX2_NMID_AMOMINL		0x1D8		//
+#define BJX2_NMID_AMOMAXL		0x1D9		//
+#define BJX2_NMID_AMOMINUL		0x1DA		//
+#define BJX2_NMID_AMOMAXUL		0x1DB		//
+
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
 #define BJX2_NMID_FMAC			BJX2_NMID_FMADDD		//
@@ -937,7 +950,7 @@ Will use direct linking and assume a non-modifiable program space.
 // #ifdef X86_64
 #if defined(X86_64) && !defined(BJX2_EM_NOSTAT)
 
-#define BJX2_EM_BPRED
+// #define BJX2_EM_BPRED
 #define BJX2_EM_MEMSTAT
 
 #endif

@@ -39,6 +39,8 @@ COPTS= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -Zz
 # COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F -Zz
 COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 -Zz
 
+COPTS64RV= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mXRVA -Zz
+
 COPTS96= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2G -Zz
 
 SRCS_CLIB = \
@@ -217,7 +219,10 @@ libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libvxcore_bjx2.ril \
 	libc.bjx2.ril libm.bjx2.ril libdl.bjx2.ril libcdll.bjx2.ril \
 	libtkgdi.bjx2.ril libtkgl.bjx2.ril \
-	libtkwui.bjx2.ril
+	libtkwui.bjx2.ril \
+	libc.rv64.ril libm.rv64.ril libdl.rv64.ril libcdll.rv64.ril \
+	libtkgdi.rv64.ril libtkgl.rv64.ril \
+	libtkwui.rv64.ril
 
 bins: tkshell.sys tkshdll.dll # tkshell96.sys tkshell_rbd.sys
 
@@ -261,6 +266,33 @@ libtkgl.bjx2.ril: $(TKRA_SRCS)
 
 libtkwui.bjx2.ril: $(SRCS_TKWUI) $(TKRA_SRCS)
 	$(CC) -o libtkwui.bjx2.ril tk_wui/tkwui_multi.c $(COPTS64)
+
+
+libc.rv64.ril: $(SRCS_CLIB)
+	$(CC) -o libc.rv64.ril libc_multi.c $(COPTS64RV) \
+		-D__USRONLY__
+
+libm.rv64.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
+	$(CC) -o libm.rv64.ril libm_multi.c $(COPTS64RV) \
+		-D__USRONLY__
+
+libdl.rv64.ril: $(SRCS_CLIB)
+	$(CC) -o libdl.rv64.ril libdl_multi.c $(COPTS64RV) \
+		-D__USRONLY__
+
+libcdll.rv64.ril: $(SRCS_CLIB)
+	$(CC) -o libcdll.rv64.ril libcdll_multi.c $(COPTS64) \
+		-D__USRONLY__
+
+libtkgdi.rv64.ril: $(SRCS_TKGDI) $(TKRA_SRCS)
+	$(CC) -o libtkgdi.rv64.ril tkgdi_multi.c $(COPTS64RV)
+
+libtkgl.rv64.ril: $(TKRA_SRCS)
+	$(CC) -o libtkgl.rv64.ril tkgl_multi.c $(COPTS64RV)
+
+libtkwui.rv64.ril: $(SRCS_TKWUI) $(TKRA_SRCS)
+	$(CC) -o libtkwui.rv64.ril tk_wui/tkwui_multi.c $(COPTS64RV)
+
 
 tkshell.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2) \
 		$(SRCS_CLIB) $(SRCS_TKGDI) $(TKRA_SRCS)

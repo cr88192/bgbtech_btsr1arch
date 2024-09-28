@@ -1824,6 +1824,14 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(
 					{ nm3=BGBCC_SH_NMID_CMPQGE; flip=!flip; }
 #endif
 
+			if(	(nm1==BGBCC_SH_NMID_TSTQ) &&
+				(nm2==BGBCC_SH_NMID_BF)		)
+					{ nm3=BGBCC_SH_NMID_TST; }
+
+			if(	(nm1==BGBCC_SH_NMID_TSTQ) &&
+				(nm2==BGBCC_SH_NMID_BT)		)
+					{ nm3=BGBCC_SH_NMID_NTST; }
+
 			if(!(sctx->has_qmul&16))
 			{
 				if(	(nm1==BGBCC_SH_NMID_CMPPEQ) &&
@@ -1895,28 +1903,38 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(
 				BGBCC_SH_NMID_MOVZT, ctreg, ctreg2);
 		}
 
-		if(flip)
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg2, ctreg2);
-		else
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg2, csreg2);
-//		BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, cdreg);
-
-#if 0
-		BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, cdreg);
-		
-		if(nm2==BGBCC_SH_NMID_BF)
+		if(sctx->emit_riscv&0x11)
 		{
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_NEG, cdreg, cdreg);
-			BGBCC_JX2C_EmitOpImmReg(ctx, sctx, BGBCC_SH_NMID_ADD, 1, cdreg);
-		}
-#endif
-
-		if(nm2==BGBCC_SH_NMID_BF)
-		{
-			BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVNT, cdreg);
+			BGBCC_DBGBREAK
 		}else
 		{
+			if(flip)
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg2, ctreg2);
+			else
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg2, csreg2);
+	//		BGBCC_JX2C_EmitOpReg(ctx, sctx, BGBCC_SH_NMID_MOVT, cdreg);
+
+	#if 0
 			BGBCC_JX2C_EmitDstRegOp(ctx, sctx, BGBCC_SH_NMID_MOVT, cdreg);
+			
+			if(nm2==BGBCC_SH_NMID_BF)
+			{
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+					BGBCC_SH_NMID_NEG, cdreg, cdreg);
+				BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+					BGBCC_SH_NMID_ADD, 1, cdreg);
+			}
+	#endif
+
+			if(nm2==BGBCC_SH_NMID_BF)
+			{
+				BGBCC_JX2C_EmitDstRegOp(ctx, sctx,
+					BGBCC_SH_NMID_MOVNT, cdreg);
+			}else
+			{
+				BGBCC_JX2C_EmitDstRegOp(ctx, sctx,
+					BGBCC_SH_NMID_MOVT, cdreg);
+			}
 		}
 		
 		if(doptrshl)
@@ -2169,7 +2187,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		nm2=BGBCC_SH_NMID_BF;
 
 //		if(imm!=imml)
-		if(0)
+//		if(0)
+		if(sctx->emit_riscv&0x11)
 		{
 			nm3=BGBCC_SH_NMID_BRTSTNQ;
 			jcflip=0;
@@ -2180,7 +2199,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 		nm2=BGBCC_SH_NMID_BT;
 
 //		if(imm!=imml)
-		if(0)
+//		if(0)
+		if(sctx->emit_riscv&0x11)
 		{
 			nm3=BGBCC_SH_NMID_BRTSTQ;
 			jcflip=0;
@@ -2282,6 +2302,12 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 			}
 		}
 #endif
+
+		if(sctx->emit_riscv&0x11)
+		{
+			BGBCC_DBGBREAK
+		}
+
 
 		csreg2=csreg;
 		ctreg2=ctreg;
@@ -2487,6 +2513,12 @@ int BGBCC_JX2C_EmitPredCmpVRegVRegQLong(
 	s32 imm;
 	int nm1, nm2, nm3;
 	
+	if(sctx->emit_riscv&0x11)
+	{
+		printf("BGBCC_JX2C_EmitPredCmpVRegVRegQLong: Unsupported on RISC-V\n");
+		return(0);
+	}
+
 	noflip=0;
 	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
 	{

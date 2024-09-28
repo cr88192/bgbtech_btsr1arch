@@ -2980,6 +2980,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 //			boot_newsp=boot_newspb+((1<<18)-1024);
 
 			i=TK_GetRandom16ASLR()&0x03F0;
+			i+=1024;
 			boot_newspb=TKMM_PageAlloc(1<<18);
 //			boot_newspb=TKMM_PageAlloc(1<<19);
 //			boot_newspb=TKMM_PageAlloc(1<<20);
@@ -2993,10 +2994,14 @@ int TKSH_TryLoadB(char *img, char **args0)
 //			*(byte **)boot_newsp=((byte *)boot_newsp)+8;
 //			strncpy(((byte *)boot_newsp)+8, atb, 512);
 
-			a1=(char **)(((byte *)boot_newsp)+16);
-			ct=((byte *)boot_newsp)+256;
+//			ct=((byte *)boot_newsp)+512;
+			ct=((byte *)boot_newspb);
+
+#if 1
+//			a1=(char **)(((byte *)boot_newsp)+16);
 			*(long *)(boot_newsp+0)=argc;
-			*(byte **)(boot_newsp+8)=((byte *)a1);
+//			*(byte **)(boot_newsp+8)=((byte *)a1);
+			a1=(char **)(((byte *)boot_newsp)+8);
 			strncpy(ct, atb, 512);
 			
 			for(j=0; j<argc; j++)
@@ -3004,10 +3009,50 @@ int TKSH_TryLoadB(char *img, char **args0)
 				k=((char *)(args[j]))-((char *)atb);
 				a1[j]=ct+k;
 			}
-			a1[j+0]=NULL;
-			a1[j+1]=NULL;
-			a1[j+2]=NULL;
-			a1[j+3]=NULL;
+			a1[j]=NULL;	//end eof argc list
+			a1+=(argc+1);
+
+			j=0;
+			a1[j]=NULL;	//end eof env list
+			a1+=(j+1);
+
+			j=0;
+
+			a1[j++]=TKPE_ELF_AT_BASE;		//interpreter base
+			a1[j++]=pimg->elf_interpbase;
+
+			a1[j++]=TKPE_ELF_AT_PHDR;		//program header
+			a1[j++]=pimg->elf_phdr_ptr;
+
+			a1[j++]=TKPE_ELF_AT_PHENT;
+			a1[j++]=pimg->elf_phdr_phentsz;
+
+			a1[j++]=TKPE_ELF_AT_PHNUM;
+			a1[j++]=pimg->elf_phdr_phnum;
+
+			a1[j++]=TKPE_ELF_AT_ENTRY;		//program entry point
+			a1[j++]=pimg->realentry;
+
+			a1[j++]=TKPE_ELF_AT_EXECFN;		//program entry point
+			a1[j++]=img;
+
+			a1[j++]=TKPE_ELF_AT_PAGESZ;	//page size
+			a1[j++]=1<<TKMM_PAGEBITS;	//page size
+
+			a1[j++]=TKPE_ELF_AT_HWCAP;	//capability flags
+			a1[j++]=0;					//capability flags
+
+			a1[j++]=TKPE_ELF_AT_CLKTCK;		//clock tick frequency
+			a1[j++]=1000;					//
+
+			a1[j++]=NULL;	//end eof aux list
+			a1+=(j+1);
+
+			a1[0]=NULL;
+			a1[1]=NULL;
+			a1[2]=NULL;
+			a1[3]=NULL;
+#endif
 
 //			i=TK_GetRandom16ASLR()&0x00F0;
 //			boot_newspbk=TKMM_PageAlloc(1<<16);
@@ -3176,7 +3221,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 					sza+=j+(j>>2)+4;
 				}
 
-				ct=boot_newspb;
+				ct=boot_newspb+1024;
 				cs1=tk_rovalloc(sza, (void **)(&ct));
 				
 				ct1=cs1;
@@ -3269,6 +3314,13 @@ int TKSH_TryLoadB(char *img, char **args0)
 			pb_boot=(u64)bootptr;
 
 			tkern->ctx_regsave[TKPE_REGSAVE_R4]=(tk_kptr)boottbr;
+			if(pb_boot&0x0001000000000000ULL)
+			{
+				/* If Linux binary, set TP=0 */
+				tkern->ctx_regsave[TKPE_REGSAVE_R4]=0;
+//				tkern->ctx_regsave[TKPE_REGSAVE_R4]=
+//					((tk_kptr)boot_newsp)+1024;
+			}
 
 			tkern->ctx_regsave[TKPE_REGSAVE_TTB]=tk_vmem_pageglobal;
 //			tkern->ctx_regsave[TKPE_REGSAVE_SPC]=bootptr;

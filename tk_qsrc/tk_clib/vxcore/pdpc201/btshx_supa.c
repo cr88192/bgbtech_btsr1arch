@@ -399,7 +399,9 @@ int __open(const char *a, int b, int *rc)
 	TK_Env_GetCwdQualifyName(tfn, 512, s);
 	TKSH_NormalizePath(tfn, tfn);
 	
+#ifdef __RISCV__
 //	tk_printf("__open: %s\n", tfn);
+#endif
 
 //	fd=tk_fopen(s, "rb");
 //	fd=tk_fopen(s, md);

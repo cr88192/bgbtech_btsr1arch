@@ -96,7 +96,7 @@ angle_t			clipangle;
 // maps the visible view angles to screen X coordinates,
 // flattening the arc to a flat projection plane.
 // There will be many angles mapped to the same X. 
-int			viewangletox[FINEANGLES/2];
+short			viewangletox[FINEANGLES/2];
 
 // The xtoviewangleangle[] table maps a screen pixel
 // to the lowest viewangle that maps back to x ranges
@@ -545,19 +545,19 @@ void R_InitTables (void)
 	// viewangle tangent table
 	for (i=0 ; i<FINEANGLES/2 ; i++)
 	{
-	a = (i-FINEANGLES/4+0.5)*PI*2/FINEANGLES;
-	fv = FRACUNIT*tan (a);
-	t = fv;
-	finetangent[i] = t;
+		a = (i-FINEANGLES/4+0.5)*PI*2/FINEANGLES;
+		fv = FRACUNIT*tan (a);
+		t = fv;
+		finetangent[i] = t;
 	}
 	
 	// finesine table
 	for (i=0 ; i<5*FINEANGLES/4 ; i++)
 	{
-	// OPTIMIZE: mirror...
-	a = (i+0.5)*PI*2/FINEANGLES;
-	t = FRACUNIT*sin (a);
-	finesine[i] = t;
+		// OPTIMIZE: mirror...
+		a = (i+0.5)*PI*2/FINEANGLES;
+		t = FRACUNIT*sin (a);
+		finesine[i] = t;
 	}
 #endif
 
@@ -586,24 +586,36 @@ void R_InitTextureMapping (void)
 	//  so FIELDOFVIEW angles covers SCREENWIDTH.
 	focallength = FixedDiv (centerxfrac,
 				finetangent[FINEANGLES/4+FIELDOFVIEW/2] );
+
+#ifdef __RISCV__
+//	__debugbreak();
+#endif
+	
+//	printf("R_InitTextureMapping: focallength=%08X\n", focallength);
 	
 	for (i=0 ; i<FINEANGLES/2 ; i++)
 	{
-	if (finetangent[i] > FRACUNIT*2)
-		t = -1;
-	else if (finetangent[i] < -FRACUNIT*2)
-		t = viewwidth+1;
-	else
-	{
-		t = FixedMul (finetangent[i], focallength);
-		t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
+		if (finetangent[i] > FRACUNIT*2)
+			t = -1;
+		else if (finetangent[i] < -FRACUNIT*2)
+			t = viewwidth+1;
+		else
+		{
+			t = FixedMul (finetangent[i], focallength);
+			t = (centerxfrac - t+FRACUNIT-1)>>FRACBITS;
 
-		if (t < -1)
-		t = -1;
-		else if (t>viewwidth+1)
-		t = viewwidth+1;
-	}
-	viewangletox[i] = t;
+			if (t < -1)
+				t = -1;
+			else if (t>viewwidth+1)
+				t = viewwidth+1;
+		}
+
+//		if(!(i&255))
+//		{
+//			printf("R_InitTextureMapping: i=%d t=%d\n", i, t);
+//		}
+
+		viewangletox[i] = t;
 	}
 	
 	// Scan viewangletox[] to generate xtoviewangle[]:
@@ -611,22 +623,22 @@ void R_InitTextureMapping (void)
 	//  that maps to x.	
 	for (x=0;x<=viewwidth;x++)
 	{
-	i = 0;
-	while (viewangletox[i]>x)
-		i++;
-	xtoviewangle[x] = (i<<ANGLETOFINESHIFT)-ANG90;
+		i = 0;
+		while (viewangletox[i]>x)
+			i++;
+		xtoviewangle[x] = (i<<ANGLETOFINESHIFT)-ANG90;
 	}
 	
 	// Take out the fencepost cases from viewangletox.
 	for (i=0 ; i<FINEANGLES/2 ; i++)
 	{
-	t = FixedMul (finetangent[i], focallength);
-	t = centerx - t;
-	
-	if (viewangletox[i] == -1)
-		viewangletox[i] = 0;
-	else if (viewangletox[i] == viewwidth+1)
-		viewangletox[i]  = viewwidth;
+		t = FixedMul (finetangent[i], focallength);
+		t = centerx - t;
+		
+		if (viewangletox[i] == -1)
+			viewangletox[i] = 0;
+		else if (viewangletox[i] == viewwidth+1)
+			viewangletox[i]  = viewwidth;
 	}
 	
 	clipangle = xtoviewangle[0];

@@ -179,3 +179,5 @@
 #define BGBCC_RIL3OP_LDCONSTVXI	0x8F	//load const, 128-bit vector
 
 #define BGBCC_RIL3OP_LDCONSTBI	0x90	//BigInt
+
+#define BGBCC_RIL3OP_TOPLFN		0x91

@@ -224,7 +224,8 @@ void R_DrawColumn (void)
 // UNUSED.
 // Loop unrolled.
 // #if 0
-#ifndef __BGBCC__
+// #ifndef __BGBCC__
+#ifndef __BJX2__
 void R_DrawColumn (void)
 {
 	int				count;
@@ -271,6 +272,9 @@ void R_DrawColumn (void)
 //			return;
 		}
 	}
+
+//	if(!source)
+//		return;
 
 //	else
 //	{
@@ -456,7 +460,8 @@ void R_DrawColumn_ZB (void)
 #endif
 
 // #if 0
-#ifndef __BGBCC__
+// #ifndef __BGBCC__
+#ifndef __BJX2__
 void R_DrawColumnLow (void)
 {
 	int			count;
@@ -1032,7 +1037,8 @@ void R_DrawSpan (void)
 // UNUSED.
 // Loop unrolled by 4.
 // #if 0
-#ifndef __BGBCC__
+// #ifndef __BGBCC__
+#ifndef __BJX2__
 void R_DrawSpan (void)
 {
 	register unsigned	position, step;
@@ -1647,7 +1653,8 @@ void R_DrawColumnLowUtx (void)
 #endif
 
 // #if 0
-#ifndef __BGBCC__
+// #ifndef __BGBCC__
+#ifndef __BJX2__
 
 //
 // Again..

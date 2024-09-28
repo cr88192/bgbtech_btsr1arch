@@ -910,6 +910,27 @@ int BGBCC_JX2C_EmitLoadBRegIRegScReg(
 			breg, ireg, dreg);
 		if(i>0)
 			return(1);
+
+		if(sctx->emit_riscv&0x33)
+		{
+			if(sc>1)
+			{
+				if(sc==2)	j=1;
+				if(sc==4)	j=2;
+				if(sc==8)	j=3;
+				BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_SHAD,
+					ireg, j, BGBCC_JX2CC_PSREG_TS0);
+				BGBCC_JX2_EmitOpRegRegReg(sctx, BGBCC_SH_NMID_ADD,
+					breg, BGBCC_JX2CC_PSREG_TS0, BGBCC_JX2CC_PSREG_TS0);
+			}else
+			{
+				BGBCC_JX2_EmitOpRegRegReg(sctx, BGBCC_SH_NMID_ADD,
+					breg, ireg, BGBCC_JX2CC_PSREG_TS0);
+			}
+			BGBCC_JX2_EmitOpLdRegDispReg(sctx, nmid,
+				BGBCC_JX2CC_PSREG_TS0, 0, dreg);
+			return(1);
+		}
 	}
 
 #if 1
@@ -1103,6 +1124,27 @@ int BGBCC_JX2C_EmitStoreBRegIRegScReg(
 			dreg, ireg, breg);
 		if(i>0)
 			return(1);
+
+		if(sctx->emit_riscv&0x33)
+		{
+			if(sc>1)
+			{
+				if(sc==2)	j=1;
+				if(sc==4)	j=2;
+				if(sc==8)	j=3;
+				BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_SHAD,
+					ireg, j, BGBCC_JX2CC_PSREG_TS0);
+				BGBCC_JX2_EmitOpRegRegReg(sctx, BGBCC_SH_NMID_ADD,
+					breg, BGBCC_JX2CC_PSREG_TS0, BGBCC_JX2CC_PSREG_TS0);
+			}else
+			{
+				BGBCC_JX2_EmitOpRegRegReg(sctx, BGBCC_SH_NMID_ADD,
+					breg, ireg, BGBCC_JX2CC_PSREG_TS0);
+			}
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nmid,
+				dreg, BGBCC_JX2CC_PSREG_TS0, 0);
+			return(1);
+		}
 	}
 #endif
 
@@ -1272,6 +1314,23 @@ int BGBCC_JX2C_EmitLoadBRegIRegScDispReg(
 		if(i>0)
 			return(1);
 	}
+
+	if(sctx->has_bjx1mov &&
+		(breg!=BGBCC_SH_REG_R0) &&
+		(ireg!=BGBCC_SH_REG_R0))
+	{
+		if(BGBCC_JX2C_EmitRegIsExtGpReg(ctx, sctx, dreg))
+		{
+			if(BGBCC_JX2C_CheckNmidScaleMatch(ctx, sctx, nmid, sc))
+			{
+				i=-1;
+
+				i=BGBCC_JX2_TryEmitOpLdReg2DispReg(sctx, nmid,
+					breg, ireg, disp, dreg);
+			}
+		}
+	}
+
 
 	BGBCC_DBGBREAK
 
@@ -4949,6 +5008,15 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 					vspb->flag|=BGBCC_RSPFL_ISCALLARG;
 					vspb->flag&=~0x003F0000;
 					vspb->flag|=(dstfl&0x003F0000);
+
+#if 1
+					if(sctx->emit_riscv&0x33)
+					{
+						/* Disable CallArg opt for now for RISC-V */
+						vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+						vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+					}
+#endif
 				}
 			}else if(!(dstfl&3))
 			{

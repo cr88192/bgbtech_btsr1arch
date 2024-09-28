@@ -1059,9 +1059,18 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt128(
 //		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx,
 //			dreg, BGBCC_SH_REG_R2);
 
-		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_TST,
-			BGBCC_SH_REG_R2, BGBCC_SH_REG_R2);
-		BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BF, lbl);
+		if(sctx->emit_riscv&0x33)
+		{
+			BGBCC_JX2_EmitOpRegRegLbl(sctx,
+				BGBCC_SH_NMID_BRNE,
+				BGBCC_JX2CC_PSREG_RQRET, BGBCC_SH_REG_ZZR,
+				lbl);
+		}else
+		{
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_TST,
+				BGBCC_SH_REG_R2, BGBCC_SH_REG_R2);
+			BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BF, lbl);
+		}
 
 		return(1);
 	}

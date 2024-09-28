@@ -143,8 +143,17 @@ TKGSTATUS tkgBlitSubImage(TKGHDC dev, int xo_dev, int yo_dev,
 	drect->xsize=xs_src;
 	drect->ysize=ys_src;
 	
+// #ifdef __RISCV__
+#if 0
+//	__debugbreak();
+	tk_printf("tkgBlitSubImage: Rect1 %d %d %d %d\n",
+		xo_src, yo_src, xs_src, ys_src);
+	tk_printf("tkgBlitSubImage: Rect2 %d %d %d %d\n",
+		xo_dev, yo_dev, xs_src, ys_src);
+#endif
+
 	ctx=tkgGetCurrentContext();
-	
+
 	TKGDI_CopyBitmapInfo(tkgdi_smallbuf_ifmt, info);
 
 	if(ctx->vt->magic3 == ((void *)0x12345678))
@@ -156,6 +165,8 @@ TKGSTATUS tkgBlitSubImage(TKGHDC dev, int xo_dev, int yo_dev,
 			tkgdi_smallbuf_ifmt, data,
 			rect));
 	}
+
+	tk_printf("tkgBlitSubImage: Old Path\n");
 
 	return(ctx->vt->BlitSubImage(ctx,
 		dev,

@@ -1,3 +1,5 @@
+#ifdef __BJX2__
+
 // #define X(n)	_##n
 #define X(n)	n
 
@@ -866,5 +868,7 @@ X(V_DrawPatchCmap_Col):
 #endif
 
 	RTS
+
+#endif
 
 #endif

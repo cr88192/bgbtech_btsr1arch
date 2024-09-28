@@ -571,6 +571,10 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	void *msgbuf, *msgp1, *msgp2;
 	int ret;
 
+#ifdef __RISCV__
+//	__debugbreak();
+#endif
+
 //	task=__arch_tbr;
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
 	if(!task)
@@ -579,7 +583,9 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //		__debugbreak();
 //	return(task->SysCall(sObj, uMsg, vParm1, vParm2));
 
+#ifdef __RISCV__
 //	__debugbreak();
+#endif
 
 	vParm1=tk_ptrstriptag(vParm1);
 	vParm2=tk_ptrstriptag(vParm2);
@@ -603,6 +609,10 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 		msgp2=((char *)msgbuf)+32;
 		memcpy(msgp2, vParm2, 256);
 	}
+
+#ifdef __RISCV__
+//	__debugbreak();
+#endif
 
 	SysCall=(void *)(task->SysCall);
 	if(!SysCall)
@@ -633,7 +643,11 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 //		memcpy(vParm1, msgp1, 32);
 		memcpy(vParm1, msgp1, 8);
 	}
-	
+
+#ifdef __RISCV__
+//	__debugbreak();
+#endif
+
 	return(ret);
 }
 
@@ -655,15 +669,41 @@ bool tk_iskernel(void)
 void *TKMM_PageAllocV(int sz)
 {
 	TK_SysArg ar[4];
-	void *p;
+	void *p, *q;
+	
+	if(sz<=0)
+	{
+		__debugbreak();
+	}
+
+	if(sz>=(1<<25))
+	{
+		__debugbreak();
+	}
 	
 //	tk_printf("TKMM_PageAllocV: sz=%d\n", sz);
 	
 	p=NULL;
 	ar[0].i=sz;
+
+#ifdef __RISCV__
+	q=ar;
+	if(!(*(int *)q))
+	{
+		__debugbreak();
+	}
+#endif
+
 	tk_syscall(NULL, TK_UMSG_PAGEALLOC, &p, ar);
 
 //	tk_printf("TKMM_PageAllocV: Vp=%p, p=%p\n", &p, p);
+
+#ifdef __RISCV__
+	if(!p)
+	{
+		__debugbreak();
+	}
+#endif
 
 	return(p);
 }

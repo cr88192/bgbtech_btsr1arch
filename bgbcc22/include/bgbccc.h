@@ -498,8 +498,10 @@ extern "C" {
 #define BGBCC_ARCH_BJX2_JX2I	BGBCC_FOURCC('J', 'X', '2', 'I')	//
 
 #define BGBCC_ARCH_BJX2_X2RV	BGBCC_FOURCC('X', '2', 'R', 'V')	//XG2RV
+#define BGBCC_ARCH_BJX2_X3RV	BGBCC_FOURCC('X', '3', 'R', 'V')	//XG3RV
 
 #define BGBCC_ARCH_BJX2_XG2A	BGBCC_FOURCC('X', 'G', '2', 'A')
+#define BGBCC_ARCH_BJX2_XRVA	BGBCC_FOURCC('X', 'R', 'V', 'A')
 
 #define BGBCC_ARCH_XG2A		BGBCC_FOURCC('X', 'G', '2', 'A')
 

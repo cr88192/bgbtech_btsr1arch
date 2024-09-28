@@ -879,9 +879,9 @@ char *BJX2_DbgNameForAddrSzIx(BJX2_Context *ctx,
 char *BJX2_DbgNameForAddrSz(BJX2_Context *ctx,
 	bjx2_addr addr, bjx2_addr *raddr2, int *rsz2)
 {
-	char *s;
-	s64 adj;
-	int i, j, k;
+	char *s, *bs;
+	s64 adj, d, bd;
+	int i, j, k, bi;
 
 	for(i=0; i<ctx->n_map; i++)
 	{
@@ -914,6 +914,38 @@ char *BJX2_DbgNameForAddrSz(BJX2_Context *ctx,
 			s=BJX2_DbgNameForAddrSzIx(ctx, addr, i, 0, raddr2, rsz2);
 			return(s);
 		}
+	}
+
+	bd=9999999;
+	bs=NULL;
+	bi=-1;
+	for(j=0; j<ctx->n_map_img; j++)
+	{
+		adj=ctx->map_img_base[j]-0;
+		d=addr-adj;
+
+		if((d>=0) && (d<=0x400000) )
+		{
+			if(d<bd)
+			{
+				bd=d;
+				bs=ctx->map_img_name[j];
+				bi=j;
+			}
+
+//			s=BJX2_DbgNameForAddrSzIx(ctx,
+//				addr, i, adj, raddr2, rsz2);
+//			return(s);
+		}
+	}
+	
+	if(bi>=0)
+	{
+		if(raddr2)
+			*raddr2=ctx->map_img_base[bi];
+		if(rsz2)
+			*rsz2=1<<22;
+		return(bs);
 	}
 
 	return(NULL);
@@ -1754,8 +1786,7 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx,
 
 		switch(reg)
 		{
-//			case BJX2_REG_R4:		s="X4";		break;
-
+			case BJX2_REG_R4:		s="X4";		break;
 			case BJX2_REG_R5:		s="X5";		break;
 			case BJX2_REG_R6:		s="X6";		break;
 			case BJX2_REG_R7:		s="X7";		break;
@@ -2794,7 +2825,7 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 {
 	bjx2_addr ba2;
 	char *bn2;
-	int i;
+	int i, d;
 	
 	if(!tr)
 	{
@@ -2806,8 +2837,16 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 
 	if(bn2)
 	{
-		BJX2_DbgPrintf(ctx, "PC @ %08X (%s+%d)\n", (u32)(tr->addr),
-			bn2, (int)(tr->addr-ba2));
+		d=(int)(tr->addr-ba2);
+		if(d>1024)
+		{
+			BJX2_DbgPrintf(ctx, "PC @ %08X (%s+0x%X)\n", (u32)(tr->addr),
+				bn2, d);
+		}else
+		{
+			BJX2_DbgPrintf(ctx, "PC @ %08X (%s+%d)\n", (u32)(tr->addr),
+				bn2, d);
+		}
 	}else
 	{
 		BJX2_DbgPrintf(ctx, "PC @ %08X\n", (u32)(tr->addr));
@@ -2864,12 +2903,12 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 
 	for(i=0; i<(128/2); i++)
 	{
-		if(!BJX2_DbgPrintRegs_KnownReg2(ctx, i*2))
-			continue;
-		
 		if((i>=16) && !(ctx->regs[i*2+0]) && !(ctx->regs[i*2+1]))
 			continue;
 
+//		if(!BJX2_DbgPrintRegs_KnownReg2(ctx, i*2))
+//			continue;
+		
 #if 0
 		if(((i*2)>=BJX2_REG_R32) && ((i*2)<BJX2_REG_R63))
 		{

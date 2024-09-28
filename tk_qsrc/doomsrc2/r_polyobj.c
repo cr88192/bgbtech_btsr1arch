@@ -298,6 +298,8 @@ void R_ProjectSprite_PolyObj (mobj_t* thing)
 		if(!pobj)
 			return;
 		
+		__debugbreak();
+
 		r_usezbuff = 1;
 		r_nseenpolyobj++;
 
@@ -319,6 +321,7 @@ void R_ProjectSprite_PolyObj (mobj_t* thing)
 		viewx -= thing->x - pobj->x;
 		viewy -= thing->y - pobj->y;
 		r_ispolyobj = 1;
+
 
 #if 0
 		while (count--)

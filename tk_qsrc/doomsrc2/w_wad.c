@@ -77,6 +77,12 @@ void w_strupr (char *s)
 void w_strupr_n (char *t, const char *s, int n)
 {
 	int i;
+	
+	if(n<8)
+		{ __debugbreak(); }
+	if(toupper('a')!='A')
+		{ __debugbreak(); }
+	
 	for(i=0; *s && (i<n); i++)
 		{ *t++ = toupper(*s++); }
 	for(; i<n; i++)

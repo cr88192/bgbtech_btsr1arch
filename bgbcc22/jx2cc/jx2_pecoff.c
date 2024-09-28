@@ -2908,9 +2908,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		mach=0xB265;
 
 	if(sctx->emit_riscv&0x02)
-		mach=0xB250;
+		mach=0xB250;	//XG2RV
 	if(sctx->emit_riscv&0x01)
-		mach=0x5064;
+		mach=0x5064;	//RV64
+
+	if((sctx->emit_riscv&0x03)==0x03)
+		mach=0xB253;	//RV-XG3
 
 	szstack=1<<19;
 	

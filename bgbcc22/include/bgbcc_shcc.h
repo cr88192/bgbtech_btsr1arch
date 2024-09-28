@@ -344,6 +344,7 @@
 
 #define BGBCC_SH_REG_LR			BGBCC_SH_REG_PR
 
+
 #endif
 
 
@@ -403,6 +404,41 @@
 #define BGBCC_SH_REG_LR58		BGBCC_SH_REG_LR27
 #define BGBCC_SH_REG_LR60		BGBCC_SH_REG_LR29
 #define BGBCC_SH_REG_LR62		BGBCC_SH_REG_LR31
+
+
+#define BGBCC_SH_REG_ARD0		0x160
+#define BGBCC_SH_REG_ARD1		0x161
+#define BGBCC_SH_REG_ARD2		0x162
+#define BGBCC_SH_REG_ARD3		0x163
+#define BGBCC_SH_REG_ARD4		0x164
+#define BGBCC_SH_REG_ARD5		0x165
+#define BGBCC_SH_REG_ARD6		0x166
+#define BGBCC_SH_REG_ARD7		0x167
+#define BGBCC_SH_REG_ARD8		0x168
+#define BGBCC_SH_REG_ARD9		0x169
+#define BGBCC_SH_REG_ARD10		0x16A
+#define BGBCC_SH_REG_ARD11		0x16B
+#define BGBCC_SH_REG_ARD12		0x16C
+#define BGBCC_SH_REG_ARD13		0x16D
+#define BGBCC_SH_REG_ARD14		0x16E
+#define BGBCC_SH_REG_ARD15		0x16F
+
+#define BGBCC_SH_REG_ARQ0		0x170
+#define BGBCC_SH_REG_ARQ1		0x171
+#define BGBCC_SH_REG_ARQ2		0x172
+#define BGBCC_SH_REG_ARQ3		0x173
+#define BGBCC_SH_REG_ARQ4		0x174
+#define BGBCC_SH_REG_ARQ5		0x175
+#define BGBCC_SH_REG_ARQ6		0x176
+#define BGBCC_SH_REG_ARQ7		0x177
+#define BGBCC_SH_REG_ARQ8		0x178
+#define BGBCC_SH_REG_ARQ9		0x179
+#define BGBCC_SH_REG_ARQ10		0x17A
+#define BGBCC_SH_REG_ARQ11		0x17B
+#define BGBCC_SH_REG_ARQ12		0x17C
+#define BGBCC_SH_REG_ARQ13		0x17D
+#define BGBCC_SH_REG_ARQ14		0x17E
+#define BGBCC_SH_REG_ARQ15		0x17F
 
 
 #define BGBCC_SH_REG_DLR	BGBCC_SH_REG_MACL	//Alias
@@ -1110,6 +1146,8 @@
 #define BGBCC_SH_NMID_PCVTHTOF8		0x0280	//
 #define BGBCC_SH_NMID_PCVTF8TOH		0x0281	//
 
+#define BGBCC_SH_NMID_NTST			0x0282	//NTST
+
 #define BGBCC_SH_NMID_MOVHW			0x0284	//
 #define BGBCC_SH_NMID_MOVLW			0x0285	//
 #define BGBCC_SH_NMID_MOVHLW		0x0286	//
@@ -1374,6 +1412,8 @@
 
 #define BGBCC_SH_RLC_PBOQ16_BJX		0x42	//GBR+Disp16
 
+#define BGBCC_SH_RLC_PBO32_RVI		0x44	//GBR+Disp32 (RV LUI+ADD)
+
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE
 // #define BGBCC_SH_RLC_ABSW64A_BSR	0x21	//Absolute BYTE
@@ -1442,6 +1482,9 @@
 #define BGBCC_SHX_GETLREG_LO(reg)		(BGBCC_SH_REG_R0+((reg)&31))
 #define BGBCC_SHX_GETLREG_HI(reg)		(BGBCC_SH_REG_R0+(((reg)&31)+1))
 
+#define	BGBCC_JX2CC_PSREG_ARG(ix)	\
+	BGBCC_JX2C_GetRqRegForArgumentIndex(ctx, sctx, ix)
+
 #define	BGBCC_JX2CC_PSREG_ARGTMP(ix)	\
 	BGBCC_JX2C_GetRqRegForArgTempIndex(ctx, sctx, ix)
 
@@ -1452,6 +1495,13 @@
 
 #define	BGBCC_JX2CC_PSREG_RQTHIS		BGBCC_JX2C_GetRqRegThis(ctx, sctx)
 #define	BGBCC_JX2CC_PSREG_LRTHIS		BGBCC_JX2C_GetLrRegThis(ctx, sctx)
+
+#define	BGBCC_JX2CC_PSREG_STRUCTRET		BGBCC_JX2C_GetRqRegStructReturn(ctx, sctx)
+
+#define	BGBCC_JX2CC_PSREG_TS0		BGBCC_JX2C_GetRegTempScratch(ctx, sctx, 0)
+#define	BGBCC_JX2CC_PSREG_TS1		BGBCC_JX2C_GetRegTempScratch(ctx, sctx, 1)
+
+#define	BGBCC_JX2CC_PSREG_ALTLR		BGBCC_JX2C_GetAltLr(ctx, sctx)
 
 #if 0
 typedef struct BGBCC_SHX_Context_s BGBCC_SHX_Context;

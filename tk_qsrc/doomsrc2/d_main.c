@@ -387,11 +387,13 @@ void D_UpdateSound (void)
 	
 	if(d_snd_acctime>2040.0)
 	{
+#ifdef __RISCV__
+//		__debugbreak();
+#endif
+
 		printf("D_UpdateSound: d_snd_acctime=%f dt=%d\n",
 			d_snd_acctime, dt);
 		d_snd_acctime=0;
-
-//		__debugbreak();
 	}
 //	__debugbreak();
 	
@@ -550,7 +552,13 @@ void D_AdvanceDemo (void)
 //	else
 	  demosequence = (demosequence+1)%6;
 	
+	tk_printf("D_DoAdvanceDemo: A seq=%d\n", demosequence);
+	
 	demosequence = __int_clamp(demosequence, 0, 5);
+
+//	__debugbreak();
+
+	tk_printf("D_DoAdvanceDemo: B seq=%d\n", demosequence);
 	
 	switch (demosequence)
 	{

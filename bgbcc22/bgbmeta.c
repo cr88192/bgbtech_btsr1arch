@@ -1749,7 +1749,8 @@ int BGBCC_LoadCSourcesCCXL(
 	*s1++=0;
 	
 	dllname=bgbcc_strdup(tb);
-	archsfx=BGBCP_NameSuffixForArch(bgbcc_arch);
+//	archsfx=BGBCP_NameSuffixForArch(bgbcc_arch);
+	archsfx=BGBCP_NameSuffixFForSubArch(bgbcc_arch, bgbcc_subarch);
 
 //	BIPRO_ProfilerSetActive(1);
 
@@ -2330,6 +2331,10 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 		bgbcc_tool_fcc=BGBCC_ARCH_XG2A;
 	if(!strncmp(argv[0], "xg2a-", 5))
 		bgbcc_tool_fcc=BGBCC_ARCH_XG2A;
+	if(!strncmp(argv[0], "x3rv-", 5))
+		bgbcc_tool_fcc=BGBCC_ARCH_BJX2_X3RV;
+	if(!strncmp(argv[0], "xrva-", 5))
+		bgbcc_tool_fcc=BGBCC_ARCH_BJX2_XRVA;
 
 	if(bgbcc_istool)
 	{
@@ -2788,6 +2793,10 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 
 		if(bgbcc_tool_fcc==BGBCC_ARCH_XG2A)
 			mach_name="XG2A";
+		if(bgbcc_tool_fcc==BGBCC_ARCH_BJX2_XRVA)
+			mach_name="XRVA";
+		if(bgbcc_tool_fcc==BGBCC_ARCH_BJX2_X3RV)
+			mach_name="X3RV";
 	}
 
 	if(mach_name)

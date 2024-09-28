@@ -2210,6 +2210,15 @@ int BGBCC_JX2_EmitLoadDrImm(
 int BGBCC_JX2_EmitLoadRegImm(
 	BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm)
 {
+	int i;
+
+	if(ctx->emit_riscv&0x11)
+	{
+		i=BGBCC_JX2RV_TryEmitOpImmReg(ctx,
+			BGBCC_SH_NMID_MOV, imm, reg);
+		return(i);
+	}
+
 	return(BGBCC_JX2_EmitLoadRegImm64P(ctx, reg, imm));
 }
 #endif
@@ -2959,6 +2968,34 @@ u32 BGBCC_ConstConvHalfToFloat(u16 v)
 	return(v1);
 }
 
+u64 BGBCC_ConstConvFloatToDouble(u32 v)
+{
+	u64 v1, fr;
+	u64 ex, ex0, sg;
+	
+	if(!v)
+		return(0);
+
+	sg=(v>>31)&1;
+	ex0=(v>>23)&255;
+	fr=v&0x7FFFFF;
+	ex=(ex0-127)+1023;
+	if(ex0==0)ex=0;
+	if(ex0==255)ex=2047;
+	fr=fr<<29;
+	v1=(sg<<63)|(ex<<52)|fr;
+	return(v1);
+}
+
+u64 BGBCC_ConstConvHalfToDouble(u16 v)
+{
+	u64 v1;
+	u32 t0;
+	t0=BGBCC_ConstConvHalfToFloat(v);
+	v1=BGBCC_ConstConvFloatToDouble(t0);
+	return(v1);
+}
+
 int BGBCC_JX2_ConstIsFull64(BGBCC_JX2_Context *ctx, s64 v)
 {
 	if(v==((s64)((s32)v)))
@@ -3086,6 +3123,13 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 	int rt1, rt2, shl, msk_hi, msk_lo;
 	int opw1, opw2, opw3, opw4, opw5, opw6;
 	int i, j, k;
+
+	if(ctx->emit_riscv&0x11)
+	{
+		i=BGBCC_JX2RV_TryEmitOpImmReg(ctx,
+			BGBCC_SH_NMID_MOV, imm, reg);
+		return(i);
+	}
 
 //	ctx->test_lclalign=3;
 
@@ -4532,6 +4576,16 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarPbo24(
 //	ctx->test_lclalign=3;
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+
+	if(ctx->emit_riscv&0x11)
+	{
+		i=BGBCC_JX2RV_TryEmitOpLblReg(ctx, nmid, lbl, reg);
+		if(i>0)
+			return(i);
+		BGBCC_DBGBREAK
+		return(0);
+	}
+
 
 	if(lbl==ctx->lbl_gbl_ptr)
 	{
@@ -6655,6 +6709,16 @@ int BGBCC_JX2_EmitStoreRegLabelVarRel24(
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
 //	ctx->test_lclalign=3;
+
+	if(ctx->emit_riscv&0x11)
+	{
+		i=BGBCC_JX2RV_TryEmitOpRegLbl(ctx, nmid, lbl, reg);
+		if(i>0)
+			return(i);
+		BGBCC_DBGBREAK
+		return(0);
+	}
+
 
 #if 1
 	if(BGBCC_JX2_CheckLabelIsGpRel(ctx, lbl))

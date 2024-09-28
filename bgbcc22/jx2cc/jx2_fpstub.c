@@ -156,7 +156,7 @@ int BGBCC_JX2C_MapLpRegToGr(
 	
 	if((dreg&BGBCC_SH_REG_RTMASK5)==BGBCC_SH_REG_LR0)
 	{
-		tr0=BGBCC_SH_REG_R0+(dreg&0x1E);
+		tr0=BGBCC_SH_REG_RQ0+(dreg&0x1E);
 		if(dreg&1)
 			tr0+=32;
 		return(tr0);

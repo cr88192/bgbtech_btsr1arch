@@ -767,6 +767,10 @@ fourcc BGBCP_ArchForName(char *name)
 
 	if(!bgbcc_stricmp(name, "XG2A"))		i=BGBCC_ARCH_BJX2;
 
+	if(!bgbcc_stricmp(name, "XG2RV"))		i=BGBCC_ARCH_BJX2;
+	if(!bgbcc_stricmp(name, "XG3RV"))		i=BGBCC_ARCH_BJX2;
+	if(!bgbcc_stricmp(name, "XRVA"))		i=BGBCC_ARCH_BJX2;
+
 	return(i);
 }
 
@@ -824,9 +828,13 @@ fourcc BGBCP_SubArchForName(int arch, char *name)
 	if(!bgbcc_stricmp(name, "BJX2I"))		i=BGBCC_ARCH_BJX2_JX2I;
 	
 	if(!bgbcc_stricmp(name, "BJX2RV"))		i=BGBCC_ARCH_BJX2_X2RV;
+
 	if(!bgbcc_stricmp(name, "XG2RV"))		i=BGBCC_ARCH_BJX2_X2RV;
 
 	if(!bgbcc_stricmp(name, "XG2A"))		i=BGBCC_ARCH_BJX2_XG2A;
+
+	if(!bgbcc_stricmp(name, "XG3RV"))		i=BGBCC_ARCH_BJX2_X3RV;
+	if(!bgbcc_stricmp(name, "XRVA"))		i=BGBCC_ARCH_BJX2_XRVA;
 
 	return(i);
 }
@@ -926,6 +934,19 @@ char *BGBCP_NameSuffixForArch(fourcc arch)
 	default: s=NULL; break;
 	}
 	return(s);
+}
+
+char *BGBCP_NameSuffixFForSubArch(fourcc arch, fourcc subarch)
+{
+	if(arch==BGBCC_ARCH_BJX2)
+	{
+		if(subarch==BGBCC_ARCH_BJX2_XRVA)
+			return("rv64");
+		if(subarch==BGBCC_ARCH_BJX2_X3RV)
+			return("rv64");
+	}
+
+	return(BGBCP_NameSuffixForArch(arch));
 }
 
 char *BGBCP_DescForSubArch(fourcc arch, fourcc subarch)

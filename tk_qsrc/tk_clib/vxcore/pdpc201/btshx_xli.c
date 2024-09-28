@@ -1,3 +1,5 @@
+#ifdef __BGBCC__
+
 #ifdef __BJX2__
 
 __int128 __xli_add (__int128 a, __int128 b);
@@ -534,6 +536,191 @@ __xli_cmp_ntst:
 	RTS
 };
 
+#endif
+
+
+
+#ifdef __RISCV__
+
+__int128 __xli_add (__int128 a, __int128 b);
+__int128 __xli_sub (__int128 a, __int128 b);
+__int128 __xli_smul(__int128 a, __int128 b);
+__int128 __xli_umul(__int128 a, __int128 b);
+__int128 __xli_sdiv(__int128 a, __int128 b);
+__int128 __xli_smod(__int128 a, __int128 b);
+__int128 __xli_and (__int128 a, __int128 b);
+__int128 __xli_or  (__int128 a, __int128 b);
+__int128 __xli_xor (__int128 a, __int128 b);
+__int128 __xli_shl (__int128 a, __int128 b);
+__int128 __xli_shlr(__int128 a, __int128 b);
+__int128 __xli_shar(__int128 a, __int128 b);
+
+__int128 __xli_neg (__int128 a);
+__int128 __xli_not (__int128 a);
+
+int __xli_cmp_eq(__int128 a, __int128 b);
+int __xli_cmp_ne(__int128 a, __int128 b);
+int __xli_cmp_gt(__int128 a, __int128 b);
+int __xli_cmp_ge(__int128 a, __int128 b);
+int __xli_cmp_hi(__int128 a, __int128 b);
+int __xli_cmp_he(__int128 a, __int128 b);
+
+int __xli_cmp_tst(__int128 a, __int128 b);
+int __xli_cmp_ntst(__int128 a, __int128 b);
+
+__asm {
+
+__xli_add:
+	ADD		R10, R12, R14
+	ADD		R11, R13, R15
+	MOV		R14, R10
+	MOV		R15, R11
+	RTS
+
+__xli_sub:
+	NOT		R12, R12
+	NOT		R13, R13
+	BRA		__xli_add
+
+__xli_neg:
+	NOT		R10, R10
+	NOT		R11, R11
+	RTS
+
+__xli_and:
+	AND		R10, R12, R14
+	AND		R11, R13, R15
+	MOV		R14, R10
+	MOV		R15, R11
+	RTS
+
+__xli_or:
+	OR		R10, R12, R14
+	OR		R11, R13, R15
+	MOV		R14, R10
+	MOV		R15, R11
+	RTS
+
+__xli_xor:
+	XOR		R10, R12, R14
+	XOR		R11, R13, R15
+	MOV		R14, R10
+	MOV		R15, R11
+	RTS
+
+__xli_shl:
+	SHLD.Q	R10, R12, R14
+	SHLD.Q	R11, R12, R15
+	MOV		R14, R10
+	MOV		R15, R11
+	RTS
+
+__xli_shlr:
+	SHLR.Q	R10, R12, R14
+	SHLR.Q	R11, R12, R15
+	MOV		R14, R10
+	MOV		R15, R11
+	RTS
+
+__xli_shar:
+	SHAR.Q	R10, R12, R14
+	SHAR.Q	R11, R12, R15
+	MOV		R14, R10
+	MOV		R15, R11
+	RTS
+
+__xli_smul:
+	rts
+	nop
+
+__xli_umul:
+	rts
+	nop
+
+__xli_sdiv:
+	rts
+	nop
+
+__xli_smod:
+	rts
+	nop
+
+
+__xli_cmp_rt_T:
+	mov		1, r10
+	rts
+	nop
+__xli_cmp_rt_F:
+	mov		0, r10
+	rts
+	nop
+
+.global __xli_cmp_eq
+__xli_cmp_eq:
+	brne	r11, r13, __xli_cmp_rt_F
+	brne	r10, r12, __xli_cmp_rt_F
+	mov		1, r10
+	rts
+	nop
+
+.global __xli_cmp_ne
+__xli_cmp_ne:
+	brne	r11, r13, __xli_cmp_rt_T
+	brne	r10, r12, __xli_cmp_rt_T
+	mov		0, r10
+	rts
+	nop
+
+.global __xli_cmp_gt
+__xli_cmp_gt:
+	brgt	r11, r13, __xli_cmp_rt_T
+	brgt	r10, r12, __xli_cmp_rt_T
+	mov		0, r10
+	rts
+	nop
+.global __xli_cmp_ge
+__xli_cmp_ge:
+	brgt	r11, r13,__xli_cmp_rt_T
+	brge	r10, r12, __xli_cmp_rt_T
+	mov		0, r10
+	rts
+	nop
+
+
+.global __xli_cmp_hi
+__xli_cmp_hi:
+	brgtu	r11, r13, __xli_cmp_rt_T
+	brgtu	r10, r12, __xli_cmp_rt_T
+	mov		0, r10
+	rts
+	nop
+.global __xli_cmp_he
+__xli_cmp_he:
+	brgtu	r11, r13,__xli_cmp_rt_T
+	brgeu	r10, r12, __xli_cmp_rt_T
+	mov		0, r10
+	rts
+	nop
+
+__xli_cmp_tst:
+	and		r10, r12, r14
+	and		r11, r13, r15
+	brne	r11, r0,__xli_cmp_rt_T
+	brne	r10, r0, __xli_cmp_rt_T
+	mov		0, r10
+	rts
+	nop
+
+__xli_cmp_ntst:
+	and		r10, r12, r14
+	and		r11, r13, r15
+	brne	r11, r0,__xli_cmp_rt_F
+	brne	r10, r0, __xli_cmp_rt_F
+	mov		1, r10
+	rts
+	nop
+};
+#endif
 
 #if 1
 static int _fcn_clz128(__uint128 v)

@@ -1,0 +1,591 @@
+Yet another ISA design idea.
+* This ISA design will drop WEX
+** Will instead assume the use of superscalar.
+* Will assume sharing a CPU core with 64-bit RISC-V.
+** Possible CoEx Mode, where both run at the same time.
+** Promoting CoEx Mode to a possible XG3RV Mode.
+* Will assume 32/64/96 bit instruction sizes.
+
+
+GPRs (RV64 ABI):
+* R0: ZZR / PC        (Src/Dst: Zero         ; LD/ST Base: PC)
+* R1: LR / TBR        (Src/Dst: Link Register; LD/ST Base: TP/TBR)
+* R2: SP              (Stack Pointer)
+* R3: GBR             (Global Pointer)
+* R4: TP
+* R5: T0 / ALR (Scratch)
+* R6: T1 (Scratch)
+* R7: T2 (Scratch)
+* R8: S0 (Preserved)
+* R9: S1 (Preserved)
+* R10..R17: A0..A7
+* R18..R27: S2..S11 (Preserved)
+* R28..R31: T3..T6 (Scratch)
+
+* R32..R63: Maps to F0..F31
+* R32..R39: F0..F7 / FT0..FT7
+* R40..R41: F8..F9 / FS0..FS1
+* R42..R49: F10..F17 / FA0..FA7
+* R50..R59: F18..F27 / FS2..FS11
+* R60..R63: F28..F21 / FT8..FT11
+
+
+GPRs (BJX2 ABI):
+* R0: ZZR / PC        (Src/Dst: Zero         ; LD/ST Base: PC)
+* R1: LR / TBR        (Src/Dst: Link Register; LD/ST Base: TBR)
+* R2: SP              (Stack Pointer)
+* R3: GBR             (Global Pointer)
+* R4: Scratch / Arg0
+* R5: Scratch / Arg1
+* R6: Scratch / Arg2
+* R7: Scratch / Arg3
+* R8..R13: Preserved / Callee Save
+* R14: Special, Logically swap places with R3
+* R15: Special, Logically swap places with R2
+* R16: Scratch / Temp  (Scratch, Magic Temporary)
+* R17: Scratch / LR2   (Scratch, Alternate Link Register)
+* R18: Scratch / Ret1
+* R19: Scratch / Ret2
+* R20: Scratch / Arg4
+* R21: Scratch / Arg5
+* R22: Scratch / Arg6
+* R23: Scratch / Arg7
+* R24..R31: Preserved / Callee Save
+* R32..R35: Scratch
+* R36: Scratch / Arg8
+* R37: Scratch / Arg9
+* R38: Scratch / Arg10
+* R39: Scratch / Arg11
+* R40..R47: Preserved / Callee Save
+* R48..R51: Scratch
+* R52: Scratch / Arg12
+* R53: Scratch / Arg13
+* R54: Scratch / Arg14
+* R55: Scratch / Arg15
+* R56..R63: Preserved / Callee Save
+
+
+R0 and R1 will decode as ZR and LR in most instructions.
+* They will decode as PC and TBR if used as a memory base register.
+
+The assembler may swap R2 with R15, and R14 with R3, to mimic the existing BJX2 ISA and to ease things in the compiler. This is to happen when using the ISA with the BJX2 ABI.
+
+
+May also mimic the RISC-V Mapping and/or use the RISC-V ABI.
+* When sharing a mapping with RISC-V, R32..R63 will map to F0..F31.
+
+Any operations using 128-bit inputs or outputs will use even register pairs. 
+* Encoding such an operation with an Odd register number will be invalid.
+* Encoding these operations with R0..R3 will be reserved/invalid.
+* R0 as an input will be understood as 128-bit Zero.
+
+
+Mode Selection (RV64 ASM Notation):
+* Branches if supported, NOP if not (RV64 ASM Notation):
+** LBU X0, Xs, Disp  //Dest=RV64GC
+** LHU X0, Xs, Disp  //Dest=Native
+** LWU X0, Xs, Disp  //Dest=CoEx
+* Will branch if the operation is supported (similar to a JALR)
+* Or, will behave as a NOP otherwise.
+* In native Notation:
+** MOVU.B (Rm, Disp), ZZR  //Dest=RV64GC Mode
+** MOVU.W (Rm, Disp), ZZR  //Dest=Native Mode
+** MOVU.L (Rm, Disp), ZZR  //Dest=CoEx Mode
+
+Encoding:
+* ZZoo-oooo-ZZmm-mmmm-ZZnn-nnnn-ZZZZ-YYPP  (3R)
+* ZZZZ-ZZZZ-ZZmm-mmmm-ZZnn-nnnn-ZZZZ-YYPP  (2R)
+* iiii-iiii-iimm-mmmm-ZZnn-nnnn-ZZZZ-YYPP  (3RI Imm10)
+* iiii-iiii-iiZZ-ZZZZ-ZZnn-nnnn-ZZZZ-YYPP  (2RI Imm10)
+* iiii-iiii-iiii-iiii-ZZnn-nnnn-ZZZZ-YYPP  (2RI Imm16)
+* iiii-iiii-iiii-iiii-Zjjj-jjjj-ZZZZ-YYPP  (Imm23)
+* iiii-iiii-iiii-iiii-Zjjj-jjjj-kkkk-YYPP  (Imm27, Jumbo-Only)
+
+PP, CoEx Mode:
+* 00: OP (Unconditional)
+* 01: Jumbo
+* 10: Reserved
+* 11: RV64 Op
+
+PP (Native Mode):
+* 00: OP    (Unconditional)
+* 01: Jumbo Prefix (J23/J27)
+* 10: OP?T  (Conditional True)
+* 11: OP?F  (Conditional False)
+
+YY:
+* 00: General Block, 3R/2R
+* 01: Reserved
+* 10: ALU/Misc (3RI/2RI Imm10)
+* 11: Load/Store, Imm16, and Branch
+
+* ZZ: Opcode Bits
+* ii: Immediate / Displacement
+* jj/kk: Extended Immediate or Displacement.
+
+* nn: Destination Register, 3rd Source
+** nn will be the Value Source register for Store
+* mm: First Source Register
+* oo: Second Source Register
+
+Predication will be controlled by a T bit.
+* This bit may be in an architectural status register, along with the mode.
+
+CoEx Mode:
+* Disallows Predication
+* Disables RV 'C' Extension
+* Say, 2b Mode:
+** 00: RV64G / RV64GC
+** 01: Resv
+** 10: This ISA
+** 11: CoEx
+
+
+Immediate fields:
+* Imm10: (31:22) Contiguous (i field).
+* Imm16: (31:16) Contiguous (i field).
+* Imm23: (31:16) encodes (15:0), j field encodes (22:16).
+
+Jumbo Prefixes:
+* Will come in several forms.
+* May extend the immediate or opcode of an instruction.
+
+Jumbo Encodings:
+* J23I+Imm10: Imm33s (Sign Extended)
+** Jumbo Prefix:
+*** The i field gives (23:8);
+*** The j field gives (30:24);
+** Base instruction gives (7:0) and Sign Extension (32:31)
+
+* J27I+J27I+Imm10: Imm64
+** First jumbo Prefix:
+*** The i field gives (55:40)
+*** The j field gives (62:56)
+*** The k field gives (39:36)
+** Second jumbo Prefix:
+*** The i field gives (23: 8)
+*** The j field gives (30:24)
+*** The k field gives (35:32).
+** Base instruction gives (7:0), (31), and (63)
+
+* Other combinations will be reserved unless explicitly described.
+
+
+Load/Store Scale:
+* Disp10s encodings will scale the displacement by the element size.
+* Disp33s encodings will use a scale of 1.
+
+Branch Scale:
+* Branch displacements will have a scale of 4.
+* Branches will be relative to the PC of the current instruction.
+
+Nominal Assembler Syntax:
+*  op		Rm, Ro, Rn			//Destination Last
+*  MOV.x	(Rm, Disp), Rn		//Load
+*  MOV.x	Rn, (Rm, Disp)		//Store
+*  Bxx		Rm, Rn, Label		//Conditional Branch
+** Note that comparison order is (Rn OP Rm)
+
+
+Addressing Modes:
+* (Rm, Disp)
+** EA = Rm + Disp*FixedScale
+* (Rm, Ro)
+** EA = Rm + Ro*FixedScale
+* (Rm, Ro, Disp) / (Rm, Ro*Sc, Disp)
+** EA = Rm + Ro*DflScale + Disp
+** EA = Rm + Ro*Scale + Disp
+** If no scale is given, will be the same as the fixed scale.
+** The Disp will be unscaled in this case.
+
+
+=== Opcode Listing ===
+
+1R Block:
+* 0000-0000-00ZZ-ZZZZ-ZZnn-nnnn-0000-00PP  (1R Space)
+* 0000-0000-0000-0000-00zz-zzzz-0000-00PP  INVALID
+* 0000-0000-0000-0000-01zz-zzzz-0000-00PP  ECALL
+* 0000-0000-0000-0000-10zz-zzzz-0000-00PP  EBREAK
+
+2R Block:
+* 00ZZ-ZZZZ-01mm-mmmm-ZZnn-nnnn-0000-00PP  (2R Space)
+
+* 0000-0010-01mm-mmmm-00nn-nnnn-0000-00PP  EXTS.B   Rm, Rn
+* 0000-0010-01mm-mmmm-01nn-nnnn-0000-00PP  EXTS.W   Rm, Rn
+* 0000-0010-01mm-mmmm-10nn-nnnn-0000-00PP  EXTU.B   Rm, Rn
+* 0000-0010-01mm-mmmm-11nn-nnnn-0000-00PP  EXTU.W   Rm, Rn
+
+** EXTS.L   Rm, Rn  => ADDS.L   Rm, ZR, Rn
+** EXTU.L   Rm, Rn  => ADDU.L   Rm, ZR, Rn
+** MOV      Rm, Rn  => ADD      Rm, ZR, Rn
+** MOVX     Xm, Xn  => ADD.X    Xm, ZR, Xn
+
+* 0000-0100-01mm-mmmm-00nn-nnnn-0000-00PP  FLDCI    Rm, Rn  //Load Int64
+* 0000-0100-01mm-mmmm-01nn-nnnn-0000-00PP  FLDCIU   Rm, Rn  //Load UInt64
+* 0000-0100-01mm-mmmm-10nn-nnnn-0000-00PP  FSTCI    Rm, Rn  //Store Int64
+* 0000-0100-01mm-mmmm-11nn-nnnn-0000-00PP  FSTCIU   Rm, Rn  //Store UInt64
+
+* 0000-0101-01mm-mmmm-00nn-nnnn-0000-00PP  FLDCH    Rm, Rn  //Load Half
+* 0000-0101-01mm-mmmm-01nn-nnnn-0000-00PP  FLDCF    Rm, Rn  //Load Single
+* 0000-0101-01mm-mmmm-10nn-nnnn-0000-00PP  FSTCH    Rm, Rn  //Store Half
+* 0000-0101-01mm-mmmm-11nn-nnnn-0000-00PP  FSTCF    Rm, Rn  //Store Single
+
+
+3R Blocks:
+
+* 00oo-oooo-10mm-mmmm-00nn-nnnn-0000-00PP  SLT      Rm, Ro, Rn	//Rn=Rm LT Ro
+* 00oo-oooo-10mm-mmmm-01nn-nnnn-0000-00PP  SEQ      Rm, Ro, Rn	//Rn=Rm EQ Ro
+* 00oo-oooo-10mm-mmmm-10nn-nnnn-0000-00PP  SLTU     Rm, Ro, Rn
+* 00oo-oooo-10mm-mmmm-11nn-nnnn-0000-00PP  SNE      Rm, Ro, Rn	//Rn=Rm NE Ro
+* 00oo-oooo-11mm-mmmm-00nn-nnnn-0000-00PP  SGE      Rm, Ro, Rn	//Rn=Rm GE Ro
+* 00oo-oooo-11mm-mmmm-01nn-nnnn-0000-00PP  TSTZ     Rm, Ro, Rn	//Rn=!(Rm AND Ro)
+* 00oo-oooo-11mm-mmmm-10nn-nnnn-0000-00PP  SGEU     Rm, Ro, Rn
+* 00oo-oooo-11mm-mmmm-11nn-nnnn-0000-00PP  TSTNZ    Rm, Ro, Rn
+** Rn==ZR: Update T instead.
+
+* 01oo-oooo-00mm-mmmm-00nn-nnnn-0000-00PP  ADD     Rm, Ro, Rn
+* 01oo-oooo-00mm-mmmm-01nn-nnnn-0000-00PP  SUB     Rm, Ro, Rn
+* 01oo-oooo-00mm-mmmm-10nn-nnnn-0000-00PP  SRA.Q   Rm, Ro, Rn
+* 01oo-oooo-00mm-mmmm-11nn-nnnn-0000-00PP  SRL.Q   Rm, Ro, Rn
+* 01oo-oooo-01mm-mmmm-00nn-nnnn-0000-00PP  SLL.Q   Rm, Ro, Rn
+* 01oo-oooo-01mm-mmmm-01nn-nnnn-0000-00PP  AND     Rm, Ro, Rn
+* 01oo-oooo-01mm-mmmm-10nn-nnnn-0000-00PP  OR      Rm, Ro, Rn
+* 01oo-oooo-01mm-mmmm-11nn-nnnn-0000-00PP  XOR     Rm, Ro, Rn
+* 01oo-oooo-10mm-mmmm-00nn-nnnn-0000-00PP  ADDS.L  Rm, Ro, Rn / ADDW
+* 01oo-oooo-10mm-mmmm-01nn-nnnn-0000-00PP  SUBS.L  Rm, Ro, Rn / SUBW
+* 01oo-oooo-10mm-mmmm-10nn-nnnn-0000-00PP  SRA.L   Rm, Ro, Rn
+* 01oo-oooo-10mm-mmmm-11nn-nnnn-0000-00PP  SLA.L   Rm, Ro, Rn
+* 01oo-oooo-11mm-mmmm-00nn-nnnn-0000-00PP  ADDU.L  Rm, Ro, Rn / ADDWU
+* 01oo-oooo-11mm-mmmm-01nn-nnnn-0000-00PP  SUBU.L  Rm, Ro, Rn / SUBWU
+* 01oo-oooo-11mm-mmmm-10nn-nnnn-0000-00PP  SRL.L   Rm, Ro, Rn
+* 01oo-oooo-11mm-mmmm-11nn-nnnn-0000-00PP  SLL.L   Rm, Ro, Rn
+
+* 10oo-oooo-00mm-mmmm-00nn-nnnn-0000-00PP  MOV.B   (Rm, Ro), Rn / LB
+* 10oo-oooo-00mm-mmmm-01nn-nnnn-0000-00PP  MOV.W   (Rm, Ro), Rn / LH
+* 10oo-oooo-00mm-mmmm-10nn-nnnn-0000-00PP  MOV.L   (Rm, Ro), Rn / LW
+* 10oo-oooo-00mm-mmmm-11nn-nnnn-0000-00PP  MOV.Q   (Rm, Ro), Rn / LD
+* 10oo-oooo-01mm-mmmm-00nn-nnnn-0000-00PP  MOVU.B  (Rm, Ro), Rn / LBU
+* 10oo-oooo-01mm-mmmm-01nn-nnnn-0000-00PP  MOVU.W  (Rm, Ro), Rn / LHU
+* 10oo-oooo-01mm-mmmm-10nn-nnnn-0000-00PP  MOVU.L  (Rm, Ro), Rn / LWU
+* 10oo-oooo-01mm-mmmm-11nn-nnnn-0000-00PP  -
+* 10oo-oooo-10mm-mmmm-00nn-nnnn-0000-00PP  FMOV.F  (Rm, Ro), Rn
+* 10oo-oooo-10mm-mmmm-01nn-nnnn-0000-00PP  FMOV.H  (Rm, Ro), Rn
+* 10oo-oooo-10mm-mmmm-10nn-nnnn-0000-00PP ? MOV.C   (Rm, Ro), Cn
+* 10oo-oooo-10mm-mmmm-11nn-nnnn-0000-00PP  MOV.X   (Rm, Ro), Xn
+* 10oo-oooo-11mm-mmmm-00nn-nnnn-0000-00PP  -
+* 10oo-oooo-11mm-mmmm-01nn-nnnn-0000-00PP  -
+* 10oo-oooo-11mm-mmmm-10nn-nnnn-0000-00PP  -
+* 10oo-oooo-11mm-mmmm-11nn-nnnn-0000-00PP  -
+* 11oo-oooo-00mm-mmmm-00nn-nnnn-0000-00PP  MOV.B   Rn, (Rm, Ro) / SB
+* 11oo-oooo-00mm-mmmm-01nn-nnnn-0000-00PP  MOV.W   Rn, (Rm, Ro) / SH
+* 11oo-oooo-00mm-mmmm-10nn-nnnn-0000-00PP  MOV.L   Rn, (Rm, Ro) / SW
+* 11oo-oooo-00mm-mmmm-11nn-nnnn-0000-00PP  MOV.Q   Rn, (Rm, Ro) / SD
+* 11oo-oooo-01mm-mmmm-00nn-nnnn-0000-00PP  LEA.B   Rn, (Rm, Ro)
+* 11oo-oooo-01mm-mmmm-01nn-nnnn-0000-00PP  LEA.W   Rn, (Rm, Ro)
+* 11oo-oooo-01mm-mmmm-10nn-nnnn-0000-00PP  LEA.L   Rn, (Rm, Ro)
+* 11oo-oooo-01mm-mmmm-11nn-nnnn-0000-00PP  LEA.Q   Rn, (Rm, Ro)
+* 11oo-oooo-10mm-mmmm-00nn-nnnn-0000-00PP  FMOV.F  Rn, (Rm, Ro)
+* 11oo-oooo-10mm-mmmm-01nn-nnnn-0000-00PP  FMOV.H  Rn, (Rm, Ro)
+* 11oo-oooo-10mm-mmmm-10nn-nnnn-0000-00PP ? MOV.C   Cn, (Rm, Ro)
+* 11oo-oooo-10mm-mmmm-11nn-nnnn-0000-00PP  MOV.X   Xn, (Rm, Ro)
+* 11oo-oooo-11mm-mmmm-00nn-nnnn-0000-00PP  -
+* 11oo-oooo-11mm-mmmm-01nn-nnnn-0000-00PP  -
+* 11oo-oooo-11mm-mmmm-10nn-nnnn-0000-00PP  -
+* 11oo-oooo-11mm-mmmm-11nn-nnnn-0000-00PP  -
+
+* 00oo-oooo-00mm-mmmm-00nn-nnnn-0001-00PP  MULS.Q  Rm, Ro, Rn  //MUL
+* 00oo-oooo-00mm-mmmm-01nn-nnnn-0001-00PP  MULS.L  Rm, Ro, Rn  //MULW
+* 00oo-oooo-00mm-mmmm-10nn-nnnn-0001-00PP  MULU.Q  Rm, Ro, Rn  //MULU
+* 00oo-oooo-00mm-mmmm-11nn-nnnn-0001-00PP  MULU.L  Rm, Ro, Rn
+* 00oo-oooo-01mm-mmmm-00nn-nnnn-0001-00PP  DIVS.Q  Rm, Ro, Rn  //DIV
+* 00oo-oooo-01mm-mmmm-01nn-nnnn-0001-00PP  DIVS.L  Rm, Ro, Rn  //DIVW
+* 00oo-oooo-01mm-mmmm-10nn-nnnn-0001-00PP  DIVU.Q  Rm, Ro, Rn  //DIVU
+* 00oo-oooo-01mm-mmmm-11nn-nnnn-0001-00PP  DIVU.L  Rm, Ro, Rn  //DIVUW
+* 00oo-oooo-10mm-mmmm-00nn-nnnn-0001-00PP  MULHS.Q Rm, Ro, Rn  //MULH
+* 00oo-oooo-10mm-mmmm-01nn-nnnn-0001-00PP  MULHS.L Rm, Ro, Rn
+* 00oo-oooo-10mm-mmmm-10nn-nnnn-0001-00PP  MULHU.Q Rm, Ro, Rn
+* 00oo-oooo-10mm-mmmm-11nn-nnnn-0001-00PP  MULHU.L Rm, Ro, Rn
+* 00oo-oooo-11mm-mmmm-00nn-nnnn-0001-00PP  MODS.Q  Rm, Ro, Rn  //REM
+* 00oo-oooo-11mm-mmmm-01nn-nnnn-0001-00PP  MODS.L  Rm, Ro, Rn  //REMW
+* 00oo-oooo-11mm-mmmm-10nn-nnnn-0001-00PP  MODU.Q  Rm, Ro, Rn  //REMU
+* 00oo-oooo-11mm-mmmm-11nn-nnnn-0001-00PP  MODU.L  Rm, Ro, Rn
+
+* 01oo-oooo-00mm-mmmm-00nn-nnnn-0001-00PP  FADD    Rm, Ro, Rn	//Fixed RNE
+* 01oo-oooo-00mm-mmmm-01nn-nnnn-0001-00PP  FADDG   Rm, Ro, Rn	//Dynamic
+* 01oo-oooo-00mm-mmmm-10nn-nnnn-0001-00PP  FADDA   Rm, Ro, Rn	//Approx
+* 01oo-oooo-00mm-mmmm-11nn-nnnn-0001-00PP  FCMPEQ  Rm, Ro, Rn   //FPU EQ
+* 01oo-oooo-01mm-mmmm-00nn-nnnn-0001-00PP  FSUB    Rm, Ro, Rn
+* 01oo-oooo-01mm-mmmm-01nn-nnnn-0001-00PP  FSUBG   Rm, Ro, Rn
+* 01oo-oooo-01mm-mmmm-10nn-nnnn-0001-00PP  FSUBA   Rm, Ro, Rn
+* 01oo-oooo-01mm-mmmm-11nn-nnnn-0001-00PP  FCMPNE  Rm, Ro, Rn
+* 01oo-oooo-10mm-mmmm-00nn-nnnn-0001-00PP  FMUL    Rm, Ro, Rn
+* 01oo-oooo-10mm-mmmm-01nn-nnnn-0001-00PP  FMULG   Rm, Ro, Rn
+* 01oo-oooo-10mm-mmmm-10nn-nnnn-0001-00PP  FMULA   Rm, Ro, Rn
+* 01oo-oooo-10mm-mmmm-11nn-nnnn-0001-00PP  FCMPLT  Rm, Ro, Rn
+* 01oo-oooo-11mm-mmmm-00nn-nnnn-0001-00PP  FDIV    Rm, Ro, Rn
+* 01oo-oooo-11mm-mmmm-01nn-nnnn-0001-00PP  FDIVG   Rm, Ro, Rn
+* 01oo-oooo-11mm-mmmm-10nn-nnnn-0001-00PP  FDIVA   Rm, Ro, Rn
+* 01oo-oooo-11mm-mmmm-11nn-nnnn-0001-00PP  FCMPGE  Rm, Ro, Rn
+
+** FADD/FSUB/FMUL/FDIV: Fixed Round-Nearest
+** FADDG/FSUBG/FMULG/FDIVG: Dynamic Rounding Mode
+** FADDA/FSUBA/FMULA/FDIVA: Reduced Precision
+
+* 11oo-oooo-00mm-mmmm-00nn-nnnn-0001-00PP  ADD.X   Xm, Xo, Xn
+* 11oo-oooo-00mm-mmmm-01nn-nnnn-0001-00PP  SUB.X   Xm, Xo, Xn
+* 11oo-oooo-00mm-mmmm-10nn-nnnn-0001-00PP  SRA.X   Xm, Xo, Xn
+* 11oo-oooo-00mm-mmmm-11nn-nnnn-0001-00PP  SRL.X   Xm, Xo, Xn
+* 11oo-oooo-01mm-mmmm-00nn-nnnn-0001-00PP  SLL.X   Xm, Xo, Xn
+* 11oo-oooo-01mm-mmmm-01nn-nnnn-0001-00PP  AND.X   Xm, Xo, Xn
+* 11oo-oooo-01mm-mmmm-10nn-nnnn-0001-00PP  OR.X    Xm, Xo, Xn
+* 11oo-oooo-01mm-mmmm-11nn-nnnn-0001-00PP  XOR.X   Xm, Xo, Xn
+
+
+
+3RI Block:
+
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0010-10PP  SLT     Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0010-10PP  SEQ     Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0010-10PP  SLTU    Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0010-10PP  SNE     Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0011-10PP  SGT     Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0011-10PP  TSTZ    Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0011-10PP  SGTU    Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0011-10PP  TSTNZ   Rm, Imm10s, Rn
+** SLE/SGE/SGEU can be faked by adjusting immediate value by 1.
+** Rn==ZR: Update T instead.
+
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0100-10PP  ADD     Rm, Imm10u, Rn
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0100-10PP  SUB     Rm, Imm10u, Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0100-10PP  -
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0100-10PP  -
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0101-10PP  RSUB    Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0101-10PP  AND     Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0101-10PP  OR      Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0101-10PP  XOR     Rm, Imm10s, Rn
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0110-10PP  ADDS.L  Rm, Imm10u, Rn  //ADDIW
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0110-10PP  SUBS.L  Rm, Imm10u, Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0110-10PP  MULS.L  Rm, Imm10s, Rn
+
+* 00ii-iiii-00mm-mmmm-11nn-nnnn-0110-10PP  SRA.L   Rm, Imm6u, Rn
+* 00ii-iiii-01mm-mmmm-11nn-nnnn-0110-10PP  SLA.L   Rm, Imm6u, Rn
+* 00ii-iiii-10mm-mmmm-11nn-nnnn-0110-10PP  SRA.Q   Rm, Imm6u, Rn
+* 00ii-iiii-11mm-mmmm-11nn-nnnn-0110-10PP  -
+
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0111-10PP  ADDU.L  Rm, Imm10u, Rn
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0111-10PP  SUBU.L  Rm, Imm10u, Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0111-10PP  MULU.L  Rm, Imm10s, Rn
+
+* 00ii-iiii-00mm-mmmm-11nn-nnnn-0111-10PP  SRL.L   Rm, Imm6u, Rn
+* 00ii-iiii-01mm-mmmm-11nn-nnnn-0111-10PP  SLL.L   Rm, Imm6u, Rn
+* 00ii-iiii-10mm-mmmm-11nn-nnnn-0111-10PP  SRL.Q   Rm, Imm6u, Rn
+* 00ii-iiii-11mm-mmmm-11nn-nnnn-0111-10PP  SLL.Q   Rm, Imm6u, Rn
+
+* 1iii-iiii-00mm-mmmm-11nn-nnnn-0111-10PP  SRA.X   Xm, Imm7u, Xn	//(ALUX)
+* 1iii-iiii-01mm-mmmm-11nn-nnnn-0111-10PP  -
+* 1iii-iiii-10mm-mmmm-11nn-nnnn-0111-10PP  SRL.X   Xm, Imm7u, Xn	//(ALUX)
+* 1iii-iiii-11mm-mmmm-11nn-nnnn-0111-10PP  SLL.X   Xm, Imm7u, Xn	//(ALUX)
+
+
+2RI-Imm10 Block:
+
+* iiii-iiii-iiZZ-ZZZZ-ZZnn-nnnn-11ZZ-10PP (2RI-Imm10)
+
+
+Load/Store/Imm16/Branch Block:
+
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0000-11PP  MOV.B   (Rm, Disp10s), Rn / LB
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0000-11PP  MOV.W   (Rm, Disp10s), Rn / LH
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0000-11PP  MOV.L   (Rm, Disp10s), Rn / LW
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0000-11PP  MOV.Q   (Rm, Disp10s), Rn / LD
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0001-11PP  MOVU.B  (Rm, Disp10s), Rn / LBU
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0001-11PP  MOVU.W  (Rm, Disp10s), Rn / LHU
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0001-11PP  MOVU.L  (Rm, Disp10s), Rn / LWU
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0001-11PP  -
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0010-11PP  FMOV.F  (Rm, Disp10s), Rn
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0010-11PP  FMOV.H  (Rm, Disp10s), Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0010-11PP  MOV.C   (Rm, Disp10s), Cn
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0010-11PP  MOV.X   (Rm, Disp10s), Xn / LX
+
+** Rn==R0/ZR : JALR (Rm, Disp10s), ZR
+** Rn==R1/LR : JALR (Rm, Disp10s), LR
+** Rn==R2/SP : -
+** Rn==R3/GBR: -
+
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0011-11PP  -
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0011-11PP  -
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0011-11PP  -
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0011-11PP  -
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0100-11PP  MOV.B    Rn, (Rm, Disp10s) / SB
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0100-11PP  MOV.W    Rn, (Rm, Disp10s) / SH
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0100-11PP  MOV.L    Rn, (Rm, Disp10s) / SW
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0100-11PP  MOV.Q    Rn, (Rm, Disp10s) / SD
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0101-11PP  LEA.B    (Rm, Disp10s), Rn
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0101-11PP  LEA.W    (Rm, Disp10s), Rn
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0101-11PP  LEA.L    (Rm, Disp10s), Rn
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0101-11PP  LEA.Q    (Rm, Disp10s), Rn
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0110-11PP  FMOV.F   Rn, (Rm, Disp10s)
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0110-11PP  FMOV.H   Rn, (Rm, Disp10s)
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0110-11PP  MOV.C    Cn, (Rm, Disp10s)
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0110-11PP  MOV.X    Xn, (Rm, Disp10s) / SX
+* iiii-iiii-iimm-mmmm-00nn-nnnn-0111-11PP  -
+* iiii-iiii-iimm-mmmm-01nn-nnnn-0111-11PP  -
+* iiii-iiii-iimm-mmmm-10nn-nnnn-0111-11PP  -
+* iiii-iiii-iimm-mmmm-11nn-nnnn-0111-11PP  -
+* iiii-iiii-iimm-mmmm-00nn-nnnn-1000-11PP  BEQ      Rm, Rn, Disp10s
+* iiii-iiii-iimm-mmmm-01nn-nnnn-1000-11PP  BNE      Rm, Rn, Disp10s
+* iiii-iiii-iimm-mmmm-10nn-nnnn-1000-11PP  BLT      Rm, Rn, Disp10s
+* iiii-iiii-iimm-mmmm-11nn-nnnn-1000-11PP  BGE      Rm, Rn, Disp10s
+* iiii-iiii-iimm-mmmm-00nn-nnnn-1001-11PP  BTSTZ    Rm, Rn, Disp10s
+* iiii-iiii-iimm-mmmm-01nn-nnnn-1001-11PP  BTSTNZ   Rm, Rn, Disp10s
+* iiii-iiii-iimm-mmmm-10nn-nnnn-1001-11PP  BLTU     Rm, Rn, Disp10s
+* iiii-iiii-iimm-mmmm-11nn-nnnn-1001-11PP  BGEU     Rm, Rn, Disp10s
+** BLT and BGE will share the same encodings as BGT and BLE.
+** They are equivalent apart from flipping arguments.
+
+* iiii-iiii-iiii-iiii-00nn-nnnn-1100-11PP  MOV      Imm16u, Rn
+* iiii-iiii-iiii-iiii-01nn-nnnn-1100-11PP  MOV      Imm16n, Rn
+* iiii-iiii-iiii-iiii-10nn-nnnn-1100-11PP  ADD      Imm16u, Rn
+* iiii-iiii-iiii-iiii-11nn-nnnn-1100-11PP  ADD      Imm16n, Rn
+* iiii-iiii-iiii-iiii-00nn-nnnn-1101-11PP  SHORI    Imm16u, Rn
+* iiii-iiii-iiii-iiii-01nn-nnnn-1101-11PP  FLDCH    Imm16u, Rn
+* iiii-iiii-iiii-iiii-10nn-nnnn-1101-11PP  LEA.Q    (GBR, Imm16u), Rn
+* iiii-iiii-iiii-iiii-11nn-nnnn-1101-11PP  -
+
+* iiii-iiii-iiii-iiii-00nn-nnnn-1110-11PP  -
+* iiii-iiii-iiii-iiii-01nn-nnnn-1110-11PP  -
+* iiii-iiii-iiii-iiii-10nn-nnnn-1110-11PP  -
+* iiii-iiii-iiii-iiii-11nn-nnnn-1110-11PP  -
+* iiii-iiii-iiii-iiii-0jjj-jjjj-1111-11PP  BRA      Disp23s / JAL R0, Disp23s
+* iiii-iiii-iiii-iiii-1jjj-jjjj-1111-11PP  BSR      Disp23s / JAL R1, Disp23s
+** BRA and BSR will have a range of +/- 16MB.
+
+
+Jumbo Prefixes:
+* iiii-iiii-iiii-iiii-0jjj-jjjj-1110-1101  J23_IMM
+* iiii-iiii-iiZZ-ZZZZ-0ZZZ-ZZZZ-1111-1101  J23_OP
+* iiii-iiii-iiii-iiii-1jjj-jjjj-kkkk-1101  J27_IMM
+* Other patterns are reserved for now.
+
+
+
+
+=== Complex Memory Ops ===
+
+Complex Memory Ops (Optional Extension)
+* J27I + Ld/St(3R)
+** Will encode an Extended address mode.
+*** (Rm + Ro*Sc + Disp17s)
+** The Jumbo i field will give 16-bits of displacement.
+** j field: nqqttss
+** k field: oooo
+*** n: Sign extension for displacement.
+*** qq: Controls Memory Ordering
+**** 00 = Weak (Default)
+**** 01 = Release
+**** 10 = Acquire
+**** 11 = Ordered/Volatile
+*** tt: Operand Mode
+**** 00 = (Rm, Ro*Sc, Disp), Rn -> Rn
+**** 01 = (Rm, Disp), Ro -> Rn
+**** 10 = LD (Reserved), ST (Store Only)
+**** 11 = ? LD/ST, Like 01 but with Ro as an Imm6s
+*** oooo: Gives an operator
+**** 0000 = NONE (Normal Load or Store)
+**** 0001 = ADD
+**** 0010 = MIN (ST) / SUB (LD)
+**** 0011 = MAX (ST) / RSUB (LD)
+**** 0100 = XCHG (ST) / Resv (LD)
+**** 0101 = AND
+**** 0110 = OR
+**** 0111 = XOR
+*** ss: Scale for index, 1/2/4/8, if tt=00.
+**** Reserved/MBZ if tt!=00.
+** The operator will be applied between Rn and a memory value.
+*** For Load, this value will be put into Rn.
+*** For Store, this value will be written to memory.
+*** Prior memory contents will be loaded into Rn for Store if ooo!=000.
+
+
+=== SIMD ===
+
+SIMD, 64-bit encoding Block:
+* J23I + FPU
+* j: 1qqttss
+** ss: Element Size (8/16/32/64)
+** tt: Vector Size (64/128/32/-)
+*** 128-bit vector will exist as an even register pair.
+** qq: Element Type
+*** 00: FPU
+*** 01: Int, Modulo
+*** 10: Int, Signed Saturate
+*** 11: Int, Unsigned Saturate
+* i: Additional Opcode
+** Low 8: Sub-Opcode (depends on main opcode)
+** High 8: Depends on Opcode
+*** For convert ops, will have a similar format to the j field.
+*** For MAC style operators, it will contain an additional register field.
+* ElementCount will be VectorSize/ElementSize
+** Not that hardware need not support every possible vector format.
+
+Vector Types:
+* 000000  Reserved (8x FP8)
+* 000001  4x FP16
+* 000010  2x FP32
+* 000011  1x FP64
+* 000100  Reserved (16x FP8)
+* 000101  Reserved (8x FP16)
+* 000110  4x FP32
+* 000111  2x FP64
+* 001000  4x FP8
+* 001001  2x FP16
+* 001010  1x FP32
+* 001011  Invalid
+* 0011zz  Reserved
+
+* 010000  8x Int8
+* 010001  4x Int16
+* 010010  2x Int32
+* 010011  1x Int64
+* 010100  Reserved (16x FP8)
+* 010101  Reserved (8x FP16)
+* 010110  4x Int32
+* 010111  2x Int64
+* 011000  4x Int8
+* 011001  2x Int16
+* 011010  1x Int32
+* 011011  Invalid
+* 0111zz  Reserved
+
+* 10zzzz  More Int Types
+* 11zzzz  More Int Types
+
+
+* iiii-iiii-ZZZZ-ZZZZ-01qq-ttss-1110-1101 -
+* 01oo-oooo-ZZmm-mmmm-ZZnn-nnnn-0001-00PP  SIMD64A    Rm, Ro, Rn
+
+* rrpp-pppp-ZZZZ-ZZZZ-01qq-ttss-1110-1101 -
+* 01oo-oooo-ZZmm-mmmm-ZZnn-nnnn-0001-00PP  SIMD64A    Rm, Ro, Rp, Rn
+** rr: Rounding Mode
+
+* 0000-0000-0000-0000-01qq-ttss-1110-1101 -
+* 01oo-oooo-ZZmm-mmmm-ZZnn-nnnn-0001-00PP  PADDx    Rm, Ro, Rn
+
+* 0000-0000-0000-0100-01qq-ttss-1110-1101 -
+* 01oo-oooo-ZZmm-mmmm-ZZnn-nnnn-0001-00PP  PSUBx    Rm, Ro, Rn
+
+* 0000-0000-0000-1000-01qq-ttss-1110-1101 -
+* 01oo-oooo-ZZmm-mmmm-ZZnn-nnnn-0001-00PP  PMULx    Rm, Ro, Rn
+
+* 0000-0000-0000-1100-01qq-ttss-1110-1101 -
+* 01oo-oooo-ZZmm-mmmm-ZZnn-nnnn-0001-00PP  PDIVx    Rm, Ro, Rn
+
+* rrpp-pppp-0001-0000-01qq-ttss-1110-1101 -
+* 01oo-oooo-00mm-mmmm-00nn-nnnn-0001-00PP  PMACx    Rm, Ro, Rp, Rn
+
+FPU Formats:
+* FP8: S.E4.F3
+* FP16: S.E5.F10
+* FP32: S.E8.F23
+* FP64: S.E11.F52
+

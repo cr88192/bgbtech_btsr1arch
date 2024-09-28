@@ -126,7 +126,7 @@ __PDPCLIB_API__ void *memmove(void *s1, const void *s2, size_t n)
 #endif
 __PDPCLIB_API__ char *strcpy(char *s1, const char *s2)
 {
-#if defined(__BJX2__) || defined(__riscv)
+#if defined(__BJX2__) || defined(__riscv) || defined(__RISCV__)
 	char *cs, *ct;
 	u64 li, lj;
 	int i;
@@ -178,7 +178,7 @@ __PDPCLIB_API__ char *strncpy(char *s1, const char *s2, size_t n)
 
 	for (x=0; x < n; x++)
 	{
-#if defined(__BJX2__) || defined(__riscv)
+#if defined(__BJX2__) || defined(__riscv) || defined(__RISCV__)
 		v0 = *(u64 *)s2;
 		xd = n - x;
 		v1 = v0 + 0x7F7F7F7F7F7F7F7FULL;
@@ -213,7 +213,7 @@ __PDPCLIB_API__ char *strncpy(char *s1, const char *s2, size_t n)
 	}
 	for (; x < n; x++)
 	{
-#if defined(__BJX2__) || defined(__riscv)
+#if defined(__BJX2__) || defined(__riscv) || defined(__RISCV__)
 		xd = n - x;
 
 		if(xd>=16)
@@ -429,7 +429,7 @@ __PDPCLIB_API__ int strcmp(const char *s1, const char *s2)
 	u64 c0, c1;
 	u64 li0, lj0, li1, lj1;
 
-#if defined(__riscv)
+#if defined(__riscv) || defined(__RISCV__)
 // #if 0
 	u64 li, lj;
 	int i, i0, i1;
@@ -1580,7 +1580,8 @@ __PDPCLIB_API__ size_t strlen(const char *s)
 	p = s;
 	n=0;
 
-#ifdef __riscv
+// #ifdef __riscv
+#if defined(__riscv) || defined(__RISCV__)
 	li=*(u64 *)p;
 	lj=(li|(li+0x7F7F7F7F7F7F7F7FULL))&0x8080808080808080ULL;
 	while(lj==0x8080808080808080ULL)
@@ -2054,7 +2055,7 @@ __PDPCLIB_API__ void *_memcpyf(void *s1, void *s2, size_t n)
 #endif
 
 // #if 0
-#if defined(__TK_CLIB_DLLSTUB__) || defined(__riscv)
+#if defined(__TK_CLIB_DLLSTUB__) || defined(__riscv) || defined(__RISCV__)
 
 __PDPCLIB_API__ void *memcpy(void *s1, const void *s2, size_t n)
 {

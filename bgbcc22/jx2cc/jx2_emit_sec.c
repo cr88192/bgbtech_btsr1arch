@@ -3704,6 +3704,10 @@ int BGBCC_JX2_EmitWord(BGBCC_JX2_Context *ctx, int val)
 		(ctx->sec!=BGBCC_SH_CSEG_UTEXT))
 	{
 		BGBCC_JX2DA_EmitWord(ctx, val&0xFFFF);
+	}else
+	{
+		if(ctx->emit_riscv&0x11)
+			{ BGBCC_DBGBREAK }
 	}
 
 	return(0);

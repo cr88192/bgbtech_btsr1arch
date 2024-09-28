@@ -342,6 +342,69 @@ void *TKPE_LookupImageElfExport(TKPE_ImageInfo *img, char *name)
 	return(NULL);
 }
 
+byte *TKPE_RiscV_EmitLoad32(byte *dst, int rd, u32 val)
+{
+	byte *ct;
+	ct=dst;
+	*(u32 *)ct=0x37|(rd<<7)|(((val+0x800)>>12)<<12);
+	ct+=4;
+	*(u32 *)ct=0x13|(rd<<7)|(rd<<15)|(val<<20);
+	ct+=4;
+	return(ct);
+}
+
+byte *TKPE_RiscV_EmitBreak(byte *dst)
+{
+	*(u32 *)dst=0x00100073;
+	return(dst+4);
+}
+
+byte *TKPE_RiscV_EmitSllI(byte *dst, int rd, int rs, int val)
+{
+	*(u32 *)dst=0x00001013|(rd<<7)|(rs<<15)|(val<<20);
+	return(dst+4);
+}
+
+byte *TKPE_RiscV_EmitJalr(byte *dst, int rd, int rs, int val)
+{
+	*(u32 *)dst=0x00000067|(rd<<7)|(rs<<15)|(val<<20);
+	return(dst+4);
+}
+
+byte *TKPE_RiscV_EmitAdd(byte *dst, int rd, int rs, int rt)
+{
+	*(u32 *)dst=0x00000033|(rd<<7)|(rs<<15)|(rt<<20);
+	return(dst+4);
+}
+
+byte *TKPE_RiscV_EmitLoad64(byte *dst, int rd, u64 val)
+{
+	byte *ct;
+	ct=dst;
+	ct=TKPE_RiscV_EmitLoad32(ct, 8, val);
+	ct=TKPE_RiscV_EmitLoad32(ct, 9, val>>32);
+	ct=TKPE_RiscV_EmitSllI(ct, 9, 9, 32);
+	ct=TKPE_RiscV_EmitAdd(ct, rd, 8, 9);
+	return(ct);
+}
+
+byte *TKPE_RiscV_EmitJalAbs64(byte *dst, int rd, u64 val)
+{
+	byte *ct;
+	ct=TKPE_RiscV_EmitLoad64(dst, 8, val);
+//	ct=TKPE_RiscV_EmitBreak(ct);
+	ct=TKPE_RiscV_EmitJalr(ct, rd, 8, 0);
+	return(ct);
+}
+
+byte *TKPE_RiscV_EmitLnxSyscall(byte *dst, int idx)
+{
+	byte *ct;
+	ct=TKPE_RiscV_EmitLoad32(dst, 17, idx);
+	*(u32 *)ct=0x00000073;
+	return(ct+4);
+}
+
 TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	char *imgname, char *cwd, int is_dll)
 {
@@ -353,7 +416,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	byte *imgptr, *ct, *cte, *bss_ptr;
 	byte *dyn_ptr, *rela_ptr, *strtab_ptr, *symtab_ptr;
 	u64 *rel_where;
-	byte *ptr;
+	byte *ptr, *ct;
 	int n_needed;
 
 	u64 imgbase, imgbase1;
@@ -512,6 +575,8 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 	dyn_ptr=NULL;
 
+	memcpy(imgptr, tbuf, 1024);
+
 	for(i=0; i<phnum; i++)
 	{
 		phdr=(struct btsh2_elf64_phdr_s *)(tbuf+(phoff+(i*phentsz)));
@@ -568,7 +633,16 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //			printf("BTESH2_BootLoadElf: MemCpy Failed\n");
 //		}
 	}
-	
+
+	img->elf_phdr_phoff=phoff;
+	img->elf_phdr_phentsz=phentsz;
+	img->elf_phdr_phnum=phnum;
+	img->elf_phdr_ptr=imgptr+phoff;
+
+	img->elf_interpbase=NULL;	//for now
+	img->elf_interpimg=NULL;	//for now
+	img->realentry=NULL;		//for now
+
 	n_needed=0;
 	if(dyn_ptr)
 	{
@@ -662,6 +736,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 			pltrel_ent=rela_ent;
 
 		if(rela_offs && (rela_ent>0))
+//		if(rela_offs && (rela_ent>0) && !n_needed)
 		{
 			rela_ptr=imgptr+rela_offs;
 			l=rela_sz/rela_ent;
@@ -844,6 +919,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 
 		
 		if(pltrel_offs && (pltrel_ent>0))
+//		if(pltrel_offs && (pltrel_ent>0) && !n_needed)
 		{
 			rela_ptr=imgptr+pltrel_offs;
 			l=pltrel_sz/pltrel_ent;
@@ -1004,6 +1080,43 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	if(isxg2rv)
 	{
 		entry|=0x008C000000000001ULL;
+	}
+
+	img->realentry=(void *)entry;
+
+	if(n_needed>0)
+	{
+		/* if using SO's, assume a Linux-style binary for now. */
+		/* Flag by setting SR.T */
+		entry|=0x0001000000000000ULL;
+		
+		if(img_needed[0]->elf_interpbase)
+		{
+			img->elf_interpimg=img_needed[0]->elf_interpimg;
+			img->elf_interpbase=img_needed[0]->elf_interpbase;	//for now
+		}else
+		{
+			img->elf_interpimg=img_needed[0];
+			img->elf_interpbase=img_needed[0]->imgbase;
+		}
+		
+		ptr=imgbase+((imgsz+15)&(~15));
+		ct=ptr;
+		if(isriscv)
+		{
+			for(i=0; i<n_needed; i++)
+			{
+				sym_value=img_needed[i]->bootptr;
+				ct=TKPE_RiscV_EmitJalAbs64(ct, 1, sym_value);
+			}
+//			ct=TKPE_RiscV_EmitJalAbs64(ct, 1, entry);
+
+			ct=TKPE_RiscV_EmitLnxSyscall(ct, TK_SCLNX_EXIT);
+			
+			entry=ptr;
+			entry|=0x0004000000000001ULL;
+		}
+		
 	}
 
 	if(!(entry&1))

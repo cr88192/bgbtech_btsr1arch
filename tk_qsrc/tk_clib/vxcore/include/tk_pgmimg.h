@@ -54,6 +54,56 @@
 
 #define TKPE_REGSAVE_KRR	0x48
 
+
+/* ELF Aux Vectors */
+#define TKPE_ELF_AT_NULL				0
+#define TKPE_ELF_AT_IGNORE				1
+#define TKPE_ELF_AT_EXECFD				2
+#define TKPE_ELF_AT_PHDR				3
+#define TKPE_ELF_AT_PHENT				4
+#define TKPE_ELF_AT_PHNUM				5
+#define TKPE_ELF_AT_PAGESZ				6
+#define TKPE_ELF_AT_BASE				7
+#define TKPE_ELF_AT_FLAGS				8
+#define TKPE_ELF_AT_ENTRY				9
+#define TKPE_ELF_AT_NOTELF				10
+#define TKPE_ELF_AT_UID					11
+#define TKPE_ELF_AT_EUID				12
+#define TKPE_ELF_AT_GID					13
+#define TKPE_ELF_AT_EGID				14
+#define TKPE_ELF_AT_PLATFORM			15
+#define TKPE_ELF_AT_HWCAP				16
+#define TKPE_ELF_AT_CLKTCK				17
+#define TKPE_ELF_AT_FPUCW				18
+#define TKPE_ELF_AT_DCACHEBSIZE			19
+#define TKPE_ELF_AT_ICACHEBSIZE			20
+#define TKPE_ELF_AT_UCACHEBSIZE			21
+#define TKPE_ELF_AT_IGNOREPPC			22
+#define	TKPE_ELF_AT_SECURE				23
+#define TKPE_ELF_AT_BASE_PLATFORM		24
+#define TKPE_ELF_AT_RANDOM				25
+#define TKPE_ELF_AT_HWCAP2				26
+
+#define TKPE_ELF_AT_EXECFN				31
+#define TKPE_ELF_AT_SYSINFO				32
+#define TKPE_ELF_AT_SYSINFO_EHDR		33
+#define TKPE_ELF_AT_L1I_CACHESHAPE		34
+#define TKPE_ELF_AT_L1D_CACHESHAPE		35
+#define TKPE_ELF_AT_L2_CACHESHAPE		36
+#define TKPE_ELF_AT_L3_CACHESHAPE		37
+
+#define TKPE_ELF_AT_L1I_CACHESIZE		40
+#define TKPE_ELF_AT_L1I_CACHEGEOMETRY	41
+#define TKPE_ELF_AT_L1D_CACHESIZE		42
+#define TKPE_ELF_AT_L1D_CACHEGEOMETRY	43
+#define TKPE_ELF_AT_L2_CACHESIZE		44
+#define TKPE_ELF_AT_L2_CACHEGEOMETRY	45
+#define TKPE_ELF_AT_L3_CACHESIZE		46
+#define TKPE_ELF_AT_L3_CACHEGEOMETRY	47
+
+#define TKPE_ELF_AT_MINSIGSTKSZ			51
+
+
 typedef struct TKPE_ImageInfo_s		TKPE_ImageInfo;
 
 typedef struct TKPE_TaskInfo_s			TKPE_TaskInfo;
@@ -101,6 +151,15 @@ byte *imgbase;
 byte *bootptr;		//entry point for image
 byte *bootgbr;		//pointer to start of data section
 byte *bootgbre;		//pointer to end of data section
+
+byte *realentry;		//real entry point
+TKPE_ImageInfo *elf_interpimg;	//elf interpreter base
+byte *elf_interpbase;	//elf interpreter base
+
+byte *elf_phdr_ptr;
+int elf_phdr_phoff;
+short elf_phdr_phentsz;
+short elf_phdr_phnum;
 
 s64 rlc_imgbase;
 s64 rlc_basedisp;

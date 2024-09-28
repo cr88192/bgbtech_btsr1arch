@@ -190,6 +190,11 @@ s64 TK_HandleSyscallLnx(TKPE_TaskInfo *task,
 		ret=tk_hwrite(task, args[0].i, args[1].p, args[2].i);
 		break;
 	
+	case TK_SCLNX_SET_TID_ADDRESS:
+		/* Ignore for now. Sets an address to be cleared when a thread exits. */
+		ret=0;
+		break;
+	
 	default:
 		tk_dbg_printf("TK_HandleSyscallLnx: Unhandled %04X\n", uMsg);
 		break;
@@ -255,10 +260,35 @@ s64 TK_HandleSyscall(TKPE_TaskInfo *task,
 
 			case 0x04:
 				sz=args[0].i;
+//				if(sz<=0)
+//					{ __debugbreak(); }
+
+				if(sz<=0)
+				{
+					tk_dbg_printf("SYSC: Page Alloc, Bad Size, "
+						"vParm1=%p, vParm2=%p, sz=%08X\n",
+						vParm1, vParm2, sz);
+					*((void **)vParm1)=NULL;
+					ret=TK_URES_TRUE;
+					break;
+				}
+
 				p=TKMM_PageAllocUsc(sz);
 				*((void **)vParm1)=p;
+
+				if(!p)
+				{
+					tk_dbg_printf("SYSC: Page Alloc, Failed Alloc, "
+						"vParm1=%p, vParm2=%p, sz=%08X\n",
+						vParm1, vParm2, sz);
+					*((void **)vParm1)=NULL;
+					ret=TK_URES_TRUE;
+					break;
+				}
+
 				TK_TaskAddPageAlloc(task, p, sz);
 //				tk_dbg_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
+
 				ret=TK_URES_TRUE;
 				break;
 			case 0x05:

@@ -717,3 +717,127 @@ __va64_arg_x.L0:
 };
 
 #endif
+
+#ifdef __RISCV__
+
+__asm {
+
+.global __va64_saveargs
+__va64_saveargs:
+	mov.q	r10, (r6,  0)
+	mov.q	r11, (r6,  8)
+	mov.q	r12, (r6, 16)
+	mov.q	r13, (r6, 24)
+	mov.q	r14, (r6, 32)
+	mov.q	r15, (r6, 40)
+	mov.q	r16, (r6, 48)
+	mov.q	r17, (r6, 56)
+	mov.q	r7, (r6, 128)
+	mov.q	r0, (r6, 136)
+	mov.q	r2, (r6, 144)
+	rts
+	nop
+
+.global __va64_arg_i
+.global __va64_arg_l
+__va64_arg_i:
+__va64_arg_l:
+	mov.l	(r10, 128), r28
+	mov		64, r29
+//	cmp/gt	r28, r29
+//	bf		__va64_arg_i.L0
+	brge	r29, r28, __va64_arg_i.L0
+	
+	mov		r28, r29
+	add		r10, r29
+	mov.q	(r29), r30
+	add		8, r28
+	mov.l	r28, (r10, 128)
+	mov		r30, r10
+	rts
+	nop
+
+__va64_arg_i.L0:
+	mov.q	(r10, 144), r31
+	mov.q	(r31), r30
+	add		8, r31
+	mov.q	r31, (r10, 144)
+	mov		r30, r10
+	
+	break
+	rts
+	nop
+
+.global __va64_arg_x
+__va64_arg_x:
+	mov.l	(r10, 128), r28
+// .ifarch abi_evenonly
+//	test	8, r28
+//	add?f	8, r28
+// .endif
+	mov		56, r29
+//	cmp/gt	r28, r29
+//	bf		__va64_arg_i.L0
+	brge	r29, r28, __va64_arg_x.L0
+
+	mov		r28, r29
+	add		r10, r29
+	mov.q	(r29, 0), r30
+	mov.q	(r29, 8), r31
+	add		16, r28
+	mov.l	r28, (r10, 128)
+	mov		r30, r10
+	mov		r31, r11
+	rts
+	nop
+
+__va64_arg_x.L0:
+	mov.q	(r4, 144), r29
+	add		7, r29
+	and		-8, r29
+	mov.q	(r29, 0), r30
+	mov.q	(r29, 8), r31
+	add		16, r29
+	mov.q	r29, (r10, 144)
+	mov		r30, r10
+	mov		r31, r11
+	rts
+	nop
+	
+.global _arch_gettbr
+_arch_gettbr:
+	mov		r4, r10
+	rts
+	nop
+
+
+__fpu_fdiv:
+	rts
+	nop
+
+__xlf_todbl:
+	rts
+	nop
+
+.global _start
+.extern __start
+
+_start:
+	bsr __start
+	bra _exit
+	nop
+	nop
+
+_exit:
+	break
+	mov 0, r4
+	mov 0x1003, r5
+	mov 0, r6
+	mov sp, r7
+//	syscall 0
+	syscall
+	break
+
+};
+
+#endif

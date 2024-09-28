@@ -2172,7 +2172,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 		nm2=BGBCC_SH_NMID_BF;
 
 //		if(imm!=immj)
-		if(0)
+//		if(0)
+		if(sctx->emit_riscv&0x11)
 		{
 			nm3=BGBCC_SH_NMID_BRTSTNL;
 			jcflip=0;
@@ -2184,7 +2185,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 		nm2=BGBCC_SH_NMID_BT;
 
 //		if(imm!=immj)
-		if(0)
+//		if(0)
+		if(sctx->emit_riscv&0x11)
 		{
 			nm3=BGBCC_SH_NMID_BRTSTL;
 			jcflip=0;
@@ -2697,7 +2699,7 @@ int BGBCC_JX2C_EmitJmpTab(
 	ccxl_label *lbls)
 {
 	ccxl_label dfl;
-	int csreg, ctreg;
+	int csreg, ctreg, l0;
 	int i, j, k;
 
 //	dfl=lbls[nlbl];
@@ -2711,17 +2713,39 @@ int BGBCC_JX2C_EmitJmpTab(
 
 	if(dfl.id)
 	{
-		BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
-			BGBCC_SH_NMID_CMPHI, nlbl, ctreg);
-		BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, dfl.id);
+		if(sctx->emit_riscv&0x11)
+		{
+			BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+				BGBCC_SH_NMID_MOV, nlbl, BGBCC_JX2CC_PSREG_TS0);
+			BGBCC_JX2_EmitOpRegRegLbl(sctx,
+				BGBCC_SH_NMID_BRGTU,
+				BGBCC_JX2CC_PSREG_TS0, ctreg,
+				dfl.id);
+		}else
+		{
+			BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+				BGBCC_SH_NMID_CMPHI, nlbl, ctreg);
+			BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, dfl.id);
+		}
 	}else
 	{
 		dfl=lbls[nlbl];
 		if(dfl.id)
 		{
-			BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
-				BGBCC_SH_NMID_CMPHI, nlbl, ctreg);
-			BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, dfl.id);
+			if(sctx->emit_riscv&0x11)
+			{
+				BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+					BGBCC_SH_NMID_MOV, nlbl, BGBCC_JX2CC_PSREG_TS0);
+				BGBCC_JX2_EmitOpRegRegLbl(sctx,
+					BGBCC_SH_NMID_BRGTU,
+					BGBCC_JX2CC_PSREG_TS0, ctreg,
+					dfl.id);
+			}else
+			{
+				BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+					BGBCC_SH_NMID_CMPHI, nlbl, ctreg);
+				BGBCC_JX2_EmitOpAutoLabel(sctx, BGBCC_SH_NMID_BT, dfl.id);
+			}
 		}else
 		{
 			BGBCC_DBGBREAK
@@ -2732,11 +2756,26 @@ int BGBCC_JX2C_EmitJmpTab(
 
 	BGBCC_JX2_EmitPadForLabel(sctx);
 
-//	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);
-	BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_ADD, ctreg, ctreg);
-//	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRA2F, ctreg);
-	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRAF, ctreg);
-//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
+	if(sctx->emit_riscv&0x11)
+	{
+		l0=BGBCC_JX2_GenLabelTemp(sctx);
+		BGBCC_JX2_TryEmitOpLblReg(sctx,
+			BGBCC_SH_NMID_LEAB, l0, BGBCC_JX2CC_PSREG_TS0);
+
+		BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_SHAD, ctreg, 2, ctreg);
+		BGBCC_JX2_EmitOpRegRegReg(sctx, BGBCC_SH_NMID_ADD,
+			ctreg, BGBCC_JX2CC_PSREG_TS0, ctreg);
+		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_JMP, ctreg);
+
+		BGBCC_JX2_EmitLabel(sctx, l0);
+	}else
+	{
+	//	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_SHLL1, ctreg);
+		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_ADD, ctreg, ctreg);
+	//	BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRA2F, ctreg);
+		BGBCC_JX2_EmitOpReg(sctx, BGBCC_SH_NMID_BRAF, ctreg);
+	//	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
+	}
 
 	for(i=0; i<=nlbl; i++)
 	{
@@ -2847,6 +2886,12 @@ int BGBCC_JX2C_EmitPredCmpVRegVRegInt(
 	s32 imm;
 	int nm1, nm2, nm3;
 	
+	if(sctx->emit_riscv&0x11)
+	{
+		printf("BGBCC_JX2C_EmitPredCmpVRegVRegInt: Unsupported on RISC-V\n");
+		return(0);
+	}
+
 	noflip=0;
 	
 	if((type.val==CCXL_TY_UB) || (type.val==CCXL_TY_US))

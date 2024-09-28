@@ -221,7 +221,7 @@
 	XXX -- system parameters really ought to be in a separate header.
 */
 
-#if defined(__BJX1_64__) || defined(__BJX2__)
+#if defined(__BJX1_64__) || defined(__BJX2__) || defined(__RISCV__)
 
 #define	__Q8_TC
 #define	__Q8_SC	/* signed */ char

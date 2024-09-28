@@ -1217,8 +1217,17 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 						ka+=8;
 					}else
 					{
-						obj->args[i]->fxoffs=ka;
-						ka+=4;
+						if(sctx->emit_riscv&3)
+						{
+							ka=(ka+7)&(~7);
+							obj->args[i]->fxoffs=ka;
+							ka+=8;
+						}
+						else
+						{
+							obj->args[i]->fxoffs=ka;
+							ka+=4;
+						}
 					}
 				}
 				break;

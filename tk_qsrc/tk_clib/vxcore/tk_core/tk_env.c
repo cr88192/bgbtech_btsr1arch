@@ -49,6 +49,7 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 	void *p;
 	int i;
 
+#ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
 		task=NULL;
@@ -84,6 +85,14 @@ int TK_Env_GetEnvVarI(char *varn, char *buf, int sz)
 		tk_syscall(NULL, TK_UMSG_GETENVVAR, &i, ar);
 		return(i);
 	}
+#else
+	i=-1;
+	ar[0].p=varn;
+	ar[1].p=buf;
+	ar[2].i=sz;
+	tk_syscall(NULL, TK_UMSG_GETENVVAR, &i, ar);
+	return(i);
+#endif
 }
 
 int TK_Env_SetEnvVarI(char *varn, char *varv)
@@ -94,6 +103,7 @@ int TK_Env_SetEnvVarI(char *varn, char *varv)
 	void *p;
 	int i;
 
+#ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
 		task=NULL;
@@ -121,6 +131,13 @@ int TK_Env_SetEnvVarI(char *varn, char *varv)
 		tk_syscall(NULL, TK_UMSG_SETENVVAR, &i, ar);
 		return(i);
 	}
+#else
+	i=-1;
+	ar[0].p=varn;
+	ar[1].p=varv;
+	tk_syscall(NULL, TK_UMSG_SETENVVAR, &i, ar);
+	return(i);
+#endif
 }
 
 int TK_Env_SetCwd(char *cwd)
@@ -148,13 +165,20 @@ int TK_Env_GetCwdQualifyName(char *buf, int sz, char *fn)
 
 	if(*fn=='/')
 	{
+#ifdef __RISCV__
+		__debugbreak();
+//		tk_printf("TK_Env_GetCwdQualifyName: IsAbs path=%s\n", fn);
+#endif
+	
 		strcpy(buf, fn);
 		return(1);
 	}
-	
+
 	TK_Env_GetCwd(tcwd, 256);
 
+#ifdef __RISCV__
 //	tk_printf("TK_Env_GetCwdQualifyName: cwd=%s\n", tcwd);
+#endif
 	
 	strcpy(tnam, tcwd);
 	strcat(tnam, "/");

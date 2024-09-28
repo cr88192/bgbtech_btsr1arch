@@ -1093,6 +1093,10 @@ void BGBCC_CCXL_AddAsmBlob(BGBCC_TransState *ctx, char *text)
 	BGBCC_CCXL_RegisterInfo *decl;
 	int ln;
 
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_TOPLFN);
+	BGBCC_CCXLR3_EmitArgString(ctx, ctx->lfn);
+	BGBCC_CCXLR3_EmitArgInt(ctx, ctx->lln);
+
 	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_ASMBLOB);
 	BGBCC_CCXLR3_EmitArgTextBlob(ctx, text);
 
@@ -1103,6 +1107,9 @@ void BGBCC_CCXL_AddAsmBlob(BGBCC_TransState *ctx, char *text)
 	decl->text=bgbcc_malloc(ln);
 	decl->sz_text=ln;
 	memcpy(decl->text, text, ln);
+	
+	decl->alc_fn=ctx->lfn;
+	decl->alc_ln=ctx->lln;
 
 	BGBCC_CCXL_AddGlobalDecl(ctx, decl);
 }

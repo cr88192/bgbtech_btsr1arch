@@ -1158,6 +1158,11 @@ void R_SortVisSprites (void)
 	{
 		bestscale = MAXINT;
 //		bestscale = 1999999;
+		best=NULL;
+		
+		if(bestscale<0)
+			{ __debugbreak(); }
+		
 		for (ds=unsorted.next ; ds!= &unsorted ; ds=ds->next)
 		{
 			if (ds->scale < bestscale)
@@ -1166,6 +1171,12 @@ void R_SortVisSprites (void)
 				best = ds;
 			}
 		}
+		
+		if(!best)
+		{
+			__debugbreak();
+		}
+		
 		best->next->prev = best->prev;
 		best->prev->next = best->next;
 		best->next = &vsprsortedhead;

@@ -122,7 +122,9 @@ typedef struct
 typedef struct
 {
 	// Keep name for switch changing, etc.
-	char	name[8];		
+	char	name[8];
+	char	pad[4];
+	int		magic1;
 	short	width;
 	short	height;
 	short	next;		//BGB: next texture in hash chain
@@ -563,6 +565,20 @@ byte *R_GetColumn
 	int		lump;
 	int		ofs;
 	
+// #ifdef __RISCV__
+#if 0
+	return(
+		"0123456789"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"+/"
+		"0123456789"
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"+/"
+		);
+#endif
+	
 //	if(texturewidthmask[tex]<2)
 //	{
 //		__debugbreak();
@@ -791,10 +807,18 @@ void R_InitTextures (void)
 		texture->width = SHORT(mtexture->width);
 		texture->height = SHORT(mtexture->height);
 		texture->patchcount = SHORT(mtexture->patchcount);
+		texture->magic1 = 0x123456;
 
 //		memcpy (texture->name, mtexture->name, sizeof(texture->name));
 
 		w_strupr_n(texture->name, mtexture->name, sizeof(texture->name));
+		
+		if(texture->name[0]!=mtexture->name[0])
+		{
+			__debugbreak();
+			tk_printf("R_InitTextures: %s -> %s\n",
+				mtexture->name, texture->name);
+		}
 		
 //		j = W_HashIndexForName(texture->name);
 //		texture->next = texturehash[j];
@@ -810,8 +834,8 @@ void R_InitTextures (void)
 			patch->patch = patchlookup[SHORT(mpatch->patch)];
 			if (patch->patch == -1)
 			{
-			I_Error ("R_InitTextures: Missing patch in texture %s",
-				 texture->name);
+				I_Error ("R_InitTextures: Missing patch in texture %s",
+					 texture->name);
 			}
 		}		
 //		texturecolumnlump[i] = Z_Malloc (texture->width*2, PU_STATIC,0);
@@ -842,6 +866,9 @@ void R_InitTextures (void)
 			
 		totalwidth += texture->width;
 
+		if(texture->magic1 != 0x123456)
+			{ __debugbreak(); }
+
 		j = W_HashIndexForName(texture->name);
 		texture->next = texturehash[j];
 		texturehash[j] = i;
@@ -853,8 +880,14 @@ void R_InitTextures (void)
 	
 	// Precalculate whatever possible.	
 	for (i=0 ; i<numtextures ; i++)
+	{
+		if(textures[i]->magic1 != 0x123456)
+			{ __debugbreak(); }
 		R_GenerateLookup (i);
-	
+		if(textures[i]->magic1 != 0x123456)
+			{ __debugbreak(); }
+	}	
+
 	// Create translation table for global animation.
 	texturetranslation = Z_Malloc ((numtextures+1)*sizeof(int), PU_STATIC, 0);
 	
@@ -1969,6 +2002,8 @@ int	R_CheckTextureNumForName (char *name)
 		return 0;
 	
 	w_strupr_n(tname, name, 8);
+	tname[8]=0;
+
 	h = W_HashIndexForName(tname);
 	n = numtextures;
 
@@ -1978,7 +2013,13 @@ int	R_CheckTextureNumForName (char *name)
 //	while((i>=0) && (n>=0))
 	{
 		if (!memcmp (textures[i]->name, tname, 8) )
+		{
+			if(i<0)
+			{
+				__debugbreak();
+			}
 			return(i);
+		}
 		i = textures[i]->next;
 
 		if(n<0)
@@ -1988,10 +2029,21 @@ int	R_CheckTextureNumForName (char *name)
 #endif
 
 #if 1
-	if(n<0)
+//	if(n<0)
+	if(i<0)
 	{
+		if(!numtextures)
+		{
+			tk_printf("R_CheckTextureNumForName: No Textures\n");
+		}
+	
 		for (i=0 ; i<numtextures ; i++)
 		{
+			if(textures[i]->magic1 != 0x123456)
+				{ __debugbreak(); }
+
+//			tk_printf("R_CheckTextureNumForName: %d %s %s\n", i,
+//				textures[i]->name, tname);
 	//		if (!strnicmp (textures[i]->name, name, 8) )
 			if (!memcmp (textures[i]->name, tname, 8) )
 				return i;
@@ -2021,8 +2073,9 @@ int	R_TextureNumForName (char* name)
 
 	if (i==-1)
 	{
-//	I_Error ("R_TextureNumForName: %s not found",
-//		 tname);
+//		I_Error ("R_TextureNumForName: %s not found",
+//			tname);
+		tk_printf("R_TextureNumForName: %s not found\n", tname);
 		return(0);
 	}
 	return i;

@@ -257,6 +257,8 @@ void R_RenderSegLoop (void)
 
 //	return;
 
+//	tk_printf("R_RenderSegLoop: %d %d\n", rw_x, rw_stopx);
+
 	//texturecolumn = 0;				// shut up compiler warning
 
 	texturecolumn = 0;
@@ -352,10 +354,15 @@ void R_RenderSegLoop (void)
 		}
 		
 		dc_col = texturecolumn;
-		
+
+//		tk_printf("R_RenderSegLoop: Col A %d %d\n", yl, yh);
+
 		// draw the wall tiers
 		if (midtexture)
 		{
+
+//			tk_printf("R_RenderSegLoop: Midtexture %d %d\n", yl, yh);
+
 			// single sided line
 			dc_yl = yl;
 			dc_yh = yh;
@@ -480,11 +487,19 @@ R_StoreWallRange
 
 	// don't overflow and crash
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
-		return;		
+	{
+		tk_printf("R_StoreWallRange: MAXDRAWSEGS\n");
+		return;
+	}
+
+//	tk_printf("R_StoreWallRange: %d %d\n", start, stop);
 		
 #ifdef RANGECHECK
 	if (start >=viewwidth || start > stop)
+	{
+		__debugbreak();
 		I_Error ("Bad R_RenderWallRange: %i to %i", start , stop);
+	}
 #endif
 	
 	sidedef = curline->sidedef;
@@ -611,6 +626,15 @@ R_StoreWallRange
 		// single sided line
 		midtexture = texturetranslation[sidedef->midtexture];
 		// a single sided line is terminal, so it must mark ends
+
+#if 0		
+		if(!midtexture)
+		{
+			tk_printf("R_StoreWallRange: !midtexture, sidedef midtex=%d\n",
+				sidedef->midtexture);
+		}
+#endif
+		
 		markfloor = markceiling = true;
 		if (linedef->flags & ML_DONTPEGBOTTOM)
 		{
@@ -763,6 +787,9 @@ R_StoreWallRange
 			maskedtexture = true;
 			ds_p->maskedtexturecol = maskedtexturecol = lastopening - rw_x;
 			lastopening += rw_stopx - rw_x;
+
+			if (lastopening - openings > MAXOPENINGS)
+				{ __debugbreak(); }
 		}
 	}
 	
@@ -889,14 +916,24 @@ R_StoreWallRange
 
 	R_RenderSegLoop ();
 //	I_MusicFineTick ();
-	
+
+	if (lastopening - openings > MAXOPENINGS)
+		{ __debugbreak(); }
+
 	// save sprite clipping info
 	if(!r_ispolyobj)
 //	if(0)
 	{
+		if (start > MAXOPENINGS)
+			{ __debugbreak(); }
+
 		lightnum = lastopening - openings;
 		if(lightnum < start)
+		{
 			lastopening += start - lightnum;
+			if (lastopening - openings > MAXOPENINGS)
+				{ __debugbreak(); }
+		}
 	
 		if ( ((ds_p->silhouette & SIL_TOP) || maskedtexture)
 		 && !ds_p->sprtopclip)
@@ -906,6 +943,9 @@ R_StoreWallRange
 			memcpy (lastopening, ceilingclip+start, 2*(rw_stopx-start));
 			ds_p->sprtopclip = lastopening - start;
 			lastopening += rw_stopx - start;
+
+			if (lastopening - openings > MAXOPENINGS)
+				{ __debugbreak(); }
 		}
 		
 		if ( ((ds_p->silhouette & SIL_BOTTOM) || maskedtexture)
@@ -914,6 +954,9 @@ R_StoreWallRange
 			memcpy (lastopening, floorclip+start, 2*(rw_stopx-start));
 			ds_p->sprbottomclip = lastopening - start;
 			lastopening += rw_stopx - start;	
+
+			if (lastopening - openings > MAXOPENINGS)
+				{ __debugbreak(); }
 		}
 
 		if (maskedtexture && !(ds_p->silhouette&SIL_TOP))

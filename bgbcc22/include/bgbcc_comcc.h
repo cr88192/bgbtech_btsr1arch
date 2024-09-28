@@ -392,6 +392,14 @@ int stat_ldst_pbotot_9b;
 int stat_ldst_pbotot_10b;
 int stat_ldst_pbotot_33b;
 
+int stat_ldst_tot;
+int stat_ldst_2r;
+int stat_ldst_2rpi;
+int stat_ldst_disp;
+int stat_ldst_indx;
+int stat_ldst_idxdisp;
+
+
 int stat_func_tot;
 int stat_func_leaf;
 int stat_func_leaftiny;
@@ -533,6 +541,9 @@ const short *shufreg3;
 
 u64 regs_excl;
 u64 regs_excl_tiny;
+u64 regs_scratch;
+u64 regs_scratch_ts;
+u64 regs_args;
 
 u64 memcpy64_mask;
 u64 memcpy_byte_mask[8];

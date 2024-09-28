@@ -2075,6 +2075,7 @@ void I_InitTkGdi()
 	i_dibinfo->biHeight=-200;
 	
 	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+//	screen_fbuf=NULL;
 }
 
 extern byte	st_oddframe;		//BGB: Odd Frame
@@ -2088,7 +2089,10 @@ void I_FinishUpdate (void)
 	I_DrawFramerate();
 
 	if(!screen)
+	{
+		printf("I_FinishUpdate: No Screen\n");
 		return;
+	}
 
 	st_oddframe = !st_oddframe;
 

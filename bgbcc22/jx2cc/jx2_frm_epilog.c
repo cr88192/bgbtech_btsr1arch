@@ -82,7 +82,8 @@ int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
 //			sctx->lbl_ret);
 		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret_zero);
 		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV,
-			0, BGBCC_SH_REG_R2);
+//			0, BGBCC_SH_REG_R2);
+			0, BGBCC_JX2CC_PSREG_RQRET);
 	}
 
 	if(sctx->lbl_ret)
@@ -192,7 +193,8 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	{
 		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret_zero);
 		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV,
-			0, BGBCC_SH_REG_R2);
+//			0, BGBCC_SH_REG_R2);
+			0, BGBCC_JX2CC_PSREG_RQRET);
 	}
 
 	if(sctx->lbl_ret)
@@ -328,7 +330,11 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 //			0x1234567890ABCDEFLL);
 			sctx->frm_val_sectoken);
 
-		if(sctx->abi_spillpad&2)
+		if(sctx->emit_riscv&0x11)
+		{
+			/* RISC-V */
+		}else
+			if(sctx->abi_spillpad&2)
 		{
 			BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_VSKC,
 				BGBCC_SH_REG_R17, BGBCC_SH_REG_R16);

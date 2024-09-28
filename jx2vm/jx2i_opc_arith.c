@@ -968,6 +968,31 @@ void BJX2_Op_DIVUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 }
 
+void BJX2_Op_MODSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc;
+	va=(s32)(ctx->regs[op->rm]);
+	vb=(s32)(ctx->regs[op->ro]);
+	if(vb!=0)
+		{ vc=va%vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MODUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	va=(u32)(ctx->regs[op->rm]);
+	vb=(u32)(ctx->regs[op->ro]);
+	if(vb!=0)
+		{ vc=va%vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
 
 void BJX2_Op_MACSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
