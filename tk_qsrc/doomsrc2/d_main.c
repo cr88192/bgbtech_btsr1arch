@@ -384,7 +384,11 @@ void D_UpdateSound (void)
 
 #if 1
 	d_snd_acctime+=dt;
-	
+
+#ifdef __RISCV__
+//	__debugbreak();
+#endif
+
 	if(d_snd_acctime>2040.0)
 	{
 #ifdef __RISCV__
@@ -396,6 +400,16 @@ void D_UpdateSound (void)
 		d_snd_acctime=0;
 	}
 //	__debugbreak();
+	
+	if(d_snd_acctime<-250.0)
+	{
+		printf("D_UpdateSound: d_snd_acctime=%f dt=%d\n",
+			d_snd_acctime, dt);
+		d_snd_acctime=0;
+	}
+
+//	printf("D_UpdateSound: d_snd_acctime=%f dt=%d\n",
+//		d_snd_acctime, dt);
 	
 //	if(dt>72)
 	if(1)

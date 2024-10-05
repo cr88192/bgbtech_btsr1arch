@@ -83,8 +83,8 @@ Any operations using 128-bit inputs or outputs will use even register pairs.
 Mode Selection (RV64 ASM Notation):
 * Branches if supported, NOP if not (RV64 ASM Notation):
 ** LBU X0, Xs, Disp  //Dest=RV64GC
-** LHU X0, Xs, Disp  //Dest=Native
-** LWU X0, Xs, Disp  //Dest=CoEx
+** LHU X0, Xs, Disp  //Dest=CoEx
+** LWU X0, Xs, Disp  //Dest=Native
 * Will branch if the operation is supported (similar to a JALR)
 * Or, will behave as a NOP otherwise.
 * In native Notation:
@@ -153,20 +153,26 @@ Jumbo Prefixes:
 Jumbo Encodings:
 * J23I+Imm10: Imm33s (Sign Extended)
 ** Jumbo Prefix:
-*** The i field gives (23:8);
-*** The j field gives (30:24);
-** Base instruction gives (7:0) and Sign Extension (32:31)
+*** The i field gives (31:16);
+*** The j field gives (15:12);
+*** The t field gives (11:10);
+*** The s field gives (32)
+** Base instruction gives (9:0)
 
 * J27I+J27I+Imm10: Imm64
 ** First jumbo Prefix:
-*** The i field gives (55:40)
-*** The j field gives (62:56)
+*** The i field gives (63:48)
+*** The j field gives (47:44)
+*** The t field gives (43:42)
+*** The s field gives (   41)
 *** The k field gives (39:36)
 ** Second jumbo Prefix:
-*** The i field gives (23: 8)
-*** The j field gives (30:24)
-*** The k field gives (35:32).
-** Base instruction gives (7:0), (31), and (63)
+*** The s field gives (   40);
+*** The k field gives (35:32);
+*** The i field gives (31:16);
+*** The j field gives (15:12);
+*** The t field gives (11:10);
+** Base instruction gives (9:0)
 
 * Other combinations will be reserved unless explicitly described.
 
@@ -462,11 +468,37 @@ Load/Store/Imm16/Branch Block:
 
 
 Jumbo Prefixes:
-* iiii-iiii-iiii-iiii-0jjj-jjjj-1110-1101  J23_IMM
+* iiii-iiii-iiii-iiii-0sZZ-jjjj-1110-1101  J21_IMM
+* iiii-iiii-iiii-iiii-0stt-jjjj-1110-1101  J23_IMM
 * iiii-iiii-iiZZ-ZZZZ-0ZZZ-ZZZZ-1111-1101  J23_OP
-* iiii-iiii-iiii-iiii-1jjj-jjjj-kkkk-1101  J27_IMM
+* iiii-iiii-iiii-iiii-1stt-jjjj-kkkk-1101  J27_IMM
 * Other patterns are reserved for now.
 
+The J23 will be understood as a J21 if combined with a RV Imm12 op.
+
+
+=== Jumbo Prefix with RV64 ops ===
+
+Jumbo prefixes applied to Imm12 ops would take the form:
+* iiii-iiii-iiii-iiii-0sZZ-jjjj-1110-1101  J21_IMM
+* iiii-iiii-iiii-iiii-1stt-jjjj-kkkk-1101  J26_IMM
+
+If used with an Imm12 op, its effect is to extend the immediate field to 33 bits.
+* The low 12 bits remain as-is;
+* (15:12) are filled with the j field.
+* (31:16) are filled with the i field.
+* s gives a sign-extension for the upper 32-bits.
+
+The J26_IMM prefix would be similar, but two prefixes will extend an immediate to 64 bits.
+* Low 32-bits are decoded as with J21 (with the second J26).
+* The former J26 encodes the high 32 bits:
+** (63:48): i field
+** (47:44): j field
+** (43:42): tt field (first prefix)
+** (   41): s field (first prefix)
+** (   40): s field (second prefix)
+** (39:36): k field (first prefix)
+** (35:32): k field (second prefix)
 
 
 

@@ -1057,8 +1057,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 
 //		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RD0);
 //		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RD2);
-		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx,
-			BGBCC_JX2CC_PSREG_RDRET);
+//		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx,
+//			BGBCC_JX2CC_PSREG_RDRET);
 
 		BGBCC_JX2C_EmitCallName(ctx, sctx, sn0);
 
@@ -1067,6 +1067,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ta0);
 		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ta1);
+
+		BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx,
+			BGBCC_JX2CC_PSREG_RDRET);
 
 //		BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R0);
 //		BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_R0);
@@ -2033,8 +2036,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 
 //			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RD0);
 //			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RD2);
-			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx,
-				BGBCC_JX2CC_PSREG_RDRET);
+
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 				{ BGBCC_JX2C_EmitCallName(ctx, sctx, "__udivsi3"); }
 			else
@@ -2043,6 +2045,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 //			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RD5);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ta0);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, ta1);
+
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx,
+				BGBCC_JX2CC_PSREG_RDRET);
 
 //			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RD0);
 //			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RD0);

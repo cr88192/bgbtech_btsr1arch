@@ -577,6 +577,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		ctx->arch_has_predops=0;
 
 		shctx->has_xgpr&=~7;
+		shctx->has_jcmp|=3;
+		shctx->has_qmul|=1;
+		shctx->has_qmul|=32;
+		shctx->has_fmovc|=1;		//
 
 		shctx->is_fixed32|=3;
 		shctx->emit_riscv|=0x01;
@@ -584,6 +588,35 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->has_jumbo=0;
 		shctx->has_pushx2=0;
+		shctx->has_simdx2=0;
+
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo"))
+		{
+			shctx->has_jumbo|=1;
+			shctx->has_rvzba|=16;
+			shctx->has_pushx2|=1;
+		}
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvzba"))
+			{ shctx->has_rvzba|=1; }
+	}
+
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_X3RV)
+	{
+		/* RV64G + XG3 */
+		shctx->no_ops48=1;
+		shctx->fpu_gfp=1;
+		shctx->is_pbo=1;
+		shctx->has_fpim=0;
+		ctx->arch_has_predops=0;
+
+		shctx->has_xgpr&=~7;
+
+		shctx->is_fixed32|=3;
+		shctx->emit_riscv|=0x03;
+		shctx->use_wexmd=0;
+
+		shctx->has_jumbo=1;
+		shctx->has_pushx2=1;
 		shctx->has_simdx2=0;
 	}
 
@@ -6094,6 +6127,98 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
 			break;
 
+		case BGBCC_SH_RLC_PBO32J_RVI:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+4, en);
+
+//			b1=((s32)w1)>>20;
+//			b1+=(s32)((w0>>12)<<12);
+			b1=0;
+
+			d1=b1+(ctl-gbr_base);
+
+			w2=(d1&2047)|((d1>>31)<<11);
+			w3=d1>>11;
+			
+//			w0=(w0&0x00000FFF)|(((d1+2048)>>12)<<12);
+//			w1=(w1&0x000FFFFF)|(d1<<20);
+
+			w0=(w0&0x0000707F)|
+				(((w3>> 0)&2047)<<20)|
+				(((w3>>11)&  31)<<15)|
+				(((w3>>16)&  31)<< 7);
+			w1=(w1&0x000FFFFF)|(w2<<20);
+
+//			w1=(d1>>3)&0xFFFF;
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_PBO32LD_RVI:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+8, en);
+
+			b1=((s32)w1)>>20;
+			b1+=(s32)((w0>>12)<<12);
+
+			d1=b1+(ctl-gbr_base);
+
+			w2=((s32)(d1<<20))>>20;
+			w3=(d1-w2)>>12;
+
+			w0=(w0&0x00000FFF)|(w3<<12);
+			w1=(w1&0x000FFFFF)|(w2<<20);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+8, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_PBO32ST_RVI:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+8, en);
+
+//			b1=((s32)w1)>>20;
+//			b1+=(s32)((w0>>12)<<12);
+			b1=0;
+
+			d1=b1+(ctl-gbr_base);
+
+			w2=((s32)(d1<<20))>>20;
+			w3=(d1-w2)>>12;
+
+			w0=(w0&0x00000FFF)|(w3<<12);
+			w1=(w1&0x01FFF07F)|
+				((w2&0xFE0)<<20)|
+				((w2&0x01F)<< 7);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+8, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_PBO32STJ_RVI:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+4, en);
+
+			b1=0;
+
+			d1=b1+(ctl-gbr_base);
+
+			w2=(d1&2047)|((d1>>31)<<11);
+			w3=d1>>11;
+
+			w0=(w0&0x0000707F)|
+				(((w3>> 0)&2047)<<20)|
+				(((w3>>11)&  31)<<15)|
+				(((w3>>16)&  31)<< 7);
+//			w1=(w1&0x000FFFFF)|(w2<<20);
+			w1=(w1&0x01FFF07F)|
+				((w2&0xFE0)<<20)|
+				((w2&0x01F)<< 7);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
+			break;
+
 		case BGBCC_SH_RLC_REL32UI_RVI:
 			w0=bgbcc_getu32en(ctr+0, en);
 			w1=bgbcc_getu32en(ctr+4, en);
@@ -6654,6 +6779,38 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			bgbcc_jx2cc_setu16en(ctr+0, en, w0);
 			bgbcc_jx2cc_setu16en(ctr+2, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_RELW33J_RVI:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+4, en);
+			
+			b=	((w1&0x00000F00)>> 7) |
+				((w1&0x00000080)<< 4) |
+				((w1&0x7E000000)>>20) |
+				((w1&0x80000000)>>19) ;
+			b1=((s32)(b<<19))>>19;
+
+//			d1=b1+(d-4);
+			d1=b1+(d);
+//			if((((s32)(d1<<19))>>19)!=d1)
+//				{ BGBCC_DBGBREAK }
+
+			w2=(d1&0xFFE)|((d1>>31)<<12);
+			w3=d1>>12;
+
+			w0=(w0&0x0000707F) |
+				(((w3>> 0)&2047)<<20) |
+				(((w3>>11)&  31)<<15) |
+				(((w3>>16)&  31)<< 7) ;
+			w1=	(w1&0x01FFF07F) |
+				((w2<< 7)&0x00000F00) |
+				((w2>> 4)&0x00000080) |
+				((w2<<20)&0x7E000000) |
+				((w2<<19)&0x80000000) ;
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
 			break;
 
 		case BGBCC_SH_RLC_RELW8_BJCMP:

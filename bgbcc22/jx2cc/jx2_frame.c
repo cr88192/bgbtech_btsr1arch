@@ -5009,7 +5009,7 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 					vspb->flag&=~0x003F0000;
 					vspb->flag|=(dstfl&0x003F0000);
 
-#if 1
+#if 0
 					if(sctx->emit_riscv&0x33)
 					{
 						/* Disable CallArg opt for now for RISC-V */

@@ -3321,8 +3321,10 @@ int BGBCC_JX2RV_EmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt,
 int BGBCC_JX2RV_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rn);
 int BGBCC_JX2RV_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 imm, int rn);
 int BGBCC_JX2RV_TryEmitOpRegImmReg(BGBCC_JX2_Context *ctx, int nmid, int rm, s64 imm, int rn);
-int BGBCC_JX2RV_TryEmitOpRegStRegDisp(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn, int disp);
-int BGBCC_JX2RV_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int disp, int rn);
+int BGBCC_JX2RV_EmitOpRegStRegDisp(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn, s64 disp);
+int BGBCC_JX2RV_TryEmitOpRegStRegDisp(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn, s64 disp);
+int BGBCC_JX2RV_EmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 disp, int rn);
+int BGBCC_JX2RV_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 disp, int rn);
 int BGBCC_JX2RV_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2RV_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
@@ -3331,6 +3333,7 @@ int BGBCC_JX2RV_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int 
 int BGBCC_JX2RV_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2RV_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid);
 int BGBCC_JX2RV_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg);
+int BGBCC_JX2RV_EmitOpImm(BGBCC_JX2_Context *ctx,int nmid, s64 imm);
 int BGBCC_JX2RV_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm);
 int BGBCC_JX2RV_EmitOpRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
@@ -3629,6 +3632,7 @@ int BGBCC_JX2C_GetLrRegReturn(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetRqRegThis(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetLrRegThis(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetAltLr(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_GetRtsLr(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetRegTempScratch(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ts);
 int BGBCC_JX2C_CheckFrameNeedSaveReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_CheckFrameNeedSaveFpReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);

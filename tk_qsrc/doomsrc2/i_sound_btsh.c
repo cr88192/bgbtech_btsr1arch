@@ -665,6 +665,8 @@ void I_UpdateSound( void )
 	leftend = mixbuffer + SAMPLECOUNT*step;
 //	leftend = mixbuffer + framesamp*step;
 
+//	printf("I_UpdateSound: %p %p\n", leftout, leftend);
+
 	//BGB: count channels
 	nchan = 0;
 	for ( chan = 0; chan < NUM_CHANNELS; chan++ )
@@ -831,6 +833,8 @@ void I_UpdateSound( void )
 				printf("lvol=%d rvol=%d\n", lvol, rvol);
 				lvol=0;		rvol=0;
 			}
+
+//			printf("lvol=%d rvol=%d\n", lvol, rvol);
 
 			for(samp=0; samp < nsamp; samp += step)
 			{

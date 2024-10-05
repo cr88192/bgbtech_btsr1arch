@@ -2094,7 +2094,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 	char tb1[64];
 	BJX2_Opcode *op1;
 	s64 li;
-	int opw1, opw2, opw3, opsep;
+	int opw1, opw2, opw3, opw4, opsep;
 	int msc, psc, brpc, nonl, nosc, islea;
 
 //	BJX2_DbgPrintf(ctx, "%05X  %04X %-8s ", op->pc, op->opn,
@@ -2148,15 +2148,29 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 				strcpy(tb1, BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 			}
 
+			opw1=op->opn;
+			opw2=op->opn2;
+			opw3=op1->opn;
+			opw4=op1->opn2;
+			opsep='_';
 
-			BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X_%04X   -\n",
+			if(op->fl&BJX2_OPFL_RV64)
+			{
+				opw1=op->opn2;
+				opw2=op->opn ;
+				opw3=op1->opn2;
+				opw4=op1->opn;
+				opsep='.';
+			}
+
+			BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X%c%04X   -\n",
 				(u32)((op->pc+0)>>32),
 				(u32)op->pc, op->cyc,
-				op->opn, op->opn2);
-			BJX2_DbgPrintf(ctx, "%04X_%08X       %04X_%04X   %-8s ",
+				opw1, opsep, opw2);
+			BJX2_DbgPrintf(ctx, "%04X_%08X       %04X%c%04X   %-8s ",
 				(u32)((op->pc+4)>>32),
 				(u32)op1->pc,
-				op1->opn, op1->opn2,
+				opw3, opsep, opw4,
 //				BJX2_DbgPrintNameForNmid(ctx, op->nmid));
 				tb1);
 			brpc=op->pc+8;
@@ -3588,7 +3602,16 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 				ctx->status=0x9997;
 				break;
 			}
-			
+
+			if(!(ctx->regs[BJX2_REG_MMCR]&1))
+			{
+				if(pc!=(pc&0x000000003FFFFFFEULL))
+				{
+					ctx->status=0x9997;
+					break;
+				}
+			}
+
 			ctx->v_wexmd=0xFF;
 
 			ctx->trapc=pc;

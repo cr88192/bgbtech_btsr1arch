@@ -812,6 +812,7 @@ _arch_gettbr:
 
 
 __fpu_fdiv:
+	fdiv	x10, x11, x10
 	rts
 	nop
 

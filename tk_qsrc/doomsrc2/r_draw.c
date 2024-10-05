@@ -243,6 +243,7 @@ void R_DrawColumn (void)
 //	register int	fracstep;
 	register unsigned	frac;
 	register unsigned	fracstep;
+	register int c0, c1, c2, c3;
 
 	count = dc_yh - dc_yl + 1;
 
@@ -307,7 +308,7 @@ void R_DrawColumn (void)
 		frac += fracstep4;
 #endif
 
-#if 1
+#if 0
 		dest[0            ] = colormap[source[frac>>25]]; frac += fracstep;
 		dest[SCREENWIDTH  ] = colormap[source[frac>>25]]; frac += fracstep;
 		dest[SCREENWIDTH*2] = colormap[source[frac>>25]]; frac += fracstep;
@@ -317,6 +318,26 @@ void R_DrawColumn (void)
 		dest[SCREENWIDTH*5] = colormap[source[frac>>25]]; frac += fracstep;
 		dest[SCREENWIDTH*6] = colormap[source[frac>>25]]; frac += fracstep;
 		dest[SCREENWIDTH*7] = colormap[source[frac>>25]]; frac += fracstep;
+#endif
+
+#if 1
+		c0 = frac>>25; frac += fracstep; c0 = source[c0];
+		c1 = frac>>25; frac += fracstep; c1 = source[c1];
+		c2 = frac>>25; frac += fracstep; c2 = source[c2];
+		c3 = frac>>25; frac += fracstep; c3 = source[c3];
+		c0 = colormap[c0];	c1 = colormap[c1];
+		c2 = colormap[c2];	c3 = colormap[c3];
+		dest[0            ] = c0;	dest[SCREENWIDTH  ] = c1;
+		dest[SCREENWIDTH*2] = c2;	dest[SCREENWIDTH*3] = c3;
+
+		c0 = frac>>25; frac += fracstep; c0 = source[c0];
+		c1 = frac>>25; frac += fracstep; c1 = source[c1];
+		c2 = frac>>25; frac += fracstep; c2 = source[c2];
+		c3 = frac>>25; frac += fracstep; c3 = source[c3];
+		c0 = colormap[c0];	c1 = colormap[c1];
+		c2 = colormap[c2];	c3 = colormap[c3];
+		dest[SCREENWIDTH*4] = c0;	dest[SCREENWIDTH*5] = c1;
+		dest[SCREENWIDTH*6] = c2;	dest[SCREENWIDTH*7] = c3;
 #endif
 
 		dest += SCREENWIDTH*8;

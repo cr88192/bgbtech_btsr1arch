@@ -1,23 +1,18 @@
 BJX2 RISC-V Extension (RVI)
 * Adds RISC-V Decoding to BJX2
-* For now, will focus on RV64I and RV64IC
-** Will also support Zfinx / Zdinx
-* For now, will not support M or A extensions.
-** Though, MULW may be supported.
+* For now, will focus on RV64G and RV64GC
 
 SR(27:26):
 * 00: BJX2, WEX Disabled
 * 10: BJX2, WEX Enabled
 * 01: RISC-V, WEX Disabled (RV64IC)
-* 11: RISC-V, WEX Enabled (RV64I + WEX)
+* 11: RISC-V, Reserved
 
 Register Mapping:
 * X0 -> ZZR
 * X1 -> LR
 * X2 -> SP (R15 in BJX2)
 * X3 -> GBR
-* / X4 -> TBR
-* / X5 -> DHR (R1 in BJX2)
 * X4 -> R4
 * X5 -> R5
 * X6 -> R6
@@ -27,61 +22,8 @@ Register Mapping:
 * X15 -> R3
 * X16..X31 -> R16..R31
 
-Register Mapping (FPR, Opt):
+Register Mapping (FPR):
 * F0..F31 -> R32..R63
-
-
-=== RISC-V + WEX Extension (Possible) ===
-
-In RISC-V Mode with WEX Disabled, the two LSB bits will be interpreted as:
-* 00: Compressed 16-bit Encoding
-* 01: Compressed 16-bit Encoding
-* 10: Compressed 16-bit Encoding
-* 11: Normal 32-bit instruction
-
-In RISC-V Mode with WEX Enabled, the two LSB bits will be interpreted as:
-* 00: Reserved
-* 01: Reserved
-* 10: Wide-Execute 32-bit Instruction
-* 11: Scalar 32-bit instruction
-
-The 16-bit RVC ops will be Non-Encodable with WEX Enabled.
-
-The Wide-Execute Block will be equivalent to the Scalar / Normal Block, except:
-* JAL, JALR, Bxx, will be non-encodable.
-* The JAL and JALR blocks will be reinterpreted as Jumbo Encodings.
-
-Bundle rules will be similar to those in BJX2, in particular:
-* A maximum of 3 instruction words may be encoded;
-* LD/ST or Branches may only be allowed in Lane 1.
-* Lanes are reverse-numbered relative to instruction words.
-
-A Sequence like:
- LUI	DispHi, Rs
- LW		Rd, Rs, Disp12
-
-May be transformed into:
- JUMBO20S DispHi1 | LW Rd, Rs, DispLo1
-
-Where the DispHi and Disp12 fields are reinterpreted as a 33-bit Jumbo Encoding. This conversion will elminitate the carry from the prefix.
-
-Jumbo20S:
-* iiiiiii-iiiii-iiiii-iii-00000-11-0s110  JUMBO20S	Imm20_SV
-** The 20-bit immediate will encode(31:12)
-** The S bit will encode the sign-extension (63:32).
-
-A pair of Jumbo prefixes may be used with an Imm12 instruction:
-* iiiiiii-iiiii-iiiii-iii-iiiii-11-0i110  JUMBO26V  Imm26_V
-* These will extend the immediate field to 64 bits.
-* The JUMBO26V form will only be encodable when two jumbo prefixes are used.
-* This form will only be allowed for ALU instructions.
-
-
-It is assumed that code will be transformed from RV64I form to WEX form via a program loader, rather than by requiring the compiler to be aware of WEX. However, the loader may need to infer the location of labels and may not wexify across any label (doing so has a high likelihood of breaking programs).
-
-Programs making use of compressed instructions are to be excluded from WEX conversion in this context.
-
-Encoding non RV64I instructions in a binary marked as RV64I will be undefined in this context.
 
 
 === Addressing ===
@@ -96,15 +38,7 @@ Addressing (PC):
 ** JALR with X1 or X5 will restore these bits.
 ** Otherwise, the high 16 bits are ignored by JALR or LD/ST ops.
 
-As a divergence from the RISC-V spec, JALR where the LSB is set in the result will invoke special behavior:
-* 01: / Jump back to BJX2 Mode.
-* 11: / Jump to Mode as given in bits (51:50).
-* / The target for an Inter-ISA jump will require a 4-byte alignment.
-* x1: / Jump to Mode as given in bits (51:50).
-
 For BJX2 Cores with the RVI Extension, JMP or JSR with the LSB set will jump into RISC-V Mode. They may jump into either Scalar or WEX Mode.
-* 01: / Jump into RISC-V Mode.
-* 11: / Jump to Mode as given in bits (51:50).
 * x1: Jump to Mode as given in bits (51:50).
 
 With both low-order bits set, the mode bits will be restored similar to what happens with a jump via the link register.
@@ -148,7 +82,7 @@ Listing:
 * iiiiiii-iiiii-mmmmm-100-nnnnn-00-00011  LBU	Rn, Rm, Disp12_I
 * iiiiiii-iiiii-mmmmm-101-nnnnn-00-00011  LHU	Rn, Rm, Disp12_I
 * iiiiiii-iiiii-mmmmm-110-nnnnn-00-00011  LWU	Rn, Rm, Disp12_I
-* iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011  LX	Rn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011  LX	Rn, Rm, Disp12_I (BGB)
 
 * iiiiiii-ttttt-mmmmm-000-iiiii-01-00011  SB	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-001-iiiii-01-00011  SH	Rm, Disp12_S, Rt
@@ -157,7 +91,7 @@ Listing:
 * iiiiiii-ttttt-mmmmm-100-iiiii-01-00011  SBU	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-101-iiiii-01-00011  SHU	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-110-iiiii-01-00011  SWU	Rm, Disp12_S, Rt
-* iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt (BGB)
 
 * uuuuu00-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.S	Rn, Rs, Rt, Ru
 * uuuuu01-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.D	Rn, Rs, Rt, Ru
@@ -184,8 +118,8 @@ Listing:
 
 * ddddddd-ddddd-mmmmm-000-nnnnn-11-00111  JALR		Rn, Rm, Disp12_I
 
-* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User)
-* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01011  (User)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User / Custom 0)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01011  (User / Custom 1)
 
 * uuuuu00-ttttt-sssss-zzz-nnnnn-10-01011  FNMSUB.S	Rn, Rs, Rt, Ru (F)
 * uuuuu01-ttttt-sssss-zzz-nnnnn-10-01011  FNMSUB.D	Rn, Rs, Rt, Ru (D)
@@ -230,14 +164,14 @@ Listing:
 ** 00110ss-ttttt-mmmmm-111-nnnnn-01-01111  LX	Rn, (Rm, Rt*Sc)
 
 * 00111ss-ooooo-mmmmm-ttt-nnnnn-01-01111  St (Rm, Ro), Rn		(BGB: ScIx)
-** 00110ss-ttttt-mmmmm-000-nnnnn-01-01111  SB	(Rm, Rt*Sc), Rn
-** 00110ss-ttttt-mmmmm-001-nnnnn-01-01111  SH	(Rm, Rt*Sc), Rn
-** 00110ss-ttttt-mmmmm-010-nnnnn-01-01111  SW	(Rm, Rt*Sc), Rn
-** 00110ss-ttttt-mmmmm-011-nnnnn-01-01111  SD	(Rm, Rt*Sc), Rn
-** 00110ss-ttttt-mmmmm-100-nnnnn-01-01111  SBU	(Rm, Rt*Sc), Rn
-** 00110ss-ttttt-mmmmm-101-nnnnn-01-01111  SHU	(Rm, Rt*Sc), Rn
-** 00110ss-ttttt-mmmmm-110-nnnnn-01-01111  SWU	(Rm, Rt*Sc), Rn
-** 00110ss-ttttt-mmmmm-111-nnnnn-01-01111  SX	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-000-nnnnn-01-01111  SB	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-001-nnnnn-01-01111  SH	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-010-nnnnn-01-01111  SW	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-011-nnnnn-01-01111  SD	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-100-nnnnn-01-01111 ? SBU	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-101-nnnnn-01-01111 ? SHU	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-110-nnnnn-01-01111 ? SWU	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-111-nnnnn-01-01111  SX	(Rm, Rt*Sc), Rn
 
 * uuuuu00-ttttt-sssss-zzz-nnnnn-10-01111  FNMADD.S	Rn, Rs, Rt, Ru (F)
 * uuuuu01-ttttt-sssss-zzz-nnnnn-10-01111  FNMADD.D	Rn, Rs, Rt, Ru (D)
@@ -374,23 +308,26 @@ Listing:
 * 000000i-iiiii-mmmmm-001-nnnnn-00-11011  SLLIW		Rn, Rm, Imm12
 * iiiiiii-iiiii-mmmmm-010-nnnnn-00-11011  -
 * iiiiiii-iiiii-mmmmm-011-nnnnn-00-11011  -
-* iiiiiii-iiiii-mmmmm-100-nnnnn-00-11011  -
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J21_IMM	(BGB)
+* 1iiiiii-iiiii-zzzzz-100-omnpp-00-11011  J21_OP	(BGB)
 * 000000i-iiiii-mmmmm-101-nnnnn-00-11011  SRLIW		Rn, Rm, Imm12_I
 * 010000i-iiiii-mmmmm-101-nnnnn-00-11011  SRAIW		Rn, Rm, Imm12_I
-* iiiiiii-iiiii-mmmmm-110-nnnnn-00-11011  -
-* iiiiiii-iiiii-mmmmm-111-nnnnn-00-11011  -
-
-* iiiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? SHORI Rn, Imm17s (BGB)
-* iiiiiii-iiiii-iiiii-111-nnnnn-00-11011  ? LI Rn, Imm17s (BGB)
+* 0iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? SHORI	Rn, Imm16u (BGB)
+* 1iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? FLDCH	Rn, Imm17s (BGB)
+* iiiiiii-iiiii-iiiii-111-nnnnn-00-11011  ? LI		Rn, Imm17s (BGB)
 
 * 0000000-ttttt-mmmmm-000-nnnnn-01-11011  ADDW		Rn, Rm, Rt
 * 0000100-ttttt-mmmmm-000-nnnnn-01-11011  ADDUW		Rn, Rm, Rt
 * 0100000-ttttt-mmmmm-000-nnnnn-01-11011  SUBW		Rn, Rm, Rt
+* 0100100-ttttt-mmmmm-000-nnnnn-01-11011 ? SUBUW	Rn, Rm, Rt	(BGB)
+
 * 0000001-ttttt-mmmmm-000-nnnnn-01-11011  MULW		Rn, Rm, Rt (M, M lite)
 * 0000000-ttttt-mmmmm-001-nnnnn-01-11011  SLLW		Rn, Rm, Rt
 * 0000000-ttttt-mmmmm-010-nnnnn-01-11011  -
+* 0000001-ttttt-mmmmm-010-nnnnn-01-11011  DMULSW	Rn, Rm, Rt (BGB)
 * 0010000-ttttt-mmmmm-010-nnnnn-01-11011  SH1ADD.UW	Rn, Rm, Rt (ZBA)
 * 0000000-ttttt-mmmmm-011-nnnnn-01-11011  -
+* 0000001-ttttt-mmmmm-011-nnnnn-01-11011  DMULUW	Rn, Rm, Rt (BGB)
 * 0000000-ttttt-mmmmm-100-nnnnn-01-11011  -
 * 0000001-ttttt-mmmmm-100-nnnnn-01-11011  DIVW		Rn, Rm, Rt (M)
 * 0010000-ttttt-mmmmm-100-nnnnn-01-11011  SH2ADD.UW	Rn, Rm, Rt (ZBA)
@@ -403,6 +340,9 @@ Listing:
 * 0000000-ttttt-mmmmm-111-nnnnn-01-11011  -
 * 0000001-ttttt-mmmmm-111-nnnnn-01-11011  REMUW		Rn, Rm, Rt (M)
 
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-11011  (User / Custom 2)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-11011  (User / Custom 3)
+
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-111xx  (48b, Unused)
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-111xx  (64b, Unused)
@@ -410,4 +350,41 @@ Listing:
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-111xx  (80b, Unused)
 
 ...
+
+
+=== Jumbo Encodings ===
+
+* tiiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J22	(Prefix, BGB)
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J21I	(Prefix, BGB)
+* 1iiiiii-iiiii-zzzzz-100-omnpp-00-11011  J21O	(Prefix, BGB)
+* tiiiiii-iiiii-zzzzz-100-sZnpp-00-11011  J12O	(Prefix, BGB)
+
+The J21I will be a prefix op, which will combine with the following instruction.
+* An Imm12 field will be expanded to 33 bits.
+** The second instruction will provide (32) and (10:0)
+** The i field will provide (21:11)
+** The j field will provide (26:22)
+** The k field will provide (31:27)
+
+The J21O prefix will also combine with Imm12 ops:
+* The immediate field will be 22 bits;
+* The register fields will expand to 6 bits.
+
+If combined with LUI or AUIPC:
+* Will be understood as a J12O.
+* The t and i fields will be filled into the low 12 bits.
+* The high 20 bits will be taken from the LUI or AUIPC.
+* The s field will be taken as a sign extension bit.
+
+If two prefixes are combined with a LUI:
+* Interpreted as J22.
+* Second prefix	(31:20) gives (11: 0)
+* Instruction	(31:12) gives (31:12)
+* Second Prefix	(19:15) gives (36:32)
+* Second Prefix (11: 7) gives (41:37)
+* First Prefix (   31) gives (   42)
+* First Prefix (30:20) gives (53:43)
+* First Prefix (19:15) gives (58:54)
+* First Prefix (11: 7) gives (63:59)
+
 

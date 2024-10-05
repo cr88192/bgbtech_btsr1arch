@@ -1,0 +1,194 @@
+BGB Jumbo Extension for RISC-V
+* Rationale: Define extensions that address a few weak areas in RV64.
+* This will also assume the existence of the Zba extension.
+
+
+=== Jumbo Encodings ===
+
+* tiiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J22	(Prefix, BGB)
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J21I	(Prefix, BGB)
+* 1iiiiii-iiiii-zzzzV-100-omnpp-00-11011  J21O	(Prefix, BGB)
+* tiiiiii-iiiii-zzzzz-100-sZnpp-00-11011  J12O	(Prefix, BGB)
+
+The jumbo prefix will be a prefix op, which will combine with the following instruction.
+
+To some extent, the interpretation of the jumbo prefix will depend on the type of instruction it is combined with.
+
+
+J21I + Imm12:
+* An Imm12 field will be expanded to 33 bits.
+** Instruction (   31) gives (   32) / Sign Extension
+** Prefix      (11: 7) gives (31:27)
+** Prefix      (19:15) gives (26:22)
+** Prefix      (30:20) gives (21:11)
+** Instruction (30:20) gives (10: 0)
+
+The J21O prefix may combine with Imm12 ops:
+* The immediate field will be 23 bits;
+** Instruction (   31) gives (   22) / Sign Extension
+** Prefix      (30:20) gives (21:11)
+** Instruction (30:20) gives (10: 0)
+* The register fields will expand to 6 bits.
+* The V field will be an opcode bit.
+* the z field will give additional opcode bits.
+** 0 will perform the base operation.
+** The meaning of these bits will depend on base instruction.
+
+The J21O prefix may combine with 3 register ops:
+* The register fields will expand to 6 bits.
+* V=0: The i field may be used as context-dependant bits.
+* V=1: The i and Ro fields will combine into an Imm17s.
+** Prefix      (   11) gives (  16) / Sign Extension
+** Prefix      (30:20) gives (15:5)
+** Instruction (24:20) gives ( 4:0)
+** The Immediate will logically replace Ro.
+* Possible, FPU Ops: 
+** Immediate case is understood as Binary16.
+* the z field will give additional opcode bits.
+** 0 will perform the base operation.
+
+If combined with LUI, AUIPC, or JAL:
+* Will be understood as a J12O.
+* The t and i fields will be filled into the low 12 bits.
+* The high 20 bits will be taken from the LUI or AUIPC.
+* The s field will be taken as a sign extension bit.
+* Note that JAL will be decoded the same as LUI and AUIPC in this case.
+
+If two prefixes are combined with a LUI:
+* Interpreted as J22.
+* First Prefix  (11: 7) gives (63:59)
+* First Prefix  (19:15) gives (58:54)
+* First Prefix  (30:20) gives (53:43)
+* First Prefix  (   31) gives (   42)
+* Second Prefix (11: 7) gives (41:37)
+* Second Prefix	(19:15) gives (36:32)
+* Instruction	(31:12) gives (31:12)
+* Second prefix	(31:20) gives (11: 0)
+
+The two J22 Prefixes on a LUI will encode a direct 64-bit constant load.
+* Note that the pattern for a LUI assumes two decoders working in parallel.
+* Each will decode a 32 bit value which will be combined to 64 bits.
+
+
+Expanded Register Numbers (Optional):
+* Nominally, with the expanded 6 bit registers:
+**  0..31: Map to X0..X31
+** 32..63: Map to F0..F31
+* These will map FPU and integer instructions into the same register space.
+* (Possible?) V instructions:
+**  0..31: V0..V31
+** If VLEN=64-bit, 32..63 maps to F0..F31.
+** If VLEN=128-bit, 32..63: Map to F and X spaces.
+** Even: Even Pairs in F Space.
+** Odd: Even Pairs in X Space, excluding 0, 2, 4.
+** This will be N/A for other sizes of VLEN.
+
+
+Predication (Optional):
+* PP=00: Unconditional
+* PP=01: Reserved
+* PP=10: Execute if True (T=1)
+* PP=11: Execute if False (T=0)
+* The SLT, SLTI, SLTU, and SLTIU instructions may update T if Rn==X0.
+** These are to be ignored if the implementation does not support a T bit.
+
+
+=== SHORI ===
+
+*      0iiiiii-iiiii-jjjjj-110-nnnnn-00-11011  SHORI	Rn, Imm16u
+* J21I 0iiiiii-iiiii-mmmmm-110-nnnnn-00-11011  SHORI32	Rn, Rm, Imm32u
+
+SHORI will perform the operation:
+* Rn = (Rn SHL 16) OR Imm16u
+
+SHORI32 will perform the operation:
+* Rn = (Rm SHL 32) OR Imm32u
+
+Imm16:
+* (30:20) will give (10: 0)
+* (19:15) will give (15:11)
+
+
+=== FCVT.D.H (Imm16u) ===
+
+* 1iiiiii-iiiii-jjjjj-110-nnnnn-00-11011  FCVT.D.H	Fn, Imm16u
+
+Imm16:
+* (30:20) will give (10: 0)
+* (19:15) will give (15:11)
+
+This will load a Binary16 value into an FPR, converting it to Binary64.
+* Restriction: Only normal-range values allowed and Zero allowed.
+** The exact result of Inf/NaN or Subnormal values will be undefined.
+
+For the Binary16 format:
+* s.h.eeee.ffffffffff
+
+The conversion here will be informally defined as:
+* s.h.HHHHHH.eeee.ffffffffff.0000 ...
+* Where H = (~h) AND (e!=0).
+** This conversion may be understood for other instances of Binary16 immediates.
+
+
+=== LDI (Imm17s) ===
+
+* iiiiiii-iiiii-jjjjj-111-nnnnn-00-11011  LDI		Rn, Imm17s
+
+This operation will load a 17-bit sign-extended immediate into Rn.
+
+Imm16:
+* (30:20) will give (10: 0)
+* (19:15) will give (15:11)
+* (   31) will give (   16) / Sign Extension
+
+
+=== Load / Store Indexed ===
+
+* 00110ss-ooooo-mmmmm-ttt-nnnnn-01-01111  Lt Rn, (Rm, Ro)		(BGB: ScIx)
+** 00110ss-ooooo-mmmmm-000-nnnnn-01-01111  LB	Rn, (Rm, Ro*Sc)
+** 00110ss-ooooo-mmmmm-001-nnnnn-01-01111  LH	Rn, (Rm, Ro*Sc)
+** 00110ss-ooooo-mmmmm-010-nnnnn-01-01111  LW	Rn, (Rm, Ro*Sc)
+** 00110ss-ooooo-mmmmm-011-nnnnn-01-01111  LD	Rn, (Rm, Ro*Sc)
+** 00110ss-ooooo-mmmmm-100-nnnnn-01-01111  LBU	Rn, (Rm, Ro*Sc)
+** 00110ss-ooooo-mmmmm-101-nnnnn-01-01111  LHU	Rn, (Rm, Ro*Sc)
+** 00110ss-ooooo-mmmmm-110-nnnnn-01-01111  LWU	Rn, (Rm, Ro*Sc)
+** 00110ss-ooooo-mmmmm-111-nnnnn-01-01111  LX	Rn, (Rm, Ro*Sc)
+
+* 00111ss-ooooo-mmmmm-ttt-nnnnn-01-01111  St (Rm, Ro), Rn		(BGB: ScIx)
+** 00111ss-ooooo-mmmmm-000-nnnnn-01-01111  SB	(Rm, Ro*Sc), Rn
+** 00111ss-ooooo-mmmmm-001-nnnnn-01-01111  SH	(Rm, Ro*Sc), Rn
+** 00111ss-ooooo-mmmmm-010-nnnnn-01-01111  SW	(Rm, Ro*Sc), Rn
+** 00111ss-ooooo-mmmmm-011-nnnnn-01-01111  SD	(Rm, Ro*Sc), Rn
+** 00111ss-ooooo-mmmmm-100-nnnnn-01-01111 ? SBU	(Rm, Ro*Sc), Rn
+** 00111ss-ooooo-mmmmm-101-nnnnn-01-01111 ? SHU	(Rm, Ro*Sc), Rn
+** 00111ss-ooooo-mmmmm-110-nnnnn-01-01111 ? SWU	(Rm, Ro*Sc), Rn
+** 00111ss-ooooo-mmmmm-111-nnnnn-01-01111  SX	(Rm, Ro*Sc), Rn
+
+These perform a Load/Store with Ro understood as an index register.
+* ss will give the scale (1/2/4/8).
+
+
+=== Load / Store Pair ===
+
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011  LX	Rn, Rm, Disp12_I
+* iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt
+
+Load or Store a 128 bit register pair.
+* An implementation may require an 8 byte alignment for LX/SX.
+* Even registers will map to pairs in X space.
+* Odd registers will map to pairs in F space.
+
+
+=== DMULSW / DMULUW ===
+
+* 0000001-ttttt-mmmmm-010-nnnnn-01-11011  DMULSW	Rn, Rm, Rt
+* 0000001-ttttt-mmmmm-011-nnnnn-01-11011  DMULUW	Rn, Rm, Rt
+
+These perform a widening 32-bit multiply, producing a 64-bit result.
+* DMULSW will understand the input values as signed.
+* DMULUW will understand the input values as unsigned.
+
+While theoretically these don't offer much over MUL, they may hint to use a faster 32-bit multiplier if available.
+* May alias to MUL if no fast 32-bit widening multiplier exists.
+* Result is implementation defined if values are out of range.
+

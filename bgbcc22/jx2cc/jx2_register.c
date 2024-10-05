@@ -1922,6 +1922,16 @@ int BGBCC_JX2C_GetAltLr(
 	return(BGBCC_SH_REG_RQ1);
 }
 
+int BGBCC_JX2C_GetRtsLr(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	if(sctx->emit_riscv&0x33)
+		return(BGBCC_SH_REG_RQ1);
+
+	return(BGBCC_SH_REG_RQ1);
+}
+
 int BGBCC_JX2C_GetRegTempScratch(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx, int ts)
@@ -4770,7 +4780,8 @@ int BGBCC_JX2C_EmitGetRegisterSniffReg(
 	BGBCC_JX2_Context *sctx,
 	int creg)
 {
-	
+
+#if 0
 	if(!(sctx->is_tr_leaf&1))
 	{
 		if(sctx->emit_riscv&0x11)
@@ -4781,6 +4792,7 @@ int BGBCC_JX2C_EmitGetRegisterSniffReg(
 			}
 		}
 	}
+#endif
 
 	return(0);
 }
