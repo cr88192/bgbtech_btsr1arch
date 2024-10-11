@@ -2535,6 +2535,10 @@ int main(int argc, char **argv, char **env)
 	JX2R_UseImageAddFile(
 		(char *)"DOOM_RV.ELF",
 		(char *)"../../tk_qsrc/doomsrc2/doom_rv64.elf");
+
+	JX2R_UseImageAddFile(
+		(char *)"DOOM_XRV.EXE",
+		(char *)"../../tk_qsrc/doomsrc2/doom_xrv.exe");
 #endif
 
 #if 1

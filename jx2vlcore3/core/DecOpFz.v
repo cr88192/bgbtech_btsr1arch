@@ -3829,6 +3829,36 @@ begin
 					end
 `endif
 
+					4'h8: begin
+						opNmid		= JX2_UCMD_JMP;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NW;
+
+//						opFmid		= JX2_FMID_REG;
+//						opIty		= JX2_ITY_XW;
+
+						opUCmdIx	= { istrWord[3:1], 1'b1, 2'b00 };
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+						end
+					end
+
+					4'h9: begin
+						opNmid		= JX2_UCMD_JSR;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_NW;
+
+//						opFmid		= JX2_FMID_REG;
+//						opIty		= JX2_ITY_XW;
+
+						opUCmdIx	= { istrWord[3:1], 1'b1, 2'b00 };
+						if(opExQ)
+						begin
+							opUCty		= JX2_IUC_WX;
+						end
+					end
+
 					default: begin end
 				endcase
 			end
@@ -7017,7 +7047,7 @@ begin
 			UQ: Cm, Rn, Rn
 
 			NB: Rn, Rm, Rn
-			NW: /
+			NW: Rn, ZZR, LR
 			NL: /
 			NQ: /
 
@@ -7113,6 +7143,15 @@ begin
 					opRegP	= opRegN_Dfl;
 					opRegM	= opRegN_Dfl;
 					opRegO	= opRegM_Dfl;
+//					opImm	= opImm_imm8au;
+					opDoImm	= JX2_FMIMM_IMM8AU;
+				end
+
+				JX2_ITY_NW: begin
+					opRegM	= opRegN_Dfl;
+					opRegO	= JX2_GR_ZZR;
+					opRegN	= JX2_GR_LR;
+					opRegP	= JX2_GR_ZZR;
 //					opImm	= opImm_imm8au;
 					opDoImm	= JX2_FMIMM_IMM8AU;
 				end

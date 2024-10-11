@@ -78,6 +78,12 @@ begin
 		opLenA0=4'b0010;
 		if(istrBits[ 1: 0]!=2'b11)
 			opLenA0=4'b0001;
+
+`ifdef jx2_enable_rvjumbo
+		if((istrBits[ 6: 0]==7'h1B) && (istrBits[14:12]==3'h4))
+			opLenA0=4'b1110;
+`endif
+
 	end
 `endif
 

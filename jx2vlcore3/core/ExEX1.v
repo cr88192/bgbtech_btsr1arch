@@ -1386,7 +1386,19 @@ begin
 //			begin
 //				$display("EX: JMP: RVI PC=%X", tValBra);
 //			end
-			
+
+			if(opUIxt[2])
+			begin
+				/* Implicit Mode Switch */
+//				tRegOutSr[27]	= opUIxt[3];	//WXE
+//				tRegOutSr[26]	= opUIxt[4];	//WX2
+//				tRegOutSr[23]	= opUIxt[5];	//WX3
+
+				tRegOutSr[26]	= opUIxt[3];	//WX2
+				tRegOutSr[23]	= opUIxt[4];	//WX3
+				tRegOutSr[22]	= opUIxt[5];	//WX4
+			end
+
 			if(tValAgu[0])
 			begin
 `ifdef jx2_debug_isr
@@ -1479,6 +1491,18 @@ begin
 //				tValBra[63:48] = regValRs[63:48];
 			end
 			tValBra[63:48] = UV16_00;
+
+			if(opUIxt[2])
+			begin
+				/* Implicit Mode Switch */
+//				tRegOutSr[27]	= opUIxt[3];
+//				tRegOutSr[26]	= opUIxt[4];
+//				tRegOutSr[23]	= opUIxt[5];
+
+				tRegOutSr[26]	= opUIxt[3];	//WX2
+				tRegOutSr[23]	= opUIxt[4];	//WX3
+				tRegOutSr[22]	= opUIxt[5];	//WX4
+			end
 
 			if(tValAgu[0])
 			begin

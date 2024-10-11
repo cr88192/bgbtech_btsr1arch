@@ -12,6 +12,8 @@
 
 `define jx2_enable_riscv		//Enable RISC-V Decoder
 `define jx2_enable_riscv_rvc	//Enable RISC-V Decoder ('C' Extension)
+`define jx2_enable_rvjumbo		//Enable RISC-V Jumbo Encodings
+// `define jx2_enable_rvjumbo96	//RV Jumbo Encodings, 96-bit ops
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
@@ -107,9 +109,8 @@
 
 // `define	jx2_mem_misal_movx			//Allow MOV.X to be misaligned
 
-// `define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
-
-// `define	jx2_mulw_nolane3		//Disallow MULW from Lane 3
+`define	jx2_shadq_nolane3		//Disallow SHAD/SHLD from Lane 3
+`define	jx2_mulw_nolane3		//Disallow MULW from Lane 3
 
 `ifdef jx2_xc7s50
 // `define	jx2_fpu_noround		//FPU: Disable Rounding

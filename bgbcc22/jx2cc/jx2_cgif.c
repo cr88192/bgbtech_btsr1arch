@@ -590,14 +590,21 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2=0;
 		shctx->has_simdx2=0;
 
-		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo"))
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo") ||
+			BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo96"))
 		{
-			shctx->has_jumbo|=1;
-			shctx->has_rvzba|=16;
-			shctx->has_pushx2|=1;
+			shctx->has_jumbo|=2;	//Jumbo Prefixes
+			shctx->has_rvzba|=16;	//Load/Store Indexed
+			shctx->has_pushx2|=1;	//LX / SX
+		}
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo96"))
+		{
+			shctx->has_jumbo|=4;
 		}
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvzba"))
-			{ shctx->has_rvzba|=1; }
+		{
+			shctx->has_rvzba|=1;	//Zba
+		}
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_X3RV)

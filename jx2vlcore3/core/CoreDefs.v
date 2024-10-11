@@ -662,6 +662,7 @@ REGREG, Fz
 	SB: Rm, Ro, Rn
 	SW: Rm, Q?Imm5u:Ro, Rn
 	SL: Rm, Q?Imm5n:Ro, Rn
+	SQ: Rm, Q?Disp5u:Ro, Rn
 
 	UB: Rm, Rn, Rn
 	UW: Rm, Rn, Rn
@@ -669,14 +670,15 @@ REGREG, Fz
 	UQ: Cm, Rn, Rn
 
 	NB: Rn, Rm, Rn
-	NW: Sm, Sn, Sn
-	NL: Rm, Sn, Sn
-	NQ: Sm, Rn, Rn
+	NW: Rn, ZZR, LR
+	NL: 
+	NQ: 
 
-	XB: Rm, Ro, Rn
-	XW: Rm, Ro, Rn
+	XB: Rm, Ro, Rp->Rn
+	XW: Rm, Ro, Imm->Rn
 
 	XL: Rn, RmImm6u, Rn
+	XQ: Rm, Ro, Rn, Imm8 (FPU)
 
 REGREG, Fz+Au (Rm, Ro, Rp, Rn)
 	SB: Rm, Ro, Rn, Rn
@@ -914,6 +916,17 @@ parameter[3:0] JX2_RVCIMM_IMM6LUI	= 4'h9;
 parameter[3:0] JX2_RVCIMM_IMM11J	= 4'hA;
 parameter[3:0] JX2_RVCIMM_IMM8JCC	= 4'hB;
 
+
+parameter[3:0] JX2_RVIMM_NONE		= 4'h0;
+parameter[3:0] JX2_RVIMM_IMMAU		= 4'h1;
+parameter[3:0] JX2_RVIMM_IMM20UI	= 4'h2;	//LUI
+parameter[3:0] JX2_RVIMM_DISP20J	= 4'h3;	//JAL
+parameter[3:0] JX2_RVIMM_DISP12LD	= 4'h4;
+parameter[3:0] JX2_RVIMM_DISP12ST	= 4'h5;
+parameter[3:0] JX2_RVIMM_DISP12B	= 4'h6;	//12-bit, Bcc
+parameter[3:0] JX2_RVIMM_IMM17S		= 4'h7;	//LUI
+
+parameter[3:0] JX2_RVIMM_IMM12S		= 4'h4;
 
 
 
