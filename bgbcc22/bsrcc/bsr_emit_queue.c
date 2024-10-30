@@ -70,7 +70,7 @@ int BGBCC_BSR_EmitQueueOpBasic(
 		BGBCC_BSR_EmitOpRegReg(ctx,
 			op->nmid, op->rm, op->rn);
 		break;
-	case BGBCC_SH_FMID_REGIMM:
+	case BGBCC_SH_FMID_IMMREG:
 		BGBCC_BSR_EmitOpImmReg(ctx,
 			op->nmid, op->imm, op->rn);
 		break;
@@ -358,7 +358,7 @@ int BGBCC_BSR_QueueOpImmReg(BGBCC_BSR_Context *ctx,
 	BGBCC_BSR_EmitQueueOp *tmp;
 	tmp=BGBCC_BSR_AllocQueueOp(ctx);
 	tmp->nmid=nmid;
-	tmp->fmid=BGBCC_SH_FMID_REGIMM;
+	tmp->fmid=BGBCC_SH_FMID_IMMREG;
 	tmp->rn=reg;
 	tmp->imm=imm;
 	BGBCC_BSR_AddQueueOp(ctx, tmp);

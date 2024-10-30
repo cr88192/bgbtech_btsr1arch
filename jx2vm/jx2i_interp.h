@@ -264,6 +264,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FLT_TLBGF		0xA000		//TLB General Fault
 #define BJX2_FLT_TLBMISS	0xA001		//TLB Miss
 #define BJX2_FLT_TLBACL		0xA002		//TLB ACL Check
+#define BJX2_FLT_OPEMURQ	0xA003		//Instruction Emulation Request
 
 #define BJX2_FLT_TIMER		0xC001		//kHz timer
 #define BJX2_FLT_IOPOKE		0xC002		//IO Poke
@@ -779,12 +780,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_BITNN			0x1C1		//
 #define BJX2_NMID_RGB5PCKI8		0x1C2		//
 #define BJX2_NMID_RGB5UPCKI8	0x1C3		//
-
 #define BJX2_NMID_PSHALW		0x1C4		//
 #define BJX2_NMID_PSHLLW		0x1C5		//
 #define BJX2_NMID_PSHARW		0x1C6		//
 #define BJX2_NMID_PSHLRW		0x1C7		//
-
 #define BJX2_NMID_PCVTHTOF8		0x1C8		//
 #define BJX2_NMID_PCVTF8TOH		0x1C9		//
 #define BJX2_NMID_PMULF8H		0x1CA		//
@@ -800,6 +799,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_AMOANDL		0x1D4		//
 #define BJX2_NMID_AMOORL		0x1D5		//
 #define BJX2_NMID_AMOXORL		0x1D6		//
+
+#define BJX2_NMID_TSTNQ			0x1D7		//
 
 #define BJX2_NMID_AMOMINL		0x1D8		//
 #define BJX2_NMID_AMOMAXL		0x1D9		//

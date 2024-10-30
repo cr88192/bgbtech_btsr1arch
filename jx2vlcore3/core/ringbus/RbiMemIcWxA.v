@@ -41,6 +41,10 @@ L1 Instruction Cache, WEX
 
 `endif
 
+`ifdef jx2_enable_riscv_xg3
+// `include "DecOpRepXG3.v"
+`endif
+
 module RbiMemIcWxA(
 	/* verilator lint_off UNUSED */
 	clock,			reset,

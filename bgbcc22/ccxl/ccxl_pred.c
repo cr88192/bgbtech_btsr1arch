@@ -853,6 +853,31 @@ ccxl_type BGBCC_CCXL_GetRegDeclType(
 #endif
 
 
+BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetRegRegisterInfo(
+	BGBCC_TransState *ctx, ccxl_register reg)
+{
+	BGBCC_CCXL_LiteralInfo *linf;
+	char *str;
+	u64 regty;
+	int i, j;
+	
+	regty=reg.val&CCXL_REGTY_REGMASK;
+	if(regty==CCXL_REGTY_GLOBAL)
+	{
+		i=reg.val&CCXL_REGID_REGMASK;
+		if(!i)
+		{
+			return(NULL);
+		}
+		if(i>=ctx->n_reg_globals)
+			{ BGBCC_DBGBREAK }
+
+		return(ctx->reg_globals[i]);
+	}
+
+	return(NULL);
+}
+
 u64 BGBCC_CCXL_GetRegFlags(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
@@ -1896,6 +1921,16 @@ bool BGBCC_CCXL_IsRegNonReachTraceP(
 bool BGBCC_CCXL_IsRegImmP(
 	BGBCC_TransState *ctx, ccxl_register reg)
 {
+	if((reg.val&CCXL_REGTY_REGMASK)<CCXL_REGTY_IMM_INT)
+		return(false);
+
+	if(	((reg.val&CCXL_REGTY_REGMASK)>=CCXL_REGTY_IMM_INT)		&&
+		((reg.val&CCXL_REGTY_REGMASK)<=CCXL_REGTY_IMM_F128_LVT)	)
+	{
+		return(true);
+	}
+
+#if 0
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_INT)
 		return(true);
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_LONG)
@@ -1921,6 +1956,7 @@ bool BGBCC_CCXL_IsRegImmP(
 		return(true);
 	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_F128_LVT)
 		return(true);
+#endif
 
 	if((reg.val&CCXL_REGTY2_TYMASK)==CCXL_REGTY2_IMM_LONG)
 		return(true);

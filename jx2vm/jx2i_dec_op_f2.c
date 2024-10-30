@@ -27,7 +27,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
 	int rn_dfl, rm_dfl, ro_dfl;
-	int disp5, eq, eo, disp8s, disp11s;
+	int disp5, eq, eo, disp8s, disp11s, isxg3;
 //	int imm8u, imm8n;
 //	int imm10u, imm10n;
 //	int imm9u, imm9n;
@@ -40,6 +40,11 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	op->opn=opw1;
 	op->opn2=opw2;
 	op->pc=addr;
+
+	isxg3=0;
+	if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&
+		(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) )
+			isxg3=1;
 
 	rn_dfl=(opw1>>4)&15;
 	rm_dfl=(opw1   )&15;
@@ -93,6 +98,23 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	{
 		imm10u|= 2048;
 		imm10n&=~2048;
+	}
+	
+	if(isxg3)
+	{
+		imm9n&=~512;
+		imm10n&=~1024;
+		imm10n&=~2048;
+
+		if(jbits&0x10000000U)
+		{
+			imm9n|= 512;
+			imm10n|= 1024;
+		}
+		if(jbits&0x20000000U)
+		{
+			imm10n|= 2048;
+		}
 	}
 	
 //	disp11s=(opw1&1)?imm10n:imm10u;

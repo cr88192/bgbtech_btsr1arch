@@ -2170,6 +2170,68 @@ int BGBCC_JX2_EmitCheckAutoLabelNear8(
 }
 
 
+int BGBCC_JX2_EmitCheckAutoLabelNear10(
+	BGBCC_JX2_Context *ctx, int lbl, int nmid)
+{
+	int i, j, k, rngb, rngw, rngw16, szrng;
+
+	szrng=ctx->simfnnsz-ctx->simfnmsz;
+	if(szrng<0)szrng=999999;
+
+	i=BGBCC_JX2_LookupSimLabelIndex(ctx, lbl);
+	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec))
+	{
+		j=ctx->lbl_ofs[i];
+
+		k=BGBCC_JX2_EmitGetOffs(ctx);
+
+		rngb=996;
+
+		if(i>=ctx->nlbl)
+		{
+			if((ctx->simfnsz>0) && (ctx->simfnsz<996) && !ctx->is_rawasm &&
+					!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
+				return(1);
+
+			if(!ctx->need_n12jmp && !ctx->is_rawasm)
+				return(1);
+		
+			if(ctx->is_rawasm)
+				return(0);
+		
+//			return(0);
+		
+			if(j<k)
+			{
+				j=j-szrng;
+			}else
+			{
+				j=j+szrng;
+			}
+			
+			rngb=160;
+		}
+			
+		k=BGBCC_JX2_EmitGetOffs(ctx);
+		j=j-(k+4);
+		if(j<0)j=-j;
+		
+		if(j<rngb)
+		{
+			return(1);
+		}
+		
+		return(0);
+	}
+
+	if((ctx->simfnsz>0) && (ctx->simfnsz<996) && !ctx->is_rawasm &&
+			!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
+		return(1);
+
+	return(0);
+}
+
+
 int BGBCC_JX2_EmitCheckAutoLabelNear11(
 	BGBCC_JX2_Context *ctx, int lbl, int nmid)
 {

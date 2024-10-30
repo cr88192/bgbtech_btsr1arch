@@ -399,7 +399,7 @@ EXSR Codes:
 ** 0x800F: Bounds Fault
 ** 0x8010: Canary Fault
 ** 0x8011: Privleged Instruction Fault
-** 0x8012: Floating Point Fault (Needs Emulation)
+** / 0x8012: Floating Point Fault (Needs Emulation)
 * Interrupts:
 ** 0xC000: General Interrupt
 ** 0xC001: Interval Timer
@@ -410,6 +410,7 @@ EXSR Codes:
 ** 0xA000: General Fault
 ** 0xA001: TLB Miss
 ** 0xA002: TLB ACL Check
+** 0xA003: Instruction Emulation Request
 * Inter-Processor Hard:
 ** 0xB000: Core Boot To Address.
 * Syscall
@@ -1756,7 +1757,6 @@ F0zz Instruction Block:
 *** F0nm_1G88 BCDADCX	Xm, Xn				//(BCDX) BCD ADC
 *** F0nm_1g98 BCDSBB	Rm, Rn				//(BCD) BCD SBB
 *** F0nm_1G98 BCDSBBX	Xm, Xn				//(BCDX) BCD SBB
-
 *** F0nm_1gA8 MOVZT		Rm, Rn				//MOV, Zero Tag
 *** F0nm_1GA8 XMOVZT	Xm, Xn				//XMOV, Zero Tag
 *** F0nm_1gB8 SNIPEDC	Rm, Rn				//Calculate L1 D$ Snipe Address
@@ -1786,7 +1786,7 @@ F0zz Instruction Block:
 *** F0nm_1g79 /? XOR	Rm, Rn				//
 *** F0nm_1g89 MOV		Rm, Rn				//Rn=Rm
 *** F0nm_1G89 MOVX		Rm, Rn				//MOV, 128-bit
-*** F0nm_1g99 MOV		Sm, Sn
+*** F0nm_1g99 / MOV		Sm, Sn
 *** F0nm_1G99 CMPNANTEQ	RmImm6u, Rn			//(TTAG) Compare NaN-Tag
 *** F0nm_1gA9 MOV		Rm, Cn				//Cn=Rm
 *** F0nm_1GA9 SETTRAP	Rn, (Rm)			//(Opt/Dbg) Set Trap Mode
@@ -1810,13 +1810,16 @@ F0zz Instruction Block:
 *** F0nm_1G2A /
 *** F0nm_1g3A /
 *** F0nm_1G3A /
+
 *** F0nm_1g4A -
+*** F0nm_1G4A -
 *** F0nm_1g5A / PADD.H		Rm, Rn			//(GSVF) Packed ADD Half
 *** F0nm_1G5A / PADD.F		Rm, Rn			//(GSVF) Packed ADD Float
 *** F0nm_1g6A / PSUB.H		Rm, Rn			//(GSVF) Packed SUB Half
 *** F0nm_1G6A / PSUB.F		Rm, Rn			//(GSVF) Packed SUB Float
 *** F0nm_1g7A / PMUL.H		Rm, Rn			//(GSVF) Packed MUL Half
 *** F0nm_1G7A / PMUL.F		Rm, Rn			//(GSVF) Packed MUL Float
+
 *** F0nm_1g8A / MOVHD		Rm, Rn			//(GSV) Move High DWord
 *** F0nm_1G8A / MOVLD		Rm, Rn			//(GSV) Move Low DWord
 *** F0ni_1g9A ? PDOTT.H		Imm5u, Rn		//(GSVF? Predict Dot Predicate)
@@ -1825,6 +1828,7 @@ F0zz Instruction Block:
 *** F0nm_1GAA  PCMPEQ.F		Rm, Rn			//Packed Compare Single, Equal
 *** F0nm_1gBA  PCMPGT.H		Rm, Rn			//Packed Compare Half, Greater
 *** F0nm_1GBA  PCMPGT.F		Rm, Rn			//Packed Compare Single, Greater
+
 *** F0nm_1gCA  PCMPEQ.W		Rm, Rn			//Pack Compare Word, Equal
 *** F0nm_1GCA  PCMPEQ.L		Rm, Rn			//Pack Compare DWord, Equal
 *** F0nm_1gDA  PCMPHI.W		Rm, Rn			//Pack Compare Word, Above
@@ -1857,21 +1861,25 @@ F0zz Instruction Block:
 *** F0nm_1G0C  NOTX		Xm, Xn				//(ALUX) Xn=~Xm
 *** F0nm_1g1C  NEG		Rm, Rn				//Rn=(~Rn)+1
 *** F0nm_1G1C  NEGX		Xm, Xn				//(ALUX) Xn=(~Xm)+1
-*** F0nm_1e2C  CLZ{Q}	Rm, Rn				//(CLZ) Count Leading Zeroes
-*** F0nm_1e3C  CTZ{Q}	Rm, Rn				//(CLZ) Count Trailing Zeroes
-*** F0nm_1e4C  BTRNS{Q}	Rm, Rn				//(CLZ) Bit Transpose
+*** F0nm_1g2C  CLZ.L	Rm, Rn				//(CLZ) Count Leading Zeroes
+*** F0nm_1G2C  CLZ.Q	Rm, Rn				//(CLZ) Count Leading Zeroes
+*** F0nm_1g3C  CTZ.L	Rm, Rn				//(CLZ) Count Trailing Zeroes
+*** F0nm_1G3C  CTZ.Q	Rm, Rn				//(CLZ) Count Trailing Zeroes
+
+*** F0nm_1g4C  BTRNS.L	Rm, Rn				//(CLZ) Bit Transpose
+*** F0nm_1G4C  BTRNS.Q	Rm, Rn				//(CLZ) Bit Transpose
 *** F0nm_1g5C  EXTS.L	Rm, Rn				//Q=0
 *** F0nm_1G5C  EXTU.L	Rm, Rn				//Q=1
-*** F0nm_1e6C  SHAD{Q}	Rm, Rn				//Barrel Shift, Arithmetic
-*** F0nm_1e7C  SHLD{Q}	Rm, Rn				//Barrel Shift, Logical
+*** F0nm_1e6C /? SHAD{Q}	Rm, Rn			//Barrel Shift, Arithmetic
+*** F0nm_1e7C /? SHLD{Q}	Rm, Rn			//Barrel Shift, Logical
+
 *** F0nm_1g8C  EXTS.B	Rm, Rn				//Q=0, I=0
 *** F0nm_1G8C  EXTU.B	Rm, Rn				//Q=1, I=0
 *** F0nm_1g9C  EXTS.W	Rm, Rn				//Q=0, I=0
 *** F0nm_1G9C  EXTU.W	Rm, Rn				//Q=1, I=0
-
-*** F0nm_1gAC  MOV		Rm, Sn				//Sn=Rm
+*** F0nm_1gAC / MOV		Rm, Sn				//Sn=Rm
 *** F0nm_1GAC  MOVX		Xm, XCn				//(XMOV) XCn=Xm
-*** F0nm_1gBC  MOV		Sm, Rn				//Rn=Sm
+*** F0nm_1gBC / MOV		Sm, Rn				//Rn=Sm
 *** F0nm_1GBC  MOVX		XCm, Xn				//(XMOV) Xn=XCm
 
 *** F0nm_1eCC / CLNZ{Q}	Rm, Rn				//(CLZ) Count Leading Ones
@@ -1882,18 +1890,24 @@ F0zz Instruction Block:
 ** F0nm_1ezD ? (GFP, GPR FPU, Opt)
 *** F0nm_1g0D  FLDCF		Rm, Rn		//Load Convert Float32 (Low Bits, ZX)
 *** F0nm_1G0D  FLDCDX		Rm, Xn		//Load Convert Double (GFPX, F128)
-*** F0nm_1e1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+*** F0nm_1g1D  FLDCHF		Rm, Rn		//Load Convert Float32 (High Bits)
+*** F0nm_1G1D  -
 *** F0nm_1g2D  FLDCI		Rm, Rn		//Load Convert Int64
 *** F0nm_1G2D  FLDCXI		Rm, Xn		//Load Convert Int64 (GFPX, F128)
-*** F0nm_1e3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+*** F0nm_1g3D  FLDCH		Rm, Rn		//Load Convert Half (Low16)
+*** F0nm_1G3D  -
 *** F0nm_1g4D  FSTCF		Rm, Rn		//Store Convert Float32 (Low Bits, ZX)
 *** F0nm_1G4D  FSTCDX		Xm, Rn		//Store Convert Double (GFPX, F128)
-*** F0nm_1e5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
+*** F0nm_1g5D  FSTCHF		Rm, Rn		//Store Convert Float32 (High Bits)
+*** F0nm_1G5D  -
 *** F0nm_1g6D  FSTCI		Rm, Rn		//Store Convert Int64
 *** F0nm_1G6D  FSTCXI		Xm, Rn		//Store Convert Int64 (GFPX, F128)
-*** F0nm_1e7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
+*** F0nm_1g7D  FSTCH		Rm, Rn		//Store Convert Half (Low16)
+*** F0nm_1G7D  -
 *** F0nm_1g8D  FNEG			Rm, Rn		//(GFP ) Negate
+*** F0nm_1G8D  -
 *** F0nm_1g9D  FABS			Rm, Rn		//(GFP ) Absolute
+*** F0nm_1G9D  -
 *** F0nm_1gAD  FCMPEQ		Rm, Rn		//(GFP ) SR.T=(FRn EQ FRm)
 *** F0nm_1GAD  FCMPXEQ		Xm, Xn		//(GFPX) SR.T=(FRn EQ FRm)
 *** F0nm_1gBD  FCMPGT		Rm, Rn		//(GFP ) SR.T=(FRn GT FRm)
@@ -1916,7 +1930,9 @@ F0zz Instruction Block:
 *** F0nm_1G2E  RGB5PCK64	Rm, Rn		//(RGB) RGB555 Pack from RGB64
 *** F0nm_1g3E  RGB5UPCK32	Rm, Rn		//(RGB) RGB555 Unpack to RGB32
 *** F0nm_1G3E  RGB5UPCK64	Rm, Rn		//(RGB) RGB555 Unpack to RGB64
+*** F0nm_1g4E  -
 *** F0nm_1G4E  RGB32PCK64	Rm, Rn		//(RGB) RGB32 Pack from RGB64
+*** F0nm_1g5E  -
 *** F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
 *** F0nm_1g6E ? PSHAL.W		Rm, Rn		//Packed Shift Left 1-bit
 *** F0nm_1G6E ? PSHLL.W		Rm, Rn
@@ -2122,7 +2138,7 @@ F0zz Instruction Block:
 ** F0nm_3Go5  SHLDX		Xm, Ro, Xn		//(ALUX) Shift Logical (128b)
 ** F0nm_3go6  ROTL.L	Rm, Ro, Rn		//(ALU) Rotate Left (32b)
 ** F0nm_3Go6  ROTLX		Xm, Ro, Xn		//(ALUX) Rotate Left (128b)
-** F0nm_3ez7  SWxP.x	Rm, Rn			//(GSV) SWAP and SWCP
+** F0nm_3ez7 /? SWxP.x	Rm, Rn			//(GSV) SWAP and SWCP
 
 ** F0nm_3ez8  (Reserved 2R Block Space)
 ** F0nm_3ez8
@@ -2144,6 +2160,9 @@ F0zz Instruction Block:
 *** F0nm_3G68 ? CMPPEQX		Xm, Xn				//(ALUPTR) Compare 128b Pointer
 *** F0nm_3g78 ? CMPPGT		Rm, Rn				//(ALUPTR) Compare Pointer
 *** F0nm_3G78 ? CMPPGTX		Xm, Xn				//(ALUPTR) Compare 128b Pointer
+
+*** F0ni_3G88 ? JMPMD		Imm5u, Rn		//JMP with Mode Change
+*** F0ni_3G98 ? JSRMD		Imm5u, Rn		//JSR with Mode Change
 
 ** F0nm_3ez9  (Reserved 2R Block Space)
 ** F0nm_3ezA  (Reserved 2R Block Space)
@@ -2286,9 +2305,9 @@ F0zz Instruction Block:
 ** F0nm_8gd0  XMOV.B	Rn, (Xm, Disp5)		//
 ** F0nm_8Gd0  ? XLEA.B	(Xm, Disp5), Xn		//
 ** F0nm_8gd1  XMOV.W	Rn, (Xm, Disp5)		//
-** F0nm_8Gd1  -
+** F0nm_8Gd1  ? TSTQ	Rm, Ro, Rn			//Rn=(Rm AND Ro)
 ** F0nm_8gd2  XMOV.L	Rn, (Xm, Disp5)		//
-** F0nm_8Gd2  -
+** F0nm_8Gd2  ? TSTNQ	Rm, Ro, Rn			//Rn=!(Rm AND Ro)
 ** F0nm_8gd3  XMOV.Q	Rn, (Xm, Disp5)		//
 ** F0nm_8Gd3  XMOV.X	Xn, (Xm, Disp5)		//
 ** F0nm_8go4  XMOV.B	Rn, (Xm, Ro)		//
@@ -2318,9 +2337,9 @@ F0zz Instruction Block:
 
 
 * F0nm_9eoZ  (More Load/Store Space)
-** F0nm_9go0 ? MOV.TW	Rn, (Rm, Disp5)		//(LDST48) Store TWORD
+** F0nm_9go0 /? MOV.TW	Rn, (Rm, Disp5)		//(LDST48) Store TWORD
 ** F0nm_9Go0 ? CMPQEQ	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm==Imm5
-** F0nm_9go1 ? MOV.HTW	Rn, (Rm, Disp5)		//(LDST48) Store High TWORD
+** F0nm_9go1 /? MOV.HTW	Rn, (Rm, Disp5)		//(LDST48) Store High TWORD
 ** F0nm_9Go1 ? CMPQGT	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm>Imm5
 *** (Jumbo+WI)|WQ: Becomes CMPQHI (Unsigned Greater-Than)
 ** F0nm_9go2 -
@@ -2329,26 +2348,26 @@ F0zz Instruction Block:
 ** F0nm_9Go3 ? CMPQLT	Rm, Imm5us, Rn		//(CMP3R) Rn = Rm<Imm5
 *** (Jumbo+WI)|WQ: Becomes CMPQBI (Unsigned Less-Than)
 
-** F0nm_9go4 ? MOV.TW	Rn, (Rm, Ro)		//(LDST48) Store TWORD
+** F0nm_9go4 /? MOV.TW	Rn, (Rm, Ro)		//(LDST48) Store TWORD
 ** F0nm_9Go4 ? CMPQEQ	Rm, Ro, Rn			//(CMP3R) Rn = Rm==Ro
-** F0nm_9go5 ? MOV.HTW	Rn, (Rm, Ro)		//(LDST48) Store High TWORD
+** F0nm_9go5 /? MOV.HTW	Rn, (Rm, Ro)		//(LDST48) Store High TWORD
 ** F0nm_9Go5 ? CMPQGT	Rm, Ro, Rn			//(CMP3R) Rn = Rm>Ro
 ** F0nm_9go6 -
 ** F0nm_9Go6 ? CMPQNE	Rm, Ro, Rn			//(CMP3R) Rn = Rm!=Ro
 ** F0nm_9go7 -
 ** F0nm_9Go7 ? CMPQGE	Rm, Ro, Rn			//(CMP3R) Rn = Rm>=Ro
 
-** F0nm_9go8 ? MOV.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
-** F0nm_9Go8 ? MOVU.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
-** F0nm_9go9 ? MOV.HTW	(Rm, Disp5), Rn		//(LDST48) Load High TWORD
+** F0nm_9go8 /? MOV.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
+** F0nm_9Go8 /? MOVU.TW	(Rm, Disp5), Rn		//(LDST48) Load TWORD
+** F0nm_9go9 /? MOV.HTW	(Rm, Disp5), Rn		//(LDST48) Load High TWORD
 ** F0nm_9Go9 -
 ** F0nm_9goA -
 ** F0nm_9GoA -
 ** F0nm_9goB -
 ** F0nm_9GoB -
-** F0nm_9goC ? MOV.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
-** F0nm_9GoC ? MOVU.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
-** F0nm_9goD ? MOV.HTW	(Rm, Ro), Rn		//(LDST48) Load High TWORD
+** F0nm_9goC /? MOV.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
+** F0nm_9GoC /? MOVU.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
+** F0nm_9goD /? MOV.HTW	(Rm, Ro), Rn		//(LDST48) Load High TWORD
 ** F0nm_9GoD -
 ** F0nm_9goE -
 ** F0nm_9GoE -
@@ -2634,8 +2653,8 @@ F8zz Instruction Block:
 * F8Bn_dddd ? LEA.Q		(GBR, Disp16u), Rk
 * F8Cn_iiii  -
 * F8Dn_iiii  -
-* F8En_iiii  -
-* F8Fn_iiii  -
+* F8Ei_iiii ? BRA/BSR		(PC, Disp20s)	//XG3: Relocated from F0
+* F8Fi_iiii ? BRA/BSR		(PC, Disp20s)	//XG3: Relocated from F0
 
 The FCzz block will repeat the F8zz block, but with the primary difference that FCzz will indicate a WEX2 form.
 
@@ -2658,7 +2677,32 @@ Or, in effect, the Rn field will be expanded to 6 bits.
 As a special case:
 * F88F_iiii  BREAK		Imm16u			//Breakpoint with Imm16
 ** The Imm16 may be used for debugging.
-** This special case will be N/A in XG2RV mode.
+** This special case will be N/E in XG2RV mode.
+
+In XG2 and XG3 and Not-Jumbo, FLDCH may be extended:
+* Wnmi=00: FLDCH	Imm16u, Rn
+* Wnmi=01: -
+** BPC in XG3
+* Wnmi=10: MOV.Q	Rn, (GBR, Disp16)
+* Wnmi=11: MOV.L	Rn, (GBR, Disp16)
+
+In XG2 and XG3, LEA.Q may be extended:
+* Wnmi=00: LEA.Q	(GBR, Disp16), Rn
+* Wnmi=01: LEA.L	-
+** BPC in XG3
+* Wnmi=10: MOV.Q	(GBR, Disp16), Rn
+* Wnmi=11: MOV.L	(GBR, Disp16), Rn
+
+XG3 will relocate the BRA and BSR instructions from F0 to F8.
+* In XG3:
+** WM will encode BSR vs BRA
+** WN and WI will be part of the immediate.
+** WI will encode the sign extension.
+* In Baseline / XG2:
+** Rn[4] will encode BSR vs BRA
+** WN, WM, and WI will be part of the immediate.
+*** XOR'ed against the sign extension from Rm[3].
+** Rn[3] will encode the sign extension.
 
 
 ==== F9zz Instruction Block ====

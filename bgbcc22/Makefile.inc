@@ -118,6 +118,7 @@ SRCS=\
 	jx2cc/jx2_emit_opc.c \
 	jx2cc/jx2_emit_sec.c \
 	jx2cc/jx2_emrv_opc.c \
+	jx2cc/jx2_emx3_opc.c \
 	jx2cc/jx2_fltrom.c \
 	jx2cc/jx2_fparith.c \
 	jx2cc/jx2_fpreg2x.c \

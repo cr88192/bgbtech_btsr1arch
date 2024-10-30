@@ -5,6 +5,9 @@ input			isXG2;
 input			isRV;
 input			isWXE;
 
+wire		isXG3;
+assign	isXG3 = isRV && isWXE;
+
 reg[3:0]		tOpLen;
 assign		opLen = tOpLen;
 
@@ -76,7 +79,7 @@ begin
 	if(isRV)
 	begin
 		opLenA0=4'b0010;
-		if(istrBits[ 1: 0]!=2'b11)
+		if((istrBits[ 1: 0]!=2'b11) && !isXG3)
 			opLenA0=4'b0001;
 
 `ifdef jx2_enable_rvjumbo
@@ -84,6 +87,10 @@ begin
 			opLenA0=4'b1110;
 `endif
 
+`ifdef jx2_enable_riscv_xg3
+		if((istrBits[ 4: 3]==2'b11) && (istrBits[ 1: 0]==2'b10) && isXG3)
+			opLenA0=4'b1110;
+`endif
 	end
 `endif
 

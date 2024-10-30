@@ -95,7 +95,7 @@ int BGBCC_JX2_EmitQueueOpBasic(
 		BGBCC_JX2_EmitOpRegReg(ctx,
 			op->nmid, op->rm, op->rn);
 		break;
-	case BGBCC_SH_FMID_REGIMM:
+	case BGBCC_SH_FMID_IMMREG:
 		BGBCC_JX2_EmitOpImmReg(ctx,
 			op->nmid, op->imm, op->rn);
 		break;
@@ -383,7 +383,7 @@ int BGBCC_JX2_QueueOpImmReg(BGBCC_JX2_Context *ctx,
 	BGBCC_JX2_EmitQueueOp *tmp;
 	tmp=BGBCC_JX2_AllocQueueOp(ctx);
 	tmp->nmid=nmid;
-	tmp->fmid=BGBCC_SH_FMID_REGIMM;
+	tmp->fmid=BGBCC_SH_FMID_IMMREG;
 	tmp->rn=reg;
 	tmp->imm=imm;
 	BGBCC_JX2_AddQueueOp(ctx, tmp);

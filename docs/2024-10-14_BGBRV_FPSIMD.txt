@@ -1,0 +1,442 @@
+BGB Low-Cost FPU-SIMD Extension for RISC-V:
+* Goal: Cheap FP-SIMD ISA.
+** Will aim to be cheaper to implement than V.
+* Will mostly reuse the FPU extensions (F, D, Zfh) as a base.
+** This will primarily modify the semantics of the existing instructions.
+** A goal is to remain fully backwards compatible with F and D.
+
+General:
+* Will use F0..F31 for FP-SIMD Vectors.
+** These registers will remain 64-bit.
+* FADD.S / FSUB.S / FMUL.S will be reused.
+** Essentially, FADD.S and PADD.S will be considered equivalent.
+** They will differ mostly in their canonical results for the high bits.
+* Basic case need only assume 64 bit vectors.
+** Support for 128 bit vectors will be considered optional.
+
+
+Canonical FPU scalar S and H ops will fill the high order bits with all 1s, resulting in NaN values. This extension will change the behavior, such that the high order bits will contain additional floating point elements when not holding NaNs.
+
+Ops may be NaN preserving:
+* If the high input is a NaN, the high output should also be NaN.
+* FLW and FLH are to produce NaN extended results.
+* Some operations may differentiate behavior based on high-order NaN.
+** The high NaN on the input will separate FADD.S from PADD.S.
+** Though, in many cases, this distinction will be largely irrelevant.
+
+
+The type bits for floating point operations will be understood as:
+* 00: 2x Binary32
+* 01: 1x Binary64
+* 10: 4x Binary16
+* 11: Binary128 (Reserved)
+
+Optionally, the rounding mode may also signal an additional vector size:
+* 000=RNE, 001=RTZ  , 010=RDN  , 011=RUP
+* 100=RMM, 101=2xRTZ, 110=2xRNE, 111=DYN
+
+In the 2xRNE and 2xRTZ cases, the registers will be a 128-bit register pairs.
+* Only even numbered register numbers will be allowed.
+* These may be N/A if (FLEN==128).
+** If used with (FLEN==128), it may signal a logical 256 bit vector.
+
+For the 2x cases, the type will be understood as:
+* 00: 4x Binary32
+* 01: 2x Binary64
+* 10: 8x Binary16 (Optional)
+* 11: Binary128 (Reserved)
+
+
+If (FLEN==128), the SIMD vectors will be understood as always being nominally 128 bits, and semantics will need to be adjusted as needed to deal with the larger registers.
+
+Most of this specification will assume an implementation with (FLEN==64).
+
+For sake of definition, one will define:
+* 2 element 64-bit vector:
+** (31: 0): X
+** (63:32): Y
+* 4 element 64-bit vector:
+** (15: 0): X
+** (31:16): Y
+** (47:32): Z
+** (63:48): W
+* 4 element 128-bit vector:
+** F0(31: 0): X
+** F0(63:32): Y
+** F1(31: 0): Z
+** F1(63:32): W
+
+
+=== FLx / FSx ===
+
+* iiiiiii-iiiii-mmmmm-zzz-nnnnn-00-00111 (FP LOAD)
+* iiiiiii-iiiii-mmmmm-001-nnnnn-00-00111  FLH	Fn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-010-nnnnn-00-00111  FLW	Fn, Rm, Disp12_I
+* iiiiiii-iiiii-mmmmm-011-nnnnn-00-00111  FLD	Fn, Rm, Disp12_I
+
+* iiiiiii-iiiii-mmmmm-zzz-nnnnn-01-00111 (FP STORE)
+* iiiiiii-ttttt-mmmmm-001-iiiii-01-00111  FSH	Rm, Disp12_S, Ft
+* iiiiiii-ttttt-mmmmm-010-iiiii-01-00111  FSW	Rm, Disp12_S, Ft
+* iiiiiii-ttttt-mmmmm-011-iiiii-01-00111  FSD	Rm, Disp12_S, Ft
+
+The FLH and FLW instructions will load 16 and 32 bits, filling the high order bits with all ones.
+
+FLD will load 64 bits.
+
+FSH, FSW, and FSD will store 16, 32 or 64 bits.
+
+A pair of FLD or FSD operations may be used to load or store a 128-bit vector with freeform alignment.
+
+These operations will be understood to load or store the raw bits given in the register, and may not make assumptions regarding the semantic contents of said registers.
+
+
+=== FLX and FSX (FLEN==64) ===
+
+* iiiiiii-iiiii-mmmmm-100-nnnnn-00-00111  FLX	XFn, Rm, Disp12_I
+* iiiiiii-ttttt-mmmmm-100-iiiii-01-00111  FSX	Rm, Disp12_S, XFt
+
+FLX and FSX will be optional.
+
+These will be N/E if (FLEN==128), in which case they will map to the FLQ and FSQ instructions (other encodings are not available as the V extension ate all of them).
+
+
+If supported, FLX will use the same encoding as FLQ, but will load a 128-bit register pair with 64-bit FPRs. This will be mostly equivalent to a pair of FLD instructions, but may impose an alignment, and only even register numbers are allowed.
+
+FSX is optional and will store 128 bits.
+
+The FLX and FSX instructions will have a required minimum alignment of 8 bytes.
+
+
+=== PADD/PSUB/PMUL ===
+
+* 0000000-ttttt-mmmmm-rrr-nnnnn-10-10011  PADD.S		Fn, Fm, Ft
+* 0000100-ttttt-mmmmm-rrr-nnnnn-10-10011  PSUB.S		Fn, Fm, Ft
+* 0001000-ttttt-mmmmm-rrr-nnnnn-10-10011  PMUL.S		Fn, Fm, Ft
+
+* 0000010-ttttt-mmmmm-rrr-nnnnn-10-10011  PADD.H		Fn, Fm, Ft
+* 0000110-ttttt-mmmmm-rrr-nnnnn-10-10011  PSUB.H		Fn, Fm, Ft
+* 0001010-ttttt-mmmmm-rrr-nnnnn-10-10011  PMUL.H		Fn, Fm, Ft
+
+Perform a SIMD vector operation.
+
+These will use the same encodings as the scalar operations and will alias with them. The distinction between the scalar and simd operations will be based primarily on how they are used.
+
+The operation will be performed pairwise between each element:
+* { AX, AY } + { BX, BY } => { AX + BX, AY + BY }
+* { AX, AY } - { BX, BY } => { AX - BX, AY - BY }
+* { AX, AY } * { BX, BY } => { AX * BX, AY * BY }
+
+
+=== PDIV ===
+
+* 0001100-ttttt-mmmmm-rrr-nnnnn-10-10011  PDIV.S		Fn, Fm, Ft
+* 0001110-ttttt-mmmmm-rrr-nnnnn-10-10011  PDIV.H		Fn, Fm, Ft
+
+Note that PDIV may potentially be slow.
+
+
+The existence of SIMD PDIV operators may be considered semi-optional.
+* An implementation may perform a scalar FDIV if the high values are NaN.
+* An implementation may trap and emulate if the high values are not NaN.
+
+On an implementation with unknown PDIV performance, it may be preferable to fake it manually using Newton-Raphson.
+
+The implementation specifics of any traps or emulation are outside the scope of this spec, but it may make sense for software to be able to assume that it exists, even if it is slow.
+
+
+=== PADDX/PSUBX/PMULX (Optional) ===
+
+* 0000000-ttttt-mmmmm-rrr-nnnnn-10-10011  PADDX.S		XFn, XFm, XFt
+* 0000100-ttttt-mmmmm-rrr-nnnnn-10-10011  PSUBX.S		XFn, XFm, XFt
+* 0001000-ttttt-mmmmm-rrr-nnnnn-10-10011  PMULX.S		XFn, XFm, XFt
+
+* 0000001-ttttt-mmmmm-rrr-nnnnn-10-10011  PADDX.D		XFn, XFm, XFt
+* 0000101-ttttt-mmmmm-rrr-nnnnn-10-10011  PSUBX.D		XFn, XFm, XFt
+* 0001001-ttttt-mmmmm-rrr-nnnnn-10-10011  PMULX.D		XFn, XFm, XFt
+
+* 0000010-ttttt-mmmmm-rrr-nnnnn-10-10011  PADDX.H		XFn, XFm, XFt	//1
+* 0000110-ttttt-mmmmm-rrr-nnnnn-10-10011  PSUBX.H		XFn, XFm, XFt
+* 0001010-ttttt-mmmmm-rrr-nnnnn-10-10011  PMULX.H		XFn, XFm, XFt
+
+
+These will be encoded by setting the rounding mode to 101 or 110.
+
+In this case, the vector will be a 128-bit register pair.
+Only even register numbers will be valid.
+
+
+1: Note that the Binary16 operations meed not be supported if the implementation does not support 8 element vectors, even if it does otherwise support 128-bit operations.
+
+
+=== PDIVX ===
+
+* 0001100-ttttt-mmmmm-rrr-nnnnn-10-10011  PDIVX.S		XFn, XFm, XFt
+* 0001101-ttttt-mmmmm-rrr-nnnnn-10-10011  PDIVX.D		XFn, XFm, XFt
+* 0001110-ttttt-mmmmm-rrr-nnnnn-10-10011  PDIVX.H		XFn, XFm, XFt
+
+These will be encoded by setting the rounding mode to 101 or 110, operating on a register pair.
+
+Similarly, the existence of SIMD PDIV operators may be considered as optional.
+
+
+=== FSGNJ / FSGNJN / FSGNJX ===
+
+* 0010000-ttttt-mmmmm-000-nnnnn-10-10011  PSGNJ.S	Fn, Fm, Ft
+* 0010000-ttttt-mmmmm-001-nnnnn-10-10011  PSGNJN.S	Fn, Fm, Ft
+* 0010000-ttttt-mmmmm-010-nnnnn-10-10011  PSGNJX.S	Fn, Fm, Ft
+
+* 0010001-ttttt-mmmmm-000-nnnnn-10-10011  FSGNJ.D	Fn, Fm, Ft
+* 0010001-ttttt-mmmmm-001-nnnnn-10-10011  FSGNJN.D	Fn, Fm, Ft
+* 0010001-ttttt-mmmmm-010-nnnnn-10-10011  FSGNJX.D	Fn, Fm, Ft
+
+* 0010010-ttttt-mmmmm-000-nnnnn-10-10011  PSGNJ.H	Fn, Fm, Ft
+* 0010010-ttttt-mmmmm-001-nnnnn-10-10011  PSGNJN.H	Fn, Fm, Ft
+* 0010010-ttttt-mmmmm-010-nnnnn-10-10011  PSGNJX.H	Fn, Fm, Ft
+
+These copy the value bits from Fm, with the sign bits copied from Ft.
+* FSGNJ: Copies sign bit directly.
+* FSGNJN: Inverts the sign bit from the source.
+* FSGNJX: Takes the XOR of the sign bits.
+
+Where:
+* The D form only modifies bit 63.
+* The F form modifies 63 and 31.
+* The H form modifies 63, 47, 31, and 15.
+
+
+=== FLE / FLT / FEQ ===
+
+These instructions will not be modified, and as such will only apply to the low order element of each vector.
+
+
+=== PMIN / PMAX ===
+
+* 0010100-ttttt-mmmmm-000-nnnnn-10-10011  PMIN.S		Fn, Fm, Ft
+* 0010100-ttttt-mmmmm-001-nnnnn-10-10011  PMAX.S		Fn, Fm, Ft
+
+* 0010110-ttttt-mmmmm-000-nnnnn-10-10011  PMIN.H		Fn, Fm, Ft
+* 0010110-ttttt-mmmmm-001-nnnnn-10-10011  PMAX.H		Fn, Fm, Ft
+
+Select the minimum and maximum of each element.
+These will lack 128-bit equivalents.
+
+
+=== Pack Operations (Possible) ===
+
+* 0010000-ttttt-mmmmm-100-nnnnn-10-10011 ? FPKBB.H		Fn, Fm, Ft
+* 0010000-ttttt-mmmmm-101-nnnnn-10-10011 ? FPKBT.H		Fn, Fm, Ft
+* 0010000-ttttt-mmmmm-110-nnnnn-10-10011 ? FPKTB.H		Fn, Fm, Ft
+* 0010000-ttttt-mmmmm-111-nnnnn-10-10011 ? FPKTT.H		Fn, Fm, Ft
+
+* 0010001-ttttt-mmmmm-100-nnnnn-10-10011 ? FPKBB.S		Fn, Fm, Ft
+* 0010001-ttttt-mmmmm-101-nnnnn-10-10011 ? FPKBT.S		Fn, Fm, Ft
+* 0010001-ttttt-mmmmm-110-nnnnn-10-10011 ? FPKTB.S		Fn, Fm, Ft
+* 0010001-ttttt-mmmmm-111-nnnnn-10-10011 ? FPKTT.S		Fn, Fm, Ft
+
+These will compose a value by selecting values from a pair of registers.
+* BB: Select the low order value from both registers.
+* BT: Select the low order value from Fm, high order from Ft.
+* TB: Select the high order value from Fm, low order from Ft.
+* TT: Select the high order value from both registers.
+
+The new register will be composed by putting selected the value from Fm into the high-order bits of the output, and the value from Ft into the low order bits.
+
+For S, the selection size will be 32 bits from each register, producing a 64 bit result.
+
+For H, the selection will be 16 bits, selecting (15:0) or (31:16) from each register, and producing a result in the low 32 bits. The high 32 bits will be filled with zeroes.
+
+
+
+=== Conversion Ops ===
+
+* 0100000-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.S.D		Fn, Fm
+* 0100001-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.D.S		Fn, Fm
+
+* 0100000-00010-mmmmm-rrr-nnnnn-10-10011  PCVT.S.H		Fn, Fm
+* 0100010-00000-mmmmm-rrr-nnnnn-10-10011  PCVT.H.S		Fn, Fm
+
+* 0100001-00010-mmmmm-rrr-nnnnn-10-10011  FCVT.D.H		Fn, Fm
+* 0100010-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.H.D		Fn, Fm
+
+* 0100000-00110-mmmmm-rrr-nnnnn-10-10011  PCVT.S.BF16	Fn, Fm
+* 0100010-01000-mmmmm-rrr-nnnnn-10-10011  PCVT.BF16.S	Fn, Fm
+
+* 0100001-00110-mmmmm-rrr-nnnnn-10-10011  FCVT.D.BF16	Fn, Fm
+* 0100010-01001-mmmmm-rrr-nnnnn-10-10011  FCVT.BF16.D	Fn, Fm
+
+* 0100000-01010-mmmmm-rrr-nnnnn-10-10011  PCVTHI.S.H	Fn, Fm
+* 0100000-01110-mmmmm-rrr-nnnnn-10-10011  PCVTHI.S.BF16	Fn, Fm
+
+
+* 0100000-00010-mmmmm-rrr-nnnnn-10-10011  PCVTX.S.H		XFn, Fm  //Rm=2X
+* 0100010-00000-mmmmm-rrr-nnnnn-10-10011  PCVTX.H.S		Fn, XFm  //Rm=2X
+
+* 0100000-00110-mmmmm-rrr-nnnnn-10-10011  PCVTX.S.BF16	XFn, Fm  //Rm=2X
+* 0100010-01000-mmmmm-rrr-nnnnn-10-10011  PCVTX.BF16.S	Fn, XFm  //Rm=2X
+
+Convert between floating point formats.
+
+Here:
+* FCVT will convert a single scalar value.
+* PCVT will convert a pair of values.
+* PCVTHI will convert a pair of values, taken from the high-order bits.
+
+Example Conversion of a 4x Binary16 vector to 4x Binary32:
+  PCVT.S.H    F12, F10
+  PCVTHI.S.H  F13, F10
+Or:
+  PCVTX.S.H   F12, F10  //4 element conversion
+
+Example Conversion of a 4x Binary32 vector to 4x Binary16:
+  PCVT.H.S    F12, F10
+  PCVT.H.S    F13, F11
+  FPKBB.S     F12, F12, F13
+Or:
+  PCVTX.H.S   F12, F10  //4 element conversion
+
+
+
+=== PSQRT ===
+
+* 0101100-00000-mmmmm-rrr-nnnnn-10-10011  PSQRT.S	Fn, Fm
+* 0101101-00000-mmmmm-rrr-nnnnn-10-10011  FSQRT.D	Fn, Fm
+* 0101110-00000-mmmmm-rrr-nnnnn-10-10011  PSQRT.H	Fn, Fm
+
+* 0101100-00000-mmmmm-rrr-nnnnn-10-10011  PSQRTX.S	XFn, XFm	//Rm=2X
+* 0101101-00000-mmmmm-rrr-nnnnn-10-10011  PSQRTX.D	XFn, XFm	//Rm=2X
+
+Perform a packed Square Root operation.
+
+Packed Square Root is semi-optional, if not supported:
+* If high values are NaN, perform a scalar Square Root;
+* If high values are not NaN, trap and emulate.
+
+
+=== Helper Ops (Possible) ===
+
+* 1111000-zzzzz-mmmmm-001-nnnnn-10-10011  FOPxx.S	Fn, Fm
+* 1111001-zzzzz-mmmmm-001-nnnnn-10-10011  FOPxx.D	Fn, Fm
+* 1111010-zzzzz-mmmmm-001-nnnnn-10-10011  FOPxx.H	Fn, Fm
+
+Fast Approximate Reciprocal:
+* 1111000-00001-mmmmm-001-nnnnn-10-10011  PRCPA.S	Fn, Fm
+* 1111001-00001-mmmmm-001-nnnnn-10-10011  FRCPA.D	Fn, Fm
+* 1111010-00001-mmmmm-001-nnnnn-10-10011  PRCPA.H	Fn, Fm
+
+Fast Approximate Square Root:
+* 1111000-00010-mmmmm-001-nnnnn-10-10011  PSQRTA.S	Fn, Fm
+* 1111001-00010-mmmmm-001-nnnnn-10-10011  FSQRTA.D	Fn, Fm
+* 1111010-00010-mmmmm-001-nnnnn-10-10011  PSQRTA.H	Fn, Fm
+
+The RCPA and SQRTA oparations would try to generate a fast approximation of a reciprocal or square root that could then be used to start the Newton-Raphson iteration process.
+
+
+=== PMADD (Optional) ===
+
+* uuuuu00-ttttt-sssss-rrr-nnnnn-10-00011  PMADD.S		Fn, Fs, Ft, Fu (F)
+* uuuuu10-ttttt-sssss-rrr-nnnnn-10-00011  PMADD.H		Fn, Fs, Ft, Fu (H)
+
+* uuuuu00-ttttt-sssss-rrr-nnnnn-10-00111  PMSUB.S		Fn, Fs, Ft, Fu (F)
+* uuuuu10-ttttt-sssss-rrr-nnnnn-10-00111  PMSUB.H		Fn, Fs, Ft, Fu (H)
+
+* uuuuu00-ttttt-sssss-rrr-nnnnn-10-01011  PNMSUB.S		Fn, Fs, Ft, Fu (F)
+* uuuuu10-ttttt-sssss-rrr-nnnnn-10-01011  PNMSUB.H		Fn, Fs, Ft, Fu (H)
+
+* uuuuu00-ttttt-sssss-rrr-nnnnn-10-01111  PNMADD.S		Fn, Fs, Ft, Fu (F)
+* uuuuu10-ttttt-sssss-rrr-nnnnn-10-01111  PNMADD.H		Fn, Fs, Ft, Fu (H)
+
+
+If supported, the MADD operations may perform a SIMD MADD.
+* These are otherwise equivalent to the FMADD operations.
+* If high element is NaN, it is the same as FMADD.
+
+
+=== Examples ===
+
+
+Hypothetical Binary16 SW divider (concept):
+  __v4h_rcp:
+  FMV.X.D  X10, F10
+  LI       X11, 0x7800780078007800
+  LI       X13, 0x4000400040004000
+  SUB      X12, X11, X10
+  FMV.D.X  F13, X13
+  FMV.D.X  F11, X12
+  PMUL.H   F12, F10, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  //iterate some more:
+  PMUL.H   F12, F10, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  PMUL.H   F12, F10, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F10, F11, F14
+  RET
+
+  __v4h_div:
+  FMV.D    F16, F11
+  FMV.X.D  X10, F11
+  LI       X11, 0x7800780078007800
+  LI       X13, 0x4000400040004000
+  SUB      X12, X11, X10
+  FMV.D.X  F13, X13
+  FMV.D.X  F11, X12
+  PMUL.H   F12, F16, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  //iterate some more:
+  PMUL.H   F12, F16, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  PMUL.H   F12, F16, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  //final divide:
+  PMUL.H   F10, F10, F11
+  RET
+
+Though, as-is, this will not necessarily give stable convergence (it is often necessary to fudge the values in the first iteration stage to get convergence stable). This can be taken more as a conceptual example.
+
+What if we have PRCPA.H:
+  __v4h_div:
+  LI       X13, 0x4000400040004000
+  FMV.D    F16, F11
+  FMV.D.X  F13, X13
+  FRPCA.H  F11, F11
+  PMUL.H   F12, F16, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  //iterate some more:
+  PMUL.H   F12, F16, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  PMUL.H   F12, F16, F11
+  PSUB.H   F14, F13, F12
+  PMUL.H   F11, F11, F14
+  //final divide:
+  PMUL.H   F10, F10, F11
+  RET
+
+
+
+
+=== Misc ===
+
+
+* 0000100-ttttt-mmmmm-100-nnnnn-01-10011  PACK			Rn, Rm, Rt (B)
+* 0100100-ttttt-mmmmm-100-nnnnn-01-10011  PACKU			Rn, Rm, Rt (B)
+
+* 0100iii-iiiii-mmmmm-001-nnnnn-00-11011  PSHUF.W		Rn, Rm, Imm8	(BGB)
+
+
+* 0000111-ttttt-mmmmm-001-nnnnn-11-10111  PKBB16		Rn, Rm, Rt (P)
+* 0001111-ttttt-mmmmm-001-nnnnn-11-10111  PKBT16		Rn, Rm, Rt (P)
+* 0010111-ttttt-mmmmm-001-nnnnn-11-10111  PKTB16		Rn, Rm, Rt (P)
+* 0011111-ttttt-mmmmm-001-nnnnn-11-10111  PKTT16		Rn, Rm, Rt (P)
+
+* 0000111-ttttt-mmmmm-010-nnnnn-11-10111  PKBB32		Rn, Rm, Rt (P)
+* 0001111-ttttt-mmmmm-010-nnnnn-11-10111  PKBT32		Rn, Rm, Rt (P)
+* 0010111-ttttt-mmmmm-010-nnnnn-11-10111  PKTB32		Rn, Rm, Rt (P)
+* 0011111-ttttt-mmmmm-010-nnnnn-11-10111  PKTT32		Rn, Rm, Rt (P)
+

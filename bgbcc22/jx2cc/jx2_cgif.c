@@ -550,6 +550,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->is_fixed32|=3;
 		shctx->emit_riscv|=0x02;
+		shctx->has_xgpr|=3;
 
 #if 1
 //		if(shctx->use_wexmd==0)
@@ -596,6 +597,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->has_jumbo|=2;	//Jumbo Prefixes
 			shctx->has_rvzba|=16;	//Load/Store Indexed
 			shctx->has_pushx2|=1;	//LX / SX
+
+			shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
 		}
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo96"))
 		{
@@ -625,6 +628,27 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_jumbo=1;
 		shctx->has_pushx2=1;
 		shctx->has_simdx2=0;
+
+
+//		shctx->has_xgpr|=3;
+
+		shctx->has_jcmp|=3;
+		shctx->has_qmul|=1;
+		shctx->has_qmul|=32;
+		shctx->has_fmovc|=1;		//
+
+		shctx->has_jumbo=0;
+		shctx->has_pushx2=0;
+		shctx->has_simdx2=0;
+
+
+		shctx->has_jumbo|=2;	//Jumbo Prefixes
+		shctx->has_rvzba|=16;	//Load/Store Indexed
+		shctx->has_pushx2|=1;	//LX / SX
+
+		shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
+//		shctx->has_jumbo|=4;	//Jumbo96
+		shctx->has_rvzba|=1;	//Zba
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_XG2A)
@@ -1790,6 +1814,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj, BGBCC_CCXL_VirtOp *op)
 {
 	static int rec=0;
+	ccxl_register reg1;
 	char *s0;
 	int i, j, k;
 
@@ -1813,6 +1838,12 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		{
 			k=-1;
 		}
+	}
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+	{
+		BGBCC_DBGBREAK
 	}
 
 	switch(op->opn)
@@ -2172,6 +2203,13 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 		BGBCC_CCXL_StubError(ctx);
 		break;
 	}
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+	{
+		BGBCC_DBGBREAK
+	}
+
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 	
@@ -2750,9 +2788,15 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj, int fcnlbl)
 {
+	ccxl_register reg1;
+
 	int bs, bt, bo, co, ce, bo1, co1;
 	int plsz, fnsz;
 	int i, j, k;
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+		{ BGBCC_DBGBREAK }
 
 	ctx->cur_func=obj;
 	sctx->is_tr_leaf=0;
@@ -2761,10 +2805,18 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 
 	BGBCC_JX2C_EmitLabelFlushRegisters(ctx, sctx);
 
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+		{ BGBCC_DBGBREAK }
+
 	BGBCC_JX2_SetSectionName(sctx, ".text");
 
 	if((sctx->regalc_live || sctx->fregalc_live) && !(sctx->is_leaftiny&1))
 			{ BGBCC_DBGBREAK }
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+		{ BGBCC_DBGBREAK }
 
 //	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 	BGBCC_JX2_EmitPadForLabel(sctx);
@@ -2774,6 +2826,12 @@ ccxl_status BGBCC_JX2C_BuildFunctionBody(
 	sctx->is_prolog=1;
 	BGBCC_JX2C_EmitFrameProlog(ctx, sctx, obj, fcnlbl);
 	sctx->is_prolog=0;
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+	{
+		BGBCC_DBGBREAK
+	}
 
 //	BGBCC_JX2_EmitPadForOpWord(sctx, 0xF000);
 	BGBCC_JX2_EmitPadForLabel(sctx);
@@ -5514,6 +5572,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		case BGBCC_SH_RLC_RELW8_BSR:
 		case BGBCC_SH_RLC_RELW12_RVI:
 		case BGBCC_SH_RLC_RELW20_RVI:
+		case BGBCC_SH_RLC_RELW10_XG3:
+		case BGBCC_SH_RLC_RELW23_XG3:
 			d=val-(var&(~1));
 			break;
 		}
@@ -6963,6 +7023,50 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu16en(ctr+6, en, w3);
 			break;
 
+
+
+		case BGBCC_SH_RLC_RELW23_XG3:
+			w0=bgbcc_getu32en(ctr+0, en);
+			
+			b=	(((w0>>16)&0xFFFF)<< 0) |
+				(((w0>> 6)&    63)<<16) |
+				(((w0>> 5)&     1)<<22) ;
+			b1=((s32)(b<<9))>>9;
+			b1<<=2;
+
+			if(d&3)
+				{ BGBCC_DBGBREAK }
+			
+			d1=b1+(d>>2);
+			if((((s32)(d1<<9))>>9)!=d1)
+				{ BGBCC_DBGBREAK }
+
+			w0=(w0&0x0000F03FU)|
+				((d1&0xFFFF)<<16) |
+				(((d1>>16)&63)<<6) |
+				(((d1>>31)& 1)<<5) ;
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			break;
+
+		case BGBCC_SH_RLC_RELW10_XG3:
+			w0=bgbcc_getu32en(ctr+0, en);
+			
+			b=(w0>>22);
+			b1=((s32)(b<<22))>>22;
+
+			if(d&3)
+				{ BGBCC_DBGBREAK }
+
+			d1=b1+(d>>2);
+			if((((s32)(d1<<22))>>22)!=d1)
+				{ BGBCC_DBGBREAK }
+
+			w0=(w0&0x003FFFFFU)|((d1&1023)<<22);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			break;
+
 		default:
 			BGBCC_CCXL_StubError(ctx);
 //			BGBCC_DBGBREAK
@@ -7890,6 +7994,100 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	sctx->need_n16dat=1;
 	sctx->need_n20dat=1;
 	sctx->need_n24dat=0;
+
+#if 1
+	for(i=0; i<ctx->n_reg_globals; i++)
+	{
+		obj=ctx->reg_globals[i];
+
+		if(!obj)
+			continue;
+
+		if(obj->regtype==CCXL_LITID_FUNCTION)
+		{
+			if(!obj->gblsetmask)
+			{
+				k=((ctx->n_reg_globals+63)/64)*8;
+				obj->gblsetmask=bgbcc_malloc(k);
+				memset(obj->gblsetmask, 0, k);
+			}
+		}
+	}
+
+	/* Propagate some information along call graph */
+	sctx->is_simpass=64;
+	for(j=0; j<16; j++)
+//	for(j=0; j<32; j++)
+//	for(j=0; j<64; j++)
+	{
+		for(i=0; i<ctx->n_reg_globals; i++)
+		{
+			obj=ctx->reg_globals[i];
+
+			if(!obj)
+				continue;
+
+			if(obj->regtype==CCXL_LITID_FUNCTION)
+			{
+				if(obj->regflags&
+//					(BGBCC_REGFL_REC_GBLSTORE|
+					(BGBCC_REGFL_REC_FTGBLSTORE|
+						BGBCC_REGFL_REC_NOGBLSTORE))
+				{
+					continue;
+				}
+			
+				if(obj->vtr)
+				{
+					BGBCC_JX2C_SetupFrameLayout(ctx, sctx, obj);
+				}else
+				{
+					BGBCC_JX2C_InvalidateGlobalSetMask(ctx, sctx, obj);
+					obj->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+					obj->regflags|=BGBCC_REGFL_REC_FTGBLSTORE;
+				}
+				continue;
+			}
+		}
+	}
+
+	for(i=0; i<ctx->n_reg_globals; i++)
+	{
+		obj=ctx->reg_globals[i];
+
+		if(!obj)
+			continue;
+
+		if(obj->regtype==CCXL_LITID_FUNCTION)
+		{
+			if(obj->vtr)
+			{
+				BGBCC_JX2C_SetupFrameLayout(ctx, sctx, obj);
+			}
+
+			if(obj->regflags&
+				(BGBCC_REGFL_REC_GBLSTORE|
+					BGBCC_REGFL_REC_NOGBLSTORE))
+			{
+				continue;
+			}
+
+			/* If couldn't find any global stores... */
+
+#if 1
+			 /* Assume they exist... */
+			obj->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+#endif
+
+#if 0
+			 /* Assume they don't exist... */
+			obj->regflags|=BGBCC_REGFL_REC_NOGBLSTORE;
+#endif
+		}
+	}
+
+#endif
+
 
 	BGBCC_JX2_SetBeginSimPass(sctx);
 	sctx->is_simpass=64;

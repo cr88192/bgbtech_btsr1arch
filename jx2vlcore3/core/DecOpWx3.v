@@ -60,14 +60,20 @@ For scalar Ops, Lane 2/3 will hold:
 `include "DecOpRvC.v"
 `endif
 
+`ifdef jx2_enable_riscv_xg3
+// `include "DecOpRepXG3.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 // /* verilator lint_off UNUSEDSIGNAL */
 
 module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	istrWord,	istrBPc,
-	regSr,		istrSxo,	idPcStep,
+	istrWord,	istrMTag,
+	istrBPc,	regSr,
+	istrSxo,	idPcStep,
+
 	idRegS,		idRegT,		idRegM,
 	idImmA,		idUCmdA,	idUIxtA,
 	idRegU,		idRegV,		idRegN,
@@ -85,15 +91,35 @@ input[47:0]		istrBPc;	//Instruction PC Address
 input[63:0]		regSr;
 input[3:0]		istrSxo;	//source instruction word
 input[3:0]		idPcStep;	//PC Step
+input[5:0]		istrMTag;	//PC Step
 
 
 wire[31:0]		istrWordA;
 wire[31:0]		istrWordB;
 wire[31:0]		istrWordC;
 
+wire[1:0]		istrMTagA;
+wire[1:0]		istrMTagB;
+wire[1:0]		istrMTagC;
+
+wire	srXG3;
+
+// `ifdef jx2_enable_riscv_xg3
+//`ifndef def_true
+// DecOpRepXG3		repXg3a(istrWord[31: 0], istrWordA, srXG3);
+// DecOpRepXG3		repXg3b(istrWord[63:32], istrWordB, srXG3);
+// DecOpRepXG3		repXg3c(istrWord[95:64], istrWordC, srXG3);
+// `else
+
 assign		istrWordA = istrWord[31: 0];
 assign		istrWordB = istrWord[63:32];
 assign		istrWordC = istrWord[95:64];
+
+assign		istrMTagA = istrMTag[1:0];
+assign		istrMTagB = istrMTag[3:2];
+assign		istrMTagC = istrMTag[5:4];
+
+// `endif
 
 wire			srWxe;
 wire			srXG2;
@@ -106,6 +132,10 @@ assign		srUser	= !regSr[30];
 assign		srSxo	= istrSxo[0];
 assign		srRiscv	= (regSr[27:26] == 2'b01);
 
+`ifdef jx2_enable_riscv_xg3
+assign	srXG3 = srRiscv && srWxe;
+`endif
+
 `ifdef jx2_enable_xg2mode
 assign		srXG2	= regSr[23];
 `else
@@ -114,15 +144,27 @@ assign		srXG2	= 0;
 
 assign		srXG2RV	= srRiscv && srXG2;
 
+wire			srSsc2;
+wire			srSsc3;
 wire			srRiscvSsc;
+assign		srSsc2 = idPcStep[3:2]==2'b10;
+assign		srSsc3 = idPcStep[3:2]==2'b11;
 assign		srRiscvSsc = srRiscv && idPcStep[3];
 
 // wire[2:0]		srMod;
 wire[7:0]		srMod;
+wire[7:0]		srModA;
+wire[7:0]		srModB;
+wire[7:0]		srModC;
+
 // assign		srMod = { regSr[29], srSxo, srUser };
 assign		srMod = {
 	1'b0, 1'b0, 1'b0, srRiscv,
 	srXG2, regSr[29], srSxo, srUser };
+
+assign		srModA = { istrMTagA[1:0], srMod[5:0] };
+assign		srModB = { istrMTagB[1:0], srMod[5:0] };
+assign		srModC = { istrMTagC[1:0], srMod[5:0] };
 
 `output_gpr		idRegS;
 `output_gpr		idRegT;
@@ -283,7 +325,7 @@ wire[8:0]		decOpFzC_idUIxt;
 wire[18:0]		decOpFzC_idUFl;
 
 DecOpFz	decOpFzC(
-	clock,		reset,	srMod,
+	clock,		reset,	srModC,
 //	{ UV32_00, istrWord[95:64] },	4'h5,
 	{ UV32_00, istrWordC },	4'h5,
 		{ tOpJBitsB[24], tOpJBitsC[24],
@@ -311,7 +353,7 @@ wire[8:0]		decOpFzB_idUIxt;
 wire[18:0]		decOpFzB_idUFl;
 
 DecOpFz	decOpFzB(
-	clock,		reset,	srMod,
+	clock,		reset,	srModB,
 //	{ UV32_00, istrWord[63:32] },	4'h1,
 	{ UV32_00, istrWordB },	4'h1,
 		{ 1'b0, tOpJBitsB[24],
@@ -336,7 +378,7 @@ wire[8:0]		decOpFzA_idUIxt;
 wire[18:0]		decOpFzA_idUFl;
 
 DecOpFz	decOpFzA(
-	clock,		reset,	srMod,
+	clock,		reset,	srModA,
 //	{ UV32_00, istrWord[31: 0] },	4'h0,
 	{ UV32_00, istrWordA },	4'h0,
 		UV28_00,
@@ -360,7 +402,7 @@ wire[8:0]		decOpRvA_idUIxt;
 wire[18:0]		decOpRvA_idUFl;
 
 DecOpRvI	decOpRvA(
-	clock,		reset,	srMod,
+	clock,		reset,	srModA,
 //	{ UV32_00, istrWord[31: 0] },
 	{ UV32_00, istrWordA },
 	{srRiscv && !srXG2RV, srWxe, 2'b00},
@@ -384,7 +426,7 @@ wire[8:0]		decOpRvB_idUIxt;
 wire[18:0]		decOpRvB_idUFl;
 
 DecOpRvI	decOpRvB(
-	clock,		reset,	srMod,
+	clock,		reset,	srModB,
 //	{ UV32_00, istrWord[63:32] },
 	{ UV32_00, istrWordB },
 	{srRiscv && !srXG2RV, srWxe, 2'b00},
@@ -432,7 +474,7 @@ wire[18:0]		decOpRvC_idUFl;
 
 // DecOpRvI	decOpRvC(
 DecOpRvJO	decOpRvC(
-	clock,		reset,	srMod,
+	clock,		reset,	srModC,
 //	{ UV32_00, istrWord[95:64] },
 	{ UV32_00, istrWordC },
 	{srRiscv && !srXG2RV, srWxe, 2'b00},
@@ -1378,6 +1420,86 @@ begin
 			end
 		end
 		else
+`ifdef dev_true
+		if(srSsc2)
+		begin
+
+			opRegAM	= decOpFzB_idRegM;
+			opRegAO	= decOpFzB_idRegO;
+			opRegAN	= decOpFzB_idRegN;
+			opRegAP	= decOpFzB_idRegP;
+			opImmA	= decOpFzB_idImm;
+			opUCmdA	= decOpFzB_idUCmd;
+			opUIxtA	= decOpFzB_idUIxt;
+			opUFlA	= decOpFzB_idUFl;
+
+			opRegBM	= decOpFzA_idRegM;
+			opRegBO	= decOpFzA_idRegO;
+			opRegBN	= decOpFzA_idRegN;
+			opRegBP	= decOpFzA_idRegP;
+			opImmB	= decOpFzA_idImm;
+			opUCmdB	= decOpFzA_idUCmd;
+			opUIxtB	= decOpFzA_idUIxt;
+
+`ifdef jx2_enable_riscv
+`ifdef jx2_dec_ssc_riscv
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagB[0])
+			begin
+				opRegAM	= decOpRvB_idRegM;
+				opRegAO	= decOpRvB_idRegO;
+				opRegAN	= decOpRvB_idRegN;
+				opRegAP	= decOpRvB_idRegP;
+				opImmA	= decOpRvB_idImm;
+				opUCmdA	= decOpRvB_idUCmd;
+				opUIxtA	= decOpRvB_idUIxt;
+				opUFlA	= decOpRvB_idUFl;
+			end
+
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagA[0])
+			begin
+				opRegBM	= decOpRvA_idRegM;
+				opRegBO	= decOpRvA_idRegO;
+				opRegBN	= decOpRvA_idRegN;
+				opRegBP	= decOpRvA_idRegP;
+				opImmB	= decOpRvA_idImm;
+				opUCmdB	= decOpRvA_idUCmd;
+				opUIxtB	= decOpRvA_idUIxt;
+			end
+`endif
+`endif
+
+			opRegAM0	= opRegAM;
+			opRegAO0	= opRegAO;
+			opRegAN0	= opRegAN;
+			opRegAP0	= opRegAP;
+			opUCmdA0	= opUCmdA;
+			opUIxtA0	= opUIxtA;
+			opUFlA0		= opUFlA;
+
+			opRegCM	= opRegBP;
+			opRegCO	= opRegAP;
+
+			opRegCN	= JX2_GR_ZZR;
+			opImmC	= UV33_00;
+			opUCmdC	= UV9_00;
+//				opUIxtC	= UV9_00;
+//				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
+			opUIxtC	= decOpFzB_idUFl[12:4];
+
+			opUCmdC		= { 3'b001, decOpFzB_idUFl[18:13] };
+
+			opIsScalar	= opIsWexJumboA;
+
+			if(opIsWexJumboA)
+			begin
+				/* Jumbo24 + Imm24 */
+				opImmB	= {
+					opImmA[32] ? UV17_FF : UV17_00,
+					tOpJBitsB[23:8] };
+			end
+		end
+`endif
+`ifndef dev_true
 		if(opIsWfA || opIsWexJumboA)
 		begin
 		
@@ -1479,12 +1601,14 @@ begin
 		end
 `endif
 `endif
+`endif
 		else
 		begin
 `ifdef jx2_enable_riscv
 
 //			if(srRiscv && !noNoRiscV)
-			if(srRiscv && !noNoRiscV && !srXG2RV)
+//			if(srRiscv && !noNoRiscV && !srXG2RV)
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagA[0])
 			begin
 				opRegAM0	= decOpRvA_idRegM;
 				opRegAO0	= decOpRvA_idRegO;

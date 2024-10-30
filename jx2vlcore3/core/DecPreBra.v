@@ -55,6 +55,12 @@ State Machine 2:
 
 */
 
+/*
+MTAG, in RV64 Mode:
+ 00: RV Op
+ 01: XG3 Op repacked to XG2RV.
+ */
+
 `ifndef HAS_DECPREBRA
 `define HAS_DECPREBRA
 
@@ -66,7 +72,8 @@ State Machine 2:
 
 module DecPreBra(
 	clock,			reset,
-	istrWord,		istrBasePc,	istrBraPc,
+	istrWord,		istrMTag,
+	istrBasePc,		istrBraPc,
 	preBraPc,		preIsBra,
 	preBraPcInc,	preWasBra,
 
@@ -84,6 +91,7 @@ input[63:0]		regValLr;	//Link Register
 input[63:0]		regValDlr;	//Link Register
 input[63:0]		regValDhr;	//Link Register
 input[4:0]		regMemOpm;	//OPM
+input[3:0]		istrMTag;	//OPM
 
 input[47:0]		ifBraBPc;	//Fetch Branch PC
 input[47:0]		exBraBPc;	//Fetch Base PC
@@ -383,9 +391,9 @@ begin
 
 
 	tIsBraRv12		=
-		(istrWord[6:0]==7'b1100011) && pipeHasLr[4];
+		(istrWord[6:0]==7'b1100011) && pipeHasLr[4] && !istrMTag[0];
 	tIsBraRv20		=
-		(istrWord[6:0]==7'b1101111) && pipeHasLr[4];
+		(istrWord[6:0]==7'b1101111) && pipeHasLr[4] && !istrMTag[0];
 
 //	tIsBraRv12		=	0;	//BGB: debug
 //	tIsBraRv20		=	0;	//BGB: debug
@@ -517,10 +525,11 @@ begin
 `endif
 
 `ifdef jx2_enable_riscv
-	if(pipeHasLr[4])
+//	if(pipeHasLr[4])
+	if(pipeHasLr[4] && !istrMTag[0])
 //	if(isRV)
 	begin
-		/* RISC-V */
+		/* RISC-V, Excluding XG3 */
 		tIsBra8		= 0;
 		tIsBraCc8	= 0;
 		tIsBraCc8B	= 0;
@@ -529,6 +538,12 @@ begin
 		tIsBra20	= 0;
 		tIsRtsu		= 0;
 		tIsRtsR1	= 0;
+	end
+	if(pipeHasLr[4])
+	begin
+		/* Excluded in RISC-V and XG3 */
+		tIsBraCc20	= 0;
+		tIsBra20	= 0;
 	end
 `endif
 
@@ -877,7 +892,8 @@ begin
 //	tPreBra		= 0;
 
 `ifndef def_true
-	if(pipeHasLr[4])
+//	if(pipeHasLr[4])
+	if(pipeHasLr[4] && !istrMTag[0])
 	begin
 		if(tPreBra)
 		begin

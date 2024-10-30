@@ -14,6 +14,7 @@
 `define jx2_enable_riscv_rvc	//Enable RISC-V Decoder ('C' Extension)
 `define jx2_enable_rvjumbo		//Enable RISC-V Jumbo Encodings
 // `define jx2_enable_rvjumbo96	//RV Jumbo Encodings, 96-bit ops
+`define jx2_enable_riscv_xg3	//Enable XG3RV
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
@@ -33,6 +34,11 @@
 `ifdef jx2_enable_riscv
 `ifdef jx2_enable_xg2mode
 // `define jx2_enable_xg2rvmode	//Enable XG2RV Mode
+
+`ifdef jx2_enable_riscv_xg3
+`define jx2_enable_xg2rvmode	//Enable XG2RV Mode
+`endif
+
 `endif
 `endif
 

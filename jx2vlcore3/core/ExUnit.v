@@ -112,6 +112,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExPredChkNeedSrT.v"
 `endif
 
+`ifdef jx2_enable_riscv_xg3
+`include "DecOpRepXG3.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExUnit(
@@ -403,6 +407,9 @@ reg[47:0]		ifValPcInc;
 
 // wire[63:0]	ifIstrWord;	//source instruction word
 wire[95:0]		ifIstrWord;	//source instruction word
+wire[95:0]		ifIstrWordA;	//source instruction word
+wire[5:0]		ifIstrMTag;		//source mode tags
+
 wire[1:0]		ifOutPcOK;
 wire[3:0]		ifOutPcStep;
 reg[3:0]		ifLastPcStep;
@@ -469,12 +476,36 @@ assign	dbgDcOutOK	= dcOutOK;
 wire[127:0]		memRegExc;
 wire[63:0]		memRegTraPc;
 
+wire			srWxe;
+wire			srXG2;
+wire			srXG3;
+wire			srRiscv;
+wire			srXG2RV;
+wire			srUser;
+wire			srSxo;
+assign		srWxe	= crOutSr[27];
+assign		srUser	= !crOutSr[30];
+assign		srRiscv	= (crOutSr[27:26] == 2'b01);
+assign		srXG3 = srRiscv && srWxe;
+
+`ifdef jx2_enable_riscv_xg3
+DecOpRepXG3		repXg3a(
+	ifIstrWordA[31: 0], ifIstrWord[31: 0], ifIstrMTag[1:0], srXG3);
+DecOpRepXG3		repXg3b(
+	ifIstrWordA[63:32], ifIstrWord[63:32], ifIstrMTag[3:2], srXG3);
+DecOpRepXG3		repXg3c(
+	ifIstrWordA[95:64], ifIstrWord[95:64], ifIstrMTag[5:4], srXG3);
+`else
+assign	ifIstrWord = ifIstrWordA;
+assign	ifIstrMTag = 0;
+`endif
+
 `ifdef jx2_use_ringbus
 
 RbiMemL1A		memL1(
 	clock,			exResetL,
 
-	ifValPcW,		ifIstrWord,
+	ifValPcW,		ifIstrWordA,
 	ifOutPcOK,		ifOutPcStep,
 	ifInPcHold,		ifInPcWxe,
 	ifOutPcSxo,		ifOutPcLow,
@@ -558,6 +589,9 @@ reg[3:0]		id1PcStep;
 (* max_fanout = 200 *)
 	reg[95:0]		id1IstrWord;	//source instruction word
 
+(* max_fanout = 200 *)
+	reg[5:0]		id1IstrMTag;	//source instruction word
+
 // reg[31:0]	id1IstrWordL1;	//source instruction word
 // reg[31:0]	id1IstrWordL2;	//source instruction word
 reg[95:0]		id1IstrWordL1;	//source instruction word
@@ -611,9 +645,8 @@ assign		idC1IdUCmd = (id2PreBra == 2'b01) ?
 DecOpWx3	decOp(
 	clock,			exResetL,
 //	id1IstrWord,	ifInPcWxe,
-	id1IstrWord,	id1ValBPc,
-//	crOutSr,
-	id1ValFetchSr,
+	id1IstrWord,	id1IstrMTag,
+	id1ValBPc,		id1ValFetchSr,
 	id1IstrSxo,		id1PcStep,
 
 	idA1IdRegM,		idA1IdRegO,
@@ -717,7 +750,8 @@ reg[7:0]			id1BraPipelineLrL;
 
 DecPreBra	preBra(
 	clock,				exResetL,
-	id1IstrWord[63:0],	id1ValBPc,	id1ValPc,
+	id1IstrWord[63:0],	id1IstrMTag[3:0],
+	id1ValBPc,			id1ValPc,
 	id1PreBraPc,		id1PreBra,
 	id1PreBraPcInc,		id1WasBra,
 
@@ -1856,6 +1890,8 @@ wire[63:0]		ex1FpuValGRnB;
 wire[63:0]		exB1FpuValGRnB;
 wire[1:0]		ex1FpuOKB;
 
+wire[7:0]		ex1FpuTrapB;
+
 assign	ex1FpuValGRn	= fpuLowPrec ? 0 : ex1FpuValGRnB;
 assign	exB1FpuValGRn	= fpuLowPrec ? 0 : exB1FpuValGRnB;
 assign	ex1FpuOK		= fpuLowPrec ? 0 : ex1FpuOKB;
@@ -1884,7 +1920,7 @@ FpuExOpW	ex1Fpu(
 //	ex1BraFlush || exResetL,
 	ex1BraFlush,
 //	ex1BraFlush || ex1PredNoExec,
-	exHold2,
+	exHold2,		ex1FpuTrapB,
 	
 	ex1FpuValGRnB,	exB1FpuValGRnB
 	);
@@ -2024,6 +2060,8 @@ wire		ex1SloMulDoHold;
 wire[63:0]	ex1SloMulVal;
 wire[63:0]	ex1SloMulValHi;
 
+wire[7:0]	ex1SloMuTrap;
+
 `ifdef jx2_alu_slomuldiv
 
 // isGpu
@@ -2036,7 +2074,7 @@ ExOpSloMulDiv	ex1SloMul(
 	ex1RegValRsGpo[63:0],	ex1RegValRtGpo[63:0],
 	ex1SloMulVal,	ex1SloMulValHi,
 	exHold2,		ex1SloMulDoHold,
-	ex1MulFaz
+	ex1MulFaz,		ex1SloMuTrap
 	);
 
 `else
@@ -4112,6 +4150,16 @@ begin
 	if(ex1TrapExcB[15] && !tRegExc[15])
 		tNxtRegExc = ex1TrapExcB;
 
+	if(ex1SloMuTrap[7] && !tRegExc[15])
+		tNxtRegExc = {
+			UV64_00, UV48_00,
+			ex1SloMuTrap[7:5], 8'h00, ex1SloMuTrap[4:0] };
+
+	if(ex1FpuTrapB[7] && !tRegExc[15])
+		tNxtRegExc = {
+			UV64_00, UV48_00,
+			ex1FpuTrapB[7:5], 8'h00, ex1FpuTrapB[4:0] };
+
 `ifdef jx2_enable_ldekey
 //	if(ex1KrreLo[65:64]==2'b11)
 	if((ex1KrreLo[65:64]==2'b11) && !tRegExc[15])
@@ -5875,6 +5923,7 @@ begin
 //		id1ValPc		<= tValNextPc;
 		id1ValPc		<= tOpNextPc;
 		id1IstrWord		<= ifIstrWord;
+		id1IstrMTag		<= ifIstrMTag;
 		id1IstrSxo		<= ifOutPcSxo;
 //		id1ValFetchSr	<= crOutSr;
 		id1ValFetchSr	<= ifValFetchSr;

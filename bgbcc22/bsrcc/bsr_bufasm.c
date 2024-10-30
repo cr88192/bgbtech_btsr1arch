@@ -798,7 +798,7 @@ int BGBCC_BSRA_LookupOpcodeFmid(
 			switch(arg1->ty)
 			{
 			case BGBCC_SH_OPVTY_REG:
-				fm=BGBCC_SH_FMID_REGIMM; break;
+				fm=BGBCC_SH_FMID_IMMREG; break;
 			case BGBCC_SH_OPVTY_RRMEM:
 				fm=BGBCC_SH_FMID_IMMSTRMN; break;
 			default: fm=0; break;
@@ -925,7 +925,7 @@ int BGBCC_BSRA_TryAssembleOpcode(
 		rt=BGBCC_BSR_TryEmitOpRegReg(ctx,
 			nmid, arg0->breg, arg1->breg);
 		break;
-	case BGBCC_SH_FMID_REGIMM:
+	case BGBCC_SH_FMID_IMMREG:
 		rt=BGBCC_BSR_TryEmitOpImmReg(ctx,
 			nmid, arg0->disp, arg1->breg);
 		break;

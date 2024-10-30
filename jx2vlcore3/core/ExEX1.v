@@ -317,7 +317,18 @@ reg				tRegHeld;
 assign	exHold		= { tRegHeld, tExHold };
 
 wire		tBraIsRiscv;
+// wire		tBraIsXG3;
 assign	tBraIsRiscv = regInSr[26] && (regInSr[23:22]==2'b00);
+
+// assign	tBraIsXG3 = tBraIsRiscv;
+
+wire[32:0]		regValImmJCmp;
+
+`ifdef jx2_enable_riscv_xg3
+assign regValImmJCmp = opUIxt[5] ? { regValImm[31:0], 1'b0 } : regValImm;
+`else
+assign regValImmJCmp = regValImm;
+`endif
 
 reg		tAguFlagJq;
 reg		tAguFlagSv;
@@ -735,10 +746,11 @@ begin
 
 
 //	tValAguBraJCmpMi = tValBraBasePc[31:16] + 1;
-	tValAguBraJCmpMi0 = tValBraBasePc[31:16] + regValImm[30:15] + 0;
-	tValAguBraJCmpMi1 = tValBraBasePc[31:16] + regValImm[30:15] + 1;
+	tValAguBraJCmpMi0 = tValBraBasePc[31:16] + regValImmJCmp[30:15] + 0;
+	tValAguBraJCmpMi1 = tValBraBasePc[31:16] + regValImmJCmp[30:15] + 1;
 	tValAguBraJCmpLo = { 1'b0, tValBraBasePc[15:1] } +
-		{ 1'b0, regValImm[14:0] };
+		{ 1'b0, regValImmJCmp[14:0] };
+	
 	tValAguBraJCmp = {
 		regValPc[47:32],
 //		tValAguBraJCmpLo[15] ? tValAguBraJCmpMi : regValPc[31:16],

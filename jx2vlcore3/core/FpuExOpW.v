@@ -79,7 +79,7 @@ module FpuExOpW(
 	regInFpsr,	regOutFpsr,
 
 	regInSr,	braFlush,
-	exHold,
+	exHold,		regOutTrap,
 
 	regValGRnA,	regValGRnB
 
@@ -132,11 +132,15 @@ input			exHold;
 input[15:0]		regInFpsr;
 output[15:0]	regOutFpsr;
 
+output[7:0]		regOutTrap;
 
 (* max_fanout = 200 *)
 	wire			exHoldN;
 
 assign	exHoldN = !exHold;
+
+reg[7:0]	tRegOutTrap;
+assign	regOutTrap = tRegOutTrap;
 
 reg[15:0]		tRegOutFpsr;
 assign		regOutFpsr = tRegOutFpsr;
@@ -772,6 +776,7 @@ begin
 
 	tRegValRcpS		= UV64_XX;
 	tRegValRcpDoS	= 0;
+	tRegOutTrap		= 0;
 
 	tRegOutFpsr		= regInFpsr;
 
@@ -1490,6 +1495,7 @@ begin
 `endif
 	
 				default: begin
+					tRegOutTrap = 8'hA3;
 				end
 			endcase
 		end

@@ -817,6 +817,9 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 	return(0);
 }
 
+int BJX2_DecodeOpcode_DecXG3(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits);
+
 int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr)
 {
@@ -853,7 +856,14 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	{
 		if((ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) || ((opw&3)==3))
 		{
-			ret=BJX2_DecodeOpcode_DecRVI(ctx, op, addr, opw, opw2, 0);
+			if((opw&3)==3)
+			{
+				ret=BJX2_DecodeOpcode_DecRVI(ctx, op, addr, opw, opw2, 0);
+			}
+			else
+			{
+				ret=BJX2_DecodeOpcode_DecXG2(ctx, op, addr, opw, opw2, 0);
+			}
 		}else
 		{
 			ret=BJX2_DecodeOpcode_DecRVC(ctx, op, addr, opw);

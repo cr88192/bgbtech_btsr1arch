@@ -1296,7 +1296,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		break;
 #endif
 
-	case BGBCC_SH_FMID_REGIMM:
+	case BGBCC_SH_FMID_IMMREG:
 	case BGBCC_SH_FMID_REGIMM8S:
 		arg0->ty=BGBCC_SH_OPVTY_IMM;
 		arg1->ty=BGBCC_SH_OPVTY_REG;

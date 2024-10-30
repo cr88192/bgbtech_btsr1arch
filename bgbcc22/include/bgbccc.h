@@ -366,6 +366,11 @@ extern "C" {
 #define BGBCC_REGFL_ISVARARG		0x02000000		//Is varargs
 
 #define BGBCC_REGFL_TYPEACCESSED	0x04000000		//type was accessed
+#define BGBCC_REGFL_HASSTIX			0x08000000		//memory store seen
+
+#define BGBCC_REGFL_REC_GBLSTORE	0x10000000		//Call Graph, GBLSTORE
+#define BGBCC_REGFL_REC_NOGBLSTORE	0x20000000		//Call Graph, No GBLSTORE
+#define BGBCC_REGFL_REC_FTGBLSTORE	0x40000000		//Call Graph fully Traced
 
 
 #define	BGBCC_MAXSTACKOBJ			0x080000	//maximum allowed stack frame

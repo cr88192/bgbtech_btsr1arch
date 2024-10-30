@@ -301,6 +301,9 @@ These instructions will be part of the TTAG extension.
 * 32n0       JMP		Rn
 * F020_3en0  JMP		Rn					//Fix32
 
+* F0ni_3G88 ? JMPMD		Imm5u, Rn		//JMP with Mode Change
+* F0ni_3G98 ? JSRMD		Imm5u, Rn		//JSR with Mode Change
+
 * FEjj_jjjj_F202_C4jj /	BRA		(PC, Disp33s)
 * FFw0_0ddd_F0dd_Cddd	BRA		(PC, Disp33s)
 * FFjj_jjjj_FAjj_jjjj	JMP		Abs48		//Abs48 Branch
@@ -320,6 +323,19 @@ The displacement will be defined in terms of 16-bit words relative to the start 
 
 In Fix32 and XG2 Mode, only even word displacements will be valid (trying to branch to an address that doesn't have a 32-bit alignment will be invalid).
 
+
+
+For JMPMD and JSRMD, there will be an Immediate field.
+In this case, a default mode transition will exist (unless overridden by the pointer) giving the requested mode:
+* { WX4, WX3, WX2, WXE }
+** 0: Baseline (WEX Disabled)
+** 1: Baseline (WEX Enabled)
+** 2: RV64GC
+** 3: Reserved
+** 4: XG2 (WEX Disabled)
+** 5: XG2 (WEX Enabled)
+** 6: XG2RV (WEX Disabled)
+** 7: XG2RV (WEX Enabled)
 
 === BREAK ===
 

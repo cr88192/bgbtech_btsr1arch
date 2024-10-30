@@ -1151,10 +1151,24 @@
 #define BGBCC_SH_NMID_MOVLW			0x0285	//
 #define BGBCC_SH_NMID_MOVHLW		0x0286	//
 #define BGBCC_SH_NMID_MOVLHW		0x0287	//
-
 #define BGBCC_SH_NMID_RVJ21O		0x0288	//
 #define BGBCC_SH_NMID_RVJ22			0x0289	//
 #define BGBCC_SH_NMID_LDSH32		0x028A	//
+#define BGBCC_SH_NMID_MOVX_ST		0x028B	//MOV.X / SD
+#define BGBCC_SH_NMID_MOVB_ST		0x028C	//MOV.B / SB
+#define BGBCC_SH_NMID_MOVW_ST		0x028D	//MOV.W / SH
+#define BGBCC_SH_NMID_MOVL_ST		0x028E	//MOV.L / SW
+#define BGBCC_SH_NMID_MOVQ_ST		0x028F	//MOV.Q / SD
+
+#define BGBCC_SH_NMID_PDIVF			0x0290	//
+#define BGBCC_SH_NMID_PSQRTF		0x0291	//
+#define BGBCC_SH_NMID_PMINF			0x0292	//
+#define BGBCC_SH_NMID_PMAXF			0x0293	//
+
+#define BGBCC_SH_NMID_FCMPLT		0x0294	//
+#define BGBCC_SH_NMID_PCMPLTF		0x0295	//
+#define BGBCC_SH_NMID_FCMPLE		0x0296	//
+#define BGBCC_SH_NMID_PCMPLEF		0x0297	//
 
 
 #define BGBCC_SH_NMID_MOVZT			BGBCC_SH_NMID_MOVTT
@@ -1168,7 +1182,7 @@
 #define BGBCC_SH_FMID_REGREG		0x01	//Rm, Rn
 #define BGBCC_SH_FMID_REGRM			0x02	//Rm
 #define BGBCC_SH_FMID_REGRN			0x03	//Rn
-#define BGBCC_SH_FMID_REGIMM		0x04	//Imm, Rn
+#define BGBCC_SH_FMID_IMMREG		0x04	//Imm, Rn
 #define BGBCC_SH_FMID_REGLDABS		0x05	//@(Abs), Rn
 #define BGBCC_SH_FMID_REGST			0x06	//Rm, @Rn
 #define BGBCC_SH_FMID_REGLD			0x07	//@Rm, Rn
@@ -1279,6 +1293,10 @@
 
 #define BGBCC_SH_FMID_REGIMMREG_US		0x68	//Rm, Imm9us, Rn
 #define BGBCC_SH_FMID_REGREGIMM_8S		0x69	//Rm, Rn, Imm8s
+
+#define BGBCC_SH_FMID_REGIMM			0x6A	//Rn, Imm
+#define BGBCC_SH_FMID_REGREGIMM			0x6B	//Rm, Rn, Imm
+
 
 
 #define BGBCC_SH_FMID_ISRV				0x80
@@ -1438,6 +1456,7 @@
 
 #define BGBCC_SH_RLC_PBOQ16_BJX		0x42	//GBR+Disp16
 
+
 #define BGBCC_SH_RLC_PBO32_RVI		0x44	//GBR+Disp32 (RV LUI+ADDI)
 #define BGBCC_SH_RLC_PBO32J_RVI		0x45	//GBR+Disp32 (RV J21+ADDI)
 
@@ -1445,6 +1464,9 @@
 #define BGBCC_SH_RLC_PBO32ST_RVI	0x47	//GBR+Disp32 (RV LUI+ADD+St)
 #define BGBCC_SH_RLC_PBO32STJ_RVI	0x48	//GBR+Disp32 (RV J21+St)
 #define BGBCC_SH_RLC_RELW33J_RVI	0x49	//RV, 33-bit (J21+BEQ/etc)
+
+#define BGBCC_SH_RLC_RELW10_XG3		0x4A	//Bxx (DWORD, XG3)
+#define BGBCC_SH_RLC_RELW23_XG3		0x4B	//Jxx (DWORD, XG3)
 
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE
@@ -1516,6 +1538,13 @@
 
 #define	BGBCC_JX2CC_PSREG_ARG(ix)	\
 	BGBCC_JX2C_GetRqRegForArgumentIndex(ctx, sctx, ix)
+#define	BGBCC_JX2CC_PSREG_RQARG(ix)	\
+	BGBCC_JX2C_GetRqRegForArgumentIndex(ctx, sctx, ix)
+#define	BGBCC_JX2CC_PSREG_RDARG(ix)	\
+	BGBCC_JX2C_GetRdRegForArgumentIndex(ctx, sctx, ix)
+
+#define	BGBCC_JX2CC_PSREG_LRARG(ix)	\
+	BGBCC_JX2C_GetLrRegForArgumentIndex(ctx, sctx, ix)
 
 #define	BGBCC_JX2CC_PSREG_ARGTMP(ix)	\
 	BGBCC_JX2C_GetRqRegForArgTempIndex(ctx, sctx, ix)

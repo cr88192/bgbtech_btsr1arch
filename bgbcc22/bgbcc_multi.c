@@ -197,6 +197,7 @@
 #include "jx2cc/jx2_emit_bra.c"
 #include "jx2cc/jx2_emit_queue.c"
 #include "jx2cc/jx2_emrv_opc.c"
+#include "jx2cc/jx2_emx3_opc.c"
 #include "jx2cc/jx2_fltrom.c"
 #include "jx2cc/jx2_fparith.c"
 #include "jx2cc/jx2_fpreg2x.c"

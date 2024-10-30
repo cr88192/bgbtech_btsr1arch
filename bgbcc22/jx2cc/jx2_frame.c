@@ -1145,6 +1145,8 @@ int BGBCC_JX2C_EmitStoreBRegIRegScReg(
 				dreg, BGBCC_JX2CC_PSREG_TS0, 0);
 			return(1);
 		}
+
+		i=-1;
 	}
 #endif
 
@@ -4801,6 +4803,8 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(
 	return(0);
 }
 
+int bgbcc_jx2cc_framevreghash[256];
+
 int BGBCC_JX2C_SetupFrameVRegSpan(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -4810,12 +4814,14 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	BGBCC_JX2_VarSpan2 *vspb;
 	ccxl_type tty;
 	int fl, regfl, mult, acnt;
-	int i, j, k;
+	int i, j, k, h, h1;
 
 	if(!sreg.val)
 		return(0);
 	if((sreg.val&4095)==4095)
 		return(0);
+
+	h=(((sreg.val&0xFFF)*4093)>>12)&255;
 
 //	sctx->vsp_tcnt++;
 
@@ -4841,192 +4847,215 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	}
 	
 	mult=mult0;
-	for(i=0; i<sctx->vspan_num; i++)
+	
+	i=bgbcc_jx2cc_framevreghash[h];
+	if(i>=0)
 	{
 		vsp=sctx->vspan[i];
-		if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vsp->reg, sreg))
+		if(!BGBCC_CCXL_RegisterIdentEqualP(ctx, vsp->reg, sreg))
+			i=-1;
+	}
+	
+	if(i<0)
+	{
+		for(i=0; i<sctx->vspan_num; i++)
 		{
-			if(!vsp->flag)
-				mult=mult0+1;
-		
-			if(vsp->flag&BGBCC_RSPFL_NONLOCAL)
+			vsp=sctx->vspan[i];
+			if(BGBCC_CCXL_RegisterIdentEqualP(ctx, vsp->reg, sreg))
 			{
-				if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) &&
-					!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
+//				bgbcc_jx2cc_framevreghash[h]=i;
+				break;
+			}
+		}
+	}
+
+	if(i<sctx->vspan_num)
+	{
+		if(!vsp->flag)
+			mult=mult0+1;
+	
+		if(vsp->flag&BGBCC_RSPFL_NONLOCAL)
+		{
+			if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) &&
+				!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
 //				if(0)
-				{
+			{
 //					mult=mult0-1;
 //					if(mult<0)
 //						mult=0;
-				}
-				else
-					if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
-				{
+			}
+			else
+				if(BGBCC_CCXL_IsRegImmIntP(ctx, sreg))
+			{
 #if 0
 //					mult=-1;
-					if(mult0>0)
-						mult=mult0-1;
-					else
-						mult=0;
+				if(mult0>0)
+					mult=mult0-1;
+				else
+					mult=0;
 #endif
 //					mult=mult0+1;
-					mult=mult0;
+				mult=mult0;
 
 //					mult=-1;
-				}else
-				{
-					mult=0;
-				}
+			}else
+			{
+				mult=0;
 			}
-			if(vsp->flag&BGBCC_RSPFL_NONBASIC)
-				mult=0;
-			if(vsp->flag&BGBCC_RSPFL_ALIASPTR)
-				mult=0;
+		}
+		if(vsp->flag&BGBCC_RSPFL_NONBASIC)
+			mult=0;
+		if(vsp->flag&BGBCC_RSPFL_ALIASPTR)
+			mult=0;
 //			if(vsp->flag&BGBCC_RSPFL_GBLSTORE)
 //				mult=0;
 //			if(dstfl&1)
 //				mult=0;
-			
-			if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) && (dstfl&1))
-				vsp->flag|=BGBCC_RSPFL_GBLSTORE;
+		
+		if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) && (dstfl&1))
+			vsp->flag|=BGBCC_RSPFL_GBLSTORE;
 
 #if 0
-			if(dstfl&2)
-			{
-				if(!(vsp->flag&BGBCC_RSPFL_ISSOURCE))
-					vsp->flag|=BGBCC_RSPFL_ISCALLARG;
-			}else if(!(dstfl&3))
-			{
-				vsp->flag&=~BGBCC_RSPFL_ISCALLARG;
-				vsp->flag|=BGBCC_RSPFL_ISSOURCE;
-			}
+		if(dstfl&2)
+		{
+			if(!(vsp->flag&BGBCC_RSPFL_ISSOURCE))
+				vsp->flag|=BGBCC_RSPFL_ISCALLARG;
+		}else if(!(dstfl&3))
+		{
+			vsp->flag&=~BGBCC_RSPFL_ISCALLARG;
+			vsp->flag|=BGBCC_RSPFL_ISSOURCE;
+		}
 #endif
 
-			if(sctx->tr_opnum < vsp->bbeg)
-				vsp->bbeg=sctx->tr_opnum;
-			if(sctx->tr_opnum > vsp->bend)
-				vsp->bend=sctx->tr_opnum;
+		if(sctx->tr_opnum < vsp->bbeg)
+			vsp->bbeg=sctx->tr_opnum;
+		if(sctx->tr_opnum > vsp->bend)
+			vsp->bend=sctx->tr_opnum;
 
-			if(sctx->tr_trnum < vsp->tbeg)
-				vsp->tbeg=sctx->tr_trnum;
-			if(sctx->tr_trnum > vsp->tend)
-				vsp->tend=sctx->tr_trnum;
+		if(sctx->tr_trnum < vsp->tbeg)
+			vsp->tbeg=sctx->tr_trnum;
+		if(sctx->tr_trnum > vsp->tend)
+			vsp->tend=sctx->tr_trnum;
 
-			acnt=vsp->cnt;
+		acnt=vsp->cnt;
 
-			if(mult>=0)
-				vsp->cnt++;
+		if(mult>=0)
+			vsp->cnt++;
 
 #if 1
 //			if(mult>0)
 //				vsp->cnt++;
 
-			if(mult>0)
-			{
+		if(mult>0)
+		{
 //				vsp->cnt+=mult;
 //				vsp->cnt+=mult*mult;
-				vsp->cnt+=8*mult*mult;
+			vsp->cnt+=8*mult*mult;
 //				vsp->cnt+=4*mult*mult;
-			}
-#endif
-
-#if 0
-			if(mult>1)
-				vsp->cnt+=vsp->cnt>>2;
-			if(mult>2)
-				vsp->cnt+=vsp->cnt>>3;
-			if(mult>4)
-				vsp->cnt+=vsp->cnt>>4;
-#endif
-
-			sctx->vsp_tcnt+=vsp->cnt-acnt;
-
-			while(i>0)
-			{
-				vsp1=sctx->vspan[i-1];
-				if(vsp->cnt<=vsp1->cnt)
-					break;
-				if((vsp->flag&3) && !(vsp1->flag&3))
-					break;
-				sctx->vspan[i-1]=vsp;
-				sctx->vspan[i  ]=vsp1;
-				i--;
-			}
-			
-//			j=(sreg.val>>12)&4093;
-			j=(sreg.val>>12)&4095;
-			if(j<0)j=0;
-			if(j>63)j=63;
-			vspb=vsp->seq+j;
-			if(j>=vsp->nseq)
-				vsp->nseq=j+1;
-
-			if(vspb->cnt)
-			{
-				if(sctx->tr_opnum < vspb->bbeg)
-					vspb->bbeg=sctx->tr_opnum;
-				if(sctx->tr_opnum > vspb->bend)
-					vspb->bend=sctx->tr_opnum;
-				if(sctx->tr_trnum < vspb->tbeg)
-					vspb->tbeg=sctx->tr_trnum;
-				if(sctx->tr_trnum > vspb->tend)
-					vspb->tend=sctx->tr_trnum;
-				vspb->cnt++;
-			}else
-			{
-				vspb->bbeg=sctx->tr_opnum;
-				vspb->bend=sctx->tr_opnum;
-				vspb->tbeg=sctx->tr_trnum;
-				vspb->tend=sctx->tr_trnum;
-				vspb->cnt=1;
-				vspb->flag=0;
-				if(!(dstfl&1))
-					{ vspb->flag|=BGBCC_RSPFL_CROSSTRACE; }
-			}
-
-			if(vspb->tbeg!=vspb->tend)
-			{
-				vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
-				vspb->flag|=BGBCC_RSPFL_ISSOURCE;
-			}
-
-			if((dstfl&2) && BGBCC_CCXL_IsRegTempP(ctx, sreg))
-			{
-				if(vspb->flag&BGBCC_RSPFL_ISCALLARG)
-				{
-					if((vspb->flag&0x003F0000)!=(dstfl&0x003F0000))
-					{
-						/* Input to two different calls... */
-						vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
-						vspb->flag|=BGBCC_RSPFL_ISSOURCE;
-					}
-				}
-
-				if(!(vspb->flag&BGBCC_RSPFL_ISSOURCE))
-				{
-					/* Input to a CALL */
-					vspb->flag|=BGBCC_RSPFL_ISCALLARG;
-					vspb->flag&=~0x003F0000;
-					vspb->flag|=(dstfl&0x003F0000);
-
-#if 0
-					if(sctx->emit_riscv&0x33)
-					{
-						/* Disable CallArg opt for now for RISC-V */
-						vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
-						vspb->flag|=BGBCC_RSPFL_ISSOURCE;
-					}
-#endif
-				}
-			}else if(!(dstfl&3))
-			{
-				/* Input to expression, can't be call arg. */
-				vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
-				vspb->flag|=BGBCC_RSPFL_ISSOURCE;
-			}
-
-			return(1);
 		}
+#endif
+
+#if 0
+		if(mult>1)
+			vsp->cnt+=vsp->cnt>>2;
+		if(mult>2)
+			vsp->cnt+=vsp->cnt>>3;
+		if(mult>4)
+			vsp->cnt+=vsp->cnt>>4;
+#endif
+
+		sctx->vsp_tcnt+=vsp->cnt-acnt;
+
+		while(i>0)
+		{
+			vsp1=sctx->vspan[i-1];
+			if(vsp->cnt<=vsp1->cnt)
+				break;
+			if((vsp->flag&3) && !(vsp1->flag&3))
+				break;
+			sctx->vspan[i-1]=vsp;
+			sctx->vspan[i  ]=vsp1;
+
+			h1=(((vsp1->reg.val&0xFFF)*4093)>>12)&255;
+			bgbcc_jx2cc_framevreghash[h1]=i;
+
+			i--;
+		}
+		bgbcc_jx2cc_framevreghash[h]=i;
+
+//			j=(sreg.val>>12)&4093;
+		j=(sreg.val>>12)&4095;
+		if(j<0)j=0;
+		if(j>63)j=63;
+		vspb=vsp->seq+j;
+		if(j>=vsp->nseq)
+			vsp->nseq=j+1;
+
+		if(vspb->cnt)
+		{
+			if(sctx->tr_opnum < vspb->bbeg)
+				vspb->bbeg=sctx->tr_opnum;
+			if(sctx->tr_opnum > vspb->bend)
+				vspb->bend=sctx->tr_opnum;
+			if(sctx->tr_trnum < vspb->tbeg)
+				vspb->tbeg=sctx->tr_trnum;
+			if(sctx->tr_trnum > vspb->tend)
+				vspb->tend=sctx->tr_trnum;
+			vspb->cnt++;
+		}else
+		{
+			vspb->bbeg=sctx->tr_opnum;
+			vspb->bend=sctx->tr_opnum;
+			vspb->tbeg=sctx->tr_trnum;
+			vspb->tend=sctx->tr_trnum;
+			vspb->cnt=1;
+			vspb->flag=0;
+			if(!(dstfl&1))
+				{ vspb->flag|=BGBCC_RSPFL_CROSSTRACE; }
+		}
+
+		if(vspb->tbeg!=vspb->tend)
+		{
+			vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+			vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+		}
+
+		if((dstfl&2) && BGBCC_CCXL_IsRegTempP(ctx, sreg))
+		{
+			if(vspb->flag&BGBCC_RSPFL_ISCALLARG)
+			{
+				if((vspb->flag&0x003F0000)!=(dstfl&0x003F0000))
+				{
+					/* Input to two different calls... */
+					vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+					vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+				}
+			}
+
+			if(!(vspb->flag&BGBCC_RSPFL_ISSOURCE))
+			{
+				/* Input to a CALL */
+				vspb->flag|=BGBCC_RSPFL_ISCALLARG;
+				vspb->flag&=~0x003F0000;
+				vspb->flag|=(dstfl&0x003F0000);
+
+#if 0
+				if(sctx->emit_riscv&0x33)
+				{
+					/* Disable CallArg opt for now for RISC-V */
+					vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+					vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+				}
+#endif
+			}
+		}else if(!(dstfl&3))
+		{
+			/* Input to expression, can't be call arg. */
+			vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
+			vspb->flag|=BGBCC_RSPFL_ISSOURCE;
+		}
+
+		return(1);
 	}
 
 	tty=BGBCC_CCXL_GetRegType(ctx, sreg);
@@ -5084,6 +5113,8 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 	{
 		memset(vsp, 0, sizeof(BGBCC_JX2_VarSpan));
 	}
+
+	bgbcc_jx2cc_framevreghash[h]=i;
 
 	vsp->reg=sreg;
 	vsp->bbeg=sctx->tr_opnum;

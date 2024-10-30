@@ -1285,6 +1285,7 @@ ccxl_type BGBCC_CCXL_MakeTypeID(BGBCC_TransState *ctx, int id);
 ccxl_type BGBCC_CCXL_MakeTypeID_Arr(BGBCC_TransState *ctx, int id, int asz);
 ccxl_type BGBCC_CCXL_GetRegType(BGBCC_TransState *ctx, ccxl_register reg);
 ccxl_type BGBCC_CCXL_GetRegDeclType(BGBCC_TransState *ctx, ccxl_register reg);
+BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetRegRegisterInfo(BGBCC_TransState *ctx, ccxl_register reg);
 u64 BGBCC_CCXL_GetRegFlags(BGBCC_TransState *ctx, ccxl_register reg);
 ccxl_type BGBCC_CCXL_GetRegStorageType(BGBCC_TransState *ctx, ccxl_register reg);
 int BGBCC_CCXL_GetRegAsType(BGBCC_TransState *ctx, ccxl_register reg, ccxl_type tty, ccxl_register *rtreg);
@@ -2901,12 +2902,14 @@ int BGBCC_JX2A_ParseOperand_OffsetOf(BGBCC_JX2_Context *ctx,char *objn, char *fl
 int BGBCC_JX2A_ParseOperand(BGBCC_JX2_Context *ctx, char **rcs, BGBCC_JX2_OpcodeArg *opv);
 int BGBCC_JX2A_Init();
 int BGBCC_JX2A_LookupOpcodeNmid(BGBCC_JX2_Context *ctx, char *name);
+int BGBCC_JX2A_LookupOpcodeMfl(BGBCC_JX2_Context *ctx, char *name);
 int BGBCC_JX2A_LookupOpcodeFmid(BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2, BGBCC_JX2_OpcodeArg *arg3);
 int BGBCC_JX2A_TryAssembleOpcode(BGBCC_JX2_Context *ctx, char *name, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2, BGBCC_JX2_OpcodeArg *arg3);
 int BGBCC_JX2A_ParseCheckFeatureList(BGBCC_JX2_Context *ctx, char *sym);
 int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym);
 int BGBCC_JX2A_ParseOpcode_ScanForBar(BGBCC_JX2_Context *ctx, char *cs0);
 int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs);
+int BGBCC_JX2A_InferBufferDestFirst(BGBCC_JX2_Context *ctx, char *buf);
 int BGBCC_JX2A_ParseBuffer(BGBCC_JX2_Context *ctx, char **rcs);
 int BGBCC_JX2C_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *text);
 //AHSRC:jx2cc/jx2_disasm.c
@@ -3080,6 +3083,7 @@ int BGBCC_JX2_EmitOpFar20Label(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2_TryEmitOpFar20Label(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2_TryEmitOpFar24Label(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2_EmitCheckAutoLabelNear8(BGBCC_JX2_Context *ctx, int lbl, int nmid);
+int BGBCC_JX2_EmitCheckAutoLabelNear10(BGBCC_JX2_Context *ctx, int lbl, int nmid);
 int BGBCC_JX2_EmitCheckAutoLabelNear11(BGBCC_JX2_Context *ctx, int lbl, int nmid);
 int BGBCC_JX2_EmitCheckAutoLabelNear16B(BGBCC_JX2_Context *ctx, int lbl, int nmid);
 int BGBCC_JX2_EmitCheckAutoLabelNear24B(BGBCC_JX2_Context *ctx, int lbl, int nmid);
@@ -3317,6 +3321,10 @@ int BGBCC_JX2_EmitDWordRva32Disp(BGBCC_JX2_Context *ctx, int lbl, int disp);
 int BGBCC_JX2RV_NormalizeReg(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2RV_CheckRegIsGPR(BGBCC_JX2_Context *ctx, int reg);
 int BGBCC_JX2RV_CheckRegIsFPR(BGBCC_JX2_Context *ctx, int reg);
+int BGBCC_JX2RV_TryEncJumboOpXRegImm12XReg(BGBCC_JX2_Context *ctx, int rm, s64 imm, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2RV_TryEncJumboOpXRegXRegXReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2RV_TryEncJumboOpFRegFRegFReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2RV_TryEncJumboOpFRegFRegXReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2RV_EmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int rn);
 int BGBCC_JX2RV_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rn);
 int BGBCC_JX2RV_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 imm, int rn);
@@ -3327,6 +3335,7 @@ int BGBCC_JX2RV_EmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 
 int BGBCC_JX2RV_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 disp, int rn);
 int BGBCC_JX2RV_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2RV_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
+int BGBCC_JX2RV_EmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int rn);
 int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2RV_TryEmitOpRegLbl(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2RV_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int lbl);
@@ -3345,6 +3354,14 @@ int BGBCC_JX2RV_TryEmitOpRegStReg2(BGBCC_JX2_Context *ctx, int nmid, int rm, int
 int BGBCC_JX2RV_TryEmitOpLdReg2Reg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
 int BGBCC_JX2RV_TryEmitOpLdReg2DispReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int disp, int rn);
 int BGBCC_JX2RV_TryEmitOpRegStReg2Disp(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn, int disp);
+//AHSRC:jx2cc/jx2_emx3_opc.c
+int BGBCC_JX2X3_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
+int BGBCC_JX2X3_TryEmitOpRegImmReg(BGBCC_JX2_Context *ctx, int nmid, int rm, s64 imm, int rn);
+int BGBCC_JX2X3_TryEmitOpLdReg2Reg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
+int BGBCC_JX2X3_TryEmitOpRegStReg2(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
+int BGBCC_JX2X3_TryEmitOpRegStRegDisp(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn, s64 disp);
+int BGBCC_JX2X3_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 disp, int rn);
+int BGBCC_JX2X3_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int lbl);
 //AHSRC:jx2cc/jx2_fltrom.c
 ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
@@ -3462,6 +3479,10 @@ int BGBCC_JX2C_EndSetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *s
 int BGBCC_JX2C_SetupFrameVRegSpan(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register sreg, int dstfl, int mult0);
 int BGBCC_JX2C_CheckVRegLastUseInBlock(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_register reg);
 //AHSRC:jx2cc/jx2_frm_layout.c
+int BGBCC_JX2C_MergeGlobalSetMask(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *dobj, BGBCC_CCXL_RegisterInfo *sobj);
+int BGBCC_JX2C_InvalidateGlobalSetMask(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *dobj);
+int BGBCC_JX2C_MarkGlobalSetMask(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj, ccxl_register reg);
+int BGBCC_JX2C_CheckGlobalSetMask(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, ccxl_register reg);
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,BGBCC_JX2_Context *sctx, BGBCC_CCXL_RegisterInfo *obj);
 //AHSRC:jx2cc/jx2_frm_prolog.c
 int BGBCC_JX2C_CalcBitCount(u64 val);

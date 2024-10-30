@@ -227,6 +227,8 @@ byte optmode;		//optimization mode
 byte pred_tfmd;
 byte verbose;		//verbosity level
 
+int probe_opw[8];
+
 int simfnsz;		//simulation's function size
 int simfnmsz;		//simulation's min function size
 int simfnnsz;		//simulation's max function size

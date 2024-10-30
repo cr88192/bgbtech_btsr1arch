@@ -702,9 +702,12 @@ char **goto_name;
 ccxl_label *goto_lbl;
 int n_goto, m_goto;
 
+u64 *gblsetmask;
+
 ccxl_register *listdata;
 int n_listdata, m_listdata;
-int gblid, regflags;
+int gblid;
+s64 regflags;
 int fxsize;				//fixed-format size
 int fxoffs;				//fixed-format offset (frame var offset)
 int fxmoffs, fxnoffs;	//fixed min/max size

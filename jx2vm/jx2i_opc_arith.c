@@ -638,6 +638,21 @@ void BJX2_Op_TSTQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]|=1;
 }
 
+void BJX2_Op_TSTQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int v;
+	v=((ctx->regs[op->rm]&ctx->regs[op->ro])==0);
+	ctx->regs[op->rn]=v;
+}
+
+void BJX2_Op_TSTNQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int v;
+	v=((ctx->regs[op->rm]&ctx->regs[op->ro])!=0);
+	ctx->regs[op->rn]=v;
+}
+
+
 void BJX2_Op_AND_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[op->rn]&=ctx->regs[op->rm];
@@ -1234,6 +1249,14 @@ void BJX2_Op_CMPQEQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]&=~1;
 }
 
+void BJX2_Op_CMPQNE_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(ctx->regs[op->rn]!=ctx->regs[op->rm])
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
 void BJX2_Op_CMPQHI_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(((u64)ctx->regs[op->rn])>((u64)ctx->regs[op->rm]))
@@ -1274,6 +1297,14 @@ void BJX2_Op_CMPQEQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]&=~1;
 }
 
+void BJX2_Op_CMPQNE_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((u64)ctx->regs[op->rn])!=((u64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
 void BJX2_Op_CMPQGT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(((s64)ctx->regs[op->rn])>((s64)op->imm))
@@ -1301,6 +1332,14 @@ void BJX2_Op_CMPQHI_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 void BJX2_Op_CMPQHS_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(((u64)ctx->regs[op->rn])>=((u64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
+void BJX2_Op_CMPQLT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((s64)ctx->regs[op->rn])<((s64)op->imm))
 		ctx->regs[BJX2_REG_SR]|=1;
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;

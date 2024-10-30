@@ -39,7 +39,7 @@ module ExOpSloMulDiv(
 	valRs,		valRt,
 	valRn,		valRnHi,
 	exInHold,	exOutHold,
-	ex1MulFaz
+	ex1MulFaz,	regOutTrap
 	);
 
 input	clock;
@@ -56,6 +56,8 @@ input[63:0]		valRt;
 output[63:0]	valRn;
 output[63:0]	valRnHi;
 
+output[7:0]		regOutTrap;
+
 input	ex1MulFaz;		//Multiplier has handled divide.
 
 reg				tDoHold;
@@ -70,6 +72,10 @@ reg[63:0]		tNxtValRnHi;
 
 assign		valRn = tValRn;
 assign		valRnHi = tValRnHi;
+
+reg[7:0]	tRegOutTrap;
+reg[7:0]	tRegOutTrapB;
+assign	regOutTrap = tRegOutTrapB;
 
 reg[63:0]		tValQ;
 reg[63:0]		tNxtValQ;
@@ -133,6 +139,7 @@ begin
 	tDoHold			= 0;
 	tValFdivRndb	= 0;
 	tValFdivRnd		= 0;
+	tRegOutTrap		= 0;
 	
 	tNxtValAddD		= tValAddD;
 	tNxtValAddDc	= tValAddDc;
@@ -265,7 +272,7 @@ begin
 			tNxtValRn[22:0]		= tValAQ[52:30];
 			tValFdivRndb		= tValAQ[29];
 		end
-		
+				
 		tValFdivRnd = { 1'b0, tNxtValRn[7:0] } + { 8'b0, tValFdivRndb };
 		if(!tValFdivRnd[8])
 			tNxtValRn[7:0] = tValFdivRnd[7:0];
@@ -357,6 +364,13 @@ begin
 					1022 +
 					{ 4'b0, valRs[30:23] } -
 					{ 4'b0, valRt[30:23] };
+
+				if(	(valRt[62:55]!=8'hFF) &&
+					(valRt[62:55]!=8'h00) )
+				begin
+					tRegOutTrap		= 8'hA3;
+				end
+
 			end
 `endif
 
@@ -480,7 +494,8 @@ begin
 		tOpCnt		<= tNxtOpCnt;
 	end
 
-	tLstOpCnt	<= tOpCnt;
+	tLstOpCnt		<= tOpCnt;
+	tRegOutTrapB	<= tRegOutTrap;
 
 //	if(tNxtOpCnt!=0)
 	if(tDoHold || (tNxtOpCnt!=0))

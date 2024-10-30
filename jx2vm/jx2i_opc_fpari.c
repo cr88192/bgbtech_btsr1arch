@@ -2519,6 +2519,7 @@ void BJX2_Op_FSGNJXS_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_FMINS_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#if 0
 	u64 va, vb, vc;
 	int isgt;
 
@@ -2540,10 +2541,59 @@ void BJX2_Op_FMINS_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 
 	ctx->regs[op->rn]=isgt?vb:va;
+#endif
+
+#if 1
+	u64 va, vb, vc;
+	u32 val, vbl, vcl;
+	u32 vah, vbh, vch;
+	int isgt;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	
+	val=(u32)va;	vah=(u32)(va>>32);
+	vbl=(u32)vb;	vbh=(u32)(vb>>32);
+
+	if(val>>31)
+	{
+		if(vbl>>31)
+			{ isgt=vbl>val; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vbl>>31)
+			{ isgt=1; }
+		else
+			{ isgt=val>vbl; }
+	}
+	vcl=isgt?vbl:val;
+
+	if(vah>>31)
+	{
+		if(vbh>>31)
+			{ isgt=vbh>vah; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vbh>>31)
+			{ isgt=1; }
+		else
+			{ isgt=vah>vbh; }
+	}
+	vch=isgt?vbh:vah;
+
+	vc=(((u64)vch)<<32)|vcl;
+
+	ctx->regs[op->rn]=vc;
+#endif
 }
 
 void BJX2_Op_FMAXS_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+#if 0
 	u64 va, vb, vc;
 	int isgt;
 
@@ -2565,6 +2615,54 @@ void BJX2_Op_FMAXS_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 
 	ctx->regs[op->rn]=isgt?va:vb;
+#endif
+
+#if 1
+	u64 va, vb, vc;
+	u32 val, vbl, vcl;
+	u32 vah, vbh, vch;
+	int isgt;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	
+	val=(u32)va;	vah=(u32)(va>>32);
+	vbl=(u32)vb;	vbh=(u32)(vb>>32);
+
+	if(val>>31)
+	{
+		if(vbl>>31)
+			{ isgt=vbl>val; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vbl>>31)
+			{ isgt=1; }
+		else
+			{ isgt=val>vbl; }
+	}
+	vcl=isgt?val:vbl;
+
+	if(vah>>31)
+	{
+		if(vbh>>31)
+			{ isgt=vbh>vah; }
+		else
+			{ isgt=0; }
+	}else
+	{
+		if(vbh>>31)
+			{ isgt=1; }
+		else
+			{ isgt=vah>vbh; }
+	}
+	vch=isgt?vah:vbh;
+
+	vc=(((u64)vch)<<32)|vcl;
+
+	ctx->regs[op->rn]=vc;
+#endif
 }
 
 void BJX2_Op_FMIN_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -2663,12 +2761,32 @@ void BJX2_Op_FNMSUBD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vd;
 }
 
+int BJX2_CheckFloatNotZeroOrNaN(u32 val)
+{
+	if(((val>>23)&255)==0)
+		return(0);
+	if(((val>>23)&255)==255)
+		return(0);
+	return(1);
+}
+
 void BJX2_Op_FDIVS_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;
 
-	va=BJX2_CvtFloatToDouble(ctx->regs[op->rm]);
-	vb=BJX2_CvtFloatToDouble(ctx->regs[op->ro]);
+	ctx->trapc=op->pc;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+
+	if(	BJX2_CheckFloatNotZeroOrNaN(va>>32) ||
+		BJX2_CheckFloatNotZeroOrNaN(vb>>32) )
+	{
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}
+
+	va=BJX2_CvtFloatToDouble(va);
+	vb=BJX2_CvtFloatToDouble(vb);
 
 #if 0
 	if(vb!=0)

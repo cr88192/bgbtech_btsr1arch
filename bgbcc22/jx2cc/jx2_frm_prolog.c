@@ -1056,6 +1056,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 {
 	char tb[256];
 	ccxl_register reg, treg;
+	ccxl_register reg1;
 	ccxl_type tty;
 	BGBCC_CCXL_VirtOp *vop;
 	int bo, co, pr0;
@@ -1068,6 +1069,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 
 	ctx->cur_func=obj;
 	ctx->cur_vtr=NULL;
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+	{
+		BGBCC_DBGBREAK
+	}
 
 	if(sctx->frm_offs_thisptr)
 	{
@@ -1331,6 +1338,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		sctx->dfl_fpscr=0;
 	}
 
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+	{
+		BGBCC_DBGBREAK
+	}
+
 //	sctx->cur_fpscr=0x1000;	
 //	BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 
@@ -1378,6 +1391,9 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 
 		if(ctx->cur_func->regflags&BGBCC_REGFL_HAS128)
 			sctx->vsp_rsv-=2;
+
+		if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+			{ sctx->vsp_rsv+=12; }
 	}
 
 
@@ -1400,11 +1416,37 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 
 		if(sctx->vspan[i]->flag&BGBCC_RSPFL_NONLOCAL)
 		{
+			if(BGBCC_CCXL_IsRegImmP(ctx, reg))
+//			if(BGBCC_CCXL_IsRegImmSmallLongP(ctx, reg))
+			{
+				continue;
+			}
+		
 #if 1
 			if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
 				(sctx->is_leaf&1) &&
 //				!(sctx->vspan[i]->flag&BGBCC_RSPFL_GBLSTORE) &&
 				!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
+			{
+				continue;
+			}
+#endif
+
+#if 1
+			if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
+				!BGBCC_CCXL_IsRegGlobalFunctionP(ctx, reg) &&
+				!!BGBCC_CCXL_IsRegAliasedP(ctx, reg) &&
+				(ctx->cur_func->regflags&BGBCC_REGFL_REC_NOGBLSTORE))
+			{
+				continue;
+			}
+#endif
+
+#if 0
+			if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
+				!BGBCC_CCXL_IsRegGlobalFunctionP(ctx, reg) &&
+				!BGBCC_JX2C_CheckGlobalSetMask(ctx, sctx, reg) &&
+				!BGBCC_CCXL_IsRegAliasedP(ctx, reg))
 			{
 				continue;
 			}
@@ -1462,6 +1504,19 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		maxrsv+=14;
 	}
 
+	if(sctx->emit_riscv&0x33)
+	{
+		/* RISC-V and XG2RV */
+//		maxrsv=8;
+		maxrsv=10;
+
+//		if(ctx->cur_func->regflags&BGBCC_REGFL_HAS128)
+//			maxrsv-=2;
+
+		if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+			{ maxrsv+=12; }
+	}
+
 	ismaxrsv=0;
 
 	if(	(sctx->vspan_num<=maxrsv) &&
@@ -1477,8 +1532,36 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		for(i=maxvalidrsv; i<sctx->vspan_num; i++)
 		{
 			reg=sctx->vspan[i]->reg;
-			if(!BGBCC_CCXL_IsRegImmP(ctx, reg))
-				break;
+//			if(!BGBCC_CCXL_IsRegImmP(ctx, reg))
+//				break;
+
+			if(BGBCC_CCXL_IsRegImmP(ctx, reg))
+				continue;
+
+#if 1
+			if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
+				!BGBCC_CCXL_IsRegAliasedP(ctx, reg) &&
+				(ctx->cur_func->regflags&BGBCC_REGFL_REC_NOGBLSTORE))
+					continue;
+#endif
+
+			if(BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
+				(sctx->is_leaf&1) &&
+				!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
+					continue;
+
+#if 0
+			if(	BGBCC_CCXL_IsRegGlobalP(ctx, reg) &&
+				!BGBCC_CCXL_IsRegGlobalFunctionP(ctx, reg) &&
+				!BGBCC_CCXL_IsRegAliasedP(ctx, reg) &&
+				!BGBCC_JX2C_CheckGlobalSetMask(ctx, sctx, reg))
+			{
+				continue;
+			}
+#endif
+
+			break;
+
 //			if(ctx->cur_func->regflags&BGBCC_REGFL_IMMLOAD)
 //				break;
 		}
@@ -1506,6 +1589,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 
 	if(maxvalidrsv<sctx->vsp_rsv)
 		sctx->vsp_rsv=maxvalidrsv;
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+	{
+		BGBCC_DBGBREAK
+	}
 
 	cnt=0;
 	for(i=0; i<sctx->vsp_rsv; i++)
@@ -1616,6 +1705,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		k+=sctx->is_addr64?2:1;
 	}
 #endif
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+	{
+		BGBCC_DBGBREAK
+	}
 
 //	j=BGBCC_JX2_EmitCheckAutoLabelNear16B(sctx, epilbl);
 //	epij=BGBCC_JX2_EmitCheckAutoLabelNear16B(sctx, epilbl);
@@ -3743,14 +3838,26 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		sctx->sreg_live || sctx->sfreg_live)
 			{ BGBCC_DBGBREAK }
 
-#if 0
+#if 1
 	for(i=0; i<sctx->vsp_rsv; i++)
 	{
-		reg=sctx->vspan[i].reg;
-		BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, reg);
+		reg=sctx->vspan[i]->reg;
+//		BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, reg);
 //		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, reg);
+
+//		if(BGBCC_CCXL_IsRegImmP(ctx, reg))
+		if(	BGBCC_CCXL_IsRegImmP(ctx, reg) ||
+			BGBCC_CCXL_IsRegGlobalP(ctx, reg))
+		{
+			BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, reg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, reg);
+		}
 	}
 #endif
+
+//	if(ismaxrsv)
+//	{
+//	}
 
 	co=BGBCC_JX2_EmitGetOffs(sctx);
 	sctx->fnsz_pro=co-bo;

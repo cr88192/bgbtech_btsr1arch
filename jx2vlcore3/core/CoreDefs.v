@@ -793,7 +793,7 @@ IMM8REG, Fz
 
 	XB: Fznz_zejj		ImmFp10, Rn, Rn
 	XW: Fzeo_jjjj		ImmFp16, Ro, Ro
-	XL: Fznz_zzjj		(GBR, Disp10u), Rn
+	XL: Fznz_zzjj		(GBR, Disp16u), Rn
 	XQ: Fznz_zejj		Rn, ImmFp10, Rn
 
 IMM10REG, Fz
@@ -901,6 +901,7 @@ parameter[4:0] JX2_FMIMM_DISP8S		= 5'h0F;
 
 parameter[4:0] JX2_FMIMM_DISP11S	= 5'h10;
 parameter[4:0] JX2_FMIMM_IMM5U		= 5'h12;
+parameter[4:0] JX2_FMIMM_DISP20X	= 5'h13;
 
 parameter[3:0] JX2_RVCIMM_NONE		= 4'h0;
 parameter[3:0] JX2_RVCIMM_IMM6ALU	= 4'h1;
@@ -1105,6 +1106,9 @@ parameter[5:0] JX2_UCIX_ALUW_PSUBW	= 6'h21;		//ALU SUB
 
 parameter[5:0] JX2_UCIX_ALUW_PADDP	= 6'h30;		//ALU ADD Pointer
 parameter[5:0] JX2_UCIX_ALUW_PSUBP	= 6'h31;		//ALU SUB Pointer
+
+parameter[5:0] JX2_UCIX_ALUW_MOVHLW	= 6'h12;		//ALU (High, Low)
+parameter[5:0] JX2_UCIX_ALUW_MOVLHW	= 6'h13;		//ALU (Low, High)
 
 parameter[5:0] JX2_UCIX_ALUW_MOVHLD	= 6'h22;		//ALU (High, Low)
 parameter[5:0] JX2_UCIX_ALUW_MOVLHD	= 6'h23;		//ALU (Low, High)
@@ -1367,6 +1371,7 @@ parameter[5:0] JX2_UCIX_LDI_LDISH16	= 6'h02;		//
 parameter[5:0] JX2_UCIX_LDI_LDISH32	= 6'h03;		//
 parameter[5:0] JX2_UCIX_LDI_JLDIX	= 6'h04;		//
 parameter[5:0] JX2_UCIX_LDI_FLDCH	= 6'h05;		//
+parameter[5:0] JX2_UCIX_LDI_LDIHI32	= 6'h06;		//
 
 parameter[5:0] JX2_UCIX_SHAD_SHAD3	= 6'h00;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLD3	= 6'h01;		//

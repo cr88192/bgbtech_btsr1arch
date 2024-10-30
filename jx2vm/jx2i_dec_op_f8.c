@@ -26,8 +26,8 @@
 int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
-	s64 imm16u, imm16n, imm16s;
-	int rn_i16;
+	s64 imm16u, imm16n, imm16s, imm20s;
+	int rn_i16, rn_i16_org, wm, wi, isxg3;
 	int ret;
 	
 	op->fl|=BJX2_OPFL_TWOWORD;
@@ -35,17 +35,40 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 	op->opn2=opw2;
 	op->pc=addr;
 
+	wm=0;	wi=0;
+
 //	rn_i16=opw1&15;
 //	if(opw1&0x0100)
 //		rn_i16+=16;
 	rn_i16=opw1&31;
-	if(jbits&0x40000000U)rn_i16+=32;
+	if(jbits&0x40000000U)	rn_i16+=32;	
+	if(jbits&0x20000000U)	wm=1;
+	if(jbits&0x10000000U)	wi=1;
 	
+	isxg3=0;
+	if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&
+		(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) )
+			isxg3=1;
+
+	rn_i16_org=rn_i16;
 	rn_i16=BJX2_RemapGPR(ctx, rn_i16);
 
 	imm16u=(u16)opw2;
 	imm16n=opw2|(~65535);
 	imm16s=(s16)opw2;
+
+	imm20s=imm16u|((opw1&15)<<16);
+	if(opw1&8)
+		imm20s|=(~0)<<20;
+	imm20s^=((jbits>>28)&7)<<20;
+
+	if(isxg3)
+	{
+		imm20s=imm16u|(rn_i16<<16);
+		if(wi)
+			imm20s|=(~0)<<22;
+		imm20s=(imm20s<<1)-2;
+	}
 
 	if(jbits&0x02000000U)
 	{
@@ -152,6 +175,22 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 			default:
 				break;
 			}
+		}else
+			if(wm)
+		{
+			op->imm=imm16u;
+			op->rn=BJX2_REG_GBR;
+			op->rm=rn_i16;
+
+			op->nmid=BJX2_NMID_MOVQ;
+			op->fmid=BJX2_FMID_REGSTREGDISP;
+			op->Run=BJX2_Op_MOVQ_RegStRegDisp;
+			
+			if(wi)
+			{
+				op->nmid=BJX2_NMID_MOVL;
+				op->Run=BJX2_Op_MOVQ_RegStRegDisp;
+			}
 		}
 
 		break;
@@ -164,6 +203,40 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 		op->fmid=BJX2_FMID_LDREGDISPREG;
 		op->Run=BJX2_Op_LEAQ_LdRegDispReg;
 		op->fl|=BJX2_OPFL_NOWEX_IO2;
+		
+		if(wm)
+		{
+			op->nmid=BJX2_NMID_MOVQ;
+			op->fmid=BJX2_FMID_LDREGDISPREG;
+			op->Run=BJX2_Op_MOVQ_LdRegDispReg;
+			
+			if(wi)
+			{
+				op->nmid=BJX2_NMID_MOVL;
+				op->Run=BJX2_Op_MOVL_LdRegDispReg;
+			}
+		}
+		break;
+
+	case 0xE:	case 0xF:
+		op->imm=imm20s;
+		op->nmid=BJX2_NMID_BRA;
+		op->fmid=BJX2_FMID_PCDISP;
+		op->Run=BJX2_Op_BRA_PcDisp;
+		op->fl|=BJX2_OPFL_CTRLF;
+		op->fl|=BJX2_OPFL_NOWEX;
+		op->fl|=BJX2_OPFL_NOWEXSFX;
+		
+		if(isxg3 && wm)
+		{
+			op->nmid=BJX2_NMID_BSR;
+			op->Run=BJX2_Op_BSR_PcDisp;
+		}
+		if(!isxg3 && (opw1&0x0010))
+		{
+			op->nmid=BJX2_NMID_BSR;
+			op->Run=BJX2_Op_BSR_PcDisp;
+		}
 		break;
 
 	default:

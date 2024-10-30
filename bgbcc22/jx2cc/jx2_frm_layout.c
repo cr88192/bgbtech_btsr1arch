@@ -23,6 +23,98 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
+int BGBCC_JX2C_MergeGlobalSetMask(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *dobj,
+	BGBCC_CCXL_RegisterInfo *sobj)
+{
+	int i, j, k, n;
+	if(!sobj)
+		return(0);
+	if(!sobj->gblsetmask)
+		return(0);
+
+	if(!dobj)
+		return(0);
+	if(!dobj->gblsetmask)
+		return(0);
+
+	if(!(sctx->is_simpass&64))
+		return(0);
+
+	n=((ctx->n_reg_globals+63)/64);
+	
+	for(i=0; i<n; i++)
+		{ dobj->gblsetmask[i]|=sobj->gblsetmask[i]; }
+
+	return(1);
+}
+
+int BGBCC_JX2C_InvalidateGlobalSetMask(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *dobj)
+{
+	int n;
+
+	if(!dobj)
+		return(0);
+	if(!dobj->gblsetmask)
+		return(0);
+
+	if(dobj->gblsetmask[0]&1)
+		return(0);
+
+	if(!(sctx->is_simpass&64))
+		return(0);
+
+	n=((ctx->n_reg_globals+63)/64);
+	memset(dobj->gblsetmask, 0xFF, n*8);
+
+	return(1);
+}
+
+int BGBCC_JX2C_MarkGlobalSetMask(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	BGBCC_CCXL_RegisterInfo *obj,
+	ccxl_register reg)
+{
+	int i, n;
+
+	if(!obj)
+		return(0);
+	if(!obj->gblsetmask)
+		return(0);
+
+	if(BGBCC_CCXL_IsRegGlobalP(ctx, reg))
+	{
+		i=BGBCC_CCXL_GetRegID(ctx, reg);
+		
+		if(i>0)
+		{
+			obj->gblsetmask[i>>6]|=(1ULL<<(i&63));
+		}
+	}
+	return(0);
+}
+
+int BGBCC_JX2C_CheckGlobalSetMask(BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx, ccxl_register reg)
+{
+	int i, n;
+
+	if(BGBCC_CCXL_IsRegGlobalP(ctx, reg))
+	{
+		i=BGBCC_CCXL_GetRegID(ctx, reg);
+		
+		if(i>0)
+		{
+			if(ctx->cur_func->gblsetmask[i>>6]&(1ULL<<(i&63)))
+				return(1);
+		}
+	}
+	return(0);
+}
+
 int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	BGBCC_CCXL_RegisterInfo *obj)
@@ -33,9 +125,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	char *fname;
 	ccxl_register reg, reg1;
 	ccxl_type tty;
+	s64 regfl, regfl2;
 	int trn;
 	int ni, nf, rcls, noarg, sz, tsz, msz;
-	int i, j, k, ka, kf;
+	int i, j, k, ka, kf, nogblstore, ftgblstore;
 
 	sctx->vspan_num=0;
 
@@ -49,6 +142,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	sctx->frm_offs_isrsaves=0;
 
 	memset(localmap, 0, 16*sizeof(u32));
+
+	for(i=0; i<256; i++)
+		bgbcc_jx2cc_framevreghash[i]=-1;
 
 	for(i=0; i<obj->n_vop; i++)
 	{
@@ -116,6 +212,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //				{ obj->args[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
 //			if(BGBCC_CCXL_IsRegLocalP(ctx, reg))
 //				{ obj->locals[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
+
+			obj->regflags|=BGBCC_REGFL_HASSTIX;
+		}
+		
+		if(vop->opn==CCXL_VOP_STORESLOT)
+		{
+			obj->regflags|=BGBCC_REGFL_HASSTIX;
 		}
 
 		if((vop->opn==CCXL_VOP_INITOBJ) ||
@@ -432,10 +535,21 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	sctx->vsp_tcnt=0;
 	trn=0;
 	BGBCC_JX2C_BeginSetupFrameVRegSpan(ctx, sctx);
+	nogblstore=1;
+	ftgblstore=1;
 
 	for(i=0; i<obj->n_vop; i++)
 	{
 		vop=obj->vop[i];
+
+		if(vop->opn==CCXL_VOP_OBJCALL)
+		{
+			BGBCC_JX2C_InvalidateGlobalSetMask(ctx, sctx, obj);
+			obj->regflags|=BGBCC_REGFL_NOTLEAF;
+			obj->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+			nogblstore=0;
+			ftgblstore=3;
+		}
 
 		if(vop->opn==CCXL_VOP_CALL)
 		{
@@ -450,11 +564,54 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			{
 				ctx->cur_func->regflags|=BGBCC_REGFL_CALLVARARG;
 			}
+			
+			if(BGBCC_CCXL_IsRegGlobalFunctionP(ctx, vop->srca))
+			{
+				if(BGBCC_CCXL_GetRegRegisterInfo(ctx, vop->srca)!=obj)
+//				if(1)
+				{
+					regfl=BGBCC_CCXL_GetRegFlags(ctx, reg);
+					if(	(regfl&BGBCC_REGFL_GBLSTORE) ||
+						(regfl&BGBCC_REGFL_HASGBLALIAS) ||
+						(regfl&BGBCC_REGFL_REC_GBLSTORE))
+					{
+						ctx->cur_func->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+						nogblstore=0;
+						
+						BGBCC_JX2C_MergeGlobalSetMask(ctx, sctx, obj,
+							BGBCC_CCXL_GetRegRegisterInfo(ctx, vop->srca));
+					}else if(!(regfl&BGBCC_REGFL_REC_NOGBLSTORE))
+					{
+						nogblstore=0;
+					}
+
+					if(!(regfl&(
+						BGBCC_REGFL_REC_FTGBLSTORE|
+						BGBCC_REGFL_REC_NOGBLSTORE)))
+					{
+						if(!(ftgblstore&2))
+							ftgblstore=0;
+					}
+				}
+			}else
+			{
+				/* Be cautious. */
+				BGBCC_JX2C_InvalidateGlobalSetMask(ctx, sctx, obj);
+				ctx->cur_func->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+				nogblstore=0;
+
+				BGBCC_JX2C_InvalidateGlobalSetMask(ctx, sctx, obj);
+				ftgblstore=3;
+			}
 		}
 		
 		if(BGBCC_CCXL_IsRegGlobalP(ctx, vop->dst))
 		{
 			ctx->cur_func->regflags|=BGBCC_REGFL_GBLSTORE;
+			ctx->cur_func->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+			nogblstore=0;
+
+			BGBCC_JX2C_MarkGlobalSetMask(ctx, sctx, obj, vop->dst);
 
 			if(BGBCC_CCXL_IsRegAliasedP(ctx, vop->dst))
 				obj->regflags|=BGBCC_REGFL_HASGBLALIAS;
@@ -516,6 +673,85 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 		}
 	}
+	
+	regfl=ctx->cur_func->regflags;
+
+	if(!(regfl&BGBCC_REGFL_NOTLEAF))
+		nogblstore=1;
+
+	if(	(regfl&BGBCC_REGFL_GBLSTORE) ||
+		(regfl&BGBCC_REGFL_HASGBLALIAS) ||
+		(regfl&BGBCC_REGFL_ALLOCA) ||
+//		(regfl&BGBCC_REGFL_HASSTIX) ||
+		(regfl&BGBCC_REGFL_REC_GBLSTORE))
+	{
+		nogblstore=0;
+		ctx->cur_func->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+	}
+
+	if(nogblstore)
+	{
+		/* Entire call graph is known clean WRT global variables. */
+		ctx->cur_func->regflags|=BGBCC_REGFL_REC_NOGBLSTORE;
+	}
+
+	if(ftgblstore)
+	{
+		/* This part of the graph is fully resolved. */
+		ctx->cur_func->regflags|=BGBCC_REGFL_REC_FTGBLSTORE;
+	}
+	
+	if(obj->qname[0]=='m')
+	{
+		if(	!strcmp(obj->qname, "memcpy") ||
+			!strcmp(obj->qname, "memset") ||
+			!strcmp(obj->qname, "memmove"))
+		{
+//			ctx->cur_func->regflags|=BGBCC_REGFL_GBLSTORE;
+//			ctx->cur_func->regflags|=BGBCC_REGFL_REC_GBLSTORE;
+
+			/* pretend these don't touch anything */
+			ctx->cur_func->regflags&=~BGBCC_REGFL_REC_GBLSTORE;
+			ctx->cur_func->regflags|=BGBCC_REGFL_REC_NOGBLSTORE;
+		}
+	}
+
+	if(obj->qname[0]=='t')
+	{
+		if(	!strcmp(obj->qname, "tk_syscall") ||
+			!strcmp(obj->qname, "tk_sprintf") ||
+			!strcmp(obj->qname, "tk_printf"))
+		{
+			/* pretend these don't touch anything */
+			ctx->cur_func->regflags&=~BGBCC_REGFL_REC_GBLSTORE;
+			ctx->cur_func->regflags|=BGBCC_REGFL_REC_NOGBLSTORE;
+		}
+	}
+	
+#if 0
+	regfl=ctx->cur_func->regflags;
+
+	if(!sctx->is_simpass)
+	{
+		if(!(regfl&(BGBCC_REGFL_REC_GBLSTORE|BGBCC_REGFL_REC_NOGBLSTORE)))
+		{
+			printf("DBG: Not Rec GBLSTORE or NOGBLSTORE %s\n", obj->qname);
+		}else if(regfl&BGBCC_REGFL_REC_GBLSTORE)
+		{
+			if(regfl&BGBCC_REGFL_REC_GBLSTORE)
+			{
+				printf("DBG: FTGBLSTORE  %s\n", obj->qname);
+			}else
+			{
+				printf("DBG: GBLSTORE    %s\n", obj->qname);
+			}
+		}else if(regfl&BGBCC_REGFL_REC_NOGBLSTORE)
+		{
+			printf("DBG: NOGBLSTORE  %s\n", obj->qname);
+		}
+	}
+#endif
+	
 
 	for(i=0; i<obj->n_vop; i++)
 	{
@@ -533,7 +769,32 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		
 		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->dst, 1, vop->tgt_mult);
 
-		if(vop->opn!=CCXL_VOP_CALL)
+		if(vop->opn==CCXL_VOP_MOV)
+		{
+			reg1=vop->srca;
+			BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, vop->type, &reg1);
+			if(reg1.val!=vop->srca.val)
+			{
+				BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,
+					reg1, 0, vop->tgt_mult);
+			}
+		}
+
+		if(	(vop->opn==CCXL_VOP_BINARY) ||
+			(vop->opn==CCXL_VOP_COMPARE) ||
+			(vop->opn==CCXL_VOP_JCMP))
+		{
+			reg1=vop->srcb;
+			BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, vop->type, &reg1);
+			if(reg1.val!=vop->srcb.val)
+			{
+				BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,
+					reg1, 0, vop->tgt_mult);
+			}
+		}
+
+		if(	(vop->opn!=CCXL_VOP_CALL) &&
+			(vop->opn!=CCXL_VOP_CALL_INTRIN))
 //		if(1)
 		{
 			BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,
@@ -548,7 +809,6 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		}
 
 		BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx, vop->srcb, 0, vop->tgt_mult);
-
 
 		if(vop->opn==CCXL_VOP_CALL)
 		{

@@ -3082,6 +3082,14 @@ const short bgbcc_jx2_maxreg_xgpr_lf=59;
 #endif
 
 #if 1
+short bgbcc_jx2_jcachereg_xrv[64];
+short bgbcc_jx2_qcachereg_xrv[64];
+short bgbcc_jx2_pcachereg_xrv[64];
+short bgbcc_jx2_lcachereg_xrv[64];
+
+short bgbcc_jx2_maxreg_xrv=0;
+short bgbcc_jx2_maxreg_xrv_lf=0;
+
 short bgbcc_jx2_jcachereg_xg2rv[64];
 short bgbcc_jx2_qcachereg_xg2rv[64];
 short bgbcc_jx2_pcachereg_xg2rv[64];
@@ -3090,16 +3098,28 @@ short bgbcc_jx2_lcachereg_xg2rv[64];
 short bgbcc_jx2_maxreg_xg2rv=0;
 short bgbcc_jx2_maxreg_xg2rv_lf=0;
 
+const short bgbcc_jx2_remap_xrv[64]={
+	-1, -1,  6,  7, 10, 11, 12, 13,
+	 8,  9, 18, 19, 20, 21, 26,  2,
+	28, 29, 30, 31, 14, 15, 16, 17,
+	-1, -1, -1, 27, 22, 23, 24, 25,
+
+	36, 37, 38, 39, 42, 43, 44, 45,
+	40, 41, 50, 51, 52, 53, 54, 55,
+	-1, -1, -1, -1, 46, 47, 48, 49,
+	56, 57, 58, 59, -1, -1, -1, -1
+};
+
 const short bgbcc_jx2_remap_xg2rv[64]={
 	-1, -1,  6,  7, 10, 11, 12, 13,
-	 8,  9, 18, 19, 20, 21, 27,  2,
+	 8,  9, 18, 19, 20, 21, 26,  2,
 	28, 29, 30, 31, 14, 15, 16, 17,
-	-1, -1, -1, 26, 22, 23, 24, 25,
+	56, 57, 58, 59, 22, 23, 24, 25,
 
-	32, 33, 34, 35, 42, 43, 44, 45,
+	36, 37, 38, 39, 42, 43, 44, 45,
 	40, 41, 50, 51, 52, 53, 54, 55,
-	36, 37, 38, 39, 46, 47, 48, 49,
-	56, 57, 58, 59, -1, -1, -1, -1
+	-1, -1, -1, -1, 46, 47, 48, 49,
+	-1, -1, -1, -1, -1, -1, -1, 27
 };
 
 
@@ -3150,6 +3170,50 @@ int BGBCC_JX2_InitRegsXG2RV()
 
 	bgbcc_jx2_maxreg_xg2rv=bgbcc_jx2_maxreg_xgpr;
 	bgbcc_jx2_maxreg_xg2rv_lf=bgbcc_jx2_maxreg_xgpr_lf;
+
+
+
+	for(i=0; i<64; i++)
+	{
+		j=bgbcc_jx2_jcachereg_xgpr[i];
+		k=bgbcc_jx2_remap_xrv[j&63];
+		if(k>0)
+			k=BGBCC_SH_REG_RD0+k;
+		else
+			k=BGBCC_SH_REG_ZZR;
+		bgbcc_jx2_jcachereg_xrv[i]=k;
+
+		j=bgbcc_jx2_qcachereg_xgpr[i];
+		k=bgbcc_jx2_remap_xrv[j&63];
+		if(k>0)
+			k=BGBCC_SH_REG_RQ0+k;
+		else
+			k=BGBCC_SH_REG_ZZR;
+		bgbcc_jx2_qcachereg_xrv[i]=k;
+
+		j=bgbcc_jx2_pcachereg_xgpr[i];
+		k=bgbcc_jx2_remap_xrv[j&63];
+		if(k>0)
+			k=BGBCC_SH_REG_RQ0+k;
+		else
+			k=BGBCC_SH_REG_ZZR;
+		bgbcc_jx2_pcachereg_xrv[i]=k;
+
+
+		j=bgbcc_jx2_lcachereg_xgpr[i];
+		k=j&0x1E;
+		if(j&1)k|=32;
+		k=bgbcc_jx2_remap_xrv[k];
+		if((k>0) && (j!=BGBCC_SH_REG_ZZR))
+			{ k=BGBCC_SH_REG_LR0+((k&0x1E)+((k>>5)&1)); }
+		else
+			{ k=BGBCC_SH_REG_ZZR; }
+		bgbcc_jx2_lcachereg_xrv[i]=k;
+	}
+
+	bgbcc_jx2_maxreg_xrv=bgbcc_jx2_maxreg_xgpr;
+	bgbcc_jx2_maxreg_xrv_lf=bgbcc_jx2_maxreg_xgpr_lf;
+
 	return(1);
 }
 
@@ -4314,6 +4378,13 @@ int BGBCC_JX2C_EmitGetRegister(
 		return(BGBCC_SH_REG_ZZR);
 	if(reg.val==CCXL_REGID_REG_DZ)
 		return(BGBCC_SH_REG_ZZR);
+
+	if(((s64)reg.val)<0)
+		{ BGBCC_DBGBREAK }
+
+	reg1=sctx->regalc_map[0];
+	if(((s64)reg1.val)<0)
+		{ BGBCC_DBGBREAK }
 
 	creg=BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, fl);
 	if((creg>=0) && (creg!=BGBCC_SH_REG_ZZR))
@@ -5845,7 +5916,8 @@ int BGBCC_JX2C_EmitSyncRegisterIndex2(
 			BGBCC_CCXL_IsRegVolatileP(ctx, reg) ||
 			(regfl&BGBCC_REGFL_ALIASPTR))
 		{
-			sctx->regalc_map[i].val=-1;
+//			sctx->regalc_map[i].val=-1;
+			sctx->regalc_map[i].val=CCXL_REGID_REG_Z;
 			sctx->regalc_utcnt[i]=0;
 			sctx->regalc_ltcnt[i]=0;
 			sctx->regalc_dirty&=~(1ULL<<i);
@@ -6064,7 +6136,8 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 				if(i<sctx->vsp_rsv)
 					continue;
 
-				sctx->regalc_map[i].val=-1;
+//				sctx->regalc_map[i].val=-1;
+				sctx->regalc_map[i].val=CCXL_REGID_REG_Z;
 				sctx->regalc_utcnt[i]=0;
 				sctx->regalc_ltcnt[i]=0;
 				sctx->regalc_dirty&=~(1ULL<<i);
@@ -6218,24 +6291,35 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 	if(sctx->emit_riscv&3)
 	{
 		BGBCC_JX2_InitRegsXG2RV();
-		sctx->jcachereg=bgbcc_jx2_jcachereg_xg2rv;
-		sctx->qcachereg=bgbcc_jx2_qcachereg_xg2rv;
-		sctx->pcachereg=bgbcc_jx2_pcachereg_xg2rv;
-		sctx->lcachereg=bgbcc_jx2_lcachereg_xg2rv;
 
-		sctx->maxreg_gpr=bgbcc_jx2_maxreg_xg2rv;
-		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_xg2rv_lf;
-		sctx->lmaxreg_gpr=bgbcc_jx2_maxreg_xg2rv;
-		sctx->lmaxreg_gpr_lf=bgbcc_jx2_maxreg_xg2rv_lf;
+		sctx->jcachereg=bgbcc_jx2_jcachereg_xrv;
+		sctx->qcachereg=bgbcc_jx2_qcachereg_xrv;
+		sctx->pcachereg=bgbcc_jx2_pcachereg_xrv;
+		sctx->lcachereg=bgbcc_jx2_lcachereg_xrv;
+
+		sctx->maxreg_gpr=bgbcc_jx2_maxreg_xrv;
+		sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_xrv_lf;
+		sctx->lmaxreg_gpr=bgbcc_jx2_maxreg_xrv;
+		sctx->lmaxreg_gpr_lf=bgbcc_jx2_maxreg_xrv_lf;
 
 		sctx->regs_excl			=0xFFFFFFFF0000003FULL;
 		sctx->regs_excl_tiny	=0xFFFFFFFF0FFC03FFULL;
-		sctx->regs_scratch		=0xF003FCFFF003FC00ULL;
-		sctx->regs_scratch_ts	=0xF003FCFFF003FCC0ULL;
+		sctx->regs_scratch		=0xF003FCF0F003FC00ULL;
+		sctx->regs_scratch_ts	=0xF003FCF0F003FCC0ULL;
 		sctx->regs_args			=0x0003FC0000F3FC00ULL;
 
-		if(sctx->emit_riscv&2)
+		if((sctx->emit_riscv&2) && (sctx->has_xgpr&1))
 		{
+			sctx->jcachereg=bgbcc_jx2_jcachereg_xg2rv;
+			sctx->qcachereg=bgbcc_jx2_qcachereg_xg2rv;
+			sctx->pcachereg=bgbcc_jx2_pcachereg_xg2rv;
+			sctx->lcachereg=bgbcc_jx2_lcachereg_xg2rv;
+
+			sctx->maxreg_gpr=bgbcc_jx2_maxreg_xg2rv;
+			sctx->maxreg_gpr_lf=bgbcc_jx2_maxreg_xg2rv_lf;
+			sctx->lmaxreg_gpr=bgbcc_jx2_maxreg_xg2rv;
+			sctx->lmaxreg_gpr_lf=bgbcc_jx2_maxreg_xg2rv_lf;
+
 			sctx->regs_excl			=0x000000000000003FULL;
 			sctx->regs_excl_tiny	=0x0FFC03000FFC03FFULL;
 		}
@@ -6261,7 +6345,8 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 //		if(i<sctx->vsp_rsv)
 //			continue;
 
-		sctx->regalc_map[i].val=-1;
+//		sctx->regalc_map[i].val=-1;
+		sctx->regalc_map[i].val=CCXL_REGID_REG_Z;
 		sctx->regalc_utcnt[i]=0;
 		sctx->regalc_ltcnt[i]=0;
 		sctx->regalc_dirty&=~(1ULL<<i);
@@ -6307,7 +6392,8 @@ int BGBCC_JX2C_EmitScratchFlushRegisters(
 		if(BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i)<=0)
 			continue;
 
-		sctx->regalc_map[i].val=-1;
+//		sctx->regalc_map[i].val=-1;
+		sctx->regalc_map[i].val=CCXL_REGID_REG_Z;
 		sctx->regalc_utcnt[i]=0;
 		sctx->regalc_ltcnt[i]=0;
 		sctx->regalc_dirty&=~(1ULL<<i);
@@ -6330,7 +6416,8 @@ int BGBCC_JX2C_EmitEpilogFlushRegisters(
 
 	for(i=0; i<sctx->maxreg_gpr_lf; i++)
 	{
-		sctx->regalc_map[i].val=-1;
+//		sctx->regalc_map[i].val=-1;
+		sctx->regalc_map[i].val=CCXL_REGID_REG_Z;
 		sctx->regalc_utcnt[i]=0;
 		sctx->regalc_ltcnt[i]=0;
 		sctx->regalc_dirty&=~(1ULL<<i);
