@@ -53,13 +53,14 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 	s64 v0, v1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
-	int isriscv, isbjx2, isbjx2xg2;
+	int isriscv, isbjx2, isbjx2xg2, isx3rv;
 	int tg;
 
 	isriscv=(mach==0x5064);
 	isbjx2=(mach==0xB264);
 //	isbjx2xg2=(mach==0xB265);
 	isbjx2xg2 = (mach==0xB265) || (mach==0xB250);
+	isx3rv=(mach==0xB253);
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
@@ -110,7 +111,7 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				*((u32 *)pdst)=(*((u32 *)pdst))+(disp>>32);
 				break;
 			case 5:
-				if(isriscv)
+				if(isriscv || isx3rv)
 				{
 					/* RISC-V: Disp High 20 */
 					pv=*((u32 *)pdst);
@@ -247,7 +248,7 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 				
 			case 7:
-				if(isriscv)
+				if(isriscv || isx3rv)
 				{
 					/* RISC-V: Low 12 I */
 					pv=*((u32 *)pdst);
@@ -258,7 +259,7 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				__debugbreak();
 				break;
 			case 8:
-				if(isriscv)
+				if(isriscv || isx3rv)
 				{
 					/* RISC-V: Low 12 S */
 					pv=*((u32 *)pdst);
@@ -508,7 +509,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 //	if((mach!=0xB264) && (mach!=0x5064))
 	if(	(mach!=0xB264) && (mach!=0xB265) &&
 		(mach!=0x5064) && (mach!=0xB250) &&
-		(mach!=0xB296) && (mach!=0xB297))
+		(mach!=0xB296) && (mach!=0xB297) &&
+		(mach!=0xB253))
 	{
 		printf("TKPE: Unexpected Arch %04X\n", mach);
 		return(NULL);
@@ -740,6 +742,11 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	{
 //		entry|=0x0004000000000003ULL;
 		entry|=0x008C000000000001ULL;
+	}
+
+	if(mach==0xB253)
+	{
+		entry|=0x000C000000000001ULL;
 	}
 
 //	img->bootptr=imgptr+startrva;

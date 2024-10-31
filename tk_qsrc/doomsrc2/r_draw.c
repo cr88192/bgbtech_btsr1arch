@@ -1084,6 +1084,7 @@ void R_DrawSpan (void)
 
 	while (count >= 4)
 	{
+#if 0
 		ytemp = position>>4;
 		ytemp = ytemp & 4032;
 		xtemp = position>>26;
@@ -1114,6 +1115,47 @@ void R_DrawSpan (void)
 
 		count -= 4;
 		dest += 4;
+#endif
+
+#if 1
+		ytemp = position>>4;
+		ytemp = ytemp & 4032;
+		xtemp = position>>26;
+		spot = xtemp | ytemp;
+		position += step;
+
+		value = source[spot];
+		ytemp = position>>4;
+		ytemp = ytemp & 4032;
+		value = colormap[value];
+		xtemp = position>>26;
+		spot = xtemp | ytemp;
+		dest[0] = value;
+		position += step;
+
+		value = source[spot];
+		ytemp = position>>4;
+		ytemp = ytemp & 4032;
+		value = colormap[value];
+		xtemp = position>>26;
+		spot = xtemp | ytemp;
+		dest[1] = value;
+		position += step;
+
+		value = source[spot];
+		ytemp = position>>4;
+		ytemp = ytemp & 4032;
+		value = colormap[value];
+		xtemp = position>>26;
+		spot = xtemp | ytemp;
+		dest[2] = value;
+		value = source[spot];
+		position += step;
+		value = colormap[value];
+		count -= 4;
+		dest[3] = value;
+		dest += 4;
+#endif
 	}
 	while (count > 0)
 	{

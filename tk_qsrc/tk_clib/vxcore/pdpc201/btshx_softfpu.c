@@ -597,6 +597,17 @@ u64 __sfp_fsqrt_f64(u64 f0)
 }
 #endif
 
+u64 __sfp_pdiv_f32(u64 f0, u64 f1)
+{
+	u64 vc;
+	u32 vc0, vc1;
+	
+	vc0=__sfp_fmul_f32((u32)f0, __sfp_frcp_f32((u32)f1));
+	vc1=__sfp_fmul_f32((u32)(f0>>32), __sfp_frcp_f32((u32)(f1>>32)));
+	vc=vc0|(((u64)vc1)<<32);
+	return(vc);
+}
+
 
 u64 __sfp_fcnvsd(u32 f0)
 {

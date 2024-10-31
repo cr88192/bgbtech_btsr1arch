@@ -631,13 +631,13 @@ s64 TK_HandleSyscall(TKPE_TaskInfo *task,
 			break;
 
 		default:
-			tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
+			tk_printf("SYSC: BAD A sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
 				sObj, uMsg, vParm1, vParm2);
 			break;
 		}
 		break;
 	default:
-		tk_printf("SYSC: BAD sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
+		tk_printf("SYSC: BAD B sObj=%p, uMsg=%X, vParm1=%p, vParm1=%p\n",
 			sObj, uMsg, vParm1, vParm2);
 		break;
 	}

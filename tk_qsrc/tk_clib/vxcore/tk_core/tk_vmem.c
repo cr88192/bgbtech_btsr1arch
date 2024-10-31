@@ -122,6 +122,7 @@ extern volatile u64 __arch_teah;
 extern volatile u64 __arch_exsr;
 extern volatile u64 __arch_mmcr;
 extern volatile u64 __arch_sttb;
+extern volatile u64 __arch_spc;
 
 extern volatile u64 __arch_gbh;
 extern volatile u64 __arch_pch;
@@ -4121,6 +4122,22 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea, u64 teah)
 	}
 }
 
+void *tk_vmem_virttophys(u64 vaddr)
+{
+	u64 pte, vaddr1;
+
+	u64 mask_lo, mask_hi;
+	
+	mask_lo=(1<<TKMM_PAGEBITS)-1;
+	mask_hi=~mask_lo;
+	
+	pte=TK_VMem_GetPageTableEntry2(vaddr, 0);
+	TK_VMem_ValidatePageTableEntry(pte);
+	
+	vaddr1=(pte&mask_hi)|(vaddr&mask_lo);
+	return((void *)vaddr1);
+}
+
 void tk_vmem_aclmiss(u64 ttb, u64 tea, u64 teah)
 {
 	u64 *acla;
@@ -4190,6 +4207,67 @@ void tk_vmem_aclmiss(u64 ttb, u64 tea, u64 teah)
 	}
 }
 
+u64 __sfp_fdiv_f64(u64 f0, u64 f1);
+u64 __sfp_pdiv_f32(u64 f0, u64 f1);
+
+void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
+{
+	u32 opw;
+	int rn, rm, ro, rmf, rnf, rof, isok;
+
+	opw=*opp;
+
+	rn=(opw>> 7);	rm=(opw>>15);	ro=(opw>>20);
+	rn&=31;			rm&=31;			ro&=31;
+	rnf=rn+32;		rmf=rm+32;		rof=ro+32;
+	isok=0;
+
+	if((opw&0x7F)==0x53)
+	{
+		switch(opw>>25)
+		{
+		case 0x0C:
+			/* FDIV.S */
+			regs[rnf]=__sfp_pdiv_f32(regs[rmf], regs[rof]);
+			isok=1;
+			break;
+		case 0x0D:
+			/* FDIV.D */
+			regs[rnf]=__sfp_fdiv_f64(regs[rmf], regs[rof]);
+			isok=1;
+			break;
+		default:
+			break;
+		}
+	}
+	
+	if(isok)
+	{
+		/* instruction was emulated. */
+		regs[TKPE_REGSAVE_SPC]=regs[TKPE_REGSAVE_SPC]+4;
+		return;
+	}
+
+	__debugbreak();
+}
+
+void tk_vmem_emurq(u64 spc, u64 exc, u64 *regs)
+{
+	u32 ssr, opw;
+	u32 *opp;
+	
+	opp=tk_vmem_virttophys(spc);
+	
+	ssr=exc>>32;
+	if(((ssr>>26)&1) && !((ssr>>23)&1))
+	{
+		tk_vmem_emurq_rv(spc, exc, regs, opp);
+		return;
+	}
+	
+	opw=*opp;
+}
+
 #ifdef __BJX2__
 __interrupt void __isr_tlbfault(void)
 // __interrupt_tbrsave void __isr_tlbfault(void)
@@ -4197,14 +4275,16 @@ __interrupt void __isr_tlbfault(void)
 {
 	TKPE_TaskInfo *task, *task2, *task3;
 	TKPE_TaskInfoKern *taskern, *taskern2;
+	u32 *isrsave;
 
-	u64 ttb, tea, teah, exc;
+	u64 ttb, tea, teah, exc, spc;
 	u16 exsr;
 
 	ttb=__arch_ttb;
 	tea=__arch_tea;
 	teah=__arch_teah;
 	exc=__arch_exsr;
+	spc=__arch_spc;
 	exsr=(u16)(exc);
 //	tea=exc>>16;
 
@@ -4233,6 +4313,11 @@ __interrupt void __isr_tlbfault(void)
 	{
 		tk_vmem_aclmiss(ttb, tea, teah);
 		return;
+	}else
+		if(exsr==0xA003)
+	{
+		isrsave=__arch_isrsave;
+		tk_vmem_emurq(spc, exc, isrsave);
 	}else
 	{
 		__debugbreak();

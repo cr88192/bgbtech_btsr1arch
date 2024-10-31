@@ -15,6 +15,9 @@ int tk_shell_chksane_bcd()
 	vj=vi*vi;
 	vk=152415765279684L;
 
+	if(vj!=vk)
+		__debugbreak();
+
 //	__debugbreak();
 
 	printf("BCD 1: %08X %08X\n", vj, vk);
