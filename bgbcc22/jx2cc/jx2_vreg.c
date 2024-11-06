@@ -2895,7 +2895,8 @@ int BGBCC_JX2C_EmitPredCmpVRegVRegInt(
 	s32 imm;
 	int nm1, nm2, nm3;
 	
-	if(sctx->emit_riscv&0x11)
+	if(	(sctx->emit_riscv&0x11) &&
+		!(sctx->emit_riscv&0x22))
 	{
 		printf("BGBCC_JX2C_EmitPredCmpVRegVRegInt: Unsupported on RISC-V\n");
 		return(0);

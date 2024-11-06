@@ -1,9 +1,11 @@
-BSR4K / XG3:
+BSR4K / XG3 / XG3RV:
 * Repack of XG2RV Encoding Space to be compatible with RISC-V OP32 Encodings.
 ** Some mostly minor differences will exist.
 * Would exist in a separate operating mode from RV64GC.
 ** XG3RV uses the same encoding space as the RISC-V 'C' extension.
 * XG3RV will require a 32-bit instruction alignment.
+* For XG3, will consider support for predicated instructions as optional.
+
 
 Original XG2/XG2RV Encoding:
 * NMOP-YwYY-nnnn-mmmm ZZZZ-Qnmo-oooo-XXXX (F0/F3/F9)
@@ -19,20 +21,20 @@ Repack:
 * iiii-iiiiii-iiiiii-jjjj-jjjjab-c1-1Y10 (FE/FF)
 
 Pw:
-* 00: OP?T (Conditional True)
-* 01: OP?F (Conditional False)
+* 00: OP?T (Conditional True, Optional)
+* 01: OP?F (Conditional False, Optional)
 * 10: OP
-* 11: RV OP32
+* 11: RV OP32 (XG3RV)
 
 Where, YYY:
-  000: F0 (3R ops)
-  001: F1 (LD/ST Disp10)
-  010: F2 (3RI Imm10 Ops)
-  011: F3 (Reserved / User, 3R Ops)
-  100: F8 (Imm16 ops)
-  101: F9 (Reserved, 3R Ops)
-  110: FE (Jumbo Prefix)
-  111: FF (Jumbo Prefix)
+* 000: F0 (3R ops)
+* 001: F1 (LD/ST Disp10)
+* 010: F2 (3RI Imm10 Ops)
+* 011: F3 (Reserved / User, 3R Ops)
+* 100: F8 (Imm16 ops)
+* 101: F9 (Reserved, 3R Ops)
+* 110: FE (Jumbo Prefix)
+* 111: FF (Jumbo Prefix)
 
 Exact repacking rules will depend on the encoding block.
 * F1/F2/F8: Will modify repacking such that immed bits are contiguous.
@@ -56,11 +58,67 @@ Registers:
 * R5..R31: GRPs
 * R32..R63: GRPs (Aliased to F0..F31)
 
+Versus RV64, will treat the GPRs and FPRs as a single unified register space.
+
+
 Can note that Rn notation will specify a single register being used, wheres Xn will specify a 128-bit register pair.
 
 R0 and R1 will be special if used as the base register of a Load/Store:
-* R0: PC
-* R1: Reserved
+* R0: PC (Unscaled)
+* R1: GP (Unscaled)
+
+Where GP (GBR) may be encoded as either R1 or R3, but with the difference that R1 will use a byte-scale, and R3 will be scaled based on the element size (as with most other GPRs).
+
+
+=== Jumbo Prefixes ===
+
+F0/F3/F9
+* iiii-iiiiii-iiiiii-jjjj-jjjjBB-B1-1010 (FE)
+* XXXX-ASkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+
+For the F0/F3/F9 block, a 29-bit immediate will be formed:
+* S-jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk
+
+Where:
+* Imm6u/Disp6s will be extended to Imm29s/Disp29s.
+* Some instructions may synthesize an immediate field.
+
+
+The behavior of an FF prefix with an F0 instruction will depend on the F0 instruction.
+
+
+
+F1/F2
+* iiii-iiiiii-iiiiii-jjjj-jjjjXX-X1-1010 (FE)
+* XSkk-kkkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
+
+For the F1/F2 block, a 33-bit immediate will be formed:
+* S-jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk-kkkk
+
+
+F8
+* iiii-iiiiii-iiiiii-XXXX-XXXXXX-X1-1110 (FF)
+* kkkk-kkkkkk-kkkkkk-ZZZZ-nnnnnn-SY-YYPw (F8)
+
+For the F8 Block:
+* S-iiii-iiii-iiii-iiii-kkkk-kkkk-kkkk-kkkk
+
+Though, for some operations the S bit may instead function as an opcode bit.
+The additional X bits will be reserved for additional opcode.
+
+
+F8
+* iiii-iiiiii-iiiiii-aaaa-aaaaXX-X1-1010 (FE)
+* jjjj-jjjjjj-jjjjjj-bbbb-bbbbXX-X1-1010 (FE)
+* kkkk-kkkkkk-kkkkkk-ZZZZ-nnnnnn-SY-YYPw (F8)
+
+Will encode a 64-bit immediate:
+* aaaa-aaaa-iiii-iiii-iiii-iiii-bbbb-bbbb
+* jjjj-jjjj-jjjj-jjjj-kkkk-kkkk-kkkk-kkkk
+
+Note that the decoding of the register field for the 96-bit F8 Block in XG3 will differ from that in XG2, if interpreted in terms of the repacking rules.
+
+The additional X bits will be reserved for additional opcode.
 
 
 === F0 Block ===
@@ -118,6 +176,7 @@ R0 and R1 will be special if used as the base register of a Load/Store:
 ** 0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX			Xm, Xo, Xn
 ** 0111-oooooo-mmmmmm-0001-nnnnnn-00-0010  XOR			Rm, Ro, Rn
 ** 0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX			Xm, Xo, Xn
+
 ** 1zzz-zzzzzz-mmmmmm-0001-nnnnnn-z0-0010  (2R Space)
 
 * F0zz_2zzz (More 3R Ops)
@@ -125,10 +184,10 @@ R0 and R1 will be special if used as the base register of a Load/Store:
 ** 0000-oooooo-mmmmmm-0010-nnnnnn-10-0010  PADD.L		Rm, Ro, Rn
 ** 0001-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSUB.W		Rm, Ro, Rn
 ** 0001-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSUB.L		Rm, Ro, Rn
-** 0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHAR.L		Rm, Ro, Rn
-** 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHAR.Q		Rm, Ro, Rn
-** 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHLR.L		Rm, Ro, Rn
-** 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHLR.Q		Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHAR.L		Rm, Ro, Rn	//SRAW
+** 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHAR.Q		Rm, Ro, Rn	//SRA
+** 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHLR.L		Rm, Ro, Rn	//SRLW
+** 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHLR.Q		Rm, Ro, Rn	//SRL
 ** 0100-oooooo-mmmmmm-0010-nnnnnn-00-0010  PCSELT.W		Rm, Ro, Rn
 ** 0100-oooooo-mmmmmm-0010-nnnnnn-10-0010  PCSELT.L		Rm, Ro, Rn
 ** 0101-oooooo-mmmmmm-0010-nnnnnn-00-0010  PADD.F		Rm, Ro, Rn	//FADD.S
@@ -137,8 +196,8 @@ R0 and R1 will be special if used as the base register of a Load/Store:
 ** 0110-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSUBX.F		Xm, Xo, Xn
 ** 0111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.F		Rm, Ro, Rn	//FMUL.S
 ** 0111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.F		Xm, Xo, Xn
-** 1000-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHD		Rm, Ro, Rn
-** 1000-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLD		Rm, Ro, Rn
+** 1000-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHD		Rm, Ro, Rn	//PACKU
+** 1000-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLD		Rm, Ro, Rn	//PACK
 ** 1001-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHLD		Rm, Ro, Rn
 ** 1001-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLHD		Rm, Ro, Rn
 ** 1010-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSCHEQ.W		Rm, Ro, Rn
@@ -154,7 +213,6 @@ R0 and R1 will be special if used as the base register of a Load/Store:
 ** 1111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.H		Rm, Ro, Rn	//FMUL.H
 ** 1111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.D		Xm, Xo, Xn
 
-** 0000-oooooo-mmmmmm-0011-nnnnnn-z0-0010  (1R Space)
 ** 0000-oooooo-mmmmmm-0011-nnnnnn-z0-0010  (1R Space)
 
 ** 0001-oooooo-mmmmmm-0011-nnnnnn-00-0010  MOVTT		Rm, Ri, Rn
@@ -192,7 +250,7 @@ R0 and R1 will be special if used as the base register of a Load/Store:
 ** 0111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		Rn, (Rm, Ro)
 ** 0111-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.Q		(Rm, Ro), Rn
 ** 1000-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		(Rm, Disp6s), Xn
-** 1000-oooooo-mmmmmm-0100-nnnnnn-10-0010  -
+** 1000-oooooo-mmmmmm-0100-nnnnnn-10-0010  ? MOVN.L		(Rm, Disp6s), Rn //FLW
 ** 1001-oooooo-mmmmmm-0100-nnnnnn-00-0010  (N/A)
 ** 1001-oooooo-mmmmmm-0100-nnnnnn-10-0010  -
 ** 1010-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		(Rm, Disp6s), Rn
@@ -200,7 +258,7 @@ R0 and R1 will be special if used as the base register of a Load/Store:
 ** 1011-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		(Rm, Disp6s), Rn
 ** 1011-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.2H		(Rm, Disp6s), Rn
 ** 1100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		(Rm, Ro), Xn
-** 1100-oooooo-mmmmmm-0100-nnnnnn-10-0010  -
+** 1100-oooooo-mmmmmm-0100-nnnnnn-10-0010  ? MOVN.L		(Rm, Ro), Rn //FLW
 ** 1101-oooooo-mmmmmm-0100-nnnnnn-00-0010  (N/A)
 ** 1101-oooooo-mmmmmm-0100-nnnnnn-10-0010  -
 ** 1110-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		(Rm, Ro), Rn
@@ -329,6 +387,8 @@ R0 and R1 will be special if used as the base register of a Load/Store:
 ** 1111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Ro), Rn		//
 ** 1111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Ro), Xn		//
 
+The XMOV instructions operate on 128-bit pointers, and are only valid if 128-bit pointers are supported.
+
 
 * F0nm_9eoZ
 ** 0000-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
@@ -365,31 +425,38 @@ If a CMPxx instruction is encoded with Rn=ZR, this will update SR.T based on the
 === F1 Block ===
 
 * F1nm_Zeii  (MOV Disp10s Block)
-** iiiiiiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		Rn, (Rm, Disp10s)
+** iiiiiiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		Rn, (Rm, Disp10s)	//SB
 ** iiiiiiiiii-mmmmmm-0000-nnnnnn-10-0110  LEA.B		(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W		Rn, (Rm, Disp10s)
+** iiiiiiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W		Rn, (Rm, Disp10s)	//SH
 ** iiiiiiiiii-mmmmmm-0001-nnnnnn-10-0110  LEA.W		(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L		Rn, (Rm, Disp10s)
+** iiiiiiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L		Rn, (Rm, Disp10s)	//SW
 ** iiiiiiiiii-mmmmmm-0010-nnnnnn-10-0110  LEA.L		(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		Rn, (Rm, Disp10s)
+** iiiiiiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		Rn, (Rm, Disp10s)	//SD
 ** iiiiiiiiii-mmmmmm-0011-nnnnnn-10-0110  LEA.Q		(Rm, Disp10s), Rn
 ** iiiiiiiiii-mmmmmm-0100-nnnnnn-00-0110  FMOV.S	Rn, (Rm, Disp10s)
 ** iiiiiiiiii-mmmmmm-0100-nnnnnn-10-0110  FMOV.H	Rn, (Rm, Disp10s)
 ** iiiiiiiiii-mmmmmm-0101-nnnnnn-00-0110  (N/A)
-** iiiiiiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X		Rn, (Rm, Disp10s)
+** iiiiiiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X		Rn, (Rm, Disp10s)	//SX
 ** iiiiiiiiii-mmmmmm-0110-nnnnnn-00-0110  FMOV.S	(Rm, Disp10s), Rn
 ** iiiiiiiiii-mmmmmm-0110-nnnnnn-10-0110  FMOV.H	(Rm, Disp10s), Rn
 ** iiiiiiiiii-mmmmmm-0111-nnnnnn-00-0110  (N/A)
-** iiiiiiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X		(Rm, Disp10s), Rn
+** iiiiiiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X		(Rm, Disp10s), Rn	//LX
 
-** iiiiiiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B		(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B	(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W		(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W	(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L		(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L	(Rm, Disp10s), Rn
-** iiiiiiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q		(Rm, Disp10s), Rn
+** iiiiiiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B		(Rm, Disp10s), Rn	//LB
+** iiiiiiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B	(Rm, Disp10s), Rn	//LBU
+** iiiiiiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W		(Rm, Disp10s), Rn	//LH
+** iiiiiiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W	(Rm, Disp10s), Rn	//LHU
+** iiiiiiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L		(Rm, Disp10s), Rn	//LW
+** iiiiiiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L	(Rm, Disp10s), Rn	//LWU
+** iiiiiiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q		(Rm, Disp10s), Rn	//LD
 ** iiiiiiiiii-mmmmmm-1011-nnnnnn-10-0110  -
+
+Load/Store displacement will be scaled by the element size:
+* B will have a scale of 1.
+* W will have a scale of 2.
+* L will have a scale of 4.
+* Q will have a scale of 8.
+* X will also have a scale of 8.
 
 ** F1zz_Czzz
 *** iiiiiiiiii-mmmmmm-1100-nnnnnn-00-0110 ? BTSTT	Rm, Rn, Disp10s
@@ -457,9 +524,9 @@ Many were functionally redundant in this case, or were optimization cases.
 ** iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI	Imm16u, Rn
 ** iiii-iiiiii-iiiiii-0011-nnnnnn-11-0010  -
 ** iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCH	Imm16u, Rn
-** iiii-iiiiii-iiiiii-0001-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  -
 ** iiii-iiiiii-iiiiii-0101-nnnnnn-01-0010  LEA.Q	(GP, Disp16u), Rn
-** iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  MOVU.L	(GP, Disp16u*4), Rn	//LWU
 ** iiii-iiiiii-iiiiii-0110-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-0110-nnnnnn-11-0010  -
 ** iiii-iiiiii-iiiiii-0111-jjjjjj-k1-00Pw  BRA		(PC, Disp23s)
@@ -467,10 +534,10 @@ Many were functionally redundant in this case, or were optimization cases.
 ** iiii-iiiiii-iiiiii-1001-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1010-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1011-nnnnnn-01-0010  -
-** iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  MOV.Q	Rn, (GP, Disp16u*8)
-** iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  MOV.L	Rn, (GP, Disp16u*4)
-** iiii-iiiiii-iiiiii-1101-nnnnnn-01-0010  MOV.Q	(GP, Disp16u*8), Rn
-** iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  MOV.L	(GP, Disp16u*4), Rn
+** iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  MOV.Q	Rn, (GP, Disp16u*8)	//SD
+** iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  MOV.L	Rn, (GP, Disp16u*4)	//SW
+** iiii-iiiiii-iiiiii-1101-nnnnnn-01-0010  MOV.Q	(GP, Disp16u*8), Rn	//LD
+** iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  MOV.L	(GP, Disp16u*4), Rn	//LW
 ** iiii-iiiiii-iiiiii-1110-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1110-nnnnnn-11-0010  -
 ** iiii-iiiiii-iiiiii-1111-jjjjjj-k1-00Pw  BSR		(PC, Disp23s)
@@ -484,6 +551,35 @@ The reason for changing the BRA/BSR encoding:
 * The F0 block encoding would be very ugly in the repacked form.
 * In RISC-V terms, BRA will be a "JAL X0, Disp" and BSR "JAL X1, Disp".
 * Branh reach will be +/- 16MB
+
+
+* With Jumbo-FF Prefix:
+** iiii-iiiiii-iiiiii-0000-nnnnnn-s1-0010  LDI		Imm33s, Rn
+** iiii-iiiiii-iiiiii-0001-nnnnnn-s1-0010  -
+** iiii-iiiiii-iiiiii-0010-nnnnnn-s1-0010  ADD		Imm33s, Rn
+** iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI32	Imm32u, Rn
+** iiii-iiiiii-iiiiii-0011-nnnnnn-11-0010  LDIHI32	Imm32u, Rn
+** iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCF	Imm32u, Rn
+** iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  PLDCH	Imm32u, Rn
+
+** iiii-iiiiii-iiiiii-0101-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-0110-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-0110-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-0111-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-0111-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-1000-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-1001-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-1010-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-1011-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  ? PLDCM8SH	Imm32u, Rn
+** iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  ? PLDCM8UH	Imm32u, Rn
+** iiii-iiiiii-iiiiii-1101-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-1110-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-1110-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-1111-nnnnnn-01-0010  -
+** iiii-iiiiii-iiiiii-1111-nnnnnn-11-0010  -
 
 
 
@@ -526,12 +622,12 @@ The reason for changing the BRA/BSR encoding:
 *** 1000-001111-mmmmmm-0001-nnnnnn-10-0010  CONVFLI		Rm, Rn
 
 ** F0nm_1ez9
-*** 1001-000010-mmmmmm-0001-nnnnnn-00-0010  ADC			Rm, Rn
-*** 1001-000010-mmmmmm-0001-nnnnnn-10-0010  ADC.L		Rm, Rn
-*** 1001-000011-mmmmmm-0001-nnnnnn-00-0010  SBB			Rm, Rn
-*** 1001-000011-mmmmmm-0001-nnnnnn-10-0010  SBB.L		Rm, Rn
-*** 1001-000100-mmmmmm-0001-nnnnnn-00-0010  TST.L		Rm, Rn
-*** 1001-000100-mmmmmm-0001-nnnnnn-10-0010  TST.Q		Rm, Rn
+*** 1001-000010-mmmmmm-0001-nnnnnn-00-0010 ? ADC		Rm, Rn
+*** 1001-000010-mmmmmm-0001-nnnnnn-10-0010 ? ADC.L		Rm, Rn
+*** 1001-000011-mmmmmm-0001-nnnnnn-00-0010 ? SBB		Rm, Rn
+*** 1001-000011-mmmmmm-0001-nnnnnn-10-0010 ? SBB.L		Rm, Rn
+*** 1001-000100-mmmmmm-0001-nnnnnn-00-0010 ? TST.L		Rm, Rn
+*** 1001-000100-mmmmmm-0001-nnnnnn-10-0010 ? TST.Q		Rm, Rn
 
 *** 1001-001000-mmmmmm-0001-nnnnnn-00-0010  MOV			Rm, Rn
 *** 1001-001000-mmmmmm-0001-nnnnnn-10-0010  MOVX		Rm, Rn
@@ -548,58 +644,58 @@ The reason for changing the BRA/BSR encoding:
 *** 1010-000001-mmmmmm-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
 *** 1010-000001-mmmmmm-0001-nnnnnn-10-0010  -
 
-*** 1010-001001-mmmmmm-0001-nnnnnn-00-0010 ? PDOTT.H	Imm6u, Rn
-*** 1010-001001-mmmmmm-0001-nnnnnn-10-0010 ? PDOTT.F	Imm6u, Rn
-*** 1010-001010-mmmmmm-0001-nnnnnn-00-0010  PCMPEQ.H	Rm, Rn
-*** 1010-001010-mmmmmm-0001-nnnnnn-10-0010  PCMPEQ.F	Rm, Rn
-*** 1010-001011-mmmmmm-0001-nnnnnn-00-0010  PCMPGT.H	Rm, Rn
-*** 1010-001011-mmmmmm-0001-nnnnnn-10-0010  PCMPGT.F	Rm, Rn
+*** 1010-001001-mmmmmm-0001-nnnnnn-00-0010  ? PDOTT.H	Imm6u, Rn
+*** 1010-001001-mmmmmm-0001-nnnnnn-10-0010  ? PDOTT.F	Imm6u, Rn
+*** 1010-001010-mmmmmm-0001-nnnnnn-00-0010  ? PCMPEQ.H	Rm, Rn
+*** 1010-001010-mmmmmm-0001-nnnnnn-10-0010  ? PCMPEQ.F	Rm, Rn
+*** 1010-001011-mmmmmm-0001-nnnnnn-00-0010  ? PCMPGT.H	Rm, Rn
+*** 1010-001011-mmmmmm-0001-nnnnnn-10-0010  ? PCMPGT.F	Rm, Rn
 
-*** 1010-001100-mmmmmm-0001-nnnnnn-00-0010  PCMPEQ.W	Rm, Rn
-*** 1010-001100-mmmmmm-0001-nnnnnn-10-0010  PCMPEQ.L	Rm, Rn
-*** 1010-001101-mmmmmm-0001-nnnnnn-00-0010  PCMPHI.W	Rm, Rn
-*** 1010-001101-mmmmmm-0001-nnnnnn-10-0010  PCMPHI.L	Rm, Rn
-*** 1010-001110-mmmmmm-0001-nnnnnn-00-0010  PCMPGT.W	Rm, Rn
-*** 1010-001110-mmmmmm-0001-nnnnnn-10-0010  PCMPGT.L	Rm, Rn
+*** 1010-001100-mmmmmm-0001-nnnnnn-00-0010  ? PCMPEQ.W	Rm, Rn
+*** 1010-001100-mmmmmm-0001-nnnnnn-10-0010  ? PCMPEQ.L	Rm, Rn
+*** 1010-001101-mmmmmm-0001-nnnnnn-00-0010  ? PCMPHI.W	Rm, Rn
+*** 1010-001101-mmmmmm-0001-nnnnnn-10-0010  ? PCMPHI.L	Rm, Rn
+*** 1010-001110-mmmmmm-0001-nnnnnn-00-0010  ? PCMPGT.W	Rm, Rn
+*** 1010-001110-mmmmmm-0001-nnnnnn-10-0010  ? PCMPGT.L	Rm, Rn
 *** 1010-001111-mmmmmm-0001-nnnnnn-00-0010  ? BSWAPU.L	Rm, Rn
 *** 1010-001111-mmmmmm-0001-nnnnnn-10-0010  ? BSWAP.Q	Rm, Rn
 
 ** F0nm_1ezC
-*** 1100-000000-mmmmmm-0001-nnnnnn-00-0010   NOT		Rm, Rn
-*** 1100-000000-mmmmmm-0001-nnnnnn-10-0010   NOTX		Xm, Xn
-*** 1100-000001-mmmmmm-0001-nnnnnn-00-0010   NEG		Rm, Rn
-*** 1100-000001-mmmmmm-0001-nnnnnn-10-0010   NEGX		Xm, Xn
-*** 1100-000010-mmmmmm-0001-nnnnnn-00-0010   CLZ.L		Rm, Rn
-*** 1100-000010-mmmmmm-0001-nnnnnn-10-0010   CLZ.Q		Rm, Rn
-*** 1100-000011-mmmmmm-0001-nnnnnn-00-0010   CTZ.L		Rm, Rn
-*** 1100-000011-mmmmmm-0001-nnnnnn-10-0010   CTZ.Q		Rm, Rn
+*** 1100-000000-mmmmmm-0001-nnnnnn-00-0010  NOT			Rm, Rn
+*** 1100-000000-mmmmmm-0001-nnnnnn-10-0010  NOTX		Xm, Xn
+*** 1100-000001-mmmmmm-0001-nnnnnn-00-0010  NEG			Rm, Rn
+*** 1100-000001-mmmmmm-0001-nnnnnn-10-0010  NEGX		Xm, Xn
+*** 1100-000010-mmmmmm-0001-nnnnnn-00-0010  CLZ.L		Rm, Rn
+*** 1100-000010-mmmmmm-0001-nnnnnn-10-0010  CLZ.Q		Rm, Rn
+*** 1100-000011-mmmmmm-0001-nnnnnn-00-0010  CTZ.L		Rm, Rn
+*** 1100-000011-mmmmmm-0001-nnnnnn-10-0010  CTZ.Q		Rm, Rn
 
-*** 1100-000100-mmmmmm-0001-nnnnnn-00-0010   BTRNS.L	Rm, Rn
-*** 1100-000100-mmmmmm-0001-nnnnnn-10-0010   BTRNS.Q	Rm, Rn
-*** 1100-000101-mmmmmm-0001-nnnnnn-00-0010   EXTS.L		Rm, Rn
-*** 1100-000101-mmmmmm-0001-nnnnnn-10-0010   EXTU.L		Rm, Rn
+*** 1100-000100-mmmmmm-0001-nnnnnn-00-0010  BTRNS.L		Rm, Rn
+*** 1100-000100-mmmmmm-0001-nnnnnn-10-0010  BTRNS.Q		Rm, Rn
+*** 1100-000101-mmmmmm-0001-nnnnnn-00-0010  EXTS.L		Rm, Rn
+*** 1100-000101-mmmmmm-0001-nnnnnn-10-0010  EXTU.L		Rm, Rn
 
-*** 1100-001000-mmmmmm-0001-nnnnnn-00-0010   EXTS.B		Rm, Rn
-*** 1100-001000-mmmmmm-0001-nnnnnn-10-0010   EXTU.B		Rm, Rn
-*** 1100-001001-mmmmmm-0001-nnnnnn-00-0010   EXTS.W		Rm, Rn
-*** 1100-001001-mmmmmm-0001-nnnnnn-10-0010   EXTU.W		Rm, Rn
+*** 1100-001000-mmmmmm-0001-nnnnnn-00-0010  EXTS.B		Rm, Rn
+*** 1100-001000-mmmmmm-0001-nnnnnn-10-0010  EXTU.B		Rm, Rn
+*** 1100-001001-mmmmmm-0001-nnnnnn-00-0010  EXTS.W		Rm, Rn
+*** 1100-001001-mmmmmm-0001-nnnnnn-10-0010  EXTU.W		Rm, Rn
 
 ** F0nm_1ezD ? (GFP, GPR FPU, Opt)
-*** 1101-000000-mmmmmm-0001-nnnnnn-00-0010   FLDCF		Rm, Rn
-*** 1101-000000-mmmmmm-0001-nnnnnn-10-0010   FLDCDX		Rm, Xn
-*** 1101-000001-mmmmmm-0001-nnnnnn-00-0010   FLDCHF		Rm, Rn
-*** 1101-000001-mmmmmm-0001-nnnnnn-10-0010   -
-*** 1101-000010-mmmmmm-0001-nnnnnn-00-0010   FLDCI		Rm, Rn
-*** 1101-000010-mmmmmm-0001-nnnnnn-10-0010   FLDCXI		Rm, Xn
-*** 1101-000011-mmmmmm-0001-nnnnnn-00-0010   FLDCH		Rm, Rn
-*** 1101-000011-mmmmmm-0001-nnnnnn-10-0010   -
-*** 1101-000100-mmmmmm-0001-nnnnnn-00-0010   FSTCF		Rm, Rn
-*** 1101-000100-mmmmmm-0001-nnnnnn-10-0010   FSTCDX		Xm, Rn
-*** 1101-000101-mmmmmm-0001-nnnnnn-00-0010   FSTCHF		Rm, Rn
-*** 1101-000101-mmmmmm-0001-nnnnnn-10-0010   -
-*** 1101-000110-mmmmmm-0001-nnnnnn-00-0010   FSTCI		Rm, Rn
-*** 1101-000110-mmmmmm-0001-nnnnnn-10-0010   FSTCXI		Xm, Rn
-*** 1101-000111-mmmmmm-0001-nnnnnn-00-0010   FSTCH		Rm, Rn
+*** 1101-000000-mmmmmm-0001-nnnnnn-00-0010  FLDCF		Rm, Rn
+*** 1101-000000-mmmmmm-0001-nnnnnn-10-0010  FLDCDX		Rm, Xn
+*** 1101-000001-mmmmmm-0001-nnnnnn-00-0010  FLDCHF		Rm, Rn
+*** 1101-000001-mmmmmm-0001-nnnnnn-10-0010  -
+*** 1101-000010-mmmmmm-0001-nnnnnn-00-0010  FLDCI		Rm, Rn
+*** 1101-000010-mmmmmm-0001-nnnnnn-10-0010  FLDCXI		Rm, Xn
+*** 1101-000011-mmmmmm-0001-nnnnnn-00-0010  FLDCH		Rm, Rn
+*** 1101-000011-mmmmmm-0001-nnnnnn-10-0010  -
+*** 1101-000100-mmmmmm-0001-nnnnnn-00-0010  FSTCF		Rm, Rn
+*** 1101-000100-mmmmmm-0001-nnnnnn-10-0010  FSTCDX		Xm, Rn
+*** 1101-000101-mmmmmm-0001-nnnnnn-00-0010  FSTCHF		Rm, Rn
+*** 1101-000101-mmmmmm-0001-nnnnnn-10-0010  -
+*** 1101-000110-mmmmmm-0001-nnnnnn-00-0010  FSTCI		Rm, Rn
+*** 1101-000110-mmmmmm-0001-nnnnnn-10-0010  FSTCXI		Xm, Rn
+*** 1101-000111-mmmmmm-0001-nnnnnn-00-0010  FSTCH		Rm, Rn
 *** 1101-000111-mmmmmm-0001-nnnnnn-10-0010   -
 *** 1101-001000-mmmmmm-0001-nnnnnn-00-0010  FNEG		Rm, Rn
 *** 1101-001000-mmmmmm-0001-nnnnnn-10-0010  -
@@ -609,12 +705,12 @@ The reason for changing the BRA/BSR encoding:
 *** 1101-001010-mmmmmm-0001-nnnnnn-10-0010  FCMPXEQ		Xm, Xn
 *** 1101-001011-mmmmmm-0001-nnnnnn-00-0010  FCMPGT		Rm, Rn
 *** 1101-001011-mmmmmm-0001-nnnnnn-10-0010  FCMPXGT		Xm, Xn
-*** 1101-001100-mmmmmm-0001-nnnnnn-00-0010 ? FSQRT		Rm, Rn
-*** 1101-001100-mmmmmm-0001-nnnnnn-10-0010 ? FSQRTX		Xm, Xn
-*** 1101-001101-mmmmmm-0001-nnnnnn-00-0010 ? FSQRTA		Rm, Rn
-*** 1101-001101-mmmmmm-0001-nnnnnn-10-0010 ? FSQRTXA	Xm, Xn
-*** 1101-001110-mmmmmm-0001-nnnnnn-00-0010 ? FCMPGE		Rm, Rn
-*** 1101-001110-mmmmmm-0001-nnnnnn-10-0010 ? FCMPXGE	Xm, Xn
+*** 1101-001100-mmmmmm-0001-nnnnnn-00-0010  ? FSQRT		Rm, Rn
+*** 1101-001100-mmmmmm-0001-nnnnnn-10-0010  ? FSQRTX	Xm, Xn
+*** 1101-001101-mmmmmm-0001-nnnnnn-00-0010  ? FSQRTA	Rm, Rn
+*** 1101-001101-mmmmmm-0001-nnnnnn-10-0010  ? FSQRTXA	Xm, Xn
+*** 1101-001110-mmmmmm-0001-nnnnnn-00-0010  ? FCMPGE	Rm, Rn
+*** 1101-001110-mmmmmm-0001-nnnnnn-10-0010  ? FCMPXGE	Xm, Xn
 *** 1101-001111-mmmmmm-0001-nnnnnn-00-0010  FLDCIU		Rm, Rn
 *** 1101-001111-mmmmmm-0001-nnnnnn-10-0010  FLDCXIU		Rm, Rn
 

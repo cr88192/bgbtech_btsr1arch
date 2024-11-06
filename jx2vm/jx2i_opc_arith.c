@@ -630,6 +630,14 @@ void BJX2_Op_TSTQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]|=1;
 }
 
+void BJX2_Op_TSTNQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(!(ctx->regs[op->rn]&ctx->regs[op->rm]))
+		ctx->regs[BJX2_REG_SR]&=~1;
+	else
+		ctx->regs[BJX2_REG_SR]|=1;
+}
+
 void BJX2_Op_TSTQ_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(ctx->regs[op->rn]&op->imm)
@@ -1344,6 +1352,15 @@ void BJX2_Op_CMPQLT_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	else
 		ctx->regs[BJX2_REG_SR]&=~1;
 }
+
+void BJX2_Op_CMPQLTU_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	if(((u64)ctx->regs[op->rn])<((u64)op->imm))
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+}
+
 
 
 void BJX2_Op_CMPPEQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)

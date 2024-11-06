@@ -1091,10 +1091,13 @@ begin
 //			tHeldIdRn1	= regIdRm;
 			tRegHeld		= 1;
 
+			if(opUIxt[5:4]==2'b00)
+				tDoMemOpm	= { 2'b01, 3'b010 };
+
 `ifdef jx2_enable_ldst48a
 			if(opUIxt[2])
 			begin
-				tDoMemOpm	= { 2'b10, 3'b011 };
+				tDoMemOpm	= { 2'b01, 3'b011 };
 			end
 `endif
 

@@ -3722,6 +3722,76 @@ int BGBCC_JX2_EmitDWord(BGBCC_JX2_Context *ctx, u32 val)
 
 int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, u32 val)
 {
+	static u32 lval, lval2;
+	int ix, ix1;
+
+	if(	(ctx->emit_riscv&0x11) &&
+		!(ctx->emit_riscv&0x22))
+	{
+		if((val&3)!=3)
+			{ BGBCC_DBGBREAK }
+	}
+
+	if((lval&0x707F)==0x401B)
+	{
+		if((val&0x707F)==0x401B)
+		{
+			if(!(ctx->has_jumbo&4))
+				{ BGBCC_DBGBREAK }
+		}
+		if((val&3)!=3)
+			{ BGBCC_DBGBREAK }
+	}
+	
+	if(!ctx->is_simpass)
+	{
+		ctx->stat_opc_tot++;
+		ctx->stat_opc_ext8a++;
+		if((val&3)!=3)
+		{
+			switch((val>>2)&7)
+			{
+			case 0:
+				ix=(((val>>12)&15)<<4)|((val>>28)&15);
+				ctx->opcnt_f0xx[ix]++;
+				if((ix&0xF8)==0x18)
+				{
+					ix1=((ix&7)<<4)|((val>>22)&15);
+					ctx->opcnt_f01xx[ix1]++;
+					ctx->n_opcnt_f01xx++;
+				}
+				break;
+			case 1:
+				ix=((val>>12)&15);
+				ctx->opcnt_f1xx[ix]++;
+				break;
+			case 2:
+//				ix=((val>>12)&15);
+				ix=(((val>>12)&15)<<4)|((val>>22)&15);
+				ctx->opcnt_f2xx[ix]++;
+				break;
+			case 3:
+				ix=(((val>>12)&15)<<4)|((val>>28)&15);
+				ctx->opcnt_f3xx[ix]++;
+				break;
+			case 4:
+				ix=((val>>12)&15);
+				ctx->opcnt_f8xx[ix]++;
+				break;
+			case 5:
+				ix=(((val>>12)&15)<<4)|((val>>28)&15);
+				ctx->opcnt_f9xx[ix]++;
+				break;
+			}
+		}else
+		{
+		}
+	}
+	
+
+	lval2=lval;
+	lval=val;
+
 	BGBCC_JX2_EmitDWordI(ctx, val);
 	return(0);
 }

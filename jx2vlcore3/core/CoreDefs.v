@@ -592,6 +592,27 @@ parameter[4:0] UMEM_OPM_SW_TILE	= 5'b11111;		//Swap Tiles (Full Duplex)
 parameter[4:0] UMEM_OPM_RD_BOUNCE	= 5'b01100;	//Read Request, Bounce
 
 
+/*
+MOV_MR:
+  SB/SW/SL/SQ: Signed Byte/Word/DWord/QWord
+  UB/UW/UL: Unsigned Byte/Word/DWord
+  UQ: Pair (128-bit)
+FMOV:
+  SB: DWord, One Extended
+  SW: Binary16 -> Binary64
+  SL: Binary32 -> Binary64
+  SQ: LDTEX
+  UB: TWord, S-Ext
+  UW: TWord, Z-Ext
+  UL: TWord, High 48
+  UQ: -
+PMOV:
+  SB: 2x Binary16 -> 2x Binary32
+  SW: -
+  SL: 4x FP8 (S.E4.F3) to 4x Binary16
+  SQ: -
+ */
+
 parameter[2:0] JX2_BTY_SB		= 3'b000;
 parameter[2:0] JX2_BTY_SW		= 3'b001;
 parameter[2:0] JX2_BTY_SL		= 3'b010;
@@ -600,6 +621,7 @@ parameter[2:0] JX2_BTY_UB		= 3'b100;
 parameter[2:0] JX2_BTY_UW		= 3'b101;
 parameter[2:0] JX2_BTY_UL		= 3'b110;
 parameter[2:0] JX2_BTY_UQ		= 3'b111;
+
 
 parameter[3:0] JX2_ITY_SB		= 4'b0000;
 parameter[3:0] JX2_ITY_SW		= 4'b0001;

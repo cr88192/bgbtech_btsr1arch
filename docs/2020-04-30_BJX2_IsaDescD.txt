@@ -1854,6 +1854,15 @@ These operations will have a scale and alignment of 2, so using a TWORD in an ar
 There will be MOV.TWV/MOVU.TWV/MOV.HTWV pseudo instructions which will synthesize the pre-scale-by-3.
 
 
+=== MOVN.L ===
+
+* F0nm_4Go8  MOVN.L	(Rm, Disp5), Rn		//Load DWord, One-Extended
+* F0nm_4GoC  MOVN.L	(Rm, Ro), Rn		//Load DWord, One-Extended
+
+Special case instruction, similar to MOVU.L, but differs primarily in that the high-order bits are one-extended.
+
+
+
 === MOVST (TTAG) ===
 
 * F0nm_1gFE  MOVST		Rm, Rn			//MOV, Sign-Extend Tag

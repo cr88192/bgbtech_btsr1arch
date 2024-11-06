@@ -633,6 +633,13 @@ begin
 			opFmid		= JX2_FMID_LDREGDISPREG;
 			opBty		= { 2'b01, istrWord[12] };
 			opIty		= JX2_ITY_XB;
+			
+			if(istrWord[14:12]==3'b010)
+			begin
+				/* One Extended special case. */
+				opNmid	= JX2_UCMD_FMOV_MR;
+				opBty	= JX2_BTY_SB;
+			end
 		end
 
 		5'b01_001: begin /* FP_STORE, (Rm, Disp) */
@@ -640,6 +647,17 @@ begin
 			opFmid		= JX2_FMID_REGSTREGDISP;
 			opBty		= { 2'b01, istrWord[12] };
 			opIty		= JX2_ITY_XB;
+
+			casez(istrWord[14:12])
+				3'b000: opBty = JX2_BTY_SB;		//'V'
+				3'b001: opBty = JX2_BTY_SW;		//Binary16
+				3'b010: opBty = JX2_BTY_SL;		//Binary32
+				3'b011: opBty = JX2_BTY_SQ;		//Binary64
+				3'b100: opBty = JX2_BTY_UQ;		//Pair
+				3'b101: opBty = JX2_BTY_UQ;		//'V'
+				3'b110: opBty = JX2_BTY_UQ;		//'V'
+				3'b111: opBty = JX2_BTY_UQ;		//'V'
+			endcase
 		end
 
 `ifdef jx2_fpu_fmac

@@ -4030,8 +4030,12 @@ begin
 				opIty	= JX2_ITY_UB;
 				if(opExQ)
 				begin
-					opBty	= JX2_BTY_SQ;
-					opIty	= JX2_ITY_UL;
+//					opBty	= JX2_BTY_SQ;
+//					opIty	= JX2_ITY_UL;
+
+					opNmid	= JX2_UCMD_FMOV_MR;
+					opBty	= JX2_BTY_UL;
+//					opIty	= JX2_ITY_SB;
 				end
 			end
 
@@ -4094,7 +4098,10 @@ begin
 
 				if(opExQ)
 				begin
-					opNmid		= JX2_UCMD_INVOP;
+//					opNmid		= JX2_UCMD_INVOP;
+
+					opNmid	= JX2_UCMD_FMOV_MR;
+					opBty	= JX2_BTY_SB;
 				end
 
 `ifndef def_true
@@ -6513,6 +6520,12 @@ begin
 					opUCmdIx	= opIsJumboAu ?
 						JX2_UCIX_LDI_LDISH32 :
 						JX2_UCIX_LDI_LDISH16;
+					if(opIsJumboAu && opExWI)
+					begin
+						opNmid		= JX2_UCMD_CONV_RR;
+						opIty		= JX2_ITY_UW;
+						opUCmdIx	= JX2_UCIX_CONV_LDIQHI32;
+					end
 				end
 			end
 
@@ -6610,6 +6623,9 @@ begin
 				begin
 					if(opExWI)
 					begin
+						opNmid		= JX2_UCMD_MOV_MR;
+						opBty		= JX2_BTY_UL;
+
 //						opRegM_Fix	= JX2_GR_PC;
 //						if(srXG3RV)
 //							opRegM_Fix	= JX2_GR_BPC;

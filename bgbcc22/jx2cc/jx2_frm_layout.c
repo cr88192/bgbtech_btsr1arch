@@ -1053,7 +1053,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //	if(sctx->has_xgpr&2)
 //	if((sctx->has_xgpr&2) ||
 //		((sctx->has_xgpr&1) && (sctx->use_egpr&2)))
-	if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+//	if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+//	if((sctx->has_xgpr&1) || (sctx->use_egpr&2))
+	if((sctx->has_xgpr&6) || (sctx->use_egpr&2))
 		k-=16*8;		//saved R40..R47, R56..R63
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)

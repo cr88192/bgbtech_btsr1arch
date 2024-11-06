@@ -38,9 +38,12 @@ output[3:0]		istrFlag;
 reg[3:0]		tIstrFlag;
 assign		istrFlag = tIstrFlag;
 
+reg[3:0]		tIstrFlagXG3;
+
 always @*
 begin
-	tIstrFlag	= 0;
+	tIstrFlag		= 0;
+	tIstrFlagXG3	= 0;
 
 	casez(istrWord[6:2])
 
@@ -142,6 +145,10 @@ begin
 			tIstrFlag	= 4'b1111;
 			if(istrWord[14:13]==2'b01)
 				tIstrFlag	= 4'b0011;
+			if(istrWord[14:12]==3'b100)
+				tIstrFlag	= 4'b0000;
+			if(istrWord[14:13]==2'b11)
+				tIstrFlag	= 4'b0011;
 		end
 
 		5'b01_110: begin /* ALU OP, 3R */
@@ -160,8 +167,86 @@ begin
 
 	endcase
 
+`ifdef jx2_enable_riscv_xg3
+	casez(istrWord[4:2])
+		3'b000: begin
+			casez(istrWord[15:12])
+				4'b0000: begin
+					tIstrFlagXG3	= istrWord[31] ? 4'b0011 : 4'b0001;
+				end
+				4'b0001: begin
+					casez(istrWord[31:28])
+						4'b000z:
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
+						4'b001z, 4'b0100:
+							tIstrFlagXG3 = 4'b0011;
+						4'b0101, 4'b011z:
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
+						default:
+							tIstrFlagXG3	= 4'b0000;
+					endcase
+				end
+				default:
+					tIstrFlagXG3	= 4'b0000;
+			endcase
+		end
+		3'b001: begin
+			if(istrWord[15:14]==2'b00)
+				tIstrFlagXG3	= 4'b0001;
+			if(istrWord[15:14]==2'b01)
+				tIstrFlagXG3	= 4'b0000;
+			if(istrWord[15:14]==2'b10)
+				tIstrFlagXG3	= 4'b0011;
+			if(istrWord[15:14]==2'b11)
+				tIstrFlagXG3	= 4'b0000;
+		end
+		3'b010: begin
+			casez(istrWord[15:12])
+				4'b000z: tIstrFlagXG3	= 4'b1111;
+				4'b0011: tIstrFlagXG3	= 4'b1111;
+				4'b01zz: tIstrFlagXG3	= 4'b0111;
+				4'b100z: begin
+					tIstrFlagXG3	= 4'b0111;
+					if(istrWord[31:30]!=2'b00)
+						tIstrFlagXG3	= 4'b0011;
+				end
+				default: begin
+					tIstrFlagXG3	= 4'b0000;
+				end
+			endcase
+		end
+		3'b011: begin
+			tIstrFlagXG3	= 4'b0000;
+		end
+
+		3'b100: begin
+			casez(istrWord[15:12])
+				4'b00zz:
+					tIstrFlagXG3	= 4'b0111;
+				4'b010z:
+					tIstrFlagXG3	= 4'b0011;
+				default:
+					tIstrFlagXG3	= 4'b0000;
+			endcase
+		end
+
+		3'b101: begin
+			tIstrFlagXG3	= 4'b0000;
+		end
+
+		3'b11z: begin
+			tIstrFlagXG3	= 4'b0000;
+		end
+	endcase
+`endif
+
+`ifdef jx2_enable_riscv_xg3
+	if(istrWord[1:0]!=2'b11)
+		tIstrFlag	= tIstrFlagXG3;
+`else
 	if(istrWord[1:0]!=2'b11)
 		tIstrFlag	= 4'b0000;
+`endif
 
 end
 

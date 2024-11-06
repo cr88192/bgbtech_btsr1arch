@@ -407,6 +407,11 @@ begin
 			end
 `endif
 
+			if(opUIxt[5:4]==2'b00)
+			begin
+				tValOutHeld[63:0]	= { UV32_FF, memDataIn[31:0] };
+			end
+
 `ifdef jx2_enable_ldst48a
 			if(opUIxt[2])
 			begin

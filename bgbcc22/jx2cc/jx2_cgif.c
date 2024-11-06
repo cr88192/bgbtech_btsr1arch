@@ -618,6 +618,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->is_pbo=1;
 		shctx->has_fpim=0;
 		ctx->arch_has_predops=0;
+//		ctx->arch_has_predops=1;
 
 		shctx->has_xgpr&=~7;
 
@@ -631,6 +632,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 
 //		shctx->has_xgpr|=3;
+		shctx->has_xgpr|=5;
 
 		shctx->has_jcmp|=3;
 		shctx->has_qmul|=1;
@@ -641,13 +643,15 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2=0;
 		shctx->has_simdx2=0;
 
+		if(ctx->arch_has_predops)
+			shctx->has_jcmp|=16;
 
 		shctx->has_jumbo|=2;	//Jumbo Prefixes
 		shctx->has_rvzba|=16;	//Load/Store Indexed
 		shctx->has_pushx2|=1;	//LX / SX
 
 		shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
-//		shctx->has_jumbo|=4;	//Jumbo96
+		shctx->has_jumbo|=4;	//Jumbo96
 		shctx->has_rvzba|=1;	//Zba
 	}
 
@@ -7032,7 +7036,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				(((w0>> 6)&    63)<<16) |
 				(((w0>> 5)&     1)<<22) ;
 			b1=((s32)(b<<9))>>9;
-			b1<<=2;
+//			b1<<=2;
 
 			if(d&3)
 				{ BGBCC_DBGBREAK }
@@ -7066,6 +7070,55 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 
 			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
 			break;
+
+		case BGBCC_SH_RLC_RELW33_XG3:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+4, en);
+			
+			b1=	(((w0>>16)&0xFFFF)<< 8) |
+				(((w0>> 8)&0x00FF)<<24) |
+				(((w1>>22)&0x00FF)<< 0) |
+				(((w1>>30)&   1LL)<<32) ;
+//			b1<<=2;
+
+			if(d&3)
+				{ BGBCC_DBGBREAK }
+			
+			d1=b1+(d>>2);
+
+			w0=(w0&0x000000FFU)|
+				(((d1>> 8)&0xFFFF)<<16) |
+				(((d1>>24)&0x00FF)<< 8);
+			w1=(w1&0x803FFFFFU)|
+				(((d1>> 0)&0x00FF)<<22) |
+				(((d1>>32)&0x0001)<<30);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
+			break;
+
+		case BGBCC_SH_RLC_RELB33_XG3:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+4, en);
+			
+			b1=	(((w0>>16)&0xFFFF)<< 8) |
+				(((w0>> 8)&0x00FF)<<24) |
+				(((w1>>22)&0x00FF)<< 0) |
+				(((w1>>30)&   1LL)<<32) ;
+			
+			d1=b1+d;
+
+			w0=(w0&0x000000FFU)|
+				(((d1>> 8)&0xFFFF)<<16) |
+				(((d1>>24)&0x00FF)<< 8);
+			w1=(w1&0x803FFFFFU)|
+				(((d1>> 0)&0x00FF)<<22) |
+				(((d1>>32)&0x0001)<<30);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
+			break;
+
 
 		default:
 			BGBCC_CCXL_StubError(ctx);

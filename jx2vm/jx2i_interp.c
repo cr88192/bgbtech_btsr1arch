@@ -1457,6 +1457,7 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_CLZ:			s0="CLZ";		break;
 	case BJX2_NMID_CLZQ:		s0="CLZQ";		break;
 	case BJX2_NMID_MOVDL:		s0="MOVD.L";	break;
+	case BJX2_NMID_MOVNL:		s0="MOVN.L";	break;
 	case BJX2_NMID_LDI:			s0="LDI";		break;
 	case BJX2_NMID_JLDI:		s0="JLDI";		break;
 	case BJX2_NMID_LDIQ:		s0="LDIQ";		break;
@@ -2363,6 +2364,7 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		break;
 	case BJX2_NMID_MOVL:
 	case BJX2_NMID_MOVUL:
+	case BJX2_NMID_MOVNL:
 	case BJX2_NMID_MOVDL:
 		msc=4;	break;
 	case BJX2_NMID_MOVQ:

@@ -1064,6 +1064,7 @@ int BGBCC_JX2_CheckGetLabelGpOffs(
 	BGBCC_JX2_Context *sctx, int lblid)
 {
 	char *lbln;
+	int dsz;
 	int i, j, k;
 
 	if(!sctx->is_pbo)
@@ -1081,6 +1082,26 @@ int BGBCC_JX2_CheckGetLabelGpOffs(
 
 	if((j==BGBCC_SH_CSEG_DATA) && (k>=0))
 		return(k);
+
+#if 1
+	if((j==BGBCC_SH_CSEG_BSS) && (k>=0) &&
+		(sctx->is_exe || sctx->is_dll))
+	{
+		if(sctx->is_simpass&64)
+			return(-1);
+		if(sctx->is_simpass&32)
+			return(-1);
+	
+		/* HACK (Possibly Unsafe):
+		   Rely on section layout to infer offset into ".bss"
+		   relative to ".data".
+		 */
+		dsz=	sctx->sec_pos[BGBCC_SH_CSEG_DATA]-
+				sctx->sec_buf[BGBCC_SH_CSEG_DATA];
+		dsz=(dsz+63)&(~63);
+		return(dsz+k);
+	}
+#endif
 	
 	return(-1);
 }

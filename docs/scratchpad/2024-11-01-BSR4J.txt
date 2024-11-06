@@ -1,0 +1,12 @@
+BSE4J: Writing this down mostly for completion.
+* Would have been a slightly cheaper way to glue XG2 onto RV64.
+* Would have still left the encoding a bit dog-chewed.
+
+Premise:
+* Low 16 bits are remapped:
+** NMOP-YwYY-nnnn-mmmm => NMOY-mmmm-nnnn-YYPw
+* High 16-bits left as-is.
+
+I ended up going with BSR4K as a possible "XG3" mostly because:
+* It could reduce the amount of dog-chew in the encoding scheme;
+* Unlike BSR4I, it could reuse the existing decoders.

@@ -1468,6 +1468,9 @@
 #define BGBCC_SH_RLC_RELW10_XG3		0x4A	//Bxx (DWORD, XG3)
 #define BGBCC_SH_RLC_RELW23_XG3		0x4B	//Jxx (DWORD, XG3)
 
+#define BGBCC_SH_RLC_RELB33_XG3		0x4C	//PC-Rel Jumbo 33 (BYTE, XG3)
+#define BGBCC_SH_RLC_RELW33_XG3		0x4D	//PC-Rel Jumbo 33 (WORD, XG3)
+
 
 // #define BGBCC_SH_RLC_ABSW48A_BSR	0x20	//Absolute BYTE
 // #define BGBCC_SH_RLC_ABSW64A_BSR	0x21	//Absolute BYTE

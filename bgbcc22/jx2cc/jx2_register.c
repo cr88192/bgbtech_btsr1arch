@@ -1724,6 +1724,14 @@ int BGBCC_JX2C_GetBaseRegForArgumentIndex(
 		{
 			return(BGBCC_SH_REG_R10+idx);
 		}
+		
+		if(sctx->has_xgpr&2)
+		{
+			if((idx>=8) && (idx<16))
+			{
+				return(BGBCC_SH_REG_R42+(idx-8));
+			}
+		}
 	
 		return(-1);
 	}
