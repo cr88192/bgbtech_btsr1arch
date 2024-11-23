@@ -750,16 +750,6 @@ REGIMMREG, Fz:
 	XB: Rm, Imm9f/Imm32f/Imm57f, Rn
 	XW:	Rm, Imm9u, Rn (Decoded like REGDISPREG)
 
-REGIMMREG, RVI:
-	SB: Rm, 0, Rn
-	SW: Rm, Imm12s, Rn
-
-	UW: Rm, Imm12u, Rn
-
-	NB: Rm, 0, Rt, Rn
-	NW: Rm, Imm12n, Rn
-
-
 REGPC, Fz:
 	SB: (PC, Ro), ZZR
 	SW: (PC, Ro), LR
@@ -787,6 +777,7 @@ LDREGDISPREG, Fz:
 	NW: (Rm, Disp5u*2), Rn
 	NL: (Rm, Disp5u*4), Rn
 	NQ: (Rm, Disp5u*8), Rn
+
 
 LDDRREGREG, Fz:
 	UB: (Rm, Ro), Rn
@@ -842,6 +833,36 @@ IMM10REG, Fz
 JX2_FMID_LDREGDISPREG:
 	UB: (Rm, Disp5), Rn
 	SW: (Rm, Disp9), Rn
+
+
+
+REGIMMREG, RVI:
+	SB: Rm, 0, Rn
+	SW: Rm, Imm12s, Rn
+
+	UW: Rm, Imm12u, Rn
+
+	NB: Rm, 0, Rt, Rn
+	NW: Rm, Imm12n, Rn
+
+
+
+LDREGDISPREG, RVC:
+	SB: (Rn3, Disp4u), Rm3
+	SW: (Fn3, Disp4u), Fm3
+	UB: Rm3, (Rn3, Disp4u)
+	UW: Fm3, (Fn3, Disp4u)
+
+IMM8REG, RVC
+	SB: Rn5, Imm6alu, Rn5
+	SW: Rn5, Imm6lui, Rn5
+
+	UB: Rn5, Imm6a16sp, Rn5
+	UW: Rn3, Imm6alu, Rn3
+	UL: SP, Imm8spn, Rm3
+
+	NB: Rn5, Imm6aluz, Rn5
+	NW: Rn3, Imm6aluz, Rn3
 
 */
 
@@ -938,6 +959,8 @@ parameter[3:0] JX2_RVCIMM_IMM6A16SP	= 4'h8;
 parameter[3:0] JX2_RVCIMM_IMM6LUI	= 4'h9;
 parameter[3:0] JX2_RVCIMM_IMM11J	= 4'hA;
 parameter[3:0] JX2_RVCIMM_IMM8JCC	= 4'hB;
+parameter[3:0] JX2_RVCIMM_IMM6ALUZ	= 4'hC;
+parameter[3:0] JX2_RVCIMM_IMM8SPN	= 4'hD;
 
 
 parameter[3:0] JX2_RVIMM_NONE		= 4'h0;

@@ -70,6 +70,8 @@ MTAG, in RV64 Mode:
 `endif
 `endif
 
+`define jx2_prebra_ga6bit
+
 module DecPreBra(
 	clock,			reset,
 	istrWord,		istrMTag,
@@ -179,11 +181,20 @@ reg			tDoBraCc20;		//Take Conditional Branch (Cc20)
 
 reg			tDoBraRv12;		//Take Conditional Branch (12-bit Disp)
 
+`ifdef jx2_prebra_ga6bit
+reg[5:0]	preCnts[63:0];
+reg[5:0]	tPreIfCnt;
+reg[5:0]	tPreExCnt;
+reg[5:0]	tPreExCntB;
+`else
 reg[2:0]	preCnts[63:0];
-// reg[2:0]	preCnts[4095:0];
 reg[2:0]	tPreIfCnt;
 reg[2:0]	tPreExCnt;
 reg[2:0]	tPreExCntB;
+`endif
+
+reg			tPreIfDir;
+
 reg[2:0]	tPreExDir;
 reg[47:0]	tPreExBPc;
 
@@ -230,6 +241,11 @@ wire	isRV	= 0;
 wire	isXG2RV	= 0;
 `endif
 
+reg[11:0]	tStatBraTot;
+reg[11:0]	tStatBraHit;
+reg[11:0]	tNxtStatBraTot;
+reg[11:0]	tNxtStatBraHit;
+
 always @*
 begin
 //	tPreBraPc	= UV48_XX;
@@ -244,7 +260,20 @@ begin
 	tNonBra		= 1;
 	tWasBra		= 0;
 	tHistBitsB	= tHistBits;
-	
+
+	tNxtStatBraTot	= tStatBraTot;
+	tNxtStatBraHit	= tStatBraHit;
+
+// `ifdef def_true
+`ifndef def_true
+	if(tStatBraTot[11])
+	begin
+		$display("DecPreBra: %d hit=%d", tStatBraTot, tStatBraHit);
+		tNxtStatBraTot	= 0;
+		tNxtStatBraHit	= 0;
+	end
+`endif
+
 `ifdef jx2_prebra_do_vtlb
 	tVtlbStIx	= regValDhr[19:14] ^ regValDhr[25:20];
 	tVtlbStVal	= regValDhr[31:14];
@@ -267,6 +296,82 @@ begin
 		tHistBitsB = { tHistBits[4:0], tPreExDir[2] };
 		tPreExBitB = { tPreExBit[4:0], tPreExDir[2] };
 
+		tNxtStatBraTot	= tStatBraTot + 1;
+
+`ifdef jx2_prebra_ga6bit
+		if(tPreExCnt[0] == tPreExDir[2])
+			tNxtStatBraHit	= tStatBraHit + 1;
+
+		case( {tPreExCnt[5:1], tPreExDir[2]} )
+			6'b00000_0: tPreExCntB=6'b00101_1;
+			6'b00000_1: tPreExCntB=6'b10111_0;
+			6'b00001_0: tPreExCntB=6'b01111_1;
+			6'b00001_1: tPreExCntB=6'b10100_0;
+			6'b00010_0: tPreExCntB=6'b01010_0;
+			6'b00010_1: tPreExCntB=6'b00011_0;
+			6'b00011_0: tPreExCntB=6'b10000_0;
+			6'b00011_1: tPreExCntB=6'b11110_1;
+			6'b00100_0: tPreExCntB=6'b01000_1;
+			6'b00100_1: tPreExCntB=6'b01101_1;
+			6'b00101_0: tPreExCntB=6'b11111_1;
+			6'b00101_1: tPreExCntB=6'b00010_0;
+			6'b00110_0: tPreExCntB=6'b10011_0;
+			6'b00110_1: tPreExCntB=6'b00110_1;
+			6'b00111_0: tPreExCntB=6'b01011_0;
+			6'b00111_1: tPreExCntB=6'b10110_1;
+			6'b01000_0: tPreExCntB=6'b10000_0;
+			6'b01000_1: tPreExCntB=6'b00111_1;
+			6'b01001_0: tPreExCntB=6'b10111_0;
+			6'b01001_1: tPreExCntB=6'b00110_0;
+			6'b01010_0: tPreExCntB=6'b00000_0;
+			6'b01010_1: tPreExCntB=6'b00100_1;
+			6'b01011_0: tPreExCntB=6'b10000_1;
+			6'b01011_1: tPreExCntB=6'b10111_0;
+			6'b01100_0: tPreExCntB=6'b01000_0;
+			6'b01100_1: tPreExCntB=6'b01010_1;
+			6'b01101_0: tPreExCntB=6'b01110_1;
+			6'b01101_1: tPreExCntB=6'b01101_1;
+			6'b01110_0: tPreExCntB=6'b00101_0;
+			6'b01110_1: tPreExCntB=6'b01100_1;
+			6'b01111_0: tPreExCntB=6'b11100_1;
+			6'b01111_1: tPreExCntB=6'b01100_0;
+			6'b10000_0: tPreExCntB=6'b11110_0;
+			6'b10000_1: tPreExCntB=6'b10001_0;
+			6'b10001_0: tPreExCntB=6'b01011_0;
+			6'b10001_1: tPreExCntB=6'b10110_0;
+			6'b10010_0: tPreExCntB=6'b00101_0;
+			6'b10010_1: tPreExCntB=6'b01001_1;
+			6'b10011_0: tPreExCntB=6'b10010_1;
+			6'b10011_1: tPreExCntB=6'b10111_1;
+			6'b10100_0: tPreExCntB=6'b11011_0;
+			6'b10100_1: tPreExCntB=6'b00110_1;
+			6'b10101_0: tPreExCntB=6'b10011_0;
+			6'b10101_1: tPreExCntB=6'b01110_0;
+			6'b10110_0: tPreExCntB=6'b10011_1;
+			6'b10110_1: tPreExCntB=6'b00100_0;
+			6'b10111_0: tPreExCntB=6'b11011_1;
+			6'b10111_1: tPreExCntB=6'b10110_0;
+			6'b11000_0: tPreExCntB=6'b01101_1;
+			6'b11000_1: tPreExCntB=6'b00110_1;
+			6'b11001_0: tPreExCntB=6'b10011_1;
+			6'b11001_1: tPreExCntB=6'b10110_1;
+			6'b11010_0: tPreExCntB=6'b01100_0;
+			6'b11010_1: tPreExCntB=6'b10001_0;
+			6'b11011_0: tPreExCntB=6'b01110_0;
+			6'b11011_1: tPreExCntB=6'b10111_0;
+			6'b11100_0: tPreExCntB=6'b11100_0;
+			6'b11100_1: tPreExCntB=6'b11010_0;
+			6'b11101_0: tPreExCntB=6'b10001_1;
+			6'b11101_1: tPreExCntB=6'b11110_0;
+			6'b11110_0: tPreExCntB=6'b00001_0;
+			6'b11110_1: tPreExCntB=6'b10100_0;
+			6'b11111_0: tPreExCntB=6'b01111_0;
+			6'b11111_1: tPreExCntB=6'b10100_0;
+		endcase
+`else
+		if((tPreExCnt[2]^tPreExCnt[1]) == tPreExDir[2])
+			tNxtStatBraHit	= tStatBraHit + 1;
+
 		case( {tPreExDir[2], tPreExCnt[2:0]} )
 			4'b0000: tPreExCntB=3'b001;
 			4'b0001: tPreExCntB=3'b001;
@@ -285,6 +390,7 @@ begin
 			4'b1110: tPreExCntB=3'b100;
 			4'b1111: tPreExCntB=3'b110;
 		endcase
+`endif
 
 //		$display("PreBra: Predict State %X, BPc=%X",
 //			{tPreExDir[2], tPreExCnt[2:0]},
@@ -584,13 +690,20 @@ begin
 	tDoBraCc11B	= 0;
 
 	tDoBraRv12	= 0;
+	
+`ifdef jx2_prebra_ga6bit
+	tPreIfDir	= tPreIfCnt[0];
+`else
+	tPreIfDir	= tPreIfCnt[2] ^ tPreIfCnt[1];
+`endif
 
 // `ifndef def_true
 `ifdef def_true
 	if(tIsBraCc8 && (tPreIbIx==tPreIdIx))
 	begin
 //		tDoBraCc8 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
-		tDoBraCc8 = tPreIfCnt[2] ^ tPreIfCnt[1];
+//		tDoBraCc8 = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tDoBraCc8 = tPreIfDir;
 		tNonBra		= 0;
 		tWasBra		= 1;
 		
@@ -604,7 +717,8 @@ begin
 	if(tIsBraCc20 && (tPreIbIx==tPreIdIx))
 	begin
 //		tDoBraCc20 = tPreExCntB[1] ? tPreBit : tPreIfCnt[2];
-		tDoBraCc20 = tPreIfCnt[2] ^ tPreIfCnt[1];
+//		tDoBraCc20 = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tDoBraCc20 = tPreIfDir;
 		tNonBra		= 0;
 		tWasBra		= 1;
 		
@@ -616,21 +730,24 @@ begin
 
 	if(tIsBraCc8B && (tPreIbIx==tPreIdIx))
 	begin
-		tDoBraCc8B = tPreIfCnt[2] ^ tPreIfCnt[1];
+//		tDoBraCc8B = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tDoBraCc8B = tPreIfDir;
 		tNonBra		= 0;
 		tWasBra		= 1;
 	end
 
 	if(tIsBraCc11B && (tPreIbIx==tPreIdIx))
 	begin
-		tDoBraCc11B = tPreIfCnt[2] ^ tPreIfCnt[1];
+//		tDoBraCc11B = tPreIfCnt[2] ^ tPreIfCnt[1];
+		tDoBraCc11B = tPreIfDir;
 		tNonBra		= 0;
 		tWasBra		= 1;
 	end
 
 	if(tIsBraRv12 && (tPreIbIx==tPreIdIx))
 	begin
-		tDoBraRv12	= tPreIfCnt[2] ^ tPreIfCnt[1];
+//		tDoBraRv12	= tPreIfCnt[2] ^ tPreIfCnt[1];
+		tDoBraRv12	= tPreIfDir;
 		tNonBra		= 0;
 		tWasBra		= 1;
 	end
@@ -914,6 +1031,10 @@ always @(posedge clock)
 begin
 	tHistBits	<= tHistBitsB;
 	tPreExBit	<= tPreExBitB;
+
+	tStatBraTot	<= tNxtStatBraTot;
+	tStatBraHit	<= tNxtStatBraHit;
+
 
 	tPreIfCnt	<= preCnts[tPreIfIx];
 	tPreIdIx	<= tPreIfIx;

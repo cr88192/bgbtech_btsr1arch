@@ -357,6 +357,12 @@ int stat_const_maskhit;
 int stat_const_maskjumbo;
 int stat_const_masktot;
 
+int stat_const_imm16;
+int stat_const_imm16u;
+int stat_const_imm16n;
+int stat_const_imm16h;
+int stat_const_imm20lui;
+
 int stat_const_jumbo64;
 int stat_const_jumbo96;
 
@@ -709,6 +715,16 @@ int opcnt_f3xx[256];
 int opcnt_f8xx[256];
 int opcnt_f9xx[256];
 int opcnt_opw1;
+
+int n_opcnt_f0xx;
+int n_opcnt_f1xx;
+int n_opcnt_f2xx;
+int n_opcnt_f3xx;
+int n_opcnt_f8xx;
+int n_opcnt_f9xx;
+
+int opcnt_rv53xx[256];
+int stat_opc_rv;
 };
 
 /*

@@ -67,3 +67,21 @@ mk_link:
 	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-nm
 	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-c++
 	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xg2a-tk-pel-g++
+
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-cc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-gcc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-as
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-ld
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-ar
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-nm
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-c++
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/xrva-tk-pel-g++
+
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-cc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-gcc
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-as
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-ld
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-ar
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-nm
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-c++
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/x3rv-tk-pel-g++

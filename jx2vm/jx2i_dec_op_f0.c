@@ -84,18 +84,24 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	int cm_dfl, cn_dfl;
 	int rm_x, rn_x, ro_x, rp_x;
 	int opw3, opw4;
-	int disp5, imm5, imm6, eq, eo, wq, wo;
+	s64 disp5, imm5, imm6;
+	int eq, eo, wq, wo;
 	int disp11as, dispasc, disp_ldop;
 	int imm8u, imm8n;
 	int imm10u, imm10n;
 	int imm20s;
-	int ret, fnm, is4r, isjimm, isjau;
+	int ret, fnm, is4r, isjimm, isjau, isxg3;
 
 	op->fl|=BJX2_OPFL_TWOWORD;
 	op->opn=opw1;
 	op->opn2=opw2;
 	op->pc=addr;
-	
+
+	isxg3=0;
+	if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&
+		(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) )
+			isxg3=1;
+
 	if(1)
 	{
 #ifdef BJX2_FLIPSTNM
@@ -248,6 +254,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		if(jbits&0x10000000U)
 //			disp5|=0xFFFFE000;
 			disp5|=0xFFFF0000;
+			
+		disp5=(s32)disp5;
 		imm5=disp5;
 		
 		disp11as=(jbits&2047);
@@ -275,8 +283,37 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	if(jbits&0x01000000U)
 	{
 		disp5=((jbits&0x000FFFFFF)<<4)|((opw1   )&15);
-		if(opw1&0x0010)
-			disp5|=0xF0000000;
+
+		if(isxg3)
+		{
+			if(jbits&0x10000000U)
+				disp5|=~0xFFFFFFFFULL;
+			if(jbits&0x80000000U)
+				disp5|=0x80000000U;
+			if(jbits&0x08000000U)
+				disp5|=0x40000000U;
+			if(jbits&0x04000000U)
+				disp5|=0x20000000U;
+			if(opw1&0x0010)
+				disp5|=0x10000000U;
+		}else
+		{
+			if(opw1&0x0010)
+				disp5|=0xF0000000;
+
+#if 0
+			if(jbits&0x80000000U)
+				disp5^=0x80000000U;
+			if(jbits&0x08000000U)
+				disp5^=0x40000000U;
+			if(jbits&0x04000000U)
+				disp5^=0x20000000U;
+			if(jbits&0x10000000U)
+				disp5^=0x10000000U;
+#endif
+
+			disp5=(s32)disp5;
+		}
 		imm5=disp5;
 		isjimm=1;
 	}
@@ -6069,7 +6106,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_SEQI_RegImmReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 
-				if(isjimm && wo)
+				if(isjimm && wo && !isxg3)
 				{
 					op->nmid=BJX2_NMID_CMPQHI;
 					op->Run=BJX2_Op_SGTIU_RegImmReg;
@@ -6098,7 +6135,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_SGTI_RegImmReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 
-				if(isjimm && wo)
+				if(isjimm && wo && !isxg3)
 				{
 					op->nmid=BJX2_NMID_CMPQHI;
 					op->Run=BJX2_Op_SGTIU_RegImmReg;
@@ -6128,7 +6165,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_SNEI_RegImmReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 
-				if(isjimm && wo)
+				if(isjimm && wo && !isxg3)
 				{
 					op->nmid=BJX2_NMID_SLTU;
 					op->Run=BJX2_Op_SLTIU_RegImmReg;
@@ -6154,7 +6191,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_SLTI_RegImmReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 
-				if(isjimm && wo)
+				if(isjimm && wo && !isxg3)
 				{
 					op->nmid=BJX2_NMID_SLTU;
 					op->Run=BJX2_Op_SLTIU_RegImmReg;
@@ -7202,6 +7239,14 @@ int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
 			if(!(opw3&0x2000))
 				immb|=0x10000000U;
 			opw3v|=0xE000;
+
+
+			if(!(opw1&0x8000))
+				immb|=0x80000000U;
+			if(!(opw1&0x4000))
+				immb|=0x08000000U;
+			if(!(opw1&0x2000))
+				immb|=0x04000000U;
 		}
 
 //		switch((opw3>>8)&15)

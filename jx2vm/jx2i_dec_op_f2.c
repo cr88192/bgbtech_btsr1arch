@@ -171,6 +171,22 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		imm10u=(u32)((opw2&255)|((jbits&255)<<8));
 		imm10u|=((opw2&0x0300)<<8);
 		imm10n=imm10u|0xFFFFFFFFFFFC0000LL;
+
+#if 1
+		if(isxg3)
+//		if(1)
+		{
+			imm10u=imm9u;
+			imm10n=imm9n;
+		}
+#endif
+	}
+
+	if(isxg3)
+	{
+		/* Tweak: Make XG3 interpret 2RI using same immed as 3RI */
+		imm10u=imm9u;
+		imm10n=imm9n;
 	}
 
 	disp11s=(opw1&1)?imm10n:imm10u;

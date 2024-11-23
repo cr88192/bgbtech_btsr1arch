@@ -2698,6 +2698,15 @@ int BGBCC_JX2C_EmitLeaBRegIRegScReg(
 	}
 #endif
 
+	if(
+		(sctx->emit_riscv&0x33) &&
+		((ireg&0x3F)==0x00)		)
+	{
+		BGBCC_JX2_EmitOpRegReg(sctx, BGBCC_SH_NMID_MOV,
+			breg, dreg);
+		return(1);
+	}
+
 //	if(		((breg&0x1E)==0x00) ||
 //			((ireg&0x1E)==0x00)	)
 	if(		((breg&0x3E)==0x00) ||

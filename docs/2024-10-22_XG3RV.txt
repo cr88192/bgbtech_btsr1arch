@@ -1,4 +1,4 @@
-BSR4K / XG3 / XG3RV:
+XG3 / XG3RV:
 * Repack of XG2RV Encoding Space to be compatible with RISC-V OP32 Encodings.
 ** Some mostly minor differences will exist.
 * Would exist in a separate operating mode from RV64GC.
@@ -18,12 +18,12 @@ Repack:
 * jiii-iiiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
 * iiii-iiiiii-iiiiii-aZZZ-nnnnnn-bY-YYPw (F8)
 * iiii-iiiiii-iiiiii-aZZZ-jjjjjj-bY-YYPw (BRA)
-* iiii-iiiiii-iiiiii-jjjj-jjjjab-c1-1Y10 (FE/FF)
+* iiii-iiiiii-iiiiii-jjjj-jjjjaa-a1-1Y10 (FE/FF)
 
 Pw:
 * 00: OP?T (Conditional True, Optional)
 * 01: OP?F (Conditional False, Optional)
-* 10: OP
+* 10: OP (Unconditional)
 * 11: RV OP32 (XG3RV)
 
 Where, YYY:
@@ -72,21 +72,82 @@ Where GP (GBR) may be encoded as either R1 or R3, but with the difference that R
 
 === Jumbo Prefixes ===
 
-F0/F3/F9
-* iiii-iiiiii-iiiiii-jjjj-jjjjBB-B1-1010 (FE)
-* XXXX-ASkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
 
-For the F0/F3/F9 block, a 29-bit immediate will be formed:
-* S-jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk
+Prefixes
+* iiii-iiiiii-iiiiii-jjjj-jjjjaa-a1-1010 (Jumbo_FE)
+* ZZZZ-jjjjii-iiiiii-ZZZZ-ZZZZaa-a1-1110 (Jumbo_FF)
+
+The Jumbo_FE prefix will serve the primary role of expanding the immediate field.
+
+The Jumbo_FF prefix will have a lesser role in immediate, but is more intended to expand the instruction encodings.
+
+
+
+==== Jumbo, F0 Block ====
+
+F0/F3/F9
+* iiii-iiiiii-iiiiii-jjjj-jjjjbb-b1-1010 (FE)
+* XXXX-Sakkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+
+For the F0/F3/F9 block, a 33-bit immediate will be formed:
+* S-bbba-jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk
 
 Where:
-* Imm6u/Disp6s will be extended to Imm29s/Disp29s.
-* Some instructions may synthesize an immediate field.
+* Imm6u/Disp6s will be extended to Imm33s/Disp33s.
+* Some 3R instructions may synthesize an immediate field.
 
 
 The behavior of an FF prefix with an F0 instruction will depend on the F0 instruction.
 
 
+F0, 4R:
+* UUUU-1ttttt-ssssss-VVVV-WWWWWW-R1-1110 (FF)
+* XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+
+F0, 3RI Imm17s:
+* UUUU-0jjjjj-jjjjjj-VVVV-WWWWWW-R1-1110 (FF)
+* XXXX-Skiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+
+For the F0 block, a Imm17s may be formed if used with an Imm6 or Disp6 op:
+* S-kjjj-jjjj-jjjj-iiii
+
+With the R/U/V/W bits as additional opcode or context dependent fields.
+
+
+==== Jumbo-FF with F0 Load/Store (Optional) ====
+
+If used with a register-indexed Load/Store:
+* UUUU-0iiiii-iiiiii-0000-ssssss-01-1110 (FF)
+* XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+** {LDOP_U}.x (Rm, Ro, Disp11u), Rn
+* UUUU-1ssiii-iiiiii-0000-ssssss-01-1110 (FF)
+* XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+** {LDOP_U}.x (Rm, Ro*Sc, Disp9u), Rn
+
+Where:
+* Load will encode a LoadOp instruction on a given type.
+** The destination is unchanged, value is loaded into Rn.
+* Store will encode an OpStore instruction on a given type.
+** The result of the operation will be written to memory.
+
+U Field:
+* 0: MOV
+* 1: XCHG
+* 2: ADD
+* 3: SUB_MR (Mem-Reg)
+* 4: SUB_RM (Reg-Mem)
+* 5: AND
+* 6: OR
+* 7: XOR
+* 8..F: Repeat 0..7, but perform a Volatile operation.
+
+The Rs field will be reserved for now.
+* May modify the behavior of OpStore if not ZZR:
+** Source value is pulled from Rs rather than Rn.
+** Rn is given the prior memory contents.
+
+
+==== Jumbo, F1/F2 Block ====
 
 F1/F2
 * iiii-iiiiii-iiiiii-jjjj-jjjjXX-X1-1010 (FE)
@@ -95,6 +156,31 @@ F1/F2
 For the F1/F2 block, a 33-bit immediate will be formed:
 * S-jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk-kkkk
 
+
+For some F2 Block Instructions:
+
+Two Jumbo FE prefixes will give a 64-bit immediate:
+* uuuu-uuuuuu-uuuuuu-vvvv-vvvvaa-a1-1010 (FE)
+* iiii-iiiiii-iiiiii-jjjj-jjjjbb-b1-1010 (FE)
+* cckk-kkkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
+
+Will give:
+* ccaa-abbb-vvvv-vvvv-uuuu-uuuu-uuuu-uuuu (High)
+* jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk-kkkk (Low)
+
+
+If a Jumbo-FF prefix is used with the F1 and F2 blocks, the immediate will be expanded to 18-bits sign-extended.
+
+* UUUU-TTTTii-iiiiii-VVVV-WWWWWW-R1-1110 (FF)
+* Sjkk-kkkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
+
+For the F1/F2 block, a 18-bit immediate will be formed:
+* S-j-iiii-iiii-kkkk-kkkk
+
+With the R/U/V/T/W bits as additional opcode or context dependent fields.
+
+
+==== Jumbo, F8 Block ====
 
 F8
 * iiii-iiiiii-iiiiii-XXXX-XXXXXX-X1-1110 (FF)
@@ -121,7 +207,7 @@ Note that the decoding of the register field for the 96-bit F8 Block in XG3 will
 The additional X bits will be reserved for additional opcode.
 
 
-=== F0 Block ===
+=== F0 Block Listing ===
 
 0000-oooooo-mmmmmm-0000-nnnnnn-Q0-0010
 
@@ -422,7 +508,7 @@ If a CMPxx instruction is encoded with Rn=ZR, this will update SR.T based on the
 * zzzz-oooooo-mmmmmm-1111-nnnnnn-z0-0010  (Reserved)
 
 
-=== F1 Block ===
+=== F1 Block Listing ===
 
 * F1nm_Zeii  (MOV Disp10s Block)
 ** iiiiiiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		Rn, (Rm, Disp10s)	//SB
@@ -474,7 +560,7 @@ For the relative branch cases, these will be modified to be relative to BasePC a
 
 
 
-=== F2 Block ===
+=== F2 Block Listing ===
 
 * F2nm_Zgjj
 
@@ -512,7 +598,7 @@ For now, the 2RI encodings are not being carried over.
 Many were functionally redundant in this case, or were optimization cases.
 
 
-=== F8 Block ===
+=== F8 Block Listing ===
 
 * F8Zn_iiii
 ** iiii-iiiiii-iiiiii-0000-nnnnnn-01-0010  LDIZ		Imm16u, Rn
@@ -529,7 +615,7 @@ Many were functionally redundant in this case, or were optimization cases.
 ** iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  MOVU.L	(GP, Disp16u*4), Rn	//LWU
 ** iiii-iiiiii-iiiiii-0110-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-0110-nnnnnn-11-0010  -
-** iiii-iiiiii-iiiiii-0111-jjjjjj-k1-00Pw  BRA		(PC, Disp23s)
+** iiii-iiiiii-iiiiii-0111-jjjjjj-k1-00Pw  BRA		(PC, Disp23s)	//J lbl
 ** iiii-iiiiii-iiiiii-1000-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1001-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1010-nnnnnn-01-0010  -
@@ -540,7 +626,7 @@ Many were functionally redundant in this case, or were optimization cases.
 ** iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  MOV.L	(GP, Disp16u*4), Rn	//LW
 ** iiii-iiiiii-iiiiii-1110-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1110-nnnnnn-11-0010  -
-** iiii-iiiiii-iiiiii-1111-jjjjjj-k1-00Pw  BSR		(PC, Disp23s)
+** iiii-iiiiii-iiiiii-1111-jjjjjj-k1-00Pw  BSR		(PC, Disp23s)	//JAL lbl
 
 BRA/BSR:
 * bits (1:0) are understood as 0.
@@ -553,6 +639,7 @@ The reason for changing the BRA/BSR encoding:
 * In RISC-V terms, BRA will be a "JAL X0, Disp" and BSR "JAL X1, Disp".
 ** RV JAL may still be used in XG3RV Mode.
 ** However, branching to a non 32-bit aligned address is undefined.
+** Unlike RV JAL, these may not encode additional link registers.
 * Branch reach will be +/- 16MB
 ** It will only be able to branch to a 32-bit aligned address.
 
@@ -588,6 +675,8 @@ The reason for changing the BRA/BSR encoding:
 
 
 === F0 Block, 2R Space ===
+
+Much of these can be considered optional.
 
 ** F0nm_1ez8
 *** 1000-000000-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.B	Rm, Rn
@@ -636,11 +725,11 @@ The reason for changing the BRA/BSR encoding:
 *** 1001-001000-mmmmmm-0001-nnnnnn-00-0010  MOV			Rm, Rn
 *** 1001-001000-mmmmmm-0001-nnnnnn-10-0010  MOVX		Rm, Rn
 *** 1001-001001-mmmmmm-0001-nnnnnn-00-0010  -
-*** 1001-001001-mmmmmm-0001-nnnnnn-10-0010  CMPNANTEQ	RmImm6u, Rn
+*** 1001-001001-mmmmmm-0001-nnnnnn-10-0010 ? CMPNANTEQ	RmImm6u, Rn
 *** 1001-001010-mmmmmm-0001-nnnnnn-00-0010  MOV			Rm, Cn
 *** 1001-001010-mmmmmm-0001-nnnnnn-10-0010  SETTRAP		Rn, (Rm)
 *** 1001-001011-mmmmmm-0001-nnnnnn-00-0010  MOV			Cm, Rn
-*** 1001-001011-mmmmmm-0001-nnnnnn-10-0010  CMPTTEQ		RmImm6u, Rn
+*** 1001-001011-mmmmmm-0001-nnnnnn-10-0010 ? CMPTTEQ	RmImm6u, Rn
 
 ** F0nm_1ezA  (GSV Block)
 *** 1010-000000-mmmmmm-0001-nnnnnn-00-0010  PSTCF8H		Rm, Rn

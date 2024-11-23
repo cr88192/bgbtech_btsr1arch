@@ -749,6 +749,10 @@ int BGBCC_JX2C_ScratchReleaseReg(
 			((reg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RD0) ||
 			((reg&BGBCC_SH_REG_RTMASK6)==BGBCC_SH_REG_RQ0))
 		{
+		
+			if(!(reg&63))
+				return(1);
+		
 			sctx->is_leaf&=(~4);
 			sctx->is_leaftiny|=8;
 			ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
@@ -957,6 +961,22 @@ int BGBCC_JX2C_ScratchAllocTsReg(
 	}	
 	i=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, cls);
 	return(i);
+}
+
+int BGBCC_JX2C_ScratchAllocRegZzr(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	int tr0;
+
+	if(sctx->emit_riscv&0x33)
+	{
+		return(BGBCC_SH_REG_RQ0);
+	}
+
+	tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+	BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV, 0, tr0);
+	return(tr0);
 }
 
 int BGBCC_JX2C_ScratchAllocReg(
@@ -3767,6 +3787,26 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		}
 	}
 
+	if(BGBCC_CCXL_IsRegImmZeroP(ctx, reg) && (sctx->emit_riscv&0x33))
+	{
+		/* If trying to load zero on RISC-V, we already have a register... */
+
+		if(	(rcls==BGBCC_SH_REGCLS_GR)		||
+			(rcls==BGBCC_SH_REGCLS_VO_GR)	)
+		{
+			return(BGBCC_SH_REG_RD0);
+		}
+
+		if(	(rcls==BGBCC_SH_REGCLS_QGR)	||
+			(rcls==BGBCC_SH_REGCLS_VO_QGR)	)
+		{
+			return(BGBCC_SH_REG_RQ0);
+		}
+		
+		i=-1;
+//		return(0);
+	}
+
 //	if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
 //		BGBCC_CCXL_IsRegDoubleP(ctx, reg))
 //	{
@@ -4401,8 +4441,10 @@ int BGBCC_JX2C_EmitGetRegister(
 		{
 //			if(BGBCC_JX2C_SaveFrameOfsForReg(ctx, sctx, creg)!=0)
 //				{ BGBCC_DBGBREAK }
-			if(!((sctx->regs_scratch>>(creg&63))&1))
-				{ BGBCC_DBGBREAK }
+//			if(!((sctx->regs_scratch>>(creg&63))&1))
+			if(!((sctx->regs_scratch>>(creg&63))&1) &&
+				((creg&0x3F)!=0x00))
+					{ BGBCC_DBGBREAK }
 		}
 
 		BGBCC_JX2C_EmitGetRegisterSniffReg(ctx, sctx, creg);
@@ -4554,6 +4596,9 @@ int BGBCC_JX2C_EmitGetRegister(
 		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1);
 //		i1=i;
 
+		if(i1<0)
+			{ BGBCC_DBGBREAK }
+
 		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1))
 			continue;
 
@@ -4621,6 +4666,11 @@ int BGBCC_JX2C_EmitGetRegister(
 				}
 			}
 		}
+	}
+	
+	if((nsv<=0) && (bi<0))
+	{
+		i=-1;
 	}
 	
 	if(bi<0)
@@ -4908,6 +4958,8 @@ int BGBCC_JX2C_EmitTryGetRegisterDirty(
 {
 	int creg;
 	creg=BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, 3);
+	if((sctx->is_leaftiny&1) && (creg==BGBCC_SH_REG_ZZR))
+		creg=BGBCC_JX2C_EmitGetRegister(ctx, sctx, reg, 3);
 	BGBCC_JX2C_EmitGetRegisterSniffReg(ctx, sctx, creg);
 	return(creg);
 }
@@ -4920,6 +4972,8 @@ int BGBCC_JX2C_EmitTryGetRegisterWrite(
 {
 	int creg;
 	creg=BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, 1);
+	if((sctx->is_leaftiny&1) && (creg==BGBCC_SH_REG_ZZR))
+		creg=BGBCC_JX2C_EmitGetRegister(ctx, sctx, reg, 1);
 	BGBCC_JX2C_EmitGetRegisterSniffReg(ctx, sctx, creg);
 	return(creg);
 }
@@ -4930,7 +4984,10 @@ int BGBCC_JX2C_EmitTryGetRegisterRead(
 	BGBCC_JX2_Context *sctx,
 	ccxl_register reg)
 {
-	return(BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, 2));
+//	if(sctx->is_leaftiny&1)
+//		return(BGBCC_JX2C_EmitGetRegister(ctx, sctx, reg, 2));
+//	else
+		return(BGBCC_JX2C_EmitTryGetRegister(ctx, sctx, reg, 2));
 }
 
 int BGBCC_JX2C_EmitBindVRegReg(
@@ -5655,6 +5712,10 @@ int BGBCC_JX2C_EmitReleaseRegister(
 			return(1);
 		}
 	}
+	
+	/* Allow it to pass if zero wasn't assigned a register. */
+	if(BGBCC_CCXL_IsRegImmZeroP(ctx, reg))
+		return(0);
 
 	BGBCC_DBGBREAK
 	return(0);
@@ -6286,7 +6347,8 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 			sctx->regs_excl_tiny	=0xFF00FF00FF00FF00ULL;
 		}
 
-		if(sctx->use_egpr&2)
+//		if(sctx->use_egpr&2)
+		if(sctx->use_egpr&3)
 		{
 			sctx->regs_excl			=0x0000000000008000ULL;
 			sctx->regs_excl_tiny	=0xFF00FF00FF00FF00ULL;
@@ -6617,6 +6679,12 @@ int BGBCC_JX2C_EmitSyncProlog(
 		if(	BGBCC_CCXL_IsRegGlobalP(ctx, reg1) ||
 			BGBCC_CCXL_IsRegImmP(ctx, reg1))
 		{
+			if(sctx->emit_riscv&0x33)
+			{
+				if(BGBCC_CCXL_IsRegImmZeroP(ctx, reg1))
+					continue;
+			}
+
 			BGBCC_JX2C_EmitLoadFrameVRegReg(ctx, sctx, reg1, creg);
 		}
 	}

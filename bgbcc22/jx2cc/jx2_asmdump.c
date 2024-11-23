@@ -271,6 +271,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_SHLD:	sn="SHLD.L";	break;	//0x5F
 	case BGBCC_SH_NMID_CLRS:	sn="CLRS";		break;	//0x61
 	case BGBCC_SH_NMID_SETS:	sn="SETS";		break;	//0x62
+	case BGBCC_SH_NMID_AUIPC:	sn="AUIPC";		break;	//0x63	//AUIPC
+	case BGBCC_SH_NMID_LUI:		sn="LUI";		break;	//0x64	//LUI
 	case BGBCC_SH_NMID_MOVUB:	sn="MOVU.B";	break;	//0x65	//MOVU.B
 	case BGBCC_SH_NMID_MOVUW:	sn="MOVU.W";	break;	//0x66	//MOVU.W
 	case BGBCC_SH_NMID_MOVUL:	sn="MOVU.L";	break;	//0x67	//MOVU.L
@@ -347,6 +349,7 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_FSTCD:	sn="FSTCD";		break;	//0xAD
 	case BGBCC_SH_NMID_FSTCI:	sn="FSTCI";		break;	//0xAE
 	case BGBCC_SH_NMID_FSTCH:	sn="FSTCH";		break;	//0xAF
+
 	case BGBCC_SH_NMID_FRCPA:	sn="FRCPA";		break;	//0xB0
 	case BGBCC_SH_NMID_FSQRTA:	sn="FSQRTA";	break;	//0xB1
 	case BGBCC_SH_NMID_FRCP:	sn="FRCP";		break;	//0xB2
@@ -355,8 +358,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_BRA2F:		sn="BRA2F";			break;	//0xBB
 	case BGBCC_SH_NMID_MOVDL:		sn="MOVD.L";		break;	//0xBC
 	case BGBCC_SH_NMID_RET:			sn="RET";			break;	//0xBD
-	case BGBCC_SH_NMID_PUSHX2:		sn="PUSHX2";		break;	//0xBE
-	case BGBCC_SH_NMID_POPX2:		sn="POPX2";			break;	//0xBF
+//	case BGBCC_SH_NMID_PUSHX2:		sn="PUSHX2";		break;	//0xBE
+//	case BGBCC_SH_NMID_POPX2:		sn="POPX2";			break;	//0xBF
 
 	case BGBCC_SH_NMID_MOVI:		sn="MOVI";			break;	//0xC0
 	case BGBCC_SH_NMID_MOVIV:		sn="MOVIV";			break;	//0xC1

@@ -148,10 +148,13 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 //		op->fl|=BJX2_OPFL_NOWEX;
 
 //		if((opw1&31)==15)
-		if(((opw1&31)==15) && !(jbits&0x40000000U))
+		if(((opw1&31)==15) &&
+			!(jbits&0x40000000U) &&
+			!(jbits&0x02000000U))
 		{
 			op->nmid=BJX2_NMID_BREAK;
 			op->Run=BJX2_Op_BREAK_None;
+			op->fl|=BJX2_OPFL_CTRLF;
 		}
 
 		if(jbits&0x02000000U)
@@ -313,6 +316,13 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 		op->Run=BJX2_Op_PREDT_Chn;
 		op->data=op1;
 	}
+
+	if(op1->fl&BJX2_OPFL_CTRLF)
+		{ op->fl|=BJX2_OPFL_CTRLF; }
+	if(op1->fl&BJX2_OPFL_NOWEX)
+		{ op->fl|=BJX2_OPFL_NOWEX; }
+	if(op1->fl&BJX2_OPFL_NOWEXSFX)
+		{ op->fl|=BJX2_OPFL_NOWEXSFX; }
 
 	return(ret);
 }

@@ -2917,15 +2917,21 @@ Immediate values may be extended by 8 bits:
 * Imm5u becomes Imm11s / Imm17s
 * Imm9u becomes Imm17u or Imm18s
 * Imm9n becomes Imm17n
-* Imm10u becomes Imm18u or Imm19s
-* Imm10n becomes Imm18n
+* / Imm10u becomes Imm18u or Imm19s
+* / Imm10n becomes Imm18n
+* Imm10u becomes Imm17u or Imm18s
+* Imm10n becomes Imm17n
 * Imm16u becomes Imm33s
 * Imm16n becomes Imm33s
 * Disp9u becomes Imm18s
 
 The extra bits are added between the base bits and E.i, so:
-* Imm18 = { Wi ? -1 : 0, Em, Ei, jbits(7:0), opw_b(7:0) }
+* / Imm18 = { Wi ? -1 : 0, Em, Ei, jbits(7:0), opw_b(7:0) }
 * Imm33s = { Wi ? -1 : 0, jbits(15:0), opw_b(15:0) }
+
+Change:
+* Op64 Imm10->Imm18u/Imm19s case will be replaced with Imm17u/Imm18s.
+* This may save some logic on a case that is used "hardly ever".
 
 For certain ops, Imm17u or Imm18u may function instead as Imm18s or Imm19s.
 * In these cases, W.i will serve as a sign bit.

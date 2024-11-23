@@ -294,6 +294,12 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "jcmpr"))
 		{ shctx->has_jcmp|=2; }
 
+	if(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVA)
+	{
+		/* For RISC-V Mode, Default to plain PE/COFF */
+		ctx->pel_cmpr=255;
+	}
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pexe"))
 		ctx->pel_cmpr=255;
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pel0"))
@@ -636,6 +642,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->has_jcmp|=3;
 		shctx->has_qmul|=1;
+		shctx->has_qmul|=8;
 		shctx->has_qmul|=32;
 		shctx->has_fmovc|=1;		//
 
@@ -7402,6 +7409,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx;
 	BGBCC_CCXL_RegisterInfo *obj, *obj1, *obj2;
 	BGBCC_CCXL_LiteralInfo *litobj;
+	char *s0, *s1;
 	double f, g;
 	int *shufarr, *shufarr_rev;
 	int t0, t1, t2, t3;
@@ -8497,7 +8505,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	//		printf("16=%.2f%% 8A=%.2f%% 8E=%.2f%% CE=%.2f%% "
 	//				"CC0=%.2f%% CC3=%.2f%%\n",
 			printf("16=%.2f%% Fz=%.2f%% FC=%.2f%% FD=%.2f%% "
-					"CC0=%.2f%% CC3=%.2f%% 7z=%.2f%% 9z=%.2f%% \n",
+					"CC0=%.2f%% CC3=%.2f%% 7z=%.2f%% 9z=%.2f%% RV=%.2f%% \n",
 				(100.0*sctx->stat_opc_base16)/k,
 				(100.0*sctx->stat_opc_ext8a)/k,
 				(100.0*sctx->stat_opc_ext8e)/k,
@@ -8505,7 +8513,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				(100.0*sctx->stat_opc_extCC0)/k,
 				(100.0*sctx->stat_opc_extCC3)/k,
 				(100.0*sctx->stat_opc_7xx)/k,
-				(100.0*sctx->stat_opc_9xx)/k
+				(100.0*sctx->stat_opc_9xx)/k,
+				(100.0*sctx->stat_opc_rv)/k
 				);
 
 			printf("16=%.2fkB Fz=%.2fkB FC=%.2fkB FD=%.2fkB 7z=%.2fkB 9z=%.2fkB\n",
@@ -8565,7 +8574,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	#endif
 
 	#if 1
-		if(!(sctx->is_fixed32&1))
+//		if(!(sctx->is_fixed32&1))
+		if(sctx->n_opcnt_3xx>0)
 		{
 			printf("High 3xzx op use map:\n");
 		//	printf("   ");
@@ -8610,57 +8620,61 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	#endif
 
 	#if 1
-		printf("High F0xx op use map:\n");
-	//	printf("   ");
-	//	for(j=0; j<16; j++)
-	//			printf("  x%1X", j);
-	//	printf("\n");
-
-		printf("A    ");
-		for(j=0; j<8; j++)
-				printf("    x%1X", j);
-		printf("\n");
-
-		printf("B     ");
-		for(j=8; j<16; j++)
-				printf("    x%1X", j);
-		printf("\n");
-
-		for(i=0; i<16; i++)
+		if(sctx->n_opcnt_f0xx>0)
 		{
-			k=0;
-			for(j=0; j<16; j++)
-				{ k+=sctx->opcnt_f0xx[i*16+j]; }
-			if(!k)continue;
-		
-			if(i>=0xC)
+			printf("High F0xx op use map:\n");
+		//	printf("   ");
+		//	for(j=0; j<16; j++)
+		//			printf("  x%1X", j);
+		//	printf("\n");
+
+			printf("A    ");
+			for(j=0; j<8; j++)
+					printf("    x%1X", j);
+			printf("\n");
+
+			printf("B     ");
+			for(j=8; j<16; j++)
+					printf("    x%1X", j);
+			printf("\n");
+
+			for(i=0; i<16; i++)
 			{
 				k=0;
 				for(j=0; j<16; j++)
 					{ k+=sctx->opcnt_f0xx[i*16+j]; }
-				printf("  %1Xx %d\n", i, k);
-				continue;
-			}
+				if(!k)continue;
+			
+				if(i>=0xC)
+				{
+					k=0;
+					for(j=0; j<16; j++)
+						{ k+=sctx->opcnt_f0xx[i*16+j]; }
+					printf("  %1Xx %d\n", i, k);
+					continue;
+				}
 
-			printf("A %1Xx ", i);
-			for(j=0; j<8; j++)
-			{
-				printf(" %5d", sctx->opcnt_f0xx[i*16+j]);
-			}
-			printf("\n");
+				printf("A %1Xx ", i);
+				for(j=0; j<8; j++)
+				{
+					printf(" %5d", sctx->opcnt_f0xx[i*16+j]);
+				}
+				printf("\n");
 
-			printf("B %1Xx  ", i);
-			for(j=8; j<16; j++)
-			{
-				printf(" %5d", sctx->opcnt_f0xx[i*16+j]);
+				printf("B %1Xx  ", i);
+				for(j=8; j<16; j++)
+				{
+					printf(" %5d", sctx->opcnt_f0xx[i*16+j]);
+				}
+				printf("\n");
 			}
 			printf("\n");
 		}
-		printf("\n");
 	#endif
 
 	#if 1
-		if(sctx->is_fixed32&1)
+//		if(sctx->is_fixed32&1)
+		if(sctx->n_opcnt_f03xx>0)
 		{
 			printf("High F0-3xx op use map:\n");
 
@@ -8739,92 +8753,166 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	#endif
 
 	#if 1
-		printf("High F1xx op use map:\n");
-		for(i=0; i<8; i++)
+		if(sctx->n_opcnt_f1xx>0)
 		{
-			printf(" %5d", sctx->opcnt_f1xx[i]);
+			printf("High F1xx op use map:\n");
+			for(i=0; i<8; i++)
+			{
+				printf(" %5d", sctx->opcnt_f1xx[i]);
+			}
+			printf("\n");
+			for(i=8; i<16; i++)
+			{
+				printf(" %5d", sctx->opcnt_f1xx[i]);
+			}
+			printf("\n");
 		}
-		printf("\n");
-		for(i=8; i<16; i++)
-		{
-			printf(" %5d", sctx->opcnt_f1xx[i]);
-		}
-		printf("\n");
 
 		printf("\n");
 	#endif
 
 	#if 1
-		printf("High F2xx op use map:\n");
-
-		printf("A    ");
-		for(j=0; j<8; j++)
-				printf("    x%1X", j);
-		printf("\n");
-
-		printf("B     ");
-		for(j=8; j<16; j++)
-				printf("    x%1X", j);
-		printf("\n");
-
-		printf("0x..7x ");
-		for(i=0; i<8; i++)
+		if(sctx->n_opcnt_f2xx>0)
 		{
-			k=0;
-			for(j=0; j<16; j++)
-				{ k+=sctx->opcnt_f2xx[i*16+j]; }
-			printf(" %5d", k);
-		}
-		printf("\n");
-		printf("8x..Bx ");
-		for(i=8; i<12; i++)
-		{
-			k=0;
-			for(j=0; j<16; j++)
-				{ k+=sctx->opcnt_f2xx[i*16+j]; }
-			printf(" %5d", k);
-		}
-		printf("\n");
+			printf("High F2xx op use map:\n");
 
-		for(i=12; i<16; i++)
-		{
-			k=0;
-			for(j=0; j<16; j++)
-				{ k+=sctx->opcnt_f2xx[i*16+j]; }
-			if(!k)continue;
-		
-			printf("A %1Xx ", i);
+			printf("A    ");
 			for(j=0; j<8; j++)
+					printf("    x%1X", j);
+			printf("\n");
+
+			printf("B     ");
+			for(j=8; j<16; j++)
+					printf("    x%1X", j);
+			printf("\n");
+
+			printf("0x..7x ");
+			for(i=0; i<8; i++)
 			{
-				printf(" %5d", sctx->opcnt_f2xx[i*16+j]);
+				k=0;
+				for(j=0; j<16; j++)
+					{ k+=sctx->opcnt_f2xx[i*16+j]; }
+				printf(" %5d", k);
+			}
+			printf("\n");
+			printf("8x..Bx ");
+			for(i=8; i<12; i++)
+			{
+				k=0;
+				for(j=0; j<16; j++)
+					{ k+=sctx->opcnt_f2xx[i*16+j]; }
+				printf(" %5d", k);
 			}
 			printf("\n");
 
-			printf("B %1Xx  ", i);
-			for(j=8; j<16; j++)
+			for(i=12; i<16; i++)
 			{
-				printf(" %5d", sctx->opcnt_f2xx[i*16+j]);
+				k=0;
+				for(j=0; j<16; j++)
+					{ k+=sctx->opcnt_f2xx[i*16+j]; }
+				if(!k)continue;
+			
+				printf("A %1Xx ", i);
+				for(j=0; j<8; j++)
+				{
+					printf(" %5d", sctx->opcnt_f2xx[i*16+j]);
+				}
+				printf("\n");
+
+				printf("B %1Xx  ", i);
+				for(j=8; j<16; j++)
+				{
+					printf(" %5d", sctx->opcnt_f2xx[i*16+j]);
+				}
+				printf("\n");
 			}
 			printf("\n");
 		}
-		printf("\n");
 	#endif
 
 	#if 1
-		printf("High F8xx op use map:\n");
-		for(i=0; i<8; i++)
+		if(sctx->n_opcnt_f8xx>0)
 		{
-			printf(" %5d", sctx->opcnt_f8xx[i]);
+			printf("High F8xx op use map:\n");
+			for(i=0; i<8; i++)
+			{
+				printf(" %5d", sctx->opcnt_f8xx[i]);
+			}
+			printf("\n");
+			for(i=8; i<16; i++)
+			{
+				printf(" %5d", sctx->opcnt_f8xx[i]);
+			}
+			printf("\n");
+
+			printf("\n");
 		}
-		printf("\n");
-		for(i=8; i<16; i++)
-		{
-			printf(" %5d", sctx->opcnt_f8xx[i]);
-		}
-		printf("\n");
 	#endif
 
-		printf("\n");
+		if(sctx->stat_opc_rv>0)
+		{
+			printf("High RV32 op use map:\n");
+			for(i=0; i<32; i++)
+			{
+				k=0;
+				for(j=0; j<8; j++)
+					k+=sctx->opcnt_rv53xx[i*8+j];
+				if(!k)
+					continue;
+			
+				j=0;
+				switch(i)
+				{
+				case 0x00:	s0="LD   ";		break;
+				case 0x01:	s0="FLD  ";		break;
+				case 0x02:	s0="Usr0 ";		break;
+				case 0x03:	s0="FENCE";		break;
+				case 0x04:	s0="ALUI ";		break;
+				case 0x05:	s0="AUIPC";	j=1;	break;
+				case 0x06:	s0="ALUIW";		break;
+
+				case 0x08:	s0="ST   ";		break;
+				case 0x09:	s0="FST  ";		break;
+				case 0x0A:	s0="Usr1 ";		break;
+				case 0x0B:	s0="AMO  ";		break;
+				case 0x0C:	s0="ALU  ";		break;
+				case 0x0D:	s0="LUI  ";	j=1;	break;
+				case 0x0E:	s0="ALUW ";		break;
+
+				case 0x10:	s0="FMA  ";		break;
+				case 0x11:	s0="FMS  ";		break;
+				case 0x12:	s0="FNMS ";		break;
+				case 0x13:	s0="FNMA ";		break;
+				case 0x14:	s0="FPU  ";		break;
+				case 0x15:	s0="OP-V ";		break;
+				case 0x16:	s0="Usr2 ";		break;
+
+				case 0x18:	s0="Bcc  ";		break;
+				case 0x19:	s0="JALR ";		break;
+				case 0x1A:	s0="RSV0 ";		break;
+				case 0x1B:	s0="JAL  ";	j=1;	break;
+				case 0x1C:	s0="SYS  ";		break;
+				case 0x1D:	s0="OP-P ";		break;
+				case 0x1E:	s0="Usr3 ";		break;
+				}
+			
+				if(j>0)
+				{
+					printf("%02X (%s):  %5d\n", i, s0, k);
+					continue;
+				}
+			
+				printf("%02X (%s): ", i, s0);
+				for(j=0; j<8; j++)
+				{
+					printf(" %5d", sctx->opcnt_rv53xx[i*8+j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+		}
+
+//		printf("\n");
 
 		n=0;
 		for(i=0; i<64; i++)
@@ -8842,7 +8930,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				}
 				if(j>=4)
 					continue;
-			
+
 				printf("R%02u: ", i*4);
 				for(j=0; j<4; j++)
 				{
@@ -8857,11 +8945,21 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 
 		printf("Consts: MaskHit=%d MaskJumbo=%d MaskTot=%d\n"
-			"\tTot_J64=%d (Fp32=%d 2xFp16=%d 4xFp8=%d i33l=%d i32h=%d i32c=%d)\n"
+			"\tTot_I16=%d (U=%d N=%d Fp16=%d) I20_LUI=%d\n"
+
+			"\tTot_J64=%d (Fp32=%d 2xFp16=%d 4xFp8=%d "
+				"i33l=%d i32h=%d i32c=%d)\n"
 			"\tTot_J96=%d (PH=%d)\n",
 			sctx->stat_const_maskhit,
 			sctx->stat_const_maskjumbo,
 			sctx->stat_const_masktot,
+			
+			sctx->stat_const_imm16,
+			sctx->stat_const_imm16u,
+			sctx->stat_const_imm16n,
+			sctx->stat_const_imm16h,
+			sctx->stat_const_imm20lui,
+
 			sctx->stat_const_jumbo64,
 			sctx->stat_const_jumbo64_f32,
 			sctx->stat_const_jumbo64_2xf16,
@@ -8869,6 +8967,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			sctx->stat_const_jumbo64_imm33l,
 			sctx->stat_const_jumbo64_imm32h,
 			sctx->stat_const_jumbo64_imm32c,
+
 			sctx->stat_const_jumbo96,
 			sctx->stat_const_jumbo96ph
 			);

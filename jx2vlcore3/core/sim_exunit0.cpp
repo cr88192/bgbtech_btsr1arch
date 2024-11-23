@@ -520,6 +520,7 @@ char *BTSR1_CheckGetString()
 
 		getstr_tbuf[getstr_tbpos++]=i;
 		fputc(i, stdout);
+		fflush(stdout);
 		
 		i=BTSR1_MainGetKey();
 	}
@@ -528,6 +529,7 @@ char *BTSR1_CheckGetString()
 	if(i>0)
 	{
 		fputc('\n', stdout);
+		fflush(stdout);
 		getstr_tbpos=0;
 		return(getstr_tbuf);
 	}
@@ -783,6 +785,7 @@ uint32_t mmio_WriteDWord(BJX2_Context *ctx, uint32_t addr, uint32_t val)
 	case 0xE014:
 //		printf("UART TX %02X(%c)\n", val, val);
 		fputc(val, stdout);
+		fflush(stdout);
 		break;
 	case 0xE018:
 		break;

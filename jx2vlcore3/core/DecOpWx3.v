@@ -159,7 +159,7 @@ wire[7:0]		srModC;
 
 // assign		srMod = { regSr[29], srSxo, srUser };
 assign		srMod = {
-	1'b0, 1'b0, 1'b0, srRiscv,
+	1'b0, 1'b0, srWxe, srRiscv,
 	srXG2, regSr[29], srSxo, srUser };
 
 assign		srModA = { istrMTagA[1:0], srMod[5:0] };
@@ -197,6 +197,12 @@ defparam		decOpFzA.fpuLowPrec		= fpuLowPrec;
 defparam		decOpFzB.fpuLowPrec		= fpuLowPrec;
 defparam		decOpFzC.fpuLowPrec		= fpuLowPrec;
 defparam		decOpBz.fpuLowPrec		= fpuLowPrec;
+
+wire[2:0]	opJumboWxBitsB;
+wire[2:0]	opJumboWxBitsC;
+
+assign	opJumboWxBitsB = ~istrWordA[15:13];
+assign	opJumboWxBitsC = ~istrWordB[15:13];
 
 
 `reg_gpr		opRegAM;
@@ -328,11 +334,13 @@ DecOpFz	decOpFzC(
 	clock,		reset,	srModC,
 //	{ UV32_00, istrWord[95:64] },	4'h5,
 	{ UV32_00, istrWordC },	4'h5,
-		{ tOpJBitsB[24], tOpJBitsC[24],
+		{	opJumboWxBitsC,
+			tOpJBitsB[24], tOpJBitsC[24],
 			opIsWexJumbo96,
 			opIsWexJumboB | opIsWex2x40B,
 			tOpJBitsC[23:0] },
-		{ 1'b0, tOpJBitsB[24],
+		{	opJumboWxBitsB,
+			1'b0, tOpJBitsB[24],
 			1'b0,
 			opIsWexJumboA | opIsWex2x40B,
 			tOpJBitsB[23:0] },
@@ -356,11 +364,12 @@ DecOpFz	decOpFzB(
 	clock,		reset,	srModB,
 //	{ UV32_00, istrWord[63:32] },	4'h1,
 	{ UV32_00, istrWordB },	4'h1,
-		{ 1'b0, tOpJBitsB[24],
+		{	opJumboWxBitsB,
+			1'b0, tOpJBitsB[24],
 			1'b0,
 			opIsWexJumboA | opIsWex2x40B,
 			tOpJBitsB[23:0] },
-		UV28_00,
+		UV31_00,
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idRegP,
 	decOpFzB_idImm,
@@ -381,8 +390,8 @@ DecOpFz	decOpFzA(
 	clock,		reset,	srModA,
 //	{ UV32_00, istrWord[31: 0] },	4'h0,
 	{ UV32_00, istrWordA },	4'h0,
-		UV28_00,
-		UV28_00,
+		UV31_00,
+		UV31_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idRegP,
 	decOpFzA_idImm,

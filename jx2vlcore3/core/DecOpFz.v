@@ -47,8 +47,8 @@ input[7:0]		srMod;		//mode
 
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;
-input[27:0]		istrJBits;
-input[27:0]		istrJ2Bits;
+input[30:0]		istrJBits;
+input[30:0]		istrJ2Bits;
 
 `output_gpr		idRegN;
 `output_gpr		idRegM;
@@ -844,6 +844,14 @@ begin
 			opExM, opExI, istrJBits[7:0], istrWord [23:16] };
 		opImm_imm10n	= { UV15_FF,
 			opExM, opExI, istrJBits[7:0], istrWord [23:16] };
+
+//		if(srXG3RV)
+		if(1'b1)
+		begin
+			opImm_imm10u	= opImm_imm9s;
+			opImm_imm10n	= opImm_imm9s;
+		end
+
 //		opImm_imm10n	= opImm_imm10u;
 		opImm_imm10s	= opImm_imm10u;
 		opImm_disp11s	= opImm_imm10u;
@@ -980,6 +988,11 @@ begin
 		opImm_disp5u	= {opExI ? 5'b11111 : 5'b00000,
 			istrJBits[23:0], istrWord[23:20]};
 
+		if(srXG3RV)
+		begin
+			opImm_disp5u[32:28] = { opExWI, istrJBits[30:28], opExI };
+		end
+
 		opImm_imm5u		= opImm_disp5u;
 		opImm_imm5n		= opImm_disp5u;
 
@@ -1017,10 +1030,19 @@ begin
 //		opImm_imm10n	= {UV22_FF, !opExWI, istrWord[25:16]};
 
 		opImm_imm10u	= {UV21_00,  opExWM,  opExWI, istrWord[25:16]};
-//		opImm_imm10n	= {UV21_FF, !opExWM, !opExWI, istrWord[25:16]};
-		opImm_imm10n	= {UV21_FF,
-			!opExWM ^ srXG3RV, !opExWI ^ srXG3RV,
-			istrWord[25:16]};
+		opImm_imm10n	= {UV21_FF, !opExWM, !opExWI, istrWord[25:16]};
+//		opImm_imm10n	= {UV21_FF,
+//			!opExWM ^ srXG3RV, !opExWI ^ srXG3RV,
+//			istrWord[25:16]};
+
+		if(srXG3RV)
+		begin
+//			opImm_imm10u	= opImm_imm9u;
+//			opImm_imm10n	= opImm_imm9n;
+
+			opImm_imm10u[10:9]=opImm_imm9u[10:9];
+			opImm_imm10n[10:9]=opImm_imm9n[10:9];
+		end
 
 //		opImm_disp11s	=
 //			{	istrWord[0] ? UV21_FF : UV21_00,
@@ -8461,6 +8483,14 @@ begin
 `ifndef jx2_reg_rp
 //	opRegP = opRegN;
 `endif
+
+	if(srXG3RV)
+	begin
+//		if(opDoImm == JX2_FMIMM_IMM10U)
+//			opDoImm		= JX2_FMIMM_IMM9U;
+//		if(opDoImm == JX2_FMIMM_IMM10N)
+//			opDoImm		= JX2_FMIMM_IMM9N;
+	end
 
 	case(opDoImm)
 		JX2_FMIMM_NONE:		begin end

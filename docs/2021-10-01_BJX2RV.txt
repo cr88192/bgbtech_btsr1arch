@@ -83,12 +83,13 @@ Listing:
 * iiiiiii-iiiii-mmmmm-101-nnnnn-00-00011  LHU	Rn, Rm, Disp12_I
 * iiiiiii-iiiii-mmmmm-110-nnnnn-00-00011  LWU	Rn, Rm, Disp12_I
 * iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011  LX	Rn, Rm, Disp12_I (BGB)
+** iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011 ? LDU	Rn, Rm, Disp12_I (RV128)
 
 * iiiiiii-ttttt-mmmmm-000-iiiii-01-00011  SB	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-001-iiiii-01-00011  SH	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-010-iiiii-01-00011  SW	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-011-iiiii-01-00011  SD	Rm, Disp12_S, Rt
-* iiiiiii-ttttt-mmmmm-100-iiiii-01-00011  SBU	Rm, Disp12_S, Rt
+* iiiiiii-ttttt-mmmmm-100-iiiii-01-00011  SBU	Rm, Disp12_S, Rt (RV128, SQ?)
 * iiiiiii-ttttt-mmmmm-101-iiiii-01-00011  SHU	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-110-iiiii-01-00011  SWU	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt (BGB)
@@ -123,6 +124,8 @@ Listing:
 * uuuuu10-ttttt-sssss-zzz-nnnnn-10-00111  FMSUB.H	Rn, Rs, Rt, Ru (H)
 
 * ddddddd-ddddd-mmmmm-000-nnnnn-11-00111  JALR		Rn, Rm, Disp12_I
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-11-00011 ? J21B_IMM	(BGB)
+* 1iiiiii-iiiii-zzzzz-100-omnpp-11-00011 ? J21B_OP	(BGB)
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User / Custom 0)
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01011  (User / Custom 1)
@@ -134,6 +137,8 @@ Listing:
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-01011  (Reserved)
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01111  (Fence)
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-01111 ? LQ	Rn, Rm, Disp12_I (RV128)
+
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01111  (Atomic)
 
 * 00000al-ooooo-mmmmm-010-nnnnn-01-01111  AMOADD.W		(A)
@@ -175,7 +180,7 @@ Listing:
 ** 00111ss-ttttt-mmmmm-001-nnnnn-01-01111  SH	(Rm, Rt*Sc), Rn
 ** 00111ss-ttttt-mmmmm-010-nnnnn-01-01111  SW	(Rm, Rt*Sc), Rn
 ** 00111ss-ttttt-mmmmm-011-nnnnn-01-01111  SD	(Rm, Rt*Sc), Rn
-** 00111ss-ttttt-mmmmm-100-nnnnn-01-01111 ? SBU	(Rm, Rt*Sc), Rn
+** 00111ss-ttttt-mmmmm-100-nnnnn-01-01111 ? SQ	(Rm, Rt*Sc), Rn (RV128)
 ** 00111ss-ttttt-mmmmm-101-nnnnn-01-01111 ? SHU	(Rm, Rt*Sc), Rn
 ** 00111ss-ttttt-mmmmm-110-nnnnn-01-01111 ? SWU	(Rm, Rt*Sc), Rn
 ** 00111ss-ttttt-mmmmm-111-nnnnn-01-01111  SX	(Rm, Rt*Sc), Rn
@@ -405,13 +410,13 @@ Listing:
 
 
 * iiiiiii-iiiii-mmmmm-000-nnnnn-00-11011  ADDIW		Rn, Rm, Imm12_I
-* 000000i-iiiii-mmmmm-001-nnnnn-00-11011  SLLIW		Rn, Rm, Imm12
+* 000000i-iiiii-mmmmm-001-nnnnn-00-11011  SLLIW		Rn, Rm, Imm6
 * iiiiiii-iiiii-mmmmm-010-nnnnn-00-11011  -
 * iiiiiii-iiiii-mmmmm-011-nnnnn-00-11011  -
 * 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J21_IMM	(BGB)
 * 1iiiiii-iiiii-zzzzz-100-omnpp-00-11011  J21_OP	(BGB)
-* 000000i-iiiii-mmmmm-101-nnnnn-00-11011  SRLIW		Rn, Rm, Imm12_I
-* 010000i-iiiii-mmmmm-101-nnnnn-00-11011  SRAIW		Rn, Rm, Imm12_I
+* 000000i-iiiii-mmmmm-101-nnnnn-00-11011  SRLIW		Rn, Rm, Imm6_I
+* 010000i-iiiii-mmmmm-101-nnnnn-00-11011  SRAIW		Rn, Rm, Imm6_I
 * 0iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? SHORI	Rn, Imm16u (BGB)
 * 1iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? FLDCH	Rn, Imm17s (BGB)
 * iiiiiii-iiiii-iiiii-111-nnnnn-00-11011  ? LI		Rn, Imm17s (BGB)
@@ -458,6 +463,63 @@ Listing:
 ...
 
 
+=== Compressed "C" Encodings ===
+
+*  000-i-ii-iii-ii-mmm-00  ADD			(SP, Imm8sp), Rm
+** 000-0-00-000-00-000-00  Invalid
+*  001-i-ii-nnn-ii-mmm-00  FLD			(Rn, Disp5q), Rm
+*  010-i-ii-nnn-ii-mmm-00  LW			(Rn, Disp5l), Rm
+*  011-i-ii-nnn-ii-mmm-00  LD			(Rn, Disp5q), Rm
+*  100-z-zz-zzz-zz-zzz-00  Reserved
+*  101-i-ii-nnn-ii-mmm-00  FSD			Rm, (Rn, Disp5q)
+*  110-i-ii-nnn-ii-mmm-00  SW			Rm, (Rn, Disp5l)
+*  111-i-ii-nnn-ii-mmm-00  SD			Rm, (Rn, Disp5q)
+
+*  000-i-nn-nnn-ii-iii-01  ADD			Rn, Imm6Alu, Rn
+*  001-i-nn-nnn-ii-iii-01  ADDSL		Rn, Imm6Alu, Rn
+*  010-i-nn-nnn-ii-iii-01  LI			Imm6Alu, Rn
+*  011-i-nn-nnn-ii-iii-01  LUI			Imm6Alu, Rn
+** 011-i-00-010-ii-iii-01  ADDI16SP		Imm6Alu, Rn
+*  100-i-00-nnn-ii-iii-01  SRL			Rn3, Imm6AluZ, Rn3
+*  100-i-01-nnn-ii-iii-01  SRA			Rn3, Imm6AluZ, Rn3
+*  100-i-10-nnn-ii-iii-01  AND			Rn3, Imm6AluZ, Rn3
+
+*  100-0-11-nnn-00-mmm-01  SUB			Rn3, Rm3, Rn3
+*  100-0-11-nnn-01-mmm-01  XOR			Rn3, Rm3, Rn3
+*  100-0-11-nnn-10-mmm-01  OR			Rn3, Rm3, Rn3
+*  100-0-11-nnn-11-mmm-01  AND			Rn3, Rm3, Rn3
+*  100-1-11-nnn-00-mmm-01  SUBSL		Rn3, Rm3, Rn3
+*  100-1-11-nnn-01-mmm-01  ADDSL		Rn3, Rm3, Rn3
+*  100-1-11-nnn-10-mmm-01  -
+*  100-1-11-nnn-11-mmm-01  -
+
+*  101-i-ii-iii-ii-iii-01  BRA			Disp11J
+*  110-i-ii-nnn-ii-iii-01  BEQ			Rn3, ZR, Disp8J
+*  111-i-ii-nnn-ii-iii-01  BNE			Rn3, ZR, Disp8J
+
+*  000-i-nn-nnn-ii-iii-10  SLLI			Rn, Imm6AluZ, Rn
+*  001-i-nn-nnn-ii-iii-10  FLD			(SP, Disp6Lq), Rn
+*  010-i-nn-nnn-ii-iii-10  LW			(SP, Disp6Ll), Rn
+*  011-i-nn-nnn-ii-iii-10  LD			(SP, Disp6Lq), Rn
+
+*  100-0-nn-nnn-mm-mmm-10  MV			Rm, Rn
+** 100-0-nn-nnn-00-000-10  JR			Rm, Rn
+** 100-0-00-000-00-000-10  BREAK
+*  100-1-nn-nnn-mm-mmm-10  ADD			Rm, Rn
+** 100-1-nn-nnn-00-000-10  JALR			Rm, Rn
+** 100-1-00-000-00-000-10  -
+
+*  101-i-ii-iii-mm-mmm-10  FSD			Rm, (SP, Disp6Sq)
+*  110-i-ii-iii-mm-mmm-10  SW			Rm, (SP, Disp6Sl)
+*  111-i-ii-iii-mm-mmm-10  SD			Rm, (SP, Disp6Sq)
+
+Imm/Disp:
+*  ZZZ-d-ch-gfe-ab-RRR-ZZ  (Imm8sp)
+*  ZZZ-c-ba-nnn-ed-RRR-ZZ  (Disp5q)
+*  ZZZ-d-cb-nnn-ae-RRR-ZZ  (Disp5l)
+
+
+
 === Jumbo Encodings ===
 
 * tiiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J22	(Prefix, BGB)
@@ -473,7 +535,7 @@ The J21I will be a prefix op, which will combine with the following instruction.
 ** The k field will provide (31:27)
 
 The J21O prefix will also combine with Imm12 ops:
-* The immediate field will be 22 bits;
+* The immediate field will be 23 bits;
 * The register fields will expand to 6 bits.
 
 If combined with LUI or AUIPC:
@@ -494,3 +556,12 @@ If two prefixes are combined with a LUI:
 * First Prefix (11: 7) gives (63:59)
 
 
+=== Instruction Wishlist ===
+
+* SEQ, SNE, SLE
+* SEQI, SNEI, SLEI
+
+* AUI Rm, Imm12, Rn		//Rn = Rm + (Imm12 SHL 12)
+* AUIGP  GP, Imm16, Rn	//Rn = GP + (Imm<<3)
+* LWGP   (GP, Imm14), Rn	//Rn = LW(GP + (Imm<<2))
+* LDGP   (GP, Imm14), Rn	//Rn = LW(GP + (Imm<<3))

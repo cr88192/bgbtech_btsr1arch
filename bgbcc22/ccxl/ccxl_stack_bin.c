@@ -786,6 +786,7 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 	if(!strcmp(op, "!=="))opr=CCXL_CMP_NEQQ;
 	if(!strcmp(op, "!&"))opr=CCXL_CMP_NTST;
 	if(!strcmp(op, "!!&"))opr=CCXL_CMP_TST;
+//	if(!strcmp(op, "&&&"))opr=CCXL_CMP_TST;
 
 	if(opr>=0)
 	{
@@ -799,6 +800,16 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 		tty=BGBCC_CCXL_GetRegType(ctx, treg);
 		BGBCC_CCXL_GetTypeCompareBinaryDest(ctx, opr, sty, tty, &dty);
+
+#if 0
+		if(BGBCC_CCXL_TypeSmallLongP(ctx, dty))
+		{
+			BGBCC_JX2C_NormalizeImmVRegInt(ctx, NULL, dty, &sreg);
+			BGBCC_JX2C_NormalizeImmVRegInt(ctx, NULL, dty, &treg);
+			sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+			tty=BGBCC_CCXL_GetRegType(ctx, treg);
+		}
+#endif
 
 //		if(BGBCC_CCXL_TypeEqualP(ctx, dty, sty) &&
 //			BGBCC_CCXL_TypeEqualP(ctx, dty, tty))

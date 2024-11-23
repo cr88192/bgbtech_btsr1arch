@@ -422,9 +422,11 @@ reg[5:0]		tInOpmC;		//OPM (Used for cache-control)
 reg[5:0]		tInPcOpm;		//OPM (Used for cache-control)
 reg				tInPcWxe;
 reg				tInPcXG2;
+reg				tInPcXG3;
 reg				tInPcRiscv;
 reg				tNxtInPcWxe;
 reg				tNxtInPcXG2;
+reg				tNxtInPcXG3;
 reg				tNxtInPcRiscv;
 
 reg[3:0]		tInPmode;
@@ -770,13 +772,17 @@ reg				tReqUtlbHitAxB;
 wire[15:0]	memDataSsc;
 
 DecRvSscFlag	rvssc_p0(
-	memDataIn[ 31: 0], memDataSsc[ 3: 0]);
+	memDataIn[ 31: 0], memDataSsc[ 3: 0],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p1(
-	memDataIn[ 63:32], memDataSsc[ 7: 4]);
+	memDataIn[ 63:32], memDataSsc[ 7: 4],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p2(
-	memDataIn[ 95:64], memDataSsc[11: 8]);
+	memDataIn[ 95:64], memDataSsc[11: 8],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p3(
-	memDataIn[127:96], memDataSsc[15:12]);
+	memDataIn[127:96], memDataSsc[15:12],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 `endif
 
@@ -1207,22 +1213,30 @@ wire[15:0]	blkDataSscA;
 wire[15:0]	blkDataSscB;
 
 DecRvSscFlag	rvssc_p0a(
-	tBlkDataA[ 31: 0], blkDataSscA[ 3: 0]);
+	tBlkDataA[ 31: 0], blkDataSscA[ 3: 0],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p1a(
-	tBlkDataA[ 63:32], blkDataSscA[ 7: 4]);
+	tBlkDataA[ 63:32], blkDataSscA[ 7: 4],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p2a(
-	tBlkDataA[ 95:64], blkDataSscA[11: 8]);
+	tBlkDataA[ 95:64], blkDataSscA[11: 8],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p3a(
-	tBlkDataA[127:96], blkDataSscA[15:12]);
+	tBlkDataA[127:96], blkDataSscA[15:12],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 DecRvSscFlag	rvssc_p0b(
-	tBlkDataB[ 31: 0], blkDataSscB[ 3: 0]);
+	tBlkDataB[ 31: 0], blkDataSscB[ 3: 0],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p1b(
-	tBlkDataB[ 63:32], blkDataSscB[ 7: 4]);
+	tBlkDataB[ 63:32], blkDataSscB[ 7: 4],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p2b(
-	tBlkDataB[ 95:64], blkDataSscB[11: 8]);
+	tBlkDataB[ 95:64], blkDataSscB[11: 8],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 DecRvSscFlag	rvssc_p3b(
-	tBlkDataB[127:96], blkDataSscB[15:12]);
+	tBlkDataB[127:96], blkDataSscB[15:12],
+	tInPcXG2, tInPcRiscv, tInPcWxe);
 
 wire[15:0]	blkDataSscRegA;
 wire[15:0]	blkDataSscRegB;
@@ -1478,6 +1492,7 @@ begin
 //	tNxtInPcRiscv	= (icInPcWxm == 2'b01);
 //	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01);
 	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01) && !tNxtInPcXG2;
+	tNxtInPcXG3		= tNxtInPcRiscv && tNxtInPcWxe;
 
 //	tUtlb1BlkIx		= tUtlb1BlkIxL;
 	tUtlb1BlkIx		= tNxtUtlbBlkIx;
@@ -1557,6 +1572,7 @@ begin
 		tNxtReqPFx		= tReqPFx;
 		tNxtInPcWxe		= tInPcWxe;
 		tNxtInPcXG2		= tInPcXG2;
+		tNxtInPcXG3		= tInPcXG3;
 		tNxtInPcRiscv	= tInPcRiscv;
 		tNxtSkipTlb		= tSkipTlb;
 		tNxtSkipMiss	= tSkipMiss;
@@ -2136,7 +2152,7 @@ begin
 	tCombJWA = tPcStepJWA;
 
 `ifdef jx2_dec_ssc_riscv
-	if(blkDataRvSscEna && tInPcRiscv)
+	if(blkDataRvSscEna && tInPcRiscv && !tPcStepBA)
 		tCombJWA = 1;
 `endif
 
@@ -2876,6 +2892,13 @@ begin
 		tInPcXG2		<= tNxtInPcXG2;
 `else
 		tInPcXG2		<= 0;
+		tInPcXG3		<= 0;
+`endif
+
+`ifdef jx2_enable_riscv_xg3
+		tInPcXG3		<= tNxtInPcXG3;
+`else
+		tInPcXG3		<= 0;
 `endif
 
 //		tUtlbBlkIx		<= tNxtReqAddr[11:8];

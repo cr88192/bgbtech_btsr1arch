@@ -2717,7 +2717,19 @@ int BGBCC_JX2_TryEmitOpAutoLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 	int ndfl, flcl, fn16, flc20, nbra;
 
 	if(ctx->emit_riscv&0x11)
+	{
+#if 0
+		if(	(nmid==BGBCC_SH_NMID_BRAN) &&
+				!(ctx->op_is_wex2&12) &&
+			BGBCC_JX2_CheckPadLastOpWasBRA(ctx))
+		{
+			/* Eliminate branch directly after a branch. */
+			return(1);
+		}
+#endif
+
 		return(BGBCC_JX2RV_TryEmitOpLabel(ctx, nmid, lbl));
+	}
 	
 	ndfl=	(nmid!=BGBCC_SH_NMID_BRA) &&
 			(nmid!=BGBCC_SH_NMID_BRAN) &&

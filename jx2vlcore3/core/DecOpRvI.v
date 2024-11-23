@@ -559,7 +559,8 @@ begin
 	if(istrWord[11:7]==5'h4)
 		usrReject		= 1;
 
-	opIsNotFx = (istrWord[1:0] != 2'b11) && !isOpWxe;
+//	opIsNotFx = (istrWord[1:0] != 2'b11) && !isOpWxe;
+	opIsNotFx = (istrWord[1:0] != 2'b11);
 	if(!isOpRiscV)
 		opIsNotFx = 1;
 
@@ -1567,13 +1568,13 @@ begin
 	endcase
 
 
-	if(opNmid == JX2_UCMD_INVOP)
-		opFmid = JX2_FMID_INV;
+//	if(opNmid == JX2_UCMD_INVOP)
+//		opFmid = JX2_FMID_INV;
 
 	if(opIsNotFx)
 	begin
-		opFmid	= JX2_FMID_Z;
-		opIty	= JX2_ITY_SB;
+//		opFmid	= JX2_FMID_Z;
+//		opIty	= JX2_ITY_SB;
 	end
 
 	opUCmd = { opCcty, opNmid };
@@ -1997,11 +1998,11 @@ begin
 			opUFl[0]	= opIsImm9;
 		end
 
-		JX2_FMID_IMM4ZREG: begin
-		end
+//		JX2_FMID_IMM4ZREG: begin
+//		end
 
-		JX2_FMID_IMM4NREG: begin
-		end
+//		JX2_FMID_IMM4NREG: begin
+//		end
 		
 		/*
 			SB: (PC, Ro), ZZR
@@ -2082,7 +2083,7 @@ begin
 		end
 
 		JX2_FMID_INV: begin
-			if(!opIsNotFx)
+			if(!opIsNotFx && !isAltOp)
 			begin
 				opUCmd = { opCcty, JX2_UCMD_INVOP };
 				if(!tMsgLatch && isOpRiscV)
@@ -2130,7 +2131,7 @@ begin
 
 //	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
 //	if(usrReject && srUser && !usrSuAllowEn)
-	if(usrReject && srUser && !usrSuAllowEn && !opIsNotFx)
+	if(usrReject && srUser && !usrSuAllowEn && !opIsNotFx && !isAltOp)
 	begin
 		$display("DecOpRvI: Usermode Reject %X-%X",
 			istrWord[15:0], istrWord[31:16]);
@@ -2138,7 +2139,7 @@ begin
 		opFmid	= JX2_FMID_INV;
 	end
 	
-	if(isOpRiscV)
+	if(isOpRiscV && !opIsNotFx && !isAltOp)
 	begin
 		if(opNmid == JX2_UCMD_INVOP)
 		begin

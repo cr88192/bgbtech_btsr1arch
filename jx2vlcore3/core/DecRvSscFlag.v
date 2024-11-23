@@ -31,9 +31,17 @@
  * (3): Can Run in Lane 3
  */
 
-module DecRvSscFlag(istrWord, istrFlag);
+module DecRvSscFlag(istrWord, istrFlag,
+	isXG2, isRV, isWXE);
 input[31:0]		istrWord;
 output[3:0]		istrFlag;
+input			isXG2;
+input			isRV;
+input			isWXE;
+
+wire isXG3;
+
+assign isXG3 = isRV && !isXG2 && isWXE;
 
 reg[3:0]		tIstrFlag;
 assign		istrFlag = tIstrFlag;
@@ -242,7 +250,12 @@ begin
 
 `ifdef jx2_enable_riscv_xg3
 	if(istrWord[1:0]!=2'b11)
+	begin
+//		tIstrFlag	= 4'b0000;
+//		if(isXG3)
+//			tIstrFlag	= tIstrFlagXG3;
 		tIstrFlag	= tIstrFlagXG3;
+	end
 `else
 	if(istrWord[1:0]!=2'b11)
 		tIstrFlag	= 4'b0000;

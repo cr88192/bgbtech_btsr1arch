@@ -6041,6 +6041,9 @@ int BGBCC_JX2_TryEmitOpRegStReg2Disp(
 	if((ctx->op_is_wex2&2) && (odr>0))
 		{ opw1=-1; odr=0; }
 
+	if(ctx->op_is_wex2&12)
+		{ opw1=-1; odr=0; }
+
 	exw=0;
 	if(ctx->op_is_wex2&8) exw|=0x1000;
 	if(BGBCC_JX2_EmitCheckRegExt5(ctx, rn)) exw|=0x0400;
@@ -6196,6 +6199,9 @@ int BGBCC_JX2_TryEmitOpLdReg2DispReg(
 		{ opw1=-1; odr=0; }
 
 	if((ctx->op_is_wex2&2) && (odr>0))
+		{ opw1=-1; odr=0; }
+
+	if(ctx->op_is_wex2&12)
 		{ opw1=-1; odr=0; }
 
 	exw=0;

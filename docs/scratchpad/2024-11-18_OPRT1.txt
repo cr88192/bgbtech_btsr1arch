@@ -1,0 +1,20 @@
+Optimization Probability Ranking Table:
+* Assume an already entropy coded source.
+* Try to squeeze additional entropy out of it.
+* But, moderately fast and efficiently.
+
+Premise:
+* One has an order-1 model;
+** There is a context for each preceding byte.
+** Symbol probabilities are ranked according to STF.
+* Keep track of a "median index" for each context.
+** If encoded index is less than median, decrement median.
+** If encoded index is greated than median, increment median.
+* Depending on the median index, use an entropy encoding.
+** 60..255: Indedx as raw 8 bits.
+** 00..5F: Rank2
+
+Rank2 (LSB First):
+* 0xxxxxx       //00..3F, 7
+* 10xxxxxx      //40..7F, 8
+* 11xxxxxxx     //80..FF, 9

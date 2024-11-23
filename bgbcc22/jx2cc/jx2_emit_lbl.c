@@ -1083,7 +1083,7 @@ int BGBCC_JX2_CheckGetLabelGpOffs(
 	if((j==BGBCC_SH_CSEG_DATA) && (k>=0))
 		return(k);
 
-#if 1
+#if 0
 	if((j==BGBCC_SH_CSEG_BSS) && (k>=0) &&
 		(sctx->is_exe || sctx->is_dll))
 	{

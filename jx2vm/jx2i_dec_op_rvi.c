@@ -52,6 +52,12 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 //	op->pc2=addr;
 	ret=0;
 
+	if(addr&3)
+	{
+		op->fl|=BJX2_OPFL_NOWEX;
+		op->fl|=BJX2_OPFL_NOWEXSFX;
+	}
+
 	opw=(opw2<<16)|((u16)opw1);
 
 #if 1

@@ -8237,10 +8237,12 @@ int BGBCC_JX2_ComposeJumboImmRegF2(BGBCC_JX2_Context *ctx,
 			opw1|=0x0010;
 
 		imm1=((opw2&0x00FF)<<8)|(opw4&0x00FF);
-		imm1|=((opw4&0x0300)<<8);
+//		imm1|=((opw4&0x0300)<<8);
+		imm1|=((opw4&0x0100)<<8);
 		if(opw3&0x0001)
 //		if((opw1&0x0010) || (opw3&0x0001))
-			imm1|=0xFFFFFFFFFFFC0000LL;
+//			imm1|=0xFFFFFFFFFFFC0000LL;
+			imm1|=0xFFFFFFFFFFFE0000LL;
 
 		if((opw3&0x0001) && !(opw1&0x0010))
 			{ BGBCC_DBGBREAK }

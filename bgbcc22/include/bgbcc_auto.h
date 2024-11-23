@@ -3367,6 +3367,9 @@ int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6I(BGBCC_JX2_Context *ctx, s64 opwb, int rm, 
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
 int BGBCC_JX2X3_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn);
+int BGBCC_JX2X3_UpdateStat2RI(BGBCC_JX2_Context *ctx, int nmid, s64 imm);
+int BGBCC_JX2X3_UpdateStat3RI(BGBCC_JX2_Context *ctx, int nmid, s64 imm);
+int BGBCC_JX2X3_UpdateStat2RIM(BGBCC_JX2_Context *ctx, int nmid, s64 imm);
 int BGBCC_JX2X3_TryEncodeLoadImmReg(BGBCC_JX2_Context *ctx, s64 imm, int rn, s64 *ropw1, s64 *ropw2, s64 *ropw3);
 int BGBCC_JX2X3_TryEmitOpImmReg(BGBCC_JX2_Context *ctx, int nmid, s64 imm, int rn);
 int BGBCC_JX2X3_TryEmitOpRegImmReg(BGBCC_JX2_Context *ctx, int nmid, int rm, s64 imm, int rn);
@@ -3643,6 +3646,7 @@ int BGBCC_JX2C_ScratchStompReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, i
 int BGBCC_JX2C_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_ScratchAllocTsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
+int BGBCC_JX2C_ScratchAllocRegZzr(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
 int BGBCC_JX2C_ScratchQueryReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
 int BGBCC_JX2C_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
