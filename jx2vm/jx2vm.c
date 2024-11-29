@@ -1,26 +1,24 @@
 /*
- Copyright (c) 2018-2022 Brendan G Bohannon
+ MIT No Attribution
 
- Permission is hereby granted, free of charge, to any person
- obtaining a copy of this software and associated documentation
- files (the "Software"), to deal in the Software without
- restriction, including without limitation the rights to use,
- copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following
- conditions:
+ Copyright (c) 2018-2024 Brendan G Bohannon
 
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
+ Permission is hereby granted, free of charge, to any person 
+ obtaining a copy of this software and associated documentation 
+ files (the "Software"), to deal in the Software without 
+ restriction, including without limitation the rights to use, 
+ copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ copies of the Software, and to permit persons to whom the 
+ Software is furnished to do so.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- OTHER DEALINGS IN THE SOFTWARE.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
+ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include <stdio.h>
@@ -1375,14 +1373,92 @@ void btesh_main_iterate()
 	GfxDrv_EndDrawing();
 }
 
+void print_usage(char *name)
+{
+	printf("usage: %s romfile [options]\n", name);
+	printf(
+	"--rd_sz <size>     Size of SDcard ramdisk in MB\n"
+	"--rd_add <files*>  Files to add to ramdisk\n"
+	"--rd_exp <files*>  Files to export from ramdisk\n"
+	"--rd_ovl <files*>  Overlays to add to ramdisk\n"
+	"--rd_map <files*>  Give symbol maps to load\n"
+
+	"--rd_add_fl <lst>  Read list of files to add to ramdisk\n"
+	"--rd_exp_fl <lst>  Read list of files to export from ramdisk\n"
+	"--rd_ovl_fl <lst>  Read list of overlays to add to ramdisk\n"
+
+	"--mhz <mhz>        Specify target clock speed\n"
+	"--walltime         Base time on external (wall clock) time\n"
+	"--wallspeed        Run emulator full speed with external time.\n"
+	"--swap <size>      Add a swapfile / pagefile\n"
+	"--noswap           Don't use a swapfile\n"
+	"--l1cfg <cfg>      Specify L1 cache configuration parameters\n"
+	"--l1icfg <cfg>     Specify L1 I-cache configuration parameters\n"
+	"--l1dcfg <cfg>     Specify L1 D-cache configuration parameters\n"
+	"--l2cfg <cfg>      Specify L2 cache configuration parameters\n"
+	"--isacfg <cfg>     Specify ISA configuration sub-mode\n"
+	"--jit              Enable JIT compiler\n"
+	"--nojit            Disable JIT compiler\n"
+
+	"--chkbss           Debug data/bss sections.\n"
+	"--usbhid           Use virtual USB HID devices, rather than PS/2.\n"
+	"--norast           Disable rasterizer module.\n"
+	"--nowex            Disable support for WEX.\n"
+	"--opssc            Enable superscalar (RV and XG3).\n"
+	"--breakperf        ?\n"
+
+	"\n"
+	"Ramdisk files:\n"
+	"    <internal_path>=<external_path>\n"
+	"    Added files are copied into the ramdisk on startup.\n"
+	"    Exported files are copied out when the VM exits.\n"
+	"    Overlays are added on-top of the ramdisk, with direct IO\n"
+	"      IO on an overlay will be performed on the external file.\n"
+	"      Unlike import/export, overlays may not be resized/expanded.\n"
+	"    This is intended for things like non-volatile VFS mounts.\n"
+	"    When given a list file, it will be parsed for the files to add.\n"
+	);
+}
+
+int btesh_parse_addlist(char *fname, char **rdadd, int *rnadd)
+{
+	char tb[256];
+	FILE *fd;
+	char **a;
+	int i, n;
+	
+	n=*rnadd;
+	fd=fopen(fname, "rb");
+	while(!feof(fd))
+	{
+		memset(tb, 0, 256);
+		fgets(tb, 255, fd);
+		
+		a=JX2R_SplitLine(tb);
+		for(i=0; a[i]; i++)
+		{
+			if(a[i][0]=='#')
+				break;
+			if((a[i][0]=='/') && (a[i][1]=='/'))
+				break;
+			rdadd[n++]=strdup(a[i]);
+		}
+	}
+	fclose(fd);
+	*rnadd=n;
+	return(0);
+}
+
 int main(int argc, char *argv[])
 {
-	char *rd_add[64];
-	char *rd_exp[64];
-	char *rd_map[64];
+	char *rd_add[256];
+	char *rd_exp[256];
+	char *rd_map[256];
+	char *rd_ovl[256];
 	int rd_n_add;
 	int rd_n_exp;
 	int rd_n_map;
+	int rd_n_ovl;
 	char tb1[256], tb2[256];
 
 	char *ifn, *s, *t, *l1icfg, *l1dcfg, *l2cfg, *isacfg;
@@ -1395,6 +1471,7 @@ int main(int argc, char *argv[])
 	rd_n_add=0;
 	rd_n_exp=0;
 	rd_n_map=0;
+	rd_n_ovl=0;
 	ifn=NULL;
 //	ifmd=0; rdsz=128;
 //	ifmd=0; rdsz=256;
@@ -1413,6 +1490,12 @@ int main(int argc, char *argv[])
 	dorast=1;
 	nowex=0;
 	
+	if(argc<2)
+	{
+		print_usage(argv[0]);
+		return(0);
+	}
+	
 	for(i=1; i<argc; i++)
 	{
 		if(argv[i][0]=='-')
@@ -1425,6 +1508,29 @@ int main(int argc, char *argv[])
 				{ ifmd=2; continue; }
 			if(!strcmp(argv[i], "--rd_map"))
 				{ ifmd=3; continue; }
+			if(!strcmp(argv[i], "--rd_ovl"))
+				{ ifmd=4; continue; }
+
+			if(!strcmp(argv[i], "--rd_add_fl"))
+			{
+				btesh_parse_addlist(argv[i+1], rd_add, &rd_n_add);
+				i++;
+				continue;
+			}
+
+			if(!strcmp(argv[i], "--rd_exp_fl"))
+			{
+				btesh_parse_explist(argv[i+1], rd_exp, &rd_n_exp);
+				i++;
+				continue;
+			}
+
+			if(!strcmp(argv[i], "--rd_ovl_fl"))
+			{
+				btesh_parse_addlist(argv[i+1], rd_ovl, &rd_n_ovl);
+				i++;
+				continue;
+			}
 
 			if(!strcmp(argv[i], "--mhz"))
 				{ mhz=atoi(argv[i+1]); i++; continue; }
@@ -1481,7 +1587,7 @@ int main(int argc, char *argv[])
 			if(!strcmp(argv[i], "--opssc"))
 				{ nowex|=2; continue; }
 			if(!strcmp(argv[i], "--breakperf"))
-				{ nowex|=2; continue; }
+				{ nowex|=4; continue; }
 
 			continue;
 		}
@@ -1495,9 +1601,14 @@ int main(int argc, char *argv[])
 			{ rd_exp[rd_n_exp++]=argv[i]; continue; }
 		if(ifmd==3)
 			{ rd_map[rd_n_map++]=argv[i]; continue; }
+		if(ifmd==4)
+			{ rd_ovl[rd_n_ovl++]=argv[i]; continue; }
 	}
 	
 	bjx2_vmoutlog=fopen("bjx2_vmoutlog.txt", "wb");
+	
+	if(swapsz>0)
+		rdsz+=swapsz;
 	
 	JX2R_UseImageCreateRamdisk(rdsz*1024);
 	
@@ -1507,11 +1618,18 @@ int main(int argc, char *argv[])
 	}
 	for(i=0; i<rd_n_exp; i++)
 		JX2R_UseImageAddExport(rd_exp[i], NULL);
+
+	for(i=0; i<rd_n_ovl; i++)
+	{
+		JX2R_UseImageAddFileOverlay(rd_ovl[i], NULL);
+	}
 	
 	if(swapsz>0)
 	{
 		JX2R_UseImageAddFileBuffer("swapfile.sys", NULL, swapsz*(1<<20));
 	}
+	
+	JX2R_TKFAT_SyncImageBuffers();
 	
 	ctx=BJX2_AllocContext();
 //	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x00007FFFU);

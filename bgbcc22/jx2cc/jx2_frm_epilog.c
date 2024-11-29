@@ -305,20 +305,25 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	k=sctx->frm_offs_allocamrk;
 	if(k)
 	{
-		if(BGBCC_JX2C_CheckFrameSavedLpReg(ctx, sctx, BGBCC_SH_REG_LR12))
+		if(BGBCC_JX2C_CheckFrameSavedLpReg(ctx, sctx, BGBCC_SH_REG_LR12) &&
+			!(sctx->emit_riscv&0x33))
 		{
 			BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
 				BGBCC_SH_REG_LR2, BGBCC_SH_REG_LR12);
-			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, BGBCC_SH_REG_RQ4);
+			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, 
+				BGBCC_JX2CC_PSREG_ARG(0));
 			BGBCC_JX2C_EmitCallName(ctx, sctx, "__alloca_end");
 			BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
 				BGBCC_SH_REG_LR12, BGBCC_SH_REG_LR2);
 		}else
 		{
-			BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, 0, BGBCC_SH_REG_LR2);
-			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, BGBCC_SH_REG_RQ4);
+			BGBCC_JX2C_EmitStoreFrameOfsReg(ctx, sctx, 0,
+				BGBCC_JX2CC_PSREG_LRRET);
+			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k,
+				BGBCC_JX2CC_PSREG_ARG(0));
 			BGBCC_JX2C_EmitCallName(ctx, sctx, "__alloca_end");
-			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, 0, BGBCC_SH_REG_LR2);
+			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, 0,
+				BGBCC_JX2CC_PSREG_LRRET);
 		}
 	}
 

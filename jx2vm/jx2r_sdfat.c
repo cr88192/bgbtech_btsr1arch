@@ -1,26 +1,24 @@
 /*
- Copyright (c) 2018-2022 Brendan G Bohannon
+ MIT No Attribution
 
- Permission is hereby granted, free of charge, to any person
- obtaining a copy of this software and associated documentation
- files (the "Software"), to deal in the Software without
- restriction, including without limitation the rights to use,
- copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following
- conditions:
+ Copyright (c) 2018-2024 Brendan G Bohannon
 
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
+ Permission is hereby granted, free of charge, to any person 
+ obtaining a copy of this software and associated documentation 
+ files (the "Software"), to deal in the Software without 
+ restriction, including without limitation the rights to use, 
+ copy, modify, merge, publish, distribute, sublicense, and/or sell 
+ copies of the Software, and to permit persons to whom the 
+ Software is furnished to do so.
 
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- OTHER DEALINGS IN THE SOFTWARE.
+ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, 
+ EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES 
+ OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT 
+ HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
+ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE 
+ OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 JX2R_TKFAT_ImageInfo *spimmc_img=NULL;
@@ -255,10 +253,44 @@ int JX2R_TKFAT_ReadSectors(JX2R_TKFAT_ImageInfo *img,
 			(lba+num));
 		return(-1);
 	}
-
-	if(img->pImgData)
+	
+	for(i=0; i<img->n_ovl; i++)
 	{
-		memcpy(buf, img->pImgData+(lba<<9), (num<<9));
+		if(lba<img->ovl_sblk[i])
+			continue;
+		if(lba>=img->ovl_eblk[i])
+			continue;
+		k=lba-img->ovl_sblk[i];
+		bjx2_fseek(img->ovl_fd[i], (k<<9), 0);
+		j=bjx2_fread(buf, 1, 512*num, img->ovl_fd[i]);
+		if(j<0)
+			return(-1);
+		return(0);
+	}
+
+//	if(img->pImgData)
+//	{
+//		memcpy(buf, img->pImgData+(lba<<9), (num<<9));
+//		return(0);
+//	}
+
+	if(img->pImgArr)
+	{
+		if((lba>>11)!=((lba+(num-1))>>11))
+		{
+			for(i=0; i<num; i++)
+				{ JX2R_TKFAT_ReadSectors(img, buf+(i<<9), lba+i, 1); }
+			return(0);
+		}
+		
+		if(!img->pImgArr[lba>>11])
+		{
+//			img->pImgArr[lba>>11]=malloc(1<<20);
+			memset(buf, 0, (num<<9));
+			return(0);
+		}
+
+		memcpy(buf, img->pImgArr[lba>>11]+((lba&2047)<<9), (num<<9));
 		return(0);
 	}
 
@@ -314,8 +346,9 @@ int JX2R_TKFAT_ReadSectors(JX2R_TKFAT_ImageInfo *img,
 int JX2R_TKFAT_WriteSectors(JX2R_TKFAT_ImageInfo *img,
 	byte *buf, s64 lba, int num)
 {
+	void *tbd;
 	int sg, bi, n1, offs;
-	int i, j;
+	int i, j, k;
 
 	if(num<1)
 		return(-1);
@@ -325,9 +358,44 @@ int JX2R_TKFAT_WriteSectors(JX2R_TKFAT_ImageInfo *img,
 	if((lba+num)>img->nImgBlks)
 		return(-1);
 
-	if(img->pImgData)
+	for(i=0; i<img->n_ovl; i++)
 	{
-		memcpy(img->pImgData+(lba<<9), buf, (num<<9));
+		if(lba<img->ovl_sblk[i])
+			continue;
+		if(lba>=img->ovl_eblk[i])
+			continue;
+		k=lba-img->ovl_sblk[i];
+		bjx2_fseek(img->ovl_fd[i], (k<<9), 0);
+		j=bjx2_fwrite(buf, 1, 512*num, img->ovl_fd[i]);
+		bjx2_fflush(img->ovl_fd[i]);
+		if(j<0)
+			return(-1);
+		return(0);
+	}
+
+//	if(img->pImgData)
+//	{
+//		memcpy(img->pImgData+(lba<<9), buf, (num<<9));
+//		return(0);
+//	}
+
+	if(img->pImgArr)
+	{
+		if((lba>>11)!=((lba+(num-1))>>11))
+		{
+			for(i=0; i<num; i++)
+				{ JX2R_TKFAT_WriteSectors(img, buf+(i<<9), lba+i, 1); }
+			return(0);
+		}
+		
+		if(!img->pImgArr[lba>>11])
+		{
+			tbd=malloc(1<<20);
+			memset(tbd, 0, 1<<20);
+			img->pImgArr[lba>>11]=tbd;
+		}
+		img->pImgArrFl[lba>>11]|=1;
+		memcpy(img->pImgArr[lba>>11]+((lba&2047)<<9), buf, (num<<9));
 		return(0);
 	}
 
@@ -389,8 +457,22 @@ byte *JX2R_TKFAT_GetSectorTempBuffer(JX2R_TKFAT_ImageInfo *img,
 	int n, tbn;
 	int i, j, k;
 
-	if(img->pImgData)
-		return(img->pImgData+(lba<<9));
+//	if(img->pImgData)
+//		return(img->pImgData+(lba<<9));
+
+	if(img->pImgArr && ((lba>>11)==((lba+((num&255)-1))>>11)))
+	{
+		if(!img->pImgArr[lba>>11])
+		{
+			tbd=malloc(1<<20);
+			memset(tbd, 0, 1<<20);
+			img->pImgArr[lba>>11]=tbd;
+			img->pImgArrFl[lba>>11]|=1;
+		}
+		if(num&TKFAT_SFL_DIRTY)
+			img->pImgArrFl[lba>>11]|=1;
+		return(img->pImgArr[lba>>11]+((lba&2047)<<9));
+	}
 
 	n=num&255;
 	for(i=0; i<img->tbc_num; i++)
@@ -456,10 +538,25 @@ byte *JX2R_TKFAT_GetSectorTempBuffer(JX2R_TKFAT_ImageInfo *img,
 byte *JX2R_TKFAT_GetSectorStaticBuffer(JX2R_TKFAT_ImageInfo *img,
 	s64 lba, int num)
 {
+	void *tbd;
 	int i;
 
-	if(img->pImgData)
-		return(img->pImgData+(lba<<9));
+//	if(img->pImgData)
+//		return(img->pImgData+(lba<<9));
+
+	if(img->pImgArr && ((lba>>11)==((lba+((num&255)-1))>>11)))
+	{
+		if(!img->pImgArr[lba>>11])
+		{
+			tbd=malloc(1<<20);
+			memset(tbd, 0, 1<<20);
+			img->pImgArr[lba>>11]=tbd;
+			img->pImgArrFl[lba>>11]|=1;
+		}
+		if(num&TKFAT_SFL_DIRTY)
+			img->pImgArrFl[lba>>11]|=1;
+		return(img->pImgArr[lba>>11]+((lba&2047)<<9));
+	}
 
 	for(i=0; i<img->sbc_num; i++)
 		if(img->sbc_lba[i]==lba)
@@ -483,7 +580,8 @@ byte *JX2R_TKFAT_GetSectorStaticBuffer(JX2R_TKFAT_ImageInfo *img,
 
 void JX2R_TKFAT_FlushBuffers(JX2R_TKFAT_ImageInfo *img)
 {
-	int i;
+	u64 *ibp;
+	int i, j, k;
 	
 	for(i=0; i<img->sbc_num; i++)
 	{
@@ -511,6 +609,28 @@ void JX2R_TKFAT_FlushBuffers(JX2R_TKFAT_ImageInfo *img)
 
 		free(img->tbc_buf[i]);
 		img->tbc_buf[i]=NULL;
+		img->tbc_lba[i]=0;
+		img->tbc_lbn[i]=0;
+	}
+	
+	/* if ramdisk blocks are entirely zeroes, discard. */
+	k=img->nImgBlks>>11;
+	for(i=0; i<k; i++)
+	{
+		if(!img->pImgArr[i])
+			continue;
+		if(!(img->pImgArrFl[i]&1))
+			continue;
+		ibp=(u64 *)img->pImgArr[i];
+		for(j=0; j<(1<<17); j++)
+			if(ibp[j]!=0)
+				break;
+		if(j>=(1<<17))
+		{
+			free(img->pImgArr[i]);
+			img->pImgArr[i]=NULL;
+		}
+		img->pImgArrFl[i]&=~1;
 	}
 }
 
@@ -2166,6 +2286,17 @@ u32 JX2R_TKFAT_GetDirEntCluster(
 	return(i|(j<<16));
 }
 
+u64 JX2R_TKFAT_GetDirEntClusterLBA(
+	JX2R_TKFAT_FAT_DirEntExt *dee)
+{
+	int clid;
+	int lba;
+	
+	clid=JX2R_TKFAT_GetDirEntCluster(dee);
+	lba=JX2R_TKFAT_GetClusterLBA(dee->img, clid);
+	return(lba);
+}
+
 int JX2R_TKFAT_SetDirEntCluster(
 	JX2R_TKFAT_FAT_DirEntExt *dee,
 	u32 clid)
@@ -2679,12 +2810,13 @@ int JX2R_SetUseImage(char *name)
 JX2R_TKFAT_ImageInfo *JX2R_CreateRamImage(int imgsz, int fsty)
 {
 	JX2R_TKFAT_ImageInfo *img;
-	byte *imgbuf;
+	byte **imgba;
+	byte *imgbuf, *imgfa;
 //	BJX2_FILE *imgfd;
 	int n;
 	int i, j, k;
 	
-	imgbuf=malloc(imgsz*512);
+//	imgbuf=malloc(imgsz*512);
 	
 	img=malloc(sizeof(JX2R_TKFAT_ImageInfo));
 	memset(img, 0, sizeof(JX2R_TKFAT_ImageInfo));
@@ -2692,7 +2824,15 @@ JX2R_TKFAT_ImageInfo *JX2R_CreateRamImage(int imgsz, int fsty)
 	if(fsty)
 		img->fsty=fsty;
 	
-	img->pImgData=imgbuf;
+	n=(imgsz+2047)>>11;
+	imgba=malloc(n*sizeof(byte *));
+	imgfa=malloc(n*sizeof(byte));
+	memset(imgba, 0, n*sizeof(byte *));
+	memset(imgfa, 0, n*sizeof(byte));
+	img->pImgArr=imgba;
+	img->pImgArrFl=imgfa;
+	
+//	img->pImgData=imgbuf;
 	img->nImgBlks=imgsz;
 //	img->fdImgData=imgfd;
 	
@@ -2853,6 +2993,53 @@ int JX2R_ImageAddFile(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 	
 	JX2R_TKFAT_ReadWriteDirEntFile(&tdee, 0, true, tbuf, fsz);
 	printf("Add %s OK %d bytes\n", fn1, fsz);
+	
+	free(tbuf);
+	
+	return(1);
+}
+
+int JX2R_ImageAddFileOverlay(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
+{
+	JX2R_TKFAT_FAT_DirEntExt tdee;
+	byte *tbuf;
+	BJX2_FILE *fd;
+	int fsz, fty;
+	int n, lba, fsb;
+	int i;
+
+	tbuf=JX2R_LoadFile(fn2, &fsz);
+	if(!tbuf)
+	{
+		printf("Read %s fail\n", fn2);
+		return(-1);
+	}
+
+	free(tbuf);		//don't need data just yet.
+	
+	i=JX2R_TKFAT_CreateDirEntPath(img, &tdee, fn1);
+	if(i<0)
+	{
+		printf("Create %s fail\n", fn1);
+		return(-1);
+	}
+	
+	JX2R_TKFAT_ReadWriteDirEntFile(&tdee, 0, true, NULL, fsz);
+//	free(tbuf);
+	printf("Add-Overlay %s OK %d bytes\n", fn1, fsz);
+
+	JX2R_TKFAT_FlushBuffers(img);
+
+	fd=bjx2_fopen(fn2, "r+b");
+	
+	fsb=(fsz+511)>>9;
+	
+	i=img->n_ovl++;
+	lba=JX2R_TKFAT_GetDirEntClusterLBA(&tdee);
+	img->ovl_fd[i]=fd;
+	img->ovl_sblk[i]=lba;
+	img->ovl_eblk[i]=lba+fsb;
+
 	return(1);
 }
 
@@ -2872,6 +3059,7 @@ int JX2R_ImageAddFileBuffer(JX2R_TKFAT_ImageInfo *img, char *fn,
 	}
 	
 	JX2R_TKFAT_ReadWriteDirEntFile(&tdee, 0, true, tbuf, fsz);
+	JX2R_TKFAT_FlushBuffers(img);
 	printf("Add %s OK %d bytes\n", fn, fsz);
 	return(1);
 }
@@ -2953,6 +3141,21 @@ int JX2R_UseImageAddExport(char *fn1, char *fn2)
 	return(JX2R_ImageAddExport(spimmc_img, fn1, fn2));
 }
 
+
+int JX2R_UseImageAddFileOverlay(char *fn1, char *fn2)
+{
+	char tb1[256];
+	char tb2[256];
+
+	if(fn1 && !fn2)
+	{
+		JX2R_UseSplitNameEquals(fn1, tb1, tb2);
+		fn1=tb1;
+		fn2=tb2;
+	}
+
+	return(JX2R_ImageAddFileOverlay(spimmc_img, fn1, fn2));
+}
 
 int JX2R_ProcessSDCL(
 	char *ibuf, int szibuf)
@@ -3211,4 +3414,27 @@ int JX2R_TKFAT_SyncExports(void)
 	}
 	
 	return(1);
+}
+
+int JX2R_TKFAT_SyncImageBuffers(void)
+{
+	int i, j, k;
+
+	JX2R_TKFAT_FlushBuffers(spimmc_img);
+
+	if(spimmc_img->pImgArr)
+	{
+		k=spimmc_img->nImgBlks>>11;
+		j=0;
+		for(i=0; i<k; i++)
+		{
+			if(!spimmc_img->pImgArr[i])
+				continue;
+			j++;
+		}
+		
+		printf("JX2R_TKFAT_SyncImageBuffers: Ramdisk Init'ed %d/%d MB\n", j, k);
+	}
+
+	return(0);
 }
