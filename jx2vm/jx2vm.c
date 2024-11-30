@@ -1520,7 +1520,7 @@ int main(int argc, char *argv[])
 
 			if(!strcmp(argv[i], "--rd_exp_fl"))
 			{
-				btesh_parse_explist(argv[i+1], rd_exp, &rd_n_exp);
+				btesh_parse_addlist(argv[i+1], rd_exp, &rd_n_exp);
 				i++;
 				continue;
 			}
