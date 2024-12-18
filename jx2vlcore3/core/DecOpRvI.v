@@ -556,8 +556,8 @@ begin
 	usrRejectCnR	= 0;
 	usrRejectCnW	= 0;
 
-	if(istrWord[11:7]==5'h4)
-		usrReject		= 1;
+//	if(istrWord[11:7]==5'h4)
+//		usrReject		= 1;
 
 //	opIsNotFx = (istrWord[1:0] != 2'b11) && !isOpWxe;
 	opIsNotFx = (istrWord[1:0] != 2'b11);

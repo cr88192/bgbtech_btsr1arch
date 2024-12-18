@@ -23,6 +23,14 @@
 
 #define TKFAT_SFL_DIRTY		0x00000200
 
+#ifndef RIFF_MAKETAG
+#define RIFF_MAKETAG(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))
+#endif
+
+#ifndef RIFF_MAKETWOCC
+#define RIFF_MAKETWOCC(a, b)		((a)|((b)<<8))
+#endif
+
 typedef struct JX2R_TKFAT_MBR_Entry_s JX2R_TKFAT_MBR_Entry;
 typedef struct JX2R_TKFAT_MBR_s JX2R_TKFAT_MBR;
 typedef struct JX2R_TKFAT_FAT16_Boot_s JX2R_TKFAT_FAT16_Boot;
@@ -224,6 +232,9 @@ int JX2R_TKFAT_ReadSectors(JX2R_TKFAT_ImageInfo *img,
 	byte *buf, s64 lba, int num);
 int JX2R_TKFAT_WriteSectors(JX2R_TKFAT_ImageInfo *img,
 	byte *buf, s64 lba, int num);
+
+int TKBDEV_ReadSectors(int bdev, void *tblk, s64 lba, int cnt);
+int TKBDEV_WriteSectors(int bdev, void *tblk, s64 lba, int cnt);
 
 int JX2R_TKFAT_SetupDirEntNewDirectory(
 	JX2R_TKFAT_FAT_DirEntExt *dee);

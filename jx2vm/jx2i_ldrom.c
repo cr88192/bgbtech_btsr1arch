@@ -1247,3 +1247,560 @@ int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 	
 	return(0);
 }
+
+
+
+
+byte *_memlzcpy(byte *dst, byte *src, int sz)
+{
+	byte *cs, *ct, *cse;
+	
+	cs=src; cse=src+sz; ct=dst;
+	while(cs<cse)
+	{
+		*ct++=*cs++;
+	}
+	return(ct);
+}
+
+byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
+{
+	byte *cs, *cse;
+	register byte *cs1, *cs1e, *ct1;
+//	byte *cs1, *cs1e, *ct1;
+	register int tg, lr, ll, ld;
+//	int tg, lr, ll, ld;
+	int i;
+	
+//	__hint_use_egpr();
+	
+	tg=0; lr=0; ll=0; ld=0;
+	
+	cs=ibuf; cse=ibuf+isz;
+	while(cs<cse)
+	{
+		tg=*cs++;
+		lr=(tg>>4)&15;
+		if(lr==15)
+		{
+			i=*cs++;
+			while(i==255)
+				{ lr+=255; i=*cs++; }
+			lr+=i;
+		}
+
+#if 0
+		ct1=ct; cs1=cs; cs1e=cs+lr;
+		while(cs1<cs1e)
+		{
+			*(u64 *)ct1=*(u64 *)cs1;
+			ct1+=8; cs1+=8;
+		}
+#endif
+
+//		_memlzcpyf(ct, cs, lr);
+		_memlzcpy(ct, cs, lr);
+		ct+=lr; cs+=lr;
+		
+		if((cs+1)>=cse)
+			break;
+
+		ll=(tg&15)+4;
+		
+//		ld=tkfat_getWord(cs);
+		ld=*(u16 *)cs;
+		cs+=2;
+		if(!ld)
+		{
+			if(ll==5)
+				continue;
+			break;
+		}
+//		ll=(tg&15)+4;
+		if(ll==19)
+		{
+			i=*cs++;
+			while(i==255)
+				{ ll+=255; i=*cs++; }
+			ll+=i;
+		}
+
+//		ct=_memlzcpyf(ct, ct-ld, ll);
+		ct=_memlzcpy(ct, ct-ld, ll);
+
+#if 0
+		cs1=ct-ld; cs1e=cs1+ll;
+//		if(ld>=8)
+		if(ld>8)
+		{
+			ct1=ct;
+			while(cs1<cs1e)
+			{
+				((u64 *)ct1)[0]=((u64 *)cs1)[0];
+				((u64 *)ct1)[1]=((u64 *)cs1)[1];
+				ct1+=16; cs1+=16;
+			}
+//				{ *(u64 *)ct1=*(u64 *)cs1; ct1+=8; cs1+=8; }
+			ct+=ll;
+		}else
+			if(ld>4)
+		{
+			ct1=ct;
+			while(cs1<cs1e)
+			{
+				((u32 *)ct1)[0]=((u32 *)cs1)[0];
+				((u32 *)ct1)[1]=((u32 *)cs1)[1];
+				ct1+=8; cs1+=8;
+			}
+			ct+=ll;
+//			__debugbreak();
+		}else
+		{
+			while(cs1<cs1e)
+				{ *ct++=*cs1++; }
+		}
+#endif
+	}
+	
+	return(ct);
+}
+
+// #ifndef __BJX2__
+#if 1
+int TKPE_DecodeBufferRP2(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse;
+	int pl, pd;
+	int rl, l, d;
+	u64 t0;
+	int t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf;
+	pl=0; pd=0;
+	
+//	while(1)
+	while(cs<cse)
+	{
+		t0=*(u64 *)cs;
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+			_memlzcpy(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+			*(u32 *)ct=*(u32 *)cs;
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+			rl=(t1+1)*8;
+//			W_RawCopyB(ct, cs, rl);
+			_memlzcpy(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+		{
+			__debugbreak();
+		}
+
+		*(u64 *)ct=*(u64 *)cs;
+		cs+=rl;
+		ct+=rl;
+//		W_MatchCopy2(ct, l, d);
+		_memlzcpy(ct, ct-d, l);
+		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+#endif
+
+byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
+{
+	byte *ct1;
+	int rsz;
+
+	if((cmp==4) || (cmp==6))
+	{
+		return(TKPE_UnpackL4(ct, ibuf, isz));
+	}
+
+	if(cmp==3)
+	{
+		rsz=TKPE_DecodeBufferRP2(ibuf, ct, isz, 999999);
+		return(ct+rsz);
+	}
+	
+	return(NULL);
+}
+
+u32 TKPE_CalculateImagePel4Checksum(byte *buf, int size)
+{
+	byte *cs, *cse;
+//	u64 acc;
+	u32 acc_lo, acc_hi;
+	u32 csum;
+	
+	cs=buf;
+	cse=cs+size;
+	acc_lo=1;
+	acc_hi=0;
+	while(cs<cse)
+	{
+		acc_lo=acc_lo+(*cs++);
+		if(acc_lo>=65521)
+			acc_lo-=65521;
+		acc_hi=acc_hi+acc_lo;
+		if(acc_hi>=65521)
+			acc_hi-=65521;
+	}
+	csum=acc_lo|(acc_hi<<16);
+//	csum+=size;
+	return(csum);
+}
+
+
+u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
+{
+	byte *cs, *cse;
+	u32 v, v0, v1, v2, v3;
+	u64 acc_lo, acc_hi;
+	u32 csum;
+	
+	cs=buf;
+	cse=cs+size;
+	acc_lo=1;
+	acc_hi=0;
+	while(cs<cse)
+	{
+		v0=((u32 *)cs)[0];	v1=((u32 *)cs)[1];
+		v2=((u32 *)cs)[2];	v3=((u32 *)cs)[3];
+//		v0=get_u32le(cs+0);	v1=get_u32le(cs+ 4);
+//		v2=get_u32le(cs+8);	v3=get_u32le(cs+12);
+		acc_lo=acc_lo+v0;	acc_hi=acc_hi+acc_lo;
+		acc_lo=acc_lo+v1;	acc_hi=acc_hi+acc_lo;
+		acc_lo=acc_lo+v2;	acc_hi=acc_hi+acc_lo;
+		acc_lo=acc_lo+v3;	acc_hi=acc_hi+acc_lo;
+		cs+=16;
+	}
+	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+	acc_lo=((u32)acc_lo)+(acc_lo>>32);
+	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+	acc_hi=((u32)acc_hi)+(acc_hi>>32);
+	csum=(u32)(acc_lo^acc_hi);
+//	csum+=size;
+	return(csum);
+}
+
+u16 TKPE_CalculateSmallByteCsum(byte *buf, int sz)
+{
+	byte *cs, *cse;
+	u32 ac0, ac1, csum;
+	
+	if(!sz)
+		return(0);
+	
+	cs=buf; cse=buf+sz;
+	ac0=1; ac1=0;
+	while(cs<cse)
+	{
+		ac0+=*cs;
+		ac1+=ac0;
+		cs++;
+	}
+	ac0=((u16)ac0)+(ac0>>16);
+	ac1=((u16)ac1)+(ac1>>16);
+	ac0=((u16)ac0)+(ac0>>16);
+	ac1=((u16)ac1)+(ac1>>16);
+	csum=(u16)(ac0^ac1);
+	return(csum);
+}
+
+u32 TKPE_CalculateImagePel4BChecksumAc(byte *buf, int sz)
+{
+	u32 csum0, csum1;
+
+	if(!(sz&15))
+	{
+		csum0=TKPE_CalculateImagePel4BChecksum(buf, sz);
+		return(csum0);
+	}
+
+	csum0=TKPE_CalculateImagePel4BChecksum(buf, sz&(~15));
+	csum1=TKPE_CalculateSmallByteCsum(buf+(sz&(~15)), sz&15);
+	return(csum0^csum1);
+}
+
+
+
+int TKPE_MiniPackBlockRP2(byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	byte *hash[256];
+	byte *cs, *cse, *lcs;
+	byte *ct, *cte;
+	byte *cs1a, *cs1b;
+	u32 v;
+	int pl, pd;
+	int l, d, rl, l1, d1, h;
+	int i, j, k;
+
+	for(i=0; i<256; i++)
+		hash[i]=ibuf;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf; cte=obuf+obsz;
+	
+	pd=0; pl=0;
+	
+	lcs=cs;
+	while((cs<cse) && (ct<cte))
+	{
+		h=*(u32 *)cs;
+		h=(h^(h>>7)^(h>>17))&255;
+		
+		cs1a=cs;
+		cs1b=hash[h];
+		d=cs-cs1b;
+		
+		k=cse-cs;
+		if(k>514)
+			k=514;
+		if(d>0)
+		{
+			for(l=0; l<k; l++)
+				if(cs1a[l]!=cs1b[l])
+					break;
+		}else
+			{ l=0; d=0; }
+		if((l<4) || (d<=0) || (d>131000))
+			{ l=0; d=0; }
+
+		i=(l>=4);
+		
+		if(!i)
+		{
+			hash[h]=cs;
+			cs++;
+			continue;
+		}
+			
+		rl=cs-lcs;
+
+#if 1
+		while(rl>(128+7))
+		{
+			j=(rl>>3)-1;
+			if(j>511)j=511;
+			
+			k=(j+1)*8;
+
+			v=0x3F+(j<<7);
+			*ct++=v;
+			*ct++=v>>8;
+
+			memcpy(ct, lcs, k);
+			ct+=k;	lcs+=k;	rl-=k;
+		}
+#endif
+
+		while(rl>=8)
+		{
+			j=(rl>>3)-1;
+			if(j>15)j=15;
+			
+			k=(j+1)*8;
+			*ct++=0x07+(j<<4);
+			memcpy(ct, lcs, k);
+			ct+=k;	lcs+=k;	rl-=k;
+		}
+
+		if((rl<8) && (l<=10) && (d<=511))
+		{
+			d1=d;
+			l1=l-3;
+			v=(d1<<7)|(l1<<4)|(rl<<1)|0;
+			*ct++=v;
+			*ct++=v>>8;
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+			if((rl<8) && (l<=67) && (d<=8191))
+		{
+			d1=d;
+			l1=l-4;
+
+			v=(d1<<11)|(l1<<5)|(rl<<2)|1;
+			*ct++=v;
+			*ct++=v>>8;
+			*ct++=v>>16;
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+			if((rl<8) && (l<=515) && (d<=131071))
+		{
+			d1=d;
+			l1=l-4;
+
+			v=(d1<<15)|(l1<<6)|(rl<<3)|3;
+			*ct++=v;
+			*ct++=v>>8;
+			*ct++=v>>16;
+			*ct++=v>>24;
+
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+			if((rl<8) && (l<=0x3FFF) && (d<=0x3FFFFF))
+		{
+			*ct++=0x0F|(rl<<5);
+			d1=d;
+			l1=l-4;
+
+			if(l1<128)
+			{
+				*ct++=(l1<<1);
+			}else
+			{
+				v=(l1<<2)|1;
+				*ct++=v;
+				*ct++=v>>8;
+			}
+
+			if(d1<32768)
+			{
+				v=d1<<1;
+				*ct++=v;
+				*ct++=v>>8;
+			}else
+			{
+				v=(d1<<2)|1;
+				*ct++=v;
+				*ct++=v>>8;
+				*ct++=v>>16;
+			}
+
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+		{
+//			BGBCC_DBGBREAK
+		}
+		
+		pl=l; pd=d;
+
+		for(j=0; j<l; j++)
+		{
+			h=*(u32 *)cs;
+			h=(h^(h>>7)^(h>>17))&255;
+			hash[h]=cs;
+			cs++;
+		}
+
+		lcs=cs;
+	}
+
+	rl=cse-lcs;
+
+#if 1
+	while(rl>(128+3))
+	{
+		j=(rl>>3)-1;
+		if(j>511)j=511;
+		
+		k=(j+1)*8;
+
+		v=0x3F+(j<<7);
+		*ct++=v;
+		*ct++=v>>8;
+
+		memcpy(ct, lcs, k);
+		ct+=k;	lcs+=k;	rl-=k;
+	}
+#endif
+
+	while(rl>8)
+	{
+		j=(rl>>3)-1;
+		if(j>15)j=15;
+		
+		k=(j+1)*8;
+
+		*ct++=0x07+(j<<4);
+		memcpy(ct, lcs, k);
+		ct+=k;	rl-=k;	lcs+=k;
+	}
+
+	while(rl)
+	{
+		j=rl;
+		if(j>3)j=3;
+		
+		*ct++=0x1F+(j<<6);
+		memcpy(ct, lcs, j);
+		ct+=j;	rl-=j;	lcs+=j;
+	}
+
+	*ct++=0x1F;
+
+	return(ct-obuf);
+}
+

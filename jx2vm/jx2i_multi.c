@@ -53,6 +53,7 @@
 #include "jx2i_interp.h"
 
 #include "jx2r_fatfs.h"
+#include "jx2r_tkdfs.h"
 
 #include "gfxdrv_keys.h"
 #include "gfxdrv_w32.c"
@@ -60,6 +61,7 @@
 
 #include "sound_w32.c"
 
+#include "jx2r_tkdfs.c"
 #include "jx2r_sdfat.c"
 #include "jx2r_spimmc.c"
 

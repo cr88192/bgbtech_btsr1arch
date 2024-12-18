@@ -1535,3 +1535,8 @@ s32 BJX2_MemGetDWord_NoAT(BJX2_Context *ctx,
 	bjx2_addr addr0, bjx2_addr addrh);
 s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx,
 	bjx2_addr addr0, bjx2_addr addrh);
+
+
+byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp);
+u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size);
+int TKPE_MiniPackBlockRP2(byte *ibuf, byte *obuf, int ibsz, int obsz);

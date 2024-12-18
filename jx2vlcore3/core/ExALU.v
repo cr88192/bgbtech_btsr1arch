@@ -1942,8 +1942,8 @@ begin
 		if(	(idUCmd[5:0]==JX2_UCMD_ALUW3) &&
 			(idUIxt[5:0]==JX2_UCIX_ALUW_MOVTA16))
 		begin
-			$display("JX2_UCIX_ALUW_MOVTA16: %X, Rs=%X, Rt=%X",
-				tResult2A, regValRs, regValRt);
+//			$display("JX2_UCIX_ALUW_MOVTA16: %X, Rs=%X, Rt=%X",
+//				tResult2A, regValRs, regValRt);
 		end
 	end
 

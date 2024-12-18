@@ -634,13 +634,58 @@ void JX2R_TKFAT_FlushBuffers(JX2R_TKFAT_ImageInfo *img)
 	}
 }
 
-/** Partition image with a simple MBR holding a FAT volume.
-  */
-void JX2R_TKFAT_SetupImageMBR(JX2R_TKFAT_ImageInfo *img)
+void JX2R_TKFAT_SetupImageMBR_PartId(
+	JX2R_TKFAT_ImageInfo *img,
+	int idx, s64 lba_start, s64 lba_count, int fsty)
 {
 	s64 lba;
-	int fsty;
-	
+
+	lba=lba_start+lba_count;
+	if((lba>>32)!=0)
+	{
+		img->mbr->entry[idx].flag=0x01;
+		img->mbr->entry[idx].fstype=fsty;
+		
+		img->mbr->entry[idx].shead=0x14;
+		img->mbr->entry[idx].ehead=0xEB;
+		btesh2_tkfat_setWord(img->mbr->entry[idx].ssect,
+			((s64)lba_start)>>32);
+		btesh2_tkfat_setWord(img->mbr->entry[idx].esect,
+			((s64)lba_count)>>32);
+
+		btesh2_tkfat_setDWord(img->mbr->entry[idx].lba_start, lba_start);
+		btesh2_tkfat_setDWord(img->mbr->entry[idx].lba_count, lba_count);
+	}else
+	{
+		img->mbr->entry[idx].flag=0x00;
+		img->mbr->entry[idx].fstype=fsty;
+		
+		btesh2_tkfat_setChs(&(img->mbr->entry[idx].shead), lba_start);
+		btesh2_tkfat_setChs(&(img->mbr->entry[idx].ehead),
+			lba_start+lba_count);
+
+		btesh2_tkfat_setDWord(img->mbr->entry[idx].lba_start, lba_start);
+		btesh2_tkfat_setDWord(img->mbr->entry[idx].lba_count, lba_count);
+	}
+}
+
+/** Partition image with a simple MBR holding a FAT volume.
+  */
+
+int jx2r_tkfat_dfs_lba;
+int jx2r_tkfat_dfs_lbn;
+
+void JX2R_TKFAT_SetupImageMBR(JX2R_TKFAT_ImageInfo *img)
+{
+//	TKDFS_ImageContext *dfsimg;
+//	TKDFS_DirentInfo dfs_t_info1;
+//	TKDFS_DirentInfo *dfs_info1;
+
+	s64 lba, lba_dfs;
+	int fsty, lbn_dfs;
+
+//	dfs_info1=&dfs_t_info1;
+
 	if(!img->fsty)
 	{
 		fsty=0x06;
@@ -656,17 +701,50 @@ void JX2R_TKFAT_SetupImageMBR(JX2R_TKFAT_ImageInfo *img)
 		fsty=img->fsty;
 	}
 	
+	lbn_dfs=0;
+	lba_dfs=0;
+
+	lbn_dfs=img->nImgBlks/16;
+	
 	img->fsty=fsty;
 	img->isfat16=(fsty==0x06);
 	img->lba_start=8;
 	img->lba_count=img->nImgBlks-8;
 	
+	if(lbn_dfs>0)
+	{
+		img->lba_count-=lbn_dfs;
+		lba_dfs=img->lba_start+img->lba_count;
+	}
+
 //	img->mbr=(JX2R_TKFAT_MBR *)img->pImgData;
 	img->mbr=(JX2R_TKFAT_MBR *)
 		JX2R_TKFAT_GetSectorStaticBuffer(
 			img, 0, 1|TKFAT_SFL_DIRTY);
 	memset(img->mbr, 0, 512);
-	
+
+	JX2R_TKFAT_SetupImageMBR_PartId(img, 0,
+		img->lba_start, img->lba_count, fsty);
+
+	if(lba_dfs>0)
+	{
+		JX2R_TKFAT_SetupImageMBR_PartId(img, 1,
+			lba_dfs, lbn_dfs, 0x3E);
+
+		jx2r_tkfat_dfs_lba=lba_dfs;
+		jx2r_tkfat_dfs_lbn=lbn_dfs;
+
+#if 0
+		dfsimg=TKDFS_InitializeNewImage(0, lba_dfs, lbn_dfs);
+		
+		dfs_info1->de_ino=1;
+		dfs_info1->de_idx=-1;
+		
+		TKDFS_WalkDirEntNext(dfsimg, dfs_info1);
+#endif
+	}
+
+#if 0
 	lba=img->lba_start+img->lba_count;
 	if((lba>>32)!=0)
 	{
@@ -697,6 +775,7 @@ void JX2R_TKFAT_SetupImageMBR(JX2R_TKFAT_ImageInfo *img)
 		btesh2_tkfat_setDWord(img->mbr->entry[0].lba_start, img->lba_start);
 		btesh2_tkfat_setDWord(img->mbr->entry[0].lba_count, img->lba_count);
 	}
+#endif
 
 	img->mbr->aa55[0]=0x55;
 	img->mbr->aa55[1]=0xAA;
@@ -3073,6 +3152,103 @@ int JX2R_ImageAddExport(JX2R_TKFAT_ImageInfo *img, char *fn1, char *fn2)
 	return(0);
 }
 
+u64 gfxfont[256];
+
+int JX2R_DebugTestDfs()
+{
+#if 1
+	static byte tcbuf[512*8];
+	static byte tdbuf[512*8];
+
+	char tbuf[256];
+	TKDFS_ImageContext *dfsimg;
+	TKDFS_DirentInfo dfs_t_info1;
+	TKDFS_DirentInfo *dfs_info1;
+	char *oldfn;
+	char *newfn;
+	int i, sz;
+
+	dfs_info1=&dfs_t_info1;
+
+	if(jx2r_tkfat_dfs_lba<=0)
+		return(0);
+
+	dfsimg=TKDFS_InitializeNewImage(0,
+		jx2r_tkfat_dfs_lba, jx2r_tkfat_dfs_lbn);
+	
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/foo1", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/foo2", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/foo3", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/foo4", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/foo5", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/foo6", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/foo7", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/bar1/", 0);
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/bar2/", 0);
+
+
+	oldfn="/boot/doom";
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/ln1", 0);
+	sz=8+strlen(oldfn)+2;
+	((u64 *)tbuf)[0]=0xBEAF5A52618F4181ULL;
+	tbuf[8]=' ';
+	strcpy(tbuf+9, oldfn);
+
+	TKDFS_ReadWriteDirEntFile(
+		dfs_info1, 0, 9, tbuf, sz);
+	TKDFS_SetDirEntMode(dfs_info1, 0xA000);
+
+
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/fct0", 0);
+
+	TKDFS_ReadWriteDirEntFile(
+		dfs_info1, 0, 1, (byte *)gfxfont, 256*8);
+
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test/fct1", 0);
+
+	TKDFS_ReadWriteDirEntFile(
+		dfs_info1, 0, TKDFS_DFLAG_COMPRESS|1, (byte *)gfxfont, 256*8);
+
+
+	TKDFS_ImageCreateInodePath(dfsimg, dfs_info1, "test", 0);
+	
+	dfs_info1->di_ino=dfs_info1->de_ino;
+//	dfs_info1->di_ino=1;
+	dfs_info1->di_idx=-1;
+	
+	i=TKDFS_WalkDirEntNext(dfsimg, dfs_info1);
+	while(i>0)
+	{
+		i=TKDFS_WalkDirEntNext(dfsimg, dfs_info1);
+	}
+
+
+	dfs_info1->di_ino=1;
+	dfs_info1->di_idx=-1;
+
+	i=TKDFS_WalkDirEntNext(dfsimg, dfs_info1);
+	while(i>0)
+	{
+		i=TKDFS_WalkDirEntNext(dfsimg, dfs_info1);
+	}
+
+	
+	TKDFS_SyncImageInodes(dfsimg);
+	
+	sz=TKPE_MiniPackBlockRP2((byte *)gfxfont, tcbuf, 256*8, 256*8*2);
+	printf("JX2R_DebugTestDfs: RP2 Enc %d\n", sz);
+	
+	TKPE_UnpackBuffer(tdbuf, tcbuf, sz, 3);
+	
+	if(memcmp((byte *)gfxfont, tdbuf, 256*8))
+	{
+		printf("JX2R_DebugTestDfs: RP2 Fail %d\n", sz);
+	}
+#endif
+
+	return(0);
+}
+
 int JX2R_UseImageCreateRamdisk(int imgsz)
 {
 	JX2R_TKFAT_ImageInfo *img;
@@ -3080,6 +3256,21 @@ int JX2R_UseImageCreateRamdisk(int imgsz)
 //	img=JX2R_CreateRamImage(imgsz*2, 6);
 	img=JX2R_CreateRamImage(imgsz*2, 0x0C);
 	spimmc_img=img;
+
+	JX2R_DebugTestDfs();
+
+	return(0);
+}
+
+int TKBDEV_ReadSectors(int bdev, void *tblk, s64 lba, int cnt)
+{
+	JX2R_TKFAT_ReadSectors(spimmc_img, tblk, lba, cnt);
+	return(0);
+}
+
+int TKBDEV_WriteSectors(int bdev, void *tblk, s64 lba, int cnt)
+{
+	JX2R_TKFAT_WriteSectors(spimmc_img, tblk, lba, cnt);
 	return(0);
 }
 

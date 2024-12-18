@@ -40,7 +40,8 @@ Note that multibyte values within filesystem metadata will be assumed to be litt
     u64 blk_inotab;             //0x38, Backup Inode Table.
     byte ln2_sz_ino;            //0x40, Size of inode (Log2, 8 or 9)
     byte ln2_sz_de;             //0x41, Size of Dirent (log2, 6)
-    byte resv2[6];              //0x42, reserved
+	byte ln2_sz_cblk;			//0x42, Log2 of Compressed Block (14..18)
+    byte resv2[5];              //0x43, reserved
     u64 vol_id;                 //0x48, Volume ID Number
     byte label[16];             //0x50, Volume Label
     byte bootstrap[414];        //0x60, x86 bootstrap or similar (N/A)
@@ -50,6 +51,8 @@ Note that multibyte values within filesystem metadata will be assumed to be litt
 BootBlock will have the similar structure to the NTFS Boot Block.
 
 The bytes_sector and sectors_cluster members will be used to encode the effective size of the disk block. Most other structures will be addressed in terms of this disk block size.
+
+The compressed block will be a larger logical block size used for compressed files. The compressed block may be compressed and then stored in a smaller number of disk blocks.
 
 
 Inodes:
@@ -84,8 +87,8 @@ A tag value of 0 will signal the end of the list of tags. Structures may begin i
  INode_File {
  U64	dsize;		//0x00, File Size (Logical)
  U64	csize;		//0x08, File Size (Compressed)
- U64	ctime;		//0x10, Creation Time
- U64	mtime;		//0x18, Modified Time
+ S64	ctime;		//0x10, Creation Time
+ S64	mtime;		//0x18, Modified Time
  U16	uid;		//0x20, Owner UID
  U16	gid;		//0x22, Owner GID
  U16	mode;		//0x34, File Mode Flags
@@ -110,15 +113,18 @@ File Mode:
 ** 8000: FILE
 ** A000: SYMLINK
 
+CTime/MTime:
+* Expressed as microseconds since epoch (Jan 1, 1970).
+
 File Data:
 * "ID" / "IDAT": Inline Data
 ** Consists of raw data.
 
 * "I4" / "IDX4": File Block Index, with 32-bit block numbers, 128 bytes.
 ** May be used if volume has fewer than 2^32 blocks.
-* "I6" / "IDX6": File Block Index, with 48-bit block numbers, 192 bytes.
-** May be used if volume has fewer than 2^48 blocks.
 * "I8" / "IDX8": File Block Index, with 64-bit block numbers, 256 bytes.
+* "C8" / "IXC8": Compact Block Index, 128 bytes.
+** Same as IDX8, but may fit into a 256-byte INode.
 
  FileBlockIndex4 {
    u32 block_0l[16];  //direct blocks
@@ -128,66 +134,52 @@ File Data:
    u32 block_4l;      //indirect blocks (4-level)
    u32 block_5l;      //indirect blocks (5-level)
  }
- FileBlockIndex6 {
-   u32 block_0l[16];  //direct blocks
-   u32 block_1l[ 8];  //indirect blocks (1-level)
-   u32 block_2l[ 4];  //indirect blocks (2-level)
-   u32 block_3l[ 2];  //indirect blocks (3-level)
-   u32 block_4l;      //indirect blocks (4-level)
-   u32 block_5l;      //indirect blocks (5-level)
-   u16 block_0h[16];  //direct block, high bits
-   u16 block_1h[ 8];  //
-   u16 block_2h[ 4];  //
-   u16 block_3h[ 2];  //
-   u16 block_4h;      //
-   u16 block_5h;      //
- };
  FileBlockIndex8 {
    u64 block_0l[16];  //direct blocks
    u64 block_1l[ 8];  //indirect blocks (1-level)
    u64 block_2l[ 4];  //indirect blocks (2-level)
-   u64 block_3l[ 2];  //indirect blocks (3-level)
+   u64 block_3l;      //indirect blocks (3-level)
+   u64 block_4l;      //indirect blocks (4-level)
+   u64 block_5l;      //indirect blocks (5-level)
+   u64 block_6l;      //indirect blocks (6-level)
+ }
+ FileBlockIndexC8 {
+   u64 block_0l[8];   //direct blocks
+   u64 block_1l[4];   //indirect blocks (1-level)
+   u64 block_2l;      //indirect blocks (2-level)
+   u64 block_3l;      //indirect blocks (3-level)
    u64 block_4l;      //indirect blocks (4-level)
    u64 block_5l;      //indirect blocks (5-level)
  }
 
-Fir indirect blocks, the index will point to a block full of block pointers.
+For indirect blocks, the index will point to a block full of block pointers.
 * For Index4, each pointer will be 32 bits.
-* For Index8, each will be 8 bytes.
+* For Index8 or IndexC8, each will be 8 bytes.
+** IndexC8 is functionally analogous to Index8, but smaller.
 
+For Index8 and IndexC8, each entry will be 64 bits.
+* The low 32 or 48 bits will hold a block number.
+* The high bits will encode compressed-block metadata.
 
-* "IS" / "IDXS"
-  FileBlockIndexSpan {
-  u128 span[8];		//span bits
-  }
-
-Span (Possible):
-* ( 47: 0)=File Base (Blocks)
-* ( 63:48)=Logical Size (Blocks)
-* ( 95:64)=Disk Block Number
-* (127:96)=Size on Disk (if Compressed)
-* If logical_size=0001..7FFF, and logical_size==size_disk, it is stored.
-* If logical_size=0001..7FFF, and size_disk==0, it is uninitialized.
-* If logical_size=0001..7FFF, and size_disk==0001..7FFF, it is compressed.
-* If size_disk=8000..FFFF, this entry points at a span table.
-** Logical Span will give the area covered by the span table.
-** Or 0000, if the span-table covers more than 32767 blocks.
 
 Would have fixed inode numbers for:
 * 0, Inode Table
 * 1, Root Directory
 * 2, Block Allocation Bitmap
 * 3, Inode Table Bitmap
+* 4..7, Reserved
 * 8+, Generic File Inodes
 
 
 Backup tables and/or a journal could be optional features (to improve reliability). Optional because these are not always needed.
 
-The inode table would have its own inode, superblock holding the first span of the inode table, which would (necessarily) contain the inode-table inode and other fixed inodes (with table being expanded if/when the initial part gets full).
+The inode table would have its own inode, superblock holding the first block of the inode table, which would (necessarily) contain the inode-table inode and other fixed inodes (with table being expanded if/when the initial part gets full).
 
 
 
 Directories will be represented similar to files, but will hold directory entries rather than file data. Each directory will be organized into an AVL tree. The first entry in the directory will be special in that it will serve as a directory root rather than a file entry. This entry will point to the root node of the tree as its left subnode.
+
+Unlike a normal AVL tree, the balancing constraints may be relaxed to +/- 2. This can reduce the number of rotates needed to maintain balance.
 
 Directory Entry:
 * Directories are organized as an AVL Tree
@@ -195,8 +187,10 @@ Directory Entry:
 
  DirEnt_Basic {
  u32 ino;			//00, inode number
- u32 lsn;			//04, left child node
- u32 rsn;			//08, right child node
+ u16 lsn;			//04, left child node
+ u16 psn;			//06, parent node
+ u16 rsn;			//08, right child node
+ u16 hsn;			//0A, node high bits
  u16 ino_hi;		//0C, inode high bits
  byte zdepth;		//0E, Z height of node (0=Leaf)
  byte etype;		//0F, dirent type
@@ -210,13 +204,45 @@ Directory Entry:
  byte etype;        //0F, dirent type
  byte name2[48];    //10, name 2
  };
+ DirEnt_Header_s {		//first entry in directory
+ u32 ino;			//00, -
+ u16 lsn;			//04, top node
+ u16 psn;			//06, -
+ u16 rsn;			//08, free-list node
+ u16 hsn;			//0A, node high bits
+ u16 ino_hi;	    //0C, -
+ byte zdepth;		//0E, -
+ byte etype;	    //0F, dirent type
+ byte name[8];		//10, name
+ u32 lastent;		//18, last entry
+ byte resv[36];		//1C
+};
 
 
 Entry Type:
-* 0: Free (No File)
-* 1: Basic File (single part name)
-* 2: File with multipart name.
-* 3: Name Fragment
+* 00: Free (No File)
+* 01: Basic File (single part name)
+* 02: File with multipart name (1 or more fragments follow).
+* 03: Name Fragment
+* 04..08: Reserved
+* 09: Deleted File (single part name)
+* 0A: Deleted file with multipart name (fragments follow).
+
+High 3 bits may cache type from inode:
+* 0: Default / Unknown
+* 1: Reserved
+* 2: Directory
+* 3: Reserved
+* 4: Regular File
+* 5: Symbolic Link
+* 6: Reserved
+* 7: Reserved
+
+Hsn:
+* ( 4: 0): High 5 bits of LSN
+* ( 9: 5): High 5 bits of RSN
+* (14:10): High 5 bits of PSN
+* (15): Set if node needs rebalaning.
 
 The number of multipart name fragments will be variable, but will be enough to encode the name up to a certain maximum number of bytes. Names will be encoded in a variant of UTF-8.
 
@@ -227,3 +253,77 @@ Free entries will be organized in a linked list, with the 'ino' member used to p
 The 'rsn' member of Entry 0 will point to the first member of the free entry list, and in other entries a value of 0 will signal the end of the list.
 
 The hash will help validate the integrity of multipart names.
+
+Files may be deleted but with their directory entries still left in the directory tree. This may be done in cases where it is difficult to remove the entry directly (such as due to being too deep in the tree). Such entires may be removed at a later time.
+
+
+Multipart Names:
+* First 40 bytes of the name will be encoded in the first entry;
+* Each remaining entry will contain 60 bytes;
+* The last 8 bytes of the name for the first entry will contain a hash.
+** This hash will represent the entire name field.
+
+In a directory lookup where the name is 48 bytes or less, the AVL tree will be walked according to the full name. For longer names, it will be converted to the 40B+Hash form, and this will be used for the lookup.
+
+Long Name Hash:
+* Start with two 64 bit accumulators, H0 and H1
+** H0 is initialized to 1, H1 to 0.
+* Add each 32-bit zero-extended word in the name to H0;
+** Name is zero padded to a multiple of 32 bits.
+* Add H0 to H1;
+* Add High 32 bits from H0 and H1 to zero-extended low 32 bits.
+* Repeat the last step.
+* Compose a value with H0 in the low 32 bits, H1 in the high 32 bits.
+
+
+=== File Compression ===
+
+The compression type header in the INode file header will give a default compression method. If set to 0 (Store), the file is uncompressed. In which case, the block index will directly identify uncompressed disk blocks.
+
+Compression Type:
+* 0, Store
+* 1: -
+* 2: -
+* 3: RP2
+* 4: LZ4
+* 5: -
+* 6: -
+* 7: -
+* 8: Deflate
+* 9: Deflate64
+
+
+For compressed Index8 or IndexC8:
+* (63:62): Block Compression Sub Mode
+** 0: Store (Uncompressed)
+*** (61:48): Reserved (MBZ)
+*** (47: 0): Block Number
+**** Block is stored unmodified using N disk blocks.
+** 1: Compressed Block, Stored in blocks
+*** (61:58): Reserved
+*** (57:48): Block Count
+*** (47: 0): Block Number
+** 2: Compressed and Packed within the data area of another INode
+*** (61:56): Cell Count
+*** (55:40): Cell Index
+*** (39: 0): Target Inode
+** 3: Reserved
+
+These only apply if the compression method in the file header is non-zero. If it is set to Store, Index8 and IndexC8 will merely encode block numbers.
+
+
+In the basic Compressed Storage case, the larger logical data block is compressed and stored within a variable number of disk blocks.
+
+In the packed storage case, the compressed data is stored within the data area of another inode (rather than in disk blocks). The cell index and count give the location of the compressed data. This may used if the compressed block is sufficiently small (such that storage via disk blocks would be inefficient). 
+
+Nominally, each cell will be 64 bytes. The target inode's data area will give a bitmap of which cells are in-use. The data area will start with a 64kb (8K) bitmap, with the remaining space holding cells.
+
+
+Compressed Blocks will have a 12-byte header:
+ u32 nSz;       //00: Compressed size, stored inverted, includes header
+ u32 csum;      //04: Checksum of uncompressed data for block.
+ byte szHead;   //09: Header Size, 12
+ byte cmp;      //09: Compression Method for this block.
+ byte resv1;    //0A: reserved / MBZ
+ byte resv2;    //0B: reserved / MBZ
+

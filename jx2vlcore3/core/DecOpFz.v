@@ -1952,6 +1952,7 @@ begin
 						if(opExQ)
 						begin
 							opNmid	= JX2_UCMD_NOP;
+							opIty	= JX2_ITY_SB;
 						end
 					end
 					4'hB: begin
