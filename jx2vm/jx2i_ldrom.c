@@ -1088,6 +1088,11 @@ int BJX2_ContextLoadMap(BJX2_Context *ctx, char *name, char *imgname)
 			continue;
 		}
 		
+		if(!a[1])
+			continue;
+		if(!a[2])
+			continue;
+		
 //		sscanf(a[0], "%08X", &ta);
 		sscanf(a[0], "%llX", &ta);
 		
@@ -1455,7 +1460,7 @@ int TKPE_DecodeBufferRP2(
 			continue;
 		}else
 		{
-			__debugbreak();
+			JX2_DBGBREAK
 		}
 
 		*(u64 *)ct=*(u64 *)cs;

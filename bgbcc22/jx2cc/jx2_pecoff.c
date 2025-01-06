@@ -2895,7 +2895,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	if(!(bgbcc_is_vxcore&1))
 		mchar|=0x0020;
 
-	if(sctx->abi_spillpad&16)
+//	if(sctx->abi_spillpad&16)
+	if(sctx->abi_spillpad&256)
 		mdllchar|=0x0080;
 
 //	mach=0x1A6;

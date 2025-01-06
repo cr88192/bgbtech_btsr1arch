@@ -3195,7 +3195,7 @@ int JX2R_DebugTestDfs()
 	strcpy(tbuf+9, oldfn);
 
 	TKDFS_ReadWriteDirEntFile(
-		dfs_info1, 0, 9, tbuf, sz);
+		dfs_info1, 0, 9, (byte *)tbuf, sz);
 	TKDFS_SetDirEntMode(dfs_info1, 0xA000);
 
 
@@ -3269,7 +3269,9 @@ int JX2R_UseImageCreateRamdisk(int imgsz)
 	img=JX2R_CreateRamImage(imgsz*2, 0x0C);
 	spimmc_img=img;
 
+#ifndef __GNUC__
 	JX2R_DebugTestDfs();
+#endif
 
 	return(0);
 }

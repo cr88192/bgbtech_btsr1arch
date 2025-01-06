@@ -2458,7 +2458,7 @@ u64 TKRA_CachedBlkUtx2(u64 blk, int ix)
 //	hxi=(ix1^(ix1>>6))&63;
 	hxi=((((blk^(blk>>32))*65521)*251)>>8)&63;
 	
-	if((tkra_utx2_cachedblka[hxi]==blk))
+	if(tkra_utx2_cachedblka[hxi]==blk)
 	{
 		return(tkra_utx2_cachedpels[hxi][ix0]);
 	}

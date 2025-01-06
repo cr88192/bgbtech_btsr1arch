@@ -1540,3 +1540,44 @@ s64 BJX2_MemGetQWord_NoAT(BJX2_Context *ctx,
 byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp);
 u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size);
 int TKPE_MiniPackBlockRP2(byte *ibuf, byte *obuf, int ibsz, int obsz);
+
+int BJX2_MemSimAddrL2(BJX2_Context *ctx, bjx2_addr addr, int acc);
+int BJX2_MemRamCb_SetFault(BJX2_Context *ctx,
+	BJX2_MemSpan *sp, bjx2_addr addr, s32 val);
+int BJX2_DbgAddrAccessTrap(BJX2_Context *ctx,
+	bjx2_addr base, bjx2_addr tgt, int asz);
+int BJX2_DbgPrintRegs(BJX2_Context *ctx);
+int BJX2_DecodeOpcode_CheckExtEnabled(BJX2_Context *ctx, int ext);
+
+int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits);
+int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1);
+int BJX2_DecodeOpcode_DecXG2(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1a, int opw2a);
+
+int BJX2_RemapGPR(BJX2_Context *ctx, int reg);
+int BJX2_RemapCR(BJX2_Context *ctx, int reg);
+
+int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits);
+int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits);
+
+int BJX2_DecodeOpcode_DecXz(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2);
+int BJX2_DecodeOpcode_DecFK(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1a, int opw2a);
+int BJX2_DecodeOpcode_DecFJ(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1a, int opw2a);
+
+int BJX2_RepackOpcode_DecXG3toXG2(
+	int opw1, int opw2,
+	int *ropw3, int *ropw4);
+
+int BJX2_DebugConPuts(BJX2_Context *ctx, char *str);
+
+int bjx2_vmgetmousepos(BJX2_Context *ctx, int *rmx, int *rmy);
+int GfxDrv_MouseGetWheelDelta(void);
+int GfxDrv_MouseGetRelPos(int *dx, int *dy, int *mb);
+int GfxDrv_MouseGetPos(int *mx, int *my, int *mb);

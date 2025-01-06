@@ -2814,7 +2814,7 @@ int BGBCC_JX2_EmitGetStrtabLabelTag(BGBCC_JX2_Context *ctx,
 	char *str, int tg, int len)
 {
 	char *s0;
-	int sn0;
+	int sn0, ofs;
 	int i, j, k, l;
 	
 	if(!ctx->lblstr_ofs)
@@ -2884,6 +2884,8 @@ int BGBCC_JX2_EmitGetStrtabLabelTag(BGBCC_JX2_Context *ctx,
 	k=BGBCC_JX2_GenLabel(ctx);
 	BGBCC_JX2_SetSectionName(ctx, ".strtab");
 
+	ofs=BGBCC_JX2_EmitGetOffs(ctx);
+
 	if(tg)
 	{
 #if 0
@@ -2904,16 +2906,22 @@ int BGBCC_JX2_EmitGetStrtabLabelTag(BGBCC_JX2_Context *ctx,
 #if 1
 		if(l<64)
 		{
+			if(ofs&1)
+				BGBCC_JX2_EmitByteI(ctx, 0);
 			BGBCC_JX2_EmitByteI(ctx, tg);
 			BGBCC_JX2_EmitByteI(ctx, 0x80|l);
 		}else
 			if(l<2048)
 		{
+			if(!(ofs&1))
+				BGBCC_JX2_EmitByteI(ctx, 0);
 			BGBCC_JX2_EmitByteI(ctx, tg);
 			BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
 			BGBCC_JX2_EmitByteI(ctx, 0xC0|((l>> 6)&31));
 		}else
 		{
+			if(ofs&1)
+				BGBCC_JX2_EmitByteI(ctx, 0);
 			BGBCC_JX2_EmitByteI(ctx, tg);
 			BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
 			BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 6)&63));
@@ -3226,12 +3234,14 @@ int BGBCC_JX2_EmitGetStrtabLabelUCS2(BGBCC_JX2_Context *ctx, u16 *str, int len)
 		BGBCC_JX2_EmitByteI(ctx, 'w');
 		BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
 	}else
+#if 0
 		if(l<2048)
 	{
 		BGBCC_JX2_EmitByteI(ctx, 'w');
 		BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
 		BGBCC_JX2_EmitByteI(ctx, 0xC0|((l>> 6)&31));
 	}else
+#endif
 	{
 		BGBCC_JX2_EmitByteI(ctx, 'w');
 		BGBCC_JX2_EmitByteI(ctx, 0x80|((l>> 0)&63));
@@ -3510,7 +3520,25 @@ int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)
 	if(	(ctx->sec==BGBCC_SH_CSEG_TEXT) ||
 		(ctx->sec==BGBCC_SH_CSEG_UTEXT))
 	{
-		if(ctx->is_fixed32)
+		if(ctx->emit_riscv&0x11)
+		{
+			if(j&1)
+			{
+				BGBCC_JX2_EmitByteI(ctx, 0); j--;
+			}
+			
+			if(j&2)
+			{
+				BGBCC_JX2_EmitWordI(ctx, 0x0001);
+				j-=2;
+			}
+			while(j>0)
+			{
+				BGBCC_JX2_EmitDWordI(ctx, 0x00000013);
+				j-=2;
+			}
+		}else
+			if(ctx->is_fixed32)
 		{
 			if(j&1)
 			{

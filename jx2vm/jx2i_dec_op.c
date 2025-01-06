@@ -154,6 +154,7 @@ int BJX2_DecodeOpcode_CheckExtEnabled(BJX2_Context *ctx, int ext)
 
 int BJX2_SetCpuConfig(BJX2_Context *ctx, char *str)
 {
+	byte *strb;
 	u64 fflags;
 
 //	fflags=0x01D9FF00;
@@ -168,51 +169,53 @@ int BJX2_SetCpuConfig(BJX2_Context *ctx, char *str)
 //		return(0);
 	}
 	
-	if(!btesh2_tkfat_stricmp(str, "bjx2a"))
+	strb=(byte *)str;
+	
+	if(!btesh2_tkfat_stricmp(strb, (byte *)"bjx2a"))
 	{
 		fflags=0x01D9FF00;
 		ctx->cfg_fflags=fflags;
 	}
 
-	if(!btesh2_tkfat_stricmp(str, "bjx2b"))
+	if(!btesh2_tkfat_stricmp(strb, (byte *)"bjx2b"))
 	{
 		fflags=BJX2_FFLAG_GFP|BJX2_FFLAG_FIX32;
 		ctx->cfg_fflags=fflags;
 	}
 
-	if(!btesh2_tkfat_stricmp(str, "bjx2c"))
+	if(!btesh2_tkfat_stricmp(strb, (byte *)"bjx2c"))
 	{
 		fflags=BJX2_FFLAG_GFP;
 		ctx->cfg_fflags=fflags;
 	}
 
-	if(!btesh2_tkfat_stricmp(str, "bjx2d"))
+	if(!btesh2_tkfat_stricmp(strb, (byte *)"bjx2d"))
 	{
 		fflags=BJX2_FFLAG_FIX32;
 		ctx->cfg_fflags=fflags;
 	}
 
-	if(!btesh2_tkfat_stricmp(str, "bjx2e"))
+	if(!btesh2_tkfat_stricmp(strb, (byte *)"bjx2e"))
 	{
 		fflags=0;
 		ctx->cfg_fflags=fflags;
 	}
 
-	if(!btesh2_tkfat_stricmp(str, "bjx2f"))
+	if(!btesh2_tkfat_stricmp(strb, (byte *)"bjx2f"))
 	{
 		fflags=BJX2_FFLAG_GFP;
 		ctx->cfg_fflags=fflags;
 	}
 
-	if(	!btesh2_tkfat_stricmp(str, "bjx2g") ||
-		!btesh2_tkfat_stricmp(str, "bjx2h"))
+	if(	!btesh2_tkfat_stricmp(strb, (byte *)"bjx2g") ||
+		!btesh2_tkfat_stricmp(strb, (byte *)"bjx2h"))
 	{
 //		fflags=0x77D9FF00;
 		fflags=0xF7D9FF00ULL;
 		ctx->cfg_fflags=fflags;
 	}
 
-	if(!btesh2_tkfat_stricmp(str, "bjx2i"))
+	if(!btesh2_tkfat_stricmp(strb, (byte *)"bjx2i"))
 	{
 		fflags=
 			BJX2_FFLAG_GFP|
@@ -860,7 +863,7 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 			}
 			else
 			{
-				ret=BJX2_DecodeOpcode_DecXG2(ctx, op, addr, opw, opw2, 0);
+				ret=BJX2_DecodeOpcode_DecXG2(ctx, op, addr, opw, opw2);
 			}
 		}else
 		{

@@ -198,6 +198,13 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "novsk"))
 		shctx->abi_spillpad|=64;
 
+	/* use mode-tagged function pointers, UBSM enforce. */
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "functag_ex"))
+	{
+		shctx->abi_spillpad|=16;
+		shctx->abi_spillpad|=256;
+	}
+
 	/* shuffle function order in the binary. */
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "shuffle"))
 		shctx->do_shuffle|=1;
@@ -3071,6 +3078,12 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		l0=BGBCC_JX2_GetNamedLabel(sctx, obj->qname);
 		obj->fxoffs=l0;
 		BGBCC_JX2_MarkLabelIsText(sctx, l0);
+	}else
+	{
+		if(!BGBCC_JX2_CheckLabelIsText(sctx, l0))
+		{
+			BGBCC_JX2_MarkLabelIsText(sctx, l0);
+		}
 	}
 	
 #if 1

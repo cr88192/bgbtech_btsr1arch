@@ -213,10 +213,10 @@ u64 BJX2_MemEdgeWalk_LerpRgbFrac16(u64 v0, u64 v1, int fr)
 	cg1=(v1>>16)&0xFFFF;	cb1=(v1>> 0)&0xFFFF;
 	
 	fr&=15;
-	cr2=(cr0*(16-fr))+(cr1*fr)>>4;
-	cg2=(cg0*(16-fr))+(cg1*fr)>>4;
-	cb2=(cb0*(16-fr))+(cb1*fr)>>4;
-	ca2=(ca0*(16-fr))+(ca1*fr)>>4;
+	cr2=((cr0*(16-fr))+(cr1*fr))>>4;
+	cg2=((cg0*(16-fr))+(cg1*fr))>>4;
+	cb2=((cb0*(16-fr))+(cb1*fr))>>4;
+	ca2=((ca0*(16-fr))+(ca1*fr))>>4;
 	
 	v2=
 		(((u64)ca2)<<48) |

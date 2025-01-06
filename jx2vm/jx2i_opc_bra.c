@@ -1106,6 +1106,15 @@ void BJX2_Op_RTS_None(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	sr=ctx->regs[BJX2_REG_SR];
 	lr=ctx->regs[BJX2_REG_LR];
+
+	if(sr&(1<<17))
+	{
+		if(((sr>>8)&255)!=((lr>>56)&255))
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+		}
+	}
+
 //	sr&=0xFFFFFFFFF3FF000CULL;
 	sr&=0xFFFFFFFFF30F00FCULL;
 //	sr|=(lr>>48)&0xFFF3;
@@ -1319,6 +1328,15 @@ void BJX2_Op_BRA_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	if(pc1&1)
 	{
 		sr=ctx->regs[BJX2_REG_SR];
+
+		if(sr&(1<<17))
+		{
+			if(((sr>>8)&255)!=((rn>>56)&255))
+			{
+				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+			}
+		}
+
 //		sr&=0xFFFFFFFFF3FF000CULL;
 		sr&=0xFFFFFFFFF30F00FCULL;
 //		sr|=(rn>>48)&0xFFF3;
@@ -1328,6 +1346,27 @@ void BJX2_Op_BRA_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]=sr;
 //		pc1&=~3;
 		pc1&=~1;
+	}else
+	{
+		sr=ctx->regs[BJX2_REG_SR];
+
+#if 0
+		if(op->rn==BJX2_REG_DHR)
+		{
+			if(sr&(1<<17))
+			{
+				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+			}
+		}
+#endif
+
+#if 1
+//		if(sr&(1<<17))
+		if((sr&(1<<17)) && !(sr&(1<<29)))
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+		}
+#endif
 	}
 
 
@@ -1366,6 +1405,14 @@ void BJX2_Op_BSR_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	if(pc1&1)
 	{
+		if(sr&(1<<17))
+		{
+			if(((sr>>8)&255)!=((rn>>56)&255))
+			{
+				BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+			}
+		}
+
 //		sr&=0xFFFFFFFFF3FF000CULL;
 //		sr|=(rn>>48)&0xFFF3;
 //		sr|=((rn>>48)&0x000C)<<24;
@@ -1382,6 +1429,17 @@ void BJX2_Op_BSR_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]=sr;
 //		pc1&=~3;
 		pc1&=~1;
+	}else
+	{
+		sr=ctx->regs[BJX2_REG_SR];
+		
+#if 1
+//		if(sr&(1<<17))
+		if((sr&(1<<17)) && !(sr&(1<<29)))
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+		}
+#endif
 	}
 
 //	ctx->regs[BJX2_REG_LR]=op->pc2;
@@ -1403,6 +1461,8 @@ void BJX2_Op_BSR_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BT_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 sr;
+
 	if(ctx->regs[BJX2_REG_SR]&1)
 	{
 		ctx->regs[BJX2_REG_PC]=ctx->regs[op->rn];
@@ -1411,12 +1471,22 @@ void BJX2_Op_BT_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 //		if(!ctx->regs[BJX2_REG_PC])
 		if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+	}else
+	{
+		sr=ctx->regs[BJX2_REG_SR];
+		
+		if(sr&(1<<17))
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+		}
 	}
 	BJX2_DbgBRA(ctx, op, "JT");
 }
 
 void BJX2_Op_BF_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 sr;
+
 	if(!(ctx->regs[BJX2_REG_SR]&1))
 	{
 		ctx->regs[BJX2_REG_PC]=ctx->regs[op->rn];
@@ -1425,6 +1495,14 @@ void BJX2_Op_BF_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 //		if(!ctx->regs[BJX2_REG_PC])
 		if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+	}else
+	{
+		sr=ctx->regs[BJX2_REG_SR];
+		
+		if(sr&(1<<17))
+		{
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+		}
 	}
 	BJX2_DbgBRA(ctx, op, "JF");
 }

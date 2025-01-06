@@ -302,3 +302,102 @@ u64 pad0;	//alignment pad
 byte t_bootblk[512];
 // TKDFS_InodeInfo t_inoroot;
 };
+
+
+
+u32 TKDFS_ReadImageInodeWord32(TKDFS_ImageContext *img,
+	int d_ino, int d_idx);
+int TKDFS_WriteImageInodeWord32(TKDFS_ImageContext *img,
+	int d_ino, int d_idx, u32 d_val);
+
+int TKDFS_SyncCompressedBlockIdx(TKDFS_ImageContext *img, int idx);
+int TKDFS_SyncCompressedBlocks(TKDFS_ImageContext *img);
+byte *TKDFS_GetImageCompressedBlock(TKDFS_ImageContext *img,
+	int d_ino, int d_blk, int d_flg);
+
+byte *TKDFS_GetImageCachedInodeBlock(TKDFS_ImageContext *img,
+	int d_ino, s64 d_blk, int d_flg);
+int TKDFS_InitializeImageFileInode(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info, int ino, int d_flg);
+int TKDFS_InitializeImageFileInodeIdat(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info, int ino);
+TKDFS_InodeInfo *TKDFS_GetImageCachedInode(TKDFS_ImageContext *img,
+	int d_ino, int d_flg);
+
+int TKDFS_ImageSetInodeInfoDeh(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info,
+	char *bname, s64 dirino, int dfl);
+
+int TKDFS_CopyName48Expand(byte *dst, byte *src);
+
+int TKDFS_SyncImageInodes(TKDFS_ImageContext *img);
+int TKDFS_SetImageInodeBlockNum(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *ino_inf, int d_blk, u64 newblk);
+int TKDFS_InitBaseName48(char *bname, char *d_name);
+int TKDFS_WriteImageDirent(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, int d_ino, int d_idx);
+int TKDFS_CopyDirentInfo(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *dinfo,
+	TKDFS_DirentInfo *sinfo);
+int TKDFS_ImageAllocInodeDirentName(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info,
+	int d_ino, char *d_name);
+
+int TKDFS_GetDirentLeftIdx(
+	TKDFS_DirentInfo *info);
+int TKDFS_GetDirentRightIdx(
+	TKDFS_DirentInfo *info);
+int TKDFS_GetDirentParentIdx(
+	TKDFS_DirentInfo *info);
+
+int TKDFS_SetDirentLeftIdx(
+	TKDFS_DirentInfo *info, int idx);
+int TKDFS_SetDirentRightIdx(
+	TKDFS_DirentInfo *info, int idx);
+int TKDFS_SetDirentParentIdx(
+	TKDFS_DirentInfo *info, int idx);
+
+int TKDFS_ImageCheckDirentUpdateZ(
+	TKDFS_ImageContext *img, int d_ino, int d_idx);
+int TKDFS_ImageCheckDirentRebalance(
+	TKDFS_ImageContext *img, TKDFS_DirentInfo *info);
+int TKDFS_ImageFreeDirent(
+	TKDFS_ImageContext *img, TKDFS_DirentInfo *info);
+int TKDFS_ImageRemoveDirentRebalance(
+	TKDFS_ImageContext *img, TKDFS_DirentInfo *info);
+int TKDFS_ImageLookupInodeDirentName(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, int d_ino, char *d_name, int dfl);
+int TKDFS_WalkDirEntNext(TKDFS_ImageContext *img, TKDFS_DirentInfo *dee);
+int TKDFS_ImageLookupInodePathI(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, char *path, int dfl);
+int TKDFS_ImageLookupInodePath(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, char *path, int dfl);
+int TKDFS_ImageCreateInodePath(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, char *path, int dfl);
+int TKDFS_ReadWriteImageInodeFileData(TKDFS_ImageContext *img,
+	byte *data, int d_ino, s64 fd_offs, int fd_len, int dfl);
+int TKDFS_ReadImageInodeFileData(TKDFS_ImageContext *img,
+	byte *data, int d_ino, s64 fd_offs, int fd_len);
+int TKDFS_WriteImageInodeFileData(TKDFS_ImageContext *img,
+	byte *data, int d_ino, s64 fd_offs, int fd_len);
+int TKDFS_ReadWriteDirEntFile(
+	TKDFS_DirentInfo *dee, s64 ofs, int dfl, byte *dbuf, s64 dsz);
+s64 TKDFS_GetDirEntSize(TKDFS_DirentInfo *dee);
+int TKDFS_SetDirEntSize(TKDFS_DirentInfo *dee, s64 size);
+s64 TKDFS_GetDirEntInode(TKDFS_DirentInfo *dee);
+int TKDFS_SetDirEntInode(TKDFS_DirentInfo *dee, s64 d_ino);
+int TKDFS_DeleteDirEnt(TKDFS_DirentInfo *dee);
+int TKDFS_UpdateDirEnt(TKDFS_DirentInfo *dee);
+int TKDFS_SyncDirEntFile(TKDFS_DirentInfo *dee);
+
+int TKDFS_GetDirEntMode(TKDFS_DirentInfo *dee);
+int TKDFS_SetDirEntMode(TKDFS_DirentInfo *dee, int d_mode);
+int TKDFS_GetDirEntUid(TKDFS_DirentInfo *dee);
+int TKDFS_GetDirEntGid(TKDFS_DirentInfo *dee);
+s64 TKDFS_GetDirEntCTime(TKDFS_DirentInfo *dee);
+s64 TKDFS_GetDirEntMTime(TKDFS_DirentInfo *dee);
+
+int TKDFS_ImageDestroyInode(TKDFS_ImageContext *img,
+	int d_ino, int d_flg);
+int TKDFS_DeleteInode(TKDFS_ImageContext *img, int d_ino);
+

@@ -69,6 +69,7 @@ static struct termios old_termios;
 
 void btesh2_ttynoncanon(void)
 {
+#if 0
 	struct termios new_termios;
 
 	tcgetattr(0, &old_termios);
@@ -78,12 +79,13 @@ void btesh2_ttynoncanon(void)
 	new_termios.c_cc[VTIME]=0;
 	new_termios.c_cc[VMIN]=1;
 	tcsetattr(0, TCSANOW, &new_termios);
+#endif
 	return;
 }
 
 void btesh2_resettermios(void)
 {
-	tcsetattr(0, TCSANOW, &old_termios);
+//	tcsetattr(0, TCSANOW, &old_termios);
 	return;
 }
 #endif
@@ -318,14 +320,17 @@ void GfxDrv_UpdateEvents()
 
 int GfxDrv_MouseGetWheelDelta(void)
 {
+	return(0);
 }
 
 int GfxDrv_MouseGetRelPos(int *dx, int *dy, int *mb)
 {
+	return(0);
 }
 
 int GfxDrv_MouseGetPos(int *mx, int *my, int *mb)
 {
+	return(0);
 }
 
 int gfxdrv_locksurf=0;
@@ -737,7 +742,8 @@ int BJX2_MainPollKeyboard(BJX2_Context *ctx)
 	}
 #endif
 
-#ifdef linux
+// #ifdef linux
+#if 0
 	j=fgetc(stdin);
 	while(j>=0)
 	{
@@ -1605,6 +1611,8 @@ int main(int argc, char *argv[])
 			{ rd_ovl[rd_n_ovl++]=argv[i]; continue; }
 	}
 	
+	printf("Setup Filesystem\n");
+	
 	bjx2_vmoutlog=fopen("bjx2_vmoutlog.txt", "wb");
 	
 	if(swapsz>0)
@@ -1630,6 +1638,8 @@ int main(int argc, char *argv[])
 	}
 	
 	JX2R_TKFAT_SyncImageBuffers();
+	
+	printf("Setup Memory Map\n");
 	
 	ctx=BJX2_AllocContext();
 //	BJX2_MemDefineROM(ctx,		"ROM",	0x00000000U, 0x00007FFFU);
@@ -1685,6 +1695,8 @@ int main(int argc, char *argv[])
 	BJX2_MemDefineEdgeWalk(ctx, "EDGE", 0x0000F000C000LL, 0x0000F000CFFFLL);
 	BJX2_MemDefineEdgeWalk(ctx, "EDGE", 0xFFFFF000C000LL, 0xFFFFF000CFFFLL);
 
+	printf("Setup CPU Config\n");
+	
 	BJX2_SetCpuConfig(ctx, isacfg);
 	
 	if(nowex&1)
@@ -1725,12 +1737,16 @@ int main(int argc, char *argv[])
 
 	ctx->do_edgewalk=dorast;
 	
+	printf("Setup Load ROM\n");
+
 	BJX2_ContextSetupZero(ctx);
 	if(ifn)
 	{
 		BJX2_ContextLoadRom(ctx, ifn);
 	}
 
+	printf("Setup Load Symbol Maps\n");
+	
 	for(i=0; i<rd_n_map; i++)
 	{
 		BJX2_ContextLoadMap(ctx, rd_map[i], NULL);
@@ -1761,6 +1777,8 @@ int main(int argc, char *argv[])
 //		JX2R_UseImageAddFile(rd_add[i], NULL);
 	}
 
+	printf("Setup Debug BSS\n");
+	
 	if(chkbss)
 	{
 		ctx->dbg_data_start=BJX2_DbgAddrForName(ctx, "__data_start");
@@ -1822,6 +1840,8 @@ int main(int argc, char *argv[])
 //	ctx->ttick_rst=100000000/1024;
 	ctx->ttick_hk=ctx->ttick_rst;
 
+	printf("Setup Power On State\n");
+	
 	BJX2_ContextPowerOnState(ctx);
 
 	if(ctx_c2)
@@ -1840,17 +1860,27 @@ int main(int argc, char *argv[])
 
 //	ctx_c2=NULL;
 
-#ifdef __linux
+// #ifdef __linux
+#if 0
 	i = fcntl(0, F_GETFL, 0);
 	fcntl(0, F_SETFL, i | O_NONBLOCK);
 	btesh2_ttynoncanon();
 #endif
 
+	printf("Setup Graphics\n");
 	GfxDrv_Start();
+
+	printf("Setup Sound\n");
 	SoundDev_Init();
+
+	printf("Setup Console\n");
 	JX2I_GfxCon_Startup(ctx);
+
+	printf("Setup FM Synth\n");
 	SMus_Init(ctx);
 
+	printf("Start Main Loop\n");
+	
 //	t0=clock();
 	t0=FRGL_TimeMS();
 
@@ -1867,7 +1897,8 @@ int main(int argc, char *argv[])
 
 	SoundDev_DeInit();
 
-#ifdef __linux
+// #ifdef __linux
+#if 0
 	btesh2_resettermios();
 #endif
 

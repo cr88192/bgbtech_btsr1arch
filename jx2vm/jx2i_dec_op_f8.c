@@ -57,14 +57,14 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 
 	imm20s=imm16u|((opw1&15)<<16);
 	if(opw1&8)
-		imm20s|=(~0)<<20;
+		imm20s|=(~0ULL)<<20;
 	imm20s^=((jbits>>28)&7)<<20;
 
 	if(isxg3)
 	{
 		imm20s=imm16u|(rn_i16_org<<16);
 		if(wi)
-			imm20s|=(~0)<<22;
+			imm20s|=(~0ULL)<<22;
 		imm20s=(imm20s<<1)-2;
 	}
 

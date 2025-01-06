@@ -1805,8 +1805,7 @@ int BJX2_MemSimAddrL1Multi(BJX2_Context *ctx, bjx2_addr addr, int opm)
 				p1=prcnt[(i<<4)|(j*2)|1];
 				if(p0<0)
 				{
-					fprintf(mlogfd, "%d,Z,Z,",
-						1<<i,p0/1000, p0%1000, p1/1000, p1%1000);
+					fprintf(mlogfd, "%d,Z,Z,", 1<<i);
 				}else
 				{
 				fprintf(mlogfd, "%d,%d.%03d,%d.%03d,",

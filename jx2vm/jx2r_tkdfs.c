@@ -1,23 +1,3 @@
-u32 TKDFS_ReadImageInodeWord32(TKDFS_ImageContext *img,
-	int d_ino, int d_idx);
-int TKDFS_WriteImageInodeWord32(TKDFS_ImageContext *img,
-	int d_ino, int d_idx, u32 d_val);
-
-byte *TKDFS_GetImageCachedInodeBlock(TKDFS_ImageContext *img,
-	int d_ino, s64 d_blk, int d_flg);
-int TKDFS_InitializeImageFileInode(TKDFS_ImageContext *img,
-	TKDFS_InodeInfo *info, int ino, int d_flg);
-int TKDFS_InitializeImageFileInodeIdat(TKDFS_ImageContext *img,
-	TKDFS_InodeInfo *info, int ino);
-TKDFS_InodeInfo *TKDFS_GetImageCachedInode(TKDFS_ImageContext *img,
-	int d_ino, int d_flg);
-
-int TKDFS_ImageSetInodeInfoDeh(TKDFS_ImageContext *img,
-	TKDFS_InodeInfo *info,
-	char *bname, s64 dirino, int dfl);
-
-int TKDFS_CopyName48Expand(byte *dst, byte *src);
-
 void *tkdfs_malloc(int sz)
 {
 	return(malloc(sz));
@@ -651,7 +631,7 @@ int TKDFS_ImageSetInodeInfoDeh(TKDFS_ImageContext *img,
 	if(info->ino_dmhd)
 	{
 //		strncpy(info->ino_dmhd->refname, bname, 48);
-		islfn=TKDFS_InitBaseName48(info->ino_dmhd->refname, bname);
+		islfn=TKDFS_InitBaseName48((char *)(info->ino_dmhd->refname), bname);
 
 		info->ino_dmhd->dirino_lo=dirino;
 		info->ino_dmhd->dirino_hi=dirino>>32;
@@ -2316,7 +2296,7 @@ int TKDFS_ReadImageDirent(TKDFS_ImageContext *img,
 	
 	if(deb->etype==1)
 	{
-		TKDFS_CopyName48Expand(info->de_name, deb->name);
+		TKDFS_CopyName48Expand((byte *)(info->de_name), deb->name);
 	}else
 		if(deb->etype==2)
 	{
@@ -2464,7 +2444,7 @@ int TKDFS_InitBaseName48(char *bname, char *d_name)
 
 	if(nln>48)
 	{
-		*(u64 *)(bname+40)=TKDFS_LongNameHash64(d_name);
+		*(u64 *)(bname+40)=TKDFS_LongNameHash64((byte *)d_name);
 		return(1);
 	}
 	return(0);
@@ -2504,7 +2484,7 @@ int TKDFS_WriteImageDirent(TKDFS_ImageContext *img,
 	//	memset(deb->name, 0, 48);
 	//	memcpy(deb->name, info->de_name, nl1);
 	//	deb->ino=info->de_ino;
-		islfn=TKDFS_InitBaseName48(deb->name, info->de_name);
+		islfn=TKDFS_InitBaseName48((char *)(deb->name), info->de_name);
 
 //		if(nln>48)
 		if(islfn)
@@ -2576,6 +2556,16 @@ int tkdfs_strcmp8(char *ds0, char *ds1)
 	return(c0-c1);
 }
 
+u32 tkdfs_ntohl(u32 val)
+{
+	u32 val1;
+	val1=	((val>>24)&0x000000FFU) |
+			((val>> 8)&0x0000FF00U) |
+			((val<< 8)&0x00FF0000U) |
+			((val<< 8)&0xFF000000U) ;
+	return(val1);
+}
+
 int tkdfs_qwordcmp8(u64 v0, u64 v1)
 {
 	u64 t0, t1;
@@ -2587,15 +2577,15 @@ int tkdfs_qwordcmp8(u64 v0, u64 v1)
 	t0=(u32)v0;	t1=(u32)v1;
 	if(t0!=t1)
 	{
-		t0=ntohl(t0);
-		t1=ntohl(t1);
+		t0=tkdfs_ntohl(t0);
+		t1=tkdfs_ntohl(t1);
 
 		rel=((s64)(t0-t1))>>63;
 		return(rel*2+1);
 	}
 
-	t0=ntohl(v0>>32);
-	t1=ntohl(v1>>32);
+	t0=tkdfs_ntohl(v0>>32);
+	t1=tkdfs_ntohl(v1>>32);
 	rel=((s64)(t0-t1))>>63;
 	return(rel*2+1);
 }
@@ -3570,7 +3560,7 @@ int TKDFS_ImageLookupInodePathI(TKDFS_ImageContext *img,
 		if(((imd&0xF000)==0xA000) && isdir)
 		{
 			sz=TKDFS_ReadWriteDirEntFile(
-				info, 0, 0, tbn, 512);
+				info, 0, 0, (byte *)tbn, 512);
 			strncpy(info->de_name, tbn+8, sz-8);
 			strcat(info->de_name, "/");
 			strcat(info->de_name, cs);
@@ -3771,9 +3761,6 @@ int TKDFS_SetDirEntInode(TKDFS_DirentInfo *dee, s64 d_ino)
 	dee->deb->ino=d_ino;
 	return(0);
 }
-
-int TKDFS_ImageDestroyInode(TKDFS_ImageContext *img,
-	int d_ino, int d_flg);
 
 int TKDFS_DeleteInode(TKDFS_ImageContext *img, int d_ino)
 {

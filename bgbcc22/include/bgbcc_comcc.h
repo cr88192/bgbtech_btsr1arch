@@ -191,7 +191,8 @@ byte has_rvzba;		//Has RV BitManip
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 byte abi_noexcept;	//Disable Exceptions
-byte abi_spillpad;	//Disable Exceptions
+// byte abi_spillpad;	//Disable Exceptions
+int abi_spillpad;	//Various ABI flags
 
 byte do_shuffle;
 
