@@ -32,6 +32,13 @@ __tk_saved_vbr:
 
 // start:
 _start:
+
+#ifdef __USRONLY__
+
+	bsr X(__start)
+	bra _exit
+
+#else
 //	mov STACK_BASE, sp
 //	mov STACK_BASE_USR, sp
 
@@ -94,6 +101,7 @@ _start:
 
 	bsr X(__start)
 	bra _exit
+#endif
 
 _exit:
 	break

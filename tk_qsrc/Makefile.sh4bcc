@@ -43,11 +43,19 @@ LDFLAGS=$(TK_LDFL) -lvxcore
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2F -O2 -fwex3w -fwexj -Zz
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz
 
-CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
-	-fqmul -fptropt0 -ffpu_fpvsf2 -fldgbr -fnoexcept \
-	-fxgpr_abi -fnoshuffle -fjcmp -fnovsk -fxg2mode -ffunctag -fleagbr \
-	-ffpu_fpimm -fcmp3r -frsub -fldimi -fmovc
+# CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
+#	-fqmul -fptropt0 -ffpu_fpvsf2 -fldgbr -fnoexcept \
+#	-fxgpr_abi -fnoshuffle -fjcmp -fxg2mode -ffunctag -fleagbr \
+#	-ffpu_fpimm -fcmp3r -frsub -fldimi -fmovc -fpbostatic \
+#	-fvskglobal # -fdobounds
 
+CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
+	-fptropt0 -fnoexcept \
+	-fxgpr_abi -fnoshuffle -fxg2mode \
+	-fpbostatic \
+	-fvskglobal # -fdobounds
+
+# -fnovsk
 # -ffpu_fpimm -fldtex 
 # -fxg2mode
 #	-fxgpr_ena 

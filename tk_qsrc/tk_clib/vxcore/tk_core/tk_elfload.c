@@ -416,7 +416,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	byte *imgptr, *ct, *cte, *bss_ptr;
 	byte *dyn_ptr, *rela_ptr, *strtab_ptr, *symtab_ptr;
 	u64 *rel_where;
-	byte *ptr, *ct;
+	byte *ptr;
 	int n_needed;
 
 	u64 imgbase, imgbase1;
@@ -1100,7 +1100,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 			img->elf_interpbase=img_needed[0]->imgbase;
 		}
 		
-		ptr=imgbase+((imgsz+15)&(~15));
+		ptr=(byte *)imgbase+((imgsz+15)&(~15));
 		ct=ptr;
 		if(isriscv)
 		{
@@ -1139,6 +1139,8 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //	img->rlc_basedisp=rlc_disp;
 //	img->ptr_reloc=imgptr+rva_rlc;
 //	img->sz_reloc=sz_rlc;
+
+	img->dllflags=0x0002;
 
 //	img->gbr_rva=gbr_rva;
 

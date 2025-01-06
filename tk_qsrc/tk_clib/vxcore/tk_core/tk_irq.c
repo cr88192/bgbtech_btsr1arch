@@ -15,6 +15,7 @@ TKPE_TaskInfo *tk_task_syscall;
 #ifndef __TK_CLIB_ONLY__
 extern TKPE_TaskInfo *tk_task_syscall;
 extern u64	tk_vmem_pageglobal;
+int tk_task_syscall_isinit=123;
 #endif
 
 int tk_issyscall()
@@ -367,8 +368,8 @@ __interrupt void __isr_syscall(void)
 	TKPE_TaskInfo *task, *task2, *task3;
 	TKPE_TaskInfoKern *taskern, *taskern2;
 	u64 *isrsave, *args, *pret;
-	u64 ttb, tea, exc, yres, uobj;
-	u32 reg_sr, umsg;
+	u64 ttb, tea, exc, yres, uobj, spc, spcm;
+	u32 reg_sr, umsg, opw;
 	s32 lnxsc;
 	u16 exsr;
 	
@@ -400,7 +401,24 @@ __interrupt void __isr_syscall(void)
 		isrsave[TKPE_REGSAVE_SPC_LO]+=4;
 	}else
 	{
-		isrsave[TKPE_REGSAVE_SPC]+=4;
+		spc=isrsave[TKPE_REGSAVE_SPC];
+		spcm=tk_vmem_virttophys(spc);
+		if(((reg_sr>>26)&1) && !((reg_sr>>23)&1))
+		{
+			opw=*(u32 *)spcm;
+			if((opw&3)==3)
+			{
+				isrsave[TKPE_REGSAVE_SPC]=spc+4;
+			}else
+			{
+				isrsave[TKPE_REGSAVE_SPC]=spc+2;
+			}
+		}else
+		{
+			isrsave[TKPE_REGSAVE_SPC]=spc+4;
+		}
+	
+//		isrsave[TKPE_REGSAVE_SPC]+=4;
 	}
 
 	if((exsr&15)==0)
@@ -505,7 +523,14 @@ __interrupt void __isr_syscall(void)
 			task2=tk_task_syscall;
 			if(!task2)
 				__debugbreak();
+
+			if(task2->magic0!=TKPE_TASK_MAGIC)
+				__debugbreak();
+
 			taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
+			if(taskern2->magic0!=TKPE_TASK_MAGIC)
+				__debugbreak();
+
 			taskern2->task_sysc_user=(tk_kptr)task;
 		}else
 		{
@@ -514,10 +539,30 @@ __interrupt void __isr_syscall(void)
 	}else
 		if((exsr&15)==1)
 	{
+		if(tk_task_syscall_isinit==123)
+		{
+			/* not yet initialized */
+		}else
+			if(tk_task_syscall_isinit==1)
+		{
+			task2=tk_task_syscall;
+			if(!task2)
+				__debugbreak();
+			if(task2->magic0!=TKPE_TASK_MAGIC)
+				__debugbreak();
+		}else
+		{
+			/* stomped */
+			__debugbreak();
+		}
+
 		task2=taskern->task_sysc_user;
 		if(!task2)
 			__debugbreak();
 		if(task2==tk_task_syscall)
+			__debugbreak();
+
+		if(task2->magic0!=TKPE_TASK_MAGIC)
 			__debugbreak();
 
 #if 1
@@ -785,6 +830,7 @@ int TK_Task_SyscallLoop(void *uptr)
 	u64 *argsl;
 	void *sobj, *rptr, *args;
 	s64		rc;
+	int		i, j, k;
 
 	task=NULL;	sobj=NULL;
 	umsg=0;		rptr=NULL;
@@ -849,6 +895,29 @@ int TK_Task_SyscallLoop(void *uptr)
 
 			rc=TK_HandleSyscall(task, sobj, umsg, rptr, args);
 			TK_Task_SyscallSetReturn(task, rc);
+			
+			if(umsg==TK_UMSG_MUTEXTRYLOCK)
+			{
+				argsl=args;
+
+				j=*(int *)rptr;
+				if((j<=0) && (argsl[1]&1))
+				{
+					/* Tried to lock mutex and failed.
+					 * So, switch to a different task.
+					 */
+					task2=TK_CheckSchedNewTask(task, 1);
+
+					if(task2 && (task2!=task))
+					{
+						if(task2->magic0!=TKPE_TASK_MAGIC)
+							__debugbreak();
+
+						TK_Task_SyscallReturnToUser(task2);
+						continue;
+					}
+				}
+			}
 		}
 		TK_Task_SyscallReturnToUser(task);
 	}
@@ -976,6 +1045,8 @@ void *TK_AllocNewTask()
 	task->allocaptr=(tk_kptr)(&(tusr->allocamrk));
 	task->tlsptr=(tk_kptr)(tusr->tlsdat);
 	task->regsave=(tk_kptr)(tknl->ctx_regsave);
+
+	task->tls_freelist=(tk_kptr)(tusr->tls_freelistarray);
 	
 	task->magic0=TKPE_TASK_MAGIC;
 	tknl->magic0=TKPE_TASK_MAGIC;
@@ -1267,6 +1338,16 @@ void **TK_GetAllocaMark()
 	return((void **)(task->allocaptr));
 }
 
+void **TK_GetTlsFreeList()
+{
+	TKPE_TaskInfo *task;
+
+	task=(TKPE_TaskInfo *)TK_GET_TBR;
+	if(!task)
+		{ return(NULL); }
+	return((void **)(task->tls_freelist));
+}
+
 int TK_TaskAddPageAlloc(TKPE_TaskInfo *task, void *base, int size)
 {
 	TKPE_TaskInfoKern *krnl;
@@ -1309,6 +1390,7 @@ int TK_TaskFreeAllPageAlloc(TKPE_TaskInfo *task)
 	return(0);
 }
 
+#ifndef __TK_CLIB_ONLY__
 int TK_TaskGetCwd(TKPE_TaskInfo *task, char *buf, int sz)
 {
 	if(task->envctx)
@@ -1332,6 +1414,7 @@ int TK_TaskSetCwd(TKPE_TaskInfo *task, char *buf)
 	
 	return(-1);
 }
+#endif
 
 #ifdef __TK_CLIB_ONLY__
 TK_APIEXPORT
@@ -1418,6 +1501,19 @@ void TK_FlushCacheL1D()
 	TK_FlushCacheL1D_INVDC(NULL);
 	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
 //	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
+}
+
+void TK_FastFlushCacheL1D()
+{
+	static int tempvar;
+	u64 *pptr;
+	int i, j, k;
+
+	pptr=(u64 *)(&tempvar);	/* need memory to read from. */
+	pptr=(u64 *)(((u64)pptr)&(~32767));	/* Align */
+
+	TK_FlushCacheL1D_INVDC(NULL);
+	TK_FlushCacheL1D_ReadBuf(pptr, 32768);
 }
 
 
@@ -2418,8 +2514,11 @@ int TK_SpawnSyscallTask(TKPE_TaskInfo *btask)
 	TKPE_TaskInfo *sctask;
 	TKPE_TaskInfoKern *taskern;
 
+//	tk_task_syscall=btask;	//temporary
+
 	sctask=TK_SpawnNewThreadB(btask, TK_Task_SyscallLoop, btask);
 	tk_task_syscall=sctask;
+	tk_task_syscall_isinit=1;
 
 	sctask->ystatus=1024;
 
@@ -2607,6 +2706,103 @@ s64 TK_TlsSet(int key, s64 val)
 	return(oval);
 }
 
+int _mtx_sync_get(int *ptr);
+int _mtx_sync_set(int *ptr, int val);
+int _mtx_sync_getw(short *ptr);
+int _mtx_sync_setw(short *ptr, int val);
+int _mtx_sync_getcpu();
+
+
+int TK_MutexTryLockB(TKPE_TaskInfo *task, int *mtx, int flag)
+{
+	int tid;
+	int mtxval, ccid, lcid, cpu, mtcpu, vcfl;
+	
+//	tid=task->sch_id;
+	tid=TK_GetCurrentThreadId();
+	if(tid<=0)
+		return(-1);
+
+	cpu=_mtx_sync_getcpu();
+	
+	mtxval=_mtx_sync_get(mtx);
+	lcid=(mtxval>>20)&15;
+
+//	if((mtxval&0xFFFFF)==0)
+	if(mtxval==0)
+	{
+		_mtx_sync_set(mtx+0, tid);
+		mtcpu=_mtx_sync_setw(mtx+1, cpu);
+		if(mtcpu && (mtcpu!=cpu))
+		{
+			vcfl=((s16 *)mtx)[3];
+			((s16 *)mtx)[3]=vcfl|1;
+			TK_FastFlushCacheL1D();
+		}
+		return(1);
+	}
+
+	if(mtxval==tid)
+	{
+		return(1);
+	}
+
+	return(0);
+}
+
+int TK_MutexTryReleaseB(TKPE_TaskInfo *task, int *mtx)
+{
+	int vcfl;
+	
+	vcfl=((s16 *)mtx)[3];
+	_mtx_sync_set(mtx, 0);
+	if(vcfl)
+	{
+		TK_FastFlushCacheL1D();
+	}
+	return(1);
+}
+
+/**
+ * Try to lock a mutex.
+ * Flag(0): Are we trying a full lock, or just a lock.
+ */
+int TK_MutexTryLock(int *mtx, int flag)
+{
+	TK_SysArg ar[4];
+	s64 p;
+		
+	if(tk_issyscall())
+	{
+		__debugbreak();
+		return(-1);
+	}
+
+	p=0;
+	ar[0].p=mtx;
+	ar[1].i=flag;
+	tk_syscall(NULL, TK_UMSG_MUTEXTRYLOCK, &p, ar);
+
+	return(p);
+}
+
+int TK_MutexUnlock(int *mtx)
+{
+	TK_SysArg ar[4];
+	s64 p;
+		
+	if(tk_issyscall())
+	{
+		__debugbreak();
+		return(-1);
+	}
+
+	p=0;
+	ar[0].p=mtx;
+	tk_syscall(NULL, TK_UMSG_MUTEXRELEASE, &p, ar);
+
+	return(p);
+}
 
 
 tk_kptr TK_PboGbrGetB(TKPE_TaskInfo *task, int key)

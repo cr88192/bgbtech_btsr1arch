@@ -23,6 +23,8 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
+extern int bgbcc_is_vxcore;
+
 int BGBCC_JX2C_CoffLoadBufferDLL(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -2213,7 +2215,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	int lpg, lpg0, lsec, szrlc, ofsrlc, nrlce, mach, lbl;
 	int ofsimp, szimp, ofsexp, szexp;
 	int ofsexc, szexc, ofsrsrc, szrsrc, ofstlsd, sztlsd;
-	int szstack, denserlc;
+	int szstack, denserlc, mchar, mdllchar;
 	int i, j, k;
 
 	sctx=ctx->uctx;
@@ -2886,6 +2888,15 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 	k=sctx->is_le?0x0080:0x8000;
 	k|=0x0302;
+	mchar=k;
+
+	mdllchar=0x0140;
+
+	if(!(bgbcc_is_vxcore&1))
+		mchar|=0x0020;
+
+	if(sctx->abi_spillpad&16)
+		mdllchar|=0x0080;
 
 //	mach=0x1A6;
 //	if(sctx->has_bjx1mov)
@@ -2932,7 +2943,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	bgbcc_setu32en(ct+0x08, en, 0);			//mTimeDateStamp
 	bgbcc_setu32en(ct+0x0C, en, 0);			//mPointerToSymbolTable
 	bgbcc_setu32en(ct+0x10, en, 0);			//mNumberOfSymbols
-	bgbcc_setu16en(ct+0x16, en, k);			//mCharacteristics
+	bgbcc_setu16en(ct+0x16, en, mchar);		//mCharacteristics
 
 	if(!sctx->is_addr64 || sctx->is_addr_x32)
 	{
@@ -2963,7 +2974,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x54, en, ofs_sdat);	//mSizeOfHeaders
 
 		bgbcc_setu16en(ct+0x5C, en, 1);			//mSubsystem
-		bgbcc_setu16en(ct+0x5E, en, 0x0140);	//mDllCharacteristics
+//		bgbcc_setu16en(ct+0x5E, en, 0x0140);	//mDllCharacteristics
+		bgbcc_setu16en(ct+0x5E, en, mdllchar);	//mDllCharacteristics
 
 //		bgbcc_setu32en(ct+0x60, en, 0x100000);	//mSizeOfStackReserve
 		bgbcc_setu32en(ct+0x60, en, szstack);	//mSizeOfStackReserve
@@ -3022,7 +3034,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		bgbcc_setu32en(ct+0x54, en, ofs_sdat);	//mSizeOfHeaders
 
 		bgbcc_setu16en(ct+0x5C, en, 1);			//mSubsystem
-		bgbcc_setu16en(ct+0x5E, en, 0x0140);	//mDllCharacteristics
+//		bgbcc_setu16en(ct+0x5E, en, 0x0140);	//mDllCharacteristics
+		bgbcc_setu16en(ct+0x5E, en, mdllchar);	//mDllCharacteristics
 
 //		bgbcc_setu64en(ct+0x60, en, 0x100000);	//mSizeOfStackReserve
 		bgbcc_setu64en(ct+0x60, en, szstack);	//mSizeOfStackReserve

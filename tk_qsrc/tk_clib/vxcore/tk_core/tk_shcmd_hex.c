@@ -241,6 +241,9 @@ int TKSH_HexUpdateLoop()
 			if(!dn)
 				continue;
 
+			if((key=='q') || (key=='Q'))
+				brk=1;
+
 			if((key>=' ') && (key<='~') && !tksh_hex_ctrl)
 			{
 				TKSH_HexGetRow(tksh_hex_cur_y, tbu);

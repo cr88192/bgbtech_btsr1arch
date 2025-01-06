@@ -807,6 +807,61 @@ int socket(int domain, int type, int protocol)
 long __multicall(int callnum, void *retptr, void **args)
 {
 }
+
+struct tk_clib_iface_s {
+	struct tk_clib_iface_s *next;
+	u64 major;
+	u64 minor;
+	void *vtab;
+};
+
+struct tk_clib_iface_s *tk_clib_iface_list;
+
+void *TkClGetInterface(u64 qwMajor, u64 qwMinor)
+{
+	struct tk_clib_iface_s *ifcur;
+	void *ptr;
+	
+	ifcur=tk_clib_iface_list;
+	while(ifcur)
+	{
+		if((ifcur->major==qwMajor) && (ifcur->minor==qwMinor))
+			return(ifcur->vtab);
+		ifcur=ifcur->next;
+	}
+	
+	ptr=TK_DlGetApiContextA(qwMajor, qwMinor);
+	if(ptr)
+		return(ptr);
+	return(NULL);
+}
+
+void *TkClSetInterface(u64 qwMajor, u64 qwMinor, void *vtab, u64 flag)
+{
+	struct tk_clib_iface_s *ifcur;
+	void *ptr;
+	
+	ifcur=tk_clib_iface_list;
+	while(ifcur)
+	{
+		if((ifcur->major==qwMajor) && (ifcur->minor==qwMinor))
+		{
+			if(vtab)
+				ifcur->vtab=vtab;
+			return(ifcur->vtab);
+		}
+		ifcur=ifcur->next;
+	}
+	
+	ifcur=malloc(sizeof(struct tk_clib_iface_s));
+	ifcur->major=qwMajor;
+	ifcur->minor=qwMinor;
+	ifcur->vtab=vtab;
+
+	ifcur->next=tk_clib_iface_list;
+	tk_clib_iface_list=ifcur;
+}
+
 #endif
 
 void __exita(int status)

@@ -1525,6 +1525,16 @@ void BJX2_Op_LDISH32_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(ctx->regs[op->rn]<<32)|((u32)(op->imm));
 }
 
+void BJX2_Op_LDISH16_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(ctx->regs[op->rm]<<16)|((u16)(op->imm));
+}
+
+void BJX2_Op_LDISH32_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(ctx->regs[op->rm]<<32)|((u32)(op->imm));
+}
+
 
 void BJX2_Op_LDIZ_Imm12(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -1762,6 +1772,7 @@ void BJX2_Op_LEATB_LdPcDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	lr=lr&0x0000FFFFFFFFFFFFULL;
 //	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
 	lr|=((u64)(((sr>>24)&0x0004))|((sr>>16)&0x00F0))<<48;
+	lr|=(((u64)((sr>>8)&0xFF))<<56);
 	lr|=1;
 	ctx->regs[op->rn]=lr;
 }
@@ -1780,6 +1791,7 @@ void BJX2_Op_LEATB_LdPcIdxReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	lr=lr&0x0000FFFFFFFFFFFFULL;
 //	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
 	lr|=((u64)(((sr>>24)&0x0004))|((sr>>16)&0x00F0))<<48;
+	lr|=(((u64)((sr>>8)&0xFF))<<56);
 	lr|=1;
 #endif
 

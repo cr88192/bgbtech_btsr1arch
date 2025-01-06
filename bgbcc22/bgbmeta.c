@@ -46,6 +46,8 @@ int bgbcc_nopts;
 int bgbcc_istool;
 int bgbcc_verbose;
 
+int bgbcc_is_vxcore;
+
 #if 0
 // BGBCC_API int BGBCC_BindSig(BGBCC_State *ctx, char *name, char *sig)
 {
@@ -3613,7 +3615,10 @@ int main(int argc, char *argv[], char **env)
 				if(!strcmp(s0, "-lcdll"))
 					break;
 				if(!strncmp(s0+2, "vxcore", 6))
+				{
+					bgbcc_is_vxcore|=1;
 					break;
+				}
 			}
 			
 			if(!(i<nuds))

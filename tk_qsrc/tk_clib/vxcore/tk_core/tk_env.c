@@ -288,7 +288,7 @@ int TK_Env_SetEnvVar(char *varn, char *varv)
 #if 0
 	if(!strcmp(varn, "CWD"))
 	{
-		TK_Env_SetCwd(varv);
+//		TK_Env_SetCwd(varv);
 		return(1);
 	}
 	

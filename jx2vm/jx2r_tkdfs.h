@@ -15,6 +15,8 @@
 #endif
 
 #define TKDFS_FCC_FHDR	RIFF_MAKETAG('F','H','D','R')
+#define TKDFS_FCC_DHDR	RIFF_MAKETAG('D','H','D','R')
+
 #define TKDFS_FCC_IDAT	RIFF_MAKETAG('I','D','A','T')
 #define TKDFS_FCC_IDX4	RIFF_MAKETAG('I','D','X','4')
 #define TKDFS_FCC_IDX6	RIFF_MAKETAG('I','D','X','6')
@@ -22,6 +24,8 @@
 #define TKDFS_FCC_IXC8	RIFF_MAKETAG('I','X','C','8')
 
 #define TKDFS_TCC_FH	RIFF_MAKETWOCC('F','H')
+#define TKDFS_TCC_DH	RIFF_MAKETWOCC('D','H')
+
 #define TKDFS_TCC_ID	RIFF_MAKETWOCC('I','D')
 #define TKDFS_TCC_I4	RIFF_MAKETWOCC('I','4')
 #define TKDFS_TCC_I6	RIFF_MAKETWOCC('I','6')
@@ -63,12 +67,26 @@
 #define TKDFS_FIXINO_ROOTDIR	1
 #define TKDFS_FIXINO_BLKBMP		2
 #define TKDFS_FIXINO_INOBMP		3
+#define TKDFS_FIXINO_INOTAB2	4
 
 #define TKDFS_FIXINO_FIRSTFILE	8
 
+#define TKDFS_ETYPE_FREE		0
+#define TKDFS_ETYPE_FILE_BASE	1		//name is base 48 bytes
+#define TKDFS_ETYPE_FILE_LFN	2		//name is/was an LFN
+#define TKDFS_ETYPE_FRAG_LFN	3
+
+#define TKDFS_ETYPE_DEL_BASE	9		//deleted, basic name
+#define TKDFS_ETYPE_DEL_LFN		10		//deleted, LFN
+
+#define TKDFS_ETYPE_INO_SYS		TKDFS_ETYPE_FRAG_LFN	//system inode
+
+
+#define TKDFS_AVG_LG2FILESZ		18	//Log2 of estimated average filesize
 
 typedef struct TKDFS_BootBlock_s TKDFS_BootBlock;
 typedef struct TKDFS_INode_File_s TKDFS_INode_File;
+typedef struct TKDFS_INode_DirMeta_s TKDFS_INode_DirMeta;
 typedef struct TKDFS_INode_FileBlockIndex4_s TKDFS_INode_FileBlockIndex4;
 // typedef struct TKDFS_INode_FileBlockIndex6_s TKDFS_INode_FileBlockIndex6;
 typedef struct TKDFS_INode_FileBlockIndex8_s TKDFS_INode_FileBlockIndex8;
@@ -105,7 +123,8 @@ struct TKDFS_BootBlock_s {
 	byte ln2_sz_ino;            //0x40, Size of inode (Log2, 8 or 9)
 	byte ln2_sz_de;             //0x41, Size of Dirent (log2, 6)
 	byte ln2_sz_cblk;			//0x42, Size of Logical Compressed Block (16)
-	byte resv2[5];              //0x43, reserved
+	byte ln2_ino_fixed;			//0x43, Log2 of fixed inodes
+	byte resv2[4];              //0x43, reserved
 	u64 vol_id;                 //0x48, Volume ID Number
 	byte label[16];             //0x50, Volume Label
 	byte bootstrap[414];        //0x60, x86 bootstrap or similar (N/A)
@@ -122,6 +141,14 @@ struct TKDFS_INode_File_s {
 	u16	mode;		//0x34, File Mode Flags
 	byte cmpmode;	//0x26, Compression Type
 	byte etype;		//0x27, File Entry Type
+};
+
+struct TKDFS_INode_DirMeta_s {
+   byte refname[48];  //00, filename, or first part of longname
+   u32 dirino_lo;     //30, irectory inode, low
+   u16 dirino_hi;     //34, directory inode, high
+   byte tag1;         //36, tag byte / reserved
+   byte tag2;         //37, tag byte / reserved
 };
 
 struct TKDFS_INode_FileBlockIndex4_s {
@@ -213,7 +240,8 @@ typedef struct TKDFS_DirentInfo_s TKDFS_DirentInfo;
 struct TKDFS_InodeInfo_s {
 byte t_data[512];
 
-TKDFS_INode_File *ino_file;
+TKDFS_INode_File				*ino_file;
+TKDFS_INode_DirMeta				*ino_dmhd;
 TKDFS_INode_FileBlockIndex4		*ino_idx4;
 TKDFS_INode_FileBlockIndex8		*ino_idx8;
 TKDFS_INode_FileBlockIndexC8	*ino_idxc8;
@@ -251,10 +279,12 @@ s64 lba_count;
 s64 blk_count;
 
 s64 blk_inotab;
+s64 blk_inotab2;
 
 byte ln2_blksz;
 byte ln2_inosz;
 byte ln2_cblksz;
+byte ln2_ino_fixed;
 
 TKDFS_InodeInfo img_inocache[64];
 

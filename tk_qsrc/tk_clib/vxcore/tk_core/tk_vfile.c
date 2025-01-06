@@ -92,6 +92,7 @@ TK_MOUNT *tk_vf_firstmount(void)
 }
 
 int tk_fat_init();
+int tk_dfs_init();
 int tk_mount_sdfat();
 
 int tk_sysc_init();
@@ -239,9 +240,17 @@ int tk_vfile_init()
 	
 //		tk_ird_init();
 		tk_fat_init();
+		tk_dfs_init();
 		tk_wad4_init();
 
-		tk_mount_wad4temp(NULL);
+		if(tk_bdspi_dfs_lba>0)
+		{
+			tk_mount_sddfs(NULL);
+		}else
+		{
+			tk_mount_wad4temp(NULL);
+		}
+
 		tk_mount_sdfat("boot");
 
 //		tk_mount_sdfat(NULL);
@@ -274,8 +283,12 @@ TK_FILE *tk_alloc_file()
 	tmp=tk_vf_freelist;
 	if(tmp)
 	{
+		if(tmp->magic!=TK_FILE_FREEMAGIC)
+			__debugbreak();
+
 		tk_vf_freelist=tmp->udata0;
 		memset(tmp, 0, sizeof(TK_FILE));
+		tmp->magic=TK_FILE_FILEMAGIC;
 		return(tmp);
 	}
 	
@@ -285,6 +298,7 @@ TK_FILE *tk_alloc_file()
 	for(i=0; i<256; i++)
 	{
 		tmp->udata0=tk_vf_freelist;
+		tmp->magic=TK_FILE_FREEMAGIC;
 		tk_vf_freelist=tmp;
 		tmp++;
 	}
@@ -294,6 +308,7 @@ TK_FILE *tk_alloc_file()
 	{
 		tk_vf_freelist=tmp->udata0;
 		memset(tmp, 0, sizeof(TK_FILE));
+		tmp->magic=TK_FILE_FILEMAGIC;
 		return(tmp);
 	}
 	
@@ -312,6 +327,10 @@ TK_DIR *tk_alloc_dir()
 
 void tk_free_file(TK_FILE *tmp)
 {
+	if(tmp->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
+	tmp->magic=TK_FILE_FREEMAGIC;
+
 	tmp->udata0=tk_vf_freelist;
 	tk_vf_freelist=tmp;
 }
@@ -407,6 +426,29 @@ int tk_fmount(char *devfn, char *mntfn, char *fsty, char *mode, char **opts)
 				mnt=cur->mount(devfn, mntfn, fsty, mode, opts);
 				if(mnt)
 					return(0);
+			}
+		}
+		cur=cur->next;
+	}
+	return(-1);
+}
+
+int tk_mkfs2(TK_USERINFO *usri, char *devfn, char *fsty, char **opts)
+{
+	TK_FILE_VT *cur;
+	int i;
+	
+	cur=tk_fsty_root;
+	while(cur)
+	{
+		if(!strcmp(cur->fsname, fsty))
+		{
+			if(cur->fsctl)
+			{
+				i=cur->fsctl(NULL, usri,
+					devfn, TK_IOC_VFS_MKFS, (void *)opts);
+				if(i>0)
+					return(i);
 			}
 		}
 		cur=cur->next;
@@ -883,6 +925,7 @@ int tk_fsctl(char *name, int cmd, void *ptr)
 #ifndef __TK_CLIB_ONLY__
 // #include "tk_vf_ird.c"
 #include "tk_vf_fat.c"
+#include "tk_vf_tkdfs.c"
 #endif
 
 #include "tk_vf_sysc.c"
@@ -899,6 +942,8 @@ TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode)
 		return(NULL);
 
 	tk_vfile_init();
+
+	name=TKDFS_TempNormalizeStringUtf8(name, 0);
 
 	if((name[0]=='.') && (name[1]=='/'))
 		name+=2;
@@ -943,6 +988,8 @@ TK_FILE *tk_fopen2(TK_USERINFO *usri, char *name, char *mode)
 			fd=mnt->vt->fopen(mnt, usri, s1, mode);
 			if(fd)
 			{
+				if(fd->magic!=TK_FILE_FILEMAGIC)
+					__debugbreak();
 				tk_open_reclim--;
 				return(fd);
 			}
@@ -966,6 +1013,9 @@ int tk_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
 
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
+
 	if(fd->vt->fread)
 		return(fd->vt->fread(buf, sz1, sz2, fd));
 	return(-1);
@@ -975,6 +1025,9 @@ int tk_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 {
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->fwrite)
 		return(fd->vt->fwrite(buf, sz1, sz2, fd));
@@ -986,6 +1039,9 @@ s64 tk_fseek(TK_FILE *fd, s64 ofs, int rel)
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
 
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
+
 	if(fd->vt->fseek)
 		return(fd->vt->fseek(fd, ofs, rel));
 	return(-1);
@@ -995,6 +1051,9 @@ s64 tk_ftell(TK_FILE *fd)
 {
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->ftell)
 		return(fd->vt->ftell(fd));
@@ -1006,6 +1065,9 @@ int tk_fclose(TK_FILE *fd)
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
 
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
+
 	if(fd->vt->fclose)
 		return(fd->vt->fclose(fd));
 	return(-1);
@@ -1015,6 +1077,9 @@ int tk_fgetc(TK_FILE *fd)
 {
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->fgetc)
 		return(fd->vt->fgetc(fd));
@@ -1026,6 +1091,9 @@ int tk_fputc(int ch, TK_FILE *fd)
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
 
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
+
 	if(fd->vt->fputc)
 		return(fd->vt->fputc(ch, fd));
 	return(-1);
@@ -1036,6 +1104,9 @@ int tk_fputs(char *str, TK_FILE *fd)
 	char *s;
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->fputc)
 	{
@@ -1054,6 +1125,9 @@ int tk_fgets(char *str, int lim, TK_FILE *fd)
 	
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->fgetc)
 	{
@@ -1079,6 +1153,9 @@ int tk_fioctl(TK_FILE *fd, int cmd, void *ptr)
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
 
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
+
 	if(fd->vt->fioctl)
 		return(fd->vt->fioctl(fd, cmd, ptr));
 	return(-1);
@@ -1090,6 +1167,9 @@ int tk_fsend(TK_FILE *fd, int cmd,
 {
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->fsend)
 		return(fd->vt->fsend(fd, cmd,
@@ -1104,6 +1184,9 @@ int tk_frecv(TK_FILE *fd, int cmd,
 {
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->frecv)
 		return(fd->vt->frecv(fd, cmd,
@@ -1364,6 +1447,8 @@ TK_DIR *tk_opendir2(TK_USERINFO *usri, char *name)
 		return(NULL);
 
 	tk_vfile_init();
+	
+	name=TKDFS_TempNormalizeStringUtf8(name, 0);
 
 	if((name[0]=='.') && (name[1]=='/'))
 		name+=2;
@@ -1442,6 +1527,9 @@ TK_DIRENT *tk_readdir(TK_DIR *fd)
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
 
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
+
 	if(fd->vt->readdir)
 		return(fd->vt->readdir(fd));
 	return(NULL);
@@ -1451,6 +1539,9 @@ int tk_closedir(TK_DIR *fd)
 {
 	if(!fd || !(fd->vt))
 		{ __debugbreak(); }
+
+	if(fd->magic!=TK_FILE_FILEMAGIC)
+		__debugbreak();
 
 	if(fd->vt->closedir)
 		return(fd->vt->closedir(fd));

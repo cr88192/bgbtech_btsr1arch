@@ -34,6 +34,9 @@ int tk_devfs_rename(TK_MOUNT *mnt, char *oldfn, char *newfn);
 int tk_devfs_mkdir(TK_MOUNT *mnt, char *name, char *mode);
 int tk_devfs_rmdir(TK_MOUNT *mnt, char *name);
 
+int tk_devfs_fsctl(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, int cmd, void *ptr);
+
 int tk_devfs_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_devfs_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
 s64 tk_devfs_fseek(TK_FILE *fd, s64 ofs, int rel);
@@ -59,7 +62,7 @@ NULL,				//fstat
 
 NULL,				//mkdir
 NULL,				//rmdir
-NULL,				//fsctl
+tk_devfs_fsctl,		//fsctl
 
 /* FILE Ops */
 NULL,				//fread
@@ -108,7 +111,44 @@ TK_MOUNT *tk_devfs_mount(char *devfn, char *mntfn,
 {
 }
 
-TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
+int tk_devfs_fsctl(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, int cmd, void *ptr)
+{
+	TK_DEVFSDEV *cur;
+	char *s1;
+	
+	while(*name=='/')
+		name++;
+
+	cur=tk_devfs_dev;
+	while(cur)
+	{
+		if(strncmp(mnt->src, name, mnt->szSrc))
+		{
+			cur=cur->next;
+			continue;
+		}
+
+		s1=name;
+		s1+=mnt->szSrc;
+		if(*s1 && (*s1!='?'))
+		{
+			mnt=mnt->next;
+			continue;
+		}
+
+		if(cur->vt && cur->vt->fsctl)
+		{
+			return(cur->vt->fsctl(cur, usri, name, cmd, ptr));
+		}
+
+		cur=cur->next;
+	}
+	return(-1);
+}
+
+TK_FILE *tk_devfs_fopen(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, char *mode)
 {
 	TK_DEVFSDEV *cur;
 	char *s1;

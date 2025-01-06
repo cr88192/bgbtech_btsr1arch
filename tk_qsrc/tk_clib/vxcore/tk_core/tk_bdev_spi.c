@@ -9,6 +9,9 @@ int tk_bdspi_fgetc(TK_FILE *fd);
 int tk_bdspi_fputc(int ch, TK_FILE *fd);
 int tk_bdspi_fioctl(TK_FILE *fd, int cmd, void *ptr);
 
+int tk_bdspi_fsctl(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, int cmd, void *ptr);
+
 TK_FILE_VT tk_vfile_bdspi_vt={
 "bdev_spi",			//fsname
 NULL,				//next
@@ -21,7 +24,7 @@ NULL,				//fstat
 
 NULL,				//mkdir
 NULL,				//rmdir
-NULL,				//fsctl
+tk_bdspi_fsctl,		//fsctl
 
 /* FILE Ops */
 tk_bdspi_fread,		//fread
@@ -42,7 +45,33 @@ NULL,				//fsend
 NULL				//frecv
 };
 
+
+int tk_bdspi_ReadSectors(TK_BLKDEV_CTX *ctx, byte *buf, s64 lba, int cnt)
+{
+	return(TKSPI_ReadSectors(buf, lba+ctx->udata_i0, cnt));
+}
+
+int tk_bdspi_WriteSectors(TK_BLKDEV_CTX *ctx, byte *buf, s64 lba, int cnt)
+{
+	return(TKSPI_WriteSectors(buf, lba+ctx->udata_i0, cnt));
+}
+
+TK_BLKDEV_VT tk_bdspi_blkdev_vt = {
+"bdspi",
+NULL,
+NULL,
+NULL,
+tk_bdspi_ReadSectors,
+tk_bdspi_WriteSectors
+};
+
+int tk_bdspi_sdix[8][12];
+
 static int tk_bdspi_isinit=0;
+
+int tk_bdspi_dfs_lba;
+int tk_bdspi_dfs_lbn;
+int tk_bdspi_dfs_fsty;
 
 int tk_bdspi_init()
 {
@@ -50,6 +79,7 @@ int tk_bdspi_init()
 	TKFAT_MBR tmbr;
 	TKFAT_MBR *mbr;
 	TK_BLKDEVINFO *bdi;
+	TK_BLKDEV_CTX *bdctx;
 	TK_DEVFSDEV *tmp;
 	char *s0;
 	s64 maxlba;
@@ -79,7 +109,18 @@ int tk_bdspi_init()
 		
 		if((lba+lbn)>maxlba)
 			maxlba=lba+lbn;
-		
+
+		if(	(fsty==0x3E) ||
+			(fsty==0x3F))
+		{
+			if(tk_bdspi_dfs_lba<=0)
+			{
+				tk_bdspi_dfs_lba=lba;
+				tk_bdspi_dfs_lbn=lbn;
+				tk_bdspi_dfs_fsty=fsty;
+			}
+		}
+
 		tk_dbg_printf("  %08X %08X %02X %s\n", lba, lbn, fsty, s0);
 	}
 
@@ -117,6 +158,17 @@ int tk_bdspi_init()
 		bdi->lba_sz=lbn;
 		
 		TK_DevFS_AddDevice(tmp);
+
+		bdctx=TKBDEV_AllocNewDevice();
+		bdctx->vt=&tk_bdspi_blkdev_vt;
+		bdctx->udata_i0=lba;
+		bdctx->udata_i1=lbn;
+		bdctx->lba_base=lba;
+		bdctx->lbn_base=lbn;
+		
+		bdi->devid=bdctx->bdev;
+		
+		tk_bdspi_sdix[0][i]=bdctx->bdev;
 	}
 #endif
 
@@ -259,4 +311,36 @@ int tk_bdspi_fputc(int ch, TK_FILE *fd)
 
 int tk_bdspi_fioctl(TK_FILE *fd, int cmd, void *ptr)
 {
+}
+
+int tk_bdspi_fsctl(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, int cmd, void *ptr)
+{
+	int devid;
+
+	if(cmd==TK_IOC_VFS_OPENBLKDEV)
+	{
+		if(!strcmp(name, "sda"))
+		{
+			*(s64 *)ptr=tkspi_id_bdev;
+			return(1);
+		}
+		
+		if((name[0]=='s') && (name[1]=='d') &&
+			(name[2]>='a') && (name[2]<='z') &&
+			(name[3]>='1') && (name[3]<='8') &&
+			!name[4])
+		{
+			*(s64 *)ptr=tk_bdspi_sdix[name[2]-'a'][name[3]-'1'];
+			return(1);
+		}
+
+//		tk_bdspi_sdix=
+	
+//		devid=TKFAT_GetLvmDeviceId(img, name);
+//		*(s64 *)ptr=tkspi_id_bdev;
+//		return(0);
+	}
+
+	return(-1);
 }

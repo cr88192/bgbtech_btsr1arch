@@ -233,12 +233,18 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 
 	if(sz>=TKMM_MAXMMLISTSZ)
 	{
+//		if(sz>=(1<<25))
+//		{
+//			__debugbreak();
+//		}
+	
 		if(cat==TKMM_MCAT_PHYSDFL)
 		{
 #ifndef __TK_CLIB_ONLY__
 			if(tk_iskernel())
 			{
-				ptr=TKMM_PageAlloc(sz+256);
+//				ptr=TKMM_PageAlloc(sz+256);
+				ptr=TKMM_PageAllocKrn(sz+256);
 			}else
 			{
 				ptr=tk_mmap(NULL, sz+256, TKMM_PROT_RWX,
@@ -664,6 +670,12 @@ void *TKMM_MMList_Malloc(int sz)
 {
 	TKMM_MemLnkObj *obj;
 	void *ptr;
+	int cat;
+	
+	cat=TKMM_MCAT_DFL;
+	if(tk_iskernel())
+		cat=TKMM_MCAT_KRN_RW;
+	
 	obj=TKMM_MMList_AllocObjCat(sz, 0);
 	ptr=(byte *)obj->data;
 	__setmemtrap(obj, 3);
@@ -944,6 +956,7 @@ void *tk_malloc_cat(int sz, int cat)
 #endif
 }
 
+#ifndef __TK_CLIB_ONLY__
 void *tk_malloc_krn(int sz)
 {
 	void *ptr;
@@ -968,6 +981,12 @@ void *tk_malloc_usr(int sz)
 
 //	return(TKMM_MallocCat(sz, TKMM_MCAT_USR_RW));
 }
+#else
+void *tk_malloc_krn(int sz)
+	{ return(tk_malloc(sz)); }
+void *tk_malloc_usr(int sz)
+	{ return(tk_malloc(sz)); }
+#endif
 
 void *tk_malloc_wxe(int sz)
 {

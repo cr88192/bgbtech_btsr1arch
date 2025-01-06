@@ -70,6 +70,10 @@ extern viddef_t	vid;				// global video state
 // short	zbuffer[BASEWIDTH*(BASEHEIGHT+4)];
 // byte	surfcache[256*1024];
 
+byte	*vid_combuffer;
+u64		*vid_combuffer_lomark;
+u64		*vid_combuffer_himark;
+
 byte	*vid_buffer;
 short	*zbuffer;
 byte	*surfcache;
@@ -449,17 +453,46 @@ void	VID_ShiftPaletteVec (int dr, int dg, int db, int dpcnt)
 		((dpcnt>>4)<<16);
 }
 
+void	VID_CheckProbeComBuffer()
+{
+	if(*vid_combuffer_lomark!=0x12345678)
+		__debugbreak();
+	if(*vid_combuffer_himark!=0x12345678)
+		__debugbreak();
+}
+
 void	VID_Init (unsigned char *palette)
 {
 	u32 *ict;
-	int i, j, k;
+	byte *cbcs;
+	int i, j, k, cbsz;
 
+#if 0
 //	vid_buffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 //	vid_backbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
 	vid_buffer=tkgGlobalAlloc(BASEWIDTH*BASEHEIGHT*2);
 	vid_backbuffer=tkgGlobalAlloc(BASEWIDTH*BASEHEIGHT*2);
-
 	zbuffer=malloc(BASEWIDTH*BASEHEIGHT*2);
+#endif
+
+	cbsz = 3*BASEWIDTH*(BASEHEIGHT+2)*2;
+	vid_combuffer = tkgGlobalAlloc(cbsz);
+	cbcs = vid_combuffer;
+
+	vid_combuffer_lomark = (u64 *)cbcs;
+
+	cbcs += BASEWIDTH*2*2;
+	vid_buffer = cbcs;
+	cbcs += BASEWIDTH*BASEHEIGHT*2;
+	zbuffer = cbcs;
+	cbcs += BASEWIDTH*BASEHEIGHT*2;
+	vid_backbuffer = cbcs;
+
+	vid_combuffer_himark = (u64 *)cbcs;
+	
+	*vid_combuffer_lomark=0x12345678;
+	*vid_combuffer_himark=0x12345678;
+
 //	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*2);
 //	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*4);
 //	surfcache=malloc(BASEWIDTH*BASEHEIGHT*3*6);
@@ -1470,6 +1503,8 @@ void	VID_Update (vrect_t *rects)
 	I_InitTkGdi();
 
 	I_DrawFramerate();
+
+	VID_CheckProbeComBuffer();
 
 //	conbufa=(u32 *)0xA00A0000;
 	conbufa=(u32 *)0xFFFFF00A0000ULL;

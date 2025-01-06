@@ -534,6 +534,19 @@ void *TKMM_PageAllocUsc(int sz)
 #endif
 }
 
+#ifndef __TK_CLIB_ONLY__
+void *TKMM_PageAllocKrn(int sz)
+{
+	void *ptr;
+	ptr=TKMM_PageAlloc(sz);
+
+	TK_VMem_MProtectPages(
+		ptr, sz, TKMM_PROT_RW|TKMM_PROT_NOUSER);
+
+	return(ptr);
+}
+#endif
+
 int TKMM_PageFreeUsc(void *ptr, int sz)
 {
 #ifdef __TK_CLIB_ONLY__
@@ -635,7 +648,7 @@ int tk_syscall(void *sObj, int uMsg, void *vParm1, void *vParm2)
 	}
 //	return(SysCall(sObj, uMsg, vParm1, vParm2));
 
-	ret=*(int *)SysCall;	//BGB: debug, make sure paged in...
+//	ret=*(int *)SysCall;	//BGB: debug, make sure paged in...
 
 	ret=SysCall(sObj, uMsg, msgp1, msgp2);
 	if(vParm1)

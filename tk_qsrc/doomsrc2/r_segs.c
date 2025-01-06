@@ -257,7 +257,7 @@ void R_RenderSegLoop (void)
 
 //	return;
 
-//	tk_printf("R_RenderSegLoop: %d %d\n", rw_x, rw_stopx);
+//	printf("R_RenderSegLoop: %d %d\n", rw_x, rw_stopx);
 
 	//texturecolumn = 0;				// shut up compiler warning
 
@@ -355,13 +355,13 @@ void R_RenderSegLoop (void)
 		
 		dc_col = texturecolumn;
 
-//		tk_printf("R_RenderSegLoop: Col A %d %d\n", yl, yh);
+//		printf("R_RenderSegLoop: Col A %d %d\n", yl, yh);
 
 		// draw the wall tiers
 		if (midtexture)
 		{
 
-//			tk_printf("R_RenderSegLoop: Midtexture %d %d\n", yl, yh);
+//			printf("R_RenderSegLoop: Midtexture %d %d\n", yl, yh);
 
 			// single sided line
 			dc_yl = yl;
@@ -488,11 +488,11 @@ R_StoreWallRange
 	// don't overflow and crash
 	if (ds_p == &drawsegs[MAXDRAWSEGS])
 	{
-		tk_printf("R_StoreWallRange: MAXDRAWSEGS\n");
+		printf("R_StoreWallRange: MAXDRAWSEGS\n");
 		return;
 	}
 
-//	tk_printf("R_StoreWallRange: %d %d\n", start, stop);
+//	printf("R_StoreWallRange: %d %d\n", start, stop);
 		
 #ifdef RANGECHECK
 	if (start >=viewwidth || start > stop)
@@ -630,7 +630,7 @@ R_StoreWallRange
 #if 0		
 		if(!midtexture)
 		{
-			tk_printf("R_StoreWallRange: !midtexture, sidedef midtex=%d\n",
+			printf("R_StoreWallRange: !midtexture, sidedef midtex=%d\n",
 				sidedef->midtexture);
 		}
 #endif

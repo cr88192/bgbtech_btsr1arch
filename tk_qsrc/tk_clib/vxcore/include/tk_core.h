@@ -467,7 +467,9 @@ int (*frecv)(TK_FILE *fd, int cmd,
 	void *sockaddr, int szsockaddr);
 };
 
-#define TK_FILE_SZTFDA	64
+#define TK_FILE_SZTFDA		64
+#define TK_FILE_FILEMAGIC	0x14253647
+#define TK_FILE_FREEMAGIC	0x47362514
 
 struct TK_FILE_s {
 TK_FILE_VT *vt;
@@ -483,6 +485,7 @@ int ipos;			//directory position
 s64 ofs;			//current file offset
 s64 size;			//file size
 int flags;			//Access Flags
+int magic;			//magic code
 byte tfda[TK_FILE_SZTFDA];		//temp array (user data)
 };
 
@@ -547,6 +550,7 @@ u32 lba_sz;
 
 void **buf_ptrs;		//buffer pointers
 int buf_max;			//max allocated pointers.
+int devid;
 };
 
 typedef struct TK_VFB_RECT_s TK_VFB_RECT;

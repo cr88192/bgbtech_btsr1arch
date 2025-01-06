@@ -194,6 +194,9 @@ byte shclust;		//shift for cluster (bytes)
 int lba_start;		//LBA start of FAT volume
 int lba_count;		//LBA count of FAT volume
 
+int lba_dfs_start;		//LBA start of DFS volume
+int lba_dfs_count;		//LBA count of DFS volume
+
 int lba_fat1;		//LBA of first FAT
 int lba_fat2;		//LBA of second FAT
 int lba_root;		//LBA of root directory

@@ -3244,6 +3244,18 @@ int JX2R_DebugTestDfs()
 	{
 		printf("JX2R_DebugTestDfs: RP2 Fail %d\n", sz);
 	}
+	
+	oldfn="basic string test\n";
+	newfn=TKDFS_TempNormalizeStringUtf8(oldfn, 0);
+
+	oldfn="test1 \xC0\x80 test2\n";
+	newfn=TKDFS_TempNormalizeStringUtf8(oldfn, 0);
+
+	oldfn="test1 \xC5\xB8 test2\n";
+	newfn=TKDFS_TempNormalizeStringUtf8(oldfn, 0);
+
+	oldfn="test1 \xC2\x9F test2\n";
+	newfn=TKDFS_TempNormalizeStringUtf8(oldfn, 0);
 #endif
 
 	return(0);

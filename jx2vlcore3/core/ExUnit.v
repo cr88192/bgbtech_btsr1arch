@@ -604,6 +604,8 @@ reg[3:0]		id1IstrSxo;
 	reg[63:0]		id1ValFetchSr;
 (* max_fanout = 200 *)
 	reg[63:0]		id2ValFetchSr;
+(* max_fanout = 200 *)
+	reg[63:0]		ex1ValFetchSr;
 
 reg[1:0]		id2PreBra;
 
@@ -3227,7 +3229,10 @@ begin
 			(ex1RegIdRm == gprIdRv) ||
 			(ex1RegIdRm == gprIdRx) ||
 			(ex1RegIdRm == gprIdRy)	) &&
+			(ex1RegIdRm != JX2_GR_ZZR) &&
 			(ex1Hold[1]));
+//			(ex1Hold[1] || ex1RegIdRm[6]));
+//			(ex1Hold[1] || (ex1RegIdRm[6:5]==2'b11)));
 	exHold1B2	=
 		((	(exB1RegIdRm == gprIdRs) ||
 			(exB1RegIdRm == gprIdRt) ||
@@ -3235,7 +3240,10 @@ begin
 			(exB1RegIdRm == gprIdRv) ||
 			(exB1RegIdRm == gprIdRx) ||
 			(exB1RegIdRm == gprIdRy)	) &&
+			(exB1RegIdRm != JX2_GR_ZZR) &&
 			(exB1Hold[1]));
+//			(exB1Hold[1] || exB1RegIdRm[6]));
+//			(exB1Hold[1] || (exB1RegIdRm[6:5]==2'b11)));
 
 `ifdef jx2_cpu_nofw_lane3
 	exHold1B3	=
@@ -3253,7 +3261,9 @@ begin
 			(exC1RegIdRm == gprIdRv) ||
 			(exC1RegIdRm == gprIdRx) ||
 			(exC1RegIdRm == gprIdRy)	) &&
+			(exC1RegIdRm != JX2_GR_ZZR) &&
 			(exC1Hold[1]));
+//			(exC1Hold[1] || exC1RegIdRm[6]));
 `endif
 
 	exHold1C1	=
@@ -3263,7 +3273,10 @@ begin
 			(ex2RegIdRm == gprIdRv) ||
 			(ex2RegIdRm == gprIdRx) ||
 			(ex2RegIdRm == gprIdRy)	) &&
+			(ex2RegIdRm != JX2_GR_ZZR) &&
 			(ex2Hold[1]));
+//			(ex2Hold[1] || ex2RegIdRm[6]));
+//			(ex2Hold[1] || (ex2RegIdRm[6:5]==2'b11)));
 	exHold1C2	=
 		((	(exB2RegIdRm == gprIdRs) ||
 			(exB2RegIdRm == gprIdRt) ||
@@ -3271,7 +3284,10 @@ begin
 			(exB2RegIdRm == gprIdRv) ||
 			(exB2RegIdRm == gprIdRx) ||
 			(exB2RegIdRm == gprIdRy)	) &&
+			(exB2RegIdRm != JX2_GR_ZZR) &&
 			(exB2Hold[1]));
+//			(exB2Hold[1] || exB2RegIdRm[6]));
+//			(exB2Hold[1] || (exB2RegIdRm[6:5]==2'b11)));
 
 `ifdef jx2_cpu_nofw_lane3
 	exHold1C3	=
@@ -3289,7 +3305,9 @@ begin
 			(exC2RegIdRm == gprIdRv) ||
 			(exC2RegIdRm == gprIdRx) ||
 			(exC2RegIdRm == gprIdRy)	) &&
+			(exC2RegIdRm != JX2_GR_ZZR) &&
 			(exC2Hold[1]));
+//			(exC2Hold[1] || exC2RegIdRm[6]));
 `endif
 
 	exHold1D1	=
@@ -3299,7 +3317,10 @@ begin
 			(ex3RegIdRm == gprIdRv) ||
 			(ex3RegIdRm == gprIdRx) ||
 			(ex3RegIdRm == gprIdRy)	) &&
+			(ex3RegIdRm != JX2_GR_ZZR) &&
 			(ex3Hold[1]));
+//			(ex3Hold[1] || ex3RegIdRm[6]));
+//			(ex3Hold[1] || (ex3RegIdRm[6:5]==2'b11)));
 
 //	exHold1D2	= 0;
 
@@ -3310,7 +3331,9 @@ begin
 			(exB3RegIdRm == gprIdRv) ||
 			(exB3RegIdRm == gprIdRx) ||
 			(exB3RegIdRm == gprIdRy) ) &&
+			(exB3RegIdRm != JX2_GR_ZZR) &&
 			(exB3Hold[1]));
+//			(exB3Hold[1] || exB3RegIdRm[6]));
 
 
 `ifdef jx2_cpu_nofw_lane3
@@ -5097,6 +5120,12 @@ begin
 //					crInExsr[55:52]	= ex2RegInLastSr[23:20];
 //					crInExsr[59:58]	= ex2RegInLastSr[27:26];
 
+//					crInExsr[55:52]	= ex2RegOutSr[23:20];	//Unsure
+//					crInExsr[59:58]	= ex2RegOutSr[27:26];
+
+					crInExsr[55:52]	= ex1ValFetchSr[23:20];	//Unsure
+					crInExsr[59:58]	= ex1ValFetchSr[27:26];
+
 //					crInLr			= ex1RegInLr;
 //					crInLr			= crOutLr;
 //					gprInDlr		= gprOutDlr;
@@ -5140,6 +5169,9 @@ begin
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
 //					crInExsr[55:52]	= ex2RegOutSr[23:20];
 //					crInExsr[59:58]	= ex2RegOutSr[27:26];
+
+					crInExsr[55:52]	= id2ValFetchSr[23:20];	//Unsure
+					crInExsr[59:58]	= id2ValFetchSr[27:26];
 
 //					crInLr			= crOutLr;
 //					crInLr			= ex1RegOutLr;
@@ -5187,6 +5219,9 @@ begin
 					crInExsr[39:32]	= ex2RegOutSr[7:0];
 //					crInExsr[55:52]	= ex2RegOutSr[23:20];
 //					crInExsr[59:58]	= ex2RegOutSr[27:26];
+
+					crInExsr[55:52]	= id1ValFetchSr[23:20];	//Unsure
+					crInExsr[59:58]	= id1ValFetchSr[27:26];
 
 //					crInLr			= crOutLr;
 //					crInLr			= ex1RegOutLr;
@@ -5988,6 +6023,7 @@ begin
 		id2PreBraPc		<= id1PreBraPc;
 		id2PreBra		<= id1PreBra;
 		id2ValFetchSr	<= id1ValFetchSr;
+		ex1ValFetchSr	<= id2ValFetchSr;
 
 //		id1IstrWordL1	<= nxtBraFlushMask[2] ? UV32_00: id1IstrWord[31:0];
 		id1IstrWordL1	<= nxtBraFlushMask[2] ? UV96_00: id1IstrWord[95:0];

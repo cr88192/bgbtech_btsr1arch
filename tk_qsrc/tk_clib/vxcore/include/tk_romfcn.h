@@ -56,6 +56,8 @@
 
 #define TK_UMSG_CREATEPROCESS	0x1040
 #define TK_UMSG_TRYJOINRESULT	0x1041
+#define TK_UMSG_MUTEXTRYLOCK	0x1042
+#define TK_UMSG_MUTEXRELEASE	0x1043
 
 
 #define TK_UMSG_COMGLUE_VMT0		0x1200
@@ -146,8 +148,13 @@
 #define TK_IOC_ACCEPT			0x4007
 #define TK_IOC_CONNECT			0x4008
 
+#define TK_IOC_VFS_OPENBLKDEV	0x4040
+#define TK_IOC_VFS_MKFS			0x4041
+
 #define TK_IOC_VFB_BLIT			0x4101
 #define TK_IOC_VFB_COPYRECT		0x4102
+
+
 
 typedef union TK_SysArg_s TK_SysArg;
 union TK_SysArg_s {

@@ -370,7 +370,7 @@ extern int i_sound_init;
 
 void D_UpdateSound (void)
 {
-	int dt;
+	int dt, n;
 
 	if(i_sound_init<=0)
 		return;
@@ -414,8 +414,13 @@ void D_UpdateSound (void)
 //	if(dt>72)
 	if(1)
 	{
+		n=90;
 		while(d_snd_acctime>0)
 		{
+			n--;
+			if(n<0)
+				{ __debugbreak(); }
+		
 			I_UpdateSound();
 			I_SubmitSound2(1);
 //			d_snd_acctime-=46.4399;
@@ -452,8 +457,10 @@ void D_DoomLoop (void)
 	int dt;
 	int i;
 	
+	printf("D_DoomLoop: A0\n");
+	
 	if (demorecording)
-	G_BeginRecording ();
+		G_BeginRecording ();
 		
 	if (M_CheckParm ("-debugfile"))
 	{
@@ -462,10 +469,14 @@ void D_DoomLoop (void)
 		printf ("debug output to: %s\n",filename);
 		debugfile = fopen (filename,"w");
 	}
-	
+
+	printf("D_DoomLoop: A1\n");
+
 	I_InitGraphics ();
 
 	d_snd_acctime+=75;
+
+	printf("D_DoomLoop: A2, d_snd_acctime=%f\n", d_snd_acctime);
 
 //	while (1)
 	while (!gfxdrv_kill)
@@ -566,13 +577,13 @@ void D_AdvanceDemo (void)
 //	else
 	  demosequence = (demosequence+1)%6;
 	
-	tk_printf("D_DoAdvanceDemo: A seq=%d\n", demosequence);
+	printf("D_DoAdvanceDemo: A seq=%d\n", demosequence);
 	
 	demosequence = __int_clamp(demosequence, 0, 5);
 
 //	__debugbreak();
 
-	tk_printf("D_DoAdvanceDemo: B seq=%d\n", demosequence);
+	printf("D_DoAdvanceDemo: B seq=%d\n", demosequence);
 	
 	switch (demosequence)
 	{
@@ -1304,6 +1315,8 @@ void D_DoomMain (void)
 	printf ("External statistics registered.\n");
 	}
 #endif
+
+	printf ("d_main: Debug Mark A0.\n");
 	
 	// start the apropriate game based on parms
 	p = M_CheckParm ("-record");
@@ -1339,6 +1352,8 @@ void D_DoomMain (void)
 	G_LoadGame (file);
 	}
 	
+	printf ("d_main: Debug Mark A1.\n");
+
 	W_Profile ();	//BGB: Enabled
 
 	if ( gameaction != ga_loadgame )
@@ -1349,6 +1364,8 @@ void D_DoomMain (void)
 		D_StartTitle ();				// start up intro loop
 
 	}
+
+	printf ("d_main: Debug Mark A2.\n");
 
 	D_DoomLoop ();  // never returns
 }

@@ -12,6 +12,10 @@ int TKDFS_InitializeImageFileInodeIdat(TKDFS_ImageContext *img,
 TKDFS_InodeInfo *TKDFS_GetImageCachedInode(TKDFS_ImageContext *img,
 	int d_ino, int d_flg);
 
+int TKDFS_ImageSetInodeInfoDeh(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info,
+	char *bname, s64 dirino, int dfl);
+
 int TKDFS_CopyName48Expand(byte *dst, byte *src);
 
 void *tkdfs_malloc(int sz)
@@ -37,13 +41,18 @@ TKDFS_ImageContext *TKDFS_AllocContext()
 TKDFS_ImageContext *TKDFS_InitializeNewImage(
 	int bdev, s64 lbastart, s64 lbasize)
 {
-	byte tblk[512];
+	byte tblk[1024];
 	TKDFS_BootBlock *bblk;
 	TKDFS_ImageContext *img;
 	TKDFS_InodeInfo *ino_mft;
+	TKDFS_InodeInfo *ino_mft2;
 	TKDFS_InodeInfo *ino_root;
 	TKDFS_InodeInfo *ino_bbmp;
 	TKDFS_InodeInfo *ino_ibmp;
+	int bsz_bbmp, blk_bbmp, blk_bbmp_l1;
+	int bsz_ibmp, blk_ibmp, blk_ibmp_l1;
+	int bsz_mft, blk_mft1, blk_mft2, blk_mft1_l1, blk_mft2_l1;
+	int bsz_rov, rsv_mft;
 	int i, j, k;
 
 	TKBDEV_ReadSectors(bdev, tblk, lbastart, 1);
@@ -68,13 +77,67 @@ TKDFS_ImageContext *TKDFS_InitializeNewImage(
 	bblk->ln2_sz_ino=8;
 	bblk->ln2_sz_de=6;
 	bblk->ln2_sz_cblk=14;
+	bblk->ln2_ino_fixed=5;
 
 	bblk->media_type=0xF8;
 	bblk->ebp_sig=0x80;
 	bblk->sectors_track=63;
 	bblk->heads=255;
 
-	bblk->blk_inotab=4;
+	rsv_mft=(lbasize<<9)>>TKDFS_AVG_LG2FILESZ;
+	if(rsv_mft<64)
+		rsv_mft=64;
+	
+	for(i=5; (1<<i)<rsv_mft; i++) { }
+	bblk->ln2_ino_fixed=i;
+	rsv_mft=1<<i;
+	
+	bsz_mft=(rsv_mft<<bblk->ln2_sz_ino)>>10;
+	bsz_bbmp=(((lbasize+7)>>3)+1023)>>10;
+	bsz_ibmp=(((rsv_mft+7)>>3)+1023)>>10;
+
+	bsz_rov=4;
+	
+	blk_bbmp_l1=0;
+	blk_ibmp_l1=0;
+	blk_mft1_l1=0;
+	blk_mft2_l1=0;
+	
+	blk_mft1=bsz_rov;
+	bsz_rov+=bsz_mft;
+	if(bsz_mft>=16)
+	{
+		blk_mft1_l1=bsz_rov;
+		bsz_rov++;
+	}
+	
+	blk_bbmp=bsz_rov;
+	bsz_rov+=bsz_bbmp;
+	if(bsz_bbmp>=16)
+	{
+		blk_bbmp_l1=bsz_rov;
+		bsz_rov++;
+	}
+
+	blk_ibmp=bsz_rov;
+	bsz_rov+=bsz_ibmp;
+	if(bsz_ibmp>=16)
+	{
+		blk_ibmp_l1=bsz_rov;
+		bsz_rov++;
+	}
+
+	blk_mft2=bsz_rov;
+	bsz_rov+=bsz_mft;
+	if(bsz_mft>=16)
+	{
+		blk_mft2_l1=bsz_rov;
+		bsz_rov++;
+	}
+
+//	bblk->blk_inotab=4;
+	bblk->blk_inotab=blk_mft1;
+	bblk->blk_inotab2=blk_mft2;
 
 	TKBDEV_WriteSectors(bdev, tblk, lbastart, 1);
 
@@ -98,59 +161,152 @@ TKDFS_ImageContext *TKDFS_InitializeNewImage(
 	img->ln2_blksz=9+j;
 	img->ln2_inosz=bblk->ln2_sz_ino;
 	img->ln2_cblksz=bblk->ln2_sz_cblk;
+	img->ln2_ino_fixed=bblk->ln2_ino_fixed;
 	
 	img->blk_count=img->lba_count>>j;
 	
 //	img->lba_inotab=lbastart+bblk->blk_inotab;
 	img->blk_inotab=bblk->blk_inotab;
+	img->blk_inotab2=bblk->blk_inotab2;
 
-	memset(tblk, 0, 512);
+	memset(tblk, 0, 1024);
 
 	//Inode Table (Initial Blocks)
-	for(i=0; i<32; i++)
-		TKBDEV_WriteSectors(bdev, tblk, lbastart+8+i, 1);
+//	for(i=0; i<32; i++)
+//		TKBDEV_WriteSectors(bdev, tblk, lbastart+8+i, 1);
+
+	for(i=0; i<bsz_mft; i++)
+		TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_mft1+i)*2+0, 2);
+	for(i=0; i<bsz_mft; i++)
+		TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_mft2+i)*2+0, 2);
+
+	if(blk_mft1_l1>0)
+		{ TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_mft1_l1)*2+0, 2); }
+	if(blk_mft2_l1>0)
+		{ TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_mft2_l1)*2+0, 2); }
 
 	//Root Directory (first block)
 	TKBDEV_WriteSectors(bdev, tblk, lbastart+2, 1);
 	TKBDEV_WriteSectors(bdev, tblk, lbastart+3, 1);
 
-	TKBDEV_WriteSectors(bdev, tblk, lbastart+5, 1);
-	TKBDEV_WriteSectors(bdev, tblk, lbastart+7, 1);
+//	TKBDEV_WriteSectors(bdev, tblk, lbastart+5, 1);
+//	TKBDEV_WriteSectors(bdev, tblk, lbastart+7, 1);
 
 	//Block Bitmap (first block)
-	tblk[0]=0xFF;
-	tblk[1]=0xFF;
-	tblk[2]=0xFF;
-	tblk[3]=0x00;
-	TKBDEV_WriteSectors(bdev, tblk, lbastart+4, 1);
-//	TKBDEV_WriteSectors(bdev, tblk, lbastart+5, 1);
+
+	memset(tblk, 0, 1024);
+	for(i=0; i<bsz_bbmp; i++)
+		TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_bbmp+i)*2+0, 2);
+
+	if(blk_bbmp_l1>0)
+		{ TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_bbmp_l1)*2+0, 2); }
+
+	if(bsz_rov>=8192)
+	{
+		k=bsz_rov>>13;
+		memset(tblk, 0xFF, 1024);
+
+		for(i=0; i<k; i++)
+			TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_bbmp+i)*2+0, 2);
+
+		j=((bsz_rov&8191)+7)>>3;
+		if(j)
+		{
+			memset(tblk, 0, 1024);
+			for(i=0; i<j; i++)
+				tblk[i]=0xFF;
+			TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_bbmp+k)*2+0, 2);
+		}
+	}else
+	{
+#if 0
+		tblk[0]=0xFF;
+		tblk[1]=0xFF;
+		tblk[2]=0xFF;
+		tblk[3]=0x00;
+		TKBDEV_WriteSectors(bdev, tblk, lbastart+4, 1);
+	//	TKBDEV_WriteSectors(bdev, tblk, lbastart+5, 1);
+#endif
+
+		j=(bsz_rov+7)>>3;
+//		memset(tblk, 0, 1024);
+		for(i=0; i<j; i++)
+			tblk[i]=0xFF;
+		TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_bbmp+0)*2+0, 2);
+	}
 
 	//Inode Bitmap (first block)
+
+	memset(tblk, 0, 1024);
+	for(i=0; i<bsz_ibmp; i++)
+		TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_ibmp+i)*2+0, 2);
+
+	if(blk_ibmp_l1>0)
+		{ TKBDEV_WriteSectors(bdev, tblk, lbastart+(blk_ibmp_l1)*2+0, 2); }
+
 	tblk[0]=0xFF;
 	tblk[1]=0x00;
 	tblk[2]=0x00;
 	tblk[3]=0x00;
-	TKBDEV_WriteSectors(bdev, tblk, lbastart+6, 1);
+	TKBDEV_WriteSectors(bdev, tblk, lbastart+blk_ibmp*2+0, 1);
+
+//	TKBDEV_WriteSectors(bdev, tblk, lbastart+6, 1);
 //	TKBDEV_WriteSectors(bdev, tblk, lbastart+7, 1);
 
 
 	ino_mft=TKDFS_GetImageCachedInode(img, 0, 0);	
 	TKDFS_InitializeImageFileInode(img, ino_mft, 0, 0);
 	ino_mft=TKDFS_GetImageCachedInode(img, 0, 1);
+	TKDFS_ImageSetInodeInfoDeh(img, ino_mft, "$.MFT1", 0, 1);
 
 	ino_root=TKDFS_GetImageCachedInode(img, 1, 0);	
 	TKDFS_InitializeImageFileInode(img, ino_root, 1, 0);
 	ino_root=TKDFS_GetImageCachedInode(img, 1, 1);
+	TKDFS_ImageSetInodeInfoDeh(img, ino_root, "$.ROOT", 0, 1);
 
 	ino_bbmp=TKDFS_GetImageCachedInode(img, 2, 0);	
 	TKDFS_InitializeImageFileInode(img, ino_bbmp, 2, 0);
 	ino_bbmp=TKDFS_GetImageCachedInode(img, 2, 1);
+	TKDFS_ImageSetInodeInfoDeh(img, ino_bbmp, "$.BBMP", 0, 1);
 
 	ino_ibmp=TKDFS_GetImageCachedInode(img, 3, 0);	
 	TKDFS_InitializeImageFileInode(img, ino_ibmp, 3, 0);
 	ino_ibmp=TKDFS_GetImageCachedInode(img, 3, 1);
+	TKDFS_ImageSetInodeInfoDeh(img, ino_ibmp, "$.IBMP", 0, 1);
+
+	ino_mft2=TKDFS_GetImageCachedInode(img, 4, 0);
+	TKDFS_InitializeImageFileInode(img, ino_mft2, 4, 0);
+	ino_mft2=TKDFS_GetImageCachedInode(img, 4, 1);
+	TKDFS_ImageSetInodeInfoDeh(img, ino_mft2, "$.MFT2", 0, 1);
+
+	ino_bbmp=TKDFS_GetImageCachedInode(img, 2, 1);
+	k=bsz_bbmp;
+	if(k>16)k=16;
+	for(i=0; i<k; i++)
+		ino_bbmp->ino_idx4->block_0l[i]=blk_bbmp+i;
+	ino_bbmp->ino_idx4->block_1l[0]=blk_bbmp_l1;
+	ino_bbmp->ino_file->dsize=bsz_bbmp*1024;
+	ino_bbmp->ino_file->csize=bsz_bbmp*1024;
+
+	ino_ibmp=TKDFS_GetImageCachedInode(img, 3, 1);
+	k=bsz_ibmp;
+	if(k>16)k=16;
+	for(i=0; i<k; i++)
+		ino_ibmp->ino_idx4->block_0l[i]=blk_ibmp+i;
+	ino_ibmp->ino_idx4->block_1l[0]=blk_ibmp_l1;
+	ino_ibmp->ino_file->dsize=bsz_ibmp*1024;
+	ino_ibmp->ino_file->csize=bsz_ibmp*1024;
 
 	ino_mft=TKDFS_GetImageCachedInode(img, 0, 1);
+	k=bsz_mft;
+	if(k>16)k=16;
+	for(i=0; i<k; i++)
+		ino_mft->ino_idx4->block_0l[i]=blk_mft1+i;
+	ino_mft->ino_idx4->block_1l[0]=blk_mft1_l1;
+	ino_mft->ino_file->dsize=bsz_mft*1024;
+	ino_mft->ino_file->csize=bsz_mft*1024;
+
+#if 0
 	ino_mft->ino_idx4->block_0l[ 0]= 4;
 	ino_mft->ino_idx4->block_0l[ 1]= 5;
 	ino_mft->ino_idx4->block_0l[ 2]= 6;
@@ -167,30 +323,56 @@ TKDFS_ImageContext *TKDFS_InitializeNewImage(
 	ino_mft->ino_idx4->block_0l[13]=17;
 	ino_mft->ino_idx4->block_0l[14]=18;
 	ino_mft->ino_idx4->block_0l[15]=19;
-	
-	ino_mft->ino_file->dsize=16*1024;
-	ino_mft->ino_file->csize=16*1024;
+#endif
+
+
+	ino_mft2=TKDFS_GetImageCachedInode(img, 4, 1);
+	k=bsz_mft;
+	if(k>16)k=16;
+	for(i=0; i<k; i++)
+		ino_mft2->ino_idx4->block_0l[i]=blk_mft2+i;
+	ino_mft2->ino_idx4->block_1l[0]=blk_mft2_l1;
+	ino_mft2->ino_file->dsize=bsz_mft*1024;
+	ino_mft2->ino_file->csize=bsz_mft*1024;
+
 
 	ino_root=TKDFS_GetImageCachedInode(img, 1, 1);
 	ino_root->ino_idx4->block_0l[0]=1;
-	ino_root->ino_file->dsize=1*1024;
-	ino_root->ino_file->csize=1*1024;
+	ino_root->ino_idx4->block_0l[1]=2;
+	ino_root->ino_idx4->block_0l[2]=3;
+	ino_root->ino_file->dsize=3*1024;
+	ino_root->ino_file->csize=3*1024;
 	ino_root->ino_file->mode=0x4000;
 
-	ino_bbmp=TKDFS_GetImageCachedInode(img, 2, 1);
-	ino_bbmp->ino_idx4->block_0l[0]=2;
+	TKDFS_SyncImageInodes(img);
 
-	ino_bbmp->ino_idx4->block_0l[1]=20;
-	ino_bbmp->ino_idx4->block_0l[2]=21;
-	ino_bbmp->ino_idx4->block_0l[3]=22;
-	ino_bbmp->ino_idx4->block_0l[4]=23;
-	ino_bbmp->ino_file->dsize=5*1024;
-	ino_bbmp->ino_file->csize=5*1024;
+	for(i=16; i<bsz_bbmp; i++)
+	{
+		ino_bbmp=TKDFS_GetImageCachedInode(img, 2, 1);
+		TKDFS_SetImageInodeBlockNum(img,
+			ino_bbmp, i, blk_bbmp+i);
+	}
 
-	ino_ibmp=TKDFS_GetImageCachedInode(img, 3, 1);
-	ino_ibmp->ino_idx4->block_0l[0]=3;
-	ino_ibmp->ino_file->dsize=1*1024;
-	ino_ibmp->ino_file->csize=1*1024;
+	for(i=16; i<bsz_ibmp; i++)
+	{
+		ino_ibmp=TKDFS_GetImageCachedInode(img, 3, 1);
+		TKDFS_SetImageInodeBlockNum(img,
+			ino_ibmp, i, blk_ibmp+i);
+	}
+
+	for(i=16; i<bsz_mft; i++)
+	{
+		ino_mft=TKDFS_GetImageCachedInode(img, 0, 1);
+		TKDFS_SetImageInodeBlockNum(img,
+			ino_mft, i, blk_mft1+i);
+	}
+
+	for(i=16; i<bsz_mft; i++)
+	{
+		ino_mft2=TKDFS_GetImageCachedInode(img, 4, 1);
+		TKDFS_SetImageInodeBlockNum(img,
+			ino_mft2, i, blk_mft2+i);
+	}
 
 	TKDFS_SyncImageInodes(img);
 
@@ -228,11 +410,13 @@ TKDFS_ImageContext *TKDFS_TryOpenImage(int bdev, s64 lbastart)
 	img->ln2_blksz=9+j;
 	img->ln2_inosz=bblk->ln2_sz_ino;
 	img->ln2_cblksz=bblk->ln2_sz_cblk;
+	img->ln2_ino_fixed=bblk->ln2_ino_fixed;
 
 	img->blk_count=img->lba_count>>j;
 
 //	img->lba_inotab=lbastart+bblk->blk_inotab;
 	img->blk_inotab=bblk->blk_inotab;
+	img->blk_inotab2=bblk->blk_inotab2;
 
 	return(img);
 }
@@ -456,12 +640,58 @@ int TKDFS_ImageFreeBlockSpan(TKDFS_ImageContext *img, u64 base, int cnt)
 	return(TKDFS_ImageBitmapFreeSpan(img, TKDFS_FIXINO_BLKBMP, n, base, cnt));
 }
 
+int TKDFS_ImageSetInodeInfoDeh(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info,
+	char *bname, s64 dirino, int dfl)
+{
+	int islfn;
+
+	islfn=0;
+
+	if(info->ino_dmhd)
+	{
+//		strncpy(info->ino_dmhd->refname, bname, 48);
+		islfn=TKDFS_InitBaseName48(info->ino_dmhd->refname, bname);
+
+		info->ino_dmhd->dirino_lo=dirino;
+		info->ino_dmhd->dirino_hi=dirino>>32;
+	}
+
+	if(dirino>0)
+	{
+		if(islfn)
+			info->ino_file->etype=TKDFS_ETYPE_FILE_LFN;
+		else
+			info->ino_file->etype=TKDFS_ETYPE_FILE_BASE;
+	}else
+	{
+		info->ino_file->etype=TKDFS_ETYPE_INO_SYS;
+	}
+
+	return(0);
+}
+
 int TKDFS_ImageAllocateInode(TKDFS_ImageContext *img)
 {
 	int sh, n;
 
 	n=1<<28;
 	return(TKDFS_ImageAllocateBitmap(img, TKDFS_FIXINO_INOBMP, n));
+}
+
+int TKDFS_ImageAllocateInodeDeh(TKDFS_ImageContext *img,
+	char *bname, s64 dirino, int dfl)
+{
+	TKDFS_InodeInfo *inf;
+	int ino;
+	
+	ino=TKDFS_ImageAllocateInode(img);
+
+	inf=TKDFS_GetImageCachedInode(img, ino, 3);	
+	TKDFS_InitializeImageFileInode(img, inf, ino, 0);
+	inf=TKDFS_GetImageCachedInode(img, ino, 1);	
+	TKDFS_ImageSetInodeInfoDeh(img, inf, bname, dirino, dfl);
+	return(ino);
 }
 
 int TKDFS_ImageFreeInode(TKDFS_ImageContext *img, int ino)
@@ -526,7 +756,10 @@ int TKDFS_UnpackImageInode(TKDFS_ImageContext *img,
 
 	info->ino_file=NULL;
 	info->ino_idx4=NULL;
+	info->ino_idx8=NULL;
+	info->ino_idxc8=NULL;
 	info->ino_idat=NULL;
+	info->ino_dmhd=NULL;
 	
 	j=0;
 	for(i=0; i<32; i++)
@@ -583,6 +816,11 @@ int TKDFS_UnpackImageInode(TKDFS_ImageContext *img,
 			info->ino_idat=info->t_data+tgofs;
 			info->ino_szidat=tglen;
 		}
+
+		if((tg32==TKDFS_FCC_DHDR) || (tg16==TKDFS_TCC_DH))
+		{
+			info->ino_dmhd=(TKDFS_INode_DirMeta *)(info->t_data+tgofs);
+		}
 	}
 	return(1);
 }
@@ -607,7 +845,8 @@ int TKDFS_ReadImageInode(TKDFS_ImageContext *img,
 	ino_offs=((s64)ino)<<img->ln2_inosz;
 	ino_brem=ino_offs&((1<<img->ln2_blksz)-1);
 	
-	if(ino<32)
+//	if(ino<32)
+	if(ino<(1<<(img->ln2_ino_fixed)))
 	{
 		/* assumed fixed inodes are directly accessible */
 		inoblk=img->blk_inotab+(ino_offs>>img->ln2_blksz);
@@ -639,8 +878,28 @@ int TKDFS_WriteImageInode(TKDFS_ImageContext *img,
 
 	ino_offs=((s64)ino)<<img->ln2_inosz;
 	ino_brem=ino_offs&((1<<img->ln2_blksz)-1);
+
+	if(img->blk_inotab2)
+	{
+		/* if we have a backup inode table, update it first */
+
+		if(ino<1<<(img->ln2_ino_fixed))
+		{
+			/* assumed fixed inodes are directly accessible */
+			inoblk=img->blk_inotab2+(ino_offs>>img->ln2_blksz);
+			pblk=TKDFS_GetImageCachedBlock(img, inoblk, 1);
+		}else
+		{
+			inoblk=ino_offs>>img->ln2_blksz;
+			pblk=TKDFS_GetImageCachedInodeBlock(img,
+				TKDFS_FIXINO_INOTAB2, inoblk, 1);
+		}
+
+		memcpy(pblk+ino_brem, info->t_data, 1<<img->ln2_inosz);
+	}
 	
-	if(ino<32)
+//	if(ino<32)
+	if(ino<(1<<(img->ln2_ino_fixed)))
 	{
 		/* assumed fixed inodes are directly accessible */
 		inoblk=img->blk_inotab+(ino_offs>>img->ln2_blksz);
@@ -732,8 +991,10 @@ int TKDFS_InitializeImageFileInode(TKDFS_ImageContext *img,
 	taga[1]=0;
 	taga[2]=TKDFS_FCC_IDX4;
 	taga[3]=0;
-	taga[4]=0;
+	taga[4]=TKDFS_FCC_DHDR;
 	taga[5]=0;
+	taga[6]=0;
+	taga[7]=0;
 
 	if((d_flg&0x20) || (img->blk_count>1LL<<30))
 	{
@@ -751,6 +1012,18 @@ int TKDFS_InitializeImageFileInode(TKDFS_ImageContext *img,
 	
 	info->ino_file=(TKDFS_INode_File *)ct;
 	ct+=l0;
+
+
+	l0=sizeof(TKDFS_INode_DirMeta);
+	l0=(l0+7)&(~7);
+	o0=ct-info->t_data;
+	
+	tl1=((~l0)&0xFFFF)|(o0<<16);
+	taga[5]=tl1;
+	
+	info->ino_dmhd=(TKDFS_INode_DirMeta *)ct;
+	ct+=l0;
+
 
 
 	if(taga[2]==TKDFS_FCC_IDX8)
@@ -1570,6 +1843,21 @@ int TKDFS_ImageInodeFreeAllBlocks(TKDFS_ImageContext *img,
 			ino_inf->ino_idxc8->block_5l=0;
 		}
 	}
+	
+	if(d_flg&TKDFS_DFLAG_DELETE)
+	{
+		if(ino_inf->ino_file)
+		{
+			ino_inf->ino_file->dsize=0;
+			ino_inf->ino_file->csize=0;
+			ino_inf->ino_file->ctime=0;
+			ino_inf->ino_file->mtime=0;
+			ino_inf->ino_file->uid=0;
+			ino_inf->ino_file->gid=0;
+			ino_inf->ino_file->cmpmode=0;
+			ino_inf->ino_file->etype=TKDFS_ETYPE_DEL_BASE;
+		}
+	}
 
 	return(0);
 }
@@ -1589,7 +1877,7 @@ int TKDFS_ImageDestroyInode(TKDFS_ImageContext *img,
 	if(ino_inf->ino_file && ino_inf->ino_file->cmpmode)
 		dfl|=TKDFS_DFLAG_COMPRESS;
 
-	TKDFS_ImageInodeFreeAllBlocks(img, d_ino, dfl);
+	TKDFS_ImageInodeFreeAllBlocks(img, d_ino, dfl|TKDFS_DFLAG_DELETE);
 	TKDFS_ImageFreeInode(img, d_ino);
 	return(0);
 }
@@ -3263,7 +3551,12 @@ int TKDFS_ImageLookupInodePathI(TKDFS_ImageContext *img,
 		{
 			if(!(dfl&1))
 				return(0);
-			info->de_ino=TKDFS_ImageAllocateInode(img);
+				
+			dfl1=1;
+			if(isdir)
+				dfl1|=TKDFS_DFLAG_ISDIR;
+//			info->de_ino=TKDFS_ImageAllocateInode(img);
+			info->de_ino=TKDFS_ImageAllocateInodeDeh(img, tbn, ino, dfl1);
 			TKDFS_WriteImageDirent(img, info, ino, info->di_idx);
 			if(isdir)
 			{

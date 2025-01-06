@@ -54,6 +54,9 @@ extern volatile void *__arch_isrsave;		/* Pseudo */
 
 #endif
 
+int tk_syscall_utxt(void *sobj, int umsg, void *pptr, void *args);
+int tk_syscall_rv_utxt(void *sobj, int umsg, void *pptr, void *args);
+
 
 /* Model TLB so we can check if a page is likely already evicted.
  * The need for this is not an ideal turn of events.
@@ -1493,6 +1496,7 @@ int TK_VMem_Init()
 	char tblk1[512], tblk2[512];
 	TK_VMem_PageInfo *cpi, *lpi, *npi;
 	u32 *conbuft;
+	void *tp0;
 	s64 tva;
 	u64 tpte, tpte1, tmmcr;
 	int np, b, lba, pg;
@@ -1538,7 +1542,10 @@ int TK_VMem_Init()
 #endif
 
 	lba=tk_vmem_swap_lba;
-	TKSPI_ReadSectors(tblk2, lba, 1);
+	if(lba>0)
+	{
+		TKSPI_ReadSectors(tblk2, lba, 1);
+	}
 
 #if 1
 	/* Feed bits into hardware RNG.
@@ -1566,17 +1573,24 @@ int TK_VMem_Init()
 #endif
 
 	lba=tk_vmem_swap_lba;
-	TKSPI_WriteSectors(tblk1, lba, 1);
-	TKSPI_ReadSectors(tblk2, lba, 1);
-
-	for(i=0; i<512; i++)
+	if(lba>0)
 	{
-		if(tblk1[i]!=tblk2[i])
+		TKSPI_WriteSectors(tblk1, lba, 1);
+		TKSPI_ReadSectors(tblk2, lba, 1);
+
+		for(i=0; i<512; i++)
 		{
-			tk_dbg_printf("TK_VMem_Init: Swap IO Check Fail\n");
-			tk_vmem_swap_disable=1;
-			break;
+			if(tblk1[i]!=tblk2[i])
+			{
+				tk_dbg_printf("TK_VMem_Init: Swap IO Check Fail\n");
+				tk_vmem_swap_disable=1;
+				break;
+			}
 		}
+	}else
+	{
+		tk_dbg_printf("TK_VMem_Init: VMem with No Swap\n");
+		tk_vmem_swap_disable=1;
 	}
 
 	for(i=0; i<256; i++)
@@ -1695,12 +1709,15 @@ int TK_VMem_Init()
 	/* Identity Map RAM/etc */
 //	n=(TKMM_PAGEEND>>TK_VMEM_PAGESHL);
 	n=(TKMM_VAS_START_LO>>TK_VMEM_PAGESHL);
-	for(i=0; i<n; i++)
+	for(i=256; i<n; i++)
 	{
 		tva=((u64)i)<<TK_VMEM_PAGESHL;
 //		tpte=(2<<8)|(1<<10)|1;
 		tpte=(0<<8)|(1<<10)|1;
 		tpte|=i<<TK_VMEM_PTESHL;
+
+		if(tva<TKMM_PAGEBASE)
+			tpte|=(1<<7);	//No User
 
 		tpte=TK_VMem_EncCheckPageTableEntry(tpte);
 
@@ -1713,12 +1730,15 @@ int TK_VMem_Init()
 	/* Validate Identity Map RAM/etc */
 //	n=(TKMM_PAGEEND>>TK_VMEM_PAGESHL);
 	n=(TKMM_VAS_START_LO>>TK_VMEM_PAGESHL);
-	for(i=0; i<n; i++)
+	for(i=256; i<n; i++)
 	{
 		tva=((u64)i)<<TK_VMEM_PAGESHL;
 //		tpte=(2<<8)|(1<<10)|1;
 		tpte=(0<<8)|(1<<10)|1;
 		tpte|=i<<TK_VMEM_PTESHL;
+
+		if(tva<TKMM_PAGEBASE)
+			tpte|=(1<<7);	//No User
 
 		tpte=TK_VMem_EncCheckPageTableEntry(tpte);
 
@@ -1726,6 +1746,22 @@ int TK_VMem_Init()
 		if(tpte!=tpte1)
 			__debugbreak();
 	}
+#endif
+
+#if 1
+	tp0=tk_syscall_utxt;
+	tva=(u64)tp0;
+	tpte=TK_VMem_GetPageTableEntry(tva);
+	tpte&=~(1<<7);
+	tpte=TK_VMem_EncCheckPageTableEntry(tpte);
+	TK_VMem_SetPageTableEntry(tva, tpte);
+
+	tp0=tk_syscall_rv_utxt;
+	tva=(u64)tp0;
+	tpte=TK_VMem_GetPageTableEntry(tva);
+	tpte&=~(1<<7);
+	tpte=TK_VMem_EncCheckPageTableEntry(tpte);
+	TK_VMem_SetPageTableEntry(tva, tpte);
 #endif
 
 #if 0
@@ -1846,6 +1882,22 @@ int TK_VMem_Init()
 //		8192,
 		&__utext_end-&__utext_start,
 		TKMM_PROT_RWX);
+
+
+	TK_VMem_MProtectPages(
+		tk_vmem_pageroot, 1<<TK_VMEM_PAGESHL,
+		TKMM_PROT_RW|TKMM_PROT_NOUSER);
+
+	for(i=0; i<(1<<(TK_VMEM_PAGESHL-3)); i++)
+	{
+		tpte=tk_vmem_pageroot[i];
+		if(!(tpte&1))
+			continue;
+		TK_VMem_MProtectPages(
+			(void *)tpte, 1<<TK_VMEM_PAGESHL,
+			TKMM_PROT_RW|TKMM_PROT_NOUSER);
+	}
+
 #endif
 
 	tk_dbg_printf("TK_VMem_Init: A-5\n");
@@ -1912,11 +1964,13 @@ int TK_VMem_MProtectPages2(u64 addr, u64 addrh, size_t len, int prot)
 	if(!tk_vmem_pageroot)
 		return(0);
 
+#if 0
 	if(addr<TKMM_VALOSTART)
 	{
 		/* Skip physical-map range. */
 		return(0);
 	}
+#endif
 
 //	tk_dbg_printf("TK_VMem_MProtectPages: %p..%p sz=%d %X\n",
 //		addr, addr+len, len, prot);
@@ -4122,11 +4176,16 @@ void tk_vmem_tlbmiss(u64 ttb, u64 tea, u64 teah)
 	}
 }
 
+#ifdef __BJX2__
 void *tk_vmem_virttophys(u64 vaddr)
 {
 	u64 pte, vaddr1;
 
 	u64 mask_lo, mask_hi;
+	
+	pte=__arch_ttb;
+	if(!(pte&1))
+		return((void *)vaddr);
 	
 	mask_lo=(1<<TKMM_PAGEBITS)-1;
 	mask_hi=~mask_lo;
@@ -4137,6 +4196,12 @@ void *tk_vmem_virttophys(u64 vaddr)
 	vaddr1=(pte&mask_hi)|(vaddr&mask_lo);
 	return((void *)vaddr1);
 }
+#else
+void *tk_vmem_virttophys(u64 vaddr)
+{
+	return((void *)vaddr);
+}
+#endif
 
 void tk_vmem_aclmiss(u64 ttb, u64 tea, u64 teah)
 {

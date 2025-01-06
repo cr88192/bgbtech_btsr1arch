@@ -5,6 +5,9 @@ TK_DIR *tk_fat_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 int tk_fat_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 int tk_fat_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, char *mode);
 
+int tk_fat_fsctl(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, int cmd, void *ptr);
+
 int tk_fat_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode);
 int tk_fat_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 
@@ -32,7 +35,7 @@ NULL,				//fstat
 
 tk_fat_mkdir,		//mkdir
 tk_fat_rmdir,		//rmdir
-NULL,				//fsctl
+tk_fat_fsctl,		//fsctl
 
 /* FILE Ops */
 tk_fat_fread,		//fread
@@ -87,6 +90,10 @@ int tk_mount_sdfat(char *path)
 	
 	tk_vf_addmount(mnt);
 
+	if(img->lba_dfs_start>0)
+	{
+	}
+
 //	if(mnt->vt->fopen!=tk_fat_fopen)
 //		{ __debugbreak(); }
 
@@ -107,12 +114,97 @@ int tk_mount_sdfat(char *path)
 	}else
 	{
 		tk_puts("tk_mount_sdfat: no swapfile\n");
+		TK_VMem_Init();
 	}
 }
 
 TK_MOUNT *tk_fat_mount(char *devfn, char *mntfn,
 	char *fsty, char *mode, char **opts)
 {
+	TKFAT_FAT_DirEntExt tdee;
+	TKFAT_FAT_DirEntExt *dee, *dee2;
+
+	TKFAT_ImageInfo *img;
+	TK_MOUNT *mnt;
+	int		lba, clid, sz, devid;
+	int i, j, k;
+
+	tk_dbg_printf("tk_fat_mount\n");
+
+	devid=TKBDEV_OpenPathAsDeviceId(devfn);
+
+	if(devid<=0)
+		return(0);
+
+	img=TKFAT_TryOpenImage(devid, 0);
+	if(!img)
+	{
+		return(0);
+	}
+
+	tk_dbg_printf("tk_fat_mount: B\n");
+
+	mnt=tk_alloc_mount();
+	mnt->vt=&tk_vfile_fat_vt;
+	mnt->udata0=img;
+	
+	if(mntfn)
+	{
+		mnt->src=tk_strdup_in(mntfn);
+		mnt->szSrc=strlen(mnt->src);
+	}
+	
+	if(devfn)
+	{
+		mnt->tgt=tk_strdup_in(devfn);
+	}
+	
+	tk_vf_addmount(mnt);
+
+	tk_dbg_printf("tk_fat_mount: C\n");
+}
+
+int tk_fat_mkfs(char *devfn, char **opts)
+{
+	TKFAT_ImageInfo *img;
+	s64		devid;
+	int		lba, clid, sz;
+	int i, j, k;
+
+	tk_dbg_printf("tk_dfs_mount\n");
+
+	devid=TKBDEV_OpenPathAsDeviceId(devfn);
+
+	if(devid<=0)
+		return(0);
+
+	sz=TKBDEV_GetSectorCount(devid);
+	img=TKFAT_InitializeNewImage(devid, 0, sz);
+	TKBDEV_ReleaseDevice(devid);
+	return(1);
+}
+
+int tk_fat_fsctl(TK_MOUNT *mnt, TK_USERINFO *usri,
+	char *name, int cmd, void *ptr)
+{
+	TKFAT_ImageInfo *img;
+	int devid;
+
+	img=mnt->udata0;
+
+	if(cmd==TK_IOC_VFS_OPENBLKDEV)
+	{
+		devid=TKFAT_GetLvmDeviceId(img, name);
+		*(s64 *)ptr=devid;
+		return(1);
+	}
+
+	if(cmd==TK_IOC_VFS_MKFS)
+	{
+		return(tk_fat_mkfs(name, (char **)ptr));
+	}
+
+	return(-1);
 }
 
 TK_FILE *tk_fat_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)

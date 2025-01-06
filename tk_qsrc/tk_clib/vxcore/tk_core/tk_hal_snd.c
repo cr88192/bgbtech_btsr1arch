@@ -142,6 +142,18 @@ void	TKGDI_Snd_WriteStereoSamples2_8b(
 
 void	TKGDI_Snd_WriteModeSamples2(void *mixbuf, int nsamp, int nsamp2)
 {
+	if(!mixbuf)
+		return;
+
+	if(nsamp>nsamp2)
+		return;
+	if(nsamp<=0)
+		return;
+	if(nsamp2<=0)
+		return;
+	if(nsamp2>8192)
+		return;
+
 	if((dma_chan==2) && (dma_bits==16))
 	{
 		TKGDI_Snd_WriteStereoSamples2(mixbuf, nsamp, nsamp2);

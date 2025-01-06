@@ -225,7 +225,7 @@ s64 TK_HandleSyscall(TKPE_TaskInfo *task,
 //	exsr=(u16)(__arch_exsr);
 //	ptetlb_rethow_exc=0;
 
-//	tk_printf("SYSC: uMsg=%X vParm1=%p, vParm2=%p\n", uMsg, vParm1, vParm2);
+//	tk_dbg_printf("SYSC: uMsg=%X vParm1=%p, vParm2=%p\n", uMsg, vParm1, vParm2);
 
 //	task=TK_GetCurrentTask();
 	env=(void *)task->envctx;
@@ -287,7 +287,8 @@ s64 TK_HandleSyscall(TKPE_TaskInfo *task,
 				}
 
 				TK_TaskAddPageAlloc(task, p, sz);
-//				tk_dbg_printf("SYSC: Page Alloc, vParm=%p, p=%p\n", vParm1, p);
+//				tk_dbg_printf("SYSC: Page Alloc, vParm=%p, p=%p, sz=%08X\n", 
+//					vParm1, p, sz);
 
 				ret=TK_URES_TRUE;
 				break;
@@ -607,6 +608,15 @@ s64 TK_HandleSyscall(TKPE_TaskInfo *task,
 
 			case 0x41:
 				*((s64 *)vParm1)=TK_Task_TryJoinOnReturnPid(args[0].i);
+				ret=TK_URES_TRUE;
+				break;
+
+			case 0x42:
+				*((s64 *)vParm1)=TK_MutexTryLockB(task, args[0].p, args[1].i);
+				ret=TK_URES_TRUE;
+				break;
+			case 0x43:
+				*((s64 *)vParm1)=TK_MutexTryReleaseB(task, args[0].p);
 				ret=TK_URES_TRUE;
 				break;
 

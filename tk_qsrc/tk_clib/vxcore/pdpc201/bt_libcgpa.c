@@ -67,6 +67,9 @@ char *TK_Env_GetCwd(char *buf, int sz)
 
 #ifndef __TK_CLIB_DLLSTUB__
 
+void *TkClGetInterface(u64 qwMajor, u64 qwMinor);
+void *TkClSetInterface(u64 qwMajor, u64 qwMinor, void *vtab, u64 flag);
+
 struct tk_stdio_vt tk_stdio_vti =
 {
 NULL,			NULL,				NULL,			NULL,			//00
@@ -87,7 +90,8 @@ dlopen,			dlclose,			dlsym,			dlerror,		//34
 __open,			__close,			__read,			__write,		//38
 __seek,			__ioctl,			__sendto,		__recvfrom,		//3C
 __bind,			__accept,			__connect,		__multicall,	//40
-__exita,		TK_GetTimeUs,
+__exita,			TK_GetTimeUs,
+TkClGetInterface,	TkClSetInterface,
 
 NULL
 };

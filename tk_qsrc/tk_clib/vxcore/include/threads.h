@@ -31,13 +31,19 @@ typedef long thrd_t;
 typedef int (*thrd_start_t)(void *ptr);
 typedef void (*tss_dtor_t)(void *ptr);
 
-typedef int mtx_t;
-typedef int cnd_t;
+// typedef int mtx_t;
+typedef struct thrd_mtx_s mtx_t;
 typedef int cnd_t;
 typedef int tss_t;
 
 typedef int once_flag;
 
+struct thrd_mtx_s {
+int vtid;			//locked thread ID
+short vcor;			//core ID
+short vcflag;		//core flags
+long long vpad;	//aligning pad for now
+};
 
 void call_once( once_flag* flag, void (*func)(void) );
 

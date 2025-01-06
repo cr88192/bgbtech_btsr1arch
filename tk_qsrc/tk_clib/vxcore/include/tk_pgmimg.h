@@ -166,6 +166,8 @@ s64 rlc_basedisp;
 byte *ptr_reloc;
 int sz_reloc;
 
+s64 dllflags;
+
 int rva_imp;
 int sz_imp;
 int rva_exp;
@@ -238,6 +240,7 @@ byte		kbfifo_end;
 //End of fixed area.
 
 u64			tlsdat[2048];	//data for TLS
+u64			tls_freelistarray[256];
 };
 
 /*
@@ -282,49 +285,83 @@ The TaskInfo area will be Read-Only to the running program.
 The program needs to be able to see these parameters, but should not be allowed to modify them.
  */
 struct TKPE_TaskInfo_s {
-tk_kptr		resv_00;		//00, reserved pointer
-tk_kptr		resv_08;		//08, reserved pointer
-tk_kptr		SysCall;		//10, System Call (Entry Point)
-tk_kptr		resv_18;		//18, reserved function pointer
-tk_kptr		regsave;		//20, pointer to register save area
-tk_kptr		resv_28;		//28, reserved pointer
-tk_kptr		krnlptr;		//30, pointer to kernel-only area
-tk_kptr		ystatus;		//38, Sleep / Terminate Status
-tk_kptr		usrptr;			//40, pointer to user-modifiable area
-tk_kptr		allocaptr;		//48, pointer to alloca mark
-tk_kptr		tlsptr;			//50, pointer to TLS data area
+tk_kptr		resv_00;		//000, reserved pointer
+tk_kptr		resv_08;		//008, reserved pointer
+tk_kptr		SysCall;		//010, System Call (Entry Point)
+tk_kptr		resv_18;		//018, reserved function pointer
+tk_kptr		regsave;		//020, pointer to register save area
+tk_kptr		resv_28;		//028, reserved pointer
+tk_kptr		krnlptr;		//030, pointer to kernel-only area
+tk_kptr		ystatus;		//038, Sleep / Terminate Status
+tk_kptr		usrptr;			//040, pointer to user-modifiable area
+tk_kptr		allocaptr;		//048, pointer to alloca mark
+tk_kptr		tlsptr;			//050, pointer to TLS data area
 
-u16			pid;			//58, Process ID
-u16			sch_id;			//5A, Scheduler ID
-u16			uid;			//5C
-u16			gid;			//5E
+u16			pid;			//058, Process ID
+u16			sch_id;			//05A, Scheduler ID
+u16			uid;			//05C
+u16			gid;			//05E
 
-tk_kptr		baseptr;		//60, base pointer for main binary
-tk_kptr		bootptr;		//68, entry point for main binary
-tk_kptr		basegbr;		//70, GBR for main binary, set on program startup.
-tk_kptr		boottbr;		//78, main process TBR (threads) | self-pointer.
+tk_kptr		baseptr;		//060, base pointer for main binary
+tk_kptr		bootptr;		//068, entry point for main binary
+tk_kptr		basegbr;		//070, GBR for main binary, set on program startup.
+tk_kptr		boottbr;		//078, main process TBR (threads) | self-pointer.
 
-tk_kptr		boot_sps;		//80, Stack Start (Bottom)
-tk_kptr		boot_spe;		//88, Stack End (Top)
-tk_kptr		argv;			//90, argument string (main thread), uptr (thread)
-tk_kptr		envctx;			//98, Environment Context
+tk_kptr		boot_sps;		//080, Stack Start (Bottom)
+tk_kptr		boot_spe;		//088, Stack End (Top)
+tk_kptr		argv;			//090, argument string (main thread), uptr (thread)
+tk_kptr		envctx;			//098, Environment Context
 
-tk_kptr		imgbaseptrs;	//A0, list of loaded image Base Pointers.
-tk_kptr		imggbrptrs;		//A8, list of loaded image GBR Pointers
-tk_kptr		imgtlsrvas;		//B0, list of loaded image TLS RVAs.
-tk_kptr		resv_B8;		//B8, reserved
-tk_kptr		resv_C0;		//C0, reserved pointer
-tk_kptr		resv_C8;		//C8, reserved pointer
-tk_kptr		resv_D0;		//D0, reserved pointer
-tk_kptr		resv_D8;		//D8, reserved pointer
-tk_kptr		resv_E0;		//E0, reserved pointer
-tk_kptr		resv_E8;		//E8, reserved pointer
-tk_kptr		resv_F0;		//F0, reserved pointer
-tk_kptr		resv_F8;		//F8, reserved pointer
+tk_kptr		imgbaseptrs;	//0A0, list of loaded image Base Pointers.
+tk_kptr		imggbrptrs;		//0A8, list of loaded image GBR Pointers
+tk_kptr		imgtlsrvas;		//0B0, list of loaded image TLS RVAs.
+tk_kptr		resv_B8;		//0B8, reserved
+tk_kptr		resv_C0;		//0C0, reserved pointer
+tk_kptr		resv_C8;		//0C8, reserved pointer
+tk_kptr		tls_freelist;	//0D0, thread local free list
+tk_kptr		resv_D8;		//0D8, reserved pointer
+tk_kptr		resv_E0;		//0E0, reserved pointer
+tk_kptr		resv_E8;		//0E8, reserved pointer
+tk_kptr		resv_F0;		//0F0, reserved pointer
+tk_kptr		resv_F8;		//0F8, reserved pointer
 
-//End of fixed area.
+tk_kptr		resv_100;		//100, reserved pointer
+tk_kptr		resv_108;		//108, reserved pointer
+tk_kptr		resv_110;		//110, reserved pointer
+tk_kptr		resv_118;		//118, reserved pointer
+tk_kptr		resv_120;		//120, reserved pointer
+tk_kptr		resv_128;		//128, reserved pointer
+tk_kptr		resv_130;		//130, reserved pointer
+tk_kptr		resv_138;		//138, reserved pointer
+tk_kptr		resv_140;		//140, reserved pointer
+tk_kptr		resv_148;		//148, reserved pointer
+tk_kptr		resv_150;		//150, reserved pointer
+tk_kptr		resv_158;		//158, reserved pointer
+tk_kptr		resv_160;		//160, reserved pointer
+tk_kptr		resv_168;		//168, reserved pointer
+tk_kptr		resv_170;		//170, reserved pointer
+tk_kptr		resv_178;		//178, reserved pointer
 
-tk_kptr		magic0;			//100, key magic pointer
+tk_kptr		resv_180;		//180, reserved pointer
+tk_kptr		resv_188;		//188, reserved pointer
+tk_kptr		resv_190;		//190, reserved pointer
+tk_kptr		resv_198;		//198, reserved pointer
+tk_kptr		resv_1A0;		//1A0, reserved pointer
+tk_kptr		resv_1A8;		//1A8, reserved pointer
+tk_kptr		resv_1B0;		//1B0, reserved pointer
+tk_kptr		resv_1B8;		//1B8, reserved pointer
+tk_kptr		resv_1C0;		//1C0, reserved pointer
+tk_kptr		resv_1C8;		//1C8, reserved pointer
+tk_kptr		resv_1D0;		//1D0, reserved pointer
+tk_kptr		resv_1D8;		//1D8, reserved pointer
+tk_kptr		resv_1E0;		//1E0, reserved pointer
+tk_kptr		resv_1E8;		//1E8, reserved pointer
+tk_kptr		resv_1F0;		//1F0, reserved pointer
+tk_kptr		resv_1F8;		//1F8, reserved pointer
+
+//200, End of fixed area.
+
+tk_kptr		magic0;			//key magic pointer
 
 int			n_tlsv;			//number of allocated TLS vars
 int			n_dllimg;		//number of loaded DLL images

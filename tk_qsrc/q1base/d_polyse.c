@@ -137,9 +137,17 @@ D_PolysetDraw
 */
 void D_PolysetDraw (void)
 {
-	spanpackage_t	spans[DPS_MAXSPANS + 1 +
-			((CACHE_SIZE - 1) / sizeof(spanpackage_t)) + 1];
+//	static spanpackage_t	spans[DPS_MAXSPANS + 1 +
+//			((CACHE_SIZE - 1) / sizeof(spanpackage_t)) + 1];
 						// one extra because of cache line pretouching
+	static spanpackage_t	*spans;
+	
+	if(!spans)
+	{
+		spans = malloc(
+			((DPS_MAXSPANS + 1) * sizeof(spanpackage_t)) +
+			(CACHE_SIZE - 1));
+	}
 
 	a_spans = (spanpackage_t *)
 			(((nlint)&spans[0] + CACHE_SIZE - 1) & ~(CACHE_SIZE - 1));

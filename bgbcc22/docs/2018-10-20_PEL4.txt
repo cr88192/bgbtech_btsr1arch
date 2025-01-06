@@ -363,6 +363,80 @@ This header is unused and the image will begin directly at the 'PE' header in Te
 
 Following initial loading, TestKern may use mPointerToSymbolTable as a handle index for the loaded program binary.
 
+mCharacteristics (Win):
+* 0001: RELOCS_STRIPPED
+* 0002: EXECUTABLE
+* 0004: FILE_NUMS_STRIPPED
+* 0008: LOCAL_SYMS_STRIPPED
+* 0010: AGRESSIVE_TRIM
+* 0020: LARGE_ADDRESS_AWARE
+* 0040: Reserved
+* 0080: Little Endian
+* 0100: MACH_32B
+* 0200: DEBUG_STRIPPED
+* 0400: RUN_FROM_SWAP (Removable Disk)
+* 0800: RUN_FROM_SWAP (Network)
+* 1000: IS_SYS, System File
+* 2000: IS_DLL, DLL
+* 4000: UP_ONLY, Uniprocessor Only
+* 8000: Big Endian
+
+mCharacteristics (TestKern):
+* 0001: -
+* 0002: EXECUTABLE
+* 0004: -
+* 0008: -
+* 0010: -
+* 0020: Run in User-Mode (Else needs Supervisor)
+* 0040: -
+* 0080: Little Endian
+* 0100: MACH_32B (Key)
+* 0200: -
+* 0400: -
+* 0800: -
+* 1000: IS_SYS, System File
+* 2000: IS_DLL, DLL
+* 4000: -
+* 8000: Big Endian
+
+mDllCharacteristics (Win):
+* 0001: -
+* 0002: -
+* 0004: -
+* 0008: -
+* 0010: -
+* 0020: Supports ASLR
+* 0040: Can Rebase
+* 0080: Code Integrity
+* 0100: NX Compatible
+* 0200: No Isolation
+* 0400: No SEH
+* 0800: No Bind
+* 1000: AppContainer
+* 2000: WDM
+* 4000: Control Flow
+* 8000: Terminal Server
+
+mDllCharacteristics (TestKern):
+* 0001: -
+* 0002: -
+* 0004: -
+* 0008: -
+* 0010: -
+* 0020: Supports ASLR (Assumed)
+* 0040: Can Rebase (Assumed)
+* 0080: Function Pointer Tagging
+* 0100: NX Compatible (Assumed)
+* 0200: -
+* 0400: -
+* 0800: -
+* 1000: -
+* 2000: -
+* 4000: -
+* 8000: -
+
+If function pointer tagging is used and set, it may also assume the binary supports U-Bit Sealed Mode.
+
 
 === Section Headers ===
 

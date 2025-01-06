@@ -94,7 +94,8 @@ void *multicall_fp;		//43
 void *exita_fp;			//44
 void *gettimeus_fp;		//45
 
-void *resv1;
+void *getinterface_fp;	//46
+void *setinterface_fp;	//47
 void *resv2;
 void *resv3;
 void *resv4;

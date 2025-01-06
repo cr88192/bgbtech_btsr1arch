@@ -157,7 +157,7 @@ reg[32:0]		opImm_disp12st;
 // reg[32:0]		opImm_disp5u;
 
 reg[32:0]		opImm_imm5u;
-reg[32:0]		opImm_imm5n;
+//reg[32:0]		opImm_imm5n;
 
 reg[32:0]		opImm_imm8au;
 
@@ -191,23 +191,25 @@ reg		tOpIsXGprX0;
 reg		tOpIsXGprX1;
 reg		tOpIsXGprX2;
 
-reg tRegRmIsRz;
-reg tRegRnIsRz;
-reg tRegRoIsRz;
-reg tRegRmIsR0;
-reg tRegRmIsR1;
-reg tRegRnIsR0;
-reg tRegRnIsR1;
-reg tRegRoIsR0;
-reg tRegRoIsR1;
+// reg tRegRmIsRz;
+// reg tRegRnIsRz;
+// reg tRegRoIsRz;
+// reg tRegRmIsR0;
+// reg tRegRmIsR1;
+// reg tRegRnIsR0;
+// reg tRegRnIsR1;
+// reg tRegRoIsR0;
+// reg tRegRoIsR1;
 
 reg tRegRmIsRs;
 reg tRegRnIsRs;
 reg tRegRoIsRs;
 
 reg tRegRmIsZr;
+reg tRegRoIsZr;
 reg tRegRnIsZr;
 reg tRegCsrIsCpuid;
+reg tRegImm12IsZero;
 
 reg	tMsgLatch;
 reg	tNextMsgLatch;
@@ -246,7 +248,9 @@ begin
 	tRegRnIsRs	= (istrWord[11]==1'b0);
 
 	tRegRmIsZr	= (istrWord[19:15] == 5'h00);
+	tRegRoIsZr	= (istrWord[24:20] == 5'h00);
 	tRegRnIsZr	= (istrWord[11: 7] == 5'h00);
+	tRegImm12IsZero	= (istrWord[31:20] == 12'h000);
 
 	opIsJumbo	= istrJBits[24];
 	opIsJumbo96	= istrJBits[25];
@@ -286,6 +290,13 @@ begin
 		opExWM		= istrJBits[19];
 		opExWI		= istrJBits[20];
 		opExWQ		= istrJBits[11];
+		
+		if(opExWM)
+			tRegRmIsZr=0;
+		if(opExWI)
+			tRegRoIsZr=0;
+		if(opExWN)
+			tRegRnIsZr=0;
 	end
 `endif
 
@@ -294,12 +305,8 @@ begin
 		4'b0001: opRegO_Sr = JX2_GR_LR;
 		4'b0010: opRegO_Sr = JX2_GR_SP;
 		4'b0011: opRegO_Sr = JX2_GR_GBR;
-
-//		4'b0100: opRegO_Sr = JX2_GR_TBR;
-//		4'b0101: opRegO_Sr = JX2_GR_DHR;
 		4'b0100: opRegO_Sr = JX2_GR_R4;
 		4'b0101: opRegO_Sr = JX2_GR_R5;
-
 		4'b0110: opRegO_Sr = JX2_GR_R6;
 		4'b0111: opRegO_Sr = JX2_GR_R7;
 		4'b1000: opRegO_Sr = JX2_GR_R8;
@@ -317,12 +324,8 @@ begin
 		4'b0001: opRegM_Sr = JX2_GR_LR;
 		4'b0010: opRegM_Sr = JX2_GR_SP;
 		4'b0011: opRegM_Sr = JX2_GR_GBR;
-
-//		4'b0100: opRegM_Sr = JX2_GR_TBR;
-//		4'b0101: opRegM_Sr = JX2_GR_DHR;
 		4'b0100: opRegM_Sr = JX2_GR_R4;
 		4'b0101: opRegM_Sr = JX2_GR_R5;
-
 		4'b0110: opRegM_Sr = JX2_GR_R6;
 		4'b0111: opRegM_Sr = JX2_GR_R7;
 		4'b1000: opRegM_Sr = JX2_GR_R8;
@@ -340,12 +343,8 @@ begin
 		4'b0001: opRegN_Sr = JX2_GR_LR;
 		4'b0010: opRegN_Sr = JX2_GR_SP;
 		4'b0011: opRegN_Sr = JX2_GR_GBR;
-
-//		4'b0100: opRegN_Sr = JX2_GR_TBR;
-//		4'b0101: opRegN_Sr = JX2_GR_DHR;
 		4'b0100: opRegN_Sr = JX2_GR_R4;
 		4'b0101: opRegN_Sr = JX2_GR_R5;
-
 		4'b0110: opRegN_Sr = JX2_GR_R6;
 		4'b0111: opRegN_Sr = JX2_GR_R7;
 		4'b1000: opRegN_Sr = JX2_GR_R8;
@@ -378,6 +377,10 @@ begin
 `endif
 
 
+//	tRegRmIsRz = (opRegM_Dfl == JX2_GR_ZZR);
+//	tRegRoIsRz = (opRegO_Dfl == JX2_GR_ZZR);
+//	tRegRnIsRz = (opRegN_Dfl == JX2_GR_ZZR);
+
 	opRegM_Cr	= 0;
 	opRegO_Cr	= 0;
 	opRegN_Cr	= 0;
@@ -390,17 +393,18 @@ begin
 `ifdef jx2_enable_rvjumbo
 	if(opIsJumboAu)
 	begin
-		if(istrJBits[11])
+//		if(istrJBits[11])
+		if(opExWQ)
 		begin
 			opRegM_Df3R	= JX2_GR_IMM;
 			opRegO_Df3R	= JX2_GR_IMM;
 		end
 	end
-//	else
-//		if(opIsJumboAu)
-//	begin
-//		opRegO_Df3R	= JX2_GR_IMM;
-//	end
+	else
+		if(opIsJumbo)
+	begin
+		opRegO_Df3R	= JX2_GR_IMM;
+	end
 `endif
 
 
@@ -427,7 +431,7 @@ begin
 //	opImm_imm5u	= {UV27_00, opRegO_Dfl[5:0]};
 	opImm_imm5u	= {UV28_00, istrWord[24:20]};
 //	opImm_imm5n	= {UV27_FF, opRegO_Dfl[5:0]};
-	opImm_imm5n	= {UV28_FF, istrWord[24:20]};
+//	opImm_imm5n	= {UV28_FF, istrWord[24:20]};
 
 //	opImm_disp5u	= opImm_imm5u;
 	opImm_imm8au	= opImm_imm5u;
@@ -776,7 +780,42 @@ begin
 			opIty		= JX2_ITY_SW;
 
 			case(istrWord[14:12])
-				3'b000: opUCmdIx = JX2_UCIX_ALU_ADD;
+				3'b000: begin
+					opUCmdIx = JX2_UCIX_ALU_ADD;
+					if(!opIsJumbo)
+					begin
+						if(tRegRmIsZr)
+						begin
+							/* Special Case: MOV Imm, Rn */
+							opNmid		= JX2_UCMD_MOV_IR;
+							opUCmdIx	= JX2_UCIX_LDI_LDIX;
+						end
+`ifndef def_true
+						else
+							if(tRegImm12IsZero)
+						begin
+							/* Special Case: MOV Rm, Rn */
+							opNmid		= JX2_UCMD_MOV_IR;
+							opUCmdIx	= JX2_UCIX_LDI_LDIX;
+							opIty		= JX2_ITY_UL;
+						end
+`endif
+					end
+
+// `ifdef def_true
+`ifndef def_true
+					if(opIsJumbo)
+					begin
+						if(istrWord[19:15]==5'h03)
+						begin
+							opNmid		= JX2_UCMD_LEA_MR;
+							opFmid		= JX2_FMID_LDREGDISPREG;
+							opBty		= JX2_BTY_SB;
+							opIty		= JX2_ITY_SB;
+						end
+					end
+`endif
+				end
 				3'b001: begin
 					case(istrWord[31:26])
 						6'h00: begin
@@ -850,6 +889,16 @@ begin
 					3'b000: begin
 						opUCmdIx = istrWord[30] ?
 							JX2_UCIX_ALU_SUB : JX2_UCIX_ALU_ADD;
+
+`ifndef def_true
+						if(!opIsJumbo && tRegRoIsZr)
+						begin
+							/* Special Case: MOV Rm, Rn */
+							opNmid		= JX2_UCMD_MOV_IR;
+							opUCmdIx	= JX2_UCIX_LDI_LDIX;
+							opIty		= JX2_ITY_NB;
+						end
+`endif
 					end
 
 					3'b001: begin
@@ -1436,6 +1485,12 @@ begin
 						opUCmdIx	= JX2_UCIX_LDI_FLDCH;
 					end
 
+					if(opIsJumboAu)
+					begin
+						opFmid		= JX2_FMID_REGIMMREG;
+						opIty		= JX2_ITY_SW;
+					end
+					else
 					if(opIsJumbo)
 					begin
 						opUCmdIx	= JX2_UCIX_LDI_LDISH32;
@@ -1666,7 +1721,8 @@ begin
 			SB: Rm, Ro|Imm17au, Rn
 			SW: -
 			SL: -
-			SQ: Ro, Rm|Imm17au, Rn
+			SQ: / Ro, Rm|Imm17au, Rn
+			SQ: Ro|Imm17au, Rm, Rn
 
 			UB: Rm, Rn, Rn
 			UW: Ro, Rn, Rn
@@ -1702,8 +1758,11 @@ begin
 				end
 
 				JX2_ITY_SQ: begin
-					opRegM	= opRegO_Dfl;
-					opRegO	= opRegM_Df3R;
+//					opRegM	= opRegO_Dfl;
+//					opRegO	= opRegM_Df3R;
+
+					opRegM	= opRegO_Df3R;
+					opRegO	= opRegM_Dfl;
 					opRegN	= opRegN_Dfl;
 					opRegP	= opRegN_Dfl;
 				end
@@ -1847,7 +1906,7 @@ begin
 //				end
 				
 				default: begin
-					$display("Jx2DecOpRvI: RegReg, Bad Ity=%X", opIty);
+					$display("Jx2DecOpRvI: RegImmReg, Bad Ity=%X", opIty);
 				end
 
 			endcase
@@ -2147,6 +2206,36 @@ begin
 				istrWord[15:0], istrWord[31:16]);
 		end
 	end
+
+`ifndef def_true
+	if(opIsJumboAu)
+	begin
+		if(!tMsgLatch)
+		begin
+			$display(
+			"DecOpRvI: Dbg-JA  %X-%X jb=%X  %X-%X m=%X o=%X p=%X n=%X i=%X",
+				istrWord[15:0], istrWord[31:16], istrJBits,
+				opUCmd, opUIxt,
+				opRegM, opRegO, opRegP, opRegN,
+				opImm);
+		end
+		tNextMsgLatch=1;
+	end
+	else
+		if(opIsJumbo)
+	begin
+		if(!tMsgLatch)
+		begin
+			$display(
+			"DecOpRvI: Dbg-J  %X-%X jb=%X  %X-%X m=%X o=%X p=%X n=%X i=%X",
+				istrWord[15:0], istrWord[31:16], istrJBits,
+				opUCmd, opUIxt,
+				opRegM, opRegO, opRegP, opRegN,
+				opImm);
+		end
+		tNextMsgLatch=1;
+	end
+`endif
 end
 
 always @(posedge clock)

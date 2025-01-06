@@ -63,8 +63,15 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 	if(ys_bmp<0)
 		ys_bmp=-ys_bmp;
 	
+	if((xo_dev<0) || (yo_dev<0))
+		return(-1);
+	if((xo_dev>=tkgdi_vid_xsize) || (yo_dev>=tkgdi_vid_ysize))
+		return(-1);
+//	if(((xo_dev+xs_src)>tkgdi_vid_xsize) || ((yo_dev+ys_src)>tkgdi_vid_ysize))
+//		return(-1);
+	
 //	return(-1);
-		
+
 	if(dev==1)
 	{
 		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_320x200_RGB555_LFB)
@@ -2860,6 +2867,7 @@ void *TKGDI_GetWrapVTableForTask(TKPE_TaskInfo *task,
 		uli=(u64)fn;
 		uli&=0x0000FFFFFFFFFFFEULL;
 		uli|=0x0000000000000001ULL;
+		uli|=((u64)tkpe_magic_ubkey)<<56;
 		fn=(void *)uli;
 		
 		vt_jx[j]=fn;
@@ -2897,6 +2905,12 @@ void *TKGDI_GetWrapVTableForTask(TKPE_TaskInfo *task,
 			case 28: fn=tkgdi_comglue_rv_wrapcall28; break;
 			case 29: fn=tkgdi_comglue_rv_wrapcall29; break;
 		}
+
+		uli=(u64)fn;
+		uli&=0x0000FFFFFFFFFFFEULL;
+		uli|=0x0004000000000001ULL;
+		uli|=((u64)tkpe_magic_ubkey)<<56;
+		fn=(void *)uli;
 		
 //		uli=(u64)fn;
 //		uli&=0x0000FFFFFFFFFFFEULL;
@@ -2921,6 +2935,8 @@ _tkgdi_context_vtable_t *tkgdi_context_vtable_grvvtc;
 _tkgdi_context_t *tkgdi_gcontext_ctx[256];
 TKPE_TaskInfo *tkgdi_gcontext_task[256];
 int tkgdi_n_gcontexts;
+
+byte tkpe_magic_ubkey;
 
 void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 	u64 apiname, u64 subname)
@@ -2978,6 +2994,7 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 
 			lv&=0x0000FFFFFFFFFFFEULL;
 			lv|=0x0000000000000001ULL;
+			lv|=((u64)tkpe_magic_ubkey)<<56;
 			ppv[i]=(void *)lv;
 		}
 
@@ -2993,6 +3010,7 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 
 			lv&=0x0000FFFFFFFFFFFEULL;
 			lv|=0x0004000000000001ULL;
+			lv|=((u64)tkpe_magic_ubkey)<<56;
 			ppv[i]=(void *)lv;
 		}
 	}

@@ -288,7 +288,7 @@ void TKSH_ListDir(char *path, char **args)
 
 int TKSH_Cmds_Cls(char **args)
 {
-	if(args[1] && !strcmp(args[1], "--help"))
+	if(args && args[1] && !strcmp(args[1], "--help"))
 	{
 		tk_printf("Usage: %s [options]\n", args[0]);
 		return(0);
@@ -2730,7 +2730,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 	int plf_dofs, plf_dnum, plf_fdofs, plf_fdsz;
 	int plf_lofs, plf_lsz, plf_lname1, plf_lname2, plf_lname3;
 	int sig_is_pe, sig_is_asc, sig_is_elf;
-	int rv, nl, sz, sza, ix, pid;
+	int rv, nl, sz, sza, ix, pid, ubkey;
 	int argc;
 	int i, j, k;
 
@@ -2932,6 +2932,9 @@ int TKSH_TryLoadB(char *img, char **args0)
 
 	j=strlen(args[0]);	//BGB: Debug
 
+//	ubkey=TK_GetRandom16ASLR();
+//	ubkey=(ubkey^(ubkey>>8))&0xFF;
+
 //	if(fd)
 	if(pimg || (fd && sig_is_pe) || (fd && sig_is_elf))
 	{
@@ -2955,6 +2958,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 		}
 
 		bootptr=(void *)(pimg->bootptr);
+
+		ubkey=(((u64)(pimg->bootptr))>>56)&255;
 
 #if 0
 		if(bootgbr)
@@ -3017,6 +3022,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 			a1+=(j+1);
 
 			j=0;
+
+			/* auxiliary vector */
 
 			a1[j++]=TKPE_ELF_AT_BASE;		//interpreter base
 			a1[j++]=pimg->elf_interpbase;
@@ -3151,6 +3158,9 @@ int TKSH_TryLoadB(char *img, char **args0)
 					pb_sysc&=0x0000FFFFFFFFFFFEULL;
 					pb_sysc|=0x0000000000000001ULL;
 				}
+				
+				pb_sysc|=((u64)ubkey)<<56;
+				
 				sysc=(void *)pb_sysc;
 			}
 #endif
@@ -3168,6 +3178,9 @@ int TKSH_TryLoadB(char *img, char **args0)
 				pb_sysc=(tk_kptr)sysc;
 				pb_sysc&=0x0000FFFFFFFFFFFEULL;
 				pb_sysc|=0x0004000000000001ULL;
+
+				pb_sysc|=((u64)ubkey)<<56;
+
 				sysc=(void *)pb_sysc;				
 			}
 #endif
@@ -3309,9 +3322,11 @@ int TKSH_TryLoadB(char *img, char **args0)
 			
 			pid=task->pid;
 			
-			i+=*(u64 *)bootptr;
+//			i+=*(u64 *)bootptr;
 			
 			pb_boot=(u64)bootptr;
+
+			i+=*(u64 *)(pb_boot&0x0000FFFFFFFFFFF0ULL);
 
 			tkern->ctx_regsave[TKPE_REGSAVE_R4]=(tk_kptr)boottbr;
 			if(pb_boot&0x0001000000000000ULL)
@@ -3330,10 +3345,33 @@ int TKSH_TryLoadB(char *img, char **args0)
 			tkern->ctx_regsave[TKPE_REGSAVE_SSP]=(tk_kptr)boot_newsp;
 //			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
 			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=
-				0xC000000000000000ULL|
+				0x8000000000000000ULL|
+//				0xC000000000000000ULL|
 				(((pb_boot>>48)&0x000C)<<56)|
 				(((pb_boot>>48)&0x00F0)<<48);
 //			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0x8000000000000000ULL;
+
+			tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=
+				((u64)ubkey)<<(8+32);
+
+			if(!(pimg->dllflags&0x0002))
+			{
+				__debugbreak();
+			}
+
+			if(!(pimg->dllflags&0x0020))
+			{
+				tk_dbg_printf("TKSH_TryLoad: dllflags=%08X\n",
+					pimg->dllflags);
+				tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=
+					0xC000000000000000ULL;
+			}
+
+			if(pimg->dllflags&0x00800000)
+			{
+				tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=
+					(1ULL<<(17+32));
+			}
 
 			if(ctask!=tk_task_syscall)
 			{

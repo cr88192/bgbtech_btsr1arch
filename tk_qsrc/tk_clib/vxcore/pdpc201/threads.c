@@ -9,6 +9,10 @@ int64_t TK_JoinThread(int pid);
 void TK_SleepCurrentThread(int usec);
 int TK_AllocNewTlsA(void);
 
+int TK_MutexTryLock(int *mtx, int flag);
+int TK_MutexUnlock(int *mtx);
+void TK_FastFlushCacheL1D();
+
 tss_dtor_t	thr_dtor_fun[256];
 int			thr_dtor_key[256];
 int			thr_n_dtor;
@@ -16,6 +20,10 @@ int			thr_n_dtor;
 
 int _mtx_sync_get(int *ptr);
 int _mtx_sync_set(int *ptr, int val);
+int _mtx_sync_getw(short *ptr);
+int _mtx_sync_setw(short *ptr, int val);
+
+int _mtx_sync_getcpu();
 
 #ifdef __BJX2__
 __asm {
@@ -32,6 +40,24 @@ _mtx_sync_set:
 	MOV.L		R5, (R4)
 	MOV.L		(R6), R3
 	RTS
+
+_mtx_sync_getw:
+	SNIPE.DC	R4, R6
+	MOV.W		(R6), R2
+	MOV.W		(R4), R2
+	RTS
+
+_mtx_sync_setw:
+	SNIPE.DC	R4, R6
+	MOV.W		(R6), R3
+	MOV.W		(R4), R2
+	MOV.W		R5, (R4)
+	MOV.W		(R6), R3
+	RTS
+
+_mtx_sync_getcpu:
+	MOV			1, R2
+	RTS
 };
 #else
 
@@ -42,7 +68,30 @@ int _mtx_sync_get(int *ptr)
 
 int _mtx_sync_set(int *ptr, int val)
 {
+	int lval;
+	
+	lval=*ptr;
 	*ptr=val;
+	return(lval);
+}
+
+int _mtx_sync_getw(short *ptr)
+{
+	return(*ptr);
+}
+
+int _mtx_sync_setw(short *ptr, int val)
+{
+	int lval;
+	
+	lval=*ptr;
+	*ptr=val;
+	return(lval);
+}
+
+int _mtx_sync_getcpu()
+{
+	return(1);
 }
 
 #endif
@@ -129,38 +178,70 @@ int thrd_join( thrd_t thr, int *res )
 
 int mtx_init( mtx_t* mutex, int type )
 {
-	*mutex = 0;
+//	*mutex = 0;
+	memset(mutex, 0, sizeof(mtx_t));
 }
 
 int mtx_lock( mtx_t* mutex )
 {
-	int tid, ntid;
-	int i;
+	int tid, ntid, tid1, cpu;
+	int i, j;
 	
 	if(!mutex)
 		return(thrd_error);
-	
+
 	tid=thrd_current();
 	ntid=-tid;
-		
-	i=_mtx_sync_set(mutex, ntid);
+	cpu=_mtx_sync_getcpu();
+
+	/* fast case. */
+	i=_mtx_sync_set((int *)mutex, ntid);
 	if(!i || (i==tid))
+//	if(!i || ((i&0xFFFFF)==tid))
 	{
-		i=_mtx_sync_set(mutex, tid);
-		if(i==ntid)
-			return(thrd_success);
+		if(i)
+		{
+			j=_mtx_sync_set((int *)mutex, i);
+			if(i==j)
+				return(thrd_success);
+		}else
+		{
+			j=mutex->vcor;
+			if(!j || (j==cpu))
+			{
+				i=_mtx_sync_set((int *)mutex, tid);
+				_mtx_sync_setw(&(mutex->vcor), cpu);
+				if(i==ntid)
+					return(thrd_success);
+			}
+		}
+	}else
+	{
+		/* restore prior value */
+		j=_mtx_sync_set((int *)mutex, i);
 	}
+
+#if 0
 	while(1)
 	{
 		while(i)
 		{
 			thrd_yield();
-			i=_mtx_sync_set(mutex, ntid);
+			i=_mtx_sync_set((int *)mutex, ntid);
 		}
-		i=_mtx_sync_set(mutex, tid);
+		i=_mtx_sync_set((int *)mutex, tid);
 		if(i==ntid)
 			break;
 	}
+#endif
+
+	while(1)
+	{
+		i=TK_MutexTryLock((int *)mutex, 1);
+		if(i>0)
+			break;
+	}
+
 	return(thrd_success);
 }
 
@@ -170,29 +251,73 @@ int mtx_timedlock(
 
 int mtx_trylock( mtx_t *mutex )
 {
-	int tid, ntid;
-	int i;
+	int tid, ntid, cpu;
+	int i, j;
 	
 	if(!mutex)
 		return(thrd_error);
-	
+
 	tid=thrd_current();
 	ntid=-tid;
-		
+	cpu=_mtx_sync_getcpu();
+	
+#if 0
 	i=_mtx_sync_set(mutex, ntid);
+//	if(!i || (i==tid))
 	if(!i || (i==tid))
 	{
 		i=_mtx_sync_set(mutex, tid);
 		if(i==ntid)
 			return(thrd_success);
 	}
+#endif
+
+#if 1
+	i=_mtx_sync_set((int *)mutex, ntid);
+	if(!i || (i==tid))
+//	if(!i || ((i&0xFFFFF)==tid))
+	{
+		if(i)
+		{
+			j=_mtx_sync_set((int *)mutex, i);
+			if(i==j)
+				return(thrd_success);
+		}else
+		{
+			j=mutex->vcor;
+			if(!j || (j==cpu))
+			{
+				i=_mtx_sync_set((int *)mutex, tid);
+				_mtx_sync_setw(&(mutex->vcor), cpu);
+				if(i==ntid)
+					return(thrd_success);
+			}
+		}
+	}else
+	{
+		/* restore prior value */
+		j=_mtx_sync_set((int *)mutex, i);
+	}
+#endif
+
+	i=TK_MutexTryLock((int *)mutex, 0);
+	if(i>0)
+		return(thrd_success);
 
 	return(thrd_busy);
 }
 
 int mtx_unlock( mtx_t *mutex )
 {
-	_mtx_sync_set(mutex, 0);
+	if(!mutex->vcflag)
+	{
+		/* fast case, simply mark as unlocked. */
+		_mtx_sync_set((int *)mutex, 0);
+		return(1);
+	}
+
+	TK_MutexUnlock((int *)mutex);
+	return(1);
 }
 
 void mtx_destroy( mtx_t *mutex )

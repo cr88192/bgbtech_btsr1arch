@@ -396,18 +396,28 @@ void W_AddFile (char *filename)
 				__debugbreak();
 
 			numlumps += header.numlumps;
+			if(numlumps<header.numlumps)
+				__debugbreak();
 
 			if(header.numlumps!=lumps0)
 				__debugbreak();
+
+//			__debugbreak();
 
 			printf("    IW wlumps=%d numlumps=%d\n",
 				header.numlumps, numlumps);
 
 			if(header.numlumps!=lumps0)
 				__debugbreak();
+
+			if(numlumps<header.numlumps)
+				__debugbreak();
+
 		}else
 			if(!strncmp(header.identification, "WAD2", 4))
 		{
+			lumps0 = header.numlumps;
+
 			header.numlumps = LONG(header.numlumps);
 			header.infotableofs = LONG(header.infotableofs);
 
@@ -418,6 +428,13 @@ void W_AddFile (char *filename)
 			w_lseek (handle, header.infotableofs, SEEK_SET);
 			w_read (handle, wad2info, length);
 			numlumps += header.numlumps;
+
+			if(header.numlumps!=lumps0)
+				__debugbreak();
+
+			if(numlumps<header.numlumps)
+				__debugbreak();
+
 			printf("    W2 wlumps=%d numlumps=%d\n",
 				header.numlumps, numlumps);
 		}else

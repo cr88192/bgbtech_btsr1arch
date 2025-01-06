@@ -928,6 +928,11 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 		__debugbreak();
 #endif
 
+//	if(n>(1<<25))
+//	{
+//		__debugbreak();
+//	}
+
 //#ifdef __BJX2__
 #if defined(__BJX2__) && !defined(__ADDR_X96__)
 // #if 0

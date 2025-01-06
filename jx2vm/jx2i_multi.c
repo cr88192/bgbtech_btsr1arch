@@ -61,6 +61,7 @@
 
 #include "sound_w32.c"
 
+#include "jx2r_fsutil.c"
 #include "jx2r_tkdfs.c"
 #include "jx2r_sdfat.c"
 #include "jx2r_spimmc.c"

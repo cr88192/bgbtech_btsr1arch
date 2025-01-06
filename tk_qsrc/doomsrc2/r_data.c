@@ -185,7 +185,7 @@ fixed_t*	spritetopoffset;
 
 lighttable_t	*colormaps;
 
-byte			cmap_luma[64];
+byte			cmap_luma[68];
 
 lighttable_t	*colormaps_alt[8];
 int				colormaps_aidx[8];
@@ -816,7 +816,7 @@ void R_InitTextures (void)
 		if(texture->name[0]!=mtexture->name[0])
 		{
 			__debugbreak();
-			tk_printf("R_InitTextures: %s -> %s\n",
+			printf("R_InitTextures: %s -> %s\n",
 				mtexture->name, texture->name);
 		}
 		
@@ -2034,7 +2034,7 @@ int	R_CheckTextureNumForName (char *name)
 	{
 		if(!numtextures)
 		{
-			tk_printf("R_CheckTextureNumForName: No Textures\n");
+			printf("R_CheckTextureNumForName: No Textures\n");
 		}
 	
 		for (i=0 ; i<numtextures ; i++)
@@ -2042,7 +2042,7 @@ int	R_CheckTextureNumForName (char *name)
 			if(textures[i]->magic1 != 0x123456)
 				{ __debugbreak(); }
 
-//			tk_printf("R_CheckTextureNumForName: %d %s %s\n", i,
+//			printf("R_CheckTextureNumForName: %d %s %s\n", i,
 //				textures[i]->name, tname);
 	//		if (!strnicmp (textures[i]->name, name, 8) )
 			if (!memcmp (textures[i]->name, tname, 8) )
@@ -2075,7 +2075,7 @@ int	R_TextureNumForName (char* name)
 	{
 //		I_Error ("R_TextureNumForName: %s not found",
 //			tname);
-		tk_printf("R_TextureNumForName: %s not found\n", tname);
+		printf("R_TextureNumForName: %s not found\n", tname);
 		return(0);
 	}
 	return i;

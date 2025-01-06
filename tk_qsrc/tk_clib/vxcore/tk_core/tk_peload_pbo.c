@@ -438,6 +438,8 @@ int TKPE_ApplyDataRelocs(
 TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	char *imgname, char *cwd, int is_dll);
 
+byte tkpe_magic_ubkey;
+
 #if 1
 // byte *TKPE_LoadDynPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)
 TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
@@ -454,7 +456,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	byte is64;
 	byte is_pel4, cmp;
 	u32 csum1, csum2;
-	int sig_mz, sig_pe, mach, mmagic;
+	int sig_mz, sig_pe, mach, mmagic, mchar, mdllchar;
 	int rva_rlc, sz_rlc;
 	s64 rlc_disp;
 	u32 tls_rva, tls_sz, tls_iptr, tls_key, tls_rds, tls_rde;
@@ -463,6 +465,13 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	int ofs_pe, pboix, szcpy;
 	int cb, nb, kb;
 	int i, j, k, l, n;
+	
+	if(!tkpe_magic_ubkey)
+	{
+		k=TK_GetRandom16ASLR();
+		k=(k^(k>>8))&0xFF;
+		tkpe_magic_ubkey=k;
+	}
 	
 	tk_fseek(fd, fdoffs, 0);
 	tk_fread(tbuf, 1, 1024, fd);
@@ -534,6 +543,10 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		return(NULL);
 	}
 
+	mchar=tkfat_getWord(tbuf+ofs_pe+0x16);
+	mdllchar=tkfat_getWord(tbuf+ofs_pe+0x5E);
+
+
 	if(is64)
 	{
 //		puts("TKPE: PE64\n");
@@ -553,7 +566,6 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		sz_exp=*(u32 *)(tbuf+ofs_pe+0x8C);
 		rva_imp=*(u32 *)(tbuf+ofs_pe+0x90);
 		sz_imp=*(u32 *)(tbuf+ofs_pe+0x94);
-
 	}else
 	{
 //		puts("TKPE: PE32\n");
@@ -601,6 +613,10 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 		TKMM_PROT_EXEC);
 
 //	imgptr+=i;
+
+	img->dllflags=
+		(mchar&0x0000FFFFULL) |
+		((mdllchar&0x0000FFFFULL)<<16);
 
 	img->imgbase=imgptr;
 	img->imgname=TKMM_LVA_Strdup(imgname);
@@ -748,6 +764,8 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	{
 		entry|=0x000C000000000001ULL;
 	}
+
+	entry|=((u64)tkpe_magic_ubkey)<<56;
 
 //	img->bootptr=imgptr+startrva;
 	img->bootptr=(void *)entry;

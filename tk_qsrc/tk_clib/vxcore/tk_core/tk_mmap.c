@@ -114,6 +114,11 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 		{
 			ptr=TKMM_PageAlloc(len);
 		}
+		
+		if(!ptr)
+		{
+			return(NULL);
+		}
 
 		TK_VMem_MProtectPages((u64)ptr, len, prot);
 	

@@ -130,10 +130,13 @@ wire			srSxo;
 assign		srWxe	= regSr[27];
 assign		srUser	= !regSr[30];
 assign		srSxo	= istrSxo[0];
-assign		srRiscv	= (regSr[27:26] == 2'b01);
+// assign		srRiscv	= (regSr[27:26] == 2'b01);
+assign		srRiscv	= regSr[26];
 
 `ifdef jx2_enable_riscv_xg3
 assign	srXG3 = srRiscv && srWxe;
+`else
+assign	srXG3 = 0;
 `endif
 
 `ifdef jx2_enable_xg2mode
@@ -1208,7 +1211,8 @@ begin
 	if(srRiscv && !srXG2RV)
 	begin
 //		if(istrWord[1:0]==2'b11)
-		if(istrWordA[1:0]==2'b11)
+//		if(istrWordA[1:0]==2'b11)
+		if((istrWordA[1:0]==2'b11) || srXG3)
 		begin
 			opIsFxA = 1;		opIsFzA = 1;
 			opIsFCA = 0;		opIsDzA = 0;
@@ -1385,7 +1389,8 @@ begin
 `endif
 	if(opIsFxA)
 	begin
-		if(opIsWfA && opIsWfB)
+//		if(opIsWfA && opIsWfB)
+		if(srSsc3)
 		begin
 //			$display("DecOpWz3: WEX3");
 		
