@@ -53,6 +53,10 @@ BJX2_Context *BJX2_CreateSubContext(BJX2_Context *pctx)
 
 int BJX2_ContextPowerOnState(BJX2_Context *ctx)
 {
+	BJX2_MemSpan *sp;
+	byte *buf;
+	int isrv;
+
 	ctx->regs[BJX2_REG_PC]=0;
 	ctx->regs[BJX2_REG_VBR]=0;
 	ctx->regs[BJX2_REG_SR]=0x40000000ULL;
@@ -60,6 +64,33 @@ int BJX2_ContextPowerOnState(BJX2_Context *ctx)
 	ctx->regs[BJX2_REG_PC_HI]=0;
 	ctx->regs[BJX2_REG_GBR_HI]=0;
 	ctx->regs[BJX2_REG_VBR_HI]=0;
+
+	isrv=0;
+	sp=BJX2_MemSpanForName(ctx, "ROM");
+	if(sp)
+	{
+		buf=sp->data;
+
+		if(	(buf[4]==0x13) &&
+			(buf[5]==0x00))
+		{
+			isrv=1;
+		}
+
+		if(	(buf[4]==0x0A) &&
+			(buf[5]==0x00))
+		{
+			isrv=2;
+		}
+
+	}
+
+	if(isrv)
+	{
+		ctx->regs[BJX2_REG_SR]|=BJX2_FLAG_SR_RVE;
+		if(isrv==2)
+			ctx->regs[BJX2_REG_SR]|=BJX2_FLAG_SR_WXE;
+	}
 	
 	return(0);
 }

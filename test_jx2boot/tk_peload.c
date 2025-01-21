@@ -917,7 +917,7 @@ TKPE_CalculateImagePel4BChecksum:
 u32 TKPE_CalculateImagePel4BChecksum(byte *buf, int size)
 {
 	byte *cs, *cse;
-	u32 v;
+	u32 v, v0, v1, v2, v3;
 	u64 acc_lo, acc_hi;
 	u32 csum;
 	
@@ -1424,6 +1424,11 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 	printf("t: %d ms\n", TK_GetTimeMs());
 
 	entry=((u64)imgptr)+startrva;
+
+	if(mach==0xB264)
+	{
+		entry|=0x0000000000000001ULL;
+	}
 
 	if(mach==0x5064)
 	{

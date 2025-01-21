@@ -445,9 +445,14 @@ void printf(char *str, ...)
 		case 'd':
 //			v=(int)(*plst++);
 			if(isll)
+			{
 				lv=va_arg(lst, long long);
+			}
 			else
+			{
 				lv=va_arg(lst, int);
+				lv=(s32)lv;
+			}
 			if(w)
 			{
 				print_decimal_n(lv, w);
@@ -460,9 +465,18 @@ void printf(char *str, ...)
 //			if(!w)w=8;
 //			v=(int)(*plst++);
 			if(isll)
+			{
 				lv=va_arg(lst, long long);
+			}
 			else
+			{
 				lv=va_arg(lst, int);
+//				if(lv!=((u32)lv))
+//					__debugbreak();
+				lv=(u32)lv;
+
+//				__debugbreak();
+			}
 
 //			__debugbreak();
 

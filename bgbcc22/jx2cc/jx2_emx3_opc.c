@@ -2047,6 +2047,8 @@ int BGBCC_JX2X3_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 	if(!(ctx->emit_riscv&0x11) || !(ctx->emit_riscv&0x22))
 		return(0);
 
+//	return(0);
+
 	rm=BGBCC_JX2RV_NormalizeReg(ctx, rm);
 	rn=BGBCC_JX2RV_NormalizeReg(ctx, rn);
 

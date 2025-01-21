@@ -130,6 +130,7 @@ int tk_cmd2idx(char *s)
 	return(-1);
 }
 
+#ifdef __BJX2__
 void TK_FlushCacheL1D_INVDCA(void);
 void TK_FlushCacheL1D_INVL2(void);
 void TK_FlushCacheL1D_INVDC(void *ptr);
@@ -171,6 +172,51 @@ TK_FlushCacheL1D_ReadBuf:
 	BT		.L0
 	RTS
 };
+#endif
+
+
+#ifdef __RISCV__
+void TK_FlushCacheL1D_INVDCA(void);
+void TK_FlushCacheL1D_INVL2(void);
+void TK_FlushCacheL1D_INVDC(void *ptr);
+void TK_FlushCacheL1D_INVIC(void *ptr);
+void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
+__asm {
+TK_FlushCacheL1D_INVDCA:
+//	MOV		-1, R4
+//	INVDC	R4
+	NOP
+	NOP
+	RTS
+
+TK_FlushCacheL1D_INVL2:
+//	MOV		-2, R4
+//	INVDC	R4
+	NOP
+	NOP
+	RTS
+
+TK_FlushCacheL1D_INVDC:
+//	INVDC	R4
+	NOP
+	NOP
+	RTS
+TK_FlushCacheL1D_INVIC:
+//	INVIC	R4
+//	WEXMD	31
+	NOP
+	NOP
+	RTS
+
+TK_FlushCacheL1D_ReadBuf:
+	.L0:
+	MOV.Q	(R10), R17
+	ADD		-16, R11
+	ADD		16, R10
+	BGT		R11, R0, .L0
+	RTS
+};
+#endif
 
 void TK_FlushCacheL1D(void *ptr)
 {

@@ -5,6 +5,8 @@ XG3 / XG3RV:
 ** XG3RV uses the same encoding space as the RISC-V 'C' extension.
 * XG3RV will require a 32-bit instruction alignment.
 * For XG3, will consider support for predicated instructions as optional.
+* Formally, XG3 will only define the User-Mode ISA.
+** System level specifics are out of scope.
 
 
 Original XG2/XG2RV Encoding:
@@ -19,6 +21,7 @@ Repack:
 * iiii-iiiiii-iiiiii-aZZZ-nnnnnn-bY-YYPw (F8)
 * iiii-iiiiii-iiiiii-aZZZ-jjjjjj-bY-YYPw (BRA)
 * iiii-iiiiii-iiiiii-jjjj-jjjjaa-a1-1Y10 (FE/FF)
+
 
 Pw:
 * 00: OP?T (Conditional True, Optional)
@@ -44,7 +47,7 @@ Changes (from BJX2 / XG2):
 * FA/FB, EA/EB/EE/EF: Will be N/E.
 * WEX is N/E.
 * PrWEX is N/E.
-* Will relocate BRA/BSR to the F8 block.
+* Will modify BRA/BSR encodings.
 ** Will be relative to BasePC vs NextPC.
 ** This will be to match RISC-V behavior.
 
@@ -157,6 +160,15 @@ For the F1/F2 block, a 33-bit immediate will be formed:
 * S-jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk-kkkk
 
 
+For F1 Load/Store and the Jumbo-FE prefix, the MSB of the instruction word will indicate displacement scale:
+* 0: Scaled Displacement
+* 1: Unscaled Displacement
+** This will be N/A for Byte operations.
+* For LEA.x (Possible):
+** 0: LEA.x
+** 1: LEAT.x
+
+
 For some F2 Block Instructions:
 
 Two Jumbo FE prefixes will give a 64-bit immediate:
@@ -235,7 +247,7 @@ The additional X bits will be reserved for additional opcode.
 ** 1010-oooooo-mmmmmm-0000-nnnnnn-00-0010  (N/A)
 ** 1010-oooooo-mmmmmm-0000-nnnnnn-10-0010  (N/A)
 ** 1011-oooooo-mmmmmm-0000-nnnnnn-00-0010  (N/A)
-** 1011-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX		(Rm, Ro), Rn
+** 1011-oooooo-mmmmmm-0000-nnnnnn-10-0010 ? LDTEX		(Rm, Ro), Rn
 ** 1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		(Rm, Ro), Rn	//LB
 ** 1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.B		(Rm, Ro), Rn	//LBU
 ** 1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		(Rm, Ro), Rn	//LH
@@ -243,13 +255,13 @@ The additional X bits will be reserved for additional opcode.
 ** 1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		(Rm, Ro), Rn	//LW
 ** 1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.L		(Rm, Ro), Rn	//LWU
 ** 1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		(Rm, Ro), Rn	//LD
-** 1111-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX2
+** 1111-oooooo-mmmmmm-0000-nnnnnn-10-0010 ? LDTEX2
 
 * F0zz_1zzZ
 ** 0000-oooooo-mmmmmm-0001-nnnnnn-00-0010  ADD			Rm, Ro, Rn
-** 0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX			Xm, Xo, Xn
+** 0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX			Xm, Xo, Xn	//(ALUX)
 ** 0001-oooooo-mmmmmm-0001-nnnnnn-00-0010  SUB			Rm, Ro, Rn
-** 0001-oooooo-mmmmmm-0001-nnnnnn-10-0010  SUBX			Xm, Xo, Xn
+** 0001-oooooo-mmmmmm-0001-nnnnnn-10-0010  SUBX			Xm, Xo, Xn	//(ALUX)
 ** 0010-oooooo-mmmmmm-0001-nnnnnn-00-0010  MULS.L		Rm, Ro, Rn
 ** 0010-oooooo-mmmmmm-0001-nnnnnn-10-0010  MULS.Q		Rm, Ro, Rn
 ** 0011-oooooo-mmmmmm-0001-nnnnnn-00-0010  MULU.L		Rm, Ro, Rn
@@ -257,11 +269,11 @@ The additional X bits will be reserved for additional opcode.
 ** 0100-oooooo-mmmmmm-0001-nnnnnn-00-0010  MIN			Rm, Ro, Rn
 ** 0100-oooooo-mmmmmm-0001-nnnnnn-10-0010  MAX			Rm, Ro, Rn
 ** 0101-oooooo-mmmmmm-0001-nnnnnn-00-0010  AND			Rm, Ro, Rn
-** 0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX			Xm, Xo, Xn
+** 0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX			Xm, Xo, Xn	//(ALUX)
 ** 0110-oooooo-mmmmmm-0001-nnnnnn-00-0010  OR			Rm, Ro, Rn
-** 0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX			Xm, Xo, Xn
+** 0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX			Xm, Xo, Xn	//(ALUX)
 ** 0111-oooooo-mmmmmm-0001-nnnnnn-00-0010  XOR			Rm, Ro, Rn
-** 0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX			Xm, Xo, Xn
+** 0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX			Xm, Xo, Xn	//(ALUX)
 
 ** 1zzz-zzzzzz-mmmmmm-0001-nnnnnn-z0-0010  (2R Space)
 
@@ -306,26 +318,26 @@ The additional X bits will be reserved for additional opcode.
 ** 0010-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTLQ		Rm, Ro, Rn
 ** 0010-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHARX		Xm, Ro, Xn
 ** 0011-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTRQ		Rm, Ro, Rn
-** 0011-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLRX		Xm, Ro, Xn
+** 0011-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLRX		Xm, Ro, Xn	//(ALUX)
 ** 0100-oooooo-mmmmmm-0011-nnnnnn-00-0010  MULHS.Q		Rm, Ro, Rn
-** 0100-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHADX		Xm, Ro, Xn
+** 0100-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHADX		Xm, Ro, Xn	//(ALUX)
 ** 0101-oooooo-mmmmmm-0011-nnnnnn-00-0010  MULHU.Q		Rm, Ro, Rn
-** 0101-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLDX		Xm, Ro, Xn
+** 0101-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLDX		Xm, Ro, Xn	//(ALUX)
 ** 0110-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTL.L		Rm, Ro, Rn
-** 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTLX		Xm, Ro, Xn
+** 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTLX		Xm, Ro, Xn	//(ALUX)
 ** 0111-oooooo-mmmmmm-0011-nnnnnn-00-0010  (N/A)
 ** 0111-oooooo-mmmmmm-0011-nnnnnn-10-0010  (N/A)
 
 ** 1zzz-zzzzzz-mmmmmm-0011-nnnnnn-z0-0010  (2R Space)
 
 * F0nm_4eoz
-** 0000-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		Xn, (Rm, Disp6s)
+** 0000-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? MOV.X		Xn, (Rm, Disp6s)
 ** 0000-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.B		(Rm, Disp6s), Rn
 ** 0001-oooooo-mmmmmm-0100-nnnnnn-00-0010  (N/A)
 ** 0001-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.W		(Rm, Disp6s), Rn
-** 0010-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		Rn, (Rm, Disp6s)
+** 0010-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.S		Rn, (Rm, Disp6s)
 ** 0010-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.L		(Rm, Disp6s), Rn
-** 0011-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		Rn, (Rm, Disp6s)
+** 0011-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.H		Rn, (Rm, Disp6s)
 ** 0011-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.Q		(Rm, Disp6s), Rn
 ** 0100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		Xn, (Rm, Ro)
 ** 0100-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.B		(Rm, Ro), Rn
@@ -335,13 +347,13 @@ The additional X bits will be reserved for additional opcode.
 ** 0110-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.L		(Rm, Ro), Rn
 ** 0111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		Rn, (Rm, Ro)
 ** 0111-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.Q		(Rm, Ro), Rn
-** 1000-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		(Rm, Disp6s), Xn
-** 1000-oooooo-mmmmmm-0100-nnnnnn-10-0010  ? MOVN.L		(Rm, Disp6s), Rn //FLW
+** 1000-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? MOV.X		(Rm, Disp6s), Xn
+** 1000-oooooo-mmmmmm-0100-nnnnnn-10-0010 ? MOVN.L		(Rm, Disp6s), Rn //FLW
 ** 1001-oooooo-mmmmmm-0100-nnnnnn-00-0010  (N/A)
 ** 1001-oooooo-mmmmmm-0100-nnnnnn-10-0010  -
-** 1010-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		(Rm, Disp6s), Rn
+** 1010-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.S		(Rm, Disp6s), Rn
 ** 1010-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.F8		(Rm, Disp6s), Rn
-** 1011-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		(Rm, Disp6s), Rn
+** 1011-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.H		(Rm, Disp6s), Rn
 ** 1011-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.2H		(Rm, Disp6s), Rn
 ** 1100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		(Rm, Ro), Xn
 ** 1100-oooooo-mmmmmm-0100-nnnnnn-10-0010  ? MOVN.L		(Rm, Ro), Rn //FLW
@@ -501,8 +513,19 @@ If a CMPxx instruction is encoded with Rn=ZR, this will update SR.T based on the
 * zzzz-oooooo-mmmmmm-1010-nnnnnn-z0-0010  (Reserved)
 * zzzz-oooooo-mmmmmm-1011-nnnnnn-z0-0010  (Reserved)
 
-* zzzz-oooooo-mmmmmm-1100-nnnnnn-z0-0010  (Reserved / BRA Space)
-* zzzz-oooooo-mmmmmm-1101-nnnnnn-z0-0010  (Reserved / BSR Space)
+* jjjj-oooooo-mmmmmm-1100-nnnnnn-s0-0010  BRA Disp23
+* jjjj-oooooo-mmmmmm-1101-nnnnnn-s0-0010  BSR Disp23
+** { s-nnnnnn-jjjj-oooooo-mmmmmm }
+** Multiple of 4 bytes, relative to BasePC.
+
+BRA/BSR encoding:
+* In RISC-V terms, BRA will be a "JAL X0, Disp" and BSR "JAL X1, Disp".
+** RV JAL may still be used in XG3RV Mode.
+** However, branching to a non 32-bit aligned address is undefined.
+** Unlike RV JAL, these may not encode additional link registers.
+* Branch reach will be +/- 16MB
+** This will only be able to branch to a 32-bit aligned address.
+
 
 * zzzz-oooooo-mmmmmm-1110-nnnnnn-z0-0010  (Reserved)
 * zzzz-oooooo-mmmmmm-1111-nnnnnn-z0-0010  (Reserved)
@@ -597,6 +620,8 @@ For the relative branch cases, these will be modified to be relative to BasePC a
 For now, the 2RI encodings are not being carried over.
 Many were functionally redundant in this case, or were optimization cases.
 
+Note that the 2RI instructions in this case would use the same Imm10 format at the 3RI encodings (the Em and Wm bits will be available for opcode).
+
 
 === F8 Block Listing ===
 
@@ -626,7 +651,7 @@ Many were functionally redundant in this case, or were optimization cases.
 ** iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  MOV.L	(GP, Disp16u*4), Rn	//LW
 ** iiii-iiiiii-iiiiii-1110-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1110-nnnnnn-11-0010  -
-** iiii-iiiiii-iiiiii-1111-jjjjjj-k1-00Pw  BSR		(PC, Disp23s)	//JAL lbl
+** iiii-iiiiii-iiiiii-1111-jjjjjj-k1-00Pw / BSR		(PC, Disp23s)	//JAL lbl
 
 BRA/BSR:
 * bits (1:0) are understood as 0.
@@ -634,15 +659,11 @@ BRA/BSR:
 * j field gives (23:18)
 * k field gives (33:24), as a sign-extension bit
 
-The reason for changing the BRA/BSR encoding:
-* The F0 block encoding would be very ugly in the repacked form.
-* In RISC-V terms, BRA will be a "JAL X0, Disp" and BSR "JAL X1, Disp".
-** RV JAL may still be used in XG3RV Mode.
-** However, branching to a non 32-bit aligned address is undefined.
-** Unlike RV JAL, these may not encode additional link registers.
-* Branch reach will be +/- 16MB
-** It will only be able to branch to a 32-bit aligned address.
+The BRA/BSR encoding has been moved back to the F0 Block.
 
+FLDCH:
+* Nominally loads a Binary16 value.
+* If Rn==R2, it is a BREAK with an Index.
 
 * With Jumbo-FF Prefix:
 ** iiii-iiiiii-iiiiii-0000-nnnnnn-s1-0010  LDI		Imm33s, Rn

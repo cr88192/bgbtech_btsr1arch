@@ -10,6 +10,8 @@
 *.db-shm
 *.db-wal
 *.ipch
+*.vsidx
+*.lock
 
 randbits.txt
 

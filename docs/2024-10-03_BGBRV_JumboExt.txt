@@ -47,6 +47,18 @@ The J21O prefix may combine with 3 register ops:
 * the z field will give additional opcode bits.
 ** 0 will perform the base operation.
 
+J21O+SLT:
+* Sub-Op:
+** 0000: SLT
+** 0001: SEQ
+** 0010: SGE
+** 0011: SNE
+** 0100: -
+** 0101: STST
+** 0110: -
+** 0111: SNTST
+
+
 If combined with LUI, AUIPC, or JAL:
 * Will be understood as a J12O.
 * The t and i fields will be filled into the low 12 bits.

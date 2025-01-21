@@ -241,9 +241,9 @@ SR Bits:
 * 8..15: U0..U7, Context Dependent
 ** May be used as a Predicate Stack.
 * 16: XMOV: Bounds Enforce Mode
-* 17: Reserved
-* 18: RBS1 (RBS) / Reserved
-* 19: RBS2 (RBS) / Reserved
+* 17: UBSM: U-Bits Sealed Mode
+* 18: RBS1 (RBS / Register Bank) / Reserved
+* 19: RBS2 (RBS / Register Bank) / Reserved
 * 20: WM2, Reserved
 * 21: WM1, Reserved
 * 22: WX4, Mode 4
@@ -329,6 +329,10 @@ The Vector Base Register (VBR) will have the layout:
 * 11: Register Bank 3
 
 RBS would increase the total number of internal GPRs to 256, but would allow assigning interrupts and system-call handling to different register banks and avoiding the need to save and restore all of the registers to handle interrupts or perform system calls.
+
+UBSM: U-Bits Sealed Mode
+* If this flag is set, the U-Bits will be assumed to hold a magic number. Branching to a tagged pointer which has U-Bits which don't match the current value will raise an exception.
+* Branching to an untagged pointer will raise an exception.
 
 
 === Special Restrictions ===
@@ -2092,12 +2096,12 @@ F0zz Instruction Block:
 
 *** F028_3en0 / BRA.B	(PC, Rn)	//(Op24) BRA, Byte Scale
 *** F029_3en0 / BSR.B	(PC, Rn)	//(Op24) BSR, Byte Scale
-*** F02A_3en0 / BT.B		(PC, Rn)	//(Op24) BT, Byte Scale
-*** F02B_3en0 / BF.B		(PC, Rn)	//(Op24) BF, Byte Scale
+*** F02A_3en0 / BT.B	(PC, Rn)	//(Op24) BT, Byte Scale
+*** F02B_3en0 / BF.B	(PC, Rn)	//(Op24) BF, Byte Scale
 *** F02C_3en0  BRA.L	(PC, Rn)	//Branch, DWord Scale
 *** F02D_3en0  BSR.L	(PC, Rn)	//Branch, DWord Scale
-*** F02E_3en0 / BT.L		(PC, Rn)	//Branch, DWord Scale
-*** F02F_3en0 / BF.L		(PC, Rn)	//Branch, DWord Scale
+*** F02E_3en0 / BT.L	(PC, Rn)	//Branch, DWord Scale
+*** F02F_3en0 / BF.L	(PC, Rn)	//Branch, DWord Scale
 
 *** F033_3gn0  MOVNT		Rn
 *** F033_3Gn0  REGCHKG		Rn		//Debug: Generate Register Check Value
@@ -2383,6 +2387,8 @@ F0zz Instruction Block:
 * F0dd_Fddd / BF	(PC, disp20s)		//(Dropped), Branch False, 1
 
 Branch ops may only exist in lane 1.
+* Displacement extended to 23 bits in XG2 and XG3 Mode.
+* Displacement is internally reworked for XG3.
 
 1: These are now to be encoded as as E0dd_Cddd and E4dd_Cddd.
 This space will now be marked as subject to being reclaimed.
@@ -2653,8 +2659,8 @@ F8zz Instruction Block:
 * F8Bn_dddd ? LEA.Q		(GBR, Disp16u), Rk
 * F8Cn_iiii  -
 * F8Dn_iiii  -
-* F8Ei_iiii ? BRA/BSR		(PC, Disp20s)	//XG3: Relocated from F0
-* F8Fi_iiii ? BRA/BSR		(PC, Disp20s)	//XG3: Relocated from F0
+* F8Ei_iiii /? BRA/BSR		(PC, Disp20s)	//XG3: Relocated from F0
+* F8Fi_iiii /? BRA/BSR		(PC, Disp20s)	//XG3: Relocated from F0
 
 The FCzz block will repeat the F8zz block, but with the primary difference that FCzz will indicate a WEX2 form.
 
@@ -2693,7 +2699,7 @@ In XG2 and XG3, LEA.Q may be extended:
 * Wnmi=10: MOV.Q	(GBR, Disp16), Rn
 * Wnmi=11: MOV.L	(GBR, Disp16), Rn
 
-XG3 will relocate the BRA and BSR instructions from F0 to F8.
+Drop: XG3 will relocate the BRA and BSR instructions from F0 to F8.
 * In XG3:
 ** WM will encode BSR vs BRA
 ** WN and WI will be part of the immediate.
@@ -2703,6 +2709,9 @@ XG3 will relocate the BRA and BSR instructions from F0 to F8.
 ** WN, WM, and WI will be part of the immediate.
 *** XOR'ed against the sign extension from Rm[3].
 ** Rn[3] will encode the sign extension.
+
+Change:
+* XG3 will keep BRA and BSR in the F0 block, but will modify the encoding.
 
 
 ==== F9zz Instruction Block ====

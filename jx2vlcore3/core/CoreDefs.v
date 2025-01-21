@@ -1066,6 +1066,8 @@ parameter[5:0] JX2_UCIX_ALU_CMPQHI	= 6'h2D;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CMPQGT	= 6'h2E;		//ALU Command
 parameter[5:0] JX2_UCIX_ALU_CSELT	= 6'h2F;		//ALU CSELT
 
+parameter[5:0] JX2_UCIX_ALU_TSTNQ	= 6'h2F;		//(CMP3R)
+
 parameter[5:0] JX2_UCIX_ALU_ADDSL	= 6'h00;		//ALU ADDSL
 parameter[5:0] JX2_UCIX_ALU_SUBSL	= 6'h01;		//ALU SUBSL
 

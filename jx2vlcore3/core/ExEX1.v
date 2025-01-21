@@ -962,8 +962,9 @@ begin
 		
 		JX2_UCMD_INVOP: begin
 			if(!tMsgLatch)
-				$display("EX1: Invalid Opcode %X-%X, IsRV=%d PC=%X",
-					tOpUCmd1, opUIxt, tBraIsRiscv, regValBPc);
+				$display("EX1: Invalid Opcode %X-%X, IsRV=%d PC=%X D=%X",
+					tOpUCmd1, opUIxt, tBraIsRiscv, regValBPc,
+					opIstrWord);
 			tNextMsgLatch	= 1;
 
 //			tExTrapExc = {
@@ -2313,6 +2314,19 @@ begin
 			tExHold		= 1;
 			if(regInExc[15])
 				tExHold		= 0;
+		end
+`endif
+
+`ifndef def_true
+		if(tValBra[31:28]!=0)
+		begin
+			if(!tMsgLatch)
+			begin
+				$display("EX1: Branch Debug, PC=%X, Bra=%X",
+					regValPc, tValBra);
+				$display("  BasePC=%X Disp=%X", tValBraBasePc, regValImmJCmp);
+			end
+			tNextMsgLatch	= 1;
 		end
 `endif
 

@@ -4,14 +4,17 @@ Repackage instructions from XG3RV to XG2.
 
 module DecOpRepXG3(
 	/* verilator lint_off UNUSED */
+	clock,
 	istrWordIn,	istrWordOut,
-	istrMTagOut, isXG3
+	istrMTagOut, isXG3, isFlush
 	);
 
+input			clock;
 input[31:0]		istrWordIn;
 output[31:0]	istrWordOut;
 output[1:0]		istrMTagOut;
 input			isXG3;
+input			isFlush;
 
 reg[31:0]		tWordOut;
 assign		istrWordOut = tWordOut;
@@ -26,14 +29,19 @@ reg[31:0]		tWordRepFE;
 
 reg[31:0]		tWordSel;
 reg[1:0]		tWordSelIx;
+reg				tPSelBit;
 
 always @*
 begin
 	tWordOut = istrWordIn;
 	tWordMTag = 0;
 	
+	tPSelBit	= (istrWordIn[ 4: 3] == 2'b11);
+	if(!istrWordIn[1])
+		tPSelBit = istrWordIn[0];
+	
 	tWordRepF0 = {
-		istrWordIn[19:16],
+		istrWordIn[15:12],
 		istrWordIn[    5],
 		istrWordIn[   10],
 		istrWordIn[   20],
@@ -46,14 +54,15 @@ begin
 		!istrWordIn[  27],
 		istrWordIn[    1],
 		istrWordIn[    4],
-		istrWordIn[ 4: 3] == 2'b11,
+//		istrWordIn[ 4: 3] == 2'b11,
+		tPSelBit,
 		istrWordIn[ 3: 2],
 		istrWordIn[ 9: 6],
 		istrWordIn[19:16]
 	};
 
 	tWordRepF1 = {
-		istrWordIn[19:16],
+		istrWordIn[15:12],
 		istrWordIn[    5],
 		istrWordIn[   10],
 		istrWordIn[   20],
@@ -66,7 +75,8 @@ begin
 		!istrWordIn[  31],
 		istrWordIn[    1],
 		istrWordIn[    4],
-		istrWordIn[ 4: 3] == 2'b11,
+//		istrWordIn[ 4: 3] == 2'b11,
+		tPSelBit,
 		istrWordIn[ 3: 2],
 		istrWordIn[ 9: 6],
 		istrWordIn[19:16]
@@ -80,7 +90,8 @@ begin
 		!istrWordIn[   5],
 		istrWordIn[    1],
 		istrWordIn[    4],
-		istrWordIn[ 4: 3] == 2'b11,
+//		istrWordIn[ 4: 3] == 2'b11,
+		tPSelBit,
 		istrWordIn[ 3: 2],
 
 		istrWordIn[14:12],
@@ -98,7 +109,8 @@ begin
 		istrWordIn[    1],
 
 		istrWordIn[    4],
-		istrWordIn[ 4: 3] == 2'b11,
+//		istrWordIn[ 4: 3] == 2'b11,
+		tPSelBit,
 		istrWordIn[ 3: 2],
 		istrWordIn[15: 8]
 	};
@@ -124,6 +136,13 @@ begin
 	if(isXG3 && (istrWordIn[ 1: 0] != 2'b11))
 	begin
 		tWordOut = tWordSel;
+		tWordMTag = 1;
+//		$display("DecOpRepXG3: %X -> %X", istrWordIn, tWordOut);
+	end
+	
+	if(isFlush)
+	begin
+		tWordOut = 32'h3030_F000;
 		tWordMTag = 1;
 	end
 end

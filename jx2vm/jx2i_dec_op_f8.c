@@ -148,6 +148,15 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 //		if((opw1&31)==15)
 		if(((opw1&31)==15) &&
 			!(jbits&0x40000000U) &&
+			!(jbits&0x02000000U) &&
+			!isxg3)
+		{
+			op->nmid=BJX2_NMID_BREAK;
+			op->Run=BJX2_Op_BREAK_None;
+			op->fl|=BJX2_OPFL_CTRLF;
+		}
+		
+		if((rn_i16==BJX2_REG_SP) &&
 			!(jbits&0x02000000U))
 		{
 			op->nmid=BJX2_NMID_BREAK;

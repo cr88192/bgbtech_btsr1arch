@@ -405,6 +405,16 @@ reg[47:0]		ifValPcInc;
 
 `endif
 
+(* max_fanout = 200 *)
+	reg[63:0]		ifValFetchSr;
+
+(* max_fanout = 200 *)
+ 	reg[7:0]	opBraFlushMask;
+(* max_fanout = 200 *)
+	reg[7:0]	nxtBraFlushMask;
+(* max_fanout = 200 *)
+	reg[7:0]	tIsrBraFlushMask;
+
 // wire[63:0]	ifIstrWord;	//source instruction word
 wire[95:0]		ifIstrWord;	//source instruction word
 wire[95:0]		ifIstrWordA;	//source instruction word
@@ -476,6 +486,14 @@ assign	dbgDcOutOK	= dcOutOK;
 wire[127:0]		memRegExc;
 wire[63:0]		memRegTraPc;
 
+wire			srFlushIf;		//Flushing the IF stage.
+wire			srFlushId1;		//Flushing the ID1 stage.
+wire			srFlushId2;		//Flushing the ID2 stage.
+
+assign		srFlushIf = opBraFlushMask[3];
+assign		srFlushId1 = opBraFlushMask[2];
+assign		srFlushId2 = opBraFlushMask[1];
+
 wire			srWxe;
 wire			srXG2;
 wire			srXG3;
@@ -483,18 +501,26 @@ wire			srRiscv;
 wire			srXG2RV;
 wire			srUser;
 wire			srSxo;
-assign		srWxe	= crOutSr[27];
-assign		srUser	= !crOutSr[30];
-assign		srRiscv	= (crOutSr[27:26] == 2'b01);
+// assign		srWxe	= crOutSr[27];
+// assign		srUser	= !crOutSr[30];
+// assign		srRiscv	= (crOutSr[27:26] == 2'b01);
+// assign		srRiscv	= crOutSr[26];
+
+assign		srWxe	= ifValFetchSr[27];
+assign		srUser	= !ifValFetchSr[30];
+assign		srRiscv	= ifValFetchSr[26];
 assign		srXG3 = srRiscv && srWxe;
 
 `ifdef jx2_enable_riscv_xg3
 DecOpRepXG3		repXg3a(
-	ifIstrWordA[31: 0], ifIstrWord[31: 0], ifIstrMTag[1:0], srXG3);
+	clock, ifIstrWordA[31: 0], ifIstrWord[31: 0], ifIstrMTag[1:0],
+	srXG3, srFlushIf);
 DecOpRepXG3		repXg3b(
-	ifIstrWordA[63:32], ifIstrWord[63:32], ifIstrMTag[3:2], srXG3);
+	clock, ifIstrWordA[63:32], ifIstrWord[63:32], ifIstrMTag[3:2],
+	srXG3, srFlushIf);
 DecOpRepXG3		repXg3c(
-	ifIstrWordA[95:64], ifIstrWord[95:64], ifIstrMTag[5:4], srXG3);
+	clock, ifIstrWordA[95:64], ifIstrWord[95:64], ifIstrMTag[5:4],
+	srXG3, srFlushIf);
 `else
 assign	ifIstrWord = ifIstrWordA;
 assign	ifIstrMTag = 0;
@@ -598,8 +624,8 @@ reg[95:0]		id1IstrWordL1;	//source instruction word
 reg[95:0]		id1IstrWordL2;	//source instruction word
 reg[3:0]		id1IstrSxo;
 
-(* max_fanout = 200 *)
-	reg[63:0]		ifValFetchSr;
+// (* max_fanout = 200 *)
+//	reg[63:0]		ifValFetchSr;
 (* max_fanout = 200 *)
 	reg[63:0]		id1ValFetchSr;
 (* max_fanout = 200 *)
@@ -2795,12 +2821,12 @@ reg[15:0]	tValBraSrT;
 reg[15:0]	tValNextBraSrT;
 reg[47:0]	tIsrBraPc;
 
-(* max_fanout = 200 *)
-	reg[7:0]	opBraFlushMask;
-(* max_fanout = 200 *)
-	reg[7:0]	nxtBraFlushMask;
-(* max_fanout = 200 *)
-	reg[7:0]	tIsrBraFlushMask;
+// (* max_fanout = 200 *)
+// 	reg[7:0]	opBraFlushMask;
+// (* max_fanout = 200 *)
+//	reg[7:0]	nxtBraFlushMask;
+// (* max_fanout = 200 *)
+//	reg[7:0]	tIsrBraFlushMask;
 
 // reg[63:0]	tNxtRegExc;
 // reg[63:0]	tRegExc;
@@ -4641,7 +4667,8 @@ begin
 		tValNextBraPc = UV48_00;
 //		nxtBraFlushMask = 8'h07;
 //		nxtBraFlushMask = 8'h0F;
-		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
+//		nxtBraFlushMask = JX2_BRA_FLUSHMSK;
+		nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
 		tNxtDeadlockLatch	= 0;
 	end
 	
@@ -5423,6 +5450,57 @@ begin
 `ifdef jx2_reg_spdecswap
 	gprInSp		= gprOutSp;
 	crInSsp		= crOutSsp;
+`endif
+
+`ifdef def_true
+//	if(ifOutPcSxo[3:2]!=0)
+	if(id1IstrSxo[3:2]!=0)
+	begin
+//		case(ifOutPcSxo[3:2])
+		case(id1IstrSxo[3:2])
+			2'b00: begin end
+			2'b01: crInSr[27:26]	= 2'b00;
+			2'b10: crInSr[27:26]	= 2'b01;
+			2'b11: crInSr[27:26]	= 2'b11;
+		endcase
+//		crInVbr[51:50]=crInSr[27:26];
+		if(crInSr[27:26]!=crOutSr[27:26])
+			$display("ExUnit: Trigger RV Mode, %X->%X",
+				crOutSr[27:26], crInSr[27:26]);
+	end
+`endif
+
+// `ifdef def_true
+`ifndef def_true
+//	if(id1ValBPc[47:4]==0)
+	if(	!crOutMmcr[0] &&
+		(id1ValBPc[31:16]==0) &&
+		(id1ValBPc[15:4]==0))
+	begin
+		if(id1IstrWord[47:40]==8'h00)
+		begin
+			if(id1IstrWord[39:32]==8'h13)
+			begin
+				/* Hack: Detect ROM is in RISC-V Mode */
+				crInSr[27:26]	= 2'b01;
+				crInSr[23:20]	= 4'b0000;
+			end
+			if(id1IstrWord[39:32]==8'h0A)
+			begin
+				/* Hack: Detect ROM is in XG3RV Mode */
+				crInSr[27:26]	= 2'b11;
+				crInSr[23:20]	= 4'b0000;
+			end
+
+			if(crInSr[26] && !crOutSr[26] && !ifValBraOk)
+			begin
+				$display("ExUnit: Boot-Branch into RV Mode PC=%X", id1ValBPc);
+				tValNextBraPc = 0;
+				tValNextBraSrT = { 8'b00, crInSr[23:20], crInSr[27:26], 2'b0};
+				nxtBraFlushMask = JX2_BRA_FLUSHMSK_XTRA;
+			end
+		end
+	end
 `endif
 
 

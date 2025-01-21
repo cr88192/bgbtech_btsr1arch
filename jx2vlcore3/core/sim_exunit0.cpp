@@ -2669,6 +2669,8 @@ int main(int argc, char **argv, char **env)
 	memset(drambuf2, 0, 1<<27);
 
 	fd=fopen("../../tst_jx2boot.bin", "rb");
+//	fd=fopen("../../tst_jx2boot_xrv.bin", "rb");
+//	fd=fopen("../../tst_jx2boot_x3rv.bin", "rb");
 	if(fd)
 	{
 		t2=fread(rombuf, 1, 32768, fd);

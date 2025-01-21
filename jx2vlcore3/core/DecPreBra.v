@@ -631,8 +631,8 @@ begin
 `endif
 
 `ifdef jx2_enable_riscv
-//	if(pipeHasLr[4])
-	if(pipeHasLr[4] && !istrMTag[0])
+	if(pipeHasLr[4])
+//	if(pipeHasLr[4] && !istrMTag[0])
 //	if(isRV)
 	begin
 		/* RISC-V, Excluding XG3 */

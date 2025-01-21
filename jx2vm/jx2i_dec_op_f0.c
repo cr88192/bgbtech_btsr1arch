@@ -81,6 +81,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	int rn_dfl, rm_dfl, ro_dfl, rp_dfl;
 	int cm_dfl, cn_dfl;
 	int rm_x, rn_x, ro_x, rp_x;
+	int rn_rvo, rm_rvo, ro_rvo;
 	int opw3, opw4;
 	s64 disp5, imm5, imm6;
 	int eq, eo, wq, wo;
@@ -170,6 +171,10 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			is4r=1;
 		}
 	}
+	
+	rm_rvo=rm_dfl;
+	rn_rvo=rn_dfl;
+	ro_rvo=ro_dfl;
 
 	rm_x=(rm_dfl&0x1E)+((rm_dfl&1)?32:0);
 	rn_x=(rn_dfl&0x1E)+((rn_dfl&1)?32:0);
@@ -319,6 +324,19 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	if(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2)
 	{
 		imm20s&=~1;
+	}
+	
+	if(isxg3)
+	{
+		imm20s=
+			((rm_rvo   &63)<< 0) |
+			((ro_rvo   &63)<< 6) |
+			(((opw2>>8)&15)<<12) |
+			((rn_rvo   &63)<<16) ;
+		if(eq)
+			imm20s|=(~0U)<<22;
+		
+		imm20s=(imm20s<<1)-2;
 	}
 
 	op->rn=rn_dfl;

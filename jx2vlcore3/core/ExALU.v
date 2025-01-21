@@ -1805,6 +1805,10 @@ begin
 				(regValRp & (~regValRt))
 				};
 `endif
+
+			tResult1T=!tTst1ZF;
+			tResult2T=!tTst2ZF;
+			tResult1S=!tTst1BZF;
 		end
 	endcase
 

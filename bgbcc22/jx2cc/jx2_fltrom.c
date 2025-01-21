@@ -43,6 +43,7 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 	int lb_strt, va_strt;
 
 	int lb_isr[8], va_isr[8];
+	u32 opw1, opw2;
 
 	int nm, fl, lva, rva, lsz, sn_strs, imty;
 	int va_rom, va_ram, va_base;
@@ -124,6 +125,8 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 		break;
 	}
 	
+//	sctx->gbr_rva=va_ram;
+
 	for(i=0; i<sctx->nsec; i++)
 	{
 		if(i==BGBCC_SH_CSEG_BSS)
@@ -184,6 +187,10 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 
 	ofs_iend=va_rom;
 
+
+	sctx->gbr_rva=ofs_rd_strt;
+
+
 	i=BGBCC_SH_CSEG_BSS;
 	j=sctx->sec_pos[i]-sctx->sec_buf[i];
 //	va_ram-=j;
@@ -211,7 +218,6 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 	BGBCC_JX2_EmitLabelAbs(sctx, sctx->lbl_rom_data_strt, ofs_rd_strt);
 	BGBCC_JX2_EmitLabelAbs(sctx, sctx->lbl_rom_data_end, ofs_rd_end);
 
-
 	lb_strt=0;
 //	lb_strt=BGBCC_JX2_LookupNamedLabel(sctx, "__start");
 //	if(lb_strt<=0)
@@ -232,6 +238,7 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 	for(i=0; i<8; i++)
 		{ lb_isr[i]=lb_strt; }
 
+	lb_isr[0]=lb_strt;
 	lb_isr[1]=BGBCC_JX2_LookupNamedLabel(sctx, "__isr_except");
 	lb_isr[2]=BGBCC_JX2_LookupNamedLabel(sctx, "__isr_inter");
 	lb_isr[3]=BGBCC_JX2_LookupNamedLabel(sctx, "__isr_mmu");
@@ -250,26 +257,7 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 //	if(ofs_sdat<16)
 	if(1)
 	{
-//		bgbcc_setu16en(ct+0, en, 0xE000|(va_strt>>16)&255);
-//		bgbcc_setu16en(ct+2, en, 0xD000|(va_strt>> 8)&255);
-//		bgbcc_setu16en(ct+4, en, 0xD000|(va_strt>> 0)&255);
-//		bgbcc_setu16en(ct+6, en, 0x3200);
-
 #if 0
-		i=(va_strt-8)/2;
-//		bgbcc_setu16en(ct+0, en, 0xA000|(i>>20)&4095);
-//		bgbcc_setu16en(ct+2, en, 0x2600|(i>>12)& 255);
-//		bgbcc_setu16en(ct+4, en, 0x2600|(i>> 4)& 255);
-//		bgbcc_setu16en(ct+6, en, 0x40F0|(i>> 0)&  15);
-
-		bgbcc_setu16en(ct+0, en, 0xA000|((i>>16)&4095));
-		bgbcc_setu16en(ct+2, en, 0x2600|((i>> 8)& 255));
-		bgbcc_setu16en(ct+4, en, 0x2600|((i>> 0)& 255));
-//		bgbcc_setu16en(ct+6, en, 0x3002);
-		bgbcc_setu16en(ct+6, en, 0x3100);
-#endif
-
-#if 1
 		i=(va_strt-4)/2;
 		bgbcc_setu16en(ct+0, en, 0xF000|((i>>12)& 255));
 		bgbcc_setu16en(ct+2, en, 0xC000|((i>> 0)&4095));
@@ -279,36 +267,31 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 
 
 #if 1
-		ct+=8;
-		for(i=1; i<8; i++)
+//		ct+=8;
+//		for(i=1; i<8; i++)
+		for(i=0; i<8; i++)
 		{
 #if 1
-			j=(va_isr[i]-((i+1)*8-4))/2;
-			bgbcc_setu16en(ct+0, en, 0xF000|((j>>12)& 255));
-			bgbcc_setu16en(ct+2, en, 0xC000|((j>> 0)&4095));
-			bgbcc_setu16en(ct+4, en, 0xF000);
-			bgbcc_setu16en(ct+6, en, 0x3030);
-#endif
-
-#if 0
-			j=(va_isr[i]-((i+1)*8))/2;
-			bgbcc_setu16en(ct+0, en, 0xF000);
-			bgbcc_setu16en(ct+2, en, 0x3000);
-			bgbcc_setu16en(ct+4, en, 0xF000|((j>>12)& 255));
-			bgbcc_setu16en(ct+6, en, 0xC000|((j>> 0)&4095));
-#endif
-
-#if 0
-			j=(va_isr[i]-((i+1)*8))/2;
-//			bgbcc_setu16en(ct+0, en, 0xA000|(j>>20)&4095);
-//			bgbcc_setu16en(ct+2, en, 0x2600|(j>>12)& 255);
-//			bgbcc_setu16en(ct+4, en, 0x2600|(j>> 4)& 255);
-//			bgbcc_setu16en(ct+6, en, 0x40F0|(j>> 0)&  15);
-			bgbcc_setu16en(ct+0, en, 0xA000|((j>>16)&4095));
-			bgbcc_setu16en(ct+2, en, 0x2600|((j>> 8)& 255));
-			bgbcc_setu16en(ct+4, en, 0x2600|((j>> 0)& 255));
-//			bgbcc_setu16en(ct+6, en, 0x3002);
-			bgbcc_setu16en(ct+6, en, 0x3100);
+			if(sctx->emit_riscv&0x01)
+			{
+				j=va_isr[i]-(i*8);
+				opw1=0x0000006FU|
+					((j&0x000007FE)<<20)|
+					((j&0x00000800)<< 9)|
+					((j&0x000FF000)<< 0);
+				opw2=0x00000013U;
+				if(sctx->emit_riscv&0x22)
+					opw2=0x0000000AU;
+				bgbcc_setu32en(ct+0, en, opw1);
+				bgbcc_setu32en(ct+4, en, opw2);
+			}else
+			{
+				j=(va_isr[i]-((i+1)*8-4))/2;
+				bgbcc_setu16en(ct+0, en, 0xF000|((j>>12)& 255));
+				bgbcc_setu16en(ct+2, en, 0xC000|((j>> 0)&4095));
+				bgbcc_setu16en(ct+4, en, 0xF000);
+				bgbcc_setu16en(ct+6, en, 0x3030);
+			}
 #endif
 
 			ct+=8;
@@ -316,47 +299,16 @@ ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,
 #endif
 	}else
 	{
-//		bgbcc_setu16en(ct+0, en, 0xE000|(va_strt>>24)&255);
-//		bgbcc_setu16en(ct+2, en, 0xD000|(va_strt>>16)&255);
-//		bgbcc_setu16en(ct+4, en, 0xD000|(va_strt>> 8)&255);
-//		bgbcc_setu16en(ct+6, en, 0xD000|(va_strt>> 0)&255);
-//		bgbcc_setu16en(ct+8, en, 0x3200);
 	}
-
-//	bgbcc_setu16en(ct+0, en, 0xD001);	//load entry point
-//	bgbcc_setu16en(ct+2, en, 0x402B);	//jump to entry point
-//	bgbcc_setu16en(ct+4, en, 0x0009);	//
-//	bgbcc_setu16en(ct+6, en, 0x0009);	//
-//	bgbcc_setu32en(ct+8, en, va_strt);	//entry point
 
 	BGBCC_JX2C_ApplyImageRelocs(ctx, sctx, obuf);
-
-#if 0
-	sprintf(tb, "%s.map", ctx->imgname);
-	mapfd=fopen(tb, "wt");
-//	mapfd=fopen("aout.map", "wt");
-	for(i=0; i<sctx->nlbln; i++)
-	{
-//		if(!strcmp(ctx->lbln_name[i], name))
-//			return(ctx->lbln_id[i]);
-
-		lva=BGBCC_JX2C_LookupLabelImgVA(ctx, sctx, sctx->lbln_id[i]);
-		fprintf(mapfd, "%08X T %s\n", lva, sctx->lbln_name[i]);
-	}
-	fclose(mapfd);
-#endif
 
 #if 1
 	sprintf(tb, "%s.map", ctx->imgname);
 	mapfd=fopen(tb, "wt");
-//	mapfd=fopen("aout.map", "wt");
 	for(i=0; i<sctx->nlbln; i++)
 	{
-//		if(!strcmp(ctx->lbln_name[i], name))
-//			return(ctx->lbln_id[i]);
-
 		lva=BGBCC_JX2C_LookupLabelImgVA(ctx, sctx, sctx->lbln_id[i]);
-//		fprintf(mapfd, "%08X T %s\n", lva, sctx->lbln_name[i]);
 		map_lvatab[i]=lva;
 		map_lvntab[i]=sctx->lbln_name[i];
 	}

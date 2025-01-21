@@ -171,6 +171,10 @@ reg[5:0]	opUCmdIx;
 reg[2:0]	opUCty;
 
 reg[3:0]	opDoImm;
+reg[3:0]	opJSubOp;
+
+reg[32:0]	opImm_immRo;
+reg			opDoImmRo;
 
 reg		opExQ;
 reg		opExN;
@@ -274,6 +278,9 @@ begin
 	opExWM = 0;
 	opExWI = 0;
 	opExWQ = 0;
+	opJSubOp	= 0;
+	opDoImmRo	= 0;
+	opImm_immRo	= 0;
 
 `ifdef jx2_enable_rvjumbo
 	if(opIsJumboAu)
@@ -291,6 +298,12 @@ begin
 		opExWI		= istrJBits[20];
 		opExWQ		= istrJBits[11];
 		
+		opJSubOp	= istrJBits[15:12];
+
+//		opDoImmRo	= istrJBits[11];
+//		opImm_immRo	= { opExWI ? UV17_FF : UV17_00,
+//			istrJBits[10:0], istrWord[24:20] };
+
 		if(opExWM)
 			tRegRmIsZr=0;
 		if(opExWI)
@@ -396,7 +409,7 @@ begin
 //		if(istrJBits[11])
 		if(opExWQ)
 		begin
-			opRegM_Df3R	= JX2_GR_IMM;
+//			opRegM_Df3R	= JX2_GR_IMM;
 			opRegO_Df3R	= JX2_GR_IMM;
 		end
 	end
@@ -420,6 +433,28 @@ begin
 			tRegCsrIsCpuid = 1;
 			opRegM_Cr = { 1'b0, istrWord[25:20] };
 		end
+
+		12'b1100_0000_00zz: begin
+			tRegCsrIsCpuid = 1;
+			casez(istrWord[21:20])
+				2'b00: opRegM_Cr = JX2_GR_R30;
+				2'b01: opRegM_Cr = JX2_GR_R28;
+				2'b10: opRegM_Cr = JX2_GR_R28;
+				2'b11: opRegM_Cr = JX2_GR_R31;
+			endcase
+		end
+
+		12'b1111_0001_0zzz: begin
+			tRegCsrIsCpuid = 1;
+			casez(istrWord[22:20])
+				3'b001: opRegM_Cr = JX2_GR_R0;
+				3'b010: opRegM_Cr = JX2_GR_R0;
+				3'b011: opRegM_Cr = JX2_GR_R0;
+				3'b100: opRegM_Cr = JX2_GR_R1;
+				default: opRegM_Cr = JX2_GR_R0;
+			endcase
+		end
+
 		default: begin
 		end
 	endcase
@@ -566,6 +601,9 @@ begin
 //	opIsNotFx = (istrWord[1:0] != 2'b11) && !isOpWxe;
 	opIsNotFx = (istrWord[1:0] != 2'b11);
 	if(!isOpRiscV)
+		opIsNotFx = 1;
+	
+	if(srMod[7:6]!=0)
 		opIsNotFx = 1;
 
 	opNmid		= JX2_UCMD_INVOP;
@@ -906,7 +944,25 @@ begin
 						opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 					end
 
-					3'b010: opUCmdIx = JX2_UCIX_ALU_SLTSQ;
+					3'b010: begin
+						opUCmdIx = JX2_UCIX_ALU_SLTSQ;
+						
+						if(opJSubOp==1)
+						begin
+							opNmid		= JX2_UCMD_ALUCMP3R;
+							opUCmdIx	= JX2_UCIX_ALU_CMPQEQ;
+						end
+						if(opJSubOp==2)
+						begin
+							opNmid		= JX2_UCMD_ALUCMP3R;
+							opUCmdIx	= JX2_UCIX_ALU_CMPQGE;
+						end
+						if(opJSubOp==3)
+						begin
+							opNmid		= JX2_UCMD_ALUCMP3R;
+							opUCmdIx	= JX2_UCIX_ALU_CMPQNE;
+						end
+					end
 					3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUQ;
 
 					3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
@@ -1300,6 +1356,21 @@ begin
 						opFmid	= JX2_FMID_REGREG;
 						opIty	= JX2_ITY_UL;
 					end
+
+					if(tRegRmIsZr)
+					begin
+						opNmid	= JX2_UCMD_MOV_CR;
+						opFmid	= JX2_FMID_REGREG;
+						opIty	= JX2_ITY_UQ;
+					end
+
+					if(tRegCsrIsCpuid)
+					begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_CPUID;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UQ;
+					end
 				end
 
 				3'b010: begin
@@ -1631,6 +1702,9 @@ begin
 //		opFmid	= JX2_FMID_Z;
 //		opIty	= JX2_ITY_SB;
 	end
+
+	if(opIsNotFx)
+		opFmid = JX2_FMID_INV;
 
 	opUCmd = { opCcty, opNmid };
 

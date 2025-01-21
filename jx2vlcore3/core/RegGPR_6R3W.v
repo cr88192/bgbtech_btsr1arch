@@ -880,6 +880,7 @@ begin
 			tValRsA=0;
 			tValRsA[63:0] = { UV16_00, regValPc[47:1],
 				regValPc[0] &tEnablePcLsb };
+			tValRsZz=1;
 		end
 		JX2_GR_GBR:
 		begin
@@ -903,8 +904,12 @@ begin
 `ifdef jx2_enable_riscv
 		JX2_GR_BPC:
 		begin
+//			$display("RegGPR: Debug BPC=%X PC=%X",
+//				regValBPc, regValPc);
+		
 			tValRsA=0;
 			tValRsA[63:0] = { UV16_00, regValBPc };
+			tValRsZz=1;
 		end
 `endif
 

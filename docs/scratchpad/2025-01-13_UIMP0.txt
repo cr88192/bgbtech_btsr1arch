@@ -1,0 +1,28 @@
+UIMP0:
+* Multi-purpose Messaging Protocol.
+* Intended for point-to-point message routing over a link.
+** Network socket or serial link.
+** Try to be compatible with sending other data over the same link.
+* May carry other protocols.
+
+In its basic form, this will assume a 7-bit ASCII transport.
+* Message Start: "%UIxx~"
+** With xx as the message length (Base64X).
+** Will be given as a count of logical 32-bit words.
+* Message End: "~xxx~"
+** With xxx as a message check value (Base41X).
+* Geneal message data is Base85 encoded.
+
+Base64X:
+* 31..70
+** Groups of 2 encode 12 bits.
+** Groups of 4 encode 24 bits
+
+Base41X:
+* 31..59
+** Groups of 3 encode 16 bits.
+
+Base85:
+* 21..75: Groups of 5 characters encode 32 bits.
+* 79: 20202020
+* 7A: 00000000

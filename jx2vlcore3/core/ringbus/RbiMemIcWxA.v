@@ -1491,7 +1491,8 @@ begin
 	tNxtInPcXG2		= icInPcXG2;
 //	tNxtInPcRiscv	= (icInPcWxm == 2'b01);
 //	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01);
-	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01) && !tNxtInPcXG2;
+//	tNxtInPcRiscv	= (icInPcWxm[1:0] == 2'b01) && !tNxtInPcXG2;
+	tNxtInPcRiscv	= icInPcWxm[0] && !tNxtInPcXG2;
 	tNxtInPcXG3		= tNxtInPcRiscv && tNxtInPcWxe;
 
 //	tUtlb1BlkIx		= tUtlb1BlkIxL;
@@ -2032,6 +2033,26 @@ begin
 
 	if(tBlkIsSxo)
 		tRegOutPcSxo[0]=1;
+
+`ifdef def_true
+	if((tReqAddrA[27:0]==0) && !tMiss && !tRegInMmcr[0])
+	begin
+		/* Detect boot into RISC-V Mode. */
+		if(tBlkData2A[47:40]==8'h00)
+		begin
+			if(tBlkData2A[39:32]==8'h13)
+				tRegOutPcSxo[3:2]=2'b10;	/* RV NOP */
+			if(tBlkData2A[39:32]==8'h0A)
+				tRegOutPcSxo[3:2]=2'b11;	/* XG3 NOP */
+
+			if(tRegOutPcSxo[3] && !regInSr[26])
+			begin
+				$display("RbiMemIcWxA: Trigger RV-Mode %X", tRegOutPcSxo[3:2]);
+				tDoStallNop=1;
+			end
+		end
+	end
+`endif
 
 `ifndef def_true
 	if(tInWordIx[1])

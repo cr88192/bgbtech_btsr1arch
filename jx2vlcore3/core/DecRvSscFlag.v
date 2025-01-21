@@ -249,6 +249,8 @@ begin
 `endif
 
 `ifdef jx2_enable_riscv_xg3
+//	tIstrFlagXG3	= 4'b0000;
+
 	if(istrWord[1:0]!=2'b11)
 	begin
 //		tIstrFlag	= 4'b0000;

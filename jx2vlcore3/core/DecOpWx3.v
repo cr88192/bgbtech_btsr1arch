@@ -211,14 +211,17 @@ assign	opJumboWxBitsC = ~istrWordB[15:13];
 `reg_gpr		opRegAM;
 `reg_gpr		opRegAO;
 `reg_gpr		opRegAN;
+`reg_gpr		opRegAP;
 
 `reg_gpr		opRegBM;
 `reg_gpr		opRegBO;
 `reg_gpr		opRegBN;
+`reg_gpr		opRegBP;
 
 `reg_gpr		opRegCM;
 `reg_gpr		opRegCO;
 `reg_gpr		opRegCN;
+`reg_gpr		opRegCP;
 
 `reg_gpr		opRegAM0;
 `reg_gpr		opRegAO0;
@@ -306,6 +309,9 @@ wire	opIsWex2x40B;
 
 reg	tMsgLatch;
 reg	tNextMsgLatch;
+
+reg[15:0]	tMsgLatchBPc;
+reg[15:0]	tNextMsgLatchBPc;
 
 
 `wire_gpr		decOpBz_idRegN;
@@ -568,7 +574,8 @@ assign	opIsWexJumboA =
 //		(istrWord[12: 9] == 4'b1111) &&
 //		((istrWord[15:13] == 3'b111) || srXG2) && !srNoJumbo ;
 		 (istrWordA[12: 9] == 4'b1111) &&
-		((istrWordA[15:13] == 3'b111 ) || srXG2) && !srNoJumbo ;
+		((istrWordA[15:13] == 3'b111 ) || srXG2) &&
+			(!srNoJumbo || istrMTagA[0]) ;
 
 assign	opIsWexJumboB =
 //		(istrWord[47:41] == 7'b1111_111) && !srNoJumbo;
@@ -576,7 +583,8 @@ assign	opIsWexJumboB =
 //		(istrWord[44:41] == 4'b1111) &&
 //		((istrWord[47:45] == 3'b111) || srXG2) && !srNoJumbo ;
 		 (istrWordB[12: 9] == 4'b1111) &&
-		((istrWordB[15:13] == 3'b111 ) || srXG2) && !srNoJumbo ;
+		((istrWordB[15:13] == 3'b111 ) || srXG2) &&
+			(!srNoJumbo || istrMTagB[0]) ;
 
 assign	opIsWexJumboXA =
 //		((istrWord[15:12] == 4'b0111) && (istrWord[10:8] == 3'b000)) ||
@@ -914,6 +922,7 @@ begin
 	opRegAM	= JX2_GR_ZZR;
 	opRegAO	= JX2_GR_ZZR;
 	opRegAN	= JX2_GR_ZZR;
+	opRegAP	= JX2_GR_ZZR;
 
 	opUCmdB	= UV9_00;
 	opUIxtB	= UV9_00;
@@ -921,6 +930,7 @@ begin
 	opRegBM	= JX2_GR_ZZR;
 	opRegBO	= JX2_GR_ZZR;
 	opRegBN	= JX2_GR_ZZR;
+	opRegBP	= JX2_GR_ZZR;
 
 	opUCmdC	= UV9_00;
 	opUIxtC	= UV9_00;
@@ -928,6 +938,7 @@ begin
 	opRegCM	= JX2_GR_ZZR;
 	opRegCO	= JX2_GR_ZZR;
 	opRegCN	= JX2_GR_ZZR;
+	opRegCP	= JX2_GR_ZZR;
 
 	opRegXM		= JX2_GR_ZZR;
 	opRegXO		= JX2_GR_ZZR;
@@ -1205,6 +1216,20 @@ begin
 
 `endif
 
+	tNextMsgLatchBPc = istrBPc[15:0];
+
+	if(srXG3)
+	begin
+		if((istrBPc[1:0]!=2'b00) || (idPcStep[1:0]!=2'b00))
+		begin
+			if(!tMsgLatch && (tMsgLatchBPc!=tNextMsgLatchBPc))
+			begin
+				$display("DecOpWx3: XG3 Bad PC/Step PC=%X St=%X",
+					istrBPc, idPcStep);
+			end
+			tNextMsgLatch = 1;
+		end
+	end
 
 `ifdef jx2_enable_riscv
 //	if(srRiscv)
@@ -1389,7 +1414,6 @@ begin
 `endif
 	if(opIsFxA)
 	begin
-//		if(opIsWfA && opIsWfB)
 		if(srSsc3)
 		begin
 //			$display("DecOpWz3: WEX3");
@@ -1434,10 +1458,8 @@ begin
 			end
 		end
 		else
-`ifdef dev_true
 		if(srSsc2)
 		begin
-
 			opRegAM	= decOpFzB_idRegM;
 			opRegAO	= decOpFzB_idRegO;
 			opRegAN	= decOpFzB_idRegN;
@@ -1455,6 +1477,8 @@ begin
 			opUCmdB	= decOpFzA_idUCmd;
 			opUIxtB	= decOpFzA_idUIxt;
 
+			opIsScalar	= opIsWexJumboA;
+
 `ifdef jx2_enable_riscv
 `ifdef jx2_dec_ssc_riscv
 			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagB[0])
@@ -1467,6 +1491,8 @@ begin
 				opUCmdA	= decOpRvB_idUCmd;
 				opUIxtA	= decOpRvB_idUIxt;
 				opUFlA	= decOpRvB_idUFl;
+
+				opIsScalar	= opIsRvJumboA;
 			end
 
 			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagA[0])
@@ -1502,8 +1528,6 @@ begin
 
 			opUCmdC		= { 3'b001, decOpFzB_idUFl[18:13] };
 
-			opIsScalar	= opIsWexJumboA;
-
 			if(opIsWexJumboA)
 			begin
 				/* Jumbo24 + Imm24 */
@@ -1512,114 +1536,18 @@ begin
 					tOpJBitsB[23:8] };
 			end
 		end
-`endif
-`ifndef dev_true
-		if(opIsWfA || opIsWexJumboA)
-		begin
-		
-			if(!opIsWexJumboA)
-			begin
-//				$display("DecOpWz3: WEX2 %X-%X %X-%X",
-//					istrWord[15:0], istrWord[31:16],
-//					istrWord[47:32], istrWord[63:48]);
-			end
-
-			opRegAM	= decOpFzB_idRegM;
-			opRegAO	= decOpFzB_idRegO;
-			opRegAN	= decOpFzB_idRegN;
-			opImmA	= decOpFzB_idImm;
-			opUCmdA	= decOpFzB_idUCmd;
-			opUIxtA	= decOpFzB_idUIxt;
-
-			opRegAM0	= decOpFzB_idRegM;
-			opRegAO0	= decOpFzB_idRegO;
-			opRegAN0	= decOpFzB_idRegN;
-			opRegAP0	= decOpFzB_idRegP;
-			opUCmdA0	= decOpFzB_idUCmd;
-			opUIxtA0	= decOpFzB_idUIxt;
-			opUFlA0		= decOpFzB_idUFl;
-
-			opRegBM	= decOpFzA_idRegM;
-			opRegBO	= decOpFzA_idRegO;
-			opRegBN	= decOpFzA_idRegN;
-			opImmB	= decOpFzA_idImm;
-			opUCmdB	= decOpFzA_idUCmd;
-			opUIxtB	= decOpFzA_idUIxt;
-
-			opRegCM	= decOpFzA_idRegP;
-			opRegCO	= decOpFzB_idRegP;
-			opRegCN	= JX2_GR_ZZR;
-			opImmC	= UV33_00;
-			opUCmdC	= UV9_00;
-//				opUIxtC	= UV9_00;
-//				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
-			opUIxtC	= decOpFzB_idUFl[12:4];
-
-			opUCmdC		= { 3'b001, decOpFzB_idUFl[18:13] };
-
-			opIsScalar	= opIsWexJumboA;
-
-			if(opIsWexJumboA)
-			begin
-//				if(decOpFzB_idUFl[0])
-				if(1'b0)
-				begin
-					/* Jumbo24 + Imm16 */
-					opImmB	= {
-						opImmA[32] ? UV25_FF : UV25_00,
-						tOpJBitsB[23:16] };
-				end else begin
-					/* Jumbo24 + Imm24 */
-					opImmB	= {
-						opImmA[32] ? UV17_FF : UV17_00,
-						tOpJBitsB[23:8] };
-				end
-			end
-		end
-`ifdef jx2_enable_riscv
-`ifdef jx2_dec_ssc_riscv
-		else	if((srRiscv && !noNoRiscV && !srXG2RV) && srRiscvSsc)
-		begin
-			opRegAM	= decOpRvB_idRegM;
-			opRegAO	= decOpRvB_idRegO;
-			opRegAN	= decOpRvB_idRegN;
-			opImmA	= decOpRvB_idImm;
-			opUCmdA	= decOpRvB_idUCmd;
-			opUIxtA	= decOpRvB_idUIxt;
-
-			opRegAM0	= decOpRvB_idRegM;
-			opRegAO0	= decOpRvB_idRegO;
-			opRegAN0	= decOpRvB_idRegN;
-			opRegAP0	= decOpRvB_idRegP;
-			opUCmdA0	= decOpRvB_idUCmd;
-			opUIxtA0	= decOpRvB_idUIxt;
-			opUFlA0		= decOpRvB_idUFl;
-
-			opRegBM	= decOpRvA_idRegM;
-			opRegBO	= decOpRvA_idRegO;
-			opRegBN	= decOpRvA_idRegN;
-			opImmB	= decOpRvA_idImm;
-			opUCmdB	= decOpRvA_idUCmd;
-			opUIxtB	= decOpRvA_idUIxt;
-
-			opRegCM	= decOpRvA_idRegP;
-			opRegCO	= decOpRvB_idRegP;
-			opRegCN	= JX2_GR_ZZR;
-			opImmC	= UV33_00;
-			opUCmdC	= UV9_00;
-			opUIxtC	= decOpRvB_idUFl[12:4];
-
-			opUCmdC		= { 3'b001, decOpRvB_idUFl[18:13] };
-
-			opIsScalar	= 0;
-		end
-`endif
-`endif
-`endif
 		else
 		begin
-`ifdef jx2_enable_riscv
+			opRegAM0	= decOpFzA_idRegM;
+			opRegAO0	= decOpFzA_idRegO;
+			opRegAN0	= decOpFzA_idRegN;
+			opRegAP0	= decOpFzA_idRegP;
+			opImmA0		= decOpFzA_idImm;
+			opUCmdA0	= decOpFzA_idUCmd;
+			opUIxtA0	= decOpFzA_idUIxt;
+			opUFlA0		= decOpFzA_idUFl;
 
+`ifdef jx2_enable_riscv
 //			if(srRiscv && !noNoRiscV)
 //			if(srRiscv && !noNoRiscV && !srXG2RV)
 			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagA[0])
@@ -1633,29 +1561,6 @@ begin
 				opUIxtA0	= decOpRvA_idUIxt;
 				opUFlA0		= decOpRvA_idUFl;
 			end
-			else
-			begin
-				opRegAM0	= decOpFzA_idRegM;
-				opRegAO0	= decOpFzA_idRegO;
-				opRegAN0	= decOpFzA_idRegN;
-				opRegAP0	= decOpFzA_idRegP;
-				opImmA0		= decOpFzA_idImm;
-				opUCmdA0	= decOpFzA_idUCmd;
-				opUIxtA0	= decOpFzA_idUIxt;
-				opUFlA0		= decOpFzA_idUFl;
-			end
-
-`else
-
-			opRegAM0	= decOpFzA_idRegM;
-			opRegAO0	= decOpFzA_idRegO;
-			opRegAN0	= decOpFzA_idRegN;
-			opRegAP0	= decOpFzA_idRegP;
-			opImmA0		= decOpFzA_idImm;
-			opUCmdA0	= decOpFzA_idUCmd;
-			opUIxtA0	= decOpFzA_idUIxt;
-			opUFlA0		= decOpFzA_idUFl;
-
 `endif
 
 `ifdef def_true
@@ -1666,23 +1571,6 @@ begin
 			opUCmdA	= opUCmdA0;
 			opUIxtA	= opUIxtA0;
 			opUFlA	= opUFlA0;
-`endif
-
-`ifndef def_true
-			opRegAM	= decOpFzA_idRegM;
-			opRegAO	= decOpFzA_idRegO;
-			opRegAN	= decOpFzA_idRegN;
-			opImmA	= decOpFzA_idImm;
-			opUCmdA	= decOpFzA_idUCmd;
-			opUIxtA	= decOpFzA_idUIxt;
-
-			opRegAM0	= decOpFzA_idRegM;
-			opRegAO0	= decOpFzA_idRegO;
-			opRegAN0	= decOpFzA_idRegN;
-			opRegAP0	= decOpFzA_idRegP;
-			opUCmdA0	= decOpFzA_idUCmd;
-			opUIxtA0	= decOpFzA_idUIxt;
-			opUFlA0		= decOpFzA_idUFl;
 `endif
 
 			opRegBM	= JX2_GR_ZZR;
@@ -1713,10 +1601,6 @@ begin
 		opRegAM	= decOpBz_idRegM;
 		opRegAO	= decOpBz_idRegO;
 		opRegAN	= decOpBz_idRegN;
-//		opImmA	= decOpBz_idImm;
-//		opImmA	= {
-//			decOpBz_idImm[15] ? UV17_FF : UV17_00,
-//			decOpBz_idImm[15:0] };
 		opImmA	= {
 			decOpBz_idImm[12] ? UV20_FF : UV20_00,
 			decOpBz_idImm[12:0] };
@@ -2038,7 +1922,42 @@ begin
 `endif
 	end
 
-	tNextMsgLatch = 0;
+//	tNextMsgLatch = 0;
+
+`ifndef def_true
+// `ifdef def_true
+	if(srXG3)
+	begin
+		if(tMsgLatchBPc!=tNextMsgLatchBPc)
+		begin
+			$display("DecOpWx3 Istr=%X-%X,%X-%X,%X-%X Mod=%X PC=%X Step=%X",
+				istrWordA[15: 0], istrWordA[31:16],
+				istrWordB[15: 0], istrWordB[31:16],
+				istrWordC[15: 0], istrWordC[31:16],
+				srMod, istrBPc, idPcStep);
+			$display("DecOpWx3 Tags=%X,%X,%X Mod=%X,%X,%X",
+				istrMTagA, istrMTagB, istrMTagC,
+				srModA, srModB, srModC);
+
+			$display("DecOpWx3 Ucmd/UIxt, FzA=%X-%X, FzB=%X-%X, FzC=%X-%X",
+				decOpFzA_idUCmd, decOpFzA_idUIxt,
+				decOpFzB_idUCmd, decOpFzB_idUIxt,
+				decOpFzC_idUCmd, decOpFzC_idUIxt);
+
+			$display("DecOpWx3 Ucmd/UIxt, RvA=%X-%X, RvB=%X-%X",
+				decOpRvA_idUCmd, decOpRvA_idUIxt,
+				decOpRvB_idUCmd, decOpRvB_idUIxt);
+			$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
+				opUCmdA0, opUIxtA0,
+				opRegAM, opRegAO,
+				opRegBM, opRegBO,
+				opRegCM, opRegCO,
+				opRegAN, opRegBN, opRegCN,
+				opIsDualLaneRm, opIsDualLaneRo, opIsDualLaneRn);
+			$display("  %X-%X", opImmB, opImmA);
+		end
+	end
+`endif
 
 // `ifndef def_true
 `ifdef def_true
@@ -2049,14 +1968,34 @@ begin
 		if(!tMsgLatch)
 		begin
 	//		$display("DecOpWx3 Istr=%X Mod=%X", istrWord, srMod);
-			$display("DecOpWx3 Istr=%X-%X-%X-%X-%X-%X Mod=%X PC=%X",
+			$display("DecOpWx3 Istr=%X-%X,%X-%X,%X-%X Mod=%X PC=%X Step=%X",
 //				istrWord[15: 0], istrWord[31:16],
 //				istrWord[47:32], istrWord[63:48],
 //				istrWord[79:64], istrWord[95:80],
 				istrWordA[15: 0], istrWordA[31:16],
 				istrWordB[15: 0], istrWordB[31:16],
 				istrWordC[15: 0], istrWordC[31:16],
-				srMod, istrBPc);
+				srMod, istrBPc, idPcStep);
+			$display("DecOpWx3 Tags=%X,%X,%X Mod=%X,%X,%X",
+				istrMTagA, istrMTagB, istrMTagC,
+				srModA, srModB, srModC);
+
+			$display("DecOpWx3 Ucmd/UIxt, FzA=%X-%X, FzB=%X-%X, FzC=%X-%X",
+				decOpFzA_idUCmd, decOpFzA_idUIxt,
+				decOpFzB_idUCmd, decOpFzB_idUIxt,
+				decOpFzC_idUCmd, decOpFzC_idUIxt);
+
+`ifdef jx2_enable_rvjumbo96
+			$display("DecOpWx3 Ucmd/UIxt, RvA=%X-%X, RvB=%X-%X, RvC=%X-%X",
+				decOpRvA_idUCmd, decOpRvA_idUIxt,
+				decOpRvB_idUCmd, decOpRvB_idUIxt,
+				decOpRvC_idUCmd, decOpRvC_idUIxt);
+`else
+			$display("DecOpWx3 Ucmd/UIxt, RvA=%X-%X, RvB=%X-%X",
+				decOpRvA_idUCmd, decOpRvA_idUIxt,
+				decOpRvB_idUCmd, decOpRvB_idUIxt);
+`endif
+
 			$display("DecOpWx3 %X-%X %X,%X %X,%X %X,%X ->%X,%X,%X %X-%X-%X",
 				opUCmdA0, opUIxtA0,
 				opRegAM, opRegAO,
@@ -2074,7 +2013,8 @@ end
 
 always @(posedge clock)
 begin
-	tMsgLatch	<= tNextMsgLatch;
+	tMsgLatch		<= tNextMsgLatch;
+	tMsgLatchBPc	<= tNextMsgLatchBPc;
 end
 
 endmodule

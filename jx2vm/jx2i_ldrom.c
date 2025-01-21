@@ -1214,7 +1214,7 @@ int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 	BJX2_MemSpan *sp;
 	byte *buf;
 	BJX2_FILE *fd;
-	int sz, sz1;
+	int sz, sz1, isrv;
 	int i, j, k;
 	
 	fd=bjx2_fopen(name, "rb");
@@ -1244,11 +1244,25 @@ int BJX2_ContextLoadRom(BJX2_Context *ctx, char *name)
 		printf("Oversized ROM, %d>%d\n", sz, sz1);
 		sz=sz1;
 	}
+	
+	isrv=0;
+
+	if(	(buf[4]==0x13) &&
+		(buf[5]==0x00))
+	{
+		isrv=1;
+	}
+
 	memcpy(sp->data, buf, sz);
 	free(buf);
 	
 	sprintf(tb, "%s.map", name);
 	BJX2_ContextLoadMap(ctx, tb, NULL);
+	
+	if(isrv)
+	{
+		ctx->regs[BJX2_REG_SR]|=BJX2_FLAG_SR_RVE;
+	}
 	
 	return(0);
 }

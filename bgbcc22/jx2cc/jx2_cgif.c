@@ -776,7 +776,14 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(ctx->imgfmt==BGBCC_IMGFMT_SYS)
 	{
-		shctx->is_pbo=0;
+		if(shctx->emit_riscv&0x11)
+		{
+			shctx->is_pbo=3;
+		}
+		else
+		{
+			shctx->is_pbo=0;
+		}
 	}
 
 	BGBPP_AddStaticDefine(NULL, "__jx2__", "");
@@ -7460,6 +7467,9 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	if(imgfmt==BGBCC_IMGFMT_ROM)
 	{
 		sctx->is_pbo=0;		//PBO is N/A for ROM images.
+		if(sctx->emit_riscv&0x11)
+			sctx->is_pbo=3;		//Except in the case of RISC-V...
+
 		sctx->is_rom=1;
 		sctx->lbl_rom_data_strt=
 			BGBCC_JX2_GetNamedLabel(sctx, "__rom_data_start");

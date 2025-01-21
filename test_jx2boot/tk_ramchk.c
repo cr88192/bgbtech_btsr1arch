@@ -198,6 +198,7 @@ void memset_fixed512_test(void *dst, int val, int sz);
 void memload_movx_test(void *dst, int val, int sz);
 void memload_fixed512_test(void *dst, int val, int sz);
 
+#ifdef __BJX2__
 __asm {
 memcpy_movx_test:
 #if 0
@@ -546,7 +547,9 @@ memcpy_movb_test:
 	RTSU
 #endif
 }
+#endif
 
+#ifdef __BJX2__
 int TK_RamBench()
 {
 	byte *cs, *ct;
@@ -908,6 +911,14 @@ int TK_RamBench()
 
 	return(0);
 }
+#endif
+
+#ifndef __BJX2__
+int TK_RamBench()
+{
+	return(0);
+}
+#endif
 
 #endif
 

@@ -37,11 +37,12 @@ Note that multibyte values within filesystem metadata will be assumed to be litt
 	byte resv1;                 //0x27, 0
 	u64 lba_count64;            //0x28, Total Sectors
     u64 blk_inotab;             //0x30, First Block of Inode Table.
-    u64 blk_inotab;             //0x38, Backup Inode Table.
+    u64 blk_inotab2;            //0x38, Backup Inode Table.
     byte ln2_sz_ino;            //0x40, Size of inode (Log2, 8 or 9)
     byte ln2_sz_de;             //0x41, Size of Dirent (log2, 6)
-	byte ln2_sz_cblk;			//0x42, Log2 of Compressed Block (14..18)
-    byte resv2[5];              //0x43, reserved
+    byte ln2_sz_cblk;           //0x42, Log2 of Compressed Block (14..18)
+    byte ln2_ino_fixed;         //0x43, Log2 of fixed inodes
+    byte resv2[4];              //0x44, reserved
     u64 vol_id;                 //0x48, Volume ID Number
     byte label[16];             //0x50, Volume Label
     byte bootstrap[414];        //0x60, x86 bootstrap or similar (N/A)
@@ -54,6 +55,9 @@ The bytes_sector and sectors_cluster members will be used to encode the effectiv
 
 The compressed block will be a larger logical block size used for compressed files. The compressed block may be compressed and then stored in a smaller number of disk blocks.
 
+The ln2_ino_fixed member will give the log2 size of the number of fixed inodes. The fixed inodes will be allocated in contiguous disk blocks relative to the start of the inode table, and thus will not require accessing the inode-table inode to access.
+
+=== Inodes ===
 
 Inodes:
 * Likely 256 or 512 Bytes
@@ -106,6 +110,7 @@ File Mode:
 * 0040: XU
 * 0080: WU
 * 0100: RU
+* 0200: -
 * 0400: SetGID
 * 0800: SetUID
 * High Bits give Type:
@@ -161,14 +166,33 @@ For Index8 and IndexC8, each entry will be 64 bits.
 * The low 32 or 48 bits will hold a block number.
 * The high bits will encode compressed-block metadata.
 
+"DH" / "DHDR": Holds INode_DirMeta structure.
+ INode_DirMeta {
+   byte refname[48];  //00, filename, or first part of longname
+   u32 dirino_lo;     //30, irectory inode, low
+   u16 dirino_hi;     //34, directory inode, high
+   byte tag1;         //36, tag byte / reserved
+   byte tag2;         //37, tag byte / reserved
+ }
+
 
 Would have fixed inode numbers for:
 * 0, Inode Table
+** Nominal Name: "$.MFT1"
 * 1, Root Directory
+** Nominal Name: "$.ROOT"
 * 2, Block Allocation Bitmap
+** Nominal Name: "$.BBMP"
 * 3, Inode Table Bitmap
-* 4..7, Reserved
+** Nominal Name: "$.IBMP"
+* 4, Backup Inode Table
+** Nominal Name: "$.MFT2"
+* 5..7, Reserved
 * 8+, Generic File Inodes
+
+
+A name may be held in the inode via the DirMeta structure. For filesystem metadata inodes, these will have special predefined names and a directory inode of 0. For normal file inodes, this will give the name within a directory (or the first 48 byte part of the name), and the inode of the directory containing the file.
+
 
 
 Backup tables and/or a journal could be optional features (to improve reliability). Optional because these are not always needed.
@@ -176,6 +200,7 @@ Backup tables and/or a journal could be optional features (to improve reliabilit
 The inode table would have its own inode, superblock holding the first block of the inode table, which would (necessarily) contain the inode-table inode and other fixed inodes (with table being expanded if/when the initial part gets full).
 
 
+=== Directories ===
 
 Directories will be represented similar to files, but will hold directory entries rather than file data. Each directory will be organized into an AVL tree. The first entry in the directory will be special in that it will serve as a directory root rather than a file entry. This entry will point to the root node of the tree as its left subnode.
 
@@ -274,6 +299,13 @@ Long Name Hash:
 * Add High 32 bits from H0 and H1 to zero-extended low 32 bits.
 * Repeat the last step.
 * Compose a value with H0 in the low 32 bits, H1 in the high 32 bits.
+
+
+Canonical UTF-8:
+* M-UTF-8, NFC
+** Codepoints outside the BMP will be encoded in UTF-8 via surrogate pairs.
+** Combining characters are to be stored in composed form for the latin alphabet.
+** Other details may depend on implementation.
 
 
 === File Compression ===

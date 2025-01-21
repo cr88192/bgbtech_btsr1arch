@@ -124,8 +124,8 @@ Listing:
 * uuuuu10-ttttt-sssss-zzz-nnnnn-10-00111  FMSUB.H	Rn, Rs, Rt, Ru (H)
 
 * ddddddd-ddddd-mmmmm-000-nnnnn-11-00111  JALR		Rn, Rm, Disp12_I
-* 0iiiiii-iiiii-jjjjj-100-kkkkk-11-00011 ? J21B_IMM	(BGB)
-* 1iiiiii-iiiii-zzzzz-100-omnpp-11-00011 ? J21B_OP	(BGB)
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-11-00111 ? J21B_IMM	(BGB)
+* 1iiiiii-iiiii-zzzzz-100-omnpp-11-00111 ? J21B_OP	(BGB)
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User / Custom 0)
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01011  (User / Custom 1)
@@ -524,7 +524,7 @@ Imm/Disp:
 
 * tiiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J22	(Prefix, BGB)
 * 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J21I	(Prefix, BGB)
-* 1iiiiii-iiiii-zzzzz-100-omnpp-00-11011  J21O	(Prefix, BGB)
+* 1iiiiii-iiiii-zzzzV-100-omnpp-00-11011  J21O	(Prefix, BGB)
 * tiiiiii-iiiii-zzzzz-100-sZnpp-00-11011  J12O	(Prefix, BGB)
 
 The J21I will be a prefix op, which will combine with the following instruction.
@@ -537,6 +537,12 @@ The J21I will be a prefix op, which will combine with the following instruction.
 The J21O prefix will also combine with Imm12 ops:
 * The immediate field will be 23 bits;
 * The register fields will expand to 6 bits.
+
+If the J21O prefix is used with a 3-Register Op:
+* The register fields will expand to 6 bits.
+* The instruction may gain additional opcode bits.
+** The z field will be understood as a 4-bit sub-opcode.
+
 
 If combined with LUI or AUIPC:
 * Will be understood as a J12O.
