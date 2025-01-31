@@ -124,10 +124,27 @@ Listing:
 * uuuuu10-ttttt-sssss-zzz-nnnnn-10-00111  FMSUB.H	Rn, Rs, Rt, Ru (H)
 
 * ddddddd-ddddd-mmmmm-000-nnnnn-11-00111  JALR		Rn, Rm, Disp12_I
-* 0iiiiii-iiiii-jjjjj-100-kkkkk-11-00111 ? J21B_IMM	(BGB)
-* 1iiiiii-iiiii-zzzzz-100-omnpp-11-00111 ? J21B_OP	(BGB)
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-11-00111 / J21B_IMM	(BGB)
+* 1iiiiii-iiiii-zzzzz-100-omnpp-11-00111 / J21B_OP	(BGB)
+
+* iiiiii0-0dddd-mmmmm-010-ddddd-11-00111  BEQI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii0-1dddd-mmmmm-010-ddddd-11-00111  BNEI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii1-0dddd-mmmmm-010-ddddd-11-00111  BLTI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii1-1dddd-mmmmm-010-ddddd-11-00111  BGEI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii0-0dddd-mmmmm-011-ddddd-11-00111  BLTUI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii0-1dddd-mmmmm-011-ddddd-11-00111  BGEUI		Imm6s, Rm, Disp9s (BGB)
+
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User / Custom 0)
+
+* iiiiiii-idddd-mmmmm-000-ddddd-00-01011  BEQI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-001-ddddd-00-01011  BNEI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-010-ddddd-00-01011  BLTI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-011-ddddd-00-01011  BGEI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-100-ddddd-00-01011  BLTUI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-101-ddddd-00-01011  BGEUI		Imm8s, Rm, Disp9s (Huawei)
+
+
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01011  (User / Custom 1)
 
 * uuuuu00-ttttt-sssss-zzz-nnnnn-10-01011  FNMSUB.S	Rn, Rs, Rt, Ru (F)
@@ -413,8 +430,8 @@ Listing:
 * 000000i-iiiii-mmmmm-001-nnnnn-00-11011  SLLIW		Rn, Rm, Imm6
 * iiiiiii-iiiii-mmmmm-010-nnnnn-00-11011  -
 * iiiiiii-iiiii-mmmmm-011-nnnnn-00-11011  -
-* 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J21_IMM	(BGB)
-* 1iiiiii-iiiii-zzzzz-100-omnpp-00-11011  J21_OP	(BGB)
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  / J21_IMM	(BGB)
+* 1iiiiii-iiiii-zzzzz-100-omnpp-00-11011  / J21_OP	(BGB)
 * 000000i-iiiii-mmmmm-101-nnnnn-00-11011  SRLIW		Rn, Rm, Imm6_I
 * 010000i-iiiii-mmmmm-101-nnnnn-00-11011  SRAIW		Rn, Rm, Imm6_I
 * 0iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? SHORI	Rn, Imm16u (BGB)
@@ -456,7 +473,7 @@ Listing:
 
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-111xx  (48b, Unused)
-* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-111xx  (64b, Unused)
+* zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-111xx  (64b)
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-10-111xx  (48b, Unused)
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-11-111xx  (80b, Unused)
 
@@ -519,13 +536,24 @@ Imm/Disp:
 *  ZZZ-d-cb-nnn-ae-RRR-ZZ  (Disp5l)
 
 
+=== 48 Long C-Extended Encodings ===
+
+* 2x(iiiiiiii-iiiiiiii) 0000-nnnnn-00-11111  L.LI		Rn, Imm32s (Huawei)
+* 2x(iiiiiiii-iiiiiiii) 1000-nnnnn-00-11111  L.SHORI32	Rn, Imm32u (?)
+** Rn = (Rn SHL 32) OR Imm32u
+
 
 === Jumbo Encodings ===
 
-* tiiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J22	(Prefix, BGB)
-* 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  J21I	(Prefix, BGB)
-* 1iiiiii-iiiii-zzzzV-100-omnpp-00-11011  J21O	(Prefix, BGB)
-* tiiiiii-iiiii-zzzzz-100-sZnpp-00-11011  J12O	(Prefix, BGB)
+* tiiiiii-iiiii-jjjjj-100-kkkkk-00-11011 / J22	(Prefix, BGB)
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011 / J21I	(Prefix, BGB)
+* 1iiiiii-iiiii-zzzzV-100-omnpp-00-11011 / J21O	(Prefix, BGB)
+* tiiiiii-iiiii-zzzzz-100-sZnpp-00-11011 / J12O	(Prefix, BGB)
+
+* tiiiiii-iiiii-jjjjj-100-kkkkk-01-11111  J22	(Prefix, BGB)
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-01-11111  J21I	(Prefix, BGB)
+* 1iiiiii-iiiii-zzzzV-100-omnpp-01-11111  J21O	(Prefix, BGB)
+* tiiiiii-iiiii-zzzzz-100-sZnpp-01-11111  J12O	(Prefix, BGB)
 
 The J21I will be a prefix op, which will combine with the following instruction.
 * An Imm12 field will be expanded to 33 bits.

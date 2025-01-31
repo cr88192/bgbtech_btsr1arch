@@ -338,6 +338,7 @@ wire[32:0]		decOpFzC_idImm;
 wire[8:0]		decOpFzC_idUCmd;
 wire[8:0]		decOpFzC_idUIxt;
 wire[18:0]		decOpFzC_idUFl;
+wire[16:0]		decOpFzC_idImmB;
 
 DecOpFz	decOpFzC(
 	clock,		reset,	srModC,
@@ -355,7 +356,7 @@ DecOpFz	decOpFzC(
 			tOpJBitsB[23:0] },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idRegP,
-	decOpFzC_idImm,
+	decOpFzC_idImm,			decOpFzC_idImmB,
 	decOpFzC_idUCmd,		decOpFzC_idUIxt,
 	decOpFzC_idUFl
 	);
@@ -368,6 +369,7 @@ wire[32:0]		decOpFzB_idImm;
 wire[8:0]		decOpFzB_idUCmd;
 wire[8:0]		decOpFzB_idUIxt;
 wire[18:0]		decOpFzB_idUFl;
+wire[16:0]		decOpFzB_idImmB;
 
 DecOpFz	decOpFzB(
 	clock,		reset,	srModB,
@@ -381,7 +383,7 @@ DecOpFz	decOpFzB(
 		UV31_00,
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idRegP,
-	decOpFzB_idImm,
+	decOpFzB_idImm,			decOpFzB_idImmB,
 	decOpFzB_idUCmd,		decOpFzB_idUIxt,
 	decOpFzB_idUFl
 	);
@@ -394,6 +396,7 @@ wire[32:0]		decOpFzA_idImm;
 wire[8:0]		decOpFzA_idUCmd;
 wire[8:0]		decOpFzA_idUIxt;
 wire[18:0]		decOpFzA_idUFl;
+wire[16:0]		decOpFzA_idImmB;
 
 DecOpFz	decOpFzA(
 	clock,		reset,	srModA,
@@ -403,7 +406,7 @@ DecOpFz	decOpFzA(
 		UV31_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idRegP,
-	decOpFzA_idImm,
+	decOpFzA_idImm,			decOpFzA_idImmB,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt,
 	decOpFzA_idUFl
 	);
@@ -418,16 +421,18 @@ wire[32:0]		decOpRvA_idImm;
 wire[8:0]		decOpRvA_idUCmd;
 wire[8:0]		decOpRvA_idUIxt;
 wire[18:0]		decOpRvA_idUFl;
+wire[16:0]		decOpRvA_idImmB;
 
 DecOpRvI	decOpRvA(
 	clock,		reset,	srModA,
 //	{ UV32_00, istrWord[31: 0] },
-	{ UV32_00, istrWordA },
+//	{ UV32_00, istrWordA },
+	{ istrWordB, istrWordA },
 	{srRiscv && !srXG2RV, srWxe, 2'b00},
 	UV28_00,
 	decOpRvA_idRegN,		decOpRvA_idRegM,
 	decOpRvA_idRegO,		decOpRvA_idRegP,
-	decOpRvA_idImm,
+	decOpRvA_idImm,			decOpRvA_idImmB,
 	decOpRvA_idUCmd,		decOpRvA_idUIxt,
 	decOpRvA_idUFl
 	);
@@ -442,6 +447,7 @@ wire[32:0]		decOpRvB_idImm;
 wire[8:0]		decOpRvB_idUCmd;
 wire[8:0]		decOpRvB_idUIxt;
 wire[18:0]		decOpRvB_idUFl;
+wire[16:0]		decOpRvB_idImmB;
 
 DecOpRvI	decOpRvB(
 	clock,		reset,	srModB,
@@ -455,7 +461,7 @@ DecOpRvI	decOpRvB(
 		tOpRvJBitsB[23:0] },
 	decOpRvB_idRegN,		decOpRvB_idRegM,
 	decOpRvB_idRegO,		decOpRvB_idRegP,
-	decOpRvB_idImm,
+	decOpRvB_idImm,			decOpRvB_idImmB,
 	decOpRvB_idUCmd,		decOpRvB_idUIxt,
 	decOpRvB_idUFl
 	);
@@ -489,6 +495,7 @@ wire[32:0]		decOpRvC_idImm;
 wire[8:0]		decOpRvC_idUCmd;
 wire[8:0]		decOpRvC_idUIxt;
 wire[18:0]		decOpRvC_idUFl;
+wire[16:0]		decOpRvC_idImmB;
 
 // DecOpRvI	decOpRvC(
 DecOpRvJO	decOpRvC(
@@ -503,7 +510,7 @@ DecOpRvJO	decOpRvC(
 		tOpRvJBitsC[23:0] },
 	decOpRvC_idRegN,		decOpRvC_idRegM,
 	decOpRvC_idRegO,		decOpRvC_idRegP,
-	decOpRvC_idImm,
+	decOpRvC_idImm,			decOpRvC_idImmB,
 	decOpRvC_idUCmd,		decOpRvC_idUIxt,
 	decOpRvC_idUFl
 	);
@@ -732,12 +739,31 @@ assign	opJumbo96WxBits = 0;
 `ifdef jx2_enable_riscv
 `ifdef jx2_enable_rvjumbo
 
-assign		opIsRvJumboA =
-	(istrWordA[ 6: 0] == 7'h1B) && (istrWordA[14:12] == 3'h4) &&
-	(srRiscv && !srXG2RV);
-assign		opIsRvJumboB =
-	(istrWordB[ 6: 0] == 7'h1B) && (istrWordB[14:12] == 3'h4) &&
-	(srRiscv && !srXG2RV);
+wire		opIsRvJumboA_En;
+wire		opIsRvJumboB_En;
+wire		opIsRvJumboA_0;
+wire		opIsRvJumboA_1;
+wire		opIsRvJumboB_0;
+wire		opIsRvJumboB_1;
+
+assign		opIsRvJumboA_En = (srRiscv && !srXG2RV && !istrMTagA[0]);
+assign		opIsRvJumboB_En = (srRiscv && !srXG2RV && !istrMTagB[0]);
+
+assign		opIsRvJumboA_0 =
+	(istrWordA[ 6: 0] == 7'h1B) && (istrWordA[14:12] == 3'h4);
+assign		opIsRvJumboB_0 =
+	(istrWordB[ 6: 0] == 7'h1B) && (istrWordB[14:12] == 3'h4);
+
+assign		opIsRvJumboA_1 =
+	(istrWordA[ 6: 0] == 7'h3F) && (istrWordA[14:12] == 3'h4);
+assign		opIsRvJumboB_1 =
+	(istrWordB[ 6: 0] == 7'h3F) && (istrWordB[14:12] == 3'h4);
+
+assign		opIsRvJumboA = (opIsRvJumboA_0 || opIsRvJumboA_1) && 
+				opIsRvJumboA_En;
+assign		opIsRvJumboB = (opIsRvJumboB_0 || opIsRvJumboB_1) && 
+				opIsRvJumboB_En;
+
 assign		opIsRvJumbo96 = opIsRvJumboA && opIsRvJumboB;
 
 assign		tOpRvJBitsA = 0;
@@ -745,12 +771,12 @@ assign		tOpRvJBitsA = 0;
 assign		tOpRvJBitsB = {
 	istrWordA[31],
 	istrWordA[31], 2'b00,
-	istrWordA[11: 7], istrWordA[19:15], istrWordA[30:20]};
+	istrWordA[11: 7], istrWordA[19:15], istrWordA[30:20] };
 
 assign		tOpRvJBitsC = {
 	istrWordB[31],
 	istrWordB[31], 2'b00,
-	istrWordB[11: 7], istrWordB[19:15], istrWordB[30:20]};
+	istrWordB[11: 7], istrWordB[19:15], istrWordB[30:20] };
 
 `else
 
@@ -1343,6 +1369,13 @@ begin
 		opRegCO	= JX2_GR_ZZR;
 		opRegCN	= JX2_GR_ZZR;
 		opImmC	= UV33_00;
+
+`ifdef jx2_enable_riscv_immb
+		opImmC	= {
+			decOpRvC_idImmB[16] ? UV17_FF : UV17_00,
+			decOpRvC_idImmB[15:0] };
+`endif
+
 		opUCmdC	= UV9_00;
 		opUIxtC	= UV9_00;
 
@@ -1399,6 +1432,12 @@ begin
 		opImmC	= UV33_00;
 		opUCmdC	= UV9_00;
 		opUIxtC	= UV9_00;
+
+`ifdef jx2_enable_immb
+		opImmC	= {
+			decOpFzC_idImmB[16] ? UV17_FF : UV17_00,
+			decOpFzC_idImmB[15:0] };
+`endif
 
 //		opUCmdC		= { 3'b001, decOpFzC_idUFl[18:13] };
 		opUIxtC		= decOpFzC_idUFl[12:4];
@@ -1521,6 +1560,24 @@ begin
 
 			opRegCN	= JX2_GR_ZZR;
 			opImmC	= UV33_00;
+
+`ifdef jx2_enable_immb
+			opImmC	= {
+				decOpFzB_idImmB[16] ? UV17_FF : UV17_00,
+				decOpFzB_idImmB[15:0] };
+`endif
+
+`ifdef jx2_enable_riscv_immb
+`ifdef jx2_dec_ssc_riscv
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagB[0])
+			begin
+				opImmC	= {
+					decOpRvB_idImmB[16] ? UV17_FF : UV17_00,
+					decOpRvB_idImmB[15:0] };
+			end
+`endif
+`endif
+
 			opUCmdC	= UV9_00;
 //				opUIxtC	= UV9_00;
 //				opUIxtC	= { 5'h0, decOpFzB_idUFl[7:4] };
@@ -1588,6 +1645,22 @@ begin
 //			opUIxtC	= UV9_00;
 //			opUIxtC	= { 5'h0, decOpFzA_idUFl[7:4] };
 			opUIxtC	= decOpFzA_idUFl[12:4];
+
+`ifdef jx2_enable_immb
+			opImmC	= {
+				decOpFzA_idImmB[16] ? UV17_FF : UV17_00,
+				decOpFzA_idImmB[15:0] };
+`endif
+
+`ifdef jx2_enable_riscv_immb
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagA[0])
+			begin
+				opImmC	= {
+					decOpRvA_idImmB[16] ? UV17_FF : UV17_00,
+					decOpRvA_idImmB[15:0] };
+			end
+`endif
+
 
 			if(decOpFzA_idUFl[12])
 				opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };

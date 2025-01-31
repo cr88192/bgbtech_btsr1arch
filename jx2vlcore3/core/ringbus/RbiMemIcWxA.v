@@ -2183,7 +2183,9 @@ begin
 
 		5'b00zz0: tRegOutPcStep = 4'b0100;
 		5'b00zz1: tRegOutPcStep = 4'b0010;
-		5'b0100z: tRegOutPcStep = 4'b1000;
+//		5'b0100z: tRegOutPcStep = 4'b1000;
+		5'b01000: tRegOutPcStep = 4'b1000;
+		5'b01001: tRegOutPcStep = 4'b0110;
 		5'b0101z: tRegOutPcStep = 4'b0110;
 		5'b011zz: tRegOutPcStep = 4'b1100;
 		

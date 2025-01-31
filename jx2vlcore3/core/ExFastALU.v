@@ -46,12 +46,13 @@ assign			tRegValRtInv = ~regValRt;
 
 wire	tOpIsAdd = (idUIxt[3:0] == 0);
 wire	tOpIsSub = (idUIxt[3:0] == 1);
+wire	tOpIsSx = (idUIxt[5:4] == 2'b00);
 wire	tOpIsZx = (idUIxt[5:4] == 2'b01);
 wire	tOpIs64 = (idUIxt[5:4] == 2'b10);
 wire	tOpIsPx = (idUIxt[5:4] == 2'b11);
 
-wire	tRsHiIsValid = tOpIs64 ? (tRsHiIsZero || tRsHiIsOnes) : 1;
-wire	tRtHiIsValid = tOpIs64 ? (tRtHiIsZero || tRtHiIsOnes) : 1;
+wire	tRsHiIsValid = tOpIs64 ? (tRsHiIsZero || tRsHiIsOnes) : !idUIxt[5];
+wire	tRtHiIsValid = tOpIs64 ? (tRtHiIsZero || tRtHiIsOnes) : !idUIxt[5];
 
 reg[63:0]	tRegValRt;
 

@@ -116,6 +116,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "DecOpRepXG3.v"
 `endif
 
+`ifdef jx2_enable_riscv_op48rep
+`include "DecOpRepRv48A.v"
+`endif
+
 /* verilator lint_off DEFPARAM */
 
 module ExUnit(
@@ -422,6 +426,7 @@ wire[5:0]		ifIstrMTag;		//source mode tags
 
 wire[1:0]		ifOutPcOK;
 wire[3:0]		ifOutPcStep;
+wire[3:0]		ifOutPcStepAdj;
 reg[3:0]		ifLastPcStep;
 reg				ifInPcHold;
 wire[3:0]		ifOutPcSxo;
@@ -511,16 +516,39 @@ assign		srUser	= !ifValFetchSr[30];
 assign		srRiscv	= ifValFetchSr[26];
 assign		srXG3 = srRiscv && srWxe;
 
+wire[63:0]		ifIstrWordB;
+wire[63:0]		ifIstrWordC;
+
+`ifdef jx2_enable_riscv_op48rep
+wire[1:0]		ifIstrRv48MTag;
+
+DecOpRepRv48A	repRv48a(
+	clock, ifIstrWordA[63: 0], ifIstrWordB[63: 0],
+	ifOutPcStep, ifOutPcStepAdj,
+	ifIstrRv48MTag,
+	srRiscv, srFlushIf);
+`else
+assign		ifIstrWordB = ifIstrWordA[63:0];
+assign		ifOutPcStepAdj = ifOutPcStep;
+`endif
+
+
 `ifdef jx2_enable_riscv_xg3
 DecOpRepXG3		repXg3a(
-	clock, ifIstrWordA[31: 0], ifIstrWord[31: 0], ifIstrMTag[1:0],
+	clock, ifIstrWordA[31: 0], ifIstrWordC[31: 0], ifIstrMTag[1:0],
 	srXG3, srFlushIf);
 DecOpRepXG3		repXg3b(
-	clock, ifIstrWordA[63:32], ifIstrWord[63:32], ifIstrMTag[3:2],
+	clock, ifIstrWordA[63:32], ifIstrWordC[63:32], ifIstrMTag[3:2],
 	srXG3, srFlushIf);
 DecOpRepXG3		repXg3c(
 	clock, ifIstrWordA[95:64], ifIstrWord[95:64], ifIstrMTag[5:4],
 	srXG3, srFlushIf);
+
+assign	ifIstrWord[31: 0] = ifIstrMTag[0] ?
+	ifIstrWordC[31: 0] : ifIstrWordB[31: 0];
+assign	ifIstrWord[63:32] = ifIstrMTag[2] ?
+	ifIstrWordC[63:32] : ifIstrWordB[63:32];
+
 `else
 assign	ifIstrWord = ifIstrWordA;
 assign	ifIstrMTag = 0;
@@ -6040,7 +6068,7 @@ begin
 		id1IstrSxo		<= ifOutPcSxo;
 //		id1ValFetchSr	<= crOutSr;
 		id1ValFetchSr	<= ifValFetchSr;
-		id1PcStep		<= ifOutPcStep;
+		id1PcStep		<= ifOutPcStepAdj;
 
 `ifdef jx2_enable_prebra
 //		id1BraPipelineLrL	<= id1BraPipelineLr;

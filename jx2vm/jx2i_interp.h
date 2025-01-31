@@ -163,6 +163,7 @@ Will use direct linking and assume a non-modifiable program space.
 // #define BJX2_REG_IMM	78
 // #define BJX2_REG_ZZR	79
 
+#define BJX2_REG_IMM	94
 #define BJX2_REG_ZZR	95
 
 #endif
@@ -873,6 +874,10 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_REGREGREGREG	0x2E		//Rm, Ro, Rp, Rn
 #define BJX2_FMID_REGIMMREGREG	0x2F		//Rm, Imm, Rp, Rn
 
+#define BJX2_FMID_IMMBREGPCDISP		0x30		//ImmB, Reg, (PC, disp)
+#define BJX2_FMID_IMMBSTREGDISP1	0x31		//ImmB, (Rn, Disp1)
+
+
 #define BJX2_FLAG_SR_T			0x00000001ULL
 #define BJX2_FLAG_SR_S			0x00000002ULL
 
@@ -1422,6 +1427,8 @@ byte ldop;		//Load Operation
 
 s16 cyc;		//Clock Cycles
 u32 fl;			//Opcode Flags
+s32 immb;		//Immediate B
+
 // s32 imm;		//Immediate
 s64 imm;		//Immediate
 

@@ -35,8 +35,9 @@ module DecOpFz(
 	istrJ2Bits,
 	idRegN,		idRegM,
 	idRegO,		idRegP,
-	idImm,		idUCmd,
-	idUIxt,		idUFl
+	idImm,		idImmB,
+	idUCmd,		idUIxt,
+	idUFl
 	);
 
 input			clock;		//clock
@@ -55,6 +56,7 @@ input[30:0]		istrJ2Bits;
 `output_gpr		idRegO;
 `output_gpr		idRegP;
 output[32:0]	idImm;
+output[16:0]	idImmB;
 output[8:0]		idUCmd;
 output[8:0]		idUIxt;
 output[18:0]	idUFl;
@@ -104,6 +106,7 @@ assign		srXGRV = srXG2RV || srXG3RV;
 `reg_gpr		opRegImm16;
 `reg_gpr		opRegImm10;
 reg[32:0]		opImm;
+reg[16:0]		opImmB;
 reg[8:0]		opUCmd;
 reg[8:0]		opUIxt;
 reg[3:0]		opUFl;			//[0]=Imm16+24, [1]=SplitImm, [2]=FpImm
@@ -116,6 +119,7 @@ assign	idRegM = opRegM;
 assign	idRegO = opRegO;
 assign	idRegP = opRegP;
 assign	idImm = opImm;
+assign	idImmB = opImmB;
 assign	idUCmd = opUCmd;
 assign	idUIxt = opUIxt;
 // assign	idUFl = opUFl;
@@ -1088,6 +1092,7 @@ begin
 	opRegP		= JX2_GR_ZZR;
 	opDoImm		= JX2_FMIMM_NONE;
 	opImm		= 0;
+	opImmB		= 0;
 	opUIxt		= 0;
 	opCcty		= JX2_IXC_AL;
 

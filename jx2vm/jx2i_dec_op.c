@@ -45,6 +45,9 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 int BJX2_DecodeOpcode_DecDC(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, int opw3);
 
+int BJX2_DecodeOpcode_DecRVL(BJX2_Context *ctx,
+	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, int opw3);
+
 int BJX2_DecodeOpcode_CheckExtDisabled(BJX2_Context *ctx, int ext)
 {
 	return(0);
@@ -859,7 +862,14 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		{
 			if((opw&3)==3)
 			{
-				ret=BJX2_DecodeOpcode_DecRVI(ctx, op, addr, opw, opw2, 0);
+				if((opw&0x3F)==0x1F)
+				{
+					ret=BJX2_DecodeOpcode_DecRVL(ctx, op, addr,
+						opw, opw2, opw3);
+				}else
+				{
+					ret=BJX2_DecodeOpcode_DecRVI(ctx, op, addr, opw, opw2, 0);
+				}
 			}
 			else
 			{

@@ -1253,6 +1253,25 @@ int BGBCC_JX2_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 	return(0);
 }
 
+int BGBCC_JX2_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,
+	int nmid, s64 imm, int rn, int lbl)
+{
+	int opw1, opw2, opw3, opw4, opw5, opw6, rlty, rlty2;
+	int opwf1, opwf2, opwf3, opwf4;
+	int ex2, ex3, exw, swap, prlty;
+
+	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
+	rn=BGBCC_JX2_NormalizeReg(ctx, rn);
+
+	if(ctx->emit_riscv&0x11)
+	{
+		return(BGBCC_JX2RV_TryEmitOpImmRegLbl(ctx, nmid, imm, rn, lbl));
+	}
+	
+	return(0);
+}
+
+
 int BGBCC_JX2_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 {
 	if(ctx->emit_riscv&0x11)

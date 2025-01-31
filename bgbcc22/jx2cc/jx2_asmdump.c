@@ -1724,6 +1724,24 @@ int BGBCC_JX2DA_EmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 	return(1);
 }
 
+int BGBCC_JX2DA_EmitOpImmRegLbl(BGBCC_JX2_Context *ctx,
+	int nmid, s64 imm, int rn, int lbl)
+{
+	char *snm, *srm, *srn, *sro;
+
+	if(ctx->is_simpass || !ctx->do_asm)
+		return(0);
+		
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
+	srn=BGBCC_JX2DA_RegToName(ctx, rn);
+	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
+
+	BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %lld, %s, %s%s",
+		snm, imm, srn, sro,
+		BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	return(1);
+}
+
 int BGBCC_JX2DA_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 {
 	char *snm, *srm, *srn, *sro;

@@ -138,6 +138,8 @@ parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
 // parameter[6:0] JX2_GR_PC2_HI	= 7'h58;
 // parameter[6:0] JX2_GR_LR2_HI	= 7'h59;
 
+parameter[6:0] JX2_GR_IMMB		= 7'h59;		//Immed B
+
 parameter[6:0] JX2_GR_FPIMM56F	= 7'h5A;		//FP Immed, Imm56f
 parameter[6:0] JX2_GR_FPIMM56VF	= 7'h5B;		//FP Immed, 4x S.E5.F8
 
@@ -714,7 +716,11 @@ REGREG, Fz+Au (Rm, Ro, Rp, Rn)
 	XW: Rm, Ro, Imm8, Rn
 
 REGREG, RVI:
-	SB: Rm, Ro, Rn
+	SB: Rm, Ro|Imm17au, Rn
+	SW: -
+	SL: -
+	SQ: -
+	SQ: Ro|Imm17au, Rm, Rn
 
 	UB: Rm, Rn, Rn
 	UW: Ro, Rn, Rn
@@ -846,6 +852,18 @@ REGIMMREG, RVI:
 	NW: Rm, Imm12n, Rn
 
 
+IMM8REG, RVI
+	SB: Rn, Imm20, Rn
+	SW: Imm20, Rn, Rn
+	SL: -
+	SQ: Rn, Imm17s, Rn
+
+	UB: ZR, Imm20, Rn
+	UW: -
+	UL: -
+	UQ: Rn, Imm32lc, Rn
+
+
 
 LDREGDISPREG, RVC:
 	SB: (Rn3, Disp4u), Rm3
@@ -971,6 +989,7 @@ parameter[3:0] JX2_RVIMM_DISP12LD	= 4'h4;
 parameter[3:0] JX2_RVIMM_DISP12ST	= 4'h5;
 parameter[3:0] JX2_RVIMM_DISP12B	= 4'h6;	//12-bit, Bcc
 parameter[3:0] JX2_RVIMM_IMM17S		= 4'h7;	//LUI
+parameter[3:0] JX2_RVIMM_IMM32LC	= 4'h8;	//L.LI
 
 parameter[3:0] JX2_RVIMM_IMM12S		= 4'h4;
 

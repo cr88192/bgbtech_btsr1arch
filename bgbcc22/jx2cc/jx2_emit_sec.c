@@ -3775,24 +3775,59 @@ int BGBCC_JX2_EmitDWord(BGBCC_JX2_Context *ctx, u32 val)
 	return(0);
 }
 
-int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, u32 val)
+int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 {
 	static u32 lval, lval2;
-	int ix, ix1, isjmb;
+	s64 val1;
+	int ix, ix1, isjmb, is32, is16, is48;
 	int i;
+
+	is16=0;
+	is32=0;
+	is48=0;
+
+	if(((val>>56)==0x00) || ((val>>56)==0x0A) || ((val>>56)==0x0B))
+	{
+		val1=(val<<8)>>8;
+		if(((u32)val1)!=val1)
+			{ BGBCC_DBGBREAK }
+		is32=1;
+	}
+
+	if((val>>56)==0x0C)
+	{
+		val1=(val<<8)>>8;
+		if(((u16)val1)!=val1)
+			{ BGBCC_DBGBREAK }
+		is16=1;
+		if(ctx->is_fixed32&1)
+			{ BGBCC_DBGBREAK }
+	}
+
+	if((val>>56)==0x0D)
+	{
+//		val1=(val<<8)>>8;
+//		if(((u16)val1)!=val1)
+//			{ BGBCC_DBGBREAK }
+		is48=1;
+		if(ctx->is_fixed32&1)
+			{ BGBCC_DBGBREAK }
+	}
 
 	if(	(ctx->emit_riscv&0x11) &&
 		!(ctx->emit_riscv&0x22))
 	{
-		if((val&3)!=3)
+		if(((val&3)!=3) && !is16)
 			{ BGBCC_DBGBREAK }
 	}
 
 	isjmb=0;
 
-	if((lval&0x707F)==0x401B)
+//	if(((lval&0x707F)==0x401B) || ((lval&0x707F)==0x403F))
+	if((lval&0x707F)==0x403F)
 	{
-		if((val&0x707F)==0x401B)
+//		if((val&0x707F)==0x401B)
+		if((val&0x707F)==0x403F)
 		{
 			if(!(ctx->has_jumbo&4))
 				{ BGBCC_DBGBREAK }
@@ -3810,7 +3845,7 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, u32 val)
 	if(!ctx->is_simpass)
 	{
 		ctx->stat_opc_tot++;
-		if((val&3)!=3)
+		if(((val&3)!=3) && is32)
 		{
 			ctx->stat_opc_ext8a++;
 
@@ -3879,11 +3914,15 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, u32 val)
 			case 7:
 				break;
 			}
-		}else
+		}else if(is32)
 		{
+			/* RVI Ops */
 			ctx->stat_opc_rv++;
 			ix=(((val>>2)&31)<<3)|((val>>12)&7);
 			ctx->opcnt_rv53xx[ix]++;
+		}else if(is16)
+		{
+			/* RVC Ops */
 		}
 	}
 	
@@ -3903,7 +3942,19 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, u32 val)
 	lval2=lval;
 	lval=val;
 
-	BGBCC_JX2_EmitDWordI(ctx, val);
+	if(is16)
+	{
+		BGBCC_JX2_EmitWordI(ctx, val&0xFFFF);
+	}else
+		if(is48)
+	{
+		BGBCC_JX2_EmitWordI(ctx, (val>> 0)&0xFFFF);
+		BGBCC_JX2_EmitWordI(ctx, (val>>16)&0xFFFF);
+		BGBCC_JX2_EmitWordI(ctx, (val>>32)&0xFFFF);
+	}else
+	{
+		BGBCC_JX2_EmitDWordI(ctx, val);
+	}
 	return(0);
 }
 

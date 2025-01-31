@@ -87,6 +87,14 @@ begin
 			opLenA0=4'b1110;
 `endif
 
+`ifdef jx2_enable_riscv_op48
+		if(istrBits[ 5: 0]==6'h1F)
+			opLenA0=4'b1011;
+`endif
+
+		if(istrBits[ 6: 0]==7'h3F)
+			opLenA0=4'b1110;
+
 `ifdef jx2_enable_riscv_xg3
 		if((istrBits[ 4: 3]==2'b11) && (istrBits[ 1: 0]==2'b10) && isXG3)
 			opLenA0=4'b1110;

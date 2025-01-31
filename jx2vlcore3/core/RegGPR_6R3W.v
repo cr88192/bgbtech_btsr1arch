@@ -967,6 +967,16 @@ begin
 			tValRsZz=1;
 		end
 
+`ifdef jx2_enable_immb
+		JX2_GR_IMMB: begin
+			tValRsA = 0;
+			tValRsA[63:0] = {
+				regValImmC[32]?UV32_FF:UV32_00,
+				regValImmC[31:0] };
+			tValRsZz=1;
+		end
+`endif
+
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
 //			tValRsA = 0;
@@ -1053,6 +1063,16 @@ begin
 			tValRtA=UVGPRV_00;
 			tValRtZz=1;
 		end
+
+`ifdef jx2_enable_immb
+		JX2_GR_IMMB: begin
+			tValRtA = 0;
+			tValRtA[63:0] = {
+				regValImmC[32]?UV32_FF:UV32_00,
+				regValImmC[31:0] };
+			tValRtZz=1;
+		end
+`endif
 		
 		JX2_GR_IMM_HI: begin
 			tValRtA[63:0] = {
@@ -1269,7 +1289,7 @@ begin
 
 `endif
 
-		JX2_GR_IMM:
+		JX2_GR_IMM, JX2_GR_IMMB:
 		begin
 			tValRxA = UVGPRV_00;
 			tValRxA[63:0] = {
@@ -1388,7 +1408,7 @@ begin
 
 `endif
 
-		JX2_GR_IMM:
+		JX2_GR_IMM, JX2_GR_IMMB:
 		begin
 			tValRyA = UVGPRV_00;
 			tValRyA[63:0] = {

@@ -2357,3 +2357,9 @@ int BGBCC_JX2X3_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 
 	return(0);
 }
+
+int BGBCC_JX2X3_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,
+	int nmid, s64 imm, int rn, int lbl)
+{
+	return(0);
+}

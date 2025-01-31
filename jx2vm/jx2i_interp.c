@@ -2814,6 +2814,22 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		nonl=1;
 		break;
 
+	case BJX2_FMID_IMMBREGPCDISP:
+		if(op->imm>256)
+		{
+			BJX2_DbgPrintf(ctx, "#%d, %s, (0x%llX)",
+				op->immb,
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl),
+				brpc+(op->imm*psc));
+		}else
+		{
+			BJX2_DbgPrintf(ctx, "#%d, %s, (PC, %lld)",
+				op->immb,
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl),
+				(op->imm*psc));
+		}
+		break;
+
 	default:
 		BJX2_DbgPrintf(ctx, "?");
 		break;

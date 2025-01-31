@@ -2316,6 +2316,11 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			!(op1->fl&(BJX2_OPFL_JUMBO64|BJX2_OPFL_JUMBO96)) &&
 			!(op2->fl&(BJX2_OPFL_JUMBO64|BJX2_OPFL_JUMBO96)) &&
 
+			(op1->fl&BJX2_OPFL_TWOWORD) &&
+			(op2->fl&BJX2_OPFL_TWOWORD) &&
+			!(op1->pc&3) &&
+			!(op2->pc&3) &&
+
 			!(op1->fl&BJX2_OPFL_NOWEX) &&
 			!(op1->fl&BJX2_OPFL_NOWEX_FP2) &&
 			!(op1->fl&BJX2_OPFL_NOWEX_IO2) &&

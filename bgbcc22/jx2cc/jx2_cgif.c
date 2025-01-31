@@ -615,11 +615,20 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		}
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo96"))
 		{
-			shctx->has_jumbo|=4;
+			shctx->has_jumbo|=4;	//Jumbo96
 		}
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvzba"))
 		{
 			shctx->has_rvzba|=1;	//Zba
+		}
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvbraimm"))
+		{
+			shctx->has_rvzba|=32;	//Branch-with-Immediate
+		}
+
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvc"))
+		{
+			shctx->is_fixed32&=~3;
 		}
 	}
 
@@ -665,7 +674,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2|=1;	//LX / SX
 
 		shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
-		shctx->has_jumbo|=4;	//Jumbo96
+//		shctx->has_jumbo|=4;	//Jumbo96
 		shctx->has_rvzba|=1;	//Zba
 	}
 
@@ -8893,6 +8902,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				case 0x04:	s0="ALUI ";		break;
 				case 0x05:	s0="AUIPC";	j=1;	break;
 				case 0x06:	s0="ALUIW";		break;
+				case 0x07:	s0="OP48A";		break;
 
 				case 0x08:	s0="ST   ";		break;
 				case 0x09:	s0="FST  ";		break;
@@ -8901,6 +8911,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				case 0x0C:	s0="ALU  ";		break;
 				case 0x0D:	s0="LUI  ";	j=1;	break;
 				case 0x0E:	s0="ALUW ";		break;
+				case 0x0F:	s0="OP64 ";		break;
 
 				case 0x10:	s0="FMA  ";		break;
 				case 0x11:	s0="FMS  ";		break;
@@ -8909,6 +8920,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				case 0x14:	s0="FPU  ";		break;
 				case 0x15:	s0="OP-V ";		break;
 				case 0x16:	s0="Usr2 ";		break;
+				case 0x17:	s0="OP48B";		break;
 
 				case 0x18:	s0="Bcc  ";		break;
 				case 0x19:	s0="JALR ";		break;
@@ -8917,6 +8929,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				case 0x1C:	s0="SYS  ";		break;
 				case 0x1D:	s0="OP-P ";		break;
 				case 0x1E:	s0="Usr3 ";		break;
+				case 0x1F:	s0="OP80P";		break;
 				}
 			
 				if(j>0)
