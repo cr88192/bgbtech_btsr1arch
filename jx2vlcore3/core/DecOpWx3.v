@@ -764,7 +764,11 @@ assign		opIsRvJumboA = (opIsRvJumboA_0 || opIsRvJumboA_1) &&
 assign		opIsRvJumboB = (opIsRvJumboB_0 || opIsRvJumboB_1) && 
 				opIsRvJumboB_En;
 
+`ifdef jx2_enable_rvjumbo96
 assign		opIsRvJumbo96 = opIsRvJumboA && opIsRvJumboB;
+`else
+assign		opIsRvJumbo96 = 0;
+`endif
 
 assign		tOpRvJBitsA = 0;
 
@@ -1276,6 +1280,28 @@ begin
 			opIsFCA = 0;		opIsDzA = 0;
 			opIsDfA = 0;
 		end
+		
+		if(srSsc3 &&
+			(!istrMTagA[0] || !istrMTagB[0] || !istrMTagC[0]) && 
+			!opIsRvJumbo96)
+		begin
+			$display("DecOpWx3: 3-Wide RV");
+		end
+		
+		if(opIsRvJumboA && !srSsc2 && !srSsc3)
+		begin
+			$display("DecOpWx3: RV Jumbo and not Ssc2");
+		end
+		
+		if(opIsRvJumboA && istrMTagB[0])
+		begin
+			$display("DecOpWx3: RV Jumbo and XG3 Op");
+		end
+
+		if(opIsWexJumboA && !istrMTagB[0])
+		begin
+			$display("DecOpWx3: WEX Jumbo and RV Op");
+		end
 	end
 `endif
 
@@ -1624,6 +1650,7 @@ begin
 			opRegAM	= opRegAM0;
 			opRegAO	= opRegAO0;
 			opRegAN	= opRegAN0;
+			opRegAP	= opRegAP0;
 			opImmA	= opImmA0;
 			opUCmdA	= opUCmdA0;
 			opUIxtA	= opUIxtA0;

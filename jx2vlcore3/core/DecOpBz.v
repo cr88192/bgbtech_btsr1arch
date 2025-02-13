@@ -1811,11 +1811,12 @@ begin
 	endcase
 
 //	if(usrReject && srUser && !(usrSuAllow && srSuperuser))
-	if(usrReject && srUser && !usrSuAllowEn)
+	if(usrReject && srUser && !usrSuAllowEn && !opIsFx)
 	begin
 		$display("DecOpBz: Usermode Reject %X", istrWord[15:0]);
 		opNmid		= JX2_UCMD_INVOP;
-		opFmid		= JX2_FMID_INV;
+//		opFmid		= JX2_FMID_INV;
+		opFmid		= JX2_FMID_Z;
 		opUCmdIx	= JX2_UCIX_INVOP_PRIVFAULT;
 	end
 

@@ -1001,6 +1001,118 @@ int BGBCC_JX2_DisassembleBuildOpIdx()
 	return(1);
 }
 
+int BGBCC_JX2_RepackOpcode_DecXG3toXG2(
+	int opw1, int opw2,
+	int *ropw3, int *ropw4)
+{
+	u32 opw;
+	int opw3, opw4;
+	int imm;
+	int ret;
+
+	opw=((u16)opw1)|(opw2<<16);
+	
+	ret=0;
+	switch((opw>>2)&7)
+	{
+	case 0:
+	case 3:
+	case 5:
+#if 0
+		if(((opw1>>12)&0xE)==0xC)
+		{
+			imm=(opw2&0xFFFF)|(((opw1>>6)&63)<<16);
+			if(opw1&0x20)
+				imm|=~0x003FFFFFULL;
+			opw3=0xF000|((imm>>12)&0xFF);
+			opw4=(opw1&0xF000)|(imm&0x0FFF);
+			if(((imm>>20)^(imm>>31))&1)
+				opw3^=0x2000;
+			if(((imm>>21)^(imm>>31))&1)
+				opw3^=0x4000;
+			if(((imm>>22)^(imm>>31))&1)
+				opw3^=0x8000;
+			break;
+		}
+#endif
+
+		if(((opw1>>12)&0xE)==0xC)
+		{
+			imm=(opw2&0xFFFF)|(((opw1>>6)&63)<<16);
+		}
+	
+		opw3=
+			((((opw>>11)^1)& 1)<<15) |
+			((((opw>>21)^1)& 1)<<14) |
+			((((opw>>27)^1)& 1)<<13) |
+			((((opw>> 1)^0)& 1)<<12) |
+			((((opw>> 4)^0)& 1)<<11) |
+			((((opw>> 2)^0)& 3)<< 8) |
+			((((opw>> 6)^0)&15)<< 4) |
+			((((opw>>16)^0)&15)<< 0) ;
+		opw4=
+			(((opw>>12)&15)<<12) |
+			(((opw>> 5)& 1)<<11) |
+			(((opw>>10)& 1)<<10) |
+			(((opw>>20)& 1)<< 9) |
+			(((opw>>26)& 1)<< 8) |
+			(((opw>>22)&15)<< 4) |
+			(((opw>>28)&15)<< 0) ;
+		break;
+	case 1:
+	case 2:
+		opw3=
+			((((opw>>11)^1)& 1)<<15) |
+			((((opw>>21)^1)& 1)<<14) |
+			((((opw>>31)^1)& 1)<<13) |
+			((((opw>> 1)^0)& 1)<<12) |
+			((((opw>> 4)^0)& 1)<<11) |
+			((((opw>> 2)^0)& 3)<< 8) |
+			((((opw>> 6)^0)&15)<< 4) |
+			((((opw>>16)^0)&15)<< 0) ;
+		opw4=
+			(((opw>>12)&15)<<12) |
+			(((opw>> 5)& 1)<<11) |
+			(((opw>>10)& 1)<<10) |
+			(((opw>>20)& 1)<< 9) |
+			(((opw>>26)&31)<< 4) |
+			(((opw>>22)&15)<< 0) ;
+		break;
+	case 4:
+		opw4=opw2;
+		opw3=
+			((((opw>>11)^1)& 1)<<15) |
+			((((opw>>15)^1)& 1)<<14) |
+			((((opw>> 5)^1)& 1)<<13) |
+			((((opw>> 1)^0)& 1)<<12) |
+			((((opw>> 4)^0)& 1)<<11) |
+			((((opw>> 2)^0)& 3)<< 8) |
+			(((opw>> 6)&31)<<0) |
+			(((opw>>12)& 7)<<5) ;
+		break;
+	case 6:
+	case 7:
+		opw3=0x1E00|
+			((((opw>>5)^7)& 7)<<13) |
+			((((opw>>2)^0)& 1)<< 8) |
+			( ((opw>>8)  &255)<< 0) ;
+		opw4=opw2;
+		break;
+	}
+	
+	if(!(opw&2))
+	{
+		opw3&=~0x1400;
+		if(opw&1)
+			opw3&=0x0400;
+	}
+	
+	*ropw3=opw3;
+	*ropw4=opw4;
+	return(0);
+}
+
+
 int BGBCC_JX2_TryDisassembleOpcodeI1(
 	BGBCC_JX2_Context *ctx,
 	u32 opw,
@@ -1009,8 +1121,9 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	BGBCC_JX2_OpcodeArg *arg1,
 	BGBCC_JX2_OpcodeArg *arg2)
 {
-	u32 opwb;
-	int nmid, fmid, wex2, ex, exw, sc, isrv;
+	u32 opwb, opwa;
+	int nmid, fmid, wex2, ex, exw, sc, isrv, isxg3;
+	int opw3, opw4;
 	int i, j, il;
 	
 	wex2=0;
@@ -1036,6 +1149,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	}
 
 	opwb=opw;
+	opwa=opw;
 	if(il==1)
 		opwb=(u16)opw;
 
@@ -1044,8 +1158,21 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 
 	if(isrv)
 	{
-	}else
-		if(ctx->is_fixed32&2)
+		isxg3=((opw&3)!=3);
+
+		if(isxg3)
+		{
+			opw3=0;
+			opw4=0;
+			BGBCC_JX2_RepackOpcode_DecXG3toXG2(
+				(u16)opw, (u16)(opw>>16),
+				&opw3, &opw4);
+			opw=opw3|(opw4<<16);
+			opwb=opw;
+		}
+	}
+	
+	if((ctx->is_fixed32&2) && (!isrv || isxg3))
 	{
 		if(!(opw&0x1000))
 		{
@@ -1072,7 +1199,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 			if(opw&0x0400)
 				wex2|=3;
 		}
-	}else
+	}else if(!isrv)
 	{
 		if((opw&0xF000)==0xE000)
 		{
@@ -1120,7 +1247,7 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		}
 	}
 
-	if(isrv)
+	if(isrv && !isxg3)
 	{
 		j=((opwb>>0)&0x07F)|((opwb>>4)&0x700);
 		j=bgbcc_jx2_opidx_rv[j];
@@ -1135,11 +1262,11 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	{
 		if(bgbcc_jx2_optab[i].fmid&BGBCC_SH_FMID_ISRV)
 		{
-			if(!isrv)
+			if(!isrv || isxg3)
 				continue;
 		}else
 		{
-			if(isrv)
+			if(isrv && !isxg3)
 				continue;
 		}
 	
@@ -1467,6 +1594,8 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg0->breg=((opw    )&15)|(((ex>>1)&1)<<4)|(((exw>>1)&1)<<5);
 		arg1->disp=(opw>>16)&511;
 		arg2->breg=((opw>> 4)&15)|(((ex>>2)&1)<<4)|(((exw>>2)&1)<<5);
+		if(exw&1)
+			arg1->disp|=512;
 		break;
 
 	case BGBCC_SH_FMID_REGIMMREG_N:
@@ -1476,6 +1605,10 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg0->breg=((opw    )&15)|(((ex>>1)&1)<<4)|(((exw>>1)&1)<<5);
 		arg1->disp=((opw>>16)&511)|(~511LL);
 		arg2->breg=((opw>> 4)&15)|(((ex>>2)&1)<<4)|(((exw>>2)&1)<<5);
+		if(exw&1)
+			arg1->disp&=~512;
+		if(isxg3)
+			arg1->disp^=512;
 		break;
 
 	case BGBCC_SH_FMID_REGIMMREG_8S:
@@ -1736,11 +1869,28 @@ int BGBCC_JX2_TryDisassembleOpcode_FixupArg(
 	BGBCC_JX2_Context *ctx,
 	BGBCC_JX2_OpcodeArg *arg, int nmid)
 {
+	int isrv;
+	
+	isrv=ctx->emit_riscv&0x01;
+
 	if(arg->ty==BGBCC_SH_OPVTY_REG)
 	{
-		if(arg->breg==BGBCC_SH_REG_R15)
+		if((arg->breg==BGBCC_SH_REG_R15) && !isrv)
 		{
 			arg->breg=BGBCC_SH_REG_SP;
+		}
+
+		if((arg->breg==BGBCC_SH_REG_R1) && isrv)
+		{
+			arg->breg=BGBCC_SH_REG_LR;
+		}
+		if((arg->breg==BGBCC_SH_REG_R2) && isrv)
+		{
+			arg->breg=BGBCC_SH_REG_SP;
+		}
+		if((arg->breg==BGBCC_SH_REG_R3) && isrv)
+		{
+			arg->breg=BGBCC_SH_REG_GBR;
 		}
 		return(1);
 	}
@@ -1770,7 +1920,11 @@ int BGBCC_JX2_TryDisassembleOpcode_FixupArg(
 				arg->ireg=BGBCC_SH_REG_R0;
 			}
 		}else
-			if(arg->breg==BGBCC_SH_REG_R15)
+			if((arg->breg==BGBCC_SH_REG_R15) && !isrv)
+		{
+			arg->breg=BGBCC_SH_REG_SP;
+		}else
+			if((arg->breg==BGBCC_SH_REG_R2) && isrv)
 		{
 			arg->breg=BGBCC_SH_REG_SP;
 		}
@@ -1791,7 +1945,9 @@ int BGBCC_JX2_TryDisassembleOpcode_FixupArg(
 			arg->sc=1;
 		}
 
-		if(arg->breg==BGBCC_SH_REG_R15)
+		if((arg->breg==BGBCC_SH_REG_R15) && !isrv)
+			arg->breg=BGBCC_SH_REG_SP;
+		if((arg->breg==BGBCC_SH_REG_R2) && isrv)
 			arg->breg=BGBCC_SH_REG_SP;
 		return(1);
 	}
@@ -1867,6 +2023,10 @@ int BGBCC_JX2_TryDisassembleOpcodeBuf(
 	int nmid, fmid, wex2, il;
 	int i, j;
 	
+	int isrv;
+	
+	isrv=ctx->emit_riscv&0x01;
+
 	BGBCC_JX2_DisassembleBuildOpIdx();
 	
 	il=BGBCC_JX2_TryDisassembleOpcodeI1(ctx, opw1|(opw2<<16),
@@ -1893,7 +2053,15 @@ int BGBCC_JX2_TryDisassembleOpcodeBuf(
 	ct0=ct;
 
 	if(il>1)
-		sprintf(ct, "  %04X_%04X  %-10s ", opw1, opw2, snm);
+	{
+		if(isrv)
+		{
+			sprintf(ct, "  %04X.%04X  %-10s ", opw2, opw1, snm);
+		}else
+		{
+			sprintf(ct, "  %04X_%04X  %-10s ", opw1, opw2, snm);
+		}
+	}
 	else
 		sprintf(ct, "  %04X       %-10s ", opw1, snm);
 	ct+=strlen(ct);

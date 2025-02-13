@@ -25,6 +25,7 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	BJX2_Opcode *op, bjx2_addr addr, int opw1, int opw2, u32 jbits)
 {
 	int rn_dfl, rm_dfl, ro_dfl;
+	int rn_rvo, rm_rvo, ro_rvo;
 	int disp5, eq, eo, disp8s, disp11s, isxg3;
 //	int imm8u, imm8n;
 //	int imm10u, imm10n;
@@ -53,6 +54,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 
 	if(jbits&0x40000000U)rn_dfl+=32;
 	if(jbits&0x20000000U)rm_dfl+=32;
+
+	rn_rvo=rn_dfl;
+	rm_rvo=rm_dfl;
 
 	rn_dfl=BJX2_RemapGPR(ctx, rn_dfl);
 	rm_dfl=BJX2_RemapGPR(ctx, rm_dfl);
@@ -318,6 +322,30 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			op->Run=BJX2_Op_SHADX_RegImmReg;
 		}
 #endif
+
+		if(eq && (rn_rvo<2))
+		{
+			op->nmid=BJX2_NMID_BRA;
+			op->fmid=BJX2_FMID_LDREGDISP1;
+			op->Run=BJX2_Op_BRA_RegDisp1;
+			op->rn=rm_dfl;
+			op->rm=rm_dfl;
+			op->imm=imm9us*4;
+
+			if(rn_rvo==1)
+			{
+				op->rn=BJX2_REG_LR;
+				op->nmid=BJX2_NMID_BSR;
+				op->fmid=BJX2_FMID_LDREGDISP1REG;
+				op->Run=BJX2_Op_BSR_RegRegDisp1;
+			}
+			
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
+			break;
+		}
+
 		break;
 	case 0x7:	/* F2nm_7ejj */
 		op->imm=imm9u;

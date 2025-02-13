@@ -1622,6 +1622,7 @@ ExPredChkNeedSrT	id2NeedSr1a(id2IdUCmd, Id2OpUIxt, id2_isPred);
 
 assign	id2_PredNeedStall =
 	id2_ex1UpdSrT &&
+	!ex1BraFlush &&
 	id2_isPred	;
 `else
 

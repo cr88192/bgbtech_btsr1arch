@@ -82,7 +82,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	int cm_dfl, cn_dfl;
 	int rm_x, rn_x, ro_x, rp_x;
 	int rn_rvo, rm_rvo, ro_rvo;
-	int opw3, opw4;
+	int opw3, opw4, op1r_opsel;
 	s64 disp5, imm5, imm6;
 	int eq, eo, wq, wo;
 	int disp11as, dispasc, disp_ldop;
@@ -136,7 +136,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 #endif
 
 		ret=1;
-		if(((opw2&0xF000)>=0xC000))
+		if(((opw2&0xF000)>=0xC000) && !isxg3)
 			ret=0;
 
 		if(ret)
@@ -1071,6 +1071,14 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_ADD;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_ADD_RegRegReg;
+			
+			if(ro_dfl==BJX2_REG_ZZR)
+			{
+				op->nmid=BJX2_NMID_MOV;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_MOV_RegReg;
+			}
+			
 			if(eq)
 			{
 //				op->fmid=BJX2_FMID_REGIMMREG;
@@ -1080,6 +1088,13 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fl|=BJX2_OPFL_NOWEX;
 				op->fl|=BJX2_OPFL_NOWEXSFX;
 				op->fl|=BJX2_OPFL_REGX3R;
+
+				if(ro_dfl==BJX2_REG_ZZR)
+				{
+					op->nmid=BJX2_NMID_MOVX2;
+					op->fmid=BJX2_FMID_REGREG;
+					op->Run=BJX2_Op_MOVX_RegReg;
+				}				
 			}
 			break;
 		case 0x1:	/* F0ez_11zz */
@@ -3292,11 +3307,24 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 		op->rm=ro_dfl;
 		op->ro=BJX2_REG_ZZR;
 		op->rn=ro_dfl;
-		op->imm=ro_dfl;
+//		op->imm=ro_dfl;
+		op->imm=ro_rvo;
+		op1r_opsel=opw2&255;
+		
+		if(isxg3)
+		{
+			op->rm=rn_dfl;
+			op->ro=BJX2_REG_ZZR;
+			op->rn=rn_dfl;
+			op->imm=rn_rvo;
+			op1r_opsel=(opw2&15)|((ro_rvo&15)<<4);
+		}
+		
 		switch((opw2>>8)&15)
 		{
 		case 0x0:	/* F0ez_30zz */
-			switch(opw2&255)
+//			switch(opw2&255)
+			switch(op1r_opsel)
 			{
 			case 0x00:	/* F0ez_3000 */
 				op->fmid=BJX2_FMID_Z;
@@ -5011,11 +5039,25 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_ADDSL;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_ADDSL_RegRegReg;
+
 			if(eq)
 			{
 				op->nmid=BJX2_NMID_ADDUL;
 				op->Run=BJX2_Op_ADDUL_RegRegReg;
 			}
+
+			if(ro_dfl==BJX2_REG_ZZR)
+			{
+				op->nmid=BJX2_NMID_EXTSL;
+				op->fmid=BJX2_FMID_REGREG;
+				op->Run=BJX2_Op_EXTSL_RegReg;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_EXTUL;
+					op->Run=BJX2_Op_EXTUL_RegReg;
+				}
+			}
+			
 			break;
 		case 0xD:	/* F0ez_5Dzz */
 			op->nmid=BJX2_NMID_SUBSL;
@@ -6328,6 +6370,12 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fl|=BJX2_OPFL_NOWEX;
 			break;
 
+		case 0xA:
+			break;
+
+		case 0xB:
+			break;
+
 		case 0xC:	/* F0ez_9Czz */
 			op->imm=disp11as;
 			op->fl|=BJX2_OPFL_NOWEX;
@@ -6343,13 +6391,75 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 
 		case 0xD:	/* F0ez_9Dzz */
 			if(eq)
+			{
+				op->nmid=BJX2_NMID_FCMPEQ;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_FCMPEQ_GRegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+
+				if(rn_dfl==BJX2_REG_ZZR)
+				{
+					op->rn=rm_dfl;
+					op->rm=ro_dfl;
+					op->fmid=BJX2_FMID_REGREG;
+					op->Run=BJX2_Op_FCMPEQ_GRegReg;
+				}
 				break;
+			}
+
 			op->imm=disp11as;
 			op->fl|=BJX2_OPFL_NOWEX;
 			op->nmid=BJX2_NMID_MOVHTW;
 			op->fmid=BJX2_FMID_LDREG2REG;
 			op->Run=BJX2_Op_MOVHTW_LdReg2Reg;
 			break;
+
+		case 0xE:
+			if(eq)
+			{
+//				op->rm=ro_dfl;
+//				op->ro=rm_dfl;
+//				op->rn=rn_dfl;
+
+				op->rm=rm_dfl;
+				op->ro=ro_dfl;
+				op->rn=rn_dfl;
+
+				op->nmid=BJX2_NMID_FCMPGT;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_FCMPGE_GRegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+
+				if(rn_dfl==BJX2_REG_ZZR)
+				{
+					op->rn=rm_dfl;
+					op->rm=ro_dfl;
+					op->fmid=BJX2_FMID_REGREG;
+					op->Run=BJX2_Op_FCMPGT_GRegReg;
+				}
+				break;
+			}
+			break;
+
+		case 0xF:
+			if(eq)
+			{
+//				op->rm=rm_dfl;
+//				op->ro=ro_dfl;
+//				op->rn=rn_dfl;
+
+				op->rm=ro_dfl;
+				op->ro=rm_dfl;
+				op->rn=rn_dfl;
+
+				op->nmid=BJX2_NMID_FCMPGE;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_FCMPGE_GRegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				break;
+			}
+			break;
+
 		}
 		break;
 
@@ -7910,6 +8020,7 @@ int BJX2_RepackOpcode_DecXG3toXG2(
 {
 	u32 opw;
 	int opw3, opw4;
+	int imm;
 	int ret;
 
 	opw=((u16)opw1)|(opw2<<16);
@@ -7920,6 +8031,29 @@ int BJX2_RepackOpcode_DecXG3toXG2(
 	case 0:
 	case 3:
 	case 5:
+#if 0
+		if(((opw1>>12)&0xE)==0xC)
+		{
+			imm=(opw2&0xFFFF)|(((opw1>>6)&63)<<16);
+			if(opw1&0x20)
+				imm|=~0x003FFFFFULL;
+			opw3=0xF000|((imm>>12)&0xFF);
+			opw4=(opw1&0xF000)|(imm&0x0FFF);
+			if(((imm>>20)^(imm>>31))&1)
+				opw3^=0x2000;
+			if(((imm>>21)^(imm>>31))&1)
+				opw3^=0x4000;
+			if(((imm>>22)^(imm>>31))&1)
+				opw3^=0x8000;
+			break;
+		}
+#endif
+
+		if(((opw1>>12)&0xE)==0xC)
+		{
+			imm=(opw2&0xFFFF)|(((opw1>>6)&63)<<16);
+		}
+	
 		opw3=
 			((((opw>>11)^1)& 1)<<15) |
 			((((opw>>21)^1)& 1)<<14) |
@@ -7977,6 +8111,13 @@ int BJX2_RepackOpcode_DecXG3toXG2(
 			( ((opw>>8)  &255)<< 0) ;
 		opw4=opw2;
 		break;
+	}
+	
+	if(!(opw&2))
+	{
+		opw3&=~0x1400;
+		if(opw&1)
+			opw3&=0x0400;
 	}
 	
 	*ropw3=opw3;

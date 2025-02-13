@@ -47,12 +47,18 @@ assign		ifPcStepOut = tPcStepOut;
 reg[31:0]		tWordRepRVJ;
 reg[31:0]		tWordRepRVB;
 
+reg[31:0]		tWordRepRVJ_3R;
+reg[31:0]		tWordRepRVB_3R;
+
 reg[31:0]		tWordSel;
 reg[1:0]		tWordSelIx;
 reg				tPSelBit;
 
 reg				tIs48;
 reg				tImmSExt;
+reg				tOpBit31;
+reg[4:0]		tOpYYY;
+reg				tOpIs3R;
 
 always @*
 begin
@@ -62,7 +68,29 @@ begin
 	
 //	tIs48 = (ifPcStepIn == 4'b0110);
 	tIs48 = (istrWordIn[5:0] == 6'h1F);
+	tOpYYY		= { istrWordIn[47:46], istrWordIn[15:13] };
 	tImmSExt	= istrWordIn[37];
+	
+	tOpIs3R		= 0;
+	
+	case(tOpYYY)
+		5'b01_100:	tOpIs3R		= 1;
+		5'b01_110:	tOpIs3R		= 1;
+		default:	tOpIs3R		= 0;
+	endcase
+	
+	if(tOpIs3R)
+	begin
+		if(istrWordIn[37])
+		begin
+			tImmSExt	= istrWordIn[36];
+		end
+		tOpBit31 = 0;
+	end
+	else
+	begin
+		tOpBit31 = tImmSExt;
+	end
 	
 	tWordRepRVJ = {
 		1'b0,
@@ -74,7 +102,7 @@ begin
 		7'h3F
 	};
 	tWordRepRVB = {
-		tImmSExt,
+		tOpBit31,
 		istrWordIn[26:16],
 		istrWordIn[42:38],
 		istrWordIn[45:43],
@@ -84,6 +112,9 @@ begin
 		2'b11
 	};
 	
+	tWordRepRVJ_3R = tWordRepRVJ;
+	tWordRepRVB_3R = tWordRepRVB;
+	
 	if(isRv && tIs48)
 	begin
 		if((istrWordIn[6:5]==2'b00) && istrWordIn[12])
@@ -91,6 +122,7 @@ begin
 			tWordOut[31: 0] = tWordRepRVJ;
 			tWordOut[63:32] = tWordRepRVB;
 			tPcStepOut		= 4'b1000;
+			tWordMTag		= 1;
 		end
 	end
 end

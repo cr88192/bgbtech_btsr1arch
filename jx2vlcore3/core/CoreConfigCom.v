@@ -18,8 +18,8 @@
 // `define jx2_enable_rvjumbo96	//RV Jumbo Encodings, 96-bit ops
 `define jx2_enable_riscv_xg3	//Enable XG3RV
 `define jx2_enable_riscv_immb	//Enable RISC-V Second Immediate
-`define jx2_enable_riscv_op48	//Enable RISC-V 48-bit ops
-`define jx2_enable_riscv_op48rep	//Enable RISC-V 48-bit repacked ops
+// `define jx2_enable_riscv_op48	//Enable RISC-V 48-bit ops
+// `define jx2_enable_riscv_op48rep	//Enable RISC-V 48-bit repacked ops
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 

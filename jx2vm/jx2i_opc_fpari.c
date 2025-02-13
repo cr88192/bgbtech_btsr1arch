@@ -2321,6 +2321,22 @@ void BJX2_Op_FCMPEQ_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=((va==vb) && !isnan);
 }
 
+void BJX2_Op_FCMPNE_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+
+	isnan=(((va>>52)&2047)==2047) && (((va>>48)&15)!=0);
+	
+	if((((va>>52)&2047)==0) && (((vb>>52)&2047)==0))
+		{ va=0; vb=0; }
+
+	ctx->regs[op->rn]=((va!=vb) && !isnan);
+}
+
 void BJX2_Op_FCMPGT_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;

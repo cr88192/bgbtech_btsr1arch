@@ -5047,7 +5047,8 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 		{
 			if(vspb->flag&BGBCC_RSPFL_ISCALLARG)
 			{
-				if((vspb->flag&0x003F0000)!=(dstfl&0x003F0000))
+//				if((vspb->flag&0x003F0000)!=(dstfl&0x003F0000))
+				if((vspb->flag&0x0FFF0000)!=(dstfl&0x0FFF0000))
 				{
 					/* Input to two different calls... */
 					vspb->flag&=~BGBCC_RSPFL_ISCALLARG;
@@ -5059,8 +5060,10 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 			{
 				/* Input to a CALL */
 				vspb->flag|=BGBCC_RSPFL_ISCALLARG;
-				vspb->flag&=~0x003F0000;
-				vspb->flag|=(dstfl&0x003F0000);
+//				vspb->flag&=~0x003F0000;
+//				vspb->flag|=(dstfl&0x003F0000);
+				vspb->flag&=~0x0FFF0000;
+				vspb->flag|=(dstfl&0x0FFF0000);
 
 #if 0
 				vspb->flag&=~BGBCC_RSPFL_ISCALLARG;

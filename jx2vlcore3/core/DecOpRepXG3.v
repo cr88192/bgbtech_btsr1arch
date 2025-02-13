@@ -31,6 +31,10 @@ reg[31:0]		tWordSel;
 reg[1:0]		tWordSelIx;
 reg				tPSelBit;
 
+reg[31:0]		tIstrWordL;
+
+// reg				tIs1R;
+
 always @*
 begin
 	tWordOut = istrWordIn;
@@ -39,6 +43,11 @@ begin
 	tPSelBit	= (istrWordIn[ 4: 3] == 2'b11);
 	if(!istrWordIn[1])
 		tPSelBit = istrWordIn[0];
+	
+//	tIs1R	=
+//		(istrWordIn[31:28]==4'b0000) &&
+//		(istrWordIn[15:12]==4'b0011) &&
+//		(istrWordIn[4:2] == 3'b000) ;
 	
 	tWordRepF0 = {
 		istrWordIn[15:12],
@@ -137,14 +146,35 @@ begin
 	begin
 		tWordOut = tWordSel;
 		tWordMTag = 1;
-//		$display("DecOpRepXG3: %X -> %X", istrWordIn, tWordOut);
+`ifndef def_true
+		if(tIstrWordL != istrWordIn)
+		begin
+//			$display("DecOpRepXG3: %X -> %X", istrWordIn, tWordOut);
+			$display("DecOpRepXG3: %b-%b-%b-%b-%b-%b -> %X-%X",
+				istrWordIn[31:28],
+				istrWordIn[27:22],
+				istrWordIn[21:16],
+				istrWordIn[15:12],
+				istrWordIn[11: 6],
+				istrWordIn[ 5: 0],
+				tWordOut[15:0], tWordOut[31:16]);
+		end
+`endif
 	end
 	
 	if(isFlush)
 	begin
-		tWordOut = 32'h3030_F000;
+//		tWordOut = 32'h3030_F000;
+		tWordOut = 32'h3000_F000;
+//		tWordOut = 32'h3000F013;
+//		tWordOut = 32'h5800F013;
 		tWordMTag = 1;
 	end
+end
+
+always @(clock)
+begin
+	tIstrWordL	<= istrWordIn;
 end
 
 endmodule

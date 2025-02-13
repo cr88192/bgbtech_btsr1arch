@@ -2915,6 +2915,7 @@ int BGBCC_JX2A_ParseBuffer(BGBCC_JX2_Context *ctx, char **rcs);
 int BGBCC_JX2C_AssembleBuffer(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *text);
 //AHSRC:jx2cc/jx2_disasm.c
 int BGBCC_JX2_DisassembleBuildOpIdx();
+int BGBCC_JX2_RepackOpcode_DecXG3toXG2(int opw1, int opw2, int *ropw3, int *ropw4);
 int BGBCC_JX2_TryDisassembleOpcodeI1(BGBCC_JX2_Context *ctx, u32 opw, int *rnmid, int *rfmid, int *rwex2, BGBCC_JX2_OpcodeArg *arg0, BGBCC_JX2_OpcodeArg *arg1, BGBCC_JX2_OpcodeArg *arg2);
 int BGBCC_JX2_TryDisassembleOpcode_FixupArg(BGBCC_JX2_Context *ctx, BGBCC_JX2_OpcodeArg *arg, int nmid);
 int BGBCC_JX2_TryDisassembleOpcode_PrintArgStr(BGBCC_JX2_Context *ctx, char **rct, BGBCC_JX2_OpcodeArg *arg, int nmid);
@@ -3345,6 +3346,7 @@ int BGBCC_JX2RV_TryEmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int r
 int BGBCC_JX2RV_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2RV_EmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int rn);
 int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
+int BGBCC_JX2RV_EmitOpRegLbl(BGBCC_JX2_Context *ctx,int nmid, int lbl, int rn);
 int BGBCC_JX2RV_TryEmitOpRegLbl(BGBCC_JX2_Context *ctx,int nmid, int lbl, int reg);
 int BGBCC_JX2RV_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int lbl);
 int BGBCC_JX2RV_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int rn, int lbl);
@@ -3386,6 +3388,7 @@ int BGBCC_JX2X3_TryEmitOpRegStRegDisp(BGBCC_JX2_Context *ctx, int nmid, int rm, 
 int BGBCC_JX2X3_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 disp, int rn);
 int BGBCC_JX2X3_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int lbl);
 int BGBCC_JX2X3_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int rn, int lbl);
+int BGBCC_JX2X3_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 //AHSRC:jx2cc/jx2_fltrom.c
 ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);

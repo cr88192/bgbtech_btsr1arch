@@ -840,6 +840,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			for(j=0; j<vop->imm.call.na; j++)
 			{
 				k=2|(j<<16);
+				k|=(((i*31)+i)&0x3F)<<(16+6);	//key to 3AC op
 				if(noarg)
 					k=0;
 				BGBCC_JX2C_SetupFrameVRegSpan(ctx, sctx,

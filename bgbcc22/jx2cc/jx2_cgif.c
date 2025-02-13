@@ -7155,6 +7155,29 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
 			break;
 
+		case BGBCC_SH_RLC_PBOJ33_XG3:
+			w0=bgbcc_getu32en(ctr+0, en);
+			w1=bgbcc_getu32en(ctr+4, en);
+
+			b1=	(((w0>>16)&0xFFFF)<< 8) |
+				(((w0>> 8)&0x00FF)<<24) |
+				(((w1>>22)&0x00FF)<< 0) |
+				(((w1>>30)&   1LL)<<32) ;
+			
+//			d1=b1+d;
+			d1=b1+(ctl-gbr_base);
+
+			w0=(w0&0x000000FFU)|
+				(((d1>> 8)&0xFFFF)<<16) |
+				(((d1>>24)&0x00FF)<< 8);
+			w1=(w1&0x803FFFFFU)|
+				(((d1>> 0)&0x00FF)<<22) |
+				(((d1>>32)&0x0001)<<30);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
+			break;
+
 
 		default:
 			BGBCC_CCXL_StubError(ctx);

@@ -689,7 +689,8 @@ REGREG, Fz
 	SQ: Rm, Q?Disp5u:Ro, Rn
 
 	UB: Rm, Rn, Rn
-	UW: Rm, Rn, Rn
+	UW: / Rm, Rn, Rn
+	UW: Ro, Rm, Rn
 	UL: Rm, Cn, Cn
 	UQ: Cm, Rn, Rn
 

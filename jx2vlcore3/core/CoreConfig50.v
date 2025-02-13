@@ -31,7 +31,7 @@
 `define jx2_cpu_ddrclock_100		//Use 100MHz DDR Clock
 
 
-`define jx2_cpu_merge_rxy		//Merge Rx/Ry
+`define jx2_cpu_merge_rxy		//Merge Rx/Ry into Lane 1/2 third input.
 
 // `define jx2_cpu_shad_ex2		//Move SHAD/SHLD output to EX2
 // `define jx2_cpu_conv_ex2		//Move CONV output to EX2
@@ -39,7 +39,7 @@
 `define jx2_cpu_pred_id2		//Move predication handling to ID2
 `define jx2_cpu_lea_ex2			//Move LEA output to EX2
 
-// `define jx2_cpu_addp			//Move LEA output to EX2
+// `define jx2_cpu_addp			//Enable 48-bit ALU Ops
 
 // `define jx2_cpu_nofw_lane3		//Disable Lane 3 Register Forwarding
 
