@@ -351,6 +351,14 @@
 `endif
 
 `define jx2_dec_ssc_riscv		//Enable RISC-V Superscalar
+// `define jx2_dec_ssc3_riscv		//Enable 3-wide Superscalar
+
+`ifdef jx2_enable_rvjumbo
+`ifdef jx2_dec_ssc3_riscv
+/* If we have jumbo and 3-wide superscalar, enable 96-bit jumbo */
+`define jx2_enable_rvjumbo96	//RV Jumbo Encodings, 96-bit ops
+`endif
+`endif
 
 
 `endif

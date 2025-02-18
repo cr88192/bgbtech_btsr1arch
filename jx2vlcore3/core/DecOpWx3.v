@@ -50,8 +50,10 @@ For scalar Ops, Lane 2/3 will hold:
 `ifdef jx2_enable_riscv
 `include "DecOpRvI.v"
 
+`ifndef jx2_dec_ssc3_riscv
 `ifdef jx2_enable_rvjumbo96
 `include "DecOpRvJO.v"
+`endif
 `endif
 
 `endif
@@ -497,8 +499,11 @@ wire[8:0]		decOpRvC_idUIxt;
 wire[18:0]		decOpRvC_idUFl;
 wire[16:0]		decOpRvC_idImmB;
 
-// DecOpRvI	decOpRvC(
+`ifdef jx2_dec_ssc3_riscv
+DecOpRvI	decOpRvC(
+`else
 DecOpRvJO	decOpRvC(
+`endif
 	clock,		reset,	srModC,
 //	{ UV32_00, istrWord[95:64] },
 	{ UV32_00, istrWordC },
@@ -746,8 +751,11 @@ wire		opIsRvJumboA_1;
 wire		opIsRvJumboB_0;
 wire		opIsRvJumboB_1;
 
-assign		opIsRvJumboA_En = (srRiscv && !srXG2RV && !istrMTagA[0]);
-assign		opIsRvJumboB_En = (srRiscv && !srXG2RV && !istrMTagB[0]);
+// assign		opIsRvJumboA_En = (srRiscv && !srXG2RV && !istrMTagA[0]);
+// assign		opIsRvJumboB_En = (srRiscv && !srXG2RV && !istrMTagB[0]);
+
+assign		opIsRvJumboA_En = (srRiscv && !istrMTagA[0]);
+assign		opIsRvJumboB_En = (srRiscv && !istrMTagB[0]);
 
 assign		opIsRvJumboA_0 =
 	(istrWordA[ 6: 0] == 7'h1B) && (istrWordA[14:12] == 3'h4);
@@ -1281,12 +1289,14 @@ begin
 			opIsDfA = 0;
 		end
 		
+`ifndef jx2_dec_ssc3_riscv
 		if(srSsc3 &&
 			(!istrMTagA[0] || !istrMTagB[0] || !istrMTagC[0]) && 
 			!opIsRvJumbo96)
 		begin
 			$display("DecOpWx3: 3-Wide RV");
 		end
+`endif
 		
 		if(opIsRvJumboA && !srSsc2 && !srSsc3)
 		begin
@@ -1301,6 +1311,11 @@ begin
 		if(opIsWexJumboA && !istrMTagB[0])
 		begin
 			$display("DecOpWx3: WEX Jumbo and RV Op");
+		end
+		
+		if(srSsc2 && (istrMTagA[0] != istrMTagB[0]))
+		begin
+			$display("DecOpWx3: RV Mixed Bundle");
 		end
 	end
 `endif
@@ -1358,7 +1373,8 @@ begin
 	opIsWfA = ((opIsDfA && !opIsDzA) || opIsDwA) && srWxe;
 	opIsWfB = ((opIsDfB && !opIsDzB) || opIsDwB) && srWxe;
 
-`ifdef jx2_enable_rvjumbo96
+// `ifdef jx2_enable_rvjumbo96
+`ifndef def_true
 	if(opIsRvJumbo96)
 	begin
 		opImmA	= decOpFzC_idImm;
@@ -1490,13 +1506,13 @@ begin
 			opUCmdA	= decOpFzC_idUCmd;
 			opUIxtA	= decOpFzC_idUIxt;
 
-			opRegAM0	= decOpFzC_idRegM;
-			opRegAO0	= decOpFzC_idRegO;
-			opRegAN0	= decOpFzC_idRegN;
-			opRegAP0	= decOpFzC_idRegP;
-			opUCmdA0	= decOpFzC_idUCmd;
-			opUIxtA0	= decOpFzC_idUIxt;
-			opUFlA0		= decOpFzC_idUFl;
+//			opRegAM0	= decOpFzC_idRegM;
+//			opRegAO0	= decOpFzC_idRegO;
+//			opRegAN0	= decOpFzC_idRegN;
+//			opRegAP0	= decOpFzC_idRegP;
+//			opUCmdA0	= decOpFzC_idUCmd;
+//			opUIxtA0	= decOpFzC_idUIxt;
+//			opUFlA0		= decOpFzC_idUFl;
 
 			opRegBM	= decOpFzB_idRegM;
 			opRegBO	= decOpFzB_idRegO;
@@ -1512,6 +1528,64 @@ begin
 			opUCmdC	= decOpFzA_idUCmd;
 			opUIxtC	= decOpFzA_idUIxt;
 
+`ifdef jx2_enable_riscv
+`ifdef jx2_dec_ssc3_riscv
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagC[0])
+			begin
+				opRegAM	= decOpRvC_idRegM;
+				opRegAO	= decOpRvC_idRegO;
+				opRegAN	= decOpRvC_idRegN;
+				opRegAP	= decOpRvC_idRegP;
+				opImmA	= decOpRvC_idImm;
+				opUCmdA	= decOpRvC_idUCmd;
+				opUIxtA	= decOpRvC_idUIxt;
+				opUFlA	= decOpRvC_idUFl;
+
+		//		opRegAM0	= opRegAM;
+		//		opRegAO0	= opRegAO;
+		//		opRegAN0	= opRegAN;
+		//		opRegAP0	= opRegAP;
+		//		opUCmdA0	= opUCmdA;
+		//		opUIxtA0	= opUIxtA;
+		//		opUFlA0		= opUFlA;
+
+				opIsScalar	= opIsRvJumboA && opIsRvJumboB;
+			end
+
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagB[0])
+			begin
+				opRegBM	= decOpRvB_idRegM;
+				opRegBO	= decOpRvB_idRegO;
+				opRegBN	= decOpRvB_idRegN;
+				opRegBP	= decOpRvB_idRegP;
+				opImmB	= decOpRvB_idImm;
+				opUCmdB	= decOpRvB_idUCmd;
+				opUIxtB	= decOpRvB_idUIxt;
+			end
+
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagA[0])
+			begin
+				opRegCM	= decOpRvA_idRegM;
+				opRegCO	= decOpRvA_idRegO;
+				opRegCN	= decOpRvA_idRegN;
+				opRegCP	= decOpRvA_idRegP;
+				opImmC	= decOpRvA_idImm;
+				opUCmdC	= decOpRvA_idUCmd;
+				opUIxtC	= decOpRvA_idUIxt;
+			end
+`endif
+`endif
+
+`ifdef jx2_enable_rvjumbo96
+			if(opIsRvJumbo96 && !istrMTagC[0])
+			begin
+				opImmB	= { 1'b0,
+					tOpRvJBitsB[20: 0],
+					tOpRvJBitsB[   23],
+					tOpRvJBitsC[20:11] };
+			end
+`endif
+
 			if(noLane3)
 			begin
 				opRegCM	= JX2_GR_ZZR;
@@ -1521,6 +1595,15 @@ begin
 				opUCmdC	= 0;
 				opUIxtC	= 0;
 			end
+
+			opRegAM0	= opRegAM;
+			opRegAO0	= opRegAO;
+			opRegAN0	= opRegAN;
+			opRegAP0	= opRegAP;
+			opUCmdA0	= opUCmdA;
+			opUIxtA0	= opUIxtA;
+			opUFlA0		= opUFlA;
+
 		end
 		else
 		if(srSsc2)
@@ -1836,10 +1919,15 @@ begin
 
 `ifdef jx2_enable_xgpr
 
-	opRegXM	= { 1'b0, opRegAM0[0], opRegAM0[4:1], opDualLaneSw };
-	opRegXO	= { 1'b0, opRegAO0[0], opRegAO0[4:1], opDualLaneSw };
-	opRegXN	= { 1'b0, opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
-	opRegXP	= { 1'b0, opRegAP0[0], opRegAP0[4:1], opDualLaneSw };
+//	opRegXM	= { 1'b0, opRegAM0[0], opRegAM0[4:1], opDualLaneSw };
+//	opRegXO	= { 1'b0, opRegAO0[0], opRegAO0[4:1], opDualLaneSw };
+//	opRegXN	= { 1'b0, opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
+//	opRegXP	= { 1'b0, opRegAP0[0], opRegAP0[4:1], opDualLaneSw };
+	
+	opRegXM	= { 1'b0, opRegAM0[5] || opRegAM0[0], opRegAM0[4:1], opDualLaneSw };
+	opRegXO	= { 1'b0, opRegAO0[5] || opRegAO0[0], opRegAO0[4:1], opDualLaneSw };
+	opRegXN	= { 1'b0, opRegAN0[5] || opRegAN0[0], opRegAN0[4:1], opDualLaneSw };
+	opRegXP	= { 1'b0, opRegAP0[5] || opRegAP0[0], opRegAP0[4:1], opDualLaneSw };
 	
 	opRegXMv = { opRegXM[6:1], !opRegXM[0] };
 	opRegXOv = { opRegXO[6:1], !opRegXO[0] };
@@ -1912,6 +2000,13 @@ begin
 
 	if(opRegAN0[6])
 	begin
+//		if((opRegAN0==JX2_GR_ZZR) || (opRegAN0==JX2_GR_IMM))
+		if(opRegAN0[6])
+		begin
+			opRegXN	= JX2_GR_ZZR;
+			opRegXNv = JX2_GR_ZZR;
+		end
+
 		if((opRegAN0==JX2_GR_SP) || (opRegAN0==JX2_GR_SSP))
 		begin
 			opRegXN	= { 1'b0, 5'b10111, opDualLaneSw };
@@ -1925,6 +2020,16 @@ begin
 		begin
 			opRegXO	= { 1'b0, 5'b10111, opDualLaneSw };
 			opRegXOv = { opRegXO[6:1], !opRegXO[0] };
+		end
+	end
+
+	if(opRegAP0[6])
+	begin
+//		if(opRegAP0==JX2_GR_ZZR)
+		if(opRegAP0[6])
+		begin
+			opRegXP	= JX2_GR_ZZR;
+			opRegXPv = JX2_GR_ZZR;
 		end
 	end
 

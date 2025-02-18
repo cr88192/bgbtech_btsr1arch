@@ -747,7 +747,8 @@ begin
 
 `ifdef def_true
 	opImm_imm5f = { UV17_00,
-		opRegO_Dfl[4] ? 4'h4 : 4'h3,
+		opExWI,
+		opRegO_Dfl[4] ? 3'h4 : 3'h3,
 		opRegO_Dfl[3:0],
 		8'h00 };
 `endif
@@ -5026,7 +5027,7 @@ begin
 
 					opUCmdIx	= JX2_UCIX_ALU_CMPQEQ;
 
-					if((opIsJumbo && opExWI) || opExWQ)
+					if((opIsJumbo && opExWI && !srXG3RV) || opExWQ)
 						opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
 				end
 			end
@@ -5048,7 +5049,7 @@ begin
 
 //					if((opIsJumbo && opExWI) || opExWQ)
 //						opIty	= JX2_ITY_NQ;
-					if((opIsJumbo && opExWI) || opExWQ)
+					if((opIsJumbo && opExWI && !srXG3RV) || opExWQ)
 						opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
 				end
 			end
@@ -5063,7 +5064,7 @@ begin
 					opIty		= JX2_ITY_NL;
 					opUCmdIx	= JX2_UCIX_ALU_CMPQNE;
 
-					if((opIsJumbo && opExWI) || opExWQ)
+					if((opIsJumbo && opExWI && !srXG3RV) || opExWQ)
 					begin
 						opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
 						opIty		= JX2_ITY_NQ;
@@ -5085,7 +5086,7 @@ begin
 //					if((opIsJumbo && opExWI) || opExWQ)
 //						opIty	= JX2_ITY_NQ;
 
-					if((opIsJumbo && opExWI) || opExWQ)
+					if((opIsJumbo && opExWI && !srXG3RV) || opExWQ)
 					begin
 						opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
 						opIty		= JX2_ITY_NQ;
@@ -5201,8 +5202,8 @@ begin
 				begin
 					opNmid		= JX2_UCMD_FCMP;
 					opFmid		= JX2_FMID_REGREG;
-//					opIty		= JX2_ITY_SB;
-					opIty		= JX2_ITY_UW;
+					opIty		= JX2_ITY_SB;
+//					opIty		= JX2_ITY_UW;
 					opUCmdIx	= JX2_UCIX_FCMP_CMPGT_R;
 				end
 			end
@@ -5212,7 +5213,8 @@ begin
 				begin
 					opNmid		= JX2_UCMD_FCMP;
 					opFmid		= JX2_FMID_REGREG;
-					opIty		= JX2_ITY_SB;
+//					opIty		= JX2_ITY_SB;
+					opIty		= JX2_ITY_UW;
 					opUCmdIx	= JX2_UCIX_FCMP_CMPGE_R;
 				end
 			end

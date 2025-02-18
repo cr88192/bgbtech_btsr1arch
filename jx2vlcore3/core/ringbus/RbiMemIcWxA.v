@@ -1242,22 +1242,30 @@ wire[15:0]	blkDataSscRegA;
 wire[15:0]	blkDataSscRegB;
 
 DecRvSscChkReg	rvssc_q0a(
-	tBlkDataA[ 31: 0], tBlkDataA[ 63:32], blkDataSscRegA[ 3: 0]);
+	tBlkDataA[ 31: 0], tBlkDataA[ 63:32], tBlkDataA[ 95:64],
+	blkDataSscRegA[ 3: 0]);
 DecRvSscChkReg	rvssc_q1a(
-	tBlkDataA[ 63:32], tBlkDataA[ 95:64], blkDataSscRegA[ 7: 4]);
+	tBlkDataA[ 63:32], tBlkDataA[ 95:64], tBlkDataA[127:96],
+	blkDataSscRegA[ 7: 4]);
 DecRvSscChkReg	rvssc_q2a(
-	tBlkDataA[ 95:64], tBlkDataA[127:96], blkDataSscRegA[11: 8]);
+	tBlkDataA[ 95:64], tBlkDataA[127:96], tBlkDataB[ 31: 0],
+	blkDataSscRegA[11: 8]);
 DecRvSscChkReg	rvssc_q3a(
-	tBlkDataA[127:96], tBlkDataB[ 31: 0], blkDataSscRegA[15:12]);
+	tBlkDataA[127:96], tBlkDataB[ 31: 0], tBlkDataB[ 63:32],
+	blkDataSscRegA[15:12]);
 
 DecRvSscChkReg	rvssc_q0b(
-	tBlkDataB[ 31: 0], tBlkDataB[ 63:32], blkDataSscRegB[ 3: 0]);
+	tBlkDataB[ 31: 0], tBlkDataB[ 63:32], tBlkDataB[ 95:64],
+	blkDataSscRegB[ 3: 0]);
 DecRvSscChkReg	rvssc_q1b(
-	tBlkDataB[ 63:32], tBlkDataB[ 95:64], blkDataSscRegB[ 7: 4]);
+	tBlkDataB[ 63:32], tBlkDataB[ 95:64], tBlkDataB[127:96],
+	blkDataSscRegB[ 7: 4]);
 DecRvSscChkReg	rvssc_q2b(
-	tBlkDataB[ 95:64], tBlkDataB[127:96], blkDataSscRegB[11: 8]);
+	tBlkDataB[ 95:64], tBlkDataB[127:96], tBlkDataA[ 31: 0],
+	blkDataSscRegB[11: 8]);
 DecRvSscChkReg	rvssc_q3b(
-	tBlkDataB[127:96], tBlkDataA[ 31: 0], blkDataSscRegB[15:12]);
+	tBlkDataB[127:96], tBlkDataA[ 31: 0], tBlkDataA[ 63:32],
+	blkDataSscRegB[15:12]);
 
 wire[3:0]	selBlkDataSsc0 =
 	tInAddr[4] ? 
@@ -1277,6 +1285,15 @@ wire[3:0]	selBlkDataSsc1 =
 			(tInAddr[2] ? blkDataSscB[ 3: 0] : blkDataSscA[15:12]) :
 			(tInAddr[2] ? blkDataSscA[11: 8] : blkDataSscA[ 7: 4]) ) ;
 
+wire[3:0]	selBlkDataSsc2 =
+	tInAddr[4] ? 
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscA[ 7: 4] : blkDataSscA[ 3: 0]) :
+			(tInAddr[2] ? blkDataSscB[15:12] : blkDataSscB[11: 8]) ) :
+		(tInAddr[3] ? 
+			(tInAddr[2] ? blkDataSscB[ 7: 4] : blkDataSscB[ 3: 0]) :
+			(tInAddr[2] ? blkDataSscA[15:12] : blkDataSscA[11: 8]) ) ;
+
 wire[3:0]	selBlkDataSscReg =
 	tInAddr[4] ? 
 		(tInAddr[3] ? 
@@ -1290,6 +1307,13 @@ wire blkDataRvSscEna =
 	selBlkDataSsc0[2] && selBlkDataSsc1[0] &&
 	(tInAddr[1:0] == 2'b00) &&
 	(selBlkDataSscReg[1:0]==2'b00);
+
+wire blkDataRvSsc3Ena =
+	selBlkDataSsc0[3] &&
+	selBlkDataSsc0[2] &&
+	selBlkDataSsc2[1] &&
+	(tInAddr[1:0] == 2'b00) &&
+	(selBlkDataSscReg[3:0]==4'b0000);
 
 `endif
 
@@ -2174,7 +2198,15 @@ begin
 
 `ifdef jx2_dec_ssc_riscv
 	if(blkDataRvSscEna && tInPcRiscv && !tPcStepBA)
+	begin
 		tCombJWA = 1;
+`ifdef jx2_dec_ssc_riscv
+		if(blkDataRvSsc3Ena)
+		begin
+			tPcStepWB = 1;
+		end
+`endif
+	end
 `endif
 
 	casez( { tDoStallNop,

@@ -68,7 +68,8 @@ begin
 		end
 
 		5'b10_000: begin /* FMADD */
-			tIstrFlag	= 4'b0001;
+//			tIstrFlag	= 4'b0001;
+			tIstrFlag	= 4'b0000;
 //			if(istrWord[14:12]==3'b111)
 //				tIstrFlag	= 4'b0000;
 		end
@@ -81,14 +82,19 @@ begin
 
 		5'b00_001: begin /* FP-LOAD, (Rm, Disp) */
 			tIstrFlag	= 4'b0011;
+			if(istrWord[14])
+				tIstrFlag	= 4'b0000;
 		end
 
 		5'b01_001: begin /* FP-STORE, (Rm, Disp) */
 			tIstrFlag	= 4'b0001;
+			if(istrWord[14])
+				tIstrFlag	= 4'b0000;
 		end
 
 		5'b10_001: begin /* FMSUB */
-			tIstrFlag	= 4'b0001;
+//			tIstrFlag	= 4'b0001;
+			tIstrFlag	= 4'b0000;
 		end
 
 		5'b11_001: begin /* JALR */
@@ -96,7 +102,8 @@ begin
 		end
 
 		5'b10_010: begin /* FNMSUB */
-			tIstrFlag	= 4'b0001;
+//			tIstrFlag	= 4'b0001;
+			tIstrFlag	= 4'b0000;
 		end
 
 		5'b00_011: begin /* FENCE */
@@ -107,7 +114,8 @@ begin
 		end
 
 		5'b10_011: begin /* FNMADD */
-			tIstrFlag	= 4'b0001;
+//			tIstrFlag	= 4'b0001;
+			tIstrFlag	= 4'b0000;
 		end
 
 		5'b11_011: begin /* JAL */
@@ -117,6 +125,14 @@ begin
 
 		5'b00_100: begin /* ALU OP, 3RI */
 			tIstrFlag	= 4'b1111;
+
+			if((istrWord[14:12]==3'b001) || (istrWord[14:12]==3'b101))
+			begin
+				tIstrFlag	= 4'b0111;
+				if(istrWord[29:26]!=0)
+					tIstrFlag	= 4'b0000;
+			end
+
 			if(istrWord[14:13]==2'b01)
 				tIstrFlag	= 4'b0011;
 		end
@@ -151,12 +167,20 @@ begin
 
 		5'b00_110: begin /* ALU OP, 3RI */
 			tIstrFlag	= 4'b1111;
+
+			if((istrWord[14:12]==3'b001) || (istrWord[14:12]==3'b101))
+			begin
+				tIstrFlag	= 4'b0111;
+				if(istrWord[29:26]!=0)
+					tIstrFlag	= 4'b0000;
+			end
+
 			if(istrWord[14:13]==2'b01)
+				tIstrFlag	= 4'b0011;
+			if(istrWord[14:13]==2'b11)
 				tIstrFlag	= 4'b0011;
 			if(istrWord[14:12]==3'b100)
 				tIstrFlag	= 4'b0000;
-			if(istrWord[14:13]==2'b11)
-				tIstrFlag	= 4'b0011;
 		end
 
 		5'b01_110: begin /* ALU OP, 3R */

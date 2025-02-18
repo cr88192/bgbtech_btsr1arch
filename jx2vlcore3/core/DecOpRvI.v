@@ -575,8 +575,8 @@ begin
 		opImm_imm8au[15: 5]		= istrJBits[10:0];
 		opImm_imm8au[32:16]		= istrJBits[20] ? UV17_FF : UV17_00;
 		
-//		$display("DecOpRvI: JumboAu istr=%X JBits=%X",
-//			istrWord[31:0], istrJBits);
+//		$display("DecOpRvI: JumboAu istr=%X JBits=%X Imm12=%X",
+//			istrWord[31:0], istrJBits, opImm_imm12s);
 	end
 	else
 		if(opIsJumbo)
@@ -592,8 +592,8 @@ begin
 		opImm_imm8au[25:5]		= istrJBits[20:0];
 		opImm_imm8au[32:26]		= istrJBits[20] ? UV7_FF : UV7_00;
 
-//		$display("DecOpRvI: Jumbo istr=%X JBits=%X",
-//			istrWord[31:0], istrJBits);
+//		$display("DecOpRvI: Jumbo istr=%X JBits=%X Imm12=%X",
+//			istrWord[31:0], istrJBits, opImm_imm12s);
 	end
 
 	if(opIsJumbo)
@@ -2392,6 +2392,7 @@ begin
 	end
 
 `ifndef def_true
+// `ifdef def_true
 	if(opIsJumboAu)
 	begin
 		if(!tMsgLatch)

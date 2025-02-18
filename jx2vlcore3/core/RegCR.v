@@ -121,7 +121,8 @@ output[15:0]	regOutFpsr;
 input [15:0]	regInFpsr;
 
 output[47:0]	regOutVbr;
-output[47:0]	regOutGbr;
+// output[47:0]	regOutGbr;
+output[63:0]	regOutGbr;
 output[47:0]	regOutTbr;
 output[63:0]	regOutMmcr;
 output[63:0]	regOutKrr;
@@ -208,7 +209,8 @@ assign	regOutSpc	= crRegSpc;
 assign	regOutSsp	= crRegSsp;
 
 assign	regOutVbr	= crRegVbr;
-assign	regOutGbr	= crRegGbr;
+// assign	regOutGbr	= crRegGbr;
+assign	regOutGbr	= { crRegFpsr, crRegGbr };
 assign	regOutTbr	= crRegTbr;
 assign	regOutTea	= crRegTea;
 assign	regOutTeaHi	= crRegTeaHi;

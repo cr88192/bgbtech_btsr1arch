@@ -621,7 +621,8 @@ MemL1A		memL1(
 
 /* ID1 */
 
-wire[47:0]		gprValGbr;
+// wire[47:0]		gprValGbr;
+wire[63:0]		gprValGbr;
 wire[47:0]		gprValTbr;
 wire[63:0]		gprValLr;
 wire[63:0]		gprValSsp;
@@ -1047,7 +1048,7 @@ RegGPR_6R3W regGpr(
 
 	gprValPc,		//PC Value (Synthesized)
 	gprValGbr,		//GBR Value (CR)
-	gprValTbr,		//GBR Value (CR)
+	gprValTbr,		//TBR Value (CR)
 	gprValImm,		//Immediate (Decode, A)
 	gprValImmB,		//Immediate (Decode, B)
 	gprValImmC,		//Immediate (Decode, C)
@@ -1311,7 +1312,8 @@ wire[15:0]	crInFpsr;
 wire[15:0]	crOutVbrCm;
 
 wire[47:0]	crOutVbr;
-wire[47:0]	crOutGbr;
+// wire[47:0]	crOutGbr;
+wire[63:0]	crOutGbr;
 wire[47:0]	crOutTbr;
 // wire[63:0]	crOutMmcr;
 // wire[63:0]	crOutKrr;
