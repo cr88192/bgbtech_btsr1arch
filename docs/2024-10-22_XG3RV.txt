@@ -497,7 +497,6 @@ The XMOV instructions operate on 128-bit pointers, and are only valid if 128-bit
 ** 0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q	Rm, Imm6s, Rn
 ** 0011-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q	Rm, Imm6s, Rn	//SLTI
-
 ** 0100-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 0100-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q	Rm, Ro, Rn
 ** 0101-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
@@ -506,6 +505,23 @@ The XMOV instructions operate on 128-bit pointers, and are only valid if 128-bit
 ** 0110-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q	Rm, Ro, Rn
 ** 0111-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 0111-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGE.Q	Rm, Ro, Rn
+** 1000-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1000-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1001-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1001-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1010-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1011-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1100-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1100-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1101-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1101-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPEQ	Rm, Ro, Rn		//FEQ
+** 1110-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1110-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPLT	Rm, Ro, Rn		//~FGT
+** 1111-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
+** 1111-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPGE	Rm, Ro, Rn		//FGE
+
 
 If a CMPxx instruction is encoded with Rn=ZR, this will update SR.T based on the result, else it will put the result into Rn.
 
@@ -542,6 +558,7 @@ BRA/BSR encoding:
 ** iiiiiiiiii-mmmmmm-0010-nnnnnn-10-0110  LEA.L		(Rm, Disp10s), Rn
 ** iiiiiiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		Rn, (Rm, Disp10s)	//SD
 ** iiiiiiiiii-mmmmmm-0011-nnnnnn-10-0110  LEA.Q		(Rm, Disp10s), Rn
+
 ** iiiiiiiiii-mmmmmm-0100-nnnnnn-00-0110  FMOV.S	Rn, (Rm, Disp10s)
 ** iiiiiiiiii-mmmmmm-0100-nnnnnn-10-0110  FMOV.H	Rn, (Rm, Disp10s)
 ** iiiiiiiiii-mmmmmm-0101-nnnnnn-00-0110  (N/A)
@@ -599,8 +616,11 @@ For the relative branch cases, these will be modified to be relative to BasePC a
 * iiiiiiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUB		Rm, Imm10s, Rn
 * iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010  OR			Rm, Imm10u, Rn
 * 00iiiiiiii-mmmmmm-0110-nnnnnn-10-1010  SHAD.X		Xm, Imm8s, Xn
+* iiiiiiiiii-mmmmmm-0110-000000-10-1010  JALR		Rm, Imm10s, ZR
+* iiiiiiiiii-mmmmmm-0110-000001-10-1010  JALR		Rm, Imm10s, LR
 * iiiiiiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm10u, Rn
 * 00iiiiiiii-mmmmmm-0111-nnnnnn-10-1010  SHLD.X		Xm, Imm8s, Xn
+
 * 00iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  SHAD.L		Rm, Imm8s, Rn
 * 00iiiiiiii-mmmmmm-1000-nnnnnn-10-1010  SHAD.Q		Rm, Imm8s, Rn
 * 01iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  PSHUF.B	Rm, Imm8u, Rn
@@ -640,7 +660,7 @@ Note that the 2RI instructions in this case would use the same Imm10 format at t
 ** iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  MOVU.L	(GP, Disp16u*4), Rn	//LWU
 ** iiii-iiiiii-iiiiii-0110-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-0110-nnnnnn-11-0010  -
-** iiii-iiiiii-iiiiii-0111-jjjjjj-k1-00Pw  BRA		(PC, Disp23s)	//J lbl
+** iiii-iiiiii-iiiiii-0111-jjjjjj-k1-00Pw / BRA		(PC, Disp23s)	//J lbl
 ** iiii-iiiiii-iiiiii-1000-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1001-nnnnnn-01-0010  -
 ** iiii-iiiiii-iiiiii-1010-nnnnnn-01-0010  -
@@ -755,7 +775,8 @@ Much of these can be considered optional.
 ** F0nm_1ezA  (GSV Block)
 *** 1010-000000-mmmmmm-0001-nnnnnn-00-0010  PSTCF8H		Rm, Rn
 *** 1010-000000-mmmmmm-0001-nnnnnn-10-0010  -
-*** 1010-000001-mmmmmm-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
+*** 1010-000001-mmmmm
+m-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
 *** 1010-000001-mmmmmm-0001-nnnnnn-10-0010  -
 
 *** 1010-001001-mmmmmm-0001-nnnnnn-00-0010  ? PDOTT.H	Imm6u, Rn
@@ -895,4 +916,24 @@ Much of these can be considered optional.
 *** 1111-001110-mmmmmm-0001-nnnnnn-10-0010  FLDCXIU.L	Rm, Xn
 *** 1111-001111-mmmmmm-0001-nnnnnn-00-0010  FLDCIS.L	Rm, Rn
 *** 1111-001111-mmmmmm-0001-nnnnnn-10-0010  FLDCXIS.L	Rm, Xn
+
+
+=== Possible 1R Mapping ===
+
+* NMOP-YwYY-nnnn-mmmm ZZZZ-Qnmo-oooo-XXXX (F0/F3/F9)
+Repack:
+* XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+
+*** F020_3gn0  JMP		Rn
+*** F021_3gn0  JSR		Rn
+*** F02C_3en0  BRA.L	(PC, Rn)	//Branch, DWord Scale
+*** F02D_3en0  BSR.L	(PC, Rn)	//Branch, DWord Scale
+
+Decoder switch Rn and Ro fields relative to XG1/XG2 for the 1R and 0R blocks.
+
+*** 0000-000010-000000-0011-nnnnnn-00-0010  JMP		Rn
+*** 0000-000010-000001-0011-nnnnnn-00-0010  JSR		Rn
+
+*** 0000-000010-001100-0011-nnnnnn-00-0010  BRA.L	Rn
+*** 0000-000010-001101-0011-nnnnnn-00-0010  BSR.L	Rn
 

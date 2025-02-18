@@ -127,22 +127,22 @@ Listing:
 * 0iiiiii-iiiii-jjjjj-100-kkkkk-11-00111 / J21B_IMM	(BGB)
 * 1iiiiii-iiiii-zzzzz-100-omnpp-11-00111 / J21B_OP	(BGB)
 
-* iiiiii0-0dddd-mmmmm-010-ddddd-11-00111  BEQI		Imm6s, Rm, Disp9s (BGB)
-* iiiiii0-1dddd-mmmmm-010-ddddd-11-00111  BNEI		Imm6s, Rm, Disp9s (BGB)
-* iiiiii1-0dddd-mmmmm-010-ddddd-11-00111  BLTI		Imm6s, Rm, Disp9s (BGB)
-* iiiiii1-1dddd-mmmmm-010-ddddd-11-00111  BGEI		Imm6s, Rm, Disp9s (BGB)
-* iiiiii0-0dddd-mmmmm-011-ddddd-11-00111  BLTUI		Imm6s, Rm, Disp9s (BGB)
-* iiiiii0-1dddd-mmmmm-011-ddddd-11-00111  BGEUI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii0-0dddd-mmmmm-010-ddddd-11-00111 ? BEQI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii0-1dddd-mmmmm-010-ddddd-11-00111 ? BNEI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii1-0dddd-mmmmm-010-ddddd-11-00111 ? BLTI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii1-1dddd-mmmmm-010-ddddd-11-00111 ? BGEI		Imm6s, Rm, Disp9s (BGB)
+* iiiiii0-0dddd-mmmmm-011-ddddd-11-00111 ? BLTUI	Imm6s, Rm, Disp9s (BGB)
+* iiiiii0-1dddd-mmmmm-011-ddddd-11-00111 ? BGEUI	Imm6s, Rm, Disp9s (BGB)
 
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User / Custom 0)
 
-* iiiiiii-idddd-mmmmm-000-ddddd-00-01011  BEQI		Imm8s, Rm, Disp9s (Huawei)
-* iiiiiii-idddd-mmmmm-001-ddddd-00-01011  BNEI		Imm8s, Rm, Disp9s (Huawei)
-* iiiiiii-idddd-mmmmm-010-ddddd-00-01011  BLTI		Imm8s, Rm, Disp9s (Huawei)
-* iiiiiii-idddd-mmmmm-011-ddddd-00-01011  BGEI		Imm8s, Rm, Disp9s (Huawei)
-* iiiiiii-idddd-mmmmm-100-ddddd-00-01011  BLTUI		Imm8s, Rm, Disp9s (Huawei)
-* iiiiiii-idddd-mmmmm-101-ddddd-00-01011  BGEUI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-000-ddddd-00-01011 ? BEQI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-001-ddddd-00-01011 ? BNEI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-010-ddddd-00-01011 ? BLTI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-011-ddddd-00-01011 ? BGEI		Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-100-ddddd-00-01011 ? BLTUI	Imm8s, Rm, Disp9s (Huawei)
+* iiiiiii-idddd-mmmmm-101-ddddd-00-01011 ? BGEUI	Imm8s, Rm, Disp9s (Huawei)
 
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-01-01011  (User / Custom 1)

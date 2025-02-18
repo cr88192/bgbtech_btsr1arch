@@ -2199,17 +2199,17 @@ F0zz Instruction Block:
 ** F0nm_4go9  MOV.C		(Rm, Disp5), Cn		//(MOVC)
 ** F0nm_4Go9  -
 ** F0nm_4goA  FMOV.S	(Rm, Disp5), Rn		//(FMOV)
-** F0nm_4GoA ? PMOV.F8	(Rm, Disp5), Rn		//(PMOV) 4x FP8 to Binary16
+** F0nm_4GoA ? PMOV.F8	(Rm, Disp5), Rn		//(PMOV) 4x FP8 to 4x Binary16
 ** F0nm_4goB  FMOV.H	(Rm, Disp5), Rn		//(FMOV)
-** F0nm_4GoB ? PMOV.2H	(Rm, Disp5), Rn		//(PMOV) 2x Binary16 to Binary32
+** F0nm_4GoB ? PMOV.2H	(Rm, Disp5), Rn		//(PMOV) 2x Binary16 to 2x Binary32
 ** F0nm_4goC  MOV.X		(Rm, Ro), Xn		//(MOVX2) Load Pair
 ** F0nm_4GoC ? MOVN.L	(Rm, Ro), Rn		//(?) Load One-Extended
 ** F0nm_4goD  MOV.C		(Rm, Ro), Cn		//(MOVC)
 ** F0nm_4GoD  -
 ** F0nm_4goE  FMOV.S	(Rm, Ro), Rn		//(FMOV)
-** F0nm_4GoE ? PMOV.F8	(Rm, Ro), Rn		//(PMOV) 4x FP8 to Binary16
+** F0nm_4GoE ? PMOV.F8	(Rm, Ro), Rn		//(PMOV) 4x FP8 to 4x Binary16
 ** F0nm_4goF  FMOV.H	(Rm, Ro), Rn		//(FMOV)
-** F0nm_4GoF ? PMOV.2H	(Rm, Ro), Rn		//(PMOV) 2x Binary16 to Binary32
+** F0nm_4GoF ? PMOV.2H	(Rm, Ro), Rn		//(PMOV) 2x Binary16 to 2x Binary32
 
 * F0zz_5zzz
 ** F0nm_5go0  CSELT		Rm, Ro, Rn			//Rn=SR.T?Rm:Ro
@@ -2372,11 +2372,11 @@ F0zz Instruction Block:
 ** F0nm_9goC /? MOV.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
 ** F0nm_9GoC /? MOVU.TW	(Rm, Ro), Rn		//(LDST48) Load TWORD
 ** F0nm_9goD /? MOV.HTW	(Rm, Ro), Rn		//(LDST48) Load High TWORD
-** F0nm_9GoD -
+** F0nm_9GoD ? FCMPEQ	Rm, Ro, Rn			//(CMP3R) Rn = Rm==Ro (FPU)
 ** F0nm_9goE -
-** F0nm_9GoE -
+** F0nm_9GoE ? FCMPLT	Rm, Ro, Rn			//(CMP3R) Rn = Rm< Ro (FPU)
 ** F0nm_9goF -
-** F0nm_9GoF -
+** F0nm_9GoF ? FCMPGE	Rm, Ro, Rn			//(CMP3R) Rn = Rm>=Ro (FPU)
 
 * F0nm_AeoZ  (3R Space)
 * F0nm_BeoZ  (3R Space)
@@ -2463,6 +2463,9 @@ F2zz Instruction Block  (Imm9 Block):
 * F2nm_5Gjj ? RSUB		Rm, Imm9us, Rn		// Rn=Imm9u-Rm
 * F2nm_6gjj  OR			Rm, Imm9u, Rn		//
 * F2nm_6Pjj  SHADX		Xm, Imm8s, Xn		//(ALUX)
+* F20m_6Pjj  JALR		Rm, Imm9us, ZR		//(Rn==R0, XG3)
+* F21m_6Pjj  JALR		Rm, Imm9us, LR		//(Rn==R1, XG3)
+
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
 * F2nm_7Pjj  SHLDX		Xm, Imm8s, Xn		//(ALUX)
 
