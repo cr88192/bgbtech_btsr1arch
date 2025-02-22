@@ -179,6 +179,7 @@ reg[32:0]		opImm_disp11s;
 reg				opImm_dispAltLr;
 
 reg[32:0]		opImm_disp5u;
+reg[32:0]		opImm_disp5u_rm;
 
 reg[32:0]		opImm_imm5u;
 reg[32:0]		opImm_imm5n;
@@ -188,6 +189,7 @@ reg[32:0]		opImm_imm5f;
 
 reg[32:0]		opImmRm_imm6u;
 reg[32:0]		opImmRm_imm6n;
+reg[32:0]		opImmRm_imm6u_rn;
 
 reg[32:0]		opImm_imm8au;
 reg[32:0]		opImm_imm8as;
@@ -704,6 +706,8 @@ begin
 	opImm_disp5u	= {opExWI ? UV27_FF : UV27_00, opRegO_RvoDfl[5:0]};
 	
 	opImm_imm5u		= opImm_disp5u;
+	
+	opImm_disp5u_rm	= { UV27_00, opRegM_RvoDfl[5:0]};
 `else
 //	opImm_imm5u	= {UV28_00, opRegO_Dfl[4:0]};
 //	opImm_imm5n	= {UV28_FF, opRegO_Dfl[4:0]};
@@ -717,6 +721,7 @@ begin
 
 	opImmRm_imm6u	= {UV27_00, istrWord[25:24], istrWord[ 3: 0]};
 	opImmRm_imm6n	= {UV27_FF, istrWord[25:24], istrWord[ 3: 0]};
+	opImmRm_imm6u_rn	= 0;
 
 	//0.011-01.00-zzzz-zzzz
 	//0.011-10.00-zzzz-zzzz
@@ -828,42 +833,72 @@ begin
 //		opImm_imm9n		= opImm_imm9s;
 //		opImm_imm9u		= { UV16_00, opExI, istrJBits[7:0], istrWord [23:16] };
 
-		opImm_imm9s		= { opExWI ? UV16_FF : UV16_00,
-			opExI, istrJBits[7:0], istrWord [23:16] };
-		opImm_imm9u		= opImm_imm9s;
-		opImm_imm9n		= opImm_imm9s;
-//		opImm_imm9n		= { UV16_FF, opExI, istrJBits[7:0], istrWord [23:16] };
-
-//		opImm_imm10s	= opImm_imm9s;
-//		opImm_imm10u	= opImm_imm9u;
-//		opImm_imm10n	= opImm_imm9n;
-
-		opImm_imm10u	= { opExWI ? UV15_FF : UV15_00,
-			opExM, opExI, istrJBits[7:0], istrWord [23:16] };
-		opImm_imm10n	= { UV15_FF,
-			opExM, opExI, istrJBits[7:0], istrWord [23:16] };
-
-//		if(srXG3RV)
-		if(1'b1)
-		begin
-			opImm_imm10u	= opImm_imm9s;
-			opImm_imm10n	= opImm_imm9s;
-		end
-
-//		opImm_imm10n	= opImm_imm10u;
-		opImm_imm10s	= opImm_imm10u;
-		opImm_disp11s	= opImm_imm10u;
-
-		opImm_disp9s	= opImm_imm9s;
-
-		opImm_disp8s	= { istrJBits[7] ? UV17_FF : UV17_00,
-			istrJBits[7:0], istrWord[23:16] };
-//		opImm_disp5u	= {UV19_00,
-//			opExWI, opExI, istrJBits[7:0], istrWord[23:20]};
-
 		opIsImm4R	= istrJBits[11];
 //		opIsImmLdOp	= istrJBits[15:12];
 		opIsImmLdOp	= { 5'h0, istrJBits[15:12] };
+
+`ifdef jx2_enable_immb
+		if(opIsImm4R)
+		begin
+			opImm_imm9u	= {UV23_00,  opExWI, istrWord[24:16]};
+			opImm_imm9n	= {UV23_FF, !opExWI ^ srXG3RV, istrWord[24:16]};
+			opImm_imm9s	= opImm_imm9u;
+			opImm_disp9s	= { opExWI ? UV24_FF : UV24_00, istrWord[24:16] };
+
+//			opImm_imm10u	= opImm_imm9u;
+//			opImm_imm10n	= opImm_imm9n;
+
+			opImm_imm10u	= {UV21_00,  opExWM,  opExWI, istrWord[25:16]};
+			opImm_imm10n	= {UV21_FF, !opExWM, !opExWI, istrWord[25:16]};
+
+			if(srXG3RV)
+			begin
+				opImm_imm10u[10:9]=opImm_imm9u[10:9];
+				opImm_imm10n[10:9]=opImm_imm9n[10:9];
+			end
+			
+			opImmRm_imm6u_rn	= {
+//				(srXG2 ? opRegN_RvoDfl[5] : opRegN_RvoDfl[4]) ?
+				opRegN_RvoDfl[5] ? UV17_FF : UV17_00,
+				opRegN_RvoDfl[4],
+				istrJBits[10:0],
+				opRegN_RvoDfl[3:0] };
+		end
+		else
+`else
+		if(1'b1)
+`endif
+		begin
+
+			opImm_imm9s		= { opExWI ? UV16_FF : UV16_00,
+				opExI, istrJBits[7:0], istrWord [23:16] };
+			opImm_imm9u		= opImm_imm9s;
+			opImm_imm9n		= opImm_imm9s;
+
+			opImm_imm10u	= { opExWI ? UV15_FF : UV15_00,
+				opExM, opExI, istrJBits[7:0], istrWord [23:16] };
+			opImm_imm10n	= { UV15_FF,
+				opExM, opExI, istrJBits[7:0], istrWord [23:16] };
+
+	//		if(srXG3RV)
+			if(1'b1)
+			begin
+				opImm_imm10u	= opImm_imm9s;
+				opImm_imm10n	= opImm_imm9s;
+			end
+
+	//		opImm_imm10n	= opImm_imm10u;
+			opImm_imm10s	= opImm_imm10u;
+			opImm_disp11s	= opImm_imm10u;
+
+			opImm_disp9s	= opImm_imm9s;
+
+			opImm_disp8s	= { istrJBits[7] ? UV17_FF : UV17_00,
+				istrJBits[7:0], istrWord[23:16] };
+	//		opImm_disp5u	= {UV19_00,
+	//			opExWI, opExI, istrJBits[7:0], istrWord[23:20]};
+
+		end
 
 //		opImm_disp5u	= {opExWI ? UV20_FF : UV20_00,
 //			opExI, istrJBits[7:0], istrWord[23:20]};
@@ -8240,6 +8275,12 @@ begin
 					opRegN	= JX2_GR_ZZR;
 					opRegP	= JX2_GR_ZZR;
 
+					if(opIsImm4R)
+					begin
+						opRegM	= JX2_GR_IMMB;
+					end
+
+
 `ifdef jx2_alu_jcmp_rpimm
 					if(opImm_dispasc[2])
 					begin
@@ -8309,6 +8350,11 @@ begin
 
 					opRegN	= JX2_GR_ZZR;
 					opRegP	= JX2_GR_ZZR;
+
+					if(opIsImm4R)
+					begin
+						opRegO	= JX2_GR_IMMB;
+					end
 
 `ifdef jx2_alu_jcmp_rpimm
 					if(opImm_dispasc[2])
@@ -8519,6 +8565,16 @@ begin
 //			opDoImm		= JX2_FMIMM_IMM9U;
 //		if(opDoImm == JX2_FMIMM_IMM10N)
 //			opDoImm		= JX2_FMIMM_IMM9N;
+
+`ifndef def_true
+		if(	(opDoImm == JX2_FMIMM_DISP5U) ||
+			(opDoImm == JX2_FMIMM_IMM5U))
+		begin
+			$display("DecOpFz: Istr=%X-%X JBits=%X Disp5u Imm=%X",
+				istrWord[15:0], istrWord[31:16],
+				istrJBits, opImm_disp5u);
+		end
+`endif
 	end
 
 	case(opDoImm)
@@ -8551,6 +8607,9 @@ begin
 		default:			opImm	= UV33_XX;
 //		default:		begin end
 	endcase
+
+	opImmB		= opImmRm_imm6u_rn[16:0];
+
 
 `ifdef def_true
 	if(usrReject && srUser && !usrSuAllowEn)
