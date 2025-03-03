@@ -130,6 +130,8 @@ Imm16:
 * (30:20) will give (10: 0)
 * (19:15) will give (15:11)
 
+If Rn is X0, SHORI will be decoded as a Breakpoint with Immediate.
+
 
 === FCVT.D.H (Imm16u) ===
 

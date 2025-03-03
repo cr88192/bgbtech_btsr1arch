@@ -282,11 +282,19 @@ Listing:
 * 0010000-ttttt-mmmmm-010-nnnnn-01-10011  SH1ADD	Rn, Rm, Rt (ZBA)
 * 0010100-ttttt-mmmmm-010-nnnnn-01-10011  XPERM.N	Rn, Rm, Rt (ZB-)
 
+* 0100000-ttttt-mmmmm-010-nnnnn-01-10011  SGE		Rn, Rm, Rt	(BGB)
+* 1000000-ttttt-mmmmm-010-nnnnn-01-10011  SEQ		Rn, Rm, Rt	(BGB)
+* 1100000-ttttt-mmmmm-010-nnnnn-01-10011  SNE		Rn, Rm, Rt	(BGB)
+
 * 0000000-ttttt-mmmmm-011-nnnnn-01-10011  SLTU		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-011-nnnnn-01-10011  MULHU		Rn, Rm, Rt (M)
 * 0000100-ttttt-mmmmm-011-nnnnn-01-10011  BMATOR	Rn, Rm, Rt (ZBB)
 * 0000101-ttttt-mmmmm-011-nnnnn-01-10011  CLMULH	Rn, Rm, Rt (ZB-)
 * 0100100-ttttt-mmmmm-011-nnnnn-01-10011  BMATXOR	Rn, Rm, Rt (ZB-)
+
+* 0100000-ttttt-mmmmm-011-nnnnn-01-10011  SGEU		Rn, Rm, Rt	(BGB)
+* 1000000-ttttt-mmmmm-011-nnnnn-01-10011  STST		Rn, Rm, Rt	(BGB)
+* 1100000-ttttt-mmmmm-011-nnnnn-01-10011  SNTST		Rn, Rm, Rt	(BGB)
 
 * 0000000-ttttt-mmmmm-100-nnnnn-01-10011  XOR		Rn, Rm, Rt
 * 0000001-ttttt-mmmmm-100-nnnnn-01-10011  DIV		Rn, Rm, Rt (M)
@@ -435,7 +443,8 @@ Listing:
 * 000000i-iiiii-mmmmm-101-nnnnn-00-11011  SRLIW		Rn, Rm, Imm6_I
 * 010000i-iiiii-mmmmm-101-nnnnn-00-11011  SRAIW		Rn, Rm, Imm6_I
 * 0iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? SHORI	Rn, Imm16u (BGB)
-* 1iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? FLDCH	Rn, Imm17s (BGB)
+** If (Rn==X0), Decode as "EBREAK Imm16"
+* 1iiiiii-iiiii-iiiii-110-nnnnn-00-11011  ? FLDCH	Fn, Imm16u (BGB)
 * iiiiiii-iiiii-iiiii-111-nnnnn-00-11011  ? LI		Rn, Imm17s (BGB)
 
 * 0000000-ttttt-mmmmm-000-nnnnn-01-11011  ADDW		Rn, Rm, Rt

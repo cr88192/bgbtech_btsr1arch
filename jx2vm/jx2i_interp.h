@@ -808,6 +808,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_AMOMINUL		0x1DA		//
 #define BJX2_NMID_AMOMAXUL		0x1DB		//
 
+#define BJX2_NMID_BITMOV		0x1DC		//
+#define BJX2_NMID_BITMOVX		0x1DD		//
+
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
 #define BJX2_NMID_FMAC			BJX2_NMID_FMADDD		//

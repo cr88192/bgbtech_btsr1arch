@@ -49,7 +49,10 @@ This decoder will support WEX.
 module DecOpWx2(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
-	istrWord,	regSr,		istrSxo,
+	istrWord,	istrMTag,
+	istrBPc,	regSr,
+	istrSxo,	idPcStep,
+
 	idRegS,		idRegT,		idRegM,
 	idImmA,		idUCmdA,	idUIxtA,
 	idRegU,		idRegV,		idRegN,
@@ -60,9 +63,30 @@ input			clock;		//clock
 input			reset;		//clock
 
 input[95:0]		istrWord;	//source instruction word
+input[47:0]		istrBPc;	//Instruction PC Address
 // input			srWxe;
 input[63:0]		regSr;
 input[3:0]		istrSxo;	//source instruction word
+input[3:0]		idPcStep;	//PC Step
+input[5:0]		istrMTag;	//PC Step
+
+wire[31:0]		istrWordA;
+wire[31:0]		istrWordB;
+wire[31:0]		istrWordC;
+
+wire[1:0]		istrMTagA;
+wire[1:0]		istrMTagB;
+wire[1:0]		istrMTagC;
+
+wire	srXG3;
+
+assign		istrWordA = istrWord[31: 0];
+assign		istrWordB = istrWord[63:32];
+assign		istrWordC = istrWord[95:64];
+
+assign		istrMTagA = istrMTag[1:0];
+assign		istrMTagB = istrMTag[3:2];
+assign		istrMTagC = istrMTag[5:4];
 
 wire			srWxe;
 wire			srXG2;
@@ -73,7 +97,14 @@ wire			srSxo;
 assign		srWxe	= regSr[27];
 assign		srUser	= !regSr[30];
 assign		srSxo	= istrSxo[0];
-assign		srRiscv	= (regSr[27:26] == 2'b01);
+// assign		srRiscv	= (regSr[27:26] == 2'b01);
+assign		srRiscv	= regSr[26];
+
+`ifdef jx2_enable_riscv_xg3
+assign	srXG3 = srRiscv && srWxe;
+`else
+assign	srXG3 = 0;
+`endif
 
 `ifdef jx2_enable_xg2mode
 assign		srXG2	= regSr[23];
@@ -81,14 +112,32 @@ assign		srXG2	= regSr[23];
 assign		srXG2	= 0;
 `endif
 
+wire			srXG2X;
+assign		srXG2X	= srXG2 || srXG3;
+
 assign		srXG2RV	= srRiscv && srXG2;
+
+wire			srSsc2;
+wire			srSsc3;
+wire			srRiscvSsc;
+assign		srSsc2 = idPcStep[3:2]==2'b10;
+assign		srSsc3 = idPcStep[3:2]==2'b11;
+assign		srRiscvSsc = srRiscv && idPcStep[3];
 
 // wire[2:0]		srMod;
 wire[7:0]		srMod;
+wire[7:0]		srModA;
+wire[7:0]		srModB;
+wire[7:0]		srModC;
+
 // assign		srMod = { regSr[29], srSxo, srUser };
 assign		srMod = {
 	1'b0, 1'b0, 1'b0, srRiscv,
 	srXG2, regSr[29], srSxo, srUser };
+
+assign		srModA = { istrMTagA[1:0], srMod[5:0] };
+assign		srModB = { istrMTagB[1:0], srMod[5:0] };
+assign		srModC = { istrMTagC[1:0], srMod[5:0] };
 
 `output_gpr		idRegS;
 `output_gpr		idRegT;
@@ -118,10 +167,12 @@ defparam		decOpBz.fpuLowPrec		= fpuLowPrec;
 `reg_gpr		opRegAM;
 `reg_gpr		opRegAO;
 `reg_gpr		opRegAN;
+`reg_gpr		opRegAP;
 
 `reg_gpr		opRegBM;
 `reg_gpr		opRegBO;
 `reg_gpr		opRegBN;
+`reg_gpr		opRegBP;
 
 `reg_gpr		opRegAM0;
 `reg_gpr		opRegAO0;
@@ -175,6 +226,9 @@ wire[24:0]		tOpJBitsA;
 wire[24:0]		tOpJBitsB;
 wire[24:0]		tOpJBitsC;
 
+wire[2:0]		opJumboWxBitsB;
+wire[2:0]		opJumboWxBitsC;
+
 wire		opIsWexJumboA;
 wire		opIsWexJumboB;
 wire		opIsWexJumbo96;
@@ -188,7 +242,11 @@ wire	opIsWexB;
 wire	opIsWexaB;
 wire	opIsWex2x40B;
 
+wire[24:0]	tOpRvJBitsB;
+wire		opIsRvJumboA;
 
+assign	opIsRvJumboA	= 0;
+assign	tOpRvJBitsB		= 0;
 
 `wire_gpr		decOpBz_idRegN;
 `wire_gpr		decOpBz_idRegM;
@@ -213,6 +271,7 @@ wire[32:0]		decOpFzC_idImm;
 wire[8:0]		decOpFzC_idUCmd;
 wire[8:0]		decOpFzC_idUIxt;
 wire[18:0]		decOpFzC_idUFl;
+wire[16:0]		decOpFzC_idImmB;
 
 wire[31:0]		decOpFzC_maskInstr;
 //assign		decOpFzC_maskInstr =
@@ -225,19 +284,21 @@ wire[31:0]		decOpFzC_maskInstr;
 assign		decOpFzC_maskInstr = istrWord[95:64] ;
 
 DecOpFz	decOpFzC(
-	clock,		reset,	srMod,
+	clock,		reset,	srModC,
 	{ UV32_00, decOpFzC_maskInstr },	4'h7,
-		{ tOpJBitsB[24], tOpJBitsC[24],
+		{	opJumboWxBitsC,
+			tOpJBitsB[24], tOpJBitsC[24],
 			opIsWexJumbo96,
 			opIsWexJumboB | opIsWex2x40B,
 			tOpJBitsC[23:0] },
-		{ 1'b0, tOpJBitsB[24],
+		{	opJumboWxBitsB,
+			1'b0, tOpJBitsB[24],
 			1'b0,
 			opIsWexJumboA | opIsWex2x40B,
 			tOpJBitsB[23:0] },
 	decOpFzC_idRegN,		decOpFzC_idRegM,
 	decOpFzC_idRegO,		decOpFzC_idRegP,
-	decOpFzC_idImm,
+	decOpFzC_idImm,			decOpFzC_idImmB,
 	decOpFzC_idUCmd,		decOpFzC_idUIxt,
 	decOpFzC_idUFl
 	);
@@ -250,18 +311,20 @@ wire[32:0]		decOpFzB_idImm;
 wire[8:0]		decOpFzB_idUCmd;
 wire[8:0]		decOpFzB_idUIxt;
 wire[18:0]		decOpFzB_idUFl;
+wire[16:0]		decOpFzB_idImmB;
 
 DecOpFz	decOpFzB(
-	clock,		reset,	srMod,
+	clock,		reset,	srModB,
 	{ UV32_00, istrWord[63:32] },	4'h1,
-		{ 1'b0, tOpJBitsB[24],
+		{	opJumboWxBitsB,
+			1'b0, tOpJBitsB[24],
 			1'b0,
 			opIsWexJumboA | opIsWex2x40B,
 			tOpJBitsB[23:0] },
-		UV28_00,
+		UV31_00,
 	decOpFzB_idRegN,		decOpFzB_idRegM,
 	decOpFzB_idRegO,		decOpFzB_idRegP,
-	decOpFzB_idImm,
+	decOpFzB_idImm,			decOpFzB_idImmB,
 	decOpFzB_idUCmd,		decOpFzB_idUIxt,
 	decOpFzB_idUFl
 	);
@@ -274,15 +337,16 @@ wire[32:0]		decOpFzA_idImm;
 wire[8:0]		decOpFzA_idUCmd;
 wire[8:0]		decOpFzA_idUIxt;
 wire[18:0]		decOpFzA_idUFl;
+wire[16:0]		decOpFzA_idImmB;
 
 DecOpFz	decOpFzA(
-	clock,		reset,	srMod,
+	clock,		reset,	srModA,
 	{ UV32_00, istrWord[31: 0] },	4'h0,
-		UV28_00,
-		UV28_00,
+		UV31_00,
+		UV31_00,
 	decOpFzA_idRegN,		decOpFzA_idRegM,
 	decOpFzA_idRegO,		decOpFzA_idRegP,
-	decOpFzA_idImm,
+	decOpFzA_idImm,			decOpFzA_idImmB,
 	decOpFzA_idUCmd,		decOpFzA_idUIxt,
 	decOpFzA_idUFl
 	);
@@ -299,7 +363,7 @@ wire[8:0]		decOpRvA_idUIxt;
 wire[18:0]		decOpRvA_idUFl;
 
 DecOpRvI	decOpRvA(
-	clock,		reset,	srMod,
+	clock,		reset,	srModA,
 	{ UV32_00, istrWord[31: 0] },
 	{srRiscv && !srXG2RV, srWxe, 2'b00},		UV28_00,
 	decOpRvA_idRegN,		decOpRvA_idRegM,
@@ -308,6 +372,37 @@ DecOpRvI	decOpRvA(
 	decOpRvA_idUCmd,		decOpRvA_idUIxt,
 	decOpRvA_idUFl
 	);
+
+`ifdef jx2_dec_ssc_riscv
+
+`wire_gpr		decOpRvB_idRegN;
+`wire_gpr		decOpRvB_idRegM;
+`wire_gpr		decOpRvB_idRegO;
+`wire_gpr		decOpRvB_idRegP;
+wire[32:0]		decOpRvB_idImm;
+wire[8:0]		decOpRvB_idUCmd;
+wire[8:0]		decOpRvB_idUIxt;
+wire[18:0]		decOpRvB_idUFl;
+wire[16:0]		decOpRvB_idImmB;
+
+DecOpRvI	decOpRvB(
+	clock,		reset,	srModB,
+//	{ UV32_00, istrWord[63:32] },
+	{ UV32_00, istrWordB },
+	{srRiscv && !srXG2RV, srWxe, 2'b00},
+//	UV28_00,
+	{ 1'b0, tOpRvJBitsB[24],
+		1'b0,
+		opIsRvJumboA,
+		tOpRvJBitsB[23:0] },
+	decOpRvB_idRegN,		decOpRvB_idRegM,
+	decOpRvB_idRegO,		decOpRvB_idRegP,
+	decOpRvB_idImm,			decOpRvB_idImmB,
+	decOpRvB_idUCmd,		decOpRvB_idUIxt,
+	decOpRvB_idUFl
+	);
+
+`endif
 
 `endif
 
@@ -346,10 +441,28 @@ reg opIsWfC;		//WEX
 
 
 `ifdef jx2_enable_wexjumbo
+
+`ifdef jx2_enable_riscv
+wire	srNoJumbo =
+	(srRiscv && !srXG2RV);
+`else
+wire	srNoJumbo = 0;
+`endif
+
+// assign	opIsWexJumboA =
+//		(istrWord[15: 9] == 7'b1111_111) ;
+// assign	opIsWexJumboB =
+//		(istrWord[47:41] == 7'b1111_111) ;
+
 assign	opIsWexJumboA =
-		(istrWord[15: 9] == 7'b1111_111) ;
+		 (istrWordA[12: 9] == 4'b1111) &&
+		((istrWordA[15:13] == 3'b111 ) || srXG2X) &&
+			(!srNoJumbo || istrMTagA[0]) ;
+
 assign	opIsWexJumboB =
-		(istrWord[47:41] == 7'b1111_111) ;
+		 (istrWordB[12: 9] == 4'b1111) &&
+		((istrWordB[15:13] == 3'b111 ) || srXG2X) &&
+			(!srNoJumbo || istrMTagB[0]) ;
 
 assign	opIsWexJumboXA =
 		((istrWord[15:12] == 4'b0111) && (istrWord[10:8] == 3'b000)) ||
@@ -382,6 +495,9 @@ assign		opIsWex2x40B_RiAltC =
 assign	tOpJBitsB		= { istrWord [8: 0], istrWord[31:16] };
 assign	tOpJBitsC		= { istrWord[40:32], istrWord[63:48] };
 
+assign	opJumboWxBitsB = ~istrWord[15:13];
+assign	opJumboWxBitsC = ~istrWord[47:45];
+
 `else
 
 assign	opIsWexJumboA	= 0;
@@ -392,6 +508,71 @@ assign	tOpJBitsB		= 0;
 assign	tOpJBitsC		= 0;
 
 `endif
+
+
+`ifdef jx2_enable_riscv
+`ifdef jx2_enable_rvjumbo
+
+wire		opIsRvJumboA_En;
+wire		opIsRvJumboB_En;
+wire		opIsRvJumboA_0;
+wire		opIsRvJumboA_1;
+wire		opIsRvJumboB_0;
+wire		opIsRvJumboB_1;
+
+// assign		opIsRvJumboA_En = (srRiscv && !srXG2RV && !istrMTagA[0]);
+// assign		opIsRvJumboB_En = (srRiscv && !srXG2RV && !istrMTagB[0]);
+
+assign		opIsRvJumboA_En = (srRiscv && !istrMTagA[0]);
+assign		opIsRvJumboB_En = (srRiscv && !istrMTagB[0]);
+
+assign		opIsRvJumboA_0 =
+	(istrWordA[ 6: 0] == 7'h1B) && (istrWordA[14:12] == 3'h4);
+assign		opIsRvJumboB_0 =
+	(istrWordB[ 6: 0] == 7'h1B) && (istrWordB[14:12] == 3'h4);
+
+assign		opIsRvJumboA_1 =
+	(istrWordA[ 6: 0] == 7'h3F) && (istrWordA[14:12] == 3'h4);
+assign		opIsRvJumboB_1 =
+	(istrWordB[ 6: 0] == 7'h3F) && (istrWordB[14:12] == 3'h4);
+
+assign		opIsRvJumboA = (opIsRvJumboA_0 || opIsRvJumboA_1) && 
+				opIsRvJumboA_En;
+assign		opIsRvJumboB = (opIsRvJumboB_0 || opIsRvJumboB_1) && 
+				opIsRvJumboB_En;
+
+`ifdef jx2_enable_rvjumbo96
+assign		opIsRvJumbo96 = opIsRvJumboA && opIsRvJumboB;
+`else
+assign		opIsRvJumbo96 = 0;
+`endif
+
+assign		tOpRvJBitsA = 0;
+
+assign		tOpRvJBitsB = {
+	istrWordA[31],
+	istrWordA[31], 2'b00,
+	istrWordA[11: 7], istrWordA[19:15], istrWordA[30:20] };
+
+assign		tOpRvJBitsC = {
+	istrWordB[31],
+	istrWordB[31], 2'b00,
+	istrWordB[11: 7], istrWordB[19:15], istrWordB[30:20] };
+
+`else
+
+assign		opIsRvJumboA = 0;
+assign		opIsRvJumboB = 0;
+assign		opIsRvJumbo96 = opIsRvJumboA && opIsRvJumboB;
+
+assign		tOpRvJBitsA = 0;
+assign		tOpRvJBitsB = 0;
+assign		tOpRvJBitsC = 0;
+
+`endif
+`endif
+
+
 
 `reg_gpr	opCmRemapRxA[63:0];
 `reg_gpr	opCmRemapRxB[63:0];
@@ -540,24 +721,32 @@ end
 
 always @*
 begin
+	opUCmdA		= UV9_00;
+	opUIxtA		= UV9_00;
+	opImmA		= UV33_00;
+	opRegAM		= JX2_GR_ZZR;
+	opRegAO		= JX2_GR_ZZR;
+	opRegAN		= JX2_GR_ZZR;
+	opRegAP		= JX2_GR_ZZR;
+	opUFlA		= 0;
 
-	opUCmdA	= UV9_00;
-	opUIxtA	= UV9_00;
-	opImmA	= UV33_00;
-	opRegAM	= JX2_GR_ZZR;
-	opRegAO	= JX2_GR_ZZR;
-	opRegAN	= JX2_GR_ZZR;
+	opUCmdB		= UV9_00;
+	opUIxtB		= UV9_00;
+	opImmB		= UV33_00;
+	opRegBM		= JX2_GR_ZZR;
+	opRegBO		= JX2_GR_ZZR;
+	opRegBN		= JX2_GR_ZZR;
+	opRegBP		= JX2_GR_ZZR;
 
-	opUCmdB	= UV9_00;
-	opUIxtB	= UV9_00;
-	opImmB	= UV33_00;
-	opRegBM	= JX2_GR_ZZR;
-	opRegBO	= JX2_GR_ZZR;
-	opRegBN	= JX2_GR_ZZR;
-
-	opRegXM	= JX2_GR_ZZR;
-	opRegXO	= JX2_GR_ZZR;
-	opRegXN	= JX2_GR_ZZR;
+	opRegXM		= JX2_GR_ZZR;
+	opRegXO		= JX2_GR_ZZR;
+	opRegXN		= JX2_GR_ZZR;
+	opRegXP		= JX2_GR_ZZR;
+	
+	opRegXMv = JX2_GR_ZZR;
+	opRegXOv = JX2_GR_ZZR;
+	opRegXNv = JX2_GR_ZZR;
+	opRegXPv = JX2_GR_ZZR;
 
 	opUCmdA0	= UV9_00;
 	opUIxtA0	= UV9_00;
@@ -565,8 +754,8 @@ begin
 	opRegAO0	= JX2_GR_ZZR;
 	opRegAN0	= JX2_GR_ZZR;
 	opRegAP0	= JX2_GR_ZZR;
+	opImmA0		= 0;
 	opUFlA0		= 0;
-
 
 	opIsDwA = 0;
 	opIsDwB = 0;
@@ -790,7 +979,8 @@ begin
 	begin
 		if(1'b1)
 		begin
-			if(opIsWfA && opIsWfB)
+//			if(opIsWfA && opIsWfB)
+			if(srSsc3)
 			begin
 				$display("DecOpWx2: WEX-3 Invalid if 2-wide");
 				opUCmdA	= { 3'b000, JX2_UCMD_INVOP };
@@ -823,31 +1013,63 @@ begin
 `endif
 			end
 			else
-			if(opIsWfA || opIsWexJumboA)
+//			if(opIsWfA || opIsWexJumboA)
+			if(srSsc2)
 			begin
 				opRegAM	= decOpFzB_idRegM;
 				opRegAO	= decOpFzB_idRegO;
 				opRegAN	= decOpFzB_idRegN;
+				opRegAP	= decOpFzB_idRegP;
 				opImmA	= decOpFzB_idImm;
 				opUCmdA	= decOpFzB_idUCmd;
 				opUIxtA	= decOpFzB_idUIxt;
-
-				opRegAM0	= decOpFzB_idRegM;
-				opRegAO0	= decOpFzB_idRegO;
-				opRegAN0	= decOpFzB_idRegN;
-				opRegAP0	= decOpFzB_idRegP;
-				opUCmdA0	= decOpFzB_idUCmd;
-				opUIxtA0	= decOpFzB_idUIxt;
-				opUFlA0		= decOpFzB_idUFl;
+				opUFlA	= decOpFzB_idUFl;
 
 				opRegBM	= decOpFzA_idRegM;
 				opRegBO	= decOpFzA_idRegO;
 				opRegBN	= decOpFzA_idRegN;
+				opRegBP	= decOpFzA_idRegP;
 				opImmB	= decOpFzA_idImm;
 				opUCmdB	= decOpFzA_idUCmd;
 				opUIxtB	= decOpFzA_idUIxt;
 
 				opIsScalar	= opIsWexJumboA;
+
+`ifdef jx2_dec_ssc_riscv
+				if(srRiscv && !noNoRiscV && !srXG2RV && !srMTagB[0])
+				begin
+					opRegAM		= decOpRvB_idRegM;
+					opRegAO		= decOpRvB_idRegO;
+					opRegAN		= decOpRvB_idRegN;
+					opRegAP		= decOpRvB_idRegP;
+					opImmA		= decOpRvB_idImm;
+					opUCmdA		= decOpRvB_idUCmd;
+					opUIxtA		= decOpRvB_idUIxt;
+					opUFlA		= decOpRvB_idUFl;
+					
+					opIsScalar	= opIsRvJumboA
+				end
+
+				if(srRiscv && !noNoRiscV && !srXG2RV && !srMTagA[0])
+				begin
+					opRegBM		= decOpRvA_idRegM;
+					opRegBO		= decOpRvA_idRegO;
+					opRegBN		= decOpRvA_idRegN;
+					opRegBP		= decOpRvA_idRegP;
+					opImmB		= decOpRvA_idImm;
+					opUCmdB		= decOpRvA_idUCmd;
+					opUIxtB		= decOpRvA_idUIxt;
+					opUFlB		= decOpRvA_idUFl;
+				end
+`endif
+
+				opRegAM0	= opRegAM;
+				opRegAO0	= opRegAO;
+				opRegAN0	= opRegAN;
+				opRegAP0	= opRegAP;
+				opUCmdA0	= opUCmdA;
+				opUIxtA0	= opUIxtA;
+				opUFlA0		= opUFlA;
 
 				if(opIsWexJumboA)
 				begin
@@ -867,8 +1089,17 @@ begin
 			end
 			else
 			begin
+				opRegAM0	= decOpFzA_idRegM;
+				opRegAO0	= decOpFzA_idRegO;
+				opRegAN0	= decOpFzA_idRegN;
+				opRegAP0	= decOpFzA_idRegP;
+				opImmA0		= decOpFzA_idImm;
+				opUCmdA0	= decOpFzA_idUCmd;
+				opUIxtA0	= decOpFzA_idUIxt;
+				opUFlA0		= decOpFzA_idUFl;
+
 `ifdef jx2_enable_riscv
-				if(srRiscv && !noNoRiscV && !srXG2RV)
+				if(srRiscv && !noNoRiscV && !srXG2RV && !srMTagA[0])
 				begin
 					opRegAM0	= decOpRvA_idRegM;
 					opRegAO0	= decOpRvA_idRegO;
@@ -879,26 +1110,6 @@ begin
 					opUIxtA0	= decOpRvA_idUIxt;
 					opUFlA0		= decOpRvA_idUFl;
 				end
-				else
-				begin
-					opRegAM0	= decOpFzA_idRegM;
-					opRegAO0	= decOpFzA_idRegO;
-					opRegAN0	= decOpFzA_idRegN;
-					opRegAP0	= decOpFzA_idRegP;
-					opImmA0		= decOpFzA_idImm;
-					opUCmdA0	= decOpFzA_idUCmd;
-					opUIxtA0	= decOpFzA_idUIxt;
-					opUFlA0		= decOpFzA_idUFl;
-				end
-`else
-				opRegAM0	= decOpFzA_idRegM;
-				opRegAO0	= decOpFzA_idRegO;
-				opRegAN0	= decOpFzA_idRegN;
-				opRegAP0	= decOpFzA_idRegP;
-				opImmA0		= decOpFzA_idImm;
-				opUCmdA0	= decOpFzA_idUCmd;
-				opUIxtA0	= decOpFzA_idUIxt;
-				opUFlA0		= decOpFzA_idUFl;
 `endif
 
 `ifdef def_true
@@ -974,7 +1185,7 @@ begin
 
 			if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
 			begin
-				if(opUIxtA0[5:0] == JX2_UCIX_CONV_FP16PCK32)
+				if(opUIxtA0[5:0] == JX2_UCIX_CONV2_FP16PCK32)
 				begin
 					opIsDualLaneRm	= 1;
 					opIsDualLaneRo	= 0;

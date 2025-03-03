@@ -48,15 +48,17 @@
 `endif
 
 `ifdef jx2_xc7s50
-`define jx2_tlb_novugid
+`define jx2_tlb_novugid	//Disable VUGIG / ACL handling in TLB
 `endif
 
 // `define jx2_cfg_75mhz
 
+`define jx2_enable_xgpr		//Enable R32..R63 and XGPR ops
+
 `ifndef jx2_xc7s50
 
 // `define jx2_enable_gpr48		//Enable R32..R63 (SIMD)
-`define jx2_enable_xgpr		//Enable R32..R63 and XGPR ops
+// `define jx2_enable_xgpr		//Enable R32..R63 and XGPR ops
 
 // `define jx2_enable_pred_s	//SR.S Predication
 
@@ -70,13 +72,15 @@
 `endif
 
 
-`ifndef jx2_xc7s50
+// `ifndef jx2_xc7s50
 `define	jx2_use_fpu_w			//use wide FPU (GSVX)
-`endif
+// `endif
 
 `define	jx2_fcmp_alu			//do FCMP via ALU
 
+`ifndef jx2_xc7s50
 `define	jx2_use_fpu_v4sf		//use FPU V4SF Unit
+`endif
 
 `ifndef jx2_xc7s50
 // `define	jx2_use_fpu_v2sd		//Enable Binary64 via V4SF Unit
@@ -134,6 +138,8 @@
 `define jx2_enable_fmovh			//FPU Load/Store
 `define jx2_enable_movc			//MOV.C
 
+// `define	jx2_shadq_bitmov		//Enable BITMOV
+
 // `define jx2_enable_memcap			//Enable Memory Capabilities
 
 // `define jx2_enable_movclite		//MOV.C (Lite)
@@ -189,10 +195,12 @@
 `define jx2_l1i_nohash			//Disable L1 address hashing.
 
 
+`ifndef jx2_xc7s50
 `define jx2_enable_edgewalk		//Hardware rasterizer / edge-walker
 // `define jx2_edgewalk_rcpz	//Enable Z Reciprocal
 `define jx2_edgewalk_fbdword	//Enable DWORD framebuffer
 // `define jx2_edgewalk_stencil	//Enable Stencil Testing
+`endif
 
 `ifdef jx2_xc7a200
 // `define jx2_enable_dualcore			//Enable Second Core

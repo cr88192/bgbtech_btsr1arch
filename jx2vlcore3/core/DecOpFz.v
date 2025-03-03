@@ -863,6 +863,9 @@ begin
 				opRegN_RvoDfl[4],
 				istrJBits[10:0],
 				opRegN_RvoDfl[3:0] };
+
+			opImm_disp11s	= istrWord[0] ? opImm_imm10n : opImm_imm10u;
+			opImm_disp8s	= {istrWord[23]?UV25_FF:UV25_00, istrWord[23:16]};
 		end
 		else
 `else
@@ -981,6 +984,8 @@ begin
 		opImm_imm16u	= { 1'b0, istrJBits[15:0], istrWord[31:16] };
 		opImm_imm16n	= { 1'b1, istrJBits[15:0], istrWord[31:16] };
 		opImm_imm16s	= { istrJBits[15], istrJBits[15:0], istrWord[31:16] };
+
+		opImm_imm8au	= { UV9_00, istrJBits[23:0] };
 	end
 	else
 	begin
@@ -2909,6 +2914,21 @@ begin
 					opUCmdIx	= JX2_UCIX_SHAD_SHLR3;
 				opFmid	= JX2_FMID_REGREG;
 				opIty	= JX2_ITY_SB;
+				
+`ifdef jx2_shadq_bitmov
+				if(opIsJumbo)
+				begin
+					opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKQ3;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_XQ;
+
+					if(opExQ)
+					begin
+						opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKX3;
+						opUCty		= JX2_IUC_WX;
+					end
+				end
+`endif
 			end
 
 			16'h2zz4: begin		/* F0nm_2eo4 */
@@ -4920,8 +4940,8 @@ begin
 					opFmid		= JX2_FMID_REGREG;
 					opIty		= JX2_ITY_SB;
 					opUCty		= JX2_IUC_SC;
-//					opUCmdIx	= JX2_UCIX_ALU_TSTQ;
-					opUCmdIx	= JX2_UCIX_ALU_TSTNQ;
+					opUCmdIx	= JX2_UCIX_ALU_TSTQ;
+//					opUCmdIx	= JX2_UCIX_ALU_TSTNQ;
 				end
 			end
 			16'h8zz2: begin		/* F0nm_8eo2 */
@@ -4937,8 +4957,8 @@ begin
 					opFmid		= JX2_FMID_REGREG;
 					opIty		= JX2_ITY_SB;
 					opUCty		= JX2_IUC_SC;
-					opUCmdIx	= JX2_UCIX_ALU_TSTQ;
-//					opUCmdIx	= JX2_UCIX_ALU_TSTNQ;
+//					opUCmdIx	= JX2_UCIX_ALU_TSTQ;
+					opUCmdIx	= JX2_UCIX_ALU_TSTNQ;
 				end
 			end
 			16'h8zz3: begin		/* F0nm_8eo3 */
@@ -7573,6 +7593,15 @@ begin
 							(srXG3RV ? JX2_GR_BPC : JX2_GR_PC);
 					end
 				end
+
+				JX2_ITY_XQ: begin
+					opRegM	= opRegM_Dfl;
+					opRegO	= JX2_GR_IMM;
+					opRegP	= opRegO_Dfl;
+					opRegN	= opRegN_Dfl;
+					opDoImm	= JX2_FMIMM_IMM8AU;
+				end
+				
 				
 				default: begin
 					$display("Jx2DecOpFx: RegReg, Bad Ity=%X", opIty);

@@ -29,6 +29,10 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 
  */
 
+/* verilator lint_off DEFPARAM */
+/* verilator lint_off UNUSEDSIGNAL */
+/* verilator lint_off UNUSEDPARAM */
+
 `include "CoreDefs.v"
 
 `ifdef jx2_use_ringbus
@@ -731,9 +735,13 @@ assign		idB1IdUCmd = (id2PreBra == 2'b01) ?
 
 DecOpWx2	decOp(
 	clock,			exResetL,
-	id1IstrWord,
-	id1ValFetchSr,
-	id1IstrSxo,
+//	id1IstrWord,
+//	id1ValFetchSr,
+//	id1IstrSxo,
+
+	id1IstrWord,	id1IstrMTag,
+	id1ValBPc,		id1ValFetchSr,
+	id1IstrSxo,		id1PcStep,
 
 	idA1IdRegM,		idA1IdRegO,
 	idA1IdRegN,		idA1IdImm,
@@ -1087,6 +1095,9 @@ RegGPR_6R3W regGpr(
 	);
 
 `else
+
+assign		gprDoHold = 0;
+
 RegGPR_4R2W regGpr(
 	clock,
 	exResetL,
@@ -1641,6 +1652,8 @@ ExPredCheck		pred1a(idA2IdUCmd, idA2IdUIxt, ex1RegInSr[7:0], idA2PredNoExec);
 ExPredCheck		pred1b(idB2IdUCmd, idB2IdUIxt, ex1RegInSr[7:0], idB2PredNoExec);
 `ifdef jx2_enable_wex3w
 ExPredCheck		pred1c(idC2IdUCmd, idC2IdUIxt, ex1RegInSr[7:0], idC2PredNoExec);
+`else
+assign		idC2PredNoExec = 0;
 `endif
 `else
 ExPredCheck		pred1a(id2IdUCmd, id2IdUIxt, ex1RegInSr[7:0], idA2PredNoExec);
@@ -2014,6 +2027,10 @@ assign	exB1FpuV4SfRn = 0;
 
 `else
 
+wire[7:0]		ex1FpuTrapB;
+
+assign		ex1FpuTrapB = 0;
+
 assign		crInFpsr = crOutFpsr;
 
 FpuExOp	ex1Fpu(
@@ -2141,6 +2158,7 @@ ExOpSloMulDiv	ex1SloMul(
 assign		ex1SloMulDoHold	= 0;
 assign		ex1SloMulVal	= 0;
 assign		ex1SloMulValHi	= 0;
+assign		ex1SloMuTrap	= 0;
 
 `endif
 
@@ -2366,15 +2384,15 @@ ExEX3	ex3(
 wire[63:0]		exB1MulWVal;
 
 `ifndef jx2_use_fpu_w
-reg[8:0]		exB1OpUCmd;
-reg[8:0]		exB1OpUIxt;
-reg[32:0]		exB1RegValImm;		//Immediate (Decode)
+// reg[8:0]		exB1OpUCmd;
+// reg[8:0]		exB1OpUIxt;
+// reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 
-`reg_gpr		exB1RegIdRs;		//Source A, ALU / Base
-`reg_gpr		exB1RegIdRt;		//Source B, ALU / Index
-`reg_gpr		exB1RegIdRm;		//Source C, MemStore
+// `reg_gpr		exB1RegIdRs;		//Source A, ALU / Base
+// `reg_gpr		exB1RegIdRt;		//Source B, ALU / Index
+// `reg_gpr		exB1RegIdRm;		//Source C, MemStore
 // reg[63:0]		exB1RegValRs;		//Source A Value
-`reg_gprval		exB1RegValRt;		//Source B Value
+// `reg_gprval		exB1RegValRt;		//Source B Value
 // `reg_gprval		exB1RegValRm;		//Source C Value
 `endif
 
@@ -3143,8 +3161,10 @@ begin
 	ex2MemDataOK	= 0;
 	ex2MemDataInB	= 0;
 	ex2MemDataIn	= 0;
+`ifdef jx2_enable_wex3w
 	exC3RegMulWRes	= 0;
 	exC2RegMulWRes	= 0;
+`endif
 	exB2RegMulWRes	= 0;
 	exB3RegMulWRes	= 0;
 	dcInTraPc		= 0;
@@ -3166,8 +3186,10 @@ begin
 	exB2RegAluRes	= 0;
 	exB3RegAluRes	= 0;
 
+`ifdef jx2_enable_wex3w
 	exC2RegAluRes	= 0;
 	exC3RegAluRes	= 0;
+`endif
 
 	gprEx1Flush		= 0;
 	gprEx2Flush		= 0;
@@ -3188,6 +3210,7 @@ begin
 	gprIdRnB4		= 0;
 	gprValRnB4		= 0;
 
+`ifdef jx2_enable_wex3w
 	gprIdRnC1		= 0;
 	gprValRnC1		= 0;
 	gprIdRnC2		= 0;
@@ -3196,6 +3219,7 @@ begin
 	gprValRnC3		= 0;
 	gprIdRnC4		= 0;
 	gprValRnC4		= 0;
+`endif
 
 	gprIdRn1		= 0;
 	gprValRn1		= 0;
@@ -3206,7 +3230,10 @@ begin
 	gprIdRn4		= 0;
 	gprValRn4		= 0;
 
+`ifdef jx2_enable_wex3w
 	gprValImmC4		= 0;
+`endif
+
 	gprValImmB4		= 0;
 	gprValImmA4		= 0;
 	

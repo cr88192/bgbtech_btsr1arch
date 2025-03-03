@@ -1795,6 +1795,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_RGB5PCKI8:	s0="RGB5PCKI8";		break;
 	case BJX2_NMID_RGB5UPCKI8:	s0="RGB5UPCKI8";	break;
 
+	case BJX2_NMID_CSRRW:		s0="CSRRW";		break;
+	case BJX2_NMID_CSRRS:		s0="CSRRS";		break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;

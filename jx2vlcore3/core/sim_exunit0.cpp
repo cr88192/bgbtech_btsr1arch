@@ -2475,9 +2475,15 @@ int main(int argc, char **argv, char **env)
 	ptr0=malloc(1<<20);
 
 #if !defined(DOOM_RV) && !defined(QUAKE_RV)
+#if defined(USE_ROM_RBD)
+	JX2R_UseImageAddFile(
+		(char *)"BOOTLOAD.SYS",
+		(char *)"../../tk_qsrc/tk_clib/tkshell_rbd.sys");
+#else
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/tk_clib/tkshell.sys");
+#endif
 #endif
 
 #ifdef DOOM_RV
@@ -2668,9 +2674,16 @@ int main(int argc, char **argv, char **env)
 	memset(srambuf2, 0, 8192);
 	memset(drambuf2, 0, 1<<27);
 
+#if defined(USE_ROM_RBD)
+	fd=fopen("../../tst_jx2boot_rbd.bin", "rb");
+#elif defined(USE_ROM_XG3)
+	fd=fopen("../../tst_jx2boot_x3rv.bin", "rb");
+#elif defined(USE_ROM_XRV)
+	fd=fopen("../../tst_jx2boot_xrv.bin", "rb");
+#else
 	fd=fopen("../../tst_jx2boot.bin", "rb");
-//	fd=fopen("../../tst_jx2boot_xrv.bin", "rb");
-//	fd=fopen("../../tst_jx2boot_x3rv.bin", "rb");
+#endif
+
 	if(fd)
 	{
 		t2=fread(rombuf, 1, 32768, fd);

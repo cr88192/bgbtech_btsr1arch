@@ -649,7 +649,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->use_wexmd=0;
 
 		shctx->has_jumbo=1;
-		shctx->has_pushx2=1;
+//		shctx->has_pushx2=1;
+		shctx->has_pushx2=0;
 		shctx->has_simdx2=0;
 
 
@@ -9127,6 +9128,13 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			(100.0*sctx->stat_fp16_tot)/(sctx->stat_const_masktot+1),
 			(100.0*sctx->stat_fp16_hit5)/(sctx->stat_const_masktot+1),
 			(100.0*sctx->stat_fp16_hit5b)/(sctx->stat_const_masktot+1));
+
+		printf("Imm-Hit: IsFp MissExp=%.2f%% MissPow10=%.2f%% "
+			"MissPow3=%.2f%% MissPow7=%.2f%%\n",
+			(100.0*sctx->stat_fp16_miss_exp)/(sctx->stat_const_masktot+1),
+			(100.0*sctx->stat_fp16_miss_pow10)/(sctx->stat_const_masktot+1),
+			(100.0*sctx->stat_fp16_miss_pow3)/(sctx->stat_const_masktot+1),
+			(100.0*sctx->stat_fp16_miss_pow7)/(sctx->stat_const_masktot+1));
 
 		printf("Imm-Hit(Mask): 10u_sh12=%.2f%%, 10u_sh16=%.2f%%\n",
 			(100.0*sctx->stat_mask_imm10u_sh12)/(sctx->stat_const_masktot+1),

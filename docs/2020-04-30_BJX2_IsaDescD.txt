@@ -5,6 +5,20 @@ Register Aliases:
 * DHR will be an alias for R1.
 * SP will be an alias for R15.
 
+Major ISA Variants:
+* XG1: Will include 16 bit ops.
+* XG2: Will extend registers to 6-bits.
+** Imm9 extended to Imm10, Disp9u to Disp10s.
+** It is otherwise mostly the same as XG1.
+** The liberated high 3 bits will encode WN, WM, and WI bits.
+*** XG2 may not encode 16-bit ops.
+*** Extending each register, or the immediate, as needed.
+*** Typically, if no register exists, the immediate is extended.
+*** In other cases, the bits will go to opcode.
+* XG3: Will be mostly a bit-shuffled XG2.
+** Lacks 16-bit instructions;
+** Various special case differences exist.
+
 
 Notation:
 * 0..9, A..F: Literal Hexadecimal Values
@@ -3363,6 +3377,35 @@ Other than the first element, the others will be labeled as Low, Middle, and Hig
 These will be deprecated in favor of PSHUF.B / PSHUF.W.
 
 
+=== BITMOV (BITS) ===
+
+* FEii_iiii_F0nm_2go3  BITMOV		Rm, Ro, Rn, Imm24
+* FEii_iiii_F0nm_2Go3  BITMOVX		Xm, Xo, Xn, Imm24
+
+Move a value from one bitfield to another.
+
+Imm24 (BITMOV):
+* ( 5: 0): Base in Rm (Dest Bitfield)
+* (13: 8): Base in Ro (Source Bitfield)
+* (21:16): Bitfield Width
+
+Imm24 (BITMOVX):
+* ( 6: 0): Base in Xm (Dest Bitfield)
+* (14: 8): Base in Xo (Source Bitfield)
+* (22:16): Bitfield Width
+
+Generates a value that is a copy of Rm, but with bits from Ro copied in at the specified location.
+
+
+
+=== BITSEL (BITS) ===
+
+* F0nm_6goB  BITSEL		Rm, Ro, Rn			//(?) Rn = (Rm & Ro) | (Rn & ~Ro)
+* F0nm_6GoB  BITSELX	Xm, Xo, Xn			//(?) Xn = (Xm & Xo) | (Xn & ~Xo)
+
+Generate a value combining bits from Rm and Rn using a mask given ib Ro.
+
+
 === BLERP (RGBX) ===
 
 * F0nm_6go9            BLERP	Rm, Ro, Rn		//(RGBX) Linear Interpolate
@@ -3690,6 +3733,8 @@ These will be decoded as-if they were first expanded to Binary16 as:
 * 101xx: 4400, 4500, 4600, 4700 ( 4.000,  5.000,  6.000,  7.000)
 * 110xx: 4800, 4900, 4A00, 4B00 ( 8.000, 10.000, 12.000, 14.000)
 * 111xx: 4C00, 4D00, 4E00, 4F00 (16.000, 20.000, 24.000, 28.000)
+
+In XG2 and XG3, Imm6fp will exist. The format is basically the same as Imm5fp, except that WI will encode a sign bit.
 
 The Imm10fp case will be be encoded as (S.E5.F4).
 This is effectively a truncated form of Binary16, and may be converted to the Binary16 format by adding 6 zero bits onto the bottom.

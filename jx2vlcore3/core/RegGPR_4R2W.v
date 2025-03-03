@@ -121,7 +121,8 @@ input[63:0]		regValRnB3;		//Destination Value
 
 input [47:0]	regValPc;		//PC Value (Synthesized)
 input [47:0]	regValBPc;		//Base PC Value
-input [47:0]	regValGbr;		//GBR Value (CR)
+// input [47:0]	regValGbr;		//GBR Value (CR)
+input [63:0]	regValGbr;		//GBR Value (CR)
 input [47:0]	regValTbr;		//GBR Value (CR)
 input [32:0]	regValImmA;		//Immediate (Decode)
 input [32:0]	regValImmB;		//Immediate (Decode)
@@ -381,7 +382,8 @@ begin
 `ifdef jx2_enable_vaddr48
 		JX2_GR_PC:	tValRsA={ UV16_00, regValPc[47:1],
 			regValPc[0] &tEnablePcLsb };
-		JX2_GR_GBR:	tValRsA={ UV16_00, regValGbr };
+//		JX2_GR_GBR:	tValRsA={ UV16_00, regValGbr };
+		JX2_GR_GBR:	tValRsA= regValGbr;
 		JX2_GR_TBR:	tValRsA={ UV16_00, regValTbr };
 		JX2_GR_LR:	tValRsA= regValLr;
 

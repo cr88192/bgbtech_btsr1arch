@@ -445,7 +445,8 @@ assign	tValShad32 = tValShad64[31:0];
 ExShad64D	exShad64(clock, reset,
 	regValRs[63:0],
 	regValXs[63:0],
-	regValRt[7:0],
+	regValRt[31:0],
+	regValRm[63:0],
 	tValShad64,
 	opUIxt[5:0], 0);
 
@@ -1245,7 +1246,8 @@ begin
 		end
 
 		JX2_UCMD_BRA_NB: begin
-			if(opPreBra!=2'b00)
+//			if(opPreBra!=2'b00)
+			if(opPreBra==2'b01)
 			begin
 				tValBra		= regValPc[63:0];
 				tValBra[63:48] = UV16_00;
@@ -1565,7 +1567,8 @@ begin
 			else
 			begin
 				tValBra		= regValPc[63:0];
-				tDoBra		= (opPreBra != 2'b00);
+//				tDoBra		= (opPreBra != 2'b00);
+				tDoBra		= (opPreBra == 2'b01);
 			end
 		end
 `endif
@@ -1580,7 +1583,8 @@ begin
 			else
 			begin
 				tValBra		= regValPc[63:0];
-				tDoBra		= (opPreBra != 2'b00);
+//				tDoBra		= (opPreBra != 2'b00);
+				tDoBra		= (opPreBra == 2'b01);
 			end
 		end
 `endif

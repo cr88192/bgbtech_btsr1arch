@@ -956,30 +956,29 @@ end
 
 always @*
 begin
+	opUCmdA		= UV9_00;
+	opUIxtA		= UV9_00;
+	opImmA		= UV33_00;
+	opRegAM		= JX2_GR_ZZR;
+	opRegAO		= JX2_GR_ZZR;
+	opRegAN		= JX2_GR_ZZR;
+	opRegAP		= JX2_GR_ZZR;
 
-	opUCmdA	= UV9_00;
-	opUIxtA	= UV9_00;
-	opImmA	= UV33_00;
-	opRegAM	= JX2_GR_ZZR;
-	opRegAO	= JX2_GR_ZZR;
-	opRegAN	= JX2_GR_ZZR;
-	opRegAP	= JX2_GR_ZZR;
+	opUCmdB		= UV9_00;
+	opUIxtB		= UV9_00;
+	opImmB		= UV33_00;
+	opRegBM		= JX2_GR_ZZR;
+	opRegBO		= JX2_GR_ZZR;
+	opRegBN		= JX2_GR_ZZR;
+	opRegBP		= JX2_GR_ZZR;
 
-	opUCmdB	= UV9_00;
-	opUIxtB	= UV9_00;
-	opImmB	= UV33_00;
-	opRegBM	= JX2_GR_ZZR;
-	opRegBO	= JX2_GR_ZZR;
-	opRegBN	= JX2_GR_ZZR;
-	opRegBP	= JX2_GR_ZZR;
-
-	opUCmdC	= UV9_00;
-	opUIxtC	= UV9_00;
-	opImmC	= UV33_00;
-	opRegCM	= JX2_GR_ZZR;
-	opRegCO	= JX2_GR_ZZR;
-	opRegCN	= JX2_GR_ZZR;
-	opRegCP	= JX2_GR_ZZR;
+	opUCmdC		= UV9_00;
+	opUIxtC		= UV9_00;
+	opImmC		= UV33_00;
+	opRegCM		= JX2_GR_ZZR;
+	opRegCO		= JX2_GR_ZZR;
+	opRegCN		= JX2_GR_ZZR;
+	opRegCP		= JX2_GR_ZZR;
 
 	opRegXM		= JX2_GR_ZZR;
 	opRegXO		= JX2_GR_ZZR;
@@ -1002,9 +1001,9 @@ begin
 //	opRegXO			= 0;
 
 
-	opIsDwA = 0;
-	opIsDwB = 0;
-	opIsDwC = 0;
+	opIsDwA			= 0;
+	opIsDwB			= 0;
+	opIsDwC			= 0;
 	opIsWexJumboLdi	= 0;
 	opIsScalar		= 0;
 	opIsScalarBase	= 0;
@@ -1439,6 +1438,7 @@ begin
 		opRegAM	= decOpFzC_idRegM;
 		opRegAO	= decOpFzC_idRegO;
 		opRegAN	= decOpFzC_idRegN;
+		opRegAP	= decOpFzC_idRegP;
 		opImmA	= decOpFzC_idImm;
 		opUCmdA	= decOpFzC_idUCmd;
 		opUIxtA	= decOpFzC_idUIxt;
@@ -1505,6 +1505,7 @@ begin
 			opRegAM	= decOpFzC_idRegM;
 			opRegAO	= decOpFzC_idRegO;
 			opRegAN	= decOpFzC_idRegN;
+			opRegAP	= decOpFzC_idRegP;
 			opImmA	= decOpFzC_idImm;
 			opUCmdA	= decOpFzC_idUCmd;
 			opUIxtA	= decOpFzC_idUIxt;
@@ -1520,6 +1521,7 @@ begin
 			opRegBM	= decOpFzB_idRegM;
 			opRegBO	= decOpFzB_idRegO;
 			opRegBN	= decOpFzB_idRegN;
+			opRegBP	= decOpFzB_idRegP;
 			opImmB	= decOpFzB_idImm;
 			opUCmdB	= decOpFzB_idUCmd;
 			opUIxtB	= decOpFzB_idUIxt;
@@ -1527,6 +1529,7 @@ begin
 			opRegCM	= decOpFzA_idRegM;
 			opRegCO	= decOpFzA_idRegO;
 			opRegCN	= decOpFzA_idRegN;
+			opRegCP	= decOpFzA_idRegP;
 			opImmC	= decOpFzA_idImm;
 			opUCmdC	= decOpFzA_idUCmd;
 			opUIxtC	= decOpFzA_idUIxt;
@@ -1797,6 +1800,8 @@ begin
 		opRegAM	= decOpBz_idRegM;
 		opRegAO	= decOpBz_idRegO;
 		opRegAN	= decOpBz_idRegN;
+		opRegAP	= decOpBz_idRegN;
+
 		opImmA	= {
 			decOpBz_idImm[12] ? UV20_FF : UV20_00,
 			decOpBz_idImm[12:0] };
@@ -1811,6 +1816,7 @@ begin
 			opRegAM	= decOpRc_idRegM;
 			opRegAO	= decOpRc_idRegO;
 			opRegAN	= decOpRc_idRegN;
+			opRegAP	= decOpRc_idRegN;
 			opImmA	= decOpRc_idImm;
 			opUCmdA	= decOpRc_idUCmd;
 			opUIxtA	= decOpRc_idUIxt;
@@ -1818,23 +1824,30 @@ begin
 `endif
 `endif
 
+`ifdef jx2_reg_rp
+		if(opUCmdA[5:0] == JX2_UCMD_MOV_RM)
+			opRegAN	= JX2_GR_ZZR;
+		if(opUCmdA[5:0] == JX2_UCMD_MOV_MR)
+			opRegAP	= JX2_GR_ZZR;
+`endif
+
 		opRegAM0	= opRegAM;
 		opRegAO0	= opRegAO;
 		opRegAN0	= opRegAN;
-		opRegAP0	= opRegAN;
+		opRegAP0	= opRegAP;
 		opUCmdA0	= opUCmdA;
 		opUIxtA0	= opUIxtA;
 		opUFlA0		= opUFlA;
 
 		opRegBN	= JX2_GR_ZZR;
 		opRegBM	= JX2_GR_ZZR;
-		opRegBO	= opRegAN;
+		opRegBO	= opRegAP;
 		opImmB	= UV33_00;
 		opUCmdB	= UV9_00;
 		opUIxtB	= UV9_00;
 
 		opRegCM	= JX2_GR_ZZR;
-		opRegCO	= opRegAN;
+		opRegCO	= opRegAP;
 		opRegCN	= JX2_GR_ZZR;
 		opImmC	= UV33_00;
 		opUCmdC	= UV9_00;

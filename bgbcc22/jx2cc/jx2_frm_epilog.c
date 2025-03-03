@@ -511,6 +511,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 #if 1
 			if(sctx->has_pushx2 && !(i&1))
+//			if(0)
 			{
 				if(((sctx->reg_save&(3ULL<<i))==(3ULL<<i)) &&
 					(i!=14) && (i!=31) && (i!=63))

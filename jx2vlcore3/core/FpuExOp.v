@@ -73,7 +73,7 @@ output[63:0]	regOutVal;		//Ro output value
 `output_gpr		regOutId;		//Ro, register to write (FPR)
 output[1:0]		regOutOK;		//execute status
 
-input[63:0]		memDataLd;		//memory data (load)
+input[65:0]		memDataLd;		//memory data (load)
 input[1:0]		memDataOK;		//memory status (load)
 
 input[63:0]		regInSr;		//input SR
@@ -81,14 +81,14 @@ input			braFlush;
 input			exHold;
 
 reg[63:0]	tRegOutVal;			//Rn output value
-reg[5:0]	tRegOutId;			//Rn, value to write
+`reg_gpr	tRegOutId;			//Rn, value to write
 reg[1:0]	tRegOutOK;			//execute status
 reg			tRegOutSrT;
 reg[63:0]	tRegValGRn;			//GRn Out
 reg[63:0]	tRegValLdGRn;		//GRn Out
 
 reg[63:0]	tRegOutVal2;		//Rn output value
-reg[5:0]	tRegOutId2;			//Rn, value to write
+`reg_gpr	tRegOutId2;			//Rn, value to write
 reg[1:0]	tRegOutOK2;			//execute status
 reg			tRegOutSrT2;
 reg[63:0]	tRegValGRn2;			//GRn Out
@@ -104,9 +104,9 @@ assign		regValLdGRn		= tRegValLdGRn;
 `ifndef def_true
 reg[8:0]		tOpCmd;			//command opcode
 reg[8:0]		tRegIdIxt;		//ALU Index / Opcode Extension
-reg[5:0]		tRegIdRs;
-reg[5:0]		tRegIdRt;
-reg[5:0]		tRegIdRn;
+`reg_gpr		tRegIdRs;
+`reg_gpr		tRegIdRt;
+`reg_gpr		tRegIdRn;
 reg[63:0]		tRegValRs;		//Rs input value (FPR)
 reg[63:0]		tRegValRt;		//Rt input value (FPR)
 reg[63:0]		tRegValRn;		//Rn input value (FPR, Duplicate)
@@ -129,9 +129,9 @@ wire			tBraFlush;
 
 reg[8:0]		tOpCmdL;			//command opcode
 reg[8:0]		tRegIdIxtL;		//ALU Index / Opcode Extension
-reg[5:0]		tRegIdRsL;
-reg[5:0]		tRegIdRtL;
-reg[5:0]		tRegIdRnL;
+`reg_gpr		tRegIdRsL;
+`reg_gpr		tRegIdRtL;
+`reg_gpr		tRegIdRnL;
 reg[63:0]		tRegValRsL;		//Rs input value (FPR)
 reg[63:0]		tRegValRtL;		//Rt input value (FPR)
 reg[63:0]		tRegValRnL;		//Rn input value (FPR, Duplicate)

@@ -6,6 +6,10 @@ This unit implements a 128-bit Funnel Shift.
 
 `include "CoreDefs.v"
 
+`ifdef jx2_shadq_bitmov
+`include "ExCsMaskGen64.v"
+`endif
+
 `ifndef HAS_JX2EXSHADQ_D
 `define HAS_JX2EXSHADQ_D
 
@@ -13,7 +17,7 @@ module ExShad64D(
 	/* verilator lint_off UNUSED */
 	clock, reset,
 	valRs, valRx,
-	valRt,
+	valRt, valRp,
 	valRn, shOpA,
 	idLane
 	);
@@ -25,7 +29,8 @@ input	reset;
 
 input[63:0]		valRs;
 input[63:0]		valRx;
-input[ 7:0]		valRt;
+input[31:0]		valRt;
+input[63:0]		valRp;
 input[ 5:0]		shOpA;
 output[63:0]	valRn;
 input[1:0]		idLane;
@@ -41,12 +46,14 @@ wire			shOpU;
 wire			shOpQ;
 wire			shOpR;
 wire			shOpO;
+wire			shOpM;
 wire			shOpX;
 wire			shOpL;
 assign		shOpU = shOpA[0];	//Zero Extend
 assign		shOpQ = shOpA[1];	//QuadWord
 assign		shOpR = shOpA[2];	//Shift-Right
 assign		shOpO = shOpA[3];	//Rotate
+assign		shOpM = shOpA[4];	//Mask
 // assign		shOpO = shOpA[3] && !isLaneC;	//Rotate
 assign		shOpX = shOpA[5] && !isLaneC;	//Funnel
 
@@ -82,6 +89,21 @@ reg[ 64:0]		tValSht1;
 
 reg				tValSgn;
 reg				tValSgnX;
+
+`ifdef jx2_shadq_bitmov
+wire[63:0]		valMaskLo;
+wire[63:0]		valMaskHi;
+wire[63:0]		valMask;
+wire			valMaskPol;
+assign		valMaskPol = valRt[22:16] > valRt[14:8];
+
+ExCsMaskGen64	genMaskLo( { 1'b1, valRt[13: 8] }, valMaskLo);
+ExCsMaskGen64	genMaskHi( { 1'b0, valRt[21:16] }, valMaskHi);
+
+assign		valMask = valMaskPol ?
+	(valMaskLo & valMaskHi) :
+	(valMaskLo | valMaskHi);
+`endif
 
 always @*
 begin
@@ -178,6 +200,13 @@ begin
 	begin
 		tValRn[63:32]=(tValRn[31] && !shOpU) ? UV32_FF : UV32_00 ;
 	end
+
+`ifdef jx2_shadq_bitmov
+	if(shOpM)
+	begin
+		tValRn = (tValRn & valMask) | (valRp & (~valMask));
+	end
+`endif
 
 end
 

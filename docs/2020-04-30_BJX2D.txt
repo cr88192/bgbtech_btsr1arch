@@ -2899,7 +2899,7 @@ The w and v fields:
 * V: wssi (Ld / St)
 ** ss=Scale
 
-The W field, in Baseline mode, will encode the Wn, Wm, and Wi fields.
+The W field, in Baseline/XG1 mode, will encode the Wn, Wm, and Wi fields.
 * Nominally, these will extend the register field to 6 bits.
 * In XG2, these bits will nominally be encoded in the final instruction.
 ** The Op64 prefix bits may be used if the instruction bits are 111.
@@ -2920,6 +2920,11 @@ The V.w flag will apply to 3R (Basic) encodings (V.w):
 The V.w flag will apply to 3R/4R encodings (V.w):
 * 0: 3R ( Rm, Ro, Rn, Rn )
 * 1: 3R ( Rm, Ro, Rp, Rn )
+
+The V.w flag may modify F1 JCMP or Store:
+* 0: Displacement is extended to 17 bits.
+* 1: The Rn field is replaced with an Imm16s (XG1) or Imm17s (XG2/XG3).
+** The v and i fields combine with Rn.
 
 Where, 3R/4R will be limited to 3R instructions which could make use of a 4th register if available, such as MAC/FMAC.
 
@@ -2974,7 +2979,7 @@ These encodings are assumed for low-probability instructions, where the bulkier 
 
 
 
-==== Jumbo Op40x2 (Optional) ====
+==== Jumbo Op40x2 (Optional / Drop) ====
 
 Will define an Op40x2 Prefix (78ww_vvii).
 
@@ -3192,6 +3197,8 @@ Bxx.B will be a byte-aligned branch op.
 === Op32 XGPR (Optional) ===
 
 The Op32_XGPR encoding space will use an encoding space which overlaps with Op24, and is as such mutually exclusive.
+
+This encoding scheme will only apply to the Baseline/XG1 Mode.
 
 Will use the encoding spaces:
 * 7wnm_ZeoZ, Maps to F0nm_ZeoZ

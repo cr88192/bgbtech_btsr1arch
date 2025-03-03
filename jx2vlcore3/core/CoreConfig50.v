@@ -166,11 +166,13 @@
 `define jx2_rbi_bridge_ecyc_l1	//Ringbus: Add output cycle on L1 Bridge
 `define jx2_rbi_bridge_ecyc_l2	//Ringbus: Add output cycle on L1 Bridge
 
+`ifndef jx2_xc7s50
 `define jx2_rbi_bridge_vca		//Ringbus: Bridge with Victim Cache
 // `define jx2_rbi_bridge_vca_8x	//Ringbus: Increase to 8-way
 `define jx2_rbi_bridge_vca_mtf	//Ringbus: Move to Front
 
 // `define jx2_rbi_bridge_vca_a256		//Ringbus: Increase to 8-way
+`endif
 
 // `define jx2_rbi_ecyc_tlbfw	//Ringbus: Add extra cycles for TLB skip
 

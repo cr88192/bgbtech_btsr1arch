@@ -456,6 +456,7 @@ extern "C" {
 #define BGBCC_LANG_BS2		BGBCC_FOURCC('B', 'S', '2', ' ')
 
 #define BGBCC_LANG_ASM		BGBCC_FOURCC('A', 'S', 'M', ' ')
+#define BGBCC_LANG_VERILOG	BGBCC_FOURCC('V', 'E', 'R', 'L')
 
 #define BGBCC_ARCH_DEFAULT	0	//any arch
 #define BGBCC_ARCH_X86		BGBCC_FOURCC('X', '8', '6', ' ')

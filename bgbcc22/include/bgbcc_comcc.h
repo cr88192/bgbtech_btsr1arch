@@ -474,6 +474,11 @@ int stat_fp16_tot;
 int stat_fp16_hit5;
 int stat_fp16_hit5b;
 
+int stat_fp16_miss_exp;
+int stat_fp16_miss_pow10;
+int stat_fp16_miss_pow3;
+int stat_fp16_miss_pow7;
+
 int stat_mask_imm10u_sh12;
 int stat_mask_imm10u_sh16;
 

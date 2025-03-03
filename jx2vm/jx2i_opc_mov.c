@@ -367,10 +367,16 @@ void BJX2_Op_MOVUW_LdDr4PcReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MOVB_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 rm;	
+	rm=ctx->regs[op->rm];
+	if(op->rm==BJX2_REG_IMM)
+		rm=op->immb;
+
 	ctx->trapc=op->pc;
 	BJX2_MemSetByteW(ctx,
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm), ctx->regs[op->rq],
-		ctx->regs[op->rm]);
+//		ctx->regs[op->rm]);
+		rm);
 	BJX2_DbgAddrAccessTrap(ctx,
 		(bjx2_addr)(ctx->regs[op->rn]),
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm), 1);
@@ -388,10 +394,16 @@ void BJX2_Op_MOVB_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MOVW_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 rm;	
+	rm=ctx->regs[op->rm];
+	if(op->rm==BJX2_REG_IMM)
+		rm=op->immb;
+
 	ctx->trapc=op->pc;
 	BJX2_MemSetWordW(ctx,
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2), ctx->regs[op->rq],
-		ctx->regs[op->rm]);
+//		ctx->regs[op->rm]);
+		rm);
 	BJX2_DbgAddrAccessTrap(ctx,
 		(bjx2_addr)(ctx->regs[op->rn]),
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*2), 2);
@@ -409,10 +421,16 @@ void BJX2_Op_MOVW_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MOVL_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 rm;	
+	rm=ctx->regs[op->rm];
+	if(op->rm==BJX2_REG_IMM)
+		rm=op->immb;
+
 	ctx->trapc=op->pc;
 	BJX2_MemSetDWordW(ctx,
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*4), ctx->regs[op->rq],
-		ctx->regs[op->rm]);
+//		ctx->regs[op->rm]);
+		rm);
 	BJX2_DbgAddrAccessTrap(ctx,
 		(bjx2_addr)(ctx->regs[op->rn]),
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*4), 4);
@@ -430,10 +448,16 @@ void BJX2_Op_MOVL_LdRegDispReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_MOVQ_RegStRegDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 rm;	
+	rm=ctx->regs[op->rm];
+	if(op->rm==BJX2_REG_IMM)
+		rm=op->immb;
+
 	ctx->trapc=op->pc;
 	BJX2_MemSetQWordW(ctx,
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*8), ctx->regs[op->rq],
-		ctx->regs[op->rm]);
+//		ctx->regs[op->rm]);
+		rm);
 	BJX2_DbgAddrAccessTrap(ctx,
 		(bjx2_addr)(ctx->regs[op->rn]),
 		(bjx2_addr)(ctx->regs[op->rn])+(op->imm*8), 8);

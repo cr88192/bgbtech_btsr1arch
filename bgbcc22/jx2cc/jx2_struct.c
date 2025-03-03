@@ -2629,21 +2629,30 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 
 		BGBCC_JX2_EmitNamedLabel(sctx, s0);
 
+		sprintf(tb, "__memcpy64_%u", i*8);
+		s1=bgbcc_strdup(tb);
+		BGBCC_JX2_EmitNamedLabel(sctx, s1);
+
+		sprintf(tb, "__memcpy8_%u", i*8);
+		s1=bgbcc_strdup(tb);
+		BGBCC_JX2_EmitNamedLabel(sctx, s1);
+
 		k=i-4;
 		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
 			BGBCC_SH_NMID_MOVQ, tr5, k*8+ 0, tr20);
 		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
-			BGBCC_SH_NMID_MOVQ, tr5, k*8+ 8, tr21);
-		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
 			BGBCC_SH_NMID_MOVQ, tr5, k*8+16, tr22);
 		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
+			BGBCC_SH_NMID_MOVQ, tr5, k*8+ 8, tr21);
+		BGBCC_JX2_EmitOpLdRegDispReg(sctx,
 			BGBCC_SH_NMID_MOVQ, tr5, k*8+24, tr23);
+
 		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
 			BGBCC_SH_NMID_MOVQ, tr20, tr4, k*8+0);
 		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
-			BGBCC_SH_NMID_MOVQ, tr21, tr4, k*8+8);
-		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
 			BGBCC_SH_NMID_MOVQ, tr22, tr4, k*8+16);
+		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+			BGBCC_SH_NMID_MOVQ, tr21, tr4, k*8+8);
 		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
 			BGBCC_SH_NMID_MOVQ, tr23, tr4, k*8+24);
 	}
@@ -2687,6 +2696,9 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 	for(i=1; i<512; i++)
 	{
 		if(!(sctx->memcpy_byte_mask[i>>6]&(1ULL<<(i&63))))
+			continue;
+
+		if(!(i&31))
 			continue;
 
 		sprintf(tb, "__memcpy8_%u", i);
@@ -2738,8 +2750,8 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 		if(!((sctx->memcpy64_mask>>(i-1))&1))
 			continue;
 
-//		if(!(i&3))
-//			continue;
+		if(!(i&3))
+			continue;
 
 		sprintf(tb, "__memcpy64_%u", i*8);
 		s0=bgbcc_strdup(tb);

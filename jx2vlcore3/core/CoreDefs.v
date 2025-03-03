@@ -757,6 +757,8 @@ REGIMMREG, Fz:
 	XB: Rm, Imm9f/Imm32f/Imm57f, Rn
 	XW:	Rm, Imm9u, Rn (Decoded like REGDISPREG)
 
+	XQ:	Rm, Imm8u, Ro->Rn
+
 REGPC, Fz:
 	SB: (PC, Ro), ZZR
 	SW: (PC, Ro), LR
@@ -1460,6 +1462,9 @@ parameter[5:0] JX2_UCIX_SHAD_SHARX3	= 6'h24;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLRX3	= 6'h25;		//
 parameter[5:0] JX2_UCIX_SHAD_ROTLX3	= 6'h28;		//
 parameter[5:0] JX2_UCIX_SHAD_ROTRX3	= 6'h2C;		//
+
+parameter[5:0] JX2_UCIX_SHAD_SHLDMSKQ3	= 6'h13;		//
+parameter[5:0] JX2_UCIX_SHAD_SHLDMSKX3	= 6'h33;		//
 
 
 parameter[5:0] JX2_UCIX_FPU_FADD	= 6'h00;		//FPU ADD

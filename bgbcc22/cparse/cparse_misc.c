@@ -502,6 +502,7 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(name, "Java"))lang=BGBCC_LANG_JAVA;
 		if(!bgbcp_strcmp(name, "S"))lang=BGBCC_LANG_ASM;
 		if(!bgbcp_strcmp(name, "ASM"))lang=BGBCC_LANG_ASM;
+		if(!bgbcp_strcmp(name, "V"))lang=BGBCC_LANG_VERILOG;
 		if(lang)return(lang);
 
 		if(!bgbcp_strcmp(name, "c"))lang=BGBCC_LANG_C;
@@ -514,6 +515,7 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(name, "java"))lang=BGBCC_LANG_JAVA;
 		if(!bgbcp_strcmp(name, "s"))lang=BGBCC_LANG_ASM;
 		if(!bgbcp_strcmp(name, "asm"))lang=BGBCC_LANG_ASM;
+		if(!bgbcp_strcmp(name, "v"))lang=BGBCC_LANG_VERILOG;
 		if(lang)return(lang);
 
 		s=name+strlen(name);
@@ -620,6 +622,11 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".AS"))lang=BGBCC_IMGFMT_ASM;
 		if(!bgbcp_strcmp(s, ".s"))lang=BGBCC_IMGFMT_ASM;
 		if(!bgbcp_strcmp(s, ".S"))lang=BGBCC_IMGFMT_ASM;
+
+		if(!bgbcp_strcmp(s, ".v"))lang=BGBCC_LANG_VERILOG;
+		if(!bgbcp_strcmp(s, ".V"))lang=BGBCC_LANG_VERILOG;
+		if(!bgbcp_strcmp(s, ".sv"))lang=BGBCC_LANG_VERILOG;
+		if(!bgbcp_strcmp(s, ".SV"))lang=BGBCC_LANG_VERILOG;
 
 		if(!bgbcp_strcmp(s, ".wad"))	lang=BGBCC_FMT_WAD;
 		if(!bgbcp_strcmp(s, ".WAD"))	lang=BGBCC_FMT_WAD;

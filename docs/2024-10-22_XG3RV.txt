@@ -420,7 +420,7 @@ The additional X bits will be reserved for additional opcode.
 ** 1001-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLERP		Rm, Ro, Rn
 ** 1001-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUTX3L		Xm, Ro, Rn
 ** 1010-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLINTA		Rm, Ro, Rn
-** 1010-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLINT		Xm, Xo, Xn
+** 1010-oooooo-mmmmmm-0110-nnnnnn-10-0010 /? BLINT		Xm, Xo, Xn
 ** 1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL		Rm, Ro, Rn
 ** 1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX		Xm, Xo, Xn
 ** 1100-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLKUAB1		Rm, Ro, Rn
@@ -598,6 +598,9 @@ For the relative branch cases, these will be modified to be relative to BasePC a
 * BTSTT, Branch if !(Rm AND Rn)
 * BTSTF, Branch if (Rm AND Rn)
 
+Possible:
+* XG3L may require Rm to be X0 for BGT/BLE and BEQ/BNE.
+** BGTU and BLEU will be disallowed.
 
 
 === F2 Block Listing ===

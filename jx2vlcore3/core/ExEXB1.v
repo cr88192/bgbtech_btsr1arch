@@ -170,7 +170,8 @@ assign	tValShad32 = tValShad64[31:0];
 ExShad64D	exShad64(clock, reset,
 	regValRs[63:0],
 	regValXs[63:0],
-	regValRt[7:0],
+	regValRt[31:0],
+	regValRm[63:0],
 	tValShad64,
 	opUIxt[5:0], idLane);
 

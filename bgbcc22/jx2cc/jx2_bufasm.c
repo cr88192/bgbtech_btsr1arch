@@ -1912,6 +1912,9 @@ int mfl;
 {"csrrsi",		BGBCC_SH_NMID_CSRRSI,	2},
 {"csrrci",		BGBCC_SH_NMID_CSRRCI,	2},
 
+{"csrr",		BGBCC_SH_NMID_CSRR,		2},
+{"csrw",		BGBCC_SH_NMID_CSRW,		2},
+
 
 {"fadd.d",		BGBCC_SH_NMID_FADD,		0},
 {"fsub.d",		BGBCC_SH_NMID_FSUB,		0},

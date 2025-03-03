@@ -1282,6 +1282,8 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 				if(!bgbcp_strcmp(tag, "__unaligned"))i=BGBCC_TYFL_PACKED;
 				if(!bgbcp_strcmp(tag, "__restrict"))i=BGBCC_TYFL_RESTRICT;
 
+				if(!bgbcp_strcmp(tag, "__aligned"))i=BGBCC_TYFL_INLINE;
+
 				if(!bgbcp_strcmp(tag, "__wide"))i=BGBCC_TYFL_WIDE;
 
 				if(!bgbcp_strcmp(tag, "__ltlendian"))i=BGBCC_TYFL_LTLENDIAN;
@@ -2792,6 +2794,50 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 //	if(!bgbcp_strcmp(b, "interface"))return(BGBCP_DefClassJ(ctx, str));
 //	if(!bgbcp_strcmp4(b, "enum"))return(BGBCP_DefClassJ(ctx, str));
 
+	if(ctx->lang==BGBCC_LANG_VERILOG)
+	{
+		if(!bgbcp_strcmp(b, "reg") ||
+			!bgbcp_strcmp(b, "wire") ||
+			!bgbcp_strcmp(b, "input") ||
+			!bgbcp_strcmp(b, "output") ||
+			!bgbcp_strcmp4(b, "inout"))
+		{
+			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+
+			bty=bgbcc_strdup(b);
+		
+			s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+			if(!bgbcp_strcmp1(b2, "[") && (ty==BTK_BRACE))
+			{
+				s=s1;
+				n1=BGBCP_Expression(ctx, &s);
+				n2=NULL;
+				s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+				if(!bgbcp_strcmp1(b2, ":"))
+				{
+					s=s1;
+					n2=BGBCP_Expression(ctx, &s);
+					s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
+				}
+				if(!bgbcp_strcmp1(b2, "]"))
+				{
+					s=s1;
+				}
+
+				n=BCCX_NewCst2(&bgbcc_rcst_type, "type",
+					BCCX_NewCst1V(&bgbcc_rcst_left, "left", n1),
+					BCCX_NewCst1V(&bgbcc_rcst_right, "right", n2));
+			}else
+			{
+				n=BCCX_NewCst(&bgbcc_rcst_type, "type");
+			}
+	
+			BCCX_SetCst(n, &bgbcc_rcst_name, "name", bty);
+			*str=s;
+			return(n);
+		}
+	}
+
 	if(!bgbcp_strcmp(b, "class") ||
 		!bgbcp_strcmp(b, "struct") ||
 		!bgbcp_strcmp(b, "union") ||
@@ -3016,6 +3062,9 @@ BCCX_Node *BGBCP_DefType(BGBCP_ParseState *ctx, char **str)
 	if(ctx->lang==BGBCC_LANG_BS2)
 		return(BGBCP_DefTypeJ(ctx, str));
 	if(ctx->lang==BGBCC_LANG_BS)
+		return(BGBCP_DefTypeJ(ctx, str));
+
+	if(ctx->lang==BGBCC_LANG_VERILOG)
 		return(BGBCP_DefTypeJ(ctx, str));
 
 	return(NULL);

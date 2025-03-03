@@ -1737,7 +1737,8 @@ int btesh2_tkfat_stricmp(byte *str1, byte *str2)
 	cs1=str1;
 	cs2=str2;
 	i1=*cs1; i2=*cs2;
-	while(*cs1 && *cs2)
+//	while(*cs1 && *cs2)
+	while(i1 && i2)
 	{
 		i1=*cs1++;
 		i2=*cs2++;
@@ -1749,6 +1750,7 @@ int btesh2_tkfat_stricmp(byte *str1, byte *str2)
 		if(i1!=i2)
 			break;
 	}
+//	i1=*cs1; i2=*cs2;
 	if(i1>i2)return(1);
 	if(i2>i1)return(-1);
 	return(0);
