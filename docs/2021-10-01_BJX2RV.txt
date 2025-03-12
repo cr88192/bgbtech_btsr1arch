@@ -212,11 +212,11 @@ Listing:
 * iiiiiii-iiiii-mmmmm-000-nnnnn-00-10011  ADDI		Rn, Rm, Imm12_I
 * 000000i-iiiii-mmmmm-001-nnnnn-00-10011  SLLI		Rn, Rm, Imm12
 
-* 000010i-iiiii-mmmmm-001-nnnnn-00-10011  SLLI.UW	Rn, Rm, Imm12 (ZBA)
-* 001000i-iiiii-mmmmm-001-nnnnn-00-10011  SLOI		Rn, Rm, Imm12 (ZBB)
-* 00101ii-iiiii-mmmmm-001-nnnnn-00-10011  BSETI		Rn, Rm, Imm12 (ZBB)
-* 01001ii-iiiii-mmmmm-001-nnnnn-00-10011  BCLRI		Rn, Rm, Imm12 (ZBB)
-* 01101ii-iiiii-mmmmm-001-nnnnn-00-10011  BINVI		Rn, Rm, Imm12 (ZBB)
+* 000010i-iiiii-mmmmm-001-nnnnn-00-10011  SLLI.UW	Rn, Rm, Imm6 (ZBA)
+* 001000i-iiiii-mmmmm-001-nnnnn-00-10011  SLOI		Rn, Rm, Imm6 (ZBB)
+* 00101ii-iiiii-mmmmm-001-nnnnn-00-10011  BSETI		Rn, Rm, Imm7 (ZBB)
+* 01001ii-iiiii-mmmmm-001-nnnnn-00-10011  BCLRI		Rn, Rm, Imm7 (ZBB)
+* 01101ii-iiiii-mmmmm-001-nnnnn-00-10011  BINVI		Rn, Rm, Imm7 (ZBB)
 
 * 0110000-00000-mmmmm-001-nnnnn-00-10011  CLZ		Rn, Rm (ZBB)
 * 0110000-00001-mmmmm-001-nnnnn-00-10011  CTZ		Rn, Rm (ZBB)
@@ -243,12 +243,12 @@ Listing:
 * ppppp1i-iiiii-mmmmm-101-nnnnn-00-10011  FSR		Rn, Rm, Imm6 (ZBT)
 * 001000i-iiiii-mmmmm-101-nnnnn-00-10011  SROI		Rn, Rm, Imm12 (ZBB)
 
-* 010000i-iiiii-mmmmm-101-nnnnn-00-10011  SRAI		Rn, Rm, Imm12
-* 01001ii-iiiii-mmmmm-101-nnnnn-00-10011  BEXTI		Rn, Rm, Imm12 (ZBB)
-* 00101ii-iiiii-mmmmm-101-nnnnn-00-10011  BORCI		Rn, Rm, Imm12 (ZBB)
-* 01101ii-iiiii-mmmmm-101-nnnnn-00-10011  GREVI		Rn, Rm, Imm12 (ZBB)
+* 010000i-iiiii-mmmmm-101-nnnnn-00-10011  SRAI		Rn, Rm, Imm6
+* 01001ii-iiiii-mmmmm-101-nnnnn-00-10011  BEXTI		Rn, Rm, Imm7 (ZBB)
+* 00101ii-iiiii-mmmmm-101-nnnnn-00-10011  BORCI		Rn, Rm, Imm7 (ZBB)
+* 01101ii-iiiii-mmmmm-101-nnnnn-00-10011  GREVI		Rn, Rm, Imm7 (ZBB)
 
-* 011000i-iiiii-mmmmm-101-nnnnn-00-10011  RORI		Rn, Rm, Imm12 (ZBB)
+* 011000i-iiiii-mmmmm-101-nnnnn-00-10011  RORI		Rn, Rm, Imm6 (ZBB)
 * 0110100-01000-mmmmm-101-nnnnn-00-10011  REV8.H	Rn, Rm (ZBP)
 * 0110101-11111-mmmmm-101-nnnnn-00-10011  REV		Rn, Rm (ZBP)
 

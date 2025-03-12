@@ -146,6 +146,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->has_qmul=0;
 
 	shctx->has_ldop=0;
+	shctx->has_bitmov=0;
 	shctx->has_fpim=0;
 	shctx->has_fpvsf=0;
 
@@ -261,6 +262,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "loadop"))
 		shctx->has_ldop|=1;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "bitmov"))
+		shctx->has_bitmov|=1;
 
 	if(	BGBCC_CCXL_CheckForOptStr(ctx, "wexj") ||
 		BGBCC_CCXL_CheckForOptStr(ctx, "jumbo"))
@@ -604,6 +608,13 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2=0;
 		shctx->has_simdx2=0;
 
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvldix"))
+		{
+			shctx->has_rvzba|=16;	//Load/Store Indexed
+			shctx->has_pushx2|=1;	//LX / SX
+//			shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
+		}
+
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo") ||
 			BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo96"))
 		{
@@ -724,6 +735,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "xg2mode"))
 		{ shctx->is_fixed32|=3; }
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "fix32"))
+		{ shctx->is_fixed32|=1; }
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "nowex"))
 		shctx->use_wexmd=0;
@@ -1716,8 +1730,11 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_CALL_INTRIN:		s0="CALL_INTRIN"; break;
 			case CCXL_VOP_ASMINLINE:		s0="ASM_INLINE"; break;
 			case CCXL_VOP_TEMP_PHI:			s0="TEMP_PHI"; break;
-
+//			case CCXL_VOP_TRINARY:			s0="TRINARY"; break;
 			case CCXL_VOP_CSRV_RET:			s0="CSRV_RET"; break;
+			case CCXL_VOP_LDIXIMMA:			s0="LDIXIMMA"; break;
+			case CCXL_VOP_LDIXA:			s0="LDIXA"; break;
+			case CCXL_VOP_BITMOV:			s0="BITMOV"; break;
 		}
 
 		if(s0)
@@ -1851,6 +1868,7 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	static int rec=0;
 	ccxl_register reg1;
 	char *s0;
+	int i0, i1, i2, i3;
 	int i, j, k;
 
 //	BGBCC_JX2C_CompilePrintVirtOp(ctx, sctx, obj, op);
@@ -2232,6 +2250,16 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 
 	case CCXL_VOP_TEMP_PHI:
 		BGBCC_JX2C_EmitTempPhiRegister(ctx, sctx, op->srca);
+		break;
+
+	case CCXL_VOP_BITMOV:
+		i0=(s16)(op->imm.ul>> 0);
+		i1=(s16)(op->imm.ul>>16);
+		i2=(s16)(op->imm.ul>>32);
+		BGBCC_JX2C_EmitBitMovVRegVRegVReg(ctx, sctx,
+			op->type,	op->dst,
+			op->srca,	op->srcb,
+			i0, i1, i2);
 		break;
 
 	default:

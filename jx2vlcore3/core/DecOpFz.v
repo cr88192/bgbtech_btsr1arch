@@ -293,6 +293,7 @@ reg		opIsNotFx;
 reg		opIsJumbo;
 reg		opIsJumboAu;
 reg		opIsJumbo96;
+reg		opIsJumboImm;
 reg		opIsImm9;
 reg		opIsImm4R;
 reg		opIsImmSplit;
@@ -440,6 +441,7 @@ begin
 	opIsJumbo96	= istrJBits[25];
 //	opIsJumboAu	= istrJBits[26];
 	opIsJumboAu	= istrJBits[26] && opIsJumbo;
+	opIsJumboImm	= !istrJBits[26] && opIsJumbo;
 
 `ifdef jx2_enable_xgpr
 
@@ -2916,7 +2918,19 @@ begin
 				opIty	= JX2_ITY_SB;
 				
 `ifdef jx2_shadq_bitmov
-				if(opIsJumbo)
+				if(opIsImm4R)
+				begin
+					opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKQ3;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_XB;
+					if(opExQ)
+					begin
+						opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKX3;
+						opUCty		= JX2_IUC_WX;
+					end
+				end
+
+				if(opIsJumboImm)
 				begin
 					opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKQ3;
 					opFmid		= JX2_FMID_REGIMMREG;

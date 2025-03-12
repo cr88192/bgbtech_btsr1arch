@@ -543,6 +543,7 @@ Base, Q1..Q3:
 
 #define CCXL_VOP_LDIXIMMA			0x34		//load index (immed)
 #define CCXL_VOP_LDIXA				0x35
+#define CCXL_VOP_BITMOV				0x36
 
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used
@@ -797,6 +798,7 @@ bccx_cxstate bgbcc_rcst_catch;
 bccx_cxstate bgbcc_rcst_charstring;
 bccx_cxstate bgbcc_rcst_class;
 bccx_cxstate bgbcc_rcst_classdef;
+bccx_cxstate bgbcc_rcst_colon;
 bccx_cxstate bgbcc_rcst_comma;
 bccx_cxstate bgbcc_rcst_complex;
 bccx_cxstate bgbcc_rcst_cond;

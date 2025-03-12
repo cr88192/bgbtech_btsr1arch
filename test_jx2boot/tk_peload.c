@@ -7,6 +7,94 @@ int TKPE_LoadStaticELF(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 
 byte tkpe_imgend;
 
+void TKPE_MatchCopyL4(byte *ct, int ld, int ll)
+{
+	byte *cs1, *cs1e, *ct1;
+	u64 *cs1q, *ct1q, *cs1qe;
+	u64 tv, v0, v1, v2;
+
+	cs1=ct-ld; cs1e=cs1+ll;
+	if(ld>=24)
+	{
+		ct1=ct;
+		cs1q=(u64 *)cs1;
+		ct1q=(u64 *)ct1;
+		v0=cs1q[0];
+		v1=cs1q[1];
+		ct1q[0]=v0;
+		ct1q[1]=v1;
+
+		if(ll>16)
+		{
+			cs1qe=(u64 *)cs1e;
+			cs1q+=2;
+			ct1q+=2;
+			while(cs1q<cs1qe)
+			{
+				v0=cs1q[0];
+				v1=cs1q[1];
+				v2=cs1q[2];
+				cs1q+=3;
+				ct1q[0]=v0;
+				ct1q[1]=v1;
+				ct1q[2]=v2;
+				ct1q+=3;
+			}
+		}
+//		ct+=ll;
+	}else
+		if(ld>=8)
+	{
+		ct1=ct;
+		while(cs1<cs1e)
+		{
+			((u64 *)ct1)[0]=((u64 *)cs1)[0];
+			((u64 *)ct1)[1]=((u64 *)cs1)[1];
+			ct1+=16; cs1+=16;
+		}
+//		ct+=ll;
+	}else
+		if(ld>=4)
+	{
+		ct1=ct;
+		while(cs1<cs1e)
+		{
+			((u32 *)ct1)[0]=((u32 *)cs1)[0];
+			((u32 *)ct1)[1]=((u32 *)cs1)[1];
+			ct1+=8; cs1+=8;
+		}
+//		ct+=ll;
+	}else if(ld==1)
+	{
+		tv=*cs1;		tv|=tv<<8;
+		tv|=tv<<16;		tv|=tv<<32;
+		ct1=ct;
+		while(cs1<cs1e)
+		{
+			((u64 *)ct1)[0]=tv;
+			((u64 *)ct1)[1]=tv;
+			ct1+=16; cs1+=16;
+		}
+//		ct+=ll;
+	}else if(ld==2)
+	{
+		tv=*(u16 *)cs1;
+		tv|=tv<<16;		tv|=tv<<32;
+		ct1=ct;
+		while(cs1<cs1e)
+		{
+			((u64 *)ct1)[0]=tv;
+			((u64 *)ct1)[1]=tv;
+			ct1+=16; cs1+=16;
+		}
+//		ct+=ll;
+	}else
+	{
+		while(cs1<cs1e)
+			{ *ct++=*cs1++; }
+	}
+}
+
 byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 {
 	byte *cs, *cse;
@@ -14,7 +102,8 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 	byte *cs1, *cs1e, *ct1;
 //	register int tg, lr, ll, ld;
 	u64 *cs1q, *ct1q, *cs1qe;
-	u64 tv, v0, v1, v2;
+//	u64 tv, v0, v1, v2;
+	u64 v0, v1, v2;
 	int tg, lr, ll, ld;
 	int i;
 	
@@ -29,68 +118,6 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		tg=*cs++;
 		lr=(tg>>4)&15;
 		ll=(tg&15)+4;
-
-#if 0
-//		i=((tg&15)+1)|(((tg>>4)&15)+1);
-//		if(!(i&16))
-		if((lr!=15) && (ll!=19) && ((cs+20)<cse))
-		{
-			v0=((u64 *)cs)[0];
-			v1=((u64 *)cs)[1];
-			((u64 *)ct)[0]=v0;
-			((u64 *)ct)[1]=v1;
-			ct+=lr; cs+=lr;
-
-			ld=*(u16 *)cs;
-			cs+=2;
-			if(ld<20)
-				goto SLO;
-
-			cs1=ct-ld;
-			cs1q=(u64 *)cs1;
-			ct1q=(u64 *)ct;
-			v0=cs1q[0];
-			v1=cs1q[1];
-			v2=cs1q[2];
-			ct1q[0]=v0;
-			ct1q[1]=v1;
-			ct1q[2]=v2;
-			ct+=ll;
-			continue;
-		}
-#endif
-
-#if 0
-		if(lr==15)
-		{
-			i=*cs++;
-			while(i==255)
-				{ lr+=255; i=*cs++; }
-			lr+=i;
-		}
-		
-		ct1=ct; cs1=cs; cs1e=cs+lr;
-		v0=((u64 *)cs1)[0];
-		v1=((u64 *)cs1)[1];
-		((u64 *)ct1)[0]=v0;
-		((u64 *)ct1)[1]=v1;
-		if(lr>16)
-		{
-			ct1+=16; cs1+=16;
-			while(cs1<cs1e)
-			{
-	//			*(u64 *)ct1=*(u64 *)cs1;
-	//			ct1+=8; cs1+=8;
-
-				v0=((u64 *)cs1)[0];
-				v1=((u64 *)cs1)[1];
-				((u64 *)ct1)[0]=v0;
-				((u64 *)ct1)[1]=v1;
-				ct1+=16; cs1+=16;
-			}
-		}
-		ct+=lr; cs+=lr;
-#endif
 
 #if 1
 		if(lr==15)
@@ -130,8 +157,6 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 		ld=*(u16 *)cs;
 		cs+=2;
 		
-		SLO:
-		
 		if(!ld)
 		{
 			if(ll==5)
@@ -140,7 +165,6 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 			tkpe_imgend=1;
 			break;
 		}
-//		ll=(tg&15)+4;
 		if(ll==19)
 		{
 			i=*cs++;
@@ -149,111 +173,51 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 			ll+=i;
 		}
 #if 1
-		else if(ld>=20)
+		else
 		{
 			cs1=ct-ld;
 			cs1q=(u64 *)cs1;
 			ct1q=(u64 *)ct;
-			v0=cs1q[0];
-			v1=cs1q[1];
-			v2=cs1q[2];
-			ct1q[0]=v0;
-			ct1q[1]=v1;
-			ct1q[2]=v2;
-			ct+=ll;
-			continue;
+			if(ld>=20)
+			{
+				v0=cs1q[0];
+				v1=cs1q[1];
+				v2=cs1q[2];
+				ct1q[0]=v0;
+				ct1q[1]=v1;
+				ct1q[2]=v2;
+				ct+=ll;
+				continue;
+			}
+			else if(ld>=8)
+			{
+				v0=cs1q[0];
+				ct1q[0]=v0;
+				v1=cs1q[1];
+				ct1q[1]=v1;
+				v2=cs1q[2];
+				ct1q[2]=v2;
+				ct+=ll;
+				continue;
+			}
+			else if(ld==1)
+			{
+				v0=*cs1;		v0|=v0<<8;
+				v0|=v0<<16;		v0|=v0<<32;
+				ct1q[0]=v0;
+				ct1q[1]=v0;
+				ct1q[2]=v0;
+				ct+=ll;
+				continue;
+			}
 		}
 #endif
-		
-		cs1=ct-ld; cs1e=cs1+ll;
-		if(ld>=24)
-		{
-			ct1=ct;
-			cs1q=(u64 *)cs1;
-			ct1q=(u64 *)ct1;
-			v0=cs1q[0];
-			v1=cs1q[1];
-			ct1q[0]=v0;
-			ct1q[1]=v1;
 
-			if(ll>16)
-			{
-				cs1qe=(u64 *)cs1e;
-				cs1q+=2;
-				ct1q+=2;
-				while(cs1q<cs1qe)
-				{
-					v0=cs1q[0];
-					v1=cs1q[1];
-					v2=cs1q[2];
-					cs1q+=3;
-					ct1q[0]=v0;
-					ct1q[1]=v1;
-					ct1q[2]=v2;
-					ct1q+=3;
-				}
-			}
-			ct+=ll;
-		}else
-			if(ld>=8)
-//		if(ld>8)
-//		if(ld>4)
-//		if(0)
-		{
-			ct1=ct;
-			while(cs1<cs1e)
-			{
-				((u64 *)ct1)[0]=((u64 *)cs1)[0];
-				((u64 *)ct1)[1]=((u64 *)cs1)[1];
-				ct1+=16; cs1+=16;
-			}
-//				{ *(u64 *)ct1=*(u64 *)cs1; ct1+=8; cs1+=8; }
-//				{ *(u32 *)ct1=*(u32 *)cs1; ct1+=4; cs1+=4; }
-			ct+=ll;
-//			__debugbreak();
-		}else
-//			if(ld>4)
-			if(ld>=4)
-//		if(0)
-		{
-			ct1=ct;
-			while(cs1<cs1e)
-			{
-				((u32 *)ct1)[0]=((u32 *)cs1)[0];
-				((u32 *)ct1)[1]=((u32 *)cs1)[1];
-				ct1+=8; cs1+=8;
-			}
-			ct+=ll;
-//			__debugbreak();
-		}else if(ld==1)
-		{
-			tv=*cs1;		tv|=tv<<8;
-			tv|=tv<<16;		tv|=tv<<32;
-			ct1=ct;
-			while(cs1<cs1e)
-			{
-				((u64 *)ct1)[0]=tv;
-				((u64 *)ct1)[1]=tv;
-				ct1+=16; cs1+=16;
-			}
-			ct+=ll;
-		}else if(ld==2)
-		{
-			tv=*(u16 *)cs1;
-			tv|=tv<<16;		tv|=tv<<32;
-			ct1=ct;
-			while(cs1<cs1e)
-			{
-				((u64 *)ct1)[0]=tv;
-				((u64 *)ct1)[1]=tv;
-				ct1+=16; cs1+=16;
-			}
-			ct+=ll;
-		}else
-		{
-			while(cs1<cs1e)
-				{ *ct++=*cs1++; }
-		}
+#if 1
+		TKPE_MatchCopyL4(ct, ld, ll);
+		ct+=ll;
+		continue;
+#endif
 	}
 	
 	tg=0;	lr=0;

@@ -1292,7 +1292,8 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 		{
 //			s=BGBCP_Token(s, b, &ty); //[
 			s=s1;
-			n1=BGBCP_Expression(ctx, &s);
+//			n1=BGBCP_Expression(ctx, &s);
+			n1=BGBCP_ExpressionColon(ctx, &s);
 			s=BGBCP_Token(s, b, &ty); //]
 			n=BCCX_NewCst2(&bgbcc_rcst_getindex, "getindex",
 				BCCX_NewCst1V(&bgbcc_rcst_array, "array", n),
@@ -2205,4 +2206,32 @@ BCCX_Node *BGBCP_Expression2(BGBCP_ParseState *ctx, char **str)
 	return(n);
 }
 #endif
+
+BCCX_Node *BGBCP_ExpressionColon(BGBCP_ParseState *ctx, char **str)
+{
+	char b[256], b2[256];
+	char *s, *t;
+	int ty, ty2;
+	BCCX_Node *n, *n1, *n2, *n3;
+
+	s=*str;
+	n=BGBCP_ExpressionEquals(ctx, &s);
+	if(!n) { *str=NULL; return(n); }
+
+	while(1)
+	{
+		BGBCP_Token(s, b, &ty);
+		if(ty!=BTK_SEPERATOR)break;
+		if(bgbcp_strcmp1(b, ":"))break;
+
+		s=BGBCP_Token(s, b, &ty);
+		n1=BGBCP_ExpressionEquals(ctx, &s);
+		n=BCCX_NewCst2(&bgbcc_rcst_colon, "colon",
+			BCCX_NewCst1V(&bgbcc_rcst_left, "left", n),
+			BCCX_NewCst1V(&bgbcc_rcst_right, "right", n1));
+	}
+
+	*str=s;
+	return(n);
+}
 

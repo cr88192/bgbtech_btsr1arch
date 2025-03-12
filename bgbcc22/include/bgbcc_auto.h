@@ -200,6 +200,7 @@ BCCX_Node *BGBCP_ExpressionEquals(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_ExpressionComma(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_Expression(BGBCP_ParseState *ctx, char **str);
 BCCX_Node *BGBCP_Expression2(BGBCP_ParseState *ctx, char **str);
+BCCX_Node *BGBCP_ExpressionColon(BGBCP_ParseState *ctx, char **str);
 //AHSRC:cparse/cparse_reduce.c
 int BGBCP_IsUnaryP(BGBCP_ParseState *ctx, BCCX_Node *l, char *op);
 int BGBCP_IsBinaryP(BGBCP_ParseState *ctx, BCCX_Node *l, char *op);
@@ -976,6 +977,7 @@ ccxl_status BGBCC_CCXL_EmitVaArg(BGBCC_TransState *ctx,ccxl_type type, ccxl_regi
 ccxl_status BGBCC_CCXL_EmitCSelCmp(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, ccxl_type ptype, int cmpop, ccxl_register srcc, ccxl_register srcd);
 ccxl_status BGBCC_CCXL_EmitCSelCmpZero(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, ccxl_type ptype, int cmpop, ccxl_register srcc);
 ccxl_status BGBCC_CCXL_InlineAsmBlob(BGBCC_TransState *ctx, char *text);
+ccxl_status BGBCC_CCXL_EmitBitMov(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, int shl, int mlo, int mhi);
 ccxl_status BGBCC_CCXL_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_CCXL_AddResourceData(BGBCC_TransState *ctx,char *name, byte *buf, int sz, fourcc imgfmt);
 ccxl_status BGBCC_CCXL_SetupContextForArch(BGBCC_TransState *ctx);
@@ -1483,6 +1485,7 @@ int BGBCC_IsEmitRil(BGBCC_TransState *ctx);
 void BGBCC_CCXLR3_EmitArgInt(BGBCC_TransState *ctx, s64 val);
 void BGBCC_CCXLR3_EmitArgTag(BGBCC_TransState *ctx, s64 val);
 void BGBCC_CCXLR3_EmitArgFloat(BGBCC_TransState *ctx, f64 val);
+void BGBCC_CCXLR3_EmitArgUIntPair(BGBCC_TransState *ctx, u32 val1, u32 val2);
 int BGBCC_CCXLR3_CheckEmitRIL(BGBCC_TransState *ctx);
 int BGBCC_CCXL_CheckIsStaticLib(BGBCC_TransState *ctx);
 void BGBCC_CCXLR3_EmitBufUVLI(byte **rct, u64 val);
@@ -1500,6 +1503,7 @@ f64 BGBCC_CCXLR3_ReadFVLI(BGBCC_TransState *ctx, byte **rcs);
 int BGBCC_CCXLR3_ReadXFVLI(BGBCC_TransState *ctx, byte **rcs,s64 *rlo, s64 *rhi);
 u32 BGBCC_CCXLR3_ReadOpVLI(BGBCC_TransState *ctx, byte **rcs);
 int BGBCC_CCXLR3_ReadTag(BGBCC_TransState *ctx, byte **rcs);
+int BGBCC_CCXLR3_ReadUPairVLI(BGBCC_TransState *ctx, byte **rcs,int *rv0, int *rv1);
 int BGBCC_CCXLR3_ReadTextBlob(BGBCC_TransState *ctx, byte **rcs,byte **rbuf, int *rsz);
 char *BGBCC_CCXLR3_ReadString(BGBCC_TransState *ctx, byte **rcs);
 ccxl_label BGBCC_CCXLR3_ReadLabel(BGBCC_TransState *ctx, byte **rcs);
@@ -1633,6 +1637,11 @@ ccxl_status BGBCC_CCXL_StackLitTypeSig(BGBCC_TransState *ctx, char *sig);
 ccxl_status BGBCC_CCXL_StackVaStart(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_StackVaEnd(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_StackVaArg(BGBCC_TransState *ctx);
+ccxl_status BGBCC_CCXL_StackBitLoad(BGBCC_TransState *ctx,int mlo, int mhi);
+ccxl_status BGBCC_CCXL_StackBitStore(BGBCC_TransState *ctx,int mlo, int mhi);
+ccxl_status BGBCC_CCXL_StackBitMove(BGBCC_TransState *ctx,int mdlo, int mdhi, int mslo, int mshi);
+ccxl_status BGBCC_CCXL_StackBitStoreRef(BGBCC_TransState *ctx,int mlo, int mhi, char *name);
+ccxl_status BGBCC_CCXL_StackBitMoveRef(BGBCC_TransState *ctx,int mdlo, int mdhi, int mslo, int mshi, char *name);
 //AHSRC:ccxl/ccxl_stack_bin.c
 char *BGBCC_CCXL_StackGetSigBinary(BGBCC_TransState *ctx,ccxl_type lty, ccxl_type rty);
 char *BGBCC_CCXL_StackGetNameBinaryOverload(BGBCC_TransState *ctx, char *op);
@@ -2823,6 +2832,7 @@ int BGBCC_JX2DA_EmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn);
 int BGBCC_JX2DA_EmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int rn);
 int BGBCC_JX2DA_EmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg);
 int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 imm, int rn);
+int BGBCC_JX2DA_EmitOpRegRegImmReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, s64 imm, int rn);
 int BGBCC_JX2DA_EmitOpRegStReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2DA_EmitOpLdRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 int BGBCC_JX2DA_EmitOpRegStDecReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
@@ -3063,6 +3073,7 @@ int BGBCC_JX2_ComposeJumboRegImmRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ro
 int BGBCC_JX2_ComposeJumboRegImmRegRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, s64 imm, int preg, int dreg);
 int BGBCC_JX2_ComposeJumboRegRegImmRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, int treg, s64 imm, int dreg);
 int BGBCC_JX2_ComposeJumboRegRegRegRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, int treg, int preg, int dreg);
+int BGBCC_JX2_ComposeJumboRegImm24RegRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2, int sreg, s64 imm, int preg, int dreg);
 int BGBCC_JX2_ComposeOp64RegImm17sRegF0(BGBCC_JX2_Context *ctx,int *ropw1, int *ropw2, int *ropw3, int *ropw4, int topw1, int topw2,	int topw3, int topw4, int sreg, s64 imm, int dreg);
 //AHSRC:jx2cc/jx2_emit_bra.c
 int BGBCC_JX2_ModelIsLabel16P(BGBCC_JX2_Context *ctx);
@@ -3578,6 +3589,7 @@ int BGBCC_JX2C_EmitPredCmpVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context
 int BGBCC_JX2C_EmitPredCmpVRegZeroQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, int cmp);
 int BGBCC_JX2C_EmitCSeltSelectVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg);
 int BGBCC_JX2C_EmitCSeltCompareVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int cmp, ccxl_register sreg, ccxl_register treg);
+int BGBCC_JX2C_EmitBitMovVRegVRegVRegQLong(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int mshl, int mlo, int mhi);
 //AHSRC:jx2cc/jx2_lvarith.c
 int BGBCC_JX2C_EmitBinaryVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register treg);
 int BGBCC_JX2C_EmitBinaryVRegVRegVRegVariant(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, int opr, ccxl_register sreg, ccxl_register treg);
@@ -3804,6 +3816,7 @@ int BGBCC_JX2C_EmitMovVRegImm(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, cc
 int BGBCC_JX2C_SizeofVar(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg);
 int BGBCC_JX2C_EmitPredCmpVRegVRegInt(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
 int BGBCC_JX2C_EmitPredCmpVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg, ccxl_register treg, int cmp);
+int BGBCC_JX2C_EmitBitMovVRegVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register sreg, ccxl_register treg, int mshl, int mlo, int mhi);
 //AHSRC:jx2cc/jx2_wexify.c
 int BGBCC_JX2_CheckOps32GetRegs(BGBCC_JX2_Context *sctx, int opw1, int opw2, u16 *rrs, u16 *rrt, u16 *rrn, u16 *rrp, u16 *rspr, u16 *rspw, int *rspfl);
 int BGBCC_JX2_CheckOps32ReadsRn(BGBCC_JX2_Context *sctx, int opw1, int opw2);

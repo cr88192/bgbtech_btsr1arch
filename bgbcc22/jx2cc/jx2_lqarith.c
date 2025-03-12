@@ -2964,3 +2964,87 @@ int BGBCC_JX2C_EmitCSeltCompareVRegVRegQLong(
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
 }
+
+
+int BGBCC_JX2C_EmitBitMovVRegVRegVRegQLong(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type, ccxl_register dreg,
+	ccxl_register sreg, ccxl_register treg,
+	int mshl, int mlo, int mhi)
+{
+	int csreg, ctreg, cdreg, csreg2, ctreg2;
+	s64 imm, shl;
+	int flip, noflip, doptrshl;
+	int nm1, nm2, nm3, cmp1;
+	int tr0, tr1;
+	int i;
+
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
+	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
+
+	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, sreg))
+	{
+		i=BGBCC_CCXL_GetRegImmIntValue(ctx, sreg);
+		if(i==0)
+		{
+			if((mlo==0) && (mhi>0) && (mshl<=0))
+			{
+				/* Simple bitfield extract... */
+				ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, treg);
+				cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+
+				imm=(1<<(mhi+1))-1;
+				BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_SHLDQ,
+					ctreg, mshl, cdreg);
+				BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_AND,
+					cdreg, imm, cdreg);
+
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
+				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+				return(1);
+			}
+		}
+	}
+
+	csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+	ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, treg);
+	cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+
+	if(sctx->has_bitmov&1)
+	{
+		imm=(mshl&255)|((mlo&255)<<8)|(((mhi+1)&255)<<16);
+		BGBCC_JX2_EmitOpRegRegImmReg(sctx, BGBCC_SH_NMID_BITMOV,
+			ctreg, csreg, imm, cdreg);
+	}else
+	{
+//		if((mlo==0) && (mhi>0) && (mshl<=0))
+//		{
+//		}else
+		if(1)
+		{
+			imm=((1LL<<(mhi+1))-1)&(~((1<<mlo)-1));
+			tr0=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx,
+				BGBCC_SH_REGCLS_QGR);
+			tr1=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx,
+				BGBCC_SH_REGCLS_QGR);
+
+			BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_SHLDQ,
+				ctreg, mshl, tr0);
+			BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_AND,
+				tr0, imm, tr0);
+			BGBCC_JX2_EmitOpRegImmReg(sctx, BGBCC_SH_NMID_AND,
+				csreg, ~imm, tr1);
+			BGBCC_JX2_EmitOpRegRegReg(sctx, BGBCC_SH_NMID_OR,
+				tr0, tr1, cdreg);
+
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr1);
+		}
+	}
+
+	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
+	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+	return(1);
+}

@@ -217,6 +217,52 @@ While theoretically these don't offer much over MUL, they may hint to use a fast
 * Result is implementation defined if values are out of range.
 
 
+=== Extended Compare ===
+
+* 0100000-ttttt-mmmmm-010-nnnnn-01-10011  SGE		Rn, Rm, Rt	(BGB)
+* 1000000-ttttt-mmmmm-010-nnnnn-01-10011  SEQ		Rn, Rm, Rt	(BGB)
+* 1100000-ttttt-mmmmm-010-nnnnn-01-10011  SNE		Rn, Rm, Rt	(BGB)
+
+* 0100000-ttttt-mmmmm-011-nnnnn-01-10011  SGEU		Rn, Rm, Rt	(BGB)
+* 1000000-ttttt-mmmmm-011-nnnnn-01-10011  STST		Rn, Rm, Rt	(BGB)
+* 1100000-ttttt-mmmmm-011-nnnnn-01-10011  SNTST		Rn, Rm, Rt	(BGB)
+
+These would fill in the missing compare operators.
+
+
+=== BITMOV ===
+
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-01-11111  -
+* 0000000-ttttt-mmmmm-101-nnnnn-01-10011  BITMOV	Rn, Rm, Rt, Imm21s
+
+* 0iiiiii-iiiii-jjjjj-100-kkkkk-01-11111  -
+* 0100000-ttttt-mmmmm-101-nnnnn-01-10011  BITMOVX	Rn, Rm, Rt, Imm21s
+
+Move a value from one bitfield to another.
+The immediate field from the jumbo prefix is decoded as a single immediate.
+
+Imm21:
+* ( 7: 0): Shift to Apply
+* (13: 8): Mask Low Bit (L)
+* (19:14): Mask High Bit (H)
+* (   20): Mask Low/High Extension (X, BITMOVX)
+
+The value in Rm is shifted and then combined with the value in Ro according to the mask encoded in the L and H fields of the immediate.
+
+For mask generation (BITMOV):
+* L: Generates 1s for bits GE L;
+* H: Generates 1s for bits LT H;
+* H GT L: Combine using AND
+* H LE L: Combine using OR 
+
+The handling will be modified for BITMOVX:
+* H GT L, X will encode whether the bitfield is in the low or high half.
+* H LE L, X will indicate a bitfield crossing a 64-bit boundary.
+** The X bit will be applied to H, with L being left clear.
+
+The shift will be encoded as a signed 8 bit shift from -63 to 63 for BITMOV or -127 to 127 for BITMOVX. Positive values encode left shifts and negative values encode right shifts.
+
+
 === Jumbo-Mini-48 Encodings ===
 
 These are a set of "mini" encodings that encode an instruction in 48 bits.

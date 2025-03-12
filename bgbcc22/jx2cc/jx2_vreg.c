@@ -3211,3 +3211,20 @@ int BGBCC_JX2C_EmitPredCmpVRegVReg(
 	BGBCC_CCXL_StubError(ctx);
 	return(0);
 }
+
+int BGBCC_JX2C_EmitBitMovVRegVRegVReg(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	ccxl_type type, ccxl_register dreg,
+	ccxl_register sreg, ccxl_register treg,
+	int mshl, int mlo, int mhi)
+{
+	if(	BGBCC_CCXL_TypeSmallLongP(ctx, type))
+	{
+		return(BGBCC_JX2C_EmitBitMovVRegVRegVRegQLong(ctx, sctx,
+			type, dreg, sreg, treg, mshl, mlo, mhi));
+	}
+
+	BGBCC_CCXL_StubError(ctx);
+	return(0);
+}

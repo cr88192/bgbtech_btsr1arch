@@ -1991,6 +1991,35 @@ ccxl_status BGBCC_CCXL_InlineAsmBlob(BGBCC_TransState *ctx, char *text)
 	return(0);
 }
 
+
+ccxl_status BGBCC_CCXL_EmitBitMov(BGBCC_TransState *ctx,
+	ccxl_type type,
+	ccxl_register dst,
+	ccxl_register srca,
+	ccxl_register srcb,
+	int shl, int mlo, int mhi)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_BITMOV;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->dst=dst;
+	op->srca=srca;
+	op->srcb=srcb;
+	op->imm.ul=
+		((shl&65535ULL)<< 0) |
+		((mlo&65535ULL)<<16) |
+		((mhi&65535ULL)<<32) ;
+	op->immty=CCXL_VOPITY_UI;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
 #endif
 
 

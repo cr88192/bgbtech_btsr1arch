@@ -2228,7 +2228,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear10(
 				j=j+szrng;
 			}
 			
-			rngb=160;
+//			rngb=160;
+			rngb=720;
 		}
 			
 		k=BGBCC_JX2_EmitGetOffs(ctx);
@@ -2504,6 +2505,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear12B(
 	ra=BGBCC_JX2_EmitCheckAutoLabelNearClass(ctx, lbl, nmid);
 	if((ra>0) && (ra<=2))
 		return(ra);
+	if((ra>(16+0)) && (ra<=(16+2)))
+		return(ra);
 	return(0);
 }
 
@@ -2515,6 +2518,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear16B(
 	ra=BGBCC_JX2_EmitCheckAutoLabelNearClass(ctx, lbl, nmid);
 	if((ra>0) && (ra<=3))
 		return(ra);
+	if((ra>(16+0)) && (ra<=(16+3)))
+		return(ra);
 	return(0);
 }
 
@@ -2525,6 +2530,8 @@ int BGBCC_JX2_EmitCheckAutoLabelNear20B(
 	
 	ra=BGBCC_JX2_EmitCheckAutoLabelNearClass(ctx, lbl, nmid);
 	if((ra>0) && (ra<=4))
+		return(ra);
+	if((ra>(16+0)) && (ra<=(16+4)))
 		return(ra);
 	return(0);
 }

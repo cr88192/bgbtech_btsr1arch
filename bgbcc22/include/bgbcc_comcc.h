@@ -188,6 +188,7 @@ byte has_fpvsf;		//Has FPU Immediates
 byte has_jcmp;		//Has Compare+Branch
 
 byte has_rvzba;		//Has RV BitManip
+byte has_bitmov;	//Has BITMOV
 
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 byte abi_noexcept;	//Disable Exceptions

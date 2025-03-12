@@ -2127,6 +2127,16 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_SHLR;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_SHLR_RegRegReg;
+				if(jbits&0x01000000U)
+				{
+					op->imm=
+						((jbits<<0)&0x003FFF) |
+						((jbits<<2)&0x3F0000) ;
+					op->nmid=BJX2_NMID_BITMOV;
+					op->fmid=BJX2_FMID_REGREGIMMREG;
+					op->Run=BJX2_Op_BITMOV_RegRegImmReg;
+					break;
+				}
 				break;
 			case 0x01:
 				op->nmid=BJX2_NMID_DIVUL;
@@ -2139,6 +2149,23 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_SHAR;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_SHAR_RegRegReg;
+				if(jbits&0x01000000U)
+				{
+					op->imm=
+						((jbits<<0)&0x003FFF) |
+						((jbits<<2)&0x3F0000) ;
+					if((jbits>>20)&1)
+					{
+						if(((jbits>>14)&63)>((jbits>>8)&63))
+							{ op->imm|=0x404000; }
+						else
+							{ op->imm|=0x400000; }
+					}
+					op->nmid=BJX2_NMID_BITMOV;
+					op->fmid=BJX2_FMID_REGREGIMMREG;
+					op->Run=BJX2_Op_BITMOVX_RegRegImmReg;
+					break;
+				}
 				break;
 			}
 			break;

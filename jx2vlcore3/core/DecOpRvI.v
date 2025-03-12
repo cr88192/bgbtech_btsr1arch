@@ -118,6 +118,9 @@ assign	idUFl = { 6'h0, 5'h0, opULdOp, opUFl };
 `reg_gpr	opRegN_Dfl;
 `reg_gpr	opRegP_Dfl;
 
+`reg_gpr	opRegP_D4R;
+reg			opIs4R;
+
 `reg_gpr	opRegM_Fix;
 `reg_gpr	opRegO_Fix;
 `reg_gpr	opRegN_Fix;
@@ -166,6 +169,7 @@ reg[32:0]		opImm_imm5u;
 reg[32:0]		opImm_imm8au;
 
 reg[32:0]		opImm_imm32lc;		//48-bit ops
+reg[32:0]		opImm_imm21j;		//Jumbo
 
 reg[5:0]	opNmid;
 reg[4:0]	opFmid;
@@ -188,6 +192,7 @@ reg		opExM;
 reg		opExI;
 reg		opIsNotFx;
 reg		opIsJumbo;
+reg		opIsJumboImm;
 reg		opIsJumboAu;
 reg		opIsJumbo96;
 reg		opIsImm9;
@@ -265,6 +270,7 @@ begin
 	opIsJumbo	= istrJBits[24];
 	opIsJumbo96	= istrJBits[25];
 	opIsJumboAu	= istrJBits[26] && opIsJumbo;
+	opIsJumboImm	= !istrJBits[26] && opIsJumbo;
 
 	opRegO_Dfl	= { 2'b00, istrWord[24:20] };
 	opRegM_Dfl	= { 2'b00, istrWord[19:15] };
@@ -280,6 +286,9 @@ begin
 	opRegO_Fr	= { 2'b01, istrWord[24:20] };
 	opRegN_Fr	= { 2'b01, istrWord[11: 7] };
 	opRegP_Fr	= { 2'b01, istrWord[31:27] };
+
+	opRegP_D4R	= JX2_GR_ZZR;
+	opIs4R		= 0;
 
 	opExWN = 0;
 	opExWM = 0;
@@ -307,6 +316,9 @@ begin
 		opExWQ		= istrJBits[11];
 		
 		opJSubOp	= istrJBits[15:12];
+
+		opRegP_D4R	= { 1'b0, istrJBits[5:0] };
+		opIs4R		= opExWQ;
 
 //		opDoImmRo	= istrJBits[11];
 //		opImm_immRo	= { opExWI ? UV17_FF : UV17_00,
@@ -559,6 +571,8 @@ begin
 `else
 	opImm_imm32lc	= 0;
 `endif
+
+	opImm_imm21j	= { istrJBits[20] ? UV13_FF : UV13_00, istrJBits[19:0] };
 
 `ifdef jx2_enable_rvjumbo
 	if(opIsJumboAu)
@@ -1071,6 +1085,17 @@ begin
 						opNmid		= JX2_UCMD_SHADQ3;
 						opUCmdIx = istrWord[30] ?
 							JX2_UCIX_SHAD_SHARQ3 : JX2_UCIX_SHAD_SHLRQ3;
+						if(opIsJumboImm)
+						begin
+							opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKL3;
+							opFmid		= JX2_FMID_REGIMMREG;
+							opIty		= JX2_ITY_XQ;
+							if(istrWord[30])
+							begin
+								opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKLX3;
+								opUCty		= JX2_IUC_WX;
+							end
+						end
 					end
 					3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
 					3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
@@ -2138,6 +2163,14 @@ begin
 //					opImm	= opImm_imm12n;
 //				end
 				
+				JX2_ITY_XQ: begin
+					opRegM	= opRegM_Dfl;
+					opRegO	= JX2_GR_IMM;
+					opRegP	= opRegO_Dfl;
+					opRegN	= opRegN_Dfl;
+					opDoImm	= JX2_RVIMM_IMM21J;
+				end
+				
 				default: begin
 					$display("Jx2DecOpRvI: RegImmReg, Bad Ity=%X", opIty);
 				end
@@ -2427,6 +2460,7 @@ begin
 		JX2_RVIMM_IMM17S:	opImm	= opImm_imm17s;
 //		JX2_RVIMM_IMM12S:	opImm	= opImm_imm12s;
 		JX2_RVIMM_IMM32LC:	opImm	= opImm_imm32lc;
+		JX2_RVIMM_IMM21J:	opImm	= opImm_imm21j;
 		default:			opImm	= 0;
 	endcase
 

@@ -4628,6 +4628,15 @@ begin
 `endif
 
 
+`ifdef jx2_alu_jcmp
+	if((ex1OpUCmd[5:0]==JX2_UCMD_JCMP) && !ex1BraFlush)
+	begin
+		ex1ValBraDir[1:0] = 2'b10;
+		ex1ValBraDir[2]	= ((ex1RegIdCn1 == JX2_CR_PC) ^ ex1PreBra[0]);
+	end
+`endif
+
+
 `ifdef jx2_debug_hitmiss
 	if(tBraCycCnt[15]!=tBraNxtCycCnt[15])
 //	if(tBraCycCnt[12]!=tBraNxtCycCnt[12])

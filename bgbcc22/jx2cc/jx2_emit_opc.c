@@ -8757,6 +8757,23 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 			rs, rt, imm, rn);
 		break;
 
+	case BGBCC_SH_NMID_BITMOV:
+		if(!(ctx->has_bitmov&1))
+			break;
+		BGBCC_JX2_ComposeJumboRegImm24RegRegF0(ctx,
+			&opw1, &opw2, &opw3, &opw4,
+			0xF000, 0x2003,
+			rs, imm, rt, rn);
+		break;
+	case BGBCC_SH_NMID_BITMOVX:
+		if(!(ctx->has_bitmov&1))
+			break;
+		BGBCC_JX2_ComposeJumboRegImm24RegRegF0(ctx,
+			&opw1, &opw2, &opw3, &opw4,
+			0xF000, 0x2803,
+			rs, imm, rt, rn);
+		break;
+
 	default:
 		break;
 	}
@@ -8777,7 +8794,7 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 			return(1);
 		}
 
-//		BGBCC_JX2DA_EmitOpRegImmReg(ctx, nmid, rs, imm, rn);
+		BGBCC_JX2DA_EmitOpRegRegImmReg(ctx, nmid, rs, rt, imm, rn);
 	
 		if(!ctx->is_simpass)
 		{

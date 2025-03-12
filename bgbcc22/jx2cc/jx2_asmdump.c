@@ -813,6 +813,25 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_FCMPLE:		sn="FCMPLE";		break;
 	case BGBCC_SH_NMID_PCMPLEF:		sn="FCMPLE.F";		break;
 
+	case BGBCC_SH_NMID_CSRRW:		sn="CSRRW";			break;
+	case BGBCC_SH_NMID_CSRRS:		sn="CSRRS";			break;
+	case BGBCC_SH_NMID_CSRRC:		sn="CSRRC";			break;
+	case BGBCC_SH_NMID_CSRRWI:		sn="CSRRWI";		break;
+	case BGBCC_SH_NMID_CSRRSI:		sn="CSRRSI";		break;
+	case BGBCC_SH_NMID_CSRRCI:		sn="CSRRCI";		break;
+	case BGBCC_SH_NMID_CSRR:		sn="CSRR";			break;
+	case BGBCC_SH_NMID_CSRW:		sn="CSRW";			break;
+
+	case BGBCC_SH_NMID_FSGNJS:		sn="FSGNJ.S";		break;
+	case BGBCC_SH_NMID_FSGNJNS:		sn="FSGNJN.S";		break;
+	case BGBCC_SH_NMID_FSGNJXS:		sn="FSGNJX.S";		break;
+	case BGBCC_SH_NMID_FSGNJD:		sn="FSGNJ.D";		break;
+	case BGBCC_SH_NMID_FSGNJND:		sn="FSGNJN.D";		break;
+	case BGBCC_SH_NMID_FSGNJXD:		sn="FSGMJX.D";		break;
+
+	case BGBCC_SH_NMID_BITMOV:		sn="BITMOV";		break;
+	case BGBCC_SH_NMID_BITMOVX:		sn="BITMOVX";		break;
+
 	default:
 		sprintf(tb, "UNK_%04X", nmid);
 		sn=bgbcc_strdup(tb);
@@ -1363,6 +1382,40 @@ int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,
 	{
 		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %lld, %s%s",
 			snm, srm, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}
+	return(1);
+}
+
+
+int BGBCC_JX2DA_EmitOpRegRegImmReg(BGBCC_JX2_Context *ctx,
+	int nmid, int rs, int rt, s64 imm, int rn)
+{
+	char *snm, *srs, *srt, *srn;
+
+	if(ctx->is_simpass || !ctx->do_asm)
+		return(0);
+		
+	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
+	srs=BGBCC_JX2DA_RegToName(ctx, rs);
+	srt=BGBCC_JX2DA_RegToName(ctx, rt);
+	srn=BGBCC_JX2DA_RegToName(ctx, rn);
+
+	if(((s32)imm)!=imm)
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s, 0x%016llX, %s%s",
+			snm, srs, srt, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}else
+	if(((s16)imm)!=imm)
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s, 0x%08llX, %s%s",
+			snm, srs, srt, imm, srn,
+			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
+	}else
+	{
+		BGBCC_JX2DA_EmitPrintf(ctx, "  %-12s %s, %s, %lld, %s%s",
+			snm, srs, srt, imm, srn,
 			BGBCC_JX2DA_GetIstrSuffix(ctx, ctx->op_is_wex2));
 	}
 	return(1);

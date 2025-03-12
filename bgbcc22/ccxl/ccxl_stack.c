@@ -4854,3 +4854,173 @@ ccxl_status BGBCC_CCXL_StackVaArg(BGBCC_TransState *ctx)
 
 	return(CCXL_STATUS_YES);
 }
+
+ccxl_status BGBCC_CCXL_StackBitLoad(BGBCC_TransState *ctx,
+	int mlo, int mhi)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BitLoad", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BITLOAD);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mlo, mhi);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+//	j=BGBCC_CCXL_PopRegister(ctx, &treg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+	BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+
+//	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	dty=BGBCC_CCXL_MakeTypeID_Arr(ctx, CCXL_TY_UBITINT, (mhi-mlo)+1);
+
+	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+	BGBCC_CCXL_EmitBitMov(ctx, sty, dreg, treg, sreg, -mlo, 0, mhi-mlo);
+
+//	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+//	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackBitStore(BGBCC_TransState *ctx,
+	int mlo, int mhi)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BitStore", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BITSTORE);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mlo, mhi);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+	j=BGBCC_CCXL_PopRegister(ctx, &treg);
+//	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+
+	BGBCC_CCXL_EmitBitMov(ctx, dty, dreg, sreg, treg, mlo, mlo, mhi);
+
+//	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackBitMove(BGBCC_TransState *ctx,
+	int mdlo, int mdhi, int mslo, int mshi)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BitMove", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BITMOVE);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mdlo, mdhi);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mslo, mshi);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+	j=BGBCC_CCXL_PopRegister(ctx, &treg);
+//	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+
+	BGBCC_CCXL_EmitBitMov(ctx, dty, dreg, sreg, treg,
+		mdlo-mslo, mdlo, mdhi);
+
+//	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+	return(CCXL_STATUS_YES);
+}
+
+
+
+ccxl_status BGBCC_CCXL_StackBitStoreRef(BGBCC_TransState *ctx,
+	int mlo, int mhi, char *name)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	j=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
+	if(j<=0)
+	{
+		if(!j)return(CCXL_STATUS_ERR_LOOKUPFAIL);
+//		if(i<0)return(i);
+		if(j<0)return(j);
+		return(CCXL_STATUS_ERR_GENERIC);
+	}
+	
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StBitStore", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_STBITSTORE);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mlo, mhi);
+	BGBCC_CCXLR3_EmitArgSymbol(ctx, name);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+	BGBCC_CCXL_EmitBitMov(ctx, dty, dreg, dreg, sreg, mlo, mlo, mhi);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackBitMoveRef(BGBCC_TransState *ctx,
+	int mdlo, int mdhi, int mslo, int mshi, char *name)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+
+	j=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
+	if(j<=0)
+	{
+		if(!j)return(CCXL_STATUS_ERR_LOOKUPFAIL);
+//		if(i<0)return(i);
+		if(j<0)return(j);
+		return(CCXL_STATUS_ERR_GENERIC);
+	}
+	
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "StBitMove", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_STBITMOVE);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mdlo, mdhi);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mslo, mshi);
+	BGBCC_CCXLR3_EmitArgSymbol(ctx, name);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+
+	BGBCC_CCXL_EmitBitMov(ctx, dty, dreg, dreg, sreg,
+		mdlo-mslo, mdlo, mdhi);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+
+	return(CCXL_STATUS_YES);
+}

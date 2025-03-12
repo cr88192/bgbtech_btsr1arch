@@ -452,6 +452,16 @@ void BGBCC_CCXLR3_EmitArgFloat(
 	BGBCC_CCXLR3_EmitSVLI(ctx, fm);
 }
 
+void BGBCC_CCXLR3_EmitArgUIntPair(
+	BGBCC_TransState *ctx, u32 val1, u32 val2)
+{
+	if(!(ctx->ril_ip) || ctx->ril3_noril)
+		return;
+
+	BGBCC_CCXLR3_EmitSVLI(ctx, val1);
+	BGBCC_CCXLR3_EmitSVLI(ctx, val2);
+}
+
 int BGBCC_CCXLR3_CheckEmitRIL(
 	BGBCC_TransState *ctx)
 {
@@ -1081,6 +1091,26 @@ int BGBCC_CCXLR3_ReadTag(BGBCC_TransState *ctx, byte **rcs)
 	if((i>=0x20) && (i<=0x3F))
 		i=0x9000+(i&0x1F);
 	return(i);
+}
+
+int BGBCC_CCXLR3_ReadUPairVLI(BGBCC_TransState *ctx, byte **rcs,
+	int *rv0, int *rv1)
+{
+	u32 uv0, uv1;
+	
+	uv0=BGBCC_CCXLR3_ReadUVLI(ctx, rcs);
+	
+	if(uv0&1)
+	{
+		*rv0=(uv0>>1)&7;
+		*rv1=(uv0>>4)&7;
+	}else
+	{
+		uv1=BGBCC_CCXLR3_ReadUVLI(ctx, rcs);
+		*rv0=uv0>>1;
+		*rv1=uv1>>1;
+	}
+	return(1);
 }
 
 int BGBCC_CCXLR3_ReadTextBlob(BGBCC_TransState *ctx, byte **rcs,
@@ -2074,6 +2104,32 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
 		ctx->lfn=bgbcc_strdup(s0);
 		ctx->lln=i0;
+		break;
+
+	case BGBCC_RIL3OP_BITLOAD:
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
+		BGBCC_CCXL_StackBitLoad(ctx, i0, i1);
+		break;
+	case BGBCC_RIL3OP_BITSTORE:
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
+		BGBCC_CCXL_StackBitStore(ctx, i0, i1);
+		break;
+	case BGBCC_RIL3OP_BITMOVE:
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i2, &i3);
+		BGBCC_CCXL_StackBitMove(ctx, i0, i1, i2, i3);
+		break;
+
+	case BGBCC_RIL3OP_STBITSTORE:
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackBitStoreRef(ctx, i0, i1, s0);
+		break;
+	case BGBCC_RIL3OP_STBITMOVE:
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i2, &i3);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackBitMoveRef(ctx, i0, i1, i2, i3, s0);
 		break;
 
 	default:

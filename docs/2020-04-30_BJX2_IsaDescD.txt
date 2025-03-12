@@ -3380,22 +3380,31 @@ These will be deprecated in favor of PSHUF.B / PSHUF.W.
 === BITMOV (BITS) ===
 
 * FEii_iiii_F0nm_2go3  BITMOV		Rm, Ro, Rn, Imm24
-* FEii_iiii_F0nm_2Go3  BITMOVX		Xm, Xo, Xn, Imm24
+* FEii_iiii_F0nm_2Go3  BITMOVX		Xm, Ro, Xn, Imm24
+
+* FFw0_08pp_F0nm_2go3  BITMOV		Rm, Ro, Rp, Rn
+* FFw0_08pp_F0nm_2Go3  BITMOVX		Xm, Ro, Xp, Xn
+
 
 Move a value from one bitfield to another.
+The immediate field from the jumbo prefix is decoded as a single immediate.
 
-Imm24 (BITMOV):
-* ( 5: 0): Base in Rm (Dest Bitfield)
-* (13: 8): Base in Ro (Source Bitfield)
-* (21:16): Bitfield Width
+Imm24:
+* ( 7: 0): Shift to Apply
+* (15: 8): Mask Low Bit (L)
+* (23:16): Mask High Bit (H)
 
-Imm24 (BITMOVX):
-* ( 6: 0): Base in Xm (Dest Bitfield)
-* (14: 8): Base in Xo (Source Bitfield)
-* (22:16): Bitfield Width
+The value in Rm is shifted and then combined with the value in Ro according to the mask encoded in the L and H fields of the immediate.
 
-Generates a value that is a copy of Rm, but with bits from Ro copied in at the specified location.
+In the 4R variant, the value in Rm is shifted and combined with the value from Rp with Ro giving the shift and mask in the same format as the Imm24.
 
+For mask generation:
+* L: Generates 1s for bits GE L;
+* H: Generates 1s for bits LT H;
+* H GT L: Combine using AND
+* H LE L: Combine using OR 
+
+The shift will be encoded as a signed 8 bit shift from -63 to 63 for BITMOV or -127 to 127 for BITMOVX. Positive values encode left shifts and negative values encode right shifts.
 
 
 === BITSEL (BITS) ===

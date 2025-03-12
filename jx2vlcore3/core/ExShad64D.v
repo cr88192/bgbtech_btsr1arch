@@ -57,7 +57,7 @@ assign		shOpM = shOpA[4];	//Mask
 // assign		shOpO = shOpA[3] && !isLaneC;	//Rotate
 assign		shOpX = shOpA[5] && !isLaneC;	//Funnel
 
-assign		shOpL = !(shOpQ || shOpX);
+assign		shOpL = !(shOpQ || shOpX || shOpM);
 
 reg[63:0]		tValRn;
 assign			valRn = tValRn;
@@ -95,10 +95,42 @@ wire[63:0]		valMaskLo;
 wire[63:0]		valMaskHi;
 wire[63:0]		valMask;
 wire			valMaskPol;
-assign		valMaskPol = valRt[22:16] > valRt[14:8];
+// assign		valMaskPol = valRt[22:16] > valRt[14:8];
 
-ExCsMaskGen64	genMaskLo( { 1'b1, valRt[13: 8] }, valMaskLo);
-ExCsMaskGen64	genMaskHi( { 1'b0, valRt[21:16] }, valMaskHi);
+wire			valMaskPolL;
+assign		valMaskPolL = valRt[19:14] > valRt[13:8];
+
+wire[6:0]		shlMaskXLo;
+wire[6:0]		shlMaskXHi;
+
+assign		shlMaskXLo = shOpQ ? valRt[14: 8] :
+	{ valRt[20] & valMaskPolL, valRt[13:8] } ;
+assign		shlMaskXHi = shOpQ ? valRt[22:16] :
+	{ valRt[20], valRt[19:14] };
+
+assign		valMaskPol = shlMaskXHi > shlMaskXLo;
+
+wire[6:0]		shlMaskLo;
+wire[6:0]		shlMaskHi;
+
+assign		shlMaskLo =
+	shOpX ?
+	( (isLaneB == shlMaskXLo[6]) ?
+		{ 1'b1, shlMaskXLo[5:0] } :
+		{ !isLaneB, 6'h00 }
+	) :
+	( !shlMaskXLo[6] ? { 1'b1, shlMaskXLo[5:0] } : 7'h40);
+
+assign		shlMaskHi =
+	shOpX ?
+	( (isLaneB == shlMaskXHi[6]) ?
+		{ 1'b0, shlMaskXHi[5:0] } :
+		{ isLaneB, 6'h00 }
+	) :
+	( !shlMaskXHi[6] ? { 1'b0, shlMaskXHi[5:0] } : 7'h00);
+
+ExCsMaskGen64	genMaskLo(shlMaskLo, valMaskLo);
+ExCsMaskGen64	genMaskHi(shlMaskHi, valMaskHi);
 
 assign		valMask = valMaskPol ?
 	(valMaskLo & valMaskHi) :

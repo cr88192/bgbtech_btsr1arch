@@ -33,8 +33,15 @@
 
 `define jx2_cpu_merge_rxy		//Merge Rx/Ry into Lane 1/2 third input.
 
-// `define jx2_cpu_shad_ex2		//Move SHAD/SHLD output to EX2
+`define jx2_cpu_shad_ex2		//Move SHAD/SHLD output to EX2
 // `define jx2_cpu_conv_ex2		//Move CONV output to EX2
+
+`ifdef jx2_shadq_bitmov
+`ifndef jx2_cpu_shad_ex2
+// If BITMOV is enabled, always move SHAD to EX2...
+`define jx2_cpu_shad_ex2		//Move SHAD/SHLD output to EX2
+`endif
+`endif
 
 `define jx2_cpu_pred_id2		//Move predication handling to ID2
 `define jx2_cpu_lea_ex2			//Move LEA output to EX2

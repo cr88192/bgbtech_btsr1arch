@@ -81,12 +81,27 @@ void sanity_a()
 	if(k!=12345)
 		__debugbreak();
 
+	k=-1;
 	l=i%j;
 
 	if(l!=6)
 		__debugbreak();
 
 //	puts("A4\n");
+
+	if((k>=-64) && (k<=64))
+	{
+	}else
+	{
+		if(k>=-64)
+		{
+			if(k<=64)
+			{
+				__debugbreak();
+			}
+		}
+	}
+
 }
 
 void sanity_b()

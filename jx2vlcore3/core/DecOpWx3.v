@@ -1277,7 +1277,7 @@ begin
 	begin
 //		if(istrWord[1:0]==2'b11)
 //		if(istrWordA[1:0]==2'b11)
-		if((istrWordA[1:0]==2'b11) || srXG3)
+		if((istrWordA[1:0]==2'b11) || srXG3 || istrMTagA[0])
 		begin
 			opIsFxA = 1;		opIsFzA = 1;
 			opIsFCA = 0;		opIsDzA = 0;
