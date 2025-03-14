@@ -612,7 +612,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{
 			shctx->has_rvzba|=16;	//Load/Store Indexed
 			shctx->has_pushx2|=1;	//LX / SX
-//			shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
+			shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
 		}
 
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo") ||
@@ -6283,7 +6283,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				(((w3>> 0)&2047)<<20)|
 				(((w3>>11)&  31)<<15)|
 				(((w3>>16)&  31)<< 7);
-			w1=(w1&0x000FFFFF)|(w2<<20);
+			w1=(w1&0x000FFFFF)|((w2&4095)<<20);
 
 //			w1=(d1>>3)&0xFFFF;
 			bgbcc_jx2cc_setu32en(ctr+0, en, w0);

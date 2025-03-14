@@ -2639,8 +2639,8 @@ int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 				BGBCC_SH_REG_RQ3, gpoffs, 0, reg, &opw1, &opw2)>0)
 					break;
 
-			if(ctx->has_jumbo&2)
-//			if(0)	//DBG disabled
+//			if(ctx->has_jumbo&2)
+			if(0)	//DBG disabled (2025-03: Can't find cause of bug...)
 			{
 				rlty=BGBCC_SH_RLC_PBO32J_RVI;
 //				opw1=0x0000401BU;
