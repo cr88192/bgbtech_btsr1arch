@@ -1779,6 +1779,19 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackPushConstFloat128(ctx, li0, li1);
 		break;
 
+	case BGBCC_RIL3OP_LDCONSTBTI:
+		li0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		li1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		i1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackPushConstBitInt128(ctx, li0, li1, i1);
+		break;
+	case BGBCC_RIL3OP_LDCONSTTS:
+		li0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		li1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		i1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackPushConstTristate64(ctx, li0, li1, i1);
+		break;
+
 	case BGBCC_RIL3OP_STCONSTI:
 		li0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
 		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
@@ -2087,6 +2100,11 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
 		BGBCC_CCXL_StackPushConstBigInt(ctx, s0, i0);
 		break;
+	case BGBCC_RIL3OP_LDCONSTBTS:
+		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		BGBCC_CCXL_StackPushConstBigTristate(ctx, s0, i0);
+		break;
 		
 	case BGBCC_RIL3OP_INLINEASM:
 		s0=BGBCC_CCXLR3_ReadString(ctx, &cs);
@@ -2110,6 +2128,10 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
 		BGBCC_CCXL_StackBitLoad(ctx, i0, i1);
 		break;
+	case BGBCC_RIL3OP_BITLOADINT:
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
+		BGBCC_CCXL_StackBitLoadInt(ctx, i0, i1);
+		break;
 	case BGBCC_RIL3OP_BITSTORE:
 		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
 		BGBCC_CCXL_StackBitStore(ctx, i0, i1);
@@ -2120,6 +2142,11 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		BGBCC_CCXL_StackBitMove(ctx, i0, i1, i2, i3);
 		break;
 
+	case BGBCC_RIL3OP_STBITLOAD:
+		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackBitLoadStRef(ctx, i0, i1, s0);
+		break;
 	case BGBCC_RIL3OP_STBITSTORE:
 		BGBCC_CCXLR3_ReadUPairVLI(ctx, &cs, &i0, &i1);
 		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);

@@ -157,6 +157,17 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 				nm4=BGBCC_SH_NMID_EXTSW;
 			if(type.val==CCXL_TY_US)
 				nm4=BGBCC_SH_NMID_EXTUW;
+
+			if(BGBCC_CCXL_TypeUBitIntMaxP(ctx, type, 32))
+			{
+				l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+				nm4=BGBCC_SH_NMID_EXTUL+(l<<16);
+			}
+			if(BGBCC_CCXL_TypeSBitIntMaxP(ctx, type, 32))
+			{
+				l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+				nm4=BGBCC_SH_NMID_EXTSL+(l<<16);
+			}
 		}
 
 		nm1=-1;
@@ -428,6 +439,18 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 					nm4=BGBCC_SH_NMID_EXTSW;
 				if(ty.val==CCXL_TY_US)
 					nm4=BGBCC_SH_NMID_EXTUW;
+
+
+				if(BGBCC_CCXL_TypeUBitIntMaxP(ctx, ty, 32))
+				{
+					l=BGBCC_CCXL_TypeGetBitIntSize(ctx, ty);
+					nm4=BGBCC_SH_NMID_EXTUL+(l<<16);
+				}
+				if(BGBCC_CCXL_TypeSBitIntMaxP(ctx, type, 32))
+				{
+					l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+					nm4=BGBCC_SH_NMID_EXTSL+(l<<16);
+				}
 			}
 		}
 
@@ -787,6 +810,17 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 			nm4=BGBCC_SH_NMID_EXTSW;
 		if(type.val==CCXL_TY_US)
 			nm4=BGBCC_SH_NMID_EXTUW;
+
+		if(BGBCC_CCXL_TypeUBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTUL+(l<<16);
+		}
+		if(BGBCC_CCXL_TypeSBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTSL+(l<<16);
+		}
 	}
 
 	nm1=-1; nm2=-1;
@@ -1175,7 +1209,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 	int nm1, nm2, nm3, nm4;
 	int ta0, ta1, ta2, ta3;
 	u32 div_rcp;
-	int i, j, k, shl, div_shl;
+	int i, j, k, l, shl, div_shl;
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
@@ -1192,6 +1226,17 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 			nm4=BGBCC_SH_NMID_EXTSW;
 		if(type.val==CCXL_TY_US)
 			nm4=BGBCC_SH_NMID_EXTUW;
+
+		if(BGBCC_CCXL_TypeUBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTUL+(l<<16);
+		}
+		if(BGBCC_CCXL_TypeSBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTSL+(l<<16);
+		}
 	}
 	
 //	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
@@ -2490,14 +2535,16 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVReg(
 	}
 
 	if((BGBCC_CCXL_TypeSgLongP(ctx, type) ||
-		BGBCC_CCXL_TypeSgNLongP(ctx, type)) &&
+		BGBCC_CCXL_TypeSgNLongP(ctx, type) ||
+		BGBCC_CCXL_TypeBitIntMaxP(ctx, type, 64)) &&
 		(sctx->is_addr64))
 	{
 		return(BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(ctx, sctx,
 			type, dreg, opr, sreg, treg));
 	}
 
-	if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
+	if(	BGBCC_CCXL_TypeSgInt128P(ctx, type) ||
+		BGBCC_CCXL_TypeBitIntMaxP(ctx, type, 128))
 	{
 		return(BGBCC_JX2C_EmitBinaryVRegVRegVRegInt128(ctx, sctx,
 			type, dreg, opr, sreg, treg));
@@ -2585,7 +2632,7 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt(
 	int csreg, ctreg, cdreg;
 	int nm1, nm2, nm4;
 	s32 imm;
-	int i, j, k;
+	int i, j, k, l;
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	
@@ -2642,6 +2689,17 @@ int BGBCC_JX2C_EmitUnaryVRegVRegInt(
 			nm4=BGBCC_SH_NMID_EXTUW;
 		if(type.val==CCXL_TY_UI)
 			nm4=BGBCC_SH_NMID_EXTUL;
+
+		if(BGBCC_CCXL_TypeUBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTUL+(l<<16);
+		}
+		if(BGBCC_CCXL_TypeSBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTSL+(l<<16);
+		}
 	}
 
 	switch(opr)
@@ -2871,7 +2929,8 @@ int BGBCC_JX2C_EmitUnaryVRegVReg(
 	}
 
 	if((BGBCC_CCXL_TypeSgLongP(ctx, type) ||
-		BGBCC_CCXL_TypeSgNLongP(ctx, type)) &&
+		BGBCC_CCXL_TypeSgNLongP(ctx, type) ||
+		BGBCC_CCXL_TypeBitIntMaxP(ctx, type, 64)) &&
 		(sctx->is_addr64))
 	{
 		return(BGBCC_JX2C_EmitUnaryVRegVRegQLong(ctx, sctx,
@@ -2886,7 +2945,8 @@ int BGBCC_JX2C_EmitUnaryVRegVReg(
 			type, dreg, opr, sreg));
 	}
 
-	if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
+	if(	BGBCC_CCXL_TypeSgInt128P(ctx, type) ||
+		BGBCC_CCXL_TypeBitIntMaxP(ctx, type, 128))
 	{
 		return(BGBCC_JX2C_EmitUnaryVRegVRegInt128(ctx, sctx,
 			type, dreg, opr, sreg));
@@ -3447,7 +3507,8 @@ int BGBCC_JX2C_EmitCompareVRegVRegVReg(
 
 	if((BGBCC_CCXL_TypePointerP(ctx, type) ||
 		BGBCC_CCXL_TypeSgLongP(ctx, type) ||
-		BGBCC_CCXL_TypeSgNLongP(ctx, type)) &&
+		BGBCC_CCXL_TypeSgNLongP(ctx, type) ||
+		BGBCC_CCXL_TypeBitIntMaxP(ctx, type, 64)) &&
 		sctx->is_addr64)
 	{
 		return(BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(ctx, sctx,
@@ -3463,7 +3524,8 @@ int BGBCC_JX2C_EmitCompareVRegVRegVReg(
 			type, dreg, opr, sreg, treg));
 	}
 
-	if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
+	if(	BGBCC_CCXL_TypeSgInt128P(ctx, type) ||
+		BGBCC_CCXL_TypeBitIntMaxP(ctx, type, 128))
 	{
 		return(BGBCC_JX2C_EmitCompareVRegVRegVRegInt128(ctx, sctx,
 			type, dreg, opr, sreg, treg));

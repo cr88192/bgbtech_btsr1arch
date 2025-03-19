@@ -32,7 +32,7 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 	char *suf, *op;
 	s64 li, lj;
 	int i0, i1, i2, i3;
-	int opr;
+	int opr, sz;
 	int i, j, k;
 
 	*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UNDEF_I);
@@ -42,6 +42,22 @@ int BGBCC_CCXL_InferExpr(BGBCC_TransState *ctx,
 	{
 		suf=BCCX_GetCst(l, &bgbcc_rcst_tysuf, "tysuf");
 		li=BCCX_GetIntCst(l, &bgbcc_rcst_value, "value");
+		sz=BCCX_GetIntCst(l, &bgbcc_rcst_value_sz, "value_sz");
+		
+		if(sz>0)
+		{
+			if(suf && (*suf=='U'))
+			{
+				dty=BGBCC_CCXL_MakeTypeID_Arr(ctx,
+					CCXL_TY_UBITINT, sz);
+			}else
+			{
+				dty=BGBCC_CCXL_MakeTypeID_Arr(ctx,
+					CCXL_TY_SBITINT, sz);
+			}
+			*rdty=dty;
+			return(1);
+		}
 		
 		if(!suf)
 		{

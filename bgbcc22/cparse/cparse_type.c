@@ -863,6 +863,8 @@ static char *bgbcp_basetypes_c[]={
 "__auto",	"__var",
 
 "_BitInt",
+"_UBitInt",
+"_UnsignedBitInt",
 
 "__object",		"__string",
 "__number",
@@ -2060,7 +2062,7 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 				}
 			}else
 			{
-				s3=BGBCP_Token2(s1, b3, &ty3, ctx->lang);
+				s3=BGBCP_Token2(s2, b3, &ty3, ctx->lang);
 
 				bty=bgbcc_strdup(b);
 				if(bty[0]=='_')
@@ -2074,34 +2076,62 @@ BCCX_Node *BGBCP_DefTypeC(BGBCP_ParseState *ctx, char **str)
 							bty+=7;
 						else
 							bty+=2;
-					}if(!strcmp(bty, "_BitInt"))
+					}if(!strcmp(bty, "_BitInt") ||
+						!strcmp(bty, "_UnsignedBitInt") ||
+						!strcmp(bty, "_UBitInt"))
 					{
 						if(!strcmp(b2, "(") && (ty3==BTK_NUMBER))
 						{
 							s=BGBCP_Token2(s3, b2, &ty2, ctx->lang);
 
 							k=atoi(b3);
-							if(k<=8)
-								{ bty=bgbcc_strdup("char"); }
-							else if(k<=16)
-								{ bty=bgbcc_strdup("short"); }
-							else if(k<=32)
-								{ bty=bgbcc_strdup("int"); }
-							else if(k<=64)
-//								{ bty=bgbcc_strdup("llong"); }
-								{ bty=bgbcc_strdup("long_long"); }
-							else if(k<=128)
-								{ bty=bgbcc_strdup("int128"); }
-							else if(k<=256)
-								{ bty=bgbcc_strdup("bitint_256"); }
-							else if(k<=384)
-								{ bty=bgbcc_strdup("bitint_384"); }
-							else if(k<=512)
-								{ bty=bgbcc_strdup("bitint_512"); }
-							else
+
+#if 0
+							if(k==8)
 							{
-								k=((k+127)/128)*128;
-								sprintf(b2, "bitint_%d", k);
+//								bty=bgbcc_strdup("char");
+								bty=bgbcc_strdup((bty[1]=='U')?"uint8":"char");
+							}
+							else if(k==16)
+							{
+//								bty=bgbcc_strdup("short");
+								bty=bgbcc_strdup(
+									(bty[1]=='U')?"uint16":"short");
+							}
+							else if(k==32)
+							{
+//								bty=bgbcc_strdup("int");
+								bty=bgbcc_strdup(
+									(bty[1]=='U')?"uint32":"int");
+							}
+							else if(k==64)
+							{ 
+//								bty=bgbcc_strdup("long_long");
+								bty=bgbcc_strdup(
+									(bty[1]=='U')?"uint64":"long_long");
+							}
+							else if(k==128)
+							{
+//								bty=bgbcc_strdup("int128");
+								bty=bgbcc_strdup(
+									(bty[1]=='U')?"uint128":"int128");
+							}
+//							else if(k==256)
+//								{ bty=bgbcc_strdup("bitint_256"); }
+//							else if(k==384)
+//								{ bty=bgbcc_strdup("bitint_384"); }
+//							else if(k==512)
+//								{ bty=bgbcc_strdup("bitint_512"); }
+							else
+#endif
+
+							if(1)
+							{
+//								k=((k+127)/128)*128;
+								if(bty[1]=='U')
+									sprintf(b2, "ubitint_%d", k);
+								else
+									sprintf(b2, "bitint_%d", k);
 								bty=bgbcc_strdup(b2);
 							}
 						}

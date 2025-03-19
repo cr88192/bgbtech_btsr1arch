@@ -244,8 +244,26 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 	s64 li, lj;
 	int csreg, ctreg, cdreg;
 	int tr0, tr1, tr2, tr3;
-	int nm1, nm2, mul2x_sh, mul3x_sh;
-	int i, j, k, shl;
+	int nm1, nm2, nm3, nm4, mul2x_sh, mul3x_sh;
+	int i, j, k, l, shl;
+
+	nm3=-1;
+	nm4=-1;
+	if((opr==CCXL_BINOP_ADD) || (opr==CCXL_BINOP_SUB) ||
+		(opr==CCXL_BINOP_MUL) || (opr==CCXL_BINOP_SHL))
+	{
+		if(BGBCC_CCXL_TypeUBitIntMaxP(ctx, type, 63))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTUL+(l<<16);
+		}
+		if(BGBCC_CCXL_TypeSBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTSL+(l<<16);
+		}
+	}
+
 
 #if 1
 //	if(BGBCC_CCXL_IsRegImmIntP(ctx, treg))
@@ -431,6 +449,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 		{
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 			BGBCC_JX2C_EmitOpImmReg(ctx, sctx, nm1, k, cdreg);
+			if(nm4>0)
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			return(1);
 		}
@@ -446,6 +466,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 			cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 			BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
 				nm1, cdreg, shl, cdreg);
+			if(nm4>0)
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 			return(1);
 		}
@@ -457,6 +479,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 				cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
 					BGBCC_SH_NMID_SHLDQ, cdreg, -shl, cdreg);
+				if(nm4>0)
+					BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 				return(1);
 			}
@@ -473,6 +497,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
 					BGBCC_SH_NMID_SHADQ, cdreg, -shl, cdreg);
 
+				if(nm4>0)
+					BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 				return(1);
 			}
@@ -485,6 +511,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 				cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 				BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
 					BGBCC_SH_NMID_AND, j-1, cdreg);
+				if(nm4>0)
+					BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 				return(1);
 			}
@@ -543,6 +571,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, treg);
 		cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg, cdreg);
+		if(nm4>0)
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
 		return(1);
@@ -574,6 +604,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 		cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 		BGBCC_JX2_EmitOpRegRegReg(sctx, nm1, cdreg, ctreg, cdreg);
+		if(nm4>0)
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
 		return(1);
@@ -734,6 +766,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 		cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg, cdreg);
+		if(nm4>0)
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
 		return(1);
@@ -763,6 +797,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegQLong(
 		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, BGBCC_SH_NMID_NEG, ctreg, tr0);
 		BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, tr0, cdreg);
+		if(nm4>0)
+			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm4, cdreg, cdreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
 		return(1);
@@ -783,8 +819,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(
 	s64	li;
 	int csreg, ctreg, cdreg;
 	int tr0, tr1, tr2, tr3;
-	int nm1, nm2;
-	int i, j, k, shl, mul2x_sh, mul3x_sh;
+	int nm1, nm2, nm3, nm4;
+	int i, j, k, l, shl, mul2x_sh, mul3x_sh;
 
 	li=-1;
 	j=-999;
@@ -800,6 +836,24 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(
 			i=-1;
 		}
 	}
+
+	nm3=-1;
+	nm4=-1;
+	if((opr==CCXL_BINOP_ADD) || (opr==CCXL_BINOP_SUB) ||
+		(opr==CCXL_BINOP_MUL) || (opr==CCXL_BINOP_SHL))
+	{
+		if(BGBCC_CCXL_TypeUBitIntMaxP(ctx, type, 63))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTUL+(l<<16);
+		}
+		if(BGBCC_CCXL_TypeSBitIntMaxP(ctx, type, 32))
+		{
+			l=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			nm4=BGBCC_SH_NMID_EXTSL+(l<<16);
+		}
+	}
+
 
 	if(	BGBCC_CCXL_IsRegImmLongP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmUIntP(ctx, treg))
@@ -1143,6 +1197,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(
 				cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 				csreg=cdreg;
 				BGBCC_JX2_EmitOpRegImmReg(sctx, nm1, csreg, k, cdreg);
+				if(nm4>0)
+					BGBCC_JX2_EmitOpRegReg(sctx, nm4, cdreg, cdreg);
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 				return(1);
 			}
@@ -1156,6 +1212,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(
 			i=BGBCC_JX2_TryEmitOpRegImmReg(sctx, nm1, csreg, k, cdreg);
 			if(i>0)
 			{
+				if(nm4>0)
+					BGBCC_JX2_EmitOpRegReg(sctx, nm4, cdreg, cdreg);
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
 				return(1);
@@ -1325,6 +1383,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegQLong(
 
 //		BGBCC_JX2C_CheckSetModeDqSet(ctx, sctx);
 		BGBCC_JX2_EmitOpRegRegReg(sctx, nm1, csreg, ctreg, cdreg);
+		if(nm4>0)
+			BGBCC_JX2_EmitOpRegReg(sctx, nm4, cdreg, cdreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
 		if(!BGBCC_CCXL_RegisterIdentEqualP(ctx, dreg, treg))
@@ -2986,7 +3046,8 @@ int BGBCC_JX2C_EmitBitMovVRegVRegVRegQLong(
 	if(BGBCC_CCXL_IsRegImmSmallSIntP(ctx, sreg))
 	{
 		i=BGBCC_CCXL_GetRegImmIntValue(ctx, sreg);
-		if(i==0)
+		if((i==0) && !(sctx->has_bitmov&1))
+//		if(i==0)
 		{
 			if((mlo==0) && (mhi>0) && (mshl<=0))
 			{
@@ -3013,6 +3074,11 @@ int BGBCC_JX2C_EmitBitMovVRegVRegVRegQLong(
 
 	if(sctx->has_bitmov&1)
 	{
+		if(((ctreg&63)>=32) || ((csreg&63)>=32) || ((cdreg&63)>=32))
+		{
+			i=-1;
+		}
+
 		imm=(mshl&255)|((mlo&255)<<8)|(((mhi+1)&255)<<16);
 		BGBCC_JX2_EmitOpRegRegImmReg(sctx, BGBCC_SH_NMID_BITMOV,
 			ctreg, csreg, imm, cdreg);

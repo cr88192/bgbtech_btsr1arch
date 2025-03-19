@@ -1,0 +1,77 @@
+Mapping for Verilog like features onto C.
+
+
+=== Fixed width Integers ===
+
+Bit Width Integers
+* _BitInt(n): Bit Integer with 'n' bits.
+** Default is sign-extended.
+* _UBitInt(n): Unsigned Bit Integer with 'n' bits.
+** Zero Extended.
+* _UnsignedBitInt(n): Same as _UBitInt(n)
+
+Bit integers will have a logical size of exactly n bits.
+* They will wrap on overflow preserving the same logical width.
+* _BitInt(6) would have a range of -32 to 31.
+* _UBitInt(6) would have a range of 0 to 63.
+** Operations are not allowed to produce values outside the range.
+
+Operations on BitInt with matching size will produce a result of the same size.
+* In the case of mismatched sizes, they may "decay" to normal integer types.
+** 1 to 32 will decay to 'int' or 'unsigned int'
+** 33 to 64 will decay to 'long long' or 'unsigned long long'
+
+
+Note that the existing C types with known sizes will have bit widths, but will not be considered as fixed-width in the case of operations where an exact width is required.
+
+So, for example, while 'int' or 'unsigned int' will be 32 bits, they are not equivalent to '_BitInt(32)' or '_UBitInt(32)' in the case of fixed-width operations.
+
+
+=== Literals ===
+
+Literals may have size-specific variants:
+* 0xABCi12 will specify a signed 12-bit literal.
+* 0xABCu12 will specify an unsigned 12-bit literal.
+** 0xABCui12 will be equivalent to the above.
+
+With size specific literals, hex or binary only:
+* X/Z or x/z may be used for tristate bits.
+* X: Indicates an undefined value.
+* Z: Indicates a high impedance state.
+
+These tristate values will not exist in runtime values, but will rather exist for specific use-cases. If assigned to a variable or used in an operation, these will decay to normal binary values.
+* Z will decay to 0.
+* X may decay to either 0 or 1.
+
+Note that X and Z may not be used with decimal literals, nor in the absense of a matching type suffix.
+
+
+=== Bitfield Index Notation ===
+
+A bitfield may be extracted from an integer type by giving a bit range.
+
+For example:
+* "z=v[7:4];" will extract a 4 bit field from 'v', starting at bit 4.
+* "w[11:8]=v;" will store a 4 bit field to 'w' starting at bit 8.
+* "w[15:12]=v[3:0];" will directly copy a 4 bit field from 'v' to 'w'.
+
+When assigning to a bit field, all other bits in the value will be left unchanged.
+
+Note, however:
+* The bitfield ranges must be constant.
+* For normal integer types, both the high and low range are always required.
+** Single bit "v[idx]" will only be allowed for fixed width integers.
+
+
+=== Bit Compose/Decompose ===
+
+The "(_UBitInt(n)) { ... }" syntax may be used to compose or decompose a bit vector from fixed-width components.
+
+If used as an rvalue, it will compose a bit vector from the specified inputs.
+
+If used as an lvalue for an assignment, the assigned value will be decomposed into the corresponding components, each of which will be assigned individually. Bit range destinations may be specified. If literal values are present, they will be treated as placeholders but otherwise ignored.
+
+For both compose and decompose, the size (if given) of the resultant vector and the added up width of the individual components will be required to match.
+
+If the size is given as 0, then the width of the result vector will be inferred from the width of the components.
+

@@ -1410,6 +1410,7 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 	static byte pixv_c2[4]={0, 85, 170, 255};
 	static byte pixv_c3[8]={0, 36, 73, 109, 146, 182, 218, 255};
 	static u32 pixv6[64];
+	static u32 pixv6b[64];
 	static u32 pixv9[512];
 	static u32 clrt4[4];
 	static byte clrt4_y[4];
@@ -1448,14 +1449,27 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 				(pixv_c2[(i>>2)&3]<< 8)|
 				(pixv_c2[(i>>0)&3]<<16);
 
+//			j=((i&7)<<5);
+			j=((i&7)<<5)|((i&7)<<2);
+			k=j>>2;
+			clrb=(255<<24) |
+				(((i&0x20)?j:k)<< 0) |
+				(((i&0x10)?j:k)<< 8) |
+				(((i&0x08)?j:k)<<16) ;
+
 			if(btesh2_gfxcon_swaprb)
 			{
 				clra=(clra&0xFF00FF00U)|
 					((clra<<16)&0x00FF0000U)|
 					((clra>>16)&0x000000FFU);
+
+				clrb=(clrb&0xFF00FF00U)|
+					((clrb<<16)&0x00FF0000U)|
+					((clrb>>16)&0x000000FFU);
 			}
 
 			pixv6[i]=clra;
+			pixv6b[i]=clrb;
 		}
 		for(i=0; i<512; i++)
 		{
@@ -1649,6 +1663,18 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 			clrb4[2]=pixv6[(c1>> 6)&63];
 			clra4[3]=pixv6[(c1>>16)&63];
 			clrb4[3]=pixv6[(c1>>22)&63];
+			
+			if(((c1>>28)&3)==1)
+			{
+				clra4[0]=pixv6b[(c0>> 0)&63];
+				clrb4[0]=pixv6b[(c0>> 6)&63];
+				clra4[1]=pixv6b[(c0>>16)&63];
+				clrb4[1]=pixv6b[(c0>>22)&63];
+				clra4[2]=pixv6b[(c1>> 0)&63];
+				clrb4[2]=pixv6b[(c1>> 6)&63];
+				clra4[3]=pixv6b[(c1>>16)&63];
+				clrb4[3]=pixv6b[(c1>>22)&63];
+			}
 			
 			clra=clra4[0];
 			clrb=clrb4[0];
@@ -2014,8 +2040,8 @@ int JX2I_GfxCon_UpdateCell(int cx, int cy)
 			for(py=0; py<8; py++)
 				for(px=0; px<8; px++)
 			{
-				clra=clra4[(((py>>1)&2)|(px>>3))^3];
-				clrb=clrb4[(((py>>1)&2)|(px>>3))^3];
+				clra=clra4[(((py>>1)&2)|(px>>2))^3];
+				clrb=clrb4[(((py>>1)&2)|(px>>2))^3];
 				clrc=((pixbits>>((7-py)*8+(7-px)))&1)?clra:clrb;
 				JX2I_GfxCon_PutPix200(cx*8+px, cy*8+py, clrc);
 			}

@@ -2790,7 +2790,9 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		return(1);
 	}
 
-	if(BGBCC_CCXL_IsRegImmLongP(ctx, sreg))
+	if(	BGBCC_CCXL_IsRegImmLongP(ctx, sreg) ||
+		BGBCC_CCXL_IsRegImmBitIntMaxP(ctx, sreg, 64) ||
+		BGBCC_CCXL_IsRegImmTristateMaxP(ctx, sreg, 64))
 	{
 		ctx->cur_func->regflags|=BGBCC_REGFL_IMMLOAD;
 	
@@ -3557,6 +3559,41 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 			dreg2=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, dreg);
 
 			BGBCC_CCXL_GetRegImmX128Value(ctx, sreg, &li, &lj);
+//			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+0, li);
+//			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+1, lj);
+			BGBCC_JX2_EmitLoadRegImm128P(sctx, dreg2, li, lj);
+			return(1);
+		}
+
+		if(1)
+		{
+//			dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+			dreg2=BGBCC_SH_REG_RQ0+(dreg&63);
+			BGBCC_CCXL_GetRegImmX128Value(ctx, sreg, &li, &lj);
+			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+0, li);
+			return(1);
+		}
+	}
+
+	if(
+		BGBCC_CCXL_IsRegImmBitIntMaxP(ctx, sreg, 128) ||
+		BGBCC_CCXL_IsRegImmTristateMaxP(ctx, sreg, 128) )
+	{
+		if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+		{
+//			dreg2=BGBCC_SH_REG_RQ0+(dreg&31);
+//			if(dreg2&1)
+//				{ dreg2=(dreg2&(~1))+32; }
+
+			dreg2=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, dreg);
+
+			BGBCC_CCXL_GetRegImmX128Value(ctx, sreg, &li, &lj);
+			
+			if((sreg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_TS64_LVT)
+			{
+				lj=0;
+			}
+			
 //			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+0, li);
 //			BGBCC_JX2_EmitLoadRegImm64P(sctx, dreg2+1, lj);
 			BGBCC_JX2_EmitLoadRegImm128P(sctx, dreg2, li, lj);

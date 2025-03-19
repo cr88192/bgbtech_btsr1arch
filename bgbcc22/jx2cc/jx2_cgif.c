@@ -1104,6 +1104,11 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 	if(ty.val==CCXL_TY_PIL)
 		{ return(BGBCC_SH_REGCLS_QGR); }
 
+	if(BGBCC_CCXL_TypeBitIntP(ctx, ty))
+	{
+		sz=-1;
+	}
+
 	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
 	{
 #if 1
@@ -1338,6 +1343,21 @@ int BGBCC_JX2C_TypeGetRegClassPI(BGBCC_TransState *ctx, ccxl_type ty)
 	if(BGBCC_CCXL_TypeFatPointerP(ctx, ty))
 	{
 		return(BGBCC_SH_REGCLS_VO_QGR2);
+	}
+
+	if(BGBCC_CCXL_TypeBitIntP(ctx, ty))
+	{
+		sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, ty);
+		
+		if(sz<=64)
+			return(BGBCC_SH_REGCLS_QGR);
+		if(sz<=128)
+			return(BGBCC_SH_REGCLS_QGR2);
+
+		if(ctx->arch_sizeof_ptr==16)
+			return(BGBCC_SH_REGCLS_VO_REF2);
+
+		return(BGBCC_SH_REGCLS_VO_REF);
 	}
 
 	return(BGBCC_SH_REGCLS_NONE);

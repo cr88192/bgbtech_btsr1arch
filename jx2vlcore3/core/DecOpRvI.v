@@ -896,6 +896,19 @@ begin
 `endif
 					end
 
+`ifdef def_true
+// `ifndef def_true
+					if(opIsJumbo)
+					begin
+						if(tRegRmIsZr)
+						begin
+							/* Special Case: MOV Imm, Rn */
+							opNmid		= JX2_UCMD_MOV_IR;
+							opUCmdIx	= JX2_UCIX_LDI_LDIX;
+						end
+					end
+`endif
+
 // `ifdef def_true
 `ifndef def_true
 					if(opIsJumbo)
@@ -1761,20 +1774,15 @@ begin
 				case(istrWord[14:12])
 					3'b000:
 					begin
-//						opUCmdIx = JX2_UCIX_QMUL_MULSL;
 						opNmid		= JX2_UCMD_MUL3;
 						opUCmdIx	= JX2_UCIX_MUL3_MUL3S;
 					end
 					3'b001: opUCmdIx = JX2_UCIX_QMUL_MULHSL;
 					3'b010: begin
-//						opUCmdIx = JX2_UCIX_QMUL_MULHSU;
-//						opUCmdIx = JX2_UCIX_QMUL_MULS;
 						opNmid		= JX2_UCMD_MUL3;
 						opUCmdIx	= JX2_UCIX_MUL3_DMUL3S;
 					end
 					3'b011: begin
-//						opUCmdIx = JX2_UCIX_QMUL_MULHUL;
-//						opUCmdIx = JX2_UCIX_QMUL_MULS;
 						opNmid		= JX2_UCMD_MUL3;
 						opUCmdIx	= JX2_UCIX_MUL3_DMUL3U;
 					end
@@ -2009,6 +2017,9 @@ begin
 				opRegN	= JX2_GR_ZZR;
 			if(opNmid == JX2_UCMD_MOV_MR)
 				opRegP	= JX2_GR_ZZR;
+
+			if(opNmid == JX2_UCMD_ALU3)
+				opRegP	= JX2_GR_ZZR;
 `endif
 
 			case(opIty)
@@ -2137,6 +2148,11 @@ begin
 			opRegM	= opRegM_Dfl;
 			opRegO	= JX2_GR_IMM;
 			opUIxt	= { opUCty, opUCmdIx };
+
+`ifdef jx2_reg_rp
+			if(opNmid == JX2_UCMD_ALU3)
+				opRegP	= JX2_GR_ZZR;
+`endif
 
 			case(opIty)
 				JX2_ITY_SB: begin
@@ -2499,13 +2515,14 @@ begin
 
 `ifndef def_true
 // `ifdef def_true
-	if(opIsJumboAu)
+//	if(opIsJumboAu)
+	if(opIsJumboAu && (opNmid == JX2_UCMD_ALU3))
 	begin
 		if(!tMsgLatch)
 		begin
 			$display(
-			"DecOpRvI: Dbg-JA  %X-%X jb=%X  %X-%X m=%X o=%X p=%X n=%X i=%X",
-				istrWord[15:0], istrWord[31:16], istrJBits,
+			"DecOpRvI: Dbg-JA %X.%X jb=%X  %X-%X m=%X o=%X p=%X n=%X i=%X",
+				istrWord[31:16], istrWord[15:0], istrJBits,
 				opUCmd, opUIxt,
 				opRegM, opRegO, opRegP, opRegN,
 				opImm);
@@ -2513,13 +2530,14 @@ begin
 		tNextMsgLatch=1;
 	end
 	else
-		if(opIsJumbo)
+//		if(opIsJumbo)
+		if(opIsJumbo && (opNmid == JX2_UCMD_ALU3))
 	begin
 		if(!tMsgLatch)
 		begin
 			$display(
-			"DecOpRvI: Dbg-J  %X-%X jb=%X  %X-%X m=%X o=%X p=%X n=%X i=%X",
-				istrWord[15:0], istrWord[31:16], istrJBits,
+			"DecOpRvI: Dbg-J  %X.%X jb=%X  %X-%X m=%X o=%X p=%X n=%X i=%X",
+				istrWord[31:16], istrWord[15:0], istrJBits,
 				opUCmd, opUIxt,
 				opRegM, opRegO, opRegP, opRegN,
 				opImm);

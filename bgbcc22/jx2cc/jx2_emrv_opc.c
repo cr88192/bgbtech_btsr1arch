@@ -5439,6 +5439,12 @@ int BGBCC_JX2RV_TryEmitOpRegRegRegReg(
 int BGBCC_JX2RV_TryEmitOpRegRegImmReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int imm, int rn)
 {
+	int ret;
+
+	ret=BGBCC_JX2X3_TryEmitOpRegRegImmReg(ctx, nmid, rs, rt, imm, rn);
+	if(ret>0)
+		return(ret);
+
 	return(0);
 }
 

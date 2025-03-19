@@ -2157,7 +2157,8 @@ begin
 
 `ifndef def_true
 // `ifdef def_true
-	if(srXG3)
+//	if(srXG3)
+	if((opUCmdA0[5:0] == JX2_UCMD_ALU3) && srRiscv && srSsc2)
 	begin
 		if(tMsgLatchBPc!=tNextMsgLatchBPc)
 		begin

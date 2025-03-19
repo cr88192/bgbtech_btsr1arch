@@ -35,6 +35,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegBitInt(
 	int i, j, k;
 
 	sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+	sz=(sz+127)/128;
 
 	nm1=-1;
 
@@ -132,6 +133,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegBitInt(
 	}
 
 	sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+	sz=(sz+127)/128;
 
 	nm1=-1;
 
@@ -198,6 +200,7 @@ int BGBCC_JX2C_EmitUnaryVRegVRegBitInt(
 	int i, j, k;
 	
 	sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+	sz=(sz+127)/128;
 
 	if(opr==CCXL_UNOP_MOV)
 	{
@@ -259,6 +262,7 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegBitInt(
 	int i, j, k;
 
 	sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+	sz=(sz+127)/128;
 
 	nm1=-1;
 	nm2=-1;
@@ -346,6 +350,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegBitInt(
 	
 
 	sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+	sz=(sz+127)/128;
 
 	nm1=-1;
 	nm2=-1;
@@ -429,6 +434,9 @@ int BGBCC_JX2C_EmitConvFromVRegVRegBitInt(
 
 	dsz=BGBCC_CCXL_TypeGetBitIntSize(ctx, dtype);
 	ssz=BGBCC_CCXL_TypeGetBitIntSize(ctx, stype);
+
+	dsz=(dsz+127)/128;
+	ssz=(ssz+127)/128;
 	
 	msz=dsz;
 	nsz=dsz;

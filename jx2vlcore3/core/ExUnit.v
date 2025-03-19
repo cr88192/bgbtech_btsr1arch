@@ -1290,6 +1290,8 @@ RegGPR regGpr(
 //reg [ 4:0]	crIdCn3;		//Destination ID (EX3)
 `reg_gpr	crIdCn3;		//Destination ID (EX3)
 `reg_gprval	crValCn3;		//Destination Value (EX3)
+`reg_gpr	crIdCn4;		//Destination ID (EX4/WB)
+`reg_gprval	crValCn4;		//Destination Value (EX4/WB)
 wire[47:0]	crOutPc;
 reg [47:0]	crInPc;
 wire[63:0]	crOutLr;
@@ -1364,6 +1366,8 @@ RegCR regCr(
 	crValCn2,		//Destination Value (EX2)
 	crIdCn3,		//Destination ID (EX3)
 	crValCn3,		//Destination Value (EX3)
+	crIdCn4,		//Destination ID (EX4/WB)
+	crValCn4,		//Destination Value (EX4/WB)
 
 	gprEx1Flush,	//Flush EX1
 	gprEx2Flush,	//Flush EX2
@@ -3194,6 +3198,8 @@ begin
 	gprEx1Flush		= 0;
 	gprEx2Flush		= 0;
 	gprEx3Flush		= 0;
+	crIdCn4			= 0;
+	crValCn4		= 0;
 	crIdCn3			= 0;
 	crValCn3		= 0;
 	crIdCn2			= 0;
@@ -5695,6 +5701,8 @@ begin
 	crValCn2		= ex2RegValCn2;
 	crIdCn3			= ex3RegIdCn3;
 	crValCn3		= ex3RegValCn3;
+	crIdCn4			= ex3RegIdCn4;
+	crValCn4		= ex3RegValCn4;
 `endif
 
 // `ifdef def_true
@@ -5704,13 +5712,16 @@ begin
 	crIdCn2			= ex2RegIdRn2;
 	crValCn2		= ex2RegValRn2;
 
-`ifdef jx2_enable_movc
+//`ifdef jx2_enable_movc
 	crIdCn3			= ex3RegIdRn3;
 	crValCn3		= ex3RegValRn3;
-`else
-	crIdCn3			= ex3RegIdRn2;
-	crValCn3		= ex3RegValRn2;
-`endif
+// `else
+//	crIdCn3			= ex3RegIdRn2;
+//	crValCn3		= ex3RegValRn2;
+// `endif
+
+	crIdCn4			= ex3RegIdRn4;
+	crValCn4		= ex3RegValRn4;
 
 `endif
 

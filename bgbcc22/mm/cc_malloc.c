@@ -1152,7 +1152,10 @@ int bgbcc_strtoxl2(char *str, int rdx, u64 *rxlo, u64 *rxhi, short *rdpct)
 		if((i>='a') && (i<='z'))
 			j=10+(i-'a');
 		if((j<0) || (j>=rdx))
+		{
+			s--;
 			break;
+		}
 //		tl=(tl*rdx)+j;
 //		tm=(tm*rdx)+(tl>>32);
 //		th=(th*rdx)+(tm>>32);
@@ -1184,6 +1187,12 @@ int bgbcc_strtoxl2(char *str, int rdx, u64 *rxlo, u64 *rxhi, short *rdpct)
 	{
 		/* Exceeds 128-bit range... */
 		return(-1);
+	}
+	
+	if(*s)
+	{
+		
+		return(0);
 	}
 	
 	return(1);
@@ -1402,7 +1411,99 @@ int bgbcc_strtoxx2(char *str, int rdx, u64 *rxa, int *rdpct)
 		tv=tvaa[k*2+0]|(tvaa[k*2+1]<<32);
 		rxa[k]=tv;
 		if(!tv)
+		{
+			for(j=k+1; j<32; j++)
+			{
+				tv=tvaa[j*2+0]|(tvaa[j*2+1]<<32);
+				if(tv)
+					break;
+			}
+			if(j>=32)
+				break;
+		}
+	}
+	
+	*rdpct=0;
+	return(k);
+}
+
+int bgbcc_strtoxtx2(char *str, int rdx, u64 *rxa, u64 *rxb, int *rdpct)
+{
+	char *s;
+	u64 tvaa[64], tvab[64], tv, tva, tvb;
+	int i, j, k, jm, dpct;
+	
+	memset(tvaa, 0, 64*sizeof(u64));
+	memset(tvab, 0, 64*sizeof(u64));
+	
+//	s=str; tl=0; tm=0; th=0; dpct=-9999;
+	s=str; dpct=-99999;
+	while(*s)
+	{
+		if(*s=='_')
+			{ s++; continue; }
+
+		if((*s=='.') && rdpct)
+		{
+			s++;
+			dpct=0;
+			continue;
+		}
+
+		jm=0;
+
+		i=*s++; j=-1;
+		if((i>='0') && (i<='9'))
+			j=0+(i-'0');
+		if((i>='A') && (i<='W'))
+			j=10+(i-'A');
+		if((i>='a') && (i<='w'))
+			j=10+(i-'a');
+		
+		if((i=='x') || (i=='X'))
+			{ j=rdx-1; jm=rdx-1; }
+		if((i=='z') || (i=='Z'))
+			{ j=0; jm=rdx-1; }
+		
+		if((j<0) || (j>=rdx))
 			break;
+
+		tvaa[0]=(tvaa[0]*rdx)+j;
+		tvab[0]=(tvab[0]*rdx)+jm;
+		for(k=1; k<64; k++)
+		{
+			tvaa[k]=(tvaa[k]*rdx)+(tvaa[k-1]>>32);
+			tvab[k]=(tvab[k]*rdx)+(tvab[k-1]>>32);
+		}
+		for(k=0; k<64; k++)
+		{
+			tvaa[k]=(u32)tvaa[k];
+			tvab[k]=(u32)tvab[k];
+		}
+		dpct++;
+	}
+	
+	if(dpct<0)
+		dpct=0;
+	
+	for(k=0; k<32; k++)
+	{
+		tva=tvaa[k*2+0]|(tvaa[k*2+1]<<32);
+		tvb=tvab[k*2+0]|(tvab[k*2+1]<<32);
+		rxa[k]=tva;
+		rxb[k]=tvb;
+		if(!tva && !tvb)
+		{
+			for(j=k+1; j<32; j++)
+			{
+				tva=tvaa[j*2+0]|(tvaa[j*2+1]<<32);
+				tvb=tvab[j*2+0]|(tvab[j*2+1]<<32);
+				if(tva||tvb)
+					break;
+			}
+			if(j>=32)
+				break;
+		}
 	}
 	
 	*rdpct=0;
@@ -1465,6 +1566,64 @@ int bgbcc_strtoxx(char *str, u64 *rxa, int *rdpct)
 	return(n);
 }
 
+
+int bgbcc_strtoxtx(char *str, u64 *rxa, u64 *rxb, int *rdpct)
+{
+	char *s;
+	u64 tv, tv1;
+	int i, j, c, n, sg, rdx;
+	
+	rdx=10;
+	
+	s=str; sg=0;
+	if(*s=='-')
+		{ s++; sg=1; }
+
+	if(*s=='0')
+	{
+		if((s[1]=='x') || (s[1]=='X'))
+		{
+			rdx=16;
+			s+=2;
+		}
+		else if((s[1]=='b') || (s[1]=='B'))
+		{
+			rdx=2;
+			s+=2;
+		}
+		else if((s[1]=='d') || (s[1]=='D'))
+		{
+			rdx=10;
+			s+=2;
+		}
+		else if((s[1]=='c') || (s[1]=='C'))
+		{
+			rdx=8;
+			s+=2;
+		}else
+		{
+			rdx=8;
+			s++;
+		}
+	}
+		
+	n=bgbcc_strtoxtx2(s, rdx, rxa, rxb, rdpct);
+
+	if(sg)
+	{
+		c=1;
+		for(i=0; i<n; i++)
+		{
+			tv=~rxa[i];
+			tv^=rxb[i];
+			tv1=tv+c;
+			rxa[i]=tv1;
+			c=((tv>>63)^(tv1>>63))&1;
+		}
+	}
+	return(n);
+}
+
 int bgbcc_strtoxs(char *str, char *rxb)
 {
 	u64 tva[64];
@@ -1478,6 +1637,51 @@ int bgbcc_strtoxs(char *str, char *rxb)
 	for(i=0; i<n; i++)
 	{
 		tv=tva[i];
+		t[ 0]='0'+((tv>> 0)&63);
+		t[ 1]='0'+((tv>> 6)&63);
+		t[ 2]='0'+((tv>>12)&63);
+		t[ 3]='0'+((tv>>18)&63);
+		t[ 4]='0'+((tv>>24)&63);
+		t[ 5]='0'+((tv>>30)&63);
+		t[ 6]='0'+((tv>>36)&63);
+		t[ 7]='0'+((tv>>42)&63);
+		t[ 8]='0'+((tv>>48)&63);
+		t[ 9]='0'+((tv>>54)&63);
+		t[10]='0'+((tv>>60)&63);
+		t+=11;
+	}
+	*t=0;
+	
+	return(n);
+}
+
+int bgbcc_strtoxts(char *str, char *rxb)
+{
+	u64 tva[64], tvb[64];
+	u64 tv;
+	char *t;
+	int i, j, k, n, pct;
+
+	n=bgbcc_strtoxtx(str, tva, tvb, &pct);
+
+	t=rxb;
+	for(i=0; i<n; i++)
+	{
+		tv=tva[i];
+		t[ 0]='0'+((tv>> 0)&63);
+		t[ 1]='0'+((tv>> 6)&63);
+		t[ 2]='0'+((tv>>12)&63);
+		t[ 3]='0'+((tv>>18)&63);
+		t[ 4]='0'+((tv>>24)&63);
+		t[ 5]='0'+((tv>>30)&63);
+		t[ 6]='0'+((tv>>36)&63);
+		t[ 7]='0'+((tv>>42)&63);
+		t[ 8]='0'+((tv>>48)&63);
+		t[ 9]='0'+((tv>>54)&63);
+		t[10]='0'+((tv>>60)&63);
+		t+=11;
+
+		tv=tvb[i];
 		t[ 0]='0'+((tv>> 0)&63);
 		t[ 1]='0'+((tv>> 6)&63);
 		t[ 2]='0'+((tv>>12)&63);

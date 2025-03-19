@@ -57,9 +57,9 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 {
 	char tba[512];
 	BCCX_Node *n;
-	char *s, *suf1;
+	char *s, *suf1, *s1;
 	s64 li, lj;
-	int i, big;
+	int i, big, bigts, tsi_sz;
 
 	s=str;
 //	while(*s && (*s!='.') && (*s!='e') && (*s!='E')) s++;
@@ -72,8 +72,58 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 		i=bgbcc_atoxl(str, (u64 *)(&li), (u64 *)(&lj));
 		
 		big=0;
+		bigts=0;
+		tsi_sz=0;
 		if(!suf && (i<0))
-			big=1;
+		{
+//			big=1;
+
+			s=str;
+			if((s[0]=='0') &&
+				((s[1]=='x') || (s[1]=='X') ||
+				 (s[1]=='b') || (s[1]=='B')))
+					s+=2;
+			while(*s)
+			{
+				if((*s=='x') || (*s=='z') || (*s=='X') || (*s=='Z'))
+					break;
+				s++;
+			}
+		
+			if(*s)
+				bigts=1;
+			else
+				big=1;
+		}
+
+		if(suf &&
+			((suf[0]=='I') || (suf[0]=='U')) &&
+			(suf[1]>='0') && (suf[1]<='9'))
+		{
+			tsi_sz=atoi(suf+1);
+		}
+		
+		if((i<=0) && suf &&
+			((suf[0]=='I') || (suf[0]=='U')) &&
+			(suf[1]>='0') && (suf[1]<='9'))
+		{
+			s=str;
+			if((s[0]=='0') &&
+				((s[1]=='x') || (s[1]=='X') ||
+				 (s[1]=='b') || (s[1]=='B')))
+					s+=2;
+			while(*s)
+			{
+				if((*s=='x') || (*s=='z') || (*s=='X') || (*s=='Z'))
+					break;
+				s++;
+			}
+		
+			if(*s)
+				bigts=1;
+			else
+				big=1;
+		}
 		
 		suf1=suf;
 #if 1
@@ -114,12 +164,68 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 		}
 #endif
 		
+		if(bigts)
+		{
+			bgbcc_strtoxts(str, tba);
+			
+			if(!tsi_sz)
+			{
+				tsi_sz=(strlen(tba)/22)*64;
+			}
+
+			if(strlen(tba)==22)
+			{
+				/* special-case tristate values <= 64 bits. */
+				s=tba;
+				li=	(((u64)(s[ 0]-'0'))<< 0) |
+					(((u64)(s[ 1]-'0'))<< 6) |
+					(((u64)(s[ 2]-'0'))<<12) |
+					(((u64)(s[ 3]-'0'))<<18) |
+					(((u64)(s[ 4]-'0'))<<24) |
+					(((u64)(s[ 5]-'0'))<<30) |
+					(((u64)(s[ 6]-'0'))<<36) |
+					(((u64)(s[ 7]-'0'))<<42) |
+					(((u64)(s[ 8]-'0'))<<58) |
+					(((u64)(s[ 9]-'0'))<<54) |
+					(((u64)(s[10]-'0'))<<60) ;
+				s+=11;
+				lj=	(((u64)(s[ 0]-'0'))<< 0) |
+					(((u64)(s[ 1]-'0'))<< 6) |
+					(((u64)(s[ 2]-'0'))<<12) |
+					(((u64)(s[ 3]-'0'))<<18) |
+					(((u64)(s[ 4]-'0'))<<24) |
+					(((u64)(s[ 5]-'0'))<<30) |
+					(((u64)(s[ 6]-'0'))<<36) |
+					(((u64)(s[ 7]-'0'))<<42) |
+					(((u64)(s[ 8]-'0'))<<58) |
+					(((u64)(s[ 9]-'0'))<<54) |
+					(((u64)(s[10]-'0'))<<60) ;
+
+				n=BCCX_NewCst(&bgbcc_rcst_int_ts, "int_ts");
+				BCCX_SetIntCst(n, &bgbcc_rcst_value_lo, "value_lo", li);
+				BCCX_SetIntCst(n, &bgbcc_rcst_value_hi, "value_hi", lj);
+				BCCX_SetIntCst(n, &bgbcc_rcst_value_sz, "value_sz", tsi_sz);
+				return(n);
+			}
+
+			n=BCCX_NewCst(&bgbcc_rcst_bigtsi, "bigtsi");
+			BCCX_SetCst(n, &bgbcc_rcst_value, "value", tba);
+			if(tsi_sz)
+				BCCX_SetIntCst(n, &bgbcc_rcst_value_sz, "value_sz", tsi_sz);
+//			BCCX_SetIntCst(n, &bgbcc_rcst_value, "value", li);			
+			if(suf1)
+				BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", suf1);
+			return(n);
+		}
+		
 		if(big)
 		{
 			bgbcc_strtoxs(str, tba);
 		
 			n=BCCX_NewCst(&bgbcc_rcst_bigint, "bigint");
 			BCCX_SetCst(n, &bgbcc_rcst_value, "value", tba);
+			if(tsi_sz)
+				BCCX_SetIntCst(n, &bgbcc_rcst_value_sz, "value_sz", tsi_sz);
 //			BCCX_SetIntCst(n, &bgbcc_rcst_value, "value", li);			
 			if(suf1)
 				BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", suf1);
@@ -134,12 +240,16 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 			n=BCCX_NewCst(&bgbcc_rcst_int128, "int128");
 			BCCX_SetIntCst(n, &bgbcc_rcst_value_lo, "value_lo", li);
 			BCCX_SetIntCst(n, &bgbcc_rcst_value_hi, "value_hi", lj);
+			if(tsi_sz)
+				BCCX_SetIntCst(n, &bgbcc_rcst_value_sz, "value_sz", tsi_sz);
 			return(n);
 		}
 
 		n=BCCX_NewCst(&bgbcc_rcst_int, "int");
 //		BCCX_SetCst(n, &bgbcc_rcst_value, "value", str);
 		BCCX_SetIntCst(n, &bgbcc_rcst_value, "value", li);
+		if(tsi_sz)
+			BCCX_SetIntCst(n, &bgbcc_rcst_value_sz, "value_sz", tsi_sz);
 		
 		if(suf1)
 			BCCX_SetCst(n, &bgbcc_rcst_tysuf, "tysuf", suf1);
@@ -1178,6 +1288,31 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 				suf="ULL";
 			if(!bgbcp_strcmp5(b2, "UI128") || !bgbcp_strcmp5(b2, "ui128"))
 				suf="UXL";
+			
+			if(	((b2[0]=='i') || (b2[0]=='I')) &&
+				(b2[1]>='0') && (b2[1]<='9') &&
+				!suf)
+			{
+				sprintf(b3, "I%u", atoi(b2+1));
+				suf=bgbcc_strdup(b3);
+			}
+
+			if(	((b2[0]=='u') || (b2[0]=='U')) &&
+				(b2[1]>='0') && (b2[1]<='9') &&
+				!suf)
+			{
+				sprintf(b3, "U%u", atoi(b2+1));
+				suf=bgbcc_strdup(b3);
+			}
+
+			if(	((b2[0]=='u') || (b2[0]=='U')) &&
+				((b2[1]=='i') || (b2[1]=='I')) &&
+				(b2[2]>='0') && (b2[2]<='9') &&
+				!suf)
+			{
+				sprintf(b3, "U%u", atoi(b2+2));
+				suf=bgbcc_strdup(b3);
+			}
 		}
 
 		if(suf && (ty2==BTK_NAME) && !bgbcp_strcmp2(suf, "XF"))

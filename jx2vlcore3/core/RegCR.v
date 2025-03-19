@@ -37,6 +37,8 @@ module RegCR(
 	regValCn2,		//Destination Value (EX2)
 	regIdCn3,		//Destination ID (EX3)
 	regValCn3,		//Destination Value (EX3)
+	regIdCn4,		//Destination ID (EX4/WB)
+	regValCn4,		//Destination Value (EX4/WB)
 
 	regEx1Flush,
 	regEx2Flush,
@@ -95,6 +97,9 @@ input			regEx2Flush;
 `input_gpr		regIdCn3;		//Destination ID
 `input_gprval	regValCn3;		//Destination Value
 input			regEx3Flush;
+
+`input_gpr		regIdCn4;		//Destination ID
+`input_gprval	regValCn4;		//Destination Value
 
 input [47:0]	gprValPc;		//PC Value (Synthesized)
 
@@ -306,8 +311,11 @@ begin
 
 
 //	regIdCn2B	= { 1'b1, regIdCn3 };
-	regIdCn2B	= regIdCn3;
-	regValCn2B	= regValCn3[63:0];
+//	regIdCn2B	= regIdCn3;
+//	regValCn2B	= regValCn3[63:0];
+
+	regIdCn2B	= regIdCn4;
+	regValCn2B	= regValCn4[63:0];
 
 	if(regEx3Flush)
 	begin

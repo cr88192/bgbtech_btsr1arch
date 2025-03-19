@@ -120,12 +120,21 @@ char *BGBCC_CCXL_TagGetMessage(int tag)
 		str="Undeclared function";	break;
 	case CCXL_TERR_AUTOALLOCA:
 		str="Local storage converted to alloca";	break;
+
+	case CCXL_TERR_CONSTBITLOSS:
+		str="Constant range outside of specified size";	break;
+	case CCXL_TERR_BADTYPEARG:
+		str="Bad type for operation argument";	break;
+	case CCXL_TERR_BADTYPEDEST:
+		str="Bad type for operation destination";	break;
+	case CCXL_TERR_BITSIZENEQ:
+		str="Bit sizes not equal";	break;
 		
 	case CCXL_TERR_STATUS(CCXL_STATUS_ERR_UNHANDLEDTYPE):
 		str="Unhandled Type";	break;
 	case CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS):
 		str="Bad Operation Arguments";	break;
-	
+
 	default:
 		str="(Unknown)";	break;
 	}
@@ -2723,6 +2732,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			if(!strcmp(s, "long_long"))*t++='y';
 			if(!strcmp(s, "int128"))*t++='o';
 
+			if(!strcmp(s, "int8"))*t++='h';
+			if(!strcmp(s, "int16"))*t++='t';
+			if(!strcmp(s, "int32"))*t++='j';
+			if(!strcmp(s, "int64"))*t++='y';
+
 			if(!strcmp(s, "float"))
 				{ *t++='C'; *t++='f'; }
 			if(!strcmp(s, "double"))
@@ -2740,6 +2754,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		}else
 			if(fl&BGBCC_TYFL_SIGNED)
 		{
+			if(!strcmp(s, "int8"))*t++='c';
+			if(!strcmp(s, "int16"))*t++='s';
+			if(!strcmp(s, "int32"))*t++='i';
+			if(!strcmp(s, "int64"))*t++='x';
+
 			if(!strcmp(s, "float"))
 				{ *t++='G'; *t++='f'; }
 			if(!strcmp(s, "double"))
@@ -3064,11 +3083,15 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "number"))
 			{ *t++='d'; }
 
-		if(!strncmp(s, "bitint_", 7))
+		if(	!strncmp(s, "bitint_", 7) ||
+			!strncmp(s, "ubitint_", 8))
 		{
-			k=atoi(s+7);
-			k/=128;
-			if(fl&BGBCC_TYFL_UNSIGNED)
+			if(!strncmp(s, "bitint_", 7))
+				k=atoi(s+7);
+			if(!strncmp(s, "ubitint_", 8))
+				k=atoi(s+8);
+//			k/=128;
+			if((fl&BGBCC_TYFL_UNSIGNED) || (s[0]=='u'))
 				{ *t++='D'; *t++='y'; }
 			else
 				{ *t++='D'; *t++='x'; }

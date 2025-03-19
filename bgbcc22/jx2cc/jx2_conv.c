@@ -29,6 +29,7 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 	ccxl_type dtype, ccxl_type stype,
 	ccxl_register dreg, ccxl_register sreg)
 {
+	ccxl_type dty2, sty2;
 	s64 li;
 	int csreg, ctreg, cdreg;
 	int tr0, tr1, tr2, tr3;
@@ -543,6 +544,42 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 
 	if(BGBCC_CCXL_TypeBitIntP(ctx, dtype))
 	{
+		if(BGBCC_CCXL_TypeBitIntMaxP(ctx, dtype, 64))
+		{
+			if(BGBCC_CCXL_TypeBitIntMaxP(ctx, stype, 64))
+			{
+				return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+					dtype, dreg, sreg));
+			}else
+				if(BGBCC_CCXL_TypeBitIntMaxP(ctx, stype, 128))
+			{
+				dty2=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UL);
+				sty2=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UI128);
+				return(BGBCC_JX2C_EmitConvVRegVReg(ctx, sctx,
+					dty2, sty2, dreg, sreg));
+			}else
+				if(BGBCC_CCXL_TypeSmallLongP(ctx, stype))
+			{
+				return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+					dtype, dreg, sreg));
+			}
+		}else
+			if(BGBCC_CCXL_TypeBitIntMaxP(ctx, dtype, 128))
+		{
+			if(BGBCC_CCXL_TypeBitIntMaxP(ctx, stype, 64))
+			{
+				dty2=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UI128);
+				sty2=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_UL);
+				return(BGBCC_JX2C_EmitConvVRegVReg(ctx, sctx,
+					dty2, sty2, dreg, sreg));
+			}else
+				if(BGBCC_CCXL_TypeBitIntMaxP(ctx, stype, 128))
+			{
+				return(BGBCC_JX2C_EmitMovVRegVReg(ctx, sctx,
+					dtype, dreg, sreg));
+			}
+		}
+	
 		if(BGBCC_CCXL_TypeSmallBitIntP(ctx, stype))
 		{
 			return(BGBCC_JX2C_EmitConvFromVRegVRegBitInt(ctx, sctx,

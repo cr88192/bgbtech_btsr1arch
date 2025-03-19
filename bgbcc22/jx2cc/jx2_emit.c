@@ -9032,8 +9032,9 @@ int BGBCC_JX2_ComposeJumboRegImm24RegRegF0(BGBCC_JX2_Context *ctx,
 		BGBCC_JX2_EmitCheckRegExt5(ctx, sreg) ||
 		BGBCC_JX2_EmitCheckRegExt5(ctx, preg))
 	{
-		if(!(ctx->op_is_wex2&2))
-			return(0);
+		opw4=-1;
+//		if(!(ctx->op_is_wex2&2))
+//			return(0);
 	}
 
 	opw1=0x4FE00|((imm>>16)&0x00FF);

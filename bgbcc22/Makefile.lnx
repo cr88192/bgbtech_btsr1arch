@@ -50,6 +50,8 @@ mk_link:
 #	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-c++
 #	ln -f -s $(INST_BIN)/bgbcc $(INST_BIN)/bjx2-pel-g++
 
+	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bgbcc
+
 	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-cc
 	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-gcc
 	ln -f -s $(INST_BIN)/bgbcc$(BINSUF) $(INST_BIN)/bjx2-tk-pel-as

@@ -1798,6 +1798,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_CSRRW:		s0="CSRRW";		break;
 	case BJX2_NMID_CSRRS:		s0="CSRRS";		break;
 
+	case BJX2_NMID_BITMOV:		s0="BITMOV";		break;
+	case BJX2_NMID_BITMOVX:		s0="BITMOVX";		break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;
@@ -2764,6 +2767,13 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
 			op->imm,
 			BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
+			BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		break;
+	case BJX2_FMID_REGREGIMMREG:
+		BJX2_DbgPrintf(ctx, "%s, %s, #%lld, %s",
+			BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
+			BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
+			op->imm,
 			BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
 		break;
 

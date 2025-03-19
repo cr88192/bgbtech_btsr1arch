@@ -502,6 +502,17 @@ ccxl_type BGBCC_CCXL_GetRegType(
 			BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
 			return(tty);
 		}
+
+		if(	(regty==CCXL_REGTY_IMM_BI48) ||
+			(regty==CCXL_REGTY_IMM_TS24) ||
+			(regty==CCXL_REGTY_IMM_BI128_LVT) ||
+			(regty==CCXL_REGTY_IMM_TS64_LVT) )
+		{
+			i=(reg.val>>48)&127;
+			tty=BGBCC_CCXL_MakeTypeID_Arr(ctx,
+				CCXL_TY_UBITINT, i);
+			return(tty);
+		}
 	}
 #endif
 
@@ -2437,6 +2448,26 @@ s64 BGBCC_CCXL_GetRegImmLongValue(
 		return(v);
 	}
 
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_BI48)
+	{
+		v=reg.val&CCXL_REGI48_MASK;
+		return(v);
+	}
+
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_TS24)
+	{
+		v=reg.val&CCXL_REGID_REGMASK;
+		return(v);
+	}
+
+	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_BI128_LVT) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_TS64_LVT))
+	{
+		i=reg.val&CCXL_REGINTPL_MASK;
+		v=ctx->ctab_lvt8[i];
+		return(v);
+	}
+
 	__debugbreak();
 
 	return(0);
@@ -2450,12 +2481,22 @@ int BGBCC_CCXL_GetRegImmX128Value(
 	int i, j, k;
 
 	if(((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_I128_LVT) ||
-		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_F128_LVT))
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_F128_LVT) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_TS64_LVT))
 	{
 		i=reg.val&CCXL_REGINTPL_MASK;
 		j=(reg.val>>CCXL_REGINTPH_SHL)&CCXL_REGINTPL_MASK;
 		vl=ctx->ctab_lvt8[i];
 		vh=ctx->ctab_lvt8[j];
+		*rval_lo=vl;
+		*rval_hi=vh;
+		return(1);
+	}
+	
+	if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_TS24)
+	{
+		vl=reg.val&CCXL_REGINTPL_MASK;
+		vh=(reg.val>>CCXL_REGINTPH_SHL)&CCXL_REGINTPL_MASK;
 		*rval_lo=vl;
 		*rval_hi=vh;
 		return(1);
@@ -2857,6 +2898,130 @@ ccxl_status BGBCC_CCXL_GetRegForX128Value(
 }
 
 
+bool BGBCC_CCXL_IsRegImmBitIntMaxP(
+	BGBCC_TransState *ctx, ccxl_register reg, int msz)
+{
+	int i, j, k;
+	if(	((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_BI48) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_BI128_LVT))
+	{
+		i=(reg.val>>48)&127;
+		
+		if(i<=msz)
+			return(true);
+		return(false);
+	}
+
+	return(false);
+}
+
+bool BGBCC_CCXL_IsRegImmTristateMaxP(
+	BGBCC_TransState *ctx, ccxl_register reg, int msz)
+{
+	int i, j, k;
+	if(	((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_TS24) ||
+		((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_IMM_TS64_LVT))
+	{
+		i=(reg.val>>48)&127;
+		
+		if(i<=msz)
+			return(true);
+		return(false);
+	}
+
+	return(false);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForTristateValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg,
+	s64 val_lo, s64 val_hi, int val_sz)
+{
+	ccxl_register treg;
+	int i, j, k;
+	
+	if(	((val_lo&CCXL_REGI48_MASK)==val_lo) &&
+		(val_hi==0))
+	{
+		treg.val=
+			(val_lo&CCXL_REGI48_MASK)|
+			(( val_sz&127LL)<<CCXL_REGINTTY_SHL)|
+			CCXL_REGTY_IMM_BI48;
+		*rreg=treg;
+		return(CCXL_STATUS_YES);
+	}
+	
+	if(	((val_lo&CCXL_REGINTPL_MASK)==val_lo) &&
+		((val_hi&CCXL_REGINTPL_MASK)==val_hi) )
+	{
+		i=val_lo;
+		j=val_hi;
+		treg.val=
+			(i&CCXL_REGINTPL_MASK)|
+			((j&CCXL_REGINTPL_MASK)<<CCXL_REGINTPH_SHL)|
+			(( val_sz&127LL)<<CCXL_REGINTTY_SHL)|
+			CCXL_REGTY_IMM_TS24;
+		*rreg=treg;
+		return(CCXL_STATUS_YES);
+	}
+	
+	i=BGBCC_CCXL_IndexLitS64(ctx, val_lo);
+	j=BGBCC_CCXL_IndexLitS64(ctx, val_hi);
+	treg.val=
+		(i&CCXL_REGINTPL_MASK)|
+		((j&CCXL_REGINTPL_MASK)<<CCXL_REGINTPH_SHL)|
+		(( val_sz&127LL)<<CCXL_REGINTTY_SHL)|
+		CCXL_REGTY_IMM_TS64_LVT;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForUBitIntValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg,
+	s64 val, int val_sz)
+{
+	if((val_sz==64) && ((val&CCXL_REGI48_MASK)!=val))
+	{
+		return(BGBCC_CCXL_GetRegForULongValue(ctx, rreg, val));
+	}
+
+	return(BGBCC_CCXL_GetRegForTristateValue(ctx, rreg, val, 0, val_sz));
+}
+
+ccxl_status BGBCC_CCXL_GetRegForUBitInt128Value(
+	BGBCC_TransState *ctx, ccxl_register *rreg,
+	s64 val_lo, s64 val_hi, int val_sz)
+{
+	ccxl_register treg;
+	int i, j, k;
+		
+	if(val_sz==128)
+	{
+		return(BGBCC_CCXL_GetRegForInt128Value(ctx, rreg, val_lo, val_hi));
+	}
+
+	if((val_sz==64) && ((val_lo&CCXL_REGI48_MASK)!=val_lo))
+	{
+		return(BGBCC_CCXL_GetRegForULongValue(ctx, rreg, val_lo));
+	}
+
+	if((val_sz<=64) || ((val_sz<128) && (val_hi==0)))
+	{
+		return(BGBCC_CCXL_GetRegForTristateValue(ctx, rreg,
+			val_lo, 0, val_sz));
+	}
+
+	i=BGBCC_CCXL_IndexLitS64(ctx, val_lo);
+	j=BGBCC_CCXL_IndexLitS64(ctx, val_hi);
+	treg.val=
+		(i&CCXL_REGINTPL_MASK)|
+		((j&CCXL_REGINTPL_MASK)<<CCXL_REGINTPH_SHL)|
+		(( val_sz&127LL)<<CCXL_REGINTTY_SHL)|
+		CCXL_REGTY_IMM_BI128_LVT;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+
 ccxl_status BGBCC_CCXL_GetRegForStringValue(
 	BGBCC_TransState *ctx, ccxl_register *rreg, char *str)
 {
@@ -2967,6 +3132,28 @@ ccxl_status BGBCC_CCXL_GetRegForBigIntValueN(
 	return(i);
 //	*rreg=treg;
 //	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForBigTristateValueStr(
+	BGBCC_TransState *ctx, ccxl_register *rreg, char *str, int vsz)
+{
+	ccxl_register treg;
+	int i, j, vty;
+	
+	vty=CCXL_TY_UBITINT|(vsz<<16);
+	
+	i=BGBCC_CCXL_IndexString(ctx, str);
+	if(i<0)
+		{ BGBCC_DBGBREAK }
+	
+	j=strlen(str)/11;
+	j=(j+1)/2;
+	
+	treg.val=(i&CCXL_REGINT_MASK)|CCXL_REGTY_IMM_STRING|
+		(4LL<<52)|(((u64)j)<<40)|(((u64)vty)<<32);
+
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
 }
 
 ccxl_status BGBCC_CCXL_GetRegForFieldIdValue(

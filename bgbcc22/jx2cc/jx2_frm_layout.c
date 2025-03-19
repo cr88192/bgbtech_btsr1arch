@@ -1152,6 +1152,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(obj->locals[i]->regflags&BGBCC_REGFL_CULL)
 			continue;
 	
+		if((obj->locals[i]->type.val&4095)==CCXL_TY_UBITINT)
+		{
+//			k=-1;
+			k++;
+			k--;
+		}
+	
 		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->locals[i]->type);
 		
 		obj->locals[i]->regcls=rcls;

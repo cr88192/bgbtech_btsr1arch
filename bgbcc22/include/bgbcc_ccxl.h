@@ -91,10 +91,8 @@
 #define CCXL_TY_FP8U			0x49		//Float8U
 #define CCXL_TY_VEC4_FP8S		0x4A		//Vec4 Float8S
 #define CCXL_TY_VEC4_FP8U		0x4B		//Vec4 Float8U
-
 #define CCXL_TY_VEC3FQ			0x4C		//64-bit 3x float21
 #define CCXL_TY_VEC3FX			0x4D		//128-bit 3x float42
-
 #define CCXL_TY_VARWSTRING		0x4E		//Variant String
 #define CCXL_TY_VARUSTRING		0x4F		//Variant String
 
@@ -111,6 +109,9 @@
 #define CCXL_TY_UI48			0x59		//
 #define CCXL_TY_F48				0x5A		//
 #define CCXL_TY_VEC3H_48		0x5B		//
+
+#define CCXL_TY_OSBITINT		0x5C		//signed output(n)
+#define CCXL_TY_OUBITINT		0x5D		//unsigned output(n)
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'
@@ -222,6 +223,11 @@ Base, Q1..Q3:
 // #define CCXL_REGTY_IMM_VEC_LVT		0x1100000000000000ULL	//pair of indices
 #define CCXL_REGTY_IMM_FIELDNAME	0x1200000000000000ULL
 
+#define CCXL_REGTY_IMM_BI48			0x1300000000000000ULL	//bitint (48b)
+#define CCXL_REGTY_IMM_TS64_LVT		0x1400000000000000ULL	//tristate (64b)
+#define CCXL_REGTY_IMM_TS24			0x1500000000000000ULL	//tristate (24b)
+#define CCXL_REGTY_IMM_BI128_LVT	0x1600000000000000ULL	//bitint (128b)
+
 #define CCXL_REGTY2_TYMASK			0xE000000000000000ULL
 #define CCXL_REGTY2_IMM_LONG		0x2000000000000000ULL	//long(61b)
 #define CCXL_REGTY2_IMM_DOUBLE		0x4000000000000000ULL	//double(61b)
@@ -239,6 +245,7 @@ Base, Q1..Q3:
 
 #define CCXL_REGINT_MASK		0x00000000FFFFFFFFULL	//int/float
 #define CCXL_REGLONG_MASK		0x00FFFFFFFFFFFFFFULL	//long/double (non-LVT)
+#define CCXL_REGI48_MASK		0x0000FFFFFFFFFFFFULL	//int48
 
 #define CCXL_REGINT_STMASK		0x00F0000000000000ULL	//int subtype
 #define CCXL_REGINT_ST_I		0x0000000000000000ULL	//signed int
@@ -438,6 +445,10 @@ Base, Q1..Q3:
 #define CCXL_TERR_MISSINGPROTO			0xA007
 
 #define CCXL_TERR_AUTOALLOCA			0xA008
+#define CCXL_TERR_CONSTBITLOSS			0xA009
+#define CCXL_TERR_BADTYPEARG			0xA00A
+#define CCXL_TERR_BADTYPEDEST			0xA00B
+#define CCXL_TERR_BITSIZENEQ			0xA00C
 
 #define CCXL_TERR_STATUS(st)			(0xA800+(st))
 
@@ -784,6 +795,7 @@ bccx_cxstate bgbcc_rcst_attributes;
 
 bccx_cxstate bgbcc_rcst_begin;
 bccx_cxstate bgbcc_rcst_bigint;
+bccx_cxstate bgbcc_rcst_bigtsi;
 bccx_cxstate bgbcc_rcst_binary;
 bccx_cxstate bgbcc_rcst_bits;
 bccx_cxstate bgbcc_rcst_blockcomment;
@@ -848,6 +860,8 @@ bccx_cxstate bgbcc_rcst_int;
 bccx_cxstate bgbcc_rcst_int128;
 bccx_cxstate bgbcc_rcst_instanceof;
 bccx_cxstate bgbcc_rcst_interface;
+bccx_cxstate bgbcc_rcst_int_ts;
+bccx_cxstate bgbcc_rcst_int_bi;
 bccx_cxstate bgbcc_rcst_iproto;
 
 bccx_cxstate bgbcc_rcst_jnew;
@@ -929,6 +943,7 @@ bccx_cxstate bgbcc_rcst_using;
 bccx_cxstate bgbcc_rcst_value;
 bccx_cxstate bgbcc_rcst_value_hi;
 bccx_cxstate bgbcc_rcst_value_lo;
+bccx_cxstate bgbcc_rcst_value_sz;
 
 bccx_cxstate bgbcc_rcst_value_x0;
 bccx_cxstate bgbcc_rcst_value_x1;

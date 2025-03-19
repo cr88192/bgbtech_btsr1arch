@@ -2197,10 +2197,10 @@ begin
 	tCombJWA = tPcStepJWA;
 
 `ifdef jx2_dec_ssc_riscv
-	if(blkDataRvSscEna && tInPcRiscv && !tPcStepBA)
+	if(blkDataRvSscEna && tInPcRiscv && !tPcStepBA && !tCombJWA)
 	begin
 		tCombJWA = 1;
-`ifdef jx2_dec_ssc_riscv
+`ifdef jx2_dec_ssc3_riscv
 		if(blkDataRvSsc3Ena)
 		begin
 			tPcStepWB = 1;

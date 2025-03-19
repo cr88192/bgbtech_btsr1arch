@@ -984,6 +984,28 @@ ccxl_status BGBCC_CCXL_GetSigMinMaxSize(
 			ala[0]=4; ala[1]=4;
 			break;
 
+		case 'x':
+		case 'y':
+			k=atoi(sig+2);
+			if(k<=128)
+			{
+				sz=16;
+				if(k<=64)	sz=8;
+				if(k<=32)	sz=4;
+				if(k<=16)	sz=2;
+				if(k<= 8)	sz=1;
+				al=sz;
+			}else
+			{
+				sz=16*((k+127)/128);
+				al=16;
+			}
+			if(al>ctx->arch_align_max)
+				al=ctx->arch_align_max;
+			sza[0]=sz; sza[1]=sz;
+			ala[0]=al; ala[1]=al;
+			break;
+
 		default:
 			BGBCC_DBGBREAK
 			break;

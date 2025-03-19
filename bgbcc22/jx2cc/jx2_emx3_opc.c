@@ -185,6 +185,36 @@ int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6s(
 		opwb, rm, imm, rn, ropw1, ropw2));
 }
 
+int BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(
+	BGBCC_JX2_Context *ctx,
+	s64 opwb, int rm, int ro, s64 imm, int rn,
+	s64 *ropw1, s64 *ropw2)
+{
+	s64 opw1, opw2;
+	int isimm24s;
+	
+//	return(0);
+	
+	isimm24s=0;
+	if((((s32)(imm<<8))>>8)==imm)
+		isimm24s=1;
+	
+//	if((((s32)imm)==imm) || (((u32)imm)==imm))
+	if(isimm24s)
+	{
+		*ropw1=0x0000001AU |
+			(((imm>> 0)&0xFFFF)<<16) |
+			(((imm>>16)&0x00FF)<< 8) ;
+		*ropw2=opwb|
+			((rm&63)<<16) |
+			((rn&63)<< 6) |
+			((ro&63)<<22) ;
+		return(1);
+	}
+	
+	return(0);
+}
+
 
 
 int BGBCC_JX2X3_TryEmitOpRegRegReg(
@@ -2574,6 +2604,62 @@ int BGBCC_JX2X3_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 
 		if(rlty3>0)
 			{ BGBCC_JX2_EmitRelocTy(ctx, lbl, rlty3); }
+		if(opw3>0)
+			BGBCC_JX2_EmitOpDWord(ctx, opw3);
+
+		if(opw4>0)
+			BGBCC_JX2_EmitOpDWord(ctx, opw4);
+		return(1);
+	}
+
+	return(0);
+}
+
+
+int BGBCC_JX2X3_TryEmitOpRegRegImmReg(
+	BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int imm, int rn)
+{
+	s64 opw1, opw2, opw3, opw4;
+	int odr, ex, ex2, nowxi, exw, rlty, rlty2, rlty3, isrvr;
+	int i, j, k;
+
+	if(!(ctx->emit_riscv&0x11) || !(ctx->emit_riscv&0x22))
+		return(0);
+
+//	return(0);
+
+	opw1=-1;	opw2=-1;
+	opw3=-1;	opw4=-1;
+	rlty=-1;	rlty2=-1;	rlty3=-1;
+
+
+	switch(nmid)
+	{
+	case BGBCC_SH_NMID_BITMOV:
+		BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(ctx,
+			0x30002002, rs, rt, imm, rn,
+			&opw1, &opw2);
+		break;
+	case BGBCC_SH_NMID_BITMOVX:
+		BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(ctx,
+			0x30002022, rs, rt, imm, rn,
+			&opw1, &opw2);
+		break;
+	}
+
+
+	if(opw1>0)
+	{
+		if(ctx->emit_isprobe)
+			return(1);
+
+		BGBCC_JX2DA_EmitOpRegRegImmReg(ctx, nmid, rs, rt, imm, rn);
+
+		BGBCC_JX2_EmitOpDWord(ctx, opw1);
+
+		if(opw2>0)
+			BGBCC_JX2_EmitOpDWord(ctx, opw2);
+
 		if(opw3>0)
 			BGBCC_JX2_EmitOpDWord(ctx, opw3);
 

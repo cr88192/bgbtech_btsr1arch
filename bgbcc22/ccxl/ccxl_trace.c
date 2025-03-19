@@ -1459,7 +1459,7 @@ int BGBCC_CCXL_NormalizeImmVReg(
 	float bf;
 	s64 li, lj, li0, li1;
 	u32 ui;
-	int bty, dty, stv;
+	int bty, dty, stv, sz;
 	int i, j, k, sg;
 
 //	treg=*rtreg;
@@ -1473,6 +1473,31 @@ int BGBCC_CCXL_NormalizeImmVReg(
 		BGBCC_CCXL_IsRegImmFloatP(ctx, treg) ||
 		BGBCC_CCXL_IsRegImmDoubleP(ctx, treg))
 	{
+		if(BGBCC_CCXL_TypeBitIntMaxP(ctx, type, 63))
+		{
+			sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, type);
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+
+			li0=li;
+			li&=(1ULL<<sz)-1;
+
+			if((li0!=li) && (li0!=((s32)li)) && (((s32)li0)!=li))
+			{
+				BGBCC_CCXL_Warn(ctx, "Constant Conversion, Loss of Range\n");
+			}
+			
+			if(sz<=32)
+			{
+				BGBCC_CCXL_GetRegForUIntValue(ctx, &treg2, li);
+			}else
+			{
+				BGBCC_CCXL_GetRegForULongValue(ctx, &treg2, li);
+			}
+
+			*rtreg=treg2;
+			return(1);
+		}
+	
 //		if(BGBCC_CCXL_TypeSmallSIntP(ctx, type))
 		if(BGBCC_CCXL_TypeSmallIntP(ctx, type))
 		{

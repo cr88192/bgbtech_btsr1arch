@@ -2695,6 +2695,14 @@ ccxl_status BGBCC_CCXL_StackCastBool(BGBCC_TransState *ctx)
 //	BGBCC_CCXL_StubError(ctx);
 }
 
+ccxl_status BGBCC_CCXL_StackCastType(BGBCC_TransState *ctx, ccxl_type type)
+{
+	char *sig;
+	
+	sig=BGBCC_CCXL_TypeGetSig(ctx, type);
+	return(BGBCC_CCXL_StackCastSig(ctx, sig));
+}
+
 ccxl_status BGBCC_CCXL_StackCastSig(BGBCC_TransState *ctx, char *sig)
 {
 	BGBCC_CCXL_DebugPrintStackLLn(ctx, "CastSig", __FILE__, __LINE__);
@@ -3391,6 +3399,73 @@ ccxl_status BGBCC_CCXL_StackPushConstInt128(
 //	BGBCC_CCXL_StubError(ctx);
 }
 
+ccxl_status BGBCC_CCXL_StackPushConstTristate64(
+	BGBCC_TransState *ctx, s64 val_lo, s64 val_hi, int val_sz)
+{
+	ccxl_register sreg;
+
+	if(val_hi==0)
+	{
+		return(BGBCC_CCXL_StackPushConstBitInt64(ctx, val_lo, val_sz));
+	}
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstTS64", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTTS);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val_lo);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val_hi);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val_sz);
+
+	BGBCC_CCXL_GetRegForTristateValue(ctx, &sreg, val_lo, val_hi, val_sz);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+
+ccxl_status BGBCC_CCXL_StackPushConstBitInt64(
+	BGBCC_TransState *ctx, s64 val, int val_sz)
+{
+	ccxl_register sreg;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstBI64", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTBTI);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val);
+	BGBCC_CCXLR3_EmitArgInt(ctx, 0);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val_sz);
+
+	BGBCC_CCXL_GetRegForUBitIntValue(ctx, &sreg, val, val_sz);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+
+ccxl_status BGBCC_CCXL_StackPushConstBitInt128(
+	BGBCC_TransState *ctx, s64 val_lo, s64 val_hi, int val_sz)
+{
+	ccxl_register sreg;
+
+	if(val_hi==0)
+	{
+		return(BGBCC_CCXL_StackPushConstBitInt64(ctx, val_lo, val_sz));
+	}
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstBI128", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTBTI);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val_lo);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val_hi);
+	BGBCC_CCXLR3_EmitArgInt(ctx, val_sz);
+
+	BGBCC_CCXL_GetRegForUBitInt128Value(ctx, &sreg, val_lo, val_hi, val_sz);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+
 ccxl_status BGBCC_CCXL_StackPushConstFloat128(
 	BGBCC_TransState *ctx, s64 val_lo, s64 val_hi)
 {
@@ -3742,6 +3817,23 @@ ccxl_status BGBCC_CCXL_StackPushConstBigInt(
 	BGBCC_CCXLR3_EmitArgInt(ctx, vty);
 
 	BGBCC_CCXL_GetRegForBigIntValueStr(ctx, &sreg, val, vty);
+	BGBCC_CCXL_PushRegister(ctx, sreg);
+	return(CCXL_STATUS_YES);
+//	BGBCC_CCXL_StubError(ctx);
+}
+
+ccxl_status BGBCC_CCXL_StackPushConstBigTristate(
+	BGBCC_TransState *ctx, char *val, int vsz)
+{
+	ccxl_register sreg;
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "PushConstBigTristate",
+		__FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDCONSTBTS);
+	BGBCC_CCXLR3_EmitArgString(ctx, val);
+	BGBCC_CCXLR3_EmitArgInt(ctx, vsz);
+
+	BGBCC_CCXL_GetRegForBigTristateValueStr(ctx, &sreg, val, vsz);
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 	return(CCXL_STATUS_YES);
 //	BGBCC_CCXL_StubError(ctx);
@@ -4889,6 +4981,41 @@ ccxl_status BGBCC_CCXL_StackBitLoad(BGBCC_TransState *ctx,
 	return(CCXL_STATUS_YES);
 }
 
+ccxl_status BGBCC_CCXL_StackBitLoadInt(BGBCC_TransState *ctx,
+	int mlo, int mhi)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BitLoadInt", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BITLOADINT);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mlo, mhi);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+//	j=BGBCC_CCXL_PopRegister(ctx, &treg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+	BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+
+//	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_MakeTypeID_Arr(ctx, CCXL_TY_UBITINT, (mhi-mlo)+1);
+	dty=sty;
+
+	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+	BGBCC_CCXL_EmitBitMov(ctx, sty, dreg, treg, sreg, -mlo, 0, mhi-mlo);
+
+//	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+//	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+	return(CCXL_STATUS_YES);
+}
+
 ccxl_status BGBCC_CCXL_StackBitStore(BGBCC_TransState *ctx,
 	int mlo, int mhi)
 {
@@ -4956,6 +5083,122 @@ ccxl_status BGBCC_CCXL_StackBitMove(BGBCC_TransState *ctx,
 }
 
 
+
+ccxl_status BGBCC_CCXL_StackBitLoadStRef(BGBCC_TransState *ctx,
+	int mlo, int mhi, char *name)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BitLoadStRef", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_STBITLOAD);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mlo, mhi);
+	BGBCC_CCXLR3_EmitArgSymbol(ctx, name);
+
+	j=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
+	if(j<=0)
+	{
+		if(!j)return(CCXL_STATUS_ERR_LOOKUPFAIL);
+//		if(i<0)return(i);
+		if(j<0)return(j);
+		return(CCXL_STATUS_ERR_GENERIC);
+	}
+	
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+//	j=BGBCC_CCXL_PopRegister(ctx, &treg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+	BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_MakeTypeID_Arr(ctx, CCXL_TY_UBITINT, (mhi-mlo)+1);
+//	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+
+	BGBCC_CCXL_EmitBitMov(ctx, sty, dreg, treg, sreg, -mlo, 0, mhi-mlo);
+
+//	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
+
+//	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+//	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+	return(CCXL_STATUS_YES);
+}
+
+#if 0
+// ccxl_status BGBCC_CCXL_StackBitLoadLdRef(BGBCC_TransState *ctx,
+	int mlo, int mhi)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BitLoadLdRef", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BITLOAD);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mlo, mhi);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+//	j=BGBCC_CCXL_PopRegister(ctx, &treg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+	BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+
+//	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	dty=BGBCC_CCXL_MakeTypeID_Arr(ctx, CCXL_TY_UBITINT, (mhi-mlo)+1);
+
+	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+	BGBCC_CCXL_EmitBitMov(ctx, sty, dreg, treg, sreg, -mlo, 0, mhi-mlo);
+
+//	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+//	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+	return(CCXL_STATUS_YES);
+}
+
+// ccxl_status BGBCC_CCXL_StackBitLoadLdRefInt(BGBCC_TransState *ctx,
+	int mlo, int mhi)
+{
+	ccxl_register sreg, treg, dreg;
+	ccxl_type dty, sty;
+	int i, j;
+
+	BGBCC_CCXL_DebugPrintStackLLn(ctx, "BitLoadLdRefInt", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_BITLOADINT);
+	BGBCC_CCXLR3_EmitArgUIntPair(ctx, mlo, mhi);
+
+	i=BGBCC_CCXL_PopRegister(ctx, &sreg);
+//	j=BGBCC_CCXL_PopRegister(ctx, &treg);
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+	BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+
+//	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_MakeTypeID_Arr(ctx, CCXL_TY_UBITINT, (mhi-mlo)+1);
+	dty=sty;
+
+	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+	BGBCC_CCXL_EmitBitMov(ctx, sty, dreg, treg, sreg, -mlo, 0, mhi-mlo);
+
+//	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+//	BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+	return(CCXL_STATUS_YES);
+}
+#endif
 
 ccxl_status BGBCC_CCXL_StackBitStoreRef(BGBCC_TransState *ctx,
 	int mlo, int mhi, char *name)
