@@ -95,6 +95,7 @@
 
 #include "mm/cc_fmt_targa.c"
 #include "mm/cc_fmt_bmp.c"
+#include "mm/cc_fmtcnv.c"
 
 #include "mm/qoilz_dec.c"
 #include "mm/qoilz_enc.c"
@@ -124,6 +125,7 @@
 #include "ccxl/ccxl_struct.c"
 #include "ccxl/ccxl_trace.c"
 #include "ccxl/ccxl_type.c"
+#include "ccxl/ccxl_vlalways.c"
 
 #include "ccxl/ccxl_fr2e.c"
 #include "ccxl/ccxl_lvatag.c"

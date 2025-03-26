@@ -2550,7 +2550,8 @@ begin
 						if(opExQ)
 							opUCmdIx	= JX2_UCIX_CONV_RGB32PCK64;
 						else
-							opUCmdIx	= JX2_UCIX_CONV_RGB5PCK32;
+//							opUCmdIx	= JX2_UCIX_CONV_RGB5PCK32;
+							opUCmdIx	= JX2_UCIX_CONV_RGB5SH3;
 					end
 					4'h5: begin
 						opNmid		= JX2_UCMD_CONV_RR;
@@ -2559,7 +2560,8 @@ begin
 						if(opExQ)
 							opUCmdIx	= JX2_UCIX_CONV_RGB32UPCK64;
 						else
-							opUCmdIx	= JX2_UCIX_CONV_RGB5UPCK32;
+//							opUCmdIx	= JX2_UCIX_CONV_RGB5UPCK32;
+							opUCmdIx	= JX2_UCIX_CONV_RGB5USH3;
 					end
 
 

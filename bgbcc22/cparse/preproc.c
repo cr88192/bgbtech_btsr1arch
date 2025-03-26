@@ -2875,7 +2875,9 @@ char *BGBPP_ParseLine(BGBCP_ParseState *ctx, char *s, char *b)
 int BGBPP_BufferLine(BGBCP_ParseState *ctx, char *b)
 {
 	char *s, *t, *s1, *t1;
-	int i, cln, pln;
+	int i, cln, pln, isveril;
+
+	isveril=(ctx->lang==BGBCC_LANG_VERILOG);
 
 	t=b; while(*t && (*t<=' '))t++;
 	if(!*t)
@@ -2910,7 +2912,14 @@ int BGBPP_BufferLine(BGBCP_ParseState *ctx, char *b)
 	}
 
 //	if(*s1=='#')
-	if((s1[0]=='#') && (s1[1]!='`'))
+	if(!isveril && (s1[0]=='#') && (s1[1]!='`'))
+	{
+		BGBCP_FlushToken(b);
+		BGBPP_Directive(ctx, b);
+		return(0);
+	}
+
+	if(isveril && (s1[0]=='`'))
 	{
 		BGBCP_FlushToken(b);
 		BGBPP_Directive(ctx, b);

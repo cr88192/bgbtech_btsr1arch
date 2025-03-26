@@ -112,6 +112,7 @@
 
 #define CCXL_TY_OSBITINT		0x5C		//signed output(n)
 #define CCXL_TY_OUBITINT		0x5D		//unsigned output(n)
+#define CCXL_TY_OBITINT			0x5D		//unsigned output(n)
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'
@@ -919,6 +920,7 @@ bccx_cxstate bgbcc_rcst_structs;
 bccx_cxstate bgbcc_rcst_subarch;
 bccx_cxstate bgbcc_rcst_super;
 bccx_cxstate bgbcc_rcst_switch;
+bccx_cxstate bgbcc_rcst_switchz;
 bccx_cxstate bgbcc_rcst_symbol;
 bccx_cxstate bgbcc_rcst_s_proto;
 
@@ -958,5 +960,11 @@ bccx_cxstate bgbcc_rcst_vector_ref;
 
 bccx_cxstate bgbcc_rcst_vec2;
 bccx_cxstate bgbcc_rcst_vec4;
+
+bccx_cxstate bgbcc_rcst_vlalways;
+bccx_cxstate bgbcc_rcst_vlassign;
+bccx_cxstate bgbcc_rcst_vlcase;
+bccx_cxstate bgbcc_rcst_vlcasez;
+bccx_cxstate bgbcc_rcst_vlmodule;
 
 bccx_cxstate bgbcc_rcst_while;

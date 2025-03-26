@@ -1750,6 +1750,12 @@ int mfl;
 {"rgb32pck64",	BGBCC_SH_NMID_RGB32PCK64},
 {"rgb32upck64",	BGBCC_SH_NMID_RGB32UPCK64},
 
+{"rgb5sh3",		BGBCC_SH_NMID_RGB5SH3},
+{"rgb5ush3",	BGBCC_SH_NMID_RGB5USH3},
+
+{"bitmov",		BGBCC_SH_NMID_BITMOV},
+{"bitmovx",		BGBCC_SH_NMID_BITMOVX},
+
 {"pcvtsb2h",	BGBCC_SH_NMID_PCVTSB2HL},
 {"pcvtub2h",	BGBCC_SH_NMID_PCVTUB2HL},
 {"pcvtsb2hl",	BGBCC_SH_NMID_PCVTSB2HL},
@@ -2779,6 +2785,9 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "has_fpimm"))
 		return((ctx->has_fpim&1)!=0);
+
+	if(!bgbcc_stricmp(sym, "has_bitmov"))
+		return((ctx->has_bitmov&1)!=0);
 
 	if(!bgbcc_stricmp(sym, "abi_argshadow"))
 		return((ctx->abi_spillpad&1)!=0);

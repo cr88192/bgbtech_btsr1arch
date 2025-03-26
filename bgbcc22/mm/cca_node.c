@@ -654,7 +654,7 @@ char *BCCX_GetCst(BCCX_Node *n,
 		if((*an>>12)==BCCX_IVTY_INT)
 		{
 			tb=bgbcc_ralloc(64);
-			sprintf(tb, "%lld", av->i);
+			sprintf(tb, "%lld", (long long)(av->i));
 			return(tb);
 		}
 

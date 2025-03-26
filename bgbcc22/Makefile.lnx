@@ -33,6 +33,9 @@ DLL_LDFLAGS=-g -L.. -lbgbgc -lbgbdy -lbgbasm -lbgbsxil -lzpack -lm -fPIC \
 	-Wl,-rpath,"$$ORIGIN"
 LDFLAGS_META=
 
+TOOL_CFLAGS=-Iinclude -g -lm
+
+
 # INST_BIN=$(PREFIX)/usr/bin
 INST_BIN=$(PREFIX)/usr/local/bin
 

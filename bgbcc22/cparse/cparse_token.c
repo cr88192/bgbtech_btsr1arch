@@ -1447,7 +1447,7 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 	u32 tcv;
 	char *t, *s0, *s1, *s1e, *te;
 	int i, j, k, sti, ch;
-	int spfx;
+	int spfx, isveril;
 
 	*b=0;
 #if 0
@@ -1458,6 +1458,8 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 		return(s);
 	}
 #endif
+
+	isveril=(lang==BGBCC_LANG_VERILOG);
 
 #if 0
 //	i=*s;
@@ -1635,9 +1637,14 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 				((*s>='a') && (*s<='f')) ||
 				((*s=='Z') || (*s=='X')) ||
 				((*s=='z') || (*s=='x')) ||
-				(*s=='_') || (*s=='`') || (*s=='\''))
+				(*s=='_') ||
+				(!isveril && ((*s=='`') || (*s=='\''))))
 			{
-				if((*s=='_') || (*s=='`') || (*s=='\''))
+//				if((*s=='_') || (*s=='`') || (*s=='\''))
+//					{ s++; continue; }
+				if(*s=='_')
+					{ s++; continue; }
+				if(!isveril && ((*s=='`') || (*s=='\'')))
 					{ s++; continue; }
 				*t++=*s++;
 			}
@@ -1654,9 +1661,14 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 			while(((*s>='0') && (*s<='1')) ||
 				((*s=='Z') || (*s=='X')) ||
 				((*s=='z') || (*s=='x')) ||
-				(*s=='_') || (*s=='`') || (*s=='\''))
+				(*s=='_') ||
+				(!isveril && ((*s=='`') || (*s=='\''))))
 			{
-				if((*s=='_') || (*s=='`') || (*s=='\''))
+//				if((*s=='_') || (*s=='`') || (*s=='\''))
+//					{ s++; continue; }
+				if(*s=='_')
+					{ s++; continue; }
+				if(!isveril && ((*s=='`') || (*s=='\'')))
 					{ s++; continue; }
 				*t++=*s++;
 			}
@@ -1683,17 +1695,23 @@ char *BGBCP_TokenI(char *s, char *b, int *ty, int lang, int sz)
 #endif
 
 		while(((*s>='0') && (*s<='9')) ||
-			(*s=='_') || (*s=='`') || (*s=='\''))
+			(*s=='_') ||
+			(!isveril && ((*s=='`') || (*s=='\''))))
 		{
-			if((*s=='_') || (*s=='`') || (*s=='\''))
+//			if((*s=='_') || (*s=='`') || (*s=='\''))
+//				{ s++; continue; }
+			if((*s=='_') || (!isveril && ((*s=='`') || (*s=='\''))))
 				{ s++; continue; }
 			*t++=*s++;
 		}
 		if(*s=='.')*t++=*s++;
 		while(((*s>='0') && (*s<='9')) ||
-			(*s=='_') || (*s=='`') || (*s=='\''))
+			(*s=='_') ||
+			(!isveril && ((*s=='`') || (*s=='\''))))
 		{
-			if((*s=='_') || (*s=='`') || (*s=='\''))
+//			if((*s=='_') || (*s=='`') || (*s=='\''))
+//				{ s++; continue; }
+			if((*s=='_') || (!isveril && ((*s=='`') || (*s=='\''))))
 				{ s++; continue; }
 			*t++=*s++;
 		}

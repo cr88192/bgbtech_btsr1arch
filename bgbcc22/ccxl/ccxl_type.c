@@ -427,6 +427,11 @@ bool BGBCC_CCXL_TypeBitIntP(
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_BITINT;
 		return(true);
 	}
+	if(BGBCC_CCXL_GetTypeBaseType(ctx, ty)==CCXL_TY_OBITINT)
+	{
+		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_BITINT;
+		return(true);
+	}
 
 //	if(BGBCC_CCXL_TypeSmallLongP(ctx, ty))
 //		return(true);
@@ -2217,6 +2222,7 @@ bool BGBCC_CCXL_TypeValueObjectP(
 
 	case CCXL_TY_SBITINT:
 	case CCXL_TY_UBITINT:
+	case CCXL_TY_OBITINT:
 		sz=BGBCC_CCXL_TypeGetBitIntSize(ctx, ty);
 		if(sz<=128)
 			return(false);
@@ -2827,6 +2833,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 
 	case CCXL_TY_SBITINT:
 	case CCXL_TY_UBITINT:
+	case CCXL_TY_OBITINT:
 		i=BGBCC_CCXL_TypeGetBitIntSize(ctx, ty);
 		
 		if(i<=128)
@@ -2929,6 +2936,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 
 	case CCXL_TY_SBITINT:
 	case CCXL_TY_UBITINT:
+	case CCXL_TY_OBITINT:
 		bsz=BGBCC_CCXL_TypeGetBitIntSize(ctx, ty);
 		if(bsz<=128)
 		{
@@ -4669,6 +4677,13 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 				{ i=(i*10)+((*s++)-'0'); }
 			asz[an++]=i;
 			break;
+		case 'p':
+			bty=CCXL_TY_OBITINT;
+			s+=2; i=0;
+			while((*s>='0') && (*s<='9'))
+				{ i=(i*10)+((*s++)-'0'); }
+			asz[an++]=i;
+			break;
 
 //		case 'a': bty=CCXL_TY_VEC2D; break;
 		case 'z': bty=CCXL_TY_VALIST; break;
@@ -4991,6 +5006,7 @@ char *BGBCC_CCXL_TypeGetSig(
 	}
 	
 	if((bt==CCXL_TY_SBITINT) || (bt==CCXL_TY_UBITINT) ||
+		(bt==CCXL_TY_OBITINT) ||
 		(bt==CCXL_TY_BCDBIG_P0) || (bt==CCXL_TY_BCDBIG_P4))
 	{
 		if(an>0)
@@ -5138,9 +5154,13 @@ char *BGBCC_CCXL_TypeGetSig(
 			*t++='D';
 			*t++='x';
 			i=bsz[an];
-			if(i>100)
+			if(i>=10000)
+				*t++='0'+((i/10000)%10);
+			if(i>=1000)
+				*t++='0'+((i/1000)%10);
+			if(i>=100)
 				*t++='0'+((i/100)%10);
-			if(i>10)
+			if(i>=10)
 				*t++='0'+((i/10)%10);
 			*t++='0'+(i%10);
 			break;
@@ -5148,9 +5168,27 @@ char *BGBCC_CCXL_TypeGetSig(
 			*t++='D';
 			*t++='y';
 			i=bsz[an];
-			if(i>100)
+			if(i>=10000)
+				*t++='0'+((i/10000)%10);
+			if(i>=1000)
+				*t++='0'+((i/1000)%10);
+			if(i>=100)
 				*t++='0'+((i/100)%10);
-			if(i>10)
+			if(i>=10)
+				*t++='0'+((i/10)%10);
+			*t++='0'+(i%10);
+			break;
+		case CCXL_TY_OBITINT:
+			*t++='D';
+			*t++='p';
+			i=bsz[an];
+			if(i>=10000)
+				*t++='0'+((i/10000)%10);
+			if(i>=1000)
+				*t++='0'+((i/1000)%10);
+			if(i>=100)
+				*t++='0'+((i/100)%10);
+			if(i>=10)
 				*t++='0'+((i/10)%10);
 			*t++='0'+(i%10);
 			break;

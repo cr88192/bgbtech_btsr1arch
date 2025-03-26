@@ -1087,6 +1087,54 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 		}
 	}
 
+	s1=s;
+	s2=BGBCP_Token(s1, b, &ty);
+
+#if 1
+	if((ty==BTK_NAME) &&
+		(((ctx->lang==BGBCC_LANG_VERILOG) && !bgbcp_strcmp(b, "module")) ||
+		!bgbcp_strcmp(b, "__vlmodule")))
+	{
+		n=BCCX_NewCst(&bgbcc_rcst_type, "type");
+		BCCX_SetCst(n, &bgbcc_rcst_name, "name", "variant");
+		BCCX_SetIntCst(n, &bgbcc_rcst_flags, "flags", lfi);
+
+		n1=BGBCP_VarDefinition(ctx, &s2, n);
+		if(BCCX_TagIsCstP(n1, &bgbcc_rcst_proto, "proto"))
+		{
+			ntl=NULL;
+			ntci=NULL;
+
+			s2=BGBCP_Token(s2, b, &ty);
+
+			BCCX_CheckDeleteUnlinked(n);
+
+			n=BCCX_Clone(n1);
+			BCCX_CheckDeleteUnlinked(n1);
+
+			ofenv=ctx->fenv_access;
+			i=ctx->in_func_body;
+			ctx->in_func_body=1;
+			ctx->fenv_access=0;
+			tk0=BGBCP_GetTokenCount();
+			n1=BGBCP_VlModuleBlock(ctx, &s2);
+			tk1=BGBCP_GetTokenCount();
+			ctx->in_func_body=i;
+						
+			ctx->fenv_access=ofenv;
+
+			BCCX_SetTagCst(n, &bgbcc_rcst_vlmodule, "vlmodule");
+			BCCX_AddV(n, BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1));
+
+			tk2=tk1-tk0;
+			if(tk2>0)
+				BCCX_SetIntCst(n, &bgbcc_rcst_tokens, "tokens", tk2);
+
+			*str=s2;
+			return(n);
+		}
+	}
+#endif
 
 	n=BGBCP_DefType(ctx, &s);
 	if(n)

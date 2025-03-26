@@ -727,11 +727,13 @@ ccxl_status BGBCC_CCXL_EmitCallArg(BGBCC_TransState *ctx,
 
 ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register src,
-	int clm, int cln, ccxl_label *clbl, s64 *clv,
+	int clm, int cln, int clmw,
+	ccxl_label *clbl, s64 *clv, s64 *clmv,
 	ccxl_label dfl, ccxl_label dfl2)
 {
 	BGBCC_CCXL_VirtOp *op;
-	s64 vmin, vmax;
+	s64 vmin, vmax, clmm;
+	s64 li, lj, lk, lmi;
 	int ncl, ncv;
 	int i, j, k;
 
@@ -746,6 +748,11 @@ ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
 //	if((ncl<1) || (ncl>256))
 	if((ncl<1) || (ncl>1024))
 		{ BGBCC_DBGBREAK }
+
+	if(clmw<64)
+		{ clmm=(1ULL<<clmw)-1; }
+	else
+		{ clmm=-1; }
 
 	vmin=clv[clm];
 	vmax=clv[cln-1];
@@ -789,6 +796,29 @@ ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
 			{ BGBCC_DBGBREAK }
 		
 		op->imm.jmptab.lbls[j]=clbl[clm+i];
+	}
+
+	for(i=0; i<ncl; i++)
+	{
+		if(!(clmv[clm+i]&clmm))
+			continue;
+
+		li=clv[clm+i];
+		lmi=(~clmv[clm+i])&clmm;
+		j=li-vmin;
+		if((j<0) || (j>=ncv))
+			{ BGBCC_DBGBREAK }
+		
+		for(k=0; k<ncv; k++)
+		{
+			if(op->imm.jmptab.lbls[k].id!=dfl2.id)
+				continue;
+			lj=vmin+k;
+			
+			if((li&lmi)!=(lj&lmi))
+				continue;
+			op->imm.jmptab.lbls[k]=clbl[clm+i];
+		}
 	}
 
 	BGBCC_CCXL_AddVirtOp(ctx, op);

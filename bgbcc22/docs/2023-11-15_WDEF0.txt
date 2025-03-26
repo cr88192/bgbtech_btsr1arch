@@ -38,6 +38,13 @@ Where, fmt may be one of:
 
 * bmp_cram8: BMP with 8-bit CRAM encoding.
 * bmp_cram8a: BMPA with 8-bit CRAM encoding.
+* bmp_cram8np: BMP with 8-bit CRAM encoding (No Palette).
+* bmp_cram8npa: BMPA with 8-bit CRAM encoding (No Palette).
+
+* bmp_cq8: BMP with 8-bit CQ8 encoding.
+* bmp_cq8a: BMPA with 8-bit CQ8 encoding.
+* bmp_cq8np: BMP with 8-bit CQ8 encoding (No Palette).
+* bmp_cq8npa: BMPA with 8-bit CQ8 encoding (No Palette).
 
 * qoi: QOI Format
 * qoli: QOLI (QOI with inline LZ compression)
@@ -62,6 +69,9 @@ For LCIF and UPIC, the 'q' parameter will speficy a lossy quality level (0=best,
 Both QOI and LCIF will include an full Alpha channel.
 
 
+Both CRAM8 and CQ8 may have no palette variants. These formats may save some space by omitting the color palette, in which case the default 256 color palette will be assumed.
+
+
 === BMP: 8-bit CRAM ===
 
 This will encode the image as a stream of bytes, using a variant of the CRAM (MS Video 1) encoding.
@@ -83,3 +93,19 @@ The first two bytes from each encoded block may be interpreted as a 16-bit word:
 
 Note that alpha masking may be encoded in this format by using a designated transparent color. In these blocks, the selection will be between transparent and another non-transparent color (the average of the other non-transparent colors in the block).
 
+
+=== BMP: 8-bit CQ8 ===
+
+biCompression:
+* 'CQL0': CQ8, Uncompressed
+* 'CQL3': CQ8, RP2
+* 'CQL4': CQ8, LZ4
+
+This format will resemble 8-bit CRAM, but will operate in terms of 8x8 blocks.
+* 0000..7FFF: 2 colors, 8x8, 10 bytes
+* 80cc: Flat Color, 2 bytes
+* 84nn..87nn: Skip Blocks, Unused
+* 88zz..8Fzz: Reserved.
+* 9000..FFFF Either 8-color (16 byte) or 4x4 (4 byte).
+** 1zzz1zzz: 8 color (16 bytes)
+** 1zzz0zzzz: 4x4 (4 bytes)

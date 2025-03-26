@@ -48,6 +48,9 @@ int bgbcc_verbose;
 
 int bgbcc_is_vxcore;
 
+ExWAD_Context *bgbcc_exwad_ctx;
+char *bgbcc_exwad_outdir;
+
 #if 0
 // BGBCC_API int BGBCC_BindSig(BGBCC_State *ctx, char *name, char *sig)
 {
@@ -1225,412 +1228,15 @@ char *BGBCC_LoadCSourcePPOnly(char *name)
 }
 #endif
 
-byte bgbcc_dfl_pal256[1024];
-byte bgbcc_dfl_pal16[64];
-byte bgbcc_dfl_pal16t[64];
-byte bgbcc_dfl_pal4[16];
-byte bgbcc_dfl_pal4t[16];
-byte bgbcc_dfl_pal2[8];
-byte bgbcc_dfl_pal2t[8];
-
-byte *bgbcc_img_bmppallookup;
-byte *bgbcc_img_bmppallookupb;
-
-
-int BGBCC_LoadConvResource_SetupPal()
-{
-	byte *tbuf;
-	byte *pal, *pal256;
-	byte *paldith;
-	int cr, cg, cb;
-	int ch, cm, cl;
-	int i, j, k;
-	
-	if(bgbcc_dfl_pal256[15*4+0])
-		return(0);
-	
-	pal=bgbcc_dfl_pal256;
-	for(i=0; i<16; i++)
-	{
-		for(j=0; j<16; j++)
-		{
-			ch=j*16;
-			cl=ch>>2;
-			if(i&8)
-				{ cl=(ch*5)/8; }
-			cr=(i&4)?ch:cl;
-			cg=(i&2)?ch:cl;
-			cb=(i&1)?ch:cl;
-			if(i==0)
-				{ cr=ch; cg=ch; cb=ch; }
-			if((i==7) || (i==8) || (i==15))
-			{
-				cl=(ch*7)/8;
-				cr=ch;	cg=ch;	cb=ch;
-				if(i==7)	cg=cl;
-				if(i==8)	cb=cl;
-				if(i==15)	cr=cl;
-			}
-			pal[(i*16+j)*4+0]=cr;
-			pal[(i*16+j)*4+1]=cg;
-			pal[(i*16+j)*4+2]=cb;
-			pal[(i*16+j)*4+3]=255;
-		}
-	}
-
-	for(i=0; i<3; i++)
-	{
-		for(j=1; j<16; j++)
-		{
-			ch=j*16;
-			cm=(ch*5)/8;
-			cl=(ch*3)/8;
-			if(i==0)
-				{ cr=ch; cg=cm; cb=cl; }
-			if(i==1)
-				{ cr=cm; cg=ch; cb=cl; }
-			if(i==2)
-				{ cr=cl; cg=cm; cb=ch; }
-			pal[(j*16+i+1)*4+0]=cr;
-			pal[(j*16+i+1)*4+1]=cg;
-			pal[(j*16+i+1)*4+2]=cb;
-			pal[(j*16+i+1)*4+3]=255;
-		}
-	}
-
-	pal256=pal;
-
-	pal=bgbcc_dfl_pal16;
-	for(i=0; i<16; i++)
-	{
-		if(i&8)
-			{ ch=0xFF; cl=0x55; }
-		else
-			{ ch=0xAA; cl=0x00; }
-		cr=(i&4)?ch:cl;
-		cg=(i&2)?ch:cl;
-		cb=(i&1)?ch:cl;
-		pal[i*4+0]=cr;
-		pal[i*4+1]=cg;
-		pal[i*4+2]=cb;
-		pal[i*4+3]=255;
-
-		pal256[(i*16+0)*4+0]=cr;
-		pal256[(i*16+0)*4+1]=cg;
-		pal256[(i*16+0)*4+2]=cb;
-		pal256[(i*16+0)*4+3]=255;
-	}
-
-	pal256[(8*16+0)*4+0]=255;
-	pal256[(8*16+0)*4+1]=0;
-	pal256[(8*16+0)*4+2]=255;
-	pal256[(8*16+0)*4+3]=0;
-
-	for(i=0; i<64; i++)
-		bgbcc_dfl_pal16t[i]=bgbcc_dfl_pal16[i];
-
-	bgbcc_dfl_pal16t[13*4+0]=255;
-	bgbcc_dfl_pal16t[13*4+1]=0;
-	bgbcc_dfl_pal16t[13*4+2]=255;
-	bgbcc_dfl_pal16t[13*4+3]=0;
-
-	pal=bgbcc_dfl_pal4;
-	for(i=0; i<4; i++)
-	{
-		if(i==0)	ch=0x00;
-		if(i==1)	ch=0x55;
-		if(i==2)	ch=0xAA;
-		if(i==3)	ch=0xFF;
-		pal[i*4+0]=ch;
-		pal[i*4+1]=ch;
-		pal[i*4+2]=ch;
-		pal[i*4+3]=255;
-	}
-
-	pal=bgbcc_dfl_pal2;
-	for(i=0; i<2; i++)
-	{
-		if(i==0)	ch=0x00;
-		if(i==1)	ch=0xFF;
-		pal[i*4+0]=ch;
-		pal[i*4+1]=ch;
-		pal[i*4+2]=ch;
-		pal[i*4+3]=255;
-	}
-
-	pal=bgbcc_dfl_pal4t;
-	pal[0*4+0]=0x00; pal[0*4+1]=0x00; pal[0*4+2]=0x00; pal[0*4+3]=255;
-	pal[1*4+0]=0xFF; pal[1*4+1]=0xFF; pal[1*4+2]=0xFF; pal[1*4+3]=255;
-	pal[2*4+0]=0x7F; pal[2*4+1]=0x7F; pal[2*4+2]=0x7F; pal[2*4+3]=255;
-	pal[3*4+0]=0xFF; pal[3*4+1]=0x00; pal[3*4+2]=0xFF; pal[3*4+3]=0;
-
-#if 0
-	tbuf=malloc(16*16*8);
-	k=BGBCC_Img_EncodeImageBMP8(
-		tbuf, bgbcc_dfl_pal256, 16, 16, bgbcc_dfl_pal256);
-	BGBCC_StoreFile("dump/rsrc_pal256.bmp", tbuf, k);
-
-	k=BGBCC_Img_EncodeImageBMP16(
-		tbuf, bgbcc_dfl_pal256, 16, 16);
-	BGBCC_StoreFile("dump/rsrc_pal256b.bmp", tbuf, k);
-
-	k=BGBCC_Img_EncodeImageBMP32(
-		tbuf, bgbcc_dfl_pal256, 16, 16);
-	BGBCC_StoreFile("dump/rsrc_pal256c.bmp", tbuf, k);
-
-	k=BGBCC_Img_EncodeImageBMP4(
-		tbuf, bgbcc_dfl_pal256, 16, 16, bgbcc_dfl_pal16);
-	BGBCC_StoreFile("dump/rsrc_pal16.bmp", tbuf, k);
-
-	k=BGBCC_Img_EncodeImageBMP2(
-		tbuf, bgbcc_dfl_pal4, 4, 1, bgbcc_dfl_pal4);
-	BGBCC_StoreFile("dump/rsrc_pal4.bmp", tbuf, k);
-#endif
-
-#if 0
-	BGBCC_Img_EncodeImageBmpSetupPal(bgbcc_dfl_pal256, 256);
-
-	paldith=malloc(256*256*4);
-	for(i=0; i<32768; i++)
-	{
-		j=bgbcc_img_bmppallookup[i];
-		k=bgbcc_img_bmppallookupb[i];
-		paldith[i*4+0]=bgbcc_dfl_pal256[j*4+0];
-		paldith[i*4+1]=bgbcc_dfl_pal256[j*4+1];
-		paldith[i*4+2]=bgbcc_dfl_pal256[j*4+2];
-		paldith[i*4+3]=255;
-
-		j=i+32768;
-		paldith[j*4+0]=bgbcc_dfl_pal256[k*4+0];
-		paldith[j*4+1]=bgbcc_dfl_pal256[k*4+1];
-		paldith[j*4+2]=bgbcc_dfl_pal256[k*4+2];
-		paldith[j*4+3]=255;
-	}
-
-	tbuf=malloc(256*256*8);
-	k=BGBCC_Img_EncodeImageBMP8(
-		tbuf, paldith, 256, 256, bgbcc_dfl_pal256);
-	BGBCC_StoreFile("dump/rsrc_paldith8.bmp", tbuf, k);
-
-
-	for(i=0; i<32768; i++)
-	{
-		cr=(i>>10)&31;
-		cg=(i>> 5)&31;
-		cb=(i>> 0)&31;
-		cr=(cr<<3)|(cr>>2);
-		cg=(cg<<3)|(cg>>2);
-		cb=(cb<<3)|(cb>>2);
-		paldith[i*4+0]=cr;
-		paldith[i*4+1]=cg;
-		paldith[i*4+2]=cb;
-		paldith[i*4+3]=255;
-		
-		j=i+32768;
-		paldith[j*4+0]=cr;
-		paldith[j*4+1]=cg;
-		paldith[j*4+2]=cb;
-		paldith[j*4+3]=255;
-	}
-
-	k=BGBCC_Img_EncodeImageBMP16(
-		tbuf, paldith, 256, 256);
-	BGBCC_StoreFile("dump/rsrc_paldith16.bmp", tbuf, k);
-#endif
-
-	return(1);
-}
-
-byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
-	char *cnvstr, int *rsz, fourcc *rfcc)
-{
-	char cnv[16], pvar[8], pval[64];
-	char *cs, *ct;
-	byte *ibuf, *obuf;
-	int qlvl;
-	int xs, ys, sz1, fl;
-
-	cs=cnvstr;
-	ct=cnv;
-	while(*cs && (*cs!=','))
-		*ct++=*cs++;
-	*ct++=0;
-	
-	qlvl=0;
-	
-	while(*cs==',')
-	{
-		cs++;
-		ct=pvar;
-		while(*cs && *cs!='=' && *cs!=',')
-			*ct++=*cs++;
-		*ct++=0;
-		if(*cs=='=')
-		{
-			ct=pval;
-			while(*cs && *cs!='=' && *cs!=',')
-				*ct++=*cs++;
-			*ct++=0;
-			
-			if(!bgbcc_stricmp(pvar, "q"))
-				qlvl=atoi(pval);
-		}
-	}
-
-	if(	!bgbcc_stricmp(cnv, "bmp1") ||
-		!bgbcc_stricmp(cnv, "bmp2") ||
-		!bgbcc_stricmp(cnv, "bmp4") ||
-		!bgbcc_stricmp(cnv, "bmp8") ||
-		!bgbcc_stricmp(cnv, "bmp1a") ||
-		!bgbcc_stricmp(cnv, "bmp2a") ||
-		!bgbcc_stricmp(cnv, "bmp4a") ||
-		!bgbcc_stricmp(cnv, "bmp8a") ||
-		!bgbcc_stricmp(cnv, "bmp2ta") ||
-		!bgbcc_stricmp(cnv, "bmp2t") ||
-		!bgbcc_stricmp(cnv, "bmp4ta") ||
-		!bgbcc_stricmp(cnv, "bmp4t") ||
-		!bgbcc_stricmp(cnv, "bmp16") ||
-		!bgbcc_stricmp(cnv, "bmp16a") ||
-		!bgbcc_stricmp(cnv, "bmp32") ||
-		!bgbcc_stricmp(cnv, "bmp32a") ||
-		!bgbcc_stricmp(cnv, "bmp_cram8") ||
-		!bgbcc_stricmp(cnv, "bmp_cram8a") ||
-		!bgbcc_stricmp(cnv, "bmp_lz8") ||
-		!bgbcc_stricmp(cnv, "bmp_lz8a") )
-	{
-		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
-		if(!ibuf)
-			return(NULL);
-		
-		BGBCC_LoadConvResource_SetupPal();
-		
-		obuf=malloc(xs*ys*2);
-		sz1=0;
-
-		if(!bgbcc_stricmp(cnv, "bmp8"))
-			sz1=BGBCC_Img_EncodeImageBMP8(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp4"))
-			sz1=BGBCC_Img_EncodeImageBMP4(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
-		if(!bgbcc_stricmp(cnv, "bmp2"))
-			sz1=BGBCC_Img_EncodeImageBMP2(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal4);
-		if(!bgbcc_stricmp(cnv, "bmp1"))
-			sz1=BGBCC_Img_EncodeImageBMP1(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal2);
-
-		if(!bgbcc_stricmp(cnv, "bmp8a"))
-			sz1=BGBCC_Img_EncodeImageBMP8A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp4a"))
-			sz1=BGBCC_Img_EncodeImageBMP4A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
-		if(!bgbcc_stricmp(cnv, "bmp2a"))
-			sz1=BGBCC_Img_EncodeImageBMP2A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal4);
-		if(!bgbcc_stricmp(cnv, "bmp1a"))
-			sz1=BGBCC_Img_EncodeImageBMP1A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal2);
-
-		if(!bgbcc_stricmp(cnv, "bmp4t"))
-			sz1=BGBCC_Img_EncodeImageBMP4(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
-		if(!bgbcc_stricmp(cnv, "bmp4ta"))
-			sz1=BGBCC_Img_EncodeImageBMP4A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
-
-		if(!bgbcc_stricmp(cnv, "bmp2t"))
-			sz1=BGBCC_Img_EncodeImageBMP2(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal4t);
-		if(!bgbcc_stricmp(cnv, "bmp2ta"))
-			sz1=BGBCC_Img_EncodeImageBMP2A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal4t);
-
-		if(!bgbcc_stricmp(cnv, "bmp16"))
-			sz1=BGBCC_Img_EncodeImageBMP16(
-				obuf, ibuf, xs, ys);
-		if(!bgbcc_stricmp(cnv, "bmp16a"))
-			sz1=BGBCC_Img_EncodeImageBMP16A(
-				obuf, ibuf, xs, ys);
-
-		if(!bgbcc_stricmp(cnv, "bmp32"))
-			sz1=BGBCC_Img_EncodeImageBMP32(
-				obuf, ibuf, xs, ys);
-		if(!bgbcc_stricmp(cnv, "bmp32a"))
-			sz1=BGBCC_Img_EncodeImageBMP32A(
-				obuf, ibuf, xs, ys);
-
-		if(!bgbcc_stricmp(cnv, "bmp_cram8"))
-			sz1=BGBCC_Img_EncodeImageBMP_CRAM8(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_cram8a"))
-			sz1=BGBCC_Img_EncodeImageBMP_CRAM8A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-
-		if(!bgbcc_stricmp(cnv, "bmp_lz8"))
-			sz1=BGBCC_Img_EncodeImageBMP_LZ8(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_lz8a"))
-			sz1=BGBCC_Img_EncodeImageBMP_LZ8A(
-				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-
-		*rfcc=BGBCC_FMT_BMP;
-		*rsz=sz1;
-		return(obuf);
-	}
-	
-	if(	!bgbcc_stricmp(cnv, "qoi") ||
-		!bgbcc_stricmp(cnv, "qoli") )
-	{
-		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
-		if(!ibuf)
-			return(NULL);
-		
-		fl=0;
-		if(!bgbcc_stricmp(cnv, "qoli"))
-			fl|=1;
-		
-		fl|=(qlvl&7)<<1;
-		
-		obuf=malloc(xs*ys*2);
-		sz1=QOI_EncodeImageBuffer(obuf, ibuf, xs, ys, fl);
-		
-		*rfcc=BGBCC_FMT_QOIF;
-		*rsz=sz1;
-		return(obuf);
-	}
-
-	if(	!bgbcc_stricmp(cnv, "upic") )
-	{
-		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
-		if(!ibuf)
-			return(NULL);
-		
-		fl=1<<8;
-		
-		fl|=100-((qlvl&7)*12);
-		
-		obuf=malloc(xs*ys*2);
-		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
-		
-		*rfcc=BGBCC_FMT_UPIC;
-		*rsz=sz1;
-		return(obuf);
-	}
-	
-	return(NULL);
-}
-
 int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name)
 {
 	char tbuf[256];
 	char tb1[256], tb2[256], tbcnv[64];
 	char *cs, *ct;
 	FILE *fd;
-	byte *buf, *buf1;
-	u32 lang, lang1;
-	int sz, sz1;
+	byte *buf, *buf1, *buf2;
+	u32 lang, lang1, lang2;
+	int sz, sz1, sz2;
 	int i, j, k;
 	
 	fd=fopen(name, "rt");
@@ -1697,15 +1303,54 @@ int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name)
 					
 					if(buf1)
 					{
-						BGBCC_CCXL_AddResourceData(ctx,
-							tb1, buf1, sz1, lang1);
-						free(buf1);
+						if(ctx)
+						{
+							BGBCC_CCXL_AddResourceData(ctx,
+								tb1, buf1, sz1, lang1);
+						}
+						if(bgbcc_exwad_ctx)
+						{
+							ExWAD_StoreFile(
+								bgbcc_exwad_ctx, tb1, buf1, sz1);
+						}
+						if(bgbcc_exwad_outdir)
+						{
+							sprintf(tb2, "%s/%s", bgbcc_exwad_outdir, tb1);
+							BGBCC_StoreFile(tb2, buf1, sz1);
+							
+							if(lang1==BGBCC_FMT_BMP)
+							{
+								buf2=BGBCC_LoadConvResource(buf1, sz1, lang1,
+									"bmp32", &sz2, &lang2);
+								if(buf2)
+								{
+									sprintf(tb2, "%s/%s__dec.bmp",
+										bgbcc_exwad_outdir, tb1);
+									BGBCC_StoreFile(tb2, buf2, sz2);
+//									free(buf2);
+								}
+							}
+						}
+//						free(buf1);
 						continue;
 					}
 				}
 			
-				BGBCC_CCXL_AddResourceData(ctx,
-					tb1, buf, sz, lang);
+				if(ctx)
+				{
+					BGBCC_CCXL_AddResourceData(ctx,
+						tb1, buf, sz, lang);
+				}
+				if(bgbcc_exwad_ctx)
+				{
+					ExWAD_StoreFile(
+						bgbcc_exwad_ctx, tb1, buf, sz);
+				}
+				if(bgbcc_exwad_outdir)
+				{
+					sprintf(tb2, "%s/%s", bgbcc_exwad_outdir, tb1);
+					BGBCC_StoreFile(tb2, buf, sz);
+				}
 			}
 			continue;
 		}
@@ -3093,6 +2738,7 @@ int help(char *arg0)
 	printf("/Fw<name>           ExWAD Output Name\n");
 	printf("/Fi<name>           Program Image Name\n");
 	printf("/Fe<name>           Program Executable Name\n");
+	printf("/Fcd<path>          File/Lump Conversion Out Dir (RWAD)\n");
 	printf("/m<arch>            Specify target arch\n");
 	printf("/cfg=<name>         Set Config File\n");
 	printf("/home=<path>        Set Home Path (Config Search)\n");
@@ -3109,7 +2755,7 @@ int main(int argc, char *argv[], char **env)
 	byte *obuf;
 	void *p;
 	char *s, *t, *s0;
-	fourcc fmt;
+	fourcc fmt, lang;
 	int n, m, nuds, nargs, nadds, minuds;
 	int is_compile_only;
 	int is_preproc_only;
@@ -3153,6 +2799,8 @@ int main(int argc, char *argv[], char **env)
 	is_compile_only=0;
 	is_preproc_only=0;
 
+	bgbcc_exwad_outdir=NULL;
+
 	n=0; m=0; nadds=0;
 	for(i=1; i<argc; i++)
 	{
@@ -3192,6 +2840,12 @@ int main(int argc, char *argv[], char **env)
 			if(!strncmp(argv[i]+1, "Fw", 2))
 			{
 				wadfn=argv[i]+3;
+				continue;
+			}
+
+			if(!strncmp(argv[i]+1, "Fcd", 3))
+			{
+				bgbcc_exwad_outdir=argv[i]+4;
 				continue;
 			}
 
@@ -3573,7 +3227,7 @@ int main(int argc, char *argv[], char **env)
 		}
 	}
 
-	if(!metafn && !wadfn && !frbcfn)
+	if(!metafn && !wadfn && !frbcfn && !bgbcc_exwad_outdir)
 	{
 		printf("%s: No output file\n", argv[0]);
 //		help(argv[0]);
@@ -3689,14 +3343,39 @@ int main(int argc, char *argv[], char **env)
 	if(wadfn)
 	{
 		wad=ExWAD_LoadImage2(wadfn);
+		bgbcc_exwad_ctx=wad;
 	}
 
-	if(wad)
+	if(wad || bgbcc_exwad_outdir)
 	{
+		for(i=0; i<nuds; i++)
+		{
+			lang=BGBCP_LangForName(uds[i]);
+			if(lang==BGBCC_FMT_WDEF)
+			{
+				BGBCC_LoadWDef(NULL, uds[i]);
+				continue;
+			}
+		}
+
 		for(i=0; i<nadds; i++)
-			ExWAD_AddFile(wad, adds[i]);
+		{
+#if 1
+			lang=BGBCP_LangForName(adds[i]);
+			if(lang==BGBCC_FMT_WDEF)
+			{
+				BGBCC_LoadWDef(NULL, adds[i]);
+				continue;
+			}
+#endif
+
+			if(wad)
+			{
+				ExWAD_AddFile(wad, adds[i]);
+			}
+		}
 			
-		if(nuds)
+		if(nuds && metafn)
 		{
 #if 1
 			s0=malloc(1<<24);
@@ -3708,8 +3387,11 @@ int main(int argc, char *argv[], char **env)
 			free(s0);
 #endif
 		}
-		
-		ExWAD_SaveImage(wad);
+
+		if(wad)
+		{
+			ExWAD_SaveImage(wad);
+		}
 	}
 
 	if(metafn)

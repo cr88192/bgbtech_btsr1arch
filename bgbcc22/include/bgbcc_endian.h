@@ -45,6 +45,9 @@
 
 #ifndef force_inline
 #define force_inline
+#endif
+
+#ifndef default_inline
 #define default_inline
 #endif
 

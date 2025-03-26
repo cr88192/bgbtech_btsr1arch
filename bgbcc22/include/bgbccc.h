@@ -554,6 +554,9 @@ extern "C" {
 
 #define BGBCC_FMT_CRAM		BGBCC_FOURCC('C', 'R', 'A', 'M')
 
+#define BGBCC_FMT_CQL0		BGBCC_FOURCC('C', 'Q', 'L', '0')
+#define BGBCC_FMT_CQL3		BGBCC_FOURCC('C', 'Q', 'L', '3')
+
 #define BGBCC_FMT_RGL3		BGBCC_FOURCC('R', 'G', 'L', '3')
 #define BGBCC_FMT_RGL4		BGBCC_FOURCC('R', 'G', 'L', '4')
 
@@ -613,7 +616,8 @@ typedef union {
 #include <bgbcc_xml.h>
 #endif
 
-#ifdef BGBCC_BGBMETA
+// #ifdef BGBCC_BGBMETA
+#if 1
 #include <bgbcc_meta.h>
 #include <bgbcc_exwad.h>
 #include <bgbcc_link.h>
@@ -763,6 +767,39 @@ BGBPP_PpiFrame *next;
 BGBPP_PpiDef *vars;
 };
 
+typedef struct BGBCC_VlSenseList_s BGBCC_VlSenseList;
+
+/* Verilog sensitivity list */
+struct BGBCC_VlSenseList_s {
+BGBCC_VlSenseList *next;
+BGBCC_VlSenseList *chain;
+char *name;			//name of always block
+
+char **pedep;		//posedge
+char **nedep;		//negedge
+char **refin;		//references (in)
+char **refout;		//references (out)
+
+short n_pedep;		//num posedge
+short n_nedep;		//num negedge
+short n_refin;		//num references (in)
+short n_refout;		//num references (out)
+
+short m_pedep;		//max posedge
+short m_nedep;		//max negedge
+short m_refin;		//max references (in)
+short m_refout;		//max references (out)
+
+short blkord;		//block order
+short rankord;		//ranking order
+
+char *t_pedep[4];	//posedge
+char *t_nedep[4];	//negedge
+char *t_refin[64];	//references (in)
+char *t_refout[64];	//references (out)
+
+};
+
 struct BGBCC_TransState_s {
 byte lvl;	//block level, 0=toplevel, 1..=in function
 byte olvl;	//object level, 0=module, 1..=in object
@@ -858,6 +895,11 @@ int cur_idx;	//field
 int cur_idx2;	//method
 int cur_idx3;	//property
 int cur_idx4;	//property
+
+BGBCC_VlSenseList *mod_slist;
+BGBCC_VlSenseList *cur_slist;
+
+BGBCC_VlSenseList *free_slist;
 
 char *imp_ns[256];
 int n_imp;

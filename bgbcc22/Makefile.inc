@@ -23,6 +23,7 @@ SRCS=\
 	mm/cc_thread.c \
 	mm/cc_fmt_targa.c \
 	mm/cc_fmt_bmp.c \
+	mm/cc_fmtcnv.c \
 	\
 	mm/qoilz_dec.c \
 	mm/qoilz_enc.c \
@@ -50,6 +51,7 @@ SRCS=\
 	ccxl/ccxl_struct.c \
 	ccxl/ccxl_trace.c \
 	ccxl/ccxl_type.c \
+	ccxl/ccxl_vlalways.c \
 	\
 	ccxl/ccxl_fr2e.c \
 	ccxl/ccxl_lvatag.c \

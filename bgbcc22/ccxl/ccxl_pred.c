@@ -3022,6 +3022,43 @@ ccxl_status BGBCC_CCXL_GetRegForUBitInt128Value(
 }
 
 
+ccxl_status BGBCC_CCXL_GetRegForSBitInt128Value(
+	BGBCC_TransState *ctx, ccxl_register *rreg,
+	s64 val_lo, s64 val_hi, int val_sz)
+{
+	ccxl_register treg;
+	int i, j, k;
+		
+	if(val_sz==128)
+	{
+		return(BGBCC_CCXL_GetRegForInt128Value(ctx, rreg, val_lo, val_hi));
+	}
+
+	if(val_sz==64)
+	{
+		return(BGBCC_CCXL_GetRegForLongValue(ctx, rreg, val_lo));
+	}
+
+	i=BGBCC_CCXL_IndexLitS64(ctx, val_lo);
+	j=BGBCC_CCXL_IndexLitS64(ctx, val_hi);
+	treg.val=
+		(i&CCXL_REGINTPL_MASK)|
+		((j&CCXL_REGINTPL_MASK)<<CCXL_REGINTPH_SHL)|
+		(( val_sz&127LL)<<CCXL_REGINTTY_SHL)|
+		((        128LL)<<CCXL_REGINTTY_SHL)|
+		CCXL_REGTY_IMM_BI128_LVT;
+	*rreg=treg;
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_GetRegForSBitIntValue(
+	BGBCC_TransState *ctx, ccxl_register *rreg,
+	s64 val, int val_sz)
+{
+	return(BGBCC_CCXL_GetRegForSBitInt128Value(ctx,
+		rreg, val, val>>63, val_sz));
+}
+
 ccxl_status BGBCC_CCXL_GetRegForStringValue(
 	BGBCC_TransState *ctx, ccxl_register *rreg, char *str)
 {

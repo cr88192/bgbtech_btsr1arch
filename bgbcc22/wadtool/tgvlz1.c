@@ -62,17 +62,59 @@ This format will not attempt to deal with chunking or streaming.
 #ifdef HAVE_STDINT_H
 #include <stdint.h>
 
+#ifndef BYTE_T
+#define BYTE_T
+typedef unsigned char byte;
+#endif
+
+#ifndef SBYTE_T
+#define SBYTE_T
+typedef signed char sbyte;
+#endif
+
+#ifndef U8_T
+#define U8_T
+typedef unsigned char u8;
+#endif
+
+#ifndef S8_T
+#define S8_T
+typedef signed char s8;
+#endif
+
+
+
+#ifndef PDLIB_INT_BITS_T
+#define PDLIB_INT_BITS_T
+
 typedef uint8_t	byte;
 typedef uint16_t	u16;
 typedef uint32_t	u32;
 typedef uint64_t	u64;
 
+typedef int8_t		sbyte;
+typedef int16_t	s16;
+typedef int32_t	s32;
+typedef int64_t	s64;
+
+#endif
+
 #else
 
-typedef unsigned char byte;
-typedef unsigned short u16;
-typedef unsigned int u32;
-typedef unsigned long long u64;
+#ifndef PDLIB_INT_BITS_T
+#define PDLIB_INT_BITS_T
+
+typedef unsigned char			byte;
+typedef unsigned short		u16;
+typedef unsigned int			u32;
+typedef unsigned long long	u64;
+
+typedef signed char			sbyte;
+typedef signed short			s16;
+typedef signed int			s32;
+typedef signed long long		s64;
+
+#endif
 
 #endif
 

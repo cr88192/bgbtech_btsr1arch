@@ -1485,7 +1485,10 @@ int BGBCC_CCXL_NormalizeImmVReg(
 			{
 				BGBCC_CCXL_Warn(ctx, "Constant Conversion, Loss of Range\n");
 			}
-			
+
+			BGBCC_CCXL_GetRegForUBitIntValue(ctx, &treg2, li, sz);
+
+#if 0
 			if(sz<=32)
 			{
 				BGBCC_CCXL_GetRegForUIntValue(ctx, &treg2, li);
@@ -1493,6 +1496,7 @@ int BGBCC_CCXL_NormalizeImmVReg(
 			{
 				BGBCC_CCXL_GetRegForULongValue(ctx, &treg2, li);
 			}
+#endif
 
 			*rtreg=treg2;
 			return(1);

@@ -827,6 +827,112 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				return(n);
 			}
 #endif
+
+			if(!bgbcp_strcmp(b, "__switchz"))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
+	//			n1=BGBCP_Expression(ctx, &s);
+				n1=BGBCP_Expression2(ctx, &s);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
+
+				s=BGBCP_Token2(s, b, &ty, ctx->lang); //{
+				n2=BGBCP_Block(ctx, &s);
+
+				n=BCCX_NewCst2(&bgbcc_rcst_switchz, "switchz",
+					BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
+					BCCX_NewCst1(&bgbcc_rcst_body, "body", n2));
+
+				*str=s;
+				return(n);
+			}
+
+			if(
+				!bgbcp_strcmp(b, "__vlcase") ||
+				!bgbcp_strcmp(b, "__vlcasez") )
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
+	//			n1=BGBCP_Expression(ctx, &s);
+				n1=BGBCP_Expression2(ctx, &s);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
+
+				s=BGBCP_Token2(s, b, &ty, ctx->lang); //{
+//				n2=BGBCP_Block(ctx, &s);
+				n2=BGBCP_VlCaseBlock(ctx, &s);
+
+				n=BCCX_NewCst2(&bgbcc_rcst_vlcasez, "vlcasez",
+					BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
+					BCCX_NewCst1(&bgbcc_rcst_body, "body", n2));
+
+				*str=s;
+				return(n);
+			}
+		}
+
+//		if(ctx->lang==BGBCC_LANG_VERILOG)
+		if(1)
+		{
+			if(	(ctx->lang==BGBCC_LANG_VERILOG) &&
+				(	!bgbcp_strcmp(b, "case") ||
+					!bgbcp_strcmp(b, "casez")))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
+	//			n1=BGBCP_Expression(ctx, &s);
+				n1=BGBCP_Expression2(ctx, &s);
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
+
+				n2=BGBCP_VlCaseBlock(ctx, &s);
+
+				if(!bgbcp_strcmp(b, "casez"))
+				{
+					n=BCCX_NewCst2(&bgbcc_rcst_vlcasez, "vlcasez",
+						BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
+						BCCX_NewCst1(&bgbcc_rcst_body, "body", n2));
+				}else
+				{
+					n=BCCX_NewCst2(&bgbcc_rcst_vlcase, "vlcase",
+						BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n1),
+						BCCX_NewCst1(&bgbcc_rcst_body, "body", n2));
+				}
+
+				*str=s;
+				return(n);
+			}
+			
+			if(((ctx->lang==BGBCC_LANG_VERILOG) &&
+				!bgbcp_strcmp(b, "assign")) ||
+				!bgbcp_strcmp(b, "__vl_assign"))
+			{
+				n1=BGBCP_BlockStatement2(ctx, &s);
+				n2=BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_vlassign, "vlassign", n2);
+				*str=s;
+				return(n);
+			}
+
+			if(
+				((ctx->lang==BGBCC_LANG_VERILOG) &&
+					!bgbcp_strcmp(b, "always")) ||
+				!bgbcp_strcmp(b, "__vl_always"))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//@
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
+				if(!bgbcp_strcmp(b, "("))
+				{
+					n2=BGBCP_Expression2(ctx, &s);
+					s=BGBCP_Token2(s, b, &ty, ctx->lang);	//)
+				}else
+				{
+					n2=NULL;
+				}
+
+				n1=BGBCP_BlockStatement2(ctx, &s);
+				n1=BCCX_NewCst1V(&bgbcc_rcst_body, "body", n1);
+				n=BCCX_NewCst1(&bgbcc_rcst_vlalways, "vlalways", n1);
+				if(n2)
+					BCCX_Add(n, BCCX_NewCst1V(&bgbcc_rcst_cond, "cond", n2));
+				*str=s;
+				return(n);
+			}
 		}
 
 		if(ctx->lang==BGBCC_LANG_CS)
@@ -1253,8 +1359,10 @@ BCCX_Node *BGBCP_BlockI(BGBCP_ParseState *ctx, char **str, int flag)
 {
 	char b[256];
 	char *s, *s1;
-	int ty, ty2, i;
-	BCCX_Node *n, *lst, *lste;
+	int ty, ty2, i, isveril;
+	BCCX_Node *n, *ln, *rn, *n1, *lst, *lste;
+
+	isveril=(ctx->lang==BGBCC_LANG_VERILOG);
 
 	s=*str; s1=s;
 	lst=NULL; lste=NULL;
@@ -1263,10 +1371,21 @@ BCCX_Node *BGBCP_BlockI(BGBCP_ParseState *ctx, char **str, int flag)
 		if(!s)
 			break;
 		BGBCP_Token2(s, b, &ty, ctx->lang);
-		if(!*s || (*b=='}'))
+		if(!*s || (!isveril && (*b=='}')))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
 			break;
+		}
+		
+		if(isveril)
+		{
+			if(	(!bgbcc_strcmp(b, "end") && !(flag&(16|32))) ||
+				(!bgbcc_strcmp(b, "endcase") && (flag&16)) ||
+				(!bgbcc_strcmp(b, "endmodule") && (flag&32)))
+			{
+				s=BGBCP_Token2(s, b, &ty, ctx->lang);
+				break;
+			}
 		}
 
 		s1=BGBCP_EatWhite(s);
@@ -1276,6 +1395,34 @@ BCCX_Node *BGBCP_BlockI(BGBCP_ParseState *ctx, char **str, int flag)
 #ifdef CATCH_BLOCK_SEH
 		__try {
 #endif
+
+		if(flag&16)
+		{
+			s1=s;
+			n=BGBCP_ExpressionComma(ctx, &s1);
+
+			BGBCP_Token2(s1, b, &ty, ctx->lang);
+			if(*b==':')
+			{
+				s=BGBCP_Token2(s1, b, &ty, ctx->lang);
+
+				while(BCCX_TagIsCstP(n, &bgbcc_rcst_comma, "comma"))
+				{
+					ln=BCCX_FetchCst(n, &bgbcc_rcst_left, "left");
+					rn=BCCX_FetchCst(n, &bgbcc_rcst_right, "right");
+					
+					n1=BCCX_NewCst1(&bgbcc_rcst_case, "case",
+						BCCX_NewCst1V(&bgbcc_rcst_value, "value", rn));
+					lst=BCCX_AddEnd2(lst, &lste, n1);
+					
+					n=ln;
+				}
+
+				n1=BCCX_NewCst1(&bgbcc_rcst_case, "case",
+					BCCX_NewCst1V(&bgbcc_rcst_value, "value", n));
+				lst=BCCX_AddEnd2(lst, &lste, n1);
+			}
+		}
 
 		n=BGBCP_BlockStatementI(ctx, &s, flag);
 		if(n==NULL)
@@ -1329,6 +1476,22 @@ BCCX_Node *BGBCP_Block(BGBCP_ParseState *ctx, char **str)
 	BCCX_Node *n;
 	
 	n=BGBCP_BlockI(ctx, str, 0);
+	return(n);
+}
+
+BCCX_Node *BGBCP_VlCaseBlock(BGBCP_ParseState *ctx, char **str)
+{
+	BCCX_Node *n;
+	
+	n=BGBCP_BlockI(ctx, str, 16);
+	return(n);
+}
+
+BCCX_Node *BGBCP_VlModuleBlock(BGBCP_ParseState *ctx, char **str)
+{
+	BCCX_Node *n;
+	
+	n=BGBCP_BlockI(ctx, str, 32);
 	return(n);
 }
 
@@ -1393,7 +1556,7 @@ BCCX_Node *BGBCP_BlockStatement2(BGBCP_ParseState *ctx, char **str)
 	char *s;
 	s64 dfl_fl;
 	int tk0, tk1, tk2, bn;
-	int ty;
+	int ty, isveril;
 	BCCX_Node *n;
 
 //	if(	(ctx->lang==BGBCC_LANG_JAVA) ||
@@ -1404,8 +1567,12 @@ BCCX_Node *BGBCP_BlockStatement2(BGBCP_ParseState *ctx, char **str)
 
 	s=*str;
 
+	isveril=(ctx->lang==BGBCC_LANG_VERILOG);
+
 	BGBCP_Token2(s, b, &ty, ctx->lang);
-	if(!bgbcp_strcmp1(b, "{"))
+	if(		(!isveril && !bgbcp_strcmp1(b, "{")) ||
+			(isveril && !bgbcp_strcmp5(b, "begin"))
+		)
 	{
 		s=BGBCP_Token2(s, b, &ty, ctx->lang);
 

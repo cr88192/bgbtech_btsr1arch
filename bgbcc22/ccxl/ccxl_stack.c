@@ -3435,7 +3435,14 @@ ccxl_status BGBCC_CCXL_StackPushConstBitInt64(
 	BGBCC_CCXLR3_EmitArgInt(ctx, 0);
 	BGBCC_CCXLR3_EmitArgInt(ctx, val_sz);
 
-	BGBCC_CCXL_GetRegForUBitIntValue(ctx, &sreg, val, val_sz);
+	if(val_sz<0)
+	{
+		BGBCC_CCXL_GetRegForSBitIntValue(ctx, &sreg, val, -val_sz);
+	}else
+	{
+		BGBCC_CCXL_GetRegForUBitIntValue(ctx, &sreg, val, val_sz);
+	}
+
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 	return(CCXL_STATUS_YES);
 //	BGBCC_CCXL_StubError(ctx);
@@ -3459,7 +3466,15 @@ ccxl_status BGBCC_CCXL_StackPushConstBitInt128(
 	BGBCC_CCXLR3_EmitArgInt(ctx, val_hi);
 	BGBCC_CCXLR3_EmitArgInt(ctx, val_sz);
 
-	BGBCC_CCXL_GetRegForUBitInt128Value(ctx, &sreg, val_lo, val_hi, val_sz);
+	if(val_sz<0)
+	{
+		BGBCC_CCXL_GetRegForSBitInt128Value(ctx,
+			&sreg, val_lo, val_hi, -val_sz);
+	}else
+	{
+		BGBCC_CCXL_GetRegForUBitInt128Value(ctx,
+			&sreg, val_lo, val_hi, val_sz);
+	}
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 	return(CCXL_STATUS_YES);
 //	BGBCC_CCXL_StubError(ctx);
@@ -5034,9 +5049,11 @@ ccxl_status BGBCC_CCXL_StackBitStore(BGBCC_TransState *ctx,
 //	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
 
 	dty=BGBCC_CCXL_GetRegType(ctx, sreg);
+//	dty=BGBCC_CCXL_GetRegType(ctx, treg);
 	BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
 
 	BGBCC_CCXL_EmitBitMov(ctx, dty, dreg, sreg, treg, mlo, mlo, mhi);
+//	BGBCC_CCXL_EmitBitMov(ctx, dty, dreg, treg, sreg, mlo, mlo, mhi);
 
 //	BGBCC_CCXL_EmitVaArg(ctx, dty, dreg, sreg);
 

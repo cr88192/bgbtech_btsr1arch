@@ -4,7 +4,7 @@ Make a WAD4 image from a list of files.
 Starting a line with '#' or '/' will result in a comment.
 
 Format is generally:
-  <lumppath> <filepath>
+  <lumppath> <filepath> [<ugm>] [<conv>]
 Which will import a given file and added as a given lump path.
 
 Meanwhile:
@@ -14,6 +14,17 @@ If dstpath begins with '/', it will be relative to the global VFS.
 If dstpath begins with ':', it will be relative to the mount point for the local filesystem.
 
 Otherwise, it will be relative to its base path within the filesystem.
+
+ugm:
+  uid/gid,<mode>
+    u+rwx / u=rwx: Set Mode for User
+    g+rwx / g=rwx: Set Mode for Group
+    o+rwx / o=rwx: Set Mode for Other
+    a+rwx / a=rwx: Set Mode for Everyone
+
+conv:
+  fmt[,<args>]
+Specify a format for conversion on load.
 
  */
 
@@ -31,6 +42,9 @@ Otherwise, it will be relative to its base path within the filesystem.
 #define TGVLZ_NOMAIN
 #include "tgvlz1.c"
 
+#define BGBCC_BCCX2
+#include "../bgbcc_mtool.c"
+
 #if 0
 typedef unsigned char byte;
 typedef unsigned short u16;
@@ -47,6 +61,16 @@ typedef unsigned long long u64;
 #define	FCC_COM						BGBCC_FOURCC('C', 'O', 'M', ' ')
 #define	FCC_SH						BGBCC_FOURCC('S', 'H', ' ', ' ')
 #define	FCC_PF						BGBCC_FOURCC('P', 'F', ' ', ' ')
+
+
+// #define	BGBCC_FMT_CRAM				BGBCC_FOURCC('C', 'R', 'A', 'M')
+// #define	BGBCC_FMT_RGL3				BGBCC_FOURCC('R', 'G', 'L', '3')
+// #define	BGBCC_FMT_CQL0				BGBCC_FOURCC('C', 'Q', 'L', '0')
+
+// #include "../mm/cc_fmt_targa.c"
+// #include "../mm/cc_fmt_bmp.c"
+// #include "../bgbcc_mtool.c"
+
 
 #define TKFAT_EMODE_SETUID		0x00000800
 #define TKFAT_EMODE_SETGID		0x00000400
@@ -87,6 +111,7 @@ typedef struct
 	byte	name[8];
 } wadlump_t;
 
+#if 0
 typedef struct
 {
 	u32		foffs;
@@ -97,6 +122,7 @@ typedef struct
 	u16		chn;		//Chain (ExWAD)
 	byte	name[16];
 } wad2lump_t;
+#endif
 
 typedef struct
 {
@@ -907,6 +933,11 @@ void *LoadFile(char *name, int *rsz)
 	return(buf);
 }
 
+void *bgbcc_loadfile(char *name, int *rsz)
+{
+	return(LoadFile(name, rsz));
+}
+
 void StoreFile(char *name, void *buf, int sz)
 {
 	FILE *fd;
@@ -917,6 +948,19 @@ void StoreFile(char *name, void *buf, int sz)
 	fclose(fd);
 }
 
+int BGBCC_StoreFile(char *name, void *buf, int sz)
+{
+	StoreFile(name, buf, sz);
+	return(0);
+}
+
+int bgbcc_storefile(char *name, void *buf, int sz)
+{
+	StoreFile(name, buf, sz);
+	return(0);
+}
+
+#if 0
 byte *bgbcc_rlcbuf=NULL;
 int bgbcc_rlcpos;
 
@@ -983,6 +1027,7 @@ char **bgbcc_split(char *s)
 
 	return(a);
 }
+#endif
 
 int FccTagForName(char *src)
 {
@@ -1069,17 +1114,19 @@ int print_usage(char *argv0)
 	return(0);
 }
 
-int main(int argc, char *argv[])
+// int main(int argc, char *argv[])
+int main(int argc, char *argv[], char **env)
 {
 	char tbuf[512];
 	char tn[257];
 	FILE *ifd;
-	char *ibuf;
-	char *ifn, *ofn, *dir;
+	char *ibuf, *ibuf1;
+	char *ifn, *ofn, *dir, *tcnv;
 	char **a;
 	char *s, *s1, *sugm;
 	u64 ugm;
-	int isz, tag, tag1, tyofs, dirofs;
+	u32 tag, tag1;
+	int isz, isz1, tyofs, dirofs;
 	int	rov1, rov2, drov;
 	int hashofs, hashsz;
 	int i, j, k, h;
@@ -1181,9 +1228,21 @@ int main(int argc, char *argv[])
 			continue;
 
 		sugm=NULL;
+		tcnv=NULL;
 
 		if(a[1])
-			{ s=a[1]; sugm=a[2]; }
+		{
+			s=a[1];
+			if(a[2] && (a[2][0]>='0') && (a[2][0]<='9'))
+			{
+				sugm=a[2];
+				if(a[3])
+					tcnv=a[3];
+			}else if(a[2])
+			{
+				tcnv=a[2];
+			}
+		}
 		else
 			{ s=a[0]; }
 		if((s[0]=='.') && (s[1]=='/'))
@@ -1223,6 +1282,20 @@ int main(int argc, char *argv[])
 		printf("Add: %-24s (%08X)  ", tn, tag);
 
 		rov1=wad_rover;
+
+		if(tcnv && tcnv[1])
+		{
+			ibuf1=(char *)BGBCC_LoadConvResource(
+				(byte *)ibuf, isz, tag,
+				tcnv, &isz1, &tag1);
+			
+			if(ibuf1)
+			{
+				ibuf=ibuf1;
+				isz=isz1;
+				tag=tag1;
+			}
+		}
 
 //		strncpy(tn, a[0], 256);
 //		strncpy(tn, s, 256);

@@ -147,7 +147,7 @@ char *BCCX_PrintBufNodeAttr(BCCX_Node *node, char *buf, int flag)
 		if((j>>12)==BCCX_IVTY_INT)
 		{
 			*t++=' ';
-			sprintf(t, "%s=%lld", s0, av->i);
+			sprintf(t, "%s=%lld", s0, (long long)(av->i));
 			t+=strlen(t);
 		}
 		if((j>>12)==BCCX_IVTY_REAL)

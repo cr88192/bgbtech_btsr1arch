@@ -2766,7 +2766,7 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 {
 	char b[256], b2[256], b3[256];
 	char *s, *s1, *s2, *bty, *vty;
-	s64 fl, li;
+	s64 fl, li, lj, lk;
 	int i, j, ty, ty2, ty3, ind;
 	BCCX_Node *n, *n1, *n2, *attrl, *attrle;
 
@@ -2830,11 +2830,13 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 			!bgbcp_strcmp(b, "wire") ||
 			!bgbcp_strcmp(b, "input") ||
 			!bgbcp_strcmp(b, "output") ||
-			!bgbcp_strcmp4(b, "inout"))
+			!bgbcp_strcmp(b, "inout"))
 		{
 			s=BGBCP_Token2(s, b, &ty, ctx->lang);
+			sprintf(b3, "vl_%s", b);
 
-			bty=bgbcc_strdup(b);
+//			bty=bgbcc_strdup(b);
+			bty=bgbcc_strdup(b3);
 		
 			s1=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 			if(!bgbcp_strcmp1(b2, "[") && (ty==BTK_BRACE))
@@ -2852,6 +2854,23 @@ BCCX_Node *BGBCP_DefTypeJ(BGBCP_ParseState *ctx, char **str)
 				if(!bgbcp_strcmp1(b2, "]"))
 				{
 					s=s1;
+				}
+				
+				n1=BGBCP_ReduceExpr(ctx, n1);
+				n2=BGBCP_ReduceExpr(ctx, n2);
+								
+				if(	BGBCP_IsIntP(ctx, n1) &&
+					BGBCP_IsIntP(ctx, n2))
+				{
+					li=BCCX_GetIntCst(n1, &bgbcc_rcst_value, "value");
+					lj=BCCX_GetIntCst(n2, &bgbcc_rcst_value, "value");
+					
+					j=(li-lj)+1;
+					if(lj==0)
+					{
+						sprintf(b3, "vl_%s_%u", b, j);
+						bty=bgbcc_strdup(b3);
+					}
 				}
 
 				n=BCCX_NewCst2(&bgbcc_rcst_type, "type",

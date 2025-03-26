@@ -257,7 +257,8 @@
 // `define jx2_enable_rgb5minmax_mul			//RGB5 Min/Max Op (CCENC)
 // `define jx2_enable_rgb5btcenccc			//RGB5 Color-Cell Encode Helper
 
-`define jx2_enable_rgb5pcki8				//RGB5 Pack Indexed
+// `define jx2_enable_rgb5pcki8				//RGB5 Pack Indexed
+`define jx2_enable_rgb5sh3					//RGB5 Shuffle-3
 `define jx2_enable_bitnn					//Bit Neural Net
 
 `define jx2_enable_fmulfp8					//FMUL FP8

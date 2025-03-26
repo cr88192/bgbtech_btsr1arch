@@ -287,7 +287,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dm': __bcd64
 * 'Dn': nullptr
 * 'Do': __bcd128
-* 'Dp':
+* 'Dp{n}': Output BitInt
 * 'Dq': __quatd
 * 'Dr':
 * 'Ds': wstring
@@ -1042,6 +1042,93 @@ Opcodes (Executable Code)
 ** The constant is encoded as a string in LSB-first order, in 64 bit chunks.
 ** Each 'digit' is 6-bits and encoded as an ASCII value 0x30..0x6F.
 ** There are 11 digits per 64-bit chunk.
+
+* 0x91, TOPLFN ( -- )
+** STRING lfn;
+** SVLI lln;
+
+* 0x92, BITLOAD ( V -- V )
+** UVLIP bitpos;
+** Extract bits from a value, given as a low/high pair.
+*** Result is an _SBitInt or _UBitInt of the given width.
+
+* 0x93, BITLOADINT ( V -- V )
+** UVLIP bitpos;
+** Extract bits from a value, given as a low/high pair.
+*** Result is an integer type matching the input value.
+
+* 0x94, BITSTORE ( Vs Vd -- Vd )
+** UVLIP bitpos;
+** Store source value into bit-position in the destination.
+*** Bits outside the destinatin bitfield are kept unchanged.
+
+* 0x95, BITMOVE ( Vs Vd -- Vd )
+** UVLIP dbitpos;
+** UVLIP sbitpos;
+** Move source bitfield into bit-position in the destination.
+*** Bits outside the destinatin bitfield are kept unchanged.
+
+* 0x96, STBITSTORE ( V -- )
+** UVLIP bitpos;
+** SYMBOL name;
+** Store source value into bit-position in the destination.
+*** Bits outside the destinatin bitfield are kept unchanged.
+** Destination is given as a named variable.
+
+* 0x97, STBITMOVE ( V -- )
+** UVLIP dbitpos;
+** UVLIP sbitpos;
+** SYMBOL name;
+** Move source bitfield into bit-position in the destination.
+*** Bits outside the destinatin bitfield are kept unchanged.
+** Destination is given as a named variable.
+
+
+* 0x98, LDCONSTBTI ( -- V )
+** SVLI li0;
+** SVLI li1;
+** SVLI vsz;
+** Loads bit vector constant (up to 128 bits).
+*** If vsz is negative, this encodes signed value.
+*** If vsz is positive, this encodes an unsigned value.
+
+* 0x99, LDCONSTTS ( -- V )
+** SVLI li0;
+** SVLI li1;
+** SVLI vsz;
+** Loads a tristate bit vector constant (up to 64 bits).
+** Value is encoded as a value and mask.
+** Where for (m,v) pairs: 00=0, 01=1, 10=Z, 11=X
+
+* 0x9A, LDCONSTBTS ( -- V )
+** STRING val;
+** SVLI vty;
+** Loads a big tristate bit vector constant.
+** The constant is encoded as a string in LSB-first order, in 64 bit chunks.
+** Each 'digit' is 6-bits and encoded as an ASCII value 0x30..0x6F.
+** There are 11 digits per 64-bit chunk.
+** The 64 bit chunks are encoded as pairs: value and mask.
+
+* 0x9B, STBITLOAD ( V -- )
+** UVLIP bitpos;
+** SYMBOL name;
+** Extract bits and store them to the named variable.
+
+* 0x9C, JMPTABZ
+** Jump Table
+** SVLI nLbl;	//number of labels
+*** Greater than 0: Check range, branch to Default if out of range.
+*** Less than 0: Don't check range (value assumed to be in range).
+** SVLI szMask;	//LOB range mask Size
+** LABEL dfl;	//default
+** For Each Label:
+*** SVLI val;	//case value
+*** SVLI mask;	//case mask
+*** LABEL lbl;	//target label
+** Jump table with masked (tristate) values.
+*** Masked bits (Z/X) will match either value bit.
+*** The value being matched is first masked by a given size.
+
 
 
 

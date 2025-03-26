@@ -414,6 +414,59 @@ begin
 		end
 `endif
 
+// `ifdef def_true
+`ifdef jx2_enable_rgb5sh3
+		JX2_UCIX_CONV_RGB5SH3: begin
+			tRegOutVal = {
+			regValRs[63],
+			regValRs[57], regValRs[62], regValRs[52],
+			regValRs[56], regValRs[61], regValRs[51],
+			regValRs[55], regValRs[60], regValRs[50],
+			regValRs[54], regValRs[59], regValRs[49],
+			regValRs[53], regValRs[58], regValRs[48],
+			regValRs[47],
+			regValRs[41], regValRs[46], regValRs[36],
+			regValRs[40], regValRs[45], regValRs[35],
+			regValRs[39], regValRs[44], regValRs[34],
+			regValRs[38], regValRs[43], regValRs[33],
+			regValRs[37], regValRs[42], regValRs[32],
+			regValRs[31],
+			regValRs[25], regValRs[30], regValRs[20],
+			regValRs[24], regValRs[29], regValRs[19],
+			regValRs[23], regValRs[28], regValRs[18],
+			regValRs[22], regValRs[27], regValRs[17],
+			regValRs[21], regValRs[26], regValRs[16],
+			regValRs[15],
+			regValRs[ 9], regValRs[14], regValRs[ 4],
+			regValRs[ 8], regValRs[13], regValRs[ 3],
+			regValRs[ 7], regValRs[12], regValRs[ 2],
+			regValRs[ 6], regValRs[11], regValRs[ 1],
+			regValRs[ 5], regValRs[10], regValRs[ 0]
+			};
+		end
+
+		JX2_UCIX_CONV_RGB5USH3: begin
+			tRegOutVal = {
+			regValRs[63],
+			regValRs[61],regValRs[58],regValRs[55],regValRs[52],regValRs[49],
+			regValRs[62],regValRs[59],regValRs[56],regValRs[53],regValRs[50],
+			regValRs[60],regValRs[57],regValRs[54],regValRs[51],regValRs[48],
+			regValRs[47],
+			regValRs[45],regValRs[42],regValRs[39],regValRs[36],regValRs[33],
+			regValRs[46],regValRs[43],regValRs[40],regValRs[37],regValRs[34],
+			regValRs[44],regValRs[41],regValRs[38],regValRs[35],regValRs[32],
+			regValRs[31],
+			regValRs[29],regValRs[26],regValRs[23],regValRs[20],regValRs[17],
+			regValRs[30],regValRs[27],regValRs[24],regValRs[21],regValRs[18],
+			regValRs[28],regValRs[25],regValRs[22],regValRs[19],regValRs[16],
+			regValRs[15],
+			regValRs[13],regValRs[10],regValRs[ 7],regValRs[ 4],regValRs[ 1],
+			regValRs[14],regValRs[11],regValRs[ 8],regValRs[ 5],regValRs[ 2],
+			regValRs[12],regValRs[ 9],regValRs[ 6],regValRs[ 3],regValRs[ 0]
+			};
+		end
+`endif
+
 		JX2_UCIX_CONV_BSWAPL: begin
 			tRegOutVal = {
 				32'h00,

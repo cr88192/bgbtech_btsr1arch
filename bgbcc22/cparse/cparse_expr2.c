@@ -522,7 +522,9 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	int ty, ty2, ty3;
 	BCCX_Node *n, *n1, *n2, *n3, *n4;
 	s64 li;
-	int i, j, k, is_n;
+	int i, j, k, is_n, isveril;
+
+	isveril=(ctx->lang==BGBCC_LANG_VERILOG);
 
 	s=*str;
 	n=NULL;
@@ -1171,6 +1173,48 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	if(ty==BTK_NUMBER)
 	{
 		BGBCP_Token(s, b2, &ty2);
+		
+		if(isveril && bgbcp_strcmp1(b2, "\'"))
+		{
+			sprintf(b3, "U%u", atoi(b));
+			suf=bgbcc_strdup(b3);			
+
+			s=BGBCP_Token(s, b2, &ty2);
+			s=BGBCP_Token(s, b3, &ty3);
+
+			if((b3[0]=='h') || (b3[0]=='H'))
+			{
+				strcpy(b, "0x");
+				strcat(b, b3+1);
+				n=BGBCP_NumberSuf(ctx, b, suf);
+				*str=s;
+				return(n);
+			}
+			if((b3[0]=='b') || (b3[0]=='B'))
+			{
+				strcpy(b, "0b");
+				strcat(b, b3+1);
+				n=BGBCP_NumberSuf(ctx, b, suf);
+				*str=s;
+				return(n);
+			}
+			if((b3[0]=='o') || (b3[0]=='O'))
+			{
+				strcpy(b, "0");
+				strcat(b, b3+1);
+				n=BGBCP_NumberSuf(ctx, b, suf);
+				*str=s;
+				return(n);
+			}
+			if((b3[0]=='d') || (b3[0]=='D'))
+			{
+				strcpy(b, b3+1);
+				n=BGBCP_NumberSuf(ctx, b, suf);
+				*str=s;
+				return(n);
+			}
+		}
+		
 		if((	!bgbcp_strcmp1(b2, "i") ||
 				!bgbcp_strcmp1(b2, "I") ||
 				!bgbcp_strcmp2(b2, "if") ||
@@ -1596,6 +1640,23 @@ BCCX_Node *BGBCP_ExpressionUnary(BGBCP_ParseState *ctx, char **str)
 		BCCX_SetCst(n, &bgbcc_rcst_op, "op", b);
 		*str=s;
 		return(n);
+	}
+
+	if(ctx->lang==BGBCC_LANG_VERILOG)
+	{
+		if((	!bgbcp_strcmp(b, "posedge") ||
+				!bgbcp_strcmp(b, "negedge")	) &&
+				(ty==BTK_NAME))
+		{
+			s=BGBCP_Token(s, b, &ty);
+			n1=BGBCP_ExpressionCast(ctx, &s);
+			n1=BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1);
+			n=BCCX_NewCst1(&bgbcc_rcst_unary, "unary", n1);
+			BCCX_SetCst(n, &bgbcc_rcst_op, "op", b);
+			*str=s;
+			return(n);
+		}
+
 	}
 
 #if 1

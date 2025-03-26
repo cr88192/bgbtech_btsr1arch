@@ -1331,7 +1331,8 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	static int lop, lop1, lop2, lop3;
 	static int lop4, lop5, lop6, lop7;
 	char tb[4096];
-	s64 vala[256];
+	s64 vala[1024];
+	s64 valb[1024];
 	ccxl_label lbla[256];
 	BGBCC_CCXL_RegisterInfo *decl;
 	byte *cs, *tbuf;
@@ -2022,10 +2023,35 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		for(i=0; i<i0; i++)
 		{
 			vala[i]=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+			valb[i]=0;
 			lbla[i]=BGBCC_CCXLR3_ReadLabel(ctx, &cs);
 		}
 
-		BGBCC_CCXL_StackCompileJmpTab(ctx, 0, i0, lbla, vala, lbl, lbl2);
+		BGBCC_CCXL_StackCompileJmpTab(ctx,
+			0, i0, 64, lbla, vala, valb, lbl, lbl2);
+
+//		BGBCC_CCXL_StackDupIdx(ctx, i0);
+
+		break;
+
+	case BGBCC_RIL3OP_JMPTABZ:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		i1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		lbl=BGBCC_CCXLR3_ReadLabel(ctx, &cs);
+
+		lbl2=lbl;
+		if(i0<0)
+			{ lbl.id=0; i0=-i0; }
+
+		for(i=0; i<i0; i++)
+		{
+			vala[i]=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+			valb[i]=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+			lbla[i]=BGBCC_CCXLR3_ReadLabel(ctx, &cs);
+		}
+
+		BGBCC_CCXL_StackCompileJmpTab(ctx,
+			0, i0, i1, lbla, vala, valb, lbl, lbl2);
 
 //		BGBCC_CCXL_StackDupIdx(ctx, i0);
 

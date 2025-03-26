@@ -2519,9 +2519,11 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				break;
 
 			case 0x4:	/* F0e4_1Enm */
-				op->nmid=BJX2_NMID_RGBPCK;
+//				op->nmid=BJX2_NMID_RGBPCK;
+				op->nmid=BJX2_NMID_RGB5SH3;
 				op->fmid=BJX2_FMID_REGREG;
-				op->Run=BJX2_Op_RGB5PCK32_RegReg;
+//				op->Run=BJX2_Op_RGB5PCK32_RegReg;
+				op->Run=BJX2_Op_RGB5SH3_RegReg;
 				if(eq)
 				{
 					op->nmid=BJX2_NMID_RGB32PCK64;
@@ -2529,9 +2531,11 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				}
 				break;
 			case 0x5:	/* F0e5_1Enm */
-				op->nmid=BJX2_NMID_RGBPCK;
+//				op->nmid=BJX2_NMID_RGBPCK;
+				op->nmid=BJX2_NMID_RGB5USH3;
 				op->fmid=BJX2_FMID_REGREG;
-				op->Run=BJX2_Op_RGB5UPCK32_RegReg;
+//				op->Run=BJX2_Op_RGB5UPCK32_RegReg;
+				op->Run=BJX2_Op_RGB5USH3_RegReg;
 				if(eq)
 				{
 					op->nmid=BJX2_NMID_RGB32UPCK64;

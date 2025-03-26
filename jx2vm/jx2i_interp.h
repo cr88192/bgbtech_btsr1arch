@@ -811,6 +811,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_BITMOV		0x1DC		//
 #define BJX2_NMID_BITMOVX		0x1DD		//
 
+#define BJX2_NMID_RGB5SH3		0x1DE		//
+#define BJX2_NMID_RGB5USH3		0x1DF		//
+
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
 #define BJX2_NMID_FMAC			BJX2_NMID_FMADDD		//

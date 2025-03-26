@@ -3336,6 +3336,13 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 			opw1=0xF085|ex;
 			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
 
+		case BGBCC_SH_NMID_RGB5SH3:
+			opw1=0xF004|ex;
+			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
+		case BGBCC_SH_NMID_RGB5USH3:
+			opw1=0xF005|ex;
+			opw2=0x1E00|((rn&15)<<4)|((rm&15)<<0);			break;
+
 		case BGBCC_SH_NMID_PCVTH2AL:
 			opw1=0xF00C|ex;
 			opw2=0x1F00|((rn&15)<<4)|((rm&15)<<0);			break;

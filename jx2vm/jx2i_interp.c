@@ -2763,18 +2763,38 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 		}
 		break;
 	case BJX2_FMID_REGIMMREGREG:
-		BJX2_DbgPrintf(ctx, "%s, #%lld, %s, %s",
-			BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
-			op->imm,
-			BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
-			BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		if((op->imm&255)!=op->imm)
+		{
+			BJX2_DbgPrintf(ctx, "%s, #0x%llX, %s, %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
+				op->imm,
+				BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		}else
+		{
+			BJX2_DbgPrintf(ctx, "%s, #%lld, %s, %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
+				op->imm,
+				BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		}
 		break;
 	case BJX2_FMID_REGREGIMMREG:
-		BJX2_DbgPrintf(ctx, "%s, %s, #%lld, %s",
-			BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
-			BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
-			op->imm,
-			BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		if((op->imm&255)!=op->imm)
+		{
+			BJX2_DbgPrintf(ctx, "%s, %s, #0x%llX, %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
+				BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
+				op->imm,
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		}else
+		{
+			BJX2_DbgPrintf(ctx, "%s, %s, #%lld, %s",
+				BJX2_DbgPrintNameForReg(ctx, op->rm, op->fl),
+				BJX2_DbgPrintNameForReg(ctx, op->ro, op->fl),
+				op->imm,
+				BJX2_DbgPrintNameForReg(ctx, op->rn, op->fl));
+		}
 		break;
 
 	case BJX2_FMID_FREG:

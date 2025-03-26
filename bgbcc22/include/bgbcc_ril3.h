@@ -160,31 +160,23 @@
 #define BGBCC_RIL3OP_LDCONSTCPX	0x81	//load constant, Complex
 #define BGBCC_RIL3OP_LDCONSTV2F	0x82	//load constant, Vec2F
 #define BGBCC_RIL3OP_LDCONSTV4F	0x83	//load constant, Vec4F
-
 #define BGBCC_RIL3OP_LDCONSTU8S	0x84	//UTF-8 String
 #define BGBCC_RIL3OP_LDCONSTW4S	0x85	//UTF-32 String
-
 #define BGBCC_RIL3OP_INLINEASM	0x86	//inline ASM blob
-// #define BGBCC_RIL3OP_MKINITOBJ	0x87	//New Temporary Object (Init)
 #define BGBCC_RIL3OP_LDAVSIG	0x87
-
 #define BGBCC_RIL3OP_STCONSTI	0x88
 #define BGBCC_RIL3OP_STCONSTL	0x89
 #define BGBCC_RIL3OP_STREFREF	0x8A
 #define BGBCC_RIL3OP_LDCONSTSMI	0x8B	//load const small integer/long
 #define BGBCC_RIL3OP_TRINOP		0x8C
 #define BGBCC_RIL3OP_STTRINOP	0x8D
-
 #define BGBCC_RIL3OP_LABELLVL	0x8E	//label, with a loop-level
 #define BGBCC_RIL3OP_LDCONSTVXI	0x8F	//load const, 128-bit vector
 
 #define BGBCC_RIL3OP_LDCONSTBI	0x90	//BigInt
-
 #define BGBCC_RIL3OP_TOPLFN		0x91
-
 #define BGBCC_RIL3OP_BITLOAD	0x92
 #define BGBCC_RIL3OP_BITLOADINT	0x93
-
 #define BGBCC_RIL3OP_BITSTORE	0x94
 #define BGBCC_RIL3OP_BITMOVE	0x95
 #define BGBCC_RIL3OP_STBITSTORE	0x96
@@ -197,3 +189,5 @@
 #define BGBCC_RIL3OP_STBITLOAD		0x9B
 // #define BGBCC_RIL3OP_LDBITLOAD		0x9C
 // #define BGBCC_RIL3OP_LDBITLOADINT	0x9D
+
+#define BGBCC_RIL3OP_JMPTABZ	0x9C	//Jump Table (Masked)

@@ -1353,6 +1353,77 @@ void BJX2_Op_RGB32UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_RGB5SH3_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	static const u16 exp3tab[32]={
+		0x0000, 0x0001, 0x0008, 0x0009,
+		0x0040, 0x0041, 0x0048, 0x0049,
+		0x0200, 0x0201, 0x0208, 0x0209,
+		0x0240, 0x0241, 0x0248, 0x0249,
+		0x1000, 0x1001, 0x1008, 0x1009,
+		0x1040, 0x1041, 0x1048, 0x1049,
+		0x1200, 0x1201, 0x1208, 0x1209,
+		0x1240, 0x1241, 0x1248, 0x1249 };
+	u64	vs, vt, vn, msk;
+
+	vs=ctx->regs[op->rm];
+
+	vn=	(((u64)(exp3tab[(vs>> 0)&31]))<< 0) |
+		(((u64)(exp3tab[(vs>> 5)&31]))<< 2) |
+		(((u64)(exp3tab[(vs>>10)&31]))<< 1) |
+		(((u64)(exp3tab[(vs>>16)&31]))<<16) |
+		(((u64)(exp3tab[(vs>>21)&31]))<<18) |
+		(((u64)(exp3tab[(vs>>26)&31]))<<17) |
+		(((u64)(exp3tab[(vs>>32)&31]))<<32) |
+		(((u64)(exp3tab[(vs>>37)&31]))<<34) |
+		(((u64)(exp3tab[(vs>>42)&31]))<<33) |
+		(((u64)(exp3tab[(vs>>48)&31]))<<48) |
+		(((u64)(exp3tab[(vs>>53)&31]))<<50) |
+		(((u64)(exp3tab[(vs>>58)&31]))<<49) |
+		(vs&0x8000800080008000ULL);
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_RGB5USH3_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	static const u16 exp5tab[8]={
+		0x0000, 0x0001, 0x0020, 0x0021,
+		0x0400, 0x0401, 0x0420, 0x0421 };
+	u64	vs, vt, vn, msk;
+
+	vs=ctx->regs[op->rm];
+
+	vn=	(((u64)(exp5tab[(vs>> 0)&7]))<< 0) |
+		(((u64)(exp5tab[(vs>> 3)&7]))<< 1) |
+		(((u64)(exp5tab[(vs>> 6)&7]))<< 2) |
+		(((u64)(exp5tab[(vs>> 9)&7]))<< 3) |
+		(((u64)(exp5tab[(vs>>12)&7]))<< 4) |
+		(((u64)(exp5tab[(vs>>16)&7]))<<16) |
+		(((u64)(exp5tab[(vs>>19)&7]))<<17) |
+		(((u64)(exp5tab[(vs>>22)&7]))<<18) |
+		(((u64)(exp5tab[(vs>>25)&7]))<<19) |
+		(((u64)(exp5tab[(vs>>28)&7]))<<20) |
+		(((u64)(exp5tab[(vs>>32)&7]))<<32) |
+		(((u64)(exp5tab[(vs>>35)&7]))<<33) |
+		(((u64)(exp5tab[(vs>>38)&7]))<<34) |
+		(((u64)(exp5tab[(vs>>41)&7]))<<35) |
+		(((u64)(exp5tab[(vs>>44)&7]))<<36) |
+		(((u64)(exp5tab[(vs>>48)&7]))<<48) |
+		(((u64)(exp5tab[(vs>>51)&7]))<<49) |
+		(((u64)(exp5tab[(vs>>54)&7]))<<50) |
+		(((u64)(exp5tab[(vs>>57)&7]))<<51) |
+		(((u64)(exp5tab[(vs>>60)&7]))<<52) |
+		(vs&0x8000800080008000ULL);
+
+	vn=
+		((vn<<5)&0x7C007C007C007C00ULL) |
+		((vn>>5)&0x03E003E003E003E0ULL) |
+		((vn<<0)&0x801B801B801B801BULL) ;
+
+	ctx->regs[op->rn]=vn;
+}
+
 #if 0
 int bjx2_opi_rgb5toi8(int clr)
 {
