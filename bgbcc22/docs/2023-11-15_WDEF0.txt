@@ -51,6 +51,9 @@ Where, fmt may be one of:
 * lcif: LCIF Format
 * upic: UPIC Format
 
+* wav_{8/11/16/22/32/44}{m/s}_{8/16/alaw/adpcm/adpcm2b/adlq} : WAV conversion
+
+
 BMPA is a modified BMP differing mostly in that the fields and image data will be aligned. The headers will have a native 32-bit alignment, whereas the image data will have a 64-bit alignment. The magic will be changed from 'BM' to ' BMP', but apart from the alignment change the format is basically the same.
 
 The 256 color palette will include a designated transparent color (encoded in the palette with an alpha of 0). During encoding, any pixels with an alpha less than 128 will be assumed transparent, and any with more than 128 will be opaque.
@@ -72,9 +75,25 @@ Both QOI and LCIF will include an full Alpha channel.
 Both CRAM8 and CQ8 may have no palette variants. These formats may save some space by omitting the color palette, in which case the default 256 color palette will be assumed.
 
 
+Wave conversion:
+* wav_<rate>{m/s}_<enc>
+** rate is one of 8/11/16/22/32/44 (8000/11025/16000/22050/32000/44100)
+** m/s: Mono/Stereo
+* enc: ncoding.
+** 8: 8-bit linear PCM
+** 16: 16-bit linear PCM
+** alaw: 8-bit A-Law
+** adpcm: IMA ADPCM (4-bit / sample)
+** adpcm2b: IMA ADPCM (2-bit / sample)
+** adlq: Custom 2-bit/sample ADPCM
+
+
 === BMP: 8-bit CRAM ===
 
 This will encode the image as a stream of bytes, using a variant of the CRAM (MS Video 1) encoding.
+
+This format will have a nominal size of 2 bits per pixel.
+
 
 The first two bytes from each encoded block may be interpreted as a 16-bit word:
 * 0000..7FFF aa bb: 2-color block.
@@ -101,6 +120,8 @@ biCompression:
 * 'CQL3': CQ8, RP2
 * 'CQL4': CQ8, LZ4
 
+This will be a CRAM-like format intended to further reduce bits/pixel. This format will have a nominal size of 1.25 bpp.
+
 This format will resemble 8-bit CRAM, but will operate in terms of 8x8 blocks.
 * 0000..7FFF: 2 colors, 8x8, 10 bytes
 * 80cc: Flat Color, 2 bytes
@@ -109,3 +130,157 @@ This format will resemble 8-bit CRAM, but will operate in terms of 8x8 blocks.
 * 9000..FFFF Either 8-color (16 byte) or 4x4 (4 byte).
 ** 1zzz1zzz: 8 color (16 bytes)
 ** 1zzz0zzzz: 4x4 (4 bytes)
+
+Unlike CRAM, pixel packing will ne MSB first within each byte.
+
+
+
+=== IMA ADPCM, 4-bit ===
+
+Uses the IMA ADPCM tag (0x0011), with 4 bits per sample.
+* The nBlockAlign member encodes the block size.
+** This indirectly encodes the number of samples in the block.
+** This gives the length of each block including the header.
+* Nominally, the WAVEFORMATEX has a cbSize of 2
+** Overall length of the structure is 20 bytes.
+** This adds a 16 bit member also encoding the number of samples per block.
+
+The WAV may add a 'fact' chunk, which is 4 bytes with a 32-bit member giving the overall length (in samples) of the audio stream.
+
+
+Eavh block has a 4 byte block header:
+* Predictor Sample (Low Byte)
+* Predictor Sample (High Byte)
+* Step Index
+* Zero
+
+This is followed by samples, with samples in low-to-high bit order.
+Logically, samples are organized into groups each of which is 32 bits.
+
+The low 3 bits from each sample will be scaled by the step size:
+* 000: 1/8 * step, index-=1
+* 001: 3/8 * step, index-=1
+* 010: 5/8 * step, index-=1
+* 011: 7/8 * step, index-=1
+* 100: 9/8 * step, index+=2
+* 101: 11/8 * step, index+=4
+* 110: 13/8 * step, index+=6
+* 111: 15/8 * step, index+=8
+
+With the high bit of the sample encoding the step sign:
+* 0: Positive
+* 1: Negative
+
+Where, the index will map to a step from the table:
+ static int ima_step_table[89] = { 
+     7,     8,     9,    10,    11,    12,    13,    14,    16,    17, 
+    19,    21,    23,    25,    28,    31,    34,    37,    41,    45, 
+    50,    55,    60,    66,    73,    80,    88,    97,   107,   118, 
+   130,   143,   157,   173,   190,   209,   230,   253,   279,   307,
+   337,   371,   408,   449,   494,   544,   598,   658,   724,   796,
+   876,   963,  1060,  1166,  1282,  1411,  1552,  1707,  1878,  2066, 
+  2272,  2499,  2749,  3024,  3327,  3660,  4026,  4428,  4871,  5358,
+  5894,  6484,  7132,  7845,  8630,  9493, 10442, 11487, 12635, 13899, 
+ 15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767 
+ };
+
+The ranges are for both sample value and index are clamped in this format.
+* Predictor value is clamped to -32768 to 32767.
+* Index is clamped to range of 0 to 88.
+
+For stereo, there is 8 bytes of header.
+* The mono structure repeats twice, Left then Right.
+* The 32-bit sample blocks alternate between the left and right channels.
+
+
+=== IMA ADPCM, 2-bit ===
+
+Uses the IMA ADPCM tag (0x0011), albeit with 2 bits per sample rather than 4.
+
+Has a 4 byte block header:
+* Predictor Sample (Low Byte)
+* Predictor Sample (High Byte)
+* Step Index
+* Zero
+
+This is followed by samples, with samples in low-to-high bit order.
+Logically, samples are organized into groups each of which is 32 bits.
+
+The step tables are inherited from IMA ADPCM, with the sampe range for the step index.
+
+As for the 2 bit samples:
+* 00: + (1/2) * step, Index-=1
+* 01: + (3/2) * step, Index+=2
+* 10: - (1/2) * step, Index-=1
+* 11: - (3/2) * step, Index+=2
+
+The ranges are for both sample value and index are clamped in this format.
+
+For stereo, there is 8 bytes of header.
+* The mono structure repeats twice, Left then Right.
+* The 32-bit sample blocks alternate between the left and right channels.
+
+
+=== ADLQ ===
+
+Compact Low Quality Audio.
+
+Nominal 2 bits/sample:
+* 00: Small Positive (Decrease Step)
+* 01: Large Positive (Increase Step)
+* 10: Small Negative (Decrease Step)
+* 11: Large Negative (Increase Step)
+
+With a 16 bit block header:
+* (15:13): Block-Size (Log2)
+* (   12): Sample Interpolation Mode
+* (11: 8): Initial Predictor Step Size
+* ( 7: 0): Initial Predictor Sample (A-Law, S.E3.M4)
+
+Block Size:
+* ((2^(n+2))-1)*8 samples.
+** 0: 24 samples (64 bits)
+** 1: 56 samples (128 bits)
+** 2: 120 samples (256 bits)
+** ...
+** 7: 4088 samples (8192 bits / 1K)
+
+Sample Mode:
+* 0: Basic, Each 2 bits is seen as 1 sample.
+** If 2x subsampled, intermediate samples are interpolated.
+** Likely interpolation is linear or quadratic.
+* 1: Complex.
+** If 2x subsampled, may infer some more complex shapes.
+** Final step adjustment will be the same as in Basic mode.
+** Most likely option is to assume cubic interpolation.
+
+
+Samples will have a valid range of -32768 to 32767, but may be represented in A-Law form as -31744 to 31744.
+
+The predictor scale will have a half-bit accuracy, and a nominal range of 8..23, where step values are 2 and 6 if the scale is even, and 3 and 9 if the scale is odd. The remaining bits from the scale be used as a left-ship for the step.
+
+So, step values (scale, small / large):
+*  8, 32 / 96
+*  9, 48 / 144
+* 10, 64 / 192
+* 11, 96 / 288
+* ...
+* 20,  4096 / 12288
+* 21,  6144 / 18432
+* 22,  8192 / 24576
+* 23, 12288 / 36864
+
+When adding a negative step, it will add the bitwise inverse of the positive step.
+
+No range clamping will be performed in the decoder, it will be the responsibility of the encoder to ensure that values don't go outside of their allowed ranges.
+
+
+Maybe use a 'WAVE' format:
+* 00: 'WAVE'
+* 04: FileSize
+* 08: OfsData
+* 0C: Reserved
+* 10: WAVEFORMATEX / PCMWAVEFORMAT
+
+This format will be simplified if compared with the RIFF/WAVE format.
+* In the simple case, audio data starts at 0x20.

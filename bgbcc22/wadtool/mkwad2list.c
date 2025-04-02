@@ -1,3 +1,20 @@
+/*
+Make a WAD2 from a list of files.
+
+Starting a line with '#' or '/' will result in a comment.
+
+Format is generally:
+  <lumpname> <filepath> [<conv>]
+
+Which will import a given file and added as a given lump name/path.
+
+conv:
+  fmt[,<args>]
+Specify a format for conversion on load.
+
+Same as WDEF.
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -5,6 +22,9 @@
 
 #define TGVLZ_NOMAIN
 #include "tgvlz1.c"
+
+#define BGBCC_BCCX2
+#include "../bgbcc_mtool.c"
 
 #if 0
 typedef unsigned char byte;
@@ -17,6 +37,7 @@ typedef unsigned long long u64;
 
 typedef unsigned short word;
 
+#if 0
 typedef struct
 {
 	byte	ident[4];		//Header Magic
@@ -24,18 +45,20 @@ typedef struct
 	u32		diroffs;
 	u32		typeofs;
 } wad2head_t;
+#endif
 
 
 typedef struct
 {
-	u32		foffs;
+	u32		fileoffs;
 	u32		size;
 	byte	name[8];
 } wadlump_t;
 
+#if 0
 typedef struct
 {
-	u32		foffs;
+	u32		fileoffs;
 	u32		csize;
 	u32		dsize;
 	byte	ety;		//Entry Type
@@ -44,6 +67,7 @@ typedef struct
 	byte	name[16];
 } wad2lump_t;
 
+#endif
 
 FILE		*wad_fd;
 // wadlump_t	wad_dir[2048];
@@ -131,7 +155,7 @@ int AddWadLump2(char *name, void *buf, int csz, int dsz, int cmp, int tag)
 	w_strlwr_n(tn, name, 16);
 	
 	n=wad_n_lumps++;
-	wad_dir[n].foffs=wad_rover;
+	wad_dir[n].fileoffs=wad_rover;
 	wad_dir[n].csize=csz;
 	wad_dir[n].dsize=dsz;
 	wad_dir[n].ety=ety;
@@ -323,7 +347,7 @@ int GetWadPathId(char *name, int pfx, int tag)
 	i=GetDirLumpNumForName(tn);
 	if(i>=0)
 	{
-		id=(wad_dir[i].foffs)&32767;
+		id=(wad_dir[i].fileoffs)&32767;
 		if((id<0) || (id>=wad_dirid))
 			{ debug_break }
 		return(id);
@@ -342,7 +366,7 @@ int GetWadPathId(char *name, int pfx, int tag)
 	wad_ldirid=id;
 
 	n=wad_n_lumps++;
-	wad_dir[n].foffs=id;
+	wad_dir[n].fileoffs=id;
 	wad_dir[n].csize=0;
 	wad_dir[n].dsize=0;
 	wad_dir[n].ety=ety;
@@ -441,6 +465,11 @@ void *LoadFile(char *name, int *rsz)
 	return(buf);
 }
 
+void *bgbcc_loadfile(char *name, int *rsz)
+{
+	return(LoadFile(name, rsz));
+}
+
 void StoreFile(char *name, void *buf, int sz)
 {
 	FILE *fd;
@@ -451,6 +480,19 @@ void StoreFile(char *name, void *buf, int sz)
 	fclose(fd);
 }
 
+int BGBCC_StoreFile(char *name, void *buf, int sz)
+{
+	StoreFile(name, buf, sz);
+	return(0);
+}
+
+int bgbcc_storefile(char *name, void *buf, int sz)
+{
+	StoreFile(name, buf, sz);
+	return(0);
+}
+
+#if 0
 byte *bgbcc_rlcbuf=NULL;
 int bgbcc_rlcpos;
 
@@ -516,6 +558,7 @@ char **bgbcc_split(char *s)
 
 	return(a);
 }
+#endif
 
 int FccTagForName(char *src)
 {
@@ -563,16 +606,17 @@ int print_usage(char *argv0)
 	return(0);
 }
 
-int main(int argc, char *argv[])
+// int main(int argc, char *argv[])
+int main(int argc, char *argv[], char **env)
 {
 	char tbuf[512];
 	char tn[257];
 	FILE *ifd;
-	char *ibuf;
-	char *ifn, *ofn, *dir;
+	char *ibuf, *ibuf1;
+	char *ifn, *ofn, *dir, *tcnv;
 	char **a;
 	char *s, *s1;
-	int isz, tag, tag1, tyofs;
+	int isz, tag, tag1, isz1, tyofs;
 	int i, j, k, h;
 	
 //	ifn=argv[1];
@@ -655,8 +699,13 @@ int main(int argc, char *argv[])
 		if((a[0][0]=='#') || (a[0][0]==';') || (a[0][0]=='/'))
 			continue;
 
+		tcnv=NULL;
+
 		if(a[1])
-			{ s=a[1]; }
+		{
+			s=a[1];
+			tcnv=a[2];
+		}
 		else
 			{ s=a[0]; }
 		if((s[0]=='.') && (s[1]=='/'))
@@ -689,6 +738,22 @@ int main(int argc, char *argv[])
 //		tag=FccTagForName(a[1]);
 //		tag1=FccTagForName(a[0]);
 		tag=FccTagForName(s);
+//		tag1=FccTagForName(s1);
+
+		if(tcnv && tcnv[1])
+		{
+			ibuf1=(char *)BGBCC_LoadConvResource(
+				(byte *)ibuf, isz, tag,
+				tcnv, &isz1, &tag1);
+			
+			if(ibuf1)
+			{
+				ibuf=ibuf1;
+				isz=isz1;
+				tag=tag1;
+			}
+		}
+
 		tag1=FccTagForName(s1);
 
 		if(tag1)
@@ -720,7 +785,7 @@ int main(int argc, char *argv[])
 		w_strupr_n(tn, iwad_dir[i].name, 8);
 		tn[8]=0;
 		AddWadLump(tn,
-			iwad_data+iwad_dir[i].foffs,
+			iwad_data+iwad_dir[i].fileoffs,
 			iwad_dir[i].size);
 	}
 	printf("\n");
@@ -746,10 +811,11 @@ int main(int argc, char *argv[])
 
 	wad_rover=(wad_rover+15)&(~15);
 	
-	memcpy(wad_head.ident, "WAD2", 4);
+//	memcpy(wad_head.ident, "WAD2", 4);
+	wad_head.magic=BGBCC_FMT_WAD2;
 	wad_head.numlumps=wad_n_lumps;
 	wad_head.diroffs=wad_rover;
-	wad_head.typeofs=tyofs;
+	wad_head.typeoffs=tyofs;
 
 	memcpy(wad_data+wad_rover, wad_dir, wad_n_lumps*32);
 	wad_rover+=wad_n_lumps*32;

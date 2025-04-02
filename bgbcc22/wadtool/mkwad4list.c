@@ -26,6 +26,8 @@ conv:
   fmt[,<args>]
 Specify a format for conversion on load.
 
+Same as WDEF.
+
  */
 
 #include <stdio.h>

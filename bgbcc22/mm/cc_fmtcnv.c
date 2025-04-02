@@ -489,8 +489,9 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 	char cnv[16], pvar[8], pval[64];
 	char *cs, *ct;
 	byte *ibuf, *obuf;
+	short *sbuf;
 	int qlvl;
-	int xs, ys, sz1, fl;
+	int xs, ys, sz1, fl, len, rt, fm1, ch1;
 
 	cs=cnvstr;
 	ct=cnv;
@@ -683,6 +684,104 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
 		
 		*rfcc=BGBCC_FMT_UPIC;
+		*rsz=sz1;
+		return(obuf);
+	}
+	
+	if(!strncmp(cnv, "wav_", 4))
+	{
+		rt=16000;
+		fm1=0;
+		ch1=1;
+		
+		cs=cnv;
+		if(!strncmp(cs, "wav_", 4))
+			cs+=4;
+
+		if(!strncmp(cs, "8m_", 3))
+			{ rt=8000; cs+=3; }
+		if(!strncmp(cs, "11m_", 4))
+			{ rt=11025; cs+=4; }
+		if(!strncmp(cs, "16m_", 4))
+			{ rt=16000; cs+=4; }
+		if(!strncmp(cs, "22m_", 4))
+			{ rt=22050; cs+=4; }
+		if(!strncmp(cs, "32m_", 4))
+			{ rt=32000; cs+=4; }
+		if(!strncmp(cs, "44m_", 4))
+			{ rt=44100; cs+=4; }
+
+		if(!strncmp(cs, "8s_", 3))
+			{ rt=8000; ch1=2; cs+=3; }
+		if(!strncmp(cs, "11s_", 4))
+			{ rt=16000; ch1=2; cs+=4; }
+		if(!strncmp(cs, "16s_", 4))
+			{ rt=16000; ch1=2; cs+=4; }
+		if(!strncmp(cs, "22s_", 4))
+			{ rt=22050; ch1=2; cs+=4; }
+		if(!strncmp(cs, "32s_", 4))
+			{ rt=32000; ch1=2; cs+=4; }
+		if(!strncmp(cs, "44s_", 4))
+			{ rt=44100; ch1=2; cs+=4; }
+
+		if(!strcmp(cs, "16"))
+			fm1=0;
+		if(!strcmp(cs, "8"))
+			fm1=1;
+		if(!strcmp(cs, "alaw"))
+			fm1=2;
+		if(!strcmp(cs, "adpcm"))
+			fm1=3;
+		if(!strcmp(cs, "adlq"))
+			fm1=4;
+		if(!strcmp(cs, "adpcm2b"))
+			fm1=5;
+
+		if(ch1==2)
+		{
+			sbuf=BGBCC_WAVE_LoadWAV_RateStereo16(buf, sz, rt, &len);
+			obuf=malloc(256+len*2*2);
+		}else
+		{
+			sbuf=BGBCC_WAVE_LoadWAV_RateMono16(buf, sz, rt, &len);
+			obuf=malloc(256+len*2);
+		}
+
+		if(fm1==0)
+		{
+			sz1=BGBCC_WAVE_StoreWavePCM(obuf, (byte *)sbuf, ch1, rt, 16, len);
+		}
+		if(fm1==1)
+		{
+			sz1=BGBCC_WAVE_StoreWaveCnvPcm8(
+				obuf, sbuf, ch1, rt, len);
+		}
+
+		if(fm1==2)
+		{
+			sz1=BGBCC_WAVE_StoreWaveCnvALaw(
+				obuf, sbuf, ch1, rt, len);
+		}
+
+		if(fm1==3)
+		{
+			sz1=BGBCC_WAVE_StoreWaveImaAdpcm(
+				obuf, sbuf, ch1, rt, len);
+		}
+
+		if(fm1==4)
+		{
+			sz1=BGBCC_WAVE_StoreWaveAdlq(
+				obuf, sbuf, ch1, rt, len);
+		}
+
+		if(fm1==5)
+		{
+			sz1=BGBCC_WAVE_StoreWaveImaAdpcm2b(
+				obuf, sbuf, ch1, rt, len);
+		}
+
+		*rfcc=BGBCC_FMT_WAV;
 		*rsz=sz1;
 		return(obuf);
 	}

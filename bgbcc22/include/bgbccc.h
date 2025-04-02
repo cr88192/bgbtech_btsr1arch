@@ -547,6 +547,7 @@ extern "C" {
 
 #define BGBCC_FMT_DEF		BGBCC_FOURCC('D', 'E', 'F', ' ')
 #define BGBCC_FMT_WDEF		BGBCC_FOURCC('W', 'D', 'E', 'F')
+#define BGBCC_FMT_TEXT		BGBCC_FOURCC('T', 'E', 'X', 'T')
 
 #define BGBCC_FMT_QOIF		BGBCC_FOURCC('Q', 'O', 'I', 'F')
 #define BGBCC_FMT_LCIF		BGBCC_FOURCC('L', 'C', 'I', 'F')
@@ -561,6 +562,18 @@ extern "C" {
 #define BGBCC_FMT_RGL4		BGBCC_FOURCC('R', 'G', 'L', '4')
 
 #endif
+
+#define BGBCC_WAVE_FMT_PCM			0x0001
+#define BGBCC_WAVE_FMT_MSADPCM		0x0002
+#define BGBCC_WAVE_FMT_IEEEFP		0x0003
+
+#define BGBCC_WAVE_FMT_ALAW			0x0006
+#define BGBCC_WAVE_FMT_ULAW			0x0007
+
+#define BGBCC_WAVE_FMT_IMAADPCM		0x0011
+
+#define BGBCC_WAVE_FMT_ADLQ			0xAD10
+
 
 /* flags for features the frontend has seen used. */
 #define BGBCC_TYCSEEN_VARIANT	0x0001	//saw variant types

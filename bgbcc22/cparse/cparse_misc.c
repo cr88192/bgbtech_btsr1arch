@@ -661,6 +661,9 @@ fourcc BGBCP_LangForName(char *name)
 		if(!bgbcp_strcmp(s, ".LCI"))	lang=BGBCC_FMT_LCIF;
 		if(!bgbcp_strcmp(s, ".lcif"))	lang=BGBCC_FMT_LCIF;
 		if(!bgbcp_strcmp(s, ".LCIF"))	lang=BGBCC_FMT_LCIF;
+
+		if(!bgbcp_strcmp(s, ".txt"))	lang=BGBCC_FMT_TEXT;
+		if(!bgbcp_strcmp(s, ".TXT"))	lang=BGBCC_FMT_TEXT;
 	}
 	
 	if(lang==BGBCC_LANG_BS)
@@ -684,6 +687,32 @@ char *BGBCP_NameForLang(int lang)
 	case BGBCC_LANG_BS2: s="BS2"; break;
 
 	default: s="unknown"; break;
+	}
+	return(s);
+}
+
+char *BGBCP_ExtForLang(int lang)
+{
+	char *s;
+	
+	switch(lang)
+	{
+	case BGBCC_LANG_C:		s=".c"; break;
+	case BGBCC_LANG_CPP:	s=".cpp"; break;
+	case BGBCC_LANG_JAVA:	s=".java"; break;
+	case BGBCC_LANG_CS:		s=".cs"; break;
+	case BGBCC_LANG_CX:		s=".cx"; break;
+	case BGBCC_LANG_BS:		s=".bs"; break;
+	case BGBCC_LANG_BS2:	s=".bs2"; break;
+
+	case BGBCC_FMT_BMP:		s=".bmp"; break;
+	case BGBCC_FMT_WAV:		s=".wav"; break;
+	case BGBCC_FMT_AVI:		s=".avi"; break;
+	case BGBCC_FMT_LUMP:	s=".lmp"; break;
+	case BGBCC_FMT_QOIF:	s=".qoi"; break;
+	case BGBCC_FMT_TEXT:	s=".txt"; break;
+
+	default: s=""; break;
 	}
 	return(s);
 }

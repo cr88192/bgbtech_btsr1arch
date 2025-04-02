@@ -1513,6 +1513,33 @@ byte *BGBCC_Img_EncodeImageBMP_CellCRAM8I(byte *ct, byte *ibuf, int xstr)
 	return(ct);
 }
 
+int BGBCC_Img_EncodeImageBMP_PalHash(byte *pal)
+{
+	int sum1, sum2;
+	int cr, cg, cb, ca;
+	int i, j, k;
+	
+	sum1=1; sum2=0;
+	for(i=0; i<256; i++)
+	{
+		cr=pal[i*4+0];	cg=pal[i*4+1];
+		cb=pal[i*4+2];	ca=pal[i*4+3];
+		cr=cr>>3;	cg=cg>>3;	cb=cb>>3;
+		j=(cr<<10)|(cg<<5)|cb;
+		if(ca<128)
+			{ j=j&0x7BDE; j=j|0x8000; }
+		
+//		j=pal[i*2+0]|(pal[i*2+1]<<8);
+		sum1+=j;
+		sum2+=sum1;
+	}
+	
+	sum1=((u16)sum1)+(sum1>>16);
+	sum2=((u16)sum2)+(sum2>>16);
+	k=(u16)(sum1^sum2);
+	return(k);
+}
+
 int BGBCC_Img_EncodeImageBMP_CRAM8I(byte *obuf, byte *ibuf,
 	int xs, int ys, byte *pal, int fl)
 {
@@ -1605,6 +1632,17 @@ int BGBCC_Img_EncodeImageBMP_CRAM8I(byte *obuf, byte *ibuf,
 			if(pal[i*4+3]<16)
 				aki=i;
 		}
+	}else
+	{
+		for(i=0; i<256; i++)
+		{
+			if(pal[i*4+3]<16)
+				aki=i;
+		}
+		
+		i=BGBCC_Img_EncodeImageBMP_PalHash(pal);
+		bpal[0]=i>> 0;	bpal[1]=i>> 8;
+		bpal[2]=i>>16;	bpal[3]=i>>24;
 	}
 	
 	ct=bdat;

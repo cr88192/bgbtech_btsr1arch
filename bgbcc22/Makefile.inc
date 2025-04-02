@@ -22,6 +22,7 @@ SRCS=\
 	mm/cc_malloc.c \
 	mm/cc_thread.c \
 	mm/cc_fmt_targa.c \
+	mm/cc_fmt_wave.c \
 	mm/cc_fmt_bmp.c \
 	mm/cc_fmtcnv.c \
 	\

@@ -1315,7 +1315,9 @@ int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name)
 						}
 						if(bgbcc_exwad_outdir)
 						{
-							sprintf(tb2, "%s/%s", bgbcc_exwad_outdir, tb1);
+							sprintf(tb2, "%s/%s%s",
+								bgbcc_exwad_outdir, tb1,
+								BGBCP_ExtForLang(lang1));
 							BGBCC_StoreFile(tb2, buf1, sz1);
 							
 							if(lang1==BGBCC_FMT_BMP)
@@ -1325,6 +1327,19 @@ int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name)
 								if(buf2)
 								{
 									sprintf(tb2, "%s/%s__dec.bmp",
+										bgbcc_exwad_outdir, tb1);
+									BGBCC_StoreFile(tb2, buf2, sz2);
+//									free(buf2);
+								}
+							}
+
+							if(lang1==BGBCC_FMT_WAV)
+							{
+								buf2=BGBCC_LoadConvResource(buf1, sz1, lang1,
+									"wav_22m_16", &sz2, &lang2);
+								if(buf2)
+								{
+									sprintf(tb2, "%s/%s__dec.wav",
 										bgbcc_exwad_outdir, tb1);
 									BGBCC_StoreFile(tb2, buf2, sz2);
 //									free(buf2);
@@ -1348,7 +1363,8 @@ int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name)
 				}
 				if(bgbcc_exwad_outdir)
 				{
-					sprintf(tb2, "%s/%s", bgbcc_exwad_outdir, tb1);
+					sprintf(tb2, "%s/%s%s", bgbcc_exwad_outdir, tb1,
+						BGBCP_ExtForLang(lang));
 					BGBCC_StoreFile(tb2, buf, sz);
 				}
 			}
@@ -3346,7 +3362,7 @@ int main(int argc, char *argv[], char **env)
 		bgbcc_exwad_ctx=wad;
 	}
 
-	if(wad || bgbcc_exwad_outdir)
+	if(wad || (bgbcc_exwad_outdir && !frbcfn))
 	{
 		for(i=0; i<nuds; i++)
 		{

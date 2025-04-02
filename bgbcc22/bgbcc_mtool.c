@@ -70,6 +70,7 @@
 
 #include "mm/cc_fmt_targa.c"
 #include "mm/cc_fmt_bmp.c"
+#include "mm/cc_fmt_wave.c"
 #include "mm/cc_fmtcnv.c"
 
 #include "mm/qoilz_dec.c"
