@@ -779,6 +779,10 @@ int BGBCC_WAVE_StoreWaveFmtBlockI(byte *obuf, byte *ibuf, int ibsz, int wft, int
 int BGBCC_WAVE_StoreWavePCM(byte *obuf, byte *ibuf, int ch, int rt, int bits, int len);
 int bgbcc_wave_samp2alaw(int val);
 int bgbcc_wave_alaw2samp(int val);
+int bgbcc_wave_samp2alaw_nq16(int val);
+int bgbcc_wave_alaw2samp_nq16(int val);
+int bgbcc_wave_alaw2nq16(int val);
+int bgbcc_wave_nq16toalaw(int val);
 int BGBCC_WAVE_StoreWaveCnvALaw(byte *obuf, s16 *ibuf, int ch, int rt, int len);
 int BGBCC_WAVE_StoreWaveCnvPcm8(byte *obuf, s16 *ibuf, int ch, int rt, int len);
 int BGBCC_WAVE_EncodeBlockAdlq(u16 *dst, s16 *src, int blksz,int *rpred, int *rdsc);
@@ -3282,6 +3286,8 @@ int BGBCC_JX2_TryEmitOpRegStReg2Disp(BGBCC_JX2_Context *ctx, int nmid, int rm, i
 int BGBCC_JX2_TryEmitOpLdReg2DispReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int disp, int rn);
 //AHSRC:jx2cc/jx2_emit_opc.c
 int BGBCC_JX2_NormalizeReg(BGBCC_JX2_Context *ctx, int reg);
+int BGBCC_JX2_MarkRegModified(BGBCC_JX2_Context *ctx, int reg);
+int BGBCC_JX2_CheckRegHoldingZero(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitOpNone(BGBCC_JX2_Context *ctx, int nmid);
 int BGBCC_JX2_ProbeEmitOpNone(BGBCC_JX2_Context *ctx, int nmid);
 int BGBCC_JX2_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid);

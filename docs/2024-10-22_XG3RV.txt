@@ -313,10 +313,10 @@ The additional X bits will be reserved for additional opcode.
 
 ** 0000-oooooo-mmmmmm-0011-nnnnnn-z0-0010  (1R Space)
 
-** 0001-oooooo-mmmmmm-0011-nnnnnn-00-0010  MOVTT		Rm, Ri, Rn
+** 0001-oooooo-mmmmmm-0011-nnnnnn-00-0010  MOVTT		Rm, Ri, Rn	//(TTAG)
 ** 0001-oooooo-mmmmmm-0011-nnnnnn-10-0010  MOVTT		Rm, Imm6u, Rn
 ** 0010-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTLQ		Rm, Ro, Rn
-** 0010-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHARX		Xm, Ro, Xn
+** 0010-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHARX		Xm, Ro, Xn	//(ALUX)
 ** 0011-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTRQ		Rm, Ro, Rn
 ** 0011-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLRX		Xm, Ro, Xn	//(ALUX)
 ** 0100-oooooo-mmmmmm-0011-nnnnnn-00-0010  MULHS.Q		Rm, Ro, Rn

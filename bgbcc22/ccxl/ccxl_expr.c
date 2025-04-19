@@ -3544,8 +3544,24 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 				btysz=tbsz;
 				bty=BGBCC_CCXL_MakeTypeID_Arr(ctx, CCXL_TY_UBITINT, btysz);
 			}
+			
+			li=0;
+			if(btysz<=64)
+			{
+				for(ci=0; ci<na; ci++)
+				{
+					if(BCCX_TagIsCstP(c, &bgbcc_rcst_int, "int"))
+					{
+						i0=BCCX_GetIntCst(c, &bgbcc_rcst_value, "value");
+						if(!i0)
+							continue;
+						li|=((s64)i0)<<an_bo[ci];
+					}
+				}
+			}
 
-			BGBCC_CCXL_StackPushConstInt(ctx, 0);
+//			BGBCC_CCXL_StackPushConstInt(ctx, 0);
+			BGBCC_CCXL_StackPushConstInt(ctx, li);
 			BGBCC_CCXL_StackCastType(ctx, bty);
 			for(ci=0; ci<na; ci++)
 			{
@@ -3586,6 +3602,15 @@ void BGBCC_CCXL_CompileExprAsTypeSig(BGBCC_TransState *ctx,
 							an_bo[ci], an_bo[ci], i0, i0);
 						continue;
 					}
+				}
+
+				if(BCCX_TagIsCstP(c, &bgbcc_rcst_int, "int"))
+				{
+					if(li!=0)
+						continue;
+					i0=BCCX_GetIntCst(c, &bgbcc_rcst_value, "value");
+					if(!i0)
+						continue;
 				}
 
 				BGBCC_CCXL_CompileExpr(ctx, an[ci]);

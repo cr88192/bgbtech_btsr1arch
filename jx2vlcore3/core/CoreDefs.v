@@ -1467,9 +1467,12 @@ parameter[5:0] JX2_UCIX_SHAD_SHLRX3	= 6'h25;		//
 parameter[5:0] JX2_UCIX_SHAD_ROTLX3	= 6'h28;		//
 parameter[5:0] JX2_UCIX_SHAD_ROTRX3	= 6'h2C;		//
 
+parameter[5:0] JX2_UCIX_SHAD_SHADMSKL3	= 6'h10;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLDMSKL3	= 6'h11;		//
+parameter[5:0] JX2_UCIX_SHAD_SHADMSKQ3	= 6'h12;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLDMSKQ3	= 6'h13;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLDMSKLX3	= 6'h31;		//
+parameter[5:0] JX2_UCIX_SHAD_SHADMSKX3	= 6'h32;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLDMSKX3	= 6'h33;		//
 
 

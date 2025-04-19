@@ -1934,9 +1934,9 @@ F0zz Instruction Block:
 *** F0nm_1G2E  RGB5PCK64	Rm, Rn		//(RGB) RGB555 Pack from RGB64
 *** F0nm_1g3E  RGB5UPCK32	Rm, Rn		//(RGB) RGB555 Unpack to RGB32
 *** F0nm_1G3E  RGB5UPCK64	Rm, Rn		//(RGB) RGB555 Unpack to RGB64
-*** F0nm_1g4E  -
+*** F0nm_1g4E  RGB5SH3		Rm, Rn		//(RGB) RGB555 Shuffle-3
 *** F0nm_1G4E  RGB32PCK64	Rm, Rn		//(RGB) RGB32 Pack from RGB64
-*** F0nm_1g5E  -
+*** F0nm_1g5E  RGB5USH3		Rm, Rn		//(RGB) RGB555 UnShuffle-3
 *** F0nm_1G5E  RGB32UPCK64	Rm, Rn		//(RGB) RGB32 Unpack to RGB64
 *** F0nm_1g6E ? PSHAL.W		Rm, Rn		//Packed Shift Left 1-bit
 *** F0nm_1G6E ? PSHLL.W		Rm, Rn

@@ -312,6 +312,10 @@ reg[3:0]	opIsExWB2;
 
 reg			opExJWI;
 
+reg		opIsExJXN;
+reg		opIsExJXM;
+reg		opIsExJXI;
+
 reg		opIsXGpr;
 reg		tOpIsXGprX0;
 reg		tOpIsXGprX1;
@@ -442,6 +446,10 @@ begin
 //	opIsJumboAu	= istrJBits[26];
 	opIsJumboAu	= istrJBits[26] && opIsJumbo;
 	opIsJumboImm	= !istrJBits[26] && opIsJumbo;
+
+	opIsExJXN	= istrJBits[30];
+	opIsExJXM	= istrJBits[29];
+	opIsExJXI	= istrJBits[28];
 
 `ifdef jx2_enable_xgpr
 
@@ -2909,7 +2917,34 @@ begin
 					opUCmdIx	= JX2_UCIX_SHAD_SHAR3;
 				opFmid	= JX2_FMID_REGREG;
 				opIty	= JX2_ITY_SB;
+`ifdef jx2_shadq_bitmov
+				if(opIsImm4R)
+				begin
+					opUCmdIx	= JX2_UCIX_SHAD_SHADMSKQ3;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_XB;
+					if(opExQ)
+					begin
+						opUCmdIx	= JX2_UCIX_SHAD_SHADMSKX3;
+						opUCty		= JX2_IUC_WX;
+					end
+				end
+
+				if(opIsJumboImm)
+				begin
+					opUCmdIx	= JX2_UCIX_SHAD_SHADMSKQ3;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_XQ;
+
+					if(opExQ)
+					begin
+						opUCmdIx	= JX2_UCIX_SHAD_SHADMSKX3;
+						opUCty		= JX2_IUC_WX;
+					end
+				end
+`endif
 			end
+
 			16'h2zz3: begin		/* F0nm_2eo3 */
 				opNmid	= opExQ ? JX2_UCMD_SHLDQ3 : JX2_UCMD_SHLD3;
 				if(opExQ)
@@ -2938,9 +2973,14 @@ begin
 					opFmid		= JX2_FMID_REGIMMREG;
 					opIty		= JX2_ITY_XQ;
 
+//					if(opIsExJXI)
+//						opUCmdIx	= JX2_UCIX_SHAD_SHADMSKQ3;
+
 					if(opExQ)
 					begin
 						opUCmdIx	= JX2_UCIX_SHAD_SHLDMSKX3;
+//						if(opIsExJXI)
+//							opUCmdIx	= JX2_UCIX_SHAD_SHADMSKX3;
 						opUCty		= JX2_IUC_WX;
 					end
 				end

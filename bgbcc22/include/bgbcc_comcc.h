@@ -195,6 +195,8 @@ byte abi_noexcept;	//Disable Exceptions
 // byte abi_spillpad;	//Disable Exceptions
 int abi_spillpad;	//Various ABI flags
 
+u64 reg_iszero;		//registers known to hold 0
+
 byte do_shuffle;
 
 

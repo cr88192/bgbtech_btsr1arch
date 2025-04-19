@@ -244,6 +244,8 @@ int BGBCC_JX2_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 		ctx->pos_pad_op2=-999;
 		ctx->pos_pad_op1=-999;
 		ctx->pos_pad_op0=-999;
+		
+		ctx->reg_iszero=0;
 	}
 
 	ofs=BGBCC_JX2_EmitGetOffs(ctx);

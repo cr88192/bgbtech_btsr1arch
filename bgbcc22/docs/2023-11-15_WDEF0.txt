@@ -224,6 +224,7 @@ For stereo, there is 8 bytes of header.
 === ADLQ ===
 
 Compact Low Quality Audio.
+* wFormatTag: 0xAD10
 
 Nominal 2 bits/sample:
 * 00: Small Positive (Decrease Step)

@@ -3348,6 +3348,34 @@ Where yyyy gives a luma, and irgb/cc gives chroma.
 ** 10: Olive	(5/8, 1/1, 3/8)
 ** 11: Azure	(3/8, 5/8, 1/1)
 
+Change:
+* Replace Off-White wiith Orange/Olive/Azure
+** 0111: Orange
+** 1000: Olive
+** 1111: Azure
+* With cc now encoding off-white:
+** 00: RGBI (yyyy interpreted as a traditional 16-color palette)
+** 01: Off-White
+*** ( 1.. 5)=Magenta (11..15)
+*** ( 6..10)=Yellow (11..15)
+*** (11..15)=Cyan (11..15)
+** 10: Reserved
+** 11: Reserved
+
+=== RGB5SH3 / RGB5USH3 (RGB) ===
+
+* F0nm_1g4E  RGB5SH3		Rm, Rn		//(RGB) RGB555 Shuffle-3
+* F0nm_1g5E  RGB5USH3		Rm, Rn		//(RGB) RGB555 UnShuffle-3
+
+The RGB5SH3 instruction shuffles the bits from a RGB555 value into an interleved 3-bit form:
+* TRRRRRGGGGGBBBBB
+* TGRBGRBGRBGRBGRB
+
+The input register is assumed to contain 4 RGB555 values, which are all shuffled in the same way.
+
+The RGB5USH3 instruction does the inverse process, converting the shuffled form back into the unshuffled form.
+
+
 
 === SWxP.x (GSV, Deprecated) ===
 
@@ -3386,8 +3414,20 @@ These will be deprecated in favor of PSHUF.B / PSHUF.W.
 * FFw0_08pp_F0nm_2Go3  BITMOVX		Xm, Ro, Xp, Xn
 
 
+* FEii_iiii_F0nm_2go2  BITMOVS		Rm, Ro, Rn, Imm24
+* FEii_iiii_F0nm_2Go2  BITMOVSX		Xm, Ro, Xn, Imm24
+
+* FFw0_08pp_F0nm_2go2  BITMOVS		Rm, Ro, Rp, Rn
+* FFw0_08pp_F0nm_2Go2  BITMOVSX		Xm, Ro, Xp, Xn
+
+
 Move a value from one bitfield to another.
 The immediate field from the jumbo prefix is decoded as a single immediate.
+
+The BITMOV instruction will move a bitfield while leaving copying all bits outside the masked region uchanged.
+
+The BITMOVS instruction will selectively invert any bits outside the masked region based on the MSB of the masked value.
+
 
 Imm24:
 * ( 7: 0): Shift to Apply

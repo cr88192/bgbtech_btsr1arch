@@ -1343,7 +1343,11 @@ int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
 		}
 #endif
 		
-//		if(d<=0)i=0;
+		if((i>0) && (d<=0))
+		{
+			i=0;
+			BGBCC_DBGBREAK
+		}
 		
 
 		if(!i)
@@ -1433,6 +1437,7 @@ int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
 			memcpy(ct, lcs, rl);
 			ct+=rl;
 		}
+#if 0
 		else
 			if((rl<8) && (l<=0x3FFF) && (d<=0x3FFFFF))
 		{
@@ -1466,6 +1471,7 @@ int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
 			memcpy(ct, lcs, rl);
 			ct+=rl;
 		}
+#endif
 		else
 		{
 			BGBCC_DBGBREAK
@@ -1551,7 +1557,7 @@ int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
 		ct+=j;	rl-=j;	lcs+=j;
 	}
 
-	if(cs<cte)
+	if(ct<cte)
 		*ct++=0x1F;
 	
 	bgbcc_packlz_cblksz=ct-obuf;

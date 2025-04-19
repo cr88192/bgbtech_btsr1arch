@@ -302,8 +302,8 @@ Similar to 0.2, except that (255:128) is interpreted as pixel bits more like tho
 
 Encodes an 8x8 Color Cell (128):
 * (63:62): Cell Mode B (CellModeB)
-* CellModeB=00: Y=8x8x1, 128-bit
-* CellModeB=01: Reserved
+* CellModeB=00: Y=8x8x1, 128-bit (2 colors)
+* CellModeB=01: Y=8x8x1, 128-bit (8 colors, 4x4 sub-cell)
 * CellModeB=10: Y=8x8x2, 256-bit
 * CellModeB=11: Reserved
 

@@ -442,6 +442,7 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 {
 	int opw1, opw2, opw3, opw4, ex, ex2, exw;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpLdRegReg(ctx, nmid, rm, rn));
 
@@ -1019,6 +1020,7 @@ int BGBCC_JX2_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,
 	int opw1, opw2, opw3, opw4, exw;
 	int ex2;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(0);
 
@@ -5230,6 +5232,7 @@ int BGBCC_JX2_TryEmitOpLdReg2Reg(
 {
 	int opw1, opw2, opw3, opw4, ex, exw, rt;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpLdReg2Reg(ctx, nmid, rm, ro, rn));
 
@@ -6112,6 +6115,7 @@ int BGBCC_JX2_TryEmitOpLdReg2DispReg(
 	int opw1, opw2, opw3, opw4, exw;
 	int odr;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpLdReg2DispReg(ctx,
 			nmid, rm, ro, disp, rn));

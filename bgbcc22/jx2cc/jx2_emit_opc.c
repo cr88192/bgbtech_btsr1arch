@@ -70,6 +70,28 @@ int BGBCC_JX2_NormalizeReg(BGBCC_JX2_Context *ctx, int reg)
 	return(reg);
 }
 
+int BGBCC_JX2_MarkRegModified(BGBCC_JX2_Context *ctx, int reg)
+{
+	ctx->reg_iszero&=~(1ULL<<(reg&63));
+	return(0);
+}
+
+int BGBCC_JX2_CheckRegHoldingZero(BGBCC_JX2_Context *ctx)
+{
+	int i;
+	if(!ctx->reg_iszero)
+		return(-1);
+	
+	for(i=0; i<64; i++)
+	{
+		if(ctx->reg_iszero&(1ULL<<i))
+		{
+			return(BGBCC_SH_REG_R0+i);
+		}
+	}
+	return(-1);
+}
+
 int BGBCC_JX2_EmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 {
 	if(!BGBCC_JX2_TryEmitOpNone(ctx, nmid))
@@ -247,6 +269,7 @@ int BGBCC_JX2_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 	int opw1, opw2, opw3, opw4, reg2, ex, ex2, exw;
 	int i;
 
+	BGBCC_JX2_MarkRegModified(ctx, reg);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpReg(ctx, nmid, reg));
 
@@ -1693,6 +1716,7 @@ int BGBCC_JX2_TryEmitOpMReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 {
 	int opw1, opw2, opw3, opw4, exw;
 
+	BGBCC_JX2_MarkRegModified(ctx, reg);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpReg(ctx, nmid, reg));
 
@@ -1924,7 +1948,8 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 	int nmid, int rm, int rn)
 {
 	int opw1, opw2, opw3, opw4, ex, ex2, ex3r, exw;
-	int rm3, rn3, nm1;
+	s64 li;
+	int rm3, rn3, rmz, nm1, ret;
 	int i, j, k, n;
 
 	k=(nmid>>16)&255;
@@ -1958,6 +1983,31 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 				BGBCC_SH_NMID_AND, rm, (1ULL<<k)-1, rn));
 		}
 		
+#if 0
+		if(	(ctx->emit_riscv&0x11) &&
+			(ctx->emit_riscv&0x22) &&
+			(ctx->has_bitmov&1))
+		{
+			li=0|(k<<16);
+			ret=BGBCC_JX2_TryEmitOpRegRegImmReg(ctx,
+				BGBCC_SH_NMID_BITMOV, rm, BGBCC_SH_REG_RQ0, li, rn);
+			if(ret>0)
+				return(ret);
+		}
+
+		rmz=BGBCC_JX2_CheckRegHoldingZero(ctx);
+
+		if(	(rmz>0) &&
+			(ctx->has_bitmov&1))
+		{
+			li=0|(k<<16);
+			ret=BGBCC_JX2_TryEmitOpRegRegImmReg(ctx,
+				BGBCC_SH_NMID_BITMOV, rm, rmz, li, rn);
+			if(ret>0)
+				return(ret);
+		}
+#endif
+
 		if(ctx->emit_isprobe)
 			return(0);
 
@@ -1996,6 +2046,31 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 				nm1, rm, rn));
 		}
 		
+#if 0
+		if(	(ctx->emit_riscv&0x11) &&
+//			(ctx->emit_riscv&0x22) &&
+			(ctx->has_bitmov&1))
+		{
+			li=0|(k<<16);
+			ret=BGBCC_JX2_TryEmitOpRegRegImmReg(ctx,
+				BGBCC_SH_NMID_BITMOVS, rm, BGBCC_SH_REG_RQ0, li, rn);
+			if(ret>0)
+				return(ret);
+		}
+
+		rmz=BGBCC_JX2_CheckRegHoldingZero(ctx);
+
+		if(	(rmz>0) &&
+			(ctx->has_bitmov&1))
+		{
+			li=0|(k<<16);
+			ret=BGBCC_JX2_TryEmitOpRegRegImmReg(ctx,
+				BGBCC_SH_NMID_BITMOVS, rm, rmz, li, rn);
+			if(ret>0)
+				return(ret);
+		}
+#endif
+
 		if(ctx->emit_isprobe)
 			return(0);
 
@@ -2010,6 +2085,7 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		return(0);
 	}
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpRegReg(ctx, nmid, rm, rn));
 
@@ -3830,6 +3906,7 @@ int BGBCC_JX2_TryEmitOpRegRegReg(
 	int opw1, opw2, opw3, opw4;
 	int i, ex, exw, nm2, nm3;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpRegRegReg(ctx, nmid, rs, rt, rn));
 
@@ -5056,6 +5133,7 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 	int opw1, opw2, opw3, opw4, opw5, opw6, odr, ex, ex2, exw;
 	int i, j, k;
 
+	BGBCC_JX2_MarkRegModified(ctx, reg);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpImmReg(ctx, nmid, imm, reg));
 
@@ -5087,7 +5165,16 @@ int BGBCC_JX2_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 	{
 		return(BGBCC_JX2_TryEmitOpRegImmReg(ctx, nmid, reg, imm, reg));
 	}
-	
+
+	if(	(nmid==BGBCC_SH_NMID_MOV) &&
+		!(ctx->emit_isprobe)	&&
+		BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg) &&
+		(imm==0)	)
+	{
+		ctx->reg_iszero|=(1ULL<<(reg&63));
+	}
+
+
 	if(ctx->is_fixed32)
 	{
 		if(((imm>=0) && (imm<512)) || (imm>=65536))
@@ -6822,6 +6909,7 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 	int odr, imm_is12s;
 	int i;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpRegImmReg(ctx, nmid, rm, imm, rn));
 
@@ -8510,6 +8598,7 @@ int BGBCC_JX2_TryEmitOpRegRegRegReg(
 	int opw1, opw2, opw3, opw4;
 	int i, ex, exw;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpRegRegRegReg(ctx, nmid, rs, rt, rp, rn));
 
@@ -8683,6 +8772,7 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1;
 	odr=0;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(BGBCC_JX2RV_TryEmitOpRegRegImmReg(ctx, nmid, rs, rt, imm, rn));
 
@@ -8863,6 +8953,22 @@ int BGBCC_JX2_TryEmitOpRegRegImmReg(
 			0xF000, 0x2803,
 			rs, imm, rt, rn);
 		break;
+	case BGBCC_SH_NMID_BITMOVS:
+		if(!(ctx->has_bitmov&1))
+			break;
+		BGBCC_JX2_ComposeJumboRegImm24RegRegF0(ctx,
+			&opw1, &opw2, &opw3, &opw4,
+			0xF000, 0x2002,
+			rs, imm, rt, rn);
+		break;
+	case BGBCC_SH_NMID_BITMOVSX:
+		if(!(ctx->has_bitmov&1))
+			break;
+		BGBCC_JX2_ComposeJumboRegImm24RegRegF0(ctx,
+			&opw1, &opw2, &opw3, &opw4,
+			0xF000, 0x2802,
+			rs, imm, rt, rn);
+		break;
 
 	default:
 		break;
@@ -8945,6 +9051,7 @@ int BGBCC_JX2_TryEmitOpRegImmRegReg(
 	opw1=-1; opw2=-1; opw3=-1; opw4=-1;
 	odr=0;
 
+	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
 		return(0);
 

@@ -867,6 +867,40 @@ int bgbcc_wave_alaw2samp(int val)
 	return(v);
 }
 
+int bgbcc_wave_samp2alaw_nq16(int val)
+{
+	int v0, v, vm;
+	v0=bgbcc_wave_samp2alaw(val);
+	v=(s16)(v0<<8);
+	v^=(v>>16)&0x7FFF;
+	return(v);
+}
+
+int bgbcc_wave_alaw2samp_nq16(int val)
+{
+	int v0;
+	v0=(val>>8);
+	v0^=(((s16)val)>>16)&0x7F;
+	return(bgbcc_wave_alaw2samp(v0));
+}
+
+int bgbcc_wave_alaw2nq16(int val)
+{
+	int v0, v, vm;
+	v0=val;
+	v=(s16)(v0<<8);
+	v^=(v>>16)&0x7FFF;
+	return(v);
+}
+
+int bgbcc_wave_nq16toalaw(int val)
+{
+	int v0;
+	v0=(val>>8);
+	v0^=(((s16)val)>>16)&0x7F;
+	return(v0);
+}
+
 int BGBCC_WAVE_StoreWaveCnvALaw(
 	byte *obuf, s16 *ibuf, int ch, int rt, int len)
 {
@@ -945,13 +979,16 @@ int BGBCC_WAVE_EncodeBlockAdlq(u16 *dst, s16 *src, int blksz,
 	int pred_a2, dsc_a2, dsc1_a2, dscf_a2;
 	int pred_a3, dsc_a3, dsc1_a3, dscf_a3;
 	int s0, s1, s2, s3, d0, d1, d2, d3;
-	int d, bd, bk, lbk;
+	int d, bd, bk, lbk, islqal;
 	s64 err;
 	int i, j, k, k0, k1, j0, j1, j2, ilen, stp, stp1, stp2;
 	
 	ilen=((blksz>>1)-1)*8;
 	pred=*rpred;
 	dsc=*rdsc;
+	
+	islqal=0;
+//	islqal=1;
 
 	k=blksz>>1;
 	for(i=0; i<k; i++)
@@ -978,6 +1015,12 @@ int BGBCC_WAVE_EncodeBlockAdlq(u16 *dst, s16 *src, int blksz,
 //	s0=src[i+0];
 //	s0=src[i+1];
 	s0=src[i+2];
+
+	if(islqal)
+	{
+		pred=bgbcc_wave_samp2alaw_nq16(pred);
+		s0=bgbcc_wave_samp2alaw_nq16(s0);
+	}
 
 	while(dsc<21)
 	{
@@ -1022,12 +1065,19 @@ int BGBCC_WAVE_EncodeBlockAdlq(u16 *dst, s16 *src, int blksz,
 	k0=bk;
 #endif
 
+	if(islqal)
+		{ bk=(pred>>8)&0xFF; }
+
+
 //	k=bgbcc_wave_samp2alaw(pred)|((dsc-4)<<8)|(j<<13);
 //	k=bgbcc_wave_samp2alaw(pred)|((dsc-8)<<8)|(j<<13);
 //	k=bgbcc_wave_samp2alaw(pred)|((dsc-6)<<8)|(j<<13);
-	k=bk|((dsc-8)<<8)|(j<<13);
+	k=bk|((dsc-8)<<8)|(j<<13)|((islqal&1)<<12);
 	dst[0]=k;
-	pred=bgbcc_wave_alaw2samp(k);
+	if(islqal)
+		pred=(s16)(bk<<8);
+	else
+		pred=bgbcc_wave_alaw2samp(k);
 	err=0;
 	bk=0;
 
@@ -1041,6 +1091,14 @@ int BGBCC_WAVE_EncodeBlockAdlq(u16 *dst, s16 *src, int blksz,
 		s1=src[i+1];
 		s2=src[i+2];
 		s3=src[i+3];
+
+		if(islqal)
+		{
+			s0=bgbcc_wave_samp2alaw_nq16(s0);
+			s1=bgbcc_wave_samp2alaw_nq16(s1);
+			s2=bgbcc_wave_samp2alaw_nq16(s2);
+			s3=bgbcc_wave_samp2alaw_nq16(s3);
+		}
 
 		lbk=bk;
 		excl=0;
@@ -1320,16 +1378,21 @@ int BGBCC_WAVE_EncodeBlockAdlq(u16 *dst, s16 *src, int blksz,
 int BGBCC_WAVE_DecodeBlockAdlq(u16 *src, s16 *dst)
 {
 	int pred, bsz, dsc, dscf, dsc1, prd2;
-	int i, j, k, j0, j1, ilen, stp;
+	int i, j, k, j0, j1, ilen, stp, islqal;
 	
 	k=src[0];
 	ilen=((1<<(((k>>13)&7)+2))-1)*8;
 	bsz=(ilen+8)/4;
 	
+	islqal=(k>>12)&1;
+	
 //	dsc=4+((k>>8)&15);
 	dsc=8+((k>>8)&15);
 //	dsc=6+((k>>8)&15);
 	pred=bgbcc_wave_alaw2samp(k);
+	
+	if(islqal)
+		pred=(s16)(k<<8);
 
 	dscf=dsc<<1;
 
@@ -1349,7 +1412,10 @@ int BGBCC_WAVE_DecodeBlockAdlq(u16 *src, s16 *dst)
 //		dscf+=(k&1)*3-1;	dsc=dscf>>1;
 		pred+=stp;
 
-		dst[i]=pred;
+		if(islqal)
+			{ dst[i]=bgbcc_wave_alaw2samp_nq16(pred); }
+		else
+			{ dst[i]=pred; }
 	}
 
 	return(bsz);

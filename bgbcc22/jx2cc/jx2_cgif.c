@@ -7356,7 +7356,7 @@ ccxl_status BGBCC_JX2C_AddRWadLump(BGBCC_TransState *ctx,
 	char tname[32];
 	BGBCC_JX2_Context *sctx;
 	BGBCC_CMG_RWadEntry *ent;
-	int i, j, k, n, lbl, lbld, lblt;
+	int i, j, k, n, lbl, lbld, lblt, csz1;
 	
 	sctx=ctx->uctx;
 
@@ -7379,11 +7379,13 @@ ccxl_status BGBCC_JX2C_AddRWadLump(BGBCC_TransState *ctx,
 	
 	sprintf(tname, "__rsrc__%s", ent->name);
 	lbl=BGBCC_JX2_GetNamedLabel(sctx, tname);
+	
+	csz1=(csz+7)&(~7);
 
 	BGBCC_JX2_SetSectionName(sctx, ".rsrc");
 	BGBCC_JX2_EmitBAlign(sctx, 8);
 	BGBCC_JX2_EmitLabel(sctx, lbl);
-	BGBCC_JX2_EmitRawBytes(sctx, buf, csz);
+	BGBCC_JX2_EmitRawBytes(sctx, buf, csz1);
 	
 	ent->lbl=lbl;
 	ent->csize=csz;

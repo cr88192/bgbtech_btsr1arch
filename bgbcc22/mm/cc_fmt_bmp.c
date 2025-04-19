@@ -677,6 +677,12 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 				bi2=j; bd2=d;
 			}
 		}
+
+		if((bd==0) || ((bd*1.5)<bd2))
+		{
+			bi2=bi;
+		}
+
 		bgbcc_img_bmppallookup[i]=bi;
 		bgbcc_img_bmppallookupb[i]=bi2;
 	}
@@ -691,7 +697,7 @@ int BGBCC_Img_EncodeImageBMP8I(byte *obuf, byte *ibuf,
 	int ofs_bmi;
 	int ofs_pal;
 	int ofs_dat;
-	int cr, cg, cb, ca, ci, aki;
+	int cr, cg, cb, ca, ci, cj, ck, aki;
 	int xstr, sz;
 	int x, y;
 	int i;
@@ -768,10 +774,17 @@ int BGBCC_Img_EncodeImageBMP8I(byte *obuf, byte *ibuf,
 			cg=(cg>>3);
 			cb=(cb>>3);
 			ci=(cr<<10)|(cg<<5)|cb;
-			ci=bgbcc_img_bmppallookup[ci];
+			cj=bgbcc_img_bmppallookup[ci];
+			ck=bgbcc_img_bmppallookupb[ci];
+			if((cj==aki) && (ck!=aki))
+				cj=ck;
+			if((ck==aki) && (cj!=aki))
+				ck=cj;
+			if((x^y)&1)
+				cj=ck;
 			if(ca<128)
-				ci=aki;
-			ct[x]=ci;
+				cj=aki;
+			ct[x]=cj;
 		}
 	}
 	
@@ -798,7 +811,7 @@ int BGBCC_Img_EncodeImageBMP4I(byte *obuf, byte *ibuf,
 	int ofs_bmi;
 	int ofs_pal;
 	int ofs_dat;
-	int cr, cg, cb, ca, ci;
+	int cr, cg, cb, ca, ci, cj, ck;
 	int xstr, sz, aki;
 	int x, y;
 	int i;
@@ -868,13 +881,21 @@ int BGBCC_Img_EncodeImageBMP4I(byte *obuf, byte *ibuf,
 			cr=(cr>>3);		cg=(cg>>3);		cb=(cb>>3);
 			ca=cs[x*4+3];
 			ci=(cr<<10)|(cg<<5)|cb;
-			ci=bgbcc_img_bmppallookup[ci];
+			cj=bgbcc_img_bmppallookup[ci];
+			ck=bgbcc_img_bmppallookupb[ci];
+			if((cj==aki) && (ck!=aki))
+				cj=ck;
+			if((ck==aki) && (cj!=aki))
+				ck=cj;
+			if((x^y)&1)
+				cj=ck;
+
 			if(ca<128)
-				ci=aki;
+				cj=aki;
 			if(x&1)
-				{ ct[x>>1]=ct[x>>1]|ci; }
+				{ ct[x>>1]=ct[x>>1]|cj; }
 			else
-				{ ct[x>>1]=ci<<4; }
+				{ ct[x>>1]=cj<<4; }
 		}
 	}
 	
@@ -1498,6 +1519,18 @@ byte *BGBCC_Img_EncodeImageBMP_CellCRAM8I(byte *ct, byte *ibuf, int xstr)
 		px=~px;
 		k=clra; clra=clrb; clrb=k;
 	}
+
+	if(clra==clrb)
+	{
+		cr=(mcr>>3);
+		cg=(mcg>>3);
+		cb=(mcb>>3);
+		j=(cr<<10)|(cg<<5)|cb;
+		clrb=bgbcc_img_bmppallookupb[j];
+		
+		px=0x5A5A;
+	}
+
 	
 	if(clra==clrb)
 	{
@@ -1767,6 +1800,8 @@ int BGBCC_Img_EncodeImageBMP_LZ8I(byte *obuf, byte *ibuf,
 
 	memcpy(obuf+ofs_dat, tbuf, csz);
 	bmi->biSizeImage=csz;
+
+	free(tbuf);
 
 	sz=ofs_dat+csz;
 	

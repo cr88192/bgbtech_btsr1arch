@@ -3520,3 +3520,124 @@ void BJX2_Op_BITMOVX_RegRegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn+0]=v2a;
 	ctx->regs[op->rn+1]=v2b;
 }
+
+
+void BJX2_Op_BITMOVS_RegRegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0, v1, v2, v0sh, v0msk, v0mskl, v0mskh;
+	int shl, vh, vl, sgext;
+
+	v0=ctx->regs[op->rm];
+	v1=ctx->regs[op->ro];
+//	v1=(v0>>1)&0x7FFF7FFF7FFF7FFFULL;
+
+	shl=(sbyte)(op->imm);
+	vl=(op->imm>>8)&255;
+	vh=(op->imm>>16)&255;
+
+	if(shl>=0)
+		v0sh=v0<<shl;
+	else
+		v0sh=v0>>(-shl);
+
+	v0mskh=(1LL<<vh)-1;
+	v0mskl=~((1LL<<vl)-1);
+
+	if(vh>vl)
+		v0msk=v0mskh&v0mskl;
+	else
+		v0msk=v0mskh|v0mskl;
+
+	v2=(v0sh&v0msk)|(v1&(~v0msk));
+	
+	sgext=(v2>>(vh-1))&1;
+	if(sgext)
+	{
+		v2^=~v0msk;
+	}
+
+	ctx->regs[op->rn]=v2;
+}
+
+void BJX2_Op_BITMOVSX_RegRegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v0a, v1a, v2a, v0ash, v0amsk, v0amskl, v0amskh;
+	u64 v0b, v1b, v2b, v0bsh, v0bmsk, v0bmskl, v0bmskh;
+	int shl, shln, vh, vl, sgext;
+
+	v0a=ctx->regs[op->rm+0];
+	v0b=ctx->regs[op->rm+1];
+	v1a=ctx->regs[op->ro+0];
+	v1b=ctx->regs[op->ro+1];
+
+	shl=(sbyte)(op->imm);
+	vl=(op->imm>>8)&255;
+	vh=(op->imm>>16)&255;
+	shln=-shl;
+
+	if(shl>0)
+	{
+		v0ash=(v0a<<shl);
+		v0bsh=(v0b<<shl)|(v0a>>64-shl);
+	}
+	else
+		if(shl<0)
+	{
+		v0ash=(v0a>>shln)|(v0b<<(64-shln));
+		v0bsh=(v0b>>shln);
+	}else
+	{
+		v0ash=v0a;
+		v0bsh=v0b;
+	}
+
+	if(vh<64)
+	{
+		v0amskh=(1LL<<vh)-1;
+		v0bmskh=0;
+	}else
+	{
+		v0amskh=~0ULL;
+		v0bmskh=(1LL<<(vh-64))-1;
+	}
+	
+	if(vl<64)
+	{
+		v0amskl=(1LL<<vl)-1;
+		v0bmskl=0;
+	}else
+	{
+		v0amskl=~0ULL;
+		v0bmskl=(1LL<<(vl-64))-1;
+	}
+	
+	v0amskl=~v0amskl;
+	v0bmskl=~v0bmskl;
+
+	if(vh>vl)
+	{
+		v0amsk=v0amskh&v0amskl;
+		v0bmsk=v0bmskh&v0bmskl;
+	}
+	else
+	{
+		v0amsk=v0amskh|v0amskl;
+		v0bmsk=v0bmskh|v0bmskl;
+	}
+
+	v2a=(v0ash&v0amsk)|(v1a&(~v0amsk));
+	v2b=(v0bsh&v0bmsk)|(v1b&(~v0bmsk));
+
+	if(vh>64)
+		sgext=(v2b>>(vh-65))&1;
+	else
+		sgext=(v2a>>(vh- 1))&1;
+	if(sgext)
+	{
+		v2a^=~v0amsk;
+		v2b^=~v0bmsk;
+	}
+
+	ctx->regs[op->rn+0]=v2a;
+	ctx->regs[op->rn+1]=v2b;
+}

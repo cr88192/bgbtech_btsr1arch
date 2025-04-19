@@ -45,6 +45,8 @@ TKBMP
 ** 'U2L3': RP2 Compressed UTX2
 ** 'U2L4': LZ4 Compressed UTX2
 ** 'CRAM': MS-CRAM (Fixed Size Subset)
+** 'C8L0': 8x8 Color-Cell (Uncompressed)
+** 'C8L3': 8x8 Color-Cell (RP2)
 *** biBitCount=8: Indexed 256 Color
 *** biBitCount=16: RGB555
 ** 'hdru': HDR Image
@@ -121,7 +123,7 @@ The biClrImportant field will be reserved and set to 0.
 
 ==== CRAM ====
 
-For static bitmap images, CRAM will use a fixed-size subset. This subset will omit support for skipped blocks and 8-color blocks. For the 8-bit version, this will store each block of 16 pixels in 4 bytes, and 16 pixels in 6 bytes for the 16-bit version.
+For static bitmap images, CRAM may use a fixed-size subset. This subset will omit support for skipped blocks, single color blocks, and 8-color blocks. For the 8-bit version, this will store each block of 16 pixels in 4 bytes, and 16 pixels in 6 bytes for the 16-bit version.
 
 Say, for the 8-bit version of CRAM:
 *  16 bits: pixel data, 4x4 pixels in LSB first order.
@@ -132,6 +134,38 @@ Say, for the 8-bit version of CRAM:
 For the 8-bit version, the colors will come from the color palette in the BMP header.
 
 The 16-bit version will use 16-bit values for ColorA and ColorB, these will resemble normal RGB555, but with red and blue swapped (0.bbbbb.ggggg.rrrrr).
+
+The first 2 bytes will be special:
+* ByteA, ByteB
+** ByteB:
+*** 00..7F, Normal Pixel Block
+*** 80..83: Flat Color (in ByteA, 8-bit)
+*** 84..87: Skip (N/A for flat images)
+
+
+==== CQL0 ====
+
+Will be an 8x8 color cell format.
+
+General block format will be (8-bit):
+* 64 bits: Color Selectors
+* 8 bits: ColorA
+* 8 bits: ColorB
+
+This will store the image at 1.25 bpp (8-bit), or 1.5 bpp (16-bit).
+
+Encoding rules will be similar to CRAM, albeit with larger blocks and pixels encoded in MSB-first ordering.
+
+As in CRAM, the first 2 bytes will be special:
+* ByteA, ByteB
+
+ByteB:
+* 00..7F, Normal Pixel Block (8x8 with 2 endpoints, 10 bytes)
+* 80..83: Flat Color (in ByteA, 8-bit, 2 bytes)
+* 84..87: Skip (N/A for flat images)
+* 90..FF:
+** 1zzz1zzz: 8 color endpoints (4x4 sub blocks, 16 bytes)
+** 1zzz0zzz: 2 color endpoints (4x4 block, 4 bytes)
 
 
 === tkgGlobalAlloc ===

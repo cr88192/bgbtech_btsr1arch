@@ -1755,6 +1755,8 @@ int mfl;
 
 {"bitmov",		BGBCC_SH_NMID_BITMOV},
 {"bitmovx",		BGBCC_SH_NMID_BITMOVX},
+{"bitmovs",		BGBCC_SH_NMID_BITMOVS},
+{"bitmovsx",	BGBCC_SH_NMID_BITMOVSX},
 
 {"pcvtsb2h",	BGBCC_SH_NMID_PCVTSB2HL},
 {"pcvtub2h",	BGBCC_SH_NMID_PCVTUB2HL},

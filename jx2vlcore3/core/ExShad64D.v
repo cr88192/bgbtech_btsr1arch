@@ -103,12 +103,18 @@ assign		valMaskPolL = valRt[19:14] > valRt[13:8];
 wire[6:0]		shlMaskXLo;
 wire[6:0]		shlMaskXHi;
 
+wire[6:0]		shlMaskSgn;
+
 assign		shlMaskXLo = shOpQ ? valRt[14: 8] :
 	{ valRt[20] & valMaskPolL, valRt[13:8] } ;
 assign		shlMaskXHi = shOpQ ? valRt[22:16] :
 	{ valRt[20], valRt[19:14] };
 
 assign		valMaskPol = shlMaskXHi > shlMaskXLo;
+// assign		shlMaskSgn = shlMaskXHi[5:0] - 1;
+// assign		shlMaskSgn = valRt[5:0] + shlMaskXHi[5:0] - 1;
+// assign		shlMaskSgn = (~valRt[5:0]) + shlMaskXHi[5:0];
+assign		shlMaskSgn = (~valRt[6:0]) + shlMaskXHi[6:0];
 
 wire[6:0]		shlMaskLo;
 wire[6:0]		shlMaskHi;
@@ -135,6 +141,9 @@ ExCsMaskGen64	genMaskHi(shlMaskHi, valMaskHi);
 assign		valMask = valMaskPol ?
 	(valMaskLo & valMaskHi) :
 	(valMaskLo | valMaskHi);
+
+reg			valMaskSignExt;
+reg[63:0]	valMaskSignExtVal;
 `endif
 
 always @*
@@ -228,6 +237,14 @@ begin
 	tValRn		= tValSht1[63:0];
 `endif
 
+`ifdef jx2_shadq_bitmov
+//	valMaskSignExt = tValRn[shlMaskSgn];
+//	valMaskSignExt = tValRs[shlMaskSgn];
+
+	valMaskSignExtVal = (isLaneB^shlMaskSgn[6]) ? valRs : valRx;
+	valMaskSignExt = valMaskSignExtVal[shlMaskSgn[5:0]];
+`endif
+
 	if(shOpL)
 	begin
 		tValRn[63:32]=(tValRn[31] && !shOpU) ? UV32_FF : UV32_00 ;
@@ -236,7 +253,15 @@ begin
 `ifdef jx2_shadq_bitmov
 	if(shOpM)
 	begin
-		tValRn = (tValRn & valMask) | (valRp & (~valMask));
+`ifdef jx2_shadq_bitmovs
+//		tValRn = ((tValRn & valMask) | (valRp & (~valMask))) ^
+//			((!shOpU && valMaskSignExt) ? (~valMaskHi) : 0);
+
+		tValRn = ((tValRn & valMask) |
+			(((!shOpU && valMaskSignExt) ? ~valRp : valRp) & (~valMask)));
+`else
+		tValRn = ((tValRn & valMask) | (valRp & (~valMask)));
+`endif
 	end
 `endif
 

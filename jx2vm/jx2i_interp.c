@@ -1800,6 +1800,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 
 	case BJX2_NMID_BITMOV:		s0="BITMOV";		break;
 	case BJX2_NMID_BITMOVX:		s0="BITMOVX";		break;
+	case BJX2_NMID_BITMOVS:		s0="BITMOVS";		break;
+	case BJX2_NMID_BITMOVSX:	s0="BITMOVSX";		break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);

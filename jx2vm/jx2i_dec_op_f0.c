@@ -2928,6 +2928,21 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_SHARQ;
 				op->Run=BJX2_Op_SHARQ_RegRegReg;
 			}
+			if(jbits&0x01000000U)
+			{
+				op->imm=jbits&0xFFFFFF;
+				op->nmid=BJX2_NMID_BITMOVS;
+				op->fmid=BJX2_FMID_REGREGIMMREG;
+				op->Run=BJX2_Op_BITMOVS_RegRegImmReg;
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_BITMOVSX;
+					op->Run=BJX2_Op_BITMOVSX_RegRegImmReg;
+					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGX2R;
+				}
+			}
 			break;
 		case 0x3:	/* F0eo_23nm */
 			op->nmid=BJX2_NMID_SHLR;

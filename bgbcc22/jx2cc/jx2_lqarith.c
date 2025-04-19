@@ -3037,8 +3037,10 @@ int BGBCC_JX2C_EmitBitMovVRegVRegVRegQLong(
 	s64 imm, shl;
 	int flip, noflip, doptrshl;
 	int nm1, nm2, nm3, cmp1;
-	int tr0, tr1;
+	int tr0, tr1, issgn;
 	int i;
+
+	issgn=0;
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);

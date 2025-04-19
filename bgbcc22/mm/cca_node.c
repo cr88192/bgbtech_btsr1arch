@@ -246,8 +246,8 @@ int BCCX_LookupAttrArrIx(BCCX_Node *node, int iv,
 	}
 
 	j=iv&7;
-	*rrn=node->attr_n+j;
-	*rrv=(BCCX_AttrVal *)(node->attr_v+j);
+	*rrn=nl->attr_n+j;
+	*rrv=(BCCX_AttrVal *)(nl->attr_v+j);
 	return(1);
 }
 
@@ -308,13 +308,13 @@ int BCCX_FetchAttrArrIx(BCCX_Node *node, int iv,
 			nl1->ztag=node->ztag;
 			nl->attr_v[j]=(u64)nl1;
 		}
-		nl=nl1;
 		i=nl->malvl;
+		nl=nl1;
 	}
 
 	j=iv&7;
-	*rrn=node->attr_n+j;
-	*rrv=(BCCX_AttrVal *)(node->attr_v+j);
+	*rrn=nl->attr_n+j;
+	*rrv=(BCCX_AttrVal *)(nl->attr_v+j);
 	return(1);
 }
 
@@ -371,7 +371,8 @@ int BCCX_LookupAttrValIx(BCCX_Node *node, int iv,
 		attr_v=NULL;
 		na=node->nattr;
 //		ma=node->mattr;
-		ma=1<<(3*node->malvl);
+//		ma=1<<(3*node->malvl);
+		ma=1<<(3*(node->malvl+1));
 	}
 
 	if(na>ma)
@@ -520,7 +521,8 @@ int BCCX_FetchAttrValIx(BCCX_Node *node, int iv,
 		attr_n=NULL;
 		attr_v=NULL;
 		na=node->nattr;
-		ma=1<<(3*node->malvl);
+//		ma=1<<(3*node->malvl);
+		ma=1<<(3*(node->malvl+1));
 	}
 
 	if(na>ma)

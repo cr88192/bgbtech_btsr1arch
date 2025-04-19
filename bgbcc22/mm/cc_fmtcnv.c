@@ -208,8 +208,10 @@ int BGBCC_LoadConvResource_SetupPal()
 			cl=(ch*3)/8;
 			if(i==0)
 				{ cr=ch; cg=cm; cb=cl; k=7; }
+//			if(i==1)
+//				{ cr=cm; cg=ch; cb=cl; k=8; }
 			if(i==1)
-				{ cr=cm; cg=ch; cb=cl; k=8; }
+				{ cr=ch; cg=cl; cb=cm; k=8; }
 			if(i==2)
 				{ cr=cl; cg=cm; cb=ch; k=15; }
 //			pal[(j*16+i+1)*4+0]=cr;
@@ -353,7 +355,7 @@ int BGBCC_LoadConvResource_SetupPal()
 	pal[2*4+0]=0x7F; pal[2*4+1]=0x7F; pal[2*4+2]=0x7F; pal[2*4+3]=255;
 	pal[3*4+0]=0xFF; pal[3*4+1]=0x00; pal[3*4+2]=0xFF; pal[3*4+3]=0;
 
-#if 0
+#if 1
 	tbuf=malloc(16*16*8);
 	k=BGBCC_Img_EncodeImageBMP8(
 		tbuf, bgbcc_dfl_pal256, 16, 16, bgbcc_dfl_pal256);
@@ -376,7 +378,7 @@ int BGBCC_LoadConvResource_SetupPal()
 	BGBCC_StoreFile("dump/rsrc_pal4.bmp", tbuf, k);
 #endif
 
-#if 0
+#if 1
 	BGBCC_Img_EncodeImageBmpSetupPal(bgbcc_dfl_pal256, 256);
 
 	paldith=malloc(256*256*4);
@@ -427,7 +429,7 @@ int BGBCC_LoadConvResource_SetupPal()
 	BGBCC_StoreFile("dump/rsrc_paldith16.bmp", tbuf, k);
 #endif
 
-#if 0
+#if 1
 	if(!paldith)
 	{
 		BGBCC_Img_EncodeImageBmpSetupPal(bgbcc_dfl_pal256, 256);

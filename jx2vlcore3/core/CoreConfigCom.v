@@ -139,6 +139,7 @@
 `define jx2_enable_movc			//MOV.C
 
 `define	jx2_shadq_bitmov		//Enable BITMOV
+`define	jx2_shadq_bitmovs		//Enable BITMOVS
 
 // `define jx2_enable_memcap			//Enable Memory Capabilities
 

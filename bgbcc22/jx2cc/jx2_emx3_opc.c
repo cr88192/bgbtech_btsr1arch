@@ -2645,6 +2645,17 @@ int BGBCC_JX2X3_TryEmitOpRegRegImmReg(
 			0x30002022, rs, rt, imm, rn,
 			&opw1, &opw2);
 		break;
+
+	case BGBCC_SH_NMID_BITMOVS:
+		BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(ctx,
+			0x20002002, rs, rt, imm, rn,
+			&opw1, &opw2);
+		break;
+	case BGBCC_SH_NMID_BITMOVSX:
+		BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(ctx,
+			0x20002022, rs, rt, imm, rn,
+			&opw1, &opw2);
+		break;
 	}
 
 

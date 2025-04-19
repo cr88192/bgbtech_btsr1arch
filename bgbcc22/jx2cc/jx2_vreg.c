@@ -496,6 +496,36 @@ int BGBCC_JX2C_EmitMovRegReg(
 					{ nm1=BGBCC_SH_NMID_EXTUW; }
 				if((sty==CCXL_TY_UB) && (dsz>8))
 					{ nm1=BGBCC_SH_NMID_EXTUB; }
+			}else
+				if(	BGBCC_CCXL_TypeSBitIntP(ctx, tdty) &&
+					BGBCC_CCXL_TypeSBitIntP(ctx, tsty) )
+			{
+				dsz=BGBCC_CCXL_TypeGetBitIntSize(ctx, tdty);
+				ssz=BGBCC_CCXL_TypeGetBitIntSize(ctx, tsty);
+
+				if(dsz<ssz)
+				{
+					nm1=BGBCC_SH_NMID_EXTSL+(dsz<<16);
+				}else if(dsz>=ssz)
+				{
+					nm1=BGBCC_SH_NMID_EXTSL+(ssz<<16);
+				}
+
+			}else
+				if(	BGBCC_CCXL_TypeSBitIntP(ctx, tdty) &&
+					BGBCC_CCXL_TypeUBitIntP(ctx, tsty) )
+			{
+				dsz=BGBCC_CCXL_TypeGetBitIntSize(ctx, tdty);
+				ssz=BGBCC_CCXL_TypeGetBitIntSize(ctx, tsty);
+
+				if(dsz<=ssz)
+				{
+					nm1=BGBCC_SH_NMID_EXTSL+(dsz<<16);
+				}else if(dsz>ssz)
+				{
+					nm1=BGBCC_SH_NMID_EXTUL+(ssz<<16);
+				}
+
 			}
 		}
 	
