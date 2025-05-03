@@ -751,8 +751,9 @@ void TKMM_Init()
 {
 	int i;
 
-	if(tkmm_is_init)return;
-	tkmm_is_init=1;
+	if(tkmm_is_init==0xA5)
+		return;
+	tkmm_is_init=0xA5;
 
 #ifndef __TK_CLIB_ONLY__
 //	if(tk_getsavedvbr())
@@ -823,7 +824,8 @@ void *TKMM_Malloc(int sz)
 	void *ptr, *ptr1;
 	int pg, np, np1;
 	
-	if(!TKMM_PageAlloc_f)
+//	if(!TKMM_PageAlloc_f)
+	if(!TKMM_PageAlloc_f || (tkmm_is_init!=0xA5))
 	{
 		TKMM_Init();
 		if(!TKMM_PageAlloc_f)

@@ -36,6 +36,8 @@ int TK_Env_GetLibPathList(char ***rlst, int *rnlst);
 TKPE_ImageInfo *TK_GetImageForIndex(int ix);
 
 
+byte tkpe_magic_ubkey;
+
 /*
 Apply base relocations.
 disp: gives the displacement relative to the image base address.
@@ -315,7 +317,13 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				__debugbreak();
 				break;
 			case 10:
-				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
+//				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
+
+				v0=*((s64 *)pdst);
+				v1=v0-imgbase;
+				if((v0&1) && (v1<gbr_rva))
+					{ v0|=(((s64)tkpe_magic_ubkey)<<56); }
+				*((s64 *)pdst)=v0+disp;
 				break;
 			case 11:
 				break;
@@ -343,6 +351,7 @@ int TKPE_ApplyDataRelocs(
 	byte *cs, *cse, *cs1, *cs1e;
 	byte *pdst;
 	u32 pv;
+	s64 v0, v1;
 //	int gbr_rva, gbr_sz;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, rva_dest, sz_blk;
@@ -419,7 +428,12 @@ int TKPE_ApplyDataRelocs(
 					*((s64 *)pdst)=(*((s64 *)pdst))+disp_data;
 					break;
 				}
-				*((s64 *)pdst)=(*((s64 *)pdst))+disp_base;
+
+//				*((s64 *)pdst)=(*((s64 *)pdst))+disp_base;
+				v0=*((s64 *)pdst);
+				if(v0&1)
+					v0|=(((s64)tkpe_magic_ubkey)<<56);
+				*((s64 *)pdst)=v0+disp_base;
 				break;
 			case 11:
 				break;
@@ -437,8 +451,6 @@ int TKPE_ApplyDataRelocs(
 
 TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	char *imgname, char *cwd, int is_dll);
-
-byte tkpe_magic_ubkey;
 
 #if 1
 // byte *TKPE_LoadDynPE(TK_FILE *fd, void **rbootptr, void **rbootgbr)

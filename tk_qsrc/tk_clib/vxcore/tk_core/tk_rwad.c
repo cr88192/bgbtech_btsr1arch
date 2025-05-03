@@ -253,22 +253,24 @@ byte *TKPE_UnpackL4(byte *ct, byte *ibuf, int isz)
 }
 
 #ifndef __BJX2__
+// #if 1
 int TKPE_DecodeBufferRP2(
 	byte *ibuf, byte *obuf, int ibsz, int obsz)
 {
 	u32 tag;
-	byte *cs, *ct, *cse;
+	byte *cs, *ct, *cse, *cte;
 	int pl, pd;
 	int rl, l, d;
 	u64 t0;
 	int t1, t2;
 	
 	cs=ibuf; cse=ibuf+ibsz;
-	ct=obuf;
+	ct=obuf; cte=obuf+obsz;
 	pl=0; pd=0;
 	
 //	while(1)
 	while(cs<cse)
+//	while((cs<cse) && (ct<cte))
 	{
 		t0=*(u64 *)cs;
 		if(!(t0&0x01))
@@ -305,6 +307,9 @@ int TKPE_DecodeBufferRP2(
 		}else
 			if(!(t0&0x10))
 		{
+			__debugbreak();
+
+#if 0
 			/* Long Match */
 			cs++;
 			rl=(t0>>5)&7;
@@ -317,6 +322,7 @@ int TKPE_DecodeBufferRP2(
 				{ d=((t2>>1)&0x007FFF); cs+=2; }
 			else
 				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+#endif
 		}else
 			if(!(t0&0x20))
 		{
@@ -1427,7 +1433,7 @@ int TKDFS_UtfMergeInit()
 	return(0);
 }
 
-int TKDFS_UtfCheckSplit(int vi, int *rv0, int *rv1)
+int TKDFS_UtfCheckSplit(int vi, int *rv0, int *rv1, int cfl)
 {
 	int v0, v1, vc, vf, vo0, vo1;
 	int i, j, k, h;
@@ -1464,7 +1470,7 @@ int TKDFS_UtfCheckSplit(int vi, int *rv0, int *rv1)
 	return(0);
 }
 
-int TKDFS_UtfCheckMerge(int v0, int v1, int *rvo)
+int TKDFS_UtfCheckMerge(int v0, int v1, int *rvo, int cfl)
 {
 	int av0, av1, avf;
 	int vo, i, h;

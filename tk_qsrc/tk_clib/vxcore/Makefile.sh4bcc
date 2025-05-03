@@ -8,7 +8,9 @@ TK_CFL=-DARCH_SH4 -DARCH_SH4LE -O3
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -fxgpr_ena
 
-TK_LDEXTFS = -fqmul -ffpu_fpvsf2 -fxgpr_ena -fjcmpz -ffunctag -fvskglobal # -fdobounds
+TK_LDEXTFS = -fqmul -ffpu_fpvsf2 -fxgpr_ena -fjcmpz -ffunctag \
+	-fvskglobal -fbitmov
+# -fdobounds
 
 # TK_LDEXTFS = -fqmul -ffdiv -ffpu_fpvsf -ffpu_fpimm -fxgpr_ena -fnowexify -fjcmp \
 #	-fdobounds -fvskglobal
@@ -23,7 +25,7 @@ TK_LDFL64= -L. -lvxcore64 -fwex3w -fwexj -fptropt0 -mBJX2 $(TK_LDEXTFS)
 # TK_LDFL64= -L. -lvxcore64
 #  /fwex3w
 
-TK_LDFL64_RBD= -L. -lvxcore64 -fptropt0 -mBJX2I -fnowex
+TK_LDFL64_RBD= -L. -lvxcore64 -fptropt0 -mBJX2I -fnowex -DTK_IS_RBD
 
 TK_LDFL64_DLL= -L. -lcdll -fwex3w -fwexj -fptropt0
 
@@ -35,9 +37,10 @@ CC=$(TOOLPATH)bgbcc
 AR=$(TOOLPATH)bgbcc
 AS=$(TOOLPATH)bgbcc
 
-COPTS= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -Zz
+COPTS= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -Zz /Fcddump/fcdout
 # COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2F -Zz
-COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 -Zz
+COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 \
+	-Zz /Fcddump/fcdout
 
 COPTS64RV= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mXRVA -Zz
 
@@ -224,7 +227,7 @@ libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libtkgdi.rv64.ril libtkgl.rv64.ril \
 	libtkwui.rv64.ril
 
-bins: tkshell.sys tkshdll.dll # tkshell96.sys tkshell_rbd.sys
+bins: tkshell.sys tkshdll.dll tkshell_rbd.sys # tkshell96.sys
 
 apps: bins FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps

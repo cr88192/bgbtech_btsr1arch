@@ -362,7 +362,7 @@ tk_shell_chksane_rgb5_asm:
 	BREAK?F
 
 	/* UTX2 */
-
+#ifndef TK_IS_RBD
 	MOV			0xFFAA550012342BCD, R16
 
 	MOV			0xFFFF21218C8CA5A5, R20
@@ -412,6 +412,7 @@ tk_shell_chksane_rgb5_asm:
 	BREAK?F
 #endif
 
+#endif
 
 	/* Test FLDCH Immed */
 //	MOV			0x40159C0000000000, R20
@@ -453,7 +454,8 @@ tk_shell_chksane_rgb5_asm:
 	CMPQEQ		R7, R23
 	BREAK?F
 
-#if 1
+// #if 1
+#ifndef TK_IS_RBD
 	PCVTSW2H	R16, R6
 	MOV			0xC200C200C200C200, R3
 	PADD.H		R6, R3, R7
@@ -481,7 +483,8 @@ tk_shell_chksane_rgb5_asm:
 	BREAK?F
 #endif
 
-#if 1
+// #if 1
+#ifndef TK_IS_RBD
 	RGB5PCKI8	R3, R6
 	CMPEQ		0, R6
 	BREAK?T
@@ -1863,11 +1866,14 @@ int tk_shell_chksane()
 
 	tk_printf("CS B8\n");
 	
+#ifndef TK_IS_RBD
 	tk_chksane_chkocr();
 
 	tk_printf("CS B9\n");
 
 	tk_shell_chksane_qsort();
+
+#endif
 
 	tk_printf("CS B10\n");
 }

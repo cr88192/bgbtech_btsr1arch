@@ -1737,6 +1737,9 @@ int TKSH_Cmds_StartGui(char **args)
 //	info->biHeight=600;
 	info->biBitCount=16;
 
+//	info->biWidth=1024;
+//	info->biHeight=768;
+
 //	ctx=TKGDI_GetHalContext(TK_FCC_GDI, TK_FCC_GDI);
 	ctx=TKGDI_GetCurrentGdiContext();
 
@@ -3159,7 +3162,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 					pb_sysc|=0x0000000000000001ULL;
 				}
 				
-				pb_sysc|=((u64)ubkey)<<56;
+//				pb_sysc|=((u64)ubkey)<<56;
 				
 				sysc=(void *)pb_sysc;
 			}
@@ -3179,13 +3182,17 @@ int TKSH_TryLoadB(char *img, char **args0)
 				pb_sysc&=0x0000FFFFFFFFFFFEULL;
 				pb_sysc|=0x0004000000000001ULL;
 
-				pb_sysc|=((u64)ubkey)<<56;
+//				pb_sysc|=((u64)ubkey)<<56;
 
 				sysc=(void *)pb_sysc;				
 			}
 #endif
 
-			task->SysCall=(tk_kptr)sysc;
+			pb_sysc&=~(0xFFULL<<56);
+			pb_sysc|=((u64)ubkey)<<56;
+
+//			task->SysCall=(tk_kptr)sysc;
+			task->SysCall=(tk_kptr)pb_sysc;
 
 #if 0
 			if(tlsix[0])
@@ -3369,6 +3376,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 
 			if(pimg->dllflags&0x00800000)
 			{
+				tk_dbg_printf("TKSH_TryLoad: UBSM: Key=%02X\n", ubkey);
+
 				tkern->ctx_regsave[TKPE_REGSAVE_EXSR]|=
 					(1ULL<<(17+32));
 			}

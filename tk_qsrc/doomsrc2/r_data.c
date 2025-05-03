@@ -461,8 +461,9 @@ void R_GenerateCompositeUtx (int texnum)
 //
 void R_GenerateLookup (int texnum)
 {
+	static byte	*patchcount;
 	texture_t*		texture;
-	byte*		patchcount;	// patchcount[texture->width]
+//	byte*		patchcount;	// patchcount[texture->width]
 	texpatch_t*		patch;	
 	patch_t*		realpatch;
 	int			x;
@@ -491,7 +492,9 @@ void R_GenerateLookup (int texnum)
 	// Fill in the lump / offset, so columns
 	//	with only a single patch are all done.
 //	patchcount = (byte *)alloca (texture->width);
-	patchcount = (byte *)malloc (texture->width);
+//	patchcount = (byte *)malloc (texture->width);
+	if(!patchcount)
+		patchcount = (byte *)malloc (1024);
 	memset (patchcount, 0, texture->width);
 	patch = texture->patches;
 		
@@ -552,7 +555,24 @@ void R_GenerateLookup (int texnum)
 }
 
 
+void R_GenerateLookupLazy(int tex)
+{
+	if(textures[tex]->magic1 != 0x123456)
+		{ __debugbreak(); }
 
+	texturecolumnlump[tex] = Z_Malloc (
+		textures[tex]->width*sizeof(int), PU_STATIC,0);
+	texturecolumnofs[tex] = Z_Malloc (
+		textures[tex]->width*sizeof(int), PU_STATIC,0);
+
+	if(textures[tex]->magic1 != 0x123456)
+		{ __debugbreak(); }
+
+	R_GenerateLookup(tex);
+
+	if(textures[tex]->magic1 != 0x123456)
+		{ __debugbreak(); }
+}
 
 //
 // R_GetColumn
@@ -583,6 +603,10 @@ byte *R_GetColumn
 //	{
 //		__debugbreak();
 //	}
+	
+//	if(!texturecolumnlump[tex][0])
+	if(!texturecolumnlump[tex])
+		{ R_GenerateLookupLazy(tex); }
 	
 	col &= texturewidthmask[tex];
 	lump = texturecolumnlump[tex][col];
@@ -623,6 +647,11 @@ u64 *R_GetColumnUtx
 	int		lump;
 	int		ofs;
 		
+//	if(!texturecolumnlump[tex][0])
+//		{ R_GenerateLookup(tex); }
+	if(!texturecolumnlump[tex])
+		{ R_GenerateLookupLazy(tex); }
+	
 	col &= texutx_widthmask[tex];
 	lump = texutx_columnlump[tex][col];
 	ofs = texutx_columnofs[tex][col];
@@ -837,7 +866,9 @@ void R_InitTextures (void)
 				I_Error ("R_InitTextures: Missing patch in texture %s",
 					 texture->name);
 			}
-		}		
+		}
+
+#if 0
 //		texturecolumnlump[i] = Z_Malloc (texture->width*2, PU_STATIC,0);
 //		texturecolumnofs[i] = Z_Malloc (texture->width*2, PU_STATIC,0);
 
@@ -845,6 +876,12 @@ void R_InitTextures (void)
 			texture->width*sizeof(int), PU_STATIC,0);
 		texturecolumnofs[i] = Z_Malloc (
 			texture->width*sizeof(int), PU_STATIC,0);
+
+		texturecolumnlump[i][0]=0;
+#endif
+
+		texturecolumnlump[i] = NULL;
+		texturecolumnofs[i] = NULL;
 
 #ifdef UTXWALLS
 		texutx_columnlump[i] = Z_Malloc (
@@ -877,7 +914,8 @@ void R_InitTextures (void)
 	Z_Free (maptex1);
 	if (maptex2)
 		Z_Free (maptex2);
-	
+
+#if 0	/* BGB: Delay until first use. */
 	// Precalculate whatever possible.	
 	for (i=0 ; i<numtextures ; i++)
 	{
@@ -886,7 +924,8 @@ void R_InitTextures (void)
 		R_GenerateLookup (i);
 		if(textures[i]->magic1 != 0x123456)
 			{ __debugbreak(); }
-	}	
+	}
+#endif
 
 	// Create translation table for global animation.
 	texturetranslation = Z_Malloc ((numtextures+1)*sizeof(int), PU_STATIC, 0);
@@ -1588,6 +1627,8 @@ void *W_CacheFlatName(const char *name, int tag)
 	return(W_CacheFlatNum(lump-firstflat, tag));
 }
 
+extern void		**lumpcache_head;
+
 //
 // R_InitSpriteLumps
 // Finds the width and hoffset of all sprites in the wad,
@@ -1596,7 +1637,7 @@ void *W_CacheFlatName(const char *name, int tag)
 //
 void R_InitSpriteLumps (void)
 {
-	int		i, j, k;
+	int		i, j, k, lump;
 	patch_t	*patch;
 	
 	firstspritelump = W_GetNumForName ("S_START") + 1;
@@ -1627,16 +1668,57 @@ void R_InitSpriteLumps (void)
 			printf (".");
 			fflush(stdout);
 		}
+		
+		/* BGB: Leave sprite caching until later... */
+		spritewidth[i] = 0;
+		spriteoffset[i] = 0;
+		spritetopoffset[i] = 0;
+
+#if 0
+		lump = firstspritelump+i;
+		patch = W_CacheLumpHeadNum (lump, PU_CACHE);
 
 //		patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
-		patch = W_CachePatchNum (firstspritelump+i, PU_CACHE);
+//		patch = W_CachePatchNum (firstspritelump+i, PU_CACHE);
+
 //		spritewidth[i] = SHORT(patch->width)<<FRACBITS;
 		spritewidth[i] = (patch->width)<<FRACBITS;
 //		spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
 		spriteoffset[i] = (patch->leftoffset)<<FRACBITS;
 //		spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
 		spritetopoffset[i] = (patch->topoffset)<<FRACBITS;
+		
+		if( patch == lumpcache_head[lump] )
+			Z_Free(patch);
+#endif
 	}
+}
+
+void R_CheckSpriteLump (int idx)
+{
+	int		i, j, k, lump;
+	patch_t	*patch;
+	
+	if(spritewidth[idx] || spriteoffset[idx] || spritetopoffset[idx])
+		return;
+
+	i=idx;
+
+	lump = firstspritelump+i;
+//	patch = W_CacheLumpHeadNum (lump, PU_CACHE);
+
+//		patch = W_CacheLumpNum (firstspritelump+i, PU_CACHE);
+	patch = W_CachePatchNum (firstspritelump+i, PU_CACHE);
+
+//	spritewidth[i] = SHORT(patch->width)<<FRACBITS;
+	spritewidth[i] = (patch->width)<<FRACBITS;
+//	spriteoffset[i] = SHORT(patch->leftoffset)<<FRACBITS;
+	spriteoffset[i] = (patch->leftoffset)<<FRACBITS;
+//	spritetopoffset[i] = SHORT(patch->topoffset)<<FRACBITS;
+	spritetopoffset[i] = (patch->topoffset)<<FRACBITS;
+	
+//	if( patch == lumpcache_head[lump] )
+//		Z_Free(patch);
 }
 
 

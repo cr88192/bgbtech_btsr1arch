@@ -171,6 +171,8 @@ getsfx
 	// I do not do runtime patches to that
 	//	variable. Instead, we will use a
 	//	default sound for replacement.
+
+#if 0
 	if ( W_CheckNumForName(name) == -1 )
 	{
 		if ( W_CheckNumForName("DSPISTOL") != -1 )
@@ -193,7 +195,20 @@ getsfx
 	{
 		sfxlump = W_GetNumForName(name);
 	}
-	
+#endif
+
+#if 1
+	sfxlump = W_CheckNumForName(name);
+	if ( sfxlump < 0 )
+	{
+		sfxlump = W_CheckNumForName("DSPISTOL");
+		if ( sfxlump < 0 )
+			sfxlump = W_CheckNumForName("STFPOW");
+		if ( sfxlump < 0 )
+			sfxlump = W_CheckNumForName("TICTOC");
+	}
+#endif
+
 	if(sfxlump<0)
 		return(NULL);
 	
@@ -209,6 +224,9 @@ getsfx
 	//fflush( stderr );
 	
 	sfx = (unsigned char*)W_CacheLumpNum( sfxlump, PU_SOUND );
+
+	if(!sfx)
+		{ __debugbreak(); }
 
 	tg	= ((short *)sfx)[0];
 	rt	= ((short *)sfx)[1];
@@ -240,6 +258,9 @@ getsfx
 	// ddt: (unsigned char *) realloc(sfx, paddedsize+8);
 	// This should interfere with zone memory handling,
 	//	which does not kick in in the soundserver.
+
+	if(!paddedsfx)
+		{ __debugbreak(); }
 
 	if(tg==7)
 	{
@@ -1060,11 +1081,13 @@ int i_sound_init=0;
 void
 I_InitSound()
 {
+	sfxinfo_t	*tsfx, *lsfx;
 //	static int init=0;
 	int rate;
 	
 #if 1 
-	int i;
+	int dotrem, dotfra;
+	int i, j;
 
 	if(i_sound_init)
 	{
@@ -1087,9 +1110,26 @@ I_InitSound()
 	
 	// Initialize external data (all sounds) at start, keep static.
 	fprintf( stderr, "I_InitSound: ");
+	fflush(stderr);
+	
+	dotrem=NUMSFX>>3;
+	dotfra=0;
 	
 	for (i=1 ; i<NUMSFX ; i++)
-	{ 
+	{
+		tsfx=S_sfx+i;
+		lsfx=tsfx->link;
+//		lsfx=S_sfx[i].link;
+		if(lsfx)
+		{
+			j=lsfx-S_sfx;
+			if(j<0)
+				{ __debugbreak(); }
+			if(j>=NUMSFX)
+				{ __debugbreak(); }
+		}
+		
+
 		// Alias? Example is the chaingun sound linked to pistol.
 		if (!S_sfx[i].link)
 		{
@@ -1103,6 +1143,14 @@ I_InitSound()
 			// Previously loaded already?
 			S_sfx[i].data = S_sfx[i].link->data;
 			lengths[i] = lengths[(S_sfx[i].link - S_sfx)/sizeof(sfxinfo_t)];
+		}
+		
+		dotfra++;
+		if(dotfra>=dotrem)
+		{
+			dotfra=0;
+			fputc('.', stderr);
+			fflush(stderr);
 		}
 	}
 

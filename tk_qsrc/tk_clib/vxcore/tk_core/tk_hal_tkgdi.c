@@ -773,6 +773,12 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 			ofmt_mode=TKGDI_SCRMODE_800x600_CC;	//Use 100x75 color cell
 //			ofmt_mode=TKGDI_SCRMODE_800x600_PAL8B;	//Use 800x600 8bpp
 		}
+		
+		if(	(ifmt->biWidth		== 1024) &&
+			(ifmt->biHeight		== 768) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_1024x768_M;	//Use 128x96 mono
+		}
 	}
 	
 	return(ofmt_mode);
@@ -831,9 +837,17 @@ TKGSTATUS TKGDI_QueryCreateDisplay(
 
 		if(ofmt_mode==TKGDI_SCRMODE_800x600_CC)
 		{
-			ofmt->biWidth=640;
-			ofmt->biHeight=400;
+			ofmt->biWidth=800;
+			ofmt->biHeight=600;
 //			ofmt->biBitCount=16;
+//			ofmt->biCompression=TKGDI_FCC_UTX2;
+		}
+
+		if(ofmt_mode==TKGDI_SCRMODE_1024x768_M)
+		{
+			ofmt->biWidth=1024;
+			ofmt->biHeight=768;
+			ofmt->biBitCount=1;
 //			ofmt->biCompression=TKGDI_FCC_UTX2;
 		}
 
@@ -1236,6 +1250,12 @@ TKGHDC TKGDI_CreateDisplay(
 		tkgdi_blitupdate_getconbuf_sticky=0;
 		tkgdi_blitupdate_getconbuf_sticky_cnt=64;
 
+		tkgdi_vid_planar=0;
+		tkgdi_vid_noutx2=0;
+		tkgdi_vid_is8bit=0;
+		tkgdi_vid_is1bit=0;
+		tkgdi_vid_is2bit_cc=0;
+
 		if(tgt_mode==TKGDI_SCRMODE_TEXT)
 		{
 			((u32 *)0xFFFFF00BFF00UL)[0]=0x0081;	//80x25 color-cell
@@ -1285,8 +1305,29 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_xsize=800;
 			tkgdi_vid_ysize=600;
 			tkgdi_vid_planar=0;
-			tkgdi_vid_noutx2=0;
+			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=0;
+			tkgdi_vid_is2bit_cc=1;
+			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
+			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
+			tk_con_disable();
+			return(1);
+		}
+
+		if(tgt_mode==TKGDI_SCRMODE_1024x768_M)
+		{
+			tkgdi_vid_scrmode=tgt_mode;
+
+			((u32 *)0xFFFFF00BFF00UL)[0]=0x0525;	//100x75 color-cell
+			tkgdi_vid_cellstride=2;
+			tkgdi_vid_rowstride=128*2;
+
+			tkgdi_vid_xsize=1024;
+			tkgdi_vid_ysize=768;
+			tkgdi_vid_planar=0;
+			tkgdi_vid_noutx2=1;
+			tkgdi_vid_is8bit=0;
+			tkgdi_vid_is1bit=1;
 			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
 			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
 			tk_con_disable();

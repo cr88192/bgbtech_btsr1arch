@@ -1027,6 +1027,9 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 	v=c; v|=(v<<8); v|=(v<<16);
 	ct=s; cte=s+n;
 
+	if(ct>cte)
+		__debugbreak();
+
 #if defined(__ADDR_X96__)
 	xv1 = (__int128)cte;
 	if(xv1!=(long)xv1)
@@ -1035,6 +1038,21 @@ __PDPCLIB_API__ void *memset(void *s, int c, size_t n)
 
 #if 1
 	v1=(((unsigned long long)v)<<32)|((unsigned int)v);
+
+	cte0=cte-64;
+	while(ct<=cte0)
+	{
+		((unsigned long long *)ct)[0]=v1;
+		((unsigned long long *)ct)[1]=v1;
+		((unsigned long long *)ct)[2]=v1;
+		((unsigned long long *)ct)[3]=v1;
+		((unsigned long long *)ct)[4]=v1;
+		((unsigned long long *)ct)[5]=v1;
+		((unsigned long long *)ct)[6]=v1;
+		((unsigned long long *)ct)[7]=v1;
+		ct+=64;
+	}
+
 	cte0=cte-16;
 	while(ct<=cte0)
 	{

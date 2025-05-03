@@ -302,9 +302,9 @@ primecnt_sh4b.elf: primecnt.c
 
 
 dhry_rv64.elf: $(DHRY_SRCS)
-#	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME -DREG=register
-	$(CC) $(CFLAGS64_GLIB) -o $@ $(DHRY_SRCS) $(LDFLAGS64_GLIB) \
-		-DTIME -DREG=register
+	$(CC) $(CFLAGS64) -o $@ $(DHRY_SRCS) $(LDFLAGS64) -DTIME -DREG=register
+#	$(CC) $(CFLAGS64_GLIB) -o $@ $(DHRY_SRCS) $(LDFLAGS64_GLIB) \
+#		-DTIME -DREG=register
 	$(NM) dhry_rv64.elf > dhry_rv64.elf.map
 
 

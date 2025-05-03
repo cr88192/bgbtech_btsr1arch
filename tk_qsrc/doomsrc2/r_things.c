@@ -744,6 +744,8 @@ void R_ProjectSprite (mobj_t* thing)
 		flip = (boolean)sprframe->flip[0];
 	}
 	
+	R_CheckSpriteLump(lump);
+	
 	// calculate edges of the shape
 	tx -= spriteoffset[lump];	
 	x1 = (centerxfrac + FixedMul (tx,xscale) ) >>FRACBITS;
@@ -931,6 +933,8 @@ void R_DrawPSprite (pspdef_t* psp)
 	
 	// calculate edges of the shape
 	tx = psp->sx-160*FRACUNIT;
+	
+	R_CheckSpriteLump(lump);
 	
 	tx -= spriteoffset[lump];	
 	x1 = (centerxfrac + FixedMul (tx,pspritescale) ) >>FRACBITS;

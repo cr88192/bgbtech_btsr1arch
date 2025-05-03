@@ -166,6 +166,8 @@ __PDPCLIB_API__ int CTYP __start()
 	t_stdin->bufStartR = 0;
 	t_stdin->bufTech = _IOLBF;
 	t_stdin->intBuffer = buffer1;
+	*(u16 *)t_stdin->intBuffer=0x1234;
+	*(u16 *)(t_stdin->intBuffer+(BUFSIZ + 6))=0x4321;
 	t_stdin->fbuf = t_stdin->intBuffer + 2;
 	*t_stdin->fbuf++ = '\0';
 	*t_stdin->fbuf++ = '\0';
@@ -187,7 +189,9 @@ __PDPCLIB_API__ int CTYP __start()
 	t_stdout->textMode = 1;
 	t_stdout->bufTech = _IOLBF;
 	t_stdout->intBuffer = buffer2;
-	t_stdout->fbuf = t_stdout->intBuffer;
+	*(u16 *)t_stdout->intBuffer=0x1234;
+	*(u16 *)(t_stdout->intBuffer+(BUFSIZ + 6))=0x4321;
+	t_stdout->fbuf = t_stdout->intBuffer + 2;
 	*t_stdout->fbuf++ = '\0';
 	*t_stdout->fbuf++ = '\0';
 	t_stdout->szfbuf = BUFSIZ;
@@ -207,7 +211,9 @@ __PDPCLIB_API__ int CTYP __start()
 	t_stderr->textMode = 1;
 	t_stderr->bufTech = _IOLBF;
 	t_stderr->intBuffer = buffer3;
-	t_stderr->fbuf = t_stderr->intBuffer;
+	*(u16 *)t_stderr->intBuffer=0x1234;
+	*(u16 *)(t_stderr->intBuffer+(BUFSIZ + 6))=0x4321;
+	t_stderr->fbuf = t_stderr->intBuffer + 2;
 	*t_stderr->fbuf++ = '\0';
 	*t_stderr->fbuf++ = '\0';
 	t_stderr->szfbuf = BUFSIZ;

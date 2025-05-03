@@ -143,10 +143,46 @@ __PDPCLIB_API__ FILE **__get_stderr()
 
 void __stdio_chkmagic(FILE *fd)
 {
+	char *bufs, *bufe;
+
 	if(fd->magic1!=_FILE_MAGIC)
 		__debugbreak();
 	if(fd->magic2!=_FILE_MAGIC)
 		__debugbreak();
+	
+//	if(!fd->theirBuffer)
+	if(1)
+	{
+		bufs=fd->intBuffer;
+//		bufe=bufs+(BUFSIZ+8);
+		bufe=bufs+(fd->szfbuf+8);
+
+		if(fd->szfbuf>(1<<20))
+			__debugbreak();
+
+		if(bufe<=bufs)
+			__debugbreak();
+
+		if(fd->fbuf<bufs)
+			__debugbreak();
+		if(fd->fbuf>bufe)
+			__debugbreak();
+
+		if(fd->upto<bufs)
+			__debugbreak();
+		if(fd->upto>bufe)
+			__debugbreak();
+
+		if(fd->endbuf<bufs)
+			__debugbreak();
+		if(fd->endbuf>bufe)
+			__debugbreak();
+
+		if(*(u16 *)(bufs+0)!=0x1234)
+			__debugbreak();
+		if(*(u16 *)(bufe-2)!=0x4321)
+			__debugbreak();
+	}
 }
 
 static void dblcvt(double num, char cnvtype, size_t nwidth,
@@ -331,6 +367,8 @@ static void fopen2(void)
 static void fopen3(void)
 {
 	myfile->intBuffer = malloc(BUFSIZ + 8);
+	*(u16 *)myfile->intBuffer=0x1234;
+	*(u16 *)(myfile->intBuffer+(BUFSIZ + 6))=0x4321;
 	if (myfile->intBuffer == NULL)
 	{
 		tk_puts("fopen3: intBuffer malloc fail\n");
@@ -396,6 +434,8 @@ static void fopen3(void)
 				myfile->update = 1;
 				break;
 		}
+
+		__stdio_chkmagic(myfile);
 	}
 	return;
 }
@@ -699,6 +739,7 @@ __PDPCLIB_API__ size_t fread(void *ptr,
 				elemRead = actualRead / size;
 			}
 		}
+		__stdio_chkmagic(stream);
 		return (elemRead);
 	}
 	else
@@ -751,6 +792,8 @@ __PDPCLIB_API__ size_t fread(void *ptr,
 			}
 		}
 		stream->bufStartR += actualRead;
+
+		__stdio_chkmagic(stream);
 		return (elemRead);
 	}
 }
@@ -967,6 +1010,7 @@ __PDPCLIB_API__ size_t fwrite(const void *ptr,
 	if (!stream->quickBin)
 	{
 		fwriteSlow(ptr, size, nmemb, stream, towrite, &elemWritten);
+		__stdio_chkmagic(stream);
 		return (elemWritten);
 	}
 	else
@@ -1002,6 +1046,7 @@ __PDPCLIB_API__ size_t fwrite(const void *ptr,
 			elemWritten = actualWritten / size;
 		}
 		stream->bufStartR += actualWritten;
+		__stdio_chkmagic(stream);
 		return (elemWritten);
 	}
 }
@@ -1313,6 +1358,8 @@ static int vvprintf(const char *format, va_list arg,
 
 	dste=s+nmax;
 
+//	__debugbreak();
+
 //	__stdio_chkmagic(fq);
 
 	fin = 0;
@@ -1430,6 +1477,9 @@ static int vvprintf(const char *format, va_list arg,
 //				else if(ljust&2)
 //					{ *nptr++ = '+'; }
 
+				if((nptr-numbuf)>=sizeof(numbuf))
+					{ __debugbreak(); }
+
 				do
 				{
 					nptr--;
@@ -1484,6 +1534,9 @@ static int vvprintf(const char *format, va_list arg,
 				vdbl = va_arg(arg, double);
 				dblcvt(vdbl, *format, 0, 6, numbuf);   /* 'e','f' etc. */
 				len = strlen(numbuf);
+
+				if(len>=sizeof(numbuf))
+					{ __debugbreak(); }
 
 				if (fq == NULL)
 				{
@@ -2311,6 +2364,8 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 		processed = 0;
 	}
 
+	__stdio_chkmagic(stream);
+
 	if (n < 1)
 	{
 		return (NULL);
@@ -2389,6 +2444,7 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 //			{
 //				stream->quickText = 1;
 //			}
+			__stdio_chkmagic(stream);
 			return (s);
 		}
 		else if (((t > p) && (p < stream->endbuf))
@@ -2439,6 +2495,7 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 //				{
 //					stream->quickText = 1;
 //				}
+				__stdio_chkmagic(stream);
 				return (s);
 			}
 		}
@@ -2465,10 +2522,12 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 			if ((u - s) <= 1)
 			{
 				stream->eofInd = 1;
+				__stdio_chkmagic(stream);
 				return (NULL);
 			}
 			else
 			{
+				__stdio_chkmagic(stream);
 				return (s);
 			}
 		}
@@ -2563,6 +2622,7 @@ __PDPCLIB_API__ int fseek(FILE *stream, long int offset, int whence)
 	stream->quickBin = 0;
 	stream->quickText = 0;
 	stream->ungetCh = -1;
+	__stdio_chkmagic(stream);
 	return (0);
 }
 
@@ -2665,6 +2725,9 @@ __PDPCLIB_API__ int setvbuf(FILE *stream, char *buf, int mode, size_t size)
 		free(stream->intBuffer);
 	}
 	stream->intBuffer = mybuf;
+	*(u16 *)stream->intBuffer=0x1234;
+	*(u16 *)(stream->intBuffer+(size+6))=0x4321;
+
 	stream->fbuf = stream->intBuffer + 2;
 	*stream->fbuf++ = '\0';
 	*stream->fbuf++ = '\0';

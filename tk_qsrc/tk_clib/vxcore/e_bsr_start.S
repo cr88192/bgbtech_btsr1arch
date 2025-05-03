@@ -47,6 +47,9 @@ _start:
 
 //	xor		r2, r2
 
+	mov		0x0000FFFFFFFFFFFE, r7
+	and		r2, r7, r2
+
 	mov		__tk_saved_vbr, r3
 	mov.q	r2, @r3
 	

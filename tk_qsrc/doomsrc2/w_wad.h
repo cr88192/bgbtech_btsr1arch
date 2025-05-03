@@ -105,6 +105,8 @@ int W_LumpHandle (int lump);
 int W_GetNumForCache (void *ptr);
 
 void*	W_CacheLumpNum (int lump, int tag);
+void *W_CacheLumpHeadNum( int lump, int tag );
+
 void*	W_CacheLumpName (const char* name, int tag);
 void*	W_CacheLumpNameBase (int base, char* name, int tag);
 

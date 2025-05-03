@@ -2732,7 +2732,7 @@ int TK_MutexTryLockB(TKPE_TaskInfo *task, int *mtx, int flag)
 	if(mtxval==0)
 	{
 		_mtx_sync_set(mtx+0, tid);
-		mtcpu=_mtx_sync_setw(mtx+1, cpu);
+		mtcpu=_mtx_sync_setw((s16 *)(mtx+1), cpu);
 		if(mtcpu && (mtcpu!=cpu))
 		{
 			vcfl=((s16 *)mtx)[3];

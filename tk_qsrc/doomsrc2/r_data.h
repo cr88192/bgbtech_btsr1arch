@@ -66,6 +66,8 @@ int R_CheckTextureNumForName (char *name);
 lighttable_t *R_ColormapForLump(int lump, int lvl);
 lighttable_t *R_ColormapRemapForBlend(lighttable_t *cmap);
 
+void R_CheckSpriteLump (int lump);
+
 #endif
 //-----------------------------------------------------------------------------
 //

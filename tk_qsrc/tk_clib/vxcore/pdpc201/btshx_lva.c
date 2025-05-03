@@ -190,6 +190,7 @@ s64 __lva_conv_toi64(u64 val)
 
 	if((val>>62)==2)
 	{
+		f=0;
 		*(u64 *)(&f)=(val<<2);
 		return((s64)(f));
 	}
@@ -226,6 +227,7 @@ double __lva_conv_tof64(u64 val)
 
 	if((val>>62)==2)
 	{
+		f=0;
 		*(u64 *)(&f)=(val<<2);
 		return(f);
 	}

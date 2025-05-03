@@ -547,8 +547,14 @@ Z_ChangeTag2
 	
 	block = (memblock_t *) ( (byte *)ptr - sizeof(memblock_t));
 
+	if(((long)block)&15)
+		__debugbreak();
+
 	if (block->id != ZONEID)
+	{
+		__debugbreak();
 		I_Error ("Z_ChangeTag: freed a pointer without ZONEID");
+	}
 
 	other = block->next;
 

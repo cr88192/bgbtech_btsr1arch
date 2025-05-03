@@ -748,8 +748,9 @@ __va64_arg_l:
 //	bf		__va64_arg_i.L0
 	brge	r29, r28, __va64_arg_i.L0
 	
-	mov		r28, r29
-	add		r10, r29
+//	mov		r28, r29
+//	add		r10, r29
+	add		r10, r28, r29
 	mov.q	(r29), r30
 	add		8, r28
 	mov.l	r28, (r10, 128)
@@ -780,8 +781,9 @@ __va64_arg_x:
 //	bf		__va64_arg_i.L0
 	brge	r29, r28, __va64_arg_x.L0
 
-	mov		r28, r29
-	add		r10, r29
+//	mov		r28, r29
+//	add		r10, r29
+	add		r10, r28, r29
 	mov.q	(r29, 0), r30
 	mov.q	(r29, 8), r31
 	add		16, r28

@@ -119,6 +119,7 @@ int TKSPI_DelayUSec(int us)
 
 #ifdef __BJX2__
 int TKSPI_ReadDataQA(byte *sbuf, byte *ebuf);
+int TKSPI_ReadDataQB(byte *sbuf, byte *ebuf);
 
 __asm {
 TKSPI_ReadDataQA:
@@ -159,6 +160,59 @@ TKSPI_ReadDataQA:
 
 .L1:
 	RTS
+
+#if 1
+TKSPI_ReadDataQB:
+	CMPGT	 R4, R5
+	BF		.L1
+
+	MOV		-1, R16
+	MOV.L	tkspi_ctl_status, R17
+	MOV		0xFFFFF000E030, R18		//CTRL
+	MOV		0xFFFFF000E038, R20		//QDATA0
+	MOV		0xFFFFF000E039, R21		//QDATA1
+	MOV		0xFFFFF000E03A, R22		//QDATA2
+	MOV		0xFFFFF000E03B, R23		//QDATA3
+
+	OR		0x40, R17
+
+.L0:
+//	P_SPI_QDATA=0xFFFFFFFFFFFFFFFFULL;
+//	P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT8X;
+//	v=P_SPI_CTRL;
+//	while(v&SPICTRL_BUSY) 
+//		v=P_SPI_CTRL;
+//	*(u64 *)ct=P_SPI_QDATA;
+//	ct+=8;
+
+	MOV.Q	R16, (R20)
+	MOV.Q	R16, (R21)
+	MOV.Q	R16, (R22)
+	MOV.Q	R16, (R23)
+	MOV.L	R17, (R18)
+
+	.L3:
+	MOVU.L	(R18), R2
+	TEST	2, R2
+	BF		.L3
+			
+	MOV.Q	(R20), R2
+	MOV.Q	(R21), R3
+	MOV.Q	R2, (R4, 0)
+	MOV.Q	R3, (R4, 8)
+	MOV.Q	(R22), R2
+	MOV.Q	(R23), R3
+	MOV.Q	R2, (R4, 16)
+	MOV.Q	R3, (R4, 24)
+
+	ADD		32, R4
+
+	CMPGT	 R4, R5
+	BT		.L0
+
+.L1:
+	RTS
+#endif
 };
 #endif
 
@@ -249,7 +303,14 @@ int TKSPI_ReadData(byte *buf, u32 len)
 	if(!(len&7))
 	{
 #ifdef __BJX2__
-		TKSPI_ReadDataQA(ct, cte);
+		if(!(len&31))
+		{
+			TKSPI_ReadDataQB(ct, cte);
+		}
+		else
+		{
+			TKSPI_ReadDataQA(ct, cte);
+		}
 #else
 		while(n>0)
 //		while(ct<cte)

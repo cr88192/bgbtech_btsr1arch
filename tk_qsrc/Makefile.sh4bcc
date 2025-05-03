@@ -31,7 +31,8 @@ TK_LDFL= $(TK_CFL)
 BASE_CFLAGS=-Itk_clib/include -Ltk_clib
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS) -mBSR1
-LDFLAGS=$(TK_LDFL) -lvxcore
+# LDFLAGS=$(TK_LDFL) -lvxcore
+LDFLAGS=$(TK_LDFL) -lc
 
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2E
 # CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -Zz -fnowexj -fnowexify -fnofmovs
@@ -50,10 +51,11 @@ LDFLAGS=$(TK_LDFL) -lvxcore
 #	-fvskglobal # -fdobounds
 
 CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
-	-fptropt0 -fnoexcept \
+	-fptropts -fnoexcept \
 	-fxgpr_abi -fnoshuffle -fxg2mode \
 	-fpbostatic \
-	-fvskglobal # -fdobounds
+	-fnovsk -fldgbr -fjcmp -fleagbr -fcmp3r -frsub -fqmul -fldimi
+#	-fvskglobal # -fdobounds
 
 # -fnovsk
 # -ffpu_fpimm -fldtex 
@@ -78,7 +80,8 @@ CFLAGS64=$(TK_CFL) $(BASE_CFLAGS) -mBJX2 -O2 -fwex3w -fwexj -Zz \
 # LDFLAGS64=$(TK_LDFL) -lvxcore64 -ltkgdi
 LDFLAGS64=$(TK_LDFL) -lc -ltkgdi -ltkgl
 
-LDFLAGS64_DHRY=$(TK_LDFL) -lvxcore64 -ltkgdi
+# LDFLAGS64_DHRY=$(TK_LDFL) -lvxcore64 -ltkgdi
+LDFLAGS64_DHRY=$(TK_LDFL) -lc # -ltkgdi
 
 GL_CFLAGS64	= $(CFLAGS64) /DGLQUAKE
 

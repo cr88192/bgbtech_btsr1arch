@@ -131,7 +131,19 @@ int ExpandTics (int low)
 	delta = low - (maketic&0xff);
 		
 	if (delta >= -64 && delta <= 64)
+	{
+//		__debugbreak();
 		return (maketic&~0xff) + low;
+	}
+
+	if (delta >= -64)
+	{
+		if(delta <= 64)
+		{
+			__debugbreak();
+		}
+	}
+
 	if (delta > 64)
 		return (maketic&~0xff) - 256 + low;
 	if (delta < -64)

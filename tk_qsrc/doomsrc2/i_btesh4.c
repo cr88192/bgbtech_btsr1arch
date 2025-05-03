@@ -182,6 +182,8 @@ byte* I_ZoneBase (int*	size)
     *size = mb_used*1024*1024;
     ptr = (byte *) malloc (*size);
     
+    memset(ptr, 0, *size);
+    
     if(((long)ptr)&15)
 		__debugbreak();
     

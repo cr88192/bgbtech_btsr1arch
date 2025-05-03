@@ -83,6 +83,8 @@ tk_ports/Q3Src/baseq3_1/*
 tk_ports/Q3Src/demoq3/*
 
 tk_qsrc/tk_clib/vxcore/tkrast_*
+tk_qsrc/tk_clib/vxcore/dump/*
+tk_qsrc/tk_clib/vxcore/tk_rsrc/paldith8_*
 
 tk_ports/RottSrc/w3d2rott/w3d_base/*
 tk_ports/Wolf3D/*

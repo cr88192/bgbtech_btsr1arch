@@ -231,6 +231,8 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 	if(cat&(~7))
 		__debugbreak();
 
+	ptr=NULL;
+
 	if(sz>=TKMM_MAXMMLISTSZ)
 	{
 //		if(sz>=(1<<25))
@@ -395,7 +397,12 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 
 		if(((long)(brkbuf))&15)
 			__debugbreak();
-		
+
+		if(brkbuf<ptr)
+			__debugbreak();
+		if(brkbuf>ptr)
+			__debugbreak();
+
 		TKMM_MMList_MProtectCat(
 			brkbuf,
 			1<<TKMM_BRKBITS,
@@ -422,6 +429,9 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 		
 		if((long)(brkpos)&15)
 			__debugbreak();
+
+		if(brkpos<=ptr)
+			__debugbreak();
 		
 		seg->nblk=0;
 
@@ -433,8 +443,17 @@ void *TKMM_MMList_AllocBrkCat(int sz, int cat)
 	seg=(TKMM_MemLnkSeg *)(brkbuf);
 	
 	ptr=brkpos;
+
+	if(brkpos<ptr)
+		__debugbreak();
+	if(brkpos>ptr)
+		__debugbreak();
+
 	brkpos=ptr+sz;
 	tkmm_mmlist_brkpos_c[cat]=brkpos;
+
+	if(brkpos<=ptr)
+		__debugbreak();
 
 	if(((long)(ptr))&15)
 		__debugbreak();
@@ -732,6 +751,9 @@ int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj)
 	}
 
 	if((obj->cat)&(~7))
+		__debugbreak();
+
+	if(obj->fl&1)
 		__debugbreak();
 
 //	freelist=tkmm_mmlist_freelist;

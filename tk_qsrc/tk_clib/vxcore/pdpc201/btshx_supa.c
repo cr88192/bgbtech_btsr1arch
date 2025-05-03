@@ -940,7 +940,19 @@ u64 TK_GetTimeUs(void)
 }
 #endif
 
-#ifndef __BJX2__
+#ifdef __RISCV__
+u64 TK_GetTimeUs(void);
+
+__asm {
+TK_GetTimeUs:
+	CSRR	0xFDC, R10
+//	BREAK
+	RTS
+};
+#endif
+
+// #ifndef __BJX2__
+#if !defined(__BJX2__) && !defined(__RISCV__)
 s64 TK_GetTimeUs(void)
 {
 #if 1
@@ -1181,14 +1193,33 @@ int tk_mgetzone(void *ptr);
 int tk_msezone(void *ptr, int sz);
 int tk_mfreezone(int ztag, int zmask);
 
+static void *tk_start_realloctest = tk_realloc;
 
 int __start_early()
 {
+	void *p;
+
 	TKMM_Init();
+
 	_malloc_fptr=(void *(*)(size_t, int))tk_malloc_cat;
 	_free_fptr=(void (*)(void *))tk_free;
 	_realloc_fptr=(void *(*)(void *, size_t))tk_realloc;
 	_msize_fptr=(size_t (*)(void *))tk_msize;
+
+#if 0
+	if(((u64)tk_start_realloctest)&1)
+	{
+		if(!(((u64)_malloc_fptr)&1))
+		{
+			__debugbreak();
+		}
+	}
+#endif
+
+//	p=tk_malloc_cat;	_malloc_fptr=p;
+//	p=tk_free;			_free_fptr=p;
+//	p=tk_realloc;		_realloc_fptr=p;
+//	p=tk_msize;			_msize_fptr=p;
 	
 	_mgetbase_fptr=tk_mgetbase;
 	_mfreezone_fptr=tk_mfreezone;
@@ -1197,6 +1228,21 @@ int __start_early()
 	_msettag_fptr=tk_msettag;
 	_mgetzone_fptr=tk_mgetzone;
 	_msetzone_fptr=tk_msetzone;
+	
+#if 0
+	if(((u64)_mgettag_fptr)&1)
+	{
+		if(!(((u64)_malloc_fptr)&1))
+		{
+			__debugbreak();
+		}
+
+		if(!(((u64)_realloc_fptr)&1))
+		{
+			__debugbreak();
+		}
+	}
+#endif
 	
 	return(0);
 }

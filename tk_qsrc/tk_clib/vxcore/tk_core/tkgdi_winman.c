@@ -15,6 +15,7 @@ int tkgdi_vid_bxs;
 int tkgdi_vid_bys;
 
 int tkgdi_vid_bmxsize;
+int tkgdi_vid_bmsize;
 
 u64 *tkgdi_vid_screenutx;		//screen UTX2 buffer
 u64 *tkgdi_vid_screenrgb;		//screen RGB buffer
@@ -156,6 +157,9 @@ int TKGDI_UpdateWindowCells(
 int TKGDI_ScreenMarkDirty(void)
 {
 	int xs, ys, bxs, bys, bxs2, bys2, bmsz;
+
+	if(!tkgdi_vid_screendirty)
+		return(0);
 
 	xs=tkgdi_vid_xsize;
 	ys=tkgdi_vid_ysize;
@@ -1016,6 +1020,9 @@ int TKGDI_UpdateWindowStack(void)
 	bmxs2=tkgdi_vid_bmxsize<<3;
 	bmsz=tkgdi_vid_bmxsize*bys2;
 	
+	if(tkgdi_vid_bmsize!=bmsz)
+		tkgdi_vid_screendirty=NULL;
+	
 //	tk_printf("TKGDI_UpdateWindowStack: %d %d\n",
 //		tkgdi_vid_bmxsize, bmsz);
 	
@@ -1030,6 +1037,7 @@ int TKGDI_UpdateWindowStack(void)
 		tkgdi_vid_screendirty=tk_malloc_krn(bmsz+(16*tkgdi_vid_bmxsize));
 		tkgdi_vid_screendirty+=8*tkgdi_vid_bmxsize;
 		memset(tkgdi_vid_screendirty, 0xFF, bmsz);
+		tkgdi_vid_bmsize=bmsz;
 	}
 	
 	

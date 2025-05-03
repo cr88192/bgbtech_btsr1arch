@@ -8,7 +8,7 @@
 CC=gcc
 # CC=clang
 
-CFLAGS=-I. -O3 -fPIC
+CFLAGS=-I. -Os -fPIC -ffunction-sections -fdata-sections -Wl,-gc-sections
 # CFLAGS=-I. -g -Os -Wextra
 # CFLAGS=-I. -g
 # CFLAGS=/I. /Os

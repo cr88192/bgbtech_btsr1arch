@@ -614,6 +614,7 @@ void R_Subsector (int num)
 
 
 
+int r_subseccnt;
 
 //
 // RenderBSPNode
@@ -632,6 +633,7 @@ void R_RenderBSPNode (int bspnum)
 			R_Subsector (0);
 		else
 			R_Subsector (bspnum&(~NF_SUBSECTOR));
+		r_subseccnt++;
 		return;
 	}
 		
@@ -646,6 +648,14 @@ void R_RenderBSPNode (int bspnum)
 	// Possibly divide back space.
 	if (R_CheckBBox (bsp->bbox[side^1]))	
 		R_RenderBSPNode (bsp->children[side^1]);
+	
+//	if(r_subseccnt>=256)
+	if(r_subseccnt>=3)
+	{
+//		tk_printf("R_RenderBSPNode: Mus Fine Tick\n");
+		I_MusicFineTick();
+		r_subseccnt=0;
+	}
 }
 
 

@@ -576,6 +576,8 @@ Restricted CRAM Subset:
 Excludes all non-2-color blocks.
 No skip blocks, no 8 color blocks.
 Effectively, turning it into fixed color-cells.
+
+Change: Allow for flat color blocks.
  */
 
 void TKGDI_CopyPixelSpan_RowCnvCRAM8to15(
@@ -600,6 +602,20 @@ void TKGDI_CopyPixelSpan_RowCnvCRAM8to15(
 		px=*((u16 *)cs);
 		ca=cs[2];		cb=cs[3];
 		ca=pal[ca];		cb=pal[cb];
+
+		if(px&0x8000)
+		{
+			p0=((px>>8)&0xFC);
+			if(p0==0x80)
+			{
+				ca=px&255;
+				cb=ca;
+				cs+=2;
+			}
+		}else
+		{
+			cs+=4;
+		}
 		
 		if(px&0x0001)	{ p0=ca; } else { p0=cb; }
 		if(px&0x0002)	{ p1=ca; } else { p1=cb; }
@@ -626,7 +642,6 @@ void TKGDI_CopyPixelSpan_RowCnvCRAM8to15(
 		ct3[0]=p0;		ct3[1]=p1;
 		ct3[2]=p2;		ct3[3]=p3;
 		
-		cs+=4;
 		ct0+=4;		ct1+=4;
 		ct2+=4;		ct3+=4;
 	}
@@ -654,6 +669,20 @@ void TKGDI_CopyPixelSpan_RowCnvCRAM16to15(
 		px=((u16 *)cs)[0];
 		ca=((u16 *)cs)[1];
 		cb=((u16 *)cs)[2];
+
+		if(px&0x8000)
+		{
+			p0=((px>>8)&0xFC);
+			if((p0==0x80) || (p0==0x88))
+			{
+				ca=px;
+				cb=ca;
+				cs+=2;
+			}
+		}else
+		{
+			cs+=6;
+		}
 
 		ca=(ca&0x03E0)|((ca<<10)&0x7C00)|((ca>>10)&0x001F);
 		cb=(cb&0x03E0)|((cb<<10)&0x7C00)|((cb>>10)&0x001F);
@@ -683,7 +712,6 @@ void TKGDI_CopyPixelSpan_RowCnvCRAM16to15(
 		ct3[0]=p0;		ct3[1]=p1;
 		ct3[2]=p2;		ct3[3]=p3;
 		
-		cs+=6;
 		ct0+=4;		ct1+=4;
 		ct2+=4;		ct3+=4;
 	}

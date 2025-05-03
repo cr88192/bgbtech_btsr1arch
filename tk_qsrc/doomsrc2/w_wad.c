@@ -62,6 +62,7 @@ int			numlumps;
 int			lumphash[64];
 
 void		**lumpcache;
+void		**lumpcache_head;
 extern void		**patchcache;
 extern void		**utxcache;
 
@@ -82,7 +83,13 @@ void w_strupr_n (char *t, const char *s, int n)
 		{ __debugbreak(); }
 	if(toupper('a')!='A')
 		{ __debugbreak(); }
-	
+	if(toupper('z')!='Z')
+		{ __debugbreak(); }
+	if(toupper('A')!='A')
+		{ __debugbreak(); }
+	if(toupper('Z')!='Z')
+		{ __debugbreak(); }
+
 	for(i=0; *s && (i<n); i++)
 		{ *t++ = toupper(*s++); }
 	for(; i<n; i++)
@@ -293,6 +300,9 @@ void W_AddFile (char *filename)
 	wad2lump_t		*wad2info;
 	int			storehandle, lumps0;
 	
+//	header.numlumps=0;
+//	__debugbreak();
+
 	// open the file and add to directory
 
 	// handle reload indicator.
@@ -303,14 +313,22 @@ void W_AddFile (char *filename)
 		reloadlump = numlumps;
 	}
 		
+	i=*filename;
+	if((i<' ') || (i>'~'))
+		__debugbreak();
+
 //	if ( (handle = open (filename,O_RDONLY | O_BINARY)) == -1)
 	if ( (handle = w_open (filename, "rb")) == -1)
 	{
 		printf (" couldn't open %s\n",filename);
 		return;
 	}
+	
+	i=*filename;
+	if((i<' ') || (i>'~'))
+		__debugbreak();
 
-	printf (" adding %s\n",filename);
+	printf (" adding %s\n", filename);
 	startlump = numlumps;
 	
 	fileinfo = NULL;
@@ -378,9 +396,13 @@ void W_AddFile (char *filename)
 			
 			printf("    IW1 wlumps=%d\n",
 				header.numlumps);
+
+			if(header.numlumps!=lumps0)
+				__debugbreak();
 			
 			length = header.numlumps*sizeof(filelump_t);
-			fileinfo = malloc (length);
+//			fileinfo = malloc (length);
+			fileinfo = malloc (length * 2);
 
 			if(header.numlumps!=lumps0)
 				__debugbreak();
@@ -445,6 +467,11 @@ void W_AddFile (char *filename)
 #endif
 	}
 
+	if(startlump>=numlumps)
+		__debugbreak();
+
+//	if(startlump)
+//		__debugbreak();
 	
 	// Fill in lumpinfo
 	lumpinfo = realloc (lumpinfo, numlumps*sizeof(lumpinfo_t));
@@ -452,8 +479,15 @@ void W_AddFile (char *filename)
 	if (!lumpinfo)
 		I_Error ("Couldn't realloc lumpinfo");
 
+	printf("sizeof(*lump_p)=%d\n", sizeof(*lump_p));
+
 //	lump_p = &lumpinfo[startlump];
 	lump_p = lumpinfo + startlump;
+
+	memset(lump_p, 0, (numlumps-startlump)*sizeof(*lump_p));
+
+//	if(lump_p!=lumpinfo)
+//		__debugbreak();
 	
 	storehandle = reloadname ? -1 : handle;
 	
@@ -461,6 +495,7 @@ void W_AddFile (char *filename)
 	{
 		for (i=startlump ; i<numlumps ; i++, lump_p++, wad2info++)
 		{
+//			memset(lump_p, 0, sizeof(*lump_p));
 			lump_p->handle = handle;
 			lump_p->position = LONG(wad2info->filepos);
 			lump_p->size = LONG(wad2info->dsize);
@@ -469,23 +504,38 @@ void W_AddFile (char *filename)
 			lump_p->cmp = wad2info->cmp;
 //			strncpy (lump_p->name, wad2info->name, 8);
 			w_strupr_n (lump_p->name, wad2info->name, 16);
+
+			if(!lump_p->name[0])
+				__debugbreak();
 		}
 	}else
 	{
 	//	for (i=startlump ; i<numlumps ; i++,lump_p++, fileinfo++)
 		for (i=startlump ; i<numlumps ; i++)
 		{
-			memset(lump_p, 0, sizeof(*lump_p));
+//			memset(lump_p, 0, sizeof(*lump_p));
 			lump_p->handle = storehandle;
 			lump_p->position = LONG(fileinfo->filepos);
 			lump_p->size = LONG(fileinfo->size);
 			lump_p->csize = LONG(fileinfo->size);
-			strncpy (lump_p->name, fileinfo->name, 8);
+			lump_p->ety = 0;
+			lump_p->cmp = 0;
+//			strncpy (lump_p->name, fileinfo->name, 8);
+			memcpy (lump_p->name, fileinfo->name, 8);
+			
+			if(!lump_p->name[0])
+				__debugbreak();
+			
 			lump_p++;
 			fileinfo++;
 		}
 	}
 
+	if(!lumpinfo->name[0])
+		__debugbreak();
+	if(!lumpinfo[1].name[0])
+		__debugbreak();
+	
 	printf("    numlumps=%d\n",
 		numlumps);
 	
@@ -778,6 +828,121 @@ int W_DecodeBufferRP2(
 	
 	while(1)
 //	while(cs<cse)
+	{
+		t0=*(u64 *)cs;
+//		memcpy(&t0, cs, sizeof(u64));
+		if(!(t0&0x01))
+		{
+			cs+=2;
+			rl=(t0>>1)&7;
+			l=((t0>>4)&7)+3;
+			d=(t0>>7)&511;
+		}else
+			if(!(t0&0x02))
+		{
+			cs+=3;
+			rl=(t0>>2)&7;
+			l=((t0>>5)&63)+4;
+			d=(t0>>11)&8191;
+		}else
+			if(!(t0&0x04))
+		{
+			cs+=4;
+			rl=(t0>>3)&7;
+			l=((t0>>6)&511)+4;
+			d=(t0>>15)&131071;
+		}else
+			if(!(t0&0x08))
+		{
+			cs++;
+			t1=(t0>>4)&15;
+//			rl=(t1+1)*8;
+			rl=(t1+1)<<3;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x10))
+		{
+			/* Long Match */
+//			__debugbreak();
+
+			cs++;
+			rl=(t0>>5)&7;
+			t1=t0>>8;
+			if(!(t1&1))
+				{ l=((t1>>1)&0x007F)+4; cs+=1; t2=t0>>16; }
+			else
+				{ l=((t1>>2)&0x3FFF)+4; cs+=2; t2=t0>>24; }
+			if(!(t2&1))
+				{ d=((t2>>1)&0x007FFF); cs+=2; }
+			else
+				{ d=((t2>>2)&0x3FFFFF); cs+=3; }
+		}else
+			if(!(t0&0x20))
+		{
+			cs++;
+			rl=(t0>>6)&3;
+			if(!rl)break;
+			*(u32 *)ct=*(u32 *)cs;
+//			memcpy(ct, cs, sizeof(u32));
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+			if(!(t0&0x40))
+		{
+			/* Long Raw */
+			cs+=2;
+			t1=(t0>>7)&511;
+//			rl=(t1+1)*8;
+			rl=(t1+1)<<3;
+			W_RawCopyB(ct, cs, rl);
+			cs+=rl;
+			ct+=rl;
+			continue;
+		}else
+		{
+			rl=0; l=0; d=0;
+			__debugbreak();
+		}
+		
+		if(!d)
+			__debugbreak();
+
+		*(u64 *)ct=*(u64 *)cs;
+//		memcpy(ct, cs, sizeof(u64));
+		cs+=rl;
+		ct+=rl;
+		W_MatchCopy2(ct, l, d);
+		ct+=l;
+	}
+	
+	return(ct-obuf);
+}
+#endif
+
+
+// #ifndef __BJX2__
+// #if 0
+#if 1
+int W_DecodeBufferRP2_S(
+	byte *ibuf, byte *obuf, int ibsz, int obsz)
+{
+	u32 tag;
+	byte *cs, *ct, *cse, *cte;
+//	int pl, pd;
+	int rl, l, d;
+	u64 t0;
+	u64 t1, t2;
+	
+	cs=ibuf; cse=ibuf+ibsz;
+	ct=obuf; cte=obuf+obsz;
+//	pl=0; pd=0;
+	
+//	while(1)
+	while((cs<cse) && (ct<cte))
 	{
 		t0=*(u64 *)cs;
 //		memcpy(&t0, cs, sizeof(u64));
@@ -1215,20 +1380,52 @@ int W_HashIndexForName(char *s)
 void W_InitMultipleFiles (char** filenames)
 {	
 	lumpinfo_t*		lump_p;
+	char			*s0;
 	int		size;
 	int		i, j, h;
+
+	for (i=0; filenames[i]; i++)
+	{
+		s0=filenames[i];
+		j=*s0;
+		if((j<=' ') || (j>'~'))
+			__debugbreak();
+	}
+	
+	printf("W_InitMultipleFiles: A-1\n");
 	
 	// open all the files, load headers, and count lumps
 	numlumps = 0;
 
 	// will be realloced as lumps are added
-	lumpinfo = malloc(1);	
+//	lumpinfo = malloc(1);	
+	lumpinfo = malloc(256);	
 
-	for ( ; *filenames ; filenames++)
-		W_AddFile (*filenames);
+//	for ( ; *filenames ; filenames++)
+//		W_AddFile (*filenames);
+
+	for (i=0; filenames[i]; i++)
+	{
+		s0=filenames[i];
+		j=*s0;
+		if((j<=' ') || (j>'~'))
+			__debugbreak();
+
+//		W_AddFile (filenames[i]);
+		W_AddFile (s0);
+	}
+
+	printf("W_InitMultipleFiles: A-2\n");
 
 	if (!numlumps)
 		I_Error ("W_InitFiles: no files found");
+
+	if(!lumpinfo->name[0])
+		__debugbreak();
+
+	if(!lumpinfo[1].name[0])
+		__debugbreak();
+	
 	
 	printf("W_InitFiles: numlumps=%d\n", numlumps);
 	
@@ -1246,12 +1443,25 @@ void W_InitMultipleFiles (char** filenames)
 		lump_p->chain = lumphash[h];
 		lumphash[h] = i;
 	}
+
+	if(!lumpinfo->name[0])
+		__debugbreak();
+
+	if(!lumpinfo[1].name[0])
+		__debugbreak();
 	
+	if(W_GetNumForName("PNAMES")<0)
+	{
+//		W_PrintLumps();
+		__debugbreak();
+	}
+
 	// set up caching
 //	size = numlumps * sizeof(*lumpcache);
 //	size = (numlumps + 64) * sizeof(*lumpcache);
 	size = (numlumps + 64) * sizeof(void *);
 	lumpcache = malloc (size);
+	lumpcache_head = malloc (size);
 	patchcache = malloc (size);
 	utxcache = malloc (size);
 	
@@ -1259,8 +1469,14 @@ void W_InitMultipleFiles (char** filenames)
 		I_Error ("Couldn't allocate lumpcache");
 
 	memset (lumpcache,0, size);
+	memset (lumpcache_head,0, size);
 	memset (patchcache,0, size);
 	memset (utxcache,0, size);
+	
+	if(W_GetNumForName("PNAMES")<0)
+	{
+		__debugbreak();
+	}
 }
 
 
@@ -1406,10 +1622,9 @@ int W_CheckNumForNameBase (int base, const char* name)
 int W_CheckNumForNameBase (int base, const char* name)
 {
 	union {
-//	char	s[9];
-	char	s[20];
-	u64		x[2];
-	
+//		char	s[9];
+		char	s[20];
+		u64		x[2];
 	} name8;
 	
 	u64		v1;
@@ -1419,7 +1634,10 @@ int W_CheckNumForNameBase (int base, const char* name)
 	char		*s;
 
 	if(base <= 0)
+	{
+		__debugbreak();
 		return(-1);
+	}
 
 	// make the name into two integers for easy compares
 //	strncpy (name8.s,name,8);
@@ -1477,6 +1695,10 @@ int W_CheckNumForNameBase (int base, const char* name)
 #if 1
 	if(i == -999)
 	{
+		printf("W_CheckNumForNameBase: Search Hash-Chain Error\n");
+
+//		if(base!=numlums)
+
 		// scan backwards so patch lump files take precedence
 	//	lump_p = lumpinfo + numlumps;
 		lump_p = lumpinfo + base;
@@ -1744,8 +1966,85 @@ W_ReadLump
 	// ??? I_EndRead ();
 }
 
+int W_ReadLumpHead( int lump, void *dest )
+{
+	static void *tbuf=NULL;
+	static byte	*tdbuf=NULL;
+	static byte	*tcbuf=NULL;
+	static int		tcsize;
+	static int		tdsize;
+	byte *ct;
+	int n;
+	
+	int		c, csz, ofs, ofs1, ofs2;
+	lumpinfo_t*	l;
+	int		handle;
+
+	if (lump < 0)
+		I_Error ("W_ReadLump: %i < 0",lump);
+	
+	if (lump >= numlumps)
+		I_Error ("W_ReadLump: %i >= numlumps (%i)", lump, numlumps);
+
+	l = lumpinfo+lump;
+	
+	if (l->handle == -1)
+	{
+		return(-1);
+	}
+	else
+		handle = l->handle;
+
+	if(l->cmp)
+	{
+		if(!tcbuf)
+			tcbuf=malloc(128);
+		if(!tdbuf)
+			tdbuf=malloc(1024);
+	
+		w_lseek (l->handle, l->position, SEEK_SET);
+		c = w_read (l->handle, tcbuf, 96);
+		if (c < l->csize)
+			I_Error ("W_ReadLump: only read %i of %i on lump %i",
+				c,l->csize,lump);
+		if(l->cmp==3)
+		{
+			W_DecodeBufferRP2_S(tcbuf, tdbuf, 64, 768);
+			memcpy(dest, tdbuf, 64);
+			return(1);
+		}
+		else if(l->cmp==4)
+		{
+//			W_DecodeBufferLZ4(tcbuf, dest, l->csize, l->size);
+			W_DecodeBufferLZ4(tcbuf, tdbuf, 64, 768);
+			memcpy(dest, tdbuf, 64);
+			return(1);
+		}
+		
+//		return(1);
+		return(-1);
+	}
+
+	w_lseek (handle, l->position, SEEK_SET);
+	c = w_read (handle, dest, 64);
+
+	if (l->handle == -1)
+		w_close (handle);
+	return(1);
+}
 
 
+
+void W_CheckZonePointerSane(void *ptr)
+{
+	long long pb;
+	
+	pb=(long long)ptr;
+	if((pb&15) || (pb>>48))
+	{
+		__debugbreak();
+	}
+}
 
 //
 // W_CacheLumpNum
@@ -1783,11 +2082,56 @@ W_CacheLumpNum
 	}
 	else
 	{
+		ptr = lumpcache[lump];
+		W_CheckZonePointerSane(ptr);
+
 		//printf ("cache hit on lump %i\n",lump);
 		Z_ChangeTag (lumpcache[lump],tag);
 	}
 	
 	return lumpcache[lump];
+}
+
+void *W_CacheLumpHeadNum( int lump, int tag )
+{
+	byte*	ptr;
+	int		sz, rt;
+
+	if(lump < 0)
+		return(NULL);
+
+	if(tag == PU_CACHE)		//BGB
+		tag = PU_CACHELUMP;
+
+	if ((unsigned)lump >= numlumps)
+		I_Error ("W_CacheLumpHeadNum: %i >= numlumps",lump);
+		
+	if (!lumpcache_head[lump])
+	{
+		// read the lump in
+		
+		//printf ("cache miss on lump %i\n",lump);
+		sz = W_LumpLength (lump);
+		if(sz<=64)
+		{
+			return(W_CacheLumpNum(lump, tag));
+		}
+		
+		ptr = Z_Malloc (64, tag, &lumpcache_head[lump]);
+		rt=W_ReadLumpHead(lump, lumpcache_head[lump]);
+		
+		if(rt<0)
+		{
+			return(W_CacheLumpNum(lump, tag));
+		}
+	}
+	else
+	{
+		//printf ("cache hit on lump %i\n",lump);
+		Z_ChangeTag (lumpcache_head[lump],tag);
+	}
+	
+	return lumpcache_head[lump];
 }
 
 int W_GetNumForCache (void *ptr)

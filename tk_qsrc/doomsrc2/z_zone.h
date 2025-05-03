@@ -103,6 +103,7 @@ typedef struct memblock_s
 } memblock_t;
 #endif
 
+#if 0
 //
 // This is used to get the local FILE:LINE info from CPP
 // prior to really call the function in question.
@@ -113,7 +114,9 @@ typedef struct memblock_s
 	  I_Error("Z_CT at "__FILE__":%i",__LINE__); \
 	  Z_ChangeTag2(p,t); } \
 };
+#endif
 
+#define Z_ChangeTag(p,t) Z_ChangeTag2(p,t);
 
 
 #endif
