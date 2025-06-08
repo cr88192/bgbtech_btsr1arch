@@ -1,0 +1,55 @@
+X3VM will be a "userland only" interpreter/emulator.
+* Will assume running RV64G and XG3
+* XG3 can exist alongside RV64G in the same encoding space.
+** But, eats the encoding space otherwise used for the RV 'C' extension.
+* This isn't intended for standalone use, rather for use as a script VM.
+** Most likely, used within another program.
+
+The guest will communicate with the host over syscalls.
+* Will use the RV "ECALL" instruction.
+
+This will use PE or PEL4 images the same as used in TestKern (and produced by BGBCC).
+
+Could potentially make sense to have an ELF loader as well.
+
+
+This VM will natively use a 46 bit address space with a 16K page size.
+* However, pointers will still assume 48 address bits.
+
+The high 16 bits of pointers are to be ignored for most memory load/store operations.
+
+The high 16 bits of PC and LR may be used to hold mode bits:
+* (63:56): U-Bits or Key
+* (55:50): ISA Mode
+* (   49): S
+* (   48): T (Predication Control)
+
+ISA Modes:
+* 0/1: XG1 (Unused in this VM)
+* 2: RV64G / RV64GC
+* 3: RV64G + XG3
+
+
+
+=== Syscalls ===
+
+Where, the syscalls will have a form:
+* X10: Object (NULL for plain syscalls)
+* X11: Syscall Number
+** 0x1000-0x11FF: Normal Syscalls.
+** 0x1200-0x13FF: Method-Call Numbers (COM like)
+* X12: Return-Value Pointer (Typical)
+* X13: Syscall/Method Argument List (Typical)
+* X14..X16: Unused for now, set to 0.
+* X17: Holds -1
+** Values of 0 or above are reserved for Linux-style syscalls.
+** Where, Linux style syscalls use X10..X15 for arguments, and X17 for number.
+
+The argument list will generally hold between 0 and 16 arguments, each represented as 64 bits. For now, will assume a limit of 16 arguments.
+
+Note that for COM style calls, argument 0 will be used for the object pointer. The same object pointer is to be passed in X10. In this case, the method call number encodes the logical index into the object's vtable. The meaning of this method index will depend on the object being called.
+
+Note that an object in this case will typically consist of a data area holding a pointer to a vtable. The first 4 entries of the vtable are typically reserved/unused, with the rest of the vtable holding methods. Each method will have the first argument as a 'this' pointer for the object being called.
+
+A syscall will be used to fetch an interface from the host, with the ID given as a pair of 64-bit values. The pair may be understood as a FOURCC pair, SIXTEENCC, or GUID, depending mostly on contents.
+

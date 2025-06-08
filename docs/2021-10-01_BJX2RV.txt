@@ -46,7 +46,7 @@ With both low-order bits set, the mode bits will be restored similar to what hap
 
 === FPU ===
 
-The FPU will follow a variation of Zfinx/Zdinx rules:
+(Drop) The FPU will follow a variation of Zfinx/Zdinx rules:
 * FPU Operations will take place in GPRs.
 * The FDIV and FSQRT operations will be omitted.
 * Floating point Load/Store will be Omitted.
@@ -58,6 +58,27 @@ FPU Rounding Modes:
 * 001: RTZ (Round Towards Zero)
 * 010: RDN (Round Down)
 * 011: RUP (Round Up)
+
+(Change) The FPU will be implemented mostly as defined in the F/D extensions.
+* Denormal is Zero.
+* Will implement Zfh.
+* Half and Single operations are not required to NaN box.
+** For scalar operations, high bits are undefined / ignored.
+** For SIMD operations, they represent other members.
+
+
+=== CSRs ===
+
+Custom CSRs:
+* 0x7C0..0x7FF: C0..C63
+* 0xBC0..0xBFF: R0..R63
+* 0xFC0..0xFFF: CPUID 0..63
+
+CPUID CSRs:
+* FC0: Core ID / Features
+* FDC: Microsecond Timer (1MHz, Undefined Epoch)
+* FDE: Cycle Counter (CPU Local)
+* FDF: Random Number Generator
 
 
 === Instruction Listing ===
