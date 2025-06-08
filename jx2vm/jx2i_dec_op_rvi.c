@@ -204,9 +204,9 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			
 			sub4op=(jbits>>12)&15;
 
-			rn_fr=rn_dfl;
-			rm_fr=rm_dfl;
-			ro_fr=ro_dfl;
+//			rn_fr=rn_dfl;
+//			rm_fr=rm_dfl;
+//			ro_fr=ro_dfl;
 		}
 	}
 	
@@ -252,6 +252,16 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 //			case 5:		ro_dfl=BJX2_REG_DHR;	break;
 			case 14:	ro_dfl=BJX2_REG_R2;		break;
 			case 15:	ro_dfl=BJX2_REG_R3;		break;
+		}
+	}
+
+	if(jbits&0x02000000U)
+	{
+		if(jbits&0x01000000U)
+		{
+			rn_fr=rn_dfl;
+			rm_fr=rm_dfl;
+			ro_fr=ro_dfl;
 		}
 	}
 
@@ -1908,9 +1918,11 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			break;
 
 		case 1:
-			op->nmid=BJX2_NMID_SHLD;
+//			op->nmid=BJX2_NMID_SHLD;
+			op->nmid=BJX2_NMID_SHAD;
 			op->fmid=BJX2_FMID_REGIMMREG;
-			op->Run=BJX2_Op_SHLD_RegImmReg;
+//			op->Run=BJX2_Op_SHLD_RegImmReg;
+			op->Run=BJX2_Op_SHAD_RegImmReg;
 			break;
 
 		case 5:
@@ -2059,9 +2071,10 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 			switch((opw>>25)&127)
 			{
 			case 0x00:
-				op->nmid=BJX2_NMID_SHLD;
+//				op->nmid=BJX2_NMID_SHLD;
+				op->nmid=BJX2_NMID_SHAD;
 				op->fmid=BJX2_FMID_REGREGREG;
-				op->Run=BJX2_Op_SHLD_RegRegReg;
+				op->Run=BJX2_Op_SHAD_RegRegReg;
 				break;
 			}
 			break;

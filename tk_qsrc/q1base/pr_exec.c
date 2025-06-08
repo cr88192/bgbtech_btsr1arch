@@ -376,7 +376,8 @@ int PR_LeaveFunction (void)
 PR_ExecuteProgram
 ====================
 */
-void PR_ExecuteProgram (func_t fnum)
+// void PR_ExecuteProgram (func_t fnum)
+void PR_ExecuteProgramLln (func_t fnum, char *fn, int ln)
 {
 	eval_t	*a, *b, *c, *a2;
 	int			s;
@@ -391,11 +392,23 @@ void PR_ExecuteProgram (func_t fnum)
 
 //	tk_puts("PR_ExecuteProgram: A0\n");
 
-	if (!fnum || fnum >= progs->numfunctions)
+//	if (!fnum || fnum >= progs->numfunctions)
+	if (!fnum)
 	{
 		if (pr_global_struct->self)
 			ED_Print (PROG_TO_EDICT(pr_global_struct->self));
+		tk_printf("PR_ExecuteProgram: CalledFrom %s:%d\n", fn, ln);
+
 		Host_Error ("PR_ExecuteProgram: NULL function");
+	}
+
+	if (fnum >= progs->numfunctions)
+	{
+		if (pr_global_struct->self)
+			ED_Print (PROG_TO_EDICT(pr_global_struct->self));
+		tk_printf("PR_ExecuteProgram: CalledFrom %s:%d\n", fn, ln);
+		tk_printf("PR_ExecuteProgram: AN %d\n", fnum);
+		Host_Error ("PR_ExecuteProgram: Bad function number");
 	}
 
 #if 0

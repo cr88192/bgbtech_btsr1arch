@@ -3770,6 +3770,7 @@ int BGBCC_JX2C_ScratchHoldReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, in
 int BGBCC_JX2C_ScratchReleaseReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
 int BGBCC_JX2C_ScratchAllocTsReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
 int BGBCC_JX2C_ScratchAllocRegZzr(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_MarkNonLeaf(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_ScratchAllocReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
 int BGBCC_JX2C_ScratchQueryReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int cls);
 int BGBCC_JX2C_SaveFrameOfsForReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);

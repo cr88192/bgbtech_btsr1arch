@@ -2876,7 +2876,8 @@ void BJX2_Op_CSRRC_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 v0, v1, v2;
 	v0=ctx->regs[op->rm];
 	v1=BJX2_RVI_GetCSR(ctx, op->imm&0xFFF);
-	v2=v0&(~v1);
+//	v2=v0&(~v1);
+	v2=v1&(~v0);
 	if(op->rm!=BJX2_REG_ZZR)
 		BJX2_RVI_SetCSR(ctx, op->imm&0xFFF, v2);
 	if(op->rn!=BJX2_REG_ZZR)
@@ -2911,7 +2912,8 @@ void BJX2_Op_CSRRCI_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	u64 v0, v1, v2;
 	v0=op->rm;
 	v1=BJX2_RVI_GetCSR(ctx, op->imm&0xFFF);
-	v2=v0&(~v1);
+//	v2=v0&(~v1);
+	v2=v1&(~v0);
 	if(op->rm!=0)
 		BJX2_RVI_SetCSR(ctx, op->imm&0xFFF, v2);
 	if(op->rn!=BJX2_REG_ZZR)

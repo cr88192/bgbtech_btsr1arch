@@ -6461,7 +6461,7 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 
 				op->nmid=BJX2_NMID_FCMPGT;
 				op->fmid=BJX2_FMID_REGREGREG;
-				op->Run=BJX2_Op_FCMPGE_GRegRegReg;
+				op->Run=BJX2_Op_FCMPGT_GRegRegReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 
 				if(rn_dfl==BJX2_REG_ZZR)

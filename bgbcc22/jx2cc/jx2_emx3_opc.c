@@ -1466,8 +1466,8 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 				break;
 		break;
 	case BGBCC_SH_NMID_DMULU:
-		opw1=0x0000300AU|((imm&1023)<<22)|((rm&63)<<16)|((rn&63)<<6);
-		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10u(ctx, 0x0000300AU,
+		opw1=0x0000202AU|((imm&1023)<<22)|((rm&63)<<16)|((rn&63)<<6);
+		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10u(ctx, 0x0000202AU,
 			rm, imm, rn, &opw1, &opw2)>0)
 				break;
 		break;

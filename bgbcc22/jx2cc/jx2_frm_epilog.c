@@ -280,7 +280,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ2);
 #endif
 
-#if 1
+#if 0
 			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RQ2);
 			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RQ3);
 			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, BGBCC_SH_REG_RQ3);
@@ -288,6 +288,17 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 				BGBCC_SH_REG_RQ3, BGBCC_SH_REG_RQ2, tsz, 8);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ3);
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RQ2);
+#endif
+
+#if 1
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_JX2CC_PSREG_RQRET);
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_JX2CC_PSREG_RQTHIS);
+			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, 
+				BGBCC_JX2CC_PSREG_RQTHIS);
+			BGBCC_JX2C_EmitValueCopyRegRegSz(ctx, sctx,
+				BGBCC_JX2CC_PSREG_RQTHIS, BGBCC_JX2CC_PSREG_RQRET, tsz, 8);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_JX2CC_PSREG_RQTHIS);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_JX2CC_PSREG_RQRET);
 #endif
 
 		}else

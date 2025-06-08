@@ -66,6 +66,11 @@ extern	int				pr_edict_size;	// in bytes
 void PR_Init (void);
 
 void PR_ExecuteProgram (func_t fnum);
+void PR_ExecuteProgramLln (func_t fnum, char *fn, int ln);
+
+#define PR_ExecuteProgram(fnum)		\
+	PR_ExecuteProgramLln(fnum, __FILE__, __LINE__)
+
 void PR_LoadProgs (void);
 
 void PR_Profile_f (void);

@@ -765,7 +765,7 @@ __va64_arg_i.L0:
 	mov.q	r31, (r10, 144)
 	mov		r30, r10
 	
-	break
+//	break
 	rts
 	nop
 
@@ -814,11 +814,58 @@ _arch_gettbr:
 
 
 __fpu_fdiv:
+__fpu_fdiv_s:
 	fdiv	x10, x11, x10
 	rts
 	nop
 
 __xlf_todbl:
+	rts
+	nop
+
+
+__ldhf16:
+	beq		r10, r0, .zero
+	
+	mov		0x3F000000, r12
+	mov		0x80000000, r13
+	shld.l	r10, 16, r14
+	and		r13, r14, r13
+	shld.l	r10, 17, r11
+	shld.l	r11, -7, r10
+	add		r10, r12, r10
+	or		r10, r13, r10
+	shld.q	r10, 32, r10
+	rts
+	nop
+
+.zero:
+	mov	0, r10
+	rts
+	nop
+
+__sthf16:
+	beq		r10, r0, .zero
+
+	mov		0x3F000000, r12
+	mov		0x80000000, r13
+	not		r13, r14
+
+	shld.q	r10, -32, r10
+	and		r10, r13, r13
+	and		r10, r14, r14
+	sub		r14, r12, r14
+	blt		r14, r0, .zero
+	
+	shld.l	r13, -16, r11
+	shld.l	r14, -10, r10
+	or		r10, r11, r10
+
+	rts
+	nop
+
+.zero:
+	mov	0, r10
 	rts
 	nop
 
@@ -841,6 +888,53 @@ _exit:
 	syscall
 	break
 
+__setj:
+	mov.q	r1, (r10, 0x08)
+	mov.q	r2, (r10, 0x10)
+	mov.q	r3, (r10, 0x18)
+
+	mov.q	r8, (r10, 0x40)
+	mov.q	r9, (r10, 0x48)
+
+	mov.q	r18, (r10, 0x90)
+	mov.q	r19, (r10, 0x98)
+	mov.q	r20, (r10, 0xA0)
+	mov.q	r21, (r10, 0xA8)
+	mov.q	r22, (r10, 0xB0)
+	mov.q	r23, (r10, 0xB8)
+	mov.q	r24, (r10, 0xC0)
+	mov.q	r25, (r10, 0xC8)
+	mov.q	r26, (r10, 0xD0)
+	mov.q	r27, (r10, 0xD8)
+	
+	mov		0, r10
+
+	rts
+
+
+__longj:
+
+	mov.q	(r10, 0x08), r1
+	mov.q	(r10, 0x10), r2
+	mov.q	(r10, 0x18), r3
+
+	mov.q	(r10, 0x40), r8
+	mov.q	(r10, 0x48), r9
+
+	mov.q	(r10, 0x90), r18
+	mov.q	(r10, 0x98), r19
+	mov.q	(r10, 0xA0), r20
+	mov.q	(r10, 0xA8), r21
+	mov.q	(r10, 0xB0), r22
+	mov.q	(r10, 0xB8), r23
+	mov.q	(r10, 0xC0), r24
+	mov.q	(r10, 0xC8), r25
+	mov.q	(r10, 0xD0), r26
+	mov.q	(r10, 0xD8), r27
+	
+	mov		r11, r10
+
+	rts
 };
 
 #endif

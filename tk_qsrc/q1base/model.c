@@ -922,11 +922,19 @@ void CalcSurfaceExtents (msurface_t *s)
 				mins[j] = val;
 			if (val > maxs[j])
 				maxs[j] = val;
+
+			if((maxs[j]-mins[j])>256)
+				{ if(!(tex->flags & TEX_SPECIAL)) { DBGBREAK } }
 		}
 	}
 
 	for (i=0 ; i<2 ; i++)
-	{	
+	{
+		if((maxs[i]-mins[i])>256)
+			{ if(!(tex->flags & TEX_SPECIAL)) { DBGBREAK } }
+		if((maxs[i]-mins[i])<  0)
+			{ if(!(tex->flags & TEX_SPECIAL)) { DBGBREAK } }
+
 		bmins[i] = floor(mins[i]/16);
 		bmaxs[i] = ceil(maxs[i]/16);
 
@@ -934,6 +942,9 @@ void CalcSurfaceExtents (msurface_t *s)
 		s->extents[i] = (bmaxs[i] - bmins[i]) * 16;
 		if ( !(tex->flags & TEX_SPECIAL) && s->extents[i] > 256)
 		{
+
+			{ DBGBREAK }
+
 #if 0
 			tk_printf("%f %f\n",
 				mins[i], maxs[i]);

@@ -6042,6 +6042,11 @@ int BGBCC_JX2_TryEmitLoadRegLabelVarRel24(
 	}
 #endif
 
+	if(ctx->emit_riscv&0x11)
+	{
+		return(BGBCC_JX2RV_EmitOpLblReg(ctx, nmid, lbl, reg));
+	}
+
 #if 0
 	if(!BGBCC_JX2_EmitCheckRegBaseGPR(ctx, reg))
 	{

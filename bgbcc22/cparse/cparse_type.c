@@ -854,6 +854,9 @@ static char *bgbcp_basetypes_c[]={
 "_Float128",	"_Float64",
 "_Float32",		"_Float16",
 
+"_Binary128",	"_Binary64",
+"_Binary32",	"_Binary16",
+
 // "__v2f", "__v3f", "__v4f",
 // "__m2f", "__m3f", "__m4f",
 "__variant", "__variantf",

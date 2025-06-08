@@ -377,14 +377,16 @@ void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count)
 	sfx = (signed char *)sc->data + ch->pos;
 	pbuf = paintbuffer;
 
-#ifdef _BGBCC
+// #ifdef _BGBCC
+#ifdef __BJX2__
 	SND_PaintChannelFrom8_Inner(sfx, pbuf, lvol, rvol, count);
 	ch->pos += count;
 	return;
 #endif
 
 // #if 0
-#ifndef _BGBCC
+// #ifndef _BGBCC
+#ifndef __BJX2__
 	lscale = snd_scaletable[ch->leftvol >> 3];
 	rscale = snd_scaletable[ch->rightvol >> 3];
 	sfx = (signed char *)sc->data + ch->pos;
@@ -397,7 +399,8 @@ void SND_PaintChannelFrom8 (channel_t *ch, sfxcache_t *sc, int count)
 	}
 #endif
 
-#ifdef _BGBCC
+#ifndef __BJX2__
+// #ifdef _BGBCC
 // #if 0
 	lvol = ch->leftvol;
 	rvol = ch->rightvol;

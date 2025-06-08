@@ -979,6 +979,21 @@ int BGBCC_JX2C_ScratchAllocRegZzr(
 	return(tr0);
 }
 
+int BGBCC_JX2C_MarkNonLeaf(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	sctx->is_leaf&=(~4);
+	sctx->is_leaftiny|=8;
+	ctx->cur_vtr->trfl&=~CCXL_TRFL_LEAF;
+
+	ctx->cur_vtr->trfl|=CCXL_TRFL_USES_SCRATCH;
+
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOTLEAFTINY;
+	ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
+	return(0);
+}
+
 int BGBCC_JX2C_ScratchAllocReg(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,

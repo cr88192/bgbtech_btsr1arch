@@ -3128,6 +3128,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "_Float64"))*t++='d';
 		if(!strcmp(s, "_Float128"))*t++='g';
 
+		if(!strcmp(s, "_Binary16"))*t++='k';
+		if(!strcmp(s, "_Binary32"))*t++='f';
+		if(!strcmp(s, "_Binary64"))*t++='d';
+		if(!strcmp(s, "_Binary128"))*t++='g';
+
 		if(!strcmp(s, "auto"))*t++='r';
 		if(!strcmp(s, "var"))*t++='r';
 		if(!strcmp(s, "variant"))*t++='r';

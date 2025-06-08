@@ -675,6 +675,9 @@ void Draw_ConsoleBackground (int lines)
 			src = conback->data + v*320;
 			f = 0;
 			fstep = 320*0x10000/vid.conwidth;
+
+//			__debugbreak();
+
 			if((lines+32)>=vid.conheight)
 			{
 				for (x=0 ; x<vid.conwidth ; x+=4)

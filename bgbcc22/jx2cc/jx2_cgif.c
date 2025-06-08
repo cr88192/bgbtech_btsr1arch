@@ -810,18 +810,22 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		}
 	}
 
-	BGBPP_AddStaticDefine(NULL, "__jx2__", "");
-
 	BGBPP_AddStaticDefine(NULL, "__BGBCC__", "");
-	BGBPP_AddStaticDefine(NULL, "__BGBCC_JX2__", "");
 
 	BGBPP_AddStaticDefine(NULL, "__STDC__", "");
 
 	if(shctx->emit_riscv&0x11)
 	{
+		if(shctx->emit_riscv&0x22)
+		{
+			BGBPP_AddStaticDefine(NULL, "__XG3__", "");
+		}
+
 		BGBPP_AddStaticDefine(NULL, "__RISCV__", "");
 	}else
 	{
+		BGBPP_AddStaticDefine(NULL, "__jx2__", "");
+		BGBPP_AddStaticDefine(NULL, "__BGBCC_JX2__", "");
 		BGBPP_AddStaticDefine(NULL, "__BJX2__", "");
 	}
 
@@ -1902,6 +1906,14 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	sctx->sfreg_live=sctx->sfreg_held;
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
 
+	if(!(sctx->is_leaftiny&1) && !(sctx->is_leaftiny&4))
+	{
+		if(sctx->regalc_live || sctx->fregalc_live)
+		{
+			BGBCC_DBGBREAK
+		}
+	}
+
 	if((sctx->is_fixed32&1) && !BGBCC_JX2_CheckPadAlign32(sctx))
 		{ BGBCC_DBGBREAK }
 
@@ -2315,7 +2327,8 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 				rec=1;
 				BGBCC_JX2C_CompileVirtOp(ctx, sctx, obj, op);
 			}
-			BGBCC_DBGBREAK
+			if(!(sctx->is_simpass&0x40))
+				{ BGBCC_DBGBREAK }
 		}
 
 		if(sctx->regalc_noval)

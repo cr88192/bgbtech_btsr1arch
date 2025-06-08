@@ -360,7 +360,7 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 
 		if(sctx->no_fpu || sctx->fpu_gfp)
 		{
-			fr0=BGBCC_SH_REG_RD2;
+			fr0=BGBCC_JX2CC_PSREG_RDRET;
 			dr0=BGBCC_JX2CC_PSREG_RQRET;
 		}else
 		{
@@ -484,9 +484,9 @@ int BGBCC_JX2C_EmitConvToVRegVRegVariant(
 			BGBCC_JX2C_EmitLoadVRegReg(ctx, sctx, sreg, tri);
 			BGBCC_JX2C_EmitCallName(ctx, sctx, "__lva_conv_toi32");
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tri);
-			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_RD2);
-			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_RD2);
-			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, BGBCC_SH_REG_RD2);
+			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, tro);
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, tro);
+			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tro);
 			return(1);
 		}
 

@@ -553,6 +553,15 @@ int BGBCC_JX2RV_TryEmitOpRegRegReg(
 	if(i>0)
 		return(i);
 
+	if(nmid==BGBCC_SH_NMID_SHLD)
+	{
+		BGBCC_JX2RV_EmitOpRegRegReg(ctx,
+			BGBCC_SH_NMID_SHAD, rs, rt, rn);
+		BGBCC_JX2RV_EmitOpRegReg(ctx,
+			BGBCC_SH_NMID_EXTUL, rn, rn);
+		return(1);
+	}
+
 	if(	(nmid==BGBCC_SH_NMID_FADD) ||
 		(nmid==BGBCC_SH_NMID_FSUB) ||
 		(nmid==BGBCC_SH_NMID_FMUL) ||
@@ -1067,7 +1076,7 @@ int BGBCC_JX2RV_TryEmitOpRegRegReg(
 		break;
 
 	case BGBCC_SH_NMID_SHAD:
-	case BGBCC_SH_NMID_SHLD:
+//	case BGBCC_SH_NMID_SHLD:
 		if(BGBCC_JX2RV_TryEncJumboOpXRegXRegXReg(
 			ctx, rs, rt, rn, 0x0000103B, &opw1, &opw2)>0)
 				break;
@@ -1512,6 +1521,16 @@ int BGBCC_JX2RV_TryEmitOpRegImmReg(
 			nm1, rm, -imm, rn));
 	}
 
+	if(nmid==BGBCC_SH_NMID_SHLD)
+	{
+		BGBCC_JX2RV_EmitOpRegImmReg(ctx,
+			BGBCC_SH_NMID_SHAD, rm, imm, rn);
+		BGBCC_JX2RV_EmitOpRegReg(ctx,
+			BGBCC_SH_NMID_EXTUL, rn, rn);
+		return(1);
+	}
+
+
 	rm=BGBCC_JX2RV_NormalizeReg(ctx, rm);
 	rn=BGBCC_JX2RV_NormalizeReg(ctx, rn);
 
@@ -1864,7 +1883,7 @@ int BGBCC_JX2RV_TryEmitOpRegImmReg(
 #endif
 
 	case BGBCC_SH_NMID_SHAD:
-	case BGBCC_SH_NMID_SHLD:
+//	case BGBCC_SH_NMID_SHLD:
 		if(BGBCC_JX2RV_TryEncJumboOpXRegImm12XReg(
 			ctx, rm, imm, rn, 0x0000101B, &opw1, &opw2)>0)
 				break;
@@ -4885,17 +4904,18 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 				opw1=0x8000403FU|
 					(((rn>>5)&1)<< 9)|
 					(((rm>>5)&1)<<10);
-				opw2=0xC2200053U|((rm&31)<<15)|((rn&31)<<7);
+				opw2=0xC2200053U|((rm&31)<<15)|((rn&31)<<7)|(1<<12);
 				break;
 			}
 		}
 		if(!BGBCC_JX2RV_CheckRegIsFPR(ctx, rm))		break;
 		if(!BGBCC_JX2RV_CheckRegIsGPR(ctx, rn))		break;
 //		opw1=0xD2200053U|((rm&31)<<15)|((rn&31)<<7);
-		opw1=0xC2200053U|((rm&31)<<15)|((rn&31)<<7);
+		opw1=0xC2200053U|((rm&31)<<15)|((rn&31)<<7)|(1<<12);
 		break;
 
-	case BGBCC_SH_NMID_FLDCF:
+//	case BGBCC_SH_NMID_FLDCF:
+	case BGBCC_SH_NMID_FSTCF:
 		if(ctx->has_jumbo&2)
 		{
 			if(	!BGBCC_JX2RV_CheckRegIsFPR(ctx, rm) ||
@@ -4913,7 +4933,8 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		if(!BGBCC_JX2RV_CheckRegIsFPR(ctx, rn))		break;
 		opw1=0x40100053U|((rm&31)<<15)|((rn&31)<<7);
 		break;
-	case BGBCC_SH_NMID_FSTCF:
+//	case BGBCC_SH_NMID_FSTCF:
+	case BGBCC_SH_NMID_FLDCF:
 		if(ctx->has_jumbo&2)
 		{
 			if(	!BGBCC_JX2RV_CheckRegIsFPR(ctx, rm) ||

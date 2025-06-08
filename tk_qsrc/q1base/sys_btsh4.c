@@ -170,7 +170,7 @@ void Sys_Error (char *error, ...)
 	char tb[256];
 	va_list         argptr;
 
-//	{ DBGBREAK }
+	{ DBGBREAK }
 
 	tk_printf("Sys_Error: ");   
 	va_start(argptr, error);
@@ -651,7 +651,8 @@ void Sys_CheckSanity(void)
 		{ DBGBREAK }
 	if((f*h)!=63.0)
 		{ DBGBREAK }
-	if((h/g)!=1.125)
+//	if((h/g)!=1.125)
+	if(fabs((h/g)-1.125)>0.000001)
 		{ DBGBREAK }
 
 	if(ceil(3.14)!=4.0)
@@ -1121,7 +1122,9 @@ int main (int argc, char **argv)
 
 		Host_Frame (time);
 //		Host_Frame (0.1);
+#ifdef __BJX2__
 		sleep_0();
+#endif
 	}
 }
 

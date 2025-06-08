@@ -85,15 +85,31 @@ LDFLAGS64_DHRY=$(TK_LDFL) -lc # -ltkgdi
 
 GL_CFLAGS64	= $(CFLAGS64) /DGLQUAKE
 
+TK_CFL_XRV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXRVA /O2 \
+	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba \
+	/frvldix /frvjumbo \
+	/fnovskgen /fnovsk
+
+TK_CFL_X3RV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXG3RV /O2 \
+	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba /frvjumbo \
+	/fnovskgen /fnovsk # /fbitmov
+
+CFLAGS_XRV=$(TK_CFL_XRV) $(BASE_CFLAGS)
+LDFLAGS_XRV= -lc -ltkgdi
+
+CFLAGS_X3RV=$(TK_CFL_X3RV) $(BASE_CFLAGS)
+LDFLAGS_X3RV= -lc -ltkgdi
+
+
 all: targets
 
 # targets: quake_sh4b.elf quake_cgfx_sh4b.elf primecnt_sh4b.elf \
 #	quake_b64b.exe primecnt_b64b.exe
 targets: quake_b64b.exe dhry_b64b.exe \
-	glquake_tkra_b64b.exe
+	glquake_tkra_b64b.exe quake_xrv.exe quake_x3rv.exe
 # glquake_b64b.exe
 
-SQUAKE_SRCS = \
+SQUAKE_SRCS_BASE = \
 	q1base/cl_demo.c \
 	q1base/cl_input.c \
 	q1base/cl_main.c \
@@ -162,7 +178,13 @@ SQUAKE_SRCS = \
 	q1base/snd_dma.c \
 	q1base/snd_mem.c \
 	q1base/snd_mix.c \
-	q1base/snd_btsh4.c \
+	q1base/snd_tkgdi.c
+
+#	q1base/snd_btsh4.c \
+
+
+SQUAKE_SRCS = \
+	$(SQUAKE_SRCS_BASE) \
 	\
 	q1base/r_surf_bjx2.S \
 
@@ -333,6 +355,13 @@ btic1h2_b32.exe: tst_btic1h2/bt1h_vfwdrv.c
 
 btic1h2_b64.exe: tst_btic1h2/bt1h_vfwdrv.c
 	$(CC) $(CFLAGS64) -o $@ tst_btic1h2/bt1h_vfwdrv.c $(LDFLAGS64)
+
+quake_xrv.exe: $(SQUAKE_SRCS_BASE)
+	$(CC) $(CFLAGS_XRV) -o $@ $(SQUAKE_SRCS_BASE) $(LDFLAGS_XRV)
+
+quake_x3rv.exe: $(SQUAKE_SRCS_BASE)
+	$(CC) $(CFLAGS_X3RV) -o $@ $(SQUAKE_SRCS_BASE) $(LDFLAGS_X3RV)
+
 
 ####
 

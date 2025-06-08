@@ -45,7 +45,8 @@ int __int_clamp(int v, int min, int max)
 }
 #endif
 
-#ifndef _BGBCC
+// #ifndef _BGBCC
+#ifndef __BJX2__
 float __fpu_frcp_sf(float f)
 {
 	return(1.0/f);
