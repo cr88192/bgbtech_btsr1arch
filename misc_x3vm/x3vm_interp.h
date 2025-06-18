@@ -64,12 +64,13 @@ typedef struct X3VM_VfsGlueVt_s	X3VM_VfsGlueVt;
 #define X3VM_REG_TEA	0x43
 
 #define X3VM_REG_BPC	0x60
-
+#define X3VM_REG_ZRX	0x62		//128-bit zero register
 
 #define X3VM_REG_ZR		X3VM_REG_X0
 #define X3VM_REG_LR		X3VM_REG_X1
 #define X3VM_REG_SP		X3VM_REG_X2
 #define X3VM_REG_GBR	X3VM_REG_X3
+
 
 
 
@@ -292,6 +293,23 @@ typedef struct X3VM_VfsGlueVt_s	X3VM_VfsGlueVt;
 #define X3VM_NMID_CSRRSI	0xCE
 #define X3VM_NMID_CSRRCI	0xCF
 
+#define X3VM_NMID_MOVTT		0xD0
+#define X3VM_NMID_PMULTH	0xD1
+
+#define X3VM_NMID_ROTLQ		0xD2
+#define X3VM_NMID_ROTRQ		0xD3
+#define X3VM_NMID_LEATB		0xD4
+#define X3VM_NMID_LEATH		0xD5
+#define X3VM_NMID_LEATW		0xD6
+#define X3VM_NMID_LEATD		0xD7
+
+#define X3VM_NMID_SRAX		0xD8
+#define X3VM_NMID_SRLX		0xD9
+#define X3VM_NMID_LDQ		0xDA
+#define X3VM_NMID_SDQ		0xDB
+
+// #define X3VM_NMID_LUI32		0xD0
+
 // #define X3VM_NMID_FNEG		0xD0
 // #define X3VM_NMID_FABS		0xD1
 
@@ -416,7 +434,8 @@ X3VM_Trace *tr_doext;	//trace-extension
 u64 addr;
 u64 addr_next;
 u64 addr_nobra;			//addr, no-branch JAL
-int n_ops;
+byte n_ops;
+byte n_orgops;
 X3VM_Opcode *ops[X3VM_TRACE_MAXOPS];
 };
 

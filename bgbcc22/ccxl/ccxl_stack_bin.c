@@ -206,6 +206,8 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 
 	if(!strcmp(op, "CONS"))
 		opr=CCXL_BINOP_CONS;
+	if(!strcmp(op, "SHUF"))
+		opr=CCXL_BINOP_SHUF;
 
 	if(opr>=0)
 	{
@@ -257,6 +259,26 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 		sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 		tty=BGBCC_CCXL_GetRegType(ctx, treg);
 		
+		if(opr==CCXL_BINOP_SHUF)
+		{
+			li=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			BGBCC_CCXL_TypeDerefType(ctx, sty, &bty);
+			BGBCC_CCXL_TypeVectorOfType(ctx, bty, (li>>16)&3, &dty);
+
+			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
+
+//			BGBCC_CCXL_TypeDerefType(ctx, sty, &bty);
+//			BGBCC_CCXL_EmitDiffPtr(ctx, bty, dreg, sreg, treg);
+
+			BGBCC_CCXL_EmitBinaryOp(ctx, sty, opr, dreg, sreg, treg);
+
+			BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+
+			BGBCC_CCXL_PushRegister(ctx, dreg);
+			return(CCXL_STATUS_YES);
+		}
+
 		if(	BGBCC_CCXL_IsRegImmILFDP(ctx, sreg) &&
 			BGBCC_CCXL_IsRegImmILFDP(ctx, treg))
 		{

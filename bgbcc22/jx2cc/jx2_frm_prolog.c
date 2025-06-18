@@ -308,10 +308,12 @@ int BGBCC_JX2C_EmitFrameProlog_PushRegs(BGBCC_TransState *ctx,
 //		for(i=31; i>0; i--)
 		for(i=63; i>0; i--)
 		{
+#if 0
 			if(!(sctx->has_xgpr&1) && (i>=32))
 				continue;
 			if(!(sctx->has_bjx1egpr) && (i>=16))
 				continue;
+#endif
 			if(i==15)
 				continue;
 
@@ -1049,14 +1051,20 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 		if(	!(ctx->cur_func->regflags&BGBCC_REGFL_NOSCRATCHDYN) &&
 			!(ctx->cur_func->regflags&BGBCC_REGFL_NOTLEAF))
 		{
-//			if(sctx->use_egpr)
-			if(sctx->use_egpr&3)
-				{ sctx->vsp_rsv+=8; }
-			else
-				{ sctx->vsp_rsv+=3; }
+			if(sctx->emit_riscv&0x11)
+			{
+				sctx->vsp_rsv+=20;
+			}else
+			{
+	//			if(sctx->use_egpr)
+				if(sctx->use_egpr&3)
+					{ sctx->vsp_rsv+=8; }
+				else
+					{ sctx->vsp_rsv+=3; }
 
-			if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
-				{ sctx->vsp_rsv+=12; }
+				if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
+					{ sctx->vsp_rsv+=12; }
+			}
 		}
 	}
 	
@@ -1466,10 +1474,12 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //		for(i=31; i>0; i--)
 		for(i=63; i>0; i--)
 		{
+#if 0
 			if(!(sctx->has_xgpr&1) && (i>=32))
 				continue;
 			if(!(sctx->has_bjx1egpr) && (i>=16))
 				continue;
+#endif
 			if(i==15)
 				continue;
 			if(!(sctx->reg_vsave&((2ULL<<i)-1)))
@@ -1482,8 +1492,8 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 //		for(i=15; i>0; i--)
 		for(i=63; i>0; i--)
 		{
-			if(!(sctx->has_xgpr&1) && (i>=32))
-				continue;
+//			if(!(sctx->has_xgpr&1) && (i>=32))
+//				continue;
 			if(sctx->freg_vsave&(1ULL<<i))
 				{ sctx->freg_save|=(1ULL<<i); k+=2; }
 		}

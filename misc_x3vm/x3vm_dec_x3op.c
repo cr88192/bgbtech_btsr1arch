@@ -577,41 +577,169 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			break;
 
 		case 0x3:
+			op->imm=imm6s;
 			switch((opw>>28)&15)
 			{
 			case 0x0:
 				break;
 			case 0x1:
-#if 0
 				if(eq)
-				{	op->nmid=X3VM_NMID_PADDL;
-					op->fmid=X3VM_FMID_3R;
-					op->Run=X3VM_Opc_PADDL_3R;
+				{	op->nmid=X3VM_NMID_MOVTT;
+					op->fmid=X3VM_FMID_3RI;
+					op->Run=X3VM_Opc_MOVTT5_3RI;
+					if(jbits)
+						op->Run=X3VM_Opc_MOVTT_3RI;
 					break;	}
-				op->nmid=X3VM_NMID_PADDW;
+				op->nmid=X3VM_NMID_MOVTT;
 				op->fmid=X3VM_FMID_3R;
-				op->Run=X3VM_Opc_PADDW_3R;
-#endif
+				op->Run=X3VM_Opc_MOVTT_3R;
+				break;
+			case 0x2:
+				if(eq)
+				{
+					op->nmid=X3VM_NMID_SRAX;
+					op->fmid=X3VM_FMID_3R;
+					op->Run=X3VM_Opc_SRAX_3R;
+					break;
+				}
+				op->nmid=X3VM_NMID_ROTLQ;
+				op->fmid=X3VM_FMID_3R;
+				op->Run=X3VM_Opc_ROTLQ_3R;
+				break;
+			case 0x3:
+				if(eq)
+				{
+					op->nmid=X3VM_NMID_SRLX;
+					op->fmid=X3VM_FMID_3R;
+					op->Run=X3VM_Opc_SRLX_3R;
+					break;
+				}
+				op->nmid=X3VM_NMID_ROTRQ;
+				op->fmid=X3VM_FMID_3R;
+				op->Run=X3VM_Opc_ROTRQ_3R;
+				break;
+
+			case 0x4:
+				if(eq)
+				{
+					op->nmid=X3VM_NMID_SLAX;
+					op->fmid=X3VM_FMID_3R;
+					op->Run=X3VM_Opc_SLAX_3R;
+					break;
+				}
+//				op->nmid=X3VM_NMID_MULHS;
+//				op->fmid=X3VM_FMID_3R;
+//				op->Run=X3VM_Opc_MULHS_3R;
+				break;
+			case 0x5:
+				if(eq)
+				{
+					op->nmid=X3VM_NMID_SLLX;
+					op->fmid=X3VM_FMID_3R;
+					op->Run=X3VM_Opc_SLLX_3R;
+					break;
+				}
+//				op->nmid=X3VM_NMID_MULHU;
+//				op->fmid=X3VM_FMID_3R;
+//				op->Run=X3VM_Opc_MULHU_3R;
 				break;
 			}
 			break;
 
 		case 0x4:
+			op->imm=imm6s;
 			switch((opw>>28)&15)
 			{
 			case 0x0:
+				if(eq)
+				{	op->nmid=X3VM_NMID_LEATB;
+					op->fmid=X3VM_FMID_LDRI;
+					op->sc=0;
+					op->Run=X3VM_Opc_LEAT_3RI;
+					break;	}
 				break;
 			case 0x1:
-#if 0
 				if(eq)
-				{	op->nmid=X3VM_NMID_PADDL;
-					op->fmid=X3VM_FMID_3R;
-					op->Run=X3VM_Opc_PADDL_3R;
+				{	op->nmid=X3VM_NMID_LEATH;
+					op->fmid=X3VM_FMID_LDRI;
+					op->sc=1;
+					op->Run=X3VM_Opc_LEAT_3RI;
 					break;	}
-				op->nmid=X3VM_NMID_PADDW;
-				op->fmid=X3VM_FMID_3R;
-				op->Run=X3VM_Opc_PADDW_3R;
-#endif
+				break;
+			case 0x2:
+				if(eq)
+				{	op->nmid=X3VM_NMID_LEATW;
+					op->fmid=X3VM_FMID_LDRI;
+					op->sc=2;
+					op->Run=X3VM_Opc_LEAT_3RI;
+					break;	}
+				break;
+			case 0x3:
+				if(eq)
+				{	op->nmid=X3VM_NMID_LEATD;
+					op->fmid=X3VM_FMID_LDRI;
+					op->sc=3;
+					op->Run=X3VM_Opc_LEAT_3RI;
+					break;	}
+				break;
+
+			case 0x4:
+				if(eq)
+				{	op->nmid=X3VM_NMID_LEATB;
+					op->fmid=X3VM_FMID_LDRR;
+					op->sc=0;
+					op->Run=X3VM_Opc_LEAT_3R;
+					break;	}
+				break;
+			case 0x5:
+				if(eq)
+				{	op->nmid=X3VM_NMID_LEATH;
+					op->fmid=X3VM_FMID_LDRR;
+					op->sc=1;
+					op->Run=X3VM_Opc_LEAT_3R;
+					break;	}
+				break;
+
+			case 0x6:
+				if(eq)
+				{	op->nmid=X3VM_NMID_LEATW;
+					op->fmid=X3VM_FMID_LDRR;
+					op->sc=2;
+					op->Run=X3VM_Opc_LEAT_3R;
+					break;	}
+				op->nmid=X3VM_NMID_FSD2W;
+				op->fmid=X3VM_FMID_STRR;
+				op->sc=2;
+				op->Run=X3VM_Opc_FST64TO32_3R;
+				break;
+			case 0x7:
+				if(eq)
+				{	op->nmid=X3VM_NMID_LEATD;
+					op->fmid=X3VM_FMID_LDRR;
+					op->sc=3;
+					op->Run=X3VM_Opc_LEAT_3R;
+					break;	}
+				op->nmid=X3VM_NMID_FSD2H;
+				op->fmid=X3VM_FMID_STRR;
+				op->sc=1;
+				op->Run=X3VM_Opc_FST64TO16_3R;
+				break;
+
+			case 0xE:
+				if(eq)
+					{ break; }
+				op->nmid=X3VM_NMID_FLW2D;
+				op->fmid=X3VM_FMID_LDRR;
+				op->sc=2;
+				op->Run=X3VM_Opc_FLD32TO64_3R;
+				break;
+			case 0xF:
+				if(eq)
+					{ break; }
+				op->nmid=X3VM_NMID_FLH2D;
+				op->fmid=X3VM_FMID_LDRR;
+				op->sc=1;
+				op->Run=X3VM_Opc_FLD16TO64_3R;
 				break;
 			}
 			break;
@@ -1417,9 +1545,11 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			}
 			break;
 		case 0x8:
-			if((imm10u>>8)==1)
+//			if((imm10u>>8)==1)
+			if(((imm10u>>8)==1) || (imm>>16))
 			{
-				op->imm=(byte)imm10u;
+//				op->imm=(byte)imm10u;
+				op->imm=imm10u;
 				op->fmid=X3VM_FMID_3RI;
 				if(eq)
 				{
@@ -1432,6 +1562,18 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 				}
 				break;
 			}
+			if((imm10u>>8)==3)
+			{
+				op->imm=(byte)imm10u;
+				op->fmid=X3VM_FMID_3RI;
+				if(eq)
+				{
+					op->nmid=X3VM_NMID_PMULTH;
+					op->Run=X3VM_Opc_PMULTH_3RI;
+				}
+				break;
+			}
+
 			op->imm=(sbyte)imm10u;
 			op->nmid=X3VM_NMID_SLAW;
 			op->fmid=X3VM_FMID_3RI;

@@ -2346,7 +2346,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 //				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 //				treg=BGBCC_SH_REG_R1;
-				treg=BGBCC_JX2CC_PSREG_TS1;
+				treg=BGBCC_JX2CC_PSREG_TS1F;
 				k=ctx->cur_func->locals[j]->fxoffs;
 				i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, nm1, k, treg);
 				BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx,
@@ -2492,7 +2492,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 //				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 //				treg=BGBCC_SH_REG_R1;
-				treg=BGBCC_JX2CC_PSREG_TS1;
+				treg=BGBCC_JX2CC_PSREG_TS1F;
 				k=ctx->cur_func->regs[j]->fxoffs;
 				i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, treg);
 				BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx,
@@ -2636,7 +2636,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 
 //				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 //				treg=BGBCC_SH_REG_R1;
-				treg=BGBCC_JX2CC_PSREG_TS1;
+				treg=BGBCC_JX2CC_PSREG_TS1F;
 				k=ctx->cur_func->args[j]->fxoffs;
 				i=BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, treg);
 				BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx,
@@ -3201,7 +3201,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 					}
 
 					BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
-						BGBCC_SH_NMID_MOVL, dreg, k);
+						BGBCC_SH_NMID_MOVDL, dreg, k);
 					if(sctx->fpu_gfp)
 					{
 						BGBCC_JX2_EmitOpRegReg(sctx,
@@ -3477,7 +3477,7 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 					}else
 					{
 						BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
-							BGBCC_SH_NMID_MOVL, treg, 0, dreg);
+							BGBCC_SH_NMID_MOVDL, treg, 0, dreg);
 						if(sctx->fpu_gfp)
 						{
 							BGBCC_JX2_EmitOpRegReg(sctx,
@@ -3729,7 +3729,7 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 				
 //				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 //				treg=BGBCC_SH_REG_R1;
-				treg=BGBCC_JX2CC_PSREG_TS1;
+				treg=BGBCC_JX2CC_PSREG_TS1F;
 				k=ctx->cur_func->locals[j]->fxoffs;
 				if(k>=sctx->frm_offs_fix)
 					{ BGBCC_DBGBREAK }
@@ -3852,7 +3852,7 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 //				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 //				treg=BGBCC_SH_REG_R1;
-				treg=BGBCC_JX2CC_PSREG_TS1;
+				treg=BGBCC_JX2CC_PSREG_TS1F;
 				k=ctx->cur_func->regs[j]->fxoffs;
 				BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx,
 					BGBCC_SH_NMID_FSTCF, sreg, treg);
@@ -3959,7 +3959,7 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 //				treg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_GR);
 //				treg=BGBCC_SH_REG_R1;
-				treg=BGBCC_JX2CC_PSREG_TS1;
+				treg=BGBCC_JX2CC_PSREG_TS1F;
 				k=ctx->cur_func->args[j]->fxoffs;
 				BGBCC_JX2C_EmitConvOpRegReg(ctx, sctx,
 					BGBCC_SH_NMID_FSTCF, sreg, treg);
@@ -4170,16 +4170,16 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 					{
 						BGBCC_JX2_EmitOpRegReg(sctx,
 //							BGBCC_SH_NMID_FSTCF, sreg, BGBCC_SH_REG_R1);
-							BGBCC_SH_NMID_FSTCF, sreg, BGBCC_JX2CC_PSREG_TS1);
+							BGBCC_SH_NMID_FSTCF, sreg, BGBCC_JX2CC_PSREG_TS1F);
 						BGBCC_JX2_EmitStoreRegLabelVarRel24(sctx,
 //							BGBCC_SH_NMID_MOVL, BGBCC_SH_REG_R1, k);
-							BGBCC_SH_NMID_MOVL, BGBCC_JX2CC_PSREG_TS1, k);
+							BGBCC_SH_NMID_MOVDL, BGBCC_JX2CC_PSREG_TS1F, k);
 					}
 				}else
 					if(sctx->fpu_soft)
 				{
 					BGBCC_JX2_EmitStoreRegLabelVarRel24(sctx,
-						BGBCC_SH_NMID_MOVL, sreg, k);
+						BGBCC_SH_NMID_MOVDL, sreg, k);
 				}else
 				{
 					BGBCC_JX2_EmitStoreRegLabelVarRel24(sctx,
@@ -4346,10 +4346,12 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 					{
 						BGBCC_JX2_EmitOpRegReg(sctx,
 //							BGBCC_SH_NMID_FSTCF, sreg, BGBCC_SH_REG_R1);
-							BGBCC_SH_NMID_FSTCF, sreg, BGBCC_JX2CC_PSREG_TS1);
+							BGBCC_SH_NMID_FSTCF, sreg,
+							BGBCC_JX2CC_PSREG_TS1F);
 						BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
 //							BGBCC_SH_NMID_MOVL, treg, 0, BGBCC_SH_REG_R1);
-							BGBCC_SH_NMID_MOVL, treg, 0, BGBCC_JX2CC_PSREG_TS1);
+							BGBCC_SH_NMID_MOVDL, treg, 0, 
+							BGBCC_JX2CC_PSREG_TS1F);
 					}
 				}
 
@@ -4993,6 +4995,20 @@ int BGBCC_JX2C_SetupFrameVRegSpan(
 //				mult=0;
 //			if(dstfl&1)
 //				mult=0;
+
+		if((sctx->emit_riscv&0x11) && !(sctx->emit_riscv&0x22))
+		{
+			/* If RISC-V and an FPU type. Demote...
+			   If demoted, it is more likely to end up in an FPU register.
+			 */
+			if(BGBCC_CCXL_IsRegFloatP(ctx, sreg) ||
+				BGBCC_CCXL_IsRegFloat16P(ctx, sreg) ||
+				BGBCC_CCXL_IsRegDoubleP(ctx, sreg))
+				{
+					vsp->flag|=BGBCC_RSPFL_NONBASIC;
+					mult=0;
+				}
+		}
 		
 		if(BGBCC_CCXL_IsRegGlobalP(ctx, sreg) && (dstfl&1))
 			vsp->flag|=BGBCC_RSPFL_GBLSTORE;

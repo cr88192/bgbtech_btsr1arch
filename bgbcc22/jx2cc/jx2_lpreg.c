@@ -182,9 +182,9 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 		if((excl>>i)&3)
 			continue;
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+0, 0))
 			continue;
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+1))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+1, 0))
 			continue;
 
 #if 1
@@ -251,9 +251,9 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 			if((excl>>i1)&3)
 				continue;
 
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
 				continue;
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
 				continue;
 
 			if(!BGBCC_JX2C_EmitCheckValidLpRegisterIndex(ctx, sctx,
@@ -493,9 +493,9 @@ int BGBCC_JX2C_EmitGetLpRegister(
 		if(excl&(3ULL<<i1))
 			continue;
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
 			continue;
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
 			continue;
 
 		if((sctx->vsp_rsv>0) && (i1<sctx->vsp_rsv))
@@ -569,9 +569,9 @@ int BGBCC_JX2C_EmitGetLpRegister(
 			if(excl&(3ULL<<i1))
 				continue;
 
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
 				continue;
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
 				continue;
 
 //			if(!(sctx->regalc_save>>i1))
@@ -686,9 +686,9 @@ int BGBCC_JX2C_EmitGetLpRegister(
 		if(excl&(3ULL<<i1))
 			continue;
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
 			continue;
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
 			continue;
 
 		if((sctx->vsp_rsv>0) && (i1<sctx->vsp_rsv))

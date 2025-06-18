@@ -693,9 +693,17 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 
 		if(nm2>=0)
 		{
-//			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
-			ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);
-//			ctreg=BGBCC_SH_REG_R1;
+			if((sctx->emit_riscv&0x11) && !(sctx->emit_riscv&0x22) &&
+				(nm2==BGBCC_SH_NMID_FLDCF))
+			{
+				nm1=BGBCC_SH_NMID_MOVDL;
+				ctreg=BGBCC_JX2CC_PSREG_TS0F;
+			}else
+			{
+//				ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
+				ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);
+//				ctreg=BGBCC_SH_REG_R1;
+			}
 		}
 
 		BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,

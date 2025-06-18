@@ -3778,6 +3778,68 @@ ccxl_status BGBCC_CCXL_TypeAutoPromoteType(
 	return(CCXL_STATUS_NO);
 }
 
+ccxl_status BGBCC_CCXL_TypeVectorOfType(
+	BGBCC_TransState *ctx,
+	ccxl_type sty, int sz, ccxl_type *rdty)
+{
+	ccxl_type tty;
+	int st;
+	
+	st=sty.val;
+
+	if(st==CCXL_TY_SS)
+	{
+		tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC4SW);
+		*rdty=tty;
+		return(CCXL_STATUS_YES);
+	}
+	if(st==CCXL_TY_US)
+	{
+		tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC4UW);
+		*rdty=tty;
+		return(CCXL_STATUS_YES);
+	}
+	if(st==CCXL_TY_F16)
+	{
+		tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC4H);
+		*rdty=tty;
+		return(CCXL_STATUS_YES);
+	}
+
+	if(st==CCXL_TY_I)
+	{
+		if(sz<=2)
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC2SI);
+		else
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC4SI);
+		*rdty=tty;
+		return(CCXL_STATUS_YES);
+	}
+	if(st==CCXL_TY_UI)
+	{
+		if(sz<=2)
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC2UI);
+		else
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC4UI);
+		*rdty=tty;
+		return(CCXL_STATUS_YES);
+	}
+	if(st==CCXL_TY_F)
+	{
+		if(sz<=2)
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC2F);
+		else if(sz==3)
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC3F);
+		else
+			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC4F);
+		*rdty=tty;
+		return(CCXL_STATUS_YES);
+	}
+
+	if(rdty)*rdty=sty;
+	return(CCXL_STATUS_NO);
+}
+
 int BGBCC_CCXL_TypeGetArraySize(
 	BGBCC_TransState *ctx, ccxl_type sty)
 {

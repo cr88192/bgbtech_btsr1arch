@@ -560,6 +560,7 @@ const short *shufreg3;
 
 u64 regs_excl;
 u64 regs_excl_tiny;
+u64 regs_excl_fpu;
 u64 regs_scratch;
 u64 regs_scratch_ts;
 u64 regs_args;

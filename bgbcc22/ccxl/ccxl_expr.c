@@ -1880,6 +1880,15 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 		{
 			return;
 		}
+
+#if 0
+		t=BGBCC_CCXL_ReduceExpr(ctx, t);
+		BGBCC_CCXL_InferExpr(ctx, t, &tty);
+
+		if(BGBCC_CCXL_TypeVecP(ctx, sty))
+		{
+		}
+#endif
 		
 		BGBCC_CCXL_CompileExpr(ctx, t);
 		BGBCC_CCXL_StackLoadSlot(ctx, s0);

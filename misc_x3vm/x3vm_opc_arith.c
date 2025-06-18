@@ -921,6 +921,48 @@ void X3VM_Opc_PSHUFH_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
 	vn=(vn<<16)|(u16)(vs>>(((im>>4)&3)*16));
 	vn=(vn<<16)|(u16)(vs>>(((im>>2)&3)*16));
 	vn=(vn<<16)|(u16)(vs>>(((im>>0)&3)*16));
+
+	if(imm>>16)
+	{
+		if(((imm>> 8)&3)==0)		vn&=~0x000000000000FFFFULL;
+		if(((imm>> 8)&3)==2)		vn^= 0x000000000000FFFFULL;
+		if(((imm>> 8)&3)==3)		vn^= 0x0000000000008000ULL;
+		if(((imm>>10)&3)==0)		vn&=~0x00000000FFFF0000ULL;
+		if(((imm>>10)&3)==2)		vn^= 0x00000000FFFF0000ULL;
+		if(((imm>>10)&3)==3)		vn^= 0x0000000080000000ULL;
+		if(((imm>>12)&3)==0)		vn&=~0x0000FFFF00000000ULL;
+		if(((imm>>12)&3)==2)		vn^= 0x0000FFFF00000000ULL;
+		if(((imm>>12)&3)==3)		vn^= 0x0000800000000000ULL;
+		if(((imm>>14)&3)==0)		vn&=~0xFFFF000000000000ULL;
+		if(((imm>>14)&3)==2)		vn^= 0xFFFF000000000000ULL;
+		if(((imm>>14)&3)==3)		vn^= 0x8000000000000000ULL;
+	}
+
+	ctx->reg[op->rn]=vn;
+}
+
+void X3VM_Opc_PMULTH_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	s64 vs, vt, vn;
+	int im;
+
+	vs=ctx->reg[op->rs];
+	im=op->imm;
+	vn=vs;
+
+	if(((imm>>0)&3)==0)		vn&=~0x000000000000FFFFULL;
+	if(((imm>>0)&3)==2)		vn^= 0x000000000000FFFFULL;
+	if(((imm>>0)&3)==3)		vn^= 0x0000000000008000ULL;
+	if(((imm>>2)&3)==0)		vn&=~0x00000000FFFF0000ULL;
+	if(((imm>>2)&3)==2)		vn^= 0x00000000FFFF0000ULL;
+	if(((imm>>2)&3)==3)		vn^= 0x0000000080000000ULL;
+	if(((imm>>4)&3)==0)		vn&=~0x0000FFFF00000000ULL;
+	if(((imm>>4)&3)==2)		vn^= 0x0000FFFF00000000ULL;
+	if(((imm>>4)&3)==3)		vn^= 0x0000800000000000ULL;
+	if(((imm>>6)&3)==0)		vn&=~0xFFFF000000000000ULL;
+	if(((imm>>6)&3)==2)		vn^= 0xFFFF000000000000ULL;
+	if(((imm>>6)&3)==3)		vn^= 0x8000000000000000ULL;
+
 	ctx->reg[op->rn]=vn;
 }
 
@@ -946,6 +988,9 @@ void X3VM_Opc_ADDX_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 	vs1=ctx->reg[op->rs+1];
 	vt0=ctx->reg[op->rt+0];
 	vt1=ctx->reg[op->rt+1];
+//	if(!op->rs) vs1=0;
+//	if(!op->rt) vt1=0;
+
 	vn0=vs0+vt0;
 	vn1=vs1+vt1+(vn0<vs0);
 
@@ -961,6 +1006,8 @@ void X3VM_Opc_SUBX_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 	vs1=ctx->reg[op->rs+1];
 	vt0=ctx->reg[op->rt+0];
 	vt1=ctx->reg[op->rt+1];
+//	if(!op->rs) vs1=0;
+//	if(!op->rt) vt1=0;
 	
 	vt0=~vt0;
 	vt1=~vt1;
@@ -980,6 +1027,9 @@ void X3VM_Opc_ANDX_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 	vs1=ctx->reg[op->rs+1];
 	vt0=ctx->reg[op->rt+0];
 	vt1=ctx->reg[op->rt+1];
+//	if(!op->rs) vs1=0;
+//	if(!op->rt) vt1=0;
+
 	vn0=vs0&vt0;
 	vn1=vs1&vt1;
 	ctx->reg[op->rn+0]=vn0;
@@ -994,6 +1044,9 @@ void X3VM_Opc_ORX_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 	vs1=ctx->reg[op->rs+1];
 	vt0=ctx->reg[op->rt+0];
 	vt1=ctx->reg[op->rt+1];
+//	if(!op->rs) vs1=0;
+//	if(!op->rt) vt1=0;
+
 	vn0=vs0|vt0;
 	vn1=vs1|vt1;
 	ctx->reg[op->rn+0]=vn0;
@@ -1008,6 +1061,9 @@ void X3VM_Opc_XORX_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 	vs1=ctx->reg[op->rs+1];
 	vt0=ctx->reg[op->rt+0];
 	vt1=ctx->reg[op->rt+1];
+//	if(!op->rs) vs1=0;
+//	if(!op->rt) vt1=0;
+
 	vn0=vs0^vt0;
 	vn1=vs1^vt1;
 	ctx->reg[op->rn+0]=vn0;
@@ -1146,5 +1202,87 @@ void X3VM_Opc_EXTUH_2R(X3VM_Context *ctx, X3VM_Opcode *op)
 	u64 vs, vt, vn;
 	vs=ctx->reg[op->rs];
 	vn=(u16)vs;
+	ctx->reg[op->rn]=vn;
+}
+
+void X3VM_Opc_MOVTT_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vs, vt, vn;
+	
+	vs=ctx->reg[op->rs];
+	vt=ctx->reg[op->rt];
+	vn=	(vs&0x0000FFFFFFFFFFFFULL) |
+		(vt&0xFFFF000000000000ULL) ;
+	ctx->reg[op->rn]=vn;
+}
+
+void X3VM_Opc_MOVTT_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vs, vt, vn;
+	
+	vs=ctx->reg[op->rs];
+//	vt=ctx->reg[op->rt];
+	vt=op->imm;
+	vn=	(vs&0x0000FFFFFFFFFFFFULL) |
+		(vt&0xFFFF000000000000ULL) ;
+	ctx->reg[op->rn]=vn;
+}
+
+void X3VM_Opc_MOVTT5_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vs, vt, vn;
+	int rt;
+	
+	rt=op->imm;
+	vs=ctx->reg[op->rs];
+	if(!(rt&1))
+		{ vn=(vs&0x0FFFFFFFFFFFFFFFULL)|(((rt>>1)&15ULL)<<60); }
+	else if(!(rt&2))
+		{ vn=(vs&0x1FFFFFFFFFFFFFFFULL)|(((rt>>2)& 7ULL)<<61); }
+	else if(!(rt&4))
+		{ vn=(vs&0x3FFFFFFFFFFFFFFFULL)|(((rt>>3)& 3ULL)<<62); }
+	else if(!(rt&8))
+		{ vn=(vs&0x7FFFFFFFFFFFFFFFULL)|(((rt>>4)& 1ULL)<<63); }
+	ctx->reg[op->rn]=vn;
+}
+
+void X3VM_Opc_MOVZT_2R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vs, vt, vn;	
+	vs=ctx->reg[op->rs];
+	vn=	(vs&0x0000FFFFFFFFFFFFULL) ;
+	ctx->reg[op->rn]=vn;
+}
+
+u64 X3VM_ALU_ROTQ(u64 val, int sh)
+{
+	u64 vc;
+	int sh1;
+	if(sh>0)
+		{ sh1=(sh&63); vc=(val<<sh1)|(val>>(64-sh1)); }
+	else if(sh<0)
+		{ sh1=((-sh)&63); vc=(val>>sh1)|(val<<(64-sh1)); }
+	else
+		{ vc=val; }
+	return(vc);
+}
+
+void X3VM_Opc_ROTLQ_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vs, vt, vn;
+	
+	vs=ctx->reg[op->rs];
+	vt=ctx->reg[op->rt];
+	vn=X3VM_ALU_ROTQ(vs, (sbyte)vt);
+	ctx->reg[op->rn]=vn;
+}
+
+void X3VM_Opc_ROTRQ_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vs, vt, vn;
+	
+	vs=ctx->reg[op->rs];
+	vt=ctx->reg[op->rt];
+	vn=X3VM_ALU_ROTQ(vs, -((sbyte)vt));
 	ctx->reg[op->rn]=vn;
 }

@@ -481,10 +481,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		{
 			for(i=0; i<64; i++)
 			{
+#if 0
 				if(!(sctx->has_xgpr&1) && (i>=32))
 					continue;
 				if(!(sctx->has_bjx1egpr) && (i>=16))
 					continue;
+#endif
 				if(i==15)
 					continue;
 
@@ -513,10 +515,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 //		for(i=0; i<32; i++)
 		for(i=0; i<64; i++)
 		{
+#if 0
 			if(!(sctx->has_xgpr&1) && (i>=32))
 				continue;
 			if(!(sctx->has_bjx1egpr) && (i>=16))
 				continue;
+#endif
 			if(i==15)
 				continue;
 

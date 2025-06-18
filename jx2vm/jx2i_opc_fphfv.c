@@ -2042,6 +2042,53 @@ void BJX2_Op_PSHUFW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		(((vs>>(((imm>>2)&3)*16))&65535)<<16) |
 		(((vs>>(((imm>>4)&3)*16))&65535)<<32) |
 		(((vs>>(((imm>>6)&3)*16))&65535)<<48) ;
+	
+	if(imm>>16)
+	{
+		if(((imm>> 8)&3)==0)		vn&=~0x000000000000FFFFULL;
+		if(((imm>> 8)&3)==2)		vn^= 0x000000000000FFFFULL;
+		if(((imm>> 8)&3)==3)		vn^= 0x0000000000008000ULL;
+		if(((imm>>10)&3)==0)		vn&=~0x00000000FFFF0000ULL;
+		if(((imm>>10)&3)==2)		vn^= 0x00000000FFFF0000ULL;
+		if(((imm>>10)&3)==3)		vn^= 0x0000000080000000ULL;
+		if(((imm>>12)&3)==0)		vn&=~0x0000FFFF00000000ULL;
+		if(((imm>>12)&3)==2)		vn^= 0x0000FFFF00000000ULL;
+		if(((imm>>12)&3)==3)		vn^= 0x0000800000000000ULL;
+		if(((imm>>14)&3)==0)		vn&=~0xFFFF000000000000ULL;
+		if(((imm>>14)&3)==2)		vn^= 0xFFFF000000000000ULL;
+		if(((imm>>14)&3)==3)		vn^= 0x8000000000000000ULL;
+	}
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PMULTW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn, msk;
+	int imm;
+
+	imm=op->imm;
+	vs=ctx->regs[op->rm];	// vt=ctx->regs[op->ro];
+
+	vn=vs;
+
+	if(((imm>>0)&3)==0)		vn&=~0x000000000000FFFFULL;
+	if(((imm>>0)&3)==2)		vn^= 0x000000000000FFFFULL;
+	if(((imm>>0)&3)==3)		vn^= 0x0000000000008000ULL;
+	if(((imm>>2)&3)==0)		vn&=~0x00000000FFFF0000ULL;
+	if(((imm>>2)&3)==2)		vn^= 0x00000000FFFF0000ULL;
+	if(((imm>>2)&3)==3)		vn^= 0x0000000080000000ULL;
+	if(((imm>>4)&3)==0)		vn&=~0x0000FFFF00000000ULL;
+	if(((imm>>4)&3)==2)		vn^= 0x0000FFFF00000000ULL;
+	if(((imm>>4)&3)==3)		vn^= 0x0000800000000000ULL;
+	if(((imm>>6)&3)==0)		vn&=~0xFFFF000000000000ULL;
+	if(((imm>>6)&3)==2)		vn^= 0xFFFF000000000000ULL;
+	if(((imm>>6)&3)==3)		vn^= 0x8000000000000000ULL;
+
+//	vn=	(((vs>>(((imm   )&3)*16))&65535)    ) |
+//		(((vs>>(((imm>>2)&3)*16))&65535)<<16) |
+//		(((vs>>(((imm>>4)&3)*16))&65535)<<32) |
+//		(((vs>>(((imm>>6)&3)*16))&65535)<<48) ;
 
 	ctx->regs[op->rn]=vn;
 }

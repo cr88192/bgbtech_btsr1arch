@@ -7817,6 +7817,14 @@ int BGBCC_JX2_TryEmitOpRegImmReg(
 				opw2=0x8900|ex2|(imm&255);
 				break;
 			}
+			if(ctx->has_jumbo)
+			{
+				i=BGBCC_JX2_ComposeJumboRegImmRegF2A(ctx,
+					&opw1, &opw2, &opw3, &opw4,
+					0xF200, 0x8900|ex2,
+					rm, imm|(~((1LL<<32)-1)), rn);
+				if(i>0)break;
+			}
 			break;
 
 		case BGBCC_SH_NMID_LEAB:

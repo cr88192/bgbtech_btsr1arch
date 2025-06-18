@@ -1026,6 +1026,26 @@ void BJX2_Op_FMOVH_LdRegDispGReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=BJX2_CvtFloatToDouble(BJX2_CvtHalfToFloat(v));
 }
 
+void BJX2_Op_FMOVH_GRegStRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	float sf;
+	u16 v;
+//	sf=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
+//	v=bjx2_f2h(sf);
+	ctx->trapc=op->pc;
+	v=BJX2_CvtFloatToHalf(BJX2_CvtDoubleToFloat(ctx->regs[op->rm]));
+	BJX2_MemSetDWord(ctx, ctx->regs[op->rn]+op->imm, v);
+}
+
+void BJX2_Op_FMOVH_LdRegDisp1GReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u16 v;
+	ctx->trapc=op->pc;
+	v=BJX2_MemGetWord(ctx, ctx->regs[op->rm]+op->imm);
+//	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, bjx2_h2f(v));
+	ctx->regs[op->rn]=BJX2_CvtFloatToDouble(BJX2_CvtHalfToFloat(v));
+}
+
 void BJX2_Op_FMOVH_GRegStReg2(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 //	float sf;

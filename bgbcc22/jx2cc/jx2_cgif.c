@@ -688,6 +688,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
 //		shctx->has_jumbo|=4;	//Jumbo96
 		shctx->has_rvzba|=1;	//Zba
+
+		shctx->has_fmovs|=3;
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_XG2A)
@@ -6906,7 +6908,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 //			d1=b1+((d-4)>>1);
 //			d1=b1+(d-4);
 			d1=b1+d;
-			if((((s32)(d1<<12))>>12)!=d1)
+//			if((((s32)(d1<<12))>>12)!=d1)
+			if((((s32)(d1<<11))>>11)!=d1)
 				{ BGBCC_DBGBREAK }
 
 //			if((((s32)(d1<<24))>>24)==d1)
@@ -6916,7 +6919,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			w1=	((d1>>16)&0x000F) |
 				((d1>> 7)&0x0010) |
 				((d1<< 4)&0x7FE0) |
-				((d1>> 4)&0x8000) ;
+//				((d1>> 4)&0x8000) ;
+				((d1>> 5)&0x8000) ;
 
 //			w0=(w0&0xFF00)|((d1>>12)&0x00FF);
 //			w1=(w1&0xF000)|((d1    )&0x0FFF);

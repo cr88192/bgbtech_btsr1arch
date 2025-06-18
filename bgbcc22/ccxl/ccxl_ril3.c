@@ -1573,6 +1573,7 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		case CCXL_BINOP_UMULH: s0="*^^"; break;
 		case CCXL_BINOP_UDIV: s0="/^"; break;
 		case CCXL_BINOP_CONS: s0="CONS"; break;
+		case CCXL_BINOP_SHUF: s0="SHUF"; break;
 
 		default: s0=NULL; BGBCC_DBGBREAK; break;
 		}

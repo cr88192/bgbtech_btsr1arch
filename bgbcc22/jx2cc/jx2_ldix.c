@@ -107,12 +107,12 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 				break;
 			}
 
-			sz=4; nm1=BGBCC_SH_NMID_MOVL;
+			sz=4; nm1=BGBCC_SH_NMID_MOVDL;
 			nm2=BGBCC_SH_NMID_FLDCF;
 			break;
 		}
 		if(sctx->fpu_soft)
-			{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break; }
+			{ sz=4; nm1=BGBCC_SH_NMID_MOVDL; nm2=-1; break; }
 		sz=4; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break;
 	case CCXL_TY_D:
 		sctx->is_leaftiny|=8;

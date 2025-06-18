@@ -1324,7 +1324,7 @@ int X3VM_TraceDecodeForAddr(X3VM_Context *ctx,
 	X3VM_Opcode *t_ops[X3VM_TRACE_MAXEXTOPS+4];
 	X3VM_Trace *tre;
 	X3VM_Opcode **opa;
-	X3VM_Opcode *op;
+	X3VM_Opcode *op, *op0, *op1;
 	u64 addr1, addr_nobra;
 	int hasrvc;
 	int n;
@@ -1442,6 +1442,8 @@ int X3VM_TraceDecodeForAddr(X3VM_Context *ctx,
 		
 		if(op->opfl&X3VM_OPFL_RN_P)
 		{
+			if(!op->rn)
+				{ op->rn=X3VM_REG_ZRX; }
 			if((op->rn&1) || (op->rn<4))
 			{
 				op->Run=X3VM_Opc_INVOP_NONE;
@@ -1451,6 +1453,8 @@ int X3VM_TraceDecodeForAddr(X3VM_Context *ctx,
 		
 		if(op->opfl&X3VM_OPFL_RS_P)
 		{
+			if(!op->rs)
+				{ op->rs=X3VM_REG_ZRX; }
 			if((op->rs&1) || (op->rs<4))
 			{
 				op->Run=X3VM_Opc_INVOP_NONE;
@@ -1460,6 +1464,8 @@ int X3VM_TraceDecodeForAddr(X3VM_Context *ctx,
 
 		if(op->opfl&X3VM_OPFL_RT_P)
 		{
+			if(!op->rt)
+				{ op->rt=X3VM_REG_ZRX; }
 			if((op->rt&1) || (op->rt<4))
 			{
 				op->Run=X3VM_Opc_INVOP_NONE;
@@ -1479,6 +1485,61 @@ int X3VM_TraceDecodeForAddr(X3VM_Context *ctx,
 		tr->n_ops=n;
 		tr->addr_next=addr1;
 	}
+	
+#if 1
+	n=tr->n_ops; k=0;
+	t_ops[n+0]=NULL;
+	t_ops[n+1]=NULL;
+	t_ops[n+2]=NULL;
+	
+	tr->n_orgops=n;
+	
+	for(i=0; i<n; i++)
+	{
+		op0=t_ops[i+0];
+		op1=t_ops[i+1];
+		if((ctx->opt_faststack&1) && (op0->rs==X3VM_REG_SP) && op1)
+		{
+			if(	(op0->rs==X3VM_REG_SP) &&
+				(op1->rs==X3VM_REG_SP))
+			{
+				if(	(op0->fmid==X3VM_FMID_LDRI) &&
+					(op1->fmid==X3VM_FMID_LDRI) &&
+					(op0->imm>=0) && (op1->imm>=0))
+				{
+					if(	(op0->nmid==X3VM_NMID_LDP) &
+						(op1->nmid==X3VM_NMID_LDP) )
+					{
+						op0->nmid=X3VM_NMID_LDQ;
+						op0->imm=(op0->imm)|(op1->imm<<32);
+						op0->ru=op1->rn;
+						op0->Run=X3VM_Opc_LD64Q_3RI_FSP;
+						t_ops[k++]=op0;
+						continue;
+					}
+				}
+
+				if(	(op0->fmid==X3VM_FMID_STRI) &&
+					(op1->fmid==X3VM_FMID_STRI) &&
+					(op0->imm>=0) && (op1->imm>=0))
+				{
+					if(	(op0->nmid==X3VM_NMID_SDP) &
+						(op1->nmid==X3VM_NMID_SDP) )
+					{
+						op0->nmid=X3VM_NMID_SDQ;
+						op0->imm=(op0->imm)|(op1->imm<<32);
+						op0->ru=op1->rn;
+						op0->Run=X3VM_Opc_ST64Q_3RI_FSP;
+						t_ops[k++]=op0;
+						continue;
+					}
+				}
+			}
+		}
+		t_ops[k++]=t_ops[i];
+	}
+	tr->n_ops=k;
+#endif
 	
 	for(i=0; i<X3VM_TRACE_MAXOPS; i++)
 		tr->ops[i]=t_ops[i];

@@ -1189,6 +1189,9 @@
 #define BGBCC_SH_NMID_BITMOVS		0x02AA	//
 #define BGBCC_SH_NMID_BITMOVSX		0x02AB	//
 
+#define BGBCC_SH_NMID_PMULTW		0x02AC	//
+#define BGBCC_SH_NMID_PMULTXL		0x02AD	//
+
 
 
 #define BGBCC_SH_NMID_MOVZT			BGBCC_SH_NMID_MOVTT
@@ -1603,6 +1606,9 @@
 
 #define	BGBCC_JX2CC_PSREG_RTSLR		BGBCC_JX2C_GetRtsLr(ctx, sctx)
 #define	BGBCC_JX2CC_PSREG_ALTLR		BGBCC_JX2C_GetAltLr(ctx, sctx)
+
+#define	BGBCC_JX2CC_PSREG_TS0F		BGBCC_JX2C_GetRegTempFpScratch(ctx, sctx, 0)
+#define	BGBCC_JX2CC_PSREG_TS1F		BGBCC_JX2C_GetRegTempFpScratch(ctx, sctx, 1)
 
 #if 0
 typedef struct BGBCC_SHX_Context_s BGBCC_SHX_Context;

@@ -759,7 +759,10 @@ int BGBCC_JX2C_ScratchReleaseReg(
 			ctx->cur_func->regflags|=BGBCC_REGFL_NOSCRATCHDYN;
 
 			if(!((sctx->regs_scratch_ts>>(reg&63))&1))
-				{ BGBCC_DBGBREAK }
+			{
+				if(((reg&63)<32) || (sctx->emit_riscv&0x22))
+					{ BGBCC_DBGBREAK }
+			}
 
 //			if(sctx->sreg_live&(1ULL<<(reg&63)))
 //				{ BGBCC_DBGBREAK }
@@ -1981,6 +1984,16 @@ int BGBCC_JX2C_GetRegTempScratch(
 {
 	if(sctx->emit_riscv&0x33)
 		return(BGBCC_SH_REG_RQ6+ts);
+
+	return(BGBCC_SH_REG_RQ16+ts);
+}
+
+int BGBCC_JX2C_GetRegTempFpScratch(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx, int ts)
+{
+	if(sctx->emit_riscv&0x11)
+		return(BGBCC_SH_REG_RQ34+ts);
 
 	return(BGBCC_SH_REG_RQ16+ts);
 }
@@ -3459,6 +3472,18 @@ int BGBCC_JX2C_EmitRotateRegisterIndex(
 
 	if(sctx->emit_riscv&0x33)
 	{
+		if((flag&0x10) && (idx>=0))
+//		if(0)
+		{
+			i1=sctx->maxreg_gpr-(idx+1);
+			i2=idx-sctx->maxreg_gpr;
+			i2=sctx->maxreg_gpr_lf-(i2+1);
+			if(idx<sctx->maxreg_gpr)
+				return(i1);
+			if(idx<sctx->maxreg_gpr_lf)
+				return(i2);
+		}
+	
 		return(idx);
 	}
 
@@ -3725,7 +3750,7 @@ int BGBCC_JX2C_CheckRegisterIndexArgIdxP(
 int BGBCC_JX2C_CheckRegisterIndexExcludeP(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
-	int idx)
+	int idx, int isfpu)
 {
 	s64 sctso;
 	int creg, tr0;
@@ -3747,6 +3772,10 @@ int BGBCC_JX2C_CheckRegisterIndexExcludeP(
 	if(sctx->is_leaftiny&1)
 	{
 		if(sctx->regs_excl_tiny&(1ULL<<tr0))
+			return(1);
+	}else if(isfpu&1)
+	{
+		if(sctx->regs_excl_fpu&(1ULL<<tr0))
 			return(1);
 	}else
 	{
@@ -3772,7 +3801,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	int maxreg;
 	u64 vrsave, uli, ulj;
 	int creg, excl, nsv, userq, usepq, rcls, vspfl;
-	int pr0, pr1, pr0b, pr1b, i1;
+	int pr0, pr1, pr0b, pr1b, i1, isfpu;
 	int i, j, bi;
 
 	if(reg.val==CCXL_REGID_REG_Z)
@@ -3785,6 +3814,12 @@ int BGBCC_JX2C_EmitTryGetRegister(
 	rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, tty);
 
 	vspfl=BGBCC_JX2C_GetFrameVRegVspanFlags(ctx, sctx, reg);
+	isfpu=0;
+
+	if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
+		BGBCC_CCXL_IsRegFloat16P(ctx, reg) ||
+		BGBCC_CCXL_IsRegDoubleP(ctx, reg))
+			isfpu=1;
 
 	if(ctx->arch_sizeof_ptr==16)
 	{
@@ -3938,7 +3973,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		if((excl>>i)&1)
 			continue;
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i, isfpu))
 			continue;
 
 //		if(!((sctx->regalc_live)&(1ULL<<i)))
@@ -4020,9 +4055,9 @@ int BGBCC_JX2C_EmitTryGetRegister(
 			if((excl>>i)&1)
 				continue;
 
-			i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1);
+			i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1|(isfpu<<4));
 
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1, isfpu))
 				continue;
 
 			if(!BGBCC_JX2C_CheckRegisterIndexScratchP(ctx, sctx, i1))
@@ -4106,7 +4141,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 //		for(i=0; i<maxreg; i++)
 		for(i=0; i<sctx->maxreg_gpr_lf; i++)
 		{
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i, isfpu))
 				continue;
 
 			if(BGBCC_JX2C_CheckRegisterIndexArgIdxP(ctx, sctx, i, j)>0)
@@ -4154,7 +4189,7 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		{
 			for(i=0; i<sctx->maxreg_gpr_lf; i++)
 			{
-				if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+				if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i, isfpu))
 					continue;
 
 				reg1=sctx->regalc_map[i];
@@ -4268,9 +4303,9 @@ int BGBCC_JX2C_EmitTryGetRegister(
 //		for(i=0; i<sctx->maxreg_gpr; i++)
 		for(i=0; i<maxreg; i++)
 		{
-			i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1);
+			i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1|(isfpu<<4));
 
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1, isfpu))
 				continue;
 
 			if(i1>=maxreg)
@@ -4359,7 +4394,8 @@ int BGBCC_JX2C_EmitTryGetRegister(
 		if((pr0>=0) && (pr0<sctx->vsp_rsv))
 			bi=pr0;
 
-		if((bi>=0) && BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, bi))
+		if((bi>=0) && BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx,
+			sctx, bi, isfpu))
 		{
 			BGBCC_DBGBREAK
 			bi=-1;
@@ -4434,7 +4470,7 @@ int BGBCC_JX2C_EmitGetRegister(
 	int maxreg;
 	u64 vrsave;
 	int creg, lng, excl, bi, nsv, userq, usepq, rcls;
-	int pr0, pr1, pr0b, pr1b;
+	int pr0, pr1, pr0b, pr1b, isfpu;
 	int i, i1;
 
 	if(reg.val==CCXL_REGID_REG_Z)
@@ -4484,6 +4520,7 @@ int BGBCC_JX2C_EmitGetRegister(
 //		return(BGBCC_SH_REG_ZZR);
 	}
 
+	isfpu=0;
 
 //	tty=BGBCC_CCXL_GetRegType(ctx, reg);
 	tty=BGBCC_CCXL_GetRegStorageType(ctx, reg);
@@ -4492,6 +4529,11 @@ int BGBCC_JX2C_EmitGetRegister(
 //	if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
 //		BGBCC_CCXL_IsRegFloat16P(ctx, reg) ||
 //		BGBCC_CCXL_IsRegDoubleP(ctx, reg))
+
+	if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
+		BGBCC_CCXL_IsRegFloat16P(ctx, reg) ||
+		BGBCC_CCXL_IsRegDoubleP(ctx, reg))
+			isfpu=1;
 
 //	if((rcls==BGBCC_SH_REGCLS_FR) ||
 //		(rcls==BGBCC_SH_REGCLS_FR2))
@@ -4608,13 +4650,13 @@ int BGBCC_JX2C_EmitGetRegister(
 //	for(i=0; i<sctx->maxreg_gpr; i++)
 	for(i=0; i<maxreg; i++)
 	{
-		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1);
+		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1|(isfpu<<4));
 //		i1=i;
 
 		if(i1<0)
 			{ BGBCC_DBGBREAK }
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1, isfpu))
 			continue;
 
 		if(i1>=maxreg)
@@ -4694,10 +4736,10 @@ int BGBCC_JX2C_EmitGetRegister(
 //		for(i=0; i<sctx->maxreg_gpr; i++)
 		for(i=0; i<maxreg; i++)
 		{
-			i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1);
+			i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 1|(isfpu<<4));
 //			i1=i;
 
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1, isfpu))
 				continue;
 
 			if(i1>=maxreg)
@@ -4829,10 +4871,10 @@ int BGBCC_JX2C_EmitGetRegister(
 //	for(i=0; i<sctx->maxreg_gpr; i++)
 	for(i=0; i<maxreg; i++)
 	{
-//		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 0);
-		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 3);
+//		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 0|(isfpu<<4));
+		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, i, 3|(isfpu<<4));
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1, isfpu))
 			continue;
 
 		if(i1>=maxreg)
@@ -5010,14 +5052,20 @@ int BGBCC_JX2C_EmitBindVRegReg(
 	BGBCC_JX2_Context *sctx,
 	ccxl_register reg, int dreg)
 {
-	int i, bi, creg, maxreg;
+	int i, bi, creg, maxreg, isfpu;
 
 	maxreg=sctx->maxreg_gpr_lf;
+	isfpu=0;
+
+	if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
+		BGBCC_CCXL_IsRegFloat16P(ctx, reg) ||
+		BGBCC_CCXL_IsRegDoubleP(ctx, reg))
+			isfpu=1;
 
 	bi=-1;
 	for(i=0; i<maxreg; i++)
 	{
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i, isfpu))
 			continue;
 
 		creg=sctx->qcachereg[i];
@@ -5067,14 +5115,20 @@ int BGBCC_JX2C_EmitBindVRegRegDirty(
 	BGBCC_JX2_Context *sctx,
 	ccxl_register reg, int dreg)
 {
-	int i, bi, creg, maxreg;
+	int i, bi, creg, maxreg, isfpu;
 
 	maxreg=sctx->maxreg_gpr_lf;
+	isfpu=0;
+
+	if(BGBCC_CCXL_IsRegFloatP(ctx, reg) ||
+		BGBCC_CCXL_IsRegFloat16P(ctx, reg) ||
+		BGBCC_CCXL_IsRegDoubleP(ctx, reg))
+			isfpu=1;
 
 	bi=-1;
 	for(i=0; i<maxreg; i++)
 	{
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i, isfpu))
 			continue;
 
 		creg=sctx->qcachereg[i];
@@ -5114,14 +5168,15 @@ int BGBCC_JX2C_GetRegisterIndexForReg(
 	BGBCC_JX2_Context *sctx,
 	int dreg)
 {
-	int i, bi, creg, maxreg;
+	int i, bi, creg, maxreg, isfpu;
 
 	maxreg=sctx->maxreg_gpr_lf;
+	isfpu=3;
 
 	bi=-1;
 	for(i=0; i<maxreg; i++)
 	{
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i, isfpu))
 			continue;
 
 		creg=sctx->qcachereg[i];
@@ -6372,6 +6427,8 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 	}
 #endif
 
+	sctx->regs_excl_fpu=sctx->regs_excl;
+
 #if 1
 	if(sctx->emit_riscv&3)
 	{
@@ -6392,6 +6449,7 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 		sctx->regs_scratch		=0xF003FCF0F003FC00ULL;
 		sctx->regs_scratch_ts	=0xF003FCF0F003FCC0ULL;
 		sctx->regs_args			=0x0003FC0000F3FC00ULL;
+		sctx->regs_excl_fpu		=0x0000000F0000003FULL;
 
 		if((sctx->emit_riscv&2) && (sctx->has_xgpr&1))
 		{
@@ -6406,6 +6464,7 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 			sctx->lmaxreg_gpr_lf=bgbcc_jx2_maxreg_xg2rv_lf;
 
 			sctx->regs_excl			=0x000000000000003FULL;
+			sctx->regs_excl_fpu		=0x000000000000003FULL;
 			sctx->regs_excl_tiny	=0x0FFC03000FFC03FFULL;
 		}
 	}

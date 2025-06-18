@@ -367,7 +367,8 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 	case 0x8:	/* F2nm_8ejj */
 		if(eo)
 		{
-			op->imm=(sbyte)imm9u;
+//			op->imm=(sbyte)imm9u;
+			op->imm=(byte)imm9u;
 			op->nmid=BJX2_NMID_PSHUFB;
 			op->fmid=BJX2_FMID_REGIMMREG;
 			op->Run=BJX2_Op_PSHUFB_RegImmReg;
@@ -375,6 +376,15 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			{
 				op->nmid=BJX2_NMID_PSHUFW;
 				op->Run=BJX2_Op_PSHUFW_RegImmReg;
+				if((imm9u>>8)==3)
+				{
+					op->nmid=BJX2_NMID_PMULTW;
+					op->Run=BJX2_Op_PMULTW_RegImmReg;
+				}
+				if(imm9u>>16)
+				{
+					op->imm=imm9u;
+				}
 			}
 		}else
 		{

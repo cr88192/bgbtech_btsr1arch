@@ -471,6 +471,8 @@ Base, Q1..Q3:
 
 #define CCXL_BINOP_MAC			0x10	//TrinOp
 
+#define CCXL_BINOP_SHUF			0x14	//Vector Shuffle
+
 #define CCXL_UNOP_MOV			0x00
 #define CCXL_UNOP_NEG			0x01
 #define CCXL_UNOP_NOT			0x02

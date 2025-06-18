@@ -1043,7 +1043,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	k-=8*8;		//saved R8/9/10/11/13, R2
 
 //	if(sctx->has_bjx1egpr)
-	if(sctx->has_bjx1egpr && sctx->use_egpr)
+	if((sctx->has_bjx1egpr && sctx->use_egpr) || (sctx->emit_riscv&0x33))
 		k-=8*8;		//saved R24..R31
 
 //	if(sctx->is_pbo)
@@ -1056,7 +1056,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //		((sctx->has_xgpr&1) && (sctx->use_egpr&2)))
 //	if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
 //	if((sctx->has_xgpr&1) || (sctx->use_egpr&2))
-	if((sctx->has_xgpr&6) || (sctx->use_egpr&2))
+	if((sctx->has_xgpr&6) || (sctx->use_egpr&2) || (sctx->emit_riscv&0x33))
 		k-=16*8;		//saved R40..R47, R56..R63
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
@@ -1074,11 +1074,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 #if 1
 		k-=16*8;		//saved R0..R15
-		if(sctx->has_bjx1egpr)
+		if(sctx->has_bjx1egpr || (sctx->emit_riscv&0x33))
 			k-=16*8;		//saved R16..R31
 
 //		if(sctx->has_xgpr&2)
-		if(sctx->has_xgpr&1)
+		if((sctx->has_xgpr&1) || (sctx->emit_riscv&0x33))
 			k-=32*8;		//saved R32..R64
 #endif
 	}

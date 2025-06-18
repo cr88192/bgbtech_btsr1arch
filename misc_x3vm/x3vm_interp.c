@@ -905,7 +905,8 @@ int X3VM_DoRun(X3VM_Context *ctx, int limit)
 		while(tr && n--)
 		{
 			ctx->tr_log[ctx->tr_logpos++]=tr;
-			ctx->totcyc+=tr->n_ops;
+//			ctx->totcyc+=tr->n_ops;
+			ctx->totcyc+=tr->n_orgops;
 //			rcyc+=tr->n_ops;
 			tr=tr->Run(ctx, tr);
 		}

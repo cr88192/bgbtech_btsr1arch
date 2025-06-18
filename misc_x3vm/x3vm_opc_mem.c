@@ -185,12 +185,48 @@ void X3VM_Opc_ST64P_3RI_FSP(X3VM_Context *ctx, X3VM_Opcode *op)
 	ptr[1]=reg[rn+1];
 }
 
+
+void X3VM_Opc_LD64Q_3RI_FSP(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 *ptr, *reg;
+	int rs, rn, ru;
+	reg=ctx->reg; rs=op->rs; rn=op->rn; ru=op->ru;
+//	ptr=(u64 *)(ctx->reg[op->rs]+(op->imm<<op->sc));
+	ptr=(u64 *)(reg[rs]+(u32)(op->imm));
+	reg[rn+0]=ptr[0];
+	reg[rn+1]=ptr[1];
+	ptr=(u64 *)(reg[rs]+(u32)(op->imm>>32));
+	reg[ru+0]=ptr[0];
+	reg[ru+1]=ptr[1];
+}
+
+void X3VM_Opc_ST64Q_3RI_FSP(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 *ptr, *reg;
+	int rs, rn, ru;
+	reg=ctx->reg; rs=op->rs; rn=op->rn; ru=op->ru;
+//	ptr=(u64 *)(ctx->reg[op->rs]+(op->imm<<op->sc));
+	ptr=(u64 *)(reg[rs]+(u32)(op->imm));
+	ptr[0]=reg[rn+0];
+	ptr[1]=reg[rn+1];
+	ptr=(u64 *)(reg[rs]+(u32)(op->imm>>32));
+	ptr[0]=reg[ru+0];
+	ptr[1]=reg[ru+1];
+}
+
 void X3VM_Opc_FLD32TO64_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
 {
+	u64 vn;
+	u32 vc;
+	
 	ctx->reg[X3VM_REG_BPC]=op->addr;
-	ctx->reg[op->rn]=X3VM_ConvFp32ToFp64(
-		X3VM_MemLoadU32(ctx,
-			ctx->reg[op->rs]+(op->imm<<op->sc)));
+	vc=X3VM_MemLoadU32(ctx, ctx->reg[op->rs]+(op->imm<<op->sc));
+	*((double *)(&vn))=*((float *)(&vc));
+	ctx->reg[op->rn]=vn;
+
+//	ctx->reg[op->rn]=X3VM_ConvFp32ToFp64(
+//		X3VM_MemLoadU32(ctx,
+//			ctx->reg[op->rs]+(op->imm<<op->sc)));
 }
 
 void X3VM_Opc_FLD16TO64_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
@@ -203,10 +239,19 @@ void X3VM_Opc_FLD16TO64_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
 
 void X3VM_Opc_FST64TO32_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
 {
+	u64 va;
+	u32 vc;
+
 	ctx->reg[X3VM_REG_BPC]=op->addr;
+
+	va=ctx->reg[op->rn];
+	*((float *)(&vc))=*((double *)(&va));
 	X3VM_MemStoreU32(ctx,
-		ctx->reg[op->rs]+(op->imm<<op->sc),
-		X3VM_ConvFp64ToFp32(ctx->reg[op->rn]));
+		ctx->reg[op->rs]+(op->imm<<op->sc), vc);
+
+//	X3VM_MemStoreU32(ctx,
+//		ctx->reg[op->rs]+(op->imm<<op->sc),
+//		X3VM_ConvFp64ToFp32(ctx->reg[op->rn]));
 }
 
 void X3VM_Opc_FST64TO16_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
@@ -340,6 +385,39 @@ void X3VM_Opc_ST64P_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 }
 
 
+void X3VM_Opc_FLD32TO64_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	ctx->reg[X3VM_REG_BPC]=op->addr;
+	ctx->reg[op->rn]=X3VM_ConvFp32ToFp64(
+		X3VM_MemLoadU32(ctx,
+			ctx->reg[op->rs]+(ctx->reg[op->rt]<<op->sc)));
+}
+
+void X3VM_Opc_FLD16TO64_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	ctx->reg[X3VM_REG_BPC]=op->addr;
+	ctx->reg[op->rn]=X3VM_ConvFp16ToFp64(
+		X3VM_MemLoadU16(ctx,
+			ctx->reg[op->rs]+(ctx->reg[op->rt]<<op->sc)));
+}
+
+void X3VM_Opc_FST64TO32_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	ctx->reg[X3VM_REG_BPC]=op->addr;
+	X3VM_MemStoreU32(ctx,
+		ctx->reg[op->rs]+(ctx->reg[op->rt]<<op->sc),
+		X3VM_ConvFp64ToFp32(ctx->reg[op->rn]));
+}
+
+void X3VM_Opc_FST64TO16_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	ctx->reg[X3VM_REG_BPC]=op->addr;
+	X3VM_MemStoreU16(ctx,
+		ctx->reg[op->rs]+(ctx->reg[op->rt]<<op->sc),
+		X3VM_ConvFp64ToFp16(ctx->reg[op->rn]));
+}
+
+
 void X3VM_Opc_LEA_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 {
 	ctx->reg[X3VM_REG_BPC]=op->addr;
@@ -368,6 +446,42 @@ void X3VM_Opc_SHNADDUW_3R(X3VM_Context *ctx, X3VM_Opcode *op)
 	ctx->reg[X3VM_REG_BPC]=op->addr;
 	ctx->reg[op->rn]=
 		ctx->reg[op->rt]+(((u32)ctx->reg[op->rs])<<op->sc);
+}
+
+void X3VM_Opc_LEAT_3R(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vn;
+
+	if(op->rt==X3VM_REG_BPC)
+	{
+		vn=(op->addr+(ctx->reg[op->rt]<<op->sc))&0x0000FFFFFFFFFFFFULL;
+		vn=vn|((u64)(ctx->pc_hibits)<<48)|1;
+		ctx->reg[op->rn]=vn;
+		return;
+	}
+	
+	ctx->reg[X3VM_REG_BPC]=op->addr;
+	ctx->reg[op->rn]=
+		(ctx->reg[op->rs]+(ctx->reg[op->rt]<<op->sc))&
+		0x0000FFFFFFFFFFFFULL;
+}
+
+void X3VM_Opc_LEAT_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
+{
+	u64 vn;
+
+	if(op->rt==X3VM_REG_BPC)
+	{
+		vn=(op->addr+(op->imm<<op->sc))&0x0000FFFFFFFFFFFFULL;
+		vn=vn|((u64)(ctx->pc_hibits)<<48)|1;
+		ctx->reg[op->rn]=vn;
+		return;
+	}
+	
+//	ctx->reg[X3VM_REG_BPC]=op->addr;
+	ctx->reg[op->rn]=
+		(ctx->reg[op->rs]+(op->imm<<op->sc))&
+		0x0000FFFFFFFFFFFFULL;
 }
 
 void X3VM_Opc_INVOP_NONE(X3VM_Context *ctx, X3VM_Opcode *op)

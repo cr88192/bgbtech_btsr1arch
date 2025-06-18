@@ -563,11 +563,14 @@ u16 X3VM_MemLoadU16(X3VM_Context *ctx, u64 addr)
 	void *ptr;
 	int i0, i1;
 
-	if((addr>>14)!=((addr+1)>>14))
+	if(addr&1)
 	{
-		i0=X3VM_MemLoadU8(ctx, addr+0);
-		i1=X3VM_MemLoadU8(ctx, addr+1);
-		return(i0|(i1<<8));
+		if((addr>>14)!=((addr+1)>>14))
+		{
+			i0=X3VM_MemLoadU8(ctx, addr+0);
+			i1=X3VM_MemLoadU8(ctx, addr+1);
+			return(i0|(i1<<8));
+		}
 	}
 	
 	ptr=X3VM_MemMapAddress(ctx, addr, 4);
@@ -585,11 +588,14 @@ u32 X3VM_MemLoadU32(X3VM_Context *ctx, u64 addr)
 	void *ptr;
 	u32 i0, i1;
 
-	if((addr>>14)!=((addr+3)>>14))
+	if(addr&3)
 	{
-		i0=X3VM_MemLoadU16(ctx, addr+0);
-		i1=X3VM_MemLoadU16(ctx, addr+2);
-		return(i0|(i1<<16));
+		if((addr>>14)!=((addr+3)>>14))
+		{
+			i0=X3VM_MemLoadU16(ctx, addr+0);
+			i1=X3VM_MemLoadU16(ctx, addr+2);
+			return(i0|(i1<<16));
+		}
 	}
 	
 	ptr=X3VM_MemMapAddress(ctx, addr, 4);
@@ -607,11 +613,14 @@ u64 X3VM_MemLoadU64(X3VM_Context *ctx, u64 addr)
 	void *ptr;
 	u64 i0, i1;
 
-	if((addr>>14)!=((addr+7)>>14))
+	if(addr&7)
 	{
-		i0=X3VM_MemLoadU32(ctx, addr+0);
-		i1=X3VM_MemLoadU32(ctx, addr+4);
-		return(i0|(i1<<32));
+		if((addr>>14)!=((addr+7)>>14))
+		{
+			i0=X3VM_MemLoadU32(ctx, addr+0);
+			i1=X3VM_MemLoadU32(ctx, addr+4);
+			return(i0|(i1<<32));
+		}
 	}
 	
 	ptr=X3VM_MemMapAddress(ctx, addr, 4);
@@ -738,11 +747,14 @@ int X3VM_MemStoreU16(X3VM_Context *ctx, u64 addr, u16 val)
 {
 	void *ptr;
 
-	if((addr>>14)!=((addr+1)>>14))
+	if(addr&1)
 	{
-		X3VM_MemStoreU8(ctx, addr+0, val);
-		X3VM_MemStoreU8(ctx, addr+1, val>>8);
-		return(1);
+		if((addr>>14)!=((addr+1)>>14))
+		{
+			X3VM_MemStoreU8(ctx, addr+0, val);
+			X3VM_MemStoreU8(ctx, addr+1, val>>8);
+			return(1);
+		}
 	}
 	
 	ptr=X3VM_MemMapAddress(ctx, addr, 5);
@@ -754,11 +766,14 @@ int X3VM_MemStoreU32(X3VM_Context *ctx, u64 addr, u32 val)
 {
 	void *ptr;
 
-	if((addr>>14)!=((addr+3)>>14))
+	if(addr&3)
 	{
-		X3VM_MemStoreU16(ctx, addr+0, val);
-		X3VM_MemStoreU16(ctx, addr+2, val>>16);
-		return(1);
+		if((addr>>14)!=((addr+3)>>14))
+		{
+			X3VM_MemStoreU16(ctx, addr+0, val);
+			X3VM_MemStoreU16(ctx, addr+2, val>>16);
+			return(1);
+		}
 	}
 	
 	ptr=X3VM_MemMapAddress(ctx, addr, 5);
@@ -770,11 +785,14 @@ int X3VM_MemStoreU64(X3VM_Context *ctx, u64 addr, u64 val)
 {
 	void *ptr;
 
-	if((addr>>14)!=((addr+7)>>14))
+	if(addr&7)
 	{
-		X3VM_MemStoreU32(ctx, addr+0, val);
-		X3VM_MemStoreU32(ctx, addr+4, val>>32);
-		return(1);
+		if((addr>>14)!=((addr+7)>>14))
+		{
+			X3VM_MemStoreU32(ctx, addr+0, val);
+			X3VM_MemStoreU32(ctx, addr+4, val>>32);
+			return(1);
+		}
 	}
 	
 	ptr=X3VM_MemMapAddress(ctx, addr, 5);

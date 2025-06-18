@@ -4249,9 +4249,10 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 {
 	char tb1[256];
 	BGBCC_CCXL_LiteralInfo *st;
+	char *s0;
 	ccxl_register sreg, dreg, treg;
 	ccxl_type bty, sty, bty2, sty2;
-	int i0, i1;
+	int i0, i1, n;
 	int i, j;
 
 	i=BGBCC_CCXL_PeekRegister(ctx, &sreg);
@@ -4264,6 +4265,60 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 		if(i>=0)
 		{
 			return(BGBCC_CCXL_StackLoadIndexConst(ctx, i));
+		}
+
+		BGBCC_CCXL_TypeDerefType(ctx, sty, &bty);
+		
+		s0=name; n=0; i0=0; i1=0;
+		while(*s0)
+		{
+			j=-1;
+
+			if(*s0=='x')	j=0;
+			if(*s0=='y')	j=1;
+			if(*s0=='z')	j=2;
+			if(*s0=='w')	j=3;
+			if(*s0=='s')	j=0;
+			if(*s0=='t')	j=1;
+			if(*s0=='u')	j=2;
+			if(*s0=='v')	j=3;
+			if(*s0=='b')	j=0;
+			if(*s0=='g')	j=1;
+			if(*s0=='r')	j=2;
+			if(*s0=='a')	j=3;
+			if(*s0=='X')	j=4;
+			if(*s0=='Y')	j=5;
+			if(*s0=='Z')	j=6;
+			if(*s0=='W')	j=7;
+			if(*s0=='S')	j=4;
+			if(*s0=='T')	j=5;
+			if(*s0=='U')	j=6;
+			if(*s0=='V')	j=7;
+			if(*s0=='B')	j=4;
+			if(*s0=='G')	j=5;
+			if(*s0=='R')	j=6;
+			if(*s0=='A')	j=7;
+			if(*s0=='o')	j=8;
+			if(*s0=='O')	j=8;
+			
+			if(j<0)
+				break;
+			
+			i0|=(j&3)<<(n*2);
+			
+			if((j&0xC)==0)		i1|=0<<(n*2);
+			if((j&0xC)==4)		i1|=1<<(n*2);
+			if((j&0xC)==8)		i1|=2<<(n*2);
+			
+			s0++;
+			n++;
+		}
+		
+		if(!(*s0) && (n>1))
+		{
+			i0=i0|(i1<<8)|(n<<16);
+			BGBCC_CCXL_StackPushConstInt(ctx, i0);
+			return(BGBCC_CCXL_StackBinaryOp(ctx, "SHUF"));
 		}
 	}
 

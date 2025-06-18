@@ -1,63 +1,66 @@
 
 #define X3PE_UMSG_ROMFCN		0x1000
 
-#define X3PE_UMSG_GETCONPARAM	0x1001
-#define X3PE_UMSG_CONRESET		0x1002
-#define X3PE_UMSG_PGMEXIT		0x1003
-#define X3PE_UMSG_PAGEALLOC		0x1004
-#define X3PE_UMSG_PAGEFREE		0x1005
-#define X3PE_UMSG_SETUSRIRQ		0x1006
-#define X3PE_UMSG_WITHKRRSETUID	0x1007
+#define X3PE_UMSG_GETCONPARAM	0x1001		//Get Console Parameter Struct
+#define X3PE_UMSG_CONRESET		0x1002		//Reset Console
+#define X3PE_UMSG_PGMEXIT		0x1003		//Exit current program
+#define X3PE_UMSG_PAGEALLOC		0x1004		//Alloc Pages (Generic)
+#define X3PE_UMSG_PAGEFREE		0x1005		//Free Pages (Generic)
+#define X3PE_UMSG_SETUSRIRQ		0x1006		//Set IRQ Handler
+#define X3PE_UMSG_WITHKRRSETUID	0x1007		//Call with updated KRR
 
-#define X3PE_UMSG_CONPUTC		0x1008
-#define X3PE_UMSG_CONGETCH		0x1009
-#define X3PE_UMSG_CONKBHIT		0x100A
-#define X3PE_UMSG_GETENVVARIDX	0x100B
-#define X3PE_UMSG_GETENVVAR		0x100C
-#define X3PE_UMSG_SETENVVAR		0x100D
-#define X3PE_UMSG_CONPUTSN		0x100E
+#define X3PE_UMSG_CONPUTC		0x1008		//putc to console / stdout
+#define X3PE_UMSG_CONGETCH		0x1009		//getc from console / stdin
+#define X3PE_UMSG_CONKBHIT		0x100A		//check for input on console/stdin
+#define X3PE_UMSG_GETENVVARIDX	0x100B		//get env var using index
+#define X3PE_UMSG_GETENVVAR		0x100C		//get environment variable
+#define X3PE_UMSG_SETENVVAR		0x100D		//set environment variable
+#define X3PE_UMSG_CONPUTSN		0x100E		//puts to console or stdout
 
-#define X3PE_UMSG_MMAP			0x1010
-#define X3PE_UMSG_MUNMAP		0x1011
-#define X3PE_UMSG_MPROTECT		0x1012
+#define X3PE_UMSG_MMAP			0x1010		//mmap
+#define X3PE_UMSG_MUNMAP		0x1011		//munmap
+#define X3PE_UMSG_MPROTECT		0x1012		//mprotect
 #define X3PE_UMSG_MSYNC			0x1013
 #define X3PE_UMSG_MLOCK			0x1014
 #define X3PE_UMSG_MUNLOCK		0x1015
 #define X3PE_UMSG_MLOCKALL		0x1016
 #define X3PE_UMSG_MUNLOCKALL	0x1017
 
-#define X3PE_UMSG_YIELDTHREAD	0x1018
-#define X3PE_UMSG_TLSNEW		0x1019
-#define X3PE_UMSG_NEWTHREAD		0x101A
-#define X3PE_UMSG_SUSPTHREAD	0x101B
-#define X3PE_UMSG_THREADSTATUS	0x101C
-#define X3PE_UMSG_GETAPICTX		0x101D
-#define X3PE_UMSG_DLOPEN		0x101E
-#define X3PE_UMSG_DLSYM			0x101F
+#define X3PE_UMSG_YIELDTHREAD	0x1018		//yeild / usleep
+#define X3PE_UMSG_TLSNEW		0x1019		//create TLS
+#define X3PE_UMSG_NEWTHREAD		0x101A		//spawn thread
+#define X3PE_UMSG_SUSPTHREAD	0x101B		//suspend thread
+#define X3PE_UMSG_THREADSTATUS	0x101C		//get thread status
+#define X3PE_UMSG_GETAPICTX		0x101D		//Get API Object
+#define X3PE_UMSG_DLOPEN		0x101E		//Open Library
+#define X3PE_UMSG_DLSYM			0x101F		//Get Symbol from Library
 
-#define X3PE_UMSG_VFOPEN		0x1020
-#define X3PE_UMSG_VFOPENDIR		0x1021
-#define X3PE_UMSG_VFUNLINK		0x1022
-#define X3PE_UMSG_VFRENAME		0x1023
-#define X3PE_UMSG_VFSTAT		0x1024
-#define X3PE_UMSG_VFMOUNT		0x1025
-#define X3PE_UMSG_VFREADDIR		0x1026
-#define X3PE_UMSG_VFCLOSEDIR	0x1027
-#define X3PE_UMSG_VFREAD		0x1028
-#define X3PE_UMSG_VFWRITE		0x1029
-#define X3PE_UMSG_VFSEEK		0x102A
-#define X3PE_UMSG_VFCLOSE		0x102B
-#define X3PE_UMSG_VFIOCTL		0x102C
-#define X3PE_UMSG_VFSCTL		0x102D
-#define X3PE_UMSG_VFMKDIR		0x102E
-#define X3PE_UMSG_VFRMDIR		0x102F
-#define X3PE_UMSG_VFSEND		0x1030
-#define X3PE_UMSG_VFRECV		0x1031
+#define X3PE_UMSG_VFOPEN		0x1020		//Open File
+#define X3PE_UMSG_VFOPENDIR		0x1021		//Open Directory
+#define X3PE_UMSG_VFUNLINK		0x1022		//Unlink File
+#define X3PE_UMSG_VFRENAME		0x1023		//Rename File
+#define X3PE_UMSG_VFSTAT		0x1024		//Stat File
+#define X3PE_UMSG_VFMOUNT		0x1025		//Mount Volume
+#define X3PE_UMSG_VFREADDIR		0x1026		//Read Directory
+#define X3PE_UMSG_VFCLOSEDIR	0x1027		//Close Directory
+#define X3PE_UMSG_VFREAD		0x1028		//Read File
+#define X3PE_UMSG_VFWRITE		0x1029		//Write File
+#define X3PE_UMSG_VFSEEK		0x102A		//Seek File
+#define X3PE_UMSG_VFCLOSE		0x102B		//Close File
+#define X3PE_UMSG_VFIOCTL		0x102C		//ioctl
+#define X3PE_UMSG_VFSCTL		0x102D		//fsctl
+#define X3PE_UMSG_VFMKDIR		0x102E		//Create Directory
+#define X3PE_UMSG_VFRMDIR		0x102F		//Remove Directory
+#define X3PE_UMSG_VFSEND		0x1030		//Send Message (socket)
+#define X3PE_UMSG_VFRECV		0x1031		//Recieve Message (socket)
 
-#define X3PE_UMSG_CREATEPROCESS	0x1040
-#define X3PE_UMSG_TRYJOINRESULT	0x1041
+#define X3PE_UMSG_CREATEPROCESS	0x1040		//Spawn a process
+#define X3PE_UMSG_TRYJOINRESULT	0x1041		//
 #define X3PE_UMSG_MUTEXTRYLOCK	0x1042
 #define X3PE_UMSG_MUTEXRELEASE	0x1043
+
+#define X3PE_UMSG_WAITMTHDCALL	0x1048		//Wait for a method call to arrive
+#define X3PE_UMSG_POSTLIVEOBJ	0x1049		//Post Object, task may accept calls
 
 
 #define X3PE_UMSG_COMGLUE_VMT0		0x1200
