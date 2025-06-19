@@ -922,20 +922,20 @@ void X3VM_Opc_PSHUFH_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
 	vn=(vn<<16)|(u16)(vs>>(((im>>2)&3)*16));
 	vn=(vn<<16)|(u16)(vs>>(((im>>0)&3)*16));
 
-	if(imm>>16)
+	if(im>>16)
 	{
-		if(((imm>> 8)&3)==0)		vn&=~0x000000000000FFFFULL;
-		if(((imm>> 8)&3)==2)		vn^= 0x000000000000FFFFULL;
-		if(((imm>> 8)&3)==3)		vn^= 0x0000000000008000ULL;
-		if(((imm>>10)&3)==0)		vn&=~0x00000000FFFF0000ULL;
-		if(((imm>>10)&3)==2)		vn^= 0x00000000FFFF0000ULL;
-		if(((imm>>10)&3)==3)		vn^= 0x0000000080000000ULL;
-		if(((imm>>12)&3)==0)		vn&=~0x0000FFFF00000000ULL;
-		if(((imm>>12)&3)==2)		vn^= 0x0000FFFF00000000ULL;
-		if(((imm>>12)&3)==3)		vn^= 0x0000800000000000ULL;
-		if(((imm>>14)&3)==0)		vn&=~0xFFFF000000000000ULL;
-		if(((imm>>14)&3)==2)		vn^= 0xFFFF000000000000ULL;
-		if(((imm>>14)&3)==3)		vn^= 0x8000000000000000ULL;
+		if(((im>> 8)&3)==0)		vn&=~0x000000000000FFFFULL;
+		if(((im>> 8)&3)==2)		vn^= 0x000000000000FFFFULL;
+		if(((im>> 8)&3)==3)		vn^= 0x0000000000008000ULL;
+		if(((im>>10)&3)==0)		vn&=~0x00000000FFFF0000ULL;
+		if(((im>>10)&3)==2)		vn^= 0x00000000FFFF0000ULL;
+		if(((im>>10)&3)==3)		vn^= 0x0000000080000000ULL;
+		if(((im>>12)&3)==0)		vn&=~0x0000FFFF00000000ULL;
+		if(((im>>12)&3)==2)		vn^= 0x0000FFFF00000000ULL;
+		if(((im>>12)&3)==3)		vn^= 0x0000800000000000ULL;
+		if(((im>>14)&3)==0)		vn&=~0xFFFF000000000000ULL;
+		if(((im>>14)&3)==2)		vn^= 0xFFFF000000000000ULL;
+		if(((im>>14)&3)==3)		vn^= 0x8000000000000000ULL;
 	}
 
 	ctx->reg[op->rn]=vn;
@@ -950,18 +950,18 @@ void X3VM_Opc_PMULTH_3RI(X3VM_Context *ctx, X3VM_Opcode *op)
 	im=op->imm;
 	vn=vs;
 
-	if(((imm>>0)&3)==0)		vn&=~0x000000000000FFFFULL;
-	if(((imm>>0)&3)==2)		vn^= 0x000000000000FFFFULL;
-	if(((imm>>0)&3)==3)		vn^= 0x0000000000008000ULL;
-	if(((imm>>2)&3)==0)		vn&=~0x00000000FFFF0000ULL;
-	if(((imm>>2)&3)==2)		vn^= 0x00000000FFFF0000ULL;
-	if(((imm>>2)&3)==3)		vn^= 0x0000000080000000ULL;
-	if(((imm>>4)&3)==0)		vn&=~0x0000FFFF00000000ULL;
-	if(((imm>>4)&3)==2)		vn^= 0x0000FFFF00000000ULL;
-	if(((imm>>4)&3)==3)		vn^= 0x0000800000000000ULL;
-	if(((imm>>6)&3)==0)		vn&=~0xFFFF000000000000ULL;
-	if(((imm>>6)&3)==2)		vn^= 0xFFFF000000000000ULL;
-	if(((imm>>6)&3)==3)		vn^= 0x8000000000000000ULL;
+	if(((im>>0)&3)==0)		vn&=~0x000000000000FFFFULL;
+	if(((im>>0)&3)==2)		vn^= 0x000000000000FFFFULL;
+	if(((im>>0)&3)==3)		vn^= 0x0000000000008000ULL;
+	if(((im>>2)&3)==0)		vn&=~0x00000000FFFF0000ULL;
+	if(((im>>2)&3)==2)		vn^= 0x00000000FFFF0000ULL;
+	if(((im>>2)&3)==3)		vn^= 0x0000000080000000ULL;
+	if(((im>>4)&3)==0)		vn&=~0x0000FFFF00000000ULL;
+	if(((im>>4)&3)==2)		vn^= 0x0000FFFF00000000ULL;
+	if(((im>>4)&3)==3)		vn^= 0x0000800000000000ULL;
+	if(((im>>6)&3)==0)		vn&=~0xFFFF000000000000ULL;
+	if(((im>>6)&3)==2)		vn^= 0xFFFF000000000000ULL;
+	if(((im>>6)&3)==3)		vn^= 0x8000000000000000ULL;
 
 	ctx->reg[op->rn]=vn;
 }

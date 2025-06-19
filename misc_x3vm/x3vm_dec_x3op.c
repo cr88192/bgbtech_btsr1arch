@@ -1546,7 +1546,7 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			break;
 		case 0x8:
 //			if((imm10u>>8)==1)
-			if(((imm10u>>8)==1) || (imm>>16))
+			if(((imm10u>>8)==1) || (imm10u>>16))
 			{
 //				op->imm=(byte)imm10u;
 				op->imm=imm10u;
