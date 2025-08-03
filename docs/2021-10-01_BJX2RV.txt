@@ -115,6 +115,9 @@ Listing:
 * iiiiiii-ttttt-mmmmm-110-iiiii-01-00011  SWU	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt (BGB)
 
+* ssttt11-ooooo-mmmmm-101-nnnnn-01-00011  Lt	Rn, (Rm, Ro*Sc)
+* ssttt11-ooooo-mmmmm-110-nnnnn-01-00011  St	(Rm, Ro*Sc), Rn
+
 * uuuuu00-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.S	Rn, Rs, Rt, Ru
 * uuuuu01-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.D	Rn, Rs, Rt, Ru
 * uuuuu10-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.H	Rn, Rs, Rt, Ru

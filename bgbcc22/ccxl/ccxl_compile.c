@@ -3182,6 +3182,11 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "m128p"))
 			{ *t++='C'; *t++='p'; }
 
+		if(!strcmp(s, "m32"))
+			{ *t++='G'; *t++='c'; }
+		if(!strcmp(s, "m16"))
+			{ *t++='G'; *t++='b'; }
+
 		if(!strcmp(s, "vec4w"))
 			{ *t++='C'; *t++='w'; }
 		if(!strcmp(s, "vec4i"))

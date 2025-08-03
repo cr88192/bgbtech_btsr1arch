@@ -840,7 +840,10 @@ int BGBCC_JX2_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,
 	int opw1, opw2, opw3, opw4, ex2, exw;
 
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
-		return(0);
+	{
+		return(BGBCC_JX2RV_TryEmitOpRegStDecReg(ctx, nmid, rm, rn));
+//		return(0);
+	}
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 	rm=BGBCC_JX2_NormalizeReg(ctx, rm);
@@ -1022,7 +1025,10 @@ int BGBCC_JX2_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,
 
 	BGBCC_JX2_MarkRegModified(ctx, rn);
 	if((ctx->emit_riscv&0x11) && !(ctx->emit_isprobe&2))
-		return(0);
+	{
+		return(BGBCC_JX2RV_TryEmitOpLdIncRegReg(ctx, nmid, rm, rn));
+//		return(0);
+	}
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 	rm=BGBCC_JX2_NormalizeReg(ctx, rm);

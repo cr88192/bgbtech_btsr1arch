@@ -5650,7 +5650,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 				(sctx->lbl_sec[j]==BGBCC_SH_CSEG_TEXT) ||
 				(sctx->lbl_sec[j]==BGBCC_SH_CSEG_UTEXT) ;
 
-			if((ctl<=imgbase) || (ctl>(imgbase+0x1000000)))
+			if((ctl<=imgbase) || (ctl>(imgbase+0x4000000)))
 				{ BGBCC_DBGBREAK }
 			if(
 //					(sctx->lbl_ofs[j]<0) ||
@@ -5661,7 +5661,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		ctr=imgbase+sctx->sec_rva[sctx->rlc_sec[i]]+sctx->rlc_ofs[i];
 		var=sctx->sec_lva[sctx->rlc_sec[i]]+sctx->rlc_ofs[i];
 
-		if((ctr<=imgbase) || (ctr>(imgbase+0x1000000)))
+		if((ctr<=imgbase) || (ctr>(imgbase+0x4000000)))
 			{ BGBCC_DBGBREAK }
 
 //		d=ctl-ctr;
@@ -9037,6 +9037,83 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				printf("\n");
 			}
 			printf("\n");
+		}
+
+		if(sctx->stat_opc_xg3c_b0t>0)
+		{
+			printf("XG3C B0 %d\n", sctx->stat_opc_xg3c_b0t);
+			for(i=0; i<8; i++)
+			{
+				if(i<5)
+				{
+					k=0;
+					for(j=0; j<16; j++)
+					{
+						k+=sctx->stat_opc_xg3c_b0b[(j<<3)|i];
+					}
+					printf("%d: %u\n", i, k);
+					continue;
+				}
+			
+				printf("%d: ", i);
+				for(j=0; j<16; j++)
+				{
+					if(!(j&3))
+						printf(" ");
+					printf("%3u ", sctx->stat_opc_xg3c_b0b[(j<<3)|i]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+		}
+
+		if(sctx->stat_opc_xg3c_b1t>0)
+		{
+			printf("XG3C B1 %d\n", sctx->stat_opc_xg3c_b1t);
+			for(i=0; i<8; i++)
+			{
+				if(i<4)
+				{
+					k=0;
+					for(j=0; j<16; j++)
+					{
+						k+=sctx->stat_opc_xg3c_b1b[(j<<3)|i];
+					}
+					printf("%d: %u\n", i, k);
+					continue;
+				}
+
+				if((i==4) || (i==7))
+				{
+					printf("%d: ", i);
+					for(j=0; j<4; j++)
+					{
+						printf("%5u ",
+							sctx->stat_opc_xg3c_b1b[(0<<5)|(j<<3)|i]+
+							sctx->stat_opc_xg3c_b1b[(1<<5)|(j<<3)|i]+
+							sctx->stat_opc_xg3c_b1b[(2<<5)|(j<<3)|i]+
+							sctx->stat_opc_xg3c_b1b[(3<<5)|(j<<3)|i]);
+					}
+					printf("\n");
+					continue;
+				}
+			
+				printf("%d: ", i);
+				for(j=0; j<16; j++)
+				{
+					if(!(j&3))
+						printf(" ");
+					printf("%3u ", sctx->stat_opc_xg3c_b1b[(j<<3)|i]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+		}
+		
+		if(sctx->stat_opc_xg3c_bpt)
+		{
+			printf("XG3C: Potential Savings %d bytes\n",
+				sctx->stat_opc_xg3c_bpt*4);
 		}
 
 //		printf("\n");

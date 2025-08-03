@@ -1826,6 +1826,11 @@ int mfl;
 {"movu.twv",	BGBCC_SH_NMID_MOVUTW_V},
 {"mov.htwv",	BGBCC_SH_NMID_MOVHTW_V},
 
+{"blkuvf1vl",	BGBCC_SH_NMID_BLKUVF1VL},
+{"blkuvf1vh",	BGBCC_SH_NMID_BLKUVF1VH},
+{"blkuvf1sl",	BGBCC_SH_NMID_BLKUVF1SL},
+{"blkuvf1sh",	BGBCC_SH_NMID_BLKUVF1SH},
+
 
 {"pack",		BGBCC_SH_NMID_MOVLD,	2},
 {"packu",		BGBCC_SH_NMID_MOVHD,	2},

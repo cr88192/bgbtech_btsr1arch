@@ -3476,7 +3476,11 @@ int BGBCC_JX2RV_TryEmitOpRegStReg2(BGBCC_JX2_Context *ctx, int nmid, int rm, int
 int BGBCC_JX2RV_TryEmitOpLdReg2Reg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
 int BGBCC_JX2RV_TryEmitOpLdReg2DispReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int disp, int rn);
 int BGBCC_JX2RV_TryEmitOpRegStReg2Disp(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn, int disp);
+int BGBCC_JX2RV_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
+int BGBCC_JX2RV_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
 //AHSRC:jx2cc/jx2_emx3_opc.c
+int BGBCC_JX2X3_CheckRemapReg6Reg3(int reg);
+u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw);
 int BGBCC_JX2X3_CheckRepack1(BGBCC_JX2_Context *ctx, s64 *ropw1);
 int BGBCC_JX2X3_CheckRepack3(BGBCC_JX2_Context *ctx, s64 *ropw1, s64 *ropw2, s64 *ropw3);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm10I(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
@@ -3486,6 +3490,7 @@ int BGBCC_JX2X3_CheckEncodeRIRJ_Disp10s(BGBCC_JX2_Context *ctx, s64 opwb, int rm
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6I(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, int ro, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2X3_CheckEncodeRRRJ(BGBCC_JX2_Context *ctx, s64 opwb, int sid, int rm, int ro, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
 int BGBCC_JX2X3_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn);
 int BGBCC_JX2X3_UpdateStat2RI(BGBCC_JX2_Context *ctx, int nmid, s64 imm);

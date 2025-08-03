@@ -357,6 +357,13 @@ byte stat_opc_issfx;
 int stat_opc_7xx;
 int stat_opc_9xx;
 
+int stat_opc_xg3c_b0t;
+int stat_opc_xg3c_b1t;
+int stat_opc_xg3c_bpt;
+
+int stat_opc_xg3c_b0b[128];
+int stat_opc_xg3c_b1b[128];
+
 int stat_const_maskhit;
 int stat_const_maskjumbo;
 int stat_const_masktot;

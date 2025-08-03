@@ -1329,6 +1329,9 @@ Notation for the 'E' field:
 * P/p: 1nm0 / 0nm0
 * Q/q: 1nm1 / 0nm1
 
+* L/l: 1nm0 / 0nm0 (Wi=1)
+* R/r: 1nm1 / 0nm1 (Wi=1)
+
 Notation for the 'W' field:
 * w: wnmi
 ** w (W.w): WEX (7zzz/9zzz)
@@ -2393,6 +2396,34 @@ Branch ops may only exist in lane 1.
 1: These are now to be encoded as as E0dd_Cddd and E4dd_Cddd.
 This space will now be marked as subject to being reclaimed.
 
+==== F0zz Op64 Instructions ====
+
+
+* FEii_iiii_F0nm_2go3  BITMOV		Rm, Ro, Rn, Imm24
+* FEii_iiii_F0nm_2Go3  BITMOVX		Xm, Ro, Xn, Imm24
+
+* FFw0_08pp_F0nm_2go3  BITMOV		Rm, Ro, Rp, Rn
+* FFw0_08pp_F0nm_2Go3  BITMOVX		Xm, Ro, Xp, Xn
+
+
+* FEii_iiii_F0nm_2go2  BITMOVS		Rm, Ro, Rn, Imm24
+* FEii_iiii_F0nm_2Go2  BITMOVSX		Xm, Ro, Xn, Imm24
+
+* FFw0_08pp_F0nm_2go2  BITMOVS		Rm, Ro, Rp, Rn
+* FFw0_08pp_F0nm_2Go2  BITMOVSX		Xm, Ro, Xp, Xn
+
+
+* FFw0_01xx_F0nm_7eoC  OP64-3R	Rm, Ro, Rn
+** OP64 Space, 3R
+
+* FFw0_0040_F0nm_7eoC  BLKUVF1VL	Rm, Ro, Rn
+* FFw0_0041_F0nm_7eoC  BLKUVF1VH	Rm, Ro, Rn
+* FFw0_0042_F0nm_7eoC  BLKUVF1SL	Rm, Ro, Rn
+* FFw0_0043_F0nm_7eoC  BLKUVF1SH	Rm, Ro, Rn
+
+* FFw0_0052_F0nm_7eoC  ADC			Rm, Ro, Rn
+* FFw0_0053_F0nm_7eoC  SBB			Rm, Ro, Rn
+
 
 ==== F1zz Instruction Block ====
 
@@ -2468,16 +2499,19 @@ F2zz Instruction Block  (Imm9 Block):
 
 * F2nm_7gjj  XOR		Rm, Imm9u, Rn		//
 * F2nm_7Pjj  SHLDX		Xm, Imm8s, Xn		//(ALUX)
+* F2nm_7Qjj ? PSHUFX.L	Xm, Imm8u, Xn		//(GSV) E.i=1
+* F2nm_7Rjj  PMULTX.L 	Xm, Imm8u, Xn		//Multiply Elements, 2b
 
 * F2nm_8pjj  SHAD{.L}	Rm, Imm8s, Rn		//E.i=0
 * F2nm_8Pjj  SHAD.Q		Rm, Imm8s, Rn		//E.i=0
 * F2nm_8qjj  PSHUF.B	Rm, Imm8u, Rn		//(GSV) E.i=1
 * F2nm_8Qjj  PSHUF.W	Rm, Imm8u, Rn		//(GSV) E.i=1
+* F2nm_8Rjj  PMULT.W	Rm, Imm8u, Rn		//Multiply Elements, 2b
 
 * F2nm_9pjj  SHLD{.L}	Rm, Imm8s, Rn		//E.i=0
 * F2nm_9Pjj  SHLD.Q		Rm, Imm8s, Rn		//E.i=0
-* F2nm_9qjj ? PCONV		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
-* F2nm_9Qjj ? PCONVX	Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9qjj / PCONV		Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
+* F2nm_9Qjj / PCONVX	Rm, Imm8u, Rn		//(GSVX) E.i=1, Packed Convert
 
 * F2nz_Aejj  (Imm10 Space)
 * F2nz_Bejj  (Imm10 Space)

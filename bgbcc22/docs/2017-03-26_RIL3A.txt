@@ -302,6 +302,8 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Dz': va_list
 
 * 'Ga': __float8s
+* 'Gb': __m16
+* 'Gc': __m32
 * 'Gd': _Imaginary double
 * 'Ge': _Imaginary long double
 * 'Gf': _Imaginary float

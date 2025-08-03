@@ -290,6 +290,10 @@ reg[32:0]	tResult1W;
 reg[64:0]	tResult2W;
 reg[32:0]	tResultShufB;
 reg[64:0]	tResultShufW;
+reg[64:0]	tResultMulTW;
+
+reg[7:0]	tValShuf;
+reg[7:0]	tValMulT;
 
 reg[63:0]	tRegConvVal;
 reg			tRegConvSrT;
@@ -462,27 +466,43 @@ begin
 
 	tResultShufB = UV33_00;
 	tResultShufW = UV65_00;
+	tResultMulTW = UV65_00;
+
+	tValShuf=regValRt[7:0];
+	tValMulT=8'h55;
+	if((regValRt[9:8]==2'b11) && (regValRt[17:16]==2'b00))
+	begin
+		tValShuf=8'hE4;
+		tValMulT=regValRt[7:0];
+	end
+//	if((regValRt[17:16]==2'b11) && (regValRt[31:30]==2'b00))
+//	if(regValRt[32:31]==2'b01)
+	if(regValRt[32])
+	begin
+		tValShuf=regValRt[ 7:0];
+		tValMulT=regValRt[15:8];
+	end
 
 `ifdef def_true
-	case(regValRt[1:0])
+	case(tValShuf[1:0])
 		2'b00: tResultShufB[ 7: 0]=regValRs[ 7: 0];
 		2'b01: tResultShufB[ 7: 0]=regValRs[15: 8];
 		2'b10: tResultShufB[ 7: 0]=regValRs[23:16];
 		2'b11: tResultShufB[ 7: 0]=regValRs[31:24];
 	endcase
-	case(regValRt[3:2])
+	case(tValShuf[3:2])
 		2'b00: tResultShufB[15: 8]=regValRs[ 7: 0];
 		2'b01: tResultShufB[15: 8]=regValRs[15: 8];
 		2'b10: tResultShufB[15: 8]=regValRs[23:16];
 		2'b11: tResultShufB[15: 8]=regValRs[31:24];
 	endcase
-	case(regValRt[5:4])
+	case(tValShuf[5:4])
 		2'b00: tResultShufB[23:16]=regValRs[ 7: 0];
 		2'b01: tResultShufB[23:16]=regValRs[15: 8];
 		2'b10: tResultShufB[23:16]=regValRs[23:16];
 		2'b11: tResultShufB[23:16]=regValRs[31:24];
 	endcase
-	case(regValRt[7:6])
+	case(tValShuf[7:6])
 		2'b00: tResultShufB[31:24]=regValRs[ 7: 0];
 		2'b01: tResultShufB[31:24]=regValRs[15: 8];
 		2'b10: tResultShufB[31:24]=regValRs[23:16];
@@ -491,30 +511,59 @@ begin
 `endif
 
 `ifdef def_true
-	case(regValRt[1:0])
+	case(tValShuf[1:0])
 		2'b00: tResultShufW[15:0]=regValRs[15: 0];
 		2'b01: tResultShufW[15:0]=regValRs[31:16];
 		2'b10: tResultShufW[15:0]=regValRs[47:32];
 		2'b11: tResultShufW[15:0]=regValRs[63:48];
 	endcase
-	case(regValRt[3:2])
+	case(tValShuf[3:2])
 		2'b00: tResultShufW[31:16]=regValRs[15: 0];
 		2'b01: tResultShufW[31:16]=regValRs[31:16];
 		2'b10: tResultShufW[31:16]=regValRs[47:32];
 		2'b11: tResultShufW[31:16]=regValRs[63:48];
 	endcase
-	case(regValRt[5:4])
+	case(tValShuf[5:4])
 		2'b00: tResultShufW[47:32]=regValRs[15: 0];
 		2'b01: tResultShufW[47:32]=regValRs[31:16];
 		2'b10: tResultShufW[47:32]=regValRs[47:32];
 		2'b11: tResultShufW[47:32]=regValRs[63:48];
 	endcase
-	case(regValRt[7:6])
+	case(tValShuf[7:6])
 		2'b00: tResultShufW[63:48]=regValRs[15: 0];
 		2'b01: tResultShufW[63:48]=regValRs[31:16];
 		2'b10: tResultShufW[63:48]=regValRs[47:32];
 		2'b11: tResultShufW[63:48]=regValRs[63:48];
 	endcase
+`endif
+
+`ifdef def_true
+	case(tValMulT[1:0])
+		2'b00: tResultMulTW[15:0] = 16'h0000;
+		2'b01: tResultMulTW[15:0] = tResultShufW[15: 0];
+		2'b10: tResultMulTW[15:0] = ~tResultShufW[15: 0];
+		2'b11: tResultMulTW[15:0] = { ~tResultShufW[15], tResultShufW[14: 0] };
+	endcase
+	case(tValMulT[3:2])
+		2'b00: tResultMulTW[31:16] = 16'h0000;
+		2'b01: tResultMulTW[31:16] = tResultShufW[31:16];
+		2'b10: tResultMulTW[31:16] = ~tResultShufW[31:16];
+		2'b11: tResultMulTW[31:16] = { ~tResultShufW[31], tResultShufW[30:16] };
+	endcase
+	case(tValMulT[5:4])
+		2'b00: tResultMulTW[47:32] = 16'h0000;
+		2'b01: tResultMulTW[47:32] = tResultShufW[47:32];
+		2'b10: tResultMulTW[47:32] = ~tResultShufW[47:32];
+		2'b11: tResultMulTW[47:32] = { ~tResultShufW[47], tResultShufW[46:32] };
+	endcase
+	case(tValMulT[7:6])
+		2'b00: tResultMulTW[63:48] = 16'h0000;
+		2'b01: tResultMulTW[63:48] = tResultShufW[63:48];
+		2'b10: tResultMulTW[63:48] = ~tResultShufW[63:48];
+		2'b11: tResultMulTW[63:48] = { ~tResultShufW[63], tResultShufW[62:48] };
+	endcase
+	
+	tResultShufW = tResultMulTW;
 `endif
 
 	case(idUIxt[3:0])

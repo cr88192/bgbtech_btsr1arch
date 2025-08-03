@@ -1187,6 +1187,8 @@ parameter[5:0] JX2_UCIX_ALUW_PSHUFB	= 6'h15;		//ALU PSHUF.B
 parameter[5:0] JX2_UCIX_ALUW_MOVLW	= 6'h16;		//ALU (Low Words)
 parameter[5:0] JX2_UCIX_ALUW_MOVHW	= 6'h17;		//ALU (High Words)
 
+// parameter[5:0] JX2_UCIX_ALUW_PMULTW	= 6'h24;		//ALU PMULT.W
+
 parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
 parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)
 parameter[5:0] JX2_UCIX_ALUW_MOVHD	= 6'h27;		//ALU (High DWords)
@@ -1372,6 +1374,11 @@ parameter[5:0] JX2_UCIX_CONV2_VF32TOSW		= 6'h3E;	//
 parameter[5:0] JX2_UCIX_CONV2_VF16TOSW		= 6'h3F;	//
 
 parameter[5:0] JX2_UCIX_CONV3_FMULFP8		= 6'h00;	//
+
+parameter[5:0] JX2_UCIX_CONV3_BLKUVF1_4H	= 6'h10;	//Get pixel, UVF1
+parameter[5:0] JX2_UCIX_CONV3_BLKUVF1_4L	= 6'h11;	//Get pixel, UVF1
+parameter[5:0] JX2_UCIX_CONV3_BLKUVF1_1H	= 6'h12;	//Get pixel, UVF1
+parameter[5:0] JX2_UCIX_CONV3_BLKUVF1_1L	= 6'h13;	//Get pixel, UVF1
 
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//

@@ -2129,6 +2129,28 @@ In this case, an Imm56 field would be interpreted as:
 ** The I2 gives the source element within Rm. 
 
 
+=== PMUL.F8H (3RI, NNX, Possible) ===
+
+* F0nm_7Go6  PMUL.F8H	Rm, Ro, Rn			//(NNX) PMUL FP8 to FP16
+
+Packed multiply of two 4 element FP8 vectors widening to a 4 element Binary16 vector.
+
+
+=== PMULT.x (3RI, ?, Possible) ===
+
+* F2nm_7Rjj  PMULTX.L 	Rm, Imm8u, Rn		//Multiply Elements, 2b
+* F2nm_8Rjj  PMULT.W	Rm, Imm8u, Rn		//Multiply Elements, 2b
+
+Multiply each element (16 or 32 bit) with a 2 bit value:
+* 00:  0 (Zeroes Bits)
+* 01:  1 (Keeps Bits)
+* 10: ~1 (Invert All Bits)
+* 11: -1 (Invert Sign Bit)
+
+The W variant will operate on 16 bit elements whereas L will operate on 32-bit.
+
+
+
 === RBSLD / RBSST (RBS) ===
 
 * F2n2_Ehjj  RBSLD.Q	Imm10u, Rn				//(RBS) RBS Load
@@ -3207,6 +3229,8 @@ PSELT will select the Word from Rm if the corresponding bit is Set, selecting th
 
 * F2nm_8qjj  PSHUF.B	Rm, Imm8, Rn		//(GSV)
 * F2nm_8Qjj  PSHUF.W	Rm, Imm8, Rn		//(GSV)
+* FE F2nm_8Qjj  PSHUF.W	Rm, Imm33s, Rn		//(NNX)
+* FF F2nm_8Qjj  PSHUF.W	Rm, Imm17s, Rn		//(NNX)
 
 Packed Shuffle of Byte or Word elements.
 
@@ -3214,6 +3238,13 @@ The elements from Rm will be reordered using the mask given in the immediate, an
 In the case of a Byte shuffle, the high 32 bits will be copied unchanged.
 
 Each element will be given as a 2-bit value, with 00 mapping to the low-order bits, and 11 to the high order bits. The elements within the mask will have the same relative order (in terms of bit-positions) as the elements in the register, and will serve to select an element at each position from the source register.
+
+
+If a jumbo prefix is used with PSHUF.W, it will function as a combined shuffle and tristate multiply.
+* imm( 7: 0): Shuffle Mask
+* imm(15: 8): Tristate Multiply
+* imm(31:16): Reserved (if not all 1s, sign-extended).
+* imm(   32): 1
 
 
 === PSHUFX.L ===
@@ -3377,7 +3408,7 @@ The RGB5USH3 instruction does the inverse process, converting the shuffled form 
 
 
 
-=== SWxP.x (GSV, Deprecated) ===
+=== SWxP.x (GSV, Dropped) ===
 
 * F0nm_3g07  SWAP.B		Rm, Rn		//(1032) Swap E/O Bytes (Low Four Bytes)
 * F0nm_3g17  SWAP.W		Rm, Rn		//(1032) Swap E/O Words (All words)
@@ -3648,6 +3679,34 @@ Selectors for RGB and Alpha will be 4x4x2:
 * 11: ColorA
 
 
+=== BLKUVF1 (?) ===
+
+* FFw0_0040_F0nm_7eoC  BLKUVF1VL	Rm, Ro, Rn
+* FFw0_0041_F0nm_7eoC  BLKUVF1VH	Rm, Ro, Rn
+* FFw0_0042_F0nm_7eoC  BLKUVF1SL	Rm, Ro, Rn
+* FFw0_0043_F0nm_7eoC  BLKUVF1SH	Rm, Ro, Rn
+
+
+Basic Format:
+* (  7: 0): ValueA
+* ( 15: 8): ValueB
+* ( 31:16): Sign Bits
+* ( 63:32): Selectors
+
+Selectors will be 4x4x2:
+* 00: ValueB
+* 01: 2/3*ValueB + 1/3*ValueA
+* 10: 1/3*ValueB + 2/3*ValueA
+* 11: ValueA
+
+Ops 'VL'/'SL' will interpret the value as a byte.
+Ops 'VH'/'SH' will interpret the value as FP8U.
+
+Ops 'VL'/'VH' will interpret the block as four 4-element vectors.
+Ops 'SL'/'SH' will interpret the block as 16 scalar values.
+
+
+
 == GFP Instructions (GPR FPU Ops, Optional) ==
 
 GFP will perform FPU operations with GPRs.
@@ -3842,7 +3901,7 @@ If either value is NaN, the resulting state of SR.T is undefined.
 For Imm10fp and Imm32f, see FADD.
 
 
-=== FCONV (GFPX) ===
+=== FCONV (GFPX, Drop) ===
 
 * F2nm_8qjj  PCONV		Rm, Imm8, Rn		//E.i=1, Packed Convert
 * F2nm_8Qjj  PCONVX		Rm, Imm8, Rn		//E.i=1, Packed Convert

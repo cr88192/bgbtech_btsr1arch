@@ -83,10 +83,8 @@
 #define CCXL_TY_VEC3H			0x43		//64-bit 3x Half
 #define CCXL_TY_BCD64			0x44		//64-bit BCD
 #define CCXL_TY_BCD128			0x45		//128-bit BCD
-
 #define CCXL_TY_BCDBIG_P0		0x46		//64-bit BCD
 #define CCXL_TY_BCDBIG_P4		0x47		//128-bit BCD
-
 #define CCXL_TY_FP8S			0x48		//Float8S
 #define CCXL_TY_FP8U			0x49		//Float8U
 #define CCXL_TY_VEC4_FP8S		0x4A		//Vec4 Float8S
@@ -104,7 +102,6 @@
 #define CCXL_TY_BITFIELD_UI		0x55		//Bitfield
 #define CCXL_TY_BITFIELD_SL		0x56		//Bitfield
 #define CCXL_TY_BITFIELD_UL		0x57		//Bitfield
-
 #define CCXL_TY_SI48			0x58		//
 #define CCXL_TY_UI48			0x59		//
 #define CCXL_TY_F48				0x5A		//
@@ -113,6 +110,11 @@
 #define CCXL_TY_OSBITINT		0x5C		//signed output(n)
 #define CCXL_TY_OUBITINT		0x5D		//unsigned output(n)
 #define CCXL_TY_OBITINT			0x5D		//unsigned output(n)
+
+#define CCXL_TY_M32				0x5E		//64-bit vector
+#define CCXL_TY_M16				0x5F		//64-bit vector
+
+#define CCXL_TY_VEC2H			0x60		//64-bit vector
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'

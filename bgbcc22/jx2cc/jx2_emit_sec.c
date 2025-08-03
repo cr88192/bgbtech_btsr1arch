@@ -3779,8 +3779,9 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 {
 	static u32 lval, lval2;
 	s64 val1;
+	u16 wv13a, wv13b;
 	int ix, ix1, isjmb, is32, is16, is48;
-	int i;
+	int i, j, k, l, ld;
 
 	is16=0;
 	is32=0;
@@ -3841,7 +3842,25 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 	{
 		isjmb=1;
 	}
-	
+
+	ld=ctx->pos_pad_op0-ctx->pos_pad_op1;
+	if(is32 && (ld==4))
+	{
+//		i=BGBCC_JX2_EmitGetOffs(ctx);
+		wv13a=BGBCC_JX2X3_CheckRepackOpwC0B(lval);
+		wv13b=BGBCC_JX2X3_CheckRepackOpwC0B(val);
+		
+		if(!(wv13a&0x8000) && !(wv13b&0x8000) &&
+			!(wv13a&wv13b&0x4000))
+		{
+			if((wv13a&0x4000) && !(wv13b&0x4000))
+				{ k=wv13a; wv13a=wv13b; wv13b=k; }
+			
+			if(!ctx->is_simpass)
+				ctx->stat_opc_xg3c_bpt++;
+		}
+	}
+
 	if(!ctx->is_simpass)
 	{
 		ctx->stat_opc_tot++;

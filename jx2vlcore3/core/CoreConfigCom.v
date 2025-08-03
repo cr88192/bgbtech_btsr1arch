@@ -238,6 +238,8 @@
 
 // `define jx2_enable_btcuab1			//UAB1/2 Block Conversion Op
 
+`define jx2_enable_btcuvf1			//UVF1 Block Conversion Op
+
 `endif
 
 

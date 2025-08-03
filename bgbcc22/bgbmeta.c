@@ -3318,7 +3318,8 @@ int main(int argc, char *argv[], char **env)
 			fmt=BGBCC_IMGFMT_RIL3;
 		}
 
-		obuf=malloc(1<<24); sz=1<<24;
+//		obuf=malloc(1<<24); sz=1<<24;
+		sz=1<<26; obuf=malloc(sz);
 		i=BGBCC_LoadCSourcesCCXL(uds, nuds, obuf, &sz, fmt);
 		if((i>=0) && (sz>0))
 		{

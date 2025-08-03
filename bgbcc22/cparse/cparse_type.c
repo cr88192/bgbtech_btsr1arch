@@ -840,8 +840,10 @@ static char *bgbcp_basetypes_c[]={
  "__vec4i", "__vec4si", "__vec4ui",
  "__vec4h", "__vec4sf",
  "__vec3h", "__vec3sf",
+ "__vec2h", "__vec2sf",
  
 "__bfloat16",
+"__m32", "__m16",
 
 "__fcomplex",
 "__dcomplex",

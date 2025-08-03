@@ -2758,6 +2758,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	
 	case CCXL_TY_F16:
 	case CCXL_TY_BF16:
+	case CCXL_TY_M16:
 		sz=2; break;
 
 	case CCXL_TY_FP8S:
@@ -2766,6 +2767,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 
 	case CCXL_TY_VEC4_FP8S:
 	case CCXL_TY_VEC4_FP8U:
+	case CCXL_TY_M32:
 		sz=4; break;
 
 	case CCXL_TY_I128:
@@ -2916,6 +2918,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	
 	case CCXL_TY_F16:
 	case CCXL_TY_BF16:
+	case CCXL_TY_M16:
 		sz=2; break;
 
 	case CCXL_TY_FP8S:
@@ -2924,6 +2927,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 
 	case CCXL_TY_VEC4_FP8S:
 	case CCXL_TY_VEC4_FP8U:
+	case CCXL_TY_M32:
 		sz=4; break;
 	
 	case CCXL_TY_I128:
@@ -4757,6 +4761,9 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		{
 		case 'a': bty=CCXL_TY_FP8S; break;
 
+		case 'b': bty=CCXL_TY_M16; break;
+		case 'c': bty=CCXL_TY_M32; break;
+
 		case 'd': bty=CCXL_TY_DIMAG; break;
 		case 'e': bty=CCXL_TY_GIMAG; break;
 		case 'f': bty=CCXL_TY_FIMAG; break;
@@ -5181,6 +5188,9 @@ char *BGBCC_CCXL_TypeGetSig(
 		case CCXL_TY_M64:			*t++='C'; *t++='m'; break;
 		case CCXL_TY_M128:			*t++='C'; *t++='n'; break;
 		case CCXL_TY_M128P:			*t++='C'; *t++='p'; break;
+
+		case CCXL_TY_M32:			*t++='G'; *t++='c'; break;
+		case CCXL_TY_M16:			*t++='G'; *t++='b'; break;
 
 		case CCXL_TY_FCOMPLEX:		*t++='C'; *t++='f'; break;
 		case CCXL_TY_DCOMPLEX:		*t++='C'; *t++='d'; break;
@@ -5615,6 +5625,35 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 					return(1);
 		}
 	}
+
+	if(dty.val==CCXL_TY_M32)
+	{
+		if(dty.val==sty.val)
+			return(1);
+
+		if(fl&4)
+		{
+//			if(sty.val==CCXL_TY_F)
+//				return(1);
+		}
+
+		if(	(sty.val==CCXL_TY_VEC4_FP8S)	||
+			(sty.val==CCXL_TY_VEC4_FP8U)	)
+				return(1);
+
+	}
+
+	if(BGBCC_CCXL_TypeSgIntP(ctx, dty))
+	{
+		if(sty.val==CCXL_TY_M32)
+			return(1);
+	}
+
+//	if(BGBCC_CCXL_TypeFloatP(ctx, dty))
+//	{
+//		if(sty.val==CCXL_TY_M32)
+//			return(1);
+//	}
 
 	if(dty.val==CCXL_TY_VEC2F)
 	{

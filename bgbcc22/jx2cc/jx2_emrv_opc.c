@@ -2035,7 +2035,8 @@ int BGBCC_JX2RV_TryEmitOpRegStRegDisp(
 
 	if(nmid==BGBCC_SH_NMID_MOVX2)
 	{
-		if(((rm&63)<4) || !(ctx->has_pushx2&1) || (rm&1))
+		if(((rm&63)<4) || ((rm&63)>=32) ||
+			!(ctx->has_pushx2&1) || (rm&1))
 		{
 			if(ctx->emit_isprobe)
 				return(0);
@@ -2291,7 +2292,7 @@ int BGBCC_JX2RV_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 
 	if(nmid==BGBCC_SH_NMID_MOVX2)
 	{
-		if(((rn&63)<4) || !(ctx->has_pushx2&1) || (rn&1))
+		if(((rn&63)<4) || ((rn&63)>=32) || !(ctx->has_pushx2&1) || (rn&1))
 		{
 			if(ctx->emit_isprobe)
 				return(0);
@@ -6244,3 +6245,67 @@ int BGBCC_JX2RV_TryEmitOpRegStReg2Disp(
 
 	return(0);
 }
+
+
+int BGBCC_JX2RV_TryEmitOpLdIncRegReg(BGBCC_JX2_Context *ctx,
+	int nmid, int rm, int rn)
+{
+	int stp;
+
+	if(ctx->emit_isprobe)
+		return(0);
+
+	stp=0;
+	if(nmid==BGBCC_SH_NMID_MOVB)	stp=1;
+	if(nmid==BGBCC_SH_NMID_MOVUB)	stp=1;
+	if(nmid==BGBCC_SH_NMID_MOVW)	stp=2;
+	if(nmid==BGBCC_SH_NMID_MOVUW)	stp=2;
+	if(nmid==BGBCC_SH_NMID_MOVL)	stp=4;
+	if(nmid==BGBCC_SH_NMID_MOVUL)	stp=4;
+	if(nmid==BGBCC_SH_NMID_MOVDL)	stp=4;
+	if(nmid==BGBCC_SH_NMID_MOVQ)	stp=8;
+	if(nmid==BGBCC_SH_NMID_MOVX2)	stp=16;
+	
+	if(stp>0)
+	{
+		BGBCC_JX2RV_TryEmitOpLdRegDispReg(ctx,
+			nmid, rm, 0, rn);
+		BGBCC_JX2RV_TryEmitOpRegImmReg(ctx,
+			BGBCC_SH_NMID_ADD, rm, stp, rm);
+		return(1);
+	}
+
+	return(0);
+}
+
+int BGBCC_JX2RV_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,
+	int nmid, int rm, int rn)
+{
+	int stp;
+
+	if(ctx->emit_isprobe)
+		return(0);
+
+	stp=0;
+	if(nmid==BGBCC_SH_NMID_MOVB)	stp=1;
+	if(nmid==BGBCC_SH_NMID_MOVUB)	stp=1;
+	if(nmid==BGBCC_SH_NMID_MOVW)	stp=2;
+	if(nmid==BGBCC_SH_NMID_MOVUW)	stp=2;
+	if(nmid==BGBCC_SH_NMID_MOVL)	stp=4;
+	if(nmid==BGBCC_SH_NMID_MOVUL)	stp=4;
+	if(nmid==BGBCC_SH_NMID_MOVDL)	stp=4;
+	if(nmid==BGBCC_SH_NMID_MOVQ)	stp=8;
+	if(nmid==BGBCC_SH_NMID_MOVX2)	stp=16;
+	
+	if(stp>0)
+	{
+		BGBCC_JX2RV_TryEmitOpRegImmReg(ctx,
+			BGBCC_SH_NMID_ADD, rn, -stp, rn);
+		BGBCC_JX2RV_TryEmitOpRegStRegDisp(ctx,
+			nmid, rm, rn, 0);
+		return(1);
+	}
+
+	return(0);
+}
+

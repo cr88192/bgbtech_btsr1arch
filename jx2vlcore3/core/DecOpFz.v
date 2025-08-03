@@ -2893,6 +2893,42 @@ begin
 					opNmid		= JX2_UCMD_ALUW3;
 					opUCmdIx	= JX2_UCIX_ALUW_PADDW;
 				end
+
+				if(opIsImm4R)
+				begin
+				end
+`ifndef def_true
+				if(opIsImmJumboAu && istrJBits[7])
+				begin
+					casez(istrJBits[5:0])
+						6'h00: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_4H;
+						end
+						6'h01: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_4L;
+						end
+						6'h02: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_1H;
+						end
+						6'h03: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_1L;
+						end
+
+						6'h12: begin
+							opNmid		= JX2_UCMD_ALU3;
+							opUCmdIx	= JX2_UCIX_ALU_ADC;
+						end
+						6'h13: begin
+							opNmid		= JX2_UCMD_ALU3;
+							opUCmdIx	= JX2_UCIX_ALU_SBB;
+						end
+					endcase
+				end
+`endif
 			end
 			16'h2zz1: begin		/* F0nm_2eo1 */
 				opFmid		= JX2_FMID_REGREG;
@@ -4969,6 +5005,64 @@ begin
 				end
 			end
 `endif
+
+
+
+			16'h7zzC: begin		/* F0nm_7eoC */
+				opFmid		= JX2_FMID_REGREG;
+				opIty		= JX2_ITY_SB;
+`ifndef def_true
+				if(opExQ)
+				begin
+					opNmid		= JX2_UCMD_ALU3;
+					opUCmdIx	= JX2_UCIX_ALU_PADDL;
+				end
+				else
+				begin
+					opNmid		= JX2_UCMD_ALUW3;
+					opUCmdIx	= JX2_UCIX_ALUW_PADDW;
+				end
+`endif
+
+				if(opIsJumboAu)
+				begin
+					casez(istrJBits[7:0])
+
+`ifdef jx2_enable_btcuvf1
+						8'h40: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_4H;
+						end
+						8'h41: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_4L;
+						end
+						8'h42: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_1H;
+						end
+						8'h43: begin
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opUCmdIx	= JX2_UCIX_CONV3_BLKUVF1_1L;
+						end
+`endif
+
+						8'h52: begin
+							opNmid		= JX2_UCMD_ALU3;
+							opUCmdIx	= JX2_UCIX_ALU_ADC;
+						end
+						8'h53: begin
+							opNmid		= JX2_UCMD_ALU3;
+							opUCmdIx	= JX2_UCIX_ALU_SBB;
+						end
+
+						default: begin
+						end
+					endcase
+				end
+			end
+
+
 
 			16'h8zz0: begin		/* F0nm_8eo0 */
 				if(opExQ)

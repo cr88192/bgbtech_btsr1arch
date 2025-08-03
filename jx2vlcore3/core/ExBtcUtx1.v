@@ -76,7 +76,7 @@ assign	regOutVal = tRegOutVal;
 `ifdef jx2_enable_btcutx3
 wire[63:0]	tUtx3OutVal;
 // ExBtcUtx3	utx3(regValRs, regValXs, regValRt, idUIxt, tUtx3OutVal);
-ExBtcUtx3B	utx3(regValRs, regValXs, regValRt, idUIxt, tUtx3OutVal);
+ExBtcUtx3B	utx3(regValRs, regValXs, regValRt, idUIxt, tUtx3OutVal, isLdTex);
 `endif
 
 
@@ -413,7 +413,8 @@ begin
 `endif
 
 `ifdef jx2_enable_btcutx3
-	if(idUIxt[1])
+//	if(idUIxt[1])
+	if(idUIxt[1] || idUIxt[4])
 	begin
 		tDoUtx3		= 1;
 	end
