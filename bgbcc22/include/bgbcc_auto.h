@@ -3405,6 +3405,7 @@ int BGBCC_JX2_EmitGetStrtabSecOfs(BGBCC_JX2_Context *ctx, char *str);
 int BGBCC_JX2_EmitRawBytes(BGBCC_JX2_Context *ctx, byte *buf, int sz);
 byte *BGBCC_JX2_EmitGetPos(BGBCC_JX2_Context *ctx);
 int BGBCC_JX2_EmitGetOffs(BGBCC_JX2_Context *ctx);
+int BGBCC_JX2_EmitSetOffs(BGBCC_JX2_Context *ctx, int offs);
 int BGBCC_JX2_EmitGetSecOffs(BGBCC_JX2_Context *ctx, int sec);
 int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al);
 byte *BGBCC_JX2_EmitGetPosForOffs(BGBCC_JX2_Context *ctx, int ofs);
@@ -3481,6 +3482,7 @@ int BGBCC_JX2RV_TryEmitOpRegStDecReg(BGBCC_JX2_Context *ctx,int nmid, int rm, in
 //AHSRC:jx2cc/jx2_emx3_opc.c
 int BGBCC_JX2X3_CheckRemapReg6Reg3(int reg);
 u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw);
+int BGBCC_JX2X3_CheckOpPairAlias(u32 opw1, u32 opw2);
 int BGBCC_JX2X3_CheckRepack1(BGBCC_JX2_Context *ctx, s64 *ropw1);
 int BGBCC_JX2X3_CheckRepack3(BGBCC_JX2_Context *ctx, s64 *ropw1, s64 *ropw2, s64 *ropw3);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm10I(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);

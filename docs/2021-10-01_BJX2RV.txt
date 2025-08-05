@@ -103,7 +103,7 @@ Listing:
 * iiiiiii-iiiii-mmmmm-100-nnnnn-00-00011  LBU	Rn, Rm, Disp12_I
 * iiiiiii-iiiii-mmmmm-101-nnnnn-00-00011  LHU	Rn, Rm, Disp12_I
 * iiiiiii-iiiii-mmmmm-110-nnnnn-00-00011  LWU	Rn, Rm, Disp12_I
-* iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011  LX	Rn, Rm, Disp12_I (BGB)
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011  LDP	Rn, Rm, Disp12_I (BGB)
 ** iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011 ? LDU	Rn, Rm, Disp12_I (RV128)
 
 * iiiiiii-ttttt-mmmmm-000-iiiii-01-00011  SB	Rm, Disp12_S, Rt
@@ -113,10 +113,16 @@ Listing:
 * iiiiiii-ttttt-mmmmm-100-iiiii-01-00011  SBU	Rm, Disp12_S, Rt (RV128, SQ?)
 * iiiiiii-ttttt-mmmmm-101-iiiii-01-00011  SHU	Rm, Disp12_S, Rt
 * iiiiiii-ttttt-mmmmm-110-iiiii-01-00011  SWU	Rm, Disp12_S, Rt
-* iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt (BGB)
+* iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SDP	Rm, Disp12_S, Rt (BGB)
 
-* ssttt11-ooooo-mmmmm-101-nnnnn-01-00011  Lt	Rn, (Rm, Ro*Sc)
-* ssttt11-ooooo-mmmmm-110-nnnnn-01-00011  St	(Rm, Ro*Sc), Rn
+* ssttt11-ooooo-mmmmm-101-nnnnn-01-00011  Lt	Rn, (Rm, Ro*Sc)	//(BGB 2)
+* ssttt11-ooooo-mmmmm-110-nnnnn-01-00011  St	(Rm, Ro*Sc), Rn	//(BGB 2)
+
+* ssttt11-ooooo-mmmmm-111-nnnnn-00-00011  Lt	Rn, (Rm, Ro*Sc)  //(? ByteDance)
+* ssttt11-ooooo-mmmmm-111-nnnnn-01-00011  St	(Rm, Ro*Sc), Rn  //(? ByteDance)
+
+* ssttt11-ooooo-mmmmm-111-nnnnn-01-00011 Lt	Rn, (Rm, Ro*Sc)
+* ssttt11-ooooo-mmmmm-111-nnnnn-01-00011 St	(Rm, Ro*Sc), Rn
 
 * uuuuu00-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.S	Rn, Rs, Rt, Ru
 * uuuuu01-ttttt-sssss-zzz-nnnnn-10-00011  FMADD.D	Rn, Rs, Rt, Ru
@@ -529,7 +535,7 @@ Listing:
 *  001-i-nn-nnn-ii-iii-01  ADDSL		Rn, Imm6Alu, Rn
 *  010-i-nn-nnn-ii-iii-01  LI			Imm6Alu, Rn
 *  011-i-nn-nnn-ii-iii-01  LUI			Imm6Alu, Rn
-** 011-i-00-010-ii-iii-01  ADDI16SP		Imm6Alu, Rn
+** 011-i-00-010-ii-iii-01  ADDI16SP		Imm6Alu, R2
 *  100-i-00-nnn-ii-iii-01  SRL			Rn3, Imm6AluZ, Rn3
 *  100-i-01-nnn-ii-iii-01  SRA			Rn3, Imm6AluZ, Rn3
 *  100-i-10-nnn-ii-iii-01  AND			Rn3, Imm6AluZ, Rn3

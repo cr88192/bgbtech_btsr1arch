@@ -7,10 +7,13 @@ XG3 will be considered a sub-mode of RISC-V Mode, and so will primarily be inten
 
 int BGBCC_JX2X3_CheckRemapReg6Reg3(int reg)
 {
-	if((reg>=8) && (reg<=11))
-		return(0+(reg&3));
-	if((reg>=24) && (reg<=27))
-		return(4+(reg&3));
+	if((reg>=8) && (reg<=15))
+		return(0+(reg&7));
+
+//	if((reg>=8) && (reg<=11))
+//		return(0+(reg&3));
+//	if((reg>=24) && (reg<=27))
+//		return(4+(reg&3));
 	return(-1);
 }
 
@@ -142,8 +145,8 @@ u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw)
 		if((rn3m>=0) && (rm3m>=0) && (i10u<4))
 			return(0x4084|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 
-		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
-			return(0x4087|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
+//		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
+//			return(0x4087|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 	}
 
 	if((opw&0xF03F)==0x3006)		//SD
@@ -153,8 +156,8 @@ u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw)
 		if((rn3m>=0) && (rm3m>=0) && (i10u<4))
 			return(0x40C4|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 
-		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
-			return(0x40C7|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
+//		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
+//			return(0x40C7|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 	}
 
 	if((opw&0xF03F)==0xA006)		//LW
@@ -164,8 +167,8 @@ u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw)
 		if((rn3m>=0) && (rm3m>=0) && (i10u<4))
 			return(0x4004|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 
-		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
-			return(0x4007|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
+//		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
+//			return(0x4007|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 	}
 
 	if((opw&0xF03F)==0xB006)		//LD
@@ -175,8 +178,8 @@ u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw)
 		if((rn3m>=0) && (rm3m>=0) && (i10u<4))
 			return(0x4044|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 
-		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
-			return(0x4047|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
+//		if((rn5m>=0) && (rm5m>=0) && (i10u<4))
+//			return(0x4047|(rn3m<<3)|(rm3m<<8)|(i10u<<11));
 	}
 
 	if((opw&0xF03F)==0x0006)		//SB
@@ -288,6 +291,27 @@ u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw)
 
 	return(0xFFFF);
 }
+
+int BGBCC_JX2X3_CheckOpPairAlias(u32 opw1, u32 opw2)
+{
+	int rn1, rm1, ro1;
+	int rn2, rm2, ro2;
+	
+	rn1=(opw1>> 6)&63;
+	rm1=(opw1>>16)&63;
+	ro1=(opw1>>22)&63;
+	
+	rn2=(opw2>> 6)&63;
+	rm2=(opw2>>16)&63;
+	ro2=(opw2>>22)&63;
+
+	if((rn1==rn2) || (rn1==rm2) || (rn1==ro2))
+		return(1);
+	if((rn2==rn1) || (rn2==rm1) || (rn2==ro1))
+		return(1);
+	return(0);
+}
+
 
 int BGBCC_JX2X3_CheckRepack1(
 	BGBCC_JX2_Context *ctx, s64 *ropw1)

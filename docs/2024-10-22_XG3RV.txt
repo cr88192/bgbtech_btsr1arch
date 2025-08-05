@@ -980,7 +980,7 @@ Encoding space z=0:
 * mmmmmnnnnn001  ADD		Rm5, Rn5
 * iiiiinnnnn010  MOV		Imm5s, Rn5
 * iiiiinnnnn011  ADD		Imm5s, Rn5
-* iiiiinnnnn100  -
+* iiiiinnnnn100  ADDS.L		Imm5s, Rn5
 
 * 00mmm00nnn101  SUB		Rm3, Rn3
 * 00mmm01nnn101  XOR		Rm3, Rn3

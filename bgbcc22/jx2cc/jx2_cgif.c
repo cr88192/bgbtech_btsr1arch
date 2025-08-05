@@ -690,6 +690,13 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_rvzba|=1;	//Zba
 
 		shctx->has_fmovs|=3;
+
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3c"))
+		{
+			/* Pair Pack Encoding... */
+//			shctx->is_fixed32&=~3;
+			shctx->is_fixed32|=0x40;
+		}
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_XG2A)

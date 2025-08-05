@@ -1009,6 +1009,13 @@ int BGBCC_JX2_EmitStatWord(BGBCC_JX2_Context *ctx, int val)
 		return(0);
 	}
 	
+	if(ctx->emit_riscv&0x11)
+	{
+		/* RV-C */
+		ctx->stat_opc_issfx=0;
+		return(0);
+	}
+	
 	if(ctx->is_simpass)
 	{
 		if(ctx->is_fixed32 || ctx->op_is_wex2)
@@ -2396,7 +2403,8 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 	if(	(ctx->sec==BGBCC_SH_CSEG_TEXT) ||
 		(ctx->sec==BGBCC_SH_CSEG_UTEXT))
 	{
-		if(!ctx->stat_opc_issfx)
+		if(!ctx->stat_opc_issfx &&
+			!(ctx->emit_riscv&0x11))
 		{
 			valv=val;
 			if(ctx->is_fixed32&2)
@@ -2495,6 +2503,7 @@ int BGBCC_JX2_EmitWordI(BGBCC_JX2_Context *ctx, int val)
 
 //	if(!ctx->is_simpass && (ctx->sec==BGBCC_SH_CSEG_TEXT))
 	if(!ctx->is_simpass && 
+		!(ctx->emit_riscv&0x11) &&
 		((ctx->sec==BGBCC_SH_CSEG_TEXT) ||
 		(ctx->sec==BGBCC_SH_CSEG_UTEXT)))
 	{
@@ -3491,6 +3500,18 @@ int BGBCC_JX2_EmitGetOffs(BGBCC_JX2_Context *ctx)
 	return(ctx->sec_pos[ctx->sec]-ctx->sec_buf[ctx->sec]);
 }
 
+int BGBCC_JX2_EmitSetOffs(BGBCC_JX2_Context *ctx, int offs)
+{
+	if(ctx->is_simpass)
+	{
+		ctx->sec_vpos[ctx->sec]=ctx->sec_buf[ctx->sec]+offs;
+		return(ctx->sec_vpos[ctx->sec]-ctx->sec_buf[ctx->sec]);
+	}
+
+	ctx->sec_pos[ctx->sec]=ctx->sec_buf[ctx->sec]+offs;
+	return(ctx->sec_pos[ctx->sec]-ctx->sec_buf[ctx->sec]);
+}
+
 int BGBCC_JX2_EmitGetSecOffs(BGBCC_JX2_Context *ctx, int sec)
 {
 	if(ctx->is_simpass)
@@ -3844,20 +3865,30 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 	}
 
 	ld=ctx->pos_pad_op0-ctx->pos_pad_op1;
-	if(is32 && (ld==4))
+	if(is32 && (ld==4) && (ctx->emit_riscv&0x22))
 	{
 //		i=BGBCC_JX2_EmitGetOffs(ctx);
 		wv13a=BGBCC_JX2X3_CheckRepackOpwC0B(lval);
 		wv13b=BGBCC_JX2X3_CheckRepackOpwC0B(val);
 		
 		if(!(wv13a&0x8000) && !(wv13b&0x8000) &&
-			!(wv13a&wv13b&0x4000))
+			!(wv13a&wv13b&0x4000) &&
+			!BGBCC_JX2X3_CheckOpPairAlias(lval, val))
 		{
 			if((wv13a&0x4000) && !(wv13b&0x4000))
 				{ k=wv13a; wv13a=wv13b; wv13b=k; }
 			
 			if(!ctx->is_simpass)
 				ctx->stat_opc_xg3c_bpt++;
+				
+			if(ctx->is_fixed32&0x40)
+			{
+				BGBCC_JX2_EmitSetOffs(ctx, ctx->pos_pad_op1);
+				val=0x001C|
+					(((wv13b>>14)&1)<<5)|
+					((wv13b&0x1FFF)<< 6)|
+					((wv13a&0x1FFF)<<19);
+			}
 		}
 	}
 
