@@ -33,6 +33,7 @@ u16 BGBCC_JX2X3_CheckRepackOpwC0B(u32 opw)
 	i8s=(sbyte)i10u;
 
 	rn5a=-1; rm5a=-1;	rn5z=-1;
+	rn5m=-1;	rm5m=-1;
 	if((rn==rm) && (rn<32))
 		{ rn5a=rn; }
 	if(ro<32)

@@ -1063,17 +1063,53 @@ int fmid;	//form index
 {0xC0000053, 0xFE00707F, BGBCC_SH_NMID_FSTCI,	BGBCC_SH_FMID_REGREGREG_RV},
 {0xC2000053, 0xFE00707F, BGBCC_SH_NMID_FSTCI,	BGBCC_SH_FMID_REGREGREG_RV},
 
+{0xC0001053, 0xFE00707F, BGBCC_SH_NMID_FSTCI,	BGBCC_SH_FMID_REGREGREG_RV},
+{0xC2001053, 0xFE00707F, BGBCC_SH_NMID_FSTCI,	BGBCC_SH_FMID_REGREGREG_RV},
+
 {0xD0000053, 0xFE00707F, BGBCC_SH_NMID_FLDCI,	BGBCC_SH_FMID_REGREGREG_RV},
 {0xD2000053, 0xFE00707F, BGBCC_SH_NMID_FLDCI,	BGBCC_SH_FMID_REGREGREG_RV},
 
 {0xE0000053, 0xFE00707F, BGBCC_SH_NMID_FMOV,	BGBCC_SH_FMID_REGREGREG_RV},
 {0xE2000053, 0xFE00707F, BGBCC_SH_NMID_FMOV,	BGBCC_SH_FMID_REGREGREG_RV},
 
+{0xF0000053, 0xFE00707F, BGBCC_SH_NMID_FMOV,	BGBCC_SH_FMID_REGREGREG_RV},
+{0xF2000053, 0xFE00707F, BGBCC_SH_NMID_FMOV,	BGBCC_SH_FMID_REGREGREG_RV},
+
 //{0xE0000053, 0xFE00707F, BGBCC_SH_NMID_FMOV,	BGBCC_SH_FMID_REGREGREG_RV},
 //{0xE2000053, 0xFE00707F, BGBCC_SH_NMID_FMOV,	BGBCC_SH_FMID_REGREGREG_RV},
 
 {0x0000403F, 0x8000707F, BGBCC_SH_NMID_JIMM,	BGBCC_SH_FMID_IMM24_RV},
 {0x8000403F, 0x8000707F, BGBCC_SH_NMID_JOP64,	BGBCC_SH_FMID_IMM24_RV},
+
+{0x00000001, 0x0000E003, BGBCC_SH_NMID_ADD,		BGBCC_SH_FMID_IMM6REG5_RVC},
+{0x00004001, 0x0000E003, BGBCC_SH_NMID_MOV,		BGBCC_SH_FMID_IMM6REG5_RVC},
+{0x00002001, 0x0000E003, BGBCC_SH_NMID_ADDSL,	BGBCC_SH_FMID_IMM6REG5_RVC},
+{0x00000002, 0x0000E003, BGBCC_SH_NMID_SHAD,	BGBCC_SH_FMID_IMM6REG5_RVC},
+
+{0x00008801, 0x0000EC03, BGBCC_SH_NMID_AND,		BGBCC_SH_FMID_IMM6REG3_RVC},
+
+{0x00008C01, 0x0000FC63, BGBCC_SH_NMID_SUB,		BGBCC_SH_FMID_REGREG3_RVC},
+{0x00008C21, 0x0000FC63, BGBCC_SH_NMID_XOR,		BGBCC_SH_FMID_REGREG3_RVC},
+{0x00008C41, 0x0000FC63, BGBCC_SH_NMID_OR,		BGBCC_SH_FMID_REGREG3_RVC},
+{0x00008C61, 0x0000FC63, BGBCC_SH_NMID_AND,		BGBCC_SH_FMID_REGREG3_RVC},
+
+{0x00009C01, 0x0000FC63, BGBCC_SH_NMID_SUBSL,	BGBCC_SH_FMID_REGREG3_RVC},
+{0x00009C21, 0x0000FC63, BGBCC_SH_NMID_ADDSL,	BGBCC_SH_FMID_REGREG3_RVC},
+
+{0x00008002, 0x0000F003, BGBCC_SH_NMID_MOV,		BGBCC_SH_FMID_REGREG5_RVC},
+{0x00009002, 0x0000F003, BGBCC_SH_NMID_ADD,		BGBCC_SH_FMID_REGREG5_RVC},
+
+{0x00004002, 0x0000E003, BGBCC_SH_NMID_MOVL,	BGBCC_SH_FMID_REG5SPLD_RVC},
+{0x00006002, 0x0000E003, BGBCC_SH_NMID_MOVQ,	BGBCC_SH_FMID_REG5SPLD_RVC},
+
+{0x0000C002, 0x0000E003, BGBCC_SH_NMID_MOVL,	BGBCC_SH_FMID_REG5SPST_RVC},
+{0x0000E002, 0x0000E003, BGBCC_SH_NMID_MOVQ,	BGBCC_SH_FMID_REG5SPST_RVC},
+
+{0x00004000, 0x0000E003, BGBCC_SH_NMID_MOVL,	BGBCC_SH_FMID_REG3LD_RVC},
+{0x00006000, 0x0000E003, BGBCC_SH_NMID_MOVQ,	BGBCC_SH_FMID_REG3LD_RVC},
+
+{0x0000C000, 0x0000E003, BGBCC_SH_NMID_MOVL,	BGBCC_SH_FMID_REG3ST_RVC},
+{0x0000E000, 0x0000E003, BGBCC_SH_NMID_MOVQ,	BGBCC_SH_FMID_REG3ST_RVC},
 
 {0, 0, 0, 0}
 };
@@ -1278,6 +1314,11 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	if(isrv)
 	{
 		il=2;
+		if(!(ctx->emit_riscv&0x02))
+		{
+			if((opw&3)!=3)
+				il=1;
+		}
 	}else
 		if(ctx->is_fixed32&1)
 	{
@@ -1304,6 +1345,8 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 	if(isrv)
 	{
 		isxg3=((opw&3)!=3);
+		if(!(ctx->emit_riscv&0x02))
+			isxg3=0;
 
 		if(isxg3)
 		{
@@ -2065,6 +2108,85 @@ int BGBCC_JX2_TryDisassembleOpcodeI1(
 		arg1->breg=((opw>> 7)&31);
 		break;
 
+
+	case BGBCC_SH_FMID_REGREG5_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_REG;
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg0->breg=((opw>> 2)&31);
+		arg1->breg=((opw>> 7)&31);
+		break;
+
+	case BGBCC_SH_FMID_REGREG3_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_REG;
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg0->breg=8+((opw>> 2)&7);
+		arg1->breg=8+((opw>> 7)&7);
+		break;
+	
+	case BGBCC_SH_FMID_IMM6REG5_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_IMM;
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg0->disp=((opw>>2)&31);
+		arg1->breg=((opw>> 7)&31);
+		if(opw&0x1000)
+			arg0->disp|=~31;
+		break;
+
+	case BGBCC_SH_FMID_REGIMMREG3_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_REG;
+		arg1->ty=BGBCC_SH_OPVTY_IMM;
+		arg2->ty=BGBCC_SH_OPVTY_REG;
+		arg0->breg=8+((opw>> 2)&7);
+		arg1->disp=((opw>>10)&7)|(((opw>>2)&3)<<3);
+		arg2->breg=8+((opw>> 7)&7);
+		break;
+
+	case BGBCC_SH_FMID_REG5SPLD_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_RDMEM;
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg0->breg=2;
+		arg0->disp=
+			(((opw>> 5)&3)<<3)|
+			(((opw>>12)&1)<<5)|
+			(((opw>> 2)&7)<<6);
+		if(sc==4)
+		{	arg0->disp=
+				(((opw>> 4)&7)<<2)|
+				(((opw>>12)&1)<<5)|
+				(((opw>> 2)&3)<<6);		}
+		arg1->breg=((opw>> 7)&31);
+		break;
+	case BGBCC_SH_FMID_REG5SPST_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_REG;
+		arg1->ty=BGBCC_SH_OPVTY_RDMEM;
+		arg0->breg=((opw>>2)&31);
+		arg1->breg=2;
+		arg1->disp=
+			(((opw>>10)&3)<<3)|
+			(((opw>>12)&1)<<5)|
+			(((opw>> 7)&7)<<6);
+		if(sc==4)
+		{	arg1->disp=
+				(((opw>> 9)&7)<<2)|
+				(((opw>>12)&1)<<5)|
+				(((opw>> 7)&3)<<6);		}
+		break;
+
+	case BGBCC_SH_FMID_REG3LD_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_RDMEM;
+		arg1->ty=BGBCC_SH_OPVTY_REG;
+		arg1->breg=8+((opw>> 2)&7);
+		arg0->disp=((opw>>10)&7)|(((opw>>2)&3)<<3);
+		arg0->breg=8+((opw>> 7)&7);
+		break;
+	case BGBCC_SH_FMID_REG3ST_RVC:
+		arg0->ty=BGBCC_SH_OPVTY_REG;
+		arg1->ty=BGBCC_SH_OPVTY_RDMEM;
+		arg0->breg=8+((opw>> 2)&7);
+		arg1->disp=((opw>>10)&7)|(((opw>>2)&3)<<3);
+		arg1->breg=8+((opw>> 7)&7);
+		break;
+
 	default:
 		il=-1;
 		break;
@@ -2260,17 +2382,28 @@ int BGBCC_JX2_TryDisassembleOpcodeBuf(
 
 	if(il<0)
 	{
-		nmid=0;
-		il=1;
-		if((opw1&0xE000)==0xE000)
+		if(isrv)
+		{
 			il=2;
-		if((opw1&0xF000)==0x7000)
-			il=2;
-		if((opw1&0xF000)==0x9000)
-			il=2;
+			if(!(ctx->emit_riscv&0x02))
+			{
+				if((opw1&3)!=3)
+					il=1;
+			}
+		}else
+		{
+			nmid=0;
+			il=1;
+			if((opw1&0xE000)==0xE000)
+				il=2;
+			if((opw1&0xF000)==0x7000)
+				il=2;
+			if((opw1&0xF000)==0x9000)
+				il=2;
 
-		if(ctx->is_fixed32&1)
-			il=2;
+			if(ctx->is_fixed32&1)
+				il=2;
+		}
 	}
 
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, wex2);

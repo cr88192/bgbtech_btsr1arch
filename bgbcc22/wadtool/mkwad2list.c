@@ -93,6 +93,8 @@ int		wad_mincsz;
 int		wad_maxcsz;
 int 	wad_cmp[16];
 
+fourcc FccTagForName(char *src);
+
 void w_strupr_n (char *t, char *s, int n)
 {
 	int i;
@@ -560,7 +562,7 @@ char **bgbcc_split(char *s)
 }
 #endif
 
-int FccTagForName(char *src)
+fourcc FccTagForName(char *src)
 {
 	char tfc[5];
 	int v;
@@ -616,7 +618,8 @@ int main(int argc, char *argv[], char **env)
 	char *ifn, *ofn, *dir, *tcnv;
 	char **a;
 	char *s, *s1;
-	int isz, tag, tag1, isz1, tyofs;
+	fourcc tag, tag1;
+	int isz, isz1, tyofs;
 	int i, j, k, h;
 	
 //	ifn=argv[1];
@@ -760,14 +763,14 @@ int main(int argc, char *argv[], char **env)
 		{
 //			w_strupr_n(tn, a[0], 256);
 			w_strupr_n(tn, s1, 256);
-			AddWadLumpPath(tn, ibuf, isz);
+			AddWadLumpPath(tn, (byte *)ibuf, isz);
 		}
 		else
 		{
 //			w_strupr_n(tn, a[0], 16);
 			w_strupr_n(tn, s1, 16);
 			tn[16]=0;
-			AddWadLump(tn, ibuf, isz, tag);
+			AddWadLump(tn, (byte *)ibuf, isz, tag);
 		}
 	}
 	

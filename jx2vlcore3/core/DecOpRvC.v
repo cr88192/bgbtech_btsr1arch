@@ -63,8 +63,8 @@ assign		srSuperuser = (srMod[0] && srMod[1]) || (srMod[0] && srMod[2]);
 wire			srDbgRVC;
 wire			srDbgRVCF;
 
-// assign		srDbgRVC = 0;
-assign		srDbgRVC = 1;
+assign		srDbgRVC = 0;
+// assign		srDbgRVC = 1;
 
 // assign		srDbgRVCF = 0;
 assign		srDbgRVCF = 0;
@@ -557,11 +557,19 @@ begin
 		end
 
 		16'b100_0zz_zzz_zz_zzz_10: begin
-			opNmid		= JX2_UCMD_MOV_IR;
+//			opNmid		= JX2_UCMD_MOV_IR;
+//			opFmid		= JX2_FMID_REGREG;
+//			opUCmdIx	= JX2_UCIX_LDI_LDIX;
+//			opIty		= JX2_ITY_SB;
+
+			opNmid		= JX2_UCMD_CONV_RR;
 			opFmid		= JX2_FMID_REGREG;
-			opUCmdIx	= JX2_UCIX_LDI_LDIX;
-			opIty		= JX2_ITY_SB;
-			
+			opIty		= JX2_ITY_SW;
+			opUCmdIx	= JX2_UCIX_CONV_MOV;
+`ifdef jx2_gprs_mergecm
+			opNmid		= JX2_UCMD_MOV_RR;
+`endif
+
 			if(istrWord[6:2]==5'h00)
 			begin
 				opNmid		= JX2_UCMD_JMP;
@@ -672,6 +680,8 @@ begin
 
 		/*
 			SB: Rn, Rm, Rn
+			SW: Rm, Rn, Rn
+
 			UB: Rn3, Rm3, Rn3
 		 */
 		
@@ -683,6 +693,11 @@ begin
 
 			case(opIty)
 				JX2_ITY_SB: begin
+				end
+
+				JX2_ITY_SW: begin
+					opRegM	= opRegM_Dfl;
+					opRegO	= opRegN_Dfl;
 				end
 
 				JX2_ITY_UB: begin

@@ -694,6 +694,32 @@ begin
 			opFmid		= JX2_FMID_REGSTREGDISP;
 			opBty		= istrWord[14:12];
 			opIty		= JX2_ITY_SB;
+
+			case(istrWord[14:12])
+				3'b101: begin
+					//Load Indexed
+					amoLdOp		= 0;
+					opNmid		= JX2_UCMD_MOV_MR;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_SB;
+					opBty		= istrWord[29:27];
+					opUCmdIx	= {
+						opBty[1:0], 1'b0, opBty[2], istrWord[31:30] };
+				end
+				3'b110: begin
+					//Store Indexed
+					amoLdOp		= 0;
+					opNmid		= JX2_UCMD_MOV_RM;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_SB;
+					opBty		= istrWord[29:27];
+					opUCmdIx	= {
+						opBty[1:0], 1'b0, opBty[2], istrWord[31:30] };
+				end
+
+				default: begin
+				end
+			endcase
 		end
 
 `ifdef jx2_fpu_fmac
