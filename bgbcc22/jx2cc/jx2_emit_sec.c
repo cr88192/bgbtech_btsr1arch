@@ -3802,7 +3802,7 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 	s64 val1;
 	u16 wv13a, wv13b;
 	int ix, ix1, isjmb, is32, is16, is48;
-	int i, j, k, l, ld;
+	int i, j, k, l, ld, ofs;
 
 	is16=0;
 	is32=0;
@@ -3864,14 +3864,18 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 		isjmb=1;
 	}
 
-	ld=ctx->pos_pad_op0-ctx->pos_pad_op1;
-	if(is32 && (ld==4) && (ctx->emit_riscv&0x22))
+	ofs=BGBCC_JX2_EmitGetOffs(ctx);
+//	ld=ctx->pos_pad_op0-ctx->pos_pad_op1;
+	ld=ofs-ctx->pos_pad_op0;
+//	if(is32 && (ld==4) && (ctx->emit_riscv&0x22))
+	if(is32 && (ld==4) && (ctx->emit_riscv&0x22) &&
+		(ctx->is_fixed32&0x40))
 	{
 //		i=BGBCC_JX2_EmitGetOffs(ctx);
 		wv13a=BGBCC_JX2X3_CheckRepackOpwC0B(lval);
 		wv13b=BGBCC_JX2X3_CheckRepackOpwC0B(val);
 		
-		if(!(wv13a&0x8000) && !(wv13b&0x8000) &&
+		if(!(wv13a&0xA000) && !(wv13b&0xA000) &&
 			!(wv13a&wv13b&0x4000) &&
 			!BGBCC_JX2X3_CheckOpPairAlias(lval, val))
 		{
@@ -3883,8 +3887,8 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 				
 			if(ctx->is_fixed32&0x40)
 			{
-				BGBCC_JX2_EmitSetOffs(ctx, ctx->pos_pad_op1);
-				val=0x001C|
+				BGBCC_JX2_EmitSetOffs(ctx, ctx->pos_pad_op0);
+				val=0x001CU|
 					(((wv13b>>14)&1)<<5)|
 					((wv13b&0x1FFF)<< 6)|
 					((wv13a&0x1FFF)<<19);

@@ -217,6 +217,17 @@ reg				tExEn5;
 reg				tFraUseA;
 reg				tFraUseB;
 
+reg[1:0]		tExDaz1;
+reg[1:0]		tExDaz2;
+reg[1:0]		tExDaz3;
+reg[1:0]		tExDaz4;
+reg[1:0]		tExDaz5;
+
+reg[7:0]		tRegRMode1;
+reg[7:0]		tRegRMode2;
+reg[7:0]		tRegRMode3;
+reg[7:0]		tRegRMode4;
+
 always @*
 begin
 	tRegExOp1	= regExOp;
@@ -229,6 +240,8 @@ begin
 
 // 	tRegExOK=UMEM_OK_READY;
 	tRegExOK	= 0;
+	tExDaz1		= 0;
+	tRegRMode1	= regRMode;
 	
 	/* Stage 1 */
 
@@ -438,13 +451,13 @@ begin
 	tValC4		= { tSgnC4B, tExpC4B[10:0], tFraC4B[60:9] };
 
 `ifndef jx2_fpu_noround
-	if(regRMode[3:0]==1)
+	if(tRegRMode4[3:0]==1)
 		tFraRbit4B=0;
-	if(regRMode[3:0]==2)
+	if(tRegRMode4[3:0]==2)
 		tFraRbit4B=!tSgnC4;
-	if(regRMode[3:0]==3)
+	if(tRegRMode4[3:0]==3)
 		tFraRbit4B=tSgnC4;
-//	if(regRMode[3:0]!=4)
+//	if(tRegRMode4[3:0]!=4)
 //		tFraRbit4B2=0;
 	tFraRbit4B2=0;
 
@@ -457,7 +470,7 @@ begin
 	if(!tValRoundC4[8])
 		tValC4[7:0] = tValRoundC4[7:0];
 
-//	if(regRMode[3:0]==4)
+//	if(tRegRMode4[3:0]==4)
 //		tValC4[1:0] = tInxC4B ? 2'b01 : 2'b00;
 `endif
 
@@ -466,7 +479,13 @@ begin
 //		$display("FADD: D2I-4 %X", tFraC4I);
 		tValC4 = tFraC4I;
 	end
-	
+
+	if(tRegRMode4[4] && (tValRoundC4[8] || (tExDaz4!=0)))
+	begin
+		//IEEE Mode & DAZ or Round Fail
+		tRegExOK = UMEM_OK_FAULT;
+	end
+
 end
 
 always @(posedge clock)
@@ -503,6 +522,9 @@ begin
 		tFraDti2	<= tFraDti1;
 		tFraItf2	<= tFraItf1;
 		tInxC2		<= tInxC1;
+
+		tExDaz2		<= tExDaz1;
+		tRegRMode2	<= tRegRMode1;
 	end
 
 	tRegExOp3	<= tRegExOp2;
@@ -527,6 +549,13 @@ begin
 	tExEn3		<= tExEn2;
 	tExEn4		<= tExEn3;
 	tExEn5		<= tExEn4;
+
+	tExDaz3		<= tExDaz2;
+	tExDaz4		<= tExDaz3;
+	tExDaz5		<= tExDaz4;
+
+	tRegRMode3	<= tRegRMode2;
+	tRegRMode4	<= tRegRMode3;
 
 	tRegValRo	<= tValC4;
 end

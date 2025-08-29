@@ -115,6 +115,7 @@
 #define CCXL_TY_M16				0x5F		//64-bit vector
 
 #define CCXL_TY_VEC2H			0x60		//64-bit vector
+#define CCXL_TY_VEC4_FP8A		0x61		//Vec4 Float8A
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'

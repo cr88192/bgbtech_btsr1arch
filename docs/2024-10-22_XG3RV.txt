@@ -970,14 +970,24 @@ Decoder switch Rn and Ro fields relative to XG1/XG2 for the 1R and 0R blocks.
 
 Where, the Jumbo-FF prefix in predicated space will encode a pair of 13/14 bit instructions. If z is 0, both x and y are in the same encoding space, if z is 1, y will use a different encoding space.
 
-The Rn5 register type will encode R0..R31, whereas Rn3 will encode R8..R15 or R8..R11,R24..R27.
+The Rn5 register type will encode R0..R31, whereas Rn3 will encode R8..R15.
+
+The Rn3b case will be special:
+* / 0/1: R18/R19
+* / 2/3: R26/R27
+* / 4/5: R20/R21
+* / 6/7: R10/R11
+
+* 0..3: R8..R11
+* 4..7: R20..R23
 
 Note that within the paired instructions, both may be assumed to be performed together, and neither may depend on the result of the other. If one instruction modifies a register used as an input by the other instruction, the results are undefined.
 
 
 Encoding space z=0:
 * mmmmmnnnnn000  MOV		Rm5, Rn5
-* mmmmmnnnnn001  ADD		Rm5, Rn5
+* mmmmmnnnnn001  / ADD		Rm5, Rn5
+* mmmmmnnnnn001  EXTS.L		Rm5, Rn5
 * iiiiinnnnn010  MOV		Imm5s, Rn5
 * iiiiinnnnn011  ADD		Imm5s, Rn5
 * iiiiinnnnn100  ADDS.L		Imm5s, Rn5
@@ -1002,14 +1012,14 @@ Encoding space z=0:
 * 11mmm11nnn101  SHAR.L		Rm3, Rn3  //SHAR.Q  Rn3, Rm3, Rn3 
 
 
-* 00mmm00nnn110  ADDS.L		Imm3u, Rn3  //SUBS.L  Rn3, Imm3u, Rn3
+* 00mmm00nnn110 / ADDS.L		Imm3u, Rn3  //ADDS.L  Rn3, Imm3u, Rn3
 * 00mmm01nnn110  ADDU.L		Imm3u, Rn3  //ADDU.L  Rn3, Imm3u, Rn3
-* 00mmm10nnn110  -
-* 00mmm11nnn110  -
-* 01mmm00nnn110  ADDS.L		Imm3n, Rn3  //ADDS.L  Rn3, Imm3n, Rn3
+* 00mmm10nnn110  ADD		Rm3, Rn3	//ADD	  Rn3, Rm3, Rn3
+* 00mmm11nnn110  EXTU.L		Rm3, Rn3	//ADDU.L  Rm3, 0, Rn3
+* 01mmm00nnn110 / ADDS.L		Imm3n, Rn3  //ADDS.L  Rn3, Imm3n, Rn3
 * 01mmm01nnn110  ADDU.L		Imm3n, Rn3  //ADDU.L  Rn3, Imm3n, Rn3
-* 01mmm10nnn110  -
-* 01mmm11nnn110  -
+* 01mmm10nnn110  ADD		Rm3b, Rn3b	//ADD     Rn3b, Rm3b, Rn3b
+* 01mmm11nnn110  EXTU.L		Rm3b, Rn3b	//ADDU.L  Rm3b, 0, Rn3b
 * 10mmm00nnn110  SHLD.Q		Imm3u, Rn3  //SHLD.Q  Rn3, Imm3u, Rn3
 * 10mmm01nnn110  SHAD.Q		Imm3u, Rn3  //SHAD.Q  Rn3, Imm3u, Rn3
 * 10mmm10nnn110  SHLD.L		Imm3u, Rn3  //SHLD.Q  Rn3, Imm3u, Rn3
@@ -1018,6 +1028,18 @@ Encoding space z=0:
 * 11mmm01nnn110  SHAD.Q		Imm3n, Rn3  //SHAD.Q  Rn3, Imm3n, Rn3 
 * 11mmm10nnn110  SHLD.L		Imm3n, Rn3  //SHLD.Q  Rn3, Imm3n, Rn3
 * 11mmm11nnn110  SHAD.L		Imm3n, Rn3  //SHAD.Q  Rn3, Imm3n, Rn3 
+
+
+* 00mmm00nnn111  -
+* 00mmm01nnn111  -
+* 00mmm10nnn111  -
+* 00mmm11nnn111  -
+
+* 01mmm00nnn111  SUBS.L		Rm3b, Rn3b  //SUBS.L  Rn3b, Rm3b, Rn3b
+* 01mmm01nnn111  ADDS.L		Rm3b, Rn3b  //ADDS.L  Rn3b, Rm3b, Rn3b
+* 01mmm10nnn111  SUBU.L		Rm3b, Rn3b  //SUBU.L  Rn3b, Rm3b, Rn3b
+* 01mmm11nnn111  ADDU.L		Rm3b, Rn3b  //ADDU.L  Rn3b, Rm3b, Rn3b
+
 
 Encoding space z=1:
 * dddddnnnnn000  MOV.L		(SP, Disp5u), Rn5
@@ -1037,3 +1059,11 @@ Encoding space z=1:
 * 01mmm01nnn101  MOVU.W		(Rm3), Rn3
 * 01mmm10nnn101  MOVU.L		(Rm3), Rn3
 * 01mmm11nnn101  -
+
+* 0mmmm0nnnn110  -
+* 0mmmm1nnnn110  -
+
+* ddmmm00nnn111  MOV.L		(Rm3b, Disp2u), Rn3b
+* ddmmm01nnn111  MOV.Q		(Rm3b, Disp2u), Rn3b
+* ddmmm10nnn111  MOV.L		Rn3b, (Rm3b, Disp2u)
+* ddmmm11nnn111  MOV.Q		Rn3b, (Rm3b, Disp2u) 

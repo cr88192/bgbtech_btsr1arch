@@ -1082,6 +1082,42 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			dty2=dty;
 		}
 
+		if(	BGBCC_CCXL_TypeUnsignedIntP(ctx, dty2) &&
+			BGBCC_CCXL_TypeIntP(ctx, dty))
+		{
+			if(	(opr==CCXL_BINOP_SHR) ||
+				(opr==CCXL_BINOP_SHRR) )
+			{
+				/* Right shift of unsigned int with int dest.
+				   Silently pretend dest was unsigned... */
+				dty=dty2;
+			}
+			if(
+				(opr==CCXL_BINOP_ADD) ||
+				(opr==CCXL_BINOP_SUB) ||
+				(opr==CCXL_BINOP_AND) ||
+				(opr==CCXL_BINOP_OR ) ||
+				(opr==CCXL_BINOP_XOR) )
+			{
+				dty2=dty;
+			}
+		}
+
+		if(	BGBCC_CCXL_TypeUnsignedIntP(ctx, dty) &&
+			BGBCC_CCXL_TypeSmallIntP(ctx, dty2))
+		{
+			if(
+				(opr==CCXL_BINOP_ADD) ||
+				(opr==CCXL_BINOP_SUB) ||
+				(opr==CCXL_BINOP_AND) ||
+				(opr==CCXL_BINOP_OR ) ||
+				(opr==CCXL_BINOP_XOR) ||
+				(opr==CCXL_BINOP_SHL))
+			{
+				dty2=dty;
+			}
+		}
+
 #if 1
 		if(	BGBCC_CCXL_TypeSmallLongP(ctx, dty) &&
 			BGBCC_CCXL_TypeSmallLongP(ctx, dty2) &&
@@ -1317,9 +1353,12 @@ ccxl_status BGBCC_CCXL_StackBinaryOpStore(BGBCC_TransState *ctx,
 			BGBCC_CCXL_TypeSgIntP(ctx, dty2) &&
 			BGBCC_CCXL_TypeSmallIntP(ctx, sty) )
 		{
-			if(		(opr==CCXL_BINOP_ADD) ||
-					(opr==CCXL_BINOP_SUB) ||
-					(opr==CCXL_BINOP_MUL) )
+			if(		(opr==CCXL_BINOP_ADD ) ||
+					(opr==CCXL_BINOP_SUB ) ||
+					(opr==CCXL_BINOP_MUL ) ||
+					(opr==CCXL_BINOP_SHL ) ||
+					(opr==CCXL_BINOP_SHR ) ||
+					(opr==CCXL_BINOP_SHRR) )
 			{
 				BGBCC_CCXL_GetRegAsType(ctx, sreg, dty2, &sreg);
 				sty=BGBCC_CCXL_GetRegType(ctx, sreg);

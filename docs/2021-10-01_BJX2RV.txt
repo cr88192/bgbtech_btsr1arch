@@ -465,7 +465,11 @@ Listing:
 
 
 * iiiiiii-iiiii-mmmmm-000-nnnnn-00-11011  ADDIW		Rn, Rm, Imm12_I
+
 * 000000i-iiiii-mmmmm-001-nnnnn-00-11011  SLLIW		Rn, Rm, Imm6
+* 0100iii-iiiii-mmmmm-001-nnnnn-00-11011  PSHUF.W	Rn, Rm, Imm8	(BGB)
+* 0110iii-iiiii-mmmmm-001-nnnnn-00-11011  PFSHUF.W	FRn, FRm, Imm8	(BGB)
+
 * iiiiiii-iiiii-mmmmm-010-nnnnn-00-11011  -
 * iiiiiii-iiiii-mmmmm-011-nnnnn-00-11011  -
 * 0iiiiii-iiiii-jjjjj-100-kkkkk-00-11011  / J21_IMM	(BGB)

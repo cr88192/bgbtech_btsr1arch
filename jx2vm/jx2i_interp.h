@@ -811,9 +811,13 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_NMID_RGB5SH3		0x1E0		//
 #define BJX2_NMID_RGB5USH3		0x1E1		//
-
 #define BJX2_NMID_PMULTW		0x1E2		//
 #define BJX2_NMID_PMULTXL		0x1E3		//
+
+#define BJX2_NMID_PCVTH2F8A		0x1E4		//
+#define BJX2_NMID_PCVTF8A2H		0x1E5		//
+
+#define BJX2_NMID_PAIR			0x1EF		//
 
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
@@ -863,12 +867,11 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_FREG			0x20		//FRn
 #define BJX2_FMID_FREGREG		0x21		//FRm, FRn
 #define BJX2_FMID_FREGREGREG	0x22		//FRm, FRo, FRn
-
 #define BJX2_FMID_IMMJREG		0x23		//#jimm, Rn
-
 #define BJX2_FMID_FREGGREG		0x24		//FRm, Rn
 #define BJX2_FMID_GREGFREG		0x25		//Rm, FRn
 
+#define BJX2_FMID_PAIR			0x26		//Paired Opcode
 #define BJX2_FMID_CHAIN			0x27		//Chained Opcode
 
 #define BJX2_FMID_REGPCDISP		0x28		//Reg, (PC, disp)

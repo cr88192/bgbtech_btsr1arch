@@ -73,7 +73,7 @@ module DecOpWx3(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
 	istrWord,	istrMTag,
-	istrBPc,	regSr,
+	istrBPc,	regSr,		regFpsr,
 	istrSxo,	idPcStep,
 
 	idRegS,		idRegT,		idRegM,
@@ -91,6 +91,7 @@ input[95:0]		istrWord;	//source instruction word
 input[47:0]		istrBPc;	//Instruction PC Address
 // input			srWxe;
 input[63:0]		regSr;
+input[15:0]		regFpsr;	//FPU control register.
 input[3:0]		istrSxo;	//source instruction word
 input[3:0]		idPcStep;	//PC Step
 input[5:0]		istrMTag;	//PC Step
@@ -160,19 +161,20 @@ assign		srSsc3 = idPcStep[3:2]==2'b11;
 assign		srRiscvSsc = srRiscv && idPcStep[3];
 
 // wire[2:0]		srMod;
-wire[7:0]		srMod;
-wire[7:0]		srModA;
-wire[7:0]		srModB;
-wire[7:0]		srModC;
+wire[11:0]		srMod;
+wire[11:0]		srModA;
+wire[11:0]		srModB;
+wire[11:0]		srModC;
 
 // assign		srMod = { regSr[29], srSxo, srUser };
 assign		srMod = {
+	1'b0, 1'b0, 1'b0, regFpsr[4],
 	1'b0, 1'b0, srWxe, srRiscv,
 	srXG2, regSr[29], srSxo, srUser };
 
-assign		srModA = { istrMTagA[1:0], srMod[5:0] };
-assign		srModB = { istrMTagB[1:0], srMod[5:0] };
-assign		srModC = { istrMTagC[1:0], srMod[5:0] };
+assign		srModA = { srMod[11:8], istrMTagA[1:0], srMod[5:0] };
+assign		srModB = { srMod[11:8], istrMTagB[1:0], srMod[5:0] };
+assign		srModC = { srMod[11:8], istrMTagC[1:0], srMod[5:0] };
 
 `output_gpr		idRegS;
 `output_gpr		idRegT;

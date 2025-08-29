@@ -878,23 +878,45 @@ begin
 	tRegMulRtHi	= tRegValRtBL;
 `endif
 
-	tRegAddRMode	= tRegValRModeL;
-	tRegMulRMode	= tRegValRModeL;
+//	tRegAddRMode	= tRegValRModeL;
+//	tRegMulRMode	= tRegValRModeL;
+
+	tRegAddRMode	= tRegValRMode;
+	tRegMulRMode	= tRegValRMode;
 
 //	regInFpsr
+
+	if(tOpCmd[5:0]==JX2_UCMD_FPU3)
+	begin
+		if(tRegIdIxt[5:2]==4'b0100)
+		begin
+			tRegAddRMode	= regInFpsr[7:0];
+			tRegMulRMode	= regInFpsr[7:0];
+		end
+	end
 
 	if(tOpUCmd1==JX2_UCMD_FPU3)
 	begin
 		if(tRegIdIxtL[5:2]==4'b0100)
 		begin
-			tRegAddRMode	= regInFpsr[7:0];
-			tRegMulRMode	= regInFpsr[7:0];
+//			tRegAddRMode	= regInFpsr[7:0];
+//			tRegMulRMode	= regInFpsr[7:0];
 			
 			if(tRegAddExOK[0] && !tRegIdIxtL[1])
 				tRegOutFpsr[8] = 1;
 			if(tRegMulExOK[0] && tRegIdIxtL[1])
 				tRegOutFpsr[8] = 1;
 		end
+
+		if(tRegAddExOK==UMEM_OK_FAULT)
+		begin
+			tRegOutTrap		= 8'hA3;
+		end
+		if(tRegMulExOK==UMEM_OK_FAULT)
+		begin
+			tRegOutTrap		= 8'hA3;
+		end
+
 	end
 
 //	tAddExHold	= exHold;
@@ -1124,7 +1146,7 @@ begin
 				end
 
 `ifdef jx2_fpu_enable_fdiv
-// `ifndef jx2_alu_slomuldiv_fdiv
+`ifndef jx2_alu_slomuldiv_fdiv
 				4'h3: begin
 					tRegMulRs	= tRegValRcpL;
 					tRegMulRt	= tRegValRtL;
@@ -1213,7 +1235,7 @@ begin
 					tRegValGRnB	= tRegValGRn;
 
 				end
-// `endif
+`endif
 `endif
 
 				4'h4: begin
@@ -1441,8 +1463,8 @@ begin
 `endif
 
 
-`ifdef jx2_fpu_enable_fdiv
-// `ifndef def_true
+// `ifdef jx2_fpu_enable_fdiv
+`ifndef def_true
 				4'hF: begin
 					tRegMulRs	= tRegValRcpL;
 					tRegMulRt	= tRegValRcpL;

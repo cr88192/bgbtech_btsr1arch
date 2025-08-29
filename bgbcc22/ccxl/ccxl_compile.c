@@ -3122,6 +3122,10 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='D'; *t++='v'; }
 		if(!strcmp(s, "vec4fp8u"))
 			{ *t++='D'; *t++='w'; }
+		if(!strcmp(s, "vec4fp8"))
+			{ *t++='D'; *t++='v'; }
+		if(!strcmp(s, "vec4fp8a"))
+			{ *t++='G'; *t++='v'; }
 
 		if(!strcmp(s, "_Float16"))*t++='k';
 		if(!strcmp(s, "_Float32"))*t++='f';

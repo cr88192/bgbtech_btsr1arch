@@ -143,6 +143,16 @@ reg[63:0]		tValC4;
 //reg[1:0]		tExEn5;
 //reg[1:0]		tExEn6;
 
+reg[1:0]		tExDaz1;
+reg[1:0]		tExDaz2;
+reg[1:0]		tExDaz3;
+reg[1:0]		tExDaz4;
+
+reg[7:0]		tRegRMode1;
+reg[7:0]		tRegRMode2;
+reg[7:0]		tRegRMode3;
+reg[7:0]		tRegRMode4;
+
 /*
     AA
    AB
@@ -169,6 +179,8 @@ begin
 //	tFraB1	= {1'b0, (tExpB1!=0), regValRm[51:0]};
 	tFraA1	= {2'b01, regValRn[51:0]};
 	tFraB1	= {2'b01, regValRm[51:0]};
+	tExDaz1	= 0;
+	tRegRMode1	= regRMode;
 	
 	tSgnC1	= tSgnA1 ^ tSgnB1;
 	tExpC1	=
@@ -176,7 +188,33 @@ begin
 		{2'b00, tExpB1} - 1023;
 	
 	if((tExpA1==0) || (tExpB1==0))
+	begin
 		tExpC1	= 0;
+		
+		/* Detect Subnormal */
+		if(regValRn[51:44]!=0)
+			tExDaz1[0]=1;
+		if(regValRm[51:44]!=0)
+			tExDaz1[0]=1;
+	end
+
+	if(regValRn[17:8]!=0)
+	begin
+		if((regValRm[17:8]!=0) || (regValRm[35:28]!=0))
+		begin
+			/* Low order bits non-zero */
+			tExDaz1[1]=1;
+		end
+	end
+
+	if(regValRm[17:8]!=0)
+	begin
+		if((regValRn[17:8]!=0) || (regValRn[35:28]!=0))
+		begin
+			/* Low order bits non-zero */
+			tExDaz1[1]=1;
+		end
+	end
 
 	tInxC1=0;
 	if(regRMode[3:0]==4)
@@ -276,13 +314,13 @@ begin
 	end
 	
 `ifndef jx2_fpu_noround
-	if(regRMode[3:0]==1)
+	if(tRegRMode4[3:0]==1)
 		tFraRbit4B=0;
-	if(regRMode[3:0]==2)
+	if(tRegRMode4[3:0]==2)
 		tFraRbit4B=!tSgnC4;
-	if(regRMode[3:0]==3)
+	if(tRegRMode4[3:0]==3)
 		tFraRbit4B=tSgnC4;
-	if(regRMode[3:0]!=4)
+	if(tRegRMode4[3:0]!=4)
 		tFraRbit4B2=0;
 	
 //	tFraRnd4B = { 1'b0, tFraC4B[7:0] } + { 8'b0, tFraRbit4B };
@@ -293,7 +331,7 @@ begin
 	if(!tFraRnd4B[8])
 		tFraC4B[7:0] = tFraRnd4B[7:0];
 
-	if(regRMode[3:0]==4)
+	if(tRegRMode4[3:0]==4)
 		tFraC4B[1:0] = tInxC4B ? 2'b01 : 2'b00;
 `endif
 
@@ -305,6 +343,12 @@ begin
 
 	tRegExOK[0] = tInxC4B;
 
+	if(tRegRMode4[4] && (tFraRnd4B[8] || (tExDaz4!=0)))
+	begin
+		//IEEE Mode & DAZ or Round Fail
+		tRegExOK = UMEM_OK_FAULT;
+	end
+
 end
 
 always @(posedge clock)
@@ -314,6 +358,8 @@ begin
 		tSgnC2		<= tSgnC1;
 		tExpC2		<= tExpC1;
 		tInxC2		<= tInxC1;
+		tExDaz2		<= tExDaz1;
+		tRegRMode2	<=tRegRMode1;
 
 		tFraC2_AC	<= tFraC1_AC;
 		tFraC2_BB	<= tFraC1_BB;
@@ -334,11 +380,15 @@ begin
 	tFraC3_P	<= tFraC2_P;
 	tFraC3_Q	<= tFraC2_Q;
 	tFraC3_R	<= tFraC2_R;
+	tExDaz3		<= tExDaz2;
+	tRegRMode3	<=tRegRMode2;
 
 	tSgnC4		<= tSgnC3;
 	tExpC4		<= tExpC3;
 	tInxC4		<= tInxC3;
 	tFraC4_S	<= tFraC3_S;
+	tExDaz4		<= tExDaz3;
+	tRegRMode4	<=tRegRMode3;
 
 	tRegValRo	<= tValC4;
 	tRegExOK2	<= tRegExOK;

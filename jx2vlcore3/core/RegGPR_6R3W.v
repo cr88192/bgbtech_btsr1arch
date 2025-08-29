@@ -102,7 +102,7 @@ module RegGPR_6R3W(
 	gprEx3DualLane,
 	
 	gprExHeldRegs,
-	regInSr,
+	regInSr,	regInFpsr,
 	regOutDoHold,
 
 	regOutDlr,	regInDlr,
@@ -186,6 +186,8 @@ input			gprEx3DualLane;
 input[8:0]		gprExHeldRegs;
 
 input[31:0]		regInSr;
+input[15:0]		regInFpsr;
+
 output			regOutDoHold;
 
 (* max_fanout = 200 *)
@@ -377,6 +379,14 @@ reg[31:0]	gprArrMB;
 	`wire_gprval	gprRegDhr;
 (* max_fanout = 200 *)
 	`wire_gprval	gprRegSp;
+(* max_fanout = 200 *)
+	`wire_gprval	gprRegSp0;
+
+`ifdef jx2_fpu_fpsr_sp
+assign	gprRegSp = { regInFpsr, gprRegSp0[47:0] };
+`else
+assign	gprRegSp = gprRegSp0;
+`endif
 
 RegSpr_3W	gprModDlr(
 	clock,		// reset,
@@ -409,7 +419,7 @@ assign	regInSpB = regInSp;
 
 RegSpr_3W	gprModSp(
 	clock,		// reset,
-	JX2_GR_SP,	gprRegSp,
+	JX2_GR_SP,	gprRegSp0,
 	regIdRnAW,	regValRnAW,
 	regIdRnBW,	regValRnBW,
 //	regIdRnCW,	regValRnCW,

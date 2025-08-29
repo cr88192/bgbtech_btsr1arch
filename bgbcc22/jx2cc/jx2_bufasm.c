@@ -1530,10 +1530,12 @@ int mfl;
 {"faddg",	BGBCC_SH_NMID_FADDG},
 {"fsubg",	BGBCC_SH_NMID_FSUBG},
 {"fmulg",	BGBCC_SH_NMID_FMULG},
+{"fdivg",	BGBCC_SH_NMID_FDIVG},
 
 {"fadd.g",	BGBCC_SH_NMID_FADDG},
 {"fsub.g",	BGBCC_SH_NMID_FSUBG},
 {"fmul.g",	BGBCC_SH_NMID_FMULG},
+{"fdiv.g",	BGBCC_SH_NMID_FDIVG},
 
 {"shad,q",	BGBCC_SH_NMID_SHADQ},
 {"shld.q",	BGBCC_SH_NMID_SHLDQ},

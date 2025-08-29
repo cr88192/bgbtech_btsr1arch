@@ -880,6 +880,7 @@ static char *bgbcp_basetypes_c[]={
 
 "__float8s",	"__float8u",
 "__vec4fp8s",	"__vec4fp8u",
+"__vec4fp8",	"__vec4fp8a",
 
 "__int48",		"__uint48",
 "__float48",

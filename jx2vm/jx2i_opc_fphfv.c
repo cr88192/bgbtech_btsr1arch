@@ -3936,6 +3936,32 @@ int bjx2_opi_cvtal2h(int vi)
 	return(v2);
 }
 
+int bjx2_opi_cvth2f8a(int vi)
+{
+	int v2;
+	v2=((vi>>6)&0x7F);
+	if(!(vi&0x2000))
+		v2=0x00;
+	if(vi&0x4000)
+		v2=0x7F;
+	v2|=((vi>>8)&0x80);
+	
+	if(v2==0x80)
+		v2=0x00;
+	
+//	if(vi!=0)
+//		printf("bjx2_opi_cvth2al: %04X->%02X\n", vi, v2);
+	
+	return(v2);
+}
+
+int bjx2_opi_cvtf8a2h(int vi)
+{
+	int v2;
+	v2=0x2000|((vi&0x7F)<<6)|((vi&0x80)<<8);
+	return(v2);
+}
+
 void BJX2_Op_PCVTH2AL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64	vs, vt, vn;
@@ -3968,6 +3994,36 @@ void BJX2_Op_PCVTAL2H_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_PCVTH2F8A_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+	
+	vn=	(bjx2_opi_cvth2f8a((vs>> 0)&0xFFFF)<< 0) |
+		(bjx2_opi_cvth2f8a((vs>>16)&0xFFFF)<< 8) |
+		(bjx2_opi_cvth2f8a((vs>>32)&0xFFFF)<<16) |
+		(bjx2_opi_cvth2f8a((vs>>48)&0xFFFF)<<24) ;
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_PCVTF8A2H_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=ctx->regs[op->rm];
+	
+	vn=	(((u64)bjx2_opi_cvtf8a2h((vs>> 0)&0xFF))<< 0) |
+		(((u64)bjx2_opi_cvtf8a2h((vs>> 8)&0xFF))<<16) |
+		(((u64)bjx2_opi_cvtf8a2h((vs>>16)&0xFF))<<32) |
+		(((u64)bjx2_opi_cvtf8a2h((vs>>24)&0xFF))<<48) ;
+
+	ctx->regs[op->rn]=vn;
+}
+
 
 int bjx2_opi_cvthtof8(int vi)
 {
@@ -3979,9 +4035,15 @@ int bjx2_opi_cvthtof8(int vi)
 	if(ex<0)
 		return(0);
 	if(ex>15)
+	{
+		if(ex==31)
+			return(0x80);
 		return(0x7F|((vi>>8)&0x80));
+	}
 
 	v2=((vi>>8)&0x80)|(ex<<3)|((vi>>7)&7);
+	if(v2==0x80)
+		v2=0;
 	return(v2);
 }
 
@@ -3989,8 +4051,13 @@ int bjx2_opi_cvtf8toh(int vi)
 {
 	int v2, ex;
 	
-	if(!(vi&0x7F))
+//	if(!(vi&0x7F))
+//		return(0);
+	if(!vi)
 		return(0);
+	if(vi==0x80)
+		return(0x7FE0);	/* NaN */
+
 	ex=((vi>>3)&15)+8;
 	v2=((vi&0x80)<<8)|(ex<<10)|((vi&7)<<7);
 	

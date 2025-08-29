@@ -2130,7 +2130,7 @@ char *BJX2_DumpPrintRVOpWord(u32 v)
 int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 {
 	char tb1[64];
-	BJX2_Opcode *op1;
+	BJX2_Opcode *op1, *op2;
 	s64 li;
 	int opw1, opw2, opw3, opw4, opsep;
 	int msc, psc, brpc, nonl, nosc, islea;
@@ -2308,6 +2308,30 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 						tb1);
 				}
 			}else
+				if(op->nmid==BJX2_NMID_PAIR)
+			{
+				opw1=op->opn;
+				opw2=op->opn2;
+				opsep='_';
+
+				if(op->fl&BJX2_OPFL_RV64)
+				{
+					opw1=op->opn2;
+					opw2=op->opn ;
+					opsep='.';
+				}
+
+				BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X%c%04X   ::\n",
+					(u32)((op->pc+0)>>32),
+					(u32)op->pc, op->cyc,
+					opw1, opsep, opw2);
+
+				op1=op->data;
+				op2=op1->data;
+				BJX2_DbgPrintOp(ctx, op1, fl|16);
+				BJX2_DbgPrintOp(ctx, op2, fl|16);
+				return(0);
+			}else
 			{
 				if(fl&2)
 				{
@@ -2336,7 +2360,17 @@ int BJX2_DbgPrintOp(BJX2_Context *ctx, BJX2_Opcode *op, int fl)
 			brpc=op->pc+4;
 		}else
 		{
-			if(fl&2)
+			if(fl&16)
+			{
+				BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) :    %04X %c %-8s ",
+					(u32)((op->pc+0)>>32),
+					(u32)op->pc, op->cyc,
+					op->opn,
+					((op->fl&BJX2_OPFL_OPSSC)?'$':
+						((op->fl&BJX2_OPFL_WEX)?'|':' ')),
+					BJX2_DbgPrintNameForNmid(ctx, op->nmid));
+			}else
+				if(fl&2)
 			{
 				BJX2_DbgPrintf(ctx, "%04X_%08X  (%2d) %04X           %c %-8s ",
 					(u32)((op->pc+0)>>32),
@@ -3128,6 +3162,9 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		trtops+=trcur->n_ops;
 		for(j=0; j<trcur->n_ops; j++)
 		{
+			if(trcur->ops[j]->nmid==BJX2_FMID_PAIR)
+				continue;
+		
 			cyc_nmid[trcur->ops[j]->nmid]+=
 				trcur->ops[j]->cyc*tra[i]->runcnt;
 

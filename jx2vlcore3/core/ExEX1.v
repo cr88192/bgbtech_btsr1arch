@@ -2253,6 +2253,18 @@ begin
 				end
 `endif
 
+				JX2_UCIX_IXT_TRAPFPU: begin
+`ifdef jx2_debug_isr
+					$display("EX1: Trap FPU");
+`endif
+					tExTrapExc = { UV112_00, 16'hA003 };
+
+					if(regInSr[29] && regInSr[28])
+					begin
+						$display("EX1: TRAPFPU in ISR");
+					end
+				end
+				
 				default: begin
 					if(!tMsgLatch)
 						$display("EX: Unhandled Op-IXT %X", opUIxt);

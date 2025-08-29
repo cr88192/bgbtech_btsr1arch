@@ -4,7 +4,7 @@
 module ExConv_Fp16PckAl(valI, valO, isfp8);
 input [15:0]	valI;
 output[ 7:0]	valO;
-input			isfp8;
+input[1:0]		isfp8;
 
 reg[7:0]	tValO;
 assign		valO = tValO;
@@ -16,7 +16,8 @@ reg			tSgn;
 always @*
 begin
 	tSgn	= valI[15];
-	tExpA	= valI[14:10] + 1;
+	tExpA	= valI[14:10] + (isfp8[1]?1:0);
+//	tExpA	= valI[14:10];
 //	tExpC	= { valI[12:10] } + 1;
 	tExpC	= tExpA[2:0];
 //	if(valI[14] == valI[13])
@@ -29,7 +30,7 @@ begin
 //		tValO = { tSgn, valI[14], valI[12:10], valI[9:7] };
 
 //	if(tExpA[4] || (tExpA[4:3] == 2'b00))
-	if((tExpA[4] && !isfp8) || (tExpA[4] == tExpA[3]))
+	if((tExpA[4] && !isfp8[0]) || (tExpA[4] == tExpA[3]))
 		tValO = tExpA[4] ? { tSgn, 7'h7F } : 8'h00;
 end
 

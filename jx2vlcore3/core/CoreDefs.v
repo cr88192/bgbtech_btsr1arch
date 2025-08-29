@@ -178,6 +178,7 @@ parameter[6:0] JX2_GR_KRR2		= 7'h7D;
 parameter[6:0] JX2_GR_IMM		= 7'h7E;
 parameter[6:0] JX2_GR_ZZR		= 7'h7F;
 
+parameter[6:0] JX2_CR_SP		= 7'h4F;
 
 parameter[6:0] JX2_CR_PC		= 7'h60;
 parameter[6:0] JX2_CR_LR		= 7'h61;
@@ -854,6 +855,8 @@ REGIMMREG, RVI:
 	NB: Rm, 0, Rt, Rn
 	NW: Rm, Imm12n, Rn
 
+	XB: FRm, Imm12s, FRn
+
 
 IMM8REG, RVI
 	SB: Rn, Imm20, Rn
@@ -994,6 +997,7 @@ parameter[3:0] JX2_RVIMM_DISP12B	= 4'h6;	//12-bit, Bcc
 parameter[3:0] JX2_RVIMM_IMM17S		= 4'h7;	//LUI
 parameter[3:0] JX2_RVIMM_IMM32LC	= 4'h8;	//L.LI
 parameter[3:0] JX2_RVIMM_IMM21J		= 4'h9;	//Jumbo, 21-bit Immed
+parameter[3:0] JX2_RVIMM_IMMFPRM	= 4'hA;
 
 parameter[3:0] JX2_RVIMM_IMM12S		= 4'h4;
 
@@ -1380,6 +1384,9 @@ parameter[5:0] JX2_UCIX_CONV3_BLKUVF1_4L	= 6'h11;	//Get pixel, UVF1
 parameter[5:0] JX2_UCIX_CONV3_BLKUVF1_1H	= 6'h12;	//Get pixel, UVF1
 parameter[5:0] JX2_UCIX_CONV3_BLKUVF1_1L	= 6'h13;	//Get pixel, UVF1
 
+parameter[5:0] JX2_UCIX_CONV3_FP16PCKF8A	= 6'h18;	//4x FP16 -> FP8A
+parameter[5:0] JX2_UCIX_CONV3_FP16UPCKF8A	= 6'h19;	//4x FP8A -> FP16
+
 parameter[5:0] JX2_UCIX_MUL3_MUL3S	= 6'h00;		//
 parameter[5:0] JX2_UCIX_MUL3_MUL3U	= 6'h01;		//
 parameter[5:0] JX2_UCIX_MUL3_MULS	= 6'h02;		//
@@ -1646,6 +1653,8 @@ parameter[5:0] JX2_UCIX_IXT_BNDCHKB	= 6'h20;		//Bound Check
 parameter[5:0] JX2_UCIX_IXT_BNDCHKW	= 6'h21;		//Bound Check
 parameter[5:0] JX2_UCIX_IXT_BNDCHKL	= 6'h22;		//Bound Check
 parameter[5:0] JX2_UCIX_IXT_BNDCHKQ	= 6'h23;		//Bound Check
+
+parameter[5:0] JX2_UCIX_IXT_TRAPFPU	= 6'h24;		//FPU TRAP
 
 
 parameter[5:0] JX2_UCIX_IXS_NOP		= 6'h00;		//No-Op

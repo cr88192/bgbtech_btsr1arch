@@ -118,6 +118,8 @@
 
 `endif
 
+`define	jx2_fpu_fpsr_sp			//FPSR is in SP(63:48)
+
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
 // `define	jx2_mem_lane2			//Allow Loads from Lane 2

@@ -505,7 +505,11 @@ begin
 		crRegVbr	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_48b : crRegVbr;
 		crRegGbr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_48b : crRegGbr;
 		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_48b : crRegTbr;
+`ifdef jx2_fpu_fpsr_sp
+		crRegFpsr	<= (regIdCn2B==JX2_CR_SP  ) ? regValCn2B_16h : regInFpsr;
+`else
 		crRegFpsr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_16h : regInFpsr;
+`endif
 		crRegVbrCm	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_16h : crRegVbrCm;
 `endif
 

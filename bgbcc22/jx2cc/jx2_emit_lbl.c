@@ -867,6 +867,18 @@ int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)
 	ofs=BGBCC_JX2_EmitGetOffs(ctx);
 	h=(((ofs*251+sec)*251)>>8)&1023;
 
+	if(1)
+	{
+		ctx->pos_pad_op7=-999;
+		ctx->pos_pad_op6=-999;
+		ctx->pos_pad_op5=-999;
+		ctx->pos_pad_op4=-999;
+		ctx->pos_pad_op3=-999;
+		ctx->pos_pad_op2=-999;
+		ctx->pos_pad_op1=-999;
+		ctx->pos_pad_op0=-999;
+	}
+
 	i=ctx->nrlc++;
 	ctx->rlc_id[i]=lblid;
 	ctx->rlc_ofs[i]=ofs;

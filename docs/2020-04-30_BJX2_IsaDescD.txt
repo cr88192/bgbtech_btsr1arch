@@ -3799,10 +3799,10 @@ For FADD vs FADDG vs FADDA:
 
 
 In the Op64 case, the Imm8 may encode a rounding mode:
-* 00: Round to Nearest
-* 01: Truncate / Round towards zero.
-* 02: Round toward +Inf
-* 03: Round toward -Inf
+* 00: RNE, Round to Nearest
+* 01: RTZ, Truncate / Round towards zero.
+* 02: RUP, Round toward +Inf
+* 03: RDN, Round toward -Inf
 * 04: Round, ULP+2, Inexact Status
 
 * 08: Round to Nearest (Single)
@@ -3962,6 +3962,9 @@ Types:
 * F0nm_1gCF ? PCVTH2AL	Rm, Rn		//(GSVF?) Packed FP16 to A-Law (4x)
 * F0nm_1gDF ? PCVTAL2H	Rm, Rn		//(GSVF?) Packed A-Law to FP16 (4x)
 
+* F0nm_1g2A  PCVTH2F8A	Rm, Rn		//(GSVF) Packed FP8A to FP16 (4x)
+* F0nm_1g3A  PCVTF8A2H	Rm, Rn		//(GSVF) Packed FP16 to FP8A (4x)
+
 Perform packed conversion between floating point and integer types.
 
 Note that the packed integer operations will perform a slightly atypical conversion in that they will map the converted value between 1.0000 and 1.9999 for unsigned and 2.0000 and 3.9999 for signed. One may add a bias of 1.0 or 3.0 to get the value back into unit range.
@@ -3970,6 +3973,8 @@ Note that the packed integer operations will perform a slightly atypical convers
 The packed A-Law will represent values in an S.E3.F4 format, and will map over to unit range values (-1.0 to 1.0) on the FP16 side of things. Exponents above 1.0 will be clamped to 0x7F or 0xFF.
 
 While standard A-Law also has the values XOR'ed with 0x55, this will not be performed by this operation.
+
+The FP8A format is basically the same format as A-Law, differing primarily in the exponent bias. In the case of FP8A, the maximum value will be 1.938 instead.
 
 
 === FDIVx (GFP, FDIV) ===

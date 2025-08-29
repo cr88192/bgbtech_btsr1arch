@@ -637,6 +637,12 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->has_rvzba|=32;	//Branch-with-Immediate
 		}
 
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvsimd"))
+//		if(1)
+		{
+			shctx->has_simdx2|=1;
+		}
+
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvc"))
 		{
 			shctx->is_fixed32&=~3;
@@ -686,7 +692,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2|=1;	//LX / SX
 
 		shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
-//		shctx->has_jumbo|=4;	//Jumbo96
+		shctx->has_jumbo|=4;	//Jumbo96
 		shctx->has_rvzba|=1;	//Zba
 
 		shctx->has_fmovs|=3;
@@ -696,6 +702,15 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			/* Pair Pack Encoding... */
 //			shctx->is_fixed32&=~3;
 			shctx->is_fixed32|=0x40;
+		}
+
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3nabi"))
+		{
+			/* XG3 Native ABI;
+			   Increase to 16 register arguments
+			   F4..F7 become Callee Save.
+			*/
+			shctx->has_xgpr|=3;
 		}
 	}
 
@@ -9074,6 +9089,34 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			printf("\n");
 		}
 
+		if(sctx->stat_opc_xg3c_m0t>0)
+		{
+			printf("XG3C B0 Miss %d\n", sctx->stat_opc_xg3c_m0t);
+			for(i=0; i<8; i++)
+			{
+				if(i<5)
+				{
+					k=0;
+					for(j=0; j<16; j++)
+					{
+						k+=sctx->stat_opc_xg3c_m0b[(j<<3)|i];
+					}
+					printf("%d: %u\n", i, k);
+					continue;
+				}
+			
+				printf("%d: ", i);
+				for(j=0; j<16; j++)
+				{
+					if(!(j&3))
+						printf(" ");
+					printf("%3u ", sctx->stat_opc_xg3c_m0b[(j<<3)|i]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+		}
+
 		if(sctx->stat_opc_xg3c_b1t>0)
 		{
 			printf("XG3C B1 %d\n", sctx->stat_opc_xg3c_b1t);
@@ -9111,6 +9154,49 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 					if(!(j&3))
 						printf(" ");
 					printf("%3u ", sctx->stat_opc_xg3c_b1b[(j<<3)|i]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+		}
+
+		if(sctx->stat_opc_xg3c_m1t>0)
+		{
+			printf("XG3C B1 Miss %d\n", sctx->stat_opc_xg3c_m1t);
+			for(i=0; i<8; i++)
+			{
+				if(i<4)
+				{
+					k=0;
+					for(j=0; j<16; j++)
+					{
+						k+=sctx->stat_opc_xg3c_m1b[(j<<3)|i];
+					}
+					printf("%d: %u\n", i, k);
+					continue;
+				}
+
+				if((i==4) || (i==7))
+				{
+					printf("%d: ", i);
+					for(j=0; j<4; j++)
+					{
+						printf("%5u ",
+							sctx->stat_opc_xg3c_m1b[(0<<5)|(j<<3)|i]+
+							sctx->stat_opc_xg3c_m1b[(1<<5)|(j<<3)|i]+
+							sctx->stat_opc_xg3c_m1b[(2<<5)|(j<<3)|i]+
+							sctx->stat_opc_xg3c_m1b[(3<<5)|(j<<3)|i]);
+					}
+					printf("\n");
+					continue;
+				}
+			
+				printf("%d: ", i);
+				for(j=0; j<16; j++)
+				{
+					if(!(j&3))
+						printf(" ");
+					printf("%3u ", sctx->stat_opc_xg3c_m1b[(j<<3)|i]);
 				}
 				printf("\n");
 			}

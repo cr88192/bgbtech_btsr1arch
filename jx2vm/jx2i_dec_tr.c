@@ -2110,7 +2110,15 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 		}
 
 //		ctx->trapc=pc;
-	
+
+#if 0
+		if(	(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_RVE) &&
+			(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) &&
+			!(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_XG2))
+		{
+		}
+#endif
+
 		op=BJX2_ContextAllocOpcode(ctx);
 		BJX2_DecodeOpcodeForAddr(ctx, op, pc);
 //		if(ctx->status)

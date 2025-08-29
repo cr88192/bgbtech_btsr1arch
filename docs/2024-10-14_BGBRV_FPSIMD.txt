@@ -428,6 +428,7 @@ What if we have PRCPA.H:
 * 0100100-ttttt-mmmmm-100-nnnnn-01-10011  PACKU			Rn, Rm, Rt (B)
 
 * 0100iii-iiiii-mmmmm-001-nnnnn-00-11011  PSHUF.W		Rn, Rm, Imm8	(BGB)
+* 0110iii-iiiii-mmmmm-001-nnnnn-00-11011  PFSHUF.W		FRn, FRm, Imm8	(BGB)
 
 
 * 0000111-ttttt-mmmmm-001-nnnnn-11-10111  PKBB16		Rn, Rm, Rt (P)

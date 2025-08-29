@@ -65,6 +65,11 @@ typedef volatile u64 vol_u64;
 #define SPI_DATA	(SPI_BASE+0x04)
 #define SPI_QDATA	(SPI_BASE+0x08)
 
+#define SPI_QDATA0	(SPI_BASE+0x08)
+#define SPI_QDATA1	(SPI_BASE+0x09)
+#define SPI_QDATA2	(SPI_BASE+0x0A)
+#define SPI_QDATA3	(SPI_BASE+0x0B)
+
 #define PS2KB_RX	(PS2_BASE+0x00)
 #define PS2KB_TX	(PS2_BASE+0x04)
 #define PS2KB_STAT	(PS2_BASE+0x08)
@@ -95,9 +100,13 @@ typedef volatile u64 vol_u64;
 #define	P_MMIO_DEBUG_TX		P_UART_TX
 #define	P_MMIO_DEBUG_STS	P_UART_STAT
 
-#define P_SPI_CTRL	(*(vol_u32 *)SPI_CTRL)
-#define P_SPI_DATA	(*(vol_u32 *)SPI_DATA)
-#define P_SPI_QDATA	(*(vol_u64 *)SPI_QDATA)
+#define P_SPI_CTRL		(*(vol_u32 *)SPI_CTRL)
+#define P_SPI_DATA		(*(vol_u32 *)SPI_DATA)
+#define P_SPI_QDATA		(*(vol_u64 *)SPI_QDATA)
+#define P_SPI_QDATA0	(*(vol_u64 *)SPI_QDATA0)
+#define P_SPI_QDATA1	(*(vol_u64 *)SPI_QDATA1)
+#define P_SPI_QDATA2	(*(vol_u64 *)SPI_QDATA2)
+#define P_SPI_QDATA3	(*(vol_u64 *)SPI_QDATA3)
 
 #define P_AIC_RTC_SEC_HI	(*(vol_u32 *)AIC_RTC_SEC_HI)
 #define P_AIC_RTC_SEC_LO	(*(vol_u32 *)AIC_RTC_SEC_LO)

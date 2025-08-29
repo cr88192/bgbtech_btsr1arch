@@ -44,7 +44,7 @@ input			clock;		//clock
 input			reset;		//reset
 // input			srUser;		//usermode
 // input[2:0]		srMod;		//mode
-input[7:0]		srMod;		//mode
+input[11:0]		srMod;		//mode
 
 input[63:0]		istrWord;	//source instruction word
 input[3:0]		isAltOpB;
@@ -2069,6 +2069,35 @@ begin
 						end
 					end
 
+					4'h2: begin
+						if(opExQ)
+						begin
+						end
+						else
+						begin
+`ifdef jx2_enable_convfp16al
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opFmid		= JX2_FMID_REGREG;
+							opIty		= JX2_ITY_UB;
+							opUCmdIx	= JX2_UCIX_CONV3_FP16PCKF8A;
+`endif
+						end
+					end
+					4'h3: begin
+						if(opExQ)
+						begin
+						end
+						else
+						begin
+`ifdef jx2_enable_convfp16al
+							opNmid		= JX2_UCMD_CONV3_RR;
+							opFmid		= JX2_FMID_REGREG;
+							opIty		= JX2_ITY_UB;
+							opUCmdIx	= JX2_UCIX_CONV3_FP16UPCKF8A;
+`endif
+						end
+					end
+
 					4'hA: begin
 						opNmid		= JX2_UCMD_FCMP;
 						opFmid		= JX2_FMID_REGREG;
@@ -2433,7 +2462,15 @@ begin
 						opUCmdIx	= JX2_UCIX_FPU_CMPGT;
 					end
 
-`ifdef jx2_fpu_enable_fdiv
+					4'hC: begin		/* F0nm_1eCD */
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UB;
+					end
+
+// `ifdef jx2_fpu_enable_fdiv
+`ifndef def_true
 					4'hC: begin		/* F0nm_1eCD */
 						opNmid		= JX2_UCMD_FPU3;
 						opFmid		= JX2_FMID_REGREG;
@@ -2451,6 +2488,10 @@ begin
 							opUCty		= JX2_IUC_WX;
 						end
 					end
+`endif
+
+`ifdef jx2_fpu_enable_fdiv
+// `ifdef def_true
 					4'hD: begin		/* F0nm_1eDD */
 						opNmid		= JX2_UCMD_FPU3;
 						opFmid		= JX2_FMID_REGREG;

@@ -1696,6 +1696,8 @@ u64 BGBCC_JX2C_GetFrameVrsaveMask(
 	if(sctx->emit_riscv&0x33)
 	{
 		vrsave=0xF003FCFFF003FCE0ULL;
+		if(sctx->has_xgpr&2)
+			{ vrsave&=~0x000000F000000000ULL; }
 		return(vrsave);
 	}
 	
@@ -3156,11 +3158,11 @@ short bgbcc_jx2_maxreg_xg2rv_lf=0;
 
 const short bgbcc_jx2_remap_xrv[64]={
 	-1, -1,  6,  7, 10, 11, 12, 13,
-	 8,  9, 18, 19, 20, 21, 26,  2,
+	20, 21, 22, 23,  8,  9, 18,  2,
 	28, 29, 30, 31, 14, 15, 16, 17,
-	-1, -1, -1, 27, 22, 23, 24, 25,
+	-1, -1, -1, 19, 24, 25, 26, 27,
 
-	36, 37, 38, 39, 42, 43, 44, 45,
+	36, 37, 38, 39,	42, 43, 44, 45,
 	40, 41, 50, 51, 52, 53, 54, 55,
 	-1, -1, -1, -1, 46, 47, 48, 49,
 	56, 57, 58, 59, -1, -1, -1, -1
@@ -3168,14 +3170,14 @@ const short bgbcc_jx2_remap_xrv[64]={
 
 const short bgbcc_jx2_remap_xg2rv[64]={
 	-1, -1,  6,  7, 10, 11, 12, 13,
-	 8,  9, 18, 19, 20, 21, 26,  2,
+	18, 19, 20, 21, 22, 23,  8,  2,
 	28, 29, 30, 31, 14, 15, 16, 17,
-	56, 57, 58, 59, 22, 23, 24, 25,
+	56, 57, 58, 59, 24, 25, 26, 27,
 
-	36, 37, 38, 39, 42, 43, 44, 45,
+	36, 37, 38, 39,	42, 43, 44, 45,
 	40, 41, 50, 51, 52, 53, 54, 55,
 	-1, -1, -1, -1, 46, 47, 48, 49,
-	-1, -1, -1, -1, -1, -1, -1, 27
+	-1, -1, -1, -1, -1, -1, -1,  9
 };
 
 
@@ -3631,7 +3633,14 @@ int BGBCC_JX2C_CheckRegisterIndexScratchP(
 			return(1);
 
 		if((tr0>=32) && (tr0<=39))
+		{
+			if(sctx->has_xgpr&2)
+			{
+				if((tr0>=36) && (tr0<=39))
+					{ return(0); }
+			}
 			return(1);
+		}
 		if((tr0>=42) && (tr0<=49))
 			return(1);
 		if((tr0>=60) && (tr0<=63))
@@ -3670,7 +3679,11 @@ int BGBCC_JX2C_CheckRegisterIndexArgIdxP(
 		BGBCC_SH_REG_RQ10, BGBCC_SH_REG_RQ11,
 		BGBCC_SH_REG_RQ12, BGBCC_SH_REG_RQ13,
 		BGBCC_SH_REG_RQ14, BGBCC_SH_REG_RQ15,
-		BGBCC_SH_REG_RQ16, BGBCC_SH_REG_RQ17
+		BGBCC_SH_REG_RQ16, BGBCC_SH_REG_RQ17,
+		BGBCC_SH_REG_RQ42, BGBCC_SH_REG_RQ43,
+		BGBCC_SH_REG_RQ44, BGBCC_SH_REG_RQ45,
+		BGBCC_SH_REG_RQ46, BGBCC_SH_REG_RQ47,
+		BGBCC_SH_REG_RQ48, BGBCC_SH_REG_RQ49
 		};
 	int creg, tr0, tr1;
 	
@@ -3681,8 +3694,15 @@ int BGBCC_JX2C_CheckRegisterIndexArgIdxP(
 
 	if(sctx->emit_riscv&0x33)
 	{
-		if(argid>=8)
-			return(0);
+		if(sctx->has_xgpr&2)
+		{
+			if(argid>=16)
+				return(0);
+		}else
+		{
+			if(argid>=8)
+				return(0);
+		}
 	}
 
 	if(idx<0)
@@ -6450,6 +6470,12 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 		sctx->regs_scratch_ts	=0xF003FCF0F003FCC0ULL;
 		sctx->regs_args			=0x0003FC0000F3FC00ULL;
 		sctx->regs_excl_fpu		=0x0000000F0000003FULL;
+
+		if(sctx->has_xgpr&2)
+		{
+			sctx->regs_scratch		&=~0x000000F000000000ULL;
+			sctx->regs_scratch_ts	&=~0x000000F000000000ULL;
+		}
 
 		if((sctx->emit_riscv&2) && (sctx->has_xgpr&1))
 		{

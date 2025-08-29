@@ -325,22 +325,22 @@ wire[63:0]	tRegFp16UPckAL;
 
 `ifdef jx2_enable_convfp16al
 ExConv_Fp16PckAl	conv_fp16pckAl0(
-	regValRs[15: 0], tRegFp16PckAL[ 7: 0], idUIxt[1]);
+	regValRs[15: 0], tRegFp16PckAL[ 7: 0], idUIxt[2:1]);
 ExConv_Fp16PckAl	conv_fp16pckAl1(
-	regValRs[31:16], tRegFp16PckAL[15: 8], idUIxt[1]);
+	regValRs[31:16], tRegFp16PckAL[15: 8], idUIxt[2:1]);
 ExConv_Fp16PckAl	conv_fp16pckAl2(
-	regValRs[47:32], tRegFp16PckAL[23:16], idUIxt[1]);
+	regValRs[47:32], tRegFp16PckAL[23:16], idUIxt[2:1]);
 ExConv_Fp16PckAl	conv_fp16pckAl3(
-	regValRs[63:48], tRegFp16PckAL[31:24], idUIxt[1]);
+	regValRs[63:48], tRegFp16PckAL[31:24], idUIxt[2:1]);
 
 ExConv_Fp16UPckAl	conv_fp16upckAl0(
-	regValRs[ 7: 0], tRegFp16UPckAL[15: 0], idUIxt[1]);
+	regValRs[ 7: 0], tRegFp16UPckAL[15: 0], idUIxt[2:1]);
 ExConv_Fp16UPckAl	conv_fp16upckAl1(
-	regValRs[15: 8], tRegFp16UPckAL[31:16], idUIxt[1]);
+	regValRs[15: 8], tRegFp16UPckAL[31:16], idUIxt[2:1]);
 ExConv_Fp16UPckAl	conv_fp16upckAl2(
-	regValRs[23:16], tRegFp16UPckAL[47:32], idUIxt[1]);
+	regValRs[23:16], tRegFp16UPckAL[47:32], idUIxt[2:1]);
 ExConv_Fp16UPckAl	conv_fp16upckAl3(
-	regValRs[31:24], tRegFp16UPckAL[63:48], idUIxt[1]);
+	regValRs[31:24], tRegFp16UPckAL[63:48], idUIxt[2:1]);
 `else
 assign	tRegFp16PckAL = UV32_00;
 assign	tRegFp16UPckAL = UV64_00;
@@ -2447,8 +2447,15 @@ begin
 		JX2_UCIX_CONV3_BLKUVF1_1H, JX2_UCIX_CONV3_BLKUVF1_1L:
 		begin
 `ifdef jx2_enable_btcuvf1
-			tRegConvVal		= tValUtx1;
+			tRegConv3Val	= tValUtx1;
 `endif
+		end
+
+		JX2_UCIX_CONV3_FP16PCKF8A: begin
+			tRegConvVal = { UV32_00, tRegFp16PckAL };
+		end
+		JX2_UCIX_CONV3_FP16UPCKF8A: begin
+			tRegConvVal = tRegFp16UPckAL;
 		end
 		
 		default: begin

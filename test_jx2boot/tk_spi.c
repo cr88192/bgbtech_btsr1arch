@@ -327,6 +327,59 @@ int TKSPI_ReadData(byte *buf, u32 len)
 			TKSPI_ReadDataQA(ct, cte);
 		}
 #else
+
+#if 1
+		u32 *pSpiCtrl;
+		u64 *pSpiQd0;
+		u64 *pSpiQd1;
+		u64 *pSpiQd2;
+		u64 *pSpiQd3;
+		u64	v0;
+		
+		pSpiCtrl=SPI_CTRL;
+		pSpiQd0=SPI_QDATA0;
+		pSpiQd1=SPI_QDATA1;
+		pSpiQd2=SPI_QDATA2;
+		pSpiQd3=SPI_QDATA3;
+		v0=0xFFFFFFFFFFFFFFFFULL;
+
+		while((ct+32)<=cte)
+		{
+			*pSpiQd0=v0;
+			*pSpiQd1=v0;
+			*pSpiQd2=v0;
+			*pSpiQd3=v0;
+			*pSpiCtrl=tkspi_ctl_status|SPICTRL_XMIT32X;
+			v=*pSpiCtrl;
+			while(v&SPICTRL_BUSY) 
+				v=*pSpiCtrl;
+			((u64 *)ct)[0]=*pSpiQd0;
+			((u64 *)ct)[1]=*pSpiQd1;
+			((u64 *)ct)[2]=*pSpiQd2;
+			((u64 *)ct)[3]=*pSpiQd3;
+			ct+=32;
+		}
+#endif
+
+#if 0
+		while((ct+32)<=cte)
+		{
+			P_SPI_QDATA0=0xFFFFFFFFFFFFFFFFULL;
+			P_SPI_QDATA1=0xFFFFFFFFFFFFFFFFULL;
+			P_SPI_QDATA2=0xFFFFFFFFFFFFFFFFULL;
+			P_SPI_QDATA3=0xFFFFFFFFFFFFFFFFULL;
+			P_SPI_CTRL=tkspi_ctl_status|SPICTRL_XMIT32X;
+			v=P_SPI_CTRL;
+			while(v&SPICTRL_BUSY) 
+				v=P_SPI_CTRL;
+			((u64 *)ct)[0]=P_SPI_QDATA0;
+			((u64 *)ct)[1]=P_SPI_QDATA1;
+			((u64 *)ct)[2]=P_SPI_QDATA2;
+			((u64 *)ct)[3]=P_SPI_QDATA3;
+			ct+=32;
+		}
+#endif
+
 //		while(n>0)
 		while(ct<cte)
 		{

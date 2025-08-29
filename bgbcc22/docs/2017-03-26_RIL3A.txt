@@ -314,6 +314,7 @@ Typed signatures are encoded as strings, with characters indicating value types.
 * 'Gk': _Imaginary float16
 * 'Gl': __vec3f_48
 
+* 'Gv': __vec4_fp8a
 * 'Gw': bigint
 * 'Gx': fixnum
 * 'Gy': flonum

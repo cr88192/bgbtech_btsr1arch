@@ -385,6 +385,8 @@ wire[47:0]		crOutVipt;
 wire[63:0]		crOutSr;
 reg [63:0]		crInSr;
 
+wire[15:0]		crOutFpsr;
+
 reg[11:0]		ex1Timers;
 
 reg[47:0]		ifValPc;
@@ -707,7 +709,7 @@ DecOpWx3	decOp(
 	clock,			exResetL,
 //	id1IstrWord,	ifInPcWxe,
 	id1IstrWord,	id1IstrMTag,
-	id1ValBPc,		id1ValFetchSr,
+	id1ValBPc,		id1ValFetchSr,	crOutFpsr,
 	id1IstrSxo,		id1PcStep,
 
 	idA1IdRegM,		idA1IdRegO,
@@ -1081,7 +1083,7 @@ RegGPR_6R3W regGpr(
 		exC2Hold[1], exB2Hold[1], ex2Hold[1],
 		exC1Hold[1], exB1Hold[1], ex1Hold[1]	},
 
-	crOutSr[31:0],
+	crOutSr[31:0],	crOutFpsr,
 	gprDoHold,
 
 	gprOutDlr,	gprInDlrB,
@@ -1318,7 +1320,7 @@ assign	crInSspB = crOutSsp;
 assign	crInSspB = crInSsp;
 `endif
 
-wire[15:0]	crOutFpsr;
+// wire[15:0]	crOutFpsr;
 // reg [15:0]	crInFpsr;
 wire[15:0]	crInFpsr;
 

@@ -289,19 +289,33 @@ The Link Register (LR) will have the layout:
 * (49:48), Saved SR( 1: 0), S and T
 * (47: 0), Saved PC Address
 
-The Global Base Register (GBR) will have the layout:
-* (63:48), FPU Status/Control (FPSCR)
+The Global Base Register (GBR) will have the layout (Old):
+* (63:48), / FPU Status/Control (FPSCR)
 * (47: 0), GBR Address
 
-FPSCR Will be defined as:
+The Global Base Register (GBR) will have the layout (Change):
+* (63:48), MBZ
+* (47: 0), GBR Address
+
+The Stack Pointer (SP) will have the layout (Change):
+* (63:48), FPU Status/Control (FPSCR)
+* (47: 0), SP Address
+
+FPSCR/FPSR Will be defined as:
 * (15: 8), Status Bits
 ** (11): Sticky, Invalid Operation
 ** (10): Sticky, Overflow
 ** ( 9): Sticky, Underflow
 ** ( 8): Sticky, Inexact
 * (7:4), Control Bits
-** ( 4): Trap as needed to emulate full IEEE semantics.
+** ( 5): Trap to emulate single-rounded FMA (Dynamic Rounding).
+** ( 4): Trap as needed to emulate IEEE semantics (Dynamic Rounding).
 * (3:0), Rounding Mode
+
+For the FPU, if Dynamic Rounding instructions are used, FADDG/FSUBG/FMULG, the rounding mode from FPSCR will be used. This will also apply to RISC-V FPU instructions using the DYN rounding mode.
+
+If the trap-to-emulate flags are set, then upon detection of scenarios that will lead to non-IEEE-754 results, it may use traps to emulate the behavior in question (it will then be the responsibility of the trap handler to produce IEEE-754 compliant results). This will generally be via an A003 (Instruction Emulation Request) exception. Some instructions, such as FDIV or FSQRT may also nominally produce this exception.
+
 
 The Vector Base Register (VBR) will have the layout:
 * (63:56), Reserved (MBZ)
@@ -1813,10 +1827,10 @@ F0zz Instruction Block:
 *** F0nm_1G0A  -
 *** F0nm_1g1A  PLDCF8H		Rm, Rn			//(GSVF) Packed FP8 to FP16 (4x)
 *** F0nm_1G1A  -
-*** F0nm_1g2A /
-*** F0nm_1G2A /
-*** F0nm_1g3A /
-*** F0nm_1G3A /
+*** F0nm_1g2A  PCVTH2F8A	Rm, Rn			//(GSVF) Packed FP8A to FP16 (4x)
+*** F0nm_1G2A  -
+*** F0nm_1g3A  PCVTF8A2H	Rm, Rn			//(GSVF) Packed FP16 to FP8A (4x)
+*** F0nm_1G3A  -
 
 *** F0nm_1g4A -
 *** F0nm_1G4A -

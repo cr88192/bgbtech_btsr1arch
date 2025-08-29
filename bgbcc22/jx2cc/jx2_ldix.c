@@ -161,12 +161,18 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	case CCXL_TY_VEC4_FP8S:
 		sctx->is_leaftiny|=8;
 		sz=4; nm1=BGBCC_SH_NMID_MOVL;
-		nm2=BGBCC_SH_NMID_PLDCM8SH; break;
+//		nm2=BGBCC_SH_NMID_PLDCM8SH; break;
+		nm2=BGBCC_SH_NMID_PCVTF8TOH; break;
 		break;
 	case CCXL_TY_VEC4_FP8U:
 		sctx->is_leaftiny|=8;
 		sz=4; nm1=BGBCC_SH_NMID_MOVL;
 		nm2=BGBCC_SH_NMID_PLDCM8UH; break;
+		break;
+	case CCXL_TY_VEC4_FP8A:
+		sctx->is_leaftiny|=8;
+		sz=4; nm1=BGBCC_SH_NMID_MOVL;
+		nm2=BGBCC_SH_NMID_PCVTF8A2H; break;
 		break;
 
 	case CCXL_TY_VARIANT:
@@ -312,6 +318,46 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	*rnm3=nm3;
 	*rnm4=nm4;
 	return(0);
+}
+
+int BGBCC_JX2C_EmitLdix_RemapConvNmidForStore(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int nm2)
+{
+	if(nm2==BGBCC_SH_NMID_LDHF16)
+		nm2=BGBCC_SH_NMID_STHF16;
+	if(nm2==BGBCC_SH_NMID_LDBF16)
+		nm2=BGBCC_SH_NMID_STBF16;
+	if(nm2==BGBCC_SH_NMID_FLDCF)
+		nm2=BGBCC_SH_NMID_FSTCF;
+	if(nm2==BGBCC_SH_NMID_FLDCH)
+		nm2=BGBCC_SH_NMID_FSTCH;
+
+	if(nm2==BGBCC_SH_NMID_LDHF8S)
+		nm2=BGBCC_SH_NMID_STHF8S;
+	if(nm2==BGBCC_SH_NMID_LDHF8U)
+		nm2=BGBCC_SH_NMID_STHF8U;
+
+	if(nm2==BGBCC_SH_NMID_PLDCM8SH)
+		nm2=BGBCC_SH_NMID_PSTCM8SH;
+	if(nm2==BGBCC_SH_NMID_PLDCM8UH)
+		nm2=BGBCC_SH_NMID_PSTCM8UH;
+
+	if(nm2==BGBCC_SH_NMID_PCVTF8TOH)
+		nm2=BGBCC_SH_NMID_PCVTHTOF8;
+//	if(nm2==BGBCC_SH_NMID_PCVTALTOH)
+//		nm2=BGBCC_SH_NMID_PCVTHTOAL;
+
+	if(nm2==BGBCC_SH_NMID_PCVTF8A2H)
+		nm2=BGBCC_SH_NMID_PCVTH2F8A;
+
+	if(nm2==BGBCC_SH_NMID_SHLL32)
+		nm2=BGBCC_SH_NMID_SHLR32;
+	if(nm2==BGBCC_SH_NMID_SHLL64)
+		nm2=BGBCC_SH_NMID_SHLR64;	
+
+	return(nm2);
 }
 
 int BGBCC_JX2C_EmitLdixVRegVRegImm(
@@ -1151,29 +1197,7 @@ int BGBCC_JX2C_EmitStixVRegVRegImm(
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
-	if(nm2==BGBCC_SH_NMID_LDHF16)
-		nm2=BGBCC_SH_NMID_STHF16;
-	if(nm2==BGBCC_SH_NMID_LDBF16)
-		nm2=BGBCC_SH_NMID_STBF16;
-	if(nm2==BGBCC_SH_NMID_FLDCF)
-		nm2=BGBCC_SH_NMID_FSTCF;
-	if(nm2==BGBCC_SH_NMID_FLDCH)
-		nm2=BGBCC_SH_NMID_FSTCH;
-
-	if(nm2==BGBCC_SH_NMID_LDHF8S)
-		nm2=BGBCC_SH_NMID_STHF8S;
-	if(nm2==BGBCC_SH_NMID_LDHF8U)
-		nm2=BGBCC_SH_NMID_STHF8U;
-
-	if(nm2==BGBCC_SH_NMID_PLDCM8SH)
-		nm2=BGBCC_SH_NMID_PSTCM8SH;
-	if(nm2==BGBCC_SH_NMID_PLDCM8UH)
-		nm2=BGBCC_SH_NMID_PSTCM8UH;
-
-	if(nm2==BGBCC_SH_NMID_SHLL32)
-		nm2=BGBCC_SH_NMID_SHLR32;
-	if(nm2==BGBCC_SH_NMID_SHLL64)
-		nm2=BGBCC_SH_NMID_SHLR64;
+	nm2=BGBCC_JX2C_EmitLdix_RemapConvNmidForStore(ctx, sctx, nm2);
 
 	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
 	{
@@ -1387,30 +1411,7 @@ int BGBCC_JX2C_EmitStixVRegVRegVReg(
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
-	if(nm2==BGBCC_SH_NMID_LDHF16)
-		nm2=BGBCC_SH_NMID_STHF16;
-	if(nm2==BGBCC_SH_NMID_LDBF16)
-		nm2=BGBCC_SH_NMID_STBF16;
-
-	if(nm2==BGBCC_SH_NMID_LDHF8S)
-		nm2=BGBCC_SH_NMID_STHF8S;
-	if(nm2==BGBCC_SH_NMID_LDHF8U)
-		nm2=BGBCC_SH_NMID_STHF8U;
-
-	if(nm2==BGBCC_SH_NMID_PLDCM8SH)
-		nm2=BGBCC_SH_NMID_PSTCM8SH;
-	if(nm2==BGBCC_SH_NMID_PLDCM8UH)
-		nm2=BGBCC_SH_NMID_PSTCM8UH;
-
-	if(nm2==BGBCC_SH_NMID_FLDCF)
-		nm2=BGBCC_SH_NMID_FSTCF;
-	if(nm2==BGBCC_SH_NMID_FLDCH)
-		nm2=BGBCC_SH_NMID_FSTCH;
-
-	if(nm2==BGBCC_SH_NMID_SHLL32)
-		nm2=BGBCC_SH_NMID_SHLR32;
-	if(nm2==BGBCC_SH_NMID_SHLL64)
-		nm2=BGBCC_SH_NMID_SHLR64;
+	nm2=BGBCC_JX2C_EmitLdix_RemapConvNmidForStore(ctx, sctx, nm2);
 
 	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
 	{
@@ -1594,30 +1595,7 @@ int BGBCC_JX2C_EmitStixVRegVRegVRegImm(
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
-	if(nm2==BGBCC_SH_NMID_LDHF16)
-		nm2=BGBCC_SH_NMID_STHF16;
-	if(nm2==BGBCC_SH_NMID_LDBF16)
-		nm2=BGBCC_SH_NMID_STBF16;
-
-	if(nm2==BGBCC_SH_NMID_LDHF8S)
-		nm2=BGBCC_SH_NMID_STHF8S;
-	if(nm2==BGBCC_SH_NMID_LDHF8U)
-		nm2=BGBCC_SH_NMID_STHF8U;
-
-	if(nm2==BGBCC_SH_NMID_PLDCM8SH)
-		nm2=BGBCC_SH_NMID_PSTCM8SH;
-	if(nm2==BGBCC_SH_NMID_PLDCM8UH)
-		nm2=BGBCC_SH_NMID_PSTCM8UH;
-
-	if(nm2==BGBCC_SH_NMID_FLDCF)
-		nm2=BGBCC_SH_NMID_FSTCF;
-	if(nm2==BGBCC_SH_NMID_FLDCH)
-		nm2=BGBCC_SH_NMID_FSTCH;
-
-	if(nm2==BGBCC_SH_NMID_SHLL32)
-		nm2=BGBCC_SH_NMID_SHLR32;
-	if(nm2==BGBCC_SH_NMID_SHLL64)
-		nm2=BGBCC_SH_NMID_SHLR64;
+	nm2=BGBCC_JX2C_EmitLdix_RemapConvNmidForStore(ctx, sctx, nm2);
 
 	if(BGBCC_CCXL_TypeQuadPointerP(ctx, stype))
 	{
