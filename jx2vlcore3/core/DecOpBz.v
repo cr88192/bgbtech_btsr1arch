@@ -2000,6 +2000,7 @@ begin
 		
 		JX2_FMID_REGREG: begin
 			opUIxt	= {opUCty, opUCmdIx[5:0]};
+			opDoImm	= JX2_BZIMM_NONE;
 
 			case(opIty)
 
@@ -2364,6 +2365,7 @@ begin
 `ifndef def_true
 	case(opDoImm)
 //		JX2_BZIMM_NONE:		begin end
+		JX2_BZIMM_NONE:		opImm	= 0;
 		JX2_BZIMM_IMM8S:	opImm	= {
 			istrWord[7]?UV25_FF:UV25_00,
 			istrWord[7:0] };

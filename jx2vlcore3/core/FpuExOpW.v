@@ -145,6 +145,8 @@ assign	regOutTrap = tRegOutTrap;
 reg[15:0]		tRegOutFpsr;
 assign		regOutFpsr = tRegOutFpsr;
 
+reg[15:0]	tRegInFpsrL;
+
 // reg[63:0]	tRegOutVal;			//Rn output value
 // `reg_gpr	tRegOutId;			//Rn, value to write
 reg[1:0]	tRegOutOK;			//execute status
@@ -778,7 +780,8 @@ begin
 	tRegValRcpDoS	= 0;
 	tRegOutTrap		= 0;
 
-	tRegOutFpsr		= regInFpsr;
+//	tRegOutFpsr		= regInFpsr;
+	tRegOutFpsr		= tRegInFpsrL;
 
 `ifndef def_true
 	casez( { tBraFlushL || reset, tOpCmdL[7:6] } )
@@ -881,18 +884,39 @@ begin
 //	tRegAddRMode	= tRegValRModeL;
 //	tRegMulRMode	= tRegValRModeL;
 
-	tRegAddRMode	= tRegValRMode;
-	tRegMulRMode	= tRegValRMode;
+//	tRegAddRMode	= tRegValRMode;
+//	tRegMulRMode	= tRegValRMode;
+
+//	tRegAddRMode	= 0;
+//	tRegMulRMode	= 0;
+	tRegAddRMode	= regInFpsr[7:0];
+	tRegMulRMode	= regInFpsr[7:0];
 
 //	regInFpsr
 
 	if(tOpCmd[5:0]==JX2_UCMD_FPU3)
 	begin
-		if(tRegIdIxt[5:2]==4'b0100)
+		if(tRegIdIxt[5:2]!=4'b0100)
 		begin
-			tRegAddRMode	= regInFpsr[7:0];
-			tRegMulRMode	= regInFpsr[7:0];
+			tRegAddRMode	= tRegValRMode;
+			tRegMulRMode	= tRegValRMode;
 		end
+
+		if(tRegValRMode[4])
+		begin
+			$display("FpuExOpW: FPU RMode=IEEE, RM=%X", tRegValRMode);
+		end
+
+//		if(tRegIdIxt[5:2]==4'b0100)
+//		begin
+//			tRegAddRMode	= regInFpsr[7:0];
+//			tRegMulRMode	= regInFpsr[7:0];
+//		end
+	end
+	else
+	begin
+		tRegAddRMode[4]	= 0;
+		tRegMulRMode[4]	= 0;
 	end
 
 	if(tOpUCmd1==JX2_UCMD_FPU3)
@@ -910,10 +934,12 @@ begin
 
 		if(tRegAddExOK==UMEM_OK_FAULT)
 		begin
+			$display("FpuExOpW: FADD EmuRQ, FPSR=%X", tRegInFpsrL);
 			tRegOutTrap		= 8'hA3;
 		end
 		if(tRegMulExOK==UMEM_OK_FAULT)
 		begin
+			$display("FpuExOpW: FMUL EmuRQ, FPSR=%X", tRegInFpsrL);
 			tRegOutTrap		= 8'hA3;
 		end
 
@@ -1517,6 +1543,7 @@ begin
 `endif
 	
 				default: begin
+//					$display("FpuExOpW: Other EmuRQ, FPRS=%X", tRegInFpsrL);
 					tRegOutTrap = 8'hA3;
 				end
 			endcase
@@ -1709,6 +1736,8 @@ begin
 		tRegAddExOpL	<= tRegAddExOp;
 		tRegMulExOpL	<= tRegMulExOp;
 
+//		tRegInFpsrL		<= regInFpsr;
+
 `ifdef def_true
 		tOpCmdL			<= tOpCmd;
 		tRegIdIxtL		<= tRegIdIxt;
@@ -1784,6 +1813,8 @@ begin
 
 	tRegValRcpSL	<= tRegValRcpS;
 	tRegValRcpDoSL	<= tRegValRcpDoS;
+
+	tRegInFpsrL		<= regInFpsr;
 
 	if(tExHold)
 		tHoldCyc <= tHoldCyc + 1;

@@ -153,6 +153,11 @@ reg[7:0]		tRegRMode2;
 reg[7:0]		tRegRMode3;
 reg[7:0]		tRegRMode4;
 
+reg[3:0]		tRegExOp1;
+reg[3:0]		tRegExOp2;
+reg[3:0]		tRegExOp3;
+reg[3:0]		tRegExOp4;
+
 /*
     AA
    AB
@@ -181,6 +186,7 @@ begin
 	tFraB1	= {2'b01, regValRm[51:0]};
 	tExDaz1	= 0;
 	tRegRMode1	= regRMode;
+	tRegExOp1	= regExOp;
 	
 	tSgnC1	= tSgnA1 ^ tSgnB1;
 	tExpC1	=
@@ -359,7 +365,8 @@ begin
 		tExpC2		<= tExpC1;
 		tInxC2		<= tInxC1;
 		tExDaz2		<= tExDaz1;
-		tRegRMode2	<=tRegRMode1;
+		tRegRMode2	<= tRegRMode1;
+		tRegExOp2	<= tRegExOp1;
 
 		tFraC2_AC	<= tFraC1_AC;
 		tFraC2_BB	<= tFraC1_BB;
@@ -381,14 +388,16 @@ begin
 	tFraC3_Q	<= tFraC2_Q;
 	tFraC3_R	<= tFraC2_R;
 	tExDaz3		<= tExDaz2;
-	tRegRMode3	<=tRegRMode2;
+	tRegRMode3	<= tRegRMode2;
+	tRegExOp3	<= tRegExOp2;
 
 	tSgnC4		<= tSgnC3;
 	tExpC4		<= tExpC3;
 	tInxC4		<= tInxC3;
 	tFraC4_S	<= tFraC3_S;
 	tExDaz4		<= tExDaz3;
-	tRegRMode4	<=tRegRMode3;
+	tRegRMode4	<= tRegRMode3;
+	tRegExOp4	<= tRegExOp3;
 
 	tRegValRo	<= tValC4;
 	tRegExOK2	<= tRegExOK;

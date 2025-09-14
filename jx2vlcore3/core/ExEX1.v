@@ -2254,9 +2254,9 @@ begin
 `endif
 
 				JX2_UCIX_IXT_TRAPFPU: begin
-`ifdef jx2_debug_isr
+// `ifdef jx2_debug_isr
 					$display("EX1: Trap FPU");
-`endif
+// `endif
 					tExTrapExc = { UV112_00, 16'hA003 };
 
 					if(regInSr[29] && regInSr[28])

@@ -24,9 +24,9 @@
 */
 
 /*
-BJX2 Instruction Decoder (WEX, 3-Wide)
+Instruction Decoder (WEX, 3-Wide)
 
-Takes a 16/32 bit instruction word.
+Takes a 16/32 bit instruction word, or 32/64/96 bit bundle.
 
 Ex block is predicated.
 Fx block is unconditional.
@@ -39,6 +39,8 @@ This decoder will support WEX.
 For scalar Ops, Lane 2/3 will hold:
   ZZR, ZZR, ZZR
   ZZR, Rm, ZZR
+
+Store gets its 3rd input from Lane 3 (Ry), with Store-Pair using Rx:Ry.
 
  */
 

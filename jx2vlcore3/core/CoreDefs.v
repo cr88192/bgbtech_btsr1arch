@@ -873,9 +873,9 @@ IMM8REG, RVI
 
 LDREGDISPREG, RVC:
 	SB: (Rn3, Disp4u), Rm3
-	SW: (Fn3, Disp4u), Fm3
+	SW: (Rn3, Disp4u), Fm3
 	UB: Rm3, (Rn3, Disp4u)
-	UW: Fm3, (Fn3, Disp4u)
+	UW: Fm3, (Rn3, Disp4u)
 
 IMM8REG, RVC
 	SB: Rn5, Imm6alu, Rn5
@@ -887,6 +887,12 @@ IMM8REG, RVC
 
 	NB: Rn5, Imm6aluz, Rn5
 	NW: Rn3, Imm6aluz, Rn3
+
+LDDI4SPREG, RVC:
+	SB: (SP, Disp4u), Rm3
+	SW: (SP, Disp4u), Fm3
+	UB: Rm3, (SP, Disp4u)
+	UW: Fm3, (SP, Disp4u)
 
 */
 

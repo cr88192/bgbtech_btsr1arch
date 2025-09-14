@@ -7586,6 +7586,9 @@ begin
 
 				JX2_ITY_XQ: begin
 					opRegP	= opRegN_Dfl;
+
+//					opDoImm	= JX2_FMIMM_NONE;
+//					if(opIsJumboAu)
 					opDoImm	= JX2_FMIMM_IMM8AU;
 				end
 				
