@@ -355,6 +355,9 @@ begin
 		tRegExOK = UMEM_OK_FAULT;
 	end
 
+	if(tRegExOp4 != 4'h7)
+		tRegExOK = 0;
+
 end
 
 always @(posedge clock)

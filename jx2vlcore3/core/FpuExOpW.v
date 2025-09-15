@@ -473,6 +473,7 @@ assign	tFpuIsLongDbl = tRegIdIxt[5];
 assign	tRegAddSimdExOp	=
 	(tRegIdIxt[3:0]==JX2_UCIX_FPU_PADD[3:0]) ? 4'h1 :
 	(tRegIdIxt[3:0]==JX2_UCIX_FPU_PSUB[3:0]) ? 4'h2 :
+	(tRegIdIxt[3:0]==JX2_UCIX_FPU_PMUL[3:0]) ? 4'h7 :
 	4'h0;
 
 assign	tFpuIsFpu3 = (tOpCmd[5:0]==JX2_UCMD_FPU3);
@@ -919,7 +920,8 @@ begin
 		tRegMulRMode[4]	= 0;
 	end
 
-	if(tOpUCmd1==JX2_UCMD_FPU3)
+	if((tOpUCmd1==JX2_UCMD_FPU3) &&
+		!tRegInSrL[29])
 	begin
 		if(tRegIdIxtL[5:2]==4'b0100)
 		begin
