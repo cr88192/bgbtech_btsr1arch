@@ -2082,8 +2082,16 @@ int BJX2_DbgPrintf(BJX2_Context *ctx, char *str, ...)
 	}
 	else
 	{
-		vprintf(str, lst);
-//		puts(tb);
+//		vprintf(str, lst);
+
+		vsprintf(tb, str, lst);
+//		fputs(tb, stdout);
+		fwrite(tb, 1, strlen(tb), stdout);
+
+		if(ctx->dbglog)
+		{
+			fputs(tb, ctx->dbglog);
+		}
 	}
 
 	va_end(lst);
@@ -3573,14 +3581,23 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	bjx2_addr pc;
 	int i;
 
-//	if(!ctx->use_jit)
-	if(ctx->pclogrov<128)
+	if(!ctx->dbglog)
 	{
-		for(i=0; i<32; i++)
+		ctx->dbglog=fopen("bjx2_dbgdumplog.txt", "wt");
+	}
+
+//	if(!ctx->use_jit)
+//	if(ctx->pclogrov<128)
+	if(1)
+	{
+//		for(i=0; i<32; i++)
+//		for(i=0; i<64; i++)
+		for(i=0; i<256; i++)
 		{
 			ctx->v_wexmd=0xFF;
 
-			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
+//			pc=ctx->pclog[(ctx->pclogrov-32+i)&63];
+			pc=ctx->pclog[(ctx->pclogrov-256+i)&255];
 			ctx->trapc=pc;
 			cur=BJX2_GetTraceForAddr(ctx, pc, 2);
 			if(cur)
@@ -3610,6 +3627,12 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 	{
 		BJX2_DbgPrintf(ctx, "Branch Pred Hit %.2f%%\n",
 			(100.0*ctx->bpr_hit)/ctx->bpr_cnt);
+	}
+
+	if(ctx->dbglog)
+	{
+		fclose(ctx->dbglog);
+		ctx->dbglog=NULL;
 	}
 	
 	return(0);
@@ -3781,7 +3804,8 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 			{
 				ctx->pclog[ctx->pclogrov]=cur->addr;
 				ctx->pclogrov=
-					(ctx->pclogrov+1)&63;
+//					(ctx->pclogrov+1)&63;
+					(ctx->pclogrov+1)&255;
 		//		BJX2_DbgPrintTrace(ctx, cur);
 				nc=cur->n_cyc;
 				cn1-=nc;

@@ -19,7 +19,8 @@ begin
 		(opUCmd[5:0] == JX2_UCMD_ALU3)		||
 		(opUCmd[5:0] == JX2_UCMD_ALUW3)		||
 		(opUCmd[5:0] == JX2_UCMD_ALUB3)		||
-		(opUCmd[5:0] == JX2_UCMD_ALUCMP)		||
+		(opUCmd[5:0] == JX2_UCMD_ALUCMP)	||
+//		(opUCmd[5:0] == JX2_UCMD_ALUCMP3R)	||
 		(opUCmd[5:0] == JX2_UCMD_UNARY)		||
 //		(opUCmd[5:0] == JX2_UCMD_CONV_RR)	||
 		(opUCmd[5:0] == JX2_UCMD_CONV2_RR)	||

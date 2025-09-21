@@ -3977,6 +3977,10 @@ int BGBCC_JX2_EmitOpDWord(BGBCC_JX2_Context *ctx, s64 val)
 		}else if(is16)
 		{
 			/* RVC Ops */
+			ctx->stat_opc_rvc++;
+//			ix=((val>>8)&0xFC)|(val&3);
+			ix=(((val>>13)&7)<<2)|((val&3)<<0);
+			ctx->opcnt_rvc5xx[ix]++;
 		}
 	}
 	

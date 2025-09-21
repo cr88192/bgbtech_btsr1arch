@@ -200,7 +200,7 @@ begin
 	case(istrWord[5:2])
 		4'b0000: opRegM_Sr = JX2_GR_ZZR;
 		4'b0001: opRegM_Sr = JX2_GR_LR;
-		4'b0010: opRegM_Sr = JX2_GR_SP;
+		4'b0010: opRegM_Sr = JX2_GR_SP_RV;
 		4'b0011: opRegM_Sr = JX2_GR_GBR;
 
 //		4'b0100: opRegM_Sr = JX2_GR_TBR;
@@ -223,7 +223,7 @@ begin
 	case(istrWord[10:7])
 		4'b0000: opRegN_Sr = JX2_GR_ZZR;
 		4'b0001: opRegN_Sr = JX2_GR_LR;
-		4'b0010: opRegN_Sr = JX2_GR_SP;
+		4'b0010: opRegN_Sr = JX2_GR_SP_RV;
 		4'b0011: opRegN_Sr = JX2_GR_GBR;
 
 //		4'b0100: opRegN_Sr = JX2_GR_TBR;
@@ -772,7 +772,7 @@ begin
 		end
 
 		JX2_FMID_LDDI4SPREG: begin
-			opRegM	= JX2_GR_SP;
+			opRegM	= JX2_GR_SP_RV;
 			opRegO	= JX2_GR_IMM;
 			opRegN	= opRegN_Dfl;
 
@@ -835,7 +835,7 @@ begin
 				end
 
 				JX2_ITY_UL: begin
-					opRegM	= JX2_GR_SP;
+					opRegM	= JX2_GR_SP_RV;
 					opRegN	= opRegM_Er;
 					tSelImm = JX2_RVCIMM_IMM8SPN;
 				end

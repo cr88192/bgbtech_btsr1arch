@@ -2407,7 +2407,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 				}
 			}
 			
-			if(BGBCC_JX2_TryEmitOpImmReg(sctx, nm1, imm, csreg)>0)
+			if(!(sctx->emit_riscv&0x11) &&
+				(BGBCC_JX2_TryEmitOpImmReg(sctx, nm1, imm, csreg)>0))
 			{
 				BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 				BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);

@@ -44,10 +44,29 @@ reg[1:0]		tSel;
 always @*
 begin
 `ifndef def_true
+//	tIsIdA	= (wrIdA == regId);
+//	tIsIdB	= (wrIdB == regId);
+//	tIsIdC	= (wrIdC == regId);
+	
+`ifdef jx2_riscv_usezsp
+	if(regId==JX2_GR_SP)
+	begin
+		tIsIdA	= (wrIdA == JX2_GR_SP) || (wrIdA == JX2_GR_ZSP);
+		tIsIdB	= (wrIdB == JX2_GR_SP) || (wrIdB == JX2_GR_ZSP);
+		tIsIdC	= (wrIdC == JX2_GR_SP) || (wrIdC == JX2_GR_ZSP);
+	end
+	else
+	begin
+		tIsIdA	= (wrIdA == regId);
+		tIsIdB	= (wrIdB == regId);
+		tIsIdC	= (wrIdC == regId);
+	end
+`else
 	tIsIdA	= (wrIdA == regId);
 	tIsIdB	= (wrIdB == regId);
 	tIsIdC	= (wrIdC == regId);
-	
+`endif
+
 	casez( {tIsIdC, tIsIdB, tIsIdA} )
 		3'b000:		tNxtRegVal	= regInVal;
 //		3'b001:		tNxtRegVal	= wrValA;

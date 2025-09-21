@@ -35,6 +35,7 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 	int imm_ofs6_lwst;
 	int imm_ofs6_qwst;
 	int imm_imm6_alu;
+	int imm_imm6_sll;
 	int imm_imm6_a16sp;
 	int imm_imm8_i4add;
 	int imm_imm8_bcc;
@@ -154,6 +155,8 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 		((opw1>>2)&0x006) |
 		((opw1<<1)&0x0C0) |
 		((opw1>>7)&0x018) ;
+
+	imm_imm6_sll=imm_imm6_alu;
 
 	if(opw1&0x1000)
 	{
@@ -348,7 +351,8 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 			case 0:
 				op->rm=rs1p;
 				op->rn=rs1p;
-				op->imm=-(imm_imm6_alu&63);
+//				op->imm=-(imm_imm6_alu&63);
+				op->imm=-imm_imm6_sll;
 				op->nmid=BJX2_NMID_SHLDQ;
 				op->fmid=BJX2_FMID_REGIMMREG;
 				op->Run=BJX2_Op_SHLDQ_RegImmReg;
@@ -356,7 +360,8 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 			case 1:
 				op->rm=rs1p;
 				op->rn=rs1p;
-				op->imm=-(imm_imm6_alu&63);
+//				op->imm=-(imm_imm6_alu&63);
+				op->imm=-imm_imm6_sll;
 				op->nmid=BJX2_NMID_SHADQ;
 				op->fmid=BJX2_FMID_REGIMMREG;
 				op->Run=BJX2_Op_SHADQ_RegImmReg;
@@ -476,7 +481,8 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 			{
 				op->rm=rs1r;
 				op->rn=rs1r;
-				op->imm=(imm_imm6_alu&63);
+//				op->imm=(imm_imm6_alu&63);
+				op->imm=imm_imm6_sll;
 				op->nmid=BJX2_NMID_SHLDQ;
 				op->fmid=BJX2_FMID_REGIMMREG;
 				op->Run=BJX2_Op_SHLDQ_RegImmReg;

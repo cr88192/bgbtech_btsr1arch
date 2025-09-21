@@ -746,6 +746,15 @@ int n_opcnt_f9xx;
 
 int opcnt_rv53xx[256];
 int stat_opc_rv;
+
+int opcnt_rvc5xx[32];
+int stat_opc_rvc;
+
+int stat_bra_tot;
+int stat_bra_2rr;
+int stat_bra_2ri;
+int stat_bra_2rz;
+int stat_bra_bra;
 };
 
 /*

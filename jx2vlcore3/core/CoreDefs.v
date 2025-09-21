@@ -147,7 +147,8 @@ parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
 // parameter[6:0] JX2_GR_FPIMM10	= 7'h5D;		//FP Immed, 10-bit
 parameter[6:0] JX2_GR_IMM_HI	= 7'h5D;		//Immed in high 32 bits.
 parameter[6:0] JX2_GR_IMM_RP	= 7'h5E;		//Immed via Rp
-parameter[6:0] JX2_GR_SP2		= 7'h5F;
+// parameter[6:0] JX2_GR_SP2		= 7'h5F;
+parameter[6:0] JX2_GR_ZSP		= 7'h5F;		//SP, Zero-Extend 48b
 
 parameter[6:0] JX2_GR_PC		= 7'h60;
 parameter[6:0] JX2_GR_LR		= 7'h61;
@@ -323,6 +324,12 @@ parameter[5:0] JX2_CR_KRR		= 6'h3D;
 parameter[5:0] JX2_CR_IMM		= 6'h3E;
 parameter[5:0] JX2_CR_ZZR		= 6'h3F;
 
+`endif
+
+`ifdef jx2_riscv_usezsp
+parameter[6:0] JX2_GR_SP_RV		= JX2_GR_ZSP;
+`else
+parameter[6:0] JX2_GR_SP_RV		= JX2_GR_SP;
 `endif
 
 

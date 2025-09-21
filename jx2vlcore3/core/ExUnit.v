@@ -2985,34 +2985,34 @@ reg[47:0]		braNxtInSsp;
 reg				braNxtIsIsr;
 
 assign		id2RegValSp		=
-			(ex1RegIdRn1==JX2_GR_SP) ?
+			((ex1RegIdRn1==JX2_GR_SP) || (ex1RegIdRn1==JX2_GR_ZSP)) ?
 				ex1RegValRn1[47:0] :
 `ifdef jx2_enable_wex
-			(exB1RegIdRn1==JX2_GR_SP) ?
+			((exB1RegIdRn1==JX2_GR_SP) || (exB1RegIdRn1==JX2_GR_ZSP)) ?
 				exB1RegValRn1[47:0] :
 `endif
 `ifdef jx2_enable_wex3w
-			(exC1RegIdRn1==JX2_GR_SP) ?
+			((exC1RegIdRn1==JX2_GR_SP) || (exC1RegIdRn1==JX2_GR_ZSP)) ?
 				exC1RegValRn1[47:0] :
 `endif
-			(ex2RegIdRn2==JX2_GR_SP) ?
+			((ex2RegIdRn2==JX2_GR_SP) || (ex2RegIdRn2==JX2_GR_ZSP)) ?
 				ex2RegValRn2[47:0] :
 `ifdef jx2_enable_wex
-			(exB2RegIdRn2==JX2_GR_SP) ?
+			((exB2RegIdRn2==JX2_GR_SP) || (exB2RegIdRn2==JX2_GR_ZSP)) ?
 				exB2RegValRn2[47:0] :
 `endif
 `ifdef jx2_enable_wex3w
-			(exC2RegIdRn2==JX2_GR_SP) ?
+			((exC2RegIdRn2==JX2_GR_SP) || (exC2RegIdRn2==JX2_GR_ZSP)) ?
 				exC2RegValRn2[47:0] :
 `endif
-			(ex3RegIdRn2==JX2_GR_SP) ?
+			((ex3RegIdRn2==JX2_GR_SP) || (ex3RegIdRn2==JX2_GR_ZSP)) ?
 				ex3RegValRn2[47:0] :
 `ifdef jx2_enable_wex
-			(exB3RegIdRn2==JX2_GR_SP) ?
+			((exB3RegIdRn2==JX2_GR_SP) || (exB3RegIdRn2==JX2_GR_ZSP)) ?
 				exB3RegValRn2[47:0] :
 `endif
 `ifdef jx2_enable_wex3w
-			(exC3RegIdRn2==JX2_GR_SP) ?
+			((exC3RegIdRn2==JX2_GR_SP) || (exC3RegIdRn2==JX2_GR_ZSP)) ?
 				exC3RegValRn2[47:0] :
 `endif
 			gprOutSp[47:0];

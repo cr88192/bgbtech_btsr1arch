@@ -357,6 +357,9 @@ int BGBCC_JX2C_EmitLdix_RemapConvNmidForStore(
 	if(nm2==BGBCC_SH_NMID_SHLL64)
 		nm2=BGBCC_SH_NMID_SHLR64;	
 
+	if(nm2==BGBCC_SH_NMID_BSWAPL)
+		nm2=BGBCC_SH_NMID_BSWAPUL;	
+
 	return(nm2);
 }
 

@@ -381,11 +381,15 @@ reg[31:0]	gprArrMB;
 	`wire_gprval	gprRegSp;
 (* max_fanout = 200 *)
 	`wire_gprval	gprRegSp0;
+(* max_fanout = 200 *)
+	`wire_gprval	gprRegSpZ;
 
 `ifdef jx2_fpu_fpsr_sp
 assign	gprRegSp = { regInFpsr, gprRegSp0[47:0] };
+assign	gprRegSpZ = { 16'h00, gprRegSp0[47:0] };
 `else
 assign	gprRegSp = gprRegSp0;
+assign	gprRegSpZ = gprRegSp0;
 `endif
 
 RegSpr_3W	gprModDlr(
@@ -872,6 +876,7 @@ begin
 //		JX2_GR_DHR:	tValRsA=regInDhr;
 		JX2_GR_SP:	tValRsA=gprRegSp;
 //		JX2_GR_SP:	tValRsA=regInSp;
+		JX2_GR_ZSP:	tValRsA=gprRegSpZ;
 
 		JX2_GR_SSP:
 		begin
@@ -1061,6 +1066,7 @@ begin
 //		JX2_GR_DHR:	tValRtA=regInDhr;
 		JX2_GR_SP:	tValRtA=gprRegSp;
 //		JX2_GR_SP:	tValRtA=regInSp;
+//		JX2_GR_ZSP:	tValRtA=gprRegSpZ;
 
 //		JX2_GR_SSP:	tValRtA=regValSsp;
 
@@ -1165,6 +1171,7 @@ begin
 //		JX2_GR_DHR:	tValRuA=regInDhr;
 		JX2_GR_SP:	tValRuA=gprRegSp;
 //		JX2_GR_SP:	tValRuA=regInSp;
+		JX2_GR_ZSP:	tValRuA=gprRegSpZ;
 
 		JX2_GR_SSP:
 		begin
@@ -1287,6 +1294,7 @@ begin
 //		JX2_GR_DHR:	tValRxA=regInDhr;
 		JX2_GR_SP:	tValRxA=gprRegSp;		//Disabled from this lane
 //		JX2_GR_SP:	tValRxA=regInSp;
+//		JX2_GR_ZSP:	tValRxA=gprRegSpZ;
 
 //		JX2_GR_SSP:	tValRxA=regValSsp;
 

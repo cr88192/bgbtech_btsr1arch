@@ -47,6 +47,8 @@
 `endif
 `endif
 
+// `define jx2_riscv_usezsp	//Use Zero-Extended SP for RISC-V
+
 `ifdef jx2_xc7s50
 `define jx2_tlb_novugid	//Disable VUGIG / ACL handling in TLB
 `endif

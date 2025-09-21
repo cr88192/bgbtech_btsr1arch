@@ -1105,7 +1105,9 @@ BJX2_Trace *tr_cur;		//Current Trace (Runtime)
 BJX2_Trace *tr_rnxt;		//Trace lnknext (Runtime)
 BJX2_Trace *tr_rjmp;		//Trace jmpnext (Runtime)
 
-u32 pclog[64];
+FILE *dbglog;
+
+u64 pclog[256];
 byte pclogrov;
 
 byte no_memcost;

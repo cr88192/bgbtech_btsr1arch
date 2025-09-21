@@ -79,6 +79,9 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 		imm16n=imm16s;
 	}
 
+	op->rp=BJX2_REG_ZZR;
+	op->rq=BJX2_REG_GBR_HI;
+
 	ret=0;
 	switch((opw1>>4)&15)
 	{
@@ -291,7 +294,9 @@ int BJX2_DecodeOpcode_DecD8(BJX2_Context *ctx,
 	op->opn2=opw2;
 //	op->opn3=opw3;
 	
-	op1=BJX2_ContextAllocOpcode(ctx);
+	op1=op->data;
+	if(!op1)
+		op1=BJX2_ContextAllocOpcode(ctx);
 	op1->pc=addr;
 
 	ret=BJX2_DecodeOpcode_DecF8(ctx, op1, addr, opw1, opw2, jbits);

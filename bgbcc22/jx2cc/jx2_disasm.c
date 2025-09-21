@@ -1285,7 +1285,7 @@ int BGBCC_JX2_RepackOpcode_DecXG3toXG2(
 	{
 		opw3&=~0x1400;
 		if(opw&1)
-			opw3&=0x0400;
+			opw3|=0x0400;
 	}
 	
 	*ropw3=opw3;

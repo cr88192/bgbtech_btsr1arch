@@ -1363,6 +1363,12 @@ int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
+	if(BGBCC_JX2DA_CheckNmidIsBranch(ctx, nmid))
+	{
+		ctx->stat_bra_tot++;
+		ctx->stat_bra_bra++;
+	}
+		
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
@@ -1722,6 +1728,52 @@ int BGBCC_JX2DA_EmitLabel(BGBCC_JX2_Context *ctx, int lblid)
 	return(1);
 }
 
+int BGBCC_JX2DA_CheckNmidIsBranch(BGBCC_JX2_Context *ctx, int nmid)
+{
+	int isbra;
+	
+	isbra=0;
+	switch(nmid)
+	{
+	case BGBCC_SH_NMID_BRA:
+	case BGBCC_SH_NMID_BSR:
+		isbra=1;
+		break;
+	case BGBCC_SH_NMID_JMP:
+	case BGBCC_SH_NMID_JSR:
+		isbra=1;
+		break;
+
+	case BGBCC_SH_NMID_BREQ:
+	case BGBCC_SH_NMID_BREQL:
+	case BGBCC_SH_NMID_BRNE:
+	case BGBCC_SH_NMID_BRNEL:
+	case BGBCC_SH_NMID_BRLT:
+	case BGBCC_SH_NMID_BRLTL:
+	case BGBCC_SH_NMID_BRGT:
+	case BGBCC_SH_NMID_BRGTL:
+	case BGBCC_SH_NMID_BRLE:
+	case BGBCC_SH_NMID_BRLEL:
+	case BGBCC_SH_NMID_BRGE:
+	case BGBCC_SH_NMID_BRGEL:
+	case BGBCC_SH_NMID_BRLTU:
+	case BGBCC_SH_NMID_BRLTUL:
+	case BGBCC_SH_NMID_BRGTU:
+	case BGBCC_SH_NMID_BRGTUL:
+	case BGBCC_SH_NMID_BRGEU:
+	case BGBCC_SH_NMID_BRGEUL:
+	case BGBCC_SH_NMID_BRLEU:
+	case BGBCC_SH_NMID_BRLEUL:
+	case BGBCC_SH_NMID_BRTSTQ:
+	case BGBCC_SH_NMID_BRTSTL:
+	case BGBCC_SH_NMID_BRTSTNQ:
+	case BGBCC_SH_NMID_BRTSTNL:
+		isbra=3;
+		break;
+	}
+	return(isbra);
+}
+
 int BGBCC_JX2DA_EmitOpLblReg(BGBCC_JX2_Context *ctx,
 	int nmid, int lbl, int reg)
 {
@@ -1729,6 +1781,12 @@ int BGBCC_JX2DA_EmitOpLblReg(BGBCC_JX2_Context *ctx,
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
+
+	if(BGBCC_JX2DA_CheckNmidIsBranch(ctx, nmid))
+	{
+		ctx->stat_bra_tot++;
+		ctx->stat_bra_bra++;
+	}
 		
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
@@ -1747,6 +1805,12 @@ int BGBCC_JX2DA_EmitOpRegLbl(BGBCC_JX2_Context *ctx,
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
+
+	if(BGBCC_JX2DA_CheckNmidIsBranch(ctx, nmid))
+	{
+		ctx->stat_bra_tot++;
+		ctx->stat_bra_2rz++;
+	}
 		
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, reg);
@@ -1765,7 +1829,20 @@ int BGBCC_JX2DA_EmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
-		
+	
+	if(BGBCC_JX2DA_CheckNmidIsBranch(ctx, nmid))
+	{
+		if(!(rm&63) || !(rn&63))
+		{
+			ctx->stat_bra_tot++;
+			ctx->stat_bra_2rz++;
+		}else
+		{
+			ctx->stat_bra_tot++;
+			ctx->stat_bra_2rr++;
+		}
+	}
+
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srm=BGBCC_JX2DA_RegToName(ctx, rm);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
@@ -1784,7 +1861,13 @@ int BGBCC_JX2DA_EmitOpImmRegLbl(BGBCC_JX2_Context *ctx,
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
-		
+	
+	if(BGBCC_JX2DA_CheckNmidIsBranch(ctx, nmid))
+	{
+		ctx->stat_bra_tot++;
+		ctx->stat_bra_2ri++;
+	}
+	
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	srn=BGBCC_JX2DA_RegToName(ctx, rn);
 	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
@@ -1802,6 +1885,12 @@ int BGBCC_JX2DA_EmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl)
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
+	if(BGBCC_JX2DA_CheckNmidIsBranch(ctx, nmid))
+	{
+		ctx->stat_bra_tot++;
+		ctx->stat_bra_bra++;
+	}
+	
 	snm=BGBCC_JX2DA_NmidToName(ctx, nmid, ctx->op_is_wex2);
 	sro=BGBCC_JX2DA_NameForLabel(ctx, lbl);
 

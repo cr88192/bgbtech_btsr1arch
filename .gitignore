@@ -12,6 +12,7 @@
 *.ipch
 *.vsidx
 *.lock
+*.json
 
 randbits.txt
 

@@ -808,6 +808,7 @@ fourcc BGBCP_ArchForName(char *name)
 	if(!bgbcc_stricmp(name, "XRVA"))		i=BGBCC_ARCH_BJX2;
 
 	if(!bgbcc_stricmp(name, "RV64G"))		i=BGBCC_ARCH_BJX2;
+	if(!bgbcc_stricmp(name, "RV64GC"))		i=BGBCC_ARCH_BJX2;
 
 	return(i);
 }
@@ -875,6 +876,7 @@ fourcc BGBCP_SubArchForName(int arch, char *name)
 	if(!bgbcc_stricmp(name, "XRVA"))		i=BGBCC_ARCH_BJX2_XRVA;
 
 	if(!bgbcc_stricmp(name, "RV64G"))		i=BGBCC_ARCH_BJX2_XRVA;
+	if(!bgbcc_stricmp(name, "RV64GC"))		i=BGBCC_ARCH_BJX2_XRVC;
 
 	return(i);
 }
@@ -981,6 +983,8 @@ char *BGBCP_NameSuffixFForSubArch(fourcc arch, fourcc subarch)
 	if(arch==BGBCC_ARCH_BJX2)
 	{
 		if(subarch==BGBCC_ARCH_BJX2_XRVA)
+			return("rv64");
+		if(subarch==BGBCC_ARCH_BJX2_XRVC)
 			return("rv64");
 		if(subarch==BGBCC_ARCH_BJX2_X3RV)
 			return("rv64");

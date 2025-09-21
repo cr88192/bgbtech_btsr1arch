@@ -508,6 +508,7 @@ extern "C" {
 
 #define BGBCC_ARCH_BJX2_XG2A	BGBCC_FOURCC('X', 'G', '2', 'A')
 #define BGBCC_ARCH_BJX2_XRVA	BGBCC_FOURCC('X', 'R', 'V', 'A')
+#define BGBCC_ARCH_BJX2_XRVC	BGBCC_FOURCC('X', 'R', 'V', 'C')
 
 #define BGBCC_ARCH_XG2A		BGBCC_FOURCC('X', 'G', '2', 'A')
 

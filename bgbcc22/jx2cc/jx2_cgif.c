@@ -305,7 +305,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "jcmpr"))
 		{ shctx->has_jcmp|=2; }
 
-	if(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVA)
+	if(	(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVA) ||
+		(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVC))
 	{
 		/* For RISC-V Mode, Default to plain PE/COFF */
 		ctx->pel_cmpr=255;
@@ -585,7 +586,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 #endif
 	}
 
-	if(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVA)
+	if(	(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVA) ||
+		(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVC))
 	{
 		/* RISC-V / RV64G */
 		shctx->no_ops48=1;
@@ -647,6 +649,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{
 			shctx->is_fixed32&=~3;
 		}
+		
+		if(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVC)
+		{
+			shctx->is_fixed32&=~3;
+		}
 	}
 
 	if(ctx->sub_arch==BGBCC_ARCH_BJX2_X3RV)
@@ -683,6 +690,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_jumbo=0;
 		shctx->has_pushx2=0;
 		shctx->has_simdx2=0;
+
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "predops"))
+			{ ctx->arch_has_predops|=1; }
+
 
 		if(ctx->arch_has_predops)
 			shctx->has_jcmp|=16;
@@ -9047,14 +9058,31 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			
 				if(j>0)
 				{
-					printf("%02X (%s):  %5d\n", i, s0, k);
+//					printf("%02X (%s):  %5d\n", i, s0, k);
+					printf("%02X (%s):  %5d\n", (i<<2)|3, s0, k);
 					continue;
 				}
 			
-				printf("%02X (%s): ", i, s0);
+//				printf("%02X (%s): ", i, s0);
+				printf("%02X (%s): ", (i<<2)|3, s0);
 				for(j=0; j<8; j++)
 				{
 					printf(" %5d", sctx->opcnt_rv53xx[i*8+j]);
+				}
+				printf("\n");
+			}
+			printf("\n");
+		}
+
+		if(sctx->stat_opc_rvc>0)
+		{
+			printf("High RVC op use map:\n");
+			for(i=0; i<3; i++)
+			{
+				printf("%1u: ", i);
+				for(j=0; j<8; j++)
+				{
+					printf("%5u ", sctx->opcnt_rvc5xx[(j<<2)|i]);
 				}
 				printf("\n");
 			}
@@ -9547,6 +9575,25 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		{
 			printf("Average Stack Frame Size: %d\n",
 				(int)(sctx->stat_tot_frm_size/sctx->stat_cnt_frm_size));
+		}
+		
+		if(sctx->stat_bra_tot>0)
+		{
+			printf("BRA: 2rr=%.2f 2ri=%.2f 2rz=%.2f bra=%.2f\n",
+				(100.0*sctx->stat_bra_2rr)/sctx->stat_bra_tot,
+				(100.0*sctx->stat_bra_2ri)/sctx->stat_bra_tot,
+				(100.0*sctx->stat_bra_2rz)/sctx->stat_bra_tot,
+				(100.0*sctx->stat_bra_bra)/sctx->stat_bra_tot
+				);
+
+			k=sctx->stat_bra_2rr+sctx->stat_bra_2ri+sctx->stat_bra_2rz;
+			if(k>0)
+			{
+				printf("Bcc: 2rr=%.2f 2ri=%.2f 2rz=%.2f\n",
+					(100.0*sctx->stat_bra_2rr)/k,
+					(100.0*sctx->stat_bra_2ri)/k,
+					(100.0*sctx->stat_bra_2rz)/k);
+			}
 		}
 	}
 

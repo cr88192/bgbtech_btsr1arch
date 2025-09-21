@@ -1181,11 +1181,16 @@ int BJX2_DecodeOpcode_DecD5(BJX2_Context *ctx,
 	BJX2_Opcode *op1;
 	int ret;
 	
-	op->fl|=BJX2_OPFL_TWOWORD;
-	op->opn=opw1;
-	op->opn2=opw2;
+	if(!(op->fl&BJX2_OPFL_RV64))
+	{
+		op->fl|=BJX2_OPFL_TWOWORD;
+		op->opn=opw1;
+		op->opn2=opw2;
+	}
 
-	op1=BJX2_ContextAllocOpcode(ctx);
+	op1=op->data;
+	if(!op1)
+		op1=BJX2_ContextAllocOpcode(ctx);
 	op1->pc=addr;
 
 	ret=BJX2_DecodeOpcode_DecF1(ctx, op1, addr, opw1, opw2, jbits);

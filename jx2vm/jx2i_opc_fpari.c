@@ -2961,50 +2961,204 @@ void BJX2_Op_FMAX_GRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=isgt?va:vb;
 }
 
+int BJX2_FaddDetectAddCancel(u64 va, u64 vb, u64 vc)
+{
+	u64 vm;
+	int ved;
+	
+	if(!vc)
+		return(0);
+	
+	vm=va;
+	if((vb<<1)>(vm<<1))
+		vm=vb;
+	
+	ved=((vm>>52)&2047)-((vc>>52)&2047);
+	if(ved>4)
+		return(1);
+	
+	return(0);
+}
 
 void BJX2_Op_FMADDD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	u64 va, vb, vc, vd;
+	int fpsr;
+	u64 va, vb, vc, vt, vd;
 
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->ro];
 	vc=ctx->regs[op->rp];
-	vd=BJX2_FAddSoft(BJX2_FMulSoft(va, vb), vc);
+	vt=BJX2_FMulSoft(va, vb);
+	vd=BJX2_FAddSoft(vt, vc);
 	ctx->regs[op->rn]=vd;
+
+	if((fpsr&0x0020) && BJX2_FaddDetectAddCancel(vt, vc, vd))
+	{
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+		ctx->regs[BJX2_REG_TEA]=0;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}
+	
+//	if(BJX2_GetFpscr(ctx)&0x0010)
+	if(fpsr&0x0010)
+	{
+		ctx->trapc=op->pc;		
+		if(bjx2_fpsoftfl&15)
+		{
+			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+			ctx->regs[BJX2_REG_TEA]=0;
+			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+		}
+	}
 }
 
 void BJX2_Op_FMSUBD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	u64 va, vb, vc, vd;
+	int fpsr;
+	u64 va, vb, vc, vt, vd;
 
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->ro];
 	vc=ctx->regs[op->rp];
-	vd=BJX2_FSubSoft(BJX2_FMulSoft(va, vb), vc);
+	vt=BJX2_FMulSoft(va, vb);
+	vd=BJX2_FSubSoft(vt, vc);
 	ctx->regs[op->rn]=vd;
+
+	if((fpsr&0x0020) && BJX2_FaddDetectAddCancel(vt, vc, vd))
+	{
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+		ctx->regs[BJX2_REG_TEA]=0;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}
+	
+//	if(BJX2_GetFpscr(ctx)&0x0010)
+	if(fpsr&0x0010)
+	{
+		ctx->trapc=op->pc;		
+		if(bjx2_fpsoftfl&15)
+		{
+			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+			ctx->regs[BJX2_REG_TEA]=0;
+			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+		}
+	}
 }
 
 void BJX2_Op_FNMADDD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	u64 va, vb, vc, vd;
+	int fpsr;
+	u64 va, vb, vc, vt, vd;
 
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->ro];
 	vc=ctx->regs[op->rp];
-	vd=BJX2_FAddSoft(BJX2_FMulSoft(va, vb), vc);
+	vt=BJX2_FMulSoft(va, vb);
+	vd=BJX2_FAddSoft(vt, vc);
 	vd=BJX2_FNegSoft(vd);
 	ctx->regs[op->rn]=vd;
+
+	if((fpsr&0x0020) && BJX2_FaddDetectAddCancel(vt, vc, vd))
+	{
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+		ctx->regs[BJX2_REG_TEA]=0;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}
+	
+//	if(BJX2_GetFpscr(ctx)&0x0010)
+	if(fpsr&0x0010)
+	{
+		ctx->trapc=op->pc;		
+		if(bjx2_fpsoftfl&15)
+		{
+			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+			ctx->regs[BJX2_REG_TEA]=0;
+			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+		}
+	}
 }
 
 void BJX2_Op_FNMSUBD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	u64 va, vb, vc, vd;
+	int fpsr;
+	u64 va, vb, vc, vt, vd;
 
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->ro];
 	vc=ctx->regs[op->rp];
-	vd=BJX2_FSubSoft(vc, BJX2_FMulSoft(va, vb));
+	vt=BJX2_FMulSoft(va, vb);
+	vd=BJX2_FSubSoft(vc, vt);
 	ctx->regs[op->rn]=vd;
+
+	if((fpsr&0x0020) && BJX2_FaddDetectAddCancel(vt, vc, vd))
+	{
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+		ctx->regs[BJX2_REG_TEA]=0;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}
+	
+//	if(BJX2_GetFpscr(ctx)&0x0010)
+	if(fpsr&0x0010)
+	{
+		ctx->trapc=op->pc;		
+		if(bjx2_fpsoftfl&15)
+		{
+			ctx->regs[BJX2_REG_PC]=ctx->trapc;
+			ctx->regs[BJX2_REG_TEA]=0;
+			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+		}
+	}
 }
 
 int BJX2_CheckFloatNotZeroOrNaN(u32 val)
@@ -3051,16 +3205,37 @@ void BJX2_Op_FDIVS_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_FMADDS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	int fpsr;
 	u64 va, vb, vc, vd;
 
-	bjx2_fpsoftfl=0;
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=BJX2_CvtFloatToDouble(ctx->regs[op->rm]);
 	vb=BJX2_CvtFloatToDouble(ctx->regs[op->ro]);
 	vc=BJX2_CvtFloatToDouble(ctx->regs[op->rp]);
 	vd=BJX2_FAddSoft(BJX2_FMulSoft(va, vb), vc);
 	ctx->regs[op->rn]=BJX2_CvtDoubleToFloat(vd);
 
-	if(BJX2_GetFpscr(ctx)&0x0010)
+
+	if(fpsr&0x0020)
+	{
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+		ctx->regs[BJX2_REG_TEA]=0;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}
+	
+//	if(BJX2_GetFpscr(ctx)&0x0010)
+	if(fpsr&0x0010)
 	{
 		ctx->trapc=op->pc;		
 		if(bjx2_fpsoftfl&15)
@@ -3075,16 +3250,28 @@ void BJX2_Op_FMADDS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_FMSUBS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	int fpsr;
 	u64 va, vb, vc, vd;
 
-	bjx2_fpsoftfl=0;
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=BJX2_CvtFloatToDouble(ctx->regs[op->rm]);
 	vb=BJX2_CvtFloatToDouble(ctx->regs[op->ro]);
 	vc=BJX2_CvtFloatToDouble(ctx->regs[op->rp]);
 	vd=BJX2_FSubSoft(BJX2_FMulSoft(va, vb), vc);
 	ctx->regs[op->rn]=BJX2_CvtDoubleToFloat(vd);
 
-	if(BJX2_GetFpscr(ctx)&0x0010)
+//	if(BJX2_GetFpscr(ctx)&0x0010)
+	if(fpsr&0x0010)
 	{
 		ctx->trapc=op->pc;		
 		if(bjx2_fpsoftfl&15)
@@ -3099,9 +3286,20 @@ void BJX2_Op_FMSUBS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_FNMADDS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	int fpsr;
 	u64 va, vb, vc, vd;
 
-	bjx2_fpsoftfl=0;
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=BJX2_CvtFloatToDouble(ctx->regs[op->rm]);
 	vb=BJX2_CvtFloatToDouble(ctx->regs[op->ro]);
 	vc=BJX2_CvtFloatToDouble(ctx->regs[op->rp]);
@@ -3124,9 +3322,20 @@ void BJX2_Op_FNMADDS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_FNMSUBS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	int fpsr;
 	u64 va, vb, vc, vd;
 
-	bjx2_fpsoftfl=0;
+	fpsr=BJX2_GetFpscr(ctx);
+
+	if((op->imm&7)==7)
+	{
+		bjx2_fpsoftfl=(fpsr&15)<<8;
+	}else
+	{
+		bjx2_fpsoftfl=(op->imm&7)<<8;
+	}
+
+//	bjx2_fpsoftfl=0;
 	va=BJX2_CvtFloatToDouble(ctx->regs[op->rm]);
 	vb=BJX2_CvtFloatToDouble(ctx->regs[op->ro]);
 	vc=BJX2_CvtFloatToDouble(ctx->regs[op->rp]);

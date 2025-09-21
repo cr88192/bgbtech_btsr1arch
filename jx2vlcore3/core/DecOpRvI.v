@@ -340,7 +340,7 @@ begin
 	case(istrWord[23:20])
 		4'b0000: opRegO_Sr = JX2_GR_ZZR;
 		4'b0001: opRegO_Sr = JX2_GR_LR;
-		4'b0010: opRegO_Sr = JX2_GR_SP;
+		4'b0010: opRegO_Sr = JX2_GR_SP_RV;
 		4'b0011: opRegO_Sr = JX2_GR_GBR;
 		4'b0100: opRegO_Sr = JX2_GR_R4;
 		4'b0101: opRegO_Sr = JX2_GR_R5;
@@ -359,7 +359,7 @@ begin
 	case(istrWord[18:15])
 		4'b0000: opRegM_Sr = JX2_GR_ZZR;
 		4'b0001: opRegM_Sr = JX2_GR_LR;
-		4'b0010: opRegM_Sr = JX2_GR_SP;
+		4'b0010: opRegM_Sr = JX2_GR_SP_RV;
 		4'b0011: opRegM_Sr = JX2_GR_GBR;
 		4'b0100: opRegM_Sr = JX2_GR_R4;
 		4'b0101: opRegM_Sr = JX2_GR_R5;
@@ -378,7 +378,7 @@ begin
 	case(istrWord[10:7])
 		4'b0000: opRegN_Sr = JX2_GR_ZZR;
 		4'b0001: opRegN_Sr = JX2_GR_LR;
-		4'b0010: opRegN_Sr = JX2_GR_SP;
+		4'b0010: opRegN_Sr = JX2_GR_SP_RV;
 		4'b0011: opRegN_Sr = JX2_GR_GBR;
 		4'b0100: opRegN_Sr = JX2_GR_R4;
 		4'b0101: opRegN_Sr = JX2_GR_R5;
@@ -404,11 +404,11 @@ begin
 `ifdef jx2_reg_spdecswap
 	if(srMod[2])
 	begin
-		if(opRegM_Dfl == JX2_GR_SP)
+		if(opRegM_Dfl == JX2_GR_SP_RV)
 			opRegM_Dfl = JX2_GR_SSP;
-		if(opRegO_Dfl == JX2_GR_SP)
+		if(opRegO_Dfl == JX2_GR_SP_RV)
 			opRegO_Dfl = JX2_GR_SSP;
-		if(opRegN_Dfl == JX2_GR_SP)
+		if(opRegN_Dfl == JX2_GR_SP_RV)
 			opRegN_Dfl = JX2_GR_SSP;
 	end
 `endif
@@ -500,7 +500,7 @@ begin
 	if(srMod[2])
 	begin
 		if(opRegM_Cr == JX2_GR_SSP)
-			opRegM_Cr = JX2_GR_SP;
+			opRegM_Cr = JX2_GR_SP_RV;
 	end
 `endif
 
@@ -764,6 +764,9 @@ begin
 			opFmid		= JX2_FMID_LDREGDISPREG;
 			opBty		= { 2'b01, istrWord[12] };
 			opIty		= JX2_ITY_XB;
+
+			if(istrWord[14])
+				opBty=JX2_BTY_UQ;
 			
 			if(istrWord[14:12]==3'b010)
 			begin
@@ -2319,6 +2322,14 @@ begin
 			begin
 				opRegN	= opRegN_Fr;
 				opRegP	= opRegN_Fr;
+
+				if((opBty==JX2_BTY_UQ) && opRegN_Fr[0])
+				begin
+					opRegN		= opRegN_Dfl;
+					opRegN[0]	= 0;
+					opRegP		= opRegN;
+				end
+
 			end
 
 `ifdef jx2_reg_rp
@@ -2350,6 +2361,13 @@ begin
 			begin
 				opRegN	= opRegO_Fr;
 				opRegP	= opRegO_Fr;
+
+				if((opBty==JX2_BTY_UQ) && opRegO_Fr[0])
+				begin
+					opRegN		= opRegO_Dfl;
+					opRegN[0]	= 0;
+					opRegP		= opRegN;
+				end
 			end
 
 `ifdef jx2_reg_rp
