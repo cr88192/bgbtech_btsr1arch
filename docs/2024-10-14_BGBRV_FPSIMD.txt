@@ -29,7 +29,7 @@ The type bits for floating point operations will be understood as:
 * 00: 2x Binary32
 * 01: 1x Binary64
 * 10: 4x Binary16
-* 11: Binary128 (Reserved)
+* 11: Binary128 (Reserved/PseudoQ)
 
 Optionally, the rounding mode may also signal an additional vector size:
 * 000=RNE, 001=RTZ  , 010=RDN  , 011=RUP
@@ -46,6 +46,10 @@ For the 2x cases, the type will be understood as:
 * 10: 8x Binary16 (Optional)
 * 11: Binary128 (Reserved)
 
+Possible:
+* The DYN rounding mode will be assumed to be always Scalar.
+** DYN may also update FPU flags.
+** RTZ and RNE may be assumed to be potentially SIMD.
 
 If (FLEN==128), the SIMD vectors will be understood as always being nominally 128 bits, and semantics will need to be adjusted as needed to deal with the larger registers.
 

@@ -3900,6 +3900,27 @@ int BGBCC_JX2_TryNormalizeXRegToReg(
 	return(rn);
 }
 
+int BGBCC_JX2_TryNormalizeFXReg(
+	BGBCC_JX2_Context *ctx, int nmid, int rs0)
+{
+	int rs1, rs2;
+	
+//	if((rs0>=0) && (rs0<=31))
+//		return(rs0);
+	
+	rs1=BGBCC_JX2_TryNormalizeXRegToReg(ctx, nmid, rs0);
+	if((rs1<0) || (rs1&1))
+		return(-1);
+	
+	rs2=-1;
+	if((rs1>=32) && (rs1<64))
+		rs2=rs1;
+	if((rs1>=4) && (rs1<32))
+		rs2=rs1|1;
+
+	return(rs2);
+}
+
 int BGBCC_JX2_TryEmitOpRegRegReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rn)
 {

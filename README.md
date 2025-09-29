@@ -102,6 +102,9 @@ jx2vlcore: Verilog attempts at a BJX2 processor.
 (2025-03): jx2vlcore3 does XG1/XG2/XG3 and RV64G.
 * But, can't boot a standard RV OS kernel.
 
+misc_x3vm: Userspace-only interpreter for XG3 and RISC-V.
+* Intended to allow program images to be run within a host application.
+* In this case, the application takes on the role of the OS.
 
 tk_qsrc: Source for Quake, Doom, and C library.
 * A lot of the code here was not written by me; check licensing more carefully in here.
@@ -113,4 +116,9 @@ tk_ports: Various software I have ported to BJX2.
 * License depends on the program.
 * I am trying to avoid distributing any files which I don't have the rights to, but it is possible some might leak through.
 * Generally, people will be expected to provide their own game WADs or similar, ...
+
+
+docs: Various documentation for the ISA project.
+
+bgbcc22/docs: Documentation relevant to BGBCC or its formats.
 

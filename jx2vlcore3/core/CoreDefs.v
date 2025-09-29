@@ -348,12 +348,12 @@ parameter[2:0] JX2_IXC_CTS	= 3'b100;	//Execute If True (SR.S)
 parameter[2:0] JX2_IXC_CFS	= 3'b101;	//Execute If False (SR.S)
 
 parameter[2:0] JX2_IUC_SC	= 3'b000;	//Scalar
-parameter[2:0] JX2_IUC_WX	= 3'b001;	//Wide
+parameter[2:0] JX2_IUC_WX	= 3'b001;	//Wide-Data
 parameter[2:0] JX2_IUC_WT	= 3'b010;	//Wide+True
 parameter[2:0] JX2_IUC_WF	= 3'b011;	//Wide+False
 
 parameter[2:0] JX2_IUC_WA	= 3'b100;	//Wide-Address
-parameter[2:0] JX2_IUC_WXA	= 3'b101;	//Wide-Address
+parameter[2:0] JX2_IUC_WXA	= 3'b101;	//Wide-Address, Wide-Data
 
 parameter[  3:0] UV4_XX			= 4'hX;	//
 parameter[  4:0] UV5_XX			= 5'hXX;	//
@@ -728,7 +728,6 @@ REGREG, RVI:
 	SB: Rm, Ro|Imm17au, Rn
 	SW: -
 	SL: -
-	SQ: -
 	SQ: Ro|Imm17au, Rm, Rn
 
 	UB: Rm, Rn, Rn
@@ -856,11 +855,15 @@ JX2_FMID_LDREGDISPREG:
 REGIMMREG, RVI:
 	SB: Rm, 0, Rn
 	SW: Rm, Imm12s, Rn
+	SL: Imm12s, Rm, Rn
 
 	UW: Rm, Imm12u, Rn
 
 	NB: Rm, 0, Rt, Rn
 	NW: Rm, Imm12n, Rn
+
+	NL: Rm, Imm5s, Rn
+	NQ: Rm, ZZR(Imm5s), Rn
 
 	XB: FRm, Imm12s, FRn
 
@@ -1011,6 +1014,7 @@ parameter[3:0] JX2_RVIMM_IMM17S		= 4'h7;	//LUI
 parameter[3:0] JX2_RVIMM_IMM32LC	= 4'h8;	//L.LI
 parameter[3:0] JX2_RVIMM_IMM21J		= 4'h9;	//Jumbo, 21-bit Immed
 parameter[3:0] JX2_RVIMM_IMMFPRM	= 4'hA;
+parameter[3:0] JX2_RVIMM_IMM5S		= 4'hB;	//imm5, sign-extend
 
 parameter[3:0] JX2_RVIMM_IMM12S		= 4'h4;
 
@@ -1178,10 +1182,10 @@ parameter[5:0] JX2_UCIX_ALUN_CTZQ	= 6'h21;		//Count Trailing Zeroes (QW)
 parameter[5:0] JX2_UCIX_ALUN_BTRNSQ	= 6'h22;		//Transpose Bits (QW)
 parameter[5:0] JX2_UCIX_ALUN_PMORTQ	= 6'h23;		//Morton-Shuffle Bits (QW)
 
-parameter[5:0] JX2_UCIX_ALUN_MINQ		= 6'h24;		//MIN
-parameter[5:0] JX2_UCIX_ALUN_MAXQ		= 6'h25;		//MAX
-parameter[5:0] JX2_UCIX_ALUN_FSGNJ		= 6'h26;		//FSGNJ (RV)
-parameter[5:0] JX2_UCIX_ALUN_FSGNJX		= 6'h27;		//FSGNJX (RV)
+parameter[5:0] JX2_UCIX_ALUN_MINQ		= 6'h24;	//MIN
+parameter[5:0] JX2_UCIX_ALUN_MAXQ		= 6'h25;	//MAX
+parameter[5:0] JX2_UCIX_ALUN_FSGNJ		= 6'h26;	//FSGNJ (RV)
+parameter[5:0] JX2_UCIX_ALUN_FSGNJX		= 6'h27;	//FSGNJX (RV)
 
 parameter[5:0] JX2_UCIX_ALUN_FMIN		= 6'h34;	//FMIN, Double
 parameter[5:0] JX2_UCIX_ALUN_FMAX		= 6'h35;	//FMAX

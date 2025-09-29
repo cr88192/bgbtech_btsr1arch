@@ -681,6 +681,29 @@ int BGBCC_JX2RV_TryEncJumboOpFRegFRegFReg(
 	return(0);
 }
 
+int BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
+	BGBCC_JX2_Context *ctx,
+	int rm, int ro, int rn,
+	s64 opwb, s64 *ropw1, s64 *ropw2)
+{
+	int rm1, ro1, rn1;
+
+	rm1=rm; ro1=ro; rn1=rn;
+
+	if(!BGBCC_JX2RV_CheckRegIsFPR(ctx, rm) &&
+		BGBCC_JX2_EmitCheckRegExtGPR(ctx, rm))
+		{ rm1=32+(rm&0x1E)+1; }
+	if(!BGBCC_JX2RV_CheckRegIsFPR(ctx, ro) &&
+		BGBCC_JX2_EmitCheckRegExtGPR(ctx, ro))
+		{ ro1=32+(ro&0x1E)+1; }
+	if(!BGBCC_JX2RV_CheckRegIsFPR(ctx, rn) &&
+		BGBCC_JX2_EmitCheckRegExtGPR(ctx, rn))
+		{ rn1=32+(rn&0x1E)+1; }
+	
+	return(BGBCC_JX2RV_TryEncJumboOpFRegFRegFReg(ctx,
+		rm1, ro1, rn1, opwb, ropw1, ropw2));
+}
+
 int BGBCC_JX2RV_TryEncJumboOpFRegFRegXReg(
 	BGBCC_JX2_Context *ctx,
 	int rm, int ro, int rn,
@@ -1700,6 +1723,23 @@ int BGBCC_JX2RV_TryEmitOpRegRegReg(
 			ctx, rs, rt, rn, 0x1A000053, &opw1, &opw2)>0)
 				break;
 
+	case BGBCC_SH_NMID_FADDX:
+		if(BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
+			ctx, rs, rt, rn, 0x06000053, &opw1, &opw2)>0)
+				break;
+	case BGBCC_SH_NMID_FSUBX:
+		if(BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
+			ctx, rs, rt, rn, 0x0E000053, &opw1, &opw2)>0)
+				break;
+	case BGBCC_SH_NMID_FMULX:
+		if(BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
+			ctx, rs, rt, rn, 0x16000053, &opw1, &opw2)>0)
+				break;
+	case BGBCC_SH_NMID_FDIVX:
+		if(BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
+			ctx, rs, rt, rn, 0x1E000053, &opw1, &opw2)>0)
+				break;
+
 #if 0
 		if(ctx->has_jumbo&2)
 		{
@@ -1799,19 +1839,19 @@ int BGBCC_JX2RV_TryEmitOpRegRegReg(
 	case BGBCC_SH_NMID_PADDFX:
 		if(!(ctx->has_simdx2&1))
 			break;
-		BGBCC_JX2RV_TryEncJumboOpFRegFRegFReg(
+		BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
 			ctx, rs, rt, rn, 0x00006053, &opw1, &opw2);
 		break;
 	case BGBCC_SH_NMID_PSUBFX:
 		if(!(ctx->has_simdx2&1))
 			break;
-		BGBCC_JX2RV_TryEncJumboOpFRegFRegFReg(
+		BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
 			ctx, rs, rt, rn, 0x08006053, &opw1, &opw2);
 		break;
 	case BGBCC_SH_NMID_PMULFX:
 		if(!(ctx->has_simdx2&1))
 			break;
-		BGBCC_JX2RV_TryEncJumboOpFRegFRegFReg(
+		BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(
 			ctx, rs, rt, rn, 0x10006053, &opw1, &opw2);
 		break;
 #if 0
@@ -5479,11 +5519,14 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 	int nmid, int rm, int rn)
 {
 	s64 opw1, opw2, ex, ex3r, exw;
-	int rm3, rn3, rm1, rn1, nm1, cm1, cn1;
+	int rm3, rn3, rm1, rn1, nm1, cm1, cn1, rm_fx, rn_fx;
 	int i;
 
 	rm=BGBCC_JX2RV_NormalizeReg(ctx, rm);
 	rn=BGBCC_JX2RV_NormalizeReg(ctx, rn);
+
+	rm_fx=BGBCC_JX2_TryNormalizeFXReg(ctx, nmid, rm);
+	rn_fx=BGBCC_JX2_TryNormalizeFXReg(ctx, nmid, rn);
 
 	i=BGBCC_JX2X3_TryEmitOpRegReg(ctx, nmid, rm, rn);
 	if(i>0)
@@ -5529,6 +5572,11 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		(nmid==BGBCC_SH_NMID_FSUB) ||
 		(nmid==BGBCC_SH_NMID_FMUL) ||
 		(nmid==BGBCC_SH_NMID_FDIV) ||
+
+		(nmid==BGBCC_SH_NMID_FADDX) ||
+		(nmid==BGBCC_SH_NMID_FSUBX) ||
+		(nmid==BGBCC_SH_NMID_FMULX) ||
+		(nmid==BGBCC_SH_NMID_FDIVX) ||
 
 		(nmid==BGBCC_SH_NMID_FADDG) ||
 		(nmid==BGBCC_SH_NMID_FSUBG) ||
@@ -5585,6 +5633,15 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 	{
 		rm3=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rm);
 		rn3=BGBCC_JX2_TryNormalizeXReg(ctx, nmid, rn);
+
+		rm1=BGBCC_JX2_TryNormalizeFXReg(ctx, nmid, rm);
+		rn1=BGBCC_JX2_TryNormalizeFXReg(ctx, nmid, rn);
+
+		if((ctx->has_fpux&1) && (rm1>=0) && (rn1>=0))
+		{
+			return(BGBCC_JX2RV_TryEmitOpRegReg(ctx,
+				BGBCC_SH_NMID_FMOVX, rm, rn));
+		}
 
 		BGBCC_JX2RV_EmitOpRegReg(ctx, BGBCC_SH_NMID_MOV, rm3+0, rn3+0);
 		BGBCC_JX2RV_EmitOpRegReg(ctx, BGBCC_SH_NMID_MOV, rm3+1, rn3+1);
@@ -5977,7 +6034,12 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		if(!BGBCC_JX2RV_CheckRegIsGPR(ctx, rn))		break;
 		opw1=0xE2000053U|((rm&31)<<15)|((rn&31)<<7);
 		break;
-	
+
+	case BGBCC_SH_NMID_FMOVX:
+		if((rm_fx<0) || (rn_fx<0))
+			break;
+		opw1=0x26000053U|((rm_fx&31)<<20)|((rm_fx&31)<<15)|((rn_fx&31)<<7);
+		break;
 	
 	default:
 		break;

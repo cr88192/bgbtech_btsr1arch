@@ -1,0 +1,109 @@
+BS4L: Yet another hypothetical ISA design idea.
+
+Idea:
+* Try to optimize for both performance and code density.
+
+Basic encoding will resemble XG3, but with 16-bit ops.
+*                    ZZZZ-nnnn-mmmm-ZZ0Z  //16-bit space
+* XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-Q0-0010  //3R Space (Reg6)
+* iiii-iiiiii-mmmmmm-ZZZZ-nnnnnn-Q0-0110  //Load/Store (Disp10)
+* iiii-iiiiii-mmmmmm-ZZZZ-nnnnnn-Q0-1010  //3RI space (Imm10)
+* iiii-iiiiii-iiiiii-ZZZZ-nnnnnn-Q1-0010  //2RI space (Imm16)
+* iiii-iiiiii-iiiiii-jjjj-jjjjab-c1-1Y10  //Prefix Space
+
+
+
+Registers:
+* R0..R63
+** R0..R3 = ZR / LR / SP / GP
+*** These are considered SPRs rather than GPRs.
+
+32-bit ops:
+* Probably either reuse XG3, or something similar.
+* Maybe drop or rework a few things.
+
+
+Register Subsets:
+* Reg3: R8..R15
+* Reg4: R8..R23
+* Reg5: R0..R31
+* FReg5: R32..R63
+
+
+
+Possible 16-bit ops:
+* 00in-nnnn-iiii-0000  ADD		Imm5s, Rn5  //"ADD 0, R0" = TRAP
+* 01in-nnnn-iiii-0000  LI		Imm5s, Rn5
+* 10mn-nnnn-mmmm-0000  ADD		Rm5, Rn5
+* 11mn-nnnn-mmmm-0000  MV		Rm5, Rn5
+
+* 0000-nnnn-iiii-0100  ADDW		Imm4u, Rn4
+* 0001-nnnn-mmmm-0100  SUB		Rm4, Rn4
+* 0010-nnnn-mmmm-0100  ADDW		Imm4n, Rn4
+* 0011-nnnn-mmmm-0100  MVW		Rm4, Rn4
+* 0100-nnnn-mmmm-0100  ADDW		Rm4, Rn4
+* 0101-nnnn-mmmm-0100  AND		Rm4, Rn4
+* 0110-nnnn-mmmm-0100  OR		Rm4, Rn4
+* 0111-nnnn-mmmm-0100  XOR		Rm4, Rn4
+
+* 0iii-0nnn-0mmm-1000 ? SLL		Rm3, Imm3u, Rn3
+* 0iii-0nnn-1mmm-1000 ? SRL		Rm3, Imm3u, Rn3
+* 0iii-1nnn-0mmm-1000 ? ADD		Rm3, Imm3u, Rn3
+* 0iii-1nnn-1mmm-1000 ? ADDW	Rm3, Imm3u, Rn3
+* 1iii-0nnn-0mmm-1000 ? AND		Rm3, Imm3u, Rn3
+* 1iii-0nnn-1mmm-1000 ? SRA		Rm3, Imm3u, Rn3
+* 1iii-1nnn-0mmm-1000 ? ADD		Rm3, Imm3n, Rn3
+* 1iii-1nnn-1mmm-1000 ? ADDW	Rm3, Imm3n, Rn3
+
+* 0ooo-0nnn-0mmm-1100 ? SLL		Rm3, Ro3, Rn3
+* 0ooo-0nnn-1mmm-1100 ? SRL		Rm3, Ro3, Rn3
+* 0ooo-1nnn-0mmm-1100 ? AND		Rm3, Ro3, Rn3
+* 0ooo-1nnn-1mmm-1100 ? SRA		Rm3, Ro3, Rn3
+* 1ooo-0nnn-0mmm-1100 ? ADD		Rm3, Ro3, Rn3
+* 1ooo-0nnn-1mmm-1100 ? SUB		Rm3, Ro3, Rn3
+* 1ooo-1nnn-0mmm-1100 ? ADDW	Rm3, Ro3, Rn3
+* 1ooo-1nnn-1mmm-1100 ? SUBW	Rm3, Ro3, Rn3
+
+* 0ddd-nnnn-mmmm-0001  LW		Disp3u(Rm4), Rn4
+* 1ddd-nnnn-mmmm-0001  LD		Disp3u(Rm4), Rn4
+* 0ddd-nnnn-mmmm-0101  SW		Rn4, Disp3u(Rm4)
+* 1ddd-nnnn-mmmm-0101  SD		Rn4, Disp3u(Rm4)
+
+* 00dn-nnnn-dddd-1001  LW		Disp5u(SP), Rn5
+* 01dn-nnnn-dddd-1001  LD		Disp5u(SP), Rn5
+* 10dn-nnnn-dddd-1001  SW		Rn5, Disp5u(SP)
+* 11dn-nnnn-dddd-1001  SD		Rn5, Disp5u(SP)
+
+* 00dd-dddd-dddd-1101  J		Disp10
+* 01dn-nnnn-dddd-1101  LD		Disp5u(SP), FRn5
+* 10in-nnnn-iiii-1101  LUI		Imm6s, Rn5
+* 11dn-nnnn-dddd-1101  SD		FRn5, Disp5u(SP)
+
+
+Also possible could be a design based on RVC, but with less dig chew:
+
+New C0 Block:
+* 000-i-nn-nnn-ii-iii-01  SLLI		Imm6u, Rn5
+* 001-d-nn-nnn-dd-ddd-00  FLD		Disp6u(SP), Rn5
+* 010-d-nn-nnn-dd-ddd-00  LW		Disp6u(SP), Rn5
+* 011-d-nn-nnn-dd-ddd-00  LD		Disp6u(SP), Rn5
+* 100-0-nn-nnn-mm-mmm-00  MV		Rm5, Rn5
+* 100-1-nn-nnn-mm-mmm-00  ADD		Rm5, Rn5
+* 101-d-nn-nnn-dd-ddd-00  FSD		Disp6u(SP), Rn5
+* 110-d-nn-nnn-dd-ddd-00  SW		Disp6u(SP), Rn5
+* 111-d-nn-nnn-dd-ddd-00  SD		Disp6u(SP), Rn5
+New C1 Block:
+* 000-i-nn-nnn-ii-iii-01  ADDI		Imm6s, Rn5
+* 001-i-nn-nnn-ii-iii-01  ADDIW		Imm6s, Rn5
+* 010-i-nn-nnn-ii-iii-01  LI		Imm6s, Rn5
+* 011-i-nn-nnn-ii-iii-01  LUI		Imm6s, Rn5
+* 100-i-00-nnn-ii-iii-01  SRLI		Imm6u, Rn5
+* 100-i-01-nnn-ii-iii-01  SRAI		Imm6u, Rn5
+* 100-i-10-nnn-ii-iii-01  ANDI		Imm6s, Rn5
+* 100-z-11-nnn-zz-mmm-01  SUB/XOR/OR/AND,SUBW/ADDW/-/-
+* 101-0-dd-ddd-dd-ddd-01  J			Disp10s
+* 101-1-dd-ddd-dd-ddd-01  -
+* 110-0-dd-nnn-dd-mmm-01  LW		Disp4u(Rm3), Rn3
+* 110-1-dd-nnn-dd-mmm-01  LD		Disp4u(Rm3), Rn3
+* 111-0-dd-nnn-dd-mmm-01  SW		Disp4u(Rm3), Rn3
+* 111-1-dd-nnn-dd-mmm-01  SD		Disp4u(Rm3), Rn3

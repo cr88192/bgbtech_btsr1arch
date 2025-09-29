@@ -1,0 +1,5 @@
+Cheap approximations for FPU operations, expressed relative to Binary16:
+* a+b: B+((A-B)>>1)+0x0400
+* a*b: A+B-0x3C00
+* a/b: A-B+0x3C00
+* sqrt(a): (A>>1)+0x1E00

@@ -33,7 +33,53 @@ Feature "-f..." options, BJX2:
 
 * nopredops: Disable use of predicated instructions.
 
-PEL:
+* jcmp: Branch and Compare (Both Zero and 2-Register)
+* jcmpz: Branch and Compare (Zero Only)
+* jcmpr: Branch and Compare (2-Register Only)
+
+
+Options for RISC-V:
+* rvldix: Load/Stpre Index (via AMO Block)
+* rvjumbo: Enable Jumbo Prefixes (64 bit)
+* rvjumbo96: Enable Jumbo Prefixes (96 bit)
+* rvzba: Enable Zba instructions.
+* rvbraimm: Branch with Immediate (Jumbo)
+* rvsimd: FPU SIMD
+* rvc: Compressed C extension.
+* fpux: Enable Pseudo-Q Encodings
+
+Options for XG3:
+* predops: Predicated Instructions
+* x3c: XG3 Compact Encodings
+* x3nabi: XG3 Native ABI
+
+Target Options ("-m")
+* BJX2{A/B/C/D/E/F/G/H/I}: BJX2 Profiles
+* X2RV: XG2RV (Retired)
+* XG2A: XG2
+* XG3RV: XG3+RV (XG3 + RV64G)
+* XRVA: RISC-V (RV64G)
+* RV64G: RISC-V (RV64G)
+* RV64GC: RISC-V (RV64GC)
+
+Older Targets:
+* BSR1A: BSR1
+* SH2: SuperH, SH-2
+* SH4: SuperH, SH-4
+* SH2L: SuperH, SH-2 (Little Endian)
+* SH4L: SuperH, SH-4 (Little Endian)
+* SH2B: SuperH, SH-2 (Big Endian)
+* SH4B: SuperH, SH-4 (Big Endian)
+* BJX1: BJX1, 32-bit
+* BJX1_32: BJX1, 32-bit
+* BJX1_64C: BJX1, 64-bit
+
+Note backends:
+* BJX2 and RISC-V share the JX2CC backend.
+* SuperH and BJX1 share the SHCC backend.
+
+
+PEL Options (via "-f"):
 * pexe: Emit traditional PE/COFF
 * pel0: PEL0 Mode, Uncompressed
 * pel3: PEL3 Mode, RP2 Compression
@@ -44,4 +90,4 @@ PEL:
 
 Default mode is PEL4.
 * LZ4 seems to on-average get best compression for BJX2 machine code.
-
+* For plain RISC-V, will default to PEXE.

@@ -38,6 +38,8 @@ idUIxt:
 `ifndef HAS_EXAGUB
 `define HAS_EXAGUB
 
+/* verilator lint_off UNUSEDSIGNAL */
+
 module ExAGUB(
 	regValRm,
 	regValRi,

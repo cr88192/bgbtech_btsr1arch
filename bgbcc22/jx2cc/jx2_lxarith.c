@@ -1102,6 +1102,10 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat128(
 		case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADDX;	break;
 		case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUBX;	break;
 		case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMULX;	break;
+		case CCXL_BINOP_DIV:
+			if(sctx->has_qmul&2)
+				nm1=BGBCC_SH_NMID_FDIVX;
+			break;
 		default:
 			break;
 		}
@@ -1189,6 +1193,10 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat128(
 		case CCXL_BINOP_ADD:	nm1=BGBCC_SH_NMID_FADDX;	break;
 		case CCXL_BINOP_SUB:	nm1=BGBCC_SH_NMID_FSUBX;	break;
 		case CCXL_BINOP_MUL:	nm1=BGBCC_SH_NMID_FMULX;	break;
+		case CCXL_BINOP_DIV:
+			if(sctx->has_qmul&2)
+				nm1=BGBCC_SH_NMID_FDIVX;
+			break;
 		default:
 			break;
 		}

@@ -4488,8 +4488,13 @@ begin
 
 				if(opExQ)
 				begin
+`ifdef jx2_fpu_longdbl
 					opUCmdIx	= JX2_UCIX_FPU_FADDX;
 					opUCty		= JX2_IUC_WX;
+`else
+					opNmid		= JX2_UCMD_OP_IXT;
+					opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+`endif
 				end
 			end
 			16'h5zz9: begin		/* F0nm_5eo9 */
@@ -4509,8 +4514,13 @@ begin
 
 				if(opExQ)
 				begin
+`ifdef jx2_fpu_longdbl
 					opUCmdIx	= JX2_UCIX_FPU_FSUBX;
 					opUCty		= JX2_IUC_WX;
+`else
+					opNmid		= JX2_UCMD_OP_IXT;
+					opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+`endif
 				end
 			end
 			16'h5zzA: begin		/* F0nm_5eoA */
@@ -4530,8 +4540,13 @@ begin
 
 				if(opExQ)
 				begin
+`ifdef jx2_fpu_longdbl
 					opUCmdIx	= JX2_UCIX_FPU_FMULX;
 					opUCty		= JX2_IUC_WX;
+`else
+					opNmid		= JX2_UCMD_OP_IXT;
+					opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+`endif
 				end
 			end
 
@@ -4561,8 +4576,13 @@ begin
 
 				if(opExQ)
 				begin
+`ifdef jx2_fpu_longdbl
 					opUCmdIx	= JX2_UCIX_FPU_FMACX;
 					opUCty		= JX2_IUC_WX;
+`else
+					opNmid		= JX2_UCMD_OP_IXT;
+					opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+`endif
 				end
 			end
 `endif
@@ -4657,8 +4677,13 @@ begin
 
 				if(opExQ)
 				begin
+`ifdef jx2_fpu_longdbl
 					opUCmdIx	= JX2_UCIX_FPU_FDIVX;
 					opUCty		= JX2_IUC_WX;
+`else
+					opNmid		= JX2_UCMD_OP_IXT;
+					opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+`endif
 				end
 `ifdef jx2_alu_slomuldiv_fdiv
 				if(!opExQ)
@@ -4682,8 +4707,13 @@ begin
 
 				if(opExQ)
 				begin
+`ifdef jx2_fpu_longdbl
 					opUCmdIx	= JX2_UCIX_FPU_FDIVXA;
 					opUCty		= JX2_IUC_WX;
+`else
+					opNmid		= JX2_UCMD_OP_IXT;
+					opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+`endif
 				end
 			end
 `endif

@@ -1791,6 +1791,35 @@ begin
 			end
 `endif
 
+`ifdef jx2_enable_riscv_zilsx
+			if(srRiscv && !noNoRiscV && !srXG2RV && !istrMTagA[0])
+			begin
+				/* pre/post increment */
+				if(decOpRvA_idUFl[3])
+				begin
+					opRegBM	= opRegAM;
+					opRegBO	= JX2_GR_IMM;
+					opRegBN	= opRegAM;
+					opImmB	= opImmA;
+//					opUCmdB	= { opUCmdA[8:6], JX2_UCMD_ALU3 };
+//					opUIxtB	= { JX2_IUC_SC, JX2_UCIX_ALU_ADD };
+
+					opUCmdB	= { opUCmdA[8:6], JX2_UCMD_LEA_MR };
+					opUIxtB	= opUIxtA;
+					opUIxtB[2] = 1;
+
+`ifndef def_true
+					case(decOpRvA_idUIxt[1:0])
+						2'b00: opImmB[9:0] = opImmA[9:0];
+						2'b01: opImmB[9:0] = { opImmA[8:0], 1'b0 };
+						2'b10: opImmB[9:0] = { opImmA[7:0], 2'b0 };
+						2'b11: opImmB[9:0] = { opImmA[6:0], 3'b0 };
+					endcase
+`endif
+				end
+			end
+`endif
+
 
 			if(decOpFzA_idUFl[12])
 				opUCmdC		= { 3'b001, decOpFzA_idUFl[18:13] };
@@ -1887,7 +1916,7 @@ begin
 		if(	(opUCmdA0[5:0] == JX2_UCMD_ALUCMP3R) &&
 			(opRegAN0 == JX2_GR_ZZR))
 		begin
-			/* Remap 3R compare targeting ZR to CMP */
+			/* Remap CMP3R Compares targeting ZZR to CMP */
 			opUCmdA[5:0] = JX2_UCMD_ALUCMP;
 		end
 
@@ -1935,6 +1964,8 @@ begin
 			if(opUCmdA0[5:0] == JX2_UCMD_ALU3)
 				opDualLaneSw	= 1;
 			if(opUCmdA0[5:0] == JX2_UCMD_ALUCMP)
+				opDualLaneSw	= 1;
+			if(opUCmdA0[5:0] == JX2_UCMD_ALUCMP3R)
 				opDualLaneSw	= 1;
 
 			if(	(opUCmdA0[5:0] == JX2_UCMD_SHADQ3) ||

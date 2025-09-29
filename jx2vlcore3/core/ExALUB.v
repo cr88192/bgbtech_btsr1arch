@@ -753,6 +753,12 @@ begin
 		end
 `endif
 
+		4'b0110, 4'b0111: begin
+			tResultu1A = { 1'b0, regValRs[31: 0] };
+			tResultu1B = { 1'b0, regValRs[63:32] };
+			tResultu2A = { 1'b0, regValRs[63: 0] };
+		end
+
 		default: begin
 		end
 	endcase

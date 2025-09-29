@@ -21,6 +21,8 @@
 // `define jx2_enable_riscv_op48	//Enable RISC-V 48-bit ops
 // `define jx2_enable_riscv_op48rep	//Enable RISC-V 48-bit repacked ops
 
+// `define jx2_enable_riscv_zilsx		//Enable RISC-V Zilx/Zisx Extension
+
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 
 // `define jx2_agu_ribound			//Enable AGU Bounds Checks
@@ -125,6 +127,8 @@
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 
 // `define	jx2_mem_lane2			//Allow Loads from Lane 2
+
+`define	jx2_lea_lane2			//Allow LEA from Lane 2
 
 // `define	jx2_mem_misal_movx			//Allow MOV.X to be misaligned
 
@@ -378,6 +382,19 @@
 
 
 `endif
+
+`ifdef	jx2_mem_lane2
+`ifndef	jx2_lea_lane2
+`define	jx2_lea_lane2			//Allow LEA from Lane 2
+`endif
+`endif
+
+`ifdef	jx2_enable_riscv_zilsx
+`ifndef	jx2_lea_lane2
+`define	jx2_lea_lane2			//Allow LEA from Lane 2
+`endif
+`endif
+
 
 `ifdef jx2_enable_vaddr96
 `ifndef jx2_tlb_xtlbe

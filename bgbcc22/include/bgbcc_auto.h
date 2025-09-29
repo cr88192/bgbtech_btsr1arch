@@ -3314,6 +3314,7 @@ int BGBCC_JX2_EmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, i
 int BGBCC_JX2_ProbeEmitOpRegRegReg(BGBCC_JX2_Context *ctx,int nmid, int rs, int rt, int rn);
 int BGBCC_JX2_TryNormalizeXReg(BGBCC_JX2_Context *ctx, int nmid, int rs0);
 int BGBCC_JX2_TryNormalizeXRegToReg(BGBCC_JX2_Context *ctx, int nmid, int rs);
+int BGBCC_JX2_TryNormalizeFXReg(BGBCC_JX2_Context *ctx, int nmid, int rs0);
 int BGBCC_JX2_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rn);
 int BGBCC_JX2_EmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg);
 int BGBCC_JX2_EmitOpImmRegPred(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg, int pfc);
@@ -3445,6 +3446,7 @@ int BGBCC_JX2RV_TryEncJumboOpXRegImm12XReg(BGBCC_JX2_Context *ctx, int rm, s64 i
 int BGBCC_JX2RV_TryEncJumboOpXRegImm12XReg_J33Only(BGBCC_JX2_Context *ctx, int rm, s64 imm, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2RV_TryEncJumboOpXRegXRegXReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2RV_TryEncJumboOpFRegFRegFReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2RV_TryEncJumboOpFxRegFxRegFxReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2RV_TryEncJumboOpFRegFRegXReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2RV_TryEncJumboOpXRegDisp12StXReg(BGBCC_JX2_Context *ctx, int rm, s64 imm, int rn, s64 opwb, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2RV_TryEncJumboSubOpXRegXRegXReg(BGBCC_JX2_Context *ctx, int rm, int ro, int rn, s64 opwb, int sub, s64 *ropw1, s64 *ropw2);

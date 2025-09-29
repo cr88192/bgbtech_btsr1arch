@@ -54,7 +54,8 @@ opUIxt:
 `endif
 `endif
 
-`ifdef jx2_mem_lane2
+// `ifdef jx2_mem_lane2
+`ifdef jx2_lea_lane2
 `include "ExAGUB.v"
 `endif
 
@@ -153,12 +154,16 @@ ExConv2R	exConv2R(regValRs[63:0], opUIxt, regInSr[0], tValCnv, tCnvSrT);
 
 reg				tAguFlagJq;
 wire[47:0]		tValAgu;
+wire[15:0]		tAguLeaTag;
 
-`ifdef jx2_mem_lane2
+//`ifdef jx2_mem_lane2
+`ifdef jx2_lea_lane2
 ExAGUB	exAgu(regValRs[47:0], regValRt[47:0],
 	opUIxt, tValAgu, tAguFlagJq);
+assign	tAguLeaTag = opUIxt[2] ? regValRs[63:48] : UV16_00;
 `else
 assign	tValAgu = UV48_00;
+assign	tAguLeaTag = UV16_00;
 `endif
 
 `ifdef jx2_merge_shadfn
@@ -302,13 +307,16 @@ begin
 //			tSlotUSup		= 0;
 			tSlotUSup		= 1;
 
-`ifdef jx2_mem_lane2
+// `ifdef jx2_mem_lane2
+`ifdef jx2_lea_lane2
 			tSlotUSup		= 0;
 			tRegIdRn1	= regIdRm;
-			tRegValRn1	= { UV16_00, tValAgu };
+			tRegValRn1	= { tAguLeaTag, tValAgu };
 `endif
 
-			if(	(opUIxt[8:6]==JX2_IUC_WX) ||
+//			if(	(opUIxt[8:6]==JX2_IUC_WX) ||
+//				(opUIxt[8:6]==JX2_IUC_WXA))
+			if(	(opUIxt[8:6]==JX2_IUC_WA) ||
 				(opUIxt[8:6]==JX2_IUC_WXA))
 			begin
 //				tRegIdRn1	= regIdRm;

@@ -278,6 +278,19 @@ u16 BJX2_GetFpscr(BJX2_Context *ctx)
 	return(ctx->regs[BJX2_REG_SP]>>48);
 }
 
+void BJX2_Op_EMUTRAP_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->trapc=op->pc;
+//	if(bjx2_fpsoftfl&15)
+	if(1)
+	{
+		ctx->regs[BJX2_REG_PC]=ctx->trapc;
+		ctx->regs[BJX2_REG_TEA]=0;
+		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}
+}
+
 #if 1
 void BJX2_Op_FADDD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -2732,8 +2745,8 @@ void BJX2_Op_FSGNJS_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->ro];
-	vc=	(va&0x7FFFFFFFULL) |
-		(vb&0x80000000ULL) ;
+	vc=	(va&0x7FFFFFFF7FFFFFFFULL) |
+		(vb&0x8000000080000000ULL) ;
 	ctx->regs[op->rn]=vc;
 }
 
@@ -2744,9 +2757,9 @@ void BJX2_Op_FSGNJNS_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->ro];
-	vc=	(va&0x7FFFFFFFULL) |
-		(vb&0x80000000ULL) ;
-	vc^=0x80000000ULL;
+	vc=	(va&0x7FFFFFFF7FFFFFFFULL) |
+		(vb&0x8000000080000000ULL) ;
+	vc^=0x8000000080000000ULL;
 	ctx->regs[op->rn]=vc;
 }
 
@@ -2757,9 +2770,94 @@ void BJX2_Op_FSGNJXS_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	va=ctx->regs[op->rm];
 	vb=ctx->regs[op->ro];
-	vc=	(va&0xFFFFFFFFULL) ^
-		(vb&0x80000000ULL) ;
+	vc=	(va&0xFFFFFFFFFFFFFFFFULL) ^
+		(vb&0x8000000080000000ULL) ;
 	ctx->regs[op->rn]=vc;
+}
+
+
+
+void BJX2_Op_FSGNJH_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	vc=	(va&0x7FFF7FFF7FFF7FFFULL) |
+		(vb&0x8000800080008000ULL) ;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_FSGNJNH_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	vc=	(va&0x7FFF7FFF7FFF7FFFULL) |
+		(vb&0x8000800080008000ULL) ;
+	vc^=0x8000800080008000ULL;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_FSGNJXH_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	vc=	(va&0xFFFFFFFFFFFFFFFFULL) ^
+		(vb&0x8000800080008000ULL) ;
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_FSGNJQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+
+	va=ctx->regs[op->rm+0];
+	ctx->regs[op->rn+0]=va;
+
+	va=ctx->regs[op->rm+1];
+	vb=ctx->regs[op->ro+1];
+	vc=	(va&0x7FFFFFFFFFFFFFFFULL) |
+		(vb&0x8000000000000000ULL) ;
+	ctx->regs[op->rn+1]=vc;
+}
+
+void BJX2_Op_FSGNJNQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+
+	va=ctx->regs[op->rm+0];
+	ctx->regs[op->rn+0]=va;
+
+	va=ctx->regs[op->rm+1];
+	vb=ctx->regs[op->ro+1];
+	vc=	(va&0x7FFFFFFFFFFFFFFFULL) |
+		(vb&0x8000000000000000ULL) ;
+	vc^=0x8000000000000000ULL;
+	ctx->regs[op->rn+1]=vc;
+}
+
+void BJX2_Op_FSGNJXQ_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isnan;
+
+	va=ctx->regs[op->rm+0];
+	ctx->regs[op->rn+0]=va;
+
+	va=ctx->regs[op->rm+1];
+	vb=ctx->regs[op->ro+1];
+	vc=	(va&0xFFFFFFFFFFFFFFFFULL) ^
+		(vb&0x8000000000000000ULL) ;
+	ctx->regs[op->rn+1]=vc;
 }
 
 
