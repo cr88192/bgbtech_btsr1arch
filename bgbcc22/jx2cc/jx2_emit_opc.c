@@ -3891,7 +3891,8 @@ int BGBCC_JX2_TryNormalizeXRegToReg(
 	if(rs&1)
 	{
 		if(rs&32)
-			{ BGBCC_DBGBREAK }
+			return(-1);
+//			{ BGBCC_DBGBREAK }
 		rn=0x20|(rs&0x1E);
 		return(rn);
 	}
@@ -3908,7 +3909,8 @@ int BGBCC_JX2_TryNormalizeFXReg(
 //	if((rs0>=0) && (rs0<=31))
 //		return(rs0);
 	
-	rs1=BGBCC_JX2_TryNormalizeXRegToReg(ctx, nmid, rs0);
+//	rs1=BGBCC_JX2_TryNormalizeXRegToReg(ctx, nmid, rs0);
+	rs1=BGBCC_JX2_NormalizeReg(ctx, rs0);
 	if((rs1<0) || (rs1&1))
 		return(-1);
 	

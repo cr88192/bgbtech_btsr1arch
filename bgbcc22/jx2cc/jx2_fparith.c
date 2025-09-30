@@ -1152,7 +1152,7 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegFloat(
 
 		if(sctx->emit_riscv&0x11)
 		{
-			if(swst)
+			if(!swst)
 				BGBCC_JX2_EmitOpRegRegReg(sctx, nm1, csreg, ctreg, cdreg);
 			else
 				BGBCC_JX2_EmitOpRegRegReg(sctx, nm1, ctreg, csreg, cdreg);
@@ -1409,7 +1409,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 
 		if(sctx->emit_riscv&0x11)
 		{
-			if(!sw)
+			if(sw)
 				BGBCC_JX2_EmitOpRegRegReg(sctx,
 					nm1, ctreg, csreg, BGBCC_JX2CC_PSREG_TS0);
 			else
