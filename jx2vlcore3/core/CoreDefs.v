@@ -879,7 +879,10 @@ IMM8REG, RVI
 	UL: -
 	UQ: Rn, Imm32lc, Rn
 
-
+REGREG, RVC:
+	SB: Rn, Rm, Rn
+	SW: Rm, Rn, Rn
+	UB: Rn3, Rm3, Rn3
 
 LDREGDISPREG, RVC:
 	SB: (Rn3, Disp4u), Rm3
@@ -890,6 +893,8 @@ LDREGDISPREG, RVC:
 IMM8REG, RVC
 	SB: Rn5, Imm6alu, Rn5
 	SW: Rn5, Imm6lui, Rn5
+	SL: ZZR, Imm6alu, Rn5
+	SQ: ZZR, Imm6lui, Rn5
 
 	UB: Rn5, Imm6a16sp, Rn5
 	UW: Rn3, Imm6alu, Rn3
@@ -1981,6 +1986,7 @@ parameter[7:0] JX2_BRA_FLUSHMSK	= 8'h0F;		//
 
 // parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h3F;		//
 parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'h7F;		//
+// parameter[7:0] JX2_BRA_FLUSHMSK_XTRA	= 8'hFF;		//
 
 `include "ExModKrrKeys.v"
 

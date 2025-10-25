@@ -667,6 +667,10 @@ reg[3:0]		id1IstrSxo;
 	reg[63:0]		id2ValFetchSr;
 (* max_fanout = 200 *)
 	reg[63:0]		ex1ValFetchSr;
+// (* max_fanout = 200 *)
+//	reg[63:0]		ex2ValFetchSr;
+// (* max_fanout = 200 *)
+// 	reg[63:0]		ex3ValFetchSr;
 
 reg[1:0]		id2PreBra;
 
@@ -1294,6 +1298,8 @@ RegGPR regGpr(
 `reg_gprval	crValCn3;		//Destination Value (EX3)
 `reg_gpr	crIdCn4;		//Destination ID (EX4/WB)
 `reg_gprval	crValCn4;		//Destination Value (EX4/WB)
+reg[31:0]	crValSr4;
+
 wire[47:0]	crOutPc;
 reg [47:0]	crInPc;
 wire[63:0]	crOutLr;
@@ -1370,6 +1376,7 @@ RegCR regCr(
 	crValCn3,		//Destination Value (EX3)
 	crIdCn4,		//Destination ID (EX4/WB)
 	crValCn4,		//Destination Value (EX4/WB)
+	crValSr4,		//Status Register in EX4
 
 	gprEx1Flush,	//Flush EX1
 	gprEx2Flush,	//Flush EX2
@@ -5540,8 +5547,8 @@ begin
 		endcase
 //		crInVbr[51:50]=crInSr[27:26];
 		if(crInSr[27:26]!=crOutSr[27:26])
-			$display("ExUnit: Trigger RV Mode, %X->%X",
-				crOutSr[27:26], crInSr[27:26]);
+			$display("ExUnit: Trigger RV Mode, %X->%X, SR=%X->%X",
+				crOutSr[27:26], crInSr[27:26], crOutSr, crInSr);
 	end
 `endif
 
@@ -5726,6 +5733,8 @@ begin
 	crValCn4		= ex3RegValRn4;
 
 `endif
+
+	crValSr4		= ex3RegInLastSr;
 
 	gprEx1Flush = ex1BraFlush || ex1TrapFlush;
 	gprEx2Flush = ex2BraFlush || ex2TrapFlush;
@@ -6291,6 +6300,8 @@ begin
 //		ex1Timers		<= timers[11:0];
 		ex1Timers		<= { timers[11:1], memOpmIn[15] };
 
+		ex1ValFetchSr	<= id2ValFetchSr;
+
 `ifdef jx2_cpu_pred_id2
 
 		if((ex1OpUCmd2[5:0] != ex1OpUCmd[5:0]) &&
@@ -6455,6 +6466,8 @@ begin
 		ex1RegValLr		<= id2RegValLr;
 		ex1RegValDlr	<= id2RegValDlr;
 		ex1RegValDhr	<= id2RegValDhr;
+
+//		ex1ValFetchSr	<= id2ValFetchSr;
 
 //		ex1RegValSp		<=
 //			(ex1RegIdRn1==JX2_GR_SP) ?

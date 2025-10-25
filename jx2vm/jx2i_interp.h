@@ -895,6 +895,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_FMID_IMMBREGPCDISP		0x30		//ImmB, Reg, (PC, disp)
 #define BJX2_FMID_IMMBSTREGDISP1	0x31		//ImmB, (Rn, Disp1)
 
+#define BJX2_FMID_REGLDINCREG		0x32		//@Rm+, Rn
+
 
 #define BJX2_FLAG_SR_T			0x00000001ULL
 #define BJX2_FLAG_SR_S			0x00000002ULL

@@ -2491,6 +2491,231 @@ ccxl_status BGBCC_CCXL_StackLoadIndexAddr(BGBCC_TransState *ctx)
 	return(CCXL_STATUS_YES);
 }
 
+ccxl_status BGBCC_CCXL_StackLoadPostAdjNameI(
+	BGBCC_TransState *ctx, int idx, int adj, char *name)
+{
+	ccxl_register treg, dreg, dreg2, sreg, sreg2;
+	ccxl_type bty, bty2, sty, sty2;
+	int i, j, k;
+
+	i=BGBCC_CCXL_LookupAsRegister(ctx, name, &sreg);
+	j=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg2);
+	if((i<=0) || (j<=0))
+	{
+		if(i==CCXL_STATUS_NO)
+			return(CCXL_STATUS_ERR_LOOKUPFAIL);
+		return(CCXL_STATUS_ERR_GENERIC);
+	}
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
+	BGBCC_CCXL_TypeAutoPromoteType(ctx, bty, &bty2);
+
+	BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &dreg);
+
+	if(ctx->arch_has_autoinc)
+	{
+		BGBCC_CCXL_EmitLoadIndexAdjImm(ctx, bty, dreg, dreg2, sreg, idx, adj);
+	}else
+	{
+		BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg, sreg, idx);
+		BGBCC_CCXL_EmitLeaImm(ctx, bty, dreg2, sreg, 1);
+	}
+
+	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+//		BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+	BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackLoadPostAdjNameStoreI(
+	BGBCC_TransState *ctx, int idx, int adj,
+	char *name, char *dstname)
+{
+	ccxl_register treg, dreg, dreg2, sreg, sreg2;
+	ccxl_type bty, bty2, sty, sty2, dty;
+	int istreg;
+	int i, j, k;
+
+	i=BGBCC_CCXL_LookupAsRegister(ctx, name, &sreg);
+	j=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg2);
+	k=BGBCC_CCXL_LookupAsRegisterStore(ctx, dstname, &dreg);
+	if((i<=0) || (j<=0) || (k<=0))
+	{
+		if(i==CCXL_STATUS_NO)
+			return(CCXL_STATUS_ERR_LOOKUPFAIL);
+		return(CCXL_STATUS_ERR_GENERIC);
+	}
+
+	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
+	bty=BGBCC_CCXL_GetRegDerefType(ctx, sreg);
+	BGBCC_CCXL_TypeAutoPromoteType(ctx, bty, &bty2);
+
+	dty=BGBCC_CCXL_GetRegType(ctx, dreg);
+
+	if(!BGBCC_CCXL_TypeCompatibleArchP(ctx, dty, bty2))
+	{
+		BGBCC_CCXL_RegisterAllocTemporaryInit(ctx, bty2, &treg);
+		if(ctx->arch_has_autoinc)
+		{
+			BGBCC_CCXL_EmitLoadIndexAdjImm(ctx, bty,
+				treg, dreg2, sreg, idx, adj);
+		}else
+		{
+			BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, treg, sreg, idx);
+			BGBCC_CCXL_EmitLeaImm(ctx, bty, dreg2, sreg, 1);
+		}
+		BGBCC_CCXL_EmitConv(ctx, dty, bty2, dreg, treg);
+		BGBCC_CCXL_RegisterCheckRelease(ctx, treg);
+	}else
+	{
+		if(ctx->arch_has_autoinc)
+		{
+			BGBCC_CCXL_EmitLoadIndexAdjImm(ctx, bty,
+				dreg, dreg2, sreg, idx, adj);
+		}else
+		{
+			BGBCC_CCXL_EmitLoadIndexImm(ctx, bty, dreg, sreg, idx);
+			BGBCC_CCXL_EmitLeaImm(ctx, bty, dreg2, sreg, 1);
+		}
+	}
+
+//	BGBCC_CCXL_PushRegister(ctx, dreg);
+
+	BGBCC_CCXL_RegisterCheckRelease(ctx, sreg);
+	BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+	BGBCC_CCXL_RegisterCheckRelease(ctx, dreg2);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackLoadPostAdjName(
+	BGBCC_TransState *ctx, int idx, int adj, char *name)
+{
+	BGBCC_CCXL_DebugPrintStackLLn(ctx,
+		"StackLoadPostAdjName", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDPACN);
+	BGBCC_CCXLR3_EmitArgInt(ctx, idx);
+	BGBCC_CCXLR3_EmitArgInt(ctx, adj);
+	BGBCC_CCXLR3_EmitArgSymbol(ctx, name);
+	
+	BGBCC_CCXL_StackLoadPostAdjNameI(ctx, idx, adj, name);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackLoadPostAdjNameStore(
+	BGBCC_TransState *ctx, int idx, int adj, char *name, char *dstname)
+{
+	BGBCC_CCXL_DebugPrintStackLLn(ctx,
+		"StackLoadPostAdjNameStore", __FILE__, __LINE__);
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_LDPACNST);
+	BGBCC_CCXLR3_EmitArgInt(ctx, idx);
+	BGBCC_CCXLR3_EmitArgInt(ctx, adj);
+	BGBCC_CCXLR3_EmitArgSymbol(ctx, name);
+	BGBCC_CCXLR3_EmitArgSymbol(ctx, dstname);
+	
+	BGBCC_CCXL_StackLoadPostAdjNameStoreI(ctx, idx, adj, name, dstname);
+	return(CCXL_STATUS_YES);
+}
+
+
+ccxl_status BGBCC_CCXL_StackStorePostAdjName(
+	BGBCC_TransState *ctx, int idx, int adj, char *name)
+{
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackLoadPostIncName(
+	BGBCC_TransState *ctx, int idx, char *name)
+{
+	if(1)
+	{
+		BGBCC_CCXL_StackLoadPostAdjName(ctx, idx, 1, name);
+		return(CCXL_STATUS_YES);
+	}
+
+	BGBCC_CCXL_PushLoad(ctx, name);
+	BGBCC_CCXL_StackDupClean(ctx);
+	BGBCC_CCXL_StackLoadIndexConst(ctx, idx);
+	BGBCC_CCXL_StackExch(ctx);
+	BGBCC_CCXL_StackUnaryOpStore(ctx, "++", name);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackLoadPostDecName(
+	BGBCC_TransState *ctx, int idx, char *name)
+{
+	if(1)
+	{
+		BGBCC_CCXL_StackLoadPostAdjName(ctx, idx, -1, name);
+		return(CCXL_STATUS_YES);
+	}
+
+	BGBCC_CCXL_PushLoad(ctx, name);
+	BGBCC_CCXL_StackDupClean(ctx);
+	BGBCC_CCXL_StackLoadIndexConst(ctx, idx);
+	BGBCC_CCXL_StackExch(ctx);
+	BGBCC_CCXL_StackUnaryOpStore(ctx, "--", name);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackLoadPostIncNameStore(
+	BGBCC_TransState *ctx, int idx, char *name, char *dstname)
+{
+	if(1)
+	{
+		BGBCC_CCXL_StackLoadPostAdjNameStore(ctx, idx, 1, name, dstname);
+		return(CCXL_STATUS_YES);
+	}
+
+	BGBCC_CCXL_PushLoad(ctx, name);
+	BGBCC_CCXL_StackDupClean(ctx);
+//	BGBCC_CCXL_StackDupB(ctx);
+	BGBCC_CCXL_StackLoadIndexConstStore(ctx, idx, dstname);
+	BGBCC_CCXL_StackUnaryOpStore(ctx, "++", name);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackLoadPostDecNameStore(
+	BGBCC_TransState *ctx, int idx, char *name, char *dstname)
+{
+	if(1)
+	{
+		BGBCC_CCXL_StackLoadPostAdjNameStore(ctx, idx, -1, name, dstname);
+		return(CCXL_STATUS_YES);
+	}
+
+	BGBCC_CCXL_PushLoad(ctx, name);
+	BGBCC_CCXL_StackDupClean(ctx);
+	BGBCC_CCXL_StackLoadIndexConstStore(ctx, idx, dstname);
+	BGBCC_CCXL_StackUnaryOpStore(ctx, "--", name);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackStorePostIncName(
+	BGBCC_TransState *ctx, int idx, char *name)
+{
+	BGBCC_CCXL_PushLoad(ctx, name);
+	BGBCC_CCXL_StackDupB(ctx);
+	BGBCC_CCXL_StackUnaryOpStore(ctx, "++", name);
+	BGBCC_CCXL_StackStoreIndexConst(ctx, idx);
+	return(CCXL_STATUS_YES);
+}
+
+ccxl_status BGBCC_CCXL_StackStorePostDecName(
+	BGBCC_TransState *ctx, int idx, char *name)
+{
+	BGBCC_CCXL_PushLoad(ctx, name);
+	BGBCC_CCXL_StackDupB(ctx);
+	BGBCC_CCXL_StackUnaryOpStore(ctx, "--", name);
+	BGBCC_CCXL_StackStoreIndexConst(ctx, idx);
+	return(CCXL_STATUS_YES);
+}
+
+
 #if 0
 ccxl_status BGBCC_CCXL_StackDup(BGBCC_TransState *ctx)
 {

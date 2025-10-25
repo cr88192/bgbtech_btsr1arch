@@ -957,6 +957,7 @@ byte arch_has_predops;	//arch has predicated instructions
 
 byte arch_has_imac;		//arch has integer multiply-accumulate
 byte arch_has_fmac;		//arch has floating point multiply-accumulate
+byte arch_has_autoinc;	//arch has auto-increment addressing
 
 byte opt_ptrcache;		//enable caching struct and pointer accesses.
 

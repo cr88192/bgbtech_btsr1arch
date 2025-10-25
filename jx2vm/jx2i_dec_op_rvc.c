@@ -544,9 +544,12 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 					op->fl|=BJX2_OPFL_NOWEX|BJX2_OPFL_NOWEXSFX;
 				}else
 				{
-					op->nmid=BJX2_NMID_SYSCALL;
+					op->nmid=BJX2_NMID_BREAK;
+					op->Run=BJX2_Op_BREAK_None;
+
+//					op->nmid=BJX2_NMID_SYSCALL;
 					op->fmid=BJX2_FMID_Z;
-					op->Run=BJX2_Op_SYSCALL_None;
+//					op->Run=BJX2_Op_SYSCALL_None;
 					op->fl|=BJX2_OPFL_CTRLF;
 					op->fl|=BJX2_OPFL_NOWEX;
 					op->fl|=BJX2_OPFL_NOWEXSFX;
@@ -572,8 +575,15 @@ int BJX2_DecodeOpcode_DecRVC(BJX2_Context *ctx,
 					op->fl|=BJX2_OPFL_NOWEX|BJX2_OPFL_NOWEXSFX;
 				}else
 				{
-					op->nmid=BJX2_NMID_NOP;
-					op->Run=BJX2_Op_NOP_None;
+//					op->nmid=BJX2_NMID_NOP;
+//					op->Run=BJX2_Op_NOP_None;
+
+					op->nmid=BJX2_NMID_SYSCALL;
+					op->fmid=BJX2_FMID_Z;
+					op->Run=BJX2_Op_SYSCALL_None;
+					op->fl|=BJX2_OPFL_CTRLF;
+					op->fl|=BJX2_OPFL_NOWEX;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
 				}
 			}
 			break;

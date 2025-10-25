@@ -644,6 +644,8 @@ begin
 		tIsBra20	= 0;
 		tIsRtsu		= 0;
 		tIsRtsR1	= 0;
+		tIsRtsuFz	= 0;
+		tIsRtsR1Fz	= 0;
 	end
 	if(pipeHasLr[4])
 	begin
@@ -916,6 +918,12 @@ begin
 			tPreBra		= 0;
 		end
 	end
+
+//	if(pipeHasLr[4])
+//	begin
+//		tNonBra		= 1;
+//		tPreBra		= 0;
+//	end
 `endif
 
 `ifdef jx2_prebra_rtsu

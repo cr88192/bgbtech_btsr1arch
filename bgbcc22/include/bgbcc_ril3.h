@@ -191,3 +191,14 @@
 // #define BGBCC_RIL3OP_LDBITLOADINT	0x9D
 
 #define BGBCC_RIL3OP_JMPTABZ	0x9C	//Jump Table (Masked)
+
+#define BGBCC_RIL3OP_LDPACNST	0x9D	//LoadPostAdjNameStore
+#define BGBCC_RIL3OP_LDPACN		0x9E	//LoadPostAdjName
+#define BGBCC_RIL3OP_STPACN		0x9F	//StorePostAdjName
+
+//#define BGBCC_RIL3OP_LDPICNST	0x9E	//LoadPostIncNameStore
+//#define BGBCC_RIL3OP_LDPDCNST	0x9F	//LoadPostDecNameStore
+//#define BGBCC_RIL3OP_LDPICN		0xA0	//LoadPostIncName
+//#define BGBCC_RIL3OP_STPICN		0xA1	//StorePostIncName
+//#define BGBCC_RIL3OP_LDPDCN		0xA2	//LoadPostDecName
+//#define BGBCC_RIL3OP_STPDCN		0xA3	//StorePostDecName

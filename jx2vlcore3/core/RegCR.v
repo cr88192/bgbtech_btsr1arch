@@ -40,6 +40,8 @@ module RegCR(
 	regIdCn4,		//Destination ID (EX4/WB)
 	regValCn4,		//Destination Value (EX4/WB)
 
+	regValSr4,
+
 	regEx1Flush,
 	regEx2Flush,
 	regEx3Flush,
@@ -100,6 +102,8 @@ input			regEx3Flush;
 
 `input_gpr		regIdCn4;		//Destination ID
 `input_gprval	regValCn4;		//Destination Value
+
+input[31:0]		regValSr4;
 
 input [47:0]	gprValPc;		//PC Value (Synthesized)
 
@@ -189,7 +193,7 @@ reg[47:0]	crRegPcHi;
 reg[47:0]	crRegLrHi;
 reg[47:0]	crRegSpcHi;
 
-reg[47:0]	crRegVbrHi;
+// reg[47:0]	crRegVbrHi;
 reg[47:0]	crRegGbrHi;
 // reg[47:0]	crRegTbrHi;
 `endif
@@ -245,7 +249,8 @@ assign	regOutLrHi	= crRegLrHi;
 
 assign	regOutSpcHi	= crRegSpcHi;
 
-assign	regOutVbrHi	= crRegVbrHi;
+// assign	regOutVbrHi	= crRegVbrHi;
+assign	regOutVbrHi	= UV64_00;
 assign	regOutGbrHi	= crRegGbrHi;
 // assign	regOutTbrHi	= crRegTbrHi;
 
@@ -265,6 +270,10 @@ reg[15:0]		regValCn2B_16h;		//Destination Value
 	reg[63:0]		tRegInLr;
 (* max_fanout = 200 *)
 	reg				tResetL;
+
+wire		tIsUMode;
+// assign	tIsUMode = !crRegSr[30];
+assign	tIsUMode = !(crRegSr[30] || regValSr4[30]);
 
 always @*
 begin
@@ -337,6 +346,16 @@ begin
 		JX2_CR_SR:		tValCmA=crRegSr;
 		JX2_CR_EXSR:	tValCmA=crRegExsr;
 
+`ifdef jx2_enable_vaddr96
+		JX2_GR_PC_HI:	tValCmA={UV16_00, crValPcHi};
+		JX2_GR_SPC_HI:	tValCmA={UV16_00, crRegSpcHi};
+		JX2_GR_GBR_HI:	tValCmA={UV16_00, crRegGbrHi};
+`else
+		JX2_GR_PC_HI:	tValCmA=UV64_00;
+		JX2_GR_SPC_HI:	tValCmA=UV64_00;
+		JX2_GR_GBR_HI:	tValCmA=UV64_00;
+`endif
+
 `ifdef jx2_enable_vaddr48
 //		JX2_CR_PC:		tValCmA={UV16_00, crRegPc};
 		JX2_CR_PC:		tValCmA={UV16_00, gprValPc};
@@ -347,8 +366,18 @@ begin
 		JX2_CR_SPC:		tValCmA={UV16_00, crRegSpc};
 		JX2_CR_SSP:		tValCmA={UV16_00, crRegSsp};
 //		JX2_CR_GBR:		tValCmA={UV16_00, crRegGbr};
+
+`ifdef jx2_fpu_fpsr_gbr
 		JX2_CR_GBR:		tValCmA={crRegFpsr, crRegGbr};
+`else
+		JX2_CR_GBR:		tValCmA={UV16_00, crRegGbr};
+`endif
+
+`ifdef jx2_fpu_fpsr_tbr
+		JX2_CR_TBR:		tValCmA={crRegFpsr, crRegTbr};
+`else
 		JX2_CR_TBR:		tValCmA={UV16_00, crRegTbr};
+`endif
 //		JX2_CR_TEA:		tValCmA={UV16_00, crRegTea};
 		JX2_CR_TEA:		tValCmA=crRegTea;
 
@@ -454,7 +483,7 @@ begin
 		crRegPcHi		<= UV48_00;
 		crRegLrHi		<= UV48_00;
 		crRegGbrHi		<= UV48_00;
-		crRegVbrHi		<= UV48_00;
+//		crRegVbrHi		<= UV48_00;
 `endif
 
 	end
@@ -491,29 +520,84 @@ begin
 //		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B_48b : tRegInLr;
 //		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B     : tRegInLr;
 		crRegLr		<= (regIdCn2B==JX2_CR_LR  ) ? regValCn2B     : crRegLr;
-		crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2B_48b : regInSpc;
-		crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2B_48b : regInSsp;
-//		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B_48b : regInTea;
-		crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B     : regInTea;
+
+		if(!tIsUMode)
+//		if(1'b1)
+		begin
+			crRegSpc	<= (regIdCn2B==JX2_CR_SPC ) ? regValCn2B_48b : regInSpc;
+			crRegSsp	<= (regIdCn2B==JX2_CR_SSP ) ? regValCn2B_48b : regInSsp;
+//			crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B_48b : regInTea;
+			crRegTea	<= (regIdCn2B==JX2_CR_TEA ) ? regValCn2B     : regInTea;
+			crRegVbr	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_48b : crRegVbr;
+			crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_48b : crRegTbr;
 
 `ifdef jx2_enable_vaddr96
-		crRegTeaHi	<= (regIdCn2B==JX2_CR_TEAH) ? regValCn2B     : regInTeaHi;
+			crRegTeaHi	<= (regIdCn2B==JX2_CR_TEAH) ? regValCn2B : regInTeaHi;
 `else
-		crRegTeaHi	<= 0;
+			crRegTeaHi	<= 0;
 `endif
 
-		crRegVbr	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_48b : crRegVbr;
+			crRegVbrCm	<= (regIdCn2B==JX2_CR_VBR ) ?
+				regValCn2B_16h : crRegVbrCm;
+
+		end
+		else
+		begin
+			crRegSpc	<= regInSpc;
+			crRegSsp	<= regInSsp;
+			crRegTea	<= regInTea;
+`ifdef jx2_enable_vaddr96
+			crRegTeaHi	<= regInTeaHi;
+`else
+			crRegTeaHi	<= 0;
+`endif
+		end
+
 		crRegGbr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_48b : crRegGbr;
-		crRegTbr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_48b : crRegTbr;
+
+`ifdef jx2_fpu_fpsr_tbr
+		crRegFpsr	<= (regIdCn2B==JX2_CR_TBR ) ? regValCn2B_16h : regInFpsr;
+`endif
+
 `ifdef jx2_fpu_fpsr_sp
 		crRegFpsr	<= (regIdCn2B==JX2_CR_SP  ) ? regValCn2B_16h : regInFpsr;
-`else
+`endif
+
+`ifdef jx2_fpu_fpsr_gbr
 		crRegFpsr	<= (regIdCn2B==JX2_CR_GBR ) ? regValCn2B_16h : regInFpsr;
 `endif
-		crRegVbrCm	<= (regIdCn2B==JX2_CR_VBR ) ? regValCn2B_16h : crRegVbrCm;
+
+`endif
+
+`ifdef def_true
+		if(tIsUMode)
+		begin
+			if((regIdCn2B==JX2_CR_TBR ) && (regValCn2B_48b!=crRegTbr))
+			begin
+				$display("RegCR: Attempt Modify CR.TBR in UMode %X != %X",
+					regValCn2B_48b, crRegTbr);
+				$display("RegCR: SR=%X:%X", crRegSr[63:32], crRegSr[31:0]);
+			end
+		
+			if(	(regIdCn2B==JX2_CR_TTB ) ||
+				(regIdCn2B==JX2_CR_MMCR) ||
+				(regIdCn2B==JX2_CR_STTB) ||
+				(regIdCn2B==JX2_CR_KRR ) ||
+				(regIdCn2B==JX2_CR_SPC ) ||
+				(regIdCn2B==JX2_CR_SSP ) ||
+				(regIdCn2B==JX2_CR_TEA ) ||
+				(regIdCn2B==JX2_CR_VBR ) ||
+				(regIdCn2B==JX2_CR_VIPT) )
+			begin
+				$display("RegCR: Attempt Modify CR in UMode %X", regIdCn2B);
+				$display("RegCR: SR=%X:%X", crRegSr[63:32], crRegSr[31:0]);
+			end
+		end
+//		else
 `endif
 
 		if(!disableTlb)
+//		if(!disableTlb && !tIsUMode)
 		begin
 `ifdef jx2_enable_mmu
 			crRegTtb	<= (regIdCn2B==JX2_CR_TTB ) ?
@@ -546,8 +630,8 @@ begin
 			crRegLrHi	<= 0;
 			crRegGbrHi	<= (regIdCn2B==JX2_GR_GBR_HI) ?
 				regValCn2B_48b : crRegGbrHi;
-			crRegVbrHi	<= (regIdCn2B==JX2_GR_VBR_HI) ?
-					regValCn2B_48b : crRegVbrHi;
+//			crRegVbrHi	<= (regIdCn2B==JX2_GR_VBR_HI) ?
+//					regValCn2B_48b : crRegVbrHi;
 			crRegSpcHi	<= (regIdCn2B==JX2_GR_SPC_HI) ?
 				regValCn2B_48b : crRegSpcHi;
 `endif
@@ -566,7 +650,7 @@ begin
 			crRegPcHi	<= 0;
 			crRegLrHi	<= 0;
 			crRegGbrHi	<= 0;
-			crRegVbrHi	<= 0;
+//			crRegVbrHi	<= 0;
 			crRegSpcHi	<= 0;
 `endif
 		end

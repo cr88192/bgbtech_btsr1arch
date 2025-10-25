@@ -99,7 +99,7 @@
 
 `ifndef jx2_xc7s50
 `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
-`define	jx2_use_mem_ldop		//Load/Store Operations
+// `define	jx2_use_mem_ldop		//Load/Store Operations
 `endif
 
 `ifndef jx2_xc7s50
@@ -122,7 +122,9 @@
 
 `endif
 
-`define	jx2_fpu_fpsr_sp			//FPSR is in SP(63:48)
+// `define	jx2_fpu_fpsr_gbr		//FPSR is in GBR(63:48)
+// `define	jx2_fpu_fpsr_sp			//FPSR is in SP(63:48)
+`define	jx2_fpu_fpsr_tbr		//FPSR is in TBR(63:48)
 
 `define	jx2_fpu_lane2			//Allow FPU from Lane 2
 

@@ -275,7 +275,8 @@ u64 BJX2_FDivSoft(u64 va, u64 vb)
 u16 BJX2_GetFpscr(BJX2_Context *ctx)
 {
 //	return(ctx->regs[BJX2_REG_GBR]>>48);
-	return(ctx->regs[BJX2_REG_SP]>>48);
+//	return(ctx->regs[BJX2_REG_SP]>>48);
+	return(ctx->regs[BJX2_REG_TBR]>>48);
 }
 
 void BJX2_Op_EMUTRAP_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)

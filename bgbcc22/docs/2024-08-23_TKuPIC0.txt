@@ -1,0 +1,165 @@
+UPIC: Tiny JPEG like Image Compressor.
+* Use Rice coding and Block Haar.
+* May define an HDR variant, UPIC-H
+
+Top Level:
+* Will use TLV Tags
+** FOURCC, Bitwise Inverted Length
+** Length includes the Tag.
+
+'qtab': Quantization Table
+* Nominally 65 bytes.
+* First byte identifies table (1=Y/A, 2=U/V);
+* Remaining 64 bytes will give the quantization factors.
+* UPIC-H: Will use 129 bytes, Each factor being 16 bits.
+
+'imgd': Image Data
+* Consists of entropy coded macroblocks.
+* Entropy coded data begins immediately within the tag.
+
+'uphd': Image Header
+* WORD xSize;	//image width (pixels)
+* WORD ySize;	//image height (pixels)
+* BYTE mbForm;	//macroblock layout
+* BYTE pxForm;	//pixel format
+* BYTE resvMbz[18]; //reserved, must be zero for now.
+
+
+Bitstream:
+* LSB First
+* AdRice+STF
+
+Rice:
+* Q Prefix
+** Consists of 0 to 8 one bits.
+* If Q<8:
+** Q prefix is terminated by a zero bit.
+** Followed by a K bit suffix (R).
+** Value is (Q SHL K) OR R
+* If Q==8:
+** No zero bit.
+** Directly followed by a raw 8 bit symbol.
+
+AdRice:
+* The K value is adapted based on Q:
+** Q=0: if(K>0) K--
+** Q>1: K++
+* Default initial K will be 4.
+
+STF:
+* Rice encodes an index into a table of symbols.
+* Each encoded symbol is swapped towards the front (lower index).
+* Next Index: I1=(I0*15)/16
+
+Initial State of the DC STF Table:
+* Symbols 00..FF in ascending order.
+
+Initial State of the AC STF Table:
+* The Z3 and R5 Bits are reordered.
+* I = Z,Z,Z,R,R,R,R,R => J = R,Z,R,Z.R,Z,R,R
+* Table at index J holds I
+
+
+Coefficients:
+* Z3R5
+** Z = 3 bit Zero Count
+** R = 5 bit Range Prefix
+* Symbols are encoded with AdRice+STF with separate DC and AC contexts.
+** The Y, U, V, and A blocks all share the same DC and AC contexts AdRice+STF.
+* The first coefficient in each 8x8 block is the DC coefficient.
+** Its value will be predicted using on the prior DC coefficient from the same channel.
+** In effect, it is encoded as a delta from the last DC coefficient.
+* The DC will be followed by the AC coefficients encoded in ZigZag order.
+** Each AC coefficient may be preceded by 0 to 7 zeroes.
+* If both Z and R are zero in an AC Coefficient
+** This will encode an End of Block.
+** The rest of the block will be filled with zeroes.
+* This symbol may be followed by 0 or more extra bits.
+** This will encode a value according to the Prefix Table.
+
+
+Prefix Table (Prefix, Extra Bits, Value Range)
+*  0..3,  0, 0000..0003
+* 04/05,  1, 0004..0007
+* 06/07,  2, 0008..000F
+* 08/09,  3, 0010..001F
+* 0A/0B,  4, 0020..003F
+* 0C/0D,  5, 0040..007F
+* 0E/0F,  6, 0080..00FF
+* 10/11,  7, 0100..01FF
+* 12/13,  8, 0200..03FF
+* 14/15,  9, 0400..07FF
+* 16/17, 10, 0800..0FFF
+* 18/19, 11, 1000..1FFF
+* 1A/1B, 12, 2000..3FFF
+* 1C/1D, 13, 4000..7FFF
+* 1E/1F, 14, 8000..FFFF
+
+The higher table entries will be modified in the case of the UPIC-H variant:
+* 18, 12, 01000..01FFF
+* 19, 13, 02000..03FFF
+* 1A, 14, 04000..07FFF
+* 1B, 15, 08000..0FFFF
+* 1C, 16, 10000..1FFFF
+* 1D, 17, 20000..3FFFF
+* 1E, 18, 40000..7FFFF
+* 1F, 19, 80000..FFFFF
+
+
+Each coefficient will be scaled by the Quantization Table values, in effect it will be stored in a form where it is divided by the quantization table value.
+
+Note that if present, the A channel will use the Y channel quantization table.
+
+Coefficients will be encoded in ZigZag order:
+*  0  1  5  6 14 15 27 28
+*  2  4  7 13 16 26 29 42
+*  3  8 12 17 25 30 41 43
+*  9 11 18 24 31 40 44 53
+* 10 19 23 32 39 45 52 54
+* 20 22 33 38 46 51 55 60
+* 21 34 37 47 50 56 59 61
+* 35 36 48 49 57 58 62 63
+
+
+
+Block Haar:
+* Works in 8 element Horizontal and Vertical steps.
+* Iteratively applies the Transform (A, B) to ((A+B)/2, A-B)
+** I0, I1, I2, I3, I4, I5, I6, I7
+** J0=(I0+I1)/2, J1=(I2+I3/2), ..., J4=I0-I1, J5=I2-I3, ...
+** K0=(J0+J1)/2, ..., K2=J0-J1, ...
+** L0=(K0+K1)/2, L1=K0-K1
+** Out: L0, L1, K2, K3, J4, J5, J6, J7
+* Decoding will reverse this process:
+** B=C-(D>>1), A=C+D
+
+
+Colorspace:
+* Y=(2*G+R+B)/4, U=B-G, V=R-G
+* G=Y-(U+V)/4, B=U+G, R=V+G
+
+
+Macroblock Layouts:
+* 0: Mono-Y
+** Y Y Y Y
+* 1: YUV 4:2:0
+** Y Y Y Y U V
+* 2: YUV 4:4:4
+** Y Y Y Y U U U U V V V V
+* 3: YUVA 4:4:4:4
+** Y Y Y Y U U U U V V V V A A A A
+
+When there are 4 blocks of a type in a macroblock, they will be encoded in Hilbert order.
+* 0 1
+* 2 3
+* Will be encoded as 0 2 3 1
+
+Pixel Format:
+* 0: Linear 8-bit RGB (LDR)
+* 1: E4.M4 (8-bit HDR)
+* 2: E5.M7 (12-bit HDR)
+* 3: S.E5.M10 (FP16 / 16-bit HDR, UPIC-H)
+
+For encoding FP16, an additional transform step will be used on image components:
+* 0000..7FFF: Mapped as-is.
+* 8000..FFFF: XOR'ed with 0xFFFF7FFF (Mapped Negative)

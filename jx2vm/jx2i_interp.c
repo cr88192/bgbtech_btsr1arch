@@ -3107,6 +3107,62 @@ int BJX2_DbgPrintFpRegs(BJX2_Context *ctx)
 }
 #endif
 
+char *BJX2_DbgPrintNameForFmid(BJX2_Context *ctx, int fmid)
+{
+	char *str;
+	switch(fmid)
+	{
+	case BJX2_FMID_NONE:			str="-"; break;
+	case BJX2_FMID_REG:				str="1R"; break;
+	case BJX2_FMID_REGREG:			str="2R"; break;
+	case BJX2_FMID_Z:				str="Z"; break;
+	case BJX2_FMID_IMM:				str="I"; break;
+	case BJX2_FMID_PCDISP:			str="PC-D"; break;
+	case BJX2_FMID_LDREGREG:		str="LD-"; break;
+	case BJX2_FMID_REGSTREG:		str="ST-"; break;
+	case BJX2_FMID_LDDRREGREG:		str="LDR0"; break;
+	case BJX2_FMID_REGSTDRREG:		str="STR0"; break;
+	case BJX2_FMID_LDREGDISPREG:	str="LDRI"; break;
+	case BJX2_FMID_REGSTREGDISP:	str="STRI"; break;
+	case BJX2_FMID_PCDR:			str="PCR0"; break;
+	case BJX2_FMID_LDDRPCREG:		str="LPCR0"; break;
+	case BJX2_FMID_REGSTDRPC:		str="LPCR0"; break;
+	case BJX2_FMID_IMMREG:			str="2RI"; break;
+	case BJX2_FMID_LDDRABSREG:		str="LDABS"; break;
+	case BJX2_FMID_REGSTDRABS:		str="STABS"; break;
+	case BJX2_FMID_LDPCDISPREG:		str="LDPCI"; break;
+	case BJX2_FMID_REGSTPCDISP:		str="STPCI"; break;
+	case BJX2_FMID_REGDRREG:		str="-"; break;
+	case BJX2_FMID_PCREG:			str="PCR"; break;
+	case BJX2_FMID_LDREG2REG:		str="LDRR"; break;
+	case BJX2_FMID_REGSTREG2:		str="STRR"; break;
+	case BJX2_FMID_REGREGREG:		str="3R"; break;
+	case BJX2_FMID_REGIMMREG:		str="3RI"; break;
+	case BJX2_FMID_IMMZREG:			str="2RIZ"; break;
+	case BJX2_FMID_IMMNREG:			str="2RIN"; break;
+	case BJX2_FMID_FREG:			str="1FR"; break;
+	case BJX2_FMID_FREGREG:			str="2FR"; break;
+	case BJX2_FMID_FREGREGREG:		str="3FR"; break;
+	case BJX2_FMID_IMMJREG:			str="2RIJ"; break;
+	case BJX2_FMID_FREGGREG:		str="2RRF"; break;
+	case BJX2_FMID_GREGFREG:		str="2RRF"; break;
+	case BJX2_FMID_PAIR:			str="PAIR"; break;
+	case BJX2_FMID_CHAIN:			str="CHN"; break;
+	case BJX2_FMID_REGPCDISP:		str="RPCI"; break;
+	case BJX2_FMID_REGREGPCDISP:	str="2RPCI"; break;
+	case BJX2_FMID_LDREGDISP1REG:	str="LDRI1"; break;
+	case BJX2_FMID_REGSTREGDISP1:	str="STRI1"; break;
+	case BJX2_FMID_LDREGDISP1:		str="LDRI1Z"; break;
+	case BJX2_FMID_REGREGIMMREG:	str="4RI"; break;
+	case BJX2_FMID_REGREGREGREG:	str="4R"; break;
+	case BJX2_FMID_REGIMMREGREG:	str="4RI"; break;
+	case BJX2_FMID_IMMBREGPCDISP:	str="BRI"; break;
+	case BJX2_FMID_IMMBSTREGDISP1:	str="STIRI"; break;
+	default:						str="?";	break;
+	}
+	return(str);
+}
+
 int BJX2_DbgTopTraces(BJX2_Context *ctx)
 {
 //	BJX2_Trace *tra[65536];
@@ -3116,6 +3172,10 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	s64 ipcyc_nmid[1024];
 	int idx_nmid[1024];
 	char *topfn_name[1024];
+	s64 cyc_fmid[256];
+	s64 ipcyc_fmid[256];
+	int idx_fmid[256];
+
 	int topfn_chn[1024];
 	s64 topfn_cyc[1024];
 	int topfn_hash[64];
@@ -3134,6 +3194,12 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	{
 		cyc_nmid[i]=0;
 		ipcyc_nmid[i]=0;
+	}
+
+	for(i=0; i<256; i++)
+	{
+		cyc_fmid[i]=0;
+		ipcyc_fmid[i]=0;
 	}
 
 	tra=malloc(262144*sizeof(void *));
@@ -3175,12 +3241,15 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		
 			cyc_nmid[trcur->ops[j]->nmid]+=
 				trcur->ops[j]->cyc*tra[i]->runcnt;
+			cyc_fmid[trcur->ops[j]->fmid]+=
+				trcur->ops[j]->cyc*tra[i]->runcnt;
 
 			if(trcur->ops[j]->fl&BJX2_OPFL_OPPIPE)
 			{
 				k=(trcur->ops[j]->cyc-1);
 				if(k<0)k=0;
 				ipcyc_nmid[trcur->ops[j]->nmid]+=k*tra[i]->runcnt;
+				ipcyc_fmid[trcur->ops[j]->fmid]+=k*tra[i]->runcnt;
 			}
 		}
 	}
@@ -3389,6 +3458,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 	for(i=0; i<1024; i++)
 		idx_nmid[i]=i;
+	for(i=0; i<256; i++)
+		idx_fmid[i]=i;
 
 	for(i=0; i<1024; i++)
 		for(j=i+1; j<1024; j++)
@@ -3398,6 +3469,17 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 			k=idx_nmid[i];
 			idx_nmid[i]=idx_nmid[j];
 			idx_nmid[j]=k;
+		}
+	}
+
+	for(i=0; i<256; i++)
+		for(j=i+1; j<256; j++)
+	{
+		if(cyc_fmid[idx_fmid[j]]>cyc_fmid[idx_fmid[i]])
+		{
+			k=idx_fmid[i];
+			idx_fmid[i]=idx_fmid[j];
+			idx_fmid[j]=k;
 		}
 	}
 
@@ -3444,6 +3526,44 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		}
 		BJX2_DbgPrintf(ctx, "\n");
 	}
+#endif
+
+#if 1
+	BJX2_DbgPrintf(ctx, "Cyc/Fmid:\n");
+	for(i=0; i<64; i++)
+	{
+		k=idx_fmid[i*2+0];
+		if(!cyc_fmid[k])
+			break;
+		for(j=0; j<2; j++)
+		{
+			k=idx_fmid[i*2+j];
+			pcnt=(100.0*cyc_fmid[k])/(ctx->tot_cyc);
+
+			BJX2_DbgPrintf(ctx, "%8s(%12lld) %.2f%%",
+				BJX2_DbgPrintNameForFmid(ctx, k),
+				cyc_fmid[k], pcnt);
+		}
+		BJX2_DbgPrintf(ctx, "\n");
+	}
+
+	cy0=	cyc_fmid[BJX2_FMID_LDREGDISPREG] + 
+			cyc_fmid[BJX2_FMID_REGSTREGDISP] + 
+			cyc_fmid[BJX2_FMID_LDREG2REG] + 
+			cyc_fmid[BJX2_FMID_REGSTREG2] ;
+
+	k=BJX2_FMID_LDREGDISPREG;
+	pcnt=(100.0*cyc_fmid[k])/cy0;
+	BJX2_DbgPrintf(ctx, "LDRI %.2f%%\n", pcnt);
+	k=BJX2_FMID_REGSTREGDISP;
+	pcnt=(100.0*cyc_fmid[k])/cy0;
+	BJX2_DbgPrintf(ctx, "STRI %.2f%%\n", pcnt);
+	k=BJX2_FMID_LDREG2REG;
+	pcnt=(100.0*cyc_fmid[k])/cy0;
+	BJX2_DbgPrintf(ctx, "LD2R %.2f%%\n", pcnt);
+	k=BJX2_FMID_REGSTREG2;
+	pcnt=(100.0*cyc_fmid[k])/cy0;
+	BJX2_DbgPrintf(ctx, "ST2R %.2f%%\n", pcnt);
 #endif
 
 	pcnt=((double)trtops)/trn;

@@ -2400,12 +2400,16 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 //					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
 					BGBCC_CCXL_VlMarkRefIn(ctx, s0);
 
+#if 0
 					BGBCC_CCXL_PushLoad(ctx, s0);
 //					BGBCC_CCXL_StackDupB(ctx);
 					BGBCC_CCXL_StackDupClean(ctx);
 					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
 					BGBCC_CCXL_StackExch(ctx);
 					BGBCC_CCXL_StackUnaryOpStore(ctx, "++", s0);
+#endif
+
+					BGBCC_CCXL_StackLoadPostIncName(ctx, 0, s0);
 					return;
 				}
 #endif
@@ -2439,12 +2443,17 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 //					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
 					BGBCC_CCXL_VlMarkRefIn(ctx, s0);
 
+					BGBCC_CCXL_StackLoadPostDecName(ctx, 0, s0);
+
+#if 0
 					BGBCC_CCXL_PushLoad(ctx, s0);
 //					BGBCC_CCXL_StackDupB(ctx);
 					BGBCC_CCXL_StackDupClean(ctx);
 					BGBCC_CCXL_StackLoadIndexConst(ctx, 0);
 					BGBCC_CCXL_StackExch(ctx);
 					BGBCC_CCXL_StackUnaryOpStore(ctx, "--", s0);
+#endif
+
 					return;
 				}
 #endif

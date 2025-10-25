@@ -388,8 +388,10 @@ reg[31:0]	gprArrMB;
 assign	gprRegSp = { regInFpsr, gprRegSp0[47:0] };
 assign	gprRegSpZ = { 16'h00, gprRegSp0[47:0] };
 `else
-assign	gprRegSp = gprRegSp0;
+assign	gprRegSp  = gprRegSp0;
 assign	gprRegSpZ = gprRegSp0;
+//assign	gprRegSp  = { 16'h00, gprRegSp0[47:0] };
+//assign	gprRegSpZ = { 16'h00, gprRegSp0[47:0] };
 `endif
 
 RegSpr_3W	gprModDlr(
@@ -419,6 +421,7 @@ RegSpr_3W	gprModDhr(
 assign	regInSpB = { 2'b00, regInSp };
 `else
 assign	regInSpB = regInSp;
+// assign	regInSpB = { 16'h00, regInSp[47:0] };
 `endif
 
 RegSpr_3W	gprModSp(
@@ -958,7 +961,8 @@ begin
 		end
 
 `ifdef jx2_enable_xgpr
-		JX2_GR_TEAH, JX2_GR_VIPT: 
+		JX2_GR_TEAH, JX2_GR_VIPT,
+			JX2_GR_PC_HI, JX2_GR_GBR_HI, JX2_GR_SPC_HI: 
 		begin
 //			tValRsA = regValCm;
 
@@ -1055,7 +1059,11 @@ begin
 		end
 `endif
 
-		default: 	tValRsA=UVGPRV_00;
+		default: begin
+			$display("RegGPR+6R3W: tValRsA, Bad ID %X", regIdRs);
+			tValRsA=UVGPRV_00;
+			tValRsZz=1;
+		end
 	endcase
 	
 	casez(regIdRt)
@@ -1068,7 +1076,7 @@ begin
 //		JX2_GR_SP:	tValRtA=regInSp;
 //		JX2_GR_ZSP:	tValRtA=gprRegSpZ;
 
-//		JX2_GR_SSP:	tValRtA=regValSsp;
+		JX2_GR_SSP:	tValRtA=regValSsp;
 
 		JX2_GR_IMM:	begin
 			tValRtA = UVGPRV_00;
@@ -1080,6 +1088,19 @@ begin
 		JX2_GR_ZZR:	begin
 			tValRtA=UVGPRV_00;
 			tValRtZz=1;
+		end
+
+		JX2_GR_LR:
+		begin
+			tValRtA=0;
+			tValRtA[63:0] = regValLr;
+		end
+
+		JX2_GR_GBR:
+		begin
+			tValRtA=0;
+//			tValRtA[63:0] = { UV16_00, regValGbr };
+			tValRtA[63:0] = regValGbr[63:0];
 		end
 
 `ifdef jx2_enable_immb
@@ -1160,7 +1181,11 @@ begin
 `endif
 
 
-		default: 	tValRtA=UVGPRV_00;
+		default: begin
+			$display("RegGPR+6R3W: tValRtA, Bad ID %X", regIdRt);
+		 	tValRtA=UVGPRV_00;
+			tValRtZz=1;
+		 end
 	endcase
 
 	casez(regIdRu)
@@ -1230,7 +1255,11 @@ begin
 		end
 `endif
 
-		default: 	tValRuA=UVGPRV_00;
+		default: begin
+			$display("RegGPR+6R3W: tValRuA, Bad ID %X", regIdRu);
+			tValRuA=UVGPRV_00;
+			tValRuZz=1;
+		end
 	endcase
 
 	casez(regIdRv)
@@ -1243,6 +1272,25 @@ begin
 //		JX2_GR_SP:	tValRvA=regInSp;
 
 //		JX2_GR_SSP:	tValRvA=regValSsp;
+
+		JX2_GR_SSP:
+		begin
+			tValRvA = UVGPRV_00;
+			tValRvA[63:0] = regValSsp;
+		end
+
+		JX2_GR_LR:
+		begin
+			tValRvA = UVGPRV_00;
+			tValRvA[63:0] = regValLr;
+		end
+
+		JX2_GR_GBR:
+		begin
+			tValRvA=0;
+//			tValRvA[63:0] = { UV16_00, regValGbr };
+			tValRvA[63:0] = regValGbr[63:0];
+		end
 
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
@@ -1283,7 +1331,11 @@ begin
 		end
 `endif
 
-		default: 	tValRvA=UVGPRV_00;
+		default: begin
+			$display("RegGPR+6R3W: tValRvA, Bad ID %X", regIdRv);
+			tValRvA=UVGPRV_00;
+			tValRvZz=1;
+		end
 	endcase
 
 	casez(regIdRx)
@@ -1340,7 +1392,10 @@ begin
 			tValRxZz=1;
 		end
 `endif
-		default: 	tValRxA=UVGPRV_00;
+		default: begin
+			$display("RegGPR+6R3W: tValRxA, Bad ID %X", regIdRx);
+		 	tValRxA=UVGPRV_00;
+		 end
 	endcase
 
 	casez(regIdRy)
@@ -1352,7 +1407,7 @@ begin
 		JX2_GR_SP:	tValRyA=gprRegSp;		//Disabled from this lane
 //		JX2_GR_SP:	tValRyA=regInSp;
 
-//		JX2_GR_SSP:	tValRyA=regValSsp;
+		JX2_GR_SSP:	tValRyA=regValSsp;
 
 
 // `ifdef def_true
@@ -1410,7 +1465,8 @@ begin
 `endif
 
 `ifdef jx2_gprs_mergecm
-		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
+//		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC, JX2_GR_SSP,
+		JX2_GR_SR, JX2_GR_VBR, JX2_GR_SPC,
 		JX2_GR_TTB, JX2_GR_TEA, JX2_GR_MMCR,
 		JX2_GR_EXSR, JX2_GR_STTB, JX2_GR_KRR:
 		begin
@@ -1424,7 +1480,7 @@ begin
 `ifdef jx2_enable_xgpr
 		JX2_GR_TEAH, JX2_GR_VIPT:
 		begin
-//			tValRsA = regValCm;
+//			tValRyA = regValCm;
 //			tValRyA = UVGPRV_00;
 			tValRyA = nMaskEnableRyCm ? regValCm : UVGPRV_XX;
 			if(!nMaskEnableRyCm && (regIdUCmd[5:0] != JX2_UCMD_NOP))
@@ -1463,7 +1519,11 @@ begin
 		end
 `endif
 
-		default: 	tValRyA=UVGPRV_00;
+		default: begin
+			$display("RegGPR+6R3W: tValRyA, Bad ID %X", regIdRy);
+			tValRyA=UVGPRV_00;
+			tValRyZz=1;
+		end
 	endcase
 
 // `ifdef def_true

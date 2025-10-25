@@ -1,0 +1,123 @@
+Manifest File
+* Binary Format
+* Represents a heirarchical key/value system.
+* May have data payloads.
+* File will consist of a header, data area, and directory.
+
+File Header:
+Manif_Head {
+FOURCC  magic1;		//00: 'WAM1'
+U32     dirents;	//04: number of entries in directory
+U32     diroffs;	//08: offset of directory in cells
+U32     dirhoffs;   //0C: directory hash table offset
+U32     magic2;     //10: Second Magic
+U32     magic3;     //14: Third Magic
+}
+
+The main structure of the manifest file will be the directory.
+* Entries will be 1x (32 byte) or 2x (64 byte)
+* The 2x entries will be pairs of 1x entries.
+* Index numbers will be given in 1x form.
+
+This format will use a 16-byte cell size.
+
+Manif_DirEnt1_InlineData {
+BYTE    data[12];   //00: Inline Data
+BYTE    ety;		//0C: Entry Type
+BYTE    cmp;		//0D: Compression Type
+U16	    chain;		//0E: Hash Lump Chain (DirEnt Index)
+U16	    dirid;		//10: Directory ID / Parent Directory (DirEnt Index)
+U16	    dirnext;	//12: Next in Directory (DirEnt Index)
+U16	    hibits;		//14: Some extra bits
+BYTE    name[10];   //16: Name Field
+};
+
+Manif_DirEnt1_File {
+U32     offs;       //00: File Offset
+U32     csize;      //04: File Compressed Size
+U32     dsize;      //08: File Uncompressed Size
+BYTE    ety;		//0C: Entry Type
+BYTE    cmp;		//0D: Compression Type
+U16	    chain;		//0E: Hash Lump Chain (DirEnt Index)
+U16	    dirid;		//10: Directory ID / Parent Directory (DirEnt Index)
+U16	    dirnext;	//12: Next in Directory (DirEnt Index)
+U16	    hibits;		//14: Some extra bits
+BYTE    name[10];   //16: Name Field
+};
+
+Manif_DirEnt2_InlineData {
+BYTE    data1[12];  //00: Inline Data
+BYTE    ety;		//0C: Entry Type
+BYTE    cmp;		//0D: Compression Type
+U16	    chain;		//0E: Hash Lump Chain (DirEnt Index)
+U16	    dirid;		//10: Directory ID / Parent Directory (DirEnt Index)
+U16	    dirnext;	//12: Next in Directory (DirEnt Index)
+U16	    hibits;		//14: Some extra bits
+BYTE    data2[10];  //16: Inline Data 2
+BYTE    name[32];	//20: name
+}
+
+Manif_DirEnt2_File {
+U32		offs;		//00: offset of lump data (64B cell)
+U32		csize;		//04: compressed size of lump (bytes)
+U32		dsize;		//08: uncompressed size of lump (bytes)
+BYTE    ety;		//0C: Entry Type
+BYTE    cmp;		//0D: Compression Type
+U16	    chain;		//0E: Hash Lump Chain (DirEnt Index)
+U16	    dirid;		//10: Directory ID / Parent Directory (DirEnt Index)
+U16	    dirnext;	//12: Next in Directory (DirEnt Index)
+U16	    hibits;		//14: Some extra bits
+BYTE    resv1[10];  //16: Reserved
+BYTE    name[32];	//20: name
+}
+
+Ety:
+* 00: Unused or Extended-Name-Terminal
+* 01: Free Entry (1x)
+* 02: File (1x)
+* 03: Directory (1x)
+* 04: Reserved
+* 05: Free Entry (2x)
+* 06: File (2x)
+* 07: Directory (2x)
+* 08: Name Escaped File (1x)
+* 09: Name Escaped Directory (1x)
+* 0A: Inline Key/Value (1x)
+* 0B: Inline Key/Value (2x)
+
+* 10..1F: Reserved
+* 20..FF: Extended Name (2x, PartB)
+
+Cmp (file):
+* 00: Uncompressed File (Data Blob)
+* 01: Fragmented File
+* 02: Packed File
+* 03: RP2 File
+* 04: LZ4 File
+
+* 10: Uncompressed Text-Blob
+* 11: Fragmented Text-Blob
+* 12: Packed Text-Blob
+* 13: RP2 Text-Blob
+* 14: LZ4 Text-Blob
+
+* 05..1F: Reserved
+
+Cmp (Inline):
+* 00: Inline Data Blob (byte length prefix)
+* 01: Inline Text Blob (String)
+* 02: Integer, 64-bit
+* 03: Integer, 96/128 bit
+** 1x: 96-bit, Sign-Ext to 128 bits
+** 2x: 128-bit
+* 04: Float, 64-bit
+* 05: Float, 96/128 bit
+** 1x: 96-bit (High bits)
+** 2x: 128-bit
+
+Name Field:
+* ASCII/1252/UTF-8
+** May use 1252 if it can be reliably distinguished from UTF-8.
+** Otherwise, assume UTF-8.
+* May store UTF-8 in an escaped form.
+** 3-byte escapes to encode each group of 16 bits.

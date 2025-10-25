@@ -309,7 +309,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVC))
 	{
 		/* For RISC-V Mode, Default to plain PE/COFF */
-		ctx->pel_cmpr=255;
+//		ctx->pel_cmpr=255;
 	}
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pexe"))
@@ -372,6 +372,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 //	ctx->arch_has_predops=0;
 	ctx->arch_has_predops=1;
+//	ctx->arch_has_autoinc=1;
+	ctx->arch_has_autoinc=0;
 
 	ctx->arch_has_imac=0;
 	ctx->arch_has_fmac=0;
@@ -2204,6 +2206,28 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 	case CCXL_VOP_LDIXA:
 		BGBCC_JX2C_EmitLdixAddrVRegVRegVReg(ctx, sctx, op->type, op->stype,
 			op->dst, op->srca, op->srcb);
+		break;
+
+	case CCXL_VOP_LDIXADJIMM:
+		BGBCC_JX2C_EmitSyncAliasRegisters(ctx, sctx);
+//		BGBCC_JX2C_EmitLdixVRegVRegImm(ctx, sctx, op->type, op->stype,
+//			op->dst, op->srca, op->imm.ipair.si);
+//		BGBCC_JX2C_EmitLeaVRegVRegImm(ctx, sctx, op->type, op->stype,
+//			op->dstb, op->srca, op->imm.ipair.sj);
+		BGBCC_JX2C_EmitLdixAdjVRegVRegImm(ctx, sctx,
+			op->type, op->stype,
+			op->dst, op->dstb, op->srca,
+			op->imm.ipair.si, op->imm.ipair.sj);
+
+		BGBCC_JX2C_EmitSyncAliasRegisters(ctx, sctx);
+		break;
+	case CCXL_VOP_STIXADJIMM:
+		BGBCC_JX2C_EmitSyncAliasRegisters(ctx, sctx);
+		BGBCC_JX2C_EmitStixVRegVRegImm(ctx, sctx, op->type, op->stype,
+			op->dst, op->srca, op->imm.ipair.si);
+		BGBCC_JX2C_EmitLeaVRegVRegImm(ctx, sctx, op->type, op->stype,
+			op->dstb, op->dst, op->imm.ipair.sj);
+		BGBCC_JX2C_EmitSyncAliasRegisters(ctx, sctx);
 		break;
 
 	case CCXL_VOP_SIZEOFVAR:

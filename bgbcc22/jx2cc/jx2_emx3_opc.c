@@ -2340,6 +2340,9 @@ int BGBCC_JX2X3_TryEmitOpLdReg2Reg(
 	if(!(ctx->emit_riscv&0x11) || !(ctx->emit_riscv&0x22))
 		return(0);
 
+	if(ro<4)
+		return(0);
+
 	rm=BGBCC_JX2RV_NormalizeReg(ctx, rm);
 	ro=BGBCC_JX2RV_NormalizeReg(ctx, ro);
 	rn=BGBCC_JX2RV_NormalizeReg(ctx, rn);
@@ -2429,6 +2432,9 @@ int BGBCC_JX2X3_TryEmitOpRegStReg2(
 	s64 opw1, opw2, opw3;
 
 	if(!(ctx->emit_riscv&0x11) || !(ctx->emit_riscv&0x22))
+		return(0);
+
+	if(ro<4)
 		return(0);
 
 	rm=BGBCC_JX2RV_NormalizeReg(ctx, rm);

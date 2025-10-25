@@ -234,6 +234,7 @@ reg tRegRmIsZr;
 reg tRegRoIsZr;
 reg tRegRnIsZr;
 reg tRegCsrIsCpuid;
+reg tRegCsrIsEmuTrap;
 reg tRegImm12IsZero;
 
 reg	tMsgLatch;
@@ -485,6 +486,7 @@ begin
 
 
 	tRegCsrIsCpuid = 0;
+	tRegCsrIsEmuTrap = 0;
 	casez(istrWord[31:20])
 		12'b0111_11zz_zzzz: begin
 			opRegM_Cr = { 1'b1, !istrWord[25], istrWord[24:20] };
@@ -519,8 +521,12 @@ begin
 		end
 
 		default: begin
+			tRegCsrIsEmuTrap = 1;
 		end
 	endcase
+
+	if(srUser && !tRegCsrIsCpuid)
+		tRegCsrIsEmuTrap = 1;
 
 `ifdef jx2_reg_spdecswap
 	if(srMod[2])
@@ -965,6 +971,14 @@ begin
 //			if(istrWord[26])
 			if(istrWord[26] && (opIty != JX2_ITY_SB))
 				amoLdOp[3] = 1;
+
+`ifndef jx2_use_mem_ldop
+			if(amoLdOp!=0)
+			begin
+				opNmid		= JX2_UCMD_OP_IXT;
+				opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+			end
+`endif
 		end
 
 `ifdef jx2_fpu_fmac
@@ -1061,7 +1075,7 @@ begin
 						end
 						6'h02: begin
 							opNmid		= JX2_UCMD_SHADQ3;
-							opUCmdIx	= JX2_UCIX_SHAD_SHLD3;
+							opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 						end
 						default: begin
 							opNmid		= JX2_UCMD_INVOP;
@@ -1128,7 +1142,14 @@ begin
 					endcase
 				end
 				3'b110: opUCmdIx = JX2_UCIX_ALU_OR;
-				3'b111: opUCmdIx = JX2_UCIX_ALU_AND;
+				3'b111:
+				begin
+					opUCmdIx = JX2_UCIX_ALU_AND;
+					if(tRegRnIsZr)
+					begin
+						opNmid		= JX2_UCMD_NOP;
+					end
+				end
 			endcase
 		end
 
@@ -1761,6 +1782,14 @@ begin
 						opFmid		= JX2_FMID_REGREG;
 						opIty		= JX2_ITY_UQ;
 					end
+					
+					if(tRegCsrIsEmuTrap)
+					begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UQ;
+					end
 				end
 
 				3'b010: begin
@@ -1778,6 +1807,14 @@ begin
 						opFmid		= JX2_FMID_REGREG;
 						opIty		= JX2_ITY_UQ;
 					end
+					
+					if(tRegCsrIsEmuTrap)
+					begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UQ;
+					end
 				end
 
 				3'b011: begin
@@ -1786,6 +1823,14 @@ begin
 						opNmid	= JX2_UCMD_MOV_CR;
 						opFmid	= JX2_FMID_REGREG;
 						opIty	= JX2_ITY_UQ;
+					end
+					
+					if(tRegCsrIsEmuTrap)
+					begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UQ;
 					end
 				end
 				
@@ -1901,13 +1946,21 @@ begin
 		end
 
 		5'b00_110: begin /* ALU OP, 32-bit, 3RI */
-			opNmid		= JX2_UCMD_ALU3;
-			opFmid		= JX2_FMID_REGIMMREG;
-			opIty		= JX2_ITY_SW;
+//			opNmid		= JX2_UCMD_ALU3;
+//			opFmid		= JX2_FMID_REGIMMREG;
+//			opIty		= JX2_ITY_SW;
 
 			case(istrWord[14:12])
-				3'b000: opUCmdIx = JX2_UCIX_ALU_ADDSL;
+				3'b000: begin
+					opNmid		= JX2_UCMD_ALU3;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_SW;
+					opUCmdIx	= JX2_UCIX_ALU_ADDSL;
+				end
 				3'b001: begin
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_SW;
+
 					casez(istrWord[31:26])
 						6'b000000: begin
 							opNmid		= JX2_UCMD_SHAD3;
@@ -1931,12 +1984,18 @@ begin
 //				3'b011: opUCmdIx = JX2_UCIX_ALU_SLTUL;
 
 				3'b010: begin
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_SW;
+
 //					opUCmdIx = JX2_UCIX_ALU_SLTSL;
 					opNmid		= JX2_UCMD_ALUCMP3R;
 					opIty		= JX2_ITY_SL;
 					opUCmdIx	= JX2_UCIX_ALU_CMPGT;
 				end
 				3'b011: begin
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_SW;
+
 //					opUCmdIx = JX2_UCIX_ALU_SLTUL;
 					opNmid		= JX2_UCMD_ALUCMP3R;
 					opIty		= JX2_ITY_SL;
@@ -1951,9 +2010,25 @@ begin
 					opUCmdIx	= JX2_UCIX_ALU_ADD;
 				end
 				3'b101: begin
-					opNmid		= JX2_UCMD_SHAD3;
-					opUCmdIx = istrWord[30] ?
-						JX2_UCIX_SHAD_SHAR3 : JX2_UCIX_SHAD_SHLR3;
+					opFmid		= JX2_FMID_REGIMMREG;
+					opIty		= JX2_ITY_SW;
+
+//					opNmid		= JX2_UCMD_SHAD3;
+//					opUCmdIx = istrWord[30] ?
+//						JX2_UCIX_SHAD_SHAR3 : JX2_UCIX_SHAD_SHLR3;
+
+					casez(istrWord[31:26])
+						6'b000000: begin
+							opNmid		= JX2_UCMD_SHAD3;
+							opUCmdIx	= JX2_UCIX_SHAD_SHLR3;
+						end
+						6'b010000: begin
+							opNmid		= JX2_UCMD_SHAD3;
+							opUCmdIx	= JX2_UCIX_SHAD_SHAR3;
+						end
+						default: begin
+						end
+					endcase
 				end
 				3'b110: begin
 //					opUCmdIx = JX2_UCIX_ALU_OR;
@@ -2227,7 +2302,8 @@ begin
 					opRegM	= opRegO_Cr;
 					opRegO	= JX2_GR_ZZR;
 					opRegN	= opRegO_Cr;
-					opRegP	= opRegO_Cr;
+//					opRegP	= opRegO_Cr;
+					opRegP	= JX2_GR_ZZR;
 					if(usrRejectCoW)
 						usrReject = 1;
 				end
@@ -2328,9 +2404,11 @@ begin
 
 				JX2_ITY_UL: begin
 					opRegM	= opRegM_Dfl;
-					opRegO	= opRegN_Cr;
+//					opRegO	= opRegN_Cr;
+					opRegO	= JX2_GR_ZZR;
 					opRegN	= opRegN_Cr;
-					opRegP	= opRegN_Cr;
+//					opRegP	= opRegN_Cr;
+					opRegP	= JX2_GR_ZZR;
 					if(usrRejectCnW)
 						usrReject = 1;
 				end
@@ -2340,6 +2418,8 @@ begin
 					opRegO	= opRegM_Cr;
 					opRegN	= opRegN_Dfl;
 					opRegP	= opRegN_Dfl;
+					if(opRegM_Cr[6])
+						opRegO	= JX2_GR_ZZR;
 					if(usrRejectCmR)
 						usrReject = 1;
 				end

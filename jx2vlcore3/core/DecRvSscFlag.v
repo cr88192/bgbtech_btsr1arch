@@ -277,10 +277,10 @@ begin
 
 	if(istrWord[1:0]!=2'b11)
 	begin
-//		tIstrFlag	= 4'b0000;
-//		if(isXG3)
-//			tIstrFlag	= tIstrFlagXG3;
-		tIstrFlag	= tIstrFlagXG3;
+		tIstrFlag	= 4'b0000;
+		if(isXG3)
+			tIstrFlag	= tIstrFlagXG3;
+//		tIstrFlag	= tIstrFlagXG3;
 	end
 `else
 	if(istrWord[1:0]!=2'b11)

@@ -998,7 +998,8 @@ void MemUpdateForBusRing()
 	top->unitNodeId = 0x04;
 	
 	rng=(rng*0x0000FEDCBA987654ULL)+
-		(((l2addr2>>4)+l2data2a)&65535);
+		(((l2addr2>>4)+l2data2a)&65535)+31;
+	rng=(rng<<1)^(rng>>31)^(l2opm2>>63);
 	l2opm2^=((rng>>48)&0x8000);
 
 #if 0

@@ -832,6 +832,8 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 	case BGBCC_SH_NMID_BITMOV:		sn="BITMOV";		break;
 	case BGBCC_SH_NMID_BITMOVX:		sn="BITMOVX";		break;
 
+	case BGBCC_SH_NMID_FMOVQ:		sn="FMOV.Q";		break;
+
 	default:
 		sprintf(tb, "UNK_%04X", nmid);
 		sn=bgbcc_strdup(tb);

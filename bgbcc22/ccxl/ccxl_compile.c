@@ -1684,10 +1684,11 @@ void BGBCC_CCXL_CompileStatement(BGBCC_TransState *ctx, BCCX_Node *l)
 				{
 					s1=BCCX_GetCst(t, &bgbcc_rcst_name, "name");
 					s1=BGBCC_CCXL_CompileRemapName(ctx, s1);
-					BGBCC_CCXL_PushLoad(ctx, s1);
-					BGBCC_CCXL_StackDupB(ctx);
-					BGBCC_CCXL_StackLoadIndexConstStore(ctx, 0, s0);
-					BGBCC_CCXL_StackUnaryOpStore(ctx, "++", s1);
+					BGBCC_CCXL_StackLoadPostIncNameStore(ctx, 0, s1, s0);
+//					BGBCC_CCXL_PushLoad(ctx, s1);
+//					BGBCC_CCXL_StackDupB(ctx);
+//					BGBCC_CCXL_StackLoadIndexConstStore(ctx, 0, s0);
+//					BGBCC_CCXL_StackUnaryOpStore(ctx, "++", s1);
 					return;
 				}
 #endif

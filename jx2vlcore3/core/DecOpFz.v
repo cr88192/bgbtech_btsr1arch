@@ -378,7 +378,7 @@ wire[31:0]	usrRejectCmMask;
 wire[31:0]	usrRejectCnMask;
 
 assign	usrRejectCmMask = 32'b1111_1111_1111_1111_1111_1111_0011_1000;
-assign	usrRejectCnMask = 32'b1111_1111_1111_1111_1111_1111_1011_1100;
+assign	usrRejectCnMask = 32'b1111_1111_1111_1111_1111_1111_0011_1100;
 
 // assign	usrRejectCmMask = 32'b0001_1100_1111_1111_1111_1111_0011_1000;
 // assign	usrRejectCnMask = 32'b0011_1101_1111_1111_1111_1111_1011_1100;
@@ -7320,6 +7320,20 @@ begin
 	end
 `endif
 
+`ifndef jx2_use_mem_ldop
+	if(opIsImmLdOp!=0)
+	begin
+		if(	(opNmid == JX2_UCMD_MOV_RM) ||
+			(opNmid == JX2_UCMD_MOV_MR) )
+		begin
+			opNmid		= JX2_UCMD_OP_IXT;
+			opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+			opFmid		= JX2_FMID_Z;
+			opIty		= JX2_ITY_SB;
+		end
+	end
+`endif
+
 	opUFl		= 0;
 	opULdOp		= 0;
 	opULdOp2	= 0;
@@ -7575,9 +7589,11 @@ begin
 
 				JX2_ITY_UL: begin
 					opRegM	= opRegM_Dfl;
-					opRegO	= opRegN_Cr;
+//					opRegO	= opRegN_Cr;
+					opRegO	= JX2_GR_ZZR;
 					opRegN	= opRegN_Cr;
-					opRegP	= opRegN_Cr;
+//					opRegP	= opRegN_Cr;
+					opRegP	= JX2_GR_ZZR;
 					if(usrRejectCnW)
 						usrReject = 1;
 				end

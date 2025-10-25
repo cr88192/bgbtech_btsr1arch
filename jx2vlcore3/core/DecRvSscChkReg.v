@@ -1,12 +1,22 @@
-module DecRvSscChkReg(istrWordA, istrWordB, istrWordC, istrFlag);
+module DecRvSscChkReg(istrWordA, istrWordB, istrWordC, istrFlag,
+	isXG2, isRV, isWXE);
 input[31:0]		istrWordA;
 input[31:0]		istrWordB;
 input[31:0]		istrWordC;
 output[3:0]		istrFlag;
 
+input			isXG2;
+input			isRV;
+input			isWXE;
+
 reg[3:0]		tIstrFlag;
 reg[3:0]		tIstrFlag_X3;
 assign		istrFlag = tIstrFlag;
+
+wire isXG3;
+
+assign isXG3 = isRV && !isXG2 && isWXE;
+
 
 wire	istrIsRvA;
 wire	istrIsRvB;
@@ -165,7 +175,11 @@ begin
 	};
 	
 	if(!istrIsRvA && !istrIsRvB)
-		tIstrFlag = tIstrFlag_X3;
+	begin
+		tIstrFlag = 4'b1111;
+		if(isXG3)
+			tIstrFlag = tIstrFlag_X3;
+	end
 
 	if(istrIsRvB != istrIsRvC)
 		tIstrFlag[3:2] = 2'b11;

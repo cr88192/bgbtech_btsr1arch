@@ -1533,6 +1533,66 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 	case BGBCC_RIL3OP_LDIXA:
 		BGBCC_CCXL_StackLoadIndexAddr(ctx);
 		break;
+
+#if 0
+	case BGBCC_RIL3OP_LDPICNST:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackLoadPostIncNameStore(ctx, i0, s0, s1);
+		break;
+	case BGBCC_RIL3OP_LDPDCNST:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackLoadPostDecNameStore(ctx, i0, s0, s1);
+		break;
+
+	case BGBCC_RIL3OP_LDPICN:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackLoadPostIncName(ctx, i0, s0);
+		break;
+	case BGBCC_RIL3OP_LDPDCN:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackLoadPostDecName(ctx, i0, s0);
+		break;
+
+	case BGBCC_RIL3OP_STPICN:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackStorePostIncName(ctx, i0, s0);
+		break;
+	case BGBCC_RIL3OP_STPDCN:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackStorePostDecName(ctx, i0, s0);
+		break;
+#endif
+
+#if 1
+	case BGBCC_RIL3OP_LDPACNST:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		i1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		s1=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackLoadPostAdjNameStore(ctx, i0, i1, s0, s1);
+		break;
+	case BGBCC_RIL3OP_LDPACN:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		i1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackLoadPostAdjName(ctx, i0, i1, s0);
+		break;
+	case BGBCC_RIL3OP_STPACN:
+		i0=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		i1=BGBCC_CCXLR3_ReadSVLI(ctx, &cs);
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackStorePostAdjName(ctx, i0, i1, s0);
+		break;
+#endif
+
 	case BGBCC_RIL3OP_DUP:
 		BGBCC_CCXL_StackDup(ctx);
 		break;

@@ -178,7 +178,7 @@
 // `define jx2_rbi_bridge_vca_8x	//Ringbus: Increase to 8-way
 `define jx2_rbi_bridge_vca_mtf	//Ringbus: Move to Front
 
-// `define jx2_rbi_bridge_vca_a256		//Ringbus: Increase to 8-way
+// `define jx2_rbi_bridge_vca_a256		//Ringbus: Increase to 256 entries
 `endif
 
 // `define jx2_rbi_ecyc_tlbfw	//Ringbus: Add extra cycles for TLB skip

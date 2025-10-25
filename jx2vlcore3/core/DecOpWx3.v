@@ -158,8 +158,10 @@ assign		srXG2RV	= srRiscv && srXG2;
 wire			srSsc2;
 wire			srSsc3;
 wire			srRiscvSsc;
-assign		srSsc2 = idPcStep[3:2]==2'b10;
-assign		srSsc3 = idPcStep[3:2]==2'b11;
+// assign		srSsc2 = idPcStep[3:2]==2'b10;
+// assign		srSsc3 = idPcStep[3:2]==2'b11;
+assign		srSsc2 = (idPcStep[3:1]==3'b100) || (idPcStep[3:1]==3'b011);
+assign		srSsc3 = (idPcStep[3:1]==3'b110) || (idPcStep[3:1]==3'b101);
 assign		srRiscvSsc = srRiscv && idPcStep[3];
 
 // wire[2:0]		srMod;
@@ -1761,7 +1763,8 @@ begin
 `endif
 
 			opRegBM	= JX2_GR_ZZR;
-			opRegBO	= opRegAN0;
+//			opRegBO	= opRegAN0;
+			opRegBO	= opRegAP0;
 			opRegBN	= JX2_GR_ZZR;
 			opImmB	= UV33_00;
 			opUCmdB	= UV9_00;
@@ -1842,6 +1845,8 @@ begin
 		opUCmdA	= decOpBz_idUCmd;
 		opUIxtA	= decOpBz_idUIxt;
 
+		opUFlA = 0;
+
 `ifdef jx2_enable_riscv
 `ifdef jx2_enable_riscv_rvc
 		if(srRiscv && !noNoRiscV)
@@ -1861,6 +1866,18 @@ begin
 		if(opUCmdA[5:0] == JX2_UCMD_MOV_RM)
 			opRegAN	= JX2_GR_ZZR;
 		if(opUCmdA[5:0] == JX2_UCMD_MOV_MR)
+			opRegAP	= JX2_GR_ZZR;
+
+		if(opUCmdA[5:0] == JX2_UCMD_MOV_RR)
+			opRegAP	= JX2_GR_ZZR;
+		if(opUCmdA[5:0] == JX2_UCMD_CONV_RR)
+			opRegAP	= JX2_GR_ZZR;
+		if(opUCmdA[5:0] == JX2_UCMD_MOV_RC)
+			opRegAP	= JX2_GR_ZZR;
+
+		if(opUCmdA[5:0] == JX2_UCMD_ALU3)
+			opRegAP	= JX2_GR_ZZR;
+		if(opUCmdA[5:0] == JX2_UCMD_SHAD3)
 			opRegAP	= JX2_GR_ZZR;
 `endif
 
@@ -2202,6 +2219,66 @@ begin
 	end
 
 //	tNextMsgLatch = 0;
+
+`ifdef def_true
+	case(idPcStep)
+		4'h0: begin
+//			if(srRiscv && !istrMTagA[0])
+			if(opUCmdA0[5:0] != JX2_UCMD_NOP)
+			begin
+				$display("DecOpWx3 OddStep 0 Istr=%X-%X",
+					istrWordA[15: 0], istrWordA[31:16]);
+			end
+		end
+		4'h2: begin
+			if((srRiscv && (istrWordA[1:0]==2'b11)) || srXG3)
+			begin
+				$display("DecOpWx3 OddStep 2 Istr=%X-%X",
+					istrWordA[15: 0], istrWordA[31:16]);
+			end
+		end
+		4'h4: begin
+			if((srRiscv && (istrWordA[1:0]!=2'b11)) && !srXG3 &&
+				!istrMTagA[0])
+			begin
+				$display("DecOpWx3 OddStep 4 Istr=%X-%X",
+					istrWordA[15: 0], istrWordA[31:16]);
+			end
+		end
+		4'h8: begin
+			if(srRiscv && !srXG3)
+			begin
+//				if(	(istrWordA[1:0]!=2'b11) || (istrWordB[1:0]!=2'b11)	)
+
+				if(
+					((istrWordA[1:0]!=2'b11) && !istrMTagA[0]) ||
+					((istrWordB[1:0]!=2'b11) && !istrMTagB[0])
+					)
+				begin
+						$display("DecOpWx3 OddStep 8 Istr=%X-%X-%X-%X",
+					istrWordA[15: 0], istrWordA[31:16],
+					istrWordB[15: 0], istrWordB[31:16]);
+				end
+			end
+		end
+		4'hC: begin
+			if(srRiscv && !srXG3)
+			begin
+				if(	(istrWordA[1:0]!=2'b11) ||
+					(istrWordB[1:0]!=2'b11) ||
+					(istrWordC[1:0]!=2'b11))
+						$display("DecOpWx3 OddStep 12");
+			end
+		end
+		default: begin
+			$display("DecOpWx3 OddStep Istr=%X-%X,%X-%X,%X-%X Mod=%X PC=%X Step=%X",
+				istrWordA[15: 0], istrWordA[31:16],
+				istrWordB[15: 0], istrWordB[31:16],
+				istrWordC[15: 0], istrWordC[31:16],
+				srMod, istrBPc, idPcStep);
+		end
+	endcase
+`endif
 
 `ifndef def_true
 // `ifdef def_true

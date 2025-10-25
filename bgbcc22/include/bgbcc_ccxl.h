@@ -562,6 +562,9 @@ Base, Q1..Q3:
 #define CCXL_VOP_LDIXA				0x35
 #define CCXL_VOP_BITMOV				0x36
 
+#define CCXL_VOP_LDIXADJIMM			0x38		//load index (adjust immed)
+#define CCXL_VOP_STIXADJIMM			0x39		//store index (adjust immed)
+
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used
 #define CCXL_VOPITY_SI				0x01		//signed int
@@ -571,6 +574,7 @@ Base, Q1..Q3:
 #define CCXL_VOPITY_CALL			0x05		//call arguments list
 #define CCXL_VOPITY_JMPTAB			0x06		//jump table list
 #define CCXL_VOPITY_GFID			0x07		//struct/field ID
+#define CCXL_VOPITY_SIPAIR			0x08		//signed int pair
 
 
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
@@ -637,6 +641,10 @@ typedef union {
 		int gid;
 		int fid;
 	}obj;
+	struct {
+		s64 si;
+		s64 sj;
+	}ipair;
 	struct {
 		s64 vmin;
 		short nlbl;
@@ -767,6 +775,7 @@ byte llvl;			//Loop Level
 ccxl_type type;
 ccxl_type stype;
 ccxl_register dst;
+ccxl_register dstb;
 ccxl_register srca;
 ccxl_register srcb;
 ccxl_register srcc;
