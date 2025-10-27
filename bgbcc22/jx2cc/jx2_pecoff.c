@@ -2228,7 +2228,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 //	is_pel=0;
 //	is_pel=1;
-	is_pel=((ctx->pel_cmpr&255)!=255);
+//	is_pel=((ctx->pel_cmpr&255)!=255);
+	is_pel=((ctx->pel_cmpr&0x80)!=0x80);
 
 	no_mz=0;
 	if(is_pel)

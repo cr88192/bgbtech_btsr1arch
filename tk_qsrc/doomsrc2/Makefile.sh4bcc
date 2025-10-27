@@ -51,21 +51,28 @@ CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 LDFLAGS=$(TK_LDFL) -lc -ltkgdi
 
 TK_CFL_XRV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXRVA /O2 \
-	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba \
+	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic \
+	/frvzba \
 	/frvldix /frvjumbo \
-	/fnovskgen /fnovsk
+	/fnovskgen /fnovsk /frvbraimm
 
 #  /frvjumbo
 
 TK_CFL_X3RV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXG3RV /O2 \
 	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba /frvjumbo \
-	/fnovskgen /fnovsk /fbitmov
+	/fnovskgen /fnovsk /fbitmov /fpredops
 
 CFLAGS_XRV=$(TK_CFL_XRV) $(BASE_CFLAGS)
 LDFLAGS_XRV= -lc -ltkgdi
 
 CFLAGS_X3RV=$(TK_CFL_X3RV) $(BASE_CFLAGS)
 LDFLAGS_X3RV= -lc -ltkgdi
+
+CFLAGS_X3CRV = $(CFLAGS_X3RV) -fx3c
+LDFLAGS_X3CRV= $(LDFLAGS_X3RV)
+
+CFLAGS_XRVC=$(TK_CFL_XRV) $(BASE_CFLAGS) -frvc
+LDFLAGS_XRVC= -lc -ltkgdi
 
 #		i_system.c		\
 #		i_sound.c		\
@@ -145,7 +152,8 @@ SRCS=				\
 #		tst_cpp1a.cpp
 
 all:	 doom_bjx2.exe tstputc_bjx2.exe tstshellcmd_bjx2.exe \
-	doom_xrv.exe doom_x3rv.exe
+	doom_xrv.exe doom_x3rv.exe \
+	doom_xrvc.exe doom_x3crv.exe
 
 # doom_bjx2.sys
 
@@ -162,6 +170,14 @@ doom_xrv.exe:	$(SRCS) i_main.c
 doom_x3rv.exe:	$(SRCS) i_main.c
 	$(CC) $(CFLAGS_X3RV) $(LDFLAGS_X3RV) $(SRCS) i_main.c \
 	/Fedoom_x3rv.exe $(LIBS)
+
+doom_x3crv.exe:	$(SRCS) i_main.c
+	$(CC) $(CFLAGS_X3CRV) $(LDFLAGS_X3CRV) $(SRCS) i_main.c \
+	/Fedoom_x3crv.exe $(LIBS)
+
+doom_xrvc.exe:	$(SRCS) i_main.c
+	$(CC) $(CFLAGS_XRVC) $(LDFLAGS_XRVC) $(SRCS) i_main.c \
+	/Fedoom_xrvc.exe $(LIBS)
 
 # doom_bjx2.sys:	$(SRCS) i_main.c
 #	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c \

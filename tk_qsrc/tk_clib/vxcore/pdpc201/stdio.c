@@ -627,7 +627,10 @@ static void osfopen(void)
 		err = 1;
 		errno = myfile->hfile;
 //		tk_puts("osfopen: got error status\n");
+		return;
 	}
+	if(myfile->hfile<3)
+		{ __debugbreak(); }
 	return;
 }
 
@@ -644,6 +647,7 @@ __PDPCLIB_API__ int fclose(FILE *stream)
 	}
 	fflush(stream);
 	__close(stream->hfile);
+	stream->isopen=0;
 	return (0);
 }
 

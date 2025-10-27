@@ -1,0 +1,249 @@
+Idea: uBASIC / UBAS:
+* Core: Small BASIC like language.
+* Will assume a combination of global and dynamic scope.
+* In simple case, interpreter should be able to be simple.
+** Allowing for a simple interpreter will take precedence over elegance.
+** This language is not intended to be scaled to non-trivial use patterns.
+
+The language will be mostly unstructured, but will use GOSUB/RETURN to manage a dynamic environment. This environment will function like a stack, with new GOSUBs pushing levels, and RETURN poping levels. Variable lookup will start in the current frame and search outwards.
+
+In the simple case, the interpreter can be understood as starting at the top of the program and stepping one line at a time.
+
+Expression evaluation may be token driven, with an intermediate working stack.
+* The stack used for expression evaluation need not exist between expressions.
+* Operators may also be pushed to a stack, and applied after the subexpression.
+
+Will assume the use of a dynamic type system.
+* May optionally support JS like objects.
+* They will have keys/values, but no methods.
+** Methods would add more implementation complexity than is justified here.
+
+Note that it is likely the language will be extended with new keywords based on context.
+
+
+=== Token Rules ===
+
+Text Format:
+* May assume a sort of Lazy UTF-8.
+** Presume that the code follows UTF-8.
+** However, implementation need only deal with ASCII in code.
+** Limit the scope of extended characters to string literals and comments.
+
+Line Continuations:
+* If a line ends in a '\' token:
+** The following line will append to the current line.
+* This will be true if followed by a linebreak or line comment.
+** The line comment will be cut off before appending the next line.
+
+Comments:
+* Will nominally use C style '//' comments
+* Note that '//' will not be a comment if inside of a string literal.
+* Comments and line continuations may be handled prior to tokenization.
+** A state machnie may be used to avoid the string-literal issue.
+
+Name:
+* Begins with 'A'..'Z', 'a'..'z', or '_'
+* Contains any of the preceding, or '0'..'9'
+
+String:
+* Wrapped in double qoutes.
+* Will use C style escape sequences.
+** \\, \r, \n, \t, \b, \e, \xXX, \uXXXX
+
+Character String:
+* Wrapped in single quotes.
+* Results in an integer value.
+* Interpreted as a literal character or multiple characters.
+* If multiple characters, value will be understood as a little endian number.
+
+Numbers:
+* If purely '0'..'9', interpret as decimal.
+* Prefix '0x': Interpret as Hexadecimal
+* Prefix '0b': Interpret as Binary
+* Prefix '0o': Interpret as Octal
+
+Operators:
+* Will be understood as one or more operator characters.
+** Any combination of operator characters are understood as an operator.
+** Terminated by a non-operator character.
+** The behavior of invalid operators is undefined.
+* Operators: ~ ! # % ^ & * - + = | < / > ?
+
+Separators:
+* Will represent separator characters.
+* Unlike operators, separators will not merge.
+* Separators: , ; . ( ) [ ] { }
+
+An implementation may or may not be case sensitive.
+* However, keywords may be written as either upper or lower case.
+** An implementation will not be required to support mixed-case keywords.
+
+
+
+=== Core Statements ===
+
+Core language:
+* name ':'				//Label
+* name '=' expr			//Assign a variable
+* GOTO name				//Transfer a control-flow to a label
+* GOSUB name			//Like GOTO, but also create a local frame
+** GOSUB name varslist	//GOSUB but with arguments
+*** Each argument will take the form: name '=' expr
+*** They will bound within the callee scope.
+* RETURN				//Control returns from a GOSUB
+* RETURN expr			//RETURN with expression (return value).
+* LET name '=' expr		//Bind a variable
+* IF expr THEN stmt		//If expression is true, run statement
+* IF expr THEN stmt ELSE stmt	//IF/ELSE
+* IF expr GOTO name		//If expression is true, GOTO name
+* END					//Terminate the current execution context
+** Toplevel: Terminate execution.
+** GOSUB: May be interpreted as RETURN
+
+Compounds:
+* X = GOSUB*					//GOSUB with return value.
+* LET X = GOSUB*				//GOSUB with return value (LET).
+* name '[' index ']' '=' expr	//Array assignment
+* name '.' name '=' expr		//Member assignment
+* DIM name '[' size ']'
+
+The behavior of LET will depend on context:
+* Not inside a GOSUB: Will bind a global variable.
+* Inside a GOSUB: Will bind within the dynamic environment.
+* LET will not create a binding if the name already exists in the same frame.
+
+If a return value is expected but not provided by callee, it will be understood as a NULL value.
+
+Note that an assignment statement will not be required to support an arbitrary expression on the LHS.
+
+Aliases:
+* CALL name				//Alias for GOSUB
+** CALL may be allowed in most cases where GOSUB is allowed.
+
+
+=== Structured Constructs (Optional) ===
+
+If the implementation wants to allow structured constructs, some may be defined.
+* These will be optional as they are more complicated for a line interpreter.
+
+Subroutine/Function:
+ SUB name [ '(' argslist ')' ]
+   ...
+ END
+
+If an argument list is provided, it will give names to use for any positional arguments for a CALL. Positional arguments will always precede named arguments.
+
+
+Block If:
+  IF expr THEN
+    ...
+  END
+
+Block If/Else:
+  IF expr THEN
+    ...
+  ELSE
+    ...
+  END
+
+While Loop:
+  WHILE cond
+    ...
+  END
+
+Do/While:
+  DO
+    ...
+  WHILE cond
+
+For-In Loop:
+  FOR i = start TO end [ STEP step ]
+    ...
+  END | NEXT
+
+
+=== Non-Core Statements ===
+
+These will be statements that depend on the implementation or context.
+
+Will define several:
+* PRINT exprlist			//Print one or more expressions.
+* INPUT promptString ',' name	//request an input from user
+
+In some cases, the use of built-in functions will be replaced with builtin subroutines, such as:
+  Y = GOSUB SQRT X
+
+
+=== Expressions ===
+
+Expressions:
+* Will be organized into precedence levels.
+* exprLit:
+** name, number, string
+** '(' expr ')'			//expression in parenthesis
+** '(' GOSUB * ')'		//GOSUB with return (contextual)
+** '[' exprlist ']'		//Creates an array given a list of expressions.
+*** May only be allowed in certain contexts.
+* name '[' index ']'	//Array access
+* name '.' name			//Member Access
+* name '(' exprlist ')'	//Function Call (optional)
+** Need only be supported if inline function calls are supported.
+** May impose similar restrictions to GOSUB expressions.
+* '(' DIM name '[' size ']' ')'	//create an array of a given size.
+* '{' keyvalList '}'	//Creates an object (optional).
+
+* exprUnary:
+** exprLit
+** '-' exprUnary
+** '!' exprUnary
+** '~' exprUnary
+
+* exprMulDiv:
+** exprUnary
+** exprMulDiv '*' exprUnary
+** exprMulDiv '/' exprUnary
+** exprMulDiv '%' exprUnary
+
+* exprAddSub:
+** exprMulDiv
+** exprAddSub '+' exprMulDiv
+** exprAddSub '-' exprMulDiv
+
+* exprShift:
+** exprAddSub
+** exprShift '<<' exprAddSub
+** exprShift '>>' exprAddSub
+
+* exprCmp:
+** exprShift
+** exprCmp cmpOp exprShift
+*** cmpOp: One of: < > <= >= == !=
+
+
+=== Types ===
+
+Values will by dynamically typed.
+* Nominally, may assume the use of 64-bit tagrefs.
+
+Some value types will be defined:
+* Integer: Values up to 62 bits (sign extended).
+* Float: Double precision numbers, may lose several bits of mantissa.
+* Object: May represent various objects, implementation specific.
+** Array: Array of values (dynamically typed, one dimensional)
+** String: Holds the value of a string, array like, immutable.
+*** If accessed as an array, a string will be seen as UTF-8 bytes.
+*** It will be illegal to assign a character within a string.
+
+If an expression is used as a conditional, it will be understood as:
+* Integer: 0 is False, all other values are True.
+* Float: All values other than 0.0 and NaN are True.
+* Object: NULL is False, everything else is True.
+* Array: Always True.
+
+Comparisons:
+* '==': True if types are equal and values are equal. Otherwise false.
+* '!=': Direct logical inverse of '=='.
+* Relative Compare: Need only compare between compatible types.
+** Will always return false for incompatible types.
+** Both Integer and Float values may be compared with each other.
+** Relative compare will be undefined for Object types.

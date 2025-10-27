@@ -170,7 +170,7 @@ void Sys_Error (char *error, ...)
 	char tb[256];
 	va_list         argptr;
 
-	{ DBGBREAK }
+//	{ DBGBREAK }
 
 	tk_printf("Sys_Error: ");   
 	va_start(argptr, error);

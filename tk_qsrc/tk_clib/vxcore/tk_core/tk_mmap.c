@@ -61,10 +61,12 @@ int TK_MMap_VaPageFree(void *ptr, int len)
 		TK_VMem_CheckAddrIsLowVirtual(addr))
 	{
 		TK_VMem_VaFreePages(addr, cnt);
+		TK_FlushCacheL1D();
 		return(0);
 	}else if(TK_VMem_CheckAddrIsPhysPage(addr))
 	{
 		TKMM_PageFree(ptr, len);
+		TK_FlushCacheL1D();
 		return(0);
 	}
 }
@@ -124,6 +126,8 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 	
 		TK_TaskAddPageAlloc(task, ptr, len);
 
+		TK_FlushCacheL1D();
+
 //		ix=tkmm_mmap_n_map++;
 		ix=TK_MMap_AllocIndex();
 //		tkmm_mmap_bufs[ix]=ptr;
@@ -176,7 +180,6 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 			TK_MMap_VaPageFree(ptrs, len);
 			krnl->mmap_ptr[i]=0;
 			krnl->mmap_len[i]=0;
-			
 //			tkmm_mmap_bufs[i]=NULL;
 //			tkmm_mmap_bufe[i]=NULL;
 			return(1);

@@ -448,6 +448,10 @@ Listing:
 * 1010001-ttttt-mmmmm-001-nnnnn-10-10011  FLT.D		Rn, Fm, Ft
 * 1010001-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.D		Rn, Fm, Ft
 
+* 1010011-ttttt-mmmmm-000-nnnnn-10-10011  FLE.Q		Rn, Fm, Ft
+* 1010011-ttttt-mmmmm-001-nnnnn-10-10011  FLT.Q		Rn, Fm, Ft
+* 1010011-ttttt-mmmmm-010-nnnnn-10-10011  FEQ.Q		Rn, Fm, Ft
+
 * 1100000-00000-mmmmm-rrr-nnnnn-10-10011  FCVT.WS	Rn, Fm
 * 1100000-00001-mmmmm-rrr-nnnnn-10-10011  FCVT.WSU	Rn, Fm
 * 1100000-00010-mmmmm-rrr-nnnnn-10-10011  FCVT.L.S	Rn, Fm
@@ -621,10 +625,10 @@ Listing:
 
 *  100-0-nn-nnn-mm-mmm-10  MV			Rm, Rn
 ** 100-0-nn-nnn-00-000-10  JR			Rm, Rn
-** 100-0-00-000-00-000-10  BREAK
+** 100-0-00-000-00-000-10  ? ECALL
 *  100-1-nn-nnn-mm-mmm-10  ADD			Rm, Rn
 ** 100-1-nn-nnn-00-000-10  JALR			Rm, Rn
-** 100-1-00-000-00-000-10  -
+** 100-1-00-000-00-000-10  EBREAK
 
 *  101-i-ii-iii-mm-mmm-10  FSD			Fm, (SP, Disp6Sq)
 *  110-i-ii-iii-mm-mmm-10  SW			Rm, (SP, Disp6Sl)

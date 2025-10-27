@@ -194,13 +194,21 @@ These perform a Load/Store with Ro understood as an index register.
 
 === Load / Store Pair ===
 
-* iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011  LX	Rn, Rm, Disp12_I
-* iiiiiii-ttttt-mmmmm-111-iiiii-01-00011  SX	Rm, Disp12_S, Rt
+* iiiiiii-iiiii-mmmmm-111-nnnnn-00-00011 / LX	Rn, Rm, Disp12_I
+* iiiiiii-ttttt-mmmmm-111-iiiii-01-00011 / SX	Rm, Disp12_S, Rt
 
-Load or Store a 128 bit register pair.
+* iiiiiii-iiiii-mmmmm-100-nnnnn-00-00111  FLQ	Fn, Rm, Disp12_I
+* iiiiiii-ttttt-mmmmm-100-iiiii-01-00111  FSQ	Rm, Disp12_S, Ft
+
+Load or Store a 128 bit register pair (Old).
 * An implementation may require an 8 byte alignment for LX/SX.
 * Even registers will map to pairs in X space.
 * Odd registers will map to pairs in F space.
+
+Load or Store a 128 bit register pair (New).
+* An implementation may require an 8 byte alignment for FLQ/FSQ.
+* Even registers will map to pairs in F space.
+* Odd registers will map to pairs in X space.
 
 
 === DMULSW / DMULUW ===

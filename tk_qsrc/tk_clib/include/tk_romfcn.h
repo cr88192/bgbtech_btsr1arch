@@ -59,6 +59,9 @@
 #define TK_UMSG_MUTEXTRYLOCK	0x1042
 #define TK_UMSG_MUTEXRELEASE	0x1043
 
+#define TK_UMSG_WAITMTHDCALL	0x1048
+#define TK_UMSG_POSTLIVEOBJ		0x1049		//Post Object, task may accept calls
+
 
 #define TK_UMSG_COMGLUE_VMT0		0x1200
 #define TK_UMSG_COMGLUE_VMT1		0x1201

@@ -869,6 +869,13 @@ __PDPCLIB_API__ double _sqrt_fast(double x)
 	return(xs);
 }
 
+double __fpu_fdiv_s(double x, double y);
+
+__PDPCLIB_API__ double _fdiv_fast(double x, double y)
+{
+	return(__fpu_fdiv_s(x, y));
+}
+
 #if 0
 __PDPCLIB_API__ double sqrt(double x)
 {

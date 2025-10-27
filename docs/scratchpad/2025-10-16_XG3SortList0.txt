@@ -1,0 +1,460 @@
+** 0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		Rn, (Rm, Ro)	//SB
+** 0100-oooooo-mmmmmm-0000-nnnnnn-10-0010  LEA.B		(Rm, Ro), Rn
+** 0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		Rn, (Rm, Ro)	//SH
+** 0101-oooooo-mmmmmm-0000-nnnnnn-10-0010  LEA.W		(Rm, Ro), Rn
+** 0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		Rn, (Rm, Ro)	//SW
+** 0110-oooooo-mmmmmm-0000-nnnnnn-10-0010  LEA.L		(Rm, Ro), Rn
+** 0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		Rn, (Rm, Ro)	//SD
+** 0111-oooooo-mmmmmm-0000-nnnnnn-10-0010  LEA.Q		(Rm, Ro), Rn
+** 1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		(Rm, Ro), Rn	//LB
+** 1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.B		(Rm, Ro), Rn	//LBU
+** 1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		(Rm, Ro), Rn	//LH
+** 1101-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.W		(Rm, Ro), Rn	//LHU
+** 1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		(Rm, Ro), Rn	//LW
+** 1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.L		(Rm, Ro), Rn	//LWU
+** 1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		(Rm, Ro), Rn	//LD
+** 0000-oooooo-mmmmmm-0001-nnnnnn-00-0010  ADD			Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-0001-nnnnnn-00-0010  SUB			Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0001-nnnnnn-00-0010  MULS.L		Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0001-nnnnnn-10-0010  MULS.Q		Rm, Ro, Rn
+** 0011-oooooo-mmmmmm-0001-nnnnnn-00-0010  MULU.L		Rm, Ro, Rn
+** 0011-oooooo-mmmmmm-0001-nnnnnn-10-0010  MULU.Q		Rm, Ro, Rn
+** 0100-oooooo-mmmmmm-0001-nnnnnn-00-0010  MIN			Rm, Ro, Rn
+** 0100-oooooo-mmmmmm-0001-nnnnnn-10-0010  MAX			Rm, Ro, Rn
+** 0101-oooooo-mmmmmm-0001-nnnnnn-00-0010  AND			Rm, Ro, Rn
+** 0110-oooooo-mmmmmm-0001-nnnnnn-00-0010  OR			Rm, Ro, Rn
+** 0111-oooooo-mmmmmm-0001-nnnnnn-00-0010  XOR			Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHAR.L		Rm, Ro, Rn	//SRAW
+** 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHAR.Q		Rm, Ro, Rn	//SRA
+** 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHLR.L		Rm, Ro, Rn	//SRLW
+** 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHLR.Q		Rm, Ro, Rn	//SRL
+** 1000-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHD		Rm, Ro, Rn	//PACKU
+** 1000-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLD		Rm, Ro, Rn	//PACK
+** 1001-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHLD		Rm, Ro, Rn
+** 1001-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLHD		Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTLQ		Rm, Ro, Rn
+** 0011-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTRQ		Rm, Ro, Rn
+** 0100-oooooo-mmmmmm-0011-nnnnnn-00-0010  MULHS.Q		Rm, Ro, Rn
+** 0101-oooooo-mmmmmm-0011-nnnnnn-00-0010  MULHU.Q		Rm, Ro, Rn
+** 0110-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTL.L		Rm, Ro, Rn
+** 0000-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.B		(Rm, Disp6s), Rn
+** 0001-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.W		(Rm, Disp6s), Rn
+** 0010-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.S		Rn, (Rm, Disp6s)
+** 0010-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.L		(Rm, Disp6s), Rn
+** 0011-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.H		Rn, (Rm, Disp6s)
+** 0011-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.Q		(Rm, Disp6s), Rn
+** 0100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		Xn, (Rm, Ro)
+** 0100-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.B		(Rm, Ro), Rn
+** 0101-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.W		(Rm, Ro), Rn
+** 0110-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		Rn, (Rm, Ro)
+** 0110-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.L		(Rm, Ro), Rn
+** 0111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		Rn, (Rm, Ro)
+** 0111-oooooo-mmmmmm-0100-nnnnnn-10-0010  LEAT.Q		(Rm, Ro), Rn
+** 1010-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.S		(Rm, Disp6s), Rn
+** 1011-oooooo-mmmmmm-0100-nnnnnn-00-0010 ? FMOV.H		(Rm, Disp6s), Rn
+** 1100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		(Rm, Ro), Xn
+** 1110-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		(Rm, Ro), Rn
+** 1111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		(Rm, Ro), Rn
+** 0010-oooooo-mmmmmm-0101-nnnnnn-00-0010  DMULS.L		Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULS.Q		Rm, Ro, Xn
+** 0011-oooooo-mmmmmm-0101-nnnnnn-00-0010  DMULU.L		Rm, Ro, Rn
+** 0011-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULU.Q		Rm, Ro, Xn
+** 0100-oooooo-mmmmmm-0101-nnnnnn-00-0010  SHAD.L		Rm, Ro, Rn	//SLAW
+** 0100-oooooo-mmmmmm-0101-nnnnnn-10-0010  SHAD.Q		Rm, Ro, Rn	//SLA
+** 0101-oooooo-mmmmmm-0101-nnnnnn-00-0010  SHLD.L		Rm, Ro, Rn	//SLL
+** 0101-oooooo-mmmmmm-0101-nnnnnn-10-0010  SHLD.Q		Rm, Ro, Rn	//SLLW
+** 1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD			Rm, Ro, Rn	//FADD.D
+** 1001-oooooo-mmmmmm-0101-nnnnnn-00-0010  FSUB			Rm, Ro, Rn	//FSUB.D
+** 1010-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMUL			Rm, Ro, Rn	//FMUL.D
+** 1011-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMAC			Rm, Ro, Rn	//~FMADD.D
+** 1100-oooooo-mmmmmm-0101-nnnnnn-00-0010  ADDS.L		Rm, Ro, Rn	//ADDW
+** 1100-oooooo-mmmmmm-0101-nnnnnn-10-0010  ADDU.L		Rm, Ro, Rn	//ADDWU
+** 1101-oooooo-mmmmmm-0101-nnnnnn-00-0010  SUBS.L		Rm, Ro, Rn	//SUBW
+** 1101-oooooo-mmmmmm-0101-nnnnnn-10-0010  SUBU.L		Rm, Ro, Rn	//SUBWU
+** 1110-oooooo-mmmmmm-0101-nnnnnn-00-0010  MULS.W		Rm, Ro, Rn
+** 1110-oooooo-mmmmmm-0101-nnnnnn-10-0010  MULS.W		Rm, Imm6u, Rn
+** 1111-oooooo-mmmmmm-0101-nnnnnn-00-0010  MULU.W		Rm, Ro, Rn
+** 1111-oooooo-mmmmmm-0101-nnnnnn-10-0010  MULU.W		Rm, Imm6u, Rn
+** 0000-oooooo-mmmmmm-0110-nnnnnn-00-0010  MACS.L		Rm, Ro, Rn
+** 0000-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACS.L		Rm, Imm6u, Rn
+** 0001-oooooo-mmmmmm-0110-nnnnnn-00-0010  MACU.L		Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACU.L		Rm, Imm6u, Rn
+** 0010-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACS.L		Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACS.L		Rm, Imm6u, Rn
+** 0011-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACU.L		Rm, Ro, Rn
+** 0011-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACU.L		Rm, Imm6u, Rn
+** 0100-oooooo-mmmmmm-0110-nnnnnn-00-0010  DIVS.Q		Rm, Ro, Rn	//DIV
+** 0100-oooooo-mmmmmm-0110-nnnnnn-10-0010  DIVU.Q		Rm, Ro, Rn	//DIVU
+** 0101-oooooo-mmmmmm-0110-nnnnnn-00-0010  MODS.Q		Rm, Ro, Rn	//REM
+** 0101-oooooo-mmmmmm-0110-nnnnnn-10-0010  MODU.Q		Rm, Ro, Rn	//REMU
+** 0110-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIV			Rm, Ro, Rn	//FDIV.D
+** 0111-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIVA		Rm, Ro, Rn
+** 1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL		Rm, Ro, Rn
+** 1101-oooooo-mmmmmm-0110-nnnnnn-00-0010  FADDG		Rm, Ro, Rn
+** 1110-oooooo-mmmmmm-0110-nnnnnn-00-0010  FSUBG		Rm, Ro, Rn
+** 1111-oooooo-mmmmmm-0110-nnnnnn-00-0010  FMULG		Rm, Ro, Rn
+** 0000-oooooo-mmmmmm-0111-nnnnnn-00-0010  FADDA		Rm, Ro, Rn
+** 0000-oooooo-mmmmmm-0111-nnnnnn-10-0010  FMIN			Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-0111-nnnnnn-00-0010  FSUBA		Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-0111-nnnnnn-10-0010  FMAX			Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-0111-nnnnnn-00-0010  FMULA		Rm, Ro, Rn
+** 0011-oooooo-mmmmmm-0111-nnnnnn-00-0010  MOVHW		Rm, Ro, Rn
+** 0011-oooooo-mmmmmm-0111-nnnnnn-10-0010  MOVLW		Rm, Ro, Rn
+** 0100-oooooo-mmmmmm-0111-nnnnnn-00-0010  DIVS.L		Rm, Ro, Rn	//DIVW
+** 0100-oooooo-mmmmmm-0111-nnnnnn-10-0010  DIVU.L		Rm, Ro, Rn	//DIVUW
+** 0101-oooooo-mmmmmm-0111-nnnnnn-00-0010  MODS.L		Rm, Ro, Rn	//REMW
+** 0101-oooooo-mmmmmm-0111-nnnnnn-10-0010  MODU.L		Rm, Ro, Rn	//REMUW
+** 0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q	Rm, Imm6s, Rn
+** 0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q	Rm, Imm6s, Rn
+** 0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q	Rm, Imm6s, Rn
+** 0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q	Rm, Imm6s, Rn	//SLTI
+** 0100-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q	Rm, Ro, Rn		//SEQ
+** 0101-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q	Rm, Ro, Rn		//SLT
+** 0110-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q	Rm, Ro, Rn		//SNE
+** 0111-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGE.Q	Rm, Ro, Rn		//SGE
+** 1101-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPEQ	Rm, Ro, Rn		//FEQ
+** 1110-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPLT	Rm, Ro, Rn		//~FGT
+** 1111-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPGE	Rm, Ro, Rn		//FGE
+* jjjj-oooooo-mmmmmm-1100-nnnnnn-s0-0010  BRA Disp23
+* jjjj-oooooo-mmmmmm-1101-nnnnnn-s0-0010  BSR Disp23
+** iiiiiiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		Rn, (Rm, Disp10s)	//SB
+** iiiiiiiiii-mmmmmm-0000-nnnnnn-10-0110  LEA.B		(Rm, Disp10s), Rn
+** iiiiiiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W		Rn, (Rm, Disp10s)	//SH
+** iiiiiiiiii-mmmmmm-0001-nnnnnn-10-0110  LEA.W		(Rm, Disp10s), Rn
+** iiiiiiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L		Rn, (Rm, Disp10s)	//SW
+** iiiiiiiiii-mmmmmm-0010-nnnnnn-10-0110  LEA.L		(Rm, Disp10s), Rn
+** iiiiiiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		Rn, (Rm, Disp10s)	//SD
+** iiiiiiiiii-mmmmmm-0011-nnnnnn-10-0110  LEA.Q		(Rm, Disp10s), Rn
+** iiiiiiiiii-mmmmmm-0100-nnnnnn-00-0110  FMOV.S	Rn, (Rm, Disp10s)	//FLS2D
+** iiiiiiiiii-mmmmmm-0100-nnnnnn-10-0110  FMOV.H	Rn, (Rm, Disp10s)	//FLH2D
+** iiiiiiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X		Rn, (Rm, Disp10s)	//SX/SDP
+** iiiiiiiiii-mmmmmm-0110-nnnnnn-00-0110  FMOV.S	(Rm, Disp10s), Rn	//FSD2S
+** iiiiiiiiii-mmmmmm-0110-nnnnnn-10-0110  FMOV.H	(Rm, Disp10s), Rn	//FSD2H
+** iiiiiiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X		(Rm, Disp10s), Rn	//LX/LDP
+** iiiiiiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B		(Rm, Disp10s), Rn	//LB
+** iiiiiiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B	(Rm, Disp10s), Rn	//LBU
+** iiiiiiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W		(Rm, Disp10s), Rn	//LH
+** iiiiiiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W	(Rm, Disp10s), Rn	//LHU
+** iiiiiiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L		(Rm, Disp10s), Rn	//LW
+** iiiiiiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L	(Rm, Disp10s), Rn	//LWU
+** iiiiiiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q		(Rm, Disp10s), Rn	//LD
+*** iiiiiiiiii-mmmmmm-1100-nnnnnn-00-0110 ? BTSTT	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1100-nnnnnn-10-0110 ? BTSTF	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1101-nnnnnn-00-0110 ? BGT		Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1101-nnnnnn-10-0110 ? BLE		Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1110-nnnnnn-00-0110 ? BGTU	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1110-nnnnnn-10-0110 ? BLEU	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1111-nnnnnn-00-0110 ? BEQ		Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1111-nnnnnn-10-0110 ? BNE		Rm, Rn, Disp10s
+* iiiiiiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0001-nnnnnn-00-1010  ADD		Rm, Imm10n, Rn
+* iiiiiiiiii-mmmmmm-0010-nnnnnn-00-1010  MULS.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0010-nnnnnn-10-1010  MULU.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0011-nnnnnn-00-1010  ADDS.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0011-nnnnnn-10-1010  ADDU.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0100-nnnnnn-00-1010  ADDS.L		Rm, Imm10n, Rn
+* iiiiiiiiii-mmmmmm-0100-nnnnnn-10-1010  ADDU.L		Rm, Imm10n, Rn
+* iiiiiiiiii-mmmmmm-0101-nnnnnn-00-1010  AND		Rm, Imm10s, Rn
+* iiiiiiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUB		Rm, Imm10s, Rn
+* iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010  OR			Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0110-000000-10-1010  JALR		Rm, Imm10s, ZR
+* iiiiiiiiii-mmmmmm-0110-000001-10-1010  JALR		Rm, Imm10s, LR
+* iiiiiiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm10u, Rn
+* 00iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  SHAD.L		Rm, Imm8s, Rn
+* 00iiiiiiii-mmmmmm-1000-nnnnnn-10-1010  SHAD.Q		Rm, Imm8s, Rn
+* 00iiiiiiii-mmmmmm-1001-nnnnnn-00-1010  SHLD.L		Rm, Imm8s, Rn
+* 00iiiiiiii-mmmmmm-1001-nnnnnn-10-1010  SHLD.Q		Rm, Imm8s, Rn
+** iiii-iiiiii-iiiiii-0000-nnnnnn-01-0010  LDIZ		Imm16u, Rn
+** iiii-iiiiii-iiiiii-0001-nnnnnn-01-0010  LDIN		Imm16n, Rn
+** iiii-iiiiii-iiiiii-0010-nnnnnn-01-0010  ADD		Imm16s, Rn
+** iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI	Imm16u, Rn
+** iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCH	Imm16u, Rn
+** iiii-iiiiii-iiiiii-0101-nnnnnn-01-0010  LEA.Q	(GP, Disp16u), Rn
+** iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  MOVU.L	(GP, Disp16u*4), Rn	//LWU
+** iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  MOV.Q	Rn, (GP, Disp16u*8)	//SD
+** iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  MOV.L	Rn, (GP, Disp16u*4)	//SW
+** iiii-iiiiii-iiiiii-1101-nnnnnn-01-0010  MOV.Q	(GP, Disp16u*8), Rn	//LD
+** iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  MOV.L	(GP, Disp16u*4), Rn	//LW
+** 0001-oooooo-mmmmmm-1000-nnnnnn-10-0010  TSTNQ	Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-1000-nnnnnn-10-0010  TSTQ		Rm, Ro, Rn
+*** 1001-001000-mmmmmm-0001-nnnnnn-00-0010  MOV			Rm, Rn
+*** 1001-001000-mmmmmm-0001-nnnnnn-10-0010  MOVX		Rm, Rn
+*** 1001-001010-mmmmmm-0001-nnnnnn-00-0010  MOV			Rm, Cn
+*** 1001-001011-mmmmmm-0001-nnnnnn-00-0010  MOV			Cm, Rn
+*** 1010-001111-mmmmmm-0001-nnnnnn-00-0010  ? BSWAPU.L	Rm, Rn
+*** 1010-001111-mmmmmm-0001-nnnnnn-10-0010  ? BSWAP.Q	Rm, Rn
+*** 1100-000010-mmmmmm-0001-nnnnnn-00-0010  CLZ.L		Rm, Rn
+*** 1100-000010-mmmmmm-0001-nnnnnn-10-0010  CLZ.Q		Rm, Rn
+*** 1100-000011-mmmmmm-0001-nnnnnn-00-0010  CTZ.L		Rm, Rn
+*** 1100-000011-mmmmmm-0001-nnnnnn-10-0010  CTZ.Q		Rm, Rn
+*** 1100-000100-mmmmmm-0001-nnnnnn-00-0010  BTRNS.L		Rm, Rn
+*** 1100-000100-mmmmmm-0001-nnnnnn-10-0010  BTRNS.Q		Rm, Rn
+*** 1100-000101-mmmmmm-0001-nnnnnn-00-0010  EXTS.L		Rm, Rn
+*** 1100-000101-mmmmmm-0001-nnnnnn-10-0010  EXTU.L		Rm, Rn
+*** 1100-001000-mmmmmm-0001-nnnnnn-00-0010  EXTS.B		Rm, Rn
+*** 1100-001000-mmmmmm-0001-nnnnnn-10-0010  EXTU.B		Rm, Rn
+*** 1100-001001-mmmmmm-0001-nnnnnn-00-0010  EXTS.W		Rm, Rn
+*** 1100-001001-mmmmmm-0001-nnnnnn-10-0010  EXTU.W		Rm, Rn
+*** 1101-000000-mmmmmm-0001-nnnnnn-00-0010  FLDCF		Rm, Rn
+*** 1101-000001-mmmmmm-0001-nnnnnn-00-0010  FLDCHF		Rm, Rn
+*** 1101-000010-mmmmmm-0001-nnnnnn-00-0010  FLDCI		Rm, Rn
+*** 1101-000011-mmmmmm-0001-nnnnnn-00-0010  FLDCH		Rm, Rn
+*** 1101-000100-mmmmmm-0001-nnnnnn-00-0010  FSTCF		Rm, Rn
+*** 1101-000101-mmmmmm-0001-nnnnnn-00-0010  FSTCHF		Rm, Rn
+*** 1101-000110-mmmmmm-0001-nnnnnn-00-0010  FSTCI		Rm, Rn
+*** 1101-000111-mmmmmm-0001-nnnnnn-00-0010  FSTCH		Rm, Rn
+*** 1101-001000-mmmmmm-0001-nnnnnn-00-0010  FNEG		Rm, Rn
+*** 1101-001001-mmmmmm-0001-nnnnnn-00-0010  FABS		Rm, Rn
+*** 1101-001111-mmmmmm-0001-nnnnnn-00-0010  FLDCIU		Rm, Rn
+
+** 0001-oooooo-mmmmmm-0011-nnnnnn-00-0010  MOVTT		Rm, Ri, Rn	//(TTAG)
+** 0001-oooooo-mmmmmm-0011-nnnnnn-10-0010  MOVTT		Rm, Imm6u, Rn
+*** 1000-000110-mmmmmm-0001-nnnnnn-00-0010  VSKG		Rm, Rn
+*** 1000-000111-mmmmmm-0001-nnnnnn-00-0010  VSKC		Rm, Rn
+*** 1000-001010-mmmmmm-0001-nnnnnn-00-0010  MOVZT		Rm, Rn
+*** 1000-001011-mmmmmm-0001-nnnnnn-00-0010  SNIPEDC		Rm, Rn
+*** 1000-001011-mmmmmm-0001-nnnnnn-10-0010  SNIPEIC		Rm, Rn
+*** 1000-001111-mmmmmm-0001-nnnnnn-10-0010  CONVFLI		Rm, Rn
+
+** 0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX			Xm, Xo, Xn	//(ALUX)
+** 0001-oooooo-mmmmmm-0001-nnnnnn-10-0010  SUBX			Xm, Xo, Xn	//(ALUX)
+** 0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX			Xm, Xo, Xn	//(ALUX)
+** 0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX			Xm, Xo, Xn	//(ALUX)
+** 0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX			Xm, Xo, Xn	//(ALUX)
+** 0010-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHARX		Xm, Ro, Xn	//(ALUX)
+** 0011-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLRX		Xm, Ro, Xn	//(ALUX)
+** 0101-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLDX		Xm, Ro, Xn	//(ALUX)
+** 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTLX		Xm, Ro, Xn	//(ALUX)
+* 00iiiiiiii-mmmmmm-0111-nnnnnn-10-1010  SHLD.X		Xm, Imm8s, Xn
+* 00iiiiiiii-mmmmmm-0110-nnnnnn-10-1010  SHAD.X		Xm, Imm8s, Xn	//Xn>=2
+*** 1000-000110-mmmmmm-0001-nnnnnn-10-0010  DIVU.X		Xm, Xn
+*** 1000-000111-mmmmmm-0001-nnnnnn-10-0010  REMU.X		Xm, Xn
+*** 1100-000000-mmmmmm-0001-nnnnnn-10-0010  NOTX		Xm, Xn
+
+** 0000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Disp6s)
+** 0000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XLEA.B	(Xm, Disp6s), Xn
+** 0001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Disp6s)
+** 0010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Disp6s)
+** 0011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Disp6s)
+** 0011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Disp6s)
+** 0100-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Ro)
+** 0100-oooooo-mmmmmm-1000-nnnnnn-10-0010  XLEA.B	(Xm, Ro), Xn
+** 0101-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Ro)
+** 0101-oooooo-mmmmmm-1000-nnnnnn-10-0010  CAS.Q	Rn, Ro, (Rm)
+** 0110-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Ro)
+** 0110-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVTT	Xm, Ro, Xn
+** 0111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Ro)
+** 0111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Ro)
+** 1000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	(Xm, Disp6s), Rn
+** 1000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.B	(Xm, Disp6s), Rn
+** 1001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	(Xm, Disp6s), Rn
+** 1001-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.W	(Xm, Disp6s), Rn
+** 1010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	(Xm, Disp6s), Rn
+** 1010-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.L	(Xm, Disp6s), Rn
+** 1011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Disp6s), Rn
+** 1011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Disp6s), Xn
+** 1100-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	(Xm, Ro), Rn		//
+** 1100-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.B	(Xm, Ro), Rn		//
+** 1101-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	(Xm, Ro), Rn		//
+** 1101-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.W	(Xm, Ro), Rn		//
+** 1110-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	(Xm, Ro), Rn		//
+** 1110-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.L	(Xm, Ro), Rn		//
+** 1111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Ro), Rn		//
+** 1111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Ro), Xn		//
+
+*** 1000-000000-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.B	Rm, Rn
+*** 1000-000001-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.W	Rm, Rn
+*** 1000-000010-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.L	Rm, Rn
+*** 1000-000011-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.Q	Rm, Rn
+*** 1000-000100-mmmmmm-0001-nnnnnn-00-0010  BNDCHK		RmImm6u, Rn
+*** 1000-000101-mmmmmm-0001-nnnnnn-00-0010  BNDCMP		RmImm6u, Rn
+
+
+** 0100-oooooo-mmmmmm-0010-nnnnnn-00-0010  PCSELT.W		Rm, Ro, Rn
+** 0100-oooooo-mmmmmm-0010-nnnnnn-10-0010  PCSELT.L		Rm, Ro, Rn
+** 0101-oooooo-mmmmmm-0010-nnnnnn-00-0010  PADD.F		Rm, Ro, Rn	//FADD.S
+** 0101-oooooo-mmmmmm-0010-nnnnnn-10-0010  PADDX.F		Xm, Xo, Xn
+** 0110-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSUB.F		Rm, Ro, Rn	//FSUB.S
+** 0110-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSUBX.F		Xm, Xo, Xn
+** 0111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.F		Rm, Ro, Rn	//FMUL.S
+** 0111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.F		Xm, Xo, Xn
+
+** 0000-oooooo-mmmmmm-0010-nnnnnn-00-0010  PADD.W		Rm, Ro, Rn
+** 0000-oooooo-mmmmmm-0010-nnnnnn-10-0010  PADD.L		Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSUB.W		Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSUB.L		Rm, Ro, Rn
+
+** 1010-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.F8		(Rm, Disp6s), Rn
+** 1011-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.2H		(Rm, Disp6s), Rn
+
+*** 1010-000000-mmmmmm-0001-nnnnnn-00-0010  PSTCF8H		Rm, Rn
+*** 1010-000001-mmmmmm-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
+*** 1101-000000-mmmmmm-0001-nnnnnn-10-0010  FLDCDX		Rm, Xn
+*** 1101-000010-mmmmmm-0001-nnnnnn-10-0010  FLDCXI		Rm, Xn
+*** 1101-000100-mmmmmm-0001-nnnnnn-10-0010  FSTCDX		Xm, Rn
+*** 1101-000110-mmmmmm-0001-nnnnnn-10-0010  FSTCXI		Xm, Rn
+*** 1101-001111-mmmmmm-0001-nnnnnn-10-0010  FLDCXIU		Rm, Rn
+
+** 1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADD			Rm, Imm6fp, Rn
+** 1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUB			Rm, Imm6fp, Rn
+** 1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMUL			Rm, Imm6fp, Rn
+
+** 1010-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSCHEQ.W		Rm, Ro, Rn
+** 1010-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSCHEQ.B		Rm, Ro, Rn
+** 1011-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSCHNE.W		Rm, Ro, Rn
+** 1011-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSCHNE.B		Rm, Ro, Rn
+** 1100-oooooo-mmmmmm-0010-nnnnnn-00-0010  BLKUTX1		Rm, Ro, Rn
+** 1100-oooooo-mmmmmm-0010-nnnnnn-10-0010  BLKUTX2		Rm, Ro, Rn
+** 1101-oooooo-mmmmmm-0010-nnnnnn-00-0010  PADD.H		Rm, Ro, Rn	//FADD.H
+** 1101-oooooo-mmmmmm-0010-nnnnnn-10-0010  PADDX.D		Xm, Xo, Xn
+** 1110-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSUB.H		Rm, Ro, Rn	//FSUB.H
+** 1110-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSUBX.D		Xm, Xo, Xn
+** 1111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.H		Rm, Ro, Rn	//FMUL.H
+** 1111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.D		Xm, Xo, Xn
+
+** 0110-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.LW		Rm, Ro, Rn
+** 0110-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.LW		Rm, Ro, Rn
+** 0111-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.HW		Rm, Ro, Rn
+** 0111-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.HW		Rm, Ro, Rn
+** 1110-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.F8		(Rm, Ro), Rn
+** 1000-oooooo-mmmmmm-0101-nnnnnn-10-0010  FADDX		Xm, Xo, Xn
+** 1001-oooooo-mmmmmm-0101-nnnnnn-10-0010  FSUBX		Xm, Xo, Xn
+** 1010-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMULX		Xm, Xo, Xn
+** 1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMAC.X		Xm, Xo, Xn
+** 0110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVX		Rm, Ro, Rn
+** 0111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVXA		Rm, Ro, Rn
+** 1000-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUTX3H		Xm, Ro, Rn
+** 1001-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLERP		Rm, Ro, Rn
+** 1001-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUTX3L		Xm, Ro, Rn
+** 1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX		Xm, Xo, Xn
+** 1100-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLKUAB1		Rm, Ro, Rn
+** 1100-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUAB2		Rm, Ro, Rn
+
+** 1111-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.2H		(Rm, Ro), Rn
+** 0001-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.W		Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.W		Rm, Ro, Rn
+** iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  PLDCH	Imm32u, Rn
+
+** 0010-oooooo-mmmmmm-0111-nnnnnn-10-0010  BITNN		Rm, Ro, Rn
+
+*** 1000-001010-mmmmmm-0001-nnnnnn-10-0010  XMOVZT		Xm, Xn
+*** 1000-001111-mmmmmm-0001-nnnnnn-00-0010  CONVFXI		Rm, Rn
+
+*** 1000-000100-mmmmmm-0001-nnnnnn-10-0010  MULU.X		Xm, Xn
+*** 1000-000101-mmmmmm-0001-nnnnnn-10-0010  MULHU.X	Xm, Xn
+* 01iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  PSHUF.B	Rm, Imm8u, Rn
+* 01iiiiiiii-mmmmmm-1000-nnnnnn-10-1010  PSHUF.W	Rm, Imm8u, Rn
+*** 1000-001000-mmmmmm-0001-nnnnnn-00-0010  BCDADC		Rm, Rn
+*** 1000-001000-mmmmmm-0001-nnnnnn-10-0010  BCDADCX		Xm, Xn
+*** 1000-001001-mmmmmm-0001-nnnnnn-00-0010  BCDSBB		Rm, Rn
+*** 1000-001001-mmmmmm-0001-nnnnnn-10-0010  BCDSBBX		Xm, Xn
+*** 1110-000000-mmmmmm-0001-nnnnnn-00-0010  RGB5SHR1	Rm, Rn
+*** 1110-000001-mmmmmm-0001-nnnnnn-00-0010  PMORT.L		Rm, Rn
+*** 1110-000001-mmmmmm-0001-nnnnnn-10-0010  PMORT.Q		Rm, Rn
+*** 1110-000010-mmmmmm-0001-nnnnnn-00-0010  RGB5PCK32	Rm, Rn
+*** 1110-000010-mmmmmm-0001-nnnnnn-10-0010  RGB5PCK64	Rm, Rn
+*** 1110-000011-mmmmmm-0001-nnnnnn-00-0010  RGB5UPCK32	Rm, Rn
+*** 1110-000011-mmmmmm-0001-nnnnnn-10-0010  RGB5UPCK64	Rm, Rn
+*** 1110-000100-mmmmmm-0001-nnnnnn-10-0010  RGB32PCK64	Rm, Rn
+*** 1110-000101-mmmmmm-0001-nnnnnn-10-0010  RGB32UPCK64	Rm, Rn
+*** 1110-000110-mmmmmm-0001-nnnnnn-00-0010 ? PSHAL.W	Rm, Rn
+*** 1110-000110-mmmmmm-0001-nnnnnn-10-0010 ? PSHLL.W	Rm, Rn
+*** 1110-000111-mmmmmm-0001-nnnnnn-00-0010 ? PSHAR.W	Rm, Rn
+*** 1110-000111-mmmmmm-0001-nnnnnn-10-0010 ? PSHLR.W	Rm, Rn
+*** 1110-001000-mmmmmm-0001-nnnnnn-00-0010  PLDCM8SH	Rm, Rn
+*** 1110-001000-mmmmmm-0001-nnnnnn-10-0010  PLDCM8UH	Rm, Rn
+*** 1110-001001-mmmmmm-0001-nnnnnn-00-0010  PLDCM30AH	Rm, Rn
+*** 1110-001001-mmmmmm-0001-nnnnnn-10-0010 ? PLDCXH		Rm, Xn
+*** 1110-001010-mmmmmm-0001-nnnnnn-00-0010  PSTCM8SH	Rm, Rn
+*** 1110-001010-mmmmmm-0001-nnnnnn-10-0010  PSTCM8UH	Rm, Rn
+*** 1110-001011-mmmmmm-0001-nnnnnn-00-0010  PSTCM30AH	Rm, Rn
+*** 1110-001011-mmmmmm-0001-nnnnnn-10-0010 ? PSTCXH		Xm, Rn
+*** 1110-001100-mmmmmm-0001-nnnnnn-00-0010  PLDCH		Rm, Rn
+*** 1110-001100-mmmmmm-0001-nnnnnn-10-0010  PLDCHH		Rm, Rn
+*** 1110-001101-mmmmmm-0001-nnnnnn-00-0010  PLDCEHL		Rm, Rn
+*** 1110-001101-mmmmmm-0001-nnnnnn-10-0010  PLDCEHH		Rm, Rn
+*** 1110-001110-mmmmmm-0001-nnnnnn-00-0010  PSTCH		Rm, Rn
+*** 1110-001110-mmmmmm-0001-nnnnnn-10-0010 ? XBLESS		Xm, Xn
+*** 1110-001111-mmmmmm-0001-nnnnnn-00-0010 ? MOVST		Rm, Rn
+*** 1110-001111-mmmmmm-0001-nnnnnn-10-0010 ? XMOVST		Xm, Xn
+*** 1111-000000-mmmmmm-0001-nnnnnn-00-0010  PCVTSB2HL	Rm, Rn
+*** 1111-000000-mmmmmm-0001-nnnnnn-10-0010  PCVTUB2HL	Rm, Rn
+*** 1111-000001-mmmmmm-0001-nnnnnn-00-0010  PCVTSB2HH	Rm, Rn
+*** 1111-000001-mmmmmm-0001-nnnnnn-10-0010  PCVTUB2HH	Rm, Rn
+*** 1111-000010-mmmmmm-0001-nnnnnn-00-0010  PCVTSW2FL	Rm, Rn
+*** 1111-000010-mmmmmm-0001-nnnnnn-10-0010  PCVTUW2FL	Rm, Rn
+*** 1111-000011-mmmmmm-0001-nnnnnn-00-0010  PCVTSW2FH	Rm, Rn
+*** 1111-000011-mmmmmm-0001-nnnnnn-10-0010  PCVTUW2FH	Rm, Rn
+*** 1111-000100-mmmmmm-0001-nnnnnn-00-0010  PCVTH2SB	Rm, Rn
+*** 1111-000100-mmmmmm-0001-nnnnnn-10-0010  PCVTH2UB	Rm, Rn
+*** 1111-000101-mmmmmm-0001-nnnnnn-00-0010  PCVTSW2H	Rm, Rn
+*** 1111-000101-mmmmmm-0001-nnnnnn-10-0010  PCVTUW2H	Rm, Rn
+*** 1111-000110-mmmmmm-0001-nnnnnn-00-0010  PCVTF2SW	Rm, Rn
+*** 1111-000110-mmmmmm-0001-nnnnnn-10-0010  PCVTF2UW	Rm, Rn
+*** 1111-000111-mmmmmm-0001-nnnnnn-00-0010  PCVTH2SW	Rm, Rn
+*** 1111-000111-mmmmmm-0001-nnnnnn-10-0010  PCVTH2UW	Rm, Rn
+*** 1111-001000-mmmmmm-0001-nnnnnn-00-0010  PSQRTA.H	Rm, Rn
+*** 1111-001000-mmmmmm-0001-nnnnnn-10-0010  PSQRTUA.H	Rm, Rn
+*** 1111-001001-mmmmmm-0001-nnnnnn-00-0010  PSQRTA.F	Rm, Rn
+*** 1111-001001-mmmmmm-0001-nnnnnn-10-0010  PSQRTUA.F	Rm, Rn
+*** 1111-001010-mmmmmm-0001-nnnnnn-00-0010  PRCPA.H		Rm, Rn
+*** 1111-001010-mmmmmm-0001-nnnnnn-10-0010  PRELU.H		Rm, Rn
+*** 1111-001011-mmmmmm-0001-nnnnnn-00-0010  PRCPA.F		Rm, Rn
+*** 1111-001011-mmmmmm-0001-nnnnnn-10-0010  PRELU.F		Rm, Rn
+*** 1111-001100-mmmmmm-0001-nnnnnn-00-0010  PCVTH2AL	Rm, Rn
+*** 1111-001100-mmmmmm-0001-nnnnnn-10-0010  RGB5PCKI8	Rm, Rn
+*** 1111-001101-mmmmmm-0001-nnnnnn-00-0010  PCVTAL2H	Rm, Rn
+*** 1111-001101-mmmmmm-0001-nnnnnn-10-0010  RGB5UPCKI8	Rm, Rn
+*** 1111-001110-mmmmmm-0001-nnnnnn-00-0010  FLDCIU.L	Rm, Rn
+*** 1111-001110-mmmmmm-0001-nnnnnn-10-0010  FLDCXIU.L	Rm, Xn
+*** 1111-001111-mmmmmm-0001-nnnnnn-00-0010  FLDCIS.L	Rm, Rn
+*** 1111-001111-mmmmmm-0001-nnnnnn-10-0010  FLDCXIS.L	Rm, Xn
+
+
+
+parameter[5:0] JX2_UCMD_NOP			= 6'h00;		//
+parameter[5:0] JX2_UCMD_OP_IXS		= 6'h01;		//1R
+parameter[5:0] JX2_UCMD_OP_IXT		= 6'h02;		//0R
+parameter[5:0] JX2_UCMD_LEA_MR		= 6'h03;		//Load
+parameter[5:0] JX2_UCMD_MOV_RM		= 6'h04;		//Store
+parameter[5:0] JX2_UCMD_MOV_MR		= 6'h05;		//Load
+parameter[5:0] JX2_UCMD_CONV3_RR	= 6'h06;		//Convert (Via ALU)
+parameter[5:0] JX2_UCMD_PMOV_RM		= 6'h07;		//SIMD Conv+Store
+parameter[5:0] JX2_UCMD_FMOV_RM		= 6'h08;		//FPU Store
+parameter[5:0] JX2_UCMD_FMOV_MR		= 6'h09;		//FPU Load
+parameter[5:0] JX2_UCMD_ALUCMP3R	= 6'h0A;		//ALU Command (3R)
+parameter[5:0] JX2_UCMD_QMULDIV		= 6'h0B;		//Slow MUL/DIV
+parameter[5:0] JX2_UCMD_CONV2_RR	= 6'h0C;		//Convert (Via ALU)
+parameter[5:0] JX2_UCMD_FPUV4SF		= 6'h0D;		//FPU Vec4SF Unit
+parameter[5:0] JX2_UCMD_PMOV_MR		= 6'h0E;		//SIMD Load+Conv
+parameter[5:0] JX2_UCMD_INVOP		= 6'h0F;		//
+parameter[5:0] JX2_UCMD_ALU3		= 6'h10;		//ALU Command (3R)
+parameter[5:0] JX2_UCMD_ALUCMP		= 6'h11;		//ALU Compare
+parameter[5:0] JX2_UCMD_UNARY		= 6'h12;		//ALU Unary Operator
+parameter[5:0] JX2_UCMD_SWAPN		= 6'h13;		//SWAP
+parameter[5:0] JX2_UCMD_SHAD3		= 6'h14;		//
+parameter[5:0] JX2_UCMD_CONV_RR		= 6'h18;		//
+parameter[5:0] JX2_UCMD_MOV_RC		= 6'h19;		//
+parameter[5:0] JX2_UCMD_MOV_CR		= 6'h1A;		//
+parameter[5:0] JX2_UCMD_MOV_IR		= 6'h1B;		//
+parameter[5:0] JX2_UCMD_BRA			= 6'h1C;		//
+parameter[5:0] JX2_UCMD_BSR			= 6'h1D;		//
+parameter[5:0] JX2_UCMD_JMP			= 6'h1E;		//
+parameter[5:0] JX2_UCMD_JSR			= 6'h1F;		//
+parameter[5:0] JX2_UCMD_MUL3		= 6'h20;		//Multiply
+parameter[5:0] JX2_UCMD_SHLLN		= 6'h21;		//Fixed Shifts
+parameter[5:0] JX2_UCMD_FPU3		= 6'h22;		//FPU 3R Ops
+parameter[5:0] JX2_UCMD_FLDCX		= 6'h23;		//FPU Convert (GR->FPR)
+parameter[5:0] JX2_UCMD_FSTCX		= 6'h24;		//FPU Convert (FPR->GR)
+parameter[5:0] JX2_UCMD_FIXS		= 6'h25;		//FPU Unary Op (FPR)
+parameter[5:0] JX2_UCMD_FCMP		= 6'h26;		//FPU Compare
+parameter[5:0] JX2_UCMD_MULW3		= 6'h27;		//Multiply (Word)
+parameter[5:0] JX2_UCMD_ALUW3		= 6'h28;		//ALU, Packed Word (3R)
+parameter[5:0] JX2_UCMD_BLINT		= 6'h29;		//Interpolator
+parameter[5:0] JX2_UCMD_ALUB3		= 6'h2A;		//ALU, Packed Byte (3R)
+parameter[5:0] JX2_UCMD_JCMP		= 6'h2B;		//Jump+Compare
+parameter[5:0] JX2_UCMD_BRA_NB		= 6'h2C;		//No Branch
+parameter[5:0] JX2_UCMD_ALUCMPW		= 6'h2D;		//ALU Cmp, Packed Word (3R)
+parameter[5:0] JX2_UCMD_ALUCMPB		= 6'h2E;		//ALU Cmp, Packed Byte (3R)
+parameter[5:0] JX2_UCMD_JCMPZ		= 6'h2F;		//Jump+Compare (Zero)
+

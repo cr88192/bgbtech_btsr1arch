@@ -297,9 +297,13 @@ The Global Base Register (GBR) will have the layout (Change):
 * (63:48), MBZ
 * (47: 0), GBR Address
 
-The Stack Pointer (SP) will have the layout (Change):
-* (63:48), FPU Status/Control (FPSCR)
+The Stack Pointer (SP) will have the layout (Drop):
+* / (63:48), FPU Status/Control (FPSCR)
 * (47: 0), SP Address
+
+The TBR will have the layout:
+* (63:48), FPU Status/Control (FPSCR)
+* (47: 0), TBR Address
 
 FPSCR/FPSR Will be defined as:
 * (15: 8), Status Bits

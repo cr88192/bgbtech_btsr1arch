@@ -387,6 +387,9 @@ int __open(const char *a, int b, int *rc)
 	char *s, *md;
 	int i;
 
+	if(btshx_tk_nhandles<3)
+		{ __debugbreak(); }
+
 	tk_vfile_init();
 
 	md="rb";
@@ -442,11 +445,16 @@ int __open(const char *a, int b, int *rc)
 		return(-1);
 	}
 
+	if(btshx_tk_nhandles<3)
+		{ __debugbreak(); }
+
 //	tk_printf("__open: %s  B\n", tfn);
 
 	*rc=0;
 	i=btshx_tk_nhandles++;
 	btshx_tk_handles[i]=fd;
+	if(i<3)
+		{ __debugbreak(); }
 	return(i);
 	
 //	return(open(a, b, c));
@@ -1199,12 +1207,20 @@ int __start_early()
 {
 	void *p;
 
+	if(btshx_tk_nhandles!=3)
+		{ __debugbreak(); }
+
 	TKMM_Init();
 
 	_malloc_fptr=(void *(*)(size_t, int))tk_malloc_cat;
 	_free_fptr=(void (*)(void *))tk_free;
 	_realloc_fptr=(void *(*)(void *, size_t))tk_realloc;
 	_msize_fptr=(size_t (*)(void *))tk_msize;
+	
+	if(btshx_tk_nhandles!=3)
+		{ __debugbreak(); }
+
+//	btshx_tk_nhandles=3;
 
 #if 0
 	if(((u64)tk_start_realloctest)&1)

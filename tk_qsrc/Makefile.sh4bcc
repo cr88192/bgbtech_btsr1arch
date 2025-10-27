@@ -86,9 +86,10 @@ LDFLAGS64_DHRY=$(TK_LDFL) -lc # -ltkgdi
 GL_CFLAGS64	= $(CFLAGS64) /DGLQUAKE
 
 TK_CFL_XRV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXRVA /O2 \
-	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba \
-	/frvldix /frvjumbo \
+	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic \
 	/fnovskgen /fnovsk
+
+	# /frvzba /frvldix /frvjumbo \
 
 TK_CFL_X3RV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXG3RV /O2 \
 	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba /frvjumbo \

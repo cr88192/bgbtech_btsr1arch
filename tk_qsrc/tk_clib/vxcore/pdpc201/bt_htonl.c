@@ -130,19 +130,23 @@ int  feholdexcept(fenv_t *env);
 int  fesetenv(const fenv_t *env);
 int  feupdateenv(const fenv_t *env);
 
+// #define ASM_REG_FENV	GBR
+// #define ASM_REG_FENV	SP
+#define ASM_REG_FENV	TBR
+
 #ifdef __BJX2__
 __asm {
 feclearexcept:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	MOV		0x00FFFFFFFFFFFFFF, R1
 	AND		R1, R6
-	MOV		R6, GBR
+	MOV		R6, ASM_REG_FENV
 	MOV		0, R2
 	RTS
 
 fegetenv:
 fegetexceptflag:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	SHLD.Q	R6, -48, R7
 	MOV.L	R7, (R4)
 	MOV		0, R2
@@ -150,53 +154,53 @@ fegetexceptflag:
 
 fesetenv:
 feupdateenv:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	MOV		0x0000FFFFFFFFFFFF, R1
 	AND		R1, R6
 	MOV.L	(R4), R7
 	SHLD.Q	R7, 48, R7
 	OR		R7, R6
-	MOV		R6, GBR
+	MOV		R6, ASM_REG_FENV
 	MOV		0, R2
 	RTS
 
 fesetexceptflag:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	MOV		0x00FFFFFFFFFFFFFF, R1
 	AND		R1, R6
 	MOV.L	(R4), R7
 	AND		0xFF00, R7
 	SHLD.Q	R7, 48, R7
 	OR		R7, R6
-	MOV		R6, GBR
+	MOV		R6, ASM_REG_FENV
 	MOV		0, R2
 	RTS
 
 fegetround:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	SHLD.Q	R6, -48, R7
 	AND		R7, 15, R2
 	RTS
 
 fesetround:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	MOV		0xFFF0FFFFFFFFFFFF, R1
 	AND		R1, R6
 	AND		15, R4
 	SHLD.Q	R4, 48, R4
 	OR		R4, R6
-	MOV		R6, GBR
+	MOV		R6, ASM_REG_FENV
 	MOV		0, R2
 	RTS
 
 feholdexcept:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	SHLD.Q	R6, -48, R7
 	MOV.L	R7, (R4)
 
 	MOV		0x00FFFFFFFFFFFFFF, R1
 	AND		R1, R6
-	MOV		R6, GBR
+	MOV		R6, ASM_REG_FENV
 
 	MOV		0, R2
 	RTS
@@ -206,9 +210,94 @@ feraiseexcept:
 	RTS
 
 fetestexcept:
-	MOV		GBR, R6
+	MOV		ASM_REG_FENV, R6
 	SHLD.Q	R6, -48, R7
 	AND		R7, R4, R2
+	RTS
+};
+#endif
+
+
+
+#ifdef __RISCV__
+__asm {
+feclearexcept:
+	MOV		ASM_REG_FENV, R12
+	MOV		0x00FFFFFFFFFFFFFF, R13
+	AND		R13, R12
+	MOV		R12, ASM_REG_FENV
+	MOV		0, R10
+	RTS
+
+fegetenv:
+fegetexceptflag:
+	MOV		ASM_REG_FENV, R12
+	SHLD.Q	R12, -48, R13
+	MOV.L	R13, (R10)
+	MOV		0, R10
+	RTS
+
+fesetenv:
+feupdateenv:
+	MOV		ASM_REG_FENV, R12
+	MOV		0x0000FFFFFFFFFFFF, R14
+	AND		R14, R12
+	MOV.L	(R10), R13
+	SHLD.Q	R13, 48, R13
+	OR		R13, R12
+	MOV		R12, ASM_REG_FENV
+	MOV		0, R10
+	RTS
+
+fesetexceptflag:
+	MOV		ASM_REG_FENV, R12
+	MOV		0x00FFFFFFFFFFFFFF, R14
+	AND		R14, R12
+	MOV.L	(R10), R13
+	AND		0xFF00, R13
+	SHLD.Q	R13, 48, R13
+	OR		R13, R12
+	MOV		R12, ASM_REG_FENV
+	MOV		0, R10
+	RTS
+
+fegetround:
+	MOV		ASM_REG_FENV, R12
+	SHLD.Q	R12, -48, R13
+	AND		R13, 15, R10
+	RTS
+
+fesetround:
+	MOV		ASM_REG_FENV, R12
+	MOV		0xFFF0FFFFFFFFFFFF, R13
+	AND		R13, R12
+	AND		15, R10
+	SHLD.Q	R10, 48, R10
+	OR		R10, R12
+	MOV		R12, ASM_REG_FENV
+	MOV		0, R10
+	RTS
+
+feholdexcept:
+	MOV		ASM_REG_FENV, R12
+	SHLD.Q	R12, -48, R13
+	MOV.L	R13, (R10)
+
+	MOV		0x00FFFFFFFFFFFFFF, R14
+	AND		R14, R12
+	MOV		R12, ASM_REG_FENV
+
+	MOV		0, R10
+	RTS
+
+feraiseexcept:
+	MOV		-1, R10
+	RTS
+
+fetestexcept:
+	MOV		ASM_REG_FENV, R12
+	SHLD.Q	R12, -48, R13
+	AND		R13, R10, R10
 	RTS
 };
 #endif

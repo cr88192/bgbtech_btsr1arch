@@ -309,7 +309,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVC))
 	{
 		/* For RISC-V Mode, Default to plain PE/COFF */
-//		ctx->pel_cmpr=255;
+		ctx->pel_cmpr=252;
 	}
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "pexe"))
@@ -622,6 +622,12 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo") ||
 			BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo96"))
 		{
+			if(ctx->pel_cmpr==252)
+			{
+				/* If (default) PE/COFF, change to PEL4 */
+				ctx->pel_cmpr=4;
+			}
+
 			shctx->has_jumbo|=2;	//Jumbo Prefixes
 			shctx->has_rvzba|=16;	//Load/Store Indexed
 			shctx->has_pushx2|=1;	//LX / SX
@@ -834,6 +840,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(shctx->has_pushx2 || shctx->has_simdx2)
 		shctx->abi_evenonly = 1;
+
+	if(ctx->pel_cmpr==252)
+		ctx->pel_cmpr=255;
 
 	if(ctx->imgfmt==BGBCC_IMGFMT_SYS)
 	{

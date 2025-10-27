@@ -116,6 +116,8 @@
 #include "pdpc201/btshx_fpusup.c"
 // #include "pdpc201/btshx_fpusup.c"
 
+#include "pdpc201/btshx_softqfp.c"
+
 #ifdef __BGBCC__
 #include "tk_core/tk_bcd.c"
 #endif

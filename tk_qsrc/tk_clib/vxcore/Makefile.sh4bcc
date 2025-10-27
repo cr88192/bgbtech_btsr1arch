@@ -66,6 +66,7 @@ SRCS_CLIB = \
 	pdpc201/stdlibext.c \
 	pdpc201/btshx_supa.c \
 	pdpc201/btshx_softfpu.c \
+	pdpc201/btshx_softqfp.c \
 	pdpc201/btshx_fpusup.c \
 	pdpc201/btshx_lva.c \
 	pdpc201/btshx_lvax.c \

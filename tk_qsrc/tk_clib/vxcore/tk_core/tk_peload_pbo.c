@@ -489,6 +489,7 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	tk_fread(tbuf, 1, 1024, fd);
 
 	is_pel4=0;
+	cmp=0;
 
 	sig_mz=tkfat_getWord(tbuf);
 	if(sig_mz!=0x4550)
@@ -511,6 +512,15 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 //			printf("TKPE: PE Sig Fail\n");
 			return(NULL);
 		}
+
+		/* Allow for MZ-stub + Compression */
+		mach=tkfat_getWord(tbuf+ofs_pe+2);
+		if(mach==0x364C)
+			{ is_pel4=1; cmp=6; }
+		if(mach==0x344C)
+			{ is_pel4=1; cmp=4; }
+		if(mach==0x334C)
+			{ is_pel4=1; cmp=3; }
 	}else
 	{
 		mach=tkfat_getWord(tbuf+2);
@@ -1472,6 +1482,8 @@ int TKPE_SetupTaskForImage(TKPE_TaskInfo *task, TKPE_ImageInfo *img)
 //	task->basegbr=gbrdat+szpbix;
 	task->basegbr=(tk_kptr)gbrdat;
 	task->boottbr=(tk_kptr)task;
+
+	TK_FlushCacheL1D();
 
 	return(1);
 }

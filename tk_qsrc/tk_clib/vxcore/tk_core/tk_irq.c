@@ -2244,6 +2244,40 @@ void TK_SleepCurrentThread(int usec)
 	TK_YieldCurrentThreadA(res1);
 }
 
+void TK_WaitMethodCall(void **robj, int *rumsg, u64 **rpret, u64 **rargs)
+{
+	TK_SysArg ar[4];
+	void *p;
+		
+	p=NULL;
+	ar[0].p=(void *)robj;
+	ar[1].p=(void *)rumsg;
+	ar[2].p=(void *)rpret;
+	ar[3].p=(void *)rargs;
+	tk_syscall(NULL, TK_UMSG_WAITMTHDCALL, &p, ar);
+	return;
+}
+
+/*
+Post a live object.
+This task may accept calls via this object if in a "WaitMethodCall".
+ */
+void TK_PostLiveObject(void *obj, int nVtab,
+	int shCpy, int ehCpy)
+{
+	TK_SysArg ar[4];
+	void *p;
+		
+	p=NULL;
+	ar[0].p=(void *)obj;
+	ar[1].i=nVtab;
+	ar[2].i=shCpy;
+	ar[3].i=ehCpy;
+	tk_syscall(NULL, TK_UMSG_POSTLIVEOBJ, &p, ar);
+	return;
+}
+
+
 void tk_thread_entry(void)
 {
 	TKPE_TaskInfo *task;

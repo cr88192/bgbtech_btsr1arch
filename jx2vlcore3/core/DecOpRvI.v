@@ -2334,8 +2334,8 @@ begin
 
 			UB: Rm, Rn, Rn
 			UW: Ro, Rn, Rn
-			UL: Rm, Cn, Cn
-			UQ: Cm, Cm, Rn
+			UL: Rm, ZR, Cn
+			UQ: Cm, Cid/ZR, Rn
 
 			NB: Rn, Rm, Rn
 			NW: Fm, Fo, Fp, Fn
