@@ -93,7 +93,12 @@
 #include "mm/dyll_metapath.c"
 #include "mm/dyll_metabin.c"
 
+#include "mm/bcn_decjpg.c"
+#include "mm/bcn_encjpg.c"
+
 #include "mm/cc_fmt_targa.c"
+#include "mm/cc_fmt_ppm.c"
+#include "mm/cc_fmt_imgutil.c"
 #include "mm/cc_fmt_bmp.c"
 #include "mm/cc_fmt_wave.c"
 #include "mm/cc_fmtcnv.c"

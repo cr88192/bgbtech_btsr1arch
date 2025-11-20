@@ -584,6 +584,13 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 			sz1=BGBCC_Img_EncodeImageBMP1A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal2);
 
+//		if(!bgbcc_stricmp(cnv, "bmp8t"))
+//			sz1=BGBCC_Img_EncodeImageBMP8(
+//				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
+//		if(!bgbcc_stricmp(cnv, "bmp8ta"))
+//			sz1=BGBCC_Img_EncodeImageBMP8A(
+//				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
+
 		if(!bgbcc_stricmp(cnv, "bmp4t"))
 			sz1=BGBCC_Img_EncodeImageBMP4(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
@@ -639,12 +646,33 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 			sz1=BGBCC_Img_EncodeImageBMP_CQ8NPA(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
 
-		if(!bgbcc_stricmp(cnv, "bmp_lz8"))
+		if(!bgbcc_stricmp(cnv, "bmp_lz8") ||
+				!bgbcc_stricmp(cnv, "bmp8_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ8(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_lz8a"))
+		if(!bgbcc_stricmp(cnv, "bmp_lz8a") ||
+				!bgbcc_stricmp(cnv, "bmp8a_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ8A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
+		if(!bgbcc_stricmp(cnv, "bmp4_lz"))
+			sz1=BGBCC_Img_EncodeImageBMP_LZ_4(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
+		if(!bgbcc_stricmp(cnv, "bmp4a_lz"))
+			sz1=BGBCC_Img_EncodeImageBMP_LZ_4A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
+
+//		if(!bgbcc_stricmp(cnv, "bmp8t_lz"))
+//			sz1=BGBCC_Img_EncodeImageBMP_LZ8(
+//				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
+//		if(!bgbcc_stricmp(cnv, "bmp8ta_lz"))
+//			sz1=BGBCC_Img_EncodeImageBMP_LZ8A(
+//				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
+		if(!bgbcc_stricmp(cnv, "bmp4t_lz"))
+			sz1=BGBCC_Img_EncodeImageBMP_LZ_4(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
+		if(!bgbcc_stricmp(cnv, "bmp4ta_lz"))
+			sz1=BGBCC_Img_EncodeImageBMP_LZ_4A(
+				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
 
 		*rfcc=BGBCC_FMT_BMP;
 		*rsz=sz1;
@@ -686,6 +714,39 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
 		
 		*rfcc=BGBCC_FMT_UPIC;
+		*rsz=sz1;
+		return(obuf);
+	}
+
+	if(	!bgbcc_stricmp(cnv, "jpeg") || !bgbcc_stricmp(cnv, "jpg") )
+	{
+		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
+		if(!ibuf)
+			return(NULL);
+		
+		fl=1<<8;
+		
+		fl|=100-((qlvl&7)*12);
+		
+		obuf=malloc(xs*ys*2);
+//		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
+		sz1=PDJPG_EncodeRgba(ibuf, obuf, xs, ys, fl);
+		
+		*rfcc=BGBCC_FMT_JPEG;
+		*rsz=sz1;
+		return(obuf);
+	}
+	
+	if(!bgbcc_stricmp(cnv, "png") )
+	{
+		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
+		if(!ibuf)
+			return(NULL);
+
+		obuf=malloc(xs*ys*2);
+		sz1=BGBBTJ_BufPNG_Encode(obuf, xs*ys*2, ibuf, xs, ys);
+		
+		*rfcc=BGBCC_FMT_PNG;
 		*rsz=sz1;
 		return(obuf);
 	}

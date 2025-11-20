@@ -46,10 +46,20 @@ Where, fmt may be one of:
 * bmp_cq8np: BMP with 8-bit CQ8 encoding (No Palette).
 * bmp_cq8npa: BMPA with 8-bit CQ8 encoding (No Palette).
 
+* bmp8_lz: BMP8 with LZ compression (RP3)
+* bmp8a_lz: BMP8A with LZ compression (RP3)
+* bmp4_lz: BMP4 with LZ compression (RP3)
+* bmp4a_lz: BMP4A with LZ compression (RP3)
+* bmpt4_lz: BMP4T with LZ compression (RP3)
+* bmp4ta_lz: BMP4TA with LZ compression (RP3)
+
 * qoi: QOI Format
 * qoli: QOLI (QOI with inline LZ compression)
 * lcif: LCIF Format
 * upic: UPIC Format
+* jpeg: JPEG Format (Extended T.81)
+* jpg: Alias for 'jpeg'
+* png: PNG Format
 
 * wav_{8/11/16/22/32/44}{m/s}_{8/16/alaw/adpcm/adpcm2b/adlq} : WAV conversion
 
@@ -71,6 +81,8 @@ For LCIF and UPIC, the 'q' parameter will speficy a lossy quality level (0=best,
 
 Both QOI and LCIF will include an full Alpha channel.
 
+For JPEG, the 'q' parameter is also 0..7 best to worst.
+* The format will support an optional alpha channel encoded as an internal grayscale image encoded inside an APP11 marker.
 
 Both CRAM8 and CQ8 may have no palette variants. These formats may save some space by omitting the color palette, in which case the default 256 color palette will be assumed.
 

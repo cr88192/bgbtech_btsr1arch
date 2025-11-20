@@ -162,6 +162,8 @@ static const int pdjpg_zigzag2[64]={
 
 PDJPG_Context *pdjpg_freectx;
 
+PDJPG_Context *pdjpg_dummyctx;
+
 PDJPG_Context *PDJPG_AllocContext()
 {
 	PDJPG_Context *ctx;
@@ -693,6 +695,13 @@ int PDJHUFF_DecodeBlock(PDJPG_Context *ctx,
 	if(i==1)
 		return(2);
 	return(0);
+}
+
+static int clamp255(int val)
+{
+	if(val<0)	return(0);
+	if(val>255)	return(255);
+	return(val);
 }
 
 void PDJPG_CopyOutBlock8B(
@@ -1582,7 +1591,7 @@ void PDJPG_Free(byte *buf)
 }
 
 #if 1
-BTEIFGL_API byte *PDJPG_DecodeScanForComponentLayer(
+byte *PDJPG_DecodeScanForComponentLayer(
 	byte *buf, int sz, char *name)
 {
 	byte *cs, *cs2, *cse;
@@ -1634,13 +1643,25 @@ BTEIFGL_API byte *PDJPG_DecodeScanForComponentLayer(
 }
 #endif
 
-BTEIFGL_API int PDJPG_DecodeBasic(PDJPG_Context *ctx,
+int PDJPG_DecodeBasic(PDJPG_Context *ctx,
 	byte *buf, int sz, int *rxs, int *rys)
 {
 	byte *obuf;
 	byte *otbuf;
 	byte *csl;
 	int i, j, n, sz1;
+
+#if 0
+	if(!ctx)
+	{
+		ctx=pdjpg_dummyctx;
+		if(!ctx)
+		{
+			ctx=PDJPG_AllocContext();
+			pdjpg_dummyctx=ctx;
+		}
+	}
+#endif
 	
 //	csl=NULL;
 	csl=PDJPG_DecodeScanForComponentLayer(buf, sz, "Alpha");
@@ -1684,6 +1705,29 @@ BTEIFGL_API int PDJPG_DecodeBasic(PDJPG_Context *ctx,
 	return(i);
 }
 
+byte *PDJPG_DecodeBasicNoCtxRGBA(
+	byte *buf, int sz, int *rxs, int *rys)
+{
+	PDJPG_Context *ctx;
+	byte *obuf;
+	int xs, ys;
+
+	ctx=pdjpg_dummyctx;
+	if(!ctx)
+	{
+		ctx=PDJPG_AllocContext();
+		pdjpg_dummyctx=ctx;
+	}
+	
+	xs=0; ys=0;
+	PDJPG_DecodeBasic(ctx, buf, sz, &xs, &ys);
+	obuf=bgbcc_malloc(xs*ys*4);
+	PDJPG_GetImageRGBA(ctx, obuf, xs, ys);
+	
+	if(rxs)		*rxs=xs;
+	if(rys)		*rys=ys;
+	return(obuf);
+}
 
 #if 1
 int PDJPG_EscapeDecodeBuffer(byte *ibuf, int isz,

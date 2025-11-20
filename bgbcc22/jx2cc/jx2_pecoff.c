@@ -658,8 +658,9 @@ int BGBCC_JX2C_PackBlockLZ_LookupMatch(
 
 	if(bgbcc_packlz_cmp==3)
 	{
-//		md=131071;
-		md=(1<<21)-1;
+//		md=(1<<21)-1;
+		md=131071;
+		ml=515;
 	}
 
 	if(bgbcc_packlz_cmp==6)
@@ -1314,9 +1315,12 @@ int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
 	byte *cs, *cse, *lcs;
 	byte *ct, *cte;
 	u32 v;
-	int pl, pd;
+	int pl, pd, ocmp;
 	int l, d, rl, l1, d1;
 	int i, j, k;
+	
+	ocmp=bgbcc_packlz_cmp;
+	bgbcc_packlz_cmp=3;
 	
 //	ctx->chn_base=ibuf;
 	cs=ibuf; cse=ibuf+ibsz;
@@ -1561,6 +1565,8 @@ int BGBCC_JX2C_PackBlockRP2(BGBCC_TransState *ctx,
 		*ct++=0x1F;
 	
 	bgbcc_packlz_cblksz=ct-obuf;
+
+	bgbcc_packlz_cmp=ocmp;
 
 //	return(ct-obuf);
 	return(lcs-ibuf);

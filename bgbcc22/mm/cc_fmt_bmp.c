@@ -94,6 +94,25 @@ struct BGBCC_BITMAPV5HEADER_s {
 byte *BGBBTJ_BufPNG_Decode(
 	byte *csbuf, int cssz, int *w, int *h);
 
+byte bgbcc_fixed_pal16[64] = {
+0x00, 0x00, 0x00, 0xFF,
+0xAA, 0x00, 0x00, 0xFF,
+0x00, 0xAA, 0x00, 0xFF,
+0xAA, 0xAA, 0x00, 0xFF,
+0x00, 0x00, 0xAA, 0xFF,
+0xAA, 0x00, 0xAA, 0xFF,
+0x00, 0x55, 0xAA, 0xFF,
+0xAA, 0xAA, 0xAA, 0xFF,
+0x55, 0x55, 0x55, 0xFF,
+0xFF, 0x55, 0x55, 0xFF,
+0x55, 0xFF, 0x55, 0xFF,
+0xFF, 0xFF, 0x55, 0xFF,
+0x55, 0x55, 0xFF, 0xFF,
+0xFF, 0x55, 0xFF, 0xFF,
+0x55, 0xFF, 0xFF, 0xFF,
+0xFF, 0xFF, 0xFF, 0xFF,
+};
+
 byte bgbcc_dfl_pal256[1024];
 byte bgbcc_dfl_pal16[64];
 
@@ -540,6 +559,16 @@ byte *BGBCC_Img_DecodeImage(byte *imgbuf, int *rw, int *rh)
 		(imgbuf[2]=='N') && (imgbuf[3]=='G'))
 	{
 		return(BGBBTJ_BufPNG_Decode(imgbuf, 1<<20, rw, rh));
+	}
+	
+	if((imgbuf[0]=='P') && (imgbuf[1]>='0') && (imgbuf[1]<='7'))
+	{
+		return(BGBCC_Img_DecodePPM(imgbuf, rw, rh));
+	}
+
+	if((imgbuf[0]==0xFF) && (imgbuf[1]==0xD8))
+	{
+		return(PDJPG_DecodeBasicNoCtxRGBA(imgbuf, 1<<20, rw, rh));
 	}
 	
 	return(NULL);
@@ -1823,6 +1852,110 @@ int BGBCC_Img_EncodeImageBMP_LZ8A(byte *obuf, byte *ibuf,
 	int xs, int ys, byte *pal)
 {
 	return(BGBCC_Img_EncodeImageBMP_LZ8I(obuf, ibuf, xs, ys, pal, 1));
+}
+
+
+int BGBCC_Img_EncodeImageBMP_LZ_4I(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal, int fl)
+{
+#ifdef TGVLZ_NOMAIN
+	TgvLz_Context *tectx;
+#endif
+	BGBCC_BITMAPINFOHEADER *bmi;
+	byte *bdat, *bpal, *cs, *ct;
+	byte *tbuf;
+	int ofs_bmi;
+	int ofs_pal;
+	int ofs_dat;
+	int cr, cg, cb, ca, ci, aki;
+	int xstr, sz, csz;
+	int x, y;
+	int i;
+
+	BGBCC_Img_EncodeImageBMP4I(obuf, ibuf, xs, ys, pal, fl);
+
+//	xstr=(xs+3)&(~3);
+	xstr=(((xs+1)/2)+3)&(~3);
+//	sz=ofs_dat+ys*xstr;
+
+	if(fl&1)
+	{
+		ofs_bmi=0x0010;
+		ofs_pal=0x0038;
+		ofs_dat=0x0440;
+		sz=ofs_dat+ys*xstr;
+
+		memcpy(obuf, " BMP", 4);
+		exwad_setu32(obuf+0x04, sz);
+		exwad_setu32(obuf+0x08, 0);
+		exwad_setu32(obuf+0x0C, ofs_dat);
+		bmi=(BGBCC_BITMAPINFOHEADER *)(obuf+0x10);
+	}else
+	{
+		ofs_bmi=0x000E;
+		ofs_pal=0x0036;
+		ofs_dat=0x0440;
+		sz=ofs_dat+ys*xstr;
+
+		memcpy(obuf, "BM", 2);
+		exwad_setu32(obuf+0x02, sz);
+		exwad_setu32(obuf+0x06, 0);
+		exwad_setu32(obuf+0x0A, ofs_dat);
+		bmi=(BGBCC_BITMAPINFOHEADER *)(obuf+0x0E);
+	}
+
+	bmi->biCompression=BGBCC_FMT_RGL3;
+	
+	tbuf=malloc(2*ys*xstr);
+
+#ifdef TGVLZ_NOMAIN
+	tectx=TgvLz_CreateContext();
+	csz=TgvLz_DoEncodeSafe(tectx, tbuf, obuf+ofs_dat, ys*xstr);
+	printf("BGBCC_Img_EncodeImageBMP_LZ4I: RP2 %d -> %d\n", ys*xstr, csz);
+#else
+	if(1)
+//	if(0)
+	{
+		BGBCC_JX2C_PackBlockLZ_Reset(NULL);
+		BGBCC_JX2C_PackBlockRP2(NULL,
+			obuf+ofs_dat, tbuf, ys*xstr, 2*ys*xstr);
+		csz=bgbcc_packlz_cblksz;
+		printf("BGBCC_Img_EncodeImageBMP_LZ8I: RP2 %d -> %d\n", ys*xstr, csz);
+	}else
+	{
+		BGBCC_JX2C_PackBlockLZ_Reset(NULL);
+		BGBCC_JX2C_PackBlockLZ4(NULL,
+			tbuf, obuf+ofs_dat, 2*ys*xstr, ys*xstr);
+		csz=bgbcc_packlz_cblksz;
+		printf("BGBCC_Img_EncodeImageBMP_LZ8I: LZ4 %d -> %d\n", ys*xstr, csz);
+	}
+#endif
+
+	memcpy(obuf+ofs_dat, tbuf, csz);
+	bmi->biSizeImage=csz;
+
+	free(tbuf);
+
+	sz=ofs_dat+csz;
+	
+	if(fl&1)
+		{ exwad_setu32(obuf+0x04, sz); }
+	else
+		{ exwad_setu32(obuf+0x02, sz); }
+
+	return(sz);
+}
+
+int BGBCC_Img_EncodeImageBMP_LZ_4(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal)
+{
+	return(BGBCC_Img_EncodeImageBMP_LZ_4I(obuf, ibuf, xs, ys, pal, 0));
+}
+
+int BGBCC_Img_EncodeImageBMP_LZ_4A(byte *obuf, byte *ibuf,
+	int xs, int ys, byte *pal)
+{
+	return(BGBCC_Img_EncodeImageBMP_LZ_4I(obuf, ibuf, xs, ys, pal, 1));
 }
 
 

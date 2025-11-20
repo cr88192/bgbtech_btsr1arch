@@ -424,6 +424,10 @@ int stat_ldst_disp;
 int stat_ldst_indx;
 int stat_ldst_idxdisp;
 
+int stat_const_hist[128];
+int stat_imm_hist[128];
+int stat_disp_hist[128];
+int stat_rldisp_hist[128];
 
 int stat_func_tot;
 int stat_func_leaf;

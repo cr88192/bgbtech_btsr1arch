@@ -586,7 +586,7 @@ void PDJHUFF_BuildLengthsAdjust(int *stat, int nc, byte *cl, int ml)
 	{
 		j=PDJHUFF_BuildLengths(stat, nc, cl, ml);
 		if(j<0)
-			printf("PDJHUFF_BuildLengthsAdjust: Huff Fail %d\n");
+			printf("PDJHUFF_BuildLengthsAdjust: Huff Fail %d\n", j);
 
 		for(i=0; i<nc; i++)
 			if(stat[i] && !cl[i])
@@ -2143,7 +2143,7 @@ int PDJPG_EncodeComponent(
 	return(sz);
 }
 
-BTEIFGL_API int PDJPG_EncodeRgbaCtx(
+int PDJPG_EncodeRgbaCtx(
 	PDJPG_Context *ctx,
 	byte *rgba, byte *obuf, int xs, int ys, int qf)
 {
@@ -2151,7 +2151,7 @@ BTEIFGL_API int PDJPG_EncodeRgbaCtx(
 		obuf, xs, ys, qf, BTIC1H_PXF_RGBA));
 }
 
-BTEIFGL_API int PDJPG_EncodeClrsCtx(
+int PDJPG_EncodeClrsCtx(
 	PDJPG_Context *ctx,
 	byte *rgba, byte *obuf, int xs, int ys, int qf, int pf)
 {
@@ -2224,7 +2224,7 @@ BTEIFGL_API int PDJPG_EncodeClrsCtx(
 	return(ct-obuf);
 }
 
-BTEIFGL_API int PDJPG_EncodeRgba(
+int PDJPG_EncodeRgba(
 	byte *rgba, byte *obuf, int xs, int ys, int qf)
 {
 	PDJPG_Context *ctx;
@@ -2237,7 +2237,7 @@ BTEIFGL_API int PDJPG_EncodeRgba(
 	return(sz);
 }
 
-BTEIFGL_API int PDJPG_EncodeClrs(
+int PDJPG_EncodeClrs(
 	byte *rgba, byte *obuf, int xs, int ys, int qf, int pf)
 {
 	PDJPG_Context *ctx;

@@ -930,7 +930,23 @@ int PDZ2_EncodeStreamLvl(byte *ibuf, byte *obuf, int isz, int osz, int l)
 	static int sd[10]=
 		{1, 16, 16, 64, 64, 256, 256, 1024, 4096, 16384};
 	static int md[10]=
-		{1, 4096, 8192, 4096, 8192, 8192, 16384, 16384, 32768, 32768};
+		{16, 4096, 8192, 4096, 8192, 8192, 16384, 16384, 32768, 32768};
+
+	int i;
+
+	pdz2_sdepth=sd[l];
+	pdz2_maxdist=md[l];
+
+	i=PDZ2_EncodeStream_I(ibuf, obuf, isz, osz);
+	return(i);
+}
+
+int PDZ2_EncodeStreamLvl1F(byte *ibuf, byte *obuf, int isz, int osz, int l)
+{
+	static int sd[10]=
+		{1, 2, 4, 6, 8, 10, 12, 16, 20, 24};
+	static int md[10]=
+		{16, 16384, 16384, 32768, 32768, 32768, 32768, 32768, 32768, 32768};
 
 	int i;
 

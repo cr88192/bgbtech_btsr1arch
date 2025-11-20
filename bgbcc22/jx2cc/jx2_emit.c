@@ -3113,6 +3113,240 @@ int BGBCC_JX2_EmitLoadRegImm128P(
 	return(1);
 }
 
+int BGBCC_JX2_Log2UpImm(s64 imm)
+{
+	s64 v;
+	int ex, ix, sg;
+	
+	ex=0; v=imm; sg=0;
+	if(v<0)
+		{ sg=1; v=-v; }
+	while(v>1)
+		{ ex++; v=(v+1)>>1; }
+	return(ex);
+}
+
+int BGBCC_JX2_AddImmHistStat(int *tab, s64 imm)
+{
+	s64 v;
+	int ex, ix, sg;
+	
+	ex=0; v=imm; sg=0;
+	if(v<0)
+		{ sg=1; v=-v; }
+	while(v>1)
+		{ ex++; v=(v+1)>>1; }
+	ix=(ex<<1)|sg;
+	tab[ix]++;
+	return(0);
+}
+
+int BGBCC_JX2_DumpHistStatFd(FILE *fd, int *tab, char *title)
+{
+	int i, j, k;
+	if(!fd)
+		return(0);
+
+	fprintf(fd, "%s:\n", title);
+
+	for(i=0; i<16; i++)
+	{
+		for(j=0; j<8; j++)
+		{
+			k=i*8+j;
+			fprintf(fd, "%6u ", tab[k]);
+		}
+		fprintf(fd, "\n");
+	}
+
+	return(0);
+}
+
+int BGBCC_JX2_DumpHistGraph(BGBCC_JX2_Context *ctx, char *fname)
+{
+	byte *imgbuf, *tbuf;
+	char *tit;
+	int *tab;
+	u32 clr;
+	int xs, ys, sz;
+	int pp_xl, pp_yl, pp_xn, pp_yn;
+	int pn_xl, pn_yl, pn_xn, pn_yn;
+	int max_lg2, isbmp, ispng, isjpg;
+	int i, j, k, k0, k1;
+	
+	isbmp=!strcmp(fname+strlen(fname)-4, ".bmp");
+	ispng=!strcmp(fname+strlen(fname)-4, ".png");
+	isjpg=!strcmp(fname+strlen(fname)-4, ".jpg");
+	
+	xs=720; ys=480;
+	imgbuf=malloc(xs*ys*4);
+	tbuf=malloc(2048+xs*ys*2);
+	
+	memset(imgbuf, 255, xs*ys*4);
+
+	BGBCC_ImgUtil_DrawLine(imgbuf, xs, ys, 20, 240, 660, 240, 0x000000);
+
+	for(i=0; i<64; i++)
+	{
+		j=(i%10)+((i/10)<<4);
+	
+		BGBCC_ImgUtil_DrawDenseHexDigit(
+			imgbuf, xs, ys,
+			20+i*10, 16, j, 0x000000);
+	}
+
+	for(i=0; i<64; i++)
+	{
+		k=(i+1)*10;
+		k-=1;
+		BGBCC_ImgUtil_DrawLine(imgbuf, xs, ys, 20+k, 240-220, 20+k, 240+200,
+			0xCFCFCF);
+	}
+
+	max_lg2=1;
+	for(j=0; j<4; j++)
+	{
+		switch(j)
+		{
+		case 0: tab=ctx->stat_const_hist;	clr=0xFF0000; break;
+		case 1: tab=ctx->stat_imm_hist;		clr=0x00FF00; break;
+		case 2: tab=ctx->stat_disp_hist;	clr=0x0000FF; break;
+		case 3: tab=ctx->stat_rldisp_hist;	clr=0x9F009F; break;
+		}
+		for(i=0; i<64; i++)
+		{
+			k0=tab[i*2+0];		k1=tab[i*2+1];
+			k0=BGBCC_JX2_Log2UpImm(k0);
+			k1=BGBCC_JX2_Log2UpImm(k1);
+			if(k0>max_lg2)
+				max_lg2=k0;
+			if(k1>max_lg2)
+				max_lg2=k1;
+		}
+	}
+
+	for(i=0; i<64; i++)
+	{
+		j=(i%10)+((i/10)<<4);
+
+		k=i*(200.0/max_lg2);
+		if(k>=220)
+			continue;
+	
+		BGBCC_ImgUtil_DrawDenseHexDigit(
+			imgbuf, xs, ys,
+			4, 240+k, j, 0x000000);
+
+		if(i)
+		{
+			BGBCC_ImgUtil_DrawDenseHexDigit(
+				imgbuf, xs, ys,
+				4, 240-k, j, 0xCF0000);
+		}
+	}
+
+	for(j=0; j<4; j++)
+	{
+		switch(j)
+		{
+		case 0:
+			tit="Const";
+			tab=ctx->stat_const_hist;
+			clr=0xDF0000;
+			break;
+		case 1:
+			tit="Imm";
+			tab=ctx->stat_imm_hist;
+			clr=0x007F00;
+			break;
+		case 2:
+			tit="Disp";
+			tab=ctx->stat_disp_hist;
+			clr=0x0000FF;
+			break;
+		case 3:
+			tit="RlDisp";
+			tab=ctx->stat_rldisp_hist;
+			clr=0x9F009F;
+			break;
+		}
+
+		BGBCC_ImgUtil_DrawTextString(imgbuf, xs, ys,
+			665, 100+j*16, tit, clr);
+
+		pp_xl=20; pp_yl=240;
+		pn_xl=20; pn_yl=240;
+		for(i=0; i<64; i++)
+		{
+			k0=tab[i*2+0];		k1=tab[i*2+1];
+			pp_xn=20+(i+1)*10-5;
+			pn_xn=20+(i+1)*10-5;
+			k0=BGBCC_JX2_Log2UpImm(k0);
+			k1=BGBCC_JX2_Log2UpImm(k1);
+			
+			k0=k0*(200.0/max_lg2);
+			k1=k1*(200.0/max_lg2);
+			
+			pp_yn=240+k0;
+			pn_yn=240-k1;
+
+			if((pp_yl!=240) || (pp_yn!=240))
+				BGBCC_ImgUtil_DrawLine(imgbuf, xs, ys,
+					pp_xl, pp_yl, pp_xn, pp_yn, clr);
+			if((pn_yl!=240) || (pn_yn!=240))
+				BGBCC_ImgUtil_DrawLine(imgbuf, xs, ys,
+					pn_xl, pn_yl, pn_xn, pn_yn, clr);
+
+			pp_xl=pp_xn;	pp_yl=pp_yn;
+			pn_xl=pn_xn;	pn_yl=pn_yn;
+		}
+	}
+
+	if(isbmp)
+	{
+		k0=clock();
+//		sz=BGBCC_Img_EncodeImageBMP16(tbuf, imgbuf, xs, ys);
+		sz=BGBCC_Img_EncodeImageBMP4(tbuf, imgbuf, xs, ys, bgbcc_fixed_pal16);
+		BGBCC_StoreFile(fname, tbuf, sz);
+		k1=clock();
+//		printf("BMP Dump: %dms\n", k1-k0);
+	}
+
+	if(ispng)
+	{
+#if 0
+		k0=clock();
+//		sz=BGBCC_Img_EncodeImageBMP16(tbuf, imgbuf, xs, ys);
+		sz=BGBCC_Img_EncodeImageBMP_LZ_4(
+			tbuf, imgbuf, xs, ys, bgbcc_fixed_pal16);
+//		BGBCC_StoreFile(fname, tbuf, sz);
+		k1=clock();
+		printf("BMP LZ_4 Dump: %dB %dms\n", sz, k1-k0);
+#endif
+
+		k0=clock();
+//		sz=BGBBTJ_BufPNG_Encode(tbuf, 1<<20, imgbuf, xs, ys);
+		sz=BGBBTJ_BufPNG_EncodeFast(tbuf, 1<<20, imgbuf, xs, ys);
+		BGBCC_StoreFile(fname, tbuf, sz);
+		k1=clock();
+		printf("PNG Dump: %dms\n", k1-k0);
+	}
+
+	if(isjpg)
+	{
+		k0=clock();
+		sz=PDJPG_EncodeRgba(imgbuf, tbuf, xs, ys, 95);
+		BGBCC_StoreFile(fname, tbuf, sz);
+		k1=clock();
+//		printf("JPG Dump: %dms\n", k1-k0);
+	}
+
+	free(imgbuf);
+	free(tbuf);
+
+	return(0);
+}
+
 int BGBCC_JX2_EmitLoadRegImm64P(
 	BGBCC_JX2_Context *ctx, int reg, s64 imm)
 {
@@ -3124,6 +3358,11 @@ int BGBCC_JX2_EmitLoadRegImm64P(
 	int isfpa, ispow10, ispow3, ispow7, isfp16;
 	int opw1, opw2, opw3, opw4, opw5, opw6;
 	int i, j, k;
+	
+	if(!ctx->is_simpass)
+	{
+		BGBCC_JX2_AddImmHistStat(ctx->stat_const_hist, imm);
+	}
 
 	if(ctx->emit_riscv&0x11)
 	{

@@ -1269,6 +1269,9 @@ int BGBCC_JX2DA_EmitOpImm(BGBCC_JX2_Context *ctx, int nmid, s64 imm)
 {
 	char *snm;
 
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_imm_hist, imm);
+
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
@@ -1334,6 +1337,9 @@ int BGBCC_JX2DA_EmitOpImmReg(BGBCC_JX2_Context *ctx,
 {
 	char *snm, *srn;
 
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_imm_hist, imm);
+
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
@@ -1361,6 +1367,9 @@ int BGBCC_JX2DA_EmitOpRegImmReg(BGBCC_JX2_Context *ctx,
 	int nmid, int rm, s64 imm, int rn)
 {
 	char *snm, *srm, *srn;
+
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_imm_hist, imm);
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
@@ -1400,6 +1409,9 @@ int BGBCC_JX2DA_EmitOpRegRegImmReg(BGBCC_JX2_Context *ctx,
 	int nmid, int rs, int rt, s64 imm, int rn)
 {
 	char *snm, *srs, *srt, *srn;
+
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_imm_hist, imm);
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
@@ -1506,6 +1518,9 @@ int BGBCC_JX2DA_EmitOpRegStRegDisp(BGBCC_JX2_Context *ctx,
 {
 	char *snm, *srm, *srn;
 
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_disp_hist, disp);
+
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
@@ -1523,6 +1538,9 @@ int BGBCC_JX2DA_EmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	int nmid, int rm, int disp, int rn)
 {
 	char *snm, *srm, *srn;
+
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_disp_hist, disp);
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
@@ -1654,6 +1672,9 @@ int BGBCC_JX2DA_EmitOpRegStReg2Disp(BGBCC_JX2_Context *ctx,
 {
 	char *snm, *srm, *srn, *sro;
 
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_disp_hist, disp);
+
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
@@ -1672,6 +1693,9 @@ int BGBCC_JX2DA_EmitOpLdReg2DispReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int disp, int rn)
 {
 	char *snm, *srm, *srn, *sro;
+
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_disp_hist, disp);
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
@@ -1861,6 +1885,9 @@ int BGBCC_JX2DA_EmitOpImmRegLbl(BGBCC_JX2_Context *ctx,
 {
 	char *snm, *srm, *srn, *sro;
 
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_imm_hist, imm);
+
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 	
@@ -1907,6 +1934,9 @@ int BGBCC_JX2DA_EmitLoadRegImm(
 {
 	char *snm, *srm, *srn, *sro;
 
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_imm_hist, imm);
+
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 		
@@ -1940,6 +1970,9 @@ int BGBCC_JX2DA_EmitLoadRegImm64(
 	BGBCC_JX2_Context *ctx, int nmid, int reg, s64 imm)
 {
 	char *snm, *srm, *srn, *sro;
+
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_imm_hist, imm);
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
@@ -2376,6 +2409,9 @@ int BGBCC_JX2DA_EmitDWordAbsDisp(BGBCC_JX2_Context *ctx, int lbl, int disp)
 {
 	char *sro;
 
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_disp_hist, disp);
+
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);
 
@@ -2387,6 +2423,9 @@ int BGBCC_JX2DA_EmitDWordAbsDisp(BGBCC_JX2_Context *ctx, int lbl, int disp)
 int BGBCC_JX2DA_EmitQWordAbsDisp(BGBCC_JX2_Context *ctx, int lbl, int disp)
 {
 	char *sro;
+
+	if(!ctx->is_simpass)
+		BGBCC_JX2_AddImmHistStat(ctx->stat_disp_hist, disp);
 
 	if(ctx->is_simpass || !ctx->do_asm)
 		return(0);

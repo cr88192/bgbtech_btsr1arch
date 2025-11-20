@@ -5762,6 +5762,8 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		else
 			{ sctx->stat_rlbl_disp33++; }
 
+		BGBCC_JX2_AddImmHistStat(sctx->stat_rldisp_hist, d);
+
 		switch(sctx->rlc_ty[i])
 		{
 		case BGBCC_SH_RLC_REL8:
@@ -7340,6 +7342,19 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			(100.0*sctx->stat_rlbl_disp33)/(sctx->stat_rlbl_tot),
 			sctx->stat_rlbl_tot);
 	}
+
+	BGBCC_JX2_DumpHistStatFd(
+		sctx->cgen_log, sctx->stat_const_hist, "StatHist_Const");
+	BGBCC_JX2_DumpHistStatFd(
+		sctx->cgen_log, sctx->stat_imm_hist, "StatHist_Imm");
+	BGBCC_JX2_DumpHistStatFd(
+		sctx->cgen_log, sctx->stat_disp_hist, "StatHist_Disp");
+	BGBCC_JX2_DumpHistStatFd(
+		sctx->cgen_log, sctx->stat_rldisp_hist, "StatHist_RelocDisp");
+
+//	BGBCC_JX2_DumpHistGraph(sctx, "bgbcc_dbghist.bmp");
+	BGBCC_JX2_DumpHistGraph(sctx, "bgbcc_dbghist.png");
+//	BGBCC_JX2_DumpHistGraph(sctx, "bgbcc_dbghist.jpg");
 
 	return(0);
 }

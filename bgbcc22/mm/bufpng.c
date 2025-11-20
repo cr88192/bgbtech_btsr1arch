@@ -1130,7 +1130,8 @@ BTEIFGL_API int BGBBTJ_BufPNG_Encode(
 	buf[1]=i&0xFF;
 //	printf("Zlib %04X\n", i);
 
-	i=PDZ2_EncodeStreamLvl(buf2, buf+2, xs*ys*ssz+ys, xs*ys*8, 1);
+//	i=PDZ2_EncodeStreamLvl(buf2, buf+2, xs*ys*ssz+ys, xs*ys*8, 1);
+	i=PDZ2_EncodeStreamLvl1F(buf2, buf+2, xs*ys*ssz+ys, xs*ys*8, 5);
 //	i=vfDeflateBufferLvl(buf+2, buf2, xs*ys*8, xs*ys*ssz+ys, 9);
 
 	//checksum
@@ -1178,9 +1179,11 @@ BTEIFGL_API int BGBBTJ_BufPNG_EncodeFast(
 {
 	byte hbuf[64];
 	byte *buf2, *s, *t, *ct, *se;
-//	byte *sxa, *sxb, *sxc, *sxd;
+	byte *sxa, *sxb, *sxc, *sxd;
 	int ysi0, ysi1, ixa, ixb, ixc, ixd;
 	int fm, sz, pa, pb, pc, pd;
+	int pc_r, pc_g, pc_b, pc_a;
+	int pd_r, pd_g, pd_b, pd_a;
 	int e, be, bf, am, ssz;
 	int i, j, k, l;
 
@@ -1256,8 +1259,8 @@ BTEIFGL_API int BGBBTJ_BufPNG_EncodeFast(
 //				ixa=(ysi0-1)*4;		ixb=(ysi0-0)*4;
 				ixc=(ysi1-1)*4;		ixd=(ysi1-0)*4;
 
-//				sxc=buf+ixc;
-//				sxd=buf+ixd;
+				sxc=buf+ixc;
+				sxd=buf+ixd;
 
 				if(ssz==4)
 				{
@@ -1266,15 +1269,40 @@ BTEIFGL_API int BGBBTJ_BufPNG_EncodeFast(
 //					*t++=(*sxd++)-(*sxc++);
 //					*t++=(*sxd++)-(*sxc++);
 
-					pc=buf[ixc+0]; pd=buf[ixd+0]; *t++=pd-pc;
-					pc=buf[ixc+1]; pd=buf[ixd+1]; *t++=pd-pc;
-					pc=buf[ixc+2]; pd=buf[ixd+2]; *t++=pd-pc;
-					pc=buf[ixc+3]; pd=buf[ixd+3]; *t++=pd-pc;
+//					pc=buf[ixc+0]; pd=buf[ixd+0]; *t++=pd-pc;
+//					pc=buf[ixc+1]; pd=buf[ixd+1]; *t++=pd-pc;
+//					pc=buf[ixc+2]; pd=buf[ixd+2]; *t++=pd-pc;
+//					pc=buf[ixc+3]; pd=buf[ixd+3]; *t++=pd-pc;
+
+					pc=buf[ixc+0]; pd=buf[ixd+0]; t[0]=pd-pc;
+					pc=buf[ixc+1]; pd=buf[ixd+1]; t[1]=pd-pc;
+					pc=buf[ixc+2]; pd=buf[ixd+2]; t[2]=pd-pc;
+					pc=buf[ixc+3]; pd=buf[ixd+3]; t[3]=pd-pc;
+					t+=4;
+
+//					pc_r=sxc[0]; pd_r=sxd[0];
+//					pc_g=sxc[1]; pd_g=sxd[1];
+//					pc_b=sxc[2]; pd_b=sxd[2];
+//					t[0]=pd_r-pc_r;	t[1]=pd_g-pc_g;
+//					pc_a=sxc[3]; pd_a=sxd[3];
+//					t[2]=pd_b-pc_b;	t[3]=pd_a-pc_a;
+//					t+=4;
 				}else if(ssz==3)
 				{
-					pc=buf[ixc+0]; pd=buf[ixd+0]; *t++=pd-pc;
-					pc=buf[ixc+1]; pd=buf[ixd+1]; *t++=pd-pc;
-					pc=buf[ixc+2]; pd=buf[ixd+2]; *t++=pd-pc;
+//					pc=buf[ixc+0]; pd=buf[ixd+0]; *t++=pd-pc;
+//					pc=buf[ixc+1]; pd=buf[ixd+1]; *t++=pd-pc;
+//					pc=buf[ixc+2]; pd=buf[ixd+2]; *t++=pd-pc;
+
+					pc=buf[ixc+0]; pd=buf[ixd+0]; t[0]=pd-pc;
+					pc=buf[ixc+1]; pd=buf[ixd+1]; t[1]=pd-pc;
+					pc=buf[ixc+2]; pd=buf[ixd+2]; t[2]=pd-pc;
+					t+=3;
+
+//					pc_r=sxc[0]; pd_r=sxd[0];
+//					pc_g=sxc[1]; pd_g=sxd[1];
+//					pc_g=sxc[2]; pd_b=sxd[2];
+//					t[0]=pd_r-pc_r;	t[1]=pd_g-pc_g;
+//					t[2]=pd_b-pc_b;	t+=3;
 				}else
 				{
 					for(k=0; k<ssz; k++)
@@ -1330,7 +1358,8 @@ BTEIFGL_API int BGBBTJ_BufPNG_EncodeFast(
 //	printf("Zlib %04X\n", i);
 
 //	i=PDZ2_EncodeStreamLvl(buf2, buf+2, xs*ys*ssz+ys, xs*ys*8, 1);
-	i=PDZ2_EncodeStreamLvl(buf2, buf+2, xs*ys*ssz+ys, xs*ys*8, 0);
+//	i=PDZ2_EncodeStreamLvl(buf2, buf+2, xs*ys*ssz+ys, xs*ys*8, 0);
+	i=PDZ2_EncodeStreamLvl1F(buf2, buf+2, xs*ys*ssz+ys, xs*ys*8, 2);
 //	i=vfDeflateBufferLvl(buf+2, buf2, xs*ys*8, xs*ys*ssz+ys, 9);
 
 	//checksum

@@ -22,6 +22,8 @@ SRCS=\
 	mm/cc_malloc.c \
 	mm/cc_thread.c \
 	mm/cc_fmt_targa.c \
+	mm/cc_fmt_ppm.c \
+	mm/cc_fmt_imgutil.c \
 	mm/cc_fmt_wave.c \
 	mm/cc_fmt_bmp.c \
 	mm/cc_fmtcnv.c \
@@ -33,6 +35,8 @@ SRCS=\
 	mm/tkupic_dec.c \
 	mm/tkupic_enc.c \
 	mm/bufpng.c \
+	mm/bcn_decjpg.c \
+	mm/bcn_encjpg.c \
 	\
 	ccxl/ccxl_cgif.c \
 	ccxl/ccxl_compile.c \

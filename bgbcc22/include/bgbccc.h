@@ -553,6 +553,8 @@ extern "C" {
 #define BGBCC_FMT_QOIF		BGBCC_FOURCC('Q', 'O', 'I', 'F')
 #define BGBCC_FMT_LCIF		BGBCC_FOURCC('L', 'C', 'I', 'F')
 #define BGBCC_FMT_UPIC		BGBCC_FOURCC('U', 'P', 'I', 'C')
+#define BGBCC_FMT_JPEG		BGBCC_FOURCC('J', 'P', 'E', 'G')
+#define BGBCC_FMT_PNG		BGBCC_FOURCC('P', 'N', 'G', ' ')
 
 #define BGBCC_FMT_CRAM		BGBCC_FOURCC('C', 'R', 'A', 'M')
 
