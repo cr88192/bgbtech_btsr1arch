@@ -485,15 +485,47 @@ int BGBCC_LoadConvResource_SetupPal()
 	return(1);
 }
 
+int BGBCC_LoadConvResource_ImageCheckResize(
+	byte **ribuf, int *rxs, int *rys,
+	int tgt_xs, int tgt_ys)
+{
+	byte *ibuf, *tbuf;
+	int xs, ys, xs1, ys1, xs2, ys2;
+	
+	ibuf=*ribuf;
+	xs=*rxs;
+	ys=*rys;
+	if(!ibuf)
+		return(0);
+	if(	(!tgt_xs || (xs==tgt_xs)) &&
+		(!tgt_ys || (ys==tgt_ys)) )
+			return(0);
+	xs1=tgt_xs?tgt_xs:xs;
+	ys1=tgt_ys?tgt_ys:ys;
+	if((ys1==-1))
+		ys1=-ys;
+	xs2=xs1; ys2=ys1;
+	if(xs1<0)	xs2=-xs1;
+	if(ys1<0)	ys2=-ys1;
+	tbuf=malloc(xs2*ys2*4);
+	BGBCC_ImgUtil_ResampleImage(ibuf, xs, ys, tbuf, xs1, ys1);
+	free(tbuf);
+	*ribuf=tbuf;
+	*rxs=xs2;
+	*rys=ys2;
+	return(0);
+}
+
 byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 	char *cnvstr, int *rsz, fourcc *rfcc)
 {
+	BTM_SolidMesh *mesh;
 	char cnv[16], pvar[8], pval[64];
 	char *cs, *ct;
 	byte *ibuf, *obuf;
 	short *sbuf;
 	int qlvl;
-	int xs, ys, sz1, fl, len, rt, fm1, ch1;
+	int xs, ys, rsz_xs, rsz_ys, sz1, fl, len, rt, fm1, ch1;
 
 	cs=cnvstr;
 	ct=cnv;
@@ -502,6 +534,8 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 	*ct++=0;
 	
 	qlvl=0;
+	rsz_xs=0;
+	rsz_ys=0;
 	
 	while(*cs==',')
 	{
@@ -512,6 +546,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		*ct++=0;
 		if(*cs=='=')
 		{
+			cs++;
 			ct=pval;
 			while(*cs && *cs!='=' && *cs!=',')
 				*ct++=*cs++;
@@ -519,6 +554,10 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 			
 			if(!bgbcc_stricmp(pvar, "q"))
 				qlvl=atoi(pval);
+			if(!bgbcc_stricmp(pvar, "xs"))
+				rsz_xs=atoi(pval);
+			if(!bgbcc_stricmp(pvar, "ys"))
+				rsz_ys=atoi(pval);
 		}
 	}
 
@@ -547,13 +586,19 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		!bgbcc_stricmp(cnv, "bmp_cq8np") ||
 		!bgbcc_stricmp(cnv, "bmp_cq8npa") ||
 		!bgbcc_stricmp(cnv, "bmp_lz8") ||
-		!bgbcc_stricmp(cnv, "bmp_lz8a") )
+		!bgbcc_stricmp(cnv, "bmp_lz8a") ||
+		!bgbcc_stricmp(cnv, "bmp8_lz") ||
+		!bgbcc_stricmp(cnv, "bmp4_lz") ||
+		!bgbcc_stricmp(cnv, "bmp4a_lz") ||
+		!bgbcc_stricmp(cnv, "bmp4ta_lz") )
 	{
 		BGBCC_LoadConvResource_SetupPal();
 		
 		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
 		if(!ibuf)
 			return(NULL);
+		BGBCC_LoadConvResource_ImageCheckResize(
+			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 		
 		obuf=malloc(xs*ys*5);
 		sz1=0;
@@ -685,6 +730,8 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
 		if(!ibuf)
 			return(NULL);
+		BGBCC_LoadConvResource_ImageCheckResize(
+			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 		
 		fl=0;
 		if(!bgbcc_stricmp(cnv, "qoli"))
@@ -700,15 +747,27 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		return(obuf);
 	}
 
-	if(	!bgbcc_stricmp(cnv, "upic") )
+	if(	!bgbcc_stricmp(cnv, "upic") ||
+		!bgbcc_stricmp(cnv, "upic_auto"))
 	{
 		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
 		if(!ibuf)
 			return(NULL);
+		BGBCC_LoadConvResource_ImageCheckResize(
+			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 		
 		fl=1<<8;
 		
-		fl|=100-((qlvl&7)*12);
+		if(!bgbcc_stricmp(cnv, "upic_auto"))
+			fl|=0x8000;
+		
+		if((qlvl>=8) && (qlvl<=127))
+		{
+			fl|=qlvl;
+		}else
+		{
+			fl|=100-((qlvl&7)*12);
+		}
 		
 		obuf=malloc(xs*ys*2);
 		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
@@ -723,10 +782,18 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
 		if(!ibuf)
 			return(NULL);
+		BGBCC_LoadConvResource_ImageCheckResize(
+			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 		
 		fl=1<<8;
 		
-		fl|=100-((qlvl&7)*12);
+		if((qlvl>=8) && (qlvl<=127))
+		{
+			fl|=qlvl;
+		}else
+		{
+			fl|=100-((qlvl&7)*12);
+		}
 		
 		obuf=malloc(xs*ys*2);
 //		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
@@ -737,16 +804,62 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		return(obuf);
 	}
 	
+	if(!bgbcc_stricmp(cnv, "bmp_bt5b") )
+	{
+		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
+		if(!ibuf)
+			return(NULL);
+		BGBCC_LoadConvResource_ImageCheckResize(
+			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
+		
+		fl=1<<8;
+		
+		fl|=100-((qlvl&7)*12);
+		
+		obuf=malloc(1024+xs*ys*3);
+		sz1=BGBCC_Img_EncodeImageBMP_BT5B(obuf, ibuf, xs, ys, fl);
+
+		*rfcc=BGBCC_FMT_BMP;
+		*rsz=sz1;
+		return(obuf);
+	}
+	
 	if(!bgbcc_stricmp(cnv, "png") )
 	{
 		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
 		if(!ibuf)
 			return(NULL);
+		BGBCC_LoadConvResource_ImageCheckResize(
+			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 
 		obuf=malloc(xs*ys*2);
 		sz1=BGBBTJ_BufPNG_Encode(obuf, xs*ys*2, ibuf, xs, ys);
 		
 		*rfcc=BGBCC_FMT_PNG;
+		*rsz=sz1;
+		return(obuf);
+	}
+
+	if(	!bgbcc_stricmp(cnv, "dds_dxt1") ||
+		!bgbcc_stricmp(cnv, "dds_dxt5") ||
+		!bgbcc_stricmp(cnv, "dds_dxt1_nomip") ||
+		!bgbcc_stricmp(cnv, "dds_dxt5_nomip"))
+	{
+		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
+		if(!ibuf)
+			return(NULL);
+
+		obuf=malloc(xs*ys*3);
+		if(!bgbcc_stricmp(cnv, "dds_dxt1"))
+			sz1=BGBCC_Img_EncodeImageDDS_DXTn(obuf, ibuf, xs, ys, 1);
+		if(!bgbcc_stricmp(cnv, "dds_dxt5"))
+			sz1=BGBCC_Img_EncodeImageDDS_DXTn(obuf, ibuf, xs, ys, 3);
+		if(!bgbcc_stricmp(cnv, "dds_dxt1_nomip"))
+			sz1=BGBCC_Img_EncodeImageDDS_DXTn(obuf, ibuf, xs, ys, 1|16);
+		if(!bgbcc_stricmp(cnv, "dds_dxt5_nomip"))
+			sz1=BGBCC_Img_EncodeImageDDS_DXTn(obuf, ibuf, xs, ys, 3|16);
+		
+		*rfcc=BGBCC_FMT_DDS;
 		*rsz=sz1;
 		return(obuf);
 	}
@@ -848,7 +961,33 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		*rsz=sz1;
 		return(obuf);
 	}
-	
+
+#ifdef BGBCC_MTOOL
+	if(!strcmp(cnv, "bmd"))
+	{
+		mesh=BTM_LoadMeshListBuffer(buf, sz, lang);
+
+		obuf=NULL; sz1=0;
+		BTM_ExportMeshListBmdBuf(mesh, &obuf, &sz1);
+
+		*rfcc=BGBCC_FMT_BMD;
+		*rsz=sz1;
+		return(obuf);
+	}
+
+	if(!strcmp(cnv, "stl"))
+	{
+		mesh=BTM_LoadMeshListBuffer(buf, sz, lang);
+
+		obuf=NULL; sz1=0;
+		BTM_ExportMeshListStlBuf(mesh, &obuf, &sz1);
+
+		*rfcc=BGBCC_FMT_STL;
+		*rsz=sz1;
+		return(obuf);
+	}
+#endif
+
 	return(NULL);
 }
 

@@ -1253,6 +1253,15 @@ int main(int argc, char *argv[], char **env)
 		s1=a[0];
 		if((s1[0]=='.') && (s1[1]=='/'))
 			s1+=2;
+		
+		if(!strcmp(s, "-"))
+			s=s1;
+		if((strlen(s)>3) && !strcmp(s+strlen(s)-2, "/-"))
+		{
+			strcpy(tn, s);
+			strcpy(tn+(strlen(s)-1), s1);
+			s=strdup(tn);
+		}
 
 		if(dir)
 			{ sprintf(tn, "%s/%s", dir, s); }

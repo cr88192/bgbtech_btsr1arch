@@ -1,0 +1,254 @@
+Mesh Model Format (Possible, for BGBTech3 Engine):
+* Also known as BMD format.
+* May contain basic non-animated meshes.
+** May also allow for animated meshes.
+** Single bone only for now.
+* Format will be image-like.
+** Will be defined in terms of offsets relative to image base.
+** Structure arrays will have nominal 64-bit alignment.
+* Nominal file extension: ".BMD"
+
+Mesh Vertex (64-bit, Material=Texture):
+* (63:56): Bone ID (if animated, 0=Base)
+* (55:54): Exponent ST
+* (53:43): Frac T
+* (42:32): Frac S
+* (31:27): Exponent XYZ
+* (26:18): Frac Z
+* (17: 9): Frac Y
+* ( 8: 0): Frac X
+
+Mesh Vertex (64-bit, Material=Flat Color):
+* (63:56): Bone ID (if animated, 0=Base)
+* (55:48): Normal Z (F8A)
+* (47:40): Normal Y (F8A)
+* (39:32): Normal X (F8A)
+* (31:27): Exponent XYZ
+* (26:18): Frac Z
+* (17: 9): Frac Y
+* ( 8: 0): Frac X
+
+Mesh Vertex (96-bit):
+* First Word (64-bit)
+** (63:56): 0xF0 .. FB
+** (55:54): Exponent ST
+** (53:43): Frac T
+** (42:32): Frac S
+** (31:27): Exponent XYZ
+** (26:18): Frac Z
+** (17: 9): Frac Y
+** ( 8: 0): Frac X
+* Second Word (32-bit)
+** (31:24): Color/Shade (F8/F9), Bone (FA/FB)
+** (23:16): Normal Z (F8A)
+** (15: 8): Normal Y (F8A)
+** ( 7: 0): Normal X (F8A)
+
+Mesh Vertex (128-bit):
+* First Word
+** (63:56): 0xFD
+** (55:48): Color/Shade
+** (47:32): Org Z (Binary16)
+** (31:16): Org Y (Binary16)
+** (15: 0): Org X (Binary16)
+* Second Word
+** (63:56): Bone ID (if animated, 0=Base)
+** (55:48): Normal Z (F8A)
+** (47:40): Normal Y (F8A)
+** (39:32): Normal X (F8A)
+** (31:28): Exponent ST
+** (27:14): Frac T (Q2.12, -2.0 to 1.999)
+** (13: 0): Frac S (Q2.12, -2.0 to 1.999)
+
+S/T coordinates in the 64 and 96 bit formats will be mapped roughly -0.500 to 1.499, with a fixed point accuracy of 1/1024 over the skin texture. Coordinates outside the range of 0.0 to 1.0 are primarily intended to deal with seams.
+
+In the F8 and FA formats, 12-bit S/T coords will be used with an accuracy of 1/2048.
+
+If F9 or FB tags are used, the S/T coords will be adjusted to use an ST exponent, as in the 64-bit format.
+* 0:  -0.5 to  1.499
+* 1:  -2.0 to  5.996
+* 2:  -8.0 to 23.984
+* 3: -32.0 to 95.936
+
+For the 128 bit vertices, the ST exponent will be a power of 2 scale.
+
+
+Vertex coordinates will be stored relative to the local coordinate space of the bone in question. In the 64-bit vertex format, no normal is encoded with textures. Cheap trick would be to assume that the bone-relative coordinate also implicitly serves as the normal vector. If a flat color material is used, the 64-bit vertex format may encode normals, with the decoded S/T coordinates understood as zeroes.
+
+
+
+Mesh Triangle (32 bit format):
+* (31:22): V2
+* (21:12): V1
+* (11: 2): V0
+* ( 1: 0): Tag (00)
+
+Mesh Quad (32 bit format):
+* (31:30): Tag2 (00)
+* (29:23): V3
+* (22:16): V2
+* (15: 9): V1
+* ( 8: 2): V0
+* ( 1: 0): Tag (01)
+
+Mesh Triangle (64 bit format):
+* (63:62): Tag2 (00)
+* (61:42): V2
+* (41:22): V1
+* (21: 2): V0
+* ( 1: 0): Tag (10)
+
+Mesh Quad (64 bit format):
+* (63:62): Tag2 (00)
+* (61:47): V3
+* (46:32): V2
+* (31:17): V1
+* (16: 2): V0
+* ( 1: 0): Tag (11)
+
+The 64-bit format will be assumed if more than 1024 vertices are used.
+Note that if fewer than 1024 vertices are used, each quad will be counted as 2 triangles, but if more are used, a quad will be a single triangle (or the triangle seen as a degenerate quad).
+
+
+Bone Tranform
+* (63:56): Rot R (F8A)
+* (55:48): Rot K (F8A)
+* (47:40): Rot J (F8A)
+* (39:32): Rot I (F8A)
+* (31:27): Org Exponent
+* (26:18): Frac Org Z
+* (17: 9): Frac Org Y
+* ( 8: 0): Frac Org X
+
+
+F8A: S.E3.F4, Unit Range
+* For I/J/K/R, these will be interpreted as a unit quaternion.
+** After unpacking, the quaternion is to be normalized.
+* Maximum value for F8A will be 1.9375, to allow 1.0 to be encoded.
+
+Anim Rotation (32 bit)
+* (31:24): Rot R (F8A)
+* (23:16): Rot K (F8A)
+* (15: 8): Rot J (F8A)
+* ( 7: 0): Rot I (F8A)
+
+Anim Translation or Scale (32 bit)
+* (31:27): Exponent
+* (26:18): Frac Z
+* (17: 9): Frac Y
+* ( 8: 0): Frac X
+
+The fraction will be a signed-extended non-normalized value which will be scaled by the exponent.
+
+
+ Header {
+ u32 magic1;		//00, 'BMD1'
+ u32 resv1;			//04, MBZ
+ u32 resv2;			//08, MBZ
+ u32 resv3;			//0C, MBZ
+ u32 ofs_meshes;	//10, Mesh List
+ u32 sz_meshes;		//14, Size of Mesh List (bytes)
+ u32 ofs_lods;		//18, LODs List
+ u32 sz_lods;		//1C, Size of LODs List (bytes)
+ u32 ofs_bones;		//20, Bone List, MBZ if static
+ u32 sz_bones;		//24, Size of Bones (bytes), MBZ if static
+ u32 ofs_anims;		//28, Anim List, MBZ if static
+ u32 sz_anims;		//2C, Size of Anim List, MBZ if static
+ }
+ 
+ MeshDef {
+ u32 ofs_vtx;		//00, offset of vertices list in image
+ u32 ofs_tris;		//04, offset of triangles list
+ u32 ofs_mat;		//08, material name string
+ u16 n_vtx;			//0C, number of vertices (0..1024)
+ u16 n_tris;		//0E, number of triangles
+ u32 sz_vtx;		//10, size of vertices list
+ u32 sz_tris;		//14, size of triangles list
+ u32 flags;			//18, mesh control flags
+ u32 resv3;			//1C, MBZ
+ }
+ 
+ LodDef {
+ byte id_mesh;		//00, Index of first mesh at LOD level
+ byte n_mesh;		//01, Number of meshes in LOD level
+ byte ld_sc;		//02, Nominal scale (F8A)
+ byte resv1;		//03, MBZ
+ }
+ 
+ BoneDef {
+ u64 xform;			//00, base transform (MBZ for Bone 0)
+ u32 ofs_name;		//08, bone name string (Bones 1+)
+ byte id_parent;	//0C, parent bone (MBZ for 0, 0xFF for Pseudo-Bone)
+ byte id_solid;		//0D, mesh to use for solid def for bone.
+ byte resv1;		//0E, MBZ
+ byte resv2;		//0F, MBZ
+ }
+ 
+ AnimDef {
+ u32 ofs_name;		//00, Offset of animation name
+ byte n_framees;	//04, number of frames in this animation loop
+ byte fl_hz;		//05, (7)=No Loop, (6:0): Anim Hz (in units of 0.25 Hz)
+ byte resv1;		//06, MBZ
+ byte resv2;		//07, MBZ
+ u32 ofs_frames;	//08, Offset of frames list
+ u32 sz_frames;		//0C, Size of frames list.
+ }
+
+If the mesh ofs_mat is 0 (Null String), this mesh nay not be drawn. However, non-drawn meshes may be used for bone solids.
+
+The model format will not define materials internally. Instead, these will be the responsibility of the 3D engine. In the simple case though, the material name will be understood as a reasource/relative path to the texture, omitting the file extension. However, the material could instead specify a shader, potentially with additional image maps, rather than just a simple texture image.
+
+If the material name starts with '#' followed by 6 hex digits, it will be understood as a flat color. No texture will be used, and any vertex colors in the mesh will be relative to this color (if no color is encoded, the material color will be used). If a texture name is used, the material base color will be implicitly relative to FFFFFF (pure white).
+
+
+Mesh control flags:
+* (1:0): Vertex Subtype
+** 00=64-bit only
+** 01=64/96/128 bit (variable length)
+** 10=128-bit only
+** 11=96-bit only
+* (3:2): Triangles Type
+** 00=32-bit, triangles only
+** 01=32/64 bit (variable length), triangles or quads
+** 10=64-bit, triangles only
+** 11=64-bit, triangles or quads
+*** Provision for quads, count triangles as degenerate quads.
+
+Note that the control flags are primarily intended as a loader hint. If a fixed-length or triangles only encoding is used, only these types are allowed. A reasonable default would be to assume variable length and either triangles or quads as primitives. An encoder may specify triangles only if it is known that the mesh only contains triangles.
+
+
+Each LOD will be defined as a range of meshes. Only drawable meshes will be present in a LOD. Nominal scale algo will be defined as 1.0/(dist+1.0) with the distance defined in meters from the viewer.
+
+Meshes used for bone solids need not be renderable, but may be renderable. They will be required to be in BREP form (fully enclosed volume, may be non-convex but may not self-intersect). The entire mesh is to be mapped to a single bone (equal to the bone for which the solid is being defined, or to bone 0). The coordinate space will be understood as relavite to the bone they are applied to (regardless of the bone specified for the vertex).
+
+Note that if vertices are duplicated for sake of texture seam handling, even if at the same location in 3D space, the mesh will no longer be in BREP form.
+
+Renderable meshes with more than 1024 vertices may be subdivided into meshes with fewer than 1024 vertices, which are also by definition not in BREP form. However, this format isn't really indended to be used for high triangle count models.
+
+Possible, Pseudo-Bones:
+* Will be special bones.
+* xform will be understood as 4 bone IDs, and 4 F8A weights.
+
+Pseudo bones will follow after any normal bones and their transforms will not be specified in animation frames. Their position in a given animation frame will be calculated based on the weights (after any interpolation for the normal bones). As for mesh vertex transform, they are handled the same as normal bones.
+
+
+Note that within the skeleton, each bone's translation and rotation will be stored relative to that of the parent bone. If the parent bone is 0, this will reflect the base model.
+
+Animation frames will nominally represent n_frames*n_bones sets of transformations.
+These animations will be organized per-bone, and will span the full list of frames for this bone.
+
+However, animation frames will be stored in a compacted form, with a tag byte:
+* (7): Rotation Present
+* (6): Translation Present
+* (5): Scale Prsent
+* (4:0): Number of preceding frames to skip during this bone.
+
+A tag of 00 will signal the end of the current bone.
+* Each tag will be followed by the rotation, translation, and scale, if present.
+
+If a value is skipped in the current frame, its value will be interpolated.
+* If absent in all frames, it will assume a default (identity) value.
+
+The defined interpolation will be to linearly interpolate values, with rotations being renormalized after interpolation. The combination of rotation, translation, and scale, may be used to construct a transformation matrix that may be applied when calculating final mesh vertex positions for a given frame.
+
+Note that the values stored in the animation frames will be relative to those in the base skeleton. So, for example, the bone translation or rotation in each frame will be relative to the bone's translation and rotatation in the base skeleton.

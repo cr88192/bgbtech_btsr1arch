@@ -1,4 +1,6 @@
-#if 0
+#define BGBCC_MTOOL
+
+#if 1
 #include "cparse/cparse_token.c"
 #include "cparse/cparse_misc.c"
 #include "cparse/cparse_type.c"
@@ -68,19 +70,31 @@
 #include "mm/dyll_metapath.c"
 #include "mm/dyll_metabin.c"
 
+#include "mm/bcn_decjpg.c"
+#include "mm/bcn_encjpg.c"
+
 #include "mm/cc_fmt_targa.c"
+#include "mm/cc_fmt_ppm.c"
+#include "mm/cc_fmt_imgutil.c"
 #include "mm/cc_fmt_bmp.c"
+#include "mm/cc_fmt_dds.c"
 #include "mm/cc_fmt_wave.c"
 #include "mm/cc_fmtcnv.c"
+
+#include "mm/cc_fmt_dec_bt5bu.c"
+#include "mm/cc_fmt_enc_bt5bu.c"
 
 #include "mm/qoilz_dec.c"
 #include "mm/qoilz_enc.c"
 #include "mm/lcif_dec.c"
 #include "mm/lcif_enc.c"
 
+#include "mm/tkupic_bcn.c"
 #include "mm/tkupic_dec.c"
 #include "mm/tkupic_enc.c"
 #include "mm/bufpng.c"
+
+#include "csg/btm_meshmulti.c"
 
 #if 0
 #include "ccxl/ccxl_cgif.c"

@@ -53,6 +53,8 @@ Where, fmt may be one of:
 * bmpt4_lz: BMP4T with LZ compression (RP3)
 * bmp4ta_lz: BMP4TA with LZ compression (RP3)
 
+* bmp_bt5b: BMP image holding a BTIC5B frame.
+
 * qoi: QOI Format
 * qoli: QOLI (QOI with inline LZ compression)
 * lcif: LCIF Format
@@ -61,8 +63,22 @@ Where, fmt may be one of:
 * jpg: Alias for 'jpeg'
 * png: PNG Format
 
+* dds_dxt1, dds_dxt5, dds_dxt1_nomip, dds_dxt5_nomip
+** Convert to DDS format.
+** Unlike the other formats, DDS will be auto-resized to a power-of-2 if needed.
+
 * wav_{8/11/16/22/32/44}{m/s}_{8/16/alaw/adpcm/adpcm2b/adlq} : WAV conversion
 
+WAD4 Tool:
+* bmd: Convert a 3D model to the BMD format.
+* stl: Convert a 3D model to the STL format.
+
+
+Parameters for image conversion:
+* q: Quality level, 0..7 (best to worst), 8-100 (percentage)
+** If absent, assume maximum/lossless quality.
+* xs, ys: Specify image size, image will be resized if needed.
+** If absemt, image keeps original size (except for DDS).
 
 BMPA is a modified BMP differing mostly in that the fields and image data will be aligned. The headers will have a native 32-bit alignment, whereas the image data will have a 64-bit alignment. The magic will be changed from 'BM' to ' BMP', but apart from the alignment change the format is basically the same.
 
@@ -297,3 +313,29 @@ Maybe use a 'WAVE' format:
 
 This format will be simplified if compared with the RIFF/WAVE format.
 * In the simple case, audio data starts at 0x20.
+
+
+=== DrawCmds ===
+
+Will be a text format that may be loaded as-if it were a raster image.
+* Will start with a magic line "#DRAWCMD"
+* Assumes origin in lower-left corner (X axis right, Y axis up).
+
+Commands:
+* canvas <xs> <ys>
+** Create an image canvas of a size specified in pixels.
+** Will be filled with working color.
+** If no color was specified before this command, uses opaque white.
+* color3 #rrggbb
+** Specify the current working color (RGB24, Opaque).
+** Alpha will be set to 255.
+* color4 #aarrggbb
+** Specify the current working color with alpha.
+* line <x0> <y0> <x1> <y1>
+** Draw a line between these points with the current working color.
+* floodfill <x> <y>
+** Flood fill the current color starting at the given location.
+** Will only replace pixels with a color matching that specified.
+* basetext <x> <y> <str>
+** Render text with a basic 8-pixel raster font.
+

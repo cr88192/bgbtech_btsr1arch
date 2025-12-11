@@ -17,6 +17,21 @@ byte *BGBCC_Img_DecodePPM_ReadNumber(byte *cs, int *rval)
 	return(cs);
 }
 
+byte *BGBCC_Img_DecodePPM_ReadLine(byte *cs, byte *lbuf)
+{
+	byte *ct;
+	
+	while(*cs && (*cs<=' '))
+		cs++;
+	
+	ct=lbuf;
+	while(*cs && (*cs!='\r') && (*cs!='\n'))
+		*ct++=*cs++;
+	*ct=0;
+	
+	return(cs);
+}
+
 byte *BGBCC_Img_DecodePPM(byte *imgbuf, int *rw, int *rh)
 {
 	byte tb[256];
@@ -198,4 +213,111 @@ byte *BGBCC_Img_DecodePPM(byte *imgbuf, int *rw, int *rh)
 	}
 	
 	return(ibuf);
+}
+
+byte *BGBCC_Img_DecodeDrawCmds(byte *srcbuf, int *rw, int *rh)
+{
+	byte tb[256];
+	char **a;
+	byte *cs;
+	byte *dstbuf;
+	u32 clr_rgb, ref_rgb;
+	int xs, ys, x0, y0, x1, y1;
+	int i, j, k, n;
+	
+	dstbuf=NULL;
+	xs=0; ys=0;
+	clr_rgb=0xFFFFFFFFU;
+	
+	cs=srcbuf;
+	while(*cs)
+	{
+		tb[0]=0;
+		cs=BGBCC_Img_DecodePPM_ReadLine(cs, tb);
+		if(tb[0]=='#')
+			continue;
+		
+		a=bgbcc_split(tb);
+		if(!a[0])
+			continue;
+			
+		if(!bgbcc_stricmp(a[0], "canvas"))
+		{
+			xs=atoi(a[1]);
+			ys=atoi(a[2]);
+			dstbuf=malloc(xs*ys*4);
+//			memset(dstbuf, 255, xs*ys*4);
+			
+			n=xs*ys;
+			for(i=0; i<n; i++)
+			{
+				dstbuf[i*4+0]=(clr_rgb>>16)&255;
+				dstbuf[i*4+1]=(clr_rgb>> 8)&255;
+				dstbuf[i*4+2]=(clr_rgb>> 0)&255;
+				dstbuf[i*4+3]=(clr_rgb>>24)&255;
+			}
+			continue;
+		}
+
+		if(!bgbcc_stricmp(a[0], "color") || !bgbcc_stricmp(a[0], "color3"))
+		{
+			if(a[1][0]=='#')
+			{
+				sscanf(a[1], "#%06X", &clr_rgb);
+				clr_rgb|=0xFF000000;
+				continue;
+			}
+			
+			clr_rgb=0xFF000000|(atoi(a[1])<<16)|
+				(atoi(a[2])<<8)|(atoi(a[3])<<0);
+			continue;
+		}
+
+		if(!bgbcc_stricmp(a[0], "color4"))
+		{
+			if(a[1][0]=='#')
+			{
+				sscanf(a[1], "#%08X", &clr_rgb);
+				continue;
+			}
+			
+			clr_rgb=
+				(atoi(a[1])<<16)|(atoi(a[2])<< 8) |
+				(atoi(a[3])<< 0)|(atoi(a[4])<<24) ;
+			continue;
+		}
+
+		if(!bgbcc_stricmp(a[0], "line"))
+		{
+			x0=atoi(a[1]);	y0=atoi(a[2]);
+			x1=atoi(a[3]);	y1=atoi(a[4]);
+			BGBCC_ImgUtil_DrawLine(
+				dstbuf, xs, ys,
+				x0, y0, x1, y1,
+				clr_rgb);
+			continue;
+		}
+
+		if(!bgbcc_stricmp(a[0], "floodfill"))
+		{
+			x0=atoi(a[1]);	y0=atoi(a[2]);
+			BGBCC_ImgUtil_DrawFloodFill(
+				dstbuf, xs, ys,
+				x0, y0, clr_rgb);
+			continue;
+		}
+
+		if(!bgbcc_stricmp(a[0], "basetext"))
+		{
+			x0=atoi(a[1]);	y0=atoi(a[2]);
+			BGBCC_ImgUtil_DrawTextString(
+				dstbuf, xs, ys,
+				x0, y0, a[3], clr_rgb);
+			continue;
+		}
+	}
+	
+	*rw=xs;
+	*rh=ys;
+	return(dstbuf);
 }

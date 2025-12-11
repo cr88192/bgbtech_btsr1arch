@@ -3,6 +3,19 @@
 // BCCX_Node *bgbcp/_structs=NULL;
 // BCCX_Node *bgbcp/_types=NULL;
 
+#ifdef BGBCC_MTOOL
+int BGBCC_CCXL_HashName(char *name)
+{
+	char *s;
+	int hi;
+	
+	s=name; hi=0;
+	while(*s)hi=(hi*251)+(*s++);
+	hi=((hi*251)>>8)&(BGBCC_GBLHASH_SZ-1);
+	return(hi);
+}
+#endif
+
 #if 0
 BCCX_Node *BGBCP_LookupStructI(BGBCP_ParseState *ctx, char *name)
 {
@@ -809,8 +822,10 @@ BCCX_Node *BGBCP_GetStructJ(BGBCP_ParseState *ctx, char *name, int ty)
 int BGBCP_CheckTypeName(BGBCP_ParseState *ctx, char *name)
 {
 	char *s;
+#ifndef BGBCC_MTOOL
 	s=BGBCP_LookupTypeSig(ctx, name);
 	if(s)return(1);
+#endif
 	if(ctx->expect_type)
 		return(1);
 	return(0);

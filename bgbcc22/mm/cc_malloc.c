@@ -597,6 +597,11 @@ int bgbcc_strdup_i(char *str, char suf)
 	return(i);
 }
 
+int bgbcc_strdup_2i(char *str)
+{
+	return(bgbcc_strdup_i(str, 0));
+}
+
 char *bgbcc_strtab_i(int i)
 	{ return(bgbcc_str_varr[i]); }
 
@@ -741,6 +746,14 @@ char *bgbcc_rstrdup(char *s)
 	char *t;
 	t=(char *)bgbcc_ralloc(strlen(s)+1);
 	strcpy(t, s);
+	return(t);
+}
+
+void *bgbcc_rmemdup(void *buf, int sz)
+{
+	char *t;
+	t=(char *)bgbcc_ralloc(sz);
+	memcpy(t, buf, sz);
 	return(t);
 }
 

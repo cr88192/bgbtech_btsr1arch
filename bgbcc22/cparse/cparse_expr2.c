@@ -610,7 +610,8 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 	}
 #endif
 
-	if(ctx->lang==BGBCC_LANG_BS2)
+	if(	(ctx->lang==BGBCC_LANG_BS2) ||
+		(ctx->lang==BGBCC_LANG_SCAD) )
 	{
 		if(!bgbcp_strcmp1(b, "{") && (ty==BTK_BRACE))
 		{
@@ -871,7 +872,8 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 		}
 
 		if(!bgbcp_strcmp5 (b, "__var") ||
-			((ctx->lang==BGBCC_LANG_BS2) &&
+			(	((ctx->lang==BGBCC_LANG_BS2) ||
+				(ctx->lang==BGBCC_LANG_SCAD)) &&
 				!bgbcp_strcmp3(b, "var"))
 			)
 		{
@@ -931,7 +933,8 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 				(	!bgbcp_strcmp8 (b, "__func__")		||
 					!bgbcp_strcmp10(b, "__function")	||
 					!bgbcp_strcmp5 (b, "__var")			)) ||
-			((ctx->lang==BGBCC_LANG_BS2) &&
+			((		(ctx->lang==BGBCC_LANG_BS2) ||
+					(ctx->lang==BGBCC_LANG_SCAD)) &&
 				(	!bgbcp_strcmp8(b, "function")	||
 					!bgbcp_strcmp3(b, "var")		))
 			)
@@ -1543,6 +1546,19 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 						BCCX_NewCst1(&bgbcc_rcst_args, "args", n1));
 				}
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", s0);
+				
+				if(ctx->lang==BGBCC_LANG_SCAD)
+				{
+					BGBCP_Token(s, b2, &ty2); //'('
+					
+					if(!strcmp(b2, "{") || (ty2==BTK_NAME))
+					{
+						n1=BGBCP_BlockStatement(ctx, &s);
+						BCCX_AddV(n,
+							BCCX_NewCst1(&bgbcc_rcst_body, "body", n1));
+					}
+				}
+				
 				continue;
 			}
 

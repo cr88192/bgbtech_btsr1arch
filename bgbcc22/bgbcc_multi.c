@@ -100,14 +100,19 @@
 #include "mm/cc_fmt_ppm.c"
 #include "mm/cc_fmt_imgutil.c"
 #include "mm/cc_fmt_bmp.c"
+#include "mm/cc_fmt_dds.c"
 #include "mm/cc_fmt_wave.c"
 #include "mm/cc_fmtcnv.c"
+
+#include "mm/cc_fmt_dec_bt5bu.c"
+#include "mm/cc_fmt_enc_bt5bu.c"
 
 #include "mm/qoilz_dec.c"
 #include "mm/qoilz_enc.c"
 #include "mm/lcif_dec.c"
 #include "mm/lcif_enc.c"
 
+#include "mm/tkupic_bcn.c"
 #include "mm/tkupic_dec.c"
 #include "mm/tkupic_enc.c"
 #include "mm/bufpng.c"

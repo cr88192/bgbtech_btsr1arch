@@ -36,6 +36,345 @@ int bccx_strcmp(char *s1, char *s2)
 }
 #endif
 
+char *bccx_rstrdup(char *str)
+	{ return(bgbcc_rstrdup(str)); }
+
+void *bccx_rmemdup(void *buf, int sz)
+	{ return(bgbcc_rmemdup(buf, sz)); }
+
+byte bccx_oprchar(int v)
+{
+	int rt;
+	switch(v)
+	{
+		case '!':	rt=1;	break;
+		case '@':	rt=1;	break;
+		case '#':	rt=1;	break;
+		case '%':	rt=1;	break;
+		case '^':	rt=1;	break;
+		case '&':	rt=1;	break;
+		case '*':	rt=1;	break;
+		case '-':	rt=1;	break;
+		case '+':	rt=1;	break;
+		case '=':	rt=1;	break;
+		case '/':	rt=1;	break;
+		case '.':	rt=1;	break;
+		case ',':	rt=1;	break;
+		case '~':	rt=1;	break;
+		case ':':	rt=1;	break;
+		case ';':	rt=1;	break;
+		case '<':	rt=1;	break;
+		case '>':	rt=1;	break;
+		default:	rt=0;	break;
+	}
+	return(rt);
+}
+
+byte bccx_sepchar(int v)
+{
+	int rt;
+	switch(v)
+	{
+		case ',':	rt=1;	break;
+		case ';':	rt=1;	break;
+		case '.':	rt=1;	break;
+		case ':':	rt=1;	break;
+		default:	rt=0;	break;
+	}
+	return(rt);
+}
+
+byte bccx_bracechar(int v)
+{
+	int rt;
+	switch(v)
+	{
+		case '(':	rt=1;	break;
+		case ')':	rt=1;	break;
+		case '[':	rt=1;	break;
+		case ']':	rt=1;	break;
+		case '{':	rt=1;	break;
+		case '}':	rt=1;	break;
+		default:	rt=0;	break;
+	}
+	return(rt);
+}
+
+char **bccx_split_i(char *str, int flag)
+{
+	char *ta[64];
+	char tb[256], tb1[16];
+	char **a, *s, *t;
+	int i, j, k, rdx;
+
+	s=str;
+//	a=bccx_ralloc(64*sizeof(char *));
+//	memset(a, 0, 64*sizeof(char *));
+	memset(ta, 0, 64*sizeof(char *));
+	tb[0]=0;
+	i=0;
+	while(*s)
+	{
+		while(*s && (*s<=' '))s++;
+		if(!*s)break;
+		if(!(flag&1))
+		{
+			if(*s=='#')break;
+			if(*s==';')break;
+		}
+		if((s[0]=='/') && (s[1]=='/'))
+			break;
+
+//		t=bccx_ralloc(256);
+		t=tb;
+//		a[i++]=t;
+
+		if(*s=='"')
+		{
+			if(flag&1)
+				*t++='S';
+			s++;
+			while(*s)
+			{
+				k=*s;
+				if(k=='"')
+				{
+					s++;
+					break;
+				}
+				if(k=='\\')
+				{
+					s++;
+					k=*s++; j=k&255;
+					switch(k)
+					{
+						case 'r':	j='\r';	break;
+						case 'n':	j='\n';	break;
+						case 't':	j='\t';	break;
+						case 'b':	j='\b';	break;
+						case '\\':	j='\\';	break;
+						case 'x':
+							tb1[0]=s[0];	tb1[1]=s[1];
+							tb1[2]=0;		s+=2;
+							j=strtol(tb1, NULL, 16);
+							break;
+						case 'u':
+							tb1[0]=s[0];	tb1[1]=s[1];
+							tb1[2]=s[2];	tb1[3]=s[3];
+							tb1[4]=0;		s+=4;
+							j=strtol(tb1, NULL, 16);
+							break;
+					}
+					if(j>=0x80)
+					{
+						if(j>=0x400)
+						{
+							*t++=0xE0|((j>>6)&0x0F);
+							*t++=0x80|((j>>6)&0x3F);
+							*t++=0x80|((j>>0)&0x3F);
+						}else
+						{
+							*t++=0xC0|((j>>6)&0x1F);
+							*t++=0x80|((j>>0)&0x3F);
+						}
+					}else
+					{
+						*t++=j;
+					}
+					continue;
+				}
+				
+				*t++=*s++;
+			}
+//			if(*s=='"')s++;
+
+			*t++=0;
+			ta[i++]=bgbcc_rstrdup(tb);
+			continue;
+		}
+
+		if(flag&1)
+		{
+			if(bccx_sepchar(*s))
+			{
+				*t++='O';
+				*t++=*s++;
+				*t++=0;
+				ta[i++]=bccx_rstrdup(tb);
+				continue;
+			}
+			if(bccx_oprchar(*s))
+			{
+				*t++='O';
+				*t++=*s++;
+				if(bccx_oprchar(*s))
+				{
+					*t++=*s++;
+					if(bccx_oprchar(*s))
+					{
+						*t++=*s++;
+					}
+				}
+				*t++=0;
+				ta[i++]=bccx_rstrdup(tb);
+				continue;
+			}
+			if(bccx_bracechar(*s))
+			{
+				*t++='B';
+				*t++=*s++;
+				*t++=0;
+				ta[i++]=bccx_rstrdup(tb);
+				continue;
+			}
+			
+			k=*s;
+			if(	((k>='a') && (k<='z')) ||
+				((k>='A') && (k<='Z')) ||
+				((k=='_') || (k=='$')))
+			{
+				*t++='I';
+				*t++=*s++;
+
+				k=*s;
+				while(	((k>='a') && (k<='z')) ||
+						((k>='A') && (k<='Z')) ||
+						((k>='0') && (k<='9')) ||
+						((k=='_') || (k=='$')))
+				{
+					*t++=*s++;
+					k=*s;
+				}
+
+				*t++=0;
+				ta[i++]=bccx_rstrdup(tb);
+				continue;
+			}
+			
+			if((k>='0') && (k<='9'))
+			{
+//				if(s[0]=='0')
+				if((s[0]=='0') && (s[1]!='.'))
+				{
+					*t++='N';
+					if((s[1]=='x') || (s[1]=='X'))
+					{
+						*t++=*s++;
+						*t++=*s++;
+						rdx=16;
+					}else
+						if((s[1]=='b') || (s[1]=='B'))
+					{
+						*t++=*s++;
+						*t++=*s++;
+						rdx=2;
+					}else
+					{
+						*t++=*s++;
+						rdx=8;
+					}
+
+					k=*s;
+					while(	((k>='a') && (k<='z')) ||
+							((k>='A') && (k<='Z')) ||
+							((k>='0') && (k<='9')))
+					{
+						j=-1;
+						if((k>='0') && (k<='9'))
+							j=k-'0';
+						if((k>='A') && (k<='Z'))
+							j=10+(k-'A');
+						if((k>='a') && (k<='z'))
+							j=10+(k-'a');
+						if(j>=rdx)
+							break;
+						
+						*t++=*s++;
+						k=*s;
+					}
+
+					*t++=0;
+					ta[i++]=bccx_rstrdup(tb);
+					continue;
+				}
+
+				*t++='N';
+				k=*s;
+				while((k>='0') && (k<='9'))
+				{
+					*t++=*s++;
+					k=*s;
+				}
+				
+//				if(*s=='.')
+				if(k=='.')
+				{
+					tb[0]='R';
+					*t++=*s++;
+					k=*s;
+					while((k>='0') && (k<='9'))
+					{
+						*t++=*s++;
+						k=*s;
+					}
+				}
+				
+				*t++=0;
+				ta[i++]=bccx_rstrdup(tb);
+				continue;
+			}
+		}
+
+		while(*s && (*s>' '))*t++=*s++;
+		*t++=0;
+		ta[i++]=bccx_rstrdup(tb);
+	}
+
+//	if(tb[0])
+//		a[i++]=bccx_rstrdup(tb);
+
+//	a[i]=NULL;
+	ta[i]=NULL;
+
+//	return(a);
+	return(bccx_rmemdup(ta, (i+1)*sizeof(char *)));
+}
+
+char **bccx_split(char *s)
+{
+	return(bccx_split_i(s, 0));
+}
+
+char **bccx_splitb(char *s)
+{
+	return(bccx_split_i(s, 1));
+}
+
+s64 bccx_atoll(char *str)
+{
+	if(str[0]=='0')
+	{
+		if(str[1]=='x')
+			return(strtoll(str+2, NULL, 16));
+		return(strtoll(str+1, NULL, 8));
+	}
+
+	return(strtoll(str, NULL, 10));
+//	return(atoll(str));
+}
+
+double bccx_atof(char *str)
+{
+	if((str[0]=='0') && (str[1]!='.'))
+	{
+		if(str[1]=='x')
+			return(bccx_atoll(str));
+		return(bccx_atoll(str));
+	}
+	return(atof(str));
+}
+
+
 #if 1
 int BCCX_StringToStridx(char *str)
 {
@@ -480,8 +819,14 @@ int BCCX_FetchAttrValCst(BCCX_Node *node,
 	u16 **rrn, BCCX_AttrVal **rrv)
 {
 	int iv;
+	
+	if(!rcst)
+	{
+		iv=BCCX_StringToStridx(var);
+		return(BCCX_FetchAttrValIx(node, iv, rrn, rrv));
+	}
+	
 	iv=*rcst;
-
 	if(!iv)
 		{ iv=BCCX_StringToStridx(var); *rcst=iv; }
 	return(BCCX_FetchAttrValIx(node, iv, rrn, rrv));
@@ -770,6 +1115,11 @@ void BCCX_SetFloatCst(BCCX_Node *n,
 	av->f=val;
 }
 #endif
+
+void BCCX_SetInt(BCCX_Node *n, char *var, s64 val)
+	{ BCCX_SetIntCst(n, NULL, var, val); }
+void BCCX_SetFloat(BCCX_Node *n, char *var, double val)
+	{ BCCX_SetFloatCst(n, NULL, var, val); }
 
 BCCX_Node *BCCX_GetNodeCst(BCCX_Node *n, bccx_cxstate *rcst, char *var)
 {

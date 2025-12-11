@@ -39,6 +39,10 @@
 #define BGBCC_UNDEFINED ((void *)(-1))
 #endif
 
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif
+
 #ifndef BYTE_T
 #define BYTE_T
 typedef unsigned char byte;
@@ -454,6 +458,7 @@ extern "C" {
 #define BGBCC_LANG_CX		BGBCC_FOURCC('C', 'A', 'U', 'X')
 #define BGBCC_LANG_MINIC	BGBCC_FOURCC('M', 'I', 'N', 'C')
 #define BGBCC_LANG_BS2		BGBCC_FOURCC('B', 'S', '2', ' ')
+#define BGBCC_LANG_SCAD		BGBCC_FOURCC('S', 'C', 'A', 'D')
 
 #define BGBCC_LANG_ASM		BGBCC_FOURCC('A', 'S', 'M', ' ')
 #define BGBCC_LANG_VERILOG	BGBCC_FOURCC('V', 'E', 'R', 'L')
@@ -549,20 +554,30 @@ extern "C" {
 #define BGBCC_FMT_DEF		BGBCC_FOURCC('D', 'E', 'F', ' ')
 #define BGBCC_FMT_WDEF		BGBCC_FOURCC('W', 'D', 'E', 'F')
 #define BGBCC_FMT_TEXT		BGBCC_FOURCC('T', 'E', 'X', 'T')
+#define BGBCC_FMT_MDEF		BGBCC_FOURCC('M', 'D', 'E', 'F')
 
 #define BGBCC_FMT_QOIF		BGBCC_FOURCC('Q', 'O', 'I', 'F')
 #define BGBCC_FMT_LCIF		BGBCC_FOURCC('L', 'C', 'I', 'F')
 #define BGBCC_FMT_UPIC		BGBCC_FOURCC('U', 'P', 'I', 'C')
 #define BGBCC_FMT_JPEG		BGBCC_FOURCC('J', 'P', 'E', 'G')
 #define BGBCC_FMT_PNG		BGBCC_FOURCC('P', 'N', 'G', ' ')
+#define BGBCC_FMT_DDS		BGBCC_FOURCC('D', 'D', 'S', ' ')
+
+#define BGBCC_FMT_BMD		BGBCC_FOURCC('B', 'M', 'D', ' ')
+#define BGBCC_FMT_STL		BGBCC_FOURCC('S', 'T', 'L', ' ')
+#define BGBCC_FMT_SCAD		BGBCC_FOURCC('S', 'C', 'A', 'D')
 
 #define BGBCC_FMT_CRAM		BGBCC_FOURCC('C', 'R', 'A', 'M')
+#define BGBCC_FMT_DXT1		BGBCC_FOURCC('D', 'X', 'T', '1')
+#define BGBCC_FMT_DXT5		BGBCC_FOURCC('D', 'X', 'T', '5')
 
 #define BGBCC_FMT_CQL0		BGBCC_FOURCC('C', 'Q', 'L', '0')
 #define BGBCC_FMT_CQL3		BGBCC_FOURCC('C', 'Q', 'L', '3')
 
 #define BGBCC_FMT_RGL3		BGBCC_FOURCC('R', 'G', 'L', '3')
 #define BGBCC_FMT_RGL4		BGBCC_FOURCC('R', 'G', 'L', '4')
+
+#define BGBCC_FMT_bt5b		BGBCC_FOURCC('b', 't', '5', 'b')
 
 #endif
 
@@ -774,6 +789,12 @@ char *name;
 BCCX_Node *args;
 BCCX_Node *body;
 BCCX_Node *value;
+u32 lang;
+
+BCCX_Node *(*PpiDoFuncall2)(BGBCP_ParseState *ctx,
+	BGBPP_PpiDef *func,
+	BCCX_Node **args, int nargs,
+	BCCX_Node *ext);
 };
 
 struct BGBPP_PpiFrame_s {
@@ -1110,6 +1131,8 @@ ccxl_status (*LoadBufferDLL)(BGBCC_TransState *ctx,
 ccxl_status (*AddResourceData)(BGBCC_TransState *ctx,
 	char *name, byte *buf, int sz, fourcc imgfmt);
 };
+
+#include <btm_mesh.h>
 
 #include <bgbcc_auto.h>
 

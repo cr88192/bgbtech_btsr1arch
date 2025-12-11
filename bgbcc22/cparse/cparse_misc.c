@@ -521,149 +521,161 @@ fourcc BGBCP_LangForName(char *name)
 		s=name+strlen(name);
 		while((s>name) && (*s!='.'))s--;
 
-		if(!bgbcp_strcmp(s, ".c"))
-			lang=BGBCC_LANG_C;
-		if(!bgbcp_strcmp(s, ".h"))
-			lang=BGBCC_LANG_C;
+		if(*s=='.')
+		{
+			if(!bgbcp_strcmp(s, ".c"))
+				lang=BGBCC_LANG_C;
+			if(!bgbcp_strcmp(s, ".h"))
+				lang=BGBCC_LANG_C;
 
-		if(!bgbcp_strcmp(s, ".cpp"))
-			lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".hpp"))
-			lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".cs"))
-			lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(s, ".java"))
-			lang=BGBCC_LANG_JAVA;
+			if(!bgbcp_strcmp(s, ".cpp"))
+				lang=BGBCC_LANG_CPP;
+			if(!bgbcp_strcmp(s, ".hpp"))
+				lang=BGBCC_LANG_CPP;
+			if(!bgbcp_strcmp(s, ".cs"))
+				lang=BGBCC_LANG_CS;
+			if(!bgbcp_strcmp(s, ".java"))
+				lang=BGBCC_LANG_JAVA;
 
-		if(!bgbcp_strcmp(s, ".bs"))
-			lang=BGBCC_LANG_BS2;
-		if(!bgbcp_strcmp(s, ".js"))
-			lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".es"))
-			lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".bs2"))
-			lang=BGBCC_LANG_BS2;
-		if(!bgbcp_strcmp(s, ".ts"))
-			lang=BGBCC_LANG_BS;
+			if(!bgbcp_strcmp(s, ".bs"))
+				lang=BGBCC_LANG_BS2;
+			if(!bgbcp_strcmp(s, ".js"))
+				lang=BGBCC_LANG_BS;
+			if(!bgbcp_strcmp(s, ".es"))
+				lang=BGBCC_LANG_BS;
+			if(!bgbcp_strcmp(s, ".bs2"))
+				lang=BGBCC_LANG_BS2;
+			if(!bgbcp_strcmp(s, ".ts"))
+				lang=BGBCC_LANG_BS;
 
-		if(!bgbcp_strcmp(s, ".s"))
-			lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(s, ".asm"))
-			lang=BGBCC_LANG_ASM;
+			if(!bgbcp_strcmp(s, ".s"))
+				lang=BGBCC_LANG_ASM;
+			if(!bgbcp_strcmp(s, ".asm"))
+				lang=BGBCC_LANG_ASM;
 
-		if(!bgbcp_strcmp(s, ".C"))
-			lang=BGBCC_LANG_C;
-		if(!bgbcp_strcmp(s, ".H"))
-			lang=BGBCC_LANG_C;
+			if(!bgbcp_strcmp(s, ".C"))
+				lang=BGBCC_LANG_C;
+			if(!bgbcp_strcmp(s, ".H"))
+				lang=BGBCC_LANG_C;
 
-		if(!bgbcp_strcmp(s, ".CPP"))
-			lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".HPP"))
-			lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(s, ".CS"))
-			lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(s, ".JAVA"))
-			lang=BGBCC_LANG_JAVA;
+			if(!bgbcp_strcmp(s, ".CPP"))
+				lang=BGBCC_LANG_CPP;
+			if(!bgbcp_strcmp(s, ".HPP"))
+				lang=BGBCC_LANG_CPP;
+			if(!bgbcp_strcmp(s, ".CS"))
+				lang=BGBCC_LANG_CS;
+			if(!bgbcp_strcmp(s, ".JAVA"))
+				lang=BGBCC_LANG_JAVA;
 
-		if(!bgbcp_strcmp(s, ".BS"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".JS"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".ES"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(s, ".BS2"))lang=BGBCC_LANG_BS2;
-		if(!bgbcp_strcmp(s, ".TS"))lang=BGBCC_LANG_BS;
+			if(!bgbcp_strcmp(s, ".BS"))lang=BGBCC_LANG_BS;
+			if(!bgbcp_strcmp(s, ".JS"))lang=BGBCC_LANG_BS;
+			if(!bgbcp_strcmp(s, ".ES"))lang=BGBCC_LANG_BS;
+			if(!bgbcp_strcmp(s, ".BS2"))lang=BGBCC_LANG_BS2;
+			if(!bgbcp_strcmp(s, ".TS"))lang=BGBCC_LANG_BS;
 
-		if(!bgbcp_strcmp(s, ".S"))
-			lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(s, ".ASM"))
-			lang=BGBCC_LANG_ASM;
+			if(!bgbcp_strcmp(s, ".S"))
+				lang=BGBCC_LANG_ASM;
+			if(!bgbcp_strcmp(s, ".ASM"))
+				lang=BGBCC_LANG_ASM;
 
-		if(!bgbcp_strcmp(s, ".ril"))
-			lang=BGBCC_IMGFMT_RIL3;
-		if(!bgbcp_strcmp(s, ".RIL"))
-			lang=BGBCC_IMGFMT_RIL3;
-		if(!bgbcp_strcmp(s, ".ril3"))
-			lang=BGBCC_IMGFMT_RIL3;
-		if(!bgbcp_strcmp(s, ".RIL3"))
-			lang=BGBCC_IMGFMT_RIL3;
+			if(!bgbcp_strcmp(s, ".ril"))
+				lang=BGBCC_IMGFMT_RIL3;
+			if(!bgbcp_strcmp(s, ".RIL"))
+				lang=BGBCC_IMGFMT_RIL3;
+			if(!bgbcp_strcmp(s, ".ril3"))
+				lang=BGBCC_IMGFMT_RIL3;
+			if(!bgbcp_strcmp(s, ".RIL3"))
+				lang=BGBCC_IMGFMT_RIL3;
 
-		if(!bgbcp_strcmp(s, ".o"))
-			lang=BGBCC_IMGFMT_OBJ;
-		if(!bgbcp_strcmp(s, ".obj"))
-			lang=BGBCC_IMGFMT_OBJ;
+			if(!bgbcp_strcmp(s, ".o"))
+				lang=BGBCC_IMGFMT_OBJ;
+			if(!bgbcp_strcmp(s, ".obj"))
+				lang=BGBCC_IMGFMT_OBJ;
 
-		if(!bgbcp_strcmp(s, ".frb"))
-			lang=BGBCC_IMGFMT_FR2E;
-		if(!bgbcp_strcmp(s, ".frb"))
-			lang=BGBCC_IMGFMT_FR2E;
+			if(!bgbcp_strcmp(s, ".frb"))
+				lang=BGBCC_IMGFMT_FR2E;
+			if(!bgbcp_strcmp(s, ".frb"))
+				lang=BGBCC_IMGFMT_FR2E;
 
-		if(!bgbcp_strcmp(s, ".dll"))lang=BGBCC_IMGFMT_DLL;
-		if(!bgbcp_strcmp(s, ".DLL"))lang=BGBCC_IMGFMT_DLL;
-		if(!bgbcp_strcmp(s, ".exe"))lang=BGBCC_IMGFMT_EXE;
-		if(!bgbcp_strcmp(s, ".EXE"))lang=BGBCC_IMGFMT_EXE;
-		if(!bgbcp_strcmp(s, ".elf"))lang=BGBCC_IMGFMT_ELXE;
-		if(!bgbcp_strcmp(s, ".ELF"))lang=BGBCC_IMGFMT_ELXE;
-		if(!bgbcp_strcmp(s, ".so"))lang=BGBCC_IMGFMT_ELSO;
-		if(!bgbcp_strcmp(s, ".SO"))lang=BGBCC_IMGFMT_ELSO;
+			if(!bgbcp_strcmp(s, ".dll"))lang=BGBCC_IMGFMT_DLL;
+			if(!bgbcp_strcmp(s, ".DLL"))lang=BGBCC_IMGFMT_DLL;
+			if(!bgbcp_strcmp(s, ".exe"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_strcmp(s, ".EXE"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_strcmp(s, ".elf"))lang=BGBCC_IMGFMT_ELXE;
+			if(!bgbcp_strcmp(s, ".ELF"))lang=BGBCC_IMGFMT_ELXE;
+			if(!bgbcp_strcmp(s, ".so"))lang=BGBCC_IMGFMT_ELSO;
+			if(!bgbcp_strcmp(s, ".SO"))lang=BGBCC_IMGFMT_ELSO;
 
-		if(!bgbcp_strcmp(s, ".pso"))lang=BGBCC_IMGFMT_DLL;
-		if(!bgbcp_strcmp(s, ".PSO"))lang=BGBCC_IMGFMT_DLL;
-		if(!bgbcp_strcmp(s, ".pex"))lang=BGBCC_IMGFMT_EXE;
-		if(!bgbcp_strcmp(s, ".PEX"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_strcmp(s, ".pso"))lang=BGBCC_IMGFMT_DLL;
+			if(!bgbcp_strcmp(s, ".PSO"))lang=BGBCC_IMGFMT_DLL;
+			if(!bgbcp_strcmp(s, ".pex"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_strcmp(s, ".PEX"))lang=BGBCC_IMGFMT_EXE;
 
-		if(!bgbcp_strcmp(s, ".rom"))lang=BGBCC_IMGFMT_ROM;
-		if(!bgbcp_strcmp(s, ".ROM"))lang=BGBCC_IMGFMT_ROM;
-		if(!bgbcp_strcmp(s, ".bin"))lang=BGBCC_IMGFMT_ROM;
-		if(!bgbcp_strcmp(s, ".BIN"))lang=BGBCC_IMGFMT_ROM;
+			if(!bgbcp_strcmp(s, ".rom"))lang=BGBCC_IMGFMT_ROM;
+			if(!bgbcp_strcmp(s, ".ROM"))lang=BGBCC_IMGFMT_ROM;
+			if(!bgbcp_strcmp(s, ".bin"))lang=BGBCC_IMGFMT_ROM;
+			if(!bgbcp_strcmp(s, ".BIN"))lang=BGBCC_IMGFMT_ROM;
 
-		if(!bgbcp_strcmp(s, ".SYS"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_strcmp(s, ".SYS"))lang=BGBCC_IMGFMT_EXE;
 
-		if(!bgbcp_strcmp(s, ".asm"))lang=BGBCC_IMGFMT_ASM;
-		if(!bgbcp_strcmp(s, ".ASM"))lang=BGBCC_IMGFMT_ASM;
-		if(!bgbcp_strcmp(s, ".as"))lang=BGBCC_IMGFMT_ASM;
-		if(!bgbcp_strcmp(s, ".AS"))lang=BGBCC_IMGFMT_ASM;
-		if(!bgbcp_strcmp(s, ".s"))lang=BGBCC_IMGFMT_ASM;
-		if(!bgbcp_strcmp(s, ".S"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_strcmp(s, ".asm"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_strcmp(s, ".ASM"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_strcmp(s, ".as"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_strcmp(s, ".AS"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_strcmp(s, ".s"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_strcmp(s, ".S"))lang=BGBCC_IMGFMT_ASM;
 
-		if(!bgbcp_strcmp(s, ".v"))lang=BGBCC_LANG_VERILOG;
-		if(!bgbcp_strcmp(s, ".V"))lang=BGBCC_LANG_VERILOG;
-		if(!bgbcp_strcmp(s, ".sv"))lang=BGBCC_LANG_VERILOG;
-		if(!bgbcp_strcmp(s, ".SV"))lang=BGBCC_LANG_VERILOG;
+			if(!bgbcp_strcmp(s, ".v"))lang=BGBCC_LANG_VERILOG;
+			if(!bgbcp_strcmp(s, ".V"))lang=BGBCC_LANG_VERILOG;
+			if(!bgbcp_strcmp(s, ".sv"))lang=BGBCC_LANG_VERILOG;
+			if(!bgbcp_strcmp(s, ".SV"))lang=BGBCC_LANG_VERILOG;
 
-		if(!bgbcp_strcmp(s, ".wad"))	lang=BGBCC_FMT_WAD;
-		if(!bgbcp_strcmp(s, ".WAD"))	lang=BGBCC_FMT_WAD;
-		if(!bgbcp_strcmp(s, ".lmp"))	lang=BGBCC_FMT_LUMP;
-		if(!bgbcp_strcmp(s, ".LMP"))	lang=BGBCC_FMT_LUMP;
-		if(!bgbcp_strcmp(s, ".wav"))	lang=BGBCC_FMT_WAV;
-		if(!bgbcp_strcmp(s, ".WAV"))	lang=BGBCC_FMT_WAV;
-		if(!bgbcp_strcmp(s, ".bmp"))	lang=BGBCC_FMT_BMP;
-		if(!bgbcp_strcmp(s, ".BMP"))	lang=BGBCC_FMT_BMP;
-		if(!bgbcp_strcmp(s, ".avi"))	lang=BGBCC_FMT_AVI;
-		if(!bgbcp_strcmp(s, ".AVI"))	lang=BGBCC_FMT_AVI;
+			if(!bgbcp_strcmp(s, ".wad"))	lang=BGBCC_FMT_WAD;
+			if(!bgbcp_strcmp(s, ".WAD"))	lang=BGBCC_FMT_WAD;
+			if(!bgbcp_strcmp(s, ".lmp"))	lang=BGBCC_FMT_LUMP;
+			if(!bgbcp_strcmp(s, ".LMP"))	lang=BGBCC_FMT_LUMP;
+			if(!bgbcp_strcmp(s, ".wav"))	lang=BGBCC_FMT_WAV;
+			if(!bgbcp_strcmp(s, ".WAV"))	lang=BGBCC_FMT_WAV;
+			if(!bgbcp_strcmp(s, ".bmp"))	lang=BGBCC_FMT_BMP;
+			if(!bgbcp_strcmp(s, ".BMP"))	lang=BGBCC_FMT_BMP;
+			if(!bgbcp_strcmp(s, ".avi"))	lang=BGBCC_FMT_AVI;
+			if(!bgbcp_strcmp(s, ".AVI"))	lang=BGBCC_FMT_AVI;
 
-		if(!bgbcp_strcmp(s, ".def"))	lang=BGBCC_FMT_DEF;
-		if(!bgbcp_strcmp(s, ".DEF"))	lang=BGBCC_FMT_DEF;
+			if(!bgbcp_strcmp(s, ".def"))	lang=BGBCC_FMT_DEF;
+			if(!bgbcp_strcmp(s, ".DEF"))	lang=BGBCC_FMT_DEF;
 
-		if(!bgbcp_strcmp(s, ".wdef"))	lang=BGBCC_FMT_WDEF;
-		if(!bgbcp_strcmp(s, ".WDEF"))	lang=BGBCC_FMT_WDEF;
+			if(!bgbcp_strcmp(s, ".wdef"))	lang=BGBCC_FMT_WDEF;
+			if(!bgbcp_strcmp(s, ".WDEF"))	lang=BGBCC_FMT_WDEF;
 
-		if(!bgbcp_strcmp(s, ".wde"))	lang=BGBCC_FMT_WDEF;
-		if(!bgbcp_strcmp(s, ".WDE"))	lang=BGBCC_FMT_WDEF;
+			if(!bgbcp_strcmp(s, ".wde"))	lang=BGBCC_FMT_WDEF;
+			if(!bgbcp_strcmp(s, ".WDE"))	lang=BGBCC_FMT_WDEF;
 
-		if(!bgbcp_strcmp(s, ".qoi"))	lang=BGBCC_FMT_QOIF;
-		if(!bgbcp_strcmp(s, ".QOI"))	lang=BGBCC_FMT_QOIF;
-		if(!bgbcp_strcmp(s, ".qol"))	lang=BGBCC_FMT_QOIF;
-		if(!bgbcp_strcmp(s, ".QOL"))	lang=BGBCC_FMT_QOIF;
-		if(!bgbcp_strcmp(s, ".qolz"))	lang=BGBCC_FMT_QOIF;
-		if(!bgbcp_strcmp(s, ".QOLZ"))	lang=BGBCC_FMT_QOIF;
-		if(!bgbcp_strcmp(s, ".qoli"))	lang=BGBCC_FMT_QOIF;
-		if(!bgbcp_strcmp(s, ".QOLI"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".qoi"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".QOI"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".qol"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".QOL"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".qolz"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".QOLZ"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".qoli"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_strcmp(s, ".QOLI"))	lang=BGBCC_FMT_QOIF;
 
-		if(!bgbcp_strcmp(s, ".lci"))	lang=BGBCC_FMT_LCIF;
-		if(!bgbcp_strcmp(s, ".LCI"))	lang=BGBCC_FMT_LCIF;
-		if(!bgbcp_strcmp(s, ".lcif"))	lang=BGBCC_FMT_LCIF;
-		if(!bgbcp_strcmp(s, ".LCIF"))	lang=BGBCC_FMT_LCIF;
+			if(!bgbcp_strcmp(s, ".lci"))	lang=BGBCC_FMT_LCIF;
+			if(!bgbcp_strcmp(s, ".LCI"))	lang=BGBCC_FMT_LCIF;
+			if(!bgbcp_strcmp(s, ".lcif"))	lang=BGBCC_FMT_LCIF;
+			if(!bgbcp_strcmp(s, ".LCIF"))	lang=BGBCC_FMT_LCIF;
 
-		if(!bgbcp_strcmp(s, ".txt"))	lang=BGBCC_FMT_TEXT;
-		if(!bgbcp_strcmp(s, ".TXT"))	lang=BGBCC_FMT_TEXT;
+			if(!bgbcp_strcmp(s, ".txt"))	lang=BGBCC_FMT_TEXT;
+			if(!bgbcp_strcmp(s, ".TXT"))	lang=BGBCC_FMT_TEXT;
+
+			if(!bgbcc_stricmp(s, ".png"))	lang=BGBCC_FMT_PNG;
+			if(!bgbcc_stricmp(s, ".jpg"))	lang=BGBCC_FMT_JPEG;
+			if(!bgbcc_stricmp(s, ".upi"))	lang=BGBCC_FMT_UPIC;
+
+			if(!bgbcc_stricmp(s, ".bmd"))	lang=BGBCC_FMT_BMD;
+			if(!bgbcc_stricmp(s, ".stl"))	lang=BGBCC_FMT_STL;
+			if(!bgbcc_stricmp(s, ".scad"))	lang=BGBCC_FMT_SCAD;
+			if(!bgbcc_stricmp(s, ".mdef"))	lang=BGBCC_FMT_MDEF;
+		}
 	}
 	
 	if(lang==BGBCC_LANG_BS)
@@ -711,6 +723,18 @@ char *BGBCP_ExtForLang(int lang)
 	case BGBCC_FMT_LUMP:	s=".lmp"; break;
 	case BGBCC_FMT_QOIF:	s=".qoi"; break;
 	case BGBCC_FMT_TEXT:	s=".txt"; break;
+
+	case BGBCC_FMT_PNG:		s=".png"; break;
+	case BGBCC_FMT_JPEG:	s=".jpg"; break;
+	case BGBCC_FMT_DDS:		s=".dds"; break;
+	case BGBCC_FMT_UPIC:	s=".upi"; break;
+
+	case BGBCC_FMT_BMD:		s=".bmd"; break;
+	case BGBCC_FMT_STL:		s=".stl"; break;
+	case BGBCC_FMT_SCAD:	s=".scad"; break;
+
+	case BGBCC_FMT_MDEF:	s=".mdef"; break;
+	case BGBCC_FMT_WDEF:	s=".wdef"; break;
 
 	default: s=""; break;
 	}
@@ -1185,7 +1209,9 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	int t0, t1, dt, lang, pprs;
 	int i, j, k;
 
+#ifndef BGBCC_MTOOL
 	BGBCC_CCXL_InitTargets();
+#endif
 
 	lang=BGBCP_LangForName(name);
 	if(!lang)return(NULL);
@@ -1235,8 +1261,11 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	ppictx->lang=BGBCC_LANG_BS;
 
 	ctx->lang=lang;
+
+#ifndef BGBCC_MTOOL
 	ctx->arch=BGBCC_GetArch();
 	ctx->subarch=BGBCC_GetSubArch();
+#endif
 	
 	ctx->tuidx=BGBCC_GenSymInt();
 	
@@ -1249,7 +1278,9 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 		BGBCP_SetLocale(ctx, "C");
 	}
 	
+#ifndef BGBCC_MTOOL
 	BGBCC_CCXL_SetupParserForArch(ctx);
+#endif
 
 	t0=clock();
 
@@ -1268,6 +1299,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
 //	printf("PreProc took %dms\n", dt);
 
+#ifndef BGBCC_MTOOL
 	bgbcc_msec_pp+=dt;
 
 //	printf("PP\n%s\n\n", tbuf);
@@ -1277,6 +1309,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 		sprintf(b, "dump/%s_pp.txt", modname);
 		BGBCC_StoreTextFile(b, tbuf);
 	}
+#endif
 
 	if(pprs<0)
 	{
@@ -1334,7 +1367,9 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
 //	printf("Parse took %dms\n", dt);
 
+#ifndef BGBCC_MTOOL
 	bgbcc_msec_cp+=dt;
+#endif
 
 	if(bgbcp_err>0)
 	{
@@ -1398,7 +1433,9 @@ char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 	int t0, t1, dt, lang, pprs;
 	int i, j, k;
 
+#ifndef BGBCC_MTOOL
 	BGBCC_CCXL_InitTargets();
+#endif
 
 	lang=BGBCP_LangForName(name);
 	if(!lang)
@@ -1439,8 +1476,10 @@ char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 	ppictx->lang=BGBCC_LANG_BS;
 
 	ctx->lang=lang;
+#ifndef BGBCC_MTOOL
 	ctx->arch=BGBCC_GetArch();
 	ctx->subarch=BGBCC_GetSubArch();
+#endif
 	
 	ctx->tuidx=BGBCC_GenSymInt();
 	
@@ -1453,7 +1492,9 @@ char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 		BGBCP_SetLocale(ctx, "C");
 	}
 	
+#ifndef BGBCC_MTOOL
 	BGBCC_CCXL_SetupParserForArch(ctx);
+#endif
 
 	t0=clock();
 
@@ -1472,7 +1513,9 @@ char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 	dt=(1000.0*(t1-t0))/CLOCKS_PER_SEC;
 //	printf("PreProc took %dms\n", dt);
 
+#ifndef BGBCC_MTOOL
 	bgbcc_msec_pp+=dt;
+#endif
 
 //	if(bgbcc_dumpast)
 //	{

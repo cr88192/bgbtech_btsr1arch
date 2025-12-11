@@ -518,6 +518,7 @@ BGBPP_Def *BGBPP_LookupDefine(BGBCP_ParseState *ctx, char *name)
 	if(!bgbpp_noinclude_p)
 		return(NULL);
 
+#ifndef BGBCC_MTOOL
 	s=BGBCP_LookupPPKey(ctx, name);
 	if(s && !bgbpp_strcmp(s, "define"))
 	{
@@ -550,6 +551,7 @@ BGBPP_Def *BGBPP_LookupDefine(BGBCP_ParseState *ctx, char *name)
 		cur=BGBPP_LookupDefine(ctx, name);
 		return(cur);
 	}
+#endif
 
 	return(NULL);
 }
@@ -780,6 +782,7 @@ void BGBPP_AddStaticDefineArgs(BGBCP_ParseState *ctx,
 
 void BGBPP_SendDefines(BGBCP_ParseState *ctx)
 {
+#ifndef BGBCC_MTOOL
 	char buf[4096];
 	BGBPP_Def *cur;
 	char *s;
@@ -823,7 +826,15 @@ void BGBPP_SendDefines(BGBCP_ParseState *ctx)
 			cur=cur->next;
 		}
 	}
+#endif
 }
+
+#ifdef BGBCC_MTOOL
+void *bgbcc_loadfile_txt(char *name, int *rsz)
+{
+	return(bgbcc_loadfile(name, rsz));
+}
+#endif
 
 char *BGBPP_LoadInclude(BGBCP_ParseState *ctx, char *name, int *rsz)
 {

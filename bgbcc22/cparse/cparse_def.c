@@ -48,8 +48,9 @@ BCCX_Node *BGBCP_VarsList(BGBCP_ParseState *ctx, char **str, BCCX_Node *tn)
 
 		n=NULL;
 
-		if(	(ctx->lang==BGBCC_LANG_BS2) ||
-			(ctx->lang==BGBCC_LANG_BS)	)
+		if(	(ctx->lang==BGBCC_LANG_BS2)		||
+			(ctx->lang==BGBCC_LANG_BS)		||
+			(ctx->lang==BGBCC_LANG_SCAD)	)
 		{
 			BGBCP_Token2(s1, b2, &ty2, ctx->lang);
 
@@ -191,7 +192,8 @@ BCCX_Node *BGBCP_FunVarsList(BGBCP_ParseState *ctx, char **str)
 			lst=BCCX_AddEnd2(lst, &lste, n);
 		}else if(
 			(ctx->lang==BGBCC_LANG_BS2) ||
-			(ctx->lang==BGBCC_LANG_BS)	)
+			(ctx->lang==BGBCC_LANG_BS) ||
+			(ctx->lang==BGBCC_LANG_SCAD)	)
 		{
 			if(ty==BTK_NAME)
 			{
@@ -604,7 +606,8 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 		n2=BGBCP_FunVarsList(ctx, &s);
 
 		if(	(ctx->lang==BGBCC_LANG_BS)	||
-			(ctx->lang==BGBCC_LANG_BS2)	)
+			(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_SCAD)	)
 		{
 			s1=BGBCP_Token2(s, b, &ty, ctx->lang);	//(
 			if(!bgbcp_strcmp1(b, ":") && (ty==BTK_SEPERATOR))
@@ -862,7 +865,8 @@ BCCX_Node *BGBCP_ArgDefinition(BGBCP_ParseState *ctx, char **str)
 		}
 
 		if(	(ctx->lang==BGBCC_LANG_CS) ||
-			(ctx->lang==BGBCC_LANG_BS2) )
+			(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_SCAD) )
 		{
 			s1=BGBCP_Token2(s, b, &ty, ctx->lang);
 			s2=BGBCP_Token2(s1, b2, &ty2, ctx->lang);
@@ -972,7 +976,8 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 //	printf("DEF %p %s\n", s, s);
 
 	if(	(ctx->lang==BGBCC_LANG_BS)	||
-		(ctx->lang==BGBCC_LANG_BS2)	)
+		(ctx->lang==BGBCC_LANG_BS2) ||
+		(ctx->lang==BGBCC_LANG_SCAD)	)
 	{
 //		s1=BGBCP_Token(s, b, &ty);
 
@@ -1000,7 +1005,10 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 
 		s2=BGBCP_Token(s1, b, &ty);
 
-		if((ty==BTK_NAME) && !bgbcp_strcmp(b, "function"))
+		if((ty==BTK_NAME) && 
+			(	!bgbcp_strcmp(b, "function") ||
+				((ctx->lang==BGBCC_LANG_SCAD) && !bgbcp_strcmp(b, "module"))
+			))
 		{
 //			s1=BGBCP_Token(s, b, &ty);
 
@@ -1143,7 +1151,8 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 
 #if 1
 		if((ctx->lang==BGBCC_LANG_CS) ||
-			(ctx->lang==BGBCC_LANG_BS2))
+			(ctx->lang==BGBCC_LANG_BS2) ||
+			(ctx->lang==BGBCC_LANG_SCAD))
 		{
 			if(BCCX_TagIsCstP(n, &bgbcc_rcst_classdef, "classdef") ||
 				BCCX_TagIsCstP(n, &bgbcc_rcst_enumdef, "enumdef") ||

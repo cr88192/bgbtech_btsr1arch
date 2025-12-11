@@ -1,6 +1,8 @@
-UPIC: Tiny JPEG like Image Compressor.
+Small JPEG like Image Compressor.
 * Use Rice coding and Block Haar.
 * May define an HDR variant, UPIC-H
+* Optional: Alternate Transforms
+** Base format will use Block-Haar and RCT.
 
 Top Level:
 * Will use TLV Tags
@@ -11,7 +13,7 @@ Top Level:
 * Nominally 65 bytes.
 * First byte identifies table (1=Y/A, 2=U/V);
 * Remaining 64 bytes will give the quantization factors.
-* UPIC-H: Will use 129 bytes, Each factor being 16 bits.
+* UPIC-H: Will use 130 bytes, Each factor being 16 bits.
 
 'imgd': Image Data
 * Consists of entropy coded macroblocks.
@@ -105,7 +107,6 @@ The higher table entries will be modified in the case of the UPIC-H variant:
 * 1E, 18, 40000..7FFFF
 * 1F, 19, 80000..FFFFF
 
-
 Each coefficient will be scaled by the Quantization Table values, in effect it will be stored in a form where it is divided by the quantization table value.
 
 Note that if present, the A channel will use the Y channel quantization table.
@@ -126,40 +127,122 @@ Block Haar:
 * Works in 8 element Horizontal and Vertical steps.
 * Iteratively applies the Transform (A, B) to ((A+B)/2, A-B)
 ** I0, I1, I2, I3, I4, I5, I6, I7
-** J0=(I0+I1)/2, J1=(I2+I3/2), ..., J4=I0-I1, J5=I2-I3, ...
+** J0=(I0+I1)/2, J1=(I2+I3)/2, ..., J4=I0-I1, J5=I2-I3, ...
 ** K0=(J0+J1)/2, ..., K2=J0-J1, ...
 ** L0=(K0+K1)/2, L1=K0-K1
 ** Out: L0, L1, K2, K3, J4, J5, J6, J7
 * Decoding will reverse this process:
 ** B=C-(D>>1), A=C+D
 
+Block WHT Transform:
+* Will follow the same general process as Block Haar.
+* The transform will use 8-element WHT.
+* The WHT here is similar in construction to the Haar.
+** However, it is expanded so that all stages cover all the elements.
 
-Colorspace:
+Block LGT 5/3:
+* In this case, input is split into even and odd elements;
+* First stage is the difference between the odd element and the average of the two adjacent even elements;
+* This process repeats again for the 4 even elements;
+* The remaining two elements are transformed similarly to Haar.
+** Essentially Haar with the two values flipped.
+
+Block DCT:
+* Basically the same DCT as in JPEG.
+* DCT is inherently lossy, so should not be used for lossless images.
+
+
+Colorspace RCT:
 * Y=(2*G+R+B)/4, U=B-G, V=R-G
 * G=Y-(U+V)/4, B=U+G, R=V+G
 
+Colorspace YCoCg-R:
+* U=R-B; T=B+(U/2); V=G-T; Y=T+(V/2)
+* T=Y-V/2; G=V+T; B=T-(U/2); R=B+U
 
-Macroblock Layouts:
+Colorspace YUV_Apx (Lossy):
+* Y=(4*G+3*R+B)/8; U=B-Y, V=R-Y
+* B=Y+U, R=Y+V, G=Y-(3*V+U)/4
+
+
+Macroblock Layouts (Low 4 bits):
 * 0: Mono-Y
-** Y Y Y Y
+** Y0 Y2 Y3 Y1
 * 1: YUV 4:2:0
-** Y Y Y Y U V
+** Y0 Y2 Y3 Y1 U V
 * 2: YUV 4:4:4
-** Y Y Y Y U U U U V V V V
+** Y0 Y2 Y3 Y1 U0 U2 U3 U1 V0 V2 V3 V1
 * 3: YUVA 4:4:4:4
-** Y Y Y Y U U U U V V V V A A A A
+** Y0 Y2 Y3 Y1 U0 U2 U3 U1 V0 V2 V3 V1 A0 A2 A3 A1
 
 When there are 4 blocks of a type in a macroblock, they will be encoded in Hilbert order.
-* 0 1
-* 2 3
-* Will be encoded as 0 2 3 1
+* Y0 Y1
+* Y2 Y3
+* Will be encoded in the order Y0 Y2 Y3 Y1.
 
-Pixel Format:
+Bits 7:5 of the macroblock format will encode the transform:
+* 000: Block Haar
+* 001: WHT
+* 010: LGT 5/3
+* 011: DCT (Lossy, Optional)
+
+
+Pixel Format (Low 4 bits):
 * 0: Linear 8-bit RGB (LDR)
 * 1: E4.M4 (8-bit HDR)
-* 2: E5.M7 (12-bit HDR)
-* 3: S.E5.M10 (FP16 / 16-bit HDR, UPIC-H)
+* 2: S.E5.M10 (FP16 / 16-bit HDR, UPIC-H)
 
 For encoding FP16, an additional transform step will be used on image components:
 * 0000..7FFF: Mapped as-is.
 * 8000..FFFF: XOR'ed with 0xFFFF7FFF (Mapped Negative)
+
+Pixel Format (High 3 bits):
+* 000: RCT Colorspace
+* 001: YCoCg-R
+* 010: YUV_Apx
+
+
+=== UPIC-H Video ===
+
+This sub-mode will mostly relate to support for 16-bit components.
+The nominal use-case for 16-bit components
+
+
+=== UPIC Video ===
+
+FOURCC: 'upic', Raw UPIC Images (Motion-JPEG style)
+FOURCC: 'upv1', This codec, with I/P Frames
+
+Will mostly reuse the format from UPIC.
+* I-Frames are encoded similarly, just with the addition of replace tags.
+* P-Frames may encode Skip/Delta, and will omit headers.
+** The headers will be reused from the prior I-Frame.
+
+Except that per-macroblock tags will be added. The tag will be encoded as a DC coefficient, just with different predictors, and the Z bits will give the tag command.
+
+Tag Z:
+* 0: Value/Operand
+* 1: Replace Block
+** Value gives quantizer scale.
+** Scale will be nominally encoded as negative.
+* 2: Delta or Skip (N/A in I-Frames)
+** Value gives quantizer scale.
+** Negative=Skip
+** Positive=Delta
+** Followed by X and Y values.
+*** These will give the translation in pixels.
+
+The quantizer scale will be encoded as a 5.5 fixed-point value, which will be multiplied with the base quantization tables to generate a new quantization table this macroblock. These will be stored as an sign folded delta from the prior scale (the delta will be applied to the coefficient in the sign-folded state).
+
+The X and Y vector values will be encoded as normal signed deltas.
+* These will give an offset in pixels for the block in the prior frame.
+* Deltas will be applied relative to the RGB/RGBA frame image.
+* They may not be used to encode a position outside of the video frame.
+* If the motion vector would have encoded a location outside the frame:
+** The location will be clamped such that the block remains inside the frame.
+
+In Skip blocks, no macroblock will be encoded.
+* This will merely translate pixels from the prior frame.
+* Pixels off the right-edge of the frame will wrap in raster order.
+* Pixels past the end of the image will be color filled.
+** The value of the last I-Frame pixel will give the fill color.

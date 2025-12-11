@@ -396,3 +396,236 @@ int BGBCC_ImgUtil_DrawDenseHexDigit(byte *ibuf, int xs, int ys,
 	BGBCC_ImgUtil_DrawGlyph(ibuf, xs, ys, xb, yb, pix, clr);
 	return(0);
 }
+
+int BGBCC_ImgUtil_ResampleImageLin(
+	byte *ibuf, int ixs, int iys,
+	byte *obuf, int oxs, int oys)
+{
+	byte *cts, *ctt;
+	int st_x, st_y, fr_x, fr_y, f_x, f_y, f_sc_x, f_sc_y;
+	int c0, c1, c2, c3, c4, c5, c6, hflip, vflip;
+	int x, y, x1, y1;
+	int i, j, k;
+	
+	if((ixs==oxs) && (iys==oys))
+	{
+		if(ibuf!=obuf)
+			memcpy(obuf, ibuf, oxs*oys*4);
+		return(0);
+	}
+	
+	hflip=0;	vflip=0;
+	if(oxs<0)	{ hflip=1; oxs=-oxs; }
+	if(oys<0)	{ vflip=1; oys=-oys; }
+	
+	st_x=(65536*ixs)/oxs;
+	st_y=(65536*iys)/oys;
+	
+	f_sc_x=256;
+	f_sc_y=256;
+	
+	if(oxs<ixs)
+	{
+		f_sc_x=(((256*oxs)/ixs)-128)*2;
+		if(f_sc_x<0)f_sc_x=0;
+	}
+	if(oys<iys)
+	{
+		f_sc_y=(((256*oys)/iys)-128)*2;
+		if(f_sc_y<0)f_sc_y=0;
+	}
+	
+	fr_x=0; fr_y=0;
+	if(hflip)
+		{ fr_x+=(oxs-1)*st_x; st_x=-st_x; }
+	if(vflip)
+		{ fr_y+=(oys-1)*st_y; st_y=-st_y; }
+	
+	ctt=obuf;
+	for(y=0; y<oys; y++)
+	{
+		fr_x=0;
+		for(x=0; x<oys; x++)
+		{
+			x1=fr_x>>16;
+			y1=fr_y>>16;
+			f_x=fr_x&65535;
+			f_y=fr_y&65535;
+			
+			f_x=(((f_x-32768)*f_sc_x)>>8)+32768;
+			f_y=(((f_y-32768)*f_sc_y)>>8)+32768;
+			
+			cts=ibuf+(y1*ixs+x1)*4;
+			
+			for(j=0; j<4; j++)
+			{
+				c0=cts[0+j];
+				c1=cts[4+j];
+				c2=cts[ixs*4+0+j];
+				c3=cts[ixs*4+4+j];
+				c4=(c0*(65535-f_x)+c1*f_x)>>16;
+				c5=(c2*(65535-f_x)+c3*f_x)>>16;
+				c6=(c4*(65535-f_y)+c5*f_y)>>16;
+				ctt[j]=c6;
+			}
+			
+			fr_x+=st_x;
+			ctt+=4;
+		}
+		fr_y+=st_y;
+	}
+
+	return(0);
+}
+
+int BGBCC_ImgUtil_ResampleImage(
+	byte *ibuf, int ixs, int iys,
+	byte *obuf, int oxs, int oys)
+{
+//	if((oxs>=ixs) && (oys>=iys))
+	if(1)
+	{
+		return(BGBCC_ImgUtil_ResampleImageLin(ibuf, ixs, iys, obuf, oxs, oys));
+	}
+}
+
+/*
+ * Composite a source image onto a destination buffer.
+ * dstbuf: Destination Buffer
+ * dxs, dys: Destination Image Size
+ * ibuf: Image Source Buffer
+ * ixs, iys: Image Source Size
+ * obx, oby: Origin within Destination Image
+ * oxs, oys: Logical resolution of image within destination
+ * ang: Rotate image by this amount
+ * d_bf, s_bf: Dest and Source Blend Function
+ */
+int BGBCC_ImgUtil_CompositeBlendImage(
+	byte *dstbuf, int dxs, int dys,
+	byte *ibuf, int ixs, int iys,
+	int obx, int oby, int oxs, int oys, u16 ang,
+	int d_bf, int s_bf
+	)
+{
+	static s16 sintab[256];
+	static byte *resampbuf;
+	static int sz_resampbuf;
+	int d_cr, d_cg, d_cb, d_ca, d_va;
+	int s_cr, s_cg, s_cb, s_ca, s_va;
+	int b_cr, b_cg, b_cb, b_ca;
+	int va_sin, va_cos;
+	int x, y, z, x1, y1, z1, i, j, k;
+	
+	if(!sintab[64])
+	{
+		for(i=0; i<256; i++)
+		{
+			sintab[i]=sin(i*(M_PI/128))*256;
+		}
+	}
+	
+	k=oxs*oys;
+	if(resampbuf && (k>sz_resampbuf))
+		{ free(resampbuf); resampbuf=NULL; }
+	
+	if(!resampbuf)
+	{
+		resampbuf=malloc(k*4);
+		sz_resampbuf=k;
+	}
+	
+	BGBCC_ImgUtil_ResampleImage(ibuf, ixs, iys, resampbuf, oxs, oys);
+	
+	z1=ang&255;
+	x1=sintab[((ang>>8)+ 0)&256];
+	y1=sintab[((ang>>8)+ 1)&256];
+	va_sin=(x1*(256-z1)+y1*z1)>>8;
+	x1=sintab[((ang>>8)+64)&256];
+	y1=sintab[((ang>>8)+65)&256];
+	va_cos=(x1*(256-z1)+y1*z1)>>8;
+	
+	for(y=0; y<oys; y++)
+		for(x=0; x<oxs; x++)
+	{
+		x1=obx+(x*va_cos)+(y*va_sin);
+		y1=oby+(y*va_cos)-(x*va_sin);
+		if((x1<0) || (y1<0) || (x1>=dxs) || (y1>=dys))
+			continue;
+
+		z1=y1*dxs+x1;
+		d_cr=dstbuf[z1+0];	d_cg=dstbuf[z1+1];
+		d_cb=dstbuf[z1+2];	d_ca=dstbuf[z1+3];
+		z=y*oxs+x;
+		s_cr=dstbuf[z+0];	s_cg=dstbuf[z+1];
+		s_cb=dstbuf[z+2];	s_ca=dstbuf[z+3];
+		
+		d_va=255-s_ca;
+		s_va=s_ca;
+		b_cr=((d_cr*d_va)+(s_cr*s_va))>>8;
+		b_cg=((d_cg*d_va)+(s_cg*s_va))>>8;
+		b_cb=((d_cb*d_va)+(s_cb*s_va))>>8;
+		b_ca=((d_ca*d_va)+(s_ca*s_va))>>8;
+		dstbuf[z1+0]=b_cr;	dstbuf[z1+1]=b_cg;
+		dstbuf[z1+2]=b_cb;	dstbuf[z1+3]=b_ca;
+	}
+	
+	return(0);
+}
+
+int BGBCC_ImgUtil_DrawFloodFillHorz(u32 *ibuf, int xs, int ys,
+	int xc, int yc, u32 clr, u32 ref)
+{
+	int x, x0, x1, yb, yb1;
+	
+	if(clr==ref)
+		return(0);
+	
+	yb=yc*xs;
+	x0=xc; x1=xc;
+	while((x0>0) && (ibuf[yb+x0-1]==ref))
+		x0--;
+	while((x1<(xs-1)) && (ibuf[yb+x1+1]==ref))
+		x1++;
+
+	for(x=x0; x<=x1; x++)
+		{ ibuf[yb+x]=clr; }
+
+	if(yc>0)
+	{
+		yb1=yb-xs;
+		for(x=x0; x<=x1; x++)
+		{
+			if(ibuf[yb1+x]==ref)
+				BGBCC_ImgUtil_DrawFloodFillHorz(ibuf, xs, ys,
+					x, yc-1, clr, ref);
+		}
+	}
+
+	if(yc<(ys-1))
+	{
+		yb1=yb+xs;
+		for(x=x0; x<=x1; x++)
+		{
+			if(ibuf[yb1+x]==ref)
+				BGBCC_ImgUtil_DrawFloodFillHorz(ibuf, xs, ys,
+					x, yc+1, clr, ref);
+		}
+	}
+	return(0);
+}
+
+int BGBCC_ImgUtil_DrawFloodFill(byte *ibuf, int xs, int ys,
+	int x0, int y0, u32 clr0)
+{
+	u32 *ibufw;
+	u32 clr1, ref;
+	
+	ibufw=(u32 *)ibuf;
+	ref=ibufw[y0*xs+x0];
+	clr1=	((clr0<< 0)&0xFF00FF00U) |
+			((clr0<<16)&0x00FF0000U) |
+			((clr0>>16)&0x000000FFU) ;
+	BGBCC_ImgUtil_DrawFloodFillHorz((u32 *)ibuf, xs, ys,
+		x0, y0, clr1, ref);
+	return(0);
+}

@@ -1,13 +1,43 @@
+BGBPP_PpiDef *bgbpp_ppiglobal;
+
+BGBPP_PpiDef *BGBPP_PpiGetGlobalDef(char *name, u32 lang)
+{
+	BGBPP_PpiDef *cur;
+
+	cur=bgbpp_ppiglobal;
+	while(cur)
+	{
+		if(lang && (cur->lang!=lang))
+			{ cur=cur->next; continue; }
+		if(!strcmp(cur->name, name))
+			return(cur);
+		cur=cur->next;
+	}
+
+	cur=bgbcc_malloc(sizeof(BGBPP_PpiDef));
+	memset(cur, 0, sizeof(BGBPP_PpiDef));
+
+	cur->name=bgbcc_strdup(name);
+	cur->next=bgbpp_ppiglobal;
+	cur->lang=lang;
+	bgbpp_ppiglobal=cur;
+
+	return(cur);
+}
+
 BGBPP_PpiDef *BGBPP_PpiAllocDef(BGBCP_ParseState *ctx)
 {
 	BGBPP_PpiDef *tmp;
 
-	tmp=ctx->ppi_freedef;
-	if(tmp)
+	if(ctx)
 	{
-		ctx->ppi_freedef=tmp->next;
-		memset(tmp, 0, sizeof(BGBPP_PpiDef));
-		return(tmp);
+		tmp=ctx->ppi_freedef;
+		if(tmp)
+		{
+			ctx->ppi_freedef=tmp->next;
+			memset(tmp, 0, sizeof(BGBPP_PpiDef));
+			return(tmp);
+		}
 	}
 
 	tmp=bgbcc_malloc(sizeof(BGBPP_PpiDef));
@@ -32,6 +62,17 @@ BGBPP_PpiDef *BGBPP_PpiLookupTopDef(BGBCP_ParseState *ctx, char *name)
 			return(cur);
 		cur=cur->next;
 	}
+	
+	cur=bgbpp_ppiglobal;
+	while(cur)
+	{
+		if(cur->lang && (cur->lang!=ctx->lang))
+			{ cur=cur->next; continue; }
+		if(!strcmp(cur->name, name))
+			return(cur);
+		cur=cur->next;
+	}
+	
 	return(NULL);
 }
 
@@ -201,11 +242,13 @@ void BGBPP_PpiInterpBodyStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
 //		n=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
 		n=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+		v=BCCX_FindTagCst(l, &bgbcc_rcst_body, "body");
+		nb=v;
 		
 		def=BGBPP_PpiLookupTopDef(ctx, s);
-		if(def)
+		if(def && !(def->PpiDoFuncall2))
 		{
-			BGBPP_PpiInterpDoFuncall(ctx, def, n);
+			BGBPP_PpiInterpDoFuncall(ctx, def, n, v);
 			return;
 		}
 		
@@ -222,8 +265,14 @@ void BGBPP_PpiInterpBodyStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 			targs[ci]=v;
 //			c=BCCX_Next(c);
 		}
+
+		if(def && def->PpiDoFuncall2)
+		{
+			def->PpiDoFuncall2(ctx, def, targs, na, nb);
+			return;
+		}
 		
-		BGBPP_PpiInterpDoFuncall2(ctx, s, targs, na);
+		BGBPP_PpiInterpDoFuncall2(ctx, s, targs, na, nb);
 		
 		return;
 	}
@@ -368,7 +417,7 @@ void BGBPP_PpiInterpBodyStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 }
 
 BCCX_Node *BGBPP_PpiInterpDoFuncall2(BGBCP_ParseState *ctx,
-	char *name, BCCX_Node **args, int nargs)
+	char *name, BCCX_Node **args, int nargs, BCCX_Node *extbody)
 {
 	char tbuf[4096];
 	BCCX_Node *v;
@@ -509,7 +558,7 @@ BCCX_Node *BGBPP_PpiInterpDoFuncall2(BGBCP_ParseState *ctx,
 }
 
 BCCX_Node *BGBPP_PpiInterpDoFuncall(BGBCP_ParseState *ctx,
-	BGBPP_PpiDef *func, BCCX_Node *args)
+	BGBPP_PpiDef *func, BCCX_Node *args, BCCX_Node *extbody)
 {
 	BGBPP_PpiFrame *frm;
 	BGBPP_PpiDef *def;	
@@ -585,7 +634,7 @@ BCCX_Node *BGBPP_PpiInterpDoFuncall(BGBCP_ParseState *ctx,
 	return(ctx->ppi_retval);
 }
 
-void BGBPP_PpiInterpTopStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
+BCCX_Node *BGBPP_PpiInterpTopStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
 	BCCX_Node *c, *n, *v, *t;
 	BGBPP_PpiDef *def;	
@@ -618,7 +667,7 @@ void BGBPP_PpiInterpTopStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 
 //			c=BCCX_Next(c);
 		}
-		return;
+		return(NULL);
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_defun, "defun"))
@@ -635,7 +684,7 @@ void BGBPP_PpiInterpTopStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 		def=BGBPP_PpiGetTopDef(ctx, s);
 		def->args=n;
 		def->body=v;
-		return;
+		return(NULL);
 	}
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_funcall, "funcall"))
@@ -643,25 +692,27 @@ void BGBPP_PpiInterpTopStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
 //		n=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
 		n=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+		v=BCCX_FindTagCst(l, &bgbcc_rcst_body, "body");
 		
 		def=BGBPP_PpiLookupTopDef(ctx, s);
 		if(def)
 		{
-			BGBPP_PpiInterpDoFuncall(ctx, def, n);
-			return;
+			v=BGBPP_PpiInterpDoFuncall(ctx, def, n, v);
+			return(v);
 		}
-		return;
+		return(NULL);
 	}
 
 //	BGBCC_CCXL_Error(ctx, "PPI Unhandled Top Statement %s\n", BCCX_Tag(l));
 	printf("PPI Unhandled Top Statement %s\n", BCCX_Tag(l));
+	return(NULL);
 }
 
 BCCX_Node *BGBPP_PpiInterpTryReduce(BGBCP_ParseState *ppctx, BCCX_Node *l)
 {
 	BCCX_Node *targs[32];
 	BGBCP_ParseState *ctx;
-	BCCX_Node *c, *n, *v, *t;
+	BCCX_Node *c, *n, *v, *t, *nb;
 	BGBPP_PpiDef *def;	
 	char *s, *s0, *s1;
 	int i, na, ci;
@@ -675,11 +726,13 @@ BCCX_Node *BGBPP_PpiInterpTryReduce(BGBCP_ParseState *ppctx, BCCX_Node *l)
 		s=BCCX_GetCst(l, &bgbcc_rcst_name, "name");
 //		n=BCCX_FetchCst(l, &bgbcc_rcst_args, "args");
 		n=BCCX_FindTagCst(l, &bgbcc_rcst_args, "args");
+		v=BCCX_FindTagCst(l, &bgbcc_rcst_body, "body");
+		nb=v;
 		
 		def=BGBPP_PpiLookupTopDef(ctx, s);
-		if(def)
+		if(def && !(def->PpiDoFuncall2))
 		{
-			v=BGBPP_PpiInterpDoFuncall(ctx, def, n);
+			v=BGBPP_PpiInterpDoFuncall(ctx, def, n, v);
 			return(v);
 		}
 
@@ -703,8 +756,14 @@ BCCX_Node *BGBPP_PpiInterpTryReduce(BGBCP_ParseState *ppctx, BCCX_Node *l)
 			c=BCCX_Next(c);
 		}
 #endif
-		
-		v=BGBPP_PpiInterpDoFuncall2(ctx, s, targs, na);
+
+		if(def && def->PpiDoFuncall2)
+		{
+			v=def->PpiDoFuncall2(ctx, def, targs, na, nb);
+			return(v);
+		}
+
+		v=BGBPP_PpiInterpDoFuncall2(ctx, s, targs, na, nb);
 		return(v);
 	}
 	
