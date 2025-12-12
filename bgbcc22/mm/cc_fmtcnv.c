@@ -962,7 +962,8 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		return(obuf);
 	}
 
-#ifdef BGBCC_MTOOL
+// #ifdef BGBCC_MTOOL
+#if 1
 	if(!strcmp(cnv, "bmd"))
 	{
 		mesh=BTM_LoadMeshListBuffer(buf, sz, lang);

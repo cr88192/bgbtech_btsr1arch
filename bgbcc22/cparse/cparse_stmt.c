@@ -217,7 +217,8 @@ char *BGBCP_EatSemicolonRequired(BGBCP_ParseState *ctx, char *s)
 	}else
 	{
 		if(	(ctx->lang==BGBCC_LANG_BS)	||
-			(ctx->lang==BGBCC_LANG_BS2)	)
+			(ctx->lang==BGBCC_LANG_BS2)	||
+			(ctx->lang==BGBCC_LANG_SCAD)	)
 		{
 			return(s);
 		}

@@ -415,7 +415,8 @@ u64 TKuPI_EncodeImageDDS_FlipImageVertBC1(u64 *ibuf, int ixs, int iys)
 			ibuf[y1*bxs+x]=v0;
 		}
 	}
-	
+
+	return(0);
 }
 
 u64 TKuPI_EncodeImageDDS_BuildMipsBC1(u64 *ibuf, int ixs, int iys)

@@ -26,7 +26,7 @@ BCCX_Node *BGBCP_FunArgs(BGBCP_ParseState *ctx, char **str)
 BCCX_Node *BGBCP_FunArgsFlag(BGBCP_ParseState *ctx, char **str, int flag)
 {
 	char b[256], b2[256], b3[256];
-	char *s, *s1, *s2;
+	char *s, *s1, *s2, *s3;
 	int ty, ty2, ty3;
 	BCCX_Node *n, *n1, *lst, *lste;
 
@@ -36,7 +36,7 @@ BCCX_Node *BGBCP_FunArgsFlag(BGBCP_ParseState *ctx, char **str, int flag)
 		b[0]=0;
 		s1=BGBCP_Token(s, b, &ty);
 		s2=BGBCP_Token(s1, b2, &ty2);
-		BGBCP_Token(s2, b3, &ty3);
+		s3=BGBCP_Token(s2, b3, &ty3);
 
 		if(ty==BTK_NULL)break;		
 		if((ty==BTK_BRACE) &&
@@ -60,6 +60,7 @@ BCCX_Node *BGBCP_FunArgsFlag(BGBCP_ParseState *ctx, char **str, int flag)
 		if(	(ctx->lang==BGBCC_LANG_CS) ||
 			(ctx->lang==BGBCC_LANG_BS2) ||
 			(ctx->lang==BGBCC_LANG_BS) ||
+			(ctx->lang==BGBCC_LANG_SCAD) ||
 			(flag&1))
 		{
 			if((ty==BTK_NAME) && !BGBCP_CheckTokenKeyword(ctx, b))
@@ -84,11 +85,25 @@ BCCX_Node *BGBCP_FunArgsFlag(BGBCP_ParseState *ctx, char **str, int flag)
 				(ty2==BTK_NAME)			&&
 				!bgbcp_strcmp1(b3, "=")	)
 			{
-				s=s2;
+				s=s3;
 				n1=BGBCP_Expression(ctx, &s);
 				n=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
 					BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
 				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b2);
+			}
+		}
+
+		if(ctx->lang==BGBCC_LANG_SCAD)
+		{
+			if(	!n						&&
+				(ty==BTK_NAME)			&&
+				!bgbcp_strcmp1(b2, "=")	)
+			{
+				s=s2;
+				n1=BGBCP_Expression(ctx, &s);
+				n=BCCX_NewCst1(&bgbcc_rcst_attr, "attr",
+					BCCX_NewCst1V(&bgbcc_rcst_value, "value", n1));
+				BCCX_SetCst(n, &bgbcc_rcst_name, "name", b);
 			}
 		}
 

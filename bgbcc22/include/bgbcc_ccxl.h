@@ -831,6 +831,8 @@ bccx_cxstate bgbcc_rcst_complex;
 bccx_cxstate bgbcc_rcst_cond;
 bccx_cxstate bgbcc_rcst_constructor;
 bccx_cxstate bgbcc_rcst_continue;
+bccx_cxstate bgbcc_rcst_cube;
+bccx_cxstate bgbcc_rcst_cylinder;
 
 bccx_cxstate bgbcc_rcst_declspec;
 bccx_cxstate bgbcc_rcst_def;
@@ -924,6 +926,7 @@ bccx_cxstate bgbcc_rcst_right;
 
 bccx_cxstate bgbcc_rcst_sharpcall;
 bccx_cxstate bgbcc_rcst_set;
+bccx_cxstate bgbcc_rcst_sphere;
 bccx_cxstate bgbcc_rcst_size;
 bccx_cxstate bgbcc_rcst_sizeof;
 bccx_cxstate bgbcc_rcst_sizeof_expr;

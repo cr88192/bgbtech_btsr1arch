@@ -1549,7 +1549,7 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 				
 				if(ctx->lang==BGBCC_LANG_SCAD)
 				{
-					BGBCP_Token(s, b2, &ty2); //'('
+					BGBCP_Token(s, b2, &ty2);
 					
 					if(!strcmp(b2, "{") || (ty2==BTK_NAME))
 					{

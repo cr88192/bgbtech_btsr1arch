@@ -81,18 +81,26 @@ BTM_CsgBrush *BTM_AllocBrushCylinder(
 	BTM_CsgBrush *brush;
 	float nv0[4], nv1[4], pt0[3];
 	float sinth1, costh1;
-	float th, sinth2, costh2, ath, sinz, ra, d;
+	float th, sinth2, costh2, ath, sinz, ra, rasc, d;
 	int i;
 	
 	brush=BTM_AllocBrush(2+fn);
 	TKRA_Vec4F_Set(brush->planes+0*4,  0,  0, -1, -org[2]+0);
 	TKRA_Vec4F_Set(brush->planes+1*4,  0,  0,  1,  org[2]+zhgt);
 	
+	rasc=cos(M_PI/fn);
+//	rasc*=0.995;
+	
 	for(i=0; i<fn; i++)
 	{
-		ra=(ratbot+rattop)/2;
-		th=i*((2*M_PI)/fn);
-		ath=atan2(ratbot-rattop, zhgt);
+//		ra=(ratbot+rattop)/2;
+		ra=ratbot*rasc;
+		th=(i+0.5)*((2*M_PI)/fn);
+//		th=th+M_PI/4;
+		
+//		ath=atan2(ratbot-rattop, zhgt);
+		ath=atan2(ratbot-rattop, zhgt*1.414);
+//		ath=asin((ratbot-rattop)/zhgt);
 		
 		sinth1=sin(th);
 		costh1=cos(th);
@@ -104,8 +112,8 @@ BTM_CsgBrush *BTM_AllocBrushCylinder(
 		nv0[1]=costh1;
 		nv0[2]=0;
 		
-//		TKRA_Vec3F_AddScale(org, nv0, ra, pt0);
-		TKRA_Vec3F_AddScale(org, nv0, ratbot, pt0);
+		TKRA_Vec3F_AddScale(org, nv0, ra, pt0);
+//		TKRA_Vec3F_AddScale(org, nv0, ratbot, pt0);
 //		d=(org[0]*sinth)+(org[1]*costh)+(org[2]*sinz);
 
 		nv1[0]=sinth2;
@@ -731,7 +739,8 @@ BTM_CsgPoly *BTM_ClipCsgPolysForCsgNode(BTM_CsgNode *tree,
 	BTM_CsgPoly *plst, *plst2, *plstb, *pcur, *pnxt;
 	BTM_CsgBrush *bcur;
 	
-	TKRA_Mat4F_MatMult(trans, tree->trans, tmat);
+//	TKRA_Mat4F_MatMult(trans, tree->trans, tmat);
+	TKRA_Mat4F_MatMultT(trans, tree->trans, tmat);
 	
 	if(tree->opr==0)
 	{
@@ -795,7 +804,8 @@ BTM_CsgPoly *BTM_GetCsgPolysForCsgNode(BTM_CsgNode *tree,
 	BTM_CsgBrush *bcur;
 	u64 clrmat;
 	
-	TKRA_Mat4F_MatMult(trans, tree->trans, tmat);
+//	TKRA_Mat4F_MatMult(trans, tree->trans, tmat);
+	TKRA_Mat4F_MatMultT(trans, tree->trans, tmat);
 	clrmat=iclrmat;
 	if((tree->clrmat) && (!(flag&1) || !clrmat))
 	{

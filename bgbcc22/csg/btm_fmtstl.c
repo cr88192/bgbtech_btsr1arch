@@ -22,17 +22,19 @@ int BTM_MeshBufPuts(char **robuf, char *str)
 	if(!obuf)
 	{
 		obsz=4096;
-		obuf=btm_malloc(obsz);
+		obuf=malloc(obsz);
+		obufe=obuf+obsz;
+		oct=obuf;
 		robuf[0]=obuf;
-		robuf[1]=obuf+obsz;
-		robuf[2]=obuf;
+		robuf[1]=obufe;
+		robuf[2]=oct;
 	}
 	
 	if((oct+strlen(str)+1)>=obufe)
 	{
 		osz1=obsz+(obsz>>1);
 		oofs=oct-obuf;
-		obuf=btm_realloc(obuf, osz1);
+		obuf=realloc(obuf, osz1);
 		obsz=osz1;
 		obufe=obuf+obsz;
 		oct=obuf+oofs;
@@ -235,15 +237,24 @@ int BTM_DumpTrisStlBuf(char **robuf, int *robsz,
 int BTM_ExportMeshListStlBuf(BTM_SolidMesh *mesh,
 	byte **robuf, int *robsz)
 {
+	char *oct[4];
 	BTM_SolidMesh *mcur;
+
+	oct[0]=*robuf;
+	oct[1]=*robuf+(*robsz);
+	oct[2]=*robuf;
+	oct[3]=NULL;
 
 	mcur=mesh;
 	while(mcur)
 	{
-		BTM_DumpTrisStlBuf(robuf, robsz, mcur->name,
+		BTM_DumpTrisStlBuf(oct, robsz, mcur->name,
 			mcur->tris, mcur->nTris);
 		mcur=mcur->next;
 	}
+	
+	*robuf=oct[0];
+	*robsz=oct[2]-oct[0];
 	return(0);
 }
 
