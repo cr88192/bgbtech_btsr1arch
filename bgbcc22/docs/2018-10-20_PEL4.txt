@@ -522,20 +522,23 @@ The relocations are given as 16 bit numbers:
 ** 3(DIR32): Fixup a 32-bit address (Abs32)
 ** 4(HIADJ): Fixup a 32 bit address split into a high and low part.
 *** The following entry gives the address of the low part.
-** 5: MIPS-specific fixup.
+** 5: Target Specific fixup.
 *** 5: BJX2(DIR24/DIR48): Fixup 24 or 48 address via instruction.
 *** FAxx/FBxx: DIR24
 *** FExx/FFxx: DIR48
-** 6: BJX2: TLS/TBR DISP12 (Azzz)
+*** 5: RV64: Fixup High-20
+** 6: BJX2 (XG1): TLS/TBR DISP12 (Azzz)
 ** 7: BJX2: PBO/GBR DISP32 (FAzz_zzzz-26zz)  (Deprecated)
+*** 7: RV64: Fixup Low-12 Load
 ** 8: BJX2: PBO/GBR DISP24 (FAzz_zzzz)
 *** Initial Contents: Variable address relative to the PBO base address.
+*** 8: RV64: Fixup Low-12 Store
 ** 9: MIPS-specific fixup.
 ** 9: BJX2: TLS/TBR DISP24 (FAzz_zzzz)
 *** Initial: TLS Index, Resolved to TBR-relative address of TLS Variable
 ** 10: Fixup a 64-bit address (Abs64).
-** 11: Set Tripwire / Set Extended Operator
-** 12: Fixup a 96-bit address (Abs96), Stored as 128 bits.
+** 11: Set Tripwire (Data) / Set Extended Operator / Canary Fixup (Code)
+** 12: Fixup a 96-bit address (Abs96), Stored as 128 bits (Addr96 Only).
 ** 13: Extended Reloc Operator B
 ** 14: Extended Reloc Operator A
 ** 15: Reserved / Escape
@@ -561,6 +564,8 @@ Set Tripwire (PBO Only):
 * This address should be set as a tripwire following initialization.
 * Attempts to address across this location may trigger a fault.
 ** A tripwire will normally have a 16-byte alignment and 16-byte size.
+** Tripwires typically only apply to relocations within the data sections.
+* If within ".text", may be understood as a stack canary fixeup.
 * If the LSB is Set, this functions as a Set Operator Command
 ** For Bzz1, (11:4) will update operator A & B.
 ** For Bzz3, (11:4) will update operator A.

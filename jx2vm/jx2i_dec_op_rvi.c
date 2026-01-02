@@ -164,6 +164,61 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 	}
 #endif
 
+#if 1
+	if((opw&0x707F)==0x603F)
+	{
+		op1=BJX2_ContextAllocOpcode(ctx);
+		op->data=op1;
+
+		opw3=BJX2_MemGetWord(ctx, addr+ 4);
+		opw4=BJX2_MemGetWord(ctx, addr+ 6);
+		opw5=BJX2_MemGetWord(ctx, addr+ 8);
+		opw6=BJX2_MemGetWord(ctx, addr+10);
+
+		opwb=(opw4<<16)|((u16)opw3);
+		opwc=(opw6<<16)|((u16)opw5);
+
+		imm20u=	(((opw>>20)&2047)<< 0) |
+				(((opw>>15)&  31)<<11) |
+				(((opw>> 7)&  31)<<16) ;
+		imm20j=	0x02000000U |
+				(((opwb>>20)&2047)<< 0) |
+				(((opwb>>15)&  31)<<11) |
+				(((opwb>> 7)&  31)<<16) ;
+
+		imm12b=
+			(((opwb>> 2)&31)<<6) |
+			(((opwb>>12)& 7)<<3) |
+			(((opw >>31)& 1)<<2) |
+			(((opwb>>31)& 1)<<1) |
+			(((opwc>>31)& 1)<<0) ;
+		imm12b|=(imm20u<<11);
+
+		op1=BJX2_ContextAllocOpcode(ctx);
+		op->data=op1;
+
+		ret=BJX2_DecodeOpcode_DecRVI(ctx, op, addr, opw5, opw6, imm20j);
+
+		op->imm=((u32)(op->imm))|(imm12b<<32);
+
+		op ->pc=addr;
+		op1->pc=addr+6;
+		
+		op ->opn =opw1;
+		op ->opn2=opw2;
+		op ->opn3=opw3;
+		op1->opn =opw4;
+		op1->opn2=opw5;
+		op1->opn3=opw6;
+		
+		op->fl&=~BJX2_OPFL_TWOWORD;
+		op->fl|=BJX2_OPFL_JUMBO96;
+		op->fl|=BJX2_OPFL_NOWEX;
+
+		return(ret);
+	}
+#endif
+
 	rn_dfl=(opw>> 7)&31;
 	rm_dfl=(opw>>15)&31;
 	ro_dfl=(opw>>20)&31;
@@ -786,6 +841,49 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 		op->nmid=BJX2_NMID_BSR;
 		op->fmid=BJX2_FMID_LDREGDISP1REG;
 		op->Run=BJX2_Op_BSR_RegRegDisp1;
+		break;
+
+	case 0x03: /* 00-011, MISC-MEM / FENCE */
+		op->imm=imm12l;
+		switch((opw>>12)&7)
+		{
+		case 0:		/* FENCE */
+			op->nmid=BJX2_NMID_TRAP;
+			op->fmid=BJX2_FMID_IMM;
+			op->Run=BJX2_Op_TRAP_Imm;
+			break;
+		case 1:		/* FENCE.I */
+			if(	(rn_dfl==BJX2_REG_ZZR) &&
+				(rm_dfl!=BJX2_REG_ZZR) )
+			{
+				op->rm=rm_dfl;
+				op->rn=rm_dfl;
+				op->nmid=BJX2_NMID_INVIC;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_INVIC_Reg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			}
+			op->nmid=BJX2_NMID_TRAP;
+			op->fmid=BJX2_FMID_IMM;
+			op->Run=BJX2_Op_TRAP_Imm;
+			break;
+		case 2:		/* CBO */
+			if(rn_dfl==BJX2_REG_ZZR)
+			{
+				op->rm=rm_dfl;
+				op->rn=rm_dfl;
+				op->nmid=BJX2_NMID_INVDC;
+				op->fmid=BJX2_FMID_REG;
+				op->Run=BJX2_Op_INVIC_Reg;
+				op->fl|=BJX2_OPFL_CTRLF;
+				break;
+			}
+			op->nmid=BJX2_NMID_TRAP;
+			op->fmid=BJX2_FMID_IMM;
+			op->Run=BJX2_Op_TRAP_Imm;
+			break;
+		}
 		break;
 
 	case 0x0B: /* 01-011, AMO / Atomic */

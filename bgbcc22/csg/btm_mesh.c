@@ -817,3 +817,14 @@ int BTM_MeshAdjustForSkeleton(BTM_SolidMesh *mesh)
 
 	return(0);
 }
+
+u16 BTM_Rgb24ToRgb555(u32 clr)
+{
+	int cr, cg, cb, cv;
+	cr=(clr>>16)&255;
+	cg=(clr>> 8)&255;
+	cb=(clr>> 0)&255;
+	cr>>=3;	cg>>=3;	cb>>=3;
+	cv=(cr<<10)|(cg<<5)|cb;
+	return(cv);
+}

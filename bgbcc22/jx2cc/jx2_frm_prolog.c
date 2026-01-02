@@ -2104,7 +2104,11 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	
 	if(sctx->frm_offs_save<(sctx->frm_size+sctx->frm_offs_save_rsv))
 	{
-		printf("Sanity: offs_save is below offs_save_rsv\n");
+		printf("Sanity: offs_save is below offs_save_rsv %d < %d (%d), fn=%s\n",
+			sctx->frm_offs_save,
+			(sctx->frm_size+sctx->frm_offs_save_rsv),
+			sctx->frm_offs_save_rsv,
+			obj->qname);
 		BGBCC_CCXL_StubError(ctx);
 	}
 
@@ -2168,6 +2172,7 @@ int BGBCC_JX2C_EmitFrameProlog(BGBCC_TransState *ctx,
 	if(k)
 	{
 //		BGBCC_JX2_EmitLoadRegImm64P(sctx, BGBCC_SH_REG_RQ16,
+		BGBCC_JX2_EmitRelocTy(sctx, fcnlbl, BGBCC_SH_RLC_SECTOKEN);
 		BGBCC_JX2_EmitLoadRegImm64P(sctx,
 			BGBCC_JX2CC_PSREG_ARGTMP(0),
 //			0x1234567890ABCDEFLL);

@@ -172,7 +172,7 @@ begin
 	end
 end
 
-always @(clock)
+always @(posedge clock)
 begin
 	tIstrWordL	<= istrWordIn;
 end

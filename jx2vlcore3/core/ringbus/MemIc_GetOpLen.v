@@ -1,3 +1,10 @@
+/*
+ * (3): Jumbo
+ * (2): WEX
+ * (1): Jumbo | (WEX&WXE)
+ * (0): 16/48
+ */
+
 module MemIc_GetOpLen(istrBits, opLen, isXG2, isRV, isWXE);
 input[15:0]		istrBits;
 output[3:0]		opLen;
@@ -93,7 +100,20 @@ begin
 `endif
 
 		if(istrBits[ 6: 0]==7'h3F)
+		begin
 			opLenA0=4'b1110;
+			if(istrBits[14:13]==2'b11)
+			begin
+				/* Jumbo-52 Prefix */
+				opLenA0=4'b1111;
+			end
+		end
+
+		if(istrBits[ 6: 0]==7'h7F)
+		begin
+			/* 80+ bit ops, assume 96 for now. */
+			opLenA0=4'b1111;
+		end
 
 `ifdef jx2_enable_riscv_xg3
 		if((istrBits[ 4: 3]==2'b11) && (istrBits[ 1: 0]==2'b10) && isXG3)

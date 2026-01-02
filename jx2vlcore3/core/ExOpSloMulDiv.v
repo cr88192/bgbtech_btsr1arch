@@ -219,6 +219,8 @@ begin
 	else
 		tNxtValRn	= tValAQ[63:0];
 
+`ifdef jx2_fpu_enable_fdiv
+
 `ifdef jx2_alu_slomuldiv_fdiv
 	if(tValOp[5:4]==2'b10)
 	begin
@@ -294,6 +296,8 @@ begin
 	end
 `endif
 
+`endif
+
 //	tNxtValRnHi = tValQ[63:0];
 //	if(tValOp[1] ^ !tValOp[2])
 //		tNxtValRn	= tValSg ? -tValR[63:0] : tValR[63:0];
@@ -356,6 +360,7 @@ begin
 				{ 1'b0, valRs[62:52] } -
 				{ 1'b0, valRt[62:52] };
 
+`ifdef jx2_fpu_enable_fdiv
 `ifdef jx2_alu_slomuldiv_fdivs
 			if(idUIxt[5:4]==2'b11)
 //			if(idUIxt[5:0]==JX2_UCIX_QMUL_FDIVS)
@@ -372,6 +377,7 @@ begin
 				end
 
 			end
+`endif
 `endif
 
 			tNxtValR		= UV64_00;
@@ -405,6 +411,8 @@ begin
 //				tNxtValAddD		= UV32_00;
 			end
 
+`ifdef jx2_fpu_enable_fdiv
+
 `ifdef jx2_alu_slomuldiv_fdiv
 			if(idUIxt[5:4]==2'b10)
 			begin
@@ -424,6 +432,8 @@ begin
 			end
 `endif
 
+`endif
+
 			if(idUIxt[2])
 			begin
 				tNxtOpCnt		= 67;
@@ -437,6 +447,7 @@ begin
 						tNxtOpCnt		= 34;
 				end
 
+`ifdef jx2_fpu_enable_fdiv
 `ifdef jx2_alu_slomuldiv_fdiv
 				if(idUIxt[5])
 				begin
@@ -444,6 +455,8 @@ begin
 //					tNxtOpCnt		= 106;
 				end
 `endif
+`endif
+
 			end
 			else
 			begin

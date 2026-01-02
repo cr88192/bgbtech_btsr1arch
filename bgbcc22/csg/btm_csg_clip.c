@@ -1,4 +1,4 @@
-int Hull_LinePlaneIntersect(float *start, float *end,
+int HullF_LinePlaneIntersect(float *start, float *end,
 	float *norm, float *point)
 {
 	float dir[3], x;
@@ -27,7 +27,7 @@ int Hull_LinePlaneIntersect(float *start, float *end,
 	return(0);
 }
 
-int Hull_LinePlaneIntersectST(float *sv, float *sst,
+int HullF_LinePlaneIntersectST(float *sv, float *sst,
 	float *ev, float *est,
 	float *norm, float *ov, float *ost)
 {
@@ -45,7 +45,7 @@ int Hull_LinePlaneIntersectST(float *sv, float *sst,
 	x=TKRA_Vec3F_DotProduct(dir, norm);
 	if(x==0)
 	{
-		printf("Hull_LinePlaneIntersectST: Parallel Clip\n");
+		printf("HullF_LinePlaneIntersectST: Parallel Clip\n");
 		TKRA_Vec3F_Copy(sv, ov);
 		TKRA_Vec2F_Copy(sst, ost);
 		return(-1);
@@ -74,7 +74,7 @@ int Hull_LinePlaneIntersectST(float *sv, float *sst,
 }
 
 
-int Hull_LinePlaneIntersectSTNVRGBA(
+int HullF_LinePlaneIntersectSTNVRGBA(
 	float *norm,
 	float *sv, float *sst, float *snv, float *sclr,
 	float *ev, float *est, float *env, float *eclr,
@@ -108,7 +108,7 @@ int Hull_LinePlaneIntersectSTNVRGBA(
 	x=TKRA_Vec3F_DotProduct(dir, norm);
 	if(x==0)
 	{
-		printf("Hull_LinePlaneIntersectST: Parallel Clip\n");
+		printf("HullF_LinePlaneIntersectST: Parallel Clip\n");
 
 		if(flags&1)
 		{
@@ -159,7 +159,7 @@ int Hull_LinePlaneIntersectSTNVRGBA(
 	return(0);
 }
 
-void Hull_AdjacentNormals(
+void HullF_AdjacentNormals(
 	float *norm, float *udir, float *vdir)
 {
 	float f;
@@ -202,7 +202,7 @@ void Hull_AdjacentNormals(
 	TKRA_Vec3F_Normalize(vdir, vdir);
 }
 
-void Hull_AdjacentNormals2(
+void HullF_AdjacentNormals2(
 	float *norm, float *udir, float *vdir)
 {
 	float f;
@@ -245,7 +245,7 @@ void Hull_AdjacentNormals2(
 	TKRA_Vec3F_Normalize(vdir, vdir);
 }
 
-void Hull_AdjacentNormals21(
+void HullF_AdjacentNormals21(
 	float *norm, float *udir, float *vdir)
 {
 	float f;
@@ -288,7 +288,7 @@ void Hull_AdjacentNormals21(
 	TKRA_Vec3F_Normalize(vdir, vdir);
 }
 
-void Hull_AdjacentNormals22(
+void HullF_AdjacentNormals22(
 	float *norm, float *udir, float *vdir)
 {
 	float f, ax, ay, az;
@@ -308,7 +308,7 @@ void Hull_AdjacentNormals22(
 	TKRA_Vec3F_Normalize(vdir, vdir);
 }
 
-void Hull_AdjacentNormals23(
+void HullF_AdjacentNormals23(
 	float *norm, float *udir, float *vdir)
 {
 	float tn[3];
@@ -352,11 +352,11 @@ void Hull_AdjacentNormals23(
 	TKRA_Vec3F_Normalize(vdir, vdir);
 }
 
-void Hull_MakePlaneFace(float *norm, float *pts)
+void HullF_MakePlaneFace(float *norm, float *pts)
 {
 	float v0[3], v1[3], v2[3];
 
-	Hull_AdjacentNormals(norm, v0, v1);
+	HullF_AdjacentNormals(norm, v0, v1);
 
 	TKRA_Vec3F_ScaleAddScale(v0, -99999, v1, -99999, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(0*3));
@@ -371,7 +371,7 @@ void Hull_MakePlaneFace(float *norm, float *pts)
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(3*3));
 }
 
-int Hull_ClipFace(float *norm,
+int HullF_ClipFace(float *norm,
 	float *ipts, float *opts, int num)
 {
 	int i, j, k, l;
@@ -410,7 +410,7 @@ int Hull_ClipFace(float *norm,
 	//exit point
 	if(TKRA_Vec3F_NDotProduct(ipts+(j*3), norm)<0)
 	{
-		Hull_LinePlaneIntersect(
+		HullF_LinePlaneIntersect(
 			ipts+(j*3), ipts+(k*3), norm, opts+(l*3));
 		l++;
 	}
@@ -426,7 +426,7 @@ int Hull_ClipFace(float *norm,
 	//entry point
 	if(TKRA_Vec3F_NDotProduct(ipts+(k*3), norm)<0)
 	{
-		Hull_LinePlaneIntersect(
+		HullF_LinePlaneIntersect(
 			ipts+(j*3), ipts+(k*3), norm, opts+(l*3));
 		l++;
 	}
@@ -434,7 +434,7 @@ int Hull_ClipFace(float *norm,
 	return(l);
 }
 
-int Hull_ClipFaceST(float *norm,
+int HullF_ClipFaceST(float *norm,
 	float *ipts, float *ist, float *opts, float *ost, int num)
 {
 	float f, g;
@@ -477,7 +477,7 @@ int Hull_ClipFaceST(float *norm,
 	f=TKRA_Vec3F_NDotProduct(ipts+(j*3), norm);
 	if(f<0)
 	{
-		Hull_LinePlaneIntersectST(
+		HullF_LinePlaneIntersectST(
 			ipts+(j*3), ist+(j*2),
 			ipts+(k*3), ist+(k*2),
 			norm, opts+(l*3), ost+(l*2));
@@ -496,7 +496,7 @@ int Hull_ClipFaceST(float *norm,
 	f=TKRA_Vec3F_NDotProduct(ipts+(k*3), norm);
 	if(f<0)
 	{
-		Hull_LinePlaneIntersectST(
+		HullF_LinePlaneIntersectST(
 			ipts+(j*3), ist+(j*2),
 			ipts+(k*3), ist+(k*2),
 			norm, opts+(l*3), ost+(l*2));
@@ -505,7 +505,7 @@ int Hull_ClipFaceST(float *norm,
 	return(l);
 }
 
-int Hull_ClipFaceSTNVRGBA(float *norm,
+int HullF_ClipFaceSTNVRGBA(float *norm,
 	int xyzsz, int stsz, int nvsz, int clrsz,
 	float *ipts, float *ist, float *inv, float *iclr,
 	float *opts, float *ost, float *onv, float *oclr,
@@ -582,7 +582,7 @@ int Hull_ClipFaceSTNVRGBA(float *norm,
 	f=TKRA_Vec3F_NDotProduct(ipts+(j*xyzsz), norm);
 	if(f<0)
 	{
-		Hull_LinePlaneIntersectSTNVRGBA(
+		HullF_LinePlaneIntersectSTNVRGBA(
 			norm,
 			ipts+(j*xyzsz), ist+(j*stsz), inv+(j*nvsz), iclr+(j*clrsz),
 			ipts+(k*xyzsz), ist+(k*stsz), inv+(k*nvsz), iclr+(k*clrsz),
@@ -604,7 +604,7 @@ int Hull_ClipFaceSTNVRGBA(float *norm,
 	f=TKRA_Vec3F_NDotProduct(ipts+(k*xyzsz), norm);
 	if(f<0)
 	{
-		Hull_LinePlaneIntersectSTNVRGBA(
+		HullF_LinePlaneIntersectSTNVRGBA(
 			norm,
 			ipts+(j*xyzsz), ist+(j*stsz), inv+(j*nvsz), iclr+(j*clrsz),
 			ipts+(k*xyzsz), ist+(k*stsz), inv+(k*nvsz), iclr+(k*clrsz),
@@ -621,7 +621,7 @@ int Hull_ClipFaceSTNVRGBA(float *norm,
 	return(l);
 }
 
-void Hull_BoxPlaneExtents(
+void HullF_BoxPlaneExtents(
 	float *mins, float *maxs, float *norm,
 	float *rm, float *rn)
 {
@@ -644,7 +644,7 @@ void Hull_BoxPlaneExtents(
 	*rm=d1-norm[3]; *rn=d0-norm[3];
 }
 
-void Hull_SpherePlaneExtents(
+void HullF_SpherePlaneExtents(
 	float *org, float rad, float *norm,
 	float *rm, float *rn)
 {
@@ -654,7 +654,7 @@ void Hull_SpherePlaneExtents(
 	*rm=f-rad; *rn=f+rad;
 }
 
-void Hull_PolyPlaneExtents(
+void HullF_PolyPlaneExtents(
 	float *pts, int npts, float *norm,
 	float *rm, float *rn)
 {
@@ -672,7 +672,7 @@ void Hull_PolyPlaneExtents(
 	*rm=m; *rn=n;
 }
 
-void Hull_CalcPolyBBox(
+void HullF_CalcPolyBBox(
 	float *pts, int npts,
 	float *rmins, float *rmaxs)
 {
@@ -688,11 +688,12 @@ void Hull_CalcPolyBBox(
 	}
 }
 
+#if 0
 void HullF_MakePlaneFace(float *norm, float *pts)
 {
 	float v0[3], v1[3], v2[3];
 
-	Hull_AdjacentNormals2(norm, v0, v1);
+	HullF_AdjacentNormals2(norm, v0, v1);
 
 	TKRA_Vec3F_ScaleAddScale(v0, -999999, v1, -999999, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(0*3));
@@ -703,7 +704,9 @@ void HullF_MakePlaneFace(float *norm, float *pts)
 	TKRA_Vec3F_ScaleAddScale(v0, -999999, v1,  999999, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(3*3));
 }
+#endif
 
+#if 0
 int HullF_ClipFace(float *norm,
 	float *ipts, float *opts, int num)
 {
@@ -743,7 +746,7 @@ int HullF_ClipFace(float *norm,
 	//exit point
 	if(TKRA_Vec3F_NDotProduct(ipts+(j*3), norm)<0)
 	{
-		Hull_LinePlaneIntersect(
+		HullF_LinePlaneIntersect(
 			ipts+(j*3), ipts+(k*3), norm, opts+(l*3));
 		l++;
 	}
@@ -759,13 +762,14 @@ int HullF_ClipFace(float *norm,
 	//entry point
 	if(TKRA_Vec3F_NDotProduct(ipts+(k*3), norm)<0)
 	{
-		Hull_LinePlaneIntersect(
+		HullF_LinePlaneIntersect(
 			ipts+(j*3), ipts+(k*3), norm, opts+(l*3));
 		l++;
 	}
 
 	return(l);
 }
+#endif
 
 int HullF_BoxHull(float *norm, int num,
 	float *mins, float *maxs)

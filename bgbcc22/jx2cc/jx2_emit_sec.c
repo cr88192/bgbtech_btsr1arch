@@ -1759,8 +1759,14 @@ int BGBCC_JX2_EmitPad32AlignLastOp(
 	{
 		if(!BGBCC_JX2_CheckPadAlign32(ctx))
 		{
-			if(!BGBCC_JX2_EmitPadCheckExpandLastOp(ctx))
-				BGBCC_JX2_EmitWordI(ctx, 0x3000);
+			if(ctx->emit_riscv&0x11)
+			{
+					BGBCC_JX2_EmitWordI(ctx, 0x0001);
+			}else
+			{
+				if(!BGBCC_JX2_EmitPadCheckExpandLastOp(ctx))
+					BGBCC_JX2_EmitWordI(ctx, 0x3000);
+			}
 		}
 	}
 	return(0);

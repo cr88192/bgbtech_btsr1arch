@@ -344,6 +344,7 @@ Base, Q1..Q3:
 #define CCXL_PFL_FARPTR			0x0002	//far pointer
 
 #define CCXL_PCLS_DFL			0x0000	//default pointer
+
 #define CCXL_PCLS_NEAR			0x0001	//near pointer
 #define CCXL_PCLS_FAR			0x0002	//far pointer
 #define CCXL_PCLS_HUGE			0x0003	//huge pointer
@@ -357,7 +358,8 @@ Base, Q1..Q3:
 #define CCXL_PCLS_VOLATILE		0x0010	//volatile
 #define CCXL_PCLS_RESTRICT		0x0020	//restrict
 #define CCXL_PCLS_MAYALIAS		0x0030	//may_alias
-#define CCXL_PCLS_ALIASMASK		0x0030	//huge pointer
+#define CCXL_PCLS_ATOMIC		0x0040	//atomic
+#define CCXL_PCLS_ALIASMASK		0x0070	//huge pointer
 
 #define CCXL_LITID_STRUCT		1
 #define CCXL_LITID_UNION		2

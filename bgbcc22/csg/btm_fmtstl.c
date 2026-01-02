@@ -2,6 +2,7 @@ BTM_SolidMesh *BTM_ProcCsgToMesh(u64 val, BTM_SolidMesh *olst);
 void QuatF_Identity(float *a);
 
 BTM_SolidMesh *BTM_LoadMeshListScadBuffer(byte *ibuf, int ibsz);
+BTM_SolidMesh *BTM_LoadMeshListScadFile(char *name);
 
 
 double btm_atod(char *s)
@@ -63,14 +64,16 @@ int BTM_MeshBufPrintf(char **robuf, char *str, ...)
 }
 
 
-int BTM_Mesh_TrisEmitTriangle(float **rtris, int *rntris,
-	btm_vec3f v0, btm_vec3f v1, btm_vec3f v2)
+int BTM_Mesh_TrisEmitTriangle(float **rtris, u16 **rrgb5, int *rntris,
+	btm_vec3f v0, btm_vec3f v1, btm_vec3f v2, u16 clr)
 {
 	float *tris;
+	u16 *rgb5;
 	int ntris, mtris;
 	int i;
 
 	tris=*rtris;
+	rgb5=*rrgb5;
 	ntris=rntris[0];
 	mtris=rntris[1];
 
@@ -78,7 +81,9 @@ int BTM_Mesh_TrisEmitTriangle(float **rtris, int *rntris,
 	{
 		i=mtris+(mtris>>1);
 		tris=btm_realloc(tris, i*9*sizeof(float));
+		rgb5=btm_realloc(rgb5, i*sizeof(u16));
 		*rtris=tris;
+		*rrgb5=rgb5;
 		mtris=i;
 		rntris[1]=i;
 	}
@@ -92,19 +97,21 @@ int BTM_Mesh_TrisEmitTriangle(float **rtris, int *rntris,
 	tris[ntris*9+6]=v2.x;
 	tris[ntris*9+7]=v2.y;
 	tris[ntris*9+8]=v2.z;
+	rgb5[ntris]=clr;
 	rntris[0]=ntris+1;
 
 	return(0);
 }
 
-int BTM_Mesh_TrisEmitQuad(float **rtris, int *rntris,
-	btm_vec3f v0, btm_vec3f v1, btm_vec3f v2, btm_vec3f v3)
+int BTM_Mesh_TrisEmitQuad(float **rtris, u16 **rrgb5, int *rntris,
+	btm_vec3f v0, btm_vec3f v1, btm_vec3f v2, btm_vec3f v3, u16 clr)
 {
-	BTM_Mesh_TrisEmitTriangle(rtris, rntris, v0, v1, v2);
-	BTM_Mesh_TrisEmitTriangle(rtris, rntris, v0, v2, v3);
+	BTM_Mesh_TrisEmitTriangle(rtris, rrgb5, rntris, v0, v1, v2, clr);
+	BTM_Mesh_TrisEmitTriangle(rtris, rrgb5, rntris, v0, v2, v3, clr);
 	return(0);
 }
 
+#if 0
 int BTM_Mesh_TrisEmitPentagon(float **rtris, int *rntris,
 	btm_vec3f v0, btm_vec3f v1, btm_vec3f v2, btm_vec3f v3, btm_vec3f v4)
 {
@@ -148,9 +155,10 @@ int BTM_Mesh_TrisEmitOctagon(float **rtris, int *rntris,
 	BTM_Mesh_TrisEmitTriangle(rtris, rntris, v0, v6, v7);
 	return(0);
 }
+#endif
 
-int BTM_Mesh_TrisEmitPolygon(float **rtris, int *rntris,
-	float *vec, int npts)
+int BTM_Mesh_TrisEmitPolygon(float **rtris, u16 **rrgb5, int *rntris,
+	float *vec, int npts, u16 clr)
 {
 	btm_vec3f v0, v1, v2;
 	int i, j, k;
@@ -160,7 +168,7 @@ int BTM_Mesh_TrisEmitPolygon(float **rtris, int *rntris,
 	{
 		v1=btm_mkvec3f(vec[(i+0)*3+0], vec[(i+0)*3+1], vec[(i+0)*3+2]);
 		v2=btm_mkvec3f(vec[(i+1)*3+0], vec[(i+1)*3+1], vec[(i+1)*3+2]);
-		BTM_Mesh_TrisEmitTriangle(rtris, rntris, v0, v1, v2);
+		BTM_Mesh_TrisEmitTriangle(rtris, rrgb5, rntris, v0, v1, v2, clr);
 	}
 
 	return(0);
@@ -258,6 +266,152 @@ int BTM_ExportMeshListStlBuf(BTM_SolidMesh *mesh,
 	return(0);
 }
 
+int BTM_DumpTrisBinStlBuf(char **robuf, int *robsz,
+	char *sldname, float *tris, int ntris, u16 clr5)
+{
+	char buf[256];
+	btm_vec3f v0, v1, v2, v3, v4, v5, v6;
+	byte *obuf, *ct;
+	float x, y, z;
+	float xo, yo, zo;
+	int i, j, k, ctris;
+
+	xo=0; yo=0; zo=0;
+
+//	if(!sldname)
+//		sldname="default";
+//	BTM_MeshBufPrintf(robuf, "solid %s\n", sldname);
+	
+	obuf=(byte *)(*robuf);
+	ctris=obuf[80]|(obuf[81]<<8)|(obuf[82]<<16)|(obuf[83]<<24);
+	
+	ct=obuf+(84+(ctris*50));
+	
+	for(i=0; i<ntris; i++)
+	{
+		v0=btm_mkvec3f(tris[i*9+0], tris[i*9+1], tris[i*9+2]);
+		v1=btm_mkvec3f(tris[i*9+3], tris[i*9+4], tris[i*9+5]);
+		v2=btm_mkvec3f(tris[i*9+6], tris[i*9+7], tris[i*9+8]);
+
+		v3=btm_v3f_sub(v1, v0);
+		v4=btm_v3f_sub(v2, v0);
+		v5=btm_v3f_cross(v3, v4);
+		v6=btm_v3f_norm(v5);
+
+		((float *)ct)[ 0]=btm_v3f_x(v6);
+		((float *)ct)[ 1]=btm_v3f_y(v6);
+		((float *)ct)[ 2]=btm_v3f_z(v6);
+		((float *)ct)[ 3]=tris[i*9+0];
+		((float *)ct)[ 4]=tris[i*9+1];
+		((float *)ct)[ 5]=tris[i*9+2];
+		((float *)ct)[ 6]=tris[i*9+3];
+		((float *)ct)[ 7]=tris[i*9+4];
+		((float *)ct)[ 8]=tris[i*9+5];
+		((float *)ct)[ 9]=tris[i*9+6];
+		((float *)ct)[10]=tris[i*9+7];
+		((float *)ct)[11]=tris[i*9+8];
+		*(u16 *)(ct+48)=0x8000|clr5;
+		
+		ct+=50;
+	}
+
+	ctris+=ntris;
+	obuf[80]=(ctris>> 0)&255;
+	obuf[81]=(ctris>> 8)&255;
+	obuf[82]=(ctris>>16)&255;
+	obuf[83]=(ctris>>24)&255;
+	
+	return(0);
+}
+
+int BTM_ExportMeshListBinStlBuf(BTM_SolidMesh *mesh,
+	byte **robuf, int *robsz)
+{
+	BTM_SolidMesh *mcur;
+	byte *obuf;
+	int tntris, tsz, clr5;
+
+	tntris=0;
+	mcur=mesh;
+	while(mcur)
+	{
+//		BTM_DumpTrisBinStlBuf(oct, robsz, mcur->name,
+//			mcur->tris, mcur->nTris);
+		tntris+=mcur->nTris;
+		mcur=mcur->next;
+	}
+	
+	tsz=84+(tntris*50);
+	
+	if(!(*robuf))
+	{
+		*robuf=btm_malloc(tsz);
+		*robsz=tsz;
+	}
+	
+	memset(*robuf, 0, tsz);
+
+	mcur=mesh;
+	obuf=*robuf;
+	obuf[0]='S';
+	obuf[1]='T';
+	obuf[2]='L';
+	obuf[3]=' ';
+
+#if 0
+	obuf[4]='C';
+	obuf[5]='O';
+	obuf[6]='L';
+	obuf[7]='O';
+	obuf[8]='R';
+	obuf[9]='=';
+	obuf[10]=(mcur->clrmat>>16)&255;
+	obuf[11]=(mcur->clrmat>> 8)&255;
+	obuf[12]=(mcur->clrmat>> 0)&255;
+	obuf[13]=255;
+	obuf[14]=',';
+	obuf[15]='M';
+	obuf[16]='A';
+	obuf[17]='T';
+	obuf[18]='E';
+	obuf[19]='R';
+	obuf[20]='I';
+	obuf[21]='A';
+	obuf[22]='L';
+	obuf[23]='=';
+	obuf[24]=(mcur->clrmat>>16)&255;
+	obuf[25]=(mcur->clrmat>> 8)&255;
+	obuf[26]=(mcur->clrmat>> 0)&255;
+	obuf[27]=255;
+	obuf[28]=255;
+	obuf[29]=255;
+	obuf[30]=255;
+	obuf[31]=255;
+	obuf[32]=0;
+	obuf[33]=0;
+	obuf[34]=0;
+	obuf[35]=255;
+#endif
+
+	mcur=mesh;
+	while(mcur)
+	{
+		clr5=BTM_Rgb24ToRgb555(mcur->clrmat);
+		if(((mcur->clrmat>>16)&255)<4)
+			clr5=0x7FFF;
+		BTM_DumpTrisBinStlBuf(robuf, robsz, mcur->name,
+			mcur->tris, mcur->nTris, clr5);
+		mcur=mcur->next;
+	}
+	
+//	*robuf=oct[0];
+//	*robsz=oct[2]-oct[0];
+	*robsz=tsz;
+	return(0);
+}
+
+
+
 int btm_bufgets(char *dst, int max, char **rcs)
 {
 	char *cs, *ct;
@@ -281,7 +435,8 @@ int btm_bufgets(char *dst, int max, char **rcs)
 	return(0);
 }
 
-int BTM_LoadTrisStlAsciiBuf(byte *sbuf, float **rtris, int *rntris)
+int BTM_LoadTrisStlAsciiBuf(byte *sbuf,
+	float **rtris, u16 **rrgb5, int *rntris)
 {
 	float pts[16*3];
 	char tb[256];
@@ -320,7 +475,7 @@ int BTM_LoadTrisStlAsciiBuf(byte *sbuf, float **rtris, int *rntris)
 
 		if(!strcmp(a[0], "endfacet"))
 		{
-			BTM_Mesh_TrisEmitPolygon(rtris, rntris, pts, npts);
+			BTM_Mesh_TrisEmitPolygon(rtris, rrgb5, rntris, pts, npts, 0x7FFF);
 			npts=0;
 			continue;
 		}
@@ -331,7 +486,7 @@ int BTM_LoadTrisStlAsciiBuf(byte *sbuf, float **rtris, int *rntris)
 	return(ntris);
 }
 
-int BTM_LoadTrisStlBuf(byte *sbuf, float **rtris, int *rntris)
+int BTM_LoadTrisStlBuf(byte *sbuf, float **rtris, u16 **rrgb5, int *rntris)
 {
 	float pts[16*3];
 	unsigned char tb[128];
@@ -339,7 +494,7 @@ int BTM_LoadTrisStlBuf(byte *sbuf, float **rtris, int *rntris)
 	byte *cs, *scs;
 	float x, y, z;
 	float xo, yo, zo;
-	int ntris, npts;
+	int ntris, npts, clr;
 	int i, j, k;
 
 	memcpy(tb, sbuf, 84);
@@ -347,7 +502,7 @@ int BTM_LoadTrisStlBuf(byte *sbuf, float **rtris, int *rntris)
 
 	if(!memcmp(tb, "solid ", 6))
 	{
-		return(BTM_LoadTrisStlAsciiBuf(sbuf, rtris, rntris));
+		return(BTM_LoadTrisStlAsciiBuf(sbuf, rtris, rrgb5, rntris));
 	}
 
 //	printf("LoadTrisStl:Binary %s\n", fname);
@@ -366,13 +521,17 @@ int BTM_LoadTrisStlBuf(byte *sbuf, float **rtris, int *rntris)
 		if((j>0) && (j<32768))
 			scs+=j;
 
+		clr=0x7FFF;
+		if(j>0x8000)
+			clr=j&0x7FFF;
+
 		for(j=0; j<9; j++)
 		{
 			cs=tb+12+(j*4);
 			k=cs[0]|(cs[1]<<8)|(cs[2]<<16)|(cs[3]<<24);
 			pts[j]=*(float *)(&k);
 		}
-		BTM_Mesh_TrisEmitPolygon(rtris, rntris, pts, 3);
+		BTM_Mesh_TrisEmitPolygon(rtris, rrgb5, rntris, pts, 3, clr);
 	}
 
 	return(ntris);
@@ -385,18 +544,21 @@ BTM_SolidMesh *BTM_LoadMeshStlBuf(byte *ibuf, int ibsz, char *fname)
 	int ntv[4];
 	BTM_SolidMesh *mesh;
 	float *tris;
+	u16 *rgb5;
 	float f, g;
 	int i, j, k;
 
 	tris=btm_malloc(256*9*sizeof(float));
+	rgb5=btm_malloc(256*sizeof(u16));
 	ntv[0]=0;
 	ntv[1]=256;
 	
-	BTM_LoadTrisStlBuf(ibuf, &tris, ntv);
+	BTM_LoadTrisStlBuf(ibuf, &tris, &rgb5, ntv);
 
 	mesh=BTM_AllocMesh();
 	mesh->fname=bccx_strdup(fname);
 	mesh->tris=tris;
+	mesh->rgb5=rgb5;
 	mesh->nTris=ntv[0];
 	mesh->mTris=ntv[1];
 
@@ -770,6 +932,25 @@ BTM_SolidMesh *BTM_LoadMeshListBufferMdef(byte *ibuf, int ibsz)
 			mlst=mcur;
 			continue;
 #endif
+		}
+
+		if(!strcmp(a[0], "csgscad"))
+		{
+			mcur=BTM_LoadMeshListScadFile(a[1]);
+
+			mcur->name=tn;
+			mcur->skel=skel;
+			
+			mc1=mcur->next; k=1;
+			while(mc1 && mc1!=mlst)
+			{
+				sprintf(tb, "%s.%d", tn, k);
+				mc1->name=bccx_strdup(tb);
+				mc1->skel=skel;
+				mc1=mc1->next; k++;
+			}
+			mlst=mcur;
+			continue;
 		}
 
 		if(!strcmp(a[0], "texture"))

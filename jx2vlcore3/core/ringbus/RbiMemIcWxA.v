@@ -28,7 +28,7 @@ L1 Instruction Cache, WEX
  */
 
 `define jx2_memic_getoplen
-// `define jx2_memic_blklenbits
+`define jx2_memic_blklenbits
 
 `include "ringbus/RbiDefs.v"
 
@@ -2070,6 +2070,19 @@ begin
 	tPcStepWB		= tOpGetLen_W1[2];
 	tPcStepBB		= tOpGetLen_W1[0];
 	tPcStepJWA		= tOpGetLen_W0[1];
+
+`ifdef def_true
+	if(tOpGetLen_W0==4'b1111)
+	begin
+		/* RV Op96 special cases */
+		tPcStepWA		= 1;
+		tPcStepBA		= 0;
+		tPcStepJA		= 1;
+		tPcStepWB		= 1;
+		tPcStepBB		= 0;
+		tPcStepJWA		= 1;
+	end
+`endif
 
 	if(tBlkIsSxo)
 		tRegOutPcSxo[0]=1;

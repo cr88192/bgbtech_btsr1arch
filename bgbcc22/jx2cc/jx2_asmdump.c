@@ -668,6 +668,9 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 
 	case BGBCC_SH_NMID_JIMM:		sn="J_IMM";			break;	//0x01F0
 	case BGBCC_SH_NMID_JOP64:		sn="J_OP64";		break;	//0x01F1
+	case BGBCC_SH_NMID_JIMM52:		sn="J_IMM52";		break;	//0x01F0
+	case BGBCC_SH_NMID_JOP96:		sn="J_OP96";		break;	//0x01F1
+
 	case BGBCC_SH_NMID_LDIHI:		sn="LDIHI.L";		break;
 	case BGBCC_SH_NMID_LDIHIQ:		sn="LDIHI.Q";		break;
 	case BGBCC_SH_NMID_LDIMI:		sn="LDIMI.L";		break;

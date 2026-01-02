@@ -2319,6 +2319,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS32) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS64) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_ABS96) &&
+			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_SECTOKEN) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_PBO24_BJX) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_PBO32_BJX) &&
 			(sctx->rlc_ty[i]!=BGBCC_SH_RLC_TBR24_BJX) &&
@@ -2371,6 +2372,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		{
 //			lva|=0x80000000;
 			lva|=0x8000000000ULL;
+		}
+
+		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_SECTOKEN)
+		{
+//			lva|=0x80000000;
+			lva|=0xB000000000ULL;
 		}
 
 		if(sctx->rlc_ty[i]==BGBCC_SH_RLC_PBO24_BJX)
@@ -2493,8 +2500,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		szrlc+=2;
 	}
 //	szrlc=(szrlc+3)&(~3);
-//	szrlc+=6*8;
-	szrlc+=3*8;
+	szrlc+=6*8;
+//	szrlc+=3*8;
 //	szrlc=(szrlc+15)&(~15);
 	szrlc=(szrlc+63)&(~63);
 #endif
@@ -2849,6 +2856,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		case 8:		j=0xB000|(rva&0xFFF);	break;
 		case 9:		j=0x5000|(rva&0xFFF);	break;
 		case 10:	j=0xC000|(rva&0xFFF);	break;
+		case 11:	j=0xB000|(rva&0xFFF);	break;
 		default:	BGBCC_DBGBREAK			break;
 		}
 #endif

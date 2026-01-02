@@ -601,11 +601,12 @@ BTM_SolidMesh *BTM_ScadCsgToMesh(BTM_CsgNode *csgn, BTM_SolidMesh *olst)
 	int ntv[4];
 	btm_vec3f v0, v1, v2, v3;
 	float *tris;
+	u16 *rgb5;
 	BTM_SolidMesh *mtmp, *mlst;
 	BTM_CsgPoly *plst, *plcur, *plnxt;
 	char *matname;
 	float f;
-	int i, j, k, nplmat, plix, ntris;
+	int i, j, k, nplmat, plix, ntris, clr5;
 		
 	TKRA_Mat4F_Identity(tmat);
 	plst=BTM_GetCsgPolysForCsgNode(csgn, NULL, tmat, 0, 0);
@@ -636,19 +637,23 @@ BTM_SolidMesh *BTM_ScadCsgToMesh(BTM_CsgNode *csgn, BTM_SolidMesh *olst)
 	for(plix=0; plix<nplmat; plix++)
 	{
 		tris=btm_malloc(256*9*sizeof(float));
+		rgb5=btm_malloc(256*sizeof(u16));
 		ntv[0]=0;
 		ntv[1]=256;
 
+		clr5=BTM_Rgb24ToRgb555(plclr[plix]);
 		ntris=0;
 		plcur=plmat[plix];
 		while(plcur)
 		{
-			BTM_Mesh_TrisEmitPolygon(&tris, ntv, plcur->pts, plcur->npts);
+			BTM_Mesh_TrisEmitPolygon(&tris, &rgb5, ntv,
+				plcur->pts, plcur->npts, clr5);
 			plcur=plcur->next;
 		}
 		
 		mtmp=BTM_AllocMesh();
 		mtmp->tris=tris;
+		mtmp->rgb5=rgb5;
 		mtmp->nTris=ntv[0];
 		mtmp->mTris=ntv[1];
 
@@ -665,8 +670,17 @@ BTM_SolidMesh *BTM_ScadCsgToMesh(BTM_CsgNode *csgn, BTM_SolidMesh *olst)
 		
 		mtmp->clrmat=plclr[plix];
 		
-		sprintf(tb, "#%06llX", mtmp->clrmat&0xFFFFFF);
-		mtmp->usetex[0]=bccx_strdup(tb);
+		if((mtmp->clrmat&0xFFFFFF)>=0x040000)
+		{
+			sprintf(tb, "#%06llX", mtmp->clrmat&0xFFFFFF);
+			mtmp->usetex[0]=bccx_strdup(tb);
+		}else if((mtmp->clrmat&0xFFFFFF)>0)
+		{
+			mtmp->usetex[0]=bgbcc_strtab_i(mtmp->clrmat&0xFFFFFF);
+		}else
+		{
+			mtmp->usetex[0]=bccx_strdup("#FFFFFF");
+		}
 		
 		if(plclr[plix])
 		{
@@ -786,4 +800,12 @@ BTM_SolidMesh *BTM_LoadMeshListScadBuffer(byte *ibuf, int ibsz)
 	return(mlst);
 
 //	n=BGBCP_ModuleBuffer("generic.scad", "generic", ibuf);
+}
+
+BTM_SolidMesh *BTM_LoadMeshListScadFile(char *name)
+{
+	byte *ibuf;
+	int ibsz;
+	ibuf=BTM_LoadFile(name, &ibsz);
+	return(BTM_LoadMeshListScadBuffer(ibuf, ibsz));
 }

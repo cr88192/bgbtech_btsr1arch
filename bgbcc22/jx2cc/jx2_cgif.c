@@ -612,6 +612,14 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2=0;
 		shctx->has_simdx2=0;
 
+		if(ctx->sub_arch!=BGBCC_ARCH_BJX2_XRVC)
+		{
+			if(shctx->optmode==BGBCC_OPT_SPEED)
+				shctx->use_wexmd=2;
+			if(shctx->optmode==BGBCC_OPT_SPEED2)
+				shctx->use_wexmd=2;
+		}
+
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvldix"))
 		{
 			shctx->has_rvzba|=16;	//Load/Store Indexed
@@ -654,13 +662,16 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		}
 
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvc"))
-		{
-			shctx->is_fixed32&=~3;
-		}
-		
+			{ shctx->is_fixed32&=~3; }
 		if(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVC)
+			{ shctx->is_fixed32&=~3; }
+		
+		if(!(shctx->is_fixed32&1))
 		{
-			shctx->is_fixed32&=~3;
+			/* Disable WEXifier for RV-C
+			 * Loss of code density defaeats the main purpose of RV-C.
+			 */
+			shctx->use_wexmd=0;
 		}
 	}
 
@@ -715,6 +726,11 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_rvzba|=1;	//Zba
 
 		shctx->has_fmovs|=3;
+
+		if(shctx->optmode==BGBCC_OPT_SPEED)
+			shctx->use_wexmd=2;
+		if(shctx->optmode==BGBCC_OPT_SPEED2)
+			shctx->use_wexmd=2;
 
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3c"))
 		{
@@ -2531,6 +2547,8 @@ ccxl_status BGBCC_JX2C_CompileVirtTr(BGBCC_TransState *ctx,
 		sctx->state_alias|=1;
 	if(ctx->cur_func->regflags&BGBCC_REGFL_HASGBLALIAS)
 		sctx->state_alias|=2;
+	if(ctx->cur_func->regflags&BGBCC_REGFL_VOLATILESEEN)
+		sctx->state_alias|=4;
 		
 
 	if(usewex)
@@ -7312,6 +7330,9 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
 			break;
 
+		case BGBCC_SH_RLC_SECTOKEN:
+			/* Mostly a concern for PE Loader. */
+			break;
 
 		default:
 			BGBCC_CCXL_StubError(ctx);

@@ -15,7 +15,7 @@
 `define jx2_enable_riscv		//Enable RISC-V Decoder
 `define jx2_enable_riscv_rvc	//Enable RISC-V Decoder ('C' Extension)
 `define jx2_enable_rvjumbo		//Enable RISC-V Jumbo Encodings
-// `define jx2_enable_rvjumbo96	//RV Jumbo Encodings, 96-bit ops
+`define jx2_enable_rvjumbo96	//RV Jumbo Encodings, 96-bit ops
 `define jx2_enable_riscv_xg3	//Enable XG3RV
 `define jx2_enable_riscv_immb	//Enable RISC-V Second Immediate
 // `define jx2_enable_riscv_op48	//Enable RISC-V 48-bit ops
@@ -107,7 +107,7 @@
 // `define jx2_use_imm_vec4h		//Enable SIMD Immediates
 // `define jx2_use_imm_shuffle		//Enable SIMD Shuffle+Op
 
-`define	jx2_fpu_enable_fdiv		//enable FDIV
+// `define	jx2_fpu_enable_fdiv		//enable FDIV
 
 `define	jx2_alu_wx				//Enable Wide-ALU
 
@@ -118,7 +118,7 @@
 `ifndef jx2_xc7s50
 
 // `define	jx2_fpu_longdbl			//Enable FPU LongDouble Ext (GFPX)
-`define	jx2_fpu_fmac			//Enable FMAC Operation
+// `define	jx2_fpu_fmac			//Enable FMAC Operation
 
 `endif
 
@@ -274,7 +274,7 @@
 `define jx2_enable_rgb5sh3					//RGB5 Shuffle-3
 `define jx2_enable_bitnn					//Bit Neural Net
 
-`define jx2_enable_fmulfp8					//FMUL FP8
+// `define jx2_enable_fmulfp8					//FMUL FP8
 
 `endif
 
@@ -378,7 +378,9 @@
 `ifdef jx2_enable_rvjumbo
 `ifdef jx2_dec_ssc3_riscv
 /* If we have jumbo and 3-wide superscalar, enable 96-bit jumbo */
+`ifndef jx2_enable_rvjumbo96
 `define jx2_enable_rvjumbo96	//RV Jumbo Encodings, 96-bit ops
+`endif
 `endif
 `endif
 

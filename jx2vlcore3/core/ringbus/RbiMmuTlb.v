@@ -751,6 +751,39 @@ begin
 	if(tlbHbDatD[135:128] != tTlbRov)
 		tlbHdatD[0] = 0;
 
+`ifdef def_true
+	/*
+	 * D being used to mark pages as excluding I$ or D$ hits.
+	 */
+	if(tlbHbDatA[2])
+	begin
+		if(tlbHbDatA[4] && (tRegInSeq[9:8]==2'b10))
+			tlbHdatA[0] = 0;
+		if(tlbHbDatA[6] && (tRegInSeq[9:8]==2'b01) && tlbHbDatA[5])
+			tlbHdatA[0] = 0;
+	end
+	if(tlbHbDatB[2])
+	begin
+		if(tlbHbDatB[4] && (tRegInSeq[9:8]==2'b10))
+			tlbHdatB[0] = 0;
+		if(tlbHbDatB[6] && (tRegInSeq[9:8]==2'b01) && tlbHbDatB[5])
+			tlbHdatB[0] = 0;
+	end
+	if(tlbHbDatC[2])
+	begin
+		if(tlbHbDatC[4] && (tRegInSeq[9:8]==2'b10))
+			tlbHdatC[0] = 0;
+		if(tlbHbDatC[6] && (tRegInSeq[9:8]==2'b01) && tlbHbDatC[5])
+			tlbHdatC[0] = 0;
+	end
+	if(tlbHbDatD[2])
+	begin
+		if(tlbHbDatD[4] && (tRegInSeq[9:8]==2'b10))
+			tlbHdatD[0] = 0;
+		if(tlbHbDatD[6] && (tRegInSeq[9:8]==2'b01) && tlbHbDatD[5])
+			tlbHdatD[0] = 0;
+	end
+`endif
 
 `ifdef def_true
 	tlbHitA_As = (tlbMmuAsid == tlbHdatA[63:48]);

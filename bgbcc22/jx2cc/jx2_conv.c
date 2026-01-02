@@ -37,8 +37,16 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 	int dt, st;
 	int i, j, k;
 
-	dt=dtype.val;
-	st=stype.val;
+//	dt=dtype.val;
+//	st=stype.val;
+
+//	BGBCC_CCXL_TypeCanonizeOverflow(ctx, &dty2, dtype);
+//	BGBCC_CCXL_TypeCanonizeOverflow(ctx, &sty2, stype);
+//	dt=dty2.val;
+//	st=sty2.val;
+
+	dt=BGBCC_CCXL_TypeAsCanonical(ctx, dtype);
+	st=BGBCC_CCXL_TypeAsCanonical(ctx, stype);
 
 	if(dt==st)
 	{

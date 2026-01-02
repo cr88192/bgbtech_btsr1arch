@@ -318,6 +318,7 @@ extern "C" {
 #define BGBCC_TYFL_GLOBAL			(1LL<<49)
 
 #define BGBCC_TYFL_TBRSAVE			(1LL<<50)
+#define BGBCC_TYFL_ATOMIC			(1LL<<51)
 
 
 #define BGBCC_TYFL_DFL_MASK			\
@@ -359,9 +360,11 @@ extern "C" {
 #define BGBCC_REGFL_NOSCRATCHDYN	0x00010000		//Can't dynamically alloc
 #define BGBCC_REGFL_IFACULL			0x00020000		//Culled via IfArch
 #define BGBCC_REGFL_TEMPLOAD		0x00040000		//Temp Loaded from Stack
+#define BGBCC_REGFL_VOLATILESEEN	0x00040000		//volatile was seen
 #define BGBCC_REGFL_HAS128			0x00080000		//Has 128-bit Types
 #define BGBCC_REGFL_IMMLOAD			0x00100000		//Immediate value Loaded
 #define BGBCC_REGFL_GBLSTORE		0x00200000		//Stores into Global
+
 
 #define BGBCC_REGFL_HASLCLALIAS		0x00400000		//Has aliased locals.
 #define BGBCC_REGFL_HASGBLALIAS		0x00800000		//Has aliased globals.
@@ -565,7 +568,9 @@ extern "C" {
 
 #define BGBCC_FMT_BMD		BGBCC_FOURCC('B', 'M', 'D', ' ')
 #define BGBCC_FMT_STL		BGBCC_FOURCC('S', 'T', 'L', ' ')
+#define BGBCC_FMT_MTL		BGBCC_FOURCC('M', 'T', 'L', ' ')
 #define BGBCC_FMT_SCAD		BGBCC_FOURCC('S', 'C', 'A', 'D')
+#define BGBCC_FMT_OBJ		BGBCC_FOURCC('O', 'B', 'J', ' ')
 
 #define BGBCC_FMT_CRAM		BGBCC_FOURCC('C', 'R', 'A', 'M')
 #define BGBCC_FMT_DXT1		BGBCC_FOURCC('D', 'X', 'T', '1')

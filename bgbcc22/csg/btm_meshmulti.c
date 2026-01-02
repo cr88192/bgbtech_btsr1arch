@@ -11,6 +11,7 @@
 
 #include "btm_mesh.c"
 #include "btm_fmtstl.c"
+#include "btm_fmtobj.c"
 #include "btm_outbmd.c"
 
 // #include "btm_quat.c"

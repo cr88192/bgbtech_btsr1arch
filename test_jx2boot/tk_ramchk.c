@@ -11,12 +11,23 @@ void TK_FlushCacheL1D_INVDCA(void);
 void TK_FlushCacheL1D_INVL2(void);
 void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
 
+u64 tk_ramrng_sum1, tk_ramrng_sum2, tk_ramrng_sumx;
+
+int TK_RamRngUpd()
+{
+	tk_ramrng_sum1+=TK_GetTimeUs();
+	tk_ramrng_sum2+=tk_ramrng_sum1;
+	tk_ramrng_sumx=tk_ramrng_sum1^tk_ramrng_sum2;
+}
+
 int TK_RamChk()
 {
 	u32 *ct, *cts, *cte, *ct1e;
 	int i, j, k;
 
+	TK_RamRngUpd();
 	puts("RAM Check: Begin\n");
+	TK_RamRngUpd();
 	
 	cts=(u32 *)TK_RAMCHK_BASE;
 	cte=(u32 *)TK_RAMCHK_LIM;
@@ -42,12 +53,18 @@ int TK_RamChk()
 	}
 #endif
 
+	TK_RamRngUpd();
+
 //	TK_FlushCacheL1D(cts);
 	TK_FlushCacheL1D_INVDCA();
 	TK_FlushCacheL1D_INVL2();
 
+	TK_RamRngUpd();
+
 //	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
 	TK_FlushCacheL1D_ReadBuf(0x02700000, 524288);
+
+	TK_RamRngUpd();
 
 //	putc('\n');
 
@@ -105,11 +122,13 @@ int TK_RamChk()
 		return(-1);
 	}
 
+	TK_RamRngUpd();
+	
 #if 1
 	cts=(u32 *)TK_RAMCHK_BASE;
 	cte=(u32 *)TK_RAMCHK_LIM_HI;
 	ct=cts;
-	
+
 	while(ct<cte)
 	{
 		ct[0]=0;
@@ -141,6 +160,8 @@ int TK_RamChk()
 //	TK_FlushCacheL1D_ReadBuf(0x02000000, 262144);
 	TK_FlushCacheL1D_ReadBuf(0x02700000, 524288);
 
+	TK_RamRngUpd();
+	
 //	k=ct[0];
 
 //	TK_FlushCacheL1D_INVL2();
@@ -181,7 +202,11 @@ int TK_RamChk()
 	printf("DRAM %dK\n", j);
 #endif
 	
+	TK_RamRngUpd();
+	
 	puts("RAM Check: OK\n");
+	
+	TK_RamRngUpd();
 	
 	return(0);
 }

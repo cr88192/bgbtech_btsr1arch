@@ -23,17 +23,26 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define	BGBCC_WXSPFL_ISMEM		1
-#define	BGBCC_WXSPFL_USE_SR		2
-#define	BGBCC_WXSPFL_PXN		4
-#define	BGBCC_WXSPFL_PXSTN		8		//Xs,Xt,Xn
-#define	BGBCC_WXSPFL_2STAGE		16
-#define	BGBCC_WXSPFL_3STAGE		32
-#define	BGBCC_WXSPFL_IS_STORE	64
+#define	BGBCC_WXSPFL_ISMEM		0x001
+#define	BGBCC_WXSPFL_USE_SR		0x002
+#define	BGBCC_WXSPFL_PXN		0x004
+#define	BGBCC_WXSPFL_PXSTN		0x008		//Xs,Xt,Xn
+#define	BGBCC_WXSPFL_2STAGE		0x010
+#define	BGBCC_WXSPFL_3STAGE		0x020
+#define	BGBCC_WXSPFL_IS_STORE	0x040
+#define	BGBCC_WXSPFL_FIXNOMOVE	0x080		//fixed/immovable, ordering
 
-#define	BGBCC_WXSPFL_RXN		0x100	//Xn
-#define	BGBCC_WXSPFL_RXS		0x200	//Xs
-#define	BGBCC_WXSPFL_RXT		0x400	//Xt
+#define	BGBCC_WXSPFL_RXN		0x100		//Xn
+#define	BGBCC_WXSPFL_RXS		0x200		//Xs
+#define	BGBCC_WXSPFL_RXT		0x400		//Xt
+
+#define	BGBCC_WXSPFL_JUMBO		0x1000		//jumbo prefix (64)
+#define	BGBCC_WXSPFL_JUMBOX2	0x2000		//jumbo prefix (96)
+#define	BGBCC_WXSPFL_HASDISP	0x4000		//has immed/disp
+
+#define	BGBCC_WXSPFL_LANE2		0x10000		//valid in Lane 2
+#define	BGBCC_WXSPFL_LANE3		0x20000		//valid in Lane 3
+#define	BGBCC_WXSPFL_1STAGE		0x40000
 
 /*
 Flag:
@@ -909,6 +918,12 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 
 //	return(0);
 
+	if(sctx->state_alias&4)
+	{
+		/* if volatile was seen, assume aliasing. */
+		return(0);
+	}
+
 	sc1=0;
 	sc2=0;
 	wx1=0;
@@ -1100,9 +1115,11 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 	 * This is "less safe" than the others.
 	 */
 	if((rs1==15) && (rs2!=15) && (ix2!=0))
-		return(1);
+		if(!(sctx->state_alias&1))
+			return(1);
 	if((rs2==15) && (rs1!=15) && (ix1!=0))
-		return(1);
+		if(!(sctx->state_alias&1))
+			return(1);
 #endif
 
 #if 1
@@ -1111,9 +1128,11 @@ int BGBCC_JX2_CheckOps32MemNoAlias(
 	 * This is "less safe" than the others.
 	 */
 	if((rs1==1) && (rs2!=1) && (ix2!=0))
-		return(1);
+		if(!(sctx->state_alias&2))
+			return(1);
 	if((rs2==1) && (rs1!=1) && (ix1!=0))
-		return(1);
+		if(!(sctx->state_alias&2))
+			return(1);
 #endif
 
 	return(0);
@@ -3729,7 +3748,7 @@ ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(
 	int i, j, k;
 
 //	return(0);
-	
+
 	dp=epos-spos;
 	if(dp&3)
 	{
@@ -3748,6 +3767,9 @@ ccxl_status BGBCC_JX2_OptInterlock_DoSwaps(
 		BGBCC_DBGBREAK
 	}
 	
+	if(sctx->emit_riscv&0x11)
+		{ return(BGBCC_JX2_OptX3Interlock_DoSwaps(sctx, spos, epos)); }
+
 	if(spos==0x1764)
 	{
 		nswap=-1;
@@ -4381,6 +4403,9 @@ ccxl_status BGBCC_JX2_CheckWexify_DoSwaps(
 		BGBCC_DBGBREAK
 	}
 	
+	if(sctx->emit_riscv&0x11)
+		{ return(BGBCC_JX2_CheckX3Wexify_DoSwaps(sctx, spos, epos)); }
+	
 	if(spos==0x1764)
 	{
 		nswap=-1;
@@ -4748,6 +4773,9 @@ ccxl_status BGBCC_JX2_CheckWexify_DoBundle(
 	int opwn1, opwn2, imv1, imv3, imv5;
 	int dp, cp, nswap;
 	int i;
+
+	if(sctx->emit_riscv&0x11)
+		return(0);
 	
 	dp=epos-spos;
 	if(dp&3)

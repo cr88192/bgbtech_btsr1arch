@@ -964,6 +964,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				obj->regflags|=BGBCC_REGFL_GOFAST;
 //				continue;
 			}
+			
+			if(	BGBCC_CCXL_TypeVolatilePointerP(ctx, obj->locals[i]->type) ||
+				BGBCC_CCXL_TypeAtomicPointerP(ctx, obj->locals[i]->type))
+			{
+				obj->regflags|=BGBCC_REGFL_VOLATILESEEN;
+			}
 		
 			rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->locals[i]->type);
 			switch(rcls)
@@ -1056,7 +1062,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //		((sctx->has_xgpr&1) && (sctx->use_egpr&2)))
 //	if((sctx->has_xgpr&2) || (sctx->use_egpr&2))
 //	if((sctx->has_xgpr&1) || (sctx->use_egpr&2))
-	if((sctx->has_xgpr&6) || (sctx->use_egpr&2) || (sctx->emit_riscv&0x33))
+//	if((sctx->has_xgpr&6) || (sctx->use_egpr&2) || (sctx->emit_riscv&0x33))
+	if((sctx->has_xgpr&6) || (sctx->use_egpr&3) || (sctx->emit_riscv&0x33))
 		k-=16*8;		//saved R40..R47, R56..R63
 
 	if(obj->flagsint&BGBCC_TYFL_INTERRUPT)
@@ -1086,6 +1093,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //	if(sctx->is_addr64)
 //		k*=2;
 	
+//	k-=8*8;		//debug reserve
+	
 	sctx->frm_offs_save_rsv=k;
 	
 	if((obj->flagsint&BGBCC_TYFL_VIRTUAL) ||
@@ -1111,7 +1120,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //	if(1)
 	{
 		i=(nlint)obj;
-		i=(u16)((i*65521)>>16);
+		i=(u16)((i*65521+17)>>16);
+
+		if(sctx->emit_riscv&0x11)
+			{ i&=0x7FF; }
+
 //		k-=8; k&=~7;
 		k-=16; k&=~15;
 		sctx->frm_offs_sectoken=k;

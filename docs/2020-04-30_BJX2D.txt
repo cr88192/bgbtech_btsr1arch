@@ -641,10 +641,11 @@ Page Control:
 ** Set to indicate accesses to this page are volatile (Data).
 ** Contents in this page should not be retained in the L1 cache.
 ** Indicates Secure-Execute if NW is also Set and NX is Clear.
-* ( 2): PR.D, (Dirty)
+* ( 2): PR.D (Dirty, OS / Virtual Memory)
 ** Set if page has been modified.
 * ( 1): PR.V1, Page Is Valid (Mode)
 * ( 0): PR.V0, Page Is Valid (Mode)
+
 
 Valid 1/0:
 * 00: Not Valid (This TLBE will be ignored).
@@ -656,25 +657,35 @@ Size 1/0 (Base=4K):
 * 00:  4K Page (Single Page)
 * 01: 2MB Page (512 Pages, PDE)
 * 10: 64K Page (16 Pages)
-* 11: -
+* 11: - (Possible: LLPTLB)
 
 Size 1/0 (Base=64K):
 * 00: 64K Page (1 Page)
 * 01: 512M Page (8192 Pages, PDE)
 * 10: 64K Page (1 Page)
-* 11: -
+* 11: - (Possible: LLPTLB)
 
 Size 1/0 (Base=16K):
 * 00: 16K Page (1 Page)
 * 01: 32M Page (2048 Pages, PDE)
 * 10: 64K Page (4 Pages)
-* 11: -
+* 11: - (Possible: LLPTLB)
 
-If NC is Set and NU is Clear:
+If NC is Set and NU and D are Clear:
 * If NX is Clear, This page has Secure-Execute privledge.
 ** Secure-Execute may also require NW to be Set.
 * If NR or NW are Set, these are ignored in Supervisor Mode.
 ** The NC flag is Ignored if NX is Set.
+
+If D is Set:
+* (NX,NW,NR):
+** 0z0: Default (D is ignored)
+** 0z1: I$ Only (Always miss for D$)
+** 100: Default (Read/Write Memory, D ignored)
+** 110: D$ Only (Always miss for I$)
+** 11: -
+
+The D+NX and D+NR cases will differ in that rather than signaling no-access, they will signal no-hit. This will allow assigning different views of the page based on I$ or D$. This feature is primarily intended for debuggers and VMs to support code hot-patching.
 
 Valid Shared/Exclusive Mode:
 * Valid Exclusive: Assume that page is only mapped once.

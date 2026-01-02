@@ -823,6 +823,15 @@ int BGBCC_JX2_LookupRelocAtOffs(BGBCC_JX2_Context *ctx, int sec, int ofs)
 #endif
 }
 
+int BGBCC_JX2_LookupRelocTagCsOffs(BGBCC_JX2_Context *ctx, int ofs)
+{
+	int i;
+	i=BGBCC_JX2_LookupRelocAtOffs(ctx, ctx->sec, ofs);
+	if(i<0)
+		return(0);
+	return(ctx->rlc_ty[i]);
+}
+
 int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)
 {
 	int h, sec, ofs;

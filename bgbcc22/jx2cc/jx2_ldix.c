@@ -30,7 +30,8 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	int *rsz, int *rnm1, int *rnm2, int *rnm3, int *rnm4)
 {
 	int nm1, nm2, nm3, nm4, ty, sz, rcls;
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 	sz=-1; nm1=-1; nm2=-1; nm3=-1; nm4=-1;
 	switch(ty)
@@ -376,7 +377,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 	int nm1, nm2, nm3, nm4, nm5, ty, sz, al, ofs, tr0;
 	int i, j, k;
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 	
 	if(ty==0x0D)
 	{
@@ -541,7 +543,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 		
 		ofs=imm*sz;
-		if(sty.val==CCXL_TY_VEC3FX)
+//		if(sty.val==CCXL_TY_VEC3FX)
+		if(BGBCC_CCXL_TypeAsCanonical(ctx, sty)==CCXL_TY_VEC3FX)
 		{
 			ofs=imm*4+1;
 		}
@@ -559,7 +562,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegImm(
 		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
 		
 		ofs=imm*sz;
-		if(sty.val==CCXL_TY_VEC3FQ)
+//		if(sty.val==CCXL_TY_VEC3FQ)
+		if(BGBCC_CCXL_TypeAsCanonical(ctx, sty)==CCXL_TY_VEC3FQ)
 		{
 			ofs=imm*2+1;
 		}
@@ -680,7 +684,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVReg(
 		return(i);
 	}
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 
 	if(	BGBCC_CCXL_TypeVarObjP(ctx, stype) ||
@@ -992,7 +997,8 @@ int BGBCC_JX2C_EmitLdixVRegVRegVRegImm(
 		return(i);
 	}
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 #if 0
 //	if(BGBCC_CCXL_TypeArrayP(ctx, type))
@@ -1156,7 +1162,8 @@ int BGBCC_JX2C_EmitStixVRegVRegImm(
 	}
 #endif
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 	if(BGBCC_CCXL_TypeVarObjP(ctx, stype))
 	{
@@ -1730,7 +1737,8 @@ int BGBCC_JX2C_EmitLdixAdjVRegVRegImm(
 	int rej;
 	int i, j, k;
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 	sty=BGBCC_CCXL_GetRegType(ctx, sreg);
 
@@ -1854,7 +1862,8 @@ int BGBCC_JX2C_EmitStixAdjVRegVRegImm(
 	int nm1, nm2, nm3, nm4, nm5, ty, sz, al, rej;
 	int i, j, k;
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
@@ -1961,7 +1970,8 @@ int BGBCC_JX2C_EmitLeaVRegVRegImm(
 	int nm1, nm2, nm3, nm4, ty, sz;
 	int i, j, k;
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 //	if(BGBCC_CCXL_TypeArrayP(ctx, type))
 //	{
@@ -2063,7 +2073,8 @@ int BGBCC_JX2C_EmitLeaVRegVRegVReg(
 	int nm1, nm2, nm3, nm4, ty, sz;
 	int i, j, k;
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 //	if(BGBCC_CCXL_TypeArrayP(ctx, type))
 //	{
@@ -2202,7 +2213,8 @@ int BGBCC_JX2C_EmitDiffPtrVRegVRegVReg(
 	int nm1, nm2, nm3, nm4, ty, sz, shl;
 	int i, j, k;
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 	BGBCC_JX2C_EmitLdix_FillSzNmTy(ctx, sctx, type,
 		&sz, &nm1, &nm2, &nm3, &nm4);
@@ -3485,8 +3497,9 @@ int BGBCC_JX2C_EmitLdixAddrVRegVRegImm(
 	int nm1, nm2, nm3, nm4, nm5, ty, sz, ofs;
 	int i, j, k;
 
-	ty=type.val;
-	
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
+
 	if(ty==0x0D)
 	{
 		i=-1;
@@ -3672,7 +3685,8 @@ int BGBCC_JX2C_EmitLdixAddrVRegVRegVReg(
 		}
 	}
 
-	ty=type.val;
+//	ty=type.val;
+	ty=BGBCC_CCXL_TypeAsCanonical(ctx, type);
 
 
 	if(	BGBCC_CCXL_TypeVarObjP(ctx, stype) ||

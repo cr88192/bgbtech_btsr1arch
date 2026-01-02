@@ -372,7 +372,7 @@ BTM_CsgPoly *BTM_MakeCsgPolyForPoints(
 	tmp->npts=npts;
 
 	tmp->clrmat=clrmat;
-	Hull_CalcPolyBBox(pts, npts, tmp->bbox+0, tmp->bbox+3);
+	HullF_CalcPolyBBox(pts, npts, tmp->bbox+0, tmp->bbox+3);
 
 	tmp->next=lst;
 	return(tmp);
@@ -541,7 +541,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 		for(i=0; i<num; i++)
 		{
 			HullF_TransformPlane(norm+i*4, tnv, trans);
-			Hull_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
+			HullF_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
 //			if(sx>=0)
 			if(sx>=(-0.999))
 				break;
@@ -579,7 +579,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 			pcmat=pcur->clrmat;
 			pcur=pcur->next;
 
-			Hull_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
+			HullF_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
 			if(sx>=0)
 			{
 				if(flag&1)

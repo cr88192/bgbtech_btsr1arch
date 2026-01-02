@@ -976,14 +976,32 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		return(obuf);
 	}
 
-	if(!strcmp(cnv, "stl"))
+	if(!strcmp(cnv, "stl") || !strcmp(cnv, "stl_asc"))
 	{
 		mesh=BTM_LoadMeshListBuffer(buf, sz, lang);
-
 		obuf=NULL; sz1=0;
 		BTM_ExportMeshListStlBuf(mesh, &obuf, &sz1);
-
 		*rfcc=BGBCC_FMT_STL;
+		*rsz=sz1;
+		return(obuf);
+	}
+
+	if(!strcmp(cnv, "stl_bin"))
+	{
+		mesh=BTM_LoadMeshListBuffer(buf, sz, lang);
+		obuf=NULL; sz1=0;
+		BTM_ExportMeshListBinStlBuf(mesh, &obuf, &sz1);
+		*rfcc=BGBCC_FMT_STL;
+		*rsz=sz1;
+		return(obuf);
+	}
+
+	if(!strcmp(cnv, "obj_mdl"))
+	{
+		mesh=BTM_LoadMeshListBuffer(buf, sz, lang);
+		obuf=NULL; sz1=0;
+		BTM_ExportMeshListObjBuf(mesh, &obuf, &sz1);
+		*rfcc=BGBCC_FMT_OBJ;
 		*rsz=sz1;
 		return(obuf);
 	}

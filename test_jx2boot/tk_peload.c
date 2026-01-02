@@ -764,6 +764,16 @@ TK_GetRandom:
 	MOV		DLR, R2
 	RTS
 };
+#else
+u64 tk_ramrng_sumx;
+u64 TK_GetRandom()
+{
+	tk_ramrng_sumx ^= ~(tk_ramrng_sumx>>47);
+	tk_ramrng_sumx ^=  (tk_ramrng_sumx<<13);
+	tk_ramrng_sumx ^=  (tk_ramrng_sumx>>19);
+	return(tk_ramrng_sumx);
+}
+
 #endif
 
 byte *TKPE_UnpackBuffer(byte *ct, byte *ibuf, int isz, int cmp)
@@ -938,13 +948,18 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 	u32 pv, pv0, pv1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
-	int isriscv, isbjx2, isbjx2xg2;
+	int isriscv, isbjx2, isbjx2xg2, isaddr96;
+	int secxor;
 	int tg;
 
 
 	isriscv=(mach==0x5064);
 	isbjx2=(mach==0xB264);
 	isbjx2xg2=(mach==0xB265);
+	isbjx2xg2=(mach==0xB265);
+	isaddr96=(mach==0xB296) || (mach==0xB297);
+	
+	secxor=TK_GetRandom()&0xFFFF;
 
 //	printf("TKPE_ApplyStaticRelocs: disp=%X rlc=%p sz=%d\n",
 //		(int)disp, rlc, szrlc);
@@ -1054,7 +1069,8 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 
 			case 6:
-				if(isbjx2 || isbjx2xg2)
+//				if(isbjx2 || isbjx2xg2)
+				if(isbjx2)
 				{
 					pv=*((u16 *)pdst);
 					if((pv==0xA000) && pboix)
@@ -1110,12 +1126,35 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
 				break;
 			case 11:
-				__setmemtrap(pdst, 3);
+				if(tg&1)
+					break;
+
+#if 0
+				if(isbjx2 || isbjx2xg2)
+				{
+					pv=*((u32 *)pdst);
+					if((pv&0xFFE0)==0xF800)
+					{
+						pv^=(secxor<<16);
+						*((u32 *)pdst)=pv;
+						break;
+					}
+					break;
+				}
+#endif
+
+//				if(tg&15)
+//					break;
+//				__setmemtrap(pdst, 3);
 				break;
 
 			case 12:
-				/* Technically Abs96 */
-				*((s64 *)pdst)=(*((s64 *)pdst))+disp;
+				if(isaddr96)
+				{
+					/* Technically Abs96 */
+					*((s64 *)pdst)=(*((s64 *)pdst))+disp;
+					break;
+				}
 				break;
 
 			default:
@@ -1260,7 +1299,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 	imgptr=(byte *)imgbase;
 	reloc_disp=0;
 
-#if 0
+#if 1
 	i=TK_GetRandom();
 	i=(i*64)&65535;
 	imgptr+=i;

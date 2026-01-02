@@ -1336,6 +1336,9 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 					i=BGBCC_TYFL_THREAD;
 				if(!bgbcp_strcmp(tag, "_Noreturn"))
 					i=BGBCC_TYFL_ABSTRACT;
+
+				if(!bgbcp_strcmp(tag, "_Atomic"))
+					i=BGBCC_TYFL_ATOMIC;
 			}
 		}
 #endif

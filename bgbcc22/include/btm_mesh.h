@@ -142,7 +142,8 @@ BTM_SolidMesh *next;
 char *fname;		//filename
 char *name;			//name of mesh
 float *tris;		//triangles
-float *norm;		//triangles
+float *norm;		//triangle normals
+u16 *rgb5;			//triangle RGB555
 int nTris;			//number of triangles
 int mTris;			//max number of triangles
 int status;			//status flags

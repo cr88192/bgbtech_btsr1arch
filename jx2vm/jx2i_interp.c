@@ -3699,6 +3699,7 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 {
 	BJX2_Trace *cur;
 	bjx2_addr pc;
+	double f0, f1, f2;
 	int i;
 
 	if(!ctx->dbglog)
@@ -3748,6 +3749,27 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 		BJX2_DbgPrintf(ctx, "Branch Pred Hit %.2f%%\n",
 			(100.0*ctx->bpr_hit)/ctx->bpr_cnt);
 	}
+	
+	if(ctx->dbg_stat_totmem_w>0)
+	{
+		f0=(100.0*ctx->dbg_stat_mismem_w)/(ctx->dbg_stat_totmem_w+1);
+		f1=(100.0*ctx->dbg_stat_mismem_l)/(ctx->dbg_stat_totmem_l+1);
+		f2=(100.0*ctx->dbg_stat_mismem_q)/(ctx->dbg_stat_totmem_q+1);
+		BJX2_DbgPrintf(ctx, "Misaligned W=%.2f%% L=%.2f%% Q=%.2f%%\n",
+			f0, f1, f2);
+	}
+#if 0
+	if(ctx->dbg_stat_totmem_l>0)
+	{
+		BJX2_DbgPrintf(ctx, "Misaligned DWord %.2f%%\n",
+			(100.0*ctx->dbg_stat_mismem_l)/ctx->dbg_stat_totmem_l);
+	}
+	if(ctx->dbg_stat_totmem_q>0)
+	{
+		BJX2_DbgPrintf(ctx, "Misaligned QWord %.2f%%\n",
+			(100.0*ctx->dbg_stat_mismem_q)/ctx->dbg_stat_totmem_q);
+	}
+#endif
 
 	if(ctx->dbglog)
 	{

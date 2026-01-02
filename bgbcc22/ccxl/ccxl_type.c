@@ -4242,6 +4242,18 @@ int BGBCC_CCXL_TypeMayaliasPointerP(
 	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_MAYALIAS);
 }
 
+int BGBCC_CCXL_TypeAtomicPointerP(
+	BGBCC_TransState *ctx, ccxl_type sty)
+{
+	int pcls;
+	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
+	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
+	return((pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_ATOMIC);
+}
+
 int BGBCC_CCXL_TypeBigEndianP(
 	BGBCC_TransState *ctx, ccxl_type sty)
 {
@@ -4400,7 +4412,17 @@ ccxl_status BGBCC_CCXL_TypeFromOverflow(
 	int i, j, k;
 	
 	if(!ovf.an && !ovf.pn)
-		ovf.pcls=0;
+	{
+//		ovf.pcls=0;
+		ovf.pcls&=~CCXL_PCLS_HGMASK;
+		ovf.pcls&=~CCXL_PCLS_ENDMASK;
+		if(	((ovf.pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_RESTRICT) ||
+			((ovf.pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_MAYALIAS) ||
+			((ovf.pcls&CCXL_PCLS_ALIASMASK)==CCXL_PCLS_VOLATILE))
+		{
+			ovf.pcls&=~CCXL_PCLS_ALIASMASK;
+		}
+	}
 
 	if((ovf.base>=0) && (ovf.base<CCXL_TY_BASETYMAX) &&
 		(ovf.an==0) &&
@@ -4494,6 +4516,36 @@ ccxl_status BGBCC_CCXL_TypeFromOverflow(
 	return(CCXL_STATUS_ERR_UNHANDLEDTYPE);
 }
 
+ccxl_status BGBCC_CCXL_TypeCanonizeOverflow(
+	BGBCC_TransState *ctx,
+	ccxl_type *rdty,
+	ccxl_type sty)
+{
+	BGBCC_CCXL_TypeOverflow ovf;
+//	ccxl_type dty;
+
+	if(	((sty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC) ||
+		((sty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC2) ||
+		((sty.val&CCXL_TY_TYTY_MASK)==CCXL_TY_TYTY_BASIC3) )
+	{
+		*rdty=sty;
+		return(CCXL_STATUS_YES);
+	}
+
+	BGBCC_CCXL_TypeUnpackOverflow(ctx, sty, &ovf);
+	ovf.pcls=0;
+	return(BGBCC_CCXL_TypeFromOverflow(ctx, rdty, ovf));
+}
+
+u32 BGBCC_CCXL_TypeAsCanonical(
+	BGBCC_TransState *ctx,
+	ccxl_type sty)
+{
+	ccxl_type dty;
+	BGBCC_CCXL_TypeCanonizeOverflow(ctx, &dty, sty);
+	return(dty.val);
+}
+
 ccxl_status BGBCC_CCXL_TypeFromSig(
 	BGBCC_TransState *ctx,
 	ccxl_type *rty, char *sig)
@@ -4527,6 +4579,7 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'r': pcls|=CCXL_PCLS_RESTRICT; break;
 		case 'v': pcls|=CCXL_PCLS_VOLATILE; break;
 		case 'a': pcls|=CCXL_PCLS_MAYALIAS; break;
+		case 't': pcls|=CCXL_PCLS_ATOMIC; break;
 		default:
 			break;
 		}

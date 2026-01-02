@@ -342,6 +342,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 	if(k)
 	{
 		BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, BGBCC_JX2CC_PSREG_TS0);
+		BGBCC_JX2_EmitRelocTy(sctx, obj->fxoffs, BGBCC_SH_RLC_SECTOKEN);
 		BGBCC_JX2_EmitLoadRegImm64P(sctx, BGBCC_JX2CC_PSREG_TS1,
 //			0x1234567890ABCDEFLL);
 			sctx->frm_val_sectoken);
@@ -349,6 +350,11 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		if(sctx->emit_riscv&0x11)
 		{
 			/* RISC-V */
+			p0=BGBCC_JX2_GenLabelTemp(sctx);
+			BGBCC_JX2_EmitOpRegRegLbl(sctx, BGBCC_SH_NMID_BREQ,
+				BGBCC_JX2CC_PSREG_TS1, BGBCC_JX2CC_PSREG_TS0, p0);
+			BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_BRK);
+			BGBCC_JX2_EmitLabel(sctx, p0);
 		}else
 			if(sctx->abi_spillpad&2)
 		{

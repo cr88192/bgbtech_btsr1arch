@@ -688,6 +688,8 @@ fourcc BGBCP_LangForName(char *name)
 
 			if(!bgbcc_stricmp(s, ".bmd"))	lang=BGBCC_FMT_BMD;
 			if(!bgbcc_stricmp(s, ".stl"))	lang=BGBCC_FMT_STL;
+			if(!bgbcc_stricmp(s, ".mtl"))	lang=BGBCC_FMT_MTL;
+
 			if(!bgbcc_stricmp(s, ".scad"))	lang=BGBCC_FMT_SCAD;
 			if(!bgbcc_stricmp(s, ".mdef"))	lang=BGBCC_FMT_MDEF;
 		}
@@ -747,6 +749,8 @@ char *BGBCP_ExtForLang(int lang)
 	case BGBCC_FMT_BMD:		s=".bmd"; break;
 	case BGBCC_FMT_STL:		s=".stl"; break;
 	case BGBCC_FMT_SCAD:	s=".scad"; break;
+	case BGBCC_FMT_OBJ:		s=".obj"; break;
+	case BGBCC_FMT_MTL:		s=".mtl"; break;
 
 	case BGBCC_FMT_MDEF:	s=".mdef"; break;
 	case BGBCC_FMT_WDEF:	s=".wdef"; break;

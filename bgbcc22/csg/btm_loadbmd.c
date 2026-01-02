@@ -1615,7 +1615,7 @@ int BTM_BmdCheckLineCrossFace(BTM_BtModelMesh *mesh, int fn,
 	xyz2=mesh->v_xy+i2*3;
 	xyz3=mesh->v_xy+i3*3;
 
-	Hull_LinePlaneIntersect(spos, epos, xnv, tv0);
+	HullF_LinePlaneIntersect(spos, epos, xnv, tv0);
 	
 	TKRA_Vec3F_Sub(xyz1, xyz0, dv0);
 	TKRA_Vec3F_Sub(xyz2, xyz1, dv1);

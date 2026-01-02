@@ -643,7 +643,8 @@ wire[63:0]		gprValSsp;
 (* max_fanout = 200 *)
 	reg[47:0]		id1ValPc;
 
-reg[3:0]		id1PcStep;
+(* max_fanout = 200 *)
+	reg[3:0]		id1PcStep;
 
 // reg[63:0]	id1IstrWord;	//source instruction word
 
@@ -1016,8 +1017,9 @@ RegGPR_6R3W regGpr(
 //	exHold2 && !crIsIsrEdge,
 	exHold2NotIsrEdge,
 
-	idA2IdUCmd,
-	idA2IdUIxt,
+	idA2IdUCmd,		idA2IdUIxt,
+	idB2IdUCmd,		idB2IdUIxt,
+	idC2IdUCmd,		idC2IdUIxt,
 
 	gprIdRs,		//Source A, ALU / Base
 	gprIdRt,		//Source B, ALU / Index
@@ -1948,6 +1950,9 @@ reg[32:0]		exB1RegValImm;		//Immediate (Decode)
 //`reg_gprval		exB1RegValRm;		//Source C Value
 
 
+reg[8:0]		exC1OpUCmd;
+reg[8:0]		exC1OpUIxt;
+
 
 `ifdef jx2_enable_fpu
 
@@ -2594,8 +2599,8 @@ ExEXB3		exb3(
 
 wire[63:0]		exC1MulWVal;
 
-reg[8:0]		exC1OpUCmd;
-reg[8:0]		exC1OpUIxt;
+// reg[8:0]		exC1OpUCmd;
+// reg[8:0]		exC1OpUIxt;
 // wire[1:0]		exC1Hold;
 
 `reg_gpr		exC1RegIdRs;		//Source A, ALU / Base
@@ -4312,6 +4317,17 @@ begin
 		$display("tNxtRegExc %X PC=%X", tNxtRegExc, ifLastPc);
 `endif
 	end
+
+`ifndef def_true
+	if(tNxtRegExc[15] && !tRegExc[15] && !exResetL2 &&
+		(tNxtRegExc[15:12]!=4'hF))
+	begin
+// `ifdef jx2_debug_isr
+`ifdef def_true
+		$display("ISR Trigger: tNxtRegExc %X PC=%X", tNxtRegExc, ifLastPc);
+`endif
+	end
+`endif
 
 	if(tRegExc[15] && !exResetL2)
 	begin
@@ -7026,6 +7042,17 @@ begin
 
 	tDbgMiscB	<= tDbgMisc;
 	tDbgMiscC	<= tDbgMiscB;
+
+// `ifdef def_true
+`ifndef def_true
+	if(tNxtRegExc[15] && !tRegExc[15] &&
+		(tNxtRegExc[15:12]!=4'hF) &&
+			(tNxtRegExc[15:12]!=4'hC) &&
+			(tNxtRegExc[15:12]!=4'hE))
+	begin
+		$display("ISR Trigger: tNxtRegExc %X PC=%X", tNxtRegExc, ifLastPc);
+	end
+`endif
 
 end
 

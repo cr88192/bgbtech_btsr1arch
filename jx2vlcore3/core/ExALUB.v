@@ -566,6 +566,16 @@ begin
 	tResultShufW = tResultMulTW;
 `endif
 
+`ifdef def_true
+	if(idLane[1])
+	begin
+		/* Zero out shuffles in Lane3 */
+		tResultShufB = 0;
+		tResultShufW = 0;
+	end
+`endif
+
+
 	case(idUIxt[3:0])
 		4'h0: begin		/* ADD */
 //			tResult1A=tAdd2A0;
@@ -805,10 +815,13 @@ begin
 `ifdef jx2_enable_gsv
 	if(idUCmd[5:0]==JX2_UCMD_ALUW3)
 	begin
-//		tResult1A = tResultu1A;
-//		tResult1B = tResultu1B;
-		tResult1A = tResult1W;
-		tResult2A = tResult2W;
+		if(!idLane[1])
+		begin
+//			tResult1A = tResultu1A;
+//			tResult1B = tResultu1B;
+			tResult1A = tResult1W;
+			tResult2A = tResult2W;
+		end
 	end
 `endif
 
@@ -890,6 +903,15 @@ begin
 		tRegOutSrT = tRegConvSrT;
 		tRegOutSrS = tRegConvSrS;
 	end	
+`endif
+
+`ifdef def_true
+	if(idLane[1])
+	begin
+		/* disable status output for Lane 3 */
+		tRegOutSrT = 0;
+		tRegOutSrS = 0;
+	end
 `endif
 
 end

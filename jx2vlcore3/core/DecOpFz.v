@@ -303,10 +303,15 @@ reg[8:0]	opIsImmLdOp;
 
 reg[8:0]	opIsImmShufOp;
 
-reg			opExWQ;
-reg			opExWN;
-reg			opExWM;
-reg			opExWI;
+(* max_fanout = 200 *)
+	reg			opExWQ;
+(* max_fanout = 200 *)
+	reg			opExWN;
+(* max_fanout = 200 *)
+	reg			opExWM;
+(* max_fanout = 200 *)
+	reg			opExWI;
+
 // reg			opExWIS;
 reg[3:0]	opIsExWB2;
 
@@ -399,6 +404,8 @@ reg			usrRejectCnW;
 reg			usrReject;
 reg[1:0]	usrSuAllow;
 reg			usrSuAllowEn;
+
+reg			usrFmidDoTrap;
 
 reg			usrReject_F0;
 reg[1:0]	usrSuAllow_F0;
@@ -591,10 +598,10 @@ begin
 `endif
 
 `ifdef jx2_enable_riscv
-	if(opRegM_Cr[4:0]==5'h0F)
-		opRegM_Cr = JX2_GR_R15;
-	if(opRegN_Cr[4:0]==5'h0F)
-		opRegN_Cr = JX2_GR_R15;
+//	if(opRegM_Cr[4:0]==5'h0F)
+//		opRegM_Cr = JX2_GR_R15;
+//	if(opRegN_Cr[4:0]==5'h0F)
+//		opRegN_Cr = JX2_GR_R15;
 `endif
 
 `ifdef def_true
@@ -4585,18 +4592,17 @@ begin
 `endif
 				end
 			end
+`else
+			16'h5zzB: begin		/* F0nm_5eoB */
+				opNmid		= JX2_UCMD_OP_IXT;
+				opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+			end
 `endif
 
 			16'h5zzC: begin		/* F0nm_5eoC */
-//`ifdef jx2_addxl_agu
-//				opNmid		= JX2_UCMD_LEA_MR;
-//				opFmid		= JX2_FMID_REGREG;
-//				opUCmdIx	= opExQ ? 6'h04 : 6'h0C;
-//`else
 				opNmid		= JX2_UCMD_ALU3;
 				opFmid		= JX2_FMID_REGREG;
 				opUCmdIx	= opExQ ? JX2_UCIX_ALU_ADDUL : JX2_UCIX_ALU_ADDSL;
-//`endif
 			end
 			16'h5zzD: begin		/* F0nm_5eoD */
 				opNmid		= JX2_UCMD_ALU3;
@@ -7320,7 +7326,8 @@ begin
 	end
 `endif
 
-`ifndef jx2_use_mem_ldop
+// `ifndef jx2_use_mem_ldop
+`ifndef def_true
 	if(opIsImmLdOp!=0)
 	begin
 		if(	(opNmid == JX2_UCMD_MOV_RM) ||
@@ -7338,6 +7345,7 @@ begin
 	opULdOp		= 0;
 	opULdOp2	= 0;
 //	opUShufOp	= 0;
+	usrFmidDoTrap	= 0;
 	
 	case(opFmid)
 		JX2_FMID_Z: begin
@@ -7713,6 +7721,7 @@ begin
 `endif
 
 `ifdef jx2_use_fpu_fpimm
+// `ifndef def_true
 				JX2_ITY_UB: begin
 //					opImm		= opImm_imm9u;
 					opDoImm		= JX2_FMIMM_IMM9U;
@@ -7891,7 +7900,7 @@ begin
 `ifdef jx2_use_mem_ldop
 			opULdOp	= opIsImmLdOp;
 `endif
-			
+
 //			if(opIty==JX2_ITY_UB)
 			if((opIty==JX2_ITY_UB) || (opIty==JX2_ITY_NB))
 			begin
@@ -7937,8 +7946,8 @@ begin
 			end
 `endif
 
-`ifdef def_true
-// `ifndef def_true
+// `ifdef def_true
+`ifndef def_true
 			if(opNmid == JX2_UCMD_MOV_RM)
 				opRegN	= JX2_GR_ZZR;
 			if(opNmid == JX2_UCMD_MOV_MR)
@@ -7975,6 +7984,16 @@ begin
 //					opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty[2], 2'b00};
 //				end
 //			end
+
+
+`ifndef jx2_use_mem_ldop
+			if(opULdOp!=0)
+			begin
+				usrFmidDoTrap	= 1;
+//				opUCmd = { opCcty, JX2_UCMD_OP_IXT };
+//				opUIxt	= { opUCty, JX2_UCIX_IXT_TRAPFPU };
+			end
+`endif
 		end
 `endif
 
@@ -8015,8 +8034,8 @@ begin
 				end
 `endif
 
-`ifdef def_true
-// `ifndef def_true
+// `ifdef def_true
+`ifndef def_true
 				if(opNmid == JX2_UCMD_MOV_RM)
 					opRegN	= JX2_GR_ZZR;
 				if(opNmid == JX2_UCMD_MOV_MR)
@@ -8097,6 +8116,15 @@ begin
 				opRegO	= JX2_GR_DLR;
 				opUIxt	= {opUCty, opBty[1:0], 1'b0, opBty};
 			end
+
+`ifndef jx2_use_mem_ldop
+			if(opULdOp!=0)
+			begin
+				usrFmidDoTrap	= 1;
+//				opUCmd = { opCcty, JX2_UCMD_OP_IXT };
+//				opUIxt	= { opUCty, JX2_UCIX_IXT_TRAPFPU };
+			end
+`endif
 		end
 
 `ifdef def_true
@@ -8714,11 +8742,13 @@ begin
 //				opDoImm	= JX2_FMIMM_NONE;
 				opDoImm	= JX2_FMIMM_DISP20S;
 
+`ifndef def_true
 				if(opImm_dispAltLr)
 				begin
 					opRegN	= JX2_GR_DHR;
 					opRegP	= JX2_GR_DHR;
 				end
+`endif
 			end
 
 			JX2_ITY_SL: begin
@@ -8738,7 +8768,7 @@ begin
 			endcase
 		end
 
-		JX2_FMID_IMM12Z: begin
+		JX2_FMID_IMM12Z, JX2_FMID_IMM12N: begin
 //			opImm	= {UV9_00, istrWord[7:0], istrWord[31:16]};
 //			opDoImm	= JX2_FMIMM_NONE;
 			opDoImm	= JX2_FMIMM_IMM24Z;
@@ -8749,6 +8779,9 @@ begin
 			opRegN	= JX2_GR_DLR;
 			opRegP	= JX2_GR_DLR;
 			opUIxt	= {opUCty, opUCmdIx[5:0]};
+
+			if(opFmid==JX2_FMID_IMM12N)
+				opDoImm	= JX2_FMIMM_IMM24N;
 
 			if(opIsJumbo)
 			begin
@@ -8772,6 +8805,8 @@ begin
 				default: begin end
 			endcase
 		end
+
+`ifndef def_true
 		JX2_FMID_IMM12N: begin
 //			opImm	= {UV9_FF, istrWord[7:0], istrWord[31:16]};
 //			opDoImm	= JX2_FMIMM_NONE;
@@ -8794,7 +8829,8 @@ begin
 				opDoImm	= JX2_FMIMM_NONE;
 			end
 		end
-		
+`endif
+
 		JX2_FMID_INV: begin
 			opUCmd = { opCcty, JX2_UCMD_INVOP };
 //			if(istrWord[15:12]==4'b1111)
@@ -8881,9 +8917,17 @@ begin
 
 
 `ifdef def_true
+	if(usrFmidDoTrap)
+	begin
+		opUCmd	= { opCcty, JX2_UCMD_OP_IXT };
+		opUIxt	= { opUCty, JX2_UCIX_IXT_TRAPFPU };
+	end
+`endif
+
+`ifdef def_true
 	if(usrReject && srUser && !usrSuAllowEn)
 	begin
-		opUCmd = { opCcty, JX2_UCMD_INVOP };
+		opUCmd	= { opCcty, JX2_UCMD_INVOP };
 		opUIxt	= { opUCty, JX2_UCIX_INVOP_PRIVFAULT };
 	end
 `endif

@@ -3943,6 +3943,8 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 
 			if(li&BGBCC_TYFL_MAYALIAS)
 				{ *t++='A'; *t++='a'; }
+			else if(li&BGBCC_TYFL_ATOMIC)
+				{ *t++='A'; *t++='t'; }
 			else if(li&BGBCC_TYFL_RESTRICT)
 				{ *t++='A'; *t++='r'; }
 			else if(li&BGBCC_TYFL_VOLATILE)

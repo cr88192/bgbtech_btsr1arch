@@ -1774,13 +1774,15 @@ begin
 
 		16'hEzzz: begin
 			opIsFx	= 1;
-			opNmid	= JX2_UCMD_INVOP;
+//			opNmid	= JX2_UCMD_INVOP;
+			opNmid	= JX2_UCMD_NOP;
 			opFmid	= JX2_FMID_Z;
 		end
 
 		16'hFzzz: begin
 			opIsFx	= 1;
-			opNmid	= JX2_UCMD_INVOP;
+//			opNmid	= JX2_UCMD_INVOP;
+			opNmid	= JX2_UCMD_NOP;
 			opFmid	= JX2_FMID_Z;
 		end
 	
@@ -1795,7 +1797,8 @@ begin
 	if(srXG2 || srXGRV || srRV)
 	begin
 		opIsFx	= 1;
-		opNmid	= JX2_UCMD_INVOP;
+//		opNmid	= JX2_UCMD_INVOP;
+		opNmid	= JX2_UCMD_NOP;
 		opFmid	= JX2_FMID_Z;
 	end
 

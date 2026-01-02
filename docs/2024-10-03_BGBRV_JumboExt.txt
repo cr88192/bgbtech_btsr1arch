@@ -15,6 +15,9 @@ BGB Jumbo Extension for RISC-V
 * 1iiiiii-iiiii-zzzzV-100-omnpp-01-11111  J21O	(Prefix, BGB)
 * tiiiiii-iiiii-zzzzz-100-sZnpp-01-11111  J12O	(Prefix, BGB)
 
+* spppppp-ppppp-qqqqq-110-rrrrr-01-11111 -
+* tiiiiii-iiiii-jjjjj-uuu-kkkkk-vv-vvv11 - J52I	(Extended Prefix, BGB)
+
 
 The jumbo prefix will be a prefix op, which will combine with the following instruction.
 
@@ -39,6 +42,18 @@ The J21O prefix may combine with Imm12 ops:
 * the z field will give additional opcode bits.
 ** 0 will perform the base operation.
 ** The meaning of these bits will depend on base instruction.
+
+The J52I Prefix will combine with Imm12 to give a 64-bit Immediate.
+* Low 32 bits of Immediate:
+** Will be composed the same as if the 2nd word was a J21I.
+* High 32 bits will be composed as-if:
+** The first word were a J21 prefix for an imagined Imm12 instruction.
+** The low 11 bits will be filled in from the rest:
+*** (10:8) = u
+*** ( 7:3) = v
+*** (   2) = s
+*** (   1) = t
+*** (   0) = Instr(31)
 
 The J21O prefix may combine with 3 register ops:
 * The register fields will expand to 6 bits.

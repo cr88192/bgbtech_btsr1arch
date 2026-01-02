@@ -1325,6 +1325,12 @@ bjx2_addr dbg_setbrk_pc[256];
 byte dbg_setbrk_rov;
 byte dbg_setbrk_nz;
 
+s64 dbg_stat_totmem_w;
+s64 dbg_stat_mismem_w;
+s64 dbg_stat_totmem_l;
+s64 dbg_stat_mismem_l;
+s64 dbg_stat_totmem_q;
+s64 dbg_stat_mismem_q;
 
 bjx2_addr	dbg_data_start;
 bjx2_addr	dbg_data_end;

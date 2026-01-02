@@ -151,8 +151,23 @@ SRCS=\
 	jx2cc/jx2_struct.c \
 	jx2cc/jx2_vreg.c \
 	jx2cc/jx2_wexify.c \
+	jx2cc/jx2_x3wexify.c \
 	jx2cc/jx2_objelf.c \
-
+	\
+	csg/btm_csg_brush.c \
+	csg/btm_csg_clip.c \
+	csg/btm_fmtobj.c \
+	csg/btm_fmtstl.c \
+	csg/btm_loadbmd.c \
+	csg/btm_mesh.c \
+	csg/btm_outbmd.c \
+	csg/btm_pgmvar.c \
+	csg/btm_prgcsg.c \
+	csg/btm_prog.c \
+	csg/btm_quat.c \
+	csg/btm_scad.c \
+	csg/btm_vec3d.c \
+	csg/tkr_matrix.c \
 
 META_SRCS = \
 	$(SRCS) \

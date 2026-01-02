@@ -217,6 +217,7 @@ TK_FlushCacheL1D_INVDC:
 	NOP
 	RTS
 TK_FlushCacheL1D_INVIC:
+	INVIC	R10
 //	INVIC	R4
 //	WEXMD	31
 	NOP
@@ -236,14 +237,15 @@ TK_FlushCacheL1D_ReadBuf:
 void TK_FlushCacheL1D(void *ptr)
 {
 	void *pptr;
-	pptr=(void *)(((u64)ptr)&(~16777215));
+//	pptr=(void *)(((u64)ptr)&(~16777215));
+	pptr=(void *)((((u64)ptr)&(~16777215))|0xD00000000000ULL);
 	
 	TK_FlushCacheL1D_INVDC(NULL);
-//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
-	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
 	TK_FlushCacheL1D_INVDC(NULL);
-//	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
-	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
+	TK_FlushCacheL1D_ReadBuf(pptr, 65536);
+//	TK_FlushCacheL1D_ReadBuf(pptr, 262144);
 
 	TK_FlushCacheL1D_INVIC(NULL);
 }

@@ -34,8 +34,9 @@ module RegGPR_6R3W(
 	reset,
 	hold,
 
-	regIdUCmd,
-	regIdUIxt,
+	regIdUCmd,		regIdUIxt,
+	regIdBUCmd,		regIdBUIxt,
+	regIdCUCmd,		regIdCUIxt,
 
 	regIdRs,		//Source A, ALU / Base (Lane 1)
 	regIdRt,		//Source B, ALU / Index (Lane 1)
@@ -117,6 +118,12 @@ input			hold;
 
 input[8:0]		regIdUCmd;
 input[8:0]		regIdUIxt;
+
+input[8:0]		regIdBUCmd;
+input[8:0]		regIdBUIxt;
+
+input[8:0]		regIdCUCmd;
+input[8:0]		regIdCUIxt;
 
 `input_gpr		regIdRs;		//Source A
 `input_gpr		regIdRt;		//Source B
@@ -1060,7 +1067,8 @@ begin
 `endif
 
 		default: begin
-			$display("RegGPR+6R3W: tValRsA, Bad ID %X", regIdRs);
+			$display("RegGPR+6R3W: tValRsA, Bad ID %X  %X/%X", regIdRs,
+				regIdUCmd, regIdUIxt);
 			tValRsA=UVGPRV_00;
 			tValRsZz=1;
 		end
@@ -1182,7 +1190,8 @@ begin
 
 
 		default: begin
-			$display("RegGPR+6R3W: tValRtA, Bad ID %X", regIdRt);
+			$display("RegGPR+6R3W: tValRtA, Bad ID %X %X/%X", regIdRt,
+				regIdUCmd, regIdUIxt);
 		 	tValRtA=UVGPRV_00;
 			tValRtZz=1;
 		 end
@@ -1216,6 +1225,26 @@ begin
 //			tValRuA[63:0] = { UV16_00, regValGbr };
 			tValRuA[63:0] = regValGbr[63:0];
 		end
+
+		JX2_GR_PC:
+		begin
+			tValRuA=0;
+			tValRuA[63:0] = { UV16_00, regValPc[47:1],
+				regValPc[0] &tEnablePcLsb };
+			tValRuZz=1;
+		end
+
+`ifdef jx2_enable_riscv
+		JX2_GR_BPC:
+		begin
+//			$display("RegGPR: Debug BPC=%X PC=%X",
+//				regValBPc, regValPc);
+		
+			tValRuA=0;
+			tValRuA[63:0] = { UV16_00, regValBPc };
+			tValRuZz=1;
+		end
+`endif
 
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
@@ -1256,7 +1285,12 @@ begin
 `endif
 
 		default: begin
-			$display("RegGPR+6R3W: tValRuA, Bad ID %X", regIdRu);
+			if(regIdBUCmd!=0)
+			begin
+				$display("RegGPR+6R3W: tValRuA, Bad ID %X %X/%X",
+					regIdRu,
+					regIdBUCmd, regIdBUIxt);
+			end
 			tValRuA=UVGPRV_00;
 			tValRuZz=1;
 		end
@@ -1332,7 +1366,11 @@ begin
 `endif
 
 		default: begin
-			$display("RegGPR+6R3W: tValRvA, Bad ID %X", regIdRv);
+			if(regIdBUCmd!=0)
+			begin
+				$display("RegGPR+6R3W: tValRvA, Bad ID %X %X/%X", regIdRv,
+					regIdBUCmd, regIdBUIxt);
+			end
 			tValRvA=UVGPRV_00;
 			tValRvZz=1;
 		end
@@ -1393,7 +1431,10 @@ begin
 		end
 `endif
 		default: begin
-			$display("RegGPR+6R3W: tValRxA, Bad ID %X", regIdRx);
+			$display("RegGPR+6R3W: tValRxA, Bad ID %X A=%X/%X C=%X/%X",
+				regIdRx,
+				regIdUCmd, regIdUIxt,
+				regIdCUCmd, regIdCUIxt);
 		 	tValRxA=UVGPRV_00;
 		 end
 	endcase
@@ -1520,7 +1561,10 @@ begin
 `endif
 
 		default: begin
-			$display("RegGPR+6R3W: tValRyA, Bad ID %X", regIdRy);
+			$display("RegGPR+6R3W: tValRyA, Bad ID %X A=%X/%X C=%X/%X",
+				regIdRy,
+				regIdUCmd, regIdUIxt,
+				regIdCUCmd, regIdCUIxt);
 			tValRyA=UVGPRV_00;
 			tValRyZz=1;
 		end
