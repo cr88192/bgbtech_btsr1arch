@@ -802,7 +802,7 @@ int BJX2_DecodeOpcodePostFixup(BJX2_Context *ctx, BJX2_Opcode *op)
 	}
 
 //	if(!op->Run)
-	if(!op->Run || !op->opn)
+	if(!op->Run || (!op->opn && !op->opn2))
 	{
 		if(1)
 		{
@@ -842,6 +842,9 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 		BJX2_MemGetWord(ctx, addr+8);
 		BJX2_MemGetWord(ctx, addr+10);
 	}
+
+	if(ctx->status)
+		return(0);
 
 	op->opn=opw;
 	op->pc=addr;

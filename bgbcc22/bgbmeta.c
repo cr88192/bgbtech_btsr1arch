@@ -1469,6 +1469,8 @@ int BGBCC_LoadCSourcesCCXL(
 				buf=bgbcc_loadfile2(tb, &sz);
 				if(buf)
 				{
+					if(ctx->verbose)
+						{ printf("added RIL: %s\n", tb); }
 					BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
 					if(ctx->n_error)
 						break;
@@ -1479,6 +1481,8 @@ int BGBCC_LoadCSourcesCCXL(
 				buf=bgbcc_loadfile2(tb, &sz);
 				if(buf)
 				{
+					if(ctx->verbose)
+						{ printf("added FRB: %s\n", tb); }
 					BGBCC_FR2E_LoadBufferFRB(ctx, buf, sz);
 					if(ctx->n_error)
 						break;
@@ -1490,6 +1494,8 @@ int BGBCC_LoadCSourcesCCXL(
 			buf=bgbcc_loadfile2(tb, &sz);
 			if(buf)
 			{
+				if(ctx->verbose)
+					{ printf("added RIL: %s\n", tb); }
 				BGBCC_CCXLR3_LoadBufferRIL(ctx, buf, sz);
 				if(ctx->n_error)
 					break;
@@ -1500,6 +1506,8 @@ int BGBCC_LoadCSourcesCCXL(
 			buf=bgbcc_loadfile2(tb, &sz);
 			if(buf)
 			{
+				if(ctx->verbose)
+					{ printf("added FRB: %s\n", tb); }
 				BGBCC_FR2E_LoadBufferFRB(ctx, buf, sz);
 				if(ctx->n_error)
 					break;
@@ -1509,7 +1517,11 @@ int BGBCC_LoadCSourcesCCXL(
 			sprintf(tb, "%s.dll", names[i]+2);
 			buf=bgbcc_loadfile2(tb, &sz);
 			if(buf)
-				{ BGBCC_CCXL_LoadBufferDLL(ctx, buf, sz); continue; }
+			{
+				if(ctx->verbose)
+					{ printf("added DLL: %s\n", tb); }
+				BGBCC_CCXL_LoadBufferDLL(ctx, buf, sz); continue;
+			}
 
 			ctx->n_error++;
 			printf("BGBCC_LoadCSourcesCCXL: Can't Find Library %s\n", names[i]);

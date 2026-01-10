@@ -3632,6 +3632,67 @@ int BGBCC_JX2_EmitBAlign(BGBCC_JX2_Context *ctx, int al)
 	return(1);
 }
 
+int BGBCC_JX2_EmitBAlignDWordVal(BGBCC_JX2_Context *ctx, int al, u32 val)
+{
+	int i, j, k;
+	
+	if(al<=0)
+		return(0);
+	
+	i=BGBCC_JX2_EmitGetOffs(ctx);
+	if(i&3)
+	{
+		BGBCC_JX2_EmitBAlign(ctx, 4);
+		i=BGBCC_JX2_EmitGetOffs(ctx);
+	}
+
+	if(!(i&(al-1)))
+		return(0);
+	j=al-(i&(al-1));
+
+	for(k=0; k<j; k+=4)
+	{
+		BGBCC_JX2_EmitDWord(ctx, val);
+	}
+	return(1);
+}
+
+
+int BGBCC_JX2_EmitDoFlushPatchZone(BGBCC_JX2_Context *ctx)
+{
+	int ce;
+	int i, j, k;
+	
+	if(ctx->nsz_patchzone<=0)
+		return(0);
+	
+	ce=BGBCC_JX2_EmitGetOffs(ctx);
+	BGBCC_JX2_EmitBAlignDWordVal(ctx, 16, 0x00000067);
+	for(i=0; i<ctx->nsz_patchzone; i++)
+	{
+		BGBCC_JX2_EmitDWord(ctx, 0x00000067);
+		BGBCC_JX2_EmitDWord(ctx, 0x00000067);
+		BGBCC_JX2_EmitDWord(ctx, 0x00000067);
+		BGBCC_JX2_EmitDWord(ctx, 0x00000067);
+	}
+	ctx->ref_patchzone=ce;
+	ctx->nsz_patchzone=0;
+	return(1);
+}
+
+int BGBCC_JX2_EmitCheckFlushPatchZone(BGBCC_JX2_Context *ctx)
+{
+	int ce;
+	ce=BGBCC_JX2_EmitGetOffs(ctx);
+	if((ctx->nsz_patchzone>=4096) ||
+		((ce-ctx->ref_patchzone)>=524288))
+	{
+		BGBCC_JX2_EmitDoFlushPatchZone(ctx);
+		return(1);
+	}
+	return(0);
+}
+
 byte *BGBCC_JX2_EmitGetPosForOffs(BGBCC_JX2_Context *ctx, int ofs)
 {
 	return(ctx->sec_buf[ctx->sec]+ofs);

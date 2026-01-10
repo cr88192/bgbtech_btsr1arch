@@ -528,6 +528,9 @@ int stat_size_epilog;
 int stat_size_body;
 int stat_size_cnt;
 
+int ref_patchzone;
+int nsz_patchzone;
+
 int ofs_curbdl;
 
 int sim_voffs;		//est' offset between real PC and sim PC

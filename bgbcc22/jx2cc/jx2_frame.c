@@ -897,7 +897,8 @@ int BGBCC_JX2C_EmitLoadBRegIRegScReg(
 //		BGBCC_JX2C_EmitRegIsGpReg(ctx, sctx, dreg) &&
 		(BGBCC_JX2C_EmitRegIsExtGpReg(ctx, sctx, dreg) ||
 		BGBCC_JX2C_EmitRegIsFpReg(ctx, sctx, dreg) ||
-		BGBCC_JX2C_EmitRegIsDpReg(ctx, sctx, dreg)) &&
+		BGBCC_JX2C_EmitRegIsDpReg(ctx, sctx, dreg) ||
+		BGBCC_JX2RV_CheckRegIsFPR(sctx, dreg)) &&
 //		BGBCC_JX2_EmitCheckRegExtGPR(sctx, dreg) &&
 		BGBCC_JX2C_CheckNmidScaleMatch(ctx, sctx, nmid, sc))
 	{
@@ -975,7 +976,8 @@ int BGBCC_JX2C_EmitLoadBRegIRegScReg(
 		dreg2=BGBCC_JX2C_MapLpRegToQgr(ctx, sctx, dreg);
 
 #if 1
-		if((nmid==BGBCC_SH_NMID_MOVX2) && !(dreg2&1))
+//		if((nmid==BGBCC_SH_NMID_MOVX2) && !(dreg2&1))
+		if((nmid==BGBCC_SH_NMID_MOVX2) && !(dreg2&1) && ((dreg2&63)<32))
 		{
 			tr0=dreg2;
 			BGBCC_JX2_EmitOpRegImmReg(sctx,

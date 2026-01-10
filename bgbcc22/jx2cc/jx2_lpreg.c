@@ -182,10 +182,14 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 		if((excl>>i)&3)
 			continue;
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+0, 0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+0, 3))
 			continue;
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+1, 0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i+1, 3))
 			continue;
+
+//		creg=sctx->qcachereg[i+1];
+//		if(creg&1)
+//			continue;
 
 #if 1
 		ulj=(sctx->regalc_save)>>i;
@@ -251,9 +255,9 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 			if((excl>>i1)&3)
 				continue;
 
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 3))
 				continue;
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 3))
 				continue;
 
 			if(!BGBCC_JX2C_EmitCheckValidLpRegisterIndex(ctx, sctx,
@@ -331,6 +335,17 @@ int BGBCC_JX2C_EmitTryGetLpRegister(
 				!BGBCC_JX2C_CheckVRegIsZRegP(ctx, sctx, reg1))
 			{
 				bi=-1;
+			}
+
+			if((sctx->emit_riscv&0x11) && !(sctx->emit_riscv&0x22))
+			{
+				if(	(nsv>=1) && (bi>=0) &&
+					(sctx->is_simpass&32) &&
+					((sctx->qcachereg[bi+1]&63)<32))
+				{
+					/* Alloc another, if in an RV GPR */
+					bi=-1;
+				}
 			}
 
 			if(reg1.val==CCXL_REGID_REG_DZ)
@@ -493,9 +508,9 @@ int BGBCC_JX2C_EmitGetLpRegister(
 		if(excl&(3ULL<<i1))
 			continue;
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 3))
 			continue;
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 3))
 			continue;
 
 		if((sctx->vsp_rsv>0) && (i1<sctx->vsp_rsv))
@@ -569,9 +584,9 @@ int BGBCC_JX2C_EmitGetLpRegister(
 			if(excl&(3ULL<<i1))
 				continue;
 
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 3))
 				continue;
-			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
+			if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 3))
 				continue;
 
 //			if(!(sctx->regalc_save>>i1))
@@ -626,6 +641,17 @@ int BGBCC_JX2C_EmitGetLpRegister(
 			bi=-1;
 		}
 		
+		if((sctx->emit_riscv&0x11) && !(sctx->emit_riscv&0x22))
+		{
+			if(	(nsv>=1) && (bi>=0) &&
+				(sctx->is_simpass&32) &&
+				((sctx->qcachereg[bi+1]&63)<32))
+			{
+				/* Alloc another, if in an RV GPR */
+				bi=-1;
+			}
+		}
+
 		if(!sctx->is_simpass &&
 			!BGBCC_JX2C_EmitCheckSavedLpRegIndex(ctx, sctx, bi))
 				{ BGBCC_DBGBREAK }
@@ -686,9 +712,9 @@ int BGBCC_JX2C_EmitGetLpRegister(
 		if(excl&(3ULL<<i1))
 			continue;
 
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+0, 3))
 			continue;
-		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 0))
+		if(BGBCC_JX2C_CheckRegisterIndexExcludeP(ctx, sctx, i1+1, 3))
 			continue;
 
 		if((sctx->vsp_rsv>0) && (i1<sctx->vsp_rsv))

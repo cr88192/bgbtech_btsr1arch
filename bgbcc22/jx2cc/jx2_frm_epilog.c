@@ -255,7 +255,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 		tsz=BGBCC_CCXL_TypeGetLogicalSize(ctx, tty);
 
-		if(sctx->has_xgpr&2)
+		if((sctx->has_xgpr&2) && !(sctx->emit_riscv&1))
 		{
 			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx,
 				BGBCC_SH_REG_RQ2);
@@ -303,6 +303,7 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 		}else
 		{
+			BGBCC_DBGBREAK
 #if 0
 //			BGBCC_JX2C_ScratchSafeStompReg(ctx, sctx, BGBCC_SH_REG_R2);
 //			BGBCC_JX2C_EmitLoadFrameOfsReg(ctx, sctx, 0, k, BGBCC_SH_REG_R2);

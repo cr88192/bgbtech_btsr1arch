@@ -655,8 +655,15 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->has_rvzba|=32;	//Branch-with-Immediate
 		}
 
-		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvsimd"))
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvsimd") ||
+			BGBCC_CCXL_CheckForOptStr(ctx, "rvsimd128"))
 //		if(1)
+		{
+//			shctx->has_simdx2|=1;
+			shctx->has_simdx2|=3;
+		}
+		
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvsimd64"))
 		{
 			shctx->has_simdx2|=1;
 		}
@@ -666,6 +673,19 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		if(ctx->sub_arch==BGBCC_ARCH_BJX2_XRVC)
 			{ shctx->is_fixed32&=~3; }
 		
+		if((shctx->has_jumbo&2) &&
+			(shctx->is_fixed32&1) &&
+//			!BGBCC_CCXL_CheckForOptStr(ctx, "rvabi"))
+			BGBCC_CCXL_CheckForOptStr(ctx, "x3nabi"))
+		{
+			/* XG3 Native ABI;
+			   Increase to 16 register arguments
+			   F4..F7 become Callee Save.
+			*/
+			shctx->has_xgpr|=3;
+//			shctx->has_xgpr|=2;
+		}
+
 		if(!(shctx->is_fixed32&1))
 		{
 			/* Disable WEXifier for RV-C
@@ -710,6 +730,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_pushx2=0;
 		shctx->has_simdx2=0;
 
+		shctx->has_simdx2|=3;
+
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "predops"))
 			{ ctx->arch_has_predops|=1; }
 
@@ -739,7 +761,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->is_fixed32|=0x40;
 		}
 
-		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3nabi"))
+//		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3nabi"))
+		if(!BGBCC_CCXL_CheckForOptStr(ctx, "rvabi"))
 		{
 			/* XG3 Native ABI;
 			   Increase to 16 register arguments
@@ -854,8 +877,10 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	ctx->arch_has_imac=shctx->has_dmacl;
 	ctx->arch_has_fmac=0;
 
-	if(shctx->has_pushx2 || shctx->has_simdx2)
-		shctx->abi_evenonly = 1;
+//	if(shctx->has_pushx2 || shctx->has_simdx2)
+//		shctx->abi_evenonly = 1;
+
+	shctx->abi_evenonly |= 1;
 
 	if(ctx->pel_cmpr==252)
 		ctx->pel_cmpr=255;
@@ -3559,6 +3584,8 @@ ccxl_status BGBCC_JX2C_BuildFunction(BGBCC_TransState *ctx,
 		sctx->stat_size_body+=sctx->fnsz_bod;
 		sctx->stat_size_cnt++;
 	}
+
+	BGBCC_JX2_EmitCheckFlushPatchZone(sctx);
 
 	return(0);
 }
@@ -8437,6 +8464,9 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	}
 
 	BGBCC_JX2_SetSectionName(sctx, ".text");
+	BGBCC_JX2_EmitDoFlushPatchZone(sctx);
+
+	BGBCC_JX2_SetSectionName(sctx, ".text");
 	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
 	BGBCC_JX2_EmitOpNone(sctx, BGBCC_SH_NMID_NOP);
@@ -8689,6 +8719,9 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	}
 
 	BGBCC_JX2C_BuildPrestartInit(ctx);
+
+	BGBCC_JX2_SetSectionName(sctx, ".text");
+	BGBCC_JX2_EmitDoFlushPatchZone(sctx);
 
 	BGBCC_JX2_SetSectionName(sctx, ".text");
 	for(j=0; j<8; j++)

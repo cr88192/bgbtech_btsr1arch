@@ -769,6 +769,11 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 		op->imm=imm12l;
 		switch((opw>>12)&7)
 		{
+		case 1:
+			op->nmid=BJX2_NMID_MOVW;
+			op->fmid=BJX2_FMID_LDREGDISP1REG;
+			op->Run=BJX2_Op_MOVW_LdRegDisp1Reg;
+			break;
 		case 2:
 			op->nmid=BJX2_NMID_MOVL;
 			op->fmid=BJX2_FMID_LDREGDISP1REG;
@@ -798,6 +803,11 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 
 		switch((opw>>12)&7)
 		{
+		case 1:
+			op->nmid=BJX2_NMID_MOVW;
+			op->fmid=BJX2_FMID_REGSTREGDISP1;
+			op->Run=BJX2_Op_MOVW_RegStRegDisp1;
+			break;
 		case 2:
 			op->nmid=BJX2_NMID_MOVL;
 			op->fmid=BJX2_FMID_REGSTREGDISP1;
@@ -1729,6 +1739,31 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->Run=BJX2_Op_FSGNJX_GRegReg;
 				op->fl|=BJX2_OPFL_NOWEX;
 				break;
+
+			case 4:
+				op->nmid=BJX2_NMID_MOVLD;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_MOVLD_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				break;
+			case 5:
+				op->nmid=BJX2_NMID_MOVLHD;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_MOVLHD_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				break;
+			case 6:
+				op->nmid=BJX2_NMID_MOVHLD;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_MOVHLD_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				break;
+			case 7:
+				op->nmid=BJX2_NMID_MOVHD;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_MOVHD_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				break;
 			}
 			break;
 
@@ -2607,7 +2642,8 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_SHLR;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_SHLR_RegRegReg;
-				if(jbits&0x01000000U)
+//				if(jbits&0x01000000U)
+				if(do_imm_ro)
 				{
 					op->imm=
 						((jbits<<0)&0x003FFF) |
@@ -2629,7 +2665,8 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_SHAR;
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_SHAR_RegRegReg;
-				if(jbits&0x01000000U)
+//				if(jbits&0x01000000U)
+				if(do_imm_ro)
 				{
 					op->imm=
 						((jbits<<0)&0x003FFF) |

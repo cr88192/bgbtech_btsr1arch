@@ -1518,7 +1518,8 @@ int BGBCC_CCXL_CheckFuncNameInstrinsicP(BGBCC_TransState *ctx, char *name)
 		}
 	}
 
-	if(BGBCC_CCXL_QueryTargetFeature(ctx, "has_simdx2"))
+	if(BGBCC_CCXL_QueryTargetFeature(ctx, "has_simdx2") &&
+		!BGBCC_CCXL_QueryTargetFeature(ctx, "riscv"))
 	{
 		if((!strcmp(name, "__int64_paddw") ||
 			!strcmp(name, "__int64_paddl") ||

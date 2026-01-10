@@ -87,6 +87,12 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 					fl|=BGBCC_WXSPFL_3STAGE;
 				}
 			}
+			
+			if((opw>>28)>=0x8)
+			{
+				fl|=BGBCC_WXSPFL_FIXNOMOVE;
+			}
+			
 			break;
 
 #if 1
@@ -1127,6 +1133,9 @@ int BGBCC_JX2_CheckOpsRv_SequenceOnlyB(
 	int opw1v, opw3v;
 	int ret1, ret2;
 
+	if(!opw1 && !opw2)
+		return(0);
+
 	if(!opw1 || !opw2)
 		return(1);
 
@@ -1623,7 +1632,7 @@ int BGBCC_JX2_CheckOpsRv_InferInterlockCost(
 	u32 opwn7, u32 opwn5,
 	u32 opwn3, u32 opwn1,
 	u32 opw1, u32 opw3, u32 opw5, u32 opw7,
-	u32 opw9, u32 opw11)
+	u32 opw9, u32 opw11, u32 opw13, u32 opw15)
 {
 	int cfn1, cfn3, cfn5, cfn7, cf1, cf2, cf3, cf4;
 	int cn7, cn5, cn3, cn1, c1, c2, c3, c4, c5;
@@ -1644,10 +1653,15 @@ int BGBCC_JX2_CheckOpsRv_InferInterlockCost(
 		opw3, opw5, opw7, opw9, opw11, 0);
 #endif
 
-	cf3=BGBCC_JX2_InferOpsRv_Interlock(sctx,
-		opw5, opw7, opw9, 0);
-	cf4=BGBCC_JX2_InferOpsRv_Interlock(sctx,
-		opw7, opw9, opw11, 0);
+//	cf3=BGBCC_JX2_InferOpsRv_Interlock(sctx,
+//		opw5, opw7, opw9, 0);
+//	cf4=BGBCC_JX2_InferOpsRv_Interlock(sctx,
+//		opw7, opw9, opw11, 0);
+
+	cf3=BGBCC_JX2_InferOpsRv_InterlockEx2(sctx,
+		opw5, opw7, opw9, opw11, opw13, 0);
+	cf4=BGBCC_JX2_InferOpsRv_InterlockEx2(sctx,
+		opw7, opw9, opw11, opw13, opw15, 0);
 
 	cn7=1;	cn5=1;
 	cn3=1;	cn1=1;
@@ -1816,6 +1830,9 @@ int BGBCC_JX2_CheckOpsRv_InferInterlockCost(
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw5, opw7))		c5+=2;
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw7, opw9))		c5+=2;
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw9, opw11))	c5+=2;
+	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw11, opw13))	c5+=2;
+	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw13, opw15))	c5+=2;
+
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opwn7, opwn3))	c5+=1;
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opwn5, opwn1))	c5+=1;
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opwn3, opw1))	c5+=1;
@@ -1824,6 +1841,8 @@ int BGBCC_JX2_CheckOpsRv_InferInterlockCost(
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw3, opw7))		c5+=1;
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw5, opw9))		c5+=1;
 	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw7, opw11))	c5+=1;
+	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw9, opw13))	c5+=1;
+	if(BGBCC_JX2_CheckOpsRv_SequenceOnly(sctx, opw11, opw15))	c5+=1;
 	
 	c5>>=1;
 	
@@ -1882,10 +1901,13 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 	BGBCC_JX2_Context *sctx,
 	int spos, int epos)
 {
-	u32 opw0, opw1, opw2, opw3, opw4, opw5, opwn1, opwn2, opwn3, opwn4;
+	u32 opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7;
+	u32 opwn1, opwn2, opwn3, opwn4;
 	int imv0, imv1, imv2, imv3, imv4, imv5, imvn1, imvn2;
 	int dp, cp, nswap, nadvl;
 	int i, j, k;
+
+//	return(0);
 
 	nswap=0;	nadvl=256;
 	cp=spos;
@@ -1904,16 +1926,18 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 			continue;
 		}
 
+		opwn4=BGBCC_JX2_EmitGetOffsDWord(sctx, cp-16);
+		opwn3=BGBCC_JX2_EmitGetOffsDWord(sctx, cp-12);
+		opwn2=BGBCC_JX2_EmitGetOffsDWord(sctx, cp- 8);
+		opwn1=BGBCC_JX2_EmitGetOffsDWord(sctx, cp- 4);
 		opw0 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+ 0);
 		opw1 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+ 4);
 		opw2 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+ 8);
 		opw3 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+12);
 		opw4 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+16);
 		opw5 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+20);
-		opwn1=BGBCC_JX2_EmitGetOffsDWord(sctx, cp- 4);
-		opwn2=BGBCC_JX2_EmitGetOffsDWord(sctx, cp- 8);
-		opwn3=BGBCC_JX2_EmitGetOffsDWord(sctx, cp-12);
-		opwn4=BGBCC_JX2_EmitGetOffsDWord(sctx, cp-16);
+		opw6 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+24);
+		opw7 =BGBCC_JX2_EmitGetOffsDWord(sctx, cp+28);
 
 		if(!(sctx->emit_riscv&0x22))
 		{
@@ -1927,6 +1951,8 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		if((cp+12)>=epos)	opw3=0;
 		if((cp+16)>=epos)	opw4=0;
 		if((cp+20)>=epos)	opw5=0;
+		if((cp+24)>=epos)	opw6=0;
+		if((cp+28)>=epos)	opw7=0;
 
 		imv0=(BGBCC_JX2_CheckOpsRv_Immovable(sctx, opw0)>0);
 		imv1=(BGBCC_JX2_CheckOpsRv_Immovable(sctx, opw1)>0);
@@ -2003,10 +2029,10 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		{
 			if(	BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw1, opw0, opw2, opw3, opw4, opw5) <
+					opw1, opw0, opw2, opw3, opw4, opw5, opw6, opw7) <
 				BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw0, opw1, opw2, opw3, opw4, opw5))
+					opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7))
 			{
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 0, opw1);
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 4, opw0);
@@ -2023,10 +2049,10 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		{
 			if(	BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw1, opw2, opw0, opw3, opw4, opw5) <
+					opw1, opw2, opw0, opw3, opw4, opw5, opw6, opw7) <
 				BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw0, opw1, opw2, opw3, opw4, opw5))
+					opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7))
 			{
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 0, opw1);
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 4, opw2);
@@ -2044,10 +2070,10 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		{
 			if(	BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw2, opw0, opw1, opw3, opw4, opw5) <
+					opw2, opw0, opw1, opw3, opw4, opw5, opw6, opw7) <
 				BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw0, opw1, opw2, opw3, opw4, opw5))
+					opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7))
 			{
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 0, opw2);
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 4, opw0);
@@ -2067,10 +2093,10 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		{
 			if(	BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw1, opw2, opw3, opw0, opw4, opw5) <
+					opw1, opw2, opw3, opw0, opw4, opw5, opw6, opw7) <
 				BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw0, opw1, opw2, opw3, opw4, opw5))
+					opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7))
 			{
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 0, opw1);
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 4, opw2);
@@ -2091,10 +2117,10 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		{
 			if(	BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw3, opw0, opw1, opw2, opw4, opw5) <
+					opw3, opw0, opw1, opw2, opw4, opw5, opw6, opw7) <
 				BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw0, opw1, opw2, opw3, opw4, opw5))
+					opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7))
 			{
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 0, opw3);
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 4, opw0);
@@ -2116,10 +2142,10 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		{
 			if(	BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw2, opw1, opw0, opw3, opw4, opw5) <
+					opw2, opw1, opw0, opw3, opw4, opw5, opw6, opw7) <
 				BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw0, opw1, opw2, opw3, opw4, opw5))
+					opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7))
 			{
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 0, opw2);
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 4, opw1);
@@ -2141,10 +2167,10 @@ ccxl_status BGBCC_JX2_OptX3Interlock_DoSwaps(
 		{
 			if(	BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw3, opw1, opw2, opw0, opw4, opw5) <
+					opw3, opw1, opw2, opw0, opw4, opw5, opw6, opw7) <
 				BGBCC_JX2_CheckOpsRv_InferInterlockCost(sctx,
 					opwn4, opwn3, opwn2, opwn1,
-					opw0, opw1, opw2, opw3, opw4, opw5))
+					opw0, opw1, opw2, opw3, opw4, opw5, opw6, opw7))
 			{
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 0, opw3);
 				BGBCC_JX2_EmitSetOffsDWord(sctx, cp+ 4, opw1);

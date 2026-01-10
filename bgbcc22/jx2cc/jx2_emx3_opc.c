@@ -915,21 +915,27 @@ int BGBCC_JX2X3_TryEmitOpRegRegReg(
 		break;
 
 	case BGBCC_SH_NMID_PADDF:
+	case BGBCC_SH_NMID_PADDFA:
 		opw1=0x50002002U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
 	case BGBCC_SH_NMID_PADDFX:
+	case BGBCC_SH_NMID_PADDFAX:
 		opw1=0x50002022U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
 	case BGBCC_SH_NMID_PSUBF:
+	case BGBCC_SH_NMID_PSUBFA:
 		opw1=0x60002002U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
 	case BGBCC_SH_NMID_PSUBFX:
+	case BGBCC_SH_NMID_PSUBFAX:
 		opw1=0x60002022U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
 	case BGBCC_SH_NMID_PMULF:
+	case BGBCC_SH_NMID_PMULFA:
 		opw1=0x70002002U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
 	case BGBCC_SH_NMID_PMULFX:
+	case BGBCC_SH_NMID_PMULFAX:
 		opw1=0x70002022U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
 #endif
@@ -1408,6 +1414,13 @@ int BGBCC_JX2X3_TryEmitOpRegReg(
 		nm1=BGBCC_SH_NMID_ADDSL;
 	if(nmid==BGBCC_SH_NMID_EXTUL)
 		nm1=BGBCC_SH_NMID_ADDUL;
+
+	if(	(nmid==BGBCC_SH_NMID_XMOV) ||
+		(nmid==BGBCC_SH_NMID_MOVX2))
+	{
+		if(ctx->has_alux&1)
+			nm1=BGBCC_SH_NMID_ADDX;
+	}
 	
 	if(nm1>0)
 	{
@@ -1458,9 +1471,9 @@ int BGBCC_JX2X3_TryEmitOpRegReg(
 	case BGBCC_SH_NMID_FLDCF:
 		opw1=0xD0001002U|((rm&63)<<16)|((rn&63)<<6);
 		break;
-//	case BGBCC_SH_NMID_FLDCHF:
-//		opw1=0xD0401002U|((rm&63)<<16)|((rn&63)<<6);
-//		break;
+	case BGBCC_SH_NMID_FLDCFH:
+		opw1=0xD0401002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
 	case BGBCC_SH_NMID_FLDCI:
 		opw1=0xD0801002U|((rm&63)<<16)|((rn&63)<<6);
 		break;
@@ -1475,9 +1488,9 @@ int BGBCC_JX2X3_TryEmitOpRegReg(
 	case BGBCC_SH_NMID_FSTCF:
 		opw1=0xD1001002U|((rm&63)<<16)|((rn&63)<<6);
 		break;
-//	case BGBCC_SH_NMID_FSTCHF:
-//		opw1=0xD1401002U|((rm&63)<<16)|((rn&63)<<6);
-//		break;
+	case BGBCC_SH_NMID_FSTCFH:
+		opw1=0xD1401002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
 	case BGBCC_SH_NMID_FSTCI:
 		opw1=0xD1801002U|((rm&63)<<16)|((rn&63)<<6);
 		break;
@@ -1491,6 +1504,78 @@ int BGBCC_JX2X3_TryEmitOpRegReg(
 	case BGBCC_SH_NMID_FABS:
 		opw1=0xD2401002U|((rm&63)<<16)|((rn&63)<<6);
 		break;
+
+//	case BGBCC_SH_NMID_FLDCIU:
+//		opw1=0xD3C01002U|((rm&63)<<16)|((rn&63)<<6);
+//		break;
+//	case BGBCC_SH_NMID_FLDCXIU:
+//		opw1=0xD3C01022U|((rm&63)<<16)|((rn&63)<<6);
+//		break;
+
+	case BGBCC_SH_NMID_RGB5SHR1:
+		opw1=0xE0001002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_PMORTL:
+		opw1=0xE0401002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_PMORTQ:
+		opw1=0xE0401022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_RGB5PCK32:
+		opw1=0xE0801002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_RGB5PCK64:
+		opw1=0xE0801022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_RGB5UPCK32:
+		opw1=0xE0C01002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_RGB5UPCK64:
+		opw1=0xE0C01022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_RGB32PCK64:
+		opw1=0xE1001022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_RGB32UPCK64:
+		opw1=0xE1401022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_PLDCM8SH:
+		opw1=0xE2001002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_PLDCM8UH:
+		opw1=0xE2001022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_PSTCM8SH:
+		opw1=0xE2801002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_PSTCM8UH:
+		opw1=0xE2801022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_PLDCH:
+		opw1=0xE3001002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+	case BGBCC_SH_NMID_PLDCHH:
+		opw1=0xE3001022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+//	case BGBCC_SH_NMID_PLDCEH:
+//		opw1=0xE3401002U|((rm&63)<<16)|((rn&63)<<6);
+//		break;
+	case BGBCC_SH_NMID_PLDCEHH:
+		opw1=0xE3401022U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_PSTCH:
+		opw1=0xE3801002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+//	case BGBCC_SH_NMID_PSTCHH:
+//		opw1=0xE3801022U|((rm&63)<<16)|((rn&63)<<6);
+//		break;
 
 	case BGBCC_SH_NMID_BSWAPUL:
 		opw1=0xA3C01002U|((rm&63)<<16)|((rn&63)<<6);
@@ -1891,7 +1976,7 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rm, s64 imm, int rn)
 {
 	s64 opw1, opw2, opw3;
-	int isimm10u, isimm10n, isimm10s, isimm8s, isimm6u, isimm6s;
+	int isimm10u, isimm10n, isimm10s, isimm8s, isimm8u, isimm6u, isimm6s;
 	int isimm16s, isimm17s;
 	int isimm12rv, isimm9u;
 
@@ -1972,6 +2057,7 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 	isimm10s=0;
 
 	isimm8s=0;
+	isimm8u=0;
 	isimm6u=0;
 	isimm6s=0;
 	isimm16s=0;
@@ -1993,6 +2079,9 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 		isimm16s=1;
 	if((((s32)(imm<<15))>>15)==imm)
 		isimm17s=1;
+
+	if((imm&255)==imm)
+		isimm8u=1;
 
 
 	switch(nmid)
@@ -2031,6 +2120,13 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 					opw1=0x00001012U|((rn&63)<<6)|((imm&0xFFFF)<<16);
 					break;
 				}
+			}
+			
+			if((((s32)(imm&(~4095)))==imm) && ((rn&31)==(rn&63)))
+			{
+				/* happens to map to RV LUI encoding. */
+				opw1=0x00000037|((rn&31)<<7)|(imm&0xFFFFF000ULL);
+				break;
 			}
 		}
 
@@ -2162,14 +2258,14 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 		break;
 
 	case BGBCC_SH_NMID_PSHUFB:
-		if(isimm8s)
+		if(isimm8s || isimm8u)
 		{
 			opw1=0x4000800AU|((imm&255)<<22)|((rm&63)<<16)|((rn&63)<<6);
 			break;
 		}
 		break;
 	case BGBCC_SH_NMID_PSHUFW:
-		if(isimm8s)
+		if(isimm8s || isimm8u)
 		{
 			opw1=0x4000802AU|((imm&255)<<22)|((rm&63)<<16)|((rn&63)<<6);
 			break;
@@ -2394,6 +2490,10 @@ int BGBCC_JX2X3_TryEmitOpLdReg2Reg(
 		opw1=0xF0000002U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
 
+	case BGBCC_SH_NMID_MOVX2:
+		opw1=0xC0004002U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
 	case BGBCC_SH_NMID_LDTEX:
 		opw1=0xB0000022U|((ro&63)<<22)|((rm&63)<<16)|((rn&63)<<6);
 		break;
@@ -2471,6 +2571,11 @@ int BGBCC_JX2X3_TryEmitOpRegStReg2(
 	case BGBCC_SH_NMID_MOVQ:
 		opw1=0x70000002U|((ro&63)<<22)|((rn&63)<<16)|((rm&63)<<6);
 		break;
+
+	case BGBCC_SH_NMID_MOVX2:
+		opw1=0x40004002U|((ro&63)<<22)|((rn&63)<<16)|((rm&63)<<6);
+		break;
+
 
 	case BGBCC_SH_NMID_FMOVH:
 		opw1=0x70004002U|((ro&63)<<22)|((rn&63)<<16)|((rm&63)<<6);

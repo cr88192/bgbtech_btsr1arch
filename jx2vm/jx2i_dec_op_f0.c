@@ -8950,6 +8950,14 @@ int BJX2_DecodeOpcode_DecXG2(BJX2_Context *ctx,
 		BJX2_RepackOpcode_DecXG3toXG2(opw1, opw2, &opw1, &opw2);
 		opwb=(opw1a&0xFFFF)|(opw2a<<16);
 		
+		if(!opw1a)
+		{
+			BJX2_DbgPrintf(ctx,
+				"BJX2_DecodeOpcode_DecXG2: %04X.%04X -> %04X_%04X\n",
+				opw2a, opw1a, opw1, opw2);
+				
+		}
+		
 		if((opw1&0x1A00)==0x0A00)
 		{
 			op1=BJX2_ContextAllocOpcode(ctx);

@@ -282,7 +282,8 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 			}
 		}
 
-		if(ctx->emit_riscv&0x22)
+//		if(ctx->emit_riscv&0x22)
+		if(ctx->emit_riscv&0x33)
 		{
 			if(!str[2])
 			{
@@ -445,8 +446,8 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 
 					if(ctx->emit_riscv&0x22)
 					{
-						if((i>=14) && (i<=15))
-							return(BGBCC_SH_REG_RQ2+(i-14));
+//						if((i>=14) && (i<=15))
+//							return(BGBCC_SH_REG_RQ2+(i-14));
 					}
 					
 					if((i>=0) && (i<=31))
@@ -1632,6 +1633,8 @@ int mfl;
 
 
 {"movd.l",	BGBCC_SH_NMID_MOVDL},
+{"movn.l",	BGBCC_SH_NMID_MOVDL},
+
 {"movd",	BGBCC_SH_NMID_MOVD},
 {"movhd",	BGBCC_SH_NMID_MOVHD},
 {"movld",	BGBCC_SH_NMID_MOVLD},
@@ -1937,11 +1940,17 @@ int mfl;
 {"fdiv.d",		BGBCC_SH_NMID_FDIV,		0},
 {"fsqrt.d",		BGBCC_SH_NMID_FSQRT,	0},
 
-{"fadd.s",		BGBCC_SH_NMID_PADDF,	0},
-{"fsub.s",		BGBCC_SH_NMID_PSUBF,	0},
-{"fmul.s",		BGBCC_SH_NMID_PMULF,	0},
-{"fdiv.s",		BGBCC_SH_NMID_PDIVF,	0},
-{"fsqrt.s",		BGBCC_SH_NMID_PSQRTF,	0},
+{"fadd.s",		BGBCC_SH_NMID_FADDF,	0},
+{"fsub.s",		BGBCC_SH_NMID_FSUBF,	0},
+{"fmul.s",		BGBCC_SH_NMID_FMULF,	0},
+{"fdiv.s",		BGBCC_SH_NMID_FDIVF,	0},
+{"fsqrt.s",		BGBCC_SH_NMID_FSQRTF,	0},
+
+{"padd.s",		BGBCC_SH_NMID_PADDF,	0},
+{"psub.s",		BGBCC_SH_NMID_PSUBF,	0},
+{"pmul.s",		BGBCC_SH_NMID_PMULF,	0},
+{"pdiv.s",		BGBCC_SH_NMID_PDIVF,	0},
+{"psqrt.s",		BGBCC_SH_NMID_PSQRTF,	0},
 
 {"fmin.d",		BGBCC_SH_NMID_FMIN,		0},
 {"fmax.d",		BGBCC_SH_NMID_FMAX,		0},
@@ -2664,7 +2673,25 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 	int i;
 
 	if(!bgbcc_stricmp(sym, "bjx2"))
+	{
+		if(ctx->emit_riscv&0x11)
+			return(0);
 		return(1);
+	}
+	
+	if(!bgbcc_stricmp(sym, "riscv"))
+	{
+		if(ctx->emit_riscv&0x11)
+			return(1);
+		return(0);
+	}
+	
+	if(!bgbcc_stricmp(sym, "xg3"))
+	{
+		if(ctx->emit_riscv&0x22)
+			return(1);
+		return(0);
+	}
 	
 	if((*sym>='0') && *sym<='9')
 	{
@@ -2725,8 +2752,24 @@ int BGBCC_JX2A_ParseCheckFeature(BGBCC_JX2_Context *ctx, char *sym)
 
 	if(!bgbcc_stricmp(sym, "has_movx"))
 		return(ctx->has_pushx2);
+
+	if(!bgbcc_stricmp(sym, "has_simd"))
+	{
+		if(ctx->emit_riscv&0x11)
+		{
+			return(ctx->has_simdx2&1);
+		}
+		return(1);
+	}
+
 	if(!bgbcc_stricmp(sym, "has_simdx2"))
-		return(ctx->has_simdx2);
+	{
+		if(ctx->emit_riscv&0x11)
+		{
+			return(ctx->has_simdx2&2);
+		}
+		return(ctx->has_simdx2&1);
+	}
 
 	if(!bgbcc_stricmp(sym, "has_alux"))
 		return(ctx->has_alux);

@@ -1437,6 +1437,8 @@ int BGBCC_JX2C_ScratchQueryReg(
 			}
 			return(n);
 		}
+
+		return(n);
 	}
 
 	if(!cls ||
@@ -3592,6 +3594,12 @@ int BGBCC_JX2C_EmitRotateLpRegisterIndex(
 //			{ i1=sctx->maxreg_gpr-idx-1; }
 		return(i1);
 	}
+
+	if(sctx->emit_riscv&0x33)
+	{
+		i1=BGBCC_JX2C_EmitRotateRegisterIndex(ctx, sctx, idx, 0x10);
+		return(i1);
+	}
 	
 	m1=sctx->maxreg_gpr;
 	m2=sctx->maxreg_gpr_lf;
@@ -4407,6 +4415,17 @@ int BGBCC_JX2C_EmitTryGetRegister(
 				bi=-1;
 			}
 
+			if((sctx->emit_riscv&0x11) && !(sctx->emit_riscv&0x22))
+			{
+				if(	(nsv>=2) && (bi>=0) && isfpu &&
+					(sctx->is_simpass&32) &&
+					((sctx->qcachereg[bi]&63)<32))
+				{
+					/* Alloc another, if in an RV GPR */
+					bi=-1;
+				}
+			}
+
 			if(reg1.val==CCXL_REGID_REG_DZ)
 				{ BGBCC_DBGBREAK }
 		}
@@ -4811,6 +4830,18 @@ int BGBCC_JX2C_EmitGetRegister(
 		{
 			bi=-1;
 		}
+
+		if((sctx->emit_riscv&0x11) && !(sctx->emit_riscv&0x22))
+		{
+			if(	(nsv>=2) && (bi>=0) && isfpu &&
+				(sctx->is_simpass&32) &&
+				((sctx->qcachereg[bi]&63)<32))
+			{
+				/* Alloc another, if in an RV GPR */
+				bi=-1;
+			}
+		}
+
 		if(reg1.val==CCXL_REGID_REG_DZ)
 			{ BGBCC_DBGBREAK }
 	}
@@ -5570,6 +5601,12 @@ int BGBCC_JX2C_ProbeVRegRejectImm3P(
 	
 	if(k!=li)
 		return(1);
+
+	if((sctx->emit_riscv&1) && !(sctx->emit_riscv&2))
+	{
+		if(k!=(((s32)(k<<20))>>20))
+			return(1);
+	}
 
 	nm1=nm;
 
@@ -6466,8 +6503,11 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 
 		sctx->regs_excl			=0xFFFFFFFF0000003FULL;
 		sctx->regs_excl_tiny	=0xFFFFFFFF0FFC03FFULL;
-		sctx->regs_scratch		=0xF003FCF0F003FC00ULL;
-		sctx->regs_scratch_ts	=0xF003FCF0F003FCC0ULL;
+//		sctx->regs_scratch		=0xF003FCF0F003FC00ULL;
+//		sctx->regs_scratch_ts	=0xF003FCF0F003FCC0ULL;
+		sctx->regs_scratch		=0xF003FC00F003FC00ULL;
+		sctx->regs_scratch_ts	=0xF003FC00F003FCC0ULL;
+
 		sctx->regs_args			=0x0003FC0000F3FC00ULL;
 		sctx->regs_excl_fpu		=0x0000000F0000003FULL;
 
@@ -6477,7 +6517,8 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 			sctx->regs_scratch_ts	&=~0x000000F000000000ULL;
 		}
 
-		if((sctx->emit_riscv&2) && (sctx->has_xgpr&1))
+		if(((sctx->emit_riscv&2) || (sctx->has_jumbo&2)) &&
+			(sctx->has_xgpr&1))
 		{
 			sctx->jcachereg=bgbcc_jx2_jcachereg_xg2rv;
 			sctx->qcachereg=bgbcc_jx2_qcachereg_xg2rv;
