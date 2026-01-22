@@ -377,11 +377,14 @@ int HullF_ClipFace(float *norm,
 	int i, j, k, l;
 
 	//first outside
-	for(i=0; i<num; i++)if(TKRA_Vec3F_NDotProduct(ipts+(i*3), norm)>0)break;
+	for(i=0; i<num; i++)
+		if(TKRA_Vec3F_NDotProduct(ipts+(i*3), norm)>0)
+			break;
 
-	if(i==num)	//nothing to clip
+	if(i>=num)	//nothing to clip
 	{
-		for(i=0; i<num*3; i++)opts[i]=ipts[i];
+		for(i=0; i<num*3; i++)
+			opts[i]=ipts[i];
 		return(num);	//nothing to clip
 	}
 
@@ -403,7 +406,10 @@ int HullF_ClipFace(float *norm,
 		l++;
 
 		k=(j+1)%num;
-		if(TKRA_Vec3F_NDotProduct(ipts+(k*3), norm)>0)break;
+		if(TKRA_Vec3F_NDotProduct(ipts+(k*3), norm)>0)
+			break;
+		if(k==i)
+			break;
 		j=k;
 	}
 

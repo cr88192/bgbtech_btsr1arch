@@ -80,6 +80,9 @@ BGBPP_PpiDef *BGBPP_PpiGetTopDef(BGBCP_ParseState *ctx, char *name)
 {
 	BGBPP_PpiDef *cur;
 	
+	if(!name)
+		return(NULL);
+	
 	cur=ctx->ppi_ctx->ppi_toplevel;
 	while(cur)
 	{
@@ -179,6 +182,9 @@ BCCX_Node *BGBPP_PpiFetchNameReduce(BGBCP_ParseState *ctx, char *name)
 BGBPP_PpiDef *BGBPP_PpiLookupNameDef(BGBCP_ParseState *ctx, char *name)
 {
 	BGBPP_PpiDef *dcur;
+
+	if(!name)
+		return(NULL);
 
 	if(ctx->ppi_ctx->ppi_callframe)
 	{
@@ -337,10 +343,12 @@ BCCX_Node *BGBPP_PpiInterpBodyStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 		i=BGBCP_BoolExpr(ctx, t);
 		if(i==1)
 		{
-			v=BGBPP_PpiInterpBodyStatement(ctx, ln);
+			if(ln)
+				v=BGBPP_PpiInterpBodyStatement(ctx, ln);
 		}else if(i==0)
 		{
-			v=BGBPP_PpiInterpBodyStatement(ctx, rn);
+			if(rn)
+				v=BGBPP_PpiInterpBodyStatement(ctx, rn);
 		}else
 		{
 			printf("PPI Failed Reduce %s\n", BCCX_Tag(t));
@@ -769,7 +777,8 @@ BCCX_Node *BGBPP_PpiInterpTopStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 		if(ctx->lang==BGBCC_LANG_SCAD)
 		{
 			def=BGBPP_PpiGetTopDef(ctx, s);
-			def->value=v;
+			if(def)
+				def->value=v;
 		}
 
 		return(NULL);

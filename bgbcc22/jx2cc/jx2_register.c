@@ -6532,7 +6532,7 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 
 			sctx->regs_excl			=0x000000000000003FULL;
 			sctx->regs_excl_fpu		=0x000000000000003FULL;
-			sctx->regs_excl_tiny	=0x0FFC03000FFC03FFULL;
+			sctx->regs_excl_tiny	=0x0FFC03F00FFC03FFULL;
 		}
 	}
 #endif

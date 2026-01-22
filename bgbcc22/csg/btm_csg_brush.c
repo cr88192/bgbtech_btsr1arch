@@ -160,32 +160,59 @@ BTM_CsgBrush *BTM_AllocBrushSphere(float rad, int fn)
 BTM_CsgBrush *BTM_AllocBrushSphereScale(
 	float *org, float *size, int fn)
 {
+	float nv0[4], nv1[4], pt0[4];
 	BTM_CsgBrush *brush;
 	float th, sinth, costh, ath, sinz, ra, d;
 	int i, j, fn2, fnn2;
 
-	fn2=fn/2;
-	if(fn2<3)
-		fn2=3;
-	fnn2=fn2-2;
+//	fn2=fn/2;
+//	if(fn2<3)
+//		fn2=3;
+//	fnn2=fn2-2;
+
+	fnn2=(fn-2)/2;
+	fn2=fnn2+2;
 	
 	brush=BTM_AllocBrush(2+fn*fnn2);
 	TKRA_Vec4F_Set(brush->planes+0*4,  0,  0, -1, -(org[2]-size[2]));
 	TKRA_Vec4F_Set(brush->planes+1*4,  0,  0,  1, org[2]+size[2]);
 	
-	for(j=0; j<fnn2; j++)
-		for(i=0; i<fn; i++)
+	for(i=0; i<fn; i++)
+		for(j=0; j<fnn2; j++)
 	{
-		th=i*((2*M_PI)/fn);
-		ath=(j+1)*(M_PI/fn2)-(M_PI/2);
+//		th=(i+0.5)*((2*M_PI)/fn);
+		th=(i+0.0)*((2*M_PI)/fn);
+//		ath=(j+1)*(M_PI/fn2)-(M_PI/2);
+//		ath=(j+0.5)*(M_PI/fn2)-(M_PI/2);
+//		ath=(j+1.5)*(M_PI/fn2)-(M_PI/2);
+		ath=(j+1)*(M_PI/(fn2-1))-(M_PI/2);
+//		ath=(j+1.5)*(M_PI/fnn2)-(M_PI/2);
 		sinth=sin(th)*cos(ath);
 		costh=cos(th)*cos(ath);
 		sinz=sin(ath);
+
+//		ra=(size[0]*fabs(sinth))+(size[1]*fabs(costh))+(size[2]*fabs(sinz));
+		ra=size[0];
+
+		nv0[0]=sinth;
+		nv0[1]=costh;
+		nv0[2]=sinz;
+		TKRA_Vec3F_Normalize(nv0, nv0);
 		
-		ra=(size[0]*sinth)+(size[1]*costh)+(size[2]*sinz);
-		d=(org[0]*sinth)+(org[1]*costh)+(org[2]*sinz);
+		d=fabs(nv0[0])+fabs(nv0[1])+fabs(nv0[2]);
+		nv1[0]=fabs(nv0[0])/d;
+		nv1[1]=fabs(nv0[1])/d;
+		nv1[2]=fabs(nv0[2])/d;
+		ra=(size[0]*nv1[0])+(size[1]*nv1[1])+(size[2]*nv1[2]);
 		
-		TKRA_Vec4F_Set(brush->planes+(i+2)*4, sinth, costh, sinz, ra+d);
+		TKRA_Vec3F_AddScale(org, nv0, ra, pt0);
+		nv0[3]=TKRA_Vec3F_DotProduct(pt0, nv0);
+
+//		ra=(size[0]*sinth)+(size[1]*costh)+(size[2]*sinz);
+//		d=(org[0]*sinth)+(org[1]*costh)+(org[2]*sinz);
+		
+		TKRA_Vec4F_Set(brush->planes+(2+i*fnn2+j)*4,
+			nv0[0], nv0[1], nv0[2], nv0[3]);
 	}
 	
 	return(brush);
@@ -338,6 +365,9 @@ BTM_CsgPoly *BTM_MakeCsgPolyForPoints(
 {
 	BTM_CsgPoly *tmp;
 	int i;
+
+	if(!npts)
+		return(lst);
 	
 	if((npts<=0) || (npts>=128))
 	{
@@ -515,8 +545,8 @@ BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,
 BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 	BTM_CsgPoly *orglst, float *trans, int flag)
 {
-	static float pts0[16*3];
-	static float pts1[16*3];
+	static float pts0[192*3];
+	static float pts1[192*3];
 	BTM_CsgPoly *tmp, *plst, *plst2, *olst, *pcur, *pnxt;
 
 	float tv0[3], tv1[3], tv2[3], tnv[4], tnnv[4];
@@ -595,12 +625,14 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 			}
 
 			t=HullF_ClipFace(tnv, pts0, pts1, l);
-			plst2=BTM_MakeCsgPolyForPoints(pts1, t, pcmat, plst2);
+			if(t>=3)
+				plst2=BTM_MakeCsgPolyForPoints(pts1, t, pcmat, plst2);
 
 			if(flag&1)
 				continue;
 			t=HullF_ClipFace(tnnv, pts0, pts1, l);
-			olst=BTM_MakeCsgPolyForPoints(pts1, t, pcmat, olst);
+			if(t>=3)
+				olst=BTM_MakeCsgPolyForPoints(pts1, t, pcmat, olst);
 		}
 		
 		BTM_FreeCsgPolyList(plst);

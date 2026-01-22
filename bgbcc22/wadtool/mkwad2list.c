@@ -461,6 +461,7 @@ void *LoadFile(char *name, int *rsz)
 	sz=ftell(fd);
 	fseek(fd, 0, 0);
 	buf=malloc(sz+16);
+	memset(buf, 0, sz+16);
 	fread(buf, 1, sz, fd);
 	fclose(fd);
 	*rsz=sz;

@@ -105,6 +105,7 @@ u32 rgb;
 {"white",		0xFFFFFF},
 
 {"yellow",		0xAAAA01},
+{"orange",		0xAA5501},
 
 {"blue2",		0x0101FF},
 {"lime",		0x01FF01},

@@ -519,7 +519,7 @@ int BGBCC_LoadConvResource_ImageCheckResize(
 byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 	char *cnvstr, int *rsz, fourcc *rfcc)
 {
-	BTM_SolidMesh *mesh;
+	BTM_SolidMesh *mesh, *mcur;
 	char cnv[16], pvar[8], pval[64];
 	char *cs, *ct;
 	byte *ibuf, *obuf;
@@ -967,6 +967,20 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 	if(!strcmp(cnv, "bmd"))
 	{
 		mesh=BTM_LoadMeshListBuffer(buf, sz, lang);
+
+#if 1
+		if(lang==BGBCC_FMT_SCAD)
+		{
+			mcur=mesh;
+			while(mcur)
+			{
+				mcur->scale[0]*=512.0/1000.0;
+				mcur->scale[1]*=512.0/1000.0;
+				mcur->scale[2]*=512.0/1000.0;
+				mcur=mcur->next;
+			}
+		}
+#endif
 
 		obuf=NULL; sz1=0;
 		BTM_ExportMeshListBmdBuf(mesh, &obuf, &sz1);

@@ -929,6 +929,7 @@ void *LoadFile(char *name, int *rsz)
 	sz=ftell(fd);
 	fseek(fd, 0, 0);
 	buf=malloc(sz+16);
+	memset(buf, 0, sz+16);
 	fread(buf, 1, sz, fd);
 	fclose(fd);
 	*rsz=sz;
@@ -1044,6 +1045,7 @@ int FccTagForName(char *src)
 	if(*s=='.')
 	{
 		w_strlwr_n(tfc, s+1, 4);
+		tfc[4]=0;
 
 		if(!strcmp(tfc, "wav"))
 			return(BGBCC_FOURCC('W', 'A', 'V', ' '));
@@ -1054,6 +1056,11 @@ int FccTagForName(char *src)
 		if(!strcmp(tfc, "ico"))
 			return(BGBCC_FOURCC('I', 'C', 'O', ' '));
 
+		if(!strcmp(tfc, "txt"))
+			return(BGBCC_FOURCC('T', 'E', 'X', 'T'));
+		if(!strcmp(tfc, "xml"))
+			return(BGBCC_FOURCC('X', 'M', 'L', ' '));
+
 		if(!strcmp(tfc, "exe"))
 			return(BGBCC_FOURCC('E', 'X', 'E', ' '));
 		if(!strcmp(tfc, "com"))
@@ -1062,6 +1069,20 @@ int FccTagForName(char *src)
 			return(BGBCC_FOURCC('S', 'H', ' ', ' '));
 		if(!strcmp(tfc, "pf"))
 			return(BGBCC_FOURCC('P', 'F', ' ', ' '));
+
+		if(!strcmp(tfc, "png"))
+			return(BGBCC_FOURCC('P', 'N', 'G', ' '));
+		if(!strcmp(tfc, "jpg"))
+			return(BGBCC_FOURCC('J', 'P', 'E', 'G'));
+		if(!strcmp(tfc, "upi"))
+			return(BGBCC_FOURCC('U', 'P', 'I', 'C'));
+
+		if(!strcmp(tfc, "mdef"))
+			return(BGBCC_FOURCC('M', 'D', 'E', 'F'));
+		if(!strcmp(tfc, "scad"))
+			return(BGBCC_FOURCC('S', 'C', 'A', 'D'));
+		if(!strcmp(tfc, "stl"))
+			return(BGBCC_FOURCC('S', 'T', 'L', ' '));
 
 		memcpy(&v, tfc, 4);
 		return(v);
@@ -1268,7 +1289,8 @@ int main(int argc, char *argv[], char **env)
 		else
 			{ strcpy(tn, s); }
 
-		tag=FccTagForName(s1);
+//		tag=FccTagForName(s1);
+		tag=FccTagForName(s);
 		if(s[0]=='$')
 		{
 			tag=FCC_SYMS;

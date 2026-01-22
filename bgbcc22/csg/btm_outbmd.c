@@ -357,6 +357,14 @@ int BTM_ExportMeshListBmdBuf(BTM_SolidMesh *mesh,
 	mcur=mesh;
 	while(mcur)
 	{
+		if(mcur->nTris && !mcur->n_vtx)
+		{
+//			mcur->scale[0]*=0.5;
+//			mcur->scale[1]*=0.5;
+//			mcur->scale[2]*=0.5;
+			BTM_RebuildMeshProjectTexture(mcur);
+		}
+	
 //		s0=mcur->name;
 //		BTM_MeshBufGetIndexString(obufa, s0, stra, &nstrs);
 		

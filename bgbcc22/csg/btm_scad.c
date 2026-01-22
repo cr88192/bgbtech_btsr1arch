@@ -50,6 +50,24 @@ void BTM_ScadPPI_InterpUnwrapVec4(BGBCP_ParseState *ctx,
 			}
 		}
 	}
+
+	if(BCCX_TagIsCstP(n, &bgbcc_rcst_real, "real"))
+	{
+		f=BCCX_GetFloatCst(n, &bgbcc_rcst_value, "value");
+		vec[0]=f;
+		vec[1]=f;
+		vec[2]=f;
+		vec[3]=f;
+	}
+
+	if(BCCX_TagIsCstP(n, &bgbcc_rcst_int, "int"))
+	{
+		f=BCCX_GetIntCst(n, &bgbcc_rcst_value, "value");
+		vec[0]=f;
+		vec[1]=f;
+		vec[2]=f;
+		vec[3]=f;
+	}
 }
 
 u32 BTM_ScadPPI_InterpSanitizeColor(u32 clr)
@@ -236,6 +254,7 @@ BCCX_Node *BTM_ScadPPI_Cylinder(BGBCP_ParseState *ctx,
 	BCCX_Node *ext)
 {
 	BCCX_Node *tmp, *nv, *nc, *vlst, *va0;
+	BGBPP_PpiDef *def;
 	char *s;
 	double f, hgt, hgt0, hgt1, ra1, ra2;
 	int sfn, ctr;
@@ -246,6 +265,14 @@ BCCX_Node *BTM_ScadPPI_Cylinder(BGBCP_ParseState *ctx,
 	ra2=1;
 	ctr=0;
 	sfn=0;
+
+	def=BGBPP_PpiLookupNameDef(ctx, "$fn");
+	if(def)
+	{
+		nv=def->value;
+		if(nv)
+			{ sfn=BCCX_GetIntCst(nv, &bgbcc_rcst_value, "value"); }
+	}
 
 	for(i=0; i<nargs; i++)
 	{
@@ -264,6 +291,9 @@ BCCX_Node *BTM_ScadPPI_Cylinder(BGBCP_ParseState *ctx,
 				if(!strcmp(s, "r1"))		ra1=f;
 				if(!strcmp(s, "r2"))		ra2=f;
 				if(!strcmp(s, "r"))			{ ra1=f; ra2=f; }
+				if(!strcmp(s, "d1"))		ra1=f/2;
+				if(!strcmp(s, "d2"))		ra2=f/2;
+				if(!strcmp(s, "d"))			{ ra1=f/2; ra2=f/2; }
 				if(!strcmp(s, "center"))	ctr=k;
 				if(!strcmp(s, "$fn"))		sfn=k;
 			}
@@ -300,6 +330,7 @@ BCCX_Node *BTM_ScadPPI_Sphere(BGBCP_ParseState *ctx,
 	BCCX_Node *ext)
 {
 	BCCX_Node *tmp, *nv, *nc, *vlst, *va0;
+	BGBPP_PpiDef *def;
 	char *s;
 	double f, hgt, hgt0, hgt1, ra1, ra2;
 	int sfn, ctr;
@@ -310,6 +341,14 @@ BCCX_Node *BTM_ScadPPI_Sphere(BGBCP_ParseState *ctx,
 	ra2=1;
 	ctr=0;
 	sfn=0;
+
+	def=BGBPP_PpiLookupNameDef(ctx, "$fn");
+	if(def)
+	{
+		nv=def->value;
+		if(nv)
+			{ sfn=BCCX_GetIntCst(nv, &bgbcc_rcst_value, "value"); }
+	}
 
 	for(i=0; i<nargs; i++)
 	{
@@ -328,6 +367,9 @@ BCCX_Node *BTM_ScadPPI_Sphere(BGBCP_ParseState *ctx,
 				if(!strcmp(s, "r1"))		ra1=f;
 				if(!strcmp(s, "r2"))		ra2=f;
 				if(!strcmp(s, "r"))			{ ra1=f; ra2=f; }
+				if(!strcmp(s, "d1"))		ra1=f/2;
+				if(!strcmp(s, "d2"))		ra2=f/2;
+				if(!strcmp(s, "d"))			{ ra1=f/2; ra2=f/2; }
 				if(!strcmp(s, "center"))	ctr=k;
 				if(!strcmp(s, "$fn"))		sfn=k;
 			}
@@ -353,6 +395,9 @@ BCCX_Node *BTM_ScadPPI_Sphere(BGBCP_ParseState *ctx,
 		if(sfn<0.5)		sfn=16;
 		if(sfn<2)		sfn=32;
 		if(sfn>128)		sfn=256;
+		
+		if(sfn>16)
+			sfn=16;
 	}
 	
 //	BTM_ScadPPI_InterpUnwrapVec4(ctx, args[0], fv);
@@ -729,7 +774,7 @@ BTM_SolidMesh *BTM_LoadMeshListScadBuffer(byte *ibuf, int ibsz)
 {
 	static BGBCP_ParseState *ctx, *ppictx;
 	BTM_CsgNode *prims[32], *prim;
-	BTM_SolidMesh *mlst;
+	BTM_SolidMesh *mlst, *mcur;
 	BTM_CsgNode *csgn;
 	BCCX_Node *n, *c, *v, *lst;
 	char *s;
@@ -766,6 +811,7 @@ BTM_SolidMesh *BTM_LoadMeshListScadBuffer(byte *ibuf, int ibsz)
 	}
 
 	s=ibuf;
+	ctx->ppi_ctx->toplevel=NULL;
 	lst=BGBCP_Toplevel(ctx->ppi_ctx, &s);
 	lst=ctx->ppi_ctx->toplevel;
 
@@ -796,6 +842,17 @@ BTM_SolidMesh *BTM_LoadMeshListScadBuffer(byte *ibuf, int ibsz)
 	}
 	
 	mlst=BTM_ScadCsgToMesh(prim, NULL);
+
+#if 0
+	mcur=mlst;
+	while(mcur)
+	{
+		mcur->scale[0]*=512.0/1000.0;
+		mcur->scale[1]*=512.0/1000.0;
+		mcur->scale[2]*=512.0/1000.0;
+		mcur=mcur->next;
+	}
+#endif
 
 	return(mlst);
 

@@ -761,8 +761,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->is_fixed32|=0x40;
 		}
 
-//		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3nabi"))
-		if(!BGBCC_CCXL_CheckForOptStr(ctx, "rvabi"))
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3nabi"))
+//		if(!BGBCC_CCXL_CheckForOptStr(ctx, "rvabi"))
 		{
 			/* XG3 Native ABI;
 			   Increase to 16 register arguments

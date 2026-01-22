@@ -2308,7 +2308,7 @@ char *BGBCP_Token2(char *s, char *b, int *ty, int lang)
 	
 	bgbcp_token_cnt++;
 	ls[i]=s;
-	ls1[i]=BGBCP_TokenI(s, tb, &j, lang, 256);
+	ls1[i]=BGBCP_TokenI2(s, tb, &j, lang, 256);
 	lty[i]=j;
 //	strcpy(b, tb);
 	k=bgbcp_strcpy(b, tb);
