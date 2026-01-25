@@ -126,6 +126,15 @@ u32 rgb;
 {"pink",		0xFFC0CB},
 {"violet",		0xEE82EE},
 
+{"gold",		0xFFD700},
+
+{"saddlebrown",	0x8B4513},
+{"sienna",		0xA0522D},
+
+{"darkgray",	0xA9A9A9},
+{"dimgray",		0x696969},
+{"lightgray",	0xD3D3D3},
+
 {NULL, 0}
 };
 

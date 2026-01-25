@@ -1438,7 +1438,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 					op->rn=ro_dfl;
 					op->rm=rm_dfl;
 					op->fmid=BJX2_FMID_REGREG;
-					op->Run=BJX2_Op_TSTQ_RegReg;
+					op->Run=BJX2_Op_TSTNQ_RegReg;
 				}
 				break;
 			case 0x60:
@@ -1451,7 +1451,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 					op->rn=ro_dfl;
 					op->rm=rm_dfl;
 					op->fmid=BJX2_FMID_REGREG;
-					op->Run=BJX2_Op_TSTNQ_RegReg;
+					op->Run=BJX2_Op_TSTQ_RegReg;
 				}
 				break;
 

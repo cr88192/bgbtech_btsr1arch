@@ -236,7 +236,11 @@ begin
 			casez(istrWord[15:12])
 				4'b000z: tIstrFlagXG3	= 4'b1111;
 				4'b0011: tIstrFlagXG3	= 4'b1111;
-				4'b01zz: tIstrFlagXG3	= 4'b0111;
+				4'b01zz: begin
+					tIstrFlagXG3	= 4'b0111;
+					if(istrWord[5])
+						tIstrFlagXG3	= 4'b0000;
+				end
 				4'b100z: begin
 					tIstrFlagXG3	= 4'b0111;
 					if(istrWord[31:30]!=2'b00)
@@ -278,7 +282,8 @@ begin
 	if(istrWord[1:0]!=2'b11)
 	begin
 		tIstrFlag	= 4'b0000;
-		if(isXG3)
+//		if(isXG3)
+		if(isXG3 && (istrWord[1:0]==2'b10))
 			tIstrFlag	= tIstrFlagXG3;
 //		tIstrFlag	= tIstrFlagXG3;
 	end

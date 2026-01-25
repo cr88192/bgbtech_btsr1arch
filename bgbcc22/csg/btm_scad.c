@@ -238,10 +238,52 @@ BCCX_Node *BTM_ScadPPI_Cube(BGBCP_ParseState *ctx,
 	BCCX_Node *ext)
 {
 	double fv[4];
-	BCCX_Node *tmp, *vlst, *va0;
+	BCCX_Node *tmp, *vlst, *va0, *nv, *nc;
+	char *s;
+	double f, hgt, hgt0, hgt1, ra1, ra2;
+	int sfn, ctr;
+	int i, j, k;
 	
 	BTM_ScadPPI_InterpUnwrapVec4(ctx, args[0], fv);
+
+	sfn=0;
+	ctr=0;
+
+	for(i=0; i<nargs; i++)
+	{
+		nc=args[i];
+		if(BCCX_TagIsCstP(nc, &bgbcc_rcst_attr, "attr"))
+		{
+			s=BCCX_GetCst(nc, &bgbcc_rcst_name, "name");
+			nv=BCCX_FetchCst(nc, &bgbcc_rcst_value, "value");
+			nv=BGBCP_ReduceExpr(ctx->ppi_ctx, nv);
+			if(nv)
+			{
+				f=BCCX_GetFloatCst(nv, &bgbcc_rcst_value, "value");
+				k=BCCX_GetIntCst(nv, &bgbcc_rcst_value, "value");
+				
+//				if(!strcmp(s, "h"))			hgt=f;
+//				if(!strcmp(s, "r1"))		ra1=f;
+//				if(!strcmp(s, "r2"))		ra2=f;
+//				if(!strcmp(s, "r"))			{ ra1=f; ra2=f; }
+//				if(!strcmp(s, "d1"))		ra1=f/2;
+//				if(!strcmp(s, "d2"))		ra2=f/2;
+//				if(!strcmp(s, "d"))			{ ra1=f/2; ra2=f/2; }
+				if(!strcmp(s, "center"))	ctr=k;
+				if(!strcmp(s, "$fn"))		sfn=k;
+			}
+		}
+	}
+
 	tmp=BCCX_New("cube");
+	
+	if(ctr)
+	{
+		BCCX_SetFloat(tmp, "org_x", -fv[0]/2);
+		BCCX_SetFloat(tmp, "org_y", -fv[1]/2);
+		BCCX_SetFloat(tmp, "org_z", -fv[2]/2);
+	}
+	
 	BCCX_SetFloat(tmp, "size_x", fv[0]);
 	BCCX_SetFloat(tmp, "size_y", fv[1]);
 	BCCX_SetFloat(tmp, "size_z", fv[2]);
@@ -599,11 +641,19 @@ BTM_CsgNode *BTM_Scad_BuildCnodeFromXnodes(BCCX_Node *n)
 
 	if(BCCX_TagIsCstP(n, &bgbcc_rcst_cube, "cube"))
 	{
+		org[0]=BCCX_GetFloat(n, "org_x");
+		org[1]=BCCX_GetFloat(n, "org_y");
+		org[2]=BCCX_GetFloat(n, "org_z");
+
 		ang[0]=BCCX_GetFloat(n, "size_x");
 		ang[1]=BCCX_GetFloat(n, "size_y");
 		ang[2]=BCCX_GetFloat(n, "size_z");
-		mins[0]=0;			mins[1]=0;			mins[2]=0;
-		maxs[0]=ang[0];		maxs[1]=ang[1];		maxs[2]=ang[2];
+//		mins[0]=0;			mins[1]=0;			mins[2]=0;
+//		maxs[0]=ang[0];		maxs[1]=ang[1];		maxs[2]=ang[2];
+
+		mins[0]=org[0];			mins[1]=org[1];			mins[2]=org[2];
+		maxs[0]=org[0]+ang[0];	maxs[1]=org[1]+ang[1];	maxs[2]=org[2]+ang[2];
+
 		bru=BTM_AllocBrushAabb(mins, maxs);
 		prim=BTM_MakeCsgNodeFromBrushList(bru);
 		return(prim);		

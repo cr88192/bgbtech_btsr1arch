@@ -5741,12 +5741,12 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 					op->rn=rm_dfl;
 					op->rm=ro_dfl;
 					op->fmid=BJX2_FMID_REGREG;
-					op->Run=BJX2_Op_TSTNQ_RegReg;
+					op->Run=BJX2_Op_TSTQ_RegReg;
 
 					if(isjimm)
 					{
 						op->fmid=BJX2_FMID_IMMREG;
-						op->Run=BJX2_Op_TSTNQ_ImmReg;
+						op->Run=BJX2_Op_TSTQ_ImmReg;
 					}
 				}
 				break;
@@ -5774,12 +5774,12 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 					op->rn=rm_dfl;
 					op->rm=ro_dfl;
 					op->fmid=BJX2_FMID_REGREG;
-					op->Run=BJX2_Op_TSTQ_RegReg;
+					op->Run=BJX2_Op_TSTNQ_RegReg;
 
 					if(isjimm)
 					{
 						op->fmid=BJX2_FMID_IMMREG;
-						op->Run=BJX2_Op_TSTQ_ImmReg;
+						op->Run=BJX2_Op_TSTNQ_ImmReg;
 					}
 				}
 				break;

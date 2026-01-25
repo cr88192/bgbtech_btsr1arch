@@ -1505,6 +1505,7 @@ int BGBCC_JX2RV_TryEmitOpRegRegReg(
 
 #if 1
 	case BGBCC_SH_NMID_TST:
+	case BGBCC_SH_NMID_TSTQ:
 		if(ctx->has_rvzba&2)
 		{
 			if(BGBCC_JX2RV_TryEncJumboOpXRegXRegXReg(
@@ -6346,8 +6347,11 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 	if(nmid==BGBCC_SH_NMID_CMPQHI)	nm1=BGBCC_SH_NMID_CMPQHI;
 	if(nmid==BGBCC_SH_NMID_CMPHI)	nm1=BGBCC_SH_NMID_CMPHI;
 
-	if(nmid==BGBCC_SH_NMID_TSTQ)	nm1=BGBCC_SH_NMID_TSTQ;
-	if(nmid==BGBCC_SH_NMID_TST)		nm1=BGBCC_SH_NMID_TSTQ;
+//	if(nmid==BGBCC_SH_NMID_TSTQ)	nm1=BGBCC_SH_NMID_TSTQ;
+//	if(nmid==BGBCC_SH_NMID_TST)		nm1=BGBCC_SH_NMID_TSTQ;
+
+	if(nmid==BGBCC_SH_NMID_TSTQ)	nm1=BGBCC_SH_NMID_NTST;
+	if(nmid==BGBCC_SH_NMID_TST)		nm1=BGBCC_SH_NMID_NTST;
 
 	if(nmid==BGBCC_SH_NMID_FCMPEQ)	nm1=BGBCC_SH_NMID_FCMPEQ;
 	if(nmid==BGBCC_SH_NMID_FCMPGT)	nm1=BGBCC_SH_NMID_FCMPGT;
@@ -6639,8 +6643,11 @@ int BGBCC_JX2RV_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 	if(nmid==BGBCC_SH_NMID_CMPQHI)	nm1=BGBCC_SH_NMID_CMPQHI;
 	if(nmid==BGBCC_SH_NMID_CMPHI)	nm1=BGBCC_SH_NMID_CMPQHI;
 
-	if(nmid==BGBCC_SH_NMID_TST)		nm1=BGBCC_SH_NMID_TST;		//?
-	if(nmid==BGBCC_SH_NMID_TSTQ)	nm1=BGBCC_SH_NMID_TSTQ;		//?
+//	if(nmid==BGBCC_SH_NMID_TST)		nm1=BGBCC_SH_NMID_TST;		//?
+//	if(nmid==BGBCC_SH_NMID_TSTQ)	nm1=BGBCC_SH_NMID_TSTQ;		//?
+
+	if(nmid==BGBCC_SH_NMID_TST)		nm1=BGBCC_SH_NMID_NTST;		//?
+	if(nmid==BGBCC_SH_NMID_TSTQ)	nm1=BGBCC_SH_NMID_NTST;		//?
 
 //	if(!(ctx->emit_riscv&0x22))
 	if(!(ctx->has_jcmp&16))

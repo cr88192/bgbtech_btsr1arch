@@ -411,6 +411,15 @@ BTM_CsgPoly *BTM_MakeCsgPolyForPoints(
 void BTM_FreeCsgPolyList(BTM_CsgPoly *lst)
 {
 	BTM_CsgPoly *pcur, *pnxt;
+
+	if(!lst)
+		return;
+
+	if(lst->clrmat==BTM_CSGTAG_FREE)
+	{
+		printf("BTM_FreeCsgPolyList: Try free already-freed poly list\n");
+		return;
+	}
 	
 	pcur=lst;
 	while(pcur)
@@ -418,7 +427,11 @@ void BTM_FreeCsgPolyList(BTM_CsgPoly *lst)
 		pnxt=pcur->next;
 
 		if(pcur->clrmat==BTM_CSGTAG_FREE)
-			{ __debugbreak(); }
+		{
+			printf("BTM_FreeCsgPolyList: Try free already-freed poly\n");
+			break;
+//			{ __debugbreak(); }
+		}
 		if((pcur->npts<=0) || (pcur->npts>=128))
 			{ __debugbreak(); }
 
@@ -431,6 +444,28 @@ void BTM_FreeCsgPolyList(BTM_CsgPoly *lst)
 	}
 }
 
+void BTM_CheckSaneCsgPolyList(BTM_CsgPoly *lst)
+{
+	BTM_CsgPoly *pcur, *pnxt;
+
+	if(!lst)
+		return;
+
+	if(lst->clrmat==BTM_CSGTAG_FREE)
+		{ __debugbreak(); }
+	
+	pcur=lst;
+	while(pcur)
+	{
+		pnxt=pcur->next;
+		if(pcur->clrmat==BTM_CSGTAG_FREE)
+			{ __debugbreak(); }
+		if((pcur->npts<=0) || (pcur->npts>=128))
+			{ __debugbreak(); }
+		pcur=pnxt;
+	}
+}
+
 BTM_CsgPoly *BTM_CloneCsgPolyList(BTM_CsgPoly *lst)
 {
 	BTM_CsgPoly *pcur, *olst;
@@ -439,9 +474,12 @@ BTM_CsgPoly *BTM_CloneCsgPolyList(BTM_CsgPoly *lst)
 	pcur=lst;
 	while(pcur)
 	{
+		if(pcur->clrmat==BTM_CSGTAG_FREE)
+			{ __debugbreak(); }
 		olst=BTM_MakeCsgPolyForPoints(pcur->pts, pcur->npts, pcur->clrmat, olst);
 		pcur=pcur->next;
 	}
+	BTM_CheckSaneCsgPolyList(olst);
 	return(olst);
 }
 
@@ -453,11 +491,14 @@ BTM_CsgPoly *BTM_MergeCsgPolyList(BTM_CsgPoly *plst1, BTM_CsgPoly *plst2)
 	pcur=plst1;
 	while(pcur)
 	{
+		if(pcur->clrmat==BTM_CSGTAG_FREE)
+			{ __debugbreak(); }
 		pnxt=pcur->next;
 		pcur->next=olst;
 		olst=pcur;
 		pcur=pnxt;
 	}
+	BTM_CheckSaneCsgPolyList(olst);
 	return(olst);
 }
 
@@ -539,6 +580,7 @@ BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,
 //		}
 	}
 
+	BTM_CheckSaneCsgPolyList(lst);
 	return(lst);
 }
 
@@ -563,6 +605,8 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 	plst=NULL;
 	while(pcur)
 	{
+		if(pcur->clrmat==BTM_CSGTAG_FREE)
+			{ __debugbreak(); }
 		memcpy(pts0, pcur->pts, pcur->npts*3*sizeof(float));
 		l=pcur->npts;
 		pcmat=pcur->clrmat;
@@ -592,6 +636,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 
 	if(olst && !plst)
 	{
+		BTM_CheckSaneCsgPolyList(olst);
 		return(olst);
 	}
 
@@ -604,6 +649,8 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 		plst2=NULL;
 		while(pcur)
 		{
+			if(pcur->clrmat==BTM_CSGTAG_FREE)
+				{ __debugbreak(); }
 			memcpy(pts0, pcur->pts, pcur->npts*3*sizeof(float));
 			l=pcur->npts;
 			pcmat=pcur->clrmat;
@@ -637,6 +684,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 		
 		BTM_FreeCsgPolyList(plst);
 		plst=plst2;
+		BTM_CheckSaneCsgPolyList(plst);
 	}
 	
 	if(flag&1)
@@ -652,10 +700,12 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 		}
 	
 //		BTM_FreeCsgPolyList(olst);
+		BTM_CheckSaneCsgPolyList(olst);
 		return(olst);
 	}
 
 	BTM_FreeCsgPolyList(plst);
+	BTM_CheckSaneCsgPolyList(olst);
 	return(olst);
 }
 
@@ -678,6 +728,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysOutsideByBrushList(
 		plst=plst2;
 	}
 	
+	BTM_CheckSaneCsgPolyList(plst);
 	return(plst);
 }
 
@@ -700,6 +751,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysInsideByBrushList(
 		plst=plst2;
 	}
 	
+	BTM_CheckSaneCsgPolyList(plst);
 	return(plst);
 }
 
@@ -711,6 +763,8 @@ BTM_CsgPoly *BTM_ClipCsgPolysCullNegExteriorN(BTM_CsgPoly *plylst)
 	pcur=plylst; olst=NULL; plst=NULL;
 	while(pcur)
 	{
+		if(pcur->clrmat==BTM_CSGTAG_FREE)
+			{ __debugbreak(); }
 		pnxt=pcur->next;
 		if(pcur->clrmat&(1<<25))
 		{
@@ -735,6 +789,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysCullNegExteriorN(BTM_CsgPoly *plylst)
 		pcur=pnxt;
 	}
 	BTM_FreeCsgPolyList(plst);
+	BTM_CheckSaneCsgPolyList(olst);
 	return(olst);
 }
 
@@ -746,6 +801,8 @@ BTM_CsgPoly *BTM_ClipCsgPolysCullExteriorN(BTM_CsgPoly *plylst)
 	pcur=plylst; olst=NULL; plst=NULL;
 	while(pcur)
 	{
+		if(pcur->clrmat==BTM_CSGTAG_FREE)
+			{ __debugbreak(); }
 		pnxt=pcur->next;
 		if(pcur->clrmat&(1<<24))
 		{
@@ -761,6 +818,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysCullExteriorN(BTM_CsgPoly *plylst)
 		pcur=pnxt;
 	}
 	BTM_FreeCsgPolyList(plst);
+	BTM_CheckSaneCsgPolyList(olst);
 	return(olst);
 }
 
@@ -780,26 +838,33 @@ BTM_CsgPoly *BTM_ClipCsgPolysForCsgNode(BTM_CsgNode *tree,
 		{
 			plst=BTM_ClipCsgPolysInsideByBrushList(
 				tree->brush, orglst, tmat);
+			BTM_CheckSaneCsgPolyList(plst);
 		}else
 		{
 			plst=BTM_ClipCsgPolysOutsideByBrushList(
 				tree->brush, orglst, tmat);
+			BTM_CheckSaneCsgPolyList(plst);
 		}
 
 		if(tree->ltree)
 		{
 			plst2=BTM_ClipCsgPolysForCsgNode(tree->ltree, plst, tmat, flag);
+			BTM_CheckSaneCsgPolyList(plst2);
 			BTM_FreeCsgPolyList(plst);
 			plst=plst2;
+			BTM_CheckSaneCsgPolyList(plst);
 		}
 
 		if(tree->rtree)
 		{
 			plst2=BTM_ClipCsgPolysForCsgNode(tree->rtree, plst, tmat, flag);
+			BTM_CheckSaneCsgPolyList(plst2);
 			BTM_FreeCsgPolyList(plst);
 			plst=plst2;
+			BTM_CheckSaneCsgPolyList(plst);
 		}
 		
+		BTM_CheckSaneCsgPolyList(plst);
 		return(plst);
 	}
 	
@@ -810,8 +875,9 @@ BTM_CsgPoly *BTM_ClipCsgPolysForCsgNode(BTM_CsgNode *tree,
 		if(tree->ltree)
 		{
 			plst2=BTM_ClipCsgPolysForCsgNode(tree->ltree, plst, tmat, flag);
-			BTM_FreeCsgPolyList(plst);
+//			BTM_FreeCsgPolyList(plst);
 			plst=plst2;
+			BTM_CheckSaneCsgPolyList(plst);
 		}
 
 		if(tree->rtree)
@@ -822,6 +888,7 @@ BTM_CsgPoly *BTM_ClipCsgPolysForCsgNode(BTM_CsgNode *tree,
 //			plst=BTM_ClipCsgPolysCullNegExteriorN(plst2);
 		}
 		
+		BTM_CheckSaneCsgPolyList(plst);
 		return(plst);
 	}
 	
@@ -865,6 +932,7 @@ BTM_CsgPoly *BTM_GetCsgPolysForCsgNode(BTM_CsgNode *tree,
 			/* union simply holding a brush. */
 			plst=BTM_GetCsgPolysForBrush(
 				tree->brush, orglst, tmat, clrmat, flag);
+			BTM_CheckSaneCsgPolyList(plst);
 			return(plst);
 		}
 	
@@ -887,6 +955,7 @@ BTM_CsgPoly *BTM_GetCsgPolysForCsgNode(BTM_CsgNode *tree,
 		BTM_FreeCsgPolyList(plst);
 
 		plst=BTM_MergeCsgPolyList(plst2, orglst);
+		BTM_CheckSaneCsgPolyList(plst);
 		return(plst);
 	}
 
@@ -907,10 +976,14 @@ BTM_CsgPoly *BTM_GetCsgPolysForCsgNode(BTM_CsgNode *tree,
 		BTM_FreeCsgPolyList(plst);
 		BTM_FreeCsgPolyList(plstb);
 
+		BTM_CheckSaneCsgPolyList(plst2);
+		BTM_CheckSaneCsgPolyList(plstb2);
+
 		plstb2=BTM_ClipCsgPolysCullNegExteriorN(plstb2);
 
 		plst=BTM_MergeCsgPolyList(plst2, orglst);
 		plst=BTM_MergeCsgPolyList(plstb2, plst);
+		BTM_CheckSaneCsgPolyList(plst);
 		return(plst);
 	}
 
@@ -933,6 +1006,7 @@ BTM_CsgPoly *BTM_GetCsgPolysForCsgNode(BTM_CsgNode *tree,
 
 		plst=BTM_MergeCsgPolyList(plsta2, orglst);
 		plst=BTM_MergeCsgPolyList(plstb2, plst);
+		BTM_CheckSaneCsgPolyList(plst);
 		return(plst);
 	}
 

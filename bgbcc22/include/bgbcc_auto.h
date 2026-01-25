@@ -4281,6 +4281,7 @@ BTM_CsgNode *BTM_MakeCsgNodeDifference(BTM_CsgNode *ltcsg, BTM_CsgNode *rtcsg);
 BTM_CsgNode *BTM_MakeCsgNodeIntersection(BTM_CsgNode *ltcsg, BTM_CsgNode *rtcsg);
 BTM_CsgPoly *BTM_MakeCsgPolyForPoints(float *pts, int npts, u64 clrmat, BTM_CsgPoly *lst);
 void BTM_FreeCsgPolyList(BTM_CsgPoly *lst);
+void BTM_CheckSaneCsgPolyList(BTM_CsgPoly *lst);
 BTM_CsgPoly *BTM_CloneCsgPolyList(BTM_CsgPoly *lst);
 BTM_CsgPoly *BTM_MergeCsgPolyList(BTM_CsgPoly *plst1, BTM_CsgPoly *plst2);
 BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,BTM_CsgPoly *orglst, float *trans, u64 iclrmat, int flag);
