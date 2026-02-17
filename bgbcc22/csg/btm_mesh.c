@@ -655,7 +655,8 @@ int BTM_RebuildMeshProjectTexture(BTM_SolidMesh *mesh)
 	u32 meshclr;
 	float f, g;
 	int nvtx, mvtx, ntris, bnid;
-	int i0, i1, i2;
+	int needflipvtx;
+	int i0, i1, i2, i3;
 	int i, j, k;
 	
 	if(mesh->t_vidx)
@@ -697,6 +698,14 @@ int BTM_RebuildMeshProjectTexture(BTM_SolidMesh *mesh)
 	bnorg[1]=0;
 	bnorg[2]=0;
 	bnid=0;
+	
+	needflipvtx=0;
+	if(mesh->scale[0]<0)
+		needflipvtx=!needflipvtx;
+	if(mesh->scale[1]<0)
+		needflipvtx=!needflipvtx;
+	if(mesh->scale[2]<0)
+		needflipvtx=!needflipvtx;
 	
 	if(mesh->skel)
 	{
@@ -790,6 +799,12 @@ int BTM_RebuildMeshProjectTexture(BTM_SolidMesh *mesh)
 		tvtris[j*3+0]=i0;
 		tvtris[j*3+1]=i1;
 		tvtris[j*3+2]=i2;
+
+		if(needflipvtx)
+		{
+			tvtris[j*3+1]=i2;
+			tvtris[j*3+2]=i1;
+		}
 	}
 
 	for(i=0; i<nvtx; i++)

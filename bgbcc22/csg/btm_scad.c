@@ -768,6 +768,8 @@ BTM_SolidMesh *BTM_ScadCsgToMesh(BTM_CsgNode *csgn, BTM_SolidMesh *olst)
 		if((mtmp->clrmat&0xFFFFFF)>=0x040000)
 		{
 			sprintf(tb, "#%06llX", mtmp->clrmat&0xFFFFFF);
+			if(!(mtmp->clrmat&1))
+				{ strcat(tb, ",Hg"); }
 			mtmp->usetex[0]=bccx_strdup(tb);
 		}else if((mtmp->clrmat&0xFFFFFF)>0)
 		{

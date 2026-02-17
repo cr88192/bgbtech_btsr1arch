@@ -2199,15 +2199,20 @@ int BGBCC_WAVE_StoreWaveFmtBlockI(
 	int wft, int ch, int rt, int bits, int len,
 	int blksz, int realbits);
 
+void BGBCC_MsImaAdpcm_EncodeBlockMono2b_Opt(
+	s16 *ibuf, byte *obuf, int len, int *rpred, int *ridx, int qfl);
+void BGBCC_MsImaAdpcm_EncodeBlockMono4b_Opt(
+	s16 *ibuf, byte *obuf, int len, int *rpred, int *ridx, int qfl);
 
-int BGBCC_WAVE_StoreWaveImaAdpcm(
-	byte *obuf, short *ibuf, int ch, int rt, int len)
+
+int BGBCC_WAVE_StoreWaveImaAdpcm_Opt(
+	byte *obuf, short *ibuf, int ch, int rt, int len, int qfl)
 {
 	s16 tblk[2048];
 	byte *tbuf;
 	byte *ct;
 	s16 *cs, *cse;
-	int nblk, blksz, blksc, idx, idxb, bts;
+	int nblk, blksz, blksc, idx, idxb, pred, bts;
 	int i, j, k;
 	
 //	nblk=(len+255)/256;
@@ -2228,6 +2233,8 @@ int BGBCC_WAVE_StoreWaveImaAdpcm(
 	
 	bgbcc_wave_blockerr=0;
 	idx=4; idxb=4;
+	pred=ibuf[0];
+
 	for(i=0; i<nblk; i++)
 	{
 		if((cs+(blksc*ch))>cse)
@@ -2235,15 +2242,23 @@ int BGBCC_WAVE_StoreWaveImaAdpcm(
 			memset(tblk, 0, 2*blksc*sizeof(s16));
 			memcpy(tblk, cs, (cse-cs)*sizeof(s16));
 			if(ch==1)
-				BGBCC_MsImaAdpcm_EncodeBlockMono(
-					tblk, ct, blksc, &idx);
+			{
+//				BGBCC_MsImaAdpcm_EncodeBlockMono(
+//					tblk, ct, blksc, &idx);
+				BGBCC_MsImaAdpcm_EncodeBlockMono4b_Opt(
+					tblk, ct, blksc, &pred, &idx, qfl);
+			}
 			if(ch==2)
 				BGBCC_MsImaAdpcm_EncodeBlockStereo(
 					tblk, ct, blksc, &idx, &idxb);
 		}else
 		{
 			if(ch==1)
-				BGBCC_MsImaAdpcm_EncodeBlockMono(cs, ct, blksc, &idx);
+			{
+//				BGBCC_MsImaAdpcm_EncodeBlockMono(cs, ct, blksc, &idx);
+				BGBCC_MsImaAdpcm_EncodeBlockMono4b_Opt(
+					cs, ct, blksc, &pred, &idx, qfl);
+			}
 			if(ch==2)
 				BGBCC_MsImaAdpcm_EncodeBlockStereo(cs, ct, blksc, &idx, &idxb);
 		}
@@ -2259,6 +2274,12 @@ int BGBCC_WAVE_StoreWaveImaAdpcm(
 		BGBCC_WAVE_FMT_IMAADPCM, ch, rt, 4, len, blksz, (ch==2)?8:4);
 	free(tbuf);
 	return(k);
+}
+
+int BGBCC_WAVE_StoreWaveImaAdpcm(
+	byte *obuf, short *ibuf, int ch, int rt, int len)
+{
+	return(BGBCC_WAVE_StoreWaveImaAdpcm_Opt(obuf, ibuf, ch, rt, len, 100));
 }
 
 int BGBCC_WAVE_DecodeStreamImaAdpcm(
@@ -2294,14 +2315,14 @@ int BGBCC_WAVE_DecodeStreamImaAdpcm(
 }
 
 
-int BGBCC_WAVE_StoreWaveImaAdpcm2b(
-	byte *obuf, short *ibuf, int ch, int rt, int len)
+int BGBCC_WAVE_StoreWaveImaAdpcm2b_Opt(
+	byte *obuf, short *ibuf, int ch, int rt, int len, int qfl)
 {
 	s16 tblk[2048];
 	byte *tbuf;
 	byte *ct;
 	s16 *cs, *cse;
-	int nblk, blksz, blksc, idx, idxb, bts;
+	int nblk, blksz, blksc, idx, idxb, bts, pred;
 	int i, j, k;
 	
 	blksc=1008;
@@ -2315,6 +2336,11 @@ int BGBCC_WAVE_StoreWaveImaAdpcm2b(
 	bgbcc_wave_blockerr=0;
 	
 	idx=4; idxb=4;
+	pred=ibuf[0];
+
+	BGBCC_MsImaAdpcm_EncodeBlockMono2b_Opt(
+		NULL, tbuf, blksc, NULL, NULL, qfl);
+
 	for(i=0; i<nblk; i++)
 	{
 		if((cs+(blksc*ch))>cse)
@@ -2322,15 +2348,23 @@ int BGBCC_WAVE_StoreWaveImaAdpcm2b(
 			memset(tblk, 0, 2*blksc*sizeof(s16));
 			memcpy(tblk, cs, (cse-cs)*sizeof(s16));
 			if(ch==1)
-				BGBCC_MsImaAdpcm_EncodeBlockMono2b(
-					tblk, ct, blksc, &idx);
+			{
+//				BGBCC_MsImaAdpcm_EncodeBlockMono2b(
+//					tblk, ct, blksc, &idx);
+				BGBCC_MsImaAdpcm_EncodeBlockMono2b_Opt(
+					tblk, ct, blksc, &pred, &idx, qfl);
+			}
 			if(ch==2)
 				BGBCC_MsImaAdpcm_EncodeBlockStereo2b(
 					tblk, ct, blksc, &idx, &idxb);
 		}else
 		{
 			if(ch==1)
-				BGBCC_MsImaAdpcm_EncodeBlockMono2b(cs, ct, blksc, &idx);
+			{
+//				BGBCC_MsImaAdpcm_EncodeBlockMono2b(cs, ct, blksc, &idx);
+				BGBCC_MsImaAdpcm_EncodeBlockMono2b_Opt(
+					cs, ct, blksc, &pred, &idx, qfl);
+			}
 			if(ch==2)
 				BGBCC_MsImaAdpcm_EncodeBlockStereo2b(
 					cs, ct, blksc, &idx, &idxb);
@@ -2348,6 +2382,12 @@ int BGBCC_WAVE_StoreWaveImaAdpcm2b(
 		BGBCC_WAVE_FMT_IMAADPCM, ch, rt, 2, len, blksz, (ch==2)?4:2);
 	free(tbuf);
 	return(k);
+}
+
+int BGBCC_WAVE_StoreWaveImaAdpcm2b(
+	byte *obuf, short *ibuf, int ch, int rt, int len)
+{
+	return(BGBCC_WAVE_StoreWaveImaAdpcm2b_Opt(obuf, ibuf, ch, rt, len, 100));
 }
 
 int BGBCC_WAVE_DecodeStreamImaAdpcm2b(
@@ -2380,4 +2420,594 @@ int BGBCC_WAVE_DecodeStreamImaAdpcm2b(
 		}
 	}
 	return(0);
+}
+
+
+
+#if 1
+int ad2b_fixpats[256]={
+0xAAAA, 0x0000, 0xFF92, 0x556A, 0x8888, 0x5560, 0xAAA8, 0x0003,
+0x000B, 0x004B, 0x0002, 0x2222, 0xAAA1, 0xAAE1, 0xAAA9, 0x554A,
+0xBFC0, 0xFF88, 0x55A0, 0x5528, 0xFF80, 0xF50A, 0xA14B, 0xE59A,
+0x014B, 0xAFC0, 0xEA89, 0xAAA0, 0x4E72, 0xFFB0, 0x000A, 0x016A,
+0x0103, 0x53E1, 0xAA13, 0xFF02, 0x5438, 0x3D30, 0x5722, 0xA04B,
+0xABE1, 0x5575, 0xF01B, 0x02E1, 0xE038, 0x82E1, 0x010B, 0xA84B,
+0xD52A, 0x284B, 0x546A, 0xFF82, 0xA86A, 0x85DA, 0x80B1, 0xC6D2,
+0x006A, 0x001B, 0x16E1, 0xABA9, 0x12E1, 0x14A9, 0x6A03, 0x82E9,
+0xC5BA, 0xB84B, 0xABA1, 0x204B, 0xA843, 0xFFE9, 0xE4D8, 0x4023,
+0xA16A, 0xABC0, 0x7F82, 0x4FC0, 0xE528, 0xC0A9, 0xAA1B, 0x506A,
+0x5462, 0x406A, 0xA8A9, 0xFC03, 0xFFE8, 0x2803, 0xFF0A, 0x8829,
+0xA2E1, 0x5520, 0x5023, 0xF8C0, 0xFC0B, 0xAAB1, 0xE829, 0x8AA1,
+0xF94B, 0x13A9, 0xFAC0, 0x056A, 0xD70A, 0xF13A, 0x5FA0, 0xF782,
+0x9588, 0xFFDF, 0x52E5, 0x4C78, 0xBE03, 0x4283, 0x1532, 0x5F80,
+0x00B8, 0x0083, 0x5A42, 0x2E78, 0xB803, 0x156A, 0x2843, 0xFF00,
+0x02C0, 0x3F03, 0x7E06, 0x53A9, 0x6E92, 0x72B0, 0x200B, 0x686A,
+0xA8E1, 0xB802, 0x814B, 0x8A08, 0xAA83, 0x8AE1, 0x83C0, 0x56A9,
+0xAAC0, 0xE002, 0x86D8, 0x02A1, 0x4E92, 0xA103, 0x024B, 0xA01B,
+0x550A, 0xC4C0, 0xEEC0, 0x084B, 0x000E, 0x6F98, 0x5322, 0xAEA1,
+0x2B03, 0xAA4B, 0x0AB1, 0xEAC0, 0x00B1, 0x0AA1, 0x4CB1, 0x2BE1,
+0x4F18, 0xA56A, 0x4A92, 0x220A, 0xBFE0, 0x55A8, 0x0BE1, 0x4432,
+0x4BE1, 0xC39C, 0x40B1, 0xA81B, 0x0AE1, 0x2A4B, 0x0503, 0xFFA0,
+0xFDA0, 0x404E, 0x03E1, 0xFF08, 0x86E9, 0xA00B, 0x280B, 0x8528,
+0x6FA1, 0x84C9, 0xFD82, 0x0BC0, 0x2A0A, 0x2283, 0xE4B8, 0x00B9,
+0xB02A, 0x2A1B, 0xE6D2, 0x001A, 0x00E1, 0xA220, 0x6939, 0x0029,
+0x552A, 0x80B9, 0x5038, 0xAAB0, 0xAEE1, 0x2A03, 0x6E42, 0xEF80,
+0x6D38, 0xFD28, 0x20A2, 0x0B90, 0x4522, 0xFA13, 0x82C9, 0xEF88,
+0x281B, 0x5F82, 0xAAA2, 0x94A9, 0x50E2, 0x88A0, 0xFBA0, 0x7E82,
+0x6F82, 0xFAB0, 0xAF92, 0xA0A0, 0x856A, 0x6C39, 0x14B9, 0x0008,
+0x02B1, 0x8539, 0xFD2A, 0x2282, 0x82B1, 0x77A0, 0xFFFF, 0xEAA9,
+0xB0AA, 0x116A, 0xA883, 0x0A22, 0x8BC0, 0xF85B, 0x2AE1, 0x0BA1,
+0xFA83, 0xAAE4, 0x8BE1, 0x8BA1, 0xFDA8, 0xAAC9, 0xE3C0, 0x55A2,
+};
+#endif
+
+byte *ad2b_pat_obase;
+byte *ad2b_pat_ohash[4096*8];
+
+
+
+int AD2B_SimDecodeN(s16 *obuf, int samp0, int idx0,
+	u32 pat, int len,
+	int *rsamp1, int *ridx1)
+{
+	int pred, index, step, diff, uni, sni;
+	int i, j;
+	
+	pred=samp0;
+	index=idx0;
+
+	step=bgbmid_ima_step_table[index&127];
+
+	for(i=0; i<len; i++)
+	{
+		j=(pat>>(i*2))&3;
+		uni=j;
+	
+		index=index+((uni&1)*3-1);
+		index=(index<0)?0:((index>88)?88:index);
+//		diff=((2*(uni&7)+1)*step)/8;
+		diff=(step>>1)+((uni&1)*step);
+		if(uni&2)diff=-diff;
+		pred=pred+diff;
+		step=bgbmid_ima_step_table[index];
+
+		pred=(pred<(-32768))?(-32768):((pred>32767)?32767:pred);
+		obuf[i]=pred;
+	}
+	if(rsamp1)	*rsamp1=pred;
+	if(ridx1)	*ridx1=index;
+
+	return(0);
+}
+
+int AD2B_EncCalcMseN(s16 *i0buf, s16 *i1buf, int len)
+{
+	int i, j, k;
+	
+	k=0;
+	for(i=0; i<len; i++)
+	{
+		j=i0buf[i]-i1buf[i];
+		j=j^(j>>31);
+		k+=j;
+//		k+=j*j;
+	}
+	return(k);
+}
+
+
+int AD2B_EncCalcMseReN(s16 *i0buf, s16 *i1buf, int len)
+{
+	static const byte escale[16]={
+		0x80,0x60,0x40,0x30, 0x20,0x18,0x14,0x10,
+		0x10,0x10,0x0C,0x0A, 0x08,0x06,0x05,0x04};
+	int e0, e1, s0, s1, sa;
+	
+	e0=AD2B_EncCalcMseN(i0buf, i1buf, len);
+	s0=i0buf[0];		s1=i0buf[len-1];
+	s0=s0^(s0>>31);		s1=s1^(s1>>31);
+	sa=(s0+s1)>>1;
+	e1=(e0*escale[sa>>12])>>4;
+	return(e1);
+}
+
+int AD2B_EncSimMsePat(s16 *ibuf, int pred0, int idx0, u32 pat, int len)
+{
+	s16 tbuf[32];
+	AD2B_SimDecodeN(tbuf, pred0, idx0, pat, len, NULL, NULL);
+	return(AD2B_EncCalcMseReN(ibuf, tbuf, len)/len);
+}
+
+int AD2B_EncSimMsePatB(s16 *ibuf, int pred0, int idx0, u32 pat, int len,
+	int *rpred1, int *ridx1)
+{
+	s16 tbuf[32];
+	AD2B_SimDecodeN(tbuf, pred0, idx0, pat, len, rpred1, ridx1);
+	return(AD2B_EncCalcMseReN(ibuf, tbuf, len)/len);
+}
+
+int AD2B_EncBest8b(s16 *ibuf, int *rpred, int *ridx)
+{
+	s16 tbuf[8];
+	int pred0, idx0;
+	int bi, be, ce;
+	int i, j, k;
+	
+	pred0=*rpred;
+	idx0=*ridx;
+	
+	bi=0; be=99999999;
+	for(i=0; i<4096; i++)
+	{
+		AD2B_SimDecodeN(tbuf, pred0, idx0, i, 6, NULL, NULL);
+		ce=AD2B_EncCalcMseN(ibuf, tbuf, 6);
+		if(ce<be)
+			{ bi=i; be=ce; }
+	}
+	
+	k=bi&255;
+	AD2B_SimDecodeN(tbuf, pred0, idx0, k, 4, rpred, ridx);
+	return(k);
+}
+
+int AD2B_EncBestPat16b(s16 *ibuf, int *rpred, int *ridx)
+{
+	s16 tbuf[32];
+	int pred0, idx0;
+	int bi, be, ce;
+	int i, j, k;
+	
+	pred0=*rpred;
+	idx0=*ridx;
+	
+	bi=0; be=99999999;
+	for(i=0; i<256; i++)
+	{
+		j=ad2b_fixpats[i];
+		j|=j<<16;
+		AD2B_SimDecodeN(tbuf, pred0, idx0, j, 10, NULL, NULL);
+		ce=AD2B_EncCalcMseReN(ibuf, tbuf, 10);
+		if(ce<be)
+			{ bi=i; be=ce; }
+	}
+	
+	k=ad2b_fixpats[bi];
+	AD2B_SimDecodeN(tbuf, pred0, idx0, k, 8, rpred, ridx);
+	return(k);
+}
+
+
+
+void BGBCC_MsImaAdpcm_EncodeBlockMono2b_Opt(
+	s16 *ibuf, byte *obuf, int len, int *rpred, int *ridx, int qfl)
+{
+	byte *ct, *csa, *csb;
+	int pred, idx, pred1, idx1, n;
+	int pred_j0, idx_j0;
+	int pred_j1, idx_j1;
+	int pred_j2, idx_j2;
+	int j0, j1, j2, e0, e1, e2, emax, hi, nl, bl;
+	int i, j, k, l;
+	
+	if(!ibuf)
+	{
+		ad2b_pat_obase=obuf;
+		for(i=0; i<4096; i++)
+		{
+			ad2b_pat_ohash[i*4+0]=NULL;
+			ad2b_pat_ohash[i*4+1]=NULL;
+			ad2b_pat_ohash[i*4+2]=NULL;
+			ad2b_pat_ohash[i*4+3]=NULL;
+		}
+		return;
+	}
+	
+	if(rpred)	pred=*rpred;
+	if(ridx)	idx=*ridx;
+	obuf[0]=pred;
+	obuf[1]=pred>>8;
+	obuf[2]=idx;
+	obuf[3]=0;
+	
+#if 0
+	n=len/4;
+	for(i=0; i<n; i++)
+	{
+		j=AD2B_EncBest8b(ibuf+(i*4), &pred, &idx);
+		obuf[4+i]=j;
+	}
+#endif
+
+#if 1
+
+//	emax=1024;
+//	emax=4096;
+//	emax=8192;
+	
+	emax=192*(100-(qfl&127));
+
+	n=len/4;
+	for(i=0; i<n; i++)
+	{
+		ct=obuf+4+i;
+		hi=(ct[-1]*7)+(ct[-2]*29)+(ct[-3]*47)+(ct[-4]*61);
+		hi=((hi*251)>>8)&4095;
+
+		e2=99999999;
+		csb=NULL;
+		bl=0;
+
+		for(k=0; k<4; k++)
+		{
+			csa=ad2b_pat_ohash[hi*4+k];
+			if(!csa)
+				continue;
+			if(!(
+				(csa[-1]==ct[-1]) && (csa[-2]==ct[-2]) &&
+				(csa[-3]==ct[-3]) && (csa[-4]==ct[-4]) ))
+					continue;
+
+			j2=csa[0];
+			e2=AD2B_EncSimMsePatB(ibuf+(i*4), pred, idx, j2, 4,
+				&pred_j2, &idx_j2);
+			if(e2>emax)
+				continue;
+
+			nl=csa-ad2b_pat_obase;
+			for(l=0; l<nl; l++)
+				if(csa[-l]!=ct[-l])
+					break;
+			if((l>bl) && (l>=4))
+				{ csb=csa; bl=l; }
+		}
+
+		if(csb)
+		{
+			j2=csb[0];
+			e2=AD2B_EncSimMsePatB(ibuf+(i*4), pred, idx, j2, 4,
+				&pred_j2, &idx_j2);
+		}
+		
+		ad2b_pat_ohash[hi*4+3]=ad2b_pat_ohash[hi*4+2];
+		ad2b_pat_ohash[hi*4+2]=ad2b_pat_ohash[hi*4+1];
+		ad2b_pat_ohash[hi*4+1]=ad2b_pat_ohash[hi*4+0];
+		ad2b_pat_ohash[hi*4+0]=ct;
+	
+		e1=99999999;
+		if((i+1)<n)
+		{
+			pred_j1=pred;	idx_j1=idx;
+			j1=AD2B_EncBestPat16b(ibuf+(i*4), &pred_j1, &idx_j1);
+			e1=AD2B_EncSimMsePat(ibuf+(i*4), pred, idx, j1, 8);
+		}
+
+		if(e2<emax)
+		{
+			obuf[4+i]=j2;
+			pred=pred_j2;
+			idx=idx_j2;
+			continue;
+		}
+
+		if(e1<emax)
+//		if(1)
+		{
+			obuf[4+(i+0)]=j1;
+			obuf[4+(i+1)]=j1>>8;
+			pred=pred_j1;
+			idx=idx_j1;
+			i++;
+			continue;
+		}
+
+#if 1
+		pred_j0=pred;	idx_j0=idx;
+		j0=AD2B_EncBest8b(ibuf+(i*4), &pred_j0, &idx_j0);
+		e0=AD2B_EncSimMsePat(ibuf+(i*4), pred, idx, j0, 4);
+#endif
+
+		obuf[4+i]=j0;
+		pred=pred_j0;
+		idx=idx_j0;
+	}
+#endif
+
+	if(rpred)	*rpred=pred;
+	if(ridx)	*ridx=idx;
+}
+
+
+#if 1
+int ad4b_fixpats[256]={
+0x0000, 0x8888, 0x8F4B, 0xBDA2, 0x1F80, 0x9BC3, 0x39C3, 0x1208,
+0x6B80, 0x0D3B, 0x114C, 0x953B, 0x044B, 0xF83B, 0x07C3, 0x20C3,
+0x793B, 0x914B, 0x31B3, 0xA719, 0x3219, 0xBD08, 0x9C08, 0x3708,
+0x7891, 0x074B, 0xAD2A, 0x8FC3, 0x9FB2, 0x8A80, 0x1008, 0xAAC3,
+0x2E3B, 0xBA91, 0x70B4, 0x91A2, 0x0080, 0x9FC2, 0x3991, 0x7718,
+0x72A2, 0xB091, 0x842A, 0x252A, 0x3819, 0x8000, 0xC1B3, 0x20B4,
+0x8719, 0x722A, 0x4808, 0x0091, 0x4080, 0x7108, 0x0880, 0x7408,
+0x1508, 0xB04C, 0xF9A2, 0xC84B, 0x423B, 0x122A, 0x08B4, 0x9CA2,
+0xFA08, 0x1749, 0xFFA0, 0xA04B, 0x133B, 0x3CB3, 0xCB2A, 0xFD80,
+0x0888, 0x0A80, 0x3B3C, 0x7319, 0x8700, 0x2C08, 0x0AC3, 0xDAB3,
+0x5700, 0x893B, 0xB93B, 0x1908, 0x83A2, 0xE23B, 0x21B3, 0xF0B3,
+0x4891, 0xE308, 0xFF80, 0xC4A2, 0x1DB3, 0x3319, 0x00B3, 0x09A2,
+0x3A08, 0x0C3B, 0x9108, 0xFB2A, 0xABB3, 0xF980, 0x3291, 0xB219,
+0xAA4B, 0xF480, 0x9B19, 0x0191, 0xFC1A, 0x80B3, 0x4208, 0x3BC3,
+0x803C, 0x3B80, 0x10B3, 0xAFC8, 0x0019, 0x1A2A, 0xF008, 0x7080,
+0x0BA2, 0xB308, 0xA84B, 0x3A4B, 0x2A19, 0x3380, 0x9608, 0x7730,
+0x22B4, 0xC108, 0x0119, 0x0D91, 0x083B, 0x8A2A, 0xBF91, 0xA319,
+0x4A3C, 0x182A, 0x894B, 0x6480, 0x9819, 0x23C3, 0x1708, 0x4491,
+0x0808, 0x97A2, 0x173A, 0xC808, 0x013B, 0x0D08, 0xAFA1, 0x2A91,
+0x01C3, 0x3191, 0xB9B3, 0x1C08, 0x8008, 0x2008, 0xEC19, 0xBA3B,
+0x90C3, 0x9880, 0x9908, 0x503B, 0x0991, 0x8880, 0x184B, 0xA980,
+0x15A2, 0x23B3, 0xF219, 0x8208, 0x08C3, 0xA108, 0x07A2, 0x80C3,
+0xB2B4, 0x0C91, 0x023B, 0xF2A2, 0x8919, 0x4A4B, 0x9008, 0x912A,
+0x4519, 0x204B, 0xC919, 0x0208, 0x88B3, 0x814B, 0x87B3, 0x1C91,
+0x1C4B, 0x8580, 0x014B, 0x9480, 0x9391, 0x05B3, 0xC080, 0x95B3,
+0x8808, 0xB3C3, 0x1180, 0x11C3, 0xA480, 0x384B, 0xC891, 0xCA80,
+0x2AC3, 0x0AB3, 0x20B3, 0x073A, 0x8780, 0x1091, 0x2080, 0x983B,
+0x09C3, 0xA02A, 0xA3B4, 0x89C3, 0x94C3, 0x903B, 0xA880, 0xCA08,
+0xA92A, 0x904B, 0xBB08, 0x1B19, 0xA8C3, 0xB3B3, 0x004B, 0xC819,
+0x8119, 0xB0C3, 0x8AB3, 0xF091, 0xA408, 0x1480, 0x0491, 0x0C19,
+0x084B, 0x8908, 0xD980, 0x172A, 0x89B3, 0x8491, 0xA82A, 0x813B,
+0x88C3, 0xAAB3, 0xA4B3, 0xC880, 0x9980, 0x883B, 0x003B, 0xF1B3,
+};
+#endif
+
+int AD4B_SimDecodeN(s16 *obuf, int samp0, int idx0,
+	u32 pat, int len,
+	int *rsamp1, int *ridx1)
+{
+	int pred, index, step, diff, uni, sni;
+	int i, j;
+	
+	pred=samp0;
+	index=idx0;
+
+	step=bgbmid_ima_step_table[index&127];
+
+	for(i=0; i<len; i++)
+	{
+		j=(pat>>(i*4))&15;
+	
+		uni=j;
+		sni=(j&8)?(-(j&7)):(j&7);
+	
+		index=index+bgbmid_ima_index_table[uni];
+		index=(index<0)?0:((index>88)?88:index);
+		diff=((2*(uni&7)+1)*step)/8;
+		if(uni&8)diff=-diff;
+		pred=pred+diff;
+		step=bgbmid_ima_step_table[index];
+
+		pred=(pred<(-32768))?(-32768):((pred>32767)?32767:pred);
+		obuf[i]=pred;
+	}
+	if(rsamp1)	*rsamp1=pred;
+	if(ridx1)	*ridx1=index;
+
+	return(0);
+}
+
+int AD4B_EncSimMsePatB(s16 *ibuf, int pred0, int idx0, u32 pat, int len,
+	int *rpred1, int *ridx1)
+{
+	s16 tbuf[32];
+	AD4B_SimDecodeN(tbuf, pred0, idx0, pat, len, rpred1, ridx1);
+	return(AD2B_EncCalcMseReN(ibuf, tbuf, len)/len);
+}
+
+int AD4B_EncSimMsePat(s16 *ibuf, int pred0, int idx0, u32 pat, int len)
+	{ return(AD4B_EncSimMsePatB(ibuf, pred0, idx0, pat, len, NULL, NULL)); }
+
+int AD4B_EncBest8b(s16 *ibuf, int *rpred, int *ridx)
+{
+	s16 tbuf[8];
+	int pred0, idx0;
+	int bi, be, ce;
+	int i, j, k;
+	
+	pred0=*rpred;
+	idx0=*ridx;
+	
+	bi=0; be=99999999;
+	for(i=0; i<4096; i++)
+	{
+		AD4B_SimDecodeN(tbuf, pred0, idx0, i, 3, NULL, NULL);
+		ce=AD2B_EncCalcMseN(ibuf, tbuf, 3);
+		if(ce<be)
+			{ bi=i; be=ce; }
+	}
+	
+	k=bi&255;
+	AD4B_SimDecodeN(tbuf, pred0, idx0, k, 2, rpred, ridx);
+	return(k);
+}
+
+int AD4B_EncBestPat16b(s16 *ibuf, int *rpred, int *ridx)
+{
+	s16 tbuf[32];
+	int pred0, idx0;
+	int bi, be, ce;
+	int i, j, k;
+	
+	pred0=*rpred;
+	idx0=*ridx;
+	
+	bi=0; be=99999999;
+	for(i=0; i<256; i++)
+	{
+		j=ad4b_fixpats[i];
+		j|=j<<16;
+		AD4B_SimDecodeN(tbuf, pred0, idx0, j, 5, NULL, NULL);
+		ce=AD2B_EncCalcMseReN(ibuf, tbuf, 5);
+		if(ce<be)
+			{ bi=i; be=ce; }
+	}
+	
+	k=ad4b_fixpats[bi];
+	AD4B_SimDecodeN(tbuf, pred0, idx0, k, 4, rpred, ridx);
+	return(k);
+}
+
+void BGBCC_MsImaAdpcm_EncodeBlockMono4b_Opt(
+	s16 *ibuf, byte *obuf, int len, int *rpred, int *ridx, int qfl)
+{
+	byte *ct, *csa, *csb, *lct[4], *lcsb[4];
+	int pred, idx, pred1, idx1, n;
+	int pred_j0, idx_j0;
+	int pred_j1, idx_j1;
+	int pred_j2, idx_j2;
+	int j0, j1, j2, e0, e1, e2, e3, emax, hi, nl, bl, be;
+	int i, j, k, l;
+	
+	if(!ibuf)
+	{
+		ad2b_pat_obase=obuf;
+		for(i=0; i<4096; i++)
+			for(j=0; j<8; j++)
+				{ ad2b_pat_ohash[i*8+j]=NULL; }
+		return;
+	}
+	
+	pred=*rpred;
+	idx=*ridx;
+	obuf[0]=pred;
+	obuf[1]=pred>>8;
+	obuf[2]=idx;
+	obuf[3]=0;
+
+#if 1	
+	emax=192*(100-(qfl&127));
+
+	for(i=0; i<4; i++)
+		{ lcsb[i]=NULL; lct[i]=NULL; }
+
+	n=len/2;
+	for(i=0; i<n; i++)
+	{
+		ct=obuf+4+i;
+		hi=(ct[-1]*7)+(ct[-2]*29)+(ct[-3]*47)+(ct[-4]*61);
+		hi=((hi*251)>>8)&4095;
+
+		e2=99999999;
+		be=99999999;
+		csb=NULL;
+		bl=0;
+
+		for(k=0; k<12; k++)
+		{
+			if(k<8)
+			{
+				csa=ad2b_pat_ohash[hi*8+k];
+			}else if(lcsb[k-8])
+			{
+				csa=lcsb[k-8]+(ct-lct[k-8]);
+			}else
+			{
+				csa=NULL;
+			}
+			
+			if(!csa)
+				continue;
+			if(!(
+				(csa[-1]==ct[-1]) && (csa[-2]==ct[-2]) &&
+				(csa[-3]==ct[-3]) && (csa[-4]==ct[-4]) ))
+					continue;
+
+			j2=csa[0];
+			e2=AD4B_EncSimMsePatB(ibuf+(i*2), pred, idx, j2, 2,
+				&pred_j2, &idx_j2);
+			if(e2>emax)
+				continue;
+
+			nl=csa-ad2b_pat_obase;
+			for(l=0; l<nl; l++)
+				if(csa[-l]!=ct[-l])
+					break;
+
+//			e3=e2/sqrt(nl);
+			e3=e2/nl;
+
+//			if((l>bl) && (l>=4))
+			if(e3<be)
+				{ csb=csa; bl=l; be=e3; }
+		}
+
+		if(csb)
+		{
+			j2=csb[0];
+			e2=AD4B_EncSimMsePatB(ibuf+(i*2), pred, idx, j2, 2,
+				&pred_j2, &idx_j2);
+			lcsb[3]=lcsb[2]; lct[3]=lct[2];
+			lcsb[2]=lcsb[1]; lct[2]=lct[1];
+			lcsb[1]=lcsb[0]; lct[1]=lct[0];
+			lcsb[0]=csb; lct[0]=ct;
+		}
+		
+		for(j=7; j>0; j--)
+			ad2b_pat_ohash[hi*8+j]=ad2b_pat_ohash[hi*8+(j-1)];
+		ad2b_pat_ohash[hi*8+0]=ct;
+	
+		e1=99999999;
+		if((i+1)<n)
+		{
+			pred_j1=pred;	idx_j1=idx;
+			j1=AD4B_EncBestPat16b(ibuf+(i*2), &pred_j1, &idx_j1);
+			e1=AD4B_EncSimMsePat(ibuf+(i*2), pred, idx, j1, 8);
+		}
+
+		if(e2<emax)
+		{
+			obuf[4+i]=j2;
+			pred=pred_j2;
+			idx=idx_j2;
+			continue;
+		}
+
+		if(e1<emax)
+//		if(1)
+		{
+			obuf[4+(i+0)]=j1;
+			obuf[4+(i+1)]=j1>>8;
+			pred=pred_j1;
+			idx=idx_j1;
+			i++;
+			continue;
+		}
+
+#if 1
+		pred_j0=pred;	idx_j0=idx;
+		j0=AD4B_EncBest8b(ibuf+(i*2), &pred_j0, &idx_j0);
+		e0=AD4B_EncSimMsePat(ibuf+(i*2), pred, idx, j0, 2);
+#endif
+
+		obuf[4+i]=j0;
+		pred=pred_j0;
+		idx=idx_j0;
+	}
+#endif
+
+	*rpred=pred;
+	*ridx=idx;
 }

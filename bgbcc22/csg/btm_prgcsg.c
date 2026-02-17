@@ -88,13 +88,13 @@ u32 rgb;
 }btm_csg_colornames[]={
 
 {"black",		0x010101},
-{"blue",		0x0101AA},
+{"blue",		0x0101AB},
 {"green",		0x01AA01},
-{"cyan",		0x01AAAA},
+{"cyan",		0x01AAAB},
 {"red",			0xAA0101},
-{"magenta",		0xAA01AA},
+{"magenta",		0xAA01AB},
 {"brown",		0xAA5501},
-{"higray",		0xAAAAAA},
+{"higray",		0xAAAAAB},
 {"logray",		0x555555},
 {"hiblue",		0x555555},
 {"higreen",		0x55FF55},
@@ -114,18 +114,18 @@ u32 rgb;
 {"fuchsia",		0xFF01FF},
 {"yellow2",		0xFFFF01},
 
-{"navy",		0x010180},
+{"navy",		0x010181},
 {"green2",		0x018001},
-{"teal",		0x018080},
+{"teal",		0x018081},
 {"maroon",		0x800101},
-{"purple",		0x800180},
+{"purple",		0x800181},
 {"olive",		0x808001},
-{"gray",		0x808080},
-{"silver",		0xC0C0C0},
+{"gray",		0x808081},
 
 {"pink",		0xFFC0CB},
-{"violet",		0xEE82EE},
+{"violet",		0xEE82EF},
 
+{"silver",		0xC0C0C0},
 {"gold",		0xFFD700},
 
 {"saddlebrown",	0x8B4513},
@@ -134,6 +134,9 @@ u32 rgb;
 {"darkgray",	0xA9A9A9},
 {"dimgray",		0x696969},
 {"lightgray",	0xD3D3D3},
+
+{"beige",		0xF5F5DD},
+{"ivory",		0xFFFFF1},
 
 {NULL, 0}
 };

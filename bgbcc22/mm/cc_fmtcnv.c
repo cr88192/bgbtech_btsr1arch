@@ -941,8 +941,14 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 
 		if(fm1==3)
 		{
-			sz1=BGBCC_WAVE_StoreWaveImaAdpcm(
-				obuf, sbuf, ch1, rt, len);
+			fl=100-(qlvl*12);
+			if(qlvl>8)
+				fl=qlvl;
+			sz1=BGBCC_WAVE_StoreWaveImaAdpcm_Opt(
+				obuf, sbuf, ch1, rt, len, fl);
+
+//			sz1=BGBCC_WAVE_StoreWaveImaAdpcm(
+//				obuf, sbuf, ch1, rt, len);
 		}
 
 		if(fm1==4)
@@ -953,8 +959,14 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 
 		if(fm1==5)
 		{
-			sz1=BGBCC_WAVE_StoreWaveImaAdpcm2b(
-				obuf, sbuf, ch1, rt, len);
+			fl=100-(qlvl*12);
+			if(qlvl>8)
+				fl=qlvl;
+			sz1=BGBCC_WAVE_StoreWaveImaAdpcm2b_Opt(
+				obuf, sbuf, ch1, rt, len, fl);
+
+//			sz1=BGBCC_WAVE_StoreWaveImaAdpcm2b(
+//				obuf, sbuf, ch1, rt, len);
 		}
 
 		*rfcc=BGBCC_FMT_WAV;
@@ -974,9 +986,9 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 			mcur=mesh;
 			while(mcur)
 			{
-				mcur->scale[0]*=512.0/1000.0;
-				mcur->scale[1]*=512.0/1000.0;
-				mcur->scale[2]*=512.0/1000.0;
+				mcur->scale[0]*=-(40.0/100.0);
+				mcur->scale[1]*=40.0/100.0;
+				mcur->scale[2]*=40.0/100.0;
 				mcur=mcur->next;
 			}
 		}

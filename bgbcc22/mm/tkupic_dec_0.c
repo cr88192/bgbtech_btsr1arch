@@ -26,9 +26,6 @@
 #define TKUPI_PIXFMT_BC1_MIP	18
 #define TKUPI_PIXFMT_BC3_MIP	19
 
-// #define TKUPI_ADRICEB_SHL		5
-#define TKUPI_ADRICEB_SHL		4
-
 typedef struct TKuPI_DecState_s TKuPI_DecState;
 
 struct TKuPI_DecState_s {
@@ -42,7 +39,6 @@ struct TKuPI_DecState_s {
 	
 	byte mbform;	//macroblock format
 	byte pixclrs;	//pixel format+colorspace
-	byte ectrl;		//entropy control
 	byte qtsc;		//quantizer space
 	byte ishdr;		//Is HDR/H variant
 	
@@ -67,7 +63,6 @@ struct TKuPI_DecState_s {
 	u16 qtab_uv[64];
 
 //	void (*TransIBH)(s32 *oblk, s32 *iblk);
-	int (*ReadAdRice)(TKuPI_DecState *ctx, byte *rkf);
 };
 
 #if 0
@@ -214,7 +209,7 @@ int TKuPI_ReadRice(TKuPI_DecState *ctx, int kf)
 }
 
 #if 0
-int TKuPI_ReadAdRiceA(TKuPI_DecState *ctx, byte *rkf)
+int TKuPI_ReadAdRice(TKuPI_DecState *ctx, byte *rkf)
 {
 	int b, q, r, v, kf, skb;
 	int p;
@@ -253,7 +248,7 @@ int TKuPI_ReadAdRiceA(TKuPI_DecState *ctx, byte *rkf)
 #endif
 
 #if 1
-int TKuPI_ReadAdRiceA(TKuPI_DecState *ctx, byte *rkf)
+int TKuPI_ReadAdRice(TKuPI_DecState *ctx, byte *rkf)
 {
 	int b, q, r, v, kf;
 
@@ -290,44 +285,6 @@ int TKuPI_ReadAdRiceA(TKuPI_DecState *ctx, byte *rkf)
 	return(v);
 }
 #endif
-
-#if 1
-int TKuPI_ReadAdRiceB(TKuPI_DecState *ctx, byte *rkf)
-{
-	int b, q, r, v, kf, kfb, skb;
-	int p;
-
-	kfb=*rkf;
-	kf=kfb>>TKUPI_ADRICEB_SHL;
-	b=TKuPI_PeekBits(ctx, 16);
-	q=tkupi_riceqtab[b&0xFF];
-	if(q==8)
-	{
-		kfb++;
-		skb=16;
-		v=(b>>8)&0xFF;
-	}else
-	{
-		r=(b>>(q+1))&((1<<kf)-1);
-		skb=q+kf+1;
-		v=(q<<kf)|r;
-		if(!q && kfb)
-			{ kfb--; }
-		else if(q>1)
-			{ kfb++; }
-	}
-
-	TKuPI_SkipBits(ctx, skb);
-
-	*rkf=kfb;
-	return(v);
-}
-#endif
-
-int TKuPI_ReadAdRice(TKuPI_DecState *ctx, byte *rkf)
-{
-	return(ctx->ReadAdRice(ctx, rkf));
-}
 
 int TKuPI_ReadAdRiceSTF(TKuPI_DecState *ctx, byte *rkf, byte *stftab)
 {
@@ -1082,11 +1039,6 @@ void TKuPI_DecodeMacroBlockI(TKuPI_DecState *ctx,
 	int mvx, mvy, tpixs, tpiys;
 	int x, y;
 	
-	ctx->ReadAdRice=TKuPI_ReadAdRiceA;
-
-	if(ctx->ectrl&16)
-		ctx->ReadAdRice=TKuPI_ReadAdRiceB;
-	
 	TransIBH=TKuPI_TransIBH;
 //	if(ctx->mbform&32)
 	if((ctx->mbform&0xE0)==0x20)
@@ -1422,7 +1374,6 @@ int TKuPI_DecodeImageBufferI(TKuPI_DecState *ctx,
 	
 	ctx->mbform=1;
 	ctx->ishdr=0;
-	ctx->ectrl=0;
 	
 	datap=NULL;
 	cs=ibuf;
@@ -1457,7 +1408,6 @@ int TKuPI_DecodeImageBufferI(TKuPI_DecState *ctx,
 			ctx->img_ys=*(u16 *)(cs0+2);
 			ctx->mbform=cs0[4];
 			ctx->pixclrs=cs0[5];
-			ctx->ectrl=cs0[6];
 			cs=ncs;
 			continue;
 		}
@@ -1513,12 +1463,6 @@ int TKuPI_DecodeImageBufferI(TKuPI_DecState *ctx,
 
 		ctx->pk_dc=4;
 		ctx->pk_ac=4;
-
-		if(ctx->ectrl&0x10)
-		{
-			ctx->pk_dc=4<<TKUPI_ADRICEB_SHL;
-			ctx->pk_ac=4<<TKUPI_ADRICEB_SHL;
-		}
 		
 		isbcn=0;
 		if(	(pixfmt==TKUPI_PIXFMT_BC1) ||

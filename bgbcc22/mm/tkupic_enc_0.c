@@ -12,8 +12,6 @@
 #define TKUPI_ENCFL_USETNS_MSK	0x0E00
 #define TKUPI_ENCFL_USECLR_MSK	0x7000
 
-#define TKUPI_ENCFL_SLOWADRC	0x10000	//use slower adaptation on AdRice
-
 typedef struct TKuPI_EncState_s TKuPI_EncState;
 
 struct TKuPI_EncState_s {
@@ -26,7 +24,6 @@ struct TKuPI_EncState_s {
 	byte pk_ac;
 	byte mbform;
 	byte pixclrs;	//pixel format+colorspace
-	byte ectrl;
 	byte ishdr;
 	
 	s32 pdc_y;
@@ -40,7 +37,6 @@ struct TKuPI_EncState_s {
 	byte cpi_ac[256];
 	u16 qtab_y[64];
 	u16 qtab_uv[64];
-	void (*WriteAdRice)(TKuPI_EncState *ctx, int val, byte *rkf);
 };
 
 void TKuPI_WriteBits(TKuPI_EncState *ctx, int val, int bits)
@@ -71,7 +67,7 @@ void TKuPI_WriteRice(TKuPI_EncState *ctx, int val, int kf)
 	TKuPI_WriteBits(ctx, val&((1<<kf)-1), kf);
 }
 
-void TKuPI_WriteAdRiceA(TKuPI_EncState *ctx, int val, byte *rkf)
+void TKuPI_WriteAdRice(TKuPI_EncState *ctx, int val, byte *rkf)
 {
 	int q, kf;
 	
@@ -92,35 +88,6 @@ void TKuPI_WriteAdRiceA(TKuPI_EncState *ctx, int val, byte *rkf)
 		{ kf--; *rkf=kf; }
 	else if(q>1)
 		{ kf++; *rkf=kf; }
-}
-
-void TKuPI_WriteAdRiceB(TKuPI_EncState *ctx, int val, byte *rkf)
-{
-	int q, kf, kfb;
-	
-	kfb=*rkf;
-	kf=kfb>>TKUPI_ADRICEB_SHL;
-	q=val>>kf;
-
-	if(q>=8)
-	{
-		kfb++; *rkf=kfb;
-		TKuPI_WriteBits(ctx, 0xFF, 8);
-		TKuPI_WriteBits(ctx, val, 8);
-		return;
-	}
-
-	TKuPI_WriteBits(ctx, (1<<q)-1, q+1);
-	TKuPI_WriteBits(ctx, val&((1<<kf)-1), kf);
-	if(!q && kfb)
-		{ kfb--; *rkf=kfb; }
-	else if(q>1)
-		{ kfb++; *rkf=kfb; }
-}
-
-void TKuPI_WriteAdRice(TKuPI_EncState *ctx, int val, byte *rkf)
-{
-	ctx->WriteAdRice(ctx, val, rkf);
 }
 
 void TKuPI_WriteAdRiceSTF(TKuPI_EncState *ctx, int val,
@@ -880,10 +847,6 @@ void TKuPI_EncodeMacroBlockI(TKuPI_EncState *ctx, u16 *img, int str)
 	
 	mbf=ctx->mbform&15;
 
-	ctx->WriteAdRice=TKuPI_WriteAdRiceA;
-	if(ctx->ectrl&0x10)
-		ctx->WriteAdRice=TKuPI_WriteAdRiceB;
-
 	TransBH=TKuPI_TransBH;
 	if((ctx->mbform&0x60)==0x20)
 	{
@@ -1166,8 +1129,6 @@ int TKuPI_EncodeImageBuffer1I(TKuPI_EncState *ctx,
 		usedct=1;
 	}
 	
-	ctx->ectrl=0;
-
 	ctx->pixclrs=0;
 	if((qfl&0x3000)==0x1000)
 		ctx->pixclrs=0x20;
@@ -1282,9 +1243,6 @@ int TKuPI_EncodeImageBuffer1I(TKuPI_EncState *ctx,
 	if(usedct)
 		ctx->mbform|=0x60;
 
-	if(qfl&TKUPI_ENCFL_SLOWADRC)
-		ctx->ectrl|=0x10;
-
 	for(i=0; i<256; i++)
 	{
 		ctx->cpt_dc[i]=i;
@@ -1308,12 +1266,6 @@ int TKuPI_EncodeImageBuffer1I(TKuPI_EncState *ctx,
 	ctx->pk_dc=4;
 	ctx->pk_ac=4;
 
-	if(ctx->ectrl&0x10)
-	{
-		ctx->pk_dc=4<<TKUPI_ADRICEB_SHL;
-		ctx->pk_ac=4<<TKUPI_ADRICEB_SHL;
-	}
-
 	ct=ibuf;
 
 	if(pixfmt==TKUPI_PIXFMT_BGRA32_F8)
@@ -1329,7 +1281,6 @@ int TKuPI_EncodeImageBuffer1I(TKuPI_EncState *ctx,
 	*(u16 *)(ct+10)=oys;
 	*(byte *)(ct+12)=ctx->mbform;
 	*(byte *)(ct+13)=ctx->pixclrs;
-	*(byte *)(ct+14)=ctx->ectrl;
 //	if(pixfmt==TKUPI_PIXFMT_BGRA32_F8)
 //		*(byte *)(ct+13)=1;
 //	if(pixsz==2)
@@ -1454,7 +1405,7 @@ double TKuPI_EncCalcMseQbpp(byte *i1buf, byte *i2buf, int xs, int ys, int sz)
 //	ce/=n;
 	ce=sqrt(ce/n);
 	bpp=((8.0*sz)/n);
-//	printf("TKuPI_EncCalcMseQbpp: MSE=%f Bpp=%f\n", ce, bpp);
+	printf("TKuPI_EncCalcMseQbpp: MSE=%f Bpp=%f\n", ce, bpp);
 	ebpp=(ce+1.0)*bpp;
 	return(ebpp);
 }
@@ -1505,17 +1456,6 @@ int TKuPI_EncodeImageBufferI(TKuPI_EncState *ctx,
 	sz=ncsz;
 	bqe=999999.0;
 	bqfl=0;
-
-	qfl1=qfl;
-	qfl1&=~TKUPI_ENCFL_SLOWADRC;
-	sz1=TKuPI_EncodeImageBuffer1I(ctx,
-		tb_cbuf, szibuf, oimg, oxs, oys, qfl1, pixfmt);
-	qfl1|=TKUPI_ENCFL_SLOWADRC;
-	sz2=TKuPI_EncodeImageBuffer1I(ctx,
-		tb_cbuf, szibuf, oimg, oxs, oys, qfl1, pixfmt);
-		
-	if((sz2*1.007)<sz1)
-		qfl|=TKUPI_ENCFL_SLOWADRC;
 	
 	for(i=0; i<3; i++)
 		for(j=0; j<4; j++)
@@ -1556,8 +1496,8 @@ int TKuPI_EncodeImageBufferI(TKuPI_EncState *ctx,
 			tb_obuf, NULL, oxs, oys, pixfmt);
 		qe=TKuPI_EncCalcMseQbpp(oimg, tb_obuf, oxs, oys, sz1);
 
-//		printf("TKuPI_EncodeImageBufferI: ev qfl=%04X %s-%s sz=%d %f\n",
-//			qfl1, sn_btns, sn_clrs, sz1, qe);
+		printf("TKuPI_EncodeImageBufferI: ev qfl=%04X %s-%s sz=%d %f\n",
+			qfl1, sn_btns, sn_clrs, sz1, qe);
 
 		if(qe<bqe)
 		{
@@ -1584,7 +1524,7 @@ int TKuPI_EncodeImageBufferI(TKuPI_EncState *ctx,
 	
 //	char *sn_btns, *sn_clrs;
 
-	printf("TKuPI_EncodeImageBufferI: bqfl=%06X %s-%s\n",
+	printf("TKuPI_EncodeImageBufferI: bqfl=%04X %s-%s\n",
 		bqfl, sn_btns, sn_clrs);
 	
 	return(sz);
