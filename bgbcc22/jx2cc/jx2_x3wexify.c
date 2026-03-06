@@ -531,6 +531,17 @@ int BGBCC_JX2_CheckOpsRv_GetRegsImm(
 			fl|=BGBCC_WXSPFL_HASDISP;
 			break;
 		case 0x08:	/* STORE */
+			if(fun3==7)
+			{
+				rp=rn_dfl;
+				rs=rm_dfl;
+				rt=ro_dfl;
+				fl|=BGBCC_WXSPFL_ISMEM;
+				fl|=BGBCC_WXSPFL_3STAGE;
+				fl|=BGBCC_WXSPFL_IS_STORE;
+				break;
+			}
+		
 			rs=rm_dfl;
 			rt=ro_dfl;
 			rp=rm_dfl;

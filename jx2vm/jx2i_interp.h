@@ -897,6 +897,9 @@ Will use direct linking and assume a non-modifiable program space.
 
 #define BJX2_FMID_REGLDINCREG		0x32		//@Rm+, Rn
 
+#define BJX2_FMID_LDREG2REGB		0x34		//(Rm, Ro*1), Rn
+#define BJX2_FMID_REGSTREG2B		0x35		//Rm, (Rn, Ro*1)
+
 
 #define BJX2_FLAG_SR_T			0x00000001ULL
 #define BJX2_FLAG_SR_S			0x00000002ULL
@@ -975,8 +978,10 @@ Will use direct linking and assume a non-modifiable program space.
 // #ifdef X86_64
 #if defined(X86_64) && !defined(BJX2_EM_NOSTAT)
 
-// #define BJX2_EM_BPRED
+#define BJX2_EM_BPRED
 #define BJX2_EM_MEMSTAT
+
+// #define BJX2_EM_BPRED_LOG
 
 #endif
 
@@ -1386,6 +1391,11 @@ u64			cfg_fdflags;
 
 bjx2_addr	vm_mousex;
 bjx2_addr	vm_mousey;
+
+#ifdef BJX2_EM_BPRED_LOG
+u32 *bpredlog_vals;
+int bpredlog_idx;
+#endif
 
 BJX2_MemSpan *(*MemSpanForAddr)(BJX2_Context *ctx, bjx2_addr addr);
 

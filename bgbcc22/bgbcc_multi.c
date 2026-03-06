@@ -117,6 +117,8 @@
 #include "mm/tkupic_enc.c"
 #include "mm/bufpng.c"
 
+#include "mm/btm_rp2stf.c"
+
 #include "csg/btm_meshmulti.c"
 
 #include "ccxl/ccxl_cgif.c"

@@ -590,8 +590,9 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	byte *obuf;
 	byte *obuf1;
 	byte *obuf2;
+	byte *obuf3;
 	u32 csum, xcsum;
-	int osz, osz1, osz2, n, cmp;
+	int osz, osz1, osz2, osz3, n, cmp;
 
 	if(!isz)
 	{
@@ -611,7 +612,8 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 		return(n);
 	}
 
-	ctx1=TgvLz_CreateContext();
+//	ctx1=TgvLz_CreateContext();
+	ctx1=TgvLz_CreateContextRP2A();
 	ctx2=TgvLz_CreateContextLZ4();
 
 	ibuf=malloc(isz+24);
@@ -620,11 +622,14 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	
 	obuf1=malloc(isz*2+1024);
 	obuf2=malloc(isz*2+1024);
+	obuf3=malloc(isz*2+1024);
 //	osz=TgvLz_DoEncode(ctx, ibuf, obuf, isz);
 	osz1=TgvLz_DoEncodeSafe(ctx1, ibuf, obuf1, isz);
 	osz2=TgvLz_DoEncodeSafe(ctx2, ibuf, obuf2, isz);
 	TgvLz_DestroyContext(ctx1);
 	TgvLz_DestroyContext(ctx2);
+
+	osz3=BTM_StfRk_EncodeBufferPostRp2(obuf3, obuf1, osz1);
 
 //	csum=TgvLz_CalculateImagePel4BChecksum(ibuf, isz);
 	csum=TgvLz_CalculateImagePel4BChecksumAc(ibuf, isz);
@@ -638,6 +643,29 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	obuf1[osz1+6]=(xcsum>>16)&255;
 	obuf1[osz1+7]=(xcsum>>24)&255;
 	osz1+=8;
+
+	if(osz3>0)
+	{
+		obuf3[osz3+0]=(csum>> 0)&255;
+		obuf3[osz3+1]=(csum>> 8)&255;
+		obuf3[osz3+2]=(csum>>16)&255;
+		obuf3[osz3+3]=(csum>>24)&255;
+		obuf3[osz3+4]=(xcsum>> 0)&255;
+		obuf3[osz3+5]=(xcsum>> 8)&255;
+		obuf3[osz3+6]=(xcsum>>16)&255;
+		obuf3[osz3+7]=(xcsum>>24)&255;
+		osz3+=8;
+	}
+	
+	if((osz3>16) && ((osz3*1.07)<osz1))
+	{
+		printf("AddWadLump: Use STF-RK %d->%d\n", osz1, osz3);
+		memcpy(obuf1, obuf3, osz3);
+		osz1=osz3;
+	}else
+	{
+		printf("AddWadLump: Fail STF-RK %d->%d\n", osz1, osz3);
+	}
 	
 	if((osz1<=osz2) && (osz1>0))
 	{
@@ -1404,8 +1432,9 @@ int main(int argc, char *argv[], char **env)
 		h=HashIndexForName32((char *)(wad_dir[i].name), wad_dir[i].dirid);
 		h&=(hashsz-1);
 
-		printf("TK_Wad4_LookupLumpNameW4: %s pfx=%d h=%X\n",
-			wad_dir[i].name, wad_dir[i].dirid, h);
+		printf("TK_Wad4_LookupLumpNameW4: %s pfx=%d h=%X dsz=%d csz=%d\n",
+			wad_dir[i].name, wad_dir[i].dirid, h,
+			wad_dir[i].dsize, wad_dir[i].csize);
 
 		wad_dir[i].chn=wad_hash[h];
 		wad_hash[h]=i;
@@ -1414,8 +1443,8 @@ int main(int argc, char *argv[], char **env)
 		if((i!=1) && (j!=1) && (i!=j) &&
 			(wad_dir[i].name[0]!='$'))
 		{
-			printf("TK_Wad4_LookupLumpNameW4: link %d -> %d\n",
-				i, wad_dir[j].foffs);
+//			printf("TK_Wad4_LookupLumpNameW4: link %d -> %d\n",
+//				i, wad_dir[j].foffs);
 
 			wad_dir[i].dirnext=wad_dir[j].foffs;
 			wad_dir[j].foffs=i;

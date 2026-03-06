@@ -302,6 +302,7 @@ begin
 		if(tPreExCnt[0] == tPreExDir[2])
 			tNxtStatBraHit	= tStatBraHit + 1;
 
+`ifndef def_true
 		case( {tPreExCnt[5:1], tPreExDir[2]} )
 			6'b00000_0: tPreExCntB=6'b00101_1;
 			6'b00000_1: tPreExCntB=6'b10111_0;
@@ -368,6 +369,75 @@ begin
 			6'b11111_0: tPreExCntB=6'b01111_0;
 			6'b11111_1: tPreExCntB=6'b10100_0;
 		endcase
+`endif
+`ifdef def_true
+		case( {tPreExCnt[5:1], tPreExDir[2]} )
+			6'h00: tPreExCntB=6'h32;
+			6'h01: tPreExCntB=6'h20;
+			6'h02: tPreExCntB=6'h3E;
+			6'h03: tPreExCntB=6'h3B;
+			6'h04: tPreExCntB=6'h18;
+			6'h05: tPreExCntB=6'h02;
+			6'h06: tPreExCntB=6'h31;
+			6'h07: tPreExCntB=6'h13;
+			6'h08: tPreExCntB=6'h0C;
+			6'h09: tPreExCntB=6'h10;
+			6'h0A: tPreExCntB=6'h06;
+			6'h0B: tPreExCntB=6'h16;
+			6'h0C: tPreExCntB=6'h1E;
+			6'h0D: tPreExCntB=6'h24;
+			6'h0E: tPreExCntB=6'h06;
+			6'h0F: tPreExCntB=6'h12;
+			6'h10: tPreExCntB=6'h0F;
+			6'h11: tPreExCntB=6'h0B;
+			6'h12: tPreExCntB=6'h01;
+			6'h13: tPreExCntB=6'h2B;
+			6'h14: tPreExCntB=6'h34;
+			6'h15: tPreExCntB=6'h19;
+			6'h16: tPreExCntB=6'h1D;
+			6'h17: tPreExCntB=6'h2C;
+			6'h18: tPreExCntB=6'h33;
+			6'h19: tPreExCntB=6'h37;
+			6'h1A: tPreExCntB=6'h26;
+			6'h1B: tPreExCntB=6'h1B;
+			6'h1C: tPreExCntB=6'h0D;
+			6'h1D: tPreExCntB=6'h11;
+			6'h1E: tPreExCntB=6'h08;
+			6'h1F: tPreExCntB=6'h03;
+			6'h20: tPreExCntB=6'h0D;
+			6'h21: tPreExCntB=6'h39;
+			6'h22: tPreExCntB=6'h3D;
+			6'h23: tPreExCntB=6'h2A;
+			6'h24: tPreExCntB=6'h01;
+			6'h25: tPreExCntB=6'h13;
+			6'h26: tPreExCntB=6'h26;
+			6'h27: tPreExCntB=6'h37;
+			6'h28: tPreExCntB=6'h34;
+			6'h29: tPreExCntB=6'h36;
+			6'h2A: tPreExCntB=6'h3F;
+			6'h2B: tPreExCntB=6'h2D;
+			6'h2C: tPreExCntB=6'h15;
+			6'h2D: tPreExCntB=6'h21;
+			6'h2E: tPreExCntB=6'h0E;
+			6'h2F: tPreExCntB=6'h2B;
+			6'h30: tPreExCntB=6'h29;
+			6'h31: tPreExCntB=6'h2E;
+			6'h32: tPreExCntB=6'h38;
+			6'h33: tPreExCntB=6'h04;
+			6'h34: tPreExCntB=6'h0C;
+			6'h35: tPreExCntB=6'h25;
+			6'h36: tPreExCntB=6'h00;
+			6'h37: tPreExCntB=6'h17;
+			6'h38: tPreExCntB=6'h30;
+			6'h39: tPreExCntB=6'h2F;
+			6'h3A: tPreExCntB=6'h09;
+			6'h3B: tPreExCntB=6'h03;
+			6'h3C: tPreExCntB=6'h14;
+			6'h3D: tPreExCntB=6'h05;
+			6'h3E: tPreExCntB=6'h3D;
+			6'h3F: tPreExCntB=6'h23;
+		endcase
+`endif
 `else
 		if((tPreExCnt[2]^tPreExCnt[1]) == tPreExDir[2])
 			tNxtStatBraHit	= tStatBraHit + 1;

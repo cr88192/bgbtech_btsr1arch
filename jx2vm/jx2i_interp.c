@@ -3697,10 +3697,11 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 
 int BJX2_DbgDump(BJX2_Context *ctx)
 {
+	FILE *fd;
 	BJX2_Trace *cur;
 	bjx2_addr pc;
 	double f0, f1, f2;
-	int i;
+	int i, j, k;
 
 	if(!ctx->dbglog)
 	{
@@ -3776,6 +3777,28 @@ int BJX2_DbgDump(BJX2_Context *ctx)
 		fclose(ctx->dbglog);
 		ctx->dbglog=NULL;
 	}
+
+#ifdef BJX2_EM_BPRED_LOG
+	if(ctx->bpredlog_vals && (ctx->bpredlog_idx>(1<<22)))
+	{
+		printf("BranchPredLog: Dump\n");
+		fd=fopen("bjx2_dbgdumpbpre.dat", "wb");
+		for(i=0; i<(1<<22); i++)
+		{
+			j=(ctx->bpredlog_idx+i)&((1<<22)-1);
+			fwrite(ctx->bpredlog_vals+j, 1, 4, fd);
+		}
+		fclose(fd);
+	}else
+	{
+		if(!ctx->bpredlog_vals)
+			printf("BranchPredLog: No Log\n");
+		if(!(ctx->bpredlog_idx>(1<<22)))
+			printf("BranchPredLog: Insufficient Samples, %d\n",
+				ctx->bpredlog_idx);
+	}
+#endif
+
 	
 	return(0);
 }

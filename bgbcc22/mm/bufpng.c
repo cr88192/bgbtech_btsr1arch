@@ -187,7 +187,7 @@ int BGBBTJ_BufPNG_Paeth(int a, int b, int c)
 }
 #endif
 
-#if 1
+#if 0
 int BGBBTJ_BufPNG_Paeth(int a, int b, int c)
 {
 	int p, pa, pb, pc;
@@ -212,6 +212,23 @@ int BGBBTJ_BufPNG_Paeth(int a, int b, int c)
 //	p=(pb>pa)?((pc>pb)?c:b):((pc>pa)?c:a);
 
 //	p=(pa<=pb)?((pa<=pc)?a:c):((pb<=pc)?b:c);
+	return(p);
+}
+#endif
+
+#if 1
+int BGBBTJ_BufPNG_Paeth(int a, int b, int c)
+{
+	int p, pa, pb, pc;
+	int ma, mb, mc;
+
+	p=a+b-c;
+	pa=p-a;	pb=p-b;	pc=p-c;
+	ma=(pa>>31);	mb=(pb>>31);	mc=(pc>>31);
+        pa=pa^ma;	pb=pb^mb;	pc=pc^mc;
+	ma=pb-pa;	mb=pc-pb;	mc=pc-pa;
+	ma=ma>>31;	mb=mb>>31;	mc=mc>>31;
+	p=(ma&((mb&c)|((~mb)&b))) | ((~ma)&((mc&c)|((~mc)&a)));
 	return(p);
 }
 #endif

@@ -21,7 +21,7 @@
 // `define jx2_enable_riscv_op48	//Enable RISC-V 48-bit ops
 // `define jx2_enable_riscv_op48rep	//Enable RISC-V 48-bit repacked ops
 
-// `define jx2_enable_riscv_zilsx		//Enable RISC-V Zilx/Zisx Extension
+`define jx2_enable_riscv_zilsx		//Enable RISC-V Zilx/Zisx Extension
 
 // `define jx2_agu_ridisp			//Enable RiDisp / ScMOV (Rm+Ro*Sc+Imm)
 

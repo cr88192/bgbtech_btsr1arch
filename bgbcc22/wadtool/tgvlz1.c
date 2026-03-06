@@ -865,14 +865,16 @@ int TgvLz_EncodeBufferRP2(TgvLz_Context *ctx,
 {
 	byte *cs, *cse, *lcs;
 	byte *ct;
-	u32 v;
-	int pl, pd;
+	u64 v;
+	int pl, pd, is2b;
 	int l, d, rl, l1, d1;
 	int i, j, k;
 	
 	ctx->chn_base=ibuf;
 	cs=ibuf; cse=ibuf+ibsz;
 	ct=obuf;
+	
+	is2b=(ctx->tstName[3]=='B');
 	
 	pd=0; pl=0;
 	
@@ -938,6 +940,16 @@ int TgvLz_EncodeBufferRP2(TgvLz_Context *ctx,
 		else
 #endif
 #if 1
+		if(is2b && (rl==0) && (l<=131) && (d==1))
+		{
+			l1=l-4;
+			v=(l1<<9)|0x007F;
+			*ct++=v;
+			*ct++=v>>8;
+		}
+		else
+#endif
+#if 1
 		if((rl<8) && (l<=67) && (d<=8191))
 		{
 			d1=d;
@@ -964,6 +976,20 @@ int TgvLz_EncodeBufferRP2(TgvLz_Context *ctx,
 			*ct++=v>>16;
 			*ct++=v>>24;
 
+			memcpy(ct, lcs, rl);
+			ct+=rl;
+		}
+		else
+#endif
+#if 1
+		if(is2b && (rl<8) && (l<=16387) && (d<=0x3FFFFF))
+		{
+			d1=d;
+			l1=l-4;
+			v=(((u64)d1)<<26)|(l1<<12)|(rl<<9)|0x017F;
+			*ct++=v>> 0;	*ct++=v>> 8;
+			*ct++=v>>16;	*ct++=v>>24;
+			*ct++=v>>32;	*ct++=v>>40;
 			memcpy(ct, lcs, rl);
 			ct+=rl;
 		}
@@ -1129,6 +1155,20 @@ int TgvLz_DecodeBufferRP2(
 			cs+=rl;
 			ct+=rl;
 			continue;
+		}else
+			if(!(t0&0x80))
+		{
+			if(t0&0x0100)
+			{
+				cs+=6;
+				rl=(t0>>9)&7;
+				l=((t0>>12)&16383)+4;
+				d=(t0>>26)&0x3FFFFF;
+			}else
+			{
+				cs+=2; rl=0; d=1;
+				l=((t0>>9)&127)+4;
+			}
 		}else
 		{
 			debug_break
@@ -1572,6 +1612,43 @@ TgvLz_Context *TgvLz_CreateContext()
 	ctx->EncodeBuffer=TgvLz_EncodeBufferRP2;
 	ctx->DecodeBuffer=TgvLz_DecodeBufferRP2;
 	ctx->tstName="RP2";
+	ctx->cmp=3;
+
+	return(ctx);
+}
+
+TgvLz_Context *TgvLz_CreateContextRP2A()
+{
+	TgvLz_Context *ctx;
+
+	ctx=malloc(sizeof(TgvLz_Context));
+	
+	memset(ctx, 0, sizeof(TgvLz_Context));
+	ctx->maxlen=515;
+	ctx->maxdist=131072-8;
+
+	ctx->EncodeBuffer=TgvLz_EncodeBufferRP2;
+	ctx->DecodeBuffer=TgvLz_DecodeBufferRP2;
+	ctx->tstName="RP2";
+	ctx->cmp=3;
+
+	return(ctx);
+}
+
+TgvLz_Context *TgvLz_CreateContextRP2B()
+{
+	TgvLz_Context *ctx;
+
+	ctx=malloc(sizeof(TgvLz_Context));
+	
+	memset(ctx, 0, sizeof(TgvLz_Context));
+	ctx->maxlen=16383;
+	ctx->maxdist=(1<<22)-1;
+//	ctx->maxdepth=1024;
+
+	ctx->EncodeBuffer=TgvLz_EncodeBufferRP2;
+	ctx->DecodeBuffer=TgvLz_DecodeBufferRP2;
+	ctx->tstName="RP2B";
 	ctx->cmp=3;
 
 	return(ctx);

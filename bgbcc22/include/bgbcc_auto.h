@@ -1072,6 +1072,7 @@ u32 BGBBTJ_BufPNG_CRC32(void *buf, int sz, u32 lcrc);
 char *BGBBTJ_BufPNG_Fourcc2String(u32 fcc);
 int BGBBTJ_BufPNG_Paeth(int a, int b, int c);
 int BGBBTJ_BufPNG_Paeth(int a, int b, int c);
+int BGBBTJ_BufPNG_Paeth(int a, int b, int c);
 u32 BGBBTJ_BufPNG_ReadInt32BE(byte **rct);
 u32 BGBBTJ_BufPNG_ReadFourcc(byte **rct);
 void BGBBTJ_BufPNG_DecodeScan24_0(byte *s, byte *sca, byte *scb, int xs);

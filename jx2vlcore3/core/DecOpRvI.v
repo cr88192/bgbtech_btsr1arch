@@ -757,6 +757,10 @@ end
 				opBty		= { istrWord[29], istrWord[31:30] };
 				opUCmdIx	= {
 					opBty[1:0], 1'b0, opBty[2], istrWord[31:30] };
+				if(!istrWord[27])
+					opUCmdIx[1:0]=2'b00;
+
+`ifndef def_true
 				if(istrWord[27:26]==2'b00)
 				begin
 					opFmid		= JX2_FMID_REGIMMREG;
@@ -764,6 +768,7 @@ end
 					if(!istrWord[25])
 						opIty		= JX2_ITY_NL;
 				end
+`endif
 			end
 `endif
 		end
@@ -812,6 +817,10 @@ end
 				opBty		= { istrWord[29], istrWord[31:30] };
 				opUCmdIx	= {
 					opBty[1:0], 1'b0, opBty[2], istrWord[31:30] };
+				if(!istrWord[27])
+					opUCmdIx[1:0]=2'b00;
+
+`ifndef def_true
 				if(istrWord[27:26]==2'b00)
 				begin
 					opFmid		= JX2_FMID_REGIMMREG;
@@ -819,6 +828,7 @@ end
 					if(!istrWord[25])
 						opIty		= JX2_ITY_NL;
 				end
+`endif
 			end
 `endif
 		end

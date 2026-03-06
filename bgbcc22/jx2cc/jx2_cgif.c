@@ -627,6 +627,22 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			shctx->has_rvzba|=2;	//BitManip Old, ADDWU/SUBWU
 		}
 
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvzilx"))
+		{
+
+//			shctx->has_rvzba&=~16;	//Load/Store Indexed
+			shctx->has_rvzba|=64;	//zilx
+
+		}
+
+		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvzilsx"))
+		{
+
+//			shctx->has_rvzba&=~16;		//Load/Store Indexed
+			shctx->has_rvzba|=0x40;		//zilx
+			shctx->has_rvzba|=0x80;		//zisx
+		}
+
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo") ||
 			BGBCC_CCXL_CheckForOptStr(ctx, "rvjumbo96"))
 		{

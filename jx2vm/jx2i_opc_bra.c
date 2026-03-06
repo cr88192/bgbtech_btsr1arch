@@ -596,6 +596,19 @@ void BJX2_Op_BpredUpdateBranch(BJX2_Context *ctx, BJX2_Opcode *op, int take)
 	if(ctx->no_memcost)
 		return;
 
+#ifdef BJX2_EM_BPRED_LOG
+	if(!ctx->bpredlog_vals)
+	{
+		ctx->bpredlog_vals=malloc((1<<22)*4);
+		ctx->bpredlog_idx=0;
+	}
+	p=ctx->bpredlog_idx++;
+	if(p>(1<<25))
+		ctx->bpredlog_idx-=1<<24;
+	p&=(1<<22)-1;
+	ctx->bpredlog_vals[p]=(op->pc&0xFFFFFFFE)|(take&1);
+#endif
+
 	pri=((op->pc)>>1)&63;
 //	pri=((op->pc)>>1)&255;
 
@@ -1663,6 +1676,67 @@ void BJX2_Op_BSR_RegRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 		{ JX2_DBGBREAK }
 
 	BJX2_DbgBRA(ctx, op, "JALR");
+}
+
+void BJX2_Op_BRA_RegDisp1_RVC(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr, pc1;
+
+	sr=ctx->regs[BJX2_REG_SR];
+	
+	lr=ctx->regs[op->rn];
+
+	pc1=(ctx->regs[op->rn]+op->imm)&0x0000FFFFFFFFFFFFULL;
+
+//	if(pc1&1)
+	if(1)
+	{
+		sr&=0xFFFFFFFFF30FFFFFULL;
+		sr|=1<<26;
+//		sr|=(lr>>48)&0xFF03;
+//		sr|=((lr>>48)&0x000C)<<24;
+//		sr|=((lr>>48)&0x00F0)<<16;
+		ctx->regs[BJX2_REG_SR]=sr;
+		pc1&=~1;
+	}
+
+	ctx->regs[BJX2_REG_PC]=pc1;
+	ctx->tr_rnxt=NULL;
+	
+	if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+
+	BJX2_DbgBRA(ctx, op, "JR");
+}
+
+void BJX2_Op_BRA_RegDisp1_XG3(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 lr, sr, pc1;
+
+	sr=ctx->regs[BJX2_REG_SR];
+	
+	lr=ctx->regs[op->rn];
+
+	pc1=(ctx->regs[op->rn]+op->imm)&0x0000FFFFFFFFFFFFULL;
+
+//	if(pc1&1)
+	if(1)
+	{
+		sr&=0xFFFFFFFFF30FFFFFULL;
+		sr|=3<<26;
+//		sr|=((lr>>48)&0x000C)<<24;
+//		sr|=((lr>>48)&0x00F0)<<16;
+		ctx->regs[BJX2_REG_SR]=sr;
+		pc1&=~1;
+	}
+
+	ctx->regs[BJX2_REG_PC]=pc1;
+	ctx->tr_rnxt=NULL;
+	
+	if((op->pc2>0x10000) && (ctx->regs[BJX2_REG_PC]<0x10000))
+		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_BADPC);
+
+	BJX2_DbgBRA(ctx, op, "JR");
 }
 
 void BJX2_Op_INVIC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
