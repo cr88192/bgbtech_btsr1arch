@@ -2341,9 +2341,9 @@ F0zz Instruction Block:
 ** F0nm_8gd0  XMOV.B	Rn, (Xm, Disp5)		//
 ** F0nm_8Gd0  ? XLEA.B	(Xm, Disp5), Xn		//
 ** F0nm_8gd1  XMOV.W	Rn, (Xm, Disp5)		//
-** F0nm_8Gd1  ? TSTQ	Rm, Ro, Rn			//Rn=(Rm AND Ro)
+** F0nm_8Gd1  ? TSTQ	Rm, Ro, Rn			//Rn=!(Rm AND Ro)
 ** F0nm_8gd2  XMOV.L	Rn, (Xm, Disp5)		//
-** F0nm_8Gd2  ? TSTNQ	Rm, Ro, Rn			//Rn=!(Rm AND Ro)
+** F0nm_8Gd2  ? TSTNQ	Rm, Ro, Rn			//Rn=(Rm AND Ro)
 ** F0nm_8gd3  XMOV.Q	Rn, (Xm, Disp5)		//
 ** F0nm_8Gd3  XMOV.X	Xn, (Xm, Disp5)		//
 ** F0nm_8go4  XMOV.B	Rn, (Xm, Ro)		//

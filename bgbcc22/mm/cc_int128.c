@@ -19,10 +19,10 @@ bgbcc_vint128 BGBCC_Int128_Neg(bgbcc_vint128 a)
 	
 	u64 pa, pb, pc, pd;
 
-	pa=(~a.la)+1ULL;
-	pb=(~a.lb)+(pa>>32);
-	pc=(~a.lc)+(pb>>32);
-	pd=(~a.ld)+(pc>>32);
+	pa=(u64)((u32)(~a.la))+1ULL;
+	pb=(u64)((u32)(~a.lb))+(pa>>32);
+	pc=(u64)((u32)(~a.lc))+(pb>>32);
+	pd=(u64)((u32)(~a.ld))+(pc>>32);
 	
 	c.la=pa;
 	c.lb=pb;

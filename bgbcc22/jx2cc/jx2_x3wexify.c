@@ -249,6 +249,17 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 
 		if(((opw>>12)&15)<4)
 		{
+			if(opw&0x20)
+			{
+				sc=ldsc_sc[(opw>>12)&15];
+				rs=rm_dfl;
+				rn=rn_dfl;
+				imm=(((s32)opw)>>22)*sc;
+				fl|=BGBCC_WXSPFL_ISMEM;
+				fl|=BGBCC_WXSPFL_HASDISP;
+				break;
+			}
+		
 			sc=ldsc_sc[(opw>>12)&15];
 			rs=rm_dfl;
 			rp=rn_dfl;

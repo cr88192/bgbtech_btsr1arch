@@ -1,0 +1,33 @@
+BJX3: Possible Soft-Reboot of BJX2 Project.
+
+Design Goals:
+* Switch to RV64GC + XG3 as primary ISAs.
+* Reduce Cruft.
+* Simplify System Level mechanisms.
+* Focus on reducing HW/FPGA costs.
+
+Will make some restrictions on RV64GC:
+* Actual CPU will not natively implement all of the ISA.
+* I: Mostly Implemented As-Is
+** JAL/JALR: Only X0 and X1 will be allowed as destination register.
+* M: May be subset
+** Will have MULW and similar;
+** MUL, DIV, DIVW, etc, will be demoted to optional.
+* A: Omitted from HW, Trap
+* F: Partial
+* D: Partial
+* Zicsr: Partial (Trap for non-core CSRs)
+
+For F/D will make some simplifications to the Native ISA:
+* Only FADD/FSUB/FMUL
+* FDIV, FSQRT, etc: Trap
+* FMADD, etc: Trap
+* Actual HW will use DAZ+FTZ with partial width multiply.
+* If HW can't deliver an IEEE result, and IEEE is requested:
+** Fault and let OS/Firmware deal with it
+
+MMU:
+* Eliminate native Global page checks and VUGID in favor of using ACL checks as the primary mechanism;
+* Will continue to assume Soft-TLB as the main mechanism;
+* TLB Miss handling will need to be possible from RISC-V land.
+
