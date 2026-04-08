@@ -3914,6 +3914,8 @@ int BGBCC_JX2_TryNormalizeFXReg(
 	if((rs1<0) || (rs1&1))
 		return(-1);
 	
+	rs1&=63;
+	
 	rs2=-1;
 	if((rs1>=32) && (rs1<64))
 		rs2=rs1;

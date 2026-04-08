@@ -3751,7 +3751,7 @@ int BGBCC_JX2RV_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg);
 int BGBCC_JX2RV_EmitOpImm(BGBCC_JX2_Context *ctx,int nmid, s64 imm);
 int BGBCC_JX2RV_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm);
 int BGBCC_JX2RV_EmitOpRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
-int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn);
+int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,int nmid, int rm0, int rn0);
 int BGBCC_JX2RV_EmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg);
 int BGBCC_JX2RV_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int reg);
 int BGBCC_JX2RV_TryEmitOpRegRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int rp, int rn);

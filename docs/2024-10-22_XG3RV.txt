@@ -510,9 +510,9 @@ The XMOV instructions operate on 128-bit pointers, and are only valid if 128-bit
 ** 1001-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 1001-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
 ** 1010-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
-** 1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPQHI	Rm, Ro, Rn		//SLTU
 ** 1011-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
-** 1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPQHS	Rm, Ro, Rn		//SGEU
 ** 1100-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 1100-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
 ** 1101-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)

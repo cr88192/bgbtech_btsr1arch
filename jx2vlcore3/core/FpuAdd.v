@@ -50,6 +50,10 @@ ExOp:
 `include "ExCsClz64F.v"
 `include "ExCsShl64F.v"
 
+`ifdef jx2_fpu_fullround
+`include "FpuDoRound64.v"
+`endif
+
 module FpuAdd(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
@@ -208,6 +212,15 @@ reg				tInxC4B;
 
 reg[8:0]		tValRoundC4;
 reg[63:0]		tValC4;
+
+wire[63:0]		tValC4B;
+
+`ifdef jx2_fpu_fullround
+reg[1:0]		tValC4_Mode;
+FpuDoRound64	fpAddRound(tValC4B, tValC4, tValC4_Mode);
+`else
+assign			tValC4B = tValC4;
+`endif
 
 reg				tFraRbit4B;
 reg				tFraRbit4B2;
@@ -448,7 +461,11 @@ begin
 	tFraRbit4B		= tFraC4B[8];
 	tFraRbit4B2		= tFraC4B[10];
 
-	tValC4		= { tSgnC4B, tExpC4B[10:0], tFraC4B[60:9] };
+	tValC4			= { tSgnC4B, tExpC4B[10:0], tFraC4B[60:9] };
+
+`ifdef jx2_fpu_fullround
+	tValC4_Mode = 0;
+`endif
 
 `ifndef jx2_fpu_noround
 	if(tRegRMode4[3:0]==1)
@@ -461,6 +478,10 @@ begin
 //		tFraRbit4B2=0;
 	tFraRbit4B2=0;
 
+`ifdef jx2_fpu_fullround
+	tValRoundC4		= 0;
+	tValC4_Mode		= { 1'b0, tFraRbit4B };
+`else
 	tValRoundC4 = { 1'b0, tValC4[7:0] } + {
 		5'b0, tFraRbit4B2,
 		1'b0, tFraRbit4B };
@@ -472,6 +493,8 @@ begin
 
 //	if(tRegRMode4[3:0]==4)
 //		tValC4[1:0] = tInxC4B ? 2'b01 : 2'b00;
+`endif
+
 `endif
 
 	if(tRegExOp4[2:0] == 4)
@@ -563,7 +586,7 @@ begin
 	tRegRMode3	<= tRegRMode2;
 	tRegRMode4	<= tRegRMode3;
 
-	tRegValRo	<= tValC4;
+	tRegValRo	<= tValC4B;
 end
 
 endmodule

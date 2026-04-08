@@ -2023,7 +2023,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 //		BJX2_MemTranslateTlb(ctx, addr+4096);
 
 		if(!ctx->status)
-			{ BJX2_MemTranslateTlb(ctx, addr+(32*8), 4); }
+			{ BJX2_MemTranslateTlb(ctx, addr+(32*8), 0); }
 	}
 
 //	if(ctx->status)

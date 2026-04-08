@@ -40,7 +40,7 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 
 	switch((opw>>2)&7)
 	{
-	case 0:
+	case 0:		/* F0 */
 		rn=rn_dfl;
 		rs=rm_dfl;
 		rt=ro_dfl;
@@ -48,7 +48,7 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 		{
 
 #if 1
-		case 0x0:
+		case 0x0:	/* F0-0 */
 			if(!((opw>>31)&1))
 			{
 				rp=rn_dfl;
@@ -188,7 +188,7 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 #endif
 
 #if 1
-		case 0x6:
+		case 0x6:	/* F0-6 */
 			if((opw&0x20) &&
 				(((opw>>28)==0xA) ||
 				 ((opw>>28)==0xB) ))
@@ -201,18 +201,26 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 #endif
 
 #if 1
-		case 0x7:
+		case 0x7:	/* F0-7 */
 			break;
 #endif
 
 #if 1
-		case 0x8:
+		case 0x8:	/* F0-8 */
 			fl|=BGBCC_WXSPFL_FIXNOMOVE;
+			if(opw&0x20)
+			{
+				if(rn_df0==0)
+				{
+					rma=BGBCC_SH_REG_SR;
+					rna=BGBCC_SH_REG_SR;
+				}
+			}
 			break;
 #endif
 
 #if 1
-		case 0x9:
+		case 0x9:	/* F0-9 */
 			if(opw&0x20)
 			{
 				if(rn_df0==0)
@@ -238,7 +246,8 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 			break;
 		}
 		break;
-	case 1:
+
+	case 1:	/* F1 */
 		if(((opw>>12)&15)>=12)
 		{
 			rs=rm_dfl;
@@ -296,6 +305,8 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 			imm=(((s32)opw)>>22)*sc;
 			fl|=BGBCC_WXSPFL_ISMEM;
 			fl|=BGBCC_WXSPFL_IS_STORE;
+			if(((opw>>12)&15)==5)
+				{ fl|=BGBCC_WXSPFL_RXP; }
 			break;
 		}else
 		{
@@ -303,6 +314,8 @@ int BGBCC_JX2_CheckOpsX3_GetRegsImm(
 			rn=rn_dfl;
 			imm=(((s32)opw)>>22)*sc;
 			fl|=BGBCC_WXSPFL_ISMEM;
+			if(((opw>>12)&15)==7)
+				{ fl|=BGBCC_WXSPFL_RXN; }
 			break;
 		}
 		if(sc==8)
@@ -533,6 +546,14 @@ int BGBCC_JX2_CheckOpsRv_GetRegsImm(
 				fl|=BGBCC_WXSPFL_3STAGE;
 				break;
 			}
+
+			if(rn_dfl==BGBCC_SH_REG_ZZR)
+			{
+				rs=rm_dfl;
+				rt=ro_dfl;
+				fl|=BGBCC_WXSPFL_FIXNOMOVE;
+				break;
+			}
 		
 			rd=rn_dfl;
 			rs=rm_dfl;
@@ -572,6 +593,8 @@ int BGBCC_JX2_CheckOpsRv_GetRegsImm(
 			rs=rm_fr;
 			rt=ro_fr;
 			rp=ru_fr;
+			if(((opw>>25)&3)==3)
+				{ fl|=BGBCC_WXSPFL_FIXNOMOVE; }
 			break;
 		case 0x18:	/* Bcc */
 			rs=rm_dfl;
@@ -723,6 +746,8 @@ int BGBCC_JX2_CheckOpsRv_GetRegsImm(
 			rs=rm_fr;
 			rt=ro_fr;
 			fl|=BGBCC_WXSPFL_FIXNOMOVE;
+			if(((opw>>25)&3)==3)
+				{ fl|=BGBCC_WXSPFL_FIXNOMOVE; }
 			break;
 		case 0x1C:	/* SYSTEM */
 			rd=rn_dfl;
@@ -744,6 +769,7 @@ int BGBCC_JX2_CheckOpsRv_GetRegsImm(
 			rd=rn_dfl;
 			rs=rm_dfl;
 			rt=ro_dfl;
+			fl|=BGBCC_WXSPFL_FIXNOMOVE;
 			break;
 #endif
 

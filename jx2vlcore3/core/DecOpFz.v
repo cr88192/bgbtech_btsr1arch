@@ -5450,9 +5450,23 @@ begin
 			end
 
 			16'h9zzA: begin		/* F0nm_9eoA */
+				if(opExQ)
+				begin
+					opNmid		= JX2_UCMD_ALUCMP3R;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_SB;
+					opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
+				end
 			end
 
 			16'h9zzB: begin		/* F0nm_9eoB */
+				if(opExQ)
+				begin
+					opNmid		= JX2_UCMD_ALUCMP3R;
+					opFmid		= JX2_FMID_REGREG;
+					opIty		= JX2_ITY_SB;
+					opUCmdIx	= JX2_UCIX_ALU_CMPQHS;
+				end
 			end
 
 			16'h9zzC: begin		/* F0nm_9eoC */

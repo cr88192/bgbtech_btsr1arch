@@ -985,6 +985,8 @@ Will use direct linking and assume a non-modifiable program space.
 
 #endif
 
+#define BJX2_ThrowFaultStatus(ctx, sts)		\
+	BJX2_ThrowFaultStatusLln(ctx, sts, __FILE__, __LINE__)
 
 #if 0
 typedef unsigned char byte;
@@ -1224,6 +1226,13 @@ int tot_cnt_mem_dri;		//total I$ to DRAM misses
 int tot_cnt_mem_drd;		//total D$ to DRAM misses
 
 s64 tot_cnt_tlbmiss;
+
+s64 tot_cnt_fpemu_hard;
+s64 tot_cnt_fpemu_ieee;
+s64 tot_cnt_fpemu_dnz;
+s64 tot_cnt_fpemu_und;
+s64 tot_cnt_fpemu_rnd;
+s64 tot_cnt_fpemu_lnz;
 
 byte mem_l2rov;
 byte mem_l1rov;
@@ -1542,7 +1551,9 @@ int (*MemQueryTransit)(BJX2_Context *ctx,
 BJX2_Opcode *BJX2_ContextAllocOpcode(BJX2_Context *ctx);
 BJX2_Trace *BJX2_ContextAllocTrace(BJX2_Context *ctx);
 BJX2_Trace *BJX2_GetTraceForAddr(BJX2_Context *ctx, bjx2_addr addr, int tfl);
-int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status);
+
+int BJX2_ThrowFaultStatusLln(BJX2_Context *ctx, int status,
+	char *fname, int lnum);
 int BJX2_FaultLeaveInterrupt(BJX2_Context *ctx);
 
 

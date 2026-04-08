@@ -115,7 +115,8 @@ u64 BJX2_FAddSoft(u64 va, u64 vb)
 
 	if(((bjx2_fpsoftfl>>8)&7)==0)
 	{
-		if((frc>>12)==((frc+8)>>12))
+//		if((frc>>12)==((frc+8)>>12))
+		if((frc>>16)==((frc+8)>>16))
 			frc=(frc+8)>>4;
 		else
 		{
@@ -172,6 +173,11 @@ u64 BJX2_FMulSoft(u64 va, u64 vb)
 		return(0);
 	}
 	
+	if((fra&255) && (frb&255))
+	{
+		bjx2_fpsoftfl|=0x08;
+	}
+	
 	frc=((fra>>32)*((frb)>>32))	+
 		((fra>>32)*((u32)frb)>>32) +
 		((frb>>32)*((u32)fra)>>32) ;
@@ -189,7 +195,8 @@ u64 BJX2_FMulSoft(u64 va, u64 vb)
 
 	if(((bjx2_fpsoftfl>>8)&7)==0)
 	{
-		if((frc>>12)==((frc+8)>>12))
+//		if((frc>>12)==((frc+8)>>12))
+		if((frc>>16)==((frc+8)>>16))
 		{
 			frc=(frc+8)>>4;
 		}
@@ -302,26 +309,6 @@ void BJX2_Op_FADDD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vb=ctx->regs[op->ro];
 	vc=BJX2_FAddSoft(va, vb);
 	ctx->regs[op->rn]=vc;
-
-#if 0
-	if(BJX2_GetFpscr(ctx)&0x0010)
-	{
-		ctx->trapc=op->pc;		
-		if(bjx2_fpsoftfl&15)
-		{
-			ctx->regs[BJX2_REG_PC]=ctx->trapc;
-			ctx->regs[BJX2_REG_TEA]=0;
-			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
-			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
-		}
-	}
-#endif
-
-//	double a, b, c;
-//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
-//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
-//	c=a+b;
-//	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
 }
 
 void BJX2_Op_FSUBD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -335,52 +322,12 @@ void BJX2_Op_FSUBD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	vb=ctx->regs[op->ro];
 	vc=BJX2_FSubSoft(va, vb);
 	ctx->regs[op->rn]=vc;
-
-#if 0
-	if(BJX2_GetFpscr(ctx)&0x0010)
-	{
-		ctx->trapc=op->pc;		
-		if(bjx2_fpsoftfl&15)
-		{
-			ctx->regs[BJX2_REG_PC]=ctx->trapc;
-			ctx->regs[BJX2_REG_TEA]=0;
-			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
-			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
-		}
-	}
-#endif
-
-//	double a, b, c;
-//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
-//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
-//	c=a-b;
-//	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
 }
 
 void BJX2_Op_FMULD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	bjx2_fpsoftfl=0;
 	ctx->regs[op->rn]=BJX2_FMulSoft(ctx->regs[op->rm], ctx->regs[op->ro]);
-
-#if 0
-	if(BJX2_GetFpscr(ctx)&0x0010)
-	{
-		ctx->trapc=op->pc;		
-		if(bjx2_fpsoftfl&15)
-		{
-			ctx->regs[BJX2_REG_PC]=ctx->trapc;
-			ctx->regs[BJX2_REG_TEA]=0;
-			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
-			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
-		}
-	}
-#endif
-
-//	double a, b, c;
-//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
-//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
-//	c=a*b;
-//	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
 }
 
 void BJX2_Op_FDIVD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -399,15 +346,6 @@ void BJX2_Op_FDIVD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
 	}
-
-#if 0
-	double a, b, c;
-	
-	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
-	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
-	c=a/b;
-	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
-#endif
 }
 
 void BJX2_Op_FDIVAD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -420,12 +358,6 @@ void BJX2_Op_FDIVAD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	v2=	((v0^v1)&0x8000000000000000ULL)|
 		((v2   )&0x7FFFFF0000000000ULL);
 	ctx->regs[op->rn]=v2;
-
-//	double a, b, c;
-//	a=BJX2_PtrGetDoubleIx(ctx->regs, op->rm);
-//	b=BJX2_PtrGetDoubleIx(ctx->regs, op->ro);
-//	c=a/b;
-//	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, c);
 }
 
 void BJX2_Op_FDIVXA_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -516,6 +448,17 @@ void BJX2_Op_FADDG_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 #endif
 }
@@ -543,6 +486,17 @@ void BJX2_Op_FSUBG_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 #endif
 }
@@ -566,6 +520,19 @@ void BJX2_Op_FMULG_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
+		if(bjx2_fpsoftfl&8)
+			{ ctx->tot_cnt_fpemu_lnz++; }
 	}
 #endif
 }
@@ -3108,6 +3075,10 @@ void BJX2_Op_FMADDD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_TEA]=0;
 		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}else
+	{
+		if(BJX2_FaddDetectAddCancel(vt, vc, vd))
+			{ ctx->tot_cnt_fpemu_ieee++; }
 	}
 	
 //	if(BJX2_GetFpscr(ctx)&0x0010)
@@ -3121,6 +3092,17 @@ void BJX2_Op_FMADDD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }
 
@@ -3153,6 +3135,10 @@ void BJX2_Op_FMSUBD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_TEA]=0;
 		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}else
+	{
+		if(BJX2_FaddDetectAddCancel(vt, vc, vd))
+			{ ctx->tot_cnt_fpemu_ieee++; }
 	}
 	
 //	if(BJX2_GetFpscr(ctx)&0x0010)
@@ -3166,6 +3152,17 @@ void BJX2_Op_FMSUBD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }
 
@@ -3199,6 +3196,10 @@ void BJX2_Op_FNMADDD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_TEA]=0;
 		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}else
+	{
+		if(BJX2_FaddDetectAddCancel(vt, vc, vd))
+			{ ctx->tot_cnt_fpemu_ieee++; }
 	}
 	
 //	if(BJX2_GetFpscr(ctx)&0x0010)
@@ -3212,6 +3213,17 @@ void BJX2_Op_FNMADDD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }
 
@@ -3244,6 +3256,10 @@ void BJX2_Op_FNMSUBD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_TEA]=0;
 		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}else
+	{
+		if(BJX2_FaddDetectAddCancel(vt, vc, vd))
+			{ ctx->tot_cnt_fpemu_ieee++; }
 	}
 	
 //	if(BJX2_GetFpscr(ctx)&0x0010)
@@ -3257,6 +3273,17 @@ void BJX2_Op_FNMSUBD_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }
 
@@ -3331,6 +3358,9 @@ void BJX2_Op_FMADDS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_TEA]=0;
 		ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 		BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
+	}else
+	{
+		ctx->tot_cnt_fpemu_ieee++;
 	}
 	
 //	if(BJX2_GetFpscr(ctx)&0x0010)
@@ -3344,6 +3374,17 @@ void BJX2_Op_FMADDS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }
 
@@ -3380,6 +3421,17 @@ void BJX2_Op_FMSUBS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }
 
@@ -3416,6 +3468,17 @@ void BJX2_Op_FNMADDS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }
 
@@ -3451,5 +3514,16 @@ void BJX2_Op_FNMSUBS_RegRegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[BJX2_REG_TEAH]=ctx->regs[BJX2_REG_GBR_HI];
 			BJX2_ThrowFaultStatus(ctx, BJX2_FLT_OPEMURQ);
 		}
+	}else
+	{
+		if(bjx2_fpsoftfl&15)
+			{ ctx->tot_cnt_fpemu_ieee++; }
+
+		if(bjx2_fpsoftfl&1)
+			{ ctx->tot_cnt_fpemu_dnz++; }
+		if(bjx2_fpsoftfl&2)
+			{ ctx->tot_cnt_fpemu_und++; }
+		if(bjx2_fpsoftfl&4)
+			{ ctx->tot_cnt_fpemu_rnd++; }
 	}
 }

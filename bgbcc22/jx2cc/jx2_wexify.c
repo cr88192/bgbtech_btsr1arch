@@ -35,6 +35,7 @@
 #define	BGBCC_WXSPFL_RXN		0x100		//Xn
 #define	BGBCC_WXSPFL_RXS		0x200		//Xs
 #define	BGBCC_WXSPFL_RXT		0x400		//Xt
+#define	BGBCC_WXSPFL_RXP		0x800		//Xp
 
 #define	BGBCC_WXSPFL_JUMBO		0x1000		//jumbo prefix (64)
 #define	BGBCC_WXSPFL_JUMBOX2	0x2000		//jumbo prefix (96)
@@ -1168,6 +1169,12 @@ int BGBCC_JX2_RemapReg5Xn(
 	if(rix==2)
 	{
 		if(spfl&BGBCC_WXSPFL_RXT)
+			isxn=3;
+	}
+
+	if(rix==4)
+	{
+		if(spfl&BGBCC_WXSPFL_RXP)
 			isxn=3;
 	}
 

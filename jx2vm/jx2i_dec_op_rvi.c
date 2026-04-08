@@ -1506,6 +1506,14 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REGREGREG;
 				op->Run=BJX2_Op_SHLDQ_RegRegReg;
 				break;
+			case 1:
+				if(rn_dfl==BJX2_REG_ZZR)
+					break;
+				op->nmid=BJX2_NMID_MULSHQ;
+				op->fmid=BJX2_FMID_REGREGREG;
+				op->Run=BJX2_Op_MULSHQ_RegRegReg;
+				op->fl|=BJX2_OPFL_NOWEX;
+				break;
 			}
 			break;
 

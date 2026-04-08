@@ -29,6 +29,10 @@
 `include "CoreDefs.v"
 `include "ExCsAdd64F.v"
 
+`ifdef jx2_fpu_fullround
+`include "FpuDoRound64.v"
+`endif
+
 module FpuMul(
 	/* verilator lint_off UNUSED */
 	clock,		reset,
@@ -135,6 +139,14 @@ reg				tFraRbit4B2;
 reg[8:0]		tFraRnd4B;
 
 reg[63:0]		tValC4;
+wire[63:0]		tValC4B;
+
+`ifdef jx2_fpu_fullround
+reg[1:0]		tValC4_Mode;
+FpuDoRound64	fpMulRound(tValC4B, tValC4, tValC4_Mode);
+`else
+assign	tValC4B = tValC4;
+`endif
 
 //reg[1:0]		tExEn1;
 //reg[1:0]		tExEn2;
@@ -274,6 +286,10 @@ begin
 
 	/* Stage 4 */
 
+`ifdef jx2_fpu_fullround
+	tValC4_Mode = 0;
+`endif
+
 //	if(tExpC4[11])
 //	if(tExpC4[11] || (tExpC4==0))
 	if(tExpC4[12] || (tExpC4==0))
@@ -284,6 +300,10 @@ begin
 		tFraRbit4B	= 0;
 		tFraRbit4B2	= 0;
 		tInxC4B = tInxC4 || tExpC4[12];
+`ifdef jx2_fpu_fullround
+		tFraC4B		= tFraC4_S[61:8];
+		tValC4_Mode = 2;
+`endif
 	end
 	else
 	if(tExpC4[11] || (tExpC4==2047))
@@ -294,6 +314,10 @@ begin
 		tFraRbit4B	= 0;
 		tFraRbit4B2	= 0;
 		tInxC4B = tInxC4 || tExpC4[11];
+`ifdef jx2_fpu_fullround
+		tFraC4B		= tFraC4_S[61:8];
+		tValC4_Mode = 3;
+`endif
 	end
 	else
 	if(tFraC4_S[61])
@@ -328,7 +352,13 @@ begin
 		tFraRbit4B=tSgnC4;
 	if(tRegRMode4[3:0]!=4)
 		tFraRbit4B2=0;
-	
+
+`ifdef jx2_fpu_fullround
+	if(!tValC4_Mode[1])
+		tValC4_Mode[0] = tFraRbit4B;
+	tFraRnd4B	= 0;
+`else
+
 //	tFraRnd4B = { 1'b0, tFraC4B[7:0] } + { 8'b0, tFraRbit4B };
 	tFraRnd4B = { 1'b0, tFraC4B[7:0] } + { 5'b0,
 		tFraRbit4B2, 1'b0,
@@ -339,6 +369,8 @@ begin
 
 	if(tRegRMode4[3:0]==4)
 		tFraC4B[1:0] = tInxC4B ? 2'b01 : 2'b00;
+`endif
+
 `endif
 
 //	$display("FpuMul: ExpB %X %X", tExpC4, tExpC4B);
@@ -402,7 +434,7 @@ begin
 	tRegRMode4	<= tRegRMode3;
 	tRegExOp4	<= tRegExOp3;
 
-	tRegValRo	<= tValC4;
+	tRegValRo	<= tValC4B;
 	tRegExOK2	<= tRegExOK;
 end
 

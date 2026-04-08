@@ -1189,15 +1189,15 @@ int mfl;
 {"beq",		BGBCC_SH_NMID_BREQ},
 {"bne",		BGBCC_SH_NMID_BRNE},
 
-{"blt",		BGBCC_SH_NMID_BRLT},
-{"bge",		BGBCC_SH_NMID_BRGE},
-{"bgt",		BGBCC_SH_NMID_BRGT},
-{"ble",		BGBCC_SH_NMID_BRLE},
+{"blt",		BGBCC_SH_NMID_BRGT},
+{"bge",		BGBCC_SH_NMID_BRLE},
+{"bgt",		BGBCC_SH_NMID_BRLT},
+{"ble",		BGBCC_SH_NMID_BRGE},
 
-{"bltu",	BGBCC_SH_NMID_BRLTU},
-{"bgeu",	BGBCC_SH_NMID_BRGEU},
-{"bgtu",	BGBCC_SH_NMID_BRGTU},
-{"bleu",	BGBCC_SH_NMID_BRLEU},
+{"bltu",	BGBCC_SH_NMID_BRGTU},
+{"bgeu",	BGBCC_SH_NMID_BRLEU},
+{"bgtu",	BGBCC_SH_NMID_BRLTU},
+{"bleu",	BGBCC_SH_NMID_BRGEU},
 
 {"bz",		BGBCC_SH_NMID_BREQ},
 {"bnz",		BGBCC_SH_NMID_BRNE},
@@ -1257,6 +1257,8 @@ int mfl;
 {"muls",	BGBCC_SH_NMID_DMULS},
 {"mulu.l",	BGBCC_SH_NMID_DMULU},
 {"muls.l",	BGBCC_SH_NMID_DMULS},
+
+{"mulu.q",	BGBCC_SH_NMID_MULUQ},
 
 {"mulu.w",	BGBCC_SH_NMID_MULUW},
 {"muls.w",	BGBCC_SH_NMID_MULSW},
@@ -1908,8 +1910,8 @@ int mfl;
 
 {"slt",			BGBCC_SH_NMID_CMPQLT,	2},
 {"slti",		BGBCC_SH_NMID_CMPQLT,	2},
-{"sltu",		BGBCC_SH_NMID_CMPQLT,	2},
-{"sltiu",		BGBCC_SH_NMID_CMPQLT,	2},
+{"sltu",		BGBCC_SH_NMID_CMPQLTU,	2},
+{"sltiu",		BGBCC_SH_NMID_CMPQLTU,	2},
 
 {"mul",			BGBCC_SH_NMID_MULSQ,	2},
 {"mulw",		BGBCC_SH_NMID_MULL,		2},
@@ -1922,6 +1924,12 @@ int mfl;
 {"divuw",		BGBCC_SH_NMID_DIVUL,	2},
 {"remu",		BGBCC_SH_NMID_MODUQ,	2},
 {"remuw",		BGBCC_SH_NMID_MODUL,	2},
+
+{"mulh",		BGBCC_SH_NMID_MULHSQ,	2},
+{"mulhu",		BGBCC_SH_NMID_MULHUQ,	2},
+
+{"mulh.q",		BGBCC_SH_NMID_MULHSQ,	4},
+{"mulhu.q",		BGBCC_SH_NMID_MULHUQ,	4},
 
 {"csrrw",		BGBCC_SH_NMID_CSRRW,	2},
 {"csrrs",		BGBCC_SH_NMID_CSRRS,	2},
@@ -3938,6 +3946,22 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 			return(1);
 		}
 		
+		if(!strcmp(tk0, "I.style"))
+		{
+			cs2=cs1;
+			cs2=BGBCC_JX2A_ParseTokenAlt(cs2, &tk1);
+
+			if(!strcmp(tk1, "Iatt"))
+				ctx->is_rawasm&=~2;
+			if(!strcmp(tk1, "Irv"))
+				ctx->is_rawasm|=2;
+
+			while(*cs2 && (*cs2!='\r') && (*cs2!='\n'))
+				cs2++;
+			*rcs=cs2;
+			return(1);
+		}
+
 		ctx->tctx->n_error++;
 		printf("unexpected token '%s'\n", tk0+1);
 		*rcs=cs;
@@ -3953,8 +3977,8 @@ int BGBCC_JX2A_ParseOpcode(BGBCC_JX2_Context *ctx, char **rcs)
 
 int BGBCC_JX2A_InferBufferDestFirst(BGBCC_JX2_Context *ctx, char *buf)
 {
-	char *tk0;
-	char *cs;
+	char *tk0, *tk1;
+	char *cs, *cs1, *cs2;
 	int mcnt, mfl;
 
 	BGBCC_JX2A_Init();
@@ -3963,7 +3987,16 @@ int BGBCC_JX2A_InferBufferDestFirst(BGBCC_JX2_Context *ctx, char *buf)
 	cs=buf;
 	while(*cs)
 	{
-		BGBCC_JX2A_ParseTokenAlt(cs, &tk0);
+		cs1=BGBCC_JX2A_ParseTokenAlt(cs, &tk0);
+		cs2=BGBCC_JX2A_ParseTokenAlt(cs1, &tk1);
+
+		if(!strcmp(tk0, "I.style"))
+		{
+			if(!strcmp(tk1, "Iatt"))
+				return(0);
+			if(!strcmp(tk1, "Irv"))
+				return(0);
+		}
 		
 		if(*tk0=='I')
 		{

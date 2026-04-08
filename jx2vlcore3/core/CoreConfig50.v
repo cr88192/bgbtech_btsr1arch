@@ -69,6 +69,8 @@
 
 // `define jx2_mul_fazdiv				//Enable FAZ Divide (N/A w/o slomuldiv)
 
+`define	jx2_fpu_fullround			//FPU: Full Precision Rounding
+
 
 // `define jx2_mem_jnexbuf			//Extra Buffer Y Joiner
 `define jx2_mem_jnfastbuf			//Fast Buffer Y Joiner

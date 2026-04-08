@@ -3106,6 +3106,17 @@ void BJX2_Op_SLTU_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=rn;
 }
 
+void BJX2_Op_SGTU_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm, ro, rn;
+	int shl;
+	
+	rm=ctx->regs[op->rm];
+	ro=ctx->regs[op->ro];
+	rn=(((u64)rm)>((u64)ro));
+	ctx->regs[op->rn]=rn;
+}
+
 void BJX2_Op_SGEU_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	s64 rm, ro, rn;
@@ -3188,6 +3199,18 @@ void BJX2_Op_SLTU_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ro=ctx->regs[op->ro];
 	ro=op->imm;
 	rn=(((u64)rm)<((u64)ro));
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_SGTU_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm, ro, rn;
+	int shl;
+	
+	rm=ctx->regs[op->rm];
+//	ro=ctx->regs[op->ro];
+	ro=op->imm;
+	rn=(((u64)rm)>((u64)ro));
 	ctx->regs[op->rn]=rn;
 }
 

@@ -1604,6 +1604,13 @@ int BGBCC_JX2C_EmitConvVRegVReg(
 			return(1);
 		}
 
+		if(st==CCXL_TY_F128)
+		{
+			return(
+				BGBCC_JX2C_EmitConvVRegVRegFromFloat128(ctx, sctx,
+					dtype, dreg, sreg));
+		}
+
 		BGBCC_CCXL_StubError(ctx);
 		return(0);
 	}

@@ -2881,6 +2881,12 @@ int BGBCC_JX2C_EmitJCmpVRegZero(
 			type, sreg, cmp, lbl));
 	}
 
+	if(BGBCC_CCXL_TypeSgInt128P(ctx, type))
+	{
+		BGBCC_CCXL_GetRegForInt128Value(ctx, &treg, 0, 0);
+		return(BGBCC_JX2C_EmitJCmpVRegVReg(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
 
 	BGBCC_CCXL_StubError(ctx);
 	return(0);

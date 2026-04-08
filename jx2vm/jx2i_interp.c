@@ -332,10 +332,19 @@ int BJX2_DecodeTraceFlushCache(BJX2_Context *ctx)
 	return(0);
 }
 
-int BJX2_ThrowFaultStatus(BJX2_Context *ctx, int status)
+int BJX2_ThrowFaultStatusLln(BJX2_Context *ctx, int status,
+	char *fname, int lnum)
 {
 	u64 exc, sr0;
 	int i;
+
+	if((((status>>12)&15)==8) && (((status>>8)&15)!=8))
+	{
+		BJX2_DbgPrintf(ctx, "TRAP %04X %s:%d\n", status, fname, lnum);
+	}
+
+	if(status==BJX2_FLT_OPEMURQ)
+		{ ctx->tot_cnt_fpemu_hard++; }
 
 	BJX2_DbgPsBRA(ctx, ctx->trapc, "TRAP");
 
@@ -1770,9 +1779,15 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_FSGNJ:		s0="FSGNJ";		break;
 	case BJX2_NMID_FSGNJN:		s0="FSGNJN";	break;
 	case BJX2_NMID_FSGNJX:		s0="FSGNJX";	break;
-	case BJX2_NMID_FSGNJS:		s0="FSGNJS";	break;
-	case BJX2_NMID_FSGNJNS:		s0="FSGNJNS";	break;
-	case BJX2_NMID_FSGNJXS:		s0="FSGNJXS";	break;
+	case BJX2_NMID_FSGNJS:		s0="FSGNJ.S";	break;
+	case BJX2_NMID_FSGNJNS:		s0="FSGNJN.S";	break;
+	case BJX2_NMID_FSGNJXS:		s0="FSGNJX.S";	break;
+	case BJX2_NMID_FSGNJH:		s0="FSGNJ.H";	break;
+	case BJX2_NMID_FSGNJNH:		s0="FSGNJN.H";	break;
+	case BJX2_NMID_FSGNJXH:		s0="FSGNJX.H";	break;
+	case BJX2_NMID_FSGNJQ:		s0="FSGNJ.Q";	break;
+	case BJX2_NMID_FSGNJNQ:		s0="FSGNJN.Q";	break;
+	case BJX2_NMID_FSGNJXQ:		s0="FSGNJX.Q";	break;
 
 	case  BJX2_NMID_FDIVS:		s0="FDIV.S";	break;
 	case  BJX2_NMID_FLDCIS:		s0="FLDCI.S";	break;
@@ -2087,6 +2102,11 @@ int BJX2_DbgPrintf(BJX2_Context *ctx, char *str, ...)
 		vsprintf(tb, str, lst);
 //		fputs(tb, stdout);
 		fwrite(tb, 1, strlen(tb), stdout);
+
+		if(!ctx->dbglog)
+		{
+			ctx->dbglog=fopen("bjx2_dbgdumplog.txt", "wt");
+		}
 
 		if(ctx->dbglog)
 		{
