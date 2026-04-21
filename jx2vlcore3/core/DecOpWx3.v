@@ -704,7 +704,8 @@ begin
 	opCmRemapRxA[6'h0B]=JX2_GR_R42;
 	opCmRemapRxA[6'h0C]=JX2_GR_R12;
 	opCmRemapRxA[6'h0D]=JX2_GR_R44;
-	opCmRemapRxA[6'h0E]=JX2_GR_R14;
+//	opCmRemapRxA[6'h0E]=JX2_GR_R14;
+	opCmRemapRxA[6'h0E]=JX2_GR_JIMM;
 	opCmRemapRxA[6'h0F]=JX2_GR_R46;
 	opCmRemapRxA[6'h10]=JX2_GR_R16;
 	opCmRemapRxA[6'h11]=JX2_GR_R48;
@@ -737,7 +738,8 @@ begin
 	opCmRemapRxB[6'h0B]=JX2_GR_R43;
 	opCmRemapRxB[6'h0C]=JX2_GR_R13;
 	opCmRemapRxB[6'h0D]=JX2_GR_R45;
-	opCmRemapRxB[6'h0E]=JX2_GR_R15;
+//	opCmRemapRxB[6'h0E]=JX2_GR_R15;
+	opCmRemapRxB[6'h0E]=JX2_GR_JIMM_EXT;
 	opCmRemapRxB[6'h0F]=JX2_GR_R47;
 	opCmRemapRxB[6'h10]=JX2_GR_R17;
 	opCmRemapRxB[6'h11]=JX2_GR_R49;
@@ -819,7 +821,7 @@ begin
 	opCmRemapRxB[6'h3B]=JX2_GR_ZZR;
 	opCmRemapRxB[6'h3C]=JX2_GR_ZZR;
 	opCmRemapRxB[6'h3D]=JX2_GR_ZZR;
-	opCmRemapRxB[6'h3E]=JX2_GR_IMM;
+	opCmRemapRxB[6'h3E]=JX2_GR_IMM_EXT;
 	opCmRemapRxB[6'h3F]=JX2_GR_ZZR;
 `endif
 

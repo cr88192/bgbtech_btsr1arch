@@ -73,6 +73,7 @@ SRCS_CLIB = \
 	pdpc201/btshx_xli.c \
 	pdpc201/btshx_xlf.c \
 	pdpc201/btshx_vnf.c \
+	pdpc201/btshx_vnf_rv.c \
 	pdpc201/btshx_alloca.c \
 	pdpc201/bt_mman.c \
 	pdpc201/bt_readdir.c \
@@ -285,16 +286,16 @@ libdl.rv64.ril: $(SRCS_CLIB)
 		-D__USRONLY__
 
 libcdll.rv64.ril: $(SRCS_CLIB)
-	$(CC) -o libcdll.rv64.ril libcdll_multi.c $(COPTS64) \
+	$(CC) -o libcdll.rv64.ril libcdll_multi.c $(COPTS64RV) \
 		-D__USRONLY__
 
-libtkgdi.rv64.ril: $(SRCS_TKGDI) $(TKRA_SRCS)
+libtkgdi.rv64.ril: $(SRCS_TKGDI) $(TKRA_SRCS) $(SRCS_CLIB)
 	$(CC) -o libtkgdi.rv64.ril tkgdi_multi.c $(COPTS64RV)
 
-libtkgl.rv64.ril: $(TKRA_SRCS)
+libtkgl.rv64.ril: $(TKRA_SRCS) $(SRCS_CLIB)
 	$(CC) -o libtkgl.rv64.ril tkgl_multi.c $(COPTS64RV)
 
-libtkwui.rv64.ril: $(SRCS_TKWUI) $(TKRA_SRCS)
+libtkwui.rv64.ril: $(SRCS_TKWUI) $(TKRA_SRCS) $(SRCS_CLIB)
 	$(CC) -o libtkwui.rv64.ril tk_wui/tkwui_multi.c $(COPTS64RV)
 
 

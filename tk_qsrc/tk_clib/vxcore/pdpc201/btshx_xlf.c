@@ -1,4 +1,13 @@
-#ifdef __BJX2__
+#ifdef __BGBCC__
+
+#define XLF_GETBITS(x)	((__uint128)((__m128)(x)))
+#define XLF_FROMBITS(x)	((__float128)((__m128)(x)))
+
+#define XDB_GETBITS(x)	((__uint64)((__m64)(x)))
+#define XDB_FROMBITS(x)	((__float64)((__m64)(x)))
+
+// #ifdef __BJX2__
+#if 0
 
 __float128 __xlf_add(__float128 x, __float128 y);
 __float128 __xlf_sub(__float128 x, __float128 y);
@@ -429,15 +438,534 @@ __xlf_fromint:
 	BRA		__xlf_fromdbl
 };
 
+#else
+
+double __xlf_todbl(__float128 x)
+{
+	__uint128 a, b, c, cs, fra;
+	__uint64 lc;
+	int exa, exb, sga, rup;
+
+	a=XLF_GETBITS(x);
+	exa=(a>>112)&32767;
+	exb=exa-(16383-1023);
+	sga=(a>>127)&1;
+	fra=a&0x0000_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFFUI128;
+	if(exa)		fra|=0x0001_0000_0000_0000_0000_0000_0000_0000UI128;
+	
+	if(exb<0)
+	{
+		if(exb<=(-52))
+			return(0);
+		fra=fra>>(-exb);
+		exb=0;
+	}else
+		if(exb>=2047)
+	{
+		lc=0x7FF0000000000000ULL|(((u64)sga)<<63);
+		return(XDB_FROMBITS(lc));
+	}
+	
+	rup=(fra>>59)&1;
+	
+	b=((fra>>60)&0x000FFFFFFFFFFFFFULL)|(((u64)exb)<<52)|(((u64)sga)<<63);
+	if(rup)		b=b+1;
+
+	lc=b;
+	return(XDB_FROMBITS(lc));
+}
+
+__float128 __xlf_fromdbl(double x)
+{
+	__uint128 a, b, c, cs;
+	__uint128 fra, frb, frc, frcm, frhb, frsg;
+	__float128 z;
+	int exa, exb, exc, sga, sgb, sgc;
+
+	a=XDB_GETBITS(x);
+	exa=(a>>52)&2047;
+	sga=(a>>63)&1;
+
+	if(a==0)
+	{
+		c=0;
+		z=XLF_FROMBITS(c);
+		return(z);
+	}
+	
+	if(exa==0)
+	{
+		frb=a&0x000FFFFFFFFFFFFFUI128;
+		exb=15360;
+		while(!(frb>>52))
+			{ frb<<=1; exb--; }
+		frb&=0x000FFFFFFFFFFFFFUI128;
+		b=(frb<<60)|(((__uint128)exb)<<112)|(((__uint128)sga)<<112);
+		z=XLF_FROMBITS(b);
+		return(z);
+	}
+	
+	if(exa==2047)
+	{
+		b=((a&0x7FFFFFFFFFFFFFFFUI128)<<60);
+		b|=0x3FFF0000000000000000000000000000UI128;
+		b|=((a&0x8000000000000000UI128)<<64);
+		z=XLF_FROMBITS(b);
+		return(z);
+	}
+	
+	b=(a&0x7FFFFFFFFFFFFFFFUI128)<<60;
+	b+=0x3C000000000000000000000000000000UI128;
+	b|=((a&0x8000000000000000UI128)<<64);
+
+	z=XLF_FROMBITS(b);
+	return(z);
+}
+
+__int128 __xlf_toint128(__float128 x)
+{
+	__uint128 a, b, c, cs;
+	__uint128 fra, frb, frc, frcm, frhb, frsg;
+	__float128 z;
+	int exa, exb, exc, sga, sgb, sgc;
+
+	a=XLF_GETBITS(x);
+	exa=(a>>112)&32767;
+	sga=(a>>127)&1;
+
+	frcm=0x0000_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFFUI128;
+	frhb=0x0001_0000_0000_0000_0000_0000_0000_0000UI128;
+	frsg=0x8000_0000_0000_0000_0000_0000_0000_0000UI128;
+	fra=a&frcm;
+	if(exa)	fra|=frhb;
+
+	if(exa<16383)
+	{
+		c=0;
+	}else
+		if(exa<16495)
+	{
+		c=fra>>(112-(exa-16383));
+	}else
+		if(exa<16510)
+	{
+		c=fra<<(exa-16495);
+	}else
+	{
+		c=~frsg;
+	}
+	
+	if(sga)
+	{
+		c=(~c)+1;
+	}
+	
+	return(c);
+}
+
+__float128 __xlf_from_frac(__uint128 frc, int exc, int sgc)
+{
+	__uint128 c, frcm, frhb, frsg;
+	__float128 z;
+	int j, rup;
+
+	if((!frc) || (exc<=(-124)))
+	{
+		c=0;
+		z=XLF_FROMBITS(c);
+		return(z);
+	}
+
+	if((frc>>127)&1)
+	{
+		frc=~frc;
+		sgc=!sgc;
+	}
+
+	frcm=0x0000_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFFUI128;
+//	frhb=0x0001_0000_0000_0000_0000_0000_0000_0000UI128;
+	frsg=0x8000_0000_0000_0000_0000_0000_0000_0000UI128;
+
+	j=(int)(frc>>120);
+	if(j>=32)
+	{
+		while((frc>>125)!=0)
+			{ frc=frc>>1; exc++; }
+	}else
+		if(j<16)
+	{
+		if(!j)
+		{
+			if((frc>>60)==0)
+				{ frc=frc<<64; exc-=64; }
+			while(!((int)(frc>>108)))
+				{ frc=frc<<16; exc-=16; }
+			while(!((int)(frc>>120)))
+				{ frc=frc<<4; exc-=4; }
+		}
+		while(!((int)(frc>>124)))
+			{ frc=frc<<1; exc--; }
+	}
+
+	if(exc<0)
+	{
+		if(exc<=(-112))
+		{
+			c=0;
+			z=XLF_FROMBITS(c);
+			return(z);
+		}
+		
+		frc=frc>>(-exc);
+		exc=0;
+		
+		c=frc;
+		if(sgc)		c|=frsg;
+
+		z=XLF_FROMBITS(c);
+		return(z);
+	}
+	
+	if(exc>=32767)
+	{
+		frc=0;
+		exc=32767;
+	}
+	
+	rup=(frc>>11)&1;
+	frc>>=12;
+
+	c=(frc&frcm)|(((__uint128)exc)<<112);
+	if(sgc)		c|=frsg;
+	if(rup)		c=c+1;
+
+	z=XLF_FROMBITS(c);
+	return(z);
+}
+
+__float128 __xlf_fromint128(__int128 li)
+{
+	__uint128 c;
+	__uint128 frc;
+	__float128 z;
+	int exc, sgc;
+
+	if(li==0)
+	{
+		c=0;
+		z=XLF_FROMBITS(c);
+		return(z);
+	}
+
+	frc=li;
+	sgc=0;
+	exc=16383+124;
+	
+	if(li<0)
+	{
+		frc=-li;
+		sgc=1;
+	}
+
+	return(__xlf_from_frac(frc, exc, sgc));
+}
+
+long long __xlf_toint(__float128 x)
+{
+	return(__xlf_toint128(x));
+}
+
+__float128 __xlf_fromint(long long x)
+{
+	return(__xlf_fromint128(x));
+}
+
+__float128 __xlf_add(__float128 x, __float128 y)
+{
+	__uint128 a, b, c, cs;
+	__uint128 fra, frb, frb1, frc, frcm, frhb, frsg;
+	__float128 z;
+	int exa, exb, exc, sga, sgb, sgc, shl;
+
+	a=XLF_GETBITS(x);
+	b=XLF_GETBITS(y);
+
+	exa=(a>>112)&32767;
+	exb=(b>>112)&32767;
+	sga=(a>>127)&1;
+	sgb=(b>>127)&1;
+
+	frcm=0x0000_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFFUI128;
+	frhb=0x0001_0000_0000_0000_0000_0000_0000_0000UI128;
+	frsg=0x8000_0000_0000_0000_0000_0000_0000_0000UI128;
+	fra=a&frcm;
+	frb=b&frcm;
+	if(exa)	fra|=frhb;
+	if(exb)	frb|=frhb;
+	
+	fra=fra<<12;
+	frb=frb<<12;
+	
+	if((exb>exa) || ((exb==exa) && (frb>fra)))
+	{
+		frc=fra; fra=frb; frb=frc;
+		exc=exa; exa=exb; exb=exc;
+		sgc=sga; sga=sgb; sgb=sgc;
+	}
+
+	shl=exa-exb;
+	frb1=frb>>shl;
+
+	if(!(sga^sgb))
+	{
+		frc=fra+frb1;
+		exc=exa;
+		sgc=sga;
+	}else
+	{
+		frc=fra-frb1;
+		exc=exa;
+		sgc=sga;
+		
+		if(frc==0)
+		{
+			z=XLF_FROMBITS(frc);
+			return(z);
+		}
+	}
+	
+	return(__xlf_from_frac(frc, exc, sgc));
+}
+
+__float128 __xlf_sub(__float128 x, __float128 y)
+	{ return(__xlf_add(x, -y)); }
+
+__uint128 __xli_mul128lo(__uint128 a, __uint128 b)
+{
+	__uint128 c;
+	c=a*b;
+	return(c);
+}
+
+int __xli_dmul128u(__uint128 a, __uint128 b, __uint128 *rcl, __uint128 *rch);
+
+#if 0
+int __xli_dmul128u(__uint128 a, __uint128 b, __uint128 *rcl, __uint128 *rch)
+{
+	__uint128 ch, cl, cm, hh, hl, lh, ll, ah, al, bh, bl;
+	int cms;
+
+	ah=a>>64;	al=(u64)a;
+	bh=b>>64;	bl=(u64)b;
+
+	hh=ah*bh;	hl=ah*bl;
+	lh=al*bh;	ll=al*bl;
+	cm=hl+lh;
+	cms=cm<hl;
+	
+	ch=hh+(cm>>64);
+	cl=ll+(cm<<64);
+	if(cl<ll)	ch+=1UI128;
+	if(cms)		ch+=1UI128<<64;
+	*rcl=cl;	*rch=ch;
+	return(0);
+}
+#endif
+
+__float128 __xlf_mul(__float128 x, __float128 y)
+{
+	__uint128 a, b, c, cs;
+	__uint128 fra, frb, frc, frch, frcl, frcm, frhb, frsg;
+	__float128 z;
+	int exa, exb, exc, sga, sgb, sgc, rndh;
+
+	a=XLF_GETBITS(x);
+	b=XLF_GETBITS(y);
+
+	exa=(a>>112)&32767;
+	exb=(b>>112)&32767;
+	sga=(a>>127)&1;
+	sgb=(b>>127)&1;
+
+	if((a==0) || (b==0))
+	{
+//		__debugbreak();
+
+		c=0;
+		z=XLF_FROMBITS(c);
+		return(z);
+	}
+
+	frcm=0x0000_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFFUI128;
+	frhb=0x0001_0000_0000_0000_0000_0000_0000_0000UI128;
+	frsg=0x8000_0000_0000_0000_0000_0000_0000_0000UI128;
+	fra=a&frcm;
+	frb=b&frcm;
+	if(exa)	fra|=frhb;
+	if(exb)	frb|=frhb;
+
+	__xli_dmul128u(fra, frb, &frcl, &frch);
+//	frch=(frch<<16)|(frcl>>112);
+//	frcl=(frcl<<16);
+	frch=(frch<<28)|(frcl>>100);
+	frcl=(frcl<<28);
+
+//	__debugbreak();
+
+	frc=frch;
+	
+	exc=exa+exb-16383;
+	sgc=sga^sgb;
+
+	return(__xlf_from_frac(frc, exc, sgc));
+}
+
+// __float128 __xlf_div(__float128 x, __float128 y);
+
+int __xlf_dbgprint_lln(__float128 x, char *lfn, int lln)
+{
+	__uint128 a;
+
+	a=XLF_GETBITS(x);
+	printf("%s:%d %016llX:%016llX\n",
+		lfn, lln,
+		(long long)(a>>64), (long long)a);
+	return(0);
+}
+
+#define __xlf_dbgprint(x)	__xlf_dbgprint_lln(x, __FILE__, __LINE__)
+
+
+#if defined(__BJX2__) || defined(__RISCV__)
+// #if 0
+
+__float128 __xlf_neg(__float128 x);
+
+#ifdef __BJX2__
+
+__asm {
+__xlf_neg:
+	MOV		0x8000000000000000, R1
+	MOV		R4, R2
+	XOR		R5, R1, R3
+	RTS
+};
+
+#endif
+
+#ifdef __RISCV__
+
+__asm {
+__xlf_neg:
+	MOV		0x8000000000000000, R17
+	XOR		R11, R17, R11
+	RTS
+};
+
+#endif
+
+#else
+__float128 __xlf_neg(__float128 x)
+{
+	__uint128 b, c, cs;
+	__float128 y;
+
+	b=XLF_GETBITS(x);
+	
+	cs=0x8000_0000_0000_0000_0000_0000_0000_0000UI128;
+	c=b^cs;
+	
+//	__debugbreak();
+	
+	y=XLF_FROMBITS(c);
+	return(y);
+}
+#endif
+
+int __xlf_cmp_eq(__float128 x, __float128 y)
+{
+	__uint128 a, b, c, cs;
+	a=XLF_GETBITS(x);
+	b=XLF_GETBITS(y);
+	return(a==b);
+}
+
+int __xlf_cmp_ne(__float128 x, __float128 y)
+{
+	__uint128 a, b, c, cs;
+	a=XLF_GETBITS(x);
+	b=XLF_GETBITS(y);
+	return(a!=b);
+}
+
+int __xlf_cmp_gt(__float128 x, __float128 y)
+{
+	__uint128 a, b, c, cs;
+
+	a=XLF_GETBITS(x);
+	b=XLF_GETBITS(y);
+	cs=0x8000_0000_0000_0000_0000_0000_0000_0000UI128;
+
+	if(!(a&cs))
+	{
+		if(!(b&cs))
+		{
+			return(a>b);
+		}else
+		{
+			return(1);
+		}
+	}else
+	{
+		if(!(b&cs))
+		{
+			return(0);
+		}else
+		{
+			return(a<b);
+		}
+	}
+}
+
+int __xlf_cmp_ge(__float128 x, __float128 y)
+{
+	__uint128 a, b, c, cs;
+
+	a=XLF_GETBITS(x);
+	b=XLF_GETBITS(y);
+	cs=0x8000_0000_0000_0000_0000_0000_0000UI128;
+
+	if(!(a&cs))
+	{
+		if(!(b&cs))
+		{
+			return(a>=b);
+		}else
+		{
+			return(1);
+		}
+	}else
+	{
+		if(!(b&cs))
+		{
+			return(0);
+		}else
+		{
+			return(a<=b);
+		}
+	}
+}
+
+
+
+#endif
+
 
 #if 1
 
-#define XLF_GETBITS(x)	((__uint128)((__m128)(x)))
-#define XLF_FROMBITS(x)	((__float128)((__m128)(x)))
-
 __float128 __xlf_rcp(__float128 x)
 {
-	__float128 y;
+	__float128 y, z, c2, c3s8, c5s8;
 	__uint128 b, c, cs, p, q, r;
 	int sg;
 	int i;
@@ -445,14 +973,106 @@ __float128 __xlf_rcp(__float128 x)
 	b=XLF_GETBITS(x);
 	
 	sg=0;
-	cs=0x8000_0000_0000_0000UI128;
+	cs=0x8000_0000_0000_0000_0000_0000_0000_0000UI128;
 	if(b&cs)
-		{ sg=1; b^=cs; }
+	{
+//		__debugbreak();
+		sg=1;
+//		b^=cs;
+		x=-x;
+		b=XLF_GETBITS(x);
+	}
 	
-	c=0x7FFE_0000_0000_0000UI128;
+	c=0x7FFE_0000_0000_0000_0000_0000_0000_0000UI128;
 	p=c-b;
-	
-	c=0x3FFF_0000_0000_0000UI128;
+
+	y=XLF_FROMBITS(p);
+//	__xlf_dbgprint(y);
+
+#if 1
+	c=0x3FFF_0000_0000_0000_0000_0000_0000_0000UI128;
+	z=x*XLF_FROMBITS(p);
+
+//	__xlf_dbgprint(z);
+
+	q=XLF_GETBITS(z);
+	r=((__int128)(c-q))>>1;
+
+//	__debugbreak();
+//	__xlf_dbgprint(XLF_FROMBITS(r));
+
+	p=p+r;
+	y=XLF_FROMBITS(p);
+#endif
+
+//	__xlf_dbgprint(y);
+
+//	__debugbreak();
+
+	c2=2.0;
+
+#if 0
+	c3s8=0.375;
+	c5s8=0.625;
+
+	__debugbreak();
+
+	z=(c2-x*y)*c3s8+c5s8;
+	y=y*z;
+#endif
+
+//	__debugbreak();
+
+#if 0
+	z=x*y;
+	printf("W "); __xlf_dbgprint(z);
+	printf("2 "); __xlf_dbgprint(c2);
+	z=(c2-z);
+	y=y*z;
+	printf("Z "); __xlf_dbgprint(z);
+	printf("Y "); __xlf_dbgprint(y);
+#endif
+
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+
+//	__xlf_dbgprint(y);
+
+#if 0
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+#endif
+
+//	__xlf_dbgprint(y);
+
+#if 0
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+	y=y*(c2-x*y);
+#endif
+
+//	__xlf_dbgprint(y);
+
+	if(sg)
+		y=-y;
+
+//	__xlf_dbgprint(y);
+
+	return(y);
+
+#if 0
+	c=0x3FFF_0000_0000_0000_0000_0000_0000_0000UI128;
 	for(i=0; i<16; i++)
 	{
 		y=x*XLF_FROMBITS(p);
@@ -465,6 +1085,7 @@ __float128 __xlf_rcp(__float128 x)
 
 	y=XLF_FROMBITS(p);
 	return(y);
+#endif
 }
 
 __float128 __xlf_div(__float128 x, __float128 y)

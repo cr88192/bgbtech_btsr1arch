@@ -290,23 +290,40 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 	if(jbits&0x01000000U)
 	{
 		disp5=((jbits&0x000FFFFFF)<<4)|((opw1   )&15);
+		imm6 =((jbits&0x000FFFFFF)<<4)|((opw2   )&15);
 
 		if(isxg3)
 		{
 			if(jbits&0x10000000U)
 				disp5|=~0xFFFFFFFFULL;
+			if(jbits&0x20000000U)
+				imm6 |=~0xFFFFFFFFULL;
+
 			if(jbits&0x80000000U)
+			{
 				disp5|=0x80000000U;
+				imm6 |=0x80000000U;
+			}
 			if(jbits&0x08000000U)
+			{
 				disp5|=0x40000000U;
+				imm6 |=0x40000000U;
+			}
 			if(jbits&0x04000000U)
+			{
 				disp5|=0x20000000U;
+				imm6 |=0x20000000U;
+			}
 			if(opw1&0x0010)
-				disp5|=0x10000000U;
+				{ disp5|=0x10000000U; }
+			if(opw1&0x0020)
+				{ imm6 |=0x10000000U; }
 		}else
 		{
 			if(opw1&0x0010)
-				disp5|=0xF0000000;
+				disp5|=0x1F0000000ULL;
+			if(opw1&0x0020)
+				imm6 |=0x1F0000000ULL;
 
 #if 0
 			if(jbits&0x80000000U)
@@ -319,9 +336,12 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				disp5^=0x10000000U;
 #endif
 
-			disp5=(s32)disp5;
+			if((disp5>>32)&1)	disp5|=(~0xFFFFFFFFULL);
+			if((imm6 >>32)&1)	imm6 |=(~0xFFFFFFFFULL);
+//			disp5=(s32)disp5;
 		}
 		imm5=disp5;
+//		imm6=((opw2   )&15)|(disp5&(~15));
 		isjimm=1;
 	}
 	
@@ -2407,6 +2427,13 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->fmid=BJX2_FMID_REGREG;
 				op->Run=BJX2_Op_FLDCI_GRegReg;
 				op->fl|=BJX2_OPFL_NOWEX;
+				
+				if(isjimm)
+				{
+					op->imm=imm6;
+					op->fmid=BJX2_FMID_IMMREG;
+					op->Run=BJX2_Op_FLDCI_ImmReg;
+				}
 				break;
 			case 0x3:	/* F0e3_1Dnm */
 				op->nmid=BJX2_NMID_FLDCH;
@@ -5157,8 +5184,26 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				}
 			}
 			
+			if(isjimm)
+			{
+				op->imm=imm5;
+
+				op->nmid=BJX2_NMID_ADDSL;
+				op->fmid=BJX2_FMID_REGIMMREG;
+				op->Run=BJX2_Op_ADDSL_RegImmReg;
+
+				if(eq)
+				{
+					op->nmid=BJX2_NMID_ADDUL;
+					op->Run=BJX2_Op_ADDUL_RegImmReg;
+				}
+			}
+			
 			break;
 		case 0xD:	/* F0ez_5Dzz */
+			if(isjimm)
+				break;
+
 			op->nmid=BJX2_NMID_SUBSL;
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_SUBSL_RegRegReg;

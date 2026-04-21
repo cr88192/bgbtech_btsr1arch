@@ -125,6 +125,7 @@
 #include "pdpc201/strings.c"
 
 #include "pdpc201/btshx_vnf.c"
+#include "pdpc201/btshx_vnf_rv.c"
 #include "pdpc201/btshx_alloca.c"
 
 #ifdef __BGBCC__

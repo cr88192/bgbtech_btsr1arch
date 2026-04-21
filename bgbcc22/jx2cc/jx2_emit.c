@@ -2685,6 +2685,19 @@ int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv)
 	return(ret);
 }
 
+int BGBCC_JX2_ConstConvDoubleToHalf(u64 v, u16 *rv)
+{
+	u32 vi;
+	int rt1, rt2;
+	
+	*rv=0;
+	rt1=BGBCC_JX2_ConstConvDoubleToFloat(v, &vi);
+	if(rt1<=0)
+		return(rt1);
+	rt2=BGBCC_JX2_ConstConvFloatToHalf(vi, rv);
+	return(rt2);
+}
+
 int BGBCC_JX2_ConstConvPackedFloatToHalf2x(u64 v, u32 *rv)
 {
 	u32 v2;

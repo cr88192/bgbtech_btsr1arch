@@ -184,6 +184,9 @@ fixed_t*	spriteoffset;
 fixed_t*	spritetopoffset;
 
 lighttable_t	*colormaps;
+lighttable_t	*colormaps_base;
+lighttable_t	*colormaps_an3d;
+lighttable_t	*colormaps_bcur;
 
 byte			cmap_luma[68];
 
@@ -1726,6 +1729,26 @@ extern unsigned short	d_8to16table[256];
 
 extern int vid_flashblend;
 
+int r_adjustcolor_nom_luma(int cr, int cy)
+{
+	static short adj_ssqrt[512];
+	int cd, cd2, cr2;
+	
+	if(!adj_ssqrt[511])
+	{
+		for(cd=-256; cd<256; cd++)
+		{
+			cd2=((cd>=0)?(sqrt(cd)):(-sqrt(-cd)))*(12/5.65);
+			adj_ssqrt[cd+256]=cd2;
+		}
+	}
+	
+	cd=cr-cy;
+	cd2=adj_ssqrt[cd+256];
+	cr2=(13*cy+5*cd2)/8;
+	return(cr2);
+}
+
 //
 // R_InitColormaps
 //
@@ -1735,7 +1758,7 @@ void R_InitColormaps (void)
 	byte *tbuf;
 	lighttable_t *tcol;
 	int	lump, length, blen, hdl, lump1, hdl1;
-	int cr, cg, cb, cr2, cg2, cb2, dr, dg, db;
+	int cr, cg, cb, cr2, cg2, cb2, dr, dg, db, cy;
 	int i, j, k, l, n;
 
 	pal = W_CacheLumpName ("PLAYPAL", PU_CACHE);
@@ -1763,6 +1786,12 @@ void R_InitColormaps (void)
 
 	colormaps = Z_Malloc ((length+256)*sizeof(lighttable_t), PU_STATIC, 0); 
 	colormaps = (lighttable_t *)( ((nlint)colormaps + 255)&(~0xff)); 
+
+	colormaps_an3d = Z_Malloc ((length+256)*sizeof(lighttable_t), PU_STATIC, 0); 
+	colormaps_an3d = (lighttable_t *)( ((nlint)colormaps_an3d + 255)&(~0xff)); 
+
+	colormaps_base = colormaps;
+	colormaps_bcur = colormaps;
 
 	colormaps_blend = Z_Malloc (
 		(length+256)*sizeof(lighttable_t), PU_STATIC, 0); 
@@ -1865,7 +1894,29 @@ void R_InitColormaps (void)
 						
 			k=(cr<<10)|(cg<<5)|cb;
 			colormaps[i*256+j] = k;
+
+//			cy=(2*cg+cr+cb)/4;
+//			cy=(cr+cb)/2;
+//			cy=(4*cr+1*cg+3*cb)/8;
+			cy=(6*cr+4*cg+6*cb)/16;
+//			cr+=cy>>1;
+//			cg+=cy>>1;
+//			cb+=cy>>1;
+//			cr=(7*cr+7*cy)/8;
+//			cg=(7*cg+7*cy)/8;
+//			cb=(7*cb+7*cy)/8;
+
+			cr=r_adjustcolor_nom_luma(cr, cy);
+			cg=r_adjustcolor_nom_luma(cg, cy);
+			cb=r_adjustcolor_nom_luma(cb, cy);
+
+			if(cr>31)	cr=31;
+			if(cg>31)	cg=31;
+			if(cb>31)	cb=31;
 			
+			k=(cr<<10)|(cg<<5)|cb;
+			colormaps_an3d[i*256+j] = k;
+
 //			colormaps[i] = d_8to16table[tbuf[i]];
 		}
 	}
@@ -1986,6 +2037,14 @@ lighttable_t *R_ColormapRemapForBlend(lighttable_t *cmap)
 
 	if(!vid_flashblend)
 	{
+		if(st_do3dglasses)
+		{
+			ofs=cmap-colormaps;
+			if((ofs>=0) && (ofs<colormaps_blend_len))
+			{
+				return(colormaps_an3d+ofs);
+			}
+		}
 		return(cmap);
 	}
 	
@@ -1993,6 +2052,8 @@ lighttable_t *R_ColormapRemapForBlend(lighttable_t *cmap)
 	if((ofs>=0) && (ofs<colormaps_blend_len))
 	{
 		basecm=colormaps;
+		if(st_do3dglasses)
+			basecm=colormaps_an3d;
 		
 		if(colormaps_blend_base==basecm)
 		{

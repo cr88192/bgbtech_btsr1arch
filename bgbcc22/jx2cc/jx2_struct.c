@@ -3027,8 +3027,11 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 	case CCXL_TY_F:
 		if(sctx->fpu_soft)
 			{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=-1; break; }
-		else
+		else if(	sctx->has_fmovs &&
+					!(sctx->abi_fpstrict&1))
 			{ sz=4; nm1=BGBCC_SH_NMID_FMOVS; nm2=-1; break; }
+		else
+			{ sz=4; nm1=BGBCC_SH_NMID_MOVL; nm2=BGBCC_SH_NMID_FLDCF; break; }
 	case CCXL_TY_D:
 		if(sctx->fpu_soft)
 			{ sz=8; nm1=BGBCC_SH_NMID_MOVQ; nm2=-1; break; }

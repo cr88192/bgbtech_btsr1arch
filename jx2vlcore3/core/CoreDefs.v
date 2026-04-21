@@ -127,27 +127,20 @@ parameter[6:0] JX2_GR_DHR2		= 7'h51;
 
 parameter[6:0] JX2_GR_PC2_HI	= 7'h52;
 parameter[6:0] JX2_GR_RBSEL		= 7'h53;
-// parameter[6:0] JX2_GR_VBR2_HI	= 7'h53;
 parameter[6:0] JX2_GR_SPC2_HI	= 7'h54;
-// parameter[6:0] JX2_GR_SSP2_HI	= 7'h55;
-
 parameter[6:0] JX2_GR_BPC		= 7'h55;		//Base PC
 
 parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
-// parameter[6:0] JX2_GR_SP2_HI	= 7'h57;
-// parameter[6:0] JX2_GR_PC2_HI	= 7'h58;
-// parameter[6:0] JX2_GR_LR2_HI	= 7'h59;
-
+parameter[6:0] JX2_GR_JIMM_EXT	= 7'h57;		//JIMM Sign Extension
+parameter[6:0] JX2_GR_IMM_EXT	= 7'h58;		//Immed Sign Extension
 parameter[6:0] JX2_GR_IMMB		= 7'h59;		//Immed B
 
 parameter[6:0] JX2_GR_FPIMM56F	= 7'h5A;		//FP Immed, Imm56f
 parameter[6:0] JX2_GR_FPIMM56VF	= 7'h5B;		//FP Immed, 4x S.E5.F8
 
 parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
-// parameter[6:0] JX2_GR_FPIMM10	= 7'h5D;		//FP Immed, 10-bit
 parameter[6:0] JX2_GR_IMM_HI	= 7'h5D;		//Immed in high 32 bits.
 parameter[6:0] JX2_GR_IMM_RP	= 7'h5E;		//Immed via Rp
-// parameter[6:0] JX2_GR_SP2		= 7'h5F;
 parameter[6:0] JX2_GR_ZSP		= 7'h5F;		//SP, Zero-Extend 48b
 
 parameter[6:0] JX2_GR_PC		= 7'h60;

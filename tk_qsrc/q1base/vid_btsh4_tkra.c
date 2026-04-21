@@ -109,6 +109,34 @@ u32 *vid_vreg;
 
 void GL_Init (void);
 
+// #ifndef _BGBCC
+// #ifndef __BJX2__
+#if 0
+float __fpu_frcp_sf(float f)
+{
+	return(1.0/f);
+}
+
+float __fpu_fdiv_sf(float f, float g)
+{
+	return(f/g);
+}
+#endif
+
+#ifndef __BJX2__
+int D_SoftDivB(int a, int b)
+{
+//	return(D_SoftDivB(a, b));
+	return(D_SoftDiv(a, b));
+}
+
+// void __hint_use_egpr()
+// {
+// }
+
+#endif
+
+
 int vid_clamp255(int v)
 {
 	if(v<0)return(0);

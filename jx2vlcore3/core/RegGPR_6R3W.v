@@ -1012,6 +1012,17 @@ begin
 			tValRsZz=1;
 		end
 
+		JX2_GR_IMM_EXT: begin
+			tValRsA = 0;
+			tValRsA[63:0]=regValImmA[32]?UV64_FF:UV64_00;
+			tValRsZz=1;
+		end
+		JX2_GR_JIMM_EXT: begin
+			tValRsA = 0;
+			tValRsA[63:0]=regValImmB[32]?UV64_FF:UV64_00;
+			tValRsZz=1;
+		end
+
 //		JX2_GR_JIMM56: begin
 //			tValRsA=tValJimm56;
 //			tValRsZz=1;
@@ -1133,6 +1144,18 @@ begin
 			tValRtA=tValJimm;
 			tValRtZz=1;
 		end
+
+		JX2_GR_IMM_EXT: begin
+			tValRtA = 0;
+			tValRtA[63:0]=regValImmA[32]?UV64_FF:UV64_00;
+			tValRtZz=1;
+		end
+		JX2_GR_JIMM_EXT: begin
+			tValRtA = 0;
+			tValRtA[63:0]=regValImmB[32]?UV64_FF:UV64_00;
+			tValRtZz=1;
+		end
+
 //		JX2_GR_JIMM56: begin
 //			tValRtA=tValJimm56;
 //			tValRtZz=1;
@@ -1251,6 +1274,17 @@ begin
 			tValRuA=tValJimm;
 			tValRuZz=1;
 		end
+
+		JX2_GR_IMM_EXT: begin
+			tValRuA = 0;
+			tValRuA[63:0]=regValImmA[32]?UV64_FF:UV64_00;
+			tValRuZz=1;
+		end
+		JX2_GR_JIMM_EXT: begin
+			tValRuA = 0;
+			tValRuA[63:0]=regValImmB[32]?UV64_FF:UV64_00;
+			tValRuZz=1;
+		end
 `endif
 
 		JX2_GR_IMM:
@@ -1329,6 +1363,17 @@ begin
 `ifdef jx2_enable_wexjumbo
 		JX2_GR_JIMM: begin
 			tValRvA=tValJimm;
+			tValRvZz=1;
+		end
+
+		JX2_GR_IMM_EXT: begin
+			tValRvA = 0;
+			tValRvA[63:0]=regValImmA[32]?UV64_FF:UV64_00;
+			tValRvZz=1;
+		end
+		JX2_GR_JIMM_EXT: begin
+			tValRvA = 0;
+			tValRvA[63:0]=regValImmB[32]?UV64_FF:UV64_00;
 			tValRvZz=1;
 		end
 `endif

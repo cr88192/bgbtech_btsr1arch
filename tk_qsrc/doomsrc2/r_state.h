@@ -51,6 +51,9 @@ extern fixed_t*		spriteoffset;
 extern fixed_t*		spritetopoffset;
 
 extern lighttable_t*	colormaps;
+extern lighttable_t*	colormaps_base;
+extern lighttable_t*	colormaps_an3d;
+extern lighttable_t*	colormaps_bcur;
 
 extern	byte			cmap_luma[68];
 

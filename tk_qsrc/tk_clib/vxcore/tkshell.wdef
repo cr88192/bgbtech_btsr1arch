@@ -8,3 +8,19 @@ genmidi=tk_rsrc/genmidi.lmp
 # mandril_qp=tk_rsrc/mandril0.bmp bmp_cq8np
 # explod0=tk_rsrc/explod0.wav		wav_11m_adlq
 # explod0al=tk_rsrc/explod0.wav	wav_11m_alaw
+
+# mandril_dd1=tk_rsrc/mandril0.bmp dds_dxt1
+# mandril_dd2=tk_rsrc/mandril0.bmp dds_dxt5
+# mandril_dd3=tk_rsrc/mandril0.bmp bmp_bt5b,q=3
+
+# steet_dd3=tk_rsrc/StreetHolland.png bmp_bt5b,q=3
+# yazil_dd3=tk_rsrc/yazil_ft0.png bmp_bt5b,q=1
+
+# colors=tk_rsrc/colors.mtl
+
+# boxman_stl=tk_rsrc/boxman.scad stl
+# boxman_bmd=tk_rsrc/boxman.scad bmd
+# boxman_stlb=tk_rsrc/boxman.scad stl_bin
+# boxman_obj=tk_rsrc/boxman.scad obj_mdl
+
+chicken1_obj=tk_rsrc/chicken1.scad obj_mdl

@@ -195,7 +195,8 @@ float modff(float value, float *iptr)
 float powf(float x, float y)
 	{ return(pow(x, y)); }
 float sqrtf(float x)
-	{ return(sqrt(x)); }
+//	{ return(sqrt(x)); }
+	{ return(_sqrt_fast(x)); }
 float acosf(float x)
 	{ return(acos(x)); }
 float asinf(float x)
@@ -203,9 +204,11 @@ float asinf(float x)
 float atanf(float x)
 	{ return(atan(x)); }
 float cosf(float x)
-	{ return(cos(x)); }
+//	{ return(cos(x)); }
+	{ return(_cos_fast(x)); }
 float sinf(float x)
-	{ return(sin(x)); }
+//	{ return(sin(x)); }
+	{ return(_sin_fast(x)); }
 float tanf(float x)
 	{ return(tan(x)); }
 float coshf(float x)
@@ -215,11 +218,14 @@ float sinhf(float x)
 float tanhf(float x)
 	{ return(tanh(x)); }
 float expf(float x)
-	{ return(exp(x)); }
+//	{ return(exp(x)); }
+	{ return(_exp_fast(x)); }
 float logf(float x)
-	{ return(log(x)); }
+//	{ return(log(x)); }
+	{ return(_log_fast(x)); }
 float log10f(float x)
-	{ return(log10(x)); }
+//	{ return(log10(x)); }
+	{ return(_log10_fast(x)); }
 
 long double ceill(long double x)
 	{ return(ceil(x)); }

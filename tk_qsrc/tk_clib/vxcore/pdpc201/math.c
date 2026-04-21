@@ -599,6 +599,52 @@ __PDPCLIB_API__ double exp (double x)
 	return(answer);
 }
 
+__PDPCLIB_API__ double _exp_fast (double x)
+{
+	int i, n;
+	float term,answer,work;
+
+	i=2;
+	term=x;
+	answer=x;
+
+#if 1
+	term =  (term * x)*(1.0/2.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/3.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/4.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/5.0);
+	answer = answer + (term);
+
+	term =  (term * x)*(1.0/6.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/7.0);
+	answer = answer + (term);
+
+#if 0
+	term =  (term * x)*(1.0/8.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/9.0);
+	answer = answer + (term);
+
+	term =  (term * x)*(1.0/10.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/11.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/12.0);
+	answer = answer + (term);
+	term =  (term * x)*(1.0/13.0);
+	answer = answer + (term);
+#endif
+
+#endif
+
+	answer=answer+1.0;
+	return(answer);
+}
+
 /*
 
    Calculate LOG using Taylor series.
@@ -724,9 +770,76 @@ __PDPCLIB_API__ double log (double x0)
 }
 
 
+__PDPCLIB_API__ double _log_fast (double x0)
+{
+	int i, n, scale;
+	double term,answer,work,xs;
+//	float term,answer,work,xs;
+
+	if (x0 <= 0 )
+	{
+		/* need to set signal */
+		errno=EDOM;
+		return (HUGE_VAL);
+	}
+	if(x0 == 1.0)
+		return(0.0);
+
+#if 1
+/*
+  Scale arguments to be in range 1 < x <= 10
+*/
+
+	scale = 0; xs = x0;
+
+	xs = frexp(x0,&scale);
+	xs = xs - 1.0;
+
+	scale = scale - 0;
+
+	i=2;
+	term=xs;
+	answer=xs;
+
+	term = - (term * xs);
+	answer = answer + (term*(1.0/2.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/3.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/4.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/5.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/6.0));
+
+#if 0
+	term = - (term * xs);
+	answer = answer + (term*(1.0/7.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/8.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/9.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/10.0));
+	term = - (term * xs);
+	answer = answer + (term*(1.0/11.0));
+#endif
+
+	work = (double)scale;
+	answer = answer + (work * M_LN2);
+	return(answer);
+#endif
+}
+
+
 __PDPCLIB_API__ double log10(double x)
 {
 	return ( log(x) / M_LN10 );
+}
+
+__PDPCLIB_API__ double _log10_fast(double x)
+{
+	return ( _log_fast(x) / M_LN10 );
 }
 
 

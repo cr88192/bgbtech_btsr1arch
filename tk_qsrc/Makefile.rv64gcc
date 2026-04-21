@@ -84,7 +84,7 @@ GL_CFLAGS64	= $(CFLAGS64) -DGLQUAKE
 all: targets
 
 # targets: quake_rv64.elf dhry_rv64.elf
-targets: dhry_rv64.elf \
+targets: dhry_rv64.elf fft1_rv64.elf whetstone_rv64.elf \
 	quake_rv64.elf  \
 	glquake_tkra_rv64.elf
 
@@ -288,6 +288,12 @@ DHRY_SRCS =			\
 	dhry/dhry_1.c	\
 	dhry/dhry_2.c
 
+FFT1_SRCS =			\
+	tst_fft/test_fft1.c
+
+WHET1_SRCS = \
+	tst_fft/whetstone.c
+
 quake_sh4b.elf: $(SQUAKE_SRCS)
 	$(CC) $(CFLAGS) -o $@ $(SQUAKE_SRCS) $(LDFLAGS)
 #	$(OBJDUMP) -t $@ > quake_sh4b.map
@@ -306,6 +312,14 @@ dhry_rv64.elf: $(DHRY_SRCS)
 #	$(CC) $(CFLAGS64_GLIB) -o $@ $(DHRY_SRCS) $(LDFLAGS64_GLIB) \
 #		-DTIME -DREG=register
 	$(NM) dhry_rv64.elf > dhry_rv64.elf.map
+
+fft1_rv64.elf: $(FFT1_SRCS)
+	$(CC) $(CFLAGS64) -o $@ $(FFT1_SRCS) $(LDFLAGS64)
+	$(NM) fft1_rv64.elf > dhry_fft1.elf.map
+
+whetstone_rv64.elf: $(WHET1_SRCS)
+	$(CC) $(CFLAGS64) -o $@ $(WHET1_SRCS) $(LDFLAGS64)
+	$(NM) whetstone_rv64.elf > whetstone_rv64.elf.map
 
 
 quake_rv64.elf: $(SQUAKE_SRCS)

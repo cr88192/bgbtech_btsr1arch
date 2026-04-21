@@ -27,6 +27,19 @@ __smulsq:
 	add		r3, r2
 
 	rtsu
+
+/*
+	umullq: Unsigned Multiply, Long to Quad
+	smullq: Signed Multiply, Long to Quad
+*/
+
+__umullq:
+	dmulu	r4, r5, r2
+	rts
+
+__smullq:
+	dmuls	r4, r5, r2
+	rts
 };
 
 __asm {
@@ -777,6 +790,10 @@ __va64_arg_x:
 //	add?f	8, r28
 // .endif
 	mov		56, r29
+	
+	add		r28, 15, r28
+	and		r28, -16, r28
+	
 //	cmp/gt	r28, r29
 //	bf		__va64_arg_i.L0
 	brge	r29, r28, __va64_arg_x.L0
@@ -805,25 +822,236 @@ __va64_arg_x.L0:
 	mov		r31, r11
 	rts
 	nop
-	
+};
+
+__asm {
 .global _arch_gettbr
 _arch_gettbr:
 	mov		r4, r10
 	rts
 	nop
+	
+.global __fpu_setstrict
+__fpu_setstrict:
+	add		-16, sp
+	mov		x1, (sp, 8)
+	bsr		fegetenv
+	or		x10, 0x10, x10
+	bsr		fesetenv
+	mov		(sp, 8), x1
+	add		16, sp
+	rts
 
+.global __fpu_frcp
+__fpu_frcp:
+	mov		0x7FE00000, x14
+	mov		0x40000000, x15
+	mov		0x3FD00000, x16
+	mov		0x3FF00000, x17
 
+	shld.q	x14, 32, x14
+	shld.q	x15, 32, x15
+	shld.q	x16, 32, x16
+	shld.q	x17, 32, x17
+
+	mov		x15, f15
+	sub		x14, x10, x11
+
+	mov		x16, f16
+	mov		x17, f17
+
+	mov		x11, f11
+	mov		x10, f10
+	
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+
+	fsub	f13, f17, f13
+	fmul	f13, f16, f13
+	fadd	f13, f17, f13
+
+	fmul	f11, f13, f11
+
+//	break
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	mov		f11, x10
+	rts
+};
+
+__asm {
+.global __fpu_frcp_s
+__fpu_frcp_s:
+	mov		0x7FE00000, x14
+	mov		0x40000000, x15
+	mov		0x3FD00000, x16
+	mov		0x3FF00000, x17
+
+	shld.q	x14, 32, x14
+	shld.q	x15, 32, x15
+	shld.q	x16, 32, x16
+	shld.q	x17, 32, x17
+
+	sub		x14, x10, x11
+
+	mov		x10, f10
+	mov		x11, f11
+	mov		x15, f15
+	mov		x16, f16
+	mov		x17, f17
+	
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+
+	fsub	f13, f17, f13
+	fmul	f13, f16, f13
+	fadd	f13, f17, f13
+
+	fmul	f11, f13, f11
+
+//	break
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	mov		f11, x10
+	rts
+};
+
+__asm {
+.global __fpu_frcp_sf
+__fpu_frcp_sf:
+	mov		0x7FE00000, x14
+	mov		0x40000000, x15
+	mov		0x3FD00000, x16
+	mov		0x3FF00000, x17
+
+	shld.q	x14, 32, x14
+	shld.q	x15, 32, x15
+	shld.q	x16, 32, x16
+	shld.q	x17, 32, x17
+
+	sub		x14, x10, x11
+
+	mov		x10, f10
+	mov		x11, f11
+	mov		x15, f15
+	mov		x16, f16
+	mov		x17, f17
+	
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+
+	fsub	f13, f17, f13
+	fmul	f13, f16, f13
+	fadd	f13, f17, f13
+
+	fmul	f11, f13, f11
+
+//	break
+
+	fmul	f10, f11, f12
+	fsub	f15, f12, f13
+	fmul	f11, f13, f11
+
+	mov		f11, x10
+	rts
+};
+
+__asm {
+.global __fpu_fdiv
+.global __fpu_fdiv_s
+.global __fpu_fdiv_sf
+
+.extern __fpu_frcp
+.extern __fpu_frcp_s
+.extern __fpu_frcp_sf
+
+__fpu_fdiv:
+	mov		x1, x31
+	mov		x10, x30
+	mov		x11, x10
+	bsr		__fpu_frcp
+	fmul	x30, x10, x10
+	mov		x31, x1
+	rts
+	nop
+
+__fpu_fdiv_s:
+	mov		x1, x31
+	mov		x10, x30
+	mov		x11, x10
+	bsr		__fpu_frcp_s
+	fmul	x30, x10, x10
+	mov		x31, x1
+	rts
+	nop
+
+__fpu_fdiv_sf:
+	mov		x1, x31
+	mov		x10, x30
+	mov		x11, x10
+	bsr		__fpu_frcp_sf
+	fmul	x30, x10, x10
+	mov		x31, x1
+	rts
+	nop
+
+#if 0
 __fpu_fdiv:
 __fpu_fdiv_s:
 	fdiv	x10, x11, x10
 	rts
 	nop
 
+__fpu_fdiv_sf:
+	bra		__fpu_fdiv_s
+#endif
+
+// };
+
+// __asm {
+
+.global __xlf_todbl
 __xlf_todbl:
 	rts
 	nop
+};
 
-
+__asm {
+.global __ldhf16
 __ldhf16:
 	beq		r10, r0, .zero
 	
@@ -844,6 +1072,7 @@ __ldhf16:
 	rts
 	nop
 
+.global __sthf16
 __sthf16:
 	beq		r10, r0, .zero
 
@@ -868,6 +1097,9 @@ __sthf16:
 	mov	0, r10
 	rts
 	nop
+};
+
+__asm {
 
 .global _start
 .extern __start
@@ -887,6 +1119,9 @@ _exit:
 //	syscall 0
 	syscall
 	break
+};
+
+__asm {
 
 __setj:
 	mov.q	r1, (r10, 0x08)
@@ -934,6 +1169,16 @@ __longj:
 	
 	mov		r11, r10
 
+	rts
+};
+
+__asm {
+__umullq:
+	dmulu	r10, r11, r10
+	rts
+
+__smullq:
+	dmuls	r10, r11, r10
 	rts
 };
 

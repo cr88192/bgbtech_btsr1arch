@@ -710,11 +710,15 @@ __PDPCLIB_API__ void qsort(void *base,
 
 
 // static unsigned long myseed = 1;
-static unsigned long long myseed = 1;
+// static unsigned long long myseed = 1;
+static unsigned long long myseed1 = 1;
+static unsigned long long myseed2 = ~1;
 
 __PDPCLIB_API__ void srand(unsigned int seed)
 {
-	myseed = seed;
+//	myseed = seed;
+	myseed1 = seed;
+	myseed2 = ~seed;
 	return;
 }
 
@@ -722,6 +726,7 @@ __PDPCLIB_API__ int rand(void)
 {
 	int ret;
 
+#if 0
 //	myseed = myseed * 1103515245UL + 12345;
 //	myseed = myseed * 65521UL + 1;
 //	myseed = myseed * 0x0000F7A83CF9E588ULL + 1;
@@ -729,6 +734,25 @@ __PDPCLIB_API__ int rand(void)
 //	ret = (int)((myseed >> 16) & 0x8fff);
 //	ret = (int)((myseed >> 16) & 0x7fff);
 	ret = (int)((myseed >> 48) & 0x7fff);
+#endif
+
+#if 0
+//	myseed ^= ~(myseed>>53);
+	myseed ^= ~(myseed>>47);
+	myseed ^=  (myseed<<13);
+	myseed ^=  (myseed>>19);
+//	myseed ^=  (myseed>> 7);
+//	myseed ^=  (myseed<<17);
+	ret = (int)((myseed >> 32) & 0x7fff);
+#endif
+
+#if 1
+	myseed1 ^= ~(myseed2>>47);	myseed2 ^= ~(myseed1>>43);
+	myseed1 ^=  (myseed1<<13);	myseed2 ^=  (myseed2>>11);
+	myseed1 ^=  (myseed1>>19);	myseed2 ^=  (myseed2<<17);
+	ret = (int)(((myseed1^myseed2) >> 32) & 0x7fff);
+#endif
+
 	return (ret);
 }
 
@@ -737,7 +761,8 @@ int rand_r(unsigned int *seedp)
 	unsigned int seed;
 	int ret;
 	seed=*seedp;
-	seed=seed*65521+1;
+//	seed=seed*65521+1;
+	seed=seed*65521+17;
 	ret = (int)((seed >> 16) & 0x7FFF);
 	*seedp=seed;
 	return (ret);

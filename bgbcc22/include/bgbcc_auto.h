@@ -3376,6 +3376,7 @@ int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm)
 int BGBCC_JX2_EmitLoadRegImm(BGBCC_JX2_Context *ctx, int nmid, int reg, s32 imm);
 int BGBCC_JX2_ConstConvDoubleToFloat(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvFloatToHalf(u32 v, u16 *rv);
+int BGBCC_JX2_ConstConvDoubleToHalf(u64 v, u16 *rv);
 int BGBCC_JX2_ConstConvPackedFloatToHalf2x(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvPackedFloatToHalf4x(u64 va, u64 vb, u64 *rv);
 int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv);
@@ -3519,6 +3520,7 @@ int BGBCC_JX2_EmitRelocTyOffs(BGBCC_JX2_Context *ctx,int lblid, int ty, int offs
 int BGBCC_JX2_LookupLabelIndex(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_LookupSimLabelIndex(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_CheckLabelIsGpRel(BGBCC_JX2_Context *sctx, int lblid);
+int BGBCC_JX2_CheckLabelIsAsmLocal(BGBCC_JX2_Context *ctx, int lblid);
 int BGBCC_JX2_CheckGetLabelGpOffs(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_MarkLabelIsText(BGBCC_JX2_Context *sctx, int lblid);
 int BGBCC_JX2_CheckLabelIsText(BGBCC_JX2_Context *sctx, int lblid);
@@ -3774,11 +3776,14 @@ int BGBCC_JX2X3_CheckRepack4(BGBCC_JX2_Context *ctx, s64 *ropw1, s64 *ropw2, s64
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm10I(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm10s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm10u(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2X3_CheckEncodeRIRJ_Imm9u(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Disp10s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int shr, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6I(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, int ro, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRRRJ(BGBCC_JX2_Context *ctx, s64 opwb, int sid, int rm, int ro, int rn, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2X3_CheckEncodeRIRJ_Imm17sI(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2X3_CheckEncodeRIRJ_Imm16fp(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
 int BGBCC_JX2X3_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn);
 int BGBCC_JX2X3_UpdateStat2RI(BGBCC_JX2_Context *ctx, int nmid, s64 imm);

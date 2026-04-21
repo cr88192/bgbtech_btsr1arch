@@ -54,7 +54,7 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *obj,
 	int rqt, u64 *repik, int *repix)
 {
-	u64 uli;
+	u64 uli, rsvm;
 	u64 epik, epix, epilbl;
 	int bc, bcm;
 
@@ -102,11 +102,23 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 //			((sctx->reg_save >>16)&0x0000FF00)|
 //			((sctx->freg_save<< 8)&0x00FF0000);
 
-	epik=	((sctx->reg_save >> 8)&0x00000000000000FFULL)|
-			((sctx->reg_save >>16)&0x000000000000FF00ULL)|
-			((sctx->freg_save<< 8)&0x0000000000FF0000ULL)|
-			((sctx->reg_save >> 8)&0x000000FF00000000ULL)|
-			((sctx->reg_save >>16)&0x0000FF0000000000ULL);
+	if(sctx->emit_riscv&3)
+	{
+		rsvm=sctx->reg_save;
+		epik=	(((rsvm>> 8)&   3)<< 0) |
+				(((rsvm>>18)&1023)<< 2) |
+				(((rsvm>>36)&  15)<<12) |
+				(((rsvm>>40)&   3)<<32) |
+				(((rsvm>>50)&1023)<<34) ;
+
+	}else
+	{
+		epik=	((sctx->reg_save >> 8)&0x00000000000000FFULL)|
+				((sctx->reg_save >>16)&0x000000000000FF00ULL)|
+				((sctx->freg_save<< 8)&0x0000000000FF0000ULL)|
+				((sctx->reg_save >> 8)&0x000000FF00000000ULL)|
+				((sctx->reg_save >>16)&0x0000FF0000000000ULL);
+	}
 
 //	if(sctx->use_fpr)
 //		epik|=0x01000000;
@@ -131,11 +143,20 @@ int BGBCC_JX2C_CalcFrameEpiKey(BGBCC_TransState *ctx,
 
 	epix=(uli>>32)&1023;
 
-	/* Unusual Registers Saved */
-	if(sctx->reg_save&0x00FF00FF00FF00FFULL)
-		{ epilbl=0; epik=0; epix=0; }
-	if(sctx->freg_save&0xFFFFFFFFFFFF00FFULL)
-		{ epilbl=0; epik=0; epix=0; }
+	if(sctx->emit_riscv&3)
+	{
+		if(sctx->reg_save&sctx->regs_scratch)
+			{ epilbl=0; epik=0; epix=0; }
+		if(sctx->freg_save)
+			{ epilbl=0; epik=0; epix=0; }
+	}else
+	{
+		/* Unusual Registers Saved */
+		if(sctx->reg_save&0x00FF00FF00FF00FFULL)
+			{ epilbl=0; epik=0; epix=0; }
+		if(sctx->freg_save&0xFFFFFFFFFFFF00FFULL)
+			{ epilbl=0; epik=0; epix=0; }
+	}
 
 	/* Not enough registers saved */
 //	if((epik&0x60)!=0x60)

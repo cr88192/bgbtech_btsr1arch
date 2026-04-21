@@ -134,6 +134,7 @@ tkra_vec2f tkra_mkvec2sfv(void *ptr);
 tkra_vec4f tkra_mkvec4sfv(void *ptr);
 tkra_vec4f tkra_mkvec3sfv1(void *ptr);
 
+#ifdef __BJX2__
 __asm {
 tkra_mkvec2sfv:
 	MOVU.L	(R4), R5
@@ -187,6 +188,37 @@ tkra_mkvec3sfv1:
 
 	RTSU
 };
+#else
+
+tkra_vec2f tkra_mkvec2sfv(void *ptr)
+{
+	float fa[4];
+	fa[0]=((short float *)ptr)[0];
+	fa[1]=((short float *)ptr)[1];
+	return(tkra_mkvec2fv(fa));
+}
+
+tkra_vec4f tkra_mkvec4sfv(void *ptr)
+{
+	float fa[4];
+	fa[0]=((short float *)ptr)[0];
+	fa[1]=((short float *)ptr)[1];
+	fa[2]=((short float *)ptr)[2];
+	fa[3]=((short float *)ptr)[3];
+	return(tkra_mkvec4fv(fa));
+}
+
+tkra_vec4f tkra_mkvec3sfv1(void *ptr)
+{
+	float fa[4];
+	fa[0]=((short float *)ptr)[0];
+	fa[1]=((short float *)ptr)[1];
+	fa[2]=((short float *)ptr)[2];
+	fa[3]=1.0;
+	return(tkra_mkvec4fv(fa));
+}
+
+#endif
 
 
 #else
@@ -242,6 +274,14 @@ float tkra_v4f_dist(tkra_vec4f a, tkra_vec4f b)
 	dx=a.x-b.x;		dy=a.y-b.y;
 	dz=a.z-b.z;		dw=a.w-b.w;
 	c=(dx*dx)+(dy*dy)+(dz*dz)+(dw*dw);
+	return(c);
+}
+
+tkra_vec4f tkra_v4f_scale(tkra_vec4f a, double b)
+{
+	tkra_vec4f c;
+	c.x=a.x*b;	c.y=a.y*b;
+	c.z=a.z*b;	c.w=a.w*b;
 	return(c);
 }
 
@@ -511,6 +551,16 @@ u32 tkra_rgba32pck64(u64 a)
 		((a>>24)&0x00FF0000ULL) |
 		((a>>16)&0x0000FF00ULL) |
 		((a>> 8)&0x000000FFULL) ;
+	return(c);
+}
+
+u32 tkra_norm_midpoint(u32 a, u32 b)
+{
+	u32 c;
+//	c=((a&0xFEFEFEFE)>>1)+((b&0xFEFEFEFE)>>1)+((a&b)&0x01010101);
+	c=	(((a&0xFEFEFEFEU)>>1)|(a&0x80808080U))
+		+
+		(((b&0xFEFEFEFEU)>>1)|(b&0x80808080U));
 	return(c);
 }
 #endif

@@ -510,9 +510,9 @@ The XMOV instructions operate on 128-bit pointers, and are only valid if 128-bit
 ** 1001-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 1001-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
 ** 1010-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
-** 1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPQHI	Rm, Ro, Rn		//SLTU
+** 1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHI.Q	Rm, Ro, Rn		//SLTU
 ** 1011-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
-** 1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPQHS	Rm, Ro, Rn		//SGEU
+** 1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHS.Q	Rm, Ro, Rn		//SGEU
 ** 1100-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 1100-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
 ** 1101-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
@@ -614,12 +614,13 @@ Possible:
 * iiiiiiiiii-mmmmmm-0010-nnnnnn-00-1010  MULS.L		Rm, Imm10u, Rn
 * iiiiiiiiii-mmmmmm-0010-nnnnnn-10-1010  MULU.L		Rm, Imm10u, Rn
 * iiiiiiiiii-mmmmmm-0011-nnnnnn-00-1010  ADDS.L		Rm, Imm10u, Rn
-* iiiiiiiiii-mmmmmm-0011-nnnnnn-10-1010  ADDU.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0011-nnnnnn-10-1010 ? ADDU.L	Rm, Imm10u, Rn
 * iiiiiiiiii-mmmmmm-0100-nnnnnn-00-1010  ADDS.L		Rm, Imm10n, Rn
-* iiiiiiiiii-mmmmmm-0100-nnnnnn-10-1010  ADDU.L		Rm, Imm10n, Rn
+* iiiiiiiiii-mmmmmm-0100-nnnnnn-10-1010 ? ADDU.L	Rm, Imm10n, Rn
 * iiiiiiiiii-mmmmmm-0101-nnnnnn-00-1010  AND		Rm, Imm10s, Rn
 * iiiiiiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUB		Rm, Imm10s, Rn
-* iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010  OR			Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010 / OR		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010  OR			Rm, Imm10s, Rn
 
 * 00iiiiiiii-mmmmmm-0110-nnnnnn-10-1010  SHAD.X		Xm, Imm8s, Xn	//Xn>=2
 * 01iiiiiiii-mmmmmm-0110-nnnnnn-10-1010  -
@@ -629,11 +630,14 @@ Possible:
 * iiiiiiiiii-mmmmmm-0110-000000-10-1010  JALR		Rm, Imm10s, ZR
 * iiiiiiiiii-mmmmmm-0110-000001-10-1010  JALR		Rm, Imm10s, LR
 
-* iiiiiiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0111-nnnnnn-00-1010 / XOR		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm10s, Rn
 * 00iiiiiiii-mmmmmm-0111-nnnnnn-10-1010  SHLD.X		Xm, Imm8s, Xn
 * 01iiiiiiii-mmmmmm-0111-nnnnnn-10-1010 ? PSHUFX.L	Rm, Imm8u, Rn
 * 10iiiiiiii-mmmmmm-0111-nnnnnn-10-1010  -
 * 11iiiiiiii-mmmmmm-0111-nnnnnn-10-1010 ? PMULTX.L	Rm, Imm8u, Rn
+* iiiiiiiiii-mmmmmm-0111-000000-10-1010  JALRX		(Xm, Imm10s), ZR
+* iiiiiiiiii-mmmmmm-0111-000001-10-1010  JALRX		(Xm, Imm10s), LR
 
 * 00iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  SHAD.L		Rm, Imm8s, Rn
 * 01iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  PSHUF.B	Rm, Imm8u, Rn
@@ -821,10 +825,10 @@ m-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
 *** 1010-001111-mmmmmm-0001-nnnnnn-10-0010  ? BSWAP.Q	Rm, Rn
 
 ** F0nm_1ezC
-*** 1100-000000-mmmmmm-0001-nnnnnn-00-0010  NOT			Rm, Rn
-*** 1100-000000-mmmmmm-0001-nnnnnn-10-0010  NOTX		Xm, Xn
-*** 1100-000001-mmmmmm-0001-nnnnnn-00-0010  ? NEG		Rm, Rn
-*** 1100-000001-mmmmmm-0001-nnnnnn-10-0010  ? NEGX		Xm, Xn
+*** 1100-000000-mmmmmm-0001-nnnnnn-00-0010  / NOT		Rm, Rn
+*** 1100-000000-mmmmmm-0001-nnnnnn-10-0010  / NOTX		Xm, Xn
+*** 1100-000001-mmmmmm-0001-nnnnnn-00-0010  / NEG		Rm, Rn
+*** 1100-000001-mmmmmm-0001-nnnnnn-10-0010  / NEGX		Xm, Xn
 *** 1100-000010-mmmmmm-0001-nnnnnn-00-0010  CLZ.L		Rm, Rn
 *** 1100-000010-mmmmmm-0001-nnnnnn-10-0010  CLZ.Q		Rm, Rn
 *** 1100-000011-mmmmmm-0001-nnnnnn-00-0010  CTZ.L		Rm, Rn
@@ -858,17 +862,17 @@ m-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
 *** 1101-000111-mmmmmm-0001-nnnnnn-00-0010  FSTCH		Rm, Rn
 *** 1101-000111-mmmmmm-0001-nnnnnn-10-0010   -
 *** 1101-001000-mmmmmm-0001-nnnnnn-00-0010  FNEG		Rm, Rn
-*** 1101-001000-mmmmmm-0001-nnnnnn-10-0010  -
+*** 1101-001000-mmmmmm-0001-nnnnnn-10-0010  FNEGX		Xm, Xn
 *** 1101-001001-mmmmmm-0001-nnnnnn-00-0010  FABS		Rm, Rn
-*** 1101-001001-mmmmmm-0001-nnnnnn-10-0010  -
+*** 1101-001001-mmmmmm-0001-nnnnnn-10-0010  FABSX		Xm, Xn
 *** 1101-001010-mmmmmm-0001-nnnnnn-00-0010  ? FCMPEQ	Rm, Rn
 *** 1101-001010-mmmmmm-0001-nnnnnn-10-0010  ? FCMPXEQ	Xm, Xn
 *** 1101-001011-mmmmmm-0001-nnnnnn-00-0010  ? FCMPGT	Rm, Rn
 *** 1101-001011-mmmmmm-0001-nnnnnn-10-0010  ? FCMPXGT	Xm, Xn
-*** 1101-001100-mmmmmm-0001-nnnnnn-00-0010  ? FSQRT		Rm, Rn
-*** 1101-001100-mmmmmm-0001-nnnnnn-10-0010  ? FSQRTX	Xm, Xn
-*** 1101-001101-mmmmmm-0001-nnnnnn-00-0010  ? FSQRTA	Rm, Rn
-*** 1101-001101-mmmmmm-0001-nnnnnn-10-0010  ? FSQRTXA	Xm, Xn
+*** 1101-001100-mmmmmm-0001-nnnnnn-00-0010  FSQRT		Rm, Rn
+*** 1101-001100-mmmmmm-0001-nnnnnn-10-0010  FSQRTX		Xm, Xn
+*** 1101-001101-mmmmmm-0001-nnnnnn-00-0010  FSQRTA		Rm, Rn
+*** 1101-001101-mmmmmm-0001-nnnnnn-10-0010  FSQRTXA		Xm, Xn
 *** 1101-001110-mmmmmm-0001-nnnnnn-00-0010  ? FCMPGE	Rm, Rn
 *** 1101-001110-mmmmmm-0001-nnnnnn-10-0010  ? FCMPXGE	Xm, Xn
 *** 1101-001111-mmmmmm-0001-nnnnnn-00-0010  FLDCIU		Rm, Rn

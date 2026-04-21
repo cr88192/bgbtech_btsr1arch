@@ -4279,41 +4279,54 @@ void tk_vmem_aclmiss(u64 ttb, u64 tea, u64 teah)
 u64 __sfp_fdiv_f64(u64 f0, u64 f1);
 u64 __sfp_pdiv_f32(u64 f0, u64 f1);
 
+static byte rvremap[64]={
+	TKPE_REGSAVE_R0 , TKPE_REGSAVE_LR , TKPE_REGSAVE_SSP, TKPE_REGSAVE_GBR,
+	TKPE_REGSAVE_R4 , TKPE_REGSAVE_R5 , TKPE_REGSAVE_R6 , TKPE_REGSAVE_R7 ,
+	TKPE_REGSAVE_R8 , TKPE_REGSAVE_R9 , TKPE_REGSAVE_R10, TKPE_REGSAVE_R11,
+	TKPE_REGSAVE_R12, TKPE_REGSAVE_R13, TKPE_REGSAVE_R2 , TKPE_REGSAVE_R3 ,
+	TKPE_REGSAVE_R16, TKPE_REGSAVE_R17, TKPE_REGSAVE_R18, TKPE_REGSAVE_R19,
+	TKPE_REGSAVE_R20, TKPE_REGSAVE_R21, TKPE_REGSAVE_R22, TKPE_REGSAVE_R23,
+	TKPE_REGSAVE_R24, TKPE_REGSAVE_R25, TKPE_REGSAVE_R26, TKPE_REGSAVE_R27,
+	TKPE_REGSAVE_R28, TKPE_REGSAVE_R29, TKPE_REGSAVE_R30, TKPE_REGSAVE_R31,
+	TKPE_REGSAVE_R32, TKPE_REGSAVE_R33, TKPE_REGSAVE_R34, TKPE_REGSAVE_R35,
+	TKPE_REGSAVE_R36, TKPE_REGSAVE_R37, TKPE_REGSAVE_R38, TKPE_REGSAVE_R39,
+	TKPE_REGSAVE_R40, TKPE_REGSAVE_R41, TKPE_REGSAVE_R42, TKPE_REGSAVE_R43,
+	TKPE_REGSAVE_R44, TKPE_REGSAVE_R45, TKPE_REGSAVE_R46, TKPE_REGSAVE_R47,
+	TKPE_REGSAVE_R48, TKPE_REGSAVE_R49, TKPE_REGSAVE_R50, TKPE_REGSAVE_R51,
+	TKPE_REGSAVE_R52, TKPE_REGSAVE_R53, TKPE_REGSAVE_R54, TKPE_REGSAVE_R55,
+	TKPE_REGSAVE_R56, TKPE_REGSAVE_R57, TKPE_REGSAVE_R58, TKPE_REGSAVE_R59,
+	TKPE_REGSAVE_R60, TKPE_REGSAVE_R61, TKPE_REGSAVE_R62, TKPE_REGSAVE_R63,
+};
+
 void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
 {
-	static byte rvremap[32]={
-		TKPE_REGSAVE_R0 , TKPE_REGSAVE_LR , TKPE_REGSAVE_SSP, TKPE_REGSAVE_GBR,
-		TKPE_REGSAVE_R4 , TKPE_REGSAVE_R5 , TKPE_REGSAVE_R6 , TKPE_REGSAVE_R7 ,
-		TKPE_REGSAVE_R8 , TKPE_REGSAVE_R9 , TKPE_REGSAVE_R10, TKPE_REGSAVE_R11,
-		TKPE_REGSAVE_R12, TKPE_REGSAVE_R13, TKPE_REGSAVE_R2 , TKPE_REGSAVE_R3 ,
-		TKPE_REGSAVE_R16, TKPE_REGSAVE_R17, TKPE_REGSAVE_R18, TKPE_REGSAVE_R19,
-		TKPE_REGSAVE_R20, TKPE_REGSAVE_R21, TKPE_REGSAVE_R22, TKPE_REGSAVE_R23,
-		TKPE_REGSAVE_R24, TKPE_REGSAVE_R25, TKPE_REGSAVE_R26, TKPE_REGSAVE_R27,
-		TKPE_REGSAVE_R28, TKPE_REGSAVE_R29, TKPE_REGSAVE_R30, TKPE_REGSAVE_R31
-	};
+	u64 vtreg[16];
 	u32 opw;
-	int rn, rm, ro, rmf, rnf, rof, isok, fpsr;
-	int rmxf, rnxf, roxf;
+	int rn, rm, ro, ru, rmf, rnf, rof, ruf, isok, fpsr;
+	int rmxf, rnxf, roxf, ruxf;
+	int i, j, k;
 
 	opw=*opp;
 
-	rn=(opw>> 7);	rm=(opw>>15);	ro=(opw>>20);
-	rn&=31;			rm&=31;			ro&=31;
-	rnf=rn+32;		rmf=rm+32;		rof=ro+32;
+	rn=(opw>> 7);	rm=(opw>>15);	ro=(opw>>20);	ru=(opw>>27);
+	rn&=31;			rm&=31;			ro&=31;			ru&=31;
+	rnf=rn+32;		rmf=rm+32;		rof=ro+32;		ruf=ru+32;
 	isok=0;
 
 	rm=rvremap[rm];
 	rn=rvremap[rn];
 	ro=rvremap[ro];
+	ru=rvremap[ru];
 	
-	rmxf=rmf;
-	rnxf=rnf;
-	roxf=rof;
+	rmxf=rmf;	rnxf=rnf;
+	roxf=rof;	ruxf=ruf;
 	if(rmf&1)	rmxf=rm&(~1);
 	if(rnf&1)	rnxf=rn&(~1);
 	if(rof&1)	roxf=ro&(~1);
+	if(ruf&1)	ruxf=ru&(~1);
 	
-	fpsr=regs[TKPE_REGSAVE_SSP]>>48;
+//	fpsr=regs[TKPE_REGSAVE_SSP]>>48;
+	fpsr=regs[TKPE_REGSAVE_TBR]>>48;
 
 	if((opw&0x7F)==0x53)
 	{
@@ -4385,6 +4398,7 @@ void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
 		case 0x0C:
 			/* FDIV.S */
 			regs[rnf]=__sfp_pdiv_f32(regs[rmf], regs[rof]);
+//			regs[rnf]=__sfp_fdiv_f32(regs[rmf], regs[rof]);
 			isok=1;
 			break;
 		case 0x0D:
@@ -4403,6 +4417,28 @@ void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
 			isok=1;
 			break;
 
+		case 0x20:
+			switch((opw>>20)&31)
+			{
+			case 0:		/* FCVT.S.S */
+				regs[rnf]=regs[rmf];
+				isok=1;
+				break;
+			case 1:		/* FCVT.S.D */
+				regs[rnf]=__sfp_fcvt_d2s(regs[rmf]);
+				isok=1;
+				break;
+			case 2:		/* FCVT.S.H */
+				regs[rnf]=__sfp_pcvt_h2s(regs[rmf]);
+				isok=1;
+				break;
+			case 3:		/* FCVT.S.Q */
+				__sqfp_fcvt_q2s(regs+rmxf, regs+rnf);
+				isok=1;
+				break;
+			}
+			break;
+
 		case 0x21:
 			switch((opw>>20)&31)
 			{
@@ -4416,10 +4452,37 @@ void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
 				regs[rnf]=regs[rmf];
 				isok=1;
 				break;
-
+			case 2:
+				/* FCVT.D.H */
+				regs[rnf]=__sfp_fcvt_h2d(regs[rmf]);
+				isok=1;
+				break;
 			case 3:
 				/* FCVT.D.Q */
 				__sqfp_fcvt_q2d(regs+rmxf, regs+rnf);
+				isok=1;
+				break;
+			}
+			break;
+
+		case 0x22:
+			switch((opw>>20)&31)
+			{
+			case 0:		/* FCVT.H.S */
+				regs[rnf]=__sfp_pcvt_s2h(regs[rmf]);
+				isok=1;
+				break;
+			case 1:		/* FCVT.H.D */
+				regs[rnf]=__sfp_fcvt_d2h(regs[rmf]);
+				isok=1;
+				break;
+			case 2:		/* FCVT.H.H */
+				regs[rnf]=regs[rmf];
+				isok=1;
+				break;
+			case 3:		/* FCVT.H.Q */
+				__sqfp_fcvt_q2d(regs+rmxf, regs+rnf);
+				regs[rnf]=__sfp_fcvt_d2h(regs[rnf]);
 				isok=1;
 				break;
 			}
@@ -4495,6 +4558,155 @@ void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
 			break;
 		}
 	}
+
+	if(
+		((opw&0x7F)==0x43) ||	/* FMADD */
+		((opw&0x7F)==0x47) ||	/* FMSUB */
+		((opw&0x7F)==0x4B) ||	/* FNMSUB */
+		((opw&0x7F)==0x4F) )	/* FNMADD */
+	{
+		j=(opw>>25)&3;
+		k=(opw>>2)&3;
+		
+		if(j==0)
+		{
+			vtreg[ 0]=__sfp_fcnvsd(regs[rmf]>> 0);
+			vtreg[ 1]=__sfp_fcnvsd(regs[rmf]>>32);
+			vtreg[ 2]=__sfp_fcnvsd(regs[rof]>> 0);
+			vtreg[ 3]=__sfp_fcnvsd(regs[rof]>>32);
+			vtreg[ 4]=__sfp_fcnvsd(regs[ruf]>> 0);
+			vtreg[ 5]=__sfp_fcnvsd(regs[ruf]>>32);
+			switch(k)
+			{
+			case 0:
+				vtreg[ 6]=__sfp_fmul_f64(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_fmul_f64(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_fadd_f64(vtreg[4], vtreg[6]);
+				vtreg[ 9]=__sfp_fadd_f64(vtreg[5], vtreg[7]);
+				break;
+			case 1:
+				vtreg[ 6]=__sfp_fmul_f64(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_fmul_f64(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_fsub_f64(vtreg[6], vtreg[4]);
+				vtreg[ 9]=__sfp_fsub_f64(vtreg[7], vtreg[5]);
+				break;
+			case 2:
+				vtreg[ 6]=__sfp_fmul_f64(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_fmul_f64(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_fsub_f64(vtreg[4], vtreg[6]);
+				vtreg[ 9]=__sfp_fsub_f64(vtreg[5], vtreg[7]);
+				break;
+			case 3:
+				vtreg[ 6]=__sfp_fmul_f64(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_fmul_f64(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_fadd_f64(vtreg[4], vtreg[6]);
+				vtreg[ 9]=__sfp_fadd_f64(vtreg[5], vtreg[7]);
+				vtreg[ 8]=__sfp_fneg_f64(vtreg[ 8]);
+				vtreg[ 9]=__sfp_fneg_f64(vtreg[ 9]);
+				break;
+			}
+			vtreg[10]=__sfp_fcnvds(vtreg[8]);
+			vtreg[11]=__sfp_fcnvds(vtreg[9]);
+			isok=1;
+		}
+
+		if(j==1)
+		{
+			__sqfp_fcvt_d2q(regs+rmf, vtreg+0);
+			__sqfp_fcvt_d2q(regs+rof, vtreg+2);
+			__sqfp_fcvt_d2q(regs+ruf, vtreg+4);
+			switch(k)
+			{
+			case 0:
+				__sqfp_fmul_f128fv(vtreg+0, vtreg+2, vtreg+6);
+				__sqfp_fadd_f128fv(vtreg+6, vtreg+4, vtreg+8);
+				break;
+			case 1:
+				__sqfp_fmul_f128fv(vtreg+0, vtreg+2, vtreg+6);
+				__sqfp_fsub_f128fv(vtreg+4, vtreg+6, vtreg+8);
+				break;
+			case 2:
+				__sqfp_fmul_f128fv(vtreg+0, vtreg+2, vtreg+6);
+				__sqfp_fsub_f128fv(vtreg+6, vtreg+4, vtreg+8);
+				break;
+			case 3:
+				__sqfp_fmul_f128fv(vtreg+0, vtreg+2, vtreg+6);
+				__sqfp_fadd_f128fv(vtreg+6, vtreg+4, vtreg+8);
+				vtreg[ 9]=__sfp_fneg_f64(vtreg[ 9]);
+				break;
+			}
+			__sqfp_fcvt_q2d(vtreg+8, regs+rnf);
+			isok=1;
+		}
+
+		if(j==2)
+		{
+			vtreg[ 0]=__sfp_pcvt_h2s(regs[rmf]>> 0);
+			vtreg[ 1]=__sfp_pcvt_h2s(regs[rmf]>>32);
+			vtreg[ 2]=__sfp_pcvt_h2s(regs[rof]>> 0);
+			vtreg[ 3]=__sfp_pcvt_h2s(regs[rof]>>32);
+			vtreg[ 4]=__sfp_pcvt_h2s(regs[ruf]>> 0);
+			vtreg[ 5]=__sfp_pcvt_h2s(regs[ruf]>>32);
+			switch(k)
+			{
+			case 0:
+				vtreg[ 6]=__sfp_pmul_f32(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_pmul_f32(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_padd_f32(vtreg[4], vtreg[6]);
+				vtreg[ 9]=__sfp_padd_f32(vtreg[5], vtreg[7]);
+				break;
+			case 1:
+				vtreg[ 6]=__sfp_pmul_f32(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_pmul_f32(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_psub_f32(vtreg[6], vtreg[4]);
+				vtreg[ 9]=__sfp_psub_f32(vtreg[7], vtreg[5]);
+				break;
+			case 2:
+				vtreg[ 6]=__sfp_pmul_f32(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_pmul_f32(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_psub_f32(vtreg[4], vtreg[6]);
+				vtreg[ 9]=__sfp_psub_f32(vtreg[5], vtreg[7]);
+				break;
+			case 3:
+				vtreg[ 6]=__sfp_pmul_f32(vtreg[0], vtreg[2]);
+				vtreg[ 7]=__sfp_pmul_f32(vtreg[1], vtreg[3]);
+				vtreg[ 8]=__sfp_padd_f32(vtreg[4], vtreg[6]);
+				vtreg[ 9]=__sfp_padd_f32(vtreg[5], vtreg[7]);
+				vtreg[ 8]=__sfp_pneg_f32(vtreg[ 8]);
+				vtreg[ 9]=__sfp_pneg_f32(vtreg[ 9]);
+				break;
+			}
+			vtreg[10]=__sfp_pcvt_s2h(vtreg[8]);
+			vtreg[11]=__sfp_pcvt_s2h(vtreg[9]);
+			isok=1;
+		}
+
+		if(j==3)
+		{
+			switch(k)
+			{
+			case 0:
+				__sqfp_fmul_f128fv(regs+rmxf, regs+roxf, vtreg+6);
+				__sqfp_fadd_f128fv(vtreg+6, regs+ruxf, regs+rnxf);
+				break;
+			case 1:
+				__sqfp_fmul_f128fv(regs+rmxf, regs+roxf, vtreg+6);
+				__sqfp_fsub_f128fv(vtreg+ruxf, regs+6, regs+rnxf);
+				break;
+			case 2:
+				__sqfp_fmul_f128fv(regs+rmxf, regs+roxf, vtreg+6);
+				__sqfp_fsub_f128fv(vtreg+6, regs+ruxf, regs+rnxf);
+				break;
+			case 3:
+				__sqfp_fmul_f128fv(regs+rmxf, regs+roxf, vtreg+6);
+				__sqfp_fadd_f128fv(vtreg+6, regs+ruxf, regs+rnxf);
+				regs[rnxf+1]=__sfp_fneg_f64(regs[rnxf+1]);
+				break;
+			}
+			isok=1;
+		}
+	}
+	
 	
 	if(isok)
 	{
@@ -4510,8 +4722,9 @@ void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
 
 void tk_vmem_emurq_xg3(u64 spc, u64 exc, u64 *regs, u32 *opp)
 {
+	u64	vtreg[16];
 	u32 opw;
-	int rn, rm, ro, isok, id;
+	int rn, rm, ro, isok, id, fpsr;
 
 	opw=*opp;
 
@@ -4524,6 +4737,13 @@ void tk_vmem_emurq_xg3(u64 spc, u64 exc, u64 *regs, u32 *opp)
 	rn=(opw>> 6);	rm=(opw>>16);	ro=(opw>>22);
 	rn&=63;			rm&=63;			ro&=63;
 	isok=0;
+
+	rm=rvremap[rm];
+	rn=rvremap[rn];
+	ro=rvremap[ro];
+//	ru=rvremap[ru];
+
+	fpsr=regs[TKPE_REGSAVE_TBR]>>48;
 
 	
 	id=((opw>>2)&0x0F)|((opw>>8)&0xF0);
@@ -4553,24 +4773,130 @@ void tk_vmem_emurq_xg3(u64 spc, u64 exc, u64 *regs, u32 *opp)
 	case 0x50:
 		switch((opw>>28)&15)
 		{
-		case 0x8:
-			/* FADD.D */
+		case 0x8:		/* FADD.D */
 			regs[rn]=__sfp_fadd_f64(regs[rm], regs[ro]);
 			isok=1;
 			break;
-		case 0x9:
-			/* FSUB.D */
+		case 0x9:		/* FSUB.D */
 			regs[rn]=__sfp_fsub_f64(regs[rm], regs[ro]);
 			isok=1;
 			break;
-		case 0xA:
-			/* FMUL.D */
+		case 0xA:		/* FMUL.D */
+			regs[rn]=__sfp_fmul_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+		case 0xB:		/* FMAC.D */
+			regs[rn]=
+				__sfp_fadd_f64(
+					__sfp_fmul_f64(regs[rm], regs[ro]),
+					regs[rn]);
+			isok=1;
+			break;
+		}
+		break;
+
+	case 0x58:
+		switch((opw>>28)&15)
+		{
+		case 0x8:		/* FADDX.Q */
+			__sqfp_fadd_f128fv(regs+rm, regs+ro, regs+rn);
+			isok=1;
+			break;
+		case 0x9:		/* FSUBX.Q */
+			__sqfp_fsub_f128fv(regs+rm, regs+ro, regs+rn);
+			isok=1;
+			break;
+		case 0xA:		/* FMULX.Q */
+			__sqfp_fmul_f128fv(regs+rm, regs+ro, regs+rn);
+			isok=1;
+			break;
+		case 0xB:		/* FMACX.Q */
+			__sqfp_fmul_f128fv(regs+rm, regs+ro, vtreg+0);
+			__sqfp_fadd_f128fv(regs+rn, vtreg+0, regs+rn);
+			break;
+		}
+		break;
+
+	case 0x60:
+		switch((opw>>28)&15)
+		{
+		case 0x6:
+			/* FDIV.D */
+			regs[rn]=__sfp_fdiv_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+		case 0x7:
+			/* FDIVA.D */
+			regs[rn]=__sfp_fdiv_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+
+		case 0xD:
+			/* FADDG.D */
+			regs[rn]=__sfp_fadd_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+		case 0xE:
+			/* FSUBG.D */
+			regs[rn]=__sfp_fsub_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+		case 0xF:
+			/* FMULG.D */
+			regs[rn]=__sfp_fmul_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+		}
+		break;
+
+	case 0x68:
+		switch((opw>>28)&15)
+		{
+		case 0x6:
+			/* FDIVX.D */
+			__sqfp_fdiv_f128fv(regs+rm, regs+ro, regs+rn);
+			isok=1;
+			break;
+		case 0x7:
+			/* FDIVXA.D */
+			__sqfp_fdiv_f128fv(regs+rm, regs+ro, regs+rn);
+			isok=1;
+			break;
+		}
+
+
+	case 0x70:
+		switch((opw>>28)&15)
+		{
+		case 0x0:
+			/* FADDA.D */
+			regs[rn]=__sfp_fadd_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+		case 0x1:
+			/* FSUBA.D */
+			regs[rn]=__sfp_fsub_f64(regs[rm], regs[ro]);
+			isok=1;
+			break;
+		case 0x2:
+			/* FMULA.D */
 			regs[rn]=__sfp_fmul_f64(regs[rm], regs[ro]);
 			isok=1;
 			break;
 		}
 		break;
 	}
+
+	if(isok)
+	{
+		/* instruction was emulated. */
+		regs[TKPE_REGSAVE_SPC]=regs[TKPE_REGSAVE_SPC]+4;
+		return;
+	}
+
+	tk_dbg_printf("tk_vmem_emurq_rv: EMU REQ: %08X @ %p, FPSR=%04X\n",
+		opw, spc, fpsr);
+	__debugbreak();
 }
 
 void tk_vmem_emurq(u64 spc, u64 exc, u64 *regs)
@@ -4578,7 +4904,8 @@ void tk_vmem_emurq(u64 spc, u64 exc, u64 *regs)
 	u32 ssr, opw;
 	u32 *opp;
 	
-	opp=tk_vmem_virttophys(spc);
+//	opp=tk_vmem_virttophys(spc);
+	opp=tk_vmem_virttophys(spc&0x0000FFFFFFFFFFFEULL);
 	
 	ssr=exc>>32;
 	if(((ssr>>26)&1) && !((ssr>>23)&1))
@@ -4593,7 +4920,7 @@ void tk_vmem_emurq(u64 spc, u64 exc, u64 *regs)
 		return;
 	}
 	
-	opw=*opp;
+//	opw=*opp;
 }
 
 #ifdef __BJX2__

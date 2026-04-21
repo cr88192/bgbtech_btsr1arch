@@ -592,6 +592,8 @@ u64 val[6];
 #include <tk_regcache.h>
 #include <tk_tkdfs.h>
 
+#include <tk_adnn.h>
+
 
 #ifdef __BJX2__
 #define TK_GET_TBR		__arch_tbr

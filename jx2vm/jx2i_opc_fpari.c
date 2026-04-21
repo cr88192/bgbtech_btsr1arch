@@ -891,6 +891,13 @@ void BJX2_Op_FSTCISUL_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=(u32)v;
 }
 
+void BJX2_Op_FLDCI_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+	v=op->imm;
+	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, (s64)v);
+}
+
 void BJX2_Op_FLDCH_GRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u32 v;

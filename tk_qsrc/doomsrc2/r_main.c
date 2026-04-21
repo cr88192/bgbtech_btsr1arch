@@ -899,7 +899,7 @@ R_PointInSubsector
 	return &subsectors[nodenum & ~NF_SUBSECTOR];
 }
 
-
+int r_view_xadjust;
 
 //
 // R_SetupFrame
@@ -975,6 +975,20 @@ void R_SetupFrame (player_t* player)
 	
 	viewsin = finesine[viewangle>>ANGLETOFINESHIFT];
 	viewcos = finecosine[viewangle>>ANGLETOFINESHIFT];
+
+	if(r_view_xadjust)
+	{
+//		if(r_view_xadjust>0)
+		if(r_view_xadjust<0)
+		{
+			viewx-=viewsin<<0;
+			viewy+=viewcos<<0;
+		}else
+		{
+			viewx+=viewsin<<0;
+			viewy-=viewcos<<0;
+		}
+	}
 	
 	sscount = 0;
 	

@@ -53,14 +53,14 @@ LDFLAGS=$(TK_LDFL) -lc -ltkgdi
 TK_CFL_XRV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXRVA /O2 \
 	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic \
 	/frvzba \
-	/frvldix /frvjumbo \
-	/fnovskgen /fnovsk /frvbraimm
+	/frvldix /frvjumbo /frvjumbo96 \
+	/fnovskgen /fnovsk /frvbraimm /frvzilsx
 
 #  /frvjumbo
 
 TK_CFL_X3RV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXG3RV /O2 \
 	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba /frvjumbo \
-	/fnovskgen /fnovsk /fbitmov /fpredops
+	/fnovskgen /fnovsk /fbitmov /fpredops /ffpu_fpimm
 
 CFLAGS_XRV=$(TK_CFL_XRV) $(BASE_CFLAGS)
 LDFLAGS_XRV= -lc -ltkgdi
@@ -153,7 +153,7 @@ SRCS=				\
 
 all:	 doom_bjx2.exe tstputc_bjx2.exe tstshellcmd_bjx2.exe \
 	doom_xrv.exe doom_x3rv.exe \
-	doom_xrvc.exe doom_x3crv.exe
+	doom_xrvc.exe # doom_x3crv.exe
 
 # doom_bjx2.sys
 

@@ -190,6 +190,8 @@ byte has_jcmp;		//Has Compare+Branch
 byte has_rvzba;		//Has RV BitManip
 byte has_bitmov;	//Has BITMOV
 
+byte abi_fpstrict;	//FPU IEEE control
+
 byte abi_evenonly;	//Pass register pairs in Even Registers.
 byte abi_noexcept;	//Disable Exceptions
 // byte abi_spillpad;	//Disable Exceptions
@@ -238,6 +240,8 @@ int simfnmsz;		//simulation's min function size
 int simfnnsz;		//simulation's max function size
 int tr_trnum;		//trace number
 int tr_opnum;		//trace op number
+
+int asm_lcnt;		//ASM blob line count
 
 int fnsz_pro;		//size of prolog
 int fnsz_epi;		//size of epilog

@@ -450,7 +450,8 @@ V_DrawPatchFlipped
 //		V_MarkRect (x, y, SHORT(patch->width), SHORT(patch->height)); 
 		V_MarkRect (x, y, (patch->width), (patch->height)); 
 
-	tcol = colormaps;
+//	tcol = colormaps;
+	tcol = colormaps_bcur;
 
     col = 0; 
     desttop = screens[scrn]+y*SCREENWIDTH+x; 
@@ -507,7 +508,8 @@ V_DrawPatchDirect
 	{
 		V_DrawPatchCmap(x, y,
 			scrn, patch,
-			colormaps);
+//			colormaps);
+			colormaps_bcur);
 		return;
 	}
 	
@@ -525,7 +527,8 @@ V_DrawPatchDirect
 //		V_DrawPatch (x,y,scrn, patch); 
 		V_DrawPatchCmap(x, y,
 			scrn, patch,
-			colormaps);
+//			colormaps);
+			colormaps_bcur);
 	}
 
     /*
@@ -611,7 +614,8 @@ V_DrawPatchDirectName
 		if(tcol)
 			V_DrawBlockCmap(0, 0, scrn, 320, 200, (byte *)patch, tcol);
 		else
-			V_DrawBlockCmap(0, 0, scrn, 320, 200, (byte *)patch, colormaps);
+//			V_DrawBlockCmap(0, 0, scrn, 320, 200, (byte *)patch, colormaps);
+			V_DrawBlockCmap(0, 0, scrn, 320, 200, (byte *)patch, colormaps_bcur);
 //			V_DrawBlock(0, 0, scrn, 320, 200, (byte *)patch);
 		return;
 	}

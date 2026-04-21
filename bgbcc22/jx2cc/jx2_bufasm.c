@@ -1552,6 +1552,11 @@ int mfl;
 {"adcx",	BGBCC_SH_NMID_ADCX},
 {"sbbx",	BGBCC_SH_NMID_SBBX},
 
+{"andx",	BGBCC_SH_NMID_ANDX},
+{"orx",		BGBCC_SH_NMID_ORX},
+{"xorx",	BGBCC_SH_NMID_XORX},
+{"notx",	BGBCC_SH_NMID_NOTX},
+
 {"rotlx",	BGBCC_SH_NMID_ROTLX},
 {"shadx",	BGBCC_SH_NMID_SHADX},
 {"shldx",	BGBCC_SH_NMID_SHLDX},
@@ -3979,11 +3984,12 @@ int BGBCC_JX2A_InferBufferDestFirst(BGBCC_JX2_Context *ctx, char *buf)
 {
 	char *tk0, *tk1;
 	char *cs, *cs1, *cs2;
-	int mcnt, mfl;
+	int mcnt, mfl, lcnt;
 
 	BGBCC_JX2A_Init();
 
 	mcnt=0;
+	lcnt=0;
 	cs=buf;
 	while(*cs)
 	{
@@ -4015,12 +4021,20 @@ int BGBCC_JX2A_InferBufferDestFirst(BGBCC_JX2_Context *ctx, char *buf)
 		while(*cs && (*cs!='\r') && (*cs!='\n'))
 			cs++;
 		if(*cs=='\r')	cs++;
-		if(*cs=='\n')	cs++;
+		if(*cs=='\n')
+		{
+			cs++;
+			lcnt++;
+		}
 	}
 	
 	if(mcnt>0)
 		return(1);
 	
+//	ctx->simfmsz=lcnt*4;
+//	ctx->simfnsz=lcnt*12;
+	ctx->asm_lcnt=lcnt;
+
 	return(0);
 }
 
@@ -4061,7 +4075,8 @@ int BGBCC_JX2C_AssembleBuffer(
 	BGBCC_JX2_Context *sctx,
 	char *text)
 {
-	int oldar, isdstfst;
+	int oldar, oldspas, isdstfst;
+	int bo, co, sz;
 	char *cs;
 
 //	BGBCC_JX2_SetSectionName(sctx, ".text");
@@ -4070,6 +4085,8 @@ int BGBCC_JX2C_AssembleBuffer(
 	sctx->iflvl_t=0;
 
 	bgbcc_jx2a_lastlbl=NULL;
+
+	oldspas=sctx->is_simpass;
 
 	oldar=sctx->emit_riscv;
 //	sctx->emit_riscv=0;
@@ -4081,10 +4098,31 @@ int BGBCC_JX2C_AssembleBuffer(
 	if(isdstfst)
 		sctx->is_rawasm|=2;
 	cs=text;
+
+	sz=sctx->asm_lcnt*12;
+	sctx->simfnsz=sz;
+
+#if 0
+	if(!oldspas)
+	{
+		BGBCC_JX2_SetBeginSimPass(sctx);
+		bo=BGBCC_JX2_EmitGetOffs(sctx);
+		BGBCC_JX2A_ParseBuffer(sctx, &cs);
+		co=BGBCC_JX2_EmitGetOffs(sctx);
+		BGBCC_JX2_SetEndSimPass(sctx);
+
+		sz=co-bo;
+		sctx->simfnsz=sz;
+	}
+#endif
+
+	sctx->is_simpass=oldspas;
 	BGBCC_JX2A_ParseBuffer(sctx, &cs);
+	
 	sctx->is_rawasm=0;
 
 	sctx->emit_riscv=oldar;
+	sctx->is_simpass=oldspas;
 
 	return(0);
 }

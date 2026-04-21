@@ -190,6 +190,14 @@ begin
 			tValRsA=tValJimm;
 			tValRsZz=1;
 		end
+		JX2_GR_IMM_EXT: begin
+			tValRsA=regValImm[32]?UV64_FF:UV64_00;
+			tValRsZz=1;
+		end
+		JX2_GR_JIMM_EXT: begin
+			tValRsA=regValImmB[32]?UV64_FF:UV64_00;
+			tValRsZz=1;
+		end
 `endif
 
 		JX2_GR_ZZR:	begin
@@ -226,6 +234,14 @@ begin
 		JX2_GR_JIMM: begin
 			tValRtA=tValJimm;
 			tValRsZz=1;
+		end
+		JX2_GR_IMM_EXT: begin
+			tValRtA=regValImm[32]?UV64_FF:UV64_00;
+			tValRtZz=1;
+		end
+		JX2_GR_JIMM_EXT: begin
+			tValRtA=regValImmB[32]?UV64_FF:UV64_00;
+			tValRtZz=1;
 		end
 `endif
 

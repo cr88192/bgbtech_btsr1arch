@@ -184,7 +184,7 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 	int		xshl, yshl;
 	int		scr_xs, scr_ys;
 
-	svctx		= ctx->svctx;
+	sctx		= ctx->svctx;
 	DrawSpan	= sctx->DrawSpan;
 	scr_cb = ctx->screen_rgb;
 	scr_zb = ctx->screen_zbuf;
@@ -210,16 +210,16 @@ void TKRA_WalkEdges_Dfl(TKRA_Context *ctx,
 		return;
 
 	dsparm[TKRA_DS_CTX]=(u64)(ctx);
-	dsparm[TKRA_DS_TEXIMG]=(u64)(ctx->tex_img);
-	dsparm[TKRA_DS_TEXBCN]=(u64)(ctx->tex_img_bcn);
+	dsparm[TKRA_DS_TEXIMG]=(u64)(sctx->tex_img);
+	dsparm[TKRA_DS_TEXBCN]=(u64)(sctx->tex_img_bcn);
 	dsparm[TKRA_DS_BLEND]=(u64)(sctx->Blend);
 	dsparm[TKRA_DS_ZATEST]=(u64)(sctx->ZaTest);
 
 //	dsparm[TKRA_DS_XMASK]=(1<<ctx->tex_xshl)-1;
 //	dsparm[TKRA_DS_YMASK]=(1<<ctx->tex_yshl)-1;
 
-	xshl=ctx->tex_xshl;
-	yshl=ctx->tex_yshl;
+	xshl=sctx->tex_xshl;
+	yshl=sctx->tex_yshl;
 	dsparm[TKRA_DS_XMASK]=(1<<xshl)-1;
 //	dsparm[TKRA_DS_YMASK]=((1<<yshl)-1)<<xshl;
 //	dsparm[TKRA_DS_YMASK]=(1<<yshl)-1;
@@ -2460,7 +2460,8 @@ R31		tstep_r
  */
 static int tkra_nommio;
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#ifdef BJX2_MMIO
 
 void TKRA_Probe_WalkEdgesMMIO(TKRA_Context *ctx)
 {
@@ -3097,13 +3098,13 @@ void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 		return;
 
 	dsparm[TKRA_DS_CTX]=(u64)(ctx);
-	dsparm[TKRA_DS_TEXIMG]=(u64)(ctx->tex_img);
-	dsparm[TKRA_DS_TEXBCN]=(u64)(ctx->tex_img_bcn);
+	dsparm[TKRA_DS_TEXIMG]=(u64)(sctx->tex_img);
+	dsparm[TKRA_DS_TEXBCN]=(u64)(sctx->tex_img_bcn);
 	dsparm[TKRA_DS_BLEND]=(u64)(sctx->Blend);
 	dsparm[TKRA_DS_ZATEST]=(u64)(sctx->ZaTest);
 
-	xshl=ctx->tex_xshl;
-	yshl=ctx->tex_yshl;
+	xshl=sctx->tex_xshl;
+	yshl=sctx->tex_yshl;
 	dsparm[TKRA_DS_XMASK]=(1<<xshl)-1;
 	dsparm[TKRA_DS_YMASK]=(1<<(yshl+xshl))-1;
 	
@@ -3202,6 +3203,13 @@ void TKRA_WalkEdges_Zbuf(TKRA_Context *ctx,
 	edge_l[TKRA_ES_ZPOS] = xzpos_l;
 	edge_r[TKRA_ES_ZPOS] = xzpos_r;
 }
+
+void TKRA_WalkEdges_ZbufNcp(TKRA_Context *ctx,
+	int ytop, u64 *edge_l, u64 *edge_r, int cnt)
+{
+	TKRA_WalkEdges_Zbuf(ctx, ytop, edge_l, edge_r, cnt);
+}
+
 #endif
 
 static s32 tkra_zrcpbitab[256];
@@ -4405,7 +4413,8 @@ int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 //			ctx->RasterWalkEdges=TKRA_WalkEdges_ZbufNZb;
 #endif
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#ifdef BJX2_MMIO
 		TKRA_Probe_WalkEdgesMMIO(ctx);
 		if(!(tkra_nommio&1))
 		{
@@ -4421,7 +4430,8 @@ int TKRA_SetupDrawEdgeForState(TKRA_Context *ctx)
 		sctx->RasterWalkEdges=TKRA_WalkEdges_Dfl;
 		sctx->RasterWalkEdgesNcp=sctx->RasterWalkEdges;
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#ifdef BJX2_MMIO
 		TKRA_Probe_WalkEdgesMMIO(ctx);
 		if(!(tkra_nommio&1))
 		{
@@ -5504,7 +5514,9 @@ int TKRA_SetupDrawEdgeForTriFlag(TKRA_Context *ctx, int trifl)
 	}
 #endif
 
+#ifdef BJX2_MMIO
 	TKRA_UpdateVars_WalkEdgesMMIO(ctx);
+#endif
 
 	return(0);
 }

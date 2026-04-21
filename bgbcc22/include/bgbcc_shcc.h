@@ -1210,6 +1210,8 @@
 #define BGBCC_SH_NMID_FDIVF			0x02BD	//
 #define BGBCC_SH_NMID_FSQRTF		0x02BE	//
 
+#define BGBCC_SH_NMID_NOTX			0x02BF	//
+
 #define BGBCC_SH_NMID_CMPQLTU		0x02C0	//CMPQLTU
 #define BGBCC_SH_NMID_CMPQLEU		0x02C1	//CMPQLEU
 
@@ -1648,7 +1650,7 @@
 #define	BGBCC_JX2CC_PSREG_ARGTMP(ix)	\
 	BGBCC_JX2C_GetRqRegForArgTempIndex(ctx, sctx, ix)
 
-#define	BGBCC_JX2CC_PSREG_RBRET			BGBCC_JX2C_GetRdRegReturn(ctx, sctx)
+#define	BGBCC_JX2CC_PSREG_RBRET			BGBCC_JX2C_GetRbRegReturn(ctx, sctx)
 #define	BGBCC_JX2CC_PSREG_RDRET			BGBCC_JX2C_GetRdRegReturn(ctx, sctx)
 #define	BGBCC_JX2CC_PSREG_RQRET			BGBCC_JX2C_GetRqRegReturn(ctx, sctx)
 #define	BGBCC_JX2CC_PSREG_LRRET			BGBCC_JX2C_GetLrRegReturn(ctx, sctx)

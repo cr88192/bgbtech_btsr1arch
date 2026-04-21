@@ -6141,6 +6141,13 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		return(1);
 	}
 
+	if(nmid==BGBCC_SH_NMID_NOTX)
+	{
+		BGBCC_JX2RV_EmitOpRegReg(ctx, BGBCC_SH_NMID_NOT, rm+0, rn+0);
+		BGBCC_JX2RV_EmitOpRegReg(ctx, BGBCC_SH_NMID_NOT, rm+1, rn+1);
+		return(1);
+	}
+
 	if(nmid==BGBCC_SH_NMID_FLDCFH)
 	{
 		if(ctx->has_simdx2&1)

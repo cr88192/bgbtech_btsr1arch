@@ -83,6 +83,7 @@ Everything else will assume the use of system calls.
 #include "pdpc201/btrv_softfp.c"
 
 #include "pdpc201/btshx_vnf.c"
+#include "pdpc201/btshx_vnf_rv.c"
 #include "pdpc201/btshx_alloca.c"
 
 #include "pdpc201/bt_mman.c"

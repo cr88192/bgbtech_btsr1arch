@@ -54,8 +54,17 @@ typedef unsigned int uint;
 #endif
 #endif
 
-#ifdef BJX2
+#if defined(__XG3__)
+#ifndef XG3RV
+#define XG3RV
+#endif
+#endif
+
+// #ifdef BJX2
+// #if defined(BJX2) || defined(XG3RV)
+#ifdef __BGBCC__
 #define BJX2_SIMD
+#define BJX2_MMIO
 #define no_cull		__declspec(nocull)
 #endif
 

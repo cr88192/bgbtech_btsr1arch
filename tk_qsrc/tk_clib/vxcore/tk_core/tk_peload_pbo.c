@@ -56,6 +56,7 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
 	int isriscv, isbjx2, isbjx2xg2, isx3rv;
+	int secxor;
 	int tg;
 
 	isriscv=(mach==0x5064);
@@ -63,6 +64,8 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 //	isbjx2xg2=(mach==0xB265);
 	isbjx2xg2 = (mach==0xB265) || (mach==0xB250);
 	isx3rv=(mach==0xB253);
+
+	secxor=TK_GetRandom()&0xFFFF;
 
 	gbr_end_rva=gbr_rva+gbr_sz;
 
@@ -326,6 +329,33 @@ int TKPE_ApplyBaseRelocs(byte *imgptr, byte *rlc, int szrlc,
 				*((s64 *)pdst)=v0+disp;
 				break;
 			case 11:
+				if(tg&1)
+					break;
+
+				if(isbjx2 || isbjx2xg2)
+				{
+					pv=*((u32 *)pdst);
+					if((pv&0xFFE0)==0xF800)
+					{
+						pv^=(secxor<<16);
+						*((u32 *)pdst)=pv;
+						break;
+					}
+					break;
+				}
+
+				if(isriscv || isx3rv)
+				{
+					pv=*((u32 *)pdst);
+					if((pv&0x000FF07F)==0x00000013)
+					{
+						pv^=(secxor<<20);
+						*((u32 *)pdst)=pv;
+						break;
+					}
+					break;
+				}
+
 				break;
 			default:
 				tk_printf("TKPE_ApplyBaseRelocs: Unhandled Reloc %d\n",

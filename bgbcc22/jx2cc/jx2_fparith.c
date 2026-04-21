@@ -105,7 +105,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 	default:		nm1=-1; nm2=-1; break;
 	}
 	
-	if(ctx->cur_func->flagsint&BGBCC_TYFL_FENVACC)
+	if(	(ctx->cur_func->flagsint&BGBCC_TYFL_FENVACC) ||
+		(sctx->abi_fpstrict&1))
 	{
 		if(nm1==BGBCC_SH_NMID_FADD)
 			nm1=BGBCC_SH_NMID_FADDG;
@@ -437,7 +438,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 		default:		nm1=-1; nm2=-1; break;
 		}
 	
-		if(ctx->cur_func->flagsint&BGBCC_TYFL_FENVACC)
+		if(	(ctx->cur_func->flagsint&BGBCC_TYFL_FENVACC) ||
+			(sctx->abi_fpstrict&1))
 		{
 			if(nm1==BGBCC_SH_NMID_FADD)
 				nm1=BGBCC_SH_NMID_FADDG;

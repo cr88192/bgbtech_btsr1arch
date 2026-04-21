@@ -2334,7 +2334,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		{
 			if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 			{
-				if(sctx->has_fmovs)
+				if(sctx->has_fmovs &&
+					!(sctx->abi_fpstrict&1))
 //				if(0)
 				{
 					k=ctx->cur_func->locals[j]->fxoffs;
@@ -2482,7 +2483,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		{
 			if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 			{
-				if(sctx->has_fmovs)
+				if(sctx->has_fmovs &&
+					!(sctx->abi_fpstrict&1))
 //				if(0)
 				{
 					k=ctx->cur_func->regs[j]->fxoffs;
@@ -2626,7 +2628,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 		{
 			if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 			{
-				if(sctx->has_fmovs)
+				if(sctx->has_fmovs &&
+					!(sctx->abi_fpstrict&1))
 //				if(0)
 				{
 					k=ctx->cur_func->args[j]->fxoffs;
@@ -3195,7 +3198,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 				k=BGBCC_JX2C_GetGblIndexLabel(ctx, sctx, j);
 				if(sctx->fpu_soft || sctx->fpu_gfp)
 				{
-					if(sctx->has_fmovs)
+					if(sctx->has_fmovs &&
+						!(sctx->abi_fpstrict&1))
 					{
 						BGBCC_JX2_EmitLoadRegLabelVarRel24(sctx,
 							BGBCC_SH_NMID_FMOVS, dreg, k);
@@ -3472,7 +3476,8 @@ int BGBCC_JX2C_EmitLoadFrameVRegReg(
 						BGBCC_SH_NMID_MOVQ, treg, 0, dreg);
 				}else
 				{
-					if(sctx->has_fmovs)
+					if(sctx->has_fmovs &&
+						!(sctx->abi_fpstrict&1))
 					{
 						BGBCC_JX2C_EmitLoadBRegOfsReg(ctx, sctx,
 							BGBCC_SH_NMID_FMOVS, treg, 0, dreg);
@@ -3716,7 +3721,8 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 		{
 			if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 			{
-				if(sctx->has_fmovs)
+				if(sctx->has_fmovs &&
+					!(sctx->abi_fpstrict&1))
 //				if(0)
 				{
 					k=ctx->cur_func->locals[j]->fxoffs;
@@ -3842,7 +3848,8 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 		{
 			if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 			{
-				if(sctx->has_fmovs)
+				if(sctx->has_fmovs &&
+					!(sctx->abi_fpstrict&1))
 //				if(0)
 				{
 					k=ctx->cur_func->regs[j]->fxoffs;
@@ -3949,7 +3956,8 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 		{
 			if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 			{
-				if(sctx->has_fmovs)
+				if(sctx->has_fmovs &&
+					!(sctx->abi_fpstrict&1))
 //				if(0)
 				{
 					k=ctx->cur_func->args[j]->fxoffs;
@@ -4164,7 +4172,8 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 
 				if(sctx->fpu_gfp)
 				{
-					if(sctx->has_fmovs)
+					if(sctx->has_fmovs &&
+						!(sctx->abi_fpstrict&1))
 					{
 						BGBCC_JX2_EmitStoreRegLabelVarRel24(sctx,
 							BGBCC_SH_NMID_FMOVS, sreg, k);
@@ -4340,7 +4349,8 @@ int BGBCC_JX2C_EmitStoreFrameVRegReg(
 						BGBCC_SH_NMID_MOVQ, treg, 0, sreg);
 				}else
 				{
-					if(sctx->has_fmovs)
+					if(sctx->has_fmovs &&
+						!(sctx->abi_fpstrict&1))
 					{
 						BGBCC_JX2C_EmitStoreBRegOfsReg(ctx, sctx,
 							BGBCC_SH_NMID_FMOVS, treg, 0, sreg);

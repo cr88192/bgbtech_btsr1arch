@@ -2321,6 +2321,13 @@ int BGBCC_JX2_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 	}
 #endif
 
+	if(nmid==BGBCC_SH_NMID_NOTX)
+	{
+		BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_NOT, rm+0, rn+0);
+		BGBCC_JX2_EmitOpRegReg(ctx, BGBCC_SH_NMID_NOT, rm+1, rn+1);
+		return(1);
+	}
+
 	ex=0;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, rn)) ex|=0x0040;
 	if(BGBCC_JX2_EmitCheckRegExt4(ctx, rm)) ex|=0x0020;

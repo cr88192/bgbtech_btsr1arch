@@ -188,7 +188,8 @@ STlib_updatePercent
   int			refresh )
 {
     if (refresh && *per->n.on)
-	V_DrawPatchDirect(per->n.x, per->n.y, FG, per->p);
+//	V_DrawPatchDirect(per->n.x, per->n.y, FG, per->p);
+	V_DrawPatchCmap(per->n.x, per->n.y, FG, per->p, colormaps_bcur);
     
     STlib_updateNum(&per->n, refresh);
 }

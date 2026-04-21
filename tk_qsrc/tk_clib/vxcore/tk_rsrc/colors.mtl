@@ -1,0 +1,60 @@
+newmtl U000
+Kd 0.0 0.0 0.0
+
+newmtl U00A
+Kd 0.0 0.0 0.6
+
+newmtl U0A0
+Kd 0.0 0.6 0.0
+
+newmtl U0AA
+Kd 0.0 0.6 0.6
+
+newmtl UA00
+Kd 0.6 0.0 0.0
+
+newmtl UA0A
+Kd 0.6 0.0 0.6
+
+newmtl UAA0
+Kd 0.6 0.6 0.0
+
+newmtl UAAA
+Kd 0.6 0.6 0.6
+
+newmtl U555
+Kd 0.3 0.3 0.3
+
+newmtl U55F
+Kd 0.3 0.3 1.0
+
+newmtl U5F5
+Kd 0.3 1.0 0.3
+
+newmtl U5FF
+Kd 0.3 1.0 1.0
+
+newmtl UF55
+Kd 1.0 0.3 0.3
+
+newmtl UF5F
+Kd 1.0 0.3 1.0
+
+newmtl UFF5
+Kd 1.0 1.0 0.3
+
+newmtl UFFF
+Kd 1.0 1.0 1.0
+
+
+newmtl UE8E
+Kd 0.9 0.5 0.9
+
+newmtl UA50
+Kd 0.6 0.3 0.0
+
+newmtl UFCC
+Kd 1.0 0.8 0.8
+
+newmtl U888
+Kd 0.5 0.5 0.5

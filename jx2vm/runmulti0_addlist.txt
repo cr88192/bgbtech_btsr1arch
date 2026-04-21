@@ -45,6 +45,7 @@ playvid/TestOut_CV0.avi=../tk_ports/PlayVid/TestOut_CV0.avi
 tksys/unisdf.wad=../tk_qsrc/tk_clib/unisdf.wd2 
 rvlibs.wd4=../tk_qsrc/tk_clib/rvlibs.wd4  
 rott/rott.exe=../tk_ports/RottSrc/rott/rott_bjx2.exe 
+rott/rott_x3rv.exe=../tk_ports/RottSrc/rott/rott_x3rv.exe 
 rott/darkwar.wad=../tk_ports/RottSrc/darkwar.wad 
 rott/darkwar.rtl=../tk_ports/RottSrc/darkwar.rtl 
 rott/darkwar.rtc=../tk_ports/RottSrc/darkwar.rtc 

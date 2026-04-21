@@ -1083,6 +1083,21 @@ int BGBCC_JX2_CheckLabelIsGpRel(
 	return(BGBCC_JX2_IsSectionGpRel(sctx, j));
 }
 
+int BGBCC_JX2_CheckLabelIsAsmLocal(BGBCC_JX2_Context *ctx, int lblid)
+{
+	char *str, *cs;
+
+	str=BGBCC_JX2_LookupNameForLabel(ctx, lblid);
+	if(!str)
+		return(0);
+
+	cs=str;
+	while(*cs && *cs!='.')	cs++;
+	if(*cs=='.')
+		return(1);
+	return(0);
+}
+
 int BGBCC_JX2_CheckGetLabelGpOffs(
 	BGBCC_JX2_Context *sctx, int lblid)
 {

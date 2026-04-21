@@ -1603,6 +1603,12 @@ __PDPCLIB_API__ size_t strlen(const char *s)
 	p = s;
 	n=0;
 
+//	while(!((((v-1)&lcomask)^(v&lcomask))&((~v)&lcomask)))
+//	while(!(((v-0x0101010101010101ULL)&lcomask)&((~v)&lcomask)))
+//	while(!((v-lcoadj)&((~v)&lcomask)))
+
+
+
 // #ifdef __riscv
 #if defined(__riscv) || defined(__RISCV__)
 	li=*(u64 *)p;

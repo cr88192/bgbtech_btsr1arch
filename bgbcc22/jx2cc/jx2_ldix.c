@@ -100,7 +100,8 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 		{
 //			if(1)
 //			if(sctx->has_fmovs)
-			if(sctx->has_fmovs&1)
+			if((sctx->has_fmovs&1) &&
+				!(sctx->abi_fpstrict&1))
 //			if(0)
 			{
 				sz=4; nm1=BGBCC_SH_NMID_FMOVS;
@@ -134,7 +135,8 @@ int BGBCC_JX2C_EmitLdix_FillSzNmTy(
 	case CCXL_TY_F16:
 		sctx->is_leaftiny|=8;
 
-		if(sctx->has_fmovs&2)
+		if((sctx->has_fmovs&2) &&
+			!(sctx->abi_fpstrict&1))
 		{
 			sz=2; nm1=BGBCC_SH_NMID_FMOVH;
 			nm2=-1;

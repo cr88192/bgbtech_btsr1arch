@@ -312,8 +312,8 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		break;
 
 	case 0x6:	/* F2nm_6ejj */
-		op->imm=imm9u;
-//		op->imm=imm9us;
+//		op->imm=imm9u;
+		op->imm=imm9us;
 		op->nmid=BJX2_NMID_OR;
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_OR_RegImmReg;
@@ -352,8 +352,8 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 
 		break;
 	case 0x7:	/* F2nm_7ejj */
-		op->imm=imm9u;
-//		op->imm=imm9us;
+//		op->imm=imm9u;
+		op->imm=imm9us;
 		op->nmid=BJX2_NMID_XOR;
 		op->fmid=BJX2_FMID_REGIMMREG;
 		op->Run=BJX2_Op_XOR_RegImmReg;

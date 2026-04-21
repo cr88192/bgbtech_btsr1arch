@@ -31,6 +31,8 @@ extern dt_scrpix	*screen;
 dt_scrpix	*screen_tmp;
 extern dt_scrpix		*screens_base;
 
+extern byte st_do3dglasses;
+
 dt_scrpix	*screen_fbuf;
 
 void IN_Init (void);
@@ -2081,9 +2083,16 @@ void I_InitTkGdi()
 }
 
 extern byte	st_oddframe;		//BGB: Odd Frame
+extern byte	st_do3dglasses;		//BGB: Do 3D glasses effect
+extern int		r_view_xadjust;
 
 void I_FinishUpdate (void)
 {
+	u64 *cs, *ct;
+	u64	vmsk, vnmsk, vcmsk, vamsk;
+	u64 ps0, ps1, ps2, ps3;
+	u64 pd0, pd1, pd2, pd3;
+	u64 pa0, pa1, pa2, pa3;
 	int i, j, k;
 
 	I_InitTkGdi();
@@ -2097,9 +2106,99 @@ void I_FinishUpdate (void)
 	}
 
 	st_oddframe = !st_oddframe;
+	if(st_do3dglasses)
+	{
+		r_view_xadjust=st_oddframe?1:(-1);
+		colormaps_bcur = colormaps_an3d;
+	}else
+	{
+		r_view_xadjust=0;
+		colormaps_bcur = colormaps_base;
+	}
 
-//	if(vid_flashblend)
-	if(0)
+	if(st_do3dglasses)
+	{
+		if(st_do3dglasses==1)
+		{
+	//		if(st_oddframe)
+			if(!st_oddframe)
+				{ vmsk=0x03FF; }
+			else
+				{ vmsk=0xFC00; }
+		}
+
+		if(st_do3dglasses==2)
+		{
+	//		if(st_oddframe)
+			if(!st_oddframe)
+				{ vmsk=0xFC1F; }
+			else
+				{ vmsk=0x03E0; }
+		}
+
+		if(st_do3dglasses==3)
+		{
+			if(st_oddframe)
+//			if(!st_oddframe)
+				{ vmsk=0xFC1F; }
+			else
+				{ vmsk=0x03E0; }
+		}
+
+		vmsk|=vmsk<<16;
+		vmsk|=vmsk<<32;
+		vnmsk=~vmsk;
+		vcmsk=0x00E000E000E000E0ULL;
+		vamsk=0x0007000700070007ULL;
+
+		cs=(u64 *)screen;
+		ct=(u64 *)screen_tmp;
+
+		for(i=0; i<((BASEWIDTH*BASEHEIGHT)>>2); i+=8)
+		{
+			ps0=cs[0];	ps1=cs[1];
+			ps2=cs[2];	ps3=cs[3];
+			pd0=ct[0];	pd1=ct[1];
+			pd2=ct[2];	pd3=ct[3];
+
+			ps0&=vmsk;	ps1&=vmsk;
+			ps2&=vmsk;	ps3&=vmsk;
+			pd0&=vnmsk;	pd1&=vnmsk;
+			pd2&=vnmsk;	pd3&=vnmsk;
+			ct[0]=pd0|ps0;	ct[1]=pd1|ps1;
+			ct[2]=pd2|ps2;	ct[3]=pd3|ps3;
+
+			ps0=cs[4];	ps1=cs[5];
+			ps2=cs[6];	ps3=cs[7];
+			pd0=ct[4];	pd1=ct[5];
+			pd2=ct[6];	pd3=ct[7];
+
+			ps0&=vmsk;	ps1&=vmsk;
+			ps2&=vmsk;	ps3&=vmsk;
+			pd0&=vnmsk;	pd1&=vnmsk;
+			pd2&=vnmsk;	pd3&=vnmsk;
+			ct[4]=pd0|ps0;	ct[5]=pd1|ps1;
+			ct[6]=pd2|ps2;	ct[7]=pd3|ps3;
+
+			ct+=8;	cs+=8;
+		}
+
+#if 0
+		for(i=0; i<((BASEWIDTH*BASEHEIGHT)>>2); i++)
+		{
+			((u64 *)screen_tmp)[i]=
+				(((u64 *)screen_tmp)[i]&vnmsk) |
+				(((u64 *)screen)[i]&vmsk);
+
+//			((u64 *)screen_tmp)[i]=VID_BlendFlash4x(
+//				((u64 *)screen)[i], vid_flashblend);
+		}
+#endif
+
+		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_tmp);
+	}else
+//		if(vid_flashblend)
+		if(0)
 	{
 #if 0
 //		screen_tmp

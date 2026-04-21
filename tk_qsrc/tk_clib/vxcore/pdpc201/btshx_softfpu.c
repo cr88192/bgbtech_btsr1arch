@@ -1314,6 +1314,41 @@ u16 __sfp_sthf16(u32 f0)
 	return(((f0>>16)&0x8000)|i0);
 }
 
+u64 __sfp_fcvt_s2d(u32 f0)
+	{ return(__sfp_fcnvsd(f0)); }
+u32 __sfp_fcvt_d2s(u64 f0)
+	{ return(__sfp_fcnvds(f0)); }
+
+u64 __sfp_fcvt_h2d(u16 f0)
+	{ return(__sfp_fcnvsd(__sfp_ldhf16(f0))); }
+u16 __sfp_fcvt_d2h(u64 f0)
+	{ return(__sfp_sthf16(__sfp_fcnvds(f0))); }
+
+u32 __sfp_fcvt_h2s(u16 f0)
+	{ return(__sfp_ldhf16(f0)); }
+u16 __sfp_fcvt_s2h(u32 f0)
+	{ return(__sfp_sthf16(f0)); }
+
+u64 __sfp_pcvt_h2s(u32 f0)
+{
+	return(__sfp_ldhf16(f0)|(((u64)__sfp_ldhf16(f0>>16))<<32));
+}
+u32 __sfp_pcvt_s2h(u64 f0)
+{
+	return(__sfp_sthf16(f0)|(((u64)__sfp_sthf16(f0>>32))<<16));
+}
+
+u64 __sfp_fneg_f64(u64 f0)
+{
+	return(f0^0x8000000000000000ULL);
+}
+
+u64 __sfp_pneg_f32(u64 f0)
+{
+	return(f0^0x8000000080000000ULL);
+}
+
+
 
 double __lfp_fcnvsd(float f0)
 {

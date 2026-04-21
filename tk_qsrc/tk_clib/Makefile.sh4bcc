@@ -31,7 +31,8 @@ libs: FORCE
 
 apps: libs FORCE
 	make -C vxcore -f Makefile.sh4bcc apps
-	cp vxcore/*.sys		$(BUILD)
+	cp vxcore/*.sys			$(BUILD)
+	cp vxcore/*.sys.map		$(BUILD)
 #	cp -rf $(BUILD)/*.ril $(INST_LIB)
 
 tkusrimg.wd4: includes libs apps tkusrimg_list.txt

@@ -221,6 +221,18 @@ fetestexcept:
 
 #ifdef __RISCV__
 __asm {
+.global feclearexcept
+.global fegetenv
+.global fegetexceptflag
+.global fesetenv
+.global feupdateenv
+.global fesetexceptflag
+.global fegetround
+.global fesetround
+.global feholdexcept
+.global feraiseexcept
+.global fetestexcept
+
 feclearexcept:
 	MOV		ASM_REG_FENV, R12
 	MOV		0x00FFFFFFFFFFFFFF, R13

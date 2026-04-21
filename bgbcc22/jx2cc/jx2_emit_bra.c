@@ -2216,7 +2216,17 @@ int BGBCC_JX2_EmitCheckAutoLabelNear10(
 				return(1);
 		
 			if(ctx->is_rawasm)
+			{
+//				if(!ctx->is_simpass && (ctx->simfnsz>0) && (ctx->simfnsz<996))
+//					return(1);
+
+				if(!ctx->is_simpass &&
+					(ctx->simfnsz>0) && (ctx->simfnsz<996) &&
+					BGBCC_JX2_CheckLabelIsAsmLocal(ctx, lbl))
+						return(1);
+
 				return(0);
+			}
 		
 //			return(0);
 		
@@ -2247,6 +2257,11 @@ int BGBCC_JX2_EmitCheckAutoLabelNear10(
 	if((ctx->simfnsz>0) && (ctx->simfnsz<996) && !ctx->is_rawasm &&
 			!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
 		return(1);
+
+	if(!ctx->is_simpass && ctx->is_rawasm &&
+		(ctx->simfnsz>0) && (ctx->simfnsz<996) &&
+		BGBCC_JX2_CheckLabelIsAsmLocal(ctx, lbl))
+			return(1);
 
 	return(0);
 }

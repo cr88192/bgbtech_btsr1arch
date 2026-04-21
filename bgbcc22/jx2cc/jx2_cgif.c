@@ -162,6 +162,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	shctx->abi_evenonly=0;
 	shctx->abi_noexcept=0;
 	shctx->abi_spillpad=0;
+	shctx->abi_fpstrict=0;
 
 //	shctx->abi_spillpad=1;
 //	shctx->abi_spillpad|=2;
@@ -265,6 +266,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "bitmov"))
 		shctx->has_bitmov|=1;
+
+	if(BGBCC_CCXL_CheckForOptStr(ctx, "fp_strict"))
+		shctx->abi_fpstrict|=1;
 
 	if(	BGBCC_CCXL_CheckForOptStr(ctx, "wexj") ||
 		BGBCC_CCXL_CheckForOptStr(ctx, "jumbo"))
@@ -750,7 +754,6 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "predops"))
 			{ ctx->arch_has_predops|=1; }
-
 
 		if(ctx->arch_has_predops)
 			shctx->has_jcmp|=16;
@@ -5182,6 +5185,17 @@ ccxl_status BGBCC_JX2C_BuildPrestartInit(BGBCC_TransState *ctx)
 	BGBCC_JX2_EmitOpRegStReg(sctx, BGBCC_SH_NMID_MOVQ,
 		BGBCC_SH_REG_R1, BGBCC_SH_REG_SP);
 	
+	if(sctx->abi_fpstrict&1)
+	{
+		s=bgbcc_strdup("__fpu_setstrict");
+		l1=BGBCC_JX2_GetNamedLabel(sctx, s);
+		if(l1>0)
+		{
+			nm1=BGBCC_SH_NMID_BSRN;
+			BGBCC_JX2_EmitOpAutoLabel(sctx, nm1, l1);
+		}
+	}
+	
 	for(i=0; i<1024; i++)
 	{
 		sprintf(tb, "__prestart_init!%d", i);
@@ -9415,7 +9429,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			sctx->stat_const_jumbo96ph
 			);
 		
-		printf("Disp-Hit(Sc): 5u=%.2f%% 5u=%.2f%% 9u=%.2f%% 10u=%.2f%% "
+		printf("Disp-Hit(Sc): 5u=%.2f%% 6u=%.2f%% 9u=%.2f%% 10u=%.2f%% "
 				"10s=%.2f%% 12s=%.2f%%\n",
 			(100.0*sctx->stat_ldst_disp5u)/(sctx->stat_ldst_disptot+1),
 			(100.0*sctx->stat_ldst_disp6u)/(sctx->stat_ldst_disptot+1),
