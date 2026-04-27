@@ -1813,10 +1813,15 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_CSRRW:		s0="CSRRW";		break;
 	case BJX2_NMID_CSRRS:		s0="CSRRS";		break;
 
+	case BJX2_NMID_TSTNQ:		s0="TSTN.Q";		break;
+
 	case BJX2_NMID_BITMOV:		s0="BITMOV";		break;
 	case BJX2_NMID_BITMOVX:		s0="BITMOVX";		break;
 	case BJX2_NMID_BITMOVS:		s0="BITMOVS";		break;
 	case BJX2_NMID_BITMOVSX:	s0="BITMOVSX";		break;
+
+	case BJX2_NMID_PLDCSW:		s0="PLDCSW";		break;
+	case BJX2_NMID_FLDCPD:		s0="FLDCPD";		break;
 
 	default:
 		sprintf(tb, "?NM%02X", nmid);
@@ -1993,7 +1998,11 @@ char *BJX2_DbgPrintNameForReg(BJX2_Context *ctx,
 	case BJX2_REG_R15A:		s="R15A";	break;
 #endif
 
+
+	case BJX2_REG_IMM:		s="IMM";	break;
+	case BJX2_REG_IMM2:		s="IMM2";	break;
 	case BJX2_REG_ZZR:		s="ZZR";	break;
+	case BJX2_REG_ZZR2:		s="ZZR2";	break;
 
 	case BJX2_REG_PC:		s="PC";		break;
 	case BJX2_REG_LR:		s="LR";		break;

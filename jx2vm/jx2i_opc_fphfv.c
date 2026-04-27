@@ -1353,6 +1353,19 @@ void BJX2_Op_RGB32UPCK64_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_RGB32UPCK64_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn, msk;
+//	vs=ctx->regs[op->rm];
+	vs=op->imm;
+	vn=	((vs&0x000000FF)<< 8)|
+		((vs&0x0000FF00)<<16)|
+		((vs&0x00FF0000)<<24)|
+		((vs&0xFF000000)<<32);
+	vn|=(vn>>8);
+	ctx->regs[op->rn]=vn;
+}
+
 void BJX2_Op_RGB5SH3_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	static const u16 exp3tab[32]={
@@ -4096,6 +4109,37 @@ void BJX2_Op_PCVTF8TOH_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_PCVTF8TOH_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+//	vs=ctx->regs[op->rn];
+//	vs=ctx->regs[op->rm];
+	vs=op->imm;
+	
+	vn=	(((u64)bjx2_opi_cvtf8toh((vs>> 0)&0xFF))<< 0) |
+		(((u64)bjx2_opi_cvtf8toh((vs>> 8)&0xFF))<<16) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>16)&0xFF))<<32) |
+		(((u64)bjx2_opi_cvtf8toh((vs>>24)&0xFF))<<48) ;
+
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_FLDCPD_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+	int i, j, k;
+
+	vs=op->imm;
+	vn=	((vs&0xFFFFFFF0ULL)<<32) |
+		((vs&0x00000FF0ULL)<<24) |
+		((vs&0x00000FF0ULL)<<16) |
+		((vs&0x00000FF0ULL)<< 8) |
+		((vs&0x00000FF0ULL)<< 0) |
+		((vs&0x0000000FULL)<< 0) ;
+	ctx->regs[op->rn]=vn;
+}
 
 int BJX2_BitNN_DoMult2x3A(int x, int w)
 {

@@ -1116,6 +1116,15 @@ void BJX2_Op_FLDCF_ImmGReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=BJX2_CvtFloatToDouble(v);
 //	BJX2_PtrSetDoubleIx(ctx->regs, op->rn, BJX2_PtrGetFloat(&v));
 }
+
+void BJX2_Op_PLDCSW_ImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 v;
+	v=(u16)(op->imm);
+	v=v|(v<<16);
+	v=v|(v<<32);
+	ctx->regs[op->rn]=v;
+}
 #endif
 
 
@@ -1944,6 +1953,68 @@ void BJX2_Op_ROTRX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 
 #if 1
+void BJX2_Op_ADDX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 valo, vahi, vblo, vbhi, vclo, vchi;
+	int vacf;
+	
+	valo=ctx->regs[op->rm+0];	vahi=ctx->regs[op->rm+1];
+	vblo=op->imm;				vbhi=op->imm>>63;
+
+	vclo=valo+vblo; vacf=(vclo<=valo);
+	vchi=vahi+vbhi+vacf;
+	ctx->regs[op->rn+0]=vclo;
+	ctx->regs[op->rn+1]=vchi;
+}
+
+void BJX2_Op_SUBX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 valo, vahi, vblo, vbhi, vclo, vchi;
+	int vacf;
+	
+	valo=ctx->regs[op->rm+0];	vahi=ctx->regs[op->rm+1];
+	vblo=op->imm;				vbhi=op->imm>>63;
+	
+	vblo=~vblo; vbhi=~vbhi;
+	
+	vclo=valo+vblo+1;
+	vacf=(vclo<=valo);
+	vchi=vahi+vbhi+vacf;
+
+	ctx->regs[op->rn+0]=vclo;
+	ctx->regs[op->rn+1]=vchi;
+}
+
+void BJX2_Op_ANDX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 valo, vahi, vblo, vbhi, vclo, vchi;
+	valo=ctx->regs[op->rm+0];	vahi=ctx->regs[op->rm+1];
+	vblo=op->imm;				vbhi=op->imm>>63;
+	vclo=valo&vblo;				vchi=vahi&vbhi;
+	ctx->regs[op->rn+0]=vclo;	ctx->regs[op->rn+1]=vchi;
+}
+
+void BJX2_Op_ORX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 valo, vahi, vblo, vbhi, vclo, vchi;
+	valo=ctx->regs[op->rm+0];	vahi=ctx->regs[op->rm+1];
+	vblo=op->imm;				vbhi=op->imm>>63;
+	vclo=valo|vblo;				vchi=vahi|vbhi;
+	ctx->regs[op->rn+0]=vclo;	ctx->regs[op->rn+1]=vchi;
+}
+
+void BJX2_Op_XORX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 valo, vahi, vblo, vbhi, vclo, vchi;
+	valo=ctx->regs[op->rm+0];	vahi=ctx->regs[op->rm+1];
+	vblo=op->imm;				vbhi=op->imm>>63;
+	vclo=valo^vblo;				vchi=vahi^vbhi;
+	ctx->regs[op->rn+0]=vclo;	ctx->regs[op->rn+1]=vchi;
+}
+#endif
+
+
+#if 1
 void BJX2_Op_CMPXEQ_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	bjx2_val128 va, vb;
@@ -2452,35 +2523,123 @@ void BJX2_Op_FCMPGE_Imm56Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->regs[BJX2_REG_SR]&=~1;
 }
 
+u64 BJX2_NormalizeFpImmToDouble(s64 va)
+{
+	u64 vb, v1;
+	int p12, p12r;
+
+	if(((u16)va)==va)
+	{
+		vb=BJX2_CvtHalfToFloat(va);
+		vb=BJX2_CvtFloatToDouble(vb);
+		return(vb);
+	}
+
+	if(((u32)va)==va)
+	{
+		vb=va<<32;
+		return(vb);
+	}
+	
+	if((va>>48)==-1)
+	{
+		if((va|(~0xFFFFULL))==va)
+		{
+			switch(va&3)
+			{
+			case 0:
+				p12=(va>>2)&3;
+				p12|=(p12<<2);
+				p12=p12|(p12<<4)|(p12<<8);
+				break;
+			case 1:
+				p12=(va>>2)&7;
+				p12|=(p12<<3);
+				p12=p12|(p12<<6);
+				break;
+			case 2:
+				p12=(va>>2)&15;
+				p12=p12|(p12<<4)|(p12<<8);
+				break;
+			case 3:
+				p12=(va>>2)&63;
+				p12=p12|(p12<<6);
+				break;
+			}
+			
+			p12r=p12>>4;
+			if(p12&8)
+				p12r++;
+			
+			v1=(((va>>15)&1ULL)<<63);
+			if((va>>14)&1)
+				{ v1|=0x40ULL<<56; }
+			else
+				{ v1|=0x3FULL<<56; }
+			
+			v1|=((va>>10)&15ULL)<<52;
+			v1|=((va>>2)&511ULL)<<44;
+			v1|=((u64)p12)<<32;
+			v1|=((u64)p12)<<20;
+			v1|=((u64)p12)<< 8;
+			v1|=p12r;
+			
+			return(v1);
+		}
+
+		if((va|(~0xFFFFFFFFULL))==va)
+		{
+			v1=
+				((va&0xFFFFFFF0ULL)<<32) |
+				((va&0x00000FF0ULL)<<24) |
+				((va&0x00000FF0ULL)<<16) |
+				((va&0x00000FF0ULL)<< 8) |
+				((va&0x00000FF0ULL)<< 0) |
+				((va&0x0000000FULL)<< 0) ;
+			return(v1);
+		}
+	}
+	
+	return(va);
+}
+
 void BJX2_Op_FADD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 vb;
-	vb=BJX2_CvtHalfToFloat(op->imm);
-	vb=BJX2_CvtFloatToDouble(vb);
+//	vb=BJX2_CvtHalfToFloat(op->imm);
+//	vb=BJX2_CvtFloatToDouble(vb);
+	vb=BJX2_NormalizeFpImmToDouble(op->imm);
 	ctx->regs[op->rn]=BJX2_FAddSoft(ctx->regs[op->rm], vb);
 }
 
 void BJX2_Op_FSUB_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 vb;
-	vb=BJX2_CvtHalfToFloat(op->imm);
-	vb=BJX2_CvtFloatToDouble(vb);
+//	vb=BJX2_CvtHalfToFloat(op->imm);
+//	vb=BJX2_CvtFloatToDouble(vb);
+	vb=BJX2_NormalizeFpImmToDouble(op->imm);
 	ctx->regs[op->rn]=BJX2_FSubSoft(ctx->regs[op->rm], vb);
 }
 
 void BJX2_Op_FMUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 vb;
-	vb=BJX2_CvtHalfToFloat(op->imm);
-	vb=BJX2_CvtFloatToDouble(vb);
+//	vb=BJX2_CvtHalfToFloat(op->imm);
+//	vb=BJX2_CvtFloatToDouble(vb);
+	vb=BJX2_NormalizeFpImmToDouble(op->imm);
 	ctx->regs[op->rn]=BJX2_FMulSoft(ctx->regs[op->rm], vb);
 }
 
-int BJX2_OpI_ImmFp5ToFp16(BJX2_Context *ctx, int v)
+s64 BJX2_OpI_ImmFp5ToFp16(BJX2_Context *ctx, s64 v)
 {
+	if((v>=0) && (v<=31))
+		return(0x3000+(v<<8));
+	if((v>=32) && (v<=63))
+		return(0xB000+((v&31)<<8));
+	return(v);
+
 //	if(!v)
 //		return(0);
-	return(0x3000+(v<<8));
 //	return(0x3200+(v<<8));
 //	return(0x3400+(v<<8));
 //	return(0x3800+(v<<8));

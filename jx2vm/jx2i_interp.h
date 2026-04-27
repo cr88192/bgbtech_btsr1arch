@@ -122,8 +122,13 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_REG_STTB	44
 #define BJX2_REG_KRR	45
 
-#define BJX2_REG_IMM	62
-#define BJX2_REG_ZZR	63
+// #define BJX2_REG_IMM	62
+// #define BJX2_REG_ZZR	63
+
+#define BJX2_REG_IMM	60
+#define BJX2_REG_IMM2	61
+#define BJX2_REG_ZZR	62
+#define BJX2_REG_ZZR2	63
 #endif
 
 #if 0
@@ -163,8 +168,13 @@ Will use direct linking and assume a non-modifiable program space.
 // #define BJX2_REG_IMM	78
 // #define BJX2_REG_ZZR	79
 
-#define BJX2_REG_IMM	94
-#define BJX2_REG_ZZR	95
+//#define BJX2_REG_IMM	94
+//#define BJX2_REG_ZZR	95
+
+#define BJX2_REG_IMM	92
+#define BJX2_REG_IMM2	93
+#define BJX2_REG_ZZR	94
+#define BJX2_REG_ZZR2	95
 
 #endif
 
@@ -825,6 +835,8 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_FSGNJQ		0x1F3		//
 #define BJX2_NMID_FSGNJNQ		0x1F4		//
 #define BJX2_NMID_FSGNJXQ		0x1F5		//
+#define BJX2_NMID_PLDCSW		0x1F6		//
+#define BJX2_NMID_FLDCPD		0x1F7		//
 
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 

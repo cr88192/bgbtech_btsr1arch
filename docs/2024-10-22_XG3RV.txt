@@ -684,7 +684,7 @@ Note that the 2RI instructions in this case would use the same Imm10 format at t
 ** iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI	Imm16u, Rn
 ** iiii-iiiiii-iiiiii-0011-nnnnnn-11-0010  -
 ** iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCH	Imm16u, Rn
-** iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  -
+** iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010 ? PLDCSW	Imm16u, Rn
 ** iiii-iiiiii-iiiiii-0101-nnnnnn-01-0010  LEA.Q	(GP, Disp16u), Rn
 ** iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  MOVU.L	(GP, Disp16u*4), Rn	//LWU
 ** iiii-iiiiii-iiiiii-0110-nnnnnn-01-0010  -
@@ -761,7 +761,7 @@ Much of these can be considered optional.
 *** 1000-000100-mmmmmm-0001-nnnnnn-00-0010  BNDCHK		RmImm6u, Rn
 *** 1000-000100-mmmmmm-0001-nnnnnn-10-0010  MULU.X		Xm, Xn
 *** 1000-000101-mmmmmm-0001-nnnnnn-00-0010  BNDCMP		RmImm6u, Rn
-*** 1000-000101-mmmmmm-0001-nnnnnn-10-0010  MULHU.X	Xm, Xn
+*** 1000-000101-mmmmmm-0001-nnnnnn-10-0010  MULHU.X		Xm, Xn
 *** 1000-000110-mmmmmm-0001-nnnnnn-00-0010  VSKG		Rm, Rn
 *** 1000-000110-mmmmmm-0001-nnnnnn-10-0010  DIVU.X		Xm, Xn
 *** 1000-000111-mmmmmm-0001-nnnnnn-00-0010  VSKC		Rm, Rn
@@ -789,11 +789,11 @@ Much of these can be considered optional.
 *** 1001-000010-mmmmmm-0001-nnnnnn-10-0010 ? ADC.L		Rm, Rn
 *** 1001-000011-mmmmmm-0001-nnnnnn-00-0010 ? SBB		Rm, Rn
 *** 1001-000011-mmmmmm-0001-nnnnnn-10-0010 ? SBB.L		Rm, Rn
-*** 1001-000100-mmmmmm-0001-nnnnnn-00-0010 ? TST.L		Rm, Rn
-*** 1001-000100-mmmmmm-0001-nnnnnn-10-0010 ? TST.Q		Rm, Rn
+*** 1001-000100-mmmmmm-0001-nnnnnn-00-0010 / TST.L		Rm, Rn
+*** 1001-000100-mmmmmm-0001-nnnnnn-10-0010 / TST.Q		Rm, Rn
 
-*** 1001-001000-mmmmmm-0001-nnnnnn-00-0010  MOV			Rm, Rn
-*** 1001-001000-mmmmmm-0001-nnnnnn-10-0010  MOVX		Rm, Rn
+*** 1001-001000-mmmmmm-0001-nnnnnn-00-0010 /? MOV		Rm, Rn
+*** 1001-001000-mmmmmm-0001-nnnnnn-10-0010 /? MOVX		Rm, Rn
 *** 1001-001001-mmmmmm-0001-nnnnnn-00-0010  -
 *** 1001-001001-mmmmmm-0001-nnnnnn-10-0010 ? CMPNANTEQ	RmImm6u, Rn
 *** 1001-001010-mmmmmm-0001-nnnnnn-00-0010  MOV			Rm, Cn
@@ -804,9 +804,12 @@ Much of these can be considered optional.
 ** F0nm_1ezA  (GSV Block)
 *** 1010-000000-mmmmmm-0001-nnnnnn-00-0010  PSTCF8H		Rm, Rn
 *** 1010-000000-mmmmmm-0001-nnnnnn-10-0010  -
-*** 1010-000001-mmmmm
-m-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
+*** 1010-000001-mmmmmm-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
 *** 1010-000001-mmmmmm-0001-nnnnnn-10-0010  -
+*** 1010-000010-mmmmmm-0001-nnnnnn-00-0010  PCVTH2F8A	Rm, Rn
+*** 1010-000010-mmmmmm-0001-nnnnnn-10-0010  -
+*** 1010-000011-mmmmmm-0001-nnnnnn-00-0010  PCVTF8A2H	Rm, Rn
+*** 1010-000011-mmmmmm-0001-nnnnnn-10-0010  -
 
 *** 1010-001001-mmmmmm-0001-nnnnnn-00-0010  ? PDOTT.H	Imm6u, Rn
 *** 1010-001001-mmmmmm-0001-nnnnnn-10-0010  ? PDOTT.F	Imm6u, Rn

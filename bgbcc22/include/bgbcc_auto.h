@@ -3380,6 +3380,7 @@ int BGBCC_JX2_ConstConvDoubleToHalf(u64 v, u16 *rv);
 int BGBCC_JX2_ConstConvPackedFloatToHalf2x(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvPackedFloatToHalf4x(u64 va, u64 vb, u64 *rv);
 int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv);
+int BGBCC_JX2_ConstConvHalfToFP8(u16 v, byte *rv);
 int BGBCC_JX2_ConstConvHalfToFP8U(u16 v, byte *rv);
 int BGBCC_JX2_ConstConvHalfToFP5A(u16 imm_f16);
 int BGBCC_JX2_ConstConvHalfToFP5B(u16 imm_f16);
@@ -3387,6 +3388,9 @@ int BGBCC_JX2_ConstConvHalfToFP5C(u16 imm_f16);
 int BGBCC_JX2_ConstConvHalfToFP5D(u16 imm_f16);
 int BGBCC_JX2_ConstConvV4HToV4FP8S(u64 v, u32 *rv);
 int BGBCC_JX2_ConstConvV4HToV4FP8U(u64 v, u32 *rv);
+int BGBCC_JX2_ConstConvV4HToV4FP8(u64 v, u32 *rv);
+int BGBCC_JX2_ConstConvRGBA64To32(u64 v, u32 *rv);
+int BGBCC_JX2_ConstConvDoublePack32(u64 v, u32 *rv);
 u32 BGBCC_ConstConvHalfToFloat(u16 v);
 u64 BGBCC_ConstConvFloatToDouble(u32 v);
 u64 BGBCC_ConstConvHalfToDouble(u16 v);
@@ -3784,6 +3788,7 @@ int BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(BGBCC_JX2_Context *ctx, s64 opwb, int rm
 int BGBCC_JX2X3_CheckEncodeRRRJ(BGBCC_JX2_Context *ctx, s64 opwb, int sid, int rm, int ro, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm17sI(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm16fp(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2X3_CheckEncodeIRJ_Imm6I(BGBCC_JX2_Context *ctx, s64 opwb, s64 imm, int reg, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_TryEmitOpRegRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
 int BGBCC_JX2X3_TryEmitOpRegReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn);
 int BGBCC_JX2X3_UpdateStat2RI(BGBCC_JX2_Context *ctx, int nmid, s64 imm);
@@ -3800,6 +3805,7 @@ int BGBCC_JX2X3_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int 
 int BGBCC_JX2X3_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int rn, int lbl);
 int BGBCC_JX2X3_TryEmitOpLabel(BGBCC_JX2_Context *ctx, int nmid, int lbl);
 int BGBCC_JX2X3_TryEmitOpRegRegImmReg(BGBCC_JX2_Context *ctx, int nmid, int rs, int rt, int imm, int rn);
+int BGBCC_JX2X3_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid);
 //AHSRC:jx2cc/jx2_fltrom.c
 ccxl_status BGBCC_JX2C_FlattenImageROM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_JX2C_FlattenImageASM(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);

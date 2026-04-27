@@ -474,6 +474,9 @@ assign	regOutSp  = gprRegSp[63:0];
 `reg_gprval	tValFpImm16B;
 `reg_gprval	tValFpImm10B;
 
+reg[11:0] tValFpImm16A_Pat12;
+reg[ 7:0] tValFpImm16A_Pat12R;
+
 `reg_gprval	tValImmRpA;
 `reg_gprval	tValImmRpB;
 
@@ -606,13 +609,15 @@ begin
 
 	tValFpImm16A[63:0]	= {
 		regValImmA[15:14],
-		(regValImmA[14] || (regValImmA[14:10]==0)) &&
-				(regValImmA[14:10]!=5'h1F) ?
+//		(regValImmA[14] || (regValImmA[14:10]==0)) &&
+//				(regValImmA[14:10]!=5'h1F) ?
+		regValImmA[14] ?
 			6'h00 : 6'h3F,
 		regValImmA[13: 0],
 		10'h0,
 		32'h0
 		};
+
 //	tValFpImm10A[63:0]	= {
 //		regValImmA[9:8],
 //		(regValImmA[8] || (regValImmA[8:4]==0)) ?
@@ -626,14 +631,103 @@ begin
 
 	tValFpImm16B[63:0]	= {
 		regValImmB[15:14],
-		(regValImmB[14] || (regValImmB[14:10]==0)) &&
-				(regValImmB[14:10]!=5'h1F) ?
+//		(regValImmB[14] || (regValImmB[14:10]==0)) &&
+//				(regValImmB[14:10]!=5'h1F) ?
+		regValImmB[14] ?
 			6'h00 : 6'h3F,
 		regValImmB[13: 0],
 		10'h0,
 		32'h0
 		};
+
 	
+// `ifdef def_true
+`ifdef jx2_use_fpu_fpimm_dp
+// `ifndef def_true
+	tValFpImm16A_Pat12 = 0;
+	tValFpImm16A_Pat12R = 0;
+
+	if(regValImmA[16])
+	begin
+		tValFpImm16A_Pat12 = 0;
+`ifdef def_true
+		case(regValImmA[1:0])
+			2'b00: begin
+				tValFpImm16A_Pat12 = {
+					regValImmA[3:2], regValImmA[3:2],
+					regValImmA[3:2], regValImmA[3:2],
+					regValImmA[3:2], regValImmA[3:2] };
+			end
+			2'b01: begin
+				tValFpImm16A_Pat12 = {
+					regValImmA[4:2], regValImmA[4:2],
+					regValImmA[4:2], regValImmA[4:2] };
+			end
+			2'b10: begin
+				tValFpImm16A_Pat12 = {
+					regValImmA[5:2], regValImmA[5:2],
+					regValImmA[5:2] };
+			end
+			2'b11: begin
+				tValFpImm16A_Pat12 = {
+					regValImmA[7:2], regValImmA[7:2] };
+			end
+		endcase
+`endif
+//		tValFpImm16A_Pat12R =
+//			tValFpImm16A_Pat12[11:4] ;
+
+		tValFpImm16A_Pat12R =
+			tValFpImm16A_Pat12[11:4] +
+			{ 7'h0, tValFpImm16A_Pat12[3] };
+		tValFpImm16A[43:32] = tValFpImm16A_Pat12;
+		tValFpImm16A[31:20] = tValFpImm16A_Pat12;
+		tValFpImm16A[19: 8] = tValFpImm16A_Pat12;
+		tValFpImm16A[ 7: 0] = tValFpImm16A_Pat12R;
+	end
+
+// `endif
+
+// `ifndef def_true
+
+	tValFpImm16A_Pat12 = 0;
+	tValFpImm16A_Pat12R = 0;
+
+	if(regValImmB[16])
+	begin
+		tValFpImm16A_Pat12 = 0;
+		case(regValImmB[1:0])
+			2'b00: begin
+				tValFpImm16A_Pat12 = {
+					regValImmB[3:2], regValImmB[3:2],
+					regValImmB[3:2], regValImmB[3:2],
+					regValImmB[3:2], regValImmB[3:2] };
+			end
+			2'b01: begin
+				tValFpImm16A_Pat12 = {
+					regValImmB[4:2], regValImmB[4:2],
+					regValImmB[4:2], regValImmB[4:2] };
+			end
+			2'b10: begin
+				tValFpImm16A_Pat12 = {
+					regValImmB[5:2], regValImmB[5:2],
+					regValImmB[5:2] };
+			end
+			2'b11: begin
+				tValFpImm16A_Pat12 = {
+					regValImmB[7:2], regValImmB[7:2] };
+			end
+		endcase
+		tValFpImm16A_Pat12R =
+			tValFpImm16A_Pat12[11:4] +
+			{ 7'h0, tValFpImm16A_Pat12[3] };
+		tValFpImm16B[43:32] = tValFpImm16A_Pat12;
+		tValFpImm16B[31:20] = tValFpImm16A_Pat12;
+		tValFpImm16B[19: 8] = tValFpImm16A_Pat12;
+		tValFpImm16B[ 7: 0] = tValFpImm16A_Pat12R;
+	end
+`endif
+
 	tValJimm56Vf[63:0] = {
 		tValJimm[55:42], 2'b0,
 		tValJimm[41:28], 2'b0,
@@ -1133,9 +1227,26 @@ begin
 `endif
 		
 		JX2_GR_IMM_HI: begin
+`ifdef jx2_use_fpu_fpimm
+// `ifndef def_true
+			tValRtA[63:0] = {
+				regValImmA[31:0], UV32_00 };
+`ifdef jx2_use_fpu_fpimm_dp
+			if(regValImmA[32])
+			begin
+				tValRtA[35:28] = regValImmA[11:4];
+				tValRtA[27:20] = regValImmA[11:4];
+				tValRtA[19:12] = regValImmA[11:4];
+				tValRtA[11: 4] = regValImmA[11:4];
+				tValRtA[ 3: 0] = regValImmA[ 3:0];
+			end
+`endif
+`else
 			tValRtA[63:0] = {
 				regValImmA[31:0],
 				regValImmA[32]?UV32_FF:UV32_00 };
+//				UV32_00 };
+`endif
 			tValRtZz=1;
 		end
 		

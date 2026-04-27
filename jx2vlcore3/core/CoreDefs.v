@@ -124,20 +124,16 @@ parameter[6:0] JX2_GR_SP		= 7'h4F;
 
 parameter[6:0] JX2_GR_DLR2		= 7'h50;
 parameter[6:0] JX2_GR_DHR2		= 7'h51;
-
 parameter[6:0] JX2_GR_PC2_HI	= 7'h52;
 parameter[6:0] JX2_GR_RBSEL		= 7'h53;
 parameter[6:0] JX2_GR_SPC2_HI	= 7'h54;
 parameter[6:0] JX2_GR_BPC		= 7'h55;		//Base PC
-
 parameter[6:0] JX2_GR_GBR2_HI	= 7'h56;
 parameter[6:0] JX2_GR_JIMM_EXT	= 7'h57;		//JIMM Sign Extension
 parameter[6:0] JX2_GR_IMM_EXT	= 7'h58;		//Immed Sign Extension
 parameter[6:0] JX2_GR_IMMB		= 7'h59;		//Immed B
-
 parameter[6:0] JX2_GR_FPIMM56F	= 7'h5A;		//FP Immed, Imm56f
 parameter[6:0] JX2_GR_FPIMM56VF	= 7'h5B;		//FP Immed, 4x S.E5.F8
-
 parameter[6:0] JX2_GR_FPIMM16	= 7'h5C;		//FP Immed, 16-bit
 parameter[6:0] JX2_GR_IMM_HI	= 7'h5D;		//Immed in high 32 bits.
 parameter[6:0] JX2_GR_IMM_RP	= 7'h5E;		//Immed via Rp
@@ -690,14 +686,13 @@ REGREG, Fz
 	SQ: Rm, Q?Disp5u:Ro, Rn
 
 	UB: Rm, Rn, Rn
-	UW: / Rm, Rn, Rn
 	UW: Ro, Rm, Rn
 	UL: Rm, Cn, Cn
 	UQ: Cm, Rn, Rn
 
 	NB: Rn, Rm, Rn
 	NW: Rn, ZZR, LR
-	NL: 
+	NL: ? Rm, Rm, Rn
 	NQ: 
 
 	XB: Rm, Ro, Rp->Rn
@@ -1474,6 +1469,7 @@ parameter[5:0] JX2_UCIX_LDI_LDISH32	= 6'h03;		//
 parameter[5:0] JX2_UCIX_LDI_JLDIX	= 6'h04;		//
 parameter[5:0] JX2_UCIX_LDI_FLDCH	= 6'h05;		//
 parameter[5:0] JX2_UCIX_LDI_LDIHI32	= 6'h06;		//
+parameter[5:0] JX2_UCIX_LDI_PLDCSW	= 6'h07;		//
 
 parameter[5:0] JX2_UCIX_SHAD_SHAD3	= 6'h00;		//
 parameter[5:0] JX2_UCIX_SHAD_SHLD3	= 6'h01;		//

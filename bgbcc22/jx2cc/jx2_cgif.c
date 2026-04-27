@@ -9402,10 +9402,10 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		}
 
 		printf("Consts: MaskHit=%d MaskJumbo=%d MaskTot=%d\n"
-			"\tTot_I16=%d (U=%d N=%d Fp16=%d) I20_LUI=%d\n"
+			"\tTot_I16=%d (U=%d N=%d Fp16=%d SW=%d) I20_LUI=%d\n"
 
-			"\tTot_J64=%d (Fp32=%d 2xFp16=%d 4xFp8=%d "
-				"i33l=%d i32h=%d i32c=%d)\n"
+			"\tTot_J64=%d (Fp32=%d 2xFp16=%d 4xFp8=%d 4xUB=%d "
+				"i33l=%d i32h=%d i32c=%d f64dp=%d)\n"
 			"\tTot_J96=%d (PH=%d)\n",
 			sctx->stat_const_maskhit,
 			sctx->stat_const_maskjumbo,
@@ -9415,15 +9415,18 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			sctx->stat_const_imm16u,
 			sctx->stat_const_imm16n,
 			sctx->stat_const_imm16h,
+			sctx->stat_const_imm16sw,
 			sctx->stat_const_imm20lui,
 
 			sctx->stat_const_jumbo64,
 			sctx->stat_const_jumbo64_f32,
 			sctx->stat_const_jumbo64_2xf16,
 			sctx->stat_const_jumbo64_4xf8,
+			sctx->stat_const_jumbo64_4xub,
 			sctx->stat_const_jumbo64_imm33l,
 			sctx->stat_const_jumbo64_imm32h,
 			sctx->stat_const_jumbo64_imm32c,
+			sctx->stat_const_jumbo64_f64dp,
 
 			sctx->stat_const_jumbo96,
 			sctx->stat_const_jumbo96ph

@@ -2301,6 +2301,16 @@ begin
 			tRegConvSrTv	= 1;
 		end
 
+`ifdef def_true
+		JX2_UCIX_CONV2_BLKRGB15F:
+		begin
+			tRegConvVal		= {
+				regValRs[31:4], regValRs[11:4],
+				regValRs[11:4], regValRs[11:4],
+				regValRs[11:4], regValRs[ 3:0] };
+		end
+`endif
+
 `ifdef jx2_enable_conv_vubtof16
 // wire[63:0]	tRegVubUpck;
 // wire[31:0]	tRegVubPck;

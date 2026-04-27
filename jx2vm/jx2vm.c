@@ -1936,12 +1936,21 @@ int main(int argc, char *argv[])
 		{
 			tsec=tt/1000.0;
 			printf("%.2f TLB miss/sec\n", (ctx->tot_cnt_tlbmiss)/tsec);
-			printf("%.2f FP-IEEE miss/sec\n", (ctx->tot_cnt_fpemu_ieee)/tsec);
-			printf("  %.2f FP-DNZ miss/sec\n", (ctx->tot_cnt_fpemu_dnz)/tsec);
-			printf("  %.2f FP-UND miss/sec\n", (ctx->tot_cnt_fpemu_und)/tsec);
-			printf("  %.2f FP-RND miss/sec\n", (ctx->tot_cnt_fpemu_rnd)/tsec);
-			printf("  %.2f FP-LNZ miss/sec\n", (ctx->tot_cnt_fpemu_lnz)/tsec);
-			printf("%.2f FP-Hard miss/sec\n", (ctx->tot_cnt_fpemu_hard)/tsec);
+			if(((ctx->tot_cnt_fpemu_ieee)/tsec)>=0.01)
+			{
+				printf("%.2f FP-IEEE miss/sec\n",
+					(ctx->tot_cnt_fpemu_ieee)/tsec);
+				printf("  %.2f FP-DNZ miss/sec\n",
+					(ctx->tot_cnt_fpemu_dnz)/tsec);
+				printf("  %.2f FP-UND miss/sec\n",
+					(ctx->tot_cnt_fpemu_und)/tsec);
+				printf("  %.2f FP-RND miss/sec\n",
+					(ctx->tot_cnt_fpemu_rnd)/tsec);
+				printf("  %.2f FP-LNZ miss/sec\n",
+					(ctx->tot_cnt_fpemu_lnz)/tsec);
+				printf("%.2f FP-Hard miss/sec\n",
+					(ctx->tot_cnt_fpemu_hard)/tsec);
+			}
 		}
 
 

@@ -85,6 +85,7 @@ Architectural Control Registers:
 * SR: Status Register
 * GBH: Data Quadrant
 * PCH: Program Quadrant
+
 * TBR: Task Base Register
 * FPSCR: FPU Status/Control
 
@@ -104,14 +105,18 @@ For instructions using a 96-bit address, the low 48 bits of each register in the
 
 There may be optional support for hardware bounds checking, but this will be handled by explicit instructions rather than built into the Load/Store instructions.
 
-Note that in this case, the current 48-bit space will exist "somewhere" within the 96 bit space. There may exist hidden architectural registers for the current location within the wider address space. For sake of naming, each 48 bit space (roughly 1/4 of a petabyte) will be referred to as a "Quadrant" or "Quad".
+Note that in this case, the current 48-bit space will exist "somewhere" within the 96 bit space, with the architectural GBH and PCH registers defining the location within the wider address space. For sake of naming, each 48 bit space (roughly 1/4 of a petabyte) will be referred to as a "Quadrant" or "Quad".
 
 Typically, Code and Data will exist within the same Quadrant, but these may differ, in which case the processor may appear like a Harvard architecture (rather than taking on the more traditional Von Neumann appearance when equivalent).
 
 The extent to which 96-bit addressing is supported natively will be implementation dependent.
 
-Note that the Local 48-bit quadrant may be considered local and allows for unrestricted address, but the larger 96-bit space may operate within a Capability Addressing scheme.
+Note that access within the Local 48-bit quadrant may be considered local and may allows for (relatively) unrestricted address, but the larger 96-bit space may operate within a Capability Addressing scheme.
 
+
+Within the Capability Scheme, the remaining 32 tag bits will be used to encode the relative address bounds (for the lower 48-bit address). If an access is out of range for a capability (or to an address that is not a valid capability, in BCE Mode), the access will fault. Note that if BCE is not supported or not enabled, then the 96 bit address will be accessed directly if Addr96 is supported by the target, otherwise a fault will be raised (for possible emulation in software).
+
+The specifics of the capability addressing scheme and MMU will be considered outside the scope of this spec.
 
 
 When used as a Base Register, R0 and R1 are special:
@@ -198,7 +203,7 @@ The Jumbo_FF prefix will have a lesser role in immediate, but is more intended t
 
 ==== Jumbo, F0 Block ====
 
-F0/F3/F9
+F0/F3/F9 (J_IMM)
 * iiii-iiiiii-iiiiii-jjjj-jjjjbb-b1-1010 (FE)
 * XXXX-Sakkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
 
@@ -217,7 +222,7 @@ F0, 4R (J_OP_4R):
 * UUUU-1ttttt-ssssss-0000-WWWWWW-R1-1110 (FF)
 * XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
 
-F0, 3RI Imm17s (J_OP):
+F0, 3RI Imm17s (J_OP + Imm6):
 * UUUU-0jjjjj-jjjjjj-0000-WWWWWW-R1-1110 (FF)
 * XXXX-Skiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
 
@@ -241,8 +246,22 @@ The J_OP_4R prefix may also expand some 2R ops to 3R.
 
 The J_OP_4R prefix will be applicable for operations where Rn is both a source and destination, using Rp to replace the input coming from Rn.
 
+The J_OP_IS prefix will convert normal 3R ops into 3RI.
+* It will also convert 2R ops to 2RI (Imm33, Rn).
+* Behavior will typically be the same as the basic instruction.
 
-==== Jumbo-FF with F0 Load/Store (Optional) ====
+
+Example for 2R Imm17s Synthesis (J_OP_IS):
+* UUUU-0jjjjj-jjjjjj-1000-WWWWWW-R1-1110 (FF)
+* XXXX-ZZZZZZ-Skiiii-ZZZZ-nnnnnn-QY-YYPw (F0)
+
+Witth the Immediate syhesis still following the pattern:
+* S-kjjj-jjjj-jjjj-iiii
+
+
+
+
+==== Jumbo-FF with F0 Load/Store (Optional, LDOP) ====
 
 If used with a register-indexed Load/Store:
 * UUUU-0iiiii-iiiiii-0000-ssssss-01-1110 (FF)
@@ -308,11 +327,33 @@ Will give:
 
 If a Jumbo-FF prefix is used with the F1 and F2 blocks, the immediate will be expanded to 18-bits sign-extended.
 
-* UUUU-TTTTii-iiiiii-VVVV-WWWWWW-R1-1110 (FF)
+Generic:
+* UUUU-HTTTii-iiiiii-0000-WWWWWW-R1-1110 (FF)
+* Sjkk-kkkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
+
+H=0:
+* UUUU-0TTTii-iiiiii-0000-WWWWWW-R1-1110 (FF)
 * Sjkk-kkkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
 
 For the F1/F2 block, a 18-bit immediate will be formed:
 * S-j-iiii-iiii-kkkk-kkkk
+
+
+H=1:
+* UUUU-1bbbbb-bbbbbb-0000-WWWWWW-R1-1110 (FF)
+* iiii-iiiiii-mmmmmm-ZZZZ-Sjkkkk-QY-YYPw (F1/F2)
+
+Where, the second immediate (Imm17s) will take the form:
+* S-jbbb-bbbb-bbbb-kkkk
+
+
+The H flag will be special with Store and Branch instructions:
+* H=0: Displacement is Extended.
+* H=1 (J_OP_4R): Original 10-bit displacement remains in effect.
+** Instead, the Rn field is replaced with a second Immediate field (Imm17s).
+** This combines with Rn in a similar way to Rm or Ro.
+** This will store an immediate to memory, or compare against an immediate.
+
 
 With the R/U/V/T/W bits as additional opcode or context dependent fields.
 
@@ -344,6 +385,41 @@ Note that the decoding of the register field for the 96-bit F8 Block in XG3 will
 The additional X bits will be reserved for additional opcode.
 
 
+=== Major Extensions ===
+
+List of Major Extensions:
+* ALUX: 128-bit ALU Operations
+* BCD: Binary Coded Decimal
+* BITMOV: Bitfield Move
+* BITNN: Bitfield NN
+* DMAC: Multiply Accumulate
+* FPIMM: FPU Immediates
+* GFP: General Floating Point
+* GSV: General SIMD Vectors
+* LDOP: Load/Store Operations
+* PRED: Predicated Instructions
+* TTAG: Type Tag Instructions
+
+Secondary Derived Extensions:
+* GFPX: Extended Binary128 operations.
+** Depends on ALUX.
+* GSVF: Floating Point SIMD Vectors
+** Depends on GSV.
+* XMOV: Extended 96-bit Addressing
+** Depends on ALUX.
+* BCE: Bounds Checked Enforcing (Capabilities)
+** Depends on XMOV.
+* RGB: Instructions for RGB Pixel / Texel Manipulation
+** Depends on GSV
+* RGBF: Instructions for Floating Point RGB
+** Depends on RGB and GSVF
+* LDTEX: Load Texture
+** Depends on RGBF
+* RGBX: Extended RGB
+** Depends on RGBF
+* UAB: Compressed Audio Block
+** Depends of GSVF
+
 
 == Instructions by Grouping ==
 
@@ -363,9 +439,8 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
 === ADDx ===
 
 *        0000-oooooo-mmmmmm-0001-nnnnnn-00-0010  ADD		Rm, Ro, Rn
-*        0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX		Xm, Xo, Xn	//(ALUX)
-*        1100-oooooo-mmmmmm-0101-nnnnnn-00-0010  ADDS.L		Rm, Ro, Rn	//ADDW
-*        1100-oooooo-mmmmmm-0101-nnnnnn-10-0010  ADDU.L		Rm, Ro, Rn	//ADDWU
+*        1100-oooooo-mmmmmm-0101-nnnnnn-00-0010  ADDS.L		Rm, Ro, Rn
+*        1100-oooooo-mmmmmm-0101-nnnnnn-10-0010  ADDU.L		Rm, Ro, Rn
 
 *        iiii-iiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD		Rm, Imm10u, Rn
 *        iiii-iiiiii-mmmmmm-0001-nnnnnn-00-1010  ADD		Rm, Imm10n, Rn
@@ -375,33 +450,40 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
 *        iiii-iiiiii-mmmmmm-0100-nnnnnn-10-1010  ADDU.L		Rm, Imm10n, Rn
 *        iiii-iiiiii-iiiiii-0010-nnnnnn-01-0010  ADD		Imm16s, Rn
 
-* J1_IMM iiii-iiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD		Rm, Imm33s, Rn
-* J1_IMM iiii-iiiiii-mmmmmm-0011-nnnnnn-00-1010  ADDS.L		Rm, Imm33s, Rn
-* J1_IMM iiii-iiiiii-mmmmmm-0011-nnnnnn-10-1010  ADDU.L		Rm, Imm33s, Rn
-* J1_IMM 0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX		Xm, Imm33, Xn
+* J_IMM  iiii-iiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD		Rm, Imm33s, Rn
+* J_IMM  iiii-iiiiii-mmmmmm-0011-nnnnnn-00-1010  ADDS.L		Rm, Imm33s, Rn
+* J_IMM  iiii-iiiiii-mmmmmm-0011-nnnnnn-10-1010  ADDU.L		Rm, Imm33s, Rn
 
 * J2_IMM iiii-iiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD		Rm, Imm64, Rn
 
-* J1_OP  iiii-iiiiii-iiiiii-0010-nnnnnn-s1-0010 ? ADD		Imm33s, Rn
-* J2_OP  iiii-iiiiii-iiiiii-0010-nnnnnn-s1-0010 ? ADD		Imm64, Rn
+* J_OP   iiii-iiiiii-iiiiii-0010-nnnnnn-s1-0010 ? ADD		Imm33s, Rn
+* J2_IMM iiii-iiiiii-iiiiii-0010-nnnnnn-s1-0010 ? ADD		Imm64, Rn
+
+Optional (ALUX):
+*        0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX		Xm, Xo, Xn
+* J_IMM  0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX		Xm, Imm33s, Xn
 
 
 
 Perform an integer ADD operation.
 * ADD: Adds two 64-bit integers.
-* ADDX: Adds two 128-bit register pairs.
+* ADDX: Adds two 128-bit register pairs (ALUX).
 * ADDS.L: Add two integers with 32-bit sign extension.
 * ADDU.L: Add two integers with 32-bit zero extension.
+
+For the ADDX instruction, the Even register will hold the low-order bits and the Odd register the high order bits. Carry propagation will happen between the low and high bits, causing a 128-bit integer result to be generated. When an immediate form is used, the value will be sign extended across both registers.
 
 
 === AND ===
 
 *        0101-oooooo-mmmmmm-0001-nnnnnn-00-0010  AND	Rm, Ro, Rn
-*        0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX	Xm, Xo, Xn
 *        iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND	Rm, Imm10s, Rn
-* J1_IMM iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND	Rm, Imm33s, Rn
+* J_IMM  iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND	Rm, Imm33s, Rn
 * J2_IMM iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND	Rm, Imm64, Rn
-* J1_IMM 0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX	Xm, Imm33s, Xn
+
+Optional (ALUX):
+*        0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX	Xm, Xo, Xn
+* J_IMM  0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX	Xm, Imm33s, Xn
 
 Perform a bitwise AND operation.
 * (ALUX) ANDX: 128-bit AND over register pairs.
@@ -409,39 +491,67 @@ Perform a bitwise AND operation.
 
 === Bcc ===
 
-** F1zz_Czzz
-*** iiiiiiiiii-mmmmmm-1100-nnnnnn-00-0110 ? BTSTT	Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1100-nnnnnn-10-0110 ? BTSTF	Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1101-nnnnnn-00-0110 ? BGT		Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1101-nnnnnn-10-0110 ? BLE		Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1110-nnnnnn-00-0110 ? BGTU	Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1110-nnnnnn-10-0110 ? BLEU	Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1111-nnnnnn-00-0110 ? BEQ		Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1111-nnnnnn-10-0110 ? BNE		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1100-nnnnnn-00-0110  BNTST		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1100-nnnnnn-10-0110  BTST		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1101-nnnnnn-00-0110  BLT		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1101-nnnnnn-10-0110  BGE		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1110-nnnnnn-00-0110  BLTU		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1110-nnnnnn-10-0110  BGEU		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1111-nnnnnn-00-0110  BEQ		Rm, Rn, Disp10s
+*        iiii-iiiiii-mmmmmm-1111-nnnnnn-10-0110  BNE		Rm, Rn, Disp10s
 
-For the relative branch cases, these will be modified to be relative to BasePC and use a 4 byte scale (+/- 2K).
-* BTSTT, Branch if !(Rm AND Rn)
-* BTSTF, Branch if (Rm AND Rn)
+* J_IMM  iiii-iiiiii-mmmmmm-1100-nnnnnn-00-0110  BNTST		Rm, Rn, Disp33s
+* J_IMM  iiii-iiiiii-mmmmmm-1100-nnnnnn-10-0110  BTST		Rm, Rn, Disp33s
+* J_IMM  iiii-iiiiii-mmmmmm-1101-nnnnnn-00-0110  BLT		Rm, Rn, Disp33s
+* J_IMM  iiii-iiiiii-mmmmmm-1101-nnnnnn-10-0110  BGE		Rm, Rn, Disp33s
+* J_IMM  iiii-iiiiii-mmmmmm-1110-nnnnnn-00-0110  BLTU		Rm, Rn, Disp33s
+* J_IMM  iiii-iiiiii-mmmmmm-1110-nnnnnn-10-0110  BGEU		Rm, Rn, Disp33s
+* J_IMM  iiii-iiiiii-mmmmmm-1111-nnnnnn-00-0110  BEQ		Rm, Rn, Disp33s
+* J_IMM  iiii-iiiiii-mmmmmm-1111-nnnnnn-10-0110  BNE		Rm, Rn, Disp33s
 
-Possible:
-* XG3L may require Rm to be X0 for BGT/BLE and BEQ/BNE.
-** BGTU and BLEU will be disallowed in XG3L.
+* J_OP_4R iiii-iiiiii-mmmmmm-1100-nnnnnn-00-0110  BNTST		Rm, Imm17s, Disp10s
+* J_OP_4R iiii-iiiiii-mmmmmm-1100-nnnnnn-10-0110  BTST		Rm, Imm17s, Disp10s
+* J_OP_4R iiii-iiiiii-mmmmmm-1101-nnnnnn-00-0110  BLT		Rm, Imm17s, Disp10s
+* J_OP_4R iiii-iiiiii-mmmmmm-1101-nnnnnn-10-0110  BGE		Rm, Imm17s, Disp10s
+* J_OP_4R iiii-iiiiii-mmmmmm-1110-nnnnnn-00-0110  BLTU		Rm, Imm17s, Disp10s
+* J_OP_4R iiii-iiiiii-mmmmmm-1110-nnnnnn-10-0110  BGEU		Rm, Imm17s, Disp10s
+* J_OP_4R iiii-iiiiii-mmmmmm-1111-nnnnnn-00-0110  BEQ		Rm, Imm17s, Disp10s
+* J_OP_4R iiii-iiiiii-mmmmmm-1111-nnnnnn-10-0110  BNE		Rm, Imm17s, Disp10s
+
+
+Perform a Compare and Branch.
+* Compare Rm op Rn and Branch based on the result.
+* EQ   : (Rm EQ Rn)    (Equal)
+* NE   : (Rm NE Rn)    (Not Equal)
+* LT   : (Rm LT Rn)    (Less Than, Signed)
+* GE   : (Rm GE Rn)    (Greater or Equal, Signed)
+* LTU  : (Rm LTU Rn)   (Less Than, Unsigned)
+* GEU  : (Rm GEU Rn)   (Greater or Equal, Unsigned)
+* BTST : (Rm AND Rn)   (Test)
+* BNTST: !(Rm AND Rn)  (Not-Test)
+
+For the relative branch cases:
+* These will be relative to BasePC and use a 4 byte scale (+/- 2K).
+* For Jumbo Prefixes: BasePC will be at the start of the jumbo prexix.
+
+If a J_OP_4R is used, it will synthesize an immediate from the Jumbo prefix and Rn (similar to the Store-Immed case).
 
 
 === BITMOV ===
 
-* J1_IMM 0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOVS	Rm, Ro, Rn, Imm24
-* J1_IMM 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVSX	Xm, Ro, Xn, Imm24
-* J1_IMM 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOV		Rm, Ro, Rn, Imm24
-* J1_IMM 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVX	Xm, Ro, Xn, Imm24
+* J_IMM   0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOVS	Rm, Ro, Rn, Imm24
+* J_IMM   0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVSX	Xm, Ro, Xn, Imm24
+* J_IMM   0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOV	Rm, Ro, Rn, Imm24
+* J_IMM   0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVX	Xm, Ro, Xn, Imm24
 
-* J1_OP_4R 0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOVS		Rm, Ro, Rp, Rn
-* J1_OP_4R 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVSX		Rm, Ro, Rp, Rn
-* J1_OP_4R 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOV		Rm, Ro, Rp, Rn
-* J1_OP_4R 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVX		Rm, Ro, Rp, Rn
+* J_OP_4R 0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOVS	Rm, Ro, Rp, Rn
+* J_OP_4R 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVSX	Rm, Ro, Rp, Rn
+* J_OP_4R 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  BITMOV	Rm, Ro, Rp, Rn
+* J_OP_4R 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  BITMOVX	Rm, Ro, Rp, Rn
 
 
-Move a value from one bitfield to another.
+Move a value from one bitfield to another (Optional, BITMOV).
+
 The immediate field from the jumbo prefix is decoded as a single immediate.
 
 The BITMOV instruction will move a bitfield while leaving copying all bits outside the masked region uchanged.
@@ -470,18 +580,83 @@ The shift will be encoded as a signed 8 bit shift from -63 to 63 for BITMOV or -
 
 === BITNN ===
 
-* 0010-oooooo-mmmmmm-0111-nnnnnn-10-0010  BITNN		Rm, Ro, Rn
+*         0010-oooooo-mmmmmm-0111-nnnnnn-10-0010  BITNN		Rm, Ro, Rn
+* J_OP_4R 0010-oooooo-mmmmmm-0111-nnnnnn-10-0010  BITNN		Rm, Ro, Rp, Rn
 
-Optional: Bitwise Neural Net.
+Optional (BITNN): Bitwise Neural Net.
+* This may be used for weighted bitwise classifier tasks.
+
+Rm:
+* Will be 16x 1-bit inputs in 1-bit mode,
+* or 16x 2b in 2-bit mode.
+
+Ro:
+* (47: 0), Weights, 3 bits each
+* (55:48), Bias, 8 bit sign-extended.
+* (57:56), Mode
+* (   58), Range Flag
+* (63:59), Reserved (MBZ)
+
+Rp (4R) / Rn (3R):
+* Will be the, 3rd Source, holding output bits.
+
+Rn:
+* Will hold the output bits / destination.
+
+Mode:
+* 00: 1-bit in, 1-bit out
+* 01: 2-bit in, 1 bit out
+* 10: 1-bit in, 2 bit out
+* 11: 2-bit in, 2-bit out
+
+In 1-bit input mode, each input will be 1 bit:
+* 0 => -1, 1 => 1
+
+In 2 bit input mode, each input will be 2 bits:
+* 00 => 0
+* 01 => 1
+* 10 => 0
+* 11 => -1
+
+Weights will be 3 bits and defined as:
+* 000 => 0
+* 001 => 1
+* 010 => 3
+* 011 => 7
+* 100 => 0
+* 101 => -1
+* 110 => -3
+* 111 => -7
+
+Each input will be multiplied by each weight, then the bias will be added, and the final result will be compared against 0.
+
+Output will shift the 3rd input to the left and add the new output into the low-order bit(s).
+
+Output in 1 bit mode will be based on whether the result is greater than or equal to zero.
+* 0: Result (after adding bias) was negative.
+* 1: Result (after adding bias) was positive or zero.
+
+In 2 bit output mode, the output will be +1 or -1.
+* 01: Result is positive.
+* 11: Result is negative.
+
+The Range Flag will modify the behavior of bias handling:
+* 0: The intermediate result and bias will be added with an 8 bit range.
+* 1: The intermediate result and bias will be added with a 9 bit range.
+
+The Range Flag will modify the behavior in the operation in the case where adding the bias would lead to an overflow outside of the 8-bit range. If this flag is set, the range will be expanded such that the overflow will not happen.
 
 
-=== BITSET ===
+=== BITSEL ===
 
-* 1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL		Rm, Ro, Rn
-* 1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX		Xm, Xo, Xn
+*         1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL	Rm, Ro, Rn
+*         1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX	Xm, Xo, Xn
+* J_OP_4R 1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL	Rm, Ro, Rp, Rn
+* J_OP_4R 1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX	Xm, Xo, Rp, Xn
 
 Bit Select.
-MUX bits using a bit mask.
+Generate a value combining bits from Rm and Rn (or Rp) using a mask given
+in Ro, then storing the resulting value in Rn.
 
 
 === BLERP / BLINT ===
@@ -489,7 +664,22 @@ MUX bits using a bit mask.
 * 1001-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLERP			Rm, Ro, Rn
 * 1010-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLINTA		Rm, Ro, Rn
 
-Optional, Linear interpolation.
+Optional (RGBX), Linear interpolation.
+
+Linearly interpolate between two vectors.
+* The vectors will be interpreted as RGBA64 or Packed UInt16.
+* Rm and Ro will give the vectors to interpolate.
+* Rn (3R) or Rp (4R) will give the interpolated value.
+** The 3R form will use bits (15:0) as the interplator.
+** The 4R will use bits (7:6) of the pp field to select an interpolator:
+*** 00: Bits (15: 0) (BLERPS)
+*** 01: Bits (31:16) (BLERPSH)
+*** 10: Bits (47:32) (BLERPT)
+*** 11: Bits (63:48) (BLERPTH)
+
+The LERP of each component will be interpreted as:
+* ValRm*(~Interp) + ValRo*Interp
+* With both components treated as Unsigned.
 
 
 === BLKUAB ===
@@ -497,7 +687,7 @@ Optional, Linear interpolation.
 * 1100-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLKUAB1		Rm, Ro, Rn
 * 1100-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUAB2		Rm, Ro, Rn
 
-Extract a value from a UAB block.
+Optional (UAB), Extract a value from a UAB block.
 
 Extract an audio sample from a block.
 
@@ -572,11 +762,11 @@ An encoder should ensure that decoded values will not go out of range.
 
 
 
-=== BLKUTX1 (RGB) ===
+=== BLKUTX1 ===
 
 * 1100-oooooo-mmmmmm-0010-nnnnnn-00-0010  BLKUTX1		Rm, Ro, Rn
 
-Extract pixels from blocks encoded in UTX1.
+Optional (RGB), Extract pixels from blocks encoded in UTX1.
 
 UTX1 will encode 16 pixels in 32-bits (2bpp).
 
@@ -598,11 +788,11 @@ Where:
 Within the pixel bits, 0 will select the minimum color, and 1 will select the maximum color.
 
 
-=== BLKUTX2 (RGB) ===
+=== BLKUTX2 ===
 
 * 1100-oooooo-mmmmmm-0010-nnnnnn-10-0010  BLKUTX2		Rm, Ro, Rn
 
-Extract pixels from blocks encoded in UTX2.
+Optional (RGB), Extract pixels from blocks encoded in UTX2.
 
 UTX2 will encode 16 pixels in 64-bits (4bpp).
 
@@ -644,13 +834,12 @@ With bit-selection, for each 2 bit pixel:
 Pixel ordering will be such that 0 refers to the pixel at the low order bit position, and 15 at the high order bit position. These operations will not care about the internal pixel ordering within the block (which may be either raster or morton).
 
 
-=== BLKUTX3 (RGB) ===
+=== BLKUTX3 ===
 
 * 1000-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUTX3H		Xm, Ro, Rn
 * 1001-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUTX3L		Xm, Ro, Rn
 
-
-Extract a texel from UTX3.
+Optional (RGB), Extract a texel from UTX3.
 
 The UTX format will come in two sub-variants:
 ** LDR, with RGBA32 endpoints.
@@ -684,6 +873,8 @@ BRA/BSR encoding:
 * Branch reach will be +/- 16MB
 ** This will only be able to branch to a 32-bit aligned address.
 
+Note that BRA and BSR may be considered as subtypes of RV's JAL, trading the flexible link register for more range.
+
 
 === BCDADC ===
 
@@ -697,8 +888,7 @@ BRA/BSR encoding:
 * J_OP_4R 1000-001001-mmmmmm-0001-nnnnnn-00-0010  BCDSBB	Rm, Rp, Rn
 * J_OP_4R 1000-001001-mmmmmm-0001-nnnnnn-10-0010  BCDSBBX	Xm, Xp, Xn
 
-Perform addition or subtraction of Packed BCD numbers.
-This is part of an optional BCD Extension.
+Optional (BCD): Perform addition or subtraction of Packed BCD numbers.
 
 The SR.T flag is used as a Carry or Borrow flag, and is updated based the result of the leftmost digit.
 
@@ -718,7 +908,7 @@ These instructions may be daisy-chained to support larger numbers.
 * 1000-000011-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.Q		Rm, Rn
 * 1000-000100-mmmmmm-0001-nnnnnn-00-0010  BNDCHK		RmImm6u, Rn
 
-Check Array Bounds.
+Optional (TTAG): Check Array Bounds.
 
 The Bounds Check operation will verify whether an index (given) in Rm, falls within the bounds of the array pointer given in Rn.
 
@@ -794,12 +984,12 @@ This will come in both 32 and 64 bit variants.
 *        0111-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPGE.Q	Rm, Ro, Rn
 *        1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHI.Q	Rm, Ro, Rn
 *        1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHS.Q	Rm, Ro, Rn
-* J1_IMM 0000-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPEQ.Q	Rm, Imm33s, Rn
-* J1_IMM 0001-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPGT.Q	Rm, Imm33s, Rn
-* J1_IMM 0010-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPNE.Q	Rm, Imm33s, Rn
-* J1_IMM 0011-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPLT.Q	Rm, Imm33s, Rn
-* J1_IMM 1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHI.Q	Rm, Imm33s, Rn
-* J1_IMM 1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHS.Q	Rm, Imm33s, Rn
+* J_IMM  0000-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPEQ.Q	Rm, Imm33s, Rn
+* J_IMM  0001-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPGT.Q	Rm, Imm33s, Rn
+* J_IMM  0010-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPNE.Q	Rm, Imm33s, Rn
+* J_IMM  0011-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPLT.Q	Rm, Imm33s, Rn
+* J_IMM  1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHI.Q	Rm, Imm33s, Rn
+* J_IMM  1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHS.Q	Rm, Imm33s, Rn
 
 Compare two values (Rm and Ro), or compare a value and an immediate, and store the result in Rn.
 
@@ -821,7 +1011,7 @@ The Reason for using GT/LT for the Immed cases was because GE/LE can be faked by
 
 * 0101-oooooo-mmmmmm-1000-nnnnnn-10-0010  CAS.Q	Rn, Ro, (Rm)
 
-Optional: Compare and Swap.
+Optional (LDOP): Compare and Swap.
 
 
 === CLZ ===
@@ -838,10 +1028,12 @@ CTZ will start counting from the LSB.
 These will count the number of zeroes until the first non-zero bit is encountered. If the register is zero, then the result will be 32 or 64.
 
 
-=== CONVFXI / CONVFLI (TTAG) ===
+=== CONVFXI / CONVFLI ===
 
 * 1000-001111-mmmmmm-0001-nnnnnn-00-0010  CONVFXI		Rm, Rn
 * 1000-001111-mmmmmm-0001-nnnnnn-10-0010  CONVFLI		Rm, Rn
+
+Optional (TTAG): Convert to Fixnum or Flonum.
 
 The CONVFXI instruction sets the high bits to 01 and copies the low order bits from Rm(61:0).
 The CONVFLI instruction sets the high bits to 10 and copies the low order bits from Rm(63:2).
@@ -858,12 +1050,16 @@ Optional (PRED): Conditional Select.
 
 === DIV ===
 
-** 0100-oooooo-mmmmmm-0111-nnnnnn-00-0010  DIVS.L		Rm, Ro, Rn	//DIVW
-** 0100-oooooo-mmmmmm-0111-nnnnnn-10-0010  DIVU.L		Rm, Ro, Rn	//DIVUW
-** 0100-oooooo-mmmmmm-0110-nnnnnn-00-0010  DIVS.Q		Rm, Ro, Rn	//DIV
-** 0100-oooooo-mmmmmm-0110-nnnnnn-10-0010  DIVU.Q		Rm, Ro, Rn	//DIVU
+*        0100-oooooo-mmmmmm-0111-nnnnnn-00-0010  DIVS.L		Rm, Ro, Rn
+*        0100-oooooo-mmmmmm-0111-nnnnnn-10-0010  DIVU.L		Rm, Ro, Rn
+*        0100-oooooo-mmmmmm-0110-nnnnnn-00-0010  DIVS.Q		Rm, Ro, Rn
+*        0100-oooooo-mmmmmm-0110-nnnnnn-10-0010  DIVU.Q		Rm, Ro, Rn
+* J_IMM  0100-oooooo-mmmmmm-0111-nnnnnn-00-0010  DIVS.L		Rm, Imm33s, Rn
+* J_IMM  0100-oooooo-mmmmmm-0111-nnnnnn-10-0010  DIVU.L		Rm, Imm33s, Rn
+* J_IMM  0100-oooooo-mmmmmm-0110-nnnnnn-00-0010  DIVS.Q		Rm, Imm33s, Rn
+* J_IMM  0100-oooooo-mmmmmm-0110-nnnnnn-10-0010  DIVU.Q		Rm, Imm33s, Rn
 
-Integer Divide.
+Optional (QMUL): Integer Divide.
 May be slow and/or implemented via traps.
 
 
@@ -875,6 +1071,7 @@ May be slow and/or implemented via traps.
 * 0011-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULU.Q		Rm, Ro, Xn
 
 Widening Multiply.
+* Q forms are Optional (QMUL).
 
 Multiplies two values and produces a signed or unsigned result twice the width of the input values.
 
@@ -887,15 +1084,23 @@ Multiplies two values and produces a signed or unsigned result twice the width o
 *         0011-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACU.L	Rm, Ro, Rn
 *         0011-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACU.L	Rm, Imm6u, Rn
 
+* J_IMM   0010-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACS.L	Rm, Imm33s, Rn
+* J_IMM   0011-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACU.L	Rm, Imm33s, Rn
+
 * J_OP_4R 0010-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACS.L	Rm, Ro, Rp, Rn
 * J_OP_4R 0010-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACS.L	Rm, Imm6u, Rp, Rn
 * J_OP_4R 0011-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACU.L	Rm, Ro, Rp, Rn
 * J_OP_4R 0011-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACU.L	Rm, Imm6u, Rp, Rn
 
+Optional (DMAC): Widening Multiply and Accumulate.
 
-Widening Multiply and Accumulate.
+Perform a Widening Multiply and Accumulate.
 * Rn = Rp + (Rm * Ro)
 Where, in the basic case, Rp is aliased to Rn.
+
+Here, the 32-bit input values will be multiplied and the result added to a 64-bit accumulator.
+
+Note that the high order bits of Rm and Ro are ignored.
 
 
 === EXT ===
@@ -916,10 +1121,13 @@ Sign or Zero extend an input value to a wider size.
 *        1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD		Rm, Ro, Rn
 *        1101-oooooo-mmmmmm-0110-nnnnnn-00-0010  FADDG		Rm, Ro, Rn
 *        0000-oooooo-mmmmmm-0111-nnnnnn-00-0010  FADDA		Rm, Ro, Rn
-*        1000-oooooo-mmmmmm-0101-nnnnnn-10-0010  FADDX		Xm, Xo, Xn
-*        1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG		Rm, Imm6f, Rn
-
 * J_OP   1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD		Rm, Ro, Rn, I8rm
+
+Optional (FPUX):
+*        1000-oooooo-mmmmmm-0101-nnnnnn-10-0010  FADDX		Xm, Xo, Xn
+
+Optional (FPIMM):
+*        1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG		Rm, Imm6f, Rn
 * J_IMM  1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD		Rm, Imm32f, Rn
 * J_OP   1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG		Rm, Imm16f, Rn
 * J_IMM  1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG		Rm, Imm32f, Rn
@@ -966,9 +1174,40 @@ In the Imm6f cases, the value will be decoded as-if it were first converted to B
 
 Meanwhile, the Imm16f cases will encode the value as Binary16 directly.
 * The extra sign bit in the Imm17s case is MBZ.
+** Optionally, this bit may specify an fraction packing scheme.
+
+Note, however, that the Imm16f case will forbid some value ranges:
+* Inf, NaN, Subnormals, also 0.0
+* This will be to allow the cheapest possible converter:
+** Simply moving the bits around and similar.
+
+May define the Binary16 to Binary64 conversion along the immediate path as:
+* { (15:14), (14) ? 6'b000000 : 6'b111111, (13:0), 42'b0 }
+
+
+If the fraction packing is used for Binary16, the basic format stays the same for the mantissa, but the low 2 bits are understood differently:
+* 00: Fill mantissa with a repeating 2 bit pattern.
+* 01: Fill mantissa with a repeating 3 bit pattern.
+* 10: Fill mantissa with a repeating 4 bit pattern.
+* 11: Fill mantissa with a repeating 6 bit pattern.
+
+These bits are taken from the remaining 8 bits of the mantissa, and then organized into a 12-bit chunk which is repeated multiple times, with the lowest chunk being rounded.
+
 
 Some encodings may encode an Imm32f. This encoding will basically represent the value as a Binary64 with the low 32 bits cut off (S.E11.F20).
+* Bit 32 is 0: Low order bits are filled with 0.
+* Bit 32 is 1: Low order bits are filled using a fraction packing scheme.
 
+The 32-bit packing scheme differs:
+* (31:4) copied to (63:36)
+* (11:4) copied to (35:28)
+* (11:4) copied to (27:20)
+* (11:4) copied to (19:12)
+* (11:4) copied to (11: 4)
+* ( 3:0) copied to ( 3: 0)
+
+
+Note that if FADD is used with an immediate and with Rm==R0 will behave as a plain constant load.
 
 
 === FSUB ===
@@ -976,9 +1215,13 @@ Some encodings may encode an Imm32f. This encoding will basically represent the 
 *        1001-oooooo-mmmmmm-0101-nnnnnn-00-0010  FSUB		Rm, Ro, Rn
 *        1110-oooooo-mmmmmm-0110-nnnnnn-00-0010  FSUBG		Rm, Ro, Rn
 *        0001-oooooo-mmmmmm-0111-nnnnnn-00-0010  FSUBA		Rm, Ro, Rn
-*        1001-oooooo-mmmmmm-0101-nnnnnn-10-0010  FSUBX		Xm, Xo, Xn
-*        1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG		Rm, Imm6f, Rn
 * J_OP   1001-oooooo-mmmmmm-0101-nnnnnn-00-0010  FSUB		Rm, Ro, Rn, I8rm
+
+Optional (FPUX):
+*        1001-oooooo-mmmmmm-0101-nnnnnn-10-0010  FSUBX		Xm, Xo, Xn
+
+Optional (FPIMM):
+*        1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG		Rm, Imm6f, Rn
 * J_IMM  1001-oooooo-mmmmmm-0101-nnnnnn-00-0010  FSUB		Rm, Imm32f, Rn
 * J_OP   1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG		Rm, Imm16f, Rn
 * J_IMM  1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG		Rm, Imm32f, Rn
@@ -986,14 +1229,19 @@ Some encodings may encode an Imm32f. This encoding will basically represent the 
 Perform an FPU Subtract.
 * See FADD for details.
 
+
 === FMUL ===
 
 *        1010-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMUL		Rm, Ro, Rn
 *        1111-oooooo-mmmmmm-0110-nnnnnn-00-0010  FMULG		Rm, Ro, Rn
 *        0010-oooooo-mmmmmm-0111-nnnnnn-00-0010  FMULA		Rm, Ro, Rn
-*        1010-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMULX		Xm, Xo, Xn
-*        1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMULG		Rm, Imm6f, Rn
 * J_OP   1010-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMUL		Rm, Ro, Rn, I8rm
+
+Optional (FPUX):
+*        1010-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMULX		Xm, Xo, Xn
+
+Optional (FPIMM):
+*        1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMULG		Rm, Imm6f, Rn
 * J_IMM  1010-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMUL		Rm, Imm32f, Rn
 * J_OP   1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMULG		Rm, Imm16f, Rn
 * J_IMM  1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMULG		Rm, Imm32f, Rn
@@ -1004,10 +1252,13 @@ Perform an FPU Multiply.
 
 === FMAC ===
 
-*       1011-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMAC		Rm, Ro, Rn
-*       1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMACX		Xm, Xo, Xn
-* J_OP  1011-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMxx		Rm, Ro, Rp, Rn
-* J_OP  1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMxxX		Xm, Xo, Xp, Xn
+*          1011-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMAC		Rm, Ro, Rn
+* J_OP_4R  1011-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMxx		Rm, Ro, Rp, Rn
+
+Optional (FPUX):
+*          1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMACX	Xm, Xo, Xn
+* J_OP_4R  1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMxxX	Xm, Xo, Xp, Xn
+
 
 Floating Point Multiply Accumulate:
 * Rn = Rn + Rm * Ro
@@ -1017,7 +1268,7 @@ Floating Point Multiply Accumulate:
 With the J_OP form, the Imm11 field will be split up:
 * ( 5:0): Rp/Xp
 * ( 7:6): MBZ
-* (11:8): Operator
+* (10:8): Operator
 ** 000=FMAC, 001=FMAS, 010=FMRS, 011=FMRA (Scalar)
 ** 100=PMAC, 101=PMAS, 110=PMRS, 111=PMRA (4x SIMD)
 
@@ -1029,12 +1280,15 @@ With the J_OP form, the Imm11 field will be split up:
 
 === FDIV ===
 
+Optional (FDIV):
 * 0110-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIV		Rm, Ro, Rn
 * 0111-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIVA		Rm, Ro, Rn
+
+Optional (FPUX + FDIV):
 * 0110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVX		Xm, Xo, Xn
 * 0111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVXA	Xm, Xo, Xn
 
-FPU Divide.
+Optional (FDIV): FPU Divide.
 * FDIV: Divide two Binary64 Values
 * FDIVA: Divide two Binary64 Values, Fast Approximation
 * FDIVX: Divide two Binary128 Values
@@ -1051,6 +1305,8 @@ Note that FDIVA will merely provide a fast approximation "close enough" to start
 
 *       0000-oooooo-mmmmmm-0111-nnnnnn-10-0010  FMIN		Rm, Ro, Rn
 *       0001-oooooo-mmmmmm-0111-nnnnnn-10-0010  FMAX		Rm, Ro, Rn
+
+Optional (FPIMM):
 * J_IMM 0000-oooooo-mmmmmm-0111-nnnnnn-10-0010  FMIN		Rm, Imm32f, Rn
 * J_IMM 0001-oooooo-mmmmmm-0111-nnnnnn-10-0010  FMAX		Rm, Imm32f, Rn
 
@@ -1062,6 +1318,8 @@ Select Minimum and Maximum Binary64 values.
 *       1101-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPEQ	Rm, Ro, Rn
 *       1110-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPLT	Rm, Ro, Rn
 *       1111-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPGE	Rm, Ro, Rn
+
+Optional (FPIMM):
 * J_IMM 1101-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPEQ	Rm, Imm32f, Rn
 * J_IMM 1110-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPLT	Rm, Imm32f, Rn
 * J_IMM 1111-oooooo-mmmmmm-1001-nnnnnn-10-0010  FCMPGE	Rm, Imm32f, Rn
@@ -1076,25 +1334,32 @@ Note that other than the special logic to deal with signs, FCMPLT will be functi
 
 === FMOV.x ===
 
-* 0010-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		Rn, (Rm, Disp6s)
-* 0011-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		Rn, (Rm, Disp6s)
-* 0110-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		Rn, (Rm, Ro)
-* 0111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		Rn, (Rm, Ro)
-* 1010-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		(Rm, Disp6s), Rn
-* 1011-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		(Rm, Disp6s), Rn
-* 1110-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S		(Rm, Ro), Rn
-* 1111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H		(Rm, Ro), Rn
+*       0010-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S	Rn, (Rm, Disp6s)
+*       0011-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H	Rn, (Rm, Disp6s)
+*       0110-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S	Rn, (Rm, Ro)
+*       0111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H	Rn, (Rm, Ro)
+*       1010-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S	(Rm, Disp6s), Rn
+*       1011-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H	(Rm, Disp6s), Rn
+*       1110-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.S	(Rm, Ro), Rn
+*       1111-oooooo-mmmmmm-0100-nnnnnn-00-0010  FMOV.H	(Rm, Ro), Rn
 
-* iiii-iiiiii-mmmmmm-0100-nnnnnn-00-0110  FMOV.S	Rn, (Rm, Disp10s)
-* iiii-iiiiii-mmmmmm-0100-nnnnnn-10-0110  FMOV.H	Rn, (Rm, Disp10s)
-* iiii-iiiiii-mmmmmm-0110-nnnnnn-00-0110  FMOV.S	(Rm, Disp10s), Rn
-* iiii-iiiiii-mmmmmm-0110-nnnnnn-10-0110  FMOV.H	(Rm, Disp10s), Rn
+*       iiii-iiiiii-mmmmmm-0100-nnnnnn-00-0110  FMOV.S	Rn, (Rm, Disp10s)
+*       iiii-iiiiii-mmmmmm-0100-nnnnnn-10-0110  FMOV.H	Rn, (Rm, Disp10s)
+*       iiii-iiiiii-mmmmmm-0110-nnnnnn-00-0110  FMOV.S	(Rm, Disp10s), Rn
+*       iiii-iiiiii-mmmmmm-0110-nnnnnn-10-0110  FMOV.H	(Rm, Disp10s), Rn
+
+* J_IMM iiii-iiiiii-mmmmmm-0100-nnnnnn-00-0110  FMOV.S	Rn, (Rm, Disp33s)
+* J_IMM iiii-iiiiii-mmmmmm-0100-nnnnnn-10-0110  FMOV.H	Rn, (Rm, Disp33s)
+* J_IMM iiii-iiiiii-mmmmmm-0110-nnnnnn-00-0110  FMOV.S	(Rm, Disp33s), Rn
+* J_IMM iiii-iiiiii-mmmmmm-0110-nnnnnn-10-0110  FMOV.H	(Rm, Disp33s), Rn
 
 Load and Store a value while converting a given format to/from Binary64.
 * FMOV.S will convert using binary32 as the in-memory format.
 * FMOV.H will convert using binary16 as the in-memory format.
 
 Note that these instructions will always perform a "cheap" conversion (RNE + DAZ/FTZ) and so may not be used if strict IEEE-754 behavior is needed.
+
+For full IEEE behavior, the use of separate conversion ops will be be needed.
 
 
 === FPU Convert ===
@@ -1113,6 +1378,7 @@ Note that these instructions will always perform a "cheap" conversion (RNE + DAZ
 * 1111-001110-mmmmmm-0001-nnnnnn-00-0010  FLDCIU.L		Rm, Rn
 * 1111-001111-mmmmmm-0001-nnnnnn-00-0010  FLDCIS.L		Rm, Rn
 
+Optional (FPUX):
 * 1101-000000-mmmmmm-0001-nnnnnn-10-0010  FLDCXD		Rm, Xn
 * 1101-000100-mmmmmm-0001-nnnnnn-10-0010  FSTCXD		Xm, Rn
 
@@ -1123,11 +1389,12 @@ Note that these instructions will always perform a "cheap" conversion (RNE + DAZ
 * 1111-001110-mmmmmm-0001-nnnnnn-10-0010  FLDCXIU.L		Rm, Xn
 * 1111-001111-mmmmmm-0001-nnnnnn-10-0010  FLDCXIS.L		Rm, Xn
 
+
 These formats will generally convert some other format to/from Binary64.
 * FLDCt: Will convert t to Binary64.
 * FSTCt: Will convert Binary64 to t.
 
-Except for the X variants, which are for Binary128
+Except for the X variants (Optional, FPUX), which are for Binary128
 * FLDCXt: Will convert t to Binary128.
 * FSTCXt: Will convert Binary128 to t.
 
@@ -1148,7 +1415,7 @@ Where t is:
 * 1101-001000-mmmmmm-0001-nnnnnn-10-0010  FNEGX		Xm, Xn
 
 Negate a value in Binary64 format (inverts bit 63).
-* FNEGX is similar, but for Binary128.
+* FNEGX is similar (FPUX), but for Binary128.
 
 
 === FABS ===
@@ -1157,7 +1424,7 @@ Negate a value in Binary64 format (inverts bit 63).
 * 1101-001001-mmmmmm-0001-nnnnnn-10-0010  FABSX		Xm, Xn
 
 Absolute value in Binary64 format (clears bit 63).
-* FABSX is similar, but for Binary128.
+* FABSX is similar (FPUX), but for Binary128.
 
 
 === FSQRT ===
@@ -1169,6 +1436,8 @@ Absolute value in Binary64 format (clears bit 63).
 
 Perform a Floating-Point Square Root.
 * Basic form for Binary64, X form for Binary128.
+* Full SQRT will be Optional (SQRT).
+* Binary128 forms will be optional (FPUX).
 
 Note that SQRT will be defined as a Signed Square Root, as-in, the output sign will be equivalent to the input sign.
 
@@ -1184,6 +1453,8 @@ As for the FSQRTA and FSQRTXA operations:
 
 * iiii-iiiiii-mmmmmm-0110-000000-10-1010  JALR		(Rm, Disp10s), ZR
 * iiii-iiiiii-mmmmmm-0110-000001-10-1010  JALR		(Rm, DIsp10s), LR
+
+Optional (BCE):
 * iiii-iiiiii-mmmmmm-0111-000000-10-1010  JALRX		(Xm, Disp10s), ZR
 * iiii-iiiiii-mmmmmm-0111-000001-10-1010  JALRX		(Xm, DIsp10s), LR
 
@@ -1198,7 +1469,7 @@ Several pseudo instructions will be defined in terms of JALR:
 
 Note that no other destinations are defined and JALR is aliased with the SHAD.X encoding.
 
-JALRX may exist as part of Addr96/BCE, which will be analogous to JALR except that it may perform a branch through a capability.
+JALRX may exist as part of Addr96/BCE, which will be analogous to JALR except that it may perform a branch through a capability. This instruction may trap if the source and desination are not within the same quadrant.
 
 
 === LDTEX ===
@@ -1206,7 +1477,7 @@ JALRX may exist as part of Addr96/BCE, which will be analogous to JALR except th
 ** 1011-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX		(Rm, Ro), Rn
 ** 1111-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX2		(Rm, Ro), Rn
 
-Load from Texture.
+optional (LDTEX): Load from Texture.
 
 The Rm gives the base address and format of the texture.
 
@@ -1260,7 +1531,7 @@ If a displacement is used, it will be interpreted as additional parameters:
 ** 111: Round S and T upward
 
 
-For UTX2, See [BLKUTX2 (RGB)]
+For UTX2, See [BLKUTX2]
 
 For RGB555A, See [RGB Pack/Unpack]
 
@@ -1277,23 +1548,24 @@ RGB4_E4:
 * This is a joint exponent format with denormal components.
 
 
-=== Constant Load ===
+=== LDI / Constant Load ===
 
 *         iiii-iiiiii-iiiiii-0000-nnnnnn-01-0010  LDI		Imm16u, Rn
 *         iiii-iiiiii-iiiiii-0001-nnnnnn-01-0010  LDI		Imm16n, Rn
-* J1_OP   iiii-iiiiii-iiiiii-0000-nnnnnn-s1-0010  LDI		Imm33s, Rn
+* J_OP    iiii-iiiiii-iiiiii-0000-nnnnnn-s1-0010  LDI		Imm33s, Rn
 * J2_IMM  iiii-iiiiii-iiiiii-0000-nnnnnn-s1-0010  LDI		Imm64, Rn
 
 *         iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI		Imm16u, Rn
-* J1_IMM  iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI32	Imm32u, Rn
-* J1_IMM  iiii-iiiiii-iiiiii-0011-nnnnnn-11-0010  LDIHI32	Imm32u, Rn
+* J_OP    iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI32	Imm32u, Rn
+* J_OP    iiii-iiiiii-iiiiii-0011-nnnnnn-11-0010  LDIHI32	Imm32u, Rn
 
 *         iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCH		Imm16u, Rn
-* J1_IMM  iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCF		Imm32u, Rn
-* J1_IMM  iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  PLDCH		Imm32u, Rn
+*         iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  PLDCSW	Imm16u, Rn
+* J_OP    iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCF		Imm32u, Rn
+* J_OP    iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  PLDCH		Imm32u, Rn
 
-* J1_IMM  iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  PLDCM8SH	Imm32u, Rn
-* J1_IMM  iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  PLDCM8UH	Imm32u, Rn
+* J_OP    iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  PLDCM8SH	Imm32u, Rn
+* J_OP    iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  PLDCM8UH	Imm32u, Rn
 
 
 Load a constant value into a register.
@@ -1304,9 +1576,18 @@ Load a constant value into a register.
 * FLDCH: Load Binary16 to Binary64
 * FLDCF: Load Binary32 to Binary64
 * PLDCH: Load 2xBinary16 to 2xBinary32
+* PLDCSW: Load Imm16u Repeated 4 times.
+* PLDCM8SH (RGBF): 4x E4.M3.S to 4x Binary16
+* PLDCM8UH (RGBF): 4x E4.M4 to 4x Binary16
 
 FLDCH:
-* Nominally loads a Binary16 value.
+* Nominally loads a Binary16 value which is converted to Binary64.
+* Note: The Imm16u form will forbid Subnormal Numbers and Inf/NaN.
+** This will allow for a simple bit-repacking implementation.
+** But, forbiding these also allows for using an IEEE aware converter.
+** Only values allowed are those where an exact conversion is known.
+** Note that the FLDCH Imm16 case will also forbid 0.
+*** Loading 0 can be done in other ways.
 * If Rn==R2, it encodes a BREAK with an Index.
 
 
@@ -1321,7 +1602,7 @@ FLDCH:
 *        iiii-iiiiii-mmmmmm-0010-nnnnnn-10-0110  LEA.L	(Rm, Disp10s), Rn
 *        iiii-iiiiii-mmmmmm-0011-nnnnnn-10-0110  LEA.Q	(Rm, Disp10s), Rn
 *        iiii-iiiiii-iiiiii-0101-nnnnnn-01-0010  LEA.Q	(GP, Disp16u), Rn
-* J1_IMM iiii-iiiiii-mmmmmm-0000-nnnnnn-10-0110  LEA.B	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-0000-nnnnnn-10-0110  LEA.B	(Rm, Disp33s), Rn
 
 Load Effective Address.
 * Type gives the Scale to apply to the Ro or Disp field.
@@ -1356,19 +1637,28 @@ If used with PC as a base register, LEAT will tag the result in the same way as 
 * J_IMM 0000-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACS.L		Rm, Imm33s, Rn
 * J_IMM 0001-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACU.L		Rm, Imm33s, Rn
 
-Integer Multiply Accumulate.
+Optional (DMAC): Integer Multiply Accumulate.
 * Rn = Rn + Rm * Ro
 * Rn = Rn + Rm * Imm
 
-Optional (MAC).
+These perform a non-widening multiply accumulate.
+* The 32 bit signed or unsigned values are multiplied.
+* The result is added to a 64-bit accumultator.
+
+Note that if the multiply overflows, the result will be truncated and extended in the same way as if a 32-bit multiply had overflowed, with the sign or zero extended result then being added to the accumulator.
 
 
 === MOD ===
 
-* 0101-oooooo-mmmmmm-0110-nnnnnn-00-0010  MODS.Q		Rm, Ro, Rn
-* 0101-oooooo-mmmmmm-0110-nnnnnn-10-0010  MODU.Q		Rm, Ro, Rn
-* 0101-oooooo-mmmmmm-0111-nnnnnn-00-0010  MODS.L		Rm, Ro, Rn
-* 0101-oooooo-mmmmmm-0111-nnnnnn-10-0010  MODU.L		Rm, Ro, Rn
+*        0101-oooooo-mmmmmm-0110-nnnnnn-00-0010  MODS.Q		Rm, Ro, Rn
+*        0101-oooooo-mmmmmm-0110-nnnnnn-10-0010  MODU.Q		Rm, Ro, Rn
+*        0101-oooooo-mmmmmm-0111-nnnnnn-00-0010  MODS.L		Rm, Ro, Rn
+*        0101-oooooo-mmmmmm-0111-nnnnnn-10-0010  MODU.L		Rm, Ro, Rn
+* J_IMM  0101-oooooo-mmmmmm-0111-nnnnnn-00-0010  MODS.L		Rm, Imm33s, Rn
+* J_IMM  0101-oooooo-mmmmmm-0111-nnnnnn-10-0010  MODU.L		Rm, Imm33s, Rn
+* J_IMM  0101-oooooo-mmmmmm-0110-nnnnnn-00-0010  MODS.Q		Rm, Imm33s, Rn
+* J_IMM  0101-oooooo-mmmmmm-0110-nnnnnn-10-0010  MODU.Q		Rm, Imm33s, Rn
+
 
 Perform a Modulo operation, dividing two integers and keeping the remainder.
 
@@ -1378,10 +1668,12 @@ Note: This operation may be potentially be implemented via trap-and-emulate and 
 
 == MIN/MAX ==
 
-* 0100-oooooo-mmmmmm-0001-nnnnnn-00-0010  MIN			Rm, Ro, Rn
-* 0100-oooooo-mmmmmm-0001-nnnnnn-10-0010  MAX			Rm, Ro, Rn
+*       0100-oooooo-mmmmmm-0001-nnnnnn-00-0010  MIN			Rm, Ro, Rn
+*       0100-oooooo-mmmmmm-0001-nnnnnn-10-0010  MAX			Rm, Ro, Rn
+* J_IMM 0100-oooooo-mmmmmm-0001-nnnnnn-00-0010  MIN			Rm, Ro, Rn
+* J_IMM 0100-oooooo-mmmmmm-0001-nnnnnn-10-0010  MAX			Rm, Ro, Rn
 
-Select the minimum or maximum of the integers given in Rm or Ro, storing result in Rn.
+Select the minimum or maximum of the integers given in Rm or Ro, storing result in Rn. These operations will treat the values as signed 64-bit integers.
 
 
 === Basic Load/Store ===
@@ -1464,8 +1756,8 @@ The X type will perform a Load/Store Pair.
 
 === MOVxD ===
 
-* 1000-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHD		Rm, Ro, Rn	//PACKU
-* 1000-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLD		Rm, Ro, Rn	//PACK
+* 1000-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHD		Rm, Ro, Rn
+* 1000-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLD		Rm, Ro, Rn
 * 1001-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHLD	Rm, Ro, Rn
 * 1001-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLHD	Rm, Ro, Rn
 
@@ -1474,6 +1766,8 @@ Compose a new 64b value with the low or high 32b halves of each register.
 * MOVHD: Select High halves of each register.
 * MOVHLD: Select High and Low halves.
 * MOVLHD: Select Low and High halves.
+
+Here, Rm supplies the value for the high 32 bits of the destination, whereas Ro supplies the value for the low 32 bits of the destination.
 
 
 === MOVxW ===
@@ -1487,29 +1781,37 @@ Compose a new 32b value with the low or high 16b values of each register.
 * MOVHLD: Select High and Low words.
 * MOVLHD: Select Low and High words.
 
+These instructions operate solely within the low 32 bits of each register, ignoring the high bits on input, and setting the high 32 bits of the result to zero.
+
 
 === MOVST ===
 
 * 1110-001111-mmmmmm-0001-nnnnnn-00-0010 ? MOVST	Rm, Rn
 * 1110-001111-mmmmmm-0001-nnnnnn-10-0010 ? XMOVST	Xm, Xn
 
-Move a value while setting tag bits to a sign extension of bit 47.
-
-This will be part of the TTAG extension.
+Optional (TTAG): Move a value while setting tag bits to a sign extension of bit 47.
 
 
 === MOVTT ===
 
-* 0001-oooooo-mmmmmm-0011-nnnnnn-00-0010  MOVTT		Rm, Ro, Rn
-* 0001-oooooo-mmmmmm-0011-nnnnnn-10-0010  MOVTT		Rm, Imm6u, Rn
+*       0001-oooooo-mmmmmm-0011-nnnnnn-00-0010  MOVTT		Rm, Ro, Rn
+*       0001-oooooo-mmmmmm-0011-nnnnnn-10-0010  MOVTT		Rm, Imm6u, Rn
+* J_OP  0001-oooooo-mmmmmm-0011-nnnnnn-10-0010  MOVTT		Rm, Imm16u, Rn
 
-Move a value into the Type Tag (high 16 bits).
+Optional (TTAG): Move a value into the Type Tag (high 16 bits).
 
 The 3R form will take the low 48 bits from Rm and the high 16 bits from the low 16 bits of Ro.
 
 The Imm6 form will encode a bit-pattern for the value to fill, replacing the top 1-4 bits.
 
-This will be part of the TTAG extension.
+In the 3RI Imm6 form, the tag is twiddled:
+* 0zzzz0: Rn(63:60)=Imm(4:1)
+* 0zzz01: Rn(63:61)=Imm(4:2)
+* 0zz011: Rn(63:62)=Imm(4:3)
+* 0z0111: Rn(63   )=Imm(4  )
+
+In the Imm16 form, it will copy the immediate into the high 16 bits of the result.
+
 
 
 === MOVZT ===
@@ -1517,9 +1819,7 @@ This will be part of the TTAG extension.
 * 1000-001010-mmmmmm-0001-nnnnnn-00-0010  MOVZT		Rm, Rn
 * 1000-001010-mmmmmm-0001-nnnnnn-10-0010  XMOVZT	Xm, Xn
 
-Move a value while setting tag bits to zero.
-
-This will be part of the TTAG extension.
+Optional (TTAG): Move a value while setting tag bits (high 16 bits) to Zero.
 
 
 === MULx ===
@@ -1542,9 +1842,12 @@ This will be part of the TTAG extension.
 Multiply:
 * MULS: Signed Multiply
 * MULU: Unsigned Multiply
+* L: 32-bit
+* Q: 64-bit (Optional, QMUL)
 
 Performs a narrow multiply of 16/32/64 bits, keeping the low order results.
 * Split into signed and unsigned variants which may sign or zero extend the results.
+
 
 
 === MULHx ===
@@ -1552,19 +1855,23 @@ Performs a narrow multiply of 16/32/64 bits, keeping the low order results.
 *         0100-oooooo-mmmmmm-0011-nnnnnn-00-0010  MULHS.Q	Rm, Ro, Rn
 *         0101-oooooo-mmmmmm-0011-nnnnnn-00-0010  MULHU.Q	Rm, Ro, Rn
 
-Multiply, High Result.
+Optional (QMUL): Multiply, High Result.
 
 
 === OR ===
 
 *         0110-oooooo-mmmmmm-0001-nnnnnn-00-0010  OR	Rm, Ro, Rn
-*         0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX	Xm, Xo, Xn
 *         iiii-iiiiii-mmmmmm-0110-nnnnnn-00-1010  OR	Rm, Imm10s, Rn
-* J1_IMM  iiii-iiiiii-mmmmmm-0110-nnnnnn-00-1010  OR	Rm, Imm33s, Rn
+* J_IMM   iiii-iiiiii-mmmmmm-0110-nnnnnn-00-1010  OR	Rm, Imm33s, Rn
 * J2_IMM  iiii-iiiiii-mmmmmm-0110-nnnnnn-00-1010  OR	Rm, Imm64, Rn
 
+Optional (ALUX):
+*         0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX	Xm, Xo, Xn
+* J_IMM   0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX	Xm, Imm33s, Xn
+
 Bitwise OR.
-* (ALUX) ORX: 128-bit OR over register pairs.
+
+Optional (ALUX): ORX: 128-bit OR over register pairs.
 
 
 === PCSELT ===
@@ -1572,6 +1879,7 @@ Bitwise OR.
 * 0100-oooooo-mmmmmm-0010-nnnnnn-00-0010  PCSELT.W		Rm, Ro, Rn
 * 0100-oooooo-mmmmmm-0010-nnnnnn-10-0010  PCSELT.L		Rm, Ro, Rn
 
+Optional (GSV):
 PCSELT.L will select elements between Rm or Ro based on the value of SR.S and SR.T, storing the result in Rn. If SR.T is set, the low 32 bits from Rm is used, otherwise the low 32 bits from Ro are used. If SR.S is set, the high 32 bits from Rm is used, otherwise the high 32 bits from Ro are used.
 
 PCSELT.W will select each Word element from Rm or Rn depending on the corresponding P/Q/R/O bits in SR. If set, the word from Rm will be selected, otherwise the value from Ro will be used.
@@ -1586,7 +1894,7 @@ PCSELT.W will select each Word element from Rm or Rn depending on the correspond
 * 1101-oooooo-mmmmmm-0010-nnnnnn-00-0010  PADD.H		Rm, Ro, Rn
 * 1101-oooooo-mmmmmm-0010-nnnnnn-10-0010  PADDX.D		Xm, Xo, Xn
 
-Packed ADD.
+Optional (GSV and GSVF): Packed ADD.
 * W: 4x Int16
 * L: 2x Int32
 * F: 2x Binary32
@@ -1597,19 +1905,20 @@ Packed ADD.
 
 === PMULx ===
 
-* 0111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.F		Rm, Ro, Rn
-* 0111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.F		Xm, Xo, Xn
-* 1111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.H		Rm, Ro, Rn
-* 1111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.D		Xm, Xo, Xn
-* 0001-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.W		Rm, Ro, Rn
-* 0001-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.W		Rm, Ro, Rn
-* 0110-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.LW		Rm, Ro, Rn
-* 0110-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.LW		Rm, Ro, Rn
-* 0111-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.HW		Rm, Ro, Rn
-* 0111-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.HW		Rm, Ro, Rn
-* 0110-oooooo-mmmmmm-0111-nnnnnn-10-0010  PMUL.F8H		Rm, Ro, Rn
+*       0111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.F		Rm, Ro, Rn
+*       0111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.F		Xm, Xo, Xn
+*       1111-oooooo-mmmmmm-0010-nnnnnn-00-0010  PMUL.H		Rm, Ro, Rn
+*       1111-oooooo-mmmmmm-0010-nnnnnn-10-0010  PMULX.D		Xm, Xo, Xn
+*       0001-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.W		Rm, Ro, Rn
+*       0001-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.W		Rm, Ro, Rn
+*       0110-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.LW	Rm, Ro, Rn
+*       0110-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.LW	Rm, Ro, Rn
+*       0111-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.HW	Rm, Ro, Rn
+*       0111-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.HW	Rm, Ro, Rn
+*       0110-oooooo-mmmmmm-0111-nnnnnn-10-0010  PMUL.F8H	Rm, Ro, Rn
+* J_IMM 0110-oooooo-mmmmmm-0111-nnnnnn-10-0010  PMUL.F8H	Rm, Imm32u, Rn
 
-Packed MUL.
+Optional (GSV and GSVF): Packed MUL.
 * F: 2x Binary32
 * X.F: 4x Binary32
 * H: 4x Binary16
@@ -1641,7 +1950,7 @@ The W variant will operate on 16 bit elements whereas L will operate on 32-bit.
 ** 1011-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSCHNE.W		Rm, Ro, Rn
 ** 1011-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSCHNE.B		Rm, Ro, Rn
 
-Packed Search.
+Optional (GSV): Packed Search.
 
 Checks if the elements in Rm match those in Ro, storing the index of the first match into Rn.
 
@@ -1667,7 +1976,7 @@ For the Packed Word operator, it will check up to 4 words.
 ** 1110-oooooo-mmmmmm-0010-nnnnnn-00-0010  PSUB.H		Rm, Ro, Rn	//FSUB.H
 ** 1110-oooooo-mmmmmm-0010-nnnnnn-10-0010  PSUBX.D		Xm, Xo, Xn
 
-Packed Subtract.
+Optional (GSV and GSVF): Packed Subtract.
 * See PADDx.
 
 
@@ -1678,23 +1987,32 @@ Packed Subtract.
 ** 1110-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.F8		(Rm, Ro), Rn
 ** 1111-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.2H		(Rm, Ro), Rn
 
-Packed Load-Convert.
+Optional (GSVF): Packed Load-Convert.
+* F8: 4x FP8 (S.E4.M3) to 4x Binary16
+* 2H: 2x Binary16 to 2x Binary32
+
+Note: As with FMOV, these conversions will not respect full IEEE semantics.
 
 
 === PCMPx ===
 
-*** 1010-001010-mmmmmm-0001-nnnnnn-00-0010  ? PCMPEQ.H	Rm, Rn
-*** 1010-001010-mmmmmm-0001-nnnnnn-10-0010  ? PCMPEQ.F	Rm, Rn
-*** 1010-001011-mmmmmm-0001-nnnnnn-00-0010  ? PCMPGT.H	Rm, Rn
-*** 1010-001011-mmmmmm-0001-nnnnnn-10-0010  ? PCMPGT.F	Rm, Rn
-*** 1010-001100-mmmmmm-0001-nnnnnn-00-0010  ? PCMPEQ.W	Rm, Rn
-*** 1010-001100-mmmmmm-0001-nnnnnn-10-0010  ? PCMPEQ.L	Rm, Rn
-*** 1010-001101-mmmmmm-0001-nnnnnn-00-0010  ? PCMPHI.W	Rm, Rn
-*** 1010-001101-mmmmmm-0001-nnnnnn-10-0010  ? PCMPHI.L	Rm, Rn
-*** 1010-001110-mmmmmm-0001-nnnnnn-00-0010  ? PCMPGT.W	Rm, Rn
-*** 1010-001110-mmmmmm-0001-nnnnnn-10-0010  ? PCMPGT.L	Rm, Rn
+*** 1010-001010-mmmmmm-0001-nnnnnn-00-0010   PCMPEQ.H	Rm, Rn
+*** 1010-001010-mmmmmm-0001-nnnnnn-10-0010   PCMPEQ.F	Rm, Rn
+*** 1010-001011-mmmmmm-0001-nnnnnn-00-0010   PCMPGT.H	Rm, Rn
+*** 1010-001011-mmmmmm-0001-nnnnnn-10-0010   PCMPGT.F	Rm, Rn
+*** 1010-001100-mmmmmm-0001-nnnnnn-00-0010   PCMPEQ.W	Rm, Rn
+*** 1010-001100-mmmmmm-0001-nnnnnn-10-0010   PCMPEQ.L	Rm, Rn
+*** 1010-001101-mmmmmm-0001-nnnnnn-00-0010   PCMPHI.W	Rm, Rn
+*** 1010-001101-mmmmmm-0001-nnnnnn-10-0010   PCMPHI.L	Rm, Rn
+*** 1010-001110-mmmmmm-0001-nnnnnn-00-0010   PCMPGT.W	Rm, Rn
+*** 1010-001110-mmmmmm-0001-nnnnnn-10-0010   PCMPGT.L	Rm, Rn
 
-Packed Compare.
+Optional (GSV and GSVF): Packed Compare.
+* These compare the two vectors and set the same status bits as used by PCSELT.
+* H: 4x Binary16
+* F: 2x Binary32
+* W: 4x Int16
+* L: 2x Int32
 
 
 === PMORT ===
@@ -1702,7 +2020,7 @@ Packed Compare.
 * 1110-000001-mmmmmm-0001-nnnnnn-00-0010  PMORT.L		Rm, Rn
 * 1110-000001-mmmmmm-0001-nnnnnn-10-0010  PMORT.Q		Rm, Rn
 
-Packed Morton Shuffle.
+Optional (GSV): Packed Morton Shuffle.
 
 Interprets a pair of packed DWORD values as indices and performs a bit shuffle, leading to an index in Morton Order.
 
@@ -1715,14 +2033,14 @@ Then this will produce as output:
 
 
 
-=== PSHxx.W 2R (GSV) ===
+=== PSHxx.W 2R ===
 
 *** 1110-000110-mmmmmm-0001-nnnnnn-00-0010 ? PSHAL.W	Rm, Rn
 *** 1110-000110-mmmmmm-0001-nnnnnn-10-0010 ? PSHLL.W	Rm, Rn
 *** 1110-000111-mmmmmm-0001-nnnnnn-00-0010 ? PSHAR.W	Rm, Rn
 *** 1110-000111-mmmmmm-0001-nnnnnn-10-0010 ? PSHLR.W	Rm, Rn
 
-Packed Shift by 1 bit.
+Optional (GSV): Packed Shift by 1 bit.
 These shifts will shift each element by 1 bit to the left or right.
 
 Unlike with normal integer shift, the packed shift left will be saturating.
@@ -1731,10 +2049,14 @@ If the shift would have overflowed, signed will clamp the result to 0x8000 or 0x
 
 === PLDCM8UH / PSTCM8UH ===
 
-* 1110-001000-mmmmmm-0001-nnnnnn-00-0010  PLDCM8SH	Rm, Rn
-* 1110-001000-mmmmmm-0001-nnnnnn-10-0010  PLDCM8UH	Rm, Rn
-* 1110-001010-mmmmmm-0001-nnnnnn-00-0010  PSTCM8SH	Rm, Rn
-* 1110-001010-mmmmmm-0001-nnnnnn-10-0010  PSTCM8UH	Rm, Rn
+* 1110-001000-mmmmmm-0001-nnnnnn-00-0010   PLDCM8SH 	Rm, Rn
+* 1110-001000-mmmmmm-0001-nnnnnn-10-0010   PLDCM8UH 	Rm, Rn
+* 1110-001010-mmmmmm-0001-nnnnnn-00-0010   PSTCM8SH 	Rm, Rn
+* 1110-001010-mmmmmm-0001-nnnnnn-10-0010   PSTCM8UH 	Rm, Rn
+
+Optional (RGBF): Packed Convert:
+* M8UH: 4x E4.M4   <-> 4x Binary16
+* M8SH: 4x E4.M3.S <-> 4x Binary16
 
 
 === PLDCM30AH / PSTCM30AH ===
@@ -1742,19 +2064,57 @@ If the shift would have overflowed, signed will clamp the result to 0x8000 or 0x
 * 1110-001001-mmmmmm-0001-nnnnnn-00-0010  PLDCM30AH	Rm, Rn
 * 1110-001011-mmmmmm-0001-nnnnnn-00-0010  PSTCM30AH	Rm, Rn
 
+Optional (RGBF): Pack or Unpack the RGB30A format.
+
+The RGB30A Format will consist of three 10 bit fields:
+* (31): Selects RGB/RGBA
+* (30): Selects Unsigned and Signed
+* (29: 0): Depends on Selector
+
+If Bit(31) is 0:
+* (29:20): Red
+* (19:10): Green
+* ( 9: 0): Blue
+* Values are truncated Binary16
+** Unsigned, E5.F5
+** Signed, E5.F4.S
+* Alpha is decoded as 1.0 (3C00)
+
+If Bit(31) is 1:
+* (29:22): Alpha
+* (21:15): Red
+* (14: 7): Green
+* ( 6: 0): Blue
+** Unsigned is E4.F4 / E4.F3
+** Signed is E4.F3.S / E4.F2.S
+
+
 
 === PLDCH / PSTCH ===
 
-*** 1110-001001-mmmmmm-0001-nnnnnn-10-0010  PLDCXH		Rm, Xn
-*** 1110-001011-mmmmmm-0001-nnnnnn-10-0010  PSTCXH		Xm, Rn
-*** 1110-001100-mmmmmm-0001-nnnnnn-00-0010  PLDCH		Rm, Rn
-*** 1110-001100-mmmmmm-0001-nnnnnn-10-0010  PLDCHH		Rm, Rn
-*** 1110-001101-mmmmmm-0001-nnnnnn-00-0010  PLDCEHL		Rm, Rn
-*** 1110-001101-mmmmmm-0001-nnnnnn-10-0010  PLDCEHH		Rm, Rn
-*** 1110-001110-mmmmmm-0001-nnnnnn-00-0010  PSTCH		Rm, Rn
+* 1110-001100-mmmmmm-0001-nnnnnn-00-0010  PLDCH			Rm, Rn
+* 1110-001100-mmmmmm-0001-nnnnnn-10-0010  PLDCHH		Rm, Rn
+* 1110-001110-mmmmmm-0001-nnnnnn-00-0010  PSTCH			Rm, Rn
+* 1110-001001-mmmmmm-0001-nnnnnn-10-0010  PLDCXH		Rm, Xn
+* 1110-001011-mmmmmm-0001-nnnnnn-10-0010  PSTCXH		Xm, Rn
+
+Optional (GSVF): Packed Convert, Binary16
+* PLDCH: 2x Binary16 to 2x Binary32 (Low Half of Source)
+* PLDCHH: 2x Binary16 to 2x Binary32 (High Half of Source)
+* PSTCH: 2x Binary32 to 2x Binary16
+* PLDCXH: 4x Binary16 to 4x Binary32
+* PSTCXH: 4x Binary32 to 4x Binary16
 
 
-=== PCVTxx (GSVF) ===
+=== PLDCEHL / PLDCEHH ===
+
+* 1110-001101-mmmmmm-0001-nnnnnn-00-0010  PLDCEHL		Rm, Rn
+* 1110-001101-mmmmmm-0001-nnnnnn-10-0010  PLDCEHH		Rm, Rn
+
+Optional (GSVF): Packed Convert, Ext Half
+
+
+=== PCVTxx ===
 
 *** 1111-000000-mmmmmm-0001-nnnnnn-00-0010  PCVTSB2HL	Rm, Rn
 *** 1111-000000-mmmmmm-0001-nnnnnn-10-0010  PCVTUB2HL	Rm, Rn
@@ -1774,12 +2134,52 @@ If the shift would have overflowed, signed will clamp the result to 0x8000 or 0x
 *** 1111-000111-mmmmmm-0001-nnnnnn-00-0010  PCVTH2SW	Rm, Rn
 *** 1111-000111-mmmmmm-0001-nnnnnn-10-0010  PCVTH2UW	Rm, Rn
 
-*** 1111-001100-mmmmmm-0001-nnnnnn-00-0010  PCVTH2AL	Rm, Rn
-*** 1111-001101-mmmmmm-0001-nnnnnn-00-0010  PCVTAL2H	Rm, Rn
+Optional (GSVF): Perform packed conversion between floating point and integer types.
+
+Packed Conversion Types:
+* SB: Signed Byte
+* UB: Unsigned Byte
+* SW: Signed Int16
+* UW: Unsigned Int16
+* H: Binary16
+* F: Binary32
+
+For instructions with an additional L or H suffix, this will indicate whether it pulls the source value from the low 32 or high 32 bits of the register.
 
 
-*** 1010-000000-mmmmmm-0001-nnnnnn-00-0010  PSTCF8H		Rm, Rn
-*** 1010-000001-mmmmmm-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
+Note that the packed integer operations will perform a slightly atypical conversion in that they will map the converted value between 1.0000 and 1.9999 for unsigned and 2.0000 and 3.9999 for signed. One may add a bias of 1.0 or 3.0 to get the value back into unit range.
+
+Converting to packed integer will involve first mapping the value to the correct range. This conversion may clamp out of range values, so for example, UB would map values below 1.0 to 0x00, and those above 1.999 to 0xFF.
+
+
+=== PCVTH2AL / PCVTAL2H ===
+
+* 1111-001100-mmmmmm-0001-nnnnnn-00-0010  PCVTH2AL		Rm, Rn
+* 1111-001101-mmmmmm-0001-nnnnnn-00-0010  PCVTAL2H		Rm, Rn
+* 1010-000010-mmmmmm-0001-nnnnnn-00-0010  PCVTH2F8A		Rm, Rn
+* 1010-000011-mmmmmm-0001-nnnnnn-00-0010  PCVTF8A2H		Rm, Rn
+
+Optional (GSVF): Packed convert between A-Law and Half.
+
+Where, A-Law will be S.E3.M4 with a Bias of 8.
+* The FP8A format is nearly identical, but with a bias of 7.
+* So, the two formats will differ mostly in the maximum value.
+
+Note however that this will be a pure FP format of A-Law, differing from the form typically stored in WAV files, which will need to be XOR'ed by 0xD5.
+
+
+
+=== PSTCF8H / PLDCF8H ===
+
+*       1010-000000-mmmmmm-0001-nnnnnn-00-0010  PSTCF8H		Rm, Rn
+*       1010-000001-mmmmmm-0001-nnnnnn-00-0010  PLDCF8H		Rm, Rn
+* J_IMM 1010-000001-mmmmmm-0001-nnnnnn-00-0010  PLDCF8H		Imm32u, Rn
+
+Optional (GSVF): Packed convert between FP8 and Half.
+
+The FP8 format will be defined as S.E4.F3 with a Bias of 7.
+* Saturates to 0x7F or 0xFF on overflow.
+* 0x00 will be defined as Zero, clamps to 0x00 on underflow.
 
 
 === PSQRTA ===
@@ -1863,12 +2263,13 @@ Rotate.
 
 === RGB Pack/Unpack ===
 
-*** 1110-000010-mmmmmm-0001-nnnnnn-00-0010  RGB5PCK32	Rm, Rn
-*** 1110-000010-mmmmmm-0001-nnnnnn-10-0010  RGB5PCK64	Rm, Rn
-*** 1110-000011-mmmmmm-0001-nnnnnn-00-0010  RGB5UPCK32	Rm, Rn
-*** 1110-000011-mmmmmm-0001-nnnnnn-10-0010  RGB5UPCK64	Rm, Rn
-*** 1110-000100-mmmmmm-0001-nnnnnn-10-0010  RGB32PCK64	Rm, Rn
-*** 1110-000101-mmmmmm-0001-nnnnnn-10-0010  RGB32UPCK64	Rm, Rn
+*       1110-000010-mmmmmm-0001-nnnnnn-00-0010  RGB5PCK32	Rm, Rn
+*       1110-000010-mmmmmm-0001-nnnnnn-10-0010  RGB5PCK64	Rm, Rn
+*       1110-000011-mmmmmm-0001-nnnnnn-00-0010  RGB5UPCK32	Rm, Rn
+*       1110-000011-mmmmmm-0001-nnnnnn-10-0010  RGB5UPCK64	Rm, Rn
+*       1110-000100-mmmmmm-0001-nnnnnn-10-0010  RGB32PCK64	Rm, Rn
+*       1110-000101-mmmmmm-0001-nnnnnn-10-0010  RGB32UPCK64	Rm, Rn
+* J_IMM 1110-000101-mmmmmm-0001-nnnnnn-10-0010  RGB32UPCK64	Rm, Rn
 
 Pack or Unpack RGB values.
 Pack will convert from a wider format to a narrower one.
@@ -1892,10 +2293,10 @@ Packing will do the reverse process, keeping only the high order bits and discar
 
 === RGB5PCKI8 (RGB?) ===
 
-*** 1111-001100-mmmmmm-0001-nnnnnn-10-0010  RGB5PCKI8	Rm, Rn
-*** 1111-001101-mmmmmm-0001-nnnnnn-10-0010  RGB5UPCKI8	Rm, Rn
+* 1111-001100-mmmmmm-0001-nnnnnn-10-0010  RGB5PCKI8	Rm, Rn
+* 1111-001101-mmmmmm-0001-nnnnnn-10-0010  RGB5UPCKI8	Rm, Rn
 
-Optional RGB. Pack four RGB555 endpoints into an indexed color in a fixed color palette.
+Optional (RGB): Pack four RGB555 endpoints into an indexed color in a fixed color palette.
 
 The color palette will roughly follow the form:
 * irgbyyyy (if yyyy>=0100)
@@ -1918,6 +2319,8 @@ Where yyyy gives a luma, and irgb/cc gives chroma.
 *** (11..15)=Cyan (11..15)
 ** 10: Reserved
 ** 11: Reserved
+
+The UPCK variant does the reverse, mapping this fixed palette back to an RGB555 value.
 
 
 === RGB5SHR1 (RGB) ===
@@ -1953,14 +2356,12 @@ The selected values will be implementation dependent in cases where multiple pix
 * 0110-oooooo-mmmmmm-0111-nnnnnn-00-0010 ? RGB5CCENC	Rm, Ro, Rn
 
 
-Color-Cell Encode Helper (Optional).
+Color-Cell Encode Helper (Optional, CCENC).
 * Rm will give the pixel values to encode.
 * Ro will give the Min and Max color endpoints.
 * Rn will give both the source and destination for the selector bits.
 
 This operation will classify the pixel colors relative to the endpoints, generating a selector between 00 (Minimum) and 11 (Maximum).
-
-/ The low order 32 bits of Rn will be shifted right by 8 bits, with the new endpoint selectors being added to bits (31:24).
 
 The low order 32 bits of Rn will be shifted left by 8 bits, with the new endpoint selectors being added to bits (7:0).
 
@@ -1986,8 +2387,6 @@ Rn=Rn+(~Rm)+(!SR.T)
 
 Subtract with Borrow.
 SR.T is updated with the borrow result of this operation.
-
-WEX: SBB will only update SR.T in Lane 1. If an SBB is in another lane, the state of SR.T will be undefined following the operation.
 
 
 === SETTRAP ===
@@ -2017,6 +2416,7 @@ Note that this feature is optional and intended for debugging, as such:
 * 1000-001011-mmmmmm-0001-nnnnnn-00-0010  SNIPEDC		Rm, Rn
 * 1000-001011-mmmmmm-0001-nnnnnn-10-0010  SNIPEIC		Rm, Rn
 
+Optional (System): Calculate Cache Sniping Address.
 
 For the address given in Rm, calculate a "sniper" address within the ZERO or RTS pages. These instructions assume either physical memory mapping, or that these pages are identity mapped.
 
@@ -2035,46 +2435,81 @@ The SNIPExx instructions will generate a NULL result if SNIPExx is not valid (su
 === SUBx ===
 
 * 0001-oooooo-mmmmmm-0001-nnnnnn-00-0010  SUB			Rm, Ro, Rn
-* 0001-oooooo-mmmmmm-0001-nnnnnn-10-0010  SUBX			Xm, Xo, Xn
 * 1101-oooooo-mmmmmm-0101-nnnnnn-00-0010  SUBS.L		Rm, Ro, Rn
 * 1101-oooooo-mmmmmm-0101-nnnnnn-10-0010  SUBU.L		Rm, Ro, Rn
 
+Optional (ALUX): 
+* 0001-oooooo-mmmmmm-0001-nnnnnn-10-0010  SUBX			Xm, Xo, Xn
+
+
 Integer Subtract.
 * (ALUX) SUBX: 128-bit SUB over register pairs.
+
+No immediate forms will be provided, instead SUB immediate will be handled as an ADD immediate with a negative operand.
 
 
 === SHAD ===
 
 * 0100-oooooo-mmmmmm-0101-nnnnnn-00-0010  SHAD.L		Rm, Ro, Rn
 * 0100-oooooo-mmmmmm-0101-nnnnnn-10-0010  SHAD.Q		Rm, Ro, Rn
-* 0100-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHAD.X		Xm, Ro, Xn
 * 00ii-iiiiii-mmmmmm-1000-nnnnnn-00-1010  SHAD.L		Rm, Imm8s, Rn
 * 00ii-iiiiii-mmmmmm-1000-nnnnnn-10-1010  SHAD.Q		Rm, Imm8s, Rn
+
+Optional (ALUX):
+* 0100-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHAD.X		Xm, Ro, Xn
 * 00ii-iiiiii-mmmmmm-0110-nnnnnn-10-1010  SHAD.X		Xm, Imm8s, Xn	//Xn>=2
+
+Optional (SHFUN):
+* J_OP_4R  0100-oooooo-mmmmmm-0101-nnnnnn-10-0010  SHAD.Q	Rm, Ro, Rp, Rn
+* J_OP_4R  00ii-iiiiii-mmmmmm-1000-nnnnnn-10-1010  SHAD.Q	Rm, Imm8s, Rp, Rn
+
 
 Shift Left Arithmetic.
 * SHAD.L will Sign-Extend the Result.
 * Negative Shifts will perform a Right Shift.
+* SHAD.X will perform a 128 bit shiift.
+** Internally, this may be performed as a pair of funnel shift operations.
+
+Funnel Shift (Optional):
+* Perform a funnel shift with an extra input.
+* Rather than shifting in zeros, this will shift in bits from Rp.
+** Except in Imm8s case if sign is negative, will still pull bits from Rp.
 
 
 === SHAR ===
 
 * 0010-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHAR.L		Rm, Ro, Rn
 * 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHAR.Q		Rm, Ro, Rn
+
+Optional (ALUX):
 * 0010-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHAR.X		Xm, Ro, Xn
+
+Optional (SHFUN):
+* J_OP_4R 0010-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHAR.Q	Rm, Ro, Rp, Rn
 
 Shift Right Arithmetic.
 * Negative Shifts will perform a Left Shift.
+
+
+Funnel Shift (Optional):
+* Perform a funnel shift with an extra input.
+* Rather than shifting in sign extension, this will shift in bits from Rp.
 
 
 === SHLD ===
 
 * 0101-oooooo-mmmmmm-0101-nnnnnn-00-0010  SHLD.L		Rm, Ro, Rn
 * 0101-oooooo-mmmmmm-0101-nnnnnn-10-0010  SHLD.Q		Rm, Ro, Rn
-* 0101-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLD.X		Xm, Ro, Xn
 * 00ii-iiiiii-mmmmmm-1001-nnnnnn-00-1010  SHLD.L		Rm, Imm8s, Rn
 * 00ii-iiiiii-mmmmmm-1001-nnnnnn-10-1010  SHLD.Q		Rm, Imm8s, Rn
+
+Optional (ALUX):
+* 0101-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLD.X		Xm, Ro, Xn
 * 00ii-iiiiii-mmmmmm-0111-nnnnnn-10-1010  SHLD.X		Xm, Imm8s, Xn
+
+Optional (SHFUN):
+* J_OP_4R  0101-oooooo-mmmmmm-0101-nnnnnn-10-0010  SHLD.Q	Rm, Ro, Rp, Rn
+* J_OP_4R  00ii-iiiiii-mmmmmm-1001-nnnnnn-10-1010  SHLD.Q	Rm, Imm8s, Rp, Rn
 
 Shift Left Logical.
 * SHLD.L will Sign-Extend the Result.
@@ -2083,12 +2518,26 @@ Shift Left Logical.
 
 === SHLR ===
 
-* 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHLR.L
-* 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHLR.Q
-* 0011-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLR.X
+* 0011-oooooo-mmmmmm-0010-nnnnnn-00-0010  SHLR.L		Rm, Ro, Rn
+* 0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHLR.Q		Rm, Ro, Rn
+
+Optional (ALUX):
+* 0011-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHLR.X		Xm, Xo, Xn
+
+Optional (SHFUN):
+* J_OP_4R  0011-oooooo-mmmmmm-0010-nnnnnn-10-0010  SHLR.Q		Rm, Ro, Rp, Rn
 
 Shift Right Logical.
 * Negative Shifts will perform a Left Shift.
+
+Funnel Shift (Optional):
+* Perform a funnel shift with an extra input.
+* Rather than shifting in sign extension, this will shift in bits from Rp.
+* Will differ from SHAR.Q in that the shift direction will be reversed.
+
+Note that the direction reversion is to aid in forming generic extended precision left shifts; with SHLD.Q-4R dealing with the high bits and SHLR.Q-4R dealing with the low-order bits. This case will also allow for a right shift when the sign is negative.
+
+Note that (unlike the ALUX cases), the funnel shift operators will be limited to 64 bits. The higher order bits of a multi-precision shift will need to be dealt with via MUXing.
 
 
 === TST ===
@@ -2118,11 +2567,11 @@ The Check operation will verify that the values match, and will raise a Canary C
 The Rm value will supply a reference value (magic number), with Rn holding the Canary value.
 
 
-=== XBLESS (BCE) ===
+=== XBLESS ===
 
 * 1110-001110-mmmmmm-0001-nnnnnn-10-0010  XBLESS		Xm, Xn
 
-Bless a Capability.
+Optional (BCE): Bless a Capability.
 
 This instruction has behavior similar to a MOVX instruction, except that while moving the value in the registers, it will also set the tag bits to mark the register contents as a capability.
 
@@ -2136,10 +2585,13 @@ If in User Mode and BCE is enabled, this will fault if Xm is not already blessed
 === XOR ===
 
 *         0111-oooooo-mmmmmm-0001-nnnnnn-00-0010  XOR		Rm, Ro, Rn
-*         0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX		Xm, Xo, Xn
 *         iiii-iiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm10s, Rn
-* J1_IMM  iiii-iiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm33s, Rn
+* J_IMM   iiii-iiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm33s, Rn
 * J2_IMM  iiii-iiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR		Rm, Imm64, Rn
+
+Optional (ALUX):
+*         0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX		Xm, Xo, Xn
+* J_IMM   0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX		Xm, Imm33s, Xn
 
 Bitwise XOR.
 * (ALUX) XORX: 128-bit XOR over register pairs.
@@ -2151,8 +2603,9 @@ Bitwise XOR.
 *        0000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XLEA.B		(Xm, Disp6s), Xn
 * J_IMM  0000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XLEA.B		(Xm, Disp33s), Xn
 
-LEA with 128-bit register pair representing an Addr96.
+Optional (XMOV): LEA with 128-bit register pair representing an Addr96.
 * With BCE, this will also adjust the offset of a Capability.
+* Will have similar behaviors to LEAT.
 
 
 === XMOV ===
@@ -2185,7 +2638,7 @@ LEA with 128-bit register pair representing an Addr96.
 ** 1111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Ro), Rn		//
 ** 1111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Ro), Xn		//
 
-Load/Store with 128-bit register pair representing an Addr96.
+Optional (XMOV): Load/Store with 128-bit register pair representing an Addr96.
 * With BCE, these may also be used to access memory through a Cabability.
 
 

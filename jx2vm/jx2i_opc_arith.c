@@ -355,6 +355,43 @@ void BJX2_Op_SBB_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 //	ctx->regs[op->rn]+=(~ctx->regs[op->rm])+(!(ctx->regs[BJX2_REG_SR]&1));
 }
 
+
+
+void BJX2_Op_ADC_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	vc=va+vb+(ctx->regs[BJX2_REG_SR]&1);
+	ctx->regs[op->rn]=vc;
+	if(vc<(va|vb))
+//	if((vc>>32)&1)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+
+//	ctx->regs[op->rn]+=ctx->regs[op->rm]+(ctx->regs[BJX2_REG_SR]&1);
+}
+
+void BJX2_Op_SBB_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	vc=va+(~vb)+(!(ctx->regs[BJX2_REG_SR]&1));
+	ctx->regs[op->rn]=vc;
+//	if(vc<(va|(~vb)))
+	if(!(vc<(va|(~vb))))
+//	if((vc>>32)&1)
+		ctx->regs[BJX2_REG_SR]|=1;
+	else
+		ctx->regs[BJX2_REG_SR]&=~1;
+
+//	ctx->regs[op->rn]+=(~ctx->regs[op->rm])+(!(ctx->regs[BJX2_REG_SR]&1));
+}
+
 void BJX2_Op_PADDW_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	const u64 m1=0xFFFF0000FFFF0000ULL;
@@ -974,6 +1011,35 @@ void BJX2_Op_MODUQ_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vc;
 }
 
+
+void BJX2_Op_MODSQ_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc;
+	va=(s64)(ctx->regs[op->rm]);
+//	vb=(s64)(ctx->regs[op->ro]);
+	vb=op->imm;
+	if(vb!=0)
+		{ vc=va%vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
+void BJX2_Op_MODUQ_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	va=(u64)(ctx->regs[op->rm]);
+//	vb=(u64)(ctx->regs[op->ro]);
+	vb=op->imm;
+	if(vb!=0)
+		{ vc=va%vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+}
+
+
 void BJX2_Op_DIVSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 //	s64 va, vb, vc;
@@ -1010,6 +1076,49 @@ void BJX2_Op_DIVUL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 		ctx->miss_cyc_bra+=33;
 	}
 }
+
+
+
+void BJX2_Op_DIVSL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+//	s64 va, vb, vc;
+	s64 va, vb, vc;
+	va=(s32)(ctx->regs[op->rm]);
+//	vb=(s32)(ctx->regs[op->ro]);
+	vb=op->imm;
+	if(vb!=0)
+		{ vc=va/vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+	
+	if((va<0) || (vb<0) || (vb>31))
+	{
+		ctx->tr_cur->acc_pencyc+=33;
+		ctx->miss_cyc_bra+=33;
+	}
+}
+
+void BJX2_Op_DIVUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	va=(u32)(ctx->regs[op->rm]);
+//	vb=(u32)(ctx->regs[op->ro]);
+	vb=op->imm;
+	if(vb!=0)
+		{ vc=va/vb; }
+	else
+		{ vc=0; }
+	ctx->regs[op->rn]=vc;
+
+	if(vb>31)
+	{
+		ctx->tr_cur->acc_pencyc+=33;
+		ctx->miss_cyc_bra+=33;
+	}
+}
+
+
 
 void BJX2_Op_MODSL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

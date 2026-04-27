@@ -2079,6 +2079,14 @@ begin
 							opFmid		= JX2_FMID_REGREG;
 							opIty		= JX2_ITY_UB;
 							opUCmdIx	= JX2_UCIX_CONV2_FP16UPCKFP8;
+
+							if(opExWM && opIsJumboImm)
+							begin
+								/* Hack: If Imm33n,
+								   Interpret as a Fraction-Packed Binary64
+								 */
+								opUCmdIx	= JX2_UCIX_CONV2_BLKRGB15F;
+							end
 `endif
 						end
 					end
@@ -4876,6 +4884,12 @@ begin
 				begin
 					opFmid		= JX2_FMID_REGIMMREG;
 					opIty		= JX2_ITY_NB;
+					
+					if(tRegRmIsR0)
+					begin
+						opNmid		= JX2_UCMD_MOV_IR;
+						opUCmdIx	= JX2_UCIX_LDI_LDIX;
+					end
 				end
 `endif
 
@@ -6936,6 +6950,11 @@ begin
 					opIty		= JX2_ITY_UB;
 					opUCmdIx	= JX2_UCIX_LDI_FLDCH;
 
+					if(opExWI)
+					begin
+						opUCmdIx	= JX2_UCIX_LDI_PLDCSW;
+					end
+
 					if(opRegO_Df2_IsSP)
 //					if(istrWord[4:0]==5'h0F)
 //					if((istrWord[4:0]==5'h0F) && !opExWN)
@@ -7490,14 +7509,13 @@ begin
 			SQ: Rm, Q?Disp5u:Ro, Rn
 
 			UB: Rm, Rn, Rn
-			UW: / Rm, Rn, Rn
 			UW: Ro, Rm, Rn
 			UL: Rm, Cn, Cn
 			UQ: Cm, Rn, Rn
 
 			NB: Rn, Rm, Rn
 			NW: Rn, ZZR, LR
-			NL: /
+			NL: ? Rm, Rm, Rn
 			NQ: /
 
 			XB: Rm, Ro, Rp->Rn (4R)
@@ -7639,7 +7657,22 @@ begin
 					opRegN	= JX2_GR_LR;
 					opRegP	= JX2_GR_ZZR;
 //					opImm	= opImm_imm8au;
-					opDoImm	= JX2_FMIMM_IMM8AU;
+//					opDoImm	= JX2_FMIMM_IMM8AU;
+					opDoImm	= JX2_FMIMM_IMM6U;
+				end
+
+				JX2_ITY_NL: begin
+					opRegM	= opRegM_Dfl;
+					opRegO	= opRegM_Dfl;
+					opRegN	= opRegN_Dfl;
+					opRegP	= opRegN_Dfl;
+					opDoImm	= JX2_FMIMM_IMM6U;
+
+					if(opIsJumboImm || opExWQ)
+					begin
+						opRegM	= JX2_GR_IMM;
+						opRegO	= JX2_GR_IMM;
+					end
 				end
 
 				JX2_ITY_SQ: begin
@@ -7771,8 +7804,15 @@ begin
 
 			case(opIty)
 				JX2_ITY_SB: begin
-					opImm	= 0;
-					opDoImm	= JX2_FMIMM_NONE;
+//					opImm	= 0;
+//					opDoImm	= JX2_FMIMM_NONE;
+//					opDoImm		= JX2_FMIMM_IMM6U;
+					opRegO	= JX2_GR_ZZR;
+
+					if(opIsJumboImm || opExWQ)
+					begin
+//						opRegM	= JX2_GR_IMM;
+					end
 				end
 
 `ifndef def_true
@@ -8672,6 +8712,7 @@ begin
 					opRegP	= JX2_GR_ZZR;
 
 					if(opIsImm4R)
+//					if(opIsImm4R || opExWQ)
 					begin
 						opRegM	= JX2_GR_IMMB;
 					end
@@ -8748,6 +8789,7 @@ begin
 					opRegP	= JX2_GR_ZZR;
 
 					if(opIsImm4R)
+//					if(opIsImm4R || opExWQ)
 					begin
 						opRegO	= JX2_GR_IMMB;
 					end

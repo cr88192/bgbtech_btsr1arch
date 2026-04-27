@@ -148,6 +148,13 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 		op->Run=BJX2_Op_FLDCH_ImmGReg;
 //		op->fl|=BJX2_OPFL_NOWEX;
 
+		if(wi)
+		{
+			op->nmid=BJX2_NMID_PLDCSW;
+			op->fmid=BJX2_FMID_IMMREG;
+			op->Run=BJX2_Op_PLDCSW_ImmReg;
+		}
+
 //		if((opw1&31)==15)
 		if(((opw1&31)==15) &&
 			!(jbits&0x40000000U) &&

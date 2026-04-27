@@ -380,6 +380,7 @@ int stat_const_imm16;
 int stat_const_imm16u;
 int stat_const_imm16n;
 int stat_const_imm16h;
+int stat_const_imm16sw;
 int stat_const_imm20lui;
 
 int stat_const_jumbo64;
@@ -391,6 +392,8 @@ int stat_const_jumbo64_imm32c;
 int stat_const_jumbo64_f32;
 int stat_const_jumbo64_2xf16;
 int stat_const_jumbo64_4xf8;
+int stat_const_jumbo64_4xub;
+int stat_const_jumbo64_f64dp;
 
 int stat_const_jumbo96ph;
 

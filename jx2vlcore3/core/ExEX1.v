@@ -1222,13 +1222,21 @@ begin
 				4'b0101: begin /* FLDCH */
 					tValOutDfl[63:0]	= {
 						regValRt[15:14],
-						(regValRt[14] || (regValRt[14:10]==0)) &&
-								(regValRt[14:10]!=5'h1F) ?
+//						(regValRt[14] || (regValRt[14:10]==0)) &&
+//								(regValRt[14:10]!=5'h1F) ?
+						regValRt[14] ?
 							6'h00 : 6'h3F,
 						regValRt[13: 0],
 						10'h0,
 						32'h0
 						};
+				end
+
+				4'b0111: begin /* PLDCSW */
+					tValOutDfl[63:0]	= {
+						regValRt[15:0], regValRt[15:0],
+						regValRt[15:0], regValRt[15:0]
+					};
 				end
 				
 				default: begin

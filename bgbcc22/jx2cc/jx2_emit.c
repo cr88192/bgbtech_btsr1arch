@@ -2771,6 +2771,16 @@ int BGBCC_JX2_ConstConvHalfToFP8S(u16 v, byte *rv)
 	return(ret);
 }
 
+int BGBCC_JX2_ConstConvHalfToFP8(u16 v, byte *rv)
+{
+	byte v1, v2;
+	int rt;
+	rt=BGBCC_JX2_ConstConvHalfToFP8S(v, &v1);
+	v2=(v1>>1)|((v1&1)<<7);
+	*rv=v2;
+	return(rt);
+}
+
 int BGBCC_JX2_ConstConvHalfToFP8U(u16 v, byte *rv)
 {
 	int sg, exp, fra, ret, v1;
@@ -2960,6 +2970,62 @@ int BGBCC_JX2_ConstConvV4HToV4FP8U(u64 v, u32 *rv)
 	v1=(tv[3]<<24)|(tv[2]<<16)|(tv[1]<<8)|(tv[0]<<0);
 	*rv=v1;
 	return(1);
+}
+
+int BGBCC_JX2_ConstConvV4HToV4FP8(u64 v, u32 *rv)
+{
+	byte tv[4];
+	u32 v1;
+	int rt;
+	
+	rt=BGBCC_JX2_ConstConvHalfToFP8(v>>0, tv+0);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8(v>>16, tv+1);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8(v>>32, tv+2);
+	if(rt<=0)return(-1);
+	rt=BGBCC_JX2_ConstConvHalfToFP8(v>>48, tv+3);
+	if(rt<=0)return(-1);
+	
+	v1=(tv[3]<<24)|(tv[2]<<16)|(tv[1]<<8)|(tv[0]<<0);
+	*rv=v1;
+	return(1);
+}
+
+
+int BGBCC_JX2_ConstConvRGBA64To32(u64 v, u32 *rv)
+{
+	u32 v1;
+	int cr, cg, cb, ca;
+	
+	ca=(v>>56)&255;
+	cr=(v>>40)&255;
+	cg=(v>>24)&255;
+	cb=(v>> 8)&255;
+	v1=(ca<<24)|(cr<<16)|(cg<<8)|cb;
+	*rv=v1;
+	if((v&0x00FF00FF00FF00FFULL)==((v>>8)&0x00FF00FF00FF00FFULL))
+		return(1);
+	return(0);
+}
+
+int BGBCC_JX2_ConstConvDoublePack32(u64 v, u32 *rv)
+{
+	u64 v2;
+	u32 v1;
+
+	v1=((v>>32)&0xFFFFFFF0ULL)|(v&15);
+	v2=	((v1&0xFFFFFFF0ULL)<<32) |
+		((v1&0x00000FF0ULL)<<24) |
+		((v1&0x00000FF0ULL)<<16) |
+		((v1&0x00000FF0ULL)<< 8) |
+		((v1&0x00000FF0ULL)<< 0) |
+		((v1&0x0000000FULL)<< 0) ;
+
+	*rv=v1;
+	if(v2==v)
+		return(1);
+	return(0);
 }
 
 u32 BGBCC_ConstConvHalfToFloat(u16 v)
