@@ -1924,6 +1924,10 @@ void BGBCC_CCXLR3_DecodeBufCmd(
 		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
 		BGBCC_CCXL_StackInitVarValue(ctx, s0);
 		break;
+	case BGBCC_RIL3OP_ZEROVAR:
+		s0=BGBCC_CCXLR3_ReadSymbol(ctx, &cs);
+		BGBCC_CCXL_StackZeroVar(ctx, s0);
+		break;
 
 	case BGBCC_RIL3OP_JMP:
 		lbl=BGBCC_CCXLR3_ReadLabel(ctx, &cs);

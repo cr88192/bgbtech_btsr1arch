@@ -1865,6 +1865,10 @@ ccxl_status BGBCC_JX2C_PrintVirtOp(BGBCC_TransState *ctx,
 			case CCXL_VOP_LDIXIMMA:			s0="LDIXIMMA"; break;
 			case CCXL_VOP_LDIXA:			s0="LDIXA"; break;
 			case CCXL_VOP_BITMOV:			s0="BITMOV"; break;
+
+			case CCXL_VOP_ZEROOBJ:			s0="ZEROOBJ"; break;
+			case CCXL_VOP_ZEROARR:			s0="ZEROARR"; break;
+			case CCXL_VOP_ZEROOBJARR:		s0="ZEROOBJARR"; break;
 		}
 
 		if(s0)
@@ -2356,6 +2360,27 @@ ccxl_status BGBCC_JX2C_CompileVirtOp(BGBCC_TransState *ctx,
 				break;
 		BGBCC_CCXL_StubError(ctx);
 		break;
+
+
+	case CCXL_VOP_ZEROOBJ:
+//		if(BGBCC_CCXL_IsRegLocalP(ctx, op->dst) ||
+//			BGBCC_CCXL_IsRegArgP(ctx, op->dst))
+//				break;
+		if(!BGBCC_CCXL_IsRegLocalP(ctx, op->dst))
+			break;
+//		BGBCC_JX2C_EmitZeroObj(ctx, sctx, op->type, op->dst);
+		break;
+	case CCXL_VOP_ZEROARR:
+		if(!BGBCC_CCXL_IsRegLocalP(ctx, op->dst))
+			break;
+		BGBCC_JX2C_EmitZeroArr(ctx, sctx, op->type, op->dst, op->imm.si);
+		break;
+	case CCXL_VOP_ZEROOBJARR:
+		if(!BGBCC_CCXL_IsRegLocalP(ctx, op->dst))
+			break;
+//		BGBCC_JX2C_EmitZeroObj(ctx, sctx, op->type, op->dst);
+		break;
+
 
 	case CCXL_VOP_VA_START:
 		BGBCC_JX2C_EmitSyncRegisters(ctx, sctx);
@@ -8546,6 +8571,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	sctx->is_simpass=0;
 	BGBCC_JX2C_EmitMemcpy64Autogen(ctx, sctx);
+	BGBCC_JX2C_EmitMemset64Autogen(ctx, sctx);
 
 #if 0
 #if 1

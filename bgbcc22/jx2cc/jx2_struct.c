@@ -2993,6 +2993,201 @@ int BGBCC_JX2C_EmitMemcpy64Autogen(
 }
 
 
+
+
+int BGBCC_JX2C_EmitMemset64Autogen(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	char tb[128];
+	char *s0, *s1, *s2;
+	int tr4, tr5, tr20, tr21, tr22, tr23;
+	int l0, l1, l2;
+	int i, j, k;
+
+	for(i=1; i<=512; i++)
+	{
+		if(!(sctx->memset_byte_mask[i>>6]&(1ULL<<(i&63))))
+			continue;
+		k=i/8;
+		sctx->memset64_mask|=1ULL<<(k-1);
+	}
+
+	if(!sctx->memset64_mask)
+		return(0);
+		
+	if(sctx->emit_riscv&0x33)
+	{
+		tr4=BGBCC_SH_REG_R10;
+		tr5=BGBCC_SH_REG_R11;
+//		trz=BGBCC_SH_REG_R0;
+//		inittrz=0;
+
+		tr20=BGBCC_SH_REG_R28;
+		tr21=BGBCC_SH_REG_R29;
+		tr22=BGBCC_SH_REG_R30;
+		tr23=BGBCC_SH_REG_R31;
+	}else
+	{
+		tr4=BGBCC_SH_REG_R4;
+		tr5=BGBCC_SH_REG_R5;
+//		trz=tr5;
+//		inittrz=1;
+
+		tr20=BGBCC_SH_REG_R20;
+		tr21=BGBCC_SH_REG_R21;
+		tr22=BGBCC_SH_REG_R22;
+		tr23=BGBCC_SH_REG_R23;
+	}
+	
+	BGBCC_JX2_SetSectionName(sctx, ".text");
+
+	for(i=64; i>0; i--)
+	{
+		if(i&3)
+			continue;
+
+		if((i>0) && !(sctx->memset64_mask>>(i-1)))
+			continue;
+
+		sprintf(tb, "__memset64_%u_ua", i*8);
+		s0=bgbcc_strdup(tb);
+
+		BGBCC_JX2_EmitNamedLabel(sctx, s0);
+
+		k=i-4;
+		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+			BGBCC_SH_NMID_MOVQ, tr5, tr4, k*8+0);
+		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+			BGBCC_SH_NMID_MOVQ, tr5, tr4, k*8+16);
+		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+			BGBCC_SH_NMID_MOVQ, tr5, tr4, k*8+8);
+		BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+			BGBCC_SH_NMID_MOVQ, tr5, tr4, k*8+24);
+	}
+
+	BGBCC_JX2_EmitOpNone(sctx,
+		BGBCC_SH_NMID_RTS);
+
+//	for(i=1; i<512; i++)
+	for(i=1; i<=512; i++)
+	{
+		if(!(sctx->memset_byte_mask[i>>6]&(1ULL<<(i&63))))
+			continue;
+
+//		if(!(i&31))
+//			continue;
+
+		sprintf(tb, "__memset8_%u", i);
+		s0=bgbcc_strdup(tb);		
+		BGBCC_JX2_EmitNamedLabel(sctx, s0);
+
+			BGBCC_JX2_EmitOpImmReg(sctx,
+				BGBCC_SH_NMID_MOV, 0, tr5);
+
+		sprintf(tb, "__memset8nz_%u", i);
+		s0=bgbcc_strdup(tb);		
+		BGBCC_JX2_EmitNamedLabel(sctx, s0);
+
+		k=i/8;
+		sctx->memset64_mask|=1ULL<<(k-1);
+
+		if(k && !(k&3))
+		{
+			sprintf(tb, "__memset64_%u_ua", k*8);
+			s1=bgbcc_strdup(tb);
+		}else
+		{
+			sprintf(tb, "__memset64_%u", k*8);
+			s1=bgbcc_strdup(tb);
+		}
+		
+//		if(inittrz)
+//		{
+//			BGBCC_JX2_EmitOpImmReg(sctx,
+//				BGBCC_SH_NMID_MOV, 0, tr5);
+//		}
+		
+		j=k*8;
+		if((j+4)<=i)
+		{
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+				BGBCC_SH_NMID_MOVL, tr5, tr4, j);
+			j+=4;
+		}
+
+		if((j+2)<=i)
+		{
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+				BGBCC_SH_NMID_MOVW, tr5, tr4, j);
+			j+=2;
+		}
+
+		while(j<i)
+		{
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+				BGBCC_SH_NMID_MOVB, tr5, tr4, j);
+			j++;
+		}
+
+		if(k>0)
+		{
+			l1=BGBCC_JX2_GetNamedLabel(sctx, s1);
+			BGBCC_JX2_EmitOpLabel(sctx,
+				BGBCC_SH_NMID_BRA, l1);
+		}else
+		{
+			BGBCC_JX2_EmitOpNone(sctx,
+				BGBCC_SH_NMID_RTS);
+		}
+	}
+
+	for(i=1; i<=64; i++)
+	{
+		if(!((sctx->memset64_mask>>(i-1))&1))
+			continue;
+
+//		if(!(i&3))
+//			continue;
+
+		sprintf(tb, "__memset64_%u", i*8);
+		s0=bgbcc_strdup(tb);
+		
+		BGBCC_JX2_EmitNamedLabel(sctx, s0);
+
+		k=i&(~3);
+
+		sprintf(tb, "__memset64_%u_ua", k*8);
+		s1=bgbcc_strdup(tb);
+
+		while(k<i)
+		{
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx,
+				BGBCC_SH_NMID_MOVQ, tr5, tr4, k*8);
+			k++;
+		}
+
+		l1=BGBCC_JX2_GetNamedLabel(sctx, s1);
+//		l2=BGBCC_JX2_GetNamedLabel(sctx, s2);
+
+		k=i&(~3);
+		if(k>0)
+		{
+			BGBCC_JX2_EmitOpLabel(sctx,
+				BGBCC_SH_NMID_BRA, l1);
+		}else
+		{
+			BGBCC_JX2_EmitOpNone(sctx,
+				BGBCC_SH_NMID_RTS);
+		}
+	}
+	
+	return(1);
+}
+
+
+
+
 int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
@@ -3119,12 +3314,13 @@ int BGBCC_JX2C_EmitLoadTypeBRegOfsReg(
 
 
 #if 1
-/** Emit logic to copy value-type given by registers and size. */
+/** Emit logic to zero value-type given by registers and size. */
 int BGBCC_JX2C_EmitValueZeroRegSz(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx,
 	int dreg, int sz, int al)
 {
+	char tb[256];
 	char *s0;
 	int tr0, tr1, tr2, tr3;
 	int l0, al0;
@@ -3237,8 +3433,8 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 		return(1);
 	}
 
-	if((al>=8) && (!(sz&7) || (al0>=8)) && (sz<=128))
-//	if((al>=8) && (!(sz&7) || (al0>=8)) && (sz<=64))
+//	if((al>=8) && (!(sz&7) || (al0>=8)) && (sz<=128))
+	if((al>=8) && (!(sz&7) || (al0>=8)) && (sz<=64))
 //	if((!(sz&7) || (al0>=8)) && (sz<=128))
 	{
 //		tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
@@ -3250,6 +3446,14 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 
 //		BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV, 0, tr0);
 		i=0;
+		while((i+32)<=sz)
+		{
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i+ 0);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i+16);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i+ 8);
+			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i+24);
+			i+=32;
+		}
 		while((i+8)<=sz)
 		{
 			BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i);
@@ -3261,17 +3465,28 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 
 	if(al<8)
 	{
-		if((al>=4) && (!(sz&3) || (al0>=4)) && (sz<=32))
+//		if((al>=4) && (!(sz&3) || (al0>=4)) && (sz<=32))
+//		if((al>=4) && (!(sz&3) || (al0>=4)) && (sz<=96))
+		if((al>=4) && (!(sz&3) || (al0>=4)) && (sz<=48))
 		{
 //			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
 			tr0=BGBCC_JX2C_ScratchAllocRegZzr(ctx, sctx);
 
 			nm1=BGBCC_SH_NMID_MOVL;
+			nm2=BGBCC_SH_NMID_MOVQ;
 			if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+			{
 				nm1=BGBCC_SH_NMID_XMOVL;
+				nm2=BGBCC_SH_NMID_XMOVQ;
+			}
 
 //			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV, 0, tr0);
 			i=0;
+			while((i+8)<=sz)
+			{
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm2, tr0, dreg, i);
+				i+=8;
+			}
 			while((i+4)<=sz)
 			{
 				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i);
@@ -3281,37 +3496,58 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 			return(1);
 		}
 
-		if((al>=2) && !(sz&1) && (sz<=16))
+//		if((al>=2) && !(sz&1) && (sz<=16))
+//		if((al>=2) && !(sz&1) && (sz<=48))
+		if((al>=2) && !(sz&1) && (sz<=24))
 		{
 //			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
 			tr0=BGBCC_JX2C_ScratchAllocRegZzr(ctx, sctx);
 
 			nm1=BGBCC_SH_NMID_MOVW;
+			nm2=BGBCC_SH_NMID_MOVL;
 			if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+			{
 				nm1=BGBCC_SH_NMID_XMOVW;
+				nm2=BGBCC_SH_NMID_XMOVL;
+			}
 
 //			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV, 0, tr0);
 			i=0;
 			while((i+4)<=sz)
 			{
-				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i);
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm2, tr0, dreg, i);
 				i+=4;
+			}
+			while((i+2)<=sz)
+			{
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i);
+				i+=2;
 			}
 			BGBCC_JX2C_ScratchReleaseReg(ctx, sctx, tr0);
 			return(1);
 		}
 
-		if(sz<=8)
+//		if(sz<=8)
+		if(sz<=24)
 		{
 //			tr0=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, BGBCC_SH_REGCLS_QGR);
 			tr0=BGBCC_JX2C_ScratchAllocRegZzr(ctx, sctx);
 
 			nm1=BGBCC_SH_NMID_MOVB;
+			nm2=BGBCC_SH_NMID_MOVL;
 			if(BGBCC_JX2C_EmitRegIsExtLpReg(ctx, sctx, dreg))
+			{
 				nm1=BGBCC_SH_NMID_XMOVB;
+				nm2=BGBCC_SH_NMID_XMOVL;
+			}
 
 //			BGBCC_JX2_EmitOpImmReg(sctx, BGBCC_SH_NMID_MOV, 0, tr0);
 			i=0;
+			while((i+4)<=sz)
+			{
+				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm2, tr0, dreg, i);
+				i+=4;
+			}
 			while(i<sz)
 			{
 				BGBCC_JX2_EmitOpRegStRegDisp(sctx, nm1, tr0, dreg, i);
@@ -3321,6 +3557,40 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 			return(1);
 		}
 	}
+
+#if 1
+	if(		(ctx->optmode==BGBCC_OPT_SPEED) ||
+			(ctx->optmode==BGBCC_OPT_SPEED2))
+	{
+		if((sz<=512) && !sctx->sreg_live)
+		{
+			sprintf(tb, "__memset8_%u", sz);
+			s0=bgbcc_strdup(tb);
+			
+			sctx->memset_byte_mask[sz>>6]|=1ULL<<(sz&63);
+
+			BGBCC_JX2C_EmitScratchSyncRegisters(ctx, sctx);
+
+			if(ctx->arch_sizeof_ptr==16)
+			{
+				BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+					dreg, BGBCC_JX2CC_PSREG_LRARG(0));
+	//			BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+	//				sreg, BGBCC_JX2CC_PSREG_LRARG(1));
+				BGBCC_JX2C_EmitCallName(ctx, sctx, s0);
+				return(1);
+			}else
+			{
+				BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+					dreg, BGBCC_JX2CC_PSREG_ARG(0));
+	//			BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+	//				sreg, BGBCC_JX2CC_PSREG_ARG(1));
+				BGBCC_JX2C_EmitCallName(ctx, sctx, s0);
+				return(1);
+			}
+		}
+	}
+#endif
 
 #if 1
 	if((al0>=8) && !(sz&15) && !sctx->sreg_live)
@@ -3449,4 +3719,103 @@ int BGBCC_JX2C_EmitValueZeroRegSz(
 	BGBCC_DBGBREAK
 	return(0);
 }
+
+int BGBCC_JX2C_EmitValueNonZeroRegSz(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx,
+	int dreg, int val, int sz, int al)
+{
+	char tb[256];
+	char *s0;
+	u64 vm;
+	int i, j, k;
+	
+	if((val&255)==0)
+	{
+		return(BGBCC_JX2C_EmitValueZeroRegSz(ctx, sctx, dreg, sz, al));
+	}
+
+	if(		(ctx->optmode==BGBCC_OPT_SPEED) ||
+			(ctx->optmode==BGBCC_OPT_SPEED2))
+	{
+		if((sz<=512) && !sctx->sreg_live)
+		{
+			sprintf(tb, "__memset8nz_%u", sz);
+			s0=bgbcc_strdup(tb);
+			
+			vm=val&255;
+			vm|=vm<<8;
+			vm|=vm<<16;
+			vm|=vm<<32;
+			
+			sctx->memset_byte_mask[sz>>6]|=1ULL<<(sz&63);
+
+			BGBCC_JX2C_EmitScratchSyncRegisters(ctx, sctx);
+
+			if(ctx->arch_sizeof_ptr==16)
+			{
+				BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+					dreg, BGBCC_JX2CC_PSREG_LRARG(0));
+				BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+					BGBCC_SH_NMID_MOV, vm, BGBCC_JX2CC_PSREG_ARG(2));
+				BGBCC_JX2C_EmitCallName(ctx, sctx, s0);
+				return(1);
+			}else
+			{
+				BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+					dreg, BGBCC_JX2CC_PSREG_ARG(0));
+				BGBCC_JX2C_EmitOpImmReg(ctx, sctx,
+					BGBCC_SH_NMID_MOV, vm, BGBCC_JX2CC_PSREG_ARG(1));
+				BGBCC_JX2C_EmitCallName(ctx, sctx, s0);
+				return(1);
+			}
+		}
+	}
+
+	if(!sctx->sreg_live)
+	{
+		BGBCC_JX2C_EmitScratchSyncRegisters(ctx, sctx);
+
+		if(ctx->arch_sizeof_ptr==16)
+		{
+			BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+				dreg, BGBCC_SH_REG_LR4);
+			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
+				BGBCC_JX2CC_PSREG_ARG(2), val);
+			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
+				BGBCC_JX2CC_PSREG_ARG(3), sz);
+			BGBCC_JX2C_EmitCallName(ctx, sctx, "memset");
+			return(1);
+		}else
+		{
+			BGBCC_JX2C_EmitMovRegReg(ctx, sctx,
+				dreg, BGBCC_JX2CC_PSREG_ARG(0));
+			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
+				BGBCC_JX2CC_PSREG_ARG(1), val);
+			BGBCC_JX2_EmitLoadRegImm(sctx, BGBCC_SH_NMID_MOV,
+				BGBCC_JX2CC_PSREG_ARG(2), sz);
+			BGBCC_JX2C_EmitCallName(ctx, sctx, "memset");
+			return(1);
+		}
+	}
+	
+	BGBCC_DBGBREAK
+	return(0);
+}
+
+int BGBCC_JX2C_EmitZeroArr(
+	BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx,
+	ccxl_type type, ccxl_register dreg, int asz)
+{
+	int cdreg, bsz;
+
+	cdreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, dreg);
+	bsz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
+
+	BGBCC_JX2C_EmitValueZeroRegSz(ctx, sctx, cdreg, bsz*asz, bsz);
+
+	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+	return(1);
+}
+
 #endif

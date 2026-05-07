@@ -186,15 +186,14 @@
 #define BGBCC_RIL3OP_LDCONSTTS	0x99	//load const TriState 64b
 #define BGBCC_RIL3OP_LDCONSTBTS	0x9A	//BigTriState (over 64b)
 
-#define BGBCC_RIL3OP_STBITLOAD		0x9B
-// #define BGBCC_RIL3OP_LDBITLOAD		0x9C
-// #define BGBCC_RIL3OP_LDBITLOADINT	0x9D
-
+#define BGBCC_RIL3OP_STBITLOAD	0x9B
 #define BGBCC_RIL3OP_JMPTABZ	0x9C	//Jump Table (Masked)
 
 #define BGBCC_RIL3OP_LDPACNST	0x9D	//LoadPostAdjNameStore
 #define BGBCC_RIL3OP_LDPACN		0x9E	//LoadPostAdjName
 #define BGBCC_RIL3OP_STPACN		0x9F	//StorePostAdjName
+
+#define BGBCC_RIL3OP_ZEROVAR	0xA0
 
 //#define BGBCC_RIL3OP_LDPICNST	0x9E	//LoadPostIncNameStore
 //#define BGBCC_RIL3OP_LDPDCNST	0x9F	//LoadPostDecNameStore

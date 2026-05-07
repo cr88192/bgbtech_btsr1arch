@@ -141,6 +141,9 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 					else
 						{ suf1="LL"; }
 				}
+			}else
+			{
+				suf1="I";
 			}
 			
 			if((lj!=0) && (lj!=(-1)))
@@ -152,6 +155,8 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 			}
 		}else if(!suf)
 		{
+			suf1="I";
+		
 			if(li!=((s32)li))
 			{
 				suf1="LL";
@@ -243,6 +248,14 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 			if(tsi_sz)
 				BCCX_SetIntCst(n, &bgbcc_rcst_value_sz, "value_sz", tsi_sz);
 			return(n);
+		}
+
+		if(suf1)
+		{
+			if(!bgbcp_strcmp1(suf1, "U"))
+				{ li=(u32)li; }
+			if(!bgbcp_strcmp1(suf1, "I"))
+				{ li=(s32)li; }
 		}
 
 		n=BCCX_NewCst(&bgbcc_rcst_int, "int");
@@ -1915,7 +1928,8 @@ BCCX_Node *BGBCP_ExpressionMD(BGBCP_ParseState *ctx, char **str)
 			bgbcp_strcmp1(b, "%") && bgbcp_strcmp1(b, "*`") &&
 			bgbcp_strcmp2(b, "/`") && bgbcp_strcmp2(b, "%`") &&
 			bgbcp_strcmp2(b, "`*") && bgbcp_strcmp2(b, "`/") &&
-			bgbcp_strcmp2(b, "`%") && bgbcp_strcmp1(b, "~") &&
+			bgbcp_strcmp2(b, "`%") &&
+//			bgbcp_strcmp1(b, "~") &&
 			bgbcp_strcmp2(b, "~`") && bgbcp_strcmp2(b, "`~"))
 				break;
 

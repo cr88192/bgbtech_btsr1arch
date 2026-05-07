@@ -1,0 +1,54 @@
+General ABI Rules for XG3 and RISC-V (within BGBCC)
+
+User Visible Registers:
+* R0 / ZR / ZERO          : Zero Register
+* R1 / LR / RA            : Link Register
+* R2 / SP                 : Stack Pointer
+* R3 / GP                 : Global Pointer
+* R4 / TP                 : Task Pointer
+* R5  .. R7  / X5 .. X7   : Scratch / Stomp
+* R8  .. R9  / X8 .. X9   : Callee Save
+* R10 .. R17 / X10.. X17  : Scratch / Arg1..Arg8
+* R18 .. R27 / X18.. X27  : Callee Save
+* R28 .. R31 / X28.. X31  : Scratch
+* R32 .. R35 / F0 .. F3   : Scratch
+* R36 .. R41 / F4 .. F9   : Callee Save
+* R42 .. R49 / F10.. F17  : Scratch / Arg9..Arg16 (Optional, XG3 Native)
+* R50 .. R59 / F18.. F27  : Callee Save
+* R60 .. R63 / F28.. F31  : Scratch
+
+
+Note:
+* The assignment of callee-save registers is similar to the RV64G LP64D ABI.
+* F4..F7 were moved over to being callee-save to adjust for register pressure.
+
+
+Argument Passing:
+* The nominal ABI will pass and return everything in X10 through X17.
+** Integer types: Will be Sign or Zero extended to 64 bits.
+** "unsigned int" is to be zero extended.
+* Floating Point types will also be passed in these registers.
+** Small scalar types will be passed in a form promoted to Binary64.
+* Structs between 1 and 8 bytes: Will be passed in a single register.
+* Structs between 9 and 16 bytes: Will be passed in an even register pair.
+* Structs above 16 bytes: Will be passed as a pointer.
+* Larger types will be passed the same as structs.
+
+Note that for register pairs, only even pairs are used. If a 128 bit type falls on an odd argument register, the register will be skipped and essentially wasted.
+
+If no more argument registers exist, any remaining arguments are to be spilled onto the stack.
+
+For local-only calls within XG3 Mode, F10..F17 may be used for an 8 additional argument registers. This will not generally be done for RV64G code generation as its effects will be, on average, detrimental.
+
+These extra arguments may be excluded in some cases:
+* Imports or exports from a DLL;
+* Functions which may be called via a function pointer;
+* Vararg functions.
+
+
+Return Value:
+* X10 or X11:X10 will be used for return.
+* Rules are essentially the same as for function arguments.
+
+If a large struct is to be returned by value from a function, an extra hidden argument is added to the start of the argument list to hold the return address for the struct. The callee will then copy the returned struct into the address provided by the caller.
+

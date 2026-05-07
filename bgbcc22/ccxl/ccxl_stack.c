@@ -5125,6 +5125,60 @@ ccxl_status BGBCC_CCXL_StackInitVarValue(BGBCC_TransState *ctx, char *name)
 	return(CCXL_STATUS_NO);
 }
 
+
+ccxl_status BGBCC_CCXL_StackZeroVar(BGBCC_TransState *ctx, char *name)
+{
+	BGBCC_CCXL_RegisterInfo *def;
+	BGBCC_CCXL_LiteralInfo *st;
+	ccxl_register sreg, dreg;
+	ccxl_type bty;
+	char *s;
+	int i, j, k, l;
+
+	BGBCC_CCXLR3_EmitOp(ctx, BGBCC_RIL3OP_ZEROVAR);
+	BGBCC_CCXLR3_EmitArgSymbol(ctx, name);
+
+	def=BGBCC_CCXL_LookupLocalInfo(ctx, name);
+	if(def)
+	{
+		i=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
+
+		st=BGBCC_CCXL_LookupStructureForSig2(ctx, def->sig);
+		if(st)
+		{
+			bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_P);
+			BGBCC_CCXL_EmitZeroObj(ctx, bty, dreg, st);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+			return(CCXL_STATUS_YES);
+		}
+		
+		s=def->sig;
+		l=BGBCC_CCXL_GetArraySizeForSig3R(ctx, &s);
+		if(l>0)
+		{
+			st=BGBCC_CCXL_LookupStructureForSig2(ctx, s);
+			if(st)
+			{
+				bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_P);
+				BGBCC_CCXL_EmitZeroObjArr(ctx, bty, dreg, st, l);
+				BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+				return(CCXL_STATUS_YES);
+			}
+
+			BGBCC_CCXL_TypeFromSig(ctx, &bty, s);
+			BGBCC_CCXL_EmitZeroArr(ctx, bty, dreg, l);
+			BGBCC_CCXL_RegisterCheckRelease(ctx, dreg);
+			return(CCXL_STATUS_YES);
+		}
+	}
+
+//	BGBCC_CCXL_StubError(ctx);
+	return(CCXL_STATUS_NO);
+
+//	BGBCC_CCXL_StubError(ctx);
+//	return(CCXL_STATUS_NO);
+}
+
 #if 0
 /* Added in error, Redundant, BGBCC_CCXL_StackPushTempObj */
 ccxl_status BGBCC_CCXL_StackPushInitObj(BGBCC_TransState *ctx, char *sig)

@@ -55,12 +55,29 @@ int BGBCP_BoolExpr(BGBCP_ParseState *ctx, BCCX_Node *l)
 
 BCCX_Node *BGBCP_WrapIntSuf(s64 i, char *suf)
 {
+	bgbcc_vint128 xi;
 	BCCX_Node *t;
 	
 	if(suf)
 	{
+		if(!bgbcp_strcmp2(suf, "XL"))
+		{
+			xi.lo=i;
+			xi.hi=i>>63;
+			return(BGBCP_WrapInt128Suf(xi, suf));
+		}
+	
+		if(!bgbcp_strcmp3(suf, "UXL"))
+		{
+			xi.lo=i;
+			xi.hi=0;
+			return(BGBCP_WrapInt128Suf(xi, suf));
+		}
+	
 		if(!bgbcp_strcmp1(suf, "U"))
 			i=(u32)i;
+		if(!bgbcp_strcmp1(suf, "I"))
+			i=(s32)i;
 	}
 	
 	t=BCCX_NewCst(&bgbcc_rcst_int, "int");
@@ -110,6 +127,113 @@ BCCX_Node *BGBCP_WrapRef(char *str)
 	return(t);
 }
 
+
+BCCX_Node *BGBCP_WrapInt128(bgbcc_vint128 i)
+{
+	return(BGBCP_WrapInt128Suf(i, NULL));
+}
+
+BCCX_Node *BGBCP_WrapInt128Suf(bgbcc_vint128 i, char *suf)
+{
+	BCCX_Node *t;
+	
+#if 0
+	if(BGBCC_Int128_CheckSx64P(i))
+	{
+		t=BGBCP_WrapIntSuf(i.lo, suf);
+		return(t);
+	}
+#endif
+	
+	t=BCCX_NewCst(&bgbcc_rcst_int128, "int128");
+	BCCX_SetIntCst(t, &bgbcc_rcst_value_lo, "value_lo", i.lo);
+	BCCX_SetIntCst(t, &bgbcc_rcst_value_hi, "value_hi", i.hi);
+	if(suf)BCCX_SetCst(t, &bgbcc_rcst_tysuf, "tysuf", suf);
+	return(t);
+}
+
+BCCX_Node *BGBCP_WrapFloat128(bgbcc_vfloat128 f)
+{
+	return(BGBCP_WrapFloat128Suf(f, NULL));
+}
+
+BCCX_Node *BGBCP_WrapFloat128Suf(bgbcc_vfloat128 f, char *suf)
+{
+	BCCX_Node *t;
+	t=BCCX_NewCst(&bgbcc_rcst_float128, "float128");
+	BCCX_SetIntCst(t, &bgbcc_rcst_value_lo, "value_lo", f.lo);
+	BCCX_SetIntCst(t, &bgbcc_rcst_value_hi, "value_hi", f.hi);
+	if(suf)BCCX_SetCst(t, &bgbcc_rcst_tysuf, "tysuf", suf);
+	return(t);
+}
+
+bgbcc_vint128 BGBCP_UnwrapInt128(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	bgbcc_vint128 c;
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int128, "int128"))
+	{
+		c.lo=BCCX_GetIntCst(l, &bgbcc_rcst_value_lo, "value_lo");
+		c.hi=BCCX_GetIntCst(l, &bgbcc_rcst_value_hi, "value_hi");
+		return(c);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
+	{
+		c.lo=BCCX_GetIntCst(l, &bgbcc_rcst_value, "value");
+		c.hi=((s64)c.lo)>>63;
+		return(c);
+	}
+
+	BGBCC_DBGBREAK
+	
+	c.lo=0;
+	c.hi=0;
+	return(c);
+}
+
+bgbcc_vfloat128 BGBCP_UnwrapFloat128(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	double f;
+	bgbcc_vfloat128 c;
+	bgbcc_vint128 xi;
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_float128, "float128"))
+	{
+		c.lo=BCCX_GetIntCst(l, &bgbcc_rcst_value_lo, "value_lo");
+		c.hi=BCCX_GetIntCst(l, &bgbcc_rcst_value_hi, "value_hi");
+		return(c);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_real, "real"))
+	{
+		f=BCCX_GetFloatCst(l, &bgbcc_rcst_value, "value");
+		c=BGBCC_Float128_FromDouble(f);
+		return(c);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
+	{
+		f=BCCX_GetIntCst(l, &bgbcc_rcst_value, "value");
+		c=BGBCC_Float128_FromDouble(f);
+		return(c);
+	}
+
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int128, "int128"))
+	{
+		xi.lo=BCCX_GetIntCst(l, &bgbcc_rcst_value_lo, "value_lo");
+		xi.hi=BCCX_GetIntCst(l, &bgbcc_rcst_value_hi, "value_hi");
+		c=BGBCC_Float128_FromInt128(xi);
+		return(c);
+	}
+
+	BGBCC_DBGBREAK
+	
+	c.lo=0;
+	c.hi=0;
+	return(c);
+}
+
 int BGBCP_IsIntP(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))return(1);
@@ -133,6 +257,42 @@ int BGBCP_IsReal2P(BGBCP_ParseState *ctx, BCCX_Node *l)
 int BGBCP_IsCharP(BGBCP_ParseState *ctx, BCCX_Node *l)
 {
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_charstring, "charstring"))
+		return(1);
+	return(0);
+}
+
+int BGBCP_IsInt128P(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int128, "int128"))
+		return(1);
+	return(0);
+}
+
+int BGBCP_IsSmallInt128P(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
+		return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int128, "int128"))
+		return(1);
+	return(0);
+}
+
+int BGBCP_IsFloat128P(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_float128, "float128"))
+		return(1);
+	return(0);
+}
+
+int BGBCP_IsReal128P(BGBCP_ParseState *ctx, BCCX_Node *l)
+{
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_float128, "float128"))
+		return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_real, "real"))
+		return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int, "int"))
+		return(1);
+	if(BCCX_TagIsCstP(l, &bgbcc_rcst_int128, "int128"))
 		return(1);
 	return(0);
 }
@@ -186,14 +346,26 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 		if(	!stricmp(s0, "L") ||
 			!stricmp(s0, "LL") ||
 			!stricmp(s0, "UL") ||
-			!stricmp(s0, "ULL"))s0=NULL;
+			!stricmp(s0, "ULL") ||
+			!stricmp(s0, "I") ||
+			!stricmp(s0, "U") ||
+			!stricmp(s0, "SB") ||
+			!stricmp(s0, "UB") ||
+			!stricmp(s0, "SS") ||
+			!stricmp(s0, "US"))s0=NULL;
 	}
 	if(s1 && BGBCP_IsReal2P(ctx, rn))
 	{
 		if(	!stricmp(s1, "L") ||
 			!stricmp(s1, "LL") ||
 			!stricmp(s1, "UL") ||
-			!stricmp(s1, "ULL"))s1=NULL;
+			!stricmp(s1, "ULL") ||
+			!stricmp(s0, "I") ||
+			!stricmp(s0, "U") ||
+			!stricmp(s0, "SB") ||
+			!stricmp(s0, "UB") ||
+			!stricmp(s0, "SS") ||
+			!stricmp(s0, "US"))s1=NULL;
 	}
 
 	//int+real, throw out int suffix
@@ -218,6 +390,22 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 	if(!s0 && !s1) return(NULL);
 	if(!s0) return(s1);
 	if(!s1) return(s0);
+
+	if(BGBCP_IsIntP(ctx, ln) && BGBCP_IsInt128P(ctx, rn))
+	{
+		if(!bgbcp_strcmp3(s1, "UXL"))
+			return(s1);
+		if(!bgbcp_strcmp2(s1, "XL"))
+			return(s1);
+	}
+
+	if(BGBCP_IsInt128P(ctx, ln) && BGBCP_IsIntP(ctx, rn))
+	{
+		if(!bgbcp_strcmp3(s0, "UXL"))
+			return(s0);
+		if(!bgbcp_strcmp2(s0, "XL"))
+			return(s0);
+	}
 	
 	if(*s0=='U')
 	{
@@ -227,10 +415,18 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 				return(s0);
 			if(!bgbcp_strcmp1(s1, "L"))
 				return(s0);
+			if(!bgbcp_strcmp1(s1, "I"))
+				return(s0);
+			if(	!bgbcp_strcmp2(s1, "SB") ||
+				!bgbcp_strcmp2(s1, "UB") ||
+				!bgbcp_strcmp2(s1, "SS") ||
+				!bgbcp_strcmp2(s1, "US") )
+					return(s0);
 			return(NULL);
 		}
 
-		if(!bgbcp_strcmp3(s0, "ULL"))
+		if(!bgbcp_strcmp3(s0, "ULL") ||
+			!bgbcp_strcmp3(s0, "UXL"))
 		{
 			if(!bgbcp_strcmp1(s1, "U"))
 				return(s0);
@@ -238,8 +434,34 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 				return(s0);
 			if(!bgbcp_strcmp2(s1, "UL"))
 				return(s0);
+			if(!bgbcp_strcmp3(s1, "ULL"))
+				return(s0);
 			if(!bgbcp_strcmp2(s1, "LL"))
 				return(s0);
+			if(!bgbcp_strcmp1(s1, "I"))
+				return(s0);
+			if(	!bgbcp_strcmp2(s1, "SB") ||
+				!bgbcp_strcmp2(s1, "UB") ||
+				!bgbcp_strcmp2(s1, "SS") ||
+				!bgbcp_strcmp2(s1, "US") )
+					return(s0);
+
+			if(!bgbcp_strcmp2(s1, "XL") && !bgbcp_strcmp3(s0, "UXL"))
+				return(s0);
+			return(NULL);
+		}
+
+		if(!bgbcp_strcmp1(s0, "U"))
+		{
+			if(!bgbcp_strcmp1(s1, "U"))
+				return(s0);
+			if(!bgbcp_strcmp1(s1, "I"))
+				return(s0);
+			if(	!bgbcp_strcmp2(s1, "SB") ||
+				!bgbcp_strcmp2(s1, "UB") ||
+				!bgbcp_strcmp2(s1, "SS") ||
+				!bgbcp_strcmp2(s1, "US") )
+					return(s0);
 			return(NULL);
 		}
 	}
@@ -252,10 +474,18 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 				return(s1);
 			if(!bgbcp_strcmp1(s0, "L"))
 				return(s1);
+			if(!bgbcp_strcmp1(s0, "I"))
+				return(s1);
+			if(	!bgbcp_strcmp2(s0, "SB") ||
+				!bgbcp_strcmp2(s0, "UB") ||
+				!bgbcp_strcmp2(s0, "SS") ||
+				!bgbcp_strcmp2(s0, "US") )
+					return(s1);
 			return(NULL);
 		}
 
-		if(!bgbcp_strcmp3(s1, "ULL"))
+		if(!bgbcp_strcmp3(s1, "ULL") ||
+			!bgbcp_strcmp3(s1, "UXL"))
 		{
 			if(!bgbcp_strcmp1(s0, "U"))
 				return(s1);
@@ -263,12 +493,132 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 				return(s1);
 			if(!bgbcp_strcmp2(s0, "UL"))
 				return(s1);
+			if(!bgbcp_strcmp3(s0, "ULL"))
+				return(s1);
 			if(!bgbcp_strcmp2(s0, "LL"))
 				return(s1);
+			if(!bgbcp_strcmp1(s0, "I"))
+				return(s1);
+			if(	!bgbcp_strcmp2(s0, "SB") ||
+				!bgbcp_strcmp2(s0, "UB") ||
+				!bgbcp_strcmp2(s0, "SS") ||
+				!bgbcp_strcmp2(s0, "US") )
+					return(s1);
+
+			if(!bgbcp_strcmp2(s0, "XL") && !bgbcp_strcmp3(s1, "UXL"))
+				return(s1);
+
+			return(NULL);
+		}
+
+		if(!bgbcp_strcmp1(s1, "U"))
+		{
+			if(!bgbcp_strcmp1(s0, "U"))
+				return(s1);
+			if(!bgbcp_strcmp1(s0, "I"))
+				return(s1);
+			if(	!bgbcp_strcmp2(s0, "SB") ||
+				!bgbcp_strcmp2(s0, "UB") ||
+				!bgbcp_strcmp2(s0, "SS") ||
+				!bgbcp_strcmp2(s0, "US") )
+					return(s1);
 			return(NULL);
 		}
 	}
-	
+
+
+	if(*s0=='L')
+	{
+		if(!bgbcp_strcmp1(s0, "L"))
+		{
+			if(!bgbcp_strcmp1(s1, "U"))
+				return(s0);
+			if(!bgbcp_strcmp1(s1, "L"))
+				return(s0);
+			if(!bgbcp_strcmp1(s1, "I"))
+				return(s0);
+			if(	!bgbcp_strcmp2(s1, "SB") ||
+				!bgbcp_strcmp2(s1, "UB") ||
+				!bgbcp_strcmp2(s1, "SS") ||
+				!bgbcp_strcmp2(s1, "US") )
+					return(s0);
+			return(NULL);
+		}
+
+		if(!bgbcp_strcmp2(s0, "LL"))
+		{
+			if(!bgbcp_strcmp1(s1, "U"))
+				return(s0);
+			if(!bgbcp_strcmp1(s1, "L"))
+				return(s0);
+//			if(!bgbcp_strcmp2(s1, "UL"))
+//				return(s0);
+			if(!bgbcp_strcmp2(s1, "LL"))
+				return(s0);
+			if(!bgbcp_strcmp1(s1, "I"))
+				return(s0);
+			if(	!bgbcp_strcmp2(s1, "SB") ||
+				!bgbcp_strcmp2(s1, "UB") ||
+				!bgbcp_strcmp2(s1, "SS") ||
+				!bgbcp_strcmp2(s1, "US") )
+					return(s0);
+			return(NULL);
+		}
+	}
+
+	if(*s1=='L')
+	{
+		if(!bgbcp_strcmp1(s1, "L"))
+		{
+			if(!bgbcp_strcmp1(s0, "U"))
+				return(s1);
+			if(!bgbcp_strcmp1(s0, "L"))
+				return(s1);
+			if(!bgbcp_strcmp1(s0, "I"))
+				return(s1);
+			if(	!bgbcp_strcmp2(s0, "SB") ||
+				!bgbcp_strcmp2(s0, "UB") ||
+				!bgbcp_strcmp2(s0, "SS") ||
+				!bgbcp_strcmp2(s0, "US") )
+					return(s1);
+			return(NULL);
+		}
+
+		if(!bgbcp_strcmp2(s1, "LL"))
+		{
+			if(!bgbcp_strcmp1(s0, "U"))
+				return(s1);
+			if(!bgbcp_strcmp1(s0, "L"))
+				return(s1);
+//			if(!bgbcp_strcmp2(s0, "UL"))
+//				return(s1);
+			if(!bgbcp_strcmp2(s0, "LL"))
+				return(s1);
+			if(!bgbcp_strcmp1(s0, "I"))
+				return(s1);
+			if(	!bgbcp_strcmp2(s0, "SB") ||
+				!bgbcp_strcmp2(s0, "UB") ||
+				!bgbcp_strcmp2(s0, "SS") ||
+				!bgbcp_strcmp2(s0, "US") )
+					return(s1);
+			return(NULL);
+		}
+	}
+
+	if(	!bgbcp_strcmp2(s0, "SB") ||
+		!bgbcp_strcmp2(s0, "UB") ||
+		!bgbcp_strcmp2(s0, "SS") ||
+		!bgbcp_strcmp2(s0, "US") ||
+		!bgbcp_strcmp1(s0, "I") )
+	{
+		if(	!bgbcp_strcmp2(s1, "SB") ||
+			!bgbcp_strcmp2(s1, "UB") ||
+			!bgbcp_strcmp2(s1, "SS") ||
+			!bgbcp_strcmp2(s1, "US") ||
+			!bgbcp_strcmp1(s1, "I") )
+				return("I");
+	}
+
 	//ok, whatever for now...
 	
 	return(NULL);
@@ -278,6 +628,8 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 	BCCX_Node *l, int flag)
 {
 	BCCX_Node *c, *t, *v, *x, *ln, *rn;
+	bgbcc_vint128 xi, xj, xk;
+	bgbcc_vfloat128 xf, xg, xh;
 	char *s, *suf;
 	double f, g;
 	int i0, i1, na, ci;
@@ -450,8 +802,10 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 
 	if(BGBCP_IsBinaryP(ctx, l, "||"))
 	{
-		ln=BGBCP_ReduceForm(ctx, BCCX_FetchCst(l, &bgbcc_rcst_left, "left"), flag);
-		rn=BGBCP_ReduceForm(ctx, BCCX_FetchCst(l, &bgbcc_rcst_right, "right"), flag);
+		ln=BGBCP_ReduceForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_left, "left"), flag);
+		rn=BGBCP_ReduceForm(ctx,
+			BCCX_FetchCst(l, &bgbcc_rcst_right, "right"), flag);
 
 #if 1
 		i0=BGBCP_BoolExpr(ctx, ln);
@@ -521,7 +875,8 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_unary, "unary"))
 	{
-		t=BGBCP_ReduceForm(ctx, BCCX_FetchCst(l, &bgbcc_rcst_value, "value"), flag);
+		t=BCCX_FetchCst(l, &bgbcc_rcst_value, "value");
+		t=BGBCP_ReduceForm(ctx, t, flag);
 
 		if(BGBCP_IsCharP(ctx, t))
 		{
@@ -582,6 +937,37 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			}
 		}
 
+		if(BGBCP_IsInt128P(ctx, t))
+		{
+			xi=BGBCP_UnwrapInt128(ctx, t);
+			suf=BCCX_GetCst(t, &bgbcc_rcst_tysuf, "tysuf");
+
+			if(!bgbcp_strcmp1(s, "+"))
+			{
+				BCCX_CheckDeleteUnlinked(t);
+				return(BGBCP_WrapInt128Suf(xi, suf));
+			}
+			if(!bgbcp_strcmp1(s, "-"))
+			{
+				BCCX_CheckDeleteUnlinked(t);
+				xk=BGBCC_Int128_Neg(xi);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+			if(!bgbcp_strcmp1(s, "~"))
+			{
+				BCCX_CheckDeleteUnlinked(t);
+				xk=BGBCC_Int128_Not(xi);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+			if(	!bgbcp_strcmp1(s, "!") ||
+				!bgbcp_strcmp2(s, "!!"))
+			{
+				BCCX_CheckDeleteUnlinked(t);
+				i=BGBCC_Int128_LNot(xi);
+				return(BGBCP_WrapInt(i));
+			}
+		}
+
 		x=BGBCP_UnaryExpr(s, t);
 		return(x);
 	}
@@ -620,6 +1006,14 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 			j=BCCX_GetIntCst(rn, &bgbcc_rcst_value, "value");
 
 			suf=BGBCP_BinaryTySuf(ctx, s, ln, rn);
+
+			if(suf)
+			{
+				if(!bgbcp_strcmp1(suf, "U"))
+					{ i=(u32)i; j=(u32)j; }
+				if(!bgbcp_strcmp1(suf, "I"))
+					{ i=(s32)i; j=(s32)j; }
+			}
 
 			if(!bgbcp_strcmp2(s, "=="))
 			{
@@ -866,6 +1260,143 @@ BCCX_Node *BGBCP_ReduceForm(BGBCP_ParseState *ctx,
 				return(BGBCP_WrapInt(f/g));
 			}
 		}
+
+#if 1
+		if(BGBCP_IsSmallInt128P(ctx, ln) &&
+			BGBCP_IsSmallInt128P(ctx, rn))
+		{
+//			i=BCCX_GetIntCst(ln, &bgbcc_rcst_value, "value");
+//			j=BCCX_GetIntCst(rn, &bgbcc_rcst_value, "value");
+
+			xi=BGBCP_UnwrapInt128(ctx, ln);
+			xj=BGBCP_UnwrapInt128(ctx, rn);
+
+			suf=BGBCP_BinaryTySuf(ctx, s, ln, rn);
+
+			if(!bgbcp_strcmp2(s, "=="))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpEq(xi, xj)));
+			}
+			if(!bgbcp_strcmp2(s, "!="))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpNe(xi, xj)));
+			}
+			if(!bgbcp_strcmp3(s, "==="))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpEq(xi, xj)));
+			}
+			if(!bgbcp_strcmp3(s, "!=="))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpNe(xi, xj)));
+			}
+			if(!bgbcp_strcmp2(s, "<="))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					return(BGBCP_WrapInt(BGBCC_Int128_CmpBe(xi, xj)));
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpLe(xi, xj)));
+			}
+			if(!bgbcp_strcmp2(s, ">="))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					return(BGBCP_WrapInt(BGBCC_Int128_CmpAe(xi, xj)));
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpGe(xi, xj)));
+			}
+			if(!bgbcp_strcmp1(s, "<"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					return(BGBCP_WrapInt(BGBCC_Int128_CmpB(xi, xj)));
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpLt(xi, xj)));
+			}
+			if(!bgbcp_strcmp1(s, ">"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				if(suf && (*suf=='U'))
+					return(BGBCP_WrapInt(BGBCC_Int128_CmpA(xi, xj)));
+				return(BGBCP_WrapInt(BGBCC_Int128_CmpGt(xi, xj)));
+			}
+
+			if(!bgbcp_strcmp1(s, "+"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				xk=BGBCC_Int128_Add(xi, xj);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+			if(!bgbcp_strcmp1(s, "-"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				xk=BGBCC_Int128_Sub(xi, xj);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+			if(!bgbcp_strcmp1(s, "*"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				xk=BGBCC_Int128_Mul(xi, xj);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+
+			if(!bgbcp_strcmp1(s, "&"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				xk=BGBCC_Int128_And(xi, xj);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+			if(!bgbcp_strcmp1(s, "|"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				xk=BGBCC_Int128_Or(xi, xj);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+			if(!bgbcp_strcmp1(s, "^"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				xk=BGBCC_Int128_Xor(xi, xj);
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+
+			if(!bgbcp_strcmp2(s, "<<"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+				xk=BGBCC_Int128_Shl(xi, (int)(xj.lo));
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+			if(!bgbcp_strcmp2(s, ">>"))
+			{
+				BCCX_CheckDeleteUnlinked(ln);
+				BCCX_CheckDeleteUnlinked(rn);
+
+				if(suf && (*suf=='U'))
+				{
+					xk=BGBCC_Int128_Shr(xi, (int)(xj.lo));
+					return(BGBCP_WrapInt128Suf(xk, suf));
+				}
+
+				xk=BGBCC_Int128_Sar(xi, (int)(xj.lo));
+				return(BGBCP_WrapInt128Suf(xk, suf));
+			}
+		}
+#endif
 
 		x=BGBCP_BinaryExpr(s, ln, rn);
 		return(x);

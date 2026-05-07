@@ -124,6 +124,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 {
 	char *sn0;
 	u64 rcp, q1, q2, n1, n2, nv;
+	u32 div_rcp;
+	int div_shl;
+
 	int ta0, ta1, ta2, ta3;
 	int csreg, ctreg, cdreg;
 	int nm1, nm2, nm3, nm4, shl;
@@ -523,7 +526,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 				{ return(1); }
 
 #if 1
-			if(BGBCC_CCXL_TypeUnsignedP(ctx, type) && (shl>=0))
+//			if(BGBCC_CCXL_TypeUnsignedP(ctx, type) && (shl>=0))
+			if(BGBCC_CCXL_TypeUnsignedP(ctx, type) && (shl>0) && (shl<32))
 			{
 				cdreg=BGBCC_JX2C_EmitGetRegisterDirty(ctx, sctx, dreg);
 				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
@@ -531,7 +535,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 				BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
 				return(1);
 			}
+#endif
 
+#if 1
 			if(BGBCC_CCXL_TypeSignedP(ctx, type) &&
 				(shl>=0) && ctx->arch_has_predops)
 			{
@@ -597,6 +603,11 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 //			k=(s32)((4294967296LL+(j/2))/j);
 //			k=(s32)((4294967296LL+(j-1))/j);
 
+			BGBCC_JX2C_CalcDivideRecipShr(ctx, sctx, j, &div_rcp, &div_shl);
+			rcp=div_rcp;
+			l=div_shl;
+
+#if 0
 			rcp=((1ULL<<l)+(j-1))/j;
 
 #if 1
@@ -625,6 +636,13 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 					rcp=0;
 					break;
 				}
+			}
+#endif
+
+			if(rcp>(1U<<31))
+			{
+				printf("Reject Div-Const %d: RCP out of range\n", j);
+				rcp=0;
 			}
 #endif
 
@@ -994,12 +1012,14 @@ int BGBCC_JX2C_EmitBinaryVRegVRegInt(
 		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 			nm1=BGBCC_SH_NMID_DMULU;
 
+#if 1
 		if(BGBCC_CCXL_TypeSmallShortP(ctx, type))
 		{
 			nm1=BGBCC_SH_NMID_MULSW;
 			if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
 				nm1=BGBCC_SH_NMID_MULUW;
 		}
+#endif
 
 		BGBCC_JX2_EmitOpRegRegReg(sctx,
 			nm1, ctreg, cdreg, cdreg);
@@ -4741,8 +4761,8 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 			return(0);
 
 		k=BGBCC_CCXL_GetRegImmIntValue(ctx, args[1]);
-		if(k!=0)
-			return(0);
+//		if(k!=0)
+//			return(0);
 		
 		sz=BGBCC_CCXL_GetRegImmIntValue(ctx, args[2]);
 
@@ -4774,7 +4794,8 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 
 		tr0=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, args[0]);
 //		BGBCC_JX2C_EmitValueCopyRegRegSz(ctx, sctx, tr0, tr1, sz, al);
-		BGBCC_JX2C_EmitValueZeroRegSz(ctx, sctx, tr0, sz, al);
+//		BGBCC_JX2C_EmitValueZeroRegSz(ctx, sctx, tr0, sz, al);
+		BGBCC_JX2C_EmitValueNonZeroRegSz(ctx, sctx, tr0, k, sz, al);
 		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, args[0]);
 		return(1);
 	}

@@ -1880,6 +1880,68 @@ ccxl_status BGBCC_CCXL_EmitInitObjArr(BGBCC_TransState *ctx,
 	return(0);
 }
 
+
+ccxl_status BGBCC_CCXL_EmitZeroObj(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst,
+	BGBCC_CCXL_LiteralInfo *st)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_ZEROOBJ;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->dst=dst;
+	op->imm.obj.gid=st->litid;
+	op->immty=CCXL_VOPITY_GFID;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_EmitZeroArr(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst, int sz)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_ZEROARR;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->dst=dst;
+	op->imm.si=sz;
+	op->immty=CCXL_VOPITY_SI;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
+ccxl_status BGBCC_CCXL_EmitZeroObjArr(BGBCC_TransState *ctx,
+	ccxl_type type, ccxl_register dst,
+	BGBCC_CCXL_LiteralInfo *st, int sz)
+{
+	BGBCC_CCXL_VirtOp *op;
+
+	if(ctx->cgif_no3ac)
+		return(0);
+
+	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op->opn=CCXL_VOP_ZEROOBJARR;
+	op->prd=ctx->curprd;
+	op->type=type;
+	op->dst=dst;
+	op->imm.obj.gid=st->litid;
+	op->imm.obj.fid=sz;
+	op->immty=CCXL_VOPITY_GFID;
+	BGBCC_CCXL_AddVirtOp(ctx, op);
+	return(0);
+}
+
+
 ccxl_status BGBCC_CCXL_EmitLoadInitArr(BGBCC_TransState *ctx,
 	ccxl_type type, ccxl_register dst, ccxl_register val, int sz)
 {

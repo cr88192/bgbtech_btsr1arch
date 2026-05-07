@@ -2325,8 +2325,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 				op->Run=BJX2_Op_EXTSW_RegReg;
 				if(eo)
 				{
-					op->nmid=BJX2_NMID_EXTSL;
-					op->Run=BJX2_Op_EXTSL_RegReg;
+//					op->nmid=BJX2_NMID_EXTSL;
+//					op->Run=BJX2_Op_EXTSL_RegReg;
 				}
 				if(eq)
 				{
@@ -2335,8 +2335,8 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 
 					if(eo)
 					{
-						op->nmid=BJX2_NMID_EXTUL;
-						op->Run=BJX2_Op_EXTUL_RegReg;
+//						op->nmid=BJX2_NMID_EXTUL;
+//						op->Run=BJX2_Op_EXTUL_RegReg;
 					}
 				}
 				break;

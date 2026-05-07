@@ -567,6 +567,10 @@ Base, Q1..Q3:
 #define CCXL_VOP_LDIXADJIMM			0x38		//load index (adjust immed)
 #define CCXL_VOP_STIXADJIMM			0x39		//store index (adjust immed)
 
+#define CCXL_VOP_ZEROOBJ			0x3A
+#define CCXL_VOP_ZEROARR			0x3B
+#define CCXL_VOP_ZEROOBJARR			0x3C
+
 
 #define CCXL_VOPITY_NONE			0x00		//imm is not used
 #define CCXL_VOPITY_SI				0x01		//signed int

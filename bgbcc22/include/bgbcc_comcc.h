@@ -591,7 +591,10 @@ u64 regs_scratch_ts;
 u64 regs_args;
 
 u64 memcpy64_mask;
+u64 memset64_mask;
 u64 memcpy_byte_mask[8];
+u64 memset_byte_mask[12];
+// u64 memsetnz_byte_mask[12];
 
 byte reg_pszx[64];		//register sign/zero extension
 

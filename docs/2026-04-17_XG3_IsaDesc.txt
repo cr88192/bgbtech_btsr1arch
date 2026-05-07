@@ -7,6 +7,12 @@ Overview:
 * It may be used alongside the RISC-V ISA within a shared operating mode.
 * Encodings are variable length, with 32, 64, or 96 bit instruction encodings.
 
+Premise:
+* XG3 is not intended as a full replacement for RV64G or RV64GC.
+* Rather as a Special Purpose ISA intended for performance oriented use cases.
+* Typical interaction between ISA modes will be at DLL or SO boundaries.
+
+
 == General ==
 
 XG3 is incompatible with RV-C in that both may not be used at the same time, however a processor may support both and it is possible in theory to use both within a single binary.
@@ -16,12 +22,12 @@ Note that XG3 will be described in terms of an AT&T style ASM notation, with the
 
 === Encodings ===
 
-Repack:
-* XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
-* jiii-iiiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
-* iiii-iiiiii-iiiiii-aZZZ-nnnnnn-bY-YYPw (F8)
-* iiii-iiiiii-iiiiii-aZZZ-jjjjjj-bY-YYPw (BRA)
-* iiii-iiiiii-iiiiii-jjjj-jjjjaa-a1-1Y10 (FE/FF)
+General Encoding Patterns:
+* XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (3R)
+* jiii-iiiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (3RI Imm10/Disp10)
+* iiii-iiiiii-iiiiii-aZZZ-nnnnnn-bY-YYPw (2RI Imm16)
+* iiii-iiiiii-iiiiii-aZZZ-jjjjjj-bY-YYPw (BRA/BSR)
+* iiii-iiiiii-iiiiii-jjjj-jjjjaa-a1-1Y10 (Jumbo Prefix)
 
 
 Pw:
@@ -60,6 +66,9 @@ Typically, the Disp10 fields will be scaled based on the instruction.
 * Branches by 4.
 
 
+Note that instruction words with the low two bits set will map to the RISC-V encoding space. XG3 and RV64G instructions may be freely mixed, except that in XG3 Mode, the RISC-V instructions will be understood in a way consistent with XG3 semantics rules. This may not necessarily be true in RV64GC Mode, with the partial exception that branching to an address with the LSB set may be used to transfer control between modes.
+
+
 === Registers ===
 
 User Visible Registers:
@@ -95,6 +104,11 @@ These architectural registers may have an indirect effect on the behavior of the
 Note that for 128-bit ALU operations, X0 may be special:
 * X0 will be treated as a 128-bit Zero Register.
 * Note that X0/X1 and X2/X3 will not pair.
+** For ALU or SIMD: X1..X3 are undefined.
+** For XMOV: They may imply expanded registers.
+*** R2 = GBH:SP
+*** R3 = GBH:GP
+* For 128-bit operations, only even-numbered register pairs are allowed.
 
 
 === Address Space ===
@@ -121,6 +135,7 @@ The specifics of the capability addressing scheme and MMU will be considered out
 
 When used as a Base Register, R0 and R1 are special:
 * R0: PC for Disp10s / Disp33; Implicit scale of 1 or 4.
+** R0 is reserved for Abs64.
 * R1: GP (Unscaled) for Disp6s / Disp10s, ZR for Abs33 / Abs64
 ** For Disp33 or scaled displacement, R3 is to be used instead.
 
@@ -142,9 +157,11 @@ Implicitly, PC and LR will have captured Status/Control bits in the high order b
 * (55:50): Processor ISA Mode
 * (49:48): S and T bits.
 
-The T bit will be used primarily to control predication.
+The T (SR.T) bit will be used primarily to control predication.
 * If an instruction is Predicated True, it only runs if T is Set.
 * If an instruction is Predicated False, it only runs if T is Clear.
+
+The S (SR.S) bit will be more niche, but may be used for certain instructions.
 
 
 For captured Link Register values, the LSB will always be Set.
@@ -192,13 +209,19 @@ Note that RV64GC mode will be allowed to have a 16-bit instruction alignment, bu
 
 
 Prefixes
-* iiii-iiiiii-iiiiii-jjjj-jjjjaa-a1-1010 (Jumbo_FE)
-* ZZZZ-jjjjii-iiiiii-ZZZZ-ZZZZaa-a1-1110 (Jumbo_FF)
+* iiii-iiiiii-iiiiii-jjjj-jjjjaa-a1-1010 (Jumbo_FE / J_IMM)
+* ZZZZ-jjjjii-iiiiii-ZZZZ-ZZZZaa-a1-1110 (Jumbo_FF / J_OP)
 
-The Jumbo_FE prefix will serve the primary role of expanding the immediate field.
+The J_IMM prefix will serve the primary role of expanding the immediate field.
 
-The Jumbo_FF prefix will have a lesser role in immediate, but is more intended to expand the instruction encodings.
+The J_OP prefix will have a lesser role in immediate, but is more intended to expand the instruction encoding space.
 
+Note that for sake of decode and execute, the prefix and the suffix instruction will be treated as a single instruction. It will not be possible to execute a prefix independent of a suffix nor will it be possible for an exception to occur between a prefix and suffix. Fetch/Execute will also operate on the prefixes and suffix as a singular unit.
+
+In the Listings, prefixes may be given before the encoding:
+* J_IMM: Single J_IMM prefix
+* J_OP: Basic J_OP prefix
+* J2_IMM: Pair of J_IMM prefixes (for 96-bit encodings).
 
 
 ==== Jumbo, F0 Block ====
@@ -215,10 +238,17 @@ Where:
 * Some 3R instructions may synthesize an immediate field.
 
 
+The J_IMM prefix will convert normal 3R ops into 3RI (Imm33s).
+* It will also convert 2R ops to 2RI (Imm33s, Rn).
+* Behavior will typically be the same as the basic instruction.
+
+Exceptions to J_IMM synthesizing an Imm33s may exist where the base instruction would not make sense as an Imm33s form.
+
+
 The behavior of an FF prefix with an F0 instruction will depend on the F0 instruction.
 
 
-F0, 4R (J_OP_4R):
+F0, 4R (J_OP_4R / J_OP_R):
 * UUUU-1ttttt-ssssss-0000-WWWWWW-R1-1110 (FF)
 * XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
 
@@ -226,7 +256,7 @@ F0, 3RI Imm17s (J_OP + Imm6):
 * UUUU-0jjjjj-jjjjjj-0000-WWWWWW-R1-1110 (FF)
 * XXXX-Skiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
 
-F0, 3R to Imm17s Synthesis (J_OP_IS):
+F0, 3R to Imm17s Synthesis (J_OP_IS / J_OP_I):
 * UUUU-0jjjjj-jjjjjj-1000-WWWWWW-R1-1110 (FF)
 * XXXX-Skiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
 
@@ -247,7 +277,7 @@ The J_OP_4R prefix may also expand some 2R ops to 3R.
 The J_OP_4R prefix will be applicable for operations where Rn is both a source and destination, using Rp to replace the input coming from Rn.
 
 The J_OP_IS prefix will convert normal 3R ops into 3RI.
-* It will also convert 2R ops to 2RI (Imm33, Rn).
+* It will also convert 2R ops to 2RI (Imm17s, Rn).
 * Behavior will typically be the same as the basic instruction.
 
 
@@ -278,20 +308,39 @@ Where:
 ** The result of the operation will be written to memory.
 
 U Field:
-* 0: MOV
-* 1: XCHG
-* 2: ADD
+* 0: MOV (Normal Load or Store)
+* 1: XCHG (Swap values in Memory and Register)
+* 2: ADD    (Mem+Reg)
 * 3: SUB_MR (Mem-Reg)
 * 4: SUB_RM (Reg-Mem)
-* 5: AND
-* 6: OR
-* 7: XOR
+* 5: AND    (Mem&Reg)
+* 6: OR     (Mem|Reg)
+* 7: XOR    (Mem^Reg)
 * 8..F: Repeat 0..7, but perform a Volatile operation.
 
 The Rs field will be reserved for now.
 * May modify the behavior of OpStore if not ZZR:
 ** Source value is pulled from Rs rather than Rn.
 ** Rn is given the prior memory contents.
+* This may be used in a way similar to RV AMO ops.
+
+
+The Volatile operations will be similar to the normal memory accesses, except that the accessed memory may be automatically evicted from the caches to keep memory accesses synchronous between processor cores.
+
+It may be assumed that volatile accesses are synchronous between cores whereas non-volatile accesses may be asynchronous with cores potentially containing memory contents that are out of sync with those in the other cores.
+
+
+General process for a Volatile access (Example):
+* Prior line is flushed regardless of whether it hits or not.
+** If dirty (such as from a prior non-volatile access), it is written back.
+* Line is fetched from external memory;
+* The operation is performed;
+* If the operation made the line dirty, it is written back;
+* The line's contents are invalidated.
+
+For a Volatile Write, the L1 cache may signal to the outer cache that this line is being written to. In this case, the outer cache may miss on volatile bus requests to this line until the preceding volatile request has completed as a way to enforce memory ordering.
+
+Though, the exact mechanism will be implementation dependent apart from the assumption that volatile accesses will enfornce ordering whereas normal access need not.
 
 
 ==== Jumbo, F1/F2 Block ====
@@ -367,7 +416,7 @@ F8
 For the F8 Block:
 * S-iiii-iiii-iiii-iiii-kkkk-kkkk-kkkk-kkkk
 
-Though, for some operations the S bit may instead function as an opcode bit.
+Though, for some operations the S bit may instead function as an opcode bit (with a 32-bit immediate).
 The additional X bits will be reserved for additional opcode.
 
 
@@ -385,6 +434,26 @@ Note that the decoding of the register field for the 96-bit F8 Block in XG3 will
 The additional X bits will be reserved for additional opcode.
 
 
+=== F3 Block (User/Dynamic) ===
+
+The F3 Block is intended primarily for User Extensions.
+
+These may include instructions which only exist for a particular implementation and are not assumed to be portable between implementations, as well as potentially dynamically configurable or bank-swapped instruction blocks.
+
+Likely Split:
+* XXXX-oooooo-mmmmmm-0ZZZ-nnnnnn-Q0-1110 (F3)
+** Implementation Specific Statically-Assigned Instructions
+* XXXX-oooooo-mmmmmm-1ZZZ-nnnnnn-Q0-1110 (F3)
+** Dynamically Configured Blocks (DCBs).
+** May consist of 8 instruction Blocks (ZZZ) that may be selected from.
+
+A pair of architectural registers may exist to hold the state of the DCBs, which in turn hold the mappings for the decoder to map these blocks into its own internal decoder space.
+
+The management of DCBs falls outside the scope of this specification.
+
+Portable and statically compiled code should not use DCBs.
+
+
 === Major Extensions ===
 
 List of Major Extensions:
@@ -396,6 +465,7 @@ List of Major Extensions:
 * FPIMM: FPU Immediates
 * GFP: General Floating Point
 * GSV: General SIMD Vectors
+* IMMB: Secondary Immed for Store and Bcc
 * LDOP: Load/Store Operations
 * PRED: Predicated Instructions
 * TTAG: Type Tag Instructions
@@ -509,6 +579,7 @@ Perform a bitwise AND operation.
 * J_IMM  iiii-iiiiii-mmmmmm-1111-nnnnnn-00-0110  BEQ		Rm, Rn, Disp33s
 * J_IMM  iiii-iiiiii-mmmmmm-1111-nnnnnn-10-0110  BNE		Rm, Rn, Disp33s
 
+Optional (IMMB):
 * J_OP_4R iiii-iiiiii-mmmmmm-1100-nnnnnn-00-0110  BNTST		Rm, Imm17s, Disp10s
 * J_OP_4R iiii-iiiiii-mmmmmm-1100-nnnnnn-10-0110  BTST		Rm, Imm17s, Disp10s
 * J_OP_4R iiii-iiiiii-mmmmmm-1101-nnnnnn-00-0110  BLT		Rm, Imm17s, Disp10s
@@ -530,9 +601,14 @@ Perform a Compare and Branch.
 * BTST : (Rm AND Rn)   (Test)
 * BNTST: !(Rm AND Rn)  (Not-Test)
 
+If the condition is true, the branch is taken, otherwise it is not taken.
+
 For the relative branch cases:
 * These will be relative to BasePC and use a 4 byte scale (+/- 2K).
+** Branches will be relative to the base address of the branch instruction.
+** In contrast to be relative to the following instruction.
 * For Jumbo Prefixes: BasePC will be at the start of the jumbo prexix.
+** The prefix and base instruction are to be treated as a single instruction.
 
 If a J_OP_4R is used, it will synthesize an immediate from the Jumbo prefix and Rn (similar to the Store-Immed case).
 
@@ -644,7 +720,7 @@ The Range Flag will modify the behavior of bias handling:
 * 0: The intermediate result and bias will be added with an 8 bit range.
 * 1: The intermediate result and bias will be added with a 9 bit range.
 
-The Range Flag will modify the behavior in the operation in the case where adding the bias would lead to an overflow outside of the 8-bit range. If this flag is set, the range will be expanded such that the overflow will not happen.
+The Range Flag will modify the behavior in the operation in the case where adding the bias would lead to an overflow outside of the 8-bit range. If this flag is set, the range will be expanded such that the overflow will not happen. Otherwise, if Clear, the result will wrap on overflow.
 
 
 === BITSEL ===
@@ -744,6 +820,12 @@ For each selector, 2 Bits:
 * 10: Small Positive (+0.333 * Sigma)
 * 11: Large Positive (+1.000 * Sigma)
 
+Or, Alternate:
+* 00: Small Negative (-0.375 * Sigma)
+* 01: Large Negative (-1.000 * Sigma)
+* 10: Small Positive (+0.375 * Sigma)
+* 11: Large Positive (+1.000 * Sigma)
+
 Endpoints are encoded as a microfloat value which expands into a 12-bit integer format (PCM):
 0: 00000000xxxx
 1: 00000001xxxx
@@ -820,7 +902,15 @@ With linear interpolation, for each 2 bit pixel:
 * 10: 1/3*ColorB + 2/3*ColorA
 * 11: ColorA
 
+Or, Also Valid:
+* 00: ColorB
+* 01: 5/8*ColorB + 3/8*ColorA
+* 10: 3/8*ColorB + 5/8*ColorA
+* 11: ColorA
+
 For interpolated translucent blocks, the alpha will be interpolated along with the color.
+
+For this usage, the difference between 1/3 + 2/3 or 3/8 + 5/8 will be considered close enough that either interpretation may be considered as valid.
 
 
 For bit select alpha, the high bit will be interpreted as selecting the color, with the low bit selecting the alpha. No interpolation will be performed.
@@ -857,6 +947,12 @@ Selectors for RGB and Alpha will be 4x4x2:
 * 10: 1/3*ColorB + 2/3*ColorA
 * 11: ColorA
 
+Or, Also Valid:
+* 00: ColorB
+* 01: 5/8*ColorB + 3/8*ColorA
+* 10: 3/8*ColorB + 5/8*ColorA
+* 11: ColorA
+
 
 === BRA/BSR ===
 
@@ -874,6 +970,10 @@ BRA/BSR encoding:
 ** This will only be able to branch to a 32-bit aligned address.
 
 Note that BRA and BSR may be considered as subtypes of RV's JAL, trading the flexible link register for more range.
+
+Note that BT and BF may exist as pseudo-instructions represented predicated forms of BRA:
+* jjjj-oooooo-mmmmmm-1100-nnnnnn-s0-0000  BT Disp23
+* jjjj-oooooo-mmmmmm-1100-nnnnnn-s0-0001  BF Disp23
 
 
 === BCDADC ===
@@ -902,20 +1002,28 @@ These instructions may be daisy-chained to support larger numbers.
 
 === BNDCHK ===
 
+Optional (TTAG):
 * 1000-000000-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.B		Rm, Rn
 * 1000-000001-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.W		Rm, Rn
 * 1000-000010-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.L		Rm, Rn
 * 1000-000011-mmmmmm-0001-nnnnnn-00-0010  BNDCHK.Q		Rm, Rn
 * 1000-000100-mmmmmm-0001-nnnnnn-00-0010  BNDCHK		RmImm6u, Rn
 
+Optional (TTAG+PRED):
+* 1000-000101-mmmmmm-0001-nnnnnn-00-0010  BNDCMP		RmImm6u, Rn
+
+
 Optional (TTAG): Check Array Bounds.
 
 The Bounds Check operation will verify whether an index (given) in Rm, falls within the bounds of the array pointer given in Rn.
 
-The immediate forms will give the bounds to check as a byte offset.
+The immediate forms will give the index to check as a byte offset.
 
 
-The pointer is assumed to follow the tagged pointer scheme defined in the ABI spec.
+The pointer is assumed to follow the tagged pointer scheme defined in the ABI spec. But, as relevant for these instructions, if the high 4 bits are 0, it is assumed to be a pointer (with the remaining 12 bits for the object type).
+
+Here, a tag with the high 4 bits will be used for a 0011 for a bounded pointer, with other patterns assumed to be non-pointer. The pointer in this case will not encode the type or other properties of the pointer.
+
 
 The Check operation will determine bounds and, if the bounds check fails, will raise a bounds check exception. It will also raise an exception if given a tagged pointer that does not represent either a raw pointer or a bounded array.
 
@@ -925,7 +1033,7 @@ SR.T will be set if the access is in-bounds, or cleared if the access is out-of-
 
 Check and Compare will differ regarding the handling of Tagged Object:
 * BNDCHK.x will allow access to all Tagged Object types.
-* BNDCMP.x will only allow Tagged Object if the tag is 0000.
+* BNDCMP.x will only allow Tagged Object if the tag is 0x0000.
 
 
 The Bounded Pointer format is:
@@ -947,6 +1055,12 @@ The bound is given in bits (55:48) as an E5.F3 microfloat.
 * ...
 
 The Bias is a value with the same exponent as the Bound, but represents a non-normalized value. It is added to the index prior to checking against the bound.
+
+
+Note that these patterns will not usually be updated directly during pointer arithmetic, but rather adjusted via a LEAT instruction. Note that this adjustment will use the carry/borrow from the low order bits to adjust the Bias.
+
+Also because the bounds are inexact, the bounds for the region will generally be padded out. They are by definition unable to perform precise bounds checks on arrays.
+
 
 These instructions will be part of the TTAG extension.
 
@@ -972,41 +1086,6 @@ Bit Transpose. This will transpose the bit pattern in a register such that the L
 This will come in both 32 and 64 bit variants.
 
 
-=== CMPcc ===
-
-*        0000-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPEQ.Q	Rm, Imm6s, Rn
-*        0010-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPNE.Q	Rm, Imm6s, Rn
-*        0001-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPGT.Q	Rm, Imm6s, Rn
-*        0011-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPLT.Q	Rm, Imm6s, Rn
-*        0100-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPEQ.Q	Rm, Ro, Rn
-*        0110-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPNE.Q	Rm, Ro, Rn
-*        0101-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPGT.Q	Rm, Ro, Rn
-*        0111-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPGE.Q	Rm, Ro, Rn
-*        1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHI.Q	Rm, Ro, Rn
-*        1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHS.Q	Rm, Ro, Rn
-* J_IMM  0000-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPEQ.Q	Rm, Imm33s, Rn
-* J_IMM  0001-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPGT.Q	Rm, Imm33s, Rn
-* J_IMM  0010-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPNE.Q	Rm, Imm33s, Rn
-* J_IMM  0011-oooooo-mmmmmm-1001-nnnnnn-10-0010   CMPLT.Q	Rm, Imm33s, Rn
-* J_IMM  1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHI.Q	Rm, Imm33s, Rn
-* J_IMM  1011-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHS.Q	Rm, Imm33s, Rn
-
-Compare two values (Rm and Ro), or compare a value and an immediate, and store the result in Rn.
-
-Comparisions:
-* EQ: Equal
-* NE: Not Equal
-* GT: Greater Than
-* LT: Less Than
-* GE: Greater Than or Equal
-* HI: Unsigned Greater Than
-* HS: Unsigned Greater Than or Equal
-
-Notes, the difference between GT/LT and GE/LE is mostly one of switching the operand order.
-
-The Reason for using GT/LT for the Immed cases was because GE/LE can be faked by adding a bias, whereas switching the operand order needs to be handled by the decoder. This inconsistency is a design annoyance, but it is more aesthetic than practical.
-
-
 === CAS ===
 
 * 0101-oooooo-mmmmmm-1000-nnnnnn-10-0010  CAS.Q	Rn, Ro, (Rm)
@@ -1028,6 +1107,47 @@ CTZ will start counting from the LSB.
 These will count the number of zeroes until the first non-zero bit is encountered. If the register is zero, then the result will be 32 or 64.
 
 
+=== CMPcc ===
+
+*        0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q	Rm, Imm6s, Rn
+*        0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q	Rm, Imm6s, Rn
+*        0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q	Rm, Imm6s, Rn
+*        0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q	Rm, Imm6s, Rn
+*        0100-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q	Rm, Ro, Rn
+*        0110-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q	Rm, Ro, Rn
+*        0101-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q	Rm, Ro, Rn
+*        0111-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGE.Q	Rm, Ro, Rn
+*        1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHI.Q	Rm, Ro, Rn
+*        1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHS.Q	Rm, Ro, Rn
+* J_IMM  0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q	Rm, Imm33s, Rn
+* J_IMM  0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q	Rm, Imm33s, Rn
+* J_IMM  0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q	Rm, Imm33s, Rn
+* J_IMM  0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q	Rm, Imm33s, Rn
+* J_IMM  1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHI.Q	Rm, Imm33s, Rn
+* J_IMM  1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHS.Q	Rm, Imm33s, Rn
+
+Compare two values (Rm and Ro), or compare a value and an immediate, and store the result in Rn.
+
+Comparisions:
+* EQ: Equal
+* NE: Not Equal
+* GT: Greater Than
+* LT: Less Than
+* GE: Greater Than or Equal
+* HI: Unsigned Greater Than
+* HS: Unsigned Greater Than or Equal
+
+Notes, the difference between GT/LT and GE/LE is mostly one of switching the operand order.
+
+The Reason for using GT/LT for the Immed cases was because GE/LE can be faked by adding a bias, whereas switching the operand order needs to be handled by the decoder. This inconsistency is a design annoyance, but it is more aesthetic than practical.
+
+
+Note (Optional, PRED):
+* If Rn is R0 / ZERO, these will update SR.T based on the result.
+** CMPEQ.Q R0, R0, R0	//Set SR.T (SETT Psuedo-Instruction)
+** CMPNE.Q R0, R0, R0	//Clear SR.T (CLRT Psuedo-Instruction)
+
+
 === CONVFXI / CONVFLI ===
 
 * 1000-001111-mmmmmm-0001-nnnnnn-00-0010  CONVFXI		Rm, Rn
@@ -1041,9 +1161,13 @@ The CONVFLI instruction sets the high bits to 10 and copies the low order bits f
 
 === CSELT ===
 
-* 0000-oooooo-mmmmmm-0101-nnnnnn-00-0010 ? CSELT		Rm, Ro, Rn
+*        0000-oooooo-mmmmmm-0101-nnnnnn-00-0010  CSELT	Rm, Ro, Rn
+* J_IMM  0000-oooooo-mmmmmm-0101-nnnnnn-00-0010  CSELT	Rm, Imm33s, Rn
 
 Optional (PRED): Conditional Select.
+
+Select between Rm or Ro based on the value of SR.T, storing the result in Rn.
+If SR.T is set, the value from Rm is used, otherwise the value from Ro is used.
 
 
 
@@ -1128,6 +1252,7 @@ Optional (FPUX):
 
 Optional (FPIMM):
 *        1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG		Rm, Imm6f, Rn
+* J_OP_I 1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD		Rm, Imm16f, Rn
 * J_IMM  1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD		Rm, Imm32f, Rn
 * J_OP   1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG		Rm, Imm16f, Rn
 * J_IMM  1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG		Rm, Imm32f, Rn
@@ -1173,8 +1298,7 @@ These will be decoded as-if they were first expanded to Binary16 as:
 In the Imm6f cases, the value will be decoded as-if it were first converted to Binary16 and then converted to Binary64 using similar behavior as the FLDCH instruction.
 
 Meanwhile, the Imm16f cases will encode the value as Binary16 directly.
-* The extra sign bit in the Imm17s case is MBZ.
-** Optionally, this bit may specify an fraction packing scheme.
+* The extra sign bit in the Imm17s case may specify an fraction packing scheme
 
 Note, however, that the Imm16f case will forbid some value ranges:
 * Inf, NaN, Subnormals, also 0.0
@@ -1191,7 +1315,7 @@ If the fraction packing is used for Binary16, the basic format stays the same fo
 * 10: Fill mantissa with a repeating 4 bit pattern.
 * 11: Fill mantissa with a repeating 6 bit pattern.
 
-These bits are taken from the remaining 8 bits of the mantissa, and then organized into a 12-bit chunk which is repeated multiple times, with the lowest chunk being rounded.
+These bits are taken from the remaining 8 bits of the mantissa, and then organized into a 12-bit chunk which is repeated multiple times, with the lowest chunk being rounded to nearest.
 
 
 Some encodings may encode an Imm32f. This encoding will basically represent the value as a Binary64 with the low 32 bits cut off (S.E11.F20).
@@ -1205,6 +1329,9 @@ The 32-bit packing scheme differs:
 * (11:4) copied to (19:12)
 * (11:4) copied to (11: 4)
 * ( 3:0) copied to ( 3: 0)
+
+
+Support for the bit-packing schemes may be considered as Optional.
 
 
 Note that if FADD is used with an immediate and with Rm==R0 will behave as a plain constant load.
@@ -1451,12 +1578,20 @@ As for the FSQRTA and FSQRTXA operations:
 
 === JALR ===
 
-* iiii-iiiiii-mmmmmm-0110-000000-10-1010  JALR		(Rm, Disp10s), ZR
-* iiii-iiiiii-mmmmmm-0110-000001-10-1010  JALR		(Rm, DIsp10s), LR
+*        iiii-iiiiii-mmmmmm-0110-000000-10-1010  JALR	(Rm, Disp10s), ZR
+*        iiii-iiiiii-mmmmmm-0110-000001-10-1010  JALR	(Rm, Disp10s), LR
+* J_IMM  iiii-iiiiii-mmmmmm-0110-000000-10-1010  JALR	(Rm, Disp33s), ZR
+* J_IMM  iiii-iiiiii-mmmmmm-0110-000001-10-1010  JALR	(Rm, Disp33s), LR
+* J2_IMM iiii-iiiiii-mmmmmm-0110-000000-10-1010  JALR	(Rm, Abs64), ZR
+* J2_IMM iiii-iiiiii-mmmmmm-0110-000001-10-1010  JALR	(Rm, Abs64), LR
 
 Optional (BCE):
-* iiii-iiiiii-mmmmmm-0111-000000-10-1010  JALRX		(Xm, Disp10s), ZR
-* iiii-iiiiii-mmmmmm-0111-000001-10-1010  JALRX		(Xm, DIsp10s), LR
+*        iiii-iiiiii-mmmmmm-0111-000000-10-1010  JALRX	(Xm, Disp10s), ZR
+*        iiii-iiiiii-mmmmmm-0111-000001-10-1010  JALRX	(Xm, Disp10s), LR
+* J_IMM  iiii-iiiiii-mmmmmm-0111-000000-10-1010  JALRX	(Xm, Disp33s), ZR
+* J_IMM  iiii-iiiiii-mmmmmm-0111-000001-10-1010  JALRX	(Xm, Disp33s), LR
+* J2_IMM iiii-iiiiii-mmmmmm-0111-000000-10-1010  JALRX	(Xm, Abs64), ZR
+* J2_IMM iiii-iiiiii-mmmmmm-0111-000001-10-1010  JALRX	(Xm, Abs64), LR
 
 Perform a computed branch to Rm+Disp10s*4.
 * JALR with ZR is a plain Branch.
@@ -1472,10 +1607,18 @@ Note that no other destinations are defined and JALR is aliased with the SHAD.X 
 JALRX may exist as part of Addr96/BCE, which will be analogous to JALR except that it may perform a branch through a capability. This instruction may trap if the source and desination are not within the same quadrant.
 
 
+The Abs64 case will behave similarly to the case for memory ops.
+* The Abs64 address will have the same general encoding rules as the Link Register.
+** Typically Rm will be R1 in this case (understood as ZR).
+* The exact behavior of JALRX Abs64 will be Impementation Defined.
+** Most likely it will always trap and the OS can decide what to do with it.
+
+
 === LDTEX ===
 
-** 1011-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX		(Rm, Ro), Rn
-** 1111-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX2		(Rm, Ro), Rn
+*       1011-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX	(Rm, Ro), Rn
+*       1111-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX2	(Rm, Ro), Rn
+* J_OP  1011-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX	(Rm, Ro, Imm11), Rn
 
 optional (LDTEX): Load from Texture.
 
@@ -1488,6 +1631,9 @@ The Ro field gives the ST coords, as a pair of 16.16 fixed-point values.
 The ST coordinate values will be interpreted as a texel coordinate.
 
 The result texel will be unpacked into RGBA64 form (4x Int16).
+* For an LDR texture format, values are linear 0000..FFFF.
+* For an HDR format, values are Binary16.
+
 
 The Rm field will be interpreted as:
 * (47: 0): Texture Base Address
@@ -1510,18 +1656,18 @@ Texture Combined Size:
 ** However, LDTEX is not required to mask the low 4 bits of the coordinate.
 
 Block Mode:
-* 000: UTX2
-* 001: RGBA64 / RGBA64F
+* 000: UTX2 (LDR)
+* 001: RGBA64 / RGBA64F (raw bits)
 * 010: UTX3 (LDR)
 * 011: UTX3 (HDR)
-* 100: RGB15F / RGB4_E4 (?)
-* 101: RGB555A
-* 110: RGBA8 / RGBA32
-* 111: RGBA32_FP8U
+* 100: RGB15F / RGB4_E4 (? HDR)
+* 101: RGB555A (LDR)
+* 110: RGBA8 / RGBA32 (LDR)
+* 111: RGBA32_FP8U (HDR)
 
 If a displacement is used, it will be interpreted as additional parameters:
 * Disp(2:0): Pixel Selector
-** 000: Truncare (Default)
+** 000: Truncate (Default)
 ** 001: Round Nearest
 ** 010: Reserved
 ** 011: Reserved
@@ -1678,57 +1824,77 @@ Select the minimum or maximum of the integers given in Rm or Ro, storing result 
 
 === Basic Load/Store ===
 
-*       iiii-iiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		Rn, (Rm, Disp10s)
-*       iiii-iiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W		Rn, (Rm, Disp10s)
-*       iiii-iiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L		Rn, (Rm, Disp10s)
-*       iiii-iiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		Rn, (Rm, Disp10s)
-*       iiii-iiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B		(Rm, Disp10s), Rn
-*       iiii-iiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B		(Rm, Disp10s), Rn
-*       iiii-iiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W		(Rm, Disp10s), Rn
-*       iiii-iiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W		(Rm, Disp10s), Rn
-*       iiii-iiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L		(Rm, Disp10s), Rn
-*       iiii-iiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L		(Rm, Disp10s), Rn
-*       iiii-iiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q		(Rm, Disp10s), Rn
+*        iiii-iiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		Rn, (Rm, Disp10s)
+*        iiii-iiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W		Rn, (Rm, Disp10s)
+*        iiii-iiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L		Rn, (Rm, Disp10s)
+*        iiii-iiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		Rn, (Rm, Disp10s)
+*        iiii-iiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B		(Rm, Disp10s), Rn
+*        iiii-iiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B		(Rm, Disp10s), Rn
+*        iiii-iiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W		(Rm, Disp10s), Rn
+*        iiii-iiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W		(Rm, Disp10s), Rn
+*        iiii-iiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L		(Rm, Disp10s), Rn
+*        iiii-iiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L		(Rm, Disp10s), Rn
+*        iiii-iiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q		(Rm, Disp10s), Rn
 
-*       0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		Rn, (Rm, Ro)
-*       0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		Rn, (Rm, Ro)
-*       0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		Rn, (Rm, Ro)
-*       0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		Rn, (Rm, Ro)
-*       1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		(Rm, Ro), Rn
-*       1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.B		(Rm, Ro), Rn
-*       1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		(Rm, Ro), Rn
-*       1101-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.W		(Rm, Ro), Rn
-*       1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		(Rm, Ro), Rn
-*       1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.L		(Rm, Ro), Rn
-*       1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		(Rm, Ro), Rn
+*        0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		Rn, (Rm, Ro)
+*        0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		Rn, (Rm, Ro)
+*        0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		Rn, (Rm, Ro)
+*        0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		Rn, (Rm, Ro)
+*        1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		(Rm, Ro), Rn
+*        1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.B		(Rm, Ro), Rn
+*        1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		(Rm, Ro), Rn
+*        1101-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.W		(Rm, Ro), Rn
+*        1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		(Rm, Ro), Rn
+*        1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.L		(Rm, Ro), Rn
+*        1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		(Rm, Ro), Rn
 
-*       iiii-iiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X		Xn, (Rm, Disp10s)
-*       iiii-iiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X		(Rm, Disp10s), Xn
-*       0100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		Xn, (Rm, Ro)
-*       1100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		(Rm, Ro), Xn
+*        iiii-iiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X		Xn, (Rm, Disp10s)
+*        iiii-iiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X		(Rm, Disp10s), Xn
+*        0100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		Xn, (Rm, Ro)
+*        1100-oooooo-mmmmmm-0100-nnnnnn-00-0010  MOV.X		(Rm, Ro), Xn
 
-*       1000-oooooo-mmmmmm-0100-nnnnnn-10-0010  MOVN.L		(Rm, Disp6s), Rn
-*       1100-oooooo-mmmmmm-0100-nnnnnn-10-0010  MOVN.L		(Rm, Ro), Rn
+*        1000-oooooo-mmmmmm-0100-nnnnnn-10-0010  MOVN.L		(Rm, Disp6s), Rn
+*        1100-oooooo-mmmmmm-0100-nnnnnn-10-0010  MOVN.L		(Rm, Ro), Rn
 
-*       iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  MOVU.L	(GP, Disp16u*4), Rn
-*       iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  MOV.Q	Rn, (GP, Disp16u*8)
-*       iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  MOV.L	Rn, (GP, Disp16u*4)
-*       iiii-iiiiii-iiiiii-1101-nnnnnn-01-0010  MOV.Q	(GP, Disp16u*8), Rn
-*       iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  MOV.L	(GP, Disp16u*4), Rn
+*        iiii-iiiiii-iiiiii-0101-nnnnnn-11-0010  MOVU.L	(GP, Disp16u*4), Rn
+*        iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  MOV.Q	Rn, (GP, Disp16u*8)
+*        iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  MOV.L	Rn, (GP, Disp16u*4)
+*        iiii-iiiiii-iiiiii-1101-nnnnnn-01-0010  MOV.Q	(GP, Disp16u*8), Rn
+*        iiii-iiiiii-iiiiii-1101-nnnnnn-11-0010  MOV.L	(GP, Disp16u*4), Rn
 
-* J_IMM iiii-iiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B	Rn, (Rm, Disp33s)
-* J_IMM iiii-iiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W	Rn, (Rm, Disp33s)
-* J_IMM iiii-iiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L	Rn, (Rm, Disp33s)
-* J_IMM iiii-iiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q	Rn, (Rm, Disp33s)
-* J_IMM iiii-iiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B	(Rm, Disp33s), Rn
-* J_IMM iiii-iiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B	(Rm, Disp33s), Rn
-* J_IMM iiii-iiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W	(Rm, Disp33s), Rn
-* J_IMM iiii-iiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W	(Rm, Disp33s), Rn
-* J_IMM iiii-iiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L	(Rm, Disp33s), Rn
-* J_IMM iiii-iiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L	(Rm, Disp33s), Rn
-* J_IMM iiii-iiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q	(Rm, Disp33s), Rn
-* J_IMM iiii-iiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X	Xn, (Rm, Disp33s)
-* J_IMM iiii-iiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X	(Rm, Disp33s), Xn
+* J_IMM  iiii-iiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B	Rn, (Rm, Disp33s)
+* J_IMM  iiii-iiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W	Rn, (Rm, Disp33s)
+* J_IMM  iiii-iiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L	Rn, (Rm, Disp33s)
+* J_IMM  iiii-iiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q	Rn, (Rm, Disp33s)
+* J_IMM  iiii-iiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q	(Rm, Disp33s), Rn
+* J_IMM  iiii-iiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X	Xn, (Rm, Disp33s)
+* J_IMM  iiii-iiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X	(Rm, Disp33s), Xn
+
+* J2_IMM iiii-iiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		Rn, (Rm, Abs64)
+* J2_IMM iiii-iiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W		Rn, (Rm, Abs64)
+* J2_IMM iiii-iiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L		Rn, (Rm, Abs64)
+* J2_IMM iiii-iiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		Rn, (Rm, Abs64)
+* J2_IMM iiii-iiiiii-mmmmmm-1000-nnnnnn-00-0110  MOV.B		(Rm, Abs64), Rn
+* J2_IMM iiii-iiiiii-mmmmmm-1000-nnnnnn-10-0110  MOVU.B		(Rm, Abs64), Rn
+* J2_IMM iiii-iiiiii-mmmmmm-1001-nnnnnn-00-0110  MOV.W		(Rm, Abs64), Rn
+* J2_IMM iiii-iiiiii-mmmmmm-1001-nnnnnn-10-0110  MOVU.W		(Rm, Abs64), Rn
+* J2_IMM iiii-iiiiii-mmmmmm-1010-nnnnnn-00-0110  MOV.L		(Rm, Abs64), Rn
+* J2_IMM iiii-iiiiii-mmmmmm-1010-nnnnnn-10-0110  MOVU.L		(Rm, Abs64), Rn
+* J2_IMM iiii-iiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q		(Rm, Abs64), Rn
+* J2_IMM iiii-iiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X		Xn, (Rm, Abs64)
+* J2_IMM iiii-iiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X		(Rm, Abs64), Xn
+
+Optional (IMMB):
+* J_OP_4R iiii-iiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B		I17s, (Rm, Disp10s)
+* J_OP_4R iiii-iiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W		I17s, (Rm, Disp10s)
+* J_OP_4R iiii-iiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L		I17s, (Rm, Disp10s)
+* J_OP_4R iiii-iiiiii-mmmmmm-0011-nnnnnn-00-0110  MOV.Q		I17s, (Rm, Disp10s)
 
 
 Load/Store displacement will be scaled by the element size:
@@ -1752,6 +1918,18 @@ The X type will perform a Load/Store Pair.
 * It is not required to support unaligned access in hardware.
 * So, a misaligned MOV.X may be allowed to fault or otherwise be very slow.
 * For Unaligned Safe Load/Store Pair, it is better to use a pair of MOV.Q instructions.
+
+The Abs64 mode will be encoded the same as a Disp64, but will have some rules of its own:
+* The Immediate will be unscaled and will canonically Absolute;
+** The high 16 bits are MBZ for Load/Store ops in a 48-bit VAS.
+* The Rm register will be treated as an unscaled offset added to the address.
+** Implicitly, behavior will be undefined if Rm is outside +/- 4GB.
+** If R1 is used for Rm, it is understood as Zero Register.
+*** This will be a typical use-case for Abs64 addressing.
+** The use of R0, R2, and R3 will be reserved.
+
+
+For the IMMB encodings, a 17-bit sign extended value is stored to memory. Note that for 8 and 16 bit types, the Immediate should not be used to encode values outside the nominal range of the type (out of range values will be reserved).
 
 
 === MOVxD ===
@@ -2293,7 +2471,7 @@ Packing will do the reverse process, keeping only the high order bits and discar
 
 === RGB5PCKI8 (RGB?) ===
 
-* 1111-001100-mmmmmm-0001-nnnnnn-10-0010  RGB5PCKI8	Rm, Rn
+* 1111-001100-mmmmmm-0001-nnnnnn-10-0010  RGB5PCKI8		Rm, Rn
 * 1111-001101-mmmmmm-0001-nnnnnn-10-0010  RGB5UPCKI8	Rm, Rn
 
 Optional (RGB): Pack four RGB555 endpoints into an indexed color in a fixed color palette.
@@ -2337,6 +2515,8 @@ Effectively, this is a combined 1-bit shift right operation and a bit-mask.
 
 Selects the Minimum and Maximum values from a vector of RGB555 values based on the approximate luminance of each color.
 
+This will select the minimum and maximum values from within the 4 RGB555 colors given in Rm, storing the result into Rn.
+
 Within the result:
 * (63:32): Reserved / Zeros
 * (31:16): Minimum
@@ -2362,8 +2542,13 @@ Color-Cell Encode Helper (Optional, CCENC).
 * Rn will give both the source and destination for the selector bits.
 
 This operation will classify the pixel colors relative to the endpoints, generating a selector between 00 (Minimum) and 11 (Maximum).
+* Each of the 4 colors will be compared relative to the min and max colors.
+* 00=Min, 01=5/8 Min + 3/8 Max, 10=3/8 Min + 5/8 Max, 11=Max
 
 The low order 32 bits of Rn will be shifted left by 8 bits, with the new endpoint selectors being added to bits (7:0).
+
+
+Along with RGB5MINMAX, this may be used to implement a faster color-cell encoder from RGB555.
 
 
 === RSUB ===
@@ -2457,7 +2642,7 @@ No immediate forms will be provided, instead SUB immediate will be handled as an
 
 Optional (ALUX):
 * 0100-oooooo-mmmmmm-0011-nnnnnn-10-0010  SHAD.X		Xm, Ro, Xn
-* 00ii-iiiiii-mmmmmm-0110-nnnnnn-10-1010  SHAD.X		Xm, Imm8s, Xn	//Xn>=2
+* 00ii-iiiiii-mmmmmm-0110-nnnnnn-10-1010  SHAD.X		Xm, Imm8s, Xn
 
 Optional (SHFUN):
 * J_OP_4R  0100-oooooo-mmmmmm-0101-nnnnnn-10-0010  SHAD.Q	Rm, Ro, Rp, Rn
@@ -2466,9 +2651,10 @@ Optional (SHFUN):
 
 Shift Left Arithmetic.
 * SHAD.L will Sign-Extend the Result.
-* Negative Shifts will perform a Right Shift.
+* Negative Shifts will perform a Right Shift Arithmetic.
 * SHAD.X will perform a 128 bit shiift.
 ** Internally, this may be performed as a pair of funnel shift operations.
+** The SHAD.X encoding will not exist for R0..R3
 
 Funnel Shift (Optional):
 * Perform a funnel shift with an extra input.
@@ -2489,6 +2675,7 @@ Optional (SHFUN):
 
 Shift Right Arithmetic.
 * Negative Shifts will perform a Left Shift.
+* SHAR.L will Sign-Extend the Result.
 
 
 Funnel Shift (Optional):
@@ -2512,8 +2699,10 @@ Optional (SHFUN):
 * J_OP_4R  00ii-iiiiii-mmmmmm-1001-nnnnnn-10-1010  SHLD.Q	Rm, Imm8s, Rp, Rn
 
 Shift Left Logical.
-* SHLD.L will Sign-Extend the Result.
+* SHLD.L will Zero-Extend the Result.
 * Negative Shifts will perform a Right Shift.
+* SHLD.X will perform a 128-bit shift.
+** The SHLD.X encoding will not exist for R0..R3
 
 
 === SHLR ===
@@ -2529,6 +2718,7 @@ Optional (SHFUN):
 
 Shift Right Logical.
 * Negative Shifts will perform a Left Shift.
+* SHLR.L will Zero-Extend the Result.
 
 Funnel Shift (Optional):
 * Perform a funnel shift with an extra input.
@@ -2610,33 +2800,48 @@ Optional (XMOV): LEA with 128-bit register pair representing an Addr96.
 
 === XMOV ===
 
-** 0000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Disp6s)
-** 0001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Disp6s)
-** 0010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Disp6s)
-** 0011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Disp6s)
-** 0011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Disp6s)
-** 0100-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Ro)
-** 0101-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Ro)
-** 0110-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Ro)
-** 0110-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVTT	Xm, Ro, Xn
-** 0111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Ro)
-** 0111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Ro)
-** 1000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	(Xm, Disp6s), Rn
-** 1000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.B	(Xm, Disp6s), Rn
-** 1001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	(Xm, Disp6s), Rn
-** 1001-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.W	(Xm, Disp6s), Rn
-** 1010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	(Xm, Disp6s), Rn
-** 1010-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.L	(Xm, Disp6s), Rn
-** 1011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Disp6s), Rn
-** 1011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Disp6s), Xn
-** 1100-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	(Xm, Ro), Rn		//
-** 1100-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.B	(Xm, Ro), Rn		//
-** 1101-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	(Xm, Ro), Rn		//
-** 1101-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.W	(Xm, Ro), Rn		//
-** 1110-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	(Xm, Ro), Rn		//
-** 1110-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.L	(Xm, Ro), Rn		//
-** 1111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Ro), Rn		//
-** 1111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Ro), Xn		//
+*       0000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Disp6s)
+*       0001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Disp6s)
+*       0010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Disp6s)
+*       0011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Disp6s)
+*       0011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Disp6s)
+*       0100-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Ro)
+*       0101-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Ro)
+*       0110-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Ro)
+*       0110-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVTT	Xm, Ro, Xn
+*       0111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Ro)
+*       0111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Ro)
+*       1000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	(Xm, Disp6s), Rn
+*       1000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.B	(Xm, Disp6s), Rn
+*       1001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	(Xm, Disp6s), Rn
+*       1001-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.W	(Xm, Disp6s), Rn
+*       1010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	(Xm, Disp6s), Rn
+*       1010-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.L	(Xm, Disp6s), Rn
+*       1011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Disp6s), Rn
+*       1011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Disp6s), Xn
+*       1100-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	(Xm, Ro), Rn
+*       1100-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.B	(Xm, Ro), Rn
+*       1101-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	(Xm, Ro), Rn
+*       1101-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.W	(Xm, Ro), Rn
+*       1110-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	(Xm, Ro), Rn
+*       1110-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.L	(Xm, Ro), Rn
+*       1111-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Ro), Rn
+*       1111-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Ro), Xn
+
+* J_IMM 0000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Disp33s)
+* J_IMM 0001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Disp33s)
+* J_IMM 0010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Disp33s)
+* J_IMM 0011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Disp33s)
+* J_IMM 0011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Disp33s)
+
+* J_IMM 1000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	(Xm, Disp33s), Rn
+* J_IMM 1000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.B	(Xm, Disp33s), Rn
+* J_IMM 1001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	(Xm, Disp33s), Rn
+* J_IMM 1001-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.W	(Xm, Disp33s), Rn
+* J_IMM 1010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	(Xm, Disp33s), Rn
+* J_IMM 1010-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOVU.L	(Xm, Disp33s), Rn
+* J_IMM 1011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	(Xm, Disp33s), Rn
+* J_IMM 1011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	(Xm, Disp33s), Xn
 
 Optional (XMOV): Load/Store with 128-bit register pair representing an Addr96.
 * With BCE, these may also be used to access memory through a Cabability.

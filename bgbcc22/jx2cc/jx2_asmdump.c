@@ -837,6 +837,11 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 
 	case BGBCC_SH_NMID_FMOVQ:		sn="FMOV.Q";		break;
 
+	case BGBCC_SH_NMID_NOTX:		sn="NOTX";			break;
+
+	case BGBCC_SH_NMID_CMPQLTU:		sn="CMPLTU.Q";		break;
+	case BGBCC_SH_NMID_CMPQLEU:		sn="CMPLEU.Q";		break;
+
 	default:
 		sprintf(tb, "UNK_%04X", nmid);
 		sn=bgbcc_strdup(tb);

@@ -485,6 +485,14 @@ int BGBCC_JX2_TryEmitOpLdRegReg(BGBCC_JX2_Context *ctx,
 		return(BGBCC_JX2_TryEmitOpLdRegDispReg(ctx, nmid, rm, 0, rn));
 	}
 
+	if(	(nmid==BGBCC_SH_NMID_LEAB)	||
+		(nmid==BGBCC_SH_NMID_LEAW)	||
+		(nmid==BGBCC_SH_NMID_LEAL)	||
+		(nmid==BGBCC_SH_NMID_LEAQ)	)
+	{
+		return(BGBCC_JX2_TryEmitOpRegReg(ctx, BGBCC_SH_NMID_MOV, rm, rn));
+	}
+
 	if(!ctx->is_simpass)
 	{
 		ctx->stat_ldst_tot++;
@@ -2821,7 +2829,10 @@ int BGBCC_JX2_EmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	}
 
 	if(!BGBCC_JX2_TryEmitOpLdRegDispReg(ctx, nmid, rm, disp, rn))
-		{ BGBCC_DBGBREAK }
+	{
+		BGBCC_JX2_TryEmitOpLdRegDispReg(ctx, nmid, rm, disp, rn);
+		BGBCC_DBGBREAK
+	}
 	return(1);
 }
 

@@ -1098,7 +1098,7 @@ int BGBCC_CCXL_CompileInitArray(BGBCC_TransState *ctx,
 	BCCX_Node *cur;
 	ccxl_type ty, bty;
 	char *s1;
-	int idx, na, ci;
+	int idx, na, ci, asz;
 
 	name=BGBCC_CCXL_CompileRemapName(ctx, name);
 
@@ -1112,6 +1112,9 @@ int BGBCC_CCXL_CompileInitArray(BGBCC_TransState *ctx,
 	}
 
 	s1=BGBCC_CCXL_TypeGetSig(ctx, bty);
+
+//	BGBCC_CCXL_TypeDerefType(ctx, ty, &bty);
+	asz=BGBCC_CCXL_TypeGetArraySize(ctx, ty);
 	
 //	cur=BCCX_Child(l);
 	idx=0;
@@ -1148,6 +1151,17 @@ int BGBCC_CCXL_CompileInitArray(BGBCC_TransState *ctx,
 
 //		cur=BCCX_Next(cur);
 	}
+
+#if 0
+	for(ci=na; ci<asz; ci++)
+	{
+		BGBCC_CCXL_StackPushConstInt(ctx, 0);
+		BGBCC_CCXL_StackCastSig(ctx, s1);
+		BGBCC_CCXL_PushLoad(ctx, name);
+		BGBCC_CCXL_StackStoreIndexConst(ctx, idx);
+		idx++;
+	}
+#endif
 
 	return(0);
 }
@@ -1188,6 +1202,7 @@ void BGBCC_CCXL_CompileInitVar(BGBCC_TransState *ctx,
 		if(*s0=='A')
 		{
 			BGBCC_CCXL_StackInitVar(ctx, name);
+			BGBCC_CCXL_StackZeroVar(ctx, name);
 			BGBCC_CCXL_CompileInitArray(ctx, name, s0, value);
 			return;
 		}
