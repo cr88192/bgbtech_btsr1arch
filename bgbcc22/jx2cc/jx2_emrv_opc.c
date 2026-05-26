@@ -5500,6 +5500,18 @@ int BGBCC_JX2RV_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,
 	int odr, ex, ex2, nowxi, exw, rlty, rlty2, rlty3, rt;
 	int i, j, k;
 
+	if(imm==0)
+	{
+		if(	(nmid==BGBCC_SH_NMID_BREQ)  ||
+			(nmid==BGBCC_SH_NMID_BREQL) ||
+			(nmid==BGBCC_SH_NMID_BRNE)  ||
+			(nmid==BGBCC_SH_NMID_BRNEL) )
+		{
+			return(BGBCC_JX2RV_TryEmitOpRegRegLbl(ctx,
+				nmid, BGBCC_SH_REG_ZZR, rn, lbl));
+		}
+	}
+
 	rn=BGBCC_JX2RV_NormalizeReg(ctx, rn);
 
 	i=BGBCC_JX2X3_TryEmitOpImmRegLbl(ctx, nmid, imm, rn, lbl);
@@ -5852,7 +5864,11 @@ int BGBCC_JX2RV_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 int BGBCC_JX2RV_TryEmitOpReg(BGBCC_JX2_Context *ctx, int nmid, int reg)
 {
 	s64 opw1, opw2, opw3, reg2, ex, ex2, exw;
-	int i;
+	int i, ret;
+
+	ret=BGBCC_JX2X3_TryEmitOpReg(ctx, nmid, reg);
+	if(ret>0)
+		return(ret);
 
 	if(nmid==BGBCC_SH_NMID_JSR)
 		return(BGBCC_JX2RV_TryEmitOpRegImmReg(ctx,
@@ -6040,6 +6056,11 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 		(nmid==BGBCC_SH_NMID_FSUB) ||
 		(nmid==BGBCC_SH_NMID_FMUL) ||
 		(nmid==BGBCC_SH_NMID_FDIV) ||
+
+		(nmid==BGBCC_SH_NMID_FADDA) ||
+		(nmid==BGBCC_SH_NMID_FSUBA) ||
+		(nmid==BGBCC_SH_NMID_FMULA) ||
+//		(nmid==BGBCC_SH_NMID_FDIVA) ||
 
 		(nmid==BGBCC_SH_NMID_FADDX) ||
 		(nmid==BGBCC_SH_NMID_FSUBX) ||

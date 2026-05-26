@@ -1085,6 +1085,51 @@ void BJX2_Op_MOVLHD_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 
 
+
+
+void BJX2_Op_MOVHD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=op->imm;
+	vn=	((vs    )&0xFFFFFFFF00000000ULL) |
+		((vt    )&0x00000000FFFFFFFFULL) ;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_MOVLD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=op->imm;
+	vn=	((vs<<32)&0xFFFFFFFF00000000ULL) |
+		((vt    )&0x00000000FFFFFFFFULL) ;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_MOVHLD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=op->imm;
+	vn=	((vt<<32)&0xFFFFFFFF00000000ULL) |
+		((vs    )&0x00000000FFFFFFFFULL) ;
+	ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_MOVLHD_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs, vt, vn;
+
+	vs=ctx->regs[op->rm];	vt=op->imm;
+	vn=	((vt<<32)&0xFFFFFFFF00000000ULL) |
+		((vs>>32)&0x00000000FFFFFFFFULL) ;
+	ctx->regs[op->rn]=vn;
+}
+
+
+
+
 void BJX2_Op_MOVHW_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64	vs, vt, vn;

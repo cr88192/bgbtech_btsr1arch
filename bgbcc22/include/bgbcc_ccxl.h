@@ -689,6 +689,10 @@ byte ucnt;				//use count
 byte type_zb;			//type Z base
 byte regcls;			//register class (backend)
 s16 cseq;				//current sequence
+
+int name_ix;			//assigned variable name (index)
+int qname_ix;			//assigned qualified name (index)
+
 int regtype;			//register type
 int regid;				//register ID
 int validx;				//value index
@@ -755,7 +759,7 @@ int littype;		//literal type
 int litid;			//literal ID
 int hnext_name;		//next by hashed name
 int hnext_sig;		//next by hashed sig
-
+int name_ix;		//assigned variable name (index)
 BGBCC_CCXL_LiteralInfo *parent;
 BGBCC_CCXL_RegisterInfo *decl;
 };

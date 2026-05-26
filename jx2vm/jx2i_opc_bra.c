@@ -2426,12 +2426,19 @@ void BJX2_Op_BRLE_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRBIQ_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 rm, rn;
+	
+	rm=ctx->regs[op->rm];
+	rn=ctx->regs[op->rn];
+	
+	if(op->rm==BJX2_REG_IMM)
+		rm=op->immb;
+	
 #ifdef BJX2_EM_BPRED
-	BJX2_Op_BpredUpdateBranch(ctx, op,
-		(((u64)ctx->regs[op->rn])<((u64)ctx->regs[op->rm])));
+	BJX2_Op_BpredUpdateBranch(ctx, op, (rn<rm));
 #endif
 
-	if(((u64)ctx->regs[op->rn])<((u64)ctx->regs[op->rm]))
+	if(rn<rm)
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
 		ctx->tr_rnxt=ctx->tr_rjmp;
@@ -2468,12 +2475,19 @@ void BJX2_Op_BRBIL_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_BRHEQ_RegRegPcDisp(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 rm, rn;
+	
+	rm=ctx->regs[op->rm];
+	rn=ctx->regs[op->rn];
+	
+	if(op->rm==BJX2_REG_IMM)
+		rm=op->immb;
+	
 #ifdef BJX2_EM_BPRED
-	BJX2_Op_BpredUpdateBranch(ctx, op,
-		(((u64)ctx->regs[op->rn])>=((u64)ctx->regs[op->rm])));
+	BJX2_Op_BpredUpdateBranch(ctx, op, (rn>=rm));
 #endif
 
-	if(((u64)ctx->regs[op->rn])>=((u64)ctx->regs[op->rm]))
+	if(rn>=rm)
 	{
 		ctx->regs[BJX2_REG_PC]=(op->pc2)+(op->imm*2);
 		ctx->tr_rnxt=ctx->tr_rjmp;

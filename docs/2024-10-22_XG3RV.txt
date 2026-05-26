@@ -153,11 +153,13 @@ The Rs field will be reserved for now.
 ==== Jumbo, F1/F2 Block ====
 
 F1/F2
-* iiii-iiiiii-iiiiii-jjjj-jjjjXX-X1-1010 (FE)
+* iiii-iiiiii-iiiiii-jjjj-jjjjBB-B1-1010 (FE)
 * XSkk-kkkkkk-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F1/F2)
 
 For the F1/F2 block, a 33-bit immediate will be formed:
 * S-jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk-kkkk
+
+Unless otherwise specified for an instruction, the BBB bits in the prefix are Reserved / MBZ for a normal J_IMM prefix with an f1/F2 instruction.
 
 
 For F1 Load/Store and the Jumbo-FE prefix, the MSB of the instruction word will indicate displacement scale:
@@ -169,7 +171,7 @@ For F1 Load/Store and the Jumbo-FE prefix, the MSB of the instruction word will 
 ** 1: LEAT.x
 
 
-For some F2 Block Instructions:
+For some F1/F2 Block Instructions:
 
 Two Jumbo FE prefixes will give a 64-bit immediate:
 * uuuu-uuuuuu-uuuuuu-vvvv-vvvvaa-a1-1010 (FE)
@@ -179,6 +181,8 @@ Two Jumbo FE prefixes will give a 64-bit immediate:
 Will give:
 * ccaa-abbb-vvvv-vvvv-uuuu-uuuu-uuuu-uuuu (High)
 * jjjj-jjjj-iiii-iiii-iiii-iiii-kkkk-kkkk (Low)
+
+The same encoding may apply to F1 instructions, though Disp64 will not be supported naturally and may be understood as an Abs64 with an optional offset register.
 
 
 If a Jumbo-FF prefix is used with the F1 and F2 blocks, the immediate will be expanded to 18-bits sign-extended.
@@ -240,14 +244,24 @@ The additional X bits will be reserved for additional opcode.
 ** 0110-oooooo-mmmmmm-0000-nnnnnn-10-0010  LEA.L		(Rm, Ro), Rn
 ** 0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		Rn, (Rm, Ro)	//SD
 ** 0111-oooooo-mmmmmm-0000-nnnnnn-10-0010  LEA.Q		(Rm, Ro), Rn
-** 1000-oooooo-mmmmmm-0000-nnnnnn-00-0010  (N/A)
-** 1000-oooooo-mmmmmm-0000-nnnnnn-10-0010  (N/A)
-** 1001-oooooo-mmmmmm-0000-nnnnnn-00-0010  (N/A)
-** 1001-oooooo-mmmmmm-0000-nnnnnn-10-0010  (N/A)
-** 1010-oooooo-mmmmmm-0000-nnnnnn-00-0010  (N/A)
-** 1010-oooooo-mmmmmm-0000-nnnnnn-10-0010  (N/A)
-** 1011-oooooo-mmmmmm-0000-nnnnnn-00-0010  (N/A)
-** 1011-oooooo-mmmmmm-0000-nnnnnn-10-0010 ? LDTEX		(Rm, Ro), Rn
+** 1000-oooooo-mmmmmm-0000-nnnnnn-00-0010 / (N/A)
+** 1000-oooooo-mmmmmm-0000-nnnnnn-10-0010 / (N/A)
+** 1001-oooooo-mmmmmm-0000-nnnnnn-00-0010 / (N/A)
+** 1001-oooooo-mmmmmm-0000-nnnnnn-10-0010 / (N/A)
+** 1010-oooooo-mmmmmm-0000-nnnnnn-00-0010 / (N/A)
+** 1010-oooooo-mmmmmm-0000-nnnnnn-10-0010 / (N/A)
+** 1011-oooooo-mmmmmm-0000-nnnnnn-00-0010 / (N/A)
+** 1011-oooooo-mmmmmm-0000-nnnnnn-10-0010 / LDTEX		(Rm, Ro), Rn
+
+** 1000-oooooo-mmmmmm-0000-nnnnnn-00-0010  BNTST		Rm, RnImm6s, Disp6s
+** 1000-oooooo-mmmmmm-0000-nnnnnn-10-0010  BTST			Rm, RnImm6s, Disp6s
+** 1001-oooooo-mmmmmm-0000-nnnnnn-00-0010  BLT			Rm, RnImm6s, Disp6s
+** 1001-oooooo-mmmmmm-0000-nnnnnn-10-0010  BGE			Rm, RnImm6s, Disp6s
+** 1010-oooooo-mmmmmm-0000-nnnnnn-00-0010  BLTU			Rm, RnImm6s, Disp6s
+** 1010-oooooo-mmmmmm-0000-nnnnnn-10-0010  BGEU			Rm, RnImm6s, Disp6s
+** 1011-oooooo-mmmmmm-0000-nnnnnn-00-0010  BEQ			Rm, RnImm6s, Disp6s
+** 1011-oooooo-mmmmmm-0000-nnnnnn-10-0010  BNE			Rm, RnImm6s, Disp6s
+
 ** 1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B		(Rm, Ro), Rn	//LB
 ** 1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.B		(Rm, Ro), Rn	//LBU
 ** 1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W		(Rm, Ro), Rn	//LH
@@ -255,7 +269,7 @@ The additional X bits will be reserved for additional opcode.
 ** 1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L		(Rm, Ro), Rn	//LW
 ** 1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.L		(Rm, Ro), Rn	//LWU
 ** 1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q		(Rm, Ro), Rn	//LD
-** 1111-oooooo-mmmmmm-0000-nnnnnn-10-0010 ? LDTEX2
+** 1111-oooooo-mmmmmm-0000-nnnnnn-10-0010  LDTEX		(Rm, Ro), Rn
 
 * F0zz_1zzZ
 ** 0000-oooooo-mmmmmm-0001-nnnnnn-00-0010  ADD			Rm, Ro, Rn
@@ -365,7 +379,7 @@ The additional X bits will be reserved for additional opcode.
 ** 1111-oooooo-mmmmmm-0100-nnnnnn-10-0010  PMOV.2H		(Rm, Ro), Rn
 
 * F0zz_5zzz
-** 0000-oooooo-mmmmmm-0101-nnnnnn-00-0010 ? CSELT		Rm, Ro, Rn
+** 0000-oooooo-mmmmmm-0101-nnnnnn-00-0010  CSELT		Rm, Ro, Rn
 ** 0000-oooooo-mmmmmm-0101-nnnnnn-10-0010  (N/A)
 ** 0001-oooooo-mmmmmm-0101-nnnnnn-00-0010  PMULS.W		Rm, Ro, Rn
 ** 0001-oooooo-mmmmmm-0101-nnnnnn-10-0010  PMULU.W		Rm, Ro, Rn
@@ -394,37 +408,37 @@ The additional X bits will be reserved for additional opcode.
 ** 1101-oooooo-mmmmmm-0101-nnnnnn-00-0010  SUBS.L		Rm, Ro, Rn	//SUBW
 ** 1101-oooooo-mmmmmm-0101-nnnnnn-10-0010  SUBU.L		Rm, Ro, Rn	//SUBWU
 ** 1110-oooooo-mmmmmm-0101-nnnnnn-00-0010  MULS.W		Rm, Ro, Rn
-** 1110-oooooo-mmmmmm-0101-nnnnnn-10-0010  MULS.W		Rm, Imm6u, Rn
+** 1110-oooooo-mmmmmm-0101-nnnnnn-10-0010  MULS.W		Rm, Imm6s, Rn
 ** 1111-oooooo-mmmmmm-0101-nnnnnn-00-0010  MULU.W		Rm, Ro, Rn
-** 1111-oooooo-mmmmmm-0101-nnnnnn-10-0010  MULU.W		Rm, Imm6u, Rn
+** 1111-oooooo-mmmmmm-0101-nnnnnn-10-0010  MULU.W		Rm, Imm6s, Rn
 
 * F0zz_6zzz
 ** 0000-oooooo-mmmmmm-0110-nnnnnn-00-0010  MACS.L		Rm, Ro, Rn
-** 0000-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACS.L		Rm, Imm6u, Rn
+** 0000-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACS.L		Rm, Imm6s, Rn
 ** 0001-oooooo-mmmmmm-0110-nnnnnn-00-0010  MACU.L		Rm, Ro, Rn
-** 0001-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACU.L		Rm, Imm6u, Rn
+** 0001-oooooo-mmmmmm-0110-nnnnnn-10-0010  MACU.L		Rm, Imm6s, Rn
 ** 0010-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACS.L		Rm, Ro, Rn
-** 0010-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACS.L		Rm, Imm6u, Rn
+** 0010-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACS.L		Rm, Imm6s, Rn
 ** 0011-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACU.L		Rm, Ro, Rn
-** 0011-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACU.L		Rm, Imm6u, Rn
+** 0011-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACU.L		Rm, Imm6s, Rn
 ** 0100-oooooo-mmmmmm-0110-nnnnnn-00-0010  DIVS.Q		Rm, Ro, Rn	//DIV
 ** 0100-oooooo-mmmmmm-0110-nnnnnn-10-0010  DIVU.Q		Rm, Ro, Rn	//DIVU
 ** 0101-oooooo-mmmmmm-0110-nnnnnn-00-0010  MODS.Q		Rm, Ro, Rn	//REM
 ** 0101-oooooo-mmmmmm-0110-nnnnnn-10-0010  MODU.Q		Rm, Ro, Rn	//REMU
 ** 0110-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIV			Rm, Ro, Rn	//FDIV.D
-** 0110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVX		Rm, Ro, Rn
+** 0110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVX		Xm, Xo, Xn
 ** 0111-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIVA		Rm, Ro, Rn
-** 0111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVXA		Rm, Ro, Rn
+** 0111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVXA		Xm, Xo, Xn
 ** 1000-oooooo-mmmmmm-0110-nnnnnn-00-0010  -
 ** 1000-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUTX3H		Xm, Ro, Rn
-** 1001-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLERP		Rm, Ro, Rn
+** 1001-oooooo-mmmmmm-0110-nnnnnn-00-0010 / BLERP		Rm, Ro, Rn
 ** 1001-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUTX3L		Xm, Ro, Rn
-** 1010-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLINTA		Rm, Ro, Rn
-** 1010-oooooo-mmmmmm-0110-nnnnnn-10-0010 /? BLINT		Xm, Xo, Xn
+** 1010-oooooo-mmmmmm-0110-nnnnnn-00-0010 / BLINTA		Rm, Ro, Rn
+** 1010-oooooo-mmmmmm-0110-nnnnnn-10-0010 / BLINT		Xm, Xo, Xn
 ** 1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL		Rm, Ro, Rn
 ** 1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX		Xm, Xo, Xn
-** 1100-oooooo-mmmmmm-0110-nnnnnn-00-0010  BLKUAB1		Rm, Ro, Rn
-** 1100-oooooo-mmmmmm-0110-nnnnnn-10-0010  BLKUAB2		Rm, Ro, Rn
+** 1100-oooooo-mmmmmm-0110-nnnnnn-00-0010 / BLKUAB1		Rm, Ro, Rn
+** 1100-oooooo-mmmmmm-0110-nnnnnn-10-0010 / BLKUAB2		Rm, Ro, Rn
 ** 1101-oooooo-mmmmmm-0110-nnnnnn-00-0010  FADDG		Rm, Ro, Rn	//FADD.D, Dyn
 ** 1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADD			Rm, Imm6fp, Rn
 ** 1110-oooooo-mmmmmm-0110-nnnnnn-00-0010  FSUBG		Rm, Ro, Rn	//FSUB.D, Dyn
@@ -445,8 +459,8 @@ The additional X bits will be reserved for additional opcode.
 ** 0100-oooooo-mmmmmm-0111-nnnnnn-10-0010  DIVU.L		Rm, Ro, Rn	//DIVUW
 ** 0101-oooooo-mmmmmm-0111-nnnnnn-00-0010  MODS.L		Rm, Ro, Rn	//REMW
 ** 0101-oooooo-mmmmmm-0111-nnnnnn-10-0010  MODU.L		Rm, Ro, Rn	//REMUW
-** 0110-oooooo-mmmmmm-0111-nnnnnn-00-0010 ? RGB5CCENC	Rm, Ro, Rn
-** 0110-oooooo-mmmmmm-0111-nnnnnn-10-0010 ? PMUL.F8H	Rm, Ro, Rn
+** 0110-oooooo-mmmmmm-0111-nnnnnn-00-0010 / RGB5CCENC	Rm, Ro, Rn
+** 0110-oooooo-mmmmmm-0111-nnnnnn-10-0010  PMUL.F8H		Rm, Ro, Rn
 ** 0111-oooooo-mmmmmm-0111-nnnnnn-00-0010  (N/A)
 ** 0111-oooooo-mmmmmm-0111-nnnnnn-10-0010  (N/A)
 ** 1zzz-zzzzzz-mmmmmm-0111-nnnnnn-z0-0010  (2R Space)
@@ -455,9 +469,9 @@ The additional X bits will be reserved for additional opcode.
 ** 0000-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Disp6s)
 ** 0000-oooooo-mmmmmm-1000-nnnnnn-10-0010  XLEA.B	(Xm, Disp6s), Xn
 ** 0001-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.W	Rn, (Xm, Disp6s)
-** 0001-oooooo-mmmmmm-1000-nnnnnn-10-0010  TSTNQ	Rm, Ro, Rn
+** 0001-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TSTNQ	Rm, Ro, Rn
 ** 0010-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.L	Rn, (Xm, Disp6s)
-** 0010-oooooo-mmmmmm-1000-nnnnnn-10-0010  TSTQ		Rm, Ro, Rn
+** 0010-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TSTQ		Rm, Ro, Rn
 ** 0011-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.Q	Rn, (Xm, Disp6s)
 ** 0011-oooooo-mmmmmm-1000-nnnnnn-10-0010  XMOV.X	Xn, (Xm, Disp6s)
 ** 0100-oooooo-mmmmmm-1000-nnnnnn-00-0010  XMOV.B	Rn, (Xm, Ro)
@@ -506,9 +520,9 @@ The XMOV instructions operate on 128-bit pointers, and are only valid if 128-bit
 ** 0111-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 0111-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGE.Q	Rm, Ro, Rn		//SGE
 ** 1000-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
-** 1000-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1000-oooooo-mmmmmm-1001-nnnnnn-10-0010  TSTNQ	Rm, Ro, Rn
 ** 1001-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
-** 1001-oooooo-mmmmmm-1001-nnnnnn-10-0010  -
+** 1001-oooooo-mmmmmm-1001-nnnnnn-10-0010  TSTQ		Rm, Ro, Rn
 ** 1010-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
 ** 1010-oooooo-mmmmmm-1001-nnnnnn-10-0010 ? CMPHI.Q	Rm, Ro, Rn		//SLTU
 ** 1011-oooooo-mmmmmm-1001-nnnnnn-00-0010 (N/A)
@@ -607,16 +621,23 @@ Possible:
 
 * F2nm_Zgjj
 
-* iiiiiiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0000-nnnnnn-00-1010 / ADD		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD		Rm, Imm10s, Rn
 * iiiiiiiiii-mmmmmm-0000-nnnnnn-10-1010  -
-* iiiiiiiiii-mmmmmm-0001-nnnnnn-00-1010  ADD		Rm, Imm10n, Rn
+* iiiiiiiiii-mmmmmm-0001-nnnnnn-00-1010  /? ADD		Rm, Imm10n, Rn
 * iiiiiiiiii-mmmmmm-0001-nnnnnn-10-1010  -
-* iiiiiiiiii-mmmmmm-0010-nnnnnn-00-1010  MULS.L		Rm, Imm10u, Rn
-* iiiiiiiiii-mmmmmm-0010-nnnnnn-10-1010  MULU.L		Rm, Imm10u, Rn
-* iiiiiiiiii-mmmmmm-0011-nnnnnn-00-1010  ADDS.L		Rm, Imm10u, Rn
-* iiiiiiiiii-mmmmmm-0011-nnnnnn-10-1010 ? ADDU.L	Rm, Imm10u, Rn
-* iiiiiiiiii-mmmmmm-0100-nnnnnn-00-1010  ADDS.L		Rm, Imm10n, Rn
-* iiiiiiiiii-mmmmmm-0100-nnnnnn-10-1010 ? ADDU.L	Rm, Imm10n, Rn
+* iiiiiiiiii-mmmmmm-0010-nnnnnn-00-1010 / MULS.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0010-nnnnnn-10-1010 / MULU.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0011-nnnnnn-00-1010 / ADDS.L		Rm, Imm10u, Rn
+* iiiiiiiiii-mmmmmm-0011-nnnnnn-10-1010 / ADDU.L		Rm, Imm10u, Rn
+
+* iiiiiiiiii-mmmmmm-0010-nnnnnn-00-1010  MULS.L		Rm, Imm10s, Rn
+* iiiiiiiiii-mmmmmm-0010-nnnnnn-10-1010  MULU.L		Rm, Imm10s, Rn
+* iiiiiiiiii-mmmmmm-0011-nnnnnn-00-1010  ADDS.L		Rm, Imm10s, Rn
+* iiiiiiiiii-mmmmmm-0011-nnnnnn-10-1010  ADDU.L		Rm, Imm10s, Rn
+
+* iiiiiiiiii-mmmmmm-0100-nnnnnn-00-1010 /? ADDS.L	Rm, Imm10n, Rn
+* iiiiiiiiii-mmmmmm-0100-nnnnnn-10-1010 /? ADDU.L	Rm, Imm10n, Rn
 * iiiiiiiiii-mmmmmm-0101-nnnnnn-00-1010  AND		Rm, Imm10s, Rn
 * iiiiiiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUB		Rm, Imm10s, Rn
 * iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010 / OR		Rm, Imm10u, Rn

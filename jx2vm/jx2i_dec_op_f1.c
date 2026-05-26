@@ -45,6 +45,7 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 		(ctx->regs[BJX2_REG_SR]&BJX2_FLAG_SR_WXE) )
 			isxg3=1;
 
+	fnm=0;
 	if(1)
 	{
 #ifdef BJX2_FLIPSTNM
@@ -82,6 +83,12 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 
 	rn_orgdfl=rn_dfl;
 	disp5=rn_orgdfl;
+	
+	if(fnm)
+	{
+		rn_orgdfl=rm_dfl;
+		disp5=rn_orgdfl;
+	}
 
 	cm_dfl=BJX2_RemapCR(ctx, rm_dfl);
 	cn_dfl=BJX2_RemapCR(ctx, rn_dfl);
@@ -172,6 +179,12 @@ int BJX2_DecodeOpcode_DecF1(BJX2_Context *ctx,
 			if(rn_orgdfl&0x20)
 				disp5|=~0x1FFFF;
 		}
+
+		if(isxg3)
+		{
+			disp8s=(imm9u<<1)-4;
+		}
+
 		opsz=8;
 	}
 	

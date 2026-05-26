@@ -3113,7 +3113,7 @@ int BGBCC_JX2_EmitLoadRegImm128P(
 	opw3=-1;	opw4=-1;
 	opw5=-1;	opw6=-1;
 
-	if(ctx->has_fpim&1)
+	if((ctx->has_fpim&1) && !(ctx->emit_riscv&0x11))
 	{
 		rt=BGBCC_JX2_ConstConvPackedFloatToHalf4x(imma, immb, &immv);
 
@@ -3162,8 +3162,11 @@ int BGBCC_JX2_EmitLoadRegImm128P(
 #endif
 		}else
 		{
-			fprintf(ctx->cgen_log, "Imm96_PH Reject: %016llX-%016llX\n",
-				immb, imma);
+			if(ctx->cgen_log)
+			{
+				fprintf(ctx->cgen_log, "Imm96_PH Reject: %016llX-%016llX\n",
+					immb, imma);
+			}
 		}
 	}
 

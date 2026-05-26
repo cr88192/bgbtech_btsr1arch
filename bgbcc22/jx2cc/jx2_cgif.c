@@ -670,7 +670,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		{
 			shctx->has_rvzba|=1;	//Zba
 		}
-		if(BGBCC_CCXL_CheckForOptStr(ctx, "rvbraimm"))
+		if(	BGBCC_CCXL_CheckForOptStr(ctx, "rvbraimm") ||
+			BGBCC_CCXL_CheckForOptStr(ctx, "immb"))
 		{
 			shctx->has_rvzba|=32;	//Branch-with-Immediate
 		}
@@ -721,7 +722,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->no_ops48=1;
 		shctx->fpu_gfp=1;
 		shctx->is_pbo=1;
-		shctx->has_fpim=0;
+//		shctx->has_fpim=0;
 		ctx->arch_has_predops=0;
 //		ctx->arch_has_predops=1;
 
@@ -768,6 +769,8 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 
 		shctx->has_fmovs|=3;
 
+		shctx->has_fpvsf|=3;
+
 		if(shctx->optmode==BGBCC_OPT_SPEED)
 			shctx->use_wexmd=2;
 		if(shctx->optmode==BGBCC_OPT_SPEED2)
@@ -778,6 +781,12 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 			/* Pair Pack Encoding... */
 //			shctx->is_fixed32&=~3;
 			shctx->is_fixed32|=0x40;
+		}
+
+		if(	BGBCC_CCXL_CheckForOptStr(ctx, "rvbraimm") ||
+			BGBCC_CCXL_CheckForOptStr(ctx, "immb"))
+		{
+			shctx->has_rvzba|=32;	//Branch-with-Immediate
 		}
 
 		if(BGBCC_CCXL_CheckForOptStr(ctx, "x3nabi"))
@@ -5844,6 +5853,7 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 		case BGBCC_SH_RLC_RELW20_RVI:
 		case BGBCC_SH_RLC_RELW10_XG3:
 		case BGBCC_SH_RLC_RELW23_XG3:
+		case BGBCC_SH_RLC_RELW6_XG3:
 			d=val-(var&(~1));
 			break;
 		}
@@ -7367,6 +7377,24 @@ ccxl_status BGBCC_JX2C_ApplyImageRelocs(
 			bgbcc_jx2cc_setu32en(ctr+4, en, w1);
 			break;
 
+		case BGBCC_SH_RLC_RELW6_XG3:
+			w0=bgbcc_getu32en(ctr+0, en);
+			
+			b=(w0>>22);
+			b1=((s32)(b<<26))>>26;
+
+			if(d&3)
+				{ BGBCC_DBGBREAK }
+
+			d1=b1+(d>>2);
+			if((((s32)(d1<<26))>>26)!=d1)
+				{ BGBCC_DBGBREAK }
+
+			w0=(w0&0xF03FFFFFU)|((d1&63)<<22);
+
+			bgbcc_jx2cc_setu32en(ctr+0, en, w0);
+			break;
+
 		case BGBCC_SH_RLC_RELB33_XG3:
 			w0=bgbcc_getu32en(ctr+0, en);
 			w1=bgbcc_getu32en(ctr+4, en);
@@ -8139,6 +8167,7 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			while(j>1)
 			{
 				obj->gblrefcnt>>=1;
+//				obj->gblrefcnt=(obj->gblrefcnt*181)>>8;
 				j>>=1;
 			}
 		}
@@ -8150,7 +8179,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 			j=(obj->n_vop)>>6;
 			while(j>1)
 			{
-				obj->gblrefcnt>>=1;
+//				obj->gblrefcnt>>=1;
+				obj->gblrefcnt=(obj->gblrefcnt*181)>>8;
 				j>>=1;
 			}
 		}
@@ -8168,6 +8198,10 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	if(sctx->do_shuffle)
 	{
+		BGBCC_JX2C_FlattenImage_ShuffleGlobals(ctx, shufarr, shufgbl);
+
+#if 0
+
 #if 1
 		for(i=1; i<shufgbl; i++)
 		{
@@ -8211,9 +8245,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 				}
 			}
 		}
+#endif
 	}else
 	{
-#if 1
+		BGBCC_JX2C_FlattenImage_SortGlobals(ctx, shufarr, shufgbl);
+
+#if 0
 		/* Sort globals by use-count. */
 		for(i=1; i<shufgbl; i++)
 		{
@@ -8232,7 +8269,9 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 #endif
 	}
 
-#if 1
+	BGBCC_JX2C_FlattenImage_ShufCompactGlobals(ctx, shufarr, shufgbl);
+
+#if 0
 	/* Shuffle global variables for space compacting. */
 	for(i=0; i<512; i++)
 	{

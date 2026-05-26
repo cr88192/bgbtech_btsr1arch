@@ -476,11 +476,39 @@ ccxl_status BGBCC_CCXL_RegisterIdentEqualP(
 	BGBCC_TransState *ctx, ccxl_register sreg, ccxl_register treg)
 {
 	s64 li0, li1;
+	int isimm_s, isimm_t;
 	u64 stxv;
 	
 	if(sreg.val==treg.val)
 		return(1);
+
 	
+#if 1
+	isimm_s=BGBCC_CCXL_IsRegImmP(ctx, sreg);
+	isimm_t=BGBCC_CCXL_IsRegImmP(ctx, treg);
+	if(isimm_s && isimm_t)
+	{
+		if(	BGBCC_CCXL_IsRegImmZeroP(ctx, sreg) &&
+			BGBCC_CCXL_IsRegImmZeroP(ctx, treg))
+		{
+			return(1);
+		}
+		
+		if(	BGBCC_CCXL_IsRegImmILP(ctx, sreg) &&
+			BGBCC_CCXL_IsRegImmILP(ctx, treg))
+		{
+			li0=BGBCC_CCXL_GetRegImmLongValue(ctx, sreg);
+			li1=BGBCC_CCXL_GetRegImmLongValue(ctx, treg);
+			if(li0==li1)
+				return(1);
+//			return(0);
+		}
+	}
+	if(isimm_s || isimm_t)
+		return(0);
+#endif
+	
+#if 0
 	if(BGBCC_CCXL_IsRegImmP(ctx, sreg) && BGBCC_CCXL_IsRegImmP(ctx, treg))
 	{
 		if(	BGBCC_CCXL_IsRegImmZeroP(ctx, sreg) &&
@@ -498,8 +526,8 @@ ccxl_status BGBCC_CCXL_RegisterIdentEqualP(
 				return(1);
 //			return(0);
 		}
-		
 	}
+#endif
 	
 	stxv=sreg.val^treg.val;
 //	if((sreg.val&CCXL_REGTY_REGMASK)!=(treg.val&CCXL_REGTY_REGMASK))

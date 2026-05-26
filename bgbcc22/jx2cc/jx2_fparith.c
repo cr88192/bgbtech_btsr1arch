@@ -143,7 +143,8 @@ int BGBCC_JX2C_EmitBinaryVRegVRegFloat(
 	{
 		f=BGBCC_CCXL_GetRegImmDoubleValue(ctx, treg);
 		
-		if(sctx->has_fpim&1)
+//		if(sctx->has_fpim&1)
+		if((sctx->has_fpim&1) && !(sctx->emit_riscv&0x11))
 		{
 			memcpy(&li, &f, sizeof(double));
 		
@@ -485,6 +486,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 			}
 
 			if(sctx->has_fpim&1)
+//			if((sctx->has_fpim&1) && !(sctx->emit_riscv&0x11))
 			{
 				memcpy(&li, &f, sizeof(double));
 			
@@ -514,7 +516,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 				j=BGBCC_JX2_ConstConvHalfToFP5A(imm_f16);
 
 //				if((rt1>0) && (rt2>0) && (imm_f16b==imm_f16) &&
-				if((rt1>0) && (rt2>0) && (j>=0) &&
+				if((rt1>0) && (rt2>0) && (j>0) &&
 					(nm3>=0))
 				{
 					if(!sctx->is_simpass)
@@ -529,7 +531,12 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegFloat(
 				}
 
 #if 1
-				if(nm3>=0)
+//				if(nm3>=0)
+				if((nm3>=0) &&
+					(BGBCC_JX2_ProbeEmitOpRegImmReg(
+						sctx, nm1,
+							BGBCC_SH_REG_RQ10, li,
+							BGBCC_SH_REG_RQ10)>0))
 //				if(nm1>=0)
 				{
 					csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
@@ -1328,7 +1335,7 @@ int BGBCC_JX2C_EmitJCmpVRegVRegFloat(
 		}
 #endif
 		
-		if(sctx->has_fpim&1)
+		if((sctx->has_fpim&1) && !(sctx->emit_riscv&0x11))
 		{
 			memcpy(&li, &f, sizeof(double));
 		

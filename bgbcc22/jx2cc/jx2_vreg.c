@@ -2469,25 +2469,28 @@ int BGBCC_JX2C_EmitJCmpVRegVRegInt(
 		}
 #endif
 
-//		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
-//		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, treg);
+		if(ctx->arch_has_predops&1)
+		{
+	//		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+	//		ctreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, treg);
 
-		BGBCC_JX2C_CheckSetModeDqClear(ctx, sctx);
+			BGBCC_JX2C_CheckSetModeDqClear(ctx, sctx);
 
-		if(flip)
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg, ctreg);
-		else
-			BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg, csreg);
-//		if(sctx->need_farjmp)
-//			BGBCC_JX2_EmitOpFarLabel(sctx, nm2, lbl);
-//		else
-//			BGBCC_JX2_EmitOpLabel(sctx, nm2, lbl);
-		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
+			if(flip)
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, csreg, ctreg);
+			else
+				BGBCC_JX2C_EmitOpRegReg(ctx, sctx, nm1, ctreg, csreg);
+	//		if(sctx->need_farjmp)
+	//			BGBCC_JX2_EmitOpFarLabel(sctx, nm2, lbl);
+	//		else
+	//			BGBCC_JX2_EmitOpLabel(sctx, nm2, lbl);
+			BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 
-		BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);
-		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
-		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
-		return(1);
+			BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, treg);
+			return(1);
+		}
 	}
 	
 //	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
@@ -2745,22 +2748,32 @@ int BGBCC_JX2C_EmitJCmpVRegZeroInt(
 			}
 		}
 
-//		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
+		if(ctx->arch_has_predops&1)
+		{
+	//		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
 
-		BGBCC_JX2C_SetModeDqClear(ctx, sctx);
+			BGBCC_JX2C_SetModeDqClear(ctx, sctx);
 
-		BGBCC_JX2C_EmitOpReg(ctx, sctx, nm1, csreg);
-//		if(sctx->need_farjmp)
-//			BGBCC_JX2_EmitOpFarLabel(sctx, nm2, lbl);
-//		else
-//			BGBCC_JX2_EmitOpLabel(sctx, nm2, lbl);
+			BGBCC_JX2C_EmitOpReg(ctx, sctx, nm1, csreg);
+	//		if(sctx->need_farjmp)
+	//			BGBCC_JX2_EmitOpFarLabel(sctx, nm2, lbl);
+	//		else
+	//			BGBCC_JX2_EmitOpLabel(sctx, nm2, lbl);
 
-		BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
-		BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);
-		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
-		return(1);
+			BGBCC_JX2C_ResetFpscrLocal(ctx, sctx);
+			BGBCC_JX2_EmitOpAutoLabel(sctx, nm2, lbl);
+			BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+			return(1);
+		}
 	}
 	
+	if(1)
+	{
+		BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
+		return(BGBCC_JX2C_EmitJCmpVRegVRegInt(ctx, sctx,
+			type, sreg, treg, cmp, lbl));
+	}
+
 	BGBCC_CCXL_StubError(ctx);
 //	BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
 	return(0);

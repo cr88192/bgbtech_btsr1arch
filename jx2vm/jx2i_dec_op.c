@@ -240,9 +240,9 @@ int BJX2_DecodeOpcode_CheckTwoWord(BJX2_Context *ctx,
 
 	return(0);
 
-//	opw=BJX2_MemGetWord(ctx, addr);
-	opw2=BJX2_MemGetWord(ctx, addr+2);
-//	opw3=BJX2_MemGetWord(ctx, addr+4);
+//	opw=BJX2_MemGetWordU(ctx, addr);
+	opw2=BJX2_MemGetWordU(ctx, addr+2);
+//	opw3=BJX2_MemGetWordU(ctx, addr+4);
 
 #if 1
 	op->opn2=opw2;
@@ -832,15 +832,15 @@ int BJX2_DecodeOpcodeForAddr(BJX2_Context *ctx,
 	int cm_dfl, cn_dfl;
 	int opw, opw2, opw3;
 
-	opw =BJX2_MemGetWord(ctx, addr+0);
-	opw2=BJX2_MemGetWord(ctx, addr+2);
-	opw3=BJX2_MemGetWord(ctx, addr+4);
+	opw =BJX2_MemGetWordU(ctx, addr+0);
+	opw2=BJX2_MemGetWordU(ctx, addr+2);
+	opw3=BJX2_MemGetWordU(ctx, addr+4);
 
 	if(((addr+12)&(~4095))!=((addr+0)&(~4095)))
 	{
-		BJX2_MemGetWord(ctx, addr+6);
-		BJX2_MemGetWord(ctx, addr+8);
-		BJX2_MemGetWord(ctx, addr+10);
+		BJX2_MemGetWordU(ctx, addr+6);
+		BJX2_MemGetWordU(ctx, addr+8);
+		BJX2_MemGetWordU(ctx, addr+10);
 	}
 
 	if(ctx->status)

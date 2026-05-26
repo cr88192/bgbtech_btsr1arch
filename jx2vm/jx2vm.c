@@ -1411,6 +1411,7 @@ void print_usage(char *name)
 	"--norast           Disable rasterizer module.\n"
 	"--nowex            Disable support for WEX.\n"
 	"--opssc            Enable superscalar (RV and XG3).\n"
+	"--opssc2           Enable superscalar (RV and XG3) with reorder.\n"
 	"--breakperf        ?\n"
 
 	"\n"
@@ -1594,6 +1595,8 @@ int main(int argc, char *argv[])
 				{ nowex|=2; continue; }
 			if(!strcmp(argv[i], "--breakperf"))
 				{ nowex|=4; continue; }
+			if(!strcmp(argv[i], "--opssc2"))
+				{ nowex|=2|8; continue; }
 
 			continue;
 		}
@@ -1709,6 +1712,10 @@ int main(int argc, char *argv[])
 	if(nowex&2)
 	{
 		ctx->do_opssc=1;
+		if(nowex&8)
+		{
+			ctx->do_opssc=3;
+		}
 	}
 
 	if(nowex&4)

@@ -320,6 +320,16 @@ void BJX2_Op_RSUB_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=op->imm-ctx->regs[op->rm];
 }
 
+void BJX2_Op_RSUBSL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(s32)(op->imm-ctx->regs[op->rm]);
+}
+
+void BJX2_Op_RSUBUL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=(u32)(op->imm-ctx->regs[op->rm]);
+}
+
 void BJX2_Op_ADC_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;
@@ -3413,6 +3423,22 @@ void BJX2_Op_CSELT_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 			ctx->regs[op->ro];
 }
 
+void BJX2_Op_CSELT_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=
+		(ctx->regs[BJX2_REG_SR]&1)?
+			ctx->regs[op->rm]:
+			op->imm;
+}
+
+void BJX2_Op_CSELTN_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	ctx->regs[op->rn]=
+		(!(ctx->regs[BJX2_REG_SR]&1))?
+			ctx->regs[op->rm]:
+			op->imm;
+}
+
 void BJX2_Op_PCSELTL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vb, vc;
@@ -3881,4 +3907,56 @@ void BJX2_Op_BITMOVSX_RegRegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	ctx->regs[op->rn+0]=v2a;
 	ctx->regs[op->rn+1]=v2b;
+}
+
+
+void BJX2_Op_MIN_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 va, vb, vc;
+	int isgt;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	isgt=va>vb;
+
+	ctx->regs[op->rn]=isgt?vb:va;
+}
+
+void BJX2_Op_MAX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isgt;
+
+	va=ctx->regs[op->rm];
+	vb=ctx->regs[op->ro];
+	isgt=va>vb;
+
+	ctx->regs[op->rn]=isgt?va:vb;
+}
+
+
+void BJX2_Op_MIN_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 va, vb, vc;
+	int isgt;
+
+	va=ctx->regs[op->rm];
+//	vb=ctx->regs[op->ro];
+	vb=op->imm;
+	isgt=va>vb;
+
+	ctx->regs[op->rn]=isgt?vb:va;
+}
+
+void BJX2_Op_MAX_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	int isgt;
+
+	va=ctx->regs[op->rm];
+//	vb=ctx->regs[op->ro];
+	vb=op->imm;
+	isgt=va>vb;
+
+	ctx->regs[op->rn]=isgt?va:vb;
 }

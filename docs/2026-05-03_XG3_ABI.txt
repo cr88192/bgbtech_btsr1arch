@@ -1,29 +1,36 @@
 General ABI Rules for XG3 and RISC-V (within BGBCC)
 
+
+=== Registers and Arguments ===
+
 User Visible Registers:
-* R0 / ZR / ZERO          : Zero Register
-* R1 / LR / RA            : Link Register
-* R2 / SP                 : Stack Pointer
-* R3 / GP                 : Global Pointer
-* R4 / TP                 : Task Pointer
-* R5  .. R7  / X5 .. X7   : Scratch / Stomp
-* R8  .. R9  / X8 .. X9   : Callee Save
-* R10 .. R17 / X10.. X17  : Scratch / Arg1..Arg8
-* R18 .. R27 / X18.. X27  : Callee Save
-* R28 .. R31 / X28.. X31  : Scratch
-* R32 .. R35 / F0 .. F3   : Scratch
-* R36 .. R41 / F4 .. F9   : Callee Save
-* R42 .. R49 / F10.. F17  : Scratch / Arg9..Arg16 (Optional, XG3 Native)
-* R50 .. R59 / F18.. F27  : Callee Save
-* R60 .. R63 / F28.. F31  : Scratch
+
+ R0 / ZR / ZERO         : Zero Register (Read Only)
+ R1 / LR / RA           : Link Register
+ R2 / SP                : Stack Pointer
+ R3 / GP                : Global Pointer
+ R4 / TP                : Task Pointer (Read Only Global)
+ R5  .. R7  / X5 .. X7  : Scratch / Stomp
+ R8  .. R9  / X8 .. X9  : Callee Save
+ R10 .. R17 / X10.. X17 : Scratch / Arg1..Arg8
+ R18 .. R27 / X18.. X27 : Callee Save
+ R28 .. R31 / X28.. X31 : Scratch
+ R32 .. R35 / F0 .. F3  : Scratch
+ R36 .. R41 / F4 .. F9  : Callee Save
+ R42 .. R49 / F10.. F17 : Scratch / Arg9..Arg16 (Optional, XG3 Native)
+ R50 .. R59 / F18.. F27 : Callee Save
+ R60 .. R63 / F28.. F31 : Scratch
 
 
 Note:
+
 * The assignment of callee-save registers is similar to the RV64G LP64D ABI.
 * F4..F7 were moved over to being callee-save to adjust for register pressure.
+** Assignments for X registers are the same as for the RV64 ABIs.
 
 
 Argument Passing:
+
 * The nominal ABI will pass and return everything in X10 through X17.
 ** Integer types: Will be Sign or Zero extended to 64 bits.
 ** "unsigned int" is to be zero extended.
@@ -41,14 +48,86 @@ If no more argument registers exist, any remaining arguments are to be spilled o
 For local-only calls within XG3 Mode, F10..F17 may be used for an 8 additional argument registers. This will not generally be done for RV64G code generation as its effects will be, on average, detrimental.
 
 These extra arguments may be excluded in some cases:
+
 * Imports or exports from a DLL;
 * Functions which may be called via a function pointer;
 * Vararg functions.
 
 
 Return Value:
+
 * X10 or X11:X10 will be used for return.
 * Rules are essentially the same as for function arguments.
 
-If a large struct is to be returned by value from a function, an extra hidden argument is added to the start of the argument list to hold the return address for the struct. The callee will then copy the returned struct into the address provided by the caller.
+If a large struct is to be returned by value from a function, an extra hidden argument may be added to the start of the argument list to hold the return address for the struct. The callee will then copy the returned struct into the address provided by the caller.
+
+If both a large struct return and "thiscall" happens, the struct pointer will come first followed by the this pointer. The remaining 6 arguments will be left as-is (behaving as if two new arguments had been added).
+
+
+=== TP Register ===
+
+In TestKern with PE/PEL loads, TP will store the same value as TBR, and as such will point to the main Task Context.
+
+If loading ELF PIE via a "ld-linux.so" or similar, TP will be initialized to 0 (the C runtime library will provide its own structure for this address).
+
+TP will otherwise be assumed to be a read-only global value as far as the ABI is concerned.
+
+
+=== GP Reload ===
+
+In PE and PEL binaries, GP will nominally point to the address given in the Global Pointer in the PE/COFF Data Directory.
+
+As part of the prolog and epilog for functions which are externally callable, non-leaf and/or access global variables, they will save and restore GP on Call and Return.
+
+The GP Reload process will then be:
+
+  Load address found at (GP, 0) into Temp.
+  Load from (Temp, PBO_Offset) into GP.
+
+With a Base Reloc encoding the location of each Reload. The PBO Offset will normally be 0 prior to Load, but the PE Loader will add the PBO_Index for the binary to this offset.
+
+This will allow each PE image within a process to have its own data/bss area.
+
+
+=== Sizes and Alignment ===
+
+Canonical Type Size and Alignment:
+
+ char			1	1
+ short			2	2
+ int			4	4
+ long			4	4	(32 bit ABI variant)
+ long			8	8	(64 bit ABI variant)
+ long long		8	8
+ __int128		16	16
+ short float	2	2	(Binary16)
+ float			4	4	(Binary32)
+ double			8	8	(Binary64)
+ long double	16	16	(Binary128)
+ __float128		16	16	(Binary128)
+ void *			4	4	(32 bit ABI variant)
+ void *			8	8	(64 bit ABI variant)
+ void *			16	16	(128 bit BCE ABI variant)
+ void __far *	8	8	(32 and 64 bit ABI variants)
+ void __far *	16	16	(128 bit BCE ABI variant)
+ void __huge *	16	16
+
+
+Note that BCE will only use 128-bit "void *" for an explicitly 128-bit ABI, which will expand all pointers to 128 bits. This would be the most strict mode.
+
+In the normal BCE ABI, pointers will remain 64-bit by default, with 128-bit only being used in "__huge" pointers. The bevior between the 64-bit normal and BCE ABI variants will be mostly similar, differing mainly in that BCE Mode will assume that 128-bit pointers represent capabilities and so will have more constraints on their handling.
+
+In BCE, the local 48-bit address space will be assumed to exist as a kind of sandbox where no particular enforcement is used.
+
+The C library may define 'far' and 'huge' as shorthands for '__far' and '__huge'.
+
+The 32 bit ABI is mostly the same as the 64-bit ABI, except that the runtime will assume less than 4GB of address space and will reduce the size of pointers as a result. Internally, the processor will remain 64-bit.
+
+
+Composite objects such as structs will nominally be stored with each member padded to its native alignment, with the whole struct alignment set as the largest member alignment, and the size of the struct padded to the next multiple of this alignment.
+
+For _BitInt(n):
+
+* Alignment for n<=256 will pad to the next power-of-2 size.
+* Alignment for n>256 will pad to the next multiple of 128 bits (16b).
 

@@ -4463,6 +4463,16 @@ s64 BJX2_MemGetQWord(BJX2_Context *ctx, bjx2_addr addr0)
 	return(v);
 }
 
+u16 BJX2_MemGetWordU(BJX2_Context *ctx, bjx2_addr addr0)
+{
+	return((u16)BJX2_MemGetWord(ctx, addr0));
+}
+
+u32 BJX2_MemGetDWordU(BJX2_Context *ctx, bjx2_addr addr0)
+{
+	return((u32)BJX2_MemGetDWord(ctx, addr0));
+}
+
 int BJX2_MemGetXWord(BJX2_Context *ctx, bjx2_addr addr0,
 	u64 *rvlo, u64 *rvhi)
 {

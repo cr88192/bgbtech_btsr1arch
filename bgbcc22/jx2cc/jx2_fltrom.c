@@ -569,3 +569,356 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 
 	return(0);
 }
+
+ccxl_status BGBCC_JX2C_FlattenImage_CompareGlobalsBasic(
+	BGBCC_TransState *ctx, int idx1, int idx2)
+{
+	BGBCC_CCXL_RegisterInfo *obj1, *obj2;
+	int c1, c2, rty1, rty2, sz1, sz2;
+	obj1=ctx->reg_globals[idx1];
+	obj2=ctx->reg_globals[idx2];
+	c1=obj1->gblrefcnt;
+	c2=obj2->gblrefcnt;
+	rty1=obj1->regtype;
+	rty2=obj2->regtype;
+
+#if 0
+	if(	((rty1==CCXL_LITID_GLOBALVAR) || (rty1==CCXL_LITID_STATICVAR)) &&
+		((rty2==CCXL_LITID_GLOBALVAR) || (rty2==CCXL_LITID_STATICVAR)) )
+	{
+		sz1=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj1->type);
+		sz2=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj2->type);
+		if(sz1>16)		{ c1*=4.0/sqrt(sz1); }
+		if(sz2>16)		{ c2*=4.0/sqrt(sz2); }
+	}
+#endif
+
+	if(c1>c2)	return( 1);
+	if(c1<c2)	return(-1);
+	return(0);
+}
+
+ccxl_status BGBCC_JX2C_FlattenImage_CompareGlobalsProp(
+	BGBCC_TransState *ctx, int idx1, int idx2)
+{
+	BGBCC_CCXL_RegisterInfo *obj1, *obj2;
+	double f, g;
+	int c1, c2, rty1, rty2, sz1, sz2;
+
+	obj1=ctx->reg_globals[idx1];
+	obj2=ctx->reg_globals[idx2];
+	c1=obj1->gblrefcnt;
+	c2=obj2->gblrefcnt;
+	rty1=obj1->regtype;
+	rty2=obj2->regtype;
+
+	f=1.25;
+	if(	((rty1==CCXL_LITID_GLOBALVAR) || (rty1==CCXL_LITID_STATICVAR)) &&
+		((rty2==CCXL_LITID_GLOBALVAR) || (rty2==CCXL_LITID_STATICVAR)) )
+	{
+		f=1.0625;
+
+#if 0
+		sz1=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj1->type);
+		sz2=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj2->type);
+		if(sz1>16)		{ c1*=4.0/sqrt(sz1); }
+		if(sz2>16)		{ c2*=4.0/sqrt(sz2); }
+#endif
+	}
+
+	if(	(rty1==CCXL_LITID_FUNCTION) &&
+		(rty2==CCXL_LITID_FUNCTION) )
+			f=1.5;
+
+	if(c1>c2)
+	{
+		g=(c1+1.0)/(c2+1.0);
+		if(g>f)
+			return( 1);
+	}else
+		if(c1<c2)
+	{
+		g=(c2+1.0)/(c1+1.0);
+		if(g>f)
+			return(-1);
+	}	
+	return(0);
+}
+
+ccxl_status BGBCC_JX2C_FlattenImage_SortGlobalsCmpR(
+	BGBCC_TransState *ctx, int *shufarr, int shufgbl, int rec,
+	int (*compare)(BGBCC_TransState *ctx, int idx1, int idx2))
+{
+	int pv, hi, lo;
+	int i, j, k;
+
+	/* Sort globals by use-count. */
+
+//	if((shufgbl<16) || (rec>=32))
+	if((shufgbl<=8) || (rec>=32))
+//	if(1)
+	{
+		/* If needed, fall back to selsort. */
+		for(i=0; i<shufgbl; i++)
+		{
+			for(j=i+1; j<shufgbl; j++)
+			{
+				k=compare(ctx, shufarr[i], shufarr[j]);
+				if(k<0)
+				{
+					k=shufarr[i];
+					shufarr[i]=shufarr[j];
+					shufarr[j]=k;
+				}
+			}
+		}
+		return(0);
+	}
+	
+	/* quicksort */
+
+	pv=shufarr[shufgbl>>1];
+	lo=0; hi=shufgbl;
+	
+	while(lo<hi)
+	{
+		k=compare(ctx, shufarr[lo], pv);
+		if(k>=0)
+			{ lo++; continue; }
+		if(k<0)
+		{
+			hi--;
+			k=shufarr[lo];
+			shufarr[lo]=shufarr[hi];
+			shufarr[hi]=k;
+		}
+	}
+	BGBCC_JX2C_FlattenImage_SortGlobalsCmpR(
+		ctx, shufarr+0, lo, rec+1, compare);
+	BGBCC_JX2C_FlattenImage_SortGlobalsCmpR(
+		ctx, shufarr+lo, shufgbl-lo, rec+1, compare);
+	return(0);
+}
+
+ccxl_status BGBCC_JX2C_FlattenImage_SortGlobals(
+	BGBCC_TransState *ctx, int *shufarr, int shufgbl)
+{
+	BGBCC_CCXL_RegisterInfo *obj1, *obj2;
+	int i, j, k;
+
+	BGBCC_JX2C_FlattenImage_SortGlobalsCmpR(ctx, shufarr+1, shufgbl-1,
+		0, BGBCC_JX2C_FlattenImage_CompareGlobalsBasic);
+	return(0);
+
+#if 0
+	/* Sort globals by use-count. */
+	for(i=1; i<shufgbl; i++)
+	{
+		for(j=i+1; j<shufgbl; j++)
+		{
+			k=BGBCC_JX2C_FlattenImage_CompareGlobalsBasic(ctx,
+				shufarr[i], shufarr[j]);
+			if(k<0)
+			{
+				k=shufarr[i];
+				shufarr[i]=shufarr[j];
+				shufarr[j]=k;
+			}
+
+#if 0
+			obj1=ctx->reg_globals[shufarr[i]];
+			obj2=ctx->reg_globals[shufarr[j]];
+			if(obj2->gblrefcnt>obj1->gblrefcnt)
+			{
+				k=shufarr[i];
+				shufarr[i]=shufarr[j];
+				shufarr[j]=k;
+			}
+#endif
+		}
+	}
+#endif
+
+	return(0);
+}
+
+ccxl_status BGBCC_JX2C_FlattenImage_ShuffleGlobals(
+	BGBCC_TransState *ctx, int *shufarr, int shufgbl)
+{
+	BGBCC_CCXL_RegisterInfo *obj1, *obj2;
+	double f, g;
+	s64 h;
+	int i, j, k;
+
+#if 1
+	h=1234;
+
+	for(i=1; i<shufgbl; i++)
+	{
+		j=(((int)(h>>32))&0x0FFFFFFF)%(shufgbl);
+		h=h*65521+13;
+		while(!j)
+		{
+			j=(((int)(h>>32))&0x0FFFFFFF)%(shufgbl);
+			h=h*65521+13;
+		}
+		k=shufarr[i];
+		shufarr[i]=shufarr[j];
+		shufarr[j]=k;
+	}
+#endif
+
+	BGBCC_JX2C_FlattenImage_SortGlobalsCmpR(ctx, shufarr+1, shufgbl-1,
+		0, BGBCC_JX2C_FlattenImage_CompareGlobalsProp);
+
+#if 0
+	/* Sort globals by use-count. */
+	for(i=1; i<shufgbl; i++)
+	{
+		for(j=i+1; j<shufgbl; j++)
+		{
+			k=BGBCC_JX2C_FlattenImage_CompareGlobalsProp(ctx,
+				shufarr[i], shufarr[j]);
+			if(k<0)
+			{
+				k=shufarr[i];
+				shufarr[i]=shufarr[j];
+				shufarr[j]=k;
+			}
+
+#if 0
+			obj1=ctx->reg_globals[shufarr[i]];
+			obj2=ctx->reg_globals[shufarr[j]];
+			
+			f=1.25;
+			if(	(obj1->regtype==CCXL_LITID_GLOBALVAR) &&
+				(obj2->regtype==CCXL_LITID_GLOBALVAR) )
+					f=1.0625;
+			if(	(obj1->regtype==CCXL_LITID_FUNCTION) &&
+				(obj2->regtype==CCXL_LITID_FUNCTION) )
+					f=1.5;
+			
+			if((obj2->gblrefcnt>obj1->gblrefcnt) &&
+//					(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>1.25))
+//					(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>1.125))
+				(((obj2->gblrefcnt+1.0)/(obj1->gblrefcnt+1.0))>f))
+			{
+				k=shufarr[i];
+				shufarr[i]=shufarr[j];
+				shufarr[j]=k;
+			}
+#endif
+		}
+	}
+#endif
+
+	return(0);
+}
+
+ccxl_status BGBCC_JX2C_FlattenImage_ShufCompactGlobals(
+	BGBCC_TransState *ctx, int *shufarr, int shufgbl)
+{
+	BGBCC_CCXL_RegisterInfo *obj1, *obj2;
+	int sz1, al1, sz2, al2, tsz, nswap, rty1, rty2;
+	int i, j, k;
+
+#if 1
+	/* Shuffle global variables for space compacting. */
+	for(i=0; i<512; i++)
+	{
+		tsz=0; nswap=0;
+		for(j=1; j<(shufgbl-1); j++)
+		{
+			obj1=ctx->reg_globals[shufarr[j+0]];
+			obj2=ctx->reg_globals[shufarr[j+1]];
+			rty1=obj1->regtype;
+			rty2=obj2->regtype;
+			if(	(rty1==CCXL_LITID_GLOBALVAR) ||
+				(rty1==CCXL_LITID_STATICVAR) )
+			{
+				if(	(rty2==CCXL_LITID_GLOBALVAR) ||
+					(rty2==CCXL_LITID_STATICVAR) )
+				{
+					sz1=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj1->type);
+					al1=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj1->type);
+					sz2=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj2->type);
+					al2=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj2->type);
+					if(al1<1)al1=1;
+					if(al2<1)al2=1;
+					
+//					if((tsz&(al1-1)) && (sz2<sz1))
+					if(	( (tsz&(al1-1)) && (al2<al1)) ||
+						(!(tsz&(al2-1)) && (al2>sz1)) ||
+						((sz1>16) && (sz2<=16)))
+					{
+						k=shufarr[j+0];
+						shufarr[j+0]=shufarr[j+1];
+						shufarr[j+1]=k;
+						nswap++;
+						
+						tsz=(tsz+(al2-1))&(~(al2-1));
+						tsz+=sz2;
+					}else
+					{
+						tsz=(tsz+(al1-1))&(~(al1-1));
+						tsz+=sz1;
+					}
+				}else
+				{
+					sz1=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj1->type);
+					al1=BGBCC_CCXL_TypeGetLogicalAlign(ctx, obj1->type);
+
+					tsz=(tsz+(al1-1))&(~(al1-1));
+					tsz+=sz1;
+				}
+			}else
+			{
+				if(	(rty2==CCXL_LITID_GLOBALVAR) ||
+					(rty2==CCXL_LITID_STATICVAR) )
+				{
+					k=shufarr[j+0];
+					shufarr[j+0]=shufarr[j+1];
+					shufarr[j+1]=k;
+					nswap++;
+					
+					if(j>1)
+						j--;
+					continue;
+				}
+			}
+		}
+
+		for(j=(shufgbl-2); j>=1; j--)
+		{
+			obj1=ctx->reg_globals[shufarr[j+0]];
+			obj2=ctx->reg_globals[shufarr[j+1]];
+			rty1=obj1->regtype;
+			rty2=obj2->regtype;
+
+			if(	(rty1==CCXL_LITID_GLOBALVAR) ||
+				(rty1==CCXL_LITID_STATICVAR) )
+			{
+			}else
+			{
+				if(	(rty2==CCXL_LITID_GLOBALVAR) ||
+					(rty2==CCXL_LITID_STATICVAR) )
+				{
+					k=shufarr[j+0];
+					shufarr[j+0]=shufarr[j+1];
+					shufarr[j+1]=k;
+					nswap++;
+					
+//					if(j>1)
+//						j--;
+					continue;
+				}
+			}
+		}
+
+		if(!nswap)
+			break;
+	}
+#endif
+
+	return(0);
+}

@@ -2371,6 +2371,76 @@ int BGBCC_JX2_EmitCheckAutoLabelNear11(
 	return(0);
 }
 
+
+
+int BGBCC_JX2_EmitCheckAutoLabelNear6_X3(
+	BGBCC_JX2_Context *ctx, int lbl, int nmid)
+{
+	int i, j, k, rngb, rngw, rngw16, szrng;
+
+	szrng=ctx->simfnnsz-ctx->simfnmsz;
+
+	if(szrng<0)
+		return(0);
+
+	i=BGBCC_JX2_LookupSimLabelIndex(ctx, lbl);
+	if((i>=0) && (ctx->lbl_sec[i]==ctx->sec))
+	{
+		j=ctx->lbl_ofs[i];
+
+		k=BGBCC_JX2_EmitGetOffs(ctx);
+
+//		rngb=108;
+		rngb=116;
+
+		if(i>=ctx->nlbl)
+		{
+			if((ctx->simfnsz>0) && (ctx->simfnsz<rngb) &&
+					!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
+				return(1);
+
+//			return(0);
+
+			if(j<k)
+			{
+				j=j-szrng;
+			}else
+			{
+				j=j+szrng;
+			}
+			
+//			rngb=80-(szrng/2);
+			rngb=96-(szrng/2);
+
+#if 0
+			if(!ctx->is_stable)
+			{
+				rngb=999999;
+				if(ctx->need_f16jmp || ctx->need_farjmp)
+					rngb=0;
+			}
+#endif
+		}
+			
+		k=BGBCC_JX2_EmitGetOffs(ctx);
+		j=j-(k+4);
+		if(j<0)j=-j;
+		
+		if(j<rngb)
+		{
+			return(1);
+		}
+		
+		return(0);
+	}
+	
+	if((ctx->simfnsz>0) && (ctx->simfnsz<112) &&
+		!BGBCC_JX2_LookupNameForLabel(ctx, lbl))
+			return(1);
+
+	return(0);
+}
+
 #if 0
 int BGBCC_JX2_EmitCheckAutoLabelNear16B(
 	BGBCC_JX2_Context *ctx, int lbl, int nmid)

@@ -1788,6 +1788,9 @@ int BJX2_CheckWexSanity3W(BJX2_Context *ctx,
 {
 	int sppfx;
 
+	if(ctx->do_opssc&2)
+		return(1);
+
 	sppfx=0;
 	
 	if((op2->nmid==BJX2_NMID_PADDF) && (op3->nmid==BJX2_NMID_PADDF))
@@ -1902,6 +1905,9 @@ int BJX2_CheckWexSanity2W(BJX2_Context *ctx,
 	BJX2_Opcode *op1, BJX2_Opcode *op2)
 {
 	int sppfx;
+
+	if(ctx->do_opssc&2)
+		return(1);
 
 	sppfx=0;
 	
@@ -2329,21 +2335,44 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			!(op1->pc&3) &&
 			!(op2->pc&3) &&
 
-			!(op1->fl&BJX2_OPFL_NOWEX) &&
-			!(op1->fl&BJX2_OPFL_NOWEX_FP2) &&
-			!(op1->fl&BJX2_OPFL_NOWEX_IO2) &&
-			!(op2->fl&BJX2_OPFL_NOWEXSFX) &&
-			!(op1->fl&BJX2_OPFL_REGX3R) && !(op2->fl&BJX2_OPFL_REGX3R))
+			!(op1->fl&BJX2_OPFL_REGX3R) &&
+			!(op2->fl&BJX2_OPFL_REGX3R))
 		{
-			if(	(op1->rn!=op2->rm) &&
-				(op1->rn!=op2->ro) &&
-				(op1->rn!=op2->rn) &&
-				(op2->rn!=op1->rm) &&
-				(op2->rn!=op1->ro) &&
-				(op1->rn!=BJX2_REG_SP))
+			if(	!(op1->fl&BJX2_OPFL_NOWEX) &&
+				!(op1->fl&BJX2_OPFL_NOWEX_FP2) &&
+				!(op1->fl&BJX2_OPFL_NOWEX_IO2) &&
+				!(op2->fl&BJX2_OPFL_NOWEXSFX) )
 			{
-				op1->fl|=BJX2_OPFL_WEX;
-				op1->fl|=BJX2_OPFL_OPSSC;
+				if(	(op1->rn!=op2->rm) &&
+					(op1->rn!=op2->ro) &&
+					(op1->rn!=op2->rn) &&
+					(op2->rn!=op1->rm) &&
+					(op2->rn!=op1->ro) &&
+					(op1->rn!=BJX2_REG_SP))
+				{
+					op1->fl|=BJX2_OPFL_WEX;
+					op1->fl|=BJX2_OPFL_OPSSC;
+				}
+			}
+			
+			if(ctx->do_opssc&2)
+			{
+				if(	!(op2->fl&BJX2_OPFL_NOWEX) &&
+					!(op2->fl&BJX2_OPFL_NOWEX_FP2) &&
+					!(op2->fl&BJX2_OPFL_NOWEX_IO2) &&
+					!(op1->fl&BJX2_OPFL_NOWEXSFX) )
+				{
+					if(	(op2->rn!=op1->rm) &&
+						(op2->rn!=op1->ro) &&
+						(op2->rn!=op1->rn) &&
+						(op1->rn!=op2->rm) &&
+						(op1->rn!=op2->ro) &&
+						(op2->rn!=BJX2_REG_SP))
+					{
+						op1->fl|=BJX2_OPFL_WEX;
+						op1->fl|=BJX2_OPFL_OPSSC;
+					}
+				}
 			}
 		}
 
@@ -2359,7 +2388,40 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 #endif
 
 #if 1
-		if((op->fl&BJX2_OPFL_WEX) && op1)
+		if((op->fl&BJX2_OPFL_WEX) && op1 &&
+			(op1->fl&BJX2_OPFL_WEX) && op2 &&
+			(ctx->do_opssc&2))
+		{
+			if((i+2)>nc)
+				continue;
+				
+			j=op->cyc;
+			if(op1->cyc>j)
+				j=op1->cyc;
+			if(op2->cyc>j)
+				j=op2->cyc;
+			op->cyc=0;
+			op1->cyc=0;
+			op2->cyc=j;
+			continue;
+		}
+
+		if((op->fl&BJX2_OPFL_WEX) && op1 &&
+			(ctx->do_opssc&2))
+		{
+			if((i+2)>nc)
+				continue;
+				
+			j=op->cyc;
+			if(op1->cyc>j)
+				j=op1->cyc;
+			op->cyc=0;
+			op1->cyc=j;
+			continue;
+		}
+
+		if((op->fl&BJX2_OPFL_WEX) && op1 &&
+			!(ctx->do_opssc&2))
 		{
 			if((i+2)>nc)
 				continue;

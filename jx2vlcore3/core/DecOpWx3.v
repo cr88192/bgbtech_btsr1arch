@@ -1026,8 +1026,17 @@ begin
 			begin
 `ifdef jx2_use_fpu_fpimm
 				opImmB	= decOpFzC_idUFl[0] ?
-					{ (opImmA[32] ? 9'h1FF : 9'h000) ^
-						{ 2'b0, opJumbo96WxBits }, tOpJBitsB[23:0] } :
+					{
+						srXG3 ?
+						{ 1'b0, opJumbo96WxBits[0], opImmA[32],
+							opJumbo96WxBits[6:1] } :
+						((opImmA[32] ? 9'h1FF : 9'h000) ^
+							{ 2'b0, opJumbo96WxBits }),
+						tOpJBitsB[23:0] } :
+
+//					{ (opImmA[32] ? 9'h1FF : 9'h000) ^
+//					{ (opImmA[32] ? (srXG3 ? 9'h080 : 9'h1FF) : 9'h000) ^
+//						{ 2'b0, opJumbo96WxBits }, tOpJBitsB[23:0] } :
 					{ 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };
 `else
 				opImmB	= { 1'b0, tOpJBitsB[23:0], tOpJBitsC[23:16] };

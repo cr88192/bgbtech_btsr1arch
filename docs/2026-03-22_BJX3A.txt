@@ -13,7 +13,7 @@ Will make some restrictions on RV64GC:
 * M: May be subset
 ** Will have MULW and similar;
 ** MUL, DIV, DIVW, etc, will be demoted to optional.
-* A: Omitted from HW, Trap
+* A: Likely omitted from HW, Trap
 * F: Partial
 * D: Partial
 * Zicsr: Partial (Trap for non-core CSRs)
@@ -30,4 +30,13 @@ MMU:
 * Eliminate native Global page checks and VUGID in favor of using ACL checks as the primary mechanism;
 * Will continue to assume Soft-TLB as the main mechanism;
 * TLB Miss handling will need to be possible from RISC-V land.
+
+
+Would need to determine whether CPU boots in RV64GC mode or XG3 mode.
+* Previously would have said RV64GC...
+** But, XG3 has become more competitive in terms of code density.
+** So, there is no longer an obvious winner for the Boot ROM.
+
+May make sense to boot in XG3 Mode, then maybe try to load either a basic kernel or UEFI layer.
+* Or add UEFI support to TestKern, allowing it to function like UEFI.
 

@@ -327,7 +327,9 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobal(
 	BGBCC_CCXL_RegisterInfo *cur, *nxt;
 	BGBCC_CCXL_RegisterInfo *llst;
 	BGBCC_CCXL_RegisterInfo *sel;
-	int i;
+	int i, ix;
+
+	ix=bgbcc_strdup_i(name, 0);
 
 //	i=BGBCC_CCXL_HashName(name);
 	i=BGBCC_CCXL_HashNameNoSig(name);
@@ -335,7 +337,8 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobal(
 	while(cur)
 	{
 //		if(!strcmp(cur->name, name))
-		if(!strcmp(cur->qname, name))
+//		if(!strcmp(cur->qname, name))
+		if((ix>0) && (cur->qname_ix==ix))
 			return(cur);
 		cur=cur->hashnext;
 	}
@@ -413,9 +416,22 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupGlobalFull(
 	BGBCC_CCXL_RegisterInfo *cur, *nxt;
 	BGBCC_CCXL_RegisterInfo *llst;
 	BGBCC_CCXL_RegisterInfo *sel;
-	int i;
+	int i, ix;
 
 #if 1
+	ix=bgbcc_strdup_i(name, 0);
+	for(i=1; i<ctx->n_reg_globals; i++)
+	{
+		cur=ctx->reg_globals[i];
+
+		if(cur->name_ix==ix)
+			return(cur);
+		if(cur->qname_ix==ix)
+			return(cur);
+	}
+#endif
+
+#if 0
 	for(i=1; i<ctx->n_reg_globals; i++)
 	{
 		cur=ctx->reg_globals[i];
@@ -607,7 +623,10 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetGlobal2I(
 	BGBCC_CCXL_CheckExpandGlobals(ctx);
 	
 	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
-	cur->name=bgbcc_strdup(name);
+//	cur->name=bgbcc_strdup(name);
+
+	cur->name_ix=bgbcc_strdup_i(name, 0);
+	cur->name=bgbcc_strtab_i(cur->name_ix);
 
 	BGBCC_CCXL_AddGlobalDecl(ctx, cur);
 
@@ -665,8 +684,13 @@ void BGBCC_CCXL_NormalizeGlobalDeclQn(BGBCC_TransState *ctx,
 			s++;
 		}
 		
-		decl->qname=sq;
-		decl->name=bgbcc_strdup(sn);
+//		decl->qname=sq;
+//		decl->name=bgbcc_strdup(sn);
+
+		decl->qname_ix=bgbcc_strdup_i(sq, 0);
+		decl->qname=bgbcc_strtab_i(decl->qname_ix);
+		decl->name_ix=bgbcc_strdup_i(sn, 0);
+		decl->name=bgbcc_strtab_i(decl->name_ix);
 	}
 }
 
@@ -746,12 +770,10 @@ void BGBCC_CCXL_AddFrameArg(BGBCC_TransState *ctx,
 		i=frame->n_vargs++;
 		if(decl->name && frame->args[i])
 		{
-			frame->args[i]->name=
-				decl->name;
-			frame->args[i]->sig=
-				decl->sig;
-			frame->args[i]->type=
-				decl->type;
+			frame->args[i]->name=decl->name;
+			frame->args[i]->name_ix=decl->name_ix;
+			frame->args[i]->sig=decl->sig;
+			frame->args[i]->type=decl->type;
 		}else
 		{
 			decl->gblid=frame->n_args;
@@ -1549,7 +1571,11 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 			obj->littype=CCXL_LITID_GLOBALVAR;
 			obj->decl->regtype=CCXL_LITID_GLOBALVAR;
 			if(name && obj->decl && !obj->decl->name)
-				{ obj->decl->name=bgbcc_strdup(name); }
+			{
+//				obj->decl->name=bgbcc_strdup(name);
+				obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+				obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+			}
 			BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 		}
 #endif
@@ -1567,7 +1593,11 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->littype=CCXL_LITID_GLOBALVAR;
 		obj->decl->regtype=CCXL_LITID_GLOBALVAR;
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 //		BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 
 		if(obj->parent)
@@ -1598,6 +1628,7 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 				
 				sprintf(tb1, "%s/%s", obj->parent->decl->name, name);
 				obj->decl->qname=bgbcc_strdup(tb1);
+				obj->decl->qname_ix=bgbcc_strdup_i(tb1, 0);
 
 				BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 				break;
@@ -1619,7 +1650,10 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxnsize=-1;
 		obj->littype=CCXL_LITID_STATICVAR;
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+		}
 //		BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 
 		if(obj->parent)
@@ -1657,6 +1691,7 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 				
 				sprintf(tb1, "%s/%s", obj->parent->decl->name, name);
 				obj->decl->qname=bgbcc_strdup(tb1);
+				obj->decl->qname_ix=bgbcc_strdup_i(tb1, 0);
 
 				BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 				break;
@@ -1679,7 +1714,10 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->littype=CCXL_LITID_PROTOTYPE;
 		obj->decl->regtype=CCXL_LITID_PROTOTYPE;
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+		}
 
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		obj->decl->type=BGBCC_CCXL_MakeTypeID(ctx, 256+obj->litid);
@@ -1721,9 +1759,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 
@@ -1763,9 +1809,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddGlobalDecl(ctx, obj->decl);
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 
@@ -1785,9 +1839,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 
@@ -1798,9 +1860,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 	case CCXL_CMD_UNION:
@@ -1810,9 +1880,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 
@@ -1823,9 +1901,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 
@@ -1836,9 +1922,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 
@@ -1849,9 +1943,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 
@@ -1864,9 +1966,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->sig=BGBCC_CCXL_GetParentLiteralSigDeref(ctx, obj);
 		obj->decl->defp=obj->parent->decl;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 
@@ -1900,9 +2010,17 @@ void BGBCC_CCXL_BeginName(BGBCC_TransState *ctx, int tag, char *name)
 		obj->decl->fxmsize=-1;
 		obj->decl->fxnsize=-1;
 		if(name && !obj->name)
-			{ obj->name=bgbcc_strdup(name); }
+		{
+//			obj->name=bgbcc_strdup(name);
+			obj->name_ix=bgbcc_strdup_i(name, 0);
+			obj->name=bgbcc_strtab_i(obj->name_ix);
+		}
 		if(name && obj->decl && !obj->decl->name)
-			{ obj->decl->name=bgbcc_strdup(name); }
+		{
+//			obj->decl->name=bgbcc_strdup(name);
+			obj->decl->name_ix=bgbcc_strdup_i(name, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+		}
 		BGBCC_CCXL_AddLiteral(ctx, obj);
 		break;
 
@@ -3173,6 +3291,7 @@ void BGBCC_CCXL_End(BGBCC_TransState *ctx)
 
 		obj->decl->pbname=BGBCC_CCXL_GetObjQName(ctx, obj->parent);
 		obj->decl->qname=BGBCC_CCXL_GetObjQName(ctx, obj);
+		obj->decl->qname_ix=bgbcc_strdup_2i(obj->decl->qname);
 		BGBCC_CCXL_NormalizeGlobalDeclQn(ctx, obj->decl);
 
 		if(obj->decl->flagstr)
@@ -3444,8 +3563,14 @@ void BGBCC_CCXL_AttribStr(BGBCC_TransState *ctx, int attr, char *str)
 		switch(attr)
 		{
 		case CCXL_ATTR_NAME:
-			obj->decl->name=bgbcc_strdup(str);
-			if(!obj->name)obj->name=obj->decl->name;
+//			obj->decl->name=bgbcc_strdup(str);
+			obj->decl->name_ix=bgbcc_strdup_i(str, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+			if(!obj->name)
+			{
+				obj->name=obj->decl->name;
+				obj->name_ix=obj->decl->name_ix;
+			}
 			break;
 		case CCXL_ATTR_SIG:
 			obj->decl->sig=bgbcc_strdup(str);
@@ -3480,8 +3605,14 @@ void BGBCC_CCXL_AttribStr(BGBCC_TransState *ctx, int attr, char *str)
 		switch(attr)
 		{
 		case CCXL_ATTR_NAME:
-			obj->decl->name=bgbcc_strdup(str);
-			if(!obj->name)obj->name=obj->decl->name;
+//			obj->decl->name=bgbcc_strdup(str);
+			obj->decl->name_ix=bgbcc_strdup_i(str, 0);
+			obj->decl->name=bgbcc_strtab_i(obj->decl->name_ix);
+			if(!obj->name)
+			{
+				obj->name=obj->decl->name;
+				obj->name_ix=obj->decl->name_ix;
+			}
 			break;
 		case CCXL_ATTR_SIG:
 			obj->decl->sig=bgbcc_strdup(str);
