@@ -100,6 +100,8 @@ int tk_mount_sysc();
 
 int tk_wad4_init();
 
+int tk_mount_sddfs(char *path);
+
 
 static int tk_vf_init=0;
 

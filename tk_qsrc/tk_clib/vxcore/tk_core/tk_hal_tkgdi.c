@@ -100,7 +100,8 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 	
 //		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_320x200_RGB555)
 		if(	(tkgdi_vid_scrmode==TKGDI_SCRMODE_320x200_RGB555) ||
-			(tkgdi_vid_scrmode==TKGDI_SCRMODE_640x400_RGB555))
+			(tkgdi_vid_scrmode==TKGDI_SCRMODE_640x400_RGB555) ||
+			(tkgdi_vid_scrmode==TKGDI_SCRMODE_640x400_PAL8B))
 		{
 			xs=xs_src;
 			ys=ys_src;
@@ -218,6 +219,19 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 					data, xo_src, yo_src, info->biWidth, info->biHeight);
 			}
 		}
+
+#if 0
+		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_640x400_PAL8B)
+		{
+			if(info->biCompression == TKGDI_BI_RGB)
+			{
+				if((info->biBitCount == 8) ||
+					(info->biBitCount == 4))
+				{
+				}
+			}
+		}
+#endif
 
 #if 0
 		if(tkgdi_vid_scrmode==TKGDI_SCRMODE_TEXT)
@@ -765,6 +779,78 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 //			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
 //			ofmt_mode=TKGDI_SCRMODE_640x400_RGB555;
 			ofmt_mode=TKGDI_SCRMODE_640x400_PAL8B;
+		}
+		
+		if(	(ifmt->biWidth		== 800) &&
+			(ifmt->biHeight		== 600) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_800x600_CC;	//Use 100x75 color cell
+//			ofmt_mode=TKGDI_SCRMODE_800x600_PAL8B;	//Use 800x600 8bpp
+		}
+		
+		if(	(ifmt->biWidth		== 1024) &&
+			(ifmt->biHeight		== 768) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_1024x768_M;	//Use 128x96 mono
+		}
+	}
+
+	if(ifmt->biBitCount == 8)
+	{
+		if(	(ifmt->biWidth		== 320) &&
+			(ifmt->biHeight		== 200) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
+		}
+
+		if(	(ifmt->biWidth		== 640) &&
+			(ifmt->biHeight		== 200) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_TEXT;		//Use 80x25 color cell
+		}
+
+		if(	(ifmt->biWidth		== 640) &&
+			(ifmt->biHeight		== 400) )
+		{
+//			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
+//			ofmt_mode=TKGDI_SCRMODE_640x400_RGB555;
+			ofmt_mode=TKGDI_SCRMODE_640x400_PAL8B;
+		}
+		
+		if(	(ifmt->biWidth		== 800) &&
+			(ifmt->biHeight		== 600) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_800x600_CC;	//Use 100x75 color cell
+//			ofmt_mode=TKGDI_SCRMODE_800x600_PAL8B;	//Use 800x600 8bpp
+		}
+		
+		if(	(ifmt->biWidth		== 1024) &&
+			(ifmt->biHeight		== 768) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_1024x768_M;	//Use 128x96 mono
+		}
+	}
+
+	if(ifmt->biBitCount == 4)
+	{
+		if(	(ifmt->biWidth		== 320) &&
+			(ifmt->biHeight		== 200) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_320x200_RGB555;		//Use hi-color
+		}
+
+		if(	(ifmt->biWidth		== 640) &&
+			(ifmt->biHeight		== 200) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_TEXT;		//Use 80x25 color cell
+		}
+
+		if(	(ifmt->biWidth		== 640) &&
+			(ifmt->biHeight		== 400) )
+		{
+			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
+//			ofmt_mode=TKGDI_SCRMODE_640x400_RGB555;
+//			ofmt_mode=TKGDI_SCRMODE_640x400_PAL8B;
 		}
 		
 		if(	(ifmt->biWidth		== 800) &&
@@ -2177,6 +2263,8 @@ void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
 	void *sObj, int idx, void *pret, void *args)
 {
 	void *obj1, **vt0, **vt, *fn;
+	
+	obj1=NULL;
 	
 	vt0=(*(void **)sObj);
 	fn=vt0[2];

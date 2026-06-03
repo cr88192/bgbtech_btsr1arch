@@ -439,6 +439,8 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 //	if(is_dll&3)
 //		return(NULL);
 
+	pltrel_sz=0;
+
 	tk_dbg_printf("TKPE_LoadDynELF: Begin Load %s\n", imgname);
 
 	tk_fseek(fd, fdoffs, 0);
@@ -1106,14 +1108,14 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		{
 			for(i=0; i<n_needed; i++)
 			{
-				sym_value=img_needed[i]->bootptr;
+				sym_value=(long)(img_needed[i]->bootptr);
 				ct=TKPE_RiscV_EmitJalAbs64(ct, 1, sym_value);
 			}
 //			ct=TKPE_RiscV_EmitJalAbs64(ct, 1, entry);
 
 			ct=TKPE_RiscV_EmitLnxSyscall(ct, TK_SCLNX_EXIT);
 			
-			entry=ptr;
+			entry=(long)ptr;
 			entry|=0x0004000000000001ULL;
 		}
 		

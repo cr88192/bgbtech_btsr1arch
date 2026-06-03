@@ -2242,8 +2242,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		no_mz=1;
 	
 	denserlc=0;
-//	if(no_mz)
-//		denserlc=1;
+	if(no_mz)
+		denserlc=1;
 
 	BGBCC_JX2C_CoffBuildExports(ctx, sctx);
 	BGBCC_JX2C_CoffBuildImports(ctx, sctx);
@@ -2500,7 +2500,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		szrlc+=2;
 	}
 //	szrlc=(szrlc+3)&(~3);
-	szrlc+=6*8;
+	szrlc+=10*8;
+//	szrlc+=6*8;
 //	szrlc+=3*8;
 //	szrlc=(szrlc+15)&(~15);
 	szrlc=(szrlc+63)&(~63);
@@ -2796,7 +2797,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 //		if((rva>>12)!=lpg)
 //		if((j!=lsec) || (((rva>>12)!=lpg) && !denserlc))
-		if(((j!=lsec) && denserlc) || (((rva>>12)!=lpg) && !denserlc) ||
+//		if(((j!=lsec) && denserlc) || (((rva>>12)!=lpg) && !denserlc) ||
+		if((j!=lsec) || (((rva>>12)!=lpg) && !denserlc) ||
 			(((rva>>12)-lpg)&(~2047)))
 //		if(j!=lsec)
 		{

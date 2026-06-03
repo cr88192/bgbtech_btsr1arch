@@ -1918,6 +1918,9 @@ int mfl;
 {"sltu",		BGBCC_SH_NMID_CMPQLTU,	2},
 {"sltiu",		BGBCC_SH_NMID_CMPQLTU,	2},
 
+{"seq",			BGBCC_SH_NMID_CMPQEQ,	2},
+{"sne",			BGBCC_SH_NMID_CMPQNE,	2},
+
 {"mul",			BGBCC_SH_NMID_MULSQ,	2},
 {"mulw",		BGBCC_SH_NMID_MULL,		2},
 {"div",			BGBCC_SH_NMID_DIVSQ,	2},

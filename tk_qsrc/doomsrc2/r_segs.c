@@ -125,6 +125,14 @@ R_RenderMaskedSegRange
 	backsector = curline->backsector;
 	texnum = texturetranslation[curline->sidedef->midtexture];
 	
+	if(!texturecolumnlump[texnum])
+	{
+		if(!R_GetColumn(texnum, 0))
+			return;
+		if(!texturecolumnlump[texnum])
+			return;
+	}
+	
 //	if(!R_GetColumn(texnum, 0))
 //		return;
 	if(texturecolumnlump[texnum][0] < 0)

@@ -721,7 +721,23 @@
 #endif
 
 #if	__Q8_TM <= 0 || __Q8_BM >= 0 || __Q8_TM <= __Q8_BM
+
 #error	"Q8defs.h: __Q8_TM, __Q8_BM macros are broken"
+
+#if	__Q8_TM < 0
+#error	"Q8defs.h: __Q8_TM is negative"
+#endif
+#if	__Q8_BM > 0
+#error	"Q8defs.h: __Q8_BM is positive"
+#endif
+
+#if	__Q8_TM == 0
+#error	"Q8defs.h: __Q8_TM is zero"
+#endif
+#if	__Q8_BM == 0
+#error	"Q8defs.h: __Q8_BM is zero"
+#endif
+
 #endif
 #if	__Q8_UM <= 0 || __Q8_UM <= __Q8_TM
 #if 0				/* XXX -- not working on Solaris */

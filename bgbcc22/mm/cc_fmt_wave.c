@@ -2622,6 +2622,8 @@ void BGBCC_MsImaAdpcm_EncodeBlockMono2b_Opt(
 		return;
 	}
 	
+	pred=0;
+	idx=0;
 	if(rpred)	pred=*rpred;
 	if(ridx)	idx=*ridx;
 	obuf[0]=pred;

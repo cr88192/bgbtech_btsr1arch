@@ -6,6 +6,8 @@
 #include <stdarg.h>
 #include <math.h>
 
+#include <ctype.h>
+
 // #include <bgbgc.h>
 // #include <bgbdy.h>
 

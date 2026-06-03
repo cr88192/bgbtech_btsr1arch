@@ -203,6 +203,8 @@ SRCS_TKGDI = \
 	tk_gdi/tk_qoilz_dec.c \
 	tk_gdi/tkg_imgload.c \
 	tk_gdi/tkg_load3d.c \
+	tk_gdi/tkg_drawbase.c \
+	tk_gdi/tkg_palbase.c \
 	tk_gdi/tkg_display.c
 
 SRCS_TKWUI = \

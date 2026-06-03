@@ -48,6 +48,7 @@ rcsid[] = "$Id: r_data.c,v 1.4 1997/02/03 16:47:55 b1 Exp $";
 // #include	<alloca.h>
 // #endif
 
+#include <math.h>
 
 #include "r_data.h"
 
@@ -203,6 +204,8 @@ int				colormaps_blend_flash;
 
 void		**patchcache;
 void		**utxcache;
+
+extern byte st_do3dglasses;
 
 #ifndef BGBCC_FOURCC
 #define BGBCC_FOURCC(a, b, c, d)	((a)|((b)<<8)|((c)<<16)|((d)<<24))

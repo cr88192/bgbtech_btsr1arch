@@ -702,6 +702,9 @@ tk_lva_variant __lvo_loadindex_var(tk_lva_object obj, int idx)
 	u32 bsi, ix2;
 	int bti;
 
+	bsi=0;
+	arr=NULL;
+
 	objv=tk_lva_object_getbits(obj);
 	if((objv>>60)==12)
 	{
@@ -762,6 +765,9 @@ void __lvo_storeindex_var(tk_lva_object obj, int idx, tk_lva_variant val)
 	int tg4, tg12, tgc, cv;
 	u32 bsi, ix2;
 	int bti;
+
+	bsi=0;
+	arr=NULL;
 
 	objv=tk_lva_object_getbits(obj);
 	obits=tk_lva_object_getbits(val);

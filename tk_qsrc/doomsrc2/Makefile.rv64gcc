@@ -9,7 +9,7 @@ AR=$(TOOLPATH)$(TARGETPFX)ar
 AS=$(TOOLPATH)$(TARGETPFX)as
 NM=$(TOOLPATH)$(TARGETPFX)nm
 
-TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__
+TK_CFL=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -DTESTKERN
 
 TK_LDFL= $(TK_CFL)
 
@@ -32,14 +32,29 @@ CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 # LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
 LDFLAGS=$(TK_LDFL)
 LIBS = -lclib_rv64 -ltkgdi_rv64 -fPIC -shared \
-	-ffunction-sections -fdata-sections -Wl,-gc-sections
+	-ffunction-sections -fdata-sections -Wl,-gc-sections \
+	-fno-align-functions -fno-align-jumps -fno-align-loops \
+	-fmerge-all-constants -fno-asynchronous-unwind-tables \
+	 -flto
 
+#  -Wl,-gc-sections -flto 
 # -Wl,--emit-relocs
 
 LIBS2 = -lvxcore_rv64 -ltkgdi_rv64 \
-	-ffunction-sections -fdata-sections -Wl,-gc-sections -Wl,-T,elf64rv_dflmod.x
+	-ffunction-sections -fdata-sections -Wl,-gc-sections \
+	-Wl,-T,elf64rv_dflmod.x \
+	-flto -fno-align-functions -fno-align-jumps -fno-align-loops
 
 # -Wl,--emit-relocs
+
+CLANGOPTS = \
+  -target riscv64-unknown-linux-gnu -march=rv64g -mabi=lp64 \
+  -Oz -ffunction-sections -fdata-sections \
+  --sysroot=/usr/local/riscv64-unknown-linux-gnu -std=gnu99
+
+# CC=clang $(CLANGOPTS)
+
+
 
 SRCS=				\
 		i_btesh4.c		\

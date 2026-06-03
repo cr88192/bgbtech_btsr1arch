@@ -573,6 +573,11 @@ int	Key_Event (int c, int dn)
     event_t event;
     int c1;
 
+//	printf("Key_Event: %04X %d\n", c, dn);
+
+	c1=c;
+
+#if 1
 	switch(c)
 	{
 	case	K_BACKSPACE: 	c1=KEY_BACKSPACE; break;
@@ -587,14 +592,19 @@ int	Key_Event (int c, int dn)
 	default:
 		c1=c; break;
 	}
+#endif
 
 	if(dn)
 	{
+//		printf("Key_Event: Down %04X %d\n", c, dn);
+
 		event.type = ev_keydown;
 		event.data1 = c1;
 		H2_PostEvent(&event);
 		return(0);
 	}
+
+//	printf("Key_Event: Up %04X %d\n", c, dn);
 
 	event.type = ev_keyup;
 	event.data1 = c1;
@@ -653,6 +663,8 @@ void IN_Commands (void)
 	{
 		c=tk_getch();
 
+//		printf("%s:%d: %02X\n", __FILE__, __LINE__, c);
+
 		switch(c)
 		{
 		case 0x7F:
@@ -664,13 +676,24 @@ void IN_Commands (void)
 		case 0x80:
 			c=tk_getch();
 			c=(c<<8)|tk_getch();
-			dn=(c&0x8000)?0:1;
+//			dn=(c&0x8000)?0:1;
+			dn=1;
+			if(c&0x8000)
+				dn=0;
+			c&=0x7FFF;
 			break;
 		default:
-			dn=(c&0x80)?0:1;
+//			dn=(c&0x80)?0:1;
+			dn=1;
+			if(c&0x80)
+				dn=0;
+//			__debugbreak();
 			c=c&0x7F;
 			break;
 		}
+
+//		printf("%s:%d: %02X %d\n", __FILE__, __LINE__, c, dn);
+
 		
 		switch(c)
 		{

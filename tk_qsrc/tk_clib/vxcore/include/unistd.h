@@ -10,4 +10,7 @@ int write(int handle, const void *buf, size_t len);
 long lseek(int handle, long offset, int whence);
 int close(int handle);
 
+char *getcwd(char *buf, int size);
+int unlink(const char *path);
+
 #endif

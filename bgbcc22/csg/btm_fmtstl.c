@@ -248,9 +248,9 @@ int BTM_ExportMeshListStlBuf(BTM_SolidMesh *mesh,
 	char *oct[4];
 	BTM_SolidMesh *mcur;
 
-	oct[0]=*robuf;
-	oct[1]=*robuf+(*robsz);
-	oct[2]=*robuf;
+	oct[0]=(char *)(*robuf);
+	oct[1]=(char *)(*robuf+(*robsz));
+	oct[2]=(char *)(*robuf);
 	oct[3]=NULL;
 
 	mcur=mesh;
@@ -261,7 +261,7 @@ int BTM_ExportMeshListStlBuf(BTM_SolidMesh *mesh,
 		mcur=mcur->next;
 	}
 	
-	*robuf=oct[0];
+	*robuf=(byte *)(oct[0]);
 	*robsz=oct[2]-oct[0];
 	return(0);
 }
@@ -399,7 +399,7 @@ int BTM_ExportMeshListBinStlBuf(BTM_SolidMesh *mesh,
 		clr5=BTM_Rgb24ToRgb555(mcur->clrmat);
 		if(((mcur->clrmat>>16)&255)<4)
 			clr5=0x7FFF;
-		BTM_DumpTrisBinStlBuf(robuf, robsz, mcur->name,
+		BTM_DumpTrisBinStlBuf((char **)robuf, robsz, mcur->name,
 			mcur->tris, mcur->nTris, clr5);
 		mcur=mcur->next;
 	}
@@ -632,8 +632,8 @@ BTM_SolidSkel *BTM_LoadBonesI(
 	if(!ibuf)
 		return(NULL);
 
-	ics=ibuf;
-	icse=ics+ibsz;
+	ics=(char *)ibuf;
+	icse=(char *)(ics+ibsz);
 	anim=NULL;
 
 	while(ics<icse)
@@ -873,8 +873,8 @@ BTM_SolidMesh *BTM_LoadMeshListBufferMdef(byte *ibuf, int ibsz)
 	int ntris, npts;
 	int i, j, k, ix;
 	
-	ics=ibuf;
-	icse=ics+ibsz;
+	ics=(char *)ibuf;
+	icse=(char *)(ics+ibsz);
 
 	skel=NULL;
 	mlst=NULL;

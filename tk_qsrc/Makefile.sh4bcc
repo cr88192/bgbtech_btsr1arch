@@ -114,7 +114,9 @@ targets: quake_b64b.exe dhry_b64b.exe \
 	glquake_x3rv.exe glquake_xrv.exe \
 	fft1_xrv.exe whetstone_xrv.exe \
 	whetstone_x3rv.exe whetstone_sp_x3rv.exe \
-	tstf128_xrv.exe tstf128_x3rv.exe
+	tstf128_xrv.exe tstf128_x3rv.exe \
+	uitst_calc_x3rv.exe
+	
 # glquake_b64b.exe
 
 SQUAKE_SRCS_BASE = \
@@ -370,6 +372,9 @@ tstf128_xrv.exe: tst_fft/test_f128.c
 
 tstf128_x3rv.exe: tst_fft/test_f128.c
 	$(CC) $(CFLAGS_X3RV) -o $@ tst_fft/test_f128.c $(LDFLAGS_X3RV)
+
+uitst_calc_x3rv.exe: tst_fft/uitst_calc.c
+	$(CC) $(CFLAGS_X3RV) -o $@ tst_fft/uitst_calc.c $(LDFLAGS_X3RV)
 
 quake_b64b.exe: $(SQUAKE_SRCS)
 	$(CC) $(CFLAGS64) -o $@ $(SQUAKE_SRCS) $(LDFLAGS64)

@@ -13,6 +13,10 @@ typedef signed short s16;
 typedef unsigned int u32;
 typedef signed int s32;
 
+extern byte	st_oddframe;		//BGB: Odd Frame
+extern byte	st_do3dglasses;		//BGB: Do 3D glasses effect
+extern int		r_view_xadjust;
+
 // int	mb_used = 6;
 
 long long __smullq(int a, int b)
@@ -112,6 +116,11 @@ void I_InitGraphics (void)
 	
 	btesh2_gfxcon_fbxs=BASEWIDTH;
 	btesh2_gfxcon_fbys=BASEHEIGHT;
+
+#ifdef OBRA
+	btesh2_gfxcon_fbxs=BASEWIDTH*2;
+	btesh2_gfxcon_fbys=BASEHEIGHT*2;
+#endif
 
 	GfxDrv_PrepareFramebuf();
 
@@ -390,11 +399,331 @@ u64 VID_BlendFlash4x(u64 pix, int flash)
 }
 #endif
 
+#define BASEWIDTH_X2 (BASEWIDTH*2)
+#define BASEHEIGHT_X2 (BASEHEIGHT*2)
+
 void I_FinishUpdate (void)
 {
+	static byte bayer4[16]={
+	 1,  5,  2,  6,
+	 9, 13, 10, 14,
+	 3,  7,  4,  8,
+	11, 15, 12, 16,
+	};
+
+	static byte *screen_luma_e;
+	static byte *screen_luma_o;
+	static byte *screen_luma;
 	dt_scrpix *cs;
-	u32 *ct;
-	int x, y, p;
+	u32 *ct, *ct0, *ct1;
+	byte *cty, *cty_e, *cty_o;
+	int px0, px1, px2, px3, px4, px5;
+	int cr0, cr1, cr2, cr3, cr4;
+	int cg0, cg1, cg2, cg3, cg4;
+	int cb0, cb1, cb2, cb3, cb4;
+	int dr1, dr2, dr3, dr4;
+	int dg1, dg2, dg3, dg4;
+	int db1, db2, db3, db4;
+	int dr, dg, db, cy, cy0, cy1;
+	int x, y, z, p;
+
+	st_oddframe = !st_oddframe;
+	if(st_do3dglasses)
+	{
+		r_view_xadjust=st_oddframe?1:(-1);
+		colormaps_bcur = colormaps_an3d;
+	}else
+	{
+		r_view_xadjust=0;
+		colormaps_bcur = colormaps_base;
+	}
+
+#ifdef OBRA
+
+	if(!screen_luma)
+	{
+		screen_luma_e=malloc(BASEWIDTH*BASEHEIGHT*4);
+		screen_luma_o=malloc(BASEWIDTH*BASEHEIGHT*4);
+	}
+	
+	screen_luma=st_oddframe?screen_luma_o:screen_luma_e;
+
+#if 1
+	for(y=0; y<BASEHEIGHT_X2; y++)
+	{
+		cs=screens[0]+((y>>1)*BASEWIDTH);
+		cty=screen_luma+(y*BASEWIDTH_X2);
+		for(x=0; x<BASEWIDTH_X2; x++)
+		{
+			px0=cs[x>>1];
+			px1=px0; px2=px0;
+			px3=px0; px4=px0;
+			if((x-1)>0)					px1=cs[(x-1)>>1];
+			if((x+1)<BASEWIDTH_X2)		px2=cs[(x+1)>>1];
+			if((y-1)>0)					px3=cs[(x-BASEWIDTH_X2)>>1];
+			if((y+1)<BASEHEIGHT_X2)		px4=cs[(x+BASEWIDTH_X2)>>1];
+
+			cr0=(px0>>10)&31;	cr1=(px1>>10)&31;
+			cr2=(px2>>10)&31;	cr3=(px3>>10)&31;
+			cr4=(px4>>10)&31;
+			cg0=(px0>>5)&31;	cg1=(px1>>5)&31;
+			cg2=(px2>>5)&31;	cg3=(px3>>5)&31;
+			cg4=(px4>>5)&31;
+			cb0=(px0>>0)&31;	cb1=(px1>>0)&31;
+			cb2=(px2>>0)&31;	cb3=(px3>>0)&31;
+			cb4=(px4>>0)&31;
+			dr1=cr1-cr0;	dr2=cr2-cr0;
+			dr3=cr3-cr0;	dr4=cr4-cr0;
+
+			dg1=cg1-cg0;	dg2=cg2-cg0;
+			dg3=cg3-cg0;	dg4=cg4-cg0;
+
+			db1=cb1-cb0;	db2=cb2-cb0;
+			db3=cb3-cb0;	db4=cb4-cb0;
+
+			dr=dr1*dr1 + dr2*dr2 + dr3*dr3 + dr4*dr4;
+			dg=dg1*dg1 + dg2*dg2 + dg3*dg3 + dg4*dg4;
+			db=db1*db1 + db2*db2 + db3*db3 + db4*db4;
+
+			dr>>=0;
+			dg>>=0;
+			db>>=0;
+
+			cy=(cr0+(2*cg0)+cb0);
+			cy=(cy>>1) + dr + dg + db;
+
+			if(cy>255)cy=255;
+			cty[x]=cy;
+		}
+	}
+
+	for(y=0; y<BASEHEIGHT_X2; y++)
+	{
+		ct=((u32 *)btesh2_gfxcon_framebuf)+(y*BASEWIDTH_X2);
+		cty=screen_luma+(y*BASEWIDTH_X2);
+
+		if(st_do3dglasses)
+		{
+			cty_e=screen_luma_e+(y*BASEWIDTH_X2);
+			cty_o=screen_luma_o+(y*BASEWIDTH_X2);
+		}else
+		{
+			cty_e=screen_luma+(y*BASEWIDTH_X2);
+			cty_o=screen_luma+(y*BASEWIDTH_X2);
+		}
+
+		px4=0xFF00FF00;
+		px5=0x00FF00FF;
+
+		if(st_do3dglasses==1)
+		{
+			px4=0xFF0000FF;
+			px5=0x00FFFF00;
+		}
+
+		if(st_do3dglasses==2)
+		{
+			px4=0xFFFF00FF;
+			px5=0x0000FF00;
+		}
+
+		for(x=0; x<BASEWIDTH_X2; x++)
+		{
+//			p=(x>>2)^(y>>11);
+//			p^=p>>13;
+//			p^=p>>7;
+
+//			p=(x>>2)-(y>>2);
+//			p=(p*251)>>8;
+		
+//			z=((y&3)*4)+(x&3);
+//			z^=(p&15);
+//			cr0=bayer4[z]*15;
+
+//			p=(2*x-y)-(2*y-x);
+//			p=(p*251)>>8;
+
+#if 0
+			z=2*y-x;
+			p=(13*y)+(7*x)+(19*z);
+			p^=(p<<11);
+			p^=(p>>17);
+			p^=(p<<13);
+			p^=(p>>19);
+//			p=p*251+17;
+//			p=p*251+11;
+			p^=(p>>7);
+			p^=(p<<5);
+			p>>=8;
+#endif
+
+//			z=((y&3)*4)+(x&3)+p;
+			z=((y&3)*4)+(x&3);
+			cr0=bayer4[z&15]*15;
+
+//			cr0=((p&15)+1)*15;
+			
+			if(st_do3dglasses)
+			{
+				cy0=cty_e[x];
+				cy1=cty_o[x];
+
+				cy0>>=1;	cy1>>=1;
+
+				px0=(cy0>cr0)?px4:0xFF000000U;
+				z^=0xF;
+				cr0=bayer4[z]*15;
+				px0|=(cy1>cr0)?px5:0;
+			}else
+			{
+				cy=cty[x];			
+//				px0=cy|(cy<<8)|(cy<<16)|(255<<24);
+				px0=(cy>cr0)?0xFFFFFFFFU:0xFF000000U;
+			}
+			ct[x]=px0;
+		}
+	}
+#endif
+
+
+#if 0
+	for(y=0; y<BASEHEIGHT; y++)
+	{
+		cs=screens[0]+(y*BASEWIDTH);
+		ct=((u32 *)btesh2_gfxcon_framebuf)+(y*BASEWIDTH);
+		cty=screen_luma+(y*BASEWIDTH);
+		for(x=0; x<BASEWIDTH; x++)
+		{
+			px0=cs[x];
+			px1=px0; px2=px0;
+			px3=px0; px4=px0;
+			if((x-1)>0)		px1=cs[x-1];
+			if((x+1)<0)		px2=cs[x+1];
+			if((y-1)>0)		px3=cs[x-BASEWIDTH];
+			if((y+1)<0)		px4=cs[x+BASEWIDTH];
+
+			cr0=(px0>>10)&31;	cr1=(px1>>10)&31;
+			cr2=(px2>>10)&31;	cr3=(px3>>10)&31;
+			cr4=(px4>>10)&31;
+			cg0=(px0>>5)&31;	cg1=(px1>>5)&31;
+			cg2=(px2>>5)&31;	cg3=(px3>>5)&31;
+			cg4=(px4>>5)&31;
+			cb0=(px0>>0)&31;	cb1=(px1>>0)&31;
+			cb2=(px2>>0)&31;	cb3=(px3>>0)&31;
+			cb4=(px4>>0)&31;
+			dr1=cr1-cr0;	dr2=cr2-cr0;
+			dr3=cr3-cr0;	dr4=cr4-cr0;
+
+			dg1=cg1-cg0;	dg2=cg2-cg0;
+			dg3=cg3-cg0;	dg4=cg4-cg0;
+
+			db1=cb1-cb0;	db2=cb2-cb0;
+			db3=cb3-cb0;	db4=cb4-cb0;
+
+			dr=dr1*dr1 + dr2*dr2 + dr3*dr3 + dr4*dr4;
+			dg=dg1*dg1 + dg2*dg2 + dg3*dg3 + dg4*dg4;
+			db=db1*db1 + db2*db2 + db3*db3 + db4*db4;
+
+			dr>>=0;
+			dg>>=0;
+			db>>=0;
+
+			cy=(cr0+(2*cg0)+cb0);
+			cy=(cy>>1) + dr + dg + db;
+
+			if(cy>255)cy=255;
+			cty[x]=cy;
+		}
+	}
+
+	for(y=0; y<BASEHEIGHT; y++)
+	{
+		ct0=((u32 *)btesh2_gfxcon_framebuf)+((y*2+0)*BASEWIDTH*2);
+		ct1=((u32 *)btesh2_gfxcon_framebuf)+((y*2+1)*BASEWIDTH*2);
+		cty=screen_luma+(y*BASEWIDTH);
+
+		if(st_do3dglasses)
+		{
+			cty_e=screen_luma_e+(y*BASEWIDTH);
+			cty_o=screen_luma_o+(y*BASEWIDTH);
+		}else
+		{
+			cty_e=screen_luma+(y*BASEWIDTH);
+			cty_o=screen_luma+(y*BASEWIDTH);
+		}
+
+		px4=0xFF00FF00;
+		px5=0x00FF00FF;
+
+		if(st_do3dglasses==1)
+		{
+			px4=0xFF0000FF;
+			px5=0x00FFFF00;
+		}
+
+		if(st_do3dglasses==2)
+		{
+			px4=0xFFFF00FF;
+			px5=0x0000FF00;
+		}
+
+		for(x=0; x<BASEWIDTH; x++)
+		{
+			z=((y&1)*8)+((x&1)*2);
+			cr0=bayer4[z+0]*15;
+			cr1=bayer4[z+1]*15;
+			cr2=bayer4[z+4]*15;
+			cr3=bayer4[z+5]*15;
+			
+
+			if(st_do3dglasses)
+			{
+				cy0=cty_e[x];
+				cy1=cty_o[x];
+
+				cy0>>=1;	cy1>>=1;
+
+//				cy0=(cy0*5)>>3;
+//				cy1=(cy1*5)>>3;
+
+				px0=(cy0>cr0)?px4:0xFF000000U;
+				px1=(cy0>cr1)?px4:0xFF000000U;
+				px2=(cy0>cr2)?px4:0xFF000000U;
+				px3=(cy0>cr3)?px4:0xFF000000U;
+
+	#if 1
+				z^=0xA;
+				cr3=bayer4[z+0]*15;
+				cr1=bayer4[z+1]*15;
+				cr2=bayer4[z+4]*15;
+				cr0=bayer4[z+5]*15;
+	#endif
+
+				px0|=(cy1>cr0)?px5:0;
+				px1|=(cy1>cr1)?px5:0;
+				px2|=(cy1>cr2)?px5:0;
+				px3|=(cy1>cr3)?px5:0;
+			}else
+			{
+				cy=cty[x];
+			
+				px0=cy|(cy<<8)|(cy<<16)|(255<<24);
+				px0=(cy>cr0)?0xFFFFFFFFU:0xFF000000U;
+				px1=(cy>cr1)?0xFFFFFFFFU:0xFF000000U;
+				px2=(cy>cr2)?0xFFFFFFFFU:0xFF000000U;
+				px3=(cy>cr3)?0xFFFFFFFFU:0xFF000000U;
+			}
+
+			ct0[x*2+0]=px0;		ct0[x*2+1]=px1;
+			ct1[x*2+0]=px2;		ct1[x*2+1]=px3;
+		}
+	}
+#endif
+
+	btesh2_gfxcon_fb_dirty=1;
+	GfxDrv_EndDrawing();
+	return;
+#endif
 
 // byte *btesh2_gfxcon_framebuf;
 // int btesh2_gfxcon_fb_dirty;

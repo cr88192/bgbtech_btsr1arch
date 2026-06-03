@@ -117,11 +117,11 @@ unsigned int	d_16to24table[1<<16];
 
 int vid_flashblend;
 
-byte *btesh2_gfxcon_framebuf;
-int btesh2_gfxcon_fb_dirty;
-int btesh2_gfxcon_fbxs;
-int btesh2_gfxcon_fbys;
-int btesh2_gfxcon_swaprb;
+extern byte *btesh2_gfxcon_framebuf;
+extern int btesh2_gfxcon_fb_dirty;
+extern int btesh2_gfxcon_fbxs;
+extern int btesh2_gfxcon_fbys;
+extern int btesh2_gfxcon_swaprb;
 
 void I_InitGraphics (void)
 {

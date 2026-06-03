@@ -31,7 +31,8 @@ u32 jx2i_smus_ctrl[128];		//SMus Control Registers
 u32 jx2i_smus_accum[64];	//SMus Accumulators
 s64 jx2i_smus_usec;			//microsecond timer
 
-// int jx2i_smus_lastval[16];	//SMus Last Value
+int jx2i_smus_lastval[64];		//SMus Last Value
+int jx2i_smus_lastramp[64];		//SMus Last Value
 
 #define SMUS_RGBUF_SZ	4096
 
@@ -86,6 +87,7 @@ void SMus_Step32k()
 	for(i=0; i<16; i++)
 	{
 		if(jx2i_smus_ctrl[i*2+0]&0x00100000)
+//		if(0)
 		{
 			jx2i_smus_accum[i*2+0]+=(jx2i_smus_ctrl[i*2+0]&0x000FFFFF)<<1;
 			if(jx2i_smus_ctrl[i*2+1]&0x00100000)
@@ -114,6 +116,7 @@ void SMus_Step16k()
 	for(i=0; i<16; i++)
 	{
 		if(jx2i_smus_ctrl[i*2]&0x00100000)
+//		if(0)
 		{
 			jx2i_smus_accum[i*2+0]+=(jx2i_smus_ctrl[i*2+0]&0x000FFFFF)<<2;
 			if(jx2i_smus_ctrl[i*2+1]&0x00100000)
@@ -136,7 +139,7 @@ void SMus_Step16k()
 int SMus_GetVoiceAttn(int vn)
 {
 	int an;
-	an=(jx2i_smus_ctrl[vn]>>22)&63;
+	an=(jx2i_smus_ctrl[vn&31]>>22)&63;
 	return(an);
 }
 
@@ -145,12 +148,49 @@ int (*SMus_GetVoiceWaveRsVal_Mod[32])(int vn);
 
 int SMus_GetVoiceWaveRsVal_Rst(int vn)
 {
+	int vm, lr;
+
+	lr=jx2i_smus_lastramp[vn&31];
+	if(lr>0)
+	{
+		vm=jx2i_smus_lastval[vn&31];
+		vm=(vm*lr)/16;
+		jx2i_smus_lastramp[vn&31]=lr-1;
+		return(vm);
+	}
+
 //	jx2i_smus_accum[vn]=0x40000;
 	return(0);
 }
 
 int SMus_GetVoiceWaveRsVal_Mute(int vn)
 {
+	int vm, lr;
+
+#if 0
+	vm=jx2i_smus_lastval[vn&31];
+	if(vm)
+	{
+//		vm=vm>>1;
+//		vm=(vm*7)>>3;
+		vm=(vm*3)/8;
+		jx2i_smus_lastval[vn&31]=vm;
+		return(vm);
+	}
+#endif
+
+//	if(((jx2i_smus_ctrl[vn&0x1E]>>21)&1) && (vn&1))
+//		return(0);
+
+	lr=jx2i_smus_lastramp[vn&31];
+	if(lr>0)
+	{
+		vm=jx2i_smus_lastval[vn&31];
+		vm=(vm*lr)/16;
+		jx2i_smus_lastramp[vn&31]=lr-1;
+		return(vm);
+	}
+
 	return(0);
 }
 
@@ -158,7 +198,7 @@ int SMus_GetVoiceWaveRsVal_Mute(int vn)
 int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 {
 	int fn, acc, v, vn, vm, am;
-	int an, usesin;
+	int an, usesin, fbv;
 	int ph0, ph1, ph2, ph3;
 	int x19, x18;
 	
@@ -173,6 +213,14 @@ int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 //		v=(v*31)/32;
 //		jx2i_smus_lastval[vn]=v;
 
+		am=jx2i_smus_lastramp[vn];
+		if(am>0)
+		{
+			vm=jx2i_smus_lastval[vn];
+			vm=(vm*am)/16;
+			jx2i_smus_lastramp[vn]=am-1;
+			return(vm);
+		}
 		return(0);
 //		return(v);
 	}
@@ -201,6 +249,45 @@ int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 		acc+=vm*16;
 //		acc+=jx2i_smus_accum[8|vn];
 	}
+
+#if 1
+//	if(((jx2i_smus_ctrl[vn&0x1E]>>21)&1) && (vn&1))
+	if(((jx2i_smus_ctrl[vn&0x1E]>>21)&1) && (vnfl&32))
+	{
+		fbv=(jx2i_smus_ctrl[32+vn]>>4)&7;
+	
+		if(fbv)
+		{
+	//		vm=jx2i_smus_lastval[vn];
+			vm=jx2i_smus_lastval[vnfl&63];
+			
+			switch(fbv)
+			{
+			case 0:		vm=0;		break;
+			case 1:		vm=vm>>4;	break;
+			case 2:		vm=vm>>3;	break;
+			case 3:		vm=vm>>2;	break;
+			case 4:		vm=vm>>1;	break;
+			case 5:		vm=vm;		break;
+			case 6:		vm=vm<<1;	break;
+			case 7:		vm=vm<<2;	break;
+			}
+
+	//		vm<<=14;
+	//		vm<<=6;
+	//		vm<<=2;
+			
+	//		vm*=2;
+	//		vm<<=1;
+	//		vm>>=1;
+			vm>>=2;
+	//		vm>>=3;
+	//		vm>>=5;
+	//		acc+=vm*16;
+			acc+=vm;
+		}
+	}
+#endif
 
 	an=(jx2i_smus_ctrl[vn]>>22)&63;
 
@@ -278,7 +365,22 @@ int SMus_GetVoiceWaveRsVal_Dfl(int vnfl)
 
 	v=SMus_ScaleWaveAttn(v, an);
 
-//	jx2i_smus_lastval[vn]=v;
+	if(vnfl&32)
+	{
+		jx2i_smus_lastval[vnfl&63]=v;
+	}else
+	{
+		if(jx2i_smus_lastramp[vn]<16)
+		{
+			vm=jx2i_smus_lastramp[vn];
+			v=(v*vm)/16;
+			jx2i_smus_lastval[vn]=v;
+			jx2i_smus_lastramp[vn]++;
+		}else
+		{
+			jx2i_smus_lastval[vn]=v;
+		}
+	}
 
 	return(v);
 }

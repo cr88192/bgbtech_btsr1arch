@@ -545,6 +545,8 @@ u64 TKMM_LVA_VarObjFetchKeyR(LVA_VarObject *obj, int key,
 	int k_m, k_n, k_c, k_cv;
 	int i, nk, ndsa;
 	
+	k_cv=0;
+	
 	ndsa=*rndsa;
 	for(i=0; i<ndsa; i++)
 		if(obj==dsarr[i])
@@ -634,6 +636,8 @@ int TKMM_LVA_VarObjTrySetKeyR(LVA_VarObject *obj, int key, u64 val,
 	int k_m, k_n, k_c, k_cv;
 	int nk, mk, mk1, ndsa;
 	int i, j, k;
+
+	k_cv=0;
 
 	ndsa=*rndsa;
 	for(i=0; i<ndsa; i++)

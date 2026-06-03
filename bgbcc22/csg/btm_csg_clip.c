@@ -358,16 +358,16 @@ void HullF_MakePlaneFace(float *norm, float *pts)
 
 	HullF_AdjacentNormals(norm, v0, v1);
 
-	TKRA_Vec3F_ScaleAddScale(v0, -99999, v1, -99999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0, -99999.0, v1, -99999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(0*3));
 
-	TKRA_Vec3F_ScaleAddScale(v0,  99999, v1, -99999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0,  99999.0, v1, -99999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(1*3));
 
-	TKRA_Vec3F_ScaleAddScale(v0,  99999, v1,  99999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0,  99999.0, v1,  99999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(2*3));
 
-	TKRA_Vec3F_ScaleAddScale(v0, -99999, v1,  99999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0, -99999.0, v1,  99999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(3*3));
 }
 
@@ -667,8 +667,8 @@ void HullF_PolyPlaneExtents(
 	float f, m, n;
 	int i;
 	
-	m= 999999999;
-	n=-999999999;
+	m= 999999999.0;
+	n=-999999999.0;
 	for(i=0; i<npts; i++)
 	{
 		f=TKRA_Vec3F_NDotProduct(pts+i*3, norm);
@@ -701,13 +701,13 @@ void HullF_MakePlaneFace(float *norm, float *pts)
 
 	HullF_AdjacentNormals2(norm, v0, v1);
 
-	TKRA_Vec3F_ScaleAddScale(v0, -999999, v1, -999999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0, -999999.0, v1, -999999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(0*3));
-	TKRA_Vec3F_ScaleAddScale(v0,  999999, v1, -999999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0,  999999.0, v1, -999999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(1*3));
-	TKRA_Vec3F_ScaleAddScale(v0,  999999, v1,  999999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0,  999999.0, v1,  999999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(2*3));
-	TKRA_Vec3F_ScaleAddScale(v0, -999999, v1,  999999, v2);
+	TKRA_Vec3F_ScaleAddScale(v0, -999999.0, v1,  999999.0, v2);
 	TKRA_Vec3F_AddScale(v2, norm, norm[3], pts+(3*3));
 }
 #endif
@@ -787,8 +787,8 @@ int HullF_BoxHull(float *norm, int num,
 	float sx, sy, f;
 	int i, j, k, l, t;
 
-	mins[0]=999999; mins[1]=999999; mins[2]=999999;
-	maxs[0]=-999999; maxs[1]=-999999; maxs[2]=-999999;
+	mins[0]=999999.0; mins[1]=999999.0; mins[2]=999999.0;
+	maxs[0]=-999999.0; maxs[1]=-999999.0; maxs[2]=-999999.0;
 
 	for(i=0; i<num; i++)
 	{

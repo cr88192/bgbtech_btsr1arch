@@ -986,7 +986,11 @@ double __fpu_fdiv_s(double x, double y);
 
 __PDPCLIB_API__ double _fdiv_fast(double x, double y)
 {
+#ifdef __BGBCC__
 	return(__fpu_fdiv_s(x, y));
+#else
+	return(x/y);
+#endif
 }
 
 #if 0

@@ -47,7 +47,7 @@ byte			*dc_source;		// first pixel in a column (possibly virtual)
 
 int				dccount;		// just for profiling
 
-#ifdef __BGBCC__
+#ifdef __BJX2__
 #define R_DRAW_ASM
 #endif
 

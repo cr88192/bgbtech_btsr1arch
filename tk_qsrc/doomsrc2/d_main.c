@@ -364,7 +364,7 @@ int d_snd_curtime;
 int d_snd_lasttime;
 double d_snd_acctime;
 
-int		gfxdrv_kill;
+extern int		gfxdrv_kill;
 
 extern int i_sound_init;
 

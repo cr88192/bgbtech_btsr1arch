@@ -510,7 +510,7 @@ char *BTM_VarGetAsPrintString(u64 val)
 	if(BTM_VarIsInt(val))
 	{
 		li=BTM_VarUnwrapInt(val);
-		sprintf(tb, "%lld", li);
+		sprintf(tb, "%lld", (long long)li);
 		return(bccx_strdup(tb));
 	}
 

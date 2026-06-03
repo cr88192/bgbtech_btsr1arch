@@ -264,6 +264,8 @@ int TKPE_DecodeBufferRP2(
 	u64 t0;
 	int t1, t2;
 	
+	rl=0; l=0; d=0;
+	
 	cs=ibuf; cse=ibuf+ibsz;
 	ct=obuf; cte=obuf+obsz;
 	pl=0; pd=0;
@@ -713,6 +715,8 @@ int TKPE_MiniPackBlockRP2(byte *ibuf, byte *obuf, int ibsz, int obsz)
 	int l, d, rl, l1, d1, h;
 	int i, j, k;
 
+	j=0;
+
 	for(i=0; i<256; i++)
 		hash[i]=ibuf;
 	
@@ -965,6 +969,8 @@ int tkdfs_readutf8(byte **rcs)
 {
 	byte *cs;
 	int c0, c1, c2, c3, v;
+	
+	v=0;
 
 	cs=*rcs;
 	c0=*cs++;
@@ -1058,6 +1064,8 @@ int tkdfs_trystringcompact(byte *dst, byte *src)
 	short cph[64];
 	byte *cs, *ct, *cs1a, *cs1b;
 	int i, j, k, h, v, v0, v1, d;
+	
+	k=0;
 	
 	for(i=0; i<64; i++)
 		cph[i]=0;

@@ -341,8 +341,8 @@ BTM_ConPgm *BTM_PgmLoadParse(char *name, char *sbuf, int szbuf)
 			}
 			*ct++=*cs++;
 		}
-		if(*cs='\r')	cs++;
-		if(*cs='\n')	cs++;
+		if(*cs=='\r')	cs++;
+		if(*cs=='\n')	cs++;
 		*ct++=0;
 		
 		a=bccx_splitb(tbuf);
@@ -620,7 +620,7 @@ char *BTM_PgmGetGlobalNameStr(BTM_ProgCtx *wrl, char *name)
 	if(BTM_VarIsInt(val))
 	{
 		li=BTM_VarUnwrapInt(val);
-		sprintf(tb, "%lld", li);
+		sprintf(tb, "%lld", (long long)li);
 		return(bccx_strdup(tb));
 	}
 
@@ -1147,7 +1147,7 @@ int BTM_PgmDoConPrint(BTM_ProgCtx *wrl, BTM_ConPgm *pgm, u16 *tok, u16 *toke)
 		if(BTM_VarIsInt(val))
 		{
 			li=BTM_VarUnwrapInt(val);
-			sprintf(ct, "%lld", li);
+			sprintf(ct, "%lld", (long long)li);
 		}else
 			if(BTM_VarIsFloat(val))
 		{
@@ -1521,7 +1521,7 @@ u64 BTM_PgmRun(BTM_ProgCtx *wrl, char *pgmname, char *lblname)
 		
 		if(!ibuf)
 			return(BRM_PGMVAR_UNDEFINED);
-		pgm=BTM_PgmLoadParse(pgmname, ibuf, isz);
+		pgm=BTM_PgmLoadParse(pgmname, (char *)ibuf, isz);
 		if(!pgm)
 			return(BRM_PGMVAR_UNDEFINED);
 	}

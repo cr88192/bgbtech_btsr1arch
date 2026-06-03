@@ -1558,13 +1558,13 @@ int BGBCP_SetDefaultLocale(char *locale)
 
 int BGBCP_SetLocale(BGBCP_ParseState *ctx, char *locale)
 {
-	if(	!stricmp(locale, "CP1252")	||
-		!stricmp(locale, "EN-US")	||
-		!stricmp(locale, "C")		||
-		!stricmp(locale, "POSIX")	||
-		!strnicmp(locale, "EN-", 3)	||
-		!strnicmp(locale, "DE-", 3)	||
-		!strnicmp(locale, "ES-", 3)	||
+	if(	!bgbcp_stricmp(locale, "CP1252")	||
+		!bgbcp_stricmp(locale, "EN-US")	||
+		!bgbcp_stricmp(locale, "C")		||
+		!bgbcp_stricmp(locale, "POSIX")	||
+		!bgbcp_strnicmp(locale, "EN-", 3)	||
+		!bgbcp_strnicmp(locale, "DE-", 3)	||
+		!bgbcp_strnicmp(locale, "ES-", 3)	||
 		0)
 	{
 		ctx->cur_codepage=1252;
@@ -1572,17 +1572,17 @@ int BGBCP_SetLocale(BGBCP_ParseState *ctx, char *locale)
 		return(1);
 	}
 
-	if(	!stricmp(locale, "UTF8")		||
-		!stricmp(locale, ".UTF8")		||
-		!stricmp(locale, "C.UTF8")		||
-		!stricmp(locale, "EN-US.UTF8")	)
+	if(	!bgbcp_stricmp(locale, "UTF8")		||
+		!bgbcp_stricmp(locale, ".UTF8")		||
+		!bgbcp_stricmp(locale, "C.UTF8")		||
+		!bgbcp_stricmp(locale, "EN-US.UTF8")	)
 	{
 		ctx->cur_codepage=8;
 		bgbcp_codepage=8;
 		return(1);
 	}
 
-	if(	!stricmp(locale, "CP437")	)
+	if(	!bgbcp_stricmp(locale, "CP437")	)
 	{
 		ctx->cur_codepage=437;
 		bgbcp_codepage=437;

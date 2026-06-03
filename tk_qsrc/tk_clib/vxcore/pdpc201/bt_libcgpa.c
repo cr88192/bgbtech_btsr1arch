@@ -51,6 +51,8 @@ void **TK_GetAllocaMark()
 
 void __exit(int status)
 {
+	TK_ExitV(status);
+	while(1);
 }
 
 u32 TK_GetTimeMs(void)

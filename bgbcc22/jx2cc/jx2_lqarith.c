@@ -2327,7 +2327,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 //		if(0)
 		if(sctx->emit_riscv&0x11)
 		{
-			nm3=BGBCC_SH_NMID_BRTSTNQ;
+//			nm3=BGBCC_SH_NMID_BRTSTNQ;
+			nm3=BGBCC_SH_NMID_BRTSTQ;
 			jcflip=0;
 		}
 		break;
@@ -2339,7 +2340,8 @@ int BGBCC_JX2C_EmitJCmpVRegVRegQLong(
 //		if(0)
 		if(sctx->emit_riscv&0x11)
 		{
-			nm3=BGBCC_SH_NMID_BRTSTQ;
+//			nm3=BGBCC_SH_NMID_BRTSTQ;
+			nm3=BGBCC_SH_NMID_BRTSTNQ;
 			jcflip=0;
 		}
 		break;

@@ -344,6 +344,9 @@ void __isr_interrupt(void)
 
 //			irq_timer[i]();
 		}
+
+		TK_Midi_TickIrq();
+
 		return;
 	}
 
@@ -2285,6 +2288,8 @@ void tk_thread_entry(void)
 	int (*run)(void *ptr);
 	void *uptr;
 	int res;
+
+	res=0;
 
 //	task=(TKPE_TaskInfo *)__arch_tbr;
 	task=(TKPE_TaskInfo *)TK_GET_TBR;

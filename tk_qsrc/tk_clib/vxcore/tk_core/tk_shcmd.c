@@ -2742,6 +2742,7 @@ int TKSH_TryLoadB(char *img, char **args0)
 	sig_is_pe=0;
 	sig_is_elf=0;
 	ext=NULL;
+	sysc=NULL;
 	
 	if(args0)
 	{
@@ -3028,32 +3029,32 @@ int TKSH_TryLoadB(char *img, char **args0)
 
 			/* auxiliary vector */
 
-			a1[j++]=TKPE_ELF_AT_BASE;		//interpreter base
-			a1[j++]=pimg->elf_interpbase;
+			a1[j++]=(void *)TKPE_ELF_AT_BASE;		//interpreter base
+			a1[j++]=(void *)(pimg->elf_interpbase);
 
-			a1[j++]=TKPE_ELF_AT_PHDR;		//program header
-			a1[j++]=pimg->elf_phdr_ptr;
+			a1[j++]=(void *)TKPE_ELF_AT_PHDR;		//program header
+			a1[j++]=(void *)(pimg->elf_phdr_ptr);
 
-			a1[j++]=TKPE_ELF_AT_PHENT;
-			a1[j++]=pimg->elf_phdr_phentsz;
+			a1[j++]=(void *)TKPE_ELF_AT_PHENT;
+			a1[j++]=(void *)(long)(pimg->elf_phdr_phentsz);
 
-			a1[j++]=TKPE_ELF_AT_PHNUM;
-			a1[j++]=pimg->elf_phdr_phnum;
+			a1[j++]=(void *)TKPE_ELF_AT_PHNUM;
+			a1[j++]=(void *)(long)(pimg->elf_phdr_phnum);
 
-			a1[j++]=TKPE_ELF_AT_ENTRY;		//program entry point
-			a1[j++]=pimg->realentry;
+			a1[j++]=(void *)TKPE_ELF_AT_ENTRY;		//program entry point
+			a1[j++]=(void *)(pimg->realentry);
 
-			a1[j++]=TKPE_ELF_AT_EXECFN;		//program entry point
-			a1[j++]=img;
+			a1[j++]=(void *)TKPE_ELF_AT_EXECFN;		//program entry point
+			a1[j++]=(void *)img;
 
-			a1[j++]=TKPE_ELF_AT_PAGESZ;	//page size
-			a1[j++]=1<<TKMM_PAGEBITS;	//page size
+			a1[j++]=(void *)TKPE_ELF_AT_PAGESZ;	//page size
+			a1[j++]=(void *)(void *)(1<<TKMM_PAGEBITS);	//page size
 
-			a1[j++]=TKPE_ELF_AT_HWCAP;	//capability flags
-			a1[j++]=0;					//capability flags
+			a1[j++]=(void *)TKPE_ELF_AT_HWCAP;	//capability flags
+			a1[j++]=(void *)0;					//capability flags
 
-			a1[j++]=TKPE_ELF_AT_CLKTCK;		//clock tick frequency
-			a1[j++]=1000;					//
+			a1[j++]=(void *)TKPE_ELF_AT_CLKTCK;		//clock tick frequency
+			a1[j++]=(void *)1024;			//
 
 			a1[j++]=NULL;	//end eof aux list
 			a1+=(j+1);

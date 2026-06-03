@@ -33,7 +33,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 //	int disp5, eq, eo;
 //	int imm8u, imm8n;
 	int imm5u;
-	s64 imm12l, imm12s, imm12b, imm17l;
+	s64 imm12l, imm12s, imm12b, imm17l, imm16u;
 	int imm20j, imm20u, imm_ro, do_imm_ro, do_imm_ro_b, sub4op;
 	int ret, fnm, nofdiv;
 
@@ -232,6 +232,8 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 		(((opw>>20)&2047)<< 0)|
 		(((opw>>15)&  31)<<11)|
 		((((s32)opw)>>31)<<16);
+
+	imm16u=imm17l&65535;
 
 	rn_fr=32+((opw>> 7)&31);
 	rm_fr=32+((opw>>15)&31);
@@ -1037,26 +1039,88 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 		break;
 
 	case 0x19: /* 11-001, JALR */
-		op->fl|=BJX2_OPFL_CTRLF;
-		op->fl|=BJX2_OPFL_NOWEX;
-		op->fl|=BJX2_OPFL_NOWEXSFX;
-
-		if(rn_dfl==BJX2_REG_ZZR)
+		switch((opw>>12)&7)
 		{
-			op->rn=rm_dfl;
-			op->imm=imm12l;
-			op->nmid=BJX2_NMID_BRA;
-			op->fmid=BJX2_FMID_LDREGDISP1;
-			op->Run=BJX2_Op_BRA_RegDisp1;
-			break;
-		}
+		case 0:		/* JALR */
+			op->fl|=BJX2_OPFL_CTRLF;
+			op->fl|=BJX2_OPFL_NOWEX;
+			op->fl|=BJX2_OPFL_NOWEXSFX;
 
-		op->rn=rn_dfl;
-		op->rm=rm_dfl;
-		op->imm=imm12l;
-		op->nmid=BJX2_NMID_BSR;
-		op->fmid=BJX2_FMID_LDREGDISP1REG;
-		op->Run=BJX2_Op_BSR_RegRegDisp1;
+			if(rn_dfl==BJX2_REG_ZZR)
+			{
+				op->rn=rm_dfl;
+				op->imm=imm12l;
+				op->nmid=BJX2_NMID_BRA;
+				op->fmid=BJX2_FMID_LDREGDISP1;
+				op->Run=BJX2_Op_BRA_RegDisp1;
+				break;
+			}
+
+			op->rn=rn_dfl;
+			op->rm=rm_dfl;
+			op->imm=imm12l;
+			op->nmid=BJX2_NMID_BSR;
+			op->fmid=BJX2_FMID_LDREGDISP1REG;
+			op->Run=BJX2_Op_BSR_RegRegDisp1;
+			break;
+
+		case 5:		/* LEA + LWU (GP, Disp16u) */
+			op->imm=imm16u;
+			op->rm=BJX2_REG_GBR;
+			op->rn=rn_dfl;
+			op->nmid=BJX2_NMID_LEAQ;
+			op->fmid=BJX2_FMID_LDREGDISPREG;
+			op->Run=BJX2_Op_LEAQ_LdRegDispReg;
+			op->fl|=BJX2_OPFL_NOWEX_IO2;
+
+			if((opw>>31)&1)
+			{
+				op->imm=imm16u*4;
+				op->nmid=BJX2_NMID_MOVUL;
+				op->fmid=BJX2_FMID_LDREGDISP1REG;
+				op->Run=BJX2_Op_MOVUL_LdRegDisp1Reg;
+			}
+			break;
+
+		case 6:
+			op->rm=BJX2_REG_GBR;
+			op->rn=rn_dfl;
+			op->fl|=BJX2_OPFL_NOWEX_IO2;
+
+			op->imm=imm16u*8;
+			op->nmid=BJX2_NMID_MOVQ;
+			op->fmid=BJX2_FMID_LDREGDISP1REG;
+			op->Run=BJX2_Op_MOVQ_LdRegDisp1Reg;
+
+			if((opw>>31)&1)
+			{
+				op->imm=imm16u*4;
+				op->nmid=BJX2_NMID_MOVL;
+				op->fmid=BJX2_FMID_LDREGDISP1REG;
+				op->Run=BJX2_Op_MOVL_LdRegDisp1Reg;
+			}
+			break;
+
+		case 7:
+			op->fl|=BJX2_OPFL_NOWEX_IO2;
+
+			op->imm=imm16u*8;
+			op->rn=BJX2_REG_GBR;
+			op->rm=rn_dfl;
+
+			op->nmid=BJX2_NMID_MOVQ;
+			op->fmid=BJX2_FMID_REGSTREGDISP1;
+			op->Run=BJX2_Op_MOVQ_RegStRegDisp1;
+
+			if((opw>>31)&1)
+			{
+				op->imm=imm16u*4;
+				op->nmid=BJX2_NMID_MOVL;
+				op->Run=BJX2_Op_MOVL_RegStRegDisp1;
+			}
+			break;
+
+		}
 		break;
 
 	case 0x03: /* 00-011, MISC-MEM / FENCE */

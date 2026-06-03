@@ -1993,6 +1993,8 @@ int tkfat_name2lfn(char *name, u16 *lfn)
 	u16 *t, *te;
 	int i, j, k;
 	
+	j=0;
+	
 	for(i=0; i<256; i++)
 		lfn[i]=0xFFFF;
 	

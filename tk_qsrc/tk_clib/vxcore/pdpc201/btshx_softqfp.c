@@ -788,7 +788,7 @@ u64 tk_sqfp_fcvt_f128_to_i64(tk_sqfp_val128 va)
 	return(vc);
 }
 
-
+int tk_sqfp_int128_iszero(tk_sqfp_val128 va);
 
 tk_sqfp_val128 tk_sqfp_fcvt_i128_to_f128(tk_sqfp_val128 va, int issg)
 {
@@ -845,8 +845,9 @@ tk_sqfp_val128 tk_sqfp_fcvt_f128_to_i128(tk_sqfp_val128 va)
 #ifdef SQFP_ISINT128
 	vc=fra>>(112-exa1);
 #else
-	fra=tk_sqfp_shlr(fra, 112-exa1);
-	vc=fra.lo;
+//	fra=tk_sqfp_shlr(fra, 112-exa1);
+	vc=tk_sqfp_shlr(fra, 112-exa1);
+//	vc=fra.lo;
 #endif
 
 	if(sga)		vc=tk_sqfp_neg_i128(vc);

@@ -84,9 +84,12 @@ SRCS=				\
 		info.c				\
 		sounds.c
 
-all:	 doom_t.exe
+all:	 doom_t.exe doom_obra_t.exe
 
 clean:
 
 doom_t.exe:	$(SRCS) i_main.c
 	cl /Fedoom_t.exe $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c $(LIBS)
+
+doom_obra_t.exe:	$(SRCS) i_main.c
+	cl /Fedoom_obra_t.exe $(CFLAGS) $(LDFLAGS) $(SRCS) i_main.c $(LIBS) /DOBRA

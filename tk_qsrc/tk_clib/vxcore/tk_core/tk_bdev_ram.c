@@ -125,6 +125,8 @@ int tk_bdram_fread(void *buf, int sz1, int sz2, TK_FILE *fd)
 	byte *cs0, *ct, *cte;
 	int ofs, ofs1, sz, szt, lba, lba1, lba2;
 
+	cs0=NULL;
+
 	bdi=fd->udata1;
 	ofs=fd->ofs;
 	sz=sz1*sz2;
@@ -201,6 +203,8 @@ int tk_bdram_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd)
 	void **ptrs;
 	byte *cs0, *ct, *cte;
 	int ofs, ofs1, sz, szt, lba, lba1, lba2, lbamax;
+
+	cs0=NULL;
 
 	bdi=fd->udata1;
 	ofs=fd->ofs;

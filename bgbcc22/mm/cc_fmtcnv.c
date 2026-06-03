@@ -502,7 +502,7 @@ int BGBCC_LoadConvResource_ImageCheckResize(
 			return(0);
 	xs1=tgt_xs?tgt_xs:xs;
 	ys1=tgt_ys?tgt_ys:ys;
-	if((ys1==-1))
+	if(ys1==(-1))
 		ys1=-ys;
 	xs2=xs1; ys2=ys1;
 	if(xs1<0)	xs2=-xs1;
@@ -520,9 +520,10 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 	char *cnvstr, int *rsz, fourcc *rfcc)
 {
 	BTM_SolidMesh *mesh, *mcur;
+	byte pal_opt[1024];
 	char cnv[16], pvar[8], pval[64];
 	char *cs, *ct;
-	byte *ibuf, *obuf;
+	byte *ibuf, *obuf, *pal;
 	short *sbuf;
 	int qlvl;
 	int xs, ys, rsz_xs, rsz_ys, sz1, fl, len, rt, fm1, ch1;
@@ -587,6 +588,10 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		!bgbcc_stricmp(cnv, "bmp_cq8npa") ||
 		!bgbcc_stricmp(cnv, "bmp_lz8") ||
 		!bgbcc_stricmp(cnv, "bmp_lz8a") ||
+		!bgbcc_stricmp(cnv, "bmp8_opt") ||
+		!bgbcc_stricmp(cnv, "bmp8_opt_lz") ||
+		!bgbcc_stricmp(cnv, "bmp8a_opt") ||
+		!bgbcc_stricmp(cnv, "bmp8a_opt_lz") ||
 		!bgbcc_stricmp(cnv, "bmp8_lz") ||
 		!bgbcc_stricmp(cnv, "bmp4_lz") ||
 		!bgbcc_stricmp(cnv, "bmp4a_lz") ||
@@ -603,121 +608,154 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		obuf=malloc(xs*ys*5);
 		sz1=0;
 
-		if(!bgbcc_stricmp(cnv, "bmp8"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8"))
 			sz1=BGBCC_Img_EncodeImageBMP8(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp4"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4"))
 			sz1=BGBCC_Img_EncodeImageBMP4(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
-		if(!bgbcc_stricmp(cnv, "bmp2"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp2"))
 			sz1=BGBCC_Img_EncodeImageBMP2(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal4);
-		if(!bgbcc_stricmp(cnv, "bmp1"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp1"))
 			sz1=BGBCC_Img_EncodeImageBMP1(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal2);
 
-		if(!bgbcc_stricmp(cnv, "bmp8a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8a"))
 			sz1=BGBCC_Img_EncodeImageBMP8A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp4a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4a"))
 			sz1=BGBCC_Img_EncodeImageBMP4A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
-		if(!bgbcc_stricmp(cnv, "bmp2a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp2a"))
 			sz1=BGBCC_Img_EncodeImageBMP2A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal4);
-		if(!bgbcc_stricmp(cnv, "bmp1a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp1a"))
 			sz1=BGBCC_Img_EncodeImageBMP1A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal2);
 
-//		if(!bgbcc_stricmp(cnv, "bmp8t"))
+//		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8t"))
 //			sz1=BGBCC_Img_EncodeImageBMP8(
 //				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
-//		if(!bgbcc_stricmp(cnv, "bmp8ta"))
+//		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8ta"))
 //			sz1=BGBCC_Img_EncodeImageBMP8A(
 //				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
 
-		if(!bgbcc_stricmp(cnv, "bmp4t"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4t"))
 			sz1=BGBCC_Img_EncodeImageBMP4(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
-		if(!bgbcc_stricmp(cnv, "bmp4ta"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4ta"))
 			sz1=BGBCC_Img_EncodeImageBMP4A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
 
-		if(!bgbcc_stricmp(cnv, "bmp2t"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp2t"))
 			sz1=BGBCC_Img_EncodeImageBMP2(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal4t);
-		if(!bgbcc_stricmp(cnv, "bmp2ta"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp2ta"))
 			sz1=BGBCC_Img_EncodeImageBMP2A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal4t);
 
-		if(!bgbcc_stricmp(cnv, "bmp16"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp16"))
 			sz1=BGBCC_Img_EncodeImageBMP16(
 				obuf, ibuf, xs, ys);
-		if(!bgbcc_stricmp(cnv, "bmp16a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp16a"))
 			sz1=BGBCC_Img_EncodeImageBMP16A(
 				obuf, ibuf, xs, ys);
 
-		if(!bgbcc_stricmp(cnv, "bmp32"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp32"))
 			sz1=BGBCC_Img_EncodeImageBMP32(
 				obuf, ibuf, xs, ys);
-		if(!bgbcc_stricmp(cnv, "bmp32a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp32a"))
 			sz1=BGBCC_Img_EncodeImageBMP32A(
 				obuf, ibuf, xs, ys);
 
-		if(!bgbcc_stricmp(cnv, "bmp_cram8"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cram8"))
 			sz1=BGBCC_Img_EncodeImageBMP_CRAM8(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_cram8a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cram8a"))
 			sz1=BGBCC_Img_EncodeImageBMP_CRAM8A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
 
-		if(!bgbcc_stricmp(cnv, "bmp_cram8np"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cram8np"))
 			sz1=BGBCC_Img_EncodeImageBMP_CRAM8NPA(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_cram8npa"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cram8npa"))
 			sz1=BGBCC_Img_EncodeImageBMP_CRAM8NPA(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
 
-		if(!bgbcc_stricmp(cnv, "bmp_cq8"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cq8"))
 			sz1=BGBCC_Img_EncodeImageBMP_CQ8A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_cq8a"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cq8a"))
 			sz1=BGBCC_Img_EncodeImageBMP_CQ8A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_cq8np"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cq8np"))
 			sz1=BGBCC_Img_EncodeImageBMP_CQ8NPA(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_cq8npa"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_cq8npa"))
 			sz1=BGBCC_Img_EncodeImageBMP_CQ8NPA(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
 
-		if(!bgbcc_stricmp(cnv, "bmp_lz8") ||
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_lz8") ||
 				!bgbcc_stricmp(cnv, "bmp8_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ8(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp_lz8a") ||
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp_lz8a") ||
 				!bgbcc_stricmp(cnv, "bmp8a_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ8A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal256);
-		if(!bgbcc_stricmp(cnv, "bmp4_lz"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ_4(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
-		if(!bgbcc_stricmp(cnv, "bmp4a_lz"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4a_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ_4A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16);
 
-//		if(!bgbcc_stricmp(cnv, "bmp8t_lz"))
+//		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8t_lz"))
 //			sz1=BGBCC_Img_EncodeImageBMP_LZ8(
 //				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
-//		if(!bgbcc_stricmp(cnv, "bmp8ta_lz"))
+//		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8ta_lz"))
 //			sz1=BGBCC_Img_EncodeImageBMP_LZ8A(
 //				obuf, ibuf, xs, ys, bgbcc_dfl_pal256t);
-		if(!bgbcc_stricmp(cnv, "bmp4t_lz"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4t_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ_4(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
-		if(!bgbcc_stricmp(cnv, "bmp4ta_lz"))
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp4ta_lz"))
 			sz1=BGBCC_Img_EncodeImageBMP_LZ_4A(
 				obuf, ibuf, xs, ys, bgbcc_dfl_pal16t);
+
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8_opt"))
+		{
+			BGBCC_GenPalOpt4(ibuf, xs, ys, pal_opt);
+			sz1=BGBCC_Img_EncodeImageBMP8(
+				obuf, ibuf, xs, ys, pal_opt);
+		}
+
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8_opt_lz"))
+		{
+			BGBCC_GenPalOpt4(ibuf, xs, ys, pal_opt);
+			sz1=BGBCC_Img_EncodeImageBMP_LZ8(
+				obuf, ibuf, xs, ys, pal_opt);
+		}
+		
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8a_opt"))
+		{
+			BGBCC_GenPalOpt4(ibuf, xs, ys, pal_opt);
+			sz1=BGBCC_Img_EncodeImageBMP8A(
+				obuf, ibuf, xs, ys, pal_opt);
+		}
+
+		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8a_opt_lz"))
+		{
+			BGBCC_GenPalOpt4(ibuf, xs, ys, pal_opt);
+			sz1=BGBCC_Img_EncodeImageBMP_LZ8A(
+				obuf, ibuf, xs, ys, pal_opt);
+		}
+		
+		if(sz1<=0)
+		{
+			return(NULL);
+		}
 
 		*rfcc=BGBCC_FMT_BMP;
 		*rsz=sz1;

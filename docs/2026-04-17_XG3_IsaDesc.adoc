@@ -576,6 +576,7 @@ Secondary Derived Extensions:
 
 === ADC ===
 
+ Optional (PRED):
          1001-000010-mmmmmm-0001-nnnnnn-00-0010  ADC        Rm, Rn
          1001-000010-mmmmmm-0001-nnnnnn-10-0010  ADC.L      Rm, Rn
  J_OP_4R 1001-000010-mmmmmm-0001-nnnnnn-00-0010  ADC        Rm, Ro, Rn
@@ -632,9 +633,7 @@ The legacy 2RI encodings are deprecated and should not ne used, they mostly exis
         iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND     Rm, Imm10s, Rn
  J_IMM  iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND     Rm, Imm33s, Rn
  J2_IMM iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND     Rm, Imm64, Rn
-
-Optional (ALUX):
-
+ Optional (ALUX):
         0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX    Xm, Xo, Xn
  J_IMM  0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX    Xm, Imm33s, Xn
 
@@ -842,14 +841,14 @@ These will count the number of zeroes until the first non-zero bit is encountere
         0110-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Ro, Rn
         0101-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Ro, Rn
         0111-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGE.Q     Rm, Ro, Rn
-        1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHI.Q     Rm, Ro, Rn
-        1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHS.Q     Rm, Ro, Rn
+        1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGTU.Q    Rm, Ro, Rn
+        1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLEU.Q    Rm, Ro, Rn
  J_IMM  0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q     Rm, Imm33s, Rn
  J_IMM  0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Imm33s, Rn
  J_IMM  0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Imm33s, Rn
  J_IMM  0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q     Rm, Imm33s, Rn
- J_IMM  1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHI.Q     Rm, Imm33s, Rn
- J_IMM  1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPHS.Q     Rm, Imm33s, Rn
+ J_IMM  1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGTU.Q    Rm, Imm33s, Rn
+ J_IMM  1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLEU.Q    Rm, Imm33s, Rn
 
 Compare two values (Rm and Ro), or compare a value and an immediate, and store the result in Rn.
 
@@ -860,8 +859,9 @@ Comparisions:
 * GT: Greater Than
 * LT: Less Than
 * GE: Greater Than or Equal
-* HI: Unsigned Greater Than
-* HS: Unsigned Greater Than or Equal
+* GTU: Unsigned Greater Than
+* GEU: Unsigned Greater Than or Equal
+* LTU: Unsigned Less Than
 
 Notes, the difference between GT/LT and GE/LE is mostly one of switching the operand order.
 
@@ -877,6 +877,7 @@ Note (Optional, PRED):
 
 === CSELT ===
 
+ Optional (PRED):
         0000-oooooo-mmmmmm-0101-nnnnnn-00-0010  CSELT   Rm, Ro, Rn
  J_IMM  0000-oooooo-mmmmmm-0101-nnnnnn-00-0010  CSELT   Rm, Imm33s, Rn
  J_IMM  0000-oooooo-mmmmmm-0101-nnnnnn-10-0010  CSELTN  Rm, Imm33s, Rn
@@ -892,6 +893,7 @@ The CSELTN case will be the same as CSELT, differing primarily in that the selec
 
 === DIV ===
 
+ Optional (QMUL):
         0100-oooooo-mmmmmm-0111-nnnnnn-00-0010  DIVS.L      Rm, Ro, Rn
         0100-oooooo-mmmmmm-0111-nnnnnn-10-0010  DIVU.L      Rm, Ro, Rn
         0100-oooooo-mmmmmm-0110-nnnnnn-00-0010  DIVS.Q      Rm, Ro, Rn
@@ -919,10 +921,11 @@ Note that this will understand division in a way where the result always truncat
 
         0010-oooooo-mmmmmm-0101-nnnnnn-00-0010  DMULS.L     Rm, Ro, Rn
         0011-oooooo-mmmmmm-0101-nnnnnn-00-0010  DMULU.L     Rm, Ro, Rn
-        0010-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULS.Q     Rm, Ro, Xn
-        0011-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULU.Q     Rm, Ro, Xn
  J_IMM  0010-oooooo-mmmmmm-0101-nnnnnn-00-0010  DMULS.L     Rm, Imm33s, Rn
  J_IMM  0011-oooooo-mmmmmm-0101-nnnnnn-00-0010  DMULU.L     Rm, Imm33s, Rn
+ Optional (QMUL):
+        0010-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULS.Q     Rm, Ro, Xn
+        0011-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULU.Q     Rm, Ro, Xn
  J_IMM  0010-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULS.Q     Rm, Imm33s, Xn
  J_IMM  0011-oooooo-mmmmmm-0101-nnnnnn-10-0010  DMULU.Q     Rm, Imm33s, Xn
 
@@ -944,6 +947,7 @@ Note that the forms that use 32 bit values as inputs are to ignore the high orde
 
 === DMAC ===
 
+ Optional (DMAC):
          0010-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACS.L    Rm, Ro, Rn
          0010-oooooo-mmmmmm-0110-nnnnnn-10-0010  DMACS.L    Rm, Imm6s, Rn
          0011-oooooo-mmmmmm-0110-nnnnnn-00-0010  DMACU.L    Rm, Ro, Rn
@@ -1000,7 +1004,7 @@ Note that:
  J_IMM  1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD    Rm, Imm32f, Rn
  J_OP   1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG   Rm, Imm16f, Rn
  J_IMM  1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG   Rm, Imm32f, Rn
- J2_IMM iiii-iiiiii-mmmmmm-0001-nnnnnn-10-1010  FADD    Rm, Imm64f, Rn
+ J2_IMM iiii-iiiiii-mmmmmm-0011-nnnnnn-10-1010  FADDG   Rm, Imm64f, Rn
 
 
 Do a floating point ADD in Binary64 format.
@@ -1087,6 +1091,8 @@ The 32-bit packing scheme differs:
 
 Support for the bit-packing schemes may be considered as Optional.
 
+Note that Imm64f will store a raw Binary64 value.
+
 
 Note that if FADD is used with an immediate and with Rm==R0 will behave as a plain constant load.
 
@@ -1101,11 +1107,13 @@ Note that if FADD is used with an immediate and with Rm==R0 will behave as a pla
         1001-oooooo-mmmmmm-0101-nnnnnn-10-0010  FSUBX   Xm, Xo, Xn
  Optional (FPIMM):
         1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG   Rm, Imm6f, Rn
- J_IMM  1001-oooooo-mmmmmm-0101-nnnnnn-00-0010  FSUB    Rm, Imm32f, Rn
- J_OP   1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG   Rm, Imm16f, Rn
- J_IMM  1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG   Rm, Imm32f, Rn
+ J_IMM  1001-oooooo-mmmmmm-0101-nnnnnn-00-0010 ? FSUB    Rm, Imm32f, Rn
+ J_OP   1110-oooooo-mmmmmm-0110-nnnnnn-10-0010 ? FSUBG   Rm, Imm16f, Rn
+ J_IMM  1110-oooooo-mmmmmm-0110-nnnnnn-10-0010 ? FSUBG   Rm, Imm32f, Rn
 
 Perform an FPU Subtract.
+
+Debate: Omit larger Imm forms, these can be encoded as FADD with a negative immediate.
 
 * See FADD for details.
 
@@ -1123,7 +1131,7 @@ Perform an FPU Subtract.
  J_IMM  1010-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMUL    Rm, Imm32f, Rn
  J_OP   1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMULG   Rm, Imm16f, Rn
  J_IMM  1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMULG   Rm, Imm32f, Rn
- J2_IMM iiii-iiiiii-mmmmmm-0100-nnnnnn-10-1010  FMUL    Rm, Imm64f, Rn
+ J2_IMM iiii-iiiiii-mmmmmm-0011-nnnnnn-00-1010  FMULG   Rm, Imm64f, Rn
 
 Perform an FPU Multiply.
 
@@ -1348,14 +1356,15 @@ Perform a computed branch to Rm+Disp10s*4.
 
 Several pseudo instructions will be defined in terms of JALR:
 
-* JMP Rm	=> JALR		(Rm, 0), ZR
-* JSR Rm	=> JALR		(Rm, 0), LR
-* RTS		=> JALR		(LR, 0), ZR
+ JMP Rm   =>  JALR  (Rm, 0), ZR
+ JSR Rm   =>  JALR  (Rm, 0), LR
+ RTS      =>  JALR  (LR, 0), ZR
 
 Note that no other destinations are defined and JALR is aliased with the SHAD.X encoding.
 
 
 The Abs64 case will behave similarly to the case for memory ops.
+
 * The Abs64 address will have the same general encoding rules as the Link Register.
 ** Typically Rm will be R1 in this case (understood as ZR).
 * The exact behavior of JALRX Abs64 will be Impementation Defined.
@@ -1369,7 +1378,14 @@ The Abs64 case will behave similarly to the case for memory ops.
          iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI      Imm16u, Rn
          iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCH      Imm16u, Rn
          iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  PLDCSW     Imm16u, Rn
-
+ J_IMM   iiii-iiiiii-000000-0000-nnnnnn-00-1010  LDI		Imm33s, Rn
+ J2_IMM  iiii-iiiiii-000000-0000-nnnnnn-00-1010  LDI		Imm64, Rn
+ J_IMM   1101-000000-iiiiii-0001-nnnnnn-00-0010  FLDCF		Imm32u, Rn
+ Optional (GSVF, RGBF):
+ J_IMM   1110-001100-iiiiii-0001-nnnnnn-00-0010  PLDCH		    Imm32u, Rn
+ J_IMM   1110-000101-iiiiii-0001-nnnnnn-10-0010  RGB32UPCK64    Imm32u, Rn
+ J_IMM   1110-001000-iiiiii-0001-nnnnnn-10-0010  PLDCM8UH	    Imm32u, Rn
+ J_IMM   1010-000001-iiiiii-0001-nnnnnn-00-0010  PLDCF8H		Imm32u, Rn
  Legacy:
  J_OP    iiii-iiiiii-iiiiii-0000-nnnnnn-s1-0010  LDI        Imm33s, Rn
  J_OP    iiii-iiiiii-iiiiii-0011-nnnnnn-01-0010  SHORI32    Imm32u, Rn
@@ -1377,19 +1393,9 @@ The Abs64 case will behave similarly to the case for memory ops.
  J_OP    iiii-iiiiii-iiiiii-0100-nnnnnn-01-0010  FLDCF      Imm32u, Rn
  J_OP    iiii-iiiiii-iiiiii-0100-nnnnnn-11-0010  PLDCH      Imm32u, Rn
  J2_IMM  iiii-iiiiii-iiiiii-0000-nnnnnn-s1-0010  LDI        Imm64, Rn
- Legacy / Optional (RGBF):
+ Legacy, Optional (RGBF):
  J_OP    iiii-iiiiii-iiiiii-1100-nnnnnn-01-0010  PLDCM8SH   Imm32u, Rn
  J_OP    iiii-iiiiii-iiiiii-1100-nnnnnn-11-0010  PLDCM8UH   Imm32u, Rn
-
- Alternatives:
- J_IMM   iiii-iiiiii-000000-0000-nnnnnn-00-1010  LDI		Imm33s, Rn
- J2_IMM  iiii-iiiiii-000000-0000-nnnnnn-00-1010  LDI		Imm64, Rn
- J_IMM   1101-000000-iiiiii-0001-nnnnnn-00-0010  FLDCF		Imm32u, Rn
- Alternatives, Optional (GSVF, RGBF):
- J_IMM   1110-001100-iiiiii-0001-nnnnnn-00-0010  PLDCH		    Imm32u, Rn
- J_IMM   1110-000101-iiiiii-0001-nnnnnn-10-0010  RGB32UPCK64    Imm32u, Rn
- J_IMM   1110-001000-iiiiii-0001-nnnnnn-10-0010  PLDCM8UH	    Imm32u, Rn
- J_IMM   1010-000001-iiiiii-0001-nnnnnn-00-0010  PLDCF8H		Imm32u, Rn
 
 
 Load a constant value into a register.
@@ -1638,7 +1644,6 @@ For the IMMB encodings, a 17-bit sign extended value is stored to memory. Note t
         1000-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLD      Rm, Ro, Rn
         1001-oooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHLD     Rm, Ro, Rn
         1001-oooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLHD     Rm, Ro, Rn
- 
  J_IMM  1000-0ooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHD      Rm, Imm32u, Rn
  J_IMM  1000-0ooooo-mmmmmm-0010-nnnnnn-10-0010  MOVLD      Rm, Imm32u, Rn
  J_IMM  1000-1ooooo-mmmmmm-0010-nnnnnn-00-0010  MOVHLD     Rm, Imm32n, Rn
@@ -1757,7 +1762,7 @@ This will behave as a shift where any bits rotated off one side will be rotated 
  J_IMM   0iii-iiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUB       Rm, Imm33s, Rn
  J2_IMM  iiii-iiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUB       Rm, Imm64, Rn
  J_IMM   10ii-iiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUBU.L    Rm, Imm32u, Rn
- J_IMM   11ii-iiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUBS.L    Rm, Imm32s, Rn
+ J_IMM   11ii-iiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUBS.L    Rm, Imm32n, Rn
 
 Reverse Subtract.
 
@@ -1863,6 +1868,7 @@ Funnel Shift (Optional):
  J_OP_4R  00ii-iiiiii-mmmmmm-1001-nnnnnn-10-1010  SHLD.Q    Rm, Imm8s, Rp, Rn
 
 Shift Left Logical.
+
 * SHLD.L will Zero-Extend the Result.
 * Negative Shifts will perform a Right Shift.
 * SHLD.X will perform a 128-bit shift.

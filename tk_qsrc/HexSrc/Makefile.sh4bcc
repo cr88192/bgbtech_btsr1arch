@@ -24,6 +24,27 @@ CFLAGS=$(TK_CFL) $(BASE_CFLAGS)
 # LDFLAGS=$(TK_LDFL) -lvxcore64 -ltkgdi
 LDFLAGS=$(TK_LDFL) -lc -ltkgdi
 
+
+TK_CFL_XRV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXRVA /O2 \
+	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic \
+	/frvzba \
+	/fnovskgen /fnovsk \
+	/frvldix /frvjumbo /frvjumbo96 /frvbraimm \
+	/fnovskgen /fnovsk /frvzilsx /fldgbr
+
+#  /frvjumbo
+
+TK_CFL_X3RV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXG3RV /O2 \
+	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba /frvjumbo \
+	/fnovskgen /fnovsk /fbitmov /fpredops /ffpu_fpimm
+
+CFLAGS_XRV=$(TK_CFL_XRV) $(BASE_CFLAGS)
+LDFLAGS_XRV= -lc -ltkgdi
+
+CFLAGS_X3RV=$(TK_CFL_X3RV) $(BASE_CFLAGS)
+LDFLAGS_X3RV= -lc -ltkgdi
+
+
 #		i_system.c		\
 #		i_sound.c		\
 #		i_video.c		\
@@ -95,10 +116,18 @@ SRCS=				\
 		r_draw_bjx2.S
 
 
-all:	 hexen_bjx2.exe
+all:	 hexen_bjx2.exe hexen_xrv.exe hexen_x3rv.exe
 
 clean:
 
 hexen_bjx2.exe:	$(SRCS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(SRCS) \
 	/Fehexen_bjx2.exe $(LIBS)
+
+hexen_xrv.exe:	$(SRCS)
+	$(CC) $(CFLAGS_XRV) $(LDFLAGS_XRV) $(SRCS) \
+	/Fehexen_xrv.exe $(LIBS)
+
+hexen_x3rv.exe:	$(SRCS)
+	$(CC) $(CFLAGS_X3RV) $(LDFLAGS_X3RV) $(SRCS) \
+	/Fehexen_x3rv.exe $(LIBS)

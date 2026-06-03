@@ -2,7 +2,11 @@ BUILD = .
 PATH := $(BUILD):$(PATH)
 
 TK_CFL=-nostdinc -nostdlib -nostartfiles -fno-builtin \
-	 -ffunction-sections
+	 -ffunction-sections -fdata-sections \
+	-fno-align-functions -fno-align-jumps -fno-align-loops
+
+# -flto
+
 TK_LDFL= $TK_CFL -fPIC \
 	-Wl,-nostdlib -Wl,-e,_start -Wl,-T,sh4elf.x
 
@@ -15,11 +19,18 @@ AR=$(TOOLPATH)$(TARGETPFX)ar
 AS=$(TOOLPATH)$(TARGETPFX)as
 
 # COPTS= -g -c -O2 -Iinclude $(TK_CFL)
-COPTS= -c -Iinclude -Ipdpc201 -Itk_core $(TK_CFL) -O3 -fPIC \
+COPTS= -c -Iinclude -Ipdpc201 -Itk_core $(TK_CFL) -Os -fPIC \
 	-fwrapv -fno-strict-aliasing -fno-inline \
 	-march=rv64g -mabi=lp64 \
 	-mno-strict-align -std=c17 -ffp-contract=off \
-	-mno-fdiv -mno-strict-align -ffast-math
+	-mno-fdiv -mno-strict-align -ffast-math -Wuninitialized
+
+CLANGOPTS = \
+  -target riscv64-unknown-linux-gnu -march=rv64g -mabi=lp64 \
+  -Oz -ffunction-sections -fdata-sections \
+  --sysroot=/usr/local/riscv64-unknown-linux-gnu
+
+# CC=clang $(CLANGOPTS)
 
 # -mtune=sifive-s76
 #	-mno-madd4

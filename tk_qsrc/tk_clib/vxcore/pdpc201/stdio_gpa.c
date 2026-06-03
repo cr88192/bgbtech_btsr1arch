@@ -336,7 +336,7 @@ int setvbuf(FILE *stream, char *buf, int mode, size_t size)
 
 void *TkClGetInterface(u64 qwMajor, u64 qwMinor)
 {
-	int (*getiface_fp)(u64 major, u64 minor);
+	void *(*getiface_fp)(u64 major, u64 minor);
 	getiface_fp=tk_stdio_vtp->getinterface_fp;
 	if(!getiface_fp)
 		return(NULL);
@@ -345,7 +345,7 @@ void *TkClGetInterface(u64 qwMajor, u64 qwMinor)
 
 void *TkClSetInterface(u64 qwMajor, u64 qwMinor, void *vtab, u64 flag)
 {
-	int (*setiface_fp)(u64 major, u64 minor);
+	void *(*setiface_fp)(u64 major, u64 minor, void *vtab, u64 flag);
 	setiface_fp=tk_stdio_vtp->setinterface_fp;
 	if(!setiface_fp)
 		return(NULL);

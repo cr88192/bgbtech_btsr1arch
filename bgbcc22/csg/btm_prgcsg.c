@@ -754,7 +754,7 @@ BTM_SolidMesh *BTM_ProcCsgToMesh(u64 val, BTM_SolidMesh *olst)
 		
 		mtmp->clrmat=plclr[plix];
 		
-		sprintf(tb, "#%06llX", mtmp->clrmat&0xFFFFFF);
+		sprintf(tb, "#%06llX", (unsigned long long)(mtmp->clrmat&0xFFFFFF));
 		mtmp->usetex[0]=bccx_strdup(tb);
 		
 		if(plclr[plix])

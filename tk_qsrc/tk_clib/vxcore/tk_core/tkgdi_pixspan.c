@@ -1102,6 +1102,67 @@ void TKGDI_UnifontInit()
 	memset(tkgdi_unisdf_glyphcache_idx, 0, 256*4);
 }
 
+#ifdef __BGBCC__
+extern void __rsrc__fixsdf1;
+#else
+extern char __rsrc__fixsdf1[16];
+#endif
+
+void TKGDI_FetchFixedSdfBits(
+	byte *dstbits, int dxs, int dys,
+	int fontid, int codepoint)
+{
+	byte *bmp, *dat, *pal;
+	int kidx, kh, ksz;
+	int bmpsz, pgn, ofs, px, py;
+
+	kidx=(codepoint&0xFFFF)|(dxs<<16)|(dys<<24);
+	kh=kidx^(kidx>>17);
+	kh=kh^(kh>>7);
+	kh=kh&255;
+	
+	if((dxs<=32) && (dys<=32) && (tkgdi_unisdf_glyphcache_idx[kh]==kidx))
+	{
+		memcpy(dstbits, tkgdi_unisdf_glyphcache_bits+kh*128, ksz);
+		return;
+	}
+
+	bmp=&__rsrc__fixsdf1;
+	if((bmp[0]!='B') || (bmp[1]!='M'))
+	{
+		tk_dbg_printf("TKGDI_FetchFixedSdfBits: Not BMP, ch=%04X\n",
+			codepoint);
+		memset(dstbits, 0, ksz);
+		return;
+	}
+	ofs=bmp[10]|(bmp[11]<<8);
+	dat=bmp+ofs;
+
+	pal=bmp+0x36;		//assume simple 8-bit indexed color...
+	
+	px=(codepoint>>0)&15;
+	py=(codepoint>>4)&15;
+	py=15-py;
+
+//	TKGDI_InterpImageSdfBits(
+//		dstbits, dxs, dys,
+//		dat, 256, 256,
+//		px*16, py*16, (px+1)*16, (py+1)*16);
+
+	TKGDI_InterpImageSdfBits2(
+		dstbits, dxs, dys,
+		dat, pal, 256, 256,
+		px*16, py*16, (px+1)*16, (py+1)*16);
+
+	tk_dbg_printf("TKGDI_FetchFixedSdfBits: OK, ch=%04X\n", codepoint);
+
+	if((dxs<=32) && (dys<=32))
+	{
+		tkgdi_unisdf_glyphcache_idx[kh]=kidx;
+		memcpy(tkgdi_unisdf_glyphcache_bits+kh*128, dstbits, ksz);
+	}
+}
+
 void TKGDI_FetchUnifontSdfBits(
 	byte *dstbits, int dxs, int dys,
 	int fontid, int codepoint)
@@ -1110,6 +1171,12 @@ void TKGDI_FetchUnifontSdfBits(
 	byte *bmp, *dat, *pal;
 	int kidx, kh, ksz;
 	int bmpsz, pgn, ofs, px, py;
+	
+	if(codepoint<0x100)
+	{
+		TKGDI_FetchFixedSdfBits(dstbits, dxs, dys, fontid, codepoint);
+		return;
+	}
 	
 	if(((u16)codepoint)>=0x8000)
 	{

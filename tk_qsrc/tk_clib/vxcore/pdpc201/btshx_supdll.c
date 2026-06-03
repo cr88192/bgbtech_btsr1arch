@@ -830,15 +830,18 @@ _arch_gettbr:
 	mov		r4, r10
 	rts
 	nop
-	
+
+.extern fegetenv
+.extern fesetenv
+
 .global __fpu_setstrict
 __fpu_setstrict:
 	add		-16, sp
-	mov		x1, (sp, 8)
+	mov.q	x1, (sp, 8)
 	bsr		fegetenv
 	or		x10, 0x10, x10
 	bsr		fesetenv
-	mov		(sp, 8), x1
+	mov.q	(sp, 8), x1
 	add		16, sp
 	rts
 
@@ -1049,6 +1052,9 @@ __xlf_todbl:
 	rts
 	nop
 };
+
+u64 __ldhf16(u16 v);
+u16 __sthf16(u64 v);
 
 __asm {
 .global __ldhf16

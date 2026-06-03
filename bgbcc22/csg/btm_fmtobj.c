@@ -155,9 +155,9 @@ int BTM_ExportMeshListObjBuf(BTM_SolidMesh *mesh,
 	char *oct[4];
 	BTM_SolidMesh *mcur;
 
-	oct[0]=*robuf;
-	oct[1]=*robuf+(*robsz);
-	oct[2]=*robuf;
+	oct[0]=(char *)(*robuf);
+	oct[1]=(char *)(*robuf+(*robsz));
+	oct[2]=(char *)(*robuf);
 	oct[3]=NULL;
 
 	vtxbuf=malloc(4096*4*sizeof(float));
@@ -178,7 +178,7 @@ int BTM_ExportMeshListObjBuf(BTM_SolidMesh *mesh,
 		mcur=mcur->next;
 	}
 	
-	*robuf=oct[0];
+	*robuf=(byte *)(oct[0]);
 	*robsz=oct[2]-oct[0];
 	return(0);
 }

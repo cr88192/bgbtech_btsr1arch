@@ -2302,6 +2302,7 @@ __PDPCLIB_API__ char *fgets(char *s, int n, FILE *stream)
 	int errind;
 
 	errind=-1;
+	c=0;
 
 	__stdio_chkmagic(stream);
 
@@ -2571,6 +2572,8 @@ __PDPCLIB_API__ int fseek(FILE *stream, long int offset, int whence)
 {
 	long oldpos;
 	long newpos;
+	
+	newpos=0;
 
 	__stdio_chkmagic(stream);
 
@@ -2925,7 +2928,12 @@ static int vvscanf(const char *format, va_list arg, FILE *fp, const char *s)
 		   /* informatitem is 1 if we have processed "%l" but not the
 			  type letter (s,d,e,f,g,...) yet. */
 
+	cptr = NULL;
+	startp = NULL;
 	dummy = 0;
+	modlong = 0;
+	startpos = 0;
+	
 	lptr = &dummy;
 	iptr = (int *)lptr;
 	lptr = (long *)iptr;

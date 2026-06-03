@@ -629,3 +629,521 @@ int BGBCC_ImgUtil_DrawFloodFill(byte *ibuf, int xs, int ys,
 		x0, y0, clr1, ref);
 	return(0);
 }
+
+
+
+
+
+
+int BGBCC_GenPalOpt_CountForBbox(s32 *rgb_cnts, u32 box)
+{
+	int cr, cg, cb, cnt, px;
+	int mcr, mcg, mcb, ncr, ncg, ncb;
+	int min, max;
+	
+	min=(u16)(box>> 0);		max=(u16)(box>>16);
+	mcr=(min>>10)&31;		ncr=(max>>10)&31;
+	mcg=(min>> 5)&31;		ncg=(max>> 5)&31;
+	mcb=(min>> 0)&31;		ncb=(max>> 0)&31;
+
+	cnt=0;
+	for(cr=mcr; cr<=ncr; cr++)
+		for(cg=mcg; cg<=ncg; cg++)
+			for(cb=mcb; cb<=ncb; cb++)
+	{
+		px=(cr<<10)|(cg<<5)|cb;
+		cnt+=rgb_cnts[px];
+	}
+	return(cnt);
+}
+
+u16 BGBCC_GenPalOpt_CenterForBbox(s32 *rgb_cnts, u32 box)
+{
+	int cr, cg, cb, cnt, px;
+	s64 acr, acg, acb;
+	int mcr, mcg, mcb, ncr, ncg, ncb;
+	int dcr, dcg, dcb;
+	int mins, maxs;
+	
+	mins=(u16)(box>> 0);	maxs=(u16)(box>>16);
+	mcr=(mins>>10)&31;		ncr=(maxs>>10)&31;
+	mcg=(mins>> 5)&31;		ncg=(maxs>> 5)&31;
+	mcb=(mins>> 0)&31;		ncb=(maxs>> 0)&31;
+
+	dcr=ncr-mcr;
+	dcg=ncg-mcg;
+	dcb=ncb-mcb;
+
+	cnt=0;	acr=0; acg=0; acb=0;
+	for(cr=mcr; cr<=ncr; cr++)
+		for(cg=mcg; cg<=ncg; cg++)
+			for(cb=mcb; cb<=ncb; cb++)
+	{
+		px=(cr<<10)|(cg<<5)|cb;
+		acr+=cr*rgb_cnts[px];
+		acg+=cg*rgb_cnts[px];
+		acb+=cb*rgb_cnts[px];
+		cnt+=rgb_cnts[px];
+	}
+	
+	if(cnt<=0)
+	{
+		cr=(mcr+ncr)/2;
+		cg=(mcg+ncg)/2;
+		cb=(mcb+ncb)/2;
+		px=(cr<<10)|(cg<<5)|cb;
+		return(px);
+	}
+	
+	cr=acr/cnt;
+	cg=acg/cnt;
+	cb=acb/cnt;
+	
+//	if(dcr<5)	cr=(mcr+ncr)/2;
+//	if(dcg<5)	cg=(mcg+ncg)/2;
+//	if(dcb<5)	cb=(mcb+ncb)/2;
+
+	if((cr==mcr) && (dcr>1))	cr++;
+	if((cr==ncr) && (dcr>1))	cr--;
+	if((cg==mcg) && (dcg>1))	cg++;
+	if((cg==ncg) && (dcg>1))	cg--;
+	if((cb==mcb) && (dcb>1))	cb++;
+	if((cb==ncb) && (dcb>1))	cb--;
+	
+	px=(cr<<10)|(cg<<5)|cb;
+	return(px);
+}
+
+u32 BGBCC_GenPalOpt_ShrinkBbox(s32 *rgb_cnts, u32 box)
+{
+	u16 mins, maxs;
+	int mcr, mcg, mcb, ncr, ncg, ncb, dcr, dcg, dcb;
+	int mcr1, mcg1, mcb1, ncr1, ncg1, ncb1;
+	u32 box1, box2;
+	int c0, c1, fm;
+	
+	mins=(u16)(box>> 0);	maxs=(u16)(box>>16);
+	mcr=(mins>>10)&31;	ncr=(maxs>>10)&31;
+	mcg=(mins>> 5)&31;	ncg=(maxs>> 5)&31;
+	mcb=(mins>> 0)&31;	ncb=(maxs>> 0)&31;
+	dcr=ncr-mcr;		dcg=ncg-mcg;		dcb=ncb-mcb;
+
+	c0=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, box);
+	box1=box;	fm=63;
+
+	if(mcr>=ncr)	fm&=~0x03;
+	if(mcg>=ncg)	fm&=~0x0C;
+	if(mcb>=ncb)	fm&=~0x30;
+
+	while(fm)
+	{
+		if(mcr>=ncr)	fm&=~0x03;
+		if(mcg>=ncg)	fm&=~0x0C;
+		if(mcb>=ncb)	fm&=~0x30;
+
+		if(mcr>=31)		fm&=~0x01;
+		if(mcr<= 0)		fm&=~0x02;
+		if(mcg>=31)		fm&=~0x04;
+		if(mcg<= 0)		fm&=~0x08;
+		if(mcb>=31)		fm&=~0x10;
+		if(mcb<= 0)		fm&=~0x20;
+
+		if(fm&0x01)
+		{
+			mcr1=mcr+1;	mcg1=mcg; mcb1=mcb;
+			ncr1=ncr;	ncg1=ncg; ncb1=ncb;
+			box2=	(ncr1<<26)|(ncg1<<21)|(ncb1<<16)|
+					(mcr1<<10)|(mcg1<< 5)|(mcb1<< 0);
+			c1=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, box2);
+			if(c1==c0)		{ box1=box2; mcr=mcr1; }
+			else			{ fm&=~0x01; }
+		}
+		if(fm&0x02)
+		{
+			mcr1=mcr;	mcg1=mcg; mcb1=mcb;
+			ncr1=ncr-1;	ncg1=ncg; ncb1=ncb;
+			box2=	(ncr1<<26)|(ncg1<<21)|(ncb1<<16)|
+					(mcr1<<10)|(mcg1<< 5)|(mcb1<< 0);
+			c1=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, box2);
+			if(c1==c0)		{ box1=box2; ncr=ncr1; }
+			else			{ fm&=~0x02; }
+		}
+
+		if(fm&0x04)
+		{
+			mcr1=mcr;	mcg1=mcg+1;		mcb1=mcb;
+			ncr1=ncr;	ncg1=ncg;		ncb1=ncb;
+			box2=	(ncr1<<26)|(ncg1<<21)|(ncb1<<16)|
+					(mcr1<<10)|(mcg1<< 5)|(mcb1<< 0);
+			c1=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, box2);
+			if(c1==c0)		{ box1=box2; mcg=mcg1; }
+			else			{ fm&=~0x04; }
+		}
+		if(fm&0x08)
+		{
+			mcr1=mcr;	mcg1=mcg;		mcb1=mcb;
+			ncr1=ncr;	ncg1=ncg-1;		ncb1=ncb;
+			box2=	(ncr1<<26)|(ncg1<<21)|(ncb1<<16)|
+					(mcr1<<10)|(mcg1<< 5)|(mcb1<< 0);
+			c1=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, box2);
+			if(c1==c0)		{ box1=box2; ncg=ncg1; }
+			else			{ fm&=~0x08; }
+		}
+
+		if(fm&0x10)
+		{
+			mcr1=mcr;	mcg1=mcg;		mcb1=mcb+1;
+			ncr1=ncr;	ncg1=ncg;		ncb1=ncb;
+			box2=	(ncr1<<26)|(ncg1<<21)|(ncb1<<16)|
+					(mcr1<<10)|(mcg1<< 5)|(mcb1<< 0);
+			c1=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, box2);
+			if(c1==c0)		{ box1=box2; mcb=mcb1; }
+			else			{ fm&=~0x10; }
+		}
+		if(fm&0x20)
+		{
+			mcr1=mcr;	mcg1=mcg;		mcb1=mcb;
+			ncr1=ncr;	ncg1=ncg;		ncb1=ncb-1;
+			box2=	(ncr1<<26)|(ncg1<<21)|(ncb1<<16)|
+					(mcr1<<10)|(mcg1<< 5)|(mcb1<< 0);
+			c1=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, box2);
+			if(c1==c0)		{ box1=box2; ncb=ncb1; }
+			else			{ fm&=~0x20; }
+		}
+	}
+	
+	return(box1);
+}
+
+int BGBCC_GenPalOpt_SplitBbox2x(s32 *rgb_cnts, u32 box, u32 *rbbox)
+{
+	u16 mid, mins, maxs;
+	int mcr, mcg, mcb, ncr, ncg, ncb;
+	int acr, acg, acb;
+	int acr0, acg0, acb0;
+	int acr1, acg1, acb1;
+	int dcr, dcg, dcb;
+	int sel, pxm0, pxn0, pxm1, pxn1;
+	
+	box=BGBCC_GenPalOpt_ShrinkBbox(rgb_cnts, box);
+	
+	mins=(u16)(box>> 0);	maxs=(u16)(box>>16);
+	mid=BGBCC_GenPalOpt_CenterForBbox(rgb_cnts, box);
+
+	mcr=(mins>>10)&31;	ncr=(maxs>>10)&31;	acr=(mid>>10)&31;
+	mcg=(mins>> 5)&31;	ncg=(maxs>> 5)&31;	acg=(mid>> 5)&31;
+	mcb=(mins>> 0)&31;	ncb=(maxs>> 0)&31;	acb=(mid>> 0)&31;
+	dcr=ncr-mcr;		dcg=ncg-mcg;		dcb=ncb-mcb;
+	
+	acr0=acr;	acr1=acr+1;
+	acg0=acg;	acg1=acg+1;
+	acb0=acb;	acb1=acb+1;
+	
+	if((acr+1)>=ncr)	{ acr0=acr-1; acr1=acr; }
+	if((acg+1)>=ncg)	{ acg0=acg-1; acg1=acg; }
+	if((acb+1)>=ncb)	{ acb0=acb-1; acb1=acb; }
+	if(dcr<2)			{ acr0=mcr; acr1=ncr; }
+	if(dcg<2)			{ acg0=mcg; acg1=ncg; }
+	if(dcb<2)			{ acb0=mcb; acb1=ncb; }
+	
+	if(dcr>dcg)
+	{
+		if(dcr>dcb)
+			{ sel=0; }
+		else
+			{ sel=2; }
+	}else
+	{
+		if(dcg>dcb)
+			{ sel=1; }
+		else
+			{ sel=2; }
+	}
+	
+	if((sel==0) && (dcr<2))
+	{
+		rbbox[0]=box;
+		return(1);
+	}
+	if((sel==1) && (dcg<2))
+	{
+		rbbox[0]=box;
+		return(1);
+	}
+	if((sel==2) && (dcb<2))
+	{
+		rbbox[0]=box;
+		return(1);
+	}
+
+	switch(sel)
+	{
+	case 0:
+		pxm0=(mcr <<10)|(mcg<<5)|mcb;
+		pxn0=(acr0<<10)|(ncg<<5)|ncb;
+		pxm1=(acr1<<10)|(mcg<<5)|mcb;
+		pxn1=(ncr <<10)|(ncg<<5)|ncb;
+		break;
+	case 1:
+		pxm0=(mcr<<10)|(mcg <<5)|mcb;
+		pxn0=(ncr<<10)|(acg0<<5)|ncb;
+		pxm1=(mcr<<10)|(acg1<<5)|mcb;
+		pxn1=(ncr<<10)|(ncg <<5)|ncb;
+		break;
+	case 2:
+		pxm0=(mcr<<10)|(mcg<<5)|mcb ;
+		pxn0=(ncr<<10)|(ncg<<5)|acb0;
+		pxm1=(mcr<<10)|(mcg<<5)|acb1;
+		pxn1=(ncr<<10)|(ncg<<5)|ncb ;
+		break;
+	}
+	
+	rbbox[0]=pxm0|(pxn0<<16);
+	rbbox[1]=pxm1|(pxn1<<16);
+	return(2);
+}
+
+void BGBCC_GenPalOpt_SwapPal4(byte *palb, int i, int j)
+{
+	int cr, cg, cb, cy;
+	cr=palb[i*4+0];				cg=palb[i*4+1];
+	cb=palb[i*4+2];				cy=palb[i*4+3];
+	palb[i*4+0]=palb[j*4+0];	palb[i*4+1]=palb[j*4+1];
+	palb[i*4+2]=palb[j*4+2];	palb[i*4+3]=palb[j*4+3];
+	palb[j*4+0]=cr;				palb[j*4+1]=cg;
+	palb[j*4+2]=cb;				palb[j*4+3]=cy;
+}
+
+int BGBCC_GenPalOpt_DistPal4(byte *palb, int i, int j)
+{
+	int cr0, cg0, cb0, cy0;
+	int cr1, cg1, cb1, cy1;
+	int dr, dg, db, dy;
+	int d;
+
+	cr0=palb[i*4+0];	cg0=palb[i*4+1];
+	cb0=palb[i*4+2];	cy0=palb[i*4+3];
+	cr1=palb[j*4+0];	cg1=palb[j*4+1];
+	cb1=palb[j*4+2];	cy1=palb[j*4+3];
+	dr=cr0-cr1;		dg=cg0-cg1;
+	db=cb0-cb1;		dy=cy0-cy1;
+	dr=(dr<<1)^(dr>>31);
+	dg=(dg<<1)^(dg>>31);
+	db=(db<<1)^(db>>31);
+	dy=(dy<<1)^(dy>>31);
+	d=(dr+dg+db+dy)/4;
+	return(d);
+}
+
+void BGBCC_GenPalOpt_SortPalOpt(byte *pal, int nclr)
+{
+	byte palb[288*4];
+	int cr, cg, cb, cy;
+	int d0, d1, nsw;
+	int i, j, k;
+	
+	for(i=0; i<nclr; i++)
+	{
+		cr=pal[i*3+0];		cg=pal[i*3+1];		cb=pal[i*3+2];
+		cy=(5*cr+8*cg+3*cb)/16;
+		palb[i*4+0]=cr;		palb[i*4+1]=cg;
+		palb[i*4+2]=cb;		palb[i*4+3]=cy;
+	}
+
+	for(i=0; i<nclr; i++)
+		for(j=i+1; j<nclr; j++)
+	{
+		d0=palb[i*4+3];
+		d1=palb[j*4+3];
+		if(d1<d0)
+			{ BGBCC_GenPalOpt_SwapPal4(palb, i, j); }
+	}
+
+#if 1
+	for(k=0; k<32; k++)
+	{
+		nsw=0;
+		for(i=1; i<(nclr-2); i++)
+		{
+			d0=	BGBCC_GenPalOpt_DistPal4(palb, i-1, i+0)+
+				BGBCC_GenPalOpt_DistPal4(palb, i+0, i+1)+
+				BGBCC_GenPalOpt_DistPal4(palb, i+1, i+2);
+
+			d1=	BGBCC_GenPalOpt_DistPal4(palb, i-1, i+1)+
+				BGBCC_GenPalOpt_DistPal4(palb, i+1, i+0)+
+				BGBCC_GenPalOpt_DistPal4(palb, i+0, i+2);
+			if(d1<d0)
+				{ BGBCC_GenPalOpt_SwapPal4(palb, i, i+1); nsw++; }
+
+			if(i<(nclr-3))
+			{
+				d0=	BGBCC_GenPalOpt_DistPal4(palb, i-1, i+0)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+0, i+1)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+1, i+2)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+2, i+3);
+
+				d1=	BGBCC_GenPalOpt_DistPal4(palb, i-1, i+2)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+2, i+1)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+1, i+0)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+0, i+3);
+
+				if(d1<d0)
+					{ BGBCC_GenPalOpt_SwapPal4(palb, i, i+2); nsw++; }
+			}
+
+			if(i<(nclr-4))
+			{
+				d0=	BGBCC_GenPalOpt_DistPal4(palb, i-1, i+0)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+0, i+1)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+1, i+2)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+2, i+3)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+3, i+4);
+
+				d1=	BGBCC_GenPalOpt_DistPal4(palb, i-1, i+3)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+3, i+2)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+2, i+1)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+1, i+0)+
+					BGBCC_GenPalOpt_DistPal4(palb, i+0, i+4);
+
+				if(d1<d0)
+				{
+					BGBCC_GenPalOpt_SwapPal4(palb, i+0, i+3);
+					BGBCC_GenPalOpt_SwapPal4(palb, i+1, i+2);
+					nsw++;
+				}
+			}
+		}
+		if(!nsw)
+			break;
+	}
+#endif
+
+	for(i=0; i<nclr; i++)
+	{
+		cr=palb[i*4+0];		cg=palb[i*4+1];		cb=palb[i*4+2];
+		pal[i*3+0]=cr;		pal[i*3+1]=cg;		pal[i*3+2]=cb;
+	}
+}
+
+void BGBCC_GenPalOpt3(byte *ibuf, int xs, int ys, byte *pal)
+{
+	static s32 rgb_cnts[32768];
+	u32 bb_box[288];
+	s32 bb_cnt[288];
+	int cr, cg, cb, px, nclr, na, nlim;
+	int i, j, k;
+	
+	for(i=0; i<32768; i++)
+		rgb_cnts[i]=0;
+	for(i=0; i<(xs*ys); i++)
+	{
+		cr=ibuf[i*4+0];		cg=ibuf[i*4+1];		cb=ibuf[i*4+2];
+		cr>>=3;				cg>>=3;				cb>>=3;
+		px=(cr<<10)|(cg<<5)|cb;
+		rgb_cnts[px]++;
+	}
+	bb_box[0]=0x7FFF0000;
+	bb_cnt[0]=BGBCC_GenPalOpt_CountForBbox(rgb_cnts, bb_box[0]);
+	nclr=1;
+	nlim=256;
+	
+	while(nclr<256)
+	{
+		if((nclr>1) && (bb_cnt[nclr-1]==0))
+		{
+			nclr--;
+			continue;
+		}
+	
+		na=BGBCC_GenPalOpt_SplitBbox2x(rgb_cnts, bb_box[0], bb_box+nclr);
+		if(na>=2)
+		{
+			for(i=0; i<na; i++)
+				bb_cnt[nclr+i]=BGBCC_GenPalOpt_CountForBbox(
+					rgb_cnts, bb_box[nclr+i]);
+
+			nclr+=na;
+			for(i=0; i<nclr; i++)
+			{
+				bb_box[i]=bb_box[i+1];
+				bb_cnt[i]=bb_cnt[i+1];
+			}
+			nclr--;
+
+			for(i=0; i<nclr; i++)
+				for(j=i+1; j<nclr; j++)
+			{
+				if(bb_cnt[j]>bb_cnt[i])
+				{
+					px=bb_box[i]; bb_box[i]=bb_box[j]; bb_box[j]=px;
+					px=bb_cnt[i]; bb_cnt[i]=bb_cnt[j]; bb_cnt[j]=px;
+				}
+			}
+			
+			nlim=256;
+		}else
+		{
+			px=bb_box[0];
+			k=bb_cnt[0];
+			for(i=0; i<nclr; i++)
+			{
+				bb_box[i]=bb_box[i+1];
+				bb_cnt[i]=bb_cnt[i+1];
+			}
+			bb_box[nclr-1]=px;
+			bb_cnt[nclr-1]=k;
+			nlim--;
+		}
+	}
+
+	for(i=0; i<768; i++)
+		{ pal[i]=0; }
+	
+	for(i=0; i<nclr; i++)
+	{
+		cr=((bb_box[i]>>10)&31)+((bb_box[i]>>26)&31);
+		cg=((bb_box[i]>> 5)&31)+((bb_box[i]>>21)&31);
+		cb=((bb_box[i]>> 0)&31)+((bb_box[i]>>16)&31);
+		cr=(cr<<2)|(cr>>4);
+		cg=(cg<<2)|(cg>>4);
+		cb=(cb<<2)|(cb>>4);
+		pal[i*3+0]=cr;
+		pal[i*3+1]=cg;
+		pal[i*3+2]=cb;
+	}
+	
+	BGBCC_GenPalOpt_SortPalOpt(pal, nclr);
+}
+
+void BGBCC_GenPalOpt4(byte *ibuf, int xs, int ys, byte *pal)
+{
+	byte palb[256*3];
+	int i;
+
+	BGBCC_GenPalOpt3(ibuf, xs, ys, palb);
+
+	for(i=0; i<256; i++)
+	{
+		pal[i*4+0]=palb[i*3+0];
+		pal[i*4+1]=palb[i*3+1];
+		pal[i*4+2]=palb[i*3+2];
+		pal[i*4+3]=255;
+	}
+}
+
+void BGBCC_GenPalOpt4_SwapRB(byte *ibuf, int xs, int ys,
+	byte *pal)
+{
+	byte palb[256*3];
+	int i;
+
+	BGBCC_GenPalOpt3(ibuf, xs, ys, palb);
+
+	for(i=0; i<256; i++)
+	{
+		pal[i*4+0]=palb[i*3+2];
+		pal[i*4+1]=palb[i*3+1];
+		pal[i*4+2]=palb[i*3+0];
+		pal[i*4+3]=255;
+	}
+}

@@ -339,6 +339,7 @@ BCCX_Node *BGBPP_PpiInterpBodyStatement(BGBCP_ParseState *ctx, BCCX_Node *l)
 
 		ln=BCCX_FetchCst(l, &bgbcc_rcst_then, "then");
 		rn=BCCX_FetchCst(l, &bgbcc_rcst_else, "else");
+		v=NULL;
 
 		i=BGBCP_BoolExpr(ctx, t);
 		if(i==1)
@@ -504,7 +505,7 @@ BCCX_Node *BGBPP_PpiInterpDoFuncall2(BGBCP_ParseState *ctx,
 			if(BCCX_TagIsCstP(v, &bgbcc_rcst_int, "int"))
 			{
 				li=BCCX_GetIntCst(v, &bgbcc_rcst_value, "value");
-				sprintf(t, "%lld", li);
+				sprintf(t, "%lld", (long long)li);
 				t+=strlen(t);
 				continue;
 			}
@@ -559,7 +560,7 @@ BCCX_Node *BGBPP_PpiInterpDoFuncall2(BGBCP_ParseState *ctx,
 					if(BCCX_TagIsCstP(v, &bgbcc_rcst_int, "int"))
 					{
 						li=BCCX_GetIntCst(v, &bgbcc_rcst_value, "value");
-						sprintf(t, "%lld", li);
+						sprintf(t, "%lld", (long long)li);
 //						strcpy(t, s0);
 						t+=strlen(t);
 						continue;

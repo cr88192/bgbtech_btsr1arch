@@ -861,6 +861,11 @@ int BT5BU_EncodeBlock(byte **rct, u64 *reps, u64 blk)
 	return(0);
 }
 
+int bt5bu_min(int x, int y)
+{
+	return((x<y)?x:y);
+}
+
 int BT5BU_EncodeFrameBlks(
 	byte *codat, int cosz, u64 *blks, int nblks)
 {
@@ -883,9 +888,9 @@ int BT5BU_EncodeFrameBlks(
 	while(cs<cse)
 	{
 		nl=cse-cs;
-		nl4=min(nl, 4);
-		nl8=min(nl, 8);
-		nl64=min(nl, 64);
+		nl4=bt5bu_min(nl, 4);
+		nl8=bt5bu_min(nl, 8);
+		nl64=bt5bu_min(nl, 64);
 		
 		if(eps)
 		{
@@ -933,7 +938,7 @@ int BT5BU_EncodeFrameBlks(
 			}
 
 
-			n=min(nce, ncf0);
+			n=bt5bu_min(nce, ncf0);
 			n4=n/4;
 			if(n4>=2)
 			{
@@ -951,7 +956,7 @@ int BT5BU_EncodeFrameBlks(
 				continue;
 			}
 
-			n=min(nce, ncf1);
+			n=bt5bu_min(nce, ncf1);
 			n4=n/4;
 			if(n4>=2)
 			{
@@ -969,7 +974,7 @@ int BT5BU_EncodeFrameBlks(
 				continue;
 			}
 
-			n=min(nl4, ncf0);
+			n=bt5bu_min(nl4, ncf0);
 			if(n>2)
 			{
 				*ct++=0x1F|((n-1)<<6);
@@ -979,7 +984,7 @@ int BT5BU_EncodeFrameBlks(
 				continue;
 			}
 
-			n=min(nce, nc_221);
+			n=bt5bu_min(nce, nc_221);
 			n2=n/2;
 			if(n2>=1)
 			{
@@ -996,7 +1001,7 @@ int BT5BU_EncodeFrameBlks(
 				continue;
 			}
 
-			n=min(nce, nc_222);
+			n=bt5bu_min(nce, nc_222);
 			if((n>1) && (ix_p6<0))
 			{
 				*ct++=0x37|((n-1)<<6);
@@ -1006,7 +1011,7 @@ int BT5BU_EncodeFrameBlks(
 				continue;
 			}
 
-			n=min(nce, nc_441);
+			n=bt5bu_min(nce, nc_441);
 			if((n>1) && (ix_p6<0))
 			{
 				*ct++=0x07|((n-1)<<6);

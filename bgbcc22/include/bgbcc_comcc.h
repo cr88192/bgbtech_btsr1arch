@@ -376,6 +376,7 @@ int stat_const_maskhit;
 int stat_const_maskjumbo;
 int stat_const_masktot;
 
+int stat_const_imm10s;
 int stat_const_imm16;
 int stat_const_imm16u;
 int stat_const_imm16n;

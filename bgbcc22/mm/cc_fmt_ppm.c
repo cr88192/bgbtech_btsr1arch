@@ -12,7 +12,7 @@ byte *BGBCC_Img_DecodePPM_ReadNumber(byte *cs, int *rval)
 	*ct++=0;
 
 	if(rval)
-		*rval=atoi(tb);
+		*rval=atoi((char *)(&tb));
 
 	return(cs);
 }
@@ -87,12 +87,12 @@ byte *BGBCC_Img_DecodePPM(byte *imgbuf, int *rw, int *rh)
 		
 		if(!xs)
 		{
-			sscanf(tb, "%u %u %u", &xs, &ys, &mv);
+			sscanf((char *)(&tb), "%u %u %u", &xs, &ys, &mv);
 			continue;
 		}
 		if(!mv)
 		{
-			sscanf(tb, "%u", &mv);
+			sscanf((char *)(&tb), "%u", &mv);
 			continue;
 		}
 		break;
@@ -237,7 +237,7 @@ byte *BGBCC_Img_DecodeDrawCmds(byte *srcbuf, int *rw, int *rh)
 		if(tb[0]=='#')
 			continue;
 		
-		a=bgbcc_split(tb);
+		a=bgbcc_split((char *)(&tb));
 		if(!a[0])
 			continue;
 			

@@ -163,6 +163,8 @@ int TKMM_MMCell_ChunkSetObjListFree(TKMM_MemCelChk *chk, int pos)
 {
 	int p, n;
 
+	p=pos;
+
 	while(p>=0)
 	{
 		n=(s16)(chk->data[p]);

@@ -7,6 +7,7 @@
 #include <tk_core.h>
 #include <tkgdi/tkgdi_avi.h>
 #include <tkgdi/tkgdi_gtf.h>
+#include <tkgdi/tkgdi_paldfl.h>
 
 #define TKGDI_SCRMODE_TEXT					0
 #define TKGDI_SCRMODE_640x400_CC			1

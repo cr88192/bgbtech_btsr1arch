@@ -16,7 +16,13 @@ int TKDFS_ImageSetInodeInfoDeh(TKDFS_ImageContext *img,
 	TKDFS_InodeInfo *info,
 	char *bname, s64 dirino, int dfl);
 
+int TKDFS_SetImageInodeBlockNum(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *ino_inf, int d_blk, u64 newblk);
+
 int TKDFS_CopyName48Expand(byte *dst, byte *src);
+
+int TKDFS_SyncImageInodes(TKDFS_ImageContext *img);
+
 
 void *tkdfs_malloc(int sz)
 {
@@ -1200,6 +1206,7 @@ u64 TKDFS_GetImageInodeBlockNum(TKDFS_ImageContext *img,
 
 	d_ino=ino_inf->d_ino;
 	blkofs=d_blk;
+	blknum=0;
 
 	if(ino_inf->ino_idx4)
 	{
@@ -2477,6 +2484,8 @@ int TKDFS_WriteImageDirent(TKDFS_ImageContext *img,
 	byte *blkptr, *deptr;
 	char *cs, *ct;
 	int ofs, blkofs, blkrem, nln, nl1, feh, islfn;
+
+	feh=0;
 
 	if(info->di_idx!=d_idx)
 		{ TKDFS_DBGBREAK }

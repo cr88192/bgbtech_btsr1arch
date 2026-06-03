@@ -1004,11 +1004,12 @@ parameter[3:0] JX2_RVIMM_DISP20J	= 4'h3;	//JAL
 parameter[3:0] JX2_RVIMM_DISP12LD	= 4'h4;
 parameter[3:0] JX2_RVIMM_DISP12ST	= 4'h5;
 parameter[3:0] JX2_RVIMM_DISP12B	= 4'h6;	//12-bit, Bcc
-parameter[3:0] JX2_RVIMM_IMM17S		= 4'h7;	//LUI
+parameter[3:0] JX2_RVIMM_IMM17S		= 4'h7;	//17-bit, sign-extend
 parameter[3:0] JX2_RVIMM_IMM32LC	= 4'h8;	//L.LI
 parameter[3:0] JX2_RVIMM_IMM21J		= 4'h9;	//Jumbo, 21-bit Immed
 parameter[3:0] JX2_RVIMM_IMMFPRM	= 4'hA;
 parameter[3:0] JX2_RVIMM_IMM5S		= 4'hB;	//imm5, sign-extend
+parameter[3:0] JX2_RVIMM_IMM16U		= 4'hC;	//16-bit, zero-extend
 
 parameter[3:0] JX2_RVIMM_IMM12S		= 4'h4;
 

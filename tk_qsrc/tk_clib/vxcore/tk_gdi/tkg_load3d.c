@@ -389,6 +389,8 @@ TKGDI_Object3D *TKGDI_TKO3D_ReadObjectAscii(byte **rcs)
 	int i, j, k;
 
 	cs=(char *)(*rcs);
+	objnam=NULL;
+	a=NULL;
 	
 	while(1)
 	{
@@ -401,6 +403,9 @@ TKGDI_Object3D *TKGDI_TKO3D_ReadObjectAscii(byte **rcs)
 		if(a[0][0]=='/')
 			continue;
 	}
+	
+	if(!a)
+		return(NULL);
 
 	if(stricmp(a[0], "OBJECT"))
 		return(NULL);
@@ -638,6 +643,7 @@ void TKGDI_TKO3D_VertexFixupDistance(
 	
 	d0=TKGDI_TKO3D_VecDist3(xyz, ijk);
 	d1=ijk[3];
+	d2=0;
 	if(d0>0)
 		d2=d1/d0;
 

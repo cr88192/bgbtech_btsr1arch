@@ -1,6 +1,7 @@
 #ifndef __TK_CORE_H__
 #define __TK_CORE_H__
 
+#include <netinet/in.h>
 
 // #ifdef ARCH_SH4
 #if defined(ARCH_SH4) || defined(ARCH_BJX1) || defined(ARCH_BJX1_64)
@@ -889,6 +890,67 @@ int tk_getch();
 int TKGDI_UpdateWindowStack(void);
 void TKGDI_HalCleanupForTask(TKPE_TaskInfo *task);
 
+void TK_FlushCacheL1D();
+void TK_FastFlushCacheL1D();
+void TK_SmallFlushL1D(void *ptr, int sz);
+void TK_SmallFlushL1I(void *ptr, int sz);
+
+void TK_FlushCacheL1D_INVDC(void *ptr);
+void TK_FlushCacheL1D_INVIC(void *ptr);
+void TK_FlushCacheL1D_ReadBuf(void *ptr, int sz);
+
+int TK_MutexTryLockB(TKPE_TaskInfo *task, int *mtx, int flag);
+int TK_MutexTryReleaseB(TKPE_TaskInfo *task, int *mtx);
+void TK_ExitV(int res);
+
+
+char *TKDFS_TempNormalizeStringUtf8(char *src, int cfl);
+
+void __sqfp_fadd_f128fv(u64 *rf0, u64 *rf1, u64 *rf2);
+void __sqfp_fsub_f128fv(u64 *rf0, u64 *rf1, u64 *rf2);
+void __sqfp_fmul_f128fv(u64 *rf0, u64 *rf1, u64 *rf2);
+void __sqfp_fdiv_f128fv(u64 *rf0, u64 *rf1, u64 *rf2);
+void __sqfp_fsqrt_f128fv(u64 *rf0, u64 *rf2);
+void __sqfp_fcvt_d2q(u64 *rf0, u64 *rf2);
+void __sqfp_fcvt_q2d(u64 *rf0, u64 *rf2);
+void __sqfp_fcvt_s2q(u64 *rf0, u64 *rf2);
+void __sqfp_fcvt_q2s(u64 *rf0, u64 *rf2);
+void __sqfp_fcvt_i2q(u64 *rf0, u64 *rf2);
+void __sqfp_fcvt_q2i(u64 *rf0, u64 *rf2);
+
+u64 __sfp_fadd_f64(u64 f0, u64 f1);
+u64 __sfp_fsub_f64(u64 f0, u64 f1);
+u64 __sfp_fmul_f64(u64 f0, u64 f1);
+u64 __sfp_frcp_f64(u64 f0);
+u64 __sfp_fdiv_f64(u64 f0, u64 f1);
+u64 __sfp_fsqrt_f64(u64 f0);
+
+u64 __sfp_padd_f16(u64 f0, u64 f1);
+u64 __sfp_psub_f16(u64 f0, u64 f1);
+u64 __sfp_pmul_f16(u64 f0, u64 f1);
+u64 __sfp_pdiv_f16(u64 f0, u64 f1);
+
+u64 __sfp_padd_f32(u64 f0, u64 f1);
+u64 __sfp_psub_f32(u64 f0, u64 f1);
+u64 __sfp_pmul_f32(u64 f0, u64 f1);
+u64 __sfp_psqrt_f32(u64 f0);
+u64 __sfp_psqrt_f16(u64 f0);
+u64 __sfp_fcnvsd(u32 f0);
+u32 __sfp_fcnvds(u64 f0);
+u32 __sfp_float_f32(s32 iv);
+u64 __sfp_float_f64(s32 iv);
+u32 __sfp_ldhf16(u16 f0);
+u16 __sfp_sthf16(u32 f0);
+
+u64 __sfp_fcvt_s2d(u32 f0);
+u32 __sfp_fcvt_d2s(u64 f0);
+u64 __sfp_fcvt_h2d(u16 f0);
+u16 __sfp_fcvt_d2h(u64 f0);
+u64 __sfp_pcvt_h2s(u32 f0);
+u32 __sfp_pcvt_s2h(u64 f0);
+u64 __sfp_fneg_f64(u64 f0);
+u64 __sfp_pneg_f32(u64 f0);
+
 
 #ifndef __BGBCC__
 int __hint_use_egpr();
@@ -899,5 +961,64 @@ int __int_clamp(int x, int m, int n);
 
 // void *malloc(int sz);
 // int free(void *ptr);
+
+u32 TKDFS_ReadImageInodeWord32(TKDFS_ImageContext *img,
+	int d_ino, int d_idx);
+int TKDFS_WriteImageInodeWord32(TKDFS_ImageContext *img,
+	int d_ino, int d_idx, u32 d_val);
+
+byte *TKDFS_GetImageCachedInodeBlock(TKDFS_ImageContext *img,
+	int d_ino, s64 d_blk, int d_flg);
+int TKDFS_InitializeImageFileInode(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info, int ino, int d_flg);
+int TKDFS_InitializeImageFileInodeIdat(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info, int ino);
+TKDFS_InodeInfo *TKDFS_GetImageCachedInode(TKDFS_ImageContext *img,
+	int d_ino, int d_flg);
+
+int TKDFS_ImageSetInodeInfoDeh(TKDFS_ImageContext *img,
+	TKDFS_InodeInfo *info,
+	char *bname, s64 dirino, int dfl);
+int TKDFS_ReadWriteDirEntFile(
+	TKDFS_DirentInfo *dee, s64 ofs, int dfl, byte *dbuf, s64 dsz);
+
+int TKDFS_CopyDirentInfo(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *dinfo,
+	TKDFS_DirentInfo *sinfo);
+int TKDFS_ImageLookupInodePathI(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, char *path, int dfl);
+int TKDFS_ImageLookupInodePath(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, char *path, int dfl);
+int TKDFS_ImageCreateInodePath(TKDFS_ImageContext *img,
+	TKDFS_DirentInfo *info, char *path, int dfl);
+
+int TKDFS_CopyName48Expand(byte *dst, byte *src);
+int TKDFS_InitBaseName48(char *bname, char *d_name);
+
+int TKDFS_SyncCompressedBlocks(TKDFS_ImageContext *img);
+
+TKDFS_ImageContext *TKDFS_InitializeNewImage(
+	int bdev, s64 lbastart, s64 lbasize);
+TKDFS_ImageContext *TKDFS_TryOpenImage(int bdev, s64 lbastart);
+
+int TKDFS_WalkDirEntNext(TKDFS_ImageContext *img, TKDFS_DirentInfo *dee);
+
+int TKDFS_SetDirEntInode(TKDFS_DirentInfo *dee, s64 d_ino);
+int TKDFS_DeleteInode(TKDFS_ImageContext *img, int d_ino);
+int TKDFS_DeleteDirEnt(TKDFS_DirentInfo *dee);
+
+int TKDFS_DeleteDirEnt(TKDFS_DirentInfo *dee);
+int TKDFS_UpdateDirEnt(TKDFS_DirentInfo *dee);
+int TKDFS_SyncDirEntFile(TKDFS_DirentInfo *dee);
+
+int TKDFS_GetDirEntMode(TKDFS_DirentInfo *dee);
+int TKDFS_SetDirEntMode(TKDFS_DirentInfo *dee, int d_mode);
+
+s64 TKDFS_GetDirEntSize(TKDFS_DirentInfo *dee);
+s64 TKDFS_GetDirEntInode(TKDFS_DirentInfo *dee);
+s64 TKDFS_GetDirEntCTime(TKDFS_DirentInfo *dee);
+s64 TKDFS_GetDirEntMTime(TKDFS_DirentInfo *dee);
+int TKDFS_GetDirEntUid(TKDFS_DirentInfo *dee);
+int TKDFS_GetDirEntGid(TKDFS_DirentInfo *dee);
 
 #endif

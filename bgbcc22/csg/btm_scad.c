@@ -767,7 +767,8 @@ BTM_SolidMesh *BTM_ScadCsgToMesh(BTM_CsgNode *csgn, BTM_SolidMesh *olst)
 		
 		if((mtmp->clrmat&0xFFFFFF)>=0x040000)
 		{
-			sprintf(tb, "#%06llX", mtmp->clrmat&0xFFFFFF);
+			sprintf(tb, "#%06llX",
+				(unsigned long long)(mtmp->clrmat&0xFFFFFF));
 			if(!(mtmp->clrmat&1))
 				{ strcat(tb, ",Hg"); }
 			mtmp->usetex[0]=bccx_strdup(tb);
@@ -862,7 +863,7 @@ BTM_SolidMesh *BTM_LoadMeshListScadBuffer(byte *ibuf, int ibsz)
 		BGBCP_SetLocale(ctx, "C");
 	}
 
-	s=ibuf;
+	s=(char *)ibuf;
 	ctx->ppi_ctx->toplevel=NULL;
 	lst=BGBCP_Toplevel(ctx->ppi_ctx, &s);
 	lst=ctx->ppi_ctx->toplevel;

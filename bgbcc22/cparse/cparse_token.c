@@ -652,6 +652,29 @@ int bgbcp_strcmp(char *s1, char *s2)
 #endif
 }
 
+int bgbcp_tolower(int x)
+{
+	if((x>='A') && (x<='Z'))
+		return(x+('a'-'A'));
+	return(x);
+}
+
+int bgbcp_stricmp(char *s1, char *s2)
+{
+	while(*s1 && (bgbcp_tolower(*s1)==bgbcp_tolower(*s2)))
+		{ s1++; s2++; }
+	return(bgbcp_tolower(*s1)-bgbcp_tolower(*s2));
+}
+
+int bgbcp_strnicmp(char *s1, char *s2, int n)
+{
+	while(*s1 && (bgbcp_tolower(*s1)==bgbcp_tolower(*s2)) && (n>0))
+		{ s1++; s2++; n--; }
+	if(!n)
+		return(0);
+	return(bgbcp_tolower(*s1)-bgbcp_tolower(*s2));
+}
+
 #ifdef BGBCC_MISAL_YES
 
 int bgbcp_strcmp1(char *s1, char *s2)

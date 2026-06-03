@@ -122,6 +122,11 @@ static _HexFloat _DblEps =  {{0x3410 ,0x0000 ,0x0000 ,0x0000}};
 #define FLT_MIN 1E-37
 #define DBL_MIN 1E-37
 #define LDBL_MIN 1E-37
+
+#ifndef FLT_EVAL_METHOD
+#define FLT_EVAL_METHOD 1
+#endif
+
 #endif
 
 #endif

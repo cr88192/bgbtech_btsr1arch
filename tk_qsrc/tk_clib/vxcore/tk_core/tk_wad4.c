@@ -681,6 +681,9 @@ void TK_Wad4_ReadLumpBuffer(TK_WadImage *img, int lump, void *buf)
 	int cmp;
 
 	csz1=0;
+	cmp=0;
+	dsz=0; csz=0;
+	offs0=0; offs=0;
 
 	if(img->w4dir)
 	{
@@ -866,6 +869,8 @@ void *TK_Wad4_GetCacheLumpNumOffs(TK_WadImage *img,
 	int cmp;
 	int i, j, k, n;
 	
+	dsz=0; csz=0; offs=0;
+	
 	cmp=TK_Wad4_GetLumpEntCmp(img, lump);
 	if(cmp<0)
 		return(NULL);
@@ -1044,6 +1049,8 @@ void *TK_Wad4_GetCacheExpandLumpNumOffs(TK_WadImage *img,
 	cmp=TK_Wad4_GetLumpEntCmp(img, lump);
 	if(cmp<0)
 		return(NULL);
+		
+	dsz=0; sz1=0; csz=0; offs=0;
 	
 	if(cmp!=TK_W4CMP_FRAG)
 	{

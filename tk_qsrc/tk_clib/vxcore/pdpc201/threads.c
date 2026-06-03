@@ -379,6 +379,7 @@ int tss_create( tss_t* tss_key, tss_dtor_t destructor )
 {
 	int tid, ix;
 	
+	tid=0;
 #ifndef __TK_CLIB_DLLSTUB__
 	tid=TK_AllocNewTlsA();
 #endif

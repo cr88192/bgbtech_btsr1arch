@@ -1769,6 +1769,8 @@ char *__lva_conv_tostring(u64 val)
 	double lf, lg;
 	int i, j, k, sg;
 	
+	sg=0;
+	
 	if(__lva_fixnump(val))
 	{
 		li=__lva_conv_toi64(val);

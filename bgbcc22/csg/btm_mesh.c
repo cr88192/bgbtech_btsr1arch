@@ -185,7 +185,7 @@ int BTM_ProjectMeshAxis(BTM_SolidMesh *mesh,
 
 	btm_stvec3fv(dv, vec);
 
-	ntris=mesh->nTris; m=999999999; n=-999999999;
+	ntris=mesh->nTris; m=999999999.0; n=-999999999.0;
 	for(i=0; i<(ntris*3); i++)
 	{
 		x=mesh->tris[i*3+0];
@@ -569,7 +569,7 @@ int BTM_CheckSphereInMeshP(BTM_SolidMesh *mesh,
 	//check if ray-cast has an odd number of hits.
 	//if outside, ray will cross an even number of times.
 	//if inside, ray will cross an odd number of times.
-	v0=btm_mkvec3f(999999, 999999, 999999);
+	v0=btm_mkvec3f(999999.0, 999999.0, 999999.0);
 	i=BTM_MeshCheckLineCrossings(mesh, org, v0, rad);
 	return(i&1);
 }
@@ -740,7 +740,7 @@ int BTM_RebuildMeshProjectTexture(BTM_SolidMesh *mesh)
 		nv[2]=mesh->norm[i*4+2];
 		nv[3]=mesh->norm[i*4+3];
 		
-		g=-999; k=0;
+		g=-999.0; k=0;
 		for(j=0; j<mesh->n_texvec; j++)
 		{
 			f=btm_vec3fv_dot(mesh->texvec_n+j*4, nv);

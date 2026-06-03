@@ -182,6 +182,14 @@ Listing:
 * iiiiii0-0dddd-mmmmm-011-ddddd-11-00111 ? BLTUI	Imm6s, Rm, Disp9s (BGB)
 * iiiiii0-1dddd-mmmmm-011-ddddd-11-00111 ? BGEUI	Imm6s, Rm, Disp9s (BGB)
 
+* 0iiiiii-iiiii-jjjjj-101-nnnnn-11-00111 ? ADDI		GP, {Imm16u*8}, Rn
+* 1iiiiii-iiiii-jjjjj-101-nnnnn-11-00111 ? LWU		{Imm16u*8}(GP), Rn
+* 0iiiiii-iiiii-jjjjj-110-nnnnn-11-00111 ? LD		{Imm16u*4}(GP), Rn
+* 1iiiiii-iiiii-jjjjj-110-nnnnn-11-00111 ? LW		{Imm16u*8}(GP), Rn
+* 0iiiiii-iiiii-jjjjj-111-nnnnn-11-00111 ? SD		Rn, {Imm16u*4}(GP)
+* 1iiiiii-iiiii-jjjjj-111-nnnnn-11-00111 ? SW		Rn, {Imm16u*8}(GP)
+
+
 
 * zzzzzzz-ooooo-mmmmm-zzz-nnnnn-00-01011  (User / Custom 0)
 

@@ -1865,10 +1865,12 @@ int BGBCC_JX2_CheckPadLastOpWasBRA(
 		op1=BGBCC_JX2_EmitGetOffsWord(ctx, j+2);
 
 		op2=-1;
-		if((j-k)==4)
-		{
-			op2=BGBCC_JX2_EmitGetOffsWord(ctx, k+0);
-		}
+//		if((j-k)==4)
+//		{
+//			op2=BGBCC_JX2_EmitGetOffsWord(ctx, k+0);
+//		}
+
+		op2=BGBCC_JX2_EmitGetOffsWord(ctx, (j-4)+0);
 
 		opw1=-1;
 		opw2=-1;
@@ -1879,7 +1881,9 @@ int BGBCC_JX2_CheckPadLastOpWasBRA(
 				return(0);
 		
 			if((op0&0x0FFF)==0x006F)	//JAL X0
+			{
 				return(1);
+			}
 			if((op0&0xF01F)==0x7012)	//BRA, XG3
 				return(1);
 		}else

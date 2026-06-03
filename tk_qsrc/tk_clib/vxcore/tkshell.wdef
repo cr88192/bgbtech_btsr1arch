@@ -4,6 +4,9 @@ paldith8=tk_rsrc/paldith8.bmp bmp_lz8
 # paldith8=tk_rsrc/paldith8.bmp bmp8
 genmidi=tk_rsrc/genmidi.lmp
 
+fixsdf1=tk_rsrc/fixsdf1_hi.bmp bmp8_opt
+
+
 # mandril_lp=tk_rsrc/mandril0.bmp bmp_cram8np
 # mandril_qp=tk_rsrc/mandril0.bmp bmp_cq8np
 # explod0=tk_rsrc/explod0.wav		wav_11m_adlq
@@ -23,4 +26,4 @@ genmidi=tk_rsrc/genmidi.lmp
 # boxman_stlb=tk_rsrc/boxman.scad stl_bin
 # boxman_obj=tk_rsrc/boxman.scad obj_mdl
 
-chicken1_obj=tk_rsrc/chicken1.scad obj_mdl
+# chicken1_obj=tk_rsrc/chicken1.scad obj_mdl

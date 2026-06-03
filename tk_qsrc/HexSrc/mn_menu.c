@@ -1202,6 +1202,9 @@ dt_bool MN_Responder(event_t *event)
 	{
 		return(false);
 	}
+	
+//	printf("MN_Responder: %02X %d\n", event->data1, event->type);
+	
 	key = event->data1;
 	if(InfoType)
 	{

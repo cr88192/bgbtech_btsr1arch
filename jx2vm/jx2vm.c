@@ -1728,11 +1728,15 @@ int main(int argc, char *argv[])
 	if(!l1dcfg)
 	{
 //		l1dcfg="32k1";
-		l1dcfg="16k1";
+//		l1dcfg="16k1";
+		l1dcfg="32k1v32";
 	}
 	if(!l2cfg)
+	{
 //		l2cfg="128k2";
 		l2cfg="256k1";
+//		l2cfg="256k1v";
+	}
 
 //	if(l1cfg)
 	BJX2_MemSimSetConfigL1I(ctx, l1icfg);

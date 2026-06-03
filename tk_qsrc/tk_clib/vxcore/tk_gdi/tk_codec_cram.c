@@ -23,6 +23,9 @@ int cram_decompress_inner8_rgb555(byte *ibuf, u16 *obuf,
 	int n, bx, by, by2, bxs, bys;
 	int i;
 	
+	bb0=NULL;	bb1=NULL;
+	bb2=NULL;	bb3=NULL;
+	
 	xs=info->ohead->biWidth;
 	ys=info->ohead->biHeight;
 	if(ys<0)

@@ -452,6 +452,7 @@ void tkgdi_con_drawcell(_tkgdi_conparm *con, int x, int y)
 
 	cxs=con->cell_xs;
 	cys=con->cell_ys;
+	fgc=0; bgc=0;
 
 	i0=(y*TKG_CONWIDTH+x)*2;
 	q0=con->conbuf[i0+0];

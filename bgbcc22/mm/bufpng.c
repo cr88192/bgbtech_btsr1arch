@@ -992,7 +992,7 @@ void BGBBTJ_BufPNG_WriteChunk(byte **rct, u32 fcc, byte *buf, int len)
 #define ABS(v)	(((v)<0)?(-(v)):(v))
 #endif
 
-BTEIFGL_API int BGBBTJ_BufPNG_Encode(
+int BGBBTJ_BufPNG_Encode(
 	byte *ctbuf, int ctsz, byte *buf, int xs, int ys)
 {
 	byte hbuf[64];

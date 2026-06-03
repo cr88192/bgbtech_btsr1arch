@@ -93,6 +93,14 @@ V_DrawPatchDirectName
   int		scrn,
   char		*name );
 
+void
+V_DrawPatchCmap
+( int		x,
+  int		y,
+  int		scrn,
+  patch_t*	patch,
+  lighttable_t *tcol1);
+
 
 // Draw a linear block of pixels into the view buffer.
 void

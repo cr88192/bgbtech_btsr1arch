@@ -35,6 +35,8 @@ extern byte st_do3dglasses;
 
 dt_scrpix	*screen_fbuf;
 
+int		gfxdrv_kill;
+
 void IN_Init (void);
 void D_PostEvent (event_t* ev);
 
@@ -2043,12 +2045,29 @@ TKGDI_BITMAPINFOHEADER *i_dibinfo = NULL;
 
 void I_InitTkGdi()
 {
+	byte *pal;
+	int i, j, k;
+
 	if(i_dibinfo)
 		return;
 		
 //	i_dibinfo = &i_t_dibinfo;
-	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER));
-	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER));
+	i_dibinfo = malloc(sizeof(TKGDI_BITMAPINFOHEADER)+(256*4));
+	memset(i_dibinfo, 0, sizeof(TKGDI_BITMAPINFOHEADER)+(256*4));
+	
+	pal=((byte *)i_dibinfo)+sizeof(TKGDI_BITMAPINFOHEADER);
+
+	for(i=0; i<256; i++)
+	{
+		k=0;
+//		if((i==7) || (i==15) || (i==255))
+//			k=255;
+		k=i;
+		pal[i*4+0]=k;
+		pal[i*4+1]=k;
+		pal[i*4+2]=k;
+		pal[i*4+3]=255;
+	}
 
 	i_dibinfo->biSize=sizeof(TKGDI_BITMAPINFOHEADER);
 	i_dibinfo->biWidth=320;
@@ -2061,6 +2080,13 @@ void I_InitTkGdi()
 //	i_dibinfo->biHeight=600;
 
 	i_dibinfo->biBitCount=16;
+
+#ifdef GFX_OBRA
+	i_dibinfo->biWidth=640;
+	i_dibinfo->biHeight=400;
+//	i_dibinfo->biBitCount=16;
+	i_dibinfo->biBitCount=4;
+#endif
 
 //	tk_printf("  1\n", hDc);
 
@@ -2077,14 +2103,150 @@ void I_InitTkGdi()
 #endif
 
 	i_dibinfo->biHeight=-200;
-	
-	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
-//	screen_fbuf=NULL;
+
+#ifdef GFX_OBRA
+	i_dibinfo->biHeight=-400;
+	i_dibinfo->biBitCount=16;
+#endif
+
+//	screen_fbuf=tkgTryMapFrameBuffer(i_hDc, i_dibinfo);
+	screen_fbuf=NULL;
 }
 
 extern byte	st_oddframe;		//BGB: Odd Frame
 extern byte	st_do3dglasses;		//BGB: Do 3D glasses effect
 extern int		r_view_xadjust;
+
+#ifdef GFX_OBRA
+
+u16 *screen_obra;
+byte *screen_obra_luma;
+
+void I_FinishUpdate_BlitObra (void)
+{
+//	static byte bayer4[16]={
+//	 1,  9,  3, 11,
+//	13,  5, 15,  7,
+//	 4, 12,  2, 10,
+//	16,  8, 14,  6,
+//	};
+
+	static byte bayer4[16]={
+	 1,  5,  2,  6,
+	 9, 13, 10, 14,
+	 3,  7,  4,  8,
+	11, 15, 12, 16,
+	};
+
+	int px0, px1, px2, px3;
+	int dr1, dr2, dg1, dg2, db1, db2;
+	int x, y, z, cy, cy0, cy1, cy2, dy1, dy2;
+	int cry0, cry1, cry2, cry3;
+	int i, j, k;
+
+	if(!screen_obra)
+	{
+		screen_obra=malloc(640*400*2);
+		screen_obra_luma=malloc(320*200);
+	}
+
+	for(y=0; y<200; y++)
+		for(x=0; x<320; x++)
+	{
+		z=y*320+x;
+		px0=screen[z];
+		px1=screen[z+1];
+		px2=screen[z+320];
+	
+		dr1=((px0>>7)&255)-((px1>>7)&255);
+		dr2=((px0>>7)&255)-((px2>>7)&255);
+		
+		dg1=((px0>>2)&255)-((px1>>2)&255);
+		dg2=((px0>>2)&255)-((px2>>2)&255);
+
+		db1=((px0<<3)&255)-((px1<<3)&255);
+		db2=((px0<<3)&255)-((px2<<3)&255);
+
+//		dr1^=dr1>>31;	dr2^=dr2>>31;
+//		dg1^=dg1>>31;	dg2^=dg2>>31;
+//		db1^=db1>>31;	db2^=db2>>31;
+		dr1=(dr1*dr1)>>5;	dr2=(dr2*dr2)>>5;
+		dg1=(dg1*dg1)>>5;	dg2=(dg2*dg2)>>5;
+		db1=(db1*db1)>>5;	db2=(db2*db2)>>5;
+
+		cy0=((px0>>3)&127)+((px0>>8)&127);
+
+		cy=((cy0>>3)+(dr1+dr2))+((dg1+dg2)+(db1+db2));
+		if(cy<0)	cy=0;
+		if(cy>255)	cy=255;
+		
+//		k=screen[y*320+x];
+//		cy=((k>>3)&127)+((k>>8)&127);
+		screen_obra_luma[z]=cy;
+	}
+
+	for(y=0; y<200; y++)
+		for(x=0; x<320; x++)
+	{
+		z=y*320+x;
+		cy=screen_obra_luma[z];
+
+		px0=(cy>>3);
+		px0|=(px0<<5)|(px0<<10);
+		z=y*1280+(x*2);
+//		screen_obra[z    ]=px0;
+//		screen_obra[z+  1]=px0;
+//		screen_obra[z+640]=px0;
+//		screen_obra[z+641]=px0;
+
+#if 1
+
+//		k=bayer4[(y&3)*4+(x&3)]*15;
+//		cry0=k+ 0;
+//		cry1=k+ 3;
+//		cry2=k+ 7;
+//		cry3=k+11;
+
+		z=(y&1)*8+(x&1)*2;
+		cry0=bayer4[z+0]*15;
+		cry1=bayer4[z+1]*15;
+		cry2=bayer4[z+4]*15;
+		cry3=bayer4[z+5]*15;
+
+#if 0
+		cy1=screen_obra_luma[z+1];
+		cy2=screen_obra_luma[z+320];
+		
+		dy1=cy1-cy;
+		dy2=cy2-cy;
+		dy1=dy1^(dy1>>31);
+		dy2=dy2^(dy2>>31);
+		cy=(cy>>3)+(dy1<<2)+(dy2<<2);
+#endif
+
+//		screen_obra[y*320+x]=(cy>k)?0xFF:0x00;
+
+//		screen_obra[(y*2+0)*640+(x*2+0)]=~((cy>cry0)-1);
+//		screen_obra[(y*2+0)*640+(x*2+1)]=~((cy>cry1)-1);
+//		screen_obra[(y*2+1)*640+(x*2+0)]=~((cy>cry2)-1);
+//		screen_obra[(y*2+1)*640+(x*2+1)]=~((cy>cry3)-1);
+
+		px0=~((cy>cry0)-1);
+		px1=~((cy>cry1)-1);
+		px2=~((cy>cry2)-1);
+		px3=~((cy>cry3)-1);
+
+		z=y*1280+(x*2);
+		screen_obra[z    ]=px0;
+		screen_obra[z+  1]=px1;
+		screen_obra[z+640]=px2;
+		screen_obra[z+641]=px3;
+#endif
+	}
+
+	tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_obra);
+}
+#endif
 
 void I_FinishUpdate (void)
 {
@@ -2195,7 +2357,11 @@ void I_FinishUpdate (void)
 		}
 #endif
 
+#ifdef GFX_OBRA
+		I_FinishUpdate_BlitObra(screen_tmp);
+#else
 		tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen_tmp);
+#endif
 	}else
 //		if(vid_flashblend)
 		if(0)
@@ -2233,7 +2399,11 @@ void I_FinishUpdate (void)
 			}
 		}else
 		{
+#ifdef GFX_OBRA
+			I_FinishUpdate_BlitObra(screen);
+#else
 			tkgBlitImage(i_hDc, 0, 0, i_dibinfo, screen);
+#endif
 		}
 	}
 

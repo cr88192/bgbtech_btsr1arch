@@ -5657,8 +5657,15 @@ begin
 				begin
 					opNmid		= JX2_UCMD_ALUCMP3R;
 					opFmid		= JX2_FMID_REGREG;
-					opIty		= JX2_ITY_SB;
+//					opIty		= JX2_ITY_SB;
 					opUCmdIx	= JX2_UCIX_ALU_CMPQHS;
+					opIty		= JX2_ITY_UW;
+					
+					if(opIsJumboImm)
+					begin
+//						opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
+//						opIty		= JX2_ITY_UW;
+					end
 				end
 			end
 
@@ -6159,12 +6166,16 @@ begin
 
 `ifdef jx2_use_fpu_fpimm
 // `ifndef def_true
-				if(opIsJumbo96 && opExQ)
+				if(opIsJumbo96)
 				begin
 					opNmid		= JX2_UCMD_FPU3;
-					opUCmdIx	= JX2_UCIX_FPU_FADD;
+					opUCmdIx	= JX2_UCIX_FPU_FADD_G;
 					opFmid		= JX2_FMID_REGIMMREG;
 					opIty		= JX2_ITY_XB;
+					if(!opExQ)
+					begin
+						opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
+					end
 				end
 `endif
 			end

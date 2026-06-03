@@ -45,6 +45,12 @@ int tkgdi_blitupdate_getconbuf_sticky_cnt;
 u16 TKGDI_BlitUpdate_Repack32to16H(u32 pix);
 int tk_img_rgb15dist(u16 va, u16 vb);
 void TKGDI_BlitUpdate_EncodeCell8x8x2(u16 *ics, u32 *ict, int sbxs);
+byte tkgdi_blitupdate_rgb555toC3Y3(u16 rgb);
+
+void TKGDI_BlitUpdate_ScanCellEncode128(u16 *ics, u32 *ict,
+	int blkn, int sbxs);
+
+int tk_img_gen10to8();
 
 #ifndef __BGBCC__
 u32 __int32_bswap(u32 vx)
@@ -923,6 +929,8 @@ int tk_img_gen15to8_bmp(byte *bmp)
 	int cr, cg, cb, px;
 	int isrp2;
 	int i, j, k;
+
+	tab=NULL;
 
 	if(bmp[0]==' ')
 	{

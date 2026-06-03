@@ -458,6 +458,7 @@ int BGBCC_JX2_CheckOpsRv_GetRegs(
 	u16 *rspr, u16 *rspw, int *rspfl)
 {
 	s64 tdisp;
+	tdisp=0;
 	return(BGBCC_JX2_CheckOpsRv_GetRegsImm(sctx,
 		opw, rrs, rrt, rrn, rrp, rspr, rspw, rspfl, &tdisp));
 }
@@ -466,7 +467,7 @@ int BGBCC_JX2_CheckOpsRv_GetRegsImm(
 	BGBCC_JX2_Context *sctx,
 	u32 opw,
 	u16 *rrs, u16 *rrt, u16 *rrn, u16 *rrp,
-	u16 *rspr, u16 *rspw, int *rspfl, u64 *rimm)
+	u16 *rspr, u16 *rspw, int *rspfl, s64 *rimm)
 {
 	static u16 gr2spr[4]={
 		BGBCC_SH_REG_ZZR,	BGBCC_SH_REG_LR,

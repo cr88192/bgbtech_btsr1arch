@@ -330,42 +330,42 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 	//throw out bad suffixes early
 	if(s0 && BGBCP_IsIntP(ctx, ln))
 	{
-		if(	!stricmp(s0, "F") ||
-			!stricmp(s0, "D") ||
-			!stricmp(s0, "M"))s0=NULL;
+		if(	!bgbcp_stricmp(s0, "F") ||
+			!bgbcp_stricmp(s0, "D") ||
+			!bgbcp_stricmp(s0, "M"))s0=NULL;
 	}
 	if(s1 && BGBCP_IsIntP(ctx, rn))
 	{
-		if(	!stricmp(s1, "F") ||
-			!stricmp(s1, "D") ||
-			!stricmp(s1, "M"))s1=NULL;
+		if(	!bgbcp_stricmp(s1, "F") ||
+			!bgbcp_stricmp(s1, "D") ||
+			!bgbcp_stricmp(s1, "M"))s1=NULL;
 	}
 
 	if(s0 && BGBCP_IsReal2P(ctx, ln))
 	{
-		if(	!stricmp(s0, "L") ||
-			!stricmp(s0, "LL") ||
-			!stricmp(s0, "UL") ||
-			!stricmp(s0, "ULL") ||
-			!stricmp(s0, "I") ||
-			!stricmp(s0, "U") ||
-			!stricmp(s0, "SB") ||
-			!stricmp(s0, "UB") ||
-			!stricmp(s0, "SS") ||
-			!stricmp(s0, "US"))s0=NULL;
+		if(	!bgbcp_stricmp(s0, "L") ||
+			!bgbcp_stricmp(s0, "LL") ||
+			!bgbcp_stricmp(s0, "UL") ||
+			!bgbcp_stricmp(s0, "ULL") ||
+			!bgbcp_stricmp(s0, "I") ||
+			!bgbcp_stricmp(s0, "U") ||
+			!bgbcp_stricmp(s0, "SB") ||
+			!bgbcp_stricmp(s0, "UB") ||
+			!bgbcp_stricmp(s0, "SS") ||
+			!bgbcp_stricmp(s0, "US"))s0=NULL;
 	}
 	if(s1 && BGBCP_IsReal2P(ctx, rn))
 	{
-		if(	!stricmp(s1, "L") ||
-			!stricmp(s1, "LL") ||
-			!stricmp(s1, "UL") ||
-			!stricmp(s1, "ULL") ||
-			!stricmp(s0, "I") ||
-			!stricmp(s0, "U") ||
-			!stricmp(s0, "SB") ||
-			!stricmp(s0, "UB") ||
-			!stricmp(s0, "SS") ||
-			!stricmp(s0, "US"))s1=NULL;
+		if(	!bgbcp_stricmp(s1, "L") ||
+			!bgbcp_stricmp(s1, "LL") ||
+			!bgbcp_stricmp(s1, "UL") ||
+			!bgbcp_stricmp(s1, "ULL") ||
+			!bgbcp_stricmp(s0, "I") ||
+			!bgbcp_stricmp(s0, "U") ||
+			!bgbcp_stricmp(s0, "SB") ||
+			!bgbcp_stricmp(s0, "UB") ||
+			!bgbcp_stricmp(s0, "SS") ||
+			!bgbcp_stricmp(s0, "US"))s1=NULL;
 	}
 
 	//int+real, throw out int suffix

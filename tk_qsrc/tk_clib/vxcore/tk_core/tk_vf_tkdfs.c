@@ -93,12 +93,12 @@ int tk_mount_sddfs(char *path)
 		dee=&tdee;
 		memset(dee, 0, sizeof(TKDFS_DirentInfo));
 
-		TKDFS_ImageCreateInodePath(img, dee, "boot/");
-		TKDFS_ImageCreateInodePath(img, dee, "dev/");
-		TKDFS_ImageCreateInodePath(img, dee, "usr/");
-		TKDFS_ImageCreateInodePath(img, dee, "mnt/");
-		TKDFS_ImageCreateInodePath(img, dee, "tmp/");
-		TKDFS_ImageCreateInodePath(img, dee, "tmp/shm/");
+		TKDFS_ImageCreateInodePath(img, dee, "boot/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "dev/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "usr/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "mnt/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "tmp/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "tmp/shm/", 0);
 	}
 
 	tk_dbg_printf("tk_mount_sddfs: B\n");
@@ -157,12 +157,12 @@ TK_MOUNT *tk_dfs_mount(char *devfn, char *mntfn,
 		dee=&tdee;
 		memset(dee, 0, sizeof(TKDFS_DirentInfo));
 
-		TKDFS_ImageCreateInodePath(img, dee, "boot/");
-		TKDFS_ImageCreateInodePath(img, dee, "dev/");
-		TKDFS_ImageCreateInodePath(img, dee, "usr/");
-		TKDFS_ImageCreateInodePath(img, dee, "mnt/");
-		TKDFS_ImageCreateInodePath(img, dee, "tmp/");
-		TKDFS_ImageCreateInodePath(img, dee, "tmp/shm/");
+		TKDFS_ImageCreateInodePath(img, dee, "boot/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "dev/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "usr/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "mnt/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "tmp/", 0);
+		TKDFS_ImageCreateInodePath(img, dee, "tmp/shm/", 0);
 	}
 
 	tk_dbg_printf("tk_dfs_mount: B\n");
@@ -217,6 +217,8 @@ int tk_dfs_fsctl(TK_MOUNT *mnt, TK_USERINFO *usri,
 	TKDFS_ImageContext *img;
 	int devid;
 
+	devid=0;
+
 	img=mnt->udata0;
 
 	if(cmd==TK_IOC_VFS_OPENBLKDEV)
@@ -254,11 +256,11 @@ TK_FILE *tk_dfs_fopen(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 
 	if(mode[0]=='w')
 	{
-		i=TKDFS_ImageCreateInodePath(img, dee, name);
+		i=TKDFS_ImageCreateInodePath(img, dee, name, 0);
 		dee->is_write=1;
 	}else
 	{
-		i=TKDFS_ImageLookupInodePath(img, dee, name);
+		i=TKDFS_ImageLookupInodePath(img, dee, name, 0);
 		if(mode[0]=='a')
 			dee->is_write=1;
 	}
@@ -336,7 +338,7 @@ int tk_dfs_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	img=mnt->udata0;
 	dee=&tdee;
 	memset(dee, 0, sizeof(TKDFS_DirentInfo));
-	i=TKDFS_ImageLookupInodePath(img, dee, name);
+	i=TKDFS_ImageLookupInodePath(img, dee, name, 0);
 	if(i<0)
 	{
 //		tk_dbg_printf("tk_dfs_unlink: fail %s\n", name);
@@ -369,7 +371,7 @@ int tk_dfs_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	img=mnt->udata0;
 	dee=&tdee;
 	memset(dee, 0, sizeof(TKDFS_DirentInfo));
-	i=TKDFS_ImageLookupInodePath(img, dee, name);
+	i=TKDFS_ImageLookupInodePath(img, dee, name, 0);
 	if(i<0)
 	{
 //		tk_dbg_printf("tk_dfs_unlink: fail %s\n", name);
@@ -407,7 +409,7 @@ int tk_dfs_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)
 	strcpy(tb, name);
 	strcat(tb, "/");
 
-	i=TKDFS_ImageCreateInodePath(img, dee, tb);
+	i=TKDFS_ImageCreateInodePath(img, dee, tb, 0);
 //	dee->is_write=1;
 	return(1);
 }
@@ -443,7 +445,7 @@ int tk_dfs_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
 
 //			tk_dbg_printf("tk_dfs_rename: ln %s %s\n", oldfn, newfn);
 
-			i=TKDFS_ImageCreateInodePath(img, dee2, newfn);
+			i=TKDFS_ImageCreateInodePath(img, dee2, newfn, 0);
 			if(i<0)
 				return(-1);
 
@@ -458,14 +460,14 @@ int tk_dfs_rename(TK_MOUNT *mnt, TK_USERINFO *usri,
 		return(-1);
 	}
 
-	i=TKDFS_ImageLookupInodePath(img, dee1, oldfn);
+	i=TKDFS_ImageLookupInodePath(img, dee1, oldfn, 0);
 	if(i<0)
 	{
 //		tk_dbg_printf("tk_dfs_rename: fail %s\n", oldfn);
 		return(-1);
 	}
 	
-	i=TKDFS_ImageCreateInodePath(img, dee2, newfn);
+	i=TKDFS_ImageCreateInodePath(img, dee2, newfn, 0);
 	if(i<0)
 	{
 //		tk_dbg_printf("tk_dfs_rename: fail %s\n", oldfn);
@@ -626,7 +628,7 @@ TK_DIR *tk_dfs_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	dee1=&tdee1;
 	memset(dee, 0, sizeof(TKDFS_DirentInfo));
 	memset(dee1, 0, sizeof(TKDFS_DirentInfo));
-	i=TKDFS_ImageLookupInodePath(img, dee, name);
+	i=TKDFS_ImageLookupInodePath(img, dee, name, 0);
 	
 	if((i<=0) && (!name || !(*name)))
 	{

@@ -15,5 +15,7 @@
 #include "tk_gdi/tk_qoilz_dec.c"
 #include "tk_gdi/tkg_imgload.c"
 #include "tk_gdi/tkg_load3d.c"
+#include "tk_gdi/tkg_drawbase.c"
+#include "tk_gdi/tkg_palbase.c"
 
 // #include "tkrast/tkr_multi.c"

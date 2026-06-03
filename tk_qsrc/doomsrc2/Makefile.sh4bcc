@@ -53,8 +53,9 @@ LDFLAGS=$(TK_LDFL) -lc -ltkgdi
 TK_CFL_XRV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXRVA /O2 \
 	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic \
 	/frvzba \
+	/fnovskgen /fnovsk \
 	/frvldix /frvjumbo /frvjumbo96 \
-	/fnovskgen /fnovsk /frvbraimm /frvzilsx
+	/fnovskgen /fnovsk /frvbraimm /frvzilsx /fldgbr
 
 #  /frvjumbo
 
@@ -68,7 +69,8 @@ LDFLAGS_XRV= -lc -ltkgdi
 CFLAGS_X3RV=$(TK_CFL_X3RV) $(BASE_CFLAGS)
 LDFLAGS_X3RV= -lc -ltkgdi
 
-CFLAGS_X3CRV = $(CFLAGS_X3RV) -fx3c
+# CFLAGS_X3CRV = $(CFLAGS_X3RV) -fx3c
+CFLAGS_X3CRV = $(CFLAGS_X3RV) -DGFX_OBRA
 LDFLAGS_X3CRV= $(LDFLAGS_X3RV)
 
 CFLAGS_XRVC=$(TK_CFL_XRV) $(BASE_CFLAGS) -frvc

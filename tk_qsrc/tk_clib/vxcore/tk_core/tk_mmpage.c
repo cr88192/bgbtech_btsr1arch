@@ -541,7 +541,7 @@ void *TKMM_PageAllocKrn(int sz)
 	ptr=TKMM_PageAlloc(sz);
 
 	TK_VMem_MProtectPages(
-		ptr, sz, TKMM_PROT_RW|TKMM_PROT_NOUSER);
+		(long)ptr, sz, TKMM_PROT_RW|TKMM_PROT_NOUSER);
 
 	return(ptr);
 }

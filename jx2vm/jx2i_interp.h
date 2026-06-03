@@ -843,6 +843,7 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_MIN			0x1F8		//
 #define BJX2_NMID_MAX			0x1F9		//
 #define BJX2_NMID_CSELTN		0x1FA		//
+#define BJX2_NMID_SLEU			0x1FB		//
 
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
