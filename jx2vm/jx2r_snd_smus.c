@@ -564,6 +564,11 @@ int SMus_GetStepSample(int step)
 		v+=SMus_GetVoiceWaveRsVal[i](i);
 	}
 
+	if(v!=0)
+	{
+		k=-1;
+	}
+
 //	v=sin(jx2i_smus_usec*(220/1000000.0)*(2*M_PI))*4096;
 
 //	printf("%lld %d\n", jx2i_smus_usec, v);

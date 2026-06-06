@@ -603,7 +603,7 @@ end
 	opImm_imm17s	= {
 		istrWord[31] ? UV17_FF : UV17_00,
 		istrWord[19:15], istrWord[30:20]};
-	opImm_imm16u	= { UV17_00, opImm_imm17s[15:0] );
+	opImm_imm16u	= { UV17_00, opImm_imm17s[15:0] };
 
 	opImm_disp12b	= {
 		istrWord[31]?UV21_FF:UV21_00,
