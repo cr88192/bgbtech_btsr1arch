@@ -6176,6 +6176,15 @@ begin
 					begin
 						opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
 					end
+
+					if(tRegRmIsR0)
+					begin
+//						opNmid		= JX2_UCMD_ALU3;
+//						opUCmdIx	= JX2_UCIX_ALU_ADD;
+
+						opNmid		= JX2_UCMD_MOV_IR;
+						opUCmdIx	= JX2_UCIX_LDI_LDIX;
+					end
 				end
 `endif
 			end

@@ -569,7 +569,8 @@ assign	opIsWexJumbo96 =
 	opIsWexJumboA && opIsWexJumboB;
 
 assign	opJumbo96WxBits =
-	srXG2X ? { ~istrWordA[15:13], ~istrWordB[15:13], ~istrWordB[29] } : 7'h00;
+//	srXG2X ? { ~istrWordA[15:13], ~istrWordB[15:13], ~istrWordB[29] } : 7'h00;
+	srXG2X ? { ~istrWordA[15:13], ~istrWordB[15:13], ~istrWordC[13] } : 7'h00;
 
 assign	opIsWexB =
 	((istrWordB[15:12] == 4'b1111) && istrWordB[10]) ||

@@ -592,12 +592,6 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
         0000-oooooo-mmmmmm-0001-nnnnnn-00-0010  ADD     Rm, Ro, Rn
         1100-oooooo-mmmmmm-0101-nnnnnn-00-0010  ADDS.L  Rm, Ro, Rn
         1100-oooooo-mmmmmm-0101-nnnnnn-10-0010  ADDU.L  Rm, Ro, Rn
-        iiii-iiiiii-mmmmmm-0000-nnnnnn-00-1010 / ADD    Rm, Imm10u, Rn
-        iiii-iiiiii-mmmmmm-0001-nnnnnn-00-1010 / ADD    Rm, Imm10n, Rn
-        iiii-iiiiii-mmmmmm-0011-nnnnnn-00-1010 / ADDS.L Rm, Imm10u, Rn
-        iiii-iiiiii-mmmmmm-0100-nnnnnn-00-1010 / ADDS.L Rm, Imm10n, Rn
-        iiii-iiiiii-mmmmmm-0011-nnnnnn-10-1010 / ADDU.L Rm, Imm10u, Rn
-        iiii-iiiiii-mmmmmm-0100-nnnnnn-10-1010 / ADDU.L Rm, Imm10n, Rn
         iiii-iiiiii-mmmmmm-0000-nnnnnn-00-1010  ADD     Rm, Imm10s, Rn
         iiii-iiiiii-mmmmmm-0011-nnnnnn-00-1010  ADDS.L  Rm, Imm10s, Rn
         iiii-iiiiii-mmmmmm-0011-nnnnnn-10-1010  ADDU.L  Rm, Imm10s, Rn

@@ -1,0 +1,159 @@
+Diphone Format:
+* Store Diphones as Blocks
+* Blocks will use Square or Trapezoid Waves
+* Will have a nominal playback rate of around 250 or 125 blocks per second.
+* This format may use external LZ compression.
+* Note that rates and frequencies will be considered as nominal.
+** The TTS engine may fine-adjust both rate and frequencies from nomimal.
+
+
+Diphone List:
+* Starts at start of file.
+* 16 bytes per entry.
+* List terminated by a NULL entry.
+* Entry 0 is unused (Header).
+
+Header Format:
+* 00: "DIPHLIB1"
+* 08: Number of Diphones (Excludes header and zero pad)
+* 0C: File Size
+
+Entry Format:
+* 00: 2 bytes: Starting Phone
+* 02: 2 bytes: Ending Phone
+* 04: 2 bytes: Diphone Length (Blocks)
+* 06: 1 Byte: Block Width / Flags
+* 07: 1 Byte: Reserved, MBZ
+* 08: 4 Bytes: Block Start Offset (bytes from start of file)
+* 0C: 4 bytes: Reserved, MBZ
+
+If both Starting and Ending Phone are 0, it is the end of the list.
+* Neither are 0: This is a diphone
+* End is 0: This phone is by itself.
+* Start is 0: Reserved
+
+
+Block Width, Low 4 bits (W parameter):
+* 2: 2 channels, 4 bytes/block
+* 4: 4 channels, 8 bytes/block
+* 6: 6 channels, 12 bytes/block
+* 8: 8 channels, 16 bytes/block
+* Other values: Reserved
+
+Block Width, Bit (5):
+* Each value stored as the difference from the preceding value (by channel).
+* Differences will be per-byte and mod-256.
+* If clear, each value is stored directly.
+
+Block Width, Bits (7:6):
+* Nominal Block Rate:
+** 00: 250 blocks/second
+** 01: 125 blocks/second
+** 10: 62.5 blocks/second
+** 11: 31.3 blocks/second
+
+
+Each block will contain:
+* Amplitude, W Bytes (T2.E3.M3)
+* Frequency, W Bytes (E3.M5)
+** 00: 8 kHz
+** 20: 4 kHz
+** 40: 2 kHz
+** 60: 1 kHz
+** 80: 500 Hz
+** A0: 250 Hz
+** C0: 125 Hz
+** E0: 62.50 Hz
+** FF: 32.23 Hz
+*** In effect, it is a microfloat encoding the period width in samples.
+*** Assuming a 16 kHz reference frequency
+
+The T bits may encode a wave shape hint:
+* 00: Trapezoid Wave
+* 01: Sine Wave
+* 10: Square Wave (or, Pulse 50% duty cycle)
+* 11: Noise (or Pulse 15% duty cycle, if below 2 kHz)
+
+
+The audio synthesis may be imagined existing as 4 to 8 concurrently running oscillators with the parameters driving each of the oscillators at each time step. The implementation of these oscillators is outside of the scope of this spec.
+
+Note that for noise waves, the frequency will be used mainly to modify noise color frequency (or, the maximum frequency of the noise, with 00 generating peak noise near 8 kHz). Note that for noise, the scale will be modified by shifting the value left by 2 bits.
+
+
+=== Phones ===
+
+Phone numbers will normally be represented as one of two ASCII characters.
+* A diphone will consist of the initial and final phone.
+
+Specials:
+* space: Represents a non-sound, silence or full stop.
+
+A space-space diphone will not be included, but understood as around 128ms of silence.
+
+
+Vowels:
+
+* a: cat / match
+* e: bet / check
+* i: bit / ship
+* o: hot / bot (or cot / caught / faught / etc)
+* u: foot / put
+* @: schwa (neutral vowel)
+* A: art / hard
+* E: -
+* I: feet / sheep
+* O: court / short
+* U: pool / boot / dude
+* W: bow / toe
+
+Dipthongs
+* AI (xI): A-I, tie
+* eI (xA): e-I, say
+* OI (xO): O-I,	boy
+
+* A@ (xa): A-@, cow
+* e@ (xe): e-@
+* I@ (xi): I-@
+* O@ (xo): O-@, caught (if no caught/cot merger)
+* U@ (xu): U-@
+* R: E-I-R
+
+Stops:
+* Ih: I-stop
+* Uh: U-stop
+
+Primary Consonants:
+* b: bet / book
+* d: dog / done
+* f: fast
+* g: good
+* h: heal / heard
+* k: kick
+* l: late
+* m: moon
+* n: new / noon
+* p: put / pear
+* r: rate / reason
+* s: sit / soon
+* t: take
+* v: very
+* w: water / wet
+* y: yellow
+* z: zero
+
+Secondary Consonants:
+* C: chew (ch)
+* D: that (th, voiced)
+* J: digit / fidget (soft g)
+* G: ring / bang (ng)
+* S: ship (sh, unvoiced)
+* T: theater (th, unvoiced)
+* H: where / why ('wh' when not decayed to 'w')
+* Z: vision (zh, like S but voiced)
+
+
+Phonetic notation may be used in strings, and will consist of a sequence of phonetic characters (which may then be broken up into diphones for synthesis). These will not be based on English spelling rules, and instead it will be necessary to use a dictionary or similar to map written English into phonetic notation.
+
+Note:
+* xA: Will be an escape for extended single-letter sounds.
+* XAA: Will be an escape for extended two-letter sounds (or dipthongs).
