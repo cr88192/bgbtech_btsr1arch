@@ -1457,7 +1457,10 @@ begin
 			if(opUCmdA0[5:0] == JX2_UCMD_ALUCMP)
 				opDualLaneSw	= 1;
 			if(opUCmdA0[5:0] == JX2_UCMD_ALUCMP3R)
+			begin
 				opDualLaneSw	= 1;
+				opIsDualLaneRn	= 0;
+			end
 
 			if(	(opUCmdA0[5:0] == JX2_UCMD_SHADQ3) ||
 				(opUCmdA0[5:0] == JX2_UCMD_SHLDQ3))

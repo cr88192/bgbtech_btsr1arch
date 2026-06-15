@@ -827,23 +827,37 @@ These will count the number of zeroes until the first non-zero bit is encountere
 
 === CMPcc ===
 
-        0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q     Rm, Imm6s, Rn
-        0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Imm6s, Rn
-        0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Imm6s, Rn
-        0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q     Rm, Imm6s, Rn
-        0100-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q     Rm, Ro, Rn
-        0110-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Ro, Rn
-        0101-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Ro, Rn
-        0111-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGE.Q     Rm, Ro, Rn
-        1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGTU.Q    Rm, Ro, Rn
-        1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLEU.Q    Rm, Ro, Rn
- J_IMM  0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q     Rm, Imm33s, Rn
- J_IMM  0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Imm33s, Rn
- J_IMM  0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Imm33s, Rn
- J_IMM  0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q     Rm, Imm33s, Rn
- J_IMM  1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGTU.Q    Rm, Imm33s, Rn
- J_IMM  1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLEU.Q    Rm, Imm33s, Rn
-
+            0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q     Rm, Imm6s, Rn
+            0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Imm6s, Rn
+            0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Imm6s, Rn
+            0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q     Rm, Imm6s, Rn
+            0100-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q     Rm, Ro, Rn
+            0110-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Ro, Rn
+            0101-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Ro, Rn
+            0111-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGE.Q     Rm, Ro, Rn
+            1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGTU.Q    Rm, Ro, Rn
+            1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLEU.Q    Rm, Ro, Rn
+ J_IMM      0000-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPEQ.Q     Rm, Imm33s, Rn
+ J_IMM      0001-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGT.Q     Rm, Imm33s, Rn
+ J_IMM      0010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPNE.Q     Rm, Imm33s, Rn
+ J_IMM      0011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLT.Q     Rm, Imm33s, Rn
+ J_IMM      1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGTU.Q    Rm, Imm33s, Rn
+ J_IMM      1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLEU.Q    Rm, Imm33s, Rn
+ Optional (ALUX):
+ J_OP(U4)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPEQX      Xm, Xo, Rn
+ J_OP(U5)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPNEX      Xm, Xo, Rn
+ J_OP(U6)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTX      Xm, Xo, Rn
+ J_OP(U7)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEX      Xm, Xo, Rn
+ J_OP(UA)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTUX     Xm, Xo, Rn
+ J_OP(UB)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEUX     Xm, Xo, Rn
+ J_OP_I(U4) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPEQX      Xm, Imm17s, Rn
+ J_OP_I(U5) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPNEX      Xm, Imm17s, Rn
+ J_OP_I(U6) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTX      Xm, Imm17s, Rn
+ J_OP_I(U7) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEX      Xm, Imm17s, Rn
+ J_OP_I(UA) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTUX     Xm, Imm17s, Rn
+ J_OP_I(UB) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEUX     Xm, Imm17s, Rn
+ 
+ 
 Compare two values (Rm and Ro), or compare a value and an immediate, and store the result in Rn.
 
 Comparisions:
@@ -1736,11 +1750,12 @@ Note that ORX with (Xo==R0) will be understood as a 128-bit register MOV. Unlike
 
 === ROTx ===
 
- 0010-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTL.Q     Rm, Ro, Rn
- 0011-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTR.Q     Rm, Ro, Rn
- 0110-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTL.L     Rm, Ro, Rn
+	        0010-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTL.Q     Rm, Ro, Rn
+            0011-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTR.Q     Rm, Ro, Rn
+            0110-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTL.L     Rm, Ro, Rn
  Optional (ALUX):
- 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTLX      Xm, Ro, Xn
+            0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTLX      Xm, Ro, Xn
+ J_OP(U1)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTRX      Xm, Ro, Rn
 
 Rotate.
 
@@ -1896,20 +1911,28 @@ Note that (unlike the ALUX cases), the funnel shift operators will be limited to
 
 === TST ===
 
-        0001-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TSTN.Q      Rm, Ro, Rn
-        0010-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TST.Q       Rm, Ro, Rn
- J_IMM  0001-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TSTN.Q      Rm, Imm33s, Rn
- J_IMM  0010-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TST.Q       Rm, Imm33s, Rn
-        1000-oooooo-mmmmmm-1001-nnnnnn-10-0010   TSTN.Q      Rm, Ro, Rn
-        1001-oooooo-mmmmmm-1001-nnnnnn-10-0010   TST.Q       Rm, Ro, Rn
- J_IMM  1000-oooooo-mmmmmm-1001-nnnnnn-10-0010   TSTN.Q      Rm, Imm33s, Rn
- J_IMM  1001-oooooo-mmmmmm-1001-nnnnnn-10-0010   TST.Q       Rm, Imm33s, Rn
+            0001-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TSTN.Q     Rm, Ro, Rn
+            0010-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TST.Q      Rm, Ro, Rn
+ J_IMM      0001-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TSTN.Q     Rm, Imm33s, Rn
+ J_IMM      0010-oooooo-mmmmmm-1000-nnnnnn-10-0010 / TST.Q      Rm, Imm33s, Rn
+            1000-oooooo-mmmmmm-1001-nnnnnn-10-0010   TSTN.Q     Rm, Ro, Rn
+            1001-oooooo-mmmmmm-1001-nnnnnn-10-0010   TST.Q      Rm, Ro, Rn
+ J_IMM      1000-oooooo-mmmmmm-1001-nnnnnn-10-0010   TSTN.Q     Rm, Imm33s, Rn
+ J_IMM      1001-oooooo-mmmmmm-1001-nnnnnn-10-0010   TST.Q      Rm, Imm33s, Rn
+ Optional (ALUX):
+ J_OP(U8)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTX       Xm, Xo, Rn
+ J_OP(U9)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTNX      Xm, Xo, Rn
+ J_OP_I(U8) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTX       Xm, Imm17s, Rn
+ J_OP_I(U9) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTNX      Xm, Imm17s, Rn
 
 Bit-Test.
+
 Set or Clear Rn based on the result of a Bit-Test operation:
+
 * If Rn is set to R0, this will direct the output to SR.T.
 * TSTN: Rn = !(Rm & Ro)
 * TST: Rn = (Rm & Ro)
+* TSTX / TSTNX: Same but on a 128-bit register pair.
 
 
 === VSKG / VSKC ==

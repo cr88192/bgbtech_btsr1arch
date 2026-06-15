@@ -1202,6 +1202,12 @@ int mfl;
 {"bz",		BGBCC_SH_NMID_BREQ},
 {"bnz",		BGBCC_SH_NMID_BRNE},
 
+{"brtst",	BGBCC_SH_NMID_BRTSTQ},
+{"brntst",	BGBCC_SH_NMID_BRTSTNQ},
+
+{"btst",	BGBCC_SH_NMID_BRTSTQ},
+{"bntst",	BGBCC_SH_NMID_BRTSTNQ},
+
 
 {"divs.q",	BGBCC_SH_NMID_DIVSQ},
 {"divu.q",	BGBCC_SH_NMID_DIVUQ},

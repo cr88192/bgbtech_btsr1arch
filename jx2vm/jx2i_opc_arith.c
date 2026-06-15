@@ -3385,6 +3385,94 @@ void BJX2_Op_SLEU_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 }
 #endif
 
+
+#if 1
+void BJX2_Op_SEQX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	rn=((rm0==ro0)&&(rm1==ro1));
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_SNEX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	rn=((rm0!=ro0)||(rm1!=ro1));
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_SGTX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	if(rm1!=ro1)
+		{ rn=(((s64)rm1)>((s64)ro1)); }
+	else
+		{ rn=(((s64)rm0)>((s64)ro0)); }
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_SLEX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	if(rm1!=ro1)
+		{ rn=(((s64)rm1)<=((s64)ro1)); }
+	else
+		{ rn=(((s64)rm0)<=((s64)ro0)); }
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_SGTUX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	if(rm1!=ro1)
+		{ rn=(((u64)rm1)>((u64)ro1)); }
+	else
+		{ rn=(((u64)rm0)>((u64)ro0)); }
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_SLEUX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	if(rm1!=ro1)
+		{ rn=(((u64)rm1)<=((u64)ro1)); }
+	else
+		{ rn=(((u64)rm0)<=((u64)ro0)); }
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_TSTX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	rn=(((rm0&ro0)|(rm1&ro1))!=0);
+	ctx->regs[op->rn]=rn;
+}
+
+void BJX2_Op_TSTNX_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 rm0, ro0, rm1, ro1, rn;
+	rm0=ctx->regs[op->rm+0];	ro0=ctx->regs[op->ro+0];
+	rm1=ctx->regs[op->rm+1];	ro1=ctx->regs[op->ro+1];
+	rn=(((rm0&ro0)|(rm1&ro1))==0);
+	ctx->regs[op->rn]=rn;
+}
+#endif
+
+
 void BJX2_Op_ROTL_RegRegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 va, vc;

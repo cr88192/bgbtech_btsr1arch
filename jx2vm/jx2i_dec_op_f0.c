@@ -4458,11 +4458,71 @@ int BJX2_DecodeOpcode_DecF0(BJX2_Context *ctx,
 			op->fmid=BJX2_FMID_REGREGREG;
 			op->Run=BJX2_Op_ROTL_RegRegReg;
 			if(eq)
-			{
-				op->nmid=BJX2_NMID_ROTLX;
-				op->Run=BJX2_Op_ROTLX_RegRegReg;
-				op->fl|=BJX2_OPFL_NOWEXSFX;
-				op->fl|=BJX2_OPFL_REGX2R;
+			{				
+				switch(disp_ldop)
+				{
+				case 0:
+					op->nmid=BJX2_NMID_ROTLX;
+					op->Run=BJX2_Op_ROTLX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGX2R;
+					break;
+				case 1:
+//					op->nmid=BJX2_NMID_ROTRX;
+//					op->Run=BJX2_Op_ROTRX_RegRegReg;
+//					op->fl|=BJX2_OPFL_NOWEXSFX;
+//					op->fl|=BJX2_OPFL_REGX2R;
+					break;
+
+				case 4:
+					op->nmid=BJX2_NMID_CMPXEQ;
+					op->Run=BJX2_Op_SEQX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				case 5:
+					op->nmid=BJX2_NMID_CMPXNE;
+					op->Run=BJX2_Op_SNEX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				case 6:
+					op->nmid=BJX2_NMID_CMPXGT;
+					op->Run=BJX2_Op_SGTX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				case 7:
+					op->nmid=BJX2_NMID_CMPXLE;
+					op->Run=BJX2_Op_SLEX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				case 8:
+					op->nmid=BJX2_NMID_TSTX;
+					op->Run=BJX2_Op_TSTX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				case 9:
+					op->nmid=BJX2_NMID_TSTNX;
+					op->Run=BJX2_Op_TSTNX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				case 10:
+					op->nmid=BJX2_NMID_CMPXGTU;
+					op->Run=BJX2_Op_SGTUX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				case 11:
+					op->nmid=BJX2_NMID_CMPXLEU;
+					op->Run=BJX2_Op_SLEUX_RegRegReg;
+					op->fl|=BJX2_OPFL_NOWEXSFX;
+					op->fl|=BJX2_OPFL_REGXM|BJX2_OPFL_REGXO;
+					break;
+				}
 			}
 			break;
 

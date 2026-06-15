@@ -633,6 +633,8 @@ int BGBCC_JX2RV_TryEncJumbo96OpXRegImm12XReg(
 
 	if(!(ctx->has_jumbo&4))
 		return(0);
+	if(ctx->emit_riscv&0x22)
+		return(0);
 
 	t_opw2=-1;	t_opw3=-1;
 	rt=BGBCC_JX2RV_TryEncJumboOpXRegImm12XReg_J33Only(ctx,
@@ -2235,6 +2237,9 @@ int BGBCC_JX2RV_TryEmitOpRegRegReg(
 	if((opw1>0) && (opw3<0))
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -2806,6 +2811,9 @@ int BGBCC_JX2RV_TryEmitOpRegImmReg(
 	if((opw1>0) && (opw3<0))
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -3087,6 +3095,9 @@ int BGBCC_JX2RV_TryEmitOpRegStRegDisp(
 
 	if((opw1>0) && (opw3<0))
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
+
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
 
 	if(opw1>0)
 	{
@@ -3404,6 +3415,9 @@ int BGBCC_JX2RV_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,
 	if((opw1>0) && (opw3<0))
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -3600,7 +3614,7 @@ int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 				break;
 			}
 
-			if((ctx->has_fmovs&8) &&
+			if((ctx->has_fmovs&8) && !(ctx->emit_riscv&0x22) &&
 				(k>0) && (k<(1<<19)) && !(k&7))
 			{
 				opw1=0x00005067U|((reg&31)<<7)|
@@ -4016,7 +4030,7 @@ int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 			}
 #endif
 
-			if((ctx->has_fmovs&8) &&
+			if((ctx->has_fmovs&8) && !(ctx->emit_riscv&0x22) &&
 				(k>0) && (k<(1<<18)) && !(k&3))
 			{
 				opw1=0x80006067U|((reg&31)<<7)|
@@ -4157,7 +4171,7 @@ int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 			}
 #endif
 
-			if((ctx->has_fmovs&8) &&
+			if((ctx->has_fmovs&8) && !(ctx->emit_riscv&0x22) &&
 				(k>0) && (k<(1<<18)) && !(k&3))
 			{
 				opw1=0x80005067U|((reg&31)<<7)|
@@ -4296,7 +4310,7 @@ int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 			}
 #endif
 
-			if((ctx->has_fmovs&8) &&
+			if((ctx->has_fmovs&8) && !(ctx->emit_riscv&0x22) &&
 				(k>0) && (k<(1<<19)) && !(k&7))
 			{
 				opw1=0x00006067U|((reg&31)<<7)|
@@ -4403,6 +4417,9 @@ int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 
 	if(opw1>0)
 		{ BGBCC_JX2X3_CheckRepack4(ctx, &opw1, &opw2, &opw3, &opw4); }
+
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
 
 	if(opw1>0)
 	{
@@ -4971,6 +4988,9 @@ int BGBCC_JX2RV_TryEmitOpRegLbl(BGBCC_JX2_Context *ctx,
 	if(opw1>0)
 		{ BGBCC_JX2X3_CheckRepack4(ctx, &opw1, &opw2, &opw3, &opw4); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -5510,6 +5530,9 @@ int BGBCC_JX2RV_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,
 	if(opw1>0)
 		{ BGBCC_JX2X3_CheckRepack4(ctx, &opw1, &opw2, &opw3, &opw4); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -5757,6 +5780,9 @@ int BGBCC_JX2RV_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,
 	if(opw1>0)
 		{ BGBCC_JX2X3_CheckRepack4(ctx, &opw1, &opw2, &opw3, &opw4); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -5895,6 +5921,9 @@ int BGBCC_JX2RV_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	if(opw1>0)
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -6012,6 +6041,9 @@ int BGBCC_JX2RV_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 
 	if(opw1>0)
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
+
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
 
 	if(opw1>0)
 	{
@@ -6715,6 +6747,9 @@ int BGBCC_JX2RV_TryEmitOpRegReg(BGBCC_JX2_Context *ctx,
 	if(opw1>0)
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -7128,6 +7163,9 @@ int BGBCC_JX2RV_TryEmitOpImmReg(BGBCC_JX2_Context *ctx,
 	if((opw1>0) && (opw3<0))
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
 
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
+
 	if(opw1>0)
 	{
 		if(ctx->emit_isprobe)
@@ -7351,6 +7389,9 @@ int BGBCC_JX2RV_TryEmitOpRegStReg2(
 //	if((opw1>0) && (opw3<0))
 	if(opw1>0)
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
+
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
 
 	if(opw1>0)
 	{
@@ -7653,6 +7694,9 @@ int BGBCC_JX2RV_TryEmitOpLdReg2Reg(
 
 	if((opw1>0) && (opw3<0))
 		{ BGBCC_JX2RV_CheckRepackRVC(ctx, &opw1, &opw2); }
+
+	if((ctx->op_is_wex2&4) && ((opw1&3)==3))
+		opw1=-1;
 
 	if(opw1>0)
 	{

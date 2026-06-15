@@ -4026,18 +4026,99 @@ begin
 
 			16'h3zz6: begin		/* F0nm_3eo6 */
 				opNmid	= JX2_UCMD_SHLDQ3;
+				opFmid	= JX2_FMID_REGREG;
+				opIty	= JX2_ITY_SB;
+
 				if(opExQ)
 				begin
+`ifdef jx2_alu_wx
 					opUCmdIx	= JX2_UCIX_SHAD_ROTLX3;
 					opUCty		= JX2_IUC_WX;
+					
+					case(opIsImmLdOp[3:0])
+					4'h0: begin
+						opNmid		= JX2_UCMD_SHLDQ3;
+						opUCmdIx	= JX2_UCIX_SHAD_ROTLX3;
+						opUCty		= JX2_IUC_WX;
+					end
+					4'h1: begin
+						opNmid		= JX2_UCMD_SHLDQ3;
+						opUCmdIx	= JX2_UCIX_SHAD_ROTRX3;
+						opUCty		= JX2_IUC_WX;
+					end
+
+					4'h4: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_SB;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_CMPQEQ;
+					end
+					4'h5: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_SB;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_CMPQNE;
+					end
+					4'h6: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_SB;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_CMPQGT;
+					end
+					4'h7: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UW;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_CMPQGE;
+					end
+					4'h8: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_SB;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_TSTNQ;
+					end
+					4'h9: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_SB;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_TSTQ;
+					end
+					4'hA: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_SB;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_CMPQHI;
+					end
+					4'hB: begin
+						opNmid		= JX2_UCMD_ALUCMP3R;
+						opFmid		= JX2_FMID_REGREG;
+						opIty		= JX2_ITY_UW;
+						opUCty		= JX2_IUC_WX;
+						opUCmdIx	= JX2_UCIX_ALU_CMPQHS;
+					end
+
+					default: begin
+						opNmid		= JX2_UCMD_OP_IXT;
+						opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+					end
+					endcase
+`else
+				opNmid		= JX2_UCMD_OP_IXT;
+				opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+`endif
 				end
 				else
 				begin
 					opNmid		= JX2_UCMD_SHLD3;
 					opUCmdIx	= JX2_UCIX_SHAD_ROTL3;
 				end
-				opFmid	= JX2_FMID_REGREG;
-				opIty	= JX2_ITY_SB;
 			end
 
 `ifndef def_true
