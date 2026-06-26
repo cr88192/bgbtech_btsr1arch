@@ -489,10 +489,10 @@ ccxl_type BGBCC_CCXL_GetRegType(
 			tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
 			if(!tty.val && ((reg.val&0xFFF)==0xFFF))
 			{
-				if(ctx->cur_func->thisstr)
+				if(ctx->cur_func->thisstr_ix)
 				{
 					linf=BGBCC_CCXL_LookupStructure(ctx,
-						ctx->cur_func->thisstr);
+						bgbcc_strtab_i(ctx->cur_func->thisstr_ix));
 //					tty.val=linf->litid+256;
 					tty=BGBCC_CCXL_MakeTypeID(ctx,
 						linf->litid+256);
@@ -622,7 +622,7 @@ ccxl_type BGBCC_CCXL_GetRegDeclType(
 				return(tty);
 			}
 
-			tty=ctx->cur_func->args[i]->type;
+			tty=ctx->cur_func->ext->args[i]->type;
 			return(tty);
 		}else
 			if((reg.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_LOCAL)
@@ -634,7 +634,7 @@ ccxl_type BGBCC_CCXL_GetRegDeclType(
 				BGBCC_CCXL_TypeGetTypedefType(ctx, tty, &tty);
 				return(tty);
 			}
-			tty=ctx->cur_func->locals[i]->type;
+			tty=ctx->cur_func->ext->locals[i]->type;
 			return(tty);
 		}else
 		{
@@ -782,10 +782,10 @@ ccxl_type BGBCC_CCXL_GetRegDeclType(
 			tty.val=(reg.val&CCXL_REGID_TYPEMASK)>>CCXL_REGID_TYPESHIFT;
 			if(!tty.val && ((reg.val&0xFFF)==0xFFF))
 			{
-				if(ctx->cur_func->thisstr)
+				if(ctx->cur_func->thisstr_ix)
 				{
 					linf=BGBCC_CCXL_LookupStructure(ctx,
-						ctx->cur_func->thisstr);
+						bgbcc_strtab_i(ctx->cur_func->thisstr_ix));
 //					tty.val=linf->litid+256;
 					tty=BGBCC_CCXL_MakeTypeID(ctx,
 						linf->litid+256);
@@ -925,7 +925,7 @@ ccxl_type BGBCC_CCXL_GetRegStorageType(
 		i=reg.val&CCXL_REGID_BASEMASK;
 		if(i!=CCXL_REGID_BASEMASK)
 		{
-			ri=ctx->cur_func->regs[i];
+			ri=ctx->cur_func->ext->regs[i];
 			return(ri->type);
 		}
 	}
@@ -935,7 +935,7 @@ ccxl_type BGBCC_CCXL_GetRegStorageType(
 		i=reg.val&CCXL_REGID_BASEMASK;
 		if(i!=CCXL_REGID_BASEMASK)
 		{
-			ri=ctx->cur_func->args[i];
+			ri=ctx->cur_func->ext->args[i];
 			return(ri->type);
 		}
 	}
@@ -945,7 +945,7 @@ ccxl_type BGBCC_CCXL_GetRegStorageType(
 		i=reg.val&CCXL_REGID_BASEMASK;
 		if(i!=CCXL_REGID_BASEMASK)
 		{
-			ri=ctx->cur_func->locals[i];
+			ri=ctx->cur_func->ext->locals[i];
 			return(ri->type);
 		}
 	}
@@ -1071,7 +1071,7 @@ ccxl_type BGBCC_CCXL_GetTypeReturnType(
 		i=BGBCC_CCXL_TypeObjectLiteralIndex(ctx, bty);
 		obj=ctx->literals[i];
 
-		sig=obj->decl->sig;
+		sig=bgbcc_strtab_i(obj->decl->sig_ix);
 		sig=BGBCC_CCXL_SigGetReturnSig(ctx, sig);
 		BGBCC_CCXL_TypeFromSig(ctx,
 			&dty, sig);
@@ -1098,7 +1098,7 @@ ccxl_type BGBCC_CCXL_GetRegReturnType(
 	if(BGBCC_CCXL_IsRegGlobalP(ctx, reg))
 	{
 		i=BGBCC_CCXL_GetRegID(ctx, reg);
-		sig=ctx->reg_globals[i]->sig;
+		sig=bgbcc_strtab_i(ctx->reg_globals[i]->sig_ix);
 		if(*sig=='(')
 		{
 			sig=BGBCC_CCXL_SigGetReturnSig(ctx, sig);
@@ -1116,7 +1116,7 @@ ccxl_type BGBCC_CCXL_GetRegReturnType(
 			i=BGBCC_CCXL_TypeObjectLiteralIndex(ctx, bty);
 			obj=ctx->literals[i];
 
-			sig=obj->decl->sig;
+			sig=bgbcc_strtab_i(obj->decl->sig_ix);
 			sig=BGBCC_CCXL_SigGetReturnSig(ctx, sig);
 			BGBCC_CCXL_TypeFromSig(ctx,
 				&dty, sig);
@@ -1137,7 +1137,7 @@ ccxl_type BGBCC_CCXL_GetRegReturnType(
 		i=BGBCC_CCXL_TypeObjectLiteralIndex(ctx, bty);
 		obj=ctx->literals[i];
 
-		sig=obj->decl->sig;
+		sig=bgbcc_strtab_i(obj->decl->sig_ix);
 		sig=BGBCC_CCXL_SigGetReturnSig(ctx, sig);
 		BGBCC_CCXL_TypeFromSig(ctx,
 			&dty, sig);

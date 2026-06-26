@@ -2001,7 +2001,7 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 	static int rec=0;
 	BJX2_Opcode *op, *op1, *op2, *op3, *op4;
 	int ldrl, vdrl, brk, wexmd;
-	int nc, ncyc, ilo, nbo;
+	int nc, ncyc, ilo, nbo, rwmask;
 	bjx2_addr pc, npc, jpc;
 	bjx2_addr br_addr;
 	byte lrseen, r1seen;
@@ -2338,16 +2338,21 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 			!(op1->fl&BJX2_OPFL_REGX3R) &&
 			!(op2->fl&BJX2_OPFL_REGX3R))
 		{
+		
+			rwmask=-1;
+			if(ctx->do_opssc&8)
+				rwmask&=~1;
+		
 			if(	!(op1->fl&BJX2_OPFL_NOWEX) &&
 				!(op1->fl&BJX2_OPFL_NOWEX_FP2) &&
 				!(op1->fl&BJX2_OPFL_NOWEX_IO2) &&
 				!(op2->fl&BJX2_OPFL_NOWEXSFX) )
 			{
-				if(	(op1->rn!=op2->rm) &&
-					(op1->rn!=op2->ro) &&
-					(op1->rn!=op2->rn) &&
-					(op2->rn!=op1->rm) &&
-					(op2->rn!=op1->ro) &&
+				if(	((op1->rn&rwmask)!=(op2->rm&rwmask)) &&
+					((op1->rn&rwmask)!=(op2->ro&rwmask)) &&
+					((op1->rn&rwmask)!=(op2->rn&rwmask)) &&
+					((op2->rn&rwmask)!=(op1->rm&rwmask)) &&
+					((op2->rn&rwmask)!=(op1->ro&rwmask)) &&
 					(op1->rn!=BJX2_REG_SP))
 				{
 					op1->fl|=BJX2_OPFL_WEX;
@@ -2362,11 +2367,11 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 					!(op2->fl&BJX2_OPFL_NOWEX_IO2) &&
 					!(op1->fl&BJX2_OPFL_NOWEXSFX) )
 				{
-					if(	(op2->rn!=op1->rm) &&
-						(op2->rn!=op1->ro) &&
-						(op2->rn!=op1->rn) &&
-						(op1->rn!=op2->rm) &&
-						(op1->rn!=op2->ro) &&
+					if(	((op2->rn&rwmask)!=(op1->rm&rwmask)) &&
+						((op2->rn&rwmask)!=(op1->ro&rwmask)) &&
+						((op2->rn&rwmask)!=(op1->rn&rwmask)) &&
+						((op1->rn&rwmask)!=(op2->rm&rwmask)) &&
+						((op1->rn&rwmask)!=(op2->ro&rwmask)) &&
 						(op2->rn!=BJX2_REG_SP))
 					{
 						op1->fl|=BJX2_OPFL_WEX;

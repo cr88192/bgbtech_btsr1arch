@@ -286,10 +286,10 @@ int BGBCC_Img_EncodeImageDDS_DXTn(byte *obuf, byte *ibuf,
 	
 	k=(xs_l2+4)*(ys_l2+4);
 	if(resampbuf && (k>sz_resampbuf))
-		{ free(resampbuf); resampbuf=NULL; }
+		{ bgbcc_free2(resampbuf); resampbuf=NULL; }
 	if(!resampbuf)
 	{
-		resampbuf=malloc(k*4);
+		resampbuf=bgbcc_malloc_bmp(k*4);
 		sz_resampbuf=k;
 	}
 
@@ -506,7 +506,7 @@ byte *BGBCC_Img_DecodeDDS(byte *imgbuf, int *rw, int *rh)
 	if(tdds->ddspf.dwFourCC==BGBCC_FMT_DXT5)
 		bcn=3;
 
-	obuf=malloc((xs+1)*(ys+1)*4);
+	obuf=bgbcc_malloc_bmp((xs+1)*(ys+1)*4);
 
 	xs2=xs>>2;
 	ys2=ys>>2;

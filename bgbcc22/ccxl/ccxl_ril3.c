@@ -1299,11 +1299,11 @@ char *BGBCC_CCXLR3_ReadSymbolTag(BGBCC_TransState *ctx, byte **rcs)
 		ix=i0>>3;
 		
 		if(((i0>>1)&3)==0)
-			{ return(func->regs[ix]->name); }
+			{ return(bgbcc_strtab_i(func->ext->regs[ix]->name_ix)); }
 		if(((i0>>1)&3)==1)
-			{ return(func->args[ix]->name); }
+			{ return(bgbcc_strtab_i(func->ext->args[ix]->name_ix)); }
 		if(((i0>>1)&3)==2)
-			{ return(func->locals[ix]->name); }
+			{ return(bgbcc_strtab_i(func->ext->locals[ix]->name_ix)); }
 	}
 
 	return(NULL);

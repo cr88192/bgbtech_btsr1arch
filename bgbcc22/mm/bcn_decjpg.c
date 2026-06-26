@@ -164,11 +164,21 @@ PDJPG_Context *pdjpg_freectx;
 
 PDJPG_Context *pdjpg_dummyctx;
 
+void *pdjpg_malloc(int sz)
+{
+	return(bgbcc_tmalloc2("_mm_jpgbuf", sz));
+}
+
+void pdjpg_free(void *buf)
+{
+	bgbcc_free2(buf);
+}
+
 PDJPG_Context *PDJPG_AllocContext()
 {
 	PDJPG_Context *ctx;
 	
-	ctx=malloc(sizeof(PDJPG_Context));
+	ctx=pdjpg_malloc(sizeof(PDJPG_Context));
 	memset(ctx, 0, sizeof(PDJPG_Context));
 	return(ctx);
 }
@@ -179,12 +189,12 @@ void PDJPG_FreeContext(PDJPG_Context *ctx)
 
 	for(i=0; i<4; i++)
 		if(ctx->jpg_sibuf[i])
-			free(ctx->jpg_sibuf[i]);
+			pdjpg_free(ctx->jpg_sibuf[i]);
 
 	if(ctx->jpg_sabuf)
-		free(ctx->jpg_sabuf);
+		pdjpg_free(ctx->jpg_sabuf);
 
-	free(ctx);
+	pdjpg_free(ctx);
 }
 
 PDJPG_Context *PDJPG_AllocPoolContext()
@@ -198,7 +208,7 @@ PDJPG_Context *PDJPG_AllocPoolContext()
 		return(ctx);
 	}
 	
-	ctx=malloc(sizeof(PDJPG_Context));
+	ctx=pdjpg_malloc(sizeof(PDJPG_Context));
 	memset(ctx, 0, sizeof(PDJPG_Context));
 	return(ctx);
 }
@@ -792,14 +802,14 @@ int PDJPG_MarkerSOS(PDJPG_Context *ctx, byte *buf)
 		{
 			if(ctx->jpg_sibuf[i])
 			{
-				free(ctx->jpg_sibuf[i]);
+				pdjpg_free(ctx->jpg_sibuf[i]);
 				ctx->jpg_sibuf[i]=NULL;
 			}
 		}
 
 		if(ctx->jpg_sabuf)
 		{
-			free(ctx->jpg_sabuf);
+			pdjpg_free(ctx->jpg_sabuf);
 			ctx->jpg_sabuf=NULL;
 		}
 	}
@@ -839,7 +849,7 @@ int PDJPG_MarkerSOS(PDJPG_Context *ctx, byte *buf)
 		ctx->jpg_scn[i]=j;
 
 		if(!ctx->jpg_sibuf[i])
-			ctx->jpg_sibuf[i]=malloc(n*64);
+			ctx->jpg_sibuf[i]=pdjpg_malloc(n*64);
 		memset(ctx->jpg_sibuf[i], 0, n*64);
 
 		sibuf[i]=ctx->jpg_sibuf[i];
@@ -1379,9 +1389,9 @@ int PDJPG_DecodeCtxInner(PDJPG_Context *ctx,
 	if(!obuf || (ctx->xs!=ctx->lxs) || (ctx->ys!=ctx->lys))
 	{
 		if(ctx->jpg_imgbuf)
-			free(ctx->jpg_imgbuf);
+			pdjpg_free(ctx->jpg_imgbuf);
 		
-		obuf=malloc((ctx->xs+1)*(ctx->ys+1)*4);
+		obuf=pdjpg_malloc((ctx->xs+1)*(ctx->ys+1)*4);
 		memset(obuf, 0xFF, ctx->xs*ctx->ys*4);
 		
 		ctx->jpg_imgbuf=obuf;
@@ -1587,7 +1597,7 @@ int PDJPG_GetImageRGBA(PDJPG_Context *ctx,
 void PDJPG_Free(byte *buf)
 {
 	if(!buf)return;
-	free(buf);
+	pdjpg_free(buf);
 }
 
 #if 1
@@ -1673,7 +1683,7 @@ int PDJPG_DecodeBasic(PDJPG_Context *ctx,
 		
 		n=ctx->xs*ctx->ys;
 		if(!ctx->jpg_sabuf)
-			ctx->jpg_sabuf=malloc(n);
+			ctx->jpg_sabuf=pdjpg_malloc(n);
 		memcpy(ctx->jpg_sabuf, ctx->jpg_sibuf[0], n);
 	}else
 	{
@@ -1685,7 +1695,7 @@ int PDJPG_DecodeBasic(PDJPG_Context *ctx,
 			
 			n=ctx->xs*ctx->ys;
 			if(!ctx->jpg_sabuf)
-				ctx->jpg_sabuf=malloc(n);
+				ctx->jpg_sabuf=pdjpg_malloc(n);
 //			memcpy(ctx->jpg_sabuf, ctx->jpg_sibuf[0], n);
 			for(i=0; i<n; i++)
 			{
@@ -1790,8 +1800,8 @@ int PDJPG_DecodeLDatCtx(PDJPG_Context *ctx,
 		cs+=i+2;
 	}
 	
-//	tbuf=malloc(1<<20);
-	tbuf=malloc(tsz);
+//	tbuf=pdjpg_malloc(1<<20);
+	tbuf=pdjpg_malloc(tsz);
 	cs=buf; ct=tbuf;
 
 	while((cs[0]==0xFF) && (cs[1]==JPG_APP12) &&
@@ -1807,7 +1817,7 @@ int PDJPG_DecodeLDatCtx(PDJPG_Context *ctx,
 	i=PDJPG_EscapeDecodeSingleBuffer(tbuf, i);
 
 	k=PDJPG_DecodeCtxInner(ctx, tbuf, i, xs, ys);
-	free(tbuf);
+	pdjpg_free(tbuf);
 	return(k);
 }
 #endif

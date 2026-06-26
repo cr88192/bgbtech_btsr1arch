@@ -3027,16 +3027,16 @@ int BGBCC_JX2C_EmitInitObj(
 	{
 		i=sreg.val&CCXL_REGID_BASEMASK;
 	
-		if(obj->regs[i]->regflags&BGBCC_REGFL_CULL)
+		if(obj->ext->regs[i]->regflags&BGBCC_REGFL_CULL)
 			return(0);
 
-		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->regs[i]->type);
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->regs[i]->type);
 
 		if((rcls==BGBCC_SH_REGCLS_VO_REF) ||
 			(rcls==BGBCC_SH_REGCLS_AR_REF))
 		{
-			j=obj->regs[i]->fxmoffs+(sctx->frm_offs_fix);
-			k=obj->regs[i]->fxoffs;
+			j=obj->ext->regs[i]->fxmoffs+(sctx->frm_offs_fix);
+			k=obj->ext->regs[i]->fxoffs;
 
 			ctreg=BGBCC_JX2C_ScratchAllocReg(ctx, sctx, 0);
 //			ctreg=BGBCC_JX2C_ScratchAllocTsReg(ctx, sctx, 0);

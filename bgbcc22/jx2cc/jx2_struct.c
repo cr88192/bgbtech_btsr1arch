@@ -377,11 +377,11 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 	fi=NULL;
 	
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
-		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->fields[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
-		fi=obj->args[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
-		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->regs[fid&CCXL_FID_BASEMASK];
 
 	type2=fi->type;
 
@@ -390,8 +390,8 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 //	if(!strcmp(ctx->cur_func->name, "RecursiveLightPoint") && !sctx->is_simpass)
 //		k=-1;
 
-	if(!strcmp(fi->name, "tagName") && !sctx->is_simpass)
-		k=-1;
+//	if(!strcmp(fi->name, "tagName") && !sctx->is_simpass)
+//		k=-1;
 
 	sz=BGBCC_CCXL_TypeGetLogicalPadSize(ctx, type);
 	al=BGBCC_CCXL_TypeGetLogicalAlign(ctx, type);
@@ -502,7 +502,9 @@ int BGBCC_JX2C_EmitLoadSlotVRegVRegImm(
 		 (fi->regtype==CCXL_LITID_PROTOTYPE))
 	{
 //		sprintf(tb, "%s/%s", obj->name, fi->name);
-		sprintf(tb, "%s/%s", obj->qname, fi->name);
+		sprintf(tb, "%s/%s",
+			bgbcc_strtab_i(obj->qname_ix),
+			bgbcc_strtab_i(fi->name_ix));
 		j=BGBCC_CCXL_LookupGlobalIndex(ctx, tb);
 
 		if(j>0)
@@ -747,14 +749,14 @@ int BGBCC_JX2C_EmitStoreSlotVRegVRegImm(
 
 	fi=NULL;
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
-		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->fields[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
-		fi=obj->args[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
-		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->regs[fid&CCXL_FID_BASEMASK];
 
-	if(!strcmp(fi->name, "tagName") && !sctx->is_simpass)
-		k=-1;
+//	if(!strcmp(fi->name, "tagName") && !sctx->is_simpass)
+//		k=-1;
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type))
 	{
@@ -960,11 +962,11 @@ int BGBCC_JX2C_EmitLoadSlotAddrVRegVRegImm(
 
 	fi=NULL;
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
-		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->fields[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
-		fi=obj->args[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
-		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->regs[fid&CCXL_FID_BASEMASK];
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
@@ -1036,11 +1038,11 @@ int BGBCC_JX2C_EmitLoadSlotAndIndexVRegVRegImm2(
 
 	fi=NULL;
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
-		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->fields[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
-		fi=obj->args[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
-		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->regs[fid&CCXL_FID_BASEMASK];
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
@@ -1117,11 +1119,11 @@ int BGBCC_JX2C_EmitLoadSlotRegVRegImm(
 
 	fi=NULL;
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
-		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->fields[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
-		fi=obj->args[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
-		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->regs[fid&CCXL_FID_BASEMASK];
 
 	type2=fi->type;
 
@@ -1254,11 +1256,11 @@ int BGBCC_JX2C_EmitStoreSlotVRegRegImm(
 
 	fi=NULL;
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
-		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->fields[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
-		fi=obj->args[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
-		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->regs[fid&CCXL_FID_BASEMASK];
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type))
 	{
@@ -1418,11 +1420,11 @@ int BGBCC_JX2C_EmitLoadSlotAddrRegVRegImm(
 
 	fi=NULL;
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_FIELD)
-		fi=obj->fields[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->fields[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_ARGS)
-		fi=obj->args[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->args[fid&CCXL_FID_BASEMASK];
 	if((fid&CCXL_FID_TAGMASK)==CCXL_FID_TAG_REGS)
-		fi=obj->regs[fid&CCXL_FID_BASEMASK];
+		fi=obj->ext->regs[fid&CCXL_FID_BASEMASK];
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))
@@ -1501,7 +1503,7 @@ int BGBCC_JX2C_EmitLoadThisIdxVRegReg(
 
 	while(scid)
 	{
-		tty=obj->decl->args[0]->type;
+		tty=obj->decl->ext->args[0]->type;
 		i=BGBCC_CCXL_GetTypeBaseType(ctx, tty);
 		if(i>=256)
 			{ gblid=i-256; }
@@ -1555,7 +1557,7 @@ int BGBCC_JX2C_EmitStoreThisIdxVRegReg(
 
 	while(scid)
 	{
-		tty=obj->decl->args[0]->type;
+		tty=obj->decl->ext->args[0]->type;
 		i=BGBCC_CCXL_GetTypeBaseType(ctx, tty);
 		if(i>=256)
 			{ gblid=i-256; }

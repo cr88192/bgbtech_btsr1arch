@@ -34,7 +34,7 @@ int bgbcc_jx2_indexSrcIdx(char *name)
 
 	for(i=0; i<bgbcc_jx2_nsrcidx; i++)
 	{
-		if(!strcmp(name, bgbcc_jx2_srcidx[i]))
+		if(!bgbcc_jx2c_strcmp(name, bgbcc_jx2_srcidx[i]))
 			return(i);
 	}
 	
@@ -110,11 +110,11 @@ int BGBCC_JX2_CheckExpandLabel(BGBCC_JX2_Context *ctx)
 	
 //		i=4096;
 		i=65536;
-		ctx->lbl_ofs=bgbcc_malloc(i*sizeof(u32));
-		ctx->lbl_id =bgbcc_malloc(i*sizeof(u32));
-		ctx->lbl_sec=bgbcc_malloc(i*sizeof(byte));
-		ctx->lbl_chn=bgbcc_malloc(i*sizeof(s32));
-		ctx->lbl_cho=bgbcc_malloc(i*sizeof(s32));
+		ctx->lbl_ofs=bgbcc_tmalloc("_jx2c_lbl_ofs", i*sizeof(u32));
+		ctx->lbl_id =bgbcc_tmalloc("_jx2c_lbl_id", i*sizeof(u32));
+		ctx->lbl_sec=bgbcc_tmalloc("_jx2c_lbl_sec", i*sizeof(byte));
+		ctx->lbl_chn=bgbcc_tmalloc("_jx2c_lbl_chn", i*sizeof(s32));
+		ctx->lbl_cho=bgbcc_tmalloc("_jx2c_lbl_cho", i*sizeof(s32));
 		ctx->nlbl=1;
 		ctx->nvlbl=1;
 		ctx->mlbl=i;
@@ -159,9 +159,12 @@ int BGBCC_JX2_EmitDebugLine(BGBCC_JX2_Context *ctx,
 	
 	if(!ctx->dbglln_srcpos)
 	{
-		k=4096;
+//		k=4096;
+//		k=8192;
+//		k=16384;
+		k=32768;
 //		ctx->dbglln_srcpos=ctx->t_dbglln_srcpos;
-		ctx->dbglln_srcpos=bgbcc_malloc(k*sizeof(int));
+		ctx->dbglln_srcpos=bgbcc_tmalloc("_jx2c_dbglln_pos", k*sizeof(int));
 		ctx->dbglln_limit=k;
 	}
 
@@ -453,7 +456,7 @@ char *BGBCC_JX2_LookupNameForLabel(BGBCC_JX2_Context *ctx, int lblid)
 	{
 		if(ctx->lbln_id[i]==lblid)
 			return(ctx->lbln_name[i]);
-//		if(!strcmp(ctx->lbln_name[i], name))
+//		if(!bgbcc_jx2c_strcmp(ctx->lbln_name[i], name))
 //			return(ctx->lbln_id[i]);
 	}
 	return(NULL);
@@ -477,7 +480,7 @@ int BGBCC_JX2_LookupNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 	i=ctx->lbln_hash[h];
 	while(i>=0)
 	{
-		if(!strcmp(ctx->lbln_name[i], name))
+		if(!bgbcc_jx2c_strcmp(ctx->lbln_name[i], name))
 			return(ctx->lbln_id[i]);
 		i=ctx->lbln_chn[i];
 	}
@@ -486,7 +489,7 @@ int BGBCC_JX2_LookupNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 #if 0
 	for(i=0; i<ctx->nlbln; i++)
 	{
-		if(!strcmp(ctx->lbln_name[i], name))
+		if(!bgbcc_jx2c_strcmp(ctx->lbln_name[i], name))
 			return(ctx->lbln_id[i]);
 	}
 	return(0);
@@ -548,12 +551,13 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 		}
 	
 //		i=1024;
-		i=4096;
+//		i=4096;
+		i=8192;
 //		i=16384;
-		ctx->lbln_name=bgbcc_malloc(i*sizeof(char *));
-		ctx->lbln_id =bgbcc_malloc(i*sizeof(u32));
-		ctx->lbln_chn=bgbcc_malloc(i*sizeof(s16));
-		ctx->lbln_ichn=bgbcc_malloc(i*sizeof(s16));
+		ctx->lbln_name=bgbcc_tmalloc("_jx2c_lbln_ofs", i*sizeof(char *));
+		ctx->lbln_id =bgbcc_tmalloc("_jx2c_lbln_id", i*sizeof(u32));
+		ctx->lbln_chn=bgbcc_tmalloc("_jx2c_lbln_chn", i*sizeof(s16));
+		ctx->lbln_ichn=bgbcc_tmalloc("_jx2c_lbln_ichn", i*sizeof(s16));
 		ctx->nlbln=0;
 		ctx->mlbln=i;
 	}else
@@ -561,7 +565,7 @@ int BGBCC_JX2_GetNamedLabel(BGBCC_JX2_Context *ctx, char *name)
 		i=ctx->lbln_hash[h];
 		while(i>=0)
 		{
-			if(!strcmp(ctx->lbln_name[i], name))
+			if(!bgbcc_jx2c_strcmp(ctx->lbln_name[i], name))
 				return(ctx->lbln_id[i]);
 			i=ctx->lbln_chn[i];
 		}
@@ -844,11 +848,11 @@ int BGBCC_JX2_EmitRelocTy(BGBCC_JX2_Context *ctx, int lblid, int ty)
 	{
 //		i=4096;
 		i=65536;
-		ctx->rlc_ofs=bgbcc_malloc(i*sizeof(u32));
-		ctx->rlc_id =bgbcc_malloc(i*sizeof(u32));
-		ctx->rlc_sec=bgbcc_malloc(i*sizeof(byte));
-		ctx->rlc_ty =bgbcc_malloc(i*sizeof(byte));
-		ctx->rlc_chn=bgbcc_malloc(i*sizeof(s32));
+		ctx->rlc_ofs=bgbcc_tmalloc("_jx2c_rlc_ofs", i*sizeof(u32));
+		ctx->rlc_id =bgbcc_tmalloc("_jx2c_rlc_id" , i*sizeof(u32));
+		ctx->rlc_sec=bgbcc_tmalloc("_jx2c_rlc_sec", i*sizeof(byte));
+		ctx->rlc_ty =bgbcc_tmalloc("_jx2c_rlc_ty" , i*sizeof(byte));
+		ctx->rlc_chn=bgbcc_tmalloc("_jx2c_rlv_chn", i*sizeof(s32));
 		ctx->nrlc=0;
 		ctx->mrlc=i;
 		
@@ -946,11 +950,11 @@ int BGBCC_JX2_EmitRelocTyOffs(BGBCC_JX2_Context *ctx,
 	{
 //		i=4096;
 		i=65536;
-		ctx->rlc_ofs=bgbcc_malloc(i*sizeof(u32));
-		ctx->rlc_id =bgbcc_malloc(i*sizeof(u32));
-		ctx->rlc_sec=bgbcc_malloc(i*sizeof(byte));
-		ctx->rlc_ty =bgbcc_malloc(i*sizeof(byte));
-		ctx->rlc_chn=bgbcc_malloc(i*sizeof(s32));
+		ctx->rlc_ofs=bgbcc_tmalloc("_jx2c_rlc_ofs", i*sizeof(u32));
+		ctx->rlc_id =bgbcc_tmalloc("_jx2c_rlc_id" , i*sizeof(u32));
+		ctx->rlc_sec=bgbcc_tmalloc("_jx2c_rlc_sec", i*sizeof(byte));
+		ctx->rlc_ty =bgbcc_tmalloc("_jx2c_rlc_ty" , i*sizeof(byte));
+		ctx->rlc_chn=bgbcc_tmalloc("_jx2c_rlc_chn", i*sizeof(s32));
 		ctx->nrlc=0;
 		ctx->mrlc=i;
 		
@@ -1068,10 +1072,10 @@ int BGBCC_JX2_CheckLabelIsGpRel(
 			return(0);
 		if((lbln[0]=='_') || (lbln[1]=='_'))
 		{
-			if(		!strcmp(lbln, "__data_start") ||
-					!strcmp(lbln, "__data_end") ||
-					!strcmp(lbln, "__bss_start") ||
-					!strcmp(lbln, "__bss_end") )
+			if(		!bgbcc_jx2c_strcmp(lbln, "__data_start") ||
+					!bgbcc_jx2c_strcmp(lbln, "__data_end") ||
+					!bgbcc_jx2c_strcmp(lbln, "__bss_start") ||
+					!bgbcc_jx2c_strcmp(lbln, "__bss_end") )
 			{
 				return(1);
 			}
@@ -1207,8 +1211,8 @@ int BGBCC_JX2_CheckLabelIsText(
 			return(0);
 		if((lbln[0]=='_') || (lbln[1]=='_'))
 		{
-			if(		!strcmp(lbln, "__text_start") ||
-					!strcmp(lbln, "__text_end") )
+			if(		!bgbcc_jx2c_strcmp(lbln, "__text_start") ||
+					!bgbcc_jx2c_strcmp(lbln, "__text_end") )
 			{
 				return(1);
 			}

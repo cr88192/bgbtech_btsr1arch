@@ -979,6 +979,7 @@ parameter[4:0] JX2_FMIMM_DISP11S	= 5'h10;
 parameter[4:0] JX2_FMIMM_IMM9F		= 5'h11;
 parameter[4:0] JX2_FMIMM_IMM5U		= 5'h12;
 parameter[4:0] JX2_FMIMM_DISP20X	= 5'h13;
+parameter[4:0] JX2_FMIMM_DISP11AS	= 5'h14;
 
 parameter[3:0] JX2_RVCIMM_NONE		= 4'h0;
 parameter[3:0] JX2_RVCIMM_IMM6ALU	= 4'h1;

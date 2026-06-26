@@ -56,7 +56,7 @@ void CCXL_LVA_TagInit(BGBCC_TransState *ctx)
 
 	i=ccxl_lva_ntag++;
 
-	inf=bgbcc_malloc(sizeof(BGBCC_CCXL_LvaTagInfo));
+	inf=bgbcc_tmalloc("_ccxl_lvatag_t", sizeof(BGBCC_CCXL_LvaTagInfo));
 	inf->name=NULL;
 	inf->idx=i;
 	ccxl_lva_tagarr[i]=inf;
@@ -111,7 +111,7 @@ BGBCC_CCXL_LvaTagInfo *CCXL_LVA_GetTagInfoForName(
 	}
 
 	i=ccxl_lva_ntag++;
-	inf=bgbcc_malloc(sizeof(BGBCC_CCXL_LvaTagInfo));
+	inf=bgbcc_tmalloc("_ccxl_lvatag_t", sizeof(BGBCC_CCXL_LvaTagInfo));
 	inf->name=bgbcc_strdup(name);
 	inf->idx=i;
 	ccxl_lva_tagarr[i]=inf;

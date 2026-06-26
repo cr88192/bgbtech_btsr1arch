@@ -8,7 +8,7 @@ void DYLL_MetaBin_EmitByte(BGBDYC_MetaBinary *ctx, int val)
 	if(!ctx->buf)
 	{
 		i=65536;
-		ctx->buf=malloc(i);
+		ctx->buf=bgbcc_malloc2(i);
 		ctx->ip=ctx->buf;
 		ctx->ipe=ctx->buf+i;
 	}
@@ -18,7 +18,7 @@ void DYLL_MetaBin_EmitByte(BGBDYC_MetaBinary *ctx, int val)
 		i=ctx->ipe-ctx->buf;
 		j=ctx->ip-ctx->buf;
 		i=i+(i>>1);
-		ctx->buf=realloc(ctx->buf, i);
+		ctx->buf=bgbcc_realloc2(ctx->buf, i);
 		ctx->ip=ctx->buf+j;
 		ctx->ipe=ctx->buf+i;
 	}
@@ -175,7 +175,7 @@ byte *DYLL_MetaBin_SaveBinaryBuf(char *name, int *rsz)
 	if(!dyll_metapath_root)
 		return(NULL);
 
-	ctx=malloc(sizeof(BGBDYC_MetaBinary));
+	ctx=bgbcc_malloc2(sizeof(BGBDYC_MetaBinary));
 	memset(ctx, 0, sizeof(BGBDYC_MetaBinary));
 
 	DYLL_MetaBin_SaveBinaryNode(ctx, dyll_metapath_root);
@@ -183,7 +183,7 @@ byte *DYLL_MetaBin_SaveBinaryBuf(char *name, int *rsz)
 	buf=ctx->buf;
 	sz=ctx->ip-ctx->buf;
 	
-	free(ctx);
+	bgbcc_free2(ctx);
 	
 	if(rsz)*rsz=sz;
 	return(buf);

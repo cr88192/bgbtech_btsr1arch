@@ -100,9 +100,9 @@ int BGBCC_SHXC_CoffLoadBufferDLL(
 		litobj->decl->regtype=CCXL_LITID_EXPLIST;
 	}
 	
-	litobj->decl->goto_name=expnames;
-	litobj->decl->n_goto=nexps;
-	litobj->decl->m_goto=nexps;
+	litobj->decl->ext->goto_name=expnames;
+	litobj->decl->ext->n_goto=nexps;
+	litobj->decl->ext->m_goto=nexps;
 	
 	return(1);
 }
@@ -130,7 +130,7 @@ int BGBCC_SHXC_CoffBuildExports(
 			continue;
 		if(!(obj->flagsint&BGBCC_TYFL_DLLEXPORT))
 			continue;
-		if(!obj->name)
+		if(!obj->name_ix)
 			continue;
 			
 		if(!exptab)
@@ -154,7 +154,9 @@ int BGBCC_SHXC_CoffBuildExports(
 	for(i=0; i<nexps; i++)
 		for(j=i+1; j<nexps; j++)
 	{
-		if(strcmp(exptab[j]->name, exptab[i]->name)<0)
+		if(strcmp(
+				bgbcc_strtab_i(exptab[j]->name_ix),
+				bgbcc_strtab_i(exptab[i]->name_ix))<0)
 			{ obj=exptab[j]; exptab[j]=exptab[i]; exptab[i]=obj; }
 	}
 
@@ -198,7 +200,7 @@ int BGBCC_SHXC_CoffBuildExports(
 		obj->fxnalgn=k;
 
 		BGBCC_SHX_EmitLabel(sctx, k);
-		BGBCC_SHX_EmitString(sctx, obj->name);
+		BGBCC_SHX_EmitString(sctx, bgbcc_strtab_i(obj->name_ix));
 	}
 
 	BGBCC_SHX_EmitBAlign(sctx, 4);
@@ -261,7 +263,7 @@ int BGBCC_SHXC_CoffBuildImports(
 			continue;
 		if(!(obj->flagsint&BGBCC_TYFL_DLLIMPORT))
 			continue;
-		if(!obj->name)
+		if(!obj->name_ix)
 			continue;
 			
 		if(!exptab)
@@ -292,7 +294,8 @@ int BGBCC_SHXC_CoffBuildImports(
 	ndlls=0;
 	for(i=0; i<nexps; i++)
 	{
-		lobj=BGBCC_CCXL_LookupExportListForName(ctx, exptab[i]->name);
+		lobj=BGBCC_CCXL_LookupExportListForName(ctx,
+			bgbcc_strtab_i(exptab[i]->name_ix));
 		for(j=0; j<ndlls; j++)
 		{
 			if(lodlls[j]==lobj)
@@ -359,7 +362,7 @@ int BGBCC_SHXC_CoffBuildImports(
 		BGBCC_SHX_EmitLabel(sctx, k);
 //		BGBCC_SHX_EmitDWord(sctx, obj->fxmoffs);	//hint
 		BGBCC_SHX_EmitWord(sctx, obj->fxmoffs);		//hint
-		BGBCC_SHX_EmitString(sctx, obj->name);		//name
+		BGBCC_SHX_EmitString(sctx, bgbcc_strtab_i(obj->name_ix));		//name
 	}
 
 	BGBCC_SHX_EmitBAlign(sctx, 4);

@@ -23,19 +23,20 @@ char *typens;			//namespace prefix for types
 void *sbxe_malloc(int sz)
 {
 	void *p;
-	p=malloc(sz);
+	p=bgbcc_malloc2(sz);
 	memset(p, 0, sz);
 	return(p);
 }
 
 void *sbxe_tmalloc(char *ty, int sz)
 {
-	return(sbxe_malloc(sz));
+//	return(sbxe_malloc(sz));
+	return(bgbcc_tmalloc2(ty, sz));
 }
 
 void sbxe_free(void *ptr)
 {
-	free(ptr);
+	bgbcc_free2(ptr);
 }
 
 //LZ+Markov

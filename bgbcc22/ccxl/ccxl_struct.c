@@ -294,25 +294,29 @@ int BGBCC_CCXL_LookupStructContainsFieldID(
 	if(!st->decl)
 		return(-1);
 	
-	for(i=0; i<st->decl->n_fields; i++)
+	for(i=0; i<st->decl->ext->n_fields; i++)
 	{
 //		if(!st->decl->fields[i]->name)
-		if((!st->decl->fields[i]->name ||
-			!strcmp(st->decl->fields[i]->name, "_")) ||
-			(st->decl->fields[i]->flagsint&BGBCC_TYFL_DELEGATE))
+		if((!st->decl->ext->fields[i]->name_ix ||
+			!strcmp(
+				bgbcc_strtab_i(st->decl->ext->fields[i]->name_ix), "_")) ||
+			(st->decl->ext->fields[i]->flagsint&BGBCC_TYFL_DELEGATE))
 		{
 			st2=BGBCC_CCXL_LookupStructureForType(ctx,
-				st->decl->fields[i]->type);
+				st->decl->ext->fields[i]->type);
 			if(!st2)
 				continue;
 			
 			j=BGBCC_CCXL_LookupStructContainsFieldID(ctx, st2, name);
-			if(j>=0)return(i);
+			if(j>=0)
+				return(i);
 
 			continue;
 		}
 
-		if(!strcmp(st->decl->fields[i]->name, name))
+		if(!strcmp(
+				bgbcc_strtab_i(st->decl->ext->fields[i]->name_ix),
+				name))
 			return(i);
 	}
 	return(-1);
@@ -336,35 +340,37 @@ int BGBCC_CCXL_LookupStructFieldIDSig(
 		return(-1);
 	
 	/* Object Fields */
-	for(i=0; i<st->decl->n_fields; i++)
+	for(i=0; i<st->decl->ext->n_fields; i++)
 	{
-		if(!st->decl->fields[i]->name)
+		if(!st->decl->ext->fields[i]->name_ix)
 			continue;
 
-		if(!strcmp(st->decl->fields[i]->name, name))
+		if(!strcmp(bgbcc_strtab_i(st->decl->ext->fields[i]->name_ix), name))
 			return(CCXL_FID_TAG_FIELD|i);
 	}
 
 	/* Static Fields */
-	for(i=0; i<st->decl->n_statics; i++)
+	for(i=0; i<st->decl->ext->n_statics; i++)
 	{
-		if(!st->decl->statics[i]->name)
+		if(!st->decl->ext->statics[i]->name_ix)
 			continue;
 
-		if(!strcmp(st->decl->statics[i]->name, name))
+		if(!strcmp(bgbcc_strtab_i(st->decl->ext->statics[i]->name_ix), name))
 			return(CCXL_FID_TAG_STATICS|i);
 	}
 
 	/* Methods */
-	for(i=0; i<st->decl->n_regs; i++)
+	for(i=0; i<st->decl->ext->n_regs; i++)
 	{
-		if(!st->decl->regs[i]->name)
+		if(!st->decl->ext->regs[i]->name_ix)
 			continue;
 
 //		if(!strcmp(st->decl->regs[i]->name, name))
-		if(!bgbcc_strcmp_nosig(st->decl->regs[i]->name, name))
+		if(!bgbcc_strcmp_nosig(
+			bgbcc_strtab_i(st->decl->ext->regs[i]->name_ix), name))
 		{
-			if(sig && !BGBCC_CCXL_MatchSig(ctx, st->decl->regs[i]->sig, sig))
+			if(sig && !BGBCC_CCXL_MatchSig(ctx,
+					bgbcc_strtab_i(st->decl->ext->regs[i]->sig_ix), sig))
 				continue;
 			return(CCXL_FID_TAG_REGS|i);
 		}
@@ -378,10 +384,10 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetStructSuperclass(
 {
 	BGBCC_CCXL_LiteralInfo *st1;
 
-	if(st->decl->n_args>0)
+	if(st->decl->ext->n_args>0)
 	{
 		st1=BGBCC_CCXL_LookupStructureForSig(ctx,
-			st->decl->args[0]->sig);
+			bgbcc_strtab_i(st->decl->ext->args[0]->sig_ix));
 		return(st1);
 	}
 	return(NULL);
@@ -409,59 +415,64 @@ ccxl_status BGBCC_CCXL_LookupStructFieldTypeSig(
 		return(-1);
 	
 	/* Object Fields */
-	for(i=0; i<st->decl->n_fields; i++)
+	for(i=0; i<st->decl->ext->n_fields; i++)
 	{
-		if(!st->decl->fields[i]->name)
+		if(!st->decl->ext->fields[i]->name_ix)
 			continue;
 
-		if(!strcmp(st->decl->fields[i]->name, name))
+		if(!strcmp(
+			bgbcc_strtab_i(st->decl->ext->fields[i]->name_ix),
+			name))
 		{
 			BGBCC_CCXL_TypeFromSig(ctx, &bty,
-				st->decl->fields[i]->sig);
+				bgbcc_strtab_i(st->decl->ext->fields[i]->sig_ix));
 			*rty=bty;
 			return(1);
 		}
 	}
 
 	/* Object Fields */
-	for(i=0; i<st->decl->n_statics; i++)
+	for(i=0; i<st->decl->ext->n_statics; i++)
 	{
-		if(!st->decl->statics[i]->name)
+		if(!st->decl->ext->statics[i]->name_ix)
 			continue;
 
-		if(!strcmp(st->decl->statics[i]->name, name))
+		if(!strcmp(
+			bgbcc_strtab_i(st->decl->ext->statics[i]->name_ix), name))
 		{
 			BGBCC_CCXL_TypeFromSig(ctx, &bty,
-				st->decl->statics[i]->sig);
+				bgbcc_strtab_i(st->decl->ext->statics[i]->sig_ix));
 			*rty=bty;
 			return(1);
 		}
 	}
 
 	/* Methods */
-	for(i=0; i<st->decl->n_regs; i++)
+	for(i=0; i<st->decl->ext->n_regs; i++)
 	{
-		if(!st->decl->regs[i]->name)
+		if(!st->decl->ext->regs[i]->name_ix)
 			continue;
 
-//		if(!strcmp(st->decl->regs[i]->name, name))
-		if(!bgbcc_strcmp_nosig(st->decl->regs[i]->name, name))
+//		if(!strcmp(st->decl->ext->regs[i]->name, name))
+		if(!bgbcc_strcmp_nosig(
+			bgbcc_strtab_i(st->decl->ext->regs[i]->name_ix), name))
 		{
-			if(sig && !BGBCC_CCXL_MatchSig(ctx, st->decl->regs[i]->sig, sig))
+			if(sig && !BGBCC_CCXL_MatchSig(ctx,
+					bgbcc_strtab_i(st->decl->ext->regs[i]->sig_ix), sig))
 				continue;
 		
 //			BGBCC_CCXL_TypeFromSig(ctx, &bty,
-//				st->decl->fields[i]->sig);
-			bty=st->decl->regs[i]->type;
+//				st->decl->ext->fields[i]->sig);
+			bty=st->decl->ext->regs[i]->type;
 			*rty=bty;
 			return(1);
 		}
 	}
 
-	if(st->decl->n_args>0)
+	if(st->decl->ext->n_args>0)
 	{
 		st1=BGBCC_CCXL_LookupStructureForSig(ctx,
-			st->decl->args[0]->sig);
+			bgbcc_strtab_i(st->decl->ext->args[0]->sig_ix));
 		i=BGBCC_CCXL_LookupStructFieldTypeSig(ctx, st1, name, sig, &bty);
 		if(i>0)
 		{
@@ -494,15 +505,15 @@ ccxl_status BGBCC_CCXL_LookupStructSuperFieldType(
 	if(!st->decl)
 		return(-1);
 	
-	for(i=0; i<st->decl->n_fields; i++)
+	for(i=0; i<st->decl->ext->n_fields; i++)
 	{
-		if(!st->decl->fields[i]->name)
+		if(!st->decl->ext->fields[i]->name_ix)
 			continue;
 
-		if(!strcmp(st->decl->fields[i]->name, name))
+		if(!strcmp(bgbcc_strtab_i(st->decl->ext->fields[i]->name_ix), name))
 		{
 			BGBCC_CCXL_TypeFromSig(ctx, &bty,
-				st->decl->fields[i]->sig);
+				bgbcc_strtab_i(st->decl->ext->fields[i]->sig_ix));
 			*rty=bty;
 			*rsi=0;
 			*rfi=i;
@@ -510,9 +521,9 @@ ccxl_status BGBCC_CCXL_LookupStructSuperFieldType(
 		}
 	}
 	
-	if(st->decl->n_args>0)
+	if(st->decl->ext->n_args>0)
 	{
-		tty=st->decl->args[0]->type;
+		tty=st->decl->ext->args[0]->type;
 		sobj=BGBCC_CCXL_LookupStructureForType(ctx, tty);
 		i=BGBCC_CCXL_LookupStructSuperFieldType(ctx, sobj, name,
 			&i0, &i1, &bty);
@@ -544,10 +555,10 @@ ccxl_status BGBCC_CCXL_LookupStructFieldIdType(
 	if(!st->decl)
 		return(-1);
 	
-	if((idx>=0) && (idx<st->decl->n_fields))
+	if((idx>=0) && (idx<st->decl->ext->n_fields))
 	{
 		BGBCC_CCXL_TypeFromSig(ctx, &bty,
-			st->decl->fields[idx]->sig);
+			bgbcc_strtab_i(st->decl->ext->fields[idx]->sig_ix));
 		*rty=bty;
 		return(1);
 	}
@@ -1067,21 +1078,28 @@ ccxl_status BGBCC_CCXL_MarkTypeAccessed(
 //	obj->decl->regflags|=BGBCC_REGFL_ACCESSED;
 	obj->decl->regflags|=BGBCC_REGFL_TYPEACCESSED;
 
-	for(i=0; i<obj->decl->n_args; i++)
-		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->args[i]->type); }
-	for(i=0; i<obj->decl->n_locals; i++)
-		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->locals[i]->type); }
-
-	for(i=0; i<obj->decl->n_regs; i++)
-		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->regs[i]->type); }
-	for(i=0; i<obj->decl->n_statics; i++)
-		{ BGBCC_CCXL_MarkTypeAccessed(ctx, obj->decl->statics[i]->type); }
-
-	n=obj->decl->n_fields;
-	for(i=0; i<n; i++)
+	if(obj->decl->ext)
 	{
-		BGBCC_CCXL_MarkTypeAccessed(ctx,
-			obj->decl->fields[i]->type);
+		for(i=0; i<obj->decl->ext->n_args; i++)
+			{ BGBCC_CCXL_MarkTypeAccessed(ctx,
+				obj->decl->ext->args[i]->type); }
+		for(i=0; i<obj->decl->ext->n_locals; i++)
+			{ BGBCC_CCXL_MarkTypeAccessed(ctx,
+				obj->decl->ext->locals[i]->type); }
+
+		for(i=0; i<obj->decl->ext->n_regs; i++)
+			{ BGBCC_CCXL_MarkTypeAccessed(ctx,
+				obj->decl->ext->regs[i]->type); }
+		for(i=0; i<obj->decl->ext->n_statics; i++)
+			{ BGBCC_CCXL_MarkTypeAccessed(ctx,
+				obj->decl->ext->statics[i]->type); }
+
+		n=obj->decl->ext->n_fields;
+		for(i=0; i<n; i++)
+		{
+			BGBCC_CCXL_MarkTypeAccessed(ctx,
+				obj->decl->ext->fields[i]->type);
+		}
 	}
 
 	return(1);
@@ -1121,11 +1139,12 @@ ccxl_status BGBCC_CCXL_MarkTypeVarConv(
 	}
 #endif
 
-	if(obj->decl->n_args>0)
+	if(obj->decl->ext->n_args>0)
 	{
 //		obj=BGBCC_CCXL_LookupStructureForSig(ctx,
 //			obj->decl->args[0]->sig);
-		BGBCC_CCXL_TypeFromSig(ctx, &tty, obj->decl->args[0]->sig);
+		BGBCC_CCXL_TypeFromSig(ctx, &tty,
+			bgbcc_strtab_i(obj->decl->ext->args[0]->sig_ix));
 		BGBCC_CCXL_MarkTypeVarConv(ctx, tty);
 	}
 
@@ -1172,18 +1191,18 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupStructureStaticMember(
 		((obj->littype==CCXL_LITID_CLASS)	||
 		(obj->littype==CCXL_LITID_ENUMDEF))	)
 	{
-		for(i=0; i<obj->decl->n_statics; i++)
+		for(i=0; i<obj->decl->ext->n_statics; i++)
 		{
-			ri=obj->decl->statics[i];
+			ri=obj->decl->ext->statics[i];
 			
-			if(!strcmp(ri->name, fname))
+			if(!strcmp(bgbcc_strtab_i(ri->name_ix), fname))
 				return(ri);
 		}
 		
-		if(obj->decl->n_args>0)
+		if(obj->decl->ext->n_args>0)
 		{
 			obj=BGBCC_CCXL_LookupStructureForSig(ctx,
-				obj->decl->args[0]->sig);
+				bgbcc_strtab_i(obj->decl->ext->args[0]->sig_ix));
 		}else
 		{
 			obj=NULL;
@@ -1261,17 +1280,17 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupStructureMember(
 		(obj->littype==CCXL_LITID_UNION)	||
 		(obj->littype==CCXL_LITID_CLASS))	)
 	{
-		for(i=0; i<obj->decl->n_fields; i++)
+		for(i=0; i<obj->decl->ext->n_fields; i++)
 		{
-			ri=obj->decl->fields[i];
-			if(!strcmp(ri->name, fname))
+			ri=obj->decl->ext->fields[i];
+			if(!strcmp(bgbcc_strtab_i(ri->name_ix), fname))
 				return(ri);
 		}
 		
-		if(obj->decl->n_args>0)
+		if(obj->decl->ext->n_args>0)
 		{
 			obj=BGBCC_CCXL_LookupStructureForSig(ctx,
-				obj->decl->args[0]->sig);
+				bgbcc_strtab_i(obj->decl->ext->args[0]->sig_ix));
 		}else
 		{
 			obj=NULL;
@@ -1299,25 +1318,25 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupStructureMethod(
 		(obj->littype==CCXL_LITID_UNION)	||
 		(obj->littype==CCXL_LITID_CLASS))	)
 	{
-		for(i=0; i<obj->decl->n_regs; i++)
+		for(i=0; i<obj->decl->ext->n_regs; i++)
 		{
-			ri=obj->decl->regs[i];
+			ri=obj->decl->ext->regs[i];
 //			if(!strcmp(ri->name, fname))
 //				return(ri);
-			if(!bgbcc_strcmp_nosig(ri->name, fname))
+			if(!bgbcc_strcmp_nosig(bgbcc_strtab_i(ri->name_ix), fname))
 			{
 				if(sig && !BGBCC_CCXL_MatchSig(ctx,
-						ri->sig, sig))
+						bgbcc_strtab_i(ri->sig_ix), sig))
 					continue;
 				return(ri);
 			}
 
 		}
 		
-		if(obj->decl->n_args>0)
+		if(obj->decl->ext->n_args>0)
 		{
 			obj=BGBCC_CCXL_LookupStructureForSig(ctx,
-				obj->decl->args[0]->sig);
+				bgbcc_strtab_i(obj->decl->ext->args[0]->sig_ix));
 		}else
 		{
 			obj=NULL;

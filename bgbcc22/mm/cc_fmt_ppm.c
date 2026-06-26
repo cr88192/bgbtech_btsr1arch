@@ -245,7 +245,7 @@ byte *BGBCC_Img_DecodeDrawCmds(byte *srcbuf, int *rw, int *rh)
 		{
 			xs=atoi(a[1]);
 			ys=atoi(a[2]);
-			dstbuf=malloc(xs*ys*4);
+			dstbuf=bgbcc_malloc_bmp(xs*ys*4);
 //			memset(dstbuf, 255, xs*ys*4);
 			
 			n=xs*ys;

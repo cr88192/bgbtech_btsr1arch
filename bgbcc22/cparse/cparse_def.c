@@ -55,9 +55,9 @@ BCCX_Node *BGBCP_VarsList(BGBCP_ParseState *ctx, char **str, BCCX_Node *tn)
 			BGBCP_Token2(s1, b2, &ty2, ctx->lang);
 
 			if((ty==BTK_NAME) && (
-				!bgbcp_strcmp(b2, ":") ||
-				!bgbcp_strcmp(b2, ",") ||
-				!bgbcp_strcmp(b2, "=") )		)
+				!bgbcp_strcmp1(b2, ":") ||
+				!bgbcp_strcmp1(b2, ",") ||
+				!bgbcp_strcmp1(b2, "=") )		)
 			{
 				s=s1;
 
@@ -245,41 +245,41 @@ char *BGBCP_OperatorNameForOp(BGBCP_ParseState *ctx, char *op)
 	
 	op2=NULL;
 
-	if(!strcmp(op, "+"))
+	if(!bgbcp_strcmp1(op, "+"))
 		{ op2="__operator_add"; }
-	else if(!strcmp(op, "-"))
+	else if(!bgbcp_strcmp1(op, "-"))
 		{ op2="__operator_sub"; }
-	else if(!strcmp(op, "*"))
+	else if(!bgbcp_strcmp1(op, "*"))
 		{ op2="__operator_mul"; }
-	else if(!strcmp(op, "/"))
+	else if(!bgbcp_strcmp1(op, "/"))
 		{ op2="__operator_div"; }
-	else if(!strcmp(op, "%"))
+	else if(!bgbcp_strcmp1(op, "%"))
 		{ op2="__operator_mod"; }
-	else if(!strcmp(op, "&"))
+	else if(!bgbcp_strcmp1(op, "&"))
 		{ op2="__operator_and"; }
-	else if(!strcmp(op, "|"))
+	else if(!bgbcp_strcmp1(op, "|"))
 		{ op2="__operator_or"; }
-	else if(!strcmp(op, "^"))
+	else if(!bgbcp_strcmp1(op, "^"))
 		{ op2="__operator_xor"; }
 
-	else if(!strcmp(op, "=="))
+	else if(!bgbcp_strcmp2(op, "=="))
 		{ op2="__operator_eq"; }
-	else if(!strcmp(op, "!="))
+	else if(!bgbcp_strcmp2(op, "!="))
 		{ op2="__operator_ne"; }
-	else if(!strcmp(op, "<"))
+	else if(!bgbcp_strcmp1(op, "<"))
 		{ op2="__operator_lt"; }
-	else if(!strcmp(op, ">"))
+	else if(!bgbcp_strcmp1(op, ">"))
 		{ op2="__operator_gt"; }
-	else if(!strcmp(op, "<="))
+	else if(!bgbcp_strcmp2(op, "<="))
 		{ op2="__operator_le"; }
-	else if(!strcmp(op, ">="))
+	else if(!bgbcp_strcmp2(op, ">="))
 		{ op2="__operator_ge"; }
 
-	else if(!strcmp(op, "="))
+	else if(!bgbcp_strcmp1(op, "="))
 		{ op2="__operator_set"; }
-	else if(!strcmp(op, "new"))
+	else if(!bgbcp_strcmp3(op, "new"))
 		{ op2="__operator_new"; }
-	else if(!strcmp(op, "delete"))
+	else if(!bgbcp_strcmp(op, "delete"))
 		{ op2="__operator_delete"; }
 
 	return(op2);
@@ -358,7 +358,7 @@ BCCX_Node *BGBCP_DefName(BGBCP_ParseState *ctx, char **str)
 		
 		if(ctx->lang==BGBCC_LANG_CPP)
 		{
-			if(!strcmp(b, "operator"))
+			if(!bgbcp_strcmp(b, "operator"))
 			{
 				s1=BGBCP_Token2(s, b, &ty, ctx->lang);
 
@@ -367,46 +367,6 @@ BCCX_Node *BGBCP_DefName(BGBCP_ParseState *ctx, char **str)
 					{ strcpy(b, s3); s=s1; }
 				else
 					{ BGBCC_DBGBREAK }
-				
-#if 0
-				if(!strcmp(b, "+"))
-					{ strcpy(b, "__operator_add"); }
-				else if(!strcmp(b, "-"))
-					{ strcpy(b, "__operator_sub"); }
-				else if(!strcmp(b, "*"))
-					{ strcpy(b, "__operator_mul"); }
-				else if(!strcmp(b, "/"))
-					{ strcpy(b, "__operator_div"); }
-				else if(!strcmp(b, "%"))
-					{ strcpy(b, "__operator_mod"); }
-				else if(!strcmp(b, "&"))
-					{ strcpy(b, "__operator_and"); }
-				else if(!strcmp(b, "|"))
-					{ strcpy(b, "__operator_or"); }
-				else if(!strcmp(b, "^"))
-					{ strcpy(b, "__operator_xor"); }
-
-				else if(!strcmp(b, "=="))
-					{ strcpy(b, "__operator_eq"); }
-				else if(!strcmp(b, "!="))
-					{ strcpy(b, "__operator_ne"); }
-				else if(!strcmp(b, "<"))
-					{ strcpy(b, "__operator_lt"); }
-				else if(!strcmp(b, ">"))
-					{ strcpy(b, "__operator_gt"); }
-				else if(!strcmp(b, "<="))
-					{ strcpy(b, "__operator_le"); }
-				else if(!strcmp(b, ">="))
-					{ strcpy(b, "__operator_ge"); }
-
-				else if(!strcmp(b, "="))
-					{ strcpy(b, "__operator_set"); }
-				else if(!strcmp(b, "new"))
-					{ strcpy(b, "__operator_new"); }
-				else if(!strcmp(b, "delete"))
-					{ strcpy(b, "__operator_delete"); }
-#endif
-
 			}
 			
 			while(!bgbcp_strcmp2(b2, "::"))
@@ -414,7 +374,7 @@ BCCX_Node *BGBCP_DefName(BGBCP_ParseState *ctx, char **str)
 				s=BGBCP_Token2(s, b2, &ty2, ctx->lang);
 				s=BGBCP_Token2(s, b3, &ty3, ctx->lang);
 
-				if(!strcmp(b3, "operator"))
+				if(!bgbcp_strcmp(b3, "operator"))
 				{
 					s1=BGBCP_Token2(s, b3, &ty3, ctx->lang);
 
@@ -561,7 +521,7 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 
 //	__debugbreak();
 
-	if(!bgbcp_strcmp(b, ";"))
+	if(!bgbcp_strcmp1(b, ";"))
 	{
 		n=BCCX_NewCst(&bgbcc_rcst_var, "var");
 
@@ -575,7 +535,8 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 		return(n);
 	}
 
-	if(!bgbcp_strcmp(b, "__stdcall"))
+	if((b[0]=='_') && (b[1]=='_') && (b[2]=='s') &&
+			!bgbcp_strcmp(b, "__stdcall"))
 		{ s=BGBCP_Token2(s, b, &ty, ctx->lang); fl|=BGBCC_TYFL_STDCALL; }
 
 	n1=BGBCP_DefName(ctx, &s);
@@ -595,7 +556,7 @@ BCCX_Node *BGBCP_VarDefinition(BGBCP_ParseState *ctx,
 	}
 
 	BGBCP_Token2(s, b, &ty, ctx->lang);
-	if(!bgbcp_strcmp(b, "__stdcall"))
+	if((b[0]=='_') && !bgbcp_strcmp(b, "__stdcall"))
 		{ s=BGBCP_Token2(s, b, &ty, ctx->lang); fl|=BGBCC_TYFL_STDCALL; }
 
 	BGBCP_Token2(s, b, &ty, ctx->lang);
@@ -822,7 +783,7 @@ BCCX_Node *BGBCP_ArgDefinition(BGBCP_ParseState *ctx, char **str)
 		s1=BGBCP_Token2(s, b, &ty, ctx->lang);
 		if(ty==BTK_NAME)
 		{
-			if(!strcmp(b, "class"))
+			if(!bgbcp_strcmp(b, "class"))
 			{
 				n1=BCCX_NewCst(&bgbcc_rcst_type, "type");
 				BCCX_SetCst(n1, &bgbcc_rcst_name, "name", "class");
@@ -1101,7 +1062,8 @@ BCCX_Node *BGBCP_Definition(BGBCP_ParseState *ctx, char **str)
 #if 1
 	if((ty==BTK_NAME) &&
 		(((ctx->lang==BGBCC_LANG_VERILOG) && !bgbcp_strcmp(b, "module")) ||
-		!bgbcp_strcmp(b, "__vlmodule")))
+		((b[0]=='_') && (b[1]=='_') && (b[2]=='v') &&
+			!bgbcp_strcmp(b, "__vlmodule"))))
 	{
 		n=BCCX_NewCst(&bgbcc_rcst_type, "type");
 		BCCX_SetCst(n, &bgbcc_rcst_name, "name", "variant");

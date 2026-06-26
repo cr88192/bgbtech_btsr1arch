@@ -49,28 +49,28 @@ int BGBCC_JX2C_EmitFrameEpilog_TinyLeaf(BGBCC_TransState *ctx,
 
 //	bo=BGBCC_JX2_EmitGetOffs(sctx);
 
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
-			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
+		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
+			{ obj->ext->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
 		else
-			{ obj->locals[i]->regflags|=BGBCC_REGFL_CULL; }
+			{ obj->ext->locals[i]->regflags|=BGBCC_REGFL_CULL; }
 	}
 
-	for(i=0; i<obj->n_args; i++)
+	for(i=0; i<obj->ext->n_args; i++)
 	{
-		if(obj->args[i]->regflags&BGBCC_REGFL_ACCESSED)
-			{ obj->args[i]->regflags&=~BGBCC_REGFL_CULL; }
+		if(obj->ext->args[i]->regflags&BGBCC_REGFL_ACCESSED)
+			{ obj->ext->args[i]->regflags&=~BGBCC_REGFL_CULL; }
 		else
-			{ obj->args[i]->regflags|=BGBCC_REGFL_CULL; }
+			{ obj->ext->args[i]->regflags|=BGBCC_REGFL_CULL; }
 	}
 
-	for(i=0; i<obj->n_regs; i++)
+	for(i=0; i<obj->ext->n_regs; i++)
 	{
-		if(obj->regs[i]->regflags&BGBCC_REGFL_ACCESSED)
-			{ obj->regs[i]->regflags&=~BGBCC_REGFL_CULL; }
+		if(obj->ext->regs[i]->regflags&BGBCC_REGFL_ACCESSED)
+			{ obj->ext->regs[i]->regflags&=~BGBCC_REGFL_CULL; }
 		else
-			{ obj->regs[i]->regflags|=BGBCC_REGFL_CULL; }
+			{ obj->ext->regs[i]->regflags|=BGBCC_REGFL_CULL; }
 	}
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
@@ -178,12 +178,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 
 	bo=BGBCC_JX2_EmitGetOffs(sctx);
 
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
-			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
+		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
+			{ obj->ext->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
 		else
-			{ obj->locals[i]->regflags|=BGBCC_REGFL_CULL; }
+			{ obj->ext->locals[i]->regflags|=BGBCC_REGFL_CULL; }
 	}
 
 	BGBCC_JX2_EmitCheckFlushIndexImm(sctx);
@@ -206,11 +206,12 @@ int BGBCC_JX2C_EmitFrameEpilog(BGBCC_TransState *ctx,
 		BGBCC_JX2_EmitLabel(sctx, sctx->lbl_ret);
 	}
 
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		if(obj->locals[i]->flagsint&BGBCC_TYFL_DYNAMIC)
+		if(obj->ext->locals[i]->flagsint&BGBCC_TYFL_DYNAMIC)
 		{
-			j=BGBCC_CCXL_LookupGlobalIndex(ctx, obj->locals[i]->name);
+			j=BGBCC_CCXL_LookupGlobalIndex(ctx,
+				bgbcc_strtab_i(obj->ext->locals[i]->name_ix));
 			if(j<=0)
 				continue;
 			tty=ctx->reg_globals[j]->type;

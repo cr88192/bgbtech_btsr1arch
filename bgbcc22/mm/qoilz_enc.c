@@ -310,8 +310,8 @@ int QOI_EncodeImageBufferLossy(
 #ifdef QOILI_MALLOCHASH
 	if(doli&1)
 	{
-		hofs=malloc(QOILI_HASHSZ*sizeof(int));
-		hrov=malloc(QOILI_HASHSZ);
+		hofs=qoi_malloc(QOILI_HASHSZ*sizeof(int));
+		hrov=qoi_malloc(QOILI_HASHSZ);
 	}else
 	{
 		hofs=(int *)tdummy;
@@ -814,8 +814,8 @@ int QOI_EncodeImageBufferLossy(
 #ifdef QOILI_MALLOCHASH
 	if(doli&1)
 	{
-		free(hofs);
-		free(hrov);
+		qoi_free(hofs);
+		qoi_free(hrov);
 	}
 #endif
 
@@ -851,8 +851,8 @@ int QOI_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int doli)
 #ifdef QOILI_MALLOCHASH
 	if(doli&1)
 	{
-		hofs=malloc(QOILI_HASHSZ*sizeof(int));
-		hrov=malloc(QOILI_HASHSZ);
+		hofs=qoi_malloc(QOILI_HASHSZ*sizeof(int));
+		hrov=qoi_malloc(QOILI_HASHSZ);
 	}else
 	{
 		hofs=(int *)tdummy;
@@ -1213,8 +1213,8 @@ int QOI_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int doli)
 #ifdef QOILI_MALLOCHASH
 	if(doli&1)
 	{
-		free(hofs);
-		free(hrov);
+		qoi_free(hofs);
+		qoi_free(hrov);
 	}
 #endif
 
@@ -1228,7 +1228,7 @@ int QOI_EncodeImageBuffer555(byte *dstbuf, u16 *img, int xs, int ys, int fl)
 	int cr, cg, cb, ca;
 	int x, y, v, sz;
 	
-	ibuf=malloc(xs*ys*4);
+	ibuf=qoi_malloc(xs*ys*4);
 	ct=ibuf;
 	for(y=0; y<ys; y++)
 	{
@@ -1253,7 +1253,7 @@ int QOI_EncodeImageBuffer555(byte *dstbuf, u16 *img, int xs, int ys, int fl)
 	}
 	
 	sz=QOI_EncodeImageBuffer(dstbuf, ibuf, xs, ys, fl);
-	free(ibuf);
+	qoi_free(ibuf);
 	return(sz);
 }
 
@@ -1331,8 +1331,8 @@ int QOILZ_PackBufferLz4(byte *dstbuf, byte *srcbuf, int sz)
 	int bdl, bll, cf;
 
 #ifdef QOILZ4_MALLOCHASH
-	hofs=malloc(QOILZ4_HASHSZ*sizeof(int));
-	hrov=malloc(QOILZ4_HASHSZ);
+	hofs=qoi_malloc(QOILZ4_HASHSZ*sizeof(int));
+	hrov=qoi_malloc(QOILZ4_HASHSZ);
 #endif
 	
 	for(i=0; i<QOILZ4_HASHSZ; i++)
@@ -1553,8 +1553,8 @@ int QOILZ_PackBufferLz4(byte *dstbuf, byte *srcbuf, int sz)
 	ct[1]=0;
 
 #ifdef QOILZ4_MALLOCHASH
-	free(hofs);
-	free(hrov);
+	qoi_free(hofs);
+	qoi_free(hrov);
 #endif
 	
 	return(ct-dstbuf);
@@ -1565,9 +1565,9 @@ int QOILZ_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int fl)
 	byte *t1buf, *t2buf, *t3buf;
 	int sz1, sz2, sz3, sz0, sz;
 	
-	t1buf=malloc(6*xs*ys);
-	t2buf=malloc(6*xs*ys);
-	t3buf=malloc(6*xs*ys);
+	t1buf=qoi_malloc(6*xs*ys);
+	t2buf=qoi_malloc(6*xs*ys);
+	t3buf=qoi_malloc(6*xs*ys);
 	sz1=QOI_EncodeImageBuffer(t1buf, img, xs, ys, (fl&(~1))|0);
 
 	sz3=QOI_EncodeImageBuffer(t3buf, img, xs, ys, (fl&(~1))|1);
@@ -1636,9 +1636,9 @@ int QOILZ_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int fl)
 		}
 	}
 
-	free(t1buf);
-	free(t2buf);
-	free(t3buf);
+	qoi_free(t1buf);
+	qoi_free(t2buf);
+	qoi_free(t3buf);
 	
 	printf("QOILZ_EncodeImageBuffer: QOI=%d LZ=%d LI=%d Pick=%d\n",
 		sz1, sz2, sz3, sz);
@@ -1654,7 +1654,7 @@ int QOILZ_EncodeImageBuffer555(byte *dstbuf, u16 *img, int xs, int ys, int fl)
 	int cr, cg, cb, ca;
 	int x, y, v, sz;
 	
-	ibuf=malloc(xs*ys*4);
+	ibuf=qoi_malloc(xs*ys*4);
 	ct=ibuf;
 	for(y=0; y<ys; y++)
 	{
@@ -1679,6 +1679,6 @@ int QOILZ_EncodeImageBuffer555(byte *dstbuf, u16 *img, int xs, int ys, int fl)
 	}
 	
 	sz=QOILZ_EncodeImageBuffer(dstbuf, ibuf, xs, ys, fl);
-	free(ibuf);
+	qoi_free(ibuf);
 	return(sz);
 }

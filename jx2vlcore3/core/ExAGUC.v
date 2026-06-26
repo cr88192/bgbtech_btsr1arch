@@ -82,12 +82,17 @@ reg[47:0]	tRiScA;
 
 reg[15:0]	tRiDi;
 
+reg[16:0]	tRiDi0A;
+reg[16:0]	tRiDi1A0;
+reg[16:0]	tRiDi1A1;
+
 reg[47:0]	tAddrSc0;
 // reg[47:0]	tAddrSc1;
 // reg[47:0]	tAddrSc2;
 // reg[47:0]	tAddrSc3;
 
-`ifdef jx2_agu_ridisp
+// `ifdef jx2_agu_ridisp
+`ifndef def_true
 reg[17:0]	tAddrSc0A;
 `else
 reg[16:0]	tAddrSc0A;
@@ -471,10 +476,33 @@ begin
 
 `endif
 
-	tRiDi = 0;
+	tRiDi		= 0;
+	tRiDi0A		= 0;
+	tRiDi1A0	= 0;
+	tRiDi1A1	= 0;
 
 	if(idUIxt[3])
+	begin
 		tRiDi = regValImm;
+		
+`ifdef jx2_agu_ridisp
+		tRiDi0A	=
+			{ 1'b0, tRiSc[15: 0] } +
+			{ 1'b0, tRiDi[15: 0] } ;
+		tRiDi1A0	= { 1'b0, tRiSc[31:16] };
+		tRiDi1A1	= { 1'b0, tRiSc[31:16] } + 1;
+`ifdef def_true
+		if(tRiDi[15])
+		begin
+			tRiDi1A1	= tRiDi1A0;
+			tRiDi1A0	= { 1'b0, tRiSc[31:16] } + 17'h0FFFF;
+		end
+`endif
+
+		tRiSc[15:0] = tRiDi0A[15:0];
+		tRiSc[31:16] = tRiDi0A[16] ? tRiDi1A1[15:0] : tRiDi1A0[15:0];
+`endif
+	end
 
 // `ifdef def_true
 `ifndef def_true
@@ -485,7 +513,8 @@ begin
 	end
 `endif
 
-`ifdef jx2_agu_ridisp
+// `ifdef jx2_agu_ridisp
+`ifndef def_true
 	tAddrSc0A  =
 		{ 2'b0, regValRm[15: 0] } +
 		{ 2'b0, tRiSc[15: 0] } +
@@ -496,7 +525,8 @@ begin
 
 	tAddrSc0B0 = { 1'b0, regValRm[31:16] } + { 1'b0, tRiSc[31:16] } + 0;
 	tAddrSc0B1 = { 1'b0, regValRm[31:16] } + { 1'b0, tRiSc[31:16] } + 1;
-`ifdef jx2_agu_ridisp
+// `ifdef jx2_agu_ridisp
+`ifndef def_true
 	tAddrSc0B2 = { 2'b0, regValRm[31:16] } + { 2'b0, tRiSc[31:16] } + 2;
 `endif
 
@@ -515,7 +545,8 @@ begin
 	tCaVal0C = tCaVal0B ? tAddrSc0B1[16] : tAddrSc0B0[16];
 
 
-`ifdef jx2_agu_ridisp
+//`ifdef jx2_agu_ridisp
+`ifndef def_true
 //	tAddrSc0B = (tAddrSc0A[17:16]!=0) ? tAddrSc0B1 : tAddrSc0B0;
 //	tAddrSc0B = tAddrSc0A[17] ? tAddrSc0B2 :
 //		(tCaVal0B ? tAddrSc0B1 : tAddrSc0B0);

@@ -37,6 +37,16 @@ typedef signed long long		s64;
 
 void QOILZ_LzMemCpy(byte *dst, byte *src, int sz);
 
+void *qoi_malloc(int sz)
+{
+	return(bgbcc_tmalloc2("_mm_qoibuf", sz));
+}
+
+void qoi_free(void *ptr)
+{
+	bgbcc_free2(ptr);
+}
+
 int QOI_DecImageBufferFlat(
 	byte *imgbuf, byte *inbuf, int *rxs, int *rys, int decfl)
 {
@@ -94,7 +104,7 @@ int QOI_DecImageBufferFlat(
 	}
 
 	n=xs*ys;
-//	imgbuf=malloc(n*4);
+//	imgbuf=qoi_malloc(n*4);
 	ct=imgbuf;
 	cte=ct+n*4;
 	
@@ -286,7 +296,7 @@ byte *QOI_DecImageBuffer(byte *inbuf, int *rxs, int *rys)
 		return(NULL);
 	}
 	
-	imgbuf=malloc(xs*ys*4);
+	imgbuf=qoi_malloc(xs*ys*4);
 	QOI_DecImageBufferFlat(imgbuf, inbuf, &xs, &ys, 0);
 	if(rxs) *rxs=xs;
 	if(rys) *rys=ys;
@@ -524,7 +534,7 @@ byte *QOILZ_DecImageBuffer(byte *inbuf, int *rxs, int *rys)
 		(inbuf[23]<< 0) ;
 
 	sz1=14+sz0;
-	tbuf=malloc(sz1+256);
+	tbuf=qoi_malloc(sz1+256);
 	memcpy(tbuf, inbuf, 14);
 	tbuf[2]='i';
 	tbuf[3]='f';
@@ -586,7 +596,7 @@ int QOILZ_DecImageBufferFlat(
 		(inbuf[23]<< 0) ;
 
 	sz1=14+sz0;
-	tbuf=malloc(sz1+256);
+	tbuf=qoi_malloc(sz1+256);
 	memcpy(tbuf, inbuf, 14);
 	tbuf[2]='i';
 	tbuf[3]='f';
@@ -617,7 +627,7 @@ u16 *QOILZ_DecImageBuffer555(byte *inbuf, int *rxs, int *rys)
 		return(NULL);
 		
 	n=xs*ys;
-	i2buf=malloc(xs*ys*2);
+	i2buf=qoi_malloc(xs*ys*2);
 	
 	cs=i1buf; cse=i1buf+n*4;
 	ct=i2buf;
@@ -650,7 +660,7 @@ u16 *QOILZ_DecImageBuffer555(byte *inbuf, int *rxs, int *rys)
 	}
 #endif
 	
-	free(i1buf);
+	qoi_free(i1buf);
 	
 	*rxs=xs;
 	*rys=ys;

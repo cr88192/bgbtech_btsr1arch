@@ -39,36 +39,40 @@ ccxl_label BGBCC_CCXL_LabelFromName(BGBCC_TransState *ctx, char *name)
 {
 	int i;
 	
-	for(i=0; i<ctx->cur_func->n_goto; i++)
+	for(i=0; i<ctx->cur_func->ext->n_goto; i++)
 	{
-		if(!strcmp(ctx->cur_func->goto_name[i], name))
-			return(ctx->cur_func->goto_lbl[i]);
+		if(!strcmp(ctx->cur_func->ext->goto_name[i], name))
+			return(ctx->cur_func->ext->goto_lbl[i]);
 	}
 	
-	if(!ctx->cur_func->goto_name)
+	if(!ctx->cur_func->ext->goto_name)
 	{
 //		i=256;
 		i=16;
-		ctx->cur_func->goto_name=bgbcc_malloc(i*sizeof(char *));
-		ctx->cur_func->goto_lbl=bgbcc_malloc(i*sizeof(ccxl_label));
-		ctx->cur_func->n_goto=0;
-		ctx->cur_func->m_goto=i;
+//		ctx->cur_func->ext->goto_name=bgbcc_malloc(i*sizeof(char *));
+		ctx->cur_func->ext->goto_name=bgbcc_tmalloc("_ccxl_gotoname_p",
+			i*sizeof(char *));
+//		ctx->cur_func->goto_lbl=bgbcc_malloc(i*sizeof(ccxl_label));
+		ctx->cur_func->ext->goto_lbl=bgbcc_tmalloc("_ccxl_gotolbl_p",
+			i*sizeof(ccxl_label));
+		ctx->cur_func->ext->n_goto=0;
+		ctx->cur_func->ext->m_goto=i;
 	}
 	
-	if((ctx->cur_func->n_goto+1)>=ctx->cur_func->m_goto)
+	if((ctx->cur_func->ext->n_goto+1)>=ctx->cur_func->ext->m_goto)
 	{
-		i=ctx->cur_func->m_goto+(ctx->cur_func->m_goto>>1);
-		ctx->cur_func->goto_name=bgbcc_realloc(
-			ctx->cur_func->goto_name, i*sizeof(char *));
-		ctx->cur_func->goto_lbl=bgbcc_realloc(
-			ctx->cur_func->goto_lbl, i*sizeof(ccxl_label));
-		ctx->cur_func->m_goto=i;
+		i=ctx->cur_func->ext->m_goto+(ctx->cur_func->ext->m_goto>>1);
+		ctx->cur_func->ext->goto_name=bgbcc_realloc(
+			ctx->cur_func->ext->goto_name, i*sizeof(char *));
+		ctx->cur_func->ext->goto_lbl=bgbcc_realloc(
+			ctx->cur_func->ext->goto_lbl, i*sizeof(ccxl_label));
+		ctx->cur_func->ext->m_goto=i;
 	}
 	
-	i=ctx->cur_func->n_goto++;
-	ctx->cur_func->goto_name[i]=bgbcc_strdup(name);
-	ctx->cur_func->goto_lbl[i]=BGBCC_CCXL_GenSym(ctx);
-	return(ctx->cur_func->goto_lbl[i]);
+	i=ctx->cur_func->ext->n_goto++;
+	ctx->cur_func->ext->goto_name[i]=bgbcc_strdup(name);
+	ctx->cur_func->ext->goto_lbl[i]=BGBCC_CCXL_GenSym(ctx);
+	return(ctx->cur_func->ext->goto_lbl[i]);
 }
 #endif
 
@@ -110,7 +114,9 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
 	if(*sig=='(')
 	{
 		obj=BGBCC_CCXL_AllocLiteral(ctx);
-		obj->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+//		obj->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+		obj->decl=bgbcc_tmalloc("_ccxl_reginfo_t",
+			sizeof(BGBCC_CCXL_RegisterInfo));
 		obj->decl->regtype=CCXL_LITID_FUNCTION;
 		obj->littype=CCXL_LITID_FUNCTION;
 //		obj->littype=CCXL_LITID_RAWSIG;
@@ -127,7 +133,9 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetLiteralRawSig(
 			memcpy(tb0, s0, j);
 
 			obj1=BGBCC_CCXL_AllocLiteral(ctx);
-			obj1->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+//			obj1->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+			obj1->decl=bgbcc_tmalloc("_ccxl_reginfo_t",
+				sizeof(BGBCC_CCXL_RegisterInfo));
 			obj1->decl->regtype=CCXL_LITID_VAR;
 			obj1->littype=CCXL_LITID_VAR;
 
@@ -1059,7 +1067,7 @@ int BGBCC_CCXL_TryGetOffsetofSig(
 		(st->decl->fxmsize==st->decl->fxnsize))
 	{
 		fn=BGBCC_CCXL_LookupStructFieldID(ctx, st, tname);
-		fi=st->decl->fields[fn];
+		fi=st->decl->ext->fields[fn];
 
 		foffs=-1;
 		fsoffs=0;
@@ -1069,7 +1077,8 @@ int BGBCC_CCXL_TryGetOffsetofSig(
 
 		if(*cs)
 		{
-			fsoffs=BGBCC_CCXL_TryGetOffsetofSig(ctx, fi->sig, cs);
+			fsoffs=BGBCC_CCXL_TryGetOffsetofSig(ctx,
+				bgbcc_strtab_i(fi->sig_ix), cs);
 		}
 
 		if((foffs>=0) && (fsoffs>=0))
@@ -1153,7 +1162,7 @@ int BGBCC_CCXL_TryGetSizeofName(BGBCC_TransState *ctx, char *name)
 			i=gbl->value.val&CCXL_REGINT_MASK;
 			litobj=ctx->literals[i];
 
-			asz=litobj->decl->n_listdata;
+			asz=litobj->decl->ext->n_listdata;
 
 			sz=sz1*asz;
 			if(sz>0)

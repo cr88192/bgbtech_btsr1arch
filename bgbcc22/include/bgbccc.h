@@ -1103,14 +1103,16 @@ int sz_strtab, msz_strtab;
 char *wstrtab;
 int sz_wstrtab, msz_wstrtab;
 
-BGBCC_CCXL_RegisterInfo *reginfo_free;
+BGBCC_CCXL_RegisterInfo		*reginfo_free;
+BGBCC_CCXL_RegisterExtInfo	*regextinfo_free;
 
 BGBCC_CCXL_LiteralInfo *cur_objstack[256];
 BGBCC_CCXL_LiteralInfo *cur_obj;
 int cur_objstackpos;
 
-BGBCC_CCXL_VirtOp *virtop_free;
-BGBCC_CCXL_VirtTr *virttr_free;
+BGBCC_CCXL_VirtOp		*virtop_free;
+BGBCC_CCXL_VirtTr		*virttr_free;
+BGBCC_CCXL_VirtOpTrim	*virtoptr_free;
 
 char *imgname;
 char *imgbasename;
@@ -1130,7 +1132,7 @@ BGBCC_CCXL_BackendFuncs_vt *next;
 ccxl_status (*SetupParserForArch)(BGBCP_ParseState *ctx);
 ccxl_status (*SetupContextForArch)(BGBCC_TransState *ctx);
 ccxl_status (*FlattenImage)(BGBCC_TransState *ctx,
-	byte *obuf, int *rosz, fourcc imgfmt);
+	byte **robuf, int *rosz, fourcc imgfmt);
 ccxl_status (*EndFunction)(BGBCC_TransState *ctx,
 	BGBCC_CCXL_LiteralInfo *obj);
 ccxl_status (*LoadBufferDLL)(BGBCC_TransState *ctx,

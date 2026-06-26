@@ -348,7 +348,7 @@ static Elf32_Context *elf32_decompose_ctx(byte *buf, int sz)
 	int i, j, k, l;
 
 
-	ctx=malloc(sizeof(Elf32_Context));
+	ctx=bgbcc_malloc2(sizeof(Elf32_Context));
 	memset(ctx, 0, sizeof(Elf32_Context));
 
 	ctx->buf=buf;
@@ -488,8 +488,8 @@ BGBCC_Object *BGBCC_ELF_LoadObjectBuf(char *name, byte *buf, int sz)
 	szt=(szt+15)&(~15);
 	szd=(szd+15)&(~15);
 
-	bt=malloc(szt);
-	bd=malloc(szd);
+	bt=bgbcc_malloc2(szt);
+	bd=bgbcc_malloc2(szd);
 
 	memset(bt, 0x90, szt);
 	memset(bd, 0x00, szd);
@@ -598,11 +598,11 @@ static int main(int argc, char *argv[])
 	fseek(fd, 0, 2);
 	sz=ftell(fd);
 	fseek(fd, 0, 0);
-	buf=malloc(sz);
+	buf=bgbcc_malloc2(sz);
 	fread(buf, 1, sz, fd);
 	fclose(fd);
 
-	ctx=malloc(sizeof(Elf32_Context));
+	ctx=bgbcc_malloc2(sizeof(Elf32_Context));
 	memset(ctx, 0, sizeof(Elf32_Context));
 
 	ctx->buf=buf;

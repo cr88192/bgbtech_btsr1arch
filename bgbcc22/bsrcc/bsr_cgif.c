@@ -468,7 +468,7 @@ char *BGBCC_BSRC_DebugRegToStr(BGBCC_TransState *ctx,
 	{
 		i=(int)(reg.val&CCXL_REGID_REGMASK);
 //		i=(int)(reg.val);
-		s0=ctx->reg_globals[i]->name;
+		s0=bgbcc_strtab_i(ctx->reg_globals[i]->name_ix);
 		if(!s0)s0="?";
 		sprintf(tb, "G%d(%s)", i, s0);
 		return(bgbcc_rstrdup(tb));
@@ -932,7 +932,7 @@ ccxl_status BGBCC_BSRC_PrintVirtTr(BGBCC_TransState *ctx,
 
 	for(i=0; i<tr->n_ops; i++)
 	{
-		BGBCC_BSRC_PrintVirtOp(ctx, sctx, obj, obj->vop[tr->b_ops+i]);
+		BGBCC_BSRC_PrintVirtOp(ctx, sctx, obj, obj->ext->vop[tr->b_ops+i]);
 	}
 
 	return(0);
@@ -958,10 +958,10 @@ ccxl_status BGBCC_BSRC_CompileVirtTr(BGBCC_TransState *ctx,
 	for(i=0; i<tr->n_ops; i++)
 	{
 		sctx->tr_opnum=tr->b_ops+i;
-		vop=obj->vop[tr->b_ops+i];
+		vop=obj->ext->vop[tr->b_ops+i];
 		vop1=NULL;
 		if((i+1)<tr->n_ops)
-			vop1=obj->vop[tr->b_ops+i+1];
+			vop1=obj->ext->vop[tr->b_ops+i+1];
 
 #if 0
 		/* Hacky Special Case Opt: arr[expr+imm] */
@@ -1036,11 +1036,11 @@ ccxl_status BGBCC_BSRC_BuildFunctionBody(
 	
 	bo=BGBCC_BSR_EmitGetOffs(sctx);
 
-	for(i=0; i<obj->n_vtr; i++)
+	for(i=0; i<obj->ext->n_vtr; i++)
 	{
 		bo1=BGBCC_BSR_EmitGetOffs(sctx);
 		sctx->tr_trnum=i;
-		BGBCC_BSRC_CompileVirtTr(ctx, sctx, obj, obj->vtr[i], i);
+		BGBCC_BSRC_CompileVirtTr(ctx, sctx, obj, obj->ext->vtr[i], i);
 		co1=BGBCC_BSR_EmitGetOffs(sctx);
 		
 		if(i<16)
@@ -1075,14 +1075,14 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 	if(obj->regflags&BGBCC_REGFL_CULL)
 	{
 		fprintf(sctx->cgen_log, "BGBCC_BSRC_BuildFunction: Culled %s\n",
-			obj->name);
+			bgbcc_strtab_i(obj->name_ix));
 		fflush(sctx->cgen_log);
 
 		return(0);
 	}
 
 #if 0
-	if((obj->flagsint&BGBCC_TYFL_DLLIMPORT) && (obj->n_vtr<=0))
+	if((obj->flagsint&BGBCC_TYFL_DLLIMPORT) && (obj->ext->n_vtr<=0))
 	{
 		l0=obj->fxoffs;
 		if(l0<=0)
@@ -1119,12 +1119,12 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 	if(sctx->cgen_log)
 	{
 		fprintf(sctx->cgen_log, "BGBCC_BSRC_BuildFunction: Begin %s\n",
-			obj->name);
+			bgbcc_strtab_i(obj->name_ix));
 		fflush(sctx->cgen_log);
 
-		for(i=0; i<obj->n_vtr; i++)
+		for(i=0; i<obj->ext->n_vtr; i++)
 		{
-			BGBCC_BSRC_PrintVirtTr(ctx, sctx, obj, obj->vtr[i], i);
+			BGBCC_BSRC_PrintVirtTr(ctx, sctx, obj, obj->ext->vtr[i], i);
 		}
 	}
 
@@ -1133,7 +1133,7 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 	if(l0<=0)
 	{
 //		l0=BGBCC_BSR_GenLabel(sctx);
-		l0=BGBCC_BSR_GetNamedLabel(sctx, obj->name);
+		l0=BGBCC_BSR_GetNamedLabel(sctx, bgbcc_strtab_i(obj->name_ix));
 		obj->fxoffs=l0;
 	}
 	
@@ -1141,7 +1141,7 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 	if(sctx->cgen_log)
 	{
 		fprintf(sctx->cgen_log, "BGBCC_BSRC_BuildFunction: BegSim %s\n",
-			obj->name);
+			bgbcc_strtab_i(obj->name_ix));
 		fflush(sctx->cgen_log);
 	}
 
@@ -1201,10 +1201,10 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 #if 0
 		BGBCC_BSRC_EmitFrameProlog(ctx, sctx, obj);
 		
-		for(i=0; i<obj->n_vtr; i++)
+		for(i=0; i<obj->ext->n_vtr; i++)
 		{
 			sctx->tr_trnum=i;
-			BGBCC_BSRC_CompileVirtTr(ctx, sctx, obj, obj->vtr[i], i);
+			BGBCC_BSRC_CompileVirtTr(ctx, sctx, obj, obj->ext->vtr[i], i);
 		}
 		
 		BGBCC_BSRC_EmitFrameEpilog(ctx, sctx, obj);
@@ -1290,7 +1290,7 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 	if(sctx->cgen_log)
 	{
 		fprintf(sctx->cgen_log, "BGBCC_BSRC_BuildFunction: EndSim %s np=%d\n",
-			obj->name, np);
+			bgbcc_strtab_i(obj->name_ix), np);
 		fflush(sctx->cgen_log);
 	}
 #endif
@@ -1330,10 +1330,10 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 #if 0
 	BGBCC_BSRC_EmitFrameProlog(ctx, sctx, obj);
 	
-	for(i=0; i<obj->n_vtr; i++)
+	for(i=0; i<obj->ext->n_vtr; i++)
 	{
 		sctx->tr_trnum=i;
-		BGBCC_BSRC_CompileVirtTr(ctx, sctx, obj, obj->vtr[i], i);
+		BGBCC_BSRC_CompileVirtTr(ctx, sctx, obj, obj->ext->vtr[i], i);
 	}
 	
 	BGBCC_BSRC_EmitFrameEpilog(ctx, sctx, obj);
@@ -1371,7 +1371,7 @@ ccxl_status BGBCC_BSRC_BuildFunction(BGBCC_TransState *ctx,
 	if(sctx->cgen_log)
 	{
 		fprintf(sctx->cgen_log, "BGBCC_BSRC_BuildFunction: End %s\n",
-			obj->name);
+			bgbcc_strtab_i(obj->name_ix));
 		fflush(sctx->cgen_log);
 	}
 
@@ -1408,7 +1408,7 @@ ccxl_status BGBCC_BSRC_BuildGlobal_EmitLitAsType(
 //			asz=BGBCC_CCXL_TypeGetArraySize(ctx, type);
 			asz=BGBCC_CCXL_TypeGetArrayDimSize(ctx, type);
 
-			n=litobj->decl->n_listdata;
+			n=litobj->decl->ext->n_listdata;
 			if((asz>0) && (asz<n))
 			{
 				n=asz;
@@ -1417,7 +1417,7 @@ ccxl_status BGBCC_BSRC_BuildGlobal_EmitLitAsType(
 			for(i=0; i<n; i++)
 			{
 				BGBCC_BSRC_BuildGlobal_EmitLitAsType(ctx, sctx,
-					tty, litobj->decl->listdata[i]);
+					tty, litobj->decl->ext->listdata[i]);
 			}
 
 			BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
@@ -1719,22 +1719,22 @@ ccxl_status BGBCC_BSRC_BuildGlobal_EmitLitAsType(
 
 			if(littyobj && (littyobj->littype==CCXL_LITID_STRUCT))
 			{
-				n=littyobj->decl->n_fields;
-				if(litobj->decl->n_listdata<n)
-					n=litobj->decl->n_listdata;
+				n=littyobj->decl->ext->n_fields;
+				if(litobj->decl->ext->n_listdata<n)
+					n=litobj->decl->ext->n_listdata;
 				
 				for(i=0; i<n; i++)
 				{
 					BGBCC_BSRC_BuildGlobal_EmitLitAsType(ctx, sctx,
-						littyobj->decl->fields[i]->type,
-						litobj->decl->listdata[i]);
+						littyobj->decl->ext->fields[i]->type,
+						litobj->decl->ext->listdata[i]);
 				}
 
 				BGBCC_CCXL_GetRegForIntValue(ctx, &treg, 0);
-				for(i=n; i<littyobj->decl->n_fields; i++)
+				for(i=n; i<littyobj->decl->ext->n_fields; i++)
 				{
 					BGBCC_BSRC_BuildGlobal_EmitLitAsType(ctx, sctx,
-						littyobj->decl->fields[i]->type, treg);
+						littyobj->decl->ext->fields[i]->type, treg);
 				}
 				return(1);
 			}
@@ -1783,7 +1783,7 @@ ccxl_status BGBCC_BSRC_BuildGlobal(BGBCC_TransState *ctx,
 	{
 //		lbl=BGBCC_BSR_LookupNamedLabel(ctx, name);
 //		l0=BGBCC_BSR_GenLabel(sctx);
-		l0=BGBCC_BSR_GetNamedLabel(sctx, obj->name);
+		l0=BGBCC_BSR_GetNamedLabel(sctx, bgbcc_strtab_i(obj->name_ix));
 		obj->fxoffs=l0;
 	}
 	
@@ -2637,15 +2637,17 @@ ccxl_status BGBCC_BSRC_ApplyImageRelocs(
 }
 
 ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,
-	byte *obuf, int *rosz, fourcc imgfmt)
+	byte **robuf, int *rosz, fourcc imgfmt)
 {
 	BGBCC_BSR_Context *sctx;
 	BGBCC_CCXL_RegisterInfo *obj;
 	BGBCC_CCXL_LiteralInfo *litobj;
+	byte *obuf;
 	int l0;
 	u32 addr;
 	int i, j, k;
 
+	obuf=*robuf;
 	sctx=ctx->uctx;
 	
 	sctx->stat_tot_dq0=0;
@@ -2714,61 +2716,61 @@ ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,
 //			continue;
 		}
 
-		if(obj->name)
+		if(obj->name_ix)
 		{
-			if(!strncmp(obj->name, "__", 2))
+			if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__", 2))
 			{
 				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_VARIANT))
 				{
-					if(!strncmp(obj->name, "__lva_", 6))
+					if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__lva_", 6))
 						continue;
 				}
 
 				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_INT128))
 				{
-					if(!strncmp(obj->name, "__xli_", 6))
+					if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__xli_", 6))
 						continue;
 				}
 
 				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_FLOAT128))
 				{
-					if(!strncmp(obj->name, "__xlf_", 6))
+					if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__xlf_", 6))
 						continue;
 				}
 
 				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_FLOAT_FPU))
 				{
-					if(!strncmp(obj->name, "__sfp_", 6))
+					if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__sfp_", 6))
 						continue;
-					if(!strncmp(obj->name, "__lfp_", 6))
+					if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__lfp_", 6))
 						continue;
 				}
 				
 				if(!(sctx->fpu_soft) && !(sctx->fpu_lite))
 				{
-					if(!strncmp(obj->name, "__sfp_", 6))
+					if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__sfp_", 6))
 						continue;
 				}
 
 				if(!(sctx->fpu_lite))
 				{
-					if(!strncmp(obj->name, "__lfp_", 6))
+					if(!strncmp(bgbcc_strtab_i(obj->name_ix), "__lfp_", 6))
 						continue;
 				}
 
 				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_IDIV_VAR))
 				{
-					if(!strcmp(obj->name, "__udivsi3"))
+					if(!strcmp(bgbcc_strtab_i(obj->name_ix), "__udivsi3"))
 						continue;
-					if(!strcmp(obj->name, "__sdivsi3"))
+					if(!strcmp(bgbcc_strtab_i(obj->name_ix), "__sdivsi3"))
 						continue;
 				}
 				
 				if(!(ctx->ccxl_tyc_seen&BGBCC_TYCSEEN_IMOD_VAR))
 				{
-					if(!strcmp(obj->name, "__umodsi3"))
+					if(!strcmp(bgbcc_strtab_i(obj->name_ix), "__umodsi3"))
 						continue;
-					if(!strcmp(obj->name, "__smodsi3"))
+					if(!strcmp(bgbcc_strtab_i(obj->name_ix), "__smodsi3"))
 						continue;
 				}
 				
@@ -2776,7 +2778,7 @@ ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,
 				continue;
 			}
 
-			if(!strcmp(obj->name, "main"))
+			if(!strcmp(bgbcc_strtab_i(obj->name_ix), "main"))
 			{
 				BGBCC_CCXL_GlobalMarkReachable(ctx, obj);
 				continue;
@@ -2818,7 +2820,7 @@ ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,
 		if(!obj)
 			continue;
 
-		if((obj->regtype==CCXL_LITID_FUNCTION) && (obj->vtr))
+		if((obj->regtype==CCXL_LITID_FUNCTION) && obj->ext && (obj->ext->vtr))
 		{
 			BGBCC_BSRC_BuildFunction(ctx, obj);
 			continue;

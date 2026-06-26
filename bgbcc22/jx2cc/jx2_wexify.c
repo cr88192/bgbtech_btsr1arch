@@ -1189,15 +1189,25 @@ int BGBCC_JX2_RemapReg5Xn(
 			isxn=3;
 	}
 
+	if(!isxn && (sctx->no_wexify&2))
+	{
+		/* CPU natively uses 128-bit register ports.
+		 * So, 64-bit accesses may also alias if same base 128-bit reg.
+		 */
+		isxn=8;
+	}
+
 	if(isxn)
 	{
 //		if((xn&1) && (isxn&1))
-		if(xn&1)
+//		if(xn&1)
+		if((xn&1) && !(isxn&8))
 		{
 			rb=(xn&0x1E)|32;
 		}else
 		{
-			rb=xn;
+//			rb=xn;
+			rb=xn&(~1);
 		}
 
 		*rrl=rb+0;
@@ -5066,7 +5076,7 @@ ccxl_status BGBCC_JX2_CheckWexify(
 		return(0);
 	}
 	
-	if(sctx->no_wexify)
+	if(sctx->no_wexify&1)
 		return(0);
 
 //	return(0);
@@ -5124,7 +5134,7 @@ ccxl_status BGBCC_JX2_BeginWex(
 	if(sctx->optmode==BGBCC_OPT_SIZE)
 		return(0);
 
-	if(sctx->no_wexify)
+	if(sctx->no_wexify&1)
 		return(0);
 
 //	return(0);

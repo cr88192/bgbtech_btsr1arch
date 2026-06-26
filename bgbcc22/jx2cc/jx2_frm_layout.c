@@ -31,12 +31,12 @@ int BGBCC_JX2C_MergeGlobalSetMask(BGBCC_TransState *ctx,
 	int i, j, k, n;
 	if(!sobj)
 		return(0);
-	if(!sobj->gblsetmask)
+	if(!sobj->ext->gblsetmask)
 		return(0);
 
 	if(!dobj)
 		return(0);
-	if(!dobj->gblsetmask)
+	if(!dobj->ext->gblsetmask)
 		return(0);
 
 	if(!(sctx->is_simpass&64))
@@ -45,7 +45,7 @@ int BGBCC_JX2C_MergeGlobalSetMask(BGBCC_TransState *ctx,
 	n=((ctx->n_reg_globals+63)/64);
 	
 	for(i=0; i<n; i++)
-		{ dobj->gblsetmask[i]|=sobj->gblsetmask[i]; }
+		{ dobj->ext->gblsetmask[i]|=sobj->ext->gblsetmask[i]; }
 
 	return(1);
 }
@@ -58,17 +58,19 @@ int BGBCC_JX2C_InvalidateGlobalSetMask(BGBCC_TransState *ctx,
 
 	if(!dobj)
 		return(0);
-	if(!dobj->gblsetmask)
+	if(!dobj->ext)
+		return(0);
+	if(!dobj->ext->gblsetmask)
 		return(0);
 
-	if(dobj->gblsetmask[0]&1)
+	if(dobj->ext->gblsetmask[0]&1)
 		return(0);
 
 	if(!(sctx->is_simpass&64))
 		return(0);
 
 	n=((ctx->n_reg_globals+63)/64);
-	memset(dobj->gblsetmask, 0xFF, n*8);
+	memset(dobj->ext->gblsetmask, 0xFF, n*8);
 
 	return(1);
 }
@@ -82,7 +84,7 @@ int BGBCC_JX2C_MarkGlobalSetMask(BGBCC_TransState *ctx,
 
 	if(!obj)
 		return(0);
-	if(!obj->gblsetmask)
+	if(!obj->ext->gblsetmask)
 		return(0);
 
 	if(BGBCC_CCXL_IsRegGlobalP(ctx, reg))
@@ -91,7 +93,7 @@ int BGBCC_JX2C_MarkGlobalSetMask(BGBCC_TransState *ctx,
 		
 		if(i>0)
 		{
-			obj->gblsetmask[i>>6]|=(1ULL<<(i&63));
+			obj->ext->gblsetmask[i>>6]|=(1ULL<<(i&63));
 		}
 	}
 	return(0);
@@ -108,7 +110,7 @@ int BGBCC_JX2C_CheckGlobalSetMask(BGBCC_TransState *ctx,
 		
 		if(i>0)
 		{
-			if(ctx->cur_func->gblsetmask[i>>6]&(1ULL<<(i&63)))
+			if(ctx->cur_func->ext->gblsetmask[i>>6]&(1ULL<<(i&63)))
 				return(1);
 		}
 	}
@@ -122,7 +124,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	BGBCC_CCXL_VirtOp *vop, *vop1;
 	BGBCC_CCXL_VirtTr *vtr;
 	u32 localmap[16];
-	char *fname;
+	char *fname, *s0;
 	ccxl_register reg, reg1;
 	ccxl_type tty;
 	s64 regfl, regfl2;
@@ -146,16 +148,16 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	for(i=0; i<256; i++)
 		bgbcc_jx2cc_framevreghash[i]=-1;
 
-	for(i=0; i<obj->n_vop; i++)
+	for(i=0; i<obj->ext->n_vop; i++)
 	{
-		vop=obj->vop[i];
+		vop=obj->ext->vop[i];
 		vop->tgt_mult=0;
 	}
 
 	kf=0;
-	for(i=0; i<obj->n_vop; i++)
+	for(i=0; i<obj->ext->n_vop; i++)
 	{
-		vop=obj->vop[i];
+		vop=obj->ext->vop[i];
 
 		if(vop->opn==CCXL_VOP_DBGFN)
 		{
@@ -173,8 +175,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			(vop->opn==CCXL_VOP_OBJCALL) )
 		{
 			j=vop->imm.call.na*2;
-			if(j>obj->n_cargs)
-				obj->n_cargs=j;
+			if(j>obj->ext->n_cargs)
+				obj->ext->n_cargs=j;
 		}
 
 		if(vop->opn==CCXL_VOP_LDAVAR)
@@ -186,13 +188,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 			if(BGBCC_CCXL_IsRegTempP(ctx, reg))
 			{
-				obj->regs[j]->regflags|=BGBCC_REGFL_ALIASPTR;
-				obj->regs[j]->regflags|=BGBCC_REGFL_INITIALIZED;
+				obj->ext->regs[j]->regflags|=BGBCC_REGFL_ALIASPTR;
+				obj->ext->regs[j]->regflags|=BGBCC_REGFL_INITIALIZED;
 			}
 			if(BGBCC_CCXL_IsRegArgP(ctx, reg))
-				{ obj->args[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
+				{ obj->ext->args[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
 			if(BGBCC_CCXL_IsRegLocalP(ctx, reg))
-				{ obj->locals[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
+				{ obj->ext->locals[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
 		}
 
 		if(	(vop->opn==CCXL_VOP_STIX) ||
@@ -205,13 +207,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 			if(BGBCC_CCXL_IsRegTempP(ctx, reg))
 			{
-//				obj->regs[j]->regflags|=BGBCC_REGFL_ALIASPTR;
-				obj->regs[j]->regflags|=BGBCC_REGFL_INITIALIZED;
+//				obj->ext->regs[j]->regflags|=BGBCC_REGFL_ALIASPTR;
+				obj->ext->regs[j]->regflags|=BGBCC_REGFL_INITIALIZED;
 			}
 //			if(BGBCC_CCXL_IsRegArgP(ctx, reg))
-//				{ obj->args[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
+//				{ obj->ext->args[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
 //			if(BGBCC_CCXL_IsRegLocalP(ctx, reg))
-//				{ obj->locals[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
+//				{ obj->ext->locals[j]->regflags|=BGBCC_REGFL_ALIASPTR; }
 
 			obj->regflags|=BGBCC_REGFL_HASSTIX;
 		}
@@ -235,16 +237,16 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				continue;
 
 			if(BGBCC_CCXL_IsRegTempP(ctx, reg))
-				{ obj->regs[j]->regflags|=BGBCC_REGFL_INITIALIZED; }
+				{ obj->ext->regs[j]->regflags|=BGBCC_REGFL_INITIALIZED; }
 		}
 
 		if((vop->opn==CCXL_VOP_JMP) ||
 			(vop->opn==CCXL_VOP_JCMP) ||
 			(vop->opn==CCXL_VOP_JCMP_ZERO))
 		{
-			for(j=0; j<obj->n_vop; j++)
+			for(j=0; j<obj->ext->n_vop; j++)
 			{
-				vop1=obj->vop[j];
+				vop1=obj->ext->vop[j];
 				if(vop1->opn!=CCXL_VOP_LABEL)
 					continue;
 				if(vop->imm.ui!=vop1->imm.ui)
@@ -257,14 +259,14 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	
 	if(!(sctx->is_simpass))
 	{
-		sctx->stat_funarg_exp[obj->n_cargs/2]++;
+		sctx->stat_funarg_exp[obj->ext->n_cargs/2]++;
 		sctx->stat_funarg_tot++;
 	}
 
 	k=0;
-	for(i=0; i<obj->n_vop; i++)
+	for(i=0; i<obj->ext->n_vop; i++)
 	{
-		vop=obj->vop[i];
+		vop=obj->ext->vop[i];
 		if(vop->opn==CCXL_VOP_LABEL)
 		{
 //			k=vop->tgt_mult;
@@ -279,36 +281,36 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		}
 	}
 
-	for(i=0; i<obj->n_regs; i++)
+	for(i=0; i<obj->ext->n_regs; i++)
 	{
 		if((sctx->is_simpass&15)==1)
-			obj->regs[i]->regflags&=~BGBCC_REGFL_CULL;
-		obj->regs[i]->fxoffs=-1;
-		obj->regs[i]->fxmoffs=-1;
+			obj->ext->regs[i]->regflags&=~BGBCC_REGFL_CULL;
+		obj->ext->regs[i]->fxoffs=-1;
+		obj->ext->regs[i]->fxmoffs=-1;
 	}
 
-	for(i=0; i<obj->n_args; i++)
+	for(i=0; i<obj->ext->n_args; i++)
 	{
 		if((sctx->is_simpass&15)==1)
-			obj->args[i]->regflags&=~BGBCC_REGFL_CULL;
-		obj->args[i]->fxoffs=-1;
-		obj->args[i]->fxmoffs=-1;
+			obj->ext->args[i]->regflags&=~BGBCC_REGFL_CULL;
+		obj->ext->args[i]->fxoffs=-1;
+		obj->ext->args[i]->fxmoffs=-1;
 	}
 
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
 		if((sctx->is_simpass&15)==1)
-			obj->locals[i]->regflags&=~BGBCC_REGFL_CULL;
-		obj->locals[i]->fxoffs=-1;
-		obj->locals[i]->fxmoffs=-1;
+			obj->ext->locals[i]->regflags&=~BGBCC_REGFL_CULL;
+		obj->ext->locals[i]->fxoffs=-1;
+		obj->ext->locals[i]->fxmoffs=-1;
 
-		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
-			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
+		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
+			{ obj->ext->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
 
-//		if(obj->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
-//			{ obj->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
+//		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_ACCESSED)
+//			{ obj->ext->locals[i]->regflags&=~BGBCC_REGFL_CULL; }
 //		else
-//			{ obj->locals[i]->regflags|=BGBCC_REGFL_CULL; }
+//			{ obj->ext->locals[i]->regflags|=BGBCC_REGFL_CULL; }
 	}
 
 #if 1
@@ -316,9 +318,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	obj->regflags&=~BGBCC_REGFL_HASLCLALIAS;
 
 	tsz=0;
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		tty=obj->locals[i]->type;
+		tty=obj->ext->locals[i]->type;
 
 		if(	BGBCC_CCXL_TypeArrayP(ctx, tty) ||
 			BGBCC_CCXL_TypeValueObjectP(ctx, tty))
@@ -335,13 +337,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		msz=16384/k;
 	}
 
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		if(obj->locals[i]->regflags&BGBCC_REGFL_CULL)
+		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_CULL)
 			continue;
-		if(obj->locals[i]->regflags&BGBCC_REGFL_ALIASPTR)
+		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_ALIASPTR)
 		{
-			tty=obj->locals[i]->type;
+			tty=obj->ext->locals[i]->type;
 
 			if(BGBCC_CCXL_TypeArrayP(ctx, tty))
 			{
@@ -355,7 +357,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				{
 					BGBCC_CCXL_TagWarn(ctx, CCXL_TERR_AUTOALLOCA);
 					obj->regflags|=BGBCC_REGFL_ALLOCA;
-					obj->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
+					obj->ext->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
 				}
 			}
 
@@ -366,7 +368,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				{
 					BGBCC_CCXL_TagWarn(ctx, CCXL_TERR_AUTOALLOCA);
 					obj->regflags|=BGBCC_REGFL_ALLOCA;
-					obj->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
+					obj->ext->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
 				}
 			}
 
@@ -375,19 +377,19 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			continue;
 		}
 			
-		tty=obj->locals[i]->type;
+		tty=obj->ext->locals[i]->type;
 
 		if(BGBCC_CCXL_TypeFloat16P(ctx, tty) ||
 			BGBCC_CCXL_TypeBFloat16P(ctx, tty))
 		{
 			tty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
-			obj->locals[i]->type=tty;
+			obj->ext->locals[i]->type=tty;
 		}
 		
 		if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 		{
 			tty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
-			obj->locals[i]->type=tty;
+			obj->ext->locals[i]->type=tty;
 		}
 
 		if(BGBCC_CCXL_TypeArrayP(ctx, tty))
@@ -402,7 +404,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			{
 				BGBCC_CCXL_TagWarn(ctx, CCXL_TERR_AUTOALLOCA);
 				obj->regflags|=BGBCC_REGFL_ALLOCA;
-				obj->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
+				obj->ext->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
 			}
 		}
 
@@ -413,7 +415,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			{
 				BGBCC_CCXL_TagWarn(ctx, CCXL_TERR_AUTOALLOCA);
 				obj->regflags|=BGBCC_REGFL_ALLOCA;
-				obj->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
+				obj->ext->locals[i]->regflags|=BGBCC_REGFL_ALLOCA;
 			}
 		}
 
@@ -423,7 +425,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			sctx->use_egpr|=1;
 		}
 
-		if(obj->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
+		if(obj->ext->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
 		{
 			sctx->use_egpr|=1;
 			obj->regflags|=BGBCC_REGFL_GOFAST;
@@ -431,30 +433,30 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	}
 
 #if 1
-	for(i=0; i<obj->n_regs; i++)
+	for(i=0; i<obj->ext->n_regs; i++)
 	{
-		if(obj->regs[i]->regflags&BGBCC_REGFL_CULL)
+		if(obj->ext->regs[i]->regflags&BGBCC_REGFL_CULL)
 			continue;
-		if(obj->regs[i]->regflags&BGBCC_REGFL_ALIASPTR)
+		if(obj->ext->regs[i]->regflags&BGBCC_REGFL_ALIASPTR)
 		{
 			obj->regflags|=BGBCC_REGFL_HASLCLALIAS;
 			continue;
 		}
 			
-		tty=obj->regs[i]->type;
+		tty=obj->ext->regs[i]->type;
 
 		if(BGBCC_CCXL_TypeFloat16P(ctx, tty) ||
 			BGBCC_CCXL_TypeBFloat16P(ctx, tty))
 		{
 			tty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
-			obj->regs[i]->type=tty;
+			obj->ext->regs[i]->type=tty;
 		}
 		
 #if 1
 		if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 		{
 			tty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
-			obj->regs[i]->type=tty;
+			obj->ext->regs[i]->type=tty;
 		}
 #endif
 
@@ -467,32 +469,32 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 #if 1
 	ni=0;
-	for(i=0; i<obj->n_args; i++)
+	for(i=0; i<obj->ext->n_args; i++)
 	{
-		if(obj->args[i]->regflags&BGBCC_REGFL_CULL)
+		if(obj->ext->args[i]->regflags&BGBCC_REGFL_CULL)
 			continue;
-		if(obj->args[i]->regflags&BGBCC_REGFL_ALIASPTR)
+		if(obj->ext->args[i]->regflags&BGBCC_REGFL_ALIASPTR)
 		{
 			obj->regflags|=BGBCC_REGFL_HASLCLALIAS;
 			continue;
 		}
 			
-		tty=obj->args[i]->type;
+		tty=obj->ext->args[i]->type;
 
 		if(BGBCC_CCXL_TypeFloat16P(ctx, tty) ||
 			BGBCC_CCXL_TypeBFloat16P(ctx, tty))
 		{
 			tty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F);
-			obj->args[i]->type=tty;
+			obj->ext->args[i]->type=tty;
 		}
 		
 		if(BGBCC_CCXL_TypeFloatP(ctx, tty) && sctx->fpu_gfp)
 		{
 			tty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_D);
-			obj->args[i]->type=tty;
+			obj->ext->args[i]->type=tty;
 		}
 		
-		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->args[i]->type);
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->args[i]->type);
 		switch(rcls)
 		{
 			case BGBCC_SH_REGCLS_VO_QGR2:
@@ -503,7 +505,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				if(ni>=8)
 				{
 					/* Argument comes from stack. */
-					obj->args[i]->regflags|=BGBCC_REGFL_TEMPLOAD;
+					obj->ext->args[i]->regflags|=BGBCC_REGFL_TEMPLOAD;
 				}
 				ni+=2;
 				break;
@@ -512,7 +514,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				if(ni>=8)
 				{
 					/* Argument comes from stack. */
-					obj->args[i]->regflags|=BGBCC_REGFL_TEMPLOAD;
+					obj->ext->args[i]->regflags|=BGBCC_REGFL_TEMPLOAD;
 				}
 				ni++;
 				break;
@@ -538,9 +540,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	nogblstore=1;
 	ftgblstore=1;
 
-	for(i=0; i<obj->n_vop; i++)
+	for(i=0; i<obj->ext->n_vop; i++)
 	{
-		vop=obj->vop[i];
+		vop=obj->ext->vop[i];
 
 		if(vop->opn==CCXL_VOP_OBJCALL)
 		{
@@ -648,10 +650,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				if(!(localmap[j>>5]&(1U<<(j&31))))
 				{
 					if(!BGBCC_CCXL_TypeArrayP(ctx,
-						ctx->cur_func->locals[j]->type))
+						ctx->cur_func->ext->locals[j]->type))
 					{
 						printf("%s:%d uninitialized local %s\n",
-							ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+							ctx->lfn, ctx->lln,
+								bgbcc_strtab_i(
+									ctx->cur_func->ext->locals[j]->name_ix));
 					}
 					localmap[j>>5]|=1U<<(j&31);
 				}
@@ -663,10 +667,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				if(!(localmap[j>>5]&(1U<<(j&31))))
 				{
 					if(!BGBCC_CCXL_TypeArrayP(ctx,
-						ctx->cur_func->locals[j]->type))
+						ctx->cur_func->ext->locals[j]->type))
 					{
 						printf("%s:%d uninitialized local %s\n",
-							ctx->lfn, ctx->lln, ctx->cur_func->locals[j]->name);
+							ctx->lfn, ctx->lln,
+								bgbcc_strtab_i(
+									ctx->cur_func->ext->locals[j]->name_ix));
 					}
 					localmap[j>>5]|=1U<<(j&31);
 				}
@@ -701,11 +707,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		ctx->cur_func->regflags|=BGBCC_REGFL_REC_FTGBLSTORE;
 	}
 	
-	if(obj->qname[0]=='m')
+	s0=bgbcc_strtab_i(obj->qname_ix);
+	if(s0[0]=='m')
 	{
-		if(	!strcmp(obj->qname, "memcpy") ||
-			!strcmp(obj->qname, "memset") ||
-			!strcmp(obj->qname, "memmove"))
+		if(	!bgbcc_jx2c_strcmp(s0, "memcpy") ||
+			!bgbcc_jx2c_strcmp(s0, "memset") ||
+			!bgbcc_jx2c_strcmp(s0, "memmove"))
 		{
 //			ctx->cur_func->regflags|=BGBCC_REGFL_GBLSTORE;
 //			ctx->cur_func->regflags|=BGBCC_REGFL_REC_GBLSTORE;
@@ -716,11 +723,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		}
 	}
 
-	if(obj->qname[0]=='t')
+	if(s0[0]=='t')
 	{
-		if(	!strcmp(obj->qname, "tk_syscall") ||
-			!strcmp(obj->qname, "tk_sprintf") ||
-			!strcmp(obj->qname, "tk_printf"))
+		if(	!bgbcc_jx2c_strcmp(s0, "tk_syscall") ||
+			!bgbcc_jx2c_strcmp(s0, "tk_sprintf") ||
+			!bgbcc_jx2c_strcmp(s0, "tk_printf"))
 		{
 			/* pretend these don't touch anything */
 			ctx->cur_func->regflags&=~BGBCC_REGFL_REC_GBLSTORE;
@@ -753,15 +760,15 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 #endif
 	
 
-	for(i=0; i<obj->n_vop; i++)
+	for(i=0; i<obj->ext->n_vop; i++)
 	{
-		vtr=obj->vtr[trn];
-		vop=obj->vop[i];
+		vtr=obj->ext->vtr[trn];
+		vop=obj->ext->vop[i];
 
-		while(i>=(vtr->b_ops+vtr->n_ops) && (trn<obj->n_vtr))
+		while(i>=(vtr->b_ops+vtr->n_ops) && (trn<obj->ext->n_vtr))
 		{
 			trn++;
-			vtr=obj->vtr[trn];
+			vtr=obj->ext->vtr[trn];
 		}
 		
 		sctx->tr_trnum=trn;
@@ -817,9 +824,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			if((vop->srca.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
 			{
 				j=(int)(vop->srca.val&CCXL_REGID_REGMASK);
-				fname=ctx->reg_globals[j]->name;
+				fname=bgbcc_strtab_i(ctx->reg_globals[j]->name_ix);
 				
-				if(fname && !strcmp(fname, "__alloca"))
+				if(fname && !bgbcc_jx2c_strcmp(fname, "__alloca"))
 					{ obj->regflags|=BGBCC_REGFL_ALLOCA; }
 					
 				noarg=BGBCC_JX2C_CheckCallPossibleBuiltin(ctx, sctx, fname);
@@ -850,13 +857,15 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	}
 	BGBCC_JX2C_EndSetupFrameVRegSpan(ctx, sctx);
 
-	if(!strcmp(obj->name, "TKRA_ProjectVertex"))
+#if 0
+	fname=bgbcc_strtab_i(obj->name_ix);
+	if(!bgbcc_jx2c_strcmp(fname, "TKRA_ProjectVertex"))
 	{
 //		sctx->frm_offs_retstr=k-8;
 		k=-1;
 //		BGBCC_DBGBREAK
 	}
-
+#endif
 	
 	if(!(sctx->use_egpr&4))
 		sctx->use_egpr=0;
@@ -952,12 +961,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 	if(!sctx->use_egpr)
 	{
-		for(i=0; i<obj->n_locals; i++)
+		for(i=0; i<obj->ext->n_locals; i++)
 		{
-			if(obj->locals[i]->regflags&BGBCC_REGFL_CULL)
+			if(obj->ext->locals[i]->regflags&BGBCC_REGFL_CULL)
 				continue;
 
-			if(obj->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
+			if(obj->ext->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
 			{
 				sctx->use_egpr|=1;
 //				sctx->use_egpr|=3;
@@ -965,13 +974,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //				continue;
 			}
 			
-			if(	BGBCC_CCXL_TypeVolatilePointerP(ctx, obj->locals[i]->type) ||
-				BGBCC_CCXL_TypeAtomicPointerP(ctx, obj->locals[i]->type))
+			if(	BGBCC_CCXL_TypeVolatilePointerP(ctx, obj->ext->locals[i]->type) ||
+				BGBCC_CCXL_TypeAtomicPointerP(ctx, obj->ext->locals[i]->type))
 			{
 				obj->regflags|=BGBCC_REGFL_VOLATILESEEN;
 			}
 		
-			rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->locals[i]->type);
+			rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->locals[i]->type);
 			switch(rcls)
 			{
 			case BGBCC_SH_REGCLS_VO_QGR:
@@ -986,9 +995,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 		}
 		
-		for(i=0; i<obj->n_args; i++)
+		for(i=0; i<obj->ext->n_args; i++)
 		{
-			rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->args[i]->type);
+			rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->args[i]->type);
 			switch(rcls)
 			{
 			case BGBCC_SH_REGCLS_VO_QGR:
@@ -1003,9 +1012,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 		}
 		
-		for(i=0; i<obj->n_regs; i++)
+		for(i=0; i<obj->ext->n_regs; i++)
 		{
-			rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->regs[i]->type);
+			rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->regs[i]->type);
 			switch(rcls)
 			{
 			case BGBCC_SH_REGCLS_VO_QGR:
@@ -1034,11 +1043,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 
 //	sctx->use_egpr&=~2;
 
-	if(!strcmp(obj->name, "TKRA_MatrixIdentify"))
+#if 0
+	if(!bgbcc_jx2c_strcmp(obj->name, "TKRA_MatrixIdentify"))
 	{
 		sctx->frm_offs_retstr=k-8;
 //		BGBCC_DBGBREAK
 	}
+#endif
 
 //	sctx->use_egpr=0;
 
@@ -1098,7 +1109,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	sctx->frm_offs_save_rsv=k;
 	
 	if((obj->flagsint&BGBCC_TYFL_VIRTUAL) ||
-		obj->thisstr)
+		obj->thisstr_ix)
 	{
 		if(sctx->has_xgpr&2)
 			{ k-=16; k&=~15; }
@@ -1160,21 +1171,21 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //	if(obj->regflags&BGBCC_REGFL_HASARRAY)
 //		k-=16;
 
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		if(obj->locals[i]->regflags&BGBCC_REGFL_CULL)
+		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_CULL)
 			continue;
 	
-		if((obj->locals[i]->type.val&4095)==CCXL_TY_UBITINT)
+		if((obj->ext->locals[i]->type.val&4095)==CCXL_TY_UBITINT)
 		{
 //			k=-1;
 			k++;
 			k--;
 		}
 	
-		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->locals[i]->type);
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->locals[i]->type);
 		
-		obj->locals[i]->regcls=rcls;
+		obj->ext->locals[i]->regcls=rcls;
 		switch(rcls)
 		{
 //		case BGBCC_SH_REGCLS_FR:	case BGBCC_SH_REGCLS_FR2:
@@ -1186,17 +1197,17 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_AR_REF2:
 
 			/* Don't reserve stack space if folded to alloca... */
-			if(obj->locals[i]->regflags&BGBCC_REGFL_ALLOCA)
+			if(obj->ext->locals[i]->regflags&BGBCC_REGFL_ALLOCA)
 				break;
 
 			kf=(kf+15)&(~15);
 
 //			obj->regflags|=BGBCC_REGFL_NOTLEAFTINY;
 
-//			obj->locals[i]->fxmoffs=kf;
-			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->locals[i]->type);
+//			obj->ext->locals[i]->fxmoffs=kf;
+			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->ext->locals[i]->type);
 
-			obj->locals[i]->fxmoffs=
+			obj->ext->locals[i]->fxmoffs=
 				BGBCC_JX2C_CheckPadOffsetToBndTag16(
 					ctx, sctx, kf, j);
 
@@ -1237,12 +1248,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		}
 	}
 
-	for(i=0; i<obj->n_regs; i++)
+	for(i=0; i<obj->ext->n_regs; i++)
 	{
-		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->regs[i]->type);
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->regs[i]->type);
 //		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, 
-//			BGBCC_CCXL_TypeWrapBasicType(obj->regs[i]->type_zb));
-		obj->regs[i]->regcls=rcls;
+//			BGBCC_CCXL_TypeWrapBasicType(obj->ext->regs[i]->type_zb));
+		obj->ext->regs[i]->regcls=rcls;
 
 		switch(rcls)
 		{
@@ -1254,13 +1265,13 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_REF2:
 		case BGBCC_SH_REGCLS_AR_REF2:
 
-			if(!(obj->regs[i]->regflags&BGBCC_REGFL_INITIALIZED))
+			if(!(obj->ext->regs[i]->regflags&BGBCC_REGFL_INITIALIZED))
 				break;
 
 			kf=(kf+15)&(~15);
 
-			obj->regs[i]->fxmoffs=kf;
-			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->regs[i]->type);
+			obj->ext->regs[i]->fxmoffs=kf;
+			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->ext->regs[i]->type);
 
 //			j=(j+15)&(~15);
 			j=(j+23)&(~15);
@@ -1298,11 +1309,11 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		}
 
 #if 0
-		if(BGBCC_CCXL_TypeArrayP(ctx, obj->regs[i]->type))
+		if(BGBCC_CCXL_TypeArrayP(ctx, obj->ext->regs[i]->type))
 		{
-//			k-=4; obj->regs[i]->fxoffs=k;
-			obj->regs[i]->fxmoffs=kf;
-			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->regs[i]->type);
+//			k-=4; obj->ext->regs[i]->fxoffs=k;
+			obj->ext->regs[i]->fxmoffs=kf;
+			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->ext->regs[i]->type);
 			j=(j+3)&(~3);
 			kf+=j;
 		}
@@ -1310,9 +1321,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		if(	(rcls==BGBCC_SH_REGCLS_VO_REF) ||
 			(rcls==BGBCC_SH_REGCLS_VO_REF2))
 		{
-//			k-=4; obj->regs[i]->fxoffs=k;
-			obj->regs[i]->fxmoffs=kf;
-			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->regs[i]->type);
+//			k-=4; obj->ext->regs[i]->fxoffs=k;
+			obj->ext->regs[i]->fxmoffs=kf;
+			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->ext->regs[i]->type);
 
 			if(j>1024)
 				{ BGBCC_DBGBREAK }
@@ -1323,16 +1334,16 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 #endif
 	}
 
-	for(i=0; i<obj->n_args; i++)
+	for(i=0; i<obj->ext->n_args; i++)
 	{
-		if(BGBCC_CCXL_TypeVarArgsP(ctx, obj->args[i]->type))
+		if(BGBCC_CCXL_TypeVarArgsP(ctx, obj->ext->args[i]->type))
 			{ sctx->is_vararg=1; }
 
-		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->args[i]->type);
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->args[i]->type);
 		if(rcls==BGBCC_SH_REGCLS_WGR)
 			rcls=BGBCC_SH_REGCLS_GR;
 
-		obj->args[i]->regcls=rcls;
+		obj->ext->args[i]->regcls=rcls;
 
 		switch(rcls)
 		{
@@ -1360,16 +1371,16 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			break;
 		}
 
-//		if(BGBCC_CCXL_TypeValueObjectP(ctx, obj->args[i]->type) &&
+//		if(BGBCC_CCXL_TypeValueObjectP(ctx, obj->ext->args[i]->type) &&
 //			(rcls==BGBCC_SH_REGCLS_VO_REF))
 		if(	(rcls==BGBCC_SH_REGCLS_VO_REF) ||
 			(rcls==BGBCC_SH_REGCLS_VO_REF2))
 		{
 			kf=(kf+15)&(~15);
 
-//			k-=4; obj->args[i]->fxoffs=k;
-			obj->args[i]->fxmoffs=kf;
-			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->args[i]->type);
+//			k-=4; obj->ext->args[i]->fxoffs=k;
+			obj->ext->args[i]->fxmoffs=kf;
+			j=BGBCC_CCXL_TypeGetLogicalSize(ctx, obj->ext->args[i]->type);
 			
 			if(j>BGBCC_MAXSTACKOBJ)
 				{ BGBCC_DBGBREAK }
@@ -1389,9 +1400,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	if(sctx->use_fpr)
 		{ k-=8*8; }		//saved FR12/13/14/15
 
-//	if(!strcmp(obj->name, "GetWavinfo"))
-//	if(!strcmp(obj->name, "TKRA_MatrixIdentify"))
-//	if(!strcmp(obj->qname, "TKRA_MatrixIdentify"))
+//	if(!bgbcc_jx2c_strcmp(obj->name, "GetWavinfo"))
+//	if(!bgbcc_jx2c_strcmp(obj->name, "TKRA_MatrixIdentify"))
+//	if(!bgbcc_jx2c_strcmp(obj->qname, "TKRA_MatrixIdentify"))
 //	{
 //		sctx->frm_offs_retstr=k-8;
 //		BGBCC_DBGBREAK
@@ -1436,9 +1447,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			{ ka+=8*8; }
 	}
 
-	for(i=0; i<obj->n_args; i++)
+	for(i=0; i<obj->ext->n_args; i++)
 	{
-		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->args[i]->type);
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->args[i]->type);
 		if(rcls==BGBCC_SH_REGCLS_WGR)
 			rcls=BGBCC_SH_REGCLS_GR;
 
@@ -1453,10 +1464,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				{
 					if(sctx->abi_spillpad&1)
 					{
-						obj->args[i]->fxoffs=ni*8; ni++;
+						obj->ext->args[i]->fxoffs=ni*8; ni++;
 					}else
 					{
-						k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++;
+						k&=~3; k-=4; obj->ext->args[i]->fxoffs=k; ni++;
 					}
 				}
 				else
@@ -1464,12 +1475,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 					if(sctx->abi_spillpad&1)
 					{
 						ka=(ka+7)&(~7);
-						obj->args[i]->fxoffs=ka;
+						obj->ext->args[i]->fxoffs=ka;
 	//					ka+=4;
 						ka+=8;
 					}else
 					{
-						obj->args[i]->fxoffs=ka;
+						obj->ext->args[i]->fxoffs=ka;
 						ka+=4;
 					}
 				}
@@ -1484,10 +1495,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				{
 					if(sctx->abi_spillpad&1)
 					{
-						obj->args[i]->fxoffs=ni*8; ni++;
+						obj->ext->args[i]->fxoffs=ni*8; ni++;
 					}else
 					{
-						k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++;
+						k&=~3; k-=4; obj->ext->args[i]->fxoffs=k; ni++;
 					}
 				}
 				else
@@ -1495,7 +1506,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 					if(sctx->abi_spillpad&1)
 					{
 						ka=(ka+7)&(~7);
-						obj->args[i]->fxoffs=ka;
+						obj->ext->args[i]->fxoffs=ka;
 	//					ka+=4;
 						ka+=8;
 					}else
@@ -1503,12 +1514,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 						if(sctx->emit_riscv&3)
 						{
 							ka=(ka+7)&(~7);
-							obj->args[i]->fxoffs=ka;
+							obj->ext->args[i]->fxoffs=ka;
 							ka+=8;
 						}
 						else
 						{
-							obj->args[i]->fxoffs=ka;
+							obj->ext->args[i]->fxoffs=ka;
 							ka+=4;
 						}
 					}
@@ -1516,8 +1527,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				break;
 			}
 		
-//			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
-//			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
+//			if(ni<4)	{ k&=~3; k-=4; obj->ext->args[i]->fxoffs=k; ni++; }
+//			else		{ obj->ext->args[i]->fxoffs=ka; ka+=4; }
 			break;
 
 		case BGBCC_SH_REGCLS_VO_REF:
@@ -1532,24 +1543,24 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				{
 					if(sctx->abi_spillpad&1)
 					{
-						obj->args[i]->fxoffs=ni*8; ni++;
+						obj->ext->args[i]->fxoffs=ni*8; ni++;
 					}else
 					{
 						k&=(~7); k-=8;
-						obj->args[i]->fxoffs=k; ni++;
+						obj->ext->args[i]->fxoffs=k; ni++;
 					}
 				}
 				else
 				{
 					ka=(ka+7)&(~7);
-					obj->args[i]->fxoffs=ka;
+					obj->ext->args[i]->fxoffs=ka;
 					ka+=8;
 				}
 				break;
 			}
 
-//			if(ni<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; ni++; }
-//			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
+//			if(ni<4)	{ k&=~3; k-=4; obj->ext->args[i]->fxoffs=k; ni++; }
+//			else		{ obj->ext->args[i]->fxoffs=ka; ka+=4; }
 			break;
 
 		case BGBCC_SH_REGCLS_GR2:
@@ -1571,34 +1582,34 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 //					k&=~7; k-=16;
 					if(sctx->abi_spillpad&1)
 					{
-						obj->args[i]->fxoffs=ni*8; ni+=2;
+						obj->ext->args[i]->fxoffs=ni*8; ni+=2;
 					}else
 					{
 						k&=~15; k-=16;
-						obj->args[i]->fxoffs=k; ni+=2;
+						obj->ext->args[i]->fxoffs=k; ni+=2;
 					}
 				}
 				else
 				{
 //					ka=(ka+7)&(~7);
 					ka=(ka+15)&(~15);
-					obj->args[i]->fxoffs=ka; ka+=16;
+					obj->ext->args[i]->fxoffs=ka; ka+=16;
 				}
 				break;
 			}
-//			if(ni<3)	{ k&=~3; k-=8; obj->args[i]->fxoffs=k; ni+=2; }
-//			else		{ obj->args[i]->fxoffs=ka; ka+=8; }
+//			if(ni<3)	{ k&=~3; k-=8; obj->ext->args[i]->fxoffs=k; ni+=2; }
+//			else		{ obj->ext->args[i]->fxoffs=ka; ka+=8; }
 			break;
 
 #if 0
 		case BGBCC_SH_REGCLS_FR:
-			if(nf<4)	{ k&=~3; k-=4; obj->args[i]->fxoffs=k; nf++; }
-			else		{ obj->args[i]->fxoffs=ka; ka+=4; }
+			if(nf<4)	{ k&=~3; k-=4; obj->ext->args[i]->fxoffs=k; nf++; }
+			else		{ obj->ext->args[i]->fxoffs=ka; ka+=4; }
 			sctx->use_fpr=1;
 			break;
 		case BGBCC_SH_REGCLS_DR:
-			if(nf<4)	{ k&=~7; k-=8; obj->args[i]->fxoffs=k; nf++; }
-			else		{ ka=(ka+7)&(~7); obj->args[i]->fxoffs=ka; ka+=8; }
+			if(nf<4)	{ k&=~7; k-=8; obj->ext->args[i]->fxoffs=k; nf++; }
+			else		{ ka=(ka+7)&(~7); obj->ext->args[i]->fxoffs=ka; ka+=8; }
 			sctx->use_fpr=1;
 			break;
 #endif
@@ -1611,12 +1622,12 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 				if(nf<7)
 				{
 					k&=~7; k-=8;
-					obj->args[i]->fxoffs=k; nf+=2;
+					obj->ext->args[i]->fxoffs=k; nf+=2;
 				}
 				else
 				{
 					ka=(ka+7)&(~7);
-					obj->args[i]->fxoffs=ka; ka+=8;
+					obj->ext->args[i]->fxoffs=ka; ka+=8;
 				}
 				sctx->use_fpr=1;
 				sctx->use_dbr=1;
@@ -1624,8 +1635,8 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 			}
 
 			nf+=nf&1;
-			if(nf<7)	{ k&=~3; k-=8; obj->args[i]->fxoffs=k; nf+=2; }
-			else		{ obj->args[i]->fxoffs=ka; ka+=8; }
+			if(nf<7)	{ k&=~3; k-=8; obj->ext->args[i]->fxoffs=k; nf+=2; }
+			else		{ obj->ext->args[i]->fxoffs=ka; ka+=8; }
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
 			break;
@@ -1642,10 +1653,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK }
 
 #if 0
-	for(i=0; i<obj->n_locals; i++)
-		{ obj->locals[i]->fxoffs=0; }
-	for(i=0; i<obj->n_regs; i++)
-		{ obj->regs[i]->fxoffs=0; }
+	for(i=0; i<obj->ext->n_locals; i++)
+		{ obj->ext->locals[i]->fxoffs=0; }
+	for(i=0; i<obj->ext->n_regs; i++)
+		{ obj->ext->regs[i]->fxoffs=0; }
 
 	for(i=sctx->vspan_num-1; i>=0; i--)
 	{
@@ -1700,9 +1711,9 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		
 		j=reg.val&4095;
 		if(BGBCC_CCXL_IsRegTempP(ctx, reg))
-			{ obj->regs[j]->fxoffs=k; }
+			{ obj->ext->regs[j]->fxoffs=k; }
 		if(BGBCC_CCXL_IsRegLocalP(ctx, reg))
-			{ obj->locals[j]->fxoffs=k; }
+			{ obj->ext->locals[j]->fxoffs=k; }
 	}
 
 	sctx->frm_offs_lcl=k;
@@ -1713,25 +1724,25 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		{ BGBCC_DBGBREAK }
 
 #if 1
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		if(obj->locals[i]->regflags&BGBCC_REGFL_CULL)
+		if(obj->ext->locals[i]->regflags&BGBCC_REGFL_CULL)
 //		if(0)
 		{
-			obj->locals[i]->fxoffs=k;
+			obj->ext->locals[i]->fxoffs=k;
 			continue;
 		}
 
-		j=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->locals[i]->type);
+		j=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->locals[i]->type);
 		switch(j)
 		{
 		case BGBCC_SH_REGCLS_GR:
 		case BGBCC_SH_REGCLS_VO_GR:
-			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=4; obj->ext->locals[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_WGR:
-			k&=~1; k-=2; obj->locals[i]->fxoffs=k;
+			k&=~1; k-=2; obj->ext->locals[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_VO_REF:
@@ -1739,10 +1750,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_QGR:
 		case BGBCC_SH_REGCLS_QGR:
 //			if(sctx->is_addr64)
-//				{ k&=~7; k-=8; obj->locals[i]->fxoffs=k; break; }
-//			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
+//				{ k&=~7; k-=8; obj->ext->locals[i]->fxoffs=k; break; }
+//			k&=~3; k-=4; obj->ext->locals[i]->fxoffs=k;
 			k&=~7; k-=8;
-			obj->locals[i]->fxoffs=k;
+			obj->ext->locals[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_GR2:
 		case BGBCC_SH_REGCLS_QGR2:
@@ -1751,29 +1762,29 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_REF2:
 		case BGBCC_SH_REGCLS_AR_REF2:
 //			if(sctx->is_addr64)
-//				{ k&=~7; k-=16; obj->locals[i]->fxoffs=k; break; }
-//				{ k&=~15; k-=16; obj->locals[i]->fxoffs=k; break; }
-//			k&=~3; k-=8; obj->locals[i]->fxoffs=k;
+//				{ k&=~7; k-=16; obj->ext->locals[i]->fxoffs=k; break; }
+//				{ k&=~15; k-=16; obj->ext->locals[i]->fxoffs=k; break; }
+//			k&=~3; k-=8; obj->ext->locals[i]->fxoffs=k;
 			k&=~15; k-=16;
-			obj->locals[i]->fxoffs=k;
+			obj->ext->locals[i]->fxoffs=k;
 			break;
 
 #if 0
 		case BGBCC_SH_REGCLS_FR:
 			sctx->use_fpr=1;
-			k&=~3; k-=4; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=4; obj->ext->locals[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_FR2:
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
 			if(sctx->is_addr64)
 				{ k&=~7; }
-			k&=~3; k-=8; obj->locals[i]->fxoffs=k;
+			k&=~3; k-=8; obj->ext->locals[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_DR:
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
-			k&=~7; k-=8; obj->locals[i]->fxoffs=k;
+			k&=~7; k-=8; obj->ext->locals[i]->fxoffs=k;
 			break;
 #endif
 
@@ -1787,20 +1798,20 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	if((-k)>=BGBCC_MAXSTACKFRAME)
 		{ BGBCC_DBGBREAK }
 
-	for(i=0; i<obj->n_regs; i++)
+	for(i=0; i<obj->ext->n_regs; i++)
 	{
-		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->regs[i]->type);
+		rcls=BGBCC_JX2C_TypeGetRegClassP(ctx, obj->ext->regs[i]->type);
 //		rcls=BGBCC_SHXC_TypeGetRegClassP(ctx, 
-//			BGBCC_CCXL_TypeWrapBasicType(obj->regs[i]->type_zb));
+//			BGBCC_CCXL_TypeWrapBasicType(obj->ext->regs[i]->type_zb));
 		switch(rcls)
 		{
 		case BGBCC_SH_REGCLS_GR:
 		case BGBCC_SH_REGCLS_VO_GR:
-			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=4; obj->ext->regs[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_WGR:
-			k&=~1; k-=2; obj->regs[i]->fxoffs=k;
+			k&=~1; k-=2; obj->ext->regs[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_VO_REF:
@@ -1808,10 +1819,10 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_QGR:
 		case BGBCC_SH_REGCLS_QGR:
 //			if(sctx->is_addr64)
-//				{ k&=~7; k-=8; obj->regs[i]->fxoffs=k; break; }
-//			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
+//				{ k&=~7; k-=8; obj->ext->regs[i]->fxoffs=k; break; }
+//			k&=~3; k-=4; obj->ext->regs[i]->fxoffs=k;
 			k&=~7; k-=8;
-			obj->regs[i]->fxoffs=k;
+			obj->ext->regs[i]->fxoffs=k;
 			break;
 
 		case BGBCC_SH_REGCLS_GR2:
@@ -1821,28 +1832,28 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 		case BGBCC_SH_REGCLS_VO_REF2:
 		case BGBCC_SH_REGCLS_AR_REF2:
 //			if(sctx->is_addr64)
-//				{ k&=~7; k-=16; obj->regs[i]->fxoffs=k; break; }
-//				{ k&=~15; k-=16; obj->regs[i]->fxoffs=k; break; }
-//			k&=~3; k-=8; obj->regs[i]->fxoffs=k;
+//				{ k&=~7; k-=16; obj->ext->regs[i]->fxoffs=k; break; }
+//				{ k&=~15; k-=16; obj->ext->regs[i]->fxoffs=k; break; }
+//			k&=~3; k-=8; obj->ext->regs[i]->fxoffs=k;
 			k&=~15; k-=16;
-			obj->regs[i]->fxoffs=k;
+			obj->ext->regs[i]->fxoffs=k;
 			break;
 
 #if 0
 		case BGBCC_SH_REGCLS_FR:
 			sctx->use_fpr=1;
-			k&=~3; k-=4; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=4; obj->ext->regs[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_FR2:
 			sctx->use_fpr=1;
 			sctx->use_dbr=1;
 			if(sctx->is_addr64)
 				{ k&=~7; }
-			k&=~3; k-=8; obj->regs[i]->fxoffs=k;
+			k&=~3; k-=8; obj->ext->regs[i]->fxoffs=k;
 			break;
 		case BGBCC_SH_REGCLS_DR:
 			sctx->use_fpr=1;
-			k&=~7; k-=8; obj->regs[i]->fxoffs=k;
+			k&=~7; k-=8; obj->ext->regs[i]->fxoffs=k;
 			break;
 #endif
 
@@ -1854,7 +1865,7 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	sctx->frm_offs_tmp=k;
 #endif
 
-	i=obj->n_cargs;
+	i=obj->ext->n_cargs;
 	
 //	i=24;
 	
@@ -1878,15 +1889,15 @@ int BGBCC_JX2C_SetupFrameLayout(BGBCC_TransState *ctx,
 	k-=i*8;
 
 //	if(sctx->is_addr64)
-//		{ k&=~7; k-=obj->n_cargs*8; }
+//		{ k&=~7; k-=obj->ext->n_cargs*8; }
 //	else
-//		k-=obj->n_cargs*4;
+//		k-=obj->ext->n_cargs*4;
 
 	if((-k)>=BGBCC_MAXSTACKFRAME)
 		{ BGBCC_DBGBREAK }
 
-//	k-=obj->n_cargs*4;
-//	k-=obj->n_cargs*8;
+//	k-=obj->ext->n_cargs*4;
+//	k-=obj->ext->n_cargs*8;
 //	k&=~15;
 //	k&=~3;
 

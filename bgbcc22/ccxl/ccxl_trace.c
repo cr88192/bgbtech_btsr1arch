@@ -13,8 +13,9 @@ BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOp(BGBCC_TransState *ctx)
 		return(tmp);
 	}
 	
-	tmp=bgbcc_malloc(256*sizeof(BGBCC_CCXL_VirtOp));
-	for(i=0; i<255; i++)
+//	tmp=bgbcc_malloc(256*sizeof(BGBCC_CCXL_VirtOp));
+	tmp=bgbcc_tmalloc("_ccxl_virtop_t", 64*sizeof(BGBCC_CCXL_VirtOp));
+	for(i=0; i<63; i++)
 	{
 		*(BGBCC_CCXL_VirtOp **)tmp=ctx->virtop_free;
 		ctx->virtop_free=tmp++;
@@ -23,6 +24,42 @@ BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOp(BGBCC_TransState *ctx)
 	memset(tmp, 0, sizeof(BGBCC_CCXL_VirtOp));
 	return(tmp);
 }
+
+#if 0
+BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOpTrim(BGBCC_TransState *ctx)
+{
+	return(BGBCC_CCXL_AllocVirtOp(ctx));
+}
+#endif
+
+#if 1
+BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOpTrim(BGBCC_TransState *ctx)
+{
+	BGBCC_CCXL_VirtOpTrim *tmp, *tmpa;
+	int i;
+	
+	tmp=ctx->virtoptr_free;
+	if(tmp)
+	{
+		ctx->virtoptr_free=*(BGBCC_CCXL_VirtOpTrim **)tmp;
+		memset(tmp, 0, sizeof(BGBCC_CCXL_VirtOpTrim));
+		tmp->immty=CCXL_VOPITY_TRIM;
+		return((BGBCC_CCXL_VirtOp *)tmp);
+	}
+	
+	tmp=bgbcc_tmalloc("_ccxl_virtoptrim_t",
+		64*sizeof(BGBCC_CCXL_VirtOpTrim));
+	for(i=0; i<63; i++)
+	{
+		*(BGBCC_CCXL_VirtOpTrim **)tmp=ctx->virtoptr_free;
+		ctx->virtoptr_free=tmp++;
+	}
+
+	memset(tmp, 0, sizeof(BGBCC_CCXL_VirtOpTrim));
+	tmp->immty=CCXL_VOPITY_TRIM;
+	return((BGBCC_CCXL_VirtOp *)tmp);
+}
+#endif
 
 BGBCC_CCXL_VirtTr *BGBCC_CCXL_AllocVirtTr(BGBCC_TransState *ctx)
 {
@@ -37,7 +74,8 @@ BGBCC_CCXL_VirtTr *BGBCC_CCXL_AllocVirtTr(BGBCC_TransState *ctx)
 		return(tmp);
 	}
 	
-	tmp=bgbcc_malloc(256*sizeof(BGBCC_CCXL_VirtTr));
+//	tmp=bgbcc_malloc(256*sizeof(BGBCC_CCXL_VirtTr));
+	tmp=bgbcc_tmalloc("_ccxl_virttr_t", 256*sizeof(BGBCC_CCXL_VirtTr));
 	for(i=0; i<255; i++)
 	{
 		*(BGBCC_CCXL_VirtTr **)tmp=ctx->virttr_free;
@@ -57,13 +95,129 @@ BGBCC_CCXL_VirtOp *BGBCC_CCXL_CloneVirtOp(BGBCC_TransState *ctx,
 	return(tmp);
 }
 
+BGBCC_CCXL_VirtOp **bgbcc_ccxl_vopptrs_cur;
+BGBCC_CCXL_VirtOp **bgbcc_ccxl_vopptrs_end;
+
+BGBCC_CCXL_VirtTr **bgbcc_ccxl_vtrptrs_cur;
+BGBCC_CCXL_VirtTr **bgbcc_ccxl_vtrptrs_end;
+
+BGBCC_CCXL_VirtOp **BGBCC_CCXL_AllocVirtOpPtrs(BGBCC_TransState *ctx, int n)
+{
+	BGBCC_CCXL_VirtOp **p;
+	
+	if(n>=64)
+	{
+		p=bgbcc_tmalloc("_ccxl_vopptr_t",
+			n*sizeof(BGBCC_CCXL_VirtOp *));
+		return(p);
+	}
+	
+	p=bgbcc_ccxl_vopptrs_cur;
+	if(p && (p+n)<bgbcc_ccxl_vopptrs_end)
+	{
+		bgbcc_ccxl_vopptrs_cur=p+n;
+		return(p);
+	}
+
+	p=bgbcc_tmalloc("_ccxl_vopptr_t",
+		1024*sizeof(BGBCC_CCXL_VirtOp *));
+	bgbcc_ccxl_vopptrs_cur=p+n;
+	bgbcc_ccxl_vopptrs_end=p+1024;
+	return(p);
+}
+
+BGBCC_CCXL_VirtTr **BGBCC_CCXL_AllocVirtTrPtrs(BGBCC_TransState *ctx, int n)
+{
+	BGBCC_CCXL_VirtTr **p;
+
+	if(n>=64)
+	{
+		p=bgbcc_tmalloc("_ccxl_vtrptr_t",
+			n*sizeof(BGBCC_CCXL_VirtTr *));
+		return(p);
+	}
+	
+	p=bgbcc_ccxl_vtrptrs_cur;
+	if(p && (p+n)<bgbcc_ccxl_vtrptrs_end)
+	{
+		bgbcc_ccxl_vtrptrs_cur=p+n;
+		return(p);
+	}
+
+	p=bgbcc_tmalloc("_ccxl_vtrptr_t",
+		1024*sizeof(BGBCC_CCXL_VirtTr *));
+	bgbcc_ccxl_vtrptrs_cur=p+n;
+	bgbcc_ccxl_vtrptrs_end=p+1024;
+	return(p);
+}
+
+ccxl_register *bgbcc_ccxl_vregs_cur;
+ccxl_register *bgbcc_ccxl_vregs_end;
+
+ccxl_register *BGBCC_CCXL_AllocVirtRegs(BGBCC_TransState *ctx, int n)
+{
+	ccxl_register *p;
+
+	if(n>=64)
+	{
+		p=bgbcc_tmalloc("_ccxl_regs_t",
+			n*sizeof(ccxl_register));
+		return(p);
+	}
+	
+	p=bgbcc_ccxl_vregs_cur;
+	if(p && (p+n)<bgbcc_ccxl_vregs_end)
+	{
+		bgbcc_ccxl_vregs_cur=p+n;
+		return(p);
+	}
+
+	p=bgbcc_tmalloc("_ccxl_regs_t",
+		1024*sizeof(ccxl_register));
+	bgbcc_ccxl_vregs_cur=p+n;
+	bgbcc_ccxl_vregs_end=p+1024;
+	return(p);
+}
+
+ccxl_label *bgbcc_ccxl_vlbls_cur;
+ccxl_label *bgbcc_ccxl_vlbls_end;
+
+ccxl_label *BGBCC_CCXL_AllocVirtLabels(BGBCC_TransState *ctx, int n)
+{
+	ccxl_label *p;
+
+	if(n>=64)
+	{
+		p=bgbcc_tmalloc("_ccxl_lbls_t",
+			n*sizeof(ccxl_label));
+		return(p);
+	}
+	
+	p=bgbcc_ccxl_vlbls_cur;
+	if(p && (p+n)<bgbcc_ccxl_vlbls_end)
+	{
+		bgbcc_ccxl_vlbls_cur=p+n;
+		return(p);
+	}
+
+	p=bgbcc_tmalloc("_ccxl_lbls_t",
+		1024*sizeof(ccxl_label));
+	bgbcc_ccxl_vlbls_cur=p+n;
+	bgbcc_ccxl_vlbls_end=p+1024;
+	return(p);
+}
+
+
+
 int BGBCC_CCXL_AddVirtOp(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op)
 {
 	int i;
 
 	if(!ctx->vop)
 	{
-		ctx->vop=bgbcc_malloc(4096*sizeof(BGBCC_CCXL_VirtOp *));
+//		ctx->vop=bgbcc_malloc(4096*sizeof(BGBCC_CCXL_VirtOp *));
+		ctx->vop=bgbcc_tmalloc("_ccxl_vopptr_t",
+			4096*sizeof(BGBCC_CCXL_VirtOp *));
 		ctx->n_vop=0;
 		ctx->m_vop=4096;
 	}
@@ -88,9 +242,10 @@ int BGBCC_CCXL_AddVirtTr(BGBCC_TransState *ctx, BGBCC_CCXL_VirtTr *tr)
 
 	if(!ctx->vtr)
 	{
-		ctx->vtr=bgbcc_malloc(256*sizeof(BGBCC_CCXL_VirtOp *));
+		ctx->vtr=bgbcc_tmalloc("_ccxl_vtrptr_t",
+			1024*sizeof(BGBCC_CCXL_VirtOp *));
 		ctx->n_vtr=0;
-		ctx->m_vtr=256;
+		ctx->m_vtr=1024;
 	}
 
 	if((ctx->n_vtr+1)>(ctx->m_vtr))
@@ -188,13 +343,13 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_VReg(BGBCC_TransState *ctx,
 		i=reg.val&CCXL_REGINT_MASK;
 		litobj=ctx->literals[i];
 
-		if(litobj->decl && litobj->decl->listdata)
+		if(litobj->decl && litobj->decl->ext->listdata)
 		{
-			n=litobj->decl->n_listdata;
+			n=litobj->decl->ext->n_listdata;
 			for(i=0; i<n; i++)
 			{
 				BGBCC_CCXL_GlobalMarkReachable_VReg(ctx,
-					litobj->decl->listdata[i], afl|1);
+					litobj->decl->ext->listdata[i], afl|1);
 			}
 		}
 		return(1);
@@ -832,16 +987,19 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 	int n, lvl, oldmult;
 	int i, j;
 
+	if(!obj->ext)
+		return(1);
+
 	oldmult=ctx->trace_mult;
 
-	for(i=0; i<obj->n_locals; i++)
+	for(i=0; i<obj->ext->n_locals; i++)
 	{
-		if(obj->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
+		if(obj->ext->locals[i]->flagsint&BGBCC_TYFL_REGISTER)
 		{
 			obj->regflags|=BGBCC_REGFL_GOFAST;
 		}
 		
-		if(BGBCC_CCXL_TypeVaListP(ctx, obj->locals[i]->type))
+		if(BGBCC_CCXL_TypeVaListP(ctx, obj->ext->locals[i]->type))
 		{
 			BGBCC_CCXL_GlobalMarkReachableName(ctx, "__va64_saveargs");
 			BGBCC_CCXL_GlobalMarkReachableName(ctx, "__va64_arg_l");
@@ -855,13 +1013,13 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 //	if(!strcmp(obj->name, "tk_vfile_init"))
 //		j=-1;
 
-	if(!strcmp(obj->name, "vfw_begin_decompress"))
-		j=-1;
+//	if(!strcmp(obj->name, "vfw_begin_decompress"))
+//		j=-1;
 
 	lvl=0;
-	for(i=0; i<obj->n_vop; i++)
+	for(i=0; i<obj->ext->n_vop; i++)
 	{
-		op=obj->vop[i];
+		op=obj->ext->vop[i];
 
 		if(op->opn==CCXL_VOP_LABEL)
 		{
@@ -897,8 +1055,12 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachable_Func(BGBCC_TransState *ctx,
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dst, 1);
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srca, 1);
 			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcb, 1);
-			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcc, 1);
-			BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcd, 1);
+			if(op->immty!=CCXL_VOPITY_TRIM)
+			{
+				BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->dstb, 1);
+				BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcc, 1);
+				BGBCC_CCXL_GlobalMarkReachable_VReg(ctx, op->srcd, 1);
+			}
 		}
 
 		if(op->opn==CCXL_VOP_BINARY)
@@ -1047,7 +1209,8 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableName(BGBCC_TransState *ctx,
 		if(!obj)
 			continue;
 
-		if(obj->qname && !strcmp(obj->qname, name))
+		if(obj->qname_ix &&
+			!strcmp(bgbcc_strtab_i(obj->qname_ix), name))
 		{
 			BGBCC_CCXL_GlobalMarkReachable(ctx, obj);
 		}
@@ -1088,7 +1251,8 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 	{
 		obj->regflags|=BGBCC_REGFL_RECTRACE;
 
-		objlst=BGBCC_CCXL_LookupGlobalList(ctx, obj->qname);
+		objlst=BGBCC_CCXL_LookupGlobalList(ctx,
+			bgbcc_strtab_i(obj->qname_ix));
 		objcur=objlst; n=0;
 		while(objcur)
 			{ objarr[n++]=objcur; objcur=objcur->chain; }
@@ -1119,8 +1283,9 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 //	if((obj->regtype==CCXL_LITID_FUNCTION) && (obj->vtr))
 	if(obj->regtype==CCXL_LITID_FUNCTION)
 	{
-		if(!(obj->n_vop))
-			BGBCC_CCXL_GlobalMarkReachableName(ctx, obj->qname);
+		if(!obj->ext || !(obj->ext->n_vop))
+			BGBCC_CCXL_GlobalMarkReachableName(ctx,
+				bgbcc_strtab_i(obj->qname_ix));
 		BGBCC_CCXL_GlobalMarkReachable_Func(ctx, obj);
 //		obj->regflags&=~BGBCC_REGFL_RECTRACE;
 		return(1);
@@ -1128,7 +1293,8 @@ ccxl_status BGBCC_CCXL_GlobalMarkReachableB(BGBCC_TransState *ctx,
 
 	if(obj->regtype==CCXL_LITID_PROTOTYPE)
 	{
-		BGBCC_CCXL_GlobalMarkReachableName(ctx, obj->qname);
+		BGBCC_CCXL_GlobalMarkReachableName(ctx,
+			bgbcc_strtab_i(obj->qname_ix));
 //		BGBCC_CCXL_GlobalMarkReachable_Func(ctx, obj);
 //		obj->regflags&=~BGBCC_REGFL_RECTRACE;
 		return(1);
@@ -1280,18 +1446,32 @@ int BGBCC_CCXL_CheckVirtOpOrderDep(
 //	if(op1->dst.val==CCXL_REGID_REG_Z)
 //		return(0);
 
-	if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
-			op1->dst, op2->srca) ||
-		BGBCC_CCXL_RegisterIdentEqualP(ctx,
-			op1->dst, op2->srcb) ||
-		BGBCC_CCXL_RegisterIdentEqualP(ctx,
-			op1->dst, op2->srcc) ||
-		BGBCC_CCXL_RegisterIdentEqualP(ctx,
-			op1->dst, op2->srcd))
+	if(op1->immty!=CCXL_VOPITY_TRIM)
 	{
-		if(op1->dst.val!=CCXL_REGID_REG_Z)
-			return(1);
+		if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				op1->dst, op2->srca) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				op1->dst, op2->srcb) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				op1->dst, op2->srcc) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				op1->dst, op2->srcd))
+		{
+			if(op1->dst.val!=CCXL_REGID_REG_Z)
+				return(1);
+		}
+	}else
+	{
+		if(	BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				op1->dst, op2->srca) ||
+			BGBCC_CCXL_RegisterIdentEqualP(ctx,
+				op1->dst, op2->srcb) )
+		{
+			if(op1->dst.val!=CCXL_REGID_REG_Z)
+				return(1);
+		}
 	}
+
 	return(0);
 }
 

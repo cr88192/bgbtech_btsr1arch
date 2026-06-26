@@ -9,7 +9,7 @@ int BT5BU_InitEncTables()
 
 	BT5BU_InitTables();
 	
-	bt5bu_pat6_elut=malloc(1<<16);
+	bt5bu_pat6_elut=bgbcc_malloc_bmp(1<<16);
 	memset(bt5bu_pat6_elut, 255, 1<<16);
 	
 	for(i=0; i<256; i++)
@@ -1095,18 +1095,18 @@ int BT5BU_EncodeFrameRGBA(
 	
 	if(blkbuf && (n>sz_blkbuf))
 	{
-		free(blkbuf);
-		free(enc1buf);
-		free(enc2buf);
+		bgbcc_free2(blkbuf);
+		bgbcc_free2(enc1buf);
+		bgbcc_free2(enc2buf);
 		blkbuf=NULL;
 		enc1buf=NULL;
 		enc2buf=NULL;
 	}
 	if(!blkbuf)
 	{
-		blkbuf=malloc(xs2*ys2*8);
-		enc1buf=malloc(xs2*ys2*12);
-		enc2buf=malloc(xs2*ys2*12);
+		blkbuf=bgbcc_malloc_bmp(xs2*ys2*8);
+		enc1buf=bgbcc_malloc_bmp(xs2*ys2*12);
+		enc2buf=bgbcc_malloc_bmp(xs2*ys2*12);
 		sz_blkbuf=n;
 	}
 	

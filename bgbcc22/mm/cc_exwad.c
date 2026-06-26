@@ -102,7 +102,7 @@ ExWAD_Context *ExWAD_LoadImageBuffer(char *name, byte *buf, int sz)
 //	buf=bgbcc_loadfile(name, &sz);
 //	if(!buf)return(NULL);
 
-	tmp=malloc(sizeof(ExWAD_Context));
+	tmp=bgbcc_tmalloc2("_mm_exwctx", sizeof(ExWAD_Context));
 	memset(tmp, 0, sizeof(ExWAD_Context));
 	tmp->img_base=buf;
 	tmp->img_size=sz;
@@ -156,7 +156,7 @@ ExWAD_Context *ExWAD_LoadImageBuffer(char *name, byte *buf, int sz)
 	if(tmp->head)
 	{
 		i=(tmp->img_size+(EXWAD_CELLSZ-1))/EXWAD_CELLSZ;
-		tmp->img_map=malloc(i);
+		tmp->img_map=bgbcc_malloc2(i);
 		memset(tmp->img_map, 0, i);
 
 		i=exwad_getu32(tmp->head->rva_dirents);
@@ -187,7 +187,7 @@ ExWAD_Context *ExWAD_LoadImageBuffer(char *name, byte *buf, int sz)
 	}
 
 	i=(tmp->img_size+(EXWAD_CELLSZ-1))/EXWAD_CELLSZ;
-	tmp->img_map=malloc(i);
+	tmp->img_map=bgbcc_malloc2(i);
 	memset(tmp->img_map, 0, i);
 	ExWAD_MarkRangeResv(tmp, 0, tmp->img_size);
 	
@@ -244,12 +244,12 @@ void ExWAD_CheckExpandImage(ExWAD_Context *img, int sz)
 	while(i<sz)i+=i>>2;
 	i=(i+(EXWAD_CELLSZ-1))&(~(EXWAD_CELLSZ-1));		//pad up to even cell
 	
-	img->img_base=realloc(img->img_base, i);
+	img->img_base=bgbcc_realloc2(img->img_base, i);
 	memset(img->img_base+img->img_size, 0, i-img->img_size);
 
 	j=i/EXWAD_CELLSZ;
 	k=(img->img_size+(EXWAD_CELLSZ-1))/EXWAD_CELLSZ;
-	img->img_map=realloc(img->img_map, j);
+	img->img_map=bgbcc_realloc2(img->img_map, j);
 	memset(img->img_map+k, 0, j-k);
 
 	img->head=(ExWAD_Header *)(img->img_base+rva_head);
@@ -428,7 +428,7 @@ ExWAD_Context *ExWAD_LoadImageBufferRead(char *name, byte *buf, int sz)
 	if(!tmp)return(NULL);
 	if(tmp->head)return(tmp);
 
-	free(tmp);
+	bgbcc_free2(tmp);
 	return(NULL);
 }
 
@@ -731,7 +731,7 @@ byte *ExWAD_LoadFile(ExWAD_Context *ctx, char *name, int *rsz)
 	
 	if(de->method==EXWAD_DIR_CM_STORE)
 	{
-		buf=malloc(l);
+		buf=bgbcc_malloc2(l);
 		memcpy(buf, ctx->img_base+j, l);
 		if(rsz)*rsz=l;
 		return(buf);
@@ -740,7 +740,7 @@ byte *ExWAD_LoadFile(ExWAD_Context *ctx, char *name, int *rsz)
 	if((de->method==EXWAD_DIR_CM_DEFLATE) ||
 		(de->method==EXWAD_DIR_CM_DEFLATE64))
 	{
-		buf=malloc(l);
+		buf=bgbcc_malloc2(l);
 		PDUNZ_DecodeStream(ctx->img_base+j, buf, k, l);
 		if(rsz)*rsz=l;
 		return(buf);
@@ -772,7 +772,7 @@ void ExWAD_StoreFile(ExWAD_Context *ctx, char *name, byte *buf, int sz)
 
 	if(sz>=256)
 	{
-		cbuf=malloc(2*sz);
+		cbuf=bgbcc_malloc2(2*sz);
 		csz=PDZ2_EncodeStream64(buf, cbuf, sz, sz*2);
 		cm=EXWAD_DIR_CM_DEFLATE64;
 		
@@ -793,7 +793,7 @@ void ExWAD_StoreFile(ExWAD_Context *ctx, char *name, byte *buf, int sz)
 		
 		if((csz<0) || (csz>=sz))
 		{
-			free(cbuf);
+			bgbcc_free2(cbuf);
 			cm=EXWAD_DIR_CM_STORE;
 			csz=sz; cbuf=buf;
 		}
@@ -828,7 +828,7 @@ void ExWAD_StoreFile(ExWAD_Context *ctx, char *name, byte *buf, int sz)
 	de->method=cm;
 	
 	if(cm!=EXWAD_DIR_CM_STORE)
-		{ free(cbuf); }
+		{ bgbcc_free2(cbuf); }
 }
 
 void ExWAD_AddFile(ExWAD_Context *ctx, char *name)

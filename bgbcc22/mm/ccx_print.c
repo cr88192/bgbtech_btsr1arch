@@ -280,7 +280,7 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 #endif
 //	BCCX_PrintNodeAttr(node, ind, pb);
 
-	if(i>=256)tb=malloc(8*i);
+	if(i>=256)tb=bgbcc_malloc2(8*i);
 
 
 	t=tb;
@@ -335,7 +335,7 @@ void BCCX_PrintBufSpecial(BCCX_Node *node, int ind,
 
 	pb(ob, tb);
 
-	if(tb!=buf)free(tb);
+	if(tb!=buf)bgbcc_free2(tb);
 	return;
 }
 
@@ -473,7 +473,7 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 		if(ind>=0)i+=ind+8;
 
 		tb=buf;
-		if(i>256)tb=malloc(2*i);
+		if(i>256)tb=bgbcc_malloc2(2*i);
 
 		t=tb;
 		for(i=0; i<ind; i++)*t++=' ';
@@ -483,7 +483,7 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 
 		pb(ob, tb);
 
-		if(tb!=buf)free(tb);
+		if(tb!=buf)bgbcc_free2(tb);
 		return;
 	}
 
@@ -519,7 +519,7 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 
 	i+=BCCX_SizeNodeAttr(node, flag);
 
-	if(i>=256)tb=malloc(8*i);
+	if(i>=256)tb=bgbcc_malloc2(8*i);
 
 
 	t=tb;
@@ -559,7 +559,7 @@ void BCCX_PrintBuf(BCCX_Node *node, int ind,
 		*t=0;
 
 		pb(ob, tb);
-		if(tb!=buf)free(tb);
+		if(tb!=buf)bgbcc_free2(tb);
 		return;
 	}
 

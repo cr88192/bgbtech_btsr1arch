@@ -1598,6 +1598,9 @@ int main(int argc, char *argv[])
 			if(!strcmp(argv[i], "--opssc2"))
 				{ nowex|=2|8; continue; }
 
+			if(!strcmp(argv[i], "--oprf_x"))
+				{ nowex|=32; continue; }
+
 			continue;
 		}
 		
@@ -1715,6 +1718,11 @@ int main(int argc, char *argv[])
 		if(nowex&8)
 		{
 			ctx->do_opssc=3;
+		}
+
+		if(nowex&32)
+		{
+			ctx->do_opssc|=8;
 		}
 	}
 

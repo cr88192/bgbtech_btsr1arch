@@ -462,7 +462,7 @@ ccxl_status BGBCC_JX2C_DumpImageASM(BGBCC_TransState *ctx,
 		lsz+=j+1024;
 	}
 
-	obuf=malloc(lsz);
+	obuf=bgbcc_malloc2(lsz);
 
 	ct=obuf;
 	for(i=0; i<sctx->nsec; i++)
@@ -489,7 +489,7 @@ ccxl_status BGBCC_JX2C_DumpImageASM(BGBCC_TransState *ctx,
 		fclose(fd);
 	}
 	
-	free(obuf);
+	bgbcc_free2(obuf);
 
 	return(0);
 }
@@ -507,7 +507,7 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 	int obsz, opw1, opw2, il, sz, lbl, lbl1, rlc;
 
 	obsz=1<<23;
-	obuf=malloc(obsz);
+	obuf=bgbcc_malloc2(obsz);
 	cte=obuf+obsz;
 	ct=obuf;
 
@@ -523,7 +523,7 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 		{
 			obsz=obsz+(obsz>>1);
 			il=ct-obuf;
-			obuf=realloc(obuf, obsz);
+			obuf=bgbcc_realloc2(obuf, obsz);
 			cte=obuf+obsz;
 			ct=obuf+il;
 		}
@@ -565,7 +565,7 @@ ccxl_status BGBCC_JX2C_DumpImageDisAsm(BGBCC_TransState *ctx,
 		fclose(fd);
 	}
 	
-	free(obuf);
+	bgbcc_free2(obuf);
 
 	return(0);
 }

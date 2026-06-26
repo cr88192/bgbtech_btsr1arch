@@ -1706,6 +1706,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_MODSL:		s0="MODS.L";	break;
 	case BJX2_NMID_MODUL:		s0="MODU.L";	break;
 	case BJX2_NMID_RSUB:		s0="RSUB";		break;
+	case BJX2_NMID_RSUBSL:		s0="RSUBS.L";	break;
+	case BJX2_NMID_RSUBUL:		s0="RSUBU.L";	break;
 
 	case BJX2_NMID_LDTEX:		s0="LDTEX";		break;
 

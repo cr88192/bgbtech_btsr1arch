@@ -1081,21 +1081,21 @@ int PDJPG_EncodeCtx(
 	{
 		if(ctx->yb)
 		{
-			free(ctx->yb);
-			free(ctx->ub);
-			free(ctx->vb);
-			free(ctx->ydb);
-			free(ctx->udb);
-			free(ctx->vdb);
+			pdjpg_free(ctx->yb);
+			pdjpg_free(ctx->ub);
+			pdjpg_free(ctx->vb);
+			pdjpg_free(ctx->ydb);
+			pdjpg_free(ctx->udb);
+			pdjpg_free(ctx->vdb);
 		}
 
-		ctx->yb=malloc(xs2*ys2);
-		ctx->ub=malloc(xs2*ys2);
-		ctx->vb=malloc(xs2*ys2);
+		ctx->yb=pdjpg_malloc(xs2*ys2);
+		ctx->ub=pdjpg_malloc(xs2*ys2);
+		ctx->vb=pdjpg_malloc(xs2*ys2);
 
-		ctx->ydb=malloc((xs2+8)*(ys2+8)*sizeof(short));
-		ctx->udb=malloc((xs3+8)*(ys3+8)*sizeof(short));
-		ctx->vdb=malloc((xs3+8)*(ys3+8)*sizeof(short));
+		ctx->ydb=pdjpg_malloc((xs2+8)*(ys2+8)*sizeof(short));
+		ctx->udb=pdjpg_malloc((xs3+8)*(ys3+8)*sizeof(short));
+		ctx->vdb=pdjpg_malloc((xs3+8)*(ys3+8)*sizeof(short));
 
 		ctx->lxs=xs;
 		ctx->lys=ys;
@@ -1304,7 +1304,7 @@ PDJPG_Context *PDJPG_AllocContext()
 {
 	PDJPG_Context *ctx;
 	
-	ctx=malloc(sizeof(PDJPG_Context));
+	ctx=pdjpg_malloc(sizeof(PDJPG_Context));
 	memset(ctx, 0, sizeof(PDJPG_Context));
 	return(ctx);
 }
@@ -1313,18 +1313,18 @@ void PDJPG_FreeContext(PDJPG_Context *ctx)
 {
 	if(ctx->yb)
 	{
-		free(ctx->yb);
-		free(ctx->ub);
-		free(ctx->vb);
-		free(ctx->ydb);
-		free(ctx->udb);
-		free(ctx->vdb);
+		pdjpg_free(ctx->yb);
+		pdjpg_free(ctx->ub);
+		pdjpg_free(ctx->vb);
+		pdjpg_free(ctx->ydb);
+		pdjpg_free(ctx->udb);
+		pdjpg_free(ctx->vdb);
 	}
 
 	if(ctx->jpg_imgbuf)
-		free(ctx->jpg_imgbuf);
+		pdjpg_free(ctx->jpg_imgbuf);
 
-	free(ctx);
+	pdjpg_free(ctx);
 }
 #endif
 
@@ -1673,21 +1673,21 @@ int PDJPG_EncodeFastCtx(PDJPG_Context *ctx,
 	{
 		if(ctx->yb)
 		{
-			free(ctx->yb);
-			free(ctx->ub);
-			free(ctx->vb);
-			free(ctx->ydb);
-			free(ctx->udb);
-			free(ctx->vdb);
+			pdjpg_free(ctx->yb);
+			pdjpg_free(ctx->ub);
+			pdjpg_free(ctx->vb);
+			pdjpg_free(ctx->ydb);
+			pdjpg_free(ctx->udb);
+			pdjpg_free(ctx->vdb);
 		}
 
-		ctx->yb=malloc(xs2*ys2);
-		ctx->ub=malloc(xs2*ys2);
-		ctx->vb=malloc(xs2*ys2);
+		ctx->yb=pdjpg_malloc(xs2*ys2);
+		ctx->ub=pdjpg_malloc(xs2*ys2);
+		ctx->vb=pdjpg_malloc(xs2*ys2);
 
-		ctx->ydb=malloc((xs2+8)*(ys2+16)*sizeof(short));
-		ctx->udb=malloc((xs3+8)*(ys3+8)*sizeof(short));
-		ctx->vdb=malloc((xs3+8)*(ys3+8)*sizeof(short));
+		ctx->ydb=pdjpg_malloc((xs2+8)*(ys2+16)*sizeof(short));
+		ctx->udb=pdjpg_malloc((xs3+8)*(ys3+8)*sizeof(short));
+		ctx->vdb=pdjpg_malloc((xs3+8)*(ys3+8)*sizeof(short));
 
 		ctx->lxs=xs;
 		ctx->lys=ys;
@@ -1968,11 +1968,11 @@ int PDJPG_EscapeEncodeSingleBuffer(byte *buf, int sz)
 	byte *tbuf;
 	int i;
 	
-	tbuf=malloc(sz*2);
+	tbuf=pdjpg_malloc(sz*2);
 	i=PDJPG_EscapeEncodeBuffer(buf, sz, tbuf, sz*2);
 	if(i<0)return(i);
 	memcpy(buf, tbuf, i);
-	free(tbuf);
+	pdjpg_free(tbuf);
 	return(i);
 }
 
@@ -1985,7 +1985,7 @@ int PDJPG_EncodeLDatCtx(
 	
 //	if(!ctx)ctx=PDJPG_AllocContext();
 
-	tbuf=malloc(1<<20);
+	tbuf=pdjpg_malloc(1<<20);
 	sz=PDJPG_EncodeCtx(ctx, ibuf, tbuf, xs, ys, qf, pf);
 
 	sz=PDJPG_EscapeEncodeSingleBuffer(tbuf, sz);
@@ -2029,7 +2029,7 @@ int PDJPG_EncodeLDatCtx(
 	}
 
 	sz=ctx->huff_ct-obuf;
-	free(tbuf);
+	pdjpg_free(tbuf);
 	
 	return(sz);
 }
@@ -2046,12 +2046,12 @@ int PDJPG_EncodeComponentCtx(
 	if(!rgba)return(-1);
 
 	n=xs*ys;
-	tbuf=malloc(xs*ys*4);
+	tbuf=pdjpg_malloc(xs*ys*4);
 
 	ct=obuf;
 //	ct=PDJPG_EmitComponentLayer(ctx, ct, "RGB");
 	i=PDJPG_EncodeCtx(ctx, rgba, ct, xs, ys, qf, 0);
-	if(i<0) { free(tbuf); return(i); }
+	if(i<0) { pdjpg_free(tbuf); return(i); }
 	ct+=i;
 	
 	if(norm)
@@ -2066,7 +2066,7 @@ int PDJPG_EncodeComponentCtx(
 
 		ct=PDJPG_EmitComponentLayer(ctx, ct, "XYZ");
 		i=PDJPG_EncodeLDatCtx(ctx, tbuf, ct, xs, ys, qf, 0);
-		if(i<0) { free(tbuf); return(i); }
+		if(i<0) { pdjpg_free(tbuf); return(i); }
 		ct+=i;
 	}
 
@@ -2074,7 +2074,7 @@ int PDJPG_EncodeComponentCtx(
 	{
 		ct=PDJPG_EmitComponentLayer(ctx, ct, "SpRGB");
 		i=PDJPG_EncodeLDatCtx(ctx, spec, ct, xs, ys, qf, 0);
-		if(i<0) { free(tbuf); return(i); }
+		if(i<0) { pdjpg_free(tbuf); return(i); }
 		ct+=i;
 	}
 
@@ -2091,7 +2091,7 @@ int PDJPG_EncodeComponentCtx(
 
 		ct=PDJPG_EmitComponentLayer(ctx, ct, "DASe");
 		i=PDJPG_EncodeLDatCtx(ctx, tbuf, ct, xs, ys, qf, 0);
-		if(i<0) { free(tbuf); return(i); }
+		if(i<0) { pdjpg_free(tbuf); return(i); }
 		ct+=i;
 	}else
 	{
@@ -2111,7 +2111,7 @@ int PDJPG_EncodeComponentCtx(
 			ct=PDJPG_EmitComponentLayer(ctx, ct, "Alpha");
 			i=PDJPG_EncodeLDatCtx(ctx,
 				tbuf, ct, xs, ys, qf, BTIC1H_PXF_YYYA);
-			if(i<0) { free(tbuf); return(i); }
+			if(i<0) { pdjpg_free(tbuf); return(i); }
 			ct+=i;
 		}
 	}
@@ -2120,11 +2120,11 @@ int PDJPG_EncodeComponentCtx(
 	{
 		ct=PDJPG_EmitComponentLayer(ctx, ct, "LuRGB");
 		i=PDJPG_EncodeLDatCtx(ctx, luma, ct, xs, ys, qf, 0);
-		if(i<0) { free(tbuf); return(i); }
+		if(i<0) { pdjpg_free(tbuf); return(i); }
 		ct+=i;
 	}
 
-	free(tbuf);
+	pdjpg_free(tbuf);
 	return(ct-obuf);
 }
 
@@ -2162,7 +2162,7 @@ int PDJPG_EncodeClrsCtx(
 	if(!rgba)return(-1);
 
 	n=xs*ys;
-	tbuf=malloc(xs*ys*4);
+	tbuf=pdjpg_malloc(xs*ys*4);
 
 	pf2=pf;
 	if(pf==BTIC1H_PXF_RGB8E8)
@@ -2170,7 +2170,7 @@ int PDJPG_EncodeClrsCtx(
 
 	ct=obuf;
 	i=PDJPG_EncodeCtx(ctx, rgba, ct, xs, ys, qf, pf2);
-	if(i<0) { free(tbuf); return(i); }
+	if(i<0) { pdjpg_free(tbuf); return(i); }
 	ct+=i;
 
 	if((pf==BTIC1H_PXF_RGBA) ||
@@ -2193,7 +2193,7 @@ int PDJPG_EncodeClrsCtx(
 			ct=PDJPG_EmitComponentLayer(ctx, ct, "Alpha");
 			i=PDJPG_EncodeLDatCtx(ctx,
 				tbuf, ct, xs, ys, qf, BTIC1H_PXF_YYYA);
-			if(i<0) { free(tbuf); return(i); }
+			if(i<0) { pdjpg_free(tbuf); return(i); }
 			ct+=i;
 		}
 	}
@@ -2216,11 +2216,11 @@ int PDJPG_EncodeClrsCtx(
 		ct=PDJPG_EmitComponentLayer(ctx, ct, "AlExp");
 		i=PDJPG_EncodeLDatCtx(ctx,
 			tbuf, ct, xs, ys, 100, BTIC1H_PXF_YYYA);
-		if(i<0) { free(tbuf); return(i); }
+		if(i<0) { pdjpg_free(tbuf); return(i); }
 		ct+=i;
 	}
 
-	free(tbuf);
+	pdjpg_free(tbuf);
 	return(ct-obuf);
 }
 

@@ -3261,8 +3261,8 @@ int BGBCC_JX2_DumpHistGraph(BGBCC_JX2_Context *ctx, char *fname)
 	isjpg=!strcmp(fname+strlen(fname)-4, ".jpg");
 	
 	xs=720; ys=480;
-	imgbuf=malloc(xs*ys*4);
-	tbuf=malloc(2048+xs*ys*2);
+	imgbuf=bgbcc_tmalloc2("misc", xs*ys*4);
+	tbuf=bgbcc_tmalloc2("misc", 2048+xs*ys*2);
 	
 	memset(imgbuf, 255, xs*ys*4);
 
@@ -8547,7 +8547,7 @@ int BGBCC_JX2_InitShufByte8(BGBCC_JX2_Context *ctx)
 	if(!fd)
 		return(-1);
 		
-	bgbcc_jx2_shuftab8b=malloc(16777216*sizeof(u64));
+	bgbcc_jx2_shuftab8b=bgbcc_tmalloc2("misc", 16777216*sizeof(u64));
 	
 	for(i=0; i<16777216; i++)
 	{
@@ -8564,7 +8564,7 @@ int BGBCC_JX2_InitShufByte8(BGBCC_JX2_Context *ctx)
 	k=(int)v;
 	if((k>0) && (k<16777216))
 	{
-		bgbcc_jx2_shufovf8b=malloc(k*sizeof(u64));
+		bgbcc_jx2_shufovf8b=bgbcc_tmalloc2("misc", k*sizeof(u64));
 		for(i=0; i<k; i++)
 		{
 			j=fread(&v, 1, 8, fd);

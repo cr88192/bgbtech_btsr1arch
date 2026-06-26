@@ -118,6 +118,8 @@ int BGBCP_DumpTargets(void);
 fourcc BGBCP_ImageFormatForName(char *name);
 char *BGBCP_BaseNameForName(char *name);
 char *BGBCP_BaseNameForNameLC(char *name);
+BGBCP_ParseState *BGBCP_AllocParseState();
+void BGBCP_FreeParseState(BGBCP_ParseState *ctx);
 BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf);
 char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf);
 int BGBCP_SetDefaultLocale(char *locale);
@@ -324,9 +326,10 @@ int BGBPP_Line(BGBCP_ParseState *ctx, char *str);
 int BGBPP_LineDigraph(BGBCP_ParseState *ctx, char *str);
 int BGBPP_LinePostFilter(BGBCP_ParseState *ctx, char *str);
 char *BGBPP_ParseLine(BGBCP_ParseState *ctx, char *s, char *b);
+int BGBPP_ExpandOutputBuffer(BGBCP_ParseState *ctx);
 int BGBPP_BufferLine(BGBCP_ParseState *ctx, char *b);
 int BGBPP_Buffer(BGBCP_ParseState *ctx, char *ibuf);
-int BGBPP_Filter(BGBCP_ParseState *ctx, char *ibuf, char *obuf, int osz);
+int BGBPP_FilterB(BGBCP_ParseState *ctx, char *ibuf, char **robuf);
 //AHSRC:mm/cc_tokord.c
 //AHSRC:mm/cca_node.c
 int bccx_strcmp(char *s1, char *s2);
@@ -628,6 +631,10 @@ int BGBCC_Int128_CheckSx64P(bgbcc_vint128 a);
 //AHSRC:mm/cc_malloc.c
 void BGBCC_DieError();
 void BGBCC_DieFatal();
+void BGBCC_MallocAddStatSwaps(int idx);
+void BGBCC_DoMallocStats(int flag);
+void BGBCC_MallocAddStatTyi(int tyi, int sz);
+void BGBCC_DumpMemStats();
 void BGBCC_CleanupAll();
 int bgbcc_malloc_memset(void *buf, int val, int sz);
 void *bgbcc_tmalloc(char *ty, int sz);
@@ -636,6 +643,8 @@ void *bgbcc_malloc(int sz);
 void *bgbcc_tmalloc2(char *ty, int sz);
 void *bgbcc_malloc2(int sz);
 void bgbcc_free(void *p);
+void bgbcc_free2(void *p);
+void *bgbcc_realloc2(void *ptr, int sz);
 void *bgbcc_realloc(void *ptr, int sz);
 int bgbcc_malloc_lookupblock(void *obj);
 int bgbcc_stralloc_lookupblock(void *obj);
@@ -888,6 +897,7 @@ int AD4B_EncBestPat16b(s16 *ibuf, int *rpred, int *ridx);
 void BGBCC_MsImaAdpcm_EncodeBlockMono4b_Opt(s16 *ibuf, byte *obuf, int len, int *rpred, int *ridx, int qfl);
 //AHSRC:mm/cc_fmt_bmp.c
 byte *BGBBTJ_BufPNG_Decode(byte *csbuf, int cssz, int *w, int *h);
+void *bgbcc_malloc_bmp(int sz);
 int BGBCC_Img_DecodeBMP_CRAM8(byte *imgbuf,byte *imgdat, int xs, int ys, byte *pal);
 int BGBCC_Img_DecodeBMP_CQ8(byte *imgbuf,byte *imgdat, int xs, int ys, byte *pal);
 byte *BGBCC_Img_DecodeBMP(byte *imgbuf, int *rw, int *rh);
@@ -939,6 +949,8 @@ int BGBCC_LoadConvResource_ImageCheckResize(byte **ribuf, int *rxs, int *rys, in
 byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,char *cnvstr, int *rsz, fourcc *rfcc);
 //AHSRC:mm/qoilz_dec.c
 void QOILZ_LzMemCpy(byte *dst, byte *src, int sz);
+void *qoi_malloc(int sz);
+void qoi_free(void *ptr);
 int QOI_DecImageBufferFlat(byte *imgbuf, byte *inbuf, int *rxs, int *rys, int decfl);
 byte *QOI_DecImageBuffer(byte *inbuf, int *rxs, int *rys);
 void QOILZ_LzMemCpy(byte *dst, byte *src, int sz);
@@ -965,6 +977,8 @@ int QOILZ_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int fl);
 int QOILZ_EncodeImageBuffer555(byte *dstbuf, u16 *img, int xs, int ys, int fl);
 //AHSRC:mm/lcif_dec.c
 void LCIF_LzMemCpy(byte *dst, byte *src, int sz);
+void *lcif_malloc(int sz);
+void lcif_free(void *ptr);
 byte *LCIF_DecColorPlane(byte *outbuf, byte *inbuf, int xs, int ys);
 void LCIF_LzMemCpy(byte *dst, byte *src, int sz);
 u32 LCIF_HashBuffer(byte *buf, int sz);
@@ -996,6 +1010,8 @@ int LCIF_LossyCalcErrorYUVA(int cr0, int cg0, int cb0, int ca0, int cr1, int cg1
 int LCIF_EncodeQuantizeColorPlane(byte *pix, u64 *blkbuf, int xs, int ys, int errtb);
 int LCIF_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int flags);
 //AHSRC:mm/tkupic_dec.c
+void *tkupi_malloc(int sz);
+void tkupi_free(void *ptr);
 int TKuPI_PeekBits(TKuPI_DecState *ctx, int bits);
 void TKuPI_SkipBits(TKuPI_DecState *ctx, int bits);
 void TKuPI_SetupReadBits(TKuPI_DecState *ctx, byte *buf);
@@ -1088,6 +1104,8 @@ int TKuPI_EncodeImageBuffer(TKuPI_EncState *ctx,byte *ibuf, int szibuf, byte *oi
 int TKuPI_EncodeImageBufferH(TKuPI_EncState *ctx,byte *ibuf, int szibuf, byte *oimg, int oxs, int oys, int qfl);
 int TKuPI_EncodeImageBufferTemp(byte *ibuf, byte *oimg, int oxs, int oys, int qfl);
 //AHSRC:mm/bufpng.c
+void *bufpng_malloc(int sz);
+void bufpng_free(void *buf);
 u32 BGBBTJ_BufPNG_DataAdler32(void *buf, int sz, u32 lcrc);
 void BGBBTJ_BufPNG_DataAdler32_Step16(byte *buf, u32 *rs1, u32 *rs2);
 u32 BGBBTJ_BufPNG_DataAdler32(void *buf, int sz, u32 lcrc);
@@ -1115,6 +1133,8 @@ void BGBBTJ_BufPNG_WriteFourcc(byte **rct, u32 v);
 void BGBBTJ_BufPNG_WriteChunk(byte **rct, u32 fcc, byte *buf, int len);
 int BGBBTJ_BufPNG_Encode(byte *ctbuf, int ctsz, byte *buf, int xs, int ys);
 //AHSRC:mm/bcn_decjpg.c
+void *pdjpg_malloc(int sz);
+void pdjpg_free(void *buf);
 PDJPG_Context *PDJPG_AllocContext();
 void PDJPG_FreeContext(PDJPG_Context *ctx);
 PDJPG_Context *PDJPG_AllocPoolContext();
@@ -1321,7 +1341,7 @@ ccxl_status BGBCC_CCXL_EmitCSelCmp(BGBCC_TransState *ctx,ccxl_type type, ccxl_re
 ccxl_status BGBCC_CCXL_EmitCSelCmpZero(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, ccxl_type ptype, int cmpop, ccxl_register srcc);
 ccxl_status BGBCC_CCXL_InlineAsmBlob(BGBCC_TransState *ctx, char *text);
 ccxl_status BGBCC_CCXL_EmitBitMov(BGBCC_TransState *ctx,ccxl_type type, ccxl_register dst, ccxl_register srca, ccxl_register srcb, int shl, int mlo, int mhi);
-ccxl_status BGBCC_CCXL_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
+ccxl_status BGBCC_CCXL_FlattenImage(BGBCC_TransState *ctx,byte **robuf, int *rosz, fourcc imgfmt);
 ccxl_status BGBCC_CCXL_AddResourceData(BGBCC_TransState *ctx,char *name, byte *buf, int sz, fourcc imgfmt);
 ccxl_status BGBCC_CCXL_SetupContextForArch(BGBCC_TransState *ctx);
 ccxl_status BGBCC_CCXL_SetupParserForArch(BGBCP_ParseState *ctx);
@@ -1524,14 +1544,18 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetGlobal2I(BGBCC_TransState *ctx, char *nam
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_GetGlobal(BGBCC_TransState *ctx, char *name);
 void BGBCC_CCXL_NormalizeGlobalDeclQn(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *decl);
 void BGBCC_CCXL_AddGlobalDecl(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *decl);
+BGBCC_CCXL_RegisterInfo **BGBCC_CCXL_AllocPregInfoPtrs(BGBCC_TransState *ctx, int n);
+BGBCC_CCXL_RegisterInfo **BGBCC_CCXL_ReAllocPregInfo(BGBCC_TransState *ctx, BGBCC_CCXL_RegisterInfo **oldlst, int newsz, int oldsz);
+ccxl_register *BGBCC_CCXL_ReAllocRegsIx(BGBCC_TransState *ctx, ccxl_register *oldlst, int newsz, int oldsz);
 void BGBCC_CCXL_AddFrameArg(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
 void BGBCC_CCXL_AddFrameLocal(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
 void BGBCC_CCXL_AddFrameField(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
 void BGBCC_CCXL_AddFrameReg(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
 void BGBCC_CCXL_AddFrameStatic(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *frame, BGBCC_CCXL_RegisterInfo *decl);
+void BGBCC_CCXL_ListAddLiteral(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *list, ccxl_register val);
+int BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
 BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_AllocLiteral(BGBCC_TransState *ctx);
 void BGBCC_CCXL_CheckFreeLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
-int BGBCC_CCXL_AddLiteral(BGBCC_TransState *ctx,BGBCC_CCXL_LiteralInfo *obj);
 char *BGBCC_CCXL_GetParentLiteralSig(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj);
 char *BGBCC_CCXL_GetParentLiteralSigDeref(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj);
 char *BGBCC_CCXL_GetObjQNameR_I(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *obj, char *vt);
@@ -1549,7 +1573,6 @@ void BGBCC_CCXL_AttribStr(BGBCC_TransState *ctx, int attr, char *str);
 void BGBCC_CCXL_AttribInt(BGBCC_TransState *ctx, int attr, int val);
 void BGBCC_CCXL_AttribLong(BGBCC_TransState *ctx, int attr, s64 val);
 void BGBCC_CCXL_Marker(BGBCC_TransState *ctx, int tag);
-void BGBCC_CCXL_ListAddLiteral(BGBCC_TransState *ctx, BGBCC_CCXL_LiteralInfo *list, ccxl_register val);
 void BGBCC_CCXL_LiteralSetField(BGBCC_TransState *ctx,int attr, char *name);
 void BGBCC_CCXL_LiteralInt(BGBCC_TransState *ctx, int attr, s32 val);
 void BGBCC_CCXL_LiteralLong(BGBCC_TransState *ctx, int attr, s64 val);
@@ -1788,6 +1811,7 @@ BCCX_Node *BGBCC_CCXL_ReduceExprIfArch(BGBCC_TransState *ctx, BCCX_Node *l);
 BCCX_Node *BGBCC_CCXL_TryReduceExprAsTypeSig(BGBCC_TransState *ctx,char *sig, BCCX_Node *l);
 //AHSRC:ccxl/ccxl_register.c
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_AllocRegisterInfo(BGBCC_TransState *ctx);
+BGBCC_CCXL_RegisterExtInfo *BGBCC_CCXL_AllocRegisterExtInfo(BGBCC_TransState *ctx);
 bool BGBCC_CCXL_FreeRegisterInfo(BGBCC_TransState *ctx,BGBCC_CCXL_RegisterInfo *rinf);
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_CloneRegisterInfo(BGBCC_TransState *ctx, BGBCC_CCXL_RegisterInfo *rinf);
 ccxl_status BGBCC_CCXL_RegisterAllocTemporary(BGBCC_TransState *ctx, ccxl_type bty, ccxl_register *rtreg);
@@ -2070,8 +2094,14 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupStructureMethodRns(BGBCC_TransState *c
 BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupStructureVirtualMethod(BGBCC_TransState *ctx, char *cname, char *fname, char *sig);
 //AHSRC:ccxl/ccxl_trace.c
 BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOp(BGBCC_TransState *ctx);
+BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOpTrim(BGBCC_TransState *ctx);
+BGBCC_CCXL_VirtOp *BGBCC_CCXL_AllocVirtOpTrim(BGBCC_TransState *ctx);
 BGBCC_CCXL_VirtTr *BGBCC_CCXL_AllocVirtTr(BGBCC_TransState *ctx);
 BGBCC_CCXL_VirtOp *BGBCC_CCXL_CloneVirtOp(BGBCC_TransState *ctx,BGBCC_CCXL_VirtOp *vop);
+BGBCC_CCXL_VirtOp **BGBCC_CCXL_AllocVirtOpPtrs(BGBCC_TransState *ctx, int n);
+BGBCC_CCXL_VirtTr **BGBCC_CCXL_AllocVirtTrPtrs(BGBCC_TransState *ctx, int n);
+ccxl_register *BGBCC_CCXL_AllocVirtRegs(BGBCC_TransState *ctx, int n);
+ccxl_label *BGBCC_CCXL_AllocVirtLabels(BGBCC_TransState *ctx, int n);
 int BGBCC_CCXL_AddVirtOp(BGBCC_TransState *ctx, BGBCC_CCXL_VirtOp *op);
 int BGBCC_CCXL_AddVirtTr(BGBCC_TransState *ctx, BGBCC_CCXL_VirtTr *tr);
 int BGBCC_CCXL_EmitMarkEndTrace(BGBCC_TransState *ctx);
@@ -2228,6 +2258,7 @@ int BGBCC_CCXL_TypeMayaliasPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeAtomicPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeBigEndianP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeUnpackOverflow(BGBCC_TransState *ctx, ccxl_type ty, BGBCC_CCXL_TypeOverflow *rovf);
+BGBCC_CCXL_TypeOverflow *BGBCC_CCXL_AllocTypeOverflow(BGBCC_TransState *ctx);
 int BGBCC_CCXL_TypeIndexOverflow(BGBCC_TransState *ctx, BGBCC_CCXL_TypeOverflow ovf);
 ccxl_status BGBCC_CCXL_TypeFromOverflow(BGBCC_TransState *ctx, ccxl_type *rty, BGBCC_CCXL_TypeOverflow ovf);
 ccxl_status BGBCC_CCXL_TypeCanonizeOverflow(BGBCC_TransState *ctx, ccxl_type *rdty, ccxl_type sty);
@@ -2389,7 +2420,7 @@ int BGBCC_SHXC_LookupLabelIndex(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, 
 int BGBCC_SHXC_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
 int BGBCC_SHXC_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, int lblid);
 ccxl_status BGBCC_SHXC_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, byte *imgbase);
-ccxl_status BGBCC_SHXC_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
+ccxl_status BGBCC_SHXC_FlattenImage(BGBCC_TransState *ctx,byte **robuf, int *rosz, fourcc imgfmt);
 //AHSRC:shcc/shx_conv.c
 int BGBCC_SHXC_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_SHX_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:shcc/shx_elf.c
@@ -2847,7 +2878,7 @@ int BGBCC_BSRC_LookupLabelImgOffs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx
 int BGBCC_BSRC_LookupLabelImgVA(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, int lblid);
 void bgbcc_bsrcc_setu16en(byte *ct, int en, u16 v);
 ccxl_status BGBCC_BSRC_ApplyImageRelocs(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, byte *imgbase);
-ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
+ccxl_status BGBCC_BSRC_FlattenImage(BGBCC_TransState *ctx,byte **robuf, int *rosz, fourcc imgfmt);
 //AHSRC:bsrcc/bsr_conv.c
 int BGBCC_BSRC_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_BSR_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:bsrcc/bsr_emit.c
@@ -3281,6 +3312,7 @@ int BGBCC_JX2C_EmitReturnVoid(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_EmitNormalizeRegForType(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, int creg);
 int BGBCC_JX2C_EmitReturnVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register sreg);
 int BGBCC_JX2C_EmitCsrvVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dreg, ccxl_register fcn);
+int bgbcc_jx2c_strcmp(char *s1, char *s2);
 int BGBCC_JX2C_CheckCallPossibleBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitCallBuiltin(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, char *name);
 int BGBCC_JX2C_EmitCallBuiltinArgs(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type type, ccxl_register dst, char *name, int narg, ccxl_register *args);
@@ -3369,7 +3401,7 @@ ccxl_status BGBCC_JX2C_CheckRWadInit(BGBCC_TransState *ctx);
 ccxl_status BGBCC_JX2C_AddRWadLump(BGBCC_TransState *ctx,char *name, byte *buf, int csz, int dsz, int cmp, int ety);
 int BGBCC_JX2C_ResourceTypeForFourcc(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, fourcc fmt);
 ccxl_status BGBCC_JX2C_AddResourceData(BGBCC_TransState *ctx,char *name, byte *buf, int sz, fourcc imgfmt);
-ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
+ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,byte **robuf, int *rosz, fourcc imgfmt);
 //AHSRC:jx2cc/jx2_conv.c
 int BGBCC_JX2C_EmitConvVRegVReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, ccxl_type dtype, ccxl_type stype, ccxl_register dreg, ccxl_register sreg);
 //AHSRC:jx2cc/jx2_emit.c
@@ -3819,6 +3851,7 @@ int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6I(BGBCC_JX2_Context *ctx, s64 opwb, int rm, 
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm6s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRRIRJ_Imm24s(BGBCC_JX2_Context *ctx, s64 opwb, int rm, int ro, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRRRJ(BGBCC_JX2_Context *ctx, s64 opwb, int sid, int rm, int ro, int rn, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2X3_CheckEncodeLd2RDRJ(BGBCC_JX2_Context *ctx, s64 opwb, int sdu, int rm, int ro, int disp, int rn, int sc, int fixsc, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm17sI(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeRIRJ_Imm16fp(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int rn, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_CheckEncodeIRJ_Imm6I(BGBCC_JX2_Context *ctx, s64 opwb, s64 imm, int reg, s64 *ropw1, s64 *ropw2);
@@ -3835,6 +3868,9 @@ int BGBCC_JX2X3_TryEmitOpLdReg2Reg(BGBCC_JX2_Context *ctx, int nmid, int rm, int
 int BGBCC_JX2X3_TryEmitOpRegStReg2(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn);
 int BGBCC_JX2X3_TryEmitOpRegStRegDisp(BGBCC_JX2_Context *ctx, int nmid, int rm, int rn, s64 disp);
 int BGBCC_JX2X3_TryEmitOpLdRegDispReg(BGBCC_JX2_Context *ctx,int nmid, int rm, s64 disp, int rn);
+int BGBCC_JX2X3_CheckEncodeLd2RDRJ(BGBCC_JX2_Context *ctx, s64 opwb, int sdu, int rm, int ro, int disp, int rn, int sc, int fixsc, s64 *ropw1, s64 *ropw2);
+int BGBCC_JX2X3_TryEmitOpLdReg2DispReg(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int disp, int rn);
+int BGBCC_JX2X3_TryEmitOpRegStReg2Disp(BGBCC_JX2_Context *ctx, int nmid, int rm, int ro, int rn, int disp);
 int BGBCC_JX2X3_TryEmitOpRegRegLbl(BGBCC_JX2_Context *ctx,int nmid, int rm, int rn, int lbl);
 int BGBCC_JX2X3_CheckEncodeRIDJ_Imm17sDisp10sI(BGBCC_JX2_Context *ctx, s64 opwb, int rm, s64 imm, int disp, int shr, s64 *ropw1, s64 *ropw2);
 int BGBCC_JX2X3_TryEmitOpImmRegLbl(BGBCC_JX2_Context *ctx,int nmid, s64 imm, int rn, int lbl);
@@ -4110,7 +4146,7 @@ u32 BGBCC_JX2C_CalculateImagePeChecksum(byte *buf, int size, int en);
 u32 BGBCC_JX2C_CalculateImagePel4Checksum(byte *buf, int size, int en);
 u32 BGBCC_JX2C_CalculateImagePel4BChecksum(byte *buf, int size, int en);
 int BGBCC_JX2C_MapSortAddrArrays(s32 *map_lvatab, char **map_lvntab, byte *map_lvmtab, int map_nlbln, int rdepth);
-ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,byte *obuf, int *rosz, fourcc imgfmt);
+ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,byte **robuf, int *rosz, fourcc imgfmt);
 //AHSRC:jx2cc/jx2_register.c
 int BGBCC_JX2C_InitRemaps(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_RemapRegJx2Rv(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);
@@ -4870,7 +4906,7 @@ int BGBCC_LoadCMeta(char *name);
 BCCX_Node *BGBCC_LoadCSourceAST(char *name);
 char *BGBCC_LoadCSourcePPOnly(char *name);
 int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name);
-int BGBCC_LoadCSourcesCCXL(char **names, int nnames, byte *obuf, int *rsz, fourcc imgfmt);
+int BGBCC_LoadCSourcesCCXL(char **names, int nnames, byte **robuf, int *rsz, fourcc imgfmt);
 u32 BGBCC_GetArch();
 u32 BGBCC_GetSubArch();
 int BGBCC_LoadConfig(char *name);

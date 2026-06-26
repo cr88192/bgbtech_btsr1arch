@@ -116,7 +116,7 @@ int BGBCC_SHXC_EmitLoadSlotVRegVRegImm(
 
 //	obj=ctx->reg_globals[gblid];
 	obj=ctx->literals[gblid]->decl;
-	fi=obj->fields[fid];
+	fi=obj->ext->fields[fid];
 
 	type2=fi->type;
 
@@ -261,7 +261,7 @@ int BGBCC_SHXC_EmitStoreSlotVRegVRegImm(
 
 //	obj=ctx->reg_globals[gblid];
 	obj=ctx->literals[gblid]->decl;
-	fi=obj->fields[fid];
+	fi=obj->ext->fields[fid];
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type))
 	{
@@ -407,7 +407,7 @@ int BGBCC_SHXC_EmitLoadSlotAddrVRegVRegImm(
 
 //	obj=ctx->reg_globals[gblid];
 	obj=ctx->literals[gblid]->decl;
-	fi=obj->fields[fid];
+	fi=obj->ext->fields[fid];
 
 	if(BGBCC_CCXL_TypeValueObjectP(ctx, type) ||
 		BGBCC_CCXL_TypeArrayP(ctx, type))

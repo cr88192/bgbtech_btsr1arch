@@ -5466,7 +5466,7 @@ int BGBCC_JX2C_CheckVRegMoreUsesInTraceStepP(
 //	for(i=cvi+1; i<cve; i++)
 	for(i=cvi+step; i<cve; i++)
 	{
-		vop=obj->vop[i];
+		vop=obj->ext->vop[i];
 		
 		if(
 			BGBCC_CCXL_RegisterIdentEqualP(ctx, vop->dst, reg) ||
@@ -5711,7 +5711,7 @@ int BGBCC_JX2C_EmitReleaseRegister(
 	{
 		i=BGBCC_CCXL_GetRegID(ctx, reg);
 //		sig=ctx->reg_globals[i]->sig;
-		s0=ctx->reg_globals[i]->name;
+		s0=bgbcc_strtab_i(ctx->reg_globals[i]->name_ix);
 		if(!strncmp(s0, "__arch_", 7))
 		{
 			i=-1;
@@ -6566,11 +6566,11 @@ int BGBCC_JX2C_EmitLabelFlushRegisters(
 		sctx->regalc_pair&=~(1ULL<<i);
 	}
 
-	for(i=0; i<ctx->cur_func->n_regs; i++)
+	for(i=0; i<ctx->cur_func->ext->n_regs; i++)
 		{ sctx->reg_stflag[i]=0; }
-	for(i=0; i<ctx->cur_func->n_args; i++)
+	for(i=0; i<ctx->cur_func->ext->n_args; i++)
 		{ sctx->arg_stflag[i]=0; }
-	for(i=0; i<ctx->cur_func->n_locals; i++)
+	for(i=0; i<ctx->cur_func->ext->n_locals; i++)
 		{ sctx->lcl_stflag[i]=0; }
 	
 	return(0);
@@ -6706,7 +6706,7 @@ int BGBCC_JX2C_EmitTempLoadReg(
 	{
 		j=sreg.val&CCXL_REGID_BASEMASK;
 //		rcls=ctx->cur_func->regs[j]->regcls;
-		ctx->cur_func->regs[j]->regflags|=BGBCC_REGFL_TEMPLOAD;
+		ctx->cur_func->ext->regs[j]->regflags|=BGBCC_REGFL_TEMPLOAD;
 //		sctx->reg_stflag[j]|=1;
 	}
 

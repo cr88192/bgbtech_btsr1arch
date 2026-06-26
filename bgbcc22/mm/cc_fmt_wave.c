@@ -81,7 +81,7 @@ byte *BGBCC_WAVE_LoadWAV(byte *ibuf, int ibufsz,
 	pfmt=ibuf+fofs;
 	pdat=ibuf+dofs;
 	
-	dat1=malloc(dsz);
+	dat1=bgbcc_tmalloc2("misc_fmt_wave", dsz);
 	memcpy(dat1, pdat, dsz);
 	
 	fmt=pfmt[0]+(pfmt[1]<<8);
@@ -161,7 +161,7 @@ short *BGBCC_WAVE_LoadWAV16(
 	{
 		if(bts==8)
 		{
-			bp=malloc(ch*len*sizeof(short)+1024);
+			bp=bgbcc_tmalloc2("misc_fmt_wave", ch*len*sizeof(short)+1024);
 
 			for(i=0; i<(ch*len); i++)
 			{
@@ -176,7 +176,7 @@ short *BGBCC_WAVE_LoadWAV16(
 
 	if(fmt==BGBCC_WAVE_FMT_ALAW)
 	{
-		bp=malloc(ch*len*sizeof(short)+1024);
+		bp=bgbcc_tmalloc2("misc_fmt_wave", ch*len*sizeof(short)+1024);
 
 		for(i=0; i<(ch*len); i++)
 		{
@@ -191,14 +191,14 @@ short *BGBCC_WAVE_LoadWAV16(
 
 	if(fmt==BGBCC_WAVE_FMT_ADLQ)
 	{
-		bp=malloc(ch*len*sizeof(short)+1024);
+		bp=bgbcc_tmalloc2("misc_fmt_wave", ch*len*sizeof(short)+1024);
 		BGBCC_WAVE_DecodeStreamAdlq(bp, bpb, ch, len);
 		free(bpb);
 	}
 
 	if(fmt==BGBCC_WAVE_FMT_IMAADPCM)
 	{
-		bp=malloc(ch*len*sizeof(short)+1024);
+		bp=bgbcc_tmalloc2("misc_fmt_wave", ch*len*sizeof(short)+1024);
 		if(bts==4)
 			BGBCC_WAVE_DecodeStreamImaAdpcm(bp, bpb, ch, len, blksz);
 		if(bts==2)
@@ -237,7 +237,7 @@ short *BGBCC_WAVE_LoadWAV_Mono16(
 	bp=NULL;
 	if(bts==8)
 	{
-		bp=malloc(ch*len*sizeof(short)+1024);
+		bp=bgbcc_tmalloc2("misc_fmt_wave", ch*len*sizeof(short)+1024);
 
 		for(i=0; i<(ch*len); i++)
 		{
@@ -266,7 +266,7 @@ short *BGBCC_WAVE_LoadWAV_Mono16(
 
 	if(ch>1)
 	{
-		bp1=malloc(len*sizeof(short));
+		bp1=bgbcc_tmalloc2("misc_fmt_wave", len*sizeof(short));
 		for(i=0; i<len; i++)
 		{
 			k=0;
@@ -303,7 +303,7 @@ short *BGBCC_WAVE_LoadWAV_Stereo16(
 	bp=NULL;
 	if(bts==8)
 	{
-		bp=malloc(ch*len*sizeof(short));
+		bp=bgbcc_tmalloc2("misc_fmt_wave", ch*len*sizeof(short));
 
 		for(i=0; i<(ch*len); i++)
 		{
@@ -332,7 +332,7 @@ short *BGBCC_WAVE_LoadWAV_Stereo16(
 
 	if(ch==1)
 	{
-		bp1=malloc(len*2*sizeof(short));
+		bp1=bgbcc_tmalloc2("misc_fmt_wave", len*2*sizeof(short));
 		for(i=0; i<len; i++)
 		{
 			k=bp[i];
@@ -363,7 +363,7 @@ short *BGBCC_WAVE_LoadWAV_RateMono16(
 	if(rt!=rate)
 	{
 		i=len*((1.0*rate)/rt);
-		bp1=malloc(i*sizeof(short));
+		bp1=bgbcc_tmalloc2("misc_fmt_wave", i*sizeof(short));
 
 		BGBCC_WAVE_ScaleSampleMono(bp1, i, bp, len);
 
@@ -390,7 +390,7 @@ short *BGBCC_WAVE_LoadWAV_RateStereo16(
 	if(rt!=rate)
 	{
 		i=len*((1.0*rate)/rt);
-		bp1=malloc(i*2*sizeof(short));
+		bp1=bgbcc_tmalloc2("misc_fmt_wave", i*2*sizeof(short));
 
 		BGBCC_WAVE_ScaleSampleStereo(bp1, i, bp, len);
 
@@ -427,8 +427,8 @@ int BGBCC_WAVE_ScaleSampleTrilinearMono(short *d, int dl, short *s, int sl)
 	tl=1;
 	while(sl>tl)tl<<=1;
 
-	tb=malloc(tl*sizeof(float));
-	tb1=malloc(tl*sizeof(float));
+	tb=bgbcc_tmalloc2("misc_fmt_wave", tl*sizeof(float));
+	tb1=bgbcc_tmalloc2("misc_fmt_wave", tl*sizeof(float));
 
 	r=(((float)(sl-1))/((float)tl));
 	for(i=0; i<tl; i++)
@@ -508,8 +508,8 @@ int BGBCC_WAVE_ScaleSampleTrilinearStereo(
 	tl=1;
 	while(sl>tl)tl<<=1;
 
-	tb=malloc(tl*2*sizeof(float));
-	tb1=malloc(tl*2*sizeof(float));
+	tb=bgbcc_tmalloc2("misc_fmt_wave", tl*2*sizeof(float));
+	tb1=bgbcc_tmalloc2("misc_fmt_wave", tl*2*sizeof(float));
 
 	r=(((float)(sl-1))/((float)tl));
 	for(i=0; i<tl; i++)
@@ -911,7 +911,7 @@ int BGBCC_WAVE_StoreWaveCnvALaw(
 	
 	err=0;
 	n=ch*len;
-	tbuf=malloc(n);
+	tbuf=bgbcc_tmalloc2("misc_fmt_wave", n);
 	for(i=0; i<n; i++)
 	{
 		s0=ibuf[i];
@@ -944,7 +944,7 @@ int BGBCC_WAVE_StoreWaveCnvPcm8(
 	
 	err=0;
 	n=ch*len;
-	tbuf=malloc(n);
+	tbuf=bgbcc_tmalloc2("misc_fmt_wave", n);
 	for(i=0; i<n; i++)
 	{
 		s0=ibuf[i];
@@ -2226,7 +2226,7 @@ int BGBCC_WAVE_StoreWaveImaAdpcm_Opt(
 	nblk=(len+(blksc-1))/blksc;
 	blksz=((blksc/2)+4)*ch;
 
-	tbuf=malloc(nblk*blksz);
+	tbuf=bgbcc_tmalloc2("misc_fmt_wave", nblk*blksz);
 	
 	cs=ibuf;	cse=ibuf+(len*ch);
 	ct=tbuf;
@@ -2329,7 +2329,7 @@ int BGBCC_WAVE_StoreWaveImaAdpcm2b_Opt(
 	nblk=(len+(blksc-1))/blksc;
 	blksz=((blksc/4)+4)*ch;
 
-	tbuf=malloc(nblk*blksz);
+	tbuf=bgbcc_tmalloc2("misc_fmt_wave", nblk*blksz);
 	
 	cs=ibuf;	cse=ibuf+(len*ch);
 	ct=tbuf;

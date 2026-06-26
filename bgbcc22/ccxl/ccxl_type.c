@@ -3639,7 +3639,8 @@ ccxl_status BGBCC_CCXL_TypePointerType(
 
 		if((sty.val&CCXL_TY_PTRMASK)==CCXL_TYB1_PTRIDXE)
 		{
-			tty.val=sty.val+CCXL_TY_PTRIDX1;
+//			tty.val=sty.val+CCXL_TY_PTRIDX1;
+			tty.val=(sty.val&(~CCXL_TY_PTRMASK))|CCXL_TY_PTRIDX1;
 			*rdty=tty;
 			return(CCXL_STATUS_YES);
 		}
@@ -4368,6 +4369,29 @@ int BGBCC_CCXL_TypeUnpackOverflow(
 	return(CCXL_STATUS_NO);
 }
 
+BGBCC_CCXL_TypeOverflow *bgbcc_ccxl_tyovfa_cur;
+BGBCC_CCXL_TypeOverflow *bgbcc_ccxl_tyovfa_end;
+
+BGBCC_CCXL_TypeOverflow *BGBCC_CCXL_AllocTypeOverflow(
+	BGBCC_TransState *ctx)
+{
+	BGBCC_CCXL_TypeOverflow *p;
+
+	if(bgbcc_ccxl_tyovfa_cur &&
+		(bgbcc_ccxl_tyovfa_cur<bgbcc_ccxl_tyovfa_end))
+	{
+		p=bgbcc_ccxl_tyovfa_cur;
+		bgbcc_ccxl_tyovfa_cur++;
+		return(p);
+	}
+	
+	p=bgbcc_tmalloc("_ccxl_tyovf_t",
+		64*sizeof(BGBCC_CCXL_TypeOverflow));
+	bgbcc_ccxl_tyovfa_cur=p+1;
+	bgbcc_ccxl_tyovfa_end=p+64;
+	return(p);
+}
+
 int BGBCC_CCXL_TypeIndexOverflow(
 	BGBCC_TransState *ctx,
 	BGBCC_CCXL_TypeOverflow ovf)
@@ -4377,7 +4401,8 @@ int BGBCC_CCXL_TypeIndexOverflow(
 	if(!ctx->tyovf)
 	{
 		k=16384;
-		ctx->tyovf=bgbcc_malloc(k*sizeof(BGBCC_CCXL_TypeOverflow *));
+		ctx->tyovf=bgbcc_tmalloc("_ccxl_tyovf_p",
+			k*sizeof(BGBCC_CCXL_TypeOverflow *));
 		ctx->n_tyovf=0;
 		ctx->m_tyovf=k;
 	}
@@ -4398,7 +4423,9 @@ int BGBCC_CCXL_TypeIndexOverflow(
 	}
 
 	i=ctx->n_tyovf++;
-	ctx->tyovf[i]=bgbcc_malloc(sizeof(BGBCC_CCXL_TypeOverflow));
+//	ctx->tyovf[i]=bgbcc_tmalloc("_ccxl_tyovf_t",
+//		sizeof(BGBCC_CCXL_TypeOverflow));
+	ctx->tyovf[i]=BGBCC_CCXL_AllocTypeOverflow(ctx);
 	memcpy(ctx->tyovf[i], &(ovf), sizeof(BGBCC_CCXL_TypeOverflow));
 	return(i);
 }

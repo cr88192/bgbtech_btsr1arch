@@ -921,9 +921,14 @@ int BGBCC_FR2E_EmitVirtOp(
 	if(op->srcb.val)	msk|=  32;
 	if(op->prd)			msk|= 128;
 	if(op->stype.val)	msk|= 256;
-	if(op->srcc.val)	msk|= 512;
-	if(op->srcd.val)	msk|=1024;
-	if(op->immty)		msk|=  64;
+
+	if(op->immty!=CCXL_VOPITY_TRIM)
+	{
+		if(op->srcc.val)	msk|= 512;
+		if(op->srcd.val)	msk|=1024;
+		if(op->dstb.val)	msk|=2048;
+		if(op->immty)		msk|=  64;
+	}
 	
 	msk|=1;
 	
@@ -977,6 +982,9 @@ int BGBCC_FR2E_EmitVirtOp(
 		img->stat_vopn_reg++;	}
 	if(msk&1024)
 	{	ct=BGBCC_FR2E_BufEmitRegister(ctx, img, ct, op->srcd, 1);
+		img->stat_vopn_reg++;	}
+	if(msk&2048)
+	{	ct=BGBCC_FR2E_BufEmitRegister(ctx, img, ct, op->dstb, 1);
 		img->stat_vopn_reg++;	}
 	img->stat_vop_regb+=ct-ct1;
 
@@ -1117,7 +1125,7 @@ int BGBCC_FR2E_EmitVirtTrace(
 	n=tr->n_ops;
 	for(i=0; i<n; i++)
 	{
-		vop=inf->vop[b+i];
+		vop=inf->ext->vop[b+i];
 		BGBCC_FR2E_EmitVirtOp(ctx, img, vop);
 	}
 
@@ -1158,10 +1166,10 @@ u64 BGBCC_FR2E_FlattenFunctionTraces(
 
 	bo=img->n_vop;
 	bn=img->n_vtr;
-	n=inf->n_vtr;
+	n=inf->ext->n_vtr;
 	for(i=0; i<n; i++)
 	{
-		vtr=inf->vtr[i];
+		vtr=inf->ext->vtr[i];
 		BGBCC_FR2E_EmitVirtTrace(ctx, img, inf, vtr);
 	}
 
@@ -1260,14 +1268,18 @@ void BGBCC_FR2E_FlattenRegisterInfoBuf(
 	ct=*rct;
 	if(!(fl&1))
 	{
-		if(inf->qname)
-			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 'q', inf->qname);
-		if(inf->name)
-			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 'n', inf->name);
-		if(inf->sig)
-			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 's', inf->sig);
-		if(inf->flagstr)
-			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 'f', inf->flagstr);
+		if(inf->qname_ix)
+			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 'q',
+				bgbcc_strtab_i(inf->qname_ix));
+		if(inf->name_ix)
+			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 'n',
+				bgbcc_strtab_i(inf->name_ix));
+		if(inf->sig_ix)
+			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 's',
+				bgbcc_strtab_i(inf->sig_ix));
+		if(inf->flagstr_ix)
+			BGBCC_FR2E_BufEmitOneccString(ctx, img, &ct, 'f',
+				bgbcc_strtab_i(inf->flagstr_ix));
 	}
 	
 	nolocal=0;
@@ -1277,52 +1289,52 @@ void BGBCC_FR2E_FlattenRegisterInfoBuf(
 			nolocal=1;
 	}
 	
-	if(inf->n_fields>0)
+	if(inf->ext->n_fields>0)
 	{
 		ct1=tb1;
 		BGBCC_FR2E_FlattenVarListBuf(ctx, img,
-			inf->fields, inf->n_fields, &ct1, 0);
+			inf->ext->fields, inf->ext->n_fields, &ct1, 0);
 		BGBCC_FR2E_BufEmitTwocc(&ct, 'F', tb1, ct1-tb1);
 	}
 	
-	if(inf->n_args>0)
+	if(inf->ext->n_args>0)
 	{
 		ct1=tb1;
 		BGBCC_FR2E_FlattenVarListBuf(ctx, img,
-			inf->args, inf->n_args, &ct1, 0);
+			inf->ext->args, inf->ext->n_args, &ct1, 0);
 		BGBCC_FR2E_BufEmitTwocc(&ct, 'A', tb1, ct1-tb1);
 	}
 	
 	if(!nolocal)
 	{
-		if(inf->n_locals>0)
+		if(inf->ext->n_locals>0)
 		{
 			ct1=tb1;
 			BGBCC_FR2E_FlattenVarListBuf(ctx, img,
-				inf->locals, inf->n_locals, &ct1, 0);
+				inf->ext->locals, inf->ext->n_locals, &ct1, 0);
 			BGBCC_FR2E_BufEmitTwocc(&ct, 'L', tb1, ct1-tb1);
 		}
 		
-		if(inf->n_regs>0)
+		if(inf->ext->n_regs>0)
 		{
 			ct1=tb1;
 			BGBCC_FR2E_FlattenVarListBuf(ctx, img,
-				inf->regs, inf->n_regs, &ct1, 0);
+				inf->ext->regs, inf->ext->n_regs, &ct1, 0);
 			BGBCC_FR2E_BufEmitTwocc(&ct, 'R', tb1, ct1-tb1);
 		}
 		
-		if(inf->n_statics>0)
+		if(inf->ext->n_statics>0)
 		{
 			ct1=tb1;
 			BGBCC_FR2E_FlattenVarListBuf(ctx, img,
-				inf->statics, inf->n_statics, &ct1, 0);
+				inf->ext->statics, inf->ext->n_statics, &ct1, 0);
 			BGBCC_FR2E_BufEmitTwocc(&ct, 'S', tb1, ct1-tb1);
 		}
 	}
 	
 	if(!nolocal)
 	{
-		if(inf->n_vtr>0)
+		if(inf->ext->n_vtr>0)
 		{
 			ct1=tb1;
 			BGBCC_FR2E_FlattenFunctionTracesBuf(ctx, img, inf, &ct1, 0);
@@ -2171,60 +2183,70 @@ void BGBCC_FR2E_UnpackGlobalObj(
 	while(cs<cse)
 	{
 		BGBCC_FR2E_ReadTag(&cs, &fcc, &cs1, &sz);
+		k=0;
 		
 		if(fcc=='n')
 		{
-			gbl->name=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+			gbl->name_ix=bgbcc_strdup_2i(
+				BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz));
 		}
 
 		if(fcc=='q')
 		{
-			gbl->qname=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+			gbl->qname_ix=bgbcc_strdup_2i(
+				BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz));
 		}
 
 		if(fcc=='s')
 		{
-			gbl->sig=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+			gbl->sig_ix=bgbcc_strdup_2i(
+				BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz));
 		}
 
 		if(fcc=='f')
 		{
-			gbl->flagstr=BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz);
+			gbl->flagstr_ix=bgbcc_strdup_2i(
+				BGBCC_FR2E_UnpackStringDataObj(ctx, img, cs1, sz));
 		}
 
 		if(fcc=='F')
 		{
 			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
-				&(gbl->fields), &(gbl->n_fields),
+				&(gbl->ext->fields), &k,
 				cs1, sz);
+			gbl->ext->n_fields=k;
 		}
 
 		if(fcc=='A')
 		{
 			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
-				&(gbl->args), &(gbl->n_args),
+				&(gbl->ext->args), &k,
 				cs1, sz);
+			gbl->ext->n_args=k;
 		}
 
 		if(fcc=='L')
 		{
 			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
-				&(gbl->locals), &(gbl->n_locals),
+				&(gbl->ext->locals), &k,
 				cs1, sz);
+			gbl->ext->n_locals=k;
 		}
 
 		if(fcc=='R')
 		{
 			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
-				&(gbl->regs), &(gbl->n_regs),
+				&(gbl->ext->regs), &k,
 				cs1, sz);
+			gbl->ext->n_regs=k;
 		}
 
 		if(fcc=='S')
 		{
 			BGBCC_FR2E_UnpackRegFieldsArray(ctx, img,
-				&(gbl->statics), &(gbl->n_statics),
+				&(gbl->ext->statics), &k,
 				cs1, sz);
+			gbl->ext->n_statics=k;
 		}
 	}
 }
@@ -2317,8 +2339,9 @@ void BGBCC_FR2E_UnpackLiteralData(
 			BGBCC_FR2E_UnpackGlobalObj(ctx, img, decl, cs1, sz, fcc);
 			
 			lit->decl=decl;
-			lit->name=decl->qname;
-			lit->sig=decl->sig;
+			lit->name_ix=decl->qname_ix;
+			lit->name=bgbcc_strtab_i(decl->qname_ix);
+			lit->sig=bgbcc_strtab_i(decl->sig_ix);
 		}
 		
 		img->lits[i]=lit;

@@ -1021,12 +1021,12 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 			sprintf(tb1, "%s!%d", s, ctx->vlcl_stack[j]);
 			i=BGBCC_CCXL_LookupLocalIndex(ctx, tb1);
 			if(i>=0)
-				{ ri=ctx->cur_func->locals[i]; break; }
+				{ ri=ctx->cur_func->ext->locals[i]; break; }
 			if(!ri)
 			{
 				i=BGBCC_CCXL_LookupStaticIndex(ctx, tb1);
 				if(i>=0)
-					{ ri=ctx->cur_func->statics[i]; break; }
+					{ ri=ctx->cur_func->ext->statics[i]; break; }
 			}
 		}
 		
@@ -1034,21 +1034,21 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		{
 			i=BGBCC_CCXL_LookupLocalIndex(ctx, s);
 			if(i>=0)
-				{ ri=ctx->cur_func->locals[i]; }
+				{ ri=ctx->cur_func->ext->locals[i]; }
 		}
 
 		if(!ri)
 		{
 			i=BGBCC_CCXL_LookupStaticIndex(ctx, s);
 			if(i>=0)
-				{ ri=ctx->cur_func->statics[i]; }
+				{ ri=ctx->cur_func->ext->statics[i]; }
 		}
 
 		if(!ri)
 		{
 			i=BGBCC_CCXL_LookupArgIndex(ctx, s);
 			if(i>=0)
-				{ ri=ctx->cur_func->args[i]; }
+				{ ri=ctx->cur_func->ext->args[i]; }
 		}
 
 		if(!ri)
@@ -1089,7 +1089,8 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 //		if(ri && ri->flagstr && !strcmp(ri->flagstr, "k"))
 //		if(ri && BGBCC_CCXL_CheckFlagstrFlag(ri->flagstr, "k"))
 		if(ri && BGBCC_CCXL_TypeSmallLongP(ctx, ri->type) &&
-			BGBCC_CCXL_CheckFlagstrFlag(ri->flagstr, "k") &&
+			BGBCC_CCXL_CheckFlagstrFlag(
+				bgbcc_strtab_i(ri->flagstr_ix), "k") &&
 			!(flag&16))
 		{
 			if(BGBCC_CCXL_IsRegImmIntP(ctx, ri->value))
@@ -1140,18 +1141,21 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 		if(1)
 		{
 //			if(ri && strcmp(ri->name, s))
-			if(ri && strcmp(ri->name, s) &&
-				!(ri->qname && !strcmp(ri->qname, s)))
+			if(ri && strcmp(bgbcc_strtab_i(ri->name_ix), s) &&
+				!(ri->qname_ix && !strcmp(bgbcc_strtab_i(ri->qname_ix), s)))
 			{
 				t=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
-				BCCX_SetCst(t, &bgbcc_rcst_name, "name", ri->name);
+				BCCX_SetCst(t, &bgbcc_rcst_name, "name",
+					bgbcc_strtab_i(ri->name_ix));
 				return(t);
 			}
 
-			if(ri && ri->qname && strcmp(ri->qname, s))
+			if(ri && ri->qname_ix &&
+				strcmp(bgbcc_strtab_i(ri->qname_ix), s))
 			{
 				t=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
-				BCCX_SetCst(t, &bgbcc_rcst_name, "name", ri->qname);
+				BCCX_SetCst(t, &bgbcc_rcst_name, "name",
+					bgbcc_strtab_i(ri->qname_ix));
 				return(t);
 			}
 		}
@@ -1199,7 +1203,8 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 			ri=BGBCC_CCXL_LookupStructureStaticMemberRns(ctx, s1, s);
 			
 			if(ri && BGBCC_CCXL_TypeSmallLongP(ctx, ri->type) &&
-				BGBCC_CCXL_CheckFlagstrFlag(ri->flagstr, "k") &&
+				BGBCC_CCXL_CheckFlagstrFlag(
+					bgbcc_strtab_i(ri->flagstr_ix), "k") &&
 				!(flag&16))
 			{
 				if(BGBCC_CCXL_IsRegImmIntP(ctx, ri->value))
@@ -1235,10 +1240,11 @@ BCCX_Node *BGBCC_CCXL_ReduceForm(BGBCC_TransState *ctx,
 			
 			if(ri)
 			{
-				if(ri->qname)
+				if(ri->qname_ix)
 				{
 					t=BCCX_NewCst(&bgbcc_rcst_ref, "ref");
-					BCCX_SetCst(t, &bgbcc_rcst_name, "name", ri->qname);
+					BCCX_SetCst(t, &bgbcc_rcst_name, "name",
+						bgbcc_strtab_i(ri->qname_ix));
 					return(t);
 				}
 			}

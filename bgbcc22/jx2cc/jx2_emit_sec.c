@@ -29,7 +29,7 @@ BGBCC_JX2_Context *BGBCC_JX2_AllocContext()
 {
 	BGBCC_JX2_Context *tmp;
 	
-	tmp=bgbcc_malloc(sizeof(BGBCC_JX2_Context));
+	tmp=bgbcc_tmalloc("_jx2c_context_t", sizeof(BGBCC_JX2_Context));
 	return(tmp);
 }
 
@@ -66,25 +66,25 @@ int BGBCC_JX2_LookupSectionID(BGBCC_JX2_Context *ctx, char *name)
 	int sec;
 	
 	sec=-1;
-	if(!strcmp(name, ".text"))		sec=BGBCC_SH_CSEG_TEXT;
-	if(!strcmp(name, ".data"))		sec=BGBCC_SH_CSEG_DATA;
-	if(!strcmp(name, ".bss"))		sec=BGBCC_SH_CSEG_BSS;
-	if(!strcmp(name, ".got"))		sec=BGBCC_SH_CSEG_GOT;
-	if(!strcmp(name, ".strtab"))	sec=BGBCC_SH_CSEG_STRTAB;
-	if(!strcmp(name, ".reloc"))		sec=BGBCC_SH_CSEG_RELOC;
+	if(!bgbcc_jx2c_strcmp(name, ".text"))		sec=BGBCC_SH_CSEG_TEXT;
+	if(!bgbcc_jx2c_strcmp(name, ".data"))		sec=BGBCC_SH_CSEG_DATA;
+	if(!bgbcc_jx2c_strcmp(name, ".bss"))		sec=BGBCC_SH_CSEG_BSS;
+	if(!bgbcc_jx2c_strcmp(name, ".got"))		sec=BGBCC_SH_CSEG_GOT;
+	if(!bgbcc_jx2c_strcmp(name, ".strtab"))	sec=BGBCC_SH_CSEG_STRTAB;
+	if(!bgbcc_jx2c_strcmp(name, ".reloc"))		sec=BGBCC_SH_CSEG_RELOC;
 
-	if(!strcmp(name, ".utext"))		sec=BGBCC_SH_CSEG_UTEXT;
-	if(!strcmp(name, ".udata"))		sec=BGBCC_SH_CSEG_UDATA;
+	if(!bgbcc_jx2c_strcmp(name, ".utext"))		sec=BGBCC_SH_CSEG_UTEXT;
+	if(!bgbcc_jx2c_strcmp(name, ".udata"))		sec=BGBCC_SH_CSEG_UDATA;
 
-	if(!strcmp(name, ".rdata"))		sec=BGBCC_SH_CSEG_RODATA;
-	if(!strcmp(name, ".rodata"))	sec=BGBCC_SH_CSEG_RODATA;
+	if(!bgbcc_jx2c_strcmp(name, ".rdata"))		sec=BGBCC_SH_CSEG_RODATA;
+	if(!bgbcc_jx2c_strcmp(name, ".rodata"))	sec=BGBCC_SH_CSEG_RODATA;
 	
 	if(sec>=0)
 		return(sec);
 
 	for(sec=BGBCC_SH_CSEG_DYN; sec<ctx->nsec; sec++)
 	{
-		if(!strcmp(name, ctx->sec_name[sec]))	
+		if(!bgbcc_jx2c_strcmp(name, ctx->sec_name[sec]))	
 		{
 			return(sec);
 		}
@@ -98,18 +98,18 @@ int BGBCC_JX2_SetSectionName(BGBCC_JX2_Context *ctx, char *name)
 	int sec;
 	
 	sec=-1;
-	if(!strcmp(name, ".text"))		sec=BGBCC_SH_CSEG_TEXT;
-	if(!strcmp(name, ".data"))		sec=BGBCC_SH_CSEG_DATA;
-	if(!strcmp(name, ".bss"))		sec=BGBCC_SH_CSEG_BSS;
-	if(!strcmp(name, ".got"))		sec=BGBCC_SH_CSEG_GOT;
-	if(!strcmp(name, ".strtab"))	sec=BGBCC_SH_CSEG_STRTAB;
-	if(!strcmp(name, ".reloc"))		sec=BGBCC_SH_CSEG_RELOC;
+	if(!bgbcc_jx2c_strcmp(name, ".text"))		sec=BGBCC_SH_CSEG_TEXT;
+	if(!bgbcc_jx2c_strcmp(name, ".data"))		sec=BGBCC_SH_CSEG_DATA;
+	if(!bgbcc_jx2c_strcmp(name, ".bss"))		sec=BGBCC_SH_CSEG_BSS;
+	if(!bgbcc_jx2c_strcmp(name, ".got"))		sec=BGBCC_SH_CSEG_GOT;
+	if(!bgbcc_jx2c_strcmp(name, ".strtab"))	sec=BGBCC_SH_CSEG_STRTAB;
+	if(!bgbcc_jx2c_strcmp(name, ".reloc"))		sec=BGBCC_SH_CSEG_RELOC;
 
-	if(!strcmp(name, ".utext"))		sec=BGBCC_SH_CSEG_UTEXT;
-	if(!strcmp(name, ".udata"))		sec=BGBCC_SH_CSEG_UDATA;
+	if(!bgbcc_jx2c_strcmp(name, ".utext"))		sec=BGBCC_SH_CSEG_UTEXT;
+	if(!bgbcc_jx2c_strcmp(name, ".udata"))		sec=BGBCC_SH_CSEG_UDATA;
 
-	if(!strcmp(name, ".rdata"))		sec=BGBCC_SH_CSEG_RODATA;
-	if(!strcmp(name, ".rodata"))	sec=BGBCC_SH_CSEG_RODATA;
+	if(!bgbcc_jx2c_strcmp(name, ".rdata"))		sec=BGBCC_SH_CSEG_RODATA;
+	if(!bgbcc_jx2c_strcmp(name, ".rodata"))	sec=BGBCC_SH_CSEG_RODATA;
 
 	if(sec>=0)
 	{
@@ -121,7 +121,7 @@ int BGBCC_JX2_SetSectionName(BGBCC_JX2_Context *ctx, char *name)
 
 	for(sec=BGBCC_SH_CSEG_DYN; sec<ctx->nsec; sec++)
 	{
-		if(!strcmp(name, ctx->sec_name[sec]))	
+		if(!bgbcc_jx2c_strcmp(name, ctx->sec_name[sec]))	
 		{
 			BGBCC_JX2_SetSection(ctx, sec);
 			return(0);
@@ -171,7 +171,7 @@ int BGBCC_JX2_IsSectionReadOnly(BGBCC_JX2_Context *ctx, int sec)
 	s0=ctx->sec_name[sec];
 	if(s0)
 	{
-		if(!strcmp(s0, ".pdata"))
+		if(!bgbcc_jx2c_strcmp(s0, ".pdata"))
 			return(1);
 	}
 
@@ -205,14 +205,32 @@ int BGBCC_JX2_IsSectionText(BGBCC_JX2_Context *ctx, int sec)
 int BGBCC_JX2_EmitCheckExpand(BGBCC_JX2_Context *ctx, int pad)
 {
 	byte *buf;
-	int sz, ofs, vofs;
+	int sz, sz1, ofs, vofs;
 
 	if(!ctx->sec_buf[ctx->sec])
 	{
 //		sz=4096;
 //		sz=1<<18;
-		sz=1<<20;
-		buf=bgbcc_malloc(sz);
+//		sz=1<<19;
+//		sz=1<<20;
+
+//		sz=1<<16;
+		sz=1<<14;
+
+		if(ctx->sec==BGBCC_SH_CSEG_TEXT)
+			sz=1<<19;
+		if(ctx->sec==BGBCC_SH_CSEG_STRTAB)
+			sz=1<<16;
+		if(ctx->sec==BGBCC_SH_CSEG_RODATA)
+			sz=1<<14;
+		if(ctx->sec==BGBCC_SH_CSEG_DATA)
+			sz=1<<18;
+		if(ctx->sec==BGBCC_SH_CSEG_BSS)
+			sz=1<<21;
+			
+
+//		buf=bgbcc_malloc(sz);
+		buf=bgbcc_tmalloc("_jx2c_secbuf", sz);
 		ctx->sec_buf[ctx->sec]=buf;
 		ctx->sec_end[ctx->sec]=buf+sz;
 		ctx->sec_pos[ctx->sec]=buf;
@@ -227,10 +245,18 @@ int BGBCC_JX2_EmitCheckExpand(BGBCC_JX2_Context *ctx, int pad)
 		sz=ctx->sec_end[ctx->sec]-buf;
 		ofs=ctx->sec_pos[ctx->sec]-buf;
 		vofs=ctx->sec_vpos[ctx->sec]-buf;
-		sz=sz+(sz>>1);
-		buf=bgbcc_realloc(buf, sz);
+		sz1=sz+(sz>>1);
+
+		if(sz<(1<<17))
+		{
+			sz1=(sz*5)/2;
+			if(sz1>(1<<18))
+				sz=1<<18;
+		}
+		
+		buf=bgbcc_realloc(buf, sz1);
 		ctx->sec_buf[ctx->sec]=buf;
-		ctx->sec_end[ctx->sec]=buf+sz;
+		ctx->sec_end[ctx->sec]=buf+sz1;
 		ctx->sec_pos[ctx->sec]=buf+ofs;
 		ctx->sec_vpos[ctx->sec]=buf+vofs;
 	}
@@ -2854,8 +2880,8 @@ int BGBCC_JX2_EmitGetStrtabLabelTag(BGBCC_JX2_Context *ctx,
 	if(!ctx->lblstr_ofs)
 	{
 		i=4096;
-		ctx->lblstr_ofs=bgbcc_malloc(i*sizeof(u32));
-		ctx->lblstr_id=bgbcc_malloc(i*sizeof(u32));
+		ctx->lblstr_ofs=bgbcc_tmalloc("_jx2c_lblstr_ofs", i*sizeof(u32));
+		ctx->lblstr_id=bgbcc_tmalloc("_jx2c_lblstr_id", i*sizeof(u32));
 		ctx->nlblstr=0;
 		ctx->mlblstr=i;
 	}
@@ -2866,7 +2892,7 @@ int BGBCC_JX2_EmitGetStrtabLabelTag(BGBCC_JX2_Context *ctx,
 		s0=(char *)(ctx->sec_buf[BGBCC_SH_CSEG_STRTAB]+ctx->lblstr_ofs[i]);
 		if((tg>0) && (*(s0-1)!=tg))
 			continue;
-//		if(!strcmp(s0, str))
+//		if(!bgbcc_jx2c_strcmp(s0, str))
 		if(!memcmp(s0, str, len+1))
 			{ return(ctx->lblstr_id[i]); }
 	}
@@ -2886,7 +2912,7 @@ int BGBCC_JX2_EmitGetStrtabLabelTag(BGBCC_JX2_Context *ctx,
 		if(ctx->lbl_sec[i]==BGBCC_SH_CSEG_STRTAB)
 		{
 			s0=(char *)(ctx->sec_buf[BGBCC_SH_CSEG_STRTAB]+ctx->lbl_ofs[i]);
-			if(!strcmp(s0, str))
+			if(!bgbcc_jx2c_strcmp(s0, str))
 			{
 				return(ctx->lbl_id[i]);
 			}

@@ -4,7 +4,8 @@
 #include <windows.h>
 #endif
 
-#define BGBCC_SZSTRHASH		16384
+// #define BGBCC_SZSTRHASH		16384
+#define BGBCC_SZSTRHASH		4096
 
 void *bgbcc_alloc_block[1024];
 void *bgbcc_alloc_blklst[1024];
@@ -33,6 +34,14 @@ char *bgbcc_str_sarr;
 int bgbcc_str_num;
 int bgbcc_str_max;
 int bgbcc_str_hash[BGBCC_SZSTRHASH];
+int bgbcc_str_phash[BGBCC_SZSTRHASH];
+
+int bgbcc_malloc_tyistat[256];
+char *bgbcc_malloc_tynstat[256];
+s64 bgbcc_malloc_tysstat[256];
+int bgbcc_malloc_ntyn;
+
+int bgbcc_malloc_strstat_buf;
 
 byte *bgbcc_rlcbuf=NULL;
 int bgbcc_rlcpos;
@@ -64,6 +73,92 @@ void BGBCC_DieFatal()
 #endif
 }
 
+void BGBCC_MallocAddStatSwaps(int idx)
+{
+	char *s0;
+	s64 li;
+	int i, j, k;
+
+	i=idx;
+	
+	while((i>0) &&
+		(bgbcc_malloc_tysstat[i]>bgbcc_malloc_tysstat[i-1]))
+	{
+		li=bgbcc_malloc_tysstat[i];
+		bgbcc_malloc_tysstat[i]=bgbcc_malloc_tysstat[i-1];
+		bgbcc_malloc_tysstat[i-1]=li;
+
+		k=bgbcc_malloc_tyistat[i];
+		bgbcc_malloc_tyistat[i]=bgbcc_malloc_tyistat[i-1];
+		bgbcc_malloc_tyistat[i-1]=k;
+
+		s0=bgbcc_malloc_tynstat[i];
+		bgbcc_malloc_tynstat[i]=bgbcc_malloc_tynstat[i-1];
+		bgbcc_malloc_tynstat[i-1]=s0;
+		
+		i--;
+	}
+}
+
+byte bgbcc_domemstats=0;
+
+void BGBCC_DoMallocStats(int flag)
+{
+	bgbcc_domemstats=flag;
+}
+
+void BGBCC_MallocAddStatTyi(int tyi, int sz)
+{
+	char *s0;
+	s64 li;
+	int i, j, k;
+	
+	if(!bgbcc_domemstats)
+		return;
+	
+	for(i=0; i<bgbcc_malloc_ntyn; i++)
+	{
+		if(bgbcc_malloc_tyistat[i]==tyi)
+			break;
+	}
+	
+	if(i<bgbcc_malloc_ntyn)
+	{
+		bgbcc_malloc_tysstat[i]+=sz;
+		BGBCC_MallocAddStatSwaps(i);
+		return;
+	}
+	
+	i=bgbcc_malloc_ntyn++;
+	bgbcc_malloc_tyistat[i]=tyi;
+	bgbcc_malloc_tysstat[i]=sz;
+	bgbcc_malloc_tynstat[i]=bgbcc_str_varr[tyi];
+	BGBCC_MallocAddStatSwaps(i);
+}
+
+void BGBCC_DumpMemStats()
+{
+	int i, j, k, tot;
+
+	if(!bgbcc_malloc_ntyn)
+		return;
+
+	printf("BGBCC_DumpMemStats:\n");
+
+	tot=0;
+	for(i=0; i<bgbcc_malloc_ntyn; i++)
+	{
+		printf("    %-24s %5dK\n", bgbcc_malloc_tynstat[i],
+			(int)(bgbcc_malloc_tysstat[i]/1024));
+		tot+=bgbcc_malloc_tysstat[i];
+	}
+	printf("    Tot %dK\n", (int)(tot/1024));
+	
+	printf("    Strs: %d/%d %dK\n",
+		bgbcc_str_num, bgbcc_str_max,
+		bgbcc_malloc_strstat_buf>>10);
+}
+
 void BGBCC_CleanupAll()
 {
 	int i;
@@ -87,7 +182,7 @@ void BGBCC_CleanupAll()
 
 		bgbcc_alloc_rov=bgbcc_alloc_block[0];
 		bgbcc_alloc_srov=bgbcc_alloc_block[0];
-		bgbcc_alloc_erov=bgbcc_alloc_srov+(1<<22);
+		bgbcc_alloc_erov=bgbcc_alloc_srov+(1<<20);
 	}
 
 //	for(i=0; i<BGBCC_SZSTRHASH; i++)
@@ -130,6 +225,11 @@ void *bgbcc_tmalloc(char *ty, int sz)
 	if(sz<0)
 		{ BGBCC_DBGBREAK }
 
+	if(sz<96)
+	{
+		i=-1;
+	}
+
 //	if(sz>=65536)
 	if(sz>=(32768-256))
 	{
@@ -157,6 +257,9 @@ void *bgbcc_tmalloc(char *ty, int sz)
 		tty=tsz|(tyi<<12);
 		((void **)p)[1]=(void *)(nlint)tty;
 
+//		bgbcc_malloc_tystat[tyi]+=sz;
+		BGBCC_MallocAddStatTyi(tyi, sz);
+
 		p=(void *)(((void **)p)+2);
 		return(p);
 	}
@@ -170,8 +273,8 @@ void *bgbcc_tmalloc(char *ty, int sz)
 		}
 		bgbcc_alloc_nblock=0;
 
-		bgbcc_alloc_srov=malloc(1<<22);
-		bgbcc_alloc_erov=bgbcc_alloc_srov+(1<<22);
+		bgbcc_alloc_srov=malloc(1<<20);
+		bgbcc_alloc_erov=bgbcc_alloc_srov+(1<<20);
 
 		bgbcc_alloc_rov=bgbcc_alloc_srov;
 
@@ -180,7 +283,8 @@ void *bgbcc_tmalloc(char *ty, int sz)
 		bgbcc_alloc_blklst[bgbcc_alloc_curblock]=NULL;
 	}
 
-	if((bgbcc_alloc_rov+sz)>=(bgbcc_alloc_erov-4096))
+//	if((bgbcc_alloc_rov+sz)>=(bgbcc_alloc_erov-4096))
+	if((bgbcc_alloc_rov+sz)>=(bgbcc_alloc_erov-256))
 	{
 		n=bgbcc_alloc_nblock++;
 		if(!bgbcc_alloc_block[n])
@@ -188,7 +292,7 @@ void *bgbcc_tmalloc(char *ty, int sz)
 //			printf("BGBCC: Expand Heap, %d block, %dMiB\n",
 //				bgbcc_alloc_nblock,
 //				bgbcc_alloc_nblock*4);
-			bgbcc_alloc_block[n]=malloc(1<<22);
+			bgbcc_alloc_block[n]=malloc(1<<20);
 
 			if(!bgbcc_alloc_block[n])
 			{
@@ -201,7 +305,7 @@ void *bgbcc_tmalloc(char *ty, int sz)
 		bgbcc_alloc_curblock=n;
 		
 		bgbcc_alloc_srov=bgbcc_alloc_block[n];
-		bgbcc_alloc_erov=bgbcc_alloc_srov+(1<<22);
+		bgbcc_alloc_erov=bgbcc_alloc_srov+(1<<20);
 		bgbcc_alloc_rov=bgbcc_alloc_srov;
 	}
 
@@ -216,7 +320,7 @@ void *bgbcc_tmalloc(char *ty, int sz)
 	memset(p, 0, sz);
 
 	bps=bgbcc_alloc_block[bgbcc_alloc_curblock];
-	bpe=((char *)bps)+(1<<22);
+	bpe=((char *)bps)+(1<<20);
 	
 	if((p<bps) || (p>=bpe))
 		{ BGBCC_DBGBREAK }
@@ -228,6 +332,9 @@ void *bgbcc_tmalloc(char *ty, int sz)
 	tty=((sz>>4)&4095)|(tyi<<12);
 	((void **)p)[1]=(void *)(nlint)tty;
 	*(void **)(((char *)p)+sz)=(void *)(nlint)tty;
+
+//	bgbcc_malloc_tystat[tyi]+=sz;
+	BGBCC_MallocAddStatTyi(tyi, sz);
 
 	p=(void *)(((void **)p)+2);
 
@@ -245,8 +352,9 @@ void *bgbcc_stralloc(int sz)
 			bgbcc_stralloc_block[i]=NULL;
 		bgbcc_stralloc_nblock=0;
 
-		bgbcc_stralloc_srov=malloc(1<<22);
-		bgbcc_stralloc_erov=bgbcc_stralloc_srov+(1<<22);
+		bgbcc_stralloc_srov=malloc(1<<18);
+		bgbcc_stralloc_erov=bgbcc_stralloc_srov+(1<<18);
+		bgbcc_malloc_strstat_buf+=1<<18;
 
 		bgbcc_stralloc_rov=bgbcc_stralloc_srov;
 
@@ -256,7 +364,8 @@ void *bgbcc_stralloc(int sz)
 //		bgbcc_stralloc_blklst[n]=NULL;
 	}
 
-	if((bgbcc_stralloc_rov+sz)>=(bgbcc_stralloc_erov-4096))
+//	if((bgbcc_stralloc_rov+sz)>=(bgbcc_stralloc_erov-4096))
+	if((bgbcc_stralloc_rov+sz)>=(bgbcc_stralloc_erov-256))
 	{
 		n=bgbcc_stralloc_nblock++;
 		if(!bgbcc_stralloc_block[n])
@@ -264,7 +373,8 @@ void *bgbcc_stralloc(int sz)
 //			printf("BGBCC: Expand Str Heap, %d block, %dMiB\n",
 //				bgbcc_stralloc_nblock,
 //				bgbcc_stralloc_nblock*4);
-			bgbcc_stralloc_block[n]=malloc(1<<22);
+			bgbcc_stralloc_block[n]=malloc(1<<18);
+			bgbcc_malloc_strstat_buf+=1<<18;
 
 			if(!bgbcc_stralloc_block[n])
 			{
@@ -277,7 +387,7 @@ void *bgbcc_stralloc(int sz)
 //		bgbcc_stralloc_curblock=n;
 		
 		bgbcc_stralloc_srov=bgbcc_stralloc_block[n];
-		bgbcc_stralloc_erov=bgbcc_stralloc_srov+(1<<22);
+		bgbcc_stralloc_erov=bgbcc_stralloc_srov+(1<<18);
 		bgbcc_stralloc_rov=bgbcc_stralloc_srov;
 	}
 
@@ -295,6 +405,7 @@ void *bgbcc_malloc(int sz)
 
 void *bgbcc_tmalloc2(char *ty, int sz)
 {
+	int tyi;
 	void *p;
 
 	p=malloc(sz);
@@ -303,6 +414,9 @@ void *bgbcc_tmalloc2(char *ty, int sz)
 		printf("bgbcc_tmalloc2: Out Of Memory\n");
 		*(int *)-1=-1;
 	}
+
+	tyi=bgbcc_strdup_i(ty, 0);
+	BGBCC_MallocAddStatTyi(tyi, sz);
 
 	memset(p, 0, sz);
 	return(p);
@@ -318,14 +432,52 @@ void bgbcc_free(void *p)
 //	free(p);
 }
 
+void bgbcc_free2(void *p)
+{
+	free(p);
+}
+
+void *bgbcc_realloc2(void *ptr, int sz)
+{
+	int tyi;
+
+	if(bgbcc_domemstats)
+	{
+		tyi=bgbcc_strdup_i("_realloc2", 0);
+		BGBCC_MallocAddStatTyi(tyi, sz);
+	}
+
+	return(realloc(ptr, sz));
+}
+
 void *bgbcc_realloc(void *ptr, int sz)
 {
+	char tb[128];
+	char *s0;
 	int sz0, sz1;
 	void *ptr2;
 	
 	if(!ptr)
 	{
-		return(bgbcc_malloc(sz));
+//		return(bgbcc_malloc(sz));
+		return(bgbcc_tmalloc("_realloc_null", sz));
+	}
+	
+	if(bgbcc_domemstats)
+	{
+		s0=bgbcc_malloc_gettype(ptr);
+		if(s0 && !strncmp("_realloc", s0, 8))
+		{
+			strcpy(tb, s0);
+		}else
+		{
+			strcpy(tb, "_realloc");
+			if(s0)
+				strcat(tb, s0);
+		}
+	}else
+	{
+		memcpy(tb, "_realloc", 9);
 	}
 	
 	sz0=bgbcc_malloc_getsize(ptr);
@@ -333,7 +485,9 @@ void *bgbcc_realloc(void *ptr, int sz)
 	if(sz<sz1)
 		sz1=sz;
 	
-	ptr2=bgbcc_malloc(sz);
+//	ptr2=bgbcc_malloc(sz);
+//	ptr2=bgbcc_tmalloc("_realloc", sz);
+	ptr2=bgbcc_tmalloc(tb, sz);
 //	memcpy(ptr2, ptr, sz);
 	if(sz1>0)
 		memcpy(ptr2, ptr, sz1);
@@ -350,7 +504,7 @@ int bgbcc_malloc_lookupblock(void *obj)
 	for(i=0; i<bgbcc_alloc_nblock; i++)
 	{
 		ps=bgbcc_alloc_block[i];
-		pe=ps+(1<<22);
+		pe=ps+(1<<20);
 		if((p>=ps) && (p<pe))
 			return(i);
 	}
@@ -366,7 +520,7 @@ int bgbcc_stralloc_lookupblock(void *obj)
 	for(i=0; i<bgbcc_stralloc_nblock; i++)
 	{
 		ps=bgbcc_stralloc_block[i];
-		pe=ps+(1<<22);
+		pe=ps+(1<<18);
 		if((p>=ps) && (p<pe))
 			return(i);
 	}
@@ -386,7 +540,7 @@ void *bgbcc_malloc_getbase(void *obj)
 	if(bi>=0)
 	{
 		bps=bgbcc_alloc_block[bi];
-		bpe=((char *)bps)+(1<<22);
+		bpe=((char *)bps)+(1<<20);
 
 		p=bgbcc_alloc_blklst[bi];
 		while(p)
@@ -537,23 +691,31 @@ int bgbcc_strdup_strcpy(char *dst, char *src)
 int bgbcc_strdup_i(char *str, char suf)
 {
 	char *s, *t;
-	int i, l, hi;
+	int i, m, l, hi;
 
-	if(!str)return(0);
+	if(!str)
+		return(0);
 
 #if 1
 	if(!bgbcc_str_varr)
 	{
-		for(i=0; i<BGBCC_SZSTRHASH; i++)bgbcc_str_hash[i]=0;
-		bgbcc_str_varr=malloc(16384*sizeof(char *));
-		bgbcc_str_carr=malloc(16384*sizeof(int));
-		bgbcc_str_sarr=malloc(16384*sizeof(char));
+		for(i=0; i<BGBCC_SZSTRHASH; i++)
+		{
+			bgbcc_str_hash[i]=0;
+			bgbcc_str_phash[i]=0;
+		}
+		
+//		m=16384;
+		m=65536;
+		bgbcc_str_varr=malloc(m*sizeof(char *));
+		bgbcc_str_carr=malloc(m*sizeof(int));
+		bgbcc_str_sarr=malloc(m*sizeof(char));
 
 		bgbcc_str_varr[0]=NULL;
 		bgbcc_str_carr[0]=0;
 		bgbcc_str_sarr[0]=0;
 		bgbcc_str_num=1;
-		bgbcc_str_max=16384;
+		bgbcc_str_max=m;
 	}
 #endif
 
@@ -562,13 +724,24 @@ int bgbcc_strdup_i(char *str, char suf)
 	hi&=(BGBCC_SZSTRHASH-1);
 //	hi=(hi>>8)&(BGBCC_SZSTRHASH-1);
 
+	i=bgbcc_str_phash[hi];
+	if(i)
+	{
+		if(!bgbcc_strdup_strcmp(bgbcc_str_varr[i], str) &&
+			(bgbcc_str_sarr[i]==suf))
+				{ return(i); }
+	}
+
 	i=bgbcc_str_hash[hi];
 	while(i)
 	{
 //		if(!strcmp(bgbcc_str_varr[i], str) &&
 		if(!bgbcc_strdup_strcmp(bgbcc_str_varr[i], str) &&
 			(bgbcc_str_sarr[i]==suf))
-				{ return(i); }
+		{
+			bgbcc_str_phash[hi]=i;
+			return(i);
+		}
 		i=bgbcc_str_carr[i];
 	}
 
@@ -593,6 +766,8 @@ int bgbcc_strdup_i(char *str, char suf)
 	bgbcc_str_carr[i]=bgbcc_str_hash[hi];
 	bgbcc_str_sarr[i]=suf;
 	bgbcc_str_hash[hi]=i;
+
+	bgbcc_str_phash[hi]=i;
 
 	return(i);
 }
@@ -643,10 +818,14 @@ int bgbcc_strdup_lookup(char *str, char suf)
 #endif
 
 #if 1
-	s=str; hi=0;
-	while(*s)hi=(hi*251)+(*s++);
-	hi&=(BGBCC_SZSTRHASH-1);
+//	s=str; hi=0;
+//	while(*s)hi=(hi*251)+(*s++);
+//	hi&=(BGBCC_SZSTRHASH-1);
 //	hi=(hi>>8)&(BGBCC_SZSTRHASH-1);
+
+	s=str; hi=1;
+	while(*s)hi=(hi*0xFEDB)+(*s++);
+	hi=((hi*0xFEDB)>>16)&(BGBCC_SZSTRHASH-1);
 
 	i=bgbcc_str_hash[hi];
 	while(i)

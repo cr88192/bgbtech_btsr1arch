@@ -9,7 +9,7 @@ void BGBCC_CCXL_DebugPrintStackLLn(
 	return;
 
 	printf("%16s:%4d(%10s) (RP=%d): ",
-		file, line, op, ctx->cur_func->n_regs);
+		file, line, op, ctx->cur_func->ext->n_regs);
 
 	for(i=0; i<ctx->regstackpos; i++)
 	{
@@ -306,8 +306,8 @@ int BGBCC_CCXL_LookupArgIndex(BGBCC_TransState *ctx, char *name)
 {
 	int i;
 	
-	for(i=0; i<ctx->cur_func->n_args; i++)
-		if(!strcmp(ctx->cur_func->args[i]->name, name))
+	for(i=0; i<ctx->cur_func->ext->n_args; i++)
+		if(!strcmp(bgbcc_strtab_i(ctx->cur_func->ext->args[i]->name_ix), name))
 			return(i);
 	return(-1);
 }
@@ -316,18 +316,20 @@ int BGBCC_CCXL_LookupLocalIndex(BGBCC_TransState *ctx, char *name)
 {
 	int i;
 	
-	for(i=0; i<ctx->cur_func->n_locals; i++)
+	for(i=0; i<ctx->cur_func->ext->n_locals; i++)
 	{
-		if(!ctx->cur_func->locals[i])
+		if(!ctx->cur_func->ext->locals[i])
 			continue;
 			
-		if(ctx->cur_func->locals[i]->flagsint&BGBCC_TYFL_DYNAMIC)
+		if(ctx->cur_func->ext->locals[i]->flagsint&BGBCC_TYFL_DYNAMIC)
 		{
 			/* Dynamic local variables are not used directly. */
 			continue;
 		}
 			
-		if(!strcmp(ctx->cur_func->locals[i]->name, name))
+		if(!strcmp(
+				bgbcc_strtab_i(ctx->cur_func->ext->locals[i]->name_ix),
+				name))
 			return(i);
 	}
 	return(-1);
@@ -337,11 +339,13 @@ int BGBCC_CCXL_LookupStaticIndex(BGBCC_TransState *ctx, char *name)
 {
 	int i;
 	
-	for(i=0; i<ctx->cur_func->n_statics; i++)
+	for(i=0; i<ctx->cur_func->ext->n_statics; i++)
 	{
-		if(!ctx->cur_func->statics[i])
+		if(!ctx->cur_func->ext->statics[i])
 			continue;
-		if(!strcmp(ctx->cur_func->statics[i]->name, name))
+		if(!strcmp(
+				bgbcc_strtab_i(ctx->cur_func->ext->statics[i]->name_ix),
+				name))
 			return(i);
 	}
 	return(-1);
@@ -499,10 +503,10 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_TryGetThisObj(BGBCC_TransState *ctx)
 	{
 		obj=BGBCC_CCXL_LookupStructureForType(
 			ctx, ctx->cur_func->clz_type);
-	}else if(ctx->cur_func->thisstr)
+	}else if(ctx->cur_func->thisstr_ix)
 	{
 		obj=BGBCC_CCXL_LookupStructure(ctx,
-			ctx->cur_func->thisstr);
+			bgbcc_strtab_i(ctx->cur_func->thisstr_ix));
 		if(obj)
 		{
 			ctx->cur_func->flagsint|=BGBCC_TYFL_VIRTUAL;
@@ -511,7 +515,7 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_TryGetThisObj(BGBCC_TransState *ctx)
 		}
 	}else
 	{
-		strcpy(b1, ctx->cur_func->name);
+		strcpy(b1, bgbcc_strtab_i(ctx->cur_func->name_ix));
 		s1=b1+strlen(b1);
 		while((s1>b1) && (*s1!='/'))
 			s1--;
@@ -587,10 +591,10 @@ int BGBCC_CCXL_TryLookupAsRegisterSig(BGBCC_TransState *ctx,
 	if(i>=0)
 	{
 		if(store)
-			ctx->cur_func->locals[i]->cseq++;
+			ctx->cur_func->ext->locals[i]->cseq++;
 	
-		ty=ctx->cur_func->locals[i]->type;
-		j=i|((ctx->cur_func->locals[i]->cseq&4095)<<12);
+		ty=ctx->cur_func->ext->locals[i]->type;
+		j=i|((ctx->cur_func->ext->locals[i]->cseq&4095)<<12);
 		treg.val=CCXL_REGTY_LOCAL|
 			(((s64)ty.val)<<CCXL_REGID_TYPESHIFT)|j;
 		BGBCC_CCXL_RegisterCheckAcquire(ctx, treg);
@@ -602,10 +606,10 @@ int BGBCC_CCXL_TryLookupAsRegisterSig(BGBCC_TransState *ctx,
 	if(i>=0)
 	{
 		if(store)
-			ctx->cur_func->args[i]->cseq++;
+			ctx->cur_func->ext->args[i]->cseq++;
 
-		ty=ctx->cur_func->args[i]->type;
-		j=i|((ctx->cur_func->args[i]->cseq&4095)<<12);
+		ty=ctx->cur_func->ext->args[i]->type;
+		j=i|((ctx->cur_func->ext->args[i]->cseq&4095)<<12);
 		treg.val=CCXL_REGTY_ARG|
 			(((s64)ty.val)<<CCXL_REGID_TYPESHIFT)|j;
 		BGBCC_CCXL_RegisterCheckAcquire(ctx, treg);
@@ -720,12 +724,14 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupLocalInfo(
 	BGBCC_CCXL_RegisterInfo *def;
 	int i;
 	
-	for(i=0; i<ctx->cur_func->n_locals; i++)
+	for(i=0; i<ctx->cur_func->ext->n_locals; i++)
 	{
-		if(!ctx->cur_func->locals[i])
+		if(!ctx->cur_func->ext->locals[i])
 			continue;
-		if(!strcmp(ctx->cur_func->locals[i]->name, name))
-			return(ctx->cur_func->locals[i]);
+		if(!strcmp(
+				bgbcc_strtab_i(ctx->cur_func->ext->locals[i]->name_ix),
+				name))
+			return(ctx->cur_func->ext->locals[i]);
 	}
 	return(NULL);
 }
@@ -736,12 +742,14 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_LookupArgInfo(
 	BGBCC_CCXL_RegisterInfo *def;
 	int i;
 	
-	for(i=0; i<ctx->cur_func->n_args; i++)
+	for(i=0; i<ctx->cur_func->ext->n_args; i++)
 	{
-		if(!ctx->cur_func->args[i])
+		if(!ctx->cur_func->ext->args[i])
 			continue;
-		if(!strcmp(ctx->cur_func->args[i]->name, name))
-			return(ctx->cur_func->args[i]);
+		if(!strcmp(
+				bgbcc_strtab_i(ctx->cur_func->ext->args[i]->name_ix),
+				name))
+			return(ctx->cur_func->ext->args[i]);
 	}
 	return(NULL);
 }
@@ -1271,8 +1279,8 @@ int BGBCC_CCXL_StackGetCntCallArgs(BGBCC_TransState *ctx)
 
 //	if(n>ctx->cur_func->n_cargs)
 //		ctx->cur_func->n_cargs=n;
-	if(n2>ctx->cur_func->n_cargs)
-		ctx->cur_func->n_cargs=n2;
+	if(n2>ctx->cur_func->ext->n_cargs)
+		ctx->cur_func->ext->n_cargs=n2;
 
 	return(n);
 }
@@ -1284,7 +1292,7 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 	BGBCC_CCXL_RegisterInfo *rfn;
 	ccxl_register treg, dreg;
 	ccxl_type bty, dty, sty, dty2, sty2;
-	int ms, ps;
+	int ms, ps, n_args;
 	int i, j, k, n, an;
 	
 	rfn=NULL;
@@ -1340,7 +1348,12 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 		dreg=ctx->regstack[ps];
 		sty=BGBCC_CCXL_GetRegType(ctx, dreg);
 
-		if(an>=rfn->n_args)
+		n_args=0;
+		if(rfn->ext)
+			n_args=rfn->ext->n_args;
+
+//		if(an>=rfn->ext->n_args)
+		if(an>=n_args)
 		{
 			if(BGBCC_CCXL_IsRegFloatP(ctx, dreg) ||
 				BGBCC_CCXL_IsRegFloat16P(ctx, dreg) ||
@@ -1353,7 +1366,7 @@ int BGBCC_CCXL_StackGetConvCallArgs(BGBCC_TransState *ctx,
 			}
 		}else
 		{
-			dty=rfn->args[an]->type;
+			dty=rfn->ext->args[an]->type;
 			
 			treg=dreg;
 //			k=BGBCC_JX2C_NormalizeImmVRegInt(ctx, NULL, dty, &treg);
@@ -1601,7 +1614,8 @@ ccxl_status BGBCC_CCXL_StackTransforCallArgsInline(
 	for(i=0; i<na; i++)
 	{
 		BGBCC_CCXL_PushRegister(ctx, tarr[i]);
-		BGBCC_CCXL_PopStore(ctx, rfn->args[i]->name);
+		BGBCC_CCXL_PopStore(ctx,
+			bgbcc_strtab_i(rfn->ext->args[i]->name_ix));
 //		BGBCC_CCXL_RegisterCheckRelease(ctx, tarr[i]);
 	}
 
@@ -1626,9 +1640,9 @@ ccxl_status BGBCC_CCXL_StackPhiTemporaries(BGBCC_TransState *ctx)
 	}
 #endif
 
-	for(i=0; i<ctx->cur_func->n_regs; i++)
+	for(i=0; i<ctx->cur_func->ext->n_regs; i++)
 	{
-		ri=ctx->cur_func->regs[i];
+		ri=ctx->cur_func->ext->regs[i];
 
 		if(ri->ucnt>0)
 		{
@@ -1804,7 +1818,7 @@ ccxl_status BGBCC_CCXL_StackCallName2(BGBCC_TransState *ctx,
 		{
 //			if((rfn->flagsint&BGBCC_TYFL_INLINE) && (rfn->n_vtr==1))
 			if((rfn->flagsint&BGBCC_TYFL_INLINE) &&
-				(rfn->n_vop>0) && (rfn->n_vop<16))
+				(rfn->ext->n_vop>0) && (rfn->ext->n_vop<16))
 			{
 				can_inline=1;
 			}
@@ -4659,7 +4673,7 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 	BGBCC_CCXL_PushRegister(ctx, sreg);
 
 	BGBCC_CCXL_Error(ctx, "Undefined Member %s -> %s\n",
-		st->decl->qname, name);
+		bgbcc_strtab_i(st->decl->qname_ix), name);
 
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS));
@@ -4776,7 +4790,7 @@ ccxl_status BGBCC_CCXL_StackStoreSlot(BGBCC_TransState *ctx, char *name)
 #endif
 	
 	BGBCC_CCXL_Error(ctx, "Undefined Member %s -> %s\n",
-		st->decl->qname, name);
+		bgbcc_strtab_i(st->decl->qname_ix), name);
 
 	BGBCC_CCXL_TagError(ctx,
 		CCXL_TERR_STATUS(CCXL_STATUS_ERR_BADOPARGS));
@@ -4851,7 +4865,7 @@ ccxl_status BGBCC_CCXL_StackLoadSlotAddr(BGBCC_TransState *ctx, char *name)
 	}
 
 	BGBCC_CCXL_Error(ctx, "Undefined Member %s -> %s\n",
-		st->decl->qname, name);
+		bgbcc_strtab_i(st->decl->qname_ix), name);
 
 //	BGBCC_CCXL_PushRegister(ctx, dreg);
 	BGBCC_CCXL_StackPushConstInt(ctx, 0);
@@ -4971,7 +4985,8 @@ ccxl_status BGBCC_CCXL_StackInitVar(BGBCC_TransState *ctx, char *name)
 	{
 		i=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
 
-		st=BGBCC_CCXL_LookupStructureForSig2(ctx, def->sig);
+		st=BGBCC_CCXL_LookupStructureForSig2(ctx,
+			bgbcc_strtab_i(def->sig_ix));
 		if(st)
 		{
 			bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_P);
@@ -4980,7 +4995,7 @@ ccxl_status BGBCC_CCXL_StackInitVar(BGBCC_TransState *ctx, char *name)
 			return(CCXL_STATUS_YES);
 		}
 		
-		s=def->sig;
+		s=bgbcc_strtab_i(def->sig_ix);
 //		l=BGBCC_CCXL_GetArraySizeForSig2R(ctx, &s);
 		l=BGBCC_CCXL_GetArraySizeForSig3R(ctx, &s);
 		if(l>0)
@@ -5007,7 +5022,8 @@ ccxl_status BGBCC_CCXL_StackInitVar(BGBCC_TransState *ctx, char *name)
 	{
 		i=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
 
-		st=BGBCC_CCXL_LookupStructureForSig2(ctx, def->sig);
+		st=BGBCC_CCXL_LookupStructureForSig2(ctx,
+			bgbcc_strtab_i(def->sig_ix));
 		if(st)
 		{
 			bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_P);
@@ -5043,7 +5059,8 @@ ccxl_status BGBCC_CCXL_StackInitVarValue(BGBCC_TransState *ctx, char *name)
 
 		i=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
 
-		st=BGBCC_CCXL_LookupStructureForSig2(ctx, def->sig);
+		st=BGBCC_CCXL_LookupStructureForSig2(ctx,
+			bgbcc_strtab_i(def->sig_ix));
 		if(st)
 		{
 			dty=BGBCC_CCXL_GetRegType(ctx, dreg);
@@ -5059,7 +5076,7 @@ ccxl_status BGBCC_CCXL_StackInitVarValue(BGBCC_TransState *ctx, char *name)
 			return(CCXL_STATUS_YES);
 		}
 		
-		s=def->sig;
+		s=bgbcc_strtab_i(def->sig_ix);
 //		l=BGBCC_CCXL_GetArraySizeForSig2R(ctx, &s);
 		l=BGBCC_CCXL_GetArraySizeForSig3R(ctx, &s);
 		if(l>0)
@@ -5143,7 +5160,8 @@ ccxl_status BGBCC_CCXL_StackZeroVar(BGBCC_TransState *ctx, char *name)
 	{
 		i=BGBCC_CCXL_LookupAsRegisterStore(ctx, name, &dreg);
 
-		st=BGBCC_CCXL_LookupStructureForSig2(ctx, def->sig);
+		st=BGBCC_CCXL_LookupStructureForSig2(ctx,
+			bgbcc_strtab_i(def->sig_ix));
 		if(st)
 		{
 			bty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_P);
@@ -5152,7 +5170,7 @@ ccxl_status BGBCC_CCXL_StackZeroVar(BGBCC_TransState *ctx, char *name)
 			return(CCXL_STATUS_YES);
 		}
 		
-		s=def->sig;
+		s=bgbcc_strtab_i(def->sig_ix);
 		l=BGBCC_CCXL_GetArraySizeForSig3R(ctx, &s);
 		if(l>0)
 		{

@@ -31,7 +31,7 @@ int BGBCC_JX2DA_EmitPuts(BGBCC_JX2_Context *ctx, char *str)
 	{
 //		bsz=65536;
 		bsz=262144;
-		ctx->asm_buf[ctx->sec]=malloc(bsz);
+		ctx->asm_buf[ctx->sec]=bgbcc_tmalloc2("misc_asmdump", bsz);
 		ctx->asm_end[ctx->sec]=ctx->asm_buf[ctx->sec]+bsz;
 		ctx->asm_pos[ctx->sec]=ctx->asm_buf[ctx->sec];
 	}
@@ -43,7 +43,7 @@ int BGBCC_JX2DA_EmitPuts(BGBCC_JX2_Context *ctx, char *str)
 		bpos=ctx->asm_pos[ctx->sec]-ctx->asm_buf[ctx->sec];
 		
 		bsz1=bsz+(bsz>>1);
-		ctx->asm_buf[ctx->sec]=realloc(ctx->asm_buf[ctx->sec], bsz1);
+		ctx->asm_buf[ctx->sec]=bgbcc_realloc2(ctx->asm_buf[ctx->sec], bsz1);
 		ctx->asm_end[ctx->sec]=ctx->asm_buf[ctx->sec]+bsz1;
 		ctx->asm_pos[ctx->sec]=ctx->asm_buf[ctx->sec]+bpos;
 	}
@@ -849,11 +849,13 @@ char *BGBCC_JX2DA_NmidToName(BGBCC_JX2_Context *ctx, int nmid, int wex2)
 		break;
 	}
 	
+#if 0
 	if(!strcmp(sn, "C_"))
 	{
 		sprintf(tb, "UNK_%04X", nmid);
 		sn=bgbcc_strdup(tb);
 	}
+#endif
 	
 //	if(wex2&4)
 	if(wex2&12)

@@ -44,7 +44,8 @@ int BGBCC_JX2C_GetMulSh2xForImm(
 	{
 		lu_init=1;
 		
-		lutab=malloc(BGBCC_JX2CC_MULSH2XLUMAX*sizeof(u16));
+		lutab=bgbcc_tmalloc2("misc_lqarith",
+			BGBCC_JX2CC_MULSH2XLUMAX*sizeof(u16));
 //		for(i=0; i<4096; i++)
 		for(i=0; i<BGBCC_JX2CC_MULSH2XLUMAX; i++)
 			lutab[i]=0;

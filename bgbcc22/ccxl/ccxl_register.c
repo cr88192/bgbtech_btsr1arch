@@ -4,6 +4,7 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_AllocRegisterInfo(
 	BGBCC_TransState *ctx)
 {
 	BGBCC_CCXL_RegisterInfo *rtmp;
+	int i;
 
 	if(ctx->reginfo_free)
 	{
@@ -13,7 +14,46 @@ BGBCC_CCXL_RegisterInfo *BGBCC_CCXL_AllocRegisterInfo(
 		return(rtmp);
 	}
 	
-	rtmp=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+	rtmp=bgbcc_tmalloc("_ccxl_reginfo_t", 64*sizeof(BGBCC_CCXL_RegisterInfo));
+
+#if 1
+	for(i=0; i<63; i++)
+	{
+		rtmp->next=ctx->reginfo_free;
+		ctx->reginfo_free=rtmp;
+		rtmp++;
+	}
+#endif
+
+	return(rtmp);
+}
+
+BGBCC_CCXL_RegisterExtInfo *BGBCC_CCXL_AllocRegisterExtInfo(
+	BGBCC_TransState *ctx)
+{
+	BGBCC_CCXL_RegisterExtInfo *rtmp;
+	int i;
+
+	if(ctx->regextinfo_free)
+	{
+		rtmp=ctx->regextinfo_free;
+		ctx->regextinfo_free=(void *)rtmp->goto_lbl;
+		memset(rtmp, 0, sizeof(BGBCC_CCXL_RegisterExtInfo));
+		return(rtmp);
+	}
+	
+	rtmp=bgbcc_tmalloc("_ccxl_regextinfo_t",
+		64*sizeof(BGBCC_CCXL_RegisterExtInfo));
+
+#if 1
+	for(i=0; i<63; i++)
+	{
+		rtmp->goto_lbl=(void *)ctx->regextinfo_free;
+		ctx->regextinfo_free=rtmp;
+		rtmp++;
+	}
+#endif
+
 	return(rtmp);
 }
 
@@ -65,13 +105,13 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 	if(BGBCC_CCXL_TypeCompatibleStorageP(ctx, tty, bty))
 		{ sbty=tty; }
 
-	if(!ctx->cur_func->regs)
+	if(!ctx->cur_func->ext->regs)
 	{
-		ctx->cur_func->regs=bgbcc_malloc(
+		ctx->cur_func->ext->regs=bgbcc_tmalloc("_ccxl_Preginfo_t", 
 			256*sizeof(BGBCC_CCXL_RegisterInfo *));
 //		ctx->cur_func->regs_tyseq=bgbcc_malloc(256*sizeof(u32));
-		ctx->cur_func->n_regs=0;
-		ctx->cur_func->m_regs=256;
+		ctx->cur_func->ext->n_regs=0;
+		ctx->cur_func->ext->m_regs=256;
 	}
 
 #if 0
@@ -83,8 +123,8 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 			ri=ctx->cur_func->regs[i];
 			if(ri)
 			{
-				printf("    R%d: %s:%d\n", i,
-					ri->alc_fn, ri->alc_ln);
+//				printf("    R%d: %s:%d\n", i,
+//					ri->alc_fn, ri->alc_ln);
 			}
 		}
 	}
@@ -95,12 +135,12 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 //	ctx->regrov=rov+3;
 	bi=-1;
 
-	nr=ctx->cur_func->n_regs;
+	nr=ctx->cur_func->ext->n_regs;
 	for(i=0; i<nr; i++)
 	{
 		j=(i+rov)%nr;
 
-		ri=ctx->cur_func->regs[j];
+		ri=ctx->cur_func->ext->regs[j];
 		if(!ri)
 			continue;
 
@@ -129,17 +169,17 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 	if(bi<0)
 	{
 	//	for(i=0; i<256; i++)
-		for(i=0; i<ctx->cur_func->m_regs; i++)
+		for(i=0; i<ctx->cur_func->ext->m_regs; i++)
 		{
 	//		j=ctx->cur_func->regs_tyseq[i];
 	//		if(j && (((j>>16)&15)!=z))
 	//			continue;
 
-			ri=ctx->cur_func->regs[i];
+			ri=ctx->cur_func->ext->regs[i];
 	//		if(!ctx->cur_func->regs[i])
 			if(!ri)
 			{
-				if(i<ctx->cur_func->n_regs)
+				if(i<ctx->cur_func->ext->n_regs)
 					BGBCC_DBGBREAK
 
 	//			if(!j)
@@ -149,11 +189,11 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 			
 				ctx->regrov=i+1;
 
-				if(i>=ctx->cur_func->n_regs)
-					ctx->cur_func->n_regs=i+1;
+				if(i>=ctx->cur_func->ext->n_regs)
+					ctx->cur_func->ext->n_regs=i+1;
 			
 				ri=BGBCC_CCXL_AllocRegisterInfo(ctx);
-				ri->alc_fn=fn;
+				ri->alc_fn_ix=bgbcc_strdup_2i(fn);
 				ri->alc_ln=ln;
 
 				ri->ucnt=1;
@@ -165,7 +205,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 	//			ri->regid=i|((j&4095)<<12);
 				ri->regid=i|((ri->cseq&4095)<<12);
 
-				ctx->cur_func->regs[i]=ri;
+				ctx->cur_func->ext->regs[i]=ri;
 				treg.val=CCXL_REGTY_TEMP|
 					(((u64)bty.val)<<CCXL_REGID_TYPESHIFT)|
 					ri->regid;
@@ -222,7 +262,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryLLn(
 	
 	if(bi>=0)
 	{
-		ri=ctx->cur_func->regs[bi];
+		ri=ctx->cur_func->ext->regs[bi];
 
 //		if((BGBCC_CCXL_TypeValueObjectP(ctx, bty) ||
 //			BGBCC_CCXL_TypeValueObjectP(ctx, ri->type)) &&
@@ -279,7 +319,7 @@ ccxl_status BGBCC_CCXL_RegisterAllocTemporaryInit2(
 //		*rtreg.val|=CCXL_REGFL_INIT;
 
 		i=rtreg->val&CCXL_REGID_BASEMASK;
-		ri=ctx->cur_func->regs[i];
+		ri=ctx->cur_func->ext->regs[i];
 		ri->regflags|=BGBCC_REGFL_INITIALIZED;
 	}
 
@@ -356,7 +396,7 @@ ccxl_status BGBCC_CCXL_RegisterCheckRelease(
 				CCXL_TERR_STATUS(CCXL_STATUS_ERR_CANTACQUIRE));
 			return(CCXL_STATUS_ERR_BADVALUE);
 		}
-		ri=ctx->cur_func->regs[i];
+		ri=ctx->cur_func->ext->regs[i];
 		if(ri->ucnt && (ri->ucnt<255))
 			ri->ucnt--;
 		if(ri->ucnt>0)
@@ -439,7 +479,7 @@ ccxl_status BGBCC_CCXL_RegisterCheckAcquire(
 		i=(reg.val&CCXL_REGID_BASEMASK);
 		if((i<0) || (i>=256))
 			return(CCXL_STATUS_ERR_BADVALUE);
-		ri=ctx->cur_func->regs[i];
+		ri=ctx->cur_func->ext->regs[i];
 		if(ri->ucnt<255)
 			ri->ucnt++;
 		return(CCXL_STATUS_YES);
@@ -460,7 +500,7 @@ ccxl_status BGBCC_CCXL_RegisterIsTempFree(
 		i=(reg.val&CCXL_REGID_BASEMASK);
 		if((i<0) || (i>=256))
 			return(CCXL_STATUS_ERR_BADVALUE);
-		ri=ctx->cur_func->regs[i];
+		ri=ctx->cur_func->ext->regs[i];
 //		if(ri->ucnt<255)
 //			ri->ucnt++;
 		if(ri->ucnt<=0)

@@ -21,6 +21,16 @@
 BTEIFGL_API byte *BGBBTJ_BufPNG_Decode(
 	byte *csbuf, int cssz, int *w, int *h);
 
+void *bufpng_malloc(int sz)
+{
+	return(bgbcc_malloc2(sz));
+}
+
+void bufpng_free(void *buf)
+{
+	bgbcc_free2(buf);
+}
+
 #if 0
 u32 BGBBTJ_BufPNG_DataAdler32(void *buf, int sz, u32 lcrc)
 {
@@ -270,7 +280,7 @@ BTEIFGL_API int BGBBTJ_BufPNG_DecodeOBuf(
 	if(!tbuf)return(-1);
 	
 	memcpy(obuf, tbuf, (*w)*(*h)*4);
-	free(tbuf);
+	bufpng_free(tbuf);
 	return(0);
 }
 
@@ -634,7 +644,7 @@ BTEIFGL_API byte *BGBBTJ_BufPNG_Decode(
 				return(NULL);
 			}
 
-			buf=malloc(xs*ys*8);
+			buf=bufpng_malloc(xs*ys*8);
 			bufe=buf;
 
 			ssz=0;
@@ -676,7 +686,7 @@ BTEIFGL_API byte *BGBBTJ_BufPNG_Decode(
 //		printf("%s %d %X\n", BGBBTJ_BufPNG_Fourcc2String(fcc0), len, crc);
 	}
 
-	buf2=malloc(xs*ys*8);
+	buf2=bufpng_malloc(xs*ys*8);
 
 	i=bufe-(buf+2);
 	i=PDUNZ_DecodeStream(buf+2, buf2, i, xs*ys*ssz+ys);
@@ -687,8 +697,8 @@ BTEIFGL_API byte *BGBBTJ_BufPNG_Decode(
 	{
 		printf("Inflater Error %d\n", i);
 
-		free(buf);
-		free(buf2);
+		bufpng_free(buf);
+		bufpng_free(buf2);
 		return(NULL);
 	}
 //	i=j;
@@ -705,9 +715,9 @@ BTEIFGL_API byte *BGBBTJ_BufPNG_Decode(
 
 //	PDZ2_EncodeStream(buf2, buf, xs*ys*ssz+ys, xs*ys*8);
 //	PDUNZ_DecodeStream(buf, buf2, i, xs*ys*ssz+ys);
-	free(buf);
+	bufpng_free(buf);
 
-	buf=malloc((xs+1)*(ys+1)*4);
+	buf=bufpng_malloc((xs+1)*(ys+1)*4);
 	s=buf2;
 	t=buf;
 
@@ -893,7 +903,7 @@ BTEIFGL_API byte *BGBBTJ_BufPNG_Decode(
 	}
 #endif
 
-	free(buf2);
+	bufpng_free(buf2);
 
 	//correct for grayscale images...
 	if(clr==0)
@@ -1006,7 +1016,7 @@ int BGBBTJ_BufPNG_Encode(
 		if(buf[i*4+3]<255)am=1;
 	ssz=am?4:3;
 
-	buf2=malloc(xs*ys*ssz+ys);
+	buf2=bufpng_malloc(xs*ys*ssz+ys);
 
 	ct=ctbuf;
 
@@ -1137,7 +1147,7 @@ int BGBBTJ_BufPNG_Encode(
 	}
 //	printf("\n");
 
-	buf=malloc(xs*ys*8);
+	buf=bufpng_malloc(xs*ys*8);
 
 	//zlib header
 	i=(7<<12)|(8<<8)|(3<<6);
@@ -1161,7 +1171,7 @@ int BGBBTJ_BufPNG_Encode(
 //	printf("Adler32: Wrote %08X\n", j);
 
 	sz=i+6;
-	free(buf2);
+	bufpng_free(buf2);
 
 	BGBBTJ_BufPNG_WriteFourcc(&ct, FCC_PNG_LOW);
 	BGBBTJ_BufPNG_WriteFourcc(&ct, FCC_PNG_HIGH);
@@ -1209,7 +1219,7 @@ BTEIFGL_API int BGBBTJ_BufPNG_EncodeFast(
 		if(buf[i*4+3]<255)am=1;
 	ssz=am?4:3;
 
-	buf2=malloc(xs*ys*ssz+ys);
+	buf2=bufpng_malloc(xs*ys*ssz+ys);
 
 	ct=ctbuf;
 
@@ -1364,7 +1374,7 @@ BTEIFGL_API int BGBBTJ_BufPNG_EncodeFast(
 //	printf("\n");
 #endif
 
-	buf=malloc(xs*ys*8);
+	buf=bufpng_malloc(xs*ys*8);
 
 	//zlib header
 	i=(7<<12)|(8<<8)|(3<<6);
@@ -1389,7 +1399,7 @@ BTEIFGL_API int BGBBTJ_BufPNG_EncodeFast(
 //	printf("Adler32: Wrote %08X\n", j);
 
 	sz=i+6;
-	free(buf2);
+	bufpng_free(buf2);
 
 	BGBBTJ_BufPNG_WriteFourcc(&ct, FCC_PNG_LOW);
 	BGBBTJ_BufPNG_WriteFourcc(&ct, FCC_PNG_HIGH);

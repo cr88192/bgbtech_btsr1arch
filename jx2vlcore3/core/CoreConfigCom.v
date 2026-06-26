@@ -100,7 +100,7 @@
 `ifndef jx2_xc7s50
 `define	jx2_use_fpu_fpimm		//Enable Floating Point Immediates
 `define	jx2_use_fpu_fpimm_dp	//Enable FP-Imm Fraction Packing
-// `define	jx2_use_mem_ldop		//Load/Store Operations
+`define	jx2_use_mem_ldop		//Load/Store Operations
 `endif
 
 `ifndef jx2_xc7s50

@@ -614,6 +614,15 @@ int bgbcp_strcmp(char *s1, char *s2)
 	else					{ return(*s1-*s2); }
 	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
 	else					{ return(*s1-*s2); }
+
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
+	if(*s1 && (*s1==*s2))	{ s1++; s2++; }
+	else					{ return(*s1-*s2); }
 #endif
 
 #if 0
@@ -2424,7 +2433,8 @@ char *BGBCP_ReadToken(BGBCP_ParseState *ctx, char **str, int *ty)
 		return(NULL);
 	}
 
-	if(!tb)tb=malloc(65536);
+//	if(!tb)tb=bgbcc_tmalloc2("_cparse_tokbuf", 65536);
+	if(!tb)tb=bgbcc_tmalloc2("_cparse_tokbuf", 4096+256);
 
 	if(flush)
 	{

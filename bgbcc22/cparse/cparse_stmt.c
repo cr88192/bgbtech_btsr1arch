@@ -141,7 +141,7 @@ int BGBCP_AddStatement(char *name,
 {
 	BGBCP_ParseItem *tmp;
 
-	tmp=malloc(sizeof(BGBCP_ParseItem));
+	tmp=bgbcc_tmalloc2("misc_cparse", sizeof(BGBCP_ParseItem));
 	tmp->name=strdup(name);
 	tmp->func=func;
 
@@ -171,7 +171,7 @@ int BGBCP_AddBlockStatement(char *name,
 {
 	BGBCP_ParseItem *tmp;
 
-	tmp=malloc(sizeof(BGBCP_ParseItem));
+	tmp=bgbcc_tmalloc2("misc_cparse", sizeof(BGBCP_ParseItem));
 	tmp->name=strdup(name);
 	tmp->func=func;
 
@@ -708,7 +708,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 
 			if(!bgbcp_strcmp(b, "__asm"))
 			{
-				s2=malloc(65536);
+				s2=bgbcc_tmalloc2("misc_cparse", 65536);
 
 				i=0;
 				t=s2;
@@ -744,7 +744,7 @@ BCCX_Node *BGBCP_BlockStatementInner(BGBCP_ParseState *ctx, char **str)
 				n=BCCX_NewCst1(&bgbcc_rcst_msvc_asm, "msvc_asm", n1);
 //				BCCX_SetCst(n, &bgbcc_rcst_value, "value", stbuf);
 
-				free(s2);
+				bgbcc_free2(s2);
 
 				*str=s;
 				return(n);

@@ -545,7 +545,7 @@ int BT5BU_DecodeFrameBlks(
 				i=65536;
 				while(i<=(dsz+64))
 					i=i+(i>>1);
-				zfbuf=malloc(i);
+				zfbuf=bgbcc_malloc_bmp(i);
 				zfbsz=i;
 			}
 			
@@ -554,7 +554,7 @@ int BT5BU_DecodeFrameBlks(
 				i=zfbsz;
 				while(i<=(dsz+64))
 					i=i+(i>>1);
-				zfbuf=realloc(zfbuf, i);
+				zfbuf=bgbcc_realloc2(zfbuf, i);
 				zfbsz=i;
 			}
 
@@ -673,9 +673,9 @@ int BT5BU_DecodeFrameRGBA(
 	n=xs2*ys2;
 	
 	if(blkbuf && (n>sz_blkbuf))
-		{ free(blkbuf); blkbuf=NULL; }
+		{ bgbcc_free2(blkbuf); blkbuf=NULL; }
 	if(!blkbuf)
-		{ blkbuf=malloc(xs2*ys2*8); sz_blkbuf=n; }
+		{ blkbuf=bgbcc_malloc_bmp(xs2*ys2*8); sz_blkbuf=n; }
 	
 	BT5BU_DecodeFrameBlksDXT1(cdat, csz, blkbuf, n);
 	for(y=0; y<ys2; y++)

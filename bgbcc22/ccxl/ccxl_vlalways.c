@@ -9,7 +9,7 @@ BGBCC_VlSenseList *BGBCC_CCXL_AllocVlSenseList(BGBCC_TransState *ctx)
 		memset(cur, 0, sizeof(BGBCC_VlSenseList));
 	}else
 	{
-		cur=bgbcc_malloc(sizeof(BGBCC_VlSenseList));
+		cur=bgbcc_tmalloc("_ccxl_vlsenselist", sizeof(BGBCC_VlSenseList));
 		memset(cur, 0, sizeof(BGBCC_VlSenseList));
 	}
 
@@ -59,7 +59,7 @@ void BGBCC_CCXL_VlMarkRefIn(BGBCC_TransState *ctx, char *name)
 		{
 			k=sn->m_refin;
 			k=k+(k>>1);
-			sn->refin=bgbcc_malloc(k*sizeof(char *));
+			sn->refin=bgbcc_tmalloc("_ccxl_vlrefin", k*sizeof(char *));
 			memcpy(sn->refin, sn->t_refin, sn->m_refin*sizeof(char *));
 			sn->m_refin=k;
 		}else
@@ -96,7 +96,7 @@ void BGBCC_CCXL_VlMarkRefOut(BGBCC_TransState *ctx, char *name)
 		{
 			k=sn->m_refout;
 			k=k+(k>>1);
-			sn->refout=bgbcc_malloc(k*sizeof(char *));
+			sn->refout=bgbcc_tmalloc("_ccxl_vlrefout", k*sizeof(char *));
 			memcpy(sn->refout, sn->t_refout, sn->m_refout*sizeof(char *));
 			sn->m_refout=k;
 		}else
@@ -234,7 +234,7 @@ void BGBCC_CCXL_CompileVlModule(BGBCC_TransState *ctx, BCCX_Node *l)
 		cur=BGBCC_CCXL_LookupStructure(ctx, qn);
 		if(cur)
 		{
-			if(cur->decl && cur->decl->n_fields)
+			if(cur->decl && cur->decl->ext->n_fields)
 				return;
 		}
 	}
@@ -295,7 +295,11 @@ void BGBCC_CCXL_CompileVlModule(BGBCC_TransState *ctx, BCCX_Node *l)
 	if(nsn<=16)
 		{ srtgrid=tb; srtlst=t_srtlst; srttlst=srtlst+nsn; }
 	else
-		{ srtgrid=malloc(nsn*nsn); srtlst=malloc(2*nsn*2); srttlst=srtlst+nsn; }
+	{
+		srtgrid=bgbcc_tmalloc2("_ccxl_vl_srtgrid", nsn*nsn);
+		srtlst=bgbcc_tmalloc2("_ccxl_vl_srtlst", 2*nsn*2);
+		srttlst=srtlst+nsn;
+	}
 	
 	snc1=ctx->mod_slist;
 	while(snc1)

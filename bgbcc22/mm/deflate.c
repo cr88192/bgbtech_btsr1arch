@@ -740,8 +740,8 @@ int PDZ2_EncodeBlockStatic(byte *ibuf, int isz, int last)
 	byte *tbuf, *mbuf;
 	int n;
 
-	tbuf=malloc(isz*2);
-	mbuf=malloc((isz*2+7)/8);
+	tbuf=bgbcc_malloc2(isz*2);
+	mbuf=bgbcc_malloc2((isz*2+7)/8);
 
 	n=PDZ2_LZCompressBuffer(ibuf, tbuf, mbuf, isz);
 
@@ -752,8 +752,8 @@ int PDZ2_EncodeBlockStatic(byte *ibuf, int isz, int last)
 
 	PDZ2_EncodeLZBuffer(tbuf, mbuf, n);
 
-	free(tbuf);
-	free(mbuf);
+	bgbcc_free2(tbuf);
+	bgbcc_free2(mbuf);
 
 	return(0);
 }
@@ -775,11 +775,11 @@ int PDZ2_EncodeBlock(byte *ibuf, int isz, int last)
 	i=isz;
 	if(!pdz2_tbuf || (isz>pdz2_tsz))
 	{
-		if(pdz2_tbuf)free(pdz2_tbuf);
-		if(pdz2_mbuf)free(pdz2_mbuf);
+		if(pdz2_tbuf)bgbcc_free2(pdz2_tbuf);
+		if(pdz2_mbuf)bgbcc_free2(pdz2_mbuf);
 		pdz2_tsz=i; pdz2_msz=(i+7)/8;
-		pdz2_tbuf=malloc(pdz2_tsz);
-		pdz2_mbuf=malloc(pdz2_msz);
+		pdz2_tbuf=bgbcc_malloc2(pdz2_tsz);
+		pdz2_mbuf=bgbcc_malloc2(pdz2_msz);
 	}
 #endif
 

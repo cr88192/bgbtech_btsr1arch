@@ -85,8 +85,8 @@ byte *LCIF_EncodeColorPlane(byte *dstbuf, byte *img, int xs, int ys)
 	int i, j, k, h, hli, hr, nl;
 
 #ifdef LCIF_MALLOCHASH
-	hofs=malloc(LCIF_HASHSZ*sizeof(int));
-	hrov=malloc(LCIF_HASHSZ);
+	hofs=lcif_malloc(LCIF_HASHSZ*sizeof(int));
+	hrov=lcif_malloc(LCIF_HASHSZ);
 #endif
 	
 	n=xs*ys;
@@ -356,8 +356,8 @@ byte *LCIF_EncodeColorPlane(byte *dstbuf, byte *img, int xs, int ys)
 	}
 
 #ifdef LCIF_MALLOCHASH
-	free(hofs);
-	free(hrov);
+	lcif_free(hofs);
+	lcif_free(hrov);
 #endif
 
 	return(ct);
@@ -414,7 +414,7 @@ byte LCIF_EncodeConvBlockPat6(u64 blk)
 
 	if(!pat6lookup)
 	{
-		pat6lookup=malloc(65536);
+		pat6lookup=lcif_malloc(65536);
 		for(i=0; i<65536; i++)
 		{
 			bi=0; bd=999;
@@ -1390,9 +1390,9 @@ int LCIF_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int flags)
 
 	xs2=(xs+3)>>2;
 	ys2=(ys+3)>>2;
-	clrbuf=malloc(xs2*ys2*2*4);
-	blkbuf=malloc(xs2*ys2*8);
-	ablkbuf=malloc(xs2*ys2*8);
+	clrbuf=lcif_malloc(xs2*ys2*2*4);
+	blkbuf=lcif_malloc(xs2*ys2*8);
+	ablkbuf=lcif_malloc(xs2*ys2*8);
 	
 	errt=(flags&0xE)*4+4;
 	
@@ -1463,9 +1463,9 @@ int LCIF_EncodeImageBuffer(byte *dstbuf, byte *img, int xs, int ys, int flags)
 	printf("Total %d\n", (int)(ct-dstbuf));
 #endif
 
-	free(clrbuf);
-	free(blkbuf);
-	free(ablkbuf);
+	lcif_free(clrbuf);
+	lcif_free(blkbuf);
+	lcif_free(ablkbuf);
 
 	return(ct-dstbuf);
 }

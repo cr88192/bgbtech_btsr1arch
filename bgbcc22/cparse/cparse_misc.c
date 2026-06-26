@@ -399,7 +399,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	BCCX_Node *t;
 	int t0, t1, dt;
 
-	tbuf=malloc(1<<24);
+	tbuf=bgbcc_tmalloc2("misc_cparse", 1<<24);
 	memset(tbuf, 0, 1<<24);
 
 	t0=clock();
@@ -497,40 +497,30 @@ fourcc BGBCP_LangForName(char *name)
 	
 	if(*name=='$')
 	{
-		if(	!strcmp(name, "$stdin") ||
-			!strcmp(name, "$stdout"))
+		if(name[1]=='s')
 		{
-			lang=BGBCC_LANG_C;
-			return(lang);
+			if(	!bgbcp_strcmp(name, "$stdin") ||
+				!bgbcp_strcmp(name, "$stdout"))
+			{
+				lang=BGBCC_LANG_C;
+				return(lang);
+			}
 		}
 	}
 
 	if(name)
 	{
-		if(!bgbcp_strcmp(name, "C"))lang=BGBCC_LANG_C;
-		if(!bgbcp_strcmp(name, "CPP"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(name, "C++"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(name, "C#"))lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(name, "CS"))lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(name, "BS"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(name, "BS2"))lang=BGBCC_LANG_BS2;
-		if(!bgbcp_strcmp(name, "Java"))lang=BGBCC_LANG_JAVA;
-		if(!bgbcp_strcmp(name, "S"))lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(name, "ASM"))lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(name, "V"))lang=BGBCC_LANG_VERILOG;
-		if(lang)return(lang);
-
-		if(!bgbcp_strcmp(name, "c"))lang=BGBCC_LANG_C;
-		if(!bgbcp_strcmp(name, "cpp"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(name, "c++"))lang=BGBCC_LANG_CPP;
-		if(!bgbcp_strcmp(name, "c#"))lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(name, "cs"))lang=BGBCC_LANG_CS;
-		if(!bgbcp_strcmp(name, "bs"))lang=BGBCC_LANG_BS;
-		if(!bgbcp_strcmp(name, "bs2"))lang=BGBCC_LANG_BS2;
-		if(!bgbcp_strcmp(name, "java"))lang=BGBCC_LANG_JAVA;
-		if(!bgbcp_strcmp(name, "s"))lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(name, "asm"))lang=BGBCC_LANG_ASM;
-		if(!bgbcp_strcmp(name, "v"))lang=BGBCC_LANG_VERILOG;
+		if(!bgbcp_stricmp(name, "c"))lang=BGBCC_LANG_C;
+		if(!bgbcp_stricmp(name, "cpp"))lang=BGBCC_LANG_CPP;
+		if(!bgbcp_stricmp(name, "c++"))lang=BGBCC_LANG_CPP;
+		if(!bgbcp_stricmp(name, "c#"))lang=BGBCC_LANG_CS;
+		if(!bgbcp_stricmp(name, "cs"))lang=BGBCC_LANG_CS;
+		if(!bgbcp_stricmp(name, "bs"))lang=BGBCC_LANG_BS;
+		if(!bgbcp_stricmp(name, "bs2"))lang=BGBCC_LANG_BS2;
+		if(!bgbcp_stricmp(name, "java"))lang=BGBCC_LANG_JAVA;
+		if(!bgbcp_stricmp(name, "s"))lang=BGBCC_LANG_ASM;
+		if(!bgbcp_stricmp(name, "asm"))lang=BGBCC_LANG_ASM;
+		if(!bgbcp_stricmp(name, "v"))lang=BGBCC_LANG_VERILOG;
 		if(lang)return(lang);
 
 		s=name+strlen(name);
@@ -538,149 +528,90 @@ fourcc BGBCP_LangForName(char *name)
 
 		if(*s=='.')
 		{
-			if(!bgbcp_strcmp(s, ".c"))
+			if(!bgbcp_stricmp(s, ".c"))
 				lang=BGBCC_LANG_C;
-			if(!bgbcp_strcmp(s, ".h"))
+			if(!bgbcp_stricmp(s, ".h"))
 				lang=BGBCC_LANG_C;
 
-			if(!bgbcp_strcmp(s, ".cpp"))
+			if(!bgbcp_stricmp(s, ".cpp"))
 				lang=BGBCC_LANG_CPP;
-			if(!bgbcp_strcmp(s, ".hpp"))
+			if(!bgbcp_stricmp(s, ".hpp"))
 				lang=BGBCC_LANG_CPP;
-			if(!bgbcp_strcmp(s, ".cs"))
+			if(!bgbcp_stricmp(s, ".cs"))
 				lang=BGBCC_LANG_CS;
-			if(!bgbcp_strcmp(s, ".java"))
+			if(!bgbcp_stricmp(s, ".java"))
 				lang=BGBCC_LANG_JAVA;
 
-			if(!bgbcp_strcmp(s, ".bs"))
+			if(!bgbcp_stricmp(s, ".bs"))
 				lang=BGBCC_LANG_BS2;
-			if(!bgbcp_strcmp(s, ".js"))
+			if(!bgbcp_stricmp(s, ".js"))
 				lang=BGBCC_LANG_BS;
-			if(!bgbcp_strcmp(s, ".es"))
+			if(!bgbcp_stricmp(s, ".es"))
 				lang=BGBCC_LANG_BS;
-			if(!bgbcp_strcmp(s, ".bs2"))
+			if(!bgbcp_stricmp(s, ".bs2"))
 				lang=BGBCC_LANG_BS2;
-			if(!bgbcp_strcmp(s, ".ts"))
+			if(!bgbcp_stricmp(s, ".ts"))
 				lang=BGBCC_LANG_BS;
 
-			if(!bgbcp_strcmp(s, ".s"))
+			if(!bgbcp_stricmp(s, ".s"))
 				lang=BGBCC_LANG_ASM;
-			if(!bgbcp_strcmp(s, ".asm"))
-				lang=BGBCC_LANG_ASM;
-
-			if(!bgbcp_strcmp(s, ".C"))
-				lang=BGBCC_LANG_C;
-			if(!bgbcp_strcmp(s, ".H"))
-				lang=BGBCC_LANG_C;
-
-			if(!bgbcp_strcmp(s, ".CPP"))
-				lang=BGBCC_LANG_CPP;
-			if(!bgbcp_strcmp(s, ".HPP"))
-				lang=BGBCC_LANG_CPP;
-			if(!bgbcp_strcmp(s, ".CS"))
-				lang=BGBCC_LANG_CS;
-			if(!bgbcp_strcmp(s, ".JAVA"))
-				lang=BGBCC_LANG_JAVA;
-
-			if(!bgbcp_strcmp(s, ".BS"))lang=BGBCC_LANG_BS;
-			if(!bgbcp_strcmp(s, ".JS"))lang=BGBCC_LANG_BS;
-			if(!bgbcp_strcmp(s, ".ES"))lang=BGBCC_LANG_BS;
-			if(!bgbcp_strcmp(s, ".BS2"))lang=BGBCC_LANG_BS2;
-			if(!bgbcp_strcmp(s, ".TS"))lang=BGBCC_LANG_BS;
-
-			if(!bgbcp_strcmp(s, ".S"))
-				lang=BGBCC_LANG_ASM;
-			if(!bgbcp_strcmp(s, ".ASM"))
+			if(!bgbcp_stricmp(s, ".asm"))
 				lang=BGBCC_LANG_ASM;
 
-			if(!bgbcp_strcmp(s, ".ril"))
+			if(!bgbcp_stricmp(s, ".ril"))
 				lang=BGBCC_IMGFMT_RIL3;
-			if(!bgbcp_strcmp(s, ".RIL"))
-				lang=BGBCC_IMGFMT_RIL3;
-			if(!bgbcp_strcmp(s, ".ril3"))
-				lang=BGBCC_IMGFMT_RIL3;
-			if(!bgbcp_strcmp(s, ".RIL3"))
+			if(!bgbcp_stricmp(s, ".ril3"))
 				lang=BGBCC_IMGFMT_RIL3;
 
-			if(!bgbcp_strcmp(s, ".o"))
+			if(!bgbcp_stricmp(s, ".o"))
 				lang=BGBCC_IMGFMT_OBJ;
-			if(!bgbcp_strcmp(s, ".obj"))
+			if(!bgbcp_stricmp(s, ".obj"))
 				lang=BGBCC_IMGFMT_OBJ;
 
-			if(!bgbcp_strcmp(s, ".frb"))
+			if(!bgbcp_stricmp(s, ".frb"))
 				lang=BGBCC_IMGFMT_FR2E;
-			if(!bgbcp_strcmp(s, ".frb"))
+			if(!bgbcp_stricmp(s, ".frb"))
 				lang=BGBCC_IMGFMT_FR2E;
 
-			if(!bgbcp_strcmp(s, ".dll"))lang=BGBCC_IMGFMT_DLL;
-			if(!bgbcp_strcmp(s, ".DLL"))lang=BGBCC_IMGFMT_DLL;
-			if(!bgbcp_strcmp(s, ".exe"))lang=BGBCC_IMGFMT_EXE;
-			if(!bgbcp_strcmp(s, ".EXE"))lang=BGBCC_IMGFMT_EXE;
-			if(!bgbcp_strcmp(s, ".elf"))lang=BGBCC_IMGFMT_ELXE;
-			if(!bgbcp_strcmp(s, ".ELF"))lang=BGBCC_IMGFMT_ELXE;
-			if(!bgbcp_strcmp(s, ".so"))lang=BGBCC_IMGFMT_ELSO;
-			if(!bgbcp_strcmp(s, ".SO"))lang=BGBCC_IMGFMT_ELSO;
+			if(!bgbcp_stricmp(s, ".dll"))lang=BGBCC_IMGFMT_DLL;
+			if(!bgbcp_stricmp(s, ".exe"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_stricmp(s, ".elf"))lang=BGBCC_IMGFMT_ELXE;
+			if(!bgbcp_stricmp(s, ".so"))lang=BGBCC_IMGFMT_ELSO;
 
-			if(!bgbcp_strcmp(s, ".pso"))lang=BGBCC_IMGFMT_DLL;
-			if(!bgbcp_strcmp(s, ".PSO"))lang=BGBCC_IMGFMT_DLL;
-			if(!bgbcp_strcmp(s, ".pex"))lang=BGBCC_IMGFMT_EXE;
-			if(!bgbcp_strcmp(s, ".PEX"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_stricmp(s, ".pso"))lang=BGBCC_IMGFMT_DLL;
+			if(!bgbcp_stricmp(s, ".pex"))lang=BGBCC_IMGFMT_EXE;
 
-			if(!bgbcp_strcmp(s, ".rom"))lang=BGBCC_IMGFMT_ROM;
-			if(!bgbcp_strcmp(s, ".ROM"))lang=BGBCC_IMGFMT_ROM;
-			if(!bgbcp_strcmp(s, ".bin"))lang=BGBCC_IMGFMT_ROM;
-			if(!bgbcp_strcmp(s, ".BIN"))lang=BGBCC_IMGFMT_ROM;
+			if(!bgbcp_stricmp(s, ".rom"))lang=BGBCC_IMGFMT_ROM;
+			if(!bgbcp_stricmp(s, ".bin"))lang=BGBCC_IMGFMT_ROM;
 
-			if(!bgbcp_strcmp(s, ".SYS"))lang=BGBCC_IMGFMT_EXE;
+			if(!bgbcp_stricmp(s, ".SYS"))lang=BGBCC_IMGFMT_EXE;
 
-			if(!bgbcp_strcmp(s, ".asm"))lang=BGBCC_IMGFMT_ASM;
-			if(!bgbcp_strcmp(s, ".ASM"))lang=BGBCC_IMGFMT_ASM;
-			if(!bgbcp_strcmp(s, ".as"))lang=BGBCC_IMGFMT_ASM;
-			if(!bgbcp_strcmp(s, ".AS"))lang=BGBCC_IMGFMT_ASM;
-			if(!bgbcp_strcmp(s, ".s"))lang=BGBCC_IMGFMT_ASM;
-			if(!bgbcp_strcmp(s, ".S"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_stricmp(s, ".asm"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_stricmp(s, ".as"))lang=BGBCC_IMGFMT_ASM;
+			if(!bgbcp_stricmp(s, ".s"))lang=BGBCC_IMGFMT_ASM;
 
-			if(!bgbcp_strcmp(s, ".v"))lang=BGBCC_LANG_VERILOG;
-			if(!bgbcp_strcmp(s, ".V"))lang=BGBCC_LANG_VERILOG;
-			if(!bgbcp_strcmp(s, ".sv"))lang=BGBCC_LANG_VERILOG;
-			if(!bgbcp_strcmp(s, ".SV"))lang=BGBCC_LANG_VERILOG;
+			if(!bgbcp_stricmp(s, ".v"))lang=BGBCC_LANG_VERILOG;
+			if(!bgbcp_stricmp(s, ".sv"))lang=BGBCC_LANG_VERILOG;
 
-			if(!bgbcp_strcmp(s, ".wad"))	lang=BGBCC_FMT_WAD;
-			if(!bgbcp_strcmp(s, ".WAD"))	lang=BGBCC_FMT_WAD;
-			if(!bgbcp_strcmp(s, ".lmp"))	lang=BGBCC_FMT_LUMP;
-			if(!bgbcp_strcmp(s, ".LMP"))	lang=BGBCC_FMT_LUMP;
-			if(!bgbcp_strcmp(s, ".wav"))	lang=BGBCC_FMT_WAV;
-			if(!bgbcp_strcmp(s, ".WAV"))	lang=BGBCC_FMT_WAV;
-			if(!bgbcp_strcmp(s, ".bmp"))	lang=BGBCC_FMT_BMP;
-			if(!bgbcp_strcmp(s, ".BMP"))	lang=BGBCC_FMT_BMP;
-			if(!bgbcp_strcmp(s, ".avi"))	lang=BGBCC_FMT_AVI;
-			if(!bgbcp_strcmp(s, ".AVI"))	lang=BGBCC_FMT_AVI;
+			if(!bgbcp_stricmp(s, ".wad"))	lang=BGBCC_FMT_WAD;
+			if(!bgbcp_stricmp(s, ".lmp"))	lang=BGBCC_FMT_LUMP;
+			if(!bgbcp_stricmp(s, ".wav"))	lang=BGBCC_FMT_WAV;
+			if(!bgbcp_stricmp(s, ".bmp"))	lang=BGBCC_FMT_BMP;
+			if(!bgbcp_stricmp(s, ".avi"))	lang=BGBCC_FMT_AVI;
 
-			if(!bgbcp_strcmp(s, ".def"))	lang=BGBCC_FMT_DEF;
-			if(!bgbcp_strcmp(s, ".DEF"))	lang=BGBCC_FMT_DEF;
+			if(!bgbcp_stricmp(s, ".def"))	lang=BGBCC_FMT_DEF;
+			if(!bgbcp_stricmp(s, ".wdef"))	lang=BGBCC_FMT_WDEF;
+			if(!bgbcp_stricmp(s, ".wde"))	lang=BGBCC_FMT_WDEF;
 
-			if(!bgbcp_strcmp(s, ".wdef"))	lang=BGBCC_FMT_WDEF;
-			if(!bgbcp_strcmp(s, ".WDEF"))	lang=BGBCC_FMT_WDEF;
+			if(!bgbcp_stricmp(s, ".qoi"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_stricmp(s, ".qol"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_stricmp(s, ".qolz"))	lang=BGBCC_FMT_QOIF;
+			if(!bgbcp_stricmp(s, ".qoli"))	lang=BGBCC_FMT_QOIF;
 
-			if(!bgbcp_strcmp(s, ".wde"))	lang=BGBCC_FMT_WDEF;
-			if(!bgbcp_strcmp(s, ".WDE"))	lang=BGBCC_FMT_WDEF;
+			if(!bgbcp_stricmp(s, ".lci"))	lang=BGBCC_FMT_LCIF;
+			if(!bgbcp_stricmp(s, ".lcif"))	lang=BGBCC_FMT_LCIF;
 
-			if(!bgbcp_strcmp(s, ".qoi"))	lang=BGBCC_FMT_QOIF;
-			if(!bgbcp_strcmp(s, ".QOI"))	lang=BGBCC_FMT_QOIF;
-			if(!bgbcp_strcmp(s, ".qol"))	lang=BGBCC_FMT_QOIF;
-			if(!bgbcp_strcmp(s, ".QOL"))	lang=BGBCC_FMT_QOIF;
-			if(!bgbcp_strcmp(s, ".qolz"))	lang=BGBCC_FMT_QOIF;
-			if(!bgbcp_strcmp(s, ".QOLZ"))	lang=BGBCC_FMT_QOIF;
-			if(!bgbcp_strcmp(s, ".qoli"))	lang=BGBCC_FMT_QOIF;
-			if(!bgbcp_strcmp(s, ".QOLI"))	lang=BGBCC_FMT_QOIF;
-
-			if(!bgbcp_strcmp(s, ".lci"))	lang=BGBCC_FMT_LCIF;
-			if(!bgbcp_strcmp(s, ".LCI"))	lang=BGBCC_FMT_LCIF;
-			if(!bgbcp_strcmp(s, ".lcif"))	lang=BGBCC_FMT_LCIF;
-			if(!bgbcp_strcmp(s, ".LCIF"))	lang=BGBCC_FMT_LCIF;
-
-			if(!bgbcp_strcmp(s, ".txt"))	lang=BGBCC_FMT_TEXT;
-			if(!bgbcp_strcmp(s, ".TXT"))	lang=BGBCC_FMT_TEXT;
+			if(!bgbcp_stricmp(s, ".txt"))	lang=BGBCC_FMT_TEXT;
 
 			if(!bgbcc_stricmp(s, ".png"))	lang=BGBCC_FMT_PNG;
 			if(!bgbcc_stricmp(s, ".jpg"))	lang=BGBCC_FMT_JPEG;
@@ -1155,7 +1086,7 @@ fourcc BGBCP_ImageFormatForName(char *name)
 		if(!bgbcc_stricmp(s, ".rom"))fmt=BGBCC_IMGFMT_ROM;
 		if(!bgbcc_stricmp(s, ".bin"))fmt=BGBCC_IMGFMT_ROM;
 
-		if(!bgbcp_strcmp(s, ".sys"))fmt=BGBCC_IMGFMT_SYS;
+		if(!bgbcp_stricmp(s, ".sys"))fmt=BGBCC_IMGFMT_SYS;
 
 		if(!bgbcc_stricmp(s, ".asm"))fmt=BGBCC_IMGFMT_ASM;
 		if(!bgbcc_stricmp(s, ".s"))fmt=BGBCC_IMGFMT_ASM;
@@ -1215,10 +1146,36 @@ char *BGBCP_BaseNameForNameLC(char *name)
 	return(bgbcc_strdup(tb));
 }
 
+BGBCP_ParseState *bgbcp_freectx;
+
+BGBCP_ParseState *BGBCP_AllocParseState()
+{
+	BGBCP_ParseState *ctx;
+	
+	ctx=bgbcp_freectx;
+	if(ctx)
+	{
+		bgbcp_freectx=ctx->ppi_ctx;
+		memset(ctx, 0, sizeof(BGBCP_ParseState));
+		return(ctx);
+	}
+	
+	ctx=bgbcc_tmalloc("_cparse_parsestate_t", sizeof(BGBCP_ParseState));
+	memset(ctx, 0, sizeof(BGBCP_ParseState));
+	return(ctx);
+}
+
+void BGBCP_FreeParseState(BGBCP_ParseState *ctx)
+{
+	ctx->ppi_ctx=bgbcp_freectx;
+	bgbcp_freectx=ctx;
+}
+
+static char *bgbcp_atbuf[4];
 
 BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 {
-	static char *tbuf=NULL;
+//	static char *tbuf=NULL;
 	char b[256];
 //	VFILE *fd;
 	BGBCP_ParseState *ctx, *ppictx;
@@ -1243,20 +1200,31 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 //		return(n);
 //	}
 
-	if(!tbuf)
+//	if(!tbuf)
+	if(!bgbcp_atbuf[0])
 	{
-		tbuf=malloc(1<<24);
+//		tbuf=bgbcc_tmalloc2("misc_cparse", 1<<24);
+//		bgbcp_atbuf[0]=bgbcc_tmalloc2("misc_cparse", 1<<24);
+//		bgbcp_atbuf[1]=bgbcp_atbuf[0]+(1<<24);
 //		memset(tbuf, 0, 1<<24);
+
+		bgbcp_atbuf[0]=bgbcc_tmalloc2("misc_cparse", 1<<19);
+		bgbcp_atbuf[1]=bgbcp_atbuf[0]+(1<<19);
 	}
 
-	*tbuf=0;
+	bgbcp_atbuf[2]=bgbcp_atbuf[0];
+//	*tbuf=0;
+	*bgbcp_atbuf[2]=0;
 //	memset(tbuf, 0, 1<<16);
 
-	ctx=bgbcc_malloc(sizeof(BGBCP_ParseState));
-	memset(ctx, 0, sizeof(BGBCP_ParseState));
+//	ctx=bgbcc_tmalloc("_cparse_parsestate_t", sizeof(BGBCP_ParseState));
+//	memset(ctx, 0, sizeof(BGBCP_ParseState));
 
-	ppictx=bgbcc_malloc(sizeof(BGBCP_ParseState));
-	memset(ppictx, 0, sizeof(BGBCP_ParseState));
+	ctx=BGBCP_AllocParseState();
+	ppictx=BGBCP_AllocParseState();
+
+//	ppictx=bgbcc_tmalloc("_cparse_parsestate_t", sizeof(BGBCP_ParseState));
+//	memset(ppictx, 0, sizeof(BGBCP_ParseState));
 	ctx->ppi_ctx=ppictx;
 	ppictx->ppi_upctx=ctx;
 	
@@ -1310,7 +1278,8 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	for(i=0; i<256; i++)
 		ctx->enum_hash[i]=-1;
 
-	pprs=BGBPP_Filter(ctx, buf, tbuf, 1<<24);
+//	pprs=BGBPP_Filter(ctx, buf, tbuf, 1<<24);
+	pprs=BGBPP_FilterB(ctx, buf, bgbcp_atbuf);
 
 	BGBCP_PopLinenum();
 
@@ -1326,14 +1295,15 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	if(bgbcc_dumpast)
 	{
 		sprintf(b, "dump/%s_pp.txt", modname);
-		BGBCC_StoreTextFile(b, tbuf);
+//		BGBCC_StoreTextFile(b, tbuf);
+		BGBCC_StoreTextFile(b, bgbcp_atbuf[0]);
 	}
 #endif
 
 	if(pprs<0)
 	{
 		printf("Preprocessor Error: Abort\n");
-		free(tbuf);
+//		free(tbuf);
 		return(NULL);
 	}
 
@@ -1354,7 +1324,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	if(!ctx->cur_nsi)
 	{
-		ctx->cur_nsi=bgbcc_malloc(256*sizeof(char *));
+		ctx->cur_nsi=bgbcc_tmalloc("_cparse_nsi_p", 256*sizeof(char *));
 		ctx->n_cur_nsi=0;
 		ctx->m_cur_nsi=256;
 	}
@@ -1363,7 +1333,8 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	if(lang==BGBCC_LANG_ASM)
 	{
-		n1=BCCX_NewCData(tbuf);
+//		n1=BCCX_NewCData(tbuf);
+		n1=BCCX_NewCData(bgbcp_atbuf[0]);
 		n1=BCCX_New1("asm_blob", n1);
 //		BCCX_Set(n1, "text", tbuf);
 
@@ -1372,8 +1343,10 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 	}else
 	{
-		BGBCP_SetLinenum(name, tbuf, 1);
-		s=tbuf;
+//		BGBCP_SetLinenum(name, tbuf, 1);
+		BGBCP_SetLinenum(name, bgbcp_atbuf[0], 1);
+//		s=tbuf;
+		s=bgbcp_atbuf[0];
 //		n1=BGBCP_Block(ctx, &s);
 		n1=BGBCP_Toplevel(ctx, &s);
 	}
@@ -1393,7 +1366,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	if(bgbcp_err>0)
 	{
 		printf("Parse Error: Abort\n");
-		free(tbuf);
+//		free(tbuf);
 		return(NULL);
 	}
 
@@ -1435,8 +1408,11 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 	}
 #endif
 
-	bgbcc_free(ppictx);
-	bgbcc_free(ctx);
+	BGBCP_FreeParseState(ppictx);
+	BGBCP_FreeParseState(ctx);
+
+//	bgbcc_free(ppictx);
+//	bgbcc_free(ctx);
 
 	return(n);
 }
@@ -1444,7 +1420,7 @@ BCCX_Node *BGBCP_ModuleBuffer(char *name, char *modname, char *buf)
 
 char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 {
-	static char *tbuf=NULL;
+//	static char *tbuf=NULL;
 	char b[256];
 	BGBCP_ParseState *ctx, *ppictx;
 	char *s;
@@ -1460,18 +1436,28 @@ char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 	if(!lang)
 		return(NULL);
 
-	if(!tbuf)
+//	if(!tbuf)
+	if(!bgbcp_atbuf[0])
 	{
-		tbuf=malloc(1<<24);
+//		tbuf=bgbcc_tmalloc2("misc_cparse", 1<<24);
+//		bgbcp_atbuf[0]=bgbcc_tmalloc2("misc_cparse", 1<<24);
+		bgbcp_atbuf[0]=bgbcc_tmalloc2("misc_cparse", 1<<19);
+//		bgbcp_atbuf[1]=bgbcp_atbuf[0]+(1<<24);
+		bgbcp_atbuf[1]=bgbcp_atbuf[0]+(1<<19);
 	}
 
-	*tbuf=0;
+//	*tbuf=0;
+	bgbcp_atbuf[2]=bgbcp_atbuf[0];
+	*bgbcp_atbuf[2]=0;
 
-	ctx=bgbcc_malloc(sizeof(BGBCP_ParseState));
-	memset(ctx, 0, sizeof(BGBCP_ParseState));
+//	ctx=bgbcc_tmalloc("_cparse_parsestate_t", sizeof(BGBCP_ParseState));
+//	memset(ctx, 0, sizeof(BGBCP_ParseState));
 
-	ppictx=bgbcc_malloc(sizeof(BGBCP_ParseState));
-	memset(ppictx, 0, sizeof(BGBCP_ParseState));
+	ctx=BGBCP_AllocParseState();
+	ppictx=BGBCP_AllocParseState();
+
+//	ppictx=bgbcc_tmalloc("_cparse_parsestate_t", sizeof(BGBCP_ParseState));
+//	memset(ppictx, 0, sizeof(BGBCP_ParseState));
 	ctx->ppi_ctx=ppictx;
 	ppictx->ppi_upctx=ctx;
 	
@@ -1524,7 +1510,8 @@ char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 	for(i=0; i<256; i++)
 		ctx->enum_hash[i]=-1;
 
-	pprs=BGBPP_Filter(ctx, buf, tbuf, 1<<24);
+//	pprs=BGBPP_Filter(ctx, buf, tbuf, 1<<24);
+	pprs=BGBPP_FilterB(ctx, buf, bgbcp_atbuf);
 
 	BGBCP_PopLinenum();
 
@@ -1545,7 +1532,11 @@ char *BGBCP_ModuleBufferPPOnly(char *name, char *modname, char *buf)
 //	fprintf(stderr, "PP: In:\n%s\n", buf);
 //	fprintf(stderr, "PP: Out:\n%s\n", tbuf);
 
-	return(tbuf);
+	BGBCP_FreeParseState(ppictx);
+	BGBCP_FreeParseState(ctx);
+
+//	return(tbuf);
+	return(bgbcp_atbuf[0]);
 }
 
 

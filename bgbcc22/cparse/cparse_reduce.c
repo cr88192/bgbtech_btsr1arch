@@ -381,8 +381,18 @@ char *BGBCP_BinaryTySuf(BGBCP_ParseState *ctx, char *op,
 	if(!s1)
 		return(s0);
 	
-	if(!bgbcp_strcmp(s0, s1))
-		return(s0);
+	if(*s0==*s1)
+	{
+		if(s0[1]==s1[1])
+		{
+			if(!s0[1])
+				return(s0);
+			if(!s0[2])
+				return(s0);
+			if(!bgbcp_strcmp(s0, s1))
+				return(s0);
+		}
+	}
 
 	//throw away 'F', as it is lesser
 	if(!bgbcp_strcmp1(s0, "F"))s0=NULL;

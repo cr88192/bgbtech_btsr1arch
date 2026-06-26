@@ -526,11 +526,11 @@ int BGBCC_ImgUtil_CompositeBlendImage(
 	
 	k=oxs*oys;
 	if(resampbuf && (k>sz_resampbuf))
-		{ free(resampbuf); resampbuf=NULL; }
+		{ bgbcc_free2(resampbuf); resampbuf=NULL; }
 	
 	if(!resampbuf)
 	{
-		resampbuf=malloc(k*4);
+		resampbuf=bgbcc_malloc_bmp(k*4);
 		sz_resampbuf=k;
 	}
 	

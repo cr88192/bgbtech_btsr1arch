@@ -356,7 +356,7 @@ int BGBCC_LoadConvResource_SetupPal()
 	pal[3*4+0]=0xFF; pal[3*4+1]=0x00; pal[3*4+2]=0xFF; pal[3*4+3]=0;
 
 #if 1
-	tbuf=malloc(16*16*8);
+	tbuf=bgbcc_tmalloc2("misc_fmt_cnv", 16*16*8);
 	k=BGBCC_Img_EncodeImageBMP8(
 		tbuf, bgbcc_dfl_pal256, 16, 16, bgbcc_dfl_pal256);
 	BGBCC_StoreFile("dump/rsrc_pal256.bmp", tbuf, k);
@@ -381,7 +381,7 @@ int BGBCC_LoadConvResource_SetupPal()
 #if 1
 	BGBCC_Img_EncodeImageBmpSetupPal(bgbcc_dfl_pal256, 256);
 
-	paldith=malloc(256*256*4);
+	paldith=bgbcc_tmalloc2("misc_fmt_cnv", 256*256*4);
 	for(i=0; i<32768; i++)
 	{
 		j=bgbcc_img_bmppallookup[i];
@@ -398,7 +398,7 @@ int BGBCC_LoadConvResource_SetupPal()
 		paldith[j*4+3]=255;
 	}
 
-	tbuf=malloc(256*256*8);
+	tbuf=bgbcc_tmalloc2("misc_fmt_cnv", 256*256*8);
 	k=BGBCC_Img_EncodeImageBMP8(
 		tbuf, paldith, 256, 256, bgbcc_dfl_pal256);
 	BGBCC_StoreFile("dump/rsrc_paldith8.bmp", tbuf, k);
@@ -433,8 +433,8 @@ int BGBCC_LoadConvResource_SetupPal()
 	if(!paldith)
 	{
 		BGBCC_Img_EncodeImageBmpSetupPal(bgbcc_dfl_pal256, 256);
-		paldith=malloc(256*256*4);
-		tbuf=malloc(256*256*8);
+		paldith=bgbcc_tmalloc2("misc_fmt_cnv", 256*256*4);
+		tbuf=bgbcc_tmalloc2("misc_fmt_cnv", 256*256*8);
 	}
 
 	for(i=0; i<32768; i++)
@@ -507,7 +507,7 @@ int BGBCC_LoadConvResource_ImageCheckResize(
 	xs2=xs1; ys2=ys1;
 	if(xs1<0)	xs2=-xs1;
 	if(ys1<0)	ys2=-ys1;
-	tbuf=malloc(xs2*ys2*4);
+	tbuf=bgbcc_tmalloc2("misc_fmt_cnv", xs2*ys2*4);
 	BGBCC_ImgUtil_ResampleImage(ibuf, xs, ys, tbuf, xs1, ys1);
 	free(tbuf);
 	*ribuf=tbuf;
@@ -605,7 +605,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		BGBCC_LoadConvResource_ImageCheckResize(
 			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 		
-		obuf=malloc(xs*ys*5);
+		obuf=bgbcc_tmalloc2("misc_fmt_cnv", xs*ys*5);
 		sz1=0;
 
 		if((sz1<=0) && !bgbcc_stricmp(cnv, "bmp8"))
@@ -777,7 +777,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		
 		fl|=(qlvl&7)<<1;
 		
-		obuf=malloc(xs*ys*2);
+		obuf=bgbcc_tmalloc2("misc_fmt_cnv", xs*ys*2);
 		sz1=QOI_EncodeImageBuffer(obuf, ibuf, xs, ys, fl);
 		
 		*rfcc=BGBCC_FMT_QOIF;
@@ -807,7 +807,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 			fl|=100-((qlvl&7)*12);
 		}
 		
-		obuf=malloc(xs*ys*2);
+		obuf=bgbcc_tmalloc2("misc_fmt_cnv", xs*ys*2);
 		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
 		
 		*rfcc=BGBCC_FMT_UPIC;
@@ -833,7 +833,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 			fl|=100-((qlvl&7)*12);
 		}
 		
-		obuf=malloc(xs*ys*2);
+		obuf=bgbcc_tmalloc2("misc_fmt_cnv", xs*ys*2);
 //		sz1=TKuPI_EncodeImageBufferTemp(obuf, ibuf, xs, ys, fl);
 		sz1=PDJPG_EncodeRgba(ibuf, obuf, xs, ys, fl);
 		
@@ -854,7 +854,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		
 		fl|=100-((qlvl&7)*12);
 		
-		obuf=malloc(1024+xs*ys*3);
+		obuf=bgbcc_tmalloc2("misc_fmt_cnv", 1024+xs*ys*3);
 		sz1=BGBCC_Img_EncodeImageBMP_BT5B(obuf, ibuf, xs, ys, fl);
 
 		*rfcc=BGBCC_FMT_BMP;
@@ -870,7 +870,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		BGBCC_LoadConvResource_ImageCheckResize(
 			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 
-		obuf=malloc(xs*ys*2);
+		obuf=bgbcc_tmalloc2("misc_fmt_cnv", xs*ys*2);
 		sz1=BGBBTJ_BufPNG_Encode(obuf, xs*ys*2, ibuf, xs, ys);
 		
 		*rfcc=BGBCC_FMT_PNG;
@@ -887,7 +887,7 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		if(!ibuf)
 			return(NULL);
 
-		obuf=malloc(xs*ys*3);
+		obuf=bgbcc_tmalloc2("misc_fmt_cnv", xs*ys*3);
 		if(!bgbcc_stricmp(cnv, "dds_dxt1"))
 			sz1=BGBCC_Img_EncodeImageDDS_DXTn(obuf, ibuf, xs, ys, 1);
 		if(!bgbcc_stricmp(cnv, "dds_dxt5"))
@@ -954,11 +954,11 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		if(ch1==2)
 		{
 			sbuf=BGBCC_WAVE_LoadWAV_RateStereo16(buf, sz, rt, &len);
-			obuf=malloc(256+len*2*2);
+			obuf=bgbcc_tmalloc2("misc_fmt_cnv", 256+len*2*2);
 		}else
 		{
 			sbuf=BGBCC_WAVE_LoadWAV_RateMono16(buf, sz, rt, &len);
-			obuf=malloc(256+len*2);
+			obuf=bgbcc_tmalloc2("misc_fmt_cnv", 256+len*2);
 		}
 
 		if(fm1==0)

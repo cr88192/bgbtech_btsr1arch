@@ -8,7 +8,7 @@ char **BGBCP_LexBuffer(char *str)
 	int i, j, ty, ty2, fl, cty;
 
 	s=*str;
-	tkarr=malloc(16*sizeof(char *));
+	tkarr=bgbcc_tmalloc2("_cparse_lexbuf", 16*sizeof(char *));
 	tkc=tkarr; tke=tkarr+16;
 
 	while(*s)
@@ -16,7 +16,7 @@ char **BGBCP_LexBuffer(char *str)
 		if((tkc+4)>=tke)
 		{
 			i=tkc-tkarr; j=tke-tkarr; j=j+(j>>1);
-			tkarr=realloc(tkarr, j*sizeof(char *));
+			tkarr=bgbcc_realloc2(tkarr, j*sizeof(char *));
 			tkc=tkarr+i; tke=tkarr+j;
 		}
 

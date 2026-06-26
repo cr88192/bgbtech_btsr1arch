@@ -8,7 +8,7 @@ int BGBCC_CCXL_CheckExpandLvt4(BGBCC_TransState *ctx)
 	if(!ctx->ctab_lvt4)
 	{
 		i=1024;
-		ctx->ctab_lvt4=bgbcc_malloc((i+5)*sizeof(u32));
+		ctx->ctab_lvt4=bgbcc_tmalloc("_ccxl_lvt4_t", (i+5)*sizeof(u32));
 		ctx->ctab_lvt4[0]=0;
 		ctx->n_ctab_lvt4=1;
 		ctx->m_ctab_lvt4=i;
@@ -32,8 +32,7 @@ int BGBCC_CCXL_CheckExpandLvt8(BGBCC_TransState *ctx)
 	if(!ctx->ctab_lvt8)
 	{
 		i=1024;
-		ctx->ctab_lvt8=bgbcc_malloc((i+5)*sizeof(u64));
-//		ctx->ctab_lvt8=malloc((i+5)*sizeof(u64));
+		ctx->ctab_lvt8=bgbcc_tmalloc("_ccxl_lvt8_t", (i+5)*sizeof(u64));
 		ctx->ctab_lvt8[0]=0;
 		ctx->n_ctab_lvt8=1;
 		ctx->m_ctab_lvt8=i;
@@ -44,7 +43,6 @@ int BGBCC_CCXL_CheckExpandLvt8(BGBCC_TransState *ctx)
 		i=ctx->m_ctab_lvt8;
 		i=i+(i>>1);
 		ctx->ctab_lvt8=bgbcc_realloc(ctx->ctab_lvt8, (i+5)*sizeof(u64));
-//		ctx->ctab_lvt8=realloc(ctx->ctab_lvt8, (i+5)*sizeof(u64));
 		ctx->m_ctab_lvt8=i;
 	}
 
@@ -164,7 +162,7 @@ int BGBCC_CCXL_IndexString(BGBCC_TransState *ctx, char *str)
 
 	if(!ctx->strtab)
 	{
-		ctx->strtab=bgbcc_malloc(1<<18);
+		ctx->strtab=bgbcc_tmalloc("_ccxl_strtab_t", 1<<18);
 		ctx->sz_strtab=2;
 		ctx->msz_strtab=1<<18;
 		ctx->strtab[0]=0;
@@ -211,7 +209,7 @@ int BGBCC_CCXL_IndexWString(BGBCC_TransState *ctx, char *str)
 
 	if(!ctx->wstrtab)
 	{
-		ctx->wstrtab=bgbcc_malloc(1<<18);
+		ctx->wstrtab=bgbcc_tmalloc("_ccxl_wstrtab_t", 1<<18);
 		ctx->sz_wstrtab=2;
 		ctx->msz_wstrtab=1<<18;
 		ctx->wstrtab[0]=0;
@@ -261,8 +259,8 @@ int BGBCC_CCXL_IndexCountString(BGBCC_TransState *ctx, char *str)
 	if(!ctx->cntstrs)
 	{
 		i=4096;
-		ctx->cntstrn=bgbcc_malloc(i*sizeof(int));
-		ctx->cntstrs=bgbcc_malloc(i*sizeof(char *));
+		ctx->cntstrn=bgbcc_tmalloc("_ccxl_cntstrn_t", i*sizeof(int));
+		ctx->cntstrs=bgbcc_tmalloc("_ccxl_cntstrs_t", i*sizeof(char *));
 		ctx->n_cntstrs=0;
 		ctx->m_cntstrs=i;
 	}
@@ -554,7 +552,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetStruct(
 	
 	BGBCC_CCXL_CheckExpandLiterals(ctx);
 
-	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+//	cur=bgbcc_tmalloc("_ccxl_litinfo_t", sizeof(BGBCC_CCXL_LiteralInfo));
+	cur=BGBCC_CCXL_AllocLiteral(ctx);
 	cur->littype=CCXL_LITID_STRUCT;
 	cur->name=bgbcc_strdup(str);
 
@@ -584,7 +583,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetUnion(
 	
 	BGBCC_CCXL_CheckExpandLiterals(ctx);
 
-	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+//	cur=bgbcc_tmalloc("_ccxl_litinfo_t", sizeof(BGBCC_CCXL_LiteralInfo));
+	cur=BGBCC_CCXL_AllocLiteral(ctx);
 	cur->littype=CCXL_LITID_UNION;
 	cur->name=bgbcc_strdup(str);
 
@@ -614,7 +614,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetExportList(
 	
 	BGBCC_CCXL_CheckExpandLiterals(ctx);
 
-	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+//	cur=bgbcc_tmalloc("_ccxl_litinfo_t", sizeof(BGBCC_CCXL_LiteralInfo));
+	cur=BGBCC_CCXL_AllocLiteral(ctx);
 	cur->littype=CCXL_LITID_EXPLIST;
 	cur->name=bgbcc_strdup(str);
 
@@ -655,13 +656,13 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_LookupExportListForName(
 //			return(cur);
 //		}
 
-		if(!cur->decl)
+		if(!cur->decl || !cur->decl->ext)
 			continue;
-		if(!cur->decl->goto_name)
+		if(!cur->decl->ext->goto_name)
 			continue;
-		for(j=0; j<cur->decl->n_goto; j++)
+		for(j=0; j<cur->decl->ext->n_goto; j++)
 		{
-			if(!strcmp(cur->decl->goto_name[j], str))
+			if(!strcmp(cur->decl->ext->goto_name[j], str))
 			{
 				cur->decl->fxmoffs=j;
 				return(cur);
@@ -685,7 +686,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetTypedef2(
 	
 	BGBCC_CCXL_CheckExpandLiterals(ctx);
 
-	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+//	cur=bgbcc_tmalloc("_ccxl_litinfo_t", sizeof(BGBCC_CCXL_LiteralInfo));
+	cur=BGBCC_CCXL_AllocLiteral(ctx);
 	cur->littype=CCXL_LITID_TYPEDEF;
 	cur->name=bgbcc_strdup(str);
 
@@ -775,7 +777,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetTypedef(
 	
 	BGBCC_CCXL_CheckExpandLiterals(ctx);
 
-	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+//	cur=bgbcc_tmalloc("_ccxl_litinfo_t", sizeof(BGBCC_CCXL_LiteralInfo));
+	cur=BGBCC_CCXL_AllocLiteral(ctx);
 	cur->littype=CCXL_LITID_TYPEDEF;
 	cur->name=bgbcc_strdup(name);
 	cur->sig=bgbcc_strdup(sig);
@@ -835,7 +838,8 @@ BGBCC_CCXL_LiteralInfo *BGBCC_CCXL_GetNamespace(
 	
 	BGBCC_CCXL_CheckExpandLiterals(ctx);
 
-	cur=bgbcc_malloc(sizeof(BGBCC_CCXL_LiteralInfo));
+//	cur=bgbcc_tmalloc("_ccxl_litinfo_t", sizeof(BGBCC_CCXL_LiteralInfo));
+	cur=BGBCC_CCXL_AllocLiteral(ctx);
 	cur->littype=CCXL_LITID_NAMESPACE;
 	cur->name=bgbcc_strdup(str);
 

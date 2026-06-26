@@ -281,8 +281,8 @@ ccxl_label BGBCC_CCXL_GenSym(BGBCC_TransState *ctx)
 
 	if(!(ctx->gs_srcpos))
 	{
-		ctx->gs_srcpos=bgbcc_malloc(1024*sizeof(int));
-		ctx->gs_srcmax=1024;
+		ctx->gs_srcpos=bgbcc_tmalloc("_ccxl_srcpos", 16384*sizeof(int));
+		ctx->gs_srcmax=16384;
 	}
 
 	if((ctx->gs_seq+1)>=(ctx->gs_srcmax))
@@ -617,9 +617,6 @@ int BGBCC_CCXL_CompileSwitch(BGBCC_TransState *ctx, BCCX_Node *l)
 	int i, j, ncl, mcl, na, ci, clw;
 	BCCX_Node *c, *t, *u, *v, *n;
 
-//	cl=bgbcc_malloc(4096*sizeof(ccxl_label));
-//	clv=bgbcc_malloc(4096*sizeof(s64));
-//	mcl=4096;
 
 	isvlcase=0;		isvlz=0;
 	if(BCCX_TagIsCstP(l, &bgbcc_rcst_switchz, "switchz"))
@@ -671,9 +668,9 @@ int BGBCC_CCXL_CompileSwitch(BGBCC_TransState *ctx, BCCX_Node *l)
 			if(cl==t_cl)
 			{
 				i=4096;
-				cl2=bgbcc_malloc(i*sizeof(ccxl_label));
-				clv2=bgbcc_malloc(i*sizeof(s64));
-				clm2=bgbcc_malloc(i*sizeof(s64));
+				cl2=bgbcc_tmalloc("_ccxl_clbl_id", i*sizeof(ccxl_label));
+				clv2=bgbcc_tmalloc("_ccxl_clbl_v", i*sizeof(s64));
+				clm2=bgbcc_tmalloc("_ccxl_clbl_m", i*sizeof(s64));
 				memcpy(cl2, cl, mcl*sizeof(ccxl_label));
 				memcpy(clv2, clv, mcl*sizeof(s64));
 				memcpy(clm2, clm, mcl*sizeof(s64));
@@ -797,9 +794,9 @@ int BGBCC_CCXL_CompileSwitch(BGBCC_TransState *ctx, BCCX_Node *l)
 			clm2=t_clm2;
 		}else
 		{
-			cl2=bgbcc_malloc(mcl*sizeof(ccxl_label));
-			clv2=bgbcc_malloc(mcl*sizeof(s64));
-			clm2=bgbcc_malloc(mcl*sizeof(s64));
+			cl2=bgbcc_tmalloc("_ccxl_clbl_id", mcl*sizeof(ccxl_label));
+			clv2=bgbcc_tmalloc("_ccxl_clbl_v", mcl*sizeof(s64));
+			clm2=bgbcc_tmalloc("_ccxl_clbl_m", mcl*sizeof(s64));
 		}
 
 		/* generate sorted list of cases */
@@ -6053,7 +6050,7 @@ void BGBCC_CCXL_CompileStruct(BGBCC_TransState *ctx, BCCX_Node *l)
 		cur=BGBCC_CCXL_LookupStructure(ctx, s);
 		if(cur)
 		{
-			if(cur->decl && cur->decl->n_fields)
+			if(cur->decl && cur->decl->ext && cur->decl->ext->n_fields)
 				return;
 		}
 	}
@@ -6117,7 +6114,7 @@ void BGBCC_CCXL_CompileUnion(BGBCC_TransState *ctx, BCCX_Node *l)
 		cur=BGBCC_CCXL_LookupStructure(ctx, s);
 		if(cur)
 		{
-			if(cur->decl && cur->decl->n_fields)
+			if(cur->decl && cur->decl->ext->n_fields)
 				return;
 		}
 	}
@@ -6185,7 +6182,7 @@ void BGBCC_CCXL_CompileClass(BGBCC_TransState *ctx, BCCX_Node *l)
 		cur=BGBCC_CCXL_LookupStructure(ctx, qn);
 		if(cur)
 		{
-			if(cur->decl && cur->decl->n_fields)
+			if(cur->decl && cur->decl->ext->n_fields)
 				return;
 		}
 	}
@@ -6882,7 +6879,7 @@ void BGBCC_CCXL_EmitVarValue(BGBCC_TransState *ctx, BCCX_Node *v)
 				return;
 			}
 
-			if(decl->sig && (*decl->sig=='A'))
+			if(decl->sig_ix && (*bgbcc_strtab_i(decl->sig_ix)=='A'))
 			{
 				BGBCC_CCXL_LiteralGlobalAddr(ctx, CCXL_ATTR_VALUE,
 					decl->gblid);
@@ -7704,7 +7701,7 @@ char *BGBCC_CCXL_CompileModule(char *name, BCCX_Node *l)
 	char *s;
 	int i;
 
-	ctx=bgbcc_malloc(sizeof(BGBCC_TransState));
+	ctx=bgbcc_tmalloc("_ccxl_transstate_t", sizeof(BGBCC_TransState));
 	memset(ctx, 0, sizeof(BGBCC_TransState));
 
 #if 0

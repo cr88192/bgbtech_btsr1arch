@@ -353,7 +353,8 @@ ccxl_status BGBCC_CCXL_StackSetPred(BGBCC_TransState *ctx, int prd)
 
 	if(ctx->curprd!=prd)
 	{
-		op=BGBCC_CCXL_AllocVirtOp(ctx);
+//		op=BGBCC_CCXL_AllocVirtOp(ctx);
+		op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 		op->opn=CCXL_VOP_PREDSYNC;
 		op->prd=ctx->curprd;
 		BGBCC_CCXL_AddVirtOp(ctx, op);
@@ -579,7 +580,8 @@ ccxl_status BGBCC_CCXL_EmitMov(BGBCC_TransState *ctx,
 			BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty)))
 		__debugbreak();
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_MOV;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -614,7 +616,9 @@ ccxl_status BGBCC_CCXL_EmitCallOp(BGBCC_TransState *ctx,
 	op->srcb.val=CCXL_REGID_REG_Z;
 	op->imm.call.na=na;
 	op->imm.call.ca=0;
-	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+//	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+//	op->imm.call.args=bgbcc_tmalloc("_ccxl_regs_t", na*sizeof(ccxl_register));
+	op->imm.call.args=BGBCC_CCXL_AllocVirtRegs(ctx, na);
 	op->immty=CCXL_VOPITY_CALL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
@@ -644,7 +648,9 @@ ccxl_status BGBCC_CCXL_EmitCallIntrinOp(BGBCC_TransState *ctx,
 	op->srcb.val=CCXL_REGID_REG_Z;
 	op->imm.call.na=na;
 	op->imm.call.ca=0;
-	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+//	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+//	op->imm.call.args=bgbcc_tmalloc("_ccxl_regs_t", na*sizeof(ccxl_register));
+	op->imm.call.args=BGBCC_CCXL_AllocVirtRegs(ctx, na);
 	op->immty=CCXL_VOPITY_CALL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 //	BGBCC_CCXL_EmitMarkEndTrace(ctx);
@@ -677,7 +683,9 @@ ccxl_status BGBCC_CCXL_EmitObjCallOp(BGBCC_TransState *ctx,
 	op->srcb=obj;
 	op->imm.call.na=na;
 	op->imm.call.ca=0;
-	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+//	op->imm.call.args=bgbcc_malloc(na*sizeof(ccxl_register));
+//	op->imm.call.args=bgbcc_tmalloc("_ccxl_regs_t", na*sizeof(ccxl_register));
+	op->imm.call.args=BGBCC_CCXL_AllocVirtRegs(ctx, na);
 	op->immty=CCXL_VOPITY_CALL;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
 	BGBCC_CCXL_EmitMarkEndTrace(ctx);
@@ -692,7 +700,8 @@ ccxl_status BGBCC_CCXL_EmitCallCsrvOp(BGBCC_TransState *ctx,
 	if(ctx->cgif_no3ac)
 		return(0);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_CSRV;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -777,7 +786,10 @@ ccxl_status BGBCC_CCXL_EmitJmpTab(BGBCC_TransState *ctx,
 	op->imm.jmptab.vmin=vmin;
 	op->imm.jmptab.nlbl=ncv;
 //	op->imm.jmptab.ca=0;
-	op->imm.jmptab.lbls=bgbcc_malloc((ncv+2)*sizeof(ccxl_label));
+//	op->imm.jmptab.lbls=bgbcc_malloc((ncv+2)*sizeof(ccxl_label));
+//	op->imm.jmptab.lbls=bgbcc_tmalloc("_ccxl_lbls_t",
+//		(ncv+2)*sizeof(ccxl_label));
+	op->imm.jmptab.lbls=BGBCC_CCXL_AllocVirtLabels(ctx, (ncv+2));
 	op->immty=CCXL_VOPITY_JMPTAB;
 
 //	for(i=0; i<ncv; i++)
@@ -835,7 +847,8 @@ ccxl_status BGBCC_CCXL_EmitCallRetDefault(BGBCC_TransState *ctx)
 
 //	BGBCC_CCXL_StackPhiTemporaries(ctx);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_RETDFL;
 	op->prd=ctx->curprd;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
@@ -852,7 +865,8 @@ ccxl_status BGBCC_CCXL_EmitCallRetV(BGBCC_TransState *ctx)
 
 //	BGBCC_CCXL_StackPhiTemporaries(ctx);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_RETV;
 	op->prd=ctx->curprd;
 	BGBCC_CCXL_AddVirtOp(ctx, op);
@@ -891,7 +905,8 @@ ccxl_status BGBCC_CCXL_EmitCallRetOp(BGBCC_TransState *ctx,
 //	BGBCC_CCXL_StackPhiTemporaries(ctx);
 	BGBCC_CCXL_EmitTempPhi(ctx, src);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_RET;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -923,7 +938,8 @@ ccxl_status BGBCC_CCXL_EmitTempPhi(BGBCC_TransState *ctx,
 	if(ctx->s_vop==ctx->n_vop)
 		return(0);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_TEMP_PHI;
 //	op->prd=ctx->curprd;
 //	op->type=type;
@@ -1010,7 +1026,8 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 //	if((dtype.val==408) && (stype.val==0))
 //		{ BGBCC_DBGBREAK }
 	
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_CONV;
 	op->prd=ctx->curprd;
 	op->type=dtype;
@@ -1036,7 +1053,8 @@ ccxl_status BGBCC_CCXL_EmitUnaryOp(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_UNARY;
 	op->prd=ctx->curprd;
 	op->opr=opr;
@@ -1105,7 +1123,8 @@ ccxl_status BGBCC_CCXL_EmitBinaryOp(BGBCC_TransState *ctx,
 		ctx->ccxl_tyc_seen|=BGBCC_TYCSEEN_FLOAT_FPU;
 	}
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_BINARY;
 	op->prd=ctx->curprd;
 	op->opr=opr;
@@ -1191,7 +1210,8 @@ ccxl_status BGBCC_CCXL_EmitCompareOp(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_COMPARE;
 	op->prd=ctx->curprd;
 	op->opr=opr;
@@ -1223,7 +1243,8 @@ ccxl_status BGBCC_CCXL_EmitPredCmpOp(BGBCC_TransState *ctx,
 	BGBCC_CCXL_EmitTempPhi(ctx, srca);
 	BGBCC_CCXL_EmitTempPhi(ctx, srcb);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_PREDCMP;
 	op->prd=ctx->curprd;
 	op->opr=opr;
@@ -1352,7 +1373,8 @@ ccxl_status BGBCC_CCXL_EmitLoadIndex(BGBCC_TransState *ctx,
 
 	sty=BGBCC_CCXL_GetRegType(ctx, srca);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_LDIX;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -1383,7 +1405,8 @@ ccxl_status BGBCC_CCXL_EmitStoreIndex(BGBCC_TransState *ctx,
 
 	sty=BGBCC_CCXL_GetRegType(ctx, dst);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_STIX;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -1446,7 +1469,8 @@ ccxl_status BGBCC_CCXL_EmitLoadIndexAddr(BGBCC_TransState *ctx,
 
 	sty=BGBCC_CCXL_GetRegType(ctx, srca);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_LDIXA;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -1509,7 +1533,8 @@ ccxl_status BGBCC_CCXL_EmitLea(BGBCC_TransState *ctx,
 
 	sty=BGBCC_CCXL_GetRegType(ctx, srca);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_LEA;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -1534,7 +1559,8 @@ ccxl_status BGBCC_CCXL_EmitLdaVar(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_LDAVAR;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -1555,7 +1581,8 @@ ccxl_status BGBCC_CCXL_EmitSizeofVar(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_SIZEOFVAR;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -1580,7 +1607,8 @@ ccxl_status BGBCC_CCXL_EmitDiffPtr(BGBCC_TransState *ctx,
 	if(BGBCC_CCXL_IsRegZzP(ctx, dst))
 		{ BGBCC_DBGBREAK }
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_DIFFPTR;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -1992,7 +2020,8 @@ ccxl_status BGBCC_CCXL_EmitVaStart(BGBCC_TransState *ctx,
 	if(ctx->cgif_no3ac)
 		return(0);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_VA_START;
 	op->prd=ctx->curprd;
 //	op->type=type;
@@ -2010,7 +2039,8 @@ ccxl_status BGBCC_CCXL_EmitVaEnd(BGBCC_TransState *ctx,
 	if(ctx->cgif_no3ac)
 		return(0);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_VA_END;
 	op->prd=ctx->curprd;
 //	op->type=type;
@@ -2028,7 +2058,8 @@ ccxl_status BGBCC_CCXL_EmitVaArg(BGBCC_TransState *ctx,
 	if(ctx->cgif_no3ac)
 		return(0);
 
-	op=BGBCC_CCXL_AllocVirtOp(ctx);
+//	op=BGBCC_CCXL_AllocVirtOp(ctx);
+	op=BGBCC_CCXL_AllocVirtOpTrim(ctx);
 	op->opn=CCXL_VOP_VA_ARG;
 	op->prd=ctx->curprd;
 	op->type=type;
@@ -2153,10 +2184,10 @@ ccxl_status BGBCC_CCXL_EmitBitMov(BGBCC_TransState *ctx,
 
 
 ccxl_status BGBCC_CCXL_FlattenImage(BGBCC_TransState *ctx,
-	byte *obuf, int *rosz, fourcc imgfmt)
+	byte **robuf, int *rosz, fourcc imgfmt)
 {
 	if(ctx->back_vt && ctx->back_vt->FlattenImage)
-		return(ctx->back_vt->FlattenImage(ctx, obuf, rosz, imgfmt));
+		return(ctx->back_vt->FlattenImage(ctx, robuf, rosz, imgfmt));
 	return(CCXL_STATUS_ERR_UNIMPLEMENTED);
 }
 

@@ -1489,16 +1489,16 @@ int TKuPI_EncodeImageBufferI(TKuPI_EncState *ctx,
 	
 	if(tb_obuf && (n>sz_obuf))
 	{
-		free(tb_cbuf);
-		free(tb_obuf);
+		tkupi_free(tb_cbuf);
+		tkupi_free(tb_obuf);
 		tb_cbuf=NULL;
 		tb_obuf=NULL;
 	}
 	
 	if(!tb_obuf)
 	{
-		tb_cbuf=malloc(ncsz);
-		tb_obuf=malloc(npsz);
+		tb_cbuf=tkupi_malloc(ncsz);
+		tb_obuf=tkupi_malloc(npsz);
 		sz_obuf=n;
 	}
 	
@@ -1620,7 +1620,7 @@ int TKuPI_EncodeImageBufferTemp(
 	if(qfl&256)
 	{
 		n=oxs*oys;
-		tibuf=malloc(n*4);
+		tibuf=tkupi_malloc(n*4);
 		for(i=0; i<n; i++)
 		{
 			tibuf[i*4+0]=oimg[i*4+2];
@@ -1636,7 +1636,7 @@ int TKuPI_EncodeImageBufferTemp(
 	sz=TKuPI_EncodeImageBuffer(ctx, ibuf, oxs*oys*6, tibuf, oxs, oys, qfl);
 	
 	if(tibuf!=oimg)
-		free(tibuf);
+		tkupi_free(tibuf);
 
 	return(sz);
 }

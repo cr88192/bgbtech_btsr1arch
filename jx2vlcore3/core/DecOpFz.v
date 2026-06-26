@@ -7664,6 +7664,17 @@ begin
 	end
 `endif
 
+`ifdef jx2_use_mem_ldop
+	if(opExWQ)
+	begin
+//		if(opFmid == JX2_FMID_REGSTDRREG)
+//			opFmid	= JX2_FMID_REGSTREGDISP;
+		if(opFmid == JX2_FMID_LDDRREGREG)
+			opFmid	= JX2_FMID_LDREGDISPREG;
+
+	end
+`endif
+
 	opUFl		= 0;
 	opULdOp		= 0;
 	opULdOp2	= 0;
@@ -8437,9 +8448,9 @@ begin
 			begin
 				opRegN	= opRegN_Dfl;
 				opRegP	= opRegN_Dfl;
-				opImm	= opImm_disp11as;
-//				opDoImm	= JX2_FMIMM_DISP11AS;
-				opDoImm	= JX2_FMIMM_NONE;
+//				opImm	= opImm_disp11as;
+				opDoImm	= JX2_FMIMM_DISP11AS;
+//				opDoImm	= JX2_FMIMM_NONE;
 
 `ifdef jx2_use_mem_ldop
 				opULdOp	= opIsImmLdOp;
@@ -9380,6 +9391,8 @@ begin
 		JX2_FMIMM_DISP11S:	opImm	= opImm_disp11s;
 		JX2_FMIMM_IMM9F:	opImm	= { opImm_imm9u[26:0], 6'h00 };
 		JX2_FMIMM_IMM5U:	opImm	= opImm_disp5u;
+
+		JX2_FMIMM_DISP11AS:	opImm	= opImm_disp11as;
 
 //		JX2_FMIMM_DISP20X:	opImm	= opImm_disp20xs;
 

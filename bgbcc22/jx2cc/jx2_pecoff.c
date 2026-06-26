@@ -130,7 +130,8 @@ int BGBCC_JX2C_CoffLoadBufferDLL(
 	rvaexpaddr=bgbcc_getu32en(csexp+0x20, 0);
 	csexpnametab=buf+rvaexpaddr;
 	
-	expnames=bgbcc_malloc(nexps*sizeof(char *));
+//	expnames=bgbcc_malloc(nexps*sizeof(char *));
+	expnames=bgbcc_tmalloc("_jx2c_pe_expname", nexps*sizeof(char *));
 	
 	for(i=0; i<nexps; i++)
 	{
@@ -145,13 +146,14 @@ int BGBCC_JX2C_CoffLoadBufferDLL(
 	litobj=BGBCC_CCXL_GetExportList(ctx, dllname);
 	if(!litobj->decl)
 	{
-		litobj->decl=bgbcc_malloc(sizeof(BGBCC_CCXL_RegisterInfo));
+		litobj->decl=bgbcc_tmalloc("_ccxl_reginfo_t",
+			sizeof(BGBCC_CCXL_RegisterInfo));
 		litobj->decl->regtype=CCXL_LITID_EXPLIST;
 	}
 	
-	litobj->decl->goto_name=expnames;
-	litobj->decl->n_goto=nexps;
-	litobj->decl->m_goto=nexps;
+	litobj->decl->ext->goto_name=expnames;
+	litobj->decl->ext->n_goto=nexps;
+	litobj->decl->ext->m_goto=nexps;
 	
 	return(1);
 }
@@ -179,13 +181,14 @@ int BGBCC_JX2C_CoffBuildExports(
 			continue;
 		if(!(obj->flagsint&BGBCC_TYFL_DLLEXPORT))
 			continue;
-		if(!obj->name)
+		if(!obj->name_ix)
 			continue;
 			
 		if(!exptab)
 		{
 			mexps=4096;
-			exptab=bgbcc_malloc(mexps*sizeof(BGBCC_CCXL_RegisterInfo *));
+			exptab=bgbcc_tmalloc("_jx2c_pe_exptab",
+				mexps*sizeof(BGBCC_CCXL_RegisterInfo *));
 		}
 		
 		if((nexps+1)>=mexps)
@@ -203,7 +206,9 @@ int BGBCC_JX2C_CoffBuildExports(
 	for(i=0; i<nexps; i++)
 		for(j=i+1; j<nexps; j++)
 	{
-		if(strcmp(exptab[j]->name, exptab[i]->name)<0)
+		if(strcmp(
+				bgbcc_strtab_i(exptab[j]->name_ix),
+				bgbcc_strtab_i(exptab[i]->name_ix))<0)
 			{ obj=exptab[j]; exptab[j]=exptab[i]; exptab[i]=obj; }
 	}
 
@@ -251,7 +256,7 @@ int BGBCC_JX2C_CoffBuildExports(
 		obj->fxnalgn=k;
 
 		BGBCC_JX2_EmitLabel(sctx, k);
-		BGBCC_JX2_EmitString(sctx, obj->name);
+		BGBCC_JX2_EmitString(sctx, bgbcc_strtab_i(obj->name_ix));
 	}
 
 	BGBCC_JX2_EmitBAlign(sctx, 4);
@@ -320,13 +325,14 @@ int BGBCC_JX2C_CoffBuildImports(
 			continue;
 		if(!(obj->flagsint&BGBCC_TYFL_DLLIMPORT))
 			continue;
-		if(!obj->name)
+		if(!obj->name_ix)
 			continue;
 			
 		if(!exptab)
 		{
 			mexps=4096;
-			exptab=bgbcc_malloc(mexps*sizeof(BGBCC_CCXL_RegisterInfo *));
+			exptab=bgbcc_tmalloc("_jx2c_pe_exptab", 
+				mexps*sizeof(BGBCC_CCXL_RegisterInfo *));
 		}
 		
 		if((nexps+1)>=mexps)
@@ -351,7 +357,8 @@ int BGBCC_JX2C_CoffBuildImports(
 	ndlls=0;
 	for(i=0; i<nexps; i++)
 	{
-		lobj=BGBCC_CCXL_LookupExportListForName(ctx, exptab[i]->name);
+		lobj=BGBCC_CCXL_LookupExportListForName(ctx,
+			bgbcc_strtab_i(exptab[i]->name_ix));
 		for(j=0; j<ndlls; j++)
 		{
 			if(lodlls[j]==lobj)
@@ -418,7 +425,7 @@ int BGBCC_JX2C_CoffBuildImports(
 		BGBCC_JX2_EmitLabel(sctx, k);
 //		BGBCC_JX2_EmitDWord(sctx, obj->fxmoffs);	//hint
 		BGBCC_JX2_EmitWord(sctx, obj->fxmoffs);		//hint
-		BGBCC_JX2_EmitString(sctx, obj->name);		//name
+		BGBCC_JX2_EmitString(sctx, bgbcc_strtab_i(obj->name_ix));		//name
 	}
 
 	BGBCC_JX2_EmitBAlign(sctx, 4);
@@ -589,13 +596,13 @@ int bgbcc_jx2c_qrsort(u32 *arr, int cnt, int rd, u32 mask)
 
 
 // #define BGBCC_PEL_HASHSZ		256
-// #define BGBCC_PEL_HASHSZ		4096
-#define BGBCC_PEL_HASHSZ		16384
+#define BGBCC_PEL_HASHSZ		4096
+// #define BGBCC_PEL_HASHSZ		16384
 #define BGBCC_PEL_HASHMASK		(BGBCC_PEL_HASHSZ-1)
 
 //#define BGBCC_PEL_HASHDSZ		16
-// #define BGBCC_PEL_HASHDSZ		32
-#define BGBCC_PEL_HASHDSZ		64
+#define BGBCC_PEL_HASHDSZ		32
+// #define BGBCC_PEL_HASHDSZ		64
 #define BGBCC_PEL_HASHDMA		(BGBCC_PEL_HASHDSZ-1)
 
 #define BGBCC_PEL_HASH_PR		65521
@@ -619,9 +626,9 @@ int BGBCC_JX2C_PackBlockLZ_Reset(BGBCC_TransState *ctx)
 	
 	if(!bgbcc_packlz_hash)
 	{
-		bgbcc_packlz_hash=malloc(
+		bgbcc_packlz_hash=bgbcc_tmalloc2("misc_pe", 
 			BGBCC_PEL_HASHSZ*BGBCC_PEL_HASHDSZ*sizeof(byte *));
-		bgbcc_packlz_hrov=malloc(BGBCC_PEL_HASHSZ);
+		bgbcc_packlz_hrov=bgbcc_tmalloc2("misc_pe", BGBCC_PEL_HASHSZ);
 	}
 	
 	for(i=0; i<BGBCC_PEL_HASHSZ; i++)
@@ -1972,7 +1979,7 @@ int BGBCC_JX2C_VerifyImagePEL(BGBCC_TransState *ctx,
 	int cb, nb, cmp;
 	int i, j, k;
 	
-	tbuf=malloc(ibsz+65536);
+	tbuf=bgbcc_tmalloc2("misc_pe", ibsz+65536);
 	
 	bgbcc_tkpe_endseen=0;
 	cs=obuf; cse=obuf+obsz;
@@ -2014,7 +2021,7 @@ int BGBCC_JX2C_VerifyImagePEL(BGBCC_TransState *ctx,
 		BGBCC_DBGBREAK
 	}
 	
-	free(tbuf);
+	bgbcc_free2(tbuf);
 	
 	return(0);
 }
@@ -2192,7 +2199,7 @@ int BGBCC_JX2C_MapSortAddrArrays(
 }
 
 ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
-	byte *obuf, int *rosz, fourcc imgfmt)
+	byte **robuf, int *rosz, fourcc imgfmt)
 {
 //	int rlc_rva_page[4096];
 //	int rlc_sz_page[4096];
@@ -2210,6 +2217,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_Context *sctx;
 	FILE *mapfd;
+	byte *obuf;
 	char *s0;
 	byte *ct, *ct0, *ct1, *ctb, *ctbe;
 	byte no_mz, is_pel;
@@ -2227,9 +2235,12 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	int lpg, lpg0, lsec, szrlc, ofsrlc, nrlce, mach, lbl;
 	int ofsimp, szimp, ofsexp, szexp;
 	int ofsexc, szexc, ofsrsrc, szrsrc, ofstlsd, sztlsd;
-	int szstack, denserlc, mchar, mdllchar;
+	int szstack, denserlc, mchar, mdllchar, omsz;
 	int i, j, k;
 
+	obuf=*robuf;
+	omsz=*rosz;
+	
 	sctx=ctx->uctx;
 
 //	is_pel=0;
@@ -2598,6 +2609,19 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		k+=j;
 		k=(k+63)&(~63);
 	}
+
+	if(k>omsz)
+	{
+		if(omsz<65536)
+			omsz=(1<<20);
+		while(omsz<k)
+			omsz=omsz+(omsz>>1);
+		obuf=bgbcc_realloc2(obuf, omsz);
+		
+		*robuf=obuf;
+		*rosz=omsz;
+	}
+
 	memset(obuf, 0, k);
 #endif
 
@@ -3249,9 +3273,9 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 	while(k<i)
 		k=k+(k>>1);
 
-	map_lvatab=bgbcc_malloc(k*sizeof(u32));
-	map_lvntab=bgbcc_malloc(k*sizeof(char *));
-	map_lvmtab=bgbcc_malloc(k*sizeof(byte));
+	map_lvatab=bgbcc_tmalloc("_jx2c_pemap_lva", k*sizeof(u32));
+	map_lvntab=bgbcc_tmalloc("_jx2c_pemap_lvn", k*sizeof(char *));
+	map_lvmtab=bgbcc_tmalloc("_jx2c_pemap_lvm", k*sizeof(byte));
 
 
 	sprintf(tb, "%s.map", ctx->imgname);
@@ -3347,8 +3371,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 
 	if(is_pel)
 	{
-//		ctb=malloc(ofs_iend*2);
-		ctb=malloc(ofs_iend2*2);
+//		ctb=bgbcc_tmalloc2("misc_pe", ofs_iend*2);
+		ctb=bgbcc_tmalloc2("misc_pe", ofs_iend2*2);
 	
 //		j=BGBCC_JX2C_PackImagePEL(ctx, ctb, obuf, ofs_iend*2, ofs_iend);
 		j=BGBCC_JX2C_PackImagePEL(ctx, ctb, obuf, ofs_iend2*2, ofs_iend2);
@@ -3376,7 +3400,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 			return(0);
 		}
 
-		free(ctb);
+		bgbcc_free2(ctb);
 	}
 
 	*rosz=ofs_iend;

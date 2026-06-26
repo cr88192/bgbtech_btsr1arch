@@ -356,6 +356,9 @@ If used with a register-indexed Load/Store:
  UUUU-1ssiii-iiiiii-0000-ssssss-01-1110 (FF)
  XXXX-oooooo-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
  * {LDOP_U}.x (Rm, Ro*Sc, Disp9u), Rn
+ UUUU-0iiiii-iiiiii-1000-ssssss-01-1110 (FF)
+ XXXX-iiiiii-mmmmmm-ZZZZ-nnnnnn-QY-YYPw (F0)
+ * {LDOP_U}.x (Rm, Disp17s), Rn
 
 Where:
 
@@ -401,6 +404,10 @@ General process for a Volatile access (Example):
 For a Volatile Write, the L1 cache may signal to the outer cache that this line is being written to. In this case, the outer cache may miss on volatile bus requests to this line until the preceding volatile request has completed as a way to enforce memory ordering.
 
 Though, the exact mechanism will be implementation dependent apart from the assumption that volatile accesses will enfornce ordering whereas normal access need not.
+
+Note that LDOP forms with an index register will use an Unscaled Zero-Extended displacement. In forms where an Index Scale is encoded, this will apply exclusively to the index register.
+
+Note that in the Ro + Disp9u/Disp11u forms, it may be considered a separate feature (RiMOV) as to whether the Disp can be non-zero in this case. For displacement-only, the Disp17s form can be used (with the displacement scaled by the size of the type).
 
 
 ==== Jumbo, F1/F2 Block ====
@@ -545,7 +552,7 @@ List of Major Extensions:
 * GFP: General Floating Point
 * GSV: General SIMD Vectors
 * IMMB: Secondary Immed for Store and Bcc
-* LDOP: Load/Store Operations
+* LDOP: Load/Store ALU Operations
 * PRED: Predicated Instructions
 * TTAG: Type Tag Instructions
 
@@ -604,8 +611,8 @@ Add with Carry, Rn=Rn+Rm+SR.T, with SR.T being updated to reflect the carry-out 
  J_OP   iiii-iiiiii-iiiiii-0010-nnnnnn-s1-0010  ADD     Imm33s, Rn
  J2_IMM iiii-iiiiii-iiiiii-0010-nnnnnn-s1-0010  ADD     Imm64, Rn
 Optional (ALUX):
-        0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX    Xm, Xo, Xn
- J_IMM  0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADDX    Xm, Imm33s, Xn
+        0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADD.X   Xm, Xo, Xn
+ J_IMM  0000-oooooo-mmmmmm-0001-nnnnnn-10-0010  ADD.X   Xm, Imm33s, Xn
 
 
 
@@ -616,7 +623,7 @@ Perform an integer ADD operation.
 * ADDS.L: Add two integers with 32-bit sign extension.
 * ADDU.L: Add two integers with 32-bit zero extension.
 
-For the ADDX instruction, the Even register will hold the low-order bits and the Odd register the high order bits. Carry propagation will happen between the low and high bits, causing a 128-bit integer result to be generated. When an immediate form is used, the value will be sign extended across both registers.
+For the ADD.X instruction, the Even register will hold the low-order bits and the Odd register the high order bits. Carry propagation will happen between the low and high bits, causing a 128-bit integer result to be generated. When an immediate form is used, the value will be sign extended across both registers.
 
 The legacy 2RI encodings are deprecated and should not ne used, they mostly exist as a hold-over from XG1 and XG2, but in XG3 the use of a 3RI ADD with X0 as a source will be considered the preferred encoding.
 
@@ -628,8 +635,8 @@ The legacy 2RI encodings are deprecated and should not ne used, they mostly exis
  J_IMM  iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND     Rm, Imm33s, Rn
  J2_IMM iiii-iiiiii-mmmmmm-0101-nnnnnn-00-1010  AND     Rm, Imm64, Rn
  Optional (ALUX):
-        0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX    Xm, Xo, Xn
- J_IMM  0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  ANDX    Xm, Imm33s, Xn
+        0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  AND.X   Xm, Xo, Xn
+ J_IMM  0101-oooooo-mmmmmm-0001-nnnnnn-10-0010  AND.X   Xm, Imm33s, Xn
 
 Perform a bitwise AND operation.
 * (ALUX) ANDX: 128-bit AND over register pairs.
@@ -757,9 +764,9 @@ Pseudocode (for Imm24 form):
 === BITSEL ===
 
          1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL     Rm, Ro, Rn
-         1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX    Xm, Xo, Xn
+         1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSEL.X   Xm, Xo, Xn
  J_OP_4R 1011-oooooo-mmmmmm-0110-nnnnnn-00-0010  BITSEL     Rm, Ro, Rp, Rn
- J_OP_4R 1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSELX    Xm, Xo, Rp, Xn
+ J_OP_4R 1011-oooooo-mmmmmm-0110-nnnnnn-10-0010  BITSEL.X   Xm, Xo, Rp, Xn
 
 Bit Select.
 Generate a value combining bits from Rm and Rn (or Rp) using a mask given
@@ -844,18 +851,18 @@ These will count the number of zeroes until the first non-zero bit is encountere
  J_IMM      1010-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPGTU.Q    Rm, Imm33s, Rn
  J_IMM      1011-oooooo-mmmmmm-1001-nnnnnn-10-0010  CMPLEU.Q    Rm, Imm33s, Rn
  Optional (ALUX):
- J_OP(U4)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPEQX      Xm, Xo, Rn
- J_OP(U5)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPNEX      Xm, Xo, Rn
- J_OP(U6)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTX      Xm, Xo, Rn
- J_OP(U7)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEX      Xm, Xo, Rn
- J_OP(UA)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTUX     Xm, Xo, Rn
- J_OP(UB)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEUX     Xm, Xo, Rn
- J_OP_I(U4) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPEQX      Xm, Imm17s, Rn
- J_OP_I(U5) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPNEX      Xm, Imm17s, Rn
- J_OP_I(U6) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTX      Xm, Imm17s, Rn
- J_OP_I(U7) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEX      Xm, Imm17s, Rn
- J_OP_I(UA) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTUX     Xm, Imm17s, Rn
- J_OP_I(UB) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEUX     Xm, Imm17s, Rn
+ J_OP(U4)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPEQ.X     Xm, Xo, Rn
+ J_OP(U5)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPNE.X     Xm, Xo, Rn
+ J_OP(U6)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGT.X     Xm, Xo, Rn
+ J_OP(U7)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLE.X     Xm, Xo, Rn
+ J_OP(UA)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTU.X    Xm, Xo, Rn
+ J_OP(UB)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEU.X    Xm, Xo, Rn
+ J_OP_I(U4) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPEQ.X     Xm, Imm17s, Rn
+ J_OP_I(U5) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPNE.X     Xm, Imm17s, Rn
+ J_OP_I(U6) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGT.X     Xm, Imm17s, Rn
+ J_OP_I(U7) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLE.X     Xm, Imm17s, Rn
+ J_OP_I(UA) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPGTU.X    Xm, Imm17s, Rn
+ J_OP_I(UB) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  CMPLEU.X    Xm, Imm17s, Rn
  
  
 Compare two values (Rm and Ro), or compare a value and an immediate, and store the result in Rn.
@@ -1005,7 +1012,7 @@ Note that:
         0000-oooooo-mmmmmm-0111-nnnnnn-00-0010  FADDA   Rm, Ro, Rn
  J_OP   1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD    Rm, Ro, Rn, I8rm
  Optional (FPUX):
-        1000-oooooo-mmmmmm-0101-nnnnnn-10-0010  FADDX   Xm, Xo, Xn
+        1000-oooooo-mmmmmm-0101-nnnnnn-10-0010  FADD.X  Xm, Xo, Xn
  Optional (FPIMM):
         1101-oooooo-mmmmmm-0110-nnnnnn-10-0010  FADDG   Rm, Imm6f, Rn
  J_OP_I 1000-oooooo-mmmmmm-0101-nnnnnn-00-0010  FADD    Rm, Imm16f, Rn
@@ -1112,7 +1119,7 @@ Note that if FADD is used with an immediate and with Rm==R0 will behave as a pla
         0001-oooooo-mmmmmm-0111-nnnnnn-00-0010  FSUBA   Rm, Ro, Rn
  J_OP   1001-oooooo-mmmmmm-0101-nnnnnn-00-0010  FSUB    Rm, Ro, Rn, I8rm
  Optional (FPUX):
-        1001-oooooo-mmmmmm-0101-nnnnnn-10-0010  FSUBX   Xm, Xo, Xn
+        1001-oooooo-mmmmmm-0101-nnnnnn-10-0010  FSUB.X  Xm, Xo, Xn
  Optional (FPIMM):
         1110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FSUBG   Rm, Imm6f, Rn
  J_IMM  1001-oooooo-mmmmmm-0101-nnnnnn-00-0010 ? FSUB    Rm, Imm32f, Rn
@@ -1133,7 +1140,7 @@ Debate: Omit larger Imm forms, these can be encoded as FADD with a negative imme
         0010-oooooo-mmmmmm-0111-nnnnnn-00-0010  FMULA   Rm, Ro, Rn
  J_OP   1010-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMUL    Rm, Ro, Rn, I8rm
  Optional (FPUX):
-        1010-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMULX   Xm, Xo, Xn
+        1010-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMUL.X  Xm, Xo, Xn
  Optional (FPIMM):
         1111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FMULG   Rm, Imm6f, Rn
  J_IMM  1010-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMUL    Rm, Imm32f, Rn
@@ -1151,7 +1158,7 @@ Perform an FPU Multiply.
           1011-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMAC      Rm, Ro, Rn
  J_OP_4R  1011-oooooo-mmmmmm-0101-nnnnnn-00-0010  FMxx      Rm, Ro, Rp, Rn
  Optional (FPUX):
-          1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMACX     Xm, Xo, Xn
+          1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMAC.X    Xm, Xo, Xn
  J_OP_4R  1011-oooooo-mmmmmm-0101-nnnnnn-10-0010  FMxxX     Xm, Xo, Xp, Xn
 
 
@@ -1181,8 +1188,8 @@ With the J_OP form, the Imm11 field will be split up:
  0110-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIV       Rm, Ro, Rn
  0111-oooooo-mmmmmm-0110-nnnnnn-00-0010  FDIVA      Rm, Ro, Rn
  Optional (FPUX + FDIV):
- 0110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVX      Xm, Xo, Xn
- 0111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVXA     Xm, Xo, Xn
+ 0110-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIV.X     Xm, Xo, Xn
+ 0111-oooooo-mmmmmm-0110-nnnnnn-10-0010  FDIVA.X    Xm, Xo, Xn
 
 Optional (FDIV): FPU Divide.
 
@@ -1305,29 +1312,29 @@ Where t is:
 === FNEG ===
 
  1101-001000-mmmmmm-0001-nnnnnn-00-0010  FNEG       Rm, Rn
- 1101-001000-mmmmmm-0001-nnnnnn-10-0010  FNEGX      Xm, Xn
+ 1101-001000-mmmmmm-0001-nnnnnn-10-0010  FNEG.X     Xm, Xn
 
 Negate a value in Binary64 format (inverts bit 63).
 
-* FNEGX is similar (FPUX), but for Binary128.
+* FNEG.X is similar (FPUX), but for Binary128.
 
 
 === FABS ===
 
  1101-001001-mmmmmm-0001-nnnnnn-00-0010  FABS       Rm, Rn
- 1101-001001-mmmmmm-0001-nnnnnn-10-0010  FABSX      Xm, Xn
+ 1101-001001-mmmmmm-0001-nnnnnn-10-0010  FABS.X     Xm, Xn
 
 Absolute value in Binary64 format (clears bit 63).
 
-* FABSX is similar (FPUX), but for Binary128.
+* FABS.X is similar (FPUX), but for Binary128.
 
 
 === FSQRT ===
 
  1101-001100-mmmmmm-0001-nnnnnn-00-0010  FSQRT      Rm, Rn
- 1101-001100-mmmmmm-0001-nnnnnn-10-0010  FSQRTX     Xm, Xn
+ 1101-001100-mmmmmm-0001-nnnnnn-10-0010  FSQRT.X    Xm, Xn
  1101-001101-mmmmmm-0001-nnnnnn-00-0010  FSQRTA     Rm, Rn
- 1101-001101-mmmmmm-0001-nnnnnn-10-0010  FSQRTXA    Xm, Xn
+ 1101-001101-mmmmmm-0001-nnnnnn-10-0010  FSQRTA.X   Xm, Xn
 
 Perform a Floating-Point Square Root.
 
@@ -1337,7 +1344,7 @@ Perform a Floating-Point Square Root.
 
 Note that SQRT will be defined as a Signed Square Root, as-in, the output sign will be equivalent to the input sign.
 
-As for the FSQRT and FSQRTX operations:
+As for the FSQRT and FSQRT.X operations:
 
 * These operation should otherwise respect IEEE-754 rules.
 * These operation may be slow and implemented by Trap and Emulate.
@@ -1584,7 +1591,7 @@ Select the minimum or maximum of the integers given in Rm or Ro, storing result 
  J_IMM  iiii-iiiiii-mmmmmm-1011-nnnnnn-00-0110  MOV.Q       (Rm, Disp33s), Rn
  J_IMM  iiii-iiiiii-mmmmmm-0101-nnnnnn-10-0110  MOV.X       Xn, (Rm, Disp33s)
  J_IMM  iiii-iiiiii-mmmmmm-0111-nnnnnn-10-0110  MOV.X       (Rm, Disp33s), Xn
- Abs64 Group (Disp10+J_IMM):
+ Abs64 Group (Disp10+J2_IMM):
  J2_IMM iiii-iiiiii-mmmmmm-0000-nnnnnn-00-0110  MOV.B       Rn, (Rm, Abs64)
  J2_IMM iiii-iiiiii-mmmmmm-0001-nnnnnn-00-0110  MOV.W       Rn, (Rm, Abs64)
  J2_IMM iiii-iiiiii-mmmmmm-0010-nnnnnn-00-0110  MOV.L       Rn, (Rm, Abs64)
@@ -1738,14 +1745,14 @@ Optional (QMUL): Multiply, High Result.
  J_IMM   iiii-iiiiii-mmmmmm-0110-nnnnnn-00-1010  OR     Rm, Imm33s, Rn
  J2_IMM  iiii-iiiiii-mmmmmm-0110-nnnnnn-00-1010  OR     Rm, Imm64, Rn
  Optional (ALUX):
-         0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX    Xm, Xo, Xn
- J_IMM   0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  ORX    Xm, Imm33s, Xn
+         0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  OR.X   Xm, Xo, Xn
+ J_IMM   0110-oooooo-mmmmmm-0001-nnnnnn-10-0010  OR.X   Xm, Imm33s, Xn
 
 Bitwise OR.
 
 Optional (ALUX): ORX: 128-bit OR over register pairs.
 
-Note that ORX with (Xo==R0) will be understood as a 128-bit register MOV. Unlike normal ORX, this case will be required to work if MOV.X is supported.
+Note that OR.X with (Xo==R0) will be understood as a 128-bit register MOV. Unlike normal OR.X, this case will be required to work if MOV.X is supported.
 
 
 === ROTx ===
@@ -1754,8 +1761,8 @@ Note that ORX with (Xo==R0) will be understood as a 128-bit register MOV. Unlike
             0011-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTR.Q     Rm, Ro, Rn
             0110-oooooo-mmmmmm-0011-nnnnnn-00-0010  ROTL.L     Rm, Ro, Rn
  Optional (ALUX):
-            0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTLX      Xm, Ro, Xn
- J_OP(U1)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTRX      Xm, Ro, Rn
+            0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTL.X     Xm, Ro, Xn
+ J_OP(U1)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010  ROTR.X     Xm, Ro, Rn
 
 Rotate.
 
@@ -1803,7 +1810,7 @@ SBB.L will operate on a 32-bit value and will produce a 32-bit zero extended res
  1101-oooooo-mmmmmm-0101-nnnnnn-00-0010  SUBS.L     Rm, Ro, Rn
  1101-oooooo-mmmmmm-0101-nnnnnn-10-0010  SUBU.L     Rm, Ro, Rn
  Optional (ALUX): 
- 0001-oooooo-mmmmmm-0001-nnnnnn-10-0010  SUBX       Xm, Xo, Xn
+ 0001-oooooo-mmmmmm-0001-nnnnnn-10-0010  SUB.X      Xm, Xo, Xn
 
 
 Integer Subtract.
@@ -1920,10 +1927,10 @@ Note that (unlike the ALUX cases), the funnel shift operators will be limited to
  J_IMM      1000-oooooo-mmmmmm-1001-nnnnnn-10-0010   TSTN.Q     Rm, Imm33s, Rn
  J_IMM      1001-oooooo-mmmmmm-1001-nnnnnn-10-0010   TST.Q      Rm, Imm33s, Rn
  Optional (ALUX):
- J_OP(U8)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTX       Xm, Xo, Rn
- J_OP(U9)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTNX      Xm, Xo, Rn
- J_OP_I(U8) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTX       Xm, Imm17s, Rn
- J_OP_I(U9) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTNX      Xm, Imm17s, Rn
+ J_OP(U8)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TST.X      Xm, Xo, Rn
+ J_OP(U9)   0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTN.X     Xm, Xo, Rn
+ J_OP_I(U8) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TST.X      Xm, Imm17s, Rn
+ J_OP_I(U9) 0110-oooooo-mmmmmm-0011-nnnnnn-10-0010   TSTN.X     Xm, Imm17s, Rn
 
 Bit-Test.
 
@@ -1932,7 +1939,7 @@ Set or Clear Rn based on the result of a Bit-Test operation:
 * If Rn is set to R0, this will direct the output to SR.T.
 * TSTN: Rn = !(Rm & Ro)
 * TST: Rn = (Rm & Ro)
-* TSTX / TSTNX: Same but on a 128-bit register pair.
+* TST.X / TSTN.X: Same but on a 128-bit register pair.
 
 
 === VSKG / VSKC ==
@@ -1956,8 +1963,8 @@ The Rm value will supply a reference value (magic number), with Rn holding the C
  J_IMM   iiii-iiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR        Rm, Imm33s, Rn
  J2_IMM  iiii-iiiiii-mmmmmm-0111-nnnnnn-00-1010  XOR        Rm, Imm64, Rn
  Optional (ALUX):
-         0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX       Xm, Xo, Xn
- J_IMM   0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XORX       Xm, Imm33s, Xn
+         0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XOR.X      Xm, Xo, Xn
+ J_IMM   0111-oooooo-mmmmmm-0001-nnnnnn-10-0010  XOR.X      Xm, Imm33s, Xn
 
 Bitwise XOR.
 
@@ -3249,3 +3256,161 @@ Optional (XMOV): Load/Store with 128-bit register pair representing an Addr96.
 Optional (XMOV): Move Type-Tag
 
 Moves the Address from Xm and the Tag bits from Ro or the Imm32.
+
+
+== LDOP ==
+
+Load/Store Operations.
+
+* These combine a Load or Store with an additional operation.
+* Limited mostly to basic ALU ops.
+
+
+=== ADD (LDOP) ===
+
+ J_OP(U2)   0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADDS.B  Rn, (Rm, Ro, Di11)
+ J_OP(U2)   0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADDS.W  Rn, (Rm, Ro, Di11)
+ J_OP(U2)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADDS.L  Rn, (Rm, Ro, Di11)
+ J_OP(U2)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADDS.Q  Rn, (Rm, Ro, Di11)
+ J_OP(U2)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADDS.B  (Rm, Ro, Di11), Rn
+ J_OP(U2)   1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  ADDU.B  (Rm, Ro, Di11), Rn
+ J_OP(U2)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADDS.W  (Rm, Ro, Di11), Rn
+ J_OP(U2)   1101-oooooo-mmmmmm-0000-nnnnnn-10-0010  ADDU.W  (Rm, Ro, Di11), Rn
+ J_OP(U2)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADDS.L  (Rm, Ro, Di11), Rn
+ J_OP(U2)   1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  ADDU.L  (Rm, Ro, Di11), Rn
+ J_OP(U2)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  ADD.Q   (Rm, Ro, Di11), Rn
+
+Add a value from Rn with a value in memory. Store form will leave the result in memory, whereas Load form will leave the result in Rn.
+
+
+=== AND (LDOP) ===
+
+ J_OP(U5)   0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.B   Rn, (Rm, Ro, Di11)
+ J_OP(U5)   0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.W   Rn, (Rm, Ro, Di11)
+ J_OP(U5)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.L   Rn, (Rm, Ro, Di11)
+ J_OP(U5)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.Q   Rn, (Rm, Ro, Di11)
+ J_OP(U5)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.B   (Rm, Ro, Di11), Rn
+ J_OP(U5)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.W   (Rm, Ro, Di11), Rn
+ J_OP(U5)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.L   (Rm, Ro, Di11), Rn
+ J_OP(U5)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  AND.Q   (Rm, Ro, Di11), Rn
+
+
+AND a value from Rn with a value in memory. Store form will leave the result in memory, whereas Load form will leave the result in Rn.
+
+AND will lack Signed / Unsigned distinction, and instead will behave as-if the memory value was always Zero extended.
+
+
+=== MOV (LDOP) ===
+
+ J_OP(U0)   0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B   Rn, (Rm, Ro, Di11)
+ J_OP(U0)   0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W   Rn, (Rm, Ro, Di11)
+ J_OP(U0)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L   Rn, (Rm, Ro, Di11)
+ J_OP(U0)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q   Rn, (Rm, Ro, Di11)
+ J_OP(U0)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.B   (Rm, Ro, Di11), Rn
+ J_OP(U0)   1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.B  (Rm, Ro, Di11), Rn
+ J_OP(U0)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.W   (Rm, Ro, Di11), Rn
+ J_OP(U0)   1101-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.W  (Rm, Ro, Di11), Rn
+ J_OP(U0)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.L   (Rm, Ro, Di11), Rn
+ J_OP(U0)   1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVU.L  (Rm, Ro, Di11), Rn
+ J_OP(U0)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOV.Q   (Rm, Ro, Di11), Rn
+ J_OP(U8)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.L  Rn, (Rm, Ro, Di11)
+ J_OP(U8)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.Q  Rn, (Rm, Ro, Di11)
+ J_OP(U8)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.L  (Rm, Ro, Di11), Rn
+ J_OP(U8)   1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVVU.L (Rm, Ro, Di11), Rn
+ J_OP(U8)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.Q  (Rm, Ro, Di11), Rn
+ J_OP_I(U8) 0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.L  Rn, (Rm, Disp17s)
+ J_OP_I(U8) 0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.Q  Rn, (Rm, Disp17s)
+ J_OP_I(U8) 1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.L  (Rm, Disp17s), Rn
+ J_OP_I(U8) 1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  MOVVU.L (Rm, Disp17s), Rn
+ J_OP_I(U8) 1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  MOVV.Q  (Rm, Disp17s), Rn
+
+Load or Store a value, but this form will support both an index and displacement.
+
+MOVV will perform a volatile memory access.
+
+
+ 
+=== OR (LDOP) ===
+
+ J_OP(U6)   0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.B    Rn, (Rm, Ro, Di11)
+ J_OP(U6)   0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.W    Rn, (Rm, Ro, Di11)
+ J_OP(U6)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.L    Rn, (Rm, Ro, Di11)
+ J_OP(U6)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.Q    Rn, (Rm, Ro, Di11)
+ J_OP(U6)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.B    (Rm, Ro, Di11), Rn
+ J_OP(U6)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.W    (Rm, Ro, Di11), Rn
+ J_OP(U6)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.L    (Rm, Ro, Di11), Rn
+ J_OP(U6)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  OR.Q    (Rm, Ro, Di11), Rn
+
+OR a value from Rn with a value in memory. Store form will leave the result in memory, whereas Load form will leave the result in Rn.
+
+OR will lack Signed / Unsigned distinction, and instead will behave as-if the memory value was always Zero extended.
+
+
+=== SUB (LDOP) ===
+
+ J_OP(U3)   0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUBS.B  Rn, (Rm, Ro, Di11)
+ J_OP(U3)   0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUBS.W  Rn, (Rm, Ro, Di11)
+ J_OP(U3)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUBS.L  Rn, (Rm, Ro, Di11)
+ J_OP(U3)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUBS.Q  Rn, (Rm, Ro, Di11)
+ J_OP(U3)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUBS.B  (Rm, Ro, Di11), Rn
+ J_OP(U3)   1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  SUBU.B  (Rm, Ro, Di11), Rn
+ J_OP(U3)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUBS.W  (Rm, Ro, Di11), Rn
+ J_OP(U3)   1101-oooooo-mmmmmm-0000-nnnnnn-10-0010  SUBU.W  (Rm, Ro, Di11), Rn
+ J_OP(U3)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUBS.L  (Rm, Ro, Di11), Rn
+ J_OP(U3)   1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  SUBU.L  (Rm, Ro, Di11), Rn
+ J_OP(U3)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  SUB.Q   (Rm, Ro, Di11), Rn
+
+SUB a value from Rn with a value in memory. Store form will leave the result in memory, whereas Load form will leave the result in Rn.
+
+Performs a Subtraction with Mem-Reg order.
+
+
+=== RSUB (LDOP) ===
+
+ J_OP(U4)   0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUBS.B Rn, (Rm, Ro, Di11)
+ J_OP(U4)   0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUBS.W Rn, (Rm, Ro, Di11)
+ J_OP(U4)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUBS.L Rn, (Rm, Ro, Di11)
+ J_OP(U4)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUBS.Q Rn, (Rm, Ro, Di11)
+ J_OP(U4)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUBS.B (Rm, Ro, Di11), Rn
+ J_OP(U4)   1100-oooooo-mmmmmm-0000-nnnnnn-10-0010  RSUBU.B (Rm, Ro, Di11), Rn
+ J_OP(U4)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUBS.W (Rm, Ro, Di11), Rn
+ J_OP(U4)   1101-oooooo-mmmmmm-0000-nnnnnn-10-0010  RSUBU.W (Rm, Ro, Di11), Rn
+ J_OP(U4)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUBS.L (Rm, Ro, Di11), Rn
+ J_OP(U4)   1110-oooooo-mmmmmm-0000-nnnnnn-10-0010  RSUBU.L (Rm, Ro, Di11), Rn
+ J_OP(U4)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  RSUB.Q  (Rm, Ro, Di11), Rn
+
+RSUB a value from Rn with a value in memory. Store form will leave the result in memory, whereas Load form will leave the result in Rn.
+
+Performs a Subtraction with Reg-Mem order.
+
+
+=== XCHG (LDOP) ===
+
+ J_OP(U1)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHG.B  (Rm, Ro, Di11), Rn
+ J_OP(U1)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHG.W  (Rm, Ro, Di11), Rn
+ J_OP(U1)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHG.L  (Rm, Ro, Di11), Rn
+ J_OP(U1)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHG.Q  (Rm, Ro, Di11), Rn
+ J_OP(U9)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHGV.L (Rm, Ro, Di11), Rn
+ J_OP(U9)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHGV.Q (Rm, Ro, Di11), Rn
+ J_OP_I(U9) 1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHGV.L (Rm, Disp17s), Rn
+ J_OP_I(U9) 1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  XCHGV.Q (Rm, Disp17s), Rn
+
+Exchange a value from Rn with a value in memory. The former value for Rn will go into memory, whereas the value from memory will go into Rn.
+
+XCHGV will be semantically exquivalent to XCHG, but will differ in that it will perform a volatile memory access.
+
+
+=== XOR (LDOP) ===
+
+ J_OP(U7)   0100-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.B   Rn, (Rm, Ro, Di11)
+ J_OP(U7)   0101-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.W   Rn, (Rm, Ro, Di11)
+ J_OP(U7)   0110-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.L   Rn, (Rm, Ro, Di11)
+ J_OP(U7)   0111-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.Q   Rn, (Rm, Ro, Di11)
+ J_OP(U7)   1100-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.B   (Rm, Ro, Di11), Rn
+ J_OP(U7)   1101-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.W   (Rm, Ro, Di11), Rn
+ J_OP(U7)   1110-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.L   (Rm, Ro, Di11), Rn
+ J_OP(U7)   1111-oooooo-mmmmmm-0000-nnnnnn-00-0010  XOR.Q   (Rm, Ro, Di11), Rn
+
+XOR a value from Rn with a value in memory. Store form will leave the result in memory, whereas Load form will leave the result in Rn.
+
+XOR will lack Signed / Unsigned distinction, and instead will behave as-if the memory value was always Zero extended.

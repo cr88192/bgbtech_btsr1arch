@@ -382,12 +382,12 @@ char *BGBCC_CCXL_CompileRemapName(BGBCC_TransState *ctx,
 		sprintf(tb1, "%s!%d", s0, ctx->vlcl_stack[j]);
 		i=BGBCC_CCXL_LookupLocalIndex(ctx, tb1);
 		if(i>=0)
-			{ ri=ctx->cur_func->locals[i]; break; }
+			{ ri=ctx->cur_func->ext->locals[i]; break; }
 		if(!ri)
 		{
 			i=BGBCC_CCXL_LookupStaticIndex(ctx, tb1);
 			if(i>=0)
-				{ ri=ctx->cur_func->statics[i]; break; }
+				{ ri=ctx->cur_func->ext->statics[i]; break; }
 		}
 	}
 
@@ -404,7 +404,7 @@ char *BGBCC_CCXL_CompileRemapName(BGBCC_TransState *ctx,
 
 	if(ri)
 	{
-		s0=ri->name;
+		s0=bgbcc_strtab_i(ri->name_ix);
 	}
 	
 	return(s0);
@@ -784,9 +784,9 @@ void BGBCC_CCXL_CompileMethodcall(BGBCC_TransState *ctx, BCCX_Node *l)
 		if(ri && !(ri->flagsint&BGBCC_TYFL_FINAL))
 //		if(ri && (ri->flagsint&BGBCC_TYFL_VIRTUAL))
 		{
-			bgbcc_strcpy_nosig(tb, ri->name);
+			bgbcc_strcpy_nosig(tb, bgbcc_strtab_i(ri->name_ix));
 			s2=bgbcc_strdup(tb);
-			sprintf(tb, "%s/%s", ri->defp->name, s2);
+			sprintf(tb, "%s/%s", bgbcc_strtab_i(ri->defp->name_ix), s2);
 
 			BGBCC_CCXL_PushMark(ctx);
 			BGBCC_CCXL_CompileExprListReverseB(ctx, u);
@@ -1380,7 +1380,9 @@ void BGBCC_CCXL_CompileNewBasic(BGBCC_TransState *ctx,
 
 	if(obj)
 	{
-		sprintf(tb, "%s/%s", obj->decl->name, "__operator_new");
+		sprintf(tb, "%s/%s",
+			bgbcc_strtab_i(obj->decl->name_ix),
+			"__operator_new");
 		i=BGBCC_CCXL_LookupGlobalIndex(ctx, tb);
 		if(i>0)
 		{
@@ -1397,7 +1399,9 @@ void BGBCC_CCXL_CompileNewBasic(BGBCC_TransState *ctx,
 
 		if(obj->decl->flagsint&BGBCC_TYFL_NONPOD)
 		{
-			sprintf(tb, "%s/%s", obj->decl->name, "__init");
+			sprintf(tb, "%s/%s",
+				bgbcc_strtab_i(obj->decl->name_ix),
+				"__init");
 
 			//Call ObjType::__init
 			BGBCC_CCXL_PushMark(ctx);
@@ -1407,7 +1411,9 @@ void BGBCC_CCXL_CompileNewBasic(BGBCC_TransState *ctx,
 	//		return;
 		}
 
-		sprintf(tb, "%s/%s", obj->decl->name, "__ctor");
+		sprintf(tb, "%s/%s",
+			bgbcc_strtab_i(obj->decl->name_ix),
+			"__ctor");
 		i=BGBCC_CCXL_LookupGlobalIndex(ctx, tb);
 		if(i>0)
 		{
@@ -2970,9 +2976,9 @@ void BGBCC_CCXL_CompileForm(BGBCC_TransState *ctx, BCCX_Node *l)
 			BGBCC_CCXL_StackCastSig(ctx, tb1);
 
 #if 1
-			for(j=0; j<obj->decl->n_fields; j++)
+			for(j=0; j<obj->decl->ext->n_fields; j++)
 			{
-				s=obj->decl->fields[j]->name;
+				s=bgbcc_strtab_i(obj->decl->ext->fields[j]->name_ix);
 				if(!s)
 					continue;
 				if((s[0]=='_') && (s[1]=='_'))
@@ -3478,7 +3484,7 @@ int BGBCC_CCXL_CompileExprValueObject(BGBCC_TransState *ctx,
 				v=BCCX_FetchCst(c, &bgbcc_rcst_value, "value");
 
 				ix1=BGBCC_CCXL_LookupStructFieldID(ctx, st, sn);
-				ss=st->decl->fields[ix1]->sig;
+				ss=bgbcc_strtab_i(st->decl->ext->fields[ix1]->sig_ix);
 			
 				BGBCC_CCXL_StackDupClean(ctx);
 
@@ -3489,8 +3495,8 @@ int BGBCC_CCXL_CompileExprValueObject(BGBCC_TransState *ctx,
 			}
 			else
 			{
-				sn=st->decl->fields[idx]->name;
-				ss=st->decl->fields[idx]->sig;
+				sn=bgbcc_strtab_i(st->decl->ext->fields[idx]->name_ix);
+				ss=bgbcc_strtab_i(st->decl->ext->fields[idx]->sig_ix);
 			
 				BGBCC_CCXL_StackDupClean(ctx);
 

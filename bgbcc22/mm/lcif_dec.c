@@ -37,6 +37,16 @@ typedef signed long long		s64;
 
 void LCIF_LzMemCpy(byte *dst, byte *src, int sz);
 
+void *lcif_malloc(int sz)
+{
+	return(bgbcc_tmalloc2("_mm_lcifbuf", sz));
+}
+
+void lcif_free(void *ptr)
+{
+	bgbcc_free2(ptr);
+}
+
 byte *LCIF_DecColorPlane(byte *outbuf, byte *inbuf, int xs, int ys)
 {
 //	byte pixtab[64*4];
@@ -1278,10 +1288,10 @@ int LCIF_DecImageBuffer(byte *outbuf, byte *inbuf, int *rxs, int *rys,
 	
 	if(clrbuf && (n>clrbufsz))
 	{
-		free(clrbuf);
-		free(blkbuf);
+		lcif_free(clrbuf);
+		lcif_free(blkbuf);
 		if(ablkbuf)
-			free(blkbuf);
+			lcif_free(blkbuf);
 		clrbuf=NULL;
 		blkbuf=NULL;
 		ablkbuf=NULL;
@@ -1294,18 +1304,18 @@ int LCIF_DecImageBuffer(byte *outbuf, byte *inbuf, int *rxs, int *rys,
 
 	if(!clrbuf)
 	{
-		clrbuf=malloc((xs2*ys2+256)*2*4);
-		blkbuf=malloc((xs2*ys2+256)*8);
+		clrbuf=lcif_malloc((xs2*ys2+256)*2*4);
+		blkbuf=lcif_malloc((xs2*ys2+256)*8);
 		ablkbuf=NULL;
 //		if(inbuf[12]==4)
 		if(isalpha)
-			ablkbuf=malloc((xs2*ys2+256)*8);
+			ablkbuf=lcif_malloc((xs2*ys2+256)*8);
 		clrbufsz=n;
 	}else
 	{
 //		if((inbuf[12]==4) && !ablkbuf)
 		if(isalpha && !ablkbuf)
-			{ ablkbuf=malloc((clrbufsz+256)*8); }
+			{ ablkbuf=lcif_malloc((clrbufsz+256)*8); }
 	}
 	
 	
@@ -1383,10 +1393,10 @@ int LCIF_DecImageBuffer(byte *outbuf, byte *inbuf, int *rxs, int *rys,
 		}
 	}
 
-//	free(clrbuf);
-//	free(blkbuf);
+//	lcif_malloc(clrbuf);
+//	lcif_malloc(blkbuf);
 //	if(ablkbuf)
-//		free(blkbuf);
+//		lcif_malloc(blkbuf);
 	
 	if(rxs)	*rxs=ixs;
 	if(rys)	*rys=iys;
@@ -1407,7 +1417,7 @@ byte *LCIF_DecImageTempBuffer(byte *inbuf, int *rxs, int *rys)
 		return(NULL);
 	}
 	
-	imgbuf=malloc(xs*ys*4);
+	imgbuf=lcif_malloc(xs*ys*4);
 	LCIF_DecImageBuffer(imgbuf, inbuf, &xs, &ys, 0);
 
 	n=xs*ys;

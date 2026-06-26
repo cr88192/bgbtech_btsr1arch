@@ -2123,7 +2123,7 @@ int BGBCC_SHXC_EmitCallVReg(
 	if((fcn.val&CCXL_REGTY_REGMASK)==CCXL_REGTY_GLOBAL)
 	{
 		i=(int)(fcn.val&CCXL_REGID_REGMASK);
-		fname=ctx->reg_globals[i]->name;
+		fname=bgbcc_strtab_i(ctx->reg_globals[i]->name_ix);
 	}
 	
 	if(fname && BGBCC_SHXC_EmitCallBuiltinArgs(

@@ -113,6 +113,11 @@ byte bgbcc_fixed_pal16[64] = {
 0xFF, 0xFF, 0xFF, 0xFF,
 };
 
+void *bgbcc_malloc_bmp(int sz)
+{
+	return(bgbcc_tmalloc2("_mm_bmpbuf", sz));
+}
+
 byte bgbcc_dfl_pal256[1024];
 byte bgbcc_dfl_pal16[64];
 
@@ -364,7 +369,7 @@ byte *BGBCC_Img_DecodeBMP(byte *imgbuf, int *rw, int *rh)
 		flip=!flip;
 	}
 	
-	buf=malloc(xs*ys*4);
+	buf=bgbcc_malloc_bmp(xs*ys*4);
 	
 	if(bmi->biCompression==BGBCC_FMT_CRAM)
 	{
@@ -615,7 +620,7 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 #if 0
 	if(!bgbcc_img_bmppallookup)
 	{
-		bgbcc_img_bmppallookup=malloc(32768);
+		bgbcc_img_bmppallookup=bgbcc_malloc_bmp(32768);
 		bgbcc_img_bmppalhash=-1;
 	}
 #endif
@@ -623,8 +628,8 @@ int BGBCC_Img_EncodeImageBmpSetupPal(byte *pal, int nclr)
 #if 1
 	if(!bgbcc_img_bmppalmlookup)
 	{
-		bgbcc_img_bmppalmlookup =malloc(4*32768);
-		bgbcc_img_bmppalmlookupb=malloc(4*32768);
+		bgbcc_img_bmppalmlookup =bgbcc_malloc_bmp(4*32768);
+		bgbcc_img_bmppalmlookupb=bgbcc_malloc_bmp(4*32768);
 		for(i=0; i<4; i++)
 			bgbcc_img_bmppalmhash[i]=-1;
 	}
@@ -1837,7 +1842,7 @@ int BGBCC_Img_EncodeImageBMP_LZ8I(byte *obuf, byte *ibuf,
 
 	bmi->biCompression=BGBCC_FMT_RGL3;
 	
-	tbuf=malloc(2*ys*xstr);
+	tbuf=bgbcc_malloc_bmp(2*ys*xstr);
 
 #ifdef TGVLZ_NOMAIN
 	tectx=TgvLz_CreateContext();
@@ -1941,7 +1946,7 @@ int BGBCC_Img_EncodeImageBMP_LZ_4I(byte *obuf, byte *ibuf,
 
 	bmi->biCompression=BGBCC_FMT_RGL3;
 	
-	tbuf=malloc(2*ys*xstr);
+	tbuf=bgbcc_malloc_bmp(2*ys*xstr);
 
 #ifdef TGVLZ_NOMAIN
 	tectx=TgvLz_CreateContext();

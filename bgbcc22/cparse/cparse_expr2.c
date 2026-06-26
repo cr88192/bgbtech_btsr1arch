@@ -23,7 +23,7 @@ int BGBCP_AddExpression(char *name,
 {
 	BGBCP_ParseItem *tmp;
 
-	tmp=malloc(sizeof(BGBCP_ParseItem));
+	tmp=bgbcc_tmalloc2("misc_cparse", sizeof(BGBCP_ParseItem));
 	tmp->name=strdup(name);
 	tmp->func=func;
 
@@ -239,7 +239,7 @@ BCCX_Node *BGBCP_NumberSuf(BGBCP_ParseState *ctx, char *str, char *suf)
 		
 		if(((lj!=0) && (lj!=(-1))) ||
 			(suf && (lj!=(li>>63)) &&
-				(!strcmp(suf, "XL") || !strcmp(suf, "UXL")))
+				(!bgbcp_strcmp(suf, "XL") || !bgbcp_strcmp(suf, "UXL")))
 			)
 		{
 			n=BCCX_NewCst(&bgbcc_rcst_int128, "int128");
@@ -309,7 +309,7 @@ BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str)
 //		stbuf=stbufa;
 
 		l=16384;
-		stbuf=malloc(l);
+		stbuf=bgbcc_tmalloc2("misc_cparse", l);
 		stbufe=stbuf+l;
 	}
 
@@ -347,7 +347,7 @@ BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str)
 				k=stbufe-stbuf;
 				
 				k=k+(k>>1);
-				stbuf=realloc(stbuf, k);
+				stbuf=bgbcc_realloc2(stbuf, k);
 				stbufe=stbuf+k;
 				t1=stbuf+j;
 			}
@@ -380,7 +380,7 @@ BCCX_Node *BGBCP_ExpressionLitString(BGBCP_ParseState *ctx, char **str)
 					k=stbufe-stbuf;
 					
 					k=k+(k>>1);
-					stbuf=realloc(stbuf, k);
+					stbuf=bgbcc_realloc2(stbuf, k);
 					stbufe=stbuf+k;
 					t1=stbuf+j;
 				}
@@ -478,7 +478,7 @@ BCCX_Node *BGBCP_ExpressionLitStringQQQ(BGBCP_ParseState *ctx, char **str)
 //		stbuf=stbufa;
 
 		l=16384;
-		stbuf=malloc(l);
+		stbuf=bgbcc_tmalloc2("misc_cparse", l);
 		stbufe=stbuf+l;
 	}
 
@@ -493,7 +493,7 @@ BCCX_Node *BGBCP_ExpressionLitStringQQQ(BGBCP_ParseState *ctx, char **str)
 			k=stbufe-stbuf;
 			
 			k=k+(k>>1);
-			stbuf=realloc(stbuf, k);
+			stbuf=bgbcc_realloc2(stbuf, k);
 			stbufe=stbuf+k;
 			t1=stbuf+j;
 		}
@@ -1087,22 +1087,22 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
 			(bgbcp_strcmp1(b2, "[")!=0))
 		{
 			s1=BGBCP_Token(s, b2, &ty2);
-			if(!strcmp(b2, "="))
+			if(!bgbcp_strcmp1(b2, "="))
 				{ s=BGBCP_Token(s, b2, &ty2); }
-			else if(!strcmp(b2, "&"))
+			else if(!bgbcp_strcmp1(b2, "&"))
 				{ s=BGBCP_Token(s, b2, &ty2); }
 			
 			n4=BGBCP_FunArgs(ctx, &s);
 
 			BGBCP_Token(s, b2, &ty2);
 			
-//			if(!strcmp(b2, "]"))
+//			if(!bgbcp_strcmp1(b2, "]"))
 //			{
 //			}
 			
 //			s2=BGBCP_Token(s1, b3, &ty3);
 			
-//			if(!strcmp(b2, "]") && !strcmp(b3, "("))
+//			if(!bgbcp_strcmp(b2, "]") && !bgbcp_strcmp(b3, "("))
 			if(1)
 			{
 //				s=BGBCP_Token(s1, b2, &ty2);
@@ -1460,8 +1460,11 @@ BCCX_Node *BGBCP_ExpressionLit(BGBCP_ParseState *ctx, char **str)
  */
 int BGBCP_FunctionNameIsIntrinsicP(BGBCP_ParseState *ctx, char *str)
 {
-	if(!strcmp(str, "__debugbreak"))
-		return(1);
+	if(str[0]=='_')
+	{
+		if(!bgbcp_strcmp(str, "__debugbreak"))
+			return(1);
+	}
 	return(0);
 }
 
@@ -1564,7 +1567,7 @@ BCCX_Node *BGBCP_ExpressionPostfix(BGBCP_ParseState *ctx, char **str)
 				{
 					BGBCP_Token(s, b2, &ty2);
 					
-					if(!strcmp(b2, "{") || (ty2==BTK_NAME))
+					if(!bgbcp_strcmp1(b2, "{") || (ty2==BTK_NAME))
 					{
 						n1=BGBCP_BlockStatement(ctx, &s);
 						BCCX_AddV(n,

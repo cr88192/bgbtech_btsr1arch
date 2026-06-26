@@ -581,6 +581,7 @@ Base, Q1..Q3:
 #define CCXL_VOPITY_JMPTAB			0x06		//jump table list
 #define CCXL_VOPITY_GFID			0x07		//struct/field ID
 #define CCXL_VOPITY_SIPAIR			0x08		//signed int pair
+#define CCXL_VOPITY_TRIM			0x7F		//signed int pair
 
 
 #define CCXL_LBL_GLOBALBASE			0x000000	//globals (main context)
@@ -664,93 +665,105 @@ typedef int ccxl_status;
 
 
 typedef struct BGBCC_CCXL_RegisterInfo_s BGBCC_CCXL_RegisterInfo;
+typedef struct BGBCC_CCXL_RegisterExtInfo_s BGBCC_CCXL_RegisterExtInfo;
 typedef struct BGBCC_CCXL_LiteralInfo_s BGBCC_CCXL_LiteralInfo;
 typedef struct BGBCC_CCXL_TypeOverflow_s BGBCC_CCXL_TypeOverflow;
 typedef struct BGBCC_CCXL_BackendFuncs_vt_s BGBCC_CCXL_BackendFuncs_vt;
 
 typedef struct BGBCC_CCXL_VirtOp_s BGBCC_CCXL_VirtOp;
+typedef struct BGBCC_CCXL_VirtOpTrim_s BGBCC_CCXL_VirtOpTrim;
 typedef struct BGBCC_CCXL_VirtTr_s BGBCC_CCXL_VirtTr;
 
 typedef struct BGBCC_CCXL_LvaTagInfo_s BGBCC_CCXL_LvaTagInfo;
 
 struct BGBCC_CCXL_RegisterInfo_s {
-BGBCC_CCXL_RegisterInfo *next;
-BGBCC_CCXL_RegisterInfo *hashnext;		//next in lookup hash
-BGBCC_CCXL_RegisterInfo *chain;		//query chain
-char *pbname;			//scope path base name
-char *name;				//assigned variable name
-char *qname;			//assigned qualified name
-char *sig;				//type signature
-char *flagstr;			//flag string
-char *thisstr;			//this string
-char *ifarchstr;		//arch check string
-ccxl_type type;			//assigned type
-byte ucnt;				//use count
-byte type_zb;			//type Z base
-byte regcls;			//register class (backend)
-s16 cseq;				//current sequence
+BGBCC_CCXL_RegisterInfo		*next;
+BGBCC_CCXL_RegisterInfo		*hashnext;	//next in lookup hash
+BGBCC_CCXL_RegisterInfo		*chain;		//query chain
+BGBCC_CCXL_RegisterExtInfo	*ext;
 
-int name_ix;			//assigned variable name (index)
-int qname_ix;			//assigned qualified name (index)
+BGBCC_CCXL_RegisterInfo		*defv;		//define var
+BGBCC_CCXL_RegisterInfo		*defp;		//define parent
 
-int regtype;			//register type
-int regid;				//register ID
-int validx;				//value index
-int srctok;				//source tokens
-int gblrefcnt_org;		//global reference count (num refs to global)
-int gblrefcnt;			//global reference count (num refs to global)
-s64 flagsint;			//flags (integer)
-ccxl_register value;	//literal value
+byte					*text;			//bytecode / etc
 
-ccxl_type clz_type;		//owning class (fields, methods)
+s64						regflags;		//
+s64						flagsint;		//flags (integer)
+ccxl_register			value;			//literal value
 
-byte *text;				//bytecode
-int sz_text;			//sizeof bytecode
+ccxl_type				clz_type;		//owning class (fields, methods)
+ccxl_type				type;			//assigned type
 
-char *alc_fn;
-int alc_ln;
+int			name_ix;			//assigned variable name (index)
+int			qname_ix;			//assigned qualified name (index)
+int			sig_ix;				//type signature
+int			flagstr_ix;			//flag string
+int			thisstr_ix;			//this string
+int			ifarchstr_ix;		//arch check string
 
-BGBCC_CCXL_RegisterInfo *defv;		//define var
-BGBCC_CCXL_RegisterInfo *defp;		//define parent
+int			regid;				//register ID (12.12)
+int			validx;				//value index (literal table index)
+int			gblrefcnt_org;		//global reference count (num refs to global)
+int			gblrefcnt;			//global reference count (num refs to global)
 
+int			sz_text;			//sizeof bytecode
+
+int			alc_fn_ix;
+int			alc_ln;
+
+short		regtype;			//register type
+
+s16			cseq;				//current sequence
+byte		ucnt;				//use count
+byte		type_zb;			//type Z base
+byte		regcls;				//register class (backend)
+int			gblid;				//global ID
+
+int fxmoffs, fxnoffs;	//fixed min/max size
+int fxmsize, fxnsize;	//fixed min/max size
+int fxmalgn, fxnalgn;	//fixed min/max size
+
+int fxsize;				//fixed-format size
+int fxoffs;				//fixed-format offset (frame var offset)
+};
+
+struct BGBCC_CCXL_RegisterExtInfo_s {
 BGBCC_CCXL_RegisterInfo **fields;	//struct/class/union fields
 BGBCC_CCXL_RegisterInfo **args;		//function arguments, superclass list
 BGBCC_CCXL_RegisterInfo **locals;	//function locals
 BGBCC_CCXL_RegisterInfo **regs;		//function temporaries, class methods
 BGBCC_CCXL_RegisterInfo **statics;	//static variables (function and class)
-// u32 *regs_tyseq;
-int n_fields, m_fields;
-int n_args, m_args;
-int n_locals, m_locals;
-int n_regs, m_regs;
-int n_statics, m_statics;
-int n_cargs;		//max number of called-function arguments
-int n_eargs;		//end args
-int n_vargs;		//virtual args
 
-BGBCC_CCXL_VirtOp **vop;
-BGBCC_CCXL_VirtTr **vtr;
-int n_vop, m_vop;
-int n_vtr, m_vtr;
-// int s_vop;
+BGBCC_CCXL_VirtOp		**vop;
+BGBCC_CCXL_VirtTr		**vtr;
 
-char **goto_name;
-ccxl_label *goto_lbl;
-int n_goto, m_goto;
+char					**goto_name;
+ccxl_label				*goto_lbl;
 
-u64 *gblsetmask;
+u64						*gblsetmask;
+ccxl_register			*listdata;
 
-ccxl_register *listdata;
-int n_listdata, m_listdata;
-int gblid;
-s64 regflags;
-int fxsize;				//fixed-format size
-int fxoffs;				//fixed-format offset (frame var offset)
-int fxmoffs, fxnoffs;	//fixed min/max size
-int fxmsize, fxnsize;	//fixed min/max size
-int fxmalgn, fxnalgn;	//fixed min/max size
 int t_lbl_ret, t_lbl_ret_z;
+
+// u32 *regs_tyseq;
+short n_fields, m_fields;
+short n_args, m_args;
+short n_locals, m_locals;
+short n_regs, m_regs;
+short n_statics, m_statics;
+short n_cargs;		//max number of called-function arguments
+short n_eargs;		//end args
+short n_vargs;		//virtual args
+
+short n_goto, m_goto;
+short n_listdata, m_listdata;
+short n_vop, m_vop;
+short n_vtr, m_vtr;
+
+short		srctok;				//source tokens
+
 };
+
 
 struct BGBCC_CCXL_LiteralInfo_s {
 char *name;
@@ -785,12 +798,27 @@ byte llvl;			//Loop Level
 ccxl_type type;
 ccxl_type stype;
 ccxl_register dst;
-ccxl_register dstb;
 ccxl_register srca;
 ccxl_register srcb;
+
+ccxl_register dstb;
 ccxl_register srcc;
 ccxl_register srcd;
 ccxl_value imm;
+};
+
+struct BGBCC_CCXL_VirtOpTrim_s {
+byte opn;
+byte opr;
+byte prd;			//predication mode
+byte immty;			//immediate type
+byte tgt_mult;		//branch target multiplier
+byte llvl;			//Loop Level
+ccxl_type type;
+ccxl_type stype;
+ccxl_register dst;
+ccxl_register srca;
+ccxl_register srcb;
 };
 
 struct BGBCC_CCXL_VirtTr_s {

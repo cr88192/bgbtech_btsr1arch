@@ -624,7 +624,7 @@ void *bgbcc_loadfile(char *name, int *rsz)
 			for(i=0; bgbcc_protos_c[i]; i++)
 				sz+=strlen(bgbcc_protos_c[i]);
 		
-			buf=bgbcc_malloc2(sz+8);
+			buf=bgbcc_tmalloc2("_main_protos", sz+8);
 			t=buf;
 			for(i=0; bgbcc_protos_c[i]; i++)
 			{
@@ -639,7 +639,7 @@ void *bgbcc_loadfile(char *name, int *rsz)
 
 		if(!strcmp(name, "$stdin"))
 		{
-			buf=bgbcc_malloc2(1<<18);
+			buf=bgbcc_tmalloc2("_main_stdin", 1<<18);
 			t=buf;
 			while(!feof(stdin))
 			{
@@ -667,7 +667,7 @@ void *bgbcc_loadfile(char *name, int *rsz)
 	fseek(fd, 0, 0);
 
 //	buf=bgbcc_malloc(sz+16);
-	buf=bgbcc_malloc2(sz+16);
+	buf=bgbcc_tmalloc2("_main_loadfile", sz+16);
 	memset(buf, 0, sz+16);
 	j=fread(buf, 1, sz, fd);
 	if(j<sz)sz=j;
@@ -801,7 +801,7 @@ void *bgbcc_loadfile_txt(char *name, int *rsz)
 		{
 			/* File has UTF16 BOM or identified as UCS2; Convert to UTF8 */
 
-			buf1=bgbcc_malloc2(sz*2);
+			buf1=bgbcc_tmalloc2("_main_textconv", sz*2);
 			
 			s=buf+((en&2)?0:2); se=buf+sz;
 			t=buf1;
@@ -865,7 +865,7 @@ void *bgbcc_loadfile_txt(char *name, int *rsz)
 			{
 				/* Codepage Text */
 
-				buf1=bgbcc_malloc2(sz*2);
+				buf1=bgbcc_tmalloc2("_main_textconv", sz*2);
 				s=buf; se=buf+sz;
 				t=buf1;
 				while(s<se)
@@ -880,7 +880,7 @@ void *bgbcc_loadfile_txt(char *name, int *rsz)
 			{
 				/* Non-BMP UTF-8 */
 
-				buf1=bgbcc_malloc2(sz*2);
+				buf1=bgbcc_tmalloc2("_main_textconv", sz*2);
 				s=buf; se=buf+sz;
 				t=buf1;
 				while(s<se)
@@ -909,12 +909,12 @@ void *bgbcc_loadfile_txt(char *name, int *rsz)
 	
 	if(buf1)
 	{
-		bgbcc_free(buf);
-		buf=bgbcc_malloc2(sz1+4);
+		bgbcc_free2(buf);
+		buf=bgbcc_tmalloc2("_main_textconv", sz1+4);
 		memcpy(buf, buf1, sz1);
 		buf[sz1]=0;
 		sz=sz1;
-		bgbcc_free(buf1);
+		bgbcc_free2(buf1);
 	}
 
 	*rsz=sz;
@@ -1379,7 +1379,7 @@ int BGBCC_LoadWDef(BGBCC_TransState *ctx, char *name)
 #if 1
 int BGBCC_LoadCSourcesCCXL(
 	char **names, int nnames,
-	byte *obuf, int *rsz, fourcc imgfmt)
+	byte **robuf, int *rsz, fourcc imgfmt)
 {
 	char tb[256];
 	BGBCC_TransState *ctx;
@@ -1387,7 +1387,7 @@ int BGBCC_LoadCSourcesCCXL(
 	char *asts_bsn[256];
 	BCCX_Node *asts_bsa[256];
 	BCCX_Node *t, *c, *n;
-	byte *buf, *tb1, *obct;
+	byte *buf, *tb1, *obuf, *obct;
 	char *dllname;
 	char *archsfx;
 	char *s0, *s1;
@@ -1395,8 +1395,6 @@ int BGBCC_LoadCSourcesCCXL(
 	int i, j, k, sz, omsz;
 	int n_asts_bs;
 
-	omsz=*rsz;
-	
 	s0=bgbcc_imgname;
 	s0=s0+strlen(s0);
 	while(s0>bgbcc_imgname)
@@ -1419,7 +1417,7 @@ int BGBCC_LoadCSourcesCCXL(
 
 //	BIPRO_ProfilerSetActive(1);
 
-	ctx=bgbcc_malloc(sizeof(BGBCC_TransState));
+	ctx=bgbcc_tmalloc("_main_transstate", sizeof(BGBCC_TransState));
 	memset(ctx, 0, sizeof(BGBCC_TransState));
 
 //	ctx->gs_seq=bgbcc_gshash;
@@ -1451,7 +1449,9 @@ int BGBCC_LoadCSourcesCCXL(
 		BGBCC_CCXLR3_BeginRecRIL(ctx);
 	}
 	
+	obuf=*robuf;
 	obct=obuf;
+	omsz=*rsz;
 	
 	n_asts_bs=0;
 
@@ -1738,6 +1738,18 @@ int BGBCC_LoadCSourcesCCXL(
 	if(imgfmt==BGBCC_IMGFMT_RIL3)
 	{
 		sz=ctx->ril_ip-ctx->ril_ips;
+		
+		if(sz>(*rsz))
+		{
+			i=*rsz;
+			if(i<65536)
+				i=65536;
+			while(i<sz)
+				i=i+(i>>1);
+			obuf=bgbcc_realloc2(obuf, i);
+			*robuf=obuf;
+		}
+		
 		memcpy(obuf, ctx->ril_ips, sz);
 		if(*rsz)*rsz=sz;
 		return(0);
@@ -1746,6 +1758,19 @@ int BGBCC_LoadCSourcesCCXL(
 	if(imgfmt==BGBCC_IMGFMT_FR2E)
 	{
 		tb1=BGBCC_FR2E_FlattenImage(ctx, &sz);
+
+		if(sz>omsz)
+		{
+			i=*rsz;
+			if(i<65536)
+				i=65536;
+			while(i<sz)
+				i=i+(i>>1);
+			obuf=bgbcc_realloc2(obuf, i);
+			omsz=i;
+			*robuf=obuf;
+		}
+		
 		memcpy(obuf, tb1, sz);
 		if(*rsz)*rsz=sz;
 		return(0);
@@ -1768,7 +1793,8 @@ int BGBCC_LoadCSourcesCCXL(
 	sz=omsz;
 
 	t0=clock();
-	i=BGBCC_CCXL_FlattenImage(ctx, obuf, &sz, imgfmt);
+	i=BGBCC_CCXL_FlattenImage(ctx, &obuf, &sz, imgfmt);
+	*robuf=obuf;
 	t1=clock();
 	t2=t1-t0;
 	if(ctx->verbose)
@@ -2131,6 +2157,12 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 				continue;
 			}
 
+			if(!strncmp(argv[i]+1, "Zmem", 4))
+			{
+				BGBCC_DoMallocStats(1);
+				continue;
+			}
+
 			if(!strcmp(argv[i]+1, "O2") ||
 				!strcmp(argv[i]+1, "O3"))
 			{
@@ -2163,12 +2195,23 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 				continue;
 			}
 
-			if(!strncmp(argv[i]+1, "stack=", 6))
+			if((argv[i][1]=='O') && argv[i][2])
 			{
-				bgbcc_opts[bgbcc_nopts++]=bgbcc_strdup(argv[i]+2);
+				bgbcc_opts[bgbcc_nopts++]=bgbcc_strdup(argv[i]+1);
 				continue;
 			}
 
+			if((argv[i][1]=='W') && argv[i][2])
+			{
+				bgbcc_opts[bgbcc_nopts++]=bgbcc_strdup(argv[i]+1);
+				continue;
+			}
+
+			if(!strncmp(argv[i]+1, "stack=", 6))
+			{
+				bgbcc_opts[bgbcc_nopts++]=bgbcc_strdup(argv[i]+1);
+				continue;
+			}
 
 			continue;
 		}
@@ -3333,8 +3376,9 @@ int main(int argc, char *argv[], char **env)
 		}
 
 //		obuf=malloc(1<<24); sz=1<<24;
-		sz=1<<26; obuf=malloc(sz);
-		i=BGBCC_LoadCSourcesCCXL(uds, nuds, obuf, &sz, fmt);
+//		sz=1<<26; obuf=malloc(sz);
+		sz=1<<20; obuf=bgbcc_tmalloc2("_main_outbuf", sz);
+		i=BGBCC_LoadCSourcesCCXL(uds, nuds, &obuf, &sz, fmt);
 		if((i>=0) && (sz>0))
 		{
 //			if(fmt==BGBCC_IMGFMT_PP)
@@ -3409,7 +3453,7 @@ int main(int argc, char *argv[], char **env)
 		if(nuds && metafn)
 		{
 #if 1
-			s0=malloc(1<<24);
+			s0=bgbcc_tmalloc2("_main_metabuf", 1<<24);
 			i=DYLL_MetaPath_SaveDBBuffer(s0, 1<<24);
 			if(i>0)
 			{

@@ -70,6 +70,16 @@ struct TKuPI_DecState_s {
 	int (*ReadAdRice)(TKuPI_DecState *ctx, byte *rkf);
 };
 
+void *tkupi_malloc(int sz)
+{
+	return(bgbcc_tmalloc2("_mm_upicbuf", sz));
+}
+
+void tkupi_free(void *ptr)
+{
+	bgbcc_free2(ptr);
+}
+
 #if 0
 int TKuPI_PeekBits(TKuPI_DecState *ctx, int bits)
 {
@@ -1658,7 +1668,7 @@ byte *TKuPI_DecodeImageTempBuffer(byte *ibuf, int *rxs, int *rys)
 	if((xs<=0) || (ys<=0))
 		return(NULL);
 	
-	buf=malloc(xs*ys*4);
+	buf=tkupi_malloc(xs*ys*4);
 	TKuPI_DecodeImageBuffer(ctx, ibuf, 1<<24, buf, xs, ys);
 	
 	*rxs=xs;
@@ -1690,7 +1700,7 @@ byte *TKuPI_DecodeImageTempBuffer_BC3MIP(byte *ibuf, int *rxs, int *rys)
 	if((xs<=0) || (ys<=0))
 		return(NULL);
 	bxs=(xs+3)/4;	bys=(ys+3)/4;
-	buf=malloc((bxs*bys*2+4)*16);
+	buf=tkupi_malloc((bxs*bys*2+4)*16);
 	TKuPI_DecodeImageBufferI(ctx, ibuf, 1<<24,
 		buf, NULL, xs, ys, TKUPI_PIXFMT_BC3_MIP);
 	*rxs=xs;
@@ -1712,7 +1722,7 @@ byte *TKuPI_DecodeImageTempBuffer_BC1MIP(byte *ibuf, int *rxs, int *rys)
 	if((xs<=0) || (ys<=0))
 		return(NULL);
 	bxs=(xs+3)/4;	bys=(ys+3)/4;
-	buf=malloc((bxs*bys*2+4)*8);
+	buf=tkupi_malloc((bxs*bys*2+4)*8);
 	TKuPI_DecodeImageBufferI(ctx, ibuf, 1<<24,
 		buf, NULL, xs, ys, TKUPI_PIXFMT_BC1_MIP);
 	*rxs=xs;
