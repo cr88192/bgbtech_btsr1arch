@@ -23,6 +23,7 @@ int TKRA_SetupContextBasic(int xs, int ys)
 	ractx->clear_rgba=0x00000000;
 	ractx->zat_alfunc=TKRA_ZAT_AL;
 	ractx->zat_zfunc=TKRA_ZAT_LE;
+	return(0);
 }
 
 void *TKRA_GetCurrentScreenBuffer_RGB(void)

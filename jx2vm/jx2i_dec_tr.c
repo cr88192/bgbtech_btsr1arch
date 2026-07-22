@@ -71,6 +71,15 @@ force_inline void BJX2_DecTraceCb_SetupForTrace(
 //		ctx->tr_rjmp=NULL;
 //	}
 
+#if 1
+	if(ctx->regs[BJX2_REG_ZZR] || ctx->regs[BJX2_REG_ZZR2])
+	{
+		ctx->tr_rnxt=NULL;
+		ctx->tr_rjmp=NULL;
+		ctx->status=BJX2_FLT_BADPC;
+	}
+#endif
+
 //	if(tr->addr && !ctx->regs[BJX2_REG_PC])
 //		{ JX2_DBGBREAK }
 

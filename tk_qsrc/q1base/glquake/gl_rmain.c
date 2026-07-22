@@ -195,7 +195,7 @@ void R_RotateForEntity (entity_t *e)
 {
 	int arr[8];
 	
-	arr[4]=(long)e;
+//	arr[4]=(long)e;
 	
 	qglTranslatef (e->origin[0],  e->origin[1],  e->origin[2]);
 
@@ -920,6 +920,9 @@ void R_DrawAliasModel (entity_t *e)
 	// HACK HACK HACK -- no fullbright colors, so make torches full light
 	if (!strcmp (clmodel->name, "progs/flame2.mdl")
 		|| !strcmp (clmodel->name, "progs/flame.mdl") )
+		ambientlight = shadelight = 256;
+
+	if(r_fullbright.value)
 		ambientlight = shadelight = 256;
 
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];

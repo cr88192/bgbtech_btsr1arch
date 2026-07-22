@@ -47,12 +47,12 @@ int __int_clamp(int v, int min, int max)
 
 // #ifndef _BGBCC
 #ifndef __BJX2__
-float __fpu_frcp_sf(float f)
+double __fpu_frcp_sf(double f)
 {
 	return(1.0/f);
 }
 
-float __fpu_fdiv_sf(float f, float g)
+double __fpu_fdiv_sf(double f, double g)
 {
 	return(f/g);
 }

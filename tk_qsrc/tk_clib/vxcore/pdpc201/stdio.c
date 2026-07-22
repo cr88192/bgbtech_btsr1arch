@@ -118,6 +118,9 @@ static const char *fnm;
 static const char *modus;
 static int modeType;
 
+static int keymagic = 0x123;
+
+
 void __init_stdin(void)
 {
 	__stdin = &permFiles[0];
@@ -144,6 +147,9 @@ __PDPCLIB_API__ FILE **__get_stderr()
 void __stdio_chkmagic(FILE *fd)
 {
 	char *bufs, *bufe;
+
+	if(keymagic != 0x123)
+		{ __debugbreak(); }
 
 	if(fd->magic1!=_FILE_MAGIC)
 		__debugbreak();
@@ -227,17 +233,25 @@ static int examine(const char **formt, FILE *fq, char *s, va_list *arg,
 void tk_puts(char *msg);
 char *__lva_conv_tostring(unsigned long long val);
 
+
 __PDPCLIB_API__ int printf(const char *format, ...)
 {
 	char tbuf[1024];
 	va_list arg;
 	int ret;
 
+	if(keymagic != 0x123)
+		{ __debugbreak(); }
+
 	va_start(arg, format);
 //	ret = vfprintf(stdout, format, arg);
 	ret = vsprintf(tbuf, format, arg);
 	va_end(arg);
 //	fflush(stdout);
+
+	if(keymagic != 0x123)
+		{ __debugbreak(); }
+
 	tk_puts(tbuf);
 
 	return (ret);
@@ -247,6 +261,9 @@ __PDPCLIB_API__ int vprintf(const char *format, va_list arg)
 {
 	char tbuf[1024];
 	int ret;
+
+	if(keymagic != 0x123)
+		{ __debugbreak(); }
 
 //	ret = vfprintf(stdout, format, arg);
 	ret = vsprintf(tbuf, format, arg);
@@ -294,6 +311,9 @@ __PDPCLIB_API__ int vfprintf(FILE *stream, const char *format, va_list arg)
 
 __PDPCLIB_API__ FILE *fopen(const char *filename, const char *mode)
 {
+	if(keymagic != 0x123)
+		{ __debugbreak(); }
+
 	if((*filename=='$') && !mode)
 	{
 		if(!strcmp(filename, "$STDIN"))

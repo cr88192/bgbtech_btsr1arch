@@ -1,0 +1,63 @@
+GfxEdit is not particularly GUI driven, but may use GUI like approaches where it makes sense.
+
+The '`'/'~' key will show or hide the console, and some commands may be used via the console.
+
+"help": Lists the various commands.
+
+
+=== Load / Save Image ===
+
+ "load <image>"
+ "save <image>"
+
+Load or save an image.
+
+In the basic form, these will load/save the whole canvas.
+If the loaded image is a basic image, this will result to a non-layered mode.
+
+Is saving to a non-layered format, the flattened version of the current canvas will be saved.
+
+
+ "loadlayer <image>"
+ "savelayer <image>"
+
+Load or save the image to/from the current layer.
+This will save off the current layer to an image, or load an image into the current layer. These will not support multi-layer image formats.
+
+Loading a layer image will fit it to the current canvas size, if expanded the borders will be filled with transparency.
+
+
+=== Palettes ===
+
+"loadpal <palette>"
+Load a color palette.
+This may include one of the built-in palettes, or a palette loaded from a file.
+
+If an image is already loaded, this will override the existing palette for the image (but may remap color indices if they fall outside of the range of the new palette). For in-range indices, the index will be kept as-is and the color will change.
+
+
+"savepal <palette>"
+Save a palette to a file.
+
+"convpal <palette> [<dither>]"
+Convert image to a new palette. This will remap colors between the old pallete and their closest match in the new palette. If dither is given, it will specify which dither type should be used for the color remapping mapping.
+
+Dither:
+* direct: No dither, closest match
+* bayer2: 2x2 ordered dither
+* bayer4: 4x4 ordered dither
+* bayer8: 8x8 ordered dither
+
+
+The basic format for color palettes will consist of ASCII text files with one color per line. These colors will consist of one of several forms:
+* rrggbb
+* #rrggbb
+* aarrggbb
+* #aarrggbb
+
+Where r/g/b/a are Red/Green/Blue/Alpha expressed as 2 digit hexadecimal values. Alpha when used will usually be one of two values: 00 (transparent) or FF (opaque). If absent, the color will be assumed to be opaque.
+
+Typically, in a color palette, there will be one major transparent color (if any), with all others assumed opaque. Note that for full 256 color palettes, there will need to be at least one transparent color to use transparency. Similarly, to use transparency in an image there will need to be a transparent color within the images' color palette.
+
+Color palettes will be assumed to have a power-of 2 number of colors, although for palettes with more than 32 colors the UI may assume the full 256 color case (for 2/4/8/16/32, the UI may use a simpler interface that assumes a smaller number of colors).
+

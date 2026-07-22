@@ -170,6 +170,7 @@ int Scrap_AllocBlock (int w, int h, int *x, int *y)
 	}
 
 	Sys_Error ("Scrap_AllocBlock: full");
+	return(0);
 }
 
 int	scrap_uploads;
@@ -2072,7 +2073,7 @@ int GL_LoadTexture32 (char *identifier,
 	}
 	else
 	{
-		GL_Upload32 (data, width, height, mipmap, alpha);
+		GL_Upload32 ((unsigned int *)data, width, height, mipmap, alpha);
 	}
 
 	gl_savetexname = NULL;

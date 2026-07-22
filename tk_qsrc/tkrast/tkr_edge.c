@@ -3586,6 +3586,8 @@ int TKRA_WalkCheckNoPersp(TKRA_Context *ctx)
 	u64 t0;
 	int nopersp;
 
+//	return(1);
+
 	nopersp=0;
 	if((tkra_nommio&3)!=2)
 		nopersp=1;
@@ -4082,7 +4084,7 @@ void TKRA_WalkLine(TKRA_Context *ctx, u64 *vec0, u64 *vec1)
 		zc+=zs;
 	}
 
-	return(0);
+//	return(0);
 }
 #endif
 

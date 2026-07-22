@@ -8,6 +8,8 @@ void tk_shell_chksane_movtt();
 
 __vec4f		tk_shell_fv0_gbl;
 
+#ifdef __BJX2__
+
 __asm {
 tk_shell_chksane_simd_asm:
 //	PUSH	SR
@@ -676,9 +678,12 @@ tk_shell_chksane_movtt:
 	RTS
 };
 
+#endif
+
 __vec4f tk_shell_chksane_padds_sf(__vec4f va, __vec4f vb);
 __vec4f tk_shell_chksane_pmuls_sf(__vec4f va, __vec4f vb);
 
+#ifdef __BJX2__
 int tk_fcn_clz(long long j);
 int tk_fcn_clzq(long long j);
 
@@ -713,6 +718,7 @@ int tk_shell_chksane_clz()
 		li=li*251+1;
 	}
 }
+#endif
 
 __m128 __m128_float4(float f0, float f1, float f2, float f3);
 
@@ -722,9 +728,11 @@ int tk_shell_chksane_simd()
 	__vec4f fv0, fv1, fv2;
 	__quatf qv0, qv1, qv2, qv3;
 	double	f0, f1, f2, f3;
-	
+
+#ifdef __BJX2__
 	tk_shell_chksane_simd_asm();
 	tk_shell_chksane_rgb5_asm();
+#endif
 
 //	__hint_cc_dbgbreak();
 	
@@ -773,6 +781,7 @@ int tk_shell_chksane_simd()
 	if(fv2.z!=18.0)
 		__debugbreak();
 
+#ifdef __BJX2__
 	fv1=tk_shell_chksane_padds_sf(fv0, fv0);
 	fv2=tk_shell_chksane_pmuls_sf(fv1, fv0);
 
@@ -782,6 +791,7 @@ int tk_shell_chksane_simd()
 	tk_printf("   Expect: %f %f %f %f\n", 2.0, 4.0, 6.0, 10.0);
 	tk_printf("SIMD A0-3: %f %f %f %f\n", fv2.x, fv2.y, fv2.z, fv2.w);
 	tk_printf("   Expect: %f %f %f %f\n", 2.0, 8.0, 18.0, 50.0);
+#endif
 
 	tk_printf("\n");
 
@@ -794,6 +804,7 @@ int tk_shell_chksane_simd()
 
 	tk_printf("SIMD A1-0: %f %f %f %f\n", qv2.i, qv2.j, qv2.k, qv2.r);
 	tk_printf("SIMD A1-1: %f %f %f %f\n", qv3.i, qv3.j, qv3.k, qv3.r);
+	tk_printf("   Expect: %f %f %f %f\n", 8.0, 16.0, 24.0, 2.0);
 
 //	__debugbreak();
 
@@ -1530,9 +1541,9 @@ int tk_shell_chksane_memset()
 	ts=(char *)tbb;
 	pi=&l;
 	
-	if(((int)tb)&7)
+	if(((long)tb)&7)
 		__debugbreak();
-	if(((int)ts)&7)
+	if(((long)ts)&7)
 		__debugbreak();
 
 	*pi=0x1234567;
@@ -1814,6 +1825,7 @@ int tk_shell_chksane()
 
 	tk_shell_chksane_memset();
 
+#ifdef __BJX2__
 	tk_printf("CS B1-1\n");
 
 	tk_shell_chksane_fmovs();
@@ -1825,14 +1837,17 @@ int tk_shell_chksane()
 	tk_printf("CS B1-3\n");
 
 	tk_shell_chksane_srtmsk();
+#endif
 
 	tk_printf("CS B1-4\n");
 
 	Sys_CheckSanityB();
 
+#ifdef __BJX2__
 	tk_printf("CS B2: CLZ\n");
 
 	tk_shell_chksane_clz();
+#endif
 
 	tk_printf("CS B3: SIMD\n");
 

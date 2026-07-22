@@ -294,10 +294,10 @@ TK_FILE *tk_alloc_file()
 		return(tmp);
 	}
 	
-	tmpa=tk_malloc(256*sizeof(TK_FILE));
+	tmpa=tk_malloc(32*sizeof(TK_FILE));
 	
 	tmp=tmpa;
-	for(i=0; i<256; i++)
+	for(i=0; i<32; i++)
 	{
 		tmp->udata0=tk_vf_freelist;
 		tmp->magic=TK_FILE_FREEMAGIC;

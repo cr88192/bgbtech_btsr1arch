@@ -2,6 +2,8 @@ int TKSH_InitCmds(void);
 
 #include "tk_shell_chksane.c"
 
+static int tksh_sanityprobe=678;
+
 int main(int argc, char *argv[])
 {
 	TKPE_TaskInfo *task;
@@ -9,9 +11,18 @@ int main(int argc, char *argv[])
 	char tb_cwd[256];
 	char tbuf[256];
 
+	if(tksh_sanityprobe!=678)
+		{ __debugbreak(); }
+
 	tk_shell_chksane();
 
+	if(tksh_sanityprobe!=678)
+		{ __debugbreak(); }
+
 	tk_con_reset();
+
+	if(tksh_sanityprobe!=678)
+		{ __debugbreak(); }
 	
 	tk_printf("TKSH 0\n");
 
@@ -20,6 +31,9 @@ int main(int argc, char *argv[])
 
 	tk_printf("TKSH 0, Init Syscall Task\n");
 	TK_SpawnSyscallTask(task);
+
+	if(tksh_sanityprobe!=678)
+		{ __debugbreak(); }
 	
 	TKSH_InitCmds();
 

@@ -19,6 +19,53 @@ int TK_Midi_NoteOff(int ch, int d0, int d1);
 int TK_Midi_ProbeDelayOff(void);
 int TK_Midi_Init();
 
+int tkgdi_memcpy_cmpne(void *dst, void *src, int sz)
+{
+	u64 *qcs, *qct, *qcte;
+	u16 *wcs, *wct, *wcte;
+	u64 v0, v1, v2, v3;
+	int rt;
+	
+	qcs=src; qct=dst;
+	qcte=qct+(sz>>3);
+	rt=0;
+	while((qct+2)<=qcte)
+	{
+		v0=qcs[0];	v1=qcs[1];
+		v2=qct[0];	v3=qct[1];
+		rt|=(v0!=v2)|(v1!=v3);
+		qct[0]=v0;	qct[1]=v1;
+		qcs+=2; qct+=2;
+	}
+	if(qct<qcte)
+	{
+		v0=qcs[0]; v2=qct[0];
+		rt|=(v0!=v2);
+		qct[0]=v0;
+		qcs++; qct++;
+	}
+	
+	if(sz&7)
+	{
+		wcs=(u16 *)qcs;
+		wct=(u16 *)qct;
+		wcte=wct+((sz&7)>>1);
+		while(wct<wcte)
+		{
+			v0=wcs[0]; v2=wct[0];
+			rt|=(v0!=v2);
+			wct[0]=v0;
+			wcs++; wct++;
+		}
+		if(sz&1)
+		{
+			*(byte *)wct=*(byte *)wcs;
+		}
+	}
+	
+	return(rt);
+}
+
 TKGSTATUS TKGDI_BlitSubImageNew(
 	_tkgdi_context_t *ctx,
 	TKGHDC dev,
@@ -29,6 +76,7 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 //	int xo_src, int yo_src, int xs_src, int ys_src)
 {
 	u16 pal_16b[256];
+	u64	span_dirty[16];
 	_tkgdi_window_t *wctx;
 	byte *bmct, *csb;
 	u16 *cs, *ct, *imgtmp;
@@ -36,7 +84,7 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 	int xo_dev, yo_dev, xs_bmp, ys_bmp;
 	int xo_src, yo_src, xs_src, ys_src;
 	int xs, ys, mxs, mys, bxs, bys, nx, ny, flip;
-	int xstr_src;
+	int xstr_src, span_dirty_fl;
 	int i, j, k;
 
 	if(dev<=0)
@@ -289,12 +337,16 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 		cs=data;
 		ct=wctx->buf_data;
 		csb=data;
+		
+		memset(span_dirty, 0, 16*8);
+		span_dirty_fl=0;
 
 		if(info->biCompression==TKGDI_BI_RGB)
 		{
 			if(info->biBitCount==16)
 			{
 				xstr_src=(xs_bmp+1)&(~1);
+//				span_dirty_fl=1;
 
 				if(flip)
 				{
@@ -308,6 +360,8 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 					for(i=0; i<ys; i++)
 					{
 						memcpy(ct, cs, xs*2);
+//						k=tkgdi_memcpy_cmpne(ct, cs, xs*2);
+//						span_dirty[i>>8]|=(k&1)<<((i>>2)&63);
 	//					cs-=xs_src;
 //						cs-=xs_bmp;
 						cs-=xstr_src;
@@ -322,6 +376,8 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 					for(i=0; i<ys; i++)
 					{
 						memcpy(ct, cs, xs*2);
+//						k=tkgdi_memcpy_cmpne(ct, cs, xs*2);
+//						span_dirty[i>>8]|=(k&1)<<((i>>2)&63);
 	//					cs+=xs_src;
 //						cs+=xs_bmp;
 						cs+=xstr_src;
@@ -611,6 +667,13 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 		for(i=(yo_dev>>2); i<ny; i++)
 		{
 			bmct=wctx->buf_dirty1+(i*wctx->size_bmxs);
+			
+			if(span_dirty_fl)
+			{
+				if(!(span_dirty[i>>6]&(1<<(i&63))))
+					continue;
+			}
+			
 			for(j=(xo_dev>>2); j<nx; j++)
 			{
 				if(!(j&7) && ((j+8)<=nx))
@@ -622,7 +685,17 @@ TKGSTATUS TKGDI_BlitSubImageNew(
 				bmct[j>>3]|=1<<(j&7);
 			}
 		}
-		wctx->dirty1=1;
+		if(span_dirty_fl)
+		{
+			if(	span_dirty[0] || span_dirty[1] ||
+				span_dirty[2] || span_dirty[3] )
+			{
+				wctx->dirty1=1;
+			}
+		}else
+		{
+			wctx->dirty1=1;
+		}
 
 		if(wctx->con)
 			tkgdi_con_redrawbuffer(wctx->con);
@@ -776,9 +849,9 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 		if(	(ifmt->biWidth		== 640) &&
 			(ifmt->biHeight		== 400) )
 		{
-//			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
+			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
 //			ofmt_mode=TKGDI_SCRMODE_640x400_RGB555;
-			ofmt_mode=TKGDI_SCRMODE_640x400_PAL8B;
+//			ofmt_mode=TKGDI_SCRMODE_640x400_PAL8B;
 		}
 		
 		if(	(ifmt->biWidth		== 800) &&
@@ -812,9 +885,9 @@ int TKGDI_ModeForInputFormat(TKGDI_BITMAPINFOHEADER *ifmt)
 		if(	(ifmt->biWidth		== 640) &&
 			(ifmt->biHeight		== 400) )
 		{
-//			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
+			ofmt_mode=TKGDI_SCRMODE_640x400_CC;	//Use 80x50 color cell
 //			ofmt_mode=TKGDI_SCRMODE_640x400_RGB555;
-			ofmt_mode=TKGDI_SCRMODE_640x400_PAL8B;
+//			ofmt_mode=TKGDI_SCRMODE_640x400_PAL8B;
 		}
 		
 		if(	(ifmt->biWidth		== 800) &&
@@ -1368,7 +1441,8 @@ TKGHDC TKGDI_CreateDisplay(
 			tkgdi_vid_xsize=640;
 			tkgdi_vid_ysize=400;
 			tkgdi_vid_planar=0;
-			tkgdi_vid_noutx2=0;
+//			tkgdi_vid_noutx2=0;
+			tkgdi_vid_noutx2=1;
 			tkgdi_vid_is8bit=0;
 			tkgdi_vid_bxs=(tkgdi_vid_xsize+7)>>3;
 			tkgdi_vid_bys=(tkgdi_vid_ysize+7)>>3;
@@ -1646,7 +1720,7 @@ TKGHDC TKGDI_CreateDisplay(
 	}
 }
 
-static u16 tkgdi_rgbi2rgb555[16]={
+static const u16 tkgdi_rgbi2rgb555[16]={
 	0x0000, /* 0, 0.000-00.00-000.0-0000 */
 	0x0015, /* 1, 0.000-00.00-000.1-0101 */
 	0x02A0, /* 2, 0.000-00.10-101.0-0000 */
@@ -2206,7 +2280,7 @@ void *TKGDI_GetHalContext(TKPE_TaskInfo *task,
 
 void tkgdi_comglue_dispatchfcn(void *obj, void *fcn, void *pret, void *args);
 
-#ifndef __BJX2__
+#if !defined(__BJX2__) && !defined(__XG3__)
 void tkgdi_comglue_dispatchfcn(void *obj, void *fcn, void *pret, void *args)
 {
 }
@@ -2249,6 +2323,40 @@ tkgdi_comglue_dispatchfcn:
 };
 #endif
 
+#ifdef __XG3__
+__asm {
+tkgdi_comglue_dispatchfcn:
+	ADD		-256, SP
+//	MOV		LR, R1
+	MOV.Q	R1, (SP, 248)
+
+	MOV.Q	R10, (SP, 192)
+	MOV.Q	R11, (SP, 200)
+	MOV.Q	R12, (SP, 208)
+	MOV.Q	R13, (SP, 216)
+	
+	
+	MOV		R13, R31
+	MOV		R11, R30
+
+	MOV.Q	(R31,  0), R11
+	MOV.Q	(R31,  8), R12
+	MOV.Q	(R31, 16), R13
+	MOV.Q	(R31, 24), R14
+	MOV.Q	(R31, 32), R15
+	MOV.Q	(R31, 40), R16
+	MOV.Q	(R31, 48), R17
+	
+	JSR		R30
+
+	MOV.Q	(SP, 248), R1
+	MOV.Q	(SP, 208), R28
+	MOV.Q	R10, (R28)
+	ADD		256, SP
+	JMP 	R1
+};
+#endif
+
 /*
 
 VTable:
@@ -2286,7 +2394,11 @@ void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
 		fn=vt[idx];
 	}else
 	{
-		__debugbreak();
+//		__debugbreak();
+		vt=vt0[1];
+		vt=(void *)(((u64)vt)^tkgdi_ptrmangle_key);
+		obj1=sObj;
+		fn=vt[idx];
 	}
 
 	tkgdi_comglue_curtask=task;
@@ -2294,6 +2406,7 @@ void TKGDI_ComGlueDispatch(TKPE_TaskInfo *task,
 }
 
 
+void tkgdi_comglue_wrapcall2(void *obj);
 void tkgdi_comglue_wrapcall3(void *obj);
 void tkgdi_comglue_wrapcall4(void *obj);
 void tkgdi_comglue_wrapcall5(void *obj);
@@ -2324,6 +2437,7 @@ void tkgdi_comglue_wrapcall29(void *obj);
 void tkgdi_comglue_wrapcall30(void *obj);
 void tkgdi_comglue_wrapcall31(void *obj);
 
+void tkgdi_comglue_rv_wrapcall2(void *obj);
 void tkgdi_comglue_rv_wrapcall3(void *obj);
 void tkgdi_comglue_rv_wrapcall4(void *obj);
 void tkgdi_comglue_rv_wrapcall5(void *obj);
@@ -2357,7 +2471,8 @@ void tkgdi_comglue_rv_wrapcall31(void *obj);
 int tk_syscall_utxt(void *sobj, int umsg, void *pptr, void *args);
 int tk_syscall_rv_utxt(void *sobj, int umsg, void *pptr, void *args);
 
-#ifndef __BJX2__
+#if !defined(__BJX2__) && !defined(__XG3__)
+void tkgdi_comglue_wrapcall2(void *obj) { }
 void tkgdi_comglue_wrapcall3(void *obj) { }
 void tkgdi_comglue_wrapcall4(void *obj) { }
 void tkgdi_comglue_wrapcall5(void *obj) { }
@@ -2388,6 +2503,7 @@ void tkgdi_comglue_wrapcall29(void *obj) { }
 void tkgdi_comglue_wrapcall30(void *obj) { }
 void tkgdi_comglue_wrapcall31(void *obj) { }
 
+void tkgdi_comglue_rv_wrapcall2(void *obj) { }
 void tkgdi_comglue_rv_wrapcall3(void *obj) { }
 void tkgdi_comglue_rv_wrapcall4(void *obj) { }
 void tkgdi_comglue_rv_wrapcall5(void *obj) { }
@@ -2420,7 +2536,6 @@ void tkgdi_comglue_rv_wrapcall31(void *obj) { }
 #endif
 
 #ifdef __BJX2__
-
 __asm {
 .section .utext
 
@@ -2533,6 +2648,9 @@ tkgdi_comglue_wrapcall_gen:
 	NOP
 	NOP
 
+tkgdi_comglue_wrapcall2:
+	MOV		TK_UMSG_COMGLUE_VMT2, R3
+	BRA		tkgdi_comglue_wrapcall_gen
 tkgdi_comglue_wrapcall3:
 	MOV		TK_UMSG_COMGLUE_VMT3, R3
 	BRA		tkgdi_comglue_wrapcall_gen
@@ -2655,14 +2773,21 @@ tkgdi_comglue_wrapcall39:
 	NOP
 
 .endfix32
-
 };
+#endif
+
+#if defined(__BJX2__) || defined(__XG3__)
 
 __asm {
 
+.section .udata
+	.quad 0
+
+.section .utext
+
 .balign 4
 
-#if 1
+#ifndef __XG3__
 .riscv
 	nop
 	nop
@@ -2693,6 +2818,9 @@ tk_syscall_rv_utxt:
 	nop
 	nop
 	nop
+#endif
+
+#if 1
 
 tkgdi_comglue_rv_wrapcall_gen:
 	ADD		-256, SP
@@ -2728,6 +2856,9 @@ tkgdi_comglue_rv_wrapcall_gen:
 	NOP
 	NOP
 
+tkgdi_comglue_rv_wrapcall2:
+	MOV		TK_UMSG_COMGLUE_VMT2, R5
+	BRA		tkgdi_comglue_rv_wrapcall_gen
 tkgdi_comglue_rv_wrapcall3:
 	MOV		TK_UMSG_COMGLUE_VMT3, R5
 	BRA		tkgdi_comglue_rv_wrapcall_gen
@@ -2826,6 +2957,7 @@ tkgdi_comglue_rv_wrapcall29:
 #endif
 
 
+#ifdef __BJX2__
 const _tkgdi_context_vtable_t tkgdi_context_vtable_gvt = {
 NULL,						//0
 NULL,						//1
@@ -2856,6 +2988,7 @@ NULL,	//9
 NULL,	//10
 (void *)0x12345678
 };
+#endif
 
 const _tkgdi_context_vtable_t tkgdi_context_vtable_grvvt = {
 NULL,						//0
@@ -2939,17 +3072,25 @@ void *TKGDI_GetWrapVTableForTask(TKPE_TaskInfo *task,
 	memset(vt_jx, 0, n*sizeof(void *));
 	memset(vt_rv, 0, n*sizeof(void *));
 
+#if 0
 	vt_jx[2]=(void *)0x789ABCDE;
 	vt_rv[2]=(void *)0x789ABCDE;
 //	vt_jx[3]=orgvt;
 //	vt_rv[3]=orgvt;
 	vt_jx[3]=ovt1;
 	vt_rv[3]=ovt1;
+#endif
+
+#if 1
+	vt_jx[1]=ovt1;
+	vt_rv[1]=ovt1;
+#endif
 
 	tkgdi_transvt_trgvt_jx[i]=vt_jx;
 	tkgdi_transvt_trgvt_rv[i]=vt_rv;
 	
-	for(j=4; j<n; j++)
+//	for(j=4; j<n; j++)
+	for(j=2; j<n; j++)
 	{
 		fn=vt_o[j];
 		if(!fn)
@@ -2960,13 +3101,15 @@ void *TKGDI_GetWrapVTableForTask(TKPE_TaskInfo *task,
 		}
 		
 		fn=NULL;
+#ifdef __BJX2__
 		switch(j)
 		{
+			case  2: fn=tkgdi_comglue_wrapcall2; break;
+			case  3: fn=tkgdi_comglue_wrapcall3; break;
 			case  4: fn=tkgdi_comglue_wrapcall4; break;
 			case  5: fn=tkgdi_comglue_wrapcall5; break;
 			case  6: fn=tkgdi_comglue_wrapcall6; break;
 			case  7: fn=tkgdi_comglue_wrapcall7; break;
-
 			case  8: fn=tkgdi_comglue_wrapcall8; break;
 			case  9: fn=tkgdi_comglue_wrapcall9; break;
 
@@ -2992,18 +3135,21 @@ void *TKGDI_GetWrapVTableForTask(TKPE_TaskInfo *task,
 			case 28: fn=tkgdi_comglue_wrapcall28; break;
 			case 29: fn=tkgdi_comglue_wrapcall29; break;
 		}
-		
+
 		uli=(u64)fn;
 		uli&=0x0000FFFFFFFFFFFEULL;
 		uli|=0x0000000000000001ULL;
 		uli|=((u64)tkpe_magic_ubkey)<<56;
 		fn=(void *)uli;
+#endif
 		
 		vt_jx[j]=fn;
 
 		fn=NULL;
 		switch(j)
 		{
+			case  2: fn=tkgdi_comglue_rv_wrapcall2; break;
+			case  3: fn=tkgdi_comglue_rv_wrapcall3; break;
 			case  4: fn=tkgdi_comglue_rv_wrapcall4; break;
 			case  5: fn=tkgdi_comglue_rv_wrapcall5; break;
 			case  6: fn=tkgdi_comglue_rv_wrapcall6; break;
@@ -3037,7 +3183,11 @@ void *TKGDI_GetWrapVTableForTask(TKPE_TaskInfo *task,
 
 		uli=(u64)fn;
 		uli&=0x0000FFFFFFFFFFFEULL;
+#ifndef __XG3__
 		uli|=0x0004000000000001ULL;
+#else
+		uli|=0x000C000000000001ULL;
+#endif
 		uli|=((u64)tkpe_magic_ubkey)<<56;
 		fn=(void *)uli;
 		
@@ -3103,14 +3253,20 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 			sizeof(_tkgdi_context_vtable_t));
 		tkgdi_context_vtable_grvvtc=tk_malloc_usr(
 			sizeof(_tkgdi_context_vtable_t));
+
+#ifdef __BJX2__
 		memcpy(tkgdi_context_vtable_gvtc,
 			&tkgdi_context_vtable_gvt,
 			sizeof(_tkgdi_context_vtable_t));
+#endif
+
 		memcpy(tkgdi_context_vtable_grvvtc,
 			&tkgdi_context_vtable_grvvt,
 			sizeof(_tkgdi_context_vtable_t));
-			
+
 		n=sizeof(_tkgdi_context_vtable_t)/sizeof(void *);
+
+#ifdef __BJX2__
 		ppv=(void **)tkgdi_context_vtable_gvtc;
 		for(i=0; i<n; i++)
 		{
@@ -3126,6 +3282,7 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 			lv|=((u64)tkpe_magic_ubkey)<<56;
 			ppv[i]=(void *)lv;
 		}
+#endif
 
 		ppv=(void **)tkgdi_context_vtable_grvvtc;
 		for(i=0; i<n; i++)
@@ -3138,7 +3295,11 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 				continue;
 
 			lv&=0x0000FFFFFFFFFFFEULL;
+#ifdef __XG3__
+			lv|=0x000C000000000001ULL;
+#else
 			lv|=0x0004000000000001ULL;
+#endif
 			lv|=((u64)tkpe_magic_ubkey)<<56;
 			ppv[i]=(void *)lv;
 		}
@@ -3168,4 +3329,28 @@ void *TKGDI_GetHalContextComGlue(TKPE_TaskInfo *task,
 	tkgdi_gcontext_ctx[i]=ctx;
 	
 	return(ctx);
+}
+
+void *tkgdi_expobj_obj[256];
+TKPE_TaskInfo *tkgdi_expobj_task[256];
+int tkgdi_n_expobj;
+
+TKPE_TaskInfo *TKGDI_LookupExpObjTask(void *obj)
+{
+	int i;
+	for(i=0; i<tkgdi_n_expobj; i++)
+	{
+		if(tkgdi_expobj_obj[i]==obj)
+			return(tkgdi_expobj_task[i]);
+	}
+	return(NULL);
+}
+
+int TKGDI_ExportObjectTask(TKPE_TaskInfo *task, void *obj)
+{
+	int i;
+	i=tkgdi_n_expobj++;
+	tkgdi_expobj_obj[i]=obj;
+	tkgdi_expobj_task[i]=task;
+	return(i);
 }

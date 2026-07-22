@@ -318,6 +318,8 @@ int BTM_StfRk_DecodeBufferPostRp2(byte *obuf, byte *ibuf, int ibsz)
 		if(tg==0x1F)
 			break;
 		
+		tag=tg;
+
 		if(tg==0x7F)
 		{
 			j=BTM_StfRk_ReadAdRiceSTF(ctx, &rk_d, prbtab_d);
@@ -328,12 +330,12 @@ int BTM_StfRk_DecodeBufferPostRp2(byte *obuf, byte *ibuf, int ibsz)
 				tsz=6;
 		}
 		
-		tag=tg;
 		for(i=tsi; i<tsz; i++)
 		{
 			j=BTM_StfRk_ReadAdRiceSTF(ctx, &rk_d, prbtab_d);
 			*ct++=j;
-			tag|=j<<(i*8);
+			if(i<4)
+				tag|=j<<(i*8);
 		}
 		
 		if(!tag)

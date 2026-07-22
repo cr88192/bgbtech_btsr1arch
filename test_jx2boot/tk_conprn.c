@@ -53,7 +53,7 @@ u64 tk_con_glyphs[96];
  */
 
 // u16 tk_con_glyphs_14seg[64]={
-u16 tk_con_glyphs_14seg[96]={
+const u16 tk_con_glyphs_14seg[96]={
 0x0000, 0x4006, 0x0202, 0x12CC, 0x12ED, 0x0C24, 0x2359, 0x0200, /* 20..27 */
 0x2400, 0x0900, 0x3F00, 0x12C0, 0x0800, 0x00C0, 0x1000, 0x0C00, /* 28..2F */
 
@@ -90,7 +90,7 @@ u16 tk_con_glyphs_14seg[96]={
 #endif
 
 #ifdef TK_CON_USE5X6SEG
-u32 tk_con_glyphs_5x6seg[96]={
+const u32 tk_con_glyphs_5x6seg[96]={
 0x00000000, /* 20 ' ' */
 0x08421004, /* 21 '!' */
 0x12948000, /* 22 '"' */

@@ -372,8 +372,8 @@ int __int_clamp(int x, int m, int n);
 int __int_min(int x, int y);
 int __int_max(int x, int y);
 
-float __fpu_frcp_sf(float f);
-float __fpu_fdiv_sf(float f, float g);
+double __fpu_frcp_sf(double f);
+double __fpu_fdiv_sf(double f, double g);
 void __debugbreak();
 int __hint_use_egpr();
 

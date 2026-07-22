@@ -483,5 +483,45 @@ __vnf_v2fa_cross:
 	RTS
 };
 
+#if 1
+__quatf		__vnf_vqf_mul(__quatf A, __quatf B)
+{
+	__quatf C;
+	float f0, f1, f2, f3;
+	float g0, g1, g2, g3;
+	float h0, h1, h2, h3;
+
+	f0=A.x;	f1=A.y;	f2=A.z;	f3=A.w;
+	g0=B.x;	g1=B.y; g2=B.z;	g3=B.w;
+
+	h0=f3*g0+f0*g3+f1*g2-f2*g1;
+	h1=f3*g1+f1*g3+f2*g0-f0*g2;
+	h2=f3*g2+f2*g3+f0*g1-f1*g0;
+	h3=f3*g3-f0*g0-f1*g1-f2*g2;
+
+	C = (__quatf) {h0, h1, h2, h3};
+
+	return(C);
+
+//	return(A*__vnf_vqf_rcp(B));
+}
+#endif
+
+__quatf __vnf_vqf_rcp(__quatf A)
+{
+	__vec4f va, vb, vc, vd;
+	float fa;
+	va=(__vec4f)A;
+//	fa=va^va;
+	fa=__vnf_v4f_dot(va, va);
+	vb=(__vec4f) { fa, fa, fa, fa };
+	vc=(__vec4f) { -va.x, -va.y, -va.z, va.w };
+	vd=vc/vb;
+	return((__quatf)vd);
+}
+
+__quatf		__vnf_vqf_div(__quatf A, __quatf B)
+	{ return(A*__vnf_vqf_rcp(B)); }
+
 #endif
 

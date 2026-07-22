@@ -31,6 +31,8 @@ TK_LDFL64_DLL= -L. -lcdll -fwex3w -fwexj -fptropt0
 
 TK_LDFL96= -L. -lvxcore96 -fwex3w -fwexj -fptropt0 $(TK_LDEXTFS)
 
+TK_LDFL64_X3RV= -L. -lvxcore64 -mXG3RV -fptropt0
+
 TOOLPATH=
 
 CC=$(TOOLPATH)bgbcc
@@ -45,6 +47,11 @@ COPTS64= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2 \
 COPTS64RV= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mXRVA -Zz
 
 COPTS96= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 -mBJX2G -Zz
+
+COPTS64_X3RV= -g -O2 -Iinclude -I. -Itk_core $(TK_CFL) -DARCH_BJX1_64 \
+	-fbitmov -fpredops -falux \
+	-mXG3RV -Zz
+# -ffpu_fpimm 
 
 SRCS_CLIB = \
 	pdpc201/stdio.c \
@@ -155,6 +162,9 @@ SRCS_ASM_DLL = \
 	tk_divi3.S			\
 	tk_softfp.S			\
 
+SRCS_ASM_RV = \
+	e_rv64_start.S		\
+
 SRCS_BS2 = \
 	tk_bs2/bscore_io.bs
 
@@ -229,9 +239,12 @@ libs: libs2 libvxcore.ril libvxcore64.ril libvxcore96.ril \
 	libtkwui.bjx2.ril \
 	libc.rv64.ril libm.rv64.ril libdl.rv64.ril libcdll.rv64.ril \
 	libtkgdi.rv64.ril libtkgl.rv64.ril \
-	libtkwui.rv64.ril
+	libtkwui.rv64.ril \
+	libvxcore64.rv64.ril
 
-bins: tkshell.sys tkshdll.dll tkshell_rbd.sys # tkshell96.sys
+bins: tkshell.sys tkshdll.dll \
+	tkshell_x3rv.sys
+	# tkshell_rbd.sys # tkshell96.sys
 
 apps: bins FORCE
 #	make -C pdpc201 -f Makefile.vx86 apps
@@ -248,6 +261,12 @@ libvxcore96.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 
 libvxcore_bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libvxcore_bjx2.ril vxcore_multi.c $(SRCS_ASM) $(SRCS_BS2) $(COPTS64)
+
+
+libvxcore64.rv64.ril: $(SRCS_CLIB) $(SRCS_ASM_RV) $(SRCS_BS2)
+	$(CC) -o libvxcore64.rv64.ril vxcore_multi.c \
+		$(SRCS_ASM_RV) $(SRCS_BS2) $(COPTS64_X3RV)
+
 
 libc.bjx2.ril: $(SRCS_CLIB) $(SRCS_ASM) $(SRCS_BS2) $(SRCS_ASM_2)
 	$(CC) -o libc.bjx2.ril libc_multi.c $(SRCS_ASM) $(COPTS64) \
@@ -323,6 +342,13 @@ tkshell_rbd.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2)
 	$(CC) -o tkshell_rbd.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
 		tkshell.wdef \
 		$(COPTS64) $(TK_LDFL64_RBD)
+
+tkshell_x3rv.sys: $(SRCS_TKSH) $(SRCS_TKSH_BS2) \
+		$(SRCS_CLIB) $(SRCS_TKGDI) $(TKRA_SRCS)
+	$(CC) -o tkshell_x3rv.sys tkshell_multi.c  $(SRCS_TKSH_BS2) \
+		tkshell.wdef \
+		$(COPTS64_X3RV) $(TK_LDFL64_X3RV)
+
 
 FORCE:
 

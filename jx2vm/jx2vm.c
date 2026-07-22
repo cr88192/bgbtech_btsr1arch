@@ -1156,6 +1156,7 @@ int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
 		s=line+10;
 		sscanf(s, "%04X_%08X", &a_hi, &a_lo);
 		addr=(((u64)a_hi)<<32)|a_lo;
+		addr|=0xC00000000000;
 		ctx->vm_mousex=addr;
 	}
 
@@ -1164,6 +1165,7 @@ int bjx2_vmcheckdbg(BJX2_Context *ctx, char *line)
 		s=line+10;
 		sscanf(s, "%04X_%08X", &a_hi, &a_lo);
 		addr=(((u64)a_hi)<<32)|a_lo;
+		addr|=0xC00000000000;
 		ctx->vm_mousey=addr;
 	}
 
@@ -1225,8 +1227,10 @@ int bjx2_vmgetmousepos(BJX2_Context *ctx, int *rmx, int *rmy)
 {
 	if(!ctx->vm_mousex || !ctx->vm_mousey)
 		return(-1);
+	ctx->mem_vmaccess=1;
 	*rmx=BJX2_MemGetDWord(ctx, ctx->vm_mousex);
 	*rmy=BJX2_MemGetDWord(ctx, ctx->vm_mousey);
+	ctx->mem_vmaccess=0;
 	return(1);
 }
 

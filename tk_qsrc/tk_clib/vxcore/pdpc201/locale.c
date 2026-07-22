@@ -21,7 +21,7 @@
 
 #include "tk_locale.h"
 
-static struct lconv thislocale = {
+static const struct lconv thislocale = {
     ".",
     "",
     "",
@@ -42,7 +42,7 @@ static struct lconv thislocale = {
     CHAR_MAX
 };
 
-struct {
+const struct {
 char *name;
 int flags;
 } locale_list[] = {

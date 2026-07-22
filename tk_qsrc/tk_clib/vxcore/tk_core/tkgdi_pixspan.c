@@ -1120,6 +1120,7 @@ void TKGDI_FetchFixedSdfBits(
 	kh=kidx^(kidx>>17);
 	kh=kh^(kh>>7);
 	kh=kh&255;
+	ksz=(dxs*dys+7)/8;
 	
 	if((dxs<=32) && (dys<=32) && (tkgdi_unisdf_glyphcache_idx[kh]==kidx))
 	{

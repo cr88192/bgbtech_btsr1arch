@@ -1062,6 +1062,9 @@ int BGBCC_JX2_CheckLabelIsGpRel(
 	if(!sctx->is_pbo)
 		return(0);
 
+	if(lblid==sctx->lbl_gbl_ptr)
+		return(0);
+
 //	i=BGBCC_JX2_LookupLabelIndex(ctx, lblid);
 	i=BGBCC_JX2_LookupSimLabelIndex(sctx, lblid);
 	

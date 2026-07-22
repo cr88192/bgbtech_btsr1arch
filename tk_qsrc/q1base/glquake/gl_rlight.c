@@ -364,15 +364,22 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 
 int R_LightPointOrg (vec3_t p)
 {
+	static		float	dirtab[8*4*4];
+	static		int		dirtab_init;
 	vec3_t		strt;
 	vec3_t		end;
+	vec3_t		dir;
+	float		th, rh;
+	float		d, w, ra, wa;
 	int			r;
+	int			i, j, k;
 	
 	if (!cl.worldmodel->lightdata)
 		return 255;
 
 //	return 255;
 
+#if 0
 	strt[0] = p[0];
 	strt[1] = p[1];
 	strt[2] = p[2] + 2;
@@ -384,9 +391,96 @@ int R_LightPointOrg (vec3_t p)
 	
 //	r = RecursiveLightPoint (cl.worldmodel->nodes, p, end);
 	r = RecursiveLightPoint (cl.worldmodel->nodes, strt, end);
-	
+//	d = VectorDistance(lightspot, strt);
 	if (r == -1)
 		r = 0;
+#endif
+
+#if 1
+	if(!dirtab_init)
+	{
+#if 0
+		for(i=0; i<3; i++)
+			for(j=0; j<6; j++)
+		{
+			rh=(i-1)*(M_PI/3);
+			th=j*(M_PI/3);
+			dir[0]=sin(th)*cos(rh);
+			dir[1]=cos(th)*cos(rh);
+			dir[2]=sin(rh);
+			
+			k=j*3+i;
+			VectorCopy(dir, dirtab+k*4);
+		}
+		dirtab_init=3*6;
+#endif
+#if 1
+		for(i=0; i<6; i++)
+		{
+//			VectorZero(dirtab+i*4);
+			dirtab[i*4+0]=0;	dirtab[i*4+1]=0;
+			dirtab[i*4+2]=0;	dirtab[i*4+3]=0;
+			dirtab[i*4+(i>>1)]=(i&1)?1:-1;
+		}
+		dirtab_init=6;
+#endif
+
+	}
+
+#if 1
+	ra=0; wa=0;
+#if 0
+	for(i=0; i<3; i++)
+//	for(i=0; i<6; i++)
+		for(j=0; j<6; j++)
+//		for(j=0; j<12; j++)
+	{
+		rh=(i-1)*(M_PI/3);
+//		rh=(i-2)*(M_PI/6);
+		th=j*(M_PI/3);
+//		th=j*(M_PI/6);
+
+		dir[0]=sin(th)*cos(rh);
+		dir[1]=cos(th)*cos(rh);
+		dir[2]=sin(rh);
+#endif
+
+#if 1
+	for(i=0; i<dirtab_init; i++)
+	{
+		VectorCopy(dirtab+i*4, dir);
+#endif
+
+		strt[0] = p[0] + dir[0]*12;
+		strt[1] = p[1] + dir[1]*12;
+		strt[2] = p[2] + dir[2]*12;
+		
+		end[0] = p[0] - dir[0]*512;
+		end[1] = p[1] - dir[1]*512;
+		end[2] = p[2] - dir[2]*512;
+	
+		r = RecursiveLightPoint (cl.worldmodel->nodes, strt, end);
+//		d = VectorDistance(lightspot, strt);
+		d = VectorDistance(lightspot, p);
+		if(r<0)
+			continue;
+
+		w=1.0/(d+1.0);
+		ra+=r*w;
+		wa+=w;
+		
+//		if(wa>(1.0/16))
+//			break;
+	}
+#endif
+	
+	r=0;
+	if(wa>0)
+	{
+		ra/=wa;
+		r=ra;
+	}
+#endif
 
 	return r;
 }
@@ -429,17 +523,25 @@ int R_LightPointDirOrg (vec3_t p, vec3_t dir)
 
 int R_LightPointDir (vec3_t p, vec3_t dir)
 {
+	vec3_t org;
 	int l, l1;
 //	return(255);
 
+#if 0
 	l=R_LightPointDirOrg(p, dir);
-	l1=R_LightPoint(p);
-	if(l1>l)
-		l=(l+l1)>>1;
+//	l1=R_LightPoint(p);
+//	if(l1>l)
+//		l=(l+l1)>>1;
 	return(l);
+#endif
+
+	org[0]=p[0]+dir[0]*8;
+	org[1]=p[1]+dir[1]*8;
+	org[2]=p[2]+dir[2]*8;
 
 //	return(R_LightPointDirOrg(p, dir));
 //	return(R_LightPoint(p));
+	return(R_LightPoint(org));
 }
 
 
@@ -452,6 +554,10 @@ int R_LightPoint (vec3_t p)
 	vec3_t p1, p2;
 	int x, y, z, w;
 	int i, j, k, k1, k2, k3, l, l1;
+	
+	
+	if(r_fullbright.value)
+		return(255);
 	
 //	return(255);
 	
@@ -486,9 +592,9 @@ int R_LightPoint (vec3_t p)
 	y=((int)(p[1]*(1.0/32)))&255;
 	z=((int)(p[2]*(1.0/32)))&255;
 
-	p1[0]=x*32+16;
-	p1[1]=y*32+16;
-	p1[2]=z*32+16;
+	p1[0]=((sbyte)x)*32+16;
+	p1[1]=((sbyte)y)*32+16;
+	p1[2]=((sbyte)z)*32+16;
 
 	j=(x<<16)|(y<<8)|z;
 
@@ -496,7 +602,8 @@ int R_LightPoint (vec3_t p)
 //	w=w*251; w=w*251;
 //	w=((x+y+z)<<2)^(x^y);
 //	w=((x+y+z)<<3)^(x^y);
-	w=j^(j>>12);
+//	w=j^(j>>12);
+	w=j+(j>>12);
 
 	w=w*65521;
 //	w=(w>>16)&4095;

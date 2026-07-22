@@ -4182,6 +4182,7 @@ int BGBCC_JX2C_GetRqRegThis(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetLrRegThis(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetAltLr(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetRtsLr(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
+int BGBCC_JX2C_GetTaskRegister(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx);
 int BGBCC_JX2C_GetRegTempScratch(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ts);
 int BGBCC_JX2C_GetRegTempFpScratch(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int ts);
 int BGBCC_JX2C_CheckFrameNeedSaveReg(BGBCC_TransState *ctx, BGBCC_JX2_Context *sctx, int reg);

@@ -1180,6 +1180,8 @@ float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 	return Length (corner);
 }
 
+extern byte lightcube_ready;
+
 /*
 =================
 Mod_LoadBrushModel
@@ -1190,6 +1192,8 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	int			i, j;
 	dheader_t	*header;
 	dmodel_t 	*bm;
+	
+	lightcube_ready = 0;
 	
 	loadmodel->type = mod_brush;
 	

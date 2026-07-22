@@ -19,10 +19,25 @@
 #define FCC_BJX2		FOURCC('B', 'J', 'X', '2')
 #define FCC_SCMD		FOURCC('S', 'C', 'M', 'D')
 
+#define FCC_XG3			FOURCC('X', 'G', '3', ' ')
+#define FCC_BJX3		FOURCC('B', 'J', 'X', '3')
+#define FCC_RV64		FOURCC('R', 'V', '6', '4')
+
 #ifdef __BJX2__
 #define PLF_FCC_CURARCH		FCC_B2DA
 #define PLF_FCC_GENARCH		FCC_BJX2
 #endif
+
+#ifdef __XG3__
+#define PLF_FCC_CURARCH		FCC_XG3
+#define PLF_FCC_GENARCH		FCC_BJX3
+#endif
+
+#ifdef __RISCV__
+#define PLF_FCC_CURARCH		FCC_RV64
+#define PLF_FCC_GENARCH		FCC_RV64
+#endif
+
 
 int TKSH_TryLoad(char *img, char **args);
 int TKSH_TryLoad_n(char *img, char **args);
@@ -1735,6 +1750,7 @@ int TKSH_Cmds_StartGui(char **args)
 
 //	info->biWidth=800;
 //	info->biHeight=600;
+
 	info->biBitCount=16;
 
 //	info->biWidth=1024;
@@ -3153,6 +3169,10 @@ int TKSH_TryLoadB(char *img, char **args0)
 			{
 //				__debugbreak();
 
+#ifdef __XG3__
+				pb_sysc&=0x0000FFFFFFFFFFFEULL;
+				pb_sysc|=0x000C000000000001ULL;
+#else
 				__ifarch(bjx2_xg2)
 				{
 					pb_sysc&=0x0000FFFFFFFFFFFEULL;
@@ -3162,7 +3182,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 					pb_sysc&=0x0000FFFFFFFFFFFEULL;
 					pb_sysc|=0x0000000000000001ULL;
 				}
-				
+#endif
+
 //				pb_sysc|=((u64)ubkey)<<56;
 				
 				sysc=(void *)pb_sysc;
@@ -3181,7 +3202,11 @@ int TKSH_TryLoadB(char *img, char **args0)
 
 				pb_sysc=(tk_kptr)sysc;
 				pb_sysc&=0x0000FFFFFFFFFFFEULL;
+#ifdef __XG3__
+				pb_sysc|=0x000C000000000001ULL;
+#else
 				pb_sysc|=0x0004000000000001ULL;
+#endif
 
 //				pb_sysc|=((u64)ubkey)<<56;
 

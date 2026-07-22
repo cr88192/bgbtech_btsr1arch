@@ -37,10 +37,10 @@ int BGBCC_JX2RV_NormalizeReg(BGBCC_JX2_Context *ctx, int reg)
 		return(BGBCC_SH_REG_R2);
 	if(reg==BGBCC_SH_REG_GBR)
 		return(BGBCC_SH_REG_R3);
-	if(reg==BGBCC_SH_REG_TBR)
-		return(BGBCC_SH_REG_R4);
-	if(reg==BGBCC_SH_REG_DHR)
-		return(BGBCC_SH_REG_R5);
+//	if(reg==BGBCC_SH_REG_TBR)
+//		return(BGBCC_SH_REG_R4);
+//	if(reg==BGBCC_SH_REG_DHR)
+//		return(BGBCC_SH_REG_R5);
 
 	if(	((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR0) ||
 		((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR16) )
@@ -3572,6 +3572,15 @@ int BGBCC_JX2RV_TryEmitOpLblReg(BGBCC_JX2_Context *ctx,
 					break;
 				}
 #endif
+
+				if(	BGBCC_JX2RV_CheckRegIsGPR(ctx, reg) &&
+					!BGBCC_JX2_CheckLabelIsGpRel(ctx, lbl))
+				{
+					rlty=BGBCC_SH_RLC_REL32UI_RVI;
+					opw1=0x00000017|((reg&31)<<7);
+					opw2=0x00000013|((reg&31)<<7)|((reg&31)<<15);
+					break;
+				}
 			}
 
 			if(BGBCC_JX2_EmitCheckRegExtGPR(ctx, reg))

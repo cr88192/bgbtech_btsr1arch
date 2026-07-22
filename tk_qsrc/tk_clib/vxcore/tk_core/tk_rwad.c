@@ -1227,7 +1227,7 @@ int TKDFS_CheckNameValidUtf8(byte *src, int nln)
 }
 
 
-struct tkdfs_utf_comb_s {
+const struct tkdfs_utf_comb_s {
 u16 v0;
 u16 v1;
 u16 vc;

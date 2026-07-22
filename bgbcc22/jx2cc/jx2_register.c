@@ -1982,6 +1982,16 @@ int BGBCC_JX2C_GetRtsLr(
 	return(BGBCC_SH_REG_RQ1);
 }
 
+int BGBCC_JX2C_GetTaskRegister(
+	BGBCC_TransState *ctx,
+	BGBCC_JX2_Context *sctx)
+{
+	if(sctx->emit_riscv&0x33)
+		return(BGBCC_SH_REG_RQ4);
+
+	return(BGBCC_SH_REG_TBR);
+}
+
 int BGBCC_JX2C_GetRegTempScratch(
 	BGBCC_TransState *ctx,
 	BGBCC_JX2_Context *sctx, int ts)

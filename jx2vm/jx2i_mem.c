@@ -2214,6 +2214,9 @@ int BJX2_MemTlbCheckAccess(BJX2_Context *ctx, int acc, int pgbits,
 	if(!acc)
 		return(0);
 
+	if(ctx->mem_vmaccess)
+		return(0);
+
 	noacc=0;
 
 	if(pgbits&0x10)

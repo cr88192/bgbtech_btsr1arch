@@ -5,7 +5,8 @@ byte *tk_ird_imgbuf=NULL;
 u32 tkmm_pagebase, tkmm_pageend;
 //static int tkmm_initvar=0;
 
-byte tkmm_pagebmp[16384];
+// byte tkmm_pagebmp[16384];
+byte tkmm_pagebmp[16384*2];
 int tkmm_maxpage;
 int tkmm_pagerov;
 
@@ -113,6 +114,47 @@ u64 *TKMM_MMCell_GetLnkObjCellHeadPtr(TKMM_MemLnkObj *obj, void *ptr);
 int TKMM_MMList_FreeLnkObj(TKMM_MemLnkObj *obj);
 int TKMM_MMCell_FreeLnkObjCellPtr(TKMM_MemLnkObj *obj, void *ptr);
 
+int tkmm_pagebmp_getbyte(int idx)
+{
+	int v0, v1;
+	v0=tkmm_pagebmp[idx];
+	v1=tkmm_pagebmp[idx+16384];
+	if((v0^v1)!=0x69)
+		{ __debugbreak(); }
+	return(v0);
+}
+
+void tkmm_pagebmp_setbyte(int idx, int val)
+{
+	if(val && ((idx<<3)>=tkmm_maxpage))
+		{ __debugbreak(); }
+	if((idx<0) || (idx>=16384))
+		{ __debugbreak(); }
+
+	tkmm_pagebmp[idx]=val;
+	tkmm_pagebmp[idx+16384]=(~val)^0x96;
+}
+
+int tkmm_pagebmp_getbit(int idx)
+{
+	int j;
+	
+	j=tkmm_pagebmp_getbyte(idx>>3);
+	return((j>>(idx&7))&1);
+}
+
+void tkmm_pagebmp_setbit(int idx, int val)
+{
+	int j;
+	
+	j=tkmm_pagebmp_getbyte(idx>>3);
+	if(val)
+		{ j|=1<<(val&7); }
+	else
+		{ j&=~(1<<(val&7)); }
+	tkmm_pagebmp_setbyte(idx>>3, j);
+}
+
 // static int tkmm_findfree_rec=0;
 
 int TKMM_FindFreePage(void)
@@ -124,7 +166,8 @@ int TKMM_FindFreePage(void)
 	m=tkmm_maxpage;
 	while(i<m)
 	{
-		j=tkmm_pagebmp[i>>3];
+//		j=tkmm_pagebmp[i>>3];
+		j=tkmm_pagebmp_getbyte(i>>3);
 		if(j==0xFF)
 			{ i=(i+8)&(~7); continue; }
 		if(j&(1<<(i&7)))
@@ -170,7 +213,8 @@ int TKMM_AllocPage(void)
 
 	while(i<m)
 	{
-		j=bm[i>>3];
+//		j=bm[i>>3];
+		j=tkmm_pagebmp_getbyte(i>>3);
 		if(j==0xFF)
 			{ i=(i+8)&(~7); continue; }
 		if(j&(1<<(i&7)))
@@ -185,12 +229,14 @@ int TKMM_AllocPage(void)
 
 	if(i<m)
 	{
-		j=bm[i>>3];
+//		j=bm[i>>3];
+		j=tkmm_pagebmp_getbyte(i>>3);
 		/* Pedantic check, in case it changed... */
 		if(!(j&(1<<(i&7))))
 		{
 			j|=1<<(i&7);
-			bm[i>>3]=j;
+//			bm[i>>3]=j;
+			tkmm_pagebmp_setbyte(i>>3, j);
 
 			tkmm_pagerov=i+1;
 			if((i+1)>=m)
@@ -233,20 +279,24 @@ int TKMM_FindFreePages(int n)
 	m=tkmm_maxpage;
 	while(i<m)
 	{
-		if(bm[i>>3]&(1<<(i&7)))
+//		if(bm[i>>3]&(1<<(i&7)))
+		if(tkmm_pagebmp_getbit(i))
 		{
-			while((bm[i>>3]==0xFF) && (i<m))
+//			while((bm[i>>3]==0xFF) && (i<m))
+			while((tkmm_pagebmp_getbyte(i>>3)==0xFF) && (i<m))
 			{
 				i=(i+8)&(~7);
 				continue;
 			}
-			while((bm[i>>3]&(1<<(i&7))) && (i<m))
+//			while((bm[i>>3]&(1<<(i&7))) && (i<m))
+			while(tkmm_pagebmp_getbit(i) && (i<m))
 				i++;
 			continue;
 		}
 		i0=i; i1=i0+n;
 		if(i1>m)break;
-		while(!(bm[i>>3]&(1<<(i&7))) && (i<i1))
+//		while(!(bm[i>>3]&(1<<(i&7))) && (i<i1))
+		while(!(tkmm_pagebmp_getbit(i)) && (i<i1))
 			i++;
 		if(i>=i1)
 		{
@@ -310,7 +360,8 @@ int TKMM_AllocPages(int n)
 	j=i; k=j+n;
 	while(j<k)
 	{
-		bm[j>>3]|=(1<<(j&7));
+//		bm[j>>3]|=(1<<(j&7));
+		tkmm_pagebmp_setbit(j, 1);
 		j++;
 	}
 
@@ -381,13 +432,15 @@ int TKMM_FreePages(int b, int n)
 	
 	if(n==1)
 	{
-		tkmm_pagebmp[b>>3]&=~(1<<(b&7));
+//		tkmm_pagebmp[b>>3]&=~(1<<(b&7));
+		tkmm_pagebmp_setbit(b, 0);
 		return(0);
 	}
 	
 	for(i=b; i<(b+n); i++)
 	{
-		tkmm_pagebmp[i>>3]&=~(1<<(i&7));
+//		tkmm_pagebmp[i>>3]&=~(1<<(i&7));
+		tkmm_pagebmp_setbit(i, 0);
 	}
 	
 //	if(b<tkmm_pagerov)
@@ -783,7 +836,10 @@ void TKMM_Init()
 		tkmm_pagebase=TKMM_PAGEBASE;
 		tkmm_pageend=TKMM_PAGEBASE+(tkmm_rampage<<TKMM_PAGEBITS);
 
-		memset(tkmm_pagebmp, 0, 16384);
+//		memset(tkmm_pagebmp, 0, 16384);
+		for(i=0; i<16384; i++)
+			tkmm_pagebmp_setbyte(i, 0);
+
 		tkmm_pagerov=0;
 		
 		if(!TKMM_PageAlloc_f)

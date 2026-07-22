@@ -1100,7 +1100,8 @@ int BGBCC_Img_EncodeImageBMP1I(byte *obuf, byte *ibuf,
 	int x, y;
 	int i;
 
-	xstr=((xs+15)&(~15))>>2;
+//	xstr=((xs+15)&(~15))>>2;
+	xstr=((xs+31)&(~31))>>3;
 //	sz=ofs_dat+ys*xstr;
 
 	if(fl&1)

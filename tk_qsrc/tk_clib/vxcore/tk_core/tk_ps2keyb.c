@@ -8,7 +8,7 @@ static byte tk_ps2st_shift;
 static byte tk_ps2st_alt;
 static byte tk_ps2st_ctrl;
 
-static u16 tk_ps2_scan2key[256] = {
+static const u16 tk_ps2_scan2key[256] = {
 0,			TK_K_F9,	0,			TK_K_F5,	//00..03
 TK_K_F3,	TK_K_F1,	TK_K_F2,	TK_K_F12,	//04..07
 0,			TK_K_F10,	TK_K_F8,	TK_K_F6,	//08..0B
@@ -83,7 +83,7 @@ TK_K_NPMUL,	TK_K_NP9,	TK_K_SCRLK,	0,			//7C..7F
 0,			0,			0,			0			//FC..FF
 };
 
-static byte tk_ps2_keyshift[256]={
+static const byte tk_ps2_keyshift[256]={
  0,   0,   0,   0,   0,   0,   0,   0,   //00..07
  0,   0,   0,   0,   0,   0,   0,   0,   //08..0F
  0,   0,   0,   0,   0,   0,   0,   0,   //10..17

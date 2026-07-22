@@ -748,7 +748,7 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 		shctx->has_qmul|=1;
 		shctx->has_qmul|=8;
 		shctx->has_qmul|=32;
-		shctx->has_fmovc|=1;		//
+//		shctx->has_fmovc|=1;		//
 
 		shctx->has_jumbo=0;
 		shctx->has_pushx2=0;
@@ -7844,6 +7844,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 	BGBCC_JX2_SetSectionName(sctx, ".data");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__data_start");
 
+	BGBCC_JX2_SetSectionName(sctx, ".rodata");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__rodata_start");
+
+	BGBCC_JX2_SetSectionName(sctx, ".strtab");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__strtab_start");
+
 //	if(sctx->is_pbo)
 	if(1)
 	{
@@ -7852,6 +7858,8 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 		 * This self-pointer needs to be at the start of the PBO data area.
 		 */
 	
+		BGBCC_JX2_SetSectionName(sctx, ".data");
+
 		BGBCC_JX2_EmitNamedLabel(sctx, "__global_ptr");
 		j=BGBCC_JX2_GetNamedLabel(sctx, "__global_ptr");
 		BGBCC_JX2_EmitQWordAbs64(sctx, j);
@@ -9887,6 +9895,12 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 	BGBCC_JX2_SetSectionName(sctx, ".data");
 	BGBCC_JX2_EmitNamedLabel(sctx, "__data_end");
+
+	BGBCC_JX2_SetSectionName(sctx, ".rodata");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__rodata_end");
+
+	BGBCC_JX2_SetSectionName(sctx, ".strtab");
+	BGBCC_JX2_EmitNamedLabel(sctx, "__strtab_end");
 
 	BGBCC_JX2_SetSectionName(sctx, ".bss");
 	BGBCC_JX2_EmitNamedLabel(sctx, "_end");

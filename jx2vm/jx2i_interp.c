@@ -338,7 +338,8 @@ int BJX2_ThrowFaultStatusLln(BJX2_Context *ctx, int status,
 	u64 exc, sr0;
 	int i;
 
-	if((((status>>12)&15)==8) && (((status>>8)&15)!=8))
+	if((((status>>12)&15)==8) && (((status>>8)&15)!=8) &&
+		(status!=BJX2_FLT_SLEEP) && !ctx->status)
 	{
 		BJX2_DbgPrintf(ctx, "TRAP %04X %s:%d\n", status, fname, lnum);
 	}
@@ -441,6 +442,9 @@ int BJX2_ThrowFaultStatusLln(BJX2_Context *ctx, int status,
 //			ctx->tr_rjmp=NULL;
 			return(0);
 		}
+		
+		if(!(sr0&0x000C))
+			return(0);
 		
 		if(!(ctx->status))
 		{
@@ -1569,6 +1573,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 
 	case BJX2_NMID_BLKUTX1:		s0="BLKUTX1";	break;
 	case BJX2_NMID_BLKUTX2:		s0="BLKUTX2";	break;
+	case BJX2_NMID_BLKUTX3H:	s0="BLKUTX3H";	break;
+	case BJX2_NMID_BLKUTX3L:	s0="BLKUTX3L";	break;
+
 	case BJX2_NMID_BLKUAB1:		s0="BLKUAB1";	break;
 	case BJX2_NMID_BLKUAB2:		s0="BLKUAB2";	break;
 	case BJX2_NMID_CONVFXI:		s0="CONVFXI";	break;

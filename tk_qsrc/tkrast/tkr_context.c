@@ -199,6 +199,8 @@ int TKRA_DebugPrintStats(TKRA_Context *ctx)
 	ctx->stat_backface_tris=0;
 	ctx->stat_negw_tris=0;
 	ctx->stat_zocc_tris=0;
+
+	return(0);
 }
 
 int TKRA_RecalcViewport(TKRA_Context *ctx)
@@ -233,6 +235,8 @@ int TKRA_RecalcViewport(TKRA_Context *ctx)
 	ctx->scr_clip_r=scr_xc+scr_xsc;
 	ctx->scr_clip_t=scr_yc+scr_ysc;
 	ctx->scr_clip_b=scr_yc-scr_ysc;
+
+	return(0);
 }
 
 int TKRA_SetViewport(TKRA_Context *ctx, int x, int y, int xs, int ys)

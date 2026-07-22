@@ -2553,6 +2553,7 @@ int BJX2_DecodeOpcode_DecRVI(BJX2_Context *ctx,
 				op->nmid=BJX2_NMID_RTE;
 				op->Run=BJX2_Op_RTE_None;
 				break;
+			case 0x005:
 			case 0x105:
 				op->nmid=BJX2_NMID_SLEEP;
 				op->Run=BJX2_Op_SLEEP_None;

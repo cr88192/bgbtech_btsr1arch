@@ -424,6 +424,7 @@ void I_FinishUpdate (void)
 	int dr1, dr2, dr3, dr4;
 	int dg1, dg2, dg3, dg4;
 	int db1, db2, db3, db4;
+	int ccr, ccg, ccb, cca;
 	int dr, dg, db, cy, cy0, cy1;
 	int x, y, z, p;
 
@@ -449,6 +450,7 @@ void I_FinishUpdate (void)
 	screen_luma=st_oddframe?screen_luma_o:screen_luma_e;
 
 #if 1
+	ccr=0; ccg=0; ccb=0; cca=0;
 	for(y=0; y<BASEHEIGHT_X2; y++)
 	{
 		cs=screens[0]+((y>>1)*BASEWIDTH);
@@ -485,9 +487,15 @@ void I_FinishUpdate (void)
 			dg=dg1*dg1 + dg2*dg2 + dg3*dg3 + dg4*dg4;
 			db=db1*db1 + db2*db2 + db3*db3 + db4*db4;
 
-			dr>>=0;
-			dg>>=0;
-			db>>=0;
+			if(x>(BASEWIDTH-8))
+				if(x<(BASEWIDTH+8))
+					if(y>(BASEHEIGHT-8))
+						if(y<(BASEHEIGHT+8))
+				{	ccr+=cr0;	ccg+=cg0;	ccb+=cb0;	cca++;	}
+
+//			dr>>=0;
+//			dg>>=0;
+//			db>>=0;
 
 			cy=(cr0+(2*cg0)+cb0);
 			cy=(cy>>1) + dr + dg + db;
@@ -495,6 +503,46 @@ void I_FinishUpdate (void)
 			if(cy>255)cy=255;
 			cty[x]=cy;
 		}
+	}
+	
+	ccr/=cca;	ccg/=cca;	ccb/=cca;
+//	cy=(2*ccg+ccr+ccb)/4;
+	cy=(ccg+ccr+ccb)/3;
+//	ccr+=(64-cy);
+//	ccg+=(64-cy);
+//	ccb+=(64-cy);
+
+	ccr=((ccr-cy)*64)+64;
+	ccg=((ccg-cy)*64)+64;
+	ccb=((ccb-cy)*64)+64;
+
+	if(ccr<0)	ccr=0;
+	if(ccg<0)	ccg=0;
+	if(ccb<0)	ccb=0;
+	if(ccr>255)	ccr=255;
+	if(ccg>255)	ccg=255;
+	if(ccb>255)	ccb=255;
+	
+
+	for(z=0; z<16; z++)
+	{
+		x=(BASEWIDTH-8)+z;
+		y=BASEHEIGHT+8;
+		p=(ccr*(15-z)+ccb*(z+1))/16;
+		screen_luma[((y+0)*BASEWIDTH_X2)+x]=p;	
+		screen_luma[((y-1)*BASEWIDTH_X2)+x]=p;	
+
+		x=(BASEWIDTH-8)+(z/2);
+		y=(BASEHEIGHT+8)-z;
+		p=(ccr*(15-z)+ccg*(z+1))/16;
+		screen_luma[(y*BASEWIDTH_X2)+(x+0)]=p;	
+		screen_luma[(y*BASEWIDTH_X2)+(x+1)]=p;	
+
+		x=(BASEWIDTH+8)-(z/2);
+		y=(BASEHEIGHT+8)-z;
+		p=(ccb*(15-z)+ccg*(z+1))/16;
+		screen_luma[(y*BASEWIDTH_X2)+(x+0)]=p;
+		screen_luma[(y*BASEWIDTH_X2)+(x-1)]=p;
 	}
 
 	for(y=0; y<BASEHEIGHT_X2; y++)

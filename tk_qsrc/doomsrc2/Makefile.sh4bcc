@@ -61,7 +61,7 @@ TK_CFL_XRV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXRVA /O2 \
 
 TK_CFL_X3RV=-DARCH_SH4 -DARCH_SH4LE -D__32BIT__ -mXG3RV /O2 \
 	/Zz /fshuffle /fptropts /fnoexcept /fpbostatic /frvzba /frvjumbo \
-	/fnovskgen /fnovsk /fbitmov /fpredops /ffpu_fpimm
+	/fnovskgen /fnovsk /fbitmov /fpredops /ffpu_fpimm /falux # /floadop
 
 CFLAGS_XRV=$(TK_CFL_XRV) $(BASE_CFLAGS)
 LDFLAGS_XRV= -lc -ltkgdi

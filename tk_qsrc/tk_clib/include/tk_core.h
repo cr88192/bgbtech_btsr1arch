@@ -269,11 +269,18 @@ extern u64 MMIO_BASE_E;
 #define TKMM_PROT_WRITE		0x0002
 #define TKMM_PROT_EXEC		0x0004
 
+#define TKMM_PROT_RO		TKMM_PROT_READ
 #define TKMM_PROT_RW		0x0003
+#define TKMM_PROT_RX		0x0005
 #define TKMM_PROT_RWX		0x0007
 
 #define TKMM_PROT_NOCACHE	0x0010
 #define TKMM_PROT_NOUSER	0x0020
+#define TKMM_PROT_USER		0x0040
+
+#define TKMM_PROT_ALLOW		0x0100
+#define TKMM_PROT_DENY		0x0200
+#define TKMM_PROT_INNER		0x0400
 
 #define TKMM_PROT_USR_SXO	(TKMM_PROT_EXEC|TKMM_PROT_NOCACHE)
 #define TKMM_PROT_USR_RO	(TKMM_PROT_READ|TKMM_PROT_NOCACHE)
@@ -596,7 +603,8 @@ u64 val[6];
 #include <tk_adnn.h>
 
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) || defined(__XG3__)
 #define TK_GET_TBR		__arch_tbr
 #define TK_SET_TBR(x)	__arch_tbr=(x)
 extern volatile u64 __arch_tbr;

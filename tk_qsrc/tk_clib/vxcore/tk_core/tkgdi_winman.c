@@ -17,9 +17,15 @@ int tkgdi_vid_bys;
 int tkgdi_vid_bmxsize;
 int tkgdi_vid_bmsize;
 
-u64 *tkgdi_vid_screenutx;		//screen UTX2 buffer
-u64 *tkgdi_vid_screenrgb;		//screen RGB buffer
+u64 *tkgdi_vid_screenutx;			//screen UTX2 buffer
+u64 *tkgdi_vid_screenrgb;			//screen RGB buffer
+u64 *tkgdi_vid_screenrgb_bak;		//screen RGB buffer (backbuffer)
 byte *tkgdi_vid_screendirty;		//screen dirtry-mask buffer
+byte *tkgdi_vid_screendirty_delay;	//screen dirtry-mask buffer (delayed clean)
+byte *tkgdi_vid_screendirty_last1;	//screen dirtry-mask buffer (last1)
+byte *tkgdi_vid_screendirty_last2;	//screen dirtry-mask buffer (last2)
+byte *tkgdi_vid_screendirty_last3;	//screen dirtry-mask buffer (last3)
+byte *tkgdi_vid_screendirty_delay2;	//screen dirtry-mask buffer (delayed clean)
 
 byte tk_img_d9to8tab[512];
 // byte tk_img_d15to8tab0[32768];
@@ -168,6 +174,7 @@ int TKGDI_ScreenMarkDirty(void)
 	bmsz=(bxs2*bys2+7)>>3;
 
 	memset(tkgdi_vid_screendirty, 0xFF, bmsz);
+	memset(tkgdi_vid_screendirty_delay, 0xFF, bmsz);
 	
 	return(0);
 }
@@ -821,14 +828,20 @@ int TKGDI_WindowSetActiveTab(_tkgdi_window_t *wctx, int tab)
 
 int TKGDI_UpdateWindowStack(void)
 {
+	static int rec;
 	_tkgdi_window_t *wctx, *wctx2;
 	byte *cs;
 	u64 *wutx, *wucs, *wuct;
 	u64 blkb, bp0, bp1;
 	int xs, ys, bxs, bys, bxs2, bys2, bmsz, bmxs2;
 	int x, y, z, z0, z1, bx, by, wxs, wys, wbmxs;
-	int sx, sy, z0a, z1a, b, issel;
+	int dirty_bmx, dirty_bmy, dirty_bnx, dirty_bny;
+	int sx, sy, z0a, z1a, b, issel, tx, ty, tz, tx0, tx1, ty0, ty1;
 	int i, j, k;
+
+	if(rec)
+		return;
+	rec=1;
 
 	for(i=0; i<tkgdi_n_window_vis; i++)
 	{
@@ -1036,7 +1049,18 @@ int TKGDI_UpdateWindowStack(void)
 //		tkgdi_vid_screendirty=tk_malloc(bmsz+(16*tkgdi_vid_bmxsize));
 		tkgdi_vid_screendirty=tk_malloc_krn(bmsz+(16*tkgdi_vid_bmxsize));
 		tkgdi_vid_screendirty+=8*tkgdi_vid_bmxsize;
+
+		tkgdi_vid_screendirty_delay=tk_malloc_krn(
+			(6*bmsz)+(16*tkgdi_vid_bmxsize));
+		tkgdi_vid_screendirty_delay+=8*tkgdi_vid_bmxsize;
+
+		tkgdi_vid_screendirty_last1=tkgdi_vid_screendirty_delay+(1*bmsz);
+		tkgdi_vid_screendirty_last2=tkgdi_vid_screendirty_delay+(2*bmsz);
+		tkgdi_vid_screendirty_last3=tkgdi_vid_screendirty_delay+(3*bmsz);
+		tkgdi_vid_screendirty_delay2=tkgdi_vid_screendirty_delay+(4*bmsz);
+
 		memset(tkgdi_vid_screendirty, 0xFF, bmsz);
+		memset(tkgdi_vid_screendirty_delay, 0x00, 5*bmsz);
 		tkgdi_vid_bmsize=bmsz;
 	}
 	
@@ -1080,8 +1104,15 @@ int TKGDI_UpdateWindowStack(void)
 		if(!tkgdi_vid_screenrgb)
 		{
 			tkgdi_vid_screenrgb=tk_malloc_krn(bxs*bys*(4*8));
+			tkgdi_vid_screenrgb_bak=tk_malloc_krn(bxs*bys*(4*8));
 			memset(tkgdi_vid_screenrgb, 0x55, bxs*bys*(4*8));
+			memset(tkgdi_vid_screenrgb_bak, 0xAA, bxs*bys*(4*8));
 		}
+
+		dirty_bmx=bxs2;
+		dirty_bmy=bys2;
+		dirty_bnx=-1;
+		dirty_bny=-1;
 
 	//	blkb=0;
 		blkb=0x55AA55AA5555AAAAULL;
@@ -1103,8 +1134,31 @@ int TKGDI_UpdateWindowStack(void)
 				if(!(b&(1<<(z&7))))
 					continue;
 
+				if(x<dirty_bmx)		dirty_bmx=x;
+				if(x>dirty_bnx)		dirty_bnx=x;
+				if(y<dirty_bmy)		dirty_bmy=y;
+				if(y>dirty_bny)		dirty_bny=y;
+
 				TKGDI_UpdateWindowStack_CopyFillPattern(
 					x, y, bxs, bp0, bp1);
+			}
+		}
+
+		for(i=0; i<tkgdi_n_window_vis; i++)
+		{
+			wctx=tkgdi_window_vis[i];
+
+			bx=wctx->base_x>>3;
+			by=wctx->base_y>>3;
+			wxs=wctx->size_bxs;
+			wys=wctx->size_bys;
+
+			if(wctx->dirty1)
+			{
+				if(bx<dirty_bmx)		dirty_bmx=bx;
+				if(by<dirty_bmy)		dirty_bmy=by;
+				if((bx+wxs)>dirty_bnx)	dirty_bnx=bx+wxs;
+				if((by+wys)>dirty_bny)	dirty_bny=by+wys;
 			}
 		}
 
@@ -1117,6 +1171,14 @@ int TKGDI_UpdateWindowStack(void)
 			wxs=wctx->size_bxs;
 			wys=wctx->size_bys;
 			wbmxs=wctx->size_bmxs;
+
+			if(!(wctx->dirty1))
+			{
+				if((bx>>1)>dirty_bnx)			continue;
+				if((by>>1)>dirty_bny)			continue;
+				if(((bx+wxs)>>1)<dirty_bmx)		continue;
+				if(((by+wys)>>1)<dirty_bmy)		continue;
+			}
 
 			issel=(i==(tkgdi_n_window_vis-1));
 
@@ -1143,8 +1205,12 @@ int TKGDI_UpdateWindowStack(void)
 					if(sx>=bxs)
 						continue;
 
-					z0a=((sy+0)>>1)*bmxs2+((bx+x)>>1);
-					z1a=((sy+1)>>1)*bmxs2+((bx+x)>>1);
+					tx=((bx+x)>>1);
+					ty0=((sy+0)>>1);
+					ty1=((sy+1)>>1);
+
+					z0a=ty0*bmxs2+tx;
+					z1a=ty1*bmxs2+tx;
 //					z=z0a+(x>>1);
 //					z1=z1a+x;
 					
@@ -1153,6 +1219,11 @@ int TKGDI_UpdateWindowStack(void)
 					{
 						continue;
 					}
+
+//					if(tx<dirty_bmx)	dirty_bmx=tx;
+//					if(tx>dirty_bnx)	dirty_bnx=tx;
+//					if(ty0<dirty_bmy)	dirty_bmy=ty0;
+//					if(ty1>dirty_bny)	dirty_bny=ty1;
 
 					TKGDI_UpdateWindowStack_CopyFillFlat(
 						sx, sy, bxs,
@@ -1192,14 +1263,23 @@ int TKGDI_UpdateWindowStack(void)
 					if(sx>=bxs)
 						continue;
 
-					z0a=((sy+0)>>1)*bmxs2+((bx+x*2)>>1);
-					z1a=((sy+1)>>1)*bmxs2+((bx+x*2)>>1);
+					tx=((bx+x*2)>>1);
+					ty0=((sy+0)>>1);
+					ty1=((sy+1)>>1);
+
+					z0a=ty0*bmxs2+tx;
+					z1a=ty1*bmxs2+tx;
 					
 					if(	!(tkgdi_vid_screendirty[z0a>>3]&(3<<(z0a&7))) &&
 						!(tkgdi_vid_screendirty[z1a>>3]&(3<<(z1a&7))))
 					{
 						continue;
 					}
+
+//					if(tx<dirty_bmx)	dirty_bmx=tx;
+//					if(tx>dirty_bnx)	dirty_bnx=tx;
+//					if(ty0<dirty_bmy)	dirty_bmy=ty0;
+//					if(ty1>dirty_bny)	dirty_bny=ty1;
 
 					TKGDI_UpdateWindowStack_CopyFillTilePx(
 						sx, sy, bxs,
@@ -1287,14 +1367,28 @@ int TKGDI_UpdateWindowStack(void)
 						if(sx>=bxs)
 							continue;
 
-						z0a=((sy+0)>>1)*bmxs2+((bx+x*2)>>1);
-						z1a=((sy+1)>>1)*bmxs2+((bx+x*2)>>1);
+//						tx0=((bx+x*2+0)>>1);
+//						tx1=((bx+x*2+1)>>1);
+						ty0=((sy+0)>>1);
+						ty1=((sy+1)>>1);
+
+						tx=((bx+x*2)>>1);
+						z0a=ty0*bmxs2+tx;
+						z1a=ty1*bmxs2+tx;
+
+//						z0a=((sy+0)>>1)*bmxs2+((bx+x*2)>>1);
+//						z1a=((sy+1)>>1)*bmxs2+((bx+x*2)>>1);
 						
 						if(	!(tkgdi_vid_screendirty[z0a>>3]&(3<<(z0a&7))) &&
 							!(tkgdi_vid_screendirty[z1a>>3]&(3<<(z1a&7))))
 						{
 							continue;
 						}
+
+//						if(tx0<dirty_bmx)	dirty_bmx=tx0;
+//						if(tx1>dirty_bnx)	dirty_bnx=tx1;
+//						if(ty0<dirty_bmy)	dirty_bmy=ty0;
+//						if(ty1>dirty_bny)	dirty_bny=ty1;
 
 						TKGDI_UpdateWindowStack_CopyFillTilePx(
 							sx, sy, bxs,
@@ -1496,18 +1590,90 @@ int TKGDI_UpdateWindowStack(void)
 		wutx[(by*4+2)*bxs+bx]=wutx[(by*4+2)*bxs+bx]+0x3333333333333333ULL;
 		wutx[(by*4+3)*bxs+bx]=wutx[(by*4+3)*bxs+bx]+0x3333333333333333ULL;
 
+#if 1
+		TKGDI_BlitUpdate_CheckUpdateMask(
+			xs, ys,
+			(u16 *)tkgdi_vid_screenrgb,
+			(u16 *)tkgdi_vid_screenrgb_bak,
+			tkgdi_vid_screendirty,
+			xs, -ys);
+#endif
+
+		memset(tkgdi_vid_screendirty_delay2, 0, bmsz);
+		z1a=0;	b=16;
+		for(i=0; i<bmsz; i++)
+		{
+			z0=tkgdi_vid_screendirty_delay[i];
+			z1=	tkgdi_vid_screendirty_last3[i] |
+				tkgdi_vid_screendirty_last2[i] |
+				tkgdi_vid_screendirty_last1[i] |
+				tkgdi_vid_screendirty[i] ;
+			if(!z0)
+			{
+				if(z1)
+					{ tkgdi_vid_screendirty_delay[i]=z1; }
+//				tkgdi_vid_screendirty_delay2[i]=0;
+				continue;
+			}
+			z0|=z1;
+			z0a=z0&(~z1);
+//			z0a=0;
+
+			if(z0a)
+			{
+				if(b>0)		{ b--; }
+				else		{ z0a-0; }
+			}
+			
+//			z1a|=z0a;
+			tkgdi_vid_screendirty_delay[i]=z0;
+			tkgdi_vid_screendirty_delay2[i]=z0a;
+		}
+
 //		TKGDI_BlitUpdate_BlkRgb5_Mask(
 //			0, 0, xs, ys,
 //			tkgdi_vid_screenutx, tkgdi_vid_screendirty,
 //			0, 0, xs, -ys);
 
+#if 0
 		TKGDI_BlitUpdate_BlkRgb555_Mask(
 			0, 0, xs, ys,
 			(u16 *)tkgdi_vid_screenrgb,
 			tkgdi_vid_screendirty,
 			0, 0, xs, -ys);
+#endif
 
+#if 1
+		TKGDI_BlitUpdate_BlkRgb555_CCE_Mask(
+			xs, ys,
+			(u16 *)tkgdi_vid_screenrgb,
+			tkgdi_vid_screendirty,
+			tkgdi_vid_screendirty_delay2,
+			xs, -ys);
+#endif
+
+//		for(i=0; i<bmsz; i++)
+//			tkgdi_vid_screendirty_delay[i]|=tkgdi_vid_screendirty[i];
+
+		cs=tkgdi_vid_screendirty_last3;
+		tkgdi_vid_screendirty_last3=tkgdi_vid_screendirty_last2;
+		tkgdi_vid_screendirty_last2=tkgdi_vid_screendirty_last1;
+		tkgdi_vid_screendirty_last1=cs;
+
+//		memcpy(tkgdi_vid_screendirty_last3, tkgdi_vid_screendirty_last2, bmsz);
+//		memcpy(tkgdi_vid_screendirty_last2, tkgdi_vid_screendirty_last1, bmsz);
+		memcpy(tkgdi_vid_screendirty_last1, tkgdi_vid_screendirty, bmsz);
 		memset(tkgdi_vid_screendirty, 0, bmsz);
+
+		for(i=0; i<bmsz; i++)
+		{
+			z0=tkgdi_vid_screendirty_delay[i];
+			z1=tkgdi_vid_screendirty_delay2[i];
+			tkgdi_vid_screendirty_delay[i]=z0&(~z1);
+		}
+
+		rec=0;
+		return(1);
 	}
 
 
@@ -1613,6 +1779,7 @@ int TKGDI_UpdateWindowStack(void)
 		memset(tkgdi_vid_screendirty, 0, bmsz);
 	}
 	
+	rec=0;
 	return(1);
 }
 

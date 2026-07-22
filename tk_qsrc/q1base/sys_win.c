@@ -67,10 +67,15 @@ void Sys_LowFPPrecision (void)
 {
 }
 
-void __hint_use_egpr()
+int __hint_use_egpr()
 {
+	return(0);
 }
 
+int __int_mulsw(int a, int b)
+{
+	return(((short)a)*((short)b));
+}
 
 /*
 ================

@@ -514,6 +514,9 @@ void R_DrawParticles (void)
 	qglEnable (GL_BLEND);
 	qglTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 //	qglBegin (GL_TRIANGLES);
+	qglBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	qglDisable (GL_ALPHA_TEST);
 
 	VectorScale (vup, 1.5, up);
 	VectorScale (vright, 1.5, right);
@@ -574,6 +577,12 @@ void R_DrawParticles (void)
 			(p->org[1] - r_origin[1])*vpn[1] +
 			(p->org[2] - r_origin[2])*vpn[2] ;
 
+		if(scale<0)
+		{
+			p->die = cl.time;
+			continue;
+		}
+
 		if (scale < 20)
 			scale = 1;
 		else
@@ -611,7 +620,11 @@ void R_DrawParticles (void)
 		fv[19] = 0;
 		fv[20] = 1;
 
-		i=d_8to24table[(int)p->color];
+//		i=d_8to24table[(int)p->color];
+		i=d_8to24table[(byte)(p->color)];
+		
+//		i=0xFFFFFFFF;
+		
 #ifdef QGL_HFLOAT
 		*((int *)(fv+ 6)) = i;
 		*((int *)(fv+14)) = i;

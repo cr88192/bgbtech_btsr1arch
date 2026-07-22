@@ -37,13 +37,14 @@ void tkra_glPopMatrix(void)
 
 	ctx=TKRA_GetCurrentContext();
 	
-	ix=(int)ctx;
-	arr[5]=ix;
-	ix=arr[4];
+	ix=0;
+//	ix=(long long)ctx;
+//	arr[5]=ix;
+//	ix=arr[4];
 	
 	if(ctx->matmode==0)
 	{
-		ix++;
+//		ix++;
 
 		ix=ctx->stkpos_xform-1;
 		ctx->stkpos_xform=ix;

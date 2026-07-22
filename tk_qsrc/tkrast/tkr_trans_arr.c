@@ -539,6 +539,16 @@ int TKRA_DrawPrimitive_TriangleComm(
 	cst=st;
 	crgb=rgb;
 
+//	memset(&v0, 0, sizeof(tkra_trivertex));
+//	memset(&v1, 0, sizeof(tkra_trivertex));
+//	memset(&v2, 0, sizeof(tkra_trivertex));
+//	memset(&v3, 0, sizeof(tkra_trivertex));
+
+	v0.fl=0;
+	v1.fl=0;
+	v2.fl=0;
+	v3.fl=0;
+
 	cnt=count/3;
 	for(i=0; i<cnt; i++)
 	{
@@ -799,7 +809,7 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 			TKRA_DrawPrimitive_TriangleComm(ctx,
 				xyz,	xyz_str,	st,		st_str,
 				rgb,	rgb_str,	mode,	count);
-			return;
+			return(0);
 		}
 
 		if((mode==TKRA_TRIANGLE_FAN) || (mode==TKRA_POLYGON))
@@ -807,7 +817,7 @@ int TKRA_DrawPrimitiveIndexArrayBasic(
 			TKRA_DrawPrimitive_PolyComm(ctx,
 				xyz,	xyz_str,	st,		st_str,
 				rgb,	rgb_str,	mode,	count);
-			return;
+			return(0);
 		}
 	}
 #endif
@@ -1485,4 +1495,6 @@ int TKRA_DrawPrimitiveIndexArrayMultiTex(
 	ctx->blend_dfunc2=0;
 	TKRA_BindTexImg(ctx, ctx->tex_cur_mtx[i]);
 //	ctx->tex_cur=iimg;
+
+	return(0);
 }

@@ -21,7 +21,8 @@ Page Table Entry:
 u32 tk_vmemavl_freelist=0;
 u64 *tk_vmemavl_refbase=NULL;
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) || defined(__XG3__)
 
 #define TK_VMemAvl_PtrForTno(x)		((u64 *)(((u64)(x))<<4))
 #define TK_VMemAvl_TnoForPtr(x)		(((u64)(x))>>4)

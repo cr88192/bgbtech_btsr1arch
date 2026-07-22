@@ -186,13 +186,13 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 				if((str[1]>='0') && (str[1]<='7'))
 				{
 					t1=t+(str[1]-'0');
-					if(ctx->emit_riscv&0x22)
-					{
-						if(t1==BGBCC_SH_REG_R14)
-							t1=BGBCC_SH_REG_R2;
-						if(t1==BGBCC_SH_REG_R15)
-							t1=BGBCC_SH_REG_R3;
-					}
+//					if(ctx->emit_riscv&0x22)
+//					{
+//						if(t1==BGBCC_SH_REG_R14)
+//							t1=BGBCC_SH_REG_R2;
+//						if(t1==BGBCC_SH_REG_R15)
+//							t1=BGBCC_SH_REG_R3;
+//					}
 					return(t1);
 				}
 //				if((str[1]=='R') || (str[1]=='r'))
@@ -415,6 +415,8 @@ int BGBCC_JX2A_GetRegId(BGBCC_JX2_Context *ctx, char *str)
 			return(BGBCC_SH_REG_R0U);
 		if(!bgbcc_stricmp(str, "r1u"))
 			return(BGBCC_SH_REG_R1U);
+		if(!bgbcc_stricmp(str, "r14u"))
+			return(BGBCC_SH_REG_R14U);
 		if(!bgbcc_stricmp(str, "r15u"))
 			return(BGBCC_SH_REG_R15U);
 

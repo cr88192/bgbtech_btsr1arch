@@ -12,7 +12,7 @@ void *TKRA_Brk(int sz)
 	tkra_totbrk+=sz;
 	
 	ptr=Q_MallocLLn(sz+16, __FILE__, __LINE__);
-	while(((long)ptr)&15)
+	while(((long long)ptr)&15)
 		ptr++;
 	return(ptr);
 }
@@ -1318,7 +1318,7 @@ int TKRA_BindTexImg2(TKRA_Context *ctx, TKRA_TexImage *img)
 {
 	if(!img)
 		return(-1);
-	if((((long)img)>>60)!=0)
+	if((((long long)img)>>60)!=0)
 		return(-1);
 
 	ctx->tex_cur2=img;

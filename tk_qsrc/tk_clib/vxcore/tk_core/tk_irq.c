@@ -208,7 +208,8 @@ int TK_SchedAddTask(TKPE_TaskInfo *newtask)
 }
 #endif
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) || defined(__XG3__)
 
 extern volatile u64 __arch_ttb;
 extern volatile u64 __arch_tea;
@@ -375,6 +376,7 @@ __interrupt void __isr_syscall(void)
 	u32 reg_sr, umsg, opw;
 	s32 lnxsc;
 	u16 exsr;
+	int umthd;
 	
 	ttb=__arch_ttb;
 	tea=__arch_tea;
@@ -406,7 +408,7 @@ __interrupt void __isr_syscall(void)
 	{
 		spc=isrsave[TKPE_REGSAVE_SPC];
 		spcm=tk_vmem_virttophys(spc);
-		if(((reg_sr>>26)&1) && !((reg_sr>>23)&1))
+		if(((reg_sr>>26)&1) && !((reg_sr>>23)&1) && !((reg_sr>>27)&1))
 		{
 			opw=*(u32 *)spcm;
 			if((opw&3)==3)
@@ -514,10 +516,19 @@ __interrupt void __isr_syscall(void)
 				}
 			}
 			
-			if(	(umsg>=TK_UMSG_COMGLUE_VMT4) &&
-				(umsg<=TK_UMSG_COMGLUE_VMT63)	&&
-				TK_VMem_CheckAddrIsPhysPage(uobj)	)
+			if(TK_VMem_CheckAddrIsPhysPage(uobj))
 			{
+				umthd=0;
+
+				if(	(umsg>=TK_UMSG_COMGLUE_VMT4) &&
+					(umsg<=TK_UMSG_COMGLUE_VMT63) )
+						{ umthd=umsg-TK_UMSG_COMGLUE_VMT0; }
+
+				if((umsg>=2) && (umsg<=4095))
+				{
+					umthd=umsg;
+					task2=TKGDI_LookupExpObjTask(uobj);
+				}
 			}
 		}
 
@@ -698,7 +709,14 @@ void TK_Task_SyscallGetArgs(
 	
 //	task=(TKPE_TaskInfo *)__arch_tbr;
 	task=(TKPE_TaskInfo *)TK_GET_TBR;
+
+	if(task->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
+
 	taskern=(TKPE_TaskInfoKern *)task->krnlptr;
+
+	if(taskern->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
 
 	task2=(void *)(taskern->task_sysc_user);
 	if(!task)
@@ -710,8 +728,14 @@ void TK_Task_SyscallGetArgs(
 		*rargs=NULL;
 		return;
 	}
-	
+
+	if(task2->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
+
 	taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
+
+	if(taskern2->magic0!=TKPE_TASK_MAGIC)
+		__debugbreak();
 	
 	regs=taskern2->ctx_regsave;
 	reg_sr=regs[TKPE_REGSAVE_EXSR]>>32;
@@ -727,6 +751,8 @@ void TK_Task_SyscallGetArgs(
 		if(lnxsc>0)
 //		if(0)
 		{
+//			__debugbreak();
+		
 			sobj=NULL;
 			umsg=TK_UMSG_LNXSC+lnxsc;
 			
@@ -743,6 +769,10 @@ void TK_Task_SyscallGetArgs(
 
 	}else
 	{
+#ifdef __XG3__
+		__debugbreak();
+#endif
+
 		/* BJX2 Mode */
 		sobj=(void *)(regs[TKPE_REGSAVE_R4]);
 		umsg=(u32)(regs[TKPE_REGSAVE_R5]);
@@ -760,7 +790,8 @@ void TK_Task_SyscallGetArgs(
 
 void tk_syscall2_rtuser();
 
-#ifndef __BJX2__
+// #ifndef __BJX2__
+#if !defined(__BJX2__) && !defined(__XG3__)
 
 void tk_syscall2_rtuser()
 {
@@ -855,6 +886,7 @@ int TK_Task_SyscallLoop(void *uptr)
 	/* This loop spins indefinately as part of a syscall handler task. */
 	while(1)
 	{
+//		task=NULL;	sobj=NULL;	umsg=0;		args=NULL;
 		TK_Task_SyscallGetArgs(&task, &sobj, &umsg, &rptr, &args);
 		if(task && umsg)
 		{
@@ -925,6 +957,50 @@ int TK_Task_SyscallLoop(void *uptr)
 		TK_Task_SyscallReturnToUser(task);
 	}
 
+	/* control should never get here. */
+	__debugbreak();
+#endif
+}
+
+int TK_Task_ObjectHandlerLoop(void *uptr)
+{
+#ifndef __TK_CLIB_ONLY__
+	TKPE_TaskInfo *task, *task2;
+	TKPE_TaskInfoKern *taskern;
+	int umsg, umidx;
+	u64 *argsl;
+	void **upa;
+	void *sobj, *rptr, *args, *baseobj;
+	s64		rc;
+	int		i, j, k;
+
+	upa=(void **)uptr;
+	task2=upa[0];
+	baseobj=upa[1];
+
+	task=NULL;	sobj=NULL;
+	umsg=0;		rptr=NULL;
+	args=NULL;
+
+	/* Not handling syscalls yet, return to spawner. */
+	TK_Task_SyscallReturnToUser(task2);
+
+	/* This loop spins indefinately as part of a handler task. */
+	while(1)
+	{
+//		task=NULL;	sobj=NULL;	umsg=0;		args=NULL;
+		TK_Task_SyscallGetArgs(&task, &sobj, &umsg, &rptr, &args);
+		if(sobj && task && umsg)
+		{
+			umidx=0;
+			if((umsg>=2) && (umsg<=4095))
+				umidx=umsg;
+			if((umsg>=TK_UMSG_COMGLUE_VMT0) && (umsg<=TK_UMSG_COMGLUE_VMT63))
+				umidx=umsg-TK_UMSG_COMGLUE_VMT0;
+			TKGDI_ComGlueDispatch(task, sobj, umidx, rptr, args);
+		}
+		TK_Task_SyscallReturnToUser(task);
+	}
 	/* control should never get here. */
 	__debugbreak();
 #endif
@@ -1016,12 +1092,17 @@ int TK_FindFreePid()
 	return(-1);
 }
 
+static int tk_task_initsane_0=789;
+
 void *TK_AllocNewTask()
 {
 	TKPE_TaskInfo		*task;
 	TKPE_TaskInfoUser	*tusr;
 	TKPE_TaskInfoKern	*tknl;
 	int pid;
+
+	if(tk_task_initsane_0!=789)
+		{ __debugbreak(); }
 
 	pid=TK_FindFreePid();
 	if(pid<=0)
@@ -2334,7 +2415,8 @@ int tk_getpid(void)
 }
 
 #ifndef __TK_CLIB_ONLY__
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) || defined(__XG3__)
 
 TKPE_TaskInfo *TK_SpawnNewThread2B(
 	TKPE_TaskInfo *btask, void *func, void *uptr, TKPE_CreateTaskInfo *info)
@@ -2380,7 +2462,16 @@ TKPE_TaskInfo *TK_SpawnNewThread2B(
 	boottbr=task;
 	bootptr=tk_thread_entry;
 	
+	if(!bootgbr)
+		bootgbr=__arch_gbr;
+	
 	bootptrbits=(long)bootptr;
+
+#ifdef __XG3__
+	bootptrbits&=0x0000FFFFFFFFFFFEULL;
+	bootptrbits|=0x000C000000000001ULL;
+#endif
+
 	if(bootptrbits&1)
 	{
 		/* Clear LSB, the mode needs to be handled explicitly. */
@@ -2549,9 +2640,13 @@ TKPE_TaskInfo *TK_SpawnNewThreadB(TKPE_TaskInfo *btask, void *func, void *uptr)
 int TK_SpawnSyscallTask(TKPE_TaskInfo *btask)
 {
 #ifndef __TK_CLIB_ONLY__
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) || defined(__XG3__)
 	TKPE_TaskInfo *sctask;
 	TKPE_TaskInfoKern *taskern;
+
+	if(tk_task_syscall_isinit!=123)
+		{ __debugbreak(); }
 
 //	tk_task_syscall=btask;	//temporary
 
@@ -2559,6 +2654,27 @@ int TK_SpawnSyscallTask(TKPE_TaskInfo *btask)
 	tk_task_syscall=sctask;
 	tk_task_syscall_isinit=1;
 
+	sctask->ystatus=1024;
+
+	taskern=(TKPE_TaskInfoKern *)(sctask->krnlptr);
+	taskern->ctx_regsave[TKPE_REGSAVE_EXSR]|=0xC000000000000000ULL;
+#endif
+#endif
+}
+
+int TK_SpawnObjectHandlerTask(TKPE_TaskInfo *btask, void *uobj)
+{
+#ifndef __TK_CLIB_ONLY__
+#if defined(__BJX2__) || defined(__XG3__)
+	static void *upa[4];
+	TKPE_TaskInfo *sctask;
+	TKPE_TaskInfoKern *taskern;
+
+	upa[0]=btask;
+	upa[1]=uobj;
+
+	sctask=TK_SpawnNewThreadB(btask, TK_Task_ObjectHandlerLoop, upa);
+	TKGDI_ExportObjectTask(sctask, uobj);
 	sctask->ystatus=1024;
 
 	taskern=(TKPE_TaskInfoKern *)(sctask->krnlptr);
@@ -2690,7 +2806,8 @@ int TK_AllocNewTlsA(void)
 #ifndef __TK_CLIB_ONLY__
 	if(tk_iskernel())
 	{
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) || defined(__XG3__)
 		tid=TK_AllocNewTlsB((TKPE_TaskInfo *)__arch_tbr);
 		return(tid);
 #endif

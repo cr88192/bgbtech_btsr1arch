@@ -599,21 +599,21 @@ Load/Store displacement will be scaled by the element size:
 * X will also have a scale of 8.
 
 ** F1zz_Czzz
-*** iiiiiiiiii-mmmmmm-1100-nnnnnn-00-0110 ? BTSTT	Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1100-nnnnnn-10-0110 ? BTSTF	Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1101-nnnnnn-00-0110 ? BGT		Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1101-nnnnnn-10-0110 ? BLE		Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1110-nnnnnn-00-0110 ? BGTU	Rm, Rn, Disp10s
-*** iiiiiiiiii-mmmmmm-1110-nnnnnn-10-0110 ? BLEU	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1100-nnnnnn-00-0110 ? BNTST	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1100-nnnnnn-10-0110 ? BTST	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1101-nnnnnn-00-0110 ? BLT		Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1101-nnnnnn-10-0110 ? BGE		Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1110-nnnnnn-00-0110 ? BLTU	Rm, Rn, Disp10s
+*** iiiiiiiiii-mmmmmm-1110-nnnnnn-10-0110 ? BGEU	Rm, Rn, Disp10s
 *** iiiiiiiiii-mmmmmm-1111-nnnnnn-00-0110 ? BEQ		Rm, Rn, Disp10s
 *** iiiiiiiiii-mmmmmm-1111-nnnnnn-10-0110 ? BNE		Rm, Rn, Disp10s
 
 For the relative branch cases, these will be modified to be relative to BasePC and use a 4 byte scale (+/- 2K).
-* BTSTT, Branch if !(Rm AND Rn)
-* BTSTF, Branch if (Rm AND Rn)
+* BNTST, Branch if !(Rm AND Rn)
+* BTST, Branch if (Rm AND Rn)
 
 Possible:
-* XG3L may require Rm to be X0 for BGT/BLE and BEQ/BNE.
+* XG3L may require Rm to be X0 for BLT/BGE and BEQ/BNE.
 ** BGTU and BLEU will be disallowed.
 
 
@@ -984,11 +984,26 @@ Repack:
 
 Decoder switch Rn and Ro fields relative to XG1/XG2 for the 1R and 0R blocks.
 
-*** 0000-000010-000000-0011-nnnnnn-00-0010  JMP		Rn
-*** 0000-000010-000001-0011-nnnnnn-00-0010  JSR		Rn
+* 0000-000010-000000-0011-nnnnnn-00-0010  JMP		Rn
+* 0000-000010-000001-0011-nnnnnn-00-0010  JSR		Rn
 
-*** 0000-000010-001100-0011-nnnnnn-00-0010  BRA.L	Rn
-*** 0000-000010-001101-0011-nnnnnn-00-0010  BSR.L	Rn
+* 0000-000010-001100-0011-nnnnnn-00-0010  BRA.L	Rn
+* 0000-000010-001101-0011-nnnnnn-00-0010  BSR.L	Rn
+
+
+* 0000-000001-001100-0011-nnnnnn-00-0010  INVIC		Rn
+* 0000-000001-001101-0011-nnnnnn-00-0010  INVDC		Rn
+
+Special 0R (System Only):
+
+* 0000-000000-000000-0011-001100-00-0010  RTE
+* 0000-000000-000000-0011-001111-00-0010  LDTLB
+
+* 0000-000010-000000-0011-000001-00-0010  RTSU
+* 0000-000010-000000-0011-000010-00-0010  SYSCALL
+* 0000-000010-000000-0011-000100-00-0010  LDACL
+
+* 0000-000010-000000-0011-001111-00-0010  INVTLB
 
 
 

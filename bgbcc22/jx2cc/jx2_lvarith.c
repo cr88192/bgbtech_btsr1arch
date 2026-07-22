@@ -1506,13 +1506,19 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegVariant(
 
 			if(invert)
 			{
-				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
-					BGBCC_SH_NMID_TST, BGBCC_SH_REG_R2, BGBCC_SH_REG_R2);
-				BGBCC_JX2C_EmitDstRegOp(ctx, sctx,
-					BGBCC_SH_NMID_MOVT, BGBCC_SH_REG_R2);
+//				BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+//					BGBCC_SH_NMID_TST, BGBCC_SH_REG_R2, BGBCC_SH_REG_R2);
+//				BGBCC_JX2C_EmitDstRegOp(ctx, sctx,
+//					BGBCC_SH_NMID_MOVT, BGBCC_SH_REG_R2);
+
+				BGBCC_JX2C_EmitOpRegImmReg(ctx, sctx,
+					BGBCC_SH_NMID_XOR,
+					BGBCC_JX2CC_PSREG_RDRET, 1,
+					BGBCC_JX2CC_PSREG_RDRET);
 			}
 
-			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx, dreg, BGBCC_SH_REG_R2);
+			BGBCC_JX2C_EmitStoreVRegReg(ctx, sctx,
+				dreg, BGBCC_JX2CC_PSREG_RDRET);
 
 			return(1);
 		}

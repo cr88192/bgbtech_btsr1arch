@@ -31,7 +31,7 @@ void TK_Con_SetColorBg(int x);
 void tk_con_clear();
 
 
-u64 tk_gfxcon_glyphs[128]=
+const u64 tk_gfxcon_glyphs[128]=
 {
 0x0000000000000000,	//0x00
 0x7c82aa82aaba827c,	//0x01
@@ -266,7 +266,7 @@ u64 tk_gfxcon_glyphs[128]=
 
 };
 
-u64 tk_gfxcon_glyphs_lat1ext[128]=
+const u64 tk_gfxcon_glyphs_lat1ext[128]=
 {
 #if 1
 0x003844F040443800, /* 80 ' ' */
@@ -400,7 +400,7 @@ u64 tk_gfxcon_glyphs_lat1ext[128]=
 #endif
 };
 
-u64 tk_gfxcon_glyphs_437ext[128]=
+const u64 tk_gfxcon_glyphs_437ext[128]=
 {
 0x000f0908090f020e,	//0x80 "?"
 0x000a001212120c00,	//0x81 "?"
@@ -531,7 +531,7 @@ u64 tk_gfxcon_glyphs_437ext[128]=
 0x0000001e1e1e1e00,	//0xFE "?"
 };
 
-u64 tk_gfxcon_glyphs_cyril0[128]=
+const u64 tk_gfxcon_glyphs_cyril0[128]=
 {
 0x081C000808080600, /* 00 ' ' */
 0x001C221824241800, /* 01 ' ' */
@@ -663,7 +663,7 @@ u64 tk_gfxcon_glyphs_cyril0[128]=
 0x0060203C22223C00, /* 7F ' ' */
 };
 
-u64 tk_gfxcon_glyphs_gfx0[128]=
+const u64 tk_gfxcon_glyphs_gfx0[128]=
 {
 0x0000000000000000ULL,		//00
 0x00005028D4FAF4EAULL,		//01
@@ -795,13 +795,13 @@ u64 tk_gfxcon_glyphs_gfx0[128]=
 0x0000000000000000ULL,		//7F, Dummy
 };
 
-byte tk_con_clr16to64[16]={
+const byte tk_con_clr16to64[16]={
 	0x00, 0x20, 0x08, 0x28, 0x02, 0x22, 0x0A, 0x2A,
 	0x00, 0x30, 0x0C, 0x3C, 0x03, 0x33, 0x0F, 0x3F };
 
 u16 tk_con_clr64to555[64];
 
-u64 tk_con_hexdig[16] = {
+const u64 tk_con_hexdig[16] = {
 	0x0000020505050200ULL, /* 0 */
 	0x0000060202020700ULL, /* 1 */
 	0x0000060107040700ULL, /* 2 */
@@ -1533,7 +1533,7 @@ void TK_Con_PutcEscape(int ch)
 u16 tk_con_chpremap_key[256];
 u16 tk_con_chpremap_val[256];
 
-u16 tk_con_remaptab[]={
+const u16 tk_con_remaptab[]={
 0x20AC, 0x0080,		0x201A, 0x0082,
 0x0192, 0x0083,		0x201E, 0x0084,
 0x2026, 0x0085,		0x2020, 0x0086,

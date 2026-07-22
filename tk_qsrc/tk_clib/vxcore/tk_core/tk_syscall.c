@@ -235,6 +235,22 @@ s64 TK_HandleSyscall(TKPE_TaskInfo *task,
 	
 	switch((uMsg>>12)&15)
 	{
+	case 0:
+		if(!sObj || (uMsg<2) || (uMsg>4095))
+		{
+			tk_dbg_printf("SYSC: COMGLUE Bad Req "
+				"sObj=%p uMsg=%d vParm1=%p, vParm2=%p\n",
+					sObj, uMsg, vParm1, vParm2);
+			ret=TK_URES_FALSE;
+			break;
+		}
+		/* COMGLUE */
+		TKGDI_ComGlueDispatch(task,
+			sObj, uMsg&4095,
+			vParm1, vParm2);
+		ret=TK_URES_TRUE;
+		break;
+
 	case 1:
 		switch((uMsg>>8)&15)
 		{

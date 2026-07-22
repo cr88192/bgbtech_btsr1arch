@@ -1959,6 +1959,16 @@ int BGBCC_JX2C_EmitCompareVRegVRegVRegQLong(
 				if(	(nm1==BGBCC_SH_NMID_TSTQ) &&
 					(nm2==BGBCC_SH_NMID_BT)		)
 						{ nm3=BGBCC_SH_NMID_NTST; }
+
+#if 1
+				if(	(nm1==BGBCC_SH_NMID_CMPQHI) &&
+					(nm2==BGBCC_SH_NMID_BT)		)
+						{ nm3=BGBCC_SH_NMID_CMPQHI; }
+
+				if(	(nm1==BGBCC_SH_NMID_CMPQHI) &&
+					(nm2==BGBCC_SH_NMID_BF)		)
+						{ nm3=BGBCC_SH_NMID_CMPQLEU; }
+#endif
 			}
 
 			if(!(sctx->has_qmul&16))

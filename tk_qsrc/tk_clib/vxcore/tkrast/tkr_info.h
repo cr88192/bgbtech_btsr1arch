@@ -139,8 +139,9 @@ typedef u32 nlint;
 // #define		TKRA_PARAM_TRISUBDIV_EDGE	(32*32*3)
 // #define		TKRA_PARAM_TRISUBDIV_NEAR	(24*24*3)
 
+#define		TKRA_PARAM_TRISUBDIV_DFL		(128*128*3)
 // #define		TKRA_PARAM_TRISUBDIV_DFL	(64*64*3)
-#define		TKRA_PARAM_TRISUBDIV_DFL	(48*48*3)
+// #define		TKRA_PARAM_TRISUBDIV_DFL	(48*48*3)
 // #define		TKRA_PARAM_TRISUBDIV_DFL	(36*36*3)
 
 // #define		TKRA_PARAM_TRISUBDIV_EDGE	(40*40*3)
@@ -155,9 +156,10 @@ typedef u32 nlint;
 // #define		TKRA_PARAM_QUADSUBDIV_EDGE	(40*40*4)
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
 
+#define		TKRA_PARAM_QUADSUBDIV_DFL	(128*128*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(72*72*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(64*64*4)
-#define		TKRA_PARAM_QUADSUBDIV_DFL	(60*60*4)
+// #define		TKRA_PARAM_QUADSUBDIV_DFL	(60*60*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(56*56*4)
 // #define		TKRA_PARAM_QUADSUBDIV_DFL	(40*40*4)
 
@@ -167,6 +169,11 @@ typedef u32 nlint;
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(24*24*4)
 // #define		TKRA_PARAM_QUADSUBDIV_NEAR	(16*16*4)
 #define		TKRA_PARAM_QUADSUBDIV_NEAR	(12*12*4)
+
+// #define		TKRA_PARAM_SCRQUADSUBDIV	64
+// #define		TKRA_PARAM_SCRQUADSUBDIV	48
+#define		TKRA_PARAM_SCRQUADSUBDIV	32
+// #define		TKRA_PARAM_SCRQUADSUBDIV	16
 
 /*
 DrawSpan Parameter Array
@@ -530,6 +537,7 @@ typedef struct TKRA_SvContext_s	TKRA_SvContext;
 typedef struct TKRA_ClContext_s	TKRA_ClContext;
 typedef struct TKRA_ContextVt_s	TKRA_ContextVt;
 typedef struct TKRA_TexImage_s		TKRA_TexImage;
+typedef struct TKRA_PrimSubDiv_s	TKRA_PrimSubDiv;
 
 // #ifdef __BJX2__
 #ifdef BJX2_SIMD
@@ -606,6 +614,12 @@ typedef struct {
 	s32	s2;		//18
 	s32 t2;		//1C
 	u64 attrib[4];
+	
+	float		rcp_z;
+	float		rcp_s;
+	float		rcp_t;
+	float		rcp_s2;
+	float		rcp_t2;
 }tkra_projvertex;
 
 typedef u64 (*tkra_blendfunc_t)(u64 sclr, u64 dclr);
@@ -791,7 +805,7 @@ tkra_trivertex v1stk[TKRA_MAX_PROJSTACK];
 tkra_trivertex v2stk[TKRA_MAX_PROJSTACK];
 tkra_trivertex v3stk[TKRA_MAX_PROJSTACK];
 
-
+TKRA_PrimSubDiv		*subdiv_free;
 
 int tex_rov;
 TKRA_TexImage *tex_list;
@@ -999,4 +1013,13 @@ u64		pad1;						//30
 void	*svptr;						//38, server-side pointer
 int		tex_mipofs[16];				//40 mip offs, pixels
 int		tex_mipofs_bcn[16];			//80 mip offs, block DWORDs
+};
+
+struct TKRA_PrimSubDiv_s
+{
+TKRA_PrimSubDiv	*next;
+tkra_projvertex pv0;
+tkra_projvertex pv1;
+tkra_projvertex pv2;
+tkra_projvertex pv3;
 };

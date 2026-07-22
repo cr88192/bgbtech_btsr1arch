@@ -1,0 +1,142 @@
+Layered Image.
+  Will use a TLV format.
+  Nominal file extension ".gel"
+
+TLV format:
+  FOURCC tag;  //ASCII only
+  DWORD nLen;  //Length, bitwise NOT
+  BYTE data[~nLen];
+
+Top-level Tag: 'GELI'
+
+'head':
+  Main Header;
+  Basically a normal BITMAPINFO Header.
+
+Layered Images:  
+  'li##': Layer Image (Uncompressed).
+  'l3##': Layer Image (RP2).
+  'l4##': Layer Image (LZ4).
+  Numbered from 00 to FF in hex.
+
+
+=== li / l3 / l4 tags ===
+
+The layer images contain raw pixel data covering the entire canvas area. As such, any transparent areas are filled with a transparent color.
+
+For the basic 'li' variant, the image data is stored in a raw/uncompressed form. The l3 and l4 tags will apply compression, either RP2 or LZ4. Note that no additional packaging or metadata will be present, as such the tag's data area will contain raw compressed data.
+
+The first two bytes of the FOURCC will identify this as a layer tag, with the remaining two bytes giving the layer ID in hexadecimal.
+
+
+For the L3 and L4 tags, if the payload contains an additional bytes equal to the number of scanlines, this will indicate that the stored image has filters applied, with 1 byte per scanline.
+
+These extra bytes will be stored at the end of the image, and will contain one of several values giving a predictor:
+
+* 0: None
+* 1: Last Value (A)
+* 2: Up (Previous Line), (B)
+* 3: Average of Last and Up ((A+B)/2)
+* 4: Paeth (p=A+B-C, choosing whichever value is closest to p).
+
+These predictors are basically the same as those in the PNG format.
+
+
+=== BITMAPINFOHEADER ===
+
+ BITMAPINFOHEADER:
+ 	U32	biSize;
+	S32	biWidth;
+	S32	biHeight;
+	U16	biPlanes;
+	U16	biBitCount;
+	U32	biCompression;
+	U32	biSizeImage;
+	S32	biXPelsPerMeter;
+	S32	biYPelsPerMeter;
+	U32	biClrUsed;
+	U32	biClrImportant;
+
+Normally, biSize is 40, which indicates this header, but possibly other headers can be used here. Implicitly, biSize also gives the relative offset to the color palette.
+
+Note that biCompression will generally be 0, even when layers are compressed. This may be used to signal alternate image formats (beyond indexed color or RGB).
+
+
+While in theory the header can be used (like in BMP) to express hicolor or truecolor images, these will not necessarily be supported in GfxEdit.
+
+Nominally, GfxEdit will use 8-bits per pixel internally, with lower bit depths being represented using 8-bit bytes.
+
+Note that unlike standard BMP, these images will normally be stored with the origin in the upper-left corner (and biHeight as negative). Also unlike normal BMP scanlines will not be padded to a multiple of 4 bytes (though if lower-BPP formats were used, scanlines would be padded to a complete byte).
+
+
+
+=== RP2 Compression ===
+
+RP2 (Transposed, LE):
+*                        dddddddd-dlllrrr0	(l=3..10, d=0..511, r=0..7)
+*               dddddddd-dddddlll-lllrrr01	(l=4..67, d=0..8191)
+*      dddddddd-dddddddd-dlllllll-llrrr011	(l=4..515, d=0..131071)
+*                                 rrrr0111	(Raw Bytes, r=(r+1)*8, 8..128)
+*                               * rrr01111	(Long Match)
+*                                 rr011111	(r=1..3 bytes, 0=EOB)
+*                        rrrrrrrr-r0111111 	(Long Raw, r=(r+1)*8, 8..4096)
+*                        lllllll0-01111111  (RP2B, l=4..131, d=1, r=0)
+* 2x D-ddddddll-llllllll-llllrrr1-01111111  (RP2B, l=4..16K, d=0..4M, r=0..7)
+*
+** d: Distance
+** l: Match Length
+** r: Literal Length
+
+Long match is excluded.
+
+Note that the encodings here are expressed in a transposed order. In a real decoder it would be looking at a unary code in the low-order bits of a little-ending word to figure out the match type.
+
+
+Note that if the RP2 blob begins with the two byte magic 10-00, it is an escape for an SFT+AdRice post-encoded blob.
+
+
+=== STF+AdRice RP2 Post-Compressor ===
+
+STF+AdRice post-compressor for RP2.
+
+Escape Magic: 0x10, 0x00
+* This will represent an illegal match in RP2.
+
+Uses 3 contexts: Tag, Length/Distance, and Literal.
+
+This separates bytes by category and then uses the appropriate context for each symbol byte.
+
+The first Byte of the Tag will be encoded using the Tag context, with Length/Distance for each of the remaining bytes in the tag. Any encoded Raw/Literal bytes will then be encoded use the Literal context (following the tag bytes).
+
+While not optimal, simply throwing the remaining bytes into a combined length/distance context was an "acceptable" compromise. Multiple contexts or repacking the fields into VLNs didn't seem worth the additional complexity.
+
+As with normal RP2, the decoding will stop when an 0x1F tag is encountered. In terms of encoded symbols, this will be a 1:1 mapping to the byte based format.
+
+
+This uses an AdRice implementation that steps by a fraction of a bit.
+The slower stepping was better for compression in this case.
+Where, Rice involves splitting the value into a unary coded prefix (Q)
+and a K bit suffix. In AdRice, the K value is adjusted based on Q.
+Rather than directly incrementing/decrementing K, was more effective to
+step with a partial bit here to slow the adaptation.
+
+In this case there will be 5 fractional bits (or 32 steps to adjust K by 1 bit), with a starting K value of 6 bits. Here, Kf will be used to denote K with the additional fraction bits.
+
+The Q prefix will be encoded as 0 or more 1 bits usually terminated by a 0 bit (except in the case of 8 consecutive ones, where no terminating 0 bit is present).
+
+For the value of Q:
+* 0: Decrement Kf if Kf>0
+* 1: Leave Kf as-is
+* 2..7: Increment Kf
+* 8: Increment Kf, but escapes to a raw 8-bit symbol index.
+** The combined symbol length is always 16 bits in this case.
+** Or, 8x 1-bits followed by the escaped index.
+
+
+STF: Swap Towards Front
+After each symbol is encoded, it is swapped towards the front of the list.
+This will typically swap symbols towards an approximation of an optimal order.
+
+Initial state will be to fill each context with all symbols in order.
+For each encoded symbol, it will be swapped with the symbol at (I*15)/16 of the current position.
+

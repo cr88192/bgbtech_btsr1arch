@@ -28,8 +28,11 @@ _start:
 	mov r10, gbr
 	mov r10, tbr
 	mov r10, mmcr
-
+#ifdef __XG3__
+	mov		0x000C000000000000, r10
+#else
 	mov		0x0004000000000000, r10
+#endif
 	mov		r10, vbr
 
 //	cpuid #1
@@ -48,8 +51,8 @@ _start:
 
 //	bsr tk_checksane_asm
 
-	bsr copy_data
 	bsr zero_bss
+	bsr copy_data
 
 	mov STACK_BASE_ISR, r10
 	mov r10, ssp
@@ -109,10 +112,13 @@ _iscore2__isr_boot:
 
 
 zero_bss:
-	mov		__bss_start, r10
+//	mov		__bss_start, r10
+	mov		__data_start, r14
 	mov		_end, r13
+	mov		gbr, r10
 	mov 	0, r11
-	sub		r13, r10, r12
+//	sub		r13, r10, r12
+	sub		r13, r14, r12
 	bra		memset
 //	break
 
@@ -229,7 +235,7 @@ sleep_0:
 __memcpy128:
 	add		r11, r12, r15
 //  bgt		r0, r12, .L0
-	bgt		r11, r15, .L0
+	bgt		r15, r11, .L0
     bra		.L1
 	.L0:
 	mov.q	(r11, 0), r16
@@ -240,7 +246,7 @@ __memcpy128:
 	mov.q	r17, (r10, 8)
     add		r10, 16, r10
 //	bgt		r0, r12, .L0
-	bgt		r11, r15, .L0
+	bgt		r15, r11, .L0
     .L1:
     rts
 

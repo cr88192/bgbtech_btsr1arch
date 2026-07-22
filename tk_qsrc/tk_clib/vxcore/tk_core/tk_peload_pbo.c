@@ -783,6 +783,9 @@ TKPE_ImageInfo *TKPE_LoadDynPE(TK_FILE *fd, int fdoffs,
 	TKPE_ApplyBaseRelocs(imgptr, imgptr+rva_rlc, sz_rlc, rlc_disp, pboix,
 		imgbase, gbr_rva, gbr_sz, mach);
 
+	TK_VMem_MProtectPages((u64)imgptr, imgsz1,
+		TKMM_PROT_READ|TKMM_PROT_EXEC);
+
 
 	TK_FlushCacheL1D();
 	TK_FlushCacheL1D_INVIC(NULL);

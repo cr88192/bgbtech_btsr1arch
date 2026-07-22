@@ -211,6 +211,11 @@ void tk_putsn_v(char *str, int n)
 	void *p;
 	int k;
 
+	if(!TK_GET_TBR)
+	{
+		__debugbreak();
+	}
+
 //	ar=tk_puts_gettempargs();
 	
 	if(!tk_puts_gbltemp)

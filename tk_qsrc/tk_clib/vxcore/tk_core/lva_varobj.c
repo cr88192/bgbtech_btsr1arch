@@ -837,7 +837,8 @@ LVA_VarObject *TKMM_LVA_AllocVarObj(void)
 }
 
 
-#ifdef __BJX2__
+// #ifdef __BJX2__
+#if defined(__BJX2__) || defined(__XG3__)
 
 
 __object __lvo_emptyobject(void)

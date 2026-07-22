@@ -2610,6 +2610,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		k=(k+63)&(~63);
 	}
 
+	k+=65536;
+
 	if(k>omsz)
 	{
 		if(omsz<65536)
@@ -2622,7 +2624,8 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 		*rosz=omsz;
 	}
 
-	memset(obuf, 0, k);
+//	memset(obuf, 0, k);
+	memset(obuf, 0, omsz);
 #endif
 
 //	k=ofs_sdat;
@@ -2718,7 +2721,7 @@ ccxl_status BGBCC_JX2C_FlattenImagePECOFF(BGBCC_TransState *ctx,
 //	sctx->sec_lva[i]=0x0C000000+k;
 	sctx->sec_lva[i]=img_base+k;
 	sctx->sec_lsz[i]=j;
-	memset(obuf+k, 0, j);
+//	memset(obuf+k, 0, j);
 	k+=j;
 	k=(k+63)&(~63);
 

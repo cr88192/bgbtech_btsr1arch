@@ -2144,6 +2144,7 @@ int AllocBlock (int w, int h, int *x, int *y)
 	}
 
 	Sys_Error ("AllocBlock: full");
+	return(0);
 }
 
 
@@ -2440,9 +2441,17 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	//		ptmp[1]=(vec[1]+porg[1])*0.5;
 	//		ptmp[2]=(vec[2]+porg[2])*0.5;
 
-			ptmp[0]=(vec[0]*0.95)+(porg[0]*0.05);
-			ptmp[1]=(vec[1]*0.95)+(porg[1]*0.05);
-			ptmp[2]=(vec[2]*0.95)+(porg[2]*0.05);
+//			ptmp[0]=(vec[0]*0.95)+(porg[0]*0.05);
+//			ptmp[1]=(vec[1]*0.95)+(porg[1]*0.05);
+//			ptmp[2]=(vec[2]*0.95)+(porg[2]*0.05);
+
+			ptmp[0]=(vec[0]*0.625)+(porg[0]*0.375);
+			ptmp[1]=(vec[1]*0.625)+(porg[1]*0.375);
+			ptmp[2]=(vec[2]*0.625)+(porg[2]*0.375);
+
+			ptmp[0]+=pdz[0]*1;
+			ptmp[1]+=pdz[1]*1;
+			ptmp[2]+=pdz[2]*1;
 			
 	//		ptmp[0]+=pdz[0]*4;
 	//		ptmp[1]+=pdz[1]*4;
@@ -2459,7 +2468,8 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 			j = R_LightPointDir(ptmp, pdz) * 2;
 			
 	//		j=f*255;
-			if(j<1)j=1;
+//			if(j<1)j=1;
+			if(j<16)j=16;
 			if(j>255)j=255;
 			k=0xFF000000|(j<<16)|(j<<8)|j;
 
@@ -2470,6 +2480,9 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 
 	#endif
 		}
+
+		if(r_fullbright.value)
+			k=0xFFFFFFFFU;
 
 #ifdef QGL_HFLOAT
 		*(int *)(pv+6) = k;

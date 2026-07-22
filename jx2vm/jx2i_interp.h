@@ -1161,6 +1161,8 @@ byte cc_flush;
 byte core_id;
 byte rbsid;
 
+byte mem_vmaccess;
+
 int status;
 bjx2_addr trapc;
 

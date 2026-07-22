@@ -110,8 +110,8 @@ extern float	d_scalemip[3];
 
 extern void (*d_drawspans) (espan_t *pspan);
 
-float __fpu_frcp_sf(float f);
-float __fpu_fdiv_sf(float f, float g);
+double __fpu_frcp_sf(double f);
+double __fpu_fdiv_sf(double f, double g);
 
 int D_SoftDiv(int a, int b);
 int D_SoftDivB(int a, int b);

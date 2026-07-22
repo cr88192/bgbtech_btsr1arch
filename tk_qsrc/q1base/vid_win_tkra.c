@@ -44,6 +44,8 @@ HWND		mainwindow;
 HWND WINAPI InitializeWindow (HINSTANCE hInstance, int nCmdShow);
 
 int			DIBWidth, DIBHeight;
+int			DrawWidth, DrawHeight;
+
 qboolean	DDActive;
 RECT		WindowRect;
 DWORD		WindowStyle, ExWindowStyle;
@@ -703,7 +705,8 @@ void VID_InitMGLDIB (HINSTANCE hInstance)
 	strcpy (modelist[0].modedesc, "320x240");
 	modelist[0].mode13 = 0;
 	modelist[0].modenum = MODE_WINDOWED;
-	modelist[0].stretched = 0;
+//	modelist[0].stretched = 0;
+	modelist[0].stretched = 2;
 	modelist[0].dib = 1;
 	modelist[0].fullscreen = 0;
 	modelist[0].halfscreen = 0;
@@ -715,7 +718,8 @@ void VID_InitMGLDIB (HINSTANCE hInstance)
 	strcpy (modelist[1].modedesc, "640x480");
 	modelist[1].mode13 = 0;
 	modelist[1].modenum = MODE_WINDOWED + 1;
-	modelist[1].stretched = 1;
+//	modelist[1].stretched = 1;
+	modelist[1].stretched = 2;
 	modelist[1].dib = 1;
 	modelist[1].fullscreen = 0;
 	modelist[1].halfscreen = 0;
@@ -727,11 +731,25 @@ void VID_InitMGLDIB (HINSTANCE hInstance)
 	strcpy (modelist[2].modedesc, "800x600");
 	modelist[2].mode13 = 0;
 	modelist[2].modenum = MODE_WINDOWED + 2;
-	modelist[2].stretched = 1;
+//	modelist[2].stretched = 1;
+	modelist[2].stretched = 2;
 	modelist[2].dib = 1;
 	modelist[2].fullscreen = 0;
 	modelist[2].halfscreen = 0;
 	modelist[2].bpp = 8;
+
+	modelist[3].type = MS_WINDOWED;
+	modelist[3].width = 1280;
+	modelist[3].height = 960;
+	strcpy (modelist[2].modedesc, "1280x960");
+	modelist[3].mode13 = 0;
+	modelist[3].modenum = MODE_WINDOWED + 3;
+//	modelist[3].stretched = 1;
+	modelist[3].stretched = 2;
+	modelist[3].dib = 1;
+	modelist[3].fullscreen = 0;
+	modelist[3].halfscreen = 0;
+	modelist[3].bpp = 8;
 
 // automatically stretch the default mode up if > 640x480 desktop resolution
 	hdc = GetDC(NULL);
@@ -749,7 +767,8 @@ void VID_InitMGLDIB (HINSTANCE hInstance)
 
 	ReleaseDC(NULL,hdc);
 
-	nummodes = 3;	// reserve space for windowed mode
+//	nummodes = 3;	// reserve space for windowed mode
+	nummodes = 4;	// reserve space for windowed mode
 
 	DDActive = 0;
 }
@@ -1081,6 +1100,7 @@ void VID_CheckModedescFixup (int mode)
 {
 	int		x, y, stretch;
 
+#if 0
 	if (mode == MODE_SETTABLE_WINDOW)
 	{
 		modelist[mode].stretched = (int)vid_stretch_by_2.value;
@@ -1098,6 +1118,7 @@ void VID_CheckModedescFixup (int mode)
 		modelist[mode].width = x;
 		modelist[mode].height = y;
 	}
+#endif
 }
 
 
@@ -1312,16 +1333,34 @@ qboolean VID_SetWindowedMode (int modenum)
 	WindowRect.right = modelist[modenum].width;
 	WindowRect.bottom = modelist[modenum].height;
 	stretched = modelist[modenum].stretched;
-	stretched=0;
+//	stretched=0;
+
+	if (stretched&2)
+	{
+		WindowRect.right = modelist[modenum].width<<1;
+		WindowRect.bottom = modelist[modenum].height<<1;
+	}
 
 	DIBWidth = modelist[modenum].width;
 	DIBHeight = modelist[modenum].height;
+	DrawWidth = modelist[modenum].width;
+	DrawHeight = modelist[modenum].height;
 
-	if (stretched)
+#if 0
+	if (stretched&1)
 	{
 		DIBWidth >>= 1;
 		DIBHeight >>= 1;
 	}
+#endif
+
+#if 1
+	if (stretched&2)
+	{
+		DIBWidth <<= 1;
+		DIBHeight <<= 1;
+	}
+#endif
 
 	WindowStyle = WS_OVERLAPPED | WS_BORDER | WS_CAPTION | WS_SYSMENU |
 				  WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_CLIPSIBLINGS |
@@ -1451,7 +1490,7 @@ qboolean VID_SetWindowedMode (int modenum)
 
 //	MGL_makeCurrentDC(dibdc);
 
-	vid.buffer = vid.conbuffer = vid.direct = malloc(DIBWidth*DIBHeight*4);
+	vid.buffer = vid.conbuffer = vid.direct = malloc(DrawWidth*DrawHeight*4);
 	vid.rowbytes = vid.conrowbytes = DIBWidth;
 
 //	vid.buffer = vid.conbuffer = vid.direct = dibdc->surface;
@@ -1459,19 +1498,22 @@ qboolean VID_SetWindowedMode (int modenum)
 	vid.numpages = 1;
 	vid.maxwarpwidth = WARP_WIDTH;
 	vid.maxwarpheight = WARP_HEIGHT;
-	vid.height = vid.conheight = DIBHeight;
-	vid.width = vid.conwidth = DIBWidth;
+//	vid.height = vid.conheight = DIBHeight;
+//	vid.width = vid.conwidth = DIBWidth;
+	vid.height = vid.conheight = DrawHeight;
+	vid.width = vid.conwidth = DrawWidth;
 	vid.aspect = ((float)vid.height / (float)vid.width) *
 				(320.0 / 240.0);
 
-	for(cy=0; cy<DIBHeight; cy++)
-		for(cx=0; cx<DIBWidth; cx++)
+	for(cy=0; cy<DrawHeight; cy++)
+		for(cx=0; cx<DrawWidth; cx++)
 	{
-		((short *)(vid.buffer))[cy*DIBWidth+cx]=rand();
+		((short *)(vid.buffer))[cy*DrawWidth+cx]=rand();
 	}
 
 #if 1
-	vid.rowbytes = vid.conrowbytes = 2*DIBWidth;
+//	vid.rowbytes = vid.conrowbytes = 2*DIBWidth;
+	vid.rowbytes = vid.conrowbytes = 2*DrawWidth;
 	r_pixbytes=2;
 
 //	host_colormap16 = Hunk_AllocName (131072, "colormap16");
@@ -1480,7 +1522,7 @@ qboolean VID_SetWindowedMode (int modenum)
 	vid.colormap16 = host_colormap16;
 #endif
 
-	TKRA_SetupContextBasic(DIBWidth, DIBHeight);
+	TKRA_SetupContextBasic(DrawWidth, DrawHeight);
 
 	QGL_Init(NULL);
 	
@@ -1573,9 +1615,9 @@ qboolean VID_SetFullDIBMode (int modenum)
 
 	gdevmode.dmFields = DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT;
 	gdevmode.dmBitsPerPel = modelist[modenum].bpp;
-	gdevmode.dmPelsWidth = modelist[modenum].width << modelist[modenum].stretched <<
+	gdevmode.dmPelsWidth = modelist[modenum].width << (modelist[modenum].stretched&1) <<
 						   modelist[modenum].halfscreen;
-	gdevmode.dmPelsHeight = modelist[modenum].height << modelist[modenum].stretched;
+	gdevmode.dmPelsHeight = modelist[modenum].height << (modelist[modenum].stretched&1);
 	gdevmode.dmSize = sizeof (gdevmode);
 
 	if (ChangeDisplaySettings (&gdevmode, CDS_FULLSCREEN) != DISP_CHANGE_SUCCESSFUL)
@@ -1777,8 +1819,8 @@ int VID_SetMode (int modenum, unsigned char *palette)
 		IN_HideMouse ();
 	}
 
-	window_width = vid.width << vid_stretched;
-	window_height = vid.height << vid_stretched;
+	window_width = vid.width << (vid_stretched&1);
+	window_height = vid.height << (vid_stretched&1);
 	VID_UpdateWindowStatus ();
 
 	CDAudio_Resume ();
@@ -2651,7 +2693,8 @@ void	VID_Init (unsigned char *palette)
 	strcpy (modelist[0].modedesc, "320x240");
 	modelist[0].mode13 = 0;
 	modelist[0].modenum = MODE_WINDOWED;
-	modelist[0].stretched = 0;
+//	modelist[0].stretched = 0;
+	modelist[0].stretched = 2;
 	modelist[0].dib = 1;
 	modelist[0].fullscreen = 0;
 	modelist[0].halfscreen = 0;
@@ -2663,7 +2706,8 @@ void	VID_Init (unsigned char *palette)
 	strcpy (modelist[1].modedesc, "640x480");
 	modelist[1].mode13 = 0;
 	modelist[1].modenum = MODE_WINDOWED + 1;
-	modelist[1].stretched = 1;
+//	modelist[1].stretched = 1;
+	modelist[1].stretched = 2;
 	modelist[1].dib = 1;
 	modelist[1].fullscreen = 0;
 	modelist[1].halfscreen = 0;
@@ -2675,11 +2719,25 @@ void	VID_Init (unsigned char *palette)
 	strcpy (modelist[2].modedesc, "800x600");
 	modelist[2].mode13 = 0;
 	modelist[2].modenum = MODE_WINDOWED + 2;
-	modelist[2].stretched = 1;
+//	modelist[2].stretched = 1;
+	modelist[2].stretched = 2;
 	modelist[2].dib = 1;
 	modelist[2].fullscreen = 0;
 	modelist[2].halfscreen = 0;
 	modelist[2].bpp = 8;
+
+	modelist[3].type = MS_WINDOWED;
+	modelist[3].width = 1280;
+	modelist[3].height = 960;
+	strcpy (modelist[3].modedesc, "1280x960");
+	modelist[3].mode13 = 0;
+	modelist[3].modenum = MODE_WINDOWED + 3;
+//	modelist[3].stretched = 1;
+	modelist[3].stretched = 2;
+	modelist[3].dib = 1;
+	modelist[3].fullscreen = 0;
+	modelist[3].halfscreen = 0;
+	modelist[3].bpp = 8;
 
 //	vid_default = MODE_WINDOWED;
 //	vid_default = 2;
@@ -2687,7 +2745,8 @@ void	VID_Init (unsigned char *palette)
 
 	windowed_default = vid_default;
 
-	nummodes = 3;	// reserve space for windowed mode
+//	nummodes = 3;	// reserve space for windowed mode
+	nummodes = 4;	// reserve space for windowed mode
 #endif
 
 
@@ -2847,7 +2906,7 @@ u32 vid_tpix16_yuv655le(u16 pxa)
 }
 #endif
 
-#if 1
+#if 0
 static u32 *yuv655_ttab=NULL;
 static u32 *yuv744_ttab=NULL;
 
@@ -3085,10 +3144,15 @@ void FlipScreen(vrect_t *rects)
 		{
 			ict=fbufDib+(DIBHeight-i-1)*DIBWidth;
 
+			if((vid_stretched&2) && (i&1))
+				ics16-=DrawWidth;
+
 			if(vid_blendp)
 			{
 				for(j=0; j<DIBWidth; j++)
 				{
+					if((vid_stretched&2) && (j&1))
+						ics16--;
 					pix=*ics16++;
 //					pix=VID_BlendRatio16(pix, vid_blendv, vid_blendp);
 //					*ict++=vid_tpix16_yuv655le(pix);
@@ -3108,6 +3172,8 @@ void FlipScreen(vrect_t *rects)
 //				*ict++=d_8to24table[*ics++];
 //				*ict++=vid_tpix16_yuv655le(*ics16++);
 
+				if((vid_stretched&2) && (j&1))
+					ics16--;
 				pix=*ics16++;
 				cr=(pix>>10)&31; cr=(cr<<3)|(cr>>2);
 				cg=(pix>> 5)&31; cg=(cg<<3)|(cg>>2);
@@ -3164,7 +3230,7 @@ void FlipScreen(vrect_t *rects)
 
 			while (rects)
 			{
-				if (vid_stretched)
+				if (vid_stretched&1)
 				{
 					MGL_stretchBltCoord(windc,dibdc,
 						rects->x, rects->y,

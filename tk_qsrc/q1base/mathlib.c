@@ -726,7 +726,7 @@ float VectorNormalize (vec3_t v)
 
 }
 
-float __fpu_frcp_sf(float x);
+// double __fpu_frcp_sf(double x);
 
 float VectorNormalizeFast (vec3_t v)
 {

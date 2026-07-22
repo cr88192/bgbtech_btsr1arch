@@ -703,6 +703,11 @@ int TKRA_DrawPrimitive_TriangleComm(
 	cst=st;
 	crgb=rgb;
 
+	v0.fl=0;
+	v1.fl=0;
+	v2.fl=0;
+	v3.fl=0;
+
 	cnt=count/3;
 	for(i=0; i<cnt; i++)
 	{

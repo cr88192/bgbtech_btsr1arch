@@ -948,7 +948,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 	u32 pv, pv0, pv1;
 	int tgt_rva, gbr_end_rva;
 	int rva_page, sz_blk;
-	int isriscv, isbjx2, isbjx2xg2, isaddr96;
+	int isriscv, isbjx2, isbjx2xg2, isaddr96, isx3rv;
 	int secxor;
 	int tg;
 
@@ -958,7 +958,8 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 	isbjx2xg2=(mach==0xB265);
 	isbjx2xg2=(mach==0xB265);
 	isaddr96=(mach==0xB296) || (mach==0xB297);
-	
+	isx3rv=(mach==0xB253);
+
 	secxor=TK_GetRandom()&0xFFFF;
 
 //	printf("TKPE_ApplyStaticRelocs: disp=%X rlc=%p sz=%d\n",
@@ -1022,7 +1023,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				*((u32 *)pdst)=(*((u32 *)pdst))+(disp>>32);
 				break;
 			case 5:
-				if(isriscv)
+				if(isriscv || isx3rv)
 				{
 					/* RISC-V: Disp High 20 */
 					pv=*((u32 *)pdst);
@@ -1085,7 +1086,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				break;
 				
 			case 7:
-				if(isriscv)
+				if(isriscv || isx3rv)
 				{
 					/* RISC-V: Low 12 I */
 					pv=*((u32 *)pdst);
@@ -1096,7 +1097,7 @@ int TKPE_ApplyStaticRelocs(byte *imgptr, byte *rlc, int szrlc,
 				__debugbreak();
 				break;
 			case 8:
-				if(isriscv)
+				if(isriscv || isx3rv)
 				{
 					/* RISC-V: Low 12 S */
 					pv=*((u32 *)pdst);
@@ -1235,7 +1236,7 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 //	if(mach!=0xB264)
 //	if((mach!=0xB264) && (mach!=0x5064))
 	if(	(mach!=0xB264) && (mach!=0xB265) &&
-		(mach!=0x5064) &&
+		(mach!=0x5064) && (mach!=0xB253) &&
 		(mach!=0xB296) && (mach!=0xB297))
 	{
 		printf("TKPE: Unexpected Arch %04X\n", mach);
@@ -1443,6 +1444,11 @@ int TKPE_LoadStaticPE(TK_FILE *fd, void **rbootptr, void **rbootgbr,
 	{
 //		entry|=0x8008000000000001ULL;
 		entry|=0x0088000000000001ULL;
+	}
+
+	if(mach==0xB253)
+	{
+		entry|=0x000C000000000001ULL;
 	}
 
 	*rbootptr=(void *)entry;

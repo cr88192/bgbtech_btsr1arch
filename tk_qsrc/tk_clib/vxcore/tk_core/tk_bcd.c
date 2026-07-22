@@ -7,7 +7,7 @@ __m64 __bcd64_mod(__m64 a, __m64 b);
 __m64 __bcd64_fromint(long long a);
 long long __bcd64_toint(__m64 a);
 
-#if 1
+#ifdef __BJX2__
 u64 tk_bcd64_fromint_asm(long long val);
 
 __asm {
@@ -53,13 +53,15 @@ __m64 __bcd64_fromint(long long a)
 	long long li;
 	u64 tc, t0;
 	int i, j;
-	
+
+#ifdef __BJX2__
 	li=tk_bcd64_fromint_asm(a);
 	if(li!=-1)
 	{
 		c=(__m64)li;
 		return(c);
 	}
+#endif
 	
 	tc=0;
 	li=a;
