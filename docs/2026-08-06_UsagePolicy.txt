@@ -1,14 +1,16 @@
 Usage Policy for these ISA Designs:
-Anyone is free to use the ISA in any way they see fit (or under the normal terms of the MIT License) but with a few additional terms (as applicable to an ISA).
+Anyone is free to use the ISA in any way they see fit (or under the normal terms of the MIT License) but with a few additional terms (as applicable to wider use of the ISA).
 
 1. Usage of the ISA does not grant any form of legal ownership over the ISA proper. One is not allowed to act in such a way as to limit the freedom of others to use the ISA as they see fit. Likewise, one may not file patents that cover features present within the ISA nor pursue any patent claims in relation to features present within the ISA.
 
 2. Any new features added to the Public / Userland ISA are to be freely usable by all parties with an interest in using these features. It is not allowed to add new features with the intent of using patents or licensing to hinder others use of said features. Or, in other words: Free for all, or not at all.
 
-3. While one may use any relevant branding on products they create, it will not be allowed to plagairize or obscure the origin of the ISA.
+3. While one may use any relevant branding on products they create, it will not be allowed to plagiarize or obscure the origin of the ISA.
 
 
-Note 2a. There will be a partial exception for exclusively system-level features. However, if the feature is usable from useland and/or has any significant impact on the operation of code within userland, rule 2 will apply. Likewise, if the machine supports virtualization and the feature would be by extension required for correct operation of a guest operating system, then rule 2 will also cover said feature.
+Note 2a. There will be a partial exception for exclusively system-level features. However, if the feature is usable from userland and/or has any significant impact on the operation of code within userland, rule 2 will apply. Likewise, if the machine supports virtualization and the feature would be by extension required for correct operation of a guest operating system, then rule 2 will also cover said feature. Defensive patents may still be allowed if all parties are granted free and irrevocable use of any features described by said patent.
 
 Note 3a. The intention of these terms is not to limit the use of the ISA, but to preserve the freedoms of others to use the ISA.
+
+Note 3b. Limitation of scope: If a design fork diverges significantly enough from the original to where it can no longer reasonably be expected to remain compatible (or "the same ISA" as the original). It may be considered a "new work" and these policy terms need not apply. The intent of this policy is not to limit the creation of derivative works. However, this limitation will not apply if it is eveident to any well informed party that said incompatible changes were made solely for the purpose of escaping this policy (or said changes can reasonably seen as non-essential tokens used merely to assert unidirection incompatibility for sake of avoiding the policy).
 
