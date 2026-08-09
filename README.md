@@ -31,7 +31,7 @@ use cases. It is not intended to be a general purpose processor arch or for the 
 more acceptable for there to be variations or breaks in binary compatibility between implementations (granted, it is
 preferable if breaks in compatibility can be avoided if possible).
 
-My personal use-case is currently mostly in the context of using BSR1 for real-time motor control (Update, 2021-07: BJX2 has mostly taken over this role, as single-wide cores can be fit onto an XC7S25). ( Update, 2024-09: I have mostly dropped these use-cases in favor of using RISC-V instead. I am currently focusing on BJX2 for more computationally oriented tasks, rather than microcontroller tasks. )
+My personal use-case is currently mostly in the context of using BSR1 for real-time motor control (Update, 2021-07: BJX2 has mostly taken over this role, as single-wide cores can be fit onto an XC7S25). ( Update, 2024-09: I have mostly dropped these use-cases in favor of using RV32 and RV64 instead. I am currently focusing on BJX2 for more computationally oriented tasks, rather than microcontroller tasks. )
 
 Update, 2025-03: Should I have my own dedicated RV32 core?...
 * Removed some older comments.
@@ -56,6 +56,10 @@ General design summary of BJX2:
 * Supports explicitly parallel encodings (WEX2).
 * Has split into 3 major variants (XG1, XG2, and XG3)
 
+Informal, BJX3:
+* A gradually in progress rework effort that will switch to XG3 + RV64G as the ISAs, and likely drop XG1 and XG2.
+* For now, this will exist more as a simplification effort, but will carry over much of the former design (hardware interfaces and memory map).
+
 BJX2 currently has an FPU and MMU, with a 48 bit Virtual Address space and a 32-bit Physical Addresses space. The ISA and MMU design allow for a 48 bit Physical Address space as well. A mode exists where the Virtual Address space is confined to 32-bits, and a subset exists which uses 32-bit addresses.
 
 Some aspects of BJX2 are still in flux and the design is not yet frozen.
@@ -70,7 +74,7 @@ XG1: Natively 32 GPRs for 32-bit encodings, but supports 64 GPRs for a subset.
 
 XG2: Drops 16 bit ops, can encode 64 GPRs for the entire ISA, also expands immediate fields in various cases.
 
-XG3: Natively 64 GPRs, can exist in the same encoding space as RV64G (replacing the 16 bit RV-C encodings). It is possible to freely mix XG3 and RV64G instructions in this mode (but not RV-C, where RV64GC is a different CPU mode). XG3 uses the same register numbering as RISC-V, just merges the X and F registers into a single register space; and uses a variant of the RV64 LP64 ABI.
+XG3: Natively 64 GPRs, can exist in the same encoding space as RV64G (replacing the 16 bit RV-C encodings). It is possible to freely mix XG3 and RV64G instructions in this mode (but not RV-C, where RV64GC is a different CPU mode). XG3 uses the same register numbering as RV64G, just merges the X and F registers into a single register space; and uses a variant of the RV64 LP64 ABI.
 
 
 bgbcc22 (BGBCC): C compiler, partly reused from my BJX1 project, but modified to add support for BSR1 and BJX2.
@@ -102,7 +106,7 @@ jx2vlcore: Verilog attempts at a BJX2 processor.
 (2025-03): jx2vlcore3 does XG1/XG2/XG3 and RV64G.
 * But, can't boot a standard RV OS kernel.
 
-misc_x3vm: Userspace-only interpreter for XG3 and RISC-V.
+misc_x3vm: Userspace-only interpreter for XG3 and RV64G.
 * Intended to allow program images to be run within a host application.
 * In this case, the application takes on the role of the OS.
 
