@@ -1365,6 +1365,8 @@ s64 BGBCP_DefTypeFlag(BGBCP_ParseState *ctx, char *tag)
 						i=BGBCC_TYFL_TBRSAVE;
 					if(!bgbcp_strcmp(tag, "__restrict"))
 						i=BGBCC_TYFL_RESTRICT;
+					if(!bgbcp_strcmp(tag, "__rvabase"))
+						i=BGBCC_TYFL_RVABASE;
 				}
 
 				if(tag[2]=='s')

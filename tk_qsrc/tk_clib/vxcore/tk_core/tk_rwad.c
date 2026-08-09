@@ -1635,3 +1635,65 @@ char *TKDFS_TempNormalizeStringUtf8(char *src, int cfl)
 	
 	return(src);
 }
+
+void __mem_get_ptr_setuprvabase(void *obj, void *base, u32 tag)
+{
+	byte *hptr, *rvabase;
+	u32 rvaSelf, rvaSzTag, chk;
+	
+	hptr=((byte *)obj)-8;
+//	rvaSelf=((u32 *)hptr)[0];
+//	rvaSzTag=((u32 *)hptr)[1];
+
+	rvaSelf=((byte *)obj)-((byte *)base);
+	rvaSzTag=tag&0x00FFFFFF;
+
+	chk=rvaSelf^(rvaSzTag&0x00FFFFFF);
+	chk^=chk<<7;
+	chk^=chk>>17;
+	chk^=chk<<5;
+	chk^=chk>>11;
+	rvaSzTag|=chk<<24;
+	((u32 *)hptr)[0]=rvaSelf;
+	((u32 *)hptr)[1]=rvaSzTag;
+}
+
+byte *__mem_get_ptr_rvabase(void *obj)
+{
+	byte *hptr, *rvabase;
+	u32 rvaSelf, rvaSzTag, chk;
+	
+	hptr=((byte *)obj)-8;
+	rvaSelf=((u32 *)hptr)[0];
+	rvaSzTag=((u32 *)hptr)[1];
+
+	if(!(rvaSelf&0xF0000007))
+	{
+		chk=rvaSelf^(rvaSzTag&0x00FFFFFF);
+		chk^=chk<<7;
+		chk^=chk>>17;
+		chk^=chk<<5;
+		chk^=chk>>11;
+		if((rvaSzTag>>24)==(chk&255))
+		{
+			rvabase=((byte *)obj)-rvaSelf;
+			return(rvabase);
+		}
+	}
+	
+	return(NULL);
+}
+
+void *__mem_load_ptr_rva(void *obj, int ofs)
+{
+	u32 rva;
+	rva=*(u32 *)(((byte *)obj)+ofs);
+	return(__mem_get_ptr_rvabase(obj)+rva);
+}
+
+void __mem_store_ptr_rva(void *obj, int ofs, void *valptr)
+{
+	u32 rva;
+	rva=((byte *)valptr)-__mem_get_ptr_rvabase(obj);
+	*(u32 *)(((byte *)obj)+ofs)=rva;
+}

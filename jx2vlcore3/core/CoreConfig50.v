@@ -71,6 +71,8 @@
 
 `define	jx2_fpu_fullround			//FPU: Full Precision Rounding
 
+`define	jx2_fpu_fullfmac			//FPU: Full Width FMAC
+
 
 // `define jx2_mem_jnexbuf			//Extra Buffer Y Joiner
 `define jx2_mem_jnfastbuf			//Fast Buffer Y Joiner

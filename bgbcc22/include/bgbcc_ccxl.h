@@ -348,7 +348,8 @@ Base, Q1..Q3:
 #define CCXL_PCLS_NEAR			0x0001	//near pointer
 #define CCXL_PCLS_FAR			0x0002	//far pointer
 #define CCXL_PCLS_HUGE			0x0003	//huge pointer
-#define CCXL_PCLS_HGMASK		0x0003	//huge pointer
+#define CCXL_PCLS_RVABASE		0x0080	//RVA pointer
+#define CCXL_PCLS_HGMASK		0x0083	//huge pointer
 
 #define CCXL_PCLS_PACKED		0x0004	//packed pointer
 #define CCXL_PCLS_BIGEND		0x0008	//big endian

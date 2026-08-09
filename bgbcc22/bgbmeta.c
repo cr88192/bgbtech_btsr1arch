@@ -2259,29 +2259,29 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 			if(!strcmp(argv[i], "--pc"))
 				m|=1;
 
-			if(!strncmp(argv[i], "-I", 2))
+			if(!strncmp(argv[i], "-I", 2) && (strlen(argv[i])>2))
 			{
 				ccAddInclude(argv[i]+2);
 				continue;
 			}
-			if(!strncmp(argv[i], "-L", 2))
+			if(!strncmp(argv[i], "-L", 2) && (strlen(argv[i])>2))
 			{
 				ccAddLibrary(argv[i]+2);
 				continue;
 			}
-			if(!strncmp(argv[i], "-S", 2))
+			if(!strncmp(argv[i], "-S", 2) && (strlen(argv[i])>2))
 			{
 				ccAddSource(argv[i]+2);
 				continue;
 			}
 
-			if(!strncmp(argv[i], "-D", 2))
+			if(!strncmp(argv[i], "-D", 2) && (strlen(argv[i])>2))
 			{
 				ccAddDefineString(argv[i]+2);
 				continue;
 			}
 			
-			if(!strncmp(argv[i], "-m", 2))
+			if(!strncmp(argv[i], "-m", 2) && (strlen(argv[i])>2))
 			{
 				mach_name=argv[i]+2;
 				continue;
@@ -2516,7 +2516,7 @@ int BGBCC_InitEnv(int argc, char **argv, char **env)
 		if(bgbcc_tool_fcc==BGBCC_ARCH_BJX2_XRVA)
 			mach_name="XRVA";
 		if(bgbcc_tool_fcc==BGBCC_ARCH_BJX2_X3RV)
-			mach_name="X3RV";
+			mach_name="XG3RV";
 	}
 
 	if(mach_name)
@@ -2832,6 +2832,7 @@ int main(int argc, char *argv[], char **env)
 	int n, m, nuds, nargs, nadds, minuds;
 	int is_compile_only;
 	int is_preproc_only;
+	int is_asm_only;
 	int t0, dt, te, sz;
 	int i, j;
 
@@ -2871,6 +2872,7 @@ int main(int argc, char *argv[], char **env)
 	minuds=nuds;
 	is_compile_only=0;
 	is_preproc_only=0;
+	is_asm_only=0;
 
 	bgbcc_exwad_outdir=NULL;
 
@@ -2894,7 +2896,12 @@ int main(int argc, char *argv[], char **env)
 			if(!strncmp(argv[i]+1, "S", 1))
 			{
 				if(argv[i][2])
+				{
 					ccAddSource(argv[i]+2);
+				}else
+				{
+					is_asm_only=1;
+				}
 				continue;
 			}
 
@@ -3245,6 +3252,11 @@ int main(int argc, char *argv[], char **env)
 		frbcfn="$stdout";
 	}
 
+	if(is_asm_only && !frbcfn)
+	{
+		frbcfn="$stdout";
+	}
+
 	if(bgbcc_istool==1)
 	{
 		if(!metafn && !wadfn && !frbcfn)
@@ -3270,6 +3282,23 @@ int main(int argc, char *argv[], char **env)
 #if 1
 				s=BGBCP_BaseNameForName(uds[minuds]);
 				sprintf(tb, "%s.o", s);
+				frbcfn=bgbcc_strdup(tb);
+
+				if(bgbcc_verbose)
+				{
+					printf("%s: automatic output name = %s\n",
+						argv[0], frbcfn);
+				}
+#endif
+			}
+
+			if(is_asm_only)
+			{
+//				frbcfn="a.o";
+
+#if 1
+				s=BGBCP_BaseNameForName(uds[minuds]);
+				sprintf(tb, "%s.s", s);
 				frbcfn=bgbcc_strdup(tb);
 
 				if(bgbcc_verbose)
@@ -3322,6 +3351,11 @@ int main(int argc, char *argv[], char **env)
 		if(is_preproc_only)
 		{
 			fmt=BGBCC_IMGFMT_PP;
+		}
+
+		if(is_asm_only)
+		{
+			fmt=BGBCC_IMGFMT_ASM;
 		}
 
 		if(bgbcc_istool==4)

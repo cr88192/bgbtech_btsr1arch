@@ -304,3 +304,33 @@ int isinf(double x)
 		return(1);
 	return(0);
 }
+
+float fmaf(float x, float y, float z)
+{
+	double x1, y1, z1, w;
+	x1=x; y1=y; z1=z;
+	w=x1*y1+z1;
+	return(w);
+}
+
+double fma(double x, double y, double z)
+{
+	long double x1, y1, z1, w1;
+	double w;
+	x1=x; y1=y; z1=z;
+	w1=x1*y1+z1;
+	w=w1;
+	return(w);
+}
+
+long double fmal(long double x, long double y, long double z)
+{
+	long double x1, y1, z1, w1;
+	long double w;
+
+	/* TODO: Do this properly... */
+	x1=x; y1=y; z1=z;
+	w1=x1*y1+z1;
+	w=w1;
+	return(w);
+}

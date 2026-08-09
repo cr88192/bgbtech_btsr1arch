@@ -323,7 +323,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 	float		*v;
 	int			i, ll;
 	texture_t	*t;
-	vec3_t		nv, dir;
+	vec3_t		nv, dir, porg;
 	float		ss, ss2, length;
 	float		s1, t1;
 	float		f;
@@ -338,6 +338,8 @@ void R_DrawSequentialPoly (msurface_t *s)
 	if(!s->polys)
 		return;
 
+//	if(r_vertex.value)
+//		return;
 
 	if (! (s->flags & (SURF_DRAWSKY|SURF_DRAWTURB|SURF_UNDERWATER) ) )
 	{
@@ -380,7 +382,15 @@ void R_DrawSequentialPoly (msurface_t *s)
 			v = p->verts[0];
 			for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
 			{
-				ll=R_LightPoint(v);
+				if(currententity)
+				{
+					VectorAdd(v, currententity->origin, porg);
+				}else
+				{
+					VectorCopy(v, porg);
+				}
+//				ll=R_LightPoint(v);
+				ll=R_LightPoint(porg);
 				f=ll*(1.0/255.0);
 				qglColor4f(f,f,f,1.0);
 				qglTexCoord2f (v[3], v[4]);
@@ -502,10 +512,12 @@ void R_DrawSequentialPoly (msurface_t *s)
 	{
 		GL_DisableMultitexture();
 
+		GL_Bind (s->texinfo->texture->gl_texturenum);
+
 		qglEnable (GL_BLEND);
 		qglBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-		GL_Bind (s->texinfo->texture->gl_texturenum);
+//		GL_Bind (s->texinfo->texture->gl_texturenum);
 		EmitWaterPolys (s);
 		return;
 	}
@@ -906,6 +918,120 @@ qgl_hfloat *R_GetDelayPolyQuadsBase(void)
 	return(gl_vadpquads);
 }
 
+qgl_hfloat gl_delaypoly_vecs[64*VERTEXSIZE];
+int gl_delaypoly_n_vecs;
+
+void GL_BeginDelayPolygon()
+{
+	gl_delaypoly_n_vecs=0;
+}
+
+void GL_EndDelayPolygon()
+{
+	qgl_hfloat *csv, *v0, *v1, *v2, *v3;
+	qgl_hfloat *ctv, *ctv2;
+	int i, j, k;
+
+	csv=gl_delaypoly_vecs;
+
+	if(gl_delaypoly_n_vecs==3)
+	{
+		ctv=R_GetExpandDelayPolyTris(3);
+		memcpy(ctv, csv, 3 * VERTEXSIZE * sizeof(qgl_hfloat));
+//		csv+=3*VERTEXSIZE; ctv+=3*VERTEXSIZE;
+//		gl_nvadptris+=3;
+		return;
+	}
+
+	if(gl_delaypoly_n_vecs==4)
+	{
+		ctv=R_GetExpandDelayPolyQuads(4);
+		memcpy(ctv, csv, 4 * VERTEXSIZE * sizeof(qgl_hfloat));
+//		csv+=VERTEXSIZE; ctv+=VERTEXSIZE;
+		return;
+	}
+	
+	v0=csv;
+	v1=v0+VERTEXSIZE;
+	v2=v1+VERTEXSIZE;
+	v3=v2+VERTEXSIZE;
+	R_CheckExpandDelayPolyTris(3*gl_delaypoly_n_vecs);
+	ctv = gl_vadptris + (gl_nvadptris * VERTEXSIZE);
+	
+#if 1
+	R_CheckExpandDelayPolyQuads(4*gl_delaypoly_n_vecs);
+	ctv2 = gl_vadpquads + (gl_nvadpquads * VERTEXSIZE);
+	for(i=2; (i+2)<=gl_delaypoly_n_vecs; i+=2)
+	{
+//		ctv2[0]=v0[0];	ctv2[1]=v0[1];
+//		ctv2[2]=v0[2];	ctv2[3]=v0[3];
+//		ctv2[4]=v0[4];	ctv2[7]=v0[7];
+		memcpy(ctv2, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv2+=VERTEXSIZE;
+//		ctv2[0]=v1[0];	ctv2[1]=v1[1];
+//		ctv2[2]=v1[2];	ctv2[3]=v1[3];
+//		ctv2[4]=v1[4];	ctv2[7]=v1[7];
+		memcpy(ctv2, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv2+=VERTEXSIZE;
+//		ctv2[0]=v2[0];	ctv2[1]=v2[1];
+//		ctv2[2]=v2[2];	ctv2[3]=v2[3];
+//		ctv2[4]=v2[4];	ctv2[7]=v2[7];
+		memcpy(ctv2, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv2+=VERTEXSIZE;
+//		ctv2[0]=v3[0];	ctv2[1]=v3[1];
+//		ctv2[2]=v3[2];	ctv2[3]=v3[3];
+//		ctv2[4]=v3[4];	ctv2[7]=v3[7];
+		memcpy(ctv2, v3, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv2+=VERTEXSIZE;
+		gl_nvadpquads+=4;
+
+		v1=v3;
+		v2=v1+VERTEXSIZE;
+		v3=v2+VERTEXSIZE;
+	}
+#endif
+
+//	for(i=2; i<gl_delaypoly_n_vecs; i++)
+	for(; i<gl_delaypoly_n_vecs; i++)
+	{
+//		ctv[0]=v0[0];	ctv[1]=v0[1];
+//		ctv[2]=v0[2];	ctv[3]=v0[3];
+//		ctv[4]=v0[4];	ctv[7]=v0[7];
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv+=VERTEXSIZE;
+//		ctv[0]=v1[0];	ctv[1]=v1[1];
+//		ctv[2]=v1[2];	ctv[3]=v1[3];
+//		ctv[4]=v1[4];	ctv[7]=v1[7];
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv+=VERTEXSIZE;
+//		ctv[0]=v2[0];	ctv[1]=v2[1];
+//		ctv[2]=v2[2];	ctv[3]=v2[3];
+//		ctv[4]=v2[4];	ctv[7]=v2[7];
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv+=VERTEXSIZE;
+		gl_nvadptris+=3;
+		v1=v2;
+		v2=v1+VERTEXSIZE;
+	}
+
+	gl_delaypoly_n_vecs=0;
+}
+
+void GL_DelayPolygon_Vertex3fv_st(float *v, float s, float t)
+{
+	float *stv;
+	int i;
+	
+	i=gl_delaypoly_n_vecs++;
+	stv=gl_delaypoly_vecs+(i*VERTEXSIZE);
+	stv[0]=v[0];
+	stv[1]=v[1];
+	stv[2]=v[2];
+	stv[3]=s;
+	stv[4]=t;
+	*(u32 *)(stv+7)=0xFFFFFFFFU;
+}
+
 void DrawGLPolyFlat (glpoly_t *p)
 {
 	int		i, step, pnv;
@@ -943,7 +1069,7 @@ void DrawGLPolyVtx (glpoly_t *p)
 {
 	int		i, step, pnv;
 //	float	*v, *v0, *v1, *v2, *ctv;
-	qgl_hfloat	*v, *v0, *v1, *v2, *ctv;
+	qgl_hfloat	*v, *v0, *v1, *v2, *v3, *v4, *v5, *ctv;
 	float f;
 
 //	return;
@@ -984,7 +1110,7 @@ void DrawGLPolyVtx (glpoly_t *p)
 	qglEnd ();
 #endif
 
-#if 1
+#if 0
 	qglEnableClientState(GL_VERTEX_ARRAY);
 	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	qglEnableClientState(GL_COLOR_ARRAY);
@@ -1009,19 +1135,19 @@ void DrawGLPolyVtx (glpoly_t *p)
 	qglDisableClientState(GL_COLOR_ARRAY);
 #endif
 
-#if 0
+#if 1
 	R_CheckExpandDelayPolyTris((p->numverts-2)*3);
+	R_CheckExpandDelayPolyQuads((p->numverts-3)*4);
 
 	v = p->verts[0];
-
-	v0 = v;
-	v+= VERTEXSIZE;
-	
-	ctv = gl_vadptris + (gl_nvadptris * VERTEXSIZE);
-	
 	pnv = p->numverts;
-	for (i=2 ; i<pnv ; i++)
+
+	if(pnv==3)
 	{
+		ctv = gl_vadptris + (gl_nvadptris * VERTEXSIZE);
+
+		v0 = v;
+		v+= VERTEXSIZE;	
 		v1 = v;
 		v += VERTEXSIZE;
 		v2 = v;
@@ -1033,7 +1159,181 @@ void DrawGLPolyVtx (glpoly_t *p)
 		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
 		ctv += VERTEXSIZE;
 		gl_nvadptris+=3;
+		
+		return;
 	}
+
+	if(pnv==4)
+	{
+		ctv = gl_vadpquads + (gl_nvadpquads * VERTEXSIZE);
+
+		v0 = v;
+		v+= VERTEXSIZE;	
+		v1 = v;
+		v += VERTEXSIZE;
+		v2 = v;
+		v += VERTEXSIZE;
+		v3 = v;
+
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v3, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		gl_nvadpquads+=4;
+		
+		return;
+	}
+
+
+	if(pnv==6)
+	{
+		ctv = gl_vadpquads + (gl_nvadpquads * VERTEXSIZE);
+
+		v0 = v;
+		v+= VERTEXSIZE;	
+		v1 = v;
+		v += VERTEXSIZE;
+		v2 = v;
+		v += VERTEXSIZE;
+		v3 = v;
+		v += VERTEXSIZE;
+		v4 = v;
+		v += VERTEXSIZE;
+		v5 = v;
+
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v3, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		gl_nvadpquads+=4;
+
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v3, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v4, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v5, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		gl_nvadpquads+=4;
+		
+		return;
+	}
+
+	if(pnv==5)
+	{
+		ctv = gl_vadpquads + (gl_nvadpquads * VERTEXSIZE);
+
+		v0 = v;
+		v+= VERTEXSIZE;	
+		v1 = v;
+		v += VERTEXSIZE;
+		v2 = v;
+		v += VERTEXSIZE;
+		v3 = v;
+		v += VERTEXSIZE;
+		v4 = v;
+//		v += VERTEXSIZE;
+//		v5 = v;
+
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v3, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		gl_nvadpquads+=4;
+
+		ctv = gl_vadptris + (gl_nvadptris * VERTEXSIZE);
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v3, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v4, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		gl_nvadptris+=3;
+		
+		return;
+	}
+
+	v0 = v;
+	v+= VERTEXSIZE;	
+	v1 = v;
+	v += VERTEXSIZE;
+	v2 = v;
+	v += VERTEXSIZE;
+	v3 = v;
+
+	ctv = gl_vadpquads + (gl_nvadpquads * VERTEXSIZE);
+	for (i=2 ; (i+2)<=pnv ; i++)
+	{
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v3, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+
+		v1=v3;
+		v += VERTEXSIZE;
+		v2 = v;
+		v += VERTEXSIZE;
+		v3 = v;
+
+		gl_nvadpquads+=4;
+	}
+	
+	if(i<pnv)
+	{
+		ctv = gl_vadptris + (gl_nvadptris * VERTEXSIZE);
+
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		gl_nvadptris+=3;
+	}
+
+#if 0
+	v0 = v;
+	v+= VERTEXSIZE;	
+	v1 = v;
+	v += VERTEXSIZE;
+	v2 = v;
+//	v += VERTEXSIZE;
+//	v3 = v;
+
+	ctv = gl_vadptris + (gl_nvadptris * VERTEXSIZE);
+	for (i=2 ; i<pnv ; i++)
+	{
+		memcpy(ctv, v0, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v1, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		memcpy(ctv, v2, VERTEXSIZE * sizeof(qgl_hfloat));
+		ctv += VERTEXSIZE;
+		gl_nvadptris+=3;
+		
+		v1=v2;
+		v += VERTEXSIZE;
+		v2 = v;
+	}
+#endif
+
 #endif
 }
 
@@ -1574,6 +1874,7 @@ void DrawTextureChains (void)
 		if (i == skytexturenum)
 		{
 			R_DrawSkyChain (s);
+			R_RenderDelayPolyTris();
 		}
 		else
 		{
@@ -1915,7 +2216,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 //				surf->texturechain = surf->texinfo->texture->texturechain;
 //				surf->texinfo->texture->texturechain = surf;
 
-#if 0
+#if 1
 				texture = surf->texinfo->texture;
 				surf->texturechain = texture->texturechain;
 				texture->texturechain = surf;
@@ -1931,6 +2232,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 				}
 #endif
 
+#if 0
 				if (r_vertex.value)
 				{
 					R_RenderBrushPoly (surf);
@@ -1939,6 +2241,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 				{
 					R_DrawSequentialPoly (surf);
 				}
+#endif
 
 				surf++;
 				c--;

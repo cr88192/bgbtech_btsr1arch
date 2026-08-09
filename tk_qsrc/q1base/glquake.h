@@ -220,6 +220,8 @@ extern	cvar_t	gl_nocolors;
 extern	cvar_t	gl_doubleeyes;
 
 extern	cvar_t	gl_wireframe;
+extern	cvar_t	gl_nosky;
+extern	cvar_t	gl_nowater;
 
 extern	int		gl_lightmap_format;
 extern	int		gl_solid_format;

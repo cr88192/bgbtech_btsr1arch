@@ -162,7 +162,7 @@ TK_MOUNT *tk_wad4_mount(char *devfn, char *mntfn,
 
 	tk_puts("tk_mount_wad4\n");
 
-	if(devfn[0]=='-')
+	if(!devfn || (devfn[0]=='-'))
 	{
 		img=TK_Wad4_CreateTempRamImage(1024);
 		if(!img)return(NULL);
@@ -181,6 +181,10 @@ TK_MOUNT *tk_wad4_mount(char *devfn, char *mntfn,
 	}
 
 	mnt=tk_alloc_mount();
+	
+	if(!mnt || (mnt->magic1!=0x1234ABCD))
+		{ __debugbreak(); }
+	
 	mnt->vt=&tk_vfile_wad4_vt;
 	mnt->udata0=img;
 

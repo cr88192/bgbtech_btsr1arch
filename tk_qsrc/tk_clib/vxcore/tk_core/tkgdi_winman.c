@@ -1658,11 +1658,13 @@ int TKGDI_UpdateWindowStack(void)
 		cs=tkgdi_vid_screendirty_last3;
 		tkgdi_vid_screendirty_last3=tkgdi_vid_screendirty_last2;
 		tkgdi_vid_screendirty_last2=tkgdi_vid_screendirty_last1;
-		tkgdi_vid_screendirty_last1=cs;
+//		tkgdi_vid_screendirty_last1=cs;
+		tkgdi_vid_screendirty_last1=tkgdi_vid_screendirty;
+		tkgdi_vid_screendirty=cs;
 
 //		memcpy(tkgdi_vid_screendirty_last3, tkgdi_vid_screendirty_last2, bmsz);
 //		memcpy(tkgdi_vid_screendirty_last2, tkgdi_vid_screendirty_last1, bmsz);
-		memcpy(tkgdi_vid_screendirty_last1, tkgdi_vid_screendirty, bmsz);
+//		memcpy(tkgdi_vid_screendirty_last1, tkgdi_vid_screendirty, bmsz);
 		memset(tkgdi_vid_screendirty, 0, bmsz);
 
 		for(i=0; i<bmsz; i++)

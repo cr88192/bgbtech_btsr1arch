@@ -495,7 +495,9 @@ void tkra_memset_word(void *buf, u16 px, int cnt)
 	u16 *ct, *cte;
 	
 	ct=buf; cte=ct+cnt;
-	px4=px|(px<<16); px4=px4|(px4<<32);
+	px4=px;
+	px4=px4|(px4<<16);
+	px4=px4|(px4<<32);
 	while((ct+32)<=cte)
 	{
 		((u64 *)ct)[0]=px4;	((u64 *)ct)[1]=px4;

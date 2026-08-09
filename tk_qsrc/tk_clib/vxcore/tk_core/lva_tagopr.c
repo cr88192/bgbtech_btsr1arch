@@ -1,3 +1,9 @@
+__int128 __lva_conv_toi128(u64 val);
+
+int __lvo_stringp(tk_lva_object obj);
+int __lvo_fixnump(tk_lva_object obj);
+int __lvo_flonump(tk_lva_object obj);
+
 LVA_Cons	*tkmm_lva_freecons;
 void		*tkmm_lva_freebigint;
 void		*tkmm_lva_freebigfloat;

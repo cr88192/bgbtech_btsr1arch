@@ -5257,7 +5257,7 @@ int TKGDI_BlitUpdate_CheckUpdateBlock(
 	u16 *sws, u16 *swt, int sbxs)
 {
 	u64 *sqs, *sqt;
-	u64 v0, v1;
+	u64 v0, v1, v2, v3;
 	int i, rt;
 
 	rt=0;
@@ -5267,9 +5267,15 @@ int TKGDI_BlitUpdate_CheckUpdateBlock(
 		sws+=sbxs;			swt+=sbxs;
 
 		v0=sqs[0];	v1=sqt[0];
-		if(v0!=v1)	{ rt=1; sqt[0]=v0; }
-		v0=sqs[1];	v1=sqt[1];
-		if(v0!=v1)	{ rt=1; sqt[1]=v0; }
+		v2=sqs[1];	v3=sqt[1];
+//		sqt[0]=v0;	sqt[1]=v2;
+//		rt=rt|(v0!=v1)|(v2!=v3);
+
+		if((v0!=v1)|(v2!=v3))
+			{ rt=1; sqt[0]=v0; sqt[1]=v2; }
+		
+//		if(v0!=v1)	{ rt=1; sqt[0]=v0; }
+//		if(v2!=v3)	{ rt=1; sqt[1]=v2; }
 	}
 	return(rt);
 }

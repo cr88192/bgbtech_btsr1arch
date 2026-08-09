@@ -4781,22 +4781,7 @@ begin
 //				opUCmdIx	= JX2_UCIX_FPU_FMUL_G;
 				opUCmdIx	= JX2_UCIX_FPU_FMAC;
 
-				if(opIsJumboAu)
-				begin
-					case(istrJBits[9:8])
-						2'b00: opUCmdIx	= JX2_UCIX_FPU_FMAC;
-						2'b01: opUCmdIx	= JX2_UCIX_FPU_FMAS;
-						2'b10: opUCmdIx	= JX2_UCIX_FPU_FMRS;
-						2'b11: opUCmdIx	= JX2_UCIX_FPU_FMRA;
-					endcase
-				end
-
-`ifdef jx2_use_fpu_v2sd
-//				if(fpuLowPrec)
-//					opNmid		= JX2_UCMD_FPUV4SF;
-`endif
-
-				if(opExQ)
+				if(opExQ && !opIsJumboAu)
 				begin
 `ifdef jx2_fpu_longdbl
 					opUCmdIx	= JX2_UCIX_FPU_FMACX;
@@ -4805,6 +4790,61 @@ begin
 					opNmid		= JX2_UCMD_OP_IXT;
 					opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
 `endif
+				end
+
+				if(opIsJumboAu)
+				begin
+					if(opExQ && !istrJBits[7])
+					begin
+						opUCty		= JX2_IUC_WX;
+
+						casez(istrJBits[10:8])
+							3'b0zz: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+							end
+							3'b100: opUCmdIx	= JX2_UCIX_FPU_FMAC;
+							3'b101: opUCmdIx	= JX2_UCIX_FPU_FMAS;
+							3'b110: opUCmdIx	= JX2_UCIX_FPU_FMRS;
+							3'b111: opUCmdIx	= JX2_UCIX_FPU_FMRA;
+						endcase
+					end
+					else
+					begin
+						case(istrJBits[10:8])
+							3'b000: opUCmdIx	= JX2_UCIX_FPU_FMAC;
+							3'b001: opUCmdIx	= JX2_UCIX_FPU_FMAS;
+							3'b010: opUCmdIx	= JX2_UCIX_FPU_FMRS;
+							3'b011: opUCmdIx	= JX2_UCIX_FPU_FMRA;
+							3'b100: opUCmdIx	= JX2_UCIX_FPU_PMAC;
+							3'b101: opUCmdIx	= JX2_UCIX_FPU_PMAS;
+							3'b110: opUCmdIx	= JX2_UCIX_FPU_PMRS;
+							3'b111: opUCmdIx	= JX2_UCIX_FPU_PMRA;
+						endcase
+					end
+					case(istrJBits[7:6])
+						2'b00: begin end
+						2'b01: begin
+`ifndef jx2_fpu_fullfmac
+							if(!istrJBits[10] || opExQ)
+							begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+							end
+`endif
+						end
+						2'b10: begin
+							if(!opExQ)
+							begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+							end
+						end
+						2'b11: begin
+							opNmid		= JX2_UCMD_OP_IXT;
+							opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+						end
+					endcase
 				end
 			end
 `else

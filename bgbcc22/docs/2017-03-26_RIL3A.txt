@@ -400,6 +400,10 @@ Pointer/Array Class Modifer:
 * De: dllexport
 * Di: dllimport
 
+* Dr: RVA Base
+* Ds: TBR Save
+* Dt: Thread
+
 * U{name};	//named flag
 
 === Structure String ===

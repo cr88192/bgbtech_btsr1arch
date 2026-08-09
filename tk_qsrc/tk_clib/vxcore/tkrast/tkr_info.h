@@ -172,8 +172,11 @@ typedef u32 nlint;
 
 // #define		TKRA_PARAM_SCRQUADSUBDIV	64
 // #define		TKRA_PARAM_SCRQUADSUBDIV	48
-#define		TKRA_PARAM_SCRQUADSUBDIV	32
+// #define		TKRA_PARAM_SCRQUADSUBDIV	32
+#define		TKRA_PARAM_SCRQUADSUBDIV	64
 // #define		TKRA_PARAM_SCRQUADSUBDIV	16
+
+#define		TKRA_PARAM_SCRTRISUBDIV		64
 
 /*
 DrawSpan Parameter Array
@@ -1022,4 +1025,6 @@ tkra_projvertex pv0;
 tkra_projvertex pv1;
 tkra_projvertex pv2;
 tkra_projvertex pv3;
+byte lvl;
+byte pvt;
 };

@@ -782,6 +782,9 @@ reg				tReqUtlbHitAxB;
 reg				tReqStrobe1;
 reg				tReqStrobe2;
 
+reg				tMsgLatch;
+reg				tNxtMsgLatch;
+
 always @*
 begin
 	/* EX1 */
@@ -1057,6 +1060,8 @@ begin
 	tNxtDoFlushTlb		= 0;
 	tNxtSkipTlb			= 0;
 
+//	tNxtMsgLatch		= 0;
+
 //	if((tInOpm == JX2_DCOPM_LDTLB) || tRegInSr[29])
 //	if((tInOpm == JX2_DCOPM_LDTLB) || (tRegInSr[29] && tRegInSr[30]))
 //	if(tRegInSr[29] && tRegInSr[30])
@@ -1170,6 +1175,7 @@ begin
 	tReqSeqIdx		= tReqSeqIdxArr[memSeqIn[3:0]];
 	tReqSeqVa		= tReqSeqVaArr[memSeqIn[3:0]];
 	tNxtTlbMissInh2	= 0;
+	tNxtMsgLatch	= 0;
 
 	tNxtVolatileInh		= tVolatileInhCnt;
 	if(tVolatileInhCnt!=0)
@@ -1877,8 +1883,12 @@ begin
 		begin
 			if(tReqOpm[4])
 			begin
-				$display("L1 D$: Bad Read %X %X/%X",
-					tReqAddr, tBlkMemAddr2A, tBlkMemAddr2B);
+				if(!tMsgLatch)
+				begin
+					$display("L1 D$: Bad Read %X %X/%X",
+						tReqAddr, tBlkMemAddr2A, tBlkMemAddr2B);
+				end
+				tNxtMsgLatch	= 1;
 				tRegOutExc[15:0] = 16'h8001;
 			end
 		end
@@ -1888,8 +1898,12 @@ begin
 		begin
 			if(tReqOpm[5])
 			begin
-				$display("L1 D$: Bad Write %X %X/%X",
-					tReqAddr, tBlkMemAddr2A, tBlkMemAddr2B);
+				if(!tMsgLatch)
+				begin
+					$display("L1 D$: Bad Write %X %X/%X",
+						tReqAddr, tBlkMemAddr2A, tBlkMemAddr2B);
+				end
+				tNxtMsgLatch	= 1;
 				tRegOutExc[15:0] = 16'h8002;
 			end
 		end
@@ -3307,6 +3321,8 @@ begin
 	tRegInMmcr		<= regInMmcr;
 	tRegRng1		<= { tRegRng1[47:0], regRng };
 	tResetL			<= reset;
+
+	tMsgLatch		<= tNxtMsgLatch;
 
 	if(dcInHoldN)
 	begin

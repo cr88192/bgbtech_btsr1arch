@@ -246,6 +246,7 @@ int tk_vfile_init()
 		tk_wad4_init();
 
 		if(tk_bdspi_dfs_lba>0)
+//		if(0)
 		{
 			tk_mount_sddfs(NULL);
 		}else
@@ -354,11 +355,13 @@ TK_MOUNT *tk_alloc_mount()
 	{
 		tk_mnt_freelist=tmp->udata0;
 		memset(tmp, 0, sizeof(TK_MOUNT));
+		tmp->magic1=0x1234ABCD;
 		return(tmp);
 	}
 	
 	tmp=tk_malloc(sizeof(TK_MOUNT));
 	memset(tmp, 0, sizeof(TK_MOUNT));
+	tmp->magic1=0x1234ABCD;
 	return(tmp);
 }
 
@@ -381,7 +384,7 @@ int TK_VF_FlagsFromModeString(char *mode)
 	
 	if(mode[0]=='r')
 	{
-		if(mode[1]='+')
+		if(mode[1]=='+')
 		{
 			fl|=TKVF_O_RDWR;
 		}else

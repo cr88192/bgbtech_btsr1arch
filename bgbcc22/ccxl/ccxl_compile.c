@@ -3738,6 +3738,9 @@ int BGBCC_CCXL_VarTypeString_ModifierChar(BGBCC_TransState *ctx, s64 i)
 
 	case BGBCC_TYFL_TBRSAVE:		c=('D'<<8)|'s'; break;
 	case BGBCC_TYFL_THREAD:			c=('D'<<8)|'t'; break;
+
+	case BGBCC_TYFL_RVABASE:		c=('D'<<8)|'r'; break;
+
 	default: c=0; break;
 	}
 	return(c);
@@ -3945,6 +3948,8 @@ char *BGBCC_CCXL_VarTypeString(BGBCC_TransState *ctx, BCCX_Node *ty)
 				{ *t++='A'; *t++='n'; }
 			else if(li&BGBCC_TYFL_FAR)
 				{ *t++='A'; *t++='f'; }
+			else if(li&BGBCC_TYFL_RVABASE)
+				{ *t++='A'; *t++='c'; }
 
 			if(li&BGBCC_TYFL_LTLENDIAN)
 				{ *t++='A'; *t++='l'; }

@@ -1,4 +1,5 @@
 float	__fpu_frcp_s(float x);
+double tkra_frcp_fast(double x);
 
 no_cull		tkra_vec4f		tkra_prj_xyzsc;
 no_cull		tkra_vec4f		tkra_prj_xyzbi;
@@ -91,15 +92,9 @@ tkra_vec4f TKRA_ProjectVertexB(tkra_vec4f vec, tkra_mat4 mat)
 	f0=tkra_v4f_w(v0xyzw);
 	f1=tkra_frcpabs(f0);
 
-//	prj_xyzsc=tkra_prj_xyzsc;
-//	prj_xyzbi=tkra_prj_xyzbi;
 	v0ww=tkra_mkvec4f(f1, f1, f1, 1.0);
-//	if(f0<0)
-//		v0ww=tkra_mkvec4f(-f1, -f1, -f1, -1.0);
 	
-//	v0ww=tkra_v4fmul(v0ww, prj_xyzsc);
 	v0ww=tkra_v4fmul(v0ww, tkra_prj_xyzsc);
-//	v0p=tkra_v4fadd(tkra_v4fmul(v0xyzw, v0ww), prj_xyzbi);
 	v0p=tkra_v4fadd(tkra_v4fmul(v0xyzw, v0ww), tkra_prj_xyzbi);
 
 	return(v0p);
@@ -275,7 +270,7 @@ void TKRA_FinalProjectVertex(
 	pv0->t=TKRA_FinalProjectVertex_Float2Fixed32pN(
 		t, 16+img->tex_yshl)-65535;
 
-	zi=__fpu_frcp_sf(z);
+	zi=tkra_frcp_fast(z);
 	pv0->rcp_z=zi;
 	pv0->rcp_s=s*zi;
 	pv0->rcp_t=t*zi;
@@ -533,6 +528,7 @@ int TKRA_TransformProjectTriangle(
 
 	sctx=ctx->svctx;
 
+#if 0
 	v0stk=sctx->v0stk;
 	v1stk=sctx->v1stk;
 	v2stk=sctx->v2stk;
@@ -547,7 +543,8 @@ int TKRA_TransformProjectTriangle(
 	v0stk[0].fl=0;
 	v1stk[0].fl=0;
 	v2stk[0].fl=0;
-	
+#endif
+
 	tfl=0;
 	nopersp=0;
 
@@ -559,11 +556,24 @@ int TKRA_TransformProjectTriangle(
 	TKRA_SetupDrawEdgeForTriFlag(ctx, tfl);
 	tfl=sctx->triflag;
 	
+	if(!sctx->tex_cur)
+		return(-1);
+
+
+	v0=iv0;	v1=iv1;	v2=iv2;
+	v0p=TKRA_ProjectVertexB(v0.xyz, prjmat);
+	v1p=TKRA_ProjectVertexB(v1.xyz, prjmat);
+	v2p=TKRA_ProjectVertexB(v2.xyz, prjmat);
+
 	if(tfl&TKRA_TRFL_NOCMOD)
 	{
-		v0stk[0].rgb=0xFFFFFFFFU;
-		v1stk[0].rgb=0xFFFFFFFFU;
-		v2stk[0].rgb=0xFFFFFFFFU;
+//		v0stk[0].rgb=0xFFFFFFFFU;
+//		v1stk[0].rgb=0xFFFFFFFFU;
+//		v2stk[0].rgb=0xFFFFFFFFU;
+
+		v0.rgb=0xFFFFFFFFU;
+		v1.rgb=0xFFFFFFFFU;
+		v2.rgb=0xFFFFFFFFU;
 	}
 	
 	prj_xyzsc=ctx->prj_xyzsc;
@@ -585,6 +595,88 @@ int TKRA_TransformProjectTriangle(
 	scr_clip_ra=scr_clip_r+((scr_clip_r-scr_clip_l)*0.1875);
 	scr_clip_ta=scr_clip_t+((scr_clip_t-scr_clip_b)*0.1875);
 	scr_clip_ba=scr_clip_b-((scr_clip_t-scr_clip_b)*0.1875);
+
+	ctx->stat_base_tris++;
+
+	v0ww=tkra_v4f_bboxmins3(v0p, v1p, v2p);
+	v1ww=tkra_v4f_bboxmaxs3(v0p, v1p, v2p);
+	
+	if(tkra_v4f_w(v1ww)<=0.0)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_negw_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_x(v0ww)>scr_clip_r)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_x(v1ww)<scr_clip_l)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_y(v0ww)>scr_clip_t)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+	if(tkra_v4f_y(v1ww)<scr_clip_b)
+	{
+		ctx->stat_reject_tris++;
+		ctx->stat_frustum_tris++;
+		return(0);
+	}
+
+#if 1
+	if(	(tkra_v4f_w(v0ww)>0.0) &&
+		(tkra_v4f_x(v0ww)>=scr_clip_l) &&
+		(tkra_v4f_x(v1ww)<=scr_clip_r) &&
+		(tkra_v4f_y(v0ww)>=scr_clip_b) &&
+		(tkra_v4f_y(v1ww)<=scr_clip_t) )
+	{
+		f0=tkra_v4f_x(v1ww)-tkra_v4f_x(v0ww);
+		f1=tkra_v4f_y(v1ww)-tkra_v4f_y(v0ww);
+//		if((f0*f1)<(32*32))
+//		if(!nopersp || ((f0*f1)<(32*32)))
+		if(1)
+		{
+			ctx->stat_draw_tris++;
+
+			TKRA_FinalProjectVertex(ctx, &pv0, &v0, v0p);
+			TKRA_FinalProjectVertex(ctx, &pv1, &v1, v1p);
+			TKRA_FinalProjectVertex(ctx, &pv2, &v2, v2p);
+
+			TKRA_EmitProjectedTriangle(ctx, pv0, pv1, pv2);
+
+			return(1);
+		}
+	}
+#endif
+
+
+	v0.pv=v0p;	v1.pv=v1p;	v2.pv=v2p;
+	v0.fl=1;	v1.fl=1;	v2.fl=1;
+
+//	v0.fl=0;	v1.fl=0;	v2.fl=0;
+
+	v0stk=sctx->v0stk;
+	v1stk=sctx->v1stk;
+	v2stk=sctx->v2stk;
+//	v3stk=ctx->v3stk;
+
+	vstkpos=1;
+	v0stk[0]=v0;
+	v1stk[0]=v1;
+	v2stk[0]=v2;
 
 //	txs=(1<<(ctx->tex_xshl));
 //	tys=(1<<(ctx->tex_yshl));
@@ -2195,7 +2287,8 @@ int TKRA_TransformProjectQuad(
 			TKRA_TransformCalcMidpointVertex(ctx, &v7, &v3, &v0, prjmat);
 
 #if 1
-			if(((g0+g2)>(2*(g1+g3))) && !(f5>(f4*64)))
+//			if(((g0+g2)>(2*(g1+g3))) && !(f5>(f4*64)))
+			if((g0+g2)>(2*(g1+g3)))
 			{
 				v0stk[vstkpos]=v0;
 				v1stk[vstkpos]=v4;
@@ -2215,7 +2308,8 @@ int TKRA_TransformProjectQuad(
 				continue;
 			}
 
-			if(((g1+g3)>(2*(g0+g2))) && !(f5>(f4*64)))
+//			if(((g1+g3)>(2*(g0+g2))) && !(f5>(f4*64)))
+			if((g1+g3)>(2*(g0+g2)))
 			{
 				v0stk[vstkpos]=v0;
 				v1stk[vstkpos]=v1;

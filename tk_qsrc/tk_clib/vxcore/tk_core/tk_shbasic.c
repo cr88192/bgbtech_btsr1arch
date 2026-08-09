@@ -14,6 +14,10 @@ struct TKSH_BasicCtx_s {
 	int n_lbl;
 };
 
+int __lvo_stringp(tk_lva_object obj);
+int __lvo_fixnump(tk_lva_object obj);
+int __lvo_flonump(tk_lva_object obj);
+
 __object __lvo_wrapstring(char *str);
 __object __lvo_emptyobject(void);
 

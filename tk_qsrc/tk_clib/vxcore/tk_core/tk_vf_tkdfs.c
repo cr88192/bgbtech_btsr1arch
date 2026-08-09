@@ -122,6 +122,7 @@ int tk_mount_sddfs(char *path)
 //	memset(dee, 0, sizeof(TKDFS_DirentInfo));
 
 	tk_dbg_printf("tk_mount_sddfs: C\n");
+	return(1);
 }
 #endif
 

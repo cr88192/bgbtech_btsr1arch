@@ -865,6 +865,8 @@ __fpu_frcp:
 
 	mov		x11, f11
 	mov		x10, f10
+	fabs	f11, f11
+	fabs	f10, f10
 	
 	fmul	f10, f11, f12
 	fsub	f15, f12, f13
@@ -901,6 +903,11 @@ __fpu_frcp:
 	fsub	f15, f12, f13
 	fmul	f11, f13, f11
 
+	blt		x10, x0, .wasneg
+	mov		f11, x10
+	rts
+	.wasneg:
+	fneg	f11, f11
 	mov		f11, x10
 	rts
 };
@@ -925,6 +932,9 @@ __fpu_frcp_s:
 	mov		x15, f15
 	mov		x16, f16
 	mov		x17, f17
+
+	fabs	f11, f11
+	fabs	f10, f10
 	
 	fmul	f10, f11, f12
 	fsub	f15, f12, f13
@@ -949,6 +959,11 @@ __fpu_frcp_s:
 	fsub	f15, f12, f13
 	fmul	f11, f13, f11
 
+	blt		x10, x0, .wasneg
+	mov		f11, x10
+	rts
+	.wasneg:
+	fneg	f11, f11
 	mov		f11, x10
 	rts
 };
@@ -973,6 +988,9 @@ __fpu_frcp_sf:
 	mov		x15, f15
 	mov		x16, f16
 	mov		x17, f17
+
+	fabs	f11, f11
+	fabs	f10, f10
 	
 	fmul	f10, f11, f12
 	fsub	f15, f12, f13
@@ -989,6 +1007,11 @@ __fpu_frcp_sf:
 	fsub	f15, f12, f13
 	fmul	f11, f13, f11
 
+	blt		x10, x0, .wasneg
+	mov		f11, x10
+	rts
+	.wasneg:
+	fneg	f11, f11
 	mov		f11, x10
 	rts
 };

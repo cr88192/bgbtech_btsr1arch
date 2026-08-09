@@ -44,11 +44,24 @@ ExOp:
 
 `include "CoreDefs.v"
 
+`ifdef jx2_fpu_fullfmac
+`define jx2_fpu_fadd_use108
+`endif
+
+// `ifdef jx2_fpu_fullfmac
+`ifdef jx2_fpu_fadd_use108
+`include "ExCsAdd108C.v"
+`else
 `include "ExCsAdd64C.v"
+`endif
 
 `include "ExCsShr64F.v"
 `include "ExCsClz64F.v"
+`ifdef jx2_fpu_fullfmac
+`include "ExCsShl64WF.v"
+`else
 `include "ExCsShl64F.v"
+`endif
 
 `ifdef jx2_fpu_fullround
 `include "FpuDoRound64.v"
@@ -63,7 +76,8 @@ module FpuAdd(
 	regValRo,
 	regExOp,
 	regExOK,
-	regRMode
+	regRMode,
+	regMulResExt
 	);
 
 input	clock;
@@ -76,6 +90,7 @@ output[63:0]	regValRo;
 input[3:0]		regExOp;
 output[1:0]		regExOK;
 input[7:0]		regRMode;
+input[127:0]	regMulResExt;	//FMA wide input
 
 (* max_fanout = 200 *)
 	wire			exHoldN;
@@ -96,6 +111,7 @@ reg[1:0]		tRegExOK;
 
 reg[3:0]		tRegExOp1;
 reg				tExEn1;
+reg				tIsMac;
 reg				tSgnA1;
 reg				tSgnB1;
 reg				tInxC1;
@@ -108,6 +124,8 @@ reg[63:0]		tFraB1;
 reg				tFraGe1;
 reg				tFraDti1;
 reg				tFraItf1;
+
+reg[43:0]		tFraA1Lo;
 
 // reg[63:0]		tFraJ1;
 // reg				tFraJ1Sg;
@@ -127,6 +145,9 @@ reg[10:0]		tExpA2;
 reg[10:0]		tExpB2;
 reg[63:0]		tFraA2;
 reg[63:0]		tFraB2;
+reg[43:0]		tFraA2lo;
+reg[43:0]		tFraB2lo;
+
 // reg[63:0]		tFraJ2;
 // reg				tFraJ2Sg;
 reg[63:0]		tRegValRn2;
@@ -139,22 +160,58 @@ reg				tInxC2;
 reg[63:0]		tFraC2;
 reg[63:0]		tFraC2I;
 
+reg[43:0]		tFraC2lo;
+reg[43:0]		tFraC2Ilo;
+
 reg[63:0]		tFraC2_S;
 reg[63:0]		tFraC2_T;
+reg[43:0]		tFraC2_Slo;
+reg[43:0]		tFraC2_Tlo;
 reg				tFraC2_Cin;
 wire[64:0]		tFraC2_C;
+wire[43:0]		tFraC2_Clo;
+
+// `ifdef jx2_fpu_fullfmac
+`ifdef jx2_fpu_fadd_use108
+ExCsAdd108C	tFraAdd(
+	{tFraC2_S, tFraC2_Slo},
+	{tFraC2_T, tFraC2_Tlo},
+	{tFraC2_C, tFraC2_Clo},
+	tFraC2_Cin);
+`else
 ExCsAdd64C	tFraAdd(tFraC2_S, tFraC2_T, tFraC2_C, tFraC2_Cin);
+// assign			tFraC2_Clo = tFraC2_Slo | tFraC2_Tlo;
+assign			tFraC2_Clo = 0;
+`endif
 
 reg[63:0]		tFraShr1_S;
+reg[43:0]		tFraShr1_Slo;
 wire[63:0]		tFraShr1_C;
+wire[63:0]		tFraShr1_Clo;
 reg[7:0]		tFraShr1_Shr;
 ExCsShr64F	tFraShr(tFraShr1_S, tFraShr1_C, tFraShr1_Shr);
 
+`ifdef jx2_fpu_fullfmac
+ExCsShr64F	tFraShrLo(
+	{ tFraShr1_S[19:0], tFraShr1_Slo }, tFraShr1_Clo, tFraShr1_Shr);
+`else
+assign		tFraShr1_Clo = 0;
+`endif
+
 `ifdef def_true
 reg[63:0]		tFraShr1A_S;
+reg[43:0]		tFraShr1A_Slo;
 wire[63:0]		tFraShr1A_C;
+wire[63:0]		tFraShr1A_Clo;
 reg[7:0]		tFraShr1A_Shr;
 ExCsShr64F	tFraShrA(tFraShr1A_S, tFraShr1A_C, tFraShr1A_Shr);
+
+`ifdef jx2_fpu_fullfmac
+ExCsShr64F	tFraShrALo(
+	{ tFraShr1A_S[19:0], tFraShr1A_Slo }, tFraShr1A_Clo, tFraShr1A_Shr);
+`else
+assign		tFraShr1A_Clo = 0;
+`endif
 
 reg[63:0]		tFraShr1B_S;
 wire[63:0]		tFraShr1B_C;
@@ -167,9 +224,15 @@ wire[7:0]		tFraClz1_C;
 ExCsClz64F	tFraClz(tFraClz1_S, tFraClz1_C);
 
 reg[63:0]		tFraShl1_S;
+reg[43:0]		tFraShl1_Slo;
 wire[63:0]		tFraShl1_C;
 reg[7:0]		tFraShl1_Shl;
+`ifdef jx2_fpu_fullfmac
+ExCsShl64WF	tFraShl(
+	tFraShl1_S, { tFraShl1_Slo, 20'h0 }, tFraShl1_C, tFraShl1_Shl);
+`else
 ExCsShl64F	tFraShl(tFraShl1_S, tFraShl1_C, tFraShl1_Shl);
+`endif
 
 
 reg[3:0]		tRegExOp3;
@@ -180,13 +243,16 @@ reg[10:0]		tExpC3;
 // reg[63:0]		tFraC3;
 reg[63:0]		tFraC3A;
 reg[63:0]		tFraC3I;
+reg[43:0]		tFraC3Ilo;
 
 
 reg				tInxC3;
 wire			tSgnC3;
 wire[63:0]		tFraC3;
+wire[43:0]		tFraC3lo;
 assign		tSgnC3 = tSgnC3A ^ tFraC3A[63];
 assign		tFraC3 = tFraC3A[63] ? (~tFraC3A) : tFraC3A;
+assign		tFraC3lo = tFraC3A[63] ? (~tFraC3Ilo) : tFraC3Ilo;
 
 reg				tSgnC3B;
 reg[11:0]		tExpC3B;
@@ -200,6 +266,7 @@ reg				tSgnC4;
 reg[11:0]		tExpC4;
 reg[63:0]		tFraC4;
 reg[63:0]		tFraC4I;
+reg[43:0]		tFraC4Ilo;
 reg				tInxC4;
 reg				tExpIsZeroC4;
 reg				tExpIsZeroC4B;
@@ -247,6 +314,8 @@ begin
 //	tExEn1		= regExOp != 0;
 	tExEn1		= regExOp[2:0] != 0;
 
+	tIsMac		= regExOp[3] && (regExOp[2:1] == 0);
+
 	tRegValRm	= regValRm;
 	tRegValRn	= regValRn;
 	tRegValRn1	= regValRn;
@@ -275,6 +344,17 @@ begin
 
 	tFraA1	= {2'b0, tFraNzA1, tRegValRn[51:0], 9'h0};
 	tFraB1	= {2'b0, tFraNzB1, tRegValRm[51:0], 9'h0};
+	tFraA1Lo	= 0;
+
+`ifdef jx2_fpu_fullfmac
+	if(tIsMac)
+//	if(0)
+	begin
+		tExpA1		= regMulResExt[122:112];
+		tFraA1		= regMulResExt[107:44];
+		tFraA1Lo	= regMulResExt[43:0];
+	end
+`endif
 
 	tInxC1=0;
 	if(regRMode[3:0]==4)
@@ -286,6 +366,12 @@ begin
 //		tExpB1		= 1085;
 		tExpB1		= 1084;
 		tFraB1		= 0;
+
+		if((tRegExOp1[2:0] == 7) && tIsMac)
+		begin
+			/* Plain Multiply */
+			tExpB1		= 0;
+		end
 
 //		if(tExpA1[10:9] == 0)
 //		begin
@@ -340,6 +426,7 @@ begin
 
 `ifdef def_true
 	tFraShr1A_S		= tFraA1;
+	tFraShr1A_Slo	= tFraA1Lo;
 //	tFraShr1A_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
 	tFraShr1A_Shr	= { tExpB1D[11:7]!=0, tExpB1D[6:0] };
 
@@ -356,11 +443,13 @@ begin
 	begin
 		tFraUseA		= 0;
 		tFraShr1_S		= tFraA1;
+		tFraShr1_Slo	= tFraA1Lo;
 //		tFraShr1_Shr	= { tExpB1D[9:7]!=0, tExpB1D[6:0] };
 		tFraShr1_Shr	= { tExpB1D[11:7]!=0, tExpB1D[6:0] };
 	end else begin
 		tFraUseA		= 1;
 		tFraShr1_S		= tFraB1;
+		tFraShr1_Slo	= 0;
 //		tFraShr1_Shr	= { tExpA1D[9:7]!=0, tExpA1D[6:0] };
 		tFraShr1_Shr	= { tExpA1D[11:7]!=0, tExpA1D[6:0] };
 	end
@@ -371,9 +460,36 @@ begin
 	tFraC2_T = ((tSgnA2 == tSgnB2) ^ tFraB2[63]) ? tFraB2 : (~tFraB2);
 	tFraC2_Cin = (tSgnA2 != tSgnB2) ^ tFraB2[63];
 
-	tSgnC2	= tSgnA2 ^ tFraB2[63];
-	tExpC2	= tExpA2;
-	tFraC2	= tFraC2_C[63:0];
+	tFraC2_Slo = tFraA2lo;
+	tFraC2_Tlo = ((tSgnA2 == tSgnB2) ^ tFraB2[63]) ? tFraB2lo : (~tFraB2lo);
+
+	if(tFraDti2)
+	begin
+		tFraC2_Slo = 0;
+//		tFraC2_Tlo = 0;
+		tFraC2_Tlo = ((tSgnA2 == tSgnB2) ^ tFraB2[63]) ? 0 : (~0);
+	end
+
+//	if(tExEn2)
+//	begin
+//		$display("FpuAdd 1: %X-%X %X-%X",
+//			tFraA2, tFraA2lo,
+//			tFraB2, tFraB2lo);
+//	end
+
+	tSgnC2		= tSgnA2 ^ tFraB2[63];
+	tExpC2		= tExpA2;
+	tFraC2		= tFraC2_C[63:0];
+	tFraC2lo	= tFraC2_Clo[43:0];
+
+//	if(tFraItf2)
+//		tFraC2lo = 0;
+
+//	if(tExEn2)
+//	begin
+//		$display("FpuAdd 2: %X-%X",
+//			tFraC2_C, tFraC2_Clo);
+//	end
 
 `ifndef def_true
 	if(tFraC2_C[63])
@@ -384,7 +500,8 @@ begin
 	end
 `endif
 
-	tFraC2I = tFraC2_C[63: 0];
+	tFraC2I		= tFraC2_C[63: 0];
+	tFraC2Ilo	= tFraC2_Clo[43: 0];
 	
 	
 	/* Stage 3 */
@@ -450,6 +567,7 @@ begin
 	/* Stage 4 */
 
 	tFraShl1_S		= tFraC4;
+	tFraShl1_Slo	= tFraC4Ilo;
 	tFraShl1_Shl	= {
 		tExpIsZeroC4,
 		tFraShlC4 };
@@ -532,6 +650,8 @@ begin
 			tFraA2 <= tFraA1;
 //			tFraB2 <= tFraShr1_C;
 			tFraB2 <= tFraShr1B_C;
+			tFraA2lo <= tFraA1Lo;
+			tFraB2lo <= 0;
 		end
 		else
 		begin
@@ -540,6 +660,8 @@ begin
 			tFraA2 <= tFraB1;
 //			tFraB2 <= tFraShr1_C;
 			tFraB2 <= tFraShr1A_C;
+			tFraA2lo <= 0;
+			tFraB2lo <= tFraShr1A_Clo[43:0];
 		end
 		
 		tRegExOp2	<= tRegExOp1;
@@ -563,6 +685,7 @@ begin
 //	tFraC3		<= tFraC2;
 	tFraC3A		<= tFraC2;
 	tFraC3I		<= tFraC2I;
+	tFraC3Ilo	<= tFraC2Ilo;
 	tInxC3		<= tInxC2;
 
 	tRegExOp4	<= tRegExOp3;
@@ -570,6 +693,7 @@ begin
 	tExpC4		<= tExpC3B;
 	tFraC4		<= tFraC3B;
 	tFraC4I		<= tFraC3I;
+	tFraC4Ilo	<= tFraC3Ilo;
 	tInxC4		<= tInxC3;
 
 	tExpIsZeroC4	<= tExpIsZeroC3;

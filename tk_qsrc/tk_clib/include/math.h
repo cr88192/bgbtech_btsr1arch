@@ -85,6 +85,7 @@ double tanh(double x);
 double exp(double x);
 double log(double x);
 double log10(double x);
+double fma(double x, double y, double z);
 
 double acosh(double x);
 double asinh(double x);
@@ -112,6 +113,7 @@ float tanhf(float x);
 float expf(float x);
 float logf(float x);
 float log10f(float x);
+float fmaf(float x, float y, float z);
 
 double _sin_fast(double ang);
 double _cos_fast(double ang);
@@ -139,6 +141,7 @@ long double tanhl(long double x);
 long double expl(long double x);
 long double logl(long double x);
 long double log10l(long double x);
+long double fmal(long double x, long double y, long double z);
 
 #endif
 

@@ -845,6 +845,14 @@ end
 			if(istrWord[26:25]==2'b00)
 				opUCmdIx	= JX2_UCIX_FPU_PMAC;
 
+`ifndef jx2_fpu_fullfmac
+			if(istrWord[25] && srStrictFp)
+			begin
+				opNmid		= JX2_UCMD_OP_IXT;
+				opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+			end
+`endif
+
 			if(istrWord[26])
 			begin
 				opNmid		= JX2_UCMD_OP_IXT;
@@ -916,6 +924,14 @@ end
 
 			if(istrWord[26:25]==2'b00)
 				opUCmdIx	= JX2_UCIX_FPU_PMAS;
+
+`ifndef jx2_fpu_fullfmac
+			if(istrWord[25] && srStrictFp)
+			begin
+				opNmid		= JX2_UCMD_OP_IXT;
+				opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+			end
+`endif
 
 			if(istrWord[26])
 			begin
@@ -991,6 +1007,14 @@ end
 
 			if(istrWord[26:25]==2'b00)
 				opUCmdIx	= JX2_UCIX_FPU_PMRS;
+
+`ifndef jx2_fpu_fullfmac
+			if(istrWord[25] && srStrictFp)
+			begin
+				opNmid		= JX2_UCMD_OP_IXT;
+				opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+			end
+`endif
 
 			if(istrWord[26])
 			begin
@@ -1108,6 +1132,14 @@ end
 			
 			if(istrWord[26:25]==2'b00)
 				opUCmdIx	= JX2_UCIX_FPU_PMRA;
+
+`ifndef jx2_fpu_fullfmac
+			if(istrWord[25] && srStrictFp)
+			begin
+				opNmid		= JX2_UCMD_OP_IXT;
+				opUCmdIx	= JX2_UCIX_IXT_TRAPFPU;
+			end
+`endif
 
 			if(istrWord[26])
 			begin

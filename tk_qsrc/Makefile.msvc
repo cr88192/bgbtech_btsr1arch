@@ -30,7 +30,9 @@ TK_LDFL= $(TK_CFL)
 
 # BASE_CFLAGS=-Dstricmp=strcasecmp
 # BASE_CFLAGS=/Zi
-BASE_CFLAGS=/Os /MD /Zi /Iq1base
+# BASE_CFLAGS=/Os /MD /Zi /Iq1base
+BASE_CFLAGS=/O1 /MD /Zi /Iq1base
+# BASE_CFLAGS=/O2 /MD /Zi /Iq1base
 GL_CFLAGS	= $(BASE_CFLAGS) /DGLQUAKE
 
 CFLAGS=$(TK_CFL) $(BASE_CFLAGS)

@@ -61,7 +61,7 @@ int main(int argc, char *argv[])
 	TK_Env_SetCwd("/boot");
 	TK_Env_SetLibPath("/usr/lib:/usr/lib/rv64");
 
-//	tk_printf("TKSH 4\n");
+	tk_printf("TKSH 4\n");
 
 	TK_SpawnShellTask(task, 0);
 

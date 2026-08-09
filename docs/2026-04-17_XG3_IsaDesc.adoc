@@ -1171,15 +1171,25 @@ Floating Point Multiply Accumulate:
 With the J_OP form, the Imm11 field will be split up:
 
 * ( 5:0): Rp/Xp
-* ( 7:6): MBZ
+* ( 7:6): Mode
+** 00: Double Rounded (Scalar)
+** 01: Single Rounded (Scalar)
+** 10: SIMD 4x 
+** 11: Reserved
 * (10:8): Operator
 ** 000=FMAC, 001=FMAS, 010=FMRS, 011=FMRA (Scalar)
-** 100=PMAC, 101=PMAS, 110=PMRS, 111=PMRA (4x SIMD)
+** 100=PMAC, 101=PMAS, 110=PMRS, 111=PMRA (2x SIMD)
 
 * FMAC: Rn=Rp+Rm*Ro
 * FMAS: Rn=Rm*Ro-Rp
 * FMRS: Rn=Rp-Rm*Ro
 * FMRA: Rn=-(Rp+Rm*Ro)
+
+In effect, with the J_OP prefix:
+
+* The base FMAC instruction will encode 64 bit cases (Binary64, 2x Binary32)
+* The FMACX instruction will encode 128-bit cases (Binary128, 2x Binary64)
+* Mode 2 will encode 4x SIMD cases, 4x Binary16 or 4x Binary32.
 
 
 === FDIV ===

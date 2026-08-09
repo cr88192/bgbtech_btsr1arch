@@ -2875,6 +2875,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	{
 		if(BGBCC_CCXL_TypeQuadPointerP(ctx, ty))
 			return(16);
+		if(BGBCC_CCXL_TypeRvaPointerP(ctx, ty))
+			return(4);
 		if(BGBCC_CCXL_TypePointerP(ctx, ty))
 			return(ctx->arch_sizeof_ptr);
 	}
@@ -3070,6 +3072,8 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	{
 		if(BGBCC_CCXL_TypeQuadPointerP(ctx, ty))
 			return(16);
+		if(BGBCC_CCXL_TypeRvaPointerP(ctx, ty))
+			return(4);
 		if(BGBCC_CCXL_TypePointerP(ctx, ty))
 			return(ctx->arch_sizeof_ptr);
 	}
@@ -4207,6 +4211,18 @@ int BGBCC_CCXL_TypeQuadPointerP(
 	return(0);
 }
 
+int BGBCC_CCXL_TypeRvaPointerP(
+	BGBCC_TransState *ctx, ccxl_type sty)
+{
+	int pcls;
+	
+	if(!BGBCC_CCXL_TypeArrayOrPointerP(ctx, sty))
+		return(0);
+
+	pcls=BGBCC_CCXL_TypeGetPointerClass(ctx, sty);
+	return((pcls&CCXL_PCLS_HGMASK)==CCXL_PCLS_RVABASE);
+}
+
 int BGBCC_CCXL_TypeVolatilePointerP(
 	BGBCC_TransState *ctx, ccxl_type sty)
 {
@@ -4607,6 +4623,7 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'v': pcls|=CCXL_PCLS_VOLATILE; break;
 		case 'a': pcls|=CCXL_PCLS_MAYALIAS; break;
 		case 't': pcls|=CCXL_PCLS_ATOMIC; break;
+		case 'c': pcls|=CCXL_PCLS_RVABASE; break;
 		default:
 			break;
 		}

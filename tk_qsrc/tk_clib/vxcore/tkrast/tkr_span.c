@@ -34,7 +34,7 @@ const u16 pmorttab[256] = {
 0x5500, 0x5501, 0x5504, 0x5505, 0x5510, 0x5511, 0x5514, 0x5515,
 0x5540, 0x5541, 0x5544, 0x5545, 0x5550, 0x5551, 0x5554, 0x5555 };
 
-
+#ifndef __XG3__
 int tkra_morton8(int x, int y)
 {
 //	return(pmorttab[x]|(pmorttab[y]<<1));
@@ -74,13 +74,33 @@ u64 tkra_pmuluhw(u64 a, u64 b)
 		(((u64)cz)<<32) | (((u64)cw)<<48) ;
 	return(c);
 }
+#endif
+
+#ifdef __XG3__
+int tkra_morton8(int x, int y);
+int tkra_morton16(int x, int y);
+u64 tkra_paddhw(u64 a, u64 b);
+u64 tkra_pmuluhw(u64 a, u64 b);
+
+__asm {
+tkra_morton8:
+tkra_morton16:
+	MOVLLD	R11, R10, R12
+	PMORT.Q	R12, R10
+	RTS
+tkra_paddhw:
+	PADD.W		R10, R11, R10
+	RTS
+tkra_pmuluhw:
+	PMULU.HW	R10, R11, R10
+	RTS
+};
+#endif
 
 u64 tkra_padduhw_sat(u64 a, u64 b)
 {
 	u64 c;
 	
-//	c=	((a&0xFFFEFFFEFFFEFFFEULL)>>1) +
-//		((b&0xFFFEFFFEFFFEFFFEULL)>>1) ;
 	c=	((a>>1)&0x7FFE7FFE7FFE7FFEULL) +
 		((b>>1)&0x7FFE7FFE7FFE7FFEULL) ;
 
@@ -101,6 +121,7 @@ u64 tkra_padduhw_sat(u64 a, u64 b)
 	return(c);
 }
 
+#ifndef __XG3__
 u64 tkra_rgbupck64(u16 a)
 {
 	int ax, ay, az, aw, av;
@@ -148,6 +169,24 @@ u16 tkra_rgbpck64(u64 a)
 	}
 	return(c);
 }
+#endif
+
+#ifdef __XG3__
+u64 tkra_rgbupck64(u16 a);
+u16 tkra_rgbpck64(u64 a);
+
+__asm {
+.global tkra_rgbupck64
+.global tkra_rgbpck64
+tkra_rgbupck64:
+	RGB5UPCK64	R10, R10
+	RTS
+tkra_rgbpck64:
+	RGB5PCK64	R10, R10
+	RTS
+};
+#endif
+
 
 void TKRA_DrawSpan_DirClr(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
@@ -158,16 +197,12 @@ void TKRA_DrawSpan_DirClr(u64 *parm,
 	u32 xmask, ymask;
 	int pix, idx;
 
-//	cpos=ctx->ds_cpos;
-//	cstep=ctx->ds_cstep;
 	cpos=parm[TKRA_DS_CPOS];
 	cstep=parm[TKRA_DS_CSTEP];
 
 	ct=dstc; cte=ct+cnt;
 	while(ct<cte)
 	{
-//		idx=((pos>>32)&ymask)|((pos>>16)&xmask);
-//		pix=src[idx];
 		pix=
 			((cpos>>33)&0x7C00) |
 			((cpos>>22)&0x03E0) |
@@ -185,15 +220,10 @@ void TKRA_DrawSpan_DirTex(u64 *parm,
 	u32 xmask, ymask;
 	int pix, idx;
 
-//	pos=ctx->ds_pos;
-//	step=ctx->ds_step;
 	pos=parm[TKRA_DS_TPOS];
 	step=parm[TKRA_DS_TSTEP];
 
-//	src=ctx->tex_img;
 	src=(tkra_rastpixel *)(parm[TKRA_DS_TEXIMG]);
-//	xmask=ctx->tex_xmask;
-//	ymask=ctx->tex_ymask;
 
 	xmask=parm[TKRA_DS_XMASK];
 	ymask=parm[TKRA_DS_YMASK];
@@ -202,7 +232,6 @@ void TKRA_DrawSpan_DirTex(u64 *parm,
 	while(ct<cte)
 	{
 		idx=((pos>>32)&ymask)|((pos>>16)&xmask);
-//		idx=tkra_morton8()
 		pix=src[idx];
 		*ct++=pix;
 		pos+=step;
@@ -217,15 +246,10 @@ void TKRA_DrawSpan_DirTexMort(u64 *parm,
 	u32 xmask, ymask;
 	int pix, idx;
 
-//	pos=ctx->ds_pos;
-//	step=ctx->ds_step;
 	tpos=parm[TKRA_DS_TPOS];
 	tstep=parm[TKRA_DS_TSTEP];
 
-//	src=ctx->tex_img;
 	src=(tkra_rastpixel *)(parm[TKRA_DS_TEXIMG]);
-//	xmask=ctx->tex_xmask;
-//	ymask=ctx->tex_ymask;
 
 	xmask=parm[TKRA_DS_XMASK];
 	ymask=parm[TKRA_DS_YMASK];
@@ -233,8 +257,6 @@ void TKRA_DrawSpan_DirTexMort(u64 *parm,
 	ct=dstc; cte=ct+cnt;
 	while(ct<cte)
 	{
-//		idx=tkra_morton8(((pos>>16)&xmask), ((pos>>48)&xmask));
-//		idx=tkra_morton8(tpos>>16, tpos>>48)&ymask;
 		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
 		pix=src[idx];
 		*ct++=pix;
@@ -301,9 +323,6 @@ void TKRA_DrawSpan_ModTexMort(u64 *parm,
 	ct=dstc; cte=ct+cnt;
 	while(ct<cte)
 	{
-//		idx=((pos>>32)&ymask)|((pos>>16)&xmask);
-//		idx=tkra_morton8(((tpos>>16)&xmask), ((tpos>>48)&xmask));
-//		idx=tkra_morton8(tpos>>16, tpos>>48)&ymask;
 		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
 		pix=src[idx];
 
@@ -340,9 +359,6 @@ void TKRA_DrawSpan_AlphaModTexMort(u64 *parm,
 	ct=dstc; cte=ct+cnt;
 	while(ct<cte)
 	{
-//		idx=((pos>>32)&ymask)|((pos>>16)&xmask);
-//		idx=tkra_morton8(((tpos>>16)&xmask), ((tpos>>48)&xmask));
-//		idx=tkra_morton8(tpos>>16, tpos>>48)&ymask;
 		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
 		pix=src[idx];
 		dpix=ct[0];
@@ -392,18 +408,12 @@ void TKRA_DrawSpan_AtestModTexMort(u64 *parm,
 	ct=dstc; cte=ct+cnt;
 	while(ct<cte)
 	{
-//		idx=((pos>>32)&ymask)|((pos>>16)&xmask);
-//		idx=tkra_morton8(((tpos>>16)&xmask), ((tpos>>48)&xmask));
-//		idx=tkra_morton8(tpos>>16, tpos>>48)&ymask;
 		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
 		pix=src[idx];
-//		dpix=ct[0];
 
 		cval=tkra_rgbupck64(pix);
 		cval=tkra_pmuluhw(cval, cpos);
 		pix=tkra_rgbpck64(cval);
-
-//		dval=tkra_rgbupck64(dpix);
 
 		if((cval>>63)&1)
 			*ct=pix;
@@ -535,7 +545,6 @@ void TKRA_DrawSpan_AlphaModBlTexMort(u64 *parm,
 		ct++;
 		tpos+=tstep;
 		cpos+=cstep;
-//		zpos+=zstep;
 	}
 }
 
@@ -584,10 +593,34 @@ void TKRA_DrawSpan_AtestModBlTexMort(u64 *parm,
 		ct++;
 		tpos+=tstep;
 		cpos+=cstep;
-//		zpos+=zstep;
 	}
 }
 
+
+#ifdef __XG3__
+
+u64 TKRA_CachedBlkUtx2(void *src, int ix);
+u64 TKRA_CachedBlkUtx3(void *src, int ix);
+
+__asm {
+TKRA_CachedBlkUtx2:
+	SHLD		R11, -4, R12
+	AND			R11, 15, R13
+	MOV.Q		(R10, R12), R14
+	BLKUTX2		R14, R13, R10
+	RTS
+TKRA_CachedBlkUtx3:
+	SHLD		R11, -4, R12
+	AND			R11, 15, R15
+	SHLD		R12, 1, R12
+	ADD			R12, 1, R13
+	MOV.Q		(R10, R12), R16
+	MOV.Q		(R10, R13), R17
+	BLKUTX3L	R16, R15, R10
+	RTS
+};
+
+#else
 
 u64 tkra_blkutx2(u64 blk, int ix)
 {
@@ -638,13 +671,11 @@ u64 TKRA_CachedBlkUtx2(void *src, int ix)
 
 	if(!src)
 	{
-//		__debugbreak();
 		return(0);
 	}
 
 	ix0=ix&15;
 	ix1=ix>>4;
-//	hxi=((ix1*251)>>8)&255;
 	hxi=(ix1^(ix1>>6))&63;
 	
 	if(	(tkra_utx2_cachedindx[hxi]==ix1) &&
@@ -678,7 +709,6 @@ u64 TKRA_CachedBlkUtx2(void *src, int ix)
 	{
 		for(i=0; i<16; i++)
 		{
-//			clrp=((pxv>>(i*2+1))&1)?clra:clrb;
 			clrp=tca[(pxv>>(i*2))&3];
 			tkra_utx2_cachedpels[hxi][i]=clrp;
 		}
@@ -702,7 +732,6 @@ u64 TKRA_CachedBlkUtx2(void *src, int ix)
 	{
 		for(i=0; i<16; i++)
 		{
-//			clrp=((pxv>>(i*2+1))&1)?clra:clrb;
 			clrp=tca[(pxv>>(i*2))&3];
 			tkra_utx2_cachedpels[hxi][i]=clrp;
 		}
@@ -755,9 +784,6 @@ u64 TKRA_CachedBlkUtx3(void *src, int ix)
 	clra=tkra_rgba32upck64(pxa);
 	clrb=tkra_rgba32upck64(pxb);
 	
-//	clra|=0xFFFF000000000000ULL;
-//	clrb|=0xFFFF000000000000ULL;
-
 	clrc=tkra_pmuluhw(clra, 0xAAAAAAAAAAAAAAAAULL);
 	clrd=tkra_pmuluhw(clrb, 0xAAAAAAAAAAAAAAAAULL);
 	clrp=tkra_pmuluhw(clra, 0x5555555555555555ULL);
@@ -783,6 +809,7 @@ u64 TKRA_CachedBlkUtx3(void *src, int ix)
 	tkra_utx3_cachedblka[hxi]=src;
 	return(tkra_utx3_cachedpels[hxi][ix0]);
 }
+#endif
 
 void TKRA_DrawSpan_ModUtx2Mort(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
@@ -813,8 +840,6 @@ void TKRA_DrawSpan_ModUtx2Mort(u64 *parm,
 	while(ct<cte)
 	{
 		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
-
-//		cval=tkra_blkutx2(blk, idx&15);
 		cval=TKRA_CachedBlkUtx2(src, idx);
 		cval=tkra_pmuluhw(cval, cpos);
 		pix=tkra_rgbpck64(cval);
@@ -853,7 +878,6 @@ void TKRA_DrawSpan_AlphaModUtx2Mort(u64 *parm,
 		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
 		dpix=ct[0];
 
-//		cval=tkra_blkutx2(blk, idx&15);
 		cval=TKRA_CachedBlkUtx2(src, idx);
 
 		cval=tkra_pmuluhw(cval, cpos);
@@ -906,8 +930,6 @@ void TKRA_DrawSpan_AtestModUtx2Mort(u64 *parm,
 	while(ct<cte)
 	{
 		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
-
-//		cval=tkra_blkutx2(blk, idx&15);
 		cval=TKRA_CachedBlkUtx2(src, idx);
 		cval=tkra_pmuluhw(cval, cpos);
 		pix=tkra_rgbpck64(cval);
@@ -970,7 +992,6 @@ void TKRA_DrawSpan_ModBlUtx2Mort(u64 *parm,
 		ct++;
 		tpos+=tstep;
 		cpos+=cstep;
-//		zpos+=zstep;
 	}
 }
 
@@ -1037,7 +1058,6 @@ void TKRA_DrawSpan_AlphaModBlUtx2Mort(u64 *parm,
 		ct++;
 		tpos+=tstep;
 		cpos+=cstep;
-//		zpos+=zstep;
 	}
 }
 
@@ -1092,7 +1112,6 @@ void TKRA_DrawSpan_AtestModBlUtx2Mort(u64 *parm,
 		ct++;
 		tpos+=tstep;
 		cpos+=cstep;
-//		zpos+=zstep;
 	}
 }
 #endif

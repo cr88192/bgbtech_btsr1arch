@@ -291,6 +291,9 @@ void EmitWaterPolys (msurface_t *fa)
 	int			i;
 	float		s, t, os, ot, ttsc, sofs, tofs;
 
+	if(gl_nowater.value)
+		return;
+
 //	return;
 
 	ttsc = realtime * TURBSCALE;
@@ -299,7 +302,8 @@ void EmitWaterPolys (msurface_t *fa)
 
 	for (p=fa->polys ; p ; p=p->next)
 	{
-		qglBegin (GL_POLYGON);
+//		qglBegin (GL_POLYGON);
+		GL_BeginDelayPolygon();
 		for (i=0,v=p->verts[0] ; i<p->numverts ; i++, v+=VERTEXSIZE)
 		{
 			os = v[3];
@@ -318,11 +322,13 @@ void EmitWaterPolys (msurface_t *fa)
 //			s=os;
 //			t=ot;
 
-			qglTexCoord2f (s, t);
+//			qglTexCoord2f (s, t);
 //			qglVertex3fv (v);
-			qglVertex3f (v[0], v[1], v[2]);
+//			qglVertex3f (v[0], v[1], v[2]);
+			GL_DelayPolygon_Vertex3fv_st(v, s, t);
 		}
-		qglEnd ();
+//		qglEnd ();
+		GL_EndDelayPolygon();
 	}
 }
 
@@ -346,7 +352,8 @@ void EmitSkyPolys (msurface_t *fa)
 
 	for (p=fa->polys ; p ; p=p->next)
 	{
-		qglBegin (GL_POLYGON);
+//		qglBegin (GL_POLYGON);
+		GL_BeginDelayPolygon();
 		for (i=0,v=p->verts[0] ; i<p->numverts ; i++, v+=VERTEXSIZE)
 		{
 			VectorSubtract_M (v, r_origin, dir);
@@ -363,11 +370,13 @@ void EmitSkyPolys (msurface_t *fa)
 			s = (speedscale + dir[0]) * (1.0/128);
 			t = (speedscale + dir[1]) * (1.0/128);
 
-			qglTexCoord2f (s, t);
+//			qglTexCoord2f (s, t);
 //			qglVertex3fv (v);
-			qglVertex3f (v[0], v[1], v[2]);
+//			qglVertex3f (v[0], v[1], v[2]);
+			GL_DelayPolygon_Vertex3fv_st(v, s, t);
 		}
-		qglEnd ();
+//		qglEnd ();
+		GL_EndDelayPolygon();
 	}
 }
 
@@ -386,6 +395,9 @@ void EmitBothSkyLayers (msurface_t *fa)
 	int			lindex;
 //	float		*vec;
 
+	if(gl_nosky.value)
+		return;
+
 	GL_DisableMultitexture();
 
 	GL_Bind (solidskytexture);
@@ -393,6 +405,9 @@ void EmitBothSkyLayers (msurface_t *fa)
 	speedscale -= (int)speedscale & ~127 ;
 
 	EmitSkyPolys (fa);
+
+	if(r_vertex.value)
+		return;
 
 	qglEnable (GL_BLEND);
 	GL_Bind (alphaskytexture);
@@ -414,7 +429,14 @@ void R_DrawSkyChain (msurface_t *s)
 {
 	msurface_t	*fa;
 
+	if(gl_nosky.value)
+		return;
+
+	R_RenderDelayPolyTris();
+
 	GL_DisableMultitexture();
+
+	qglDisable (GL_BLEND);
 
 	// used when gl_texsort is on
 	GL_Bind(solidskytexture);
@@ -422,7 +444,14 @@ void R_DrawSkyChain (msurface_t *s)
 	speedscale -= (int)speedscale & ~127 ;
 
 	for (fa=s ; fa ; fa=fa->texturechain)
+	{
 		EmitSkyPolys (fa);
+	}
+
+	R_RenderDelayPolyTris();
+
+	if(r_vertex.value)
+		return;
 
 	qglEnable (GL_BLEND);
 	GL_Bind (alphaskytexture);

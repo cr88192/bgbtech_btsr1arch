@@ -2252,6 +2252,7 @@ int BGBCC_CCXL_TypeNearPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeFarPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeHugePointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeQuadPointerP(BGBCC_TransState *ctx, ccxl_type sty);
+int BGBCC_CCXL_TypeRvaPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeVolatilePointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeRestrictPointerP(BGBCC_TransState *ctx, ccxl_type sty);
 int BGBCC_CCXL_TypeMayaliasPointerP(BGBCC_TransState *ctx, ccxl_type sty);

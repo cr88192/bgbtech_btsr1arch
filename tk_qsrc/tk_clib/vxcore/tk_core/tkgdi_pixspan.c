@@ -66,7 +66,7 @@ void TKGDI_CopyPixelSpan_CnvI8to15(
 	}
 	if(x<xs)
 	{
-		for(; x<xs; x+=4)
+		for(; x<xs; x++)
 		{
 			v0=cs[0];
 			v0=pal[v0];

@@ -4500,6 +4500,15 @@ void tk_vmem_aclmiss(u64 ttb, u64 tea, u64 teah)
 	acid=(tea    )&0xFFFF;
 	apid=(tea>>16)&0xFFFF;
 
+	if(acid==apid)
+	{
+		/* If ACL==PID, process owns this memory... */
+		acle=(u32)tea;
+		acle|=0x0003900000000ULL;
+		tk_vmem_loadacl(acle);
+		return;
+	}
+
 	acix=acid-0xF000;
 	if((acix<0) || (acix>=2048))
 	{

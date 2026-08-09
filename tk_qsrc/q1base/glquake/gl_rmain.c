@@ -114,6 +114,9 @@ cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
 
 cvar_t	gl_wireframe = {"gl_wireframe", "0"};
 
+cvar_t	gl_nosky = {"gl_nosky", "0"};
+cvar_t	gl_nowater = {"gl_nowater", "0"};
+
 extern	cvar_t	gl_ztrick;
 
 /*

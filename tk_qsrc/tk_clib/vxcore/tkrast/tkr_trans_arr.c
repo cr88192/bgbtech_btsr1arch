@@ -24,6 +24,7 @@ int TKRA_DrawTriangleArrayBasic(
 		v0.xyz=tkra_mkvec4f(xyz0[0], xyz0[1], xyz0[2], 1);
 		v0.st=tkra_mkvec2f(st0[0], st0[1]);
 		v0.rgb=*rgb0;
+		v0.fl=0;
 		cxyz+=xyz_str;
 		cst+=st_str;
 		crgb+=rgb_str;
@@ -34,6 +35,7 @@ int TKRA_DrawTriangleArrayBasic(
 		v1.xyz=tkra_mkvec4f(xyz0[0], xyz0[1], xyz0[2], 1);
 		v1.st=tkra_mkvec2f(st0[0], st0[1]);
 		v1.rgb=*rgb0;
+		v1.fl=0;
 		cxyz+=xyz_str;
 		cst+=st_str;
 		crgb+=rgb_str;
@@ -44,6 +46,7 @@ int TKRA_DrawTriangleArrayBasic(
 		v2.xyz=tkra_mkvec4f(xyz0[0], xyz0[1], xyz0[2], 1);
 		v2.st=tkra_mkvec2f(st0[0], st0[1]);
 		v2.rgb=*rgb0;
+		v2.fl=0;
 		cxyz+=xyz_str;
 		cst+=st_str;
 		crgb+=rgb_str;
@@ -750,7 +753,7 @@ int TKRA_DrawPrimitive_PolyComm(
 	void *rgb,		int rgb_str,
 	int mode,		int count)
 {
-	tkra_trivertex	v0, v1, v2, v3;
+	tkra_trivertex	v0, v1, v2, v3, v4, v5;
 	byte *cxyz, *cst, *crgb;
 	int idx_str;
 	int i, j, k, cnt, ix;
@@ -763,6 +766,8 @@ int TKRA_DrawPrimitive_PolyComm(
 	v1.fl=0;
 	v2.fl=0;
 	v3.fl=0;
+	v4.fl=0;
+	v5.fl=0;
 
 	v0.xyz=tkra_getptr_v4f_3fv1(cxyz);
 //	v0.st=tkra_getptr_v2f_2fv(cst);
@@ -784,6 +789,21 @@ int TKRA_DrawPrimitive_PolyComm(
 
 	if(mode==TKRA_POLYGON)
 	{
+#if 1
+		if(count==3)
+		{
+			v2.xyz=tkra_getptr_v4f_3fv1(cxyz);
+			v2.st=*(tkra_vec2f *)cst;
+			v2.rgb=tkra_getptr_rgba_4ubv(crgb);
+			cxyz+=xyz_str;
+			cst+=st_str;
+			crgb+=rgb_str;
+			TKRA_TransformProjectTriangle(ctx,
+				v0, v1, v2, ctx->mat_tproj);
+			return(0);
+		}
+#endif
+
 #if 1
 		if(count==4)
 		{
@@ -825,21 +845,21 @@ int TKRA_DrawPrimitive_PolyComm(
 			cst+=st_str;
 			crgb+=rgb_str;
 
-			TKRA_TransformProjectQuad(ctx,
-				v0, v1, v2, v3, ctx->mat_tproj);
-
-	//		v2=v3;
-			memcpy(&v2, &v3, sizeof(tkra_trivertex));
-
-			v3.xyz=tkra_getptr_v4f_3fv1(cxyz);
-			v3.st=*(tkra_vec2f *)cst;
-			v3.rgb=tkra_getptr_rgba_4ubv(crgb);
+			v4.xyz=tkra_getptr_v4f_3fv1(cxyz);
+			v4.st=*(tkra_vec2f *)cst;
+			v4.rgb=tkra_getptr_rgba_4ubv(crgb);
 			cxyz+=xyz_str;
 			cst+=st_str;
 			crgb+=rgb_str;
 
+			TKRA_TransformProjectQuad(ctx,
+				v0, v1, v2, v3, ctx->mat_tproj);
+
+	//		v2=v3;
+//			memcpy(&v2, &v3, sizeof(tkra_trivertex));
+
 			TKRA_TransformProjectTriangle(ctx,
-				v0, v2, v3, ctx->mat_tproj);
+				v0, v3, v4, ctx->mat_tproj);
 
 			return(0);
 		}
@@ -862,28 +882,65 @@ int TKRA_DrawPrimitive_PolyComm(
 			cst+=st_str;
 			crgb+=rgb_str;
 
-			TKRA_TransformProjectQuad(ctx,
-				v0, v1, v2, v3, ctx->mat_tproj);
-
-	//		v1=v3;
-			memcpy(&v1, &v3, sizeof(tkra_trivertex));
-
-			v2.xyz=tkra_getptr_v4f_3fv1(cxyz);
-			v2.st=*(tkra_vec2f *)cst;
-			v2.rgb=tkra_getptr_rgba_4ubv(crgb);
+			v4.xyz=tkra_getptr_v4f_3fv1(cxyz);
+			v4.st=*(tkra_vec2f *)cst;
+			v4.rgb=tkra_getptr_rgba_4ubv(crgb);
 			cxyz+=xyz_str;
 			cst+=st_str;
 			crgb+=rgb_str;
 
-			v3.xyz=tkra_getptr_v4f_3fv1(cxyz);
-			v3.st=*(tkra_vec2f *)cst;
-			v3.rgb=tkra_getptr_rgba_4ubv(crgb);
+			v5.xyz=tkra_getptr_v4f_3fv1(cxyz);
+			v5.st=*(tkra_vec2f *)cst;
+			v5.rgb=tkra_getptr_rgba_4ubv(crgb);
 			cxyz+=xyz_str;
 			cst+=st_str;
 			crgb+=rgb_str;
 
 			TKRA_TransformProjectQuad(ctx,
 				v0, v1, v2, v3, ctx->mat_tproj);
+			TKRA_TransformProjectQuad(ctx,
+				v0, v3, v4, v5, ctx->mat_tproj);
+
+			return(0);
+		}
+#endif
+
+#if 1
+//		if((count>4) && !(count&1))
+		if(count>4)
+		{
+			cnt=count-2;
+			for(i=0; (i+2)<=cnt; i+=2)
+			{		
+				v2.xyz=tkra_getptr_v4f_3fv1(cxyz);
+				v2.st=*(tkra_vec2f *)cst;
+				v2.rgb=tkra_getptr_rgba_4ubv(crgb);
+				cxyz+=xyz_str;
+				cst+=st_str;
+				crgb+=rgb_str;
+
+				v3.xyz=tkra_getptr_v4f_3fv1(cxyz);
+				v3.st=*(tkra_vec2f *)cst;
+				v3.rgb=tkra_getptr_rgba_4ubv(crgb);
+				cxyz+=xyz_str;
+				cst+=st_str;
+				crgb+=rgb_str;
+				TKRA_TransformProjectQuad(ctx, v0, v1, v2, v3, ctx->mat_tproj);
+//				v1=v3;
+
+				memcpy(&v1, &v3, sizeof(tkra_trivertex));
+			}
+			
+			if(i<cnt)
+			{
+				v2.xyz=tkra_getptr_v4f_3fv1(cxyz);
+				v2.st=*(tkra_vec2f *)cst;
+				v2.rgb=tkra_getptr_rgba_4ubv(crgb);
+				cxyz+=xyz_str;
+				cst+=st_str;
+				crgb+=rgb_str;
+				TKRA_TransformProjectTriangle(ctx, v0, v1, v2, ctx->mat_tproj);
+			}
 
 			return(0);
 		}
@@ -903,7 +960,8 @@ int TKRA_DrawPrimitive_PolyComm(
 		crgb+=rgb_str;
 
 		TKRA_TransformProjectTriangle(ctx, v0, v1, v2, ctx->mat_tproj);
-		v1=v2;
+//		v1=v2;
+		memcpy(&v1, &v2, sizeof(tkra_trivertex));
 	}
 
 	return(0);
@@ -1214,7 +1272,7 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 	u32			(*getptr_rgb)(void *ptr);
 	int			(*getptr_idx)(void *ptr);
 
-	tkra_trivertex	v0, v1, v2, v3;
+	tkra_trivertex	v0, v1, v2, v3, v4, v5;
 	byte *cxyz, *cst, *crgb, *cix;
 	int idx_str;
 	int i, j, k, cnt, ix;
@@ -1291,16 +1349,19 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 			v0.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v0.st=getptr_st(cst+(ix*st_str));
 			v0.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v0.fl=0;
 
 			ix=getptr_idx(cix+((i*3+1)*idx_str));
 			v1.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v1.st=getptr_st(cst+(ix*st_str));
 			v1.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v1.fl=0;
 
 			ix=getptr_idx(cix+((i*3+2)*idx_str));
 			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v2.st=getptr_st(cst+(ix*st_str));
 			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
 			
 			TKRA_TransformProjectTriangle(ctx, v0, v1, v2, ctx->mat_tproj);
 		}
@@ -1313,11 +1374,13 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 		v0.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 		v0.st=getptr_st(cst+(ix*st_str));
 		v0.rgb=getptr_rgb(crgb+(ix*rgb_str));
+		v0.fl=0;
 
 		ix=getptr_idx(cix+(1*idx_str));
 		v1.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 		v1.st=getptr_st(cst+(ix*st_str));
 		v1.rgb=getptr_rgb(crgb+(ix*rgb_str));
+		v1.fl=0;
 
 #if 1
 		if(count==4)
@@ -1326,13 +1389,75 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v2.st=getptr_st(cst+(ix*st_str));
 			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
 
 			ix=getptr_idx(cix+(3*idx_str));
 			v3.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v3.st=getptr_st(cst+(ix*st_str));
 			v3.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v3.fl=0;
 
 			TKRA_TransformProjectQuad(ctx, v0, v1, v2, v3, ctx->mat_tproj);
+			return(0);
+		}
+#endif
+
+#if 1
+		if(count==5)
+		{
+			ix=getptr_idx(cix+(2*idx_str));
+			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
+			v2.st=getptr_st(cst+(ix*st_str));
+			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
+
+			ix=getptr_idx(cix+(3*idx_str));
+			v3.xyz=getptr_xyz(cxyz+(ix*xyz_str));
+			v3.st=getptr_st(cst+(ix*st_str));
+			v3.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v3.fl=0;
+
+			ix=getptr_idx(cix+(4*idx_str));
+			v4.xyz=getptr_xyz(cxyz+(ix*xyz_str));
+			v4.st=getptr_st(cst+(ix*st_str));
+			v4.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v4.fl=0;
+
+			TKRA_TransformProjectQuad(ctx, v0, v1, v2, v3, ctx->mat_tproj);
+			TKRA_TransformProjectTriangle(ctx, v0, v3, v4, ctx->mat_tproj);
+			return(0);
+		}
+#endif
+
+#if 1
+		if(count==6)
+		{
+			ix=getptr_idx(cix+(2*idx_str));
+			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
+			v2.st=getptr_st(cst+(ix*st_str));
+			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
+
+			ix=getptr_idx(cix+(3*idx_str));
+			v3.xyz=getptr_xyz(cxyz+(ix*xyz_str));
+			v3.st=getptr_st(cst+(ix*st_str));
+			v3.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v3.fl=0;
+
+			ix=getptr_idx(cix+(4*idx_str));
+			v4.xyz=getptr_xyz(cxyz+(ix*xyz_str));
+			v4.st=getptr_st(cst+(ix*st_str));
+			v4.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v4.fl=0;
+
+			ix=getptr_idx(cix+(5*idx_str));
+			v5.xyz=getptr_xyz(cxyz+(ix*xyz_str));
+			v5.st=getptr_st(cst+(ix*st_str));
+			v5.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v5.fl=0;
+
+			TKRA_TransformProjectQuad(ctx, v0, v1, v2, v3, ctx->mat_tproj);
+			TKRA_TransformProjectQuad(ctx, v0, v3, v4, v5, ctx->mat_tproj);
 			return(0);
 		}
 #endif
@@ -1344,6 +1469,7 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v2.st=getptr_st(cst+(ix*st_str));
 			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
 			
 			TKRA_TransformProjectTriangle(ctx, v0, v1, v2, ctx->mat_tproj);
 			v1=v2;
@@ -1357,11 +1483,13 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 		v0.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 		v0.st=getptr_st(cst+(ix*st_str));
 		v0.rgb=getptr_rgb(crgb+(ix*rgb_str));
+		v0.fl=0;
 
 		ix=getptr_idx(cix+(1*idx_str));
 		v1.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 		v1.st=getptr_st(cst+(ix*st_str));
 		v1.rgb=getptr_rgb(crgb+(ix*rgb_str));
+		v1.fl=0;
 
 		cnt=count-2;
 		for(i=0; i<cnt; i++)
@@ -1370,6 +1498,7 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v2.st=getptr_st(cst+(ix*st_str));
 			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
 			
 			if(i&1)
 			{
@@ -1396,21 +1525,25 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 			v0.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v0.st=getptr_st(cst+(ix*st_str));
 			v0.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v0.fl=0;
 
 			ix=getptr_idx(cix+((i*4+1)*idx_str));
 			v1.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v1.st=getptr_st(cst+(ix*st_str));
 			v1.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v1.fl=0;
 
 			ix=getptr_idx(cix+((i*4+2)*idx_str));
 			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v2.st=getptr_st(cst+(ix*st_str));
 			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
 
 			ix=getptr_idx(cix+((i*4+3)*idx_str));
 			v3.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v3.st=getptr_st(cst+(ix*st_str));
 			v3.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v3.fl=0;
 			
 //			TKRA_TransformProjectTriangle(ctx, v0, v1, v2, ctx->mat_tproj);
 //			TKRA_TransformProjectTriangle(ctx, v0, v2, v3, ctx->mat_tproj);
@@ -1426,11 +1559,13 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 		v0.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 		v0.st=getptr_st(cst+(ix*st_str));
 		v0.rgb=getptr_rgb(crgb+(ix*rgb_str));
+		v0.fl=0;
 
 		ix=getptr_idx(cix+(1*idx_str));
 		v1.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 		v1.st=getptr_st(cst+(ix*st_str));
 		v1.rgb=getptr_rgb(crgb+(ix*rgb_str));
+		v1.fl=0;
 
 		cnt=(count-2)/2;
 		for(i=0; i<cnt; i++)
@@ -1439,11 +1574,13 @@ int TKRA_DrawPrimitiveIndexArrayBasicB(
 			v2.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v2.st=getptr_st(cst+(ix*st_str));
 			v2.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v2.fl=0;
 
 			ix=getptr_idx(cix+((i*2+3)*idx_str));
 			v3.xyz=getptr_xyz(cxyz+(ix*xyz_str));
 			v3.st=getptr_st(cst+(ix*st_str));
 			v3.rgb=getptr_rgb(crgb+(ix*rgb_str));
+			v3.fl=0;
 			
 //			TKRA_TransformProjectTriangle(ctx, v0, v2, v1, ctx->mat_tproj);
 //			TKRA_TransformProjectTriangle(ctx, v1, v2, v3, ctx->mat_tproj);

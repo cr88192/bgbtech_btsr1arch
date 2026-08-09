@@ -382,6 +382,7 @@ reg[63:0]	tRegMulRtHi;	//Rn input value (High Bits, LD Ext)
 
 wire		tExCmdIsSimd;
 wire		tExCmdIsMac;
+wire		tExCmdIsIeeeMul;
 wire	tFpuIsFpu3;
 wire	tFpuIsFldcx;
 wire	tFpuIsFstcx;
@@ -412,6 +413,9 @@ wire[1:0]	tRegMulExOK;
 wire[3:0]	tRegMulExOp;
 wire[3:0]	tRegMulExOpA;
 
+wire[7:0]		regRModeA;
+wire[7:0]		regRModeB;
+
 `ifdef jx2_fpu_longdbl
 
 FpuAddG	fpu_add(
@@ -441,6 +445,8 @@ FpuMulG	fpu_mul(
 assign	tRegAddValHi = 64'h0;
 assign	tRegMulValHi = 64'h0;
 
+wire[127:0]		tRegMulResExt;
+
 FpuAdd	fpu_add(
 	clock,		reset,
 	tAddExHold,
@@ -449,7 +455,7 @@ FpuAdd	fpu_add(
 //	tRegAddExOp,
 	tRegAddExOpL,
 	tRegAddExOK,
-	tRegMulRMode);
+	tRegMulRMode, tRegMulResExt);
 
 FpuMul	fpu_mul(
 	clock,			reset,		tMulExHold,
@@ -457,7 +463,7 @@ FpuMul	fpu_mul(
 	tRegMulRt,		tRegMulRs,	tRegMulVal,
 //	tRegMulExOp,	tRegMulExOK,
 	tRegMulExOpL,	tRegMulExOK,
-	tRegMulRMode);
+	tRegMulRMode,	tRegMulResExt);
 
 `endif
 
@@ -490,7 +496,7 @@ assign	tRegAddCnvLdExOp	=
 assign	tRegAddExOpA	=
 	(tExCmdIsSimd) ? tRegAddSimdExOp :
 	(tExCmdIsCnvLd) ? tRegAddCnvLdExOp :
-	{ tFpuIsLongDbl,
+	{ tFpuIsLongDbl || tExCmdIsMac || tExCmdIsIeeeMul,
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FADD[3:0])) ? 3'h1 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FSUB[3:0])) ? 3'h2 :
 	(tFpuIsFpu3 && (tRegIdIxt[3:0]==JX2_UCIX_FPU_FMUL[3:0])) ? 3'h7 :
@@ -544,6 +550,15 @@ assign	tExCmdIsMac =
 	(	(tRegIdIxt[3:0]==4'h9) ||
 		(tRegIdIxt[3:0]==4'hB) ||
 		(tRegIdIxt[3:0]==4'hD)	);
+
+`ifndef jx2_fpu_fullfmac
+assign	tExCmdIsIeeeMul =
+	(tOpCmd[5:0]==JX2_UCMD_FPU3) 	&&
+	regRModeA[4]					&&
+	(tRegIdIxt[3:0]==4'h7)			;
+`else
+assign	tExCmdIsIeeeMul =	0;
+`endif
 
 `endif
 
@@ -680,9 +695,6 @@ assign	tExCmdLaneCoW =
 	(tOpCmdA[5:0]==JX2_UCMD_FPU3) 	&&
 	(tOpCmdB[5:0]==JX2_UCMD_FPU3)	;
 	
-
-wire[7:0]		regRModeA;
-wire[7:0]		regRModeB;
 
 assign		regRModeA = regValImmA[7:0];
 assign		regRModeB = regValImmB[7:0];
@@ -1171,6 +1183,22 @@ begin
 					tRegValGRnA	= tRegMulVal;
 					tRegValGRnB	= tRegMulValHi;
 `endif
+
+					if(tExCmdIsIeeeMul)
+					begin
+						tDoHoldCyc	= 12;
+						tExCmdVecW	= tRegIdIxtL[5] || tExCmdLaneCoW;
+
+						tRegAddRs	= tRegMulVal;
+						tRegAddRsHi	= tRegMulValHi;
+						tRegAddRt	= tRegValRnL;
+						tRegAddRtHi	= tRegValRnBL;
+
+						tRegValGRn	= tRegAddVal;
+						tRegValGRnA	= tRegAddVal;
+						tRegValGRnB	= tRegAddValHi;
+					end
+
 				end
 
 `ifdef jx2_fpu_enable_fdiv
@@ -1432,10 +1460,15 @@ begin
 					tDoHoldCyc	= 12;
 					tExCmdVecW	= tRegIdIxtL[5] || tExCmdLaneCoW;
 
-					tRegAddRs	= tRegValRnL;
-					tRegAddRsHi	= tRegValRnBL;
-					tRegAddRt	= tRegMulVal;
-					tRegAddRtHi	= tRegMulValHi;
+//					tRegAddRs	= tRegValRnL;
+//					tRegAddRsHi	= tRegValRnBL;
+//					tRegAddRt	= tRegMulVal;
+//					tRegAddRtHi	= tRegMulValHi;
+
+					tRegAddRs	= tRegMulVal;
+					tRegAddRsHi	= tRegMulValHi;
+					tRegAddRt	= tRegValRnL;
+					tRegAddRtHi	= tRegValRnBL;
 
 					tRegValGRn	= tRegAddVal;
 					tRegValGRnA	= tRegAddVal;
@@ -1451,7 +1484,8 @@ begin
 					begin
 						tRegMulRs	= tVecCnvRsOL;
 						tRegMulRt	= tVecCnvRtOL;
-						tRegAddRs	= tVecCnvRuOL;
+//						tRegAddRs	= tVecCnvRuOL;
+						tRegAddRt	= tVecCnvRuOL;
 
 						tVecCnvRnI	= tRegAddVal;
 						tRegValGRn	= { UV32_00, tVecCnvRnO };

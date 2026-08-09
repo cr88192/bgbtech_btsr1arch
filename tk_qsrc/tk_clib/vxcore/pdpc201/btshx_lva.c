@@ -170,6 +170,7 @@ s32 __lva_conv_toi32(u64 val)
 
 	if((val>>62)==2)
 	{
+		f=0;
 		*(u64 *)(&f)=(val<<2);
 		return((s32)(f));
 	}
@@ -209,6 +210,7 @@ float __lva_conv_tof32(u64 val)
 
 	if((val>>62)==2)
 	{
+		f=0;
 		*(u64 *)(&f)=(val<<2);
 		return(f);
 	}

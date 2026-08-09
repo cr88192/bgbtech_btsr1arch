@@ -1119,10 +1119,166 @@ void TKRA_DrawSpan_Zbuf(
 void TKRA_DrawSpan_ModUtx2MortZb(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
 {
+	u64 *src;
+	tkra_rastpixel *ct, *cte;
+	tkra_zbufpixel *ctz;
+	u64	tpos, tstep;
+	u64	cpos, cstep;
+	u64 zpos, zstep;
+	u64 cval, blk;
+	u32 xmask, ymask;
+	s32 z;
+	int pix, clr, idx;
+
+	tpos=parm[TKRA_DS_TPOS];
+	tstep=parm[TKRA_DS_TSTEP];
+
+	cpos=parm[TKRA_DS_CPOS];
+	cstep=parm[TKRA_DS_CSTEP];
+
+	zpos=parm[TKRA_DS_ZPOS];
+	zstep=parm[TKRA_DS_ZSTEP];
+
+	src=(u64 *)(parm[TKRA_DS_TEXBCN]);
+	xmask=parm[TKRA_DS_XMASK];
+	ymask=parm[TKRA_DS_YMASK];
+
+	ct=dstc; cte=ct+cnt;
+	ctz=dstz;
+	while(ct<cte)
+	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
+		idx=tkra_morton16(tpos>>16, tpos>>48)&ymask;
+		cval=TKRA_CachedBlkUtx2(src, idx);
+		cval=tkra_pmuluhw(cval, cpos);
+		pix=tkra_rgbpck64(cval);
+
+		z=zpos>>16;
+		if(z<=(*ctz))
+		{
+			*ct=pix;
+			*ctz=z;
+		}
+		ct++;
+		ctz++;
+		tpos+=tstep;
+		cpos+=cstep;
+		zpos+=zstep;
+	}
+}
+
+void TKRA_DrawSpan_ModBlUtx2MortZb(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
+	tkra_rastpixel *ct, *cte, *src;
+	tkra_zbufpixel *ctz;
+	u64	tpos, tstep, tpos1, tstep1;
+	u64	cpos, cstep;
+	u64 zpos, zstep;
+	u64 cval;
+	u32 xmask, ymask;
+	s32 z;
+	int ix0, ix1, ix2, ix3;
+	u64 pix0, pix1, pix2, pix3;
+	int pix, clr, idx;
+
+	tpos=parm[TKRA_DS_TPOS];
+	tstep=parm[TKRA_DS_TSTEP];
+
+	cpos=parm[TKRA_DS_CPOS];
+	cstep=parm[TKRA_DS_CSTEP];
+
+	zpos=parm[TKRA_DS_ZPOS];
+	zstep=parm[TKRA_DS_ZSTEP];
+
+	src=(tkra_rastpixel *)(parm[TKRA_DS_TEXBCN]);
+	xmask=parm[TKRA_DS_XMASK];
+	ymask=parm[TKRA_DS_YMASK];
+
+	tstep1=0x0001000000010000ULL;
+
+	ct=dstc; cte=ct+cnt;
+	ctz=dstz;
+	while(ct<cte)
+	{
+#if 1
+		z=zpos>>16;
+		if(z>(*ctz))
+		{
+			ctz++;
+			ct++;
+			tpos+=tstep;
+			cpos+=cstep;
+			zpos+=zstep;
+			continue;
+		}
+#endif
+
+// #if 1
+#ifndef TKRA_CHEAP_BILIN
+		ix0=tkra_morton16((tpos>>16)+0, (tpos>>48)+0)&ymask;
+		ix1=tkra_morton16((tpos>>16)+1, (tpos>>48)+0)&ymask;
+		ix2=tkra_morton16((tpos>>16)+0, (tpos>>48)+1)&ymask;
+		ix3=tkra_morton16((tpos>>16)+1, (tpos>>48)+1)&ymask;
+		pix0=TKRA_CachedBlkUtx2(src, ix0);
+		pix1=TKRA_CachedBlkUtx2(src, ix1);
+		pix2=TKRA_CachedBlkUtx2(src, ix2);
+		pix3=TKRA_CachedBlkUtx2(src, ix3);
+		cval=TKRA_InterpBilinear64(pix0, pix1, pix2, pix3,
+			(u16)tpos, (u16)(tpos>>32));
+#endif
+
+#ifdef TKRA_CHEAP_BILIN
+		ix2=(tpos>>16);		ix3=(tpos>>48);
+		ix0=tkra_morton16(ix2+0, ix3+0)&ymask;
+		ix1=tkra_morton16(ix2+1, ix3+0)&ymask;
+		ix2=tkra_morton16(ix2+0, ix3+1)&ymask;
+		pix0=TKRA_CachedBlkUtx2(src, ix0);
+		pix1=TKRA_CachedBlkUtx2(src, ix1);
+		pix2=TKRA_CachedBlkUtx2(src, ix2);
+		cval=TKRA_InterpBilinear3Pt_64(pix0, pix1, pix2,
+			(u16)tpos, (u16)(tpos>>32));
+#endif
+
+		cval=tkra_pmuluhw(cval, cpos);
+		pix=tkra_rgbpck64(cval);
+
+		z=zpos>>16;
+		if(z<=(*ctz))
+		{
+			*ct=pix;
+			*ctz=z;
+		}
+		ctz++;
+		ct++;
+		tpos+=tstep;
+		cpos+=cstep;
+		zpos+=zstep;
+	}
+}
+
+
+#if 0
+void TKRA_DrawSpan_ModUtx2MortZb(u64 *parm,
+	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
+{
 	TKRA_DrawSpan_Zbuf(dstz, cnt,
 		parm[TKRA_DS_ZPOS], parm[TKRA_DS_ZSTEP]);
 	TKRA_DrawSpan_ModUtx2MortZt(parm, dstc, dstz, cnt);
 }
+#endif
 
 void TKRA_DrawSpan_AlphaModUtx2MortZb(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
@@ -1142,6 +1298,7 @@ void TKRA_DrawSpan_AtestModUtx2MortZb(u64 *parm,
 }
 #endif
 
+#if 0
 void TKRA_DrawSpan_ModBlUtx2MortZb(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
 {
@@ -1149,6 +1306,7 @@ void TKRA_DrawSpan_ModBlUtx2MortZb(u64 *parm,
 		parm[TKRA_DS_ZPOS], parm[TKRA_DS_ZSTEP]);
 	TKRA_DrawSpan_ModBlUtx2MortZt(parm, dstc, dstz, cnt);
 }
+#endif
 
 void TKRA_DrawSpan_AlphaModBlUtx2MortZb(u64 *parm,
 	tkra_rastpixel *dstc, tkra_zbufpixel *dstz, int cnt)
@@ -1267,6 +1425,30 @@ u64 TKRA_InterpLinear64(u64 px0, u64 px1, u16 frac)
 	return(cv4);
 }
 
+#ifdef __XG3__
+u64 TKRA_InterpBilinear3Pt_64(
+	u64 px0, u64 px1, u64 px2,
+	u16 xfrac, u16 yfrac);
+__asm {
+TKRA_InterpBilinear3Pt_64:
+	MOV			0x7FFF, R15
+	SHLD		R13, -1, R13
+	SHLD		R14, -1, R14
+	AND			R15, R13
+	AND			R15, R14
+	PSHUF.W		R13, 0, R16
+	PSHUF.W		R14, 0, R14
+	PADD.W		R14, R16, R17
+	NOT			R17, R17
+	PMULU.HW	R12, R14, R12
+	PMULU.HW	R10, R17, R10
+	PMULU.HW	R11, R16, R11
+	PADD.W		R10, R11, R13
+	PADD.W		R12, R13, R10
+	RTS
+};
+
+#else
 u64 TKRA_InterpBilinear3Pt_64(
 	u64 px0, u64 px1, u64 px2,
 	u16 xfrac, u16 yfrac)
@@ -1289,5 +1471,6 @@ u64 TKRA_InterpBilinear3Pt_64(
 		tkra_pmuluhw(px2, cyf2);
 	return(cv5);
 }
+#endif
 
 #endif

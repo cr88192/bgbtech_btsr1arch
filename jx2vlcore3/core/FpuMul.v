@@ -23,6 +23,18 @@
  OTHER DEALINGS IN THE SOFTWARE.
 */
 
+/*
+Binary64 Multiplier.
+This will nominally multiply two Binary64 inputs and produce a Binary64 result.
+
+This may additionally produce a 128-bit extended output.
+The layout of this output will mirror Binary128, but will be non-normalized and non-rounded.
+  (127)=Sign
+  (126:125): Unused for now
+  (124:112): Raw Exponent
+  (111:  0): Mantissa (Non-Normalized)
+ */
+
 `ifndef HAS_FPUMUL
 `define HAS_FPUMUL
 
@@ -31,6 +43,10 @@
 
 `ifdef jx2_fpu_fullround
 `include "FpuDoRound64.v"
+`endif
+
+`ifdef jx2_fpu_fullfmac
+`include "ExCsAdd112F.v"
 `endif
 
 module FpuMul(
@@ -42,7 +58,8 @@ module FpuMul(
 	regValRo,
 	regExOp,
 	regExOK,
-	regRMode
+	regRMode,
+	regMulResExt
 	);
 
 input	clock;
@@ -55,6 +72,7 @@ output[63:0]	regValRo;
 input[3:0]		regExOp;
 output[1:0]		regExOK;
 input[7:0]		regRMode;
+output[127:0]	regMulResExt;	//FMA wide output...
 
 
 (* max_fanout = 200 *)
@@ -64,6 +82,9 @@ assign	exHoldN = !exHold;
 
 reg[63:0]		tRegValRo;
 assign	regValRo	= tRegValRo;
+
+reg[127:0]		tRegValRoExt;
+assign	regMulResExt	= tRegValRoExt;
 
 reg[1:0]		tRegExOK;
 reg[1:0]		tRegExOK2;
@@ -91,6 +112,10 @@ reg				tFraC1_BA_Co;
 reg[9:0]		tFraC1_AB_C5;
 reg[9:0]		tFraC1_BA_C5;
 
+reg[35:0]		tFraC1_AB;
+reg[35:0]		tFraC1_BA;
+reg[35:0]		tFraC1_AA;
+
 
 reg				tSgnC2;
 reg[12:0]		tExpC2;
@@ -103,6 +128,10 @@ reg[35:0]		tFraC2_CA;
 reg[35:0]		tFraC2_CB;
 reg[35:0]		tFraC2_CC;
 
+reg[35:0]		tFraC2_AB;
+reg[35:0]		tFraC2_BA;
+reg[35:0]		tFraC2_AA;
+
 reg				tFraC2_AB_Co;
 reg				tFraC2_BA_Co;
 reg[9:0]		tFraC2_AB_C5;
@@ -111,6 +140,22 @@ reg[9:0]		tFraC2_BA_C5;
 reg[63:0]		tFraC2_P;
 reg[63:0]		tFraC2_Q;
 reg[63:0]		tFraC2_R;
+
+reg[111:0]		tFraC2_XS;
+reg[111:0]		tFraC2_XT;
+reg[111:0]		tFraC2_XU;
+reg[111:0]		tFraC2_XV;
+
+wire[111:0]		tFraC2_XP;
+wire[111:0]		tFraC2_XQ;
+
+`ifdef jx2_fpu_fullfmac
+ExCsAdd112F		fpmulAddXa(tFraC2_XS, tFraC2_XT, tFraC2_XP);
+ExCsAdd112F		fpmulAddXb(tFraC2_XU, tFraC2_XV, tFraC2_XQ);
+`else
+assign		tFraC2_XP = 112'h0;
+assign		tFraC2_XQ = 112'h0;
+`endif
 
 
 reg				tSgnC3;
@@ -124,10 +169,23 @@ reg[63:0]		tFraC3_R;
 wire[63:0]		tFraC3_S;
 ExCsAdd64F		fpmulAdd(tFraC3_Q, tFraC3_R, tFraC3_S);
 
+reg[111:0]		tFraC3_XP;
+reg[111:0]		tFraC3_XQ;
+
+wire[111:0]		tFraC3_XS;
+
+`ifdef jx2_fpu_fullfmac
+ExCsAdd112F		fpmulAddXc(tFraC3_XP, tFraC3_XQ, tFraC3_XS);
+`else
+assign			tFraC3_XS = 112'h0;
+`endif
+
 reg				tSgnC4;
 reg[12:0]		tExpC4;
 reg[63:0]		tFraC4_S;
 reg				tInxC4;
+
+reg[111:0]		tFraC4_X;
 
 reg				tSgnC4B;
 reg[12:0]		tExpC4B;
@@ -140,6 +198,7 @@ reg[8:0]		tFraRnd4B;
 
 reg[63:0]		tValC4;
 wire[63:0]		tValC4B;
+reg[127:0]		tValC4X;
 
 `ifdef jx2_fpu_fullround
 reg[1:0]		tValC4_Mode;
@@ -214,6 +273,13 @@ begin
 			tExDaz1[0]=1;
 		if(regValRm[51:44]!=0)
 			tExDaz1[0]=1;
+
+`ifdef jx2_fpu_fullfmac
+		if(tExpA1==0)
+			tFraA1[52]=0;
+		if(tExpB1==0)
+			tFraB1[52]=0;
+`endif
 	end
 
 	if(regValRn[17:8]!=0)
@@ -266,6 +332,21 @@ begin
 	tFraC1_AB_C5 = { 5'h0, tFraA1[17:13] } * { 5'h0, tFraB1[35:31] };
 	tFraC1_BA_C5 = { 5'h0, tFraA1[35:31] } * { 5'h0, tFraB1[17:13] };
 
+`ifdef jx2_fpu_fullfmac
+	tFraC1_AA	=
+		{ 18'h0, tFraA1[17: 0]} *
+		{ 18'h0, tFraB1[17: 0]};
+	tFraC1_AB	=
+		{ 18'h0, tFraA1[17: 0]} *
+		{ 18'h0, tFraB1[35:18]};
+	tFraC1_BA	=
+		{ 18'h0, tFraA1[35:18]} *
+		{ 18'h0, tFraB1[17: 0]};
+`else
+	tFraC1_AA	=	0;
+	tFraC1_AB	=	0;
+	tFraC1_BA	=	0;
+`endif
 
 	/* Stage 2 */
 
@@ -280,6 +361,17 @@ begin
 		{36'h0, tFraC2_AC[35:8]} +
 		{36'h0, tFraC2_CA[35:8]};
 
+`ifdef jx2_fpu_fullfmac
+	tFraC2_XS =
+		{ 4'h0, tFraC2_CC, tFraC2_BB, tFraC2_AA };
+	tFraC2_XT =
+		{ 22'h0, tFraC2_BC, tFraC2_AB, 18'h0 };
+	tFraC2_XU =
+		{ 22'h0, tFraC2_CB, tFraC2_BA, 18'h0 };
+	tFraC2_XV =
+		{ 40'h0, tFraC2_CA, 36'h0 } +
+		{ 40'h0, tFraC2_AC, 36'h0 } ;
+`endif
 
 	/* Stage 3 */
 
@@ -375,17 +467,20 @@ begin
 
 //	$display("FpuMul: ExpB %X %X", tExpC4, tExpC4B);
 
-	tValC4 = { tSgnC4B, tExpC4B[10:0], tFraC4B[51:0] };
+	tValC4		= { tSgnC4B, tExpC4B[10:0], tFraC4B[51:0] };
+	tValC4X		= { tSgnC4, 2'b00, tExpC4[12:0], tFraC4_X };
 	
 //	$display("FpuMul: Val=%X", tValC4);
 
 	tRegExOK[0] = tInxC4B;
 
+`ifndef jx2_fpu_fullfmac
 	if(tRegRMode4[4] && (tFraRnd4B[8] || (tExDaz4!=0)))
 	begin
 		//IEEE Mode & DAZ or Round Fail
 		tRegExOK = UMEM_OK_FAULT;
 	end
+`endif
 
 	if(tRegExOp4 != 4'h7)
 		tRegExOK = 0;
@@ -396,19 +491,23 @@ always @(posedge clock)
 begin
 	if(exHoldN)
 	begin
-		tSgnC2		<= tSgnC1;
-		tExpC2		<= tExpC1;
-		tInxC2		<= tInxC1;
-		tExDaz2		<= tExDaz1;
-		tRegRMode2	<= tRegRMode1;
-		tRegExOp2	<= tRegExOp1;
+		tSgnC2			<= tSgnC1;
+		tExpC2			<= tExpC1;
+		tInxC2			<= tInxC1;
+		tExDaz2			<= tExDaz1;
+		tRegRMode2		<= tRegRMode1;
+		tRegExOp2		<= tRegExOp1;
 
-		tFraC2_AC	<= tFraC1_AC;
-		tFraC2_BB	<= tFraC1_BB;
-		tFraC2_BC	<= tFraC1_BC;
-		tFraC2_CA	<= tFraC1_CA;
-		tFraC2_CB	<= tFraC1_CB;
-		tFraC2_CC	<= tFraC1_CC;
+		tFraC2_AC		<= tFraC1_AC;
+		tFraC2_BB		<= tFraC1_BB;
+		tFraC2_BC		<= tFraC1_BC;
+		tFraC2_CA		<= tFraC1_CA;
+		tFraC2_CB		<= tFraC1_CB;
+		tFraC2_CC		<= tFraC1_CC;
+
+		tFraC2_AA		<= tFraC1_AA;
+		tFraC2_AB		<= tFraC1_AB;
+		tFraC2_BA		<= tFraC1_BA;
 
 		tFraC2_AB_Co	<= tFraC1_AB_Co;
 		tFraC2_BA_Co	<= tFraC1_BA_Co;
@@ -416,26 +515,30 @@ begin
 		tFraC2_BA_C5	<= tFraC1_BA_C5;
 	end
 
-	tSgnC3		<= tSgnC2;
-	tExpC3		<= tExpC2;
-	tInxC3		<= tInxC2;
-	tFraC3_P	<= tFraC2_P;
-	tFraC3_Q	<= tFraC2_Q;
-	tFraC3_R	<= tFraC2_R;
-	tExDaz3		<= tExDaz2;
-	tRegRMode3	<= tRegRMode2;
-	tRegExOp3	<= tRegExOp2;
+	tSgnC3			<= tSgnC2;
+	tExpC3			<= tExpC2;
+	tInxC3			<= tInxC2;
+	tFraC3_P		<= tFraC2_P;
+	tFraC3_Q		<= tFraC2_Q;
+	tFraC3_R		<= tFraC2_R;
+	tExDaz3			<= tExDaz2;
+	tRegRMode3		<= tRegRMode2;
+	tRegExOp3		<= tRegExOp2;
+	tFraC3_XP		<= tFraC2_XP;
+	tFraC3_XQ		<= tFraC2_XQ;
 
-	tSgnC4		<= tSgnC3;
-	tExpC4		<= tExpC3;
-	tInxC4		<= tInxC3;
-	tFraC4_S	<= tFraC3_S;
-	tExDaz4		<= tExDaz3;
-	tRegRMode4	<= tRegRMode3;
-	tRegExOp4	<= tRegExOp3;
+	tSgnC4			<= tSgnC3;
+	tExpC4			<= tExpC3;
+	tInxC4			<= tInxC3;
+	tFraC4_S		<= tFraC3_S;
+	tFraC4_X		<= tFraC3_XS;
+	tExDaz4			<= tExDaz3;
+	tRegRMode4		<= tRegRMode3;
+	tRegExOp4		<= tRegExOp3;
 
-	tRegValRo	<= tValC4B;
-	tRegExOK2	<= tRegExOK;
+	tRegValRo		<= tValC4B;
+	tRegExOK2		<= tRegExOK;
+	tRegValRoExt	<= tValC4X;
 end
 
 endmodule
