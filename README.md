@@ -88,7 +88,7 @@ Change, 2025-03, Note that BGBCC is now MIT-0 / MIT-ZERO.
 Note for target names:
 * "BJX2": Original XG1 ISA.
 * "XG2A": XG2
-* "XRVA": RISC-V (assumes PE/COFF output)
+* "XRVA": RV64G or RV64G+Jx (assumes PE/COFF output)
 * "XG3RV" / "X3RV": XG3
 
 
