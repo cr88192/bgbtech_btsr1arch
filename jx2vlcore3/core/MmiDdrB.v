@@ -1,4 +1,19 @@
 /*
+// SPDX-License-Identifier: CERN-OHL-P-2.0
+// Copyright (c) 2018-2026 Brendan G Bohannon
+//
+// This source code is licensed under the CERN Open Hardware Licence 
+// Strongly Reciprocal version 2 or later (CERN-OHL-P v2+).
+//
+// You may redistribute and modify this source code under the terms of 
+// the CERN-OHL-P v2+. A copy of this license should be included with 
+// this source code. If not, see <https://ohwr.org>.
+//
+// This source code is offered "as is" without any express or implied
+// warranties. See the License for more details.
+*/
+
+/*
 DDR2 / DDR3 Interface Module
 
 Work on design for a faster module.

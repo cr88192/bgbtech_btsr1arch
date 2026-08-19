@@ -2520,8 +2520,9 @@ In this case, positive values are passed through as-is, whereas negative values 
 
 === PSHUF ===
 
- 01iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  PSHUF.B     Rm, Imm8u, Rn
- 01iiiiiiii-mmmmmm-1000-nnnnnn-10-1010  PSHUF.W     Rm, Imm8u, Rn
+       01iiiiiiii-mmmmmm-1000-nnnnnn-00-1010  PSHUF.B     Rm, Imm8u, Rn
+       01iiiiiiii-mmmmmm-1000-nnnnnn-10-1010  PSHUF.W     Rm, Imm8u, Rn
+ J_IMM 01iiiiiiii-mmmmmm-1000-nnnnnn-10-1010  PSHUF.W     Rm, Imm32n, Rn
 
 Packed Shuffle of Byte or Word elements.
 
@@ -2531,23 +2532,42 @@ In the case of a Byte shuffle, the high 32 bits will be copied unchanged.
 Each element will be given as a 2-bit value, with 00 mapping to the low-order bits, and 11 to the high order bits. The elements within the mask will have the same relative order (in terms of bit-positions) as the elements in the register, and will serve to select an element at each position from the source register.
 
 
-If a jumbo prefix is used with PSHUF.W, it will function as a combined shuffle and tristate multiply.
+If a J_IMM is used with PSHUF.W, it will function as a combined shuffle and tristate multiply.
 
 * imm( 7: 0): Shuffle Mask
 * imm(15: 8): Tristate Multiply
 * imm(31:16): Reserved (if not all 1s, sign-extended).
 * imm(   32): 1
 
+The Multipy mask elements taking the form:
+* 00: Zero
+* 01: Identity
+* 10: Invert
+* 11: Flip Sign
+
 
 === PSHUFX.L ===
 
- 01iiiiiiii-mmmmmm-0111-nnnnnn-10-1010  PSHUFX.L    Rm, Imm8u, Rn
+       01iiiiiiii-mmmmmm-0111-nnnnnn-10-1010  PSHUFX.L    Rm, Imm8u, Rn
+ J_IMM 01iiiiiiii-mmmmmm-0111-nnnnnn-10-1010  PSHUFX.L    Rm, Imm32n, Rn
 
 Optional (GSVX): Packed Shuffle of DWord element, operating on a logical 128-bit register.
 
-If not supported natively, this instruction will be synthetic, and will be built using a pair of MOVxxD ops.
+If not supported natively, this instruction will be synthetic, and will be built using a pair of MOVxxD ops or similar.
 
-* Note that, even when supported natively, it will be likely decoded as a pair of MOVxxD ops in the pipeline.
+
+If a J_IMM is used with PSHUFX.L, it will function as a combined shuffle and tristate multiply.
+
+* imm( 7: 0): Shuffle Mask
+* imm(15: 8): Tristate Multiply
+* imm(31:16): Reserved (if not all 1s, sign-extended).
+* imm(   32): 1
+
+The Multipy mask elements taking the form:
+* 00: Zero
+* 01: Identity
+* 10: Invert
+* 11: Flip Sign
 
 
 == Misc Extensions ==

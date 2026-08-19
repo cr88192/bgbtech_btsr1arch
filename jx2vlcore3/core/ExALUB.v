@@ -1,26 +1,16 @@
 /*
- Copyright (c) 2018-2022 Brendan G Bohannon
-
- Permission is hereby granted, free of charge, to any person
- obtaining a copy of this software and associated documentation
- files (the "Software"), to deal in the Software without
- restriction, including without limitation the rights to use,
- copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the
- Software is furnished to do so, subject to the following
- conditions:
-
- The above copyright notice and this permission notice shall be
- included in all copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES
- OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
- WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
- OTHER DEALINGS IN THE SOFTWARE.
+// SPDX-License-Identifier: CERN-OHL-P-2.0
+// Copyright (c) 2018-2026 Brendan G Bohannon
+//
+// This source code is licensed under the CERN Open Hardware Licence 
+// Strongly Reciprocal version 2 or later (CERN-OHL-P v2+).
+//
+// You may redistribute and modify this source code under the terms of 
+// the CERN-OHL-P v2+. A copy of this license should be included with 
+// this source code. If not, see <https://ohwr.org>.
+//
+// This source code is offered "as is" without any express or implied
+// warranties. See the License for more details.
 */
 
 /*
@@ -92,6 +82,7 @@ module ExALUB(
 	reset,
 	regValRs,
 	regValRt,
+	regValXs,
 	idUCmd,
 	idUIxt,
 	exHold,
@@ -107,6 +98,7 @@ input			reset;
 
 input[63:0]		regValRs;
 input[63:0]		regValRt;
+input[63:0]		regValXs;
 input[8:0]		idUCmd;
 input[8:0]		idUIxt;
 input			exHold;
@@ -292,6 +284,9 @@ reg[32:0]	tResultShufB;
 reg[64:0]	tResultShufW;
 reg[64:0]	tResultMulTW;
 
+reg[64:0]	tResultShufL;
+reg[64:0]	tResultMulTL;
+
 reg[7:0]	tValShuf;
 reg[7:0]	tValMulT;
 
@@ -467,6 +462,8 @@ begin
 	tResultShufB = UV33_00;
 	tResultShufW = UV65_00;
 	tResultMulTW = UV65_00;
+	tResultShufL = UV65_00;
+	tResultMulTL = UV65_00;
 
 	tValShuf=regValRt[7:0];
 	tValMulT=8'h55;
@@ -567,11 +564,44 @@ begin
 `endif
 
 `ifdef def_true
+	case(tValShuf[1:0])
+//	case(tValShuf[5:4])
+		2'b00: tResultShufL[31: 0]=regValRs[31: 0];
+		2'b01: tResultShufL[31: 0]=regValRs[63:32];
+		2'b10: tResultShufL[31: 0]=regValXs[31: 0];
+		2'b11: tResultShufL[31: 0]=regValXs[63:32];
+	endcase
+	case(tValShuf[3:2])
+//	case(tValShuf[7:6])
+		2'b00: tResultShufL[63:32]=regValRs[31: 0];
+		2'b01: tResultShufL[63:32]=regValRs[63:32];
+		2'b10: tResultShufL[63:32]=regValXs[31: 0];
+		2'b11: tResultShufL[63:32]=regValXs[63:32];
+	endcase
+	case(tValMulT[1:0])
+//	case(tValMulT[5:4])
+		2'b00: tResultMulTL[31:0] = 32'h0;
+		2'b01: tResultMulTL[31:0] = tResultShufL[31: 0];
+		2'b10: tResultMulTL[31:0] = ~tResultShufL[31: 0];
+		2'b11: tResultMulTL[31:0] = { ~tResultShufL[31], tResultShufL[30: 0] };
+	endcase
+	case(tValMulT[3:2])
+//	case(tValMulT[7:6])
+		2'b00: tResultMulTL[63:32] = 32'h0;
+		2'b01: tResultMulTL[63:32] = tResultShufL[63:32];
+		2'b10: tResultMulTL[63:32] = ~tResultShufL[63:32];
+		2'b11: tResultMulTL[63:32] = { ~tResultShufL[63], tResultShufL[62:32] };
+	endcase
+	tResultShufL = tResultMulTL;
+`endif
+
+`ifdef def_true
 	if(idLane[1])
 	begin
 		/* Zero out shuffles in Lane3 */
 		tResultShufB = 0;
 		tResultShufW = 0;
+		tResultShufL = 0;
 	end
 `endif
 
@@ -656,6 +686,7 @@ begin
 		end
 		
 		4'h4: begin		/* TST */
+			tResult2W = tResultShufL;
 		end
 		4'h5: begin		/* AND */
 			tResult1A={1'b0, regValRs[31:0] & regValRt[31:0]};

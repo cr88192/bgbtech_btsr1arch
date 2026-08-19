@@ -1,3 +1,10 @@
+Change: The ISA design, as well as the Verilog for the CPU cores, will be subject to the CERN-OHL-P.
+
+Note that scope will apply specifically to my ISA designs (and does not apply retroactively to RV64).
+
+
+=== Prior Policy ===
+
 Usage Policy for these ISA Designs:
 Anyone is free to use the ISA in any way they see fit (or under the normal terms of the MIT License) but with a few additional terms (as applicable to wider use of the ISA).
 

@@ -351,8 +351,14 @@ The RCPA and SQRTA oparations would try to generate a fast approximation of a re
 
 
 If supported, the MADD operations may perform a SIMD MADD.
+
 * These are otherwise equivalent to the FMADD operations.
 * If high element is NaN, it is the same as FMADD.
+
+* PMADD: Fs*Ft+Fu
+* PMSUB: Fs*Ft-Fu
+* PNMADD: -Fs*Ft-Fu
+* PNMSUB: -Fs*Ft+Fu
 
 
 === Examples ===
