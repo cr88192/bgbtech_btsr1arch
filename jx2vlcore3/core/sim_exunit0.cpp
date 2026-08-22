@@ -2476,7 +2476,11 @@ int main(int argc, char **argv, char **env)
 	ptr0=malloc(1<<20);
 
 #if !defined(DOOM_RV) && !defined(QUAKE_RV)
-#if defined(USE_ROM_RBD)
+#if defined(USE_SHELL_XG3)
+	JX2R_UseImageAddFile(
+		(char *)"BOOTLOAD.SYS",
+		(char *)"../../tk_qsrc/tk_clib/tkshell_x3rv.sys");
+#elif defined(USE_ROM_RBD)
 	JX2R_UseImageAddFile(
 		(char *)"BOOTLOAD.SYS",
 		(char *)"../../tk_qsrc/tk_clib/tkshell_rbd.sys");

@@ -146,7 +146,7 @@ begin
 			regIdRdA_LoP || regIdRsA_LoP || regIdRtA_LoP ||
 			regIdRdB_LoP || regIdRsB_LoPg || regIdRtB_LoPg,
 		(regIdRdA == regIdRsB) || (regIdRdA == regIdRtB) ||
-			(regIdRdA == regIdRdB) || regIdRdA_LoP
+			(regIdRdA == regIdRdB) || regIdRdA_LoP || regIdRdB_LoP
 	};
 
 `ifdef jx2_enable_riscv_xg3
@@ -171,7 +171,7 @@ begin
 			regIdRdA_LoP_X3 || regIdRsA_LoP_X3 || regIdRtA_LoP_X3 ||
 			regIdRdB_LoP_X3 || regIdRsB_LoPg_X3 || regIdRtB_LoPg_X3,
 		(regIdRdA_X3 == regIdRsB_X3) || (regIdRdA_X3 == regIdRtB_X3) ||
-			(regIdRdA_X3 == regIdRdB_X3) || regIdRdA_LoP_X3
+			(regIdRdA_X3 == regIdRdB_X3) || regIdRdA_LoP_X3 || regIdRdB_LoP_X3
 	};
 	
 	if(!istrIsRvA && !istrIsRvB)

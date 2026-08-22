@@ -1,16 +1,18 @@
 /*
-// SPDX-License-Identifier: CERN-OHL-P-2.0
-// Copyright (c) 2018-2026 Brendan G Bohannon
-//
-// This source code is licensed under the CERN Open Hardware Licence 
-// Strongly Reciprocal version 2 or later (CERN-OHL-P v2+).
-//
-// You may redistribute and modify this source code under the terms of 
-// the CERN-OHL-P v2+. A copy of this license should be included with 
-// this source code. If not, see <https://ohwr.org>.
-//
-// This source code is offered "as is" without any express or implied
-// warranties. See the License for more details.
+SPDX-License-Identifier: Apache-2.0
+Copyright (c) 2018-2026 Brendan G Bohannon
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.*/
 */
 
 /*
@@ -73,7 +75,11 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `endif
 
 `ifdef jx2_enable_prebra
+`ifdef jx2_decode_xg3only
+`include "DecPreBraX3O.v"
+`else
 `include "DecPreBra.v"
+`endif
 `endif
 
 `ifdef jx2_enable_fpu
@@ -106,9 +112,11 @@ PF IF ID1 ID2 EX1 EX2 EX3 WB
 `include "ExPredChkNeedSrT.v"
 `endif
 
+// `ifndef jx2_decode_xg3only
 `ifdef jx2_enable_riscv_xg3
 `include "DecOpRepXG3.v"
 `endif
+// `endif
 
 `ifdef jx2_enable_riscv_op48rep
 `include "DecOpRepRv48A.v"
@@ -528,7 +536,7 @@ assign		ifIstrWordB = ifIstrWordA[63:0];
 assign		ifOutPcStepAdj = ifOutPcStep;
 `endif
 
-
+// `ifndef jx2_decode_xg3only
 `ifdef jx2_enable_riscv_xg3
 DecOpRepXG3		repXg3a(
 	clock, ifIstrWordA[31: 0], ifIstrWordC[31: 0], ifIstrMTag[1:0],
@@ -549,6 +557,11 @@ assign	ifIstrWord[63:32] = ifIstrMTag[2] ?
 assign	ifIstrWord = ifIstrWordA;
 assign	ifIstrMTag = 0;
 `endif
+
+//`else
+//assign	ifIstrWord = ifIstrWordA;
+//assign	ifIstrMTag = 0;
+//`endif
 
 `ifdef jx2_use_ringbus
 
@@ -810,6 +823,19 @@ reg				id1BraPipelineDbl;
 
 reg[7:0]			id1BraPipelineLrL;
 
+`ifdef jx2_decode_xg3only
+DecPreBraX3O	preBra(
+	clock,				exResetL,
+	id1IstrWord[63:0],	id1IstrMTag[3:0],
+	id1ValBPc,			id1ValPc,
+	id1PreBraPc,		id1PreBra,
+	id1PreBraPcInc,		id1WasBra,
+
+	gprValLr,			ifLastPc,
+	gprOutDlr,			gprOutDhr,
+	ex1ValBPc,			ex1ValBraDir,
+	id1BraPipelineLrL,	ex1MemOpm);
+`else
 DecPreBra	preBra(
 	clock,				exResetL,
 	id1IstrWord[63:0],	id1IstrMTag[3:0],
@@ -821,6 +847,8 @@ DecPreBra	preBra(
 	gprOutDlr,			gprOutDhr,
 	ex1ValBPc,			ex1ValBraDir,
 	id1BraPipelineLrL,	ex1MemOpm);
+`endif
+
 `endif
 	
 
@@ -5820,6 +5848,9 @@ begin
 	dcInValB		= 0;
 `endif
 	dcInTraPc		= { UV16_00, ex1ValBPc };
+
+	if(ex1OpUCmd[5:0]==JX2_UCMD_OP_IXT)
+		dcInValB		= ex1MemDataOutB;
 
 //	if(exB1RegIdRn1 == JX2_GR_DCINB)
 //		dcInValB	= exB1RegValRn1;

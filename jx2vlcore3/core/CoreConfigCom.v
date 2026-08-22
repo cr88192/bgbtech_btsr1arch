@@ -8,6 +8,12 @@
 
 // `define jx2_enable_mmu_vipt		//Enable VIPT
 
+// `define jx2_decode_xg3only		//Only decode XG3 and RV64 modes.
+
+`ifdef XG3ONLY
+// `define jx2_decode_xg3only		//Only decode XG3 and RV64 modes.
+`endif
+
 `ifndef jx2_xc7s50
 
 `define jx2_enable_immb			//Enable Second Immediate

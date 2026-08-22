@@ -64,7 +64,7 @@ MTAG, in RV64 Mode:
 
 `define jx2_prebra_ga6bit
 
-module DecPreBra(
+module DecPreBraX3O(
 	clock,			reset,
 	istrWord,		istrMTag,
 	istrBasePc,		istrBraPc,
@@ -293,75 +293,6 @@ begin
 `ifdef jx2_prebra_ga6bit
 		if(tPreExCnt[0] == tPreExDir[2])
 			tNxtStatBraHit	= tStatBraHit + 1;
-
-`ifndef def_true
-		case( {tPreExCnt[5:1], tPreExDir[2]} )
-			6'b00000_0: tPreExCntB=6'b00101_1;
-			6'b00000_1: tPreExCntB=6'b10111_0;
-			6'b00001_0: tPreExCntB=6'b01111_1;
-			6'b00001_1: tPreExCntB=6'b10100_0;
-			6'b00010_0: tPreExCntB=6'b01010_0;
-			6'b00010_1: tPreExCntB=6'b00011_0;
-			6'b00011_0: tPreExCntB=6'b10000_0;
-			6'b00011_1: tPreExCntB=6'b11110_1;
-			6'b00100_0: tPreExCntB=6'b01000_1;
-			6'b00100_1: tPreExCntB=6'b01101_1;
-			6'b00101_0: tPreExCntB=6'b11111_1;
-			6'b00101_1: tPreExCntB=6'b00010_0;
-			6'b00110_0: tPreExCntB=6'b10011_0;
-			6'b00110_1: tPreExCntB=6'b00110_1;
-			6'b00111_0: tPreExCntB=6'b01011_0;
-			6'b00111_1: tPreExCntB=6'b10110_1;
-			6'b01000_0: tPreExCntB=6'b10000_0;
-			6'b01000_1: tPreExCntB=6'b00111_1;
-			6'b01001_0: tPreExCntB=6'b10111_0;
-			6'b01001_1: tPreExCntB=6'b00110_0;
-			6'b01010_0: tPreExCntB=6'b00000_0;
-			6'b01010_1: tPreExCntB=6'b00100_1;
-			6'b01011_0: tPreExCntB=6'b10000_1;
-			6'b01011_1: tPreExCntB=6'b10111_0;
-			6'b01100_0: tPreExCntB=6'b01000_0;
-			6'b01100_1: tPreExCntB=6'b01010_1;
-			6'b01101_0: tPreExCntB=6'b01110_1;
-			6'b01101_1: tPreExCntB=6'b01101_1;
-			6'b01110_0: tPreExCntB=6'b00101_0;
-			6'b01110_1: tPreExCntB=6'b01100_1;
-			6'b01111_0: tPreExCntB=6'b11100_1;
-			6'b01111_1: tPreExCntB=6'b01100_0;
-			6'b10000_0: tPreExCntB=6'b11110_0;
-			6'b10000_1: tPreExCntB=6'b10001_0;
-			6'b10001_0: tPreExCntB=6'b01011_0;
-			6'b10001_1: tPreExCntB=6'b10110_0;
-			6'b10010_0: tPreExCntB=6'b00101_0;
-			6'b10010_1: tPreExCntB=6'b01001_1;
-			6'b10011_0: tPreExCntB=6'b10010_1;
-			6'b10011_1: tPreExCntB=6'b10111_1;
-			6'b10100_0: tPreExCntB=6'b11011_0;
-			6'b10100_1: tPreExCntB=6'b00110_1;
-			6'b10101_0: tPreExCntB=6'b10011_0;
-			6'b10101_1: tPreExCntB=6'b01110_0;
-			6'b10110_0: tPreExCntB=6'b10011_1;
-			6'b10110_1: tPreExCntB=6'b00100_0;
-			6'b10111_0: tPreExCntB=6'b11011_1;
-			6'b10111_1: tPreExCntB=6'b10110_0;
-			6'b11000_0: tPreExCntB=6'b01101_1;
-			6'b11000_1: tPreExCntB=6'b00110_1;
-			6'b11001_0: tPreExCntB=6'b10011_1;
-			6'b11001_1: tPreExCntB=6'b10110_1;
-			6'b11010_0: tPreExCntB=6'b01100_0;
-			6'b11010_1: tPreExCntB=6'b10001_0;
-			6'b11011_0: tPreExCntB=6'b01110_0;
-			6'b11011_1: tPreExCntB=6'b10111_0;
-			6'b11100_0: tPreExCntB=6'b11100_0;
-			6'b11100_1: tPreExCntB=6'b11010_0;
-			6'b11101_0: tPreExCntB=6'b10001_1;
-			6'b11101_1: tPreExCntB=6'b11110_0;
-			6'b11110_0: tPreExCntB=6'b00001_0;
-			6'b11110_1: tPreExCntB=6'b10100_0;
-			6'b11111_0: tPreExCntB=6'b01111_0;
-			6'b11111_1: tPreExCntB=6'b10100_0;
-		endcase
-`endif
 `ifdef def_true
 		case( {tPreExCnt[5:1], tPreExDir[2]} )
 			6'h00: tPreExCntB=6'h32;
@@ -499,51 +430,11 @@ begin
 	tBraDispRv20	= {1'b0, istrBasePc[23:0] } + tDispRv20[24:0];
 `endif
 
-// `ifdef def_true
-`ifndef def_true
-	tBraDisp8HiP0	= istrBraPc[31:21];
-	tBraDisp8HiP1	= istrBraPc[31:21]+1;
-	tBraDisp8HiN1	= istrBraPc[31:21]-1;
-	tBraDisp8Lo		= { 1'b0, istrBraPc[20:1]} + tDisp8[19:0];
-	tBraDisp20Lo	= { 1'b0, istrBraPc[20:1]} + tDisp20[19:0];
-
-	if(tDisp8[30])
-		tBraDisp8 = {
-			tBraDisp8Lo[20] ? tBraDisp8HiP0 : tBraDisp8HiN1,
-			tBraDisp8Lo[19:0], istrBraPc[0]	};
-	else
-		tBraDisp8 = {
-			tBraDisp8Lo[20] ? tBraDisp8HiP1 : tBraDisp8HiP0,
-			tBraDisp8Lo[19:0], istrBraPc[0]	};
-
-	if(tDisp20[30])
-		tBraDisp20 = {
-			tBraDisp20Lo[20] ? tBraDisp8HiP0 : tBraDisp8HiN1,
-			tBraDisp20Lo[19:0], istrBraPc[0]	};
-	else
-		tBraDisp20 = {
-			tBraDisp20Lo[20] ? tBraDisp8HiP1 : tBraDisp8HiP0,
-			tBraDisp20Lo[19:0], istrBraPc[0]	};
-`endif
-
 	tIsBra8		= 0;
 	tIsBraCc8	= 0;
 
 	tIsBraRv12	= 0;
 	tIsBraRv20	= 0;
-
-`ifndef jx2_prebra_no16b
-	tIsBra8		=
-		isBase &&
-		(istrWord[15:12]==4'h2) &&
-		(istrWord[11: 9]==3'b000);
-//		(istrWord[11: 8]==4'b0000);
-
-	tIsBraCc8		=
-		isBase &&
-		(istrWord[15:12]==4'h2) &&
-		(istrWord[11: 9]==3'b001);
-`endif
 
 	tIsBra20		=
 		(istrWord[15:12]==4'hF) &&
@@ -556,7 +447,6 @@ begin
 		((istrWord[11: 8]==4'h0) || (istrWord[11: 8]==4'h4)) &&
 		(istrWord[31:28]==4'b1100);
 //	tIsBraCcP20		= 0;
-
 
 	tIsBraRv12		=
 		(istrWord[6:0]==7'b1100011) && pipeHasLr[4] && !istrMTag[0];
@@ -579,7 +469,6 @@ begin
 
 // `ifdef jx2_alu_jcmpz
 `ifdef jx2_alu_jcmp
-// `ifndef def_true
 	tIsBraCc8Br		=
 		tIsBraFz				&&
 		(istrWord[11: 8]==4'h1) &&
@@ -603,11 +492,6 @@ begin
 
 	tIsBraCc8B		= tIsBraCc8Br || tIsBraCc8Bz;
 
-//	tIsBraCc20		=
-//	tIsBraCcF20		=
-//		(istrWord[15:12]==4'hF) &&
-//		(istrWord[11: 8]==4'h0) &&
-//		(istrWord[31:29]==3'b111);
 	tIsBraCcF20		= 0;
 
 	tIsBraCc20		= tIsBraCcF20 || tIsBraCcP20;
@@ -618,17 +502,6 @@ begin
 	tIsRtsR1Fz		= 0;
 
 `ifdef jx2_prebra_rts
-
-`ifndef jx2_prebra_no16b
-	tIsRtsu			=
-		isBase &&
-		((istrWord[15:0] == 16'h3012) ||
-		((istrWord[15:0] == 16'h3010) && !pipeHasLr[0]));
-//	tIsRtsR1		= 0;
-	tIsRtsR1		=
-		isBase &&
-		(istrWord[15:0] == 16'h3210) && !pipeHasLr[1];
-`endif
 
 `ifdef def_true
 
@@ -667,13 +540,6 @@ begin
 
 `else
 `ifdef jx2_prebra_rtsu
-
-`ifndef jx2_prebra_no16b
-	tIsRtsu			=
-		isBase &&
-		(istrWord[15:0] == 16'h3012);
-	tIsRtsR1		= 0;
-`endif
 
 	tIsRtsuFz	=
 		tIsFz3x &&
@@ -816,25 +682,6 @@ begin
 		tWasBra		= 1;
 	end
 `endif
-	
-	if(tIsBra8 || tIsBraCc8)
-	begin
-//		tPreBraPc	= { istrBraPc[47:32], tBraDisp8[31:0] };
-//		tPreBraPc	= { istrBraPc[47:24], tBraDisp8[23:0] };
-
-`ifndef jx2_prebra_basepc
-		tPreBraPc	= { istrBraPc[47:12], tBraDisp8[11:0] };
-`else
-		tPreBraPc	= { istrBasePc[47:12], tBraDisp8[11:0] };
-`endif
-
-		if((tPreBraPc[31:0]!=istrBraPc[31:0]+{tDisp8[30:0],1'b0}) && 
-				!tBraDisp8[12])
-			$display("DecPreBra: Disp8 Mismatch %X %X",
-				tPreBraPc[31:0],
-				istrBraPc[31:0]+{tDisp8[30:0],1'b0});
-
-	end
 
 	if(tIsBra20 || tIsBraCc20)
 	begin
@@ -885,31 +732,7 @@ begin
 		tPreBraPc	= { istrBasePc[47:24], tBraDispRv20[23:0] };
 	end
 `endif
-
-
-//	if(tIsBra8)
-	if(tIsBra8 || tDoBraCc8)
-	begin
-//		$display("PreBra: BRA8, PC=%X I=%X-%X PC2=%X",
-//			istrBasePc,
-//			istrWord[15:0], istrWord[31:16],
-//			tBraDisp8);
-//		tPreBraPc	= tBraDisp8;
-//		tPreBraPc	= { istrBraPc[47:32], tBraDisp8 };
-		tNonBra		= 0;
-		tPreBra		= 1;
-		
-//		if(tBraDisp8[32])
-//		if(tBraDisp8[24])
-		if(tBraDisp8[12])
-		begin
-//			$display("PreBra: Reject Cc8");
-			tNonBra		= 1;
-			tPreBra		= 0;
-		end
-	end
 	
-//	if(tIsBra20)
 	if(tIsBra20 || tDoBraCc20)
 	begin
 //		$display("PreBra: BRA20, PC=%X I=%X-%X Disp=%X PC2=%X",

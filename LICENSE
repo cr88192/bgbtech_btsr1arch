@@ -1,9 +1,9 @@
 This repository uses a multi-license structure:
 
 1. Hardware RTL and Documentation:
-Files inside the /jx2vlcore3/ and /docs/ directories are licensed under the 
-CERN Open Hardware Licence Version 2 Permissive (CERN-OHL-P-2.0). 
-See /jx2vlcore3/LICENSE for the full text.
+Files inside the /jx2vlcore3/ and /docs/ directories are now licensed under the 
+Apache-2.0 License. 
+See /jx2vlcore3/LICENSE-2.0.txt for the full text.
 
 2. Software and Firmware:
 Files within other directories will generally be licensed as MIT or MIT-0 (or GPL, in a few places). See the respective trees for the terms.

@@ -1,16 +1,18 @@
 /*
-// SPDX-License-Identifier: CERN-OHL-P-2.0
-// Copyright (c) 2018-2026 Brendan G Bohannon
-//
-// This source code is licensed under the CERN Open Hardware Licence 
-// Strongly Reciprocal version 2 or later (CERN-OHL-P v2+).
-//
-// You may redistribute and modify this source code under the terms of 
-// the CERN-OHL-P v2+. A copy of this license should be included with 
-// this source code. If not, see <https://ohwr.org>.
-//
-// This source code is offered "as is" without any express or implied
-// warranties. See the License for more details.
+SPDX-License-Identifier: Apache-2.0
+Copyright (c) 2018-2026 Brendan G Bohannon
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.*/
 */
 
 /*
@@ -81,10 +83,15 @@ wire			srRV;		//RV Mode
 assign		srRV = !srMod[3] && srMod[4] && !srMod[6];
 
 wire			srXG3RV;		//XG3RV Mode
+
+`ifdef jx2_decode_xg3only
+assign		srXG3RV = 1;
+`else
 `ifdef jx2_enable_riscv_xg3
 assign		srXG3RV = !srMod[3] && srMod[4] && srMod[6];
 `else
 assign		srXG3RV = 0;
+`endif
 `endif
 
 assign		srXGRV = srXG2RV || srXG3RV;
@@ -1037,6 +1044,16 @@ begin
 		opImm_imm16s	= {
 			istrWord[31] ? UV17_FF : UV17_00,
 			istrWord[31:16] };
+
+`ifdef jx2_decode_xg3only
+		opImm_imm9u = opImm_disp9s;
+		opImm_imm9n = opImm_disp9s;
+		opImm_imm9s = opImm_disp9s;
+
+		opImm_imm10u	= opImm_imm9s;
+		opImm_imm10n	= opImm_imm9s;
+`endif
+
 	end
 
 	if(srXG2)
@@ -3441,6 +3458,160 @@ begin
 				end
 			end
 
+`ifdef jx2_decode_xg3only
+			16'h3zz0: begin	/* F0zz_3en0 */
+//				casez(istrWord[7:0])
+				casez(tIstrSel1R)
+					8'h00: begin
+						case(istrWord[23:20])
+							4'h0: begin
+								opNmid		= JX2_UCMD_NOP;
+								opFmid		= JX2_FMID_Z;
+							end
+							4'h1: begin
+								opNmid		= JX2_UCMD_JMP;
+								opFmid		= JX2_FMID_Z;
+								opRegM_Fix	= JX2_GR_LR;
+							end
+							4'h2: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SLEEP;
+							end
+							4'h3: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_BREAK;
+							end
+							4'h4: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_CLRT;
+							end
+							4'h5: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SETT;
+							end
+							4'h6: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_CLRS;
+							end
+							4'h7: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SETS;
+							end
+							4'h8: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_NOTT;
+							end
+							4'h9: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_NOTS;
+							end
+
+							4'hC: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_RTE;
+								usrReject	= 1;
+							end
+
+							4'hF: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opIty		= JX2_ITY_SB;
+								opUCmdIx	= JX2_UCIX_IXT_LDTLB;
+//								opRegM_Fix	= JX2_GR_DHR;
+//								opRegN_Fix	= JX2_GR_DLR;
+								opRegO_Fix	= JX2_GR_R7;
+								opRegM_Fix	= JX2_GR_R7;
+								opRegN_Fix	= JX2_GR_R6;
+								usrReject	= 1;
+							end
+
+							default: begin
+							end
+						endcase
+					end
+
+					8'h02: begin
+						case(istrWord[23:20])
+							4'h0: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_BREAK;
+							end
+							4'h1: begin
+								opNmid		= JX2_UCMD_JMP;
+								opFmid		= JX2_FMID_Z;
+								opRegM_Fix	= JX2_GR_LR;
+							end
+
+							4'h2: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_SYSE;
+//								opRegM_Fix	= JX2_GR_DLR;
+							end
+
+							4'h3: begin
+								opNmid		= JX2_UCMD_NOP;
+								opFmid		= JX2_FMID_Z;
+							end
+
+							4'h4: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opIty		= JX2_ITY_SB;
+								opUCmdIx	= JX2_UCIX_IXT_LDACL;
+//								opRegM_Fix	= JX2_GR_DHR;
+//								opRegN_Fix	= JX2_GR_DLR;
+								opRegO_Fix	= JX2_GR_R7;
+								opRegM_Fix	= JX2_GR_R7;
+								opRegN_Fix	= JX2_GR_R6;
+								usrReject	= 1;
+							end
+
+							4'hF: begin
+								opNmid		= JX2_UCMD_OP_IXT;
+								opFmid		= JX2_FMID_Z;
+								opUCmdIx	= JX2_UCIX_IXT_INVTLB;
+								usrReject	= 1;
+							end
+
+							default: begin
+							end
+						endcase
+					end
+
+`ifdef def_true
+					8'h1C: begin
+						opNmid		= JX2_UCMD_OP_IXS;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+						opUCmdIx	= JX2_UCIX_IXS_INVIC;
+						usrReject	= 1;
+					end
+					8'h1D: begin
+						opNmid		= JX2_UCMD_OP_IXS;
+						opFmid		= JX2_FMID_REG;
+						opIty		= JX2_ITY_SB;
+						opUCmdIx	= JX2_UCIX_IXS_INVDC;
+						usrReject	= 1;
+					end
+`endif
+
+					default: begin end
+				endcase
+			end
+`endif
+
+`ifndef jx2_decode_xg3only
 			16'h3zz0: begin	/* F0zz_3en0 */
 //				casez(istrWord[7:0])
 				casez(tIstrSel1R)
@@ -3508,8 +3679,16 @@ begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_LDTLB;
+								opIty		= JX2_ITY_SB;
+								opRegO_Fix	= JX2_GR_DHR;
 								opRegM_Fix	= JX2_GR_DHR;
 								opRegN_Fix	= JX2_GR_DLR;
+								if(srXG3RV)
+								begin
+									opRegO_Fix	= JX2_GR_R7;
+									opRegM_Fix	= JX2_GR_R7;
+									opRegN_Fix	= JX2_GR_R6;
+								end
 								usrReject	= 1;
 							end
 
@@ -3549,8 +3728,16 @@ begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
 								opUCmdIx	= JX2_UCIX_IXT_LDACL;
+								opIty		= JX2_ITY_SB;
+								opRegO_Fix	= JX2_GR_DHR;
 								opRegM_Fix	= JX2_GR_DHR;
 								opRegN_Fix	= JX2_GR_DLR;
+								if(srXG3RV)
+								begin
+									opRegO_Fix	= JX2_GR_R7;
+									opRegM_Fix	= JX2_GR_R7;
+									opRegN_Fix	= JX2_GR_R6;
+								end
 								usrReject	= 1;
 							end
 
@@ -3930,6 +4117,7 @@ begin
 
 				endcase
 			end
+`endif
 
 			16'h3zz1: begin		/* F0nm_3eo1 */
 				opNmid		= JX2_UCMD_ALUW3;
@@ -5448,7 +5636,7 @@ begin
 				opIty	= JX2_ITY_UB;
 				opUCty	= JX2_IUC_WA;
 
-				if(opExQ)
+				if(opExQ && !srXG3RV)
 				begin
 					opNmid		= JX2_UCMD_ALUCMP3R;
 					opFmid		= JX2_FMID_REGREG;
@@ -5465,7 +5653,7 @@ begin
 				opIty	= JX2_ITY_UB;
 				opUCty	= JX2_IUC_WA;
 
-				if(opExQ)
+				if(opExQ && !srXG3RV)
 				begin
 					opNmid		= JX2_UCMD_ALUCMP3R;
 					opFmid		= JX2_FMID_REGREG;

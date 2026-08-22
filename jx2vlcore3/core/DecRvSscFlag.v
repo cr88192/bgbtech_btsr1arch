@@ -1,16 +1,18 @@
 /*
-// SPDX-License-Identifier: CERN-OHL-P-2.0
-// Copyright (c) 2018-2026 Brendan G Bohannon
-//
-// This source code is licensed under the CERN Open Hardware Licence 
-// Strongly Reciprocal version 2 or later (CERN-OHL-P v2+).
-//
-// You may redistribute and modify this source code under the terms of 
-// the CERN-OHL-P v2+. A copy of this license should be included with 
-// this source code. If not, see <https://ohwr.org>.
-//
-// This source code is offered "as is" without any express or implied
-// warranties. See the License for more details.
+SPDX-License-Identifier: Apache-2.0
+Copyright (c) 2018-2026 Brendan G Bohannon
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.*/
 */
 
 /*
@@ -191,15 +193,20 @@ begin
 
 `ifdef jx2_enable_riscv_xg3
 	casez(istrWord[4:2])
-		3'b000: begin
+		3'b000: begin /* F0 Block */
 			casez(istrWord[15:12])
 				4'b0000: begin
 					tIstrFlagXG3	= istrWord[31] ? 4'b0011 : 4'b0001;
+					if(istrWord[30:28] == 3'b000)
+						tIstrFlagXG3	= 4'b0000;
 				end
 				4'b0001: begin
 					casez(istrWord[31:28])
-						4'b000z:
-							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
+						4'b000z: begin
+//							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
+							tIstrFlagXG3 = (istrWord[5] || 
+								(istrWord[11:6]==6'h00)) ? 4'b0000 : 4'b1111;
+						end
 						4'b001z, 4'b0100:
 							tIstrFlagXG3 = 4'b0011;
 						4'b0101, 4'b011z:
@@ -212,7 +219,7 @@ begin
 					tIstrFlagXG3	= 4'b0000;
 			endcase
 		end
-		3'b001: begin
+		3'b001: begin	/* F1 Block, Ld/St Disp10 */
 			if(istrWord[15:14]==2'b00)
 				tIstrFlagXG3	= 4'b0001;
 			if(istrWord[15:14]==2'b01)
@@ -222,7 +229,7 @@ begin
 			if(istrWord[15:14]==2'b11)
 				tIstrFlagXG3	= 4'b0000;
 		end
-		3'b010: begin
+		3'b010: begin	/* F2 Block, Imm10 */
 			casez(istrWord[15:12])
 				4'b000z: tIstrFlagXG3	= 4'b1111;
 				4'b0011: tIstrFlagXG3	= 4'b1111;

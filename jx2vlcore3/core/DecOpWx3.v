@@ -1,16 +1,18 @@
 /*
-// SPDX-License-Identifier: CERN-OHL-P-2.0
-// Copyright (c) 2018-2026 Brendan G Bohannon
-//
-// This source code is licensed under the CERN Open Hardware Licence 
-// Strongly Reciprocal version 2 or later (CERN-OHL-P v2+).
-//
-// You may redistribute and modify this source code under the terms of 
-// the CERN-OHL-P v2+. A copy of this license should be included with 
-// this source code. If not, see <https://ohwr.org>.
-//
-// This source code is offered "as is" without any express or implied
-// warranties. See the License for more details.
+SPDX-License-Identifier: Apache-2.0
+Copyright (c) 2018-2026 Brendan G Bohannon
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.*/
 */
 
 /*
@@ -36,7 +38,10 @@ Store gets its 3rd input from Lane 3 (Ry), with Store-Pair using Rx:Ry.
 
 `include "CoreDefs.v"
 
+`ifndef jx2_decode_xg3only
 `include "DecOpBz.v"
+`endif
+
 `include "DecOpFz.v"
 
 `ifdef jx2_enable_riscv
@@ -194,7 +199,10 @@ parameter		fpuLowPrec = 0;
 defparam		decOpFzA.fpuLowPrec		= fpuLowPrec;
 defparam		decOpFzB.fpuLowPrec		= fpuLowPrec;
 defparam		decOpFzC.fpuLowPrec		= fpuLowPrec;
+
+`ifndef jx2_decode_xg3only
 defparam		decOpBz.fpuLowPrec		= fpuLowPrec;
+`endif
 
 wire[2:0]	opJumboWxBitsB;
 wire[2:0]	opJumboWxBitsC;
@@ -317,6 +325,14 @@ wire[32:0]		decOpBz_idImm;
 wire[8:0]		decOpBz_idUCmd;
 wire[8:0]		decOpBz_idUIxt;
 
+`ifdef jx2_decode_xg3only
+assign		decOpBz_idRegN = JX2_GR_ZZR;
+assign		decOpBz_idRegM = JX2_GR_ZZR;
+assign		decOpBz_idRegO = JX2_GR_ZZR;
+assign		decOpBz_idImm = 0;
+assign		decOpBz_idUCmd = 0;
+assign		decOpBz_idUIxt = 0;
+`else
 DecOpBz	decOpBz(
 	clock,		reset,
 	{ UV32_00, istrWordA },		srMod,
@@ -324,6 +340,7 @@ DecOpBz	decOpBz(
 	decOpBz_idRegO,		decOpBz_idImm,
 	decOpBz_idUCmd,		decOpBz_idUIxt
 	);
+`endif
 
 `wire_gpr		decOpFzC_idRegN;
 `wire_gpr		decOpFzC_idRegM;
@@ -895,7 +912,8 @@ begin
 
 	if(srXG3)
 	begin
-		if((istrBPc[1:0]!=2'b00) || (idPcStep[1:0]!=2'b00))
+//		if((istrBPc[1:0]!=2'b00) || (idPcStep[1:0]!=2'b00))
+		if(istrBPc[1] || idPcStep[1])
 		begin
 			if(!tMsgLatch && (tMsgLatchBPc!=tNextMsgLatchBPc))
 			begin

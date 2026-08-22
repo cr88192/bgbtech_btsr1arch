@@ -1,16 +1,18 @@
 /*
-// SPDX-License-Identifier: CERN-OHL-P-2.0
-// Copyright (c) 2018-2026 Brendan G Bohannon
-//
-// This source code is licensed under the CERN Open Hardware Licence 
-// Strongly Reciprocal version 2 or later (CERN-OHL-P v2+).
-//
-// You may redistribute and modify this source code under the terms of 
-// the CERN-OHL-P v2+. A copy of this license should be included with 
-// this source code. If not, see <https://ohwr.org>.
-//
-// This source code is offered "as is" without any express or implied
-// warranties. See the License for more details.
+SPDX-License-Identifier: Apache-2.0
+Copyright (c) 2018-2026 Brendan G Bohannon
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.*/
 */
 
 module FpuRcpApxLu(valRm, valRn);
