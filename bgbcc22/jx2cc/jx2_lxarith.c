@@ -1655,6 +1655,28 @@ int BGBCC_JX2C_EmitUnaryVRegVRegFloat128(
 		return(1);
 	}
 	
+	nm1=-1;
+
+	if(sctx->has_fpux)
+	{
+		if(opr==CCXL_UNOP_NEG)
+			nm1=BGBCC_SH_NMID_FNEGX;
+	}
+
+	if(nm1>=0)
+	{
+		csreg=BGBCC_JX2C_EmitGetRegisterRead(ctx, sctx, sreg);
+		cdreg=BGBCC_JX2C_EmitGetRegisterWrite(ctx, sctx, dreg);
+
+		BGBCC_JX2C_EmitOpRegReg(ctx, sctx,
+			nm1, csreg, cdreg);
+
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, sreg);
+		BGBCC_JX2C_EmitReleaseRegister(ctx, sctx, dreg);
+		return(1);
+	}
+
+	
 	s0=NULL;
 	switch(opr)
 	{

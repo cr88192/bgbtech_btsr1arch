@@ -7979,11 +7979,25 @@ int BGBCC_JX2_EmitShufDWordRegReg(BGBCC_JX2_Context *ctx,
 	int sreg, int shuf, int dreg)
 {
 	int sr0, sr1, dr0, dr1;
-	int ivm, ivx;
+	int ivm, ivx, rt;
 	
 	ivm=(shuf>>8)&255;
 	if(!ivm)
 		ivm=0x55;
+
+	if(	(ctx->emit_riscv&0x11) &&
+		(ctx->emit_riscv&0x22) &&
+		(ctx->has_simdx2&2))
+	{
+		ivx=(shuf&255)|(ivm<<8)|((-1)<<16);
+		if(ivm==0x55)
+			ivx=(shuf&255);
+	
+		rt=BGBCC_JX2_TryEmitOpRegImmReg(ctx,
+			BGBCC_SH_NMID_PSHUFXL, sreg, ivx, dreg);
+		if(rt>0)
+			return(1);
+	}
 	
 //	if(!((reg&BGBCC_SH_REG_RTMASK)==BGBCC_SH_REG_LR0))
 //	{

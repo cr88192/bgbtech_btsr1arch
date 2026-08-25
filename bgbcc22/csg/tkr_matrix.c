@@ -213,3 +213,85 @@ float TKRA_Vec4F_Distance(float *a, float *b)
 	f=sqrt(TKRA_Vec4F_DotProduct(tv, tv));
 	return(f);
 }
+
+void TKRA_Vec2F2D_Copy(float *a, double *b)
+	{ b[0]=a[0]; b[1]=a[1]; }
+void TKRA_Vec3F2D_Copy(float *a, double *b)
+	{ b[0]=a[0]; b[1]=a[1]; b[2]=a[2]; }
+void TKRA_Vec4F2D_Copy(float *a, double *b)
+	{ b[0]=a[0]; b[1]=a[1]; b[2]=a[2]; b[3]=a[3]; }
+
+void TKRA_Vec2D2F_Copy(double *a, float *b)
+	{ b[0]=a[0]; b[1]=a[1]; }
+void TKRA_Vec3D2F_Copy(double *a, float *b)
+	{ b[0]=a[0]; b[1]=a[1]; b[2]=a[2]; }
+void TKRA_Vec4D2F_Copy(double *a, float *b)
+	{ b[0]=a[0]; b[1]=a[1]; b[2]=a[2]; b[3]=a[3]; }
+
+
+void TKRA_Vec3D_Add(double *a, double *b, double *c)
+	{ c[0]=b[0]+a[0]; c[1]=b[1]+a[1]; c[2]=b[2]+a[2]; }
+void TKRA_Vec3D_Sub(double *a, double *b, double *c)
+	{ c[0]=a[0]-b[0]; c[1]=a[1]-b[1]; c[2]=a[2]-b[2]; }
+void TKRA_Vec3D_Scale(double *a, double b, double *c)
+	{ c[0]=a[0]*b; c[1]=a[1]*b; c[2]=a[2]*b; }
+void TKRA_Vec3D_AddScale(
+		double *a, double *b, double s, double *c)
+	{ c[0]=b[0]*s+a[0]; c[1]=b[1]*s+a[1]; c[2]=b[2]*s+a[2]; }
+void TKRA_Vec3D_ScaleAddScale(
+		double *a, double t, double *b, double s, double *c)
+	{ c[0]=b[0]*s+a[0]*t; c[1]=b[1]*s+a[1]*t; c[2]=b[2]*s+a[2]*t; }
+
+void TKRA_Vec2D_Zero(double *b)
+	{ b[0]=0; b[1]=0; }
+void TKRA_Vec3D_Zero(double *b)
+	{ b[0]=0; b[1]=0; b[2]=0; }
+void TKRA_Vec4D_Zero(double *b)
+	{ b[0]=0; b[1]=0; b[2]=0; b[3]=0; }
+
+void TKRA_Vec2D_Copy(double *a, double *b)
+	{ b[0]=a[0]; b[1]=a[1]; }
+void TKRA_Vec3D_Copy(double *a, double *b)
+	{ b[0]=a[0]; b[1]=a[1]; b[2]=a[2]; }
+void TKRA_Vec4D_Copy(double *a, double *b)
+	{ b[0]=a[0]; b[1]=a[1]; b[2]=a[2]; b[3]=a[3]; }
+
+
+double TKRA_Vec3D_DotProduct(double *a, double *b)
+	{ return((a[0]*b[0])+(a[1]*b[1])+(a[2]*b[2])); }
+double TKRA_Vec4D_DotProduct(double *a, double *b)
+	{ return((a[0]*b[0])+(a[1]*b[1])+(a[2]*b[2])+(a[3]*b[3])); }
+
+double TKRA_Vec3D_NDotProduct(double *a, double *b)
+	{ return((a[0]*b[0])+(a[1]*b[1])+(a[2]*b[2])-b[3]); }
+
+double TKRA_Vec3D_Normalize(double *a, double *b)
+{
+	float f, g;
+	f=sqrt(TKRA_Vec3D_DotProduct(a, a));
+	g=(f==0)?1:f;
+	b[0]=a[0]/g;
+	b[1]=a[1]/g;
+	b[2]=a[2]/g;
+	return(f);
+}
+
+double TKRA_Vec4D_Normalize(double *a, double *b)
+{
+	double f, g;
+
+	f=sqrt(TKRA_Vec4D_DotProduct(a, a));
+	g=(f==0)?1:f;
+	b[0]=a[0]/g;
+	b[1]=a[1]/g;
+	b[2]=a[2]/g;
+	b[3]=a[3]/g;
+	return(f);
+}
+
+void TKRA_Vec3D_CrossProduct(double *a, double *b, double *c)
+{
+	c[0]=(a[1]*b[2])-(a[2]*b[1]);
+	c[1]=(a[2]*b[0])-(a[0]*b[2]);
+	c[2]=(a[0]*b[1])-(a[1]*b[0]);
+}

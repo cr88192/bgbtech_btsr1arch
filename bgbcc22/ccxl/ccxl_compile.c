@@ -3250,6 +3250,9 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 		if(!strcmp(s, "vec3h") || !strcmp(s, "vec3sf"))
 			{ *t++='D'; *t++='k'; }
 
+		if(!strcmp(s, "vec2h") || !strcmp(s, "vec2sf"))
+			{ *t++='G'; *t++='u'; }
+
 		if(!strcmp(s, "int48"))
 			{ *t++='G'; *t++='i'; }
 		if(!strcmp(s, "uint48"))
@@ -3258,6 +3261,9 @@ char *BGBCC_CCXL_VarTypeString_FlattenName(BGBCC_TransState *ctx,
 			{ *t++='D'; *t++='u'; }
 		if(!strcmp(s, "vec3h_48") || !strcmp(s, "vec3sf_48"))
 			{ *t++='G'; *t++='l'; }
+
+		if(!strcmp(s, "quath") || !strcmp(s, "quatsf"))
+			{ *t++='G'; *t++='q'; }
 
 		if(!strcmp(s, "bigint"))
 			{ *t++='G'; *t++='w'; }

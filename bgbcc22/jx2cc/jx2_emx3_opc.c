@@ -1718,7 +1718,7 @@ int BGBCC_JX2X3_TryEmitOpRegRegReg(
 	case BGBCC_SH_NMID_CMPXGE:
 		if(!(ctx->has_alux&1))
 			break;
-		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x70003022U, 0x7000,
+		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x60003022U, 0x7000,
 			ro, rm, rn, &opw1, &opw2);
 		break;
 	case BGBCC_SH_NMID_CMPXLT:
@@ -1730,7 +1730,7 @@ int BGBCC_JX2X3_TryEmitOpRegRegReg(
 	case BGBCC_SH_NMID_CMPXLE:
 		if(!(ctx->has_alux&1))
 			break;
-		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x70003022U, 0x7000,
+		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x60003022U, 0x7000,
 			rm, ro, rn, &opw1, &opw2);
 		break;
 
@@ -1755,7 +1755,7 @@ int BGBCC_JX2X3_TryEmitOpRegRegReg(
 	case BGBCC_SH_NMID_CMPXGEU:
 		if(!(ctx->has_alux&1))
 			break;
-		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x70003022U, 0xB000,
+		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x60003022U, 0xB000,
 			ro, rm, rn, &opw1, &opw2);
 		break;
 	case BGBCC_SH_NMID_CMPXLTU:
@@ -1767,7 +1767,7 @@ int BGBCC_JX2X3_TryEmitOpRegRegReg(
 	case BGBCC_SH_NMID_CMPXLEU:
 		if(!(ctx->has_alux&1))
 			break;
-		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x70003022U, 0xB000,
+		BGBCC_JX2X3_CheckEncodeRRRJ(ctx, 0x60003022U, 0xB000,
 			rm, ro, rn, &opw1, &opw2);
 		break;
 
@@ -1819,7 +1819,7 @@ int BGBCC_JX2X3_TryEmitOpRegReg(
 	BGBCC_JX2_Context *ctx, int nmid, int rm, int rn)
 {
 	s64 opw1, opw2, opw3;
-	int crm, crn;
+	int crm, crn, rm1, rn1;
 	int nm1;
 
 	if(!(ctx->emit_riscv&0x11) || !(ctx->emit_riscv&0x22))
@@ -1885,8 +1885,10 @@ int BGBCC_JX2X3_TryEmitOpRegReg(
 	}
 
 	nm1=-1;
-	if(nmid==BGBCC_SH_NMID_FNEG)
-		nm1=BGBCC_SH_NMID_FSUB;
+//	if(nmid==BGBCC_SH_NMID_FNEG)
+//		nm1=BGBCC_SH_NMID_FSUB;
+	if(nmid==BGBCC_SH_NMID_NEG)
+		nm1=BGBCC_SH_NMID_SUB;
 
 	if(nm1>0)
 	{
@@ -1971,6 +1973,15 @@ int BGBCC_JX2X3_TryEmitOpRegReg(
 		break;
 	case BGBCC_SH_NMID_FABS:
 		opw1=0xD2401002U|((rm&63)<<16)|((rn&63)<<6);
+		break;
+
+	case BGBCC_SH_NMID_FNEGX:
+		rm1=rm+1;		rn1=rn+1;
+		opw1=0xD2001002U|((rm1&63)<<16)|((rn1&63)<<6);
+		break;
+	case BGBCC_SH_NMID_FABSX:
+		rm1=rm+1;		rn1=rn+1;
+		opw1=0xD2401002U|((rm1&63)<<16)|((rn1&63)<<6);
 		break;
 
 //	case BGBCC_SH_NMID_FLDCIU:
@@ -3192,10 +3203,36 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 		}
 		break;
 	case BGBCC_SH_NMID_PSHUFW:
-		if(isimm8s || isimm8u)
+//		if(isimm8s || isimm8u)
+		if(isimm8u)
 		{
 			opw1=0x4000802AU|((imm&255)<<22)|((rm&63)<<16)|((rn&63)<<6);
 			break;
+		}
+		if((imm>>16)==-1)
+		{
+			if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10I(ctx,
+				0x4000802AU, rm, imm, rn, &opw1, &opw2, &opw3)>0)
+					break;
+		}
+		break;
+
+	case BGBCC_SH_NMID_PSHUFL:
+	case BGBCC_SH_NMID_PSHUFXL:
+		if(!(ctx->has_simdx2&2))
+			break;
+
+//		if(isimm8s || isimm8u)
+		if(isimm8u)
+		{
+			opw1=0x4000702AU|((imm&255)<<22)|((rm&63)<<16)|((rn&63)<<6);
+			break;
+		}
+		if((imm>>16)==-1)
+		{
+			if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10I(ctx,
+				0x4000702AU, rm, imm, rn, &opw1, &opw2, &opw3)>0)
+					break;
 		}
 		break;
 

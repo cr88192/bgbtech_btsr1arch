@@ -2391,6 +2391,7 @@ bool BGBCC_CCXL_TypeVec64P(
 	case CCXL_TY_VEC4UW:
 	case CCXL_TY_VEC4H:
 	case CCXL_TY_VEC3H:
+	case CCXL_TY_QUATH:
 		return(true);
 
 	case CCXL_TY_FCOMPLEX:
@@ -2465,6 +2466,8 @@ bool BGBCC_CCXL_TypeVecP(
 	case CCXL_TY_VEC3FX:
 	case CCXL_TY_VEC4F:
 	case CCXL_TY_QUATF:
+	case CCXL_TY_QUATD:
+	case CCXL_TY_QUATH:
 		return(true);
 
 	case CCXL_TY_VEC4SW:
@@ -2476,6 +2479,7 @@ bool BGBCC_CCXL_TypeVecP(
 	case CCXL_TY_VEC2D:
 	case CCXL_TY_VEC4H:
 	case CCXL_TY_VEC3H:
+	case CCXL_TY_VEC2H:
 		return(true);
 
 	case CCXL_TY_FCOMPLEX:
@@ -2596,6 +2600,10 @@ bool BGBCC_CCXL_TypeQuatP(
 {
 	if(ty.val==CCXL_TY_QUATF)
 		return(true);
+	if(ty.val==CCXL_TY_QUATD)
+		return(true);
+	if(ty.val==CCXL_TY_QUATH)
+		return(true);
 	return(false);
 
 #if 0
@@ -2612,12 +2620,46 @@ bool BGBCC_CCXL_TypeQuatP(
 #endif
 }
 
+bool BGBCC_CCXL_TypeSmallFQuatP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i;
+
+	if(ty.val==CCXL_TY_QUATF)
+		return(true);
+	if(ty.val==CCXL_TY_QUATH)
+		return(true);
+	if(BGBCC_CCXL_TypeSmallFComplexP(ctx, ty))
+		return(true);
+	return(false);
+}
+
+bool BGBCC_CCXL_TypeSmallDQuatP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int i;
+
+	if(ty.val==CCXL_TY_QUATF)
+		return(true);
+	if(ty.val==CCXL_TY_QUATD)
+		return(true);
+	if(ty.val==CCXL_TY_QUATH)
+		return(true);
+	if(BGBCC_CCXL_TypeSmallDComplexP(ctx, ty))
+		return(true);
+	return(false);
+}
+
 bool BGBCC_CCXL_TypeSmallQuatP(
 	BGBCC_TransState *ctx, ccxl_type ty)
 {
 	int i;
 
 	if(ty.val==CCXL_TY_QUATF)
+		return(true);
+	if(ty.val==CCXL_TY_QUATD)
+		return(true);
+	if(ty.val==CCXL_TY_QUATH)
 		return(true);
 	if(BGBCC_CCXL_TypeSmallDComplexP(ctx, ty))
 		return(true);
@@ -2771,6 +2813,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	case CCXL_TY_VEC4_FP8U:
 	case CCXL_TY_VEC4_FP8A:
 	case CCXL_TY_M32:
+	case CCXL_TY_VEC2H:
 		sz=4; break;
 
 	case CCXL_TY_I128:
@@ -2800,9 +2843,11 @@ int BGBCC_CCXL_TypeGetLogicalBaseSize(
 	case CCXL_TY_VEC4H:
 	case CCXL_TY_VEC3H:
 	case CCXL_TY_BCD64:
+	case CCXL_TY_QUATH:
 		sz=8; break;
 
 	case CCXL_TY_GCOMPLEX:
+	case CCXL_TY_QUATD:
 		sz=32; break;
 
 	case CCXL_TY_FIMAG:
@@ -2933,6 +2978,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	case CCXL_TY_VEC4_FP8S:
 	case CCXL_TY_VEC4_FP8U:
 	case CCXL_TY_VEC4_FP8A:
+	case CCXL_TY_VEC2H:
 	case CCXL_TY_M32:
 		sz=4; break;
 	
@@ -3002,6 +3048,7 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 	case CCXL_TY_VEC4H:
 	case CCXL_TY_VEC3H:
 	case CCXL_TY_BCD64:
+	case CCXL_TY_QUATH:
 		sz=8; nsz=ctx->arch_align_max;
 		if(nsz && (sz>nsz))
 			sz=nsz;
@@ -3023,7 +3070,9 @@ int BGBCC_CCXL_TypeGetLogicalBaseAlign(
 		if(nsz && (sz>nsz))
 			sz=nsz;
 		break;
+
 	case CCXL_TY_GCOMPLEX:
+	case CCXL_TY_QUATD:
 		sz=32; nsz=ctx->arch_align_max;
 		if(nsz && (sz>nsz))
 			sz=nsz;
@@ -3466,6 +3515,8 @@ ccxl_status BGBCC_CCXL_TypeDerefType(
 			return(CCXL_STATUS_YES);
 		case CCXL_TY_VEC4H:
 		case CCXL_TY_VEC3H:
+		case CCXL_TY_VEC2H:
+		case CCXL_TY_QUATH:
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_F16);
 			return(CCXL_STATUS_YES);
 
@@ -3839,7 +3890,7 @@ ccxl_status BGBCC_CCXL_TypeVectorOfType(
 	}
 	if(st==CCXL_TY_F)
 	{
-		if(sz<=2)
+		if((sz==2) || (sz==1))
 			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC2F);
 		else if(sz==3)
 			tty=BGBCC_CCXL_TypeWrapBasicType(CCXL_TY_VEC3F);
@@ -4822,6 +4873,8 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'm':	bty=CCXL_TY_BCD64; break;
 		case 'o':	bty=CCXL_TY_BCD128; break;
 
+		case 'q':	bty=CCXL_TY_QUATD; break;
+
 		case 's':	bty=CCXL_TY_VARWSTRING; break;
 		case 't':	bty=CCXL_TY_VARUSTRING; break;
 
@@ -4878,6 +4931,9 @@ ccxl_status BGBCC_CCXL_TypeFromSig(
 		case 'k': bty=CCXL_TY_HIMAG; break;
 		case 'l': bty=CCXL_TY_VEC3H_48; break;
 
+		case 'q':	bty=CCXL_TY_QUATH; break;
+
+		case 'u':	bty=CCXL_TY_VEC2H; break;
 		case 'v':	bty=CCXL_TY_VEC4_FP8A; break;
 
 		case 'w': bty=CCXL_TY_BIGINT; break;
@@ -5284,7 +5340,10 @@ char *BGBCC_CCXL_TypeGetSig(
 		case CCXL_TY_VEC2F:			*t++='C'; *t++='a'; break;
 		case CCXL_TY_VEC3F:			*t++='C'; *t++='b'; break;
 		case CCXL_TY_VEC4F:			*t++='C'; *t++='c'; break;
+
 		case CCXL_TY_QUATF:			*t++='C'; *t++='q'; break;
+		case CCXL_TY_QUATD:			*t++='D'; *t++='q'; break;
+		case CCXL_TY_QUATH:			*t++='G'; *t++='q'; break;
 
 		case CCXL_TY_VEC2D:			*t++='C'; *t++='h'; break;
 
@@ -5311,6 +5370,7 @@ char *BGBCC_CCXL_TypeGetSig(
 		case CCXL_TY_VEC4UW:		*t++='C'; *t++='w'; break;
 		case CCXL_TY_VEC4H:			*t++='C'; *t++='l'; break;
 		case CCXL_TY_VEC3H:			*t++='D'; *t++='k'; break;
+		case CCXL_TY_VEC2H:			*t++='G'; *t++='u'; break;
 
 		case CCXL_TY_BCD64:			*t++='D'; *t++='m'; break;
 		case CCXL_TY_BCD128:		*t++='D'; *t++='o'; break;
@@ -5700,6 +5760,7 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 			(sty.val==CCXL_TY_VEC4UW)	||
 			(sty.val==CCXL_TY_VEC4H)	||
 			(sty.val==CCXL_TY_VEC3H)	||
+			(sty.val==CCXL_TY_QUATH)	||
 			(sty.val==CCXL_TY_BCD64)	)
 				return(1);
 
@@ -5743,14 +5804,16 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 
 		if(	(sty.val==CCXL_TY_VEC4_FP8S)	||
 			(sty.val==CCXL_TY_VEC4_FP8U)	||
-			(sty.val==CCXL_TY_VEC4_FP8A)	)
+			(sty.val==CCXL_TY_VEC4_FP8A)	||
+			(sty.val==CCXL_TY_VEC2H)		)
 				return(1);
 
 	}
 
 	if(	(dty.val==CCXL_TY_VEC4_FP8S)	||
 		(dty.val==CCXL_TY_VEC4_FP8U)	||
-		(dty.val==CCXL_TY_VEC4_FP8A)	)
+		(dty.val==CCXL_TY_VEC4_FP8A)	||
+		(dty.val==CCXL_TY_VEC2H)		)
 	{
 		if(sty.val==CCXL_TY_M32)
 		{
@@ -5860,6 +5923,7 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 			(dty.val==CCXL_TY_VEC2F) ||
 			(dty.val==CCXL_TY_VEC4SW) ||
 			(dty.val==CCXL_TY_VEC4UW) ||
+			(dty.val==CCXL_TY_QUATH) ||
 			(dty.val==CCXL_TY_VEC4H) ||
 			(dty.val==CCXL_TY_VEC3H) ||
 			(dty.val==CCXL_TY_VEC3H_48) ||
@@ -5874,6 +5938,7 @@ int BGBCC_CCXL_TypeCompatibleFlP(
 				(sty.val==CCXL_TY_VEC2F) ||
 				(sty.val==CCXL_TY_VEC4SW) ||
 				(sty.val==CCXL_TY_VEC4UW) ||
+				(sty.val==CCXL_TY_QUATH) ||
 				(sty.val==CCXL_TY_VEC4H) ||
 				(sty.val==CCXL_TY_VEC3H) ||
 				(sty.val==CCXL_TY_VEC3H_48) ||
@@ -6539,10 +6604,13 @@ bool BGBCC_CCXL_TypeSupportsOperatorP(
 		(ty.val==CCXL_TY_VEC3F) ||
 		(ty.val==CCXL_TY_VEC4F) ||
 		(ty.val==CCXL_TY_QUATF) ||
+		(ty.val==CCXL_TY_QUATD) ||
+		(ty.val==CCXL_TY_QUATH) ||
 		(ty.val==CCXL_TY_VEC2D) ||
 		(ty.val==CCXL_TY_VEC4H) ||
 		(ty.val==CCXL_TY_VEC3H_48) ||
 		(ty.val==CCXL_TY_VEC3H) ||
+		(ty.val==CCXL_TY_VEC2H) ||
 		(ty.val==CCXL_TY_BCD64) ||
 		(ty.val==CCXL_TY_BCD128))
 	{
@@ -6559,7 +6627,13 @@ bool BGBCC_CCXL_TypeSupportsOperatorP(
 		{
 			if(	(ty.val==CCXL_TY_VEC3F) ||
 				(ty.val==CCXL_TY_VEC4F) ||
-				(ty.val==CCXL_TY_QUATF) )
+				(ty.val==CCXL_TY_VEC3D) ||
+				(ty.val==CCXL_TY_VEC4D) ||
+				(ty.val==CCXL_TY_VEC3H) ||
+				(ty.val==CCXL_TY_VEC4H) ||
+				(ty.val==CCXL_TY_QUATF) ||
+				(ty.val==CCXL_TY_QUATD) ||
+				(ty.val==CCXL_TY_QUATH) )
 					return(true);
 			return(false);
 		}
@@ -6569,7 +6643,14 @@ bool BGBCC_CCXL_TypeSupportsOperatorP(
 			if(	(ty.val==CCXL_TY_VEC2F) ||
 				(ty.val==CCXL_TY_VEC3F) ||
 				(ty.val==CCXL_TY_VEC4F) ||
+				(ty.val==CCXL_TY_VEC3D) ||
+				(ty.val==CCXL_TY_VEC4D) ||
+				(ty.val==CCXL_TY_VEC2H) ||
+				(ty.val==CCXL_TY_VEC3H) ||
+				(ty.val==CCXL_TY_VEC4H) ||
 				(ty.val==CCXL_TY_QUATF) ||
+				(ty.val==CCXL_TY_QUATD) ||
+				(ty.val==CCXL_TY_QUATH) ||
 				(ty.val==CCXL_TY_VEC2D) )
 					return(true);
 			return(false);
@@ -7012,9 +7093,16 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
 
-		if(BGBCC_CCXL_TypeSmallQuatP(ctx, rty))
+		if(BGBCC_CCXL_TypeSmallFQuatP(ctx, rty))
 		{
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATF);
+			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+				CCXL_STATUS_YES:CCXL_STATUS_NO);
+		}
+
+		if(BGBCC_CCXL_TypeSmallDQuatP(ctx, rty))
+		{
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATD);
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
@@ -7144,9 +7232,16 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
 
-		if(BGBCC_CCXL_TypeSmallQuatP(ctx, rty))
+		if(BGBCC_CCXL_TypeSmallFQuatP(ctx, rty))
 		{
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATF);
+			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+				CCXL_STATUS_YES:CCXL_STATUS_NO);
+		}
+
+		if(BGBCC_CCXL_TypeSmallDQuatP(ctx, rty))
+		{
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATD);
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
@@ -7296,9 +7391,16 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
 
-		if(BGBCC_CCXL_TypeSmallQuatP(ctx, rty))
+		if(BGBCC_CCXL_TypeSmallFQuatP(ctx, rty))
 		{
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATF);
+			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+				CCXL_STATUS_YES:CCXL_STATUS_NO);
+		}
+
+		if(BGBCC_CCXL_TypeSmallDQuatP(ctx, rty))
+		{
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATD);
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
@@ -7369,9 +7471,16 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
 
-		if(BGBCC_CCXL_TypeSmallQuatP(ctx, rty))
+		if(BGBCC_CCXL_TypeSmallFQuatP(ctx, rty))
 		{
 			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATF);
+			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+				CCXL_STATUS_YES:CCXL_STATUS_NO);
+		}
+
+		if(BGBCC_CCXL_TypeSmallDQuatP(ctx, rty))
+		{
+			*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATD);
 			return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 				CCXL_STATUS_YES:CCXL_STATUS_NO);
 		}
@@ -7514,10 +7623,18 @@ ccxl_status BGBCC_CCXL_GetTypeBinaryDestB(
 			CCXL_STATUS_YES:CCXL_STATUS_NO);
 	}
 
-	if(	BGBCC_CCXL_TypeSmallQuatP(ctx, lty) &&
-		BGBCC_CCXL_TypeSmallQuatP(ctx, rty))
+	if(	BGBCC_CCXL_TypeSmallFQuatP(ctx, lty) &&
+		BGBCC_CCXL_TypeSmallFQuatP(ctx, rty))
 	{
 		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATF);
+		return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
+			CCXL_STATUS_YES:CCXL_STATUS_NO);
+	}
+
+	if(	BGBCC_CCXL_TypeSmallDQuatP(ctx, lty) &&
+		BGBCC_CCXL_TypeSmallDQuatP(ctx, rty))
+	{
+		*rdty=BGBCC_CCXL_MakeTypeID(ctx, CCXL_TY_QUATD);
 		return(BGBCC_CCXL_TypeSupportsOperatorP(ctx, *rdty, opr)?
 			CCXL_STATUS_YES:CCXL_STATUS_NO);
 	}

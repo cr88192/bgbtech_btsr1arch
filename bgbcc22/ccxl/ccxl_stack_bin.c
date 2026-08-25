@@ -265,6 +265,9 @@ ccxl_status BGBCC_CCXL_StackBinaryOp(BGBCC_TransState *ctx, char *op)
 			BGBCC_CCXL_TypeDerefType(ctx, sty, &bty);
 			BGBCC_CCXL_TypeVectorOfType(ctx, bty, (li>>16)&3, &dty);
 
+			if(BGBCC_CCXL_TypeQuatP(ctx, sty) && ((li>>16)==4))
+				{ dty=sty; }
+
 			BGBCC_CCXL_RegisterAllocTemporary(ctx, dty, &dreg);
 
 //			BGBCC_CCXL_TypeDerefType(ctx, sty, &bty);

@@ -887,3 +887,185 @@ int HullF_Mat4F_IdentityP(float *mat)
 			return(0);
 	return(1);
 }
+
+#if 1
+void HullD_AdjacentNormals2(
+	double *norm, double *udir, double *vdir)
+{
+	double f;
+
+	TKRA_Vec3D_Zero(udir);
+	TKRA_Vec3D_Zero(vdir);
+
+	//UxV=N
+
+	if(fabs(norm[0])>fabs(norm[1]))
+	{
+		if(fabs(norm[0])>fabs(norm[2]))
+		{
+			udir[1]=(norm[0]>0)?1:-1; 
+			vdir[2]=1;
+		}else
+		{
+			udir[0]=(norm[2]>0)?1:-1; 
+			vdir[1]=1;
+		}
+	}else
+	{
+		if(fabs(norm[1])>fabs(norm[2]))
+		{
+			udir[0]=(norm[1]>0)?-1:1;
+			vdir[2]=1; 
+		}else
+		{
+			udir[0]=(norm[2]>0)?1:-1; 
+			vdir[1]=1;
+		}
+	}
+
+	f=TKRA_Vec3D_DotProduct(udir, norm);
+	TKRA_Vec3D_AddScale(udir, norm, -f, udir);
+	f=TKRA_Vec3D_DotProduct(vdir, norm);
+	TKRA_Vec3D_AddScale(vdir, norm, -f, vdir);
+
+	TKRA_Vec3D_Normalize(udir, udir);
+	TKRA_Vec3D_Normalize(vdir, vdir);
+}
+#endif
+
+#if 1
+int HullD_LinePlaneIntersect(double *start, double *end,
+	double *norm, double *point)
+{
+	double dir[3], x;
+
+	//calc direction
+	dir[0]=end[0]-start[0];
+	dir[1]=end[1]-start[1];
+	dir[2]=end[2]-start[2];
+
+	x=TKRA_Vec3D_DotProduct(dir, norm);
+	if(x==0)return(-1);
+
+	x=1.0/((x<0)?-x:x);
+	dir[0]*=x;
+	dir[1]*=x;
+	dir[2]*=x;
+
+	//calc intersection
+	x=TKRA_Vec3D_NDotProduct(start, norm);
+
+	x=(x<0)?-x:x;
+	point[0]=start[0]+dir[0]*x;
+	point[1]=start[1]+dir[1]*x;
+	point[2]=start[2]+dir[2]*x;
+
+	return(0);
+}
+#endif
+
+#if 1
+void HullD_MakePlaneFace(double *norm, double *pts)
+{
+	double v0[3], v1[3], v2[3];
+
+	HullD_AdjacentNormals2(norm, v0, v1);
+
+	TKRA_Vec3D_ScaleAddScale(v0, -999999.0, v1, -999999.0, v2);
+	TKRA_Vec3D_AddScale(v2, norm, norm[3], pts+(0*3));
+	TKRA_Vec3D_ScaleAddScale(v0,  999999.0, v1, -999999.0, v2);
+	TKRA_Vec3D_AddScale(v2, norm, norm[3], pts+(1*3));
+	TKRA_Vec3D_ScaleAddScale(v0,  999999.0, v1,  999999.0, v2);
+	TKRA_Vec3D_AddScale(v2, norm, norm[3], pts+(2*3));
+	TKRA_Vec3D_ScaleAddScale(v0, -999999.0, v1,  999999.0, v2);
+	TKRA_Vec3D_AddScale(v2, norm, norm[3], pts+(3*3));
+}
+#endif
+
+#if 1
+int HullD_ClipFace(double *norm,
+	double *ipts, double *opts, int num)
+{
+	int i, j, k, l;
+
+	//first outside
+	for(i=0; i<num; i++)
+		if(TKRA_Vec3D_NDotProduct(ipts+(i*3), norm)>0)
+			break;
+
+	if(i==num)	//nothing to clip
+	{
+		for(i=0; i<num*3; i++)opts[i]=ipts[i];
+		return(num);	//nothing to clip
+	}
+
+	//first inside
+	j=i;
+	while(1)
+	{
+		if(TKRA_Vec3D_NDotProduct(ipts+(j*3), norm)<=0)
+			break;
+		j=(j+1)%num;
+		if(j==i)return(0);	//everything clipped
+	}
+
+	//copy inside
+	i=j;
+	l=0;
+	while(1)
+	{
+		TKRA_Vec3D_Copy(ipts+(j*3), opts+(l*3));
+		l++;
+
+		k=(j+1)%num;
+		if(TKRA_Vec3D_NDotProduct(ipts+(k*3), norm)>0)
+			break;
+		j=k;
+	}
+
+	//exit point
+	if(TKRA_Vec3D_NDotProduct(ipts+(j*3), norm)<0)
+	{
+		HullD_LinePlaneIntersect(
+			ipts+(j*3), ipts+(k*3), norm, opts+(l*3));
+		l++;
+	}
+
+	j=k;
+	while(1)
+	{
+		k=(j+1)%num;
+		if(TKRA_Vec3D_NDotProduct(ipts+(k*3), norm)<=0)
+			break;
+		j=k;
+	}
+
+	//entry point
+	if(TKRA_Vec3D_NDotProduct(ipts+(k*3), norm)<0)
+	{
+		HullD_LinePlaneIntersect(
+			ipts+(j*3), ipts+(k*3), norm, opts+(l*3));
+		l++;
+	}
+
+	return(l);
+}
+#endif
+
+void HullD_PolyPlaneExtents(
+	double *pts, int npts, double *norm,
+	double *rm, double *rn)
+{
+	double f, m, n;
+	int i;
+	
+	m= 999999999;
+	n=-999999999;
+	for(i=0; i<npts; i++)
+	{
+		f=TKRA_Vec3D_NDotProduct(pts+i*3, norm);
+		if(f<m)		m=f;
+		if(f>n)		n=f;
+	}
+	*rm=m; *rn=n;
+}

@@ -12,7 +12,7 @@ Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
-limitations under the License.*/
+limitations under the License.
 */
 
 /*
@@ -219,16 +219,19 @@ begin
 //		end
 
 		JX2_UCMD_ALU3, JX2_UCMD_UNARY, JX2_UCMD_ALUW3: begin
-			tRegIdRn2			= regIdRm;			//
-			tRegValRn2[63:0]	= regValAluRes[63:0];		//
+//			tRegIdRn2			= regIdRm;			//
+//			tRegValRn2[63:0]	= regValAluRes[63:0];		//
 //			tRegOutSr[1:0]		= regValAluRes[65:64];
+
+			tValOutDfl[63:0]	= regValAluRes[63:0];
+			tDoOutDfl			= 1;
 		end
 
 		JX2_UCMD_CONV2_RR, JX2_UCMD_CONV3_RR: begin
-//			tValOutDfl[63:0]	= regValAluRes[63:0];
-//			tDoOutDfl			= 1;
-			tRegIdRn2			= regIdRm;			//
-			tRegValRn2[63:0]	= regValAluRes[63:0];		//
+			tValOutDfl[63:0]	= regValAluRes[63:0];
+			tDoOutDfl			= 1;
+//			tRegIdRn2			= regIdRm;			//
+//			tRegValRn2[63:0]	= regValAluRes[63:0];		//
 		end
 
 		JX2_UCMD_ALUCMP: begin
@@ -241,8 +244,11 @@ begin
 		end
 
 		JX2_UCMD_MULW3: begin
-			tRegIdRn2			= regIdRm;			//
-			tRegValRn2[63:0]	= regValMulwRes;		//
+//			tRegIdRn2			= regIdRm;			//
+//			tRegValRn2[63:0]	= regValMulwRes;		//
+
+			tValOutDfl[63:0]	= regValMulwRes[63:0];
+			tDoOutDfl			= 1;
 		end
 
 		JX2_UCMD_SHAD3: begin

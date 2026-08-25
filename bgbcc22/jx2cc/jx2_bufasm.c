@@ -1538,6 +1538,16 @@ int mfl;
 {"fcmpxeq",		BGBCC_SH_NMID_FCMPXEQ},
 {"fcmpxgt",		BGBCC_SH_NMID_FCMPXGT},
 
+{"fmasx",		BGBCC_SH_NMID_FMASX},
+{"fmrax",		BGBCC_SH_NMID_FMRAX},
+{"fmrsx",		BGBCC_SH_NMID_FMRSX},
+{"fmas",		BGBCC_SH_NMID_FMAS},
+{"fmra",		BGBCC_SH_NMID_FMRA},
+{"fmrs",		BGBCC_SH_NMID_FMRS},
+
+{"fnegx",		BGBCC_SH_NMID_FNEGX},
+{"fabsx",		BGBCC_SH_NMID_FABSX},
+
 {"faddg",		BGBCC_SH_NMID_FADDG},
 {"fsubg",		BGBCC_SH_NMID_FSUBG},
 {"fmulg",		BGBCC_SH_NMID_FMULG},
@@ -1547,6 +1557,16 @@ int mfl;
 {"fsub.g",		BGBCC_SH_NMID_FSUBG},
 {"fmul.g",		BGBCC_SH_NMID_FMULG},
 {"fdiv.g",		BGBCC_SH_NMID_FDIVG},
+
+{"fmacg",		BGBCC_SH_NMID_FMACG},
+{"fmasg",		BGBCC_SH_NMID_FMASG},
+{"fmrag",		BGBCC_SH_NMID_FMRAG},
+{"fmrsg",		BGBCC_SH_NMID_FMRSG},
+
+{"fmadd.d",		BGBCC_SH_NMID_FMACG},
+{"fmsub.d",		BGBCC_SH_NMID_FMASG},
+{"fnmadd.d",	BGBCC_SH_NMID_FMRAG},
+{"fnmsub.d",	BGBCC_SH_NMID_FMRSG},
 
 {"shad,q",		BGBCC_SH_NMID_SHADQ},
 {"shld.q",		BGBCC_SH_NMID_SHLDQ},

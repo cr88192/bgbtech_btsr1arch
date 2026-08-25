@@ -4526,6 +4526,7 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 			if(*s0=='g')	j=1;
 			if(*s0=='r')	j=2;
 			if(*s0=='a')	j=3;
+
 			if(*s0=='X')	j=4;
 			if(*s0=='Y')	j=5;
 			if(*s0=='Z')	j=6;
@@ -4538,8 +4539,10 @@ ccxl_status BGBCC_CCXL_StackLoadSlotSig(BGBCC_TransState *ctx,
 			if(*s0=='G')	j=5;
 			if(*s0=='R')	j=6;
 			if(*s0=='A')	j=7;
+
 			if(*s0=='o')	j=8;
 			if(*s0=='O')	j=8;
+			if(*s0=='_')	j=8;
 			
 			if(j<0)
 				break;

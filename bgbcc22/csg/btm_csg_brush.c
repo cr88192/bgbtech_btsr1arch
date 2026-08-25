@@ -359,7 +359,7 @@ BTM_CsgNode *BTM_MakeCsgNodeIntersection(BTM_CsgNode *ltcsg, BTM_CsgNode *rtcsg)
 
 BTM_CsgPoly *btm_csgpoly_freelist[128];
 
-BTM_CsgPoly *BTM_MakeCsgPolyForPoints(
+BTM_CsgPoly *BTM_MakeCsgPolyForPointsF(
 	float *pts, int npts,
 	u64 clrmat, BTM_CsgPoly *lst)
 {
@@ -406,6 +406,17 @@ BTM_CsgPoly *BTM_MakeCsgPolyForPoints(
 
 	tmp->next=lst;
 	return(tmp);
+}
+
+BTM_CsgPoly *BTM_MakeCsgPolyForPointsD(
+	double *pts, int npts,
+	u64 clrmat, BTM_CsgPoly *lst)
+{
+	float fpts[64*3];
+	int i;
+	for(i=0; i<npts; i++)
+		TKRA_Vec3D2F_Copy(pts+i*3, fpts+i*3);
+	return(BTM_MakeCsgPolyForPointsF(fpts, npts, clrmat, lst));
 }
 
 void BTM_FreeCsgPolyList(BTM_CsgPoly *lst)
@@ -476,7 +487,8 @@ BTM_CsgPoly *BTM_CloneCsgPolyList(BTM_CsgPoly *lst)
 	{
 		if(pcur->clrmat==BTM_CSGTAG_FREE)
 			{ __debugbreak(); }
-		olst=BTM_MakeCsgPolyForPoints(pcur->pts, pcur->npts, pcur->clrmat, olst);
+		olst=BTM_MakeCsgPolyForPointsF(
+			pcur->pts, pcur->npts, pcur->clrmat, olst);
 		pcur=pcur->next;
 	}
 	BTM_CheckSaneCsgPolyList(olst);
@@ -505,15 +517,18 @@ BTM_CsgPoly *BTM_MergeCsgPolyList(BTM_CsgPoly *plst1, BTM_CsgPoly *plst2)
 BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,
 	BTM_CsgPoly *orglst, float *trans, u64 iclrmat, int flag)
 {
-	static float pts0[16*3];
-	static float pts1[16*3];
+//	static float pts0[64*3];
+//	static float pts1[64*3];
+	static double dpts0[64*3];
+	static double dpts1[64*3];
 	BTM_CsgPoly *tmp, *lst;
 
 	float tv0[3], tv1[3], tv2[3], tnv[4], tnvi[4], nvi[4], nvj[4];
+	double dtnv[4];
 	float *norm;
 	float sx, sy, f;
 	u64 clrmat;
-	int i, j, k, l, t, num;
+	int i, j, k, l, dl, t, num;
 
 	norm=bru->planes;
 	num=bru->n_planes;
@@ -541,9 +556,13 @@ BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,
 			k=-1;
 		}
 		
+		TKRA_Vec4F2D_Copy(tnv, dtnv);
+		
 //		HullF_MakePlaneFace(norm+i*4, pts0);
-		HullF_MakePlaneFace(tnv, pts0);
+//		HullF_MakePlaneFace(tnv, pts0);
+		HullD_MakePlaneFace(dtnv, dpts0);
 		l=4;
+		dl=4;
 
 		for(j=0; j<num; j++)
 		{
@@ -557,8 +576,11 @@ BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,
 				k=-1;
 			}
 
+			TKRA_Vec4F2D_Copy(tnv, dtnv);
+
 //			l=HullF_ClipFace(norm+j*4, pts0, pts1, l);
-			l=HullF_ClipFace(tnv, pts0, pts1, l);
+//			l=HullF_ClipFace(tnv, pts0, pts1, l);
+			dl=HullD_ClipFace(dtnv, dpts0, dpts1, dl);
 			
 			if(l<=0)
 			{
@@ -566,12 +588,16 @@ BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,
 				break;
 			}
 			
-			for(k=0; k<(l*3); k++)pts0[k]=pts1[k];
+//			for(k=0; k<(l*3); k++)
+//				pts0[k]=pts1[k];
+			for(k=0; k<(dl*3); k++)
+				dpts0[k]=dpts1[k];
 		}
 		if(l<=0)
 			continue;
 
-		lst=BTM_MakeCsgPolyForPoints(pts0, l, clrmat, lst);
+//		lst=BTM_MakeCsgPolyForPointsF(pts0, l, clrmat, lst);
+		lst=BTM_MakeCsgPolyForPointsD(dpts0, dl, clrmat, lst);
 
 //		for(j=0; j<l; j++)
 //		{
@@ -587,13 +613,17 @@ BTM_CsgPoly *BTM_GetCsgPolysForBrush(BTM_CsgBrush *bru,
 BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 	BTM_CsgPoly *orglst, float *trans, int flag)
 {
-	static float pts0[192*3];
-	static float pts1[192*3];
+//	static float pts0[64*3];
+//	static float pts1[64*3];
+	static double dpts0[64*3];
+	static double dpts1[64*3];
 	BTM_CsgPoly *tmp, *plst, *plst2, *olst, *pcur, *pnxt;
 
 	float tv0[3], tv1[3], tv2[3], tnv[4], tnnv[4];
+	double dtnv[4], dtnnv[4];
 	float *norm;
-	float sx, sy, f;
+//	float sx, sy, f;
+	double sx, sy, f;
 	u64 pcmat;
 	int i, j, k, l, t, num;
 
@@ -607,15 +637,20 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 	{
 		if(pcur->clrmat==BTM_CSGTAG_FREE)
 			{ __debugbreak(); }
-		memcpy(pts0, pcur->pts, pcur->npts*3*sizeof(float));
+//		memcpy(pts0, pcur->pts, pcur->npts*3*sizeof(float));
 		l=pcur->npts;
+		for(i=0; i<l; i++)
+			{ TKRA_Vec3F2D_Copy(pcur->pts+i*3, dpts0+i*3); }
+
 		pcmat=pcur->clrmat;
 		pcur=pcur->next;
 
 		for(i=0; i<num; i++)
 		{
 			HullF_TransformPlane(norm+i*4, tnv, trans);
-			HullF_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
+			TKRA_Vec4F2D_Copy(tnv, dtnv);
+//			Hull_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
+			HullD_PolyPlaneExtents(dpts0, l, dtnv, &sx, &sy);
 //			if(sx>=0)
 			if(sx>=(-0.999))
 				break;
@@ -626,11 +661,13 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 			/* entirely outside of brush. */
 //			if(flag&1)
 //				continue;
-			olst=BTM_MakeCsgPolyForPoints(pts0, l, pcmat, olst);
+//			olst=BTM_MakeCsgPolyForPointsF(pts0, l, pcmat, olst);
+			olst=BTM_MakeCsgPolyForPointsD(dpts0, l, pcmat, olst);
 		}else
 		{
 			/* crosses into brush. */
-			plst=BTM_MakeCsgPolyForPoints(pts0, l, pcmat, plst);
+//			plst=BTM_MakeCsgPolyForPointsF(pts0, l, pcmat, plst);
+			plst=BTM_MakeCsgPolyForPointsD(dpts0, l, pcmat, plst);
 		}
 	}
 
@@ -644,6 +681,8 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 	{
 		HullF_TransformPlane(norm+i*4, tnv, trans);
 		TKRA_Vec4F_Scale(tnv, -1, tnnv);
+		TKRA_Vec4F2D_Copy(tnv, dtnv);
+		TKRA_Vec4F2D_Copy(tnnv, dtnnv);
 
 		pcur=plst;
 		plst2=NULL;
@@ -651,35 +690,49 @@ BTM_CsgPoly *BTM_ClipCsgPolysByBrush(BTM_CsgBrush *bru,
 		{
 			if(pcur->clrmat==BTM_CSGTAG_FREE)
 				{ __debugbreak(); }
-			memcpy(pts0, pcur->pts, pcur->npts*3*sizeof(float));
+//			memcpy(pts0, pcur->pts, pcur->npts*3*sizeof(float));
 			l=pcur->npts;
+			for(j=0; j<l; j++)
+				{ TKRA_Vec3F2D_Copy(pcur->pts+j*3, dpts0+j*3); }
+
 			pcmat=pcur->clrmat;
 			pcur=pcur->next;
 
-			HullF_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
+//			Hull_PolyPlaneExtents(pts0, l, tnv, &sx, &sy);
+			HullD_PolyPlaneExtents(dpts0, l, dtnv, &sx, &sy);
 			if(sx>=0)
 			{
 				if(flag&1)
 					continue;
-				olst=BTM_MakeCsgPolyForPoints(pts0, l, pcmat, olst);
+//				olst=BTM_MakeCsgPolyForPointsF(pts0, l, pcmat, olst);
+				olst=BTM_MakeCsgPolyForPointsD(dpts0, l, pcmat, olst);
 				continue;
 			}
 
 			if(sy<=0)
 			{
-				plst2=BTM_MakeCsgPolyForPoints(pts0, l, pcmat, plst2);
+//				plst2=BTM_MakeCsgPolyForPointsF(pts0, l, pcmat, plst2);
+				plst2=BTM_MakeCsgPolyForPointsD(dpts0, l, pcmat, plst2);
 				continue;
 			}
 
-			t=HullF_ClipFace(tnv, pts0, pts1, l);
+//			t=HullF_ClipFace(tnv, pts0, pts1, l);
+			t=HullD_ClipFace(dtnv, dpts0, dpts1, l);
 			if(t>=3)
-				plst2=BTM_MakeCsgPolyForPoints(pts1, t, pcmat, plst2);
+			{
+//				plst2=BTM_MakeCsgPolyForPointsF(pts1, t, pcmat, plst2);
+				plst2=BTM_MakeCsgPolyForPointsD(dpts1, t, pcmat, plst2);
+			}
 
 			if(flag&1)
 				continue;
-			t=HullF_ClipFace(tnnv, pts0, pts1, l);
+//			t=HullF_ClipFace(tnnv, pts0, pts1, l);
+			t=HullD_ClipFace(dtnnv, dpts0, dpts1, l);
 			if(t>=3)
-				olst=BTM_MakeCsgPolyForPoints(pts1, t, pcmat, olst);
+			{
+//				olst=BTM_MakeCsgPolyForPointsF(pts1, t, pcmat, olst);
+				olst=BTM_MakeCsgPolyForPointsD(dpts1, t, pcmat, olst);
+			}
 		}
 		
 		BTM_FreeCsgPolyList(plst);

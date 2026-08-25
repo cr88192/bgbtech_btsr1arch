@@ -106,16 +106,15 @@
 #define CCXL_TY_UI48			0x59		//
 #define CCXL_TY_F48				0x5A		//
 #define CCXL_TY_VEC3H_48		0x5B		//
-
 #define CCXL_TY_OSBITINT		0x5C		//signed output(n)
 #define CCXL_TY_OUBITINT		0x5D		//unsigned output(n)
 #define CCXL_TY_OBITINT			0x5D		//unsigned output(n)
-
 #define CCXL_TY_M32				0x5E		//64-bit vector
 #define CCXL_TY_M16				0x5F		//64-bit vector
 
 #define CCXL_TY_VEC2H			0x60		//64-bit vector
 #define CCXL_TY_VEC4_FP8A		0x61		//Vec4 Float8A
+#define CCXL_TY_QUATH			0x62		//64-bit vector
 
 
 #define CCXL_VTY_PVOID			0x00001005	//'void *'

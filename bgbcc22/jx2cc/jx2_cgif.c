@@ -361,6 +361,9 @@ ccxl_status BGBCC_JX2C_SetupContextForArch(BGBCC_TransState *ctx)
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "cmp3r"))
 		{ shctx->has_qmul|=32; }
 
+//	if(BGBCC_CCXL_CheckForOptStr(ctx, "fpux"))
+//		{ shctx->has_qmul|=64; }
+
 	if(BGBCC_CCXL_CheckForOptStr(ctx, "ldtex"))
 		{ shctx->has_fmovs|=4; }
 

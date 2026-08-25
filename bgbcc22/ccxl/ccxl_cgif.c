@@ -970,6 +970,9 @@ ccxl_status BGBCC_CCXL_EmitConv(BGBCC_TransState *ctx,
 	if(stype.val==CCXL_TY_V)
 		{ BGBCC_DBGBREAK }
 
+	if((dtype.val==CCXL_TY_VEC4F) && (stype.val==CCXL_TY_VEC2F))
+		{ BGBCC_DBGBREAK }
+
 	if(dtype.val==stype.val)
 	{
 		op=NULL;
