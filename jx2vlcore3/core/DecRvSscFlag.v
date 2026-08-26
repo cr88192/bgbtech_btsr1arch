@@ -195,17 +195,19 @@ begin
 	casez(istrWord[4:2])
 		3'b000: begin /* F0 Block */
 			casez(istrWord[15:12])
-				4'b0000: begin
+				4'b0000: begin	/* F0-0, Mem, Short Bcc-Imm */
 					tIstrFlagXG3	= istrWord[31] ? 4'b0011 : 4'b0001;
-					if(istrWord[30:28] == 3'b000)
+					if(istrWord[30:28] == 3'b011)
+						tIstrFlagXG3	= 4'b0000;
+					if(istrWord[31:30] == 2'b10)
 						tIstrFlagXG3	= 4'b0000;
 				end
-				4'b0001: begin
+				4'b0001: begin	/* F0-1, Core ALU / 2R */
 					casez(istrWord[31:28])
 						4'b000z: begin
-//							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
-							tIstrFlagXG3 = (istrWord[5] || 
-								(istrWord[11:6]==6'h00)) ? 4'b0000 : 4'b1111;
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
+//							tIstrFlagXG3 = (istrWord[5] || 
+//								(istrWord[11:6]==6'h00)) ? 4'b0000 : 4'b1111;
 						end
 						4'b001z, 4'b0100:
 							tIstrFlagXG3 = 4'b0011;
@@ -214,6 +216,62 @@ begin
 						default:
 							tIstrFlagXG3	= 4'b0000;
 					endcase
+				end
+				4'b0010: begin
+					casez(istrWord[31:28])
+						4'b00zz:
+							tIstrFlagXG3	= 4'b0111;
+						4'b01zz:
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
+						4'b100z:
+							tIstrFlagXG3	= 4'b0111;
+						4'b101z:
+							tIstrFlagXG3	= 4'b0000;
+						4'b11zz:
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
+					endcase
+				end
+				4'b0011: begin
+					casez(istrWord[31:28])
+						4'b0zzz:
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
+						4'b1zzz:
+							tIstrFlagXG3	= 4'b0000;
+					endcase
+				end
+				4'b0100: begin	/* F0-4, More Mem ops */
+					tIstrFlagXG3	= istrWord[31] ? 4'b0011 : 4'b0001;
+					if(istrWord[29:28] == 2'b00)
+						tIstrFlagXG3	= 4'b0000;
+				end
+				4'b0101: begin	/* F0-5, Misc ALU Ops */
+					casez(istrWord[31:28])
+						4'b00zz:
+							tIstrFlagXG3 = 4'b0011;
+						4'b01zz: begin
+							tIstrFlagXG3 = 4'b0111;
+							if(istrWord[11:8]==4'h0)
+								tIstrFlagXG3	= 4'b0000;
+						end
+						4'b10zz:
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
+						4'b110z:
+							tIstrFlagXG3 = 4'b1111;
+						4'b111z:
+							tIstrFlagXG3 = 4'b0111;
+					endcase
+				end
+				4'b0110: begin	/* F0-6, MAC / FPU / Misc */
+					tIstrFlagXG3	= 4'b0000;
+				end
+				4'b0111: begin	/* F0-7, Misc */
+					tIstrFlagXG3	= 4'b0000;
+				end
+				4'b1000: begin	/* F0-8, XMOV */
+					tIstrFlagXG3	= 4'b0000;
+				end
+				4'b1001: begin	/* F0-9, CMPxx */
+					tIstrFlagXG3	= istrWord[5] ? 4'b0011 : 4'b0000;
 				end
 				default:
 					tIstrFlagXG3	= 4'b0000;

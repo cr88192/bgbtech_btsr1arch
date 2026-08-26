@@ -409,6 +409,7 @@ reg[1:0]	usrSuAllow_F0;
 
 reg[7:0]	tIstrSel1R;
 reg[63:0]	tIstrWordL;
+reg[3:0]	tIstrSel0RA;
 
 always @*
 begin
@@ -1146,10 +1147,12 @@ begin
 	opRegO_OrgDfl	= opRegO_Dfl;
 
 	tIstrSel1R = istrWord[7:0];
+	tIstrSel0RA = istrWord[23:20];
 
 	if(srXG3RV)
 	begin
 		tIstrSel1R[7:4] = istrWord[23:20];
+		tIstrSel0RA		= istrWord[7:4];
 	end
 
 `ifdef jx2_reg_spdecswap
@@ -3463,7 +3466,8 @@ begin
 //				casez(istrWord[7:0])
 				casez(tIstrSel1R)
 					8'h00: begin
-						case(istrWord[23:20])
+//						case(istrWord[23:20])
+						case(tIstrSel0RA)
 							4'h0: begin
 								opNmid		= JX2_UCMD_NOP;
 								opFmid		= JX2_FMID_Z;
@@ -3540,7 +3544,8 @@ begin
 					end
 
 					8'h02: begin
-						case(istrWord[23:20])
+//						case(istrWord[23:20])
+						case(tIstrSel0RA)
 							4'h0: begin
 								opNmid		= JX2_UCMD_OP_IXT;
 								opFmid		= JX2_FMID_Z;
@@ -3617,7 +3622,8 @@ begin
 				casez(tIstrSel1R)
 
 					8'h00: begin
-						case(istrWord[23:20])
+//						case(istrWord[23:20])
+						case(tIstrSel0RA)
 							4'h0: begin
 								opNmid		= JX2_UCMD_NOP;
 								opFmid		= JX2_FMID_Z;
@@ -3698,7 +3704,8 @@ begin
 					end
 
 					8'h02: begin
-						case(istrWord[23:20])
+//						case(istrWord[23:20])
+						case(tIstrSel0RA)
 							4'h0: begin
 //								opNmid		= JX2_UCMD_NOP;
 //								opFmid		= JX2_FMID_Z;

@@ -3148,8 +3148,8 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 		}
 #endif
 //		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm9u(ctx,
-		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10s(ctx,
-			0x0000600AU, rm, imm, rn, &opw1, &opw2)>0)
+		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10sB(ctx,
+			0x0000600AU, rm, imm, rn, &opw1, &opw2, &opw3)>0)
 				break;
 		break;
 	case BGBCC_SH_NMID_SHADX:
@@ -3168,8 +3168,8 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 		}
 #endif
 //		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm9u(ctx,
-		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10s(ctx,
-			0x0000700AU, rm, imm, rn, &opw1, &opw2)>0)
+		if(BGBCC_JX2X3_CheckEncodeRIRJ_Imm10sB(ctx,
+			0x0000700AU, rm, imm, rn, &opw1, &opw2, &opw3)>0)
 				break;
 		break;
 	case BGBCC_SH_NMID_SHLDX:
@@ -3221,6 +3221,8 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 	case BGBCC_SH_NMID_PSHUFXL:
 		if(!(ctx->has_simdx2&2))
 			break;
+
+		break;
 
 //		if(isimm8s || isimm8u)
 		if(isimm8u)
@@ -5785,8 +5787,11 @@ int BGBCC_JX2X3_TryEmitOpNone(BGBCC_JX2_Context *ctx, int nmid)
 	if(	(nmid==BGBCC_SH_NMID_NOP) ||
 		(nmid==BGBCC_SH_NMID_NOP4B))
 	{
+//		return(BGBCC_JX2X3_TryEmitOpRegRegReg(ctx,
+//			BGBCC_SH_NMID_ADD,
+//			BGBCC_SH_REG_RQ0, BGBCC_SH_REG_RQ0, BGBCC_SH_REG_RQ0));
 		return(BGBCC_JX2X3_TryEmitOpRegRegReg(ctx,
-			BGBCC_SH_NMID_ADD,
+			BGBCC_SH_NMID_SHADQ,
 			BGBCC_SH_REG_RQ0, BGBCC_SH_REG_RQ0, BGBCC_SH_REG_RQ0));
 	}
 
