@@ -2315,6 +2315,7 @@ Functionally equivalent to RV64G ECALL.
 
 This instruction is allowed in usermode, but is none the less a system instruction whose sole purpose is to trap.
 
+The exact system call interface is outside the scope of the ISA spec.
 
 
 
