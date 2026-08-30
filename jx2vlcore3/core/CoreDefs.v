@@ -1198,7 +1198,7 @@ parameter[5:0] JX2_UCIX_ALUW_MOVHW	= 6'h17;		//ALU (High Words)
 
 // parameter[5:0] JX2_UCIX_ALUW_PMULTW	= 6'h24;		//ALU PMULT.W
 
-parameter[5:0] JX2_UCIX_ALUW_PSHUFL	= 6'h24;		//ALU PSHUF.W
+parameter[5:0] JX2_UCIX_ALUW_PSHUFL	= 6'h24;		//ALU PSHUFX.L
 
 parameter[5:0] JX2_UCIX_ALUW_PSHUFW	= 6'h25;		//ALU PSHUF.W
 parameter[5:0] JX2_UCIX_ALUW_MOVLD	= 6'h26;		//ALU (Low DWords)

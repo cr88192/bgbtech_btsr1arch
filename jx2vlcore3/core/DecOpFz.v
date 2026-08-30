@@ -6612,6 +6612,7 @@ begin
 						opFmid		= JX2_FMID_REGIMMREG;
 						opIty		= JX2_ITY_UW;
 						opUCmdIx	= JX2_UCIX_ALUW_PSHUFL ;
+						opUCty		= JX2_IUC_WX;
 						/* PMULTX indirectly encoded via Immediate */
 					end
 					
@@ -7715,7 +7716,7 @@ begin
 		opBty		= opBty_F1;
 		opIty		= opIty_F1;
 		opUCty		= opUCty_F1;
-//		opCcty		= opCcty_F1;
+		opCcty		= opCcty_F1;
 //		opRegM_Fix	= opRegM_Fix_F1;
 //		opRegO_Fix	= opRegO_Fix_F1;
 //		opRegN_Fix	= opRegN_Fix_F1;
@@ -7728,7 +7729,8 @@ begin
 		opUCmdIx	= opUCmdIx_F2;
 		opBty		= opBty_F2;
 		opIty		= opIty_F2;
-//		opCcty		= opCcty_F2;
+		opUCty		= opUCty_F2;
+		opCcty		= opCcty_F2;
 //		opRegM_Fix	= opRegM_Fix_F2;
 //		opRegO_Fix	= opRegO_Fix_F2;
 //		opRegN_Fix	= opRegN_Fix_F2;
@@ -9740,6 +9742,7 @@ begin
 `endif
 
 `ifndef def_true
+// `ifdef def_true
 	if((opUCty == JX2_IUC_WX) || (opUCty == JX2_IUC_WXA))
 	begin
 		if(opRegP[6] || opRegN[6])

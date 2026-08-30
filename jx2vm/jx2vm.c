@@ -1501,6 +1501,8 @@ int main(int argc, char *argv[])
 	dorast=1;
 	nowex=0;
 	
+	nowex|=2;
+	
 	if(argc<2)
 	{
 		print_usage(argv[0]);
@@ -1601,6 +1603,9 @@ int main(int argc, char *argv[])
 				{ nowex|=4; continue; }
 			if(!strcmp(argv[i], "--opssc2"))
 				{ nowex|=2|8; continue; }
+
+			if(!strcmp(argv[i], "--nossc"))
+				{ nowex&=~(2|8); continue; }
 
 			if(!strcmp(argv[i], "--oprf_x"))
 				{ nowex|=32; continue; }

@@ -1421,7 +1421,8 @@ begin
 			opUCmdA[5:0] = JX2_UCMD_ALUCMP;
 		end
 
-		if(opIsScalarBase &&
+//		if(opIsScalarBase &&
+		if(opIsScalar &&
 			((opUIxtA0[8:6]==JX2_IUC_WX) || (opUIxtA0[8:6]==JX2_IUC_WXA)))
 		begin
 			if(opUCmdA0[5:0] == JX2_UCMD_CONV2_RR)
@@ -1491,7 +1492,6 @@ begin
 `endif
 
 		end
-
 	end
 
 `ifdef jx2_enable_xgpr
@@ -1644,7 +1644,8 @@ begin
 		opUCmdB	= opUCmdA;
 		opUIxtB	= opUIxtA;
 
-		if(!opIsDualLaneRn)
+//		if(!opIsDualLaneRn)
+		if(!opIsDualLaneRn && (opUCmdA0[5:0] != JX2_UCMD_ALUCMP3R))
 		begin
 			$display("DL, No Rn opUCmdA=%X", opUCmdA);
 		end

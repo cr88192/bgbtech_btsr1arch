@@ -2085,6 +2085,34 @@ void BJX2_Op_LDACL_None(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->mem_tlb_acl[0]=ctx->regs[BJX2_REG_DLR];
 }
 
+void BJX2_Op_LDTLB_XG3_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 addr, tea;
+	u64	r0, r1, r2, r3;
+	int i, j, h;
+
+	r0=ctx->regs[BJX2_REG_R6];
+	r1=ctx->regs[BJX2_REG_R7];
+	ctx->regs[BJX2_REG_DLR]=r0;
+	ctx->regs[BJX2_REG_DHR]=r1;
+	
+	BJX2_Op_LDTLB_None(ctx, op);
+}
+
+void BJX2_Op_LDACL_XG3_None(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	s64 addr, tea;
+	u64	r0, r1, r2, r3;
+	int i, j, h;
+
+	r0=ctx->regs[BJX2_REG_R6];
+	r1=ctx->regs[BJX2_REG_R7];
+	ctx->regs[BJX2_REG_DLR]=r0;
+	ctx->regs[BJX2_REG_DHR]=r1;
+	
+	BJX2_Op_LDTLB_None(ctx, op);
+}
+
 void BJX2_Op_INVTLB_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	int i, j, k;

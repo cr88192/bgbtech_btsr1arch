@@ -2151,6 +2151,72 @@ void BJX2_Op_PMULTW_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
 	ctx->regs[op->rn]=vn;
 }
 
+void BJX2_Op_PSHUFXL_RegImmReg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64	vs0, vs1, vt0, vt1, vn0, vn1, msk;
+	int imm;
+
+	imm=op->imm;
+
+	vs0=ctx->regs[op->rm+0];
+	vs1=ctx->regs[op->rm+1];
+
+//	vn=	(((vs>>(((imm   )&3)*16))&65535)    ) |
+//		(((vs>>(((imm>>2)&3)*16))&65535)<<16) |
+//		(((vs>>(((imm>>4)&3)*16))&65535)<<32) |
+//		(((vs>>(((imm>>6)&3)*16))&65535)<<48) ;
+
+	vn0=0;	vn1=0;
+	switch((imm>>0)&3)
+	{
+	case 0:		vn0|=(vs0>> 0)&0x00000000FFFFFFFFULL; break;
+	case 1:		vn0|=(vs0>>32)&0x00000000FFFFFFFFULL; break;
+	case 2:		vn0|=(vs1>> 0)&0x00000000FFFFFFFFULL; break;
+	case 3:		vn0|=(vs1>>32)&0x00000000FFFFFFFFULL; break;
+	}
+	switch((imm>>2)&3)
+	{
+	case 0:		vn0|=((vs0>> 0)&0x00000000FFFFFFFFULL)<<32; break;
+	case 1:		vn0|=((vs0>>32)&0x00000000FFFFFFFFULL)<<32; break;
+	case 2:		vn0|=((vs1>> 0)&0x00000000FFFFFFFFULL)<<32; break;
+	case 3:		vn0|=((vs1>>32)&0x00000000FFFFFFFFULL)<<32; break;
+	}
+	switch((imm>>4)&3)
+	{
+	case 0:		vn1|=(vs0>> 0)&0x00000000FFFFFFFFULL; break;
+	case 1:		vn1|=(vs0>>32)&0x00000000FFFFFFFFULL; break;
+	case 2:		vn1|=(vs1>> 0)&0x00000000FFFFFFFFULL; break;
+	case 3:		vn1|=(vs1>>32)&0x00000000FFFFFFFFULL; break;
+	}
+	switch((imm>>6)&3)
+	{
+	case 0:		vn1|=((vs0>> 0)&0x00000000FFFFFFFFULL)<<32; break;
+	case 1:		vn1|=((vs0>>32)&0x00000000FFFFFFFFULL)<<32; break;
+	case 2:		vn1|=((vs1>> 0)&0x00000000FFFFFFFFULL)<<32; break;
+	case 3:		vn1|=((vs1>>32)&0x00000000FFFFFFFFULL)<<32; break;
+	}
+
+	if(imm>>16)
+	{
+		if(((imm>> 8)&3)==0)		vn0&=~0x00000000FFFFFFFFULL;
+		if(((imm>> 8)&3)==2)		vn0^= 0x00000000FFFFFFFFULL;
+		if(((imm>> 8)&3)==3)		vn0^= 0x0000000080000000ULL;
+		if(((imm>>10)&3)==0)		vn0&=~0xFFFFFFFF00000000ULL;
+		if(((imm>>10)&3)==2)		vn0^= 0xFFFFFFFF00000000ULL;
+		if(((imm>>10)&3)==3)		vn0^= 0x8000000000000000ULL;
+
+		if(((imm>>12)&3)==0)		vn1&=~0x00000000FFFFFFFFULL;
+		if(((imm>>12)&3)==2)		vn1^= 0x00000000FFFFFFFFULL;
+		if(((imm>>12)&3)==3)		vn1^= 0x0000000080000000ULL;
+		if(((imm>>14)&3)==0)		vn1&=~0xFFFFFFFF00000000ULL;
+		if(((imm>>14)&3)==2)		vn1^= 0xFFFFFFFF00000000ULL;
+		if(((imm>>14)&3)==3)		vn1^= 0x8000000000000000ULL;
+	}
+
+	ctx->regs[op->rn+0]=vn0;
+	ctx->regs[op->rn+1]=vn1;
+}
+
 
 void BJX2_Op_PCMPEQL_RegReg(BJX2_Context *ctx, BJX2_Opcode *op)
 {

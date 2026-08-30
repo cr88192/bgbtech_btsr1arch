@@ -1059,6 +1059,8 @@ begin
 
 	tValShuf=regValRt[7:0];
 	tValMulT=8'h55;
+
+`ifndef def_true
 	if((regValRt[9:8]==2'b11) && (regValRt[17:16]==2'b00))
 	begin
 		tValShuf=8'hE4;
@@ -1070,6 +1072,21 @@ begin
 		tValShuf=regValRt[ 7:0];
 		tValMulT=regValRt[15:8];
 	end
+`endif
+
+`ifdef def_true
+	if(regValRt[32])
+	begin
+		tValShuf=regValRt[ 7:0];
+		tValMulT=regValRt[15:8];
+
+		if(regValRt[15:8]==8'hFF)
+		begin
+//			tValShuf=8'hE4;
+//			tValMulT=regValRt[7:0];
+		end
+	end
+`endif
 
 `ifdef def_true
 	case(tValShuf[1:0])
@@ -2038,6 +2055,13 @@ begin
 		begin
 //			$display("JX2_UCIX_ALUW_MOVTA16: %X, Rs=%X, Rt=%X",
 //				tResult2A, regValRs, regValRt);
+		end
+
+		if(	(idUCmd[5:0]==JX2_UCMD_ALUW3) &&
+			(idUIxt[5:0]==JX2_UCIX_ALUW_PSHUFL))
+		begin
+//			$display("JX2_UCIX_ALUW: PSHUFL-A: %X, Rs=%X Xs=%X, Rt=%X",
+//				tResult2A, regValRs, regValXs, regValRt);
 		end
 	end
 

@@ -640,7 +640,7 @@ Possible:
 * iiiiiiiiii-mmmmmm-0100-nnnnnn-10-1010 /? ADDU.L	Rm, Imm10n, Rn
 * iiiiiiiiii-mmmmmm-0101-nnnnnn-00-1010  AND		Rm, Imm10s, Rn
 * iiiiiiiiii-mmmmmm-0101-nnnnnn-10-1010  RSUB		Rm, Imm10s, Rn
-* iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010 / OR		Rm, Imm10u, Rn
+
 * iiiiiiiiii-mmmmmm-0110-nnnnnn-00-1010  OR			Rm, Imm10s, Rn
 
 * 00iiiiiiii-mmmmmm-0110-nnnnnn-10-1010  SHAD.X		Xm, Imm8s, Xn	//Xn>=2

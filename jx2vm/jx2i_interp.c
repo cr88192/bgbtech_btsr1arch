@@ -1832,6 +1832,9 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_PLDCSW:		s0="PLDCSW";		break;
 	case BJX2_NMID_FLDCPD:		s0="FLDCPD";		break;
 
+	case BJX2_NMID_SLEU:		s0="SLEU";			break;
+	case BJX2_NMID_PSHUFXL:		s0="PSHUFX.L";		break;
+
 	default:
 		sprintf(tb, "?NM%02X", nmid);
 		s0=tb;

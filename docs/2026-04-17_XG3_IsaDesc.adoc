@@ -2135,6 +2135,10 @@ Optional (TTAG): Move a value while setting tag bits (high 16 bits) to Zero.
 
 These instructions will fall outside the typical scope of usermode instructions.
 
+As such, these instructions are not to be used in usermode (and may raise a fault if encountetered).
+
+* They may depend on or expose architectural state beyond that of the normal user ISA.
+
 
 === CAS ===
 
@@ -2143,6 +2147,119 @@ These instructions will fall outside the typical scope of usermode instructions.
 Optional (LDOP): Compare and Swap.
 
 Stores the value in Rn to the memory at (Rm) if the memory location is equal to Ro.
+
+
+=== INVTLB ===
+
+* 0000-000010-000000-0011-001111-00-0010  INVTLB
+
+Invalidate the contents of the TLB.
+Any subsequent accesses to virtual memory will necessarily require the TLBE to be reloaded.
+
+
+=== LDACL ===
+
+* 0000-000010-000000-0011-000100-00-0010  LDACL
+
+Loads an entry into the ACL Cache from R6.
+
+This entry associates a set of access modes with a pair of VUGID keys.
+* (15: 0): TLB VUGID	//VUGID from the TLB (ACLID).
+* (31:16): KRR VUGID	//VUGID from the KRR.
+* (43:32): Access Mode	//Same format as in TLBE.
+* (63:44): Reserved
+
+
+=== LDTLB ===
+
+* 0000-000000-000000-0011-001111-00-0010  LDTLB
+
+Load R7:R6 into the TLB. These will encode a 128-bit TLBE.
+
+This instruction will only be valid within a TLB Miss ISR.
+
+TLB Entry (TLBE):
+
+* (127:112) = VUGID / ACLID
+* (111: 76) = Virtual Address Page
+* ( 75: 64) = KR Access
+* ( 63: 48) = ASID
+* ( 47: 12) = Physical Address Page
+* ( 11:  0) = Page Control bits
+
+
+
+X2TLB Entry (High):
+
+* (127:112) = Reserved
+* (111: 64) = Virtual Address Page (High 48 Bits)
+* ( 63: 16) = Physical Address Page (High 48 Bits)
+* ( 11:  0) = Page Control bits
+
+X2TLB Entry (Low):
+
+* Same as Base TLB Entry
+
+X2TLB:
+
+* Two TLB Entries are used in a pair (Hi and Lo).
+* LDTLB first sends Hi then Lo.
+
+The X2TLB pattern will only be valid in 96-bit Mode.
+
+
+Page Control:
+
+* (11): PR.U3 (User 3, OS / Virtual Memory)
+* (10): PR.U2 (User 2, OS / Virtual Memory)
+* ( 9): PR.S1 (Size 1) / PR.U1 (User 1, OS / Virtual Memory)
+* ( 8): PR.S0 (Size 0) / PR.U0 (User 0, OS / Virtual Memory)
+* ( 7): PR.NU (Not User Accessible)
+** Disallow access from User Mode.
+* ( 6): PR.NX (Execute Disable)
+** Page may not be executed.
+* ( 5): PR.NW (Write Disable)
+** Page may not be written to.
+* ( 4): PR.NR (Read Disable)
+** Page may not be read from.
+* ( 3): PR.NC, Page Is Volatile / Non-Cachable
+** Set to indicate accesses to this page are volatile (Data).
+** Contents in this page should not be retained in the L1 cache.
+** Indicates Secure-Execute if NW is also Set and NX is Clear.
+* ( 2): PR.D (Dirty, OS / Virtual Memory)
+** Set if page has been modified.
+* ( 1): PR.V1, Page Is Valid (Mode)
+* ( 0): PR.V0, Page Is Valid (Mode)
+
+Valid 1/0:
+
+* 00: Not Valid (This TLBE will be ignored).
+* 01: Valid Exclusive (Normal Page), Low Range (X2TLB)
+* 10: High-Range (X2TLB), Addr(95:48)
+* 11: Valid Shared (Normal Page), Low Range (X2TLB)
+
+Size depends on master page size:
+
+*  4K: 00=4K, 01=2MB, 10=64K, 11=LLPTLB
+* 16K: 00=16K, 01=32MB, 10=64K, 11=LLPTLB
+* 64K: 00=64K, 01=512MB, 10=-, 11=LLPTLB
+
+
+LLPTLB: Last-Level Page-Table
+
+* This entry instead gives a Page-Table Page representing the last page level.
+* If applicable, may be used to reduce TLB misses.
+
+
+=== RTE ===
+
+* 0000-000000-000000-0011-001100-00-0010  RTE
+
+Return from Exception.
+
+Restores captured state from the relevant registers and transfers control to SPC.
+
+Roughly analogous to RV64G MRET.
 
 
 === SETTRAP ===
@@ -2186,6 +2303,19 @@ These operations will only work for direct-mapped caches.
 
 
 The SNIPExx instructions will generate a NULL result if SNIPExx is not valid (such as due to using an associative cache). In this case, an INVDC or INVIC cache-flush process will be required instead.
+
+
+=== SYSCALL ===
+
+* 0000-000010-000000-0011-000010-00-0010  SYSCALL
+
+Perform a system call.
+
+Functionally equivalent to RV64G ECALL.
+
+This instruction is allowed in usermode, but is none the less a system instruction whose sole purpose is to trap.
+
+
 
 
 == GSV and GSVF ==

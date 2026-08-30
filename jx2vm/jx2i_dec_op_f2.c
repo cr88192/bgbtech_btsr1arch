@@ -198,6 +198,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 
 	if(isxg3)
 	{
+		imm9u=imm9us;
+		imm9n=imm9us;
+	
 		/* Tweak: Make XG3 interpret 2RI using same immed as 3RI */
 		imm10u=imm9u;
 		imm10n=imm9n;
@@ -395,6 +398,20 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 			op->nmid=BJX2_NMID_SHLDX;
 			op->fmid=BJX2_FMID_REGIMMREG;
 			op->Run=BJX2_Op_SHLDX_RegImmReg;
+
+//			if(imm9u>>16)
+			if(imm9u>> 8)
+			{
+				op->nmid=BJX2_NMID_PSHUFXL;
+				op->Run=BJX2_Op_PSHUFXL_RegImmReg;
+				op->imm=imm9us;
+
+//				if((imm9u>>8)==3)
+//				{
+//					op->nmid=BJX2_NMID_PMULTW;
+//					op->Run=BJX2_Op_PMULTW_RegImmReg;
+//				}
+			}
 		}
 #endif
 		break;
@@ -447,6 +464,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		break;
 
 	case 0xC:	/* F2nz_Cejj */
+		if(isxg3)
+			break;
+
 		op->rn=rn_dfl;
 		op->rm=rn_dfl;
 
@@ -606,6 +626,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		break;
 
 	case 0xD:	/* F2nz_Dejj */
+		if(isxg3)
+			break;
+
 		op->rn=rn_dfl;
 		op->rm=rn_dfl;
 
@@ -929,6 +952,9 @@ int BJX2_DecodeOpcode_DecF2(BJX2_Context *ctx,
 		break;
 
 	case 0xE:	/* F2nz_Eejj */
+		if(isxg3)
+			break;
+
 		op->rn=rn_dfl;
 		op->rm=rn_dfl;
 
