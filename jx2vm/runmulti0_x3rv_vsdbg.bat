@@ -1,0 +1,1 @@
+devenv /debugexe jx2vm.exe ../tst_jx2boot_x3rv.bin --rd_add_fl runmulti0_addlist_x3.txt %1 %2 %3 %4 %5 

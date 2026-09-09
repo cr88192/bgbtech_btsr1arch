@@ -1,0 +1,154 @@
+== Why XG3? ==
+
+XG3 is a hybrid of my own ISA design with RV64G.
+
+* The RV64G encoding space is kept as-is.
+* The encoding space used by RV-C is replaced with XG3.
+* RV-C will remain as a separate operating mode.
+
+
+Merits of RV-C (16-bit Compressed Instructions):
+
+* RV64GC can offer better code-density over plain RV64G.
+* However, it is more expensive to achieve good performance.
+* Dealing with a mixed 16 and 32 bit encodings is a pain for superscalar.
+** Absent a notable cost increase to the instruction fetch mechanism, an ISA like RV64GC may come at a performance penalty relative to plain RV64G.
+
+
+How does XG3 differ:
+
+* XG3 instructions remain nominally 32 bits.
+** Larger encodings exist via "Jumbo Prefixes".
+* Nominally, the register space is expanded from 32 to 64.
+** These are the same as the X and F spaces, just merged.
+* Adds support for instruction predication.
+** Encodings can be unconditional, or True / False.
+** The conditional True / False forms will depend on a 'T' status bit.
+
+Rather than prioritizing code density, the design goal of XG3 is to prioritize performance by minimizing average case instruction counts.
+
+
+Some traditional weak areas of RV64G:
+
+* Lack of Indexed Load/Store
+* Lack of Load/Store Pair
+* Lack of Large Immediate or Displacement forms.
+
+These areas can be addressed within the RV64G encoding space, and doing so may address much of the shortfall of RV64G.
+
+I had added these cases experimentally, and variations of these also exist as extensions within several existing implementations.
+
+However, RV64G or RV64GC with these sorts of features added had still failed to reach performance parity with XG3 in my testing.
+
+However, for code density, it is more of a toss-up, as the relative savings from RV-C (a larger number of typically smaller instructions) is roughly balanced with those of XG3 (better code density through the use of typically fewer instructions overall).
+
+
+A few features from XG3, however, would not be practical to retrofit onto RV64G:
+
+* Instruction-level predication
+* Combined Register Space
+
+The problem in this case mostly comes down to encoding space, where within the existing encoding space, there is no viable way to expand register fields to 6 bits or add a predication tag.
+
+
+Though, the rest comes down to a question:
+
+* Would the merits of higher performance (in XG3) be enough to offset those of staying with RV-C encodings instead (wider usage, and decent code density).
+
+
+However, that said, while using fewer instructions is generally a goal, it can be noted that not all instruction types are equal. It is not (generally) worthwhile to add instructions for where the logic complexity would become a significant penalty, except in cases where the feature has a significant performance advantage.
+
+For example, it may be worthwhile to support misaligned memory loads and stores natively in hardware, even if this increases the cost of the L1 Cache, because of the significant performance advantage that misaligned memory operations can offer in certain use cases.
+
+However, the same can not be said for things like auto-increment addressing, where there is not really a good way to support them in a way that would not come with a penalty from using them, and by the time the CPU pays the cost where this performance penalty can be offset, the relative advantage of having it becomes negligible (apart from the possibility of minor gain in terms of code density).
+
+
+
+=== High level comparison of encodings ===
+
+
+Typical RV64G encodings:
+
+* iiiiiii-iiiii-sssss-ZZZ-nnnnn-YY-YYY11  Load / Typical Immediate Form
+* iiiiiii-ttttt-sssss-ZZZ-iiiii-YY-YYY11  Store / Conditional-Branch
+* XXXXXXX-ttttt-sssss-ZZZ-nnnnn-YY-YYY11  Three Register
+* iiiiiii-iiiii-iiiii-iii-nnnnn-YY-YYY11  JAL / LUI / AUIPC
+* Xiiiiii-iiiii-jjjjj-100-kkkkk-01-11111  Extended RV Jumbo Prefix
+
+Typical XG3 Encodings:
+
+* XXXX-tttttt-ssssss-ZZZZ-nnnnnn-YY-YYPP  Three Register
+* jiii-iiiiii-ssssss-ZZZZ-nnnnnn-YY-YYPP  Immediate
+* iiii-iiiiii-iiiiii-ZZZZ-nnnnnn-YY-YYPP  Larger Immediate
+* iiii-iiiiii-iiiiii-ZZZZ-jjjjjj-kY-YYPP  Branch (Disp23)
+* iiii-iiiiii-iiiiii-jjjj-jjjjkk-k1-1Y10  Jumbo Prefix
+
+Where:
+
+* i / j / k = Immediate
+* s / t / n = Source 1 / 2 and Destination Registers
+* Y / Z / X = Opcode Bits
+* P = Predication
+
+The PP bits encoding:
+
+* 00 = Conditional True (XG3)
+* 01 = Conditional False (XG3)
+* 10 = Unconditional (XG3)
+* 11 = RV64G
+
+Conrast with RV64GC Mode:
+
+* 00 = 16 bit Instruction
+* 01 = 16 bit Instruction
+* 10 = 16 bit Instruction
+* 11 = 32 bit instruction
+
+
+Typical RV-C Instructions:
+
+* ZZZ-Z-nn-nnn-mm-mmm-YY  Two Register, Reg5
+* ZZZ-Z-ZZ-nnn-ZZ-mmm-YY  Two Register, Reg3 (X8..X15)
+* ZZZ-i-nn-nnn-ii-iii-YY  Imm, Reg5
+* ...
+
+As noted, the primary goal of RV-C being to reduce binary sizes by making a subset of common case instructions shorter to encode. This may be a sensible goal in use cases where code density is the primary concern, such as in microcontrollers.
+
+
+Naturally, the usable XG3 encoding space is smaller than tbe RV encoding space, as well as Imm and Disp instruction forms being 10 bits rather than 12. Generally, this has not been a significant issue thus far.
+
+Note that XG3 scales load/store displacement values by the element size, meaning that the effective reach is comparable (or slightly larger in the 64 bit case, +/- 4K rather than +/- 2K). Though, this does mean that the RV64G encodings do still have a larger displacement range in the case of LB/LBU/LH/LHU and SB/SH.
+
+Likewise, RV64G has a larger displacement for things like "ADDI Xd, Xs, Imm", though the window here remains statistically small.
+
+Though, XG3 may still benefit from the RV64G encodings in cases where using them is applicable.
+
+
+
+=== Jumbo Prefixes ===
+
+In both XG3 and in an extended RV variant, the Jumbo Prefixes may serve one of several roles:
+
+* Expand an immediate or displacement field to 33 bits;
+* Allow for immediate or displacement fields expanded to 64 bits;
+* Allow for additional opcode space;
+* Allow encoding virtual 6 bit register fields (RV Space)
+* The prefixes are split into IMM and OP variants:
+** IMM is primarily focused on extending the Immediate.
+** OP typically extends the instruction itself.
+*** This either does a lesser immediate extension, or none at all.
+
+The understanding of these prefixes will depend on the suffix instruction, which is to be fetched and decoded as-if it were a single larger instruction (64 or 96 bits).
+
+Note that these will primarily leverage the existing 32 bit superscalar decoding, where usually the prefix works by modifying the suffix rather than creating an entirely new encoding space.
+
+
+When bits remain (in an Imm33 encoding) beyond those needed for the immediate, generally these will be reserved and/or left as additional opcode bits. The choice of 33 bits is partially pragmatic:
+
+* There is typically a large cluster of immediate values spanning signed and unsigned 32 bit range.
+* Things are typically very sparse above 33 bits until generally getting up around 64 bits.
+
+Generally, one prefix encodes the 33 bit immediate cases, whereas two prefixes encode a 64-bit immediate.
+
+Throwing a Jumbo_Imm prefix onto a three-register instruction in many cases may synthesize an immediate form of an instruction which had otherwise lacked an immediate form. Though, some instructions may encode something else if an expanded immediate form does not make sense for that instruction.
+

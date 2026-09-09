@@ -30,7 +30,6 @@ Note that multibyte values within filesystem metadata will be assumed to be litt
 	u16 heads;                  //0x1A, 255 / ignored
 	u32 hidden_sectors;         //0x1C, 0
 	u32 lba_count32;			//0x20, 0 | sector-count
-
 	byte drive_number;			//0x24, hint
 	byte drive_flags;			//0x25, 0
 	byte ebp_sig;               //0x26, 0x80
@@ -60,11 +59,13 @@ The ln2_ino_fixed member will give the log2 size of the number of fixed inodes. 
 === Inodes ===
 
 Inodes:
+
 * Likely 256 or 512 Bytes
 ** Less than or equal to size of disk block.
 * Will have a multi-purpose data area:
 ** Small files / Symlinks, inlined directly into inode.
 * Will follow a basic TLO structure.
+
  Inode_TLO_TCC {
    TWOCC tag;       //0x00, Tag
    byte len;        //0x02, Length, Bitwise Inverse (x8)
@@ -122,9 +123,9 @@ CTime/MTime:
 * Expressed as microseconds since epoch (Jan 1, 1970).
 
 File Data:
+
 * "ID" / "IDAT": Inline Data
 ** Consists of raw data.
-
 * "I4" / "IDX4": File Block Index, with 32-bit block numbers, 128 bytes.
 ** May be used if volume has fewer than 2^32 blocks.
 * "I8" / "IDX8": File Block Index, with 64-bit block numbers, 256 bytes.
@@ -177,6 +178,7 @@ For Index8 and IndexC8, each entry will be 64 bits.
 
 
 Would have fixed inode numbers for:
+
 * 0, Inode Table
 ** Nominal Name: "$.MFT1"
 * 1, Root Directory
@@ -241,7 +243,7 @@ Directory Entry:
  byte name[8];		//10, name
  u32 lastent;		//18, last entry
  byte resv[36];		//1C
-};
+ };
 
 
 Entry Type:
@@ -254,6 +256,7 @@ Entry Type:
 * 0A: Deleted file with multipart name (fragments follow).
 
 High 3 bits may cache type from inode:
+
 * 0: Default / Unknown
 * 1: Reserved
 * 2: Directory
@@ -264,6 +267,7 @@ High 3 bits may cache type from inode:
 * 7: Reserved
 
 Hsn:
+
 * ( 4: 0): High 5 bits of LSN
 * ( 9: 5): High 5 bits of RSN
 * (14:10): High 5 bits of PSN
@@ -283,6 +287,7 @@ Files may be deleted but with their directory entries still left in the director
 
 
 Multipart Names:
+
 * First 40 bytes of the name will be encoded in the first entry;
 * Each remaining entry will contain 60 bytes;
 * The last 8 bytes of the name for the first entry will contain a hash.
@@ -291,6 +296,7 @@ Multipart Names:
 In a directory lookup where the name is 48 bytes or less, the AVL tree will be walked according to the full name. For longer names, it will be converted to the 40B+Hash form, and this will be used for the lookup.
 
 Long Name Hash:
+
 * Start with two 64 bit accumulators, H0 and H1
 ** H0 is initialized to 1, H1 to 0.
 * Add each 32-bit zero-extended word in the name to H0;
@@ -302,6 +308,7 @@ Long Name Hash:
 
 
 Canonical UTF-8:
+
 * M-UTF-8, NFC
 ** Codepoints outside the BMP will be encoded in UTF-8 via surrogate pairs.
 ** Combining characters are to be stored in composed form for the latin alphabet.
@@ -359,3 +366,32 @@ Compressed Blocks will have a 12-byte header:
  byte resv1;    //0A: reserved / MBZ
  byte resv2;    //0B: reserved / MBZ
 
+
+=== RP2 LZ Encoding ===
+
+BtRP2 (Transposed, LE):
+
+*                        dddddddd-dlllrrr0	(l=3..10, d=0..511, r=0..7)
+*               dddddddd-dddddlll-lllrrr01	(l=4..67, d=0..8191)
+*      dddddddd-dddddddd-dlllllll-llrrr011	(l=4..515, d=0..131071)
+*                                 rrrr0111	(Raw Bytes, r=(r+1)*8, 8..128)
+*                               * rrr01111	(Long Match)
+*                                 rr011111	(r=1..3 bytes, 0=EOB)
+*                        rrrrrrrr-r0111111 	(Long Raw, r=(r+1)*8, 8..4096)
+*                        lllllll0-01111111  (RP2B, l=4..131, d=1, r=0)
+* 2x D-ddddddll-llllllll-llllrrr1-01111111  (RP2B, l=4..16K, d=0..4M, r=0..7)
+** d: Distance
+** l: Match Length
+** r: Literal Length
+
+Values are encoded in little-endian order, with tag bits located in the LSB. Bits will be contiguous within the value, with shift-and-mask being used to extract individual elements.
+
+Long Match will encode length and distance using variable-length encodings directly following the initial tag byte. Long match will be N/A for RP2B.
+
+Length VLN:
+*          lllllll0,   4..  131
+* llllllll-llllll01, 132..16383
+
+Distance VLN:
+*          dddddddd-ddddddd0, 32K (0..32767)
+* dddddddd-dddddddd-dddddd01,  4M

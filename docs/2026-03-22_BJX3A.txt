@@ -1,33 +1,37 @@
 BJX3: Possible Soft-Reboot of BJX2 Project.
 
 Design Goals:
-* Switch to RV64GC + XG3 as primary ISAs.
+* Switch to RV64GC and XG3 as primary ISAs.
 * Reduce Cruft.
 * Simplify System Level mechanisms.
 * Focus on reducing HW/FPGA costs.
 
-Will make some restrictions on RV64GC:
+May make some restrictions on RV64GC:
 * Actual CPU will not natively implement all of the ISA.
 * I: Mostly Implemented As-Is
 ** JAL/JALR: Only X0 and X1 will be allowed as destination register.
 * M: May be subset
 ** Will have MULW and similar;
-** MUL, DIV, DIVW, etc, will be demoted to optional.
+** MUL, DIV, DIVW, etc, may be demoted to optional.
 * A: Likely omitted from HW, Trap
 * F: Partial
 * D: Partial
 * Zicsr: Partial (Trap for non-core CSRs)
 
 For F/D will make some simplifications to the Native ISA:
+
 * Only FADD/FSUB/FMUL
 * FDIV, FSQRT, etc: Trap
 * FMADD, etc: Trap
+** Update: FMA may be supported as Optional
+*** Implicitly, this allows for IEEE compliant FMUL.
+*** Though, compliant FMUL will be slower.
 * Actual HW will use DAZ+FTZ with partial width multiply.
 * If HW can't deliver an IEEE result, and IEEE is requested:
 ** Fault and let OS/Firmware deal with it
 
 MMU:
-* Eliminate native Global page checks and VUGID in favor of using ACL checks as the primary mechanism;
+* Eliminate VUGID in favor of using ACL checks as the primary mechanism;
 * Will continue to assume Soft-TLB as the main mechanism;
 * TLB Miss handling will need to be possible from RISC-V land.
 
@@ -39,4 +43,8 @@ Would need to determine whether CPU boots in RV64GC mode or XG3 mode.
 
 May make sense to boot in XG3 Mode, then maybe try to load either a basic kernel or UEFI layer.
 * Or add UEFI support to TestKern, allowing it to function like UEFI.
+
+
+Changelog:
+* LDTLB and LDACL will use R7:R6 and R6 as input registers, replacing DHR and DLR.
 

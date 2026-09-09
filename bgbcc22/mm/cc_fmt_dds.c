@@ -154,10 +154,21 @@ u64 BGBCC_Img_EncodeImageDDS_BlockDXT1(byte *ibuf, int xstr, int flag)
 	pxa=((ncr>>3)<<11)|((ncg>>2)<<5)|((ncb>>3)<<0);
 	pxb=((mcr>>3)<<11)|((mcg>>2)<<5)|((mcb>>3)<<0);
 
+	pxa&=0xFFFF;
+	pxb&=0xFFFF;
+
 	flip=(pxa<pxb);
 
 	if(isal)
 		flip=!flip;
+
+#if 0
+	if(!isal && (pxa==pxb))
+	{
+		pxa|= 0x0821;
+		pxb&=~0x0821;
+	}
+#endif
 	
 
 	acy=(mcy+ncy)/2;
@@ -194,6 +205,11 @@ u64 BGBCC_Img_EncodeImageDDS_BlockDXT1(byte *ibuf, int xstr, int flag)
 	
 		z=pxa; pxa=pxb; pxb=z;
 		pix^=0x55555555;
+	}
+	
+	if((pxa==pxb) && !isal)
+	{
+		pix=0;
 	}
 	
 	tblk=(pxa<<0)|(((u64)pxb)<<16)|(((u64)pix)<<32);

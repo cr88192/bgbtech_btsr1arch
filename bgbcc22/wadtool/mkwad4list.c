@@ -629,7 +629,8 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	TgvLz_DestroyContext(ctx1);
 	TgvLz_DestroyContext(ctx2);
 
-	osz3=BTM_StfRk_EncodeBufferPostRp2(obuf3, obuf1, osz1);
+//	osz3=BTM_StfRk_EncodeBufferPostRp2(obuf3, obuf1, osz1);
+	osz3=0;
 
 //	csum=TgvLz_CalculateImagePel4BChecksum(ibuf, isz);
 	csum=TgvLz_CalculateImagePel4BChecksumAc(ibuf, isz);
@@ -659,12 +660,12 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 	
 	if((osz3>16) && ((osz3*1.07)<osz1))
 	{
-		printf("AddWadLump: Use STF-RK %d->%d\n", osz1, osz3);
+//		printf("AddWadLump: Use STF-RK %d->%d\n", osz1, osz3);
 		memcpy(obuf1, obuf3, osz3);
 		osz1=osz3;
 	}else
 	{
-		printf("AddWadLump: Fail STF-RK %d->%d\n", osz1, osz3);
+//		printf("AddWadLump: Fail STF-RK %d->%d\n", osz1, osz3);
 	}
 	
 	if((osz1<=osz2) && (osz1>0))
@@ -1168,7 +1169,7 @@ int print_usage(char *argv0)
 // int main(int argc, char *argv[])
 int main(int argc, char *argv[], char **env)
 {
-	char tbuf[512];
+	char tbuf[512], t2buf[512];
 	char tn[257];
 	FILE *ifd;
 	char *ibuf, *ibuf1;
@@ -1179,11 +1180,13 @@ int main(int argc, char *argv[], char **env)
 	u32 tag, tag1;
 	int isz, isz1, tyofs, dirofs;
 	int	rov1, rov2, drov;
-	int hashofs, hashsz;
+	int hashofs, hashsz, dodump;
 	int i, j, k, h;
 	
 //	ifn=argv[1];
 //	ofn=argv[2];
+
+	dodump=0;
 
 	ifn=NULL;
 	ofn=NULL;
@@ -1196,6 +1199,12 @@ int main(int argc, char *argv[], char **env)
 			{
 				dir=argv[i+1];
 				i++;
+				continue;
+			}
+
+			if(argv[i][1]=='Z')
+			{
+				dodump=1;
 				continue;
 			}
 			continue;
@@ -1355,6 +1364,12 @@ int main(int argc, char *argv[], char **env)
 				ibuf=ibuf1;
 				isz=isz1;
 				tag=tag1;
+		
+				if(dodump)
+				{
+					sprintf(t2buf, "dump/fcdout/%s", s1);
+					BGBCC_StoreFile(t2buf, ibuf, isz);
+				}
 			}
 		}
 

@@ -3222,7 +3222,7 @@ int BGBCC_JX2X3_TryEmitOpRegImmReg(
 		if(!(ctx->has_simdx2&2))
 			break;
 
-		break;
+//		break;
 
 //		if(isimm8s || isimm8u)
 		if(isimm8u)

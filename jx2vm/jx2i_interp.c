@@ -2987,6 +2987,18 @@ int BJX2_DbgPrintTraceOps(BJX2_Context *ctx, BJX2_Trace *tr)
 	char *bn2, *sln;
 	int i, fl;
 
+	if(tr->n_ops>0)
+	{
+		op=tr->ops[0];
+//		if(!op->pc && !op->pc2)
+		if(!op->pc)
+		{
+			BJX2_DbgPrintf(ctx,
+				"                NULL Ops\n");
+			return(-1);
+		}
+	}
+
 	fl=0;
 	for(i=0; i<tr->n_ops; i++)
 	{

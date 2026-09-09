@@ -402,7 +402,7 @@ int BGBCC_ImgUtil_ResampleImageLin(
 	byte *obuf, int oxs, int oys)
 {
 	byte *cts, *ctt;
-	int st_x, st_y, fr_x, fr_y, f_x, f_y, f_sc_x, f_sc_y;
+	s64 st_x, st_y, fr_x, fr_y, f_x, f_y, f_sc_x, f_sc_y;
 	int c0, c1, c2, c3, c4, c5, c6, hflip, vflip;
 	int x, y, x1, y1;
 	int i, j, k;
@@ -418,20 +418,20 @@ int BGBCC_ImgUtil_ResampleImageLin(
 	if(oxs<0)	{ hflip=1; oxs=-oxs; }
 	if(oys<0)	{ vflip=1; oys=-oys; }
 	
-	st_x=(65536*ixs)/oxs;
-	st_y=(65536*iys)/oys;
+	st_x=(65536LL*ixs)/oxs;
+	st_y=(65536LL*iys)/oys;
 	
 	f_sc_x=256;
 	f_sc_y=256;
 	
 	if(oxs<ixs)
 	{
-		f_sc_x=(((256*oxs)/ixs)-128)*2;
+		f_sc_x=(((256LL*oxs)/ixs)-128)*2;
 		if(f_sc_x<0)f_sc_x=0;
 	}
 	if(oys<iys)
 	{
-		f_sc_y=(((256*oys)/iys)-128)*2;
+		f_sc_y=(((256LL*oys)/iys)-128)*2;
 		if(f_sc_y<0)f_sc_y=0;
 	}
 	
@@ -466,6 +466,10 @@ int BGBCC_ImgUtil_ResampleImageLin(
 				c4=(c0*(65535-f_x)+c1*f_x)>>16;
 				c5=(c2*(65535-f_x)+c3*f_x)>>16;
 				c6=(c4*(65535-f_y)+c5*f_y)>>16;
+				if(c6<0)
+					c6=0;
+				if(c6>255)
+					c6=255;
 				ctt[j]=c6;
 			}
 			

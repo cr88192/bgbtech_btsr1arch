@@ -2142,6 +2142,9 @@ int BJX2_DecodeTraceForAddr(BJX2_Context *ctx,
 //			__debugbreak();
 			break;
 		}
+		
+		if(!op->Run)
+			break;
 
 		if(	(op->nmid==BJX2_NMID_NONE) &&
 			(op->fl&BJX2_OPFL_JUMBO96))

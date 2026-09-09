@@ -505,11 +505,11 @@ int BGBCC_LoadConvResource_ImageCheckResize(
 	if(ys1==(-1))
 		ys1=-ys;
 	xs2=xs1; ys2=ys1;
-	if(xs1<0)	xs2=-xs1;
-	if(ys1<0)	ys2=-ys1;
+	if(xs1<0)	xs2=-xs2;
+	if(ys1<0)	ys2=-ys2;
 	tbuf=bgbcc_tmalloc2("misc_fmt_cnv", xs2*ys2*4);
 	BGBCC_ImgUtil_ResampleImage(ibuf, xs, ys, tbuf, xs1, ys1);
-	free(tbuf);
+	free(ibuf);
 	*ribuf=tbuf;
 	*rxs=xs2;
 	*rys=ys2;
@@ -886,6 +886,9 @@ byte *BGBCC_LoadConvResource(byte *buf, int sz, fourcc lang,
 		ibuf=BGBCC_Img_DecodeImage(buf, &xs, &ys);
 		if(!ibuf)
 			return(NULL);
+
+		BGBCC_LoadConvResource_ImageCheckResize(
+			&ibuf, &xs, &ys, rsz_xs, rsz_ys);
 
 		obuf=bgbcc_tmalloc2("misc_fmt_cnv", xs*ys*3);
 		if(!bgbcc_stricmp(cnv, "dds_dxt1"))
