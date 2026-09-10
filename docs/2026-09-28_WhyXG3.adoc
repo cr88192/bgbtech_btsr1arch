@@ -5,7 +5,8 @@ XG3 is a hybrid of my own ISA design with RV64G.
 * The RV64G encoding space is kept as-is.
 * The encoding space used by RV-C is replaced with XG3.
 * RV-C will remain as a separate operating mode.
-
+** RV64GC may remain as-is, as a likely default option for binaries.
+** XG3 can then be used for performance optimized binaries or DLLs / SOs.
 
 Merits of RV-C (16-bit Compressed Instructions):
 
@@ -32,7 +33,7 @@ Some traditional weak areas of RV64G:
 
 * Lack of Indexed Load/Store
 * Lack of Load/Store Pair
-* Lack of Large Immediate or Displacement forms.
+* Lack of Large Immediate and Displacement forms.
 
 These areas can be addressed within the RV64G encoding space, and doing so may address much of the shortfall of RV64G.
 
@@ -40,7 +41,16 @@ I had added these cases experimentally, and variations of these also exist as ex
 
 However, RV64G or RV64GC with these sorts of features added had still failed to reach performance parity with XG3 in my testing.
 
+* A unified 64 GPR space can help notably in high register pressure scenarios.
+* Predication can help with frequent short "if()" blocks.
+
+For example, had noted in past testing that programs like Doom can see around a 50% speed up with XG3 vs plain RV64GC (though this delta drops somewhat if extensions are added to RV64G to adress the common pain points).
+
+
+
 However, for code density, it is more of a toss-up, as the relative savings from RV-C (a larger number of typically smaller instructions) is roughly balanced with those of XG3 (better code density through the use of typically fewer instructions overall).
+
+It may make sense to keep most applications and similar as RV64GC, mostly because of wider platform and toolchain support.
 
 
 A few features from XG3, however, would not be practical to retrofit onto RV64G:
@@ -58,30 +68,24 @@ Though, the rest comes down to a question:
 
 However, that said, while using fewer instructions is generally a goal, it can be noted that not all instruction types are equal. It is not (generally) worthwhile to add instructions for where the logic complexity would become a significant penalty, except in cases where the feature has a significant performance advantage.
 
-For example, it may be worthwhile to support misaligned memory loads and stores natively in hardware, even if this increases the cost of the L1 Cache, because of the significant performance advantage that misaligned memory operations can offer in certain use cases.
-
-However, the same can not be said for things like auto-increment addressing, where there is not really a good way to support them in a way that would not come with a penalty from using them, and by the time the CPU pays the cost where this performance penalty can be offset, the relative advantage of having it becomes negligible (apart from the possibility of minor gain in terms of code density).
-
-
 
 === High level comparison of encodings ===
 
+Typical RV64G encodings (32 bits):
 
-Typical RV64G encodings:
+ iiiiiii-iiiii-sssss-ZZZ-nnnnn-YY-YYY-11  Load / Typical Immediate Form
+ iiiiiii-ttttt-sssss-ZZZ-iiiii-YY-YYY-11  Store / Conditional-Branch
+ XXXXXXX-ttttt-sssss-ZZZ-nnnnn-YY-YYY-11  Three Register
+ iiiiiii-iiiii-iiiii-iii-nnnnn-YY-YYY-11  JAL / LUI / AUIPC
+ Xiiiiii-iiiii-jjjjj-100-kkkkk-01-111-11  Extended RV Jumbo Prefix
 
-* iiiiiii-iiiii-sssss-ZZZ-nnnnn-YY-YYY11  Load / Typical Immediate Form
-* iiiiiii-ttttt-sssss-ZZZ-iiiii-YY-YYY11  Store / Conditional-Branch
-* XXXXXXX-ttttt-sssss-ZZZ-nnnnn-YY-YYY11  Three Register
-* iiiiiii-iiiii-iiiii-iii-nnnnn-YY-YYY11  JAL / LUI / AUIPC
-* Xiiiiii-iiiii-jjjjj-100-kkkkk-01-11111  Extended RV Jumbo Prefix
+Typical XG3 Encodings (32 bits):
 
-Typical XG3 Encodings:
-
-* XXXX-tttttt-ssssss-ZZZZ-nnnnnn-YY-YYPP  Three Register
-* jiii-iiiiii-ssssss-ZZZZ-nnnnnn-YY-YYPP  Immediate
-* iiii-iiiiii-iiiiii-ZZZZ-nnnnnn-YY-YYPP  Larger Immediate
-* iiii-iiiiii-iiiiii-ZZZZ-jjjjjj-kY-YYPP  Branch (Disp23)
-* iiii-iiiiii-iiiiii-jjjj-jjjjkk-k1-1Y10  Jumbo Prefix
+ XXXX-tttttt-ssssss-ZZZZ-nnnnnn-X-YYY-PP  Three Register
+ jiii-iiiiii-ssssss-ZZZZ-nnnnnn-X-YYY-PP  Immediate (Imm10)
+ iiii-iiiiii-iiiiii-ZZZZ-nnnnnn-X-YYY-PP  Larger Immediate (Imm16)
+ iiii-iiiiii-iiiiii-ZZZZ-jjjjjj-k-YYY-PP  Branch (Disp23)
+ iiii-iiiiii-iiiiii-jjjj-jjjjkk-k-11Y-10  Jumbo Prefix
 
 Where:
 
@@ -92,37 +96,69 @@ Where:
 
 The PP bits encoding:
 
-* 00 = Conditional True (XG3)
-* 01 = Conditional False (XG3)
-* 10 = Unconditional (XG3)
-* 11 = RV64G
+ 00 = Conditional True (XG3)
+ 01 = Conditional False (XG3)
+ 10 = Unconditional (XG3)
+ 11 = RV64G
 
 Conrast with RV64GC Mode:
 
-* 00 = 16 bit Instruction
-* 01 = 16 bit Instruction
-* 10 = 16 bit Instruction
-* 11 = 32 bit instruction
+ 00 = 16 bit Instruction
+ 01 = 16 bit Instruction
+ 10 = 16 bit Instruction
+ 11 = 32 bit instruction
 
 
-Typical RV-C Instructions:
+Typical RV-C Instructions (16 bits):
 
-* ZZZ-Z-nn-nnn-mm-mmm-YY  Two Register, Reg5
-* ZZZ-Z-ZZ-nnn-ZZ-mmm-YY  Two Register, Reg3 (X8..X15)
-* ZZZ-i-nn-nnn-ii-iii-YY  Imm, Reg5
-* ...
+ ZZZ-Z-nn-nnn-mm-mmm-YY  Two Register, Reg5
+ ZZZ-Z-ZZ-nnn-ZZ-mmm-YY  Two Register, Reg3 (X8..X15)
+ ZZZ-i-nn-nnn-ii-iii-YY  Imm, Reg5
+ ...
 
 As noted, the primary goal of RV-C being to reduce binary sizes by making a subset of common case instructions shorter to encode. This may be a sensible goal in use cases where code density is the primary concern, such as in microcontrollers.
 
 
-Naturally, the usable XG3 encoding space is smaller than tbe RV encoding space, as well as Imm and Disp instruction forms being 10 bits rather than 12. Generally, this has not been a significant issue thus far.
+Naturally, the usable XG3 encoding space is smaller than tbe RV encoding space.
 
-Note that XG3 scales load/store displacement values by the element size, meaning that the effective reach is comparable (or slightly larger in the 64 bit case, +/- 4K rather than +/- 2K). Though, this does mean that the RV64G encodings do still have a larger displacement range in the case of LB/LBU/LH/LHU and SB/SH.
+This has not been a major issue thus far, though does mean needing to be conservative with what sorts of instructions are added to XG3.
+
+As can be noted, the XG3 space is organized into 8 major blocks based on the YYY bits:
+
+ 000: Mainly Three Register
+ 001: Load/Store Disp10s and Conditional Branch
+ 010: Imm10s forms
+ 011: User Block, assumed Three Register
+ 100: Register-Immediate (Imm16)
+ 101: More Three-Register Space
+ 110: Jumbo_Imm
+ 111: Jumbo_Op
+
+Note that in XG3, unlike in RV64G, Loads, Stores, and Conditional Branch all use the same encodings for displacements, which is also the same as that of the Imm10 instructions. This displacement is scaled as needed based on the element size. Likewise, PC relative displacements will normally assume a scale of 4.
+
+As such, Conditional Branch will have a reach of 2K in either direction, and unconditional branches have a reach of 16MB in either direction. Like in RISC-V, PC relative addressing in XG3 will be relative to the base address of the current instruction.
+
+
+=== Immediate and Displacement Sizes ===
+
+Can note that Imm and Disp instruction forms in XG3 being 10 bits rather than 12. Generally, this has not been a significant issue thus far (typically it covers around 2% of the constants, however the relative cost of falling back to the use of a jumbo prefix is less than that of using a multi-instruction sequence).
+
+Note that XG3 scales load/store displacement values by the element size, meaning that the effective reach is comparable (or slightly larger in the LD/SD case, +/- 4K rather than +/- 2K). Though, this does mean that the RV64G encodings do still have a larger displacement range in the case of LB/LBU/LH/LHU and SB/SH.
 
 Likewise, RV64G has a larger displacement for things like "ADDI Xd, Xs, Imm", though the window here remains statistically small.
 
-Though, XG3 may still benefit from the RV64G encodings in cases where using them is applicable.
+Though, XG3 may still benefit from the RV64G encodings in cases where using them is applicable (Such as both registers being in X registers).
 
+
+Though, that said, it is still the case that a significant fraction of constants will fit into the immediate field:
+
+* Typically, around 95% fall into a normal distribution near 0;
+* There are significant spikes near around 8..10 bits, 16/17 bits, 32/33 bits, and around 64 bits.
+* The 16/17 and 32/33 bit cases representing a majority of those that miss with a 10 or 12 bit immediate;
+* The space for constants above 33 bits is typically rather sparse.
+** Largely dominated by floating-point constants and bit patterns and similar.
+
+However, the ramaining 5% or so ideally should not be discounted, as falling back to multi-instruction sequences (or memory loads) can still have a notable performance impact in some cases.
 
 
 === Jumbo Prefixes ===
@@ -151,4 +187,145 @@ When bits remain (in an Imm33 encoding) beyond those needed for the immediate, g
 Generally, one prefix encodes the 33 bit immediate cases, whereas two prefixes encode a 64-bit immediate.
 
 Throwing a Jumbo_Imm prefix onto a three-register instruction in many cases may synthesize an immediate form of an instruction which had otherwise lacked an immediate form. Though, some instructions may encode something else if an expanded immediate form does not make sense for that instruction.
+
+
+It can be noted that in normal RV64G, if a constant fails to fit into an immediate, it is necessary to use a multi-instruction sequence as a fallback. Depending on the instruction in question, typical fall-back cases need between 3 and 5 instructions for a 32 bit constant.
+
+The case of 64 bit constants is worse, where composing a 64-bit constant inline will need around 6 instructions. The other fallback is to use a memory load, but then a base register is needed because RV64G also lacks a direct PC relative addressing mode.
+
+
+=== Load and Store ===
+
+In this case, indexed load and store, while typically a significant minority in terms of static instruction counts if compared with load and store with a fixed displacement, are frequently much more common in loops bodies.
+
+Pretty much any code that loops over an array and accesses elements by index will encounter a use case for these instructions.
+
+It can also be noted that in many programs, a significant number of the loads and stores are due to several other common scenarios:
+
+* Saving and restoring registers in function prologs and epiloges.
+** Instruction counts from this can be reduced by having Load/Store Pair
+* Spilling and reloading registers from the stack
+** Instruction counts from this can be reduced by having more GPRs
+
+
+Likewise, it may be worthwhile to support misaligned memory loads and stores natively in hardware, even if this increases the cost of the L1 Cache, because of the significant performance advantage that misaligned memory operations can offer in certain use cases.
+
+However, the same can not be said for things like auto-increment addressing, where there is not really a good way to support them in a way that would not come with a penalty from using them, and by the time the CPU pays the cost where this performance penalty can be offset, the relative advantage of having it becomes negligible (apart from the possibility of minor gain in terms of code density).
+
+
+=== Predication ===
+
+This will introduce the implicit state of a T bit, where:
+
+* Comparisons targeting X0 in XG3 mode will modify the T bit;
+* Predicated instructions will only conditionally execute based on this bit;
+* The T bit will be assumed N/A and undefined in RV64GC Mode;
+* The T bit will need to be preserved across implicit CPU interrupts.
+
+One major use-case for predication will be to avoid branches for short conditionals, where it may be cheaper to have non-executed instructions turn into NOPs than to branch over them. Note that the scope of this will be kept limited in part because by the time complexity gets high enough to where a single T bit is no longer sufficient, this is also the point where branching will typically become the better option.
+
+Another technical option being to special case short forwards branches to mask off the following instructions rather than perform the branch. However, this is less flexible and also still requires a mechanism to get to the correct address if an interrupt occurs.
+
+Note that predication does allow mixing instructions from if and else branches for better pipeline utilization and does not require the existence of an additional unconditional branch to deal with the existence of an else block.
+
+
+=== Register Pressure ===
+
+A typical register map here:
+
+ R0 / X0: ZR / ZERO  (Zero Register)
+ R1 / X1: LR / RA    (Link Register / Return Address)
+ R2 / X2: SP         (Stack Pointer)
+ R3 / X3: GBR / GP   (Global Pointer)
+ R4 / X4: TP         (Task Pointer)
+ R5 / X5: T0         (Scratch / Stomp)
+ R6 / X6: T1         (Scratch / Stomp)
+ R7 / X7: T2         (Scratch / Stomp)
+ R8 / X8: S0         (Callee Saved)
+ R9 / X9: S1         (Callee Saved)
+ R10 / X10: A0       (Scratch / Argument 1 / Return Value Low)
+ R11 / X11: A1       (Scratch / Argument 2 / Return Value High)
+ .. (Scratch/Argument)
+ R17 / X17: A7       (Scratch / Argument 8)
+ R18 / X18: S2       (Callee Saved)
+ .. (Callee Saved)
+ R27 / X27: S11      (Callee Saved)
+ R28 / X28: T3       (Scratch)
+ R29 / X29: T4       (Scratch)
+ R30 / X30: T5       (Scratch)
+ R31 / X31: T6       (Scratch)
+ 
+ R32 / F0: FT0       (FPU, Scratch / Stomp)
+ R33 / F1: FT1       (FPU, Scratch / Stomp)
+ R34 / F2: FT2       (FPU, Scratch / Stomp)
+ R35 / F3: FT3       (FPU, Scratch / Stomp)
+ R36 / F4: FT4       (FPU, Scratch / Callee Save, LP64D vs BGBCC ABIs)
+ R37 / F5: FT5       (FPU, Scratch / Callee Save)
+ R38 / F6: FT6       (FPU, Scratch / Callee Save)
+ R39 / F7: FT7       (FPU, Scratch / Callee Save)
+
+ R40 / F8: FS0       (FPU, Callee Save)
+ R41 / F9: FS1       (FPU, Callee Save)
+ R42 / F10: FA0      (FPU, Scratch / Argument 9)
+ .. (FPU Scratch/Argument)
+ R49 / F17: FA7      (FPU, Scratch / Argument 16)
+ R50 / F18: FS2      (FPU, Callee Save)
+ .. (Callee Save)
+ R59 / F27: FS11     (FPU, Callee Save)
+ R60 / F28: FT8      (FPU, Scratch)
+ R61 / F29: FT9      (FPU, Scratch)
+ R62 / F30: FT10     (FPU, Scratch)
+ R63 / F31: FT11     (FPU, Scratch)
+
+In RV64G, there are normally 12 callee save registers for integer and pointer operations. In this case, while the FPU registers exist, they are not directly usable.
+
+In many workloads, it may become an issue that 12 callee save registers are not always sufficient to avoid register spills. Combining the register space, and expanding the usable set of callee save registers to 28, may significantly reduce the number of register spills when dealing with code that has a high register pressure.
+
+Likewise, the split between integer and floating point register pressure is rarely an even split, and are frequently in mutual opposition, as a result having the dividing line between them more flexible can allow for lower rates of register spills in both use cases.
+
+Though, when still dealing with RV encodings, it can still make sense to preferentially allocate registers on their native side of the divide (integer values in X registers, floating point in F registers), and cross the border only in cases where high register pressure demands it.
+
+
+In the ABI in BGBCC, all arguments are passed in a single argument list (rather than splitting them up as in the LP64D ABI). While it could be argued that it would be better for floating point code on RV64G to use F registers for passing floating-point arguments, this minor advantage for math functions is typically offset by a larger penalty for things like vararg functions and COM glue stubs. In this case, average-case performance may still be better when passing FPU arguments in X registers and assuming a limit of 8 register arguments.
+
+In the XG3 Native ABI, the number of argument registers may be expanded to 16, in addition to the re-introduction of a spill space (64 or 128 bytes, depending on callee argument counts and similar).
+
+When spill space is present, space is provided on the bottom of the stack during function calls for the callee to use to spill arguments if needed. The size of this space will be 64 bytes if the count of argument registers is 8 or less, or 128 if 9 or more argument registers is used. If more than 16 function arguments are passed, the first memory argument will be passed at SP+128 (rather than SP+0 as in the traditional RV ABI).
+
+
+The XG3 Native ABI is not used by default, however:
+While it offers an advantage for XG3, passing the remaining integer arguments in FPRs is actually worse on RV64G than when passing these arguments in memory (by spilling them to the stack).
+
+As such, in a mixed RV64G / XG3 environment, it makes more sense to stick to the RV style ABI rules, and then switch to the XG3 Native ABI only in cases where either no RV64G or RV64GC code is present, or when both the caller and callee can be statically determined to be using XG3 (such as internal calls within the same PE image). In this case, DLL imports / exports and function pointers will still be assumed to follow the RV style ABI rules in an XG3 target.
+
+Within BGBCC, the move of F4..F7 to callee save is always applied regardless of which ABI is used, as this was a net positive in both RV64GC and XG3 modes. 
+
+However, F0..F3 were still kept as scratch partly as BGBCC was using them as FPU Stomp for RV64G, and the need for stomp registers was mostly unavoidable on RV64G and RV64GC. Where the stomp registers are formally scratch registers, but may never be used for register allocation (even in leaf functions) as they are left for code generation to use them hoever needed to synthesize an instruction in cases where trying to express a pseudo instruction that does not exist within the true ISA. They may be used as scratch registers in cases where they are known not to conflict with the use of pseudo instructions.
+
+If targeting for interoperability with ELF binaries though, it may be necessary to impose use of RV LP64 or LP64D ABI rules though. Typically, BGBCC does not assume direct interaction between code in PE and ELF environments.
+
+
+=== Modality ===
+
+Implicitly, the XG3 ISA does assume the use of pointer tagging to encode modes.
+
+ LSB is 0:
+ Pointer is untagged, with (47:1) generally understood as a bare address.
+ A branch via an untagged pointer will always be within the same mode.
+ High order bits will be assumed ignored or MBZ.
+ 
+ LSB is 1:
+ Pointer encodes a branch between modes or states.
+ The high order bits will encode the target operating mode and state.
+ 
+ Within XG3 mode, the Link Register will typically always be tagged.
+   The use of valid LR tagging will be assumed mandatory.
+ Within RV64GC Mode, Link Register tagging may be Optional.
+   An implementation may allow untagged LR for wider compatibility.
+
+The exact tagging scheme may be left to the implementation, but generally it may be assumed that (63:56) or (63:48) are used to capture the mode state.
+
+The merit of this approach is that it allows calls like JALR to perform implicit mode transitions.
+
+In this case, instructions like AUIPC will always produce an untagged address.
 
