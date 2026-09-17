@@ -850,6 +850,9 @@ Will use direct linking and assume a non-modifiable program space.
 #define BJX2_NMID_CMPXNE		0x1FE		//
 #define BJX2_NMID_CMPXLE		0x1FF		//
 
+#define BJX2_NMID_AMOADDQ		0x200		//
+#define BJX2_NMID_AMOSWAPQ		0x201		//
+
 // #define BJX2_NMID_CMPQLT		0x1C0		//
 
 #define BJX2_NMID_FMAC			BJX2_NMID_FMADDD		//
@@ -1113,6 +1116,8 @@ u64 ex_regs[128];				//GPRs and CRs
 
 u64 rbs_regs[256];				//RBS Banked Registers
 
+u64 dbg_lastregs[128];				//GPRs and CRs
+
 BJX2_Trace *rttr[64];		//return traces (mini hash)
 BJX2_Trace *prttr;			//return traces (pred)
 
@@ -1159,6 +1164,7 @@ byte core_id;
 byte rbsid;
 
 byte mem_vmaccess;
+byte dbg_dumpfwtraces;
 
 int status;
 bjx2_addr trapc;
@@ -1203,6 +1209,8 @@ s64 tot_nbops;
 s16 tgt_mhz;				//target MHz
 u16 rcp_mhz;				//reciprocal MHz
 int iodel_cyc;				//IO delay cycles
+
+s64 tot_cyc_traceref;
 
 byte	use_walltime;
 

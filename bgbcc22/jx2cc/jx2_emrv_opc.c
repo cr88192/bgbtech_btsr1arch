@@ -6026,6 +6026,14 @@ int BGBCC_JX2RV_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, int imm)
 		}
 	}
 
+	if(nmid==BGBCC_SH_NMID_NOP)
+	{
+		if(ctx->emit_riscv&0x22)
+		{
+			opw1=0x00004012|((imm&0xFFFF)<<16);
+		}
+	}
+
 #if 0
 	if(nmid==BGBCC_SH_NMID_RVJ21I)
 	{

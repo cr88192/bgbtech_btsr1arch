@@ -4873,6 +4873,15 @@ int BGBCC_JX2C_EmitCallBuiltinArgs(
 		return(1);
 	}
 
+	if(!bgbcc_jx2c_strcmp(name, "__debugnop") && (narg==1))
+	{
+		if(!BGBCC_CCXL_IsRegImmIntP(ctx, args[0]))
+			return(0);
+		sz=BGBCC_CCXL_GetRegImmIntValue(ctx, args[0]);
+		BGBCC_JX2C_EmitOpImm(ctx, sctx, BGBCC_SH_NMID_NOP, sz);
+		return(1);
+	}
+
 	if(!bgbcc_jx2c_strcmp(name, "__halt"))
 	{
 		BGBCC_JX2C_EmitOpNone(ctx, sctx, BGBCC_SH_NMID_SLEEP);

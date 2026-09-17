@@ -23,6 +23,7 @@ quake/id1/pak0lz.wad=../tk_qsrc/id1/pak0lz.wad
 quake/id1/pak1lz.wad=../tk_qsrc/id1/pak1lz.wad 
 quake/id1/pak2lz.wad=../tk_qsrc/id1/pak2lz.wad
 dhry_rv.elf=../tk_qsrc/dhry_rv64.elf 
+dhry_rv_b.elf=../tk_qsrc/dhry_rv64b.elf 
 fft1_rv.elf=../tk_qsrc/fft1_rv64.elf
 fft1_xrv.exe=../tk_qsrc/fft1_xrv.exe
 whetstone_rv.elf=../tk_qsrc/whetstone_rv64.elf

@@ -747,6 +747,16 @@ int tk_shell_chksane_simd()
 	
 	fv0=mv0;
 	
+	fv1=fv0.wzyx;
+	fv2=fv0.wZyX;
+
+	tk_printf("SIMD FV0-0: %f %f %f %f\n", fv0.x, fv0.y, fv0.z, fv0.w);
+	tk_printf("    Expect: %f %f %f %f\n", 1.0, 2.0, 3.0, 5.0);
+	tk_printf("SIMD FV1-0: %f %f %f %f\n", fv1.x, fv1.y, fv1.z, fv1.w);
+	tk_printf("    Expect: %f %f %f %f\n", 5.0, 3.0, 2.0, 1.0);
+	tk_printf("SIMD FV2-0: %f %f %f %f\n", fv2.x, fv2.y, fv2.z, fv2.w);
+	tk_printf("    Expect: %f %f %f %f\n", 5.0, -3.0, 2.0, -1.0);
+	
 //	if(fv0.x!=1.0)
 //		__debugbreak();
 //	if(fv0.z!=3.0)

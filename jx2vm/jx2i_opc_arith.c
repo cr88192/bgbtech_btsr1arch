@@ -2154,6 +2154,27 @@ void BJX2_Op_NOP_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 }
 
+void BJX2_Op_NOP_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	int l;
+
+	l=0;
+	switch(op->imm)
+	{
+	case 0x100:		l=1; break;
+	case 0x101:		l=2; break;
+	case 0x102:		l=3; break;
+	case 0x103:		l=4; break;
+	}
+	
+	if(l)
+	{
+		printf("BJX2_Op_NOP_Imm: %d\n", l);
+		if(l==1)
+			ctx->dbg_dumpfwtraces=1;
+	}
+}
+
 void BJX2_Op_CLRT_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	ctx->regs[BJX2_REG_SR]&=~1;

@@ -375,8 +375,8 @@ __interrupt void __isr_syscall(void)
 	u64 ttb, tea, exc, yres, uobj, spc, spcm;
 	u32 reg_sr, umsg, opw;
 	s32 lnxsc;
-	u16 exsr;
-	int umthd;
+	u16 exsr, exsr_tag;
+	int umthd, chkll;
 	
 	ttb=__arch_ttb;
 	tea=__arch_tea;
@@ -408,6 +408,7 @@ __interrupt void __isr_syscall(void)
 	{
 		spc=isrsave[TKPE_REGSAVE_SPC];
 		spcm=tk_vmem_virttophys(spc);
+		spcm&=~1;
 		if(((reg_sr>>26)&1) && !((reg_sr>>23)&1) && !((reg_sr>>27)&1))
 		{
 			opw=*(u32 *)spcm;
@@ -426,7 +427,24 @@ __interrupt void __isr_syscall(void)
 //		isrsave[TKPE_REGSAVE_SPC]+=4;
 	}
 
-	if((exsr&15)==0)
+	exsr_tag=(exsr&15);
+	lnxsc=-1;
+	umthd=0;
+
+	if(reg_sr&(1<<26))
+	{
+		lnxsc=isrsave[TKPE_REGSAVE_R17];
+		if(lnxsc>=0)
+			exsr_tag=0;
+		if(lnxsc==-1)
+			exsr_tag=0;
+		if(lnxsc==-2)
+			exsr_tag=1;
+	}
+
+
+//	if((exsr&15)==0)
+	if(exsr_tag==0)
 	{
 		if(reg_sr&(1<<26))
 		{
@@ -452,8 +470,17 @@ __interrupt void __isr_syscall(void)
 
 		task2=NULL;
 
-		if(		TK_VMem_CheckAddrIsPhysPage(pret)	&&
-				TK_VMem_CheckAddrIsPhysPage(args)	)
+		chkll=0;
+		if(umsg==TK_UMSG_YIELDTHREAD)	chkll=1;
+		if(umsg==TK_UMSG_CONKBHIT)	chkll=1;
+		if(umsg<4096)	chkll=1;
+		if(		(umsg>=TK_UMSG_COMGLUE_VMT4) &&
+				(umsg<=TK_UMSG_COMGLUE_VMT63) )
+					chkll=1;
+
+		if(	chkll &&
+			TK_VMem_CheckAddrIsPhysPage(pret)	&&
+			TK_VMem_CheckAddrIsPhysPage(args)	)
 		{
 	//		if((umsg==TK_UMSG_YIELDTHREAD) ||
 	//			(umsg==TK_UMSG_PGMEXIT))
@@ -551,7 +578,8 @@ __interrupt void __isr_syscall(void)
 			taskern2=(TKPE_TaskInfoKern *)task2->krnlptr;
 		}
 	}else
-		if((exsr&15)==1)
+//		if((exsr&15)==1)
+		if(exsr_tag==1)
 	{
 		if(tk_task_syscall_isinit==123)
 		{
@@ -892,7 +920,8 @@ int TK_Task_SyscallLoop(void *uptr)
 		{
 //			if(umsg==TK_UMSG_PGMEXIT)
 			if((umsg==TK_UMSG_PGMEXIT) ||
-				(umsg==(TK_UMSG_LNXSC+TK_SCLNX_EXIT)))
+				(umsg==(TK_UMSG_LNXSC+TK_SCLNX_EXIT)) ||
+				(umsg==(TK_UMSG_LNXSC+TK_SCLNX_EXIT_GROUP)))
 			{
 				if(task->magic0!=TKPE_TASK_MAGIC)
 					__debugbreak();

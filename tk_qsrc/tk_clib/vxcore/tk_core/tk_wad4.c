@@ -1361,6 +1361,12 @@ int TK_Wad4_LookupLumpPathI(TK_WadImage *img, char *path, int pfx)
 	
 	if(!(*s))
 	{
+		if(!tn[0])
+		{
+			img->tmp_ppath=NULL;
+			return(pfx);
+		}
+	
 		img->tmp_ppath=NULL;
 		id=TK_Wad4_LookupLumpName(img, tn, pfx);
 		return(id);

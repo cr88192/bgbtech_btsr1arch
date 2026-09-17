@@ -312,6 +312,10 @@ tk_kptr		task_join_ret;		//task join-on-return
 
 int			lclfd[512];
 
+tk_kptr		brk_base;		//base address for current brk block
+tk_kptr		brk_end;		//end for brk block
+tk_kptr		brk_cur;		//current position for brk
+
 // s64			result;			//return value (non-zero if terminated)
 };
 

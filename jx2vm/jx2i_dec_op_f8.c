@@ -174,6 +174,14 @@ int BJX2_DecodeOpcode_DecF8(BJX2_Context *ctx,
 			op->fl|=BJX2_OPFL_CTRLF;
 		}
 
+		if((rn_i16==BJX2_REG_ZZR) &&
+			!(jbits&0x02000000U))
+		{
+			op->nmid=BJX2_NMID_NOP;
+			op->Run=BJX2_Op_NOP_Imm;
+			op->fl|=BJX2_OPFL_CTRLF;
+		}
+
 		if(jbits&0x02000000U)
 		{
 			op->fl|=BJX2_OPFL_NOWEX;

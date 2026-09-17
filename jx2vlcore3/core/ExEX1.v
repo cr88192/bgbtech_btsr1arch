@@ -541,6 +541,7 @@ reg[16:0]	tValAguBraC1;
 
 reg[63:0]	tRegBraLr;
 reg[63:0]	tValAguBra;
+reg[63:0]	tRegBraLrBasic;
 
 reg[15:0]	tValAguBraJCmpMi0;
 reg[15:0]	tValAguBraJCmpMi1;
@@ -819,6 +820,12 @@ begin
 //		regValPc };
 //	tRegBraLr	= regValPc;
 	tRegBraLr	= { regValPc[63:1], 1'b1 };
+
+	tRegBraLrBasic	= tRegBraLr;
+	if(regValPc[55:50]==6'h01)
+	begin
+		tRegBraLrBasic	= { 16'h0, regValPc[47:1], 1'b0 };
+	end
 
 //	tValBra			= tValAguBra[47:0];
 //	tValBra			= { tRegBraLr[63:48], tValAguBra[47:0] };
@@ -1293,7 +1300,8 @@ begin
 // `ifdef def_true
 //			$display("EX: BSR: LR=%X PC2=%X", regValPc, tValAgu);
 //			tRegOutLr	= regValPc;
-			tRegOutLr	= tRegBraLr;
+//			tRegOutLr	= tRegBraLr;
+			tRegOutLr	= tRegBraLrBasic;
 
 `ifdef jx2_enable_vaddr96
 //			tRegOutLrHi	= regValPcHi;
@@ -1490,6 +1498,16 @@ begin
 			tValOutDfl[63:0]	= tRegBraLr;
 			tDoOutDfl			= 1;
 			tDoBra				= 1;
+
+`ifdef def_true
+			if((regValPc[55:50]==6'h02) &&
+				!opUIxt[2] &&
+				((!regValRs[0]) || (regValRs[55:50]==6'h02)))
+			begin
+				/* Is source and dest are within RV64GC mode, skip LR tags */
+				tValOutDfl[63:0]	= tRegBraLrBasic;
+			end
+`endif
 
 `ifndef def_true
 //			if(regIdRm==JX2_GR_ZZR)

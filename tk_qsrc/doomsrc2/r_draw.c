@@ -1164,8 +1164,10 @@ void R_DrawSpan (void)
 		xtemp = position>>26;
 		spot = xtemp | ytemp;
 		position += step;
-		*dest++ = colormap[source[spot]];
+		value = source[spot];
+		value = colormap[value];
 		count--;
+		*dest++ = value;
 	}
 }
 #endif

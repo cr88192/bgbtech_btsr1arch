@@ -188,6 +188,13 @@ Implicitly, PC and LR will have captured Status/Control bits in the high order b
 * (55:50): Processor ISA Mode
 * (49:48): S and T bits.
 
+
+Alternate Format (56 bit address space):
+
+* (63:58): Processor ISA Mode
+* (57:56): S and T bits.
+
+
 The T (SR.T) bit will be used primarily to control predication.
 
 * If an instruction is Predicated True, it only runs if T is Set.
@@ -221,8 +228,8 @@ The assumption for Fixed Tag U-Bits is that they will be assigned a random value
 Currently, Modes will be defined:
 
 * 000000: Implementation Dependent / Disallowed
-* 000001: Implementation Dependent / Disallowed
-* 000010: RV64GC Mode
+* 000001: RV64GC Mode
+* 000010: Implementation Dependent / Disallowed
 * 000011: XG3 Mode
 * Others: Reserved
 

@@ -246,6 +246,12 @@ boolean PIT_CheckLine (line_t* ld)
 	// if contacted a special line, add it to the list
 	if (ld->special)
 	{
+		if(numspechit >= (MAXSPECIALCROSS-1))
+		{
+			/* BGB: disallow overflow */
+			return false;
+		}
+
 		spechit[numspechit] = ld;
 		numspechit++;
 		

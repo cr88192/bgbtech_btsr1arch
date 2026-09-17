@@ -263,6 +263,20 @@ int TKPE_DecodeBufferRP2(
 	int rl, l, d;
 	u64 t0;
 	int t1, t2;
+
+	t0=*(u64 *)ibuf;
+	if(!(t0&0x01))
+	{
+		l=((t0>>4)&7)+3;
+		d=(t0>>7)&511;
+		rl=(t0>>1)&7;
+		
+		if(!d || (d>rl))
+		{
+			/* Post-Compressed RP2, Not handled here... */
+			__debugbreak();
+		}
+	}
 	
 	rl=0; l=0; d=0;
 	

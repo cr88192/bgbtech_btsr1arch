@@ -880,6 +880,9 @@ void *TKMM_Malloc(int sz)
 	void *ptr, *ptr1;
 	int pg, np, np1;
 	
+	if(sz<=0)
+		return(NULL);
+	
 //	if(!TKMM_PageAlloc_f)
 	if(!TKMM_PageAlloc_f || (tkmm_is_init!=0xA5))
 	{
@@ -977,7 +980,21 @@ void *TKMM_Malloc(int sz)
 int TKMM_Free(void *ptr)
 {
 	TKMM_MemLnkObj *obj;
+	void *ptr1;
 	int b, n;
+
+#ifndef __TK_CLIB_ONLY__
+	b=(((u64)ptr)>>44)&15;
+	if(b>=0xC)
+	{
+		if(b<0xE)
+		{
+			ptr1=(void *)(((u64)ptr)&0x00000FFFFFFFFFFFULL);
+			return(TKMM_Free(ptr1));
+		}
+		return(-1);
+	}
+#endif
 
 	if(!ptr)return(-1);
 //	obj=(TKMM_MemLnkObj *)(((byte *)ptr)-TKMM_OFFS_DATA);
@@ -1012,7 +1029,21 @@ int TKMM_Free(void *ptr)
 int TKMM_GetSize(void *ptr)
 {
 	TKMM_MemLnkObj *obj;
+	void *ptr1;
 	int b, n, sz1;
+
+#ifndef __TK_CLIB_ONLY__
+	b=(((u64)ptr)>>44)&15;
+	if(b>=0xC)
+	{
+		if(b<0xE)
+		{
+			ptr1=(void *)(((u64)ptr)&0x00000FFFFFFFFFFFULL);
+			return(TKMM_GetSize(ptr1));
+		}
+		return(-1);
+	}
+#endif
 
 	if(!ptr)
 		return(-1);

@@ -313,6 +313,7 @@ int BJX2_DecodeTraceFlushCache(BJX2_Context *ctx)
 
 	ctx->tr_rnxt=NULL;
 	ctx->tr_rjmp=NULL;
+	ctx->tot_cyc_traceref=ctx->tot_cyc;
 	
 	for(i=0; i<64; i++)
 		ctx->rttr[i]=NULL;
@@ -1411,6 +1412,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 	case BJX2_NMID_ROTCR:		s0="ROTCR";		break;
 	case BJX2_NMID_RET:			s0="RET";		break;
 
+	case BJX2_NMID_TRAP:		s0="TRAP";		break;
+
 	case BJX2_NMID_MOVT:		s0="MOVT";		break;
 	case BJX2_NMID_LDISH12:		s0="LDISH12";	break;
 	case BJX2_NMID_LDISH20:		s0="LDISH20";	break;
@@ -1831,6 +1834,8 @@ char *BJX2_DbgPrintNameForNmid(BJX2_Context *ctx, int nmid)
 
 	case BJX2_NMID_PLDCSW:		s0="PLDCSW";		break;
 	case BJX2_NMID_FLDCPD:		s0="FLDCPD";		break;
+
+	case BJX2_NMID_AMOSWAPL:	s0="AMOSWAPL";		break;
 
 	case BJX2_NMID_SLEU:		s0="SLEU";			break;
 	case BJX2_NMID_PSHUFXL:		s0="PSHUFX.L";		break;
@@ -3039,6 +3044,8 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 	if(!tr)
 	{
 		BJX2_DbgPrintf(ctx, "PC @ ...  NULL Trace\n");
+		if(ctx->dbglog)
+			{ fflush(ctx->dbglog); }
 		return(0);
 	}
 	
@@ -3066,6 +3073,10 @@ int BJX2_DbgPrintTrace(BJX2_Context *ctx, BJX2_Trace *tr)
 //	{
 //		BJX2_DbgPrintOp(ctx, tr->ops[i]);
 //	}
+
+	if(ctx->dbglog)
+		{ fflush(ctx->dbglog); }
+
 	return(0);
 }
 
@@ -3106,7 +3117,7 @@ int BJX2_DbgPrintRegs_KnownReg2(BJX2_Context *ctx, int ix)
 	return(0);
 }
 
-int BJX2_DbgPrintRegs(BJX2_Context *ctx)
+int BJX2_DbgPrintRegsB(BJX2_Context *ctx, int flag)
 {
 	int i, j;
 
@@ -3114,6 +3125,13 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 	{
 		if((i>=16) && !(ctx->regs[i*2+0]) && !(ctx->regs[i*2+1]))
 			continue;
+
+		if(flag&1)
+		{
+			if(	((ctx->regs[i*2+0])==(ctx->dbg_lastregs[i*2+0])) &&
+				((ctx->regs[i*2+1])==(ctx->dbg_lastregs[i*2+1])) )
+					continue;
+		}
 
 //		if(!BJX2_DbgPrintRegs_KnownReg2(ctx, i*2))
 //			continue;
@@ -3143,7 +3161,21 @@ int BJX2_DbgPrintRegs(BJX2_Context *ctx)
 		}
 		BJX2_DbgPrintf(ctx, "\n");
 	}
+	
+	if(flag&1)
+	{
+		memcpy(ctx->dbg_lastregs, ctx->regs, 128*sizeof(u64));
+	}
+
+	if(ctx->dbglog)
+		{ fflush(ctx->dbglog); }
+
 	return(0);
+}
+
+int BJX2_DbgPrintRegs(BJX2_Context *ctx)
+{
+	return(BJX2_DbgPrintRegsB(ctx, 0));
 }
 
 #if 0
@@ -3255,7 +3287,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	int n_topfn;
 	BJX2_Trace *trcur;
 	bjx2_addr ba2;
-	s64 cyc, cy0, cy1, ipcyc;
+	s64 cyc, cy0, cy1, ipcyc, totcyc;
 	double pcnt, pcnt2, tpcnt, tkra_pcnt;
 	char *bn2, *s0, *s1;
 	int trn, trtops;
@@ -3408,6 +3440,10 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		}
 	}
 
+	totcyc=ctx->tot_cyc-ctx->tot_cyc_traceref;
+	if(!totcyc)
+		totcyc=1;
+
 	BJX2_DbgPrintf(ctx, "Top Funcs:\n");
 
 //	float topfn_pcnt[64];
@@ -3416,7 +3452,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	for(i=0; i<64; i++)
 	{
 		cyc=topfn_cyc[i];
-		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+		pcnt=(100.0*cyc)/(totcyc);
 		tpcnt+=pcnt;
 		topfn_pcnt[i]=pcnt;
 		topfn_tpcnt[i]=tpcnt;
@@ -3465,7 +3501,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		if(cyc<1)
 			cyc=1;
 
-		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+		pcnt=(100.0*cyc)/(totcyc);
 
 		if(bn2)
 		{
@@ -3496,7 +3532,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		bn2=BJX2_DbgNameForAddr(ctx, trcur->addr, &ba2);
 
 		cyc=trcur->runcnt*trcur->n_cyc+trcur->acc_pencyc;
-		pcnt=(100.0*cyc)/(ctx->tot_cyc);
+		pcnt=(100.0*cyc)/(totcyc);
 
 		if(bn2)
 		{
@@ -3573,7 +3609,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 	BJX2_DbgPrintf(ctx, "Cyc/Nmid:\n");
 //	for(i=0; i<64; i++)
 //	for(i=0; i<128; i++)
-	for(i=0; i<512; i++)
+//	for(i=0; i<512; i++)
+	for(i=0; i<1024; i++)
 	{
 		k=idx_nmid[i*2];
 		if(!cyc_nmid[k])
@@ -3583,8 +3620,8 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		for(j=0; j<2; j++)
 		{
 			k=idx_nmid[i*2+j];
-			pcnt=(100.0*cyc_nmid[k])/(ctx->tot_cyc);
-			pcnt2=(100.0*ipcyc_nmid[k])/(ctx->tot_cyc);
+			pcnt=(100.0*cyc_nmid[k])/(totcyc);
+			pcnt2=(100.0*ipcyc_nmid[k])/(totcyc);
 
 			if(j)
 				BJX2_DbgPrintf(ctx, " ");
@@ -3609,7 +3646,7 @@ int BJX2_DbgTopTraces(BJX2_Context *ctx)
 		for(j=0; j<2; j++)
 		{
 			k=idx_fmid[i*2+j];
-			pcnt=(100.0*cyc_fmid[k])/(ctx->tot_cyc);
+			pcnt=(100.0*cyc_fmid[k])/(totcyc);
 
 			BJX2_DbgPrintf(ctx, "%8s(%12lld) %.2f%%",
 				BJX2_DbgPrintNameForFmid(ctx, k),
@@ -4043,6 +4080,11 @@ int BJX2_RunLimit(BJX2_Context *ctx, int lim)
 //					(ctx->pclogrov+1)&63;
 					(ctx->pclogrov+1)&255;
 		//		BJX2_DbgPrintTrace(ctx, cur);
+				if(ctx->dbg_dumpfwtraces)
+				{
+					BJX2_DbgPrintRegsB(ctx, 1);
+					BJX2_DbgPrintTrace(ctx, cur);
+				}
 				nc=cur->n_cyc;
 				cn1-=nc;
 				no+=cur->n_ops;

@@ -39,6 +39,12 @@ void TKMM_MMList_AddVrmBrk(byte *ptr, int sz, int flag)
 {
 	int i;
 
+	if(sz<=0)
+	{
+		__debugbreak();
+		return;
+	}
+
 	i=tkmm_mmlist_n_vrm++;
 	if(i>=1024)
 	{
@@ -565,7 +571,8 @@ TKMM_MemLnkObj *TKMM_MMList_AllocObjCat(int sz, int cat)
 
 	isz=sz;
 
-	if(sz<=0)return(NULL);
+	if(sz<=0)
+		return(NULL);
 //	if(sz<256)sz=256;
 	if(sz<64)sz=64;
 	
@@ -696,6 +703,9 @@ void *TKMM_MMList_Malloc(int sz)
 		cat=TKMM_MCAT_KRN_RW;
 	
 	obj=TKMM_MMList_AllocObjCat(sz, 0);
+	if(!obj)
+		return(NULL);
+
 	ptr=(byte *)obj->data;
 	__setmemtrap(obj, 3);
 	
@@ -964,6 +974,8 @@ void *tk_malloc_cat(int sz, int cat)
 // #ifndef __TK_CLIB_ONLY__
 #if 1
 	void *ptr;
+	if(sz<=0)
+		return(NULL);
 	if(cat)
 	{
 		ptr=TKMM_MallocCat(sz, cat);
@@ -1041,10 +1053,22 @@ void *tk_realloc(void *ptr, int sz)
 		return(tk_malloc(sz));
 	}
 	
+	if(sz<=0)
+	{
+		tk_free(ptr);
+		return(NULL);
+	}
+	
 //	osz=TKMM_MMList_GetSize(ptr);
 	osz=tk_msize(ptr);
 	if(osz>=sz)
 		return(ptr);
+		
+	if(osz<=0)
+	{
+		ptr1=tk_malloc(sz);
+		return(ptr1);
+	}
 	
 	ptr1=tk_malloc(sz);
 	memcpy(ptr1, ptr, osz);

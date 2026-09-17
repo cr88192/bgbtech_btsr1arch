@@ -3016,11 +3016,19 @@ int TKSH_TryLoadB(char *img, char **args0)
 //			boot_newsp=boot_newspb+(((1<<19)-1024)-i);
 //			boot_newsp=boot_newspb+(((1<<20)-1024)-i);
 
+			if(((u64)bootptr)&0x0001000000000000ULL)
+				{ memset(boot_newspb, 0, 1<<18); }
+
 //			*(byte **)boot_newsp=((byte *)boot_newsp)+8;
 //			strncpy(((byte *)boot_newsp)+8, atb, 512);
 
 //			ct=((byte *)boot_newsp)+512;
 			ct=((byte *)boot_newspb);
+
+			((u64 *)ct)[0]=TK_GetRandom48ASLR();
+			((u64 *)ct)[1]=TK_GetRandom48ASLR();
+
+			ct+=16;
 
 #if 1
 //			a1=(char **)(((byte *)boot_newsp)+16);
@@ -3064,7 +3072,8 @@ int TKSH_TryLoadB(char *img, char **args0)
 			a1[j++]=(void *)img;
 
 			a1[j++]=(void *)TKPE_ELF_AT_PAGESZ;	//page size
-			a1[j++]=(void *)(void *)(1<<TKMM_PAGEBITS);	//page size
+//			a1[j++]=(void *)(void *)(1<<TKMM_PAGEBITS);	//page size
+			a1[j++]=(void *)(void *)(1<<12);	//page size
 
 			a1[j++]=(void *)TKPE_ELF_AT_HWCAP;	//capability flags
 			a1[j++]=(void *)0;					//capability flags
@@ -3072,8 +3081,12 @@ int TKSH_TryLoadB(char *img, char **args0)
 			a1[j++]=(void *)TKPE_ELF_AT_CLKTCK;		//clock tick frequency
 			a1[j++]=(void *)1024;			//
 
+			a1[j++]=(void *)TKPE_ELF_AT_RANDOM;		//random bytes
+			a1[j++]=((byte *)boot_newspb);
+
 			a1[j++]=NULL;	//end eof aux list
-			a1+=(j+1);
+			a1[j++]=NULL;	//end eof aux list
+			a1+=j;
 
 			a1[0]=NULL;
 			a1[1]=NULL;
@@ -3365,9 +3378,9 @@ int TKSH_TryLoadB(char *img, char **args0)
 			if(pb_boot&0x0001000000000000ULL)
 			{
 				/* If Linux binary, set TP=0 */
-				tkern->ctx_regsave[TKPE_REGSAVE_R4]=0;
-//				tkern->ctx_regsave[TKPE_REGSAVE_R4]=
-//					((tk_kptr)boot_newsp)+1024;
+//				tkern->ctx_regsave[TKPE_REGSAVE_R4]=0;
+				tkern->ctx_regsave[TKPE_REGSAVE_R4]=
+					((tk_kptr)boot_newspb)+4096;
 			}
 
 			tkern->ctx_regsave[TKPE_REGSAVE_TTB]=tk_vmem_pageglobal;

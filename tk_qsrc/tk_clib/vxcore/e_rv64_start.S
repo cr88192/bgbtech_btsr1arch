@@ -145,8 +145,8 @@ tk_syscall2:
 	mov	0, r16
 	mov	-1, r17
 
-	mov	0, x5
-	mov x5, r0u
+//	mov	0, x5
+//	mov x5, r0u
 	nop
 	nop
 	syscall
@@ -158,8 +158,9 @@ tk_syscall2:
 	nop
 
 tk_syscall2_rtuser:
-	mov	1, x5
-	mov x5, r0u
+//	mov	1, x5
+//	mov x5, r0u
+	mov	-2, r17
 	nop
 	nop
 	syscall

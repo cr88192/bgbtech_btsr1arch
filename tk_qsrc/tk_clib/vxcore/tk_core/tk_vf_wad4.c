@@ -11,6 +11,8 @@ int tk_wad4_rmdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 int tk_wad4_unlink(TK_MOUNT *mnt, TK_USERINFO *usri, char *name);
 int tk_wad4_rename(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, char *newfn, char *mode);
 
+int tk_wad4_fstat(TK_MOUNT *mnt, TK_USERINFO *usri, char *oldfn, TK_FSTAT *st);
+
 int tk_wad4_fread(void *buf, int sz1, int sz2, TK_FILE *fd);
 int tk_wad4_fwrite(void *buf, int sz1, int sz2, TK_FILE *fd);
 s64 tk_wad4_fseek(TK_FILE *fd, s64 ofs, int rel);
@@ -38,7 +40,7 @@ tk_wad4_fopen,		//fopen
 tk_wad4_opendir,	//fopendir
 tk_wad4_unlink,		//unlink
 tk_wad4_rename,		//rename
-NULL,				//fstat
+tk_wad4_fstat,		//fstat
 
 tk_wad4_mkdir,		//mkdir
 tk_wad4_rmdir,		//rmdir
@@ -74,7 +76,7 @@ tk_wad4_fopen,		//fopen
 tk_wad4_opendir,	//fopendir
 tk_wad4_unlink,		//unlink
 tk_wad4_rename,		//rename
-NULL,				//fstat
+tk_wad4_fstat,		//fstat
 
 tk_wad4_mkdir,		//mkdir
 tk_wad4_rmdir,		//rmdir
@@ -381,6 +383,112 @@ TK_DIR *tk_wad4_opendir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name)
 	fd->udata2=tde;
 	
 	return(fd);
+}
+
+int tk_wad4_fstat(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, TK_FSTAT *st)
+{
+	char tb[512], pb[256];
+	TK_USERINFO tacc;
+	TK_WadImage *img;
+	TK_FILE *fd;
+	char *tn1, *tn2, *cs, *ct;
+	void *p;
+	int id, sz, fl, pety;
+
+//	tk_printf("tk_wad4_fstat: %s\n", name);
+
+//	fl=TK_VF_FlagsFromModeString(mode);
+
+	img=mnt->udata0;
+	id=TK_Wad4_LookupLumpPath(img, name);
+	
+	pety=0;
+	if(id>0)
+	{
+		pety=TK_Wad4_GetLumpEntType(img, id);
+		if(pety==TK_W4ETY_SYMLINK)
+		{
+//			tn1=TK_Wad4_GetCacheLumpNum(img, id, &sz);
+			tn2=img->tmp_ppath;
+			TK_Wad4_GetLinkPBase(img, name, tn2, pb);
+			TK_Wad4_GetLumpDirBaseLink(img, id, pb, tb);
+
+			ct=tb+strlen(tb);
+			while((ct>tb) && (*(ct-1)=='/'))
+				ct--;
+			*ct=0;
+			if(*tn2!='/')
+				*ct++='/';
+			strcpy(ct, tn2);
+			
+//			sprintf(tb, "%s/%s", tn1, tn2);
+//			sprintf(tb, "%s%s", tn1, tn2);
+
+			TKSH_NormalizePath(tb, tb);
+
+			id=tk_fstat2(usri, tb, st);
+			return(id);
+		}
+	}
+	
+	if(id>=0)
+	{
+		tacc.uid=TK_Wad4_GetLumpDirUid(img, id);
+		tacc.gid=TK_Wad4_GetLumpDirGid(img, id);
+		tacc.mode=TK_Wad4_GetLumpDirMode(img, id);
+		if(TK_CheckUserAccess(usri, &tacc)<=0)
+			return(-1);
+	
+		sz=TK_Wad4_GetLumpSize(img, id);
+		
+		if(st)
+		{
+//			st->st_dev=(u32)img;
+			st->st_dev=0x0026;
+			st->st_rdev=st->st_dev;
+
+			st->st_ino=0x1000+id;
+			st->st_mode=tacc.mode;
+			st->st_uid=tacc.uid;
+			st->st_gid=tacc.gid;
+			st->st_nlink=1;
+			st->st_size=sz;
+			st->st_blksize=4096;
+			st->st_blocks=(sz+511)>>9;
+			
+			st->st_pad1=0;
+			st->st_pad2=0;
+			st->st_pad4=0;
+			st->st_pad5=0;
+			
+			st->st_atime_sec=TK_GetTimeUs()>>20;
+			st->st_mtime_sec=st->st_atime_sec;
+			st->st_ctime_sec=st->st_atime_sec;
+
+			st->st_atime_nsec=0;
+			st->st_mtime_nsec=0;
+			st->st_ctime_nsec=0;
+			
+			if(((st->st_mode>>31)&1) || !st->st_mode)
+			{
+				st->st_mode=0x000081ED;
+			}
+			
+			if(pety==TK_W4ETY_DIR)
+			{
+				st->st_mode&=~TKFAT_EMODE_IFMT;
+				st->st_mode|= TKFAT_EMODE_DIR;
+
+				st->st_nlink=2;
+				st->st_size=4096;
+				st->st_blocks=8;
+			}
+		}
+		
+		return(0);
+	}
+	
+	return(-1);
 }
 
 int tk_wad4_mkdir(TK_MOUNT *mnt, TK_USERINFO *usri, char *name, char *mode)

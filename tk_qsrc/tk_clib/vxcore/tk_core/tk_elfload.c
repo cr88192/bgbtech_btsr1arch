@@ -410,6 +410,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 {
 //	byte tbuf[1024];
 	byte tbuf[1024+32];
+	byte tibuf[512];
 	char *a_needed[64];
 	TKPE_ImageInfo *img_needed[64];
 	TKPE_ImageInfo *img, *idll;
@@ -417,7 +418,9 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	byte *dyn_ptr, *rela_ptr, *strtab_ptr, *symtab_ptr;
 	u64 *rel_where;
 	byte *ptr;
+	byte *s_interp;
 	int n_needed;
+	TK_FILE *fd2;
 
 	u64 imgbase, imgbase1;
 	s64 reloc_disp;
@@ -503,6 +506,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		return(NULL);
 	}
 
+	s_interp=NULL;
 	imgsz=0;
 	for(i=0; i<phnum; i++)
 	{
@@ -512,6 +516,22 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		{
 			if(phty==2)
 				isdyn=1;
+			if(phty==3)
+			{
+				poff=btsh2_ptrGetUD(phdr->p_offset, en);
+				if((poff>0) && (poff<(1024-128)))
+				{
+					s_interp=tbuf+poff;
+					tk_printf("TKPE_LoadDynELF: interp = %s\n", s_interp);
+				}else
+				{
+					tk_printf("TKPE_LoadDynELF: interp > 1K, %X\n", poff);
+					tk_fseek(fd, fdoffs, poff);
+					tk_fread(tibuf, 1, 512, fd);
+					s_interp=tibuf;
+					tk_printf("TKPE_LoadDynELF: interp = %s\n", s_interp);
+				}
+			}
 			continue;
 		}
 
@@ -522,6 +542,28 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		if((paddr+pmsz)>imgsz)
 			imgsz=(paddr+pmsz);
 	}
+
+	if(s_interp && !strncmp(s_interp, "/lib/", 5))
+	{
+		strcpy(tibuf+256, "/usr/lib/rv64/");
+		strcat(tibuf+256, s_interp+5);
+		s_interp=tibuf+256;
+	}
+
+#if 0
+	if(s_interp)
+	{
+		tk_printf("TKPE_LoadDynELF: interp = %s\n", s_interp);
+		
+		fd2=tk_fopen(s_interp, "rb");
+		if(!fd2)
+		{
+			return(NULL);
+		}
+		img=TKPE_LoadDynELF(fd2, 0, s_interp, cwd, 3);
+		return(img);
+	}
+#endif
 
 	if(!isdyn)
 	{
@@ -646,7 +688,7 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 	img->realentry=NULL;		//for now
 
 	n_needed=0;
-	if(dyn_ptr)
+	if(dyn_ptr && !s_interp)
 	{
 		rela_offs=0;
 		rela_sz=0;
@@ -1059,6 +1101,22 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 		}
 	}
 
+	if(s_interp)
+	{
+		tk_printf("TKPE_LoadDynELF: interp = %s\n", s_interp);
+		
+		fd2=tk_fopen(s_interp, "rb");
+		if(!fd2)
+		{
+			return(NULL);
+		}
+		idll=TKPE_LoadDynELF(fd2, 0, s_interp, cwd, 3);
+
+		img->elf_interpimg=idll;
+		img->elf_interpbase=idll->imgbase;
+	}
+
+
 	TK_FlushCacheL1D();
 	TK_FlushCacheL1D_INVIC(NULL);
 
@@ -1119,6 +1177,12 @@ TKPE_ImageInfo *TKPE_LoadDynELF(TK_FILE *fd, int fdoffs,
 			entry|=0x0004000000000001ULL;
 		}
 		
+	}
+	
+	if(img->elf_interpimg)
+	{
+		entry=img->elf_interpimg->bootptr;
+		entry|=0x0001000000000000ULL;
 	}
 
 	if(!(entry&1))

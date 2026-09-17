@@ -717,19 +717,38 @@ void BJX2_Op_AMOSCL_RegStRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_AMOLRL_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 vn;
 	ctx->trapc=op->pc;
-	ctx->regs[op->rn]=(s32)BJX2_MemGetDWordW(ctx,
+	vn=(s32)BJX2_MemGetDWordW(ctx,
 		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq]);
+	if(op->rn!=BJX2_REG_ZZR)
+		ctx->regs[op->rn]=vn;
 }
 
 void BJX2_Op_AMOSWAPL_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
+	u64 vn;
 	ctx->trapc=op->pc;
-	ctx->regs[op->rn]=(s32)BJX2_MemGetDWordW(ctx,
+	vn=(s32)BJX2_MemGetDWordW(ctx,
 		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq]);
 	BJX2_MemSetDWordW(ctx,
 		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq],
 		ctx->regs[op->ro]);
+	if(op->rn!=BJX2_REG_ZZR)
+		ctx->regs[op->rn]=vn;
+}
+
+void BJX2_Op_AMOSWAPQ_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 vn;
+	ctx->trapc=op->pc;
+	vn=(s32)BJX2_MemGetQWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq]);
+	BJX2_MemSetQWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq],
+		ctx->regs[op->ro]);
+	if(op->rn!=BJX2_REG_ZZR)
+		ctx->regs[op->rn]=vn;
 }
 
 void BJX2_Op_AMOADDL_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
@@ -743,7 +762,23 @@ void BJX2_Op_AMOADDL_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	BJX2_MemSetDWordW(ctx,
 		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq],
 		vc);
-	ctx->regs[op->rn]=va;
+	if(op->rn!=BJX2_REG_ZZR)
+		ctx->regs[op->rn]=va;
+}
+
+void BJX2_Op_AMOADDQ_LdRegDisp1Reg(BJX2_Context *ctx, BJX2_Opcode *op)
+{
+	u64 va, vb, vc;
+	ctx->trapc=op->pc;
+	va=(s32)BJX2_MemGetQWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq]);
+	vb=ctx->regs[op->ro];
+	vc=va+vb;	
+	BJX2_MemSetQWordW(ctx,
+		(bjx2_addr)(ctx->regs[op->rm])+(op->imm), ctx->regs[op->rq],
+		vc);
+	if(op->rn!=BJX2_REG_ZZR)
+		ctx->regs[op->rn]=va;
 }
 
 #endif

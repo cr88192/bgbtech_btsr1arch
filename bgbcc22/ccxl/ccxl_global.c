@@ -1397,7 +1397,7 @@ void BGBCC_CCXL_AddAsmBlob(BGBCC_TransState *ctx, char *text)
 
 	if(ln<128)
 	{
-		decl->text=bgbcc_strdup(text);
+		decl->text=(byte *)(bgbcc_strdup(text));
 		decl->sz_text=ln;
 	}else
 	{

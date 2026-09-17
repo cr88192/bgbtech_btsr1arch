@@ -1707,22 +1707,75 @@ char *tk_sprint_hex_n(char *ct, u64 v, int n)
 	char *ct0;
 
 	ct0=ct;
-	if(n>15)*ct++=(chrs[(v>>60)&15]);
-	if(n>14)*ct++=(chrs[(v>>56)&15]);
-	if(n>13)*ct++=(chrs[(v>>52)&15]);
-	if(n>12)*ct++=(chrs[(v>>48)&15]);
-	if(n>11)*ct++=(chrs[(v>>44)&15]);
-	if(n>10)*ct++=(chrs[(v>>40)&15]);
-	if(n> 9)*ct++=(chrs[(v>>36)&15]);
-	if(n> 8)*ct++=(chrs[(v>>32)&15]);
-	if(n> 7)*ct++=(chrs[(v>>28)&15]);
-	if(n> 6)*ct++=(chrs[(v>>24)&15]);
-	if(n> 5)*ct++=(chrs[(v>>20)&15]);
-	if(n> 4)*ct++=(chrs[(v>>16)&15]);
-	if(n> 3)*ct++=(chrs[(v>>12)&15]);
-	if(n> 2)*ct++=(chrs[(v>> 8)&15]);
-	if(n> 1)*ct++=(chrs[(v>> 4)&15]);
-	if(n> 0)*ct++=(chrs[(v    )&15]);
+
+	if(!(n&(n-1)))
+	{
+		if(n==16)
+		{
+			ct[0]=(chrs[(v>>60)&15]);
+			ct[1]=(chrs[(v>>56)&15]);
+			ct[2]=(chrs[(v>>52)&15]);
+			ct[3]=(chrs[(v>>48)&15]);
+			ct+=4;
+			ct[0]=(chrs[(v>>44)&15]);
+			ct[1]=(chrs[(v>>40)&15]);
+			ct[2]=(chrs[(v>>36)&15]);
+			ct[3]=(chrs[(v>>32)&15]);
+			ct+=4;
+			ct[0]=(chrs[(v>>28)&15]);
+			ct[1]=(chrs[(v>>24)&15]);
+			ct[2]=(chrs[(v>>20)&15]);
+			ct[3]=(chrs[(v>>16)&15]);
+			ct+=4;
+			ct[0]=(chrs[(v>>12)&15]);
+			ct[1]=(chrs[(v>> 8)&15]);
+			ct[2]=(chrs[(v>> 4)&15]);
+			ct[3]=(chrs[(v>> 0)&15]);
+			ct+=4;
+			return(ct);
+		}
+		if(n==8)
+		{
+			ct[0]=(chrs[(v>>28)&15]);
+			ct[1]=(chrs[(v>>24)&15]);
+			ct[2]=(chrs[(v>>20)&15]);
+			ct[3]=(chrs[(v>>16)&15]);
+			ct+=4;
+			ct[0]=(chrs[(v>>12)&15]);
+			ct[1]=(chrs[(v>> 8)&15]);
+			ct[2]=(chrs[(v>> 4)&15]);
+			ct[3]=(chrs[(v>> 0)&15]);
+			ct+=4;
+			return(ct);
+		}
+		if(n>2)
+		{
+			ct[0]=(chrs[(v>>12)&15]);
+			ct[1]=(chrs[(v>> 8)&15]);
+			ct+=2;
+		}
+		if(n> 1)*ct++=(chrs[(v>> 4)&15]);
+		if(n> 0)*ct++=(chrs[(v    )&15]);
+		return(ct);
+	}else
+	{
+		if(n>15)*ct++=(chrs[(v>>60)&15]);
+		if(n>14)*ct++=(chrs[(v>>56)&15]);
+		if(n>13)*ct++=(chrs[(v>>52)&15]);
+		if(n>12)*ct++=(chrs[(v>>48)&15]);
+		if(n>11)*ct++=(chrs[(v>>44)&15]);
+		if(n>10)*ct++=(chrs[(v>>40)&15]);
+		if(n> 9)*ct++=(chrs[(v>>36)&15]);
+		if(n> 8)*ct++=(chrs[(v>>32)&15]);
+		if(n> 7)*ct++=(chrs[(v>>28)&15]);
+		if(n> 6)*ct++=(chrs[(v>>24)&15]);
+		if(n> 5)*ct++=(chrs[(v>>20)&15]);
+		if(n> 4)*ct++=(chrs[(v>>16)&15]);
+		if(n> 3)*ct++=(chrs[(v>>12)&15]);
+		if(n> 2)*ct++=(chrs[(v>> 8)&15]);
+		if(n> 1)*ct++=(chrs[(v>> 4)&15]);
+		if(n> 0)*ct++=(chrs[(v    )&15]);
+	}
 	
 	if((ct-ct0)!=n)
 	{
@@ -1792,6 +1845,12 @@ char *tk_sprint_decimal_n(char *ct, int val, int num)
 
 void tk_vsprintf(char *dst, char *str, va_list lst)
 {
+	static const u64 mask80=0x8080808080808080ULL;
+	static const u64 bias01=0x0101010101010101ULL;
+	static const u64 bias25=0x2525252525252525ULL;
+	static const u64 bias26=0x2626262626262626ULL;
+	static const u64 bias5A=0x5A5A5A5A5A5A5A5AULL;
+	static const u64 bias5B=0x5B5B5B5B5B5B5B5BULL;
 	double f;
 	char pcfill;
 	char *s, *s1;
@@ -1803,6 +1862,40 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 	s=str;
 	while(*s)
 	{
+#if 1
+		v=*(s64 *)s;
+//		if(!(v&mask80) && !((v-bias01)&mask80))
+//		if((v&mask80)==((v-bias01)&mask80))
+		if(((v|(v-bias01))&mask80)==0)
+		{
+//			__debugbreak();
+
+//			if(	!s[0] || !s[1] || !s[2] || !s[3] ||
+//				!s[4] || !s[5] || !s[6] || !s[7])
+//					__debugbreak();
+		
+			/* No NULs */
+//			if(!(((v-bias25)^(v-bias26))&mask80))
+//			if(((v-bias25)&mask80)==((v-bias26)&mask80))
+//			if(((v-bias25)&mask80)==((v-bias26)&mask80))
+//			if(((v+bias5A)&mask80)==((v+bias5B)&mask80))
+			if((((v+bias5A)^(v+bias5B))&mask80)==0)
+			{
+//				if(	(s[0]=='%') || (s[1]=='%') ||
+//					(s[2]=='%') || (s[3]=='%') ||
+//					(s[4]=='%') || (s[5]=='%') ||
+//					(s[6]=='%') || (s[7]=='%') )
+//						__debugbreak();
+
+				/* Also no %s */
+				*(s64 *)ct=v;
+				s+=8;
+				ct+=8;
+				continue;
+			}
+		}
+#endif
+	
 		if(*s!='%')
 			{ *ct++=*s++; continue; }
 
@@ -1864,6 +1957,7 @@ void tk_vsprintf(char *dst, char *str, va_list lst)
 
 		case 'd':
 		case 'i':
+		case 'u':
 			if(isll)
 				v=va_arg(lst, long long);
 			else

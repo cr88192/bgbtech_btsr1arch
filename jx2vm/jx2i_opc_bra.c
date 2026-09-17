@@ -253,6 +253,11 @@ void BJX2_Op_BSR_RegPc0Disp(BJX2_Context *ctx, BJX2_Opcode *op)
 	lr|=((u64)((sr&0xFF03)|((sr>>24)&0x000C))|((sr>>16)&0x00F0))<<48;
 	lr|=1;
 
+	if(((lr>>50)&63)==1)
+	{
+		lr&=0x0000FFFFFFFFFFFEULL;
+	}
+
 //	ctx->regs[BJX2_REG_LR]=op->pc2;
 //	ctx->regs[BJX2_REG_LR]=lr;
 	ctx->regs[op->rn]=lr;
@@ -1646,6 +1651,14 @@ void BJX2_Op_BSR_RegRegDisp1(BJX2_Context *ctx, BJX2_Opcode *op)
 	rn=ctx->regs[op->rm];
 	pc1=(rn+op->imm)&0x0000FFFFFFFFFFFFULL;
 
+	if(((lr>>50)&63)==1)
+	{
+		if(!(rn&1) || (((rn>>50)&63)==1))
+		{
+			lr&=0x0000FFFFFFFFFFFEULL;
+		}
+	}
+
 	if(pc1&1)
 	{
 		sr&=0xFFFFFFFFF30F00FCULL;
@@ -1709,6 +1722,7 @@ void BJX2_Op_BRA_RegDisp1_RVC(BJX2_Context *ctx, BJX2_Opcode *op)
 	BJX2_DbgBRA(ctx, op, "JR");
 }
 
+#if 1
 void BJX2_Op_BRA_RegDisp1_XG3(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	u64 lr, sr, pc1;
@@ -1738,6 +1752,7 @@ void BJX2_Op_BRA_RegDisp1_XG3(BJX2_Context *ctx, BJX2_Opcode *op)
 
 	BJX2_DbgBRA(ctx, op, "JR");
 }
+#endif
 
 void BJX2_Op_INVIC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 {
@@ -1759,7 +1774,9 @@ void BJX2_Op_INVDC_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 
 void BJX2_Op_TRAP_Imm(BJX2_Context *ctx, BJX2_Opcode *op)
 {
-	ctx->trapc=op->pc2;
+//	ctx->trapc=op->pc2;
+	ctx->trapc=op->pc;
+	ctx->regs[BJX2_REG_PC]=op->pc;
 	BJX2_ThrowFaultStatus(ctx, op->imm);
 }
 
@@ -1768,7 +1785,10 @@ void BJX2_Op_TRAP_Reg(BJX2_Context *ctx, BJX2_Opcode *op)
 	BJX2_Context *pctx, *cctx;
 	u64 exc;
 	int cvn;
-	ctx->trapc=op->pc2;
+
+//	ctx->trapc=op->pc2;
+	ctx->trapc=op->pc;
+	ctx->regs[BJX2_REG_PC]=op->pc;
 	
 	exc=ctx->regs[op->rn];
 	cvn=(exc>>8)&15;
@@ -1829,7 +1849,9 @@ void BJX2_Op_SYSCALL_None(BJX2_Context *ctx, BJX2_Opcode *op)
 {
 	if(ctx->status)
 		return;
-	ctx->trapc=op->pc2;
+//	ctx->trapc=op->pc2;
+	ctx->trapc=op->pc;
+	ctx->regs[BJX2_REG_PC]=op->pc;
 	BJX2_ThrowFaultStatus(ctx, 0xE000|(ctx->regs[BJX2_REG_DLR]&0xFFF));
 }
 

@@ -1385,6 +1385,7 @@ int tk_hclose(TKPE_TaskInfo *task, int iHdl)
 	fd=TK_GetPtrForHandle(task, iHdl);
 	if(!fd)
 		return(-1);
+	TK_FreeObjHandle(task, iHdl);
 	return(tk_fclose(fd));
 }
 

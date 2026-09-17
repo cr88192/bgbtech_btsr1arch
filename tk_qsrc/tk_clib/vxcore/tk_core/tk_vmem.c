@@ -1290,8 +1290,11 @@ __asm {
 .global tk_vmem_loadacl
 
 tk_vmem_do_ldtlb:
-	MOV		R10, R0U
-	MOV		R11, R1U
+//	MOV		R10, R0U
+//	MOV		R11, R1U
+
+	MOV		R10, R6
+	MOV		R11, R7
 
 	NOP
 	NOP
@@ -1299,6 +1302,11 @@ tk_vmem_do_ldtlb:
 	NOP
 
 	LDTLB
+	NOP
+	NOP
+
+	NOP
+	NOP
 	NOP
 	NOP
 
@@ -1315,8 +1323,22 @@ tk_vmem_do_ldtlb:
 	NOP
 
 tk_vmem_loadacl:
-	MOV		R10, R0U
+//	MOV		R10, R0U
+	MOV		R10, R6
+	MOV		R11, R7
+
+	NOP
+	NOP
+	NOP
+	NOP
+
 	LDACL
+
+	NOP
+	NOP
+	NOP
+	NOP
+
 	RTS
 	NOP
 
@@ -4101,7 +4123,7 @@ s64 TK_VMem_VaVirtualAlloc2(s64 addr, s64 addrh, s64 size,
 //		qfl=TK_VMem_VaQueryPages(addr, vpn);
 		qfl=TK_VMem_VaQueryPages2(addr, addrh, vpn);
 
-		if(qfl==1)
+		if((qfl==1) || (flProt&TKMM_PROT_ALLOW))
 		{
 //			if(TK_VMem_CheckAddrIsVirtual(addr))
 			if(TK_VMem_CheckAddrIsVirtual2(addr, addrh))
@@ -4117,6 +4139,8 @@ s64 TK_VMem_VaVirtualAlloc2(s64 addr, s64 addrh, s64 size,
 				return(addr);
 			}
 		}
+		
+		return(0);
 	}
 
 	if(flMap&TKMM_MAP_PHYSICAL)
@@ -4469,9 +4493,20 @@ void *tk_vmem_virttophys(u64 vaddr)
 
 	u64 mask_lo, mask_hi;
 	
+	vaddr1=vaddr&0x0000FFFFFFFFFFFFULL;
+	if(((vaddr>>44)&15)>=0xC)
+		{ return((void *)vaddr1); }
+	if(vaddr1<TKMM_VALOSTART)
+		{ return((void *)vaddr1); }
+	
 	pte=__arch_ttb;
-	if(!(pte&1))
+//	if(!(pte&1))
+	if(!(pte&255))
+	{
+		if(tk_vmem_pageroot)
+			{ __debugbreak(); }
 		return((void *)vaddr);
+	}
 	
 	mask_lo=(1<<TKMM_PAGEBITS)-1;
 	mask_hi=~mask_lo;
@@ -4997,14 +5032,21 @@ void tk_vmem_emurq_rv(u64 spc, u64 exc, u64 *regs, u32 *opp)
 			isok=1;
 		}
 	}
-	
-	
+
+	if((opw&0x7F)==0x0F)
+	{
+		j=(opw>>12)&7;
+		if((j==0) || (j==1))
+			isok=1;
+	}
+
 	if(isok)
 	{
 		/* instruction was emulated. */
 		regs[TKPE_REGSAVE_SPC]=regs[TKPE_REGSAVE_SPC]+4;
 		return;
 	}
+
 
 	tk_dbg_printf("tk_vmem_emurq_rv: EMU REQ: %08X @ %p, FPSR=%04X\n",
 		opw, spc, fpsr);

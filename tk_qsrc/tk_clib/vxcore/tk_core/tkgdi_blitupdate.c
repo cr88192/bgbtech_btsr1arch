@@ -1544,6 +1544,7 @@ void TKGDI_BlitUpdate_ScanCopy_Flip(u16 *ics, u32 *ict, int blkn);
 void TKGDI_BlitUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn)
 {
 	u64 *cs, *ct;
+	u64 tv0, tv1, tv2, tv3;
 	int i, j, k;
 
 	cs=(u64 *)ics;
@@ -1551,10 +1552,16 @@ void TKGDI_BlitUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn)
 	
 	for(i=0; i<blkn; i++)
 	{
-		ct[0]=cs[  0];
-		ct[1]=cs[ 80];
-		ct[2]=cs[160];
-		ct[3]=cs[240];
+//		ct[0]=cs[  0];
+//		ct[1]=cs[ 80];
+//		ct[2]=cs[160];
+//		ct[3]=cs[240];
+
+		tv0=cs[  0];	tv1=cs[ 80];
+		tv2=cs[160];	tv3=cs[240];
+		ct[0]=tv0;		ct[1]=tv1;
+		ct[2]=tv2;		ct[3]=tv3;
+
 		cs++;
 		ct+=4;
 	}
@@ -1563,6 +1570,7 @@ void TKGDI_BlitUpdate_ScanCopy(u16 *ics, u32 *ict, int blkn)
 void TKGDI_BlitUpdate_ScanCopy_Flip(u16 *ics, u32 *ict, int blkn)
 {
 	u64 *cs, *ct;
+	u64 tv0, tv1, tv2, tv3;
 	int i, j, k;
 
 	cs=(u64 *)ics;
@@ -1570,10 +1578,16 @@ void TKGDI_BlitUpdate_ScanCopy_Flip(u16 *ics, u32 *ict, int blkn)
 	
 	for(i=0; i<blkn; i++)
 	{
-		ct[3]=cs[  0];
-		ct[2]=cs[ 80];
-		ct[1]=cs[160];
-		ct[0]=cs[240];
+//		ct[3]=cs[  0];
+//		ct[2]=cs[ 80];
+//		ct[1]=cs[160];
+//		ct[0]=cs[240];
+
+		tv0=cs[  0];	tv1=cs[ 80];
+		tv2=cs[160];	tv3=cs[240];
+		ct[3]=tv0;		ct[2]=tv1;
+		ct[1]=tv2;		ct[0]=tv3;
+
 		cs++;
 		ct+=4;
 	}

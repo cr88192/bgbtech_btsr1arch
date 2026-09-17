@@ -487,6 +487,22 @@ __vnf_v2fa_cross:
 __quatf		__vnf_vqf_mul(__quatf A, __quatf B)
 {
 	__quatf C;
+
+#if 1
+	__vec4f Va, Vb, Vc, v0, v1, v2, v3;
+	
+	Va=(__vec4f)A;
+	Vb=(__vec4f)B;
+	v0=(Va.wwww*Vb.xyzw);
+	v1=(Va.xyzx*Vb.wwwX);
+	v2=(Va.yzxy*Vb.zxyY);
+	v3=(Va.zxyz*Vb.YZXZ);
+	Vc=(v0+v1)+(v2+v3);
+	C=(__quatf)Vc;
+//	__debugbreak();
+#endif
+
+#if 0
 	float f0, f1, f2, f3;
 	float g0, g1, g2, g3;
 	float h0, h1, h2, h3;
@@ -500,12 +516,18 @@ __quatf		__vnf_vqf_mul(__quatf A, __quatf B)
 	h3=f3*g3-f0*g0-f1*g1-f2*g2;
 
 	C = (__quatf) {h0, h1, h2, h3};
+#endif
 
 	return(C);
 
 //	return(A*__vnf_vqf_rcp(B));
 }
 #endif
+
+__quath		__vnf_vqh_mul(__quath A, __quath B)
+{
+	return((__quath)(__vnf_vqf_mul((__quatf)A, (__quatf)B)));
+}
 
 __quatf __vnf_vqf_rcp(__quatf A)
 {
@@ -523,5 +545,9 @@ __quatf __vnf_vqf_rcp(__quatf A)
 __quatf		__vnf_vqf_div(__quatf A, __quatf B)
 	{ return(A*__vnf_vqf_rcp(B)); }
 
+__quath		__vnf_vqh_div(__quath A, __quath B)
+{
+	return((__quath)(__vnf_vqf_div((__quatf)A, (__quatf)B)));
+}
 #endif
 

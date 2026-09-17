@@ -25,13 +25,14 @@ int tk_munlockall2(TKPE_TaskInfo *task)
 {
 }
 
-int TK_MMap_AllocIndex(void)
+int TK_MMap_AllocIndexTask(TKPE_TaskInfo *task)
 {
 	TKPE_TaskInfoKern *krnl;
 	int i;
 	
-	krnl=TK_GetCurrentTaskInfoKern();
-	
+//	krnl=TK_GetCurrentTaskInfoKern();
+	krnl=TK_GetTaskInfoKern(task);
+
 //	for(i=0; i<tkmm_mmap_n_map; i++)
 //		if(!tkmm_mmap_bufs[i])
 //			return(i);
@@ -48,6 +49,26 @@ int TK_MMap_AllocIndex(void)
 	}
 
 	return(i);
+}
+
+int TK_MMap_LookupMapIndexTask(TKPE_TaskInfo *task, void *vptr)
+{
+	TKPE_TaskInfoKern *krnl;
+	byte *ptr, *bcs, *bce;
+	int i;
+	
+	ptr=vptr;
+	for(i=0; i<krnl->mmap_n_map; i++)
+	{
+		if(!krnl->mmap_ptr[i])
+			continue;
+		bcs=krnl->mmap_ptr[i];
+		bce=bcs+krnl->mmap_len[i];
+		
+		if((ptr>=bcs) && (ptr<=bce))
+			return(i);
+	}
+	return(-1);
 }
 
 int TK_MMap_VaPageFree(void *ptr, int len)
@@ -77,8 +98,10 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 {
 //	TKPE_TaskInfo *task;
 	TKPE_TaskInfoKern *krnl;
-	byte *ptr;
-	int ix;
+	byte *ptr, *ptr0, *ptr1;
+	s64 p0, p1, p2, p3;
+	size_t len0, len1, len2, len3;
+	int ix, vpb, vpn;
 
 	if(!task)
 	{
@@ -87,7 +110,10 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 		__debugbreak();
 	}
 	
+	len0=len;
 	len=(len+((1<<TKMM_PAGEBITS)-1))&(~((1<<TKMM_PAGEBITS)-1));
+	vpn=len>>TKMM_PAGEBITS;
+	vpb=((s64)addr)>>TKMM_PAGEBITS;
 
 	/*
 	 * The mmap/mporotect interface will disallow NOCACHE and NOUSER.
@@ -105,14 +131,71 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 	{
 		if(addr)
 		{
-			return(NULL);
+			ptr0=(byte *)addr;
+			ix=TK_MMap_LookupMapIndexTask(task, ptr0);
+			if(ix>=0)
+			{
+				p0=krnl->mmap_ptr[ix];
+				p1=p0+(krnl->mmap_len[ix]);
+				p2=addr;
+				p3=addr+len;
+				
+				if(p3>p1)
+				{
+					krnl->mmap_len[ix]=p3-p0;
+					
+					if(TK_VMem_CheckAddrIsVirtual2(addr, 0))
+						{ TK_VMem_VaCommitPages2(addr, 0, vpn); }
+					else
+						{ TK_VMem_VaDoAllocRemapedPages2(addr, 0, vpn); }
+				}
+			
+//				krnl->mmap_ptr[ix]=(tk_kptr)ptr;
+//				krnl->mmap_len[ix]=len;
+				return(ptr0);
+			}
+			
+			ptr1=ptr0+len;
+			ix=TK_MMap_LookupMapIndexTask(task, ptr1);
+			if(ix>=0)
+			{
+				p0=krnl->mmap_ptr[ix];
+				p1=p0+(krnl->mmap_len[ix]);
+				p2=addr;
+				p3=addr+len;
+				
+				if(p2<p0)
+				{
+					krnl->mmap_ptr[ix]=vpb<<TKMM_PAGEBITS;
+					krnl->mmap_len[ix]=p1-(krnl->mmap_ptr[ix]);
+					
+					if(TK_VMem_CheckAddrIsVirtual2(addr, 0))
+						{ TK_VMem_VaCommitPages2(addr, 0, vpn); }
+					else
+						{ TK_VMem_VaDoAllocRemapedPages2(addr, 0, vpn); }
+				}
+			
+//				krnl->mmap_ptr[ix]=(tk_kptr)ptr;
+//				krnl->mmap_len[ix]=len;
+				return(ptr0);
+			}
+
+//			return(NULL);
 		}
 	
 //		ptr=TKMM_PageAlloc(len);
 //		ptr=TKMM_PageAllocUsc(len);
 		ptr=(byte *)TK_VMem_VaVirtualAlloc((u64)addr, len, prot, flags);
 
-		if(!ptr)
+		if(ptr && addr && (ptr!=addr))
+		{
+			tk_dbg_printf("  mmap2: VaAlloc %p -> %p\n", addr, ptr);
+		}
+
+		if(!ptr && addr)
+			return(NULL);
+
+		if(!ptr && !addr && !(prot&TKMM_PROT_ALLOW))
 		{
 			ptr=TKMM_PageAlloc(len);
 		}
@@ -122,6 +205,11 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 			return(NULL);
 		}
 
+		if(prot&TKMM_PROT_ALLOW)
+		{
+			memset(ptr, 0, len0);
+		}
+
 		TK_VMem_MProtectPages((u64)ptr, len, prot);
 	
 		TK_TaskAddPageAlloc(task, ptr, len);
@@ -129,7 +217,7 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 		TK_FlushCacheL1D();
 
 //		ix=tkmm_mmap_n_map++;
-		ix=TK_MMap_AllocIndex();
+		ix=TK_MMap_AllocIndexTask(task);
 //		tkmm_mmap_bufs[ix]=ptr;
 //		tkmm_mmap_bufe[ix]=ptr+len;
 //		tkmm_mmap_prot[ix]=prot;
@@ -140,6 +228,26 @@ void *tk_mmap2(TKPE_TaskInfo *task,
 		krnl->mmap_prot[ix]=prot;
 		krnl->mmap_flag[ix]=flags;
 		
+		return(ptr);
+	}
+
+	if((fd>2) && (offs>=0))
+	{
+//		ptr=tk_mmap2(task, addr, len0, prot, flags, -1, 0);
+		ptr=tk_mmap2(task, addr, len0,
+			TKMM_PROT_RWX|TKMM_PROT_ALLOW, flags, -1, 0);
+
+		if(!ptr)
+			return(NULL);
+
+		len1=tk_hseek(task, fd, 0, 2);
+		len2=offs+len0;
+		if(len1<len2)
+			len2=len1;
+		len3=len2-offs;
+		
+		tk_hseek(task, fd, offs, 0);
+		tk_hread(task, fd, ptr, len3);
 		return(ptr);
 	}
 
@@ -189,7 +297,7 @@ int tk_munmap2(TKPE_TaskInfo *task, void *addr, size_t len)
 		if((ptrs>bufs) && (ptre<bufe))
 		{
 			/* Hacks part out of the middle. */
-			j=TK_MMap_AllocIndex();
+			j=TK_MMap_AllocIndexTask(task);
 //			TKMM_PageFree(ptrs, len);
 			TK_MMap_VaPageFree(ptrs, len);
 //			tkmm_mmap_bufs[i]=bufs;

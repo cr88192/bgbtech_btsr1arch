@@ -1582,6 +1582,12 @@ int BGBCC_JX2_TryEmitOpImm(BGBCC_JX2_Context *ctx, int nmid, s64 imm)
 
 	nmid=BGBCC_JX2_EmitRemapPseudoOp(ctx, nmid);
 
+	if(nmid==BGBCC_SH_NMID_NOP)
+	{
+		return(BGBCC_JX2_TryEmitOpImmReg(ctx,
+			BGBCC_SH_NMID_FLDCH, imm, BGBCC_SH_REG_RQ0));
+	}
+
 	opw1=-1; opw2=-1; odr=0;
 	switch(nmid)
 	{

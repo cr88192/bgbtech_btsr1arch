@@ -527,6 +527,29 @@ u32 st_mtime;
 u32 st_size;
 };
 
+struct TK_FSTAT_s {
+u64 st_dev;				//00
+u64 st_ino;				//08
+u32 st_mode;			//10
+u32 st_nlink;			//14
+u32 st_uid;				//18
+u32 st_gid;				//1C
+u64 st_rdev;			//20
+u64 st_pad1;			//28
+u64 st_size;			//30
+u32 st_blksize;			//38
+u32 st_pad2;			//3C
+u64 st_blocks;			//40
+u64 st_atime_sec;		//48
+u64 st_atime_nsec;		//50
+u64 st_mtime_sec;		//58
+u64 st_mtime_nsec;		//60
+u64 st_ctime_sec;		//68
+u64 st_ctime_nsec;		//70
+u32 st_pad4;			//78
+u32 st_pad5;			//7C
+};
+
 struct TK_DATETIME_s {
 s16 year;
 byte mon;
