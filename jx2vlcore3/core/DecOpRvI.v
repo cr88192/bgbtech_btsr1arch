@@ -1212,11 +1212,11 @@ end
 				3'b001: begin
 					case(istrWord[31:26])
 						6'h00: begin
-							opNmid		= JX2_UCMD_SHADQ3;
+							opNmid		= JX2_UCMD_SHAD3;
 							opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 						end
 						6'h02: begin
-							opNmid		= JX2_UCMD_SHADQ3;
+							opNmid		= JX2_UCMD_SHAD3;
 							opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 						end
 						default: begin
@@ -1266,16 +1266,16 @@ end
 
 				3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
 				3'b101: begin
-//					opNmid		= JX2_UCMD_SHADQ3;
+//					opNmid		= JX2_UCMD_SHAD3;
 //					opUCmdIx = istrWord[30] ?
 //						JX2_UCIX_SHAD_SHARQ3 : JX2_UCIX_SHAD_SHLRQ3;
 					case(istrWord[31:26])
 						6'h00: begin
-							opNmid		= JX2_UCMD_SHADQ3;
+							opNmid		= JX2_UCMD_SHAD3;
 							opUCmdIx	= JX2_UCIX_SHAD_SHLRQ3;
 						end
 						6'h10: begin
-							opNmid		= JX2_UCMD_SHADQ3;
+							opNmid		= JX2_UCMD_SHAD3;
 							opUCmdIx	= JX2_UCIX_SHAD_SHARQ3;
 						end
 						default: begin
@@ -1338,7 +1338,7 @@ end
 					end
 
 					3'b001: begin
-						opNmid		= JX2_UCMD_SHADQ3;
+						opNmid		= JX2_UCMD_SHAD3;
 						opUCmdIx	= JX2_UCIX_SHAD_SHLDQ3;
 					end
 
@@ -1408,7 +1408,7 @@ end
 
 					3'b100: opUCmdIx = JX2_UCIX_ALU_XOR;
 					3'b101: begin
-						opNmid		= JX2_UCMD_SHADQ3;
+						opNmid		= JX2_UCMD_SHAD3;
 						opUCmdIx = istrWord[30] ?
 							JX2_UCIX_SHAD_SHARQ3 : JX2_UCIX_SHAD_SHLRQ3;
 						if(opIsJumboImm)

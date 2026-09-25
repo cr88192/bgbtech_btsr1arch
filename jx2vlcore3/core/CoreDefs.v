@@ -1040,14 +1040,14 @@ parameter[5:0] JX2_UCMD_SWAPN		= 6'h13;		//SWAP
 
 `ifdef jx2_merge_shadq
 parameter[5:0] JX2_UCMD_SHAD3		= 6'h14;		//
-parameter[5:0] JX2_UCMD_SHLD3		= 6'h14;		//
-parameter[5:0] JX2_UCMD_SHADQ3		= 6'h14;		//
-parameter[5:0] JX2_UCMD_SHLDQ3		= 6'h14;		//
+// parameter[5:0] JX2_UCMD_SHLD3		= 6'h14;		//
+// parameter[5:0] JX2_UCMD_SHADQ3		= 6'h14;		//
+// parameter[5:0] JX2_UCMD_SHLDQ3		= 6'h14;		//
 `else
-parameter[5:0] JX2_UCMD_SHAD3		= 6'h14;		//
-parameter[5:0] JX2_UCMD_SHLD3		= 6'h15;		//
-parameter[5:0] JX2_UCMD_SHADQ3		= 6'h16;		//
-parameter[5:0] JX2_UCMD_SHLDQ3		= 6'h17;		//
+// parameter[5:0] JX2_UCMD_SHAD3		= 6'h14;		//
+// parameter[5:0] JX2_UCMD_SHLD3		= 6'h15;		//
+// parameter[5:0] JX2_UCMD_SHADQ3		= 6'h16;		//
+// parameter[5:0] JX2_UCMD_SHLDQ3		= 6'h17;		//
 `endif
 
 parameter[5:0] JX2_UCMD_CONV_RR		= 6'h18;		//

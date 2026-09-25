@@ -95,17 +95,26 @@ wire[5:0]	regIdRdC_X3 = istrWordC[11: 6];
 wire[5:0]	regIdRsC_X3 = istrWordC[21:16];
 wire[5:0]	regIdRtC_X3 = istrWordC[27:22];
 
-wire	regIdRdA_LoP_X3 = (regIdRdA_X3[5:2]==4'b0000);
-wire	regIdRsA_LoP_X3 = (regIdRsA_X3[5:2]==4'b0000);
-wire	regIdRtA_LoP_X3 = (regIdRtA_X3[5:2]==4'b0000);
+wire	regIdRdA_LoP_X3 = (regIdRdA_X3[5:2]==4'b0000) && 
+			(regIdRdA_X3[1:0]!=2'b00);
+wire	regIdRsA_LoP_X3 = (regIdRsA_X3[5:2]==4'b0000) && 
+			(regIdRsA_X3[1:0]!=2'b00);
+wire	regIdRtA_LoP_X3 = (regIdRtA_X3[5:2]==4'b0000) && 
+			(regIdRtA_X3[1:0]!=2'b00);
 
-wire	regIdRdB_LoP_X3 = (regIdRdB_X3[5:2]==4'b0000);
-wire	regIdRsB_LoP_X3 = (regIdRsB_X3[5:2]==4'b0000);
-wire	regIdRtB_LoP_X3 = (regIdRtB_X3[5:2]==4'b0000);
+wire	regIdRdB_LoP_X3 = (regIdRdB_X3[5:2]==4'b0000) && 
+			(regIdRdB_X3[1:0]!=2'b00);
+wire	regIdRsB_LoP_X3 = (regIdRsB_X3[5:2]==4'b0000) && 
+			(regIdRsB_X3[1:0]!=2'b00);
+wire	regIdRtB_LoP_X3 = (regIdRtB_X3[5:2]==4'b0000) && 
+			(regIdRtB_X3[1:0]!=2'b00);
 
-wire	regIdRdC_LoP_X3 = (regIdRdC_X3[5:2]==4'b0000);
-wire	regIdRsC_LoP_X3 = (regIdRsC_X3[5:2]==4'b0000);
-wire	regIdRtC_LoP_X3 = (regIdRtC_X3[5:2]==4'b0000);
+wire	regIdRdC_LoP_X3 = (regIdRdC_X3[5:2]==4'b0000) && 
+			(regIdRdC_X3[1:0]!=2'b00);
+wire	regIdRsC_LoP_X3 = (regIdRsC_X3[5:2]==4'b0000) && 
+			(regIdRsC_X3[1:0]!=2'b00);
+wire	regIdRtC_LoP_X3 = (regIdRtC_X3[5:2]==4'b0000) && 
+			(regIdRtC_X3[1:0]!=2'b00);
 
 wire	regIdRdB_LoPg_X3 =
 	(regIdRdB_X3[5:2]==4'b0000) && (regIdRdB_X3[1:0]==2'b01);

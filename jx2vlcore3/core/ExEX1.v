@@ -822,9 +822,9 @@ begin
 	tRegBraLr	= { regValPc[63:1], 1'b1 };
 
 	tRegBraLrBasic	= tRegBraLr;
-	if(regValPc[55:50]==6'h01)
+	if(regValPc[55:50]==6'h02)
 	begin
-		tRegBraLrBasic	= { 16'h0, regValPc[47:1], 1'b0 };
+//		tRegBraLrBasic	= { 16'h0, regValPc[47:1], 1'b0 };
 	end
 
 //	tValBra			= tValAguBra[47:0];

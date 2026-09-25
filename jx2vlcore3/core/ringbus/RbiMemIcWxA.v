@@ -20,7 +20,7 @@ L1 Instruction Cache, WEX
  */
 
 `define jx2_memic_getoplen
-`define jx2_memic_blklenbits
+// `define jx2_memic_blklenbits
 
 `include "ringbus/RbiDefs.v"
 
@@ -1318,8 +1318,9 @@ assign blkDataRvSscEna =
 
 assign blkDataRvSsc3Ena =
 	selBlkDataSsc0[3] &&
-	selBlkDataSsc0[2] &&
+	selBlkDataSsc1[2] &&
 	selBlkDataSsc2[1] &&
+	selBlkDataSsc2[0] &&
 	(tInAddr[1:0] == 2'b00) &&
 	(selBlkDataSscReg[3:0]==4'b0000);
 

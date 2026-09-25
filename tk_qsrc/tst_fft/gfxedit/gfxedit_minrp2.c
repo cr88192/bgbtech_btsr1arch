@@ -858,6 +858,9 @@ int GfxEdit_EncodeRP2(byte *dst, byte *src, int dsz, int ssz)
 		/* Don't allow this run type near end of buffer. */
 		while((cs+(k+1)*8)>(cse-48))
 			k--;
+		if(k<0)
+			break;
+
 		tag=0x3F|(k<<7);
 		*ct++=(tag>>0)&255;
 		*ct++=(tag>>8)&255;

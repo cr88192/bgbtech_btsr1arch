@@ -357,14 +357,8 @@ begin
 
 `ifndef jx2_shadq_nolane3
 
-`ifdef jx2_merge_shadq
-
-//		JX2_UCMD_SHAD3, JX2_UCMD_SHLD3,
-//		JX2_UCMD_SHADQ3, JX2_UCMD_SHLDQ3:
 		JX2_UCMD_SHAD3:
 		begin
-`ifndef jx2_shadq_nolane3
-
 `ifdef jx2_cpu_shad_ex2
 			tExDelayOut[63:0]	= tValShad64;
 			tRegHeld			= 1;
@@ -372,29 +366,7 @@ begin
 			tValOutDfl[63:0]	= tValShad64;
 			tDoOutDfl			= 1;
 `endif
-
-`endif
 		end
-
-`else
-		JX2_UCMD_SHAD3: begin
-			tValOutDfl		= { tValShad32[31]?UV32_FF:UV32_00, tValShad32 };
-			tDoOutDfl		= 1;
-		end
-		JX2_UCMD_SHLD3: begin
-			tValOutDfl		= { UV32_00, tValShad32 };
-			tDoOutDfl		= 1;
-		end
-	
-		JX2_UCMD_SHADQ3: begin
-			tValOutDfl		= tValShad64;
-			tDoOutDfl		= 1;
-		end
-		JX2_UCMD_SHLDQ3: begin
-			tValOutDfl		= tValShad64;
-			tDoOutDfl		= 1;
-		end
-`endif
 
 `endif
 
@@ -459,7 +431,7 @@ begin
 
 				default: begin
 					if(!tMsgLatch)
-						$display("EX1B: Unhandled Op-IXT %X", opUIxt);
+						$display("EX1C: Unhandled Op-IXT %X", opUIxt);
 					tNextMsgLatch	= 1;
 //					tExHold		= 1;
 //					tExHold		= !reset;
@@ -498,7 +470,7 @@ begin
 	begin
 		if(!tMsgLatch)
 		begin
-			$display("EX1B: Unsupported Operation In Lane, %X-%X",
+			$display("EX1C: Unsupported Operation In Lane, %X-%X",
 				opUCmd, opUIxt);
 		end
 		tNextMsgLatch	= 1;

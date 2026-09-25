@@ -687,6 +687,8 @@ assign		tOpRvJBitsC = 0;
 `endif
 `endif
 
+reg[5:0]	dbgCheckAlias;
+
 
 // `reg_gpr	opCmRemapRxA[31:0];
 
@@ -875,6 +877,7 @@ begin
 
 	opUFlA		= 0;
 	opImmA0		= 0;
+	dbgCheckAlias	= 0;
 
 	tNextMsgLatch	= 0;
 
@@ -1478,8 +1481,9 @@ begin
 				opIsDualLaneRn	= 0;
 			end
 
-			if(	(opUCmdA0[5:0] == JX2_UCMD_SHADQ3) ||
-				(opUCmdA0[5:0] == JX2_UCMD_SHLDQ3))
+//			if(	(opUCmdA0[5:0] == JX2_UCMD_SHADQ3) ||
+//				(opUCmdA0[5:0] == JX2_UCMD_SHLDQ3))
+			if(opUCmdA0[5:0] == JX2_UCMD_SHAD3)
 			begin
 				opDualLaneSw	= 1;
 //				opIsDualLane3R	= 0;
@@ -1735,6 +1739,84 @@ begin
 				srMod, istrBPc, idPcStep);
 		end
 	endcase
+`endif
+
+`ifndef def_true
+	if((srSsc2 || srSsc3) && !opIsScalar)
+	begin
+		if(opUCmdA[5:0] == JX2_UCMD_ALU3)
+		begin
+			if(	((opUIxtA[5:0] == JX2_UCIX_ALU_ADDSL) ||
+				(opUIxtA[5:0] == JX2_UCIX_ALU_ADDUL)) &&
+				(	(opUCmdB[5:0] != JX2_UCMD_ALU3) ||
+					(	(opUIxtB[5:0] != JX2_UCIX_ALU_ADDSL) &&
+						(opUIxtB[5:0] != JX2_UCIX_ALU_ADDUL) &&
+						(opUIxtB[5:0] != JX2_UCIX_ALU_ADD  ) )))
+			begin
+				$display("DecOpWx3 Dbg ADDS.L Istr=%X-%X,%X-%X Step=%X",
+					istrWordA[15: 0], istrWordA[31:16],
+					istrWordB[15: 0], istrWordB[31:16],
+					idPcStep);
+				$display("  %X-%X %X-%X %X-%X",
+					opUCmdA, opUIxtA,
+					opUCmdB, opUIxtB,
+					opUCmdC, opUIxtC);
+				$display(
+			"  A: %X, %X, %X, %X  B: %X, %X, %X, %X  C: %X, %X, %X, %X",
+					opRegAM, opRegAO, opRegAP, opRegAN,
+					opRegBM, opRegBO, opRegBP, opRegBN,
+					opRegCM, opRegCO, opRegCP, opRegCN);
+			end
+		end
+	end
+`endif
+
+`ifndef def_true
+	dbgCheckAlias[0] =
+		((opRegBM==opRegAN) || (opRegBO==opRegAN) || (opRegBN==opRegAN)) && 
+			(opRegAN!=JX2_GR_ZZR);
+	dbgCheckAlias[1] =
+		((opRegAM==opRegBN) || (opRegAO==opRegBN) || (opRegBN==opRegAN)) &&
+			(opRegBN!=JX2_GR_ZZR);
+	dbgCheckAlias[2] =
+		((opRegAM==opRegCN) || (opRegAO==opRegCN) || (opRegCN==opRegAN)) &&
+			(opRegCN!=JX2_GR_ZZR);
+	dbgCheckAlias[3] =
+		((opRegBM==opRegCN) || (opRegBO==opRegCN) || (opRegCN==opRegBN)) &&
+			(opRegCN!=JX2_GR_ZZR);
+	dbgCheckAlias[4] =
+		((opRegCM==opRegAN) || (opRegCO==opRegAN) || (opRegCN==opRegAN)) && 
+			(opRegAN!=JX2_GR_ZZR);
+	dbgCheckAlias[5] =
+		((opRegCM==opRegBN) || (opRegCO==opRegBN) || (opRegBN==opRegCN)) &&
+			(opRegBN!=JX2_GR_ZZR);
+
+	if(srSsc2 && !opIsScalar)
+	begin
+		if(dbgCheckAlias[0] || dbgCheckAlias[1])
+		begin
+			$display("DecOpWx3 Bad Alias2 Istr=%X-%X,%X-%X Mod=%X PC=%X Step=%X",
+				istrWordA[15: 0], istrWordA[31:16],
+				istrWordB[15: 0], istrWordB[31:16],
+				srMod, istrBPc, idPcStep);
+			$display(" Alias=%X", dbgCheckAlias);
+		end
+	end
+
+	if(srSsc3 && !opIsScalar)
+	begin
+		if(	dbgCheckAlias[0] || dbgCheckAlias[1] ||
+			dbgCheckAlias[2] || dbgCheckAlias[3]  ||
+			dbgCheckAlias[4] || dbgCheckAlias[5])
+		begin
+			$display("DecOpWx3 Bad Alias3 Istr=%X-%X,%X-%X,%X-%X Mod=%X PC=%X Step=%X",
+				istrWordA[15: 0], istrWordA[31:16],
+				istrWordB[15: 0], istrWordB[31:16],
+				istrWordC[15: 0], istrWordC[31:16],
+				srMod, istrBPc, idPcStep);
+			$display(" Alias=%X", dbgCheckAlias);
+		end
+	end
 `endif
 
 `ifndef def_true

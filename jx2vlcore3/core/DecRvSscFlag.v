@@ -197,70 +197,130 @@ begin
 			casez(istrWord[15:12])
 				4'b0000: begin	/* F0-0, Mem, Short Bcc-Imm */
 					tIstrFlagXG3	= istrWord[31] ? 4'b0011 : 4'b0001;
-					if(istrWord[30:28] == 3'b011)
+//					if(istrWord[30:28] == 3'b000)
+//						tIstrFlagXG3	= 4'b0000;
+//					if(istrWord[30:28] == 3'b011)
+					if(istrWord[31:30] == 2'b00)
+					begin
+						/* Reserved */
 						tIstrFlagXG3	= 4'b0000;
+					end
 					if(istrWord[31:30] == 2'b10)
+					begin
+						/* Bcc */
 						tIstrFlagXG3	= 4'b0000;
+					end
+					if(istrWord[31:28] == 4'b1111)
+					begin
+						/* LDTEX */
+						tIstrFlagXG3	= 4'b0000;
+					end
 				end
 				4'b0001: begin	/* F0-1, Core ALU / 2R */
 					casez(istrWord[31:28])
 						4'b000z: begin
+							/* ADD / SUB */
 							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
 //							tIstrFlagXG3 = (istrWord[5] || 
 //								(istrWord[11:6]==6'h00)) ? 4'b0000 : 4'b1111;
 						end
-						4'b001z, 4'b0100:
+						4'b001z: begin
+							/* MULx.x */
+//							tIstrFlagXG3 = 4'b0011;
+							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
+						end
+						4'b0100: begin
+							/* MIN / MAX */
 							tIstrFlagXG3 = 4'b0011;
-						4'b0101, 4'b011z:
+						end
+						4'b0101, 4'b011z: begin
+							/* AND / OR / XOR */
 							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b1111;
+//							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
+						end
 						default:
 							tIstrFlagXG3	= 4'b0000;
 					endcase
 				end
-				4'b0010: begin
+// `ifdef def_false
+`ifndef def_false
+				4'b0010: begin	/* F0-2, Misc ALU */
 					casez(istrWord[31:28])
-						4'b00zz:
+						4'b000z:	/* PADDW */
+//							tIstrFlagXG3	= 4'b0111;
+							tIstrFlagXG3	= 4'b0011;
+						4'b001z: /* SHAR */
 							tIstrFlagXG3	= 4'b0111;
-						4'b01zz:
+//							tIstrFlagXG3	= 4'b0011;
+						4'b01zz: /* PCSELT / PADD / PSUB / PMUL */
 							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
-						4'b100z:
+						4'b100z: /* MOVxD */
 							tIstrFlagXG3	= 4'b0111;
-						4'b101z:
+						4'b101z: /* PSCHxx */
 							tIstrFlagXG3	= 4'b0000;
-						4'b11zz:
+						4'b11zz: /* BLKUTXx / PADD / PSUB / PMUL */
 							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
 					endcase
 				end
-				4'b0011: begin
+`endif
+`ifndef def_false
+				4'b0011: begin	/* F0-3, Misc */
 					casez(istrWord[31:28])
 						4'b0zzz:
 							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
-						4'b1zzz:
+						4'b1zzz: /* 2R Space */
 							tIstrFlagXG3	= 4'b0000;
 					endcase
 				end
+`endif
+`ifndef def_false
 				4'b0100: begin	/* F0-4, More Mem ops */
 					tIstrFlagXG3	= istrWord[31] ? 4'b0011 : 4'b0001;
 					if(istrWord[29:28] == 2'b00)
 						tIstrFlagXG3	= 4'b0000;
 				end
+`endif
+`ifndef def_false
 				4'b0101: begin	/* F0-5, Misc ALU Ops */
 					casez(istrWord[31:28])
-						4'b00zz:
-							tIstrFlagXG3 = 4'b0011;
-						4'b01zz: begin
+						4'b00zz: begin
+							/* CSELT and MUL */
+//							tIstrFlagXG3 = 4'b0011;
+							tIstrFlagXG3 = 4'b0000;
+						end
+						4'b010z: begin
+							/* SHAD */
 							tIstrFlagXG3 = 4'b0111;
+//							tIstrFlagXG3 = 4'b0011;
+//							tIstrFlagXG3 = 4'b0000;
 							if(istrWord[11:8]==4'h0)
 								tIstrFlagXG3	= 4'b0000;
 						end
-						4'b10zz:
-							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
-						4'b110z:
-							tIstrFlagXG3 = 4'b1111;
-						4'b111z:
+						4'b011z: begin
+							/* PMULx.x */
+							tIstrFlagXG3 = 4'b0011;
+						end
+						4'b10zz: begin
+							/* FADD / FSUB / FMUL / FDIV */
+//							tIstrFlagXG3 = istrWord[5] ? 4'b0000 : 4'b0011;
+							tIstrFlagXG3 = 4'b0000;
+						end
+						4'b110z: begin
+							/* ADDx.L / SUBx.L */
+//							tIstrFlagXG3 = 4'b1111;
+//							tIstrFlagXG3 = 4'b0011;
 							tIstrFlagXG3 = 4'b0111;
+//							tIstrFlagXG3 = 4'b0000;
+						end
+						4'b111z: begin
+							/* MULx.W */
+//							tIstrFlagXG3 = 4'b0111;
+							tIstrFlagXG3 = 4'b0011;
+//							tIstrFlagXG3 = 4'b0000;
+						end
 					endcase
 				end
+`endif
 				4'b0110: begin	/* F0-6, MAC / FPU / Misc */
 					tIstrFlagXG3	= 4'b0000;
 				end
@@ -271,7 +331,21 @@ begin
 					tIstrFlagXG3	= 4'b0000;
 				end
 				4'b1001: begin	/* F0-9, CMPxx */
-					tIstrFlagXG3	= istrWord[5] ? 4'b0011 : 4'b0000;
+//					tIstrFlagXG3	= 4'b0000;
+					tIstrFlagXG3	= istrWord[5] ?
+						4'b0011 : 4'b0000;
+				end
+				4'b1010: begin	/* F0-A, - */
+					tIstrFlagXG3	= 4'b0000;
+				end
+				4'b1011: begin	/* F0-B, - */
+					tIstrFlagXG3	= 4'b0000;
+				end
+				4'b1100: begin	/* F0-C, BRA */
+					tIstrFlagXG3	= 4'b0000;
+				end
+				4'b1101: begin	/* F0-D, BSR */
+					tIstrFlagXG3	= 4'b0000;
 				end
 				default:
 					tIstrFlagXG3	= 4'b0000;
@@ -289,17 +363,29 @@ begin
 		end
 		3'b010: begin	/* F2 Block, Imm10 */
 			casez(istrWord[15:12])
-				4'b000z: tIstrFlagXG3	= 4'b1111;
-				4'b0011: tIstrFlagXG3	= 4'b1111;
-				4'b01zz: begin
+				4'b0000: tIstrFlagXG3	= 4'b1111;	// ADD
+				4'b0001: tIstrFlagXG3	= 4'b0000;	// -
+				4'b0010: tIstrFlagXG3	= 4'b0011;	// MUL
+				4'b0011: tIstrFlagXG3	= 4'b1111;	// ADDS.L
+
+				4'b0100: tIstrFlagXG3	= 4'b0000;	// -
+				4'b0101: tIstrFlagXG3	= 4'b0111;	// AND / RSUB
+
+				4'b011z: begin
+					/* OR / XOR / SHAD.X / SHLD.X / Misc */
 					tIstrFlagXG3	= 4'b0111;
+//					tIstrFlagXG3	= 4'b0011;
 					if(istrWord[5])
 						tIstrFlagXG3	= 4'b0000;
 				end
 				4'b100z: begin
+					/* SHAD / SHLD / Misc */
 					tIstrFlagXG3	= 4'b0111;
+//					tIstrFlagXG3	= 4'b0011;
 					if(istrWord[31:30]!=2'b00)
 						tIstrFlagXG3	= 4'b0011;
+//					if(istrWord[5])
+//						tIstrFlagXG3	= 4'b0000;
 				end
 				default: begin
 					tIstrFlagXG3	= 4'b0000;
@@ -312,10 +398,21 @@ begin
 
 		3'b100: begin
 			casez(istrWord[15:12])
-				4'b00zz:
-					tIstrFlagXG3	= 4'b0111;
-				4'b010z:
+				4'b000z: /* LDIZ / LDIN */
+					tIstrFlagXG3	= istrWord[5] ? 4'b0000 : 4'b0111;
+				4'b001z: /* ADD / SHORI */
+					tIstrFlagXG3	= istrWord[5] ? 4'b0000 : 4'b0111;
+				4'b0100: /* FLDCH / PLDCSW */
+//					tIstrFlagXG3	= 4'b0011;
+					tIstrFlagXG3	= 4'b0000;
+				4'b0101: /* LEA.Q / MOVU.L GP */
 					tIstrFlagXG3	= 4'b0011;
+
+				4'b1100: /* SD / SW GP */
+					tIstrFlagXG3	= 4'b0001;
+				4'b1101: /* LD / LW GP */
+					tIstrFlagXG3	= 4'b0011;
+
 				default:
 					tIstrFlagXG3	= 4'b0000;
 			endcase

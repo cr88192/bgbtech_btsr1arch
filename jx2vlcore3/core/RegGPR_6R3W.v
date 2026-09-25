@@ -1476,8 +1476,8 @@ begin
 		end
 		JX2_GR_JIMM_EXT: begin
 			tValRvA = 0;
-			tValRvA[63:0]=regValImmB[32]?UV64_FF:UV64_00;
-			tValRvZz=1;
+			tValRvA[63:0] = regValImmB[32]?UV64_FF:UV64_00;
+			tValRvZz = 1;
 		end
 `endif
 
@@ -1490,8 +1490,8 @@ begin
 			tValRvZz=1;
 		end
 		JX2_GR_ZZR:	begin
-			tValRvA=UVGPRV_00;
-			tValRvZz=1;
+			tValRvA = UVGPRV_00;
+			tValRvZz = 1;
 		end
 
 `ifdef jx2_use_fpu_fpimm

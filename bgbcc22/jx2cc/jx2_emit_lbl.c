@@ -1194,13 +1194,16 @@ int BGBCC_JX2_CheckLabelIsText(
 //	if(!sctx->is_pbo)
 //		return(0);
 
-	h=((lblid*65521)>>16)&255;
-	i=bgbcc_textlbl_hash[h];
-	while(i>=0)
+	if(bgbcc_n_textlbl>0)
 	{
-		if(bgbcc_textlbl_id[i]==lblid)
-			return(1);
-		i=bgbcc_textlbl_chn[i];
+		h=((lblid*65521)>>16)&255;
+		i=bgbcc_textlbl_hash[h];
+		while(i>=0)
+		{
+			if(bgbcc_textlbl_id[i]==lblid)
+				return(1);
+			i=bgbcc_textlbl_chn[i];
+		}
 	}
 
 #if 1
@@ -1226,4 +1229,6 @@ int BGBCC_JX2_CheckLabelIsText(
 	j=sctx->lbl_sec[i];
 	return(BGBCC_JX2_IsSectionText(sctx, j));
 #endif
+
+	return(0);
 }

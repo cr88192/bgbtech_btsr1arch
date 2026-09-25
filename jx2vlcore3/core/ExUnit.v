@@ -6526,7 +6526,8 @@ begin
 		ex1RegValRt		<= UVGPRV_00;
 
 `ifndef jx2_cpu_merge_rxy
-		ex1RegValRm		<= UVGPRV_XX;
+//		ex1RegValRm		<= UVGPRV_XX;
+		ex1RegValRm		<= UVGPRV_00;
 `endif
 
 		ex1RegValCRm	<= UVGPRV_XX;
@@ -6542,8 +6543,10 @@ begin
 		exB1RegIdRs		<= JX2_GR_ZZR;
 		exB1RegIdRt		<= JX2_GR_ZZR;
 		exB1RegIdRm		<= JX2_GR_ZZR;
-		exB1RegValRs	<= UVGPRV_XX;
-		exB1RegValRt	<= UVGPRV_XX;
+//		exB1RegValRs	<= UVGPRV_XX;
+//		exB1RegValRt	<= UVGPRV_XX;
+		exB1RegValRs	<= UVGPRV_00;
+		exB1RegValRt	<= UVGPRV_00;
 
 `ifndef jx2_cpu_merge_rxy
 		exB1RegValRm	<= UVGPRV_XX;
@@ -6557,9 +6560,12 @@ begin
 		exC1RegIdRs		<= JX2_GR_ZZR;
 		exC1RegIdRt		<= JX2_GR_ZZR;
 		exC1RegIdRm		<= JX2_GR_ZZR;
-		exC1RegValRs	<= UVGPRV_XX;
-		exC1RegValRt	<= UVGPRV_XX;
-		exC1RegValRm	<= UVGPRV_XX;
+//		exC1RegValRs	<= UVGPRV_XX;
+//		exC1RegValRt	<= UVGPRV_XX;
+//		exC1RegValRm	<= UVGPRV_XX;
+		exC1RegValRs	<= UVGPRV_00;
+		exC1RegValRt	<= UVGPRV_00;
+		exC1RegValRm	<= UVGPRV_00;
 `endif
 
 `endif
