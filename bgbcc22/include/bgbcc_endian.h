@@ -285,3 +285,7 @@ default_inline void bgbcc_sets64en(byte *ptr, int en, s64 val)
 #define bgbcc_gets8en(ptr, en)			(*(sbyte *)(ptr))
 #define bgbcc_setu8en(ptr, en, val)		(*(byte *)(ptr))=(val)
 #define bgbcc_sets8en(ptr, en, val)		(*(sbyte *)(ptr))=(val)
+
+// #define gfxedit_getu64(ptr)				bgbcc_getu64le(ptr)
+// #define gfxedit_setu64(ptr, val)		bgbcc_setu64le(ptr, val)
+

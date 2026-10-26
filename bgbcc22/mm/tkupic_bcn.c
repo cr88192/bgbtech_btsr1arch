@@ -38,9 +38,6 @@ u64 TKuPI_EncodeImageDDS_BlockDXT1(byte *ibuf, int xstr, int flag)
 				switch(z)
 				{
 					case 0: cy=(2*cg+1*cr+1*cb)/ 4;		break;
-	//				case 1: cy=(8*cg+7*cb+1*cr)/16;		break;
-	//				case 2: cy=(8*cb+7*cr+1*cg)/16;		break;
-	//				case 3: cy=(8*cr+7*cg+1*cb)/16;		break;
 					case 1: cy=(4*cg+3*cb+1*cr)/8;		break;
 					case 2: cy=(4*cb+3*cr+1*cg)/8;		break;
 					case 3: cy=(4*cr+3*cg+1*cb)/8;		break;
@@ -82,9 +79,6 @@ u64 TKuPI_EncodeImageDDS_BlockDXT1(byte *ibuf, int xstr, int flag)
 		switch(ax)
 		{
 			case 0: cy=(2*cg+1*cr+1*cb)/ 4;		break;
-//			case 1: cy=(8*cg+7*cb+1*cr)/16;		break;
-//			case 2: cy=(8*cb+7*cr+1*cg)/16;		break;
-//			case 3: cy=(8*cr+7*cg+1*cb)/16;		break;
 			case 1: cy=(4*cg+3*cb+1*cr)/8;		break;
 			case 2: cy=(4*cb+3*cr+1*cg)/8;		break;
 			case 3: cy=(4*cr+3*cg+1*cb)/8;		break;
@@ -256,11 +250,11 @@ int TKuPI_DecodeImageDDS_BlockDXT1(byte *ibuf, int xstr, u64 blk)
 	clrtab[1*4+2]=cb;	clrtab[1*4+3]=ca;
 	clrtab[2*4+0]=((5*clrtab[0*4+0])+(3*clrtab[1*4+0]))/8;
 	clrtab[2*4+1]=((5*clrtab[0*4+1])+(3*clrtab[1*4+1]))/8;
-	clrtab[2*4+2]=((5*clrtab[0*4+2])+(3*clrtab[1*4+1]))/8;
+	clrtab[2*4+2]=((5*clrtab[0*4+2])+(3*clrtab[1*4+2]))/8;
 	clrtab[2*4+3]=ca;
 	clrtab[3*4+0]=((5*clrtab[1*4+0])+(3*clrtab[0*4+0]))/8;
 	clrtab[3*4+1]=((5*clrtab[1*4+1])+(3*clrtab[0*4+1]))/8;
-	clrtab[3*4+2]=((5*clrtab[1*4+2])+(3*clrtab[0*4+1]))/8;
+	clrtab[3*4+2]=((5*clrtab[1*4+2])+(3*clrtab[0*4+2]))/8;
 	clrtab[3*4+3]=ca;
 	if(pxa<=pxb)
 	{
@@ -415,7 +409,6 @@ u64 TKuPI_EncodeImageDDS_FlipImageVertBC1(u64 *ibuf, int ixs, int iys)
 			ibuf[y1*bxs+x]=v0;
 		}
 	}
-
 	return(0);
 }
 

@@ -29,6 +29,9 @@
 // #define TKUPI_ADRICEB_SHL		5
 #define TKUPI_ADRICEB_SHL		4
 
+#define TKUPI_STFRK_ADSKSHL		3
+#define TKUPI_STFRK_ADSKINIT	0
+
 typedef struct TKuPI_DecState_s TKuPI_DecState;
 
 struct TKuPI_DecState_s {
@@ -70,15 +73,18 @@ struct TKuPI_DecState_s {
 	int (*ReadAdRice)(TKuPI_DecState *ctx, byte *rkf);
 };
 
+#ifndef TKUPI_MALLOC
+#define TKUPI_MALLOC
 void *tkupi_malloc(int sz)
 {
-	return(bgbcc_tmalloc2("_mm_upicbuf", sz));
+	return(malloc(sz));
 }
 
 void tkupi_free(void *ptr)
 {
-	bgbcc_free2(ptr);
+	free(ptr);
 }
+#endif
 
 #if 0
 int TKuPI_PeekBits(TKuPI_DecState *ctx, int bits)
@@ -332,6 +338,67 @@ int TKuPI_ReadAdRiceB(TKuPI_DecState *ctx, byte *rkf)
 	*rkf=kfb;
 	return(v);
 }
+#endif
+
+#if 1
+/*
+   (15:12)=Sym Len
+   (11: 8)=Prefix Len
+   ( 7: 0)=Base
+ */
+const u16 tkupi_stfrk_skewtab2[5*32]={
+/* Skew 0 */
+	0x8900, 0x8180, 0x8900, 0x8180,	0x8900, 0x8180, 0x8900, 0x8180,
+	0x8900, 0x8180, 0x8900, 0x8180,	0x8900, 0x8180, 0x8900, 0x8180,
+	0x8900, 0x8180, 0x8900, 0x8180,	0x8900, 0x8180, 0x8900, 0x8180,
+	0x8900, 0x8180, 0x8900, 0x8180,	0x8900, 0x8180, 0x8900, 0x8180,
+/* Skew 1 */
+	0x7900, 0x8240, 0x7900, 0x9280,	0x7900, 0x8240, 0x7900, 0x9280,
+	0x7900, 0x8240, 0x7900, 0x9280,	0x7900, 0x8240, 0x7900, 0x9280,
+	0x7900, 0x8240, 0x7900, 0x9280,	0x7900, 0x8240, 0x7900, 0x9280,
+	0x7900, 0x8240, 0x7900, 0x9280,	0x7900, 0x8240, 0x7900, 0x9280,
+/* Skew 2 */
+	0x6900, 0x7220, 0x6900, 0x9340,	0x6900, 0x7220, 0x6900, 0xA380,
+	0x6900, 0x7220, 0x6900, 0x9340,	0x6900, 0x7220, 0x6900, 0xA380,
+	0x6900, 0x7220, 0x6900, 0x9340,	0x6900, 0x7220, 0x6900, 0xA380,
+	0x6900, 0x7220, 0x6900, 0x9340,	0x6900, 0x7220, 0x6900, 0xA380,
+/* Skew 3 */
+	0x5900, 0x6210, 0x5900, 0x8320,	0x5900, 0x6210, 0x5900, 0xA440,
+	0x5900, 0x6210, 0x5900, 0x8320,	0x5900, 0x6210, 0x5900, 0xB480,
+	0x5900, 0x6210, 0x5900, 0x8320,	0x5900, 0x6210, 0x5900, 0xA440,
+	0x5900, 0x6210, 0x5900, 0x8320,	0x5900, 0x6210, 0x5900, 0xB480,
+/* Skew 4 */
+	0x4900, 0x5208, 0x4900, 0x7310,	0x4900, 0x5208, 0x4900, 0x9420,
+	0x4900, 0x5208, 0x4900, 0x7310,	0x4900, 0x5208, 0x4900, 0xB540,
+	0x4900, 0x5208, 0x4900, 0x7310,	0x4900, 0x5208, 0x4900, 0x9420,
+	0x4900, 0x5208, 0x4900, 0x7310,	0x4900, 0x5208, 0x4900, 0xC580,
+};
+
+int TKuPI_ReadAdSkew(TKuPI_DecState *ctx, byte *rkf)
+{
+	int b, q, r, v, kf, kfb, skb;
+	int p;
+
+	kfb=*rkf;
+	kf=kfb>>TKUPI_STFRK_ADSKSHL;
+	b=TKuPI_PeekBits(ctx, 16);
+	q=tkupi_stfrk_skewtab2[(b&0x1F)|(kf<<5)];
+	skb=(q>>12)&15;
+
+	p=(q>>8)&7;
+	r=(1<<(skb-p))-1;
+	v=(q&0xFF)+((b>>p)&r);
+
+	TKuPI_SkipBits(ctx, skb);
+
+	if(q&0x0800)
+		{ if((kfb+1)<(5<<TKUPI_STFRK_ADSKSHL)) kfb++; }
+	else
+		{ if(kfb>0) kfb--; }
+	*rkf=kfb;
+	return(v);
+}
+
 #endif
 
 int TKuPI_ReadAdRice(TKuPI_DecState *ctx, byte *rkf)
@@ -1096,6 +1163,12 @@ void TKuPI_DecodeMacroBlockI(TKuPI_DecState *ctx,
 
 	if(ctx->ectrl&16)
 		ctx->ReadAdRice=TKuPI_ReadAdRiceB;
+	if(ctx->ectrl&32)
+	{
+		ctx->ReadAdRice=TKuPI_ReadAdSkew;
+		if(ctx->ectrl&16)
+			return;
+	}
 	
 	TransIBH=TKuPI_TransIBH;
 //	if(ctx->mbform&32)
@@ -1528,6 +1601,12 @@ int TKuPI_DecodeImageBufferI(TKuPI_DecState *ctx,
 		{
 			ctx->pk_dc=4<<TKUPI_ADRICEB_SHL;
 			ctx->pk_ac=4<<TKUPI_ADRICEB_SHL;
+		}
+
+		if(ctx->ectrl&0x20)
+		{
+			ctx->pk_dc=TKUPI_STFRK_ADSKINIT<<TKUPI_STFRK_ADSKSHL;
+			ctx->pk_ac=TKUPI_STFRK_ADSKINIT<<TKUPI_STFRK_ADSKSHL;
 		}
 		
 		isbcn=0;

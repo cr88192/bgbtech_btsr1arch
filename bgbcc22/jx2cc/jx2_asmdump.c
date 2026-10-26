@@ -146,6 +146,20 @@ char *BGBCC_JX2DA_RelocToName(BGBCC_JX2_Context *ctx, int rlc)
 
 	case BGBCC_SH_RLC_PBOQ16_BJX:		sn="PBOQ16_BJX";	break;
 
+	case BGBCC_SH_RLC_PBO32_RVI:		sn="PBO32_RVI";	break;
+	case BGBCC_SH_RLC_PBO32J_RVI:		sn="PBO32J_RVI";	break;
+	case BGBCC_SH_RLC_PBO32LD_RVI:		sn="PBO32LD_RVI";	break;
+	case BGBCC_SH_RLC_PBO32ST_RVI:		sn="PBO32ST_RVI";	break;
+	case BGBCC_SH_RLC_PBO32STJ_RVI:		sn="PBO32STJ_RVI";	break;
+	case BGBCC_SH_RLC_RELW33J_RVI:		sn="RELW33J_RVI";	break;
+
+	case BGBCC_SH_RLC_RELW10_XG3:		sn="RELW10_XG3";	break;
+	case BGBCC_SH_RLC_RELW23_XG3:		sn="RELW23_XG3";	break;
+	case BGBCC_SH_RLC_RELB33_XG3:		sn="RELB33_XG3";	break;
+	case BGBCC_SH_RLC_RELW33_XG3:		sn="RELW33_XG3";	break;
+	case BGBCC_SH_RLC_PBOJ33_XG3:		sn="PBOJ33_XG3";	break;
+	case BGBCC_SH_RLC_RELW6_XG3:		sn="RELW6_XG3";		break;
+
 	default:
 		sprintf(tb, "RLC_%02X", rlc);
 		sn=bgbcc_strdup(tb);

@@ -501,6 +501,8 @@ wad4lump_t	wad_packlump[256];
 int 		wad_packpos=0;
 int 		wad_n_packlump=0;
 
+int		wad_ena_rp2post;
+
 int FlushPack()
 {
 	char tn[64];
@@ -614,6 +616,10 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 
 //	ctx1=TgvLz_CreateContext();
 	ctx1=TgvLz_CreateContextRP2A();
+
+	if(wad_ena_rp2post)
+		ctx1=TgvLz_CreateContextRP2C();
+
 	ctx2=TgvLz_CreateContextLZ4();
 
 	ibuf=malloc(isz+24);
@@ -631,6 +637,12 @@ int AddWadLump(char *name, byte *buf, int isz, int tag, int pfx)
 
 //	osz3=BTM_StfRk_EncodeBufferPostRp2(obuf3, obuf1, osz1);
 	osz3=0;
+
+	if(wad_ena_rp2post)
+	{
+		osz3=PostRp2_EncodeBufferPostRp2(obuf3, obuf1, isz*2, osz1, 
+			wad_ena_rp2post);
+	}
 
 //	csum=TgvLz_CalculateImagePel4BChecksum(ibuf, isz);
 	csum=TgvLz_CalculateImagePel4BChecksumAc(ibuf, isz);
@@ -1159,6 +1171,9 @@ int print_usage(char *argv0)
 {
 	printf("Usage: %s [opts] <inlist> <outwad>\n", argv0);
 	printf("    -C <path>    Read input files from path\n");
+	printf("    -Pz          No RP2 Post Comressor (Default)\n");
+	printf("    -Ps          RP2 Post Comressor, Favor Speed\n");
+	printf("    -Pc          RP2 Post Comressor, Favor Ratio\n");
 	printf("\n");
 	printf("Makes a WAD4 image from a listing file\n");
 	printf("  <path> <infile>    Import file given by input path\n");
@@ -1187,6 +1202,7 @@ int main(int argc, char *argv[], char **env)
 //	ofn=argv[2];
 
 	dodump=0;
+	wad_ena_rp2post=0;
 
 	ifn=NULL;
 	ofn=NULL;
@@ -1206,6 +1222,27 @@ int main(int argc, char *argv[], char **env)
 			{
 				dodump=1;
 				continue;
+			}
+
+			if(argv[i][1]=='P')
+			{
+				if(argv[i][2]=='s')
+				{
+					wad_ena_rp2post=
+						RP2POST_FLAGS_FAVOR_SPEED |
+						RP2POST_FLAGS_NO_RANGE;
+				}
+
+				if(argv[i][2]=='c')
+				{
+					wad_ena_rp2post=
+						RP2POST_FLAGS_FAVOR_SIZE;
+				}
+
+				if(argv[i][2]=='z')
+				{
+					wad_ena_rp2post=0;
+				}
 			}
 			continue;
 		}

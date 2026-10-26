@@ -1460,19 +1460,21 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 		switch((opw>>12)&15)
 		{
 		case 0x0:
-			op->imm=imm10u;
+//			op->imm=imm10u;
+			op->imm=imm10s;
 			op->nmid=X3VM_NMID_ADD;
 			op->fmid=X3VM_FMID_3RI;
 			op->Run=X3VM_Opc_ADD_3RI;
 			break;
 		case 0x1:
-			op->imm=imm10n;
-			op->nmid=X3VM_NMID_ADD;
-			op->fmid=X3VM_FMID_3RI;
-			op->Run=X3VM_Opc_ADD_3RI;
+//			op->imm=imm10n;
+//			op->nmid=X3VM_NMID_ADD;
+//			op->fmid=X3VM_FMID_3RI;
+//			op->Run=X3VM_Opc_ADD_3RI;
 			break;
 		case 0x2:
-			op->imm=imm10u;
+//			op->imm=imm10u;
+			op->imm=imm10s;
 			op->nmid=X3VM_NMID_MULW;
 			op->fmid=X3VM_FMID_3RI;
 			op->Run=X3VM_Opc_MULW_3RI;
@@ -1483,7 +1485,8 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			}
 			break;
 		case 0x3:
-			op->imm=imm10u;
+//			op->imm=imm10u;
+			op->imm=imm10s;
 			op->nmid=X3VM_NMID_ADDW;
 			op->fmid=X3VM_FMID_3RI;
 			op->Run=X3VM_Opc_ADDW_3RI;
@@ -1494,15 +1497,15 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			}
 			break;
 		case 0x4:
-			op->imm=imm10n;
-			op->nmid=X3VM_NMID_ADDW;
-			op->fmid=X3VM_FMID_3RI;
-			op->Run=X3VM_Opc_ADDW_3RI;
-			if(eq)
-			{
-				op->nmid=X3VM_NMID_ADDWU;
-				op->Run=X3VM_Opc_ADDWU_3RI;
-			}
+//			op->imm=imm10n;
+//			op->nmid=X3VM_NMID_ADDW;
+//			op->fmid=X3VM_FMID_3RI;
+//			op->Run=X3VM_Opc_ADDW_3RI;
+//			if(eq)
+//			{
+//				op->nmid=X3VM_NMID_ADDWU;
+//				op->Run=X3VM_Opc_ADDWU_3RI;
+//			}
 			break;
 		case 0x5:
 			op->imm=imm10s;
@@ -1516,7 +1519,8 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			}
 			break;
 		case 0x6:
-			op->imm=imm10u;
+//			op->imm=imm10u;
+			op->imm=imm10s;
 			op->nmid=X3VM_NMID_OR;
 			op->fmid=X3VM_FMID_3RI;
 			op->Run=X3VM_Opc_OR_3RI;
@@ -1534,7 +1538,8 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			}
 			break;
 		case 0x7:
-			op->imm=imm10u;
+//			op->imm=imm10u;
+			op->imm=imm10s;
 			op->nmid=X3VM_NMID_XOR;
 			op->fmid=X3VM_FMID_3RI;
 			op->Run=X3VM_Opc_XOR_3RI;
@@ -1549,7 +1554,8 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			if(((imm10u>>8)==1) || (imm10u>>16))
 			{
 //				op->imm=(byte)imm10u;
-				op->imm=imm10u;
+//				op->imm=imm10u;
+				op->imm=imm10s;
 				op->fmid=X3VM_FMID_3RI;
 				if(eq)
 				{
@@ -1564,7 +1570,8 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			}
 			if((imm10u>>8)==3)
 			{
-				op->imm=(byte)imm10u;
+//				op->imm=(byte)imm10u;
+				op->imm=(byte)imm10s;
 				op->fmid=X3VM_FMID_3RI;
 				if(eq)
 				{
@@ -1574,7 +1581,8 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 				break;
 			}
 
-			op->imm=(sbyte)imm10u;
+//			op->imm=(sbyte)imm10u;
+			op->imm=(sbyte)imm10s;
 			op->nmid=X3VM_NMID_SLAW;
 			op->fmid=X3VM_FMID_3RI;
 			op->Run=X3VM_Opc_SLAW_3RI;
@@ -1585,7 +1593,8 @@ int X3VM_DecodeOpcodeXG3(X3VM_Context *ctx,
 			}
 			break;
 		case 0x9:
-			op->imm=(sbyte)imm10u;
+//			op->imm=(sbyte)imm10u;
+			op->imm=(sbyte)imm10s;
 			op->nmid=X3VM_NMID_SLLW;
 			op->fmid=X3VM_FMID_3RI;
 			op->Run=X3VM_Opc_SLLW_3RI;

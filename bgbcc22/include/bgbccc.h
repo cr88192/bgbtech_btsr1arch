@@ -687,6 +687,10 @@ typedef struct BGBCC_TransState_s BGBCC_TransState;
 typedef struct TKuPI_DecState_s TKuPI_DecState;
 typedef struct TKuPI_EncState_s TKuPI_EncState;
 
+typedef struct BTM_StfRkCtx_s BTM_StfRkCtx;
+typedef struct PostRp2Huff_DecState_s PostRp2Huff_DecState;
+typedef struct PostRp2Huff_EncState_s PostRp2Huff_EncState;
+
 
 struct BGBCP_ParseItem_s {
 BGBCP_ParseItem *next;

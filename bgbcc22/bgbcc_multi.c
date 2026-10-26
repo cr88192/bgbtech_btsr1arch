@@ -140,7 +140,12 @@
 #include "mm/tkupic_enc.c"
 #include "mm/bufpng.c"
 
+#include "mm/gfxedit_minrp2.c"
 #include "mm/btm_rp2stf.c"
+#include "mm/btm_rp2bitrc.c"
+#include "mm/rp2post_h12d.c"
+#include "mm/rp2post_h12e.c"
+#include "mm/rp2post_auto.c"
 
 #include "csg/btm_meshmulti.c"
 

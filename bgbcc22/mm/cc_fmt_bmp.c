@@ -1846,7 +1846,8 @@ int BGBCC_Img_EncodeImageBMP_LZ8I(byte *obuf, byte *ibuf,
 	tbuf=bgbcc_malloc_bmp(2*ys*xstr);
 
 #ifdef TGVLZ_NOMAIN
-	tectx=TgvLz_CreateContext();
+//	tectx=TgvLz_CreateContext();
+	tectx=TgvLz_CreateContextRP2B();
 	csz=TgvLz_DoEncodeSafe(tectx, tbuf, obuf+ofs_dat, ys*xstr);
 	printf("BGBCC_Img_EncodeImageBMP_LZ8I: RP2 %d -> %d\n", ys*xstr, csz);
 #else
@@ -1950,7 +1951,8 @@ int BGBCC_Img_EncodeImageBMP_LZ_4I(byte *obuf, byte *ibuf,
 	tbuf=bgbcc_malloc_bmp(2*ys*xstr);
 
 #ifdef TGVLZ_NOMAIN
-	tectx=TgvLz_CreateContext();
+//	tectx=TgvLz_CreateContext();
+	tectx=TgvLz_CreateContextRP2B();
 	csz=TgvLz_DoEncodeSafe(tectx, tbuf, obuf+ofs_dat, ys*xstr);
 	printf("BGBCC_Img_EncodeImageBMP_LZ4I: RP2 %d -> %d\n", ys*xstr, csz);
 #else

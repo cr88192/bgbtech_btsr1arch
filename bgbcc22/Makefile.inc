@@ -40,6 +40,9 @@ SRCS=\
 	mm/bcn_encjpg.c \
 	mm/cc_fmt_dec_bt5bu.c \
 	mm/cc_fmt_enc_bt5bu.c \
+	mm/btm_rp2stf.c \
+	mm/rp2post_h12d.c \
+	mm/rp2post_h12e.c \
 	\
 	ccxl/ccxl_cgif.c \
 	ccxl/ccxl_compile.c \
@@ -216,10 +219,10 @@ bgbcc$(BINSUF): $(DEP_HDRS) $(META_SRCS)
 	$(CC_OUTTOOL)bgbcc$(BINSUF) bgbcc_multi.c \
 		$(CFLAGS_META) $(LDFLAGS_META)
 
-mkwad2list$(BINSUF): wadtool/mkwad2list.c $(META_SRCS)
+mkwad2list$(BINSUF): wadtool/mkwad2list.c wadtool/tgvlz1.c $(META_SRCS)
 	$(CC_OUTTOOL)mkwad2list$(BINSUF) wadtool/mkwad2list.c $(TOOL_CFLAGS)
 
-mkwad4list$(BINSUF): wadtool/mkwad4list.c $(META_SRCS)
+mkwad4list$(BINSUF): wadtool/mkwad4list.c wadtool/tgvlz1.c $(META_SRCS)
 	$(CC_OUTTOOL)mkwad4list$(BINSUF) wadtool/mkwad4list.c $(TOOL_CFLAGS)
 		
 

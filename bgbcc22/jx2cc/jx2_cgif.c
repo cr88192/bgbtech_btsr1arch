@@ -8221,7 +8221,19 @@ ccxl_status BGBCC_JX2C_FlattenImage(BGBCC_TransState *ctx,
 
 		if(obj->regtype==CCXL_LITID_FUNCTION)
 		{
-			obj->gblrefcnt>>=2;
+//			obj->gblrefcnt>>=2;
+			obj->gblrefcnt=(obj->gblrefcnt+3)>>2;
+
+			if(	!(obj->flagsint&BGBCC_TYFL_DLLEXPORT) &&
+				!(obj->regflags&BGBCC_REGFL_ALIASPTR))
+			{
+				/* Try to put normal functions after DLL exports and
+				 * aliased functions, in an attempt to lessen
+				 * PBO relocs in internal functions.
+				 */
+//				obj->gblrefcnt>>=2;
+				obj->gblrefcnt=(obj->gblrefcnt+3)>>2;
+			}
 			
 			if(obj->ext)
 			{
