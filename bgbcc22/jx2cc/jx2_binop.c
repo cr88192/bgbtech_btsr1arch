@@ -1224,6 +1224,7 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 	int opr,
 	ccxl_register sreg, ccxl_register treg)
 {
+	ccxl_type sroty, troty;
 	int csreg, ctreg, cdreg;
 	int tr0;
 	int nm1, nm2, nm3, nm4;
@@ -1233,6 +1234,9 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &sreg);
 	BGBCC_JX2C_NormalizeImmVRegInt(ctx, sctx, type, &treg);
+	
+	sroty=BGBCC_CCXL_GetRegDeclType(ctx, sreg);
+	troty=BGBCC_CCXL_GetRegDeclType(ctx, treg);
 	
 	nm4=-1;
 	if((opr==CCXL_BINOP_ADD) || (opr==CCXL_BINOP_SUB) ||
@@ -1479,11 +1483,25 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 				if(opr==CCXL_BINOP_MUL)
 				{
 					if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
-						{ nm1=BGBCC_SH_NMID_DMULU; k=j; }
+					{
+						nm1=BGBCC_SH_NMID_DMULU; k=j;
+						if(	BGBCC_CCXL_TypeSmallUShortP(ctx, sroty) &&
+							BGBCC_CCXL_TypeSmallUShortP(ctx, troty))
+						{
+							nm1=BGBCC_SH_NMID_MULUW;
+						}
+					}
 //					else
 					if(!BGBCC_CCXL_TypeUnsignedP(ctx, type))
 //					if(!BGBCC_CCXL_TypeUnsignedP(ctx, type) && (j==(byte)j))
-						{ nm1=BGBCC_SH_NMID_DMULS; k=j; }
+					{
+						nm1=BGBCC_SH_NMID_DMULS; k=j;
+						if(	BGBCC_CCXL_TypeSmallShortP(ctx, sroty) &&
+							BGBCC_CCXL_TypeSmallShortP(ctx, troty))
+						{
+							nm1=BGBCC_SH_NMID_MULSW;
+						}
+					}
 				}
 			}
 #endif
@@ -1498,8 +1516,21 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 				{
 //					nm1=BGBCC_SH_NMID_MULL;
 					nm1=BGBCC_SH_NMID_DMULS;
+					if(	BGBCC_CCXL_TypeSmallSShortP(ctx, sroty) &&
+						BGBCC_CCXL_TypeSmallSShortP(ctx, troty))
+					{
+						nm1=BGBCC_SH_NMID_MULSW;
+					}
+
 					if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+					{
 						nm1=BGBCC_SH_NMID_DMULU;
+						if(	BGBCC_CCXL_TypeSmallUShortP(ctx, sroty) &&
+							BGBCC_CCXL_TypeSmallUShortP(ctx, troty))
+						{
+							nm1=BGBCC_SH_NMID_MULUW;
+						}
+					}
 					k=j;
 				}
 
@@ -2019,8 +2050,21 @@ int BGBCC_JX2C_EmitBinaryVRegVRegVRegInt(
 
 #if 1
 		nm1=BGBCC_SH_NMID_DMULS;
+		if(	BGBCC_CCXL_TypeSmallSShortP(ctx, sroty) &&
+			BGBCC_CCXL_TypeSmallSShortP(ctx, troty))
+		{
+			nm1=BGBCC_SH_NMID_MULSW;
+		}
+
 		if(BGBCC_CCXL_TypeUnsignedP(ctx, type))
+		{
 			nm1=BGBCC_SH_NMID_DMULU;
+			if(	BGBCC_CCXL_TypeSmallUShortP(ctx, sroty) &&
+				BGBCC_CCXL_TypeSmallUShortP(ctx, troty))
+			{
+				nm1=BGBCC_SH_NMID_MULUW;
+			}
+		}
 
 		if(BGBCC_CCXL_TypeSmallShortP(ctx, type))
 		{

@@ -98,7 +98,7 @@ int PostRp2_DecodeBufferPostRp2(
 #endif
 		}
 
-		if((ibuf[0]==0x10) || (ibuf[0]==0x50))
+		if((ibuf[0]==0x10) || (ibuf[0]==0x50) || (ibuf[0]==0x40))
 		{
 #ifdef RP2POST_RP2STF_C
 			return(PostRp2Stf_DecodeBufferPostRp2(obuf, ibuf, obsz, ibsz));
@@ -152,7 +152,7 @@ int PostRp2_DecodeBufferRp2Full(
 #endif
 		}
 
-		if((ibuf[0]==0x10) || (ibuf[0]==0x50))
+		if((ibuf[0]==0x10) || (ibuf[0]==0x50) || (ibuf[0]==0x40))
 		{
 #ifdef RP2POST_RP2STF_C
 			return(PostRp2Stf_DecodeBufferRp2Full(obuf, ibuf, obsz, ibsz));

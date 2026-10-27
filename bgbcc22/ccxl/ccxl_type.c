@@ -269,6 +269,46 @@ bool BGBCC_CCXL_TypeSmallShortP(
 	return(false);
 }
 
+bool BGBCC_CCXL_TypeSmallSShortP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int bty;
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
+		return(false);
+
+	bty=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
+	if(bty==CCXL_TY_SB)		return(true);
+	if(bty==CCXL_TY_UB)		return(true);
+	if(bty==CCXL_TY_SS)		return(true);
+//	if(bty==CCXL_TY_US)		return(true);
+
+	if(BGBCC_CCXL_TypeBitIntMaxP(ctx, ty, 16))
+		return(true);
+
+	return(false);
+}
+
+bool BGBCC_CCXL_TypeSmallUShortP(
+	BGBCC_TransState *ctx, ccxl_type ty)
+{
+	int bty;
+
+	if(BGBCC_CCXL_TypeArrayOrPointerP(ctx, ty))
+		return(false);
+
+	bty=BGBCC_CCXL_GetTypeBaseType(ctx, ty);
+//	if(bty==CCXL_TY_SB)		return(true);
+	if(bty==CCXL_TY_UB)		return(true);
+//	if(bty==CCXL_TY_SS)		return(true);
+	if(bty==CCXL_TY_US)		return(true);
+
+	if(BGBCC_CCXL_TypeBitIntMaxP(ctx, ty, 16))
+		return(true);
+
+	return(false);
+}
+
 
 bool BGBCC_CCXL_TypeSmallSIntP(
 	BGBCC_TransState *ctx, ccxl_type ty)

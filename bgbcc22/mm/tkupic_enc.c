@@ -124,13 +124,17 @@ void TKuPI_WriteAdSkew(TKuPI_EncState *ctx, int val, byte *rkf)
 	int q, kf, kfb, kd, b, n;
 	
 	kfb=*rkf;
-	kf=kfb>>TKUPI_STFRK_ADSKSHL;
+	kf=(kfb>>TKUPI_STFRK_ADSKSHL)&15;
 	b=0;	n=0;
-	if(kf==0)
+	if((kf==0) || (kf==15))
 	{
 		kd=val<0x80;
 		b=((val&0x7F)<<1)|(!kd);
 		n=8;
+		
+//		if(!kfb)
+		if(kf==15)
+			kd=1;
 	}else
 		if(kf==1)
 	{
@@ -179,14 +183,36 @@ void TKuPI_WriteAdSkew(TKuPI_EncState *ctx, int val, byte *rkf)
 			{ b=(val<<5)|15; n=11; kd=0; }
 		else
 			{ b=(val<<5)|31; n=12; kd=0; }
+	}else
+		if((kf==5) || (kf==6))
+	{
+		if(val<0x04)
+			{ b=(val<<1)|0; n=3; kd=1; }
+		else if(val<0x08)
+			{ b=(val<<2)|1; n=4; kd=0; }
+		else if(val<0x10)
+			{ b=(val<<3)|3; n=6; kd=0; }
+		else if(val<0x20)
+			{ b=(val<<4)|7; n=8; kd=0; }
+		else if(val<0x40)
+			{ b=(val<<5)|15; n=10; kd=0; }
+		else if(val<0x80)
+			{ b=(val<<6)|31; n=12; kd=0; }
+		else
+			{ b=(val<<6)|63; n=13; kd=0; }
+		if(kf==6)
+			kd=0;
 	}
-
 	TKuPI_WriteBits(ctx, b, n);
 
 	if(kd)
-		{ if((kfb+1)<(5<<TKUPI_STFRK_ADSKSHL)) kfb++; }
+//		{ if((kfb+1)<(5<<TKUPI_STFRK_ADSKSHL)) kfb++; }
+//		{ if((kfb+1)<(6<<TKUPI_STFRK_ADSKSHL)) kfb++; }
+//		{ if((kfb+1)<(7<<TKUPI_STFRK_ADSKSHL)) kfb++; }
+		{ kfb++; }
 	else
-		{ if(kfb>0) kfb--; }
+//		{ if(kfb>0) kfb--; }
+		{ kfb--; }
 	*rkf=kfb;
 }
 
